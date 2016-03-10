@@ -27,17 +27,17 @@ import (
 var (
 	fullEstimator = LinearEstimator{
 		Resources: []Resource{
-			Resource{
+			{
 				Base:         resource.MustParse("0.3"),
 				ExtraPerNode: resource.MustParse("1"),
 				Name:         "cpu",
 			},
-			Resource{
+			{
 				Base:         resource.MustParse("30Mi"),
 				ExtraPerNode: resource.MustParse("1Mi"),
 				Name:         "memory",
 			},
-			Resource{
+			{
 				Base:         resource.MustParse("30Gi"),
 				ExtraPerNode: resource.MustParse("1Gi"),
 				Name:         "storage",
@@ -46,12 +46,12 @@ var (
 	}
 	noCpuEstimator = LinearEstimator{
 		Resources: []Resource{
-			Resource{
+			{
 				Base:         resource.MustParse("30Mi"),
 				ExtraPerNode: resource.MustParse("1Mi"),
 				Name:         "memory",
 			},
-			Resource{
+			{
 				Base:         resource.MustParse("30Gi"),
 				ExtraPerNode: resource.MustParse("1Gi"),
 				Name:         "storage",
@@ -60,12 +60,12 @@ var (
 	}
 	noMemoryEstimator = LinearEstimator{
 		Resources: []Resource{
-			Resource{
+			{
 				Base:         resource.MustParse("0.3"),
 				ExtraPerNode: resource.MustParse("1"),
 				Name:         "cpu",
 			},
-			Resource{
+			{
 				Base:         resource.MustParse("30Gi"),
 				ExtraPerNode: resource.MustParse("1Gi"),
 				Name:         "storage",
@@ -74,12 +74,12 @@ var (
 	}
 	noStorageEstimator = LinearEstimator{
 		Resources: []Resource{
-			Resource{
+			{
 				Base:         resource.MustParse("0.3"),
 				ExtraPerNode: resource.MustParse("1"),
 				Name:         "cpu",
 			},
-			Resource{
+			{
 				Base:         resource.MustParse("30Mi"),
 				ExtraPerNode: resource.MustParse("1Mi"),
 				Name:         "memory",
