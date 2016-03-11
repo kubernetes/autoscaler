@@ -30,16 +30,16 @@ import (
 	"k8s.io/kubernetes/pkg/client/restclient"
 )
 
-const NoValue = "MISSING"
+const noValue = "MISSING"
 
 var (
 	// Flags to define the resource requirements.
-	baseCPU        = flag.String("cpu", NoValue, "The base CPU resource requirement.")
-	cpuPerNode     = flag.String("extra_cpu", "0", "The amount of CPU to add per node.")
-	baseMemory     = flag.String("memory", NoValue, "The base memory resource requirement.")
-	memoryPerNode  = flag.String("extra_memory", "0Mi", "The amount of memory to add per node.")
-	baseStorage    = flag.String("storage", NoValue, "The base storage resource requirement.")
-	storagePerNode = flag.String("extra_storage", "0Gi", "The amount of storage to add per node.")
+	baseCPU        = flag.String("cpu", noValue, "The base CPU resource requirement.")
+	cpuPerNode     = flag.String("extra-cpu", "0", "The amount of CPU to add per node.")
+	baseMemory     = flag.String("memory", noValue, "The base memory resource requirement.")
+	memoryPerNode  = flag.String("extra-memory", "0Mi", "The amount of memory to add per node.")
+	baseStorage    = flag.String("storage", noValue, "The base storage resource requirement.")
+	storagePerNode = flag.String("extra-storage", "0Gi", "The amount of storage to add per node.")
 	threshold      = flag.Int("threshold", 0, "A number between 0-100. The dependent's resources are rewritten when they deviate from expected by more than threshold.")
 	// Flags to identify the container to nanny.
 	podNamespace  = flag.String("namespace", os.Getenv("MY_POD_NAMESPACE"), "The namespace of the ward. This defaults to the nanny pod's own namespace.")
@@ -47,7 +47,7 @@ var (
 	podName       = flag.String("pod", os.Getenv("MY_POD_NAME"), "The name of the pod to watch. This defaults to the nanny's own pod.")
 	containerName = flag.String("container", "pod-nanny", "The name of the container to watch. This defaults to the nanny itself.")
 	// Flags to control runtime behavior.
-	pollPeriod = time.Millisecond * time.Duration(*flag.Int("poll_period", 10000, "The time, in milliseconds, to poll the dependent container."))
+	pollPeriod = time.Millisecond * time.Duration(*flag.Int("poll-period", 10000, "The time, in milliseconds, to poll the dependent container."))
 )
 
 func main() {
@@ -82,7 +82,7 @@ func main() {
 	var resources []nanny.Resource
 
 	// Monitor only the resources specified.
-	if *baseCPU != NoValue {
+	if *baseCPU != noValue {
 		resources = append(resources, nanny.Resource{
 			Base:         resource.MustParse(*baseCPU),
 			ExtraPerNode: resource.MustParse(*cpuPerNode),
@@ -90,7 +90,7 @@ func main() {
 		})
 	}
 
-	if *baseMemory != NoValue {
+	if *baseMemory != noValue {
 		resources = append(resources, nanny.Resource{
 			Base:         resource.MustParse(*baseMemory),
 			ExtraPerNode: resource.MustParse(*memoryPerNode),
@@ -98,7 +98,7 @@ func main() {
 		})
 	}
 
-	if *baseStorage != NoValue {
+	if *baseStorage != noValue {
 		resources = append(resources, nanny.Resource{
 			Base:         resource.MustParse(*baseStorage),
 			ExtraPerNode: resource.MustParse(*memoryPerNode),
