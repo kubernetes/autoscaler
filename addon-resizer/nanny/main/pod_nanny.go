@@ -30,15 +30,15 @@ import (
 	"k8s.io/kubernetes/pkg/client/restclient"
 )
 
-const NO_VALUE = "MISSING"
+const NoValue = "MISSING"
 
 var (
 	// Flags to define the resource requirements.
-	baseCpu        = flag.String("cpu", NO_VALUE, "The base CPU resource requirement.")
+	baseCPU        = flag.String("cpu", NoValue, "The base CPU resource requirement.")
 	cpuPerNode     = flag.String("extra_cpu", "0", "The amount of CPU to add per node.")
-	baseMemory     = flag.String("memory", NO_VALUE, "The base memory resource requirement.")
+	baseMemory     = flag.String("memory", NoValue, "The base memory resource requirement.")
 	memoryPerNode  = flag.String("extra_memory", "0Mi", "The amount of memory to add per node.")
-	baseStorage    = flag.String("storage", NO_VALUE, "The base storage resource requirement.")
+	baseStorage    = flag.String("storage", NoValue, "The base storage resource requirement.")
 	storagePerNode = flag.String("extra_storage", "0Gi", "The amount of storage to add per node.")
 	threshold      = flag.Int("threshold", 0, "A number between 0-100. The dependent's resources are rewritten when they deviate from expected by more than threshold.")
 	// Flags to identify the container to nanny.
@@ -65,7 +65,7 @@ func main() {
 	}
 
 	log.Infof("Watching namespace: %s, pod: %s, container: %s.", *podNamespace, *podName, *containerName)
-	log.Infof("cpu: %s, extra_cpu: %s, memory: %s, extra_memory: %s, storage: %s, extra_storage: %s", *baseCpu, *cpuPerNode, *baseMemory, *memoryPerNode, *baseStorage, *storagePerNode)
+	log.Infof("cpu: %s, extra_cpu: %s, memory: %s, extra_memory: %s, storage: %s, extra_storage: %s", *baseCPU, *cpuPerNode, *baseMemory, *memoryPerNode, *baseStorage, *storagePerNode)
 
 	// Set up work objects.
 	config, err := restclient.InClusterConfig()
@@ -82,15 +82,15 @@ func main() {
 	var resources []nanny.Resource
 
 	// Monitor only the resources specified.
-	if *baseCpu != NO_VALUE {
+	if *baseCPU != NoValue {
 		resources = append(resources, nanny.Resource{
-			Base:         resource.MustParse(*baseCpu),
+			Base:         resource.MustParse(*baseCPU),
 			ExtraPerNode: resource.MustParse(*cpuPerNode),
 			Name:         "cpu",
 		})
 	}
 
-	if *baseMemory != NO_VALUE {
+	if *baseMemory != NoValue {
 		resources = append(resources, nanny.Resource{
 			Base:         resource.MustParse(*baseMemory),
 			ExtraPerNode: resource.MustParse(*memoryPerNode),
@@ -98,7 +98,7 @@ func main() {
 		})
 	}
 
-	if *baseStorage != NO_VALUE {
+	if *baseStorage != NoValue {
 		resources = append(resources, nanny.Resource{
 			Base:         resource.MustParse(*baseStorage),
 			ExtraPerNode: resource.MustParse(*memoryPerNode),
@@ -112,5 +112,5 @@ func main() {
 	}
 
 	// Begin nannying.
-	nanny.PollApiServer(k8s, est, *containerName, pollPeriod, uint64(*threshold))
+	nanny.PollAPIServer(k8s, est, *containerName, pollPeriod, uint64(*threshold))
 }

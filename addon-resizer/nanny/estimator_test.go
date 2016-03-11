@@ -44,7 +44,7 @@ var (
 			},
 		},
 	}
-	noCpuEstimator = LinearEstimator{
+	noCPUEstimator = LinearEstimator{
 		Resources: []Resource{
 			{
 				Base:         resource.MustParse("30Mi"),
@@ -96,7 +96,7 @@ var (
 		"storage": resource.MustParse("30Gi"),
 	}
 
-	noCpuBaseResources = api.ResourceList{
+	noCPUBaseResources = api.ResourceList{
 		"memory":  resource.MustParse("30Mi"),
 		"storage": resource.MustParse("30Gi"),
 	}
@@ -113,7 +113,7 @@ var (
 		"memory":  resource.MustParse("33Mi"),
 		"storage": resource.MustParse("33Gi"),
 	}
-	threeNodeNoCpuResources = api.ResourceList{
+	threeNodeNoCPUResources = api.ResourceList{
 		"memory":  resource.MustParse("33Mi"),
 		"storage": resource.MustParse("33Gi"),
 	}
@@ -137,8 +137,8 @@ func TestEstimateResources(t *testing.T) {
 	}{
 		{fullEstimator, 0, baseResources, baseResources},
 		{fullEstimator, 3, threeNodeResources, threeNodeResources},
-		{noCpuEstimator, 0, noCpuBaseResources, noCpuBaseResources},
-		{noCpuEstimator, 3, threeNodeNoCpuResources, threeNodeNoCpuResources},
+		{noCPUEstimator, 0, noCPUBaseResources, noCPUBaseResources},
+		{noCPUEstimator, 3, threeNodeNoCPUResources, threeNodeNoCPUResources},
 		{noMemoryEstimator, 0, noMemoryBaseResources, noMemoryBaseResources},
 		{noMemoryEstimator, 3, threeNodeNoMemoryResources, threeNodeNoMemoryResources},
 		{noStorageEstimator, 0, noStorageBaseResources, noStorageBaseResources},

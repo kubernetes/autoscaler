@@ -73,6 +73,7 @@ func (k *kubernetesClient) UpdateDeployment(resources *apiv1.ResourceRequirement
 	return fmt.Errorf("Container %s was not found in the deployment %s in namespace %s.", k.container, k.deployment, k.namespace)
 }
 
+// NewKubernetesClient gives a KubernetesClient with the given dependencies.
 func NewKubernetesClient(namespace, deployment, pod, container string, clientset *release_1_2.Clientset) KubernetesClient {
 	return &kubernetesClient{
 		namespace:  namespace,

@@ -17,17 +17,20 @@ limitations under the License.
 package nanny
 
 import (
-	resource "k8s.io/kubernetes/pkg/api/resource"
 	api "k8s.io/kubernetes/pkg/api/v1"
+
+	"k8s.io/kubernetes/pkg/api/resource"
 
 	inf "speter.net/go/exp/math/dec/inf"
 )
 
+// Resource defines the name of a resource, the quantity, and the marginal value.
 type Resource struct {
 	Base, ExtraPerNode resource.Quantity
 	Name               api.ResourceName
 }
 
+// LinearEstimator estimates the amount of resources as r = base + extra*nodes.
 type LinearEstimator struct {
 	Resources []Resource
 }
