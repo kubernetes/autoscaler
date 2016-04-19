@@ -5,5 +5,21 @@
 		"./..."
 	],
 	"Deps": [
+		{
+                        "ImportPath": "github.com/stretchr/objx",
+                        "Rev": "1a9d0bb9f541897e62256577b352fdbc1fb4fd94"
+                },
+                {
+                        "ImportPath": "github.com/stretchr/testify/assert",
+                        "Rev": "2160c81a963bc827f650a9d420263d05d35bb97e"
+                },
+                {
+                        "ImportPath": "github.com/stretchr/testify/mock",
+                        "Rev": "2160c81a963bc827f650a9d420263d05d35bb97e"
+                },
+                {
+                        "ImportPath": "github.com/stretchr/testify/require",
+                        "Rev": "2160c81a963bc827f650a9d420263d05d35bb97e"
+                }
 	]
 }

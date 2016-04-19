@@ -16,5 +16,19 @@ limitations under the License.
 
 package main
 
+import (
+	"flag"
+	"fmt"
+	"k8s.io/contrib/cluster-autoscaler/config"
+)
+
+var (
+	migConfig config.MigConfigFlag
+)
+
 func main() {
+	flag.Var(&migConfig, "nodes", "sets min,max size and url of a MIG to be controlled by Cluster Autoscaler. "+
+		"Can be used multiple times. Format: <min>:<max>:<migurl>")
+	flag.Parse()
+	fmt.Printf("MIG: %s\n", migConfig.String())
 }
