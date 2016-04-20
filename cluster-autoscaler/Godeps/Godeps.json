@@ -2,10 +2,11 @@
 	"ImportPath": "k8s.io/contrib/cluster-autoscaler",
 	"GoVersion": "go1.6",
 	"GodepVersion": "v62",
-	"Packages": [
-		"./..."
-	],
 	"Deps": [
+		{
+			"ImportPath": "github.com/stretchr/testify/assert",
+			"Rev": "2160c81a963bc827f650a9d420263d05d35bb97e"
+		},
 		{
 			"ImportPath": "bitbucket.org/ww/goautoneg",
 			"Comment": "null-5",
@@ -137,10 +138,6 @@
 		{
 			"ImportPath": "github.com/spf13/pflag",
 			"Rev": "08b1a584251b5b62f458943640fc8ebd4d50aaa5"
-		},
-		{
-			"ImportPath": "github.com/stretchr/testify/assert",
-			"Rev": "2160c81a963bc827f650a9d420263d05d35bb97e"
 		},
 		{
 			"ImportPath": "github.com/ugorji/go/codec",
