@@ -20,6 +20,7 @@ import (
 	"flag"
 	"fmt"
 	"k8s.io/contrib/cluster-autoscaler/config"
+	"time"
 )
 
 var (
@@ -31,4 +32,13 @@ func main() {
 		"Can be used multiple times. Format: <min>:<max>:<migurl>")
 	flag.Parse()
 	fmt.Printf("MIG: %s\n", migConfig.String())
+
+	for {
+		select {
+		case <-time.After(time.Minute):
+			{
+
+			}
+		}
+	}
 }
