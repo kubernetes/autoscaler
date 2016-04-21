@@ -16,6 +16,6 @@ test-unit: clean deps build
 	$(ENVVAR) godep go test --test.short -race ./... $(FLAGS)
 
 clean:
-	rm -f clusterautoscaler
+	rm -f cluster-autoscaler
 
 .PHONY: all deps build test-unit clean
