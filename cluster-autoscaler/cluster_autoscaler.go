@@ -22,22 +22,21 @@ import (
 	"time"
 
 	"k8s.io/contrib/cluster-autoscaler/config"
+	"k8s.io/contrib/cluster-autoscaler/utils/gce"
 	kube_client "k8s.io/kubernetes/pkg/client/unversioned"
 
 	"github.com/golang/glog"
 )
 
 var (
-	migConfig  config.MigConfigFlag
-	kubernetes = flag.String("kubernetes", "", "Kuberentes master location. Leave blank for default")
+	migConfigFlag config.MigConfigFlag
+	kubernetes    = flag.String("kubernetes", "", "Kuberentes master location. Leave blank for default")
 )
 
 func main() {
-	flag.Var(&migConfig, "nodes", "sets min,max size and url of a MIG to be controlled by Cluster Autoscaler. "+
+	flag.Var(&migConfigFlag, "nodes", "sets min,max size and url of a MIG to be controlled by Cluster Autoscaler. "+
 		"Can be used multiple times. Format: <min>:<max>:<migurl>")
 	flag.Parse()
-
-	glog.Infof("MIG: %s\n", migConfig.String())
 
 	url, err := url.Parse(*kubernetes)
 	if err != nil {
@@ -51,6 +50,12 @@ func main() {
 	kubeClient := kube_client.NewOrDie(kubeConfig)
 	unscheduledPodLister := NewUnscheduledPodLister(kubeClient)
 	nodeLister := NewNodeLister(kubeClient)
+
+	migConfigs := make([]*config.MigConfig, 0, len(migConfigFlag))
+	gceManager, err := gce.CreateGceManager(migConfigs)
+	if err != nil {
+		glog.Fatalf("Failed to create GCE Manager %v", err)
+	}
 
 	for {
 		select {
@@ -80,7 +85,10 @@ func main() {
 					continue
 				}
 
-				// TODO: Checking if all nodes are present.
+				if err := CheckMigsAndNodes(nodes, gceManager); err != nil {
+					glog.Warningf("Cluster is not ready for autoscaling: %v", err)
+					continue
+				}
 
 				// Checks if scheduler tried to schedule the pods after thew newest node was added.
 				newestNode := GetNewestNode(nodes)

@@ -44,6 +44,11 @@ func GenerateInstanceUrl(project, zone, name string) string {
 	return fmt.Sprintf(instanceUrlTemplate, project, zone, name)
 }
 
+// GenerateMigUrl generates url for instance.
+func GenerateMigUrl(project, zone, name string) string {
+	return fmt.Sprintf(migUrlTemplate, project, zone, name)
+}
+
 func parseGceUrl(url, expectedResource string) (project string, zone string, name string, err error) {
 	errMsg := fmt.Errorf("Wrong url: expected format https://content.googleapis.com/compute/v1/projects/<project-id>/zones/<zone>/%s/<name>, got %s", expectedResource, url)
 	if !strings.HasPrefix(url, gcePrefix) {
