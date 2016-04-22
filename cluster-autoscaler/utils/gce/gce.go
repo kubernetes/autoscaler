@@ -31,6 +31,11 @@ import (
 	"k8s.io/kubernetes/pkg/util/wait"
 )
 
+const (
+	operationWaitTimeout  = 5 * time.Second
+	operationPollInterval = 100 * time.Millisecond
+)
+
 type gceManager struct {
 	migs       []*config.MigConfig
 	service    *gce.Service
@@ -71,14 +76,23 @@ func (m *gceManager) SetMigSize(migConf *config.MigConfig, size int64) error {
 	if err != nil {
 		return err
 	}
-	if err := m.waitForOp(op); err != nil {
+	if err := m.waitForOp(op, migConf.Project); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *gceManager) waitForOp(op *gce.Operation) error {
-	return nil
+func (m *gceManager) waitForOp(operation *gce.Operation, project string) error {
+	for start := time.Now(); time.Since(start) < operationWaitTimeout; time.Sleep(operationPollInterval) {
+		if op, err := m.service.ZoneOperations.Get(project, operation.Zone, operation.Name).Do(); err == nil {
+			if op.Status == "DONE" {
+				return nil
+			}
+		} else {
+			glog.Warningf("Error while getting operation %s on %s: %v", operation.Name, operation.TargetLink, err)
+		}
+	}
+	return fmt.Errorf("Timeout while waiting for operation %s on %s to complete.", operation.Name, operation.TargetLink)
 }
 
 // All instances must be controlled by the same MIG.
@@ -111,7 +125,7 @@ func (m *gceManager) DeleteInstances(instances []*config.InstanceConfig) error {
 	if err != nil {
 		return err
 	}
-	if err := m.waitForOp(op); err != nil {
+	if err := m.waitForOp(op, commonMig.Project); err != nil {
 		return err
 	}
 	return nil
