@@ -56,9 +56,15 @@ type MigConfig struct {
 	Name    string
 }
 
+// Url builds GCE url for the MIG.
+func (migconfig *MigConfig) Url() string {
+	return gceurl.GenerateMigUrl(migconfig.Project, migconfig.Zone, migconfig.Name)
+}
+
 // MigConfigFlag is an array of MIG configuration details. Working as a multi-value flag.
 type MigConfigFlag []MigConfig
 
+// String returns string representation of the MIG.
 func (migconfigflag *MigConfigFlag) String() string {
 	configs := make([]string, len(*migconfigflag))
 	for _, migconfig := range *migconfigflag {

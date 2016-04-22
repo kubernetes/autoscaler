@@ -17,7 +17,11 @@ limitations under the License.
 package main
 
 import (
+	"fmt"
 	"time"
+
+	"k8s.io/contrib/cluster-autoscaler/config"
+	"k8s.io/contrib/cluster-autoscaler/utils/gce"
 
 	kube_api "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/client/cache"
@@ -58,16 +62,16 @@ type ReadyNodeLister struct {
 }
 
 // List returns ready nodes.
-func (readyNodeLister *ReadyNodeLister) List() ([]kube_api.Node, error) {
+func (readyNodeLister *ReadyNodeLister) List() ([]*kube_api.Node, error) {
 	nodes, err := readyNodeLister.nodeLister.List()
 	if err != nil {
-		return []kube_api.Node{}, err
+		return []*kube_api.Node{}, err
 	}
-	readyNodes := make([]kube_api.Node, 0, len(nodes.Items))
-	for _, node := range nodes.Items {
+	readyNodes := make([]*kube_api.Node, 0, len(nodes.Items))
+	for i, node := range nodes.Items {
 		for _, condition := range node.Status.Conditions {
 			if condition.Type == kube_api.NodeReady && condition.Status == kube_api.ConditionTrue {
-				readyNodes = append(readyNodes, node)
+				readyNodes = append(readyNodes, &nodes.Items[i])
 				break
 			}
 		}
@@ -87,11 +91,11 @@ func NewNodeLister(kubeClient *kube_client.Client) *ReadyNodeLister {
 }
 
 // GetNewestNode returns the newest node from the given list.
-func GetNewestNode(nodes []kube_api.Node) *kube_api.Node {
+func GetNewestNode(nodes []*kube_api.Node) *kube_api.Node {
 	var result *kube_api.Node
-	for i, node := range nodes {
+	for _, node := range nodes {
 		if result == nil || node.CreationTimestamp.After(result.CreationTimestamp.Time) {
-			result = &(nodes[i])
+			result = node
 		}
 	}
 	return result
@@ -104,4 +108,36 @@ func GetOldestFailedSchedulingTrail(pods []*kube_api.Pod) *time.Time {
 	//TODO: Implement once pod condition is there.
 	now := time.Now()
 	return &now
+}
+
+// CheckMigsAndNodes checks if all migs have all required nodes.
+func CheckMigsAndNodes(nodes []*kube_api.Node, gceManager *gce.GceManager) error {
+	migCount := make(map[string]int)
+	migs := make(map[string]*config.MigConfig)
+	for _, node := range nodes {
+		instanceConfig, err := config.InstanceConfigFromProviderId(node.Spec.ProviderID)
+		if err != nil {
+			return err
+		}
+
+		migConfig, err := gceManager.GetMigForInstance(instanceConfig)
+		if err != nil {
+			return err
+		}
+		url := migConfig.Url()
+		count, _ := migCount[url]
+		migCount[url] = count + 1
+		migs[url] = migConfig
+	}
+	for url, mig := range migs {
+		size, err := gceManager.GetMigSize(mig)
+		if err != nil {
+			return err
+		}
+		count := migCount[url]
+		if size != int64(count) {
+			return fmt.Errorf("wrong number of nodes for mig: %s expected: %d actual: %d", url, size, count)
+		}
+	}
+	return nil
 }

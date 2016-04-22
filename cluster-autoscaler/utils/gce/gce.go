@@ -36,7 +36,8 @@ const (
 	operationPollInterval = 100 * time.Millisecond
 )
 
-type gceManager struct {
+// GceManager is handles gce communication and data caching.
+type GceManager struct {
 	migs       []*config.MigConfig
 	service    *gce.Service
 	migCache   map[config.InstanceConfig]*config.MigConfig
@@ -44,7 +45,7 @@ type gceManager struct {
 }
 
 // CreateGceManager constructs gceManager object.
-func CreateGceManager(migs []*config.MigConfig) (*gceManager, error) {
+func CreateGceManager(migs []*config.MigConfig) (*GceManager, error) {
 	// Create Google Compute Engine service.
 	client := oauth2.NewClient(oauth2.NoContext, google.ComputeTokenSource(""))
 	gceService, err := gce.New(client)
@@ -52,7 +53,7 @@ func CreateGceManager(migs []*config.MigConfig) (*gceManager, error) {
 		return nil, err
 	}
 
-	manager := &gceManager{
+	manager := &GceManager{
 		migs:     migs,
 		service:  gceService,
 		migCache: map[config.InstanceConfig]*config.MigConfig{},
@@ -63,7 +64,8 @@ func CreateGceManager(migs []*config.MigConfig) (*gceManager, error) {
 	return manager, nil
 }
 
-func (m *gceManager) GetMigSize(migConf *config.MigConfig) (int64, error) {
+// GetMigSize gets MIG size.
+func (m *GceManager) GetMigSize(migConf *config.MigConfig) (int64, error) {
 	mig, err := m.service.InstanceGroupManagers.Get(migConf.Project, migConf.Zone, migConf.Name).Do()
 	if err != nil {
 		return -1, err
@@ -71,7 +73,8 @@ func (m *gceManager) GetMigSize(migConf *config.MigConfig) (int64, error) {
 	return mig.TargetSize, nil
 }
 
-func (m *gceManager) SetMigSize(migConf *config.MigConfig, size int64) error {
+// SetMigSize sets MIG size.
+func (m *GceManager) SetMigSize(migConf *config.MigConfig, size int64) error {
 	op, err := m.service.InstanceGroupManagers.Resize(migConf.Project, migConf.Zone, migConf.Name, size).Do()
 	if err != nil {
 		return err
@@ -82,7 +85,7 @@ func (m *gceManager) SetMigSize(migConf *config.MigConfig, size int64) error {
 	return nil
 }
 
-func (m *gceManager) waitForOp(operation *gce.Operation, project string) error {
+func (m *GceManager) waitForOp(operation *gce.Operation, project string) error {
 	for start := time.Now(); time.Since(start) < operationWaitTimeout; time.Sleep(operationPollInterval) {
 		if op, err := m.service.ZoneOperations.Get(project, operation.Zone, operation.Name).Do(); err == nil {
 			if op.Status == "DONE" {
@@ -95,8 +98,8 @@ func (m *gceManager) waitForOp(operation *gce.Operation, project string) error {
 	return fmt.Errorf("Timeout while waiting for operation %s on %s to complete.", operation.Name, operation.TargetLink)
 }
 
-// All instances must be controlled by the same MIG.
-func (m *gceManager) DeleteInstances(instances []*config.InstanceConfig) error {
+// DeleteInstances deletes the given instances. All instances must be controlled by the same MIG.
+func (m *GceManager) DeleteInstances(instances []*config.InstanceConfig) error {
 	if len(instances) == 0 {
 		return nil
 	}
@@ -131,7 +134,8 @@ func (m *gceManager) DeleteInstances(instances []*config.InstanceConfig) error {
 	return nil
 }
 
-func (m *gceManager) GetMigForInstance(instance *config.InstanceConfig) (*config.MigConfig, error) {
+// GetMigForInstance returns MigConfig of the given Instance
+func (m *GceManager) GetMigForInstance(instance *config.InstanceConfig) (*config.MigConfig, error) {
 	m.cacheMutex.Lock()
 	defer m.cacheMutex.Unlock()
 	if mig, found := m.migCache[*instance]; found {
@@ -146,7 +150,7 @@ func (m *gceManager) GetMigForInstance(instance *config.InstanceConfig) (*config
 	return nil, fmt.Errorf("Instance %+v does not belong to any known MIG", *instance)
 }
 
-func (m *gceManager) regenerateCacheIgnoreError() {
+func (m *GceManager) regenerateCacheIgnoreError() {
 	m.cacheMutex.Lock()
 	defer m.cacheMutex.Unlock()
 	if err := m.regenerateCache(); err != nil {
@@ -154,7 +158,7 @@ func (m *gceManager) regenerateCacheIgnoreError() {
 	}
 }
 
-func (m *gceManager) regenerateCache() error {
+func (m *GceManager) regenerateCache() error {
 	newMigCache := map[config.InstanceConfig]*config.MigConfig{}
 
 	for _, mig := range m.migs {
