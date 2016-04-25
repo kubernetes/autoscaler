@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	gceurl "k8s.io/contrib/cluster-autoscaler/utils/gce_url"
+	kube_api "k8s.io/kubernetes/pkg/api"
 )
 
 // InstanceConfig contains instance configuration details.
@@ -59,6 +60,12 @@ type MigConfig struct {
 // Url builds GCE url for the MIG.
 func (migconfig *MigConfig) Url() string {
 	return gceurl.GenerateMigUrl(migconfig.Project, migconfig.Zone, migconfig.Name)
+}
+
+// Node returns a template/dummy node for the mig.
+func (migconfig *MigConfig) Node() *kube_api.Node {
+	//TODO(fgrzadkowski): Implement this.
+	return nil
 }
 
 // MigConfigFlag is an array of MIG configuration details. Working as a multi-value flag.

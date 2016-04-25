@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"k8s.io/contrib/cluster-autoscaler/config"
+	"k8s.io/contrib/cluster-autoscaler/estimator"
 	"k8s.io/contrib/cluster-autoscaler/utils/gce"
 	kube_client "k8s.io/kubernetes/pkg/client/unversioned"
 
@@ -32,6 +33,12 @@ var (
 	migConfigFlag config.MigConfigFlag
 	kubernetes    = flag.String("kubernetes", "", "Kuberentes master location. Leave blank for default")
 )
+
+// ExpansionOption describes an option to expand the cluster.
+type ExpansionOption struct {
+	migConfig *config.MigConfig
+	estimator *estimator.BasicNodeEstimator
+}
 
 func main() {
 	flag.Var(&migConfigFlag, "nodes", "sets min,max size and url of a MIG to be controlled by Cluster Autoscaler. "+
@@ -52,6 +59,10 @@ func main() {
 	nodeLister := NewNodeLister(kubeClient)
 
 	migConfigs := make([]*config.MigConfig, 0, len(migConfigFlag))
+	for i := range migConfigFlag {
+		migConfigs = append(migConfigs, &migConfigFlag[i])
+	}
+
 	gceManager, err := gce.CreateGceManager(migConfigs)
 	if err != nil {
 		glog.Fatalf("Failed to create GCE Manager %v", err)
@@ -108,6 +119,38 @@ func main() {
 					// Lets give scheduler another chance.
 					glog.V(1).Infof("One of the pods have not been tried after adding %s", newestNode.Name)
 					continue
+				}
+
+				expansionOptions := make([]ExpansionOption, 0)
+				for _, migConfig := range migConfigs {
+					option := ExpansionOption{
+						migConfig: migConfig,
+						estimator: estimator.NewBasicNodeEstimator(),
+					}
+					migHelpsSomePods := false
+					for _, pod := range pods {
+						if CanSchedulePodOn(pod, migConfig) {
+							migHelpsSomePods = true
+							option.estimator.Add(pod)
+						}
+					}
+					if migHelpsSomePods {
+						expansionOptions = append(expansionOptions, option)
+					}
+				}
+
+				// Pick some expansion option.
+				bestOption := BestExpansionOption(expansionOptions)
+				if bestOption != nil {
+					estimate := bestOption.estimator.Estimate(bestOption.migConfig.Node())
+					currentSize, err := gceManager.GetMigSize(bestOption.migConfig)
+					if err != nil {
+						glog.Errorf("Failed to get MIG size: %v", err)
+						continue
+					}
+					if err := gceManager.SetMigSize(bestOption.migConfig, currentSize+int64(estimate)); err == nil {
+						glog.Errorf("Failed to set: %v", err)
+					}
 				}
 			}
 		}
