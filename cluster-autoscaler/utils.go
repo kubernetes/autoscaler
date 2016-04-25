@@ -141,3 +141,17 @@ func CheckMigsAndNodes(nodes []*kube_api.Node, gceManager *gce.GceManager) error
 	}
 	return nil
 }
+
+// CanSchedulePodOn returns true if the given pod can be scheduled on a signle node from the given MIG.
+func CanSchedulePodOn(pod *kube_api.Pod, migConfig *config.MigConfig) bool {
+	// TODO(fgrzadkowski): Implement this.
+	return true
+}
+
+// BestExpansionOption picks the best cluster expansion option.
+func BestExpansionOption(expansionOptions []ExpansionOption) *ExpansionOption {
+	if len(expansionOptions) > 0 {
+		return &expansionOptions[0]
+	}
+	return nil
+}
