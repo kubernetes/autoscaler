@@ -1,5 +1,3 @@
-// +build proto
-
 /*
 Copyright 2015 The Kubernetes Authors All rights reserved.
 
@@ -33,7 +31,7 @@ import (
 
 var (
 	// protoEncodingPrefix serves as a magic number for an encoded protobuf message on this serializer. All
-	// proto messages serialized by this schema will be preceeded by the bytes 0x6b 0x38 0x73, with the fourth
+	// proto messages serialized by this schema will be precedeed by the bytes 0x6b 0x38 0x73, with the fourth
 	// byte being reserved for the encoding style. The only encoding style defined is 0x00, which means that
 	// the rest of the byte stream is a message of type k8s.io.kubernetes.pkg.runtime.Unknown (proto2).
 	//
@@ -242,16 +240,6 @@ func (s *Serializer) RecognizesData(peek io.Reader) (bool, error) {
 	return bytes.Equal(s.prefix, prefix), nil
 }
 
-// NewFrameWriter implements stream framing for this serializer
-func (s *Serializer) NewFrameWriter(w io.Writer) io.Writer {
-	return framer.NewLengthDelimitedFrameWriter(w)
-}
-
-// NewFrameReader implements stream framing for this serializer
-func (s *Serializer) NewFrameReader(r io.Reader) io.Reader {
-	return framer.NewLengthDelimitedFrameReader(r)
-}
-
 // copyKindDefaults defaults dst to the value in src if dst does not have a value set.
 func copyKindDefaults(dst, src *unversioned.GroupVersionKind) {
 	if src == nil {
@@ -437,12 +425,16 @@ func (s *RawSerializer) RecognizesData(peek io.Reader) (bool, error) {
 	return false, nil
 }
 
+var LengthDelimitedFramer = lengthDelimitedFramer{}
+
+type lengthDelimitedFramer struct{}
+
 // NewFrameWriter implements stream framing for this serializer
-func (s *RawSerializer) NewFrameWriter(w io.Writer) io.Writer {
+func (lengthDelimitedFramer) NewFrameWriter(w io.Writer) io.Writer {
 	return framer.NewLengthDelimitedFrameWriter(w)
 }
 
 // NewFrameReader implements stream framing for this serializer
-func (s *RawSerializer) NewFrameReader(r io.Reader) io.Reader {
+func (lengthDelimitedFramer) NewFrameReader(r io.Reader) io.Reader {
 	return framer.NewLengthDelimitedFrameReader(r)
 }

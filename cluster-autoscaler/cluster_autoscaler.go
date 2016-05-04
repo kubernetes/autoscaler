@@ -122,6 +122,12 @@ func main() {
 				}
 
 				expansionOptions := make([]ExpansionOption, 0)
+				_, err = GetNodeInfosForMigs(nodes, gceManager, kubeClient)
+				if err != nil {
+					glog.Errorf("Failed to build node infors for migs: %v", err)
+					continue
+				}
+
 				for _, migConfig := range migConfigs {
 					option := ExpansionOption{
 						migConfig: migConfig,
