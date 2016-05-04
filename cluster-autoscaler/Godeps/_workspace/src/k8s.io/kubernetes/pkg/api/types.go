@@ -1628,6 +1628,8 @@ type EndpointSubset struct {
 // EndpointAddress is a tuple that describes single IP address.
 type EndpointAddress struct {
 	// The IP of this endpoint.
+	// IPv6 is also accepted but not fully supported on all platforms. Also, certain
+	// kubernetes components, like kube-proxy, are not IPv6 ready.
 	// TODO: This should allow hostname or IP, see #4447.
 	IP string
 
@@ -2216,6 +2218,8 @@ const (
 	ResourcePersistentVolumeClaims ResourceName = "persistentvolumeclaims"
 	// ResourceServicesNodePorts, number
 	ResourceServicesNodePorts ResourceName = "services.nodeports"
+	// ResourceServicesLoadBalancers, number
+	ResourceServicesLoadBalancers ResourceName = "services.loadbalancers"
 	// CPU request, in cores. (500m = .5 cores)
 	ResourceRequestsCPU ResourceName = "requests.cpu"
 	// Memory request, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024)
@@ -2407,7 +2411,7 @@ type ConfigMapList struct {
 	unversioned.ListMeta `json:"metadata,omitempty"`
 
 	// Items is the list of ConfigMaps.
-	Items []ConfigMap `json:"items,omitempty"`
+	Items []ConfigMap `json:"items"`
 }
 
 // These constants are for remote command execution and port forwarding and are
