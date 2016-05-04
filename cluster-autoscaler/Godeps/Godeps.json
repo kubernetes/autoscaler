@@ -1007,7 +1007,22 @@
 			"Rev": "896882a61da30684f37a93ff39d7b0274c0de633"
 		},
 		{
+			"ImportPath": "k8s.io/kubernetes/plugin/pkg/scheduler/algorithm",
+			"Comment": "v1.3.0-alpha.3-40-g896882a",
+			"Rev": "896882a61da30684f37a93ff39d7b0274c0de633"
+		},
+		{
+			"ImportPath": "k8s.io/kubernetes/plugin/pkg/scheduler/algorithm/predicates",
+			"Comment": "v1.3.0-alpha.3-40-g896882a",
+			"Rev": "896882a61da30684f37a93ff39d7b0274c0de633"
+		},
+		{
 			"ImportPath": "k8s.io/kubernetes/plugin/pkg/scheduler/algorithm/priorities/util",
+			"Comment": "v1.3.0-alpha.3-40-g896882a",
+			"Rev": "896882a61da30684f37a93ff39d7b0274c0de633"
+		},
+		{
+			"ImportPath": "k8s.io/kubernetes/plugin/pkg/scheduler/api",
 			"Comment": "v1.3.0-alpha.3-40-g896882a",
 			"Rev": "896882a61da30684f37a93ff39d7b0274c0de633"
 		},
