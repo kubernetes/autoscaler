@@ -144,18 +144,19 @@ func CheckMigsAndNodes(nodes []*kube_api.Node, gceManager *gce.GceManager) error
 	return nil
 }
 
-// GetNodeInfosForMigs finds NodeInfos for all migs used to manage the given nodes.
-func GetNodeInfosForMigs(nodes []*kube_api.Node, gceManager *gce.GceManager, kubeClient *kube_client.Client) (map[string]*schedulercache.NodeInfo, error) {
+// GetNodeInfosForMigs finds NodeInfos for all migs used to manage the given nodes. It also returns a mig to sample node mapping.
+func GetNodeInfosForMigs(nodes []*kube_api.Node, gceManager *gce.GceManager, kubeClient *kube_client.Client) (map[string]*schedulercache.NodeInfo,
+	map[string]*kube_api.Node, error) {
 	sampleNodes := make(map[string]*kube_api.Node)
 	for _, node := range nodes {
 		instanceConfig, err := config.InstanceConfigFromProviderId(node.Spec.ProviderID)
 		if err != nil {
-			return map[string]*schedulercache.NodeInfo{}, err
+			return map[string]*schedulercache.NodeInfo{}, map[string]*kube_api.Node{}, err
 		}
 
 		migConfig, err := gceManager.GetMigForInstance(instanceConfig)
 		if err != nil {
-			return map[string]*schedulercache.NodeInfo{}, err
+			return map[string]*schedulercache.NodeInfo{}, map[string]*kube_api.Node{}, err
 		}
 		url := migConfig.Url()
 		sampleNodes[url] = node
@@ -164,17 +165,11 @@ func GetNodeInfosForMigs(nodes []*kube_api.Node, gceManager *gce.GceManager, kub
 	for url, node := range sampleNodes {
 		nodeInfo, err := simulator.BuildNodeInfoForNode(node.Name, kubeClient)
 		if err != nil {
-			return map[string]*schedulercache.NodeInfo{}, err
+			return map[string]*schedulercache.NodeInfo{}, map[string]*kube_api.Node{}, err
 		}
 		result[url] = nodeInfo
 	}
-	return result, nil
-}
-
-// CanSchedulePodOn returns true if the given pod can be scheduled on a signle node from the given MIG.
-func CanSchedulePodOn(pod *kube_api.Pod, migConfig *config.MigConfig) bool {
-	// TODO(fgrzadkowski): Implement this.
-	return true
+	return result, sampleNodes, nil
 }
 
 // BestExpansionOption picks the best cluster expansion option.

@@ -23,6 +23,7 @@ import (
 
 	"k8s.io/contrib/cluster-autoscaler/config"
 	"k8s.io/contrib/cluster-autoscaler/estimator"
+	"k8s.io/contrib/cluster-autoscaler/simulator"
 	"k8s.io/contrib/cluster-autoscaler/utils/gce"
 	kube_client "k8s.io/kubernetes/pkg/client/unversioned"
 
@@ -67,6 +68,8 @@ func main() {
 	if err != nil {
 		glog.Fatalf("Failed to create GCE Manager %v", err)
 	}
+
+	predicateChecker := simulator.NewPredicateChecker()
 
 	for {
 		select {
@@ -122,7 +125,7 @@ func main() {
 				}
 
 				expansionOptions := make([]ExpansionOption, 0)
-				_, err = GetNodeInfosForMigs(nodes, gceManager, kubeClient)
+				nodeInfos, sampleNodes, err := GetNodeInfosForMigs(nodes, gceManager, kubeClient)
 				if err != nil {
 					glog.Errorf("Failed to build node infors for migs: %v", err)
 					continue
@@ -134,10 +137,26 @@ func main() {
 						estimator: estimator.NewBasicNodeEstimator(),
 					}
 					migHelpsSomePods := false
+
+					nodeInfo, found := nodeInfos[migConfig.Url()]
+					if !found {
+						glog.Errorf("No node info for: %s", migConfig.Url())
+						continue
+					}
+
+					node, found := sampleNodes[migConfig.Url()]
+					if !found {
+						glog.Errorf("No sample node for: %s", migConfig.Url())
+						continue
+					}
+
 					for _, pod := range pods {
-						if CanSchedulePodOn(pod, migConfig) {
+						err = predicateChecker.CheckPredicates(pod, node, nodeInfo)
+						if err == nil {
 							migHelpsSomePods = true
 							option.estimator.Add(pod)
+						} else {
+							glog.V(2).Infof("Scale-up predicate failed: %v", err)
 						}
 					}
 					if migHelpsSomePods {
