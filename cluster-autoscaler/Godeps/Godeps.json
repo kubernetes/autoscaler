@@ -136,18 +136,18 @@
 		},
 		{
 			"ImportPath": "github.com/gogo/protobuf/gogoproto",
-			"Comment": "v0.1-55-g2093b57",
-			"Rev": "2093b57e5ca2ccbee4626814100bc1aada691b18"
+			"Comment": "v0.2-15-g43a2e0b",
+			"Rev": "43a2e0b1c32252bfbbdf81f7faa7a88fb3fa4028"
 		},
 		{
 			"ImportPath": "github.com/gogo/protobuf/proto",
-			"Comment": "v0.1-55-g2093b57",
-			"Rev": "2093b57e5ca2ccbee4626814100bc1aada691b18"
+			"Comment": "v0.2-15-g43a2e0b",
+			"Rev": "43a2e0b1c32252bfbbdf81f7faa7a88fb3fa4028"
 		},
 		{
 			"ImportPath": "github.com/gogo/protobuf/protoc-gen-gogo/descriptor",
-			"Comment": "v0.1-55-g2093b57",
-			"Rev": "2093b57e5ca2ccbee4626814100bc1aada691b18"
+			"Comment": "v0.2-15-g43a2e0b",
+			"Rev": "43a2e0b1c32252bfbbdf81f7faa7a88fb3fa4028"
 		},
 		{
 			"ImportPath": "github.com/golang/glog",
