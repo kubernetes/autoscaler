@@ -1,0 +1,42 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: cluster-autoscaler-v0.0.1.alpha2
+  namespace: kube-system
+  labels:
+    k8s-app: cluster-autoscaler
+    version: v1.1.0.beta1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: cluster-autoscaler
+      version: v0.0.1.alpha2
+  template:
+    metadata:
+      labels:
+        k8s-app: cluster-autoscaler
+        version: v0.0.1.alpha2
+    spec:
+      containers:
+        - image: gcr.io/mwielgus-proj/cluster-autoscaler:v0.0.1-alpha2
+          name: cluster-autoscaler
+          resources:
+            limits:
+              cpu: 100m
+              memory: 300Mi
+            requests:
+              cpu: 100m
+              memory: 300Mi
+          command:
+            - ./cluster-autoscaler
+            - -v=4
+            - --nodes=1:4:<mig-self-link>
+          volumeMounts:
+            - name: ssl-certs
+              mountPath: /etc/ssl/certs
+              readOnly: true
+      volumes:
+        - name: ssl-certs
+          hostPath:
+            path: "/etc/ssl/certs"
