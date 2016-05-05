@@ -22,7 +22,9 @@ import (
 )
 
 const (
-	gcePrefix           = "https://content.googleapis.com/compute/v1/projects/"
+	gceUrlSchema        = "https"
+	gceDomainSufix      = "googleapis.com/compute/v1/projects/"
+	gcePrefix           = gceUrlSchema + "://content." + gceDomainSufix
 	instanceUrlTemplate = gcePrefix + "%s/zones/%s/instances/%s"
 	migUrlTemplate      = gcePrefix + "%s/zones/%s/instanceGroups/%s"
 )
@@ -51,10 +53,13 @@ func GenerateMigUrl(project, zone, name string) string {
 
 func parseGceUrl(url, expectedResource string) (project string, zone string, name string, err error) {
 	errMsg := fmt.Errorf("Wrong url: expected format https://content.googleapis.com/compute/v1/projects/<project-id>/zones/<zone>/%s/<name>, got %s", expectedResource, url)
-	if !strings.HasPrefix(url, gcePrefix) {
+	if !strings.Contains(url, gceDomainSufix) {
 		return "", "", "", errMsg
 	}
-	splitted := strings.Split(strings.TrimLeft(url, gcePrefix), "/")
+	if !strings.HasPrefix(url, gceUrlSchema) {
+		return "", "", "", errMsg
+	}
+	splitted := strings.Split(strings.Split(url, gceDomainSufix)[1], "/")
 	if len(splitted) != 5 || splitted[1] != "zones" {
 		return "", "", "", errMsg
 	}
