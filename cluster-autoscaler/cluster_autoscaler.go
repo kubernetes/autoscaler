@@ -167,14 +167,22 @@ func main() {
 				// Pick some expansion option.
 				bestOption := BestExpansionOption(expansionOptions)
 				if bestOption != nil {
-					estimate := bestOption.estimator.Estimate(bestOption.migConfig.Node())
+					glog.V(1).Infof("Best option to resize: %s", bestOption.migConfig.Url())
+					node, found := sampleNodes[bestOption.migConfig.Url()]
+					if !found {
+						glog.Errorf("No sample node for: %s", bestOption.migConfig.Url())
+						continue
+					}
+					estimate := bestOption.estimator.Estimate(node)
+					glog.V(1).Infof("Adding %d nodes to %s", estimate, bestOption.migConfig.Url())
+
 					currentSize, err := gceManager.GetMigSize(bestOption.migConfig)
 					if err != nil {
 						glog.Errorf("Failed to get MIG size: %v", err)
 						continue
 					}
 					if err := gceManager.SetMigSize(bestOption.migConfig, currentSize+int64(estimate)); err == nil {
-						glog.Errorf("Failed to set: %v", err)
+						glog.Errorf("Failed to set MIG size: %v", err)
 					}
 				}
 			}
