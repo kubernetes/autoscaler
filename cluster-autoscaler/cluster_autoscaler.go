@@ -181,7 +181,7 @@ func main() {
 						glog.Errorf("Failed to get MIG size: %v", err)
 						continue
 					}
-					if err := gceManager.SetMigSize(bestOption.migConfig, currentSize+int64(estimate)); err == nil {
+					if err := gceManager.SetMigSize(bestOption.migConfig, currentSize+int64(estimate)); err != nil {
 						glog.Errorf("Failed to set MIG size: %v", err)
 					}
 				}

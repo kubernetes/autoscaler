@@ -79,15 +79,17 @@ func (m *GceManager) SetMigSize(migConf *config.MigConfig, size int64) error {
 	if err != nil {
 		return err
 	}
-	if err := m.waitForOp(op, migConf.Project); err != nil {
+	if err := m.waitForOp(op, migConf.Project, migConf.Zone); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (m *GceManager) waitForOp(operation *gce.Operation, project string) error {
+func (m *GceManager) waitForOp(operation *gce.Operation, project string, zone string) error {
 	for start := time.Now(); time.Since(start) < operationWaitTimeout; time.Sleep(operationPollInterval) {
-		if op, err := m.service.ZoneOperations.Get(project, operation.Zone, operation.Name).Do(); err == nil {
+		glog.V(4).Infof("Waiting for operation %s %s %s", project, zone, operation.Name)
+		if op, err := m.service.ZoneOperations.Get(project, zone, operation.Name).Do(); err == nil {
+			glog.V(4).Infof("Operation %s %s %s status: %s", project, zone, operation.Name, op.Status)
 			if op.Status == "DONE" {
 				return nil
 			}
@@ -128,7 +130,7 @@ func (m *GceManager) DeleteInstances(instances []*config.InstanceConfig) error {
 	if err != nil {
 		return err
 	}
-	if err := m.waitForOp(op, commonMig.Project); err != nil {
+	if err := m.waitForOp(op, commonMig.Project, commonMig.Zone); err != nil {
 		return err
 	}
 	return nil
