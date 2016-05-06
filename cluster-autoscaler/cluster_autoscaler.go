@@ -132,6 +132,18 @@ func main() {
 				}
 
 				for _, migConfig := range migConfigs {
+
+					currentSize, err := gceManager.GetMigSize(migConfig)
+					if err != nil {
+						glog.Errorf("Failed to get MIG size: %v", err)
+						continue
+					}
+					if currentSize >= int64(migConfig.MaxSize) {
+						// skip this mig.
+						glog.V(4).Infof("Skipping MIG %s - max size reached", migConfig.Url())
+						continue
+					}
+
 					option := ExpansionOption{
 						migConfig: migConfig,
 						estimator: estimator.NewBasicNodeEstimator(),
@@ -174,14 +186,20 @@ func main() {
 						continue
 					}
 					estimate := bestOption.estimator.Estimate(node)
-					glog.V(1).Infof("Adding %d nodes to %s", estimate, bestOption.migConfig.Url())
+					glog.V(1).Infof("Estimated %d nodes needed in %s", estimate, bestOption.migConfig.Url())
 
 					currentSize, err := gceManager.GetMigSize(bestOption.migConfig)
 					if err != nil {
 						glog.Errorf("Failed to get MIG size: %v", err)
 						continue
 					}
-					if err := gceManager.SetMigSize(bestOption.migConfig, currentSize+int64(estimate)); err != nil {
+					newSize := currentSize + int64(estimate)
+					if newSize >= int64(bestOption.migConfig.MaxSize) {
+						newSize = int64(bestOption.migConfig.MaxSize)
+					}
+					glog.V(1).Infof("Setting %s size to %d", bestOption.migConfig.Url(), newSize)
+
+					if err := gceManager.SetMigSize(bestOption.migConfig, newSize); err != nil {
 						glog.Errorf("Failed to set MIG size: %v", err)
 					}
 				}
