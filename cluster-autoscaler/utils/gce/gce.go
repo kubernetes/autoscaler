@@ -162,8 +162,10 @@ func (m *GceManager) regenerateCache() error {
 	newMigCache := map[config.InstanceConfig]*config.MigConfig{}
 
 	for _, mig := range m.migs {
+		glog.V(4).Infof("Regenerating MIG information for %s %s %s", mig.Project, mig.Zone, mig.Name)
 		instances, err := m.service.InstanceGroupManagers.ListManagedInstances(mig.Project, mig.Zone, mig.Name).Do()
 		if err != nil {
+			glog.V(4).Infof("Failed MIG info request for %s %s %s: %v", mig.Project, mig.Zone, mig.Name, err)
 			return err
 		}
 		for _, instance := range instances.ManagedInstances {
