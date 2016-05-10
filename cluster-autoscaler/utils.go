@@ -58,6 +58,31 @@ func NewUnscheduledPodLister(kubeClient *kube_client.Client) *UnscheduledPodList
 	}
 }
 
+// ScheduledPodLister lists scheduled pods.
+type ScheduledPodLister struct {
+	podLister *cache.StoreToPodLister
+}
+
+// List returns all scheduled pods.
+func (lister *ScheduledPodLister) List() ([]*kube_api.Pod, error) {
+	return lister.podLister.List(labels.Everything())
+}
+
+// NewScheduledPodLister builds ScheduledPodLister
+func NewScheduledPodLister(kubeClient *kube_client.Client) *ScheduledPodLister {
+	// watch unscheduled pods
+	selector := fields.ParseSelectorOrDie("spec.nodeName!=" + "" + ",status.phase!=" +
+		string(kube_api.PodSucceeded) + ",status.phase!=" + string(kube_api.PodFailed))
+	podListWatch := cache.NewListWatchFromClient(kubeClient, "pods", kube_api.NamespaceAll, selector)
+	podLister := &cache.StoreToPodLister{Store: cache.NewStore(cache.MetaNamespaceKeyFunc)}
+	podReflector := cache.NewReflector(podListWatch, &kube_api.Pod{}, podLister.Store, time.Hour)
+	podReflector.Run()
+
+	return &ScheduledPodLister{
+		podLister: podLister,
+	}
+}
+
 // ReadyNodeLister lists ready nodes.
 type ReadyNodeLister struct {
 	nodeLister *cache.StoreToNodeLister
