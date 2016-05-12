@@ -125,7 +125,7 @@ func main() {
 				}
 
 				expansionOptions := make([]ExpansionOption, 0)
-				nodeInfos, sampleNodes, err := GetNodeInfosForMigs(nodes, gceManager, kubeClient)
+				nodeInfos, err := GetNodeInfosForMigs(nodes, gceManager, kubeClient)
 				if err != nil {
 					glog.Errorf("Failed to build node infors for migs: %v", err)
 					continue
@@ -156,14 +156,8 @@ func main() {
 						continue
 					}
 
-					node, found := sampleNodes[migConfig.Url()]
-					if !found {
-						glog.Errorf("No sample node for: %s", migConfig.Url())
-						continue
-					}
-
 					for _, pod := range pods {
-						err = predicateChecker.CheckPredicates(pod, node, nodeInfo)
+						err = predicateChecker.CheckPredicates(pod, nodeInfo)
 						if err == nil {
 							migHelpsSomePods = true
 							option.estimator.Add(pod)
@@ -180,11 +174,12 @@ func main() {
 				bestOption := BestExpansionOption(expansionOptions)
 				if bestOption != nil {
 					glog.V(1).Infof("Best option to resize: %s", bestOption.migConfig.Url())
-					node, found := sampleNodes[bestOption.migConfig.Url()]
+					nodeInfo, found := nodeInfos[bestOption.migConfig.Url()]
 					if !found {
 						glog.Errorf("No sample node for: %s", bestOption.migConfig.Url())
 						continue
 					}
+					node := nodeInfo.Node()
 					estimate := bestOption.estimator.Estimate(node)
 					glog.V(1).Infof("Estimated %d nodes needed in %s", estimate, bestOption.migConfig.Url())
 

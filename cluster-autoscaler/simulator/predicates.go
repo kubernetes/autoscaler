@@ -35,14 +35,18 @@ func NewPredicateChecker() *PredicateChecker {
 }
 
 // CheckPredicates Checks if the given pod can be placed on the given node.
-func (p *PredicateChecker) CheckPredicates(pod *kube_api.Pod, node *kube_api.Node, nodeInfo *schedulercache.NodeInfo) error {
+func (p *PredicateChecker) CheckPredicates(pod *kube_api.Pod, nodeInfo *schedulercache.NodeInfo) error {
 	// TODO(fgrzadkowski): Use full list of predicates.
-	match, err := predicates.RunGeneralPredicates(pod, node.Name, nodeInfo, node)
+	match, err := predicates.GeneralPredicates(pod, nodeInfo)
+	nodename := "unknown"
+	if nodeInfo.Node() != nil {
+		nodename = nodeInfo.Node().Name
+	}
 	if err != nil {
-		return fmt.Errorf("cannot put %s on %s due to %v", pod.Name, node.Name, err)
+		return fmt.Errorf("cannot put %s on %s due to %v", pod.Name, nodename, err)
 	}
 	if !match {
-		return fmt.Errorf("cannot put %s on %s", pod.Name, node.Name)
+		return fmt.Errorf("cannot put %s on %s", pod.Name, nodename)
 	}
 	return nil
 }

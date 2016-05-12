@@ -30,19 +30,19 @@ type BasicNodeEstimator struct {
 	count     int
 	cpuSum    resource.Quantity
 	memorySum resource.Quantity
-	portSum   map[int]int
+	portSum   map[int32]int
 }
 
 // NewBasicNodeEstimator builds BasicNodeEstimator.
 func NewBasicNodeEstimator() *BasicNodeEstimator {
 	return &BasicNodeEstimator{
-		portSum: make(map[int]int),
+		portSum: make(map[int32]int),
 	}
 }
 
 // Add adds Pod to the estimation.
 func (basicEstimator *BasicNodeEstimator) Add(pod *kube_api.Pod) error {
-	ports := make(map[int]struct{})
+	ports := make(map[int32]struct{})
 	for _, container := range pod.Spec.Containers {
 		if request, ok := container.Resources.Requests[kube_api.ResourceCPU]; ok {
 			if err := basicEstimator.cpuSum.Add(request); err != nil {

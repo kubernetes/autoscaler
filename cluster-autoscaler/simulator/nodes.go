@@ -55,10 +55,14 @@ func GetRequiredPodsForNode(nodename string, client *kube_client.Client) ([]*kub
 }
 
 // BuildNodeInfoForNode build a NodeInfo structure for the given node as if the node was just created.
-func BuildNodeInfoForNode(nodename string, client *kube_client.Client) (*schedulercache.NodeInfo, error) {
-	requiredPods, err := GetRequiredPodsForNode(nodename, client)
+func BuildNodeInfoForNode(node *kube_api.Node, client *kube_client.Client) (*schedulercache.NodeInfo, error) {
+	requiredPods, err := GetRequiredPodsForNode(node.Name, client)
 	if err != nil {
 		return nil, err
 	}
-	return schedulercache.NewNodeInfo(requiredPods...), err
+	result := schedulercache.NewNodeInfo(requiredPods...)
+	if err := result.SetNode(node); err != nil {
+		return nil, err
+	}
+	return result, nil
 }
