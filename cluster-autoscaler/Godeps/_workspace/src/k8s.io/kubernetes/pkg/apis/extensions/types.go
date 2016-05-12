@@ -38,13 +38,13 @@ import (
 // describes the attributes of a scale subresource
 type ScaleSpec struct {
 	// desired number of instances for the scaled object.
-	Replicas int `json:"replicas,omitempty"`
+	Replicas int32 `json:"replicas,omitempty"`
 }
 
 // represents the current status of a scale subresource.
 type ScaleStatus struct {
 	// actual number of observed instances of the scaled object.
-	Replicas int `json:"replicas"`
+	Replicas int32 `json:"replicas"`
 
 	// label query over pods that should match the replicas count.
 	// More info: http://releases.k8s.io/HEAD/docs/user-guide/labels.md#label-selectors
@@ -71,24 +71,6 @@ type ReplicationControllerDummy struct {
 	unversioned.TypeMeta `json:",inline"`
 }
 
-// SubresourceReference contains enough information to let you inspect or modify the referred subresource.
-type SubresourceReference struct {
-	// Kind of the referent; More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#types-kinds"
-	Kind string `json:"kind,omitempty"`
-	// Name of the referent; More info: http://releases.k8s.io/HEAD/docs/user-guide/identifiers.md#names
-	Name string `json:"name,omitempty"`
-	// API version of the referent
-	APIVersion string `json:"apiVersion,omitempty"`
-	// Subresource name of the referent
-	Subresource string `json:"subresource,omitempty"`
-}
-
-type CPUTargetUtilization struct {
-	// fraction of the requested CPU that should be utilized/used,
-	// e.g. 70 means that 70% of the requested CPU should be in use.
-	TargetPercentage int `json:"targetPercentage"`
-}
-
 // Alpha-level support for Custom Metrics in HPA (as annotations).
 type CustomMetricTarget struct {
 	// Custom Metric name.
@@ -112,64 +94,7 @@ type CustomMetricCurrentStatusList struct {
 	Items []CustomMetricCurrentStatus `json:"items"`
 }
 
-// specification of a horizontal pod autoscaler.
-type HorizontalPodAutoscalerSpec struct {
-	// reference to Scale subresource; horizontal pod autoscaler will learn the current resource consumption from its status,
-	// and will set the desired number of pods by modifying its spec.
-	ScaleRef SubresourceReference `json:"scaleRef"`
-	// lower limit for the number of pods that can be set by the autoscaler, default 1.
-	MinReplicas *int `json:"minReplicas,omitempty"`
-	// upper limit for the number of pods that can be set by the autoscaler. It cannot be smaller than MinReplicas.
-	MaxReplicas int `json:"maxReplicas"`
-	// target average CPU utilization (represented as a percentage of requested CPU) over all the pods;
-	// if not specified it defaults to the target CPU utilization at 80% of the requested resources.
-	CPUUtilization *CPUTargetUtilization `json:"cpuUtilization,omitempty"`
-}
-
-// current status of a horizontal pod autoscaler
-type HorizontalPodAutoscalerStatus struct {
-	// most recent generation observed by this autoscaler.
-	ObservedGeneration *int64 `json:"observedGeneration,omitempty"`
-
-	// last time the HorizontalPodAutoscaler scaled the number of pods;
-	// used by the autoscaler to control how often the number of pods is changed.
-	LastScaleTime *unversioned.Time `json:"lastScaleTime,omitempty"`
-
-	// current number of replicas of pods managed by this autoscaler.
-	CurrentReplicas int `json:"currentReplicas"`
-
-	// desired number of replicas of pods managed by this autoscaler.
-	DesiredReplicas int `json:"desiredReplicas"`
-
-	// current average CPU utilization over all pods, represented as a percentage of requested CPU,
-	// e.g. 70 means that an average pod is using now 70% of its requested CPU.
-	CurrentCPUUtilizationPercentage *int `json:"currentCPUUtilizationPercentage,omitempty"`
-}
-
-// +genclient=true
-
-// configuration of a horizontal pod autoscaler.
-type HorizontalPodAutoscaler struct {
-	unversioned.TypeMeta `json:",inline"`
-	api.ObjectMeta       `json:"metadata,omitempty"`
-
-	// behaviour of autoscaler. More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#spec-and-status.
-	Spec HorizontalPodAutoscalerSpec `json:"spec,omitempty"`
-
-	// current information about the autoscaler.
-	Status HorizontalPodAutoscalerStatus `json:"status,omitempty"`
-}
-
-// list of horizontal pod autoscaler objects.
-type HorizontalPodAutoscalerList struct {
-	unversioned.TypeMeta `json:",inline"`
-	unversioned.ListMeta `json:"metadata,omitempty"`
-
-	// list of horizontal pod autoscaler objects.
-	Items []HorizontalPodAutoscaler `json:"items"`
-}
-
-// +genclient=true
+// +genclient=true,nonNamespaced=true
 
 // A ThirdPartyResource is a generic representation of a resource, it is used by add-ons and plugins to add new resource
 // types to the API.  It consists of one or more Versions of the api.
@@ -229,7 +154,7 @@ type Deployment struct {
 type DeploymentSpec struct {
 	// Number of desired pods. This is a pointer to distinguish between explicit
 	// zero and not specified. Defaults to 1.
-	Replicas int `json:"replicas,omitempty"`
+	Replicas int32 `json:"replicas,omitempty"`
 
 	// Label selector for pods. Existing ReplicaSets whose pods are
 	// selected by this will be the ones affected by this deployment.
@@ -244,11 +169,11 @@ type DeploymentSpec struct {
 	// Minimum number of seconds for which a newly created pod should be ready
 	// without any of its container crashing, for it to be considered available.
 	// Defaults to 0 (pod will be considered available as soon as it is ready)
-	MinReadySeconds int `json:"minReadySeconds,omitempty"`
+	MinReadySeconds int32 `json:"minReadySeconds,omitempty"`
 
 	// The number of old ReplicaSets to retain to allow rollback.
 	// This is a pointer to distinguish between explicit zero and not specified.
-	RevisionHistoryLimit *int `json:"revisionHistoryLimit,omitempty"`
+	RevisionHistoryLimit *int32 `json:"revisionHistoryLimit,omitempty"`
 
 	// Indicates that the deployment is paused and will not be processed by the
 	// deployment controller.
@@ -334,16 +259,16 @@ type DeploymentStatus struct {
 	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
 
 	// Total number of non-terminated pods targeted by this deployment (their labels match the selector).
-	Replicas int `json:"replicas,omitempty"`
+	Replicas int32 `json:"replicas,omitempty"`
 
 	// Total number of non-terminated pods targeted by this deployment that have the desired template spec.
-	UpdatedReplicas int `json:"updatedReplicas,omitempty"`
+	UpdatedReplicas int32 `json:"updatedReplicas,omitempty"`
 
 	// Total number of available pods (ready for at least minReadySeconds) targeted by this deployment.
-	AvailableReplicas int `json:"availableReplicas,omitempty"`
+	AvailableReplicas int32 `json:"availableReplicas,omitempty"`
 
 	// Total number of unavailable pods targeted by this deployment.
-	UnavailableReplicas int `json:"unavailableReplicas,omitempty"`
+	UnavailableReplicas int32 `json:"unavailableReplicas,omitempty"`
 }
 
 type DeploymentList struct {
@@ -442,15 +367,15 @@ const (
 type DaemonSetStatus struct {
 	// CurrentNumberScheduled is the number of nodes that are running at least 1
 	// daemon pod and are supposed to run the daemon pod.
-	CurrentNumberScheduled int `json:"currentNumberScheduled"`
+	CurrentNumberScheduled int32 `json:"currentNumberScheduled"`
 
 	// NumberMisscheduled is the number of nodes that are running the daemon pod, but are
 	// not supposed to run the daemon pod.
-	NumberMisscheduled int `json:"numberMisscheduled"`
+	NumberMisscheduled int32 `json:"numberMisscheduled"`
 
 	// DesiredNumberScheduled is the total number of nodes that should be running the daemon
 	// pod (including nodes correctly running the daemon pod).
-	DesiredNumberScheduled int `json:"desiredNumberScheduled"`
+	DesiredNumberScheduled int32 `json:"desiredNumberScheduled"`
 }
 
 // +genclient=true
@@ -674,7 +599,7 @@ type ReplicaSetList struct {
 // a Template set.
 type ReplicaSetSpec struct {
 	// Replicas is the number of desired replicas.
-	Replicas int `json:"replicas"`
+	Replicas int32 `json:"replicas"`
 
 	// Selector is a label query over pods that should match the replica count.
 	// Must match in order to be controlled.
@@ -690,14 +615,16 @@ type ReplicaSetSpec struct {
 // ReplicaSetStatus represents the current status of a ReplicaSet.
 type ReplicaSetStatus struct {
 	// Replicas is the number of actual replicas.
-	Replicas int `json:"replicas"`
+	Replicas int32 `json:"replicas"`
 
 	// The number of pods that have labels matching the labels of the pod template of the replicaset.
-	FullyLabeledReplicas int `json:"fullyLabeledReplicas,omitempty"`
+	FullyLabeledReplicas int32 `json:"fullyLabeledReplicas,omitempty"`
 
 	// ObservedGeneration is the most recent generation observed by the controller.
 	ObservedGeneration int64 `json:"observedGeneration,omitempty"`
 }
+
+// +genclient=true,nonNamespaced=true
 
 // PodSecurityPolicy governs the ability to make requests that affect the SecurityContext
 // that will be applied to a pod and container.
@@ -713,8 +640,17 @@ type PodSecurityPolicy struct {
 type PodSecurityPolicySpec struct {
 	// Privileged determines if a pod can request to be run as privileged.
 	Privileged bool `json:"privileged,omitempty"`
-	// Capabilities is a list of capabilities that can be added.
-	Capabilities []api.Capability `json:"capabilities,omitempty"`
+	// DefaultAddCapabilities is the default set of capabilities that will be added to the container
+	// unless the pod spec specifically drops the capability.  You may not list a capabiility in both
+	// DefaultAddCapabilities and RequiredDropCapabilities.
+	DefaultAddCapabilities []api.Capability `json:"defaultAddCapabilities,omitempty"`
+	// RequiredDropCapabilities are the capabilities that will be dropped from the container.  These
+	// are required to be dropped and cannot be added.
+	RequiredDropCapabilities []api.Capability `json:"requiredDropCapabilities,omitempty"`
+	// AllowedCapabilities is a list of capabilities that can be requested to add to the container.
+	// Capabilities in this field may be added at the pod author's discretion.
+	// You must not list a capability in both AllowedCapabilities and RequiredDropCapabilities.
+	AllowedCapabilities []api.Capability `json:"allowedCapabilities,omitempty"`
 	// Volumes is a white list of allowed volume plugins.  Empty indicates that all plugins
 	// may be used.
 	Volumes []FSType `json:"volumes,omitempty"`
@@ -727,9 +663,19 @@ type PodSecurityPolicySpec struct {
 	// HostIPC determines if the policy allows the use of HostIPC in the pod spec.
 	HostIPC bool `json:"hostIPC,omitempty"`
 	// SELinux is the strategy that will dictate the allowable labels that may be set.
-	SELinux SELinuxStrategyOptions `json:"seLinux,omitempty"`
+	SELinux SELinuxStrategyOptions `json:"seLinux"`
 	// RunAsUser is the strategy that will dictate the allowable RunAsUser values that may be set.
-	RunAsUser RunAsUserStrategyOptions `json:"runAsUser,omitempty"`
+	RunAsUser RunAsUserStrategyOptions `json:"runAsUser"`
+	// SupplementalGroups is the strategy that will dictate what supplemental groups are used by the SecurityContext.
+	SupplementalGroups SupplementalGroupsStrategyOptions `json:"supplementalGroups"`
+	// FSGroup is the strategy that will dictate what fs group is used by the SecurityContext.
+	FSGroup FSGroupStrategyOptions `json:"fsGroup"`
+	// ReadOnlyRootFilesystem when set to true will force containers to run with a read only root file
+	// system.  If the container specifically requests to run with a non-read only root file system
+	// the PSP should deny the pod.
+	// If set to false the container may run with a read only root file system if it wishes but it
+	// will not be forced to.
+	ReadOnlyRootFilesystem bool `json:"readOnlyRootFilesystem,omitempty"`
 }
 
 // HostPortRange defines a range of host ports that will be enabled by a policy
@@ -745,6 +691,9 @@ type HostPortRange struct {
 type FSType string
 
 var (
+	AzureFile             FSType = "azureFile"
+	Flocker               FSType = "flocker"
+	FlexVolume            FSType = "flexVolume"
 	HostPath              FSType = "hostPath"
 	EmptyDir              FSType = "emptyDir"
 	GCEPersistentDisk     FSType = "gcePersistentDisk"
@@ -760,6 +709,8 @@ var (
 	CephFS                FSType = "cephFS"
 	DownwardAPI           FSType = "downwardAPI"
 	FC                    FSType = "fc"
+	ConfigMap             FSType = "configMap"
+	All                   FSType = "*"
 )
 
 // SELinuxStrategyOptions defines the strategy type and any options used to create the strategy.
@@ -809,6 +760,46 @@ const (
 	RunAsUserStrategyMustRunAsNonRoot RunAsUserStrategy = "MustRunAsNonRoot"
 	// container may make requests for any uid.
 	RunAsUserStrategyRunAsAny RunAsUserStrategy = "RunAsAny"
+)
+
+// FSGroupStrategyOptions defines the strategy type and options used to create the strategy.
+type FSGroupStrategyOptions struct {
+	// Rule is the strategy that will dictate what FSGroup is used in the SecurityContext.
+	Rule FSGroupStrategyType `json:"rule,omitempty"`
+	// Ranges are the allowed ranges of fs groups.  If you would like to force a single
+	// fs group then supply a single range with the same start and end.
+	Ranges []IDRange `json:"ranges,omitempty"`
+}
+
+// FSGroupStrategyType denotes strategy types for generating FSGroup values for a
+// SecurityContext
+type FSGroupStrategyType string
+
+const (
+	// container must have FSGroup of X applied.
+	FSGroupStrategyMustRunAs FSGroupStrategyType = "MustRunAs"
+	// container may make requests for any FSGroup labels.
+	FSGroupStrategyRunAsAny FSGroupStrategyType = "RunAsAny"
+)
+
+// SupplementalGroupsStrategyOptions defines the strategy type and options used to create the strategy.
+type SupplementalGroupsStrategyOptions struct {
+	// Rule is the strategy that will dictate what supplemental groups is used in the SecurityContext.
+	Rule SupplementalGroupsStrategyType `json:"rule,omitempty"`
+	// Ranges are the allowed ranges of supplemental groups.  If you would like to force a single
+	// supplemental group then supply a single range with the same start and end.
+	Ranges []IDRange `json:"ranges,omitempty"`
+}
+
+// SupplementalGroupsStrategyType denotes strategy types for determining valid supplemental
+// groups for a SecurityContext.
+type SupplementalGroupsStrategyType string
+
+const (
+	// container must run as a particular gid.
+	SupplementalGroupsStrategyMustRunAs SupplementalGroupsStrategyType = "MustRunAs"
+	// container may make requests for any gid.
+	SupplementalGroupsStrategyRunAsAny SupplementalGroupsStrategyType = "RunAsAny"
 )
 
 // PodSecurityPolicyList is a list of PodSecurityPolicy objects.

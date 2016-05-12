@@ -36,6 +36,7 @@ import (
 	"k8s.io/kubernetes/pkg/api/meta"
 	"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/apis/apps"
+	"k8s.io/kubernetes/pkg/apis/autoscaling"
 	"k8s.io/kubernetes/pkg/apis/batch"
 	"k8s.io/kubernetes/pkg/apis/extensions"
 	"k8s.io/kubernetes/pkg/labels"
@@ -596,7 +597,7 @@ func printPodBase(pod *api.Pod, w io.Writer, options PrintOptions) error {
 	for i := len(pod.Status.ContainerStatuses) - 1; i >= 0; i-- {
 		container := pod.Status.ContainerStatuses[i]
 
-		restarts += container.RestartCount
+		restarts += int(container.RestartCount)
 		if container.State.Waiting != nil && container.State.Waiting.Reason != "" {
 			reason = container.State.Waiting.Reason
 		} else if container.State.Terminated != nil && container.State.Terminated.Reason != "" {
@@ -1607,16 +1608,15 @@ func printDeploymentList(list *extensions.DeploymentList, w io.Writer, options P
 	return nil
 }
 
-func printHorizontalPodAutoscaler(hpa *extensions.HorizontalPodAutoscaler, w io.Writer, options PrintOptions) error {
+func printHorizontalPodAutoscaler(hpa *autoscaling.HorizontalPodAutoscaler, w io.Writer, options PrintOptions) error {
 	namespace := hpa.Namespace
 	name := hpa.Name
-	reference := fmt.Sprintf("%s/%s/%s",
-		hpa.Spec.ScaleRef.Kind,
-		hpa.Spec.ScaleRef.Name,
-		hpa.Spec.ScaleRef.Subresource)
+	reference := fmt.Sprintf("%s/%s",
+		hpa.Spec.ScaleTargetRef.Kind,
+		hpa.Spec.ScaleTargetRef.Name)
 	target := "<unset>"
-	if hpa.Spec.CPUUtilization != nil {
-		target = fmt.Sprintf("%d%%", hpa.Spec.CPUUtilization.TargetPercentage)
+	if hpa.Spec.TargetCPUUtilizationPercentage != nil {
+		target = fmt.Sprintf("%d%%", *hpa.Spec.TargetCPUUtilizationPercentage)
 	}
 	current := "<waiting>"
 	if hpa.Status.CurrentCPUUtilizationPercentage != nil {
@@ -1651,7 +1651,7 @@ func printHorizontalPodAutoscaler(hpa *extensions.HorizontalPodAutoscaler, w io.
 	return err
 }
 
-func printHorizontalPodAutoscalerList(list *extensions.HorizontalPodAutoscalerList, w io.Writer, options PrintOptions) error {
+func printHorizontalPodAutoscalerList(list *autoscaling.HorizontalPodAutoscalerList, w io.Writer, options PrintOptions) error {
 	for i := range list.Items {
 		if err := printHorizontalPodAutoscaler(&list.Items[i], w, options); err != nil {
 			return err
@@ -1689,9 +1689,9 @@ func printConfigMapList(list *api.ConfigMapList, w io.Writer, options PrintOptio
 }
 
 func printPodSecurityPolicy(item *extensions.PodSecurityPolicy, w io.Writer, options PrintOptions) error {
-	_, err := fmt.Fprintf(w, "%s\t%t\t%v\t%v\t%s\t%s\n", item.Name, item.Spec.Privileged,
-		item.Spec.Capabilities, item.Spec.Volumes, item.Spec.SELinux.Rule,
-		item.Spec.RunAsUser.Rule)
+	_, err := fmt.Fprintf(w, "%s\t%t\t%v\t%s\t%s\t%s\t%s\t%t\t%v\n", item.Name, item.Spec.Privileged,
+		item.Spec.AllowedCapabilities, item.Spec.SELinux.Rule,
+		item.Spec.RunAsUser.Rule, item.Spec.FSGroup.Rule, item.Spec.SupplementalGroups.Rule, item.Spec.ReadOnlyRootFilesystem, item.Spec.Volumes)
 	return err
 }
 
@@ -1739,10 +1739,7 @@ func appendAllLabels(showLabels bool, itemLabels map[string]string) string {
 func appendLabelTabs(columnLabels []string) string {
 	var buffer bytes.Buffer
 
-	for i := range columnLabels {
-		// NB: This odd dance is to make the loop both compatible with go 1.3 and
-		// pass `gofmt -s`
-		_ = i
+	for range columnLabels {
 		buffer.WriteString("\t")
 	}
 	buffer.WriteString("\n")

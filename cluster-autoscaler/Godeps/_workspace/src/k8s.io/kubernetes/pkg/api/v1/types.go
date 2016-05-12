@@ -175,6 +175,16 @@ type ObjectMeta struct {
 	// queryable and should be preserved when modifying objects.
 	// More info: http://releases.k8s.io/HEAD/docs/user-guide/annotations.md
 	Annotations map[string]string `json:"annotations,omitempty" protobuf:"bytes,12,rep,name=annotations"`
+
+	// List of objects depended by this object. If ALL objects in the list have
+	// been deleted, this object will be garbage collected.
+	OwnerReferences []OwnerReference `json:"ownerReferences,omitempty" patchStrategy:"merge" patchMergeKey:"uid" protobuf:"bytes,13,rep,name=ownerReferences"`
+
+	// Must be empty before the object is deleted from the registry. Each entry
+	// is an identifier for the responsible component that will remove the entry
+	// from the list. If the deletionTimestamp of the object is non-nil, entries
+	// in this list can only be removed.
+	Finalizers []string `json:"finalizers,omitempty" protobuf:"bytes,14,rep,name=finalizers"`
 }
 
 const (
@@ -873,6 +883,9 @@ type VolumeMount struct {
 	// Path within the container at which the volume should be mounted.  Must
 	// not contain ':'.
 	MountPath string `json:"mountPath" protobuf:"bytes,3,opt,name=mountPath"`
+	// Path within the volume from which the container's volume should be mounted.
+	// Defaults to "" (volume's root).
+	SubPath string `json:"subPath,omitempty" protobuf:"bytes,4,opt,name=subPath"`
 }
 
 // EnvVar represents an environment variable present in a Container.
@@ -1288,6 +1301,8 @@ type PodConditionType string
 
 // These are valid conditions of pod.
 const (
+	// PodScheduled represents status of the scheduling process for this pod.
+	PodScheduled PodConditionType = "PodScheduled"
 	// PodReady means the pod is able to service requests and should be added to the
 	// load balancing pools of all matching services.
 	PodReady PodConditionType = "Ready"
@@ -1384,11 +1399,109 @@ const (
 	NodeSelectorOpLt           NodeSelectorOperator = "Lt"
 )
 
-// Affinity is a group of affinity scheduling rules, currently
-// only node affinity, but in the future also inter-pod affinity.
+// Affinity is a group of affinity scheduling rules.
 type Affinity struct {
 	// Describes node affinity scheduling rules for the pod.
 	NodeAffinity *NodeAffinity `json:"nodeAffinity,omitempty" protobuf:"bytes,1,opt,name=nodeAffinity"`
+	// Describes pod affinity scheduling rules (e.g. co-locate this pod in the same node, zone, etc. as some other pod(s)).
+	PodAffinity *PodAffinity `json:"podAffinity,omitempty" protobuf:"bytes,2,opt,name=podAffinity"`
+	// Describes pod anti-affinity scheduling rules (e.g. avoid putting this pod in the same node, zone, etc. as some other pod(s)).
+	PodAntiAffinity *PodAntiAffinity `json:"podAntiAffinity,omitempty" protobuf:"bytes,3,opt,name=podAntiAffinity"`
+}
+
+// Pod affinity is a group of inter pod affinity scheduling rules.
+type PodAffinity struct {
+	// NOT YET IMPLEMENTED. TODO: Uncomment field once it is implemented.
+	// If the affinity requirements specified by this field are not met at
+	// scheduling time, the pod will not be scheduled onto the node.
+	// If the affinity requirements specified by this field cease to be met
+	// at some point during pod execution (e.g. due to a pod label update), the
+	// system will try to eventually evict the pod from its node.
+	// When there are multiple elements, the lists of nodes corresponding to each
+	// podAffinityTerm are intersected, i.e. all terms must be satisfied.
+	// RequiredDuringSchedulingRequiredDuringExecution []PodAffinityTerm  `json:"requiredDuringSchedulingRequiredDuringExecution,omitempty"`
+	// If the affinity requirements specified by this field are not met at
+	// scheduling time, the pod will not be scheduled onto the node.
+	// If the affinity requirements specified by this field cease to be met
+	// at some point during pod execution (e.g. due to a pod label update), the
+	// system may or may not try to eventually evict the pod from its node.
+	// When there are multiple elements, the lists of nodes corresponding to each
+	// podAffinityTerm are intersected, i.e. all terms must be satisfied.
+	RequiredDuringSchedulingIgnoredDuringExecution []PodAffinityTerm `json:"requiredDuringSchedulingIgnoredDuringExecution,omitempty" protobuf:"bytes,1,rep,name=requiredDuringSchedulingIgnoredDuringExecution"`
+	// The scheduler will prefer to schedule pods to nodes that satisfy
+	// the affinity expressions specified by this field, but it may choose
+	// a node that violates one or more of the expressions. The node that is
+	// most preferred is the one with the greatest sum of weights, i.e.
+	// for each node that meets all of the scheduling requirements (resource
+	// request, requiredDuringScheduling affinity expressions, etc.),
+	// compute a sum by iterating through the elements of this field and adding
+	// "weight" to the sum if the node has pods which matches the corresponding podAffinityTerm; the
+	// node(s) with the highest sum are the most preferred.
+	PreferredDuringSchedulingIgnoredDuringExecution []WeightedPodAffinityTerm `json:"preferredDuringSchedulingIgnoredDuringExecution,omitempty" protobuf:"bytes,2,rep,name=preferredDuringSchedulingIgnoredDuringExecution"`
+}
+
+// Pod anti affinity is a group of inter pod anti affinity scheduling rules.
+type PodAntiAffinity struct {
+	// NOT YET IMPLEMENTED. TODO: Uncomment field once it is implemented.
+	// If the anti-affinity requirements specified by this field are not met at
+	// scheduling time, the pod will not be scheduled onto the node.
+	// If the anti-affinity requirements specified by this field cease to be met
+	// at some point during pod execution (e.g. due to a pod label update), the
+	// system will try to eventually evict the pod from its node.
+	// When there are multiple elements, the lists of nodes corresponding to each
+	// podAffinityTerm are intersected, i.e. all terms must be satisfied.
+	// RequiredDuringSchedulingRequiredDuringExecution []PodAffinityTerm  `json:"requiredDuringSchedulingRequiredDuringExecution,omitempty"`
+	// If the anti-affinity requirements specified by this field are not met at
+	// scheduling time, the pod will not be scheduled onto the node.
+	// If the anti-affinity requirements specified by this field cease to be met
+	// at some point during pod execution (e.g. due to a pod label update), the
+	// system may or may not try to eventually evict the pod from its node.
+	// When there are multiple elements, the lists of nodes corresponding to each
+	// podAffinityTerm are intersected, i.e. all terms must be satisfied.
+	RequiredDuringSchedulingIgnoredDuringExecution []PodAffinityTerm `json:"requiredDuringSchedulingIgnoredDuringExecution,omitempty" protobuf:"bytes,1,rep,name=requiredDuringSchedulingIgnoredDuringExecution"`
+	// The scheduler will prefer to schedule pods to nodes that satisfy
+	// the anti-affinity expressions specified by this field, but it may choose
+	// a node that violates one or more of the expressions. The node that is
+	// most preferred is the one with the greatest sum of weights, i.e.
+	// for each node that meets all of the scheduling requirements (resource
+	// request, requiredDuringScheduling anti-affinity expressions, etc.),
+	// compute a sum by iterating through the elements of this field and adding
+	// "weight" to the sum if the node has pods which matches the corresponding podAffinityTerm; the
+	// node(s) with the highest sum are the most preferred.
+	PreferredDuringSchedulingIgnoredDuringExecution []WeightedPodAffinityTerm `json:"preferredDuringSchedulingIgnoredDuringExecution,omitempty" protobuf:"bytes,2,rep,name=preferredDuringSchedulingIgnoredDuringExecution"`
+}
+
+// The weights of all of the matched WeightedPodAffinityTerm fields are added per-node to find the most preferred node(s)
+type WeightedPodAffinityTerm struct {
+	// weight associated with matching the corresponding podAffinityTerm,
+	// in the range 1-100.
+	Weight int32 `json:"weight" protobuf:"varint,1,opt,name=weight"`
+	// Required. A pod affinity term, associated with the corresponding weight.
+	PodAffinityTerm PodAffinityTerm `json:"podAffinityTerm" protobuf:"bytes,2,opt,name=podAffinityTerm"`
+}
+
+// Defines a set of pods (namely those matching the labelSelector
+// relative to the given namespace(s)) that this pod should be
+// co-located (affinity) or not co-located (anti-affinity) with,
+// where co-located is defined as running on a node whose value of
+// the label with key <topologyKey> tches that of any node on which
+// a pod of the set of pods is running
+type PodAffinityTerm struct {
+	// A label query over a set of resources, in this case pods.
+	LabelSelector *unversioned.LabelSelector `json:"labelSelector,omitempty" protobuf:"bytes,1,opt,name=labelSelector"`
+	// namespaces specifies which namespaces the labelSelector applies to (matches against);
+	// nil list means "this pod's namespace," empty list means "all namespaces"
+	// The json tag here is not "omitempty" since we need to distinguish nil and empty.
+	// See https://golang.org/pkg/encoding/json/#Marshal for more details.
+	Namespaces []string `json:"namespaces" protobuf:"bytes,2,rep,name=namespaces"`
+	// This pod should be co-located (affinity) or not co-located (anti-affinity) with the pods matching
+	// the labelSelector in the specified namespaces, where co-located is defined as running on a node
+	// whose value of the label with key topologyKey matches that of any node on which any of the
+	// selected pods is running.
+	// For PreferredDuringScheduling pod anti-affinity, empty topologyKey is interpreted as "all topologies"
+	// ("all topologies" here means all the topologyKeys indicated by scheduler command-line argument --failure-domains);
+	// for affinity and for RequiredDuringScheduling pod anti-affinity, empty topologyKey is not allowed.
+	TopologyKey string `json:"topologyKey,omitempty" protobuf:"bytes,3,opt,name=topologyKey"`
 }
 
 // Node affinity is a group of node affinity scheduling rules.
@@ -1494,6 +1607,12 @@ type PodSpec struct {
 	// in the case of docker, only DockerConfig type secrets are honored.
 	// More info: http://releases.k8s.io/HEAD/docs/user-guide/images.md#specifying-imagepullsecrets-on-a-pod
 	ImagePullSecrets []LocalObjectReference `json:"imagePullSecrets,omitempty" patchStrategy:"merge" patchMergeKey:"name" protobuf:"bytes,15,rep,name=imagePullSecrets"`
+	// Specifies the hostname of the Pod
+	// If not specified, the pod's hostname will be set to a system-defined value.
+	Hostname string `json:"hostname,omitempty" protobuf:"bytes,16,opt,name=hostname"`
+	// If specified, the fully qualified Pod hostname will be "<hostname>.<subdomain>.<pod namespace>.svc.<cluster domain>".
+	// If not specified, the pod will not have a domainname at all.
+	Subdomain string `json:"subdomain,omitempty" protobuf:"bytes,17,opt,name=subdomain"`
 }
 
 // PodSecurityContext holds pod-level security attributes and common container settings.
@@ -2006,7 +2125,8 @@ type EndpointAddress struct {
 	// kubernetes components, like kube-proxy, are not IPv6 ready.
 	// TODO: This should allow hostname or IP, See #4447.
 	IP string `json:"ip" protobuf:"bytes,1,opt,name=ip"`
-
+	// The Hostname of this endpoint
+	Hostname string `json:"hostname,omitempty" protobuf:"bytes,3,opt,name=hostname"`
 	// Reference to object providing the endpoint.
 	TargetRef *ObjectReference `json:"targetRef,omitempty" protobuf:"bytes,2,opt,name=targetRef"`
 }
@@ -2324,6 +2444,10 @@ type DeleteOptions struct {
 	// Must be fulfilled before a deletion is carried out. If not possible, a 409 Conflict status will be
 	// returned.
 	Preconditions *Preconditions `json:"preconditions,omitempty" protobuf:"bytes,2,opt,name=preconditions"`
+
+	// Should the dependent objects be orphaned. If true/false, the "orphan"
+	// finalizer will be added to/removed from the object's finalizers list.
+	OrphanDependents *bool `json:"orphanDependents,omitempty" protobuf:"varint,3,opt,name=orphanDependents"`
 }
 
 // ExportOptions is the query options to the standard REST get call.
@@ -2475,6 +2599,23 @@ type ServiceProxyOptions struct {
 	// http://localhost/api/v1/namespaces/kube-system/services/elasticsearch-logging/_search?q=user:kimchy.
 	// Path is _search?q=user:kimchy.
 	Path string `json:"path,omitempty" protobuf:"bytes,1,opt,name=path"`
+}
+
+// OwnerReference contains enough information to let you identify an owning
+// object. Currently, an owning object must be in the same namespace, so there
+// is no namespace field.
+type OwnerReference struct {
+	// API version of the referent.
+	APIVersion string `json:"apiVersion" protobuf:"bytes,5,opt,name=apiVersion"`
+	// Kind of the referent.
+	// More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#types-kinds
+	Kind string `json:"kind" protobuf:"bytes,1,opt,name=kind"`
+	// Name of the referent.
+	// More info: http://releases.k8s.io/HEAD/docs/user-guide/identifiers.md#names
+	Name string `json:"name" protobuf:"bytes,3,opt,name=name"`
+	// UID of the referent.
+	// More info: http://releases.k8s.io/HEAD/docs/user-guide/identifiers.md#uids
+	UID types.UID `json:"uid" protobuf:"bytes,4,opt,name=uid,casttype=k8s.io/kubernetes/pkg/types.UID"`
 }
 
 // ObjectReference contains enough information to let you inspect or modify the referred object.

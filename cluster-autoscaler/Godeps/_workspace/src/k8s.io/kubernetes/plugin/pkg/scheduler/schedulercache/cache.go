@@ -35,14 +35,14 @@ var (
 // It automatically starts a go routine that manages expiration of assumed pods.
 // "ttl" is how long the assumed pod will get expired.
 // "stop" is the channel that would close the background goroutine.
-func New(ttl time.Duration, stop chan struct{}) Cache {
+func New(ttl time.Duration, stop <-chan struct{}) Cache {
 	cache := newSchedulerCache(ttl, cleanAssumedPeriod, stop)
 	cache.run()
 	return cache
 }
 
 type schedulerCache struct {
-	stop   chan struct{}
+	stop   <-chan struct{}
 	ttl    time.Duration
 	period time.Duration
 
@@ -62,7 +62,7 @@ type podState struct {
 	deadline *time.Time
 }
 
-func newSchedulerCache(ttl, period time.Duration, stop chan struct{}) *schedulerCache {
+func newSchedulerCache(ttl, period time.Duration, stop <-chan struct{}) *schedulerCache {
 	return &schedulerCache{
 		ttl:    ttl,
 		period: period,
@@ -177,7 +177,7 @@ func (cache *schedulerCache) UpdatePod(oldPod, newPod *api.Pod) error {
 }
 
 func (cache *schedulerCache) updatePod(oldPod, newPod *api.Pod) error {
-	if err := cache.deletePod(oldPod); err != nil {
+	if err := cache.removePod(oldPod); err != nil {
 		return err
 	}
 	cache.addPod(newPod)
@@ -193,12 +193,12 @@ func (cache *schedulerCache) addPod(pod *api.Pod) {
 	n.addPod(pod)
 }
 
-func (cache *schedulerCache) deletePod(pod *api.Pod) error {
+func (cache *schedulerCache) removePod(pod *api.Pod) error {
 	n := cache.nodes[pod.Spec.NodeName]
 	if err := n.removePod(pod); err != nil {
 		return err
 	}
-	if len(n.pods) == 0 {
+	if len(n.pods) == 0 && n.node == nil {
 		delete(cache.nodes, pod.Spec.NodeName)
 	}
 	return nil
@@ -218,13 +218,55 @@ func (cache *schedulerCache) RemovePod(pod *api.Pod) error {
 	// An assumed pod won't have Delete/Remove event. It needs to have Add event
 	// before Remove event, in which case the state would change from Assumed to Added.
 	case ok && !cache.assumedPods[key]:
-		err := cache.deletePod(pod)
+		err := cache.removePod(pod)
 		if err != nil {
 			return err
 		}
 		delete(cache.podStates, key)
 	default:
 		return fmt.Errorf("pod state wasn't added but get removed. Pod key: %v", key)
+	}
+	return nil
+}
+
+func (cache *schedulerCache) AddNode(node *api.Node) error {
+	cache.mu.Lock()
+	defer cache.mu.Unlock()
+
+	n, ok := cache.nodes[node.Name]
+	if !ok {
+		n = NewNodeInfo()
+		cache.nodes[node.Name] = n
+	}
+	return n.SetNode(node)
+}
+
+func (cache *schedulerCache) UpdateNode(oldNode, newNode *api.Node) error {
+	cache.mu.Lock()
+	defer cache.mu.Unlock()
+
+	n, ok := cache.nodes[newNode.Name]
+	if !ok {
+		n = NewNodeInfo()
+		cache.nodes[newNode.Name] = n
+	}
+	return n.SetNode(newNode)
+}
+
+func (cache *schedulerCache) RemoveNode(node *api.Node) error {
+	cache.mu.Lock()
+	defer cache.mu.Unlock()
+
+	n := cache.nodes[node.Name]
+	if err := n.RemoveNode(node); err != nil {
+		return err
+	}
+	// We remove NodeInfo for this node only if there aren't any pods on this node.
+	// We can't do it unconditionally, because notifications about pods are delivered
+	// in a different watch, and thus can potentially be observed later, even though
+	// they happened before node removal.
+	if len(n.pods) == 0 && n.node == nil {
+		delete(cache.nodes, node.Name)
 	}
 	return nil
 }
@@ -257,7 +299,7 @@ func (cache *schedulerCache) cleanupAssumedPods(now time.Time) {
 }
 
 func (cache *schedulerCache) expirePod(key string, ps *podState) error {
-	if err := cache.deletePod(ps.pod); err != nil {
+	if err := cache.removePod(ps.pod); err != nil {
 		return err
 	}
 	delete(cache.assumedPods, key)

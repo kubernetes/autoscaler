@@ -27,6 +27,7 @@ import (
 	"os/user"
 	"path"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -50,6 +51,7 @@ import (
 	client "k8s.io/kubernetes/pkg/client/unversioned"
 	clientset "k8s.io/kubernetes/pkg/client/unversioned/adapters/internalclientset"
 	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
+	"k8s.io/kubernetes/pkg/controller"
 	"k8s.io/kubernetes/pkg/kubectl"
 	"k8s.io/kubernetes/pkg/kubectl/resource"
 	"k8s.io/kubernetes/pkg/labels"
@@ -57,6 +59,7 @@ import (
 	"k8s.io/kubernetes/pkg/runtime"
 	"k8s.io/kubernetes/pkg/runtime/serializer/json"
 	utilflag "k8s.io/kubernetes/pkg/util/flag"
+	"k8s.io/kubernetes/pkg/watch"
 )
 
 const (
@@ -100,8 +103,6 @@ type Factory struct {
 	HistoryViewer func(mapping *meta.RESTMapping) (kubectl.HistoryViewer, error)
 	// Returns a Rollbacker for changing the rollback version of the specified RESTMapping type or an error
 	Rollbacker func(mapping *meta.RESTMapping) (kubectl.Rollbacker, error)
-	// PodSelectorForObject returns the pod selector associated with the provided object
-	PodSelectorForObject func(object runtime.Object) (string, error)
 	// MapBasedSelectorForObject returns the map-based selector associated with the provided object. If a
 	// new set-based selector is provided, an error is returned if the selector cannot be converted to a
 	// map-based selector
@@ -122,7 +123,7 @@ type Factory struct {
 	SwaggerSchema func(unversioned.GroupVersionKind) (*swagger.ApiDeclaration, error)
 	// Returns the default namespace to use in cases where no
 	// other namespace is specified and whether the namespace was
-	// overriden.
+	// overridden.
 	DefaultNamespace func() (string, bool, error)
 	// Generators returns the generators for the provided command
 	Generators func(cmdName string) map[string]kubectl.Generator
@@ -364,41 +365,6 @@ func NewFactory(optionalClientConfig clientcmd.ClientConfig) *Factory {
 		Printer: func(mapping *meta.RESTMapping, noHeaders, withNamespace bool, wide bool, showAll bool, showLabels bool, absoluteTimestamps bool, columnLabels []string) (kubectl.ResourcePrinter, error) {
 			return kubectl.NewHumanReadablePrinter(noHeaders, withNamespace, wide, showAll, showLabels, absoluteTimestamps, columnLabels), nil
 		},
-		PodSelectorForObject: func(object runtime.Object) (string, error) {
-			// TODO: replace with a swagger schema based approach (identify pod selector via schema introspection)
-			switch t := object.(type) {
-			case *api.ReplicationController:
-				return kubectl.MakeLabels(t.Spec.Selector), nil
-			case *api.Pod:
-				if len(t.Labels) == 0 {
-					return "", fmt.Errorf("the pod has no labels and cannot be exposed")
-				}
-				return kubectl.MakeLabels(t.Labels), nil
-			case *api.Service:
-				if t.Spec.Selector == nil {
-					return "", fmt.Errorf("the service has no pod selector set")
-				}
-				return kubectl.MakeLabels(t.Spec.Selector), nil
-			case *extensions.Deployment:
-				selector, err := unversioned.LabelSelectorAsSelector(t.Spec.Selector)
-				if err != nil {
-					return "", fmt.Errorf("invalid label selector: %v", err)
-				}
-				return selector.String(), nil
-			case *extensions.ReplicaSet:
-				selector, err := unversioned.LabelSelectorAsSelector(t.Spec.Selector)
-				if err != nil {
-					return "", fmt.Errorf("failed to convert label selector to selector: %v", err)
-				}
-				return selector.String(), nil
-			default:
-				gvk, err := api.Scheme.ObjectKind(object)
-				if err != nil {
-					return "", err
-				}
-				return "", fmt.Errorf("cannot extract pod selector from %v", gvk)
-			}
-		},
 		MapBasedSelectorForObject: func(object runtime.Object) (string, error) {
 			// TODO: replace with a swagger schema based approach (identify pod selector via schema introspection)
 			switch t := object.(type) {
@@ -480,7 +446,8 @@ func NewFactory(optionalClientConfig clientcmd.ClientConfig) *Factory {
 					return nil, errors.New("provided options object is not a PodLogOptions")
 				}
 				selector := labels.SelectorFromSet(t.Spec.Selector)
-				pod, numPods, err := GetFirstPod(c, t.Namespace, selector)
+				sortBy := func(pods []*api.Pod) sort.Interface { return controller.ActivePods(pods) }
+				pod, numPods, err := GetFirstPod(c, t.Namespace, selector, 20*time.Second, sortBy)
 				if err != nil {
 					return nil, err
 				}
@@ -499,7 +466,8 @@ func NewFactory(optionalClientConfig clientcmd.ClientConfig) *Factory {
 				if err != nil {
 					return nil, fmt.Errorf("invalid label selector: %v", err)
 				}
-				pod, numPods, err := GetFirstPod(c, t.Namespace, selector)
+				sortBy := func(pods []*api.Pod) sort.Interface { return controller.ActivePods(pods) }
+				pod, numPods, err := GetFirstPod(c, t.Namespace, selector, 20*time.Second, sortBy)
 				if err != nil {
 					return nil, err
 				}
@@ -656,21 +624,24 @@ func NewFactory(optionalClientConfig clientcmd.ClientConfig) *Factory {
 			switch t := object.(type) {
 			case *api.ReplicationController:
 				selector := labels.SelectorFromSet(t.Spec.Selector)
-				pod, _, err := GetFirstPod(client, t.Namespace, selector)
+				sortBy := func(pods []*api.Pod) sort.Interface { return sort.Reverse(controller.ActivePods(pods)) }
+				pod, _, err := GetFirstPod(client, t.Namespace, selector, 1*time.Minute, sortBy)
 				return pod, err
 			case *extensions.Deployment:
 				selector, err := unversioned.LabelSelectorAsSelector(t.Spec.Selector)
 				if err != nil {
 					return nil, fmt.Errorf("invalid label selector: %v", err)
 				}
-				pod, _, err := GetFirstPod(client, t.Namespace, selector)
+				sortBy := func(pods []*api.Pod) sort.Interface { return sort.Reverse(controller.ActivePods(pods)) }
+				pod, _, err := GetFirstPod(client, t.Namespace, selector, 1*time.Minute, sortBy)
 				return pod, err
 			case *batch.Job:
 				selector, err := unversioned.LabelSelectorAsSelector(t.Spec.Selector)
 				if err != nil {
 					return nil, fmt.Errorf("invalid label selector: %v", err)
 				}
-				pod, _, err := GetFirstPod(client, t.Namespace, selector)
+				sortBy := func(pods []*api.Pod) sort.Interface { return sort.Reverse(controller.ActivePods(pods)) }
+				pod, _, err := GetFirstPod(client, t.Namespace, selector, 1*time.Minute, sortBy)
 				return pod, err
 			case *api.Pod:
 				return t, nil
@@ -688,21 +659,45 @@ func NewFactory(optionalClientConfig clientcmd.ClientConfig) *Factory {
 	}
 }
 
-// GetFirstPod returns the first pod of an object from its namespace and selector and the number of matching pods
-func GetFirstPod(client *client.Client, namespace string, selector labels.Selector) (*api.Pod, int, error) {
-	var pods *api.PodList
-	for pods == nil || len(pods.Items) == 0 {
-		var err error
-		options := api.ListOptions{LabelSelector: selector}
-		if pods, err = client.Pods(namespace).List(options); err != nil {
-			return nil, 0, err
-		}
-		if len(pods.Items) == 0 {
-			time.Sleep(2 * time.Second)
-		}
+// GetFirstPod returns a pod matching the namespace and label selector
+// and the number of all pods that match the label selector.
+func GetFirstPod(client client.Interface, namespace string, selector labels.Selector, timeout time.Duration, sortBy func([]*api.Pod) sort.Interface) (*api.Pod, int, error) {
+	options := api.ListOptions{LabelSelector: selector}
+
+	podList, err := client.Pods(namespace).List(options)
+	if err != nil {
+		return nil, 0, err
 	}
-	pod := &pods.Items[0]
-	return pod, len(pods.Items), nil
+	pods := []*api.Pod{}
+	for i := range podList.Items {
+		pod := podList.Items[i]
+		pods = append(pods, &pod)
+	}
+	if len(pods) > 0 {
+		sort.Sort(sortBy(pods))
+		return pods[0], len(podList.Items), nil
+	}
+
+	// Watch until we observe a pod
+	options.ResourceVersion = podList.ResourceVersion
+	w, err := client.Pods(namespace).Watch(options)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer w.Stop()
+
+	condition := func(event watch.Event) (bool, error) {
+		return event.Type == watch.Added || event.Type == watch.Modified, nil
+	}
+	event, err := watch.Until(timeout, w, condition)
+	if err != nil {
+		return nil, 0, err
+	}
+	pod, ok := event.Object.(*api.Pod)
+	if !ok {
+		return nil, 0, fmt.Errorf("%#v is not a pod event", event)
+	}
+	return pod, 1, nil
 }
 
 // Command will stringify and return all environment arguments ie. a command run by a client
@@ -743,7 +738,7 @@ func getPorts(spec api.PodSpec) []string {
 	result := []string{}
 	for _, container := range spec.Containers {
 		for _, port := range container.Ports {
-			result = append(result, strconv.Itoa(port.ContainerPort))
+			result = append(result, strconv.Itoa(int(port.ContainerPort)))
 		}
 	}
 	return result
@@ -753,7 +748,7 @@ func getPorts(spec api.PodSpec) []string {
 func getServicePorts(spec api.ServiceSpec) []string {
 	result := []string{}
 	for _, servicePort := range spec.Ports {
-		result = append(result, strconv.Itoa(servicePort.Port))
+		result = append(result, strconv.Itoa(int(servicePort.Port)))
 	}
 	return result
 }
@@ -820,7 +815,7 @@ func writeSchemaFile(schemaData []byte, cacheDir, cacheFile, prefix, groupVersio
 	return nil
 }
 
-func getSchemaAndValidate(c schemaClient, data []byte, prefix, groupVersion, cacheDir string) (err error) {
+func getSchemaAndValidate(c schemaClient, data []byte, prefix, groupVersion, cacheDir string, delegate validation.Schema) (err error) {
 	var schemaData []byte
 	var firstSeen bool
 	fullDir, err := substituteUserHome(cacheDir)
@@ -841,7 +836,7 @@ func getSchemaAndValidate(c schemaClient, data []byte, prefix, groupVersion, cac
 			return err
 		}
 	}
-	schema, err := validation.NewSwaggerSchemaFromBytes(schemaData)
+	schema, err := validation.NewSwaggerSchemaFromBytes(schemaData, delegate)
 	if err != nil {
 		return err
 	}
@@ -854,7 +849,7 @@ func getSchemaAndValidate(c schemaClient, data []byte, prefix, groupVersion, cac
 		if err != nil {
 			return err
 		}
-		schema, err := validation.NewSwaggerSchemaFromBytes(schemaData)
+		schema, err := validation.NewSwaggerSchemaFromBytes(schemaData, delegate)
 		if err != nil {
 			return err
 		}
@@ -893,20 +888,20 @@ func (c *clientSwaggerSchema) ValidateBytes(data []byte) error {
 		if c.c.AutoscalingClient == nil {
 			return errors.New("unable to validate: no autoscaling client")
 		}
-		return getSchemaAndValidate(c.c.AutoscalingClient.RESTClient, data, "apis/", gvk.GroupVersion().String(), c.cacheDir)
+		return getSchemaAndValidate(c.c.AutoscalingClient.RESTClient, data, "apis/", gvk.GroupVersion().String(), c.cacheDir, c)
 	}
 	if gvk.Group == apps.GroupName {
 		if c.c.AppsClient == nil {
 			return errors.New("unable to validate: no autoscaling client")
 		}
-		return getSchemaAndValidate(c.c.AppsClient.RESTClient, data, "apis/", gvk.GroupVersion().String(), c.cacheDir)
+		return getSchemaAndValidate(c.c.AppsClient.RESTClient, data, "apis/", gvk.GroupVersion().String(), c.cacheDir, c)
 	}
 
 	if gvk.Group == batch.GroupName {
 		if c.c.BatchClient == nil {
 			return errors.New("unable to validate: no batch client")
 		}
-		return getSchemaAndValidate(c.c.BatchClient.RESTClient, data, "apis/", gvk.GroupVersion().String(), c.cacheDir)
+		return getSchemaAndValidate(c.c.BatchClient.RESTClient, data, "apis/", gvk.GroupVersion().String(), c.cacheDir, c)
 	}
 	if registered.IsThirdPartyAPIGroupVersion(gvk.GroupVersion()) {
 		// Don't attempt to validate third party objects
@@ -916,9 +911,9 @@ func (c *clientSwaggerSchema) ValidateBytes(data []byte) error {
 		if c.c.ExtensionsClient == nil {
 			return errors.New("unable to validate: no experimental client")
 		}
-		return getSchemaAndValidate(c.c.ExtensionsClient.RESTClient, data, "apis/", gvk.GroupVersion().String(), c.cacheDir)
+		return getSchemaAndValidate(c.c.ExtensionsClient.RESTClient, data, "apis/", gvk.GroupVersion().String(), c.cacheDir, c)
 	}
-	return getSchemaAndValidate(c.c.RESTClient, data, "api", gvk.GroupVersion().String(), c.cacheDir)
+	return getSchemaAndValidate(c.c.RESTClient, data, "api", gvk.GroupVersion().String(), c.cacheDir, c)
 }
 
 // DefaultClientConfig creates a clientcmd.ClientConfig with the following hierarchy:

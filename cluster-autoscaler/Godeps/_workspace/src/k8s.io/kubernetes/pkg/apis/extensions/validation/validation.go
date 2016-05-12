@@ -17,7 +17,7 @@ limitations under the License.
 package validation
 
 import (
-	"encoding/json"
+	"fmt"
 	"net"
 	"regexp"
 	"strconv"
@@ -28,109 +28,13 @@ import (
 	unversionedvalidation "k8s.io/kubernetes/pkg/api/unversioned/validation"
 	apivalidation "k8s.io/kubernetes/pkg/api/validation"
 	"k8s.io/kubernetes/pkg/apis/extensions"
-	"k8s.io/kubernetes/pkg/controller/podautoscaler"
 	"k8s.io/kubernetes/pkg/labels"
+	psputil "k8s.io/kubernetes/pkg/security/podsecuritypolicy/util"
 	"k8s.io/kubernetes/pkg/util/intstr"
 	"k8s.io/kubernetes/pkg/util/sets"
 	"k8s.io/kubernetes/pkg/util/validation"
 	"k8s.io/kubernetes/pkg/util/validation/field"
 )
-
-// ValidateHorizontalPodAutoscaler can be used to check whether the given autoscaler name is valid.
-// Prefix indicates this name will be used as part of generation, in which case trailing dashes are allowed.
-func ValidateHorizontalPodAutoscalerName(name string, prefix bool) (bool, string) {
-	// TODO: finally move it to pkg/api/validation and use nameIsDNSSubdomain function
-	return apivalidation.ValidateReplicationControllerName(name, prefix)
-}
-
-func validateHorizontalPodAutoscalerSpec(autoscaler extensions.HorizontalPodAutoscalerSpec, fldPath *field.Path) field.ErrorList {
-	allErrs := field.ErrorList{}
-	if autoscaler.MinReplicas != nil && *autoscaler.MinReplicas < 1 {
-		allErrs = append(allErrs, field.Invalid(fldPath.Child("minReplicas"), *autoscaler.MinReplicas, "must be greater than 0"))
-	}
-	if autoscaler.MaxReplicas < 1 {
-		allErrs = append(allErrs, field.Invalid(fldPath.Child("maxReplicas"), autoscaler.MaxReplicas, "must be greater than 0"))
-	}
-	if autoscaler.MinReplicas != nil && autoscaler.MaxReplicas < *autoscaler.MinReplicas {
-		allErrs = append(allErrs, field.Invalid(fldPath.Child("maxReplicas"), autoscaler.MaxReplicas, "must be greater than or equal to `minReplicas`"))
-	}
-	if autoscaler.CPUUtilization != nil && autoscaler.CPUUtilization.TargetPercentage < 1 {
-		allErrs = append(allErrs, field.Invalid(fldPath.Child("cpuUtilization", "targetPercentage"), autoscaler.CPUUtilization.TargetPercentage, "must be greater than 0"))
-	}
-	if refErrs := ValidateSubresourceReference(autoscaler.ScaleRef, fldPath.Child("scaleRef")); len(refErrs) > 0 {
-		allErrs = append(allErrs, refErrs...)
-	} else if autoscaler.ScaleRef.Subresource != "scale" {
-		allErrs = append(allErrs, field.NotSupported(fldPath.Child("scaleRef", "subresource"), autoscaler.ScaleRef.Subresource, []string{"scale"}))
-	}
-	return allErrs
-}
-
-func ValidateSubresourceReference(ref extensions.SubresourceReference, fldPath *field.Path) field.ErrorList {
-	allErrs := field.ErrorList{}
-	if len(ref.Kind) == 0 {
-		allErrs = append(allErrs, field.Required(fldPath.Child("kind"), ""))
-	} else if ok, msg := apivalidation.IsValidPathSegmentName(ref.Kind); !ok {
-		allErrs = append(allErrs, field.Invalid(fldPath.Child("kind"), ref.Kind, msg))
-	}
-
-	if len(ref.Name) == 0 {
-		allErrs = append(allErrs, field.Required(fldPath.Child("name"), ""))
-	} else if ok, msg := apivalidation.IsValidPathSegmentName(ref.Name); !ok {
-		allErrs = append(allErrs, field.Invalid(fldPath.Child("name"), ref.Name, msg))
-	}
-
-	if len(ref.Subresource) == 0 {
-		allErrs = append(allErrs, field.Required(fldPath.Child("subresource"), ""))
-	} else if ok, msg := apivalidation.IsValidPathSegmentName(ref.Subresource); !ok {
-		allErrs = append(allErrs, field.Invalid(fldPath.Child("subresource"), ref.Subresource, msg))
-	}
-	return allErrs
-}
-
-func validateHorizontalPodAutoscalerAnnotations(annotations map[string]string, fldPath *field.Path) field.ErrorList {
-	allErrs := field.ErrorList{}
-	if annotationValue, found := annotations[podautoscaler.HpaCustomMetricsTargetAnnotationName]; found {
-		// Try to parse the annotation
-		var targetList extensions.CustomMetricTargetList
-		if err := json.Unmarshal([]byte(annotationValue), &targetList); err != nil {
-			allErrs = append(allErrs, field.Invalid(fldPath.Child("annotations"), annotations, "failed to parse custom metrics target annotation"))
-		} else {
-			if len(targetList.Items) == 0 {
-				allErrs = append(allErrs, field.Required(fldPath.Child("annotations", "items"), "custom metrics target must not be empty"))
-			}
-			for _, target := range targetList.Items {
-				if target.Name == "" {
-					allErrs = append(allErrs, field.Required(fldPath.Child("annotations", "items", "name"), "missing custom metric target name"))
-				}
-				if target.TargetValue.MilliValue() <= 0 {
-					allErrs = append(allErrs, field.Invalid(fldPath.Child("annotations", "items", "value"), target.TargetValue, "custom metric target value must be greater than 0"))
-				}
-			}
-		}
-	}
-	return allErrs
-}
-
-func ValidateHorizontalPodAutoscaler(autoscaler *extensions.HorizontalPodAutoscaler) field.ErrorList {
-	allErrs := apivalidation.ValidateObjectMeta(&autoscaler.ObjectMeta, true, ValidateHorizontalPodAutoscalerName, field.NewPath("metadata"))
-	allErrs = append(allErrs, validateHorizontalPodAutoscalerSpec(autoscaler.Spec, field.NewPath("spec"))...)
-	allErrs = append(allErrs, validateHorizontalPodAutoscalerAnnotations(autoscaler.Annotations, field.NewPath("metadata"))...)
-	return allErrs
-}
-
-func ValidateHorizontalPodAutoscalerUpdate(newAutoscaler, oldAutoscaler *extensions.HorizontalPodAutoscaler) field.ErrorList {
-	allErrs := apivalidation.ValidateObjectMetaUpdate(&newAutoscaler.ObjectMeta, &oldAutoscaler.ObjectMeta, field.NewPath("metadata"))
-	allErrs = append(allErrs, validateHorizontalPodAutoscalerSpec(newAutoscaler.Spec, field.NewPath("spec"))...)
-	return allErrs
-}
-
-func ValidateHorizontalPodAutoscalerStatusUpdate(newAutoscaler, oldAutoscaler *extensions.HorizontalPodAutoscaler) field.ErrorList {
-	allErrs := apivalidation.ValidateObjectMetaUpdate(&newAutoscaler.ObjectMeta, &oldAutoscaler.ObjectMeta, field.NewPath("metadata"))
-	status := newAutoscaler.Status
-	allErrs = append(allErrs, apivalidation.ValidateNonnegativeField(int64(status.CurrentReplicas), field.NewPath("status", "currentReplicas"))...)
-	allErrs = append(allErrs, apivalidation.ValidateNonnegativeField(int64(status.DesiredReplicas), field.NewPath("status", "desiredReplicasa"))...)
-	return allErrs
-}
 
 func ValidateThirdPartyResourceUpdate(update, old *extensions.ThirdPartyResource) field.ErrorList {
 	allErrs := field.ErrorList{}
@@ -145,7 +49,7 @@ func ValidateThirdPartyResourceName(name string, prefix bool) (bool, string) {
 
 func ValidateThirdPartyResource(obj *extensions.ThirdPartyResource) field.ErrorList {
 	allErrs := field.ErrorList{}
-	allErrs = append(allErrs, apivalidation.ValidateObjectMeta(&obj.ObjectMeta, true, ValidateThirdPartyResourceName, field.NewPath("metadata"))...)
+	allErrs = append(allErrs, apivalidation.ValidateObjectMeta(&obj.ObjectMeta, false, ValidateThirdPartyResourceName, field.NewPath("metadata"))...)
 
 	versions := sets.String{}
 	for ix := range obj.Versions {
@@ -583,7 +487,7 @@ func ValidateReplicaSetSpec(spec *extensions.ReplicaSetSpec, fldPath *field.Path
 }
 
 // Validates the given template and ensures that it is in accordance with the desired selector and replicas.
-func ValidatePodTemplateSpecForReplicaSet(template *api.PodTemplateSpec, selector labels.Selector, replicas int, fldPath *field.Path) field.ErrorList {
+func ValidatePodTemplateSpecForReplicaSet(template *api.PodTemplateSpec, selector labels.Selector, replicas int32, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 	if template == nil {
 		allErrs = append(allErrs, field.Required(fldPath, ""))
@@ -627,7 +531,11 @@ func ValidatePodSecurityPolicySpec(spec *extensions.PodSecurityPolicySpec, fldPa
 
 	allErrs = append(allErrs, validatePSPRunAsUser(fldPath.Child("runAsUser"), &spec.RunAsUser)...)
 	allErrs = append(allErrs, validatePSPSELinux(fldPath.Child("seLinux"), &spec.SELinux)...)
+	allErrs = append(allErrs, validatePSPSupplementalGroup(fldPath.Child("supplementalGroups"), &spec.SupplementalGroups)...)
+	allErrs = append(allErrs, validatePSPFSGroup(fldPath.Child("fsGroup"), &spec.FSGroup)...)
 	allErrs = append(allErrs, validatePodSecurityPolicyVolumes(fldPath, spec.Volumes)...)
+	allErrs = append(allErrs, validatePSPCapsAgainstDrops(spec.RequiredDropCapabilities, spec.DefaultAddCapabilities, field.NewPath("defaultAddCapabilities"))...)
+	allErrs = append(allErrs, validatePSPCapsAgainstDrops(spec.RequiredDropCapabilities, spec.AllowedCapabilities, field.NewPath("allowedCapabilities"))...)
 
 	return allErrs
 }
@@ -666,24 +574,48 @@ func validatePSPRunAsUser(fldPath *field.Path, runAsUser *extensions.RunAsUserSt
 	return allErrs
 }
 
+// validatePSPFSGroup validates the FSGroupStrategyOptions fields of the PodSecurityPolicy.
+func validatePSPFSGroup(fldPath *field.Path, groupOptions *extensions.FSGroupStrategyOptions) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	supportedRules := sets.NewString(
+		string(extensions.FSGroupStrategyMustRunAs),
+		string(extensions.FSGroupStrategyRunAsAny),
+	)
+	if !supportedRules.Has(string(groupOptions.Rule)) {
+		allErrs = append(allErrs, field.NotSupported(fldPath.Child("rule"), groupOptions.Rule, supportedRules.List()))
+	}
+
+	for idx, rng := range groupOptions.Ranges {
+		allErrs = append(allErrs, validateIDRanges(fldPath.Child("ranges").Index(idx), rng)...)
+	}
+	return allErrs
+}
+
+// validatePSPSupplementalGroup validates the SupplementalGroupsStrategyOptions fields of the PodSecurityPolicy.
+func validatePSPSupplementalGroup(fldPath *field.Path, groupOptions *extensions.SupplementalGroupsStrategyOptions) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	supportedRules := sets.NewString(
+		string(extensions.SupplementalGroupsStrategyRunAsAny),
+		string(extensions.SupplementalGroupsStrategyMustRunAs),
+	)
+	if !supportedRules.Has(string(groupOptions.Rule)) {
+		allErrs = append(allErrs, field.NotSupported(fldPath.Child("rule"), groupOptions.Rule, supportedRules.List()))
+	}
+
+	for idx, rng := range groupOptions.Ranges {
+		allErrs = append(allErrs, validateIDRanges(fldPath.Child("ranges").Index(idx), rng)...)
+	}
+	return allErrs
+}
+
 // validatePodSecurityPolicyVolumes validates the volume fields of PodSecurityPolicy.
 func validatePodSecurityPolicyVolumes(fldPath *field.Path, volumes []extensions.FSType) field.ErrorList {
 	allErrs := field.ErrorList{}
-	allowed := sets.NewString(string(extensions.HostPath),
-		string(extensions.EmptyDir),
-		string(extensions.GCEPersistentDisk),
-		string(extensions.AWSElasticBlockStore),
-		string(extensions.GitRepo),
-		string(extensions.Secret),
-		string(extensions.NFS),
-		string(extensions.ISCSI),
-		string(extensions.Glusterfs),
-		string(extensions.PersistentVolumeClaim),
-		string(extensions.RBD),
-		string(extensions.Cinder),
-		string(extensions.CephFS),
-		string(extensions.DownwardAPI),
-		string(extensions.FC))
+	allowed := psputil.GetAllFSTypesAsSet()
+	// add in the * value since that is a pseudo type that is not included by default
+	allowed.Insert(string(extensions.All))
 	for _, v := range volumes {
 		if !allowed.Has(string(v)) {
 			allErrs = append(allErrs, field.NotSupported(fldPath.Child("volumes"), v, allowed.List()))
@@ -710,6 +642,31 @@ func validateIDRanges(fldPath *field.Path, rng extensions.IDRange) field.ErrorLi
 	}
 
 	return allErrs
+}
+
+// validatePSPCapsAgainstDrops ensures an allowed cap is not listed in the required drops.
+func validatePSPCapsAgainstDrops(requiredDrops []api.Capability, capsToCheck []api.Capability, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+	if requiredDrops == nil {
+		return allErrs
+	}
+	for _, cap := range capsToCheck {
+		if hasCap(cap, requiredDrops) {
+			allErrs = append(allErrs, field.Invalid(fldPath, cap,
+				fmt.Sprintf("capability is listed in %s and requiredDropCapabilities", fldPath.String())))
+		}
+	}
+	return allErrs
+}
+
+// hasCap checks for needle in haystack.
+func hasCap(needle api.Capability, haystack []api.Capability) bool {
+	for _, c := range haystack {
+		if needle == c {
+			return true
+		}
+	}
+	return false
 }
 
 // ValidatePodSecurityPolicyUpdate validates a PSP for updates.

@@ -234,7 +234,7 @@ func (o *DrainOptions) getPodsForDeletion() ([]api.Pod, error) {
 
 // GetPodsForDeletionOnNodeDrain returns pods that should be deleted on node drain as well as some extra information
 // about possibly problematic pods (unreplicated and deamon sets).
-func GetPodsForDeletionOnNodeDrain(client *client.Client, nodename string, decoder runtime.Decoder, removeUnderplicated bool,
+func GetPodsForDeletionOnNodeDrain(client *client.Client, nodename string, decoder runtime.Decoder, force bool,
 	ignoreDeamonSet bool) (pods []api.Pod, unreplicatedPodNames []string, daemonSetPodNames []string, finalError error) {
 
 	pods = []api.Pod{}
@@ -308,7 +308,7 @@ func GetPodsForDeletionOnNodeDrain(client *client.Client, nodename string, decod
 			daemonSetPodNames = append(daemonSetPodNames, pod.Name)
 		case !replicated:
 			unreplicatedPodNames = append(unreplicatedPodNames, pod.Name)
-			if removeUnderplicated {
+			if force {
 				pods = append(pods, pod)
 			}
 		default:

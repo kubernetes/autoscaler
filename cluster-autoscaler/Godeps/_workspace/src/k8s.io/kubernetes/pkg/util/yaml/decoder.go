@@ -20,7 +20,10 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
+	"io/ioutil"
+	"strings"
 	"unicode"
 
 	"github.com/ghodss/yaml"
@@ -78,6 +81,7 @@ func (d *YAMLToJSONDecoder) Decode(into interface{}) error {
 // YAMLDecoder reads chunks of objects and returns ErrShortBuffer if
 // the data is not sufficient.
 type YAMLDecoder struct {
+	r         io.ReadCloser
 	scanner   *bufio.Scanner
 	remaining []byte
 }
@@ -87,10 +91,11 @@ type YAMLDecoder struct {
 // the YAML spec) into its own chunk. io.ErrShortBuffer will be
 // returned if the entire buffer could not be read to assist
 // the caller in framing the chunk.
-func NewDocumentDecoder(r io.Reader) io.Reader {
+func NewDocumentDecoder(r io.ReadCloser) io.ReadCloser {
 	scanner := bufio.NewScanner(r)
 	scanner.Split(splitYAMLDocument)
 	return &YAMLDecoder{
+		r:       r,
 		scanner: scanner,
 	}
 }
@@ -125,6 +130,10 @@ func (d *YAMLDecoder) Read(data []byte) (n int, err error) {
 	copy(data, d.remaining[:left])
 	d.remaining = d.remaining[left:]
 	return len(data), io.ErrShortBuffer
+}
+
+func (d *YAMLDecoder) Close() error {
+	return d.r.Close()
 }
 
 const yamlSeparator = "\n---"
@@ -197,7 +206,20 @@ func (d *YAMLOrJSONDecoder) Decode(into interface{}) error {
 			d.decoder = NewYAMLToJSONDecoder(buffer)
 		}
 	}
-	return d.decoder.Decode(into)
+	err := d.decoder.Decode(into)
+	if jsonDecoder, ok := d.decoder.(*json.Decoder); ok {
+		if syntax, ok := err.(*json.SyntaxError); ok {
+			data, readErr := ioutil.ReadAll(jsonDecoder.Buffered())
+			if readErr != nil {
+				glog.V(4).Infof("reading stream failed: %v", readErr)
+			}
+			js := string(data)
+			start := strings.LastIndex(js[:syntax.Offset], "\n") + 1
+			line := strings.Count(js[:start], "\n")
+			return fmt.Errorf("json: line %d: %s", line, syntax.Error())
+		}
+	}
+	return err
 }
 
 // GuessJSONStream scans the provided reader up to size, looking

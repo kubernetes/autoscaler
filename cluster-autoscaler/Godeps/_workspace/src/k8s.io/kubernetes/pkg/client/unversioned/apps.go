@@ -32,7 +32,7 @@ type AppsClient struct {
 	*restclient.RESTClient
 }
 
-func (c *AppsClient) PetSet(namespace string) PetSetInterface {
+func (c *AppsClient) PetSets(namespace string) PetSetInterface {
 	return newPetSet(c, namespace)
 }
 
@@ -72,6 +72,7 @@ func setAppsDefaults(config *restclient.Config) error {
 	//}
 
 	config.Codec = api.Codecs.LegacyCodec(*config.GroupVersion)
+	config.NegotiatedSerializer = api.Codecs
 	if config.QPS == 0 {
 		config.QPS = 5
 	}
