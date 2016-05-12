@@ -68,6 +68,8 @@ func TestFindPlaceAllOk(t *testing.T) {
 	}
 	node1 := buildNode("n1", 1000, 2000000)
 	node2 := buildNode("n2", 1000, 2000000)
+	nodeInfos["n1"].SetNode(node1)
+	nodeInfos["n2"].SetNode(node2)
 
 	err := findPlaceFor(
 		[]*kube_api.Pod{new1, new2},
@@ -88,6 +90,8 @@ func TestFindPlaceAllBas(t *testing.T) {
 	}
 	node1 := buildNode("n1", 1000, 2000000)
 	node2 := buildNode("n2", 1000, 2000000)
+	nodeInfos["n1"].SetNode(node1)
+	nodeInfos["n2"].SetNode(node2)
 
 	err := findPlaceFor(
 		[]*kube_api.Pod{new1, new2, new3},
@@ -105,6 +109,8 @@ func TestFindNone(t *testing.T) {
 	}
 	node1 := buildNode("n1", 1000, 2000000)
 	node2 := buildNode("n2", 1000, 2000000)
+	nodeInfos["n1"].SetNode(node1)
+	nodeInfos["n2"].SetNode(node2)
 
 	err := findPlaceFor(
 		[]*kube_api.Pod{},

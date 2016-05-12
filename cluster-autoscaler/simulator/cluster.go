@@ -70,6 +70,11 @@ func FindNodeToRemove(nodes []*kube_api.Node, pods []*kube_api.Pod, client *kube
 
 		tempNodeNameToNodeInfo := schedulercache.CreateNodeNameToInfoMap(pods)
 		delete(tempNodeNameToNodeInfo, node.Name)
+		for _, node := range nodes {
+			if nodeInfo, found := tempNodeNameToNodeInfo[node.Name]; found {
+				nodeInfo.SetNode(node)
+			}
+		}
 		ptrPodsToRemove := make([]*kube_api.Pod, 0, len(podsToRemoveList))
 		for i := range podsToRemoveList {
 			ptrPodsToRemove = append(ptrPodsToRemove, &podsToRemoveList[i])
@@ -103,6 +108,7 @@ func calculateReservation(node *kube_api.Node, nodeInfo *schedulercache.NodeInfo
 	return float64(podsRequest.MilliValue()) / float64(nodeCapacity.MilliValue()), nil
 }
 
+// TODO: We don't need to pass list of nodes here as they are already available in nodeInfos.
 func findPlaceFor(pods []*kube_api.Pod, nodes []*kube_api.Node, nodeInfos map[string]*schedulercache.NodeInfo) error {
 	predicateChecker := NewPredicateChecker()
 	for _, pod := range pods {
@@ -114,11 +120,11 @@ func findPlaceFor(pods []*kube_api.Pod, nodes []*kube_api.Node, nodeInfos map[st
 		for _, node := range nodes {
 			node.Status.Allocatable = node.Status.Capacity
 			if nodeInfo, found := nodeInfos[node.Name]; found {
-				err := predicateChecker.CheckPredicates(pod, node, nodeInfo)
+				err := predicateChecker.CheckPredicates(pod, nodeInfo)
 				glog.V(4).Infof("Evaluation %s for %s/%s -> %v", node.Name, pod.Namespace, pod.Name, err)
 				if err == nil {
 					foundPlace = true
-					// TODO(mwielgus): Optiomize it.
+					// TODO(mwielgus): Optimize it.
 					podsOnNode := nodeInfo.Pods()
 					podsOnNode = append(podsOnNode, pod)
 					nodeInfos[node.Name] = schedulercache.NewNodeInfo(podsOnNode...)

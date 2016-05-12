@@ -20,8 +20,10 @@ import (
 	"io"
 
 	"github.com/golang/glog"
+	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
 	cmdconfig "k8s.io/kubernetes/pkg/kubectl/cmd/config"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/rollout"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/set"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/util/flag"
 
@@ -195,6 +197,7 @@ Find more information at https://github.com/kubernetes/kubernetes.`,
 	cmds.SetGlobalNormalizationFunc(flag.WarnWordSepNormalizeFunc)
 
 	cmds.AddCommand(NewCmdGet(f, out))
+	cmds.AddCommand(set.NewCmdSet(f, out))
 	cmds.AddCommand(NewCmdDescribe(f, out))
 	cmds.AddCommand(NewCmdCreate(f, out))
 	cmds.AddCommand(NewCmdReplace(f, out))
@@ -213,7 +216,7 @@ Find more information at https://github.com/kubernetes/kubernetes.`,
 
 	cmds.AddCommand(NewCmdAttach(f, in, out, err))
 	cmds.AddCommand(NewCmdExec(f, in, out, err))
-	cmds.AddCommand(NewCmdPortForward(f))
+	cmds.AddCommand(NewCmdPortForward(f, out, err))
 	cmds.AddCommand(NewCmdProxy(f, out))
 
 	cmds.AddCommand(NewCmdRun(f, in, out, err))
@@ -225,7 +228,7 @@ Find more information at https://github.com/kubernetes/kubernetes.`,
 	cmds.AddCommand(NewCmdLabel(f, out))
 	cmds.AddCommand(NewCmdAnnotate(f, out))
 
-	cmds.AddCommand(cmdconfig.NewCmdConfig(cmdconfig.NewDefaultPathOptions(), out))
+	cmds.AddCommand(cmdconfig.NewCmdConfig(clientcmd.NewDefaultPathOptions(), out))
 	cmds.AddCommand(NewCmdClusterInfo(f, out))
 	cmds.AddCommand(NewCmdApiVersions(f, out))
 	cmds.AddCommand(NewCmdVersion(f, out))

@@ -48,9 +48,11 @@ func addKnownTypes(scheme *runtime.Scheme) {
 	scheme.AddKnownTypes(SchemeGroupVersion,
 		&Job{},
 		&JobList{},
+		&JobTemplate{},
 		&api.ListOptions{},
 	)
 }
 
-func (obj *Job) GetObjectKind() unversioned.ObjectKind     { return &obj.TypeMeta }
-func (obj *JobList) GetObjectKind() unversioned.ObjectKind { return &obj.TypeMeta }
+func (obj *Job) GetObjectKind() unversioned.ObjectKind         { return &obj.TypeMeta }
+func (obj *JobList) GetObjectKind() unversioned.ObjectKind     { return &obj.TypeMeta }
+func (obj *JobTemplate) GetObjectKind() unversioned.ObjectKind { return &obj.TypeMeta }

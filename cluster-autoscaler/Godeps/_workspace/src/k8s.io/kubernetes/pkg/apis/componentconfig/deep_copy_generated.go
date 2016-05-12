@@ -145,7 +145,7 @@ func DeepCopy_componentconfig_KubeProxyConfiguration(in KubeProxyConfiguration, 
 	out.HostnameOverride = in.HostnameOverride
 	if in.IPTablesMasqueradeBit != nil {
 		in, out := in.IPTablesMasqueradeBit, &out.IPTablesMasqueradeBit
-		*out = new(int)
+		*out = new(int32)
 		**out = *in
 	} else {
 		out.IPTablesMasqueradeBit = nil
@@ -158,7 +158,7 @@ func DeepCopy_componentconfig_KubeProxyConfiguration(in KubeProxyConfiguration, 
 	out.Master = in.Master
 	if in.OOMScoreAdj != nil {
 		in, out := in.OOMScoreAdj, &out.OOMScoreAdj
-		*out = new(int)
+		*out = new(int32)
 		**out = *in
 	} else {
 		out.OOMScoreAdj = nil
@@ -189,6 +189,8 @@ func DeepCopy_componentconfig_KubeSchedulerConfiguration(in KubeSchedulerConfigu
 	out.KubeAPIQPS = in.KubeAPIQPS
 	out.KubeAPIBurst = in.KubeAPIBurst
 	out.SchedulerName = in.SchedulerName
+	out.HardPodAffinitySymmetricWeight = in.HardPodAffinitySymmetricWeight
+	out.FailureDomains = in.FailureDomains
 	if err := DeepCopy_componentconfig_LeaderElectionConfiguration(in.LeaderElection, &out.LeaderElection, c); err != nil {
 		return err
 	}
@@ -302,6 +304,9 @@ func DeepCopy_componentconfig_KubeletConfiguration(in KubeletConfiguration, out 
 	}
 	out.NonMasqueradeCIDR = in.NonMasqueradeCIDR
 	out.EnableCustomMetrics = in.EnableCustomMetrics
+	out.EvictionHard = in.EvictionHard
+	out.EvictionSoft = in.EvictionSoft
+	out.EvictionSoftGracePeriod = in.EvictionSoftGracePeriod
 	return nil
 }
 

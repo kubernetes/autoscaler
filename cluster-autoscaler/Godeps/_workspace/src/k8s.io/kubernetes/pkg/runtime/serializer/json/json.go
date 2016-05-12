@@ -186,20 +186,13 @@ func (s *Serializer) EncodeToStream(obj runtime.Object, w io.Writer, overrides .
 }
 
 // RecognizesData implements the RecognizingDecoder interface.
-func (s *Serializer) RecognizesData(peek io.Reader) (bool, error) {
-	_, ok := utilyaml.GuessJSONStream(peek, 2048)
+func (s *Serializer) RecognizesData(peek io.Reader) (ok, unknown bool, err error) {
 	if s.yaml {
-		return !ok, nil
+		// we could potentially look for '---'
+		return false, true, nil
 	}
-	return ok, nil
-}
-
-// EncodesAsText returns true because both JSON and YAML are considered textual representations
-// of data. This is used to determine whether the serialized object should be transmitted over
-// a WebSocket Text or Binary frame. This must remain true for legacy compatibility with v1.1
-// watch over websocket implementations.
-func (s *Serializer) EncodesAsText() bool {
-	return true
+	_, ok = utilyaml.GuessJSONStream(peek, 2048)
+	return ok, false, nil
 }
 
 // Framer is the default JSON framing behavior, with newlines delimiting individual objects.
@@ -214,7 +207,7 @@ func (jsonFramer) NewFrameWriter(w io.Writer) io.Writer {
 }
 
 // NewFrameReader implements stream framing for this serializer
-func (jsonFramer) NewFrameReader(r io.Reader) io.Reader {
+func (jsonFramer) NewFrameReader(r io.ReadCloser) io.ReadCloser {
 	// we need to extract the JSON chunks of data to pass to Decode()
 	return framer.NewJSONFramedReader(r)
 }
@@ -230,7 +223,7 @@ func (yamlFramer) NewFrameWriter(w io.Writer) io.Writer {
 }
 
 // NewFrameReader implements stream framing for this serializer
-func (yamlFramer) NewFrameReader(r io.Reader) io.Reader {
+func (yamlFramer) NewFrameReader(r io.ReadCloser) io.ReadCloser {
 	// extract the YAML document chunks directly
 	return utilyaml.NewDocumentDecoder(r)
 }

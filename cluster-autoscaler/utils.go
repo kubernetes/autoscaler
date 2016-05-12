@@ -49,8 +49,9 @@ func NewUnscheduledPodLister(kubeClient *kube_client.Client) *UnscheduledPodList
 	selector := fields.ParseSelectorOrDie("spec.nodeName==" + "" + ",status.phase!=" +
 		string(kube_api.PodSucceeded) + ",status.phase!=" + string(kube_api.PodFailed))
 	podListWatch := cache.NewListWatchFromClient(kubeClient, "pods", kube_api.NamespaceAll, selector)
-	podLister := &cache.StoreToPodLister{Store: cache.NewStore(cache.MetaNamespaceKeyFunc)}
-	podReflector := cache.NewReflector(podListWatch, &kube_api.Pod{}, podLister.Store, time.Hour)
+	store := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
+	podLister := &cache.StoreToPodLister{store}
+	podReflector := cache.NewReflector(podListWatch, &kube_api.Pod{}, store, time.Hour)
 	podReflector.Run()
 
 	return &UnscheduledPodLister{
@@ -74,8 +75,9 @@ func NewScheduledPodLister(kubeClient *kube_client.Client) *ScheduledPodLister {
 	selector := fields.ParseSelectorOrDie("spec.nodeName!=" + "" + ",status.phase!=" +
 		string(kube_api.PodSucceeded) + ",status.phase!=" + string(kube_api.PodFailed))
 	podListWatch := cache.NewListWatchFromClient(kubeClient, "pods", kube_api.NamespaceAll, selector)
-	podLister := &cache.StoreToPodLister{Store: cache.NewStore(cache.MetaNamespaceKeyFunc)}
-	podReflector := cache.NewReflector(podListWatch, &kube_api.Pod{}, podLister.Store, time.Hour)
+	store := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
+	podLister := &cache.StoreToPodLister{store}
+	podReflector := cache.NewReflector(podListWatch, &kube_api.Pod{}, store, time.Hour)
 	podReflector.Run()
 
 	return &ScheduledPodLister{
@@ -170,31 +172,29 @@ func CheckMigsAndNodes(nodes []*kube_api.Node, gceManager *gce.GceManager) error
 }
 
 // GetNodeInfosForMigs finds NodeInfos for all migs used to manage the given nodes. It also returns a mig to sample node mapping.
-func GetNodeInfosForMigs(nodes []*kube_api.Node, gceManager *gce.GceManager, kubeClient *kube_client.Client) (map[string]*schedulercache.NodeInfo,
-	map[string]*kube_api.Node, error) {
-	sampleNodes := make(map[string]*kube_api.Node)
+// TODO(mwielgus): This return map keyed by url, while most code (including scheduler) uses node.Name for a key.
+func GetNodeInfosForMigs(nodes []*kube_api.Node, gceManager *gce.GceManager, kubeClient *kube_client.Client) (map[string]*schedulercache.NodeInfo, error) {
+	result := make(map[string]*schedulercache.NodeInfo)
 	for _, node := range nodes {
 		instanceConfig, err := config.InstanceConfigFromProviderId(node.Spec.ProviderID)
 		if err != nil {
-			return map[string]*schedulercache.NodeInfo{}, map[string]*kube_api.Node{}, err
+			return map[string]*schedulercache.NodeInfo{}, err
 		}
 
 		migConfig, err := gceManager.GetMigForInstance(instanceConfig)
 		if err != nil {
-			return map[string]*schedulercache.NodeInfo{}, map[string]*kube_api.Node{}, err
+			return map[string]*schedulercache.NodeInfo{}, err
 		}
 		url := migConfig.Url()
-		sampleNodes[url] = node
-	}
-	result := make(map[string]*schedulercache.NodeInfo)
-	for url, node := range sampleNodes {
-		nodeInfo, err := simulator.BuildNodeInfoForNode(node.Name, kubeClient)
+
+		nodeInfo, err := simulator.BuildNodeInfoForNode(node, kubeClient)
 		if err != nil {
-			return map[string]*schedulercache.NodeInfo{}, map[string]*kube_api.Node{}, err
+			return map[string]*schedulercache.NodeInfo{}, err
 		}
+
 		result[url] = nodeInfo
 	}
-	return result, sampleNodes, nil
+	return result, nil
 }
 
 // BestExpansionOption picks the best cluster expansion option.
