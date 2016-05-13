@@ -1,8 +1,7 @@
 all: build
 
-TAG = v0.0.1
-PREFIX = gcr.io/google_containers
-FLAGS = 
+TAG?=dev
+FLAGS=
 ENVVAR=
 
 deps:
@@ -15,7 +14,15 @@ build: clean deps
 test-unit: clean deps build
 	$(ENVVAR) godep go test --test.short -race ./... $(FLAGS)
 
+release: build
+
+ifndef REGISTRY
+    $(error REGISTRY is undefined)
+endif
+	docker build -t ${REGISTRY}/cluster-autoscaler:${TAG} .
+	gcloud docker push ${REGISTRY}/cluster-autoscaler:${TAG}
+
 clean:
 	rm -f cluster-autoscaler
 
-.PHONY: all deps build test-unit clean
+.PHONY: all deps build test-unit clean release
