@@ -56,7 +56,7 @@ func main() {
 	}
 
 	kubeClient := kube_client.NewOrDie(kubeConfig)
-	unscheduledPodLister := NewUnscheduledPodLister(kubeClient)
+	unschedulablePodLister := NewUnschedulablePodLister(kubeClient)
 	nodeLister := NewNodeLister(kubeClient)
 
 	migConfigs := make([]*config.MigConfig, 0, len(migConfigFlag))
@@ -75,20 +75,6 @@ func main() {
 		select {
 		case <-time.After(time.Minute):
 			{
-				pods, err := unscheduledPodLister.List()
-				if err != nil {
-					glog.Errorf("Failed to list pods: %v", err)
-					continue
-				}
-				if len(pods) == 0 {
-					glog.V(1).Info("No unscheduled pods")
-					continue
-				}
-
-				for _, pod := range pods {
-					glog.V(1).Infof("Pod %s/%s is not scheduled", pod.Namespace, pod.Name)
-				}
-
 				nodes, err := nodeLister.List()
 				if err != nil {
 					glog.Errorf("Failed to list nodes: %v", err)
@@ -104,24 +90,26 @@ func main() {
 					continue
 				}
 
-				// Checks if scheduler tried to schedule the pods after thew newest node was added.
-				newestNode := GetNewestNode(nodes)
-				if newestNode == nil {
-					glog.Errorf("No newest node")
-					continue
-				}
-				oldestSchedulingTrial := GetOldestFailedSchedulingTrail(pods)
-				if oldestSchedulingTrial == nil {
-					glog.Errorf("No oldest unschedueled trial: %v", err)
+				pods, err := unschedulablePodLister.List()
+				if err != nil {
+					glog.Errorf("Failed to list unscheduled pods: %v", err)
 					continue
 				}
 
-				// TODO: Find better way to check if all pods were checked after the newest node
-				// was added.
-				if newestNode.CreationTimestamp.After(oldestSchedulingTrial.Add(-1 * time.Minute)) {
-					// Lets give scheduler another chance.
-					glog.V(1).Infof("One of the pods have not been tried after adding %s", newestNode.Name)
+				// We need to reset all pods that have been marked as unschedulable not after
+				// the newest node became available for the scheduler.
+				allNodesAvailableTime := GetAllNodesAvailableTime(nodes)
+				resetOldPods(kubeClient, pods, allNodesAvailableTime)
+
+				// From now on we only care about unschedulable pods that were marked after the newest
+				// node became available for the scheduler.
+				pods = filterOldPods(pods, allNodesAvailableTime)
+				if len(pods) == 0 {
+					glog.V(1).Info("No unschedulable pods")
 					continue
+				}
+				for _, pod := range pods {
+					glog.V(1).Infof("Pod %s/%s is unschedulable", pod.Namespace, pod.Name)
 				}
 
 				expansionOptions := make([]ExpansionOption, 0)
