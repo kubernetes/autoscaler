@@ -25,26 +25,39 @@ import (
 	"k8s.io/contrib/cluster-autoscaler/utils/gce"
 
 	kube_api "k8s.io/kubernetes/pkg/api"
+	kube_api_unversioned "k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/client/cache"
 	kube_client "k8s.io/kubernetes/pkg/client/unversioned"
 	"k8s.io/kubernetes/pkg/fields"
 	"k8s.io/kubernetes/pkg/labels"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
+
+	"github.com/golang/glog"
 )
 
-// UnscheduledPodLister list unscheduled pods
-type UnscheduledPodLister struct {
+// UnschedulablePodLister lists unscheduled pods
+type UnschedulablePodLister struct {
 	podLister *cache.StoreToPodLister
 }
 
 // List returns all unscheduled pods.
-func (unscheduledPodLister *UnscheduledPodLister) List() ([]*kube_api.Pod, error) {
-	//TODO: Extra filter based on pod condition.
-	return unscheduledPodLister.podLister.List(labels.Everything())
+func (unschedulablePodLister *UnschedulablePodLister) List() ([]*kube_api.Pod, error) {
+	var unschedulablePods []*kube_api.Pod
+	allPods, err := unschedulablePodLister.podLister.List(labels.Everything())
+	if err != nil {
+		return unschedulablePods, err
+	}
+	for _, pod := range allPods {
+		_, condition := kube_api.GetPodCondition(&pod.Status, kube_api.PodScheduled)
+		if condition != nil && condition.Status == kube_api.ConditionFalse && condition.Reason == "Unschedulable" {
+			unschedulablePods = append(unschedulablePods, pod)
+		}
+	}
+	return unschedulablePods, nil
 }
 
-// NewUnscheduledPodLister returns a lister providing pods that failed to be scheduled.
-func NewUnscheduledPodLister(kubeClient *kube_client.Client) *UnscheduledPodLister {
+// NewUnschedulablePodLister returns a lister providing pods that failed to be scheduled.
+func NewUnschedulablePodLister(kubeClient *kube_client.Client) *UnschedulablePodLister {
 	// watch unscheduled pods
 	selector := fields.ParseSelectorOrDie("spec.nodeName==" + "" + ",status.phase!=" +
 		string(kube_api.PodSucceeded) + ",status.phase!=" + string(kube_api.PodFailed))
@@ -54,7 +67,7 @@ func NewUnscheduledPodLister(kubeClient *kube_client.Client) *UnscheduledPodList
 	podReflector := cache.NewReflector(podListWatch, &kube_api.Pod{}, store, time.Hour)
 	podReflector.Run()
 
-	return &UnscheduledPodLister{
+	return &UnschedulablePodLister{
 		podLister: podLister,
 	}
 }
@@ -119,24 +132,56 @@ func NewNodeLister(kubeClient *kube_client.Client) *ReadyNodeLister {
 	}
 }
 
-// GetNewestNode returns the newest node from the given list.
-func GetNewestNode(nodes []*kube_api.Node) *kube_api.Node {
-	var result *kube_api.Node
+// GetAllNodesAvailableTime returns time when the newest node became available for scheduler.
+// TODO: This function should use LastTransitionTime from NodeReady condition.
+func GetAllNodesAvailableTime(nodes []*kube_api.Node) time.Time {
+	var result time.Time
 	for _, node := range nodes {
-		if result == nil || node.CreationTimestamp.After(result.CreationTimestamp.Time) {
-			result = node
+		if node.CreationTimestamp.After(result) {
+			result = node.CreationTimestamp.Time
+		}
+	}
+	return result.Add(1 * time.Minute)
+}
+
+// Returns pods for which PodScheduled condition have LastTransitionTime after
+// the threshold.
+// Each pod must be in condition "Scheduled: False; Reason: Unschedulable"
+// NOTE: This function must be in sync with resetOldPods.
+func filterOldPods(pods []*kube_api.Pod, threshold time.Time) []*kube_api.Pod {
+	var result []*kube_api.Pod
+	for _, pod := range pods {
+		_, condition := kube_api.GetPodCondition(&pod.Status, kube_api.PodScheduled)
+		if condition != nil && condition.LastTransitionTime.After(threshold) {
+			result = append(result, pod)
 		}
 	}
 	return result
 }
 
-// GetOldestFailedSchedulingTrail returns the oldest time when a pod from the given list failed to
-// be scheduled.
-func GetOldestFailedSchedulingTrail(pods []*kube_api.Pod) *time.Time {
-	// Dummy implementation.
-	//TODO: Implement once pod condition is there.
-	now := time.Now()
-	return &now
+// Resets pod condition PodScheduled to "unknown" for all the pods with LastTransitionTime
+// not after the threshold time.
+// NOTE: This function must be in sync with resetOldPods.
+func resetOldPods(kubeClient *kube_client.Client, pods []*kube_api.Pod, threshold time.Time) {
+	for _, pod := range pods {
+		_, condition := kube_api.GetPodCondition(&pod.Status, kube_api.PodScheduled)
+		if condition != nil && !condition.LastTransitionTime.After(threshold) {
+			if err := resetPodScheduledCondition(kubeClient, pod); err != nil {
+				glog.Errorf("Error during reseting pod condition for %s/%s: %v", pod.Namespace, pod.Name, err)
+			}
+		}
+	}
+}
+
+func resetPodScheduledCondition(kubeClient *kube_client.Client, pod *kube_api.Pod) error {
+	_, condition := kube_api.GetPodCondition(&pod.Status, kube_api.PodScheduled)
+	if condition != nil {
+		condition.Status = kube_api.ConditionUnknown
+		condition.LastTransitionTime = kube_api_unversioned.Now()
+		_, err := kubeClient.Pods(pod.Namespace).UpdateStatus(pod)
+		return err
+	}
+	return fmt.Errorf("Expected condition PodScheduled")
 }
 
 // CheckMigsAndNodes checks if all migs have all required nodes.
@@ -172,7 +217,7 @@ func CheckMigsAndNodes(nodes []*kube_api.Node, gceManager *gce.GceManager) error
 }
 
 // GetNodeInfosForMigs finds NodeInfos for all migs used to manage the given nodes. It also returns a mig to sample node mapping.
-// TODO(mwielgus): This return map keyed by url, while most code (including scheduler) uses node.Name for a key.
+// TODO(mwielgus): This returns map keyed by url, while most code (including scheduler) uses node.Name for a key.
 func GetNodeInfosForMigs(nodes []*kube_api.Node, gceManager *gce.GceManager, kubeClient *kube_client.Client) (map[string]*schedulercache.NodeInfo, error) {
 	result := make(map[string]*schedulercache.NodeInfo)
 	for _, node := range nodes {
