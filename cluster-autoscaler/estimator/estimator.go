@@ -17,6 +17,8 @@ limitations under the License.
 package estimator
 
 import (
+	"bytes"
+	"fmt"
 	"math"
 
 	kube_api "k8s.io/kubernetes/pkg/api"
@@ -78,23 +80,41 @@ func maxInt(a, b int) int {
 	return b
 }
 
+// GetDebug returns debug information about the current state of BasicNodeEstimator
+func (basicEstimator *BasicNodeEstimator) GetDebug() string {
+	var buffer bytes.Buffer
+	buffer.WriteString("Resources needed:\n")
+	buffer.WriteString(fmt.Sprintf("CPU: %s\n", basicEstimator.cpuSum.String()))
+	buffer.WriteString(fmt.Sprintf("Mem: %s\n", basicEstimator.memorySum.String()))
+	for port, count := range basicEstimator.portSum {
+		buffer.WriteString(fmt.Sprintf("Port %d: %d\n", port, count))
+	}
+	return buffer.String()
+}
+
 // Estimate estimates the number needed of nodes of the given shape.
-func (basicEstimator *BasicNodeEstimator) Estimate(node *kube_api.Node) int {
+func (basicEstimator *BasicNodeEstimator) Estimate(node *kube_api.Node) (int, string) {
+	var buffer bytes.Buffer
+	buffer.WriteString("Needed nodes according to:\n")
 	result := 0
 	if cpuCapcaity, ok := node.Status.Capacity[kube_api.ResourceCPU]; ok {
-		result = maxInt(result,
-			int(math.Ceil(float64(basicEstimator.cpuSum.MilliValue())/float64(cpuCapcaity.MilliValue()))))
+		prop := int(math.Ceil(float64(basicEstimator.cpuSum.MilliValue()) / float64(cpuCapcaity.MilliValue())))
+		buffer.WriteString(fmt.Sprintf("CPU: %d\n", prop))
+		result = maxInt(result, prop)
 	}
 	if memCapcaity, ok := node.Status.Capacity[kube_api.ResourceMemory]; ok {
-		result = maxInt(result,
-			int(math.Ceil(float64(basicEstimator.memorySum.Value())/float64(memCapcaity.Value()))))
+		prop := int(math.Ceil(float64(basicEstimator.memorySum.Value()) / float64(memCapcaity.Value())))
+		buffer.WriteString(fmt.Sprintf("Mem: %d\n", prop))
+		result = maxInt(result, prop)
 	}
 	if podCapcaity, ok := node.Status.Capacity[kube_api.ResourcePods]; ok {
-		result = maxInt(result,
-			int(math.Ceil(float64(basicEstimator.count)/float64(podCapcaity.Value()))))
+		prop := int(math.Ceil(float64(basicEstimator.count) / float64(podCapcaity.Value())))
+		buffer.WriteString(fmt.Sprintf("Pods: %d\n", prop))
+		result = maxInt(result, prop)
 	}
-	for _, count := range basicEstimator.portSum {
+	for port, count := range basicEstimator.portSum {
+		buffer.WriteString(fmt.Sprintf("Port %d: %d\n", port, count))
 		result = maxInt(result, count)
 	}
-	return result
+	return result, buffer.String()
 }
