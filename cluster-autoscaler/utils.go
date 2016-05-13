@@ -111,6 +111,9 @@ func (readyNodeLister *ReadyNodeLister) List() ([]*kube_api.Node, error) {
 	}
 	readyNodes := make([]*kube_api.Node, 0, len(nodes.Items))
 	for i, node := range nodes.Items {
+		if node.Spec.Unschedulable {
+			continue
+		}
 		for _, condition := range node.Status.Conditions {
 			if condition.Type == kube_api.NodeReady && condition.Status == kube_api.ConditionTrue {
 				readyNodes = append(readyNodes, &nodes.Items[i])
