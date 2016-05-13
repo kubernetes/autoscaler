@@ -168,7 +168,9 @@ func main() {
 						continue
 					}
 					node := nodeInfo.Node()
-					estimate := bestOption.estimator.Estimate(node)
+					estimate, report := bestOption.estimator.Estimate(node)
+					glog.V(1).Info(bestOption.estimator.GetDebug())
+					glog.V(1).Info(report)
 					glog.V(1).Infof("Estimated %d nodes needed in %s", estimate, bestOption.migConfig.Url())
 
 					currentSize, err := gceManager.GetMigSize(bestOption.migConfig)

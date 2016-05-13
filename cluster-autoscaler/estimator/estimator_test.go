@@ -63,8 +63,10 @@ func TestEstimate(t *testing.T) {
 			},
 		},
 	}
-
-	assert.Equal(t, 3, estimator.Estimate(node))
+	estimate, report := estimator.Estimate(node)
+	assert.Contains(t, estimator.GetDebug(), "CPU")
+	assert.Contains(t, report, "CPU")
+	assert.Equal(t, 3, estimate)
 }
 
 func TestEstimateWithPorts(t *testing.T) {
@@ -105,5 +107,8 @@ func TestEstimateWithPorts(t *testing.T) {
 		},
 	}
 
-	assert.Equal(t, 5, estimator.Estimate(node))
+	estimate, report := estimator.Estimate(node)
+	assert.Contains(t, estimator.GetDebug(), "CPU")
+	assert.Contains(t, report, "CPU")
+	assert.Equal(t, 5, estimate)
 }

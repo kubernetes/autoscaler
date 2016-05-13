@@ -169,6 +169,8 @@ func resetOldPods(kubeClient *kube_client.Client, pods []*kube_api.Pod, threshol
 	for _, pod := range pods {
 		_, condition := kube_api.GetPodCondition(&pod.Status, kube_api.PodScheduled)
 		if condition != nil && !condition.LastTransitionTime.After(threshold) {
+			glog.V(4).Infof("Reseting pod condition for %s/%s, last transition: %s",
+				pod.Namespace, pod.Name, condition.LastTransitionTime.Time.String())
 			if err := resetPodScheduledCondition(kubeClient, pod); err != nil {
 				glog.Errorf("Error during reseting pod condition for %s/%s: %v", pod.Namespace, pod.Name, err)
 			}
