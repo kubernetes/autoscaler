@@ -18,6 +18,7 @@ package simulator
 
 import (
 	"fmt"
+	"math"
 
 	kube_api "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/resource"
@@ -45,8 +46,7 @@ func FindNodeToRemove(nodes []*kube_api.Node, pods []*kube_api.Pod, client *kube
 			continue
 		}
 
-		// TODO: Use other resources as well.
-		reservation, err := calculateReservation(node, nodeInfo, kube_api.ResourceCPU)
+		reservation, err := calculateReservation(node, nodeInfo)
 
 		if err != nil {
 			glog.Warningf("Failed to calculate reservation for %s: %v", node.Name, err)
@@ -57,7 +57,8 @@ func FindNodeToRemove(nodes []*kube_api.Node, pods []*kube_api.Pod, client *kube
 			glog.Infof("Node %s is not suitable for removal - reservation to big (%f)", node.Name, reservation)
 			continue
 		}
-		//Lets try to remove this one.
+
+		// Let's try to remove this one.
 		glog.V(2).Infof("Considering %s for removal", node.Name)
 
 		podsToRemoveList, _, _, err := cmd.GetPodsForDeletionOnNodeDrain(client, node.Name,
@@ -89,7 +90,19 @@ func FindNodeToRemove(nodes []*kube_api.Node, pods []*kube_api.Pod, client *kube
 	return nil, nil
 }
 
-func calculateReservation(node *kube_api.Node, nodeInfo *schedulercache.NodeInfo, resourceName kube_api.ResourceName) (float64, error) {
+func calculateReservation(node *kube_api.Node, nodeInfo *schedulercache.NodeInfo) (float64, error) {
+	cpu, err := calculateReservationOfResource(node, nodeInfo, kube_api.ResourceCPU)
+	if err != nil {
+		return 0, err
+	}
+	mem, err := calculateReservationOfResource(node, nodeInfo, kube_api.ResourceMemory)
+	if err != nil {
+		return 0, err
+	}
+	return math.Max(cpu, mem), nil
+}
+
+func calculateReservationOfResource(node *kube_api.Node, nodeInfo *schedulercache.NodeInfo, resourceName kube_api.ResourceName) (float64, error) {
 	nodeCapacity, found := node.Status.Capacity[resourceName]
 	if !found {
 		return 0, fmt.Errorf("Failed to get %v from %s", resourceName, node.Name)

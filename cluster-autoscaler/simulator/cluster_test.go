@@ -42,18 +42,31 @@ func TestReservation(t *testing.T) {
 	nodeInfo := schedulercache.NewNodeInfo(pod, pod, pod2)
 
 	node := &kube_api.Node{
+		ObjectMeta: kube_api.ObjectMeta{
+			Name: "node1",
+		},
+		Status: kube_api.NodeStatus{
+			Capacity: kube_api.ResourceList{
+				kube_api.ResourceCPU:    *resource.NewMilliQuantity(2000, resource.DecimalSI),
+				kube_api.ResourceMemory: *resource.NewQuantity(2000000, resource.DecimalSI),
+			},
+		},
+	}
+	reservation, err := calculateReservation(node, nodeInfo)
+	assert.NoError(t, err)
+	assert.InEpsilon(t, 2.0/10, reservation, 0.01)
+
+	node2 := &kube_api.Node{
+		ObjectMeta: kube_api.ObjectMeta{
+			Name: "node2",
+		},
 		Status: kube_api.NodeStatus{
 			Capacity: kube_api.ResourceList{
 				kube_api.ResourceCPU: *resource.NewMilliQuantity(2000, resource.DecimalSI),
 			},
 		},
 	}
-
-	reservation, err := calculateReservation(node, nodeInfo, kube_api.ResourceCPU)
-	assert.NoError(t, err)
-	assert.InEpsilon(t, 1.0/10, reservation, 0.01)
-
-	_, err = calculateReservation(node, nodeInfo, kube_api.ResourceMemory)
+	_, err = calculateReservation(node2, nodeInfo)
 	assert.Error(t, err)
 }
 
