@@ -17,6 +17,8 @@
 # Usage:
 #   REGISTRY=<my_reg> MIG_LINK=<my_mig> [MIN=1] [MAX=4] [VERSION=v1.1] deploy.sh 
 
+set -e
+
 ROOT=$(dirname "${BASH_SOURCE}")/..
 
 if [ -z "$REGISTRY" ]; then

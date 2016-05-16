@@ -15,9 +15,9 @@ test-unit: clean deps build
 	$(ENVVAR) godep go test --test.short -race ./... $(FLAGS)
 
 release: build
-
 ifndef REGISTRY
-    $(error REGISTRY is undefined)
+	ERR = $(error REGISTRY is undefined)
+	$(ERR)
 endif
 	docker build -t ${REGISTRY}/cluster-autoscaler:${TAG} .
 	gcloud docker push ${REGISTRY}/cluster-autoscaler:${TAG}
