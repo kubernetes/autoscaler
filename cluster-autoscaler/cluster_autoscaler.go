@@ -90,7 +90,7 @@ func main() {
 					continue
 				}
 
-				pods, err := unschedulablePodLister.List()
+				allPods, err := unschedulablePodLister.List()
 				if err != nil {
 					glog.Errorf("Failed to list unscheduled pods: %v", err)
 					continue
@@ -99,16 +99,16 @@ func main() {
 				// We need to reset all pods that have been marked as unschedulable not after
 				// the newest node became available for the scheduler.
 				allNodesAvailableTime := GetAllNodesAvailableTime(nodes)
-				resetOldPods(kubeClient, pods, allNodesAvailableTime)
+				podsToReset, unschedulablePods := SlicePodsByPodScheduledTime(allPods, allNodesAvailableTime)
+				ResetPodScheduledCondition(kubeClient, podsToReset)
 
 				// From now on we only care about unschedulable pods that were marked after the newest
 				// node became available for the scheduler.
-				pods = filterOldPods(pods, allNodesAvailableTime)
-				if len(pods) == 0 {
+				if len(unschedulablePods) == 0 {
 					glog.V(1).Info("No unschedulable pods")
 					continue
 				}
-				for _, pod := range pods {
+				for _, pod := range unschedulablePods {
 					glog.V(1).Infof("Pod %s/%s is unschedulable", pod.Namespace, pod.Name)
 				}
 
@@ -144,7 +144,7 @@ func main() {
 						continue
 					}
 
-					for _, pod := range pods {
+					for _, pod := range unschedulablePods {
 						err = predicateChecker.CheckPredicates(pod, nodeInfo)
 						if err == nil {
 							migHelpsSomePods = true

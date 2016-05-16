@@ -147,40 +147,38 @@ func GetAllNodesAvailableTime(nodes []*kube_api.Node) time.Time {
 	return result.Add(1 * time.Minute)
 }
 
-// Returns pods for which PodScheduled condition have LastTransitionTime after
-// the threshold.
+// SlicePodsByPodScheduledTime slices given pod array into those where PodScheduled condition
+// have been updated after the thresold and others.
 // Each pod must be in condition "Scheduled: False; Reason: Unschedulable"
-// NOTE: This function must be in sync with resetOldPods.
-func filterOldPods(pods []*kube_api.Pod, threshold time.Time) []*kube_api.Pod {
-	var result []*kube_api.Pod
+func SlicePodsByPodScheduledTime(pods []*kube_api.Pod, threshold time.Time) (oldPods []*kube_api.Pod, newPods []*kube_api.Pod) {
 	for _, pod := range pods {
 		_, condition := kube_api.GetPodCondition(&pod.Status, kube_api.PodScheduled)
-		if condition != nil && condition.LastTransitionTime.After(threshold) {
-			result = append(result, pod)
-		}
-	}
-	return result
-}
-
-// Resets pod condition PodScheduled to "unknown" for all the pods with LastTransitionTime
-// not after the threshold time.
-// NOTE: This function must be in sync with resetOldPods.
-func resetOldPods(kubeClient *kube_client.Client, pods []*kube_api.Pod, threshold time.Time) {
-	for _, pod := range pods {
-		_, condition := kube_api.GetPodCondition(&pod.Status, kube_api.PodScheduled)
-		if condition != nil && !condition.LastTransitionTime.After(threshold) {
-			glog.V(4).Infof("Reseting pod condition for %s/%s, last transition: %s",
-				pod.Namespace, pod.Name, condition.LastTransitionTime.Time.String())
-			if err := resetPodScheduledCondition(kubeClient, pod); err != nil {
-				glog.Errorf("Error during reseting pod condition for %s/%s: %v", pod.Namespace, pod.Name, err)
+		if condition != nil {
+			if condition.LastTransitionTime.After(threshold) {
+				newPods = append(newPods, pod)
+			} else {
+				oldPods = append(oldPods, pod)
 			}
 		}
 	}
+	return
 }
 
-func resetPodScheduledCondition(kubeClient *kube_client.Client, pod *kube_api.Pod) error {
+// ResetPodScheduledCondition resets pod condition PodScheduled to "unknown" for all the pods with LastTransitionTime
+// not after the threshold time.
+func ResetPodScheduledCondition(kubeClient *kube_client.Client, pods []*kube_api.Pod) {
+	for _, pod := range pods {
+		if err := resetPodScheduledConditionForPod(kubeClient, pod); err != nil {
+			glog.Errorf("Error during reseting pod condition for %s/%s: %v", pod.Namespace, pod.Name, err)
+		}
+	}
+}
+
+func resetPodScheduledConditionForPod(kubeClient *kube_client.Client, pod *kube_api.Pod) error {
 	_, condition := kube_api.GetPodCondition(&pod.Status, kube_api.PodScheduled)
 	if condition != nil {
+		glog.V(4).Infof("Reseting pod condition for %s/%s, last transition: %s",
+			pod.Namespace, pod.Name, condition.LastTransitionTime.Time.String())
 		condition.Status = kube_api.ConditionUnknown
 		condition.LastTransitionTime = kube_api_unversioned.Now()
 		_, err := kubeClient.Pods(pod.Namespace).UpdateStatus(pod)
