@@ -22,7 +22,6 @@ import (
 	"time"
 
 	"k8s.io/contrib/cluster-autoscaler/config"
-	"k8s.io/contrib/cluster-autoscaler/estimator"
 	"k8s.io/contrib/cluster-autoscaler/simulator"
 	"k8s.io/contrib/cluster-autoscaler/utils/gce"
 	kube_client "k8s.io/kubernetes/pkg/client/unversioned"
@@ -34,12 +33,6 @@ var (
 	migConfigFlag config.MigConfigFlag
 	kubernetes    = flag.String("kubernetes", "", "Kuberentes master location. Leave blank for default")
 )
-
-// ExpansionOption describes an option to expand the cluster.
-type ExpansionOption struct {
-	migConfig *config.MigConfig
-	estimator *estimator.BasicNodeEstimator
-}
 
 func main() {
 	flag.Var(&migConfigFlag, "nodes", "sets min,max size and url of a MIG to be controlled by Cluster Autoscaler. "+
@@ -90,7 +83,7 @@ func main() {
 					continue
 				}
 
-				allPods, err := unschedulablePodLister.List()
+				allUnschedulablePods, err := unschedulablePodLister.List()
 				if err != nil {
 					glog.Errorf("Failed to list unscheduled pods: %v", err)
 					continue
@@ -99,94 +92,17 @@ func main() {
 				// We need to reset all pods that have been marked as unschedulable not after
 				// the newest node became available for the scheduler.
 				allNodesAvailableTime := GetAllNodesAvailableTime(nodes)
-				podsToReset, unschedulablePods := SlicePodsByPodScheduledTime(allPods, allNodesAvailableTime)
+				podsToReset, unschedulablePodsToHelp := SlicePodsByPodScheduledTime(allUnschedulablePods, allNodesAvailableTime)
 				ResetPodScheduledCondition(kubeClient, podsToReset)
 
-				// From now on we only care about unschedulable pods that were marked after the newest
-				// node became available for the scheduler.
-				if len(unschedulablePods) == 0 {
+				if len(unschedulablePodsToHelp) == 0 {
 					glog.V(1).Info("No unschedulable pods")
 					continue
 				}
-				for _, pod := range unschedulablePods {
-					glog.V(1).Infof("Pod %s/%s is unschedulable", pod.Namespace, pod.Name)
-				}
 
-				expansionOptions := make([]ExpansionOption, 0)
-				nodeInfos, err := GetNodeInfosForMigs(nodes, gceManager, kubeClient)
+				_, err = ScaleUp(unschedulablePodsToHelp, nodes, migConfigs, gceManager, kubeClient, predicateChecker)
 				if err != nil {
-					glog.Errorf("Failed to build node infors for migs: %v", err)
-					continue
-				}
-
-				for _, migConfig := range migConfigs {
-
-					currentSize, err := gceManager.GetMigSize(migConfig)
-					if err != nil {
-						glog.Errorf("Failed to get MIG size: %v", err)
-						continue
-					}
-					if currentSize >= int64(migConfig.MaxSize) {
-						// skip this mig.
-						glog.V(4).Infof("Skipping MIG %s - max size reached", migConfig.Url())
-						continue
-					}
-
-					option := ExpansionOption{
-						migConfig: migConfig,
-						estimator: estimator.NewBasicNodeEstimator(),
-					}
-					migHelpsSomePods := false
-
-					nodeInfo, found := nodeInfos[migConfig.Url()]
-					if !found {
-						glog.Errorf("No node info for: %s", migConfig.Url())
-						continue
-					}
-
-					for _, pod := range unschedulablePods {
-						err = predicateChecker.CheckPredicates(pod, nodeInfo)
-						if err == nil {
-							migHelpsSomePods = true
-							option.estimator.Add(pod)
-						} else {
-							glog.V(2).Infof("Scale-up predicate failed: %v", err)
-						}
-					}
-					if migHelpsSomePods {
-						expansionOptions = append(expansionOptions, option)
-					}
-				}
-
-				// Pick some expansion option.
-				bestOption := BestExpansionOption(expansionOptions)
-				if bestOption != nil {
-					glog.V(1).Infof("Best option to resize: %s", bestOption.migConfig.Url())
-					nodeInfo, found := nodeInfos[bestOption.migConfig.Url()]
-					if !found {
-						glog.Errorf("No sample node for: %s", bestOption.migConfig.Url())
-						continue
-					}
-					node := nodeInfo.Node()
-					estimate, report := bestOption.estimator.Estimate(node)
-					glog.V(1).Info(bestOption.estimator.GetDebug())
-					glog.V(1).Info(report)
-					glog.V(1).Infof("Estimated %d nodes needed in %s", estimate, bestOption.migConfig.Url())
-
-					currentSize, err := gceManager.GetMigSize(bestOption.migConfig)
-					if err != nil {
-						glog.Errorf("Failed to get MIG size: %v", err)
-						continue
-					}
-					newSize := currentSize + int64(estimate)
-					if newSize >= int64(bestOption.migConfig.MaxSize) {
-						newSize = int64(bestOption.migConfig.MaxSize)
-					}
-					glog.V(1).Infof("Setting %s size to %d", bestOption.migConfig.Url(), newSize)
-
-					if err := gceManager.SetMigSize(bestOption.migConfig, newSize); err != nil {
-						glog.Errorf("Failed to set MIG size: %v", err)
-					}
+					glog.Errorf("Failed to scale up: %v", err)
 				}
 			}
 		}

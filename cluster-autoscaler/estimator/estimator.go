@@ -118,3 +118,8 @@ func (basicEstimator *BasicNodeEstimator) Estimate(node *kube_api.Node) (int, st
 	}
 	return result, buffer.String()
 }
+
+// GetCount returns number of pods included in the estimation.
+func (basicEstimator *BasicNodeEstimator) GetCount() int {
+	return basicEstimator.count
+}
