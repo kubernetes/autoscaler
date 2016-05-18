@@ -29,36 +29,11 @@ import (
 	"github.com/golang/glog"
 )
 
-const (
-	// Nodes with utilization below this are considered unused and may be subject to scale down.
-	unusedThreshold = float64(0.5)
-)
-
 // FindNodeToRemove finds a node that can be removed.
-func FindNodeToRemove(nodes []*kube_api.Node, pods []*kube_api.Pod, client *kube_client.Client) (*kube_api.Node, error) {
-	nodeNameToNodeInfo := schedulercache.CreateNodeNameToInfoMap(pods)
+func FindNodeToRemove(candidates []*kube_api.Node, allNodes []*kube_api.Node, pods []*kube_api.Pod,
+	client *kube_client.Client) (*kube_api.Node, error) {
 
-	//TODO: Interate over underutulized nodes first.
-	for _, node := range nodes {
-		nodeInfo, found := nodeNameToNodeInfo[node.Name]
-		if !found {
-			glog.Errorf("Node info for %s not found", node.Name)
-			continue
-		}
-
-		reservation, err := calculateReservation(node, nodeInfo)
-
-		if err != nil {
-			glog.Warningf("Failed to calculate reservation for %s: %v", node.Name, err)
-		}
-		glog.V(4).Infof("Node %s - reservation %f", node.Name, reservation)
-
-		if reservation > unusedThreshold {
-			glog.Infof("Node %s is not suitable for removal - reservation to big (%f)", node.Name, reservation)
-			continue
-		}
-
-		// Let's try to remove this one.
+	for _, node := range candidates {
 		glog.V(2).Infof("Considering %s for removal", node.Name)
 
 		podsToRemoveList, _, _, err := cmd.GetPodsForDeletionOnNodeDrain(client, node.Name,
@@ -71,9 +46,9 @@ func FindNodeToRemove(nodes []*kube_api.Node, pods []*kube_api.Pod, client *kube
 
 		tempNodeNameToNodeInfo := schedulercache.CreateNodeNameToInfoMap(pods)
 		delete(tempNodeNameToNodeInfo, node.Name)
-		for _, node := range nodes {
-			if nodeInfo, found := tempNodeNameToNodeInfo[node.Name]; found {
-				nodeInfo.SetNode(node)
+		for _, tempnode := range allNodes {
+			if nodeInfo, found := tempNodeNameToNodeInfo[tempnode.Name]; found {
+				nodeInfo.SetNode(tempnode)
 			}
 		}
 		ptrPodsToRemove := make([]*kube_api.Pod, 0, len(podsToRemoveList))
@@ -81,7 +56,7 @@ func FindNodeToRemove(nodes []*kube_api.Node, pods []*kube_api.Pod, client *kube
 			ptrPodsToRemove = append(ptrPodsToRemove, &podsToRemoveList[i])
 		}
 
-		findProblems := findPlaceFor(ptrPodsToRemove, nodes, tempNodeNameToNodeInfo)
+		findProblems := findPlaceFor(ptrPodsToRemove, allNodes, tempNodeNameToNodeInfo)
 		if findProblems == nil {
 			return node, nil
 		}
@@ -90,7 +65,8 @@ func FindNodeToRemove(nodes []*kube_api.Node, pods []*kube_api.Pod, client *kube
 	return nil, nil
 }
 
-func calculateReservation(node *kube_api.Node, nodeInfo *schedulercache.NodeInfo) (float64, error) {
+// CalculateReservation calculates reservation of a node.
+func CalculateReservation(node *kube_api.Node, nodeInfo *schedulercache.NodeInfo) (float64, error) {
 	cpu, err := calculateReservationOfResource(node, nodeInfo, kube_api.ResourceCPU)
 	if err != nil {
 		return 0, err

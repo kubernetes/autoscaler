@@ -52,7 +52,7 @@ func TestReservation(t *testing.T) {
 			},
 		},
 	}
-	reservation, err := calculateReservation(node, nodeInfo)
+	reservation, err := CalculateReservation(node, nodeInfo)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 2.0/10, reservation, 0.01)
 
@@ -66,7 +66,7 @@ func TestReservation(t *testing.T) {
 			},
 		},
 	}
-	_, err = calculateReservation(node2, nodeInfo)
+	_, err = CalculateReservation(node2, nodeInfo)
 	assert.Error(t, err)
 }
 

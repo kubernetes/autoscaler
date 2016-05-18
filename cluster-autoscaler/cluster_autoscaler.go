@@ -30,8 +30,17 @@ import (
 )
 
 var (
-	migConfigFlag config.MigConfigFlag
-	kubernetes    = flag.String("kubernetes", "", "Kuberentes master location. Leave blank for default")
+	migConfigFlag    config.MigConfigFlag
+	kubernetes       = flag.String("kubernetes", "", "Kuberentes master location. Leave blank for default")
+	scaleDownEnabled = flag.Bool("experimental-scale-down-enabled", false, "Should CA scale down the cluster")
+	scaleDownDelay   = flag.Duration("scale-down-delay", 10*time.Minute,
+		"Duration from the last scale up to the time when CA starts to check scale down options")
+	scaleDownUnderutilizedTime = flag.Duration("scale-down-underutilized-time", 10*time.Minute,
+		"How long the node should be underutilized before it is eligible for scale down")
+	scaleDownUtilizationThreshold = flag.Float64("scale-down-utilization-threshold", 0.5,
+		"Node reservation level below which a node can be considered for scale down")
+	scaleDownTrialFrequency = flag.Duration("scale-down-trial-frequency", 10*time.Minute,
+		"How often scale down possiblity is check")
 )
 
 func main() {
@@ -43,15 +52,12 @@ func main() {
 	if err != nil {
 		glog.Fatalf("Failed to parse Kuberentes url: %v", err)
 	}
+
+	// Configuration
 	kubeConfig, err := config.GetKubeClientConfig(url)
 	if err != nil {
 		glog.Fatalf("Failed to build Kuberentes client configuration: %v", err)
 	}
-
-	kubeClient := kube_client.NewOrDie(kubeConfig)
-	unschedulablePodLister := NewUnschedulablePodLister(kubeClient)
-	nodeLister := NewNodeLister(kubeClient)
-
 	migConfigs := make([]*config.MigConfig, 0, len(migConfigFlag))
 	for i := range migConfigFlag {
 		migConfigs = append(migConfigs, &migConfigFlag[i])
@@ -62,7 +68,16 @@ func main() {
 		glog.Fatalf("Failed to create GCE Manager %v", err)
 	}
 
+	kubeClient := kube_client.NewOrDie(kubeConfig)
+
 	predicateChecker := simulator.NewPredicateChecker()
+	unschedulablePodLister := NewUnschedulablePodLister(kubeClient)
+	scheduledPodLister := NewScheduledPodLister(kubeClient)
+	nodeLister := NewNodeLister(kubeClient)
+
+	lastScaleUpTime := time.Now()
+	lastScaleDownFailedTrial := time.Now()
+	underutilizedNodes := make(map[string]time.Time)
 
 	for {
 		select {
@@ -97,12 +112,52 @@ func main() {
 
 				if len(unschedulablePodsToHelp) == 0 {
 					glog.V(1).Info("No unschedulable pods")
-					continue
+				} else {
+					scaledUp, err := ScaleUp(unschedulablePodsToHelp, nodes, migConfigs, gceManager, kubeClient, predicateChecker)
+					if err != nil {
+						glog.Errorf("Failed to scale up: %v", err)
+						continue
+					} else {
+						if scaledUp {
+							lastScaleUpTime = time.Now()
+							// No scale down in this iteration.
+							continue
+						}
+					}
 				}
 
-				_, err = ScaleUp(unschedulablePodsToHelp, nodes, migConfigs, gceManager, kubeClient, predicateChecker)
-				if err != nil {
-					glog.Errorf("Failed to scale up: %v", err)
+				if *scaleDownEnabled {
+
+					// In dry run only utilization is updated
+					calculateUtilizationOnly := lastScaleUpTime.Add(*scaleDownDelay).After(time.Now()) ||
+						lastScaleDownFailedTrial.Add(*scaleDownTrialFrequency).After(time.Now())
+
+					allScheduled, err := scheduledPodLister.List()
+					if err != nil {
+						glog.Errorf("Failed to list scheduled pods: %v", err)
+						continue
+					}
+					underutilizedNodes = CalculateUnderutilizedNodes(
+						nodes,
+						underutilizedNodes,
+						*scaleDownUtilizationThreshold,
+						allScheduled)
+
+					if !calculateUtilizationOnly {
+						result, err := ScaleDown(
+							nodes,
+							underutilizedNodes,
+							*scaleDownUnderutilizedTime,
+							allScheduled,
+							gceManager, kubeClient)
+						if err != nil {
+							glog.Errorf("Failed to scale down: %v", err)
+						} else {
+							if result != ScaleDownNodeDeleted {
+								lastScaleDownFailedTrial = time.Now()
+							}
+						}
+					}
 				}
 			}
 		}
