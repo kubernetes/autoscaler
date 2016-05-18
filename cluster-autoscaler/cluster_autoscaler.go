@@ -149,7 +149,7 @@ func main() {
 							underutilizedNodes,
 							*scaleDownUnderutilizedTime,
 							allScheduled,
-							gceManager, kubeClient)
+							gceManager, kubeClient, predicateChecker)
 						if err != nil {
 							glog.Errorf("Failed to scale down: %v", err)
 						} else {

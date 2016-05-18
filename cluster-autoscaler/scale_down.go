@@ -93,7 +93,7 @@ func ScaleDown(
 	underutilizationTime time.Duration,
 	pods []*kube_api.Pod,
 	gceManager *gce.GceManager,
-	client *kube_client.Client) (ScaleDownResult, error) {
+	client *kube_client.Client, predicateChecker *simulator.PredicateChecker) (ScaleDownResult, error) {
 
 	now := time.Now()
 	candidates := make([]*kube_api.Node, 0)
@@ -109,7 +109,7 @@ func ScaleDown(
 		return ScaleDownNoUnderutilized, nil
 	}
 
-	nodeToRemove, err := simulator.FindNodeToRemove(candidates, nodes, pods, client)
+	nodeToRemove, err := simulator.FindNodeToRemove(candidates, nodes, pods, client, predicateChecker)
 	if err != nil {
 		return ScaleDownError, fmt.Errorf("Find node to remove failed: %v", err)
 	}
