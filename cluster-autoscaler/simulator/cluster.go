@@ -31,7 +31,14 @@ import (
 
 // FindNodeToRemove finds a node that can be removed.
 func FindNodeToRemove(candidates []*kube_api.Node, allNodes []*kube_api.Node, pods []*kube_api.Pod,
-	client *kube_client.Client) (*kube_api.Node, error) {
+	client *kube_client.Client, predicateChecker *PredicateChecker) (*kube_api.Node, error) {
+
+	nodeNameToNodeInfo := schedulercache.CreateNodeNameToInfoMap(pods)
+	for _, node := range allNodes {
+		if nodeInfo, found := nodeNameToNodeInfo[node.Name]; found {
+			nodeInfo.SetNode(node)
+		}
+	}
 
 	for _, node := range candidates {
 		glog.V(2).Infof("Considering %s for removal", node.Name)
@@ -44,19 +51,12 @@ func FindNodeToRemove(candidates []*kube_api.Node, allNodes []*kube_api.Node, po
 			continue
 		}
 
-		tempNodeNameToNodeInfo := schedulercache.CreateNodeNameToInfoMap(pods)
-		delete(tempNodeNameToNodeInfo, node.Name)
-		for _, tempnode := range allNodes {
-			if nodeInfo, found := tempNodeNameToNodeInfo[tempnode.Name]; found {
-				nodeInfo.SetNode(tempnode)
-			}
-		}
 		ptrPodsToRemove := make([]*kube_api.Pod, 0, len(podsToRemoveList))
 		for i := range podsToRemoveList {
 			ptrPodsToRemove = append(ptrPodsToRemove, &podsToRemoveList[i])
 		}
 
-		findProblems := findPlaceFor(ptrPodsToRemove, allNodes, tempNodeNameToNodeInfo)
+		findProblems := findPlaceFor(node.Name, ptrPodsToRemove, allNodes, nodeNameToNodeInfo, predicateChecker)
 		if findProblems == nil {
 			return node, nil
 		}
@@ -98,31 +98,46 @@ func calculateReservationOfResource(node *kube_api.Node, nodeInfo *schedulercach
 }
 
 // TODO: We don't need to pass list of nodes here as they are already available in nodeInfos.
-func findPlaceFor(pods []*kube_api.Pod, nodes []*kube_api.Node, nodeInfos map[string]*schedulercache.NodeInfo) error {
-	predicateChecker := NewPredicateChecker()
+func findPlaceFor(bannedNode string, pods []*kube_api.Pod, nodes []*kube_api.Node, nodeInfos map[string]*schedulercache.NodeInfo,
+	predicateChecker *PredicateChecker) error {
+
+	newNodeInfos := make(map[string]*schedulercache.NodeInfo)
+
 	for _, pod := range pods {
 		foundPlace := false
 		glog.V(4).Infof("Looking for place for %s/%s", pod.Namespace, pod.Name)
+		podKey := fmt.Sprintf("%s/%s", pod.Namespace, pod.Name)
 
 		// TODO: Sort nodes by reservation
 	nodeloop:
 		for _, node := range nodes {
+			if node.Name == bannedNode {
+				continue
+			}
+
 			node.Status.Allocatable = node.Status.Capacity
-			if nodeInfo, found := nodeInfos[node.Name]; found {
+			nodeInfo, found := newNodeInfos[node.Name]
+			if !found {
+				nodeInfo, found = nodeInfos[node.Name]
+			}
+
+			if found {
 				err := predicateChecker.CheckPredicates(pod, nodeInfo)
-				glog.V(4).Infof("Evaluation %s for %s/%s -> %v", node.Name, pod.Namespace, pod.Name, err)
+				glog.V(4).Infof("Evaluation %s for %s -> %v", node.Name, podKey, err)
 				if err == nil {
 					foundPlace = true
 					// TODO(mwielgus): Optimize it.
 					podsOnNode := nodeInfo.Pods()
 					podsOnNode = append(podsOnNode, pod)
-					nodeInfos[node.Name] = schedulercache.NewNodeInfo(podsOnNode...)
+					newNodeInfo := schedulercache.NewNodeInfo(podsOnNode...)
+					newNodeInfo.SetNode(node)
+					newNodeInfos[node.Name] = newNodeInfo
 					break nodeloop
 				}
 			}
 		}
 		if !foundPlace {
-			return fmt.Errorf("failed to find place for %s/%s", pod.Namespace, pod.Name)
+			return fmt.Errorf("failed to find place for %s", podKey)
 		}
 	}
 	return nil

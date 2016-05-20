@@ -85,9 +85,10 @@ func TestFindPlaceAllOk(t *testing.T) {
 	nodeInfos["n2"].SetNode(node2)
 
 	err := findPlaceFor(
+		"x",
 		[]*kube_api.Pod{new1, new2},
 		[]*kube_api.Node{node1, node2},
-		nodeInfos)
+		nodeInfos, NewPredicateChecker())
 	assert.NoError(t, err)
 }
 
@@ -107,9 +108,10 @@ func TestFindPlaceAllBas(t *testing.T) {
 	nodeInfos["n2"].SetNode(node2)
 
 	err := findPlaceFor(
+		"x",
 		[]*kube_api.Pod{new1, new2, new3},
 		[]*kube_api.Node{node1, node2},
-		nodeInfos)
+		nodeInfos, NewPredicateChecker())
 	assert.Error(t, err)
 }
 
@@ -126,9 +128,10 @@ func TestFindNone(t *testing.T) {
 	nodeInfos["n2"].SetNode(node2)
 
 	err := findPlaceFor(
+		"x",
 		[]*kube_api.Pod{},
 		[]*kube_api.Node{node1, node2},
-		nodeInfos)
+		nodeInfos, NewPredicateChecker())
 	assert.NoError(t, err)
 }
 
