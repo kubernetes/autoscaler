@@ -24,6 +24,7 @@ import (
 	"k8s.io/contrib/cluster-autoscaler/simulator"
 	"k8s.io/contrib/cluster-autoscaler/utils/gce"
 	kube_api "k8s.io/kubernetes/pkg/api"
+	kube_record "k8s.io/kubernetes/pkg/client/record"
 	kube_client "k8s.io/kubernetes/pkg/client/unversioned"
 
 	"github.com/golang/glog"
@@ -39,7 +40,7 @@ type ExpansionOption struct {
 // false if it didn't and error if an error occured.
 func ScaleUp(unschedulablePods []*kube_api.Pod, nodes []*kube_api.Node, migConfigs []*config.MigConfig,
 	gceManager *gce.GceManager, kubeClient *kube_client.Client,
-	predicateChecker *simulator.PredicateChecker) (bool, error) {
+	predicateChecker *simulator.PredicateChecker, recorder kube_record.EventRecorder) (bool, error) {
 
 	// From now on we only care about unschedulable pods that were marked after the newest
 	// node became available for the scheduler.
@@ -58,6 +59,7 @@ func ScaleUp(unschedulablePods []*kube_api.Pod, nodes []*kube_api.Node, migConfi
 		return false, fmt.Errorf("failed to build node infors for migs: %v", err)
 	}
 
+	podsRemainUnshedulable := make(map[*kube_api.Pod]struct{})
 	for _, migConfig := range migConfigs {
 
 		currentSize, err := gceManager.GetMigSize(migConfig)
@@ -90,6 +92,7 @@ func ScaleUp(unschedulablePods []*kube_api.Pod, nodes []*kube_api.Node, migConfi
 				option.estimator.Add(pod)
 			} else {
 				glog.V(2).Infof("Scale-up predicate failed: %v", err)
+				podsRemainUnshedulable[pod] = struct{}{}
 			}
 		}
 		if migHelpsSomePods {
@@ -125,7 +128,18 @@ func ScaleUp(unschedulablePods []*kube_api.Pod, nodes []*kube_api.Node, migConfi
 		if err := gceManager.SetMigSize(bestOption.migConfig, newSize); err != nil {
 			return false, fmt.Errorf("failed to set MIG size: %v", err)
 		}
+
+		for pod := range bestOption.estimator.FittingPods {
+			recorder.Eventf(pod, kube_api.EventTypeNormal, "TriggeredScaleUp",
+				"pod triggered scale-up, mig: %s, sizes (current/new): %d/%d", bestOption.migConfig.Name, currentSize, newSize)
+		}
+
 		return true, nil
 	}
+	for pod := range podsRemainUnshedulable {
+		recorder.Event(pod, kube_api.EventTypeNormal, "NotTriggerScaleUp",
+			"pod didn't trigger scale-up (it wouldn't fit if a new node is added)")
+	}
+
 	return false, nil
 }

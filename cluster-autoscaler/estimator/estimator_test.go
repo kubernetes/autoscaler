@@ -47,12 +47,13 @@ func TestEstimate(t *testing.T) {
 	estimator := NewBasicNodeEstimator()
 
 	for i := 0; i < 5; i++ {
-		estimator.Add(pod)
+		podCopy := *pod
+		estimator.Add(&podCopy)
 	}
 
 	assert.Equal(t, int64(500*5), estimator.cpuSum.MilliValue())
 	assert.Equal(t, int64(5*memoryPerPod), estimator.memorySum.Value())
-	assert.Equal(t, 5, estimator.count)
+	assert.Equal(t, 5, estimator.GetCount())
 
 	node := &kube_api.Node{
 		Status: kube_api.NodeStatus{
