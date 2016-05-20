@@ -32,8 +32,11 @@ import (
 )
 
 var (
-	migConfigFlag    config.MigConfigFlag
-	kubernetes       = flag.String("kubernetes", "", "Kuberentes master location. Leave blank for default")
+	migConfigFlag           config.MigConfigFlag
+	kubernetes              = flag.String("kubernetes", "", "Kuberentes master location. Leave blank for default")
+	verifyUnschedulablePods = flag.Bool("verify-unschedulable-pods", true,
+		"If enabled CA will ensure that each pod marked by Scheduler as unschedulable actually can't be scheduled on any node."+
+			"This prevents from adding unnecessary nodes in situation when CA and Scheduler have different configuration.")
 	scaleDownEnabled = flag.Bool("experimental-scale-down-enabled", false, "Should CA scale down the cluster")
 	scaleDownDelay   = flag.Duration("scale-down-delay", 10*time.Minute,
 		"Duration from the last scale up to the time when CA starts to check scale down options")
@@ -111,11 +114,35 @@ func main() {
 					continue
 				}
 
+				allScheduled, err := scheduledPodLister.List()
+				if err != nil {
+					glog.Errorf("Failed to list scheduled pods: %v", err)
+					continue
+				}
+
 				// We need to reset all pods that have been marked as unschedulable not after
 				// the newest node became available for the scheduler.
 				allNodesAvailableTime := GetAllNodesAvailableTime(nodes)
 				podsToReset, unschedulablePodsToHelp := SlicePodsByPodScheduledTime(allUnschedulablePods, allNodesAvailableTime)
 				ResetPodScheduledCondition(kubeClient, podsToReset)
+
+				// We need to check whether pods marked as unschedulable are actually unschedulable.
+				// This should prevent from adding unnecessary nodes. Example of such situation:
+				// - CA and Scheduler has slightly different configuration
+				// - Scheduler can't schedule a pod and marks it as unschedulable
+				// - CA added a node which should help the pod
+				// - Scheduler doesn't schedule the pod on the new node
+				//   because according to it logic it doesn't fit there
+				// - CA see the pod is still unschedulable, so it adds another node to help it
+				//
+				// With the check enabled the last point won't happen because CA will ignore a pod
+				// which is supposed to schedule on an existing node.
+				//
+				// Without below check cluster might be unnecessary scaled up to the max allowed size
+				// in the describe situation.
+				if *verifyUnschedulablePods {
+					unschedulablePodsToHelp = FilterOutSchedulable(unschedulablePodsToHelp, nodes, allScheduled, predicateChecker)
+				}
 
 				if len(unschedulablePodsToHelp) == 0 {
 					glog.V(1).Info("No unschedulable pods")
@@ -134,16 +161,10 @@ func main() {
 				}
 
 				if *scaleDownEnabled {
-
 					// In dry run only utilization is updated
 					calculateUtilizationOnly := lastScaleUpTime.Add(*scaleDownDelay).After(time.Now()) ||
 						lastScaleDownFailedTrial.Add(*scaleDownTrialFrequency).After(time.Now())
 
-					allScheduled, err := scheduledPodLister.List()
-					if err != nil {
-						glog.Errorf("Failed to list scheduled pods: %v", err)
-						continue
-					}
 					underutilizedNodes = CalculateUnderutilizedNodes(
 						nodes,
 						underutilizedNodes,
