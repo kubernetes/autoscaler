@@ -24,6 +24,8 @@ import (
 	"k8s.io/contrib/cluster-autoscaler/config"
 	"k8s.io/contrib/cluster-autoscaler/simulator"
 	"k8s.io/contrib/cluster-autoscaler/utils/gce"
+	kube_api "k8s.io/kubernetes/pkg/api"
+	kube_record "k8s.io/kubernetes/pkg/client/record"
 	kube_client "k8s.io/kubernetes/pkg/client/unversioned"
 
 	"github.com/golang/glog"
@@ -79,6 +81,11 @@ func main() {
 	lastScaleDownFailedTrial := time.Now()
 	underutilizedNodes := make(map[string]time.Time)
 
+	eventBroadcaster := kube_record.NewBroadcaster()
+	eventBroadcaster.StartLogging(glog.Infof)
+	eventBroadcaster.StartRecordingToSink(kubeClient.Events(""))
+	recorder := eventBroadcaster.NewRecorder(kube_api.EventSource{Component: "cluster-autoscaler"})
+
 	for {
 		select {
 		case <-time.After(time.Minute):
@@ -113,7 +120,7 @@ func main() {
 				if len(unschedulablePodsToHelp) == 0 {
 					glog.V(1).Info("No unschedulable pods")
 				} else {
-					scaledUp, err := ScaleUp(unschedulablePodsToHelp, nodes, migConfigs, gceManager, kubeClient, predicateChecker)
+					scaledUp, err := ScaleUp(unschedulablePodsToHelp, nodes, migConfigs, gceManager, kubeClient, predicateChecker, recorder)
 					if err != nil {
 						glog.Errorf("Failed to scale up: %v", err)
 						continue

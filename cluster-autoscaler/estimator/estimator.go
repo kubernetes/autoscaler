@@ -29,16 +29,17 @@ import (
 // It will never overestimate the number of nodes but is quite likekly to provide a number that
 // is too small.
 type BasicNodeEstimator struct {
-	count     int
-	cpuSum    resource.Quantity
-	memorySum resource.Quantity
-	portSum   map[int32]int
+	cpuSum      resource.Quantity
+	memorySum   resource.Quantity
+	portSum     map[int32]int
+	FittingPods map[*kube_api.Pod]struct{}
 }
 
 // NewBasicNodeEstimator builds BasicNodeEstimator.
 func NewBasicNodeEstimator() *BasicNodeEstimator {
 	return &BasicNodeEstimator{
-		portSum: make(map[int32]int),
+		portSum:     make(map[int32]int),
+		FittingPods: make(map[*kube_api.Pod]struct{}),
 	}
 }
 
@@ -69,7 +70,7 @@ func (basicEstimator *BasicNodeEstimator) Add(pod *kube_api.Pod) error {
 			basicEstimator.portSum[port] = 1
 		}
 	}
-	basicEstimator.count++
+	basicEstimator.FittingPods[pod] = struct{}{}
 	return nil
 }
 
@@ -108,7 +109,7 @@ func (basicEstimator *BasicNodeEstimator) Estimate(node *kube_api.Node) (int, st
 		result = maxInt(result, prop)
 	}
 	if podCapcaity, ok := node.Status.Capacity[kube_api.ResourcePods]; ok {
-		prop := int(math.Ceil(float64(basicEstimator.count) / float64(podCapcaity.Value())))
+		prop := int(math.Ceil(float64(basicEstimator.GetCount()) / float64(podCapcaity.Value())))
 		buffer.WriteString(fmt.Sprintf("Pods: %d\n", prop))
 		result = maxInt(result, prop)
 	}
@@ -121,5 +122,5 @@ func (basicEstimator *BasicNodeEstimator) Estimate(node *kube_api.Node) (int, st
 
 // GetCount returns number of pods included in the estimation.
 func (basicEstimator *BasicNodeEstimator) GetCount() int {
-	return basicEstimator.count
+	return len(basicEstimator.FittingPods)
 }
