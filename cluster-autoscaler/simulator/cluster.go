@@ -116,7 +116,11 @@ func findPlaceFor(bannedNode string, pods []*kube_api.Pod, nodes []*kube_api.Nod
 
 	newNodeInfos := make(map[string]*schedulercache.NodeInfo)
 
-	for _, pod := range pods {
+	for _, podptr := range pods {
+		newpod := *podptr
+		newpod.Spec.NodeName = ""
+		pod := &newpod
+
 		foundPlace := false
 		glog.V(4).Infof("Looking for place for %s/%s", pod.Namespace, pod.Name)
 		podKey := fmt.Sprintf("%s/%s", pod.Namespace, pod.Name)
