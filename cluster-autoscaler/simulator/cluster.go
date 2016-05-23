@@ -29,9 +29,10 @@ import (
 	"github.com/golang/glog"
 )
 
-// FindNodeToRemove finds a node that can be removed.
-func FindNodeToRemove(candidates []*kube_api.Node, allNodes []*kube_api.Node, pods []*kube_api.Pod,
-	client *kube_client.Client, predicateChecker *PredicateChecker) (*kube_api.Node, error) {
+// FindNodesToRemove finds nodes that can be removed.
+func FindNodesToRemove(candidates []*kube_api.Node, allNodes []*kube_api.Node, pods []*kube_api.Pod,
+	client *kube_client.Client, predicateChecker *PredicateChecker, maxCount int,
+	fastCheck bool) ([]*kube_api.Node, error) {
 
 	nodeNameToNodeInfo := schedulercache.CreateNodeNameToInfoMap(pods)
 	for _, node := range allNodes {
@@ -39,30 +40,42 @@ func FindNodeToRemove(candidates []*kube_api.Node, allNodes []*kube_api.Node, po
 			nodeInfo.SetNode(node)
 		}
 	}
+	result := make([]*kube_api.Node, 0)
 
 	for _, node := range candidates {
 		glog.V(2).Infof("Considering %s for removal", node.Name)
 
-		podsToRemoveList, _, _, err := cmd.GetPodsForDeletionOnNodeDrain(client, node.Name,
-			kube_api.Codecs.UniversalDecoder(), false, true)
+		var podsToRemove []*kube_api.Pod
+		var err error
 
-		if err != nil {
-			glog.V(1).Infof("Node %s cannot be removed: %v", node.Name, err)
-			continue
+		if fastCheck {
+			if nodeInfo, found := nodeNameToNodeInfo[node.Name]; found {
+				podsToRemove, err = FastGetPodsToMove(nodeInfo, false, kube_api.Codecs.UniversalDecoder())
+			}
+		} else {
+			drainResult, _, _, err := cmd.GetPodsForDeletionOnNodeDrain(client, node.Name,
+				kube_api.Codecs.UniversalDecoder(), false, true)
+
+			if err != nil {
+				glog.V(2).Infof("Node %s cannot be removed: %v", node.Name, err)
+				continue
+			}
+			podsToRemove = make([]*kube_api.Pod, 0, len(drainResult))
+			for i := range drainResult {
+				podsToRemove = append(podsToRemove, &drainResult[i])
+			}
 		}
 
-		ptrPodsToRemove := make([]*kube_api.Pod, 0, len(podsToRemoveList))
-		for i := range podsToRemoveList {
-			ptrPodsToRemove = append(ptrPodsToRemove, &podsToRemoveList[i])
-		}
-
-		findProblems := findPlaceFor(node.Name, ptrPodsToRemove, allNodes, nodeNameToNodeInfo, predicateChecker)
+		findProblems := findPlaceFor(node.Name, podsToRemove, allNodes, nodeNameToNodeInfo, predicateChecker)
 		if findProblems == nil {
-			return node, nil
+			result = append(result, node)
+			if len(result) >= maxCount {
+				break
+			}
 		}
-		glog.Infof("Node %s is not suitable for removal %v", node.Name, err)
+		glog.V(2).Infof("Node %s is not suitable for removal %v", node.Name, err)
 	}
-	return nil, nil
+	return result, nil
 }
 
 // CalculateReservation calculates reservation of a node.

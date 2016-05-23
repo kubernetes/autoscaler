@@ -169,7 +169,9 @@ func main() {
 						nodes,
 						underutilizedNodes,
 						*scaleDownUtilizationThreshold,
-						allScheduled)
+						allScheduled,
+						kubeClient,
+						predicateChecker)
 
 					if !calculateUtilizationOnly {
 						result, err := ScaleDown(
