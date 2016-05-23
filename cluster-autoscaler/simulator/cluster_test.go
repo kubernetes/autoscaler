@@ -19,78 +19,42 @@ package simulator
 import (
 	"testing"
 
+	. "k8s.io/contrib/cluster-autoscaler/utils/test"
+
 	kube_api "k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/resource"
-	"k8s.io/kubernetes/plugin/pkg/scheduler/algorithm"
-	"k8s.io/kubernetes/plugin/pkg/scheduler/algorithm/predicates"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func NewTestPredicateChecker() *PredicateChecker {
-	return &PredicateChecker{
-		predicates: map[string]algorithm.FitPredicate{
-			"default": predicates.GeneralPredicates,
-		},
-	}
-}
-
 func TestReservation(t *testing.T) {
-	pod := buildPod("p1", 100, 200000)
-	pod2 := &kube_api.Pod{
-		Spec: kube_api.PodSpec{
-			Containers: []kube_api.Container{
-				{
-					Resources: kube_api.ResourceRequirements{
-						Requests: kube_api.ResourceList{},
-					},
-				},
-			},
-		},
-	}
-	nodeInfo := schedulercache.NewNodeInfo(pod, pod, pod2)
+	pod := BuildTestPod("p1", 100, 200000)
+	pod2 := BuildTestPod("p2", -1, -1)
 
-	node := &kube_api.Node{
-		ObjectMeta: kube_api.ObjectMeta{
-			Name: "node1",
-		},
-		Status: kube_api.NodeStatus{
-			Capacity: kube_api.ResourceList{
-				kube_api.ResourceCPU:    *resource.NewMilliQuantity(2000, resource.DecimalSI),
-				kube_api.ResourceMemory: *resource.NewQuantity(2000000, resource.DecimalSI),
-			},
-		},
-	}
+	nodeInfo := schedulercache.NewNodeInfo(pod, pod, pod2)
+	node := BuildTestNode("node1", 2000, 2000000)
+
 	reservation, err := CalculateReservation(node, nodeInfo)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 2.0/10, reservation, 0.01)
 
-	node2 := &kube_api.Node{
-		ObjectMeta: kube_api.ObjectMeta{
-			Name: "node2",
-		},
-		Status: kube_api.NodeStatus{
-			Capacity: kube_api.ResourceList{
-				kube_api.ResourceCPU: *resource.NewMilliQuantity(2000, resource.DecimalSI),
-			},
-		},
-	}
+	node2 := BuildTestNode("node1", 2000, -1)
+
 	_, err = CalculateReservation(node2, nodeInfo)
 	assert.Error(t, err)
 }
 
 func TestFindPlaceAllOk(t *testing.T) {
-	pod1 := buildPod("p1", 300, 500000)
-	new1 := buildPod("p2", 600, 500000)
-	new2 := buildPod("p3", 500, 500000)
+	pod1 := BuildTestPod("p1", 300, 500000)
+	new1 := BuildTestPod("p2", 600, 500000)
+	new2 := BuildTestPod("p3", 500, 500000)
 
 	nodeInfos := map[string]*schedulercache.NodeInfo{
 		"n1": schedulercache.NewNodeInfo(pod1),
 		"n2": schedulercache.NewNodeInfo(),
 	}
-	node1 := buildNode("n1", 1000, 2000000)
-	node2 := buildNode("n2", 1000, 2000000)
+	node1 := BuildTestNode("n1", 1000, 2000000)
+	node2 := BuildTestNode("n2", 1000, 2000000)
 	nodeInfos["n1"].SetNode(node1)
 	nodeInfos["n2"].SetNode(node2)
 
@@ -103,17 +67,17 @@ func TestFindPlaceAllOk(t *testing.T) {
 }
 
 func TestFindPlaceAllBas(t *testing.T) {
-	pod1 := buildPod("p1", 300, 500000)
-	new1 := buildPod("p2", 600, 500000)
-	new2 := buildPod("p3", 500, 500000)
-	new3 := buildPod("p4", 700, 500000)
+	pod1 := BuildTestPod("p1", 300, 500000)
+	new1 := BuildTestPod("p2", 600, 500000)
+	new2 := BuildTestPod("p3", 500, 500000)
+	new3 := BuildTestPod("p4", 700, 500000)
 
 	nodeInfos := map[string]*schedulercache.NodeInfo{
 		"n1": schedulercache.NewNodeInfo(pod1),
 		"n2": schedulercache.NewNodeInfo(),
 	}
-	node1 := buildNode("n1", 1000, 2000000)
-	node2 := buildNode("n2", 1000, 2000000)
+	node1 := BuildTestNode("n1", 1000, 2000000)
+	node2 := BuildTestNode("n2", 1000, 2000000)
 	nodeInfos["n1"].SetNode(node1)
 	nodeInfos["n2"].SetNode(node2)
 
@@ -126,14 +90,14 @@ func TestFindPlaceAllBas(t *testing.T) {
 }
 
 func TestFindNone(t *testing.T) {
-	pod1 := buildPod("p1", 300, 500000)
+	pod1 := BuildTestPod("p1", 300, 500000)
 
 	nodeInfos := map[string]*schedulercache.NodeInfo{
 		"n1": schedulercache.NewNodeInfo(pod1),
 		"n2": schedulercache.NewNodeInfo(),
 	}
-	node1 := buildNode("n1", 1000, 2000000)
-	node2 := buildNode("n2", 1000, 2000000)
+	node1 := BuildTestNode("n1", 1000, 2000000)
+	node2 := BuildTestNode("n2", 1000, 2000000)
 	nodeInfos["n1"].SetNode(node1)
 	nodeInfos["n2"].SetNode(node2)
 
@@ -143,40 +107,4 @@ func TestFindNone(t *testing.T) {
 		[]*kube_api.Node{node1, node2},
 		nodeInfos, NewTestPredicateChecker())
 	assert.NoError(t, err)
-}
-
-func buildPod(name string, cpu int64, mem int64) *kube_api.Pod {
-	return &kube_api.Pod{
-		ObjectMeta: kube_api.ObjectMeta{
-			Namespace: "default",
-			Name:      name,
-		},
-		Spec: kube_api.PodSpec{
-			Containers: []kube_api.Container{
-				{
-					Resources: kube_api.ResourceRequirements{
-						Requests: kube_api.ResourceList{
-							kube_api.ResourceCPU:    *resource.NewMilliQuantity(cpu, resource.DecimalSI),
-							kube_api.ResourceMemory: *resource.NewQuantity(mem, resource.DecimalSI),
-						},
-					},
-				},
-			},
-		},
-	}
-}
-
-func buildNode(name string, cpu int64, mem int64) *kube_api.Node {
-	return &kube_api.Node{
-		ObjectMeta: kube_api.ObjectMeta{
-			Name: name,
-		},
-		Status: kube_api.NodeStatus{
-			Capacity: kube_api.ResourceList{
-				kube_api.ResourceCPU:    *resource.NewMilliQuantity(cpu, resource.DecimalSI),
-				kube_api.ResourceMemory: *resource.NewQuantity(mem, resource.DecimalSI),
-				kube_api.ResourcePods:   *resource.NewQuantity(100, resource.DecimalSI),
-			},
-		},
-	}
 }
