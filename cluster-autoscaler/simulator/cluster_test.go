@@ -21,10 +21,20 @@ import (
 
 	kube_api "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/resource"
+	"k8s.io/kubernetes/plugin/pkg/scheduler/algorithm"
+	"k8s.io/kubernetes/plugin/pkg/scheduler/algorithm/predicates"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 
 	"github.com/stretchr/testify/assert"
 )
+
+func NewTestPredicateChecker() *PredicateChecker {
+	return &PredicateChecker{
+		predicates: map[string]algorithm.FitPredicate{
+			"default": predicates.GeneralPredicates,
+		},
+	}
+}
 
 func TestReservation(t *testing.T) {
 	pod := buildPod("p1", 100, 200000)
@@ -88,7 +98,7 @@ func TestFindPlaceAllOk(t *testing.T) {
 		"x",
 		[]*kube_api.Pod{new1, new2},
 		[]*kube_api.Node{node1, node2},
-		nodeInfos, NewPredicateChecker())
+		nodeInfos, NewTestPredicateChecker())
 	assert.NoError(t, err)
 }
 
@@ -111,7 +121,7 @@ func TestFindPlaceAllBas(t *testing.T) {
 		"x",
 		[]*kube_api.Pod{new1, new2, new3},
 		[]*kube_api.Node{node1, node2},
-		nodeInfos, NewPredicateChecker())
+		nodeInfos, NewTestPredicateChecker())
 	assert.Error(t, err)
 }
 
@@ -131,7 +141,7 @@ func TestFindNone(t *testing.T) {
 		"x",
 		[]*kube_api.Pod{},
 		[]*kube_api.Node{node1, node2},
-		nodeInfos, NewPredicateChecker())
+		nodeInfos, NewTestPredicateChecker())
 	assert.NoError(t, err)
 }
 
