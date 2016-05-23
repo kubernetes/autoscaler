@@ -34,7 +34,17 @@ func NewPredicateChecker() *PredicateChecker {
 	return &PredicateChecker{}
 }
 
-// CheckPredicates Checks if the given pod can be placed on the given node.
+// FitsAny checks if the given pod can be place on any of the given nodes.
+func (p *PredicateChecker) FitsAny(pod *kube_api.Pod, nodeInfos map[string]*schedulercache.NodeInfo) (string, error) {
+	for name, nodeInfo := range nodeInfos {
+		if err := p.CheckPredicates(pod, nodeInfo); err == nil {
+			return name, nil
+		}
+	}
+	return "", fmt.Errorf("cannot put pod %s on any node", pod.Name)
+}
+
+// CheckPredicates checks if the given pod can be placed on the given node.
 func (p *PredicateChecker) CheckPredicates(pod *kube_api.Pod, nodeInfo *schedulercache.NodeInfo) error {
 	// TODO(fgrzadkowski): Use full list of predicates.
 	match, err := predicates.GeneralPredicates(pod, nodeInfo)

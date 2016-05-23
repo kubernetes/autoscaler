@@ -187,6 +187,34 @@ func resetPodScheduledConditionForPod(kubeClient *kube_client.Client, pod *kube_
 	return fmt.Errorf("Expected condition PodScheduled")
 }
 
+// FilterOutSchedulable checks whether pods from <unschedulableCandidates> marked as unschedulable
+// by Scheduler actually can't be scheduled on any node and filter out the ones that can.
+func FilterOutSchedulable(unschedulableCandidates []*kube_api.Pod, nodes []*kube_api.Node, allPods []*kube_api.Pod, predicateChecker *simulator.PredicateChecker) []*kube_api.Pod {
+	unschedulablePods := []*kube_api.Pod{}
+	nodeNameToNodeInfo := createNodeNameToInfoMap(allPods, nodes)
+
+	for _, pod := range unschedulableCandidates {
+		if nodeName, err := predicateChecker.FitsAny(pod, nodeNameToNodeInfo); err == nil {
+			glog.Warningf("Pod %s marked as unschedulable can be scheduled on %s. Ignoring in scale up.", pod.Name, nodeName)
+		} else {
+			unschedulablePods = append(unschedulablePods, pod)
+		}
+	}
+
+	return unschedulablePods
+}
+
+// TODO: move this function to scheduler utils.
+func createNodeNameToInfoMap(pods []*kube_api.Pod, nodes []*kube_api.Node) map[string]*schedulercache.NodeInfo {
+	nodeNameToNodeInfo := schedulercache.CreateNodeNameToInfoMap(pods)
+	for _, node := range nodes {
+		if nodeInfo, found := nodeNameToNodeInfo[node.Name]; found {
+			nodeInfo.SetNode(node)
+		}
+	}
+	return nodeNameToNodeInfo
+}
+
 // CheckMigsAndNodes checks if all migs have all required nodes.
 func CheckMigsAndNodes(nodes []*kube_api.Node, gceManager *gce.GceManager) error {
 	migCount := make(map[string]int)
