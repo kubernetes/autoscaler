@@ -48,11 +48,14 @@ const (
 func CalculateUnderutilizedNodes(nodes []*kube_api.Node,
 	underutilizedNodes map[string]time.Time,
 	utilizationThreshold float64,
-	pods []*kube_api.Pod) map[string]time.Time {
+	pods []*kube_api.Pod,
+	client *kube_client.Client,
+	predicateChecker *simulator.PredicateChecker) map[string]time.Time {
 
-	currentlyUnderutilizedNodes := make(map[string]struct{})
+	currentlyUnderutilizedNodes := make([]*kube_api.Node, 0)
 	nodeNameToNodeInfo := schedulercache.CreateNodeNameToInfoMap(pods)
 
+	// Phase1 - look at the nodes reservation.
 	for _, node := range nodes {
 		nodeInfo, found := nodeNameToNodeInfo[node.Name]
 		if !found {
@@ -70,12 +73,23 @@ func CalculateUnderutilizedNodes(nodes []*kube_api.Node,
 			glog.V(4).Infof("Node %s is not suitable for removal - reservation to big (%f)", node.Name, reservation)
 			continue
 		}
-		currentlyUnderutilizedNodes[node.Name] = struct{}{}
+		currentlyUnderutilizedNodes = append(currentlyUnderutilizedNodes, node)
 	}
 
+	// Phase2 - check which nodes can be probably removed using fast drain.
+	nodesToRemove, err := simulator.FindNodesToRemove(currentlyUnderutilizedNodes, nodes, pods,
+		client, predicateChecker,
+		len(currentlyUnderutilizedNodes), true)
+	if err != nil {
+		glog.Errorf("Error while evaluating node utilization: %v", err)
+		return map[string]time.Time{}
+	}
+
+	// Update the timestamp map.
 	now := time.Now()
 	result := make(map[string]time.Time)
-	for name := range currentlyUnderutilizedNodes {
+	for _, node := range nodesToRemove {
+		name := node.Name
 		if val, found := underutilizedNodes[name]; !found {
 			result[name] = now
 		} else {
@@ -93,7 +107,8 @@ func ScaleDown(
 	underutilizationTime time.Duration,
 	pods []*kube_api.Pod,
 	gceManager *gce.GceManager,
-	client *kube_client.Client, predicateChecker *simulator.PredicateChecker) (ScaleDownResult, error) {
+	client *kube_client.Client,
+	predicateChecker *simulator.PredicateChecker) (ScaleDownResult, error) {
 
 	now := time.Now()
 	candidates := make([]*kube_api.Node, 0)
@@ -109,16 +124,16 @@ func ScaleDown(
 		return ScaleDownNoUnderutilized, nil
 	}
 
-	nodeToRemove, err := simulator.FindNodeToRemove(candidates, nodes, pods, client, predicateChecker)
+	nodesToRemove, err := simulator.FindNodesToRemove(candidates, nodes, pods, client, predicateChecker, 1, false)
 	if err != nil {
 		return ScaleDownError, fmt.Errorf("Find node to remove failed: %v", err)
 	}
-	if nodeToRemove == nil {
+	if len(nodesToRemove) == 0 {
 		glog.V(1).Infof("No node to remove")
 		return ScaleDownNoNodeDeleted, nil
 	}
+	nodeToRemove := nodesToRemove[0]
 	glog.Infof("Removing %s", nodeToRemove.Name)
-
 	instanceConfig, err := config.InstanceConfigFromProviderId(nodeToRemove.Spec.ProviderID)
 	if err != nil {
 		return ScaleDownError, fmt.Errorf("Failed to get instance config for %s: %v", nodeToRemove.Name, err)

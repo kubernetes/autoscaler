@@ -31,7 +31,7 @@ import (
 // Based on kubectl drain code. It makes an assumption that RC, DS, Jobs and RS were deleted
 // along with their pods (no abandoned pods with dangling created-by annotation). Usefull for fast
 // checks.
-func FastGetPodsToMove(nodeInfo schedulercache.NodeInfo, force bool, decoder runtime.Decoder) ([]*api.Pod, error) {
+func FastGetPodsToMove(nodeInfo *schedulercache.NodeInfo, force bool, decoder runtime.Decoder) ([]*api.Pod, error) {
 	pods := make([]*api.Pod, 0)
 	unreplicatedPodNames := []string{}
 	for _, pod := range nodeInfo.Pods() {
