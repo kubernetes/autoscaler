@@ -403,6 +403,7 @@ func decodeExtension(b []byte, extension *ExtensionDesc) (interface{}, error) {
 	o := NewBuffer(b)
 
 	t := reflect.TypeOf(extension.ExtensionType)
+	rep := extension.repeated()
 
 	props := extensionProperties(extension)
 
@@ -424,7 +425,7 @@ func decodeExtension(b []byte, extension *ExtensionDesc) (interface{}, error) {
 			return nil, err
 		}
 
-		if o.index >= len(o.buf) {
+		if !rep || o.index >= len(o.buf) {
 			break
 		}
 	}

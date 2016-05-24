@@ -48,14 +48,10 @@ func (basicEstimator *BasicNodeEstimator) Add(pod *kube_api.Pod) error {
 	ports := make(map[int32]struct{})
 	for _, container := range pod.Spec.Containers {
 		if request, ok := container.Resources.Requests[kube_api.ResourceCPU]; ok {
-			if err := basicEstimator.cpuSum.Add(request); err != nil {
-				return err
-			}
+			basicEstimator.cpuSum.Add(request)
 		}
 		if request, ok := container.Resources.Requests[kube_api.ResourceMemory]; ok {
-			if err := basicEstimator.memorySum.Add(request); err != nil {
-				return err
-			}
+			basicEstimator.memorySum.Add(request)
 		}
 		for _, port := range container.Ports {
 			if port.HostPort > 0 {

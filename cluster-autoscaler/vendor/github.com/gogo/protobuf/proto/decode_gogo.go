@@ -115,8 +115,14 @@ func setCustomType(base structPointer, f field, value interface{}) {
 		oldHeader.Len = v.Len()
 		oldHeader.Cap = v.Cap()
 	default:
+		l := 1
 		size := reflect.TypeOf(value).Elem().Size()
-		structPointer_Copy(toStructPointer(reflect.ValueOf(value)), structPointer_Add(base, f), int(size))
+		if kind == reflect.Array {
+			l = reflect.TypeOf(value).Elem().Len()
+			size = reflect.TypeOf(value).Size()
+		}
+		total := int(size) * l
+		structPointer_Copy(toStructPointer(reflect.ValueOf(value)), structPointer_Add(base, f), total)
 	}
 }
 

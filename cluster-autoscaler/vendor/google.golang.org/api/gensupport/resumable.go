@@ -35,7 +35,7 @@ type ResumableUpload struct {
 	URI       string
 	UserAgent string // User-Agent for header of the request
 	// Media is the object being uploaded.
-	Media *ResumableBuffer
+	Media *MediaBuffer
 	// MediaType defines the media type, e.g. "image/jpeg".
 	MediaType string
 

@@ -70,12 +70,15 @@ func main() {
 
 	gceManager, err := gce.CreateGceManager(migConfigs)
 	if err != nil {
-		glog.Fatalf("Failed to create GCE Manager %v", err)
+		glog.Fatalf("Failed to create GCE Manager: %v", err)
 	}
 
 	kubeClient := kube_client.NewOrDie(kubeConfig)
 
-	predicateChecker := simulator.NewPredicateChecker()
+	predicateChecker, err := simulator.NewPredicateChecker(kubeClient)
+	if err != nil {
+		glog.Fatalf("Failed to create predicate checker: %v", err)
+	}
 	unschedulablePodLister := NewUnschedulablePodLister(kubeClient)
 	scheduledPodLister := NewScheduledPodLister(kubeClient)
 	nodeLister := NewNodeLister(kubeClient)

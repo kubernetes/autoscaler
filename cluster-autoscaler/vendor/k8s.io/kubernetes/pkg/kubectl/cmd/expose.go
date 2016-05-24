@@ -101,7 +101,7 @@ func NewCmdExposeService(f *cmdutil.Factory, out io.Writer) *cobra.Command {
 	}
 	cmdutil.AddPrinterFlags(cmd)
 	cmd.Flags().String("generator", "service/v2", "The name of the API generator to use. There are 2 generators: 'service/v1' and 'service/v2'. The only difference between them is that service port in v1 is named 'default', while it is left unnamed in v2. Default is 'service/v2'.")
-	cmd.Flags().String("protocol", "TCP", "The network protocol for the service to be created. Default is 'tcp'.")
+	cmd.Flags().String("protocol", "", "The network protocol for the service to be created. Default is 'TCP'.")
 	cmd.Flags().String("port", "", "The port that the service should serve on. Copied from the resource being exposed, if unspecified")
 	cmd.Flags().String("type", "", "Type for this service: ClusterIP, NodePort, or LoadBalancer. Default is 'ClusterIP'.")
 	// TODO: remove create-external-load-balancer in code on or after Aug 25, 2016.
@@ -110,7 +110,6 @@ func NewCmdExposeService(f *cmdutil.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().String("load-balancer-ip", "", "IP to assign to to the Load Balancer. If empty, an ephemeral IP will be created and used (cloud-provider specific).")
 	cmd.Flags().String("selector", "", "A label selector to use for this service. Only equality-based selector requirements are supported. If empty (the default) infer the selector from the replication controller or replica set.")
 	cmd.Flags().StringP("labels", "l", "", "Labels to apply to the service created by this call.")
-	cmd.Flags().Bool("dry-run", false, "If true, only print the object that would be sent, without creating it.")
 	cmd.Flags().String("container-port", "", "Synonym for --target-port")
 	cmd.Flags().MarkDeprecated("container-port", "--container-port will be removed in the future, please use --target-port instead")
 	cmd.Flags().String("target-port", "", "Name or number for the port on the container that the service should direct traffic to. Optional.")
@@ -121,6 +120,7 @@ func NewCmdExposeService(f *cmdutil.Factory, out io.Writer) *cobra.Command {
 
 	usage := "Filename, directory, or URL to a file identifying the resource to expose a service"
 	kubectl.AddJsonFilenameFlag(cmd, &options.Filenames, usage)
+	cmdutil.AddDryRunFlag(cmd)
 	cmdutil.AddRecursiveFlag(cmd, &options.Recursive)
 	cmdutil.AddApplyAnnotationFlags(cmd)
 	cmdutil.AddRecordFlag(cmd)
@@ -198,6 +198,19 @@ func RunExpose(f *cmdutil.Factory, out io.Writer, cmd *cobra.Command, args []str
 				params["ports"] = strings.Join(ports, ",")
 			}
 		}
+
+		// Always try to derive protocols from the exposed object, may use
+		// different protocols for different ports.
+		if _, found := params["protocol"]; found {
+			protocolsMap, err := f.ProtocolsForObject(info.Object)
+			if err != nil {
+				return cmdutil.UsageError(cmd, fmt.Sprintf("couldn't find protocol via introspection: %s", err))
+			}
+			if protocols := kubectl.MakeProtocols(protocolsMap); !kubectl.IsZero(protocols) {
+				params["protocols"] = protocols
+			}
+		}
+
 		if kubectl.IsZero(params["labels"]) {
 			labels, err := f.LabelsForObject(info.Object)
 			if err != nil {
@@ -243,8 +256,7 @@ func RunExpose(f *cmdutil.Factory, out io.Writer, cmd *cobra.Command, args []str
 			}
 		}
 		info.Refresh(object, true)
-		// TODO: extract this flag to a central location, when such a location exists.
-		if cmdutil.GetFlagBool(cmd, "dry-run") {
+		if cmdutil.GetDryRunFlag(cmd) {
 			return f.PrintObject(cmd, mapper, object, out)
 		}
 		if err := kubectl.CreateOrUpdateAnnotation(cmdutil.GetFlagBool(cmd, cmdutil.ApplyAnnotationsFlag), info, f.JSONEncoder()); err != nil {

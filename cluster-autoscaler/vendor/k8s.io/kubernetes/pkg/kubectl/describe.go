@@ -29,6 +29,8 @@ import (
 	"time"
 
 	"github.com/golang/glog"
+	"k8s.io/kubernetes/federation/apis/federation"
+	fed_clientset "k8s.io/kubernetes/federation/client/clientset_generated/federation_internalclientset"
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/errors"
 	"k8s.io/kubernetes/pkg/api/resource"
@@ -101,6 +103,7 @@ func describerMap(c *client.Client) map[unversioned.GroupKind]Describer {
 
 		extensions.Kind("ReplicaSet"):               &ReplicaSetDescriber{c},
 		extensions.Kind("HorizontalPodAutoscaler"):  &HorizontalPodAutoscalerDescriber{c},
+		extensions.Kind("NetworkPolicy"):            &NetworkPolicyDescriber{c},
 		autoscaling.Kind("HorizontalPodAutoscaler"): &HorizontalPodAutoscalerDescriber{c},
 		extensions.Kind("DaemonSet"):                &DaemonSetDescriber{c},
 		extensions.Kind("Deployment"):               &DeploymentDescriber{adapter.FromUnversionedClient(c)},
@@ -524,7 +527,10 @@ func describePod(pod *api.Pod, events *api.EventList) (string, error) {
 		}
 		fmt.Fprintf(out, "IP:\t%s\n", pod.Status.PodIP)
 		fmt.Fprintf(out, "Controllers:\t%s\n", printControllers(pod.Annotations))
-		describeContainers(pod.Spec.Containers, pod.Status.ContainerStatuses, EnvValueRetriever(pod), out, "")
+		if len(pod.Spec.InitContainers) > 0 {
+			describeContainers("Init Containers", pod.Spec.InitContainers, pod.Status.InitContainerStatuses, EnvValueRetriever(pod), out, "")
+		}
+		describeContainers("Containers", pod.Spec.Containers, pod.Status.ContainerStatuses, EnvValueRetriever(pod), out, "")
 		if len(pod.Status.Conditions) > 0 {
 			fmt.Fprint(out, "Conditions:\n  Type\tStatus\n")
 			for _, c := range pod.Status.Conditions {
@@ -769,6 +775,8 @@ func (d *PersistentVolumeClaimDescriber) Describe(namespace, name string, descri
 		capacity = storage.String()
 	}
 
+	events, _ := d.Events(namespace).Search(pvc)
+
 	return tabbedString(func(out io.Writer) error {
 		fmt.Fprintf(out, "Name:\t%s\n", pvc.Name)
 		fmt.Fprintf(out, "Namespace:\t%s\n", pvc.Namespace)
@@ -777,17 +785,25 @@ func (d *PersistentVolumeClaimDescriber) Describe(namespace, name string, descri
 		printLabelsMultiline(out, "Labels", pvc.Labels)
 		fmt.Fprintf(out, "Capacity:\t%s\n", capacity)
 		fmt.Fprintf(out, "Access Modes:\t%s\n", accessModes)
+		if events != nil {
+			DescribeEvents(events, out)
+		}
+
 		return nil
 	})
 }
 
 // TODO: Do a better job at indenting, maybe by using a prefix writer
-func describeContainers(containers []api.Container, containerStatuses []api.ContainerStatus, resolverFn EnvVarResolverFunc, out io.Writer, space string) {
+func describeContainers(label string, containers []api.Container, containerStatuses []api.ContainerStatus, resolverFn EnvVarResolverFunc, out io.Writer, space string) {
 	statuses := map[string]api.ContainerStatus{}
 	for _, status := range containerStatuses {
 		statuses[status.Name] = status
 	}
-	fmt.Fprintf(out, "%sContainers:\n", space)
+	if len(containers) == 0 {
+		fmt.Fprintf(out, "%s%s: <none>\n", space, label)
+	} else {
+		fmt.Fprintf(out, "%s%s:\n", space, label)
+	}
 	for _, container := range containers {
 		status, ok := statuses[container.Name]
 		nameIndent := ""
@@ -1037,7 +1053,10 @@ func DescribePodTemplate(template *api.PodTemplateSpec, out io.Writer) {
 	if len(template.Spec.ServiceAccountName) > 0 {
 		fmt.Fprintf(out, "  Service Account:\t%s\n", template.Spec.ServiceAccountName)
 	}
-	describeContainers(template.Spec.Containers, nil, nil, out, "  ")
+	if len(template.Spec.InitContainers) > 0 {
+		describeContainers("Init Containers", template.Spec.InitContainers, nil, nil, out, "  ")
+	}
+	describeContainers("Containers", template.Spec.Containers, nil, nil, out, "  ")
 	describeVolumes(template.Spec.Volumes, out, "  ")
 }
 
@@ -1605,6 +1624,7 @@ func describeNode(node *api.Node, nodeNonTerminatedPodsList *api.PodList, events
 	return tabbedString(func(out io.Writer) error {
 		fmt.Fprintf(out, "Name:\t%s\n", node.Name)
 		printLabelsMultiline(out, "Labels", node.Labels)
+		printTaintsInAnnotationMultiline(out, "Taints", node.Annotations)
 		fmt.Fprintf(out, "CreationTimestamp:\t%s\n", node.CreationTimestamp.Time.Format(time.RFC1123Z))
 		fmt.Fprintf(out, "Phase:\t%v\n", node.Status.Phase)
 		if len(node.Status.Conditions) > 0 {
@@ -1638,6 +1658,8 @@ func describeNode(node *api.Node, nodeNonTerminatedPodsList *api.PodList, events
 		fmt.Fprintf(out, " Boot ID:\t%s\n", node.Status.NodeInfo.BootID)
 		fmt.Fprintf(out, " Kernel Version:\t%s\n", node.Status.NodeInfo.KernelVersion)
 		fmt.Fprintf(out, " OS Image:\t%s\n", node.Status.NodeInfo.OSImage)
+		fmt.Fprintf(out, " Operating System:\t%s\n", node.Status.NodeInfo.OperatingSystem)
+		fmt.Fprintf(out, " Architecture:\t%s\n", node.Status.NodeInfo.Architecture)
 		fmt.Fprintf(out, " Container Runtime Version:\t%s\n", node.Status.NodeInfo.ContainerRuntimeVersion)
 		fmt.Fprintf(out, " Kubelet Version:\t%s\n", node.Status.NodeInfo.KubeletVersion)
 		fmt.Fprintf(out, " Kube-Proxy Version:\t%s\n", node.Status.NodeInfo.KubeProxyVersion)
@@ -1820,15 +1842,17 @@ func getPodsTotalRequestsAndLimits(podList *api.PodList) (reqs map[api.ResourceN
 		for podReqName, podReqValue := range podReqs {
 			if value, ok := reqs[podReqName]; !ok {
 				reqs[podReqName] = *podReqValue.Copy()
-			} else if err = value.Add(podReqValue); err != nil {
-				return nil, nil, err
+			} else {
+				value.Add(podReqValue)
+				reqs[podReqName] = value
 			}
 		}
 		for podLimitName, podLimitValue := range podLimits {
 			if value, ok := limits[podLimitName]; !ok {
 				limits[podLimitName] = *podLimitValue.Copy()
-			} else if err = value.Add(podLimitValue); err != nil {
-				return nil, nil, err
+			} else {
+				value.Add(podLimitValue)
+				limits[podLimitName] = value
 			}
 		}
 	}
@@ -2014,6 +2038,89 @@ func describeConfigMap(configMap *api.ConfigMap) (string, error) {
 	})
 }
 
+type ClusterDescriber struct {
+	fed_clientset.Interface
+}
+
+func (d *ClusterDescriber) Describe(namespace, name string, describerSettings DescriberSettings) (string, error) {
+	cluster, err := d.Federation().Clusters().Get(name)
+	if err != nil {
+		return "", err
+	}
+	return describeCluster(cluster)
+}
+
+func describeCluster(cluster *federation.Cluster) (string, error) {
+	return tabbedString(func(out io.Writer) error {
+		fmt.Fprintf(out, "Name:\t%s\n", cluster.Name)
+		fmt.Fprintf(out, "Labels:\t%s\n", labels.FormatLabels(cluster.Labels))
+
+		fmt.Fprintf(out, "ServerAddressByClientCIDRs:\n  ClientCIDR\tServerAddress\n")
+		fmt.Fprintf(out, "  ----\t----\n")
+		for _, cidrAddr := range cluster.Spec.ServerAddressByClientCIDRs {
+			fmt.Fprintf(out, "  %v \t%v\n\n", cidrAddr.ClientCIDR, cidrAddr.ServerAddress)
+		}
+
+		if len(cluster.Status.Conditions) > 0 {
+			fmt.Fprint(out, "Conditions:\n  Type\tStatus\tLastUpdateTime\tLastTransitionTime\tReason\tMessage\n")
+			fmt.Fprint(out, "  ----\t------\t-----------------\t------------------\t------\t-------\n")
+			for _, c := range cluster.Status.Conditions {
+				fmt.Fprintf(out, "  %v \t%v \t%s \t%s \t%v \t%v\n",
+					c.Type,
+					c.Status,
+					c.LastProbeTime.Time.Format(time.RFC1123Z),
+					c.LastTransitionTime.Time.Format(time.RFC1123Z),
+					c.Reason,
+					c.Message)
+			}
+		}
+
+		fmt.Fprintf(out, "Version:\t%s\n", cluster.Status.Version)
+
+		if len(cluster.Status.Capacity) > 0 {
+			fmt.Fprintf(out, "Capacity:\n")
+			for resource, value := range cluster.Status.Capacity {
+				fmt.Fprintf(out, " %s:\t%s\n", resource, value.String())
+			}
+		}
+
+		if len(cluster.Status.Allocatable) > 0 {
+			fmt.Fprintf(out, "Allocatable:\n")
+			for resource, value := range cluster.Status.Allocatable {
+				fmt.Fprintf(out, " %s:\t%s\n", resource, value.String())
+			}
+		}
+		return nil
+	})
+}
+
+// NetworkPolicyDescriber generates information about a NetworkPolicy
+type NetworkPolicyDescriber struct {
+	client.Interface
+}
+
+func (d *NetworkPolicyDescriber) Describe(namespace, name string, describerSettings DescriberSettings) (string, error) {
+	c := d.Extensions().NetworkPolicies(namespace)
+
+	networkPolicy, err := c.Get(name)
+	if err != nil {
+		return "", err
+	}
+
+	return describeNetworkPolicy(networkPolicy)
+}
+
+func describeNetworkPolicy(networkPolicy *extensions.NetworkPolicy) (string, error) {
+	return tabbedString(func(out io.Writer) error {
+		fmt.Fprintf(out, "Name:\t%s\n", networkPolicy.Name)
+		fmt.Fprintf(out, "Namespace:\t%s\n", networkPolicy.Namespace)
+		printLabelsMultiline(out, "Labels", networkPolicy.Labels)
+		printLabelsMultiline(out, "Annotations", networkPolicy.Annotations)
+
+		return nil
+	})
+}
+
 // newErrNoDescriber creates a new ErrNoDescriber with the names of the provided types.
 func newErrNoDescriber(types ...reflect.Type) error {
 	names := []string{}
@@ -2183,5 +2290,44 @@ func printLabelsMultilineWithIndent(out io.Writer, initialIndent, title, innerIn
 		}
 		fmt.Fprintf(out, "%s=%s\n", key, labels[key])
 		i++
+	}
+}
+
+// printTaintsMultiline prints multiple taints with a proper alignment.
+func printTaintsInAnnotationMultiline(out io.Writer, title string, annotations map[string]string) {
+	taints, err := api.GetTaintsFromNodeAnnotations(annotations)
+	if err != nil {
+		taints = []api.Taint{}
+	}
+	printTaintsMultilineWithIndent(out, "", title, "\t", taints)
+}
+
+// printTaintsMultilineWithIndent prints multiple taints with a user-defined alignment.
+func printTaintsMultilineWithIndent(out io.Writer, initialIndent, title, innerIndent string, taints []api.Taint) {
+	fmt.Fprintf(out, "%s%s:%s", initialIndent, title, innerIndent)
+
+	if taints == nil || len(taints) == 0 {
+		fmt.Fprintln(out, "<none>")
+		return
+	}
+
+	// to print taints in the sorted order
+	keys := make([]string, 0, len(taints))
+	for _, taint := range taints {
+		keys = append(keys, taint.Key)
+	}
+	sort.Strings(keys)
+
+	for i, key := range keys {
+		for _, taint := range taints {
+			if taint.Key == key {
+				if i != 0 {
+					fmt.Fprint(out, initialIndent)
+					fmt.Fprint(out, innerIndent)
+				}
+				fmt.Fprintf(out, "%s=%s:%s\n", taint.Key, taint.Value, taint.Effect)
+				i++
+			}
+		}
 	}
 }

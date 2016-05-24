@@ -23,6 +23,7 @@ import (
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/client/cache"
+	qosutil "k8s.io/kubernetes/pkg/kubelet/qos/util"
 	"k8s.io/kubernetes/pkg/labels"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/algorithm"
 	priorityutil "k8s.io/kubernetes/plugin/pkg/scheduler/algorithm/priorities/util"
@@ -346,8 +347,9 @@ func (c *VolumeZoneChecker) predicate(pod *api.Pod, nodeInfo *schedulercache.Nod
 }
 
 type resourceRequest struct {
-	milliCPU int64
-	memory   int64
+	milliCPU  int64
+	memory    int64
+	nvidiaGPU int64
 }
 
 func getResourceRequest(pod *api.Pod) resourceRequest {
@@ -356,19 +358,33 @@ func getResourceRequest(pod *api.Pod) resourceRequest {
 		requests := container.Resources.Requests
 		result.memory += requests.Memory().Value()
 		result.milliCPU += requests.Cpu().MilliValue()
+		result.nvidiaGPU += requests.NvidiaGPU().Value()
+	}
+	// take max_resource(sum_pod, any_init_container)
+	for _, container := range pod.Spec.InitContainers {
+		requests := container.Resources.Requests
+		if mem := requests.Memory().Value(); mem > result.memory {
+			result.memory = mem
+		}
+		if cpu := requests.Cpu().MilliValue(); cpu > result.milliCPU {
+			result.milliCPU = cpu
+		}
 	}
 	return result
 }
 
-func CheckPodsExceedingFreeResources(pods []*api.Pod, allocatable api.ResourceList) (fitting []*api.Pod, notFittingCPU, notFittingMemory []*api.Pod) {
+func CheckPodsExceedingFreeResources(pods []*api.Pod, allocatable api.ResourceList) (fitting []*api.Pod, notFittingCPU, notFittingMemory, notFittingNvidiaGPU []*api.Pod) {
 	totalMilliCPU := allocatable.Cpu().MilliValue()
 	totalMemory := allocatable.Memory().Value()
+	totalNvidiaGPU := allocatable.NvidiaGPU().Value()
 	milliCPURequested := int64(0)
 	memoryRequested := int64(0)
+	nvidiaGPURequested := int64(0)
 	for _, pod := range pods {
 		podRequest := getResourceRequest(pod)
 		fitsCPU := (totalMilliCPU - milliCPURequested) >= podRequest.milliCPU
 		fitsMemory := (totalMemory - memoryRequested) >= podRequest.memory
+		fitsNVidiaGPU := (totalNvidiaGPU - nvidiaGPURequested) >= podRequest.nvidiaGPU
 		if !fitsCPU {
 			// the pod doesn't fit due to CPU request
 			notFittingCPU = append(notFittingCPU, pod)
@@ -379,9 +395,15 @@ func CheckPodsExceedingFreeResources(pods []*api.Pod, allocatable api.ResourceLi
 			notFittingMemory = append(notFittingMemory, pod)
 			continue
 		}
+		if !fitsNVidiaGPU {
+			// the pod doesn't fit due to NvidiaGPU request
+			notFittingNvidiaGPU = append(notFittingNvidiaGPU, pod)
+			continue
+		}
 		// the pod fits
 		milliCPURequested += podRequest.milliCPU
 		memoryRequested += podRequest.memory
+		nvidiaGPURequested += podRequest.nvidiaGPU
 		fitting = append(fitting, pod)
 	}
 	return
@@ -403,12 +425,13 @@ func PodFitsResources(pod *api.Pod, nodeInfo *schedulercache.NodeInfo) (bool, er
 			newInsufficientResourceError(podCountResourceName, 1, int64(len(nodeInfo.Pods())), allowedPodNumber)
 	}
 	podRequest := getResourceRequest(pod)
-	if podRequest.milliCPU == 0 && podRequest.memory == 0 {
+	if podRequest.milliCPU == 0 && podRequest.memory == 0 && podRequest.nvidiaGPU == 0 {
 		return true, nil
 	}
 
 	totalMilliCPU := allocatable.Cpu().MilliValue()
 	totalMemory := allocatable.Memory().Value()
+	totalNvidiaGPU := allocatable.NvidiaGPU().Value()
 
 	if totalMilliCPU < podRequest.milliCPU+nodeInfo.RequestedResource().MilliCPU {
 		return false,
@@ -416,7 +439,11 @@ func PodFitsResources(pod *api.Pod, nodeInfo *schedulercache.NodeInfo) (bool, er
 	}
 	if totalMemory < podRequest.memory+nodeInfo.RequestedResource().Memory {
 		return false,
-			newInsufficientResourceError(memoryResoureceName, podRequest.memory, nodeInfo.RequestedResource().Memory, totalMemory)
+			newInsufficientResourceError(memoryResourceName, podRequest.memory, nodeInfo.RequestedResource().Memory, totalMemory)
+	}
+	if totalNvidiaGPU < podRequest.nvidiaGPU+nodeInfo.RequestedResource().NvidiaGPU {
+		return false,
+			newInsufficientResourceError(nvidiaGpuResourceName, podRequest.nvidiaGPU, nodeInfo.RequestedResource().NvidiaGPU, totalNvidiaGPU)
 	}
 	glog.V(10).Infof("Schedule Pod %+v on Node %+v is allowed, Node is running only %v out of %v Pods.",
 		podName(pod), node.Name, len(nodeInfo.Pods()), allowedPodNumber)
@@ -917,4 +944,87 @@ func (checker *PodAffinityChecker) NodeMatchPodAffinityAntiAffinity(pod *api.Pod
 		}
 	}
 	return true
+}
+
+type TolerationMatch struct {
+	info NodeInfo
+}
+
+func NewTolerationMatchPredicate(info NodeInfo) algorithm.FitPredicate {
+	tolerationMatch := &TolerationMatch{
+		info: info,
+	}
+	return tolerationMatch.PodToleratesNodeTaints
+}
+
+func (t *TolerationMatch) PodToleratesNodeTaints(pod *api.Pod, nodeInfo *schedulercache.NodeInfo) (bool, error) {
+	node := nodeInfo.Node()
+
+	taints, err := api.GetTaintsFromNodeAnnotations(node.Annotations)
+	if err != nil {
+		return false, err
+	}
+
+	tolerations, err := api.GetTolerationsFromPodAnnotations(pod.Annotations)
+	if err != nil {
+		return false, err
+	}
+
+	if tolerationsToleratesTaints(tolerations, taints) {
+		return true, nil
+	}
+	return false, ErrTaintsTolerationsNotMatch
+}
+
+func tolerationsToleratesTaints(tolerations []api.Toleration, taints []api.Taint) bool {
+	// If the taint list is nil/empty, it is tolerated by all tolerations by default.
+	if len(taints) == 0 {
+		return true
+	}
+
+	// The taint list isn't nil/empty, a nil/empty toleration list can't tolerate them.
+	if len(tolerations) == 0 {
+		return false
+	}
+
+	for _, taint := range taints {
+		// skip taints that have effect PreferNoSchedule, since it is for priorities
+		if taint.Effect == api.TaintEffectPreferNoSchedule {
+			continue
+		}
+
+		if !api.TaintToleratedByTolerations(taint, tolerations) {
+			return false
+		}
+	}
+
+	return true
+}
+
+// Determine if a pod is scheduled with best-effort QoS
+func isPodBestEffort(pod *api.Pod) bool {
+	return qosutil.GetPodQos(pod) == qosutil.BestEffort
+}
+
+// CheckNodeMemoryPressurePredicate checks if a pod can be scheduled on a node
+// reporting memory pressure condition.
+func CheckNodeMemoryPressurePredicate(pod *api.Pod, nodeInfo *schedulercache.NodeInfo) (bool, error) {
+	node := nodeInfo.Node()
+	if node == nil {
+		return false, fmt.Errorf("node not found")
+	}
+
+	// pod is not BestEffort pod
+	if !isPodBestEffort(pod) {
+		return true, nil
+	}
+
+	// is node under presure?
+	for _, cond := range node.Status.Conditions {
+		if cond.Type == api.NodeMemoryPressure && cond.Status == api.ConditionTrue {
+			return false, ErrNodeUnderMemoryPressure
+		}
+	}
+
+	return true, nil
 }

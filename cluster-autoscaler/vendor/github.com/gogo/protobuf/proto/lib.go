@@ -70,12 +70,6 @@ for a protocol buffer variable v:
 	with distinguished wrapper types for each possible field value.
   - Marshal and Unmarshal are functions to encode and decode the wire format.
 
-When the .proto file specifies `syntax="proto3"`, there are some differences:
-
-  - Non-repeated fields of non-message type are values instead of pointers.
-  - Getters are only generated for message and oneof fields.
-  - Enum types do not get an Enum method.
-
 The simplest way to describe this is to see an example.
 Given file test.proto, containing
 
@@ -235,7 +229,6 @@ To create and play with a Test object:
 		test := &pb.Test{
 			Label: proto.String("hello"),
 			Type:  proto.Int32(17),
-			Reps:  []int64{1, 2, 3},
 			Optionalgroup: &pb.Test_OptionalGroup{
 				RequiredField: proto.String("good bye"),
 			},
@@ -448,7 +441,7 @@ func (p *Buffer) DebugPrint(s string, b []byte) {
 	var u uint64
 
 	obuf := p.buf
-	sindex := p.index
+	index := p.index
 	p.buf = b
 	p.index = 0
 	depth := 0
@@ -543,7 +536,7 @@ out:
 	fmt.Printf("\n")
 
 	p.buf = obuf
-	p.index = sindex
+	p.index = index
 }
 
 // SetDefaults sets unset protocol buffer fields to their default values.
@@ -888,7 +881,3 @@ func isProto3Zero(v reflect.Value) bool {
 	}
 	return false
 }
-
-// ProtoPackageIsVersion1 is referenced from generated protocol buffer files
-// to assert that that code is compatible with this version of the proto package.
-const GoGoProtoPackageIsVersion1 = true
