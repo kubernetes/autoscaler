@@ -114,9 +114,35 @@ func ScaleDown(
 	candidates := make([]*kube_api.Node, 0)
 	for _, node := range nodes {
 		if val, found := underutilizedNodes[node.Name]; found {
-			if val.Add(underutilizationTime).Before(now) {
-				candidates = append(candidates, node)
+
+			// Check how long the node was underutilized.
+			if !val.Add(underutilizationTime).Before(now) {
+				continue
 			}
+
+			// Check mig size.
+			instance, err := config.InstanceConfigFromProviderId(node.Spec.ProviderID)
+			if err != nil {
+				glog.Errorf("Error while parsing providerid of %s: %v", node.Name, err)
+				continue
+			}
+			migConfig, err := gceManager.GetMigForInstance(instance)
+			if err != nil {
+				glog.Errorf("Error while checking mig config for instance %v: %v", instance, err)
+				continue
+			}
+			size, err := gceManager.GetMigSize(migConfig)
+			if err != nil {
+				glog.Errorf("Error while checking mig size for instance %v: %v", instance, err)
+				continue
+			}
+
+			if size <= int64(migConfig.MinSize) {
+				glog.V(1).Infof("Skipping %s - mig min size reached", node.Name)
+				continue
+			}
+
+			candidates = append(candidates, node)
 		}
 	}
 	if len(candidates) == 0 {
