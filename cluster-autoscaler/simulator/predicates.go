@@ -22,6 +22,7 @@ import (
 	kube_api "k8s.io/kubernetes/pkg/api"
 	kube_client "k8s.io/kubernetes/pkg/client/unversioned"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/algorithm"
+	"k8s.io/kubernetes/plugin/pkg/scheduler/algorithm/predicates"
 	// We need to import provider to intialize default scheduler.
 	_ "k8s.io/kubernetes/plugin/pkg/scheduler/algorithmprovider"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/factory"
@@ -48,6 +49,15 @@ func NewPredicateChecker(kubeClient *kube_client.Client) (*PredicateChecker, err
 	return &PredicateChecker{
 		predicates: predicates,
 	}, nil
+}
+
+// NewTestPredicateChecker builds test version of PredicateChecker.
+func NewTestPredicateChecker() *PredicateChecker {
+	return &PredicateChecker{
+		predicates: map[string]algorithm.FitPredicate{
+			"default": predicates.GeneralPredicates,
+		},
+	}
 }
 
 // FitsAny checks if the given pod can be place on any of the given nodes.
