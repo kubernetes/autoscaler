@@ -31,7 +31,8 @@ import (
 // Based on kubectl drain code. It makes an assumption that RC, DS, Jobs and RS were deleted
 // along with their pods (no abandoned pods with dangling created-by annotation). Usefull for fast
 // checks.
-func FastGetPodsToMove(nodeInfo *schedulercache.NodeInfo, force bool, decoder runtime.Decoder) ([]*api.Pod, error) {
+func FastGetPodsToMove(nodeInfo *schedulercache.NodeInfo, force bool,
+	failOnKubeSystemAddons bool, decoder runtime.Decoder) ([]*api.Pod, error) {
 	pods := make([]*api.Pod, 0)
 	unreplicatedPodNames := []string{}
 	for _, pod := range nodeInfo.Pods() {
@@ -47,7 +48,7 @@ func FastGetPodsToMove(nodeInfo *schedulercache.NodeInfo, force bool, decoder ru
 		if found {
 			var sr api.SerializedReference
 			if err := runtime.DecodeInto(decoder, []byte(creatorRef), &sr); err != nil {
-				return pods, err
+				return []*api.Pod{}, err
 			}
 			if sr.Reference.Kind == "ReplicationController" {
 				replicated = true
@@ -58,6 +59,10 @@ func FastGetPodsToMove(nodeInfo *schedulercache.NodeInfo, force bool, decoder ru
 			} else if sr.Reference.Kind == "ReplicaSet" {
 				replicated = true
 			}
+		}
+
+		if !daemonsetPod && pod.Namespace == "kube-system" && failOnKubeSystemAddons {
+			return []*api.Pod{}, fmt.Errorf("non-deamons set, non-mirrored, kube-system pod present: %s", pod.Name)
 		}
 
 		switch {
