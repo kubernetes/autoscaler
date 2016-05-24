@@ -50,7 +50,7 @@ func FindNodesToRemove(candidates []*kube_api.Node, allNodes []*kube_api.Node, p
 
 		if fastCheck {
 			if nodeInfo, found := nodeNameToNodeInfo[node.Name]; found {
-				podsToRemove, err = FastGetPodsToMove(nodeInfo, false, kube_api.Codecs.UniversalDecoder())
+				podsToRemove, err = FastGetPodsToMove(nodeInfo, false, true, kube_api.Codecs.UniversalDecoder())
 			}
 		} else {
 			drainResult, _, _, err := cmd.GetPodsForDeletionOnNodeDrain(client, node.Name,
