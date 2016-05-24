@@ -42,6 +42,7 @@ func FindNodesToRemove(candidates []*kube_api.Node, allNodes []*kube_api.Node, p
 	}
 	result := make([]*kube_api.Node, 0)
 
+candidateloop:
 	for _, node := range candidates {
 		glog.V(2).Infof("Considering %s for removal", node.Name)
 
@@ -65,15 +66,15 @@ func FindNodesToRemove(candidates []*kube_api.Node, allNodes []*kube_api.Node, p
 				podsToRemove = append(podsToRemove, &drainResult[i])
 			}
 		}
-
 		findProblems := findPlaceFor(node.Name, podsToRemove, allNodes, nodeNameToNodeInfo, predicateChecker)
 		if findProblems == nil {
 			result = append(result, node)
 			if len(result) >= maxCount {
-				break
+				break candidateloop
 			}
+		} else {
+			glog.V(2).Infof("Node %s is not suitable for removal %v", node.Name, err)
 		}
-		glog.V(2).Infof("Node %s is not suitable for removal %v", node.Name, err)
 	}
 	return result, nil
 }
