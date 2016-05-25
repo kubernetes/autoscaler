@@ -595,6 +595,11 @@
 			"Rev": "1ab5fc4392d75c17eb9a0cf857a7f9a3c76c0ab8"
 		},
 		{
+			"ImportPath": "k8s.io/kubernetes/pkg/api/testapi",
+			"Comment": "v1.3.0-alpha.4-426-g1ab5fc4",
+			"Rev": "1ab5fc4392d75c17eb9a0cf857a7f9a3c76c0ab8"
+		},
+		{
 			"ImportPath": "k8s.io/kubernetes/pkg/api/unversioned",
 			"Comment": "v1.3.0-alpha.4-426-g1ab5fc4",
 			"Rev": "1ab5fc4392d75c17eb9a0cf857a7f9a3c76c0ab8"
@@ -871,6 +876,11 @@
 		},
 		{
 			"ImportPath": "k8s.io/kubernetes/pkg/client/unversioned/clientcmd/api/v1",
+			"Comment": "v1.3.0-alpha.4-426-g1ab5fc4",
+			"Rev": "1ab5fc4392d75c17eb9a0cf857a7f9a3c76c0ab8"
+		},
+		{
+			"ImportPath": "k8s.io/kubernetes/pkg/client/unversioned/fake",
 			"Comment": "v1.3.0-alpha.4-426-g1ab5fc4",
 			"Rev": "1ab5fc4392d75c17eb9a0cf857a7f9a3c76c0ab8"
 		},
