@@ -186,7 +186,11 @@ func main() {
 						if err != nil {
 							glog.Errorf("Failed to scale down: %v", err)
 						} else {
-							if result != ScaleDownNodeDeleted {
+							if result == ScaleDownNodeDeleted {
+								// Clean the utilization map to be super sure that the simulated
+								// deletions are made in the new context.
+								underutilizedNodes = make(map[string]time.Time, len(underutilizedNodes))
+							} else {
 								lastScaleDownFailedTrial = time.Now()
 							}
 						}
