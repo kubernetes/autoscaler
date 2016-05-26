@@ -143,8 +143,14 @@ func main() {
 				//
 				// Without below check cluster might be unnecessary scaled up to the max allowed size
 				// in the describe situation.
+				schedulablePodsPresent := false
 				if *verifyUnschedulablePods {
-					unschedulablePodsToHelp = FilterOutSchedulable(unschedulablePodsToHelp, nodes, allScheduled, predicateChecker)
+					newUnschedulablePodsToHelp := FilterOutSchedulable(unschedulablePodsToHelp, nodes, allScheduled, predicateChecker)
+
+					if len(newUnschedulablePodsToHelp) != len(unschedulablePodsToHelp) {
+						schedulablePodsPresent = true
+					}
+					unschedulablePodsToHelp = newUnschedulablePodsToHelp
 				}
 
 				if len(unschedulablePodsToHelp) == 0 {
@@ -166,7 +172,8 @@ func main() {
 				if *scaleDownEnabled {
 					// In dry run only utilization is updated
 					calculateUtilizationOnly := lastScaleUpTime.Add(*scaleDownDelay).After(time.Now()) ||
-						lastScaleDownFailedTrial.Add(*scaleDownTrialFrequency).After(time.Now())
+						lastScaleDownFailedTrial.Add(*scaleDownTrialFrequency).After(time.Now()) ||
+						schedulablePodsPresent
 
 					underutilizedNodes = CalculateUnderutilizedNodes(
 						nodes,
