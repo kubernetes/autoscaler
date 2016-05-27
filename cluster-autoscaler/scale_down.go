@@ -49,7 +49,6 @@ func CalculateUnderutilizedNodes(nodes []*kube_api.Node,
 	underutilizedNodes map[string]time.Time,
 	utilizationThreshold float64,
 	pods []*kube_api.Pod,
-	client *kube_client.Client,
 	predicateChecker *simulator.PredicateChecker) map[string]time.Time {
 
 	currentlyUnderutilizedNodes := make([]*kube_api.Node, 0)
@@ -78,7 +77,7 @@ func CalculateUnderutilizedNodes(nodes []*kube_api.Node,
 
 	// Phase2 - check which nodes can be probably removed using fast drain.
 	nodesToRemove, err := simulator.FindNodesToRemove(currentlyUnderutilizedNodes, nodes, pods,
-		client, predicateChecker,
+		nil, predicateChecker,
 		len(currentlyUnderutilizedNodes), true)
 	if err != nil {
 		glog.Errorf("Error while evaluating node utilization: %v", err)

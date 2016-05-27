@@ -180,7 +180,6 @@ func main() {
 						underutilizedNodes,
 						*scaleDownUtilizationThreshold,
 						allScheduled,
-						kubeClient,
 						predicateChecker)
 
 					if !calculateUtilizationOnly {
