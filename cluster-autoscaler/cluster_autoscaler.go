@@ -19,6 +19,7 @@ package main
 import (
 	"flag"
 	"net/url"
+	"os"
 	"time"
 
 	"k8s.io/contrib/cluster-autoscaler/config"
@@ -34,6 +35,7 @@ import (
 var (
 	migConfigFlag           config.MigConfigFlag
 	kubernetes              = flag.String("kubernetes", "", "Kuberentes master location. Leave blank for default")
+	cloudConfig             = flag.String("cloud-config", "", "The path to the cloud provider configuration file.  Empty string for no configuration file.")
 	verifyUnschedulablePods = flag.Bool("verify-unschedulable-pods", true,
 		"If enabled CA will ensure that each pod marked by Scheduler as unschedulable actually can't be scheduled on any node."+
 			"This prevents from adding unnecessary nodes in situation when CA and Scheduler have different configuration.")
@@ -68,7 +70,16 @@ func main() {
 		migConfigs = append(migConfigs, &migConfigFlag[i])
 	}
 
-	gceManager, err := gce.CreateGceManager(migConfigs)
+	// GCE Manager
+	var config *os.File
+	if *cloudConfig != "" {
+		config, err = os.Open(*cloudConfig)
+		if err != nil {
+			glog.Fatalf("Couldn't open cloud provider configuration %s: %#v", *cloudConfig, err)
+		}
+		defer config.Close()
+	}
+	gceManager, err := gce.CreateGceManager(migConfigs, config)
 	if err != nil {
 		glog.Fatalf("Failed to create GCE Manager: %v", err)
 	}

@@ -1372,6 +1372,6 @@
 			"ImportPath": "k8s.io/kubernetes/third_party/golang/template",
 			"Comment": "v1.3.0-alpha.4-830-g8a29f67",
 			"Rev": "8a29f67fc1a3c6e107ce0d70a8e643b99b765e0a"
-		},
+		}
 	]
 }
