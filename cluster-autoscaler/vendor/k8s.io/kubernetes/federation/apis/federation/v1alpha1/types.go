@@ -37,10 +37,11 @@ type ClusterSpec struct {
 	// Clients can use the appropriate server address as per the CIDR that they match.
 	// In case of multiple matches, clients should use the longest matching CIDR.
 	ServerAddressByClientCIDRs []ServerAddressByClientCIDR `json:"serverAddressByClientCIDRs" patchStrategy:"merge" patchMergeKey:"clientCIDR" protobuf:"bytes,1,rep,name=serverAddressByClientCIDRs"`
-	// the type (e.g. bearer token, client certificate etc) and data of the credential used to access cluster.
-	// It’s used for system routines (not behalf of users)
-	// TODO: string may not enough, https://github.com/kubernetes/kubernetes/pull/23847#discussion_r59301275
-	Credential string `json:"credential,omitempty" protobuf:"bytes,2,opt,name=credential"`
+	// Name of the secret containing kubeconfig to access this cluster.
+	// The secret is read from the kubernetes cluster that is hosting federation control plane.
+	// Admin needs to ensure that the required secret exists. Secret should be in the same namespace where federation control plane is hosted and it should have kubeconfig in its data with key "kubeconfig".
+	// This will later be changed to a reference to secret in federation control plane when the federation control plane supports secrets.
+	SecretRef *v1.LocalObjectReference `json:"secretRef" protobuf:"bytes,2,opt,name=secretRef"`
 }
 
 type ClusterConditionType string
@@ -84,6 +85,11 @@ type ClusterStatus struct {
 	// Allocatable represents the total resources of a cluster that are available for scheduling.
 	Allocatable v1.ResourceList `json:"allocatable,omitempty" protobuf:"bytes,3,rep,name=allocatable,casttype=k8s.io/kubernetes/pkg/api/v1.ResourceList,castkey=k8s.io/kubernetes/pkg/api/v1.ResourceName"`
 	ClusterMeta `json:",inline" protobuf:"bytes,4,opt,name=clusterMeta"`
+	// Zones is the list of avaliability zones in which the nodes of the cluster exist, e.g. 'us-east1-a'.
+	// These will always be in the same region.
+	Zones []string `json:"zones,omitempty" protobuf:"bytes,5,rep,name=zones"`
+	// Region is the name of the region in which all of the nodes in the cluster exist.  e.g. 'us-east1'.
+	Region string `json:"region,omitempty" protobuf:"bytes,6,opt,name=region"`
 }
 
 // +genclient=true,nonNamespaced=true

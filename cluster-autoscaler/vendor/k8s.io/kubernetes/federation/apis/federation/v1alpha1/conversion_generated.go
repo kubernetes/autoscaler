@@ -208,7 +208,16 @@ func autoConvert_v1alpha1_ClusterSpec_To_federation_ClusterSpec(in *ClusterSpec,
 	} else {
 		out.ServerAddressByClientCIDRs = nil
 	}
-	out.Credential = in.Credential
+	if in.SecretRef != nil {
+		in, out := &in.SecretRef, &out.SecretRef
+		*out = new(api.LocalObjectReference)
+		// TODO: Inefficient conversion - can we improve it?
+		if err := s.Convert(*in, *out, 0); err != nil {
+			return err
+		}
+	} else {
+		out.SecretRef = nil
+	}
 	return nil
 }
 
@@ -228,7 +237,16 @@ func autoConvert_federation_ClusterSpec_To_v1alpha1_ClusterSpec(in *federation.C
 	} else {
 		out.ServerAddressByClientCIDRs = nil
 	}
-	out.Credential = in.Credential
+	if in.SecretRef != nil {
+		in, out := &in.SecretRef, &out.SecretRef
+		*out = new(v1.LocalObjectReference)
+		// TODO: Inefficient conversion - can we improve it?
+		if err := s.Convert(*in, *out, 0); err != nil {
+			return err
+		}
+	} else {
+		out.SecretRef = nil
+	}
 	return nil
 }
 
@@ -257,6 +275,8 @@ func autoConvert_v1alpha1_ClusterStatus_To_federation_ClusterStatus(in *ClusterS
 	if err := Convert_v1alpha1_ClusterMeta_To_federation_ClusterMeta(&in.ClusterMeta, &out.ClusterMeta, s); err != nil {
 		return err
 	}
+	out.Zones = in.Zones
+	out.Region = in.Region
 	return nil
 }
 
@@ -305,6 +325,8 @@ func autoConvert_federation_ClusterStatus_To_v1alpha1_ClusterStatus(in *federati
 	if err := Convert_federation_ClusterMeta_To_v1alpha1_ClusterMeta(&in.ClusterMeta, &out.ClusterMeta, s); err != nil {
 		return err
 	}
+	out.Zones = in.Zones
+	out.Region = in.Region
 	return nil
 }
 

@@ -28,6 +28,8 @@ import (
 	"strings"
 	"time"
 
+	"gopkg.in/gcfg.v1"
+
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/service"
 	"k8s.io/kubernetes/pkg/api/unversioned"
@@ -47,7 +49,6 @@ import (
 	container "google.golang.org/api/container/v1"
 	"google.golang.org/api/googleapi"
 	"google.golang.org/cloud/compute/metadata"
-	"gopkg.in/gcfg.v1"
 )
 
 const (
@@ -76,15 +77,16 @@ const (
 
 // GCECloud is an implementation of Interface, LoadBalancer and Instances for Google Compute Engine.
 type GCECloud struct {
-	service           *compute.Service
-	containerService  *container.Service
-	projectID         string
-	region            string
-	localZone         string   // The zone in which we are running
-	managedZones      []string // List of zones we are spanning (for Ubernetes-Lite, primarily when running on master)
-	networkURL        string
-	nodeTags          []string // List of tags to use on firewall rules for load balancers
-	useMetadataServer bool
+	service                  *compute.Service
+	containerService         *container.Service
+	projectID                string
+	region                   string
+	localZone                string   // The zone in which we are running
+	managedZones             []string // List of zones we are spanning (for Ubernetes-Lite, primarily when running on master)
+	networkURL               string
+	nodeTags                 []string // List of tags to use on firewall rules for load balancers
+	useMetadataServer        bool
+	operationPollRateLimiter flowcontrol.RateLimiter
 }
 
 type Config struct {
@@ -110,16 +112,6 @@ func init() {
 // Raw access to the underlying GCE service, probably should only be used for e2e tests
 func (g *GCECloud) GetComputeService() *compute.Service {
 	return g.service
-}
-
-type rateLimitedRoundTripper struct {
-	rt      http.RoundTripper
-	limiter flowcontrol.RateLimiter
-}
-
-func (rl *rateLimitedRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	rl.limiter.Accept()
-	return rl.rt.RoundTrip(req)
 }
 
 func getProjectAndZone() (string, string, error) {
@@ -261,7 +253,7 @@ func newGCECloud(config io.Reader) (*GCECloud, error) {
 			}
 		}
 		if cfg.Global.TokenURL != "" {
-			tokenSource = newAltTokenSource(cfg.Global.TokenURL, cfg.Global.TokenBody)
+			tokenSource = NewAltTokenSource(cfg.Global.TokenURL, cfg.Global.TokenBody)
 		}
 		nodeTags = cfg.Global.NodeTags
 		if cfg.Global.Multizone {
@@ -292,11 +284,6 @@ func CreateGCECloud(projectID, region, zone string, managedZones []string, netwo
 	}
 
 	client := oauth2.NewClient(oauth2.NoContext, tokenSource)
-	// Override the transport to make it rate-limited.
-	client.Transport = &rateLimitedRoundTripper{
-		rt:      client.Transport,
-		limiter: flowcontrol.NewTokenBucketRateLimiter(10, 100), // 10 qps, 100 bucket size.
-	}
 	svc, err := compute.New(client)
 	if err != nil {
 		return nil, err
@@ -325,16 +312,19 @@ func CreateGCECloud(projectID, region, zone string, managedZones []string, netwo
 		glog.Infof("managing multiple zones: %v", managedZones)
 	}
 
+	operationPollRateLimiter := flowcontrol.NewTokenBucketRateLimiter(10, 100) // 10 qps, 100 bucket size.
+
 	return &GCECloud{
-		service:           svc,
-		containerService:  containerSvc,
-		projectID:         projectID,
-		region:            region,
-		localZone:         zone,
-		managedZones:      managedZones,
-		networkURL:        networkURL,
-		nodeTags:          nodeTags,
-		useMetadataServer: useMetadataServer,
+		service:                  svc,
+		containerService:         containerSvc,
+		projectID:                projectID,
+		region:                   region,
+		localZone:                zone,
+		managedZones:             managedZones,
+		networkURL:               networkURL,
+		nodeTags:                 nodeTags,
+		useMetadataServer:        useMetadataServer,
+		operationPollRateLimiter: operationPollRateLimiter,
 	}, nil
 }
 
@@ -415,6 +405,7 @@ func (gce *GCECloud) waitForOp(op *compute.Operation, getOperation func(operatio
 	opName := op.Name
 	return wait.Poll(operationPollInterval, operationPollTimeoutDuration, func() (bool, error) {
 		start := time.Now()
+		gce.operationPollRateLimiter.Accept()
 		duration := time.Now().Sub(start)
 		if duration > 5*time.Second {
 			glog.Infof("pollOperation: waited %v for %v", duration, opName)
@@ -490,7 +481,7 @@ func isHTTPErrorCode(err error, code int) bool {
 // Due to an interesting series of design decisions, this handles both creating
 // new load balancers and updating existing load balancers, recognizing when
 // each is needed.
-func (gce *GCECloud) EnsureLoadBalancer(apiService *api.Service, hostNames []string, annotations map[string]string) (*api.LoadBalancerStatus, error) {
+func (gce *GCECloud) EnsureLoadBalancer(apiService *api.Service, hostNames []string) (*api.LoadBalancerStatus, error) {
 	if len(hostNames) == 0 {
 		return nil, fmt.Errorf("Cannot EnsureLoadBalancer() with no hosts")
 	}
@@ -511,7 +502,7 @@ func (gce *GCECloud) EnsureLoadBalancer(apiService *api.Service, hostNames []str
 	affinityType := apiService.Spec.SessionAffinity
 
 	serviceName := types.NamespacedName{Namespace: apiService.Namespace, Name: apiService.Name}
-	glog.V(2).Infof("EnsureLoadBalancer(%v, %v, %v, %v, %v, %v, %v)", loadBalancerName, gce.region, loadBalancerIP, portStr, hosts, serviceName, annotations)
+	glog.V(2).Infof("EnsureLoadBalancer(%v, %v, %v, %v, %v, %v, %v)", loadBalancerName, gce.region, loadBalancerIP, portStr, hosts, serviceName, apiService.Annotations)
 
 	// Check if the forwarding rule exists, and if so, what its IP is.
 	fwdRuleExists, fwdRuleNeedsUpdate, fwdRuleIP, err := gce.forwardingRuleNeedsUpdate(loadBalancerName, gce.region, loadBalancerIP, ports)
@@ -621,7 +612,7 @@ func (gce *GCECloud) EnsureLoadBalancer(apiService *api.Service, hostNames []str
 	// is because the forwarding rule is used as the indicator that the load
 	// balancer is fully created - it's what getLoadBalancer checks for.
 	// Check if user specified the allow source range
-	sourceRanges, err := service.GetLoadBalancerSourceRanges(annotations)
+	sourceRanges, err := service.GetLoadBalancerSourceRanges(apiService)
 	if err != nil {
 		return nil, err
 	}
