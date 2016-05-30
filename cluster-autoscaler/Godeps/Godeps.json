@@ -1,7 +1,7 @@
 {
 	"ImportPath": "k8s.io/contrib/cluster-autoscaler",
 	"GoVersion": "go1.6",
-	"GodepVersion": "v66",
+	"GodepVersion": "v71",
 	"Packages": [
 		"./..."
 	],
@@ -466,6 +466,10 @@
 			"Rev": "4300f6b0c8a7f09e521dd0af2cee27e28846e037"
 		},
 		{
+			"ImportPath": "google.golang.org/api/container/v1",
+			"Rev": "4300f6b0c8a7f09e521dd0af2cee27e28846e037"
+		},
+		{
 			"ImportPath": "google.golang.org/api/gensupport",
 			"Rev": "4300f6b0c8a7f09e521dd0af2cee27e28846e037"
 		},
@@ -901,6 +905,11 @@
 		},
 		{
 			"ImportPath": "k8s.io/kubernetes/pkg/cloudprovider/providers/aws",
+			"Comment": "v1.3.0-alpha.4-426-g1ab5fc4",
+			"Rev": "1ab5fc4392d75c17eb9a0cf857a7f9a3c76c0ab8"
+		},
+		{
+			"ImportPath": "k8s.io/kubernetes/pkg/cloudprovider/providers/gce",
 			"Comment": "v1.3.0-alpha.4-426-g1ab5fc4",
 			"Rev": "1ab5fc4392d75c17eb9a0cf857a7f9a3c76c0ab8"
 		},
