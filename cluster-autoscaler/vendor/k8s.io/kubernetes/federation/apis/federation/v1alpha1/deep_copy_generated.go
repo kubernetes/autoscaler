@@ -111,7 +111,15 @@ func DeepCopy_v1alpha1_ClusterSpec(in ClusterSpec, out *ClusterSpec, c *conversi
 	} else {
 		out.ServerAddressByClientCIDRs = nil
 	}
-	out.Credential = in.Credential
+	if in.SecretRef != nil {
+		in, out := in.SecretRef, &out.SecretRef
+		*out = new(v1.LocalObjectReference)
+		if err := v1.DeepCopy_v1_LocalObjectReference(*in, *out, c); err != nil {
+			return err
+		}
+	} else {
+		out.SecretRef = nil
+	}
 	return nil
 }
 
@@ -156,6 +164,14 @@ func DeepCopy_v1alpha1_ClusterStatus(in ClusterStatus, out *ClusterStatus, c *co
 	if err := DeepCopy_v1alpha1_ClusterMeta(in.ClusterMeta, &out.ClusterMeta, c); err != nil {
 		return err
 	}
+	if in.Zones != nil {
+		in, out := in.Zones, &out.Zones
+		*out = make([]string, len(in))
+		copy(*out, in)
+	} else {
+		out.Zones = nil
+	}
+	out.Region = in.Region
 	return nil
 }
 

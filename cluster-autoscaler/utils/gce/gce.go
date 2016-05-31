@@ -18,8 +18,11 @@ package gce
 
 import (
 	"fmt"
+	"io"
 	"sync"
 	"time"
+
+	"gopkg.in/gcfg.v1"
 
 	"k8s.io/contrib/cluster-autoscaler/config"
 	gceurl "k8s.io/contrib/cluster-autoscaler/utils/gce_url"
@@ -28,6 +31,7 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	gce "google.golang.org/api/compute/v1"
+	provider_gce "k8s.io/kubernetes/pkg/cloudprovider/providers/gce"
 	"k8s.io/kubernetes/pkg/util/wait"
 )
 
@@ -45,9 +49,26 @@ type GceManager struct {
 }
 
 // CreateGceManager constructs gceManager object.
-func CreateGceManager(migs []*config.MigConfig) (*GceManager, error) {
+func CreateGceManager(migs []*config.MigConfig, configReader io.Reader) (*GceManager, error) {
+	// Create Google Compute Engine token.
+	tokenSource := google.ComputeTokenSource("")
+	if configReader != nil {
+		var cfg provider_gce.Config
+		if err := gcfg.ReadInto(&cfg, configReader); err != nil {
+			glog.Errorf("Couldn't read config: %v", err)
+			return nil, err
+		}
+		if cfg.Global.TokenURL == "" {
+			return nil, fmt.Errorf("TokenURL not specified")
+		}
+		glog.Infof("Using TokenSource from config %#v", tokenSource)
+		tokenSource = provider_gce.NewAltTokenSource(cfg.Global.TokenURL, cfg.Global.TokenBody)
+	} else {
+		glog.Infof("Using default TokenSource %#v", tokenSource)
+	}
+
 	// Create Google Compute Engine service.
-	client := oauth2.NewClient(oauth2.NoContext, google.ComputeTokenSource(""))
+	client := oauth2.NewClient(oauth2.NoContext, tokenSource)
 	gceService, err := gce.New(client)
 	if err != nil {
 		return nil, err
