@@ -52,6 +52,13 @@ candidateloop:
 		if fastCheck {
 			if nodeInfo, found := nodeNameToNodeInfo[node.Name]; found {
 				podsToRemove, err = FastGetPodsToMove(nodeInfo, false, true, kube_api.Codecs.UniversalDecoder())
+				if err != nil {
+					glog.V(2).Infof("Node %s cannot be removed: %v", node.Name, err)
+					continue candidateloop
+				}
+			} else {
+				glog.V(2).Infof("NodeInfo for %s not found", node.Name)
+				continue candidateloop
 			}
 		} else {
 			drainResult, _, _, err := cmd.GetPodsForDeletionOnNodeDrain(client, node.Name,
@@ -59,7 +66,7 @@ candidateloop:
 
 			if err != nil {
 				glog.V(2).Infof("Node %s cannot be removed: %v", node.Name, err)
-				continue
+				continue candidateloop
 			}
 			podsToRemove = make([]*kube_api.Pod, 0, len(drainResult))
 			for i := range drainResult {
