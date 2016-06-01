@@ -212,6 +212,18 @@ func createNodeNameToInfoMap(pods []*kube_api.Pod, nodes []*kube_api.Node) map[s
 			nodeInfo.SetNode(node)
 		}
 	}
+
+	// Some pods may be out of sync with node lists. Removing incomplete node infos.
+	keysToRemove := make([]string, 0)
+	for key, nodeInfo := range nodeNameToNodeInfo {
+		if nodeInfo.Node() == nil {
+			keysToRemove = append(keysToRemove, key)
+		}
+	}
+	for _, key := range keysToRemove {
+		delete(nodeNameToNodeInfo, key)
+	}
+
 	return nodeNameToNodeInfo
 }
 
