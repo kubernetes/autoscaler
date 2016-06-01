@@ -71,15 +71,17 @@ func main() {
 	}
 
 	// GCE Manager
-	var config *os.File
+	var gceManager *gce.GceManager
 	if *cloudConfig != "" {
-		config, err = os.Open(*cloudConfig)
+		config, err := os.Open(*cloudConfig)
 		if err != nil {
 			glog.Fatalf("Couldn't open cloud provider configuration %s: %#v", *cloudConfig, err)
 		}
 		defer config.Close()
+		gceManager, err = gce.CreateGceManager(migConfigs, config)
+	} else {
+		gceManager, err = gce.CreateGceManager(migConfigs, nil)
 	}
-	gceManager, err := gce.CreateGceManager(migConfigs, config)
 	if err != nil {
 		glog.Fatalf("Failed to create GCE Manager: %v", err)
 	}
