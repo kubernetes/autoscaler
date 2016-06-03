@@ -114,6 +114,8 @@ func ScaleDown(
 	for _, node := range nodes {
 		if val, found := underutilizedNodes[node.Name]; found {
 
+			glog.V(2).Infof("%s was underutilized for %s", node.Name, now.Sub(val).String())
+
 			// Check how long the node was underutilized.
 			if !val.Add(underutilizationTime).Before(now) {
 				continue

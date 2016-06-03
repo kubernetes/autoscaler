@@ -42,9 +42,14 @@ func FindNodesToRemove(candidates []*kube_api.Node, allNodes []*kube_api.Node, p
 	}
 	result := make([]*kube_api.Node, 0)
 
+	evaluationType := "Detailed evaluation"
+	if fastCheck {
+		evaluationType = "Fast evaluation"
+	}
+
 candidateloop:
 	for _, node := range candidates {
-		glog.V(2).Infof("Considering %s for removal", node.Name)
+		glog.V(2).Infof("%s: %s for removal", evaluationType, node.Name)
 
 		var podsToRemove []*kube_api.Pod
 		var err error
@@ -53,11 +58,11 @@ candidateloop:
 			if nodeInfo, found := nodeNameToNodeInfo[node.Name]; found {
 				podsToRemove, err = FastGetPodsToMove(nodeInfo, false, true, kube_api.Codecs.UniversalDecoder())
 				if err != nil {
-					glog.V(2).Infof("Node %s cannot be removed: %v", node.Name, err)
+					glog.V(2).Infof("%s: node %s cannot be removed: %v", evaluationType, node.Name, err)
 					continue candidateloop
 				}
 			} else {
-				glog.V(2).Infof("NodeInfo for %s not found", node.Name)
+				glog.V(2).Infof("%s: nodeInfo for %s not found", evaluationType, node.Name)
 				continue candidateloop
 			}
 		} else {
@@ -65,7 +70,7 @@ candidateloop:
 				kube_api.Codecs.UniversalDecoder(), false, true)
 
 			if err != nil {
-				glog.V(2).Infof("Node %s cannot be removed: %v", node.Name, err)
+				glog.V(2).Infof("%s: node %s cannot be removed: %v", evaluationType, node.Name, err)
 				continue candidateloop
 			}
 			podsToRemove = make([]*kube_api.Pod, 0, len(drainResult))
@@ -76,11 +81,12 @@ candidateloop:
 		findProblems := findPlaceFor(node.Name, podsToRemove, allNodes, nodeNameToNodeInfo, predicateChecker)
 		if findProblems == nil {
 			result = append(result, node)
+			glog.V(2).Info("%s: node %s may be removed", evaluationType, node.Name)
 			if len(result) >= maxCount {
 				break candidateloop
 			}
 		} else {
-			glog.V(2).Infof("Node %s is not suitable for removal %v", node.Name, err)
+			glog.V(2).Infof("%s: node %s is not suitable for removal %v", evaluationType, node.Name, err)
 		}
 	}
 	return result, nil
