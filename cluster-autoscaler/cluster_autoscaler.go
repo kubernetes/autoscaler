@@ -39,7 +39,7 @@ var (
 	verifyUnschedulablePods = flag.Bool("verify-unschedulable-pods", true,
 		"If enabled CA will ensure that each pod marked by Scheduler as unschedulable actually can't be scheduled on any node."+
 			"This prevents from adding unnecessary nodes in situation when CA and Scheduler have different configuration.")
-	scaleDownEnabled = flag.Bool("experimental-scale-down-enabled", false, "Should CA scale down the cluster")
+	scaleDownEnabled = flag.Bool("scale-down-enabled", true, "Should CA scale down the cluster")
 	scaleDownDelay   = flag.Duration("scale-down-delay", 10*time.Minute,
 		"Duration from the last scale up to the time when CA starts to check scale down options")
 	scaleDownUnderutilizedTime = flag.Duration("scale-down-underutilized-time", 10*time.Minute,
