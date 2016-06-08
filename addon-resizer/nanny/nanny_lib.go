@@ -24,8 +24,8 @@ import (
 	"time"
 
 	log "github.com/golang/glog"
+	inf "gopkg.in/inf.v0"
 	api "k8s.io/kubernetes/pkg/api/v1"
-	inf "speter.net/go/exp/math/dec/inf"
 )
 
 // checkResource determines whether a specific resource needs to be over-written.
@@ -38,7 +38,7 @@ func checkResource(threshold int64, actual, expected api.ResourceList, res api.R
 	if !ok && !expOk {
 		return false
 	}
-	q := new(inf.Dec).QuoRound(val.Amount, expVal.Amount, 2, inf.RoundDown)
+	q := new(inf.Dec).QuoRound(val.AsDec(), expVal.AsDec(), 2, inf.RoundDown)
 	lower := inf.NewDec(100-threshold, 2)
 	upper := inf.NewDec(100+threshold, 2)
 	if q.Cmp(lower) == -1 || q.Cmp(upper) == 1 {

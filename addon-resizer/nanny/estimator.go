@@ -20,8 +20,6 @@ import (
 	api "k8s.io/kubernetes/pkg/api/v1"
 
 	"k8s.io/kubernetes/pkg/api/resource"
-
-	inf "speter.net/go/exp/math/dec/inf"
 )
 
 // Resource defines the name of a resource, the quantity, and the marginal value.
@@ -39,17 +37,10 @@ func (e LinearEstimator) scaleWithNodes(numNodes uint64) *api.ResourceRequiremen
 	limits := make(api.ResourceList)
 	requests := make(api.ResourceList)
 	for _, r := range e.Resources {
-		num := inf.NewDec(int64(numNodes), 0)
-		num.Mul(num, r.ExtraPerNode.Amount)
-		num.Add(num, r.Base.Amount)
-		limits[r.Name] = resource.Quantity{
-			Amount: num,
-			Format: r.Base.Format,
-		}
-		requests[r.Name] = resource.Quantity{
-			Amount: num,
-			Format: r.Base.Format,
-		}
+		val := r.Base.MilliValue() + r.ExtraPerNode.MilliValue()*int64(numNodes)
+		newRes := resource.NewMilliQuantity(val, r.Base.Format)
+		limits[r.Name] = *newRes
+		requests[r.Name] = *newRes
 	}
 	return &api.ResourceRequirements{
 		Limits:   limits,

@@ -17,7 +17,6 @@ limitations under the License.
 package nanny
 
 import (
-	"reflect"
 	"testing"
 
 	resource "k8s.io/kubernetes/pkg/api/resource"
@@ -128,6 +127,21 @@ var (
 	noResources = api.ResourceList{}
 )
 
+func verifyResources(t *testing.T, kind string, got, want api.ResourceList) {
+	if len(got) != len(want) {
+		t.Errorf("%s not equal got: %+v want: %+v", kind, got, want)
+	}
+	for res, val := range want {
+		actVal, ok := got[res]
+		if !ok {
+			t.Errorf("missing resource %s in %s", res, kind)
+		}
+		if val.Cmp(actVal) != 0 {
+			t.Errorf("not equal resource %s in %s, got: %+v, want: %+v", res, kind, actVal, val)
+		}
+	}
+}
+
 func TestEstimateResources(t *testing.T) {
 	testCases := []struct {
 		e        ResourceEstimator
@@ -147,14 +161,13 @@ func TestEstimateResources(t *testing.T) {
 		{emptyEstimator, 3, noResources, noResources},
 	}
 
-	for i, tc := range testCases {
+	for _, tc := range testCases {
 		got := tc.e.scaleWithNodes(tc.numNodes)
 		want := &api.ResourceRequirements{
 			Limits:   tc.limits,
 			Requests: tc.requests,
 		}
-		if !reflect.DeepEqual(got, want) {
-			t.Errorf("scaleWithNodes got %v, want %v in test case %d", got, want, i)
-		}
+		verifyResources(t, "limits", got.Limits, want.Limits)
+		verifyResources(t, "requests", got.Requests, want.Limits)
 	}
 }
