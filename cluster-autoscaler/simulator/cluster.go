@@ -17,6 +17,7 @@ limitations under the License.
 package simulator
 
 import (
+	"flag"
 	"fmt"
 	"math"
 
@@ -27,6 +28,14 @@ import (
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 
 	"github.com/golang/glog"
+)
+
+var (
+	skipNodesWithSystemPods = flag.Bool("skip-nodes-with-system-pods", true,
+		"If true cluster autoscaler will never delete nodes with pods from kube-system (except for DeamonSet "+
+			"or mirror pods)")
+	skipNodesWithLocalStorage = flag.Bool("skip-nodes-with-local-storage", true,
+		"If true cluster autoscaler will never delete nodes with pods with local storage, e.g. EmptyDir or HostPath")
 )
 
 // FindNodesToRemove finds nodes that can be removed.
@@ -56,7 +65,7 @@ candidateloop:
 
 		if fastCheck {
 			if nodeInfo, found := nodeNameToNodeInfo[node.Name]; found {
-				podsToRemove, err = FastGetPodsToMove(nodeInfo, false, true, kube_api.Codecs.UniversalDecoder())
+				podsToRemove, err = FastGetPodsToMove(nodeInfo, false, *skipNodesWithSystemPods, *skipNodesWithLocalStorage, kube_api.Codecs.UniversalDecoder())
 				if err != nil {
 					glog.V(2).Infof("%s: node %s cannot be removed: %v", evaluationType, node.Name, err)
 					continue candidateloop
