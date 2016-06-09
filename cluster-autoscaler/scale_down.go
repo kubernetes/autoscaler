@@ -36,22 +36,23 @@ type ScaleDownResult int
 const (
 	// ScaleDownError - scale down finished with error.
 	ScaleDownError ScaleDownResult = iota
-	// ScaleDownNoUnderutilized - no underutilized nodedes and no errors.
-	ScaleDownNoUnderutilized ScaleDownResult = iota
-	// ScaleDownNoNodeDeleted - underutilized nodes present but not available for deletion.
+	// ScaleDownNoUnneeded - no unneeded nodes and no errors.
+	ScaleDownNoUnneeded ScaleDownResult = iota
+	// ScaleDownNoNodeDeleted - unneeded nodes present but not available for deletion.
 	ScaleDownNoNodeDeleted ScaleDownResult = iota
 	// ScaleDownNodeDeleted - a node was deleted.
 	ScaleDownNodeDeleted ScaleDownResult = iota
 )
 
-// CalculateUnderutilizedNodes calculates which nodes are underutilized.
-func CalculateUnderutilizedNodes(nodes []*kube_api.Node,
-	underutilizedNodes map[string]time.Time,
+// FindUnneededNodes calculates which nodes are not needed, i.e. all pods can be scheduled somewhere else,
+// and updates unneededNodes map accordingly.
+func FindUnneededNodes(nodes []*kube_api.Node,
+	unneededNodes map[string]time.Time,
 	utilizationThreshold float64,
 	pods []*kube_api.Pod,
 	predicateChecker *simulator.PredicateChecker) map[string]time.Time {
 
-	currentlyUnderutilizedNodes := make([]*kube_api.Node, 0)
+	currentlyUnneededNodes := make([]*kube_api.Node, 0)
 	nodeNameToNodeInfo := schedulercache.CreateNodeNameToInfoMap(pods)
 
 	// Phase1 - look at the nodes reservation.
@@ -72,15 +73,15 @@ func CalculateUnderutilizedNodes(nodes []*kube_api.Node,
 			glog.V(4).Infof("Node %s is not suitable for removal - reservation to big (%f)", node.Name, reservation)
 			continue
 		}
-		currentlyUnderutilizedNodes = append(currentlyUnderutilizedNodes, node)
+		currentlyUnneededNodes = append(currentlyUnneededNodes, node)
 	}
 
 	// Phase2 - check which nodes can be probably removed using fast drain.
-	nodesToRemove, err := simulator.FindNodesToRemove(currentlyUnderutilizedNodes, nodes, pods,
+	nodesToRemove, err := simulator.FindNodesToRemove(currentlyUnneededNodes, nodes, pods,
 		nil, predicateChecker,
-		len(currentlyUnderutilizedNodes), true)
+		len(currentlyUnneededNodes), true)
 	if err != nil {
-		glog.Errorf("Error while evaluating node utilization: %v", err)
+		glog.Errorf("Error while simulating node drains: %v", err)
 		return map[string]time.Time{}
 	}
 
@@ -89,7 +90,7 @@ func CalculateUnderutilizedNodes(nodes []*kube_api.Node,
 	result := make(map[string]time.Time)
 	for _, node := range nodesToRemove {
 		name := node.Name
-		if val, found := underutilizedNodes[name]; !found {
+		if val, found := unneededNodes[name]; !found {
 			result[name] = now
 		} else {
 			result[name] = val
@@ -102,8 +103,8 @@ func CalculateUnderutilizedNodes(nodes []*kube_api.Node,
 // removed and error if such occured.
 func ScaleDown(
 	nodes []*kube_api.Node,
-	underutilizedNodes map[string]time.Time,
-	underutilizationTime time.Duration,
+	unneededNodes map[string]time.Time,
+	unneededTime time.Duration,
 	pods []*kube_api.Pod,
 	gceManager *gce.GceManager,
 	client *kube_client.Client,
@@ -112,12 +113,12 @@ func ScaleDown(
 	now := time.Now()
 	candidates := make([]*kube_api.Node, 0)
 	for _, node := range nodes {
-		if val, found := underutilizedNodes[node.Name]; found {
+		if val, found := unneededNodes[node.Name]; found {
 
 			glog.V(2).Infof("%s was underutilized for %s", node.Name, now.Sub(val).String())
 
 			// Check how long the node was underutilized.
-			if !val.Add(underutilizationTime).Before(now) {
+			if !val.Add(unneededTime).Before(now) {
 				continue
 			}
 
@@ -148,7 +149,7 @@ func ScaleDown(
 	}
 	if len(candidates) == 0 {
 		glog.Infof("No candidates for scale down")
-		return ScaleDownNoUnderutilized, nil
+		return ScaleDownNoUnneeded, nil
 	}
 
 	nodesToRemove, err := simulator.FindNodesToRemove(candidates, nodes, pods, client, predicateChecker, 1, false)
