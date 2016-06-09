@@ -36,7 +36,7 @@ import (
 
 var (
 	migConfigFlag           config.MigConfigFlag
-	address                 = flag.String("address", ":8080", "The address to expose prometheus metrics.")
+	address                 = flag.String("address", ":8085", "The address to expose prometheus metrics.")
 	kubernetes              = flag.String("kubernetes", "", "Kuberentes master location. Leave blank for default")
 	cloudConfig             = flag.String("cloud-config", "", "The path to the cloud provider configuration file.  Empty string for no configuration file.")
 	verifyUnschedulablePods = flag.Bool("verify-unschedulable-pods", true,
