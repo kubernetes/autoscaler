@@ -81,7 +81,7 @@ candidateloop:
 		findProblems := findPlaceFor(node.Name, podsToRemove, allNodes, nodeNameToNodeInfo, predicateChecker)
 		if findProblems == nil {
 			result = append(result, node)
-			glog.V(2).Info("%s: node %s may be removed", evaluationType, node.Name)
+			glog.V(2).Infof("%s: node %s may be removed", evaluationType, node.Name)
 			if len(result) >= maxCount {
 				break candidateloop
 			}
