@@ -49,8 +49,9 @@ var (
 		"How long the node should be unneeded before it is eligible for scale down")
 	scaleDownUtilizationThreshold = flag.Float64("scale-down-utilization-threshold", 0.5,
 		"Node utilization level, defined as sum of requested resources divided by capacity, below which a node can be considered for scale down")
-	scaleDownTrialFrequency = flag.Duration("scale-down-trial-frequency", 10*time.Minute,
+	scaleDownTrialInterval = flag.Duration("scale-down-trial-interval", 10*time.Minute,
 		"How often scale down possiblity is check")
+	scanInterval = flag.Duration("scan-interval", 10*time.Second, "How often cluster is reevaluated for scale up or down")
 )
 
 func main() {
@@ -116,7 +117,7 @@ func main() {
 
 	for {
 		select {
-		case <-time.After(time.Minute):
+		case <-time.After(*scanInterval):
 			{
 				loopStart := time.Now()
 				updateLastTime("main")
@@ -204,7 +205,7 @@ func main() {
 
 					// In dry run only utilization is updated
 					calculateUnneededOnly := lastScaleUpTime.Add(*scaleDownDelay).After(time.Now()) ||
-						lastScaleDownFailedTrial.Add(*scaleDownTrialFrequency).After(time.Now()) ||
+						lastScaleDownFailedTrial.Add(*scaleDownTrialInterval).After(time.Now()) ||
 						schedulablePodsPresent
 
 					updateLastTime("findUnneeded")
