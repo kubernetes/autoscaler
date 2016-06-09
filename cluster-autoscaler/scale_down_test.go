@@ -28,7 +28,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCalculateUnderutilizedNodes(t *testing.T) {
+func TestFindUnneededNodes(t *testing.T) {
 	p1 := BuildTestPod("p1", 100, 0)
 	p1.Spec.NodeName = "n1"
 
@@ -55,7 +55,7 @@ func TestCalculateUnderutilizedNodes(t *testing.T) {
 	n3 := BuildTestNode("n3", 1000, 10)
 	n4 := BuildTestNode("n4", 10000, 10)
 
-	result := CalculateUnderutilizedNodes([]*kube_api.Node{n1, n2, n3, n4}, map[string]time.Time{}, 0.35,
+	result := FindUnneededNodes([]*kube_api.Node{n1, n2, n3, n4}, map[string]time.Time{}, 0.35,
 		[]*kube_api.Pod{p1, p2, p3, p4}, simulator.NewTestPredicateChecker())
 
 	assert.Equal(t, 1, len(result))
@@ -63,7 +63,7 @@ func TestCalculateUnderutilizedNodes(t *testing.T) {
 	assert.True(t, found)
 
 	result["n1"] = time.Now()
-	result2 := CalculateUnderutilizedNodes([]*kube_api.Node{n1, n2, n3, n4}, result, 0.35,
+	result2 := FindUnneededNodes([]*kube_api.Node{n1, n2, n3, n4}, result, 0.35,
 		[]*kube_api.Pod{p1, p2, p3, p4}, simulator.NewTestPredicateChecker())
 
 	assert.Equal(t, 1, len(result2))

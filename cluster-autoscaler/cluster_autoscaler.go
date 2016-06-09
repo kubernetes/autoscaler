@@ -45,8 +45,8 @@ var (
 	scaleDownEnabled = flag.Bool("scale-down-enabled", true, "Should CA scale down the cluster")
 	scaleDownDelay   = flag.Duration("scale-down-delay", 10*time.Minute,
 		"Duration from the last scale up to the time when CA starts to check scale down options")
-	scaleDownUnderutilizedTime = flag.Duration("scale-down-underutilized-time", 10*time.Minute,
-		"How long the node should be underutilized before it is eligible for scale down")
+	scaleDownUnneededTime = flag.Duration("scale-down-unneeded-time", 10*time.Minute,
+		"How long the node should be unneeded before it is eligible for scale down")
 	scaleDownUtilizationThreshold = flag.Float64("scale-down-utilization-threshold", 0.5,
 		"Node utilization level, defined as sum of requested resources divided by capacity, below which a node can be considered for scale down")
 	scaleDownTrialFrequency = flag.Duration("scale-down-trial-frequency", 10*time.Minute,
@@ -107,7 +107,7 @@ func main() {
 
 	lastScaleUpTime := time.Now()
 	lastScaleDownFailedTrial := time.Now()
-	underutilizedNodes := make(map[string]time.Time)
+	unneededNodes := make(map[string]time.Time)
 
 	eventBroadcaster := kube_record.NewBroadcaster()
 	eventBroadcaster.StartLogging(glog.Infof)
@@ -200,32 +200,32 @@ func main() {
 				}
 
 				if *scaleDownEnabled {
-					utilizationStart := time.Now()
+					unneededStart := time.Now()
 
 					// In dry run only utilization is updated
-					calculateUtilizationOnly := lastScaleUpTime.Add(*scaleDownDelay).After(time.Now()) ||
+					calculateUnneededOnly := lastScaleUpTime.Add(*scaleDownDelay).After(time.Now()) ||
 						lastScaleDownFailedTrial.Add(*scaleDownTrialFrequency).After(time.Now()) ||
 						schedulablePodsPresent
 
-					updateLastTime("utilization")
+					updateLastTime("findUnneeded")
 
-					underutilizedNodes = CalculateUnderutilizedNodes(
+					unneededNodes = FindUnneededNodes(
 						nodes,
-						underutilizedNodes,
+						unneededNodes,
 						*scaleDownUtilizationThreshold,
 						allScheduled,
 						predicateChecker)
 
-					updateDuration("utilization", utilizationStart)
+					updateDuration("findUnneeded", unneededStart)
 
-					if !calculateUtilizationOnly {
+					if !calculateUnneededOnly {
 						scaleDownStart := time.Now()
 						updateLastTime("scaledown")
 
 						result, err := ScaleDown(
 							nodes,
-							underutilizedNodes,
-							*scaleDownUnderutilizedTime,
+							unneededNodes,
+							*scaleDownUnneededTime,
 							allScheduled,
 							gceManager, kubeClient, predicateChecker)
 
@@ -235,9 +235,9 @@ func main() {
 							glog.Errorf("Failed to scale down: %v", err)
 						} else {
 							if result == ScaleDownNodeDeleted {
-								// Clean the utilization map to be super sure that the simulated
+								// Clean the map with unneeded nodes to be super sure that the simulated
 								// deletions are made in the new context.
-								underutilizedNodes = make(map[string]time.Time, len(underutilizedNodes))
+								unneededNodes = make(map[string]time.Time, len(unneededNodes))
 							} else {
 								lastScaleDownFailedTrial = time.Now()
 							}
