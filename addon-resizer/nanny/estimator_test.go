@@ -89,6 +89,27 @@ var (
 		Resources: []Resource{},
 	}
 
+	exponentialEstimator = ExponentialEstimator{
+		Resources: []Resource{
+			{
+				Base:         resource.MustParse("0.3"),
+				ExtraPerNode: resource.MustParse("1"),
+				Name:         "cpu",
+			},
+			{
+				Base:         resource.MustParse("30Mi"),
+				ExtraPerNode: resource.MustParse("1Mi"),
+				Name:         "memory",
+			},
+			{
+				Base:         resource.MustParse("30Gi"),
+				ExtraPerNode: resource.MustParse("1Gi"),
+				Name:         "storage",
+			},
+		},
+		ScaleFactor: 1.5,
+	}
+
 	baseResources = api.ResourceList{
 		"cpu":     resource.MustParse("0.3"),
 		"memory":  resource.MustParse("30Mi"),
@@ -125,6 +146,17 @@ var (
 		"memory": resource.MustParse("33Mi"),
 	}
 	noResources = api.ResourceList{}
+
+	sixteenNodeResources = api.ResourceList{
+		"cpu":     resource.MustParse("16.3"),
+		"memory":  resource.MustParse("46Mi"),
+		"storage": resource.MustParse("46Gi"),
+	}
+	twentyFourNodeResources = api.ResourceList{
+		"cpu":     resource.MustParse("24.3"),
+		"memory":  resource.MustParse("54Mi"),
+		"storage": resource.MustParse("54Gi"),
+	}
 )
 
 func verifyResources(t *testing.T, kind string, got, want api.ResourceList) {
@@ -151,6 +183,8 @@ func TestEstimateResources(t *testing.T) {
 	}{
 		{fullEstimator, 0, baseResources, baseResources},
 		{fullEstimator, 3, threeNodeResources, threeNodeResources},
+		{fullEstimator, 16, sixteenNodeResources, sixteenNodeResources},
+		{fullEstimator, 24, twentyFourNodeResources, twentyFourNodeResources},
 		{noCPUEstimator, 0, noCPUBaseResources, noCPUBaseResources},
 		{noCPUEstimator, 3, threeNodeNoCPUResources, threeNodeNoCPUResources},
 		{noMemoryEstimator, 0, noMemoryBaseResources, noMemoryBaseResources},
@@ -159,6 +193,13 @@ func TestEstimateResources(t *testing.T) {
 		{noStorageEstimator, 3, threeNodeNoStorageResources, threeNodeNoStorageResources},
 		{emptyEstimator, 0, noResources, noResources},
 		{emptyEstimator, 3, noResources, noResources},
+		{exponentialEstimator, 0, sixteenNodeResources, sixteenNodeResources},
+		{exponentialEstimator, 3, sixteenNodeResources, sixteenNodeResources},
+		{exponentialEstimator, 10, sixteenNodeResources, sixteenNodeResources},
+		{exponentialEstimator, 16, sixteenNodeResources, sixteenNodeResources},
+		{exponentialEstimator, 17, twentyFourNodeResources, twentyFourNodeResources},
+		{exponentialEstimator, 20, twentyFourNodeResources, twentyFourNodeResources},
+		{exponentialEstimator, 24, twentyFourNodeResources, twentyFourNodeResources},
 	}
 
 	for _, tc := range testCases {

@@ -48,6 +48,7 @@ var (
 	containerName = flag.String("container", "pod-nanny", "The name of the container to watch. This defaults to the nanny itself.")
 	// Flags to control runtime behavior.
 	pollPeriod = time.Millisecond * time.Duration(*flag.Int("poll-period", 10000, "The time, in milliseconds, to poll the dependent container."))
+	estimator  = flag.String("estimator", "linear", "The estimator to use. Currently supported: linear, exponential")
 )
 
 func main() {
@@ -107,8 +108,19 @@ func main() {
 	}
 
 	log.Infof("Resources: %v", resources)
-	est := nanny.LinearEstimator{
-		Resources: resources,
+
+	var est nanny.ResourceEstimator
+	if *estimator == "linear" {
+		est = nanny.LinearEstimator{
+			Resources: resources,
+		}
+	} else if *estimator == "exponential" {
+		est = nanny.ExponentialEstimator{
+			Resources:   resources,
+			ScaleFactor: 1.5,
+		}
+	} else {
+		log.Fatalf("Estimator %s not supported", *estimator)
 	}
 
 	// Begin nannying.

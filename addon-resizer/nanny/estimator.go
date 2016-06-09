@@ -22,6 +22,10 @@ import (
 	"k8s.io/kubernetes/pkg/api/resource"
 )
 
+const (
+	eps = float64(0.01)
+)
+
 // Resource defines the name of a resource, the quantity, and the marginal value.
 type Resource struct {
 	Base, ExtraPerNode resource.Quantity
@@ -34,9 +38,29 @@ type LinearEstimator struct {
 }
 
 func (e LinearEstimator) scaleWithNodes(numNodes uint64) *api.ResourceRequirements {
+	return calculateResources(numNodes, e.Resources)
+}
+
+// ExponentialEstimator estimates the amount of resources in the way that
+// prevents from frequent updates but may end up with larger resource usage
+// than actually needed (though no more than ScaleFactor).
+type ExponentialEstimator struct {
+	Resources   []Resource
+	ScaleFactor float64
+}
+
+func (e ExponentialEstimator) scaleWithNodes(numNodes uint64) *api.ResourceRequirements {
+	n := uint64(16)
+	for n < numNodes {
+		n = uint64(float64(n)*e.ScaleFactor + eps)
+	}
+	return calculateResources(n, e.Resources)
+}
+
+func calculateResources(numNodes uint64, resources []Resource) *api.ResourceRequirements {
 	limits := make(api.ResourceList)
 	requests := make(api.ResourceList)
-	for _, r := range e.Resources {
+	for _, r := range resources {
 		val := r.Base.MilliValue() + r.ExtraPerNode.MilliValue()*int64(numNodes)
 		newRes := resource.NewMilliQuantity(val, r.Base.Format)
 		limits[r.Name] = *newRes
