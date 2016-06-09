@@ -121,6 +121,7 @@ func ScaleUp(unschedulablePods []*kube_api.Pod, nodes []*kube_api.Node, migConfi
 		}
 		newSize := currentSize + int64(estimate)
 		if newSize >= int64(bestOption.migConfig.MaxSize) {
+			glog.V(1).Infof("Capping size to MAX (%d)", bestOption.migConfig.MaxSize)
 			newSize = int64(bestOption.migConfig.MaxSize)
 		}
 		glog.V(1).Infof("Setting %s size to %d", bestOption.migConfig.Url(), newSize)
