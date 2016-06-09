@@ -58,11 +58,11 @@ func main() {
 		"Can be used multiple times. Format: <min>:<max>:<migurl>")
 	flag.Parse()
 
-	http.Handle("/metrics", prometheus.Handler())
-	err := http.ListenAndServe(*address, nil)
-	if err != nil {
-		glog.Fatalf("Failed to start http server metrics: %v", err)
-	}
+	go func() {
+		http.Handle("/metrics", prometheus.Handler())
+		err := http.ListenAndServe(*address, nil)
+		glog.Fatalf("Failed to start metrics: %v", err)
+	}()
 
 	url, err := url.Parse(*kubernetes)
 	if err != nil {
