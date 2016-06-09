@@ -92,20 +92,20 @@ candidateloop:
 	return result, nil
 }
 
-// CalculateReservation calculates reservation of a node.
-func CalculateReservation(node *kube_api.Node, nodeInfo *schedulercache.NodeInfo) (float64, error) {
-	cpu, err := calculateReservationOfResource(node, nodeInfo, kube_api.ResourceCPU)
+// CalculateUtilization calculates utilization of a node, defined as total amount of requested resources divided by capacity.
+func CalculateUtilization(node *kube_api.Node, nodeInfo *schedulercache.NodeInfo) (float64, error) {
+	cpu, err := calculateUtilizationOfResource(node, nodeInfo, kube_api.ResourceCPU)
 	if err != nil {
 		return 0, err
 	}
-	mem, err := calculateReservationOfResource(node, nodeInfo, kube_api.ResourceMemory)
+	mem, err := calculateUtilizationOfResource(node, nodeInfo, kube_api.ResourceMemory)
 	if err != nil {
 		return 0, err
 	}
 	return math.Max(cpu, mem), nil
 }
 
-func calculateReservationOfResource(node *kube_api.Node, nodeInfo *schedulercache.NodeInfo, resourceName kube_api.ResourceName) (float64, error) {
+func calculateUtilizationOfResource(node *kube_api.Node, nodeInfo *schedulercache.NodeInfo, resourceName kube_api.ResourceName) (float64, error) {
 	nodeCapacity, found := node.Status.Capacity[resourceName]
 	if !found {
 		return 0, fmt.Errorf("Failed to get %v from %s", resourceName, node.Name)
@@ -139,7 +139,7 @@ func findPlaceFor(bannedNode string, pods []*kube_api.Pod, nodes []*kube_api.Nod
 		glog.V(4).Infof("Looking for place for %s/%s", pod.Namespace, pod.Name)
 		podKey := fmt.Sprintf("%s/%s", pod.Namespace, pod.Name)
 
-		// TODO: Sort nodes by reservation
+		// TODO: Sort nodes by utilization
 	nodeloop:
 		for _, node := range nodes {
 			if node.Name == bannedNode {

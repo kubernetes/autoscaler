@@ -27,20 +27,20 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestReservation(t *testing.T) {
+func TestUtilization(t *testing.T) {
 	pod := BuildTestPod("p1", 100, 200000)
 	pod2 := BuildTestPod("p2", -1, -1)
 
 	nodeInfo := schedulercache.NewNodeInfo(pod, pod, pod2)
 	node := BuildTestNode("node1", 2000, 2000000)
 
-	reservation, err := CalculateReservation(node, nodeInfo)
+	utilization, err := CalculateUtilization(node, nodeInfo)
 	assert.NoError(t, err)
-	assert.InEpsilon(t, 2.0/10, reservation, 0.01)
+	assert.InEpsilon(t, 2.0/10, utilization, 0.01)
 
 	node2 := BuildTestNode("node1", 2000, -1)
 
-	_, err = CalculateReservation(node2, nodeInfo)
+	_, err = CalculateUtilization(node2, nodeInfo)
 	assert.Error(t, err)
 }
 

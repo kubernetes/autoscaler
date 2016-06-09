@@ -54,22 +54,22 @@ func CalculateUnderutilizedNodes(nodes []*kube_api.Node,
 	currentlyUnderutilizedNodes := make([]*kube_api.Node, 0)
 	nodeNameToNodeInfo := schedulercache.CreateNodeNameToInfoMap(pods)
 
-	// Phase1 - look at the nodes reservation.
+	// Phase1 - look at the nodes utilization.
 	for _, node := range nodes {
 		nodeInfo, found := nodeNameToNodeInfo[node.Name]
 		if !found {
 			glog.Errorf("Node info for %s not found", node.Name)
 			continue
 		}
-		reservation, err := simulator.CalculateReservation(node, nodeInfo)
+		utilization, err := simulator.CalculateUtilization(node, nodeInfo)
 
 		if err != nil {
-			glog.Warningf("Failed to calculate reservation for %s: %v", node.Name, err)
+			glog.Warningf("Failed to calculate utilization for %s: %v", node.Name, err)
 		}
-		glog.V(4).Infof("Node %s - reservation %f", node.Name, reservation)
+		glog.V(4).Infof("Node %s - utilization %f", node.Name, utilization)
 
-		if reservation >= utilizationThreshold {
-			glog.V(4).Infof("Node %s is not suitable for removal - reservation to big (%f)", node.Name, reservation)
+		if utilization >= utilizationThreshold {
+			glog.V(4).Infof("Node %s is not suitable for removal - utilization to big (%f)", node.Name, utilization)
 			continue
 		}
 		currentlyUnderutilizedNodes = append(currentlyUnderutilizedNodes, node)

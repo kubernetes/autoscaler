@@ -48,7 +48,7 @@ var (
 	scaleDownUnderutilizedTime = flag.Duration("scale-down-underutilized-time", 10*time.Minute,
 		"How long the node should be underutilized before it is eligible for scale down")
 	scaleDownUtilizationThreshold = flag.Float64("scale-down-utilization-threshold", 0.5,
-		"Node reservation level below which a node can be considered for scale down")
+		"Node utilization level, defined as sum of requested resources divided by capacity, below which a node can be considered for scale down")
 	scaleDownTrialFrequency = flag.Duration("scale-down-trial-frequency", 10*time.Minute,
 		"How often scale down possiblity is check")
 )
