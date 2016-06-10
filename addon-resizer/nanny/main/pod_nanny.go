@@ -107,7 +107,7 @@ func main() {
 		})
 	}
 
-	log.Infof("Resources: %v", resources)
+	log.Infof("Resources: %+v", resources)
 
 	var est nanny.ResourceEstimator
 	if *estimator == "linear" {

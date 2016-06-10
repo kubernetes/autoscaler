@@ -92,14 +92,14 @@ func PollAPIServer(k8s KubernetesClient, est ResourceEstimator, contName string,
 		// Query the apiserver for this pod's information.
 		resources, err := k8s.ContainerResources()
 		if err != nil {
-			log.Error(err)
+			log.Errorf("Error while querying apiserver for resources: %v", err)
 			continue
 		}
-		log.Infof("The container resources are %v", resources)
+		log.Infof("The container resources are %+v", *resources)
 
 		// Get the expected resource limits.
 		expResources := est.scaleWithNodes(num)
-		log.Infof("The expected resources are %v", expResources)
+		log.Infof("The expected resources are %+v", *expResources)
 
 		// If there's a difference, go ahead and set the new values.
 		if !shouldOverwriteResources(int64(threshold), resources.Limits, resources.Requests, expResources.Limits, expResources.Requests) {
