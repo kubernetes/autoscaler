@@ -49,7 +49,7 @@ var (
 		"How long the node should be unneeded before it is eligible for scale down")
 	scaleDownUtilizationThreshold = flag.Float64("scale-down-utilization-threshold", 0.5,
 		"Node utilization level, defined as sum of requested resources divided by capacity, below which a node can be considered for scale down")
-	scaleDownTrialInterval = flag.Duration("scale-down-trial-interval", 10*time.Minute,
+	scaleDownTrialInterval = flag.Duration("scale-down-trial-interval", 1*time.Minute,
 		"How often scale down possiblity is check")
 	scanInterval = flag.Duration("scan-interval", 10*time.Second, "How often cluster is reevaluated for scale up or down")
 )
@@ -209,7 +209,7 @@ func main() {
 						lastScaleDownFailedTrial.Add(*scaleDownTrialInterval).After(time.Now()) ||
 						schedulablePodsPresent
 
-					glog.V(4).Info("Scale down status: unneededOnly=%v lastScaleUpTime=%s "+
+					glog.V(4).Infof("Scale down status: unneededOnly=%v lastScaleUpTime=%s "+
 						"lastScaleDownFailedTrail=%s schedulablePodsPresent=%v", calculateUnneededOnly,
 						lastScaleUpTime, lastScaleDownFailedTrial, schedulablePodsPresent)
 
@@ -246,6 +246,7 @@ func main() {
 
 						updateDuration("scaledown", scaleDownStart)
 
+						// TODO: revisit result handling
 						if err != nil {
 							glog.Errorf("Failed to scale down: %v", err)
 						} else {
@@ -254,7 +255,9 @@ func main() {
 								// deletions are made in the new context.
 								unneededNodes = make(map[string]time.Time, len(unneededNodes))
 							} else {
-								lastScaleDownFailedTrial = time.Now()
+								if result == ScaleDownError || result == ScaleDownNoNodeDeleted {
+									lastScaleDownFailedTrial = time.Now()
+								}
 							}
 						}
 					}
