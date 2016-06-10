@@ -32,7 +32,7 @@ import (
 // along with their pods (no abandoned pods with dangling created-by annotation). Usefull for fast
 // checks.
 func FastGetPodsToMove(nodeInfo *schedulercache.NodeInfo, force bool,
-	failOnKubeSystemAddons bool, decoder runtime.Decoder) ([]*api.Pod, error) {
+	skipNodesWithSystemPods bool, skipNodesWithLocalStorage bool, decoder runtime.Decoder) ([]*api.Pod, error) {
 	pods := make([]*api.Pod, 0)
 	unreplicatedPodNames := []string{}
 	for _, pod := range nodeInfo.Pods() {
@@ -61,8 +61,12 @@ func FastGetPodsToMove(nodeInfo *schedulercache.NodeInfo, force bool,
 			}
 		}
 
-		if !daemonsetPod && pod.Namespace == "kube-system" && failOnKubeSystemAddons {
+		if !daemonsetPod && pod.Namespace == "kube-system" && skipNodesWithSystemPods {
 			return []*api.Pod{}, fmt.Errorf("non-deamons set, non-mirrored, kube-system pod present: %s", pod.Name)
+		}
+
+		if !daemonsetPod && hasLocalStorage(pod) && skipNodesWithLocalStorage {
+			return []*api.Pod{}, fmt.Errorf("pod with local storage present: %s", pod.Name)
 		}
 
 		switch {
@@ -81,4 +85,17 @@ func FastGetPodsToMove(nodeInfo *schedulercache.NodeInfo, force bool,
 		return []*api.Pod{}, fmt.Errorf("unreplicated pods present")
 	}
 	return pods, nil
+}
+
+func hasLocalStorage(pod *api.Pod) bool {
+	for _, volume := range pod.Spec.Volumes {
+		if isLocalVolume(&volume) {
+			return true
+		}
+	}
+	return false
+}
+
+func isLocalVolume(volume *api.Volume) bool {
+	return volume.HostPath != nil || volume.EmptyDir != nil
 }

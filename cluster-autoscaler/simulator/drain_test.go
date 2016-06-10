@@ -35,7 +35,7 @@ func TestFastGetPodsToMove(t *testing.T) {
 			Namespace: "ns",
 		},
 	}
-	_, err := FastGetPodsToMove(schedulercache.NewNodeInfo(pod1), false, true, kube_api.Codecs.UniversalDecoder())
+	_, err := FastGetPodsToMove(schedulercache.NewNodeInfo(pod1), false, true, true, kube_api.Codecs.UniversalDecoder())
 	assert.Error(t, err)
 
 	// Replicated pod
@@ -48,7 +48,7 @@ func TestFastGetPodsToMove(t *testing.T) {
 			},
 		},
 	}
-	r2, err := FastGetPodsToMove(schedulercache.NewNodeInfo(pod2), false, true, kube_api.Codecs.UniversalDecoder())
+	r2, err := FastGetPodsToMove(schedulercache.NewNodeInfo(pod2), false, true, true, kube_api.Codecs.UniversalDecoder())
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(r2))
 	assert.Equal(t, pod2, r2[0])
@@ -63,7 +63,7 @@ func TestFastGetPodsToMove(t *testing.T) {
 			},
 		},
 	}
-	r3, err := FastGetPodsToMove(schedulercache.NewNodeInfo(pod3), false, true, kube_api.Codecs.UniversalDecoder())
+	r3, err := FastGetPodsToMove(schedulercache.NewNodeInfo(pod3), false, true, true, kube_api.Codecs.UniversalDecoder())
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(r3))
 
@@ -77,7 +77,7 @@ func TestFastGetPodsToMove(t *testing.T) {
 			},
 		},
 	}
-	r4, err := FastGetPodsToMove(schedulercache.NewNodeInfo(pod2, pod3, pod4), false, true, kube_api.Codecs.UniversalDecoder())
+	r4, err := FastGetPodsToMove(schedulercache.NewNodeInfo(pod2, pod3, pod4), false, true, true, kube_api.Codecs.UniversalDecoder())
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(r4))
 	assert.Equal(t, pod2, r4[0])
@@ -92,6 +92,53 @@ func TestFastGetPodsToMove(t *testing.T) {
 			},
 		},
 	}
-	_, err = FastGetPodsToMove(schedulercache.NewNodeInfo(pod5), false, true, kube_api.Codecs.UniversalDecoder())
+	_, err = FastGetPodsToMove(schedulercache.NewNodeInfo(pod5), false, true, true, kube_api.Codecs.UniversalDecoder())
 	assert.Error(t, err)
+
+	// Local storage
+	pod6 := &kube_api.Pod{
+		ObjectMeta: kube_api.ObjectMeta{
+			Name:      "pod6",
+			Namespace: "ns",
+			Annotations: map[string]string{
+				"kubernetes.io/created-by": "{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1\",\"reference\":{\"kind\":\"ReplicaSet\"}}",
+			},
+		},
+		Spec: kube_api.PodSpec{
+			Volumes: []kube_api.Volume{
+				{
+					VolumeSource: kube_api.VolumeSource{
+						EmptyDir: &kube_api.EmptyDirVolumeSource{},
+					},
+				},
+			},
+		},
+	}
+	_, err = FastGetPodsToMove(schedulercache.NewNodeInfo(pod6), false, true, true, kube_api.Codecs.UniversalDecoder())
+	assert.Error(t, err)
+
+	// Non-local storage
+	pod7 := &kube_api.Pod{
+		ObjectMeta: kube_api.ObjectMeta{
+			Name:      "pod7",
+			Namespace: "ns",
+			Annotations: map[string]string{
+				"kubernetes.io/created-by": "{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1\",\"reference\":{\"kind\":\"ReplicaSet\"}}",
+			},
+		},
+		Spec: kube_api.PodSpec{
+			Volumes: []kube_api.Volume{
+				{
+					VolumeSource: kube_api.VolumeSource{
+						GitRepo: &kube_api.GitRepoVolumeSource{
+							Repository: "my-repo",
+						},
+					},
+				},
+			},
+		},
+	}
+	r7, err := FastGetPodsToMove(schedulercache.NewNodeInfo(pod7), false, true, true, kube_api.Codecs.UniversalDecoder())
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(r7))
 }
