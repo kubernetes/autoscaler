@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package release_1_2
+package release_1_3
 
 // These imports are the API groups the client will support.
 import (
