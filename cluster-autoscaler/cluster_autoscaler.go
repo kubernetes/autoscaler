@@ -174,6 +174,7 @@ func main() {
 					newUnschedulablePodsToHelp := FilterOutSchedulable(unschedulablePodsToHelp, nodes, allScheduled, predicateChecker)
 
 					if len(newUnschedulablePodsToHelp) != len(unschedulablePodsToHelp) {
+						glog.V(2).Info("Schedulable pods present")
 						schedulablePodsPresent = true
 					}
 					unschedulablePodsToHelp = newUnschedulablePodsToHelp
@@ -208,7 +209,12 @@ func main() {
 						lastScaleDownFailedTrial.Add(*scaleDownTrialInterval).After(time.Now()) ||
 						schedulablePodsPresent
 
+					glog.V(4).Info("Scale down status: unneededOnly=%v lastScaleUpTime=%s "+
+						"lastScaleDownFailedTrail=%s schedulablePodsPresent=%v", calculateUnneededOnly,
+						lastScaleUpTime, lastScaleDownFailedTrial, schedulablePodsPresent)
+
 					updateLastTime("findUnneeded")
+					glog.V(4).Infof("Calculating unneded nodes")
 
 					unneededNodes = FindUnneededNodes(
 						nodes,
@@ -219,7 +225,15 @@ func main() {
 
 					updateDuration("findUnneeded", unneededStart)
 
+					for key, val := range unneededNodes {
+						if glog.V(4) {
+							glog.V(4).Infof("%s is unneeded since %s duration %s", key, val.String(), time.Now().Sub(val).String())
+						}
+					}
+
 					if !calculateUnneededOnly {
+						glog.V(4).Infof("Starting scale down")
+
 						scaleDownStart := time.Now()
 						updateLastTime("scaledown")
 
