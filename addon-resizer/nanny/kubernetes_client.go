@@ -21,12 +21,12 @@ import (
 
 	api "k8s.io/kubernetes/pkg/api"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_2"
+	client "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_3"
 )
 
 type kubernetesClient struct {
 	namespace, deployment, pod, container string
-	clientset                             *release_1_2.Clientset
+	clientset                             *client.Clientset
 }
 
 func (k *kubernetesClient) CountNodes() (uint64, error) {
@@ -74,7 +74,7 @@ func (k *kubernetesClient) UpdateDeployment(resources *apiv1.ResourceRequirement
 }
 
 // NewKubernetesClient gives a KubernetesClient with the given dependencies.
-func NewKubernetesClient(namespace, deployment, pod, container string, clientset *release_1_2.Clientset) KubernetesClient {
+func NewKubernetesClient(namespace, deployment, pod, container string, clientset *client.Clientset) KubernetesClient {
 	return &kubernetesClient{
 		namespace:  namespace,
 		deployment: deployment,

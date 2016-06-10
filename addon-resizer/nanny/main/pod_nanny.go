@@ -26,7 +26,7 @@ import (
 	"k8s.io/contrib/addon-resizer/nanny"
 	resource "k8s.io/kubernetes/pkg/api/resource"
 
-	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_2"
+	client "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_3"
 	"k8s.io/kubernetes/pkg/client/restclient"
 )
 
@@ -74,7 +74,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	clientset, err := release_1_2.NewForConfig(config)
+	clientset, err := client.NewForConfig(config)
 	if err != nil {
 		log.Fatal(err)
 	}
