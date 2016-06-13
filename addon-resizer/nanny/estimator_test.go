@@ -85,6 +85,15 @@ var (
 			},
 		},
 	}
+	lessThanMilliEstimator = LinearEstimator{
+		Resources: []Resource{
+			{
+				Base:         resource.MustParse("0.3"),
+				ExtraPerNode: resource.MustParse("0.5m"),
+				Name:         "cpu",
+			},
+		},
+	}
 	emptyEstimator = LinearEstimator{
 		Resources: []Resource{},
 	}
@@ -145,6 +154,9 @@ var (
 		"cpu":    resource.MustParse("3.3"),
 		"memory": resource.MustParse("33Mi"),
 	}
+	threeNodeLessThanMilliResources = api.ResourceList{
+		"cpu": resource.MustParse("0.3015"),
+	}
 	noResources = api.ResourceList{}
 
 	sixteenNodeResources = api.ResourceList{
@@ -191,6 +203,7 @@ func TestEstimateResources(t *testing.T) {
 		{noMemoryEstimator, 3, threeNodeNoMemoryResources, threeNodeNoMemoryResources},
 		{noStorageEstimator, 0, noStorageBaseResources, noStorageBaseResources},
 		{noStorageEstimator, 3, threeNodeNoStorageResources, threeNodeNoStorageResources},
+		{lessThanMilliEstimator, 3, threeNodeLessThanMilliResources, threeNodeLessThanMilliResources},
 		{emptyEstimator, 0, noResources, noResources},
 		{emptyEstimator, 3, noResources, noResources},
 		{exponentialEstimator, 0, sixteenNodeResources, sixteenNodeResources},

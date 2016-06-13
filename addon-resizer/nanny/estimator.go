@@ -17,6 +17,8 @@ limitations under the License.
 package nanny
 
 import (
+	"fmt"
+
 	api "k8s.io/kubernetes/pkg/api/v1"
 
 	"k8s.io/kubernetes/pkg/api/resource"
@@ -61,10 +63,18 @@ func calculateResources(numNodes uint64, resources []Resource) *api.ResourceRequ
 	limits := make(api.ResourceList)
 	requests := make(api.ResourceList)
 	for _, r := range resources {
-		val := r.Base.MilliValue() + r.ExtraPerNode.MilliValue()*int64(numNodes)
-		newRes := resource.NewMilliQuantity(val, r.Base.Format)
-		limits[r.Name] = *newRes
-		requests[r.Name] = *newRes
+		// Since we want to enable passing values smaller than e.g. 1 millicore per node,
+		// we need to have some more hacky solution here than operating on MilliValues.
+		perNodeString := r.ExtraPerNode.String()
+		var perNode float64
+		read, _ := fmt.Sscanf(perNodeString, "%f", &perNode)
+		overhead := resource.MustParse(fmt.Sprintf("%f%s", perNode*float64(numNodes), perNodeString[read:]))
+
+		newRes := r.Base
+		newRes.Add(overhead)
+
+		limits[r.Name] = newRes
+		requests[r.Name] = newRes
 	}
 	return &api.ResourceRequirements{
 		Limits:   limits,
