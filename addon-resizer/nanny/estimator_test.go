@@ -118,6 +118,16 @@ var (
 		},
 		ScaleFactor: 1.5,
 	}
+	exponentialLessThanMilliEstimator = ExponentialEstimator{
+		Resources: []Resource{
+			{
+				Base:         resource.MustParse("0.3"),
+				ExtraPerNode: resource.MustParse("0.5m"),
+				Name:         "cpu",
+			},
+		},
+		ScaleFactor: 1.5,
+	}
 
 	baseResources = api.ResourceList{
 		"cpu":     resource.MustParse("0.3"),
@@ -156,6 +166,9 @@ var (
 	}
 	threeNodeLessThanMilliResources = api.ResourceList{
 		"cpu": resource.MustParse("0.3015"),
+	}
+	threeNodeLessThanMilliExpResources = api.ResourceList{
+		"cpu": resource.MustParse("0.308"),
 	}
 	noResources = api.ResourceList{}
 
@@ -213,6 +226,7 @@ func TestEstimateResources(t *testing.T) {
 		{exponentialEstimator, 17, twentyFourNodeResources, twentyFourNodeResources},
 		{exponentialEstimator, 20, twentyFourNodeResources, twentyFourNodeResources},
 		{exponentialEstimator, 24, twentyFourNodeResources, twentyFourNodeResources},
+		{exponentialLessThanMilliEstimator, 3, threeNodeLessThanMilliExpResources, threeNodeLessThanMilliExpResources},
 	}
 
 	for _, tc := range testCases {

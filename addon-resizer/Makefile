@@ -25,7 +25,7 @@
 OUT_DIR = build
 PACKAGE = k8s.io/contrib/addon-resizer
 PREFIX = gcr.io/google_containers
-TAG = 1.2
+TAG = 1.3
 
 # Rules for building the real image for deployment to gcr.io
 
