@@ -59,10 +59,11 @@ func CreateGceManager(migs []*config.MigConfig, configReader io.Reader) (*GceMan
 			return nil, err
 		}
 		if cfg.Global.TokenURL == "" {
-			return nil, fmt.Errorf("TokenURL not specified")
+			glog.Warning("Empty tokenUrl in cloud config")
+		} else {
+			glog.Infof("Using TokenSource from config %#v", tokenSource)
+			tokenSource = provider_gce.NewAltTokenSource(cfg.Global.TokenURL, cfg.Global.TokenBody)
 		}
-		glog.Infof("Using TokenSource from config %#v", tokenSource)
-		tokenSource = provider_gce.NewAltTokenSource(cfg.Global.TokenURL, cfg.Global.TokenBody)
 	} else {
 		glog.Infof("Using default TokenSource %#v", tokenSource)
 	}
