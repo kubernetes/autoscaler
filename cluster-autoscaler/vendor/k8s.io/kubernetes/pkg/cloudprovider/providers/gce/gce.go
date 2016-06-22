@@ -91,12 +91,13 @@ type GCECloud struct {
 
 type Config struct {
 	Global struct {
-		TokenURL    string   `gcfg:"token-url"`
-		TokenBody   string   `gcfg:"token-body"`
-		ProjectID   string   `gcfg:"project-id"`
-		NetworkName string   `gcfg:"network-name"`
-		NodeTags    []string `gcfg:"node-tags"`
-		Multizone   bool     `gcfg:"multizone"`
+		TokenURL           string   `gcfg:"token-url"`
+		TokenBody          string   `gcfg:"token-body"`
+		ProjectID          string   `gcfg:"project-id"`
+		NetworkName        string   `gcfg:"network-name"`
+		NodeTags           []string `gcfg:"node-tags"`
+		NodeInstancePrefix string   `gcfg:"node-instance-prefix"` // Ignored. (Manual vendor/ patch.)
+		Multizone          bool     `gcfg:"multizone"`
 	}
 }
 
