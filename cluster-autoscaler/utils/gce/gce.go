@@ -19,6 +19,7 @@ package gce
 import (
 	"fmt"
 	"io"
+	"strings"
 	"sync"
 	"time"
 
@@ -40,9 +41,14 @@ const (
 	operationPollInterval = 100 * time.Millisecond
 )
 
+type migInformation struct {
+	config   *config.MigConfig
+	basename string
+}
+
 // GceManager is handles gce communication and data caching.
 type GceManager struct {
-	migs       []*config.MigConfig
+	migs       []*migInformation
 	service    *gce.Service
 	migCache   map[config.InstanceConfig]*config.MigConfig
 	cacheMutex sync.Mutex
@@ -75,8 +81,15 @@ func CreateGceManager(migs []*config.MigConfig, configReader io.Reader) (*GceMan
 		return nil, err
 	}
 
+	migInfos := make([]*migInformation, 0, len(migs))
+	for _, mig := range migs {
+		migInfos = append(migInfos, &migInformation{
+			config: mig,
+		})
+	}
+
 	manager := &GceManager{
-		migs:     migs,
+		migs:     migInfos,
 		service:  gceService,
 		migCache: map[config.InstanceConfig]*config.MigConfig{},
 	}
@@ -165,13 +178,22 @@ func (m *GceManager) GetMigForInstance(instance *config.InstanceConfig) (*config
 	if mig, found := m.migCache[*instance]; found {
 		return mig, nil
 	}
-	if err := m.regenerateCache(); err != nil {
-		return nil, fmt.Errorf("Error while looking for MIG for instance %+v, error: %v", *instance, err)
+
+	for _, mig := range m.migs {
+		if mig.config.Project == instance.Project &&
+			mig.config.Zone == instance.Zone &&
+			strings.HasPrefix(instance.Name, mig.basename) {
+			if err := m.regenerateCache(); err != nil {
+				return nil, fmt.Errorf("Error while looking for MIG for instance %+v, error: %v", *instance, err)
+			}
+			if mig, found := m.migCache[*instance]; found {
+				return mig, nil
+			}
+			return nil, fmt.Errorf("Instance %+v does not belong to any configured MIG", *instance)
+		}
 	}
-	if mig, found := m.migCache[*instance]; found {
-		return mig, nil
-	}
-	return nil, fmt.Errorf("Instance %+v does not belong to any known MIG", *instance)
+	// Instance doesn't belong to any configured mig.
+	return nil, nil
 }
 
 func (m *GceManager) regenerateCacheIgnoreError() {
@@ -185,8 +207,16 @@ func (m *GceManager) regenerateCacheIgnoreError() {
 func (m *GceManager) regenerateCache() error {
 	newMigCache := map[config.InstanceConfig]*config.MigConfig{}
 
-	for _, mig := range m.migs {
+	for _, migInfo := range m.migs {
+		mig := migInfo.config
 		glog.V(4).Infof("Regenerating MIG information for %s %s %s", mig.Project, mig.Zone, mig.Name)
+
+		instanceGroupManager, err := m.service.InstanceGroupManagers.Get(mig.Project, mig.Zone, mig.Name).Do()
+		if err != nil {
+			return err
+		}
+		migInfo.basename = instanceGroupManager.BaseInstanceName
+
 		instances, err := m.service.InstanceGroupManagers.ListManagedInstances(mig.Project, mig.Zone, mig.Name).Do()
 		if err != nil {
 			glog.V(4).Infof("Failed MIG info request for %s %s %s: %v", mig.Project, mig.Zone, mig.Name, err)

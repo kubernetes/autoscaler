@@ -241,6 +241,9 @@ func CheckMigsAndNodes(nodes []*kube_api.Node, gceManager *gce.GceManager) error
 		if err != nil {
 			return err
 		}
+		if migConfig == nil {
+			continue
+		}
 		url := migConfig.Url()
 		count, _ := migCount[url]
 		migCount[url] = count + 1
