@@ -276,6 +276,9 @@ func GetNodeInfosForMigs(nodes []*kube_api.Node, gceManager *gce.GceManager, kub
 		if err != nil {
 			return map[string]*schedulercache.NodeInfo{}, err
 		}
+		if migConfig == nil {
+			continue
+		}
 		url := migConfig.Url()
 
 		nodeInfo, err := simulator.BuildNodeInfoForNode(node, kubeClient)
