@@ -55,6 +55,8 @@ var (
 )
 
 func main() {
+	glog.Infof("Cluster Autoscaler %s", ClusterAutoscalerVersion)
+
 	flag.Var(&migConfigFlag, "nodes", "sets min,max size and url of a MIG to be controlled by Cluster Autoscaler. "+
 		"Can be used multiple times. Format: <min>:<max>:<migurl>")
 	flag.Parse()
