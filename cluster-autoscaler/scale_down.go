@@ -133,6 +133,11 @@ func ScaleDown(
 				glog.Errorf("Error while checking mig config for instance %v: %v", instance, err)
 				continue
 			}
+			if migConfig == nil {
+				glog.V(4).Infof("Skipping %s - no mig config", node.Name)
+				continue
+			}
+
 			size, err := gceManager.GetMigSize(migConfig)
 			if err != nil {
 				glog.Errorf("Error while checking mig size for instance %v: %v", instance, err)
