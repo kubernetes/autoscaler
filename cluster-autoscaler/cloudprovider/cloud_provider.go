@@ -27,12 +27,12 @@ type CloudProvider interface {
 	Name() string
 
 	// NodeGroups returns all node groups configured for this cloud provider.
-	NodeGroups() []*NodeGroup
+	NodeGroups() []NodeGroup
 
 	// NodeGroupForNode returns the node group for the given node, nil if the node
 	// should not be processed by cluster autoscaler, or non-nil error if such
 	// occurred.
-	NodeGroupForNode(*kube_api.Node) (*NodeGroup, error)
+	NodeGroupForNode(*kube_api.Node) (NodeGroup, error)
 }
 
 // NodeGroup contains configuration info and functions to control a set
@@ -44,8 +44,11 @@ type NodeGroup interface {
 	// MinSize returns minimum size of the node group.
 	MinSize() int
 
-	// Size returns the current size of the node group.
-	Size() (int, error)
+	// TargetSize returns the current target size of the node group. It is possible that the
+	// number of nodes in Kubernetes is different at the moment but should be equal
+	// to Size() once everything stabilizes (new nodes finish startup and registration or
+	// removed nodes are deleted completely)
+	TargetSize() (int, error)
 
 	// GetSampleNode returns a sample node that belongs to this node group, or error
 	// if occurred.
@@ -53,13 +56,13 @@ type NodeGroup interface {
 
 	// IncreaseSize increases the size of the node group. To delete a node you need
 	// to explicitly name it and use DeleteNode. This function should wait until
-	// the node appears in the Kubernetes cluster.
+	// node group size is updated.
 	IncreaseSize(delta int) error
 
-	// DeleteNode deletes the node from this node group. Error is returned either on
+	// DeleteNodes deletes nodes from this node group. Error is returned either on
 	// failure or if the given node doesn't belong to this node group. This function
-	// should wait until the node is removed from the Kubernetes cluster.
-	DeleteNode(*kube_api.Node) error
+	// should wait until node group size is updated.
+	DeleteNodes([]*kube_api.Node) error
 
 	// Id returns an unique identifier of the node group.
 	Id() string
