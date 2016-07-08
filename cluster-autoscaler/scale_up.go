@@ -19,10 +19,9 @@ package main
 import (
 	"fmt"
 
-	"k8s.io/contrib/cluster-autoscaler/config"
+	"k8s.io/contrib/cluster-autoscaler/cloudprovider"
 	"k8s.io/contrib/cluster-autoscaler/estimator"
 	"k8s.io/contrib/cluster-autoscaler/simulator"
-	"k8s.io/contrib/cluster-autoscaler/utils/gce"
 	kube_api "k8s.io/kubernetes/pkg/api"
 	kube_record "k8s.io/kubernetes/pkg/client/record"
 	kube_client "k8s.io/kubernetes/pkg/client/unversioned"
@@ -32,14 +31,13 @@ import (
 
 // ExpansionOption describes an option to expand the cluster.
 type ExpansionOption struct {
-	migConfig *config.MigConfig
+	nodeGroup cloudprovider.NodeGroup
 	estimator *estimator.BasicNodeEstimator
 }
 
 // ScaleUp tries to scale the cluster up. Return true if it found a way to increase the size,
 // false if it didn't and error if an error occured.
-func ScaleUp(unschedulablePods []*kube_api.Pod, nodes []*kube_api.Node, migConfigs []*config.MigConfig,
-	gceManager *gce.GceManager, kubeClient *kube_client.Client,
+func ScaleUp(unschedulablePods []*kube_api.Pod, nodes []*kube_api.Node, cloudProvider cloudprovider.CloudProvider, kubeClient *kube_client.Client,
 	predicateChecker *simulator.PredicateChecker, recorder kube_record.EventRecorder) (bool, error) {
 
 	// From now on we only care about unschedulable pods that were marked after the newest
@@ -54,48 +52,48 @@ func ScaleUp(unschedulablePods []*kube_api.Pod, nodes []*kube_api.Node, migConfi
 	}
 
 	expansionOptions := make([]ExpansionOption, 0)
-	nodeInfos, err := GetNodeInfosForMigs(nodes, gceManager, kubeClient)
+	nodeInfos, err := GetNodeInfosForGroups(nodes, cloudProvider, kubeClient)
 	if err != nil {
-		return false, fmt.Errorf("failed to build node infors for migs: %v", err)
+		return false, fmt.Errorf("failed to build node infos for node groups: %v", err)
 	}
 
 	podsRemainUnshedulable := make(map[*kube_api.Pod]struct{})
-	for _, migConfig := range migConfigs {
+	for _, nodeGroup := range cloudProvider.NodeGroups() {
 
-		currentSize, err := gceManager.GetMigSize(migConfig)
+		currentSize, err := nodeGroup.TargetSize()
 		if err != nil {
-			glog.Errorf("Failed to get MIG size: %v", err)
+			glog.Errorf("Failed to get node group size: %v", err)
 			continue
 		}
-		if currentSize >= int64(migConfig.MaxSize) {
-			// skip this mig.
-			glog.V(4).Infof("Skipping MIG %s - max size reached", migConfig.Url())
+		if currentSize >= nodeGroup.MaxSize() {
+			// skip this node group.
+			glog.V(4).Infof("Skipping node group %s - max size reached", nodeGroup.Id())
 			continue
 		}
 
 		option := ExpansionOption{
-			migConfig: migConfig,
+			nodeGroup: nodeGroup,
 			estimator: estimator.NewBasicNodeEstimator(),
 		}
-		migHelpsSomePods := false
+		groupHelpsSomePods := false
 
-		nodeInfo, found := nodeInfos[migConfig.Url()]
+		nodeInfo, found := nodeInfos[nodeGroup.Id()]
 		if !found {
-			glog.Errorf("No node info for: %s", migConfig.Url())
+			glog.Errorf("No node info for: %s", nodeGroup.Id())
 			continue
 		}
 
 		for _, pod := range unschedulablePods {
 			err = predicateChecker.CheckPredicates(pod, nodeInfo)
 			if err == nil {
-				migHelpsSomePods = true
+				groupHelpsSomePods = true
 				option.estimator.Add(pod)
 			} else {
 				glog.V(2).Infof("Scale-up predicate failed: %v", err)
 				podsRemainUnshedulable[pod] = struct{}{}
 			}
 		}
-		if migHelpsSomePods {
+		if groupHelpsSomePods {
 			expansionOptions = append(expansionOptions, option)
 		}
 	}
@@ -103,36 +101,36 @@ func ScaleUp(unschedulablePods []*kube_api.Pod, nodes []*kube_api.Node, migConfi
 	// Pick some expansion option.
 	bestOption := BestExpansionOption(expansionOptions)
 	if bestOption != nil && bestOption.estimator.GetCount() > 0 {
-		glog.V(1).Infof("Best option to resize: %s", bestOption.migConfig.Url())
-		nodeInfo, found := nodeInfos[bestOption.migConfig.Url()]
+		glog.V(1).Infof("Best option to resize: %s", bestOption.nodeGroup.Id())
+		nodeInfo, found := nodeInfos[bestOption.nodeGroup.Id()]
 		if !found {
-			return false, fmt.Errorf("no sample node for: %s", bestOption.migConfig.Url())
+			return false, fmt.Errorf("no sample node for: %s", bestOption.nodeGroup.Id())
 
 		}
 		node := nodeInfo.Node()
 		estimate, report := bestOption.estimator.Estimate(node)
 		glog.V(1).Info(bestOption.estimator.GetDebug())
 		glog.V(1).Info(report)
-		glog.V(1).Infof("Estimated %d nodes needed in %s", estimate, bestOption.migConfig.Url())
+		glog.V(1).Infof("Estimated %d nodes needed in %s", estimate, bestOption.nodeGroup.Id())
 
-		currentSize, err := gceManager.GetMigSize(bestOption.migConfig)
+		currentSize, err := bestOption.nodeGroup.TargetSize()
 		if err != nil {
-			return false, fmt.Errorf("failed to get MIG size: %v", err)
+			return false, fmt.Errorf("failed to get node group size: %v", err)
 		}
-		newSize := currentSize + int64(estimate)
-		if newSize >= int64(bestOption.migConfig.MaxSize) {
-			glog.V(1).Infof("Capping size to MAX (%d)", bestOption.migConfig.MaxSize)
-			newSize = int64(bestOption.migConfig.MaxSize)
+		newSize := currentSize + estimate
+		if newSize >= bestOption.nodeGroup.MaxSize() {
+			glog.V(1).Infof("Capping size to MAX (%d)", bestOption.nodeGroup.MaxSize())
+			newSize = bestOption.nodeGroup.MaxSize()
 		}
-		glog.V(1).Infof("Setting %s size to %d", bestOption.migConfig.Url(), newSize)
+		glog.V(1).Infof("Setting %s size to %d", bestOption.nodeGroup.Id(), newSize)
 
-		if err := gceManager.SetMigSize(bestOption.migConfig, newSize); err != nil {
-			return false, fmt.Errorf("failed to set MIG size: %v", err)
+		if err := bestOption.nodeGroup.IncreaseSize(newSize - currentSize); err != nil {
+			return false, fmt.Errorf("failed to increase node group size: %v", err)
 		}
 
 		for pod := range bestOption.estimator.FittingPods {
 			recorder.Eventf(pod, kube_api.EventTypeNormal, "TriggeredScaleUp",
-				"pod triggered scale-up, mig: %s, sizes (current/new): %d/%d", bestOption.migConfig.Name, currentSize, newSize)
+				"pod triggered scale-up, group: %s, sizes (current/new): %d/%d", bestOption.nodeGroup.Id(), currentSize, newSize)
 		}
 
 		return true, nil

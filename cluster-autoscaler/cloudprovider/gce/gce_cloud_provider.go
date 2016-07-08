@@ -25,22 +25,17 @@ import (
 	kube_api "k8s.io/kubernetes/pkg/api"
 )
 
-// NodeProvider is a function that provides a list of nodes.
-type NodeProvider func() ([]*kube_api.Node, error)
-
 // GceCloudProvider implements CloudProvider interface.
 type GceCloudProvider struct {
-	gceManager   *GceManager
-	migs         []*Mig
-	nodeProvider NodeProvider
+	gceManager *GceManager
+	migs       []*Mig
 }
 
 // BuildGceCloudProvider builds CloudProvider implementation for GCE.
-func BuildGceCloudProvider(gceManager *GceManager, nodeProvider NodeProvider, specs []string) (*GceCloudProvider, error) {
+func BuildGceCloudProvider(gceManager *GceManager, specs []string) (*GceCloudProvider, error) {
 	gce := &GceCloudProvider{
-		gceManager:   gceManager,
-		migs:         make([]*Mig, 0),
-		nodeProvider: nodeProvider,
+		gceManager: gceManager,
+		migs:       make([]*Mig, 0),
 	}
 	for _, spec := range specs {
 		if err := gce.addNodeGroup(spec); err != nil {
@@ -56,20 +51,6 @@ func (gce *GceCloudProvider) addNodeGroup(spec string) error {
 	mig, err := buildMig(spec, gce.gceManager)
 	if err != nil {
 		return err
-	}
-	nodes, err := gce.nodeProvider()
-	if err != nil {
-		return err
-	}
-	// TODO: revisit how sample nodes are chosen.
-	for _, node := range nodes {
-		if belongs, err := mig.Belongs(node); err == nil && belongs {
-			mig.sampleNode = node
-			break
-		}
-	}
-	if mig.sampleNode == nil {
-		return fmt.Errorf("no sample node found for %s", mig.Id())
 	}
 	gce.migs = append(gce.migs, mig)
 	gce.gceManager.RegisterMig(mig)
@@ -129,9 +110,8 @@ type Mig struct {
 
 	gceManager *GceManager
 
-	minSize    int
-	maxSize    int
-	sampleNode *kube_api.Node
+	minSize int
+	maxSize int
 }
 
 // MaxSize returns maximum size of the node group.
@@ -149,15 +129,6 @@ func (mig *Mig) MinSize() int {
 func (mig *Mig) TargetSize() (int, error) {
 	size, err := mig.gceManager.GetMigSize(mig)
 	return int(size), err
-}
-
-// SampleNode returns a sample node for the mig. Assumes that mig definition doesn't change over time.
-// The node may not exist anymore.
-func (mig *Mig) SampleNode() (*kube_api.Node, error) {
-	if mig.sampleNode != nil {
-		return mig.sampleNode, nil
-	}
-	return nil, fmt.Errorf("no sample node available")
 }
 
 // IncreaseSize increases Mig size
