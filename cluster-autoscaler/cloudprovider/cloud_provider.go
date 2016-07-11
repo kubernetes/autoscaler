@@ -50,10 +50,6 @@ type NodeGroup interface {
 	// removed nodes are deleted completely)
 	TargetSize() (int, error)
 
-	// GetSampleNode returns a sample node that belongs to this node group, or error
-	// if occurred.
-	SampleNode() (*kube_api.Node, error)
-
 	// IncreaseSize increases the size of the node group. To delete a node you need
 	// to explicitly name it and use DeleteNode. This function should wait until
 	// node group size is updated.
