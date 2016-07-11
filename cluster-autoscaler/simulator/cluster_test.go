@@ -58,11 +58,19 @@ func TestFindPlaceAllOk(t *testing.T) {
 	nodeInfos["n1"].SetNode(node1)
 	nodeInfos["n2"].SetNode(node2)
 
+	oldHints := make(map[string]string)
+	newHints := make(map[string]string)
+
 	err := findPlaceFor(
 		"x",
 		[]*kube_api.Pod{new1, new2},
 		[]*kube_api.Node{node1, node2},
-		nodeInfos, NewTestPredicateChecker())
+		nodeInfos, NewTestPredicateChecker(),
+		oldHints, newHints)
+
+	assert.Len(t, newHints, 2)
+	assert.Contains(t, newHints, new1.Namespace+"/"+new1.Name)
+	assert.Contains(t, newHints, new2.Namespace+"/"+new2.Name)
 	assert.NoError(t, err)
 }
 
@@ -73,20 +81,31 @@ func TestFindPlaceAllBas(t *testing.T) {
 	new3 := BuildTestPod("p4", 700, 500000)
 
 	nodeInfos := map[string]*schedulercache.NodeInfo{
-		"n1": schedulercache.NewNodeInfo(pod1),
-		"n2": schedulercache.NewNodeInfo(),
+		"n1":   schedulercache.NewNodeInfo(pod1),
+		"n2":   schedulercache.NewNodeInfo(),
+		"nbad": schedulercache.NewNodeInfo(),
 	}
+	nodebad := BuildTestNode("nbad", 1000, 2000000)
 	node1 := BuildTestNode("n1", 1000, 2000000)
 	node2 := BuildTestNode("n2", 1000, 2000000)
 	nodeInfos["n1"].SetNode(node1)
 	nodeInfos["n2"].SetNode(node2)
+	nodeInfos["nbad"].SetNode(nodebad)
+
+	oldHints := make(map[string]string)
+	newHints := make(map[string]string)
 
 	err := findPlaceFor(
-		"x",
+		"nbad",
 		[]*kube_api.Pod{new1, new2, new3},
-		[]*kube_api.Node{node1, node2},
-		nodeInfos, NewTestPredicateChecker())
+		[]*kube_api.Node{nodebad, node1, node2},
+		nodeInfos, NewTestPredicateChecker(),
+		oldHints, newHints)
+
 	assert.Error(t, err)
+	assert.True(t, len(newHints) == 2)
+	assert.Contains(t, newHints, new1.Namespace+"/"+new1.Name)
+	assert.Contains(t, newHints, new2.Namespace+"/"+new2.Name)
 }
 
 func TestFindNone(t *testing.T) {
@@ -105,6 +124,8 @@ func TestFindNone(t *testing.T) {
 		"x",
 		[]*kube_api.Pod{},
 		[]*kube_api.Node{node1, node2},
-		nodeInfos, NewTestPredicateChecker())
+		nodeInfos, NewTestPredicateChecker(),
+		make(map[string]string),
+		make(map[string]string))
 	assert.NoError(t, err)
 }

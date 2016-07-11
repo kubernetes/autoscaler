@@ -44,12 +44,13 @@ const (
 )
 
 // FindUnneededNodes calculates which nodes are not needed, i.e. all pods can be scheduled somewhere else,
-// and updates unneededNodes map accordingly.
+// and updates unneededNodes map accordingly. It also returns information where pods can be rescheduld.
 func FindUnneededNodes(nodes []*kube_api.Node,
 	unneededNodes map[string]time.Time,
 	utilizationThreshold float64,
 	pods []*kube_api.Pod,
-	predicateChecker *simulator.PredicateChecker) map[string]time.Time {
+	predicateChecker *simulator.PredicateChecker,
+	oldHints map[string]string) (unnededTimeMap map[string]time.Time, podReschedulingHints map[string]string) {
 
 	currentlyUnneededNodes := make([]*kube_api.Node, 0)
 	nodeNameToNodeInfo := schedulercache.CreateNodeNameToInfoMap(pods)
@@ -76,12 +77,12 @@ func FindUnneededNodes(nodes []*kube_api.Node,
 	}
 
 	// Phase2 - check which nodes can be probably removed using fast drain.
-	nodesToRemove, err := simulator.FindNodesToRemove(currentlyUnneededNodes, nodes, pods,
+	nodesToRemove, newHints, err := simulator.FindNodesToRemove(currentlyUnneededNodes, nodes, pods,
 		nil, predicateChecker,
-		len(currentlyUnneededNodes), true)
+		len(currentlyUnneededNodes), true, oldHints)
 	if err != nil {
 		glog.Errorf("Error while simulating node drains: %v", err)
-		return map[string]time.Time{}
+		return map[string]time.Time{}, oldHints
 	}
 
 	// Update the timestamp map.
@@ -95,7 +96,7 @@ func FindUnneededNodes(nodes []*kube_api.Node,
 			result[name] = val
 		}
 	}
-	return result
+	return result, newHints
 }
 
 // ScaleDown tries to scale down the cluster. It returns ScaleDownResult indicating if any node was
@@ -107,7 +108,8 @@ func ScaleDown(
 	pods []*kube_api.Pod,
 	cloudProvider cloudprovider.CloudProvider,
 	client *kube_client.Client,
-	predicateChecker *simulator.PredicateChecker) (ScaleDownResult, error) {
+	predicateChecker *simulator.PredicateChecker,
+	oldHints map[string]string) (ScaleDownResult, error) {
 
 	now := time.Now()
 	candidates := make([]*kube_api.Node, 0)
@@ -150,7 +152,9 @@ func ScaleDown(
 		return ScaleDownNoUnneeded, nil
 	}
 
-	nodesToRemove, err := simulator.FindNodesToRemove(candidates, nodes, pods, client, predicateChecker, 1, false)
+	// TODO: use new hints
+	nodesToRemove, _, err := simulator.FindNodesToRemove(candidates, nodes, pods, client, predicateChecker, 1, false,
+		oldHints)
 	if err != nil {
 		return ScaleDownError, fmt.Errorf("Find node to remove failed: %v", err)
 	}

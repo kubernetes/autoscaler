@@ -38,10 +38,11 @@ var (
 		"If true cluster autoscaler will never delete nodes with pods with local storage, e.g. EmptyDir or HostPath")
 )
 
-// FindNodesToRemove finds nodes that can be removed.
+// FindNodesToRemove finds nodes that can be removed. Returns also an information about good
+// rescheduling location for each of the pods.
 func FindNodesToRemove(candidates []*kube_api.Node, allNodes []*kube_api.Node, pods []*kube_api.Pod,
 	client *kube_client.Client, predicateChecker *PredicateChecker, maxCount int,
-	fastCheck bool) ([]*kube_api.Node, error) {
+	fastCheck bool, oldHints map[string]string) (nodesToRemove []*kube_api.Node, podReschedulingHints map[string]string, finalError error) {
 
 	nodeNameToNodeInfo := schedulercache.CreateNodeNameToInfoMap(pods)
 	for _, node := range allNodes {
@@ -55,6 +56,7 @@ func FindNodesToRemove(candidates []*kube_api.Node, allNodes []*kube_api.Node, p
 	if fastCheck {
 		evaluationType = "Fast evaluation"
 	}
+	newHints := make(map[string]string, len(oldHints))
 
 candidateloop:
 	for _, node := range candidates {
@@ -87,7 +89,7 @@ candidateloop:
 				podsToRemove = append(podsToRemove, &drainResult[i])
 			}
 		}
-		findProblems := findPlaceFor(node.Name, podsToRemove, allNodes, nodeNameToNodeInfo, predicateChecker)
+		findProblems := findPlaceFor(node.Name, podsToRemove, allNodes, nodeNameToNodeInfo, predicateChecker, oldHints, newHints)
 		if findProblems == nil {
 			result = append(result, node)
 			glog.V(2).Infof("%s: node %s may be removed", evaluationType, node.Name)
@@ -98,7 +100,7 @@ candidateloop:
 			glog.V(2).Infof("%s: node %s is not suitable for removal %v", evaluationType, node.Name, err)
 		}
 	}
-	return result, nil
+	return result, newHints, nil
 }
 
 // CalculateUtilization calculates utilization of a node, defined as total amount of requested resources divided by capacity.
@@ -135,9 +137,36 @@ func calculateUtilizationOfResource(node *kube_api.Node, nodeInfo *schedulercach
 
 // TODO: We don't need to pass list of nodes here as they are already available in nodeInfos.
 func findPlaceFor(bannedNode string, pods []*kube_api.Pod, nodes []*kube_api.Node, nodeInfos map[string]*schedulercache.NodeInfo,
-	predicateChecker *PredicateChecker) error {
+	predicateChecker *PredicateChecker, oldHints map[string]string, newHints map[string]string) error {
 
 	newNodeInfos := make(map[string]*schedulercache.NodeInfo)
+
+	podKey := func(pod *kube_api.Pod) string {
+		return fmt.Sprintf("%s/%s", pod.Namespace, pod.Name)
+	}
+
+	tryNodeForPod := func(nodename string, pod *kube_api.Pod) bool {
+		nodeInfo, found := newNodeInfos[nodename]
+		if !found {
+			nodeInfo, found = nodeInfos[nodename]
+		}
+		if found {
+			nodeInfo.Node().Status.Allocatable = nodeInfo.Node().Status.Capacity
+			err := predicateChecker.CheckPredicates(pod, nodeInfo)
+			glog.V(4).Infof("Evaluation %s for %s/%s -> %v", nodename, pod.Namespace, pod.Name, err)
+			if err == nil {
+				// TODO(mwielgus): Optimize it.
+				podsOnNode := nodeInfo.Pods()
+				podsOnNode = append(podsOnNode, pod)
+				newNodeInfo := schedulercache.NewNodeInfo(podsOnNode...)
+				newNodeInfo.SetNode(nodeInfo.Node())
+				newNodeInfos[nodename] = newNodeInfo
+				newHints[podKey(pod)] = nodename
+				return true
+			}
+		}
+		return false
+	}
 
 	for _, podptr := range pods {
 		newpod := *podptr
@@ -146,38 +175,27 @@ func findPlaceFor(bannedNode string, pods []*kube_api.Pod, nodes []*kube_api.Nod
 
 		foundPlace := false
 		glog.V(4).Infof("Looking for place for %s/%s", pod.Namespace, pod.Name)
-		podKey := fmt.Sprintf("%s/%s", pod.Namespace, pod.Name)
 
-		// TODO: Sort nodes by utilization
-	nodeloop:
-		for _, node := range nodes {
-			if node.Name == bannedNode {
-				continue
-			}
-
-			node.Status.Allocatable = node.Status.Capacity
-			nodeInfo, found := newNodeInfos[node.Name]
-			if !found {
-				nodeInfo, found = nodeInfos[node.Name]
-			}
-
-			if found {
-				err := predicateChecker.CheckPredicates(pod, nodeInfo)
-				glog.V(4).Infof("Evaluation %s for %s -> %v", node.Name, podKey, err)
-				if err == nil {
-					foundPlace = true
-					// TODO(mwielgus): Optimize it.
-					podsOnNode := nodeInfo.Pods()
-					podsOnNode = append(podsOnNode, pod)
-					newNodeInfo := schedulercache.NewNodeInfo(podsOnNode...)
-					newNodeInfo.SetNode(node)
-					newNodeInfos[node.Name] = newNodeInfo
-					break nodeloop
-				}
+		hintedNode, hasHint := oldHints[podKey(pod)]
+		if hasHint {
+			if hintedNode != bannedNode && tryNodeForPod(hintedNode, pod) {
+				foundPlace = true
 			}
 		}
 		if !foundPlace {
-			return fmt.Errorf("failed to find place for %s", podKey)
+			// TODO: Sort nodes by utilization
+			for _, node := range nodes {
+				if node.Name == bannedNode {
+					continue
+				}
+				if tryNodeForPod(node.Name, pod) {
+					foundPlace = true
+					break
+				}
+			}
+			if !foundPlace {
+				return fmt.Errorf("failed to find place for %s", podKey)
+			}
 		}
 	}
 	return nil
