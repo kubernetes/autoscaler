@@ -109,6 +109,7 @@ func main() {
 	lastScaleUpTime := time.Now()
 	lastScaleDownFailedTrial := time.Now()
 	unneededNodes := make(map[string]time.Time)
+	podLocationHints := make(map[string]string)
 
 	eventBroadcaster := kube_record.NewBroadcaster()
 	eventBroadcaster.StartLogging(glog.Infof)
@@ -241,12 +242,13 @@ func main() {
 					updateLastTime("findUnneeded")
 					glog.V(4).Infof("Calculating unneded nodes")
 
-					unneededNodes = FindUnneededNodes(
+					unneededNodes, podLocationHints = FindUnneededNodes(
 						nodes,
 						unneededNodes,
 						*scaleDownUtilizationThreshold,
 						allScheduled,
-						predicateChecker)
+						predicateChecker,
+						podLocationHints)
 
 					updateDuration("findUnneeded", unneededStart)
 
@@ -267,7 +269,10 @@ func main() {
 							unneededNodes,
 							*scaleDownUnneededTime,
 							allScheduled,
-							cloudProvider, kubeClient, predicateChecker)
+							cloudProvider,
+							kubeClient,
+							predicateChecker,
+							podLocationHints)
 
 						updateDuration("scaledown", scaleDownStart)
 
