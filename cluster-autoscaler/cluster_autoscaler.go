@@ -110,6 +110,7 @@ func main() {
 	lastScaleDownFailedTrial := time.Now()
 	unneededNodes := make(map[string]time.Time)
 	podLocationHints := make(map[string]string)
+	usageTracker := simulator.NewUsageTracker()
 
 	eventBroadcaster := kube_record.NewBroadcaster()
 	eventBroadcaster.StartLogging(glog.Infof)
@@ -242,13 +243,15 @@ func main() {
 					updateLastTime("findUnneeded")
 					glog.V(4).Infof("Calculating unneded nodes")
 
+					usageTracker.CleanUp(time.Now().Add(-(*scaleDownUnneededTime)))
 					unneededNodes, podLocationHints = FindUnneededNodes(
 						nodes,
 						unneededNodes,
 						*scaleDownUtilizationThreshold,
 						allScheduled,
 						predicateChecker,
-						podLocationHints)
+						podLocationHints,
+						usageTracker, time.Now())
 
 					updateDuration("findUnneeded", unneededStart)
 
@@ -272,7 +275,8 @@ func main() {
 							cloudProvider,
 							kubeClient,
 							predicateChecker,
-							podLocationHints)
+							podLocationHints,
+							usageTracker)
 
 						updateDuration("scaledown", scaleDownStart)
 
@@ -280,14 +284,8 @@ func main() {
 						if err != nil {
 							glog.Errorf("Failed to scale down: %v", err)
 						} else {
-							if result == ScaleDownNodeDeleted {
-								// Clean the map with unneeded nodes to be super sure that the simulated
-								// deletions are made in the new context.
-								unneededNodes = make(map[string]time.Time, len(unneededNodes))
-							} else {
-								if result == ScaleDownError || result == ScaleDownNoNodeDeleted {
-									lastScaleDownFailedTrial = time.Now()
-								}
+							if result == ScaleDownError || result == ScaleDownNoNodeDeleted {
+								lastScaleDownFailedTrial = time.Now()
 							}
 						}
 					}

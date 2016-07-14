@@ -18,6 +18,7 @@ package simulator
 
 import (
 	"testing"
+	"time"
 
 	. "k8s.io/contrib/cluster-autoscaler/utils/test"
 
@@ -60,13 +61,14 @@ func TestFindPlaceAllOk(t *testing.T) {
 
 	oldHints := make(map[string]string)
 	newHints := make(map[string]string)
+	tracker := NewUsageTracker()
 
 	err := findPlaceFor(
 		"x",
 		[]*kube_api.Pod{new1, new2},
 		[]*kube_api.Node{node1, node2},
 		nodeInfos, NewTestPredicateChecker(),
-		oldHints, newHints)
+		oldHints, newHints, tracker, time.Now())
 
 	assert.Len(t, newHints, 2)
 	assert.Contains(t, newHints, new1.Namespace+"/"+new1.Name)
@@ -94,13 +96,14 @@ func TestFindPlaceAllBas(t *testing.T) {
 
 	oldHints := make(map[string]string)
 	newHints := make(map[string]string)
+	tracker := NewUsageTracker()
 
 	err := findPlaceFor(
 		"nbad",
 		[]*kube_api.Pod{new1, new2, new3},
 		[]*kube_api.Node{nodebad, node1, node2},
 		nodeInfos, NewTestPredicateChecker(),
-		oldHints, newHints)
+		oldHints, newHints, tracker, time.Now())
 
 	assert.Error(t, err)
 	assert.True(t, len(newHints) == 2)
@@ -126,6 +129,8 @@ func TestFindNone(t *testing.T) {
 		[]*kube_api.Node{node1, node2},
 		nodeInfos, NewTestPredicateChecker(),
 		make(map[string]string),
-		make(map[string]string))
+		make(map[string]string),
+		NewUsageTracker(),
+		time.Now())
 	assert.NoError(t, err)
 }
