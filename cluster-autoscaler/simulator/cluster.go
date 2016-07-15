@@ -20,6 +20,7 @@ import (
 	"flag"
 	"fmt"
 	"math"
+	"time"
 
 	kube_api "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/resource"
@@ -42,7 +43,8 @@ var (
 // rescheduling location for each of the pods.
 func FindNodesToRemove(candidates []*kube_api.Node, allNodes []*kube_api.Node, pods []*kube_api.Pod,
 	client *kube_client.Client, predicateChecker *PredicateChecker, maxCount int,
-	fastCheck bool, oldHints map[string]string) (nodesToRemove []*kube_api.Node, podReschedulingHints map[string]string, finalError error) {
+	fastCheck bool, oldHints map[string]string, usageTracker *UsageTracker,
+	timestamp time.Time) (nodesToRemove []*kube_api.Node, podReschedulingHints map[string]string, finalError error) {
 
 	nodeNameToNodeInfo := schedulercache.CreateNodeNameToInfoMap(pods)
 	for _, node := range allNodes {
@@ -89,7 +91,9 @@ candidateloop:
 				podsToRemove = append(podsToRemove, &drainResult[i])
 			}
 		}
-		findProblems := findPlaceFor(node.Name, podsToRemove, allNodes, nodeNameToNodeInfo, predicateChecker, oldHints, newHints)
+		findProblems := findPlaceFor(node.Name, podsToRemove, allNodes, nodeNameToNodeInfo, predicateChecker, oldHints, newHints,
+			usageTracker, timestamp)
+
 		if findProblems == nil {
 			result = append(result, node)
 			glog.V(2).Infof("%s: node %s may be removed", evaluationType, node.Name)
@@ -136,8 +140,9 @@ func calculateUtilizationOfResource(node *kube_api.Node, nodeInfo *schedulercach
 }
 
 // TODO: We don't need to pass list of nodes here as they are already available in nodeInfos.
-func findPlaceFor(bannedNode string, pods []*kube_api.Pod, nodes []*kube_api.Node, nodeInfos map[string]*schedulercache.NodeInfo,
-	predicateChecker *PredicateChecker, oldHints map[string]string, newHints map[string]string) error {
+func findPlaceFor(removedNode string, pods []*kube_api.Pod, nodes []*kube_api.Node, nodeInfos map[string]*schedulercache.NodeInfo,
+	predicateChecker *PredicateChecker, oldHints map[string]string, newHints map[string]string, usageTracker *UsageTracker,
+	timestamp time.Time) error {
 
 	newNodeInfos := make(map[string]*schedulercache.NodeInfo)
 
@@ -174,22 +179,26 @@ func findPlaceFor(bannedNode string, pods []*kube_api.Pod, nodes []*kube_api.Nod
 		pod := &newpod
 
 		foundPlace := false
+		targetNode := ""
+
 		glog.V(4).Infof("Looking for place for %s/%s", pod.Namespace, pod.Name)
 
 		hintedNode, hasHint := oldHints[podKey(pod)]
 		if hasHint {
-			if hintedNode != bannedNode && tryNodeForPod(hintedNode, pod) {
+			if hintedNode != removedNode && tryNodeForPod(hintedNode, pod) {
 				foundPlace = true
+				targetNode = hintedNode
 			}
 		}
 		if !foundPlace {
 			// TODO: Sort nodes by utilization
 			for _, node := range nodes {
-				if node.Name == bannedNode {
+				if node.Name == removedNode {
 					continue
 				}
 				if tryNodeForPod(node.Name, pod) {
 					foundPlace = true
+					targetNode = node.Name
 					break
 				}
 			}
@@ -197,6 +206,8 @@ func findPlaceFor(bannedNode string, pods []*kube_api.Pod, nodes []*kube_api.Nod
 				return fmt.Errorf("failed to find place for %s", podKey)
 			}
 		}
+
+		usageTracker.RegisterUsage(removedNode, targetNode, timestamp)
 	}
 	return nil
 }

@@ -56,7 +56,8 @@ func TestFindUnneededNodes(t *testing.T) {
 	n4 := BuildTestNode("n4", 10000, 10)
 
 	result, hints := FindUnneededNodes([]*kube_api.Node{n1, n2, n3, n4}, map[string]time.Time{}, 0.35,
-		[]*kube_api.Pod{p1, p2, p3, p4}, simulator.NewTestPredicateChecker(), make(map[string]string))
+		[]*kube_api.Pod{p1, p2, p3, p4}, simulator.NewTestPredicateChecker(), make(map[string]string),
+		simulator.NewUsageTracker(), time.Now())
 
 	assert.Equal(t, 1, len(result))
 	addTime, found := result["n2"]
@@ -65,7 +66,8 @@ func TestFindUnneededNodes(t *testing.T) {
 
 	result["n1"] = time.Now()
 	result2, hints := FindUnneededNodes([]*kube_api.Node{n1, n2, n3, n4}, result, 0.35,
-		[]*kube_api.Pod{p1, p2, p3, p4}, simulator.NewTestPredicateChecker(), hints)
+		[]*kube_api.Pod{p1, p2, p3, p4}, simulator.NewTestPredicateChecker(), hints,
+		simulator.NewUsageTracker(), time.Now())
 
 	assert.Equal(t, 1, len(result2))
 	addTime2, found := result2["n2"]

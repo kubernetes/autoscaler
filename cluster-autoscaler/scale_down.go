@@ -50,7 +50,9 @@ func FindUnneededNodes(nodes []*kube_api.Node,
 	utilizationThreshold float64,
 	pods []*kube_api.Pod,
 	predicateChecker *simulator.PredicateChecker,
-	oldHints map[string]string) (unnededTimeMap map[string]time.Time, podReschedulingHints map[string]string) {
+	oldHints map[string]string,
+	tracker *simulator.UsageTracker,
+	timestamp time.Time) (unnededTimeMap map[string]time.Time, podReschedulingHints map[string]string) {
 
 	currentlyUnneededNodes := make([]*kube_api.Node, 0)
 	nodeNameToNodeInfo := schedulercache.CreateNodeNameToInfoMap(pods)
@@ -79,7 +81,7 @@ func FindUnneededNodes(nodes []*kube_api.Node,
 	// Phase2 - check which nodes can be probably removed using fast drain.
 	nodesToRemove, newHints, err := simulator.FindNodesToRemove(currentlyUnneededNodes, nodes, pods,
 		nil, predicateChecker,
-		len(currentlyUnneededNodes), true, oldHints)
+		len(currentlyUnneededNodes), true, oldHints, tracker, timestamp)
 	if err != nil {
 		glog.Errorf("Error while simulating node drains: %v", err)
 		return map[string]time.Time{}, oldHints
@@ -109,7 +111,8 @@ func ScaleDown(
 	cloudProvider cloudprovider.CloudProvider,
 	client *kube_client.Client,
 	predicateChecker *simulator.PredicateChecker,
-	oldHints map[string]string) (ScaleDownResult, error) {
+	oldHints map[string]string,
+	usageTracker *simulator.UsageTracker) (ScaleDownResult, error) {
 
 	now := time.Now()
 	candidates := make([]*kube_api.Node, 0)
@@ -152,9 +155,10 @@ func ScaleDown(
 		return ScaleDownNoUnneeded, nil
 	}
 
-	// TODO: use new hints
+	// We look for only 1 node so new hints may be incomplete.
 	nodesToRemove, _, err := simulator.FindNodesToRemove(candidates, nodes, pods, client, predicateChecker, 1, false,
-		oldHints)
+		oldHints, usageTracker, time.Now())
+
 	if err != nil {
 		return ScaleDownError, fmt.Errorf("Find node to remove failed: %v", err)
 	}
@@ -174,6 +178,8 @@ func ScaleDown(
 	}
 
 	err = nodeGroup.DeleteNodes([]*kube_api.Node{nodeToRemove})
+	simulator.RemoveNodeFromTracker(usageTracker, nodeToRemove.Name, unneededNodes)
+
 	if err != nil {
 		return ScaleDownError, fmt.Errorf("Failed to delete %s: %v", nodeToRemove.Name, err)
 	}
