@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"k8s.io/contrib/cluster-autoscaler/cloudprovider"
+	"k8s.io/contrib/cluster-autoscaler/cloudprovider/aws"
 	"k8s.io/contrib/cluster-autoscaler/cloudprovider/gce"
 	"k8s.io/contrib/cluster-autoscaler/config"
 	"k8s.io/contrib/cluster-autoscaler/simulator"
@@ -139,6 +140,28 @@ func main() {
 		cloudProvider, err = gce.BuildGceCloudProvider(gceManager, nodeGroupsFlag)
 		if err != nil {
 			glog.Fatalf("Failed to create GCE cloud provider: %v", err)
+		}
+	}
+
+	if *cloudProviderFlag == "aws" {
+		var awsManager *aws.AwsManager
+		var awsError error
+		if *cloudConfig != "" {
+			config, fileErr := os.Open(*cloudConfig)
+			if fileErr != nil {
+				glog.Fatalf("Couldn't open cloud provider configuration %s: %#v", *cloudConfig, err)
+			}
+			defer config.Close()
+			awsManager, awsError = aws.CreateAwsManager(config)
+		} else {
+			awsManager, awsError = aws.CreateAwsManager(nil)
+		}
+		if awsError != nil {
+			glog.Fatalf("Failed to create AWS Manager: %v", err)
+		}
+		cloudProvider, err = aws.BuildAwsCloudProvider(awsManager, nodeGroupsFlag)
+		if err != nil {
+			glog.Fatalf("Failed to create AWS cloud provider: %v", err)
 		}
 	}
 
