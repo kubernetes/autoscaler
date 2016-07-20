@@ -29,11 +29,14 @@ import (
 	"k8s.io/contrib/cluster-autoscaler/config"
 	"k8s.io/contrib/cluster-autoscaler/simulator"
 	kube_api "k8s.io/kubernetes/pkg/api"
+	kube_leaderelection "k8s.io/kubernetes/pkg/client/leaderelection"
 	kube_record "k8s.io/kubernetes/pkg/client/record"
 	kube_client "k8s.io/kubernetes/pkg/client/unversioned"
+	kube_flag "k8s.io/kubernetes/pkg/util/flag"
 
 	"github.com/golang/glog"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/spf13/pflag"
 )
 
 // MultiStringFlag is a flag for passing multiple parameters using same flag
@@ -72,31 +75,32 @@ var (
 	cloudProviderFlag = flag.String("cloud-provider", "gce", "Cloud provider type. Allowed values: gce")
 )
 
-func main() {
-	glog.Infof("Cluster Autoscaler %s", ClusterAutoscalerVersion)
-
-	flag.Var(&nodeGroupsFlag, "nodes", "sets min,max size and other configuration data for a node group in a format accepted by cloud provider."+
-		"Can be used multiple times. Format: <min>:<max>:<other...>")
-	flag.Parse()
-
-	go func() {
-		http.Handle("/metrics", prometheus.Handler())
-		err := http.ListenAndServe(*address, nil)
-		glog.Fatalf("Failed to start metrics: %v", err)
-	}()
-
+func createKubeClient() *kube_client.Client {
 	url, err := url.Parse(*kubernetes)
 	if err != nil {
 		glog.Fatalf("Failed to parse Kuberentes url: %v", err)
 	}
 
-	// Configuration
 	kubeConfig, err := config.GetKubeClientConfig(url)
 	if err != nil {
 		glog.Fatalf("Failed to build Kuberentes client configuration: %v", err)
 	}
 
-	kubeClient := kube_client.NewOrDie(kubeConfig)
+	return kube_client.NewOrDie(kubeConfig)
+}
+
+func createEventRecorder(kubeClient *kube_client.Client) kube_record.EventRecorder {
+	eventBroadcaster := kube_record.NewBroadcaster()
+	eventBroadcaster.StartLogging(glog.Infof)
+	eventBroadcaster.StartRecordingToSink(kubeClient.Events(""))
+	return eventBroadcaster.NewRecorder(kube_api.EventSource{Component: "cluster-autoscaler"})
+}
+
+// In order to meet interface criteria for LeaderElectionConfig we need to
+// take stop channell as an argument. However, since we are committing a suicide
+// after loosing mastership we can safely ignore it.
+func run(_ <-chan struct{}) {
+	kubeClient := createKubeClient()
 
 	predicateChecker, err := simulator.NewPredicateChecker(kubeClient)
 	if err != nil {
@@ -112,10 +116,7 @@ func main() {
 	podLocationHints := make(map[string]string)
 	usageTracker := simulator.NewUsageTracker()
 
-	eventBroadcaster := kube_record.NewBroadcaster()
-	eventBroadcaster.StartLogging(glog.Infof)
-	eventBroadcaster.StartRecordingToSink(kubeClient.Events(""))
-	recorder := eventBroadcaster.NewRecorder(kube_api.EventSource{Component: "cluster-autoscaler"})
+	recorder := createEventRecorder(kubeClient)
 
 	var cloudProvider cloudprovider.CloudProvider
 
@@ -293,6 +294,53 @@ func main() {
 				updateDuration("main", loopStart)
 			}
 		}
+	}
+}
+
+func main() {
+	leaderElection := kube_leaderelection.DefaultLeaderElectionConfiguration()
+	leaderElection.LeaderElect = true
+
+	kube_leaderelection.BindFlags(&leaderElection, pflag.CommandLine)
+	flag.Var(&nodeGroupsFlag, "nodes", "sets min,max size and other configuration data for a node group in a format accepted by cloud provider."+
+		"Can be used multiple times. Format: <min>:<max>:<other...>")
+	kube_flag.InitFlags()
+
+	glog.Infof("Cluster Autoscaler %s", ClusterAutoscalerVersion)
+
+	go func() {
+		http.Handle("/metrics", prometheus.Handler())
+		err := http.ListenAndServe(*address, nil)
+		glog.Fatalf("Failed to start metrics: %v", err)
+	}()
+
+	if !leaderElection.LeaderElect {
+		run(nil)
+	} else {
+		id, err := os.Hostname()
+		if err != nil {
+			glog.Fatalf("Unable to get hostname: %v", err)
+		}
+
+		kubeClient := createKubeClient()
+		kube_leaderelection.RunOrDie(kube_leaderelection.LeaderElectionConfig{
+			EndpointsMeta: kube_api.ObjectMeta{
+				Namespace: "kube-system",
+				Name:      "cluster-autoscaler",
+			},
+			Client:        kubeClient,
+			Identity:      id,
+			EventRecorder: createEventRecorder(kubeClient),
+			LeaseDuration: leaderElection.LeaseDuration.Duration,
+			RenewDeadline: leaderElection.RenewDeadline.Duration,
+			RetryPeriod:   leaderElection.RetryPeriod.Duration,
+			Callbacks: kube_leaderelection.LeaderCallbacks{
+				OnStartedLeading: run,
+				OnStoppedLeading: func() {
+					glog.Fatalf("lost master")
+				},
+			},
+		})
 	}
 }
 
