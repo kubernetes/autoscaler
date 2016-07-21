@@ -1,7 +1,7 @@
 {
 	"ImportPath": "k8s.io/contrib/cluster-autoscaler",
 	"GoVersion": "go1.6",
-	"GodepVersion": "v71",
+	"GodepVersion": "v74",
 	"Packages": [
 		"./..."
 	],
@@ -329,8 +329,8 @@
 		},
 		{
 			"ImportPath": "github.com/google/cadvisor/info/v1",
-			"Comment": "v0.23.0",
-			"Rev": "750f18e5eac3f6193b354fc14c03d92d4318a0ec"
+			"Comment": "v0.23.2",
+			"Rev": "7ddf6eb5d1f84363fbc181a498313a880b12ba07"
 		},
 		{
 			"ImportPath": "github.com/google/gofuzz",
@@ -491,22 +491,27 @@
 		},
 		{
 			"ImportPath": "gopkg.in/gcfg.v1",
+			"Comment": "v1.0.0",
 			"Rev": "083575c3955c85df16fe9590cceab64d03f5eb6e"
 		},
 		{
 			"ImportPath": "gopkg.in/gcfg.v1/scanner",
+			"Comment": "v1.0.0",
 			"Rev": "083575c3955c85df16fe9590cceab64d03f5eb6e"
 		},
 		{
 			"ImportPath": "gopkg.in/gcfg.v1/token",
+			"Comment": "v1.0.0",
 			"Rev": "083575c3955c85df16fe9590cceab64d03f5eb6e"
 		},
 		{
 			"ImportPath": "gopkg.in/gcfg.v1/types",
+			"Comment": "v1.0.0",
 			"Rev": "083575c3955c85df16fe9590cceab64d03f5eb6e"
 		},
 		{
 			"ImportPath": "gopkg.in/inf.v0",
+			"Comment": "v0.9.0",
 			"Rev": "3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4"
 		},
 		{
@@ -784,6 +789,21 @@
 			"Rev": "8a29f67fc1a3c6e107ce0d70a8e643b99b765e0a"
 		},
 		{
+			"ImportPath": "k8s.io/kubernetes/pkg/apis/rbac",
+			"Comment": "v1.3.0-alpha.4-830-g8a29f67",
+			"Rev": "8a29f67fc1a3c6e107ce0d70a8e643b99b765e0a"
+		},
+		{
+			"ImportPath": "k8s.io/kubernetes/pkg/apis/rbac/install",
+			"Comment": "v1.3.0-alpha.4-830-g8a29f67",
+			"Rev": "8a29f67fc1a3c6e107ce0d70a8e643b99b765e0a"
+		},
+		{
+			"ImportPath": "k8s.io/kubernetes/pkg/apis/rbac/v1alpha1",
+			"Comment": "v1.3.0-alpha.4-830-g8a29f67",
+			"Rev": "8a29f67fc1a3c6e107ce0d70a8e643b99b765e0a"
+		},
+		{
 			"ImportPath": "k8s.io/kubernetes/pkg/auth/user",
 			"Comment": "v1.3.0-alpha.4-830-g8a29f67",
 			"Rev": "8a29f67fc1a3c6e107ce0d70a8e643b99b765e0a"
@@ -820,6 +840,16 @@
 		},
 		{
 			"ImportPath": "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/extensions/unversioned",
+			"Comment": "v1.3.0-alpha.4-830-g8a29f67",
+			"Rev": "8a29f67fc1a3c6e107ce0d70a8e643b99b765e0a"
+		},
+		{
+			"ImportPath": "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/rbac/unversioned",
+			"Comment": "v1.3.0-alpha.4-830-g8a29f67",
+			"Rev": "8a29f67fc1a3c6e107ce0d70a8e643b99b765e0a"
+		},
+		{
+			"ImportPath": "k8s.io/kubernetes/pkg/client/leaderelection",
 			"Comment": "v1.3.0-alpha.4-830-g8a29f67",
 			"Rev": "8a29f67fc1a3c6e107ce0d70a8e643b99b765e0a"
 		},
@@ -910,8 +940,8 @@
 		},
 		{
 			"ImportPath": "k8s.io/kubernetes/pkg/cloudprovider/providers/gce",
-			"Comment": "v1.3.0-alpha.4-830-g8a29f67 (MANUALLY MODIFIED)",
-			"Rev": "8a29f67fc1a3c6e107ce0d70a8e643b99b765e0a-dirty"
+			"Comment": "v1.3.0-alpha.4-830-g8a29f67",
+			"Rev": "8a29f67fc1a3c6e107ce0d70a8e643b99b765e0a"
 		},
 		{
 			"ImportPath": "k8s.io/kubernetes/pkg/controller",
@@ -1220,6 +1250,11 @@
 		},
 		{
 			"ImportPath": "k8s.io/kubernetes/pkg/util/sets",
+			"Comment": "v1.3.0-alpha.4-830-g8a29f67",
+			"Rev": "8a29f67fc1a3c6e107ce0d70a8e643b99b765e0a"
+		},
+		{
+			"ImportPath": "k8s.io/kubernetes/pkg/util/slice",
 			"Comment": "v1.3.0-alpha.4-830-g8a29f67",
 			"Rev": "8a29f67fc1a3c6e107ce0d70a8e643b99b765e0a"
 		},

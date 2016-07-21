@@ -29,7 +29,7 @@ spec:
               memory: 300Mi
           command:
             - ./cluster-autoscaler
-            - -v=4
+            - --v=4
             - --nodes={{MIN}}:{{MAX}}:{{MIG_LINK}}
           volumeMounts:
             - name: ssl-certs
