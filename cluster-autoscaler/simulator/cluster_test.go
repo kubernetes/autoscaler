@@ -134,3 +134,19 @@ func TestFindNone(t *testing.T) {
 		time.Now())
 	assert.NoError(t, err)
 }
+
+func TestShuffleNodes(t *testing.T) {
+	nodes := []*kube_api.Node{
+		BuildTestNode("n1", 0, 0),
+		BuildTestNode("n2", 0, 0),
+		BuildTestNode("n3", 0, 0)}
+	gotPermutation := false
+	for i := 0; i < 10000; i++ {
+		shuffled := shuffleNodes(nodes)
+		if shuffled[0].Name == "n2" && shuffled[1].Name == "n3" && shuffled[2].Name == "n1" {
+			gotPermutation = true
+			break
+		}
+	}
+	assert.True(t, gotPermutation)
+}

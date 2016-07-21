@@ -20,6 +20,7 @@ import (
 	"flag"
 	"fmt"
 	"math"
+	"math/rand"
 	"time"
 
 	kube_api "k8s.io/kubernetes/pkg/api"
@@ -173,6 +174,10 @@ func findPlaceFor(removedNode string, pods []*kube_api.Pod, nodes []*kube_api.No
 		return false
 	}
 
+	// TODO: come up with a better semi-random semi-utilization sorted
+	// layout.
+	shuffledNodes := shuffleNodes(nodes)
+
 	for _, podptr := range pods {
 		newpod := *podptr
 		newpod.Spec.NodeName = ""
@@ -191,8 +196,7 @@ func findPlaceFor(removedNode string, pods []*kube_api.Pod, nodes []*kube_api.No
 			}
 		}
 		if !foundPlace {
-			// TODO: Sort nodes by utilization
-			for _, node := range nodes {
+			for _, node := range shuffledNodes {
 				if node.Name == removedNode {
 					continue
 				}
@@ -210,4 +214,16 @@ func findPlaceFor(removedNode string, pods []*kube_api.Pod, nodes []*kube_api.No
 		usageTracker.RegisterUsage(removedNode, targetNode, timestamp)
 	}
 	return nil
+}
+
+func shuffleNodes(nodes []*kube_api.Node) []*kube_api.Node {
+	result := make([]*kube_api.Node, len(nodes))
+	for i := range nodes {
+		result[i] = nodes[i]
+	}
+	for i := range result {
+		j := rand.Intn(len(result))
+		result[i], result[j] = result[j], result[i]
+	}
+	return result
 }
