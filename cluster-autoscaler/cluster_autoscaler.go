@@ -28,6 +28,7 @@ import (
 	"k8s.io/contrib/cluster-autoscaler/cloudprovider/gce"
 	"k8s.io/contrib/cluster-autoscaler/config"
 	"k8s.io/contrib/cluster-autoscaler/simulator"
+	kube_util "k8s.io/contrib/cluster-autoscaler/utils/kubernetes"
 	kube_api "k8s.io/kubernetes/pkg/api"
 	kube_leaderelection "k8s.io/kubernetes/pkg/client/leaderelection"
 	kube_record "k8s.io/kubernetes/pkg/client/record"
@@ -106,9 +107,9 @@ func run(_ <-chan struct{}) {
 	if err != nil {
 		glog.Fatalf("Failed to create predicate checker: %v", err)
 	}
-	unschedulablePodLister := NewUnschedulablePodLister(kubeClient)
-	scheduledPodLister := NewScheduledPodLister(kubeClient)
-	nodeLister := NewNodeLister(kubeClient)
+	unschedulablePodLister := kube_util.NewUnschedulablePodLister(kubeClient)
+	scheduledPodLister := kube_util.NewScheduledPodLister(kubeClient)
+	nodeLister := kube_util.NewNodeLister(kubeClient)
 
 	lastScaleUpTime := time.Now()
 	lastScaleDownFailedTrial := time.Now()
