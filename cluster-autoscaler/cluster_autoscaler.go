@@ -107,7 +107,7 @@ func run(_ <-chan struct{}) {
 	if err != nil {
 		glog.Fatalf("Failed to create predicate checker: %v", err)
 	}
-	unschedulablePodLister := kube_util.NewUnschedulablePodLister(kubeClient)
+	unschedulablePodLister := kube_util.NewUnschedulablePodLister(kubeClient, kube_api.NamespaceAll)
 	scheduledPodLister := kube_util.NewScheduledPodLister(kubeClient)
 	nodeLister := kube_util.NewNodeLister(kubeClient)
 

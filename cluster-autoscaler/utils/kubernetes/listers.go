@@ -48,11 +48,11 @@ func (unschedulablePodLister *UnschedulablePodLister) List() ([]*kube_api.Pod, e
 }
 
 // NewUnschedulablePodLister returns a lister providing pods that failed to be scheduled.
-func NewUnschedulablePodLister(kubeClient *kube_client.Client) *UnschedulablePodLister {
+func NewUnschedulablePodLister(kubeClient *kube_client.Client, namespace string) *UnschedulablePodLister {
 	// watch unscheduled pods
 	selector := fields.ParseSelectorOrDie("spec.nodeName==" + "" + ",status.phase!=" +
 		string(kube_api.PodSucceeded) + ",status.phase!=" + string(kube_api.PodFailed))
-	podListWatch := cache.NewListWatchFromClient(kubeClient, "pods", kube_api.NamespaceAll, selector)
+	podListWatch := cache.NewListWatchFromClient(kubeClient, "pods", namespace, selector)
 	store := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
 	podLister := &cache.StoreToPodLister{store}
 	podReflector := cache.NewReflector(podListWatch, &kube_api.Pod{}, store, time.Hour)
