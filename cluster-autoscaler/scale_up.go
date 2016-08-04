@@ -36,9 +36,10 @@ type ExpansionOption struct {
 }
 
 // ScaleUp tries to scale the cluster up. Return true if it found a way to increase the size,
-// false if it didn't and error if an error occured.
+// false if it didn't and error if an error occured. Assumes that all nodes in the cluster are
+// ready and in sync with instance groups.
 func ScaleUp(unschedulablePods []*kube_api.Pod, nodes []*kube_api.Node, cloudProvider cloudprovider.CloudProvider, kubeClient *kube_client.Client,
-	predicateChecker *simulator.PredicateChecker, recorder kube_record.EventRecorder) (bool, error) {
+	predicateChecker *simulator.PredicateChecker, recorder kube_record.EventRecorder, maxNodesTotal int) (bool, error) {
 
 	// From now on we only care about unschedulable pods that were marked after the newest
 	// node became available for the scheduler.
@@ -122,6 +123,15 @@ func ScaleUp(unschedulablePods []*kube_api.Pod, nodes []*kube_api.Node, cloudPro
 			glog.V(1).Infof("Capping size to MAX (%d)", bestOption.nodeGroup.MaxSize())
 			newSize = bestOption.nodeGroup.MaxSize()
 		}
+
+		if maxNodesTotal > 0 && len(nodes)+(newSize-currentSize) > maxNodesTotal {
+			glog.V(1).Infof("Capping size to max cluster total size (%d)", maxNodesTotal)
+			newSize = maxNodesTotal - len(nodes) + currentSize
+			if newSize < currentSize {
+				return false, fmt.Errorf("max node total count already reached")
+			}
+		}
+
 		glog.V(1).Infof("Setting %s size to %d", bestOption.nodeGroup.Id(), newSize)
 
 		if err := bestOption.nodeGroup.IncreaseSize(newSize - currentSize); err != nil {
