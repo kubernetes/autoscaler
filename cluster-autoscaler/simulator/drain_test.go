@@ -35,7 +35,7 @@ func TestFastGetPodsToMove(t *testing.T) {
 			Namespace: "ns",
 		},
 	}
-	_, err := FastGetPodsToMove(schedulercache.NewNodeInfo(pod1), false, true, true, kube_api.Codecs.UniversalDecoder())
+	_, err := FastGetPodsToMove(schedulercache.NewNodeInfo(pod1), false, true, true)
 	assert.Error(t, err)
 
 	// Replicated pod
@@ -48,7 +48,7 @@ func TestFastGetPodsToMove(t *testing.T) {
 			},
 		},
 	}
-	r2, err := FastGetPodsToMove(schedulercache.NewNodeInfo(pod2), false, true, true, kube_api.Codecs.UniversalDecoder())
+	r2, err := FastGetPodsToMove(schedulercache.NewNodeInfo(pod2), false, true, true)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(r2))
 	assert.Equal(t, pod2, r2[0])
@@ -63,7 +63,7 @@ func TestFastGetPodsToMove(t *testing.T) {
 			},
 		},
 	}
-	r3, err := FastGetPodsToMove(schedulercache.NewNodeInfo(pod3), false, true, true, kube_api.Codecs.UniversalDecoder())
+	r3, err := FastGetPodsToMove(schedulercache.NewNodeInfo(pod3), false, true, true)
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(r3))
 
@@ -77,7 +77,7 @@ func TestFastGetPodsToMove(t *testing.T) {
 			},
 		},
 	}
-	r4, err := FastGetPodsToMove(schedulercache.NewNodeInfo(pod2, pod3, pod4), false, true, true, kube_api.Codecs.UniversalDecoder())
+	r4, err := FastGetPodsToMove(schedulercache.NewNodeInfo(pod2, pod3, pod4), false, true, true)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(r4))
 	assert.Equal(t, pod2, r4[0])
@@ -92,7 +92,7 @@ func TestFastGetPodsToMove(t *testing.T) {
 			},
 		},
 	}
-	_, err = FastGetPodsToMove(schedulercache.NewNodeInfo(pod5), false, true, true, kube_api.Codecs.UniversalDecoder())
+	_, err = FastGetPodsToMove(schedulercache.NewNodeInfo(pod5), false, true, true)
 	assert.Error(t, err)
 
 	// Local storage
@@ -114,7 +114,7 @@ func TestFastGetPodsToMove(t *testing.T) {
 			},
 		},
 	}
-	_, err = FastGetPodsToMove(schedulercache.NewNodeInfo(pod6), false, true, true, kube_api.Codecs.UniversalDecoder())
+	_, err = FastGetPodsToMove(schedulercache.NewNodeInfo(pod6), false, true, true)
 	assert.Error(t, err)
 
 	// Non-local storage
@@ -138,7 +138,7 @@ func TestFastGetPodsToMove(t *testing.T) {
 			},
 		},
 	}
-	r7, err := FastGetPodsToMove(schedulercache.NewNodeInfo(pod7), false, true, true, kube_api.Codecs.UniversalDecoder())
+	r7, err := FastGetPodsToMove(schedulercache.NewNodeInfo(pod7), false, true, true)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(r7))
 }

@@ -32,33 +32,29 @@ import (
 // along with their pods (no abandoned pods with dangling created-by annotation). Usefull for fast
 // checks.
 func FastGetPodsToMove(nodeInfo *schedulercache.NodeInfo, force bool,
-	skipNodesWithSystemPods bool, skipNodesWithLocalStorage bool, decoder runtime.Decoder) ([]*api.Pod, error) {
+	skipNodesWithSystemPods bool, skipNodesWithLocalStorage bool) ([]*api.Pod, error) {
 	pods := make([]*api.Pod, 0)
 	unreplicatedPodNames := []string{}
 	for _, pod := range nodeInfo.Pods() {
-		_, found := pod.ObjectMeta.Annotations[types.ConfigMirrorAnnotationKey]
-		if found {
-			// Skip mirror pod
+		if IsMirrorPod(pod) {
 			continue
 		}
+
 		replicated := false
 		daemonsetPod := false
 
-		creatorRef, found := pod.ObjectMeta.Annotations[controller.CreatedByAnnotation]
-		if found {
-			var sr api.SerializedReference
-			if err := runtime.DecodeInto(decoder, []byte(creatorRef), &sr); err != nil {
-				return []*api.Pod{}, err
-			}
-			if sr.Reference.Kind == "ReplicationController" {
-				replicated = true
-			} else if sr.Reference.Kind == "DaemonSet" {
-				daemonsetPod = true
-			} else if sr.Reference.Kind == "Job" {
-				replicated = true
-			} else if sr.Reference.Kind == "ReplicaSet" {
-				replicated = true
-			}
+		creatorKind, err := CreatorRefKind(pod)
+		if err != nil {
+			return []*api.Pod{}, err
+		}
+		if creatorKind == "ReplicationController" {
+			replicated = true
+		} else if creatorKind == "DaemonSet" {
+			daemonsetPod = true
+		} else if creatorKind == "Job" {
+			replicated = true
+		} else if creatorKind == "ReplicaSet" {
+			replicated = true
 		}
 
 		if !daemonsetPod && pod.Namespace == "kube-system" && skipNodesWithSystemPods {
@@ -85,6 +81,25 @@ func FastGetPodsToMove(nodeInfo *schedulercache.NodeInfo, force bool,
 		return []*api.Pod{}, fmt.Errorf("unreplicated pods present")
 	}
 	return pods, nil
+}
+
+// CreatorRefKind returns the kind of the creator of the pod.
+func CreatorRefKind(pod *api.Pod) (string, error) {
+	creatorRef, found := pod.ObjectMeta.Annotations[controller.CreatedByAnnotation]
+	if !found {
+		return "", nil
+	}
+	var sr api.SerializedReference
+	if err := runtime.DecodeInto(api.Codecs.UniversalDecoder(), []byte(creatorRef), &sr); err != nil {
+		return "", err
+	}
+	return sr.Reference.Kind, nil
+}
+
+// IsMirrorPod checks whether the pod is a mirror pod.
+func IsMirrorPod(pod *api.Pod) bool {
+	_, found := pod.ObjectMeta.Annotations[types.ConfigMirrorAnnotationKey]
+	return found
 }
 
 func hasLocalStorage(pod *api.Pod) bool {

@@ -70,7 +70,7 @@ candidateloop:
 
 		if fastCheck {
 			if nodeInfo, found := nodeNameToNodeInfo[node.Name]; found {
-				podsToRemove, err = FastGetPodsToMove(nodeInfo, false, *skipNodesWithSystemPods, *skipNodesWithLocalStorage, kube_api.Codecs.UniversalDecoder())
+				podsToRemove, err = FastGetPodsToMove(nodeInfo, false, *skipNodesWithSystemPods, *skipNodesWithLocalStorage)
 				if err != nil {
 					glog.V(2).Infof("%s: node %s cannot be removed: %v", evaluationType, node.Name, err)
 					continue candidateloop
