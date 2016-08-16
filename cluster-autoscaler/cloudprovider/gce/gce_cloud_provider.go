@@ -141,12 +141,12 @@ func (mig *Mig) IncreaseSize(delta int) error {
 		return err
 	}
 	if int(size)+delta > mig.MaxSize() {
-		return fmt.Errorf("size increase to large - desired:%d max:%d", int(size)+delta, mig.MaxSize())
+		return fmt.Errorf("size increase too large - desired:%d max:%d", int(size)+delta, mig.MaxSize())
 	}
 	return mig.gceManager.SetMigSize(mig, size+int64(delta))
 }
 
-// Belongs retruns true if the given node belongs to the NodeGroup.
+// Belongs returns true if the given node belongs to the NodeGroup.
 func (mig *Mig) Belongs(node *kube_api.Node) (bool, error) {
 	ref, err := GceRefFromProviderId(node.Spec.ProviderID)
 	if err != nil {
