@@ -181,7 +181,7 @@ func (mig *Mig) DeleteNodes(nodes []*kube_api.Node) error {
 		if err != nil {
 			return err
 		}
-		if belongs {
+		if !belongs {
 			return fmt.Errorf("%s belong to a different mig than %s", node.Name, mig.Id())
 		}
 		gceref, err := GceRefFromProviderId(node.Spec.ProviderID)
