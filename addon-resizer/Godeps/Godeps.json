@@ -243,6 +243,11 @@
 			"Rev": "7476d97781563b70e8b89a8bd3f99ea75ae6c290"
 		},
 		{
+			"ImportPath": "k8s.io/kubernetes/pkg/apis/apps",
+			"Comment": "v1.3.0-alpha.5-165-g7476d97",
+			"Rev": "7476d97781563b70e8b89a8bd3f99ea75ae6c290"
+		},
+		{
 			"ImportPath": "k8s.io/kubernetes/pkg/apis/authorization",
 			"Comment": "v1.3.0-alpha.5-165-g7476d97",
 			"Rev": "7476d97781563b70e8b89a8bd3f99ea75ae6c290"
@@ -329,6 +334,11 @@
 		},
 		{
 			"ImportPath": "k8s.io/kubernetes/pkg/capabilities",
+			"Comment": "v1.3.0-alpha.5-165-g7476d97",
+			"Rev": "7476d97781563b70e8b89a8bd3f99ea75ae6c290"
+		},
+		{
+			"ImportPath": "k8s.io/kubernetes/pkg/client/cache",
 			"Comment": "v1.3.0-alpha.5-165-g7476d97",
 			"Rev": "7476d97781563b70e8b89a8bd3f99ea75ae6c290"
 		},
