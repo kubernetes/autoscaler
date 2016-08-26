@@ -163,7 +163,7 @@ func GetNodeInfosForGroups(nodes []*kube_api.Node, cloudProvider cloudprovider.C
 		if err != nil {
 			return map[string]*schedulercache.NodeInfo{}, err
 		}
-		if nodeGroup == nil {
+		if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
 			continue
 		}
 		id := nodeGroup.Id()
