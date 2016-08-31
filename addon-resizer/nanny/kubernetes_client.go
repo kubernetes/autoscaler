@@ -18,12 +18,14 @@ package nanny
 
 import (
 	"fmt"
+	"time"
 
 	api "k8s.io/kubernetes/pkg/api"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	cache "k8s.io/kubernetes/pkg/client/cache"
 	client "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_3"
 	runtime "k8s.io/kubernetes/pkg/runtime"
+	wait "k8s.io/kubernetes/pkg/util/wait"
 	watch "k8s.io/kubernetes/pkg/watch"
 )
 
@@ -34,9 +36,19 @@ type kubernetesClient struct {
 	container  string
 	clientset  *client.Clientset
 	nodeStore  cache.Store
+	reflector  *cache.Reflector
 }
 
 func (k *kubernetesClient) CountNodes() (uint64, error) {
+	err := wait.PollImmediate(time.Second, time.Minute, func() (bool, error) {
+		if k.reflector.LastSyncResourceVersion() != "" {
+			return false, nil
+		}
+		return true, nil
+	})
+	if err != nil {
+		return 0, err
+	}
 	return uint64(len(k.nodeStore.List())), nil
 }
 
@@ -93,6 +105,7 @@ func NewKubernetesClient(namespace, deployment, pod, container string, clientset
 			return clientset.Core().Nodes().Watch(options)
 		},
 	}
-	cache.NewReflector(nodeListWatch, &api.Node{}, result.nodeStore, 0).Run()
+	result.reflector = cache.NewReflector(nodeListWatch, &apiv1.Node{}, result.nodeStore, 0)
+	result.reflector.Run()
 	return result
 }
