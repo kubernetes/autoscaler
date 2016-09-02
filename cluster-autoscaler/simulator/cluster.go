@@ -157,6 +157,13 @@ func findPlaceFor(removedNode string, pods []*kube_api.Pod, nodes []*kube_api.No
 			nodeInfo, found = nodeInfos[nodename]
 		}
 		if found {
+			if nodeInfo.Node() == nil {
+				// NodeInfo is generated based on pods. It is possible that node is removed from
+				// an api server faster than the pod that were running on them. In such a case
+				// we have to skip this nodeInfo. It should go away pretty soon.
+				glog.Warningf("No node in nodeInfo %s -> %v", nodename, nodeInfo)
+				return false
+			}
 			nodeInfo.Node().Status.Allocatable = nodeInfo.Node().Status.Capacity
 			err := predicateChecker.CheckPredicates(pod, nodeInfo)
 			glog.V(4).Infof("Evaluation %s for %s/%s -> %v", nodename, pod.Namespace, pod.Name, err)
