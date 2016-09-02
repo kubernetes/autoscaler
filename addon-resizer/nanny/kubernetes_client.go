@@ -41,7 +41,7 @@ type kubernetesClient struct {
 
 func (k *kubernetesClient) CountNodes() (uint64, error) {
 	err := wait.PollImmediate(time.Second, time.Minute, func() (bool, error) {
-		if k.reflector.LastSyncResourceVersion() != "" {
+		if k.reflector.LastSyncResourceVersion() == "" {
 			return false, nil
 		}
 		return true, nil
