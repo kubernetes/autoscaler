@@ -175,7 +175,8 @@ func (m *AwsManager) GetAsgForInstance(instance *AwsRef) (*Asg, error) {
 	if config, found := m.asgCache[*instance]; found {
 		return config, nil
 	}
-	return nil, fmt.Errorf("Instance %+v does not belong to any known ASG", *instance)
+	// instance does not belong to any configured ASG
+	return nil, nil
 }
 
 func (m *AwsManager) regenerateCache() error {
