@@ -57,7 +57,7 @@ spec:
               memory: 300Mi
           command:
             - ./cluster-autoscaler
-            - -v=4
+            - --v=4
             - --cloud-provider=aws
             - --skip-nodes-with-local-storage=false
             - --nodes={{ ASG MIN e.g. 1 }}:{{ASG MAX e.g. 5}}:{{ASG NAME e.g. k8s-worker-asg}}
