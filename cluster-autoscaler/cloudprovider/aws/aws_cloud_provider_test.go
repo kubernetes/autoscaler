@@ -118,6 +118,17 @@ func TestNodeGroupForNode(t *testing.T) {
 	assert.Equal(t, group.Id(), "test-asg")
 	assert.Equal(t, group.MinSize(), 1)
 	assert.Equal(t, group.MaxSize(), 5)
+
+	// test node in cluster that is not in a group managed by cluster autoscaler
+	nodeNotInGroup := &kube_api.Node{
+		Spec: kube_api.NodeSpec{
+			ProviderID: "aws:///us-east-1a/test-instance-id-not-in-group",
+		},
+	}
+
+	group, err = provider.NodeGroupForNode(nodeNotInGroup)
+	assert.NoError(t, err)
+	assert.Nil(t, group)
 }
 
 func TestAwsRefFromProviderId(t *testing.T) {
