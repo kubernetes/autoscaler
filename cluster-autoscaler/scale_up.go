@@ -32,14 +32,17 @@ import (
 // ExpansionOption describes an option to expand the cluster.
 type ExpansionOption struct {
 	nodeGroup cloudprovider.NodeGroup
-	estimator *estimator.BasicNodeEstimator
+	nodeCount int
+	debug     string
+	pods      []*kube_api.Pod
 }
 
 // ScaleUp tries to scale the cluster up. Return true if it found a way to increase the size,
 // false if it didn't and error if an error occured. Assumes that all nodes in the cluster are
 // ready and in sync with instance groups.
 func ScaleUp(unschedulablePods []*kube_api.Pod, nodes []*kube_api.Node, cloudProvider cloudprovider.CloudProvider, kubeClient *kube_client.Client,
-	predicateChecker *simulator.PredicateChecker, recorder kube_record.EventRecorder, maxNodesTotal int) (bool, error) {
+	predicateChecker *simulator.PredicateChecker, recorder kube_record.EventRecorder, maxNodesTotal int,
+	estimatorName string) (bool, error) {
 
 	// From now on we only care about unschedulable pods that were marked after the newest
 	// node became available for the scheduler.
@@ -74,9 +77,8 @@ func ScaleUp(unschedulablePods []*kube_api.Pod, nodes []*kube_api.Node, cloudPro
 
 		option := ExpansionOption{
 			nodeGroup: nodeGroup,
-			estimator: estimator.NewBasicNodeEstimator(),
+			pods:      make([]*kube_api.Pod, 0),
 		}
-		groupHelpsSomePods := false
 
 		nodeInfo, found := nodeInfos[nodeGroup.Id()]
 		if !found {
@@ -87,38 +89,43 @@ func ScaleUp(unschedulablePods []*kube_api.Pod, nodes []*kube_api.Node, cloudPro
 		for _, pod := range unschedulablePods {
 			err = predicateChecker.CheckPredicates(pod, nodeInfo)
 			if err == nil {
-				groupHelpsSomePods = true
-				option.estimator.Add(pod)
+				option.pods = append(option.pods, pod)
 			} else {
 				glog.V(2).Infof("Scale-up predicate failed: %v", err)
 				podsRemainUnshedulable[pod] = struct{}{}
 			}
 		}
-		if groupHelpsSomePods {
+		if len(option.pods) > 0 {
+			if estimatorName == BinpackingEstimatorName {
+				binpackingEstimator := estimator.NewBinpackingNodeEstimator(predicateChecker)
+				option.nodeCount = binpackingEstimator.Estimate(option.pods, nodeInfo)
+			} else if estimatorName == BasicEstimatorName {
+				basicEstimator := estimator.NewBasicNodeEstimator()
+				for _, pod := range option.pods {
+					basicEstimator.Add(pod)
+				}
+				option.nodeCount, option.debug = basicEstimator.Estimate(nodeInfo.Node())
+			} else {
+				glog.Fatalf("Unrecognized estimator: %s", estimatorName)
+			}
 			expansionOptions = append(expansionOptions, option)
 		}
 	}
 
 	// Pick some expansion option.
 	bestOption := BestExpansionOption(expansionOptions)
-	if bestOption != nil && bestOption.estimator.GetCount() > 0 {
+	if bestOption != nil && bestOption.nodeCount > 0 {
 		glog.V(1).Infof("Best option to resize: %s", bestOption.nodeGroup.Id())
-		nodeInfo, found := nodeInfos[bestOption.nodeGroup.Id()]
-		if !found {
-			return false, fmt.Errorf("no sample node for: %s", bestOption.nodeGroup.Id())
-
+		if len(bestOption.debug) > 0 {
+			glog.V(1).Info(bestOption.debug)
 		}
-		node := nodeInfo.Node()
-		estimate, report := bestOption.estimator.Estimate(node)
-		glog.V(1).Info(bestOption.estimator.GetDebug())
-		glog.V(1).Info(report)
-		glog.V(1).Infof("Estimated %d nodes needed in %s", estimate, bestOption.nodeGroup.Id())
+		glog.V(1).Infof("Estimated %d nodes needed in %s", bestOption.nodeCount, bestOption.nodeGroup.Id())
 
 		currentSize, err := bestOption.nodeGroup.TargetSize()
 		if err != nil {
 			return false, fmt.Errorf("failed to get node group size: %v", err)
 		}
-		newSize := currentSize + estimate
+		newSize := currentSize + bestOption.nodeCount
 		if newSize >= bestOption.nodeGroup.MaxSize() {
 			glog.V(1).Infof("Capping size to MAX (%d)", bestOption.nodeGroup.MaxSize())
 			newSize = bestOption.nodeGroup.MaxSize()
@@ -138,7 +145,7 @@ func ScaleUp(unschedulablePods []*kube_api.Pod, nodes []*kube_api.Node, cloudPro
 			return false, fmt.Errorf("failed to increase node group size: %v", err)
 		}
 
-		for pod := range bestOption.estimator.FittingPods {
+		for _, pod := range bestOption.pods {
 			recorder.Eventf(pod, kube_api.EventTypeNormal, "TriggeredScaleUp",
 				"pod triggered scale-up, group: %s, sizes (current/new): %d/%d", bestOption.nodeGroup.Id(), currentSize, newSize)
 		}
