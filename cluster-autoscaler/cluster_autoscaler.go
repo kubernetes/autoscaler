@@ -75,7 +75,7 @@ var (
 	scanInterval  = flag.Duration("scan-interval", 10*time.Second, "How often cluster is reevaluated for scale up or down")
 	maxNodesTotal = flag.Int("max-nodes-total", 0, "Maximum number of nodes in all node groups. Cluster autoscaler will not grow the cluster beyond this number.")
 
-	cloudProviderFlag = flag.String("cloud-provider", "gce", "Cloud provider type. Allowed values: gce")
+	cloudProviderFlag = flag.String("cloud-provider", "gce", "Cloud provider type. Allowed values: gce, aws")
 )
 
 func createKubeClient() *kube_client.Client {
