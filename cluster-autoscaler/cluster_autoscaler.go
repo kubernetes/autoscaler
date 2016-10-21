@@ -305,7 +305,8 @@ func run(_ <-chan struct{}) {
 							kubeClient,
 							predicateChecker,
 							podLocationHints,
-							usageTracker)
+							usageTracker,
+							recorder)
 
 						updateDuration("scaledown", scaleDownStart)
 
