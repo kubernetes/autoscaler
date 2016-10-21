@@ -17,12 +17,10 @@ limitations under the License.
 package simulator
 
 import (
-	"fmt"
+	"k8s.io/contrib/cluster-autoscaler/utils/drain"
 
 	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/controller"
-	"k8s.io/kubernetes/pkg/kubelet/types"
-	"k8s.io/kubernetes/pkg/runtime"
+	unversionedclient "k8s.io/kubernetes/pkg/client/unversioned"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 )
 
@@ -30,87 +28,30 @@ import (
 // is drained. Raises error if there is an unreplicated pod and force option was not specified.
 // Based on kubectl drain code. It makes an assumption that RC, DS, Jobs and RS were deleted
 // along with their pods (no abandoned pods with dangling created-by annotation). Usefull for fast
-// checks.
-func FastGetPodsToMove(nodeInfo *schedulercache.NodeInfo, force bool,
-	skipNodesWithSystemPods bool, skipNodesWithLocalStorage bool) ([]*api.Pod, error) {
-	pods := make([]*api.Pod, 0)
-	unreplicatedPodNames := []string{}
-	for _, pod := range nodeInfo.Pods() {
-		if IsMirrorPod(pod) {
-			continue
-		}
-
-		replicated := false
-		daemonsetPod := false
-
-		creatorKind, err := CreatorRefKind(pod)
-		if err != nil {
-			return []*api.Pod{}, err
-		}
-		if creatorKind == "ReplicationController" {
-			replicated = true
-		} else if creatorKind == "DaemonSet" {
-			daemonsetPod = true
-		} else if creatorKind == "Job" {
-			replicated = true
-		} else if creatorKind == "ReplicaSet" {
-			replicated = true
-		}
-
-		if !daemonsetPod && pod.Namespace == "kube-system" && skipNodesWithSystemPods {
-			return []*api.Pod{}, fmt.Errorf("non-deamons set, non-mirrored, kube-system pod present: %s", pod.Name)
-		}
-
-		if !daemonsetPod && hasLocalStorage(pod) && skipNodesWithLocalStorage {
-			return []*api.Pod{}, fmt.Errorf("pod with local storage present: %s", pod.Name)
-		}
-
-		switch {
-		case daemonsetPod:
-			break
-		case !replicated:
-			unreplicatedPodNames = append(unreplicatedPodNames, pod.Name)
-			if force {
-				pods = append(pods, pod)
-			}
-		default:
-			pods = append(pods, pod)
-		}
-	}
-	if !force && len(unreplicatedPodNames) > 0 {
-		return []*api.Pod{}, fmt.Errorf("unreplicated pods present")
-	}
-	return pods, nil
+// checks. Doesn't check i
+func FastGetPodsToMove(nodeInfo *schedulercache.NodeInfo, skipNodesWithSystemPods bool, skipNodesWithLocalStorage bool) ([]*api.Pod, error) {
+	return drain.GetPodsForDeletionOnNodeDrain(
+		nodeInfo.Pods(),
+		api.Codecs.UniversalDecoder(),
+		skipNodesWithSystemPods,
+		skipNodesWithLocalStorage,
+		false,
+		nil,
+		0)
 }
 
-// CreatorRefKind returns the kind of the creator of the pod.
-func CreatorRefKind(pod *api.Pod) (string, error) {
-	creatorRef, found := pod.ObjectMeta.Annotations[controller.CreatedByAnnotation]
-	if !found {
-		return "", nil
-	}
-	var sr api.SerializedReference
-	if err := runtime.DecodeInto(api.Codecs.UniversalDecoder(), []byte(creatorRef), &sr); err != nil {
-		return "", err
-	}
-	return sr.Reference.Kind, nil
-}
-
-// IsMirrorPod checks whether the pod is a mirror pod.
-func IsMirrorPod(pod *api.Pod) bool {
-	_, found := pod.ObjectMeta.Annotations[types.ConfigMirrorAnnotationKey]
-	return found
-}
-
-func hasLocalStorage(pod *api.Pod) bool {
-	for _, volume := range pod.Spec.Volumes {
-		if isLocalVolume(&volume) {
-			return true
-		}
-	}
-	return false
-}
-
-func isLocalVolume(volume *api.Volume) bool {
-	return volume.HostPath != nil || volume.EmptyDir != nil
+// DetailedGetPodsForMove returns a list of pods that should be moved elsewhere if the node
+// is drained. Raises error if there is an unreplicated pod and force option was not specified.
+// Based on kubectl drain code. It checks whether RC, DS, Jobs and RS that created these pods
+// still exist.
+func DetailedGetPodsForMove(nodeInfo *schedulercache.NodeInfo, skipNodesWithSystemPods bool,
+	skipNodesWithLocalStorage bool, client *unversionedclient.Client, minReplicaCount int32) ([]*api.Pod, error) {
+	return drain.GetPodsForDeletionOnNodeDrain(
+		nodeInfo.Pods(),
+		api.Codecs.UniversalDecoder(),
+		skipNodesWithSystemPods,
+		skipNodesWithLocalStorage,
+		true,
+		client,
+		minReplicaCount)
 }
