@@ -24,6 +24,7 @@ import (
 	"k8s.io/contrib/cluster-autoscaler/cloudprovider"
 	"k8s.io/contrib/cluster-autoscaler/simulator"
 	kube_api "k8s.io/kubernetes/pkg/api"
+	kube_record "k8s.io/kubernetes/pkg/client/record"
 	kube_client "k8s.io/kubernetes/pkg/client/unversioned"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 
@@ -113,7 +114,8 @@ func ScaleDown(
 	client *kube_client.Client,
 	predicateChecker *simulator.PredicateChecker,
 	oldHints map[string]string,
-	usageTracker *simulator.UsageTracker) (ScaleDownResult, error) {
+	usageTracker *simulator.UsageTracker,
+	recorder kube_record.EventRecorder) (ScaleDownResult, error) {
 
 	now := time.Now()
 	candidates := make([]*kube_api.Node, 0)
@@ -184,6 +186,9 @@ func ScaleDown(
 	if err != nil {
 		return ScaleDownError, fmt.Errorf("Failed to delete %s: %v", nodeToRemove.Name, err)
 	}
+
+	recorder.Eventf(nodeToRemove, kube_api.EventTypeNormal, "ScaleDown",
+		"node removed by cluster autoscaler")
 
 	return ScaleDownNodeDeleted, nil
 }
