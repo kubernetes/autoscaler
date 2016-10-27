@@ -63,6 +63,10 @@ func NewTestPredicateChecker() *PredicateChecker {
 // FitsAny checks if the given pod can be place on any of the given nodes.
 func (p *PredicateChecker) FitsAny(pod *kube_api.Pod, nodeInfos map[string]*schedulercache.NodeInfo) (string, error) {
 	for name, nodeInfo := range nodeInfos {
+		// Be sure that the node is schedulable.
+		if nodeInfo.Node().Spec.Unschedulable {
+			continue
+		}
 		if err := p.CheckPredicates(pod, nodeInfo); err == nil {
 			return name, nil
 		}
