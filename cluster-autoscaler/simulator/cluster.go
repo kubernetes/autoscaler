@@ -26,7 +26,6 @@ import (
 	kube_api "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/resource"
 	kube_client "k8s.io/kubernetes/pkg/client/unversioned"
-	cmd "k8s.io/kubernetes/pkg/kubectl/cmd"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 
 	"github.com/golang/glog"
@@ -38,6 +37,9 @@ var (
 			"or mirror pods)")
 	skipNodesWithLocalStorage = flag.Bool("skip-nodes-with-local-storage", true,
 		"If true cluster autoscaler will never delete nodes with pods with local storage, e.g. EmptyDir or HostPath")
+
+	minReplicaCount = flag.Int("min-replica-count", 0,
+		"Minimum number or replicas that a replica set or replication controller should have to allow their pods deletion in scale down")
 )
 
 // FindNodesToRemove finds nodes that can be removed. Returns also an information about good
@@ -68,29 +70,19 @@ candidateloop:
 		var podsToRemove []*kube_api.Pod
 		var err error
 
-		if fastCheck {
-			if nodeInfo, found := nodeNameToNodeInfo[node.Name]; found {
-				podsToRemove, err = FastGetPodsToMove(nodeInfo, false, *skipNodesWithSystemPods, *skipNodesWithLocalStorage)
-				if err != nil {
-					glog.V(2).Infof("%s: node %s cannot be removed: %v", evaluationType, node.Name, err)
-					continue candidateloop
-				}
+		if nodeInfo, found := nodeNameToNodeInfo[node.Name]; found {
+			if fastCheck {
+				podsToRemove, err = FastGetPodsToMove(nodeInfo, *skipNodesWithSystemPods, *skipNodesWithLocalStorage)
 			} else {
-				glog.V(2).Infof("%s: nodeInfo for %s not found", evaluationType, node.Name)
-				continue candidateloop
+				podsToRemove, err = DetailedGetPodsForMove(nodeInfo, *skipNodesWithSystemPods, *skipNodesWithLocalStorage, client, int32(*minReplicaCount))
 			}
-		} else {
-			drainResult, _, _, err := cmd.GetPodsForDeletionOnNodeDrain(client, node.Name,
-				kube_api.Codecs.UniversalDecoder(), false, true)
-
 			if err != nil {
 				glog.V(2).Infof("%s: node %s cannot be removed: %v", evaluationType, node.Name, err)
 				continue candidateloop
 			}
-			podsToRemove = make([]*kube_api.Pod, 0, len(drainResult))
-			for i := range drainResult {
-				podsToRemove = append(podsToRemove, &drainResult[i])
-			}
+		} else {
+			glog.V(2).Infof("%s: nodeInfo for %s not found", evaluationType, node.Name)
+			continue candidateloop
 		}
 		findProblems := findPlaceFor(node.Name, podsToRemove, allNodes, nodeNameToNodeInfo, predicateChecker, oldHints, newHints,
 			usageTracker, timestamp)
