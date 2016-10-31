@@ -42,12 +42,20 @@ var (
 		"Minimum number or replicas that a replica set or replication controller should have to allow their pods deletion in scale down")
 )
 
+// NodeToBeRemoved contain information about a node that can be removed.
+type NodeToBeRemoved struct {
+	// Node to be removed.
+	Node *kube_api.Node
+	// PodsToReschedule contains pods on the node that should be rescheduled elsewhere.
+	PodsToReschedule []*kube_api.Pod
+}
+
 // FindNodesToRemove finds nodes that can be removed. Returns also an information about good
 // rescheduling location for each of the pods.
 func FindNodesToRemove(candidates []*kube_api.Node, allNodes []*kube_api.Node, pods []*kube_api.Pod,
 	client *kube_client.Client, predicateChecker *PredicateChecker, maxCount int,
 	fastCheck bool, oldHints map[string]string, usageTracker *UsageTracker,
-	timestamp time.Time) (nodesToRemove []*kube_api.Node, podReschedulingHints map[string]string, finalError error) {
+	timestamp time.Time) (nodesToRemove []NodeToBeRemoved, podReschedulingHints map[string]string, finalError error) {
 
 	nodeNameToNodeInfo := schedulercache.CreateNodeNameToInfoMap(pods)
 	for _, node := range allNodes {
@@ -55,7 +63,7 @@ func FindNodesToRemove(candidates []*kube_api.Node, allNodes []*kube_api.Node, p
 			nodeInfo.SetNode(node)
 		}
 	}
-	result := make([]*kube_api.Node, 0)
+	result := make([]NodeToBeRemoved, 0)
 
 	evaluationType := "Detailed evaluation"
 	if fastCheck {
@@ -88,7 +96,10 @@ candidateloop:
 			usageTracker, timestamp)
 
 		if findProblems == nil {
-			result = append(result, node)
+			result = append(result, NodeToBeRemoved{
+				Node:             node,
+				PodsToReschedule: podsToRemove,
+			})
 			glog.V(2).Infof("%s: node %s may be removed", evaluationType, node.Name)
 			if len(result) >= maxCount {
 				break candidateloop

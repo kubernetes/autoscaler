@@ -117,6 +117,7 @@ func run(_ <-chan struct{}) {
 	lastScaleDownFailedTrial := time.Now()
 	unneededNodes := make(map[string]time.Time)
 	podLocationHints := make(map[string]string)
+	nodeUtilizationMap := make(map[string]float64)
 	usageTracker := simulator.NewUsageTracker()
 
 	recorder := createEventRecorder(kubeClient)
@@ -273,7 +274,7 @@ func run(_ <-chan struct{}) {
 					glog.V(4).Infof("Calculating unneded nodes")
 
 					usageTracker.CleanUp(time.Now().Add(-(*scaleDownUnneededTime)))
-					unneededNodes, podLocationHints = FindUnneededNodes(
+					unneededNodes, podLocationHints, nodeUtilizationMap = FindUnneededNodes(
 						nodes,
 						unneededNodes,
 						*scaleDownUtilizationThreshold,
@@ -298,6 +299,7 @@ func run(_ <-chan struct{}) {
 
 						result, err := ScaleDown(
 							nodes,
+							nodeUtilizationMap,
 							unneededNodes,
 							*scaleDownUnneededTime,
 							allScheduled,
