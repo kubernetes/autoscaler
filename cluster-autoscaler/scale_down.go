@@ -74,7 +74,7 @@ func FindUnneededNodes(nodes []*kube_api.Node,
 		glog.V(4).Infof("Node %s - utilization %f", node.Name, utilization)
 
 		if utilization >= utilizationThreshold {
-			glog.V(4).Infof("Node %s is not suitable for removal - utilization to big (%f)", node.Name, utilization)
+			glog.V(4).Infof("Node %s is not suitable for removal - utilization too big (%f)", node.Name, utilization)
 			continue
 		}
 		currentlyUnneededNodes = append(currentlyUnneededNodes, node)
