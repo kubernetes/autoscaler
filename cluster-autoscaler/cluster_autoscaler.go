@@ -55,6 +55,13 @@ func (flag *MultiStringFlag) Set(value string) error {
 	return nil
 }
 
+const (
+	//BasicEstimatorName is the name of basic estimator.
+	BasicEstimatorName = "basic"
+	// BinpackingEstimatorName is the name of binpacking estimator.
+	BinpackingEstimatorName = "binpacking"
+)
+
 var (
 	nodeGroupsFlag          MultiStringFlag
 	address                 = flag.String("address", ":8085", "The address to expose prometheus metrics.")
@@ -72,10 +79,14 @@ var (
 		"Node utilization level, defined as sum of requested resources divided by capacity, below which a node can be considered for scale down")
 	scaleDownTrialInterval = flag.Duration("scale-down-trial-interval", 1*time.Minute,
 		"How often scale down possiblity is check")
-	scanInterval  = flag.Duration("scan-interval", 10*time.Second, "How often cluster is reevaluated for scale up or down")
-	maxNodesTotal = flag.Int("max-nodes-total", 0, "Maximum number of nodes in all node groups. Cluster autoscaler will not grow the cluster beyond this number.")
-
+	scanInterval      = flag.Duration("scan-interval", 10*time.Second, "How often cluster is reevaluated for scale up or down")
+	maxNodesTotal     = flag.Int("max-nodes-total", 0, "Maximum number of nodes in all node groups. Cluster autoscaler will not grow the cluster beyond this number.")
 	cloudProviderFlag = flag.String("cloud-provider", "gce", "Cloud provider type. Allowed values: gce, aws")
+
+	// AvailableEstimators is a list of available estimators.
+	AvailableEstimators = []string{BasicEstimatorName, BinpackingEstimatorName}
+	estimatorFlag       = flag.String("estimator", BasicEstimatorName,
+		"Type of resource estimator to be used in scale up. Available values: ["+strings.Join(AvailableEstimators, ",")+"]")
 )
 
 func createKubeClient() *kube_client.Client {
@@ -241,7 +252,7 @@ func run(_ <-chan struct{}) {
 					scaleUpStart := time.Now()
 					updateLastTime("scaleup")
 					scaledUp, err := ScaleUp(unschedulablePodsToHelp, nodes, cloudProvider, kubeClient, predicateChecker, recorder,
-						*maxNodesTotal)
+						*maxNodesTotal, *estimatorFlag)
 
 					updateDuration("scaleup", scaleUpStart)
 
@@ -336,6 +347,16 @@ func main() {
 	kube_flag.InitFlags()
 
 	glog.Infof("Cluster Autoscaler %s", ClusterAutoscalerVersion)
+
+	correctEstimator := false
+	for _, availableEstimator := range AvailableEstimators {
+		if *estimatorFlag == availableEstimator {
+			correctEstimator = true
+		}
+	}
+	if !correctEstimator {
+		glog.Fatalf("Unrecognized estimator: %v", *estimatorFlag)
+	}
 
 	go func() {
 		http.Handle("/metrics", prometheus.Handler())
