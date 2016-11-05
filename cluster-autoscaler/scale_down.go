@@ -120,7 +120,8 @@ func ScaleDown(
 	predicateChecker *simulator.PredicateChecker,
 	oldHints map[string]string,
 	usageTracker *simulator.UsageTracker,
-	recorder kube_record.EventRecorder) (ScaleDownResult, error) {
+	recorder kube_record.EventRecorder,
+	maxEmptyBulkDelete int) (ScaleDownResult, error) {
 
 	now := time.Now()
 	candidates := make([]*kube_api.Node, 0)
@@ -163,6 +164,35 @@ func ScaleDown(
 		return ScaleDownNoUnneeded, nil
 	}
 
+	emptyNodes := simulator.FindEmptyNodesToRemove(candidates, pods)
+	if len(emptyNodes) > 0 {
+		limit := maxEmptyBulkDelete
+		if len(emptyNodes) < limit {
+			limit = len(emptyNodes)
+		}
+		emptyNodes = emptyNodes[:limit]
+		confirmation := make(chan error, len(emptyNodes))
+		for _, node := range emptyNodes {
+			glog.V(0).Infof("Scale-down: removing empty node %s", node.Name)
+			simulator.RemoveNodeFromTracker(usageTracker, node.Name, unneededNodes)
+			go func(nodeToDelete *kube_api.Node) {
+				confirmation <- deleteNodeFromCloudProvider(nodeToDelete, cloudProvider, recorder)
+			}(node)
+		}
+		var finalError error
+		for range emptyNodes {
+			if err := <-confirmation; err != nil {
+				glog.Errorf("Problem with empty node deletion: %v", err)
+				finalError = err
+			}
+		}
+		if finalError == nil {
+			return ScaleDownNodeDeleted, nil
+		} else {
+			return ScaleDownError, fmt.Errorf("failed to delete at least one empty node: %v", finalError)
+		}
+	}
+
 	// We look for only 1 node so new hints may be incomplete.
 	nodesToRemove, _, err := simulator.FindNodesToRemove(candidates, nodes, pods, client, predicateChecker, 1, false,
 		oldHints, usageTracker, time.Now())
@@ -183,23 +213,25 @@ func ScaleDown(
 	glog.V(0).Infof("Scale-down: removing node %s, utilization: %v, pods to reschedule: ", toRemove.Node.Name, utilization,
 		strings.Join(podNames, ","))
 
-	nodeGroup, err := cloudProvider.NodeGroupForNode(toRemove.Node)
-	if err != nil {
-		return ScaleDownError, fmt.Errorf("failed to node group for %s: %v", toRemove.Node.Name, err)
-	}
-	if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
-		return ScaleDownError, fmt.Errorf("picked node that doesn't belong to a node group: %s", toRemove.Node.Name)
-	}
-
-	err = nodeGroup.DeleteNodes([]*kube_api.Node{toRemove.Node})
 	simulator.RemoveNodeFromTracker(usageTracker, toRemove.Node.Name, unneededNodes)
-
+	err = deleteNodeFromCloudProvider(toRemove.Node, cloudProvider, recorder)
 	if err != nil {
 		return ScaleDownError, fmt.Errorf("Failed to delete %s: %v", toRemove.Node.Name, err)
 	}
-
-	recorder.Eventf(toRemove.Node, kube_api.EventTypeNormal, "ScaleDown",
-		"node removed by cluster autoscaler")
-
 	return ScaleDownNodeDeleted, nil
+}
+
+func deleteNodeFromCloudProvider(node *kube_api.Node, cloudProvider cloudprovider.CloudProvider, recorder kube_record.EventRecorder) error {
+	nodeGroup, err := cloudProvider.NodeGroupForNode(node)
+	if err != nil {
+		return fmt.Errorf("failed to node group for %s: %v", node.Name, err)
+	}
+	if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
+		return fmt.Errorf("picked node that doesn't belong to a node group: %s", node.Name)
+	}
+	if err = nodeGroup.DeleteNodes([]*kube_api.Node{node}); err != nil {
+		return fmt.Errorf("failed to delete %s: %v", node.Name, err)
+	}
+	recorder.Eventf(node, kube_api.EventTypeNormal, "ScaleDown", "node removed by cluster autoscaler")
+	return nil
 }
