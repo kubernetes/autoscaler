@@ -111,6 +111,30 @@ candidateloop:
 	return result, newHints, nil
 }
 
+// FindEmptyNodesToRemove finds empty nodes that can be removed.
+func FindEmptyNodesToRemove(candidates []*kube_api.Node, pods []*kube_api.Pod) []*kube_api.Node {
+	nodeNameToNodeInfo := schedulercache.CreateNodeNameToInfoMap(pods)
+	for _, node := range candidates {
+		if nodeInfo, found := nodeNameToNodeInfo[node.Name]; found {
+			nodeInfo.SetNode(node)
+		}
+	}
+	result := make([]*kube_api.Node, 0)
+	for _, node := range candidates {
+		if nodeInfo, found := nodeNameToNodeInfo[node.Name]; found {
+			// Should block on all pods.
+			podsToRemove, err := FastGetPodsToMove(nodeInfo, true, true)
+			if err == nil && len(podsToRemove) == 0 {
+				result = append(result, node)
+			}
+		} else {
+			// Node without pods.
+			result = append(result, node)
+		}
+	}
+	return result
+}
+
 // CalculateUtilization calculates utilization of a node, defined as total amount of requested resources divided by capacity.
 func CalculateUtilization(node *kube_api.Node, nodeInfo *schedulercache.NodeInfo) (float64, error) {
 	cpu, err := calculateUtilizationOfResource(node, nodeInfo, kube_api.ResourceCPU)
