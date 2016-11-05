@@ -19,6 +19,7 @@ package main
 import (
 	"fmt"
 	"reflect"
+	"strings"
 	"time"
 
 	"k8s.io/contrib/cluster-autoscaler/cloudprovider"
@@ -46,7 +47,8 @@ const (
 )
 
 // FindUnneededNodes calculates which nodes are not needed, i.e. all pods can be scheduled somewhere else,
-// and updates unneededNodes map accordingly. It also returns information where pods can be rescheduld.
+// and updates unneededNodes map accordingly. It also returns information where pods can be rescheduld and
+// node utilization level.
 func FindUnneededNodes(nodes []*kube_api.Node,
 	unneededNodes map[string]time.Time,
 	utilizationThreshold float64,
@@ -54,10 +56,11 @@ func FindUnneededNodes(nodes []*kube_api.Node,
 	predicateChecker *simulator.PredicateChecker,
 	oldHints map[string]string,
 	tracker *simulator.UsageTracker,
-	timestamp time.Time) (unnededTimeMap map[string]time.Time, podReschedulingHints map[string]string) {
+	timestamp time.Time) (unnededTimeMap map[string]time.Time, podReschedulingHints map[string]string, utilizationMap map[string]float64) {
 
 	currentlyUnneededNodes := make([]*kube_api.Node, 0)
 	nodeNameToNodeInfo := schedulercache.CreateNodeNameToInfoMap(pods)
+	utilizationMap = make(map[string]float64)
 
 	// Phase1 - look at the nodes utilization.
 	for _, node := range nodes {
@@ -72,6 +75,7 @@ func FindUnneededNodes(nodes []*kube_api.Node,
 			glog.Warningf("Failed to calculate utilization for %s: %v", node.Name, err)
 		}
 		glog.V(4).Infof("Node %s - utilization %f", node.Name, utilization)
+		utilizationMap[node.Name] = utilization
 
 		if utilization >= utilizationThreshold {
 			glog.V(4).Infof("Node %s is not suitable for removal - utilization to big (%f)", node.Name, utilization)
@@ -86,27 +90,28 @@ func FindUnneededNodes(nodes []*kube_api.Node,
 		len(currentlyUnneededNodes), true, oldHints, tracker, timestamp)
 	if err != nil {
 		glog.Errorf("Error while simulating node drains: %v", err)
-		return map[string]time.Time{}, oldHints
+		return map[string]time.Time{}, oldHints, map[string]float64{}
 	}
 
 	// Update the timestamp map.
 	now := time.Now()
 	result := make(map[string]time.Time)
 	for _, node := range nodesToRemove {
-		name := node.Name
+		name := node.Node.Name
 		if val, found := unneededNodes[name]; !found {
 			result[name] = now
 		} else {
 			result[name] = val
 		}
 	}
-	return result, newHints
+	return result, newHints, utilizationMap
 }
 
 // ScaleDown tries to scale down the cluster. It returns ScaleDownResult indicating if any node was
 // removed and error if such occured.
 func ScaleDown(
 	nodes []*kube_api.Node,
+	lastUtilizationMap map[string]float64,
 	unneededNodes map[string]time.Time,
 	unneededTime time.Duration,
 	pods []*kube_api.Pod,
@@ -169,25 +174,31 @@ func ScaleDown(
 		glog.V(1).Infof("No node to remove")
 		return ScaleDownNoNodeDeleted, nil
 	}
-	nodeToRemove := nodesToRemove[0]
-	glog.Infof("Removing %s", nodeToRemove.Name)
+	toRemove := nodesToRemove[0]
+	utilization := lastUtilizationMap[toRemove.Node.Name]
+	podNames := make([]string, 0, len(toRemove.PodsToReschedule))
+	for _, pod := range toRemove.PodsToReschedule {
+		podNames = append(podNames, pod.Namespace+"/"+pod.Name)
+	}
+	glog.V(0).Infof("Scale-down: removing node %s, utilization: %v, pods to reschedule: ", toRemove.Node.Name, utilization,
+		strings.Join(podNames, ","))
 
-	nodeGroup, err := cloudProvider.NodeGroupForNode(nodeToRemove)
+	nodeGroup, err := cloudProvider.NodeGroupForNode(toRemove.Node)
 	if err != nil {
-		return ScaleDownError, fmt.Errorf("failed to node group for %s: %v", nodeToRemove.Name, err)
+		return ScaleDownError, fmt.Errorf("failed to node group for %s: %v", toRemove.Node.Name, err)
 	}
 	if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
-		return ScaleDownError, fmt.Errorf("picked node that doesn't belong to a node group: %s", nodeToRemove.Name)
+		return ScaleDownError, fmt.Errorf("picked node that doesn't belong to a node group: %s", toRemove.Node.Name)
 	}
 
-	err = nodeGroup.DeleteNodes([]*kube_api.Node{nodeToRemove})
-	simulator.RemoveNodeFromTracker(usageTracker, nodeToRemove.Name, unneededNodes)
+	err = nodeGroup.DeleteNodes([]*kube_api.Node{toRemove.Node})
+	simulator.RemoveNodeFromTracker(usageTracker, toRemove.Node.Name, unneededNodes)
 
 	if err != nil {
-		return ScaleDownError, fmt.Errorf("Failed to delete %s: %v", nodeToRemove.Name, err)
+		return ScaleDownError, fmt.Errorf("Failed to delete %s: %v", toRemove.Node.Name, err)
 	}
 
-	recorder.Eventf(nodeToRemove, kube_api.EventTypeNormal, "ScaleDown",
+	recorder.Eventf(toRemove.Node, kube_api.EventTypeNormal, "ScaleDown",
 		"node removed by cluster autoscaler")
 
 	return ScaleDownNodeDeleted, nil

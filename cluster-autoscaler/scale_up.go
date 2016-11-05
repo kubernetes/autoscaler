@@ -139,7 +139,7 @@ func ScaleUp(unschedulablePods []*kube_api.Pod, nodes []*kube_api.Node, cloudPro
 			}
 		}
 
-		glog.V(1).Infof("Setting %s size to %d", bestOption.nodeGroup.Id(), newSize)
+		glog.V(0).Infof("Scale-up: setting group %s size to %d", bestOption.nodeGroup.Id(), newSize)
 
 		if err := bestOption.nodeGroup.IncreaseSize(newSize - currentSize); err != nil {
 			return false, fmt.Errorf("failed to increase node group size: %v", err)
