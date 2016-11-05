@@ -164,13 +164,11 @@ func ScaleDown(
 		return ScaleDownNoUnneeded, nil
 	}
 
-	emptyNodes := simulator.FindEmptyNodesToRemove(candidates, pods)
+	// Trying to delete empty nodes in bulk. If there are no empty nodes then CA will
+	// try to delete not-so-empty nodes, possibly killing some pods and allowing them
+	// to recreate on other nodes.
+	emptyNodes := getEmptyNodes(candidates, pods, maxEmptyBulkDelete, cloudProvider)
 	if len(emptyNodes) > 0 {
-		limit := maxEmptyBulkDelete
-		if len(emptyNodes) < limit {
-			limit = len(emptyNodes)
-		}
-		emptyNodes = emptyNodes[:limit]
 		confirmation := make(chan error, len(emptyNodes))
 		for _, node := range emptyNodes {
 			glog.V(0).Infof("Scale-down: removing empty node %s", node.Name)
@@ -188,9 +186,8 @@ func ScaleDown(
 		}
 		if finalError == nil {
 			return ScaleDownNodeDeleted, nil
-		} else {
-			return ScaleDownError, fmt.Errorf("failed to delete at least one empty node: %v", finalError)
 		}
+		return ScaleDownError, fmt.Errorf("failed to delete at least one empty node: %v", finalError)
 	}
 
 	// We look for only 1 node so new hints may be incomplete.
@@ -219,6 +216,48 @@ func ScaleDown(
 		return ScaleDownError, fmt.Errorf("Failed to delete %s: %v", toRemove.Node.Name, err)
 	}
 	return ScaleDownNodeDeleted, nil
+}
+
+// This functions finds empty nodes among passed candidates and returns a list of empty nodes
+// that can be deleted at the same time.
+func getEmptyNodes(candidates []*kube_api.Node, pods []*kube_api.Pod, maxEmptyBulkDelete int, cloudProvider cloudprovider.CloudProvider) []*kube_api.Node {
+	emptyNodes := simulator.FindEmptyNodesToRemove(candidates, pods)
+	availabilityMap := make(map[string]int)
+	result := make([]*kube_api.Node, 0)
+	for _, node := range emptyNodes {
+		nodeGroup, err := cloudProvider.NodeGroupForNode(node)
+		if err != nil {
+			glog.Errorf("Failed to get group for %s", node.Name)
+			continue
+		}
+		if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
+			continue
+		}
+		var available int
+		var found bool
+		if _, found = availabilityMap[nodeGroup.Id()]; !found {
+			size, err := nodeGroup.TargetSize()
+			if err != nil {
+				glog.Errorf("Failed to get size for %s: %v ", nodeGroup.Id(), err)
+				continue
+			}
+			available = size - nodeGroup.MinSize()
+			if available < 0 {
+				available = 0
+			}
+			availabilityMap[nodeGroup.Id()] = available
+		}
+		if available > 0 {
+			available -= 1
+			availabilityMap[nodeGroup.Id()] = available
+			result = append(result, node)
+		}
+	}
+	limit := maxEmptyBulkDelete
+	if len(result) < limit {
+		limit = len(result)
+	}
+	return result[:limit]
 }
 
 func deleteNodeFromCloudProvider(node *kube_api.Node, cloudProvider cloudprovider.CloudProvider, recorder kube_record.EventRecorder) error {
