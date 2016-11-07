@@ -85,7 +85,7 @@ var (
 
 	// AvailableEstimators is a list of available estimators.
 	AvailableEstimators = []string{BasicEstimatorName, BinpackingEstimatorName}
-	estimatorFlag       = flag.String("estimator", BasicEstimatorName,
+	estimatorFlag       = flag.String("estimator", BinpackingEstimatorName,
 		"Type of resource estimator to be used in scale up. Available values: ["+strings.Join(AvailableEstimators, ",")+"]")
 )
 
