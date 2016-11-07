@@ -23,6 +23,7 @@ import (
 	. "k8s.io/contrib/cluster-autoscaler/utils/test"
 
 	kube_api "k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/kubelet/types"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 
 	"github.com/stretchr/testify/assert"
@@ -149,4 +150,22 @@ func TestShuffleNodes(t *testing.T) {
 		}
 	}
 	assert.True(t, gotPermutation)
+}
+
+func TestFindEmptyNodes(t *testing.T) {
+	pod1 := BuildTestPod("p1", 300, 500000)
+	pod1.Spec.NodeName = "n1"
+	pod2 := BuildTestPod("p2", 300, 500000)
+	pod2.Spec.NodeName = "n2"
+	pod2.Annotations = map[string]string{
+		types.ConfigMirrorAnnotationKey: "",
+	}
+
+	node1 := BuildTestNode("n1", 1000, 2000000)
+	node2 := BuildTestNode("n2", 1000, 2000000)
+	node3 := BuildTestNode("n3", 1000, 2000000)
+	node4 := BuildTestNode("n4", 1000, 2000000)
+
+	emptyNodes := FindEmptyNodesToRemove([]*kube_api.Node{node1, node2, node3, node4}, []*kube_api.Pod{pod1, pod2})
+	assert.Equal(t, []*kube_api.Node{node2, node3, node4}, emptyNodes)
 }
