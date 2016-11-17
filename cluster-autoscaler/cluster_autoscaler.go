@@ -283,7 +283,7 @@ func run(_ <-chan struct{}) {
 						lastScaleUpTime, lastScaleDownFailedTrial, schedulablePodsPresent)
 
 					updateLastTime("findUnneeded")
-					glog.V(4).Infof("Calculating unneded nodes")
+					glog.V(4).Infof("Calculating unneeded nodes")
 
 					usageTracker.CleanUp(time.Now().Add(-(*scaleDownUnneededTime)))
 					unneededNodes, podLocationHints, nodeUtilizationMap = FindUnneededNodes(
