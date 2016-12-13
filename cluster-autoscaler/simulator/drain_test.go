@@ -19,7 +19,7 @@ package simulator
 import (
 	"testing"
 
-	kube_api "k8s.io/kubernetes/pkg/api"
+	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/kubelet/types"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 
@@ -29,8 +29,8 @@ import (
 func TestFastGetPodsToMove(t *testing.T) {
 
 	// Unreplicated pod
-	pod1 := &kube_api.Pod{
-		ObjectMeta: kube_api.ObjectMeta{
+	pod1 := &apiv1.Pod{
+		ObjectMeta: apiv1.ObjectMeta{
 			Name:      "pod1",
 			Namespace: "ns",
 		},
@@ -39,8 +39,8 @@ func TestFastGetPodsToMove(t *testing.T) {
 	assert.Error(t, err)
 
 	// Replicated pod
-	pod2 := &kube_api.Pod{
-		ObjectMeta: kube_api.ObjectMeta{
+	pod2 := &apiv1.Pod{
+		ObjectMeta: apiv1.ObjectMeta{
 			Name:      "pod2",
 			Namespace: "ns",
 			Annotations: map[string]string{
@@ -54,8 +54,8 @@ func TestFastGetPodsToMove(t *testing.T) {
 	assert.Equal(t, pod2, r2[0])
 
 	// Manifest pod
-	pod3 := &kube_api.Pod{
-		ObjectMeta: kube_api.ObjectMeta{
+	pod3 := &apiv1.Pod{
+		ObjectMeta: apiv1.ObjectMeta{
 			Name:      "pod3",
 			Namespace: "kube-system",
 			Annotations: map[string]string{
@@ -68,8 +68,8 @@ func TestFastGetPodsToMove(t *testing.T) {
 	assert.Equal(t, 0, len(r3))
 
 	// DeamonSet pod
-	pod4 := &kube_api.Pod{
-		ObjectMeta: kube_api.ObjectMeta{
+	pod4 := &apiv1.Pod{
+		ObjectMeta: apiv1.ObjectMeta{
 			Name:      "pod4",
 			Namespace: "ns",
 			Annotations: map[string]string{
@@ -83,8 +83,8 @@ func TestFastGetPodsToMove(t *testing.T) {
 	assert.Equal(t, pod2, r4[0])
 
 	// Kube-system
-	pod5 := &kube_api.Pod{
-		ObjectMeta: kube_api.ObjectMeta{
+	pod5 := &apiv1.Pod{
+		ObjectMeta: apiv1.ObjectMeta{
 			Name:      "pod5",
 			Namespace: "kube-system",
 			Annotations: map[string]string{
@@ -96,19 +96,19 @@ func TestFastGetPodsToMove(t *testing.T) {
 	assert.Error(t, err)
 
 	// Local storage
-	pod6 := &kube_api.Pod{
-		ObjectMeta: kube_api.ObjectMeta{
+	pod6 := &apiv1.Pod{
+		ObjectMeta: apiv1.ObjectMeta{
 			Name:      "pod6",
 			Namespace: "ns",
 			Annotations: map[string]string{
 				"kubernetes.io/created-by": "{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1\",\"reference\":{\"kind\":\"ReplicaSet\"}}",
 			},
 		},
-		Spec: kube_api.PodSpec{
-			Volumes: []kube_api.Volume{
+		Spec: apiv1.PodSpec{
+			Volumes: []apiv1.Volume{
 				{
-					VolumeSource: kube_api.VolumeSource{
-						EmptyDir: &kube_api.EmptyDirVolumeSource{},
+					VolumeSource: apiv1.VolumeSource{
+						EmptyDir: &apiv1.EmptyDirVolumeSource{},
 					},
 				},
 			},
@@ -118,19 +118,19 @@ func TestFastGetPodsToMove(t *testing.T) {
 	assert.Error(t, err)
 
 	// Non-local storage
-	pod7 := &kube_api.Pod{
-		ObjectMeta: kube_api.ObjectMeta{
+	pod7 := &apiv1.Pod{
+		ObjectMeta: apiv1.ObjectMeta{
 			Name:      "pod7",
 			Namespace: "ns",
 			Annotations: map[string]string{
 				"kubernetes.io/created-by": "{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1\",\"reference\":{\"kind\":\"ReplicaSet\"}}",
 			},
 		},
-		Spec: kube_api.PodSpec{
-			Volumes: []kube_api.Volume{
+		Spec: apiv1.PodSpec{
+			Volumes: []apiv1.Volume{
 				{
-					VolumeSource: kube_api.VolumeSource{
-						GitRepo: &kube_api.GitRepoVolumeSource{
+					VolumeSource: apiv1.VolumeSource{
+						GitRepo: &apiv1.GitRepoVolumeSource{
 							Repository: "my-repo",
 						},
 					},

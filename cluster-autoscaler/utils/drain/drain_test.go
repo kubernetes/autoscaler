@@ -18,163 +18,124 @@ package drain
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"io/ioutil"
-	"net/http"
-	"strings"
 	"testing"
-	"time"
 
-	"k8s.io/kubernetes/pkg/api"
+	api "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/testapi"
-	"k8s.io/kubernetes/pkg/api/unversioned"
-	"k8s.io/kubernetes/pkg/apis/batch"
-	"k8s.io/kubernetes/pkg/apis/extensions"
-	"k8s.io/kubernetes/pkg/client/restclient"
-	client "k8s.io/kubernetes/pkg/client/unversioned"
-	"k8s.io/kubernetes/pkg/client/unversioned/fake"
-	"k8s.io/kubernetes/pkg/controller"
-
+	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	batchv1 "k8s.io/kubernetes/pkg/apis/batch/v1"
+	extensions "k8s.io/kubernetes/pkg/apis/extensions/v1beta1"
+	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5/fake"
+	"k8s.io/kubernetes/pkg/client/testing/core"
 	"k8s.io/kubernetes/pkg/runtime"
 )
 
 func TestDrain(t *testing.T) {
-	labels := make(map[string]string)
-	labels["my_key"] = "my_value"
+	replicas := int32(5)
 
-	rc := api.ReplicationController{
-		ObjectMeta: api.ObjectMeta{
-			Name:              "rc",
-			Namespace:         "default",
-			CreationTimestamp: unversioned.Time{Time: time.Now()},
-			Labels:            labels,
-			SelfLink:          testapi.Default.SelfLink("replicationcontrollers", "rc"),
+	rc := apiv1.ReplicationController{
+		ObjectMeta: apiv1.ObjectMeta{
+			Name:      "rc",
+			Namespace: "default",
+			SelfLink:  testapi.Default.SelfLink("replicationcontrollers", "rc"),
 		},
-		Spec: api.ReplicationControllerSpec{
-			Selector: labels,
+		Spec: apiv1.ReplicationControllerSpec{
+			Replicas: &replicas,
 		},
 	}
 
-	rcAnno := make(map[string]string)
-	rcAnno[controller.CreatedByAnnotation] = refJSON(t, &rc)
-
-	rcPod := &api.Pod{
-		ObjectMeta: api.ObjectMeta{
-			Name:              "bar",
-			Namespace:         "default",
-			CreationTimestamp: unversioned.Time{Time: time.Now()},
-			Labels:            labels,
-			Annotations:       rcAnno,
+	rcPod := &apiv1.Pod{
+		ObjectMeta: apiv1.ObjectMeta{
+			Name:        "bar",
+			Namespace:   "default",
+			Annotations: map[string]string{apiv1.CreatedByAnnotation: refJSON(t, &rc)},
 		},
-		Spec: api.PodSpec{
+		Spec: apiv1.PodSpec{
 			NodeName: "node",
 		},
 	}
 
 	ds := extensions.DaemonSet{
-		ObjectMeta: api.ObjectMeta{
-			Name:              "ds",
-			Namespace:         "default",
-			CreationTimestamp: unversioned.Time{Time: time.Now()},
-			SelfLink:          "/apis/extensions/v1beta1/namespaces/default/daemonsets/ds",
-		},
-		Spec: extensions.DaemonSetSpec{
-			Selector: &unversioned.LabelSelector{MatchLabels: labels},
+		ObjectMeta: apiv1.ObjectMeta{
+			Name:      "ds",
+			Namespace: "default",
+			SelfLink:  "/apiv1s/extensions/v1beta1/namespaces/default/daemonsets/ds",
 		},
 	}
 
-	dsAnno := make(map[string]string)
-	dsAnno[controller.CreatedByAnnotation] = refJSON(t, &ds)
-
-	dsPod := &api.Pod{
-		ObjectMeta: api.ObjectMeta{
-			Name:              "bar",
-			Namespace:         "default",
-			CreationTimestamp: unversioned.Time{Time: time.Now()},
-			Labels:            labels,
-			Annotations:       dsAnno,
+	dsPod := &apiv1.Pod{
+		ObjectMeta: apiv1.ObjectMeta{
+			Name:        "bar",
+			Namespace:   "default",
+			Annotations: map[string]string{apiv1.CreatedByAnnotation: refJSON(t, &ds)},
 		},
-		Spec: api.PodSpec{
+		Spec: apiv1.PodSpec{
 			NodeName: "node",
 		},
 	}
 
-	job := batch.Job{
-		ObjectMeta: api.ObjectMeta{
-			Name:              "job",
-			Namespace:         "default",
-			CreationTimestamp: unversioned.Time{Time: time.Now()},
-			SelfLink:          "/apis/extensions/v1beta1/namespaces/default/jobs/job",
-		},
-		Spec: batch.JobSpec{
-			Selector: &unversioned.LabelSelector{MatchLabels: labels},
+	job := batchv1.Job{
+		ObjectMeta: apiv1.ObjectMeta{
+			Name:      "job",
+			Namespace: "default",
+			SelfLink:  "/apiv1s/extensions/v1beta1/namespaces/default/jobs/job",
 		},
 	}
 
-	jobPod := &api.Pod{
-		ObjectMeta: api.ObjectMeta{
-			Name:              "bar",
-			Namespace:         "default",
-			CreationTimestamp: unversioned.Time{Time: time.Now()},
-			Labels:            labels,
-			Annotations:       map[string]string{controller.CreatedByAnnotation: refJSON(t, &job)},
+	jobPod := &apiv1.Pod{
+		ObjectMeta: apiv1.ObjectMeta{
+			Name:        "bar",
+			Namespace:   "default",
+			Annotations: map[string]string{apiv1.CreatedByAnnotation: refJSON(t, &job)},
 		},
 	}
 
 	rs := extensions.ReplicaSet{
-		ObjectMeta: api.ObjectMeta{
-			Name:              "rs",
-			Namespace:         "default",
-			CreationTimestamp: unversioned.Time{Time: time.Now()},
-			Labels:            labels,
-			SelfLink:          testapi.Default.SelfLink("replicasets", "rs"),
+		ObjectMeta: apiv1.ObjectMeta{
+			Name:      "rs",
+			Namespace: "default",
+			SelfLink:  testapi.Default.SelfLink("replicasets", "rs"),
 		},
 		Spec: extensions.ReplicaSetSpec{
-			Selector: &unversioned.LabelSelector{MatchLabels: labels},
+			Replicas: &replicas,
 		},
 	}
 
-	rsAnno := make(map[string]string)
-	rsAnno[controller.CreatedByAnnotation] = refJSON(t, &rs)
-
-	rsPod := &api.Pod{
-		ObjectMeta: api.ObjectMeta{
-			Name:              "bar",
-			Namespace:         "default",
-			CreationTimestamp: unversioned.Time{Time: time.Now()},
-			Labels:            labels,
-			Annotations:       rsAnno,
+	rsPod := &apiv1.Pod{
+		ObjectMeta: apiv1.ObjectMeta{
+			Name:        "bar",
+			Namespace:   "default",
+			Annotations: map[string]string{apiv1.CreatedByAnnotation: refJSON(t, &rs)},
 		},
-		Spec: api.PodSpec{
+		Spec: apiv1.PodSpec{
 			NodeName: "node",
 		},
 	}
 
-	nakedPod := &api.Pod{
-		ObjectMeta: api.ObjectMeta{
-			Name:              "bar",
-			Namespace:         "default",
-			CreationTimestamp: unversioned.Time{Time: time.Now()},
-			Labels:            labels,
+	nakedPod := &apiv1.Pod{
+		ObjectMeta: apiv1.ObjectMeta{
+			Name:      "bar",
+			Namespace: "default",
 		},
-		Spec: api.PodSpec{
+		Spec: apiv1.PodSpec{
 			NodeName: "node",
 		},
 	}
 
-	emptydirPod := &api.Pod{
-		ObjectMeta: api.ObjectMeta{
-			Name:              "bar",
-			Namespace:         "default",
-			CreationTimestamp: unversioned.Time{Time: time.Now()},
-			Labels:            labels,
+	emptydirPod := &apiv1.Pod{
+		ObjectMeta: apiv1.ObjectMeta{
+			Name:      "bar",
+			Namespace: "default",
 		},
-		Spec: api.PodSpec{
+		Spec: apiv1.PodSpec{
 			NodeName: "node",
-			Volumes: []api.Volume{
+			Volumes: []apiv1.Volume{
 				{
 					Name:         "scratch",
-					VolumeSource: api.VolumeSource{EmptyDir: &api.EmptyDirVolumeSource{Medium: ""}},
+					VolumeSource: apiv1.VolumeSource{EmptyDir: &apiv1.EmptyDirVolumeSource{Medium: ""}},
 				},
 			},
 		},
@@ -182,94 +143,75 @@ func TestDrain(t *testing.T) {
 
 	tests := []struct {
 		description string
-		pods        []*api.Pod
-		rcs         []api.ReplicationController
+		pods        []*apiv1.Pod
+		rcs         []apiv1.ReplicationController
 		replicaSets []extensions.ReplicaSet
 		expectFatal bool
-		expectPods  []*api.Pod
+		expectPods  []*apiv1.Pod
 	}{
 		{
 			description: "RC-managed pod",
-			pods:        []*api.Pod{rcPod},
-			rcs:         []api.ReplicationController{rc},
+			pods:        []*apiv1.Pod{rcPod},
+			rcs:         []apiv1.ReplicationController{rc},
 			expectFatal: false,
-			expectPods:  []*api.Pod{rcPod},
+			expectPods:  []*apiv1.Pod{rcPod},
 		},
 		{
 			description: "DS-managed pod",
-			pods:        []*api.Pod{dsPod},
+			pods:        []*apiv1.Pod{dsPod},
 			expectFatal: false,
-			expectPods:  []*api.Pod{},
+			expectPods:  []*apiv1.Pod{},
 		},
 		{
 			description: "Job-managed pod",
-			pods:        []*api.Pod{jobPod},
-			rcs:         []api.ReplicationController{rc},
+			pods:        []*apiv1.Pod{jobPod},
+			rcs:         []apiv1.ReplicationController{rc},
 			expectFatal: false,
-			expectPods:  []*api.Pod{jobPod},
+			expectPods:  []*apiv1.Pod{jobPod},
 		},
 		{
 			description: "RS-managed pod",
-			pods:        []*api.Pod{rsPod},
+			pods:        []*apiv1.Pod{rsPod},
 			replicaSets: []extensions.ReplicaSet{rs},
 			expectFatal: false,
-			expectPods:  []*api.Pod{rsPod},
+			expectPods:  []*apiv1.Pod{rsPod},
 		},
 		{
 			description: "naked pod",
-			pods:        []*api.Pod{nakedPod},
+			pods:        []*apiv1.Pod{nakedPod},
 			expectFatal: true,
-			expectPods:  []*api.Pod{},
+			expectPods:  []*apiv1.Pod{},
 		},
 		{
 			description: "pod with EmptyDir",
-			pods:        []*api.Pod{emptydirPod},
+			pods:        []*apiv1.Pod{emptydirPod},
 			expectFatal: true,
-			expectPods:  []*api.Pod{},
+			expectPods:  []*apiv1.Pod{},
 		},
 	}
 
 	for _, test := range tests {
 
-		codec := testapi.Default.Codec()
-		extcodec := testapi.Extensions.Codec()
-
-		fakeClient := &fake.RESTClient{
-			Client: fake.CreateHTTPClient(func(req *http.Request) (*http.Response, error) {
-				m := &MyReq{req}
-				switch {
-				case m.isFor("GET", "/namespaces/default/replicationcontrollers/rc"):
-					return &http.Response{StatusCode: 200, Header: defaultHeader(), Body: objBody(codec, &test.rcs[0])}, nil
-				case m.isFor("GET", "/namespaces/default/daemonsets/ds"):
-					return &http.Response{StatusCode: 200, Header: defaultHeader(), Body: objBody(extcodec, &ds)}, nil
-				case m.isFor("GET", "/namespaces/default/jobs/job"):
-					return &http.Response{StatusCode: 200, Header: defaultHeader(), Body: objBody(extcodec, &job)}, nil
-				case m.isFor("GET", "/namespaces/default/replicasets/rs"):
-					return &http.Response{StatusCode: 200, Header: defaultHeader(), Body: objBody(extcodec, &test.replicaSets[0])}, nil
-				case m.isFor("GET", "/namespaces/default/pods/bar"):
-					return &http.Response{StatusCode: 404, Header: defaultHeader(), Body: objBody(codec, nil)}, nil
-				case m.isFor("GET", "/replicationcontrollers"):
-					return &http.Response{StatusCode: 200, Header: defaultHeader(), Body: objBody(codec, &api.ReplicationControllerList{Items: test.rcs})}, nil
-				default:
-					t.Fatalf("%s: unexpected request: %v %#v\n%#v", test.description, req.Method, req.URL, req)
-					return nil, nil
+		fakeClient := &fake.Clientset{}
+		register := func(resource string, obj runtime.Object, meta apiv1.ObjectMeta) {
+			fakeClient.Fake.AddReactor("get", resource, func(action core.Action) (bool, runtime.Object, error) {
+				getAction := action.(core.GetAction)
+				if getAction.GetName() == meta.GetName() && getAction.GetNamespace() == meta.GetNamespace() {
+					return true, obj, nil
 				}
-			}),
+				return false, nil, fmt.Errorf("Not found")
+			})
 		}
-
-		clientconfig := &restclient.Config{
-			ContentConfig: restclient.ContentConfig{
-				ContentType:  runtime.ContentTypeJSON,
-				GroupVersion: testapi.Default.GroupVersion(),
-			},
+		if len(test.rcs) > 0 {
+			register("replicationcontrollers", &test.rcs[0], test.rcs[0].ObjectMeta)
 		}
-
-		client := client.NewOrDie(clientconfig)
-		client.Client = fakeClient.Client
-		client.ExtensionsClient.Client = fakeClient.Client
-
+		register("daemonsets", &ds, ds.ObjectMeta)
+		register("jobs", &job, job.ObjectMeta)
+		if len(test.replicaSets) > 0 {
+			register("replicasets", &test.replicaSets[0], test.replicaSets[0].ObjectMeta)
+		}
 		pods, err := GetPodsForDeletionOnNodeDrain(test.pods, api.Codecs.UniversalDecoder(),
-			true, true, true, client, 0)
+			false, true, true, true, fakeClient, 0)
 
 		if test.expectFatal {
 			if err == nil {
@@ -289,33 +231,14 @@ func TestDrain(t *testing.T) {
 	}
 }
 
-func defaultHeader() http.Header {
-	header := http.Header{}
-	header.Set("Content-Type", runtime.ContentTypeJSON)
-	return header
-}
-
-type MyReq struct {
-	Request *http.Request
-}
-
-func (m *MyReq) isFor(method string, path string) bool {
-	req := m.Request
-
-	return method == req.Method && (req.URL.Path == path ||
-		req.URL.Path == strings.Join([]string{"/api/v1", path}, "") ||
-		req.URL.Path == strings.Join([]string{"/apis/extensions/v1beta1", path}, "") ||
-		req.URL.Path == strings.Join([]string{"/apis/batch/v1", path}, ""))
-}
-
 func refJSON(t *testing.T, o runtime.Object) string {
-	ref, err := api.GetReference(o)
+	ref, err := apiv1.GetReference(o)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
 	codec := testapi.Default.Codec()
-	json := runtime.EncodeOrDie(codec, &api.SerializedReference{Reference: *ref})
+	json := runtime.EncodeOrDie(codec, &apiv1.SerializedReference{Reference: *ref})
 	return string(json)
 }
 

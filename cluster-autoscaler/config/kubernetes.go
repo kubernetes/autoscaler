@@ -22,10 +22,10 @@ import (
 	"net/url"
 	"strconv"
 
-	"k8s.io/kubernetes/pkg/api/unversioned"
 	kube_rest "k8s.io/kubernetes/pkg/client/restclient"
 	kube_client_cmd "k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
 	kube_client_cmd_api "k8s.io/kubernetes/pkg/client/unversioned/clientcmd/api"
+	"k8s.io/kubernetes/pkg/runtime/schema"
 )
 
 // This code was borrowed from Heapster to push the work forward and contains some functionality
@@ -98,7 +98,7 @@ func GetKubeClientConfig(uri *url.URL) (*kube_rest.Config, error) {
 		if configOverrides.ClusterInfo.Server != "" {
 			kubeConfig.Host = configOverrides.ClusterInfo.Server
 		}
-		kubeConfig.GroupVersion = &unversioned.GroupVersion{Version: configOverrides.ClusterInfo.APIVersion}
+		kubeConfig.GroupVersion = &schema.GroupVersion{Version: configOverrides.ClusterInfo.APIVersion}
 		kubeConfig.Insecure = configOverrides.ClusterInfo.InsecureSkipTLSVerify
 		if configOverrides.ClusterInfo.InsecureSkipTLSVerify {
 			kubeConfig.TLSClientConfig.CAFile = ""
@@ -120,7 +120,7 @@ func GetKubeClientConfig(uri *url.URL) (*kube_rest.Config, error) {
 				Host:     configOverrides.ClusterInfo.Server,
 				Insecure: configOverrides.ClusterInfo.InsecureSkipTLSVerify,
 			}
-			kubeConfig.GroupVersion = &unversioned.GroupVersion{Version: configOverrides.ClusterInfo.APIVersion}
+			kubeConfig.GroupVersion = &schema.GroupVersion{Version: configOverrides.ClusterInfo.APIVersion}
 		}
 	}
 	if len(kubeConfig.Host) == 0 {

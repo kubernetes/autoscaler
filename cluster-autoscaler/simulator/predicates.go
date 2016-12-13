@@ -19,8 +19,8 @@ package simulator
 import (
 	"fmt"
 
-	kube_api "k8s.io/kubernetes/pkg/api"
-	kube_client "k8s.io/kubernetes/pkg/client/unversioned"
+	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/algorithm"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/algorithm/predicates"
 	// We need to import provider to intialize default scheduler.
@@ -35,12 +35,12 @@ type PredicateChecker struct {
 }
 
 // NewPredicateChecker builds PredicateChecker.
-func NewPredicateChecker(kubeClient *kube_client.Client) (*PredicateChecker, error) {
+func NewPredicateChecker(kubeClient kube_client.Interface) (*PredicateChecker, error) {
 	provider, err := factory.GetAlgorithmProvider(factory.DefaultProvider)
 	if err != nil {
 		return nil, err
 	}
-	schedulerConfigFactory := factory.NewConfigFactory(kubeClient, "", kube_api.DefaultHardPodAffinitySymmetricWeight, kube_api.DefaultFailureDomains)
+	schedulerConfigFactory := factory.NewConfigFactory(kubeClient, "", apiv1.DefaultHardPodAffinitySymmetricWeight, apiv1.DefaultFailureDomains)
 	predicates, err := schedulerConfigFactory.GetPredicates(provider.FitPredicateKeys)
 	if err != nil {
 		return nil, err
@@ -61,7 +61,7 @@ func NewTestPredicateChecker() *PredicateChecker {
 }
 
 // FitsAny checks if the given pod can be place on any of the given nodes.
-func (p *PredicateChecker) FitsAny(pod *kube_api.Pod, nodeInfos map[string]*schedulercache.NodeInfo) (string, error) {
+func (p *PredicateChecker) FitsAny(pod *apiv1.Pod, nodeInfos map[string]*schedulercache.NodeInfo) (string, error) {
 	for name, nodeInfo := range nodeInfos {
 		// Be sure that the node is schedulable.
 		if nodeInfo.Node().Spec.Unschedulable {
@@ -75,9 +75,9 @@ func (p *PredicateChecker) FitsAny(pod *kube_api.Pod, nodeInfos map[string]*sche
 }
 
 // CheckPredicates checks if the given pod can be placed on the given node.
-func (p *PredicateChecker) CheckPredicates(pod *kube_api.Pod, nodeInfo *schedulercache.NodeInfo) error {
+func (p *PredicateChecker) CheckPredicates(pod *apiv1.Pod, nodeInfo *schedulercache.NodeInfo) error {
 	for _, predicate := range p.predicates {
-		match, err := predicate(pod, nodeInfo)
+		match, failureReason, err := predicate(pod, nil, nodeInfo)
 		nodename := "unknown"
 		if nodeInfo.Node() != nil {
 			nodename = nodeInfo.Node().Name
@@ -86,7 +86,7 @@ func (p *PredicateChecker) CheckPredicates(pod *kube_api.Pod, nodeInfo *schedule
 			return fmt.Errorf("cannot put %s on %s due to %v", pod.Name, nodename, err)
 		}
 		if !match {
-			return fmt.Errorf("cannot put %s on %s", pod.Name, nodename)
+			return fmt.Errorf("cannot put %s on %s, reason: %v", pod.Name, nodename, failureReason)
 		}
 	}
 	return nil

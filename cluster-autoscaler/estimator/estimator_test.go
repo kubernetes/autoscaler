@@ -19,8 +19,8 @@ package estimator
 import (
 	"testing"
 
-	kube_api "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/resource"
+	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -29,14 +29,14 @@ func TestEstimate(t *testing.T) {
 	cpuPerPod := int64(500)
 	memoryPerPod := int64(1000 * 1024 * 1024)
 
-	pod := &kube_api.Pod{
-		Spec: kube_api.PodSpec{
-			Containers: []kube_api.Container{
+	pod := &apiv1.Pod{
+		Spec: apiv1.PodSpec{
+			Containers: []apiv1.Container{
 				{
-					Resources: kube_api.ResourceRequirements{
-						Requests: kube_api.ResourceList{
-							kube_api.ResourceCPU:    *resource.NewMilliQuantity(cpuPerPod, resource.DecimalSI),
-							kube_api.ResourceMemory: *resource.NewQuantity(memoryPerPod, resource.DecimalSI),
+					Resources: apiv1.ResourceRequirements{
+						Requests: apiv1.ResourceList{
+							apiv1.ResourceCPU:    *resource.NewMilliQuantity(cpuPerPod, resource.DecimalSI),
+							apiv1.ResourceMemory: *resource.NewQuantity(memoryPerPod, resource.DecimalSI),
 						},
 					},
 				},
@@ -55,12 +55,12 @@ func TestEstimate(t *testing.T) {
 	assert.Equal(t, int64(5*memoryPerPod), estimator.memorySum.Value())
 	assert.Equal(t, 5, estimator.GetCount())
 
-	node := &kube_api.Node{
-		Status: kube_api.NodeStatus{
-			Capacity: kube_api.ResourceList{
-				kube_api.ResourceCPU:    *resource.NewMilliQuantity(3*cpuPerPod, resource.DecimalSI),
-				kube_api.ResourceMemory: *resource.NewQuantity(2*memoryPerPod, resource.DecimalSI),
-				kube_api.ResourcePods:   *resource.NewQuantity(10, resource.DecimalSI),
+	node := &apiv1.Node{
+		Status: apiv1.NodeStatus{
+			Capacity: apiv1.ResourceList{
+				apiv1.ResourceCPU:    *resource.NewMilliQuantity(3*cpuPerPod, resource.DecimalSI),
+				apiv1.ResourceMemory: *resource.NewQuantity(2*memoryPerPod, resource.DecimalSI),
+				apiv1.ResourcePods:   *resource.NewQuantity(10, resource.DecimalSI),
 			},
 		},
 	}
@@ -74,17 +74,17 @@ func TestEstimateWithPorts(t *testing.T) {
 	cpuPerPod := int64(500)
 	memoryPerPod := int64(1000 * 1024 * 1024)
 
-	pod := &kube_api.Pod{
-		Spec: kube_api.PodSpec{
-			Containers: []kube_api.Container{
+	pod := &apiv1.Pod{
+		Spec: apiv1.PodSpec{
+			Containers: []apiv1.Container{
 				{
-					Resources: kube_api.ResourceRequirements{
-						Requests: kube_api.ResourceList{
-							kube_api.ResourceCPU:    *resource.NewMilliQuantity(cpuPerPod, resource.DecimalSI),
-							kube_api.ResourceMemory: *resource.NewQuantity(memoryPerPod, resource.DecimalSI),
+					Resources: apiv1.ResourceRequirements{
+						Requests: apiv1.ResourceList{
+							apiv1.ResourceCPU:    *resource.NewMilliQuantity(cpuPerPod, resource.DecimalSI),
+							apiv1.ResourceMemory: *resource.NewQuantity(memoryPerPod, resource.DecimalSI),
 						},
 					},
-					Ports: []kube_api.ContainerPort{
+					Ports: []apiv1.ContainerPort{
 						{
 							HostPort: 5555,
 						},
@@ -98,12 +98,12 @@ func TestEstimateWithPorts(t *testing.T) {
 	for i := 0; i < 5; i++ {
 		estimator.Add(pod)
 	}
-	node := &kube_api.Node{
-		Status: kube_api.NodeStatus{
-			Capacity: kube_api.ResourceList{
-				kube_api.ResourceCPU:    *resource.NewMilliQuantity(3*cpuPerPod, resource.DecimalSI),
-				kube_api.ResourceMemory: *resource.NewQuantity(2*memoryPerPod, resource.DecimalSI),
-				kube_api.ResourcePods:   *resource.NewQuantity(10, resource.DecimalSI),
+	node := &apiv1.Node{
+		Status: apiv1.NodeStatus{
+			Capacity: apiv1.ResourceList{
+				apiv1.ResourceCPU:    *resource.NewMilliQuantity(3*cpuPerPod, resource.DecimalSI),
+				apiv1.ResourceMemory: *resource.NewQuantity(2*memoryPerPod, resource.DecimalSI),
+				apiv1.ResourcePods:   *resource.NewQuantity(10, resource.DecimalSI),
 			},
 		},
 	}
