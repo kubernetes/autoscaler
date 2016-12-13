@@ -1,5 +1,5 @@
 /*
-Copyright 2015 The Kubernetes Authors All rights reserved.
+Copyright 2015 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,21 +23,21 @@ import (
 	"fmt"
 	"io"
 
-	"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/runtime"
+	"k8s.io/kubernetes/pkg/runtime/schema"
 )
 
 // Encoder is a runtime.Encoder on a stream.
 type Encoder interface {
 	// Encode will write the provided object to the stream or return an error. It obeys the same
-	// contract as runtime.Encoder.
-	Encode(obj runtime.Object, overrides ...unversioned.GroupVersion) error
+	// contract as runtime.VersionedEncoder.
+	Encode(obj runtime.Object) error
 }
 
 // Decoder is a runtime.Decoder from a stream.
 type Decoder interface {
 	// Decode will return io.EOF when no more objects are available.
-	Decode(defaults *unversioned.GroupVersionKind, into runtime.Object) (runtime.Object, *unversioned.GroupVersionKind, error)
+	Decode(defaults *schema.GroupVersionKind, into runtime.Object) (runtime.Object, *schema.GroupVersionKind, error)
 	// Close closes the underlying stream.
 	Close() error
 }
@@ -71,7 +71,7 @@ func NewDecoder(r io.ReadCloser, d runtime.Decoder) Decoder {
 var ErrObjectTooLarge = fmt.Errorf("object to decode was longer than maximum allowed size")
 
 // Decode reads the next object from the stream and decodes it.
-func (d *decoder) Decode(defaults *unversioned.GroupVersionKind, into runtime.Object) (runtime.Object, *unversioned.GroupVersionKind, error) {
+func (d *decoder) Decode(defaults *schema.GroupVersionKind, into runtime.Object) (runtime.Object, *schema.GroupVersionKind, error) {
 	base := 0
 	for {
 		n, err := d.reader.Read(d.buf[base:])
@@ -127,8 +127,8 @@ func NewEncoder(w io.Writer, e runtime.Encoder) Encoder {
 }
 
 // Encode writes the provided object to the nested writer.
-func (e *encoder) Encode(obj runtime.Object, overrides ...unversioned.GroupVersion) error {
-	if err := e.encoder.EncodeToStream(obj, e.buf, overrides...); err != nil {
+func (e *encoder) Encode(obj runtime.Object) error {
+	if err := e.encoder.Encode(obj, e.buf); err != nil {
 		return err
 	}
 	_, err := e.writer.Write(e.buf.Bytes())

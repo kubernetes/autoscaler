@@ -1,5 +1,5 @@
 /*
-Copyright 2014 The Kubernetes Authors All rights reserved.
+Copyright 2014 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,9 +20,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"runtime/debug"
 	"strconv"
 	"strings"
 
+	"k8s.io/kubernetes/pkg/genericapiserver/openapi/common"
+
+	"github.com/go-openapi/spec"
+	"github.com/golang/glog"
 	"github.com/google/gofuzz"
 )
 
@@ -34,6 +39,7 @@ import (
 //
 // +protobuf=true
 // +protobuf.options.(gogoproto.goproto_stringer)=false
+// +k8s:openapi-gen=true
 type IntOrString struct {
 	Type   Type   `protobuf:"varint,1,opt,name=type,casttype=Type"`
 	IntVal int32  `protobuf:"varint,2,opt,name=intVal"`
@@ -53,12 +59,25 @@ const (
 // than int32.
 // TODO: convert to (val int32)
 func FromInt(val int) IntOrString {
+	if val > math.MaxInt32 || val < math.MinInt32 {
+		glog.Errorf("value: %d overflows int32\n%s\n", val, debug.Stack())
+	}
 	return IntOrString{Type: Int, IntVal: int32(val)}
 }
 
 // FromString creates an IntOrString object with a string value.
 func FromString(val string) IntOrString {
 	return IntOrString{Type: String, StrVal: val}
+}
+
+// Parse the given string and try to convert it to an integer before
+// setting it as a string value.
+func Parse(val string) IntOrString {
+	i, err := strconv.Atoi(val)
+	if err != nil {
+		return FromString(val)
+	}
+	return FromInt(i)
 }
 
 // UnmarshalJSON implements the json.Unmarshaller interface.
@@ -98,6 +117,17 @@ func (intstr IntOrString) MarshalJSON() ([]byte, error) {
 		return json.Marshal(intstr.StrVal)
 	default:
 		return []byte{}, fmt.Errorf("impossible IntOrString.Type")
+	}
+}
+
+func (_ IntOrString) OpenAPIDefinition() common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type:   []string{"string"},
+				Format: "int-or-string",
+			},
+		},
 	}
 }
 
@@ -143,5 +173,5 @@ func getIntOrPercentValue(intOrStr *IntOrString) (int, bool, error) {
 		}
 		return int(v), true, nil
 	}
-	return 0, false, fmt.Errorf("invalid value: neither int nor percentage")
+	return 0, false, fmt.Errorf("invalid type: neither int nor percentage")
 }

@@ -1,5 +1,5 @@
 /*
-Copyright 2014 The Kubernetes Authors All rights reserved.
+Copyright 2014 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"strings"
 
-	"k8s.io/kubernetes/pkg/api/unversioned"
+	"k8s.io/kubernetes/pkg/runtime/schema"
 	utilerrors "k8s.io/kubernetes/pkg/util/errors"
 	"k8s.io/kubernetes/pkg/util/sets"
 )
@@ -51,12 +51,12 @@ func (m MultiRESTMapper) ResourceSingularizer(resource string) (singular string,
 	return
 }
 
-func (m MultiRESTMapper) ResourcesFor(resource unversioned.GroupVersionResource) ([]unversioned.GroupVersionResource, error) {
-	allGVRs := []unversioned.GroupVersionResource{}
+func (m MultiRESTMapper) ResourcesFor(resource schema.GroupVersionResource) ([]schema.GroupVersionResource, error) {
+	allGVRs := []schema.GroupVersionResource{}
 	for _, t := range m {
 		gvrs, err := t.ResourcesFor(resource)
 		// ignore "no match" errors, but any other error percolates back up
-		if IsNoResourceMatchError(err) {
+		if IsNoMatchError(err) {
 			continue
 		}
 		if err != nil {
@@ -86,12 +86,12 @@ func (m MultiRESTMapper) ResourcesFor(resource unversioned.GroupVersionResource)
 	return allGVRs, nil
 }
 
-func (m MultiRESTMapper) KindsFor(resource unversioned.GroupVersionResource) (gvk []unversioned.GroupVersionKind, err error) {
-	allGVKs := []unversioned.GroupVersionKind{}
+func (m MultiRESTMapper) KindsFor(resource schema.GroupVersionResource) (gvk []schema.GroupVersionKind, err error) {
+	allGVKs := []schema.GroupVersionKind{}
 	for _, t := range m {
 		gvks, err := t.KindsFor(resource)
 		// ignore "no match" errors, but any other error percolates back up
-		if IsNoResourceMatchError(err) {
+		if IsNoMatchError(err) {
 			continue
 		}
 		if err != nil {
@@ -121,41 +121,41 @@ func (m MultiRESTMapper) KindsFor(resource unversioned.GroupVersionResource) (gv
 	return allGVKs, nil
 }
 
-func (m MultiRESTMapper) ResourceFor(resource unversioned.GroupVersionResource) (unversioned.GroupVersionResource, error) {
+func (m MultiRESTMapper) ResourceFor(resource schema.GroupVersionResource) (schema.GroupVersionResource, error) {
 	resources, err := m.ResourcesFor(resource)
 	if err != nil {
-		return unversioned.GroupVersionResource{}, err
+		return schema.GroupVersionResource{}, err
 	}
 	if len(resources) == 1 {
 		return resources[0], nil
 	}
 
-	return unversioned.GroupVersionResource{}, &AmbiguousResourceError{PartialResource: resource, MatchingResources: resources}
+	return schema.GroupVersionResource{}, &AmbiguousResourceError{PartialResource: resource, MatchingResources: resources}
 }
 
-func (m MultiRESTMapper) KindFor(resource unversioned.GroupVersionResource) (unversioned.GroupVersionKind, error) {
+func (m MultiRESTMapper) KindFor(resource schema.GroupVersionResource) (schema.GroupVersionKind, error) {
 	kinds, err := m.KindsFor(resource)
 	if err != nil {
-		return unversioned.GroupVersionKind{}, err
+		return schema.GroupVersionKind{}, err
 	}
 	if len(kinds) == 1 {
 		return kinds[0], nil
 	}
 
-	return unversioned.GroupVersionKind{}, &AmbiguousResourceError{PartialResource: resource, MatchingKinds: kinds}
+	return schema.GroupVersionKind{}, &AmbiguousResourceError{PartialResource: resource, MatchingKinds: kinds}
 }
 
 // RESTMapping provides the REST mapping for the resource based on the
 // kind and version. This implementation supports multiple REST schemas and
 // return the first match.
-func (m MultiRESTMapper) RESTMapping(gk unversioned.GroupKind, versions ...string) (*RESTMapping, error) {
+func (m MultiRESTMapper) RESTMapping(gk schema.GroupKind, versions ...string) (*RESTMapping, error) {
 	allMappings := []*RESTMapping{}
 	errors := []error{}
 
 	for _, t := range m {
 		currMapping, err := t.RESTMapping(gk, versions...)
 		// ignore "no match" errors, but any other error percolates back up
-		if IsNoResourceMatchError(err) {
+		if IsNoMatchError(err) {
 			continue
 		}
 		if err != nil {
@@ -171,12 +171,43 @@ func (m MultiRESTMapper) RESTMapping(gk unversioned.GroupKind, versions ...strin
 		return allMappings[0], nil
 	}
 	if len(allMappings) > 1 {
-		return nil, fmt.Errorf("multiple matches found for %v in %v", gk, versions)
+		var kinds []schema.GroupVersionKind
+		for _, m := range allMappings {
+			kinds = append(kinds, m.GroupVersionKind)
+		}
+		return nil, &AmbiguousKindError{PartialKind: gk.WithVersion(""), MatchingKinds: kinds}
 	}
 	if len(errors) > 0 {
 		return nil, utilerrors.NewAggregate(errors)
 	}
-	return nil, fmt.Errorf("no match found for %v in %v", gk, versions)
+	return nil, &NoKindMatchError{PartialKind: gk.WithVersion("")}
+}
+
+// RESTMappings returns all possible RESTMappings for the provided group kind, or an error
+// if the type is not recognized.
+func (m MultiRESTMapper) RESTMappings(gk schema.GroupKind, versions ...string) ([]*RESTMapping, error) {
+	var allMappings []*RESTMapping
+	var errors []error
+
+	for _, t := range m {
+		currMappings, err := t.RESTMappings(gk, versions...)
+		// ignore "no match" errors, but any other error percolates back up
+		if IsNoMatchError(err) {
+			continue
+		}
+		if err != nil {
+			errors = append(errors, err)
+			continue
+		}
+		allMappings = append(allMappings, currMappings...)
+	}
+	if len(errors) > 0 {
+		return nil, utilerrors.NewAggregate(errors)
+	}
+	if len(allMappings) == 0 {
+		return nil, &NoKindMatchError{PartialKind: gk.WithVersion("")}
+	}
+	return allMappings, nil
 }
 
 // AliasesForResource finds the first alias response for the provided mappers.

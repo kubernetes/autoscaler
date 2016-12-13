@@ -1,5 +1,5 @@
 /*
-Copyright 2014 The Kubernetes Authors All rights reserved.
+Copyright 2014 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package restclient
 
 import (
 	"fmt"
+	"mime"
 	"net/http"
 	"net/url"
 	"os"
@@ -26,8 +27,8 @@ import (
 	"time"
 
 	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/runtime"
+	"k8s.io/kubernetes/pkg/runtime/schema"
 	"k8s.io/kubernetes/pkg/util/flowcontrol"
 )
 
@@ -37,6 +38,18 @@ const (
 	envBackoffBase     = "KUBE_CLIENT_BACKOFF_BASE"
 	envBackoffDuration = "KUBE_CLIENT_BACKOFF_DURATION"
 )
+
+// Interface captures the set of operations for generically interacting with Kubernetes REST apis.
+type Interface interface {
+	GetRateLimiter() flowcontrol.RateLimiter
+	Verb(verb string) *Request
+	Post() *Request
+	Put() *Request
+	Patch(pt api.PatchType) *Request
+	Get() *Request
+	Delete() *Request
+	APIVersion() schema.GroupVersion
+}
 
 // RESTClient imposes common Kubernetes API conventions on a set of resource paths.
 // The baseURL is expected to point to an HTTP or HTTPS path that is the parent
@@ -54,8 +67,11 @@ type RESTClient struct {
 	// contentConfig is the information used to communicate with the server.
 	contentConfig ContentConfig
 
-	// serializers contain all serializers for undelying content type.
+	// serializers contain all serializers for underlying content type.
 	serializers Serializers
+
+	// creates BackoffManager that is passed to requests.
+	createBackoffMgr func() BackoffManager
 
 	// TODO extract this into a wrapper interface via the RESTClient interface in kubectl.
 	Throttle flowcontrol.RateLimiter
@@ -84,7 +100,7 @@ func NewRESTClient(baseURL *url.URL, versionedAPIPath string, config ContentConf
 	base.Fragment = ""
 
 	if config.GroupVersion == nil {
-		config.GroupVersion = &unversioned.GroupVersion{}
+		config.GroupVersion = &schema.GroupVersion{}
 	}
 	if len(config.ContentType) == 0 {
 		config.ContentType = "application/json"
@@ -105,6 +121,7 @@ func NewRESTClient(baseURL *url.URL, versionedAPIPath string, config ContentConf
 		versionedAPIPath: versionedAPIPath,
 		contentConfig:    config,
 		serializers:      *serializers,
+		createBackoffMgr: readExpBackoffConfig,
 		Throttle:         throttle,
 		Client:           client,
 	}, nil
@@ -137,34 +154,55 @@ func readExpBackoffConfig() BackoffManager {
 }
 
 // createSerializers creates all necessary serializers for given contentType.
+// TODO: the negotiated serializer passed to this method should probably return
+//   serializers that control decoding and versioning without this package
+//   being aware of the types. Depends on whether RESTClient must deal with
+//   generic infrastructure.
 func createSerializers(config ContentConfig) (*Serializers, error) {
-	negotiated := config.NegotiatedSerializer
+	mediaTypes := config.NegotiatedSerializer.SupportedMediaTypes()
 	contentType := config.ContentType
-	info, ok := negotiated.SerializerForMediaType(contentType, nil)
+	mediaType, _, err := mime.ParseMediaType(contentType)
+	if err != nil {
+		return nil, fmt.Errorf("the content type specified in the client configuration is not recognized: %v", err)
+	}
+	info, ok := runtime.SerializerInfoForMediaType(mediaTypes, mediaType)
 	if !ok {
-		return nil, fmt.Errorf("serializer for %s not registered", contentType)
+		if len(contentType) != 0 || len(mediaTypes) == 0 {
+			return nil, fmt.Errorf("no serializers registered for %s", contentType)
+		}
+		info = mediaTypes[0]
 	}
-	streamInfo, ok := negotiated.StreamingSerializerForMediaType(contentType, nil)
-	if !ok {
-		return nil, fmt.Errorf("streaming serializer for %s not registered", contentType)
+
+	internalGV := schema.GroupVersions{
+		{
+			Group:   config.GroupVersion.Group,
+			Version: runtime.APIVersionInternal,
+		},
+		// always include the legacy group as a decoding target to handle non-error `Status` return types
+		{
+			Group:   "",
+			Version: runtime.APIVersionInternal,
+		},
 	}
-	internalGV := unversioned.GroupVersion{
-		Group:   config.GroupVersion.Group,
-		Version: runtime.APIVersionInternal,
-	}
-	return &Serializers{
-		Encoder:             negotiated.EncoderForVersion(info.Serializer, *config.GroupVersion),
-		Decoder:             negotiated.DecoderToVersion(info.Serializer, internalGV),
-		StreamingSerializer: streamInfo.Serializer,
-		Framer:              streamInfo.Framer,
+
+	s := &Serializers{
+		Encoder: config.NegotiatedSerializer.EncoderForVersion(info.Serializer, *config.GroupVersion),
+		Decoder: config.NegotiatedSerializer.DecoderToVersion(info.Serializer, internalGV),
+
 		RenegotiatedDecoder: func(contentType string, params map[string]string) (runtime.Decoder, error) {
-			renegotiated, ok := negotiated.SerializerForMediaType(contentType, params)
+			info, ok := runtime.SerializerInfoForMediaType(mediaTypes, contentType)
 			if !ok {
 				return nil, fmt.Errorf("serializer for %s not registered", contentType)
 			}
-			return negotiated.DecoderToVersion(renegotiated.Serializer, internalGV), nil
+			return config.NegotiatedSerializer.DecoderToVersion(info.Serializer, internalGV), nil
 		},
-	}, nil
+	}
+	if info.StreamSerializer != nil {
+		s.StreamingSerializer = info.StreamSerializer.Serializer
+		s.Framer = info.StreamSerializer.Framer
+	}
+
+	return s, nil
 }
 
 // Verb begins a request with a verb (GET, POST, PUT, DELETE).
@@ -181,7 +219,7 @@ func createSerializers(config ContentConfig) (*Serializers, error) {
 // list, ok := resp.(*api.PodList)
 //
 func (c *RESTClient) Verb(verb string) *Request {
-	backoff := readExpBackoffConfig()
+	backoff := c.createBackoffMgr()
 
 	if c.Client == nil {
 		return NewRequest(nil, verb, c.base, c.versionedAPIPath, c.contentConfig, c.serializers, backoff, c.Throttle)
@@ -215,10 +253,6 @@ func (c *RESTClient) Delete() *Request {
 }
 
 // APIVersion returns the APIVersion this RESTClient is expected to use.
-func (c *RESTClient) APIVersion() unversioned.GroupVersion {
+func (c *RESTClient) APIVersion() schema.GroupVersion {
 	return *c.contentConfig.GroupVersion
-}
-
-func (c *RESTClient) Codec() runtime.Codec {
-	return c.contentConfig.Codec
 }

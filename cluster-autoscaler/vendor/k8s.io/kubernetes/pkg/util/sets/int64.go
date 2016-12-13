@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors All rights reserved.
+Copyright 2016 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -172,6 +172,15 @@ func (s Int64) List() []int64 {
 	}
 	sort.Sort(res)
 	return []int64(res)
+}
+
+// UnsortedList returns the slice with contents in random order.
+func (s Int64) UnsortedList() []int64 {
+	res := make([]int64, 0, len(s))
+	for key := range s {
+		res = append(res, key)
+	}
+	return res
 }
 
 // Returns a single element from the set.

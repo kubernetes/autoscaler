@@ -1,5 +1,5 @@
 /*
-Copyright 2015 The Kubernetes Authors All rights reserved.
+Copyright 2015 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,32 +17,46 @@ limitations under the License.
 package v1beta1
 
 import (
-	"k8s.io/kubernetes/pkg/api/unversioned"
+	"k8s.io/kubernetes/pkg/api/v1"
+	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/runtime"
+	"k8s.io/kubernetes/pkg/runtime/schema"
+	versionedwatch "k8s.io/kubernetes/pkg/watch/versioned"
 )
 
 // GroupName is the group name use in this package
 const GroupName = "authorization.k8s.io"
 
 // SchemeGroupVersion is group version used to register these objects
-var SchemeGroupVersion = unversioned.GroupVersion{Group: GroupName, Version: "v1beta1"}
+var SchemeGroupVersion = schema.GroupVersion{Group: GroupName, Version: "v1beta1"}
 
-func AddToScheme(scheme *runtime.Scheme) {
-	// Add the API to Scheme.
-	addKnownTypes(scheme)
-	addDefaultingFuncs(scheme)
-	addConversionFuncs(scheme)
+// Resource takes an unqualified resource and returns a Group qualified GroupResource
+func Resource(resource string) schema.GroupResource {
+	return SchemeGroupVersion.WithResource(resource).GroupResource()
 }
 
+var (
+	SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes, addDefaultingFuncs, addConversionFuncs)
+	AddToScheme   = SchemeBuilder.AddToScheme
+)
+
 // Adds the list of known types to api.Scheme.
-func addKnownTypes(scheme *runtime.Scheme) {
+func addKnownTypes(scheme *runtime.Scheme) error {
 	scheme.AddKnownTypes(SchemeGroupVersion,
+		&v1.ListOptions{},
+		&v1.DeleteOptions{},
+		&metav1.ExportOptions{},
+		&metav1.GetOptions{},
+
 		&SelfSubjectAccessReview{},
 		&SubjectAccessReview{},
 		&LocalSubjectAccessReview{},
 	)
+
+	versionedwatch.AddToGroupVersion(scheme, SchemeGroupVersion)
+	return nil
 }
 
-func (obj *LocalSubjectAccessReview) GetObjectKind() unversioned.ObjectKind { return &obj.TypeMeta }
-func (obj *SubjectAccessReview) GetObjectKind() unversioned.ObjectKind      { return &obj.TypeMeta }
-func (obj *SelfSubjectAccessReview) GetObjectKind() unversioned.ObjectKind  { return &obj.TypeMeta }
+func (obj *LocalSubjectAccessReview) GetObjectKind() schema.ObjectKind { return &obj.TypeMeta }
+func (obj *SubjectAccessReview) GetObjectKind() schema.ObjectKind      { return &obj.TypeMeta }
+func (obj *SelfSubjectAccessReview) GetObjectKind() schema.ObjectKind  { return &obj.TypeMeta }
