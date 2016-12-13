@@ -1,5 +1,5 @@
 /*
-Copyright 2014 The Kubernetes Authors All rights reserved.
+Copyright 2014 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,8 +18,9 @@ package meta
 
 import (
 	"k8s.io/kubernetes/pkg/api/meta/metatypes"
-	"k8s.io/kubernetes/pkg/api/unversioned"
+	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/runtime"
+	"k8s.io/kubernetes/pkg/runtime/schema"
 	"k8s.io/kubernetes/pkg/types"
 )
 
@@ -50,10 +51,10 @@ type Object interface {
 	SetResourceVersion(version string)
 	GetSelfLink() string
 	SetSelfLink(selfLink string)
-	GetCreationTimestamp() unversioned.Time
-	SetCreationTimestamp(timestamp unversioned.Time)
-	GetDeletionTimestamp() *unversioned.Time
-	SetDeletionTimestamp(timestamp *unversioned.Time)
+	GetCreationTimestamp() metav1.Time
+	SetCreationTimestamp(timestamp metav1.Time)
+	GetDeletionTimestamp() *metav1.Time
+	SetDeletionTimestamp(timestamp *metav1.Time)
 	GetLabels() map[string]string
 	SetLabels(labels map[string]string)
 	GetAnnotations() map[string]string
@@ -62,6 +63,8 @@ type Object interface {
 	SetFinalizers(finalizers []string)
 	GetOwnerReferences() []metatypes.OwnerReference
 	SetOwnerReferences([]metatypes.OwnerReference)
+	GetClusterName() string
+	SetClusterName(clusterName string)
 }
 
 var _ Object = &runtime.Unstructured{}
@@ -73,20 +76,10 @@ type ListMetaAccessor interface {
 // List lets you work with list metadata from any of the versioned or
 // internal API objects. Attempting to set or retrieve a field on an object that does
 // not support that field will be a no-op and return a default value.
-type List interface {
-	GetResourceVersion() string
-	SetResourceVersion(version string)
-	GetSelfLink() string
-	SetSelfLink(selfLink string)
-}
+type List metav1.List
 
 // Type exposes the type and APIVersion of versioned or internal API objects.
-type Type interface {
-	GetAPIVersion() string
-	SetAPIVersion(version string)
-	GetKind() string
-	SetKind(kind string)
-}
+type Type metav1.Type
 
 // MetadataAccessor lets you work with object and list metadata from any of the versioned or
 // internal API objects. Attempting to set or retrieve a field on an object that does
@@ -151,7 +144,7 @@ type RESTMapping struct {
 	// Resource is a string representing the name of this resource as a REST client would see it
 	Resource string
 
-	GroupVersionKind unversioned.GroupVersionKind
+	GroupVersionKind schema.GroupVersionKind
 
 	// Scope contains the information needed to deal with REST Resources that are in a resource hierarchy
 	Scope RESTScope
@@ -168,22 +161,26 @@ type RESTMapping struct {
 // to API groups. In other words, kinds and resources should not be assumed to be
 // unique across groups.
 //
-// TODO(caesarxuchao): Add proper multi-group support so that kinds & resources are
-// scoped to groups. See http://issues.k8s.io/12413 and http://issues.k8s.io/10009.
+// TODO: split into sub-interfaces
 type RESTMapper interface {
-	// KindFor takes a partial resource and returns back the single match.  Returns an error if there are multiple matches
-	KindFor(resource unversioned.GroupVersionResource) (unversioned.GroupVersionKind, error)
+	// KindFor takes a partial resource and returns the single match.  Returns an error if there are multiple matches
+	KindFor(resource schema.GroupVersionResource) (schema.GroupVersionKind, error)
 
-	// KindsFor takes a partial resource and returns back the list of potential kinds in priority order
-	KindsFor(resource unversioned.GroupVersionResource) ([]unversioned.GroupVersionKind, error)
+	// KindsFor takes a partial resource and returns the list of potential kinds in priority order
+	KindsFor(resource schema.GroupVersionResource) ([]schema.GroupVersionKind, error)
 
-	// ResourceFor takes a partial resource and returns back the single match.  Returns an error if there are multiple matches
-	ResourceFor(input unversioned.GroupVersionResource) (unversioned.GroupVersionResource, error)
+	// ResourceFor takes a partial resource and returns the single match.  Returns an error if there are multiple matches
+	ResourceFor(input schema.GroupVersionResource) (schema.GroupVersionResource, error)
 
-	// ResourcesFor takes a partial resource and returns back the list of potential resource in priority order
-	ResourcesFor(input unversioned.GroupVersionResource) ([]unversioned.GroupVersionResource, error)
+	// ResourcesFor takes a partial resource and returns the list of potential resource in priority order
+	ResourcesFor(input schema.GroupVersionResource) ([]schema.GroupVersionResource, error)
 
-	RESTMapping(gk unversioned.GroupKind, versions ...string) (*RESTMapping, error)
+	// RESTMapping identifies a preferred resource mapping for the provided group kind.
+	RESTMapping(gk schema.GroupKind, versions ...string) (*RESTMapping, error)
+	// RESTMappings returns all resource mappings for the provided group kind if no
+	// version search is provided. Otherwise identifies a preferred resource mapping for
+	// the provided version(s).
+	RESTMappings(gk schema.GroupKind, versions ...string) ([]*RESTMapping, error)
 
 	AliasesForResource(resource string) ([]string, bool)
 	ResourceSingularizer(resource string) (singular string, err error)

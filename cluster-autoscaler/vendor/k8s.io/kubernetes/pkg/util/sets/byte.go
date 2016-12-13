@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors All rights reserved.
+Copyright 2016 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -172,6 +172,15 @@ func (s Byte) List() []byte {
 	}
 	sort.Sort(res)
 	return []byte(res)
+}
+
+// UnsortedList returns the slice with contents in random order.
+func (s Byte) UnsortedList() []byte {
+	res := make([]byte, 0, len(s))
+	for key := range s {
+		res = append(res, key)
+	}
+	return res
 }
 
 // Returns a single element from the set.

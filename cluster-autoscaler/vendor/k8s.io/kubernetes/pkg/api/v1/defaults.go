@@ -1,5 +1,5 @@
 /*
-Copyright 2015 The Kubernetes Authors All rights reserved.
+Copyright 2015 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,8 +23,9 @@ import (
 	"k8s.io/kubernetes/pkg/util/parsers"
 )
 
-func addDefaultingFuncs(scheme *runtime.Scheme) {
-	scheme.AddDefaultingFuncs(
+func addDefaultingFuncs(scheme *runtime.Scheme) error {
+	RegisterDefaults(scheme)
+	return scheme.AddDefaultingFuncs(
 		SetDefaults_PodExecOptions,
 		SetDefaults_PodAttachOptions,
 		SetDefaults_ReplicationController,
@@ -35,6 +36,9 @@ func addDefaultingFuncs(scheme *runtime.Scheme) {
 		SetDefaults_Pod,
 		SetDefaults_PodSpec,
 		SetDefaults_Probe,
+		SetDefaults_SecretVolumeSource,
+		SetDefaults_ConfigMapVolumeSource,
+		SetDefaults_DownwardAPIVolumeSource,
 		SetDefaults_Secret,
 		SetDefaults_PersistentVolume,
 		SetDefaults_PersistentVolumeClaim,
@@ -47,7 +51,20 @@ func addDefaultingFuncs(scheme *runtime.Scheme) {
 		SetDefaults_ObjectFieldSelector,
 		SetDefaults_LimitRangeItem,
 		SetDefaults_ConfigMap,
+		SetDefaults_RBDVolumeSource,
+		SetDefaults_ResourceList,
 	)
+}
+
+func SetDefaults_ResourceList(obj *ResourceList) {
+	for key, val := range *obj {
+		// TODO(#18538): We round up resource values to milli scale to maintain API compatibility.
+		// In the future, we should instead reject values that need rounding.
+		const milliScale = -3
+		val.RoundUp(milliScale)
+
+		(*obj)[ResourceName(key)] = val
+	}
 }
 
 func SetDefaults_PodExecOptions(obj *PodExecOptions) {
@@ -173,6 +190,24 @@ func SetDefaults_Probe(obj *Probe) {
 		obj.FailureThreshold = 3
 	}
 }
+func SetDefaults_SecretVolumeSource(obj *SecretVolumeSource) {
+	if obj.DefaultMode == nil {
+		perm := int32(SecretVolumeSourceDefaultMode)
+		obj.DefaultMode = &perm
+	}
+}
+func SetDefaults_ConfigMapVolumeSource(obj *ConfigMapVolumeSource) {
+	if obj.DefaultMode == nil {
+		perm := int32(ConfigMapVolumeSourceDefaultMode)
+		obj.DefaultMode = &perm
+	}
+}
+func SetDefaults_DownwardAPIVolumeSource(obj *DownwardAPIVolumeSource) {
+	if obj.DefaultMode == nil {
+		perm := int32(DownwardAPIVolumeSourceDefaultMode)
+		obj.DefaultMode = &perm
+	}
+}
 func SetDefaults_Secret(obj *Secret) {
 	if obj.Type == "" {
 		obj.Type = SecretTypeOpaque
@@ -194,6 +229,20 @@ func SetDefaults_PersistentVolumeClaim(obj *PersistentVolumeClaim) {
 func SetDefaults_ISCSIVolumeSource(obj *ISCSIVolumeSource) {
 	if obj.ISCSIInterface == "" {
 		obj.ISCSIInterface = "default"
+	}
+}
+func SetDefaults_AzureDiskVolumeSource(obj *AzureDiskVolumeSource) {
+	if obj.CachingMode == nil {
+		obj.CachingMode = new(AzureDataDiskCachingMode)
+		*obj.CachingMode = AzureDataDiskCachingNone
+	}
+	if obj.FSType == nil {
+		obj.FSType = new(string)
+		*obj.FSType = "ext4"
+	}
+	if obj.ReadOnly == nil {
+		obj.ReadOnly = new(bool)
+		*obj.ReadOnly = false
 	}
 }
 func SetDefaults_Endpoints(obj *Endpoints) {
@@ -284,5 +333,17 @@ func defaultHostNetworkPorts(containers *[]Container) {
 				(*containers)[i].Ports[j].HostPort = (*containers)[i].Ports[j].ContainerPort
 			}
 		}
+	}
+}
+
+func SetDefaults_RBDVolumeSource(obj *RBDVolumeSource) {
+	if obj.RBDPool == "" {
+		obj.RBDPool = "rbd"
+	}
+	if obj.RadosUser == "" {
+		obj.RadosUser = "admin"
+	}
+	if obj.Keyring == "" {
+		obj.Keyring = "/etc/ceph/keyring"
 	}
 }
