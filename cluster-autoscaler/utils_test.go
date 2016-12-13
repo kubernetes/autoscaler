@@ -22,7 +22,7 @@ import (
 	"k8s.io/contrib/cluster-autoscaler/simulator"
 	. "k8s.io/contrib/cluster-autoscaler/utils/test"
 
-	kube_api "k8s.io/kubernetes/pkg/api"
+	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -31,7 +31,7 @@ func TestFilterOutSchedulable(t *testing.T) {
 	p1 := BuildTestPod("p1", 1500, 200000)
 	p2 := BuildTestPod("p2", 3000, 200000)
 	p3 := BuildTestPod("p3", 100, 200000)
-	unschedulablePods := []*kube_api.Pod{p1, p2, p3}
+	unschedulablePods := []*apiv1.Pod{p1, p2, p3}
 
 	scheduledPod1 := BuildTestPod("s1", 100, 200000)
 	scheduledPod2 := BuildTestPod("s2", 1500, 200000)
@@ -42,11 +42,11 @@ func TestFilterOutSchedulable(t *testing.T) {
 
 	predicateChecker := simulator.NewTestPredicateChecker()
 
-	res := FilterOutSchedulable(unschedulablePods, []*kube_api.Node{node}, []*kube_api.Pod{scheduledPod1}, predicateChecker)
+	res := FilterOutSchedulable(unschedulablePods, []*apiv1.Node{node}, []*apiv1.Pod{scheduledPod1}, predicateChecker)
 	assert.Equal(t, 1, len(res))
 	assert.Equal(t, p2, res[0])
 
-	res2 := FilterOutSchedulable(unschedulablePods, []*kube_api.Node{node}, []*kube_api.Pod{scheduledPod1, scheduledPod2}, predicateChecker)
+	res2 := FilterOutSchedulable(unschedulablePods, []*apiv1.Node{node}, []*apiv1.Pod{scheduledPod1, scheduledPod2}, predicateChecker)
 	assert.Equal(t, 2, len(res2))
 	assert.Equal(t, p1, res2[0])
 	assert.Equal(t, p2, res2[1])

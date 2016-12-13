@@ -17,7 +17,7 @@ limitations under the License.
 package cloudprovider
 
 import (
-	kube_api "k8s.io/kubernetes/pkg/api"
+	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 )
 
 // CloudProvider contains configuration info and functions for interacting with
@@ -32,7 +32,7 @@ type CloudProvider interface {
 	// NodeGroupForNode returns the node group for the given node, nil if the node
 	// should not be processed by cluster autoscaler, or non-nil error if such
 	// occurred.
-	NodeGroupForNode(*kube_api.Node) (NodeGroup, error)
+	NodeGroupForNode(*apiv1.Node) (NodeGroup, error)
 }
 
 // NodeGroup contains configuration info and functions to control a set
@@ -58,7 +58,7 @@ type NodeGroup interface {
 	// DeleteNodes deletes nodes from this node group. Error is returned either on
 	// failure or if the given node doesn't belong to this node group. This function
 	// should wait until node group size is updated.
-	DeleteNodes([]*kube_api.Node) error
+	DeleteNodes([]*apiv1.Node) error
 
 	// Id returns an unique identifier of the node group.
 	Id() string

@@ -19,9 +19,9 @@ package drain
 import (
 	"fmt"
 
-	"k8s.io/kubernetes/pkg/api"
-	client "k8s.io/kubernetes/pkg/client/unversioned"
-	"k8s.io/kubernetes/pkg/controller"
+	api "k8s.io/kubernetes/pkg/api"
+	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	client "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
 	"k8s.io/kubernetes/pkg/kubelet/types"
 	"k8s.io/kubernetes/pkg/runtime"
 )
@@ -29,15 +29,16 @@ import (
 // GetPodsForDeletionOnNodeDrain returns pods that should be deleted on node drain as well as some extra information
 // about possibly problematic pods (unreplicated and deamon sets).
 func GetPodsForDeletionOnNodeDrain(
-	podList []*api.Pod,
+	podList []*apiv1.Pod,
 	decoder runtime.Decoder,
+	deleteAll bool,
 	skipNodesWithSystemPods bool,
 	skipNodesWithLocalStorage bool,
 	checkReferences bool, // Setting this to true requires client to be not-null.
-	client *client.Client,
-	minReplica int32) ([]*api.Pod, error) {
+	client client.Interface,
+	minReplica int32) ([]*apiv1.Pod, error) {
 
-	pods := []*api.Pod{}
+	pods := []*apiv1.Pod{}
 
 	for _, pod := range podList {
 		if IsMirrorPod(pod) {
@@ -49,7 +50,7 @@ func GetPodsForDeletionOnNodeDrain(
 
 		sr, err := CreatorRef(pod)
 		if err != nil {
-			return []*api.Pod{}, fmt.Errorf("failed to obtain refkind: %v", err)
+			return []*apiv1.Pod{}, fmt.Errorf("failed to obtain refkind: %v", err)
 		}
 		refKind := ""
 		if sr != nil {
@@ -58,26 +59,26 @@ func GetPodsForDeletionOnNodeDrain(
 
 		if refKind == "ReplicationController" {
 			if checkReferences {
-				rc, err := client.ReplicationControllers(sr.Reference.Namespace).Get(sr.Reference.Name)
+				rc, err := client.Core().ReplicationControllers(sr.Reference.Namespace).Get(sr.Reference.Name)
 				// Assume a reason for an error is because the RC is either
 				// gone/missing or that the rc has too few replicas configured.
 				// TODO: replace the minReplica check with pod disruption budget.
 				if err == nil && rc != nil {
-					if rc.Spec.Replicas < minReplica {
-						return []*api.Pod{}, fmt.Errorf("replication controller for %s/%s has too few replicas spec: %d min: %d",
+					if rc.Spec.Replicas != nil && *rc.Spec.Replicas < minReplica {
+						return []*apiv1.Pod{}, fmt.Errorf("replication controller for %s/%s has too few replicas spec: %d min: %d",
 							pod.Namespace, pod.Name, rc.Spec.Replicas, minReplica)
 					}
 					replicated = true
 
 				} else {
-					return []*api.Pod{}, fmt.Errorf("replication controller for %s/%s is not available, err: %v", pod.Namespace, pod.Name, err)
+					return []*apiv1.Pod{}, fmt.Errorf("replication controller for %s/%s is not available, err: %v", pod.Namespace, pod.Name, err)
 				}
 			} else {
 				replicated = true
 			}
 		} else if refKind == "DaemonSet" {
 			if checkReferences {
-				ds, err := client.DaemonSets(sr.Reference.Namespace).Get(sr.Reference.Name)
+				ds, err := client.Extensions().DaemonSets(sr.Reference.Namespace).Get(sr.Reference.Name)
 
 				// Assume the only reason for an error is because the DaemonSet is
 				// gone/missing, not for any other cause.  TODO(mml): something more
@@ -89,14 +90,14 @@ func GetPodsForDeletionOnNodeDrain(
 					// daemonset pods, probably using taints.
 					daemonsetPod = true
 				} else {
-					return []*api.Pod{}, fmt.Errorf("deamonset for %s/%s is not present, err: %v", pod.Namespace, pod.Name, err)
+					return []*apiv1.Pod{}, fmt.Errorf("deamonset for %s/%s is not present, err: %v", pod.Namespace, pod.Name, err)
 				}
 			} else {
 				daemonsetPod = true
 			}
 		} else if refKind == "Job" {
 			if checkReferences {
-				job, err := client.ExtensionsClient.Jobs(sr.Reference.Namespace).Get(sr.Reference.Name)
+				job, err := client.Batch().Jobs(sr.Reference.Namespace).Get(sr.Reference.Name)
 
 				// Assume the only reason for an error is because the Job is
 				// gone/missing, not for any other cause.  TODO(mml): something more
@@ -104,26 +105,26 @@ func GetPodsForDeletionOnNodeDrain(
 				if err == nil && job != nil {
 					replicated = true
 				} else {
-					return []*api.Pod{}, fmt.Errorf("job for %s/%s is not available: err: %v", pod.Namespace, pod.Name, err)
+					return []*apiv1.Pod{}, fmt.Errorf("job for %s/%s is not available: err: %v", pod.Namespace, pod.Name, err)
 				}
 			} else {
 				replicated = true
 			}
 		} else if refKind == "ReplicaSet" {
 			if checkReferences {
-				rs, err := client.ExtensionsClient.ReplicaSets(sr.Reference.Namespace).Get(sr.Reference.Name)
+				rs, err := client.Extensions().ReplicaSets(sr.Reference.Namespace).Get(sr.Reference.Name)
 
 				// Assume the only reason for an error is because the RS is
 				// gone/missing, not for any other cause.  TODO(mml): something more
 				// sophisticated than this
 				if err == nil && rs != nil {
-					if rs.Spec.Replicas < minReplica {
-						return []*api.Pod{}, fmt.Errorf("replication controller for %s/%s has too few replicas spec: %d min: %d",
+					if rs.Spec.Replicas != nil && *rs.Spec.Replicas < minReplica {
+						return []*apiv1.Pod{}, fmt.Errorf("replication controller for %s/%s has too few replicas spec: %d min: %d",
 							pod.Namespace, pod.Name, rs.Spec.Replicas, minReplica)
 					}
 					replicated = true
 				} else {
-					return []*api.Pod{}, fmt.Errorf("replication controller for %s/%s is not available, err: %v", pod.Namespace, pod.Name, err)
+					return []*apiv1.Pod{}, fmt.Errorf("replication controller for %s/%s is not available, err: %v", pod.Namespace, pod.Name, err)
 				}
 			} else {
 				replicated = true
@@ -132,14 +133,16 @@ func GetPodsForDeletionOnNodeDrain(
 		if daemonsetPod {
 			continue
 		}
-		if !replicated {
-			return []*api.Pod{}, fmt.Errorf("%s/%s is not replicated", pod.Namespace, pod.Name)
-		}
-		if pod.Namespace == "kube-system" && skipNodesWithSystemPods {
-			return []*api.Pod{}, fmt.Errorf("non-deamons set, non-mirrored, kube-system pod present: %s", pod.Name)
-		}
-		if HasLocalStorage(pod) && skipNodesWithLocalStorage {
-			return []*api.Pod{}, fmt.Errorf("pod with local storage present: %s", pod.Name)
+		if !deleteAll {
+			if !replicated {
+				return []*apiv1.Pod{}, fmt.Errorf("%s/%s is not replicated", pod.Namespace, pod.Name)
+			}
+			if pod.Namespace == "kube-system" && skipNodesWithSystemPods {
+				return []*apiv1.Pod{}, fmt.Errorf("non-deamons set, non-mirrored, kube-system pod present: %s", pod.Name)
+			}
+			if HasLocalStorage(pod) && skipNodesWithLocalStorage {
+				return []*apiv1.Pod{}, fmt.Errorf("pod with local storage present: %s", pod.Name)
+			}
 		}
 		pods = append(pods, pod)
 	}
@@ -147,7 +150,7 @@ func GetPodsForDeletionOnNodeDrain(
 }
 
 // CreatorRefKind returns the kind of the creator of the pod.
-func CreatorRefKind(pod *api.Pod) (string, error) {
+func CreatorRefKind(pod *apiv1.Pod) (string, error) {
 	sr, err := CreatorRef(pod)
 	if err != nil {
 		return "", err
@@ -159,12 +162,12 @@ func CreatorRefKind(pod *api.Pod) (string, error) {
 }
 
 // CreatorRef returns the kind of the creator reference of the pod.
-func CreatorRef(pod *api.Pod) (*api.SerializedReference, error) {
-	creatorRef, found := pod.ObjectMeta.Annotations[controller.CreatedByAnnotation]
+func CreatorRef(pod *apiv1.Pod) (*apiv1.SerializedReference, error) {
+	creatorRef, found := pod.ObjectMeta.Annotations[apiv1.CreatedByAnnotation]
 	if !found {
 		return nil, nil
 	}
-	var sr api.SerializedReference
+	var sr apiv1.SerializedReference
 	if err := runtime.DecodeInto(api.Codecs.UniversalDecoder(), []byte(creatorRef), &sr); err != nil {
 		return nil, err
 	}
@@ -172,13 +175,13 @@ func CreatorRef(pod *api.Pod) (*api.SerializedReference, error) {
 }
 
 // IsMirrorPod checks whether the pod is a mirror pod.
-func IsMirrorPod(pod *api.Pod) bool {
+func IsMirrorPod(pod *apiv1.Pod) bool {
 	_, found := pod.ObjectMeta.Annotations[types.ConfigMirrorAnnotationKey]
 	return found
 }
 
 // HasLocalStorage returns true if pod has any local storage.
-func HasLocalStorage(pod *api.Pod) bool {
+func HasLocalStorage(pod *apiv1.Pod) bool {
 	for _, volume := range pod.Spec.Volumes {
 		if isLocalVolume(&volume) {
 			return true
@@ -187,6 +190,6 @@ func HasLocalStorage(pod *api.Pod) bool {
 	return false
 }
 
-func isLocalVolume(volume *api.Volume) bool {
+func isLocalVolume(volume *apiv1.Volume) bool {
 	return volume.HostPath != nil || volume.EmptyDir != nil
 }

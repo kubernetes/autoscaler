@@ -20,8 +20,8 @@ import (
 	"testing"
 
 	"k8s.io/contrib/cluster-autoscaler/simulator"
-	kube_api "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/resource"
+	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 
 	"github.com/stretchr/testify/assert"
@@ -32,14 +32,14 @@ func TestBinpackingEstimate(t *testing.T) {
 
 	cpuPerPod := int64(350)
 	memoryPerPod := int64(1000 * 1024 * 1024)
-	pod := &kube_api.Pod{
-		Spec: kube_api.PodSpec{
-			Containers: []kube_api.Container{
+	pod := &apiv1.Pod{
+		Spec: apiv1.PodSpec{
+			Containers: []apiv1.Container{
 				{
-					Resources: kube_api.ResourceRequirements{
-						Requests: kube_api.ResourceList{
-							kube_api.ResourceCPU:    *resource.NewMilliQuantity(cpuPerPod, resource.DecimalSI),
-							kube_api.ResourceMemory: *resource.NewQuantity(memoryPerPod, resource.DecimalSI),
+					Resources: apiv1.ResourceRequirements{
+						Requests: apiv1.ResourceList{
+							apiv1.ResourceCPU:    *resource.NewMilliQuantity(cpuPerPod, resource.DecimalSI),
+							apiv1.ResourceMemory: *resource.NewQuantity(memoryPerPod, resource.DecimalSI),
 						},
 					},
 				},
@@ -47,16 +47,16 @@ func TestBinpackingEstimate(t *testing.T) {
 		},
 	}
 
-	pods := make([]*kube_api.Pod, 0)
+	pods := make([]*apiv1.Pod, 0)
 	for i := 0; i < 10; i++ {
 		pods = append(pods, pod)
 	}
-	node := &kube_api.Node{
-		Status: kube_api.NodeStatus{
-			Capacity: kube_api.ResourceList{
-				kube_api.ResourceCPU:    *resource.NewMilliQuantity(cpuPerPod*3-50, resource.DecimalSI),
-				kube_api.ResourceMemory: *resource.NewQuantity(2*memoryPerPod, resource.DecimalSI),
-				kube_api.ResourcePods:   *resource.NewQuantity(10, resource.DecimalSI),
+	node := &apiv1.Node{
+		Status: apiv1.NodeStatus{
+			Capacity: apiv1.ResourceList{
+				apiv1.ResourceCPU:    *resource.NewMilliQuantity(cpuPerPod*3-50, resource.DecimalSI),
+				apiv1.ResourceMemory: *resource.NewQuantity(2*memoryPerPod, resource.DecimalSI),
+				apiv1.ResourcePods:   *resource.NewQuantity(10, resource.DecimalSI),
 			},
 		},
 	}
@@ -73,17 +73,17 @@ func TestBinpackingEstimateWithPorts(t *testing.T) {
 
 	cpuPerPod := int64(200)
 	memoryPerPod := int64(1000 * 1024 * 1024)
-	pod := &kube_api.Pod{
-		Spec: kube_api.PodSpec{
-			Containers: []kube_api.Container{
+	pod := &apiv1.Pod{
+		Spec: apiv1.PodSpec{
+			Containers: []apiv1.Container{
 				{
-					Resources: kube_api.ResourceRequirements{
-						Requests: kube_api.ResourceList{
-							kube_api.ResourceCPU:    *resource.NewMilliQuantity(cpuPerPod, resource.DecimalSI),
-							kube_api.ResourceMemory: *resource.NewQuantity(memoryPerPod, resource.DecimalSI),
+					Resources: apiv1.ResourceRequirements{
+						Requests: apiv1.ResourceList{
+							apiv1.ResourceCPU:    *resource.NewMilliQuantity(cpuPerPod, resource.DecimalSI),
+							apiv1.ResourceMemory: *resource.NewQuantity(memoryPerPod, resource.DecimalSI),
 						},
 					},
-					Ports: []kube_api.ContainerPort{
+					Ports: []apiv1.ContainerPort{
 						{
 							HostPort: 5555,
 						},
@@ -92,16 +92,16 @@ func TestBinpackingEstimateWithPorts(t *testing.T) {
 			},
 		},
 	}
-	pods := make([]*kube_api.Pod, 0)
+	pods := make([]*apiv1.Pod, 0)
 	for i := 0; i < 8; i++ {
 		pods = append(pods, pod)
 	}
-	node := &kube_api.Node{
-		Status: kube_api.NodeStatus{
-			Capacity: kube_api.ResourceList{
-				kube_api.ResourceCPU:    *resource.NewMilliQuantity(5*cpuPerPod, resource.DecimalSI),
-				kube_api.ResourceMemory: *resource.NewQuantity(5*memoryPerPod, resource.DecimalSI),
-				kube_api.ResourcePods:   *resource.NewQuantity(10, resource.DecimalSI),
+	node := &apiv1.Node{
+		Status: apiv1.NodeStatus{
+			Capacity: apiv1.ResourceList{
+				apiv1.ResourceCPU:    *resource.NewMilliQuantity(5*cpuPerPod, resource.DecimalSI),
+				apiv1.ResourceMemory: *resource.NewQuantity(5*memoryPerPod, resource.DecimalSI),
+				apiv1.ResourcePods:   *resource.NewQuantity(10, resource.DecimalSI),
 			},
 		},
 	}

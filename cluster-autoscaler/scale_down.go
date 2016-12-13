@@ -24,9 +24,9 @@ import (
 
 	"k8s.io/contrib/cluster-autoscaler/cloudprovider"
 	"k8s.io/contrib/cluster-autoscaler/simulator"
-	kube_api "k8s.io/kubernetes/pkg/api"
+	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
 	kube_record "k8s.io/kubernetes/pkg/client/record"
-	kube_client "k8s.io/kubernetes/pkg/client/unversioned"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 
 	"github.com/golang/glog"
@@ -49,17 +49,17 @@ const (
 // FindUnneededNodes calculates which nodes are not needed, i.e. all pods can be scheduled somewhere else,
 // and updates unneededNodes map accordingly. It also returns information where pods can be rescheduld and
 // node utilization level.
-func FindUnneededNodes(nodes []*kube_api.Node,
+func FindUnneededNodes(nodes []*apiv1.Node,
 	unneededNodes map[string]time.Time,
 	utilizationThreshold float64,
-	pods []*kube_api.Pod,
+	pods []*apiv1.Pod,
 	predicateChecker *simulator.PredicateChecker,
 	oldHints map[string]string,
 	tracker *simulator.UsageTracker,
 	timestamp time.Time) (unnededTimeMap map[string]time.Time, podReschedulingHints map[string]string, utilizationMap map[string]float64) {
 
-	currentlyUnneededNodes := make([]*kube_api.Node, 0)
-	nodeNameToNodeInfo := schedulercache.CreateNodeNameToInfoMap(pods)
+	currentlyUnneededNodes := make([]*apiv1.Node, 0)
+	nodeNameToNodeInfo := schedulercache.CreateNodeNameToInfoMap(pods, nodes)
 	utilizationMap = make(map[string]float64)
 
 	// Phase1 - look at the nodes utilization.
@@ -110,13 +110,13 @@ func FindUnneededNodes(nodes []*kube_api.Node,
 // ScaleDown tries to scale down the cluster. It returns ScaleDownResult indicating if any node was
 // removed and error if such occured.
 func ScaleDown(
-	nodes []*kube_api.Node,
+	nodes []*apiv1.Node,
 	lastUtilizationMap map[string]float64,
 	unneededNodes map[string]time.Time,
 	unneededTime time.Duration,
-	pods []*kube_api.Pod,
+	pods []*apiv1.Pod,
 	cloudProvider cloudprovider.CloudProvider,
-	client *kube_client.Client,
+	client kube_client.Interface,
 	predicateChecker *simulator.PredicateChecker,
 	oldHints map[string]string,
 	usageTracker *simulator.UsageTracker,
@@ -124,7 +124,7 @@ func ScaleDown(
 	maxEmptyBulkDelete int) (ScaleDownResult, error) {
 
 	now := time.Now()
-	candidates := make([]*kube_api.Node, 0)
+	candidates := make([]*apiv1.Node, 0)
 	for _, node := range nodes {
 		if val, found := unneededNodes[node.Name]; found {
 
@@ -173,7 +173,7 @@ func ScaleDown(
 		for _, node := range emptyNodes {
 			glog.V(0).Infof("Scale-down: removing empty node %s", node.Name)
 			simulator.RemoveNodeFromTracker(usageTracker, node.Name, unneededNodes)
-			go func(nodeToDelete *kube_api.Node) {
+			go func(nodeToDelete *apiv1.Node) {
 				confirmation <- deleteNodeFromCloudProvider(nodeToDelete, cloudProvider, recorder)
 			}(node)
 		}
@@ -220,10 +220,10 @@ func ScaleDown(
 
 // This functions finds empty nodes among passed candidates and returns a list of empty nodes
 // that can be deleted at the same time.
-func getEmptyNodes(candidates []*kube_api.Node, pods []*kube_api.Pod, maxEmptyBulkDelete int, cloudProvider cloudprovider.CloudProvider) []*kube_api.Node {
+func getEmptyNodes(candidates []*apiv1.Node, pods []*apiv1.Pod, maxEmptyBulkDelete int, cloudProvider cloudprovider.CloudProvider) []*apiv1.Node {
 	emptyNodes := simulator.FindEmptyNodesToRemove(candidates, pods)
 	availabilityMap := make(map[string]int)
-	result := make([]*kube_api.Node, 0)
+	result := make([]*apiv1.Node, 0)
 	for _, node := range emptyNodes {
 		nodeGroup, err := cloudProvider.NodeGroupForNode(node)
 		if err != nil {
@@ -260,7 +260,7 @@ func getEmptyNodes(candidates []*kube_api.Node, pods []*kube_api.Pod, maxEmptyBu
 	return result[:limit]
 }
 
-func deleteNodeFromCloudProvider(node *kube_api.Node, cloudProvider cloudprovider.CloudProvider, recorder kube_record.EventRecorder) error {
+func deleteNodeFromCloudProvider(node *apiv1.Node, cloudProvider cloudprovider.CloudProvider, recorder kube_record.EventRecorder) error {
 	nodeGroup, err := cloudProvider.NodeGroupForNode(node)
 	if err != nil {
 		return fmt.Errorf("failed to node group for %s: %v", node.Name, err)
@@ -268,9 +268,9 @@ func deleteNodeFromCloudProvider(node *kube_api.Node, cloudProvider cloudprovide
 	if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
 		return fmt.Errorf("picked node that doesn't belong to a node group: %s", node.Name)
 	}
-	if err = nodeGroup.DeleteNodes([]*kube_api.Node{node}); err != nil {
+	if err = nodeGroup.DeleteNodes([]*apiv1.Node{node}); err != nil {
 		return fmt.Errorf("failed to delete %s: %v", node.Name, err)
 	}
-	recorder.Eventf(node, kube_api.EventTypeNormal, "ScaleDown", "node removed by cluster autoscaler")
+	recorder.Eventf(node, apiv1.EventTypeNormal, "ScaleDown", "node removed by cluster autoscaler")
 	return nil
 }

@@ -19,9 +19,9 @@ package kubernetes
 import (
 	"time"
 
-	kube_api "k8s.io/kubernetes/pkg/api"
+	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/client/cache"
-	kube_client "k8s.io/kubernetes/pkg/client/unversioned"
+	client "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
 	"k8s.io/kubernetes/pkg/fields"
 	"k8s.io/kubernetes/pkg/labels"
 )
@@ -32,15 +32,15 @@ type UnschedulablePodLister struct {
 }
 
 // List returns all unscheduled pods.
-func (unschedulablePodLister *UnschedulablePodLister) List() ([]*kube_api.Pod, error) {
-	var unschedulablePods []*kube_api.Pod
+func (unschedulablePodLister *UnschedulablePodLister) List() ([]*apiv1.Pod, error) {
+	var unschedulablePods []*apiv1.Pod
 	allPods, err := unschedulablePodLister.podLister.List(labels.Everything())
 	if err != nil {
 		return unschedulablePods, err
 	}
 	for _, pod := range allPods {
-		_, condition := kube_api.GetPodCondition(&pod.Status, kube_api.PodScheduled)
-		if condition != nil && condition.Status == kube_api.ConditionFalse && condition.Reason == "Unschedulable" {
+		_, condition := apiv1.GetPodCondition(&pod.Status, apiv1.PodScheduled)
+		if condition != nil && condition.Status == apiv1.ConditionFalse && condition.Reason == "Unschedulable" {
 			unschedulablePods = append(unschedulablePods, pod)
 		}
 	}
@@ -48,14 +48,14 @@ func (unschedulablePodLister *UnschedulablePodLister) List() ([]*kube_api.Pod, e
 }
 
 // NewUnschedulablePodLister returns a lister providing pods that failed to be scheduled.
-func NewUnschedulablePodLister(kubeClient *kube_client.Client, namespace string) *UnschedulablePodLister {
+func NewUnschedulablePodLister(kubeClient client.Interface, namespace string) *UnschedulablePodLister {
 	// watch unscheduled pods
 	selector := fields.ParseSelectorOrDie("spec.nodeName==" + "" + ",status.phase!=" +
-		string(kube_api.PodSucceeded) + ",status.phase!=" + string(kube_api.PodFailed))
-	podListWatch := cache.NewListWatchFromClient(kubeClient, "pods", namespace, selector)
+		string(apiv1.PodSucceeded) + ",status.phase!=" + string(apiv1.PodFailed))
+	podListWatch := cache.NewListWatchFromClient(kubeClient.Core().RESTClient(), "pods", namespace, selector)
 	store := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
 	podLister := &cache.StoreToPodLister{store}
-	podReflector := cache.NewReflector(podListWatch, &kube_api.Pod{}, store, time.Hour)
+	podReflector := cache.NewReflector(podListWatch, &apiv1.Pod{}, store, time.Hour)
 	podReflector.Run()
 
 	return &UnschedulablePodLister{
@@ -69,19 +69,19 @@ type ScheduledPodLister struct {
 }
 
 // List returns all scheduled pods.
-func (lister *ScheduledPodLister) List() ([]*kube_api.Pod, error) {
+func (lister *ScheduledPodLister) List() ([]*apiv1.Pod, error) {
 	return lister.podLister.List(labels.Everything())
 }
 
 // NewScheduledPodLister builds ScheduledPodLister
-func NewScheduledPodLister(kubeClient *kube_client.Client) *ScheduledPodLister {
+func NewScheduledPodLister(kubeClient client.Interface) *ScheduledPodLister {
 	// watch unscheduled pods
 	selector := fields.ParseSelectorOrDie("spec.nodeName!=" + "" + ",status.phase!=" +
-		string(kube_api.PodSucceeded) + ",status.phase!=" + string(kube_api.PodFailed))
-	podListWatch := cache.NewListWatchFromClient(kubeClient, "pods", kube_api.NamespaceAll, selector)
+		string(apiv1.PodSucceeded) + ",status.phase!=" + string(apiv1.PodFailed))
+	podListWatch := cache.NewListWatchFromClient(kubeClient.Core().RESTClient(), "pods", apiv1.NamespaceAll, selector)
 	store := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
 	podLister := &cache.StoreToPodLister{store}
-	podReflector := cache.NewReflector(podListWatch, &kube_api.Pod{}, store, time.Hour)
+	podReflector := cache.NewReflector(podListWatch, &apiv1.Pod{}, store, time.Hour)
 	podReflector.Run()
 
 	return &ScheduledPodLister{
@@ -95,15 +95,15 @@ type ReadyNodeLister struct {
 }
 
 // List returns ready nodes.
-func (readyNodeLister *ReadyNodeLister) List() ([]*kube_api.Node, error) {
+func (readyNodeLister *ReadyNodeLister) List() ([]*apiv1.Node, error) {
 	nodes, err := readyNodeLister.nodeLister.List()
 	if err != nil {
-		return []*kube_api.Node{}, err
+		return []*apiv1.Node{}, err
 	}
-	readyNodes := make([]*kube_api.Node, 0, len(nodes.Items))
+	readyNodes := make([]*apiv1.Node, 0, len(nodes.Items))
 	for i, node := range nodes.Items {
 		for _, condition := range node.Status.Conditions {
-			if condition.Type == kube_api.NodeReady && condition.Status == kube_api.ConditionTrue {
+			if condition.Type == apiv1.NodeReady && condition.Status == apiv1.ConditionTrue {
 				readyNodes = append(readyNodes, &nodes.Items[i])
 				break
 			}
@@ -113,10 +113,10 @@ func (readyNodeLister *ReadyNodeLister) List() ([]*kube_api.Node, error) {
 }
 
 // NewNodeLister builds a node lister.
-func NewNodeLister(kubeClient *kube_client.Client) *ReadyNodeLister {
-	listWatcher := cache.NewListWatchFromClient(kubeClient, "nodes", kube_api.NamespaceAll, fields.Everything())
+func NewNodeLister(kubeClient client.Interface) *ReadyNodeLister {
+	listWatcher := cache.NewListWatchFromClient(kubeClient.Core().RESTClient(), "nodes", apiv1.NamespaceAll, fields.Everything())
 	nodeLister := &cache.StoreToNodeLister{Store: cache.NewStore(cache.MetaNamespaceKeyFunc)}
-	reflector := cache.NewReflector(listWatcher, &kube_api.Node{}, nodeLister.Store, time.Hour)
+	reflector := cache.NewReflector(listWatcher, &apiv1.Node{}, nodeLister.Store, time.Hour)
 	reflector.Run()
 	return &ReadyNodeLister{
 		nodeLister: nodeLister,

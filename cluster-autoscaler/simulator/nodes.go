@@ -17,21 +17,40 @@ limitations under the License.
 package simulator
 
 import (
-	kube_api "k8s.io/kubernetes/pkg/api"
-	kube_client "k8s.io/kubernetes/pkg/client/unversioned"
+	"k8s.io/contrib/cluster-autoscaler/utils/drain"
+	api "k8s.io/kubernetes/pkg/api"
+	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
 	"k8s.io/kubernetes/pkg/fields"
-	cmd "k8s.io/kubernetes/pkg/kubectl/cmd"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 )
 
 // GetRequiredPodsForNode returns a list od pods that would appear on the node if the
 // node was just created (like deamonset and manifest-run pods). It reuses kubectl
 // drain command to get the list.
-func GetRequiredPodsForNode(nodename string, client *kube_client.Client) ([]*kube_api.Pod, error) {
-	podsToRemoveList, _, _, err := cmd.GetPodsForDeletionOnNodeDrain(client, nodename,
-		kube_api.Codecs.UniversalDecoder(), true, true)
+func GetRequiredPodsForNode(nodename string, client kube_client.Interface) ([]*apiv1.Pod, error) {
+
+	podListResult, err := client.Core().Pods(apiv1.NamespaceAll).List(
+		apiv1.ListOptions{FieldSelector: fields.SelectorFromSet(fields.Set{"spec.nodeName": nodename}).String()})
 	if err != nil {
-		return []*kube_api.Pod{}, err
+		return []*apiv1.Pod{}, err
+	}
+	allPods := make([]*apiv1.Pod, 0)
+	for i := range podListResult.Items {
+		allPods = append(allPods, &podListResult.Items[i])
+	}
+
+	podsToRemoveList, err := drain.GetPodsForDeletionOnNodeDrain(
+		allPods,
+		api.Codecs.UniversalDecoder(),
+		true, // Force all removals.
+		false,
+		false,
+		false, // Setting this to true requires client to be not-null.
+		nil,
+		0)
+	if err != nil {
+		return []*apiv1.Pod{}, err
 	}
 
 	podsToRemoveMap := make(map[string]struct{})
@@ -39,23 +58,17 @@ func GetRequiredPodsForNode(nodename string, client *kube_client.Client) ([]*kub
 		podsToRemoveMap[pod.SelfLink] = struct{}{}
 	}
 
-	allPodList, err := client.Pods(kube_api.NamespaceAll).List(
-		kube_api.ListOptions{FieldSelector: fields.SelectorFromSet(fields.Set{"spec.nodeName": nodename})})
-	if err != nil {
-		return []*kube_api.Pod{}, err
-	}
-
-	podsOnNewNode := make([]*kube_api.Pod, 0)
-	for i, pod := range allPodList.Items {
+	podsOnNewNode := make([]*apiv1.Pod, 0)
+	for _, pod := range allPods {
 		if _, found := podsToRemoveMap[pod.SelfLink]; !found {
-			podsOnNewNode = append(podsOnNewNode, &allPodList.Items[i])
+			podsOnNewNode = append(podsOnNewNode, pod)
 		}
 	}
 	return podsOnNewNode, nil
 }
 
 // BuildNodeInfoForNode build a NodeInfo structure for the given node as if the node was just created.
-func BuildNodeInfoForNode(node *kube_api.Node, client *kube_client.Client) (*schedulercache.NodeInfo, error) {
+func BuildNodeInfoForNode(node *apiv1.Node, client kube_client.Interface) (*schedulercache.NodeInfo, error) {
 	requiredPods, err := GetRequiredPodsForNode(node.Name, client)
 	if err != nil {
 		return nil, err
