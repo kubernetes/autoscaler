@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors All rights reserved.
+Copyright 2016 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,45 +18,43 @@ package batch
 
 import (
 	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/runtime"
+	"k8s.io/kubernetes/pkg/runtime/schema"
 )
 
 // GroupName is the group name use in this package
 const GroupName = "batch"
 
 // SchemeGroupVersion is group version used to register these objects
-var SchemeGroupVersion = unversioned.GroupVersion{Group: GroupName, Version: runtime.APIVersionInternal}
+var SchemeGroupVersion = schema.GroupVersion{Group: GroupName, Version: runtime.APIVersionInternal}
 
-// Kind takes an unqualified kind and returns back a Group qualified GroupKind
-func Kind(kind string) unversioned.GroupKind {
+// Kind takes an unqualified kind and returns a Group qualified GroupKind
+func Kind(kind string) schema.GroupKind {
 	return SchemeGroupVersion.WithKind(kind).GroupKind()
 }
 
-// Resource takes an unqualified resource and returns back a Group qualified GroupResource
-func Resource(resource string) unversioned.GroupResource {
+// Resource takes an unqualified resource and returns a Group qualified GroupResource
+func Resource(resource string) schema.GroupResource {
 	return SchemeGroupVersion.WithResource(resource).GroupResource()
 }
 
-func AddToScheme(scheme *runtime.Scheme) {
-	// Add the API to Scheme.
-	addKnownTypes(scheme)
-}
+var (
+	SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes)
+	AddToScheme   = SchemeBuilder.AddToScheme
+)
 
 // Adds the list of known types to api.Scheme.
-func addKnownTypes(scheme *runtime.Scheme) {
+func addKnownTypes(scheme *runtime.Scheme) error {
 	scheme.AddKnownTypes(SchemeGroupVersion,
 		&Job{},
 		&JobList{},
 		&JobTemplate{},
-		&ScheduledJob{},
-		&ScheduledJobList{},
+		&CronJob{},
+		&CronJobList{},
 		&api.ListOptions{},
+		&api.DeleteOptions{},
 	)
+	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("ScheduledJob"), &CronJob{})
+	scheme.AddKnownTypeWithName(SchemeGroupVersion.WithKind("ScheduledJobList"), &CronJobList{})
+	return nil
 }
-
-func (obj *Job) GetObjectKind() unversioned.ObjectKind              { return &obj.TypeMeta }
-func (obj *JobList) GetObjectKind() unversioned.ObjectKind          { return &obj.TypeMeta }
-func (obj *JobTemplate) GetObjectKind() unversioned.ObjectKind      { return &obj.TypeMeta }
-func (obj *ScheduledJob) GetObjectKind() unversioned.ObjectKind     { return &obj.TypeMeta }
-func (obj *ScheduledJobList) GetObjectKind() unversioned.ObjectKind { return &obj.TypeMeta }

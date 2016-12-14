@@ -1,5 +1,5 @@
 /*
-Copyright 2014 The Kubernetes Authors All rights reserved.
+Copyright 2014 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,16 +20,16 @@ import (
 	"fmt"
 	"reflect"
 
-	"k8s.io/kubernetes/pkg/api/unversioned"
+	"k8s.io/kubernetes/pkg/runtime/schema"
 )
 
 type notRegisteredErr struct {
-	gvk unversioned.GroupVersionKind
+	gvk schema.GroupVersionKind
 	t   reflect.Type
 }
 
 // NewNotRegisteredErr is exposed for testing.
-func NewNotRegisteredErr(gvk unversioned.GroupVersionKind, t reflect.Type) error {
+func NewNotRegisteredErr(gvk schema.GroupVersionKind, t reflect.Type) error {
 	return &notRegisteredErr{gvk: gvk, t: t}
 }
 
@@ -84,7 +84,7 @@ type missingVersionErr struct {
 }
 
 // IsMissingVersion returns true if the error indicates that the provided object
-// is missing a 'Versioj' field.
+// is missing a 'Version' field.
 func NewMissingVersionErr(data string) error {
 	return &missingVersionErr{data}
 }

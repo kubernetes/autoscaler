@@ -21,8 +21,8 @@ import (
 	"fmt"
 	"math"
 
-	kube_api "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/resource"
+	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 )
 
 // BasicNodeEstimator estimates the number of needed nodes to handle the given amount of pods.
@@ -32,25 +32,25 @@ type BasicNodeEstimator struct {
 	cpuSum      resource.Quantity
 	memorySum   resource.Quantity
 	portSum     map[int32]int
-	FittingPods map[*kube_api.Pod]struct{}
+	FittingPods map[*apiv1.Pod]struct{}
 }
 
 // NewBasicNodeEstimator builds BasicNodeEstimator.
 func NewBasicNodeEstimator() *BasicNodeEstimator {
 	return &BasicNodeEstimator{
 		portSum:     make(map[int32]int),
-		FittingPods: make(map[*kube_api.Pod]struct{}),
+		FittingPods: make(map[*apiv1.Pod]struct{}),
 	}
 }
 
 // Add adds Pod to the estimation.
-func (basicEstimator *BasicNodeEstimator) Add(pod *kube_api.Pod) error {
+func (basicEstimator *BasicNodeEstimator) Add(pod *apiv1.Pod) error {
 	ports := make(map[int32]struct{})
 	for _, container := range pod.Spec.Containers {
-		if request, ok := container.Resources.Requests[kube_api.ResourceCPU]; ok {
+		if request, ok := container.Resources.Requests[apiv1.ResourceCPU]; ok {
 			basicEstimator.cpuSum.Add(request)
 		}
-		if request, ok := container.Resources.Requests[kube_api.ResourceMemory]; ok {
+		if request, ok := container.Resources.Requests[apiv1.ResourceMemory]; ok {
 			basicEstimator.memorySum.Add(request)
 		}
 		for _, port := range container.Ports {
@@ -90,21 +90,21 @@ func (basicEstimator *BasicNodeEstimator) GetDebug() string {
 }
 
 // Estimate estimates the number needed of nodes of the given shape.
-func (basicEstimator *BasicNodeEstimator) Estimate(node *kube_api.Node) (int, string) {
+func (basicEstimator *BasicNodeEstimator) Estimate(node *apiv1.Node) (int, string) {
 	var buffer bytes.Buffer
 	buffer.WriteString("Needed nodes according to:\n")
 	result := 0
-	if cpuCapcaity, ok := node.Status.Capacity[kube_api.ResourceCPU]; ok {
+	if cpuCapcaity, ok := node.Status.Capacity[apiv1.ResourceCPU]; ok {
 		prop := int(math.Ceil(float64(basicEstimator.cpuSum.MilliValue()) / float64(cpuCapcaity.MilliValue())))
 		buffer.WriteString(fmt.Sprintf("CPU: %d\n", prop))
 		result = maxInt(result, prop)
 	}
-	if memCapcaity, ok := node.Status.Capacity[kube_api.ResourceMemory]; ok {
+	if memCapcaity, ok := node.Status.Capacity[apiv1.ResourceMemory]; ok {
 		prop := int(math.Ceil(float64(basicEstimator.memorySum.Value()) / float64(memCapcaity.Value())))
 		buffer.WriteString(fmt.Sprintf("Mem: %d\n", prop))
 		result = maxInt(result, prop)
 	}
-	if podCapcaity, ok := node.Status.Capacity[kube_api.ResourcePods]; ok {
+	if podCapcaity, ok := node.Status.Capacity[apiv1.ResourcePods]; ok {
 		prop := int(math.Ceil(float64(basicEstimator.GetCount()) / float64(podCapcaity.Value())))
 		buffer.WriteString(fmt.Sprintf("Pods: %d\n", prop))
 		result = maxInt(result, prop)

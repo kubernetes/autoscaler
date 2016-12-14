@@ -1,5 +1,5 @@
 /*
-Copyright 2014 The Kubernetes Authors All rights reserved.
+Copyright 2014 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -27,7 +27,9 @@ import (
 
 	flag "github.com/spf13/pflag"
 
+	"github.com/go-openapi/spec"
 	inf "gopkg.in/inf.v0"
+	"k8s.io/kubernetes/pkg/genericapiserver/openapi/common"
 )
 
 // Quantity is a fixed-point representation of a number.
@@ -91,6 +93,7 @@ import (
 // +protobuf.embed=string
 // +protobuf.options.marshal=false
 // +protobuf.options.(gogoproto.goproto_stringer)=false
+// +k8s:openapi-gen=true
 type Quantity struct {
 	// i is the quantity in int64 scaled form, if d.Dec == nil
 	i int64Amount
@@ -259,7 +262,6 @@ Suffix:
 		switch str[i] {
 		case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
 		default:
-			pos = i
 			break Suffix
 		}
 	}
@@ -384,6 +386,28 @@ func ParseQuantity(str string) (Quantity, error) {
 	}
 
 	return Quantity{d: infDecAmount{amount}, Format: format}, nil
+}
+
+// DeepCopy returns a deep-copy of the Quantity value.  Note that the method
+// receiver is a value, so we can mutate it in-place and return it.
+func (q Quantity) DeepCopy() Quantity {
+	if q.d.Dec != nil {
+		tmp := &inf.Dec{}
+		q.d.Dec = tmp.Set(q.d.Dec)
+	}
+	return q
+}
+
+// OpenAPIDefinition returns openAPI definition for this type.
+func (_ Quantity) OpenAPIDefinition() common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Type:   []string{"string"},
+				Format: "",
+			},
+		},
+	}
 }
 
 // CanonicalizeBytes returns the canonical form of q and its suffix (see comment on Quantity).
@@ -619,6 +643,7 @@ func (q Quantity) MarshalJSON() ([]byte, error) {
 }
 
 // UnmarshalJSON implements the json.Unmarshaller interface.
+// TODO: Remove support for leading/trailing whitespace
 func (q *Quantity) UnmarshalJSON(value []byte) error {
 	l := len(value)
 	if l == 4 && bytes.Equal(value, []byte("null")) {
@@ -626,14 +651,11 @@ func (q *Quantity) UnmarshalJSON(value []byte) error {
 		q.i = int64Amount{}
 		return nil
 	}
-	if l < 2 {
-		return ErrFormatWrong
-	}
-	if value[0] == '"' && value[l-1] == '"' {
+	if l >= 2 && value[0] == '"' && value[l-1] == '"' {
 		value = value[1 : l-1]
 	}
 
-	parsed, err := ParseQuantity(string(value))
+	parsed, err := ParseQuantity(strings.TrimSpace(string(value)))
 	if err != nil {
 		return err
 	}

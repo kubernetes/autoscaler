@@ -30,10 +30,12 @@ import (
 	"k8s.io/contrib/cluster-autoscaler/config"
 	"k8s.io/contrib/cluster-autoscaler/simulator"
 	kube_util "k8s.io/contrib/cluster-autoscaler/utils/kubernetes"
-	kube_api "k8s.io/kubernetes/pkg/api"
+	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
+	v1core "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5/typed/core/v1"
 	kube_leaderelection "k8s.io/kubernetes/pkg/client/leaderelection"
+	"k8s.io/kubernetes/pkg/client/leaderelection/resourcelock"
 	kube_record "k8s.io/kubernetes/pkg/client/record"
-	kube_client "k8s.io/kubernetes/pkg/client/unversioned"
 	kube_flag "k8s.io/kubernetes/pkg/util/flag"
 
 	"github.com/golang/glog"
@@ -90,7 +92,7 @@ var (
 		"Type of resource estimator to be used in scale up. Available values: ["+strings.Join(AvailableEstimators, ",")+"]")
 )
 
-func createKubeClient() *kube_client.Client {
+func createKubeClient() kube_client.Interface {
 	url, err := url.Parse(*kubernetes)
 	if err != nil {
 		glog.Fatalf("Failed to parse Kuberentes url: %v", err)
@@ -101,14 +103,14 @@ func createKubeClient() *kube_client.Client {
 		glog.Fatalf("Failed to build Kuberentes client configuration: %v", err)
 	}
 
-	return kube_client.NewOrDie(kubeConfig)
+	return kube_client.NewForConfigOrDie(kubeConfig)
 }
 
-func createEventRecorder(kubeClient *kube_client.Client) kube_record.EventRecorder {
+func createEventRecorder(kubeClient kube_client.Interface) kube_record.EventRecorder {
 	eventBroadcaster := kube_record.NewBroadcaster()
 	eventBroadcaster.StartLogging(glog.Infof)
-	eventBroadcaster.StartRecordingToSink(kubeClient.Events(""))
-	return eventBroadcaster.NewRecorder(kube_api.EventSource{Component: "cluster-autoscaler"})
+	eventBroadcaster.StartRecordingToSink(&v1core.EventSinkImpl{Interface: kubeClient.Core().Events("")})
+	return eventBroadcaster.NewRecorder(apiv1.EventSource{Component: "cluster-autoscaler"})
 }
 
 // In order to meet interface criteria for LeaderElectionConfig we need to
@@ -121,7 +123,7 @@ func run(_ <-chan struct{}) {
 	if err != nil {
 		glog.Fatalf("Failed to create predicate checker: %v", err)
 	}
-	unschedulablePodLister := kube_util.NewUnschedulablePodLister(kubeClient, kube_api.NamespaceAll)
+	unschedulablePodLister := kube_util.NewUnschedulablePodLister(kubeClient, apiv1.NamespaceAll)
 	scheduledPodLister := kube_util.NewScheduledPodLister(kubeClient)
 	nodeLister := kube_util.NewNodeLister(kubeClient)
 
@@ -378,13 +380,17 @@ func main() {
 
 		kubeClient := createKubeClient()
 		kube_leaderelection.RunOrDie(kube_leaderelection.LeaderElectionConfig{
-			EndpointsMeta: kube_api.ObjectMeta{
-				Namespace: "kube-system",
-				Name:      "cluster-autoscaler",
+			Lock: &resourcelock.EndpointsLock{
+				EndpointsMeta: apiv1.ObjectMeta{
+					Namespace: "kube-system",
+					Name:      "cluster-autoscaler",
+				},
+				Client: kubeClient,
+				LockConfig: resourcelock.ResourceLockConfig{
+					Identity:      id,
+					EventRecorder: createEventRecorder(kubeClient),
+				},
 			},
-			Client:        kubeClient,
-			Identity:      id,
-			EventRecorder: createEventRecorder(kubeClient),
 			LeaseDuration: leaderElection.LeaseDuration.Duration,
 			RenewDeadline: leaderElection.RenewDeadline.Duration,
 			RetryPeriod:   leaderElection.RetryPeriod.Duration,

@@ -17,8 +17,8 @@ limitations under the License.
 package test
 
 import (
-	kube_api "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/resource"
+	kube_api "k8s.io/kubernetes/pkg/api/v1"
 )
 
 // BuildTestPod creates a pod with specified resources.

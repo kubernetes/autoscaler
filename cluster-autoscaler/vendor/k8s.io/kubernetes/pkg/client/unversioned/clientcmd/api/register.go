@@ -1,5 +1,5 @@
 /*
-Copyright 2014 The Kubernetes Authors All rights reserved.
+Copyright 2014 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,27 +17,30 @@ limitations under the License.
 package api
 
 import (
-	"k8s.io/kubernetes/pkg/api/unversioned"
 	"k8s.io/kubernetes/pkg/runtime"
+	"k8s.io/kubernetes/pkg/runtime/schema"
 )
-
-// Scheme is the default instance of runtime.Scheme to which types in the Kubernetes API are already registered.
-var Scheme = runtime.NewScheme()
 
 // SchemeGroupVersion is group version used to register these objects
 // TODO this should be in the "kubeconfig" group
-var SchemeGroupVersion = unversioned.GroupVersion{Group: "", Version: runtime.APIVersionInternal}
+var SchemeGroupVersion = schema.GroupVersion{Group: "", Version: runtime.APIVersionInternal}
 
-func init() {
-	Scheme.AddKnownTypes(SchemeGroupVersion,
+var (
+	SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes)
+	AddToScheme   = SchemeBuilder.AddToScheme
+)
+
+func addKnownTypes(scheme *runtime.Scheme) error {
+	scheme.AddKnownTypes(SchemeGroupVersion,
 		&Config{},
 	)
+	return nil
 }
 
-func (obj *Config) GetObjectKind() unversioned.ObjectKind { return obj }
-func (obj *Config) SetGroupVersionKind(gvk unversioned.GroupVersionKind) {
+func (obj *Config) GetObjectKind() schema.ObjectKind { return obj }
+func (obj *Config) SetGroupVersionKind(gvk schema.GroupVersionKind) {
 	obj.APIVersion, obj.Kind = gvk.ToAPIVersionAndKind()
 }
-func (obj *Config) GroupVersionKind() unversioned.GroupVersionKind {
-	return unversioned.FromAPIVersionAndKind(obj.APIVersion, obj.Kind)
+func (obj *Config) GroupVersionKind() schema.GroupVersionKind {
+	return schema.FromAPIVersionAndKind(obj.APIVersion, obj.Kind)
 }

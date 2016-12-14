@@ -1,5 +1,5 @@
 /*
-Copyright 2015 The Kubernetes Authors All rights reserved.
+Copyright 2015 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -382,21 +382,27 @@ Loop:
 // parseField scans a field until a terminator
 func (p *Parser) parseField(cur *ListNode) error {
 	p.consumeText()
-	var r rune
-	for {
-		r = p.next()
-		if isTerminator(r) {
-			p.backup()
-			break
-		}
+	for p.advance() {
 	}
 	value := p.consumeText()
 	if value == "*" {
 		cur.append(newWildcard())
 	} else {
-		cur.append(newField(value))
+		cur.append(newField(strings.Replace(value, "\\", "", -1)))
 	}
 	return p.parseInsideAction(cur)
+}
+
+// advance scans until next non-escaped terminator
+func (p *Parser) advance() bool {
+	r := p.next()
+	if r == '\\' {
+		p.next()
+	} else if isTerminator(r) {
+		p.backup()
+		return false
+	}
+	return true
 }
 
 // isTerminator reports whether the input is at valid termination character to appear after an identifier.
