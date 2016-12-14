@@ -23,7 +23,7 @@ import (
 	"k8s.io/contrib/cluster-autoscaler/simulator"
 	. "k8s.io/contrib/cluster-autoscaler/utils/test"
 
-	kube_api "k8s.io/kubernetes/pkg/api"
+	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -55,8 +55,8 @@ func TestFindUnneededNodes(t *testing.T) {
 	n3 := BuildTestNode("n3", 1000, 10)
 	n4 := BuildTestNode("n4", 10000, 10)
 
-	result, hints, utilization := FindUnneededNodes([]*kube_api.Node{n1, n2, n3, n4}, map[string]time.Time{}, 0.35,
-		[]*kube_api.Pod{p1, p2, p3, p4}, simulator.NewTestPredicateChecker(), make(map[string]string),
+	result, hints, utilization := FindUnneededNodes([]*apiv1.Node{n1, n2, n3, n4}, map[string]time.Time{}, 0.35,
+		[]*apiv1.Pod{p1, p2, p3, p4}, simulator.NewTestPredicateChecker(), make(map[string]string),
 		simulator.NewUsageTracker(), time.Now())
 
 	assert.Equal(t, 1, len(result))
@@ -66,8 +66,8 @@ func TestFindUnneededNodes(t *testing.T) {
 	assert.Equal(t, 4, len(utilization))
 
 	result["n1"] = time.Now()
-	result2, hints, utilization := FindUnneededNodes([]*kube_api.Node{n1, n2, n3, n4}, result, 0.35,
-		[]*kube_api.Pod{p1, p2, p3, p4}, simulator.NewTestPredicateChecker(), hints,
+	result2, hints, utilization := FindUnneededNodes([]*apiv1.Node{n1, n2, n3, n4}, result, 0.35,
+		[]*apiv1.Pod{p1, p2, p3, p4}, simulator.NewTestPredicateChecker(), hints,
 		simulator.NewUsageTracker(), time.Now())
 
 	assert.Equal(t, 1, len(result2))

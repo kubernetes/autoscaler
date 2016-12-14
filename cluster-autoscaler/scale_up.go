@@ -22,9 +22,9 @@ import (
 	"k8s.io/contrib/cluster-autoscaler/cloudprovider"
 	"k8s.io/contrib/cluster-autoscaler/estimator"
 	"k8s.io/contrib/cluster-autoscaler/simulator"
-	kube_api "k8s.io/kubernetes/pkg/api"
+	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
 	kube_record "k8s.io/kubernetes/pkg/client/record"
-	kube_client "k8s.io/kubernetes/pkg/client/unversioned"
 
 	"github.com/golang/glog"
 )
@@ -34,13 +34,13 @@ type ExpansionOption struct {
 	nodeGroup cloudprovider.NodeGroup
 	nodeCount int
 	debug     string
-	pods      []*kube_api.Pod
+	pods      []*apiv1.Pod
 }
 
 // ScaleUp tries to scale the cluster up. Return true if it found a way to increase the size,
 // false if it didn't and error if an error occured. Assumes that all nodes in the cluster are
 // ready and in sync with instance groups.
-func ScaleUp(unschedulablePods []*kube_api.Pod, nodes []*kube_api.Node, cloudProvider cloudprovider.CloudProvider, kubeClient *kube_client.Client,
+func ScaleUp(unschedulablePods []*apiv1.Pod, nodes []*apiv1.Node, cloudProvider cloudprovider.CloudProvider, kubeClient kube_client.Interface,
 	predicateChecker *simulator.PredicateChecker, recorder kube_record.EventRecorder, maxNodesTotal int,
 	estimatorName string) (bool, error) {
 
@@ -61,7 +61,7 @@ func ScaleUp(unschedulablePods []*kube_api.Pod, nodes []*kube_api.Node, cloudPro
 		return false, fmt.Errorf("failed to build node infos for node groups: %v", err)
 	}
 
-	podsRemainUnshedulable := make(map[*kube_api.Pod]struct{})
+	podsRemainUnshedulable := make(map[*apiv1.Pod]struct{})
 	for _, nodeGroup := range cloudProvider.NodeGroups() {
 
 		currentSize, err := nodeGroup.TargetSize()
@@ -77,7 +77,7 @@ func ScaleUp(unschedulablePods []*kube_api.Pod, nodes []*kube_api.Node, cloudPro
 
 		option := ExpansionOption{
 			nodeGroup: nodeGroup,
-			pods:      make([]*kube_api.Pod, 0),
+			pods:      make([]*apiv1.Pod, 0),
 		}
 
 		nodeInfo, found := nodeInfos[nodeGroup.Id()]
@@ -146,14 +146,14 @@ func ScaleUp(unschedulablePods []*kube_api.Pod, nodes []*kube_api.Node, cloudPro
 		}
 
 		for _, pod := range bestOption.pods {
-			recorder.Eventf(pod, kube_api.EventTypeNormal, "TriggeredScaleUp",
+			recorder.Eventf(pod, apiv1.EventTypeNormal, "TriggeredScaleUp",
 				"pod triggered scale-up, group: %s, sizes (current/new): %d/%d", bestOption.nodeGroup.Id(), currentSize, newSize)
 		}
 
 		return true, nil
 	}
 	for pod := range podsRemainUnshedulable {
-		recorder.Event(pod, kube_api.EventTypeNormal, "NotTriggerScaleUp",
+		recorder.Event(pod, apiv1.EventTypeNormal, "NotTriggerScaleUp",
 			"pod didn't trigger scale-up (it wouldn't fit if a new node is added)")
 	}
 

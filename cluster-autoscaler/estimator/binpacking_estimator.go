@@ -20,15 +20,15 @@ import (
 	"sort"
 
 	"k8s.io/contrib/cluster-autoscaler/simulator"
-	kube_api "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/resource"
+	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 )
 
 // podInfo contains Pod and score that corresponds to how important it is to handle the pod first.
 type podInfo struct {
 	score float64
-	pod   *kube_api.Pod
+	pod   *apiv1.Pod
 }
 
 type byScoreDesc []*podInfo
@@ -56,13 +56,13 @@ func NewBinpackingNodeEstimator(predicateChecker *simulator.PredicateChecker) *B
 // still be maintained.
 // It is assumed that all pods from the given list can fit to nodeTemplate.
 // Returns the number of nodes needed to accommodate all pods from the list.
-func (estimator *BinpackingNodeEstimator) Estimate(pods []*kube_api.Pod, nodeTemplate *schedulercache.NodeInfo) int {
+func (estimator *BinpackingNodeEstimator) Estimate(pods []*apiv1.Pod, nodeTemplate *schedulercache.NodeInfo) int {
 
 	podInfos := calculatePodScore(pods, nodeTemplate)
 	sort.Sort(byScoreDesc(podInfos))
 
 	// nodeWithPod function returns NodeInfo, which is a copy of nodeInfo argument with an additional pod scheduled on it.
-	nodeWithPod := func(nodeInfo *schedulercache.NodeInfo, pod *kube_api.Pod) *schedulercache.NodeInfo {
+	nodeWithPod := func(nodeInfo *schedulercache.NodeInfo, pod *apiv1.Pod) *schedulercache.NodeInfo {
 		podsOnNode := nodeInfo.Pods()
 		podsOnNode = append(podsOnNode, pod)
 		newNodeInfo := schedulercache.NewNodeInfo(podsOnNode...)
@@ -90,7 +90,7 @@ func (estimator *BinpackingNodeEstimator) Estimate(pods []*kube_api.Pod, nodeTem
 // Calculates score for all pods and returns podInfo structure.
 // Score is defined as cpu_sum/node_capacity + mem_sum/node_capacity.
 // Pods that have bigger requirements should be processed first, thus have higher scores.
-func calculatePodScore(pods []*kube_api.Pod, nodeTemplate *schedulercache.NodeInfo) []*podInfo {
+func calculatePodScore(pods []*apiv1.Pod, nodeTemplate *schedulercache.NodeInfo) []*podInfo {
 	podInfos := make([]*podInfo, 0, len(pods))
 
 	for _, pod := range pods {
@@ -98,18 +98,18 @@ func calculatePodScore(pods []*kube_api.Pod, nodeTemplate *schedulercache.NodeIn
 		memorySum := resource.Quantity{}
 
 		for _, container := range pod.Spec.Containers {
-			if request, ok := container.Resources.Requests[kube_api.ResourceCPU]; ok {
+			if request, ok := container.Resources.Requests[apiv1.ResourceCPU]; ok {
 				cpuSum.Add(request)
 			}
-			if request, ok := container.Resources.Requests[kube_api.ResourceMemory]; ok {
+			if request, ok := container.Resources.Requests[apiv1.ResourceMemory]; ok {
 				memorySum.Add(request)
 			}
 		}
 		score := float64(0)
-		if cpuAllocatable, ok := nodeTemplate.Node().Status.Allocatable[kube_api.ResourceCPU]; ok && cpuAllocatable.MilliValue() > 0 {
+		if cpuAllocatable, ok := nodeTemplate.Node().Status.Allocatable[apiv1.ResourceCPU]; ok && cpuAllocatable.MilliValue() > 0 {
 			score += float64(cpuSum.MilliValue()) / float64(cpuAllocatable.MilliValue())
 		}
-		if memAllocatable, ok := nodeTemplate.Node().Status.Allocatable[kube_api.ResourceMemory]; ok && memAllocatable.Value() > 0 {
+		if memAllocatable, ok := nodeTemplate.Node().Status.Allocatable[apiv1.ResourceMemory]; ok && memAllocatable.Value() > 0 {
 			score += float64(memorySum.Value()) / float64(memAllocatable.Value())
 		}
 

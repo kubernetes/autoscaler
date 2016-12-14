@@ -1,5 +1,5 @@
 /*
-Copyright 2014 The Kubernetes Authors All rights reserved.
+Copyright 2014 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -36,6 +36,8 @@ type Info interface {
 	// This is a map[string][]string because it needs to be serializeable into
 	// a SubjectAccessReviewSpec.authorization.k8s.io for proper authorization
 	// delegation flows
+	// In order to faithfully round-trip through an impersonation flow, these keys
+	// MUST be lowercase.
 	GetExtra() map[string][]string
 }
 
@@ -63,3 +65,14 @@ func (i *DefaultInfo) GetGroups() []string {
 func (i *DefaultInfo) GetExtra() map[string][]string {
 	return i.Extra
 }
+
+// well-known user and group names
+const (
+	SystemPrivilegedGroup = "system:masters"
+	NodesGroup            = "system:nodes"
+	AllUnauthenticated    = "system:unauthenticated"
+	AllAuthenticated      = "system:authenticated"
+
+	Anonymous     = "system:anonymous"
+	APIServerUser = "system:apiserver"
+)

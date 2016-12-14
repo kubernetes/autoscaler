@@ -60,7 +60,7 @@ type AwsManager struct {
 // CreateAwsManager constructs awsManager object.
 func CreateAwsManager(configReader io.Reader) (*AwsManager, error) {
 	if configReader != nil {
-		var cfg provider_aws.AWSCloudConfig
+		var cfg provider_aws.CloudConfig
 		if err := gcfg.ReadInto(&cfg, configReader); err != nil {
 			glog.Errorf("Couldn't read config: %v", err)
 			return nil, err

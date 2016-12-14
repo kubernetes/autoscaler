@@ -1,5 +1,5 @@
 /*
-Copyright 2014 The Kubernetes Authors All rights reserved.
+Copyright 2014 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,16 +23,18 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"reflect"
 	goruntime "runtime"
 	"strings"
 
 	"github.com/golang/glog"
 	"github.com/imdario/mergo"
 
-	"k8s.io/kubernetes/pkg/api/unversioned"
+	"k8s.io/kubernetes/pkg/client/restclient"
 	clientcmdapi "k8s.io/kubernetes/pkg/client/unversioned/clientcmd/api"
 	clientcmdlatest "k8s.io/kubernetes/pkg/client/unversioned/clientcmd/api/latest"
 	"k8s.io/kubernetes/pkg/runtime"
+	"k8s.io/kubernetes/pkg/runtime/schema"
 	utilerrors "k8s.io/kubernetes/pkg/util/errors"
 	"k8s.io/kubernetes/pkg/util/homedir"
 )
@@ -65,6 +67,9 @@ func currentMigrationRules() map[string]string {
 
 type ClientConfigLoader interface {
 	ConfigAccess
+	// IsDefaultConfig returns true if the returned config matches the defaults.
+	IsDefaultConfig(*restclient.Config) bool
+	// Load returns the latest config
 	Load() (*clientcmdapi.Config, error)
 }
 
@@ -85,7 +90,7 @@ func (g *ClientConfigGetter) GetLoadingPrecedence() []string {
 	return nil
 }
 func (g *ClientConfigGetter) GetStartingConfig() (*clientcmdapi.Config, error) {
-	return nil, nil
+	return g.kubeconfigGetter()
 }
 func (g *ClientConfigGetter) GetDefaultFilename() string {
 	return ""
@@ -95,6 +100,9 @@ func (g *ClientConfigGetter) IsExplicitFile() bool {
 }
 func (g *ClientConfigGetter) GetExplicitFile() string {
 	return ""
+}
+func (g *ClientConfigGetter) IsDefaultConfig(config *restclient.Config) bool {
+	return false
 }
 
 // ClientConfigLoadingRules is an ExplicitPath and string slice of specific locations that are used for merging together a Config
@@ -112,6 +120,10 @@ type ClientConfigLoadingRules struct {
 	// DoNotResolvePaths indicates whether or not to resolve paths with respect to the originating files.  This is phrased as a negative so
 	// that a default object that doesn't set this will usually get the behavior it wants.
 	DoNotResolvePaths bool
+
+	// DefaultClientConfig is an optional field indicating what rules to use to calculate a default configuration.
+	// This should match the overrides passed in to ClientConfig loader.
+	DefaultClientConfig ClientConfig
 }
 
 // ClientConfigLoadingRules implements the ClientConfigLoader interface.
@@ -192,6 +204,7 @@ func (rules *ClientConfigLoadingRules) Load() (*clientcmdapi.Config, error) {
 
 	// first merge all of our maps
 	mapConfig := clientcmdapi.NewConfig()
+
 	for _, kubeconfig := range kubeconfigs {
 		mergo.Merge(mapConfig, kubeconfig)
 	}
@@ -215,7 +228,6 @@ func (rules *ClientConfigLoadingRules) Load() (*clientcmdapi.Config, error) {
 			errlist = append(errlist, err)
 		}
 	}
-
 	return config, utilerrors.NewAggregate(errlist)
 }
 
@@ -230,14 +242,17 @@ func (rules *ClientConfigLoadingRules) Migrate() error {
 		if _, err := os.Stat(destination); err == nil {
 			// if the destination already exists, do nothing
 			continue
+		} else if os.IsPermission(err) {
+			// if we can't access the file, skip it
+			continue
 		} else if !os.IsNotExist(err) {
 			// if we had an error other than non-existence, fail
 			return err
 		}
 
 		if sourceInfo, err := os.Stat(source); err != nil {
-			if os.IsNotExist(err) {
-				// if the source file doesn't exist, there's no work to do.
+			if os.IsNotExist(err) || os.IsPermission(err) {
+				// if the source file doesn't exist or we can't access it, there's no work to do.
 				continue
 			}
 
@@ -314,6 +329,18 @@ func (rules *ClientConfigLoadingRules) GetExplicitFile() string {
 	return rules.ExplicitPath
 }
 
+// IsDefaultConfig returns true if the provided configuration matches the default
+func (rules *ClientConfigLoadingRules) IsDefaultConfig(config *restclient.Config) bool {
+	if rules.DefaultClientConfig == nil {
+		return false
+	}
+	defaultConfig, err := rules.DefaultClientConfig.ClientConfig()
+	if err != nil {
+		return false
+	}
+	return reflect.DeepEqual(config, defaultConfig)
+}
+
 // LoadFromFile takes a filename and deserializes the contents into Config object
 func LoadFromFile(filename string) (*clientcmdapi.Config, error) {
 	kubeconfigBytes, err := ioutil.ReadFile(filename)
@@ -361,7 +388,7 @@ func Load(data []byte) (*clientcmdapi.Config, error) {
 	if len(data) == 0 {
 		return config, nil
 	}
-	decoded, _, err := clientcmdlatest.Codec.Decode(data, &unversioned.GroupVersionKind{Version: clientcmdlatest.Version, Kind: "Config"}, config)
+	decoded, _, err := clientcmdlatest.Codec.Decode(data, &schema.GroupVersionKind{Version: clientcmdlatest.Version, Kind: "Config"}, config)
 	if err != nil {
 		return nil, err
 	}
@@ -381,10 +408,38 @@ func WriteToFile(config clientcmdapi.Config, filename string) error {
 			return err
 		}
 	}
+
 	if err := ioutil.WriteFile(filename, content, 0600); err != nil {
 		return err
 	}
 	return nil
+}
+
+func lockFile(filename string) error {
+	// TODO: find a way to do this with actual file locks. Will
+	// probably need seperate solution for windows and linux.
+
+	// Make sure the dir exists before we try to create a lock file.
+	dir := filepath.Dir(filename)
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		if err = os.MkdirAll(dir, 0755); err != nil {
+			return err
+		}
+	}
+	f, err := os.OpenFile(lockName(filename), os.O_CREATE|os.O_EXCL, 0)
+	if err != nil {
+		return err
+	}
+	f.Close()
+	return nil
+}
+
+func unlockFile(filename string) error {
+	return os.Remove(lockName(filename))
+}
+
+func lockName(filename string) string {
+	return filename + ".lock"
 }
 
 // Write serializes the config to yaml.
@@ -499,7 +554,7 @@ func GetClusterFileReferences(cluster *clientcmdapi.Cluster) []*string {
 }
 
 func GetAuthInfoFileReferences(authInfo *clientcmdapi.AuthInfo) []*string {
-	return []*string{&authInfo.ClientCertificate, &authInfo.ClientKey}
+	return []*string{&authInfo.ClientCertificate, &authInfo.ClientKey, &authInfo.TokenFile}
 }
 
 // ResolvePaths updates the given refs to be absolute paths, relative to the given base directory

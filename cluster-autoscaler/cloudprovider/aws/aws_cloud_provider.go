@@ -23,7 +23,7 @@ import (
 	"strings"
 
 	"k8s.io/contrib/cluster-autoscaler/cloudprovider"
-	kube_api "k8s.io/kubernetes/pkg/api"
+	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 )
 
 // AwsCloudProvider implements CloudProvider interface.
@@ -73,7 +73,7 @@ func (aws *AwsCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 }
 
 // NodeGroupForNode returns the node group for the given node.
-func (aws *AwsCloudProvider) NodeGroupForNode(node *kube_api.Node) (cloudprovider.NodeGroup, error) {
+func (aws *AwsCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	ref, err := AwsRefFromProviderId(node.Spec.ProviderID)
 	if err != nil {
 		return nil, err
@@ -143,7 +143,7 @@ func (asg *Asg) IncreaseSize(delta int) error {
 }
 
 // Belongs returns true if the given node belongs to the NodeGroup.
-func (asg *Asg) Belongs(node *kube_api.Node) (bool, error) {
+func (asg *Asg) Belongs(node *apiv1.Node) (bool, error) {
 	ref, err := AwsRefFromProviderId(node.Spec.ProviderID)
 	if err != nil {
 		return false, err
@@ -162,7 +162,7 @@ func (asg *Asg) Belongs(node *kube_api.Node) (bool, error) {
 }
 
 // DeleteNodes deletes the nodes from the group.
-func (asg *Asg) DeleteNodes(nodes []*kube_api.Node) error {
+func (asg *Asg) DeleteNodes(nodes []*apiv1.Node) error {
 	size, err := asg.awsManager.GetAsgSize(asg)
 	if err != nil {
 		return err

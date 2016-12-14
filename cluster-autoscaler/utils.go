@@ -25,9 +25,9 @@ import (
 	"k8s.io/contrib/cluster-autoscaler/cloudprovider"
 	"k8s.io/contrib/cluster-autoscaler/simulator"
 
-	kube_api "k8s.io/kubernetes/pkg/api"
-	kube_api_unversioned "k8s.io/kubernetes/pkg/api/unversioned"
-	kube_client "k8s.io/kubernetes/pkg/client/unversioned"
+	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
+	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 
 	"github.com/golang/glog"
@@ -35,7 +35,7 @@ import (
 
 // GetAllNodesAvailableTime returns time when the newest node became available for scheduler.
 // TODO: This function should use LastTransitionTime from NodeReady condition.
-func GetAllNodesAvailableTime(nodes []*kube_api.Node) time.Time {
+func GetAllNodesAvailableTime(nodes []*apiv1.Node) time.Time {
 	var result time.Time
 	for _, node := range nodes {
 		if node.CreationTimestamp.After(result) {
@@ -48,9 +48,9 @@ func GetAllNodesAvailableTime(nodes []*kube_api.Node) time.Time {
 // SlicePodsByPodScheduledTime slices given pod array into those where PodScheduled condition
 // have been updated after the thresold and others.
 // Each pod must be in condition "Scheduled: False; Reason: Unschedulable"
-func SlicePodsByPodScheduledTime(pods []*kube_api.Pod, threshold time.Time) (oldPods []*kube_api.Pod, newPods []*kube_api.Pod) {
+func SlicePodsByPodScheduledTime(pods []*apiv1.Pod, threshold time.Time) (oldPods []*apiv1.Pod, newPods []*apiv1.Pod) {
 	for _, pod := range pods {
-		_, condition := kube_api.GetPodCondition(&pod.Status, kube_api.PodScheduled)
+		_, condition := apiv1.GetPodCondition(&pod.Status, apiv1.PodScheduled)
 		if condition != nil {
 			if condition.LastTransitionTime.After(threshold) {
 				newPods = append(newPods, pod)
@@ -64,7 +64,7 @@ func SlicePodsByPodScheduledTime(pods []*kube_api.Pod, threshold time.Time) (old
 
 // ResetPodScheduledCondition resets pod condition PodScheduled to "unknown" for all the pods with LastTransitionTime
 // not after the threshold time.
-func ResetPodScheduledCondition(kubeClient *kube_client.Client, pods []*kube_api.Pod) {
+func ResetPodScheduledCondition(kubeClient kube_client.Interface, pods []*apiv1.Pod) {
 	for _, pod := range pods {
 		if err := resetPodScheduledConditionForPod(kubeClient, pod); err != nil {
 			glog.Errorf("Error during reseting pod condition for %s/%s: %v", pod.Namespace, pod.Name, err)
@@ -72,14 +72,16 @@ func ResetPodScheduledCondition(kubeClient *kube_client.Client, pods []*kube_api
 	}
 }
 
-func resetPodScheduledConditionForPod(kubeClient *kube_client.Client, pod *kube_api.Pod) error {
-	_, condition := kube_api.GetPodCondition(&pod.Status, kube_api.PodScheduled)
+func resetPodScheduledConditionForPod(kubeClient kube_client.Interface, pod *apiv1.Pod) error {
+	_, condition := apiv1.GetPodCondition(&pod.Status, apiv1.PodScheduled)
 	if condition != nil {
 		glog.V(4).Infof("Reseting pod condition for %s/%s, last transition: %s",
 			pod.Namespace, pod.Name, condition.LastTransitionTime.Time.String())
-		condition.Status = kube_api.ConditionUnknown
-		condition.LastTransitionTime = kube_api_unversioned.Now()
-		_, err := kubeClient.Pods(pod.Namespace).UpdateStatus(pod)
+		condition.Status = apiv1.ConditionUnknown
+		condition.LastTransitionTime = metav1.Time{
+			Time: time.Now(),
+		}
+		_, err := kubeClient.Core().Pods(pod.Namespace).UpdateStatus(pod)
 		return err
 	}
 	return fmt.Errorf("Expected condition PodScheduled")
@@ -87,8 +89,8 @@ func resetPodScheduledConditionForPod(kubeClient *kube_client.Client, pod *kube_
 
 // FilterOutSchedulable checks whether pods from <unschedulableCandidates> marked as unschedulable
 // by Scheduler actually can't be scheduled on any node and filter out the ones that can.
-func FilterOutSchedulable(unschedulableCandidates []*kube_api.Pod, nodes []*kube_api.Node, allPods []*kube_api.Pod, predicateChecker *simulator.PredicateChecker) []*kube_api.Pod {
-	unschedulablePods := []*kube_api.Pod{}
+func FilterOutSchedulable(unschedulableCandidates []*apiv1.Pod, nodes []*apiv1.Node, allPods []*apiv1.Pod, predicateChecker *simulator.PredicateChecker) []*apiv1.Pod {
+	unschedulablePods := []*apiv1.Pod{}
 	nodeNameToNodeInfo := createNodeNameToInfoMap(allPods, nodes)
 
 	for _, pod := range unschedulableCandidates {
@@ -103,8 +105,8 @@ func FilterOutSchedulable(unschedulableCandidates []*kube_api.Pod, nodes []*kube
 }
 
 // TODO: move this function to scheduler utils.
-func createNodeNameToInfoMap(pods []*kube_api.Pod, nodes []*kube_api.Node) map[string]*schedulercache.NodeInfo {
-	nodeNameToNodeInfo := schedulercache.CreateNodeNameToInfoMap(pods)
+func createNodeNameToInfoMap(pods []*apiv1.Pod, nodes []*apiv1.Node) map[string]*schedulercache.NodeInfo {
+	nodeNameToNodeInfo := schedulercache.CreateNodeNameToInfoMap(pods, nodes)
 	for _, node := range nodes {
 		if nodeInfo, found := nodeNameToNodeInfo[node.Name]; found {
 			nodeInfo.SetNode(node)
@@ -126,7 +128,7 @@ func createNodeNameToInfoMap(pods []*kube_api.Pod, nodes []*kube_api.Node) map[s
 }
 
 // CheckGroupsAndNodes checks if all node groups have all required nodes.
-func CheckGroupsAndNodes(nodes []*kube_api.Node, cloudProvider cloudprovider.CloudProvider) error {
+func CheckGroupsAndNodes(nodes []*apiv1.Node, cloudProvider cloudprovider.CloudProvider) error {
 	groupCount := make(map[string]int)
 	for _, node := range nodes {
 
@@ -156,7 +158,7 @@ func CheckGroupsAndNodes(nodes []*kube_api.Node, cloudProvider cloudprovider.Clo
 
 // GetNodeInfosForGroups finds NodeInfos for all node groups used to manage the given nodes. It also returns a node group to sample node mapping.
 // TODO(mwielgus): This returns map keyed by url, while most code (including scheduler) uses node.Name for a key.
-func GetNodeInfosForGroups(nodes []*kube_api.Node, cloudProvider cloudprovider.CloudProvider, kubeClient *kube_client.Client) (map[string]*schedulercache.NodeInfo, error) {
+func GetNodeInfosForGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.CloudProvider, kubeClient kube_client.Interface) (map[string]*schedulercache.NodeInfo, error) {
 	result := make(map[string]*schedulercache.NodeInfo)
 	for _, node := range nodes {
 

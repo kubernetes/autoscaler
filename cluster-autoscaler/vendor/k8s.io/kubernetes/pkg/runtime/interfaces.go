@@ -1,5 +1,5 @@
 /*
-Copyright 2014 The Kubernetes Authors All rights reserved.
+Copyright 2014 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import (
 	"io"
 	"net/url"
 
-	"k8s.io/kubernetes/pkg/api/unversioned"
+	"k8s.io/kubernetes/pkg/runtime/schema"
 )
 
 const (
@@ -30,13 +30,23 @@ const (
 	APIVersionInternal = "__internal"
 )
 
-type Encoder interface {
-	// EncodeToStream writes an object to a stream. Override versions may be provided for each group
-	// that enforce a certain versioning. Implementations may return errors if the versions are incompatible,
-	// or if no conversion is defined.
-	EncodeToStream(obj Object, stream io.Writer, overrides ...unversioned.GroupVersion) error
+// GroupVersioner refines a set of possible conversion targets into a single option.
+type GroupVersioner interface {
+	// KindForGroupVersionKinds returns a desired target group version kind for the given input, or returns ok false if no
+	// target is known. In general, if the return target is not in the input list, the caller is expected to invoke
+	// Scheme.New(target) and then perform a conversion between the current Go type and the destination Go type.
+	// Sophisticated implementations may use additional information about the input kinds to pick a destination kind.
+	KindForGroupVersionKinds(kinds []schema.GroupVersionKind) (target schema.GroupVersionKind, ok bool)
 }
 
+// Encoders write objects to a serialized form
+type Encoder interface {
+	// Encode writes an object to a stream. Implementations may return errors if the versions are
+	// incompatible, or if no conversion is defined.
+	Encode(obj Object, w io.Writer) error
+}
+
+// Decoders attempt to load an object from data.
 type Decoder interface {
 	// Decode attempts to deserialize the provided data using either the innate typing of the scheme or the
 	// default kind, group, and version provided. It returns a decoded object as well as the kind, group, and
@@ -45,7 +55,7 @@ type Decoder interface {
 	// guaranteed to be populated. The returned object is not guaranteed to match into. If defaults are
 	// provided, they are applied to the data by default. If no defaults or partial defaults are provided, the
 	// type of the into may be used to guide conversion decisions.
-	Decode(data []byte, defaults *unversioned.GroupVersionKind, into Object) (Object, *unversioned.GroupVersionKind, error)
+	Decode(data []byte, defaults *schema.GroupVersionKind, into Object) (Object, *schema.GroupVersionKind, error)
 }
 
 // Serializer is the core interface for transforming objects into a serialized format and back.
@@ -66,9 +76,9 @@ type Codec Serializer
 type ParameterCodec interface {
 	// DecodeParameters takes the given url.Values in the specified group version and decodes them
 	// into the provided object, or returns an error.
-	DecodeParameters(parameters url.Values, from unversioned.GroupVersion, into Object) error
+	DecodeParameters(parameters url.Values, from schema.GroupVersion, into Object) error
 	// EncodeParameters encodes the provided object as query parameters or returns an error.
-	EncodeParameters(obj Object, to unversioned.GroupVersion) (url.Values, error)
+	EncodeParameters(obj Object, to schema.GroupVersion) (url.Values, error)
 }
 
 // Framer is a factory for creating readers and writers that obey a particular framing pattern.
@@ -79,20 +89,28 @@ type Framer interface {
 
 // SerializerInfo contains information about a specific serialization format
 type SerializerInfo struct {
-	Serializer
-	// EncodesAsText indicates this serializer can be encoded to UTF-8 safely.
-	EncodesAsText bool
 	// MediaType is the value that represents this serializer over the wire.
 	MediaType string
+	// EncodesAsText indicates this serializer can be encoded to UTF-8 safely.
+	EncodesAsText bool
+	// Serializer is the individual object serializer for this media type.
+	Serializer Serializer
+	// PrettySerializer, if set, can serialize this object in a form biased towards
+	// readability.
+	PrettySerializer Serializer
+	// StreamSerializer, if set, describes the streaming serialization format
+	// for this media type.
+	StreamSerializer *StreamSerializerInfo
 }
 
 // StreamSerializerInfo contains information about a specific stream serialization format
 type StreamSerializerInfo struct {
-	SerializerInfo
+	// EncodesAsText indicates this serializer can be encoded to UTF-8 safely.
+	EncodesAsText bool
+	// Serializer is the top level object serializer for this type when streaming
+	Serializer
 	// Framer is the factory for retrieving streams that separate objects on the wire
 	Framer
-	// Embedded is the type of the nested serialization that should be used.
-	Embedded SerializerInfo
 }
 
 // NegotiatedSerializer is an interface used for obtaining encoders, decoders, and serializers
@@ -100,39 +118,22 @@ type StreamSerializerInfo struct {
 // that performs HTTP content negotiation to accept multiple formats.
 type NegotiatedSerializer interface {
 	// SupportedMediaTypes is the media types supported for reading and writing single objects.
-	SupportedMediaTypes() []string
-	// SerializerForMediaType returns a serializer for the provided media type. params is the set of
-	// parameters applied to the media type that may modify the resulting output. ok will be false
-	// if no serializer matched the media type.
-	SerializerForMediaType(mediaType string, params map[string]string) (s SerializerInfo, ok bool)
-
-	// SupportedStreamingMediaTypes returns the media types of the supported streaming serializers.
-	// Streaming serializers control how multiple objects are written to a stream output.
-	SupportedStreamingMediaTypes() []string
-	// StreamingSerializerForMediaType returns a serializer for the provided media type that supports
-	// reading and writing multiple objects to a stream. It returns a framer and serializer, or an
-	// error if no such serializer can be created. Params is the set of parameters applied to the
-	// media type that may modify the resulting output. ok will be false if no serializer matched
-	// the media type.
-	StreamingSerializerForMediaType(mediaType string, params map[string]string) (s StreamSerializerInfo, ok bool)
+	SupportedMediaTypes() []SerializerInfo
 
 	// EncoderForVersion returns an encoder that ensures objects being written to the provided
 	// serializer are in the provided group version.
-	// TODO: take multiple group versions
-	EncoderForVersion(serializer Encoder, gv unversioned.GroupVersion) Encoder
+	EncoderForVersion(serializer Encoder, gv GroupVersioner) Encoder
 	// DecoderForVersion returns a decoder that ensures objects being read by the provided
 	// serializer are in the provided group version by default.
-	// TODO: take multiple group versions
-	DecoderToVersion(serializer Decoder, gv unversioned.GroupVersion) Decoder
+	DecoderToVersion(serializer Decoder, gv GroupVersioner) Decoder
 }
 
 // StorageSerializer is an interface used for obtaining encoders, decoders, and serializers
 // that can read and write data at rest. This would commonly be used by client tools that must
 // read files, or server side storage interfaces that persist restful objects.
 type StorageSerializer interface {
-	// SerializerForMediaType returns a serializer for the provided media type.  Options is a set of
-	// parameters applied to the media type that may modify the resulting output.
-	SerializerForMediaType(mediaType string, options map[string]string) (SerializerInfo, bool)
+	// SupportedMediaTypes are the media types supported for reading and writing objects.
+	SupportedMediaTypes() []SerializerInfo
 
 	// UniversalDeserializer returns a Serializer that can read objects in multiple supported formats
 	// by introspecting the data at rest.
@@ -140,29 +141,47 @@ type StorageSerializer interface {
 
 	// EncoderForVersion returns an encoder that ensures objects being written to the provided
 	// serializer are in the provided group version.
-	// TODO: take multiple group versions
-	EncoderForVersion(serializer Encoder, gv unversioned.GroupVersion) Encoder
+	EncoderForVersion(serializer Encoder, gv GroupVersioner) Encoder
 	// DecoderForVersion returns a decoder that ensures objects being read by the provided
 	// serializer are in the provided group version by default.
-	// TODO: take multiple group versions
-	DecoderToVersion(serializer Decoder, gv unversioned.GroupVersion) Decoder
+	DecoderToVersion(serializer Decoder, gv GroupVersioner) Decoder
+}
+
+// NestedObjectEncoder is an optional interface that objects may implement to be given
+// an opportunity to encode any nested Objects / RawExtensions during serialization.
+type NestedObjectEncoder interface {
+	EncodeNestedObjects(e Encoder) error
+}
+
+// NestedObjectDecoder is an optional interface that objects may implement to be given
+// an opportunity to decode any nested Objects / RawExtensions during serialization.
+type NestedObjectDecoder interface {
+	DecodeNestedObjects(d Decoder) error
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Non-codec interfaces
 
+type ObjectDefaulter interface {
+	// Default takes an object (must be a pointer) and applies any default values.
+	// Defaulters may not error.
+	Default(in Object)
+}
+
 type ObjectVersioner interface {
-	ConvertToVersion(in Object, outVersion unversioned.GroupVersion) (out Object, err error)
+	ConvertToVersion(in Object, gv GroupVersioner) (out Object, err error)
 }
 
 // ObjectConvertor converts an object to a different version.
 type ObjectConvertor interface {
 	// Convert attempts to convert one object into another, or returns an error. This method does
-	// not guarantee the in object is not mutated.
-	Convert(in, out interface{}) error
+	// not guarantee the in object is not mutated. The context argument will be passed to
+	// all nested conversions.
+	Convert(in, out, context interface{}) error
 	// ConvertToVersion takes the provided object and converts it the provided version. This
-	// method does not guarantee that the in object is not mutated.
-	ConvertToVersion(in Object, outVersion unversioned.GroupVersion) (out Object, err error)
+	// method does not guarantee that the in object is not mutated. This method is similar to
+	// Convert() but handles specific details of choosing the correct output version.
+	ConvertToVersion(in Object, gv GroupVersioner) (out Object, err error)
 	ConvertFieldLabel(version, kind, label, value string) (string, string, error)
 }
 
@@ -172,16 +191,16 @@ type ObjectTyper interface {
 	// ObjectKinds returns the all possible group,version,kind of the provided object, true if
 	// the object is unversioned, or an error if the object is not recognized
 	// (IsNotRegisteredError will return true).
-	ObjectKinds(Object) ([]unversioned.GroupVersionKind, bool, error)
+	ObjectKinds(Object) ([]schema.GroupVersionKind, bool, error)
 	// Recognizes returns true if the scheme is able to handle the provided version and kind,
 	// or more precisely that the provided version is a possible conversion or decoding
 	// target.
-	Recognizes(gvk unversioned.GroupVersionKind) bool
+	Recognizes(gvk schema.GroupVersionKind) bool
 }
 
 // ObjectCreater contains methods for instantiating an object by kind and version.
 type ObjectCreater interface {
-	New(kind unversioned.GroupVersionKind) (out Object, err error)
+	New(kind schema.GroupVersionKind) (out Object, err error)
 }
 
 // ObjectCopier duplicates an object.
@@ -214,5 +233,5 @@ type SelfLinker interface {
 // serializers to set the kind, version, and group the object is represented as. An Object may choose
 // to return a no-op ObjectKindAccessor in cases where it is not expected to be serialized.
 type Object interface {
-	GetObjectKind() unversioned.ObjectKind
+	GetObjectKind() schema.ObjectKind
 }

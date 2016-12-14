@@ -18,9 +18,9 @@ package simulator
 
 import (
 	"k8s.io/contrib/cluster-autoscaler/utils/drain"
-
-	"k8s.io/kubernetes/pkg/api"
-	unversionedclient "k8s.io/kubernetes/pkg/client/unversioned"
+	api "k8s.io/kubernetes/pkg/api"
+	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	client "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 )
 
@@ -29,10 +29,11 @@ import (
 // Based on kubectl drain code. It makes an assumption that RC, DS, Jobs and RS were deleted
 // along with their pods (no abandoned pods with dangling created-by annotation). Usefull for fast
 // checks. Doesn't check i
-func FastGetPodsToMove(nodeInfo *schedulercache.NodeInfo, skipNodesWithSystemPods bool, skipNodesWithLocalStorage bool) ([]*api.Pod, error) {
+func FastGetPodsToMove(nodeInfo *schedulercache.NodeInfo, skipNodesWithSystemPods bool, skipNodesWithLocalStorage bool) ([]*apiv1.Pod, error) {
 	return drain.GetPodsForDeletionOnNodeDrain(
 		nodeInfo.Pods(),
 		api.Codecs.UniversalDecoder(),
+		false,
 		skipNodesWithSystemPods,
 		skipNodesWithLocalStorage,
 		false,
@@ -45,10 +46,11 @@ func FastGetPodsToMove(nodeInfo *schedulercache.NodeInfo, skipNodesWithSystemPod
 // Based on kubectl drain code. It checks whether RC, DS, Jobs and RS that created these pods
 // still exist.
 func DetailedGetPodsForMove(nodeInfo *schedulercache.NodeInfo, skipNodesWithSystemPods bool,
-	skipNodesWithLocalStorage bool, client *unversionedclient.Client, minReplicaCount int32) ([]*api.Pod, error) {
+	skipNodesWithLocalStorage bool, client client.Interface, minReplicaCount int32) ([]*apiv1.Pod, error) {
 	return drain.GetPodsForDeletionOnNodeDrain(
 		nodeInfo.Pods(),
 		api.Codecs.UniversalDecoder(),
+		false,
 		skipNodesWithSystemPods,
 		skipNodesWithLocalStorage,
 		true,

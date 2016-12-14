@@ -1,5 +1,5 @@
 /*
-Copyright 2014 The Kubernetes Authors All rights reserved.
+Copyright 2014 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,15 +19,15 @@ package meta
 import (
 	"fmt"
 
-	"k8s.io/kubernetes/pkg/api/unversioned"
+	"k8s.io/kubernetes/pkg/runtime/schema"
 )
 
 // AmbiguousResourceError is returned if the RESTMapper finds multiple matches for a resource
 type AmbiguousResourceError struct {
-	PartialResource unversioned.GroupVersionResource
+	PartialResource schema.GroupVersionResource
 
-	MatchingResources []unversioned.GroupVersionResource
-	MatchingKinds     []unversioned.GroupVersionKind
+	MatchingResources []schema.GroupVersionResource
+	MatchingKinds     []schema.GroupVersionKind
 }
 
 func (e *AmbiguousResourceError) Error() string {
@@ -38,35 +38,68 @@ func (e *AmbiguousResourceError) Error() string {
 		return fmt.Sprintf("%v matches multiple kinds %v", e.PartialResource, e.MatchingKinds)
 	case len(e.MatchingResources) > 0:
 		return fmt.Sprintf("%v matches multiple resources %v", e.PartialResource, e.MatchingResources)
-
 	}
-
 	return fmt.Sprintf("%v matches multiple resources or kinds", e.PartialResource)
 }
 
-func IsAmbiguousResourceError(err error) bool {
+// AmbiguousKindError is returned if the RESTMapper finds multiple matches for a kind
+type AmbiguousKindError struct {
+	PartialKind schema.GroupVersionKind
+
+	MatchingResources []schema.GroupVersionResource
+	MatchingKinds     []schema.GroupVersionKind
+}
+
+func (e *AmbiguousKindError) Error() string {
+	switch {
+	case len(e.MatchingKinds) > 0 && len(e.MatchingResources) > 0:
+		return fmt.Sprintf("%v matches multiple resources %v and kinds %v", e.PartialKind, e.MatchingResources, e.MatchingKinds)
+	case len(e.MatchingKinds) > 0:
+		return fmt.Sprintf("%v matches multiple kinds %v", e.PartialKind, e.MatchingKinds)
+	case len(e.MatchingResources) > 0:
+		return fmt.Sprintf("%v matches multiple resources %v", e.PartialKind, e.MatchingResources)
+	}
+	return fmt.Sprintf("%v matches multiple resources or kinds", e.PartialKind)
+}
+
+func IsAmbiguousError(err error) bool {
 	if err == nil {
 		return false
 	}
-
-	_, ok := err.(*AmbiguousResourceError)
-	return ok
+	switch err.(type) {
+	case *AmbiguousResourceError, *AmbiguousKindError:
+		return true
+	default:
+		return false
+	}
 }
 
 // NoResourceMatchError is returned if the RESTMapper can't find any match for a resource
 type NoResourceMatchError struct {
-	PartialResource unversioned.GroupVersionResource
+	PartialResource schema.GroupVersionResource
 }
 
 func (e *NoResourceMatchError) Error() string {
 	return fmt.Sprintf("no matches for %v", e.PartialResource)
 }
 
-func IsNoResourceMatchError(err error) bool {
+// NoKindMatchError is returned if the RESTMapper can't find any match for a kind
+type NoKindMatchError struct {
+	PartialKind schema.GroupVersionKind
+}
+
+func (e *NoKindMatchError) Error() string {
+	return fmt.Sprintf("no matches for %v", e.PartialKind)
+}
+
+func IsNoMatchError(err error) bool {
 	if err == nil {
 		return false
 	}
-
-	_, ok := err.(*NoResourceMatchError)
-	return ok
+	switch err.(type) {
+	case *NoResourceMatchError, *NoKindMatchError:
+		return true
+	default:
+		return false
+	}
 }
