@@ -81,10 +81,11 @@ var (
 		"Node utilization level, defined as sum of requested resources divided by capacity, below which a node can be considered for scale down")
 	scaleDownTrialInterval = flag.Duration("scale-down-trial-interval", 1*time.Minute,
 		"How often scale down possiblity is check")
-	scanInterval           = flag.Duration("scan-interval", 10*time.Second, "How often cluster is reevaluated for scale up or down")
-	maxNodesTotal          = flag.Int("max-nodes-total", 0, "Maximum number of nodes in all node groups. Cluster autoscaler will not grow the cluster beyond this number.")
-	cloudProviderFlag      = flag.String("cloud-provider", "gce", "Cloud provider type. Allowed values: gce, aws")
-	maxEmptyBulkDeleteFlag = flag.Int("max-empty-bulk-delete", 10, "Maximum number of empty nodes that can be deleted at the same time.")
+	scanInterval               = flag.Duration("scan-interval", 10*time.Second, "How often cluster is reevaluated for scale up or down")
+	maxNodesTotal              = flag.Int("max-nodes-total", 0, "Maximum number of nodes in all node groups. Cluster autoscaler will not grow the cluster beyond this number.")
+	cloudProviderFlag          = flag.String("cloud-provider", "gce", "Cloud provider type. Allowed values: gce, aws")
+	maxEmptyBulkDeleteFlag     = flag.Int("max-empty-bulk-delete", 10, "Maximum number of empty nodes that can be deleted at the same time.")
+	maxGratefulTerminationFlag = flag.Int("max-grateful-termination-sec", 60, "Maximum number of seconds CA waints for pod termination when trying to scale down a node.")
 
 	// AvailableEstimators is a list of available estimators.
 	AvailableEstimators = []string{BasicEstimatorName, BinpackingEstimatorName}
@@ -134,8 +135,6 @@ func run(_ <-chan struct{}) {
 	nodeUtilizationMap := make(map[string]float64)
 	usageTracker := simulator.NewUsageTracker()
 
-	recorder := createEventRecorder(kubeClient)
-
 	var cloudProvider cloudprovider.CloudProvider
 
 	if *cloudProviderFlag == "gce" {
@@ -183,6 +182,19 @@ func run(_ <-chan struct{}) {
 		}
 	}
 
+	autoscalingContext := AutoscalingContext{
+		CloudProvider:                 cloudProvider,
+		ClientSet:                     kubeClient,
+		Recorder:                      createEventRecorder(kubeClient),
+		PredicateChecker:              predicateChecker,
+		MaxEmptyBulkDelete:            *maxEmptyBulkDeleteFlag,
+		ScaleDownUtilizationThreshold: *scaleDownUtilizationThreshold,
+		ScaleDownUnneededTime:         *scaleDownUnneededTime,
+		MaxNodesTotal:                 *maxNodesTotal,
+		EstimatorName:                 *estimatorFlag,
+		MaxGratefulTerminationSec:     *maxGratefulTerminationFlag,
+	}
+
 	for {
 		select {
 		case <-time.After(*scanInterval):
@@ -200,13 +212,13 @@ func run(_ <-chan struct{}) {
 					continue
 				}
 
-				if err := CheckGroupsAndNodes(nodes, cloudProvider); err != nil {
+				if err := CheckGroupsAndNodes(nodes, autoscalingContext.CloudProvider); err != nil {
 					glog.Warningf("Cluster is not ready for autoscaling: %v", err)
 					continue
 				}
 
 				// CA can die at any time. Removing taints that might have been left from the previous run.
-				if err := cleanToBeDeleted(nodes, kubeClient, recorder); err != nil {
+				if err := cleanToBeDeleted(nodes, kubeClient, autoscalingContext.Recorder); err != nil {
 					glog.Warningf("Failed to clean ToBeDeleted information: %v", err)
 					continue
 				}
@@ -227,7 +239,7 @@ func run(_ <-chan struct{}) {
 				// the newest node became available for the scheduler.
 				allNodesAvailableTime := GetAllNodesAvailableTime(nodes)
 				podsToReset, unschedulablePodsToHelp := SlicePodsByPodScheduledTime(allUnschedulablePods, allNodesAvailableTime)
-				ResetPodScheduledCondition(kubeClient, podsToReset)
+				ResetPodScheduledCondition(autoscalingContext.ClientSet, podsToReset)
 
 				// We need to check whether pods marked as unschedulable are actually unschedulable.
 				// This should prevent from adding unnecessary nodes. Example of such situation:
@@ -245,7 +257,8 @@ func run(_ <-chan struct{}) {
 				// in the describe situation.
 				schedulablePodsPresent := false
 				if *verifyUnschedulablePods {
-					newUnschedulablePodsToHelp := FilterOutSchedulable(unschedulablePodsToHelp, nodes, allScheduled, predicateChecker)
+					newUnschedulablePodsToHelp := FilterOutSchedulable(unschedulablePodsToHelp, nodes, allScheduled,
+						autoscalingContext.PredicateChecker)
 
 					if len(newUnschedulablePodsToHelp) != len(unschedulablePodsToHelp) {
 						glog.V(2).Info("Schedulable pods present")
@@ -261,9 +274,7 @@ func run(_ <-chan struct{}) {
 				} else {
 					scaleUpStart := time.Now()
 					updateLastTime("scaleup")
-					scaledUp, err := ScaleUp(unschedulablePodsToHelp, nodes, cloudProvider, kubeClient, predicateChecker, recorder,
-						*maxNodesTotal, *estimatorFlag)
-
+					scaledUp, err := ScaleUp(autoscalingContext, unschedulablePodsToHelp, nodes)
 					updateDuration("scaleup", scaleUpStart)
 
 					if err != nil {
@@ -295,11 +306,10 @@ func run(_ <-chan struct{}) {
 
 					usageTracker.CleanUp(time.Now().Add(-(*scaleDownUnneededTime)))
 					unneededNodes, podLocationHints, nodeUtilizationMap = FindUnneededNodes(
+						autoscalingContext,
 						nodes,
 						unneededNodes,
-						*scaleDownUtilizationThreshold,
 						allScheduled,
-						predicateChecker,
 						podLocationHints,
 						usageTracker, time.Now())
 
@@ -318,18 +328,13 @@ func run(_ <-chan struct{}) {
 						updateLastTime("scaledown")
 
 						result, err := ScaleDown(
+							autoscalingContext,
 							nodes,
 							nodeUtilizationMap,
 							unneededNodes,
-							*scaleDownUnneededTime,
 							allScheduled,
-							cloudProvider,
-							kubeClient,
-							predicateChecker,
 							podLocationHints,
-							usageTracker,
-							recorder,
-							*maxEmptyBulkDeleteFlag)
+							usageTracker)
 
 						updateDuration("scaledown", scaleDownStart)
 
