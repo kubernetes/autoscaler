@@ -28,10 +28,39 @@ import (
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
+	kube_record "k8s.io/kubernetes/pkg/client/record"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 
 	"github.com/golang/glog"
 )
+
+// AutoscalingContext contains user-configurable constant and configuration-related objects passed to
+// scale up/scale down functions.
+type AutoscalingContext struct {
+	// CloudProvider used in CA.
+	CloudProvider cloudprovider.CloudProvider
+	// ClientSet interface.
+	ClientSet kube_client.Interface
+	// Recorder for fecording events.
+	Recorder kube_record.EventRecorder
+	// PredicateChecker to check if a pod can fit into a node.
+	PredicateChecker *simulator.PredicateChecker
+	// MaxEmptyBulkDelete is a number of empty nodes that can be removed at the same time.
+	MaxEmptyBulkDelete int
+	// ScaleDownUtilizationThreshold sets threshould for nodes to be considered for scale down.
+	// Well-utilized nodes are not touched.
+	ScaleDownUtilizationThreshold float64
+	// ScaleDownUnneededTime sets the duriation CA exepects a node to be unneded/eligible for removal
+	// before scaling down the node.
+	ScaleDownUnneededTime time.Duration
+	// MaxNodesTotal sets the maximum number of nodes in the whole cluster
+	MaxNodesTotal int
+	// EstimatorName is the estimator used to estimate the number of needed nodes in scale up.
+	EstimatorName string
+	// MaxGratefulTerminationSec is maximum number of seconds scale down waits for pods to terminante before
+	// removing the node from cloud provider.
+	MaxGratefulTerminationSec int
+}
 
 // GetAllNodesAvailableTime returns time when the newest node became available for scheduler.
 // TODO: This function should use LastTransitionTime from NodeReady condition.
