@@ -59,8 +59,13 @@ func TestFindUnneededNodes(t *testing.T) {
 	n3 := BuildTestNode("n3", 1000, 10)
 	n4 := BuildTestNode("n4", 10000, 10)
 
-	result, hints, utilization := FindUnneededNodes([]*apiv1.Node{n1, n2, n3, n4}, map[string]time.Time{}, 0.35,
-		[]*apiv1.Pod{p1, p2, p3, p4}, simulator.NewTestPredicateChecker(), make(map[string]string),
+	context := AutoscalingContext{
+		PredicateChecker:              simulator.NewTestPredicateChecker(),
+		ScaleDownUtilizationThreshold: 0.35,
+	}
+
+	result, hints, utilization := FindUnneededNodes(context, []*apiv1.Node{n1, n2, n3, n4}, map[string]time.Time{},
+		[]*apiv1.Pod{p1, p2, p3, p4}, make(map[string]string),
 		simulator.NewUsageTracker(), time.Now())
 
 	assert.Equal(t, 1, len(result))
@@ -70,8 +75,8 @@ func TestFindUnneededNodes(t *testing.T) {
 	assert.Equal(t, 4, len(utilization))
 
 	result["n1"] = time.Now()
-	result2, hints, utilization := FindUnneededNodes([]*apiv1.Node{n1, n2, n3, n4}, result, 0.35,
-		[]*apiv1.Pod{p1, p2, p3, p4}, simulator.NewTestPredicateChecker(), hints,
+	result2, hints, utilization := FindUnneededNodes(context, []*apiv1.Node{n1, n2, n3, n4}, result,
+		[]*apiv1.Pod{p1, p2, p3, p4}, hints,
 		simulator.NewUsageTracker(), time.Now())
 
 	assert.Equal(t, 1, len(result2))
@@ -110,7 +115,7 @@ func TestDrainNode(t *testing.T) {
 		updatedNodes <- obj.Name
 		return true, obj, nil
 	})
-	err := drainNode(n1, []*apiv1.Pod{p1, p2}, fakeClient, createEventRecorder(fakeClient))
+	err := drainNode(n1, []*apiv1.Pod{p1, p2}, fakeClient, createEventRecorder(fakeClient), 20)
 	assert.NoError(t, err)
 	assert.Equal(t, p1.Name, getStringFromChan(deletedPods))
 	assert.Equal(t, p2.Name, getStringFromChan(deletedPods))

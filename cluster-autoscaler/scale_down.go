@@ -51,19 +51,16 @@ const (
 const (
 	// ToBeDeletedTaint is a taint used to make the node unschedulable.
 	ToBeDeletedTaint = "ToBeDeletedByClusterAutoscaler"
-
-	// MaxGracefulTerminationTime is max gracefull termination time used by CA.
-	MaxGracefulTerminationTime = time.Minute
 )
 
 // FindUnneededNodes calculates which nodes are not needed, i.e. all pods can be scheduled somewhere else,
 // and updates unneededNodes map accordingly. It also returns information where pods can be rescheduld and
 // node utilization level.
-func FindUnneededNodes(nodes []*apiv1.Node,
+func FindUnneededNodes(
+	context AutoscalingContext,
+	nodes []*apiv1.Node,
 	unneededNodes map[string]time.Time,
-	utilizationThreshold float64,
 	pods []*apiv1.Pod,
-	predicateChecker *simulator.PredicateChecker,
 	oldHints map[string]string,
 	tracker *simulator.UsageTracker,
 	timestamp time.Time) (unnededTimeMap map[string]time.Time, podReschedulingHints map[string]string, utilizationMap map[string]float64) {
@@ -87,7 +84,7 @@ func FindUnneededNodes(nodes []*apiv1.Node,
 		glog.V(4).Infof("Node %s - utilization %f", node.Name, utilization)
 		utilizationMap[node.Name] = utilization
 
-		if utilization >= utilizationThreshold {
+		if utilization >= context.ScaleDownUtilizationThreshold {
 			glog.V(4).Infof("Node %s is not suitable for removal - utilization too big (%f)", node.Name, utilization)
 			continue
 		}
@@ -96,7 +93,7 @@ func FindUnneededNodes(nodes []*apiv1.Node,
 
 	// Phase2 - check which nodes can be probably removed using fast drain.
 	nodesToRemove, newHints, err := simulator.FindNodesToRemove(currentlyUnneededNodes, nodes, pods,
-		nil, predicateChecker,
+		nil, context.PredicateChecker,
 		len(currentlyUnneededNodes), true, oldHints, tracker, timestamp)
 	if err != nil {
 		glog.Errorf("Error while simulating node drains: %v", err)
@@ -120,18 +117,14 @@ func FindUnneededNodes(nodes []*apiv1.Node,
 // ScaleDown tries to scale down the cluster. It returns ScaleDownResult indicating if any node was
 // removed and error if such occured.
 func ScaleDown(
+	context AutoscalingContext,
 	nodes []*apiv1.Node,
 	lastUtilizationMap map[string]float64,
 	unneededNodes map[string]time.Time,
-	unneededTime time.Duration,
 	pods []*apiv1.Pod,
-	cloudProvider cloudprovider.CloudProvider,
-	client kube_client.Interface,
-	predicateChecker *simulator.PredicateChecker,
 	oldHints map[string]string,
 	usageTracker *simulator.UsageTracker,
-	recorder kube_record.EventRecorder,
-	maxEmptyBulkDelete int) (ScaleDownResult, error) {
+) (ScaleDownResult, error) {
 
 	now := time.Now()
 	candidates := make([]*apiv1.Node, 0)
@@ -141,11 +134,11 @@ func ScaleDown(
 			glog.V(2).Infof("%s was unneeded for %s", node.Name, now.Sub(val).String())
 
 			// Check how long the node was underutilized.
-			if !val.Add(unneededTime).Before(now) {
+			if !val.Add(context.ScaleDownUnneededTime).Before(now) {
 				continue
 			}
 
-			nodeGroup, err := cloudProvider.NodeGroupForNode(node)
+			nodeGroup, err := context.CloudProvider.NodeGroupForNode(node)
 			if err != nil {
 				glog.Errorf("Error while checking node group for %s: %v", node.Name, err)
 				continue
@@ -177,14 +170,14 @@ func ScaleDown(
 	// Trying to delete empty nodes in bulk. If there are no empty nodes then CA will
 	// try to delete not-so-empty nodes, possibly killing some pods and allowing them
 	// to recreate on other nodes.
-	emptyNodes := getEmptyNodes(candidates, pods, maxEmptyBulkDelete, cloudProvider)
+	emptyNodes := getEmptyNodes(candidates, pods, context.MaxEmptyBulkDelete, context.CloudProvider)
 	if len(emptyNodes) > 0 {
 		confirmation := make(chan error, len(emptyNodes))
 		for _, node := range emptyNodes {
 			glog.V(0).Infof("Scale-down: removing empty node %s", node.Name)
 			simulator.RemoveNodeFromTracker(usageTracker, node.Name, unneededNodes)
 			go func(nodeToDelete *apiv1.Node) {
-				confirmation <- deleteNodeFromCloudProvider(nodeToDelete, cloudProvider, recorder)
+				confirmation <- deleteNodeFromCloudProvider(nodeToDelete, context.CloudProvider, context.Recorder)
 			}(node)
 		}
 		var finalError error
@@ -201,7 +194,8 @@ func ScaleDown(
 	}
 
 	// We look for only 1 node so new hints may be incomplete.
-	nodesToRemove, _, err := simulator.FindNodesToRemove(candidates, nodes, pods, client, predicateChecker, 1, false,
+	nodesToRemove, _, err := simulator.FindNodesToRemove(candidates, nodes, pods, context.ClientSet,
+		context.PredicateChecker, 1, false,
 		oldHints, usageTracker, time.Now())
 
 	if err != nil {
@@ -222,8 +216,7 @@ func ScaleDown(
 
 	// Nothing super-bad should happen if the node is removed from tracker prematurely.
 	simulator.RemoveNodeFromTracker(usageTracker, toRemove.Node.Name, unneededNodes)
-
-	err = deleteNode(toRemove.Node, toRemove.PodsToReschedule, client, cloudProvider, recorder)
+	err = deleteNode(context, toRemove.Node, toRemove.PodsToReschedule)
 	if err != nil {
 		return ScaleDownError, fmt.Errorf("Failed to delete %s: %v", toRemove.Node.Name, err)
 	}
@@ -273,25 +266,26 @@ func getEmptyNodes(candidates []*apiv1.Node, pods []*apiv1.Pod, maxEmptyBulkDele
 	return result[:limit]
 }
 
-func deleteNode(node *apiv1.Node, pods []*apiv1.Pod, client kube_client.Interface, cloudProvider cloudprovider.CloudProvider, recorder kube_record.EventRecorder) error {
-	if err := drainNode(node, pods, client, recorder); err != nil {
+func deleteNode(context AutoscalingContext, node *apiv1.Node, pods []*apiv1.Pod) error {
+	if err := drainNode(node, pods, context.ClientSet, context.Recorder, context.MaxGratefulTerminationSec); err != nil {
 		return err
 	}
-	return deleteNodeFromCloudProvider(node, cloudProvider, recorder)
+	return deleteNodeFromCloudProvider(node, context.CloudProvider, context.Recorder)
 }
 
 // Performs drain logic on the node. Marks the node as unschedulable and later removes all pods, giving
 // them up to MaxGracefulTerminationTime to finish.
-func drainNode(node *apiv1.Node, pods []*apiv1.Pod, client kube_client.Interface, recorder kube_record.EventRecorder) error {
+func drainNode(node *apiv1.Node, pods []*apiv1.Pod, client kube_client.Interface, recorder kube_record.EventRecorder,
+	maxGratefulTerminationSec int) error {
 	if err := markToBeDeleted(node, client, recorder); err != nil {
 		return err
 	}
 
-	seconds := int64(MaxGracefulTerminationTime.Seconds())
+	maxGraceful64 := int64(maxGratefulTerminationSec)
 	for _, pod := range pods {
 		recorder.Eventf(pod, apiv1.EventTypeNormal, "ScaleDown", "deleting pod for node scale down")
 		err := client.Core().Pods(pod.Namespace).Delete(pod.Name, &apiv1.DeleteOptions{
-			GracePeriodSeconds: &seconds,
+			GracePeriodSeconds: &maxGraceful64,
 		})
 		if err != nil {
 			glog.Errorf("Failed to delete %s/%s: %v", pod.Namespace, pod.Name, err)
@@ -300,7 +294,7 @@ func drainNode(node *apiv1.Node, pods []*apiv1.Pod, client kube_client.Interface
 	allGone := true
 
 	// Wait up to MaxGracefulTerminationTime.
-	for start := time.Now(); time.Now().Sub(start) < MaxGracefulTerminationTime; time.Sleep(5 * time.Second) {
+	for start := time.Now(); time.Now().Sub(start) < time.Duration(maxGratefulTerminationSec)*time.Second; time.Sleep(5 * time.Second) {
 		allGone = true
 		for _, pod := range pods {
 			podreturned, err := client.Core().Pods(pod.Namespace).Get(pod.Name)
