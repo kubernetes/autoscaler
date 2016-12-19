@@ -42,7 +42,9 @@ node groups and checks if any of the unschedulable pods would fit to a brand new
 While it may sound similar to what the real scheduler does it is currently quite simplified and 
 may require multiple iterations before all of the pods are eventually scheduled.
 If there are multiple node groups that, if increased, would help with getting some pods running, 
-one of them is selected at random. 
+different strategies can be selected for choosing which node group is increased. The default is
+random, but other options include selecting the group that can fit the most unschedulable pods,
+or the group that will leave the least amount of CPU or Memory available after the scale up.
 
 It may take some time before the nodes from node group appear in Kubernetes. It almost entirely 
 depends on the cloud provider and the speed of node provisioning.

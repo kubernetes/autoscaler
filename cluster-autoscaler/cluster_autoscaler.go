@@ -28,6 +28,10 @@ import (
 	"k8s.io/contrib/cluster-autoscaler/cloudprovider/aws"
 	"k8s.io/contrib/cluster-autoscaler/cloudprovider/gce"
 	"k8s.io/contrib/cluster-autoscaler/config"
+	"k8s.io/contrib/cluster-autoscaler/expander"
+	"k8s.io/contrib/cluster-autoscaler/expander/mostpods"
+	"k8s.io/contrib/cluster-autoscaler/expander/random"
+	"k8s.io/contrib/cluster-autoscaler/expander/waste"
 	"k8s.io/contrib/cluster-autoscaler/simulator"
 	kube_util "k8s.io/contrib/cluster-autoscaler/utils/kubernetes"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
@@ -62,6 +66,13 @@ const (
 	BasicEstimatorName = "basic"
 	// BinpackingEstimatorName is the name of binpacking estimator.
 	BinpackingEstimatorName = "binpacking"
+
+	// RandomExpanderName selects a node group at random
+	RandomExpanderName = "random"
+	// MostPodsExpanderName selects a node group that fits the most pods
+	MostPodsExpanderName = "most-pods"
+	// LeastWasteExpanderName selects a node group that leaves the least fraction of CPU and Memory
+	LeastWasteExpanderName = "least-waste"
 )
 
 var (
@@ -91,6 +102,11 @@ var (
 	AvailableEstimators = []string{BasicEstimatorName, BinpackingEstimatorName}
 	estimatorFlag       = flag.String("estimator", BinpackingEstimatorName,
 		"Type of resource estimator to be used in scale up. Available values: ["+strings.Join(AvailableEstimators, ",")+"]")
+
+	// AvailableExpanders is a list of avaialble expander options
+	AvailableExpanders = []string{RandomExpanderName, MostPodsExpanderName, LeastWasteExpanderName}
+	expanderFlag       = flag.String("expander", RandomExpanderName,
+		"Type of node group expander to be used in scale up. Available values: ["+strings.Join(AvailableExpanders, ",")+"]")
 )
 
 func createKubeClient() kube_client.Interface {
@@ -182,6 +198,18 @@ func run(_ <-chan struct{}) {
 		}
 	}
 
+	var expanderStrategy expander.Strategy
+	{
+		switch *expanderFlag {
+		case RandomExpanderName:
+			expanderStrategy = random.NewStrategy()
+		case MostPodsExpanderName:
+			expanderStrategy = mostpods.NewStrategy()
+		case LeastWasteExpanderName:
+			expanderStrategy = waste.NewStrategy()
+		}
+	}
+
 	autoscalingContext := AutoscalingContext{
 		CloudProvider:                 cloudProvider,
 		ClientSet:                     kubeClient,
@@ -192,6 +220,7 @@ func run(_ <-chan struct{}) {
 		ScaleDownUnneededTime:         *scaleDownUnneededTime,
 		MaxNodesTotal:                 *maxNodesTotal,
 		EstimatorName:                 *estimatorFlag,
+		ExpanderStrategy:              expanderStrategy,
 		MaxGratefulTerminationSec:     *maxGratefulTerminationFlag,
 	}
 
@@ -275,6 +304,7 @@ func run(_ <-chan struct{}) {
 					scaleUpStart := time.Now()
 					updateLastTime("scaleup")
 					scaledUp, err := ScaleUp(autoscalingContext, unschedulablePodsToHelp, nodes)
+
 					updateDuration("scaleup", scaleUpStart)
 
 					if err != nil {
