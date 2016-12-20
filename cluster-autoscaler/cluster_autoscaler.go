@@ -130,10 +130,6 @@ func run(_ <-chan struct{}) {
 
 	lastScaleUpTime := time.Now()
 	lastScaleDownFailedTrial := time.Now()
-	unneededNodes := make(map[string]time.Time)
-	podLocationHints := make(map[string]string)
-	nodeUtilizationMap := make(map[string]float64)
-	usageTracker := simulator.NewUsageTracker()
 
 	var cloudProvider cloudprovider.CloudProvider
 
@@ -194,6 +190,8 @@ func run(_ <-chan struct{}) {
 		EstimatorName:                 *estimatorFlag,
 		MaxGratefulTerminationSec:     *maxGratefulTerminationFlag,
 	}
+
+	scaleDown := NewScaleDown(&autoscalingContext)
 
 	for {
 		select {
@@ -304,18 +302,16 @@ func run(_ <-chan struct{}) {
 					updateLastTime("findUnneeded")
 					glog.V(4).Infof("Calculating unneeded nodes")
 
-					usageTracker.CleanUp(time.Now().Add(-(*scaleDownUnneededTime)))
-					unneededNodes, podLocationHints, nodeUtilizationMap = FindUnneededNodes(
-						autoscalingContext,
-						nodes,
-						unneededNodes,
-						allScheduled,
-						podLocationHints,
-						usageTracker, time.Now())
+					scaleDown.CleanUp(time.Now())
+					err := scaleDown.UpdateUnneededNodes(nodes, allScheduled, time.Now())
+					if err != nil {
+						glog.Warningf("Failed to scale down: %v", err)
+						continue
+					}
 
 					updateDuration("findUnneeded", unneededStart)
 
-					for key, val := range unneededNodes {
+					for key, val := range scaleDown.unneededNodes {
 						if glog.V(4) {
 							glog.V(4).Infof("%s is unneeded since %s duration %s", key, val.String(), time.Now().Sub(val).String())
 						}
@@ -326,16 +322,7 @@ func run(_ <-chan struct{}) {
 
 						scaleDownStart := time.Now()
 						updateLastTime("scaledown")
-
-						result, err := ScaleDown(
-							autoscalingContext,
-							nodes,
-							nodeUtilizationMap,
-							unneededNodes,
-							allScheduled,
-							podLocationHints,
-							usageTracker)
-
+						result, err := scaleDown.TryToScaleDown(nodes, allScheduled)
 						updateDuration("scaledown", scaleDownStart)
 
 						// TODO: revisit result handling
