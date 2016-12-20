@@ -63,27 +63,23 @@ func TestFindUnneededNodes(t *testing.T) {
 		PredicateChecker:              simulator.NewTestPredicateChecker(),
 		ScaleDownUtilizationThreshold: 0.35,
 	}
+	sd := NewScaleDown(&context)
+	sd.UpdateUnneededNodes([]*apiv1.Node{n1, n2, n3, n4}, []*apiv1.Pod{p1, p2, p3, p4}, time.Now())
 
-	result, hints, utilization := FindUnneededNodes(context, []*apiv1.Node{n1, n2, n3, n4}, map[string]time.Time{},
-		[]*apiv1.Pod{p1, p2, p3, p4}, make(map[string]string),
-		simulator.NewUsageTracker(), time.Now())
-
-	assert.Equal(t, 1, len(result))
-	addTime, found := result["n2"]
+	assert.Equal(t, 1, len(sd.unneededNodes))
+	addTime, found := sd.unneededNodes["n2"]
 	assert.True(t, found)
-	assert.Contains(t, hints, p2.Namespace+"/"+p2.Name)
-	assert.Equal(t, 4, len(utilization))
+	assert.Contains(t, sd.podLocationHints, p2.Namespace+"/"+p2.Name)
+	assert.Equal(t, 4, len(sd.nodeUtilizationMap))
 
-	result["n1"] = time.Now()
-	result2, hints, utilization := FindUnneededNodes(context, []*apiv1.Node{n1, n2, n3, n4}, result,
-		[]*apiv1.Pod{p1, p2, p3, p4}, hints,
-		simulator.NewUsageTracker(), time.Now())
+	sd.unneededNodes["n1"] = time.Now()
+	sd.UpdateUnneededNodes([]*apiv1.Node{n1, n2, n3, n4}, []*apiv1.Pod{p1, p2, p3, p4}, time.Now())
 
-	assert.Equal(t, 1, len(result2))
-	addTime2, found := result2["n2"]
+	assert.Equal(t, 1, len(sd.unneededNodes))
+	addTime2, found := sd.unneededNodes["n2"]
 	assert.True(t, found)
 	assert.Equal(t, addTime, addTime2)
-	assert.Equal(t, 4, len(utilization))
+	assert.Equal(t, 4, len(sd.nodeUtilizationMap))
 }
 
 func TestDrainNode(t *testing.T) {
