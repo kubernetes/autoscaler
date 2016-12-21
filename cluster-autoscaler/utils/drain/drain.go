@@ -129,6 +129,21 @@ func GetPodsForDeletionOnNodeDrain(
 			} else {
 				replicated = true
 			}
+		} else if refKind == "StatefulSet" {
+			if checkReferences {
+				ss, err := client.Apps().StatefulSets(sr.Reference.Namespace).Get(sr.Reference.Name)
+
+				// Assume the only reason for an error is because the StatefulSet is
+				// gone/missing, not for any other cause.  TODO(mml): something more
+				// sophisticated than this
+				if err == nil && ss != nil {
+					replicated = true
+				} else {
+					return []*apiv1.Pod{}, fmt.Errorf("statefulset for %s/%s is not available: err: %v", pod.Namespace, pod.Name, err)
+				}
+			} else {
+				replicated = true
+			}
 		}
 		if daemonsetPod {
 			continue
