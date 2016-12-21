@@ -26,6 +26,7 @@ import (
 	api "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/testapi"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	appsv1beta1 "k8s.io/kubernetes/pkg/apis/apps/v1beta1"
 	batchv1 "k8s.io/kubernetes/pkg/apis/batch/v1"
 	extensions "k8s.io/kubernetes/pkg/apis/extensions/v1beta1"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5/fake"
@@ -90,6 +91,22 @@ func TestDrain(t *testing.T) {
 			Name:        "bar",
 			Namespace:   "default",
 			Annotations: map[string]string{apiv1.CreatedByAnnotation: refJSON(t, &job)},
+		},
+	}
+
+	statefulset := appsv1beta1.StatefulSet{
+		ObjectMeta: apiv1.ObjectMeta{
+			Name:      "ss",
+			Namespace: "default",
+			SelfLink:  "/apiv1s/extensions/v1beta1/namespaces/default/statefulsets/ss",
+		},
+	}
+
+	ssPod := &apiv1.Pod{
+		ObjectMeta: apiv1.ObjectMeta{
+			Name:        "bar",
+			Namespace:   "default",
+			Annotations: map[string]string{apiv1.CreatedByAnnotation: refJSON(t, &statefulset)},
 		},
 	}
 
@@ -170,6 +187,13 @@ func TestDrain(t *testing.T) {
 			expectPods:  []*apiv1.Pod{jobPod},
 		},
 		{
+			description: "SS-managed pod",
+			pods:        []*apiv1.Pod{ssPod},
+			rcs:         []apiv1.ReplicationController{rc},
+			expectFatal: false,
+			expectPods:  []*apiv1.Pod{ssPod},
+		},
+		{
 			description: "RS-managed pod",
 			pods:        []*apiv1.Pod{rsPod},
 			replicaSets: []extensions.ReplicaSet{rs},
@@ -207,6 +231,8 @@ func TestDrain(t *testing.T) {
 		}
 		register("daemonsets", &ds, ds.ObjectMeta)
 		register("jobs", &job, job.ObjectMeta)
+		register("statefulsets", &statefulset, statefulset.ObjectMeta)
+
 		if len(test.replicaSets) > 0 {
 			register("replicasets", &test.replicaSets[0], test.replicaSets[0].ObjectMeta)
 		}
