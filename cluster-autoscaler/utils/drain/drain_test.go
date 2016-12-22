@@ -17,12 +17,10 @@ limitations under the License.
 package drain
 
 import (
-	"bytes"
 	"fmt"
-	"io"
-	"io/ioutil"
 	"testing"
 
+	. "k8s.io/contrib/cluster-autoscaler/utils/test"
 	api "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/testapi"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
@@ -52,7 +50,7 @@ func TestDrain(t *testing.T) {
 		ObjectMeta: apiv1.ObjectMeta{
 			Name:        "bar",
 			Namespace:   "default",
-			Annotations: map[string]string{apiv1.CreatedByAnnotation: refJSON(t, &rc)},
+			Annotations: map[string]string{apiv1.CreatedByAnnotation: RefJSON(&rc)},
 		},
 		Spec: apiv1.PodSpec{
 			NodeName: "node",
@@ -71,7 +69,7 @@ func TestDrain(t *testing.T) {
 		ObjectMeta: apiv1.ObjectMeta{
 			Name:        "bar",
 			Namespace:   "default",
-			Annotations: map[string]string{apiv1.CreatedByAnnotation: refJSON(t, &ds)},
+			Annotations: map[string]string{apiv1.CreatedByAnnotation: RefJSON(&ds)},
 		},
 		Spec: apiv1.PodSpec{
 			NodeName: "node",
@@ -90,7 +88,7 @@ func TestDrain(t *testing.T) {
 		ObjectMeta: apiv1.ObjectMeta{
 			Name:        "bar",
 			Namespace:   "default",
-			Annotations: map[string]string{apiv1.CreatedByAnnotation: refJSON(t, &job)},
+			Annotations: map[string]string{apiv1.CreatedByAnnotation: RefJSON(&job)},
 		},
 	}
 
@@ -106,7 +104,7 @@ func TestDrain(t *testing.T) {
 		ObjectMeta: apiv1.ObjectMeta{
 			Name:        "bar",
 			Namespace:   "default",
-			Annotations: map[string]string{apiv1.CreatedByAnnotation: refJSON(t, &statefulset)},
+			Annotations: map[string]string{apiv1.CreatedByAnnotation: RefJSON(&statefulset)},
 		},
 	}
 
@@ -125,7 +123,7 @@ func TestDrain(t *testing.T) {
 		ObjectMeta: apiv1.ObjectMeta{
 			Name:        "bar",
 			Namespace:   "default",
-			Annotations: map[string]string{apiv1.CreatedByAnnotation: refJSON(t, &rs)},
+			Annotations: map[string]string{apiv1.CreatedByAnnotation: RefJSON(&rs)},
 		},
 		Spec: apiv1.PodSpec{
 			NodeName: "node",
@@ -255,19 +253,4 @@ func TestDrain(t *testing.T) {
 			t.Fatalf("Wrong pod list content: %v", test.description)
 		}
 	}
-}
-
-func refJSON(t *testing.T, o runtime.Object) string {
-	ref, err := apiv1.GetReference(o)
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-
-	codec := testapi.Default.Codec()
-	json := runtime.EncodeOrDie(codec, &apiv1.SerializedReference{Reference: *ref})
-	return string(json)
-}
-
-func objBody(codec runtime.Codec, obj runtime.Object) io.ReadCloser {
-	return ioutil.NopCloser(bytes.NewReader([]byte(runtime.EncodeOrDie(codec, obj))))
 }
