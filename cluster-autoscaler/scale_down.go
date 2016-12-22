@@ -228,7 +228,7 @@ func (sd *ScaleDown) TryToScaleDown(nodes []*apiv1.Node, pods []*apiv1.Pod) (Sca
 	for _, pod := range toRemove.PodsToReschedule {
 		podNames = append(podNames, pod.Namespace+"/"+pod.Name)
 	}
-	glog.V(0).Infof("Scale-down: removing node %s, utilization: %v, pods to reschedule: ", toRemove.Node.Name, utilization,
+	glog.V(0).Infof("Scale-down: removing node %s, utilization: %v, pods to reschedule: %s", toRemove.Node.Name, utilization,
 		strings.Join(podNames, ","))
 
 	// Nothing super-bad should happen if the node is removed from tracker prematurely.
