@@ -80,7 +80,7 @@ func (sd *ScaleDown) CleanUp(timestamp time.Time) {
 
 // UpdateUnneededNodes calculates which nodes are not needed, i.e. all pods can be scheduled somewhere else,
 // and updates unneededNodes map accordingly. It also computes information where pods can be rescheduled and
-// node utilization level.
+// node utilization level. Timestamp is the current timestamp.
 func (sd *ScaleDown) UpdateUnneededNodes(
 	nodes []*apiv1.Node,
 	pods []*apiv1.Pod,
@@ -122,12 +122,11 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	}
 
 	// Update the timestamp map.
-	now := time.Now()
 	result := make(map[string]time.Time)
 	for _, node := range nodesToRemove {
 		name := node.Node.Name
 		if val, found := sd.unneededNodes[name]; !found {
-			result[name] = now
+			result[name] = timestamp
 		} else {
 			result[name] = val
 		}

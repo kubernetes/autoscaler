@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package test
+package testprovider
 
 import (
 	"fmt"
@@ -100,10 +100,10 @@ func (tcp *TestCloudProvider) AddNodeGroup(id string, min int, max int, size int
 }
 
 // AddNode adds the given node to the group.
-func (tcp *TestCloudProvider) AddNode(nodeGroup string, node *apiv1.Node) {
+func (tcp *TestCloudProvider) AddNode(nodeGroupId string, node *apiv1.Node) {
 	tcp.Lock()
 	defer tcp.Unlock()
-	tcp.nodes[node.Name] = nodeGroup
+	tcp.nodes[node.Name] = nodeGroupId
 }
 
 // TestNodeGroup is a node group used by TestCloudProvider.
