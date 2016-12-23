@@ -17,6 +17,8 @@ limitations under the License.
 package test
 
 import (
+	"fmt"
+
 	"k8s.io/kubernetes/pkg/api/resource"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 
@@ -30,6 +32,7 @@ func BuildTestPod(name string, cpu int64, mem int64) *apiv1.Pod {
 		ObjectMeta: apiv1.ObjectMeta{
 			Namespace: "default",
 			Name:      name,
+			SelfLink:  fmt.Sprintf("/api/v1/namespaces/default/pods/%s", name),
 		},
 		Spec: apiv1.PodSpec{
 			Containers: []apiv1.Container{
@@ -56,7 +59,8 @@ func BuildTestPod(name string, cpu int64, mem int64) *apiv1.Pod {
 func BuildTestNode(name string, cpu int64, mem int64) *apiv1.Node {
 	node := &apiv1.Node{
 		ObjectMeta: apiv1.ObjectMeta{
-			Name: name,
+			Name:     name,
+			SelfLink: fmt.Sprintf("/api/v1/nodes/%s", name),
 		},
 		Status: apiv1.NodeStatus{
 			Capacity: apiv1.ResourceList{
