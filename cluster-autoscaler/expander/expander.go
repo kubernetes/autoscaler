@@ -22,6 +22,17 @@ import (
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 )
 
+var (
+	// AvailableExpanders is a list of avaialble expander options
+	AvailableExpanders = []string{RandomExpanderName, MostPodsExpanderName, LeastWasteExpanderName}
+	// RandomExpanderName selects a node group at random
+	RandomExpanderName = "random"
+	// MostPodsExpanderName selects a node group that fits the most pods
+	MostPodsExpanderName = "most-pods"
+	// LeastWasteExpanderName selects a node group that leaves the least fraction of CPU and Memory
+	LeastWasteExpanderName = "least-waste"
+)
+
 // Option describes an option to expand the cluster.
 type Option struct {
 	NodeGroup cloudprovider.NodeGroup

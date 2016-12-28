@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package core
 
 import (
 	"fmt"
@@ -82,9 +82,11 @@ func TestRemoveOldUnregisteredNodes(t *testing.T) {
 	assert.NoError(t, err)
 
 	context := &AutoscalingContext{
-		CloudProvider:               provider,
-		ClusterStateRegistry:        clusterState,
-		UnregisteredNodeRemovalTime: 45 * time.Minute,
+		AutoscalingOptions: AutoscalingOptions{
+			UnregisteredNodeRemovalTime: 45 * time.Minute,
+		},
+		CloudProvider:        provider,
+		ClusterStateRegistry: clusterState,
 	}
 	unregisteredNodes := clusterState.GetUnregisteredNodes()
 	assert.Equal(t, 1, len(unregisteredNodes))
@@ -123,9 +125,11 @@ func TestRemoveFixNodeTargetSize(t *testing.T) {
 	assert.NoError(t, err)
 
 	context := &AutoscalingContext{
-		CloudProvider:               provider,
-		ClusterStateRegistry:        clusterState,
-		UnregisteredNodeRemovalTime: 45 * time.Minute,
+		AutoscalingOptions: AutoscalingOptions{
+			UnregisteredNodeRemovalTime: 45 * time.Minute,
+		},
+		CloudProvider:        provider,
+		ClusterStateRegistry: clusterState,
 	}
 
 	// Nothing should be fixed. The incorrect size state is not old enough.
