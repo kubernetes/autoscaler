@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package core
 
 import (
 	"fmt"
@@ -23,56 +23,15 @@ import (
 
 	"k8s.io/contrib/cluster-autoscaler/cloudprovider"
 	"k8s.io/contrib/cluster-autoscaler/clusterstate"
-	"k8s.io/contrib/cluster-autoscaler/expander"
 	"k8s.io/contrib/cluster-autoscaler/simulator"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
-	kube_record "k8s.io/kubernetes/pkg/client/record"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 
 	"github.com/golang/glog"
 )
-
-// AutoscalingContext contains user-configurable constant and configuration-related objects passed to
-// scale up/scale down functions.
-type AutoscalingContext struct {
-	// CloudProvider used in CA.
-	CloudProvider cloudprovider.CloudProvider
-	// ClientSet interface.
-	ClientSet kube_client.Interface
-	// ClusterState for maintaining the state of custer nodes.
-	ClusterStateRegistry *clusterstate.ClusterStateRegistry
-	// Recorder for fecording events.
-	Recorder kube_record.EventRecorder
-	// PredicateChecker to check if a pod can fit into a node.
-	PredicateChecker *simulator.PredicateChecker
-	// MaxEmptyBulkDelete is a number of empty nodes that can be removed at the same time.
-	MaxEmptyBulkDelete int
-	// ScaleDownUtilizationThreshold sets threshould for nodes to be considered for scale down.
-	// Well-utilized nodes are not touched.
-	ScaleDownUtilizationThreshold float64
-	// ScaleDownUnneededTime sets the duriation CA exepects a node to be unneded/eligible for removal
-	// before scaling down the node.
-	ScaleDownUnneededTime time.Duration
-	// ScaleDownUnreadyTime sets the duriation CA exepects an unready node to be unneded/eligible for removal
-	// before scaling down the node.
-	ScaleDownUnreadyTime time.Duration
-	// MaxNodesTotal sets the maximum number of nodes in the whole cluster
-	MaxNodesTotal int
-	// EstimatorName is the estimator used to estimate the number of needed nodes in scale up.
-	EstimatorName string
-	// ExpanderStrategy is the strategy used to choose which node group to expand when scaling up
-	ExpanderStrategy expander.Strategy
-	// MaxGratefulTerminationSec is maximum number of seconds scale down waits for pods to terminante before
-	// removing the node from cloud provider.
-	MaxGratefulTerminationSec int
-	// Maximum time that CA waits for a node to be provisioned. This is cloud provider specific.
-	MaxNodeProvisionTime time.Duration
-	// Time that CA waits before starting to remove nodes that exist in cloud provider but not in Kubernetes.
-	UnregisteredNodeRemovalTime time.Duration
-}
 
 // GetAllNodesAvailableTime returns time when the newest node became available for scheduler.
 // TODO: This function should use LastTransitionTime from NodeReady condition.

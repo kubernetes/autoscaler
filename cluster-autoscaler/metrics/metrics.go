@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package metrics
 
 import (
 	"time"
@@ -56,4 +56,15 @@ func init() {
 
 func durationToMicro(start time.Time) float64 {
 	return float64(time.Now().Sub(start).Nanoseconds() / 1000)
+}
+
+// UpdateDuration records the duration of the step identified by the label
+func UpdateDuration(label string, start time.Time) {
+	duration.WithLabelValues(label).Observe(durationToMicro(start))
+	lastDuration.WithLabelValues(label).Set(durationToMicro(start))
+}
+
+// UpdateLastTime records the time the step identified by the label was started
+func UpdateLastTime(label string) {
+	lastTimestamp.WithLabelValues(label).Set(float64(time.Now().Unix()))
 }

@@ -19,10 +19,10 @@ package aws
 import (
 	"fmt"
 	"regexp"
-	"strconv"
 	"strings"
 
 	"k8s.io/contrib/cluster-autoscaler/cloudprovider"
+	"k8s.io/contrib/cluster-autoscaler/config/dynamic"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 )
 
@@ -228,36 +228,20 @@ func (asg *Asg) Nodes() ([]string, error) {
 }
 
 func buildAsg(value string, awsManager *AwsManager) (*Asg, error) {
-	tokens := strings.SplitN(value, ":", 3)
-	if len(tokens) != 3 {
-		return nil, fmt.Errorf("wrong nodes configuration: %s", value)
+	spec, err := dynamic.SpecFromString(value)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse node group spec: %v", err)
 	}
 
 	asg := Asg{
 		awsManager: awsManager,
-	}
-	if size, err := strconv.Atoi(tokens[0]); err == nil {
-		if size <= 0 {
-			return nil, fmt.Errorf("min size must be >= 1")
-		}
-		asg.minSize = size
-	} else {
-		return nil, fmt.Errorf("failed to set min size: %s, expected integer", tokens[0])
+		minSize:    spec.MinSize,
+		maxSize:    spec.MaxSize,
+		AwsRef: AwsRef{
+			Name: spec.Name,
+		},
 	}
 
-	if size, err := strconv.Atoi(tokens[1]); err == nil {
-		if size < asg.minSize {
-			return nil, fmt.Errorf("max size must be greater or equal to min size")
-		}
-		asg.maxSize = size
-	} else {
-		return nil, fmt.Errorf("failed to set max size: %s, expected integer", tokens[1])
-	}
-
-	if tokens[2] == "" {
-		return nil, fmt.Errorf("asg name must not be blank: %s got error: %v", tokens[2])
-	}
-
-	asg.Name = tokens[2]
 	return &asg, nil
 }
