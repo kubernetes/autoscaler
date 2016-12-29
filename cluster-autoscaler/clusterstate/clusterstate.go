@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"k8s.io/contrib/cluster-autoscaler/cloudprovider"
+	"k8s.io/contrib/cluster-autoscaler/utils/deletetaint"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 
@@ -266,7 +267,7 @@ func (csr *ClusterStateRegistry) calculateReadinessStats(currentTime time.Time) 
 	perNodeGroup = make(map[string]Readiness)
 
 	update := func(current Readiness, node *apiv1.Node, ready bool) Readiness {
-		if isNodeBeingDeleted(node) {
+		if deletetaint.HasToBeDeletedTaint(node) {
 			current.Deleted++
 		} else if isNodeNotStarted(node) && node.CreationTimestamp.Time.Add(MaxNodeStartupTime).Before(currentTime) {
 			current.LongNotStarted++
@@ -312,20 +313,6 @@ func getReadinessState(node *apiv1.Node) (isNodeReady bool, lastTransitionTime t
 		}
 	}
 	return false, time.Time{}, fmt.Errorf("NodeReady condition for %s not found", node.Name)
-}
-
-func isNodeBeingDeleted(node *apiv1.Node) bool {
-	taints, err := apiv1.GetTaintsFromNodeAnnotations(node.Annotations)
-	if err != nil {
-		glog.Warningf("Failed to get taints for %s: %v", node.Name, err)
-	}
-	for _, taint := range taints {
-		// TODO: move the constant outside. Using scale_down.go constant would cause cyclic dependency.
-		if taint.Key == "ToBeDeletedByClusterAutoscaler" {
-			return true
-		}
-	}
-	return false
 }
 
 func isNodeNotStarted(node *apiv1.Node) bool {
