@@ -200,35 +200,6 @@ func TestScaleDown(t *testing.T) {
 	assert.Equal(t, n1.Name, getStringFromChan(updatedNodes))
 }
 
-func TestCleanNodes(t *testing.T) {
-	updatedNodes := make(chan string, 10)
-	fakeClient := &fake.Clientset{}
-
-	n1 := BuildTestNode("n1", 1000, 1000)
-	addToBeDeletedTaint(n1)
-	n2 := BuildTestNode("n2", 1000, 1000)
-
-	fakeClient.Fake.AddReactor("get", "nodes", func(action core.Action) (bool, runtime.Object, error) {
-		get := action.(core.GetAction)
-		if get.GetName() == n1.Name {
-			return true, n1, nil
-		}
-		if get.GetName() == n2.Name {
-			return true, n2, nil
-		}
-		return true, nil, errors.NewNotFound(apiv1.Resource("node"), get.GetName())
-	})
-	fakeClient.Fake.AddReactor("update", "nodes", func(action core.Action) (bool, runtime.Object, error) {
-		update := action.(core.UpdateAction)
-		obj := update.GetObject().(*apiv1.Node)
-		updatedNodes <- obj.Name
-		return true, obj, nil
-	})
-	err := cleanToBeDeleted([]*apiv1.Node{n1, n2}, fakeClient, createEventRecorder(fakeClient))
-	assert.NoError(t, err)
-	assert.Equal(t, n1.Name, getStringFromChan(updatedNodes))
-}
-
 func getStringFromChan(c chan string) string {
 	select {
 	case val := <-c:
