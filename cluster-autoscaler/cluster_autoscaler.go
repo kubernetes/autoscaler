@@ -301,7 +301,7 @@ func run(_ <-chan struct{}) {
 				} else {
 					scaleUpStart := time.Now()
 					updateLastTime("scaleup")
-					scaledUp, err := ScaleUp(autoscalingContext, unschedulablePodsToHelp, nodes)
+					scaledUp, err := ScaleUp(&autoscalingContext, unschedulablePodsToHelp, nodes)
 
 					updateDuration("scaleup", scaleUpStart)
 
