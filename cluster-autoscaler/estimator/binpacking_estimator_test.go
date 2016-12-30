@@ -32,20 +32,7 @@ func TestBinpackingEstimate(t *testing.T) {
 
 	cpuPerPod := int64(350)
 	memoryPerPod := int64(1000 * 1024 * 1024)
-	pod := &apiv1.Pod{
-		Spec: apiv1.PodSpec{
-			Containers: []apiv1.Container{
-				{
-					Resources: apiv1.ResourceRequirements{
-						Requests: apiv1.ResourceList{
-							apiv1.ResourceCPU:    *resource.NewMilliQuantity(cpuPerPod, resource.DecimalSI),
-							apiv1.ResourceMemory: *resource.NewQuantity(memoryPerPod, resource.DecimalSI),
-						},
-					},
-				},
-			},
-		},
-	}
+	pod := makePod(cpuPerPod, memoryPerPod)
 
 	pods := make([]*apiv1.Pod, 0)
 	for i := 0; i < 10; i++ {
@@ -64,8 +51,37 @@ func TestBinpackingEstimate(t *testing.T) {
 
 	nodeInfo := schedulercache.NewNodeInfo()
 	nodeInfo.SetNode(node)
-	estimate := estimator.Estimate(pods, nodeInfo)
+	estimate := estimator.Estimate(pods, nodeInfo, []*schedulercache.NodeInfo{})
 	assert.Equal(t, 5, estimate)
+}
+
+func TestBinpackingEstimateComingNodes(t *testing.T) {
+	estimator := NewBinpackingNodeEstimator(simulator.NewTestPredicateChecker())
+
+	cpuPerPod := int64(350)
+	memoryPerPod := int64(1000 * 1024 * 1024)
+	pod := makePod(cpuPerPod, memoryPerPod)
+
+	pods := make([]*apiv1.Pod, 0)
+	for i := 0; i < 10; i++ {
+		pods = append(pods, pod)
+	}
+	node := &apiv1.Node{
+		Status: apiv1.NodeStatus{
+			Capacity: apiv1.ResourceList{
+				apiv1.ResourceCPU:    *resource.NewMilliQuantity(cpuPerPod*3-50, resource.DecimalSI),
+				apiv1.ResourceMemory: *resource.NewQuantity(2*memoryPerPod, resource.DecimalSI),
+				apiv1.ResourcePods:   *resource.NewQuantity(10, resource.DecimalSI),
+			},
+		},
+	}
+	node.Status.Allocatable = node.Status.Capacity
+
+	nodeInfo := schedulercache.NewNodeInfo()
+	nodeInfo.SetNode(node)
+	estimate := estimator.Estimate(pods, nodeInfo, []*schedulercache.NodeInfo{nodeInfo, nodeInfo})
+	// 5 - 2 nodes that are coming.
+	assert.Equal(t, 3, estimate)
 }
 
 func TestBinpackingEstimateWithPorts(t *testing.T) {
@@ -73,23 +89,10 @@ func TestBinpackingEstimateWithPorts(t *testing.T) {
 
 	cpuPerPod := int64(200)
 	memoryPerPod := int64(1000 * 1024 * 1024)
-	pod := &apiv1.Pod{
-		Spec: apiv1.PodSpec{
-			Containers: []apiv1.Container{
-				{
-					Resources: apiv1.ResourceRequirements{
-						Requests: apiv1.ResourceList{
-							apiv1.ResourceCPU:    *resource.NewMilliQuantity(cpuPerPod, resource.DecimalSI),
-							apiv1.ResourceMemory: *resource.NewQuantity(memoryPerPod, resource.DecimalSI),
-						},
-					},
-					Ports: []apiv1.ContainerPort{
-						{
-							HostPort: 5555,
-						},
-					},
-				},
-			},
+	pod := makePod(cpuPerPod, memoryPerPod)
+	pod.Spec.Containers[0].Ports = []apiv1.ContainerPort{
+		{
+			HostPort: 5555,
 		},
 	}
 	pods := make([]*apiv1.Pod, 0)
@@ -109,6 +112,6 @@ func TestBinpackingEstimateWithPorts(t *testing.T) {
 
 	nodeInfo := schedulercache.NewNodeInfo()
 	nodeInfo.SetNode(node)
-	estimate := estimator.Estimate(pods, nodeInfo)
+	estimate := estimator.Estimate(pods, nodeInfo, []*schedulercache.NodeInfo{})
 	assert.Equal(t, 8, estimate)
 }
