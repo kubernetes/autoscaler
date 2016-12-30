@@ -245,10 +245,7 @@ func run(_ <-chan struct{}) {
 				}
 
 				// CA can die at any time. Removing taints that might have been left from the previous run.
-				if err := cleanToBeDeleted(nodes, kubeClient, autoscalingContext.Recorder); err != nil {
-					glog.Warningf("Failed to clean ToBeDeleted information: %v", err)
-					continue
-				}
+				cleanToBeDeleted(nodes, kubeClient, autoscalingContext.Recorder)
 
 				allUnschedulablePods, err := unschedulablePodLister.List()
 				if err != nil {
