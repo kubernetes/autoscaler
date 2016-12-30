@@ -23,6 +23,7 @@ import (
 
 	"k8s.io/kubernetes/pkg/api/resource"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 )
 
 // BasicNodeEstimator estimates the number of needed nodes to handle the given amount of pods.
@@ -90,28 +91,53 @@ func (basicEstimator *BasicNodeEstimator) GetDebug() string {
 }
 
 // Estimate estimates the number needed of nodes of the given shape.
-func (basicEstimator *BasicNodeEstimator) Estimate(node *apiv1.Node) (int, string) {
+func (basicEstimator *BasicNodeEstimator) Estimate(node *apiv1.Node, comingNodes []*schedulercache.NodeInfo) (int, string) {
 	var buffer bytes.Buffer
 	buffer.WriteString("Needed nodes according to:\n")
 	result := 0
+
+	resources := apiv1.ResourceList{}
+	for _, node := range comingNodes {
+		cpu := resources[apiv1.ResourceCPU]
+		cpu.Add(node.Node().Status.Capacity[apiv1.ResourceCPU])
+		resources[apiv1.ResourceCPU] = cpu
+
+		mem := resources[apiv1.ResourceMemory]
+		mem.Add(node.Node().Status.Capacity[apiv1.ResourceMemory])
+		resources[apiv1.ResourceMemory] = mem
+
+		pods := resources[apiv1.ResourcePods]
+		pods.Add(node.Node().Status.Capacity[apiv1.ResourcePods])
+		resources[apiv1.ResourcePods] = pods
+	}
+
 	if cpuCapcaity, ok := node.Status.Capacity[apiv1.ResourceCPU]; ok {
-		prop := int(math.Ceil(float64(basicEstimator.cpuSum.MilliValue()) / float64(cpuCapcaity.MilliValue())))
+		comingCpu := resources[apiv1.ResourceCPU]
+		prop := int(math.Ceil(float64(
+			basicEstimator.cpuSum.MilliValue()-comingCpu.MilliValue()) /
+			float64(cpuCapcaity.MilliValue())))
+
 		buffer.WriteString(fmt.Sprintf("CPU: %d\n", prop))
 		result = maxInt(result, prop)
 	}
 	if memCapcaity, ok := node.Status.Capacity[apiv1.ResourceMemory]; ok {
-		prop := int(math.Ceil(float64(basicEstimator.memorySum.Value()) / float64(memCapcaity.Value())))
+		comingMem := resources[apiv1.ResourceMemory]
+		prop := int(math.Ceil(float64(
+			basicEstimator.memorySum.Value()-comingMem.Value()) /
+			float64(memCapcaity.Value())))
 		buffer.WriteString(fmt.Sprintf("Mem: %d\n", prop))
 		result = maxInt(result, prop)
 	}
 	if podCapcaity, ok := node.Status.Capacity[apiv1.ResourcePods]; ok {
-		prop := int(math.Ceil(float64(basicEstimator.GetCount()) / float64(podCapcaity.Value())))
+		comingPods := resources[apiv1.ResourcePods]
+		prop := int(math.Ceil(float64(basicEstimator.GetCount()-int(comingPods.Value())) /
+			float64(podCapcaity.Value())))
 		buffer.WriteString(fmt.Sprintf("Pods: %d\n", prop))
 		result = maxInt(result, prop)
 	}
 	for port, count := range basicEstimator.portSum {
 		buffer.WriteString(fmt.Sprintf("Port %d: %d\n", port, count))
-		result = maxInt(result, count)
+		result = maxInt(result, count-len(comingNodes))
 	}
 	return result, buffer.String()
 }
