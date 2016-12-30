@@ -203,3 +203,49 @@ func TestRegisterScaleDown(t *testing.T) {
 	clusterstate.cleanUp(now.Add(5 * time.Minute))
 	assert.Equal(t, 0, len(clusterstate.scaleDownRequests))
 }
+
+func TestUpcomingNodes(t *testing.T) {
+	provider := testprovider.NewTestCloudProvider(nil, nil)
+	now := time.Now()
+
+	// 6 nodes are expected to come.
+	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
+	setReadyState(ng1_1, true, now.Add(-time.Minute))
+	provider.AddNodeGroup("ng1", 1, 10, 7)
+	provider.AddNode("ng1", ng1_1)
+
+	// One node is expected to come. One node is unready for the long time
+	// but this should not make any differnece.
+	ng2_1 := BuildTestNode("ng2-1", 1000, 1000)
+	setReadyState(ng2_1, false, now.Add(-time.Minute))
+	provider.AddNodeGroup("ng2", 1, 10, 2)
+	provider.AddNode("ng2", ng2_1)
+
+	// Two nodes are expected to come. One is just being started for the first time,
+	// the other one is not there yet.
+	ng3_1 := BuildTestNode("ng3-1", 1000, 1000)
+	setReadyState(ng3_1, false, now.Add(-time.Minute))
+	ng3_1.CreationTimestamp = metav1.Time{Time: now.Add(-time.Minute)}
+	provider.AddNodeGroup("ng3", 1, 10, 2)
+	provider.AddNode("ng3", ng3_1)
+
+	// Nothing should be added here.
+	ng4_1 := BuildTestNode("ng4-1", 1000, 1000)
+	setReadyState(ng4_1, false, now.Add(-time.Minute))
+	provider.AddNodeGroup("ng4", 1, 10, 1)
+	provider.AddNode("ng4", ng4_1)
+
+	assert.NotNil(t, provider)
+	clusterstate := NewClusterStateRegistry(provider, ClusterStateRegistryConfig{
+		MaxTotalUnreadyPercentage: 10,
+		OkTotalUnreadyCount:       1,
+	})
+	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng2_1, ng3_1, ng4_1}, now)
+	assert.NoError(t, err)
+
+	upcomingNodes := clusterstate.GetUpcomingNodes()
+	assert.Equal(t, 6, upcomingNodes["ng1"])
+	assert.Equal(t, 1, upcomingNodes["ng2"])
+	assert.Equal(t, 2, upcomingNodes["ng3"])
+	assert.NotContains(t, upcomingNodes, "ng4")
+}
