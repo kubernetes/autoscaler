@@ -56,7 +56,8 @@ func NewBinpackingNodeEstimator(predicateChecker *simulator.PredicateChecker) *B
 // still be maintained.
 // It is assumed that all pods from the given list can fit to nodeTemplate.
 // Returns the number of nodes needed to accommodate all pods from the list.
-func (estimator *BinpackingNodeEstimator) Estimate(pods []*apiv1.Pod, nodeTemplate *schedulercache.NodeInfo) int {
+func (estimator *BinpackingNodeEstimator) Estimate(pods []*apiv1.Pod, nodeTemplate *schedulercache.NodeInfo,
+	comingNodes []*schedulercache.NodeInfo) int {
 
 	podInfos := calculatePodScore(pods, nodeTemplate)
 	sort.Sort(byScoreDesc(podInfos))
@@ -71,6 +72,10 @@ func (estimator *BinpackingNodeEstimator) Estimate(pods []*apiv1.Pod, nodeTempla
 	}
 
 	newNodes := make([]*schedulercache.NodeInfo, 0)
+	for _, node := range comingNodes {
+		newNodes = append(newNodes, node)
+	}
+
 	for _, podInfo := range podInfos {
 		found := false
 		for i, nodeInfo := range newNodes {
@@ -84,7 +89,7 @@ func (estimator *BinpackingNodeEstimator) Estimate(pods []*apiv1.Pod, nodeTempla
 			newNodes = append(newNodes, nodeWithPod(nodeTemplate, podInfo.pod))
 		}
 	}
-	return len(newNodes)
+	return len(newNodes) - len(comingNodes)
 }
 
 // Calculates score for all pods and returns podInfo structure.

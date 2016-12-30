@@ -22,6 +22,7 @@ import (
 	"k8s.io/contrib/cluster-autoscaler/estimator"
 	"k8s.io/contrib/cluster-autoscaler/expander"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 
 	"github.com/golang/glog"
 )
@@ -84,17 +85,19 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 		if len(option.Pods) > 0 {
 			if context.EstimatorName == BinpackingEstimatorName {
 				binpackingEstimator := estimator.NewBinpackingNodeEstimator(context.PredicateChecker)
-				option.NodeCount = binpackingEstimator.Estimate(option.Pods, nodeInfo)
+				option.NodeCount = binpackingEstimator.Estimate(option.Pods, nodeInfo, []*schedulercache.NodeInfo{})
 			} else if context.EstimatorName == BasicEstimatorName {
 				basicEstimator := estimator.NewBasicNodeEstimator()
 				for _, pod := range option.Pods {
 					basicEstimator.Add(pod)
 				}
-				option.NodeCount, option.Debug = basicEstimator.Estimate(nodeInfo.Node())
+				option.NodeCount, option.Debug = basicEstimator.Estimate(nodeInfo.Node(), []*schedulercache.NodeInfo{})
 			} else {
 				glog.Fatalf("Unrecognized estimator: %s", context.EstimatorName)
 			}
-			expansionOptions = append(expansionOptions, option)
+			if option.NodeCount > 0 {
+				expansionOptions = append(expansionOptions, option)
+			}
 		}
 	}
 
