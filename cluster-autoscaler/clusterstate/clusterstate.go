@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"k8s.io/contrib/cluster-autoscaler/cloudprovider"
+	"k8s.io/contrib/cluster-autoscaler/utils/deletetaint"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 
@@ -31,7 +32,11 @@ import (
 
 const (
 	// MaxNodeStartupTime is the maximum time from the moment the node is registered to the time the node is ready.
-	MaxNodeStartupTime = 3 * time.Minute
+	MaxNodeStartupTime = 5 * time.Minute
+
+	// MaxStatusSettingDelayAfterCreation is the maximum time for node to set its initial status after the
+	// node is registered.
+	MaxStatusSettingDelayAfterCreation = time.Minute
 )
 
 // ScaleUpRequest contains information about the requested node group scale up.
@@ -251,9 +256,10 @@ func (csr *ClusterStateRegistry) calculateAcceptableRanges(targetSize map[string
 type Readiness struct {
 	// Number of ready nodes.
 	Ready int
-	// Number of unready nodes that doesn't fall into other categories.
+	// Number of unready nodes that broke down after they started.
 	Unready int
-	// Number of nodes that are being currently deleted.
+	// Number of nodes that are being currently deleted. They exist in K8S but
+	// are not included in NodeGroup.TargetSize().
 	Deleted int
 	// Number of nodes that failed to start within a reasonable limit.
 	LongNotStarted int
@@ -266,7 +272,7 @@ func (csr *ClusterStateRegistry) calculateReadinessStats(currentTime time.Time) 
 	perNodeGroup = make(map[string]Readiness)
 
 	update := func(current Readiness, node *apiv1.Node, ready bool) Readiness {
-		if isNodeBeingDeleted(node) {
+		if deletetaint.HasToBeDeletedTaint(node) {
 			current.Deleted++
 		} else if isNodeNotStarted(node) && node.CreationTimestamp.Time.Add(MaxNodeStartupTime).Before(currentTime) {
 			current.LongNotStarted++
@@ -314,27 +320,35 @@ func getReadinessState(node *apiv1.Node) (isNodeReady bool, lastTransitionTime t
 	return false, time.Time{}, fmt.Errorf("NodeReady condition for %s not found", node.Name)
 }
 
-func isNodeBeingDeleted(node *apiv1.Node) bool {
-	taints, err := apiv1.GetTaintsFromNodeAnnotations(node.Annotations)
-	if err != nil {
-		glog.Warningf("Failed to get taints for %s: %v", node.Name, err)
-	}
-	for _, taint := range taints {
-		// TODO: move the constant outside. Using scale_down.go constant would cause cyclic dependency.
-		if taint.Key == "ToBeDeletedByClusterAutoscaler" {
+func isNodeNotStarted(node *apiv1.Node) bool {
+	for _, condition := range node.Status.Conditions {
+		if condition.Type == apiv1.NodeReady &&
+			condition.Status == apiv1.ConditionFalse &&
+			condition.LastTransitionTime.Time.Sub(node.CreationTimestamp.Time) < MaxStatusSettingDelayAfterCreation {
 			return true
 		}
 	}
 	return false
 }
 
-func isNodeNotStarted(node *apiv1.Node) bool {
-	for _, condition := range node.Status.Conditions {
-		if condition.Type == apiv1.NodeReady &&
-			condition.Status == apiv1.ConditionFalse &&
-			condition.LastTransitionTime.Time.Sub(node.CreationTimestamp.Time) < time.Second {
-			return true
+// GetUpcomingNodes returns how many new nodes will be added shortly to the node groups or should become ready soon.
+// The functiom may overestimate the number of nodes.
+func (csr *ClusterStateRegistry) GetUpcomingNodes() map[string]int {
+	csr.Lock()
+	defer csr.Unlock()
+
+	result := make(map[string]int)
+	for _, nodeGroup := range csr.cloudProvider.NodeGroups() {
+		id := nodeGroup.Id()
+		readiness := csr.perNodeGroupReadiness[id]
+		ar := csr.acceptableRanges[id]
+		// newNodes is the number of nodes that
+		newNodes := ar.CurrentTarget - (readiness.Ready + readiness.Unready + readiness.LongNotStarted)
+		if newNodes <= 0 {
+			// Negative value is unlikely but theroetically possible.
+			continue
 		}
+		result[id] = newNodes
 	}
-	return false
+	return result
 }
