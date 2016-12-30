@@ -32,7 +32,11 @@ import (
 
 const (
 	// MaxNodeStartupTime is the maximum time from the moment the node is registered to the time the node is ready.
-	MaxNodeStartupTime = 3 * time.Minute
+	MaxNodeStartupTime = 5 * time.Minute
+
+	// MaxStatusSettingDelayAfterCreation is the maximum time for node to set its initial status after the
+	// node is registered.
+	MaxStatusSettingDelayAfterCreation = time.Minute
 )
 
 // ScaleUpRequest contains information about the requested node group scale up.
@@ -252,9 +256,10 @@ func (csr *ClusterStateRegistry) calculateAcceptableRanges(targetSize map[string
 type Readiness struct {
 	// Number of ready nodes.
 	Ready int
-	// Number of unready nodes that doesn't fall into other categories.
+	// Number of unready nodes that broke down after they started.
 	Unready int
-	// Number of nodes that are being currently deleted.
+	// Number of nodes that are being currently deleted. They exist in K8S but
+	// are not included in NodeGroup.TargetSize().
 	Deleted int
 	// Number of nodes that failed to start within a reasonable limit.
 	LongNotStarted int
@@ -319,9 +324,31 @@ func isNodeNotStarted(node *apiv1.Node) bool {
 	for _, condition := range node.Status.Conditions {
 		if condition.Type == apiv1.NodeReady &&
 			condition.Status == apiv1.ConditionFalse &&
-			condition.LastTransitionTime.Time.Sub(node.CreationTimestamp.Time) < time.Second {
+			condition.LastTransitionTime.Time.Sub(node.CreationTimestamp.Time) < MaxStatusSettingDelayAfterCreation {
 			return true
 		}
 	}
 	return false
+}
+
+// GetUpcomingNodes returns how many new nodes will be added shortly to the node groups or should become ready soon.
+// The functiom may overestimate the number of nodes.
+func (csr *ClusterStateRegistry) GetUpcomingNodes() map[string]int {
+	csr.Lock()
+	defer csr.Unlock()
+
+	result := make(map[string]int)
+	for _, nodeGroup := range csr.cloudProvider.NodeGroups() {
+		id := nodeGroup.Id()
+		readiness := csr.perNodeGroupReadiness[id]
+		ar := csr.acceptableRanges[id]
+		// newNodes is the number of nodes that
+		newNodes := ar.CurrentTarget - (readiness.Ready + readiness.Unready + readiness.LongNotStarted)
+		if newNodes <= 0 {
+			// Negative value is unlikely but theroetically possible.
+			continue
+		}
+		result[id] = newNodes
+	}
+	return result
 }
