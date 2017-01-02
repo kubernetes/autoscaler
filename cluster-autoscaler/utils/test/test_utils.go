@@ -18,9 +18,11 @@ package test
 
 import (
 	"fmt"
+	"time"
 
 	"k8s.io/kubernetes/pkg/api/resource"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 
 	"k8s.io/kubernetes/pkg/api/testapi"
 	"k8s.io/kubernetes/pkg/runtime"
@@ -79,6 +81,32 @@ func BuildTestNode(name string, cpu int64, mem int64) *apiv1.Node {
 	node.Status.Allocatable = node.Status.Capacity
 
 	return node
+}
+
+// SetNodeReadyState sets node ready state.
+func SetNodeReadyState(node *apiv1.Node, ready bool, lastTransition time.Time) {
+	for i := range node.Status.Conditions {
+		if node.Status.Conditions[i].Type == apiv1.NodeReady {
+			node.Status.Conditions[i].LastTransitionTime = metav1.Time{Time: lastTransition}
+			if ready {
+				node.Status.Conditions[i].Status = apiv1.ConditionTrue
+			} else {
+				node.Status.Conditions[i].Status = apiv1.ConditionFalse
+			}
+			return
+		}
+	}
+	condition := apiv1.NodeCondition{
+		Type:               apiv1.NodeReady,
+		Status:             apiv1.ConditionTrue,
+		LastTransitionTime: metav1.Time{Time: lastTransition},
+	}
+	if ready {
+		condition.Status = apiv1.ConditionTrue
+	} else {
+		condition.Status = apiv1.ConditionFalse
+	}
+	node.Status.Conditions = append(node.Status.Conditions, condition)
 }
 
 // RefJSON builds string reference to

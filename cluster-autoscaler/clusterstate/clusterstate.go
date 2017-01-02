@@ -288,7 +288,7 @@ func (csr *ClusterStateRegistry) calculateReadinessStats(currentTime time.Time) 
 
 	for _, node := range csr.nodes {
 		nodeGroup, errNg := csr.cloudProvider.NodeGroupForNode(node)
-		ready, _, errReady := getReadinessState(node)
+		ready, _, errReady := GetReadinessState(node)
 
 		// Node is most likely not autoscaled, however check the errors.
 		if reflect.ValueOf(nodeGroup).IsNil() {
@@ -306,11 +306,10 @@ func (csr *ClusterStateRegistry) calculateReadinessStats(currentTime time.Time) 
 	return perNodeGroup, total
 }
 
-// getReadinessState gets readiness state for the node
-func getReadinessState(node *apiv1.Node) (isNodeReady bool, lastTransitionTime time.Time, err error) {
+// GetReadinessState gets readiness state for the node
+func GetReadinessState(node *apiv1.Node) (isNodeReady bool, lastTransitionTime time.Time, err error) {
 	for _, condition := range node.Status.Conditions {
 		if condition.Type == apiv1.NodeReady {
-
 			if condition.Status == apiv1.ConditionTrue {
 				return true, condition.LastTransitionTime.Time, nil
 			}

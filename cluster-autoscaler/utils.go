@@ -53,6 +53,9 @@ type AutoscalingContext struct {
 	// ScaleDownUnneededTime sets the duriation CA exepects a node to be unneded/eligible for removal
 	// before scaling down the node.
 	ScaleDownUnneededTime time.Duration
+	// ScaleDownUnreadyTime sets the duriation CA exepects an unready node to be unneded/eligible for removal
+	// before scaling down the node.
+	ScaleDownUnreadyTime time.Duration
 	// MaxNodesTotal sets the maximum number of nodes in the whole cluster
 	MaxNodesTotal int
 	// EstimatorName is the estimator used to estimate the number of needed nodes in scale up.
