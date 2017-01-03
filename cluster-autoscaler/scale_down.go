@@ -50,6 +50,13 @@ const (
 	ScaleDownNodeDeleted ScaleDownResult = iota
 )
 
+const (
+	// MaxKubernetesEmptyNodeDeletionTime is the maximum time needed by Kubernetes to delete an empty node.
+	MaxKubernetesEmptyNodeDeletionTime = 3 * time.Minute
+	// MaxCloudProviderNodeDeletionTime is the maximum time needed by cloud provider to delete a node.
+	MaxCloudProviderNodeDeletionTime = 5 * time.Minute
+)
+
 // ScaleDown is responsible for maintaining the state needed to perform unneded node removals.
 type ScaleDown struct {
 	context            *AutoscalingContext
@@ -197,14 +204,28 @@ func (sd *ScaleDown) TryToScaleDown(nodes []*apiv1.Node, pods []*apiv1.Pod) (Sca
 			glog.V(0).Infof("Scale-down: removing empty node %s", node.Name)
 			simulator.RemoveNodeFromTracker(sd.usageTracker, node.Name, sd.unneededNodes)
 			go func(nodeToDelete *apiv1.Node) {
-				confirmation <- deleteNodeFromCloudProvider(nodeToDelete, sd.context.CloudProvider, sd.context.Recorder)
+				confirmation <- deleteNodeFromCloudProvider(nodeToDelete, sd.context.CloudProvider,
+					sd.context.Recorder, sd.context.ClusterStateRegistry)
 			}(node)
 		}
 		var finalError error
+
+		startTime := time.Now()
 		for range emptyNodes {
-			if err := <-confirmation; err != nil {
-				glog.Errorf("Problem with empty node deletion: %v", err)
-				finalError = err
+			timeElapsed := time.Now().Sub(startTime)
+			timeLeft := MaxCloudProviderNodeDeletionTime - timeElapsed
+			if timeLeft < 0 {
+				finalError = fmt.Errorf("Failed to delete nodes in time")
+				break
+			}
+			select {
+			case err := <-confirmation:
+				if err != nil {
+					glog.Errorf("Problem with empty node deletion: %v", err)
+					finalError = err
+				}
+			case <-time.After(timeLeft):
+				finalError = fmt.Errorf("Failed to delete nodes in time")
 			}
 		}
 		if finalError == nil {
@@ -290,7 +311,7 @@ func deleteNode(context *AutoscalingContext, node *apiv1.Node, pods []*apiv1.Pod
 	if err := drainNode(node, pods, context.ClientSet, context.Recorder, context.MaxGratefulTerminationSec); err != nil {
 		return err
 	}
-	return deleteNodeFromCloudProvider(node, context.CloudProvider, context.Recorder)
+	return deleteNodeFromCloudProvider(node, context.CloudProvider, context.Recorder, context.ClusterStateRegistry)
 }
 
 // Performs drain logic on the node. Marks the node as unschedulable and later removes all pods, giving
@@ -358,7 +379,8 @@ func cleanToBeDeleted(nodes []*apiv1.Node, client kube_client.Interface, recorde
 
 // Removes the given node from cloud provider. No extra pre-deletion actions are executed on
 // the Kubernetes side.
-func deleteNodeFromCloudProvider(node *apiv1.Node, cloudProvider cloudprovider.CloudProvider, recorder kube_record.EventRecorder) error {
+func deleteNodeFromCloudProvider(node *apiv1.Node, cloudProvider cloudprovider.CloudProvider,
+	recorder kube_record.EventRecorder, registry *clusterstate.ClusterStateRegistry) error {
 	nodeGroup, err := cloudProvider.NodeGroupForNode(node)
 	if err != nil {
 		return fmt.Errorf("failed to node group for %s: %v", node.Name, err)
@@ -370,5 +392,11 @@ func deleteNodeFromCloudProvider(node *apiv1.Node, cloudProvider cloudprovider.C
 		return fmt.Errorf("failed to delete %s: %v", node.Name, err)
 	}
 	recorder.Eventf(node, apiv1.EventTypeNormal, "ScaleDown", "node removed by cluster autoscaler")
+	registry.RegisterScaleDown(&clusterstate.ScaleDownRequest{
+		NodeGroupName:      nodeGroup.Id(),
+		NodeName:           node.Name,
+		Time:               time.Now(),
+		ExpectedDeleteTime: time.Now().Add(MaxCloudProviderNodeDeletionTime),
+	})
 	return nil
 }

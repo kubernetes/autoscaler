@@ -27,6 +27,7 @@ import (
 	"k8s.io/contrib/cluster-autoscaler/cloudprovider"
 	"k8s.io/contrib/cluster-autoscaler/cloudprovider/aws"
 	"k8s.io/contrib/cluster-autoscaler/cloudprovider/gce"
+	"k8s.io/contrib/cluster-autoscaler/clusterstate"
 	"k8s.io/contrib/cluster-autoscaler/config"
 	"k8s.io/contrib/cluster-autoscaler/expander"
 	"k8s.io/contrib/cluster-autoscaler/expander/mostpods"
@@ -99,6 +100,9 @@ var (
 	cloudProviderFlag          = flag.String("cloud-provider", "gce", "Cloud provider type. Allowed values: gce, aws")
 	maxEmptyBulkDeleteFlag     = flag.Int("max-empty-bulk-delete", 10, "Maximum number of empty nodes that can be deleted at the same time.")
 	maxGratefulTerminationFlag = flag.Int("max-grateful-termination-sec", 60, "Maximum number of seconds CA waints for pod termination when trying to scale down a node.")
+	maxTotalUnreadyPercentage  = flag.Float64("max-total-unready-percentage", 33, "Maximum percentage of unready nodes after which CA halts operations")
+	okTotalUnreadyCount        = flag.Int("ok-total-unready-count", 3, "Number of unready nodes that is allowed, irrespective of max-total-unready-percentage")
+	maxNodeProvisionTime       = flag.Duration("max-node-provision-time", 15*time.Minute, "Maximum time CA waits for node to be provisioned")
 
 	// AvailableEstimators is a list of available estimators.
 	AvailableEstimators = []string{BasicEstimatorName, BinpackingEstimatorName}
@@ -208,9 +212,15 @@ func run(_ <-chan struct{}) {
 		}
 	}
 
+	clusterStateConfig := clusterstate.ClusterStateRegistryConfig{
+		MaxTotalUnreadyPercentage: *maxTotalUnreadyPercentage,
+		OkTotalUnreadyCount:       *okTotalUnreadyCount,
+	}
+
 	autoscalingContext := AutoscalingContext{
 		CloudProvider:                 cloudProvider,
 		ClientSet:                     kubeClient,
+		ClusterStateRegistry:          clusterstate.NewClusterStateRegistry(cloudProvider, clusterStateConfig),
 		Recorder:                      createEventRecorder(kubeClient),
 		PredicateChecker:              predicateChecker,
 		MaxEmptyBulkDelete:            *maxEmptyBulkDeleteFlag,
@@ -221,6 +231,7 @@ func run(_ <-chan struct{}) {
 		EstimatorName:                 *estimatorFlag,
 		ExpanderStrategy:              expanderStrategy,
 		MaxGratefulTerminationSec:     *maxGratefulTerminationFlag,
+		MaxNodeProvisionTime:          *maxNodeProvisionTime,
 	}
 
 	scaleDown := NewScaleDown(&autoscalingContext)

@@ -22,6 +22,7 @@ import (
 	"testing"
 
 	"k8s.io/contrib/cluster-autoscaler/cloudprovider/test"
+	"k8s.io/contrib/cluster-autoscaler/clusterstate"
 	"k8s.io/contrib/cluster-autoscaler/expander/random"
 	"k8s.io/contrib/cluster-autoscaler/simulator"
 	. "k8s.io/contrib/cluster-autoscaler/utils/test"
@@ -68,12 +69,13 @@ func TestScaleUpOK(t *testing.T) {
 	assert.NotNil(t, provider)
 
 	context := &AutoscalingContext{
-		PredicateChecker: simulator.NewTestPredicateChecker(),
-		CloudProvider:    provider,
-		ClientSet:        fakeClient,
-		Recorder:         createEventRecorder(fakeClient),
-		EstimatorName:    BinpackingEstimatorName,
-		ExpanderStrategy: random.NewStrategy(),
+		PredicateChecker:     simulator.NewTestPredicateChecker(),
+		CloudProvider:        provider,
+		ClientSet:            fakeClient,
+		Recorder:             createEventRecorder(fakeClient),
+		EstimatorName:        BinpackingEstimatorName,
+		ExpanderStrategy:     random.NewStrategy(),
+		ClusterStateRegistry: clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}),
 	}
 	p3 := BuildTestPod("p-new", 500, 0)
 
@@ -107,12 +109,13 @@ func TestScaleUpNoHelp(t *testing.T) {
 	assert.NotNil(t, provider)
 
 	context := &AutoscalingContext{
-		PredicateChecker: simulator.NewTestPredicateChecker(),
-		CloudProvider:    provider,
-		ClientSet:        fakeClient,
-		Recorder:         createEventRecorder(fakeClient),
-		EstimatorName:    BinpackingEstimatorName,
-		ExpanderStrategy: random.NewStrategy(),
+		PredicateChecker:     simulator.NewTestPredicateChecker(),
+		CloudProvider:        provider,
+		ClientSet:            fakeClient,
+		Recorder:             createEventRecorder(fakeClient),
+		EstimatorName:        BinpackingEstimatorName,
+		ExpanderStrategy:     random.NewStrategy(),
+		ClusterStateRegistry: clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}),
 	}
 	p3 := BuildTestPod("p-new", 500, 0)
 
