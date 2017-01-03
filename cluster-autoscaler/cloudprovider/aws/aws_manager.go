@@ -185,20 +185,10 @@ func (m *AwsManager) regenerateCache() error {
 	for _, asg := range m.asgs {
 		glog.V(4).Infof("Regenerating ASG information for %s", asg.config.Name)
 
-		params := &autoscaling.DescribeAutoScalingGroupsInput{
-			AutoScalingGroupNames: []*string{aws.String(asg.config.Name)},
-			MaxRecords:            aws.Int64(1),
-		}
-		groups, err := m.service.DescribeAutoScalingGroups(params)
+		group, err := m.getAutoscalingGroup(asg.config.Name)
 		if err != nil {
-			glog.V(4).Infof("Failed ASG info request for %s: %v", asg.config.Name, err)
 			return err
 		}
-		if len(groups.AutoScalingGroups) < 1 {
-			return fmt.Errorf("Unable to get first autoscaling.Group for %s", asg.config.Name)
-		}
-		group := *groups.AutoScalingGroups[0]
-
 		for _, instance := range group.Instances {
 			ref := AwsRef{Name: *instance.InstanceId}
 			newCache[ref] = asg.config
@@ -207,4 +197,33 @@ func (m *AwsManager) regenerateCache() error {
 
 	m.asgCache = newCache
 	return nil
+}
+
+func (m *AwsManager) getAutoscalingGroup(name string) (*autoscaling.Group, error) {
+	params := &autoscaling.DescribeAutoScalingGroupsInput{
+		AutoScalingGroupNames: []*string{aws.String(name)},
+		MaxRecords:            aws.Int64(1),
+	}
+	groups, err := m.service.DescribeAutoScalingGroups(params)
+	if err != nil {
+		glog.V(4).Infof("Failed ASG info request for %s: %v", name, err)
+		return nil, err
+	}
+	if len(groups.AutoScalingGroups) < 1 {
+		return nil, fmt.Errorf("Unable to get first autoscaling.Group for %s", name)
+	}
+	return groups.AutoScalingGroups[0], nil
+}
+
+// GetAsgNodes returns Asg nodes.
+func (m *AwsManager) GetAsgNodes(asg *Asg) ([]string, error) {
+	result := make([]string, 0)
+	group, err := m.getAutoscalingGroup(asg.Name)
+	if err != nil {
+		return []string{}, err
+	}
+	for _, instance := range group.Instances {
+		result = append(result, *instance.InstanceId)
+	}
+	return result, nil
 }
