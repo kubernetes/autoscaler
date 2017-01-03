@@ -25,7 +25,6 @@ import (
 	"k8s.io/contrib/cluster-autoscaler/cloudprovider"
 	"k8s.io/contrib/cluster-autoscaler/utils/deletetaint"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
-	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 
 	"github.com/golang/glog"
 )
@@ -47,8 +46,6 @@ type ScaleUpRequest struct {
 	Time time.Time
 	// ExpectedAddTime is the time at which the request should be fulfilled.
 	ExpectedAddTime time.Time
-	// NodeTemplate is the template of the node that will appear due to this request.
-	NodeTemplate *schedulercache.NodeInfo
 	// How much the node group is increased.
 	Increase int
 }

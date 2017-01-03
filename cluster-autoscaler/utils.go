@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"k8s.io/contrib/cluster-autoscaler/cloudprovider"
+	"k8s.io/contrib/cluster-autoscaler/clusterstate"
 	"k8s.io/contrib/cluster-autoscaler/expander"
 	"k8s.io/contrib/cluster-autoscaler/simulator"
 
@@ -41,6 +42,8 @@ type AutoscalingContext struct {
 	CloudProvider cloudprovider.CloudProvider
 	// ClientSet interface.
 	ClientSet kube_client.Interface
+	// ClusterState for maintaining the state of custer nodes.
+	ClusterStateRegistry *clusterstate.ClusterStateRegistry
 	// Recorder for fecording events.
 	Recorder kube_record.EventRecorder
 	// PredicateChecker to check if a pod can fit into a node.
@@ -65,6 +68,8 @@ type AutoscalingContext struct {
 	// MaxGratefulTerminationSec is maximum number of seconds scale down waits for pods to terminante before
 	// removing the node from cloud provider.
 	MaxGratefulTerminationSec int
+	// Maximum time that CA waits for a node to be provisioned. This is cloud provider specific.
+	MaxNodeProvisionTime time.Duration
 }
 
 // GetAllNodesAvailableTime returns time when the newest node became available for scheduler.
