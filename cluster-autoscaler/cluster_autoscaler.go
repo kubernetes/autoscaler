@@ -87,7 +87,9 @@ var (
 	scaleDownDelay   = flag.Duration("scale-down-delay", 10*time.Minute,
 		"Duration from the last scale up to the time when CA starts to check scale down options")
 	scaleDownUnneededTime = flag.Duration("scale-down-unneeded-time", 10*time.Minute,
-		"How long the node should be unneeded before it is eligible for scale down")
+		"How long a node should be unneeded before it is eligible for scale down")
+	scaleDownUnreadyTime = flag.Duration("scale-down-unready-time", 20*time.Minute,
+		"How long an unready node should be unneeded before it is eligible for scale down")
 	scaleDownUtilizationThreshold = flag.Float64("scale-down-utilization-threshold", 0.5,
 		"Node utilization level, defined as sum of requested resources divided by capacity, below which a node can be considered for scale down")
 	scaleDownTrialInterval = flag.Duration("scale-down-trial-interval", 1*time.Minute,
@@ -214,6 +216,7 @@ func run(_ <-chan struct{}) {
 		MaxEmptyBulkDelete:            *maxEmptyBulkDeleteFlag,
 		ScaleDownUtilizationThreshold: *scaleDownUtilizationThreshold,
 		ScaleDownUnneededTime:         *scaleDownUnneededTime,
+		ScaleDownUnreadyTime:          *scaleDownUnreadyTime,
 		MaxNodesTotal:                 *maxNodesTotal,
 		EstimatorName:                 *estimatorFlag,
 		ExpanderStrategy:              expanderStrategy,

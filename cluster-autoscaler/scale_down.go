@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"k8s.io/contrib/cluster-autoscaler/cloudprovider"
+	"k8s.io/contrib/cluster-autoscaler/clusterstate"
 	"k8s.io/contrib/cluster-autoscaler/simulator"
 	"k8s.io/contrib/cluster-autoscaler/utils/deletetaint"
 
@@ -145,8 +146,15 @@ func (sd *ScaleDown) TryToScaleDown(nodes []*apiv1.Node, pods []*apiv1.Pod) (Sca
 
 			glog.V(2).Infof("%s was unneeded for %s", node.Name, now.Sub(val).String())
 
+			ready, _, _ := clusterstate.GetReadinessState(node)
+
 			// Check how long the node was underutilized.
-			if !val.Add(sd.context.ScaleDownUnneededTime).Before(now) {
+			if ready && !val.Add(sd.context.ScaleDownUnneededTime).Before(now) {
+				continue
+			}
+
+			// Unready nodes may be deleted after a different time than unrerutilized.
+			if !ready && !val.Add(sd.context.ScaleDownUnreadyTime).Before(now) {
 				continue
 			}
 
