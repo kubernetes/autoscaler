@@ -135,7 +135,9 @@ func TestScaleDown(t *testing.T) {
 		},
 	}
 	n1 := BuildTestNode("n1", 1000, 1000)
+	SetNodeReadyState(n1, true, time.Time{})
 	n2 := BuildTestNode("n2", 1000, 1000)
+	SetNodeReadyState(n2, true, time.Time{})
 	p1 := BuildTestPod("p1", 100, 0)
 	p1.Annotations = map[string]string{
 		"kubernetes.io/created-by": RefJSON(&job),
@@ -198,6 +200,76 @@ func TestScaleDown(t *testing.T) {
 	assert.Equal(t, ScaleDownNodeDeleted, result)
 	assert.Equal(t, n1.Name, getStringFromChan(deletedNodes))
 	assert.Equal(t, n1.Name, getStringFromChan(updatedNodes))
+}
+
+func TestNoScaleDown(t *testing.T) {
+	fakeClient := &fake.Clientset{}
+	n1 := BuildTestNode("n1", 1000, 1000)
+	SetNodeReadyState(n1, false, time.Now().Add(-3*time.Minute))
+	n2 := BuildTestNode("n2", 1000, 1000)
+	SetNodeReadyState(n2, true, time.Time{})
+	p2 := BuildTestPod("p2", 800, 0)
+	p2.Spec.NodeName = "n2"
+
+	fakeClient.Fake.AddReactor("list", "pods", func(action core.Action) (bool, runtime.Object, error) {
+		return true, &apiv1.PodList{Items: []apiv1.Pod{*p2}}, nil
+	})
+	fakeClient.Fake.AddReactor("get", "pods", func(action core.Action) (bool, runtime.Object, error) {
+		return true, nil, errors.NewNotFound(apiv1.Resource("pod"), "whatever")
+	})
+	fakeClient.Fake.AddReactor("get", "nodes", func(action core.Action) (bool, runtime.Object, error) {
+		getAction := action.(core.GetAction)
+		switch getAction.GetName() {
+		case n1.Name:
+			return true, n1, nil
+		case n2.Name:
+			return true, n2, nil
+		}
+		return true, nil, fmt.Errorf("Wrong node: %v", getAction.GetName())
+	})
+
+	provider := testprovider.NewTestCloudProvider(nil, func(nodeGroup string, node string) error {
+		t.Fatalf("Unexpected deletion of %s", node)
+		return nil
+	})
+	provider.AddNodeGroup("ng1", 1, 10, 2)
+	provider.AddNode("ng1", n1)
+	provider.AddNode("ng1", n2)
+
+	context := &AutoscalingContext{
+		PredicateChecker:              simulator.NewTestPredicateChecker(),
+		CloudProvider:                 provider,
+		ClientSet:                     fakeClient,
+		Recorder:                      createEventRecorder(fakeClient),
+		ScaleDownUtilizationThreshold: 0.5,
+		ScaleDownUnneededTime:         time.Minute,
+		ScaleDownUnreadyTime:          time.Hour,
+		MaxGratefulTerminationSec:     60,
+	}
+	scaleDown := NewScaleDown(context)
+	scaleDown.UpdateUnneededNodes([]*apiv1.Node{n1, n2}, []*apiv1.Pod{p2}, time.Now().Add(-5*time.Minute))
+	result, err := scaleDown.TryToScaleDown([]*apiv1.Node{n1, n2}, []*apiv1.Pod{p2})
+	assert.NoError(t, err)
+	assert.Equal(t, ScaleDownNoUnneeded, result)
+
+	deletedNodes := make(chan string, 10)
+
+	provider = testprovider.NewTestCloudProvider(nil, func(nodeGroup string, node string) error {
+		deletedNodes <- node
+		return nil
+	})
+	SetNodeReadyState(n1, false, time.Now().Add(-3*time.Hour))
+	provider.AddNodeGroup("ng1", 1, 10, 2)
+	provider.AddNode("ng1", n1)
+	provider.AddNode("ng1", n2)
+
+	context.CloudProvider = provider
+	scaleDown = NewScaleDown(context)
+	scaleDown.UpdateUnneededNodes([]*apiv1.Node{n1, n2}, []*apiv1.Pod{p2}, time.Now().Add(-2*time.Hour))
+	result, err = scaleDown.TryToScaleDown([]*apiv1.Node{n1, n2}, []*apiv1.Pod{p2})
+	assert.NoError(t, err)
+	assert.Equal(t, ScaleDownNodeDeleted, result)
+	assert.Equal(t, n1.Name, getStringFromChan(deletedNodes))
 }
 
 func getStringFromChan(c chan string) string {

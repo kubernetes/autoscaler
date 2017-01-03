@@ -32,9 +32,9 @@ func TestOKWithScaleUp(t *testing.T) {
 	now := time.Now()
 
 	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
-	setReadyState(ng1_1, true, now.Add(-time.Minute))
+	SetNodeReadyState(ng1_1, true, now.Add(-time.Minute))
 	ng2_1 := BuildTestNode("ng2-1", 1000, 1000)
-	setReadyState(ng2_1, true, now.Add(-time.Minute))
+	SetNodeReadyState(ng2_1, true, now.Add(-time.Minute))
 
 	provider := testprovider.NewTestCloudProvider(nil, nil)
 	provider.AddNodeGroup("ng1", 1, 10, 5)
@@ -63,9 +63,9 @@ func TestOKOneUnreadyNode(t *testing.T) {
 	now := time.Now()
 
 	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
-	setReadyState(ng1_1, true, now.Add(-time.Minute))
+	SetNodeReadyState(ng1_1, true, now.Add(-time.Minute))
 	ng2_1 := BuildTestNode("ng2-1", 1000, 1000)
-	setReadyState(ng2_1, false, now.Add(-time.Minute))
+	SetNodeReadyState(ng2_1, false, now.Add(-time.Minute))
 
 	provider := testprovider.NewTestCloudProvider(nil, nil)
 	provider.AddNodeGroup("ng1", 1, 10, 1)
@@ -88,9 +88,9 @@ func TestMissingNodes(t *testing.T) {
 	now := time.Now()
 
 	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
-	setReadyState(ng1_1, true, now.Add(-time.Minute))
+	SetNodeReadyState(ng1_1, true, now.Add(-time.Minute))
 	ng2_1 := BuildTestNode("ng2-1", 1000, 1000)
-	setReadyState(ng2_1, true, now.Add(-time.Minute))
+	SetNodeReadyState(ng2_1, true, now.Add(-time.Minute))
 
 	provider := testprovider.NewTestCloudProvider(nil, nil)
 	provider.AddNodeGroup("ng1", 1, 10, 5)
@@ -113,9 +113,9 @@ func TestToManyUnready(t *testing.T) {
 	now := time.Now()
 
 	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
-	setReadyState(ng1_1, false, now.Add(-time.Minute))
+	SetNodeReadyState(ng1_1, false, now.Add(-time.Minute))
 	ng2_1 := BuildTestNode("ng2-1", 1000, 1000)
-	setReadyState(ng2_1, false, now.Add(-time.Minute))
+	SetNodeReadyState(ng2_1, false, now.Add(-time.Minute))
 
 	provider := testprovider.NewTestCloudProvider(nil, nil)
 	provider.AddNodeGroup("ng1", 1, 10, 1)
@@ -138,7 +138,7 @@ func TestExpiredScaleUp(t *testing.T) {
 	now := time.Now()
 
 	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
-	setReadyState(ng1_1, true, now.Add(-time.Minute))
+	SetNodeReadyState(ng1_1, true, now.Add(-time.Minute))
 
 	provider := testprovider.NewTestCloudProvider(nil, nil)
 	provider.AddNodeGroup("ng1", 1, 10, 5)
@@ -159,24 +159,6 @@ func TestExpiredScaleUp(t *testing.T) {
 	assert.NoError(t, err)
 	assert.True(t, clusterstate.IsClusterHealthy(now))
 	assert.False(t, clusterstate.IsNodeGroupHealthy("ng1"))
-}
-
-func setReadyState(node *apiv1.Node, ready bool, lastTransition time.Time) {
-	if ready {
-		node.Status.Conditions = append(node.Status.Conditions,
-			apiv1.NodeCondition{
-				Type:               apiv1.NodeReady,
-				Status:             apiv1.ConditionTrue,
-				LastTransitionTime: metav1.Time{Time: lastTransition},
-			})
-	} else {
-		node.Status.Conditions = append(node.Status.Conditions,
-			apiv1.NodeCondition{
-				Type:               apiv1.NodeReady,
-				Status:             apiv1.ConditionFalse,
-				LastTransitionTime: metav1.Time{Time: lastTransition},
-			})
-	}
 }
 
 func TestRegisterScaleDown(t *testing.T) {
@@ -210,28 +192,28 @@ func TestUpcomingNodes(t *testing.T) {
 
 	// 6 nodes are expected to come.
 	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
-	setReadyState(ng1_1, true, now.Add(-time.Minute))
+	SetNodeReadyState(ng1_1, true, now.Add(-time.Minute))
 	provider.AddNodeGroup("ng1", 1, 10, 7)
 	provider.AddNode("ng1", ng1_1)
 
 	// One node is expected to come. One node is unready for the long time
 	// but this should not make any differnece.
 	ng2_1 := BuildTestNode("ng2-1", 1000, 1000)
-	setReadyState(ng2_1, false, now.Add(-time.Minute))
+	SetNodeReadyState(ng2_1, false, now.Add(-time.Minute))
 	provider.AddNodeGroup("ng2", 1, 10, 2)
 	provider.AddNode("ng2", ng2_1)
 
 	// Two nodes are expected to come. One is just being started for the first time,
 	// the other one is not there yet.
 	ng3_1 := BuildTestNode("ng3-1", 1000, 1000)
-	setReadyState(ng3_1, false, now.Add(-time.Minute))
+	SetNodeReadyState(ng3_1, false, now.Add(-time.Minute))
 	ng3_1.CreationTimestamp = metav1.Time{Time: now.Add(-time.Minute)}
 	provider.AddNodeGroup("ng3", 1, 10, 2)
 	provider.AddNode("ng3", ng3_1)
 
 	// Nothing should be added here.
 	ng4_1 := BuildTestNode("ng4-1", 1000, 1000)
-	setReadyState(ng4_1, false, now.Add(-time.Minute))
+	SetNodeReadyState(ng4_1, false, now.Add(-time.Minute))
 	provider.AddNodeGroup("ng4", 1, 10, 1)
 	provider.AddNode("ng4", ng4_1)
 
