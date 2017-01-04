@@ -186,3 +186,17 @@ func (tng *TestNodeGroup) Debug() string {
 
 	return fmt.Sprintf("%s target:%d min:%d max:%d", tng.id, tng.targetSize, tng.minSize, tng.maxSize)
 }
+
+// Nodes returns a list of all nodes that belong to this node group.
+func (tng *TestNodeGroup) Nodes() ([]string, error) {
+	tng.Lock()
+	defer tng.Unlock()
+
+	result := make([]string, 0)
+	for node, nodegroup := range tng.cloudProvider.nodes {
+		if nodegroup == tng.id {
+			result = append(result, node)
+		}
+	}
+	return result, nil
+}
