@@ -65,4 +65,7 @@ type NodeGroup interface {
 
 	// Debug returns a string containing all information regarding this node group.
 	Debug() string
+
+	// Nodes returns a list of all nodes that belong to this node group.
+	Nodes() ([]string, error)
 }

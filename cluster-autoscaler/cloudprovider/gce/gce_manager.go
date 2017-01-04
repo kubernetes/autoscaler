@@ -230,3 +230,20 @@ func (m *GceManager) regenerateCache() error {
 	m.migCache = newMigCache
 	return nil
 }
+
+// GetMigNodes returns mig nodes.
+func (m *GceManager) GetMigNodes(mig *Mig) ([]string, error) {
+	instances, err := m.service.InstanceGroupManagers.ListManagedInstances(mig.Project, mig.Zone, mig.Name).Do()
+	if err != nil {
+		return []string{}, err
+	}
+	result := make([]string, 0)
+	for _, instance := range instances.ManagedInstances {
+		_, _, name, err := ParseInstanceUrl(instance.Instance)
+		if err != nil {
+			return []string{}, err
+		}
+		result = append(result, name)
+	}
+	return result, nil
+}

@@ -203,6 +203,11 @@ func (mig *Mig) Debug() string {
 	return fmt.Sprintf("%s (%d:%d)", mig.Id(), mig.MinSize(), mig.MaxSize())
 }
 
+// Nodes returns a list of all nodes that belong to this node group.
+func (mig *Mig) Nodes() ([]string, error) {
+	return mig.gceManager.GetMigNodes(mig)
+}
+
 func buildMig(value string, gceManager *GceManager) (*Mig, error) {
 	tokens := strings.SplitN(value, ":", 3)
 	if len(tokens) != 3 {
