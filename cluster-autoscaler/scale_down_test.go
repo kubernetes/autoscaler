@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"k8s.io/contrib/cluster-autoscaler/cloudprovider/test"
+	"k8s.io/contrib/cluster-autoscaler/clusterstate"
 	"k8s.io/contrib/cluster-autoscaler/simulator"
 	. "k8s.io/contrib/cluster-autoscaler/utils/test"
 
@@ -192,6 +193,7 @@ func TestScaleDown(t *testing.T) {
 		ScaleDownUtilizationThreshold: 0.5,
 		ScaleDownUnneededTime:         time.Minute,
 		MaxGratefulTerminationSec:     60,
+		ClusterStateRegistry:          clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}),
 	}
 	scaleDown := NewScaleDown(context)
 	scaleDown.UpdateUnneededNodes([]*apiv1.Node{n1, n2}, []*apiv1.Pod{p1, p2}, time.Now().Add(-5*time.Minute))
@@ -245,6 +247,7 @@ func TestNoScaleDown(t *testing.T) {
 		ScaleDownUnneededTime:         time.Minute,
 		ScaleDownUnreadyTime:          time.Hour,
 		MaxGratefulTerminationSec:     60,
+		ClusterStateRegistry:          clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}),
 	}
 	scaleDown := NewScaleDown(context)
 	scaleDown.UpdateUnneededNodes([]*apiv1.Node{n1, n2}, []*apiv1.Pod{p2}, time.Now().Add(-5*time.Minute))

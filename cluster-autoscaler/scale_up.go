@@ -18,7 +18,9 @@ package main
 
 import (
 	"fmt"
+	"time"
 
+	"k8s.io/contrib/cluster-autoscaler/clusterstate"
 	"k8s.io/contrib/cluster-autoscaler/estimator"
 	"k8s.io/contrib/cluster-autoscaler/expander"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
@@ -135,9 +137,17 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 
 		glog.V(0).Infof("Scale-up: setting group %s size to %d", bestOption.NodeGroup.Id(), newSize)
 
-		if err := bestOption.NodeGroup.IncreaseSize(newSize - currentSize); err != nil {
+		increase := newSize - currentSize
+		if err := bestOption.NodeGroup.IncreaseSize(increase); err != nil {
 			return false, fmt.Errorf("failed to increase node group size: %v", err)
 		}
+		context.ClusterStateRegistry.RegisterScaleUp(
+			&clusterstate.ScaleUpRequest{
+				NodeGroupName:   bestOption.NodeGroup.Id(),
+				Increase:        increase,
+				Time:            time.Now(),
+				ExpectedAddTime: time.Now().Add(context.MaxNodeProvisionTime),
+			})
 
 		for _, pod := range bestOption.Pods {
 			context.Recorder.Eventf(pod, apiv1.EventTypeNormal, "TriggeredScaleUp",
