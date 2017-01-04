@@ -26,18 +26,23 @@ Suggested action: Continue operations, however do not expand this node pool. The
 
 * [UC4] A new node is being added to the cluster. However the cloud provider cannot provision the node within the reasonable time due to either no quota or technical problems. Indicating factors:
  -- The target number of nodes on the cloud provider side is greater than the number of nodes in K8S for the prolonged time (more than couple minutes) and the difference doesn’t change.
+ -- There are no new nodes when listing nodes on the cluster provider side.
 Suggested action: Reduce the target size of the problematic node group to the current size. 
 
-* [UC5] A node is in an unready state for quite a while (+20min) and the total number of unready/not-present nodes is low (less than XX%). It could either not switched from unready to ready on node registration or something crashed on the node and could not be recovered. Indicating factors:
+* [UC5] A new node was provided by the cloud. However, it failed to register. Indicating factors:
+  -- There are no new nodes on the cluster provider side that have not appeared in K8S for the long time.
+Suggested action: Remove the unregistered nodes one by one.
+
+* [UC6] A node is in an unready state for quite a while (+20min) and the total number of unready/not-present nodes is low (less than XX%). It could either not switched from unready to ready on node registration or something crashed on the node and could not be recovered. Indicating factors:
 -- Node condition is unready and last transition time is >= 20 min.
 -- The number of TOTAL nodes in K8S is equal to the target number of nodes on the cloud provider side. 
 Suggested action: Include the node in scale down, although with greater (configurable) unneeded time.
 
-* [UC6] Some nodes are being removed by cluster autoscaler. Indicating factor:
+* [UC7] Some nodes are being removed by cluster autoscaler. Indicating factor:
 -- Node is unready and has ToBeRemoved taint.
 Suggested action: Continue operations. Nodes should be removed soon.
 
-* [UC7] The number of unjustified (not related to scale-up and scale-down) unready nodes is greater than XX%. Something is broken, possibly due to network partition or generic failure. Indicating factors: 
+* [UC8] The number of unjustified (not related to scale-up and scale-down) unready nodes is greater than XX%. Something is broken, possibly due to network partition or generic failure. Indicating factors: 
  -- >XX% of nodes are unready 
 Suggested action: halt operations.
 
@@ -61,13 +66,15 @@ CA will operate with unready nodes possibly present in the cluster. Such nodes w
 The main loop algorithm will look as follows:
 
 1. Get all nodes from the cluster.
-2. Check if a cluster is, in general, in good health (most of the nodes are ready). If not, alert the user, skip the iteration and wait 10 seconds. Helps with [UC7], uses [S1]. Also clear the unneeded stats (see 7. and 8.).
-3. Check if any of the node groups has long-time missing nodes. If yes, reduce the size of the node group by the number
+2. Check if a cluster is, in general, in good health (most of the nodes are ready). If not, alert the user, skip the iteration and wait 10 seconds. Helps with [UC8], uses [S1]. Also clear the unneeded stats (see 8. and 9.).
+3. Check if any of the node groups has nodes that failed to register in K8S. If yes, remove these nodes. Helps with
+[UC5].
+4. Check if any of the node groups has long-time missing nodes. If yes, reduce the size of the node group by the number
 of long-missing nodes. Skip the rest of the iteration. Helps with [UC4], uses [S4].
-4. Check if there are any pending pods. Skip pending pods that can be scheduled on the currently available ready nodes (not including nodes that are to be deleted soon [UC6]). 
-5. If there are still some pending pods, find which of the node group can be expanded to accommodate them. Skip node groups that are not healthy (contains many unready nodes or nodes that failed to start). Helps with [UC3] uses [S2]. 
-6. Estimate the number of needed nodes, account yet-to-come nodes [UC1], [UC2], [S3]. Expand the chosen node group if needed.
-7. Calculate the unneeded nodes in the whole cluster, including the unready nodes [UC5]. Unneeded nodes must be monitored every iteration to be sure that they have been unneded for the prolonged time.
-8. Try to remove some unneeded node, if there was no recent scale up and the node has been unneeded for more than
-10 min. Use higher delay for unready nodes [UC5].
+5. Check if there are any pending pods. Skip pending pods that can be scheduled on the currently available ready nodes (not including nodes that are to be deleted soon [UC7]). 
+6. If there are still some pending pods, find which of the node group can be expanded to accommodate them. Skip node groups that are not healthy (contains many unready nodes or nodes that failed to start). Helps with [UC3] uses [S2]. 
+7. Estimate the number of needed nodes, account yet-to-come nodes [UC1], [UC2], [S3]. Expand the chosen node group if needed.
+8. Calculate the unneeded nodes in the whole cluster, including the unready nodes [UC6]. Unneeded nodes must be monitored every iteration to be sure that they have been unneded for the prolonged time.
+9. Try to remove some unneeded node, if there was no recent scale up and the node has been unneeded for more than
+10 min. Use higher delay for unready nodes [UC6].
 
