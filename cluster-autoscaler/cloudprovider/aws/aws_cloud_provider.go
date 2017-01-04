@@ -198,6 +198,11 @@ func (asg *Asg) Debug() string {
 	return fmt.Sprintf("%s (%d:%d)", asg.Id(), asg.MinSize(), asg.MaxSize())
 }
 
+// Nodes returns a list of all nodes that belong to this node group.
+func (asg *Asg) Nodes() ([]string, error) {
+	return asg.awsManager.GetAsgNodes(asg)
+}
+
 func buildAsg(value string, awsManager *AwsManager) (*Asg, error) {
 	tokens := strings.SplitN(value, ":", 3)
 	if len(tokens) != 3 {
