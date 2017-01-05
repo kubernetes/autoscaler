@@ -146,10 +146,11 @@ func run(_ <-chan struct{}) {
 	if err != nil {
 		glog.Fatalf("Failed to create predicate checker: %v", err)
 	}
-	unschedulablePodLister := kube_util.NewUnschedulablePodLister(kubeClient, apiv1.NamespaceAll)
-	scheduledPodLister := kube_util.NewScheduledPodLister(kubeClient)
-	readyNodeLister := kube_util.NewReadyNodeLister(kubeClient)
-	allNodeLister := kube_util.NewAllNodeLister(kubeClient)
+	stopchannel := make(chan struct{})
+	unschedulablePodLister := kube_util.NewUnschedulablePodLister(kubeClient, stopchannel)
+	scheduledPodLister := kube_util.NewScheduledPodLister(kubeClient, stopchannel)
+	readyNodeLister := kube_util.NewReadyNodeLister(kubeClient, stopchannel)
+	allNodeLister := kube_util.NewAllNodeLister(kubeClient, stopchannel)
 
 	lastScaleUpTime := time.Now()
 	lastScaleDownFailedTrial := time.Now()
