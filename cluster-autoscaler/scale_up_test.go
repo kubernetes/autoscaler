@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 
 	"k8s.io/contrib/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/contrib/cluster-autoscaler/clusterstate"
@@ -83,6 +84,62 @@ func TestScaleUpOK(t *testing.T) {
 	assert.NoError(t, err)
 	assert.True(t, result)
 	assert.Equal(t, "ng2-1", getStringFromChan(expandedGroups))
+}
+
+func TestScaleUpNodeComing(t *testing.T) {
+	n1 := BuildTestNode("n1", 100, 1000)
+	n2 := BuildTestNode("n2", 1000, 1000)
+	p1 := BuildTestPod("p1", 80, 0)
+	p2 := BuildTestPod("p2", 800, 0)
+	p1.Spec.NodeName = "n1"
+	p2.Spec.NodeName = "n2"
+
+	fakeClient := &fake.Clientset{}
+	fakeClient.Fake.AddReactor("list", "pods", func(action core.Action) (bool, runtime.Object, error) {
+		list := action.(core.ListAction)
+		fieldstring := list.GetListRestrictions().Fields.String()
+		if strings.Contains(fieldstring, "n1") {
+			return true, &apiv1.PodList{Items: []apiv1.Pod{*p1}}, nil
+		}
+		if strings.Contains(fieldstring, "n2") {
+			return true, &apiv1.PodList{Items: []apiv1.Pod{*p2}}, nil
+		}
+		return true, nil, fmt.Errorf("Failed to list: %v", list)
+	})
+
+	provider := testprovider.NewTestCloudProvider(func(nodeGroup string, increase int) error {
+		t.Fatalf("No expansion is expected, but increased %s by %d", nodeGroup, increase)
+		return nil
+	}, nil)
+	provider.AddNodeGroup("ng1", 1, 10, 1)
+	provider.AddNodeGroup("ng2", 1, 10, 2)
+	provider.AddNode("ng1", n1)
+	provider.AddNode("ng2", n2)
+
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{})
+	clusterState.RegisterScaleUp(&clusterstate.ScaleUpRequest{
+		NodeGroupName:   "ng2",
+		Increase:        1,
+		Time:            time.Now(),
+		ExpectedAddTime: time.Now().Add(5 * time.Minute),
+	})
+	clusterState.UpdateNodes([]*apiv1.Node{n1, n2}, time.Now())
+
+	context := &AutoscalingContext{
+		PredicateChecker:     simulator.NewTestPredicateChecker(),
+		CloudProvider:        provider,
+		ClientSet:            fakeClient,
+		Recorder:             createEventRecorder(fakeClient),
+		EstimatorName:        BinpackingEstimatorName,
+		ExpanderStrategy:     random.NewStrategy(),
+		ClusterStateRegistry: clusterState,
+	}
+	p3 := BuildTestPod("p-new", 500, 0)
+
+	result, err := ScaleUp(context, []*apiv1.Pod{p3}, []*apiv1.Node{n1, n2})
+	assert.NoError(t, err)
+	// A node is already coming - no need for scale up.
+	assert.False(t, result)
 }
 
 func TestScaleUpNoHelp(t *testing.T) {

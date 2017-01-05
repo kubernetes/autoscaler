@@ -45,12 +45,24 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 	}
 
 	nodeInfos, err := GetNodeInfosForGroups(nodes, context.CloudProvider, context.ClientSet)
-	expansionOptions := make([]expander.Option, 0)
 	if err != nil {
 		return false, fmt.Errorf("failed to build node infos for node groups: %v", err)
 	}
 
+	upcomingNodes := make([]*schedulercache.NodeInfo, 0)
+	for nodeGroup, numberOfNodes := range context.ClusterStateRegistry.GetUpcomingNodes() {
+		nodeTemplate, found := nodeInfos[nodeGroup]
+		if !found {
+			return false, fmt.Errorf("failed to find template node for node group %s", nodeGroup)
+		}
+		for i := 0; i < numberOfNodes; i++ {
+			upcomingNodes = append(upcomingNodes, nodeTemplate)
+		}
+	}
+
 	podsRemainUnshedulable := make(map[*apiv1.Pod]struct{})
+	expansionOptions := make([]expander.Option, 0)
+
 	for _, nodeGroup := range context.CloudProvider.NodeGroups() {
 
 		currentSize, err := nodeGroup.TargetSize()
@@ -87,13 +99,13 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 		if len(option.Pods) > 0 {
 			if context.EstimatorName == BinpackingEstimatorName {
 				binpackingEstimator := estimator.NewBinpackingNodeEstimator(context.PredicateChecker)
-				option.NodeCount = binpackingEstimator.Estimate(option.Pods, nodeInfo, []*schedulercache.NodeInfo{})
+				option.NodeCount = binpackingEstimator.Estimate(option.Pods, nodeInfo, upcomingNodes)
 			} else if context.EstimatorName == BasicEstimatorName {
 				basicEstimator := estimator.NewBasicNodeEstimator()
 				for _, pod := range option.Pods {
 					basicEstimator.Add(pod)
 				}
-				option.NodeCount, option.Debug = basicEstimator.Estimate(nodeInfo.Node(), []*schedulercache.NodeInfo{})
+				option.NodeCount, option.Debug = basicEstimator.Estimate(nodeInfo.Node(), upcomingNodes)
 			} else {
 				glog.Fatalf("Unrecognized estimator: %s", context.EstimatorName)
 			}
