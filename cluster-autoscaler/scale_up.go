@@ -65,6 +65,11 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 
 	for _, nodeGroup := range context.CloudProvider.NodeGroups() {
 
+		if !context.ClusterStateRegistry.IsNodeGroupHealthy(nodeGroup.Id()) {
+			glog.Warningf("Node group %s is unhealthy", nodeGroup.Id())
+			continue
+		}
+
 		currentSize, err := nodeGroup.TargetSize()
 		if err != nil {
 			glog.Errorf("Failed to get node group size: %v", err)
