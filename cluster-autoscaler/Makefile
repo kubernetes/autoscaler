@@ -20,7 +20,7 @@ ifndef REGISTRY
 	ERR = $(error REGISTRY is undefined)
 	$(ERR)
 endif
-	docker build -t ${REGISTRY}/cluster-autoscaler:${TAG} .
+	docker build --pull -t ${REGISTRY}/cluster-autoscaler:${TAG} .
 	gcloud docker push ${REGISTRY}/cluster-autoscaler:${TAG}
 
 clean:
