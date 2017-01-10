@@ -70,17 +70,30 @@ type ClusterStateRegistryConfig struct {
 	OkTotalUnreadyCount int
 }
 
+// IncorrectNodeGroupSize contains information about how much the current size of the node group
+// differs from the expected size. Prolonged, stable mismatch is an indication of quota
+// or startup issues.
+type IncorrectNodeGroupSize struct {
+	// ExpectedSize is the size of the node group measured on the cloud provider side.
+	ExpectedSize int
+	// CurrentSize is the size of the node group measured on the kubernetes side.
+	CurrentSize int
+	// FirstObserved is the time whtn the given difference occurred.
+	FirstObserved time.Time
+}
+
 // ClusterStateRegistry is a structure to keep track the current state of the cluster.
 type ClusterStateRegistry struct {
 	sync.Mutex
-	config                ClusterStateRegistryConfig
-	scaleUpRequests       []*ScaleUpRequest
-	scaleDownRequests     []*ScaleDownRequest
-	nodes                 []*apiv1.Node
-	cloudProvider         cloudprovider.CloudProvider
-	perNodeGroupReadiness map[string]Readiness
-	totalReadiness        Readiness
-	acceptableRanges      map[string]AcceptableRange
+	config                  ClusterStateRegistryConfig
+	scaleUpRequests         []*ScaleUpRequest
+	scaleDownRequests       []*ScaleDownRequest
+	nodes                   []*apiv1.Node
+	cloudProvider           cloudprovider.CloudProvider
+	perNodeGroupReadiness   map[string]Readiness
+	totalReadiness          Readiness
+	acceptableRanges        map[string]AcceptableRange
+	incorrectNodeGroupSizes map[string]IncorrectNodeGroupSize
 }
 
 // NewClusterStateRegistry creates new ClusterStateRegistry.
@@ -141,8 +154,9 @@ func (csr *ClusterStateRegistry) UpdateNodes(nodes []*apiv1.Node, currentTime ti
 
 	csr.cleanUp(currentTime)
 	csr.nodes = nodes
-	csr.perNodeGroupReadiness, csr.totalReadiness = csr.calculateReadinessStats(currentTime)
-	csr.acceptableRanges = csr.calculateAcceptableRanges(targetSizes)
+	csr.updateReadinessStats(currentTime)
+	csr.updateAcceptableRanges(targetSizes)
+	csr.updateIncorrectNodeGroupSizes(currentTime)
 	return nil
 }
 
@@ -226,7 +240,7 @@ type AcceptableRange struct {
 // So if there has been a recent scale up of size 5 then there should be between targetSize-5 and targetSize
 // nodes in ready state. In the same way, if there have been 3 nodes removed recently then
 // the expected number of ready nodes is between targetSize and targetSize + 3.
-func (csr *ClusterStateRegistry) calculateAcceptableRanges(targetSize map[string]int) map[string]AcceptableRange {
+func (csr *ClusterStateRegistry) updateAcceptableRanges(targetSize map[string]int) {
 	result := make(map[string]AcceptableRange)
 	for _, nodeGroup := range csr.cloudProvider.NodeGroups() {
 		size := targetSize[nodeGroup.Id()]
@@ -246,7 +260,7 @@ func (csr *ClusterStateRegistry) calculateAcceptableRanges(targetSize map[string
 		val.MaxNodes += 1
 		result[sdr.NodeGroupName] = val
 	}
-	return result
+	csr.acceptableRanges = result
 }
 
 // Readiness contains readiness information about a group of nodes.
@@ -262,13 +276,17 @@ type Readiness struct {
 	LongNotStarted int
 	// Number of nodes that are not yet fully started.
 	NotStarted int
+	// Number of all registered nodes in the group (ready/unready/deleted/etc).
+	Registered int
 }
 
-func (csr *ClusterStateRegistry) calculateReadinessStats(currentTime time.Time) (perNodeGroup map[string]Readiness, total Readiness) {
+func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 
-	perNodeGroup = make(map[string]Readiness)
+	perNodeGroup := make(map[string]Readiness)
+	total := Readiness{}
 
 	update := func(current Readiness, node *apiv1.Node, ready bool) Readiness {
+		current.Registered++
 		if deletetaint.HasToBeDeletedTaint(node) {
 			current.Deleted++
 		} else if isNodeNotStarted(node) && node.CreationTimestamp.Time.Add(MaxNodeStartupTime).Before(currentTime) {
@@ -300,7 +318,42 @@ func (csr *ClusterStateRegistry) calculateReadinessStats(currentTime time.Time) 
 		}
 		total = update(total, node, ready)
 	}
-	return perNodeGroup, total
+	csr.perNodeGroupReadiness = perNodeGroup
+	csr.totalReadiness = total
+}
+
+// Calculates which node groups have incorrect size.
+func (csr *ClusterStateRegistry) updateIncorrectNodeGroupSizes(currentTime time.Time) {
+	result := make(map[string]IncorrectNodeGroupSize)
+	for _, nodeGroup := range csr.cloudProvider.NodeGroups() {
+		readiness, found := csr.perNodeGroupReadiness[nodeGroup.Id()]
+		if !found {
+			glog.Warningf("Readiness for node group %s not found", nodeGroup.Id())
+			continue
+		}
+		acceptableRange, found := csr.acceptableRanges[nodeGroup.Id()]
+		if !found {
+			glog.Warningf("Acceptable range for node group %s not found", nodeGroup.Id())
+			continue
+		}
+		if readiness.Registered > acceptableRange.MaxNodes ||
+			readiness.Registered < acceptableRange.MinNodes {
+			incorrect := IncorrectNodeGroupSize{
+				CurrentSize:   readiness.Registered,
+				ExpectedSize:  acceptableRange.CurrentTarget,
+				FirstObserved: currentTime,
+			}
+			existing, found := csr.incorrectNodeGroupSizes[nodeGroup.Id()]
+			if found {
+				if incorrect.CurrentSize == existing.CurrentSize &&
+					incorrect.ExpectedSize == existing.ExpectedSize {
+					incorrect = existing
+				}
+			}
+			result[nodeGroup.Id()] = incorrect
+		}
+	}
+	csr.incorrectNodeGroupSizes = result
 }
 
 // GetReadinessState gets readiness state for the node

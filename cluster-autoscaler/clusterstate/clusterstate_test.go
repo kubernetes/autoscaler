@@ -231,3 +231,33 @@ func TestUpcomingNodes(t *testing.T) {
 	assert.Equal(t, 2, upcomingNodes["ng3"])
 	assert.NotContains(t, upcomingNodes, "ng4")
 }
+
+func TestIncorrectSize(t *testing.T) {
+	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
+	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider.AddNodeGroup("ng1", 1, 10, 5)
+	provider.AddNode("ng1", ng1_1)
+	assert.NotNil(t, provider)
+	clusterstate := NewClusterStateRegistry(provider, ClusterStateRegistryConfig{
+		MaxTotalUnreadyPercentage: 10,
+		OkTotalUnreadyCount:       1,
+	})
+	now := time.Now()
+	clusterstate.UpdateNodes([]*apiv1.Node{ng1_1}, now.Add(-5*time.Minute))
+	incorrect := clusterstate.incorrectNodeGroupSizes["ng1"]
+	assert.Equal(t, 5, incorrect.ExpectedSize)
+	assert.Equal(t, 1, incorrect.CurrentSize)
+	assert.Equal(t, now.Add(-5*time.Minute), incorrect.FirstObserved)
+
+	clusterstate.UpdateNodes([]*apiv1.Node{ng1_1}, now.Add(-4*time.Minute))
+	incorrect = clusterstate.incorrectNodeGroupSizes["ng1"]
+	assert.Equal(t, 5, incorrect.ExpectedSize)
+	assert.Equal(t, 1, incorrect.CurrentSize)
+	assert.Equal(t, now.Add(-5*time.Minute), incorrect.FirstObserved)
+
+	clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng1_1}, now.Add(-3*time.Minute))
+	incorrect = clusterstate.incorrectNodeGroupSizes["ng1"]
+	assert.Equal(t, 5, incorrect.ExpectedSize)
+	assert.Equal(t, 2, incorrect.CurrentSize)
+	assert.Equal(t, now.Add(-3*time.Minute), incorrect.FirstObserved)
+}
