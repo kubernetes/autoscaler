@@ -44,7 +44,7 @@ clean:
 	rm -rf build
 
 build: go
-	docker build -t ${PREFIX}/addon-resizer:$(TAG) .
+	docker build --pull -t ${PREFIX}/addon-resizer:$(TAG) .
 
 docker: build
 
