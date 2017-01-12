@@ -17,8 +17,12 @@ limitations under the License.
 package main
 
 import (
+	"fmt"
 	"testing"
+	"time"
 
+	"k8s.io/contrib/cluster-autoscaler/cloudprovider/test"
+	"k8s.io/contrib/cluster-autoscaler/clusterstate"
 	"k8s.io/contrib/cluster-autoscaler/simulator"
 	. "k8s.io/contrib/cluster-autoscaler/utils/test"
 
@@ -50,4 +54,49 @@ func TestFilterOutSchedulable(t *testing.T) {
 	assert.Equal(t, 2, len(res2))
 	assert.Equal(t, p1, res2[0])
 	assert.Equal(t, p2, res2[1])
+}
+
+func TestRemoveOldUnregisteredNodes(t *testing.T) {
+	deletedNodes := make(chan string, 10)
+
+	now := time.Now()
+
+	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
+	ng1_1.Spec.ProviderID = "ng1-1"
+	ng1_2 := BuildTestNode("ng1-2", 1000, 1000)
+	ng1_2.Spec.ProviderID = "ng1-2"
+	provider := testprovider.NewTestCloudProvider(nil, func(nodegroup string, node string) error {
+		deletedNodes <- fmt.Sprintf("%s/%s", nodegroup, node)
+		return nil
+	})
+	provider.AddNodeGroup("ng1", 1, 10, 2)
+	provider.AddNode("ng1", ng1_1)
+	provider.AddNode("ng1", ng1_2)
+
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{
+		MaxTotalUnreadyPercentage: 10,
+		OkTotalUnreadyCount:       1,
+	})
+	err := clusterState.UpdateNodes([]*apiv1.Node{ng1_1}, now.Add(-time.Hour))
+	assert.NoError(t, err)
+
+	context := &AutoscalingContext{
+		CloudProvider:               provider,
+		ClusterStateRegistry:        clusterState,
+		UnregisteredNodeRemovalTime: 45 * time.Minute,
+	}
+	unregisteredNodes := clusterState.GetUnregisteredNodes()
+	assert.Equal(t, 1, len(unregisteredNodes))
+
+	// Nothing should be removed. The unregistered node is not old enough.
+	removed, err := removeOldUnregisteredNodes(unregisteredNodes, context, now.Add(-50*time.Minute))
+	assert.NoError(t, err)
+	assert.False(t, removed)
+
+	// ng1_2 should be removed.
+	removed, err = removeOldUnregisteredNodes(unregisteredNodes, context, now)
+	assert.NoError(t, err)
+	assert.True(t, removed)
+	deletedNode := getStringFromChan(deletedNodes)
+	assert.Equal(t, "ng1/ng1-2", deletedNode)
 }

@@ -70,6 +70,8 @@ type AutoscalingContext struct {
 	MaxGratefulTerminationSec int
 	// Maximum time that CA waits for a node to be provisioned. This is cloud provider specific.
 	MaxNodeProvisionTime time.Duration
+	// Time that CA waits before starting to remove nodes that exist in cloud provider but not in Kubernetes.
+	UnregisteredNodeRemovalTime time.Duration
 }
 
 // GetAllNodesAvailableTime returns time when the newest node became available for scheduler.
@@ -218,4 +220,27 @@ func GetNodeInfosForGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.Clou
 		}
 	}
 	return result, nil
+}
+
+// Removes unregisterd nodes if needed. Returns true if anything was removed and error if such occurred.
+func removeOldUnregisteredNodes(unregisteredNodes []clusterstate.UnregisteredNode, contetxt *AutoscalingContext,
+	currentTime time.Time) (bool, error) {
+	removedAny := false
+	for _, unregisteredNode := range unregisteredNodes {
+		if unregisteredNode.UnregisteredSice.Add(contetxt.UnregisteredNodeRemovalTime).Before(currentTime) {
+			glog.V(0).Infof("Removing unregistered node %v", unregisteredNode.Node.Name)
+			nodeGroup, err := contetxt.CloudProvider.NodeGroupForNode(unregisteredNode.Node)
+			if err != nil {
+				glog.Warningf("Failed to get node group for %s: %v", unregisteredNode.Node.Name, err)
+				return removedAny, err
+			}
+			err = nodeGroup.DeleteNodes([]*apiv1.Node{unregisteredNode.Node})
+			if err != nil {
+				glog.Warningf("Failed to remove node %s: %v", unregisteredNode.Node.Name, err)
+				return removedAny, err
+			}
+			removedAny = true
+		}
+	}
+	return removedAny, nil
 }
