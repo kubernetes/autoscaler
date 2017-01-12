@@ -239,11 +239,11 @@ func (m *GceManager) GetMigNodes(mig *Mig) ([]string, error) {
 	}
 	result := make([]string, 0)
 	for _, instance := range instances.ManagedInstances {
-		_, _, name, err := ParseInstanceUrl(instance.Instance)
+		project, zone, name, err := ParseInstanceUrl(instance.Instance)
 		if err != nil {
 			return []string{}, err
 		}
-		result = append(result, name)
+		result = append(result, fmt.Sprintf("gce://%s/%s/%s", project, zone, name))
 	}
 	return result, nil
 }
