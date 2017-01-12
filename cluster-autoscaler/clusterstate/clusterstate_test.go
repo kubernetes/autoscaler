@@ -261,3 +261,28 @@ func TestIncorrectSize(t *testing.T) {
 	assert.Equal(t, 2, incorrect.CurrentSize)
 	assert.Equal(t, now.Add(-3*time.Minute), incorrect.FirstObserved)
 }
+
+func TestUnregisteredNodes(t *testing.T) {
+	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
+	ng1_1.Spec.ProviderID = "ng1-1"
+	ng1_2 := BuildTestNode("ng1-2", 1000, 1000)
+	ng1_2.Spec.ProviderID = "ng1-2"
+	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider.AddNodeGroup("ng1", 1, 10, 1)
+	provider.AddNode("ng1", ng1_1)
+	provider.AddNode("ng1", ng1_2)
+
+	clusterstate := NewClusterStateRegistry(provider, ClusterStateRegistryConfig{
+		MaxTotalUnreadyPercentage: 10,
+		OkTotalUnreadyCount:       1,
+	})
+	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1}, time.Now().Add(-time.Minute))
+
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(clusterstate.GetUnregisteredNodes()))
+	assert.Equal(t, "ng1-2", clusterstate.GetUnregisteredNodes()[0].Node.Name)
+
+	err = clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng1_2}, time.Now().Add(-time.Minute))
+	assert.NoError(t, err)
+	assert.Equal(t, 0, len(clusterstate.GetUnregisteredNodes()))
+}
