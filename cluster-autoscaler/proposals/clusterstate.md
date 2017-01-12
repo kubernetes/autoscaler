@@ -11,39 +11,41 @@ The number of ready nodes can be different than on the mig side in the following
 
 * [UC1] A new node is being added to the cluster. The node group has been increased but the node has not been created/started/registered in K8S yet. On GCP this usually takes couple minutes. 
 Indicating factors:
- -- There was a scale up in the last couple minutes.
- -- The number of missing node is at most the size of executed scale-up.
+   * There was a scale up in the last couple minutes.
+   * The number of missing node is at most the size of executed scale-up.
 Suggested action: Continue operations, however include all yet-to-arrive nodes in all scale-up considerations.
 
 * [UC2] A new node is being added to the cluster. The node has registered on the cluster but has not yet switched its state to ready. This should be fixed in couple seconds. Indicating factors:
- -- The unready node is new. CreateTime in the last couple minutes.
+   * The unready node is new. CreateTime in the last couple minutes.
 Suggested action: Continue operations, however include all yet-to-arrive nodes in all scale-up considerations.
 
-* [UC3] A new node was added to the cluster but failed to start within the reasonable time. There is little chance that it will start anytime soon. Indicating factors:
- -- Node is unready
- -- CreateTime == unready NodeCondition.LastTransitionTime
+* [UC3] A new node was added to the cluster, it registered in K8S but failed to fully start within 
+the reasonable time. There is little chance that it will start anytime soon. Indicating factors:
+   * Node is unready
+   * CreateTime == unready NodeCondition.LastTransitionTime
 Suggested action: Continue operations, however do not expand this node pool. The probable scenario is that the node will be picked by scale down soon (after it is unused for long enough - see UC5).
 
 * [UC4] A new node is being added to the cluster. However the cloud provider cannot provision the node within the reasonable time due to either no quota or technical problems. Indicating factors:
- -- The target number of nodes on the cloud provider side is greater than the number of nodes in K8S for the prolonged time (more than couple minutes) and the difference doesn’t change.
- -- There are no new nodes when listing nodes on the cluster provider side.
+   * The target number of nodes on the cloud provider side is greater than the number of nodes in K8S for the prolonged time (more than couple minutes) and the difference doesn’t change.
+   * There are no new nodes when listing nodes on the cluster provider side.
 Suggested action: Reduce the target size of the problematic node group to the current size. 
 
 * [UC5] A new node was provided by the cloud. However, it failed to register. Indicating factors:
-  -- There are no new nodes on the cluster provider side that have not appeared in K8S for the long time.
+   * There are no new nodes on the cluster provider side that have not appeared in K8S for the long time.
 Suggested action: Remove the unregistered nodes one by one.
 
-* [UC6] A node is in an unready state for quite a while (+20min) and the total number of unready/not-present nodes is low (less than XX%). It could either not switched from unready to ready on node registration or something crashed on the node and could not be recovered. Indicating factors:
--- Node condition is unready and last transition time is >= 20 min.
--- The number of TOTAL nodes in K8S is equal to the target number of nodes on the cloud provider side. 
-Suggested action: Include the node in scale down, although with greater (configurable) unneeded time.
+* [UC6] A node is in an unready state for quite a while (+20min) and the total number of unready/not-present nodes is low (less than XX%). Something crashed on the node and could not be recovered. Indicating factors:
+   * Node condition is unready and last transition time is >= 20 min.
+   * The number of TOTAL nodes in K8S is equal to the target number of nodes on the cloud provider side. 
+Suggested action: Include the node in scale down, although with greater (configurable) unneeded time and only
+if node controller has already removed all of its pods.
 
 * [UC7] Some nodes are being removed by cluster autoscaler. Indicating factor:
--- Node is unready and has ToBeRemoved taint.
+   * Node is unready and has ToBeRemoved taint.
 Suggested action: Continue operations. Nodes should be removed soon.
 
 * [UC8] The number of unjustified (not related to scale-up and scale-down) unready nodes is greater than XX%. Something is broken, possibly due to network partition or generic failure. Indicating factors: 
- -- >XX% of nodes are unready 
+   * >XX% of nodes are unready 
 Suggested action: halt operations.
 
 ### Proposed solution
