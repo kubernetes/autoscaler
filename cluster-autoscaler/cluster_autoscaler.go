@@ -240,6 +240,11 @@ func run(_ <-chan struct{}) {
 
 	scaleDown := NewScaleDown(&autoscalingContext)
 
+	// CA can die at any time. Removing taints that might have been left from the previous run.
+	if readyNodes, err := readyNodeLister.List(); err != nil {
+		cleanToBeDeleted(readyNodes, kubeClient, autoscalingContext.Recorder)
+	}
+
 	for {
 		select {
 		case <-time.After(*scanInterval):
@@ -303,9 +308,6 @@ func run(_ <-chan struct{}) {
 					glog.Warningf("Cluster is not ready for autoscaling: %v", err)
 					continue
 				}
-
-				// CA can die at any time. Removing taints that might have been left from the previous run.
-				cleanToBeDeleted(readyNodes, kubeClient, autoscalingContext.Recorder)
 
 				allUnschedulablePods, err := unschedulablePodLister.List()
 				if err != nil {
