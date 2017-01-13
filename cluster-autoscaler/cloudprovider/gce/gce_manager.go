@@ -114,6 +114,7 @@ func (m *GceManager) GetMigSize(mig *Mig) (int64, error) {
 
 // SetMigSize sets MIG size.
 func (m *GceManager) SetMigSize(mig *Mig, size int64) error {
+	glog.V(0).Infof("Setting mig size %s to %d", mig.Id(), size)
 	op, err := m.service.InstanceGroupManagers.Resize(mig.Project, mig.Zone, mig.Name, size).Do()
 	if err != nil {
 		return err

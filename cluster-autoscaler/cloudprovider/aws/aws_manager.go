@@ -121,6 +121,7 @@ func (m *AwsManager) SetAsgSize(asg *Asg, size int64) error {
 		DesiredCapacity:      aws.Int64(size),
 		HonorCooldown:        aws.Bool(false),
 	}
+	glog.V(0).Infof("Setting asg %s size to %d", asg.Id(), size)
 	_, err := m.service.SetDesiredCapacity(params)
 	if err != nil {
 		return err
