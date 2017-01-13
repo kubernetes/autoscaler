@@ -142,6 +142,30 @@ func (asg *Asg) IncreaseSize(delta int) error {
 	return asg.awsManager.SetAsgSize(asg, size+int64(delta))
 }
 
+// DecreaseTargetSize decreases the target size of the node group. This function
+// doesn't permit to delete any existing node and can be used only to reduce the
+// request for new nodes that have not been yet fulfilled. Delta should be negative.
+// It is assumed that cloud provider will not delete the existing nodes if the size
+// when there is an option to just decrease the target.
+func (asg *Asg) DecreaseTargetSize(delta int) error {
+	if delta >= 0 {
+		return fmt.Errorf("size decrease size must be negative")
+	}
+	size, err := asg.awsManager.GetAsgSize(asg)
+	if err != nil {
+		return err
+	}
+	nodes, err := asg.awsManager.GetAsgNodes(asg)
+	if err != nil {
+		return err
+	}
+	if int(size)+delta < len(nodes) {
+		return fmt.Errorf("attempt to delete existing nodes targetSize:%d delta:%d existingNodes: %d",
+			size, delta, len(nodes))
+	}
+	return asg.awsManager.SetAsgSize(asg, size+int64(delta))
+}
+
 // Belongs returns true if the given node belongs to the NodeGroup.
 func (asg *Asg) Belongs(node *apiv1.Node) (bool, error) {
 	ref, err := AwsRefFromProviderId(node.Spec.ProviderID)
