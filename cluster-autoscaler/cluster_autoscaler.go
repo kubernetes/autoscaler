@@ -103,7 +103,7 @@ var (
 	maxTotalUnreadyPercentage   = flag.Float64("max-total-unready-percentage", 33, "Maximum percentage of unready nodes after which CA halts operations")
 	okTotalUnreadyCount         = flag.Int("ok-total-unready-count", 3, "Number of allowed unready nodes, irrespective of max-total-unready-percentage")
 	maxNodeProvisionTime        = flag.Duration("max-node-provision-time", 15*time.Minute, "Maximum time CA waits for node to be provisioned")
-	unregisteredNodeRemovalTime = flag.Duration("unregistered-node-removal-time", 5*time.Minute, "Time that CA waits before removing nodes that are not registered in Kubernetes")
+	unregisteredNodeRemovalTime = flag.Duration("unregistered-node-removal-time", 15*time.Minute, "Time that CA waits before removing nodes that are not registered in Kubernetes")
 
 	// AvailableEstimators is a list of available estimators.
 	AvailableEstimators = []string{BasicEstimatorName, BinpackingEstimatorName}

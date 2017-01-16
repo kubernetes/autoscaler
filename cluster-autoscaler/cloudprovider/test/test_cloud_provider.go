@@ -154,6 +154,17 @@ func (tng *TestNodeGroup) IncreaseSize(delta int) error {
 	return tng.cloudProvider.onIncrease(tng.id, delta)
 }
 
+// DecreaseTargetSize decreases the target size of the node group. This function
+// doesn't permit to delete any existing node and can be used only to reduce the
+// request for new nodes that have not been yet fulfilled. Delta should be negative.
+func (tng *TestNodeGroup) DecreaseTargetSize(delta int) error {
+	tng.Lock()
+	tng.targetSize += delta
+	tng.Unlock()
+
+	return tng.cloudProvider.onIncrease(tng.id, delta)
+}
+
 // DeleteNodes deletes nodes from this node group. Error is returned either on
 // failure or if the given node doesn't belong to this node group. This function
 // should wait until node group size is updated.
