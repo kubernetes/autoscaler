@@ -146,6 +146,28 @@ func (mig *Mig) IncreaseSize(delta int) error {
 	return mig.gceManager.SetMigSize(mig, size+int64(delta))
 }
 
+// DecreaseTargetSize decreases the target size of the node group. This function
+// doesn't permit to delete any existing node and can be used only to reduce the
+// request for new nodes that have not been yet fulfilled. Delta should be negative.
+func (mig *Mig) DecreaseTargetSize(delta int) error {
+	if delta >= 0 {
+		return fmt.Errorf("size decrease must be netative")
+	}
+	size, err := mig.gceManager.GetMigSize(mig)
+	if err != nil {
+		return err
+	}
+	nodes, err := mig.gceManager.GetMigNodes(mig)
+	if err != nil {
+		return err
+	}
+	if int(size)+delta < len(nodes) {
+		return fmt.Errorf("attempt to delete existing nodes targetSize:%d delta:%d existingNodes: %d",
+			size, delta, len(nodes))
+	}
+	return mig.gceManager.SetMigSize(mig, size+int64(delta))
+}
+
 // Belongs returns true if the given node belongs to the NodeGroup.
 func (mig *Mig) Belongs(node *apiv1.Node) (bool, error) {
 	ref, err := GceRefFromProviderId(node.Spec.ProviderID)
