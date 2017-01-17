@@ -100,3 +100,42 @@ func TestRemoveOldUnregisteredNodes(t *testing.T) {
 	deletedNode := getStringFromChan(deletedNodes)
 	assert.Equal(t, "ng1/ng1-2", deletedNode)
 }
+
+func TestRemoveFixNodeTargetSize(t *testing.T) {
+	sizeChanges := make(chan string, 10)
+	now := time.Now()
+
+	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
+	ng1_1.Spec.ProviderID = "ng1-1"
+	provider := testprovider.NewTestCloudProvider(func(nodegroup string, delta int) error {
+		sizeChanges <- fmt.Sprintf("%s/%d", nodegroup, delta)
+		return nil
+	}, nil)
+	provider.AddNodeGroup("ng1", 1, 10, 3)
+	provider.AddNode("ng1", ng1_1)
+
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{
+		MaxTotalUnreadyPercentage: 10,
+		OkTotalUnreadyCount:       1,
+	})
+	err := clusterState.UpdateNodes([]*apiv1.Node{ng1_1}, now.Add(-time.Hour))
+	assert.NoError(t, err)
+
+	context := &AutoscalingContext{
+		CloudProvider:               provider,
+		ClusterStateRegistry:        clusterState,
+		UnregisteredNodeRemovalTime: 45 * time.Minute,
+	}
+
+	// Nothing should be fixed. The incorrect size state is not old enough.
+	removed, err := fixNodeGroupSize(context, now.Add(-50*time.Minute))
+	assert.NoError(t, err)
+	assert.False(t, removed)
+
+	// Node group should be decreased.
+	removed, err = fixNodeGroupSize(context, now)
+	assert.NoError(t, err)
+	assert.True(t, removed)
+	change := getStringFromChan(sizeChanges)
+	assert.Equal(t, "ng1/-2", change)
+}
