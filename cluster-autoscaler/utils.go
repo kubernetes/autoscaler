@@ -244,3 +244,31 @@ func removeOldUnregisteredNodes(unregisteredNodes []clusterstate.UnregisteredNod
 	}
 	return removedAny, nil
 }
+
+// Sets the target size of node groups to the current number of nodes in them
+// if the difference was constant for a prolonged time. Returns true if managed
+// to fix something.
+func fixNodeGroupSize(contetxt *AutoscalingContext, currentTime time.Time) (bool, error) {
+	fixed := false
+	for _, nodeGroup := range contetxt.CloudProvider.NodeGroups() {
+		incorrectSize := contetxt.ClusterStateRegistry.GetIncorrectNodeGroupSize(nodeGroup.Id())
+		if incorrectSize == nil {
+			continue
+		}
+		if incorrectSize.FirstObserved.Add(contetxt.UnregisteredNodeRemovalTime).Before(currentTime) {
+
+			delta := incorrectSize.CurrentSize - incorrectSize.ExpectedSize
+			if delta < 0 {
+				glog.V(0).Infof("Decreasing size of %s, expected=%d current=%d delta=%d", nodeGroup.Id(),
+					incorrectSize.ExpectedSize,
+					incorrectSize.CurrentSize,
+					delta)
+				if err := nodeGroup.DecreaseTargetSize(delta); err != nil {
+					return fixed, fmt.Errorf("Failed to decrease %s: %v", nodeGroup.Id(), err)
+				}
+				fixed = true
+			}
+		}
+	}
+	return fixed, nil
+}

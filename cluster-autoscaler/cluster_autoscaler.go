@@ -303,6 +303,19 @@ func run(_ <-chan struct{}) {
 					}
 				}
 
+				// Check if there has been a constant difference between the number of nodes in k8s and
+				// the number of nodes on the cloud provider side.
+				// TODO: andrewskim - add protection for ready AWS nodes.
+				fixedSomething, err := fixNodeGroupSize(&autoscalingContext, time.Now())
+				if err != nil {
+					glog.Warningf("Failed to fix node group sizes: %v", err)
+					continue
+				}
+				if fixedSomething {
+					glog.V(0).Infof("Some node group target size was fixed, skipping the iteration")
+					continue
+				}
+
 				// TODO: remove once all of the unready node handling elements are in place.
 				if err := CheckGroupsAndNodes(readyNodes, autoscalingContext.CloudProvider); err != nil {
 					glog.Warningf("Cluster is not ready for autoscaling: %v", err)
