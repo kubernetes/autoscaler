@@ -80,7 +80,7 @@ type IncorrectNodeGroupSize struct {
 	ExpectedSize int
 	// CurrentSize is the size of the node group measured on the kubernetes side.
 	CurrentSize int
-	// FirstObserved is the time whtn the given difference occurred.
+	// FirstObserved is the time when the given difference occurred.
 	FirstObserved time.Time
 }
 
@@ -89,8 +89,8 @@ type IncorrectNodeGroupSize struct {
 type UnregisteredNode struct {
 	// Node is a dummy node that contains only the name of the node.
 	Node *apiv1.Node
-	// UnregisteredSice is the time when the node was first spotted.
-	UnregisteredSice time.Time
+	// UnregisteredSince is the time when the node was first spotted.
+	UnregisteredSince time.Time
 }
 
 // ClusterStateRegistry is a structure to keep track the current state of the cluster.
@@ -254,7 +254,7 @@ type AcceptableRange struct {
 	CurrentTarget int
 }
 
-// calculateAcceptableRanges calcualtes how many nodes can be in a cluster.
+// updateAcceptableRanges updates cluster state registry with how many nodes can be in a cluster.
 // The function assumes that the nodeGroup.TargetSize() is the desired number of nodes.
 // So if there has been a recent scale up of size 5 then there should be between targetSize-5 and targetSize
 // nodes in ready state. In the same way, if there have been 3 nodes removed recently then
@@ -477,7 +477,7 @@ func getNotRegisteredNodes(allNodes []*apiv1.Node, cloudProvider cloudprovider.C
 							ProviderID: node,
 						},
 					},
-					UnregisteredSice: time,
+					UnregisteredSince: time,
 				})
 			}
 		}
