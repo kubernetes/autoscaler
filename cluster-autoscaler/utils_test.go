@@ -43,6 +43,7 @@ func TestFilterOutSchedulable(t *testing.T) {
 	scheduledPod2.Spec.NodeName = "node1"
 
 	node := BuildTestNode("node1", 2000, 2000000)
+	SetNodeReadyState(node, true, time.Time{})
 
 	predicateChecker := simulator.NewTestPredicateChecker()
 

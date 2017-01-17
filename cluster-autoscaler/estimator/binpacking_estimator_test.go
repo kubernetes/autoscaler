@@ -18,8 +18,10 @@ package estimator
 
 import (
 	"testing"
+	"time"
 
 	"k8s.io/contrib/cluster-autoscaler/simulator"
+	. "k8s.io/contrib/cluster-autoscaler/utils/test"
 	"k8s.io/kubernetes/pkg/api/resource"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
@@ -48,6 +50,7 @@ func TestBinpackingEstimate(t *testing.T) {
 		},
 	}
 	node.Status.Allocatable = node.Status.Capacity
+	SetNodeReadyState(node, true, time.Time{})
 
 	nodeInfo := schedulercache.NewNodeInfo()
 	nodeInfo.SetNode(node)
@@ -76,6 +79,7 @@ func TestBinpackingEstimateComingNodes(t *testing.T) {
 		},
 	}
 	node.Status.Allocatable = node.Status.Capacity
+	SetNodeReadyState(node, true, time.Time{})
 
 	nodeInfo := schedulercache.NewNodeInfo()
 	nodeInfo.SetNode(node)
@@ -109,6 +113,7 @@ func TestBinpackingEstimateWithPorts(t *testing.T) {
 		},
 	}
 	node.Status.Allocatable = node.Status.Capacity
+	SetNodeReadyState(node, true, time.Time{})
 
 	nodeInfo := schedulercache.NewNodeInfo()
 	nodeInfo.SetNode(node)

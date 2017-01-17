@@ -252,7 +252,6 @@ func run(_ <-chan struct{}) {
 				loopStart := time.Now()
 				updateLastTime("main")
 
-				// TODO: remove once switched to all nodes.
 				readyNodes, err := readyNodeLister.List()
 				if err != nil {
 					glog.Errorf("Failed to list ready nodes: %v", err)
@@ -313,12 +312,6 @@ func run(_ <-chan struct{}) {
 				}
 				if fixedSomething {
 					glog.V(0).Infof("Some node group target size was fixed, skipping the iteration")
-					continue
-				}
-
-				// TODO: remove once all of the unready node handling elements are in place.
-				if err := CheckGroupsAndNodes(readyNodes, autoscalingContext.CloudProvider); err != nil {
-					glog.Warningf("Cluster is not ready for autoscaling: %v", err)
 					continue
 				}
 
@@ -405,7 +398,7 @@ func run(_ <-chan struct{}) {
 					glog.V(4).Infof("Calculating unneeded nodes")
 
 					scaleDown.CleanUp(time.Now())
-					err := scaleDown.UpdateUnneededNodes(readyNodes, allScheduled, time.Now())
+					err := scaleDown.UpdateUnneededNodes(allNodes, allScheduled, time.Now())
 					if err != nil {
 						glog.Warningf("Failed to scale down: %v", err)
 						continue
@@ -424,7 +417,7 @@ func run(_ <-chan struct{}) {
 
 						scaleDownStart := time.Now()
 						updateLastTime("scaledown")
-						result, err := scaleDown.TryToScaleDown(readyNodes, allScheduled)
+						result, err := scaleDown.TryToScaleDown(allNodes, allScheduled)
 						updateDuration("scaledown", scaleDownStart)
 
 						// TODO: revisit result handling

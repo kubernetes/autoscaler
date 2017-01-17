@@ -106,11 +106,9 @@ func (readyNodeLister *ReadyNodeLister) List() ([]*apiv1.Node, error) {
 	}
 	readyNodes := make([]*apiv1.Node, 0, len(nodes.Items))
 	for i, node := range nodes.Items {
-		for _, condition := range node.Status.Conditions {
-			if condition.Type == apiv1.NodeReady && condition.Status == apiv1.ConditionTrue {
-				readyNodes = append(readyNodes, &nodes.Items[i])
-				break
-			}
+		if IsNodeReadyAndSchedulable(&node) {
+			readyNodes = append(readyNodes, &nodes.Items[i])
+			break
 		}
 	}
 	return readyNodes, nil

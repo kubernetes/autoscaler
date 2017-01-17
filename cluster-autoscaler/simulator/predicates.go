@@ -19,14 +19,16 @@ package simulator
 import (
 	"fmt"
 
+	kube_util "k8s.io/contrib/cluster-autoscaler/utils/kubernetes"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/algorithm"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/algorithm/predicates"
-	// We need to import provider to intialize default scheduler.
-	_ "k8s.io/kubernetes/plugin/pkg/scheduler/algorithmprovider"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/factory"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
+
+	// We need to import provider to intialize default scheduler.
+	_ "k8s.io/kubernetes/plugin/pkg/scheduler/algorithmprovider"
 )
 
 // PredicateChecker checks whether all required predicates are matched for given Pod and Node
@@ -42,6 +44,7 @@ func NewPredicateChecker(kubeClient kube_client.Interface) (*PredicateChecker, e
 	}
 	schedulerConfigFactory := factory.NewConfigFactory(kubeClient, "", apiv1.DefaultHardPodAffinitySymmetricWeight, apiv1.DefaultFailureDomains)
 	predicates, err := schedulerConfigFactory.GetPredicates(provider.FitPredicateKeys)
+	predicates["ready"] = isNodeReadyAndSchedulablePredicate
 	if err != nil {
 		return nil, err
 	}
@@ -51,11 +54,21 @@ func NewPredicateChecker(kubeClient kube_client.Interface) (*PredicateChecker, e
 	}, nil
 }
 
+func isNodeReadyAndSchedulablePredicate(pod *apiv1.Pod, meta interface{}, nodeInfo *schedulercache.NodeInfo) (bool,
+	[]algorithm.PredicateFailureReason, error) {
+	ready := kube_util.IsNodeReadyAndSchedulable(nodeInfo.Node())
+	if !ready {
+		return false, []algorithm.PredicateFailureReason{predicates.NewFailureReason("node is unready")}, nil
+	}
+	return true, []algorithm.PredicateFailureReason{}, nil
+}
+
 // NewTestPredicateChecker builds test version of PredicateChecker.
 func NewTestPredicateChecker() *PredicateChecker {
 	return &PredicateChecker{
 		predicates: map[string]algorithm.FitPredicate{
 			"default": predicates.GeneralPredicates,
+			"ready":   isNodeReadyAndSchedulablePredicate,
 		},
 	}
 }
@@ -78,6 +91,7 @@ func (p *PredicateChecker) FitsAny(pod *apiv1.Pod, nodeInfos map[string]*schedul
 func (p *PredicateChecker) CheckPredicates(pod *apiv1.Pod, nodeInfo *schedulercache.NodeInfo) error {
 	for _, predicate := range p.predicates {
 		match, failureReason, err := predicate(pod, nil, nodeInfo)
+
 		nodename := "unknown"
 		if nodeInfo.Node() != nil {
 			nodename = nodeInfo.Node().Name
