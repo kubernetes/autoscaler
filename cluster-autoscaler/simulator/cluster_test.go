@@ -21,7 +21,6 @@ import (
 	"time"
 
 	. "k8s.io/contrib/cluster-autoscaler/utils/test"
-
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/kubelet/types"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
@@ -35,6 +34,7 @@ func TestUtilization(t *testing.T) {
 
 	nodeInfo := schedulercache.NewNodeInfo(pod, pod, pod2)
 	node := BuildTestNode("node1", 2000, 2000000)
+	SetNodeReadyState(node, true, time.Time{})
 
 	utilization, err := CalculateUtilization(node, nodeInfo)
 	assert.NoError(t, err)
@@ -56,7 +56,9 @@ func TestFindPlaceAllOk(t *testing.T) {
 		"n2": schedulercache.NewNodeInfo(),
 	}
 	node1 := BuildTestNode("n1", 1000, 2000000)
+	SetNodeReadyState(node1, true, time.Time{})
 	node2 := BuildTestNode("n2", 1000, 2000000)
+	SetNodeReadyState(node2, true, time.Time{})
 	nodeInfos["n1"].SetNode(node1)
 	nodeInfos["n2"].SetNode(node2)
 
@@ -90,7 +92,11 @@ func TestFindPlaceAllBas(t *testing.T) {
 	}
 	nodebad := BuildTestNode("nbad", 1000, 2000000)
 	node1 := BuildTestNode("n1", 1000, 2000000)
+	SetNodeReadyState(node1, true, time.Time{})
+
 	node2 := BuildTestNode("n2", 1000, 2000000)
+	SetNodeReadyState(node2, true, time.Time{})
+
 	nodeInfos["n1"].SetNode(node1)
 	nodeInfos["n2"].SetNode(node2)
 	nodeInfos["nbad"].SetNode(nodebad)
@@ -120,7 +126,11 @@ func TestFindNone(t *testing.T) {
 		"n2": schedulercache.NewNodeInfo(),
 	}
 	node1 := BuildTestNode("n1", 1000, 2000000)
+	SetNodeReadyState(node1, true, time.Time{})
+
 	node2 := BuildTestNode("n2", 1000, 2000000)
+	SetNodeReadyState(node2, true, time.Time{})
+
 	nodeInfos["n1"].SetNode(node1)
 	nodeInfos["n2"].SetNode(node2)
 
@@ -165,6 +175,11 @@ func TestFindEmptyNodes(t *testing.T) {
 	node2 := BuildTestNode("n2", 1000, 2000000)
 	node3 := BuildTestNode("n3", 1000, 2000000)
 	node4 := BuildTestNode("n4", 1000, 2000000)
+
+	SetNodeReadyState(node1, true, time.Time{})
+	SetNodeReadyState(node2, true, time.Time{})
+	SetNodeReadyState(node3, true, time.Time{})
+	SetNodeReadyState(node4, true, time.Time{})
 
 	emptyNodes := FindEmptyNodesToRemove([]*apiv1.Node{node1, node2, node3, node4}, []*apiv1.Pod{pod1, pod2})
 	assert.Equal(t, []*apiv1.Node{node2, node3, node4}, emptyNodes)
