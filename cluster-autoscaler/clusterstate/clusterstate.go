@@ -17,13 +17,13 @@ limitations under the License.
 package clusterstate
 
 import (
-	"fmt"
 	"reflect"
 	"sync"
 	"time"
 
 	"k8s.io/contrib/cluster-autoscaler/cloudprovider"
 	"k8s.io/contrib/cluster-autoscaler/utils/deletetaint"
+	kube_util "k8s.io/contrib/cluster-autoscaler/utils/kubernetes"
 
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/util/sets"
@@ -322,7 +322,7 @@ func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 
 	for _, node := range csr.nodes {
 		nodeGroup, errNg := csr.cloudProvider.NodeGroupForNode(node)
-		ready, _, errReady := GetReadinessState(node)
+		ready, _, errReady := kube_util.GetReadinessState(node)
 
 		// Node is most likely not autoscaled, however check the errors.
 		if reflect.ValueOf(nodeGroup).IsNil() {
@@ -397,19 +397,6 @@ func (csr *ClusterStateRegistry) GetUnregisteredNodes() []UnregisteredNode {
 		result = append(result, unregistered)
 	}
 	return result
-}
-
-// GetReadinessState gets readiness state for the node
-func GetReadinessState(node *apiv1.Node) (isNodeReady bool, lastTransitionTime time.Time, err error) {
-	for _, condition := range node.Status.Conditions {
-		if condition.Type == apiv1.NodeReady {
-			if condition.Status == apiv1.ConditionTrue {
-				return true, condition.LastTransitionTime.Time, nil
-			}
-			return false, condition.LastTransitionTime.Time, nil
-		}
-	}
-	return false, time.Time{}, fmt.Errorf("NodeReady condition for %s not found", node.Name)
 }
 
 func isNodeNotStarted(node *apiv1.Node) bool {

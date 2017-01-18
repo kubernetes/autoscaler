@@ -63,6 +63,11 @@ func TestFindUnneededNodes(t *testing.T) {
 	n3 := BuildTestNode("n3", 1000, 10)
 	n4 := BuildTestNode("n4", 10000, 10)
 
+	SetNodeReadyState(n1, true, time.Time{})
+	SetNodeReadyState(n2, true, time.Time{})
+	SetNodeReadyState(n3, true, time.Time{})
+	SetNodeReadyState(n4, true, time.Time{})
+
 	context := AutoscalingContext{
 		PredicateChecker:              simulator.NewTestPredicateChecker(),
 		ScaleDownUtilizationThreshold: 0.35,
@@ -94,6 +99,7 @@ func TestDrainNode(t *testing.T) {
 	p1 := BuildTestPod("p1", 100, 0)
 	p2 := BuildTestPod("p2", 300, 0)
 	n1 := BuildTestNode("n1", 1000, 1000)
+	SetNodeReadyState(n1, true, time.Time{})
 
 	fakeClient.Fake.AddReactor("list", "pods", func(action core.Action) (bool, runtime.Object, error) {
 		return true, &apiv1.PodList{Items: []apiv1.Pod{*p1, *p2}}, nil
@@ -204,7 +210,7 @@ func TestScaleDown(t *testing.T) {
 	assert.Equal(t, n1.Name, getStringFromChan(updatedNodes))
 }
 
-func TestNoScaleDown(t *testing.T) {
+func TestNoScaleDownUnready(t *testing.T) {
 	fakeClient := &fake.Clientset{}
 	n1 := BuildTestNode("n1", 1000, 1000)
 	SetNodeReadyState(n1, false, time.Now().Add(-3*time.Minute))
@@ -249,6 +255,8 @@ func TestNoScaleDown(t *testing.T) {
 		MaxGratefulTerminationSec:     60,
 		ClusterStateRegistry:          clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}),
 	}
+
+	// N1 is unready so it requires a bigger unneeded time.
 	scaleDown := NewScaleDown(context)
 	scaleDown.UpdateUnneededNodes([]*apiv1.Node{n1, n2}, []*apiv1.Pod{p2}, time.Now().Add(-5*time.Minute))
 	result, err := scaleDown.TryToScaleDown([]*apiv1.Node{n1, n2}, []*apiv1.Pod{p2})
@@ -266,6 +274,7 @@ func TestNoScaleDown(t *testing.T) {
 	provider.AddNode("ng1", n1)
 	provider.AddNode("ng1", n2)
 
+	// N1 has been unready for 2 hours, ok to delete.
 	context.CloudProvider = provider
 	scaleDown = NewScaleDown(context)
 	scaleDown.UpdateUnneededNodes([]*apiv1.Node{n1, n2}, []*apiv1.Pod{p2}, time.Now().Add(-2*time.Hour))
@@ -273,6 +282,82 @@ func TestNoScaleDown(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, ScaleDownNodeDeleted, result)
 	assert.Equal(t, n1.Name, getStringFromChan(deletedNodes))
+}
+
+func TestScaleDownNoMove(t *testing.T) {
+	fakeClient := &fake.Clientset{}
+
+	job := batchv1.Job{
+		ObjectMeta: apiv1.ObjectMeta{
+			Name:      "job",
+			Namespace: "default",
+			SelfLink:  "/apivs/extensions/v1beta1/namespaces/default/jobs/job",
+		},
+	}
+	n1 := BuildTestNode("n1", 1000, 1000)
+	SetNodeReadyState(n1, true, time.Time{})
+
+	// N2 is unready so no pods can be moved there.
+	n2 := BuildTestNode("n2", 1000, 1000)
+	SetNodeReadyState(n2, false, time.Time{})
+
+	p1 := BuildTestPod("p1", 100, 0)
+	p1.Annotations = map[string]string{
+		"kubernetes.io/created-by": RefJSON(&job),
+	}
+
+	p2 := BuildTestPod("p2", 800, 0)
+	p1.Spec.NodeName = "n1"
+	p2.Spec.NodeName = "n2"
+
+	fakeClient.Fake.AddReactor("list", "pods", func(action core.Action) (bool, runtime.Object, error) {
+		return true, &apiv1.PodList{Items: []apiv1.Pod{*p1, *p2}}, nil
+	})
+	fakeClient.Fake.AddReactor("get", "pods", func(action core.Action) (bool, runtime.Object, error) {
+		return true, nil, errors.NewNotFound(apiv1.Resource("pod"), "whatever")
+	})
+	fakeClient.Fake.AddReactor("get", "nodes", func(action core.Action) (bool, runtime.Object, error) {
+		getAction := action.(core.GetAction)
+		switch getAction.GetName() {
+		case n1.Name:
+			return true, n1, nil
+		case n2.Name:
+			return true, n2, nil
+		}
+		return true, nil, fmt.Errorf("Wrong node: %v", getAction.GetName())
+	})
+	fakeClient.Fake.AddReactor("delete", "pods", func(action core.Action) (bool, runtime.Object, error) {
+		t.FailNow()
+		return false, nil, nil
+	})
+	fakeClient.Fake.AddReactor("update", "nodes", func(action core.Action) (bool, runtime.Object, error) {
+		t.FailNow()
+		return false, nil, nil
+	})
+	provider := testprovider.NewTestCloudProvider(nil, func(nodeGroup string, node string) error {
+		t.FailNow()
+		return nil
+	})
+	provider.AddNodeGroup("ng1", 1, 10, 2)
+	provider.AddNode("ng1", n1)
+	provider.AddNode("ng1", n2)
+	assert.NotNil(t, provider)
+
+	context := &AutoscalingContext{
+		PredicateChecker:              simulator.NewTestPredicateChecker(),
+		CloudProvider:                 provider,
+		ClientSet:                     fakeClient,
+		Recorder:                      createEventRecorder(fakeClient),
+		ScaleDownUtilizationThreshold: 0.5,
+		ScaleDownUnneededTime:         time.Minute,
+		MaxGratefulTerminationSec:     60,
+		ClusterStateRegistry:          clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}),
+	}
+	scaleDown := NewScaleDown(context)
+	scaleDown.UpdateUnneededNodes([]*apiv1.Node{n1, n2}, []*apiv1.Pod{p1, p2}, time.Now().Add(-5*time.Minute))
+	result, err := scaleDown.TryToScaleDown([]*apiv1.Node{n1, n2}, []*apiv1.Pod{p1, p2})
+	assert.NoError(t, err)
+	assert.Equal(t, ScaleDownNoUnneeded, result)
 }
 
 func getStringFromChan(c chan string) string {
