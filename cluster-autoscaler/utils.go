@@ -194,13 +194,13 @@ func GetNodeInfosForGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.Clou
 }
 
 // Removes unregisterd nodes if needed. Returns true if anything was removed and error if such occurred.
-func removeOldUnregisteredNodes(unregisteredNodes []clusterstate.UnregisteredNode, contetxt *AutoscalingContext,
+func removeOldUnregisteredNodes(unregisteredNodes []clusterstate.UnregisteredNode, context *AutoscalingContext,
 	currentTime time.Time) (bool, error) {
 	removedAny := false
 	for _, unregisteredNode := range unregisteredNodes {
-		if unregisteredNode.UnregisteredSice.Add(contetxt.UnregisteredNodeRemovalTime).Before(currentTime) {
+		if unregisteredNode.UnregisteredSince.Add(context.UnregisteredNodeRemovalTime).Before(currentTime) {
 			glog.V(0).Infof("Removing unregistered node %v", unregisteredNode.Node.Name)
-			nodeGroup, err := contetxt.CloudProvider.NodeGroupForNode(unregisteredNode.Node)
+			nodeGroup, err := context.CloudProvider.NodeGroupForNode(unregisteredNode.Node)
 			if err != nil {
 				glog.Warningf("Failed to get node group for %s: %v", unregisteredNode.Node.Name, err)
 				return removedAny, err
@@ -219,15 +219,14 @@ func removeOldUnregisteredNodes(unregisteredNodes []clusterstate.UnregisteredNod
 // Sets the target size of node groups to the current number of nodes in them
 // if the difference was constant for a prolonged time. Returns true if managed
 // to fix something.
-func fixNodeGroupSize(contetxt *AutoscalingContext, currentTime time.Time) (bool, error) {
+func fixNodeGroupSize(context *AutoscalingContext, currentTime time.Time) (bool, error) {
 	fixed := false
-	for _, nodeGroup := range contetxt.CloudProvider.NodeGroups() {
-		incorrectSize := contetxt.ClusterStateRegistry.GetIncorrectNodeGroupSize(nodeGroup.Id())
+	for _, nodeGroup := range context.CloudProvider.NodeGroups() {
+		incorrectSize := context.ClusterStateRegistry.GetIncorrectNodeGroupSize(nodeGroup.Id())
 		if incorrectSize == nil {
 			continue
 		}
-		if incorrectSize.FirstObserved.Add(contetxt.UnregisteredNodeRemovalTime).Before(currentTime) {
-
+		if incorrectSize.FirstObserved.Add(context.UnregisteredNodeRemovalTime).Before(currentTime) {
 			delta := incorrectSize.CurrentSize - incorrectSize.ExpectedSize
 			if delta < 0 {
 				glog.V(0).Infof("Decreasing size of %s, expected=%d current=%d delta=%d", nodeGroup.Id(),
