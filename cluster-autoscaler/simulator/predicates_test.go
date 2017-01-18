@@ -18,6 +18,7 @@ package simulator
 
 import (
 	"testing"
+	"time"
 
 	. "k8s.io/contrib/cluster-autoscaler/utils/test"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
@@ -39,6 +40,9 @@ func TestPredicates(t *testing.T) {
 	}
 	node1 := BuildTestNode("n1", 1000, 2000000)
 	node2 := BuildTestNode("n2", 1000, 2000000)
+	SetNodeReadyState(node1, true, time.Time{})
+	SetNodeReadyState(node2, true, time.Time{})
+
 	ni1.SetNode(node1)
 	ni2.SetNode(node2)
 

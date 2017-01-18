@@ -26,6 +26,7 @@ import (
 	"k8s.io/contrib/cluster-autoscaler/clusterstate"
 	"k8s.io/contrib/cluster-autoscaler/simulator"
 	"k8s.io/contrib/cluster-autoscaler/utils/deletetaint"
+	kube_util "k8s.io/contrib/cluster-autoscaler/utils/kubernetes"
 
 	"k8s.io/kubernetes/pkg/api/errors"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
@@ -153,7 +154,7 @@ func (sd *ScaleDown) TryToScaleDown(nodes []*apiv1.Node, pods []*apiv1.Pod) (Sca
 
 			glog.V(2).Infof("%s was unneeded for %s", node.Name, now.Sub(val).String())
 
-			ready, _, _ := clusterstate.GetReadinessState(node)
+			ready, _, _ := kube_util.GetReadinessState(node)
 
 			// Check how long the node was underutilized.
 			if ready && !val.Add(sd.context.ScaleDownUnneededTime).Before(now) {

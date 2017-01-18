@@ -18,6 +18,9 @@ package waste
 
 import (
 	"testing"
+	"time"
+
+	. "k8s.io/contrib/cluster-autoscaler/utils/test"
 
 	"github.com/stretchr/testify/assert"
 	"k8s.io/contrib/cluster-autoscaler/expander"
@@ -51,6 +54,7 @@ func makeNodeInfo(cpu int64, memory int64, pods int64) *schedulercache.NodeInfo 
 		},
 	}
 	node.Status.Allocatable = node.Status.Capacity
+	SetNodeReadyState(node, true, time.Time{})
 
 	nodeInfo := schedulercache.NewNodeInfo()
 	nodeInfo.SetNode(node)

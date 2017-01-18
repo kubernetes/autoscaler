@@ -168,35 +168,6 @@ func createNodeNameToInfoMap(pods []*apiv1.Pod, nodes []*apiv1.Node) map[string]
 	return nodeNameToNodeInfo
 }
 
-// CheckGroupsAndNodes checks if all node groups have all required nodes.
-func CheckGroupsAndNodes(nodes []*apiv1.Node, cloudProvider cloudprovider.CloudProvider) error {
-	groupCount := make(map[string]int)
-	for _, node := range nodes {
-
-		group, err := cloudProvider.NodeGroupForNode(node)
-		if err != nil {
-			return err
-		}
-		if group == nil || reflect.ValueOf(group).IsNil() {
-			continue
-		}
-		id := group.Id()
-		count, _ := groupCount[id]
-		groupCount[id] = count + 1
-	}
-	for _, nodeGroup := range cloudProvider.NodeGroups() {
-		size, err := nodeGroup.TargetSize()
-		if err != nil {
-			return err
-		}
-		count := groupCount[nodeGroup.Id()]
-		if size != count {
-			return fmt.Errorf("wrong number of nodes for node group: %s expected: %d actual: %d", nodeGroup.Id(), size, count)
-		}
-	}
-	return nil
-}
-
 // GetNodeInfosForGroups finds NodeInfos for all node groups used to manage the given nodes. It also returns a node group to sample node mapping.
 // TODO(mwielgus): This returns map keyed by url, while most code (including scheduler) uses node.Name for a key.
 func GetNodeInfosForGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.CloudProvider, kubeClient kube_client.Interface) (map[string]*schedulercache.NodeInfo, error) {
