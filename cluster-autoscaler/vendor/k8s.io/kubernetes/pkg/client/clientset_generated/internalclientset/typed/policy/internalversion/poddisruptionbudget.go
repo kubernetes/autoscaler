@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2017 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,10 +17,12 @@ limitations under the License.
 package internalversion
 
 import (
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	types "k8s.io/apimachinery/pkg/types"
+	watch "k8s.io/apimachinery/pkg/watch"
 	api "k8s.io/kubernetes/pkg/api"
 	policy "k8s.io/kubernetes/pkg/apis/policy"
 	restclient "k8s.io/kubernetes/pkg/client/restclient"
-	watch "k8s.io/kubernetes/pkg/watch"
 )
 
 // PodDisruptionBudgetsGetter has a method to return a PodDisruptionBudgetInterface.
@@ -36,10 +38,10 @@ type PodDisruptionBudgetInterface interface {
 	UpdateStatus(*policy.PodDisruptionBudget) (*policy.PodDisruptionBudget, error)
 	Delete(name string, options *api.DeleteOptions) error
 	DeleteCollection(options *api.DeleteOptions, listOptions api.ListOptions) error
-	Get(name string) (*policy.PodDisruptionBudget, error)
+	Get(name string, options v1.GetOptions) (*policy.PodDisruptionBudget, error)
 	List(opts api.ListOptions) (*policy.PodDisruptionBudgetList, error)
 	Watch(opts api.ListOptions) (watch.Interface, error)
-	Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *policy.PodDisruptionBudget, err error)
+	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *policy.PodDisruptionBudget, err error)
 	PodDisruptionBudgetExpansion
 }
 
@@ -82,6 +84,9 @@ func (c *podDisruptionBudgets) Update(podDisruptionBudget *policy.PodDisruptionB
 	return
 }
 
+// UpdateStatus was generated because the type contains a Status member.
+// Add a +genclientstatus=false comment above the type to avoid generating UpdateStatus().
+
 func (c *podDisruptionBudgets) UpdateStatus(podDisruptionBudget *policy.PodDisruptionBudget) (result *policy.PodDisruptionBudget, err error) {
 	result = &policy.PodDisruptionBudget{}
 	err = c.client.Put().
@@ -118,12 +123,13 @@ func (c *podDisruptionBudgets) DeleteCollection(options *api.DeleteOptions, list
 }
 
 // Get takes name of the podDisruptionBudget, and returns the corresponding podDisruptionBudget object, and an error if there is any.
-func (c *podDisruptionBudgets) Get(name string) (result *policy.PodDisruptionBudget, err error) {
+func (c *podDisruptionBudgets) Get(name string, options v1.GetOptions) (result *policy.PodDisruptionBudget, err error) {
 	result = &policy.PodDisruptionBudget{}
 	err = c.client.Get().
 		Namespace(c.ns).
 		Resource("poddisruptionbudgets").
 		Name(name).
+		VersionedParams(&options, api.ParameterCodec).
 		Do().
 		Into(result)
 	return
@@ -152,7 +158,7 @@ func (c *podDisruptionBudgets) Watch(opts api.ListOptions) (watch.Interface, err
 }
 
 // Patch applies the patch and returns the patched podDisruptionBudget.
-func (c *podDisruptionBudgets) Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *policy.PodDisruptionBudget, err error) {
+func (c *podDisruptionBudgets) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *policy.PodDisruptionBudget, err error) {
 	result = &policy.PodDisruptionBudget{}
 	err = c.client.Patch(pt).
 		Namespace(c.ns).

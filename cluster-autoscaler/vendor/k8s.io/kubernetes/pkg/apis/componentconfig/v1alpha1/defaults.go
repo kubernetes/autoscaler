@@ -21,12 +21,12 @@ import (
 	"runtime"
 	"time"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	kruntime "k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/kubernetes/pkg/api"
-	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/kubelet/qos"
 	kubetypes "k8s.io/kubernetes/pkg/kubelet/types"
 	"k8s.io/kubernetes/pkg/master/ports"
-	kruntime "k8s.io/kubernetes/pkg/runtime"
 )
 
 const (
@@ -213,6 +213,9 @@ func SetDefaults_KubeletConfiguration(obj *KubeletConfiguration) {
 	if obj.RuntimeRequestTimeout == zeroDuration {
 		obj.RuntimeRequestTimeout = metav1.Duration{Duration: 2 * time.Minute}
 	}
+	if obj.ImagePullProgressDeadline == zeroDuration {
+		obj.ImagePullProgressDeadline = metav1.Duration{Duration: 1 * time.Minute}
+	}
 	if obj.CPUCFSQuota == nil {
 		obj.CPUCFSQuota = boolVar(true)
 	}
@@ -348,9 +351,6 @@ func SetDefaults_KubeletConfiguration(obj *KubeletConfiguration) {
 	if obj.SyncFrequency == zeroDuration {
 		obj.SyncFrequency = metav1.Duration{Duration: 1 * time.Minute}
 	}
-	if obj.ReconcileCIDR == nil {
-		obj.ReconcileCIDR = boolVar(true)
-	}
 	if obj.ContentType == "" {
 		obj.ContentType = "application/vnd.kubernetes.protobuf"
 	}
@@ -373,6 +373,9 @@ func SetDefaults_KubeletConfiguration(obj *KubeletConfiguration) {
 	}
 	if obj.EvictionPressureTransitionPeriod == zeroDuration {
 		obj.EvictionPressureTransitionPeriod = metav1.Duration{Duration: 5 * time.Minute}
+	}
+	if obj.ExperimentalKernelMemcgNotification == nil {
+		obj.ExperimentalKernelMemcgNotification = boolVar(false)
 	}
 	if obj.SystemReserved == nil {
 		obj.SystemReserved = make(map[string]string)

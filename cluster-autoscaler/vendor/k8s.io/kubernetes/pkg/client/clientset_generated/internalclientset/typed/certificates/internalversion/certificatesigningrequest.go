@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2017 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,10 +17,12 @@ limitations under the License.
 package internalversion
 
 import (
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	types "k8s.io/apimachinery/pkg/types"
+	watch "k8s.io/apimachinery/pkg/watch"
 	api "k8s.io/kubernetes/pkg/api"
 	certificates "k8s.io/kubernetes/pkg/apis/certificates"
 	restclient "k8s.io/kubernetes/pkg/client/restclient"
-	watch "k8s.io/kubernetes/pkg/watch"
 )
 
 // CertificateSigningRequestsGetter has a method to return a CertificateSigningRequestInterface.
@@ -36,10 +38,10 @@ type CertificateSigningRequestInterface interface {
 	UpdateStatus(*certificates.CertificateSigningRequest) (*certificates.CertificateSigningRequest, error)
 	Delete(name string, options *api.DeleteOptions) error
 	DeleteCollection(options *api.DeleteOptions, listOptions api.ListOptions) error
-	Get(name string) (*certificates.CertificateSigningRequest, error)
+	Get(name string, options v1.GetOptions) (*certificates.CertificateSigningRequest, error)
 	List(opts api.ListOptions) (*certificates.CertificateSigningRequestList, error)
 	Watch(opts api.ListOptions) (watch.Interface, error)
-	Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *certificates.CertificateSigningRequest, err error)
+	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *certificates.CertificateSigningRequest, err error)
 	CertificateSigningRequestExpansion
 }
 
@@ -78,6 +80,9 @@ func (c *certificateSigningRequests) Update(certificateSigningRequest *certifica
 	return
 }
 
+// UpdateStatus was generated because the type contains a Status member.
+// Add a +genclientstatus=false comment above the type to avoid generating UpdateStatus().
+
 func (c *certificateSigningRequests) UpdateStatus(certificateSigningRequest *certificates.CertificateSigningRequest) (result *certificates.CertificateSigningRequest, err error) {
 	result = &certificates.CertificateSigningRequest{}
 	err = c.client.Put().
@@ -111,11 +116,12 @@ func (c *certificateSigningRequests) DeleteCollection(options *api.DeleteOptions
 }
 
 // Get takes name of the certificateSigningRequest, and returns the corresponding certificateSigningRequest object, and an error if there is any.
-func (c *certificateSigningRequests) Get(name string) (result *certificates.CertificateSigningRequest, err error) {
+func (c *certificateSigningRequests) Get(name string, options v1.GetOptions) (result *certificates.CertificateSigningRequest, err error) {
 	result = &certificates.CertificateSigningRequest{}
 	err = c.client.Get().
 		Resource("certificatesigningrequests").
 		Name(name).
+		VersionedParams(&options, api.ParameterCodec).
 		Do().
 		Into(result)
 	return
@@ -142,7 +148,7 @@ func (c *certificateSigningRequests) Watch(opts api.ListOptions) (watch.Interfac
 }
 
 // Patch applies the patch and returns the patched certificateSigningRequest.
-func (c *certificateSigningRequests) Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *certificates.CertificateSigningRequest, err error) {
+func (c *certificateSigningRequests) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *certificates.CertificateSigningRequest, err error) {
 	result = &certificates.CertificateSigningRequest{}
 	err = c.client.Patch(pt).
 		Resource("certificatesigningrequests").

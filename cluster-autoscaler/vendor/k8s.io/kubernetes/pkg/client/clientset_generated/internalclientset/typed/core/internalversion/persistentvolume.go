@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2017 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,9 +17,11 @@ limitations under the License.
 package internalversion
 
 import (
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	types "k8s.io/apimachinery/pkg/types"
+	watch "k8s.io/apimachinery/pkg/watch"
 	api "k8s.io/kubernetes/pkg/api"
 	restclient "k8s.io/kubernetes/pkg/client/restclient"
-	watch "k8s.io/kubernetes/pkg/watch"
 )
 
 // PersistentVolumesGetter has a method to return a PersistentVolumeInterface.
@@ -35,10 +37,10 @@ type PersistentVolumeInterface interface {
 	UpdateStatus(*api.PersistentVolume) (*api.PersistentVolume, error)
 	Delete(name string, options *api.DeleteOptions) error
 	DeleteCollection(options *api.DeleteOptions, listOptions api.ListOptions) error
-	Get(name string) (*api.PersistentVolume, error)
+	Get(name string, options v1.GetOptions) (*api.PersistentVolume, error)
 	List(opts api.ListOptions) (*api.PersistentVolumeList, error)
 	Watch(opts api.ListOptions) (watch.Interface, error)
-	Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *api.PersistentVolume, err error)
+	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *api.PersistentVolume, err error)
 	PersistentVolumeExpansion
 }
 
@@ -77,6 +79,9 @@ func (c *persistentVolumes) Update(persistentVolume *api.PersistentVolume) (resu
 	return
 }
 
+// UpdateStatus was generated because the type contains a Status member.
+// Add a +genclientstatus=false comment above the type to avoid generating UpdateStatus().
+
 func (c *persistentVolumes) UpdateStatus(persistentVolume *api.PersistentVolume) (result *api.PersistentVolume, err error) {
 	result = &api.PersistentVolume{}
 	err = c.client.Put().
@@ -110,11 +115,12 @@ func (c *persistentVolumes) DeleteCollection(options *api.DeleteOptions, listOpt
 }
 
 // Get takes name of the persistentVolume, and returns the corresponding persistentVolume object, and an error if there is any.
-func (c *persistentVolumes) Get(name string) (result *api.PersistentVolume, err error) {
+func (c *persistentVolumes) Get(name string, options v1.GetOptions) (result *api.PersistentVolume, err error) {
 	result = &api.PersistentVolume{}
 	err = c.client.Get().
 		Resource("persistentvolumes").
 		Name(name).
+		VersionedParams(&options, api.ParameterCodec).
 		Do().
 		Into(result)
 	return
@@ -141,7 +147,7 @@ func (c *persistentVolumes) Watch(opts api.ListOptions) (watch.Interface, error)
 }
 
 // Patch applies the patch and returns the patched persistentVolume.
-func (c *persistentVolumes) Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *api.PersistentVolume, err error) {
+func (c *persistentVolumes) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *api.PersistentVolume, err error) {
 	result = &api.PersistentVolume{}
 	err = c.client.Patch(pt).
 		Resource("persistentvolumes").

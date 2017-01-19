@@ -23,14 +23,15 @@ import (
 	"sync"
 
 	"github.com/golang/glog"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+	"k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/kubernetes/pkg/api/v1"
-	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
+	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	"k8s.io/kubernetes/pkg/cloudprovider"
-	"k8s.io/kubernetes/pkg/types"
-	utilerrors "k8s.io/kubernetes/pkg/util/errors"
 	"k8s.io/kubernetes/pkg/util/io"
 	"k8s.io/kubernetes/pkg/util/mount"
-	"k8s.io/kubernetes/pkg/util/validation"
 )
 
 // VolumeOptions contains option information about a volume.
@@ -529,7 +530,7 @@ func (pm *VolumePluginMgr) FindAttachablePluginByName(name string) (AttachableVo
 func NewPersistentVolumeRecyclerPodTemplate() *v1.Pod {
 	timeout := int64(60)
 	pod := &v1.Pod{
-		ObjectMeta: v1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			GenerateName: "pv-recycler-",
 			Namespace:    v1.NamespaceDefault,
 		},
@@ -562,4 +563,16 @@ func NewPersistentVolumeRecyclerPodTemplate() *v1.Pod {
 		},
 	}
 	return pod
+}
+
+// Check validity of recycle pod template
+// List of checks:
+// - at least one volume is defined in the recycle pod template
+// If successful, returns nil
+// if unsuccessful, returns an error.
+func ValidateRecyclerPodTemplate(pod *v1.Pod) error {
+	if len(pod.Spec.Volumes) < 1 {
+		return fmt.Errorf("does not contain any volume(s)")
+	}
+	return nil
 }

@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2017 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,9 +17,11 @@ limitations under the License.
 package internalversion
 
 import (
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	types "k8s.io/apimachinery/pkg/types"
+	watch "k8s.io/apimachinery/pkg/watch"
 	api "k8s.io/kubernetes/pkg/api"
 	restclient "k8s.io/kubernetes/pkg/client/restclient"
-	watch "k8s.io/kubernetes/pkg/watch"
 )
 
 // ResourceQuotasGetter has a method to return a ResourceQuotaInterface.
@@ -35,10 +37,10 @@ type ResourceQuotaInterface interface {
 	UpdateStatus(*api.ResourceQuota) (*api.ResourceQuota, error)
 	Delete(name string, options *api.DeleteOptions) error
 	DeleteCollection(options *api.DeleteOptions, listOptions api.ListOptions) error
-	Get(name string) (*api.ResourceQuota, error)
+	Get(name string, options v1.GetOptions) (*api.ResourceQuota, error)
 	List(opts api.ListOptions) (*api.ResourceQuotaList, error)
 	Watch(opts api.ListOptions) (watch.Interface, error)
-	Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *api.ResourceQuota, err error)
+	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *api.ResourceQuota, err error)
 	ResourceQuotaExpansion
 }
 
@@ -81,6 +83,9 @@ func (c *resourceQuotas) Update(resourceQuota *api.ResourceQuota) (result *api.R
 	return
 }
 
+// UpdateStatus was generated because the type contains a Status member.
+// Add a +genclientstatus=false comment above the type to avoid generating UpdateStatus().
+
 func (c *resourceQuotas) UpdateStatus(resourceQuota *api.ResourceQuota) (result *api.ResourceQuota, err error) {
 	result = &api.ResourceQuota{}
 	err = c.client.Put().
@@ -117,12 +122,13 @@ func (c *resourceQuotas) DeleteCollection(options *api.DeleteOptions, listOption
 }
 
 // Get takes name of the resourceQuota, and returns the corresponding resourceQuota object, and an error if there is any.
-func (c *resourceQuotas) Get(name string) (result *api.ResourceQuota, err error) {
+func (c *resourceQuotas) Get(name string, options v1.GetOptions) (result *api.ResourceQuota, err error) {
 	result = &api.ResourceQuota{}
 	err = c.client.Get().
 		Namespace(c.ns).
 		Resource("resourcequotas").
 		Name(name).
+		VersionedParams(&options, api.ParameterCodec).
 		Do().
 		Into(result)
 	return
@@ -151,7 +157,7 @@ func (c *resourceQuotas) Watch(opts api.ListOptions) (watch.Interface, error) {
 }
 
 // Patch applies the patch and returns the patched resourceQuota.
-func (c *resourceQuotas) Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *api.ResourceQuota, err error) {
+func (c *resourceQuotas) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *api.ResourceQuota, err error) {
 	result = &api.ResourceQuota{}
 	err = c.client.Patch(pt).
 		Namespace(c.ns).

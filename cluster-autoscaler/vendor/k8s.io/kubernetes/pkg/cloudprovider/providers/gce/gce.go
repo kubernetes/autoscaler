@@ -30,16 +30,16 @@ import (
 
 	"gopkg.in/gcfg.v1"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/kubernetes/pkg/api/v1"
 	apiservice "k8s.io/kubernetes/pkg/api/v1/service"
-	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/cloudprovider"
-	"k8s.io/kubernetes/pkg/types"
-	utilerrors "k8s.io/kubernetes/pkg/util/errors"
 	"k8s.io/kubernetes/pkg/util/flowcontrol"
 	netsets "k8s.io/kubernetes/pkg/util/net/sets"
-	"k8s.io/kubernetes/pkg/util/sets"
-	"k8s.io/kubernetes/pkg/util/wait"
 	"k8s.io/kubernetes/pkg/volume"
 
 	"cloud.google.com/go/compute/metadata"
@@ -63,8 +63,9 @@ const (
 	// AffinityTypeClientIPProto - affinity based on Client IP and port.
 	gceAffinityTypeClientIPProto = "CLIENT_IP_PROTO"
 
-	operationPollInterval        = 3 * time.Second
-	operationPollTimeoutDuration = 30 * time.Minute
+	operationPollInterval = 3 * time.Second
+	// Creating Route in very large clusters, may take more than half an hour.
+	operationPollTimeoutDuration = time.Hour
 
 	// Each page can have 500 results, but we cap how many pages
 	// are iterated through to prevent infinite loops if the API
@@ -2277,37 +2278,6 @@ func (gce *GCECloud) InstanceType(nodeName types.NodeName) (string, error) {
 	return instance.Type, nil
 }
 
-// List is an implementation of Instances.List.
-func (gce *GCECloud) List(filter string) ([]types.NodeName, error) {
-	var instances []types.NodeName
-	// TODO: Parallelize, although O(zones) so not too bad (N <= 3 typically)
-	for _, zone := range gce.managedZones {
-		pageToken := ""
-		page := 0
-		for ; page == 0 || (pageToken != "" && page < maxPages); page++ {
-			listCall := gce.service.Instances.List(gce.projectID, zone)
-			if len(filter) > 0 {
-				listCall = listCall.Filter("name eq " + filter)
-			}
-			if pageToken != "" {
-				listCall = listCall.PageToken(pageToken)
-			}
-			res, err := listCall.Do()
-			if err != nil {
-				return nil, err
-			}
-			pageToken = res.NextPageToken
-			for _, instance := range res.Items {
-				instances = append(instances, mapInstanceToNodeName(instance))
-			}
-		}
-		if page >= maxPages {
-			glog.Errorf("List exceeded maxPages=%d for Instances.List: truncating.", maxPages)
-		}
-	}
-	return instances, nil
-}
-
 // GetAllZones returns all the zones in which nodes are running
 func (gce *GCECloud) GetAllZones() (sets.String, error) {
 	// Fast-path for non-multizone
@@ -2430,7 +2400,12 @@ func (gce *GCECloud) CreateRoute(clusterName string, nameHint string, route *clo
 		Description:     k8sNodeRouteTag,
 	}).Do()
 	if err != nil {
-		return err
+		if isHTTPErrorCode(err, http.StatusConflict) {
+			glog.Info("Route %v already exists.")
+			return nil
+		} else {
+			return err
+		}
 	}
 	return gce.waitForGlobalOp(insertOp)
 }

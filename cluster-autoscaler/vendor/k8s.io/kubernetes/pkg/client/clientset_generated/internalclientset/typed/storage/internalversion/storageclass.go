@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2017 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,10 +17,12 @@ limitations under the License.
 package internalversion
 
 import (
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	types "k8s.io/apimachinery/pkg/types"
+	watch "k8s.io/apimachinery/pkg/watch"
 	api "k8s.io/kubernetes/pkg/api"
 	storage "k8s.io/kubernetes/pkg/apis/storage"
 	restclient "k8s.io/kubernetes/pkg/client/restclient"
-	watch "k8s.io/kubernetes/pkg/watch"
 )
 
 // StorageClassesGetter has a method to return a StorageClassInterface.
@@ -35,10 +37,10 @@ type StorageClassInterface interface {
 	Update(*storage.StorageClass) (*storage.StorageClass, error)
 	Delete(name string, options *api.DeleteOptions) error
 	DeleteCollection(options *api.DeleteOptions, listOptions api.ListOptions) error
-	Get(name string) (*storage.StorageClass, error)
+	Get(name string, options v1.GetOptions) (*storage.StorageClass, error)
 	List(opts api.ListOptions) (*storage.StorageClassList, error)
 	Watch(opts api.ListOptions) (watch.Interface, error)
-	Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *storage.StorageClass, err error)
+	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *storage.StorageClass, err error)
 	StorageClassExpansion
 }
 
@@ -98,11 +100,12 @@ func (c *storageClasses) DeleteCollection(options *api.DeleteOptions, listOption
 }
 
 // Get takes name of the storageClass, and returns the corresponding storageClass object, and an error if there is any.
-func (c *storageClasses) Get(name string) (result *storage.StorageClass, err error) {
+func (c *storageClasses) Get(name string, options v1.GetOptions) (result *storage.StorageClass, err error) {
 	result = &storage.StorageClass{}
 	err = c.client.Get().
 		Resource("storageclasses").
 		Name(name).
+		VersionedParams(&options, api.ParameterCodec).
 		Do().
 		Into(result)
 	return
@@ -129,7 +132,7 @@ func (c *storageClasses) Watch(opts api.ListOptions) (watch.Interface, error) {
 }
 
 // Patch applies the patch and returns the patched storageClass.
-func (c *storageClasses) Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *storage.StorageClass, err error) {
+func (c *storageClasses) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *storage.StorageClass, err error) {
 	result = &storage.StorageClass{}
 	err = c.client.Patch(pt).
 		Resource("storageclasses").
