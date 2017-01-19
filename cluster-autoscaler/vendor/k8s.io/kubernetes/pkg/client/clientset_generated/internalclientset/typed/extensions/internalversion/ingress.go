@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2017 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,10 +17,12 @@ limitations under the License.
 package internalversion
 
 import (
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	types "k8s.io/apimachinery/pkg/types"
+	watch "k8s.io/apimachinery/pkg/watch"
 	api "k8s.io/kubernetes/pkg/api"
 	extensions "k8s.io/kubernetes/pkg/apis/extensions"
 	restclient "k8s.io/kubernetes/pkg/client/restclient"
-	watch "k8s.io/kubernetes/pkg/watch"
 )
 
 // IngressesGetter has a method to return a IngressInterface.
@@ -36,10 +38,10 @@ type IngressInterface interface {
 	UpdateStatus(*extensions.Ingress) (*extensions.Ingress, error)
 	Delete(name string, options *api.DeleteOptions) error
 	DeleteCollection(options *api.DeleteOptions, listOptions api.ListOptions) error
-	Get(name string) (*extensions.Ingress, error)
+	Get(name string, options v1.GetOptions) (*extensions.Ingress, error)
 	List(opts api.ListOptions) (*extensions.IngressList, error)
 	Watch(opts api.ListOptions) (watch.Interface, error)
-	Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *extensions.Ingress, err error)
+	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *extensions.Ingress, err error)
 	IngressExpansion
 }
 
@@ -82,6 +84,9 @@ func (c *ingresses) Update(ingress *extensions.Ingress) (result *extensions.Ingr
 	return
 }
 
+// UpdateStatus was generated because the type contains a Status member.
+// Add a +genclientstatus=false comment above the type to avoid generating UpdateStatus().
+
 func (c *ingresses) UpdateStatus(ingress *extensions.Ingress) (result *extensions.Ingress, err error) {
 	result = &extensions.Ingress{}
 	err = c.client.Put().
@@ -118,12 +123,13 @@ func (c *ingresses) DeleteCollection(options *api.DeleteOptions, listOptions api
 }
 
 // Get takes name of the ingress, and returns the corresponding ingress object, and an error if there is any.
-func (c *ingresses) Get(name string) (result *extensions.Ingress, err error) {
+func (c *ingresses) Get(name string, options v1.GetOptions) (result *extensions.Ingress, err error) {
 	result = &extensions.Ingress{}
 	err = c.client.Get().
 		Namespace(c.ns).
 		Resource("ingresses").
 		Name(name).
+		VersionedParams(&options, api.ParameterCodec).
 		Do().
 		Into(result)
 	return
@@ -152,7 +158,7 @@ func (c *ingresses) Watch(opts api.ListOptions) (watch.Interface, error) {
 }
 
 // Patch applies the patch and returns the patched ingress.
-func (c *ingresses) Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *extensions.Ingress, err error) {
+func (c *ingresses) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *extensions.Ingress, err error) {
 	result = &extensions.Ingress{}
 	err = c.client.Patch(pt).
 		Namespace(c.ns).

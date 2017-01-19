@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2017 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,10 +17,12 @@ limitations under the License.
 package internalversion
 
 import (
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	types "k8s.io/apimachinery/pkg/types"
+	watch "k8s.io/apimachinery/pkg/watch"
 	api "k8s.io/kubernetes/pkg/api"
 	extensions "k8s.io/kubernetes/pkg/apis/extensions"
 	restclient "k8s.io/kubernetes/pkg/client/restclient"
-	watch "k8s.io/kubernetes/pkg/watch"
 )
 
 // ReplicaSetsGetter has a method to return a ReplicaSetInterface.
@@ -36,10 +38,10 @@ type ReplicaSetInterface interface {
 	UpdateStatus(*extensions.ReplicaSet) (*extensions.ReplicaSet, error)
 	Delete(name string, options *api.DeleteOptions) error
 	DeleteCollection(options *api.DeleteOptions, listOptions api.ListOptions) error
-	Get(name string) (*extensions.ReplicaSet, error)
+	Get(name string, options v1.GetOptions) (*extensions.ReplicaSet, error)
 	List(opts api.ListOptions) (*extensions.ReplicaSetList, error)
 	Watch(opts api.ListOptions) (watch.Interface, error)
-	Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *extensions.ReplicaSet, err error)
+	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *extensions.ReplicaSet, err error)
 	ReplicaSetExpansion
 }
 
@@ -82,6 +84,9 @@ func (c *replicaSets) Update(replicaSet *extensions.ReplicaSet) (result *extensi
 	return
 }
 
+// UpdateStatus was generated because the type contains a Status member.
+// Add a +genclientstatus=false comment above the type to avoid generating UpdateStatus().
+
 func (c *replicaSets) UpdateStatus(replicaSet *extensions.ReplicaSet) (result *extensions.ReplicaSet, err error) {
 	result = &extensions.ReplicaSet{}
 	err = c.client.Put().
@@ -118,12 +123,13 @@ func (c *replicaSets) DeleteCollection(options *api.DeleteOptions, listOptions a
 }
 
 // Get takes name of the replicaSet, and returns the corresponding replicaSet object, and an error if there is any.
-func (c *replicaSets) Get(name string) (result *extensions.ReplicaSet, err error) {
+func (c *replicaSets) Get(name string, options v1.GetOptions) (result *extensions.ReplicaSet, err error) {
 	result = &extensions.ReplicaSet{}
 	err = c.client.Get().
 		Namespace(c.ns).
 		Resource("replicasets").
 		Name(name).
+		VersionedParams(&options, api.ParameterCodec).
 		Do().
 		Into(result)
 	return
@@ -152,7 +158,7 @@ func (c *replicaSets) Watch(opts api.ListOptions) (watch.Interface, error) {
 }
 
 // Patch applies the patch and returns the patched replicaSet.
-func (c *replicaSets) Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *extensions.ReplicaSet, err error) {
+func (c *replicaSets) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *extensions.ReplicaSet, err error) {
 	result = &extensions.ReplicaSet{}
 	err = c.client.Patch(pt).
 		Namespace(c.ns).

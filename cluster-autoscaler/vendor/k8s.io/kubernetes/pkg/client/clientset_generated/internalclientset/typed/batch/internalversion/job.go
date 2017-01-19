@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2017 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,10 +17,12 @@ limitations under the License.
 package internalversion
 
 import (
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	types "k8s.io/apimachinery/pkg/types"
+	watch "k8s.io/apimachinery/pkg/watch"
 	api "k8s.io/kubernetes/pkg/api"
 	batch "k8s.io/kubernetes/pkg/apis/batch"
 	restclient "k8s.io/kubernetes/pkg/client/restclient"
-	watch "k8s.io/kubernetes/pkg/watch"
 )
 
 // JobsGetter has a method to return a JobInterface.
@@ -36,10 +38,10 @@ type JobInterface interface {
 	UpdateStatus(*batch.Job) (*batch.Job, error)
 	Delete(name string, options *api.DeleteOptions) error
 	DeleteCollection(options *api.DeleteOptions, listOptions api.ListOptions) error
-	Get(name string) (*batch.Job, error)
+	Get(name string, options v1.GetOptions) (*batch.Job, error)
 	List(opts api.ListOptions) (*batch.JobList, error)
 	Watch(opts api.ListOptions) (watch.Interface, error)
-	Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *batch.Job, err error)
+	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *batch.Job, err error)
 	JobExpansion
 }
 
@@ -82,6 +84,9 @@ func (c *jobs) Update(job *batch.Job) (result *batch.Job, err error) {
 	return
 }
 
+// UpdateStatus was generated because the type contains a Status member.
+// Add a +genclientstatus=false comment above the type to avoid generating UpdateStatus().
+
 func (c *jobs) UpdateStatus(job *batch.Job) (result *batch.Job, err error) {
 	result = &batch.Job{}
 	err = c.client.Put().
@@ -118,12 +123,13 @@ func (c *jobs) DeleteCollection(options *api.DeleteOptions, listOptions api.List
 }
 
 // Get takes name of the job, and returns the corresponding job object, and an error if there is any.
-func (c *jobs) Get(name string) (result *batch.Job, err error) {
+func (c *jobs) Get(name string, options v1.GetOptions) (result *batch.Job, err error) {
 	result = &batch.Job{}
 	err = c.client.Get().
 		Namespace(c.ns).
 		Resource("jobs").
 		Name(name).
+		VersionedParams(&options, api.ParameterCodec).
 		Do().
 		Into(result)
 	return
@@ -152,7 +158,7 @@ func (c *jobs) Watch(opts api.ListOptions) (watch.Interface, error) {
 }
 
 // Patch applies the patch and returns the patched job.
-func (c *jobs) Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *batch.Job, err error) {
+func (c *jobs) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *batch.Job, err error) {
 	result = &batch.Job{}
 	err = c.client.Patch(pt).
 		Namespace(c.ns).

@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2017 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,10 +17,12 @@ limitations under the License.
 package internalversion
 
 import (
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	types "k8s.io/apimachinery/pkg/types"
+	watch "k8s.io/apimachinery/pkg/watch"
 	api "k8s.io/kubernetes/pkg/api"
 	rbac "k8s.io/kubernetes/pkg/apis/rbac"
 	restclient "k8s.io/kubernetes/pkg/client/restclient"
-	watch "k8s.io/kubernetes/pkg/watch"
 )
 
 // RolesGetter has a method to return a RoleInterface.
@@ -35,10 +37,10 @@ type RoleInterface interface {
 	Update(*rbac.Role) (*rbac.Role, error)
 	Delete(name string, options *api.DeleteOptions) error
 	DeleteCollection(options *api.DeleteOptions, listOptions api.ListOptions) error
-	Get(name string) (*rbac.Role, error)
+	Get(name string, options v1.GetOptions) (*rbac.Role, error)
 	List(opts api.ListOptions) (*rbac.RoleList, error)
 	Watch(opts api.ListOptions) (watch.Interface, error)
-	Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *rbac.Role, err error)
+	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *rbac.Role, err error)
 	RoleExpansion
 }
 
@@ -104,12 +106,13 @@ func (c *roles) DeleteCollection(options *api.DeleteOptions, listOptions api.Lis
 }
 
 // Get takes name of the role, and returns the corresponding role object, and an error if there is any.
-func (c *roles) Get(name string) (result *rbac.Role, err error) {
+func (c *roles) Get(name string, options v1.GetOptions) (result *rbac.Role, err error) {
 	result = &rbac.Role{}
 	err = c.client.Get().
 		Namespace(c.ns).
 		Resource("roles").
 		Name(name).
+		VersionedParams(&options, api.ParameterCodec).
 		Do().
 		Into(result)
 	return
@@ -138,7 +141,7 @@ func (c *roles) Watch(opts api.ListOptions) (watch.Interface, error) {
 }
 
 // Patch applies the patch and returns the patched role.
-func (c *roles) Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *rbac.Role, err error) {
+func (c *roles) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *rbac.Role, err error) {
 	result = &rbac.Role{}
 	err = c.client.Patch(pt).
 		Namespace(c.ns).

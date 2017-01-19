@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2017 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,10 +17,12 @@ limitations under the License.
 package internalversion
 
 import (
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	types "k8s.io/apimachinery/pkg/types"
+	watch "k8s.io/apimachinery/pkg/watch"
 	api "k8s.io/kubernetes/pkg/api"
 	rbac "k8s.io/kubernetes/pkg/apis/rbac"
 	restclient "k8s.io/kubernetes/pkg/client/restclient"
-	watch "k8s.io/kubernetes/pkg/watch"
 )
 
 // ClusterRolesGetter has a method to return a ClusterRoleInterface.
@@ -35,10 +37,10 @@ type ClusterRoleInterface interface {
 	Update(*rbac.ClusterRole) (*rbac.ClusterRole, error)
 	Delete(name string, options *api.DeleteOptions) error
 	DeleteCollection(options *api.DeleteOptions, listOptions api.ListOptions) error
-	Get(name string) (*rbac.ClusterRole, error)
+	Get(name string, options v1.GetOptions) (*rbac.ClusterRole, error)
 	List(opts api.ListOptions) (*rbac.ClusterRoleList, error)
 	Watch(opts api.ListOptions) (watch.Interface, error)
-	Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *rbac.ClusterRole, err error)
+	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *rbac.ClusterRole, err error)
 	ClusterRoleExpansion
 }
 
@@ -98,11 +100,12 @@ func (c *clusterRoles) DeleteCollection(options *api.DeleteOptions, listOptions 
 }
 
 // Get takes name of the clusterRole, and returns the corresponding clusterRole object, and an error if there is any.
-func (c *clusterRoles) Get(name string) (result *rbac.ClusterRole, err error) {
+func (c *clusterRoles) Get(name string, options v1.GetOptions) (result *rbac.ClusterRole, err error) {
 	result = &rbac.ClusterRole{}
 	err = c.client.Get().
 		Resource("clusterroles").
 		Name(name).
+		VersionedParams(&options, api.ParameterCodec).
 		Do().
 		Into(result)
 	return
@@ -129,7 +132,7 @@ func (c *clusterRoles) Watch(opts api.ListOptions) (watch.Interface, error) {
 }
 
 // Patch applies the patch and returns the patched clusterRole.
-func (c *clusterRoles) Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *rbac.ClusterRole, err error) {
+func (c *clusterRoles) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *rbac.ClusterRole, err error) {
 	result = &rbac.ClusterRole{}
 	err = c.client.Patch(pt).
 		Resource("clusterroles").

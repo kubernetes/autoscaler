@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2017 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,9 +17,11 @@ limitations under the License.
 package internalversion
 
 import (
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	types "k8s.io/apimachinery/pkg/types"
+	watch "k8s.io/apimachinery/pkg/watch"
 	api "k8s.io/kubernetes/pkg/api"
 	restclient "k8s.io/kubernetes/pkg/client/restclient"
-	watch "k8s.io/kubernetes/pkg/watch"
 )
 
 // NodesGetter has a method to return a NodeInterface.
@@ -35,10 +37,10 @@ type NodeInterface interface {
 	UpdateStatus(*api.Node) (*api.Node, error)
 	Delete(name string, options *api.DeleteOptions) error
 	DeleteCollection(options *api.DeleteOptions, listOptions api.ListOptions) error
-	Get(name string) (*api.Node, error)
+	Get(name string, options v1.GetOptions) (*api.Node, error)
 	List(opts api.ListOptions) (*api.NodeList, error)
 	Watch(opts api.ListOptions) (watch.Interface, error)
-	Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *api.Node, err error)
+	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *api.Node, err error)
 	NodeExpansion
 }
 
@@ -77,6 +79,9 @@ func (c *nodes) Update(node *api.Node) (result *api.Node, err error) {
 	return
 }
 
+// UpdateStatus was generated because the type contains a Status member.
+// Add a +genclientstatus=false comment above the type to avoid generating UpdateStatus().
+
 func (c *nodes) UpdateStatus(node *api.Node) (result *api.Node, err error) {
 	result = &api.Node{}
 	err = c.client.Put().
@@ -110,11 +115,12 @@ func (c *nodes) DeleteCollection(options *api.DeleteOptions, listOptions api.Lis
 }
 
 // Get takes name of the node, and returns the corresponding node object, and an error if there is any.
-func (c *nodes) Get(name string) (result *api.Node, err error) {
+func (c *nodes) Get(name string, options v1.GetOptions) (result *api.Node, err error) {
 	result = &api.Node{}
 	err = c.client.Get().
 		Resource("nodes").
 		Name(name).
+		VersionedParams(&options, api.ParameterCodec).
 		Do().
 		Into(result)
 	return
@@ -141,7 +147,7 @@ func (c *nodes) Watch(opts api.ListOptions) (watch.Interface, error) {
 }
 
 // Patch applies the patch and returns the patched node.
-func (c *nodes) Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *api.Node, err error) {
+func (c *nodes) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *api.Node, err error) {
 	result = &api.Node{}
 	err = c.client.Patch(pt).
 		Resource("nodes").

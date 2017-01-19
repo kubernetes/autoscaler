@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2017 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,9 +17,11 @@ limitations under the License.
 package internalversion
 
 import (
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	types "k8s.io/apimachinery/pkg/types"
+	watch "k8s.io/apimachinery/pkg/watch"
 	api "k8s.io/kubernetes/pkg/api"
 	restclient "k8s.io/kubernetes/pkg/client/restclient"
-	watch "k8s.io/kubernetes/pkg/watch"
 )
 
 // ConfigMapsGetter has a method to return a ConfigMapInterface.
@@ -34,10 +36,10 @@ type ConfigMapInterface interface {
 	Update(*api.ConfigMap) (*api.ConfigMap, error)
 	Delete(name string, options *api.DeleteOptions) error
 	DeleteCollection(options *api.DeleteOptions, listOptions api.ListOptions) error
-	Get(name string) (*api.ConfigMap, error)
+	Get(name string, options v1.GetOptions) (*api.ConfigMap, error)
 	List(opts api.ListOptions) (*api.ConfigMapList, error)
 	Watch(opts api.ListOptions) (watch.Interface, error)
-	Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *api.ConfigMap, err error)
+	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *api.ConfigMap, err error)
 	ConfigMapExpansion
 }
 
@@ -103,12 +105,13 @@ func (c *configMaps) DeleteCollection(options *api.DeleteOptions, listOptions ap
 }
 
 // Get takes name of the configMap, and returns the corresponding configMap object, and an error if there is any.
-func (c *configMaps) Get(name string) (result *api.ConfigMap, err error) {
+func (c *configMaps) Get(name string, options v1.GetOptions) (result *api.ConfigMap, err error) {
 	result = &api.ConfigMap{}
 	err = c.client.Get().
 		Namespace(c.ns).
 		Resource("configmaps").
 		Name(name).
+		VersionedParams(&options, api.ParameterCodec).
 		Do().
 		Into(result)
 	return
@@ -137,7 +140,7 @@ func (c *configMaps) Watch(opts api.ListOptions) (watch.Interface, error) {
 }
 
 // Patch applies the patch and returns the patched configMap.
-func (c *configMaps) Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *api.ConfigMap, err error) {
+func (c *configMaps) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *api.ConfigMap, err error) {
 	result = &api.ConfigMap{}
 	err = c.client.Patch(pt).
 		Namespace(c.ns).
