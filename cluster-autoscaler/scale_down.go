@@ -28,9 +28,10 @@ import (
 	"k8s.io/contrib/cluster-autoscaler/utils/deletetaint"
 	kube_util "k8s.io/contrib/cluster-autoscaler/utils/kubernetes"
 
-	"k8s.io/kubernetes/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
-	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
+	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	kube_record "k8s.io/kubernetes/pkg/client/record"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 
@@ -341,7 +342,7 @@ func drainNode(node *apiv1.Node, pods []*apiv1.Pod, client kube_client.Interface
 	for start := time.Now(); time.Now().Sub(start) < time.Duration(maxGratefulTerminationSec)*time.Second; time.Sleep(5 * time.Second) {
 		allGone = true
 		for _, pod := range pods {
-			podreturned, err := client.Core().Pods(pod.Namespace).Get(pod.Name)
+			podreturned, err := client.Core().Pods(pod.Namespace).Get(pod.Name, metav1.GetOptions{})
 			if err == nil {
 				glog.Errorf("Not deleted yet %v", podreturned)
 				allGone = false
