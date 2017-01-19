@@ -20,18 +20,18 @@ import (
 	"fmt"
 	"time"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/api/resource"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
-	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/kubernetes/pkg/api/testapi"
-	"k8s.io/kubernetes/pkg/runtime"
 )
 
 // BuildTestPod creates a pod with specified resources.
 func BuildTestPod(name string, cpu int64, mem int64) *apiv1.Pod {
 	pod := &apiv1.Pod{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "default",
 			Name:      name,
 			SelfLink:  fmt.Sprintf("/api/v1/namespaces/default/pods/%s", name),
@@ -60,7 +60,7 @@ func BuildTestPod(name string, cpu int64, mem int64) *apiv1.Pod {
 // BuildTestNode creates a node with specified capacity.
 func BuildTestNode(name string, cpu int64, mem int64) *apiv1.Node {
 	node := &apiv1.Node{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:     name,
 			SelfLink: fmt.Sprintf("/api/v1/nodes/%s", name),
 		},

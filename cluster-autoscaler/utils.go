@@ -26,9 +26,9 @@ import (
 	"k8s.io/contrib/cluster-autoscaler/expander"
 	"k8s.io/contrib/cluster-autoscaler/simulator"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
-	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
-	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
+	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	kube_record "k8s.io/kubernetes/pkg/client/record"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 

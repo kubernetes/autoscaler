@@ -19,11 +19,11 @@ package kubernetes
 import (
 	"time"
 
+	"k8s.io/apimachinery/pkg/labels"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/client/cache"
-	client "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
+	client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	"k8s.io/kubernetes/pkg/fields"
-	"k8s.io/kubernetes/pkg/labels"
 )
 
 // UnschedulablePodLister lists unscheduled pods
