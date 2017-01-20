@@ -22,6 +22,36 @@
 			"Rev": "3b1ae45394a234c385be014e9a488f2bb6eef821"
 		},
 		{
+			"ImportPath": "github.com/Azure/azure-sdk-for-go/arm/compute",
+			"Comment": "v7.0.1-beta-14-gd05c22d",
+			"Rev": "d05c22dc3f9fdd2ec6e3593839fdd44df17f2de5"
+		},
+		{
+			"ImportPath": "github.com/Azure/go-autorest/autorest",
+			"Comment": "v7.2.2-10-g32cc232",
+			"Rev": "32cc2321122a649b7ba4e323527bcb145134fd47"
+		},
+		{
+			"ImportPath": "github.com/Azure/go-autorest/autorest/azure",
+			"Comment": "v7.2.2-10-g32cc232",
+			"Rev": "32cc2321122a649b7ba4e323527bcb145134fd47"
+		},
+		{
+			"ImportPath": "github.com/Azure/go-autorest/autorest/date",
+			"Comment": "v7.2.2-10-g32cc232",
+			"Rev": "32cc2321122a649b7ba4e323527bcb145134fd47"
+		},
+		{
+			"ImportPath": "github.com/Azure/go-autorest/autorest/to",
+			"Comment": "v7.2.2-10-g32cc232",
+			"Rev": "32cc2321122a649b7ba4e323527bcb145134fd47"
+		},
+		{
+			"ImportPath": "github.com/Azure/go-autorest/autorest/validation",
+			"Comment": "v7.2.2-10-g32cc232",
+			"Rev": "32cc2321122a649b7ba4e323527bcb145134fd47"
+		},
+		{
 			"ImportPath": "github.com/PuerkitoBio/purell",
 			"Comment": "v1.0.0",
 			"Rev": "8a290539e2e8629dbc4e6bad948158f790ec31f4"
@@ -222,6 +252,11 @@
 		{
 			"ImportPath": "github.com/davecgh/go-spew/spew",
 			"Rev": "5215b55f46b2b919f50a1df0eaa5886afe4e3b3d"
+		},
+		{
+			"ImportPath": "github.com/dgrijalva/jwt-go",
+			"Comment": "v3.0.0-4-g01aeca5",
+			"Rev": "01aeca54ebda6e0fbfafd0a524d234159c05ec20"
 		},
 		{
 			"ImportPath": "github.com/docker/distribution/digest",
