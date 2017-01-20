@@ -20,10 +20,10 @@ import (
 	"testing"
 	"time"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/contrib/cluster-autoscaler/cloudprovider/test"
 	. "k8s.io/contrib/cluster-autoscaler/utils/test"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
-	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 
 	"github.com/stretchr/testify/assert"
 )

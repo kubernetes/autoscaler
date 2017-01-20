@@ -25,7 +25,7 @@ import (
 
 	"k8s.io/kubernetes/pkg/api/resource"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
-	client "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
+	client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 
 	"github.com/golang/glog"

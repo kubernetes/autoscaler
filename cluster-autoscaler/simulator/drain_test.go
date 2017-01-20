@@ -19,6 +19,7 @@ package simulator
 import (
 	"testing"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/kubelet/types"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
@@ -30,7 +31,7 @@ func TestFastGetPodsToMove(t *testing.T) {
 
 	// Unreplicated pod
 	pod1 := &apiv1.Pod{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      "pod1",
 			Namespace: "ns",
 		},
@@ -40,7 +41,7 @@ func TestFastGetPodsToMove(t *testing.T) {
 
 	// Replicated pod
 	pod2 := &apiv1.Pod{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      "pod2",
 			Namespace: "ns",
 			Annotations: map[string]string{
@@ -55,7 +56,7 @@ func TestFastGetPodsToMove(t *testing.T) {
 
 	// Manifest pod
 	pod3 := &apiv1.Pod{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      "pod3",
 			Namespace: "kube-system",
 			Annotations: map[string]string{
@@ -69,7 +70,7 @@ func TestFastGetPodsToMove(t *testing.T) {
 
 	// DeamonSet pod
 	pod4 := &apiv1.Pod{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      "pod4",
 			Namespace: "ns",
 			Annotations: map[string]string{
@@ -84,7 +85,7 @@ func TestFastGetPodsToMove(t *testing.T) {
 
 	// Kube-system
 	pod5 := &apiv1.Pod{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      "pod5",
 			Namespace: "kube-system",
 			Annotations: map[string]string{
@@ -97,7 +98,7 @@ func TestFastGetPodsToMove(t *testing.T) {
 
 	// Local storage
 	pod6 := &apiv1.Pod{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      "pod6",
 			Namespace: "ns",
 			Annotations: map[string]string{
@@ -119,7 +120,7 @@ func TestFastGetPodsToMove(t *testing.T) {
 
 	// Non-local storage
 	pod7 := &apiv1.Pod{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      "pod7",
 			Namespace: "ns",
 			Annotations: map[string]string{

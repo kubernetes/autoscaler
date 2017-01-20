@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2017 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,9 +17,11 @@ limitations under the License.
 package internalversion
 
 import (
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	types "k8s.io/apimachinery/pkg/types"
+	watch "k8s.io/apimachinery/pkg/watch"
 	api "k8s.io/kubernetes/pkg/api"
 	restclient "k8s.io/kubernetes/pkg/client/restclient"
-	watch "k8s.io/kubernetes/pkg/watch"
 )
 
 // NamespacesGetter has a method to return a NamespaceInterface.
@@ -35,10 +37,10 @@ type NamespaceInterface interface {
 	UpdateStatus(*api.Namespace) (*api.Namespace, error)
 	Delete(name string, options *api.DeleteOptions) error
 	DeleteCollection(options *api.DeleteOptions, listOptions api.ListOptions) error
-	Get(name string) (*api.Namespace, error)
+	Get(name string, options v1.GetOptions) (*api.Namespace, error)
 	List(opts api.ListOptions) (*api.NamespaceList, error)
 	Watch(opts api.ListOptions) (watch.Interface, error)
-	Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *api.Namespace, err error)
+	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *api.Namespace, err error)
 	NamespaceExpansion
 }
 
@@ -77,6 +79,9 @@ func (c *namespaces) Update(namespace *api.Namespace) (result *api.Namespace, er
 	return
 }
 
+// UpdateStatus was generated because the type contains a Status member.
+// Add a +genclientstatus=false comment above the type to avoid generating UpdateStatus().
+
 func (c *namespaces) UpdateStatus(namespace *api.Namespace) (result *api.Namespace, err error) {
 	result = &api.Namespace{}
 	err = c.client.Put().
@@ -110,11 +115,12 @@ func (c *namespaces) DeleteCollection(options *api.DeleteOptions, listOptions ap
 }
 
 // Get takes name of the namespace, and returns the corresponding namespace object, and an error if there is any.
-func (c *namespaces) Get(name string) (result *api.Namespace, err error) {
+func (c *namespaces) Get(name string, options v1.GetOptions) (result *api.Namespace, err error) {
 	result = &api.Namespace{}
 	err = c.client.Get().
 		Resource("namespaces").
 		Name(name).
+		VersionedParams(&options, api.ParameterCodec).
 		Do().
 		Into(result)
 	return
@@ -141,7 +147,7 @@ func (c *namespaces) Watch(opts api.ListOptions) (watch.Interface, error) {
 }
 
 // Patch applies the patch and returns the patched namespace.
-func (c *namespaces) Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *api.Namespace, err error) {
+func (c *namespaces) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *api.Namespace, err error) {
 	result = &api.Namespace{}
 	err = c.client.Patch(pt).
 		Resource("namespaces").

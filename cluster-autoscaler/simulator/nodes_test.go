@@ -19,18 +19,19 @@ package simulator
 import (
 	"testing"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5/fake"
+	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset/fake"
 	"k8s.io/kubernetes/pkg/client/testing/core"
 	"k8s.io/kubernetes/pkg/kubelet/types"
-	"k8s.io/kubernetes/pkg/runtime"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestRequiredPodsForNode(t *testing.T) {
 	pod1 := apiv1.Pod{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "default",
 			Name:      "pod1",
 			SelfLink:  "pod1",
@@ -38,7 +39,7 @@ func TestRequiredPodsForNode(t *testing.T) {
 	}
 	// Manifest pod.
 	pod2 := apiv1.Pod{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      "pod2",
 			Namespace: "kube-system",
 			SelfLink:  "pod2",

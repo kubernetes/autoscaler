@@ -18,13 +18,12 @@ package informers
 
 import (
 	"reflect"
-	"time"
 
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/kubernetes/pkg/api/v1"
 	extensions "k8s.io/kubernetes/pkg/apis/extensions/v1beta1"
 	"k8s.io/kubernetes/pkg/client/cache"
-	"k8s.io/kubernetes/pkg/runtime"
-	"k8s.io/kubernetes/pkg/watch"
 )
 
 // DaemonSetInformer is type of SharedIndexInformer which watches and lists all pods.
@@ -99,9 +98,7 @@ func (f *deploymentInformer) Informer() cache.SharedIndexInformer {
 			},
 		},
 		&extensions.Deployment{},
-		// TODO remove this.  It is hardcoded so that "Waiting for the second deployment to clear overlapping annotation" in
-		// "overlapping deployment should not fight with each other" will work since it requires a full resync to work properly.
-		30*time.Second,
+		f.defaultResync,
 		cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
 	)
 	f.informers[informerType] = informer

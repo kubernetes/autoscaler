@@ -21,8 +21,9 @@ import (
 	"fmt"
 	"time"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
-	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
+	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 
 	"github.com/golang/glog"
 )
@@ -35,7 +36,7 @@ const (
 // MarkToBeDeleted sets a taint that makes the node unschedulable.
 func MarkToBeDeleted(node *apiv1.Node, client kube_client.Interface) error {
 	// Get the newest version of the node.
-	freshNode, err := client.Core().Nodes().Get(node.Name)
+	freshNode, err := client.Core().Nodes().Get(node.Name, metav1.GetOptions{})
 	if err != nil || freshNode == nil {
 		return fmt.Errorf("failed to get node %v: %v", node.Name, err)
 	}

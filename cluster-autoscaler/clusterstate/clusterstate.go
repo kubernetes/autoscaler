@@ -25,8 +25,9 @@ import (
 	"k8s.io/contrib/cluster-autoscaler/utils/deletetaint"
 	kube_util "k8s.io/contrib/cluster-autoscaler/utils/kubernetes"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
-	"k8s.io/kubernetes/pkg/util/sets"
 
 	"github.com/golang/glog"
 )
@@ -457,7 +458,7 @@ func getNotRegisteredNodes(allNodes []*apiv1.Node, cloudProvider cloudprovider.C
 			if !registered.Has(node) {
 				notRegistered = append(notRegistered, UnregisteredNode{
 					Node: &apiv1.Node{
-						ObjectMeta: apiv1.ObjectMeta{
+						ObjectMeta: metav1.ObjectMeta{
 							Name: node,
 						},
 						Spec: apiv1.NodeSpec{
