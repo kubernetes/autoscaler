@@ -20,10 +20,11 @@ import (
 	"fmt"
 	"reflect"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/kubernetes/pkg/api/v1"
-	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5"
+	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	"k8s.io/kubernetes/pkg/fields"
-	"k8s.io/kubernetes/pkg/watch"
 
 	"hash/fnv"
 	"math/rand"
@@ -31,9 +32,11 @@ import (
 	"strings"
 
 	"github.com/golang/glog"
-	"k8s.io/kubernetes/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kubernetes/pkg/api/resource"
-	"k8s.io/kubernetes/pkg/util/sets"
+	volutil "k8s.io/kubernetes/pkg/volume/util"
 )
 
 type RecycleEventRecorder func(eventtype, message string)
@@ -162,7 +165,7 @@ func (c *realRecyclerClient) CreatePod(pod *v1.Pod) (*v1.Pod, error) {
 }
 
 func (c *realRecyclerClient) GetPod(name, namespace string) (*v1.Pod, error) {
-	return c.client.Core().Pods(namespace).Get(name)
+	return c.client.Core().Pods(namespace).Get(name, metav1.GetOptions{})
 }
 
 func (c *realRecyclerClient) DeletePod(name, namespace string) error {
@@ -330,4 +333,24 @@ func ChooseZoneForVolume(zones sets.String, pvcName string) string {
 
 	glog.V(2).Infof("Creating volume for PVC %q; chose zone=%q from zones=%q", pvcName, zone, zoneSlice)
 	return zone
+}
+
+// UnmountViaEmptyDir delegates the tear down operation for secret, configmap, git_repo and downwardapi
+// to empty_dir
+func UnmountViaEmptyDir(dir string, host VolumeHost, volName string, volSpec Spec, podUID types.UID) error {
+	glog.V(3).Infof("Tearing down volume %v for pod %v at %v", volName, podUID, dir)
+
+	if pathExists, pathErr := volutil.PathExists(dir); pathErr != nil {
+		return fmt.Errorf("Error checking if path exists: %v", pathErr)
+	} else if !pathExists {
+		glog.Warningf("Warning: Unmount skipped because path does not exist: %v", dir)
+		return nil
+	}
+
+	// Wrap EmptyDir, let it do the teardown.
+	wrapped, err := host.NewWrapperUnmounter(volName, volSpec, podUID)
+	if err != nil {
+		return err
+	}
+	return wrapped.TearDownAt(dir)
 }

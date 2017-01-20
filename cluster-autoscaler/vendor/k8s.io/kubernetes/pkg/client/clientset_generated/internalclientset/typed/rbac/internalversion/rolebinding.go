@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2017 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,10 +17,12 @@ limitations under the License.
 package internalversion
 
 import (
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	types "k8s.io/apimachinery/pkg/types"
+	watch "k8s.io/apimachinery/pkg/watch"
 	api "k8s.io/kubernetes/pkg/api"
 	rbac "k8s.io/kubernetes/pkg/apis/rbac"
 	restclient "k8s.io/kubernetes/pkg/client/restclient"
-	watch "k8s.io/kubernetes/pkg/watch"
 )
 
 // RoleBindingsGetter has a method to return a RoleBindingInterface.
@@ -35,10 +37,10 @@ type RoleBindingInterface interface {
 	Update(*rbac.RoleBinding) (*rbac.RoleBinding, error)
 	Delete(name string, options *api.DeleteOptions) error
 	DeleteCollection(options *api.DeleteOptions, listOptions api.ListOptions) error
-	Get(name string) (*rbac.RoleBinding, error)
+	Get(name string, options v1.GetOptions) (*rbac.RoleBinding, error)
 	List(opts api.ListOptions) (*rbac.RoleBindingList, error)
 	Watch(opts api.ListOptions) (watch.Interface, error)
-	Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *rbac.RoleBinding, err error)
+	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *rbac.RoleBinding, err error)
 	RoleBindingExpansion
 }
 
@@ -104,12 +106,13 @@ func (c *roleBindings) DeleteCollection(options *api.DeleteOptions, listOptions 
 }
 
 // Get takes name of the roleBinding, and returns the corresponding roleBinding object, and an error if there is any.
-func (c *roleBindings) Get(name string) (result *rbac.RoleBinding, err error) {
+func (c *roleBindings) Get(name string, options v1.GetOptions) (result *rbac.RoleBinding, err error) {
 	result = &rbac.RoleBinding{}
 	err = c.client.Get().
 		Namespace(c.ns).
 		Resource("rolebindings").
 		Name(name).
+		VersionedParams(&options, api.ParameterCodec).
 		Do().
 		Into(result)
 	return
@@ -138,7 +141,7 @@ func (c *roleBindings) Watch(opts api.ListOptions) (watch.Interface, error) {
 }
 
 // Patch applies the patch and returns the patched roleBinding.
-func (c *roleBindings) Patch(name string, pt api.PatchType, data []byte, subresources ...string) (result *rbac.RoleBinding, err error) {
+func (c *roleBindings) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *rbac.RoleBinding, err error) {
 	result = &rbac.RoleBinding{}
 	err = c.client.Patch(pt).
 		Namespace(c.ns).

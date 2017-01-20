@@ -26,12 +26,13 @@ import (
 	"k8s.io/contrib/cluster-autoscaler/simulator"
 	. "k8s.io/contrib/cluster-autoscaler/utils/test"
 
-	"k8s.io/kubernetes/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	batchv1 "k8s.io/kubernetes/pkg/apis/batch/v1"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/release_1_5/fake"
+	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset/fake"
 	"k8s.io/kubernetes/pkg/client/testing/core"
-	"k8s.io/kubernetes/pkg/runtime"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -135,7 +136,7 @@ func TestScaleDown(t *testing.T) {
 	fakeClient := &fake.Clientset{}
 
 	job := batchv1.Job{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      "job",
 			Namespace: "default",
 			SelfLink:  "/apivs/extensions/v1beta1/namespaces/default/jobs/job",
@@ -288,7 +289,7 @@ func TestScaleDownNoMove(t *testing.T) {
 	fakeClient := &fake.Clientset{}
 
 	job := batchv1.Job{
-		ObjectMeta: apiv1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      "job",
 			Namespace: "default",
 			SelfLink:  "/apivs/extensions/v1beta1/namespaces/default/jobs/job",

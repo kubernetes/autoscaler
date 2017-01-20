@@ -29,8 +29,8 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	gce "google.golang.org/api/compute/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
 	provider_gce "k8s.io/kubernetes/pkg/cloudprovider/providers/gce"
-	"k8s.io/kubernetes/pkg/util/wait"
 )
 
 const (

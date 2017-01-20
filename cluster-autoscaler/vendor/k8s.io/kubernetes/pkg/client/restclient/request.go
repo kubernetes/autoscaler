@@ -18,6 +18,7 @@ package restclient
 
 import (
 	"bytes"
+	"context"
 	"encoding/hex"
 	"fmt"
 	"io"
@@ -32,21 +33,21 @@ import (
 	"time"
 
 	"github.com/golang/glog"
-	"k8s.io/kubernetes/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/runtime/serializer/streaming"
+	"k8s.io/apimachinery/pkg/util/net"
+	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/kubernetes/pkg/api/v1"
 	pathvalidation "k8s.io/kubernetes/pkg/api/validation/path"
-	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/client/metrics"
+	restclientwatch "k8s.io/kubernetes/pkg/client/restclient/watch"
 	"k8s.io/kubernetes/pkg/fields"
-	"k8s.io/kubernetes/pkg/labels"
-	"k8s.io/kubernetes/pkg/runtime"
-	"k8s.io/kubernetes/pkg/runtime/schema"
-	"k8s.io/kubernetes/pkg/runtime/serializer/streaming"
 	"k8s.io/kubernetes/pkg/util/flowcontrol"
-	"k8s.io/kubernetes/pkg/util/net"
-	"k8s.io/kubernetes/pkg/util/sets"
-	"k8s.io/kubernetes/pkg/watch"
-	"k8s.io/kubernetes/pkg/watch/versioned"
 )
 
 var (
@@ -105,16 +106,14 @@ type Request struct {
 	resource     string
 	resourceName string
 	subresource  string
-	selector     labels.Selector
 	timeout      time.Duration
 
 	// output
 	err  error
 	body io.Reader
 
-	// The constructed request and the response
-	req  *http.Request
-	resp *http.Response
+	// This is only used for per-request timeouts, deadlines, and cancellations.
+	ctx context.Context
 
 	backoffMgr BackoffManager
 	throttle   flowcontrol.RateLimiter
@@ -540,10 +539,10 @@ func (r *Request) Body(obj interface{}) *Request {
 			r.err = err
 			return r
 		}
-		glog.V(8).Infof("Request Body: %#v", string(data))
+		glogBody("Request Body", data)
 		r.body = bytes.NewReader(data)
 	case []byte:
-		glog.V(8).Infof("Request Body: %#v", string(t))
+		glogBody("Request Body", t)
 		r.body = bytes.NewReader(t)
 	case io.Reader:
 		r.body = t
@@ -557,12 +556,19 @@ func (r *Request) Body(obj interface{}) *Request {
 			r.err = err
 			return r
 		}
-		glog.V(8).Infof("Request Body: %#v", string(data))
+		glogBody("Request Body", data)
 		r.body = bytes.NewReader(data)
 		r.SetHeader("Content-Type", r.content.ContentType)
 	default:
 		r.err = fmt.Errorf("unknown type used for body: %+v", obj)
 	}
+	return r
+}
+
+// Context adds a context to the request. Contexts are only used for
+// timeouts, deadlines, and cancellations.
+func (r *Request) Context(ctx context.Context) *Request {
+	r.ctx = ctx
 	return r
 }
 
@@ -651,6 +657,9 @@ func (r *Request) Watch() (watch.Interface, error) {
 	if err != nil {
 		return nil, err
 	}
+	if r.ctx != nil {
+		req = req.WithContext(r.ctx)
+	}
 	req.Header = r.headers
 	client := r.client
 	if client == nil {
@@ -683,7 +692,7 @@ func (r *Request) Watch() (watch.Interface, error) {
 	}
 	framer := r.serializers.Framer.NewFrameReader(resp.Body)
 	decoder := streaming.NewDecoder(framer, r.serializers.StreamingSerializer)
-	return watch.NewStreamWatcher(versioned.NewDecoder(decoder, r.serializers.Decoder)), nil
+	return watch.NewStreamWatcher(restclientwatch.NewDecoder(decoder, r.serializers.Decoder)), nil
 }
 
 // updateURLMetrics is a convenience function for pushing metrics.
@@ -694,9 +703,10 @@ func updateURLMetrics(req *Request, resp *http.Response, err error) {
 		url = req.baseURL.Host
 	}
 
-	// If we have an error (i.e. apiserver down) we report that as a metric label.
+	// Errors can be arbitrary strings. Unbound label cardinality is not suitable for a metric
+	// system so we just report them as `<error>`.
 	if err != nil {
-		metrics.RequestResult.Increment(err.Error(), req.verb, url)
+		metrics.RequestResult.Increment("<error>", req.verb, url)
 	} else {
 		//Metrics for failure codes
 		metrics.RequestResult.Increment(strconv.Itoa(resp.StatusCode), req.verb, url)
@@ -718,6 +728,9 @@ func (r *Request) Stream() (io.ReadCloser, error) {
 	req, err := http.NewRequest(r.verb, url, nil)
 	if err != nil {
 		return nil, err
+	}
+	if r.ctx != nil {
+		req = req.WithContext(r.ctx)
 	}
 	req.Header = r.headers
 	client := r.client
@@ -793,6 +806,9 @@ func (r *Request) request(fn func(*http.Request, *http.Response)) error {
 		if err != nil {
 			return err
 		}
+		if r.ctx != nil {
+			req = req.WithContext(r.ctx)
+		}
 		req.Header = r.headers
 
 		r.backoffMgr.Sleep(r.backoffMgr.CalculateBackoff(r.URL()))
@@ -810,7 +826,20 @@ func (r *Request) request(fn func(*http.Request, *http.Response)) error {
 			r.backoffMgr.UpdateBackoff(r.URL(), err, resp.StatusCode)
 		}
 		if err != nil {
-			return err
+			// "Connection reset by peer" is usually a transient error.
+			// Thus in case of "GET" operations, we simply retry it.
+			// We are not automatically retrying "write" operations, as
+			// they are not idempotent.
+			if !net.IsConnectionReset(err) || r.verb != "GET" {
+				return err
+			}
+			// For the purpose of retry, we set the artificial "retry-after" response.
+			// TODO: Should we clean the original response if it exists?
+			resp = &http.Response{
+				StatusCode: http.StatusInternalServerError,
+				Header:     http.Header{"Retry-After": []string{"1"}},
+				Body:       ioutil.NopCloser(bytes.NewReader([]byte{})),
+			}
 		}
 
 		done := func() bool {
@@ -877,6 +906,7 @@ func (r *Request) DoRaw() ([]byte, error) {
 	var result Result
 	err := r.request(func(req *http.Request, resp *http.Response) {
 		result.body, result.err = ioutil.ReadAll(resp.Body)
+		glogBody("Response Body", result.body)
 		if resp.StatusCode < http.StatusOK || resp.StatusCode > http.StatusPartialContent {
 			result.err = r.transformUnstructuredResponseError(resp, req, result.body)
 		}
@@ -896,15 +926,7 @@ func (r *Request) transformResponse(resp *http.Response, req *http.Request) Resu
 		}
 	}
 
-	if glog.V(8) {
-		if bytes.IndexFunc(body, func(r rune) bool {
-			return r < 0x0a
-		}) != -1 {
-			glog.Infof("Response Body:\n%s", hex.Dump(body))
-		} else {
-			glog.Infof("Response Body: %s", string(body))
-		}
-	}
+	glogBody("Response Body", body)
 
 	// verify the content type is accurate
 	contentType := resp.Header.Get("Content-Type")
@@ -956,6 +978,21 @@ func (r *Request) transformResponse(resp *http.Response, req *http.Request) Resu
 	}
 }
 
+// glogBody logs a body output that could be either JSON or protobuf. It explicitly guards against
+// allocating a new string for the body output unless necessary. Uses a simple heuristic to determine
+// whether the body is printable.
+func glogBody(prefix string, body []byte) {
+	if glog.V(8) {
+		if bytes.IndexFunc(body, func(r rune) bool {
+			return r < 0x0a
+		}) != -1 {
+			glog.Infof("%s:\n%s", prefix, hex.Dump(body))
+		} else {
+			glog.Infof("%s: %s", prefix, string(body))
+		}
+	}
+}
+
 // maxUnstructuredResponseTextBytes is an upper bound on how much output to include in the unstructured error.
 const maxUnstructuredResponseTextBytes = 2048
 
@@ -993,7 +1030,6 @@ func (r *Request) newUnstructuredResponseError(body []byte, isTextResponse bool,
 	if len(body) > maxUnstructuredResponseTextBytes {
 		body = body[:maxUnstructuredResponseTextBytes]
 	}
-	glog.V(8).Infof("Response Body: %#v", string(body))
 
 	message := "unknown"
 	if isTextResponse {

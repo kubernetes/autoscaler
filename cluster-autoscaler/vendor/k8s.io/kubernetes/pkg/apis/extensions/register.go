@@ -17,12 +17,11 @@ limitations under the License.
 package extensions
 
 import (
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/apis/autoscaling"
-	"k8s.io/kubernetes/pkg/apis/batch"
-	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
-	"k8s.io/kubernetes/pkg/runtime"
-	"k8s.io/kubernetes/pkg/runtime/schema"
 )
 
 // GroupName is the group name use in this package
@@ -55,9 +54,6 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&DeploymentRollback{},
 		&autoscaling.HorizontalPodAutoscaler{},
 		&autoscaling.HorizontalPodAutoscalerList{},
-		&batch.Job{},
-		&batch.JobList{},
-		&batch.JobTemplate{},
 		&ReplicationControllerDummy{},
 		&Scale{},
 		&ThirdPartyResource{},
