@@ -87,7 +87,7 @@ func PollAPIServer(k8s KubernetesClient, est ResourceEstimator, contName string,
 			log.Error(err)
 			continue
 		}
-		log.Infof("The number of nodes is %d", num)
+		log.V(4).Infof("The number of nodes is %d", num)
 
 		// Query the apiserver for this pod's information.
 		resources, err := k8s.ContainerResources()
@@ -95,18 +95,17 @@ func PollAPIServer(k8s KubernetesClient, est ResourceEstimator, contName string,
 			log.Errorf("Error while querying apiserver for resources: %v", err)
 			continue
 		}
-		log.Infof("The container resources are %+v", *resources)
 
 		// Get the expected resource limits.
 		expResources := est.scaleWithNodes(num)
-		log.Infof("The expected resources are %+v", *expResources)
 
 		// If there's a difference, go ahead and set the new values.
 		if !shouldOverwriteResources(int64(threshold), resources.Limits, resources.Requests, expResources.Limits, expResources.Requests) {
-			log.Infof("Resources are within the expected limits.")
+			log.V(4).Infof("Resources are within the expected limits. Actual: %+v Expected: %+v", *resources, *expResources)
 			continue
 		}
-		log.Infof("Resources are not within the expected limits: updating the deployment.")
+
+		log.Infof("Resources are not within the expected limits, updating the deployment. Actual: %+v Expected: %+v", *resources, *expResources)
 		if err := k8s.UpdateDeployment(expResources); err != nil {
 			log.Error(err)
 			continue
