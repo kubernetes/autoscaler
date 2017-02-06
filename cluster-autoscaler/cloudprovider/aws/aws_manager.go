@@ -224,7 +224,8 @@ func (m *AwsManager) GetAsgNodes(asg *Asg) ([]string, error) {
 		return []string{}, err
 	}
 	for _, instance := range group.Instances {
-		result = append(result, *instance.InstanceId)
+		result = append(result,
+			fmt.Sprintf("aws:///%s/%s", *instance.AvailabilityZone, *instance.InstanceId))
 	}
 	return result, nil
 }
