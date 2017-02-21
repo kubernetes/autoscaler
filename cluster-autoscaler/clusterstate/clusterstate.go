@@ -17,11 +17,13 @@ limitations under the License.
 package clusterstate
 
 import (
+	"fmt"
 	"reflect"
 	"sync"
 	"time"
 
 	"k8s.io/contrib/cluster-autoscaler/cloudprovider"
+	"k8s.io/contrib/cluster-autoscaler/clusterstate/api"
 	"k8s.io/contrib/cluster-autoscaler/utils/deletetaint"
 	kube_util "k8s.io/contrib/cluster-autoscaler/utils/kubernetes"
 
@@ -194,7 +196,7 @@ func getTargetSizes(cp cloudprovider.CloudProvider) (map[string]int, error) {
 }
 
 // IsClusterHealthy returns true if the cluster health is within the acceptable limits
-func (csr *ClusterStateRegistry) IsClusterHealthy(currentTime time.Time) bool {
+func (csr *ClusterStateRegistry) IsClusterHealthy() bool {
 	csr.Lock()
 	defer csr.Unlock()
 
@@ -398,6 +400,71 @@ func (csr *ClusterStateRegistry) GetUnregisteredNodes() []UnregisteredNode {
 		result = append(result, unregistered)
 	}
 	return result
+}
+
+// GetStatus returns ClusterAutoscalerStatus with the current cluster autoscaler status.
+func (csr *ClusterStateRegistry) GetStatus(now time.Time) *api.ClusterAutoscalerStatus {
+	result := &api.ClusterAutoscalerStatus{
+		ClusterwideConditions: make([]api.ClusterAutoscalerCondition, 0),
+		NodeGroupStatuses:     make([]api.NodeGroupStatus, 0),
+	}
+	for _, nodeGroup := range csr.cloudProvider.NodeGroups() {
+		nodeGroupStatus := api.NodeGroupStatus{
+			ProviderID: nodeGroup.Id(),
+			Conditions: make([]api.ClusterAutoscalerCondition, 0),
+		}
+		readiness := csr.perNodeGroupReadiness[nodeGroup.Id()]
+		acceptable := csr.acceptableRanges[nodeGroup.Id()]
+
+		nodeGroupStatus.Conditions = append(nodeGroupStatus.Conditions, buildHealthStatusNodeGroup(
+			csr.IsNodeGroupHealthy(nodeGroup.Id()), readiness, acceptable))
+
+		result.NodeGroupStatuses = append(result.NodeGroupStatuses, nodeGroupStatus)
+	}
+	result.ClusterwideConditions = append(result.ClusterwideConditions,
+		buildHealthStatusClusterwide(csr.IsClusterHealthy(), csr.totalReadiness))
+
+	return result
+}
+
+func buildHealthStatusNodeGroup(isReady bool, readiness Readiness, acceptable AcceptableRange) api.ClusterAutoscalerCondition {
+	condition := api.ClusterAutoscalerCondition{
+		Type: api.ClusterAutoscalerHealth,
+		Message: fmt.Sprintf("ready=%d unready=%d notStarted=%d longNotStarted=%d registered=%d cloudProviderTarget=%d (min=%d, max=%d)",
+			readiness.Ready,
+			readiness.Unready,
+			readiness.NotStarted,
+			readiness.LongNotStarted,
+			readiness.Registered,
+			acceptable.CurrentTarget,
+			acceptable.MinNodes,
+			acceptable.MaxNodes),
+	}
+	if isReady {
+		condition.Status = api.ClusterAutoscalerHealthy
+	} else {
+		condition.Status = api.ClusterAutoscalerUnhealthy
+	}
+	return condition
+}
+
+func buildHealthStatusClusterwide(isReady bool, readiness Readiness) api.ClusterAutoscalerCondition {
+	condition := api.ClusterAutoscalerCondition{
+		Type: api.ClusterAutoscalerHealth,
+		Message: fmt.Sprintf("ready=%d unready=%d notStarted=%d longNotStarted=%d registered=%d",
+			readiness.Ready,
+			readiness.Unready,
+			readiness.NotStarted,
+			readiness.LongNotStarted,
+			readiness.Registered,
+		),
+	}
+	if isReady {
+		condition.Status = api.ClusterAutoscalerHealthy
+	} else {
+		condition.Status = api.ClusterAutoscalerUnhealthy
+	}
+	return condition
 }
 
 func isNodeNotStarted(node *apiv1.Node) bool {
