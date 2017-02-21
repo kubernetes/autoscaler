@@ -63,6 +63,7 @@ const (
 type ScaleDown struct {
 	context            *AutoscalingContext
 	unneededNodes      map[string]time.Time
+	unneededNodesList  []*apiv1.Node
 	podLocationHints   map[string]string
 	nodeUtilizationMap map[string]float64
 	usageTracker       *simulator.UsageTracker
@@ -76,12 +77,18 @@ func NewScaleDown(context *AutoscalingContext) *ScaleDown {
 		podLocationHints:   make(map[string]string),
 		nodeUtilizationMap: make(map[string]float64),
 		usageTracker:       simulator.NewUsageTracker(),
+		unneededNodesList:  make([]*apiv1.Node, 0),
 	}
 }
 
 // CleanUp cleans up the internal ScaleDown state.
 func (sd *ScaleDown) CleanUp(timestamp time.Time) {
 	sd.usageTracker.CleanUp(time.Now().Add(-(sd.context.ScaleDownUnneededTime)))
+}
+
+// GetCandidatesForScaleDown gets candidates for scale down.
+func (sd *ScaleDown) GetCandidatesForScaleDown() []*apiv1.Node {
+	return sd.unneededNodesList
 }
 
 // UpdateUnneededNodes calculates which nodes are not needed, i.e. all pods can be scheduled somewhere else,
@@ -124,13 +131,20 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		len(currentlyUnneededNodes), true, sd.podLocationHints, sd.usageTracker, timestamp)
 	if err != nil {
 		glog.Errorf("Error while simulating node drains: %v", err)
+
+		sd.unneededNodesList = make([]*apiv1.Node, 0)
+		sd.unneededNodes = make(map[string]time.Time)
+		sd.nodeUtilizationMap = make(map[string]float64)
+
 		return fmt.Errorf("error while simulating node drains: %v", err)
 	}
 
 	// Update the timestamp map.
 	result := make(map[string]time.Time)
+	unneadedNodeList := make([]*apiv1.Node, 0, len(nodesToRemove))
 	for _, node := range nodesToRemove {
 		name := node.Node.Name
+		unneadedNodeList = append(unneadedNodeList, node.Node)
 		if val, found := sd.unneededNodes[name]; !found {
 			result[name] = timestamp
 		} else {
@@ -138,6 +152,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		}
 	}
 
+	sd.unneededNodesList = unneadedNodeList
 	sd.unneededNodes = result
 	sd.podLocationHints = newHints
 	sd.nodeUtilizationMap = utilizationMap
