@@ -301,7 +301,7 @@ func run(_ <-chan struct{}) {
 
 				currentTime := loopStart
 				autoscalingContext.ClusterStateRegistry.UpdateNodes(allNodes, currentTime)
-				if !autoscalingContext.ClusterStateRegistry.IsClusterHealthy(time.Now()) {
+				if !autoscalingContext.ClusterStateRegistry.IsClusterHealthy() {
 					glog.Warningf("Cluster is not ready for autoscaling: %v", err)
 					continue
 				}
