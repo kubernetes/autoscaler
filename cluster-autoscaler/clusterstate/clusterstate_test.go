@@ -58,6 +58,27 @@ func TestOKWithScaleUp(t *testing.T) {
 	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng2_1}, now)
 	assert.NoError(t, err)
 	assert.True(t, clusterstate.IsClusterHealthy())
+
+	status := clusterstate.GetStatus(now)
+	assert.Equal(t, api.ClusterAutoscalerInProgress,
+		api.GetConditionByType(api.ClusterAutoscalerScaleUp, status.ClusterwideConditions).Status)
+	assert.Equal(t, 2, len(status.NodeGroupStatuses))
+	ng1Checked := false
+	ng2Checked := true
+	for _, nodeStatus := range status.NodeGroupStatuses {
+		if nodeStatus.ProviderID == "ng1" {
+			assert.Equal(t, api.ClusterAutoscalerInProgress,
+				api.GetConditionByType(api.ClusterAutoscalerScaleUp, nodeStatus.Conditions).Status)
+			ng1Checked = true
+		}
+		if nodeStatus.ProviderID == "ng2" {
+			assert.Equal(t, api.ClusterAutoscalerNoActivity,
+				api.GetConditionByType(api.ClusterAutoscalerScaleUp, nodeStatus.Conditions).Status)
+			ng2Checked = true
+		}
+	}
+	assert.True(t, ng1Checked)
+	assert.True(t, ng2Checked)
 }
 
 func TestOKOneUnreadyNode(t *testing.T) {
@@ -87,6 +108,9 @@ func TestOKOneUnreadyNode(t *testing.T) {
 	status := clusterstate.GetStatus(now)
 	assert.Equal(t, api.ClusterAutoscalerHealthy,
 		api.GetConditionByType(api.ClusterAutoscalerHealth, status.ClusterwideConditions).Status)
+	assert.Equal(t, api.ClusterAutoscalerNoActivity,
+		api.GetConditionByType(api.ClusterAutoscalerScaleUp, status.ClusterwideConditions).Status)
+
 	assert.Equal(t, 2, len(status.NodeGroupStatuses))
 	ng1Checked := false
 	for _, nodeStatus := range status.NodeGroupStatuses {
