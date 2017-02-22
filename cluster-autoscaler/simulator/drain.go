@@ -17,6 +17,8 @@ limitations under the License.
 package simulator
 
 import (
+	"time"
+
 	"k8s.io/contrib/cluster-autoscaler/utils/drain"
 	api "k8s.io/kubernetes/pkg/api"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
@@ -38,7 +40,8 @@ func FastGetPodsToMove(nodeInfo *schedulercache.NodeInfo, skipNodesWithSystemPod
 		skipNodesWithLocalStorage,
 		false,
 		nil,
-		0)
+		0,
+		time.Now())
 }
 
 // DetailedGetPodsForMove returns a list of pods that should be moved elsewhere if the node
@@ -55,5 +58,6 @@ func DetailedGetPodsForMove(nodeInfo *schedulercache.NodeInfo, skipNodesWithSyst
 		skipNodesWithLocalStorage,
 		true,
 		client,
-		minReplicaCount)
+		minReplicaCount,
+		time.Now())
 }
