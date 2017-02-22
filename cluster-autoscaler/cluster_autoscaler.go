@@ -301,6 +301,7 @@ func run(_ <-chan struct{}) {
 
 				currentTime := loopStart
 				autoscalingContext.ClusterStateRegistry.UpdateNodes(allNodes, currentTime)
+				autoscalingContext.ClusterStateRegistry.UpdateScaleDownCandidates([]*apiv1.Node{})
 				if !autoscalingContext.ClusterStateRegistry.IsClusterHealthy() {
 					glog.Warningf("Cluster is not ready for autoscaling: %v", err)
 					continue
@@ -426,6 +427,8 @@ func run(_ <-chan struct{}) {
 
 					scaleDown.CleanUp(time.Now())
 					err := scaleDown.UpdateUnneededNodes(allNodes, allScheduled, time.Now())
+					autoscalingContext.ClusterStateRegistry.UpdateScaleDownCandidates(scaleDown.GetCandidatesForScaleDown())
+
 					if err != nil {
 						glog.Warningf("Failed to scale down: %v", err)
 						continue
