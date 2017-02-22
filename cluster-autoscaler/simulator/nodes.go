@@ -17,6 +17,8 @@ limitations under the License.
 package simulator
 
 import (
+	"time"
+
 	"k8s.io/contrib/cluster-autoscaler/utils/drain"
 	api "k8s.io/kubernetes/pkg/api"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
@@ -48,7 +50,8 @@ func GetRequiredPodsForNode(nodename string, client kube_client.Interface) ([]*a
 		false,
 		false, // Setting this to true requires client to be not-null.
 		nil,
-		0)
+		0,
+		time.Now())
 	if err != nil {
 		return []*apiv1.Pod{}, err
 	}
@@ -60,6 +63,10 @@ func GetRequiredPodsForNode(nodename string, client kube_client.Interface) ([]*a
 
 	podsOnNewNode := make([]*apiv1.Pod, 0)
 	for _, pod := range allPods {
+		if pod.DeletionTimestamp != nil {
+			continue
+		}
+
 		if _, found := podsToRemoveMap[pod.SelfLink]; !found {
 			podsOnNewNode = append(podsOnNewNode, pod)
 		}
