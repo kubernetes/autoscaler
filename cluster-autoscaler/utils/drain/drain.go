@@ -45,6 +45,10 @@ func GetPodsForDeletionOnNodeDrain(
 		if IsMirrorPod(pod) {
 			continue
 		}
+		if pod.DeletionTimestamp != nil {
+			// pod is being deleted - no need to move it.
+			continue
+		}
 
 		daemonsetPod := false
 		replicated := false
