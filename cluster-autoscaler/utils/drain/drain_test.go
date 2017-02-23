@@ -19,6 +19,7 @@ package drain
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -131,6 +132,18 @@ func TestDrain(t *testing.T) {
 		},
 	}
 
+	rsPodDeleted := &apiv1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              "bar",
+			Namespace:         "default",
+			Annotations:       map[string]string{apiv1.CreatedByAnnotation: RefJSON(&rs)},
+			DeletionTimestamp: &metav1.Time{Time: time.Now().Add(-time.Hour)},
+		},
+		Spec: apiv1.PodSpec{
+			NodeName: "node",
+		},
+	}
+
 	nakedPod := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "bar",
@@ -200,6 +213,13 @@ func TestDrain(t *testing.T) {
 			expectPods:  []*apiv1.Pod{rsPod},
 		},
 		{
+			description: "RS-managed pod that is being deleted",
+			pods:        []*apiv1.Pod{rsPodDeleted},
+			replicaSets: []extensions.ReplicaSet{rs},
+			expectFatal: false,
+			expectPods:  []*apiv1.Pod{},
+		},
+		{
 			description: "naked pod",
 			pods:        []*apiv1.Pod{nakedPod},
 			expectFatal: true,
@@ -236,7 +256,7 @@ func TestDrain(t *testing.T) {
 			register("replicasets", &test.replicaSets[0], test.replicaSets[0].ObjectMeta)
 		}
 		pods, err := GetPodsForDeletionOnNodeDrain(test.pods, api.Codecs.UniversalDecoder(),
-			false, true, true, true, fakeClient, 0)
+			false, true, true, true, fakeClient, 0, time.Now())
 
 		if test.expectFatal {
 			if err == nil {
