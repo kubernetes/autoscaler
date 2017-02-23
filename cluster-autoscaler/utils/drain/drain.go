@@ -18,6 +18,7 @@ package drain
 
 import (
 	"fmt"
+	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -25,6 +26,11 @@ import (
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	"k8s.io/kubernetes/pkg/kubelet/types"
+)
+
+const (
+	// PodDeletionTimeout - maximum time after which a to be deleted pod is not included in the list of pods for drain.
+	PodDeletionTimeout = 5 * time.Minute
 )
 
 // GetPodsForDeletionOnNodeDrain returns pods that should be deleted on node drain as well as some extra information
@@ -37,7 +43,8 @@ func GetPodsForDeletionOnNodeDrain(
 	skipNodesWithLocalStorage bool,
 	checkReferences bool, // Setting this to true requires client to be not-null.
 	client client.Interface,
-	minReplica int32) ([]*apiv1.Pod, error) {
+	minReplica int32,
+	currentTime time.Time) ([]*apiv1.Pod, error) {
 
 	pods := []*apiv1.Pod{}
 
@@ -45,8 +52,12 @@ func GetPodsForDeletionOnNodeDrain(
 		if IsMirrorPod(pod) {
 			continue
 		}
-		if pod.DeletionTimestamp != nil {
-			// pod is being deleted - no need to move it.
+
+		// Possibly skip a pod under deletion but only if it was beeing deleted for long enough
+		// to aviod a situation when we delete the empty node immediately after the pod was marked for
+		// deletion without respecting any graceful termination.
+		if pod.DeletionTimestamp != nil && pod.DeletionTimestamp.Time.Before(currentTime.Add(-1*PodDeletionTimeout)) {
+			// pod is being deleted for long enough - no need to care about it.
 			continue
 		}
 
