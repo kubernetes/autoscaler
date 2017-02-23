@@ -71,7 +71,7 @@ type ScaleDownRequest struct {
 type ClusterStateRegistryConfig struct {
 	// Maximum percentage of unready nodes in total in, if the number is higher than OkTotalUnreadyCount
 	MaxTotalUnreadyPercentage float64
-	// Number of nodes that can be unready in total. If the number is higer than that then MaxTotalUnreadyPercentage applies.
+	// Number of nodes that can be unready in total. If the number is higher than that then MaxTotalUnreadyPercentage applies.
 	OkTotalUnreadyCount int
 }
 
@@ -617,7 +617,7 @@ func (csr *ClusterStateRegistry) GetUpcomingNodes() map[string]int {
 		// newNodes is the number of nodes that
 		newNodes := ar.CurrentTarget - (readiness.Ready + readiness.Unready + readiness.LongNotStarted)
 		if newNodes <= 0 {
-			// Negative value is unlikely but theroetically possible.
+			// Negative value is unlikely but theoretically possible.
 			continue
 		}
 		result[id] = newNodes
