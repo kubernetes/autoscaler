@@ -26,6 +26,16 @@ import (
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 )
 
+const (
+	//BasicEstimatorName is the name of basic estimator.
+	BasicEstimatorName = "basic"
+	// BinpackingEstimatorName is the name of binpacking estimator.
+	BinpackingEstimatorName = "binpacking"
+)
+
+// AvailableEstimators is a list of available estimators.
+var AvailableEstimators = []string{BasicEstimatorName, BinpackingEstimatorName}
+
 // BasicNodeEstimator estimates the number of needed nodes to handle the given amount of pods.
 // It will never overestimate the number of nodes but is quite likekly to provide a number that
 // is too small.

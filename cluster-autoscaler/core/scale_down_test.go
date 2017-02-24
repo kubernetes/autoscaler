@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package core
 
 import (
 	"fmt"
@@ -24,6 +24,7 @@ import (
 	"k8s.io/contrib/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/contrib/cluster-autoscaler/clusterstate"
 	"k8s.io/contrib/cluster-autoscaler/simulator"
+	kube_util "k8s.io/contrib/cluster-autoscaler/utils/kubernetes"
 	. "k8s.io/contrib/cluster-autoscaler/utils/test"
 
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -70,8 +71,10 @@ func TestFindUnneededNodes(t *testing.T) {
 	SetNodeReadyState(n4, true, time.Time{})
 
 	context := AutoscalingContext{
-		PredicateChecker:              simulator.NewTestPredicateChecker(),
-		ScaleDownUtilizationThreshold: 0.35,
+		AutoscalingOptions: AutoscalingOptions{
+			ScaleDownUtilizationThreshold: 0.35,
+		},
+		PredicateChecker: simulator.NewTestPredicateChecker(),
 	}
 	sd := NewScaleDown(&context)
 	sd.UpdateUnneededNodes([]*apiv1.Node{n1, n2, n3, n4}, []*apiv1.Pod{p1, p2, p3, p4}, time.Now())
@@ -122,7 +125,7 @@ func TestDrainNode(t *testing.T) {
 		updatedNodes <- obj.Name
 		return true, obj, nil
 	})
-	err := drainNode(n1, []*apiv1.Pod{p1, p2}, fakeClient, createEventRecorder(fakeClient), 20)
+	err := drainNode(n1, []*apiv1.Pod{p1, p2}, fakeClient, kube_util.CreateEventRecorder(fakeClient), 20)
 	assert.NoError(t, err)
 	assert.Equal(t, p1.Name, getStringFromChan(deletedPods))
 	assert.Equal(t, p2.Name, getStringFromChan(deletedPods))
@@ -193,14 +196,16 @@ func TestScaleDown(t *testing.T) {
 	assert.NotNil(t, provider)
 
 	context := &AutoscalingContext{
-		PredicateChecker:              simulator.NewTestPredicateChecker(),
-		CloudProvider:                 provider,
-		ClientSet:                     fakeClient,
-		Recorder:                      createEventRecorder(fakeClient),
-		ScaleDownUtilizationThreshold: 0.5,
-		ScaleDownUnneededTime:         time.Minute,
-		MaxGratefulTerminationSec:     60,
-		ClusterStateRegistry:          clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}),
+		AutoscalingOptions: AutoscalingOptions{
+			ScaleDownUtilizationThreshold: 0.5,
+			ScaleDownUnneededTime:         time.Minute,
+			MaxGratefulTerminationSec:     60,
+		},
+		PredicateChecker:     simulator.NewTestPredicateChecker(),
+		CloudProvider:        provider,
+		ClientSet:            fakeClient,
+		Recorder:             kube_util.CreateEventRecorder(fakeClient),
+		ClusterStateRegistry: clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}),
 	}
 	scaleDown := NewScaleDown(context)
 	scaleDown.UpdateUnneededNodes([]*apiv1.Node{n1, n2}, []*apiv1.Pod{p1, p2}, time.Now().Add(-5*time.Minute))
@@ -246,15 +251,17 @@ func TestNoScaleDownUnready(t *testing.T) {
 	provider.AddNode("ng1", n2)
 
 	context := &AutoscalingContext{
-		PredicateChecker:              simulator.NewTestPredicateChecker(),
-		CloudProvider:                 provider,
-		ClientSet:                     fakeClient,
-		Recorder:                      createEventRecorder(fakeClient),
-		ScaleDownUtilizationThreshold: 0.5,
-		ScaleDownUnneededTime:         time.Minute,
-		ScaleDownUnreadyTime:          time.Hour,
-		MaxGratefulTerminationSec:     60,
-		ClusterStateRegistry:          clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}),
+		AutoscalingOptions: AutoscalingOptions{
+			ScaleDownUtilizationThreshold: 0.5,
+			ScaleDownUnneededTime:         time.Minute,
+			ScaleDownUnreadyTime:          time.Hour,
+			MaxGratefulTerminationSec:     60,
+		},
+		PredicateChecker:     simulator.NewTestPredicateChecker(),
+		CloudProvider:        provider,
+		ClientSet:            fakeClient,
+		Recorder:             kube_util.CreateEventRecorder(fakeClient),
+		ClusterStateRegistry: clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}),
 	}
 
 	// N1 is unready so it requires a bigger unneeded time.
@@ -345,17 +352,20 @@ func TestScaleDownNoMove(t *testing.T) {
 	assert.NotNil(t, provider)
 
 	context := &AutoscalingContext{
-		PredicateChecker:              simulator.NewTestPredicateChecker(),
-		CloudProvider:                 provider,
-		ClientSet:                     fakeClient,
-		Recorder:                      createEventRecorder(fakeClient),
-		ScaleDownUtilizationThreshold: 0.5,
-		ScaleDownUnneededTime:         time.Minute,
-		MaxGratefulTerminationSec:     60,
-		ClusterStateRegistry:          clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}),
+		AutoscalingOptions: AutoscalingOptions{
+			ScaleDownUtilizationThreshold: 0.5,
+			ScaleDownUnneededTime:         time.Minute,
+			ScaleDownUnreadyTime:          time.Hour,
+			MaxGratefulTerminationSec:     60,
+		},
+		PredicateChecker:     simulator.NewTestPredicateChecker(),
+		CloudProvider:        provider,
+		ClientSet:            fakeClient,
+		Recorder:             kube_util.CreateEventRecorder(fakeClient),
+		ClusterStateRegistry: clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}),
 	}
 	scaleDown := NewScaleDown(context)
-	scaleDown.UpdateUnneededNodes([]*apiv1.Node{n1, n2}, []*apiv1.Pod{p1, p2}, time.Now().Add(-5*time.Minute))
+	scaleDown.UpdateUnneededNodes([]*apiv1.Node{n1, n2}, []*apiv1.Pod{p1, p2}, time.Now().Add(5*time.Minute))
 	result, err := scaleDown.TryToScaleDown([]*apiv1.Node{n1, n2}, []*apiv1.Pod{p1, p2})
 	assert.NoError(t, err)
 	assert.Equal(t, ScaleDownNoUnneeded, result)
