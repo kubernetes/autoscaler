@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package core
 
 import (
 	"fmt"
@@ -102,10 +102,10 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 			}
 		}
 		if len(option.Pods) > 0 {
-			if context.EstimatorName == BinpackingEstimatorName {
+			if context.EstimatorName == estimator.BinpackingEstimatorName {
 				binpackingEstimator := estimator.NewBinpackingNodeEstimator(context.PredicateChecker)
 				option.NodeCount = binpackingEstimator.Estimate(option.Pods, nodeInfo, upcomingNodes)
-			} else if context.EstimatorName == BasicEstimatorName {
+			} else if context.EstimatorName == estimator.BasicEstimatorName {
 				basicEstimator := estimator.NewBasicNodeEstimator()
 				for _, pod := range option.Pods {
 					basicEstimator.Add(pod)

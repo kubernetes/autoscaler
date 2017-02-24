@@ -26,6 +26,60 @@ import (
 	"k8s.io/kubernetes/pkg/fields"
 )
 
+// ListerRegistry is a registry providing various listers to list pods or nodes matching conditions
+type ListerRegistry interface {
+	AllNodeLister() *AllNodeLister
+	ReadyNodeLister() *ReadyNodeLister
+	ScheduledPodLister() *ScheduledPodLister
+	UnschedulablePodLister() *UnschedulablePodLister
+}
+
+type listerRegistryImpl struct {
+	allNodeLister          *AllNodeLister
+	readyNodeLister        *ReadyNodeLister
+	scheduledPodLister     *ScheduledPodLister
+	unschedulablePodLister *UnschedulablePodLister
+}
+
+// NewListerRegistry returns a registry providing various listers to list pods or nodes matching conditions
+func NewListerRegistry(allNode *AllNodeLister, readyNode *ReadyNodeLister, scheduledPod *ScheduledPodLister, unschedulablePod *UnschedulablePodLister) ListerRegistry {
+	return listerRegistryImpl{
+		allNodeLister:          allNode,
+		readyNodeLister:        readyNode,
+		scheduledPodLister:     scheduledPod,
+		unschedulablePodLister: unschedulablePod,
+	}
+}
+
+// NewListerRegistryWithDefaultListers returns a registry filled with listers of the default implementations
+func NewListerRegistryWithDefaultListers(kubeClient client.Interface, stopChannel <-chan struct{}) ListerRegistry {
+	unschedulablePodLister := NewUnschedulablePodLister(kubeClient, stopChannel)
+	scheduledPodLister := NewScheduledPodLister(kubeClient, stopChannel)
+	readyNodeLister := NewReadyNodeLister(kubeClient, stopChannel)
+	allNodeLister := NewAllNodeLister(kubeClient, stopChannel)
+	return NewListerRegistry(allNodeLister, readyNodeLister, scheduledPodLister, unschedulablePodLister)
+}
+
+// AllNodeLister returns the AllNodeLister registered to this registry
+func (r listerRegistryImpl) AllNodeLister() *AllNodeLister {
+	return r.allNodeLister
+}
+
+// ReadyNodeLister returns the ReadyNodeLister registered to this registry
+func (r listerRegistryImpl) ReadyNodeLister() *ReadyNodeLister {
+	return r.readyNodeLister
+}
+
+// ScheduledPodLister returns the ScheduledPodLister registered to this registry
+func (r listerRegistryImpl) ScheduledPodLister() *ScheduledPodLister {
+	return r.scheduledPodLister
+}
+
+// UnschedulablePodLister returns the UnschedulablePodLister registered to this registry
+func (r listerRegistryImpl) UnschedulablePodLister() *UnschedulablePodLister {
+	return r.unschedulablePodLister
+}
+
 // UnschedulablePodLister lists unscheduled pods
 type UnschedulablePodLister struct {
 	podLister *cache.StoreToPodLister
