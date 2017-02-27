@@ -21,7 +21,9 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -142,6 +144,21 @@ func createKubeClient() kube_client.Interface {
 	return kube_client.NewForConfigOrDie(kubeConfig)
 }
 
+func registerSignalHandlers(autoscaler core.Autoscaler) {
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, os.Interrupt, os.Kill, syscall.SIGTERM, syscall.SIGQUIT)
+	glog.Info("Registered cleanup signal handler")
+
+	go func() {
+		<-sigs
+		glog.Info("Receieved signal, attempting cleanup")
+		autoscaler.ExitCleanUp()
+		glog.Info("Cleaned up, exiting...")
+		glog.Flush()
+		os.Exit(0)
+	}()
+}
+
 // In order to meet interface criteria for LeaderElectionConfig we need to
 // take stop channel as an argument. However, since we are committing a suicide
 // after loosing mastership we can safely ignore it.
@@ -158,6 +175,7 @@ func run(_ <-chan struct{}) {
 	autoscaler := core.NewAutoscaler(opts, predicateChecker, kubeClient, kubeEventRecorder, listerRegistry)
 
 	autoscaler.CleanUp()
+	registerSignalHandlers(autoscaler)
 
 	for {
 		select {

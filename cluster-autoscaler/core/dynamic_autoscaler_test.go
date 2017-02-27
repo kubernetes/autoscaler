@@ -35,6 +35,10 @@ func (m *AutoscalerMock) CleanUp() {
 	m.Called()
 }
 
+func (m *AutoscalerMock) ExitCleanUp() {
+	m.Called()
+}
+
 type ConfigFetcherMock struct {
 	mock.Mock
 }
