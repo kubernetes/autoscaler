@@ -34,10 +34,6 @@ type StaticAutoscaler struct {
 	// AutoscalingContext consists of validated settings and options for this autoscaler
 	*AutoscalingContext
 	kube_util.ListerRegistry
-	readyNodeLister          *kube_util.ReadyNodeLister
-	scheduledPodLister       *kube_util.ScheduledPodLister
-	unschedulablePodLister   *kube_util.UnschedulablePodLister
-	allNodeLister            *kube_util.AllNodeLister
 	kubeClient               kube_client.Interface
 	lastScaleUpTime          time.Time
 	lastScaleDownFailedTrial time.Time
@@ -62,17 +58,17 @@ func NewStaticAutoscaler(opts AutoscalingOptions, predicateChecker *simulator.Pr
 // CleanUp cleans up ToBeDeleted taints added by the previously run and then failed CA
 func (a *StaticAutoscaler) CleanUp() {
 	// CA can die at any time. Removing taints that might have been left from the previous run.
-	if readyNodes, err := a.readyNodeLister.List(); err != nil {
+	if readyNodes, err := a.ReadyNodeLister().List(); err != nil {
 		cleanToBeDeleted(readyNodes, a.kubeClient, a.Recorder)
 	}
 }
 
 // RunOnce iterates over node groups and scales them up/down if necessary
 func (a *StaticAutoscaler) RunOnce(currentTime time.Time) {
-	readyNodeLister := a.readyNodeLister
-	allNodeLister := a.allNodeLister
-	unschedulablePodLister := a.unschedulablePodLister
-	scheduledPodLister := a.scheduledPodLister
+	readyNodeLister := a.ReadyNodeLister()
+	allNodeLister := a.AllNodeLister()
+	unschedulablePodLister := a.UnschedulablePodLister()
+	scheduledPodLister := a.ScheduledPodLister()
 	scaleDown := a.scaleDown
 	autoscalingContext := a.AutoscalingContext
 
