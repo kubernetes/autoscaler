@@ -34,14 +34,14 @@ type StaticAutoscaler struct {
 	// AutoscalingContext consists of validated settings and options for this autoscaler
 	*AutoscalingContext
 	kube_util.ListerRegistry
-	kubeClient               kube_client.Interface
 	lastScaleUpTime          time.Time
 	lastScaleDownFailedTrial time.Time
 	scaleDown                *ScaleDown
 }
 
 // NewStaticAutoscaler creates an instance of Autoscaler filled with provided parameters
-func NewStaticAutoscaler(opts AutoscalingOptions, predicateChecker *simulator.PredicateChecker, kubeClient kube_client.Interface, kubeEventRecorder kube_record.EventRecorder, listerRegistry kube_util.ListerRegistry) *StaticAutoscaler {
+func NewStaticAutoscaler(opts AutoscalingOptions, predicateChecker *simulator.PredicateChecker,
+	kubeClient kube_client.Interface, kubeEventRecorder kube_record.EventRecorder, listerRegistry kube_util.ListerRegistry) *StaticAutoscaler {
 	autoscalingContext := NewAutoscalingContext(opts, predicateChecker, kubeClient, kubeEventRecorder)
 
 	scaleDown := NewScaleDown(autoscalingContext)
@@ -59,7 +59,7 @@ func NewStaticAutoscaler(opts AutoscalingOptions, predicateChecker *simulator.Pr
 func (a *StaticAutoscaler) CleanUp() {
 	// CA can die at any time. Removing taints that might have been left from the previous run.
 	if readyNodes, err := a.ReadyNodeLister().List(); err != nil {
-		cleanToBeDeleted(readyNodes, a.kubeClient, a.Recorder)
+		cleanToBeDeleted(readyNodes, a.AutoscalingContext.ClientSet, a.Recorder)
 	}
 }
 
