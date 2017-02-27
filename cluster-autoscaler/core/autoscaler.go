@@ -40,6 +40,8 @@ type Autoscaler interface {
 	RunOnce(currentTime time.Time)
 	// CleanUp represents a clean-up required before the first invocation of RunOnce
 	CleanUp()
+	// ExitCleanUp is a clean-up performed just before process termination.
+	ExitCleanUp()
 }
 
 // NewAutoscaler creates an autoscaler of an appropriate type according to the parameters

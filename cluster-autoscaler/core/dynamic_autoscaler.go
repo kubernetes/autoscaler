@@ -52,6 +52,11 @@ func (a *DynamicAutoscaler) CleanUp() {
 	a.autoscaler.CleanUp()
 }
 
+// ExitCleanUp cleans-up after autoscaler, so no mess remains after process termination.
+func (a *DynamicAutoscaler) ExitCleanUp() {
+	a.autoscaler.ExitCleanUp()
+}
+
 // RunOnce represents a single iteration of a dynamic autoscaler inside the CA's control-loop
 func (a *DynamicAutoscaler) RunOnce(currentTime time.Time) {
 	reconfigureStart := time.Now()

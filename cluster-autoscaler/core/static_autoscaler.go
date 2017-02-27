@@ -263,6 +263,16 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) {
 	a.writeStatusConfigMap()
 }
 
+// ExitCleanUp removes status configmap.
+func (a *StaticAutoscaler) ExitCleanUp() {
+	maps := a.AutoscalingContext.ClientSet.CoreV1().ConfigMaps(StatusConfigMapNamespace)
+	err := maps.Delete(StatusConfigMapName, &apiv1.DeleteOptions{})
+	if err != nil {
+		// Nothing else we could do at this point
+		glog.Error("Failed to delete status configmap")
+	}
+}
+
 func (a *StaticAutoscaler) writeStatusConfigMap() {
 	statusUpdateTime := time.Now()
 	status := a.ClusterStateRegistry.GetStatus(statusUpdateTime)
