@@ -17,16 +17,29 @@ limitations under the License.
 package core
 
 import (
+	"fmt"
 	"time"
 
 	"k8s.io/contrib/cluster-autoscaler/metrics"
 	kube_util "k8s.io/contrib/cluster-autoscaler/utils/kubernetes"
 
+	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	kube_record "k8s.io/kubernetes/pkg/client/record"
 
 	"github.com/golang/glog"
 	"k8s.io/contrib/cluster-autoscaler/simulator"
+)
+
+const (
+	// StatusConfigMapNamespace is the namespace where ConfigMap with status is stored.
+	StatusConfigMapNamespace = "kube-system"
+	// StatusConfigMapName is the name of ConfigMap with status.
+	StatusConfigMapName = "cluster-autoscaler-status"
+	// ConfigMapLastUpdatedKey is the name of annotation informing about status ConfigMap last update.
+	ConfigMapLastUpdatedKey = "cluster-autoscaler.kubernetes.io/last-updated"
 )
 
 // StaticAutoscaler is an autoscaler which has all the core functionality of a CA but without the reconfiguration feature
@@ -246,5 +259,42 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) {
 				}
 			}
 		}
+	}
+	a.writeStatusConfigMap()
+}
+
+func (a *StaticAutoscaler) writeStatusConfigMap() {
+	statusUpdateTime := time.Now()
+	status := a.ClusterStateRegistry.GetStatus(statusUpdateTime)
+	statusMsg := fmt.Sprintf("Cluster-autoscaler status at %v:\n%v", statusUpdateTime, status.GetReadableString())
+	var configMap *apiv1.ConfigMap
+	var getStatusError, writeStatusError error
+	maps := a.AutoscalingContext.ClientSet.CoreV1().ConfigMaps(StatusConfigMapNamespace)
+	configMap, getStatusError = maps.Get(StatusConfigMapName, metav1.GetOptions{})
+	if getStatusError == nil {
+		configMap.Data["status"] = statusMsg
+		configMap.ObjectMeta.Annotations[ConfigMapLastUpdatedKey] = fmt.Sprintf("%v", statusUpdateTime)
+		configMap, writeStatusError = maps.Update(configMap)
+	} else if errors.IsNotFound(getStatusError) {
+		configMap := &apiv1.ConfigMap{
+			ObjectMeta: metav1.ObjectMeta{
+				Namespace: StatusConfigMapNamespace,
+				Name:      StatusConfigMapName,
+				Annotations: map[string]string{
+					ConfigMapLastUpdatedKey: fmt.Sprintf("%v", statusUpdateTime),
+				},
+			},
+			Data: map[string]string{
+				"status": statusMsg,
+			},
+		}
+		configMap, writeStatusError = maps.Create(configMap)
+	} else {
+		glog.Error("Failed to retrieve status configmap for update")
+	}
+	if writeStatusError != nil {
+		glog.Error("Failed to write status configmap")
+	} else {
+		glog.V(8).Infof("Succesfully wrote status configmap with body \"%v\"", statusMsg)
 	}
 }
