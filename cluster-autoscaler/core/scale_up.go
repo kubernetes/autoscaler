@@ -153,7 +153,6 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 		}
 
 		glog.V(0).Infof("Scale-up: setting group %s size to %d", bestOption.NodeGroup.Id(), newSize)
-
 		increase := newSize - currentSize
 		if err := bestOption.NodeGroup.IncreaseSize(increase); err != nil {
 			return false, fmt.Errorf("failed to increase node group size: %v", err)
@@ -165,6 +164,8 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 				Time:            time.Now(),
 				ExpectedAddTime: time.Now().Add(context.MaxNodeProvisionTime),
 			})
+		context.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaledUpGroup",
+			"Scale-up: group %s size set to %d", bestOption.NodeGroup.Id(), newSize)
 
 		for _, pod := range bestOption.Pods {
 			context.Recorder.Eventf(pod, apiv1.EventTypeNormal, "TriggeredScaleUp",
