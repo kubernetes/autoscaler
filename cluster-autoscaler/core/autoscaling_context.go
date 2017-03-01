@@ -94,6 +94,8 @@ type AutoscalingOptions struct {
 	ScaleDownDelay time.Duration
 	// ScaleDownTrialInterval sets how often scale down possibility is check
 	ScaleDownTrialInterval time.Duration
+	// WriteStatusConfigMap tells if the status information should be written to a ConfigMap
+	WriteStatusConfigMap bool
 }
 
 // NewAutoscalingContext returns an autoscaling context from all the necessary parameters passed via arguments
