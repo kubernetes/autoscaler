@@ -27,7 +27,7 @@ import (
 	"sync"
 	"time"
 
-	"gopkg.in/gcfg.v1"
+	gcfg "gopkg.in/gcfg.v1"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
@@ -48,7 +48,6 @@ import (
 	"k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/api/v1/service"
 	"k8s.io/kubernetes/pkg/cloudprovider"
-	awscredentials "k8s.io/kubernetes/pkg/credentialprovider/aws"
 	"k8s.io/kubernetes/pkg/volume"
 )
 
@@ -182,7 +181,7 @@ const DefaultVolumeType = "gp2"
 // See http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/volume_limits.html#linux-specific-volume-limits
 const DefaultMaxEBSVolumes = 39
 
-// Used to call awscredentials.Init() just once
+// Used to call RecognizeWellKnownRegions just once
 var once sync.Once
 
 // Services is an abstraction over AWS, to allow mocking/other implementations
@@ -691,6 +690,7 @@ func init() {
 				},
 				&credentials.SharedCredentialsProvider{},
 			})
+
 		aws := newAWSSDKProvider(creds)
 		return newAWSCloud(config, aws)
 	})
@@ -732,15 +732,6 @@ func getAvailabilityZone(metadata EC2Metadata) (string, error) {
 	return metadata.GetMetadata("placement/availability-zone")
 }
 
-func isRegionValid(region string) bool {
-	for _, r := range awscredentials.AWSRegions {
-		if r == region {
-			return true
-		}
-	}
-	return false
-}
-
 // Derives the region from a valid az name.
 // Returns an error if the az is known invalid (empty)
 func azToRegion(az string) (string, error) {
@@ -777,9 +768,14 @@ func newAWSCloud(config io.Reader, awsServices Services) (*Cloud, error) {
 		return nil, err
 	}
 
+	// Trust that if we get a region from configuration or AWS metadata that it is valid,
+	// and register ECR providers
+	RecognizeRegion(regionName)
+
 	if !cfg.Global.DisableStrictZoneCheck {
 		valid := isRegionValid(regionName)
 		if !valid {
+			// This _should_ now be unreachable, given we call RecognizeRegion
 			return nil, fmt.Errorf("not a valid AWS zone (unknown region): %s", zone)
 		}
 	} else {
@@ -848,9 +844,9 @@ func newAWSCloud(config io.Reader, awsServices Services) (*Cloud, error) {
 		glog.Infof("AWS cloud - no tag filtering")
 	}
 
-	// Register handler for ECR credentials
+	// Register regions, in particular for ECR credentials
 	once.Do(func() {
-		awscredentials.Init()
+		RecognizeWellKnownRegions()
 	})
 
 	return awsCloud, nil
@@ -908,9 +904,27 @@ func (c *Cloud) NodeAddresses(name types.NodeName) ([]v1.NodeAddress, error) {
 		if err != nil {
 			//TODO: It would be nice to be able to determine the reason for the failure,
 			// but the AWS client masks all failures with the same error description.
-			glog.V(2).Info("Could not determine public IP from AWS metadata.")
+			glog.V(4).Info("Could not determine public IP from AWS metadata.")
 		} else {
 			addresses = append(addresses, v1.NodeAddress{Type: v1.NodeExternalIP, Address: externalIP})
+		}
+
+		internalDNS, err := c.metadata.GetMetadata("local-hostname")
+		if err != nil || len(internalDNS) == 0 {
+			//TODO: It would be nice to be able to determine the reason for the failure,
+			// but the AWS client masks all failures with the same error description.
+			glog.V(2).Info("Could not determine private DNS from AWS metadata.")
+		} else {
+			addresses = append(addresses, v1.NodeAddress{Type: v1.NodeInternalDNS, Address: internalDNS})
+		}
+
+		externalDNS, err := c.metadata.GetMetadata("public-hostname")
+		if err != nil || len(externalDNS) == 0 {
+			//TODO: It would be nice to be able to determine the reason for the failure,
+			// but the AWS client masks all failures with the same error description.
+			glog.V(2).Info("Could not determine public DNS from AWS metadata.")
+		} else {
+			addresses = append(addresses, v1.NodeAddress{Type: v1.NodeExternalDNS, Address: externalDNS})
 		}
 
 		return addresses, nil
@@ -942,6 +956,14 @@ func (c *Cloud) NodeAddresses(name types.NodeName) ([]v1.NodeAddress, error) {
 			return nil, fmt.Errorf("EC2 instance had invalid public address: %s (%s)", orEmpty(instance.InstanceId), ipAddress)
 		}
 		addresses = append(addresses, v1.NodeAddress{Type: v1.NodeExternalIP, Address: ip.String()})
+	}
+
+	if !isNilOrEmpty(instance.PrivateDnsName) {
+		addresses = append(addresses, v1.NodeAddress{Type: v1.NodeInternalDNS, Address: *instance.PrivateDnsName})
+	}
+
+	if !isNilOrEmpty(instance.PublicDnsName) {
+		addresses = append(addresses, v1.NodeAddress{Type: v1.NodeExternalDNS, Address: *instance.PublicDnsName})
 	}
 
 	return addresses, nil
@@ -1227,9 +1249,10 @@ func (c *Cloud) getMountDevice(
 	// Find the next unused device name
 	deviceAllocator := c.deviceAllocators[i.nodeName]
 	if deviceAllocator == nil {
-		// we want device names with two significant characters, starting with
-		// /dev/xvdba (leaving xvda - xvdz and xvdaa-xvdaz to the system)
-		deviceAllocator = NewDeviceAllocator(2, "ba")
+		// we want device names with two significant characters, starting with /dev/xvdbb
+		// the allowed range is /dev/xvd[b-c][a-z]
+		// http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/device_naming.html
+		deviceAllocator = NewDeviceAllocator(0)
 		c.deviceAllocators[i.nodeName] = deviceAllocator
 	}
 	chosen, err := deviceAllocator.GetNext(deviceMappings)

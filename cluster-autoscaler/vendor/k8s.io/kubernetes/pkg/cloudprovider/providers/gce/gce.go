@@ -35,10 +35,10 @@ import (
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/client-go/util/flowcontrol"
 	"k8s.io/kubernetes/pkg/api/v1"
 	apiservice "k8s.io/kubernetes/pkg/api/v1/service"
 	"k8s.io/kubernetes/pkg/cloudprovider"
-	"k8s.io/kubernetes/pkg/util/flowcontrol"
 	netsets "k8s.io/kubernetes/pkg/util/net/sets"
 	"k8s.io/kubernetes/pkg/volume"
 
@@ -2484,7 +2484,12 @@ func (gce *GCECloud) CreateDisk(name string, diskType string, zone string, sizeG
 		return err
 	}
 
-	return gce.waitForZoneOp(createOp, zone)
+	err = gce.waitForZoneOp(createOp, zone)
+	if isGCEError(err, "alreadyExists") {
+		glog.Warningf("GCE PD %q already exists, reusing", name)
+		return nil
+	}
+	return err
 }
 
 func (gce *GCECloud) doDeleteDisk(diskToDelete string) error {
@@ -2588,7 +2593,7 @@ func (gce *GCECloud) AttachDisk(diskName string, nodeName types.NodeName, readOn
 	}
 	attachedDisk := gce.convertDiskToAttachedDisk(disk, readWrite)
 
-	attachOp, err := gce.service.Instances.AttachDisk(gce.projectID, disk.Zone, instanceName, attachedDisk).Do()
+	attachOp, err := gce.service.Instances.AttachDisk(gce.projectID, disk.Zone, instance.Name, attachedDisk).Do()
 	if err != nil {
 		return err
 	}
