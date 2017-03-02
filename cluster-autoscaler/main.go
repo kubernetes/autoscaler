@@ -35,14 +35,14 @@ import (
 	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	kube_leaderelection "k8s.io/kubernetes/pkg/client/leaderelection"
 	"k8s.io/kubernetes/pkg/client/leaderelection/resourcelock"
-	kube_flag "k8s.io/kubernetes/pkg/util/flag"
+	kube_flag "k8s.io/apiserver/pkg/util/flag"
+	"k8s.io/contrib/cluster-autoscaler/estimator"
+	"k8s.io/contrib/cluster-autoscaler/metrics"
+	"k8s.io/contrib/cluster-autoscaler/simulator"
 
 	"github.com/golang/glog"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/spf13/pflag"
-	"k8s.io/contrib/cluster-autoscaler/estimator"
-	"k8s.io/contrib/cluster-autoscaler/metrics"
-	"k8s.io/contrib/cluster-autoscaler/simulator"
 )
 
 // MultiStringFlag is a flag for passing multiple parameters using same flag

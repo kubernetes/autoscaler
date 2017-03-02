@@ -21,9 +21,9 @@ import (
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/kubernetes/pkg/api/resource"
+	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/kubernetes/pkg/api"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
-
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/kubernetes/pkg/api/testapi"
 )
@@ -111,7 +111,7 @@ func SetNodeReadyState(node *apiv1.Node, ready bool, lastTransition time.Time) {
 
 // RefJSON builds string reference to
 func RefJSON(o runtime.Object) string {
-	ref, err := apiv1.GetReference(o)
+	ref, err := apiv1.GetReference(api.Scheme, o)
 	if err != nil {
 		panic(err)
 	}

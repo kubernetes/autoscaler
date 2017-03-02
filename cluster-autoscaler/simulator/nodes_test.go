@@ -23,7 +23,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset/fake"
-	"k8s.io/kubernetes/pkg/client/testing/core"
+	core "k8s.io/client-go/testing"
 	"k8s.io/kubernetes/pkg/kubelet/types"
 
 	"github.com/stretchr/testify/assert"
