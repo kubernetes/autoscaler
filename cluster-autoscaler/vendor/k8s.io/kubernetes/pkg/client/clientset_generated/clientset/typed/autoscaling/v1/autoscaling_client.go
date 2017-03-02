@@ -17,21 +17,20 @@ limitations under the License.
 package v1
 
 import (
-	fmt "fmt"
-	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	serializer "k8s.io/apimachinery/pkg/runtime/serializer"
-	api "k8s.io/kubernetes/pkg/api"
-	restclient "k8s.io/kubernetes/pkg/client/restclient"
+	rest "k8s.io/client-go/rest"
+	v1 "k8s.io/kubernetes/pkg/apis/autoscaling/v1"
+	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset/scheme"
 )
 
 type AutoscalingV1Interface interface {
-	RESTClient() restclient.Interface
+	RESTClient() rest.Interface
 	HorizontalPodAutoscalersGetter
 }
 
 // AutoscalingV1Client is used to interact with features provided by the autoscaling group.
 type AutoscalingV1Client struct {
-	restClient restclient.Interface
+	restClient rest.Interface
 }
 
 func (c *AutoscalingV1Client) HorizontalPodAutoscalers(namespace string) HorizontalPodAutoscalerInterface {
@@ -39,12 +38,12 @@ func (c *AutoscalingV1Client) HorizontalPodAutoscalers(namespace string) Horizon
 }
 
 // NewForConfig creates a new AutoscalingV1Client for the given config.
-func NewForConfig(c *restclient.Config) (*AutoscalingV1Client, error) {
+func NewForConfig(c *rest.Config) (*AutoscalingV1Client, error) {
 	config := *c
 	if err := setConfigDefaults(&config); err != nil {
 		return nil, err
 	}
-	client, err := restclient.RESTClientFor(&config)
+	client, err := rest.RESTClientFor(&config)
 	if err != nil {
 		return nil, err
 	}
@@ -53,7 +52,7 @@ func NewForConfig(c *restclient.Config) (*AutoscalingV1Client, error) {
 
 // NewForConfigOrDie creates a new AutoscalingV1Client for the given config and
 // panics if there is an error in the config.
-func NewForConfigOrDie(c *restclient.Config) *AutoscalingV1Client {
+func NewForConfigOrDie(c *rest.Config) *AutoscalingV1Client {
 	client, err := NewForConfig(c)
 	if err != nil {
 		panic(err)
@@ -62,34 +61,26 @@ func NewForConfigOrDie(c *restclient.Config) *AutoscalingV1Client {
 }
 
 // New creates a new AutoscalingV1Client for the given RESTClient.
-func New(c restclient.Interface) *AutoscalingV1Client {
+func New(c rest.Interface) *AutoscalingV1Client {
 	return &AutoscalingV1Client{c}
 }
 
-func setConfigDefaults(config *restclient.Config) error {
-	gv, err := schema.ParseGroupVersion("autoscaling/v1")
-	if err != nil {
-		return err
-	}
-	// if autoscaling/v1 is not enabled, return an error
-	if !api.Registry.IsEnabledVersion(gv) {
-		return fmt.Errorf("autoscaling/v1 is not enabled")
-	}
+func setConfigDefaults(config *rest.Config) error {
+	gv := v1.SchemeGroupVersion
+	config.GroupVersion = &gv
 	config.APIPath = "/apis"
-	if config.UserAgent == "" {
-		config.UserAgent = restclient.DefaultKubernetesUserAgent()
-	}
-	copyGroupVersion := gv
-	config.GroupVersion = &copyGroupVersion
+	config.NegotiatedSerializer = serializer.DirectCodecFactory{CodecFactory: scheme.Codecs}
 
-	config.NegotiatedSerializer = serializer.DirectCodecFactory{CodecFactory: api.Codecs}
+	if config.UserAgent == "" {
+		config.UserAgent = rest.DefaultKubernetesUserAgent()
+	}
 
 	return nil
 }
 
 // RESTClient returns a RESTClient that is used to communicate
 // with API server by this client implementation.
-func (c *AutoscalingV1Client) RESTClient() restclient.Interface {
+func (c *AutoscalingV1Client) RESTClient() rest.Interface {
 	if c == nil {
 		return nil
 	}

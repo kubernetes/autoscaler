@@ -17,22 +17,21 @@ limitations under the License.
 package v2alpha1
 
 import (
-	fmt "fmt"
-	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	serializer "k8s.io/apimachinery/pkg/runtime/serializer"
-	api "k8s.io/kubernetes/pkg/api"
-	restclient "k8s.io/kubernetes/pkg/client/restclient"
+	rest "k8s.io/client-go/rest"
+	v2alpha1 "k8s.io/kubernetes/pkg/apis/batch/v2alpha1"
+	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset/scheme"
 )
 
 type BatchV2alpha1Interface interface {
-	RESTClient() restclient.Interface
+	RESTClient() rest.Interface
 	CronJobsGetter
 	JobsGetter
 }
 
 // BatchV2alpha1Client is used to interact with features provided by the batch group.
 type BatchV2alpha1Client struct {
-	restClient restclient.Interface
+	restClient rest.Interface
 }
 
 func (c *BatchV2alpha1Client) CronJobs(namespace string) CronJobInterface {
@@ -44,12 +43,12 @@ func (c *BatchV2alpha1Client) Jobs(namespace string) JobInterface {
 }
 
 // NewForConfig creates a new BatchV2alpha1Client for the given config.
-func NewForConfig(c *restclient.Config) (*BatchV2alpha1Client, error) {
+func NewForConfig(c *rest.Config) (*BatchV2alpha1Client, error) {
 	config := *c
 	if err := setConfigDefaults(&config); err != nil {
 		return nil, err
 	}
-	client, err := restclient.RESTClientFor(&config)
+	client, err := rest.RESTClientFor(&config)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +57,7 @@ func NewForConfig(c *restclient.Config) (*BatchV2alpha1Client, error) {
 
 // NewForConfigOrDie creates a new BatchV2alpha1Client for the given config and
 // panics if there is an error in the config.
-func NewForConfigOrDie(c *restclient.Config) *BatchV2alpha1Client {
+func NewForConfigOrDie(c *rest.Config) *BatchV2alpha1Client {
 	client, err := NewForConfig(c)
 	if err != nil {
 		panic(err)
@@ -67,34 +66,26 @@ func NewForConfigOrDie(c *restclient.Config) *BatchV2alpha1Client {
 }
 
 // New creates a new BatchV2alpha1Client for the given RESTClient.
-func New(c restclient.Interface) *BatchV2alpha1Client {
+func New(c rest.Interface) *BatchV2alpha1Client {
 	return &BatchV2alpha1Client{c}
 }
 
-func setConfigDefaults(config *restclient.Config) error {
-	gv, err := schema.ParseGroupVersion("batch/v2alpha1")
-	if err != nil {
-		return err
-	}
-	// if batch/v2alpha1 is not enabled, return an error
-	if !api.Registry.IsEnabledVersion(gv) {
-		return fmt.Errorf("batch/v2alpha1 is not enabled")
-	}
+func setConfigDefaults(config *rest.Config) error {
+	gv := v2alpha1.SchemeGroupVersion
+	config.GroupVersion = &gv
 	config.APIPath = "/apis"
-	if config.UserAgent == "" {
-		config.UserAgent = restclient.DefaultKubernetesUserAgent()
-	}
-	copyGroupVersion := gv
-	config.GroupVersion = &copyGroupVersion
+	config.NegotiatedSerializer = serializer.DirectCodecFactory{CodecFactory: scheme.Codecs}
 
-	config.NegotiatedSerializer = serializer.DirectCodecFactory{CodecFactory: api.Codecs}
+	if config.UserAgent == "" {
+		config.UserAgent = rest.DefaultKubernetesUserAgent()
+	}
 
 	return nil
 }
 
 // RESTClient returns a RESTClient that is used to communicate
 // with API server by this client implementation.
-func (c *BatchV2alpha1Client) RESTClient() restclient.Interface {
+func (c *BatchV2alpha1Client) RESTClient() rest.Interface {
 	if c == nil {
 		return nil
 	}

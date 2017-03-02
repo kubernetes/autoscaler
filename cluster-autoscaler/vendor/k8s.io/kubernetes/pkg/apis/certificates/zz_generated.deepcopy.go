@@ -104,14 +104,23 @@ func DeepCopy_certificates_CertificateSigningRequestSpec(in interface{}, out int
 		if in.Usages != nil {
 			in, out := &in.Usages, &out.Usages
 			*out = make([]KeyUsage, len(*in))
-			for i := range *in {
-				(*out)[i] = (*in)[i]
-			}
+			copy(*out, *in)
 		}
 		if in.Groups != nil {
 			in, out := &in.Groups, &out.Groups
 			*out = make([]string, len(*in))
 			copy(*out, *in)
+		}
+		if in.Extra != nil {
+			in, out := &in.Extra, &out.Extra
+			*out = make(map[string]ExtraValue)
+			for key, val := range *in {
+				if newVal, err := c.DeepCopy(&val); err != nil {
+					return err
+				} else {
+					(*out)[key] = *newVal.(*ExtraValue)
+				}
+			}
 		}
 		return nil
 	}

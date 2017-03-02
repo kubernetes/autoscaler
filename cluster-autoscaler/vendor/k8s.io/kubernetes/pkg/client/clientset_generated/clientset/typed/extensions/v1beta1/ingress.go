@@ -17,13 +17,12 @@ limitations under the License.
 package v1beta1
 
 import (
-	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
-	api "k8s.io/kubernetes/pkg/api"
-	v1 "k8s.io/kubernetes/pkg/api/v1"
+	rest "k8s.io/client-go/rest"
 	v1beta1 "k8s.io/kubernetes/pkg/apis/extensions/v1beta1"
-	restclient "k8s.io/kubernetes/pkg/client/restclient"
+	scheme "k8s.io/kubernetes/pkg/client/clientset_generated/clientset/scheme"
 )
 
 // IngressesGetter has a method to return a IngressInterface.
@@ -39,7 +38,7 @@ type IngressInterface interface {
 	UpdateStatus(*v1beta1.Ingress) (*v1beta1.Ingress, error)
 	Delete(name string, options *v1.DeleteOptions) error
 	DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
-	Get(name string, options meta_v1.GetOptions) (*v1beta1.Ingress, error)
+	Get(name string, options v1.GetOptions) (*v1beta1.Ingress, error)
 	List(opts v1.ListOptions) (*v1beta1.IngressList, error)
 	Watch(opts v1.ListOptions) (watch.Interface, error)
 	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1beta1.Ingress, err error)
@@ -48,7 +47,7 @@ type IngressInterface interface {
 
 // ingresses implements IngressInterface
 type ingresses struct {
-	client restclient.Interface
+	client rest.Interface
 	ns     string
 }
 
@@ -117,20 +116,20 @@ func (c *ingresses) DeleteCollection(options *v1.DeleteOptions, listOptions v1.L
 	return c.client.Delete().
 		Namespace(c.ns).
 		Resource("ingresses").
-		VersionedParams(&listOptions, api.ParameterCodec).
+		VersionedParams(&listOptions, scheme.ParameterCodec).
 		Body(options).
 		Do().
 		Error()
 }
 
 // Get takes name of the ingress, and returns the corresponding ingress object, and an error if there is any.
-func (c *ingresses) Get(name string, options meta_v1.GetOptions) (result *v1beta1.Ingress, err error) {
+func (c *ingresses) Get(name string, options v1.GetOptions) (result *v1beta1.Ingress, err error) {
 	result = &v1beta1.Ingress{}
 	err = c.client.Get().
 		Namespace(c.ns).
 		Resource("ingresses").
 		Name(name).
-		VersionedParams(&options, api.ParameterCodec).
+		VersionedParams(&options, scheme.ParameterCodec).
 		Do().
 		Into(result)
 	return
@@ -142,7 +141,7 @@ func (c *ingresses) List(opts v1.ListOptions) (result *v1beta1.IngressList, err 
 	err = c.client.Get().
 		Namespace(c.ns).
 		Resource("ingresses").
-		VersionedParams(&opts, api.ParameterCodec).
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Do().
 		Into(result)
 	return
@@ -150,11 +149,11 @@ func (c *ingresses) List(opts v1.ListOptions) (result *v1beta1.IngressList, err 
 
 // Watch returns a watch.Interface that watches the requested ingresses.
 func (c *ingresses) Watch(opts v1.ListOptions) (watch.Interface, error) {
+	opts.Watch = true
 	return c.client.Get().
-		Prefix("watch").
 		Namespace(c.ns).
 		Resource("ingresses").
-		VersionedParams(&opts, api.ParameterCodec).
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Watch()
 }
 
