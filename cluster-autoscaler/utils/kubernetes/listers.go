@@ -19,11 +19,11 @@ package kubernetes
 import (
 	"time"
 
-	"k8s.io/apimachinery/pkg/labels"	
-	apiv1 "k8s.io/kubernetes/pkg/api/v1"
-	"k8s.io/client-go/tools/cache"
-	client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	"k8s.io/apimachinery/pkg/fields"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/client-go/tools/cache"
+	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	v1lister "k8s.io/kubernetes/pkg/client/listers/core/v1"
 )
 
@@ -193,7 +193,7 @@ func (allNodeLister *AllNodeLister) List() ([]*apiv1.Node, error) {
 		return []*apiv1.Node{}, err
 	}
 	allNodes := make([]*apiv1.Node, 0, len(nodes))
-	for _,node := range nodes {
+	for _, node := range nodes {
 		allNodes = append(allNodes, node)
 	}
 	return allNodes, nil
