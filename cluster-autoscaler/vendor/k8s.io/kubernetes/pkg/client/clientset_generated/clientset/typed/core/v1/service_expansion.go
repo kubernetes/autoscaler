@@ -18,7 +18,7 @@ package v1
 
 import (
 	"k8s.io/apimachinery/pkg/util/net"
-	"k8s.io/kubernetes/pkg/client/restclient"
+	restclient "k8s.io/client-go/rest"
 )
 
 // The ServiceExpansion interface allows manually adding extra methods to the ServiceInterface.
@@ -29,9 +29,9 @@ type ServiceExpansion interface {
 // ProxyGet returns a response of the service by calling it through the proxy.
 func (c *services) ProxyGet(scheme, name, port, path string, params map[string]string) restclient.ResponseWrapper {
 	request := c.client.Get().
-		Prefix("proxy").
 		Namespace(c.ns).
 		Resource("services").
+		SubResource("proxy").
 		Name(net.JoinSchemeNamePort(scheme, name, port)).
 		Suffix(path)
 	for k, v := range params {

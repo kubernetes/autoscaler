@@ -30,9 +30,9 @@ import (
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	kube_record "k8s.io/client-go/tools/record"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
-	kube_record "k8s.io/kubernetes/pkg/client/record"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 
 	"github.com/golang/glog"
@@ -344,7 +344,7 @@ func drainNode(node *apiv1.Node, pods []*apiv1.Pod, client kube_client.Interface
 	maxGraceful64 := int64(maxGratefulTerminationSec)
 	for _, pod := range pods {
 		recorder.Eventf(pod, apiv1.EventTypeNormal, "ScaleDown", "deleting pod for node scale down")
-		err := client.Core().Pods(pod.Namespace).Delete(pod.Name, &apiv1.DeleteOptions{
+		err := client.Core().Pods(pod.Namespace).Delete(pod.Name, &metav1.DeleteOptions{
 			GracePeriodSeconds: &maxGraceful64,
 		})
 		if err != nil {

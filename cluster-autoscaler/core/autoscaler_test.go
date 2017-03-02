@@ -17,23 +17,21 @@ limitations under the License.
 package core
 
 import (
+	"fmt"
 	"testing"
+	"time"
 
 	"k8s.io/contrib/cluster-autoscaler/config/dynamic"
 
+	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
-	apiv1 "k8s.io/kubernetes/pkg/api/v1"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset/fake"
-	"k8s.io/kubernetes/pkg/client/testing/core"
-
-	. "k8s.io/contrib/cluster-autoscaler/utils/test"
-
-	"fmt"
-	"github.com/stretchr/testify/assert"
+	core "k8s.io/client-go/testing"
 	"k8s.io/contrib/cluster-autoscaler/simulator"
 	kube_util "k8s.io/contrib/cluster-autoscaler/utils/kubernetes"
-	"time"
+	. "k8s.io/contrib/cluster-autoscaler/utils/test"
+	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset/fake"
 )
 
 func TestNewAutoscalerStatic(t *testing.T) {
