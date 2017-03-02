@@ -22,6 +22,7 @@ import (
 	kube_util "k8s.io/contrib/cluster-autoscaler/utils/kubernetes"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
+	informers "k8s.io/kubernetes/pkg/client/informers/informers_generated/externalversions"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/algorithm"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/algorithm/predicates"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/factory"
@@ -42,7 +43,20 @@ func NewPredicateChecker(kubeClient kube_client.Interface) (*PredicateChecker, e
 	if err != nil {
 		return nil, err
 	}
-	schedulerConfigFactory := factory.NewConfigFactory(kubeClient, "", apiv1.DefaultHardPodAffinitySymmetricWeight, apiv1.DefaultFailureDomains)
+	informerFactory := informers.NewSharedInformerFactory(kubeClient, 0)
+
+	schedulerConfigFactory := factory.NewConfigFactory(
+		"cluster-autoscaler",
+		kubeClient,
+		informerFactory.Core().V1().Nodes(),
+		informerFactory.Core().V1().PersistentVolumes(),
+		informerFactory.Core().V1().PersistentVolumeClaims(),
+		informerFactory.Core().V1().ReplicationControllers(),
+		informerFactory.Extensions().V1beta1().ReplicaSets(),
+		informerFactory.Core().V1().Services(),
+		apiv1.DefaultHardPodAffinitySymmetricWeight,
+	)
+
 	predicates, err := schedulerConfigFactory.GetPredicates(provider.FitPredicateKeys)
 	predicates["ready"] = isNodeReadyAndSchedulablePredicate
 	if err != nil {

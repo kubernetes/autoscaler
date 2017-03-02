@@ -106,6 +106,16 @@ func DeepCopy_v2alpha1_CronJobSpec(in interface{}, out interface{}, c *conversio
 		if err := DeepCopy_v2alpha1_JobTemplateSpec(&in.JobTemplate, &out.JobTemplate, c); err != nil {
 			return err
 		}
+		if in.SuccessfulJobsHistoryLimit != nil {
+			in, out := &in.SuccessfulJobsHistoryLimit, &out.SuccessfulJobsHistoryLimit
+			*out = new(int32)
+			**out = **in
+		}
+		if in.FailedJobsHistoryLimit != nil {
+			in, out := &in.FailedJobsHistoryLimit, &out.FailedJobsHistoryLimit
+			*out = new(int32)
+			**out = **in
+		}
 		return nil
 	}
 }
@@ -118,9 +128,7 @@ func DeepCopy_v2alpha1_CronJobStatus(in interface{}, out interface{}, c *convers
 		if in.Active != nil {
 			in, out := &in.Active, &out.Active
 			*out = make([]api_v1.ObjectReference, len(*in))
-			for i := range *in {
-				(*out)[i] = (*in)[i]
-			}
+			copy(*out, *in)
 		}
 		if in.LastScheduleTime != nil {
 			in, out := &in.LastScheduleTime, &out.LastScheduleTime

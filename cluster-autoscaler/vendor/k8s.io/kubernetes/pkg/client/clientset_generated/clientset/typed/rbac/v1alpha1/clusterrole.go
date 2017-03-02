@@ -17,13 +17,12 @@ limitations under the License.
 package v1alpha1
 
 import (
-	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
-	api "k8s.io/kubernetes/pkg/api"
-	v1 "k8s.io/kubernetes/pkg/api/v1"
+	rest "k8s.io/client-go/rest"
 	v1alpha1 "k8s.io/kubernetes/pkg/apis/rbac/v1alpha1"
-	restclient "k8s.io/kubernetes/pkg/client/restclient"
+	scheme "k8s.io/kubernetes/pkg/client/clientset_generated/clientset/scheme"
 )
 
 // ClusterRolesGetter has a method to return a ClusterRoleInterface.
@@ -38,7 +37,7 @@ type ClusterRoleInterface interface {
 	Update(*v1alpha1.ClusterRole) (*v1alpha1.ClusterRole, error)
 	Delete(name string, options *v1.DeleteOptions) error
 	DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
-	Get(name string, options meta_v1.GetOptions) (*v1alpha1.ClusterRole, error)
+	Get(name string, options v1.GetOptions) (*v1alpha1.ClusterRole, error)
 	List(opts v1.ListOptions) (*v1alpha1.ClusterRoleList, error)
 	Watch(opts v1.ListOptions) (watch.Interface, error)
 	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.ClusterRole, err error)
@@ -47,7 +46,7 @@ type ClusterRoleInterface interface {
 
 // clusterRoles implements ClusterRoleInterface
 type clusterRoles struct {
-	client restclient.Interface
+	client rest.Interface
 }
 
 // newClusterRoles returns a ClusterRoles
@@ -94,19 +93,19 @@ func (c *clusterRoles) Delete(name string, options *v1.DeleteOptions) error {
 func (c *clusterRoles) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
 	return c.client.Delete().
 		Resource("clusterroles").
-		VersionedParams(&listOptions, api.ParameterCodec).
+		VersionedParams(&listOptions, scheme.ParameterCodec).
 		Body(options).
 		Do().
 		Error()
 }
 
 // Get takes name of the clusterRole, and returns the corresponding clusterRole object, and an error if there is any.
-func (c *clusterRoles) Get(name string, options meta_v1.GetOptions) (result *v1alpha1.ClusterRole, err error) {
+func (c *clusterRoles) Get(name string, options v1.GetOptions) (result *v1alpha1.ClusterRole, err error) {
 	result = &v1alpha1.ClusterRole{}
 	err = c.client.Get().
 		Resource("clusterroles").
 		Name(name).
-		VersionedParams(&options, api.ParameterCodec).
+		VersionedParams(&options, scheme.ParameterCodec).
 		Do().
 		Into(result)
 	return
@@ -117,7 +116,7 @@ func (c *clusterRoles) List(opts v1.ListOptions) (result *v1alpha1.ClusterRoleLi
 	result = &v1alpha1.ClusterRoleList{}
 	err = c.client.Get().
 		Resource("clusterroles").
-		VersionedParams(&opts, api.ParameterCodec).
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Do().
 		Into(result)
 	return
@@ -125,10 +124,10 @@ func (c *clusterRoles) List(opts v1.ListOptions) (result *v1alpha1.ClusterRoleLi
 
 // Watch returns a watch.Interface that watches the requested clusterRoles.
 func (c *clusterRoles) Watch(opts v1.ListOptions) (watch.Interface, error) {
+	opts.Watch = true
 	return c.client.Get().
-		Prefix("watch").
 		Resource("clusterroles").
-		VersionedParams(&opts, api.ParameterCodec).
+		VersionedParams(&opts, scheme.ParameterCodec).
 		Watch()
 }
 

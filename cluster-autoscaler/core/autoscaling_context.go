@@ -17,17 +17,16 @@ limitations under the License.
 package core
 
 import (
-	"k8s.io/contrib/cluster-autoscaler/cloudprovider/builder"
-	"k8s.io/contrib/cluster-autoscaler/expander"
-	"k8s.io/contrib/cluster-autoscaler/simulator"
-
-	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
-	kube_record "k8s.io/kubernetes/pkg/client/record"
-
-	"k8s.io/contrib/cluster-autoscaler/cloudprovider"
-	"k8s.io/contrib/cluster-autoscaler/clusterstate"
-	"k8s.io/contrib/cluster-autoscaler/expander/factory"
 	"time"
+
+	kube_record "k8s.io/client-go/tools/record"
+	"k8s.io/contrib/cluster-autoscaler/cloudprovider"
+	"k8s.io/contrib/cluster-autoscaler/cloudprovider/builder"
+	"k8s.io/contrib/cluster-autoscaler/clusterstate"
+	"k8s.io/contrib/cluster-autoscaler/expander"
+	"k8s.io/contrib/cluster-autoscaler/expander/factory"
+	"k8s.io/contrib/cluster-autoscaler/simulator"
+	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 )
 
 // AutoscalingContext contains user-configurable constant and configuration-related objects passed to
