@@ -17,13 +17,13 @@ limitations under the License.
 package kubernetes
 
 import (
-	"k8s.io/kubernetes/pkg/api"
-    clientv1 "k8s.io/client-go/pkg/api/v1"
 	v1core "k8s.io/client-go/kubernetes/typed/core/v1"
+	clientv1 "k8s.io/client-go/pkg/api/v1"
 	kube_record "k8s.io/client-go/tools/record"
+	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset/fake"
-		
+
 	"github.com/golang/glog"
 )
 
@@ -34,19 +34,5 @@ func CreateEventRecorder(kubeClient clientset.Interface) kube_record.EventRecord
 	if _, isfake := kubeClient.(*fake.Clientset); !isfake {
 		eventBroadcaster.StartRecordingToSink(&v1core.EventSinkImpl{Interface: v1core.New(kubeClient.Core().RESTClient()).Events("")})
 	}
-	return eventBroadcaster.NewRecorder(api.Scheme,clientv1.EventSource{Component: "cluster-autoscaler"})
-}
-
-type TestEventSink struct {}
-
-func (fes *TestEventSink) Create(event *clientv1.Event) (*clientv1.Event, error) {
-	return event, nil
-}
-
-func (fes *TestEventSink) Update(event *clientv1.Event) (*clientv1.Event, error) {
-	return event, nil
-}
-
-func (fes *TestEventSink) Patch(event *clientv1.Event, data []byte) (*clientv1.Event, error) {
-	return event, nil
+	return eventBroadcaster.NewRecorder(api.Scheme, clientv1.EventSource{Component: "cluster-autoscaler"})
 }

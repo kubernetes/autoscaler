@@ -19,12 +19,12 @@ package simulator
 import (
 	"time"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/contrib/cluster-autoscaler/utils/drain"
 	api "k8s.io/kubernetes/pkg/api"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
-	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 )
 

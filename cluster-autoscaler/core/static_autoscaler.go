@@ -25,9 +25,9 @@ import (
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	kube_record "k8s.io/client-go/tools/record"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
-	kube_record  "k8s.io/client-go/tools/record"
 
 	"github.com/golang/glog"
 	"k8s.io/contrib/cluster-autoscaler/simulator"

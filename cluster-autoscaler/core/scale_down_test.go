@@ -21,18 +21,18 @@ import (
 	"testing"
 	"time"
 
+	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	core "k8s.io/client-go/testing"
 	"k8s.io/contrib/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/contrib/cluster-autoscaler/clusterstate"
 	"k8s.io/contrib/cluster-autoscaler/simulator"
 	kube_util "k8s.io/contrib/cluster-autoscaler/utils/kubernetes"
 	. "k8s.io/contrib/cluster-autoscaler/utils/test"
-	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	batchv1 "k8s.io/kubernetes/pkg/apis/batch/v1"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset/fake"
-	core "k8s.io/client-go/testing"
 
 	"github.com/stretchr/testify/assert"
 )

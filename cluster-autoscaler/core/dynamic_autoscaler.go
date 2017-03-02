@@ -20,13 +20,13 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/golang/glog"
+	kube_record "k8s.io/client-go/tools/record"
 	"k8s.io/contrib/cluster-autoscaler/config/dynamic"
 	"k8s.io/contrib/cluster-autoscaler/metrics"
-	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
-	kube_record  "k8s.io/client-go/tools/record"
-	"github.com/golang/glog"
 	"k8s.io/contrib/cluster-autoscaler/simulator"
 	kube_util "k8s.io/contrib/cluster-autoscaler/utils/kubernetes"
+	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 )
 
 // DynamicAutoscaler is a variant of autoscaler which supports dynamic reconfiguration at runtime
