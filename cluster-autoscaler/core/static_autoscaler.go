@@ -265,6 +265,9 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) {
 
 // ExitCleanUp removes status configmap.
 func (a *StaticAutoscaler) ExitCleanUp() {
+	if !a.AutoscalingContext.WriteStatusConfigMap {
+		return
+	}
 	maps := a.AutoscalingContext.ClientSet.CoreV1().ConfigMaps(StatusConfigMapNamespace)
 	err := maps.Delete(StatusConfigMapName, &metav1.DeleteOptions{})
 	if err != nil {
@@ -274,6 +277,9 @@ func (a *StaticAutoscaler) ExitCleanUp() {
 }
 
 func (a *StaticAutoscaler) writeStatusConfigMap() {
+	if !a.AutoscalingContext.WriteStatusConfigMap {
+		return
+	}
 	statusUpdateTime := time.Now()
 	status := a.ClusterStateRegistry.GetStatus(statusUpdateTime)
 	statusMsg := fmt.Sprintf("Cluster-autoscaler status at %v:\n%v", statusUpdateTime, status.GetReadableString())

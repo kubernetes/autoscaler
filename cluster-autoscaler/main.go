@@ -95,6 +95,8 @@ var (
 
 	expanderFlag = flag.String("expander", expander.RandomExpanderName,
 		"Type of node group expander to be used in scale up. Available values: ["+strings.Join(expander.AvailableExpanders, ",")+"]")
+
+	writeStatusConfigMapFlag = flag.Bool("write-status-configmap", true, "Should CA write status information to a configmap")
 )
 
 func createAutoscalerOptions() core.AutoscalerOptions {
@@ -117,6 +119,7 @@ func createAutoscalerOptions() core.AutoscalerOptions {
 		ScaleDownUnreadyTime:          *scaleDownUnreadyTime,
 		ScaleDownUtilizationThreshold: *scaleDownUtilizationThreshold,
 		VerifyUnschedulablePods:       *verifyUnschedulablePods,
+		WriteStatusConfigMap:          *writeStatusConfigMapFlag,
 	}
 
 	configFetcherOpts := dynamic.ConfigFetcherOptions{
