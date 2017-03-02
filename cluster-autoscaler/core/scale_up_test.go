@@ -28,12 +28,10 @@ import (
 	"k8s.io/contrib/cluster-autoscaler/simulator"
 	kube_util "k8s.io/contrib/cluster-autoscaler/utils/kubernetes"
 	. "k8s.io/contrib/cluster-autoscaler/utils/test"
-
 	"k8s.io/apimachinery/pkg/runtime"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset/fake"
-	"k8s.io/kubernetes/pkg/client/testing/core"
-
+	core "k8s.io/client-go/testing"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/contrib/cluster-autoscaler/estimator"
 )

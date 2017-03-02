@@ -22,8 +22,9 @@ import (
 	"k8s.io/contrib/cluster-autoscaler/utils/drain"
 	api "k8s.io/kubernetes/pkg/api"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
-	"k8s.io/kubernetes/pkg/fields"
+	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 )
 
@@ -33,7 +34,7 @@ import (
 func GetRequiredPodsForNode(nodename string, client kube_client.Interface) ([]*apiv1.Pod, error) {
 
 	podListResult, err := client.Core().Pods(apiv1.NamespaceAll).List(
-		apiv1.ListOptions{FieldSelector: fields.SelectorFromSet(fields.Set{"spec.nodeName": nodename}).String()})
+		metav1.ListOptions{FieldSelector: fields.SelectorFromSet(fields.Set{"spec.nodeName": nodename}).String()})
 	if err != nil {
 		return []*apiv1.Pod{}, err
 	}

@@ -27,7 +27,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
-	kube_record "k8s.io/kubernetes/pkg/client/record"
+	kube_record  "k8s.io/client-go/tools/record"
 
 	"github.com/golang/glog"
 	"k8s.io/contrib/cluster-autoscaler/simulator"
@@ -266,7 +266,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) {
 // ExitCleanUp removes status configmap.
 func (a *StaticAutoscaler) ExitCleanUp() {
 	maps := a.AutoscalingContext.ClientSet.CoreV1().ConfigMaps(StatusConfigMapNamespace)
-	err := maps.Delete(StatusConfigMapName, &apiv1.DeleteOptions{})
+	err := maps.Delete(StatusConfigMapName, &metav1.DeleteOptions{})
 	if err != nil {
 		// Nothing else we could do at this point
 		glog.Error("Failed to delete status configmap")

@@ -17,7 +17,6 @@ limitations under the License.
 package deletetaint
 
 import (
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -55,42 +54,23 @@ func MarkToBeDeleted(node *apiv1.Node, client kube_client.Interface) error {
 }
 
 func addToBeDeletedTaint(node *apiv1.Node) (bool, error) {
-	taints, err := apiv1.GetTaintsFromNodeAnnotations(node.Annotations)
-	if err != nil {
-		glog.Warningf("Error while getting Taints for node %v: %v", node.Name, err)
-		return false, err
-	}
-	for _, taint := range taints {
+	for _, taint := range node.Spec.Taints {
 		if taint.Key == ToBeDeletedTaint {
 			glog.Infof("ToBeDeletedTaint already present on on node %v", taint, node.Name)
 			return false, nil
 		}
 	}
-	taints = append(taints, apiv1.Taint{
+	node.Spec.Taints = append(node.Spec.Taints, apiv1.Taint{
 		Key:    ToBeDeletedTaint,
 		Value:  time.Now().String(),
 		Effect: apiv1.TaintEffectNoSchedule,
 	})
-	taintsJson, err := json.Marshal(taints)
-	if err != nil {
-		glog.Warningf("Error while adding taints on node %v: %v", node.Name, err)
-		return false, err
-	}
-	if node.Annotations == nil {
-		node.Annotations = make(map[string]string)
-	}
-	node.Annotations[apiv1.TaintsAnnotationKey] = string(taintsJson)
 	return true, nil
 }
 
 // HasToBeDeletedTaint returns true if ToBeDeleted taint is applied on the node.
 func HasToBeDeletedTaint(node *apiv1.Node) bool {
-	taints, err := apiv1.GetTaintsFromNodeAnnotations(node.Annotations)
-	if err != nil {
-		glog.Warningf("Node %v has incorrect taint annotation: %v", err)
-		return false
-	}
-	for _, taint := range taints {
+	for _, taint := range node.Spec.Taints {
 		if taint.Key == ToBeDeletedTaint {
 			return true
 		}
@@ -100,14 +80,8 @@ func HasToBeDeletedTaint(node *apiv1.Node) bool {
 
 // CleanToBeDeleted cleans ToBeDeleted taint.
 func CleanToBeDeleted(node *apiv1.Node, client kube_client.Interface) (bool, error) {
-	taints, err := apiv1.GetTaintsFromNodeAnnotations(node.Annotations)
-	if err != nil {
-		glog.Warningf("Error while getting Taints for node %v: %v", node.Name, err)
-		return false, err
-	}
-
 	newTaints := make([]apiv1.Taint, 0)
-	for _, taint := range taints {
+	for _, taint := range node.Spec.Taints {
 		if taint.Key == ToBeDeletedTaint {
 			glog.V(1).Infof("Releasing taint %+v on node %v", taint, node.Name)
 		} else {
@@ -115,17 +89,9 @@ func CleanToBeDeleted(node *apiv1.Node, client kube_client.Interface) (bool, err
 		}
 	}
 
-	if len(newTaints) != len(taints) {
-		taintsJson, err := json.Marshal(newTaints)
-		if err != nil {
-			glog.Warningf("Error while releasing taints on node %v: %v", node.Name, err)
-			return false, err
-		}
-		if node.Annotations == nil {
-			node.Annotations = make(map[string]string)
-		}
-		node.Annotations[apiv1.TaintsAnnotationKey] = string(taintsJson)
-		_, err = client.Core().Nodes().Update(node)
+	if len(newTaints) != len(node.Spec.Taints) {
+		node.Spec.Taints = newTaints
+		_, err := client.Core().Nodes().Update(node)
 		if err != nil {
 			glog.Warningf("Error while releasing taints on node %v: %v", node.Name, err)
 			return false, err
