@@ -111,6 +111,7 @@ func createAutoscalerOptions() core.AutoscalerOptions {
 		MaxGratefulTerminationSec:     *maxGratefulTerminationFlag,
 		MaxNodeProvisionTime:          *maxNodeProvisionTime,
 		MaxNodesTotal:                 *maxNodesTotal,
+		NodeGroups:                    nodeGroupsFlag,
 		UnregisteredNodeRemovalTime:   *unregisteredNodeRemovalTime,
 		ScaleDownDelay:                *scaleDownDelay,
 		ScaleDownEnabled:              *scaleDownEnabled,
