@@ -17,11 +17,15 @@ limitations under the License.
 package simulator
 
 import (
+	"fmt"
 	"time"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/contrib/cluster-autoscaler/utils/drain"
 	api "k8s.io/kubernetes/pkg/api"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	policyv1 "k8s.io/kubernetes/pkg/apis/policy/v1beta1"
 	client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 )
@@ -30,9 +34,10 @@ import (
 // is drained. Raises error if there is an unreplicated pod and force option was not specified.
 // Based on kubectl drain code. It makes an assumption that RC, DS, Jobs and RS were deleted
 // along with their pods (no abandoned pods with dangling created-by annotation). Usefull for fast
-// checks. Doesn't check i
-func FastGetPodsToMove(nodeInfo *schedulercache.NodeInfo, skipNodesWithSystemPods bool, skipNodesWithLocalStorage bool) ([]*apiv1.Pod, error) {
-	return drain.GetPodsForDeletionOnNodeDrain(
+// checks.
+func FastGetPodsToMove(nodeInfo *schedulercache.NodeInfo, skipNodesWithSystemPods bool, skipNodesWithLocalStorage bool,
+	pdbs []*policyv1.PodDisruptionBudget) ([]*apiv1.Pod, error) {
+	pods, err := drain.GetPodsForDeletionOnNodeDrain(
 		nodeInfo.Pods(),
 		api.Codecs.UniversalDecoder(),
 		false,
@@ -42,6 +47,15 @@ func FastGetPodsToMove(nodeInfo *schedulercache.NodeInfo, skipNodesWithSystemPod
 		nil,
 		0,
 		time.Now())
+
+	if err != nil {
+		return pods, err
+	}
+	if err := checkPdbs(pods, pdbs); err != nil {
+		return []*apiv1.Pod{}, err
+	}
+
+	return pods, nil
 }
 
 // DetailedGetPodsForMove returns a list of pods that should be moved elsewhere if the node
@@ -49,8 +63,9 @@ func FastGetPodsToMove(nodeInfo *schedulercache.NodeInfo, skipNodesWithSystemPod
 // Based on kubectl drain code. It checks whether RC, DS, Jobs and RS that created these pods
 // still exist.
 func DetailedGetPodsForMove(nodeInfo *schedulercache.NodeInfo, skipNodesWithSystemPods bool,
-	skipNodesWithLocalStorage bool, client client.Interface, minReplicaCount int32) ([]*apiv1.Pod, error) {
-	return drain.GetPodsForDeletionOnNodeDrain(
+	skipNodesWithLocalStorage bool, client client.Interface, minReplicaCount int32,
+	pdbs []*policyv1.PodDisruptionBudget) ([]*apiv1.Pod, error) {
+	pods, err := drain.GetPodsForDeletionOnNodeDrain(
 		nodeInfo.Pods(),
 		api.Codecs.UniversalDecoder(),
 		false,
@@ -60,4 +75,30 @@ func DetailedGetPodsForMove(nodeInfo *schedulercache.NodeInfo, skipNodesWithSyst
 		client,
 		minReplicaCount,
 		time.Now())
+	if err != nil {
+		return pods, err
+	}
+	if err := checkPdbs(pods, pdbs); err != nil {
+		return []*apiv1.Pod{}, err
+	}
+
+	return pods, nil
+}
+
+func checkPdbs(pods []*apiv1.Pod, pdbs []*policyv1.PodDisruptionBudget) error {
+	// TODO: make it more efficient.
+	for _, pdb := range pdbs {
+		selector, err := metav1.LabelSelectorAsSelector(pdb.Spec.Selector)
+		if err != nil {
+			return err
+		}
+		for _, pod := range pods {
+			if selector.Matches(labels.Set(pod.Labels)) {
+				if pdb.Status.PodDisruptionsAllowed < 1 {
+					return fmt.Errorf("no enough pod disruption budget to move %s/%s", pod.Namespace, pod.Name)
+				}
+			}
+		}
+	}
+	return nil
 }

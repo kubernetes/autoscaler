@@ -82,6 +82,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) {
 	allNodeLister := a.AllNodeLister()
 	unschedulablePodLister := a.UnschedulablePodLister()
 	scheduledPodLister := a.ScheduledPodLister()
+	pdbLister := a.PodDisruptionBudgetLister()
 	scaleDown := a.scaleDown
 	autoscalingContext := a.AutoscalingContext
 
@@ -215,6 +216,12 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) {
 	if a.ScaleDownEnabled {
 		unneededStart := time.Now()
 
+		pdbs, err := pdbLister.List()
+		if err != nil {
+			glog.Errorf("Failed to list pod disruption budgets: %v", err)
+			return
+		}
+
 		// In dry run only utilization is updated
 		calculateUnneededOnly := a.lastScaleUpTime.Add(a.ScaleDownDelay).After(time.Now()) ||
 			a.lastScaleDownFailedTrial.Add(a.ScaleDownTrialInterval).After(time.Now()) ||
@@ -228,7 +235,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) {
 		glog.V(4).Infof("Calculating unneeded nodes")
 
 		scaleDown.CleanUp(time.Now())
-		err := scaleDown.UpdateUnneededNodes(allNodes, allScheduled, time.Now())
+		err = scaleDown.UpdateUnneededNodes(allNodes, allScheduled, time.Now(), pdbs)
 		if err != nil {
 			glog.Warningf("Failed to scale down: %v", err)
 			return
@@ -247,7 +254,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) {
 
 			scaleDownStart := time.Now()
 			metrics.UpdateLastTime("scaledown")
-			result, err := scaleDown.TryToScaleDown(allNodes, allScheduled)
+			result, err := scaleDown.TryToScaleDown(allNodes, allScheduled, pdbs)
 			metrics.UpdateDuration("scaledown", scaleDownStart)
 
 			// TODO: revisit result handling
