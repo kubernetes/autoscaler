@@ -23,8 +23,10 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/tools/cache"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	policyv1 "k8s.io/kubernetes/pkg/apis/policy/v1beta1"
 	client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	v1lister "k8s.io/kubernetes/pkg/client/listers/core/v1"
+	v1policylister "k8s.io/kubernetes/pkg/client/listers/policy/v1beta1"
 )
 
 // ListerRegistry is a registry providing various listers to list pods or nodes matching conditions
@@ -33,22 +35,26 @@ type ListerRegistry interface {
 	ReadyNodeLister() *ReadyNodeLister
 	ScheduledPodLister() *ScheduledPodLister
 	UnschedulablePodLister() *UnschedulablePodLister
+	PodDisruptionBudgetLister() *PodDisruptionBudgetLister
 }
 
 type listerRegistryImpl struct {
-	allNodeLister          *AllNodeLister
-	readyNodeLister        *ReadyNodeLister
-	scheduledPodLister     *ScheduledPodLister
-	unschedulablePodLister *UnschedulablePodLister
+	allNodeLister             *AllNodeLister
+	readyNodeLister           *ReadyNodeLister
+	scheduledPodLister        *ScheduledPodLister
+	unschedulablePodLister    *UnschedulablePodLister
+	podDisruptionBudgetLister *PodDisruptionBudgetLister
 }
 
 // NewListerRegistry returns a registry providing various listers to list pods or nodes matching conditions
-func NewListerRegistry(allNode *AllNodeLister, readyNode *ReadyNodeLister, scheduledPod *ScheduledPodLister, unschedulablePod *UnschedulablePodLister) ListerRegistry {
+func NewListerRegistry(allNode *AllNodeLister, readyNode *ReadyNodeLister, scheduledPod *ScheduledPodLister,
+	unschedulablePod *UnschedulablePodLister, podDisruptionBudgetLister *PodDisruptionBudgetLister) ListerRegistry {
 	return listerRegistryImpl{
-		allNodeLister:          allNode,
-		readyNodeLister:        readyNode,
-		scheduledPodLister:     scheduledPod,
-		unschedulablePodLister: unschedulablePod,
+		allNodeLister:             allNode,
+		readyNodeLister:           readyNode,
+		scheduledPodLister:        scheduledPod,
+		unschedulablePodLister:    unschedulablePod,
+		podDisruptionBudgetLister: podDisruptionBudgetLister,
 	}
 }
 
@@ -58,7 +64,9 @@ func NewListerRegistryWithDefaultListers(kubeClient client.Interface, stopChanne
 	scheduledPodLister := NewScheduledPodLister(kubeClient, stopChannel)
 	readyNodeLister := NewReadyNodeLister(kubeClient, stopChannel)
 	allNodeLister := NewAllNodeLister(kubeClient, stopChannel)
-	return NewListerRegistry(allNodeLister, readyNodeLister, scheduledPodLister, unschedulablePodLister)
+	podDisruptionBudgetLister := NewPodDisruptionBudgetLister(kubeClient, stopChannel)
+	return NewListerRegistry(allNodeLister, readyNodeLister, scheduledPodLister,
+		unschedulablePodLister, podDisruptionBudgetLister)
 }
 
 // AllNodeLister returns the AllNodeLister registered to this registry
@@ -79,6 +87,11 @@ func (r listerRegistryImpl) ScheduledPodLister() *ScheduledPodLister {
 // UnschedulablePodLister returns the UnschedulablePodLister registered to this registry
 func (r listerRegistryImpl) UnschedulablePodLister() *UnschedulablePodLister {
 	return r.unschedulablePodLister
+}
+
+// PodDisruptionBudgetLister returns the podDisruptionBudgetLister registered to this registry
+func (r listerRegistryImpl) PodDisruptionBudgetLister() *PodDisruptionBudgetLister {
+	return r.podDisruptionBudgetLister
 }
 
 // UnschedulablePodLister lists unscheduled pods
@@ -208,5 +221,27 @@ func NewAllNodeLister(kubeClient client.Interface, stopchannel <-chan struct{}) 
 	reflector.RunUntil(stopchannel)
 	return &AllNodeLister{
 		nodeLister: nodeLister,
+	}
+}
+
+// PodDisruptionBudgetLister lists all pod disruption budgets
+type PodDisruptionBudgetLister struct {
+	pdbLister v1policylister.PodDisruptionBudgetLister
+}
+
+// List returns all nodes
+func (lister *PodDisruptionBudgetLister) List() ([]*policyv1.PodDisruptionBudget, error) {
+	return lister.pdbLister.List(labels.Everything())
+}
+
+// NewPodDisruptionBudgetLister builds a pod disruption budget lister.
+func NewPodDisruptionBudgetLister(kubeClient client.Interface, stopchannel <-chan struct{}) *PodDisruptionBudgetLister {
+	listWatcher := cache.NewListWatchFromClient(kubeClient.Policy().RESTClient(), "podpisruptionbudgets", apiv1.NamespaceAll, fields.Everything())
+	store := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
+	pdbLister := v1policylister.NewPodDisruptionBudgetLister(store)
+	reflector := cache.NewReflector(listWatcher, &policyv1.PodDisruptionBudget{}, store, time.Hour)
+	reflector.RunUntil(stopchannel)
+	return &PodDisruptionBudgetLister{
+		pdbLister: pdbLister,
 	}
 }
