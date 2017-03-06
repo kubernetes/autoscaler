@@ -20,7 +20,9 @@ import (
 	"testing"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	policyv1 "k8s.io/kubernetes/pkg/apis/policy/v1beta1"
 	"k8s.io/kubernetes/pkg/kubelet/types"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 
@@ -36,7 +38,7 @@ func TestFastGetPodsToMove(t *testing.T) {
 			Namespace: "ns",
 		},
 	}
-	_, err := FastGetPodsToMove(schedulercache.NewNodeInfo(pod1), true, true)
+	_, err := FastGetPodsToMove(schedulercache.NewNodeInfo(pod1), true, true, nil)
 	assert.Error(t, err)
 
 	// Replicated pod
@@ -49,7 +51,7 @@ func TestFastGetPodsToMove(t *testing.T) {
 			},
 		},
 	}
-	r2, err := FastGetPodsToMove(schedulercache.NewNodeInfo(pod2), true, true)
+	r2, err := FastGetPodsToMove(schedulercache.NewNodeInfo(pod2), true, true, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(r2))
 	assert.Equal(t, pod2, r2[0])
@@ -64,7 +66,7 @@ func TestFastGetPodsToMove(t *testing.T) {
 			},
 		},
 	}
-	r3, err := FastGetPodsToMove(schedulercache.NewNodeInfo(pod3), true, true)
+	r3, err := FastGetPodsToMove(schedulercache.NewNodeInfo(pod3), true, true, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(r3))
 
@@ -78,7 +80,7 @@ func TestFastGetPodsToMove(t *testing.T) {
 			},
 		},
 	}
-	r4, err := FastGetPodsToMove(schedulercache.NewNodeInfo(pod2, pod3, pod4), true, true)
+	r4, err := FastGetPodsToMove(schedulercache.NewNodeInfo(pod2, pod3, pod4), true, true, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(r4))
 	assert.Equal(t, pod2, r4[0])
@@ -93,7 +95,7 @@ func TestFastGetPodsToMove(t *testing.T) {
 			},
 		},
 	}
-	_, err = FastGetPodsToMove(schedulercache.NewNodeInfo(pod5), true, true)
+	_, err = FastGetPodsToMove(schedulercache.NewNodeInfo(pod5), true, true, nil)
 	assert.Error(t, err)
 
 	// Local storage
@@ -115,7 +117,7 @@ func TestFastGetPodsToMove(t *testing.T) {
 			},
 		},
 	}
-	_, err = FastGetPodsToMove(schedulercache.NewNodeInfo(pod6), true, true)
+	_, err = FastGetPodsToMove(schedulercache.NewNodeInfo(pod6), true, true, nil)
 	assert.Error(t, err)
 
 	// Non-local storage
@@ -139,7 +141,78 @@ func TestFastGetPodsToMove(t *testing.T) {
 			},
 		},
 	}
-	r7, err := FastGetPodsToMove(schedulercache.NewNodeInfo(pod7), true, true)
+	r7, err := FastGetPodsToMove(schedulercache.NewNodeInfo(pod7), true, true, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(r7))
+
+	// Pdb blocking
+	pod8 := &apiv1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "pod8",
+			Namespace: "ns",
+			Annotations: map[string]string{
+				"kubernetes.io/created-by": "{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1\",\"reference\":{\"kind\":\"ReplicaSet\"}}",
+			},
+			Labels: map[string]string{
+				"critical": "true",
+			},
+		},
+		Spec: apiv1.PodSpec{},
+	}
+	pdb8 := &policyv1.PodDisruptionBudget{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "foobar",
+			Namespace: "ns",
+		},
+		Spec: policyv1.PodDisruptionBudgetSpec{
+			MinAvailable: intstr.FromInt(1),
+			Selector: &metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					"critical": "true",
+				},
+			},
+		},
+		Status: policyv1.PodDisruptionBudgetStatus{
+			PodDisruptionsAllowed: 0,
+		},
+	}
+
+	_, err = FastGetPodsToMove(schedulercache.NewNodeInfo(pod8), true, true, []*policyv1.PodDisruptionBudget{pdb8})
+	assert.Error(t, err)
+
+	// Pdb allowing
+	pod9 := &apiv1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "pod9",
+			Namespace: "ns",
+			Annotations: map[string]string{
+				"kubernetes.io/created-by": "{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1\",\"reference\":{\"kind\":\"ReplicaSet\"}}",
+			},
+			Labels: map[string]string{
+				"critical": "true",
+			},
+		},
+		Spec: apiv1.PodSpec{},
+	}
+	pdb9 := &policyv1.PodDisruptionBudget{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "foobar",
+			Namespace: "ns",
+		},
+		Spec: policyv1.PodDisruptionBudgetSpec{
+			MinAvailable: intstr.FromInt(1),
+			Selector: &metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					"critical": "true",
+				},
+			},
+		},
+		Status: policyv1.PodDisruptionBudgetStatus{
+			PodDisruptionsAllowed: 1,
+		},
+	}
+
+	r9, err := FastGetPodsToMove(schedulercache.NewNodeInfo(pod9), true, true, []*policyv1.PodDisruptionBudget{pdb9})
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(r9))
 }
