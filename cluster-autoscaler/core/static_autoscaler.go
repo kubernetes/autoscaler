@@ -17,29 +17,17 @@ limitations under the License.
 package core
 
 import (
-	"fmt"
 	"time"
 
+	"k8s.io/contrib/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/contrib/cluster-autoscaler/metrics"
 	kube_util "k8s.io/contrib/cluster-autoscaler/utils/kubernetes"
 
-	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kube_record "k8s.io/client-go/tools/record"
-	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 
 	"github.com/golang/glog"
 	"k8s.io/contrib/cluster-autoscaler/simulator"
-)
-
-const (
-	// StatusConfigMapNamespace is the namespace where ConfigMap with status is stored.
-	StatusConfigMapNamespace = "kube-system"
-	// StatusConfigMapName is the name of ConfigMap with status.
-	StatusConfigMapName = "cluster-autoscaler-status"
-	// ConfigMapLastUpdatedKey is the name of annotation informing about status ConfigMap last update.
-	ConfigMapLastUpdatedKey = "cluster-autoscaler.kubernetes.io/last-updated"
 )
 
 // StaticAutoscaler is an autoscaler which has all the core functionality of a CA but without the reconfiguration feature
@@ -55,7 +43,14 @@ type StaticAutoscaler struct {
 // NewStaticAutoscaler creates an instance of Autoscaler filled with provided parameters
 func NewStaticAutoscaler(opts AutoscalingOptions, predicateChecker *simulator.PredicateChecker,
 	kubeClient kube_client.Interface, kubeEventRecorder kube_record.EventRecorder, listerRegistry kube_util.ListerRegistry) *StaticAutoscaler {
-	autoscalingContext := NewAutoscalingContext(opts, predicateChecker, kubeClient, kubeEventRecorder)
+	logRecorder, err := utils.NewStatusMapRecorder(kubeClient, kubeEventRecorder, opts.WriteStatusConfigMap)
+	if err != nil {
+		glog.Error("Failed to initialize status configmap, unable to write status events")
+		// Get a dummy, so we can at least safely call the methods
+		// TODO(maciekpytel): recover from this after successfull status configmap update?
+		logRecorder, _ = utils.NewStatusMapRecorder(kubeClient, kubeEventRecorder, false)
+	}
+	autoscalingContext := NewAutoscalingContext(opts, predicateChecker, kubeClient, kubeEventRecorder, logRecorder)
 
 	scaleDown := NewScaleDown(autoscalingContext)
 
@@ -260,7 +255,10 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) {
 			}
 		}
 	}
-	a.writeStatusConfigMap()
+	if autoscalingContext.WriteStatusConfigMap {
+		status := a.ClusterStateRegistry.GetStatus(time.Now())
+		utils.WriteStatusConfigMap(autoscalingContext.ClientSet, status.GetReadableString(), a.AutoscalingContext.LogRecorder)
+	}
 }
 
 // ExitCleanUp removes status configmap.
@@ -268,49 +266,5 @@ func (a *StaticAutoscaler) ExitCleanUp() {
 	if !a.AutoscalingContext.WriteStatusConfigMap {
 		return
 	}
-	maps := a.AutoscalingContext.ClientSet.CoreV1().ConfigMaps(StatusConfigMapNamespace)
-	err := maps.Delete(StatusConfigMapName, &metav1.DeleteOptions{})
-	if err != nil {
-		// Nothing else we could do at this point
-		glog.Error("Failed to delete status configmap")
-	}
-}
-
-func (a *StaticAutoscaler) writeStatusConfigMap() {
-	if !a.AutoscalingContext.WriteStatusConfigMap {
-		return
-	}
-	statusUpdateTime := time.Now()
-	status := a.ClusterStateRegistry.GetStatus(statusUpdateTime)
-	statusMsg := fmt.Sprintf("Cluster-autoscaler status at %v:\n%v", statusUpdateTime, status.GetReadableString())
-	var configMap *apiv1.ConfigMap
-	var getStatusError, writeStatusError error
-	maps := a.AutoscalingContext.ClientSet.CoreV1().ConfigMaps(StatusConfigMapNamespace)
-	configMap, getStatusError = maps.Get(StatusConfigMapName, metav1.GetOptions{})
-	if getStatusError == nil {
-		configMap.Data["status"] = statusMsg
-		configMap.ObjectMeta.Annotations[ConfigMapLastUpdatedKey] = fmt.Sprintf("%v", statusUpdateTime)
-		configMap, writeStatusError = maps.Update(configMap)
-	} else if errors.IsNotFound(getStatusError) {
-		configMap := &apiv1.ConfigMap{
-			ObjectMeta: metav1.ObjectMeta{
-				Namespace: StatusConfigMapNamespace,
-				Name:      StatusConfigMapName,
-				Annotations: map[string]string{
-					ConfigMapLastUpdatedKey: fmt.Sprintf("%v", statusUpdateTime),
-				},
-			},
-			Data: map[string]string{
-				"status": statusMsg,
-			},
-		}
-		configMap, writeStatusError = maps.Create(configMap)
-	} else {
-		glog.Error("Failed to retrieve status configmap for update")
-	}
-	if writeStatusError != nil {
-		glog.Error("Failed to write status configmap")
-	} else {
-		glog.V(8).Infof("Succesfully wrote status configmap with body \"%v\"", statusMsg)
-	}
+	utils.DeleteStatusConfigMap(a.AutoscalingContext.ClientSet)
 }

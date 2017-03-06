@@ -23,6 +23,7 @@ import (
 	"k8s.io/contrib/cluster-autoscaler/cloudprovider"
 	"k8s.io/contrib/cluster-autoscaler/cloudprovider/builder"
 	"k8s.io/contrib/cluster-autoscaler/clusterstate"
+	"k8s.io/contrib/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/contrib/cluster-autoscaler/expander"
 	"k8s.io/contrib/cluster-autoscaler/expander/factory"
 	"k8s.io/contrib/cluster-autoscaler/simulator"
@@ -48,6 +49,8 @@ type AutoscalingContext struct {
 	PredicateChecker *simulator.PredicateChecker
 	// ExpanderStrategy is the strategy used to choose which node group to expand when scaling up
 	ExpanderStrategy expander.Strategy
+	// LogRecorder can be used to collect log messages to expose via Events on some central object.
+	LogRecorder *utils.LogEventRecorder
 }
 
 // AutoscalingOptions contain various options to customize how autoscaling works
@@ -99,7 +102,8 @@ type AutoscalingOptions struct {
 }
 
 // NewAutoscalingContext returns an autoscaling context from all the necessary parameters passed via arguments
-func NewAutoscalingContext(options AutoscalingOptions, predicateChecker *simulator.PredicateChecker, kubeClient kube_client.Interface, kubeEventRecorder kube_record.EventRecorder) *AutoscalingContext {
+func NewAutoscalingContext(options AutoscalingOptions, predicateChecker *simulator.PredicateChecker,
+	kubeClient kube_client.Interface, kubeEventRecorder kube_record.EventRecorder, logEventRecorder *utils.LogEventRecorder) *AutoscalingContext {
 	cloudProviderBuilder := builder.NewCloudProviderBuilder(options.CloudProviderName, options.CloudConfig)
 	cloudProvider := cloudProviderBuilder.Build(options.NodeGroups)
 	expanderStrategy := factory.ExpanderStrategyFromString(options.ExpanderName)
@@ -118,6 +122,7 @@ func NewAutoscalingContext(options AutoscalingOptions, predicateChecker *simulat
 		Recorder:             kubeEventRecorder,
 		PredicateChecker:     predicateChecker,
 		ExpanderStrategy:     expanderStrategy,
+		LogRecorder:          logEventRecorder,
 	}
 
 	return &autoscalingContext
