@@ -78,6 +78,20 @@ func HasToBeDeletedTaint(node *apiv1.Node) bool {
 	return false
 }
 
+// GetToBeDeletedTime returns the date when the node was marked by CA as for delete.
+func GetToBeDeletedTime(node *apiv1.Node) (*time.Time, error) {
+	for _, taint := range node.Spec.Taints {
+		if taint.Key == ToBeDeletedTaint {
+			result, err := time.Parse("2006-01-02 15:04:05.999999999 -0700 MST", taint.Value)
+			if err != nil {
+				return nil, err
+			}
+			return &result, nil
+		}
+	}
+	return nil, nil
+}
+
 // CleanToBeDeleted cleans ToBeDeleted taint.
 func CleanToBeDeleted(node *apiv1.Node, client kube_client.Interface) (bool, error) {
 	newTaints := make([]apiv1.Taint, 0)
