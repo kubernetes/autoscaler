@@ -40,6 +40,19 @@ func TestMarkNodes(t *testing.T) {
 	assert.True(t, HasToBeDeletedTaint(node))
 }
 
+func TestCheckNodes(t *testing.T) {
+	node := BuildTestNode("node", 1000, 1000)
+	fakeClient, updatedNodes := buildFakeClientAndUpdateChannel(node)
+	err := MarkToBeDeleted(node, fakeClient)
+	assert.NoError(t, err)
+	assert.Equal(t, node.Name, getStringFromChan(updatedNodes))
+	assert.True(t, HasToBeDeletedTaint(node))
+
+	val, err := GetToBeDeletedTime(node)
+	assert.NoError(t, err)
+	assert.True(t, time.Now().Sub(*val) < 10*time.Second)
+}
+
 func TestCleanNodes(t *testing.T) {
 	node := BuildTestNode("node", 1000, 1000)
 	addToBeDeletedTaint(node)
