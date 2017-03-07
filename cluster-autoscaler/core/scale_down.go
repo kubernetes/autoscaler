@@ -107,6 +107,16 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 
 	// Phase1 - look at the nodes utilization.
 	for _, node := range nodes {
+
+		// Skip nodes marked to be deleted, if they were marked recently.
+		// Old-time marked nodes are again eligible for deletion - something went wrong with them
+		// and they have not been deleted.
+		deleteTime, _ := deletetaint.GetToBeDeletedTime(node)
+		if deleteTime != nil && (timestamp.Sub(*deleteTime) < MaxCloudProviderNodeDeletionTime || timestamp.Sub(*deleteTime) < MaxKubernetesEmptyNodeDeletionTime) {
+			glog.V(1).Info("Skipping %s from delete considerations - the node is currently being deleted", node.Name)
+			continue
+		}
+
 		nodeInfo, found := nodeNameToNodeInfo[node.Name]
 		if !found {
 			glog.Errorf("Node info for %s not found", node.Name)
