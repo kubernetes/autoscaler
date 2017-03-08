@@ -143,7 +143,7 @@ func TestOKOneUnreadyNodeWithScaleDownCandidate(t *testing.T) {
 		OkTotalUnreadyCount:       1,
 	})
 	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng2_1}, now)
-	clusterstate.UpdateScaleDownCandidates([]*apiv1.Node{ng1_1})
+	clusterstate.UpdateScaleDownCandidates([]*apiv1.Node{ng1_1}, now)
 
 	assert.NoError(t, err)
 	assert.True(t, clusterstate.IsClusterHealthy())
@@ -399,4 +399,109 @@ func TestUnregisteredNodes(t *testing.T) {
 	err = clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng1_2}, time.Now().Add(-time.Minute))
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(clusterstate.GetUnregisteredNodes()))
+}
+
+func TestUpdateLastTransitionTimes(t *testing.T) {
+	now := metav1.Time{Time: time.Now()}
+	later := metav1.Time{Time: now.Time.Add(10 * time.Second)}
+	oldStatus := &api.ClusterAutoscalerStatus{
+		ClusterwideConditions: make([]api.ClusterAutoscalerCondition, 0),
+		NodeGroupStatuses:     make([]api.NodeGroupStatus, 0),
+	}
+	oldStatus.ClusterwideConditions = append(
+		oldStatus.ClusterwideConditions,
+		api.ClusterAutoscalerCondition{
+			Type:               api.ClusterAutoscalerHealth,
+			Status:             api.ClusterAutoscalerHealthy,
+			LastProbeTime:      now,
+			LastTransitionTime: now,
+		})
+	oldStatus.ClusterwideConditions = append(
+		oldStatus.ClusterwideConditions,
+		api.ClusterAutoscalerCondition{
+			Type:               api.ClusterAutoscalerScaleUp,
+			Status:             api.ClusterAutoscalerInProgress,
+			LastProbeTime:      now,
+			LastTransitionTime: now,
+		})
+	oldStatus.NodeGroupStatuses = append(
+		oldStatus.NodeGroupStatuses,
+		api.NodeGroupStatus{
+			ProviderID: "ng1",
+			Conditions: oldStatus.ClusterwideConditions,
+		})
+
+	newStatus := &api.ClusterAutoscalerStatus{
+		ClusterwideConditions: make([]api.ClusterAutoscalerCondition, 0),
+		NodeGroupStatuses:     make([]api.NodeGroupStatus, 0),
+	}
+	newStatus.ClusterwideConditions = append(
+		newStatus.ClusterwideConditions,
+		api.ClusterAutoscalerCondition{
+			Type:          api.ClusterAutoscalerHealth,
+			Status:        api.ClusterAutoscalerHealthy,
+			LastProbeTime: later,
+		})
+	newStatus.ClusterwideConditions = append(
+		newStatus.ClusterwideConditions,
+		api.ClusterAutoscalerCondition{
+			Type:          api.ClusterAutoscalerScaleUp,
+			Status:        api.ClusterAutoscalerNotNeeded,
+			LastProbeTime: later,
+		})
+	newStatus.ClusterwideConditions = append(
+		newStatus.ClusterwideConditions,
+		api.ClusterAutoscalerCondition{
+			Type:          api.ClusterAutoscalerScaleDown,
+			Status:        api.ClusterAutoscalerNoCandidates,
+			LastProbeTime: later,
+		})
+	newStatus.NodeGroupStatuses = append(
+		newStatus.NodeGroupStatuses,
+		api.NodeGroupStatus{
+			ProviderID: "ng2",
+			Conditions: newStatus.ClusterwideConditions,
+		})
+	newStatus.NodeGroupStatuses = append(
+		newStatus.NodeGroupStatuses,
+		api.NodeGroupStatus{
+			ProviderID: "ng1",
+			Conditions: newStatus.ClusterwideConditions,
+		})
+	updateLastTransition(oldStatus, newStatus)
+
+	for _, cwCondition := range newStatus.ClusterwideConditions {
+		switch cwCondition.Type {
+		case api.ClusterAutoscalerHealth:
+			// Status has not changed
+			assert.Equal(t, now, cwCondition.LastTransitionTime)
+		case api.ClusterAutoscalerScaleUp:
+			// Status has changed
+			assert.Equal(t, later, cwCondition.LastTransitionTime)
+		case api.ClusterAutoscalerScaleDown:
+			// No old status information
+			assert.Equal(t, later, cwCondition.LastTransitionTime)
+		}
+	}
+
+	expectedNgTimestamps := make(map[string](map[api.ClusterAutoscalerConditionType]metav1.Time), 0)
+	// Same as clusterwide
+	expectedNgTimestamps["ng1"] = map[api.ClusterAutoscalerConditionType]metav1.Time{
+		api.ClusterAutoscalerHealth:    now,
+		api.ClusterAutoscalerScaleUp:   later,
+		api.ClusterAutoscalerScaleDown: later,
+	}
+	// New node group - everything should have latest timestamp as last transition time
+	expectedNgTimestamps["ng2"] = map[api.ClusterAutoscalerConditionType]metav1.Time{
+		api.ClusterAutoscalerHealth:    later,
+		api.ClusterAutoscalerScaleUp:   later,
+		api.ClusterAutoscalerScaleDown: later,
+	}
+
+	for _, ng := range newStatus.NodeGroupStatuses {
+		expectations := expectedNgTimestamps[ng.ProviderID]
+		for _, ngCondition := range ng.Conditions {
+			assert.Equal(t, expectations[ngCondition.Type], ngCondition.LastTransitionTime)
+		}
+	}
 }

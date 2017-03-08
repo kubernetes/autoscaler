@@ -73,12 +73,21 @@ func TestFindUnneededNodes(t *testing.T) {
 	fakeClient := &fake.Clientset{}
 	fakeRecorder := kube_util.CreateEventRecorder(fakeClient)
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, fakeRecorder, false)
+
+	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider.AddNodeGroup("ng1", 1, 10, 2)
+	provider.AddNode("ng1", n1)
+	provider.AddNode("ng1", n2)
+	provider.AddNode("ng1", n3)
+	provider.AddNode("ng1", n4)
+
 	context := AutoscalingContext{
 		AutoscalingOptions: AutoscalingOptions{
 			ScaleDownUtilizationThreshold: 0.35,
 		},
-		PredicateChecker: simulator.NewTestPredicateChecker(),
-		LogRecorder:      fakeLogRecorder,
+		ClusterStateRegistry: clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}),
+		PredicateChecker:     simulator.NewTestPredicateChecker(),
+		LogRecorder:          fakeLogRecorder,
 	}
 	sd := NewScaleDown(&context)
 	sd.UpdateUnneededNodes([]*apiv1.Node{n1, n2, n3, n4}, []*apiv1.Pod{p1, p2, p3, p4}, time.Now(), nil)
