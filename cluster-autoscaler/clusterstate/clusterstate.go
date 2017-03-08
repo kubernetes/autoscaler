@@ -110,10 +110,16 @@ type ClusterStateRegistry struct {
 	incorrectNodeGroupSizes map[string]IncorrectNodeGroupSize
 	unregisteredNodes       map[string]UnregisteredNode
 	candidatesForScaleDown  map[string][]string
+	lastStatus              *api.ClusterAutoscalerStatus
+	lastScaleDownUpdateTime time.Time
 }
 
 // NewClusterStateRegistry creates new ClusterStateRegistry.
 func NewClusterStateRegistry(cloudProvider cloudprovider.CloudProvider, config ClusterStateRegistryConfig) *ClusterStateRegistry {
+	emptyStatus := &api.ClusterAutoscalerStatus{
+		ClusterwideConditions: make([]api.ClusterAutoscalerCondition, 0),
+		NodeGroupStatuses:     make([]api.NodeGroupStatus, 0),
+	}
 	return &ClusterStateRegistry{
 		scaleUpRequests:         make([]*ScaleUpRequest, 0),
 		scaleDownRequests:       make([]*ScaleDownRequest, 0),
@@ -125,6 +131,7 @@ func NewClusterStateRegistry(cloudProvider cloudprovider.CloudProvider, config C
 		incorrectNodeGroupSizes: make(map[string]IncorrectNodeGroupSize),
 		unregisteredNodes:       make(map[string]UnregisteredNode),
 		candidatesForScaleDown:  make(map[string][]string),
+		lastStatus:              emptyStatus,
 	}
 }
 
@@ -319,12 +326,14 @@ type Readiness struct {
 	NotStarted int
 	// Number of all registered nodes in the group (ready/unready/deleted/etc).
 	Registered int
+	// Time when the readiness was measured.
+	Time time.Time
 }
 
 func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 
 	perNodeGroup := make(map[string]Readiness)
-	total := Readiness{}
+	total := Readiness{Time: currentTime}
 
 	update := func(current Readiness, node *apiv1.Node, ready bool) Readiness {
 		current.Registered++
@@ -358,6 +367,10 @@ func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 			perNodeGroup[nodeGroup.Id()] = update(perNodeGroup[nodeGroup.Id()], node, ready)
 		}
 		total = update(total, node, ready)
+	}
+	for ngId, ngReadiness := range perNodeGroup {
+		ngReadiness.Time = currentTime
+		perNodeGroup[ngId] = ngReadiness
 	}
 	csr.perNodeGroupReadiness = perNodeGroup
 	csr.totalReadiness = total
@@ -422,7 +435,7 @@ func (csr *ClusterStateRegistry) GetUnregisteredNodes() []UnregisteredNode {
 }
 
 // UpdateScaleDownCandidates updates scale down candidates
-func (csr *ClusterStateRegistry) UpdateScaleDownCandidates(nodes []*apiv1.Node) {
+func (csr *ClusterStateRegistry) UpdateScaleDownCandidates(nodes []*apiv1.Node, now time.Time) {
 	result := make(map[string][]string)
 	for _, node := range nodes {
 		group, err := csr.cloudProvider.NodeGroupForNode(node)
@@ -433,6 +446,7 @@ func (csr *ClusterStateRegistry) UpdateScaleDownCandidates(nodes []*apiv1.Node) 
 		result[group.Id()] = append(result[group.Id()], node.Name)
 	}
 	csr.candidatesForScaleDown = result
+	csr.lastScaleDownUpdateTime = now
 }
 
 // GetStatus returns ClusterAutoscalerStatus with the current cluster autoscaler status.
@@ -459,7 +473,7 @@ func (csr *ClusterStateRegistry) GetStatus(now time.Time) *api.ClusterAutoscaler
 
 		// Scale down.
 		nodeGroupStatus.Conditions = append(nodeGroupStatus.Conditions, buildScaleDownStatusNodeGroup(
-			csr.candidatesForScaleDown[nodeGroup.Id()]))
+			csr.candidatesForScaleDown[nodeGroup.Id()], csr.lastScaleDownUpdateTime))
 
 		result.NodeGroupStatuses = append(result.NodeGroupStatuses, nodeGroupStatus)
 	}
@@ -468,8 +482,10 @@ func (csr *ClusterStateRegistry) GetStatus(now time.Time) *api.ClusterAutoscaler
 	result.ClusterwideConditions = append(result.ClusterwideConditions,
 		buildScaleUpStatusClusterwide(result.NodeGroupStatuses, csr.totalReadiness))
 	result.ClusterwideConditions = append(result.ClusterwideConditions,
-		buildScaleDownStatusClusterwide(csr.candidatesForScaleDown))
+		buildScaleDownStatusClusterwide(csr.candidatesForScaleDown, csr.lastScaleDownUpdateTime))
 
+	updateLastTransition(csr.lastStatus, result)
+	csr.lastStatus = result
 	return result
 }
 
@@ -485,6 +501,7 @@ func buildHealthStatusNodeGroup(isReady bool, readiness Readiness, acceptable Ac
 			acceptable.CurrentTarget,
 			acceptable.MinNodes,
 			acceptable.MaxNodes),
+		LastProbeTime: metav1.Time{Time: readiness.Time},
 	}
 	if isReady {
 		condition.Status = api.ClusterAutoscalerHealthy
@@ -500,6 +517,7 @@ func buildScaleUpStatusNodeGroup(isScaleUpInProgress bool, readiness Readiness, 
 		Message: fmt.Sprintf("ready=%d cloudProviderTarget=%d",
 			readiness.Ready,
 			acceptable.CurrentTarget),
+		LastProbeTime: metav1.Time{Time: readiness.Time},
 	}
 	if isScaleUpInProgress {
 		condition.Status = api.ClusterAutoscalerInProgress
@@ -509,10 +527,11 @@ func buildScaleUpStatusNodeGroup(isScaleUpInProgress bool, readiness Readiness, 
 	return condition
 }
 
-func buildScaleDownStatusNodeGroup(candidates []string) api.ClusterAutoscalerCondition {
+func buildScaleDownStatusNodeGroup(candidates []string, lastProbed time.Time) api.ClusterAutoscalerCondition {
 	condition := api.ClusterAutoscalerCondition{
-		Type:    api.ClusterAutoscalerScaleDown,
-		Message: fmt.Sprintf("candidates=%d", len(candidates)),
+		Type:          api.ClusterAutoscalerScaleDown,
+		Message:       fmt.Sprintf("candidates=%d", len(candidates)),
+		LastProbeTime: metav1.Time{Time: lastProbed},
 	}
 	if len(candidates) > 0 {
 		condition.Status = api.ClusterAutoscalerCandidatesPresent
@@ -532,6 +551,7 @@ func buildHealthStatusClusterwide(isReady bool, readiness Readiness) api.Cluster
 			readiness.LongNotStarted,
 			readiness.Registered,
 		),
+		LastProbeTime: metav1.Time{Time: readiness.Time},
 	}
 	if isReady {
 		condition.Status = api.ClusterAutoscalerHealthy
@@ -557,6 +577,7 @@ func buildScaleUpStatusClusterwide(nodeGroupStatuses []api.NodeGroupStatus, read
 		Message: fmt.Sprintf("ready=%d registered=%d",
 			readiness.Ready,
 			readiness.Registered),
+		LastProbeTime: metav1.Time{Time: readiness.Time},
 	}
 	if isScaleUpInProgress {
 		condition.Status = api.ClusterAutoscalerInProgress
@@ -566,14 +587,15 @@ func buildScaleUpStatusClusterwide(nodeGroupStatuses []api.NodeGroupStatus, read
 	return condition
 }
 
-func buildScaleDownStatusClusterwide(candidates map[string][]string) api.ClusterAutoscalerCondition {
+func buildScaleDownStatusClusterwide(candidates map[string][]string, lastProbed time.Time) api.ClusterAutoscalerCondition {
 	totalCandidates := 0
 	for _, val := range candidates {
 		totalCandidates += len(val)
 	}
 	condition := api.ClusterAutoscalerCondition{
-		Type:    api.ClusterAutoscalerScaleDown,
-		Message: fmt.Sprintf("candidates=%d", totalCandidates),
+		Type:          api.ClusterAutoscalerScaleDown,
+		Message:       fmt.Sprintf("candidates=%d", totalCandidates),
+		LastProbeTime: metav1.Time{Time: lastProbed},
 	}
 	if totalCandidates > 0 {
 		condition.Status = api.ClusterAutoscalerCandidatesPresent
@@ -592,6 +614,47 @@ func isNodeNotStarted(node *apiv1.Node) bool {
 		}
 	}
 	return false
+}
+
+func updateLastTransition(oldStatus, newStatus *api.ClusterAutoscalerStatus) {
+	newStatus.ClusterwideConditions = updateLastTransitionSingleList(
+		oldStatus.ClusterwideConditions, newStatus.ClusterwideConditions)
+	updatedNgStatuses := make([]api.NodeGroupStatus, 0)
+	for _, ngStatus := range newStatus.NodeGroupStatuses {
+		oldConds := make([]api.ClusterAutoscalerCondition, 0)
+		for _, oldNgStatus := range oldStatus.NodeGroupStatuses {
+			if ngStatus.ProviderID == oldNgStatus.ProviderID {
+				oldConds = oldNgStatus.Conditions
+				break
+			}
+		}
+		newConds := updateLastTransitionSingleList(oldConds, ngStatus.Conditions)
+		updatedNgStatuses = append(
+			updatedNgStatuses,
+			api.NodeGroupStatus{
+				ProviderID: ngStatus.ProviderID,
+				Conditions: newConds,
+			})
+	}
+	newStatus.NodeGroupStatuses = updatedNgStatuses
+}
+
+func updateLastTransitionSingleList(oldConds, newConds []api.ClusterAutoscalerCondition) []api.ClusterAutoscalerCondition {
+	result := make([]api.ClusterAutoscalerCondition, 0)
+	// We have ~3 conditions, so O(n**2) is good enough
+	for _, condition := range newConds {
+		condition.LastTransitionTime = condition.LastProbeTime
+		for _, oldCondition := range oldConds {
+			if condition.Type == oldCondition.Type {
+				if condition.Status == oldCondition.Status {
+					condition.LastTransitionTime = oldCondition.LastTransitionTime
+				}
+				break
+			}
+		}
+		result = append(result, condition)
+	}
+	return result
 }
 
 // GetIncorrectNodeGroupSize gets IncorrectNodeGroupSizeInformation for the given node group.

@@ -147,6 +147,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		sd.unneededNodesList = make([]*apiv1.Node, 0)
 		sd.unneededNodes = make(map[string]time.Time)
 		sd.nodeUtilizationMap = make(map[string]float64)
+		sd.context.ClusterStateRegistry.UpdateScaleDownCandidates(sd.unneededNodesList, timestamp)
 
 		return fmt.Errorf("error while simulating node drains: %v", err)
 	}
@@ -168,6 +169,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	sd.unneededNodes = result
 	sd.podLocationHints = newHints
 	sd.nodeUtilizationMap = utilizationMap
+	sd.context.ClusterStateRegistry.UpdateScaleDownCandidates(sd.unneededNodesList, timestamp)
 	return nil
 }
 
