@@ -236,7 +236,7 @@ func (lister *PodDisruptionBudgetLister) List() ([]*policyv1.PodDisruptionBudget
 
 // NewPodDisruptionBudgetLister builds a pod disruption budget lister.
 func NewPodDisruptionBudgetLister(kubeClient client.Interface, stopchannel <-chan struct{}) *PodDisruptionBudgetLister {
-	listWatcher := cache.NewListWatchFromClient(kubeClient.Policy().RESTClient(), "podpisruptionbudgets", apiv1.NamespaceAll, fields.Everything())
+	listWatcher := cache.NewListWatchFromClient(kubeClient.Policy().RESTClient(), "poddisruptionbudgets", apiv1.NamespaceAll, fields.Everything())
 	store := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
 	pdbLister := v1policylister.NewPodDisruptionBudgetLister(store)
 	reflector := cache.NewReflector(listWatcher, &policyv1.PodDisruptionBudget{}, store, time.Hour)
