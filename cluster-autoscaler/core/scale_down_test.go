@@ -18,6 +18,7 @@ package core
 
 import (
 	"fmt"
+	"sort"
 	"testing"
 	"time"
 
@@ -33,6 +34,7 @@ import (
 	. "k8s.io/contrib/cluster-autoscaler/utils/test"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	batchv1 "k8s.io/kubernetes/pkg/apis/batch/v1"
+	policyv1 "k8s.io/kubernetes/pkg/apis/policy/v1beta1"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset/fake"
 
 	"github.com/stretchr/testify/assert"
@@ -118,18 +120,22 @@ func TestDrainNode(t *testing.T) {
 	n1 := BuildTestNode("n1", 1000, 1000)
 	SetNodeReadyState(n1, true, time.Time{})
 
-	fakeClient.Fake.AddReactor("list", "pods", func(action core.Action) (bool, runtime.Object, error) {
-		return true, &apiv1.PodList{Items: []apiv1.Pod{*p1, *p2}}, nil
-	})
 	fakeClient.Fake.AddReactor("get", "pods", func(action core.Action) (bool, runtime.Object, error) {
 		return true, nil, errors.NewNotFound(apiv1.Resource("pod"), "whatever")
 	})
 	fakeClient.Fake.AddReactor("get", "nodes", func(action core.Action) (bool, runtime.Object, error) {
 		return true, n1, nil
 	})
-	fakeClient.Fake.AddReactor("delete", "pods", func(action core.Action) (bool, runtime.Object, error) {
-		deleteAction := action.(core.DeleteAction)
-		deletedPods <- deleteAction.GetName()
+	fakeClient.Fake.AddReactor("create", "pods", func(action core.Action) (bool, runtime.Object, error) {
+		createAction := action.(core.CreateAction)
+		if createAction == nil {
+			return false, nil, nil
+		}
+		eviction := createAction.GetObject().(*policyv1.Eviction)
+		if eviction == nil {
+			return false, nil, nil
+		}
+		deletedPods <- eviction.Name
 		return true, nil, nil
 	})
 	fakeClient.Fake.AddReactor("update", "nodes", func(action core.Action) (bool, runtime.Object, error) {
@@ -138,10 +144,74 @@ func TestDrainNode(t *testing.T) {
 		updatedNodes <- obj.Name
 		return true, obj, nil
 	})
-	err := drainNode(n1, []*apiv1.Pod{p1, p2}, fakeClient, kube_util.CreateEventRecorder(fakeClient), 20)
+	err := drainNode(n1, []*apiv1.Pod{p1, p2}, fakeClient, kube_util.CreateEventRecorder(fakeClient), 20, 5*time.Second, 0*time.Second)
 	assert.NoError(t, err)
-	assert.Equal(t, p1.Name, getStringFromChan(deletedPods))
-	assert.Equal(t, p2.Name, getStringFromChan(deletedPods))
+	deleted := make([]string, 0)
+	deleted = append(deleted, getStringFromChan(deletedPods))
+	deleted = append(deleted, getStringFromChan(deletedPods))
+	sort.Strings(deleted)
+	assert.Equal(t, p1.Name, deleted[0])
+	assert.Equal(t, p2.Name, deleted[1])
+	assert.Equal(t, n1.Name, getStringFromChan(updatedNodes))
+}
+
+func TestDrainNodeWithRetries(t *testing.T) {
+	deletedPods := make(chan string, 10)
+	updatedNodes := make(chan string, 10)
+	// Simulate pdb of size 1, by making them goroutine succeed sequentially
+	// and fail/retry before they can proceed.
+	ticket := make(chan bool, 1)
+	fakeClient := &fake.Clientset{}
+
+	p1 := BuildTestPod("p1", 100, 0)
+	p2 := BuildTestPod("p2", 300, 0)
+	p3 := BuildTestPod("p3", 300, 0)
+	n1 := BuildTestNode("n1", 1000, 1000)
+	SetNodeReadyState(n1, true, time.Time{})
+
+	fakeClient.Fake.AddReactor("get", "pods", func(action core.Action) (bool, runtime.Object, error) {
+		return true, nil, errors.NewNotFound(apiv1.Resource("pod"), "whatever")
+	})
+	fakeClient.Fake.AddReactor("get", "nodes", func(action core.Action) (bool, runtime.Object, error) {
+		return true, n1, nil
+	})
+	fakeClient.Fake.AddReactor("create", "pods", func(action core.Action) (bool, runtime.Object, error) {
+		createAction := action.(core.CreateAction)
+		if createAction == nil {
+			return false, nil, nil
+		}
+		eviction := createAction.GetObject().(*policyv1.Eviction)
+		if eviction == nil {
+			return false, nil, nil
+		}
+		select {
+		case <-ticket:
+			deletedPods <- eviction.Name
+			return true, nil, nil
+		default:
+			select {
+			case ticket <- true:
+			default:
+			}
+			return true, nil, fmt.Errorf("Too many concurrent evictions")
+		}
+	})
+	fakeClient.Fake.AddReactor("update", "nodes", func(action core.Action) (bool, runtime.Object, error) {
+		update := action.(core.UpdateAction)
+		obj := update.GetObject().(*apiv1.Node)
+		updatedNodes <- obj.Name
+		return true, obj, nil
+	})
+	err := drainNode(n1, []*apiv1.Pod{p1, p2, p3}, fakeClient, kube_util.CreateEventRecorder(fakeClient), 20, 5*time.Second, 0*time.Second)
+	assert.NoError(t, err)
+	deleted := make([]string, 0)
+	deleted = append(deleted, getStringFromChan(deletedPods))
+	deleted = append(deleted, getStringFromChan(deletedPods))
+	deleted = append(deleted, getStringFromChan(deletedPods))
+	sort.Strings(deleted)
+	assert.Equal(t, p1.Name, deleted[0])
+	assert.Equal(t, p2.Name, deleted[1])
+	assert.Equal(t, p3.Name, deleted[2])
 	assert.Equal(t, n1.Name, getStringFromChan(updatedNodes))
 }
 
