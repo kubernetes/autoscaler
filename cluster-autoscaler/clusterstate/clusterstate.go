@@ -356,7 +356,7 @@ func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 		ready, _, errReady := kube_util.GetReadinessState(node)
 
 		// Node is most likely not autoscaled, however check the errors.
-		if reflect.ValueOf(nodeGroup).IsNil() {
+		if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
 			if errNg != nil {
 				glog.Warningf("Failed to get nodegroup for %s: %v", node.Name, errNg)
 			}
@@ -441,6 +441,9 @@ func (csr *ClusterStateRegistry) UpdateScaleDownCandidates(nodes []*apiv1.Node, 
 		group, err := csr.cloudProvider.NodeGroupForNode(node)
 		if err != nil {
 			glog.Warningf("Failed to get node group for %s: %v", node.Name, err)
+			continue
+		}
+		if group == nil || reflect.ValueOf(group).IsNil() {
 			continue
 		}
 		result[group.Id()] = append(result[group.Id()], node.Name)
