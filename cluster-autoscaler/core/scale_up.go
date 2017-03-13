@@ -60,7 +60,7 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 		}
 	}
 
-	podsRemainUnshedulable := make(map[*apiv1.Pod]struct{})
+	podsRemainUnschedulable := make(map[*apiv1.Pod]bool)
 	expansionOptions := make([]expander.Option, 0)
 
 	for _, nodeGroup := range context.CloudProvider.NodeGroups() {
@@ -96,9 +96,12 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 			err = context.PredicateChecker.CheckPredicates(pod, nodeInfo)
 			if err == nil {
 				option.Pods = append(option.Pods, pod)
+				podsRemainUnschedulable[pod] = false
 			} else {
 				glog.V(2).Infof("Scale-up predicate failed: %v", err)
-				podsRemainUnshedulable[pod] = struct{}{}
+				if _, exists := podsRemainUnschedulable[pod]; !exists {
+					podsRemainUnschedulable[pod] = true
+				}
 			}
 		}
 		if len(option.Pods) > 0 {
@@ -122,6 +125,12 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 
 	if len(expansionOptions) == 0 {
 		glog.V(1).Info("No node group can help with pending pods.")
+		for pod, unschedulable := range podsRemainUnschedulable {
+			if unschedulable {
+				context.Recorder.Event(pod, apiv1.EventTypeNormal, "NotTriggerScaleUp",
+					"pod didn't trigger scale-up (it wouldn't fit if a new node is added)")
+			}
+		}
 		return false, nil
 	}
 
@@ -174,9 +183,11 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 
 		return true, nil
 	}
-	for pod := range podsRemainUnshedulable {
-		context.Recorder.Event(pod, apiv1.EventTypeNormal, "NotTriggerScaleUp",
-			"pod didn't trigger scale-up (it wouldn't fit if a new node is added)")
+	for pod, unschedulable := range podsRemainUnschedulable {
+		if unschedulable {
+			context.Recorder.Event(pod, apiv1.EventTypeNormal, "NotTriggerScaleUp",
+				"pod didn't trigger scale-up (it wouldn't fit if a new node is added)")
+		}
 	}
 
 	return false, nil
