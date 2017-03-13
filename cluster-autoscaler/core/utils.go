@@ -164,6 +164,10 @@ func removeOldUnregisteredNodes(unregisteredNodes []clusterstate.UnregisteredNod
 				glog.Warningf("Failed to get node group for %s: %v", unregisteredNode.Node.Name, err)
 				return removedAny, err
 			}
+			if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
+				glog.Warningf("No node group for node %s, skipping", unregisteredNode.Node.Name)
+				continue
+			}
 			err = nodeGroup.DeleteNodes([]*apiv1.Node{unregisteredNode.Node})
 			if err != nil {
 				glog.Warningf("Failed to remove node %s: %v", unregisteredNode.Node.Name, err)
