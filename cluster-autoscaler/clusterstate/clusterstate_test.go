@@ -123,6 +123,23 @@ func TestOKOneUnreadyNode(t *testing.T) {
 	assert.True(t, ng1Checked)
 }
 
+func TestNodeWithoutNodeGroupDontCrash(t *testing.T) {
+	now := time.Now()
+
+	noNgNode := BuildTestNode("no_ng", 1000, 1000)
+	SetNodeReadyState(noNgNode, true, now.Add(-time.Minute))
+	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider.AddNode("no_ng", noNgNode)
+
+	clusterstate := NewClusterStateRegistry(provider, ClusterStateRegistryConfig{
+		MaxTotalUnreadyPercentage: 10,
+		OkTotalUnreadyCount:       1,
+	})
+	err := clusterstate.UpdateNodes([]*apiv1.Node{noNgNode}, now)
+	assert.NoError(t, err)
+	clusterstate.UpdateScaleDownCandidates([]*apiv1.Node{noNgNode}, now)
+}
+
 func TestOKOneUnreadyNodeWithScaleDownCandidate(t *testing.T) {
 	now := time.Now()
 
