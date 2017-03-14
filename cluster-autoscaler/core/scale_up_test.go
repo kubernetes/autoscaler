@@ -18,6 +18,7 @@ package core
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
@@ -25,6 +26,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/runtime"
 	core "k8s.io/client-go/testing"
+	kube_record "k8s.io/client-go/tools/record"
 	"k8s.io/contrib/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/contrib/cluster-autoscaler/clusterstate"
 	"k8s.io/contrib/cluster-autoscaler/clusterstate/utils"
@@ -75,8 +77,8 @@ func TestScaleUpOK(t *testing.T) {
 
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{})
 	clusterState.UpdateNodes([]*apiv1.Node{n1, n2}, time.Now())
-	fakeRecorder := kube_util.CreateEventRecorder(fakeClient)
-	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, fakeRecorder, false)
+	fakeRecorder := kube_record.NewFakeRecorder(5)
+	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, kube_record.NewFakeRecorder(5), false)
 	context := &AutoscalingContext{
 		AutoscalingOptions: AutoscalingOptions{
 			EstimatorName: estimator.BinpackingEstimatorName,
@@ -95,6 +97,19 @@ func TestScaleUpOK(t *testing.T) {
 	assert.NoError(t, err)
 	assert.True(t, result)
 	assert.Equal(t, "ng2-1", getStringFromChan(expandedGroups))
+	nodeEventSeen := false
+	for eventsLeft := true; eventsLeft; {
+		select {
+		case event := <-fakeRecorder.Events:
+			if strings.Contains(event, "TriggeredScaleUp") && strings.Contains(event, "ng2") {
+				nodeEventSeen = true
+			}
+			assert.NotRegexp(t, regexp.MustCompile("NotTriggerScaleUp"), event)
+		default:
+			eventsLeft = false
+		}
+	}
+	assert.True(t, nodeEventSeen)
 }
 
 func TestScaleUpNodeComingNoScale(t *testing.T) {
@@ -311,8 +326,8 @@ func TestScaleUpNoHelp(t *testing.T) {
 
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{})
 	clusterState.UpdateNodes([]*apiv1.Node{n1}, time.Now())
-	fakeRecorder := kube_util.CreateEventRecorder(fakeClient)
-	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, fakeRecorder, false)
+	fakeRecorder := kube_record.NewFakeRecorder(5)
+	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, kube_record.NewFakeRecorder(5), false)
 	context := &AutoscalingContext{
 		AutoscalingOptions: AutoscalingOptions{
 			EstimatorName: estimator.BinpackingEstimatorName,
@@ -330,4 +345,11 @@ func TestScaleUpNoHelp(t *testing.T) {
 	result, err := ScaleUp(context, []*apiv1.Pod{p3}, []*apiv1.Node{n1})
 	assert.NoError(t, err)
 	assert.False(t, result)
+	var event string
+	select {
+	case event = <-fakeRecorder.Events:
+	default:
+		t.Fatal("No Event recorded, expected NotTriggerScaleUp event")
+	}
+	assert.Regexp(t, regexp.MustCompile("NotTriggerScaleUp"), event)
 }
