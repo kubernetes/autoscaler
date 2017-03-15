@@ -45,7 +45,7 @@ func GetReadinessState(node *apiv1.Node) (isNodeReady bool, lastTransitionTime t
 		switch cond.Type {
 		case apiv1.NodeReady:
 			readyFound = true
-			if cond.Status == apiv1.ConditionFalse {
+			if cond.Status == apiv1.ConditionFalse || cond.Status == apiv1.ConditionUnknown {
 				canNodeBeReady = false
 			}
 			if lastTransitionTime.Before(cond.LastTransitionTime.Time) {
