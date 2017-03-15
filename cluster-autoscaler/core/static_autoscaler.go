@@ -102,6 +102,13 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) {
 	}
 
 	a.ClusterStateRegistry.UpdateNodes(allNodes, currentTime)
+	// Update status information when the loop is done (regardless of reason)
+	defer func() {
+		if autoscalingContext.WriteStatusConfigMap {
+			status := a.ClusterStateRegistry.GetStatus(time.Now())
+			utils.WriteStatusConfigMap(autoscalingContext.ClientSet, status.GetReadableString(), a.AutoscalingContext.LogRecorder)
+		}
+	}()
 	if !a.ClusterStateRegistry.IsClusterHealthy() {
 		glog.Warningf("Cluster is not ready for autoscaling: %v", err)
 		return
@@ -261,10 +268,6 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) {
 				}
 			}
 		}
-	}
-	if autoscalingContext.WriteStatusConfigMap {
-		status := a.ClusterStateRegistry.GetStatus(time.Now())
-		utils.WriteStatusConfigMap(autoscalingContext.ClientSet, status.GetReadableString(), a.AutoscalingContext.LogRecorder)
 	}
 }
 
