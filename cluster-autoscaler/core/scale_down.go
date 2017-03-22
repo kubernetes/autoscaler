@@ -96,6 +96,12 @@ func (sd *ScaleDown) GetCandidatesForScaleDown() []*apiv1.Node {
 	return sd.unneededNodesList
 }
 
+// CleanUpUnneededNodes clears the list of unneeded nodes.
+func (sd *ScaleDown) CleanUpUnneededNodes() {
+	sd.unneededNodesList = make([]*apiv1.Node, 0)
+	sd.unneededNodes = make(map[string]time.Time)
+}
+
 // UpdateUnneededNodes calculates which nodes are not needed, i.e. all pods can be scheduled somewhere else,
 // and updates unneededNodes map accordingly. It also computes information where pods can be rescheduled and
 // node utilization level. Timestamp is the current timestamp.
