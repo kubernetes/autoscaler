@@ -88,6 +88,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) {
 	}
 	if len(readyNodes) == 0 {
 		glog.Errorf("No ready nodes in the cluster")
+		scaleDown.CleanUpUnneededNodes()
 		return
 	}
 
@@ -98,6 +99,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) {
 	}
 	if len(allNodes) == 0 {
 		glog.Errorf("No nodes in the cluster")
+		scaleDown.CleanUpUnneededNodes()
 		return
 	}
 
@@ -111,6 +113,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) {
 	}()
 	if !a.ClusterStateRegistry.IsClusterHealthy() {
 		glog.Warningf("Cluster is not ready for autoscaling: %v", err)
+		scaleDown.CleanUpUnneededNodes()
 		return
 	}
 
