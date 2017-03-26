@@ -78,9 +78,9 @@ can be deleted when it is also not needed for more than 10 min. It may happen ju
 the previous node is fully deleted or after some longer time.
 
 What happens when a node is deleted? As mentioned above, all pods should be migrated elsewhere.
-For example if node A is deleted then its pods, consumig 400m CPU, are moved to, let's say, node
+For example if node A is deleted then its pods, consuming 400m CPU, are moved to, let's say, node
 X where is 450m CPU available. Ok, but what other nodes that also were eligible for deletion? Well,
-it depends. If node B also wanted to move its pods, consumig 350m CPU, to node X then it cannot 
+it depends. If node B also wanted to move its pods, consuming 350m CPU, to node X then it cannot 
 do it anymore as there is almost no capacity left. It has to them somewhere else, and it is not sure that
 if A had been deleted much earlier then B, during the last 10 min, would always have a place to
 move its pods. So the requirement of being unused for 10 min may not be valid anymore for B. 
