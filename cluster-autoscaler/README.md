@@ -7,6 +7,18 @@ Cluster Autoscaler is a tool that automatically adjusts the size of the Kubernet
 * some nodes in the cluster are so underutilized, for an extended period of time, 
 that they can be deleted and their pods will be easily placed on some other, existing nodes.  
 
+# Releases
+
+We strongly recommend using Cluster Autoscaler with version for which it was meant. We don't 
+do ANY cross version testing so if you put the newest Cluster Autoscaler on an old cluster
+there is a big chance that it won't work as expected.
+
+| Kubernets Version  | CA Version   |
+|--------|--------|
+| 1.6.X  | 0.5.X  |
+| 1.5.X  | 0.4.X  |
+| 1.4.X  | 0.3.X  |
+
 # Deployment
 
 Cluster Autoscaler runs on the Kubernetes master node (at least in the default setup on GCE and GKE). 
