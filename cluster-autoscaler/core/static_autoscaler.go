@@ -187,12 +187,16 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) {
 	// in the describe situation.
 	schedulablePodsPresent := false
 	if a.VerifyUnschedulablePods {
+
+		glog.V(4).Infof("Filtering out schedulables")
 		newUnschedulablePodsToHelp := FilterOutSchedulable(unschedulablePodsToHelp, readyNodes, allScheduled,
 			a.PredicateChecker)
 
 		if len(newUnschedulablePodsToHelp) != len(unschedulablePodsToHelp) {
 			glog.V(2).Info("Schedulable pods present")
 			schedulablePodsPresent = true
+		} else {
+			glog.V(4).Info("No schedulable pods")
 		}
 		unschedulablePodsToHelp = newUnschedulablePodsToHelp
 	}
