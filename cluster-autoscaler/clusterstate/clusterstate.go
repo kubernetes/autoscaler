@@ -261,7 +261,8 @@ func (csr *ClusterStateRegistry) IsNodeGroupScalingUp(nodeGroupName string) bool
 		return false
 	}
 
-	if acceptable.CurrentTarget <= readiness.Registered {
+	provisioned := readiness.Registered - readiness.NotStarted - readiness.LongNotStarted
+	if acceptable.CurrentTarget <= provisioned {
 		return false
 	}
 	// Let's check if there is an active scale up request
