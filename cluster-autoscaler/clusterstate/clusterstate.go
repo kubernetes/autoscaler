@@ -40,7 +40,7 @@ const (
 
 	// MaxStatusSettingDelayAfterCreation is the maximum time for node to set its initial status after the
 	// node is registered.
-	MaxStatusSettingDelayAfterCreation = time.Minute
+	MaxStatusSettingDelayAfterCreation = 2 * time.Minute
 )
 
 // ScaleUpRequest contains information about the requested node group scale up.
@@ -612,6 +612,16 @@ func isNodeNotStarted(node *apiv1.Node) bool {
 	for _, condition := range node.Status.Conditions {
 		if condition.Type == apiv1.NodeReady &&
 			condition.Status == apiv1.ConditionFalse &&
+			condition.LastTransitionTime.Time.Sub(node.CreationTimestamp.Time) < MaxStatusSettingDelayAfterCreation {
+			return true
+		}
+		if condition.Type == apiv1.NodeOutOfDisk &&
+			condition.Status == apiv1.ConditionTrue &&
+			condition.LastTransitionTime.Time.Sub(node.CreationTimestamp.Time) < MaxStatusSettingDelayAfterCreation {
+			return true
+		}
+		if condition.Type == apiv1.NodeNetworkUnavailable &&
+			condition.Status == apiv1.ConditionTrue &&
 			condition.LastTransitionTime.Time.Sub(node.CreationTimestamp.Time) < MaxStatusSettingDelayAfterCreation {
 			return true
 		}
