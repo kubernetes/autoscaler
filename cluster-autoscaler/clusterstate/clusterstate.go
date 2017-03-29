@@ -469,7 +469,7 @@ func (csr *ClusterStateRegistry) GetStatus(now time.Time) *api.ClusterAutoscaler
 
 		// Health.
 		nodeGroupStatus.Conditions = append(nodeGroupStatus.Conditions, buildHealthStatusNodeGroup(
-			csr.IsNodeGroupHealthy(nodeGroup.Id()), readiness, acceptable))
+			csr.IsNodeGroupHealthy(nodeGroup.Id()), readiness, acceptable, nodeGroup.MinSize(), nodeGroup.MaxSize()))
 
 		// Scale up.
 		nodeGroupStatus.Conditions = append(nodeGroupStatus.Conditions, buildScaleUpStatusNodeGroup(
@@ -493,18 +493,18 @@ func (csr *ClusterStateRegistry) GetStatus(now time.Time) *api.ClusterAutoscaler
 	return result
 }
 
-func buildHealthStatusNodeGroup(isReady bool, readiness Readiness, acceptable AcceptableRange) api.ClusterAutoscalerCondition {
+func buildHealthStatusNodeGroup(isReady bool, readiness Readiness, acceptable AcceptableRange, minSize, maxSize int) api.ClusterAutoscalerCondition {
 	condition := api.ClusterAutoscalerCondition{
 		Type: api.ClusterAutoscalerHealth,
-		Message: fmt.Sprintf("ready=%d unready=%d notStarted=%d longNotStarted=%d registered=%d cloudProviderTarget=%d (min=%d, max=%d)",
+		Message: fmt.Sprintf("ready=%d unready=%d notStarted=%d longNotStarted=%d registered=%d cloudProviderTarget=%d (minSize=%d, maxSize=%d)",
 			readiness.Ready,
 			readiness.Unready,
 			readiness.NotStarted,
 			readiness.LongNotStarted,
 			readiness.Registered,
 			acceptable.CurrentTarget,
-			acceptable.MinNodes,
-			acceptable.MaxNodes),
+			minSize,
+			maxSize),
 		LastProbeTime: metav1.Time{Time: readiness.Time},
 	}
 	if isReady {
