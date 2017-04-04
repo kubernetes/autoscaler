@@ -19,6 +19,25 @@ there is a big chance that it won't work as expected.
 | 1.5.X  | 0.4.X  |
 | 1.4.X  | 0.3.X  |
 
+# Notable changes:
+
+CA Version 0.5:
+* CA continues to operate even if some nodes are unready and is able to scale-down them.
+* CA exports its status to kube-system/cluster-autoscaler-status config map.
+* CA respects PodDisruptionBudgets.
+* Azure support.
+* Alpha support for dynamic config changes.
+* Multiple expanders to decide which node group to scale up.
+
+CA Version 0.4:
+* Bulk empty node deletions.
+* Better scale-up estimator based on binpacking.
+* Improved logging.
+
+CA Version 0.3:
+* AWS support.
+* Performance improvements around scale down.
+
 # Deployment
 
 Cluster Autoscaler runs on the Kubernetes master node (at least in the default setup on GCE and GKE). 
@@ -32,13 +51,14 @@ Right now it is possible to run Cluster Autoscaler on:
 * GCE http://kubernetes.io/docs/admin/cluster-management/#cluster-autoscaling
 * GKE https://cloud.google.com/container-engine/docs/cluster-autoscaler
 * AWS https://github.com/kubernetes/contrib/blob/master/cluster-autoscaler/cloudprovider/aws/README.md
+* Azure
 
 # Scale Up
 
 Scale up creates a watch on the api server looking for all pods. Every 10 seconds (configurable)
 it checks for any unschedulable pods. A pod is unschedulable when the Kubernetes scheduler is unable
-to find a node that can accomodate the pod. For example a pod can request more CPU that is 
-available on any of the cluster nodes. Unschedulable pods are reconginzed by their PodCondition. 
+to find a node that can accommodate the pod. For example a pod can request more CPU that is 
+available on any of the cluster nodes. Unschedulable pods are recognized by their PodCondition. 
 Whenever a kubernetes scheduler fails to find a place to run a pod it sets "schedulable" 
 PodCondition to false and reason to "unschedulable".  If there are any items on the unschedulable 
 lists Cluster Autoscaler tries to find a new place to run them. 
@@ -51,7 +71,7 @@ will have all pods run from the node manifest or daemon sets).
 
 Based on the above assumption Cluster Autoscaler creates template nodes for each of the 
 node groups and checks if any of the unschedulable pods would fit to a brand new node, if created.
-While it may sound similar to what the real scheduler does it is currently quite simplified and 
+While it may sound similar to what the real scheduler does, it is currently quite simplified and 
 may require multiple iterations before all of the pods are eventually scheduled.
 If there are multiple node groups that, if increased, would help with getting some pods running, 
 different strategies can be selected for choosing which node group is increased. The default is
@@ -75,7 +95,7 @@ under control of a deployment, replica set, replication controller or job would 
 if the node is deleted so they make a node needed, even if its utilization is low. While 
 checking this condition the new locations of all pods are memorized. With that Cluster Autoscaler
 knows where each pod can be moved and which nodes depend on which other nodes in terms of 
-pod migration. Of course, it may happen that eventaully the scheduler will place the pods 
+pod migration. Of course, it may happen that eventually the scheduler will place the pods 
 somewhere else. 
 
 * There are no kube-system pods on the node (except these that run on all nodes by default like 
@@ -94,13 +114,13 @@ For example if node A is deleted then its pods, consuming 400m CPU, are moved to
 X where is 450m CPU available. Ok, but what other nodes that also were eligible for deletion? Well,
 it depends. If node B also wanted to move its pods, consuming 350m CPU, to node X then it cannot 
 do it anymore as there is almost no capacity left. It has to them somewhere else, and it is not sure that
-if A had been deleted much earlier then B, during the last 10 min, would always have a place to
+if A had been deleted much earlier than B, during the last 10 min, would always have a place to
 move its pods. So the requirement of being unused for 10 min may not be valid anymore for B. 
 But if another node C, in case of deletion, can move its pods to node Y then it 
-may still do it, because noone touched Y. So C can be deleted immediatelly after A. And B not. 
+may still do it, because noone touched Y. So C can be deleted immediately after A. And B not. 
 
-Cluster Autoscaler does all of this acounting based on the simulations and memorized new pod location.
-They may not always be precise (pods can land elswehere) but it seems to be a good heuristic so far.
+Cluster Autoscaler does all of this accounting based on the simulations and memorized new pod location.
+They may not always be precise (pods can land elsewhere) but it seems to be a good heuristic so far.
 
 
 # When scaling is executed
@@ -110,3 +130,13 @@ measured on the cloud provider side, matches the number of nodes in Kubernetes t
 node group. If this condition is not met then all scaling operations are postponed until it is 
 fulfilled. 
 Also, any scale down will happen only after at least 10 min after the last scale up.
+
+# Unready nodes
+
+From 0.5 CA continues the work even if some (up to 33% or not greater than 3, configurable via flag) percentage of nodes
+is unavailable. Once there is more unready nodes in the cluster CA pauses all operations until the situation
+improves. If there is less unready nodes but they are concentrated in a particular node group
+then this node group may be excluded from scale-ups. 
+Prior to 0.5 CA stopped all operations when a single node became unready.
+
+
