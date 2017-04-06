@@ -20,6 +20,16 @@ Cluster Autoscaler decreases the size of the cluster when some nodes are consist
 * Pods that are not backed by a controller objects (so not created by deployment, replica set, job, stateful set etc).
 * Pods with local storage.
 
+### How Horizontal Pod Autoscaler works with Cluster Autoscaler?
+
+Horizontal Pod Autoscaler changes the number of deployment's (or replicaset) replicas based on the current 
+CPU load. 
+If the load increases HPA will create new replicas, for which ther may or may not be enough 
+space in the cluster. If there is no enough resources then CA will try to bring up some nodes so that the 
+HPA-created pods have a place to run. 
+If the load decreases HPA will stop some of the replicas. As the result some nodes may start to be 
+underutilized or completely empty and then CA will delete such unneded nodes.
+
 ****************
 
 # Internals 
@@ -116,6 +126,23 @@ is unavailable. Once there is more unready nodes in the cluster CA pauses all op
 improves. If there is less unready nodes but they are concentrated in a particular node group
 then this node group may be excluded from scale-ups. 
 Prior to 0.5 CA stopped all operations when a single node became unready.
+
+### How fast is Cluster Autoscaler?
+
+Scale up (if it is reasonable) is executed up to 10 seconds after some pod is marked as unschedulable. 
+Scale down is executed (by default) 10 min (or later) after a node becomes unneeded. 
+
+### How fast is HPA when combined with CA?
+
+By default, Pod CPU usage is scraped by kubelets every 10 sec, CPU usage is obtained from kubelets by Heapster every 1 min. 
+HPA checks cpu load metrics in Heapster every 30 sec, and CA looks for unschedulable pods every 10 sec. So the max reaction 
+time, measured from the time CPU spikes in the pods to the time CA asks the cloud provider for a new node is 2 min. On average 
+it should be around 1 min. 
+The amount of time the cloud provider needs to start a new node, boot it up is measured in minutes. On GCE/GKE it is around 1.5-2 min
+however this depends on the data center location and machine type. 
+Then it may take up to 30 sec to register the node in the Kubernetes master and finalize all of the necessary network settings. 
+
+All in all the total reaction time is around 4 min.
 
 ************
 
