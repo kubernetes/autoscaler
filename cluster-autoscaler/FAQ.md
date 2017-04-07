@@ -36,6 +36,13 @@ underutilized or completely empty and then CA will delete such unneded nodes.
 * Specify requests for your pods.
 * Use PodDisruptionBudgets to prevent pods from being deleted (if needed).
 * Check if your cloud provider quota is big enough before specifying min/max settings for your node pools.
+* Do not run any additional node group autoscalers (especially those from your cloud provider).
+
+### Is Cluster Autoscaler compatible with CPU-based node autoscalers. 
+
+NO. CPU-based (or any metric-based) cluster/node group autoscalers, like
+[GCE Instance Group Autoscaler](https://cloud.google.com/compute/docs/autoscaler/), are NOT compatible with CA. 
+They are also not particularly suited to use with Kubernetes in general.
 
 ****************
 
