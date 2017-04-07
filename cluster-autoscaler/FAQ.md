@@ -30,9 +30,20 @@ HPA-created pods have a place to run.
 If the load decreases HPA will stop some of the replicas. As the result some nodes may start to be 
 underutilized or completely empty and then CA will delete such unneded nodes.
 
+### What are the key best practices for running Cluster Autoscaler?
+
+* Do not modify the nodes. All nodes within the same node group should have the same capacity, labels and system pods running on them.
+* Specify requests for your pods.
+* Use PodDisruptionBudgets to prevent pods from being deleted (if needed).
+* Check if your cloud provider quota is big enough before specifying min/max settings for your node pools.
+
 ****************
 
 # Internals 
+
+### Are all of the mentioned heuristics and timings final?
+
+No. We reserve the right to update them in the future if needed. 
 
 ### How does scale up work?
 
@@ -105,7 +116,7 @@ They may not always be precise (pods can land elsewhere) but it seems to be a go
 
 ### Does CA work with PodDisruptionBudget in scale down?
 
-From 0.5 CA respects PDB. Before starting to delete a node CA makes sure that there is at least some non-zero PodDisruptionBudget. Then it deletes all pods from a node through the pod eviction api, retrying, if needed, for up to 2 min. During that time other CA activities are stopped. If one of the evictions fails the node is saved and it is not deleted, but another attempt to delete it may be conducted in the near future.
+From 0.5 CA (K8S 1.6) respects PDB. Before starting to delete a node CA makes sure that there is at least some non-zero PodDisruptionBudget. Then it deletes all pods from a node through the pod eviction api, retrying, if needed, for up to 2 min. During that time other CA activities are stopped. If one of the evictions fails the node is saved and it is not deleted, but another attempt to delete it may be conducted in the near future.
 
 ### Does CA respect GracefulTermination in scale down?
 
@@ -121,7 +132,7 @@ Also, any scale down will happen only after at least 10 min after the last scale
 
 ### How does CA deal with unready nodes in version >=0.5.0 ?
 
-From 0.5 CA continues the work even if some (up to 33% or not greater than 3, configurable via flag) percentage of nodes
+From 0.5 CA (K8S 1.6) continues the work even if some (up to 33% or not greater than 3, configurable via flag) percentage of nodes
 is unavailable. Once there is more unready nodes in the cluster CA pauses all operations until the situation
 improves. If there is less unready nodes but they are concentrated in a particular node group
 then this node group may be excluded from scale-ups. 
@@ -147,6 +158,20 @@ All in all the total reaction time is around 4 min.
 ************
 
 # Troubleshooting:
+
+### I have a couple of nodes with low utilization, but they are not scaled down. Why?
+
+CA doesn't remove nodes if they are running system pods, pods without a controller or pods with local storage. 
+Also it won't remove a node which has pods that cannot be run elsewhere due to limited resources. Another possibility
+is that the corresponding node group already has the minimum size. Finally, CA doesn't scale down if there was a scale up
+in the last 10 min.
+
+### I have a couple of pending pods, but there was no scale up? 
+
+CA doesn't scale up the cluster when expansion of any of the node groups (for which it is configured) will not 
+make the pods schedule. One of the possible reasons is that the pod has too big requests (ex. 100 cpus) or too specific
+requests (like node selector) that cannot be fulfilled with the current nodes. The other reason is that all of the 
+relevant node groups are at their maximum size.
 
 ### CA doesn’t work but it used to work yesterday. Why?
 
@@ -177,3 +202,9 @@ There are three options:
     * on pods (particularly those that cannot be scheduled).
     * on nodes.
     * on kube-system/cluster-autoscaler-status config map.
+
+### What happens in scale up when I have no more quota in the cloud provider?
+
+Scale up will periodically try to increase the cluster and, once failed, move back to the previous size until the quota arrives or
+the scale-up-triggering pods are removed.
+
