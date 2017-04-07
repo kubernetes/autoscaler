@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/google_containers/ubuntu-slim:0.1
+FROM gcr.io/google-containers/ubuntu-slim:0.8
 MAINTAINER Marcin Wielgus "mwielgus@google.com"
 
 ADD cluster-autoscaler cluster-autoscaler
