@@ -393,7 +393,7 @@ func drainNode(node *apiv1.Node, pods []*apiv1.Pod, client kube_client.Interface
 	drainSuccessful := false
 	toEvict := len(pods)
 	if err := deletetaint.MarkToBeDeleted(node, client); err != nil {
-		recorder.Eventf(node, apiv1.EventTypeWarning, "ScaleDown", "failed to mark the node as toBeDeleted/unschedulable: %v", err)
+		recorder.Eventf(node, apiv1.EventTypeWarning, "ScaleDownFailed", "failed to mark the node as toBeDeleted/unschedulable: %v", err)
 		return err
 	}
 
