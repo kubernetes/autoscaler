@@ -210,6 +210,46 @@ There are three options:
     * on nodes.
     * on kube-system/cluster-autoscaler-status config map.
 
+### What events are emitted by CA?
+
+Whenever Cluster Autoscaler adds or removes nodes it will create events
+describing this action. It will also create events for some serious
+errors. Below is the non-exhaustive list of events emitted by CA (new events may
+be added in future):
+
+* on kube-system/cluster-autoscaler-status config map:
+    * ScaledUpGroup - CA increased the size of node group, gives
+      both old and new group size.
+    * ScaleDownEmpty - CA removed a node with no pods running on it (except
+      system pods found on all nodes).
+    * ScaleDown - CA decided to remove a node with some pods running on it.
+      Event includes names of all pods that will be rescheduled to drain the
+      node.
+* on nodes:
+    * ScaleDown - CA is scaling down the node. Multiple ScaleDown events may be
+      recorded on the node, describing status of scale down operation.
+    * ScaleDownFailed - CA tried to remove the node, but failed. The event
+      includes error message.
+* on pods:
+    * TriggeredScaleUp - CA decided to scale up cluster to make place for this
+      pod.
+    * NotTriggerScaleUp - CA couldn't find node group that can be scaled up to
+      make this pod schedulable.
+    * ScaleDown - CA will try to evict this pod as part of draining the node.
+
+Example event:
+```sh
+$ kubectl describe pods memory-reservation-73rl0 --namespace e2e-tests-autoscaling-kncnx
+Name:   memory-reservation-73rl0
+
+...
+
+Events:
+  FirstSeen	LastSeen	Count	From			SubObjectPath	Type		Reason			Message
+  ---------	--------	-----	----			-------------	--------	------			-------
+  1m		1m		1	cluster-autoscaler			Normal		TriggeredScaleUp	pod triggered scale-up, group: https://content.googleapis.com/compute/v1/projects/maciekpytel-dev-playground/zones/us-central1-b/instanceGroups/e2e-test-maciekpytel-minion-group, sizes (current/new): 3/4
+```
+
 ### What happens in scale up when I have no more quota in the cloud provider?
 
 Scale up will periodically try to increase the cluster and, once failed, move back to the previous size until the quota arrives or
