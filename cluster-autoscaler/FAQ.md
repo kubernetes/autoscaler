@@ -22,20 +22,20 @@ Cluster Autoscaler decreases the size of the cluster when some nodes are consist
 
 ### How Horizontal Pod Autoscaler works with Cluster Autoscaler?
 
-Horizontal Pod Autoscaler changes the number of deployment's (or replicaset) replicas based on the current
+Horizontal Pod Autoscaler changes the deployment's or replicaset's number of replicas based on the current
 CPU load.
-If the load increases HPA will create new replicas, for which ther may or may not be enough
+If the load increases HPA will create new replicas, for which there may or may not be enough
 space in the cluster. If there is no enough resources then CA will try to bring up some nodes so that the
 HPA-created pods have a place to run.
-If the load decreases HPA will stop some of the replicas. As the result some nodes may start to be
-underutilized or completely empty and then CA will delete such unneded nodes.
+If the load decreases, HPA will stop some of the replicas. As a result, some nodes may start to be
+underutilized or completely empty and then CA will delete such unneeded nodes.
 
 ### What are the key best practices for running Cluster Autoscaler?
 
 * Do not modify the nodes. All nodes within the same node group should have the same capacity, labels and system pods running on them.
 * Specify requests for your pods.
 * Use PodDisruptionBudgets to prevent pods from being deleted (if needed).
-* Check if your cloud provider quota is big enough before specifying min/max settings for your node pools.
+* Check if your cloud provider's quota is big enough before specifying min/max settings for your node pools.
 * Do not run any additional node group autoscalers (especially those from your cloud provider).
 
 ### Is Cluster Autoscaler compatible with CPU-based node autoscalers.
@@ -54,8 +54,8 @@ No. We reserve the right to update them in the future if needed.
 
 ### How does scale up work?
 
-Scale up creates a watch on the api server looking for all pods. Every 10 seconds (configurable)
-it checks for any unschedulable pods. A pod is unschedulable when the Kubernetes scheduler is unable
+Scale up creates a watch on the api server looking for all pods. It checks for any unschedulable
+pods every 10 seconds (configurable). A pod is unschedulable when the Kubernetes scheduler is unable
 to find a node that can accommodate the pod. For example a pod can request more CPU that is
 available on any of the cluster nodes. Unschedulable pods are recognized by their PodCondition.
 Whenever a kubernetes scheduler fails to find a place to run a pod it sets "schedulable"
@@ -116,7 +116,8 @@ do it anymore as there is almost no capacity left. It has to them somewhere else
 if A had been deleted much earlier than B, during the last 10 min, would always have a place to
 move its pods. So the requirement of being unused for 10 min may not be valid anymore for B.
 But if another node C, in case of deletion, can move its pods to node Y then it
-may still do it, because noone touched Y. So C can be deleted immediately after A. And B not.
+may still do it, because no one touched Y. So C can be deleted immediately after A, but B may not be
+deleted immediately.
 
 Cluster Autoscaler does all of this accounting based on the simulations and memorized new pod location.
 They may not always be precise (pods can land elsewhere) but it seems to be a good heuristic so far.
@@ -140,10 +141,10 @@ Also, any scale down will happen only after at least 10 min after the last scale
 ### How does CA deal with unready nodes in version >=0.5.0 ?
 
 From 0.5 CA (K8S 1.6) continues the work even if some (up to 33% or not greater than 3, configurable via flag) percentage of nodes
-is unavailable. Once there is more unready nodes in the cluster CA pauses all operations until the situation
+is unavailable. Once there are more unready nodes in the cluster, CA pauses all operations until the situation
 improves. If there is less unready nodes but they are concentrated in a particular node group
 then this node group may be excluded from scale-ups.
-Prior to 0.5 CA stopped all operations when a single node became unready.
+Prior to 0.5, CA stopped all operations when a single node became unready.
 
 ### How fast is Cluster Autoscaler?
 
@@ -176,7 +177,7 @@ in the last 10 min.
 ### I have a couple of pending pods, but there was no scale up?
 
 CA doesn't scale up the cluster when expansion of any of the node groups (for which it is configured) will not
-make the pods schedule. One of the possible reasons is that the pod has too big requests (ex. 100 cpus) or too specific
+make the pods schedulable. One of the possible reasons is that the pod has too big requests (ex. 100 cpus) or too specific
 requests (like node selector) that cannot be fulfilled with the current nodes. The other reason is that all of the
 relevant node groups are at their maximum size.
 
