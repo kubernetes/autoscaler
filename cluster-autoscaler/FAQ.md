@@ -38,9 +38,23 @@ underutilized or completely empty and then CA will delete such unneeded nodes.
 * Check if your cloud provider's quota is big enough before specifying min/max settings for your node pools.
 * Do not run any additional node group autoscalers (especially those from your cloud provider).
 
-### Is Cluster Autoscaler compatible with CPU-based node autoscalers.
+### Should I use CPU-usage-based node autoscaler with Kubernetes.
 
-NO. CPU-based (or any metric-based) cluster/node group autoscalers, like
+No.
+
+### How Cluster Autoscaler is different from CPU-usage-based node autoscalers?
+
+Cluster Autoscaler makes sure that all of the pods in a cluster have a place to run, no matter if
+there is any load in the cluster or not. Moreover it tries to ensure that there are no unneeded nodes
+in the cluster.
+
+CPU-usage-based (or any metric-based) cluster/node group autoscalers don't care about pods when scaling up 
+and down. As a result they may add a node, that will not have any pods, or remove a node, that 
+has some system-critical pods on it, like kube-dns. Usage of these autoscalers with Kubernetes is discouraged.
+
+### Is Cluster Autoscaler compatible with CPU-usage-based node autoscalers?
+
+No. CPU-based (or any metric-based) cluster/node group autoscalers, like
 [GCE Instance Group Autoscaler](https://cloud.google.com/compute/docs/autoscaler/), are NOT compatible with CA.
 They are also not particularly suited to use with Kubernetes in general.
 
