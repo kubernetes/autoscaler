@@ -109,6 +109,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) {
 		scaleDown.CleanUpUnneededNodes()
 		return
 	}
+	metrics.UpdateClusterState(a.ClusterStateRegistry)
 
 	// Update status information when the loop is done (regardless of reason)
 	defer func() {
@@ -164,6 +165,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) {
 		glog.Errorf("Failed to list unscheduled pods: %v", err)
 		return
 	}
+	metrics.UpdateUnschedulablePodsCount(len(allUnschedulablePods))
 
 	allScheduled, err := scheduledPodLister.List()
 	if err != nil {

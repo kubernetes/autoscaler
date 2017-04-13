@@ -493,6 +493,11 @@ func (csr *ClusterStateRegistry) GetStatus(now time.Time) *api.ClusterAutoscaler
 	return result
 }
 
+// GetClusterReadiness returns current readiness stats of cluster
+func (csr *ClusterStateRegistry) GetClusterReadiness() Readiness {
+	return csr.totalReadiness
+}
+
 func buildHealthStatusNodeGroup(isReady bool, readiness Readiness, acceptable AcceptableRange, minSize, maxSize int) api.ClusterAutoscalerCondition {
 	condition := api.ClusterAutoscalerCondition{
 		Type: api.ClusterAutoscalerHealth,
