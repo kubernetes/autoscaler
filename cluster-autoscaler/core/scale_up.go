@@ -23,6 +23,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
+	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 
@@ -178,6 +179,7 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 				Time:            time.Now(),
 				ExpectedAddTime: time.Now().Add(context.MaxNodeProvisionTime),
 			})
+		metrics.RegisterScaleUp(increase)
 		context.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaledUpGroup",
 			"Scale-up: group %s size set to %d", bestOption.NodeGroup.Id(), newSize)
 
