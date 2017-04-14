@@ -291,6 +291,11 @@ the scale-up-triggering pods are removed.
     go run hack/e2e.go -- -v --test --test_args="--ginkgo.focus=\[Feature:ClusterSizeAutoscaling"
     ```
     It will take >1 hour to run the full suite. You may want to redirect output to file, as there will be plenty of it.
+    
+    Test runner may be missing default credentials. On GCE they can be provided with:
+    ```sh
+    gcloud beta auth application-default login
+    ```
 
 A few tests are specific to GKE and will be skipped if you're running on a
 different provider.
