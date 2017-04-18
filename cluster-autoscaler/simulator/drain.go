@@ -22,7 +22,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/contrib/cluster-autoscaler/utils/drain"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	api "k8s.io/kubernetes/pkg/api"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	policyv1 "k8s.io/kubernetes/pkg/apis/policy/v1beta1"

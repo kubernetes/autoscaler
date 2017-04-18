@@ -19,7 +19,7 @@ package simulator
 import (
 	"fmt"
 
-	kube_util "k8s.io/contrib/cluster-autoscaler/utils/kubernetes"
+	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	informers "k8s.io/kubernetes/pkg/client/informers/informers_generated/externalversions"

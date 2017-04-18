@@ -20,7 +20,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"k8s.io/contrib/cluster-autoscaler/expander"
+	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 )
 

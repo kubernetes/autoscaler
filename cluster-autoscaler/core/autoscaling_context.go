@@ -20,13 +20,13 @@ import (
 	"time"
 
 	kube_record "k8s.io/client-go/tools/record"
-	"k8s.io/contrib/cluster-autoscaler/cloudprovider"
-	"k8s.io/contrib/cluster-autoscaler/cloudprovider/builder"
-	"k8s.io/contrib/cluster-autoscaler/clusterstate"
-	"k8s.io/contrib/cluster-autoscaler/clusterstate/utils"
-	"k8s.io/contrib/cluster-autoscaler/expander"
-	"k8s.io/contrib/cluster-autoscaler/expander/factory"
-	"k8s.io/contrib/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
+	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
+	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
+	"k8s.io/autoscaler/cluster-autoscaler/expander"
+	"k8s.io/autoscaler/cluster-autoscaler/expander/factory"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 )
 

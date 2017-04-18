@@ -20,7 +20,7 @@ import (
 	"testing"
 	"time"
 
-	. "k8s.io/contrib/cluster-autoscaler/utils/test"
+	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
