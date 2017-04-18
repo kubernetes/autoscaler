@@ -19,7 +19,7 @@ package random
 import (
 	"testing"
 
-	"k8s.io/contrib/cluster-autoscaler/expander"
+	"k8s.io/autoscaler/cluster-autoscaler/expander"
 
 	"github.com/stretchr/testify/assert"
 )

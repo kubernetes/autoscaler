@@ -21,9 +21,9 @@ import (
 	"reflect"
 	"time"
 
-	"k8s.io/contrib/cluster-autoscaler/cloudprovider"
-	"k8s.io/contrib/cluster-autoscaler/clusterstate"
-	"k8s.io/contrib/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
