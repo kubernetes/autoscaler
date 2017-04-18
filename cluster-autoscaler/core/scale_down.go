@@ -22,11 +22,11 @@ import (
 	"strings"
 	"time"
 
-	"k8s.io/contrib/cluster-autoscaler/cloudprovider"
-	"k8s.io/contrib/cluster-autoscaler/clusterstate"
-	"k8s.io/contrib/cluster-autoscaler/simulator"
-	"k8s.io/contrib/cluster-autoscaler/utils/deletetaint"
-	kube_util "k8s.io/contrib/cluster-autoscaler/utils/kubernetes"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
+	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

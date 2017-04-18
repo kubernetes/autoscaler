@@ -17,10 +17,10 @@ limitations under the License.
 package factory
 
 import (
-	"k8s.io/contrib/cluster-autoscaler/expander"
-	"k8s.io/contrib/cluster-autoscaler/expander/mostpods"
-	"k8s.io/contrib/cluster-autoscaler/expander/random"
-	"k8s.io/contrib/cluster-autoscaler/expander/waste"
+	"k8s.io/autoscaler/cluster-autoscaler/expander"
+	"k8s.io/autoscaler/cluster-autoscaler/expander/mostpods"
+	"k8s.io/autoscaler/cluster-autoscaler/expander/random"
+	"k8s.io/autoscaler/cluster-autoscaler/expander/waste"
 )
 
 // ExpanderStrategyFromString creates an expander.Strategy according to its name

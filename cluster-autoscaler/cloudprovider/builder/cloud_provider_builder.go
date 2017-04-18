@@ -18,10 +18,10 @@ package builder
 
 import (
 	"github.com/golang/glog"
-	"k8s.io/contrib/cluster-autoscaler/cloudprovider"
-	"k8s.io/contrib/cluster-autoscaler/cloudprovider/aws"
-	"k8s.io/contrib/cluster-autoscaler/cloudprovider/azure"
-	"k8s.io/contrib/cluster-autoscaler/cloudprovider/gce"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce"
 	"os"
 )
 

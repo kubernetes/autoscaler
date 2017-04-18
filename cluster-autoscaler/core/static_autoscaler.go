@@ -19,15 +19,15 @@ package core
 import (
 	"time"
 
-	"k8s.io/contrib/cluster-autoscaler/clusterstate/utils"
-	"k8s.io/contrib/cluster-autoscaler/metrics"
-	kube_util "k8s.io/contrib/cluster-autoscaler/utils/kubernetes"
+	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
+	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 
 	kube_record "k8s.io/client-go/tools/record"
 	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 
 	"github.com/golang/glog"
-	"k8s.io/contrib/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 )
 
 // StaticAutoscaler is an autoscaler which has all the core functionality of a CA but without the reconfiguration feature
