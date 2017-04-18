@@ -1,0 +1,21 @@
+sudo: required
+
+services:
+  - docker
+
+language: go
+
+matrix:
+  include:
+    - go: 1.7
+
+install:
+  - mkdir -p $HOME/gopath/src/k8s.io
+  - mv $TRAVIS_BUILD_DIR $HOME/gopath/src/k8s.io/autoscaler
+  - hack/install-verify-tools.sh
+  - export PATH=$GOPATH/bin:$PATH
+  - hack/for-go-proj.sh install
+
+script:
+  - hack/verify-all.sh -v
+  - hack/for-go-proj.sh test
