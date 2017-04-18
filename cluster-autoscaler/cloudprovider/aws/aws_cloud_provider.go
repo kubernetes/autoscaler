@@ -21,8 +21,8 @@ import (
 	"regexp"
 	"strings"
 
-	"k8s.io/contrib/cluster-autoscaler/cloudprovider"
-	"k8s.io/contrib/cluster-autoscaler/config/dynamic"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 )
 

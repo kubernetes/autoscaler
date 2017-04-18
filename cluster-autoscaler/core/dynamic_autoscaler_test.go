@@ -18,7 +18,7 @@ package core
 
 import (
 	"github.com/stretchr/testify/mock"
-	"k8s.io/contrib/cluster-autoscaler/config/dynamic"
+	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"testing"
 	"time"
 )

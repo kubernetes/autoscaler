@@ -20,7 +20,7 @@ import (
 	"sort"
 
 	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/contrib/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 )
