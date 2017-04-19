@@ -17,6 +17,7 @@ limitations under the License.
 package aws
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"strings"
@@ -27,15 +28,62 @@ import (
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 )
 
-// AwsCloudProvider implements CloudProvider interface.
-type AwsCloudProvider struct {
+// awsCloudProvider implements CloudProvider interface.
+type awsCloudProvider struct {
 	awsManager *AwsManager
 	asgs       []*Asg
 }
 
 // BuildAwsCloudProvider builds CloudProvider implementation for AWS.
-func BuildAwsCloudProvider(awsManager *AwsManager, specs []string) (*AwsCloudProvider, error) {
-	aws := &AwsCloudProvider{
+func BuildAwsCloudProvider(awsManager *AwsManager, discoveryOpts cloudprovider.NodeGroupDiscoveryOptions) (cloudprovider.CloudProvider, error) {
+	if err := discoveryOpts.Validate(); err != nil {
+		return nil, fmt.Errorf("Failed to build an aws cloud provider: %v", err)
+	}
+	if discoveryOpts.StaticDiscoverySpecified() {
+		return buildStaticallyDiscoveringProvider(awsManager, discoveryOpts.NodeGroupSpecs)
+	}
+	if discoveryOpts.AutoDiscoverySpecified() {
+		return buildAutoDiscoveringProvider(awsManager, discoveryOpts.NodeGroupAutoDiscoverySpec)
+	}
+	return nil, errors.New("Failed to build an aws cloud provider: Either node group specs or node group auto discovery spec must be specified")
+}
+
+func buildAutoDiscoveringProvider(awsManager *AwsManager, spec string) (*awsCloudProvider, error) {
+	tokens := strings.Split(spec, ":")
+	if len(tokens) != 2 {
+		return nil, fmt.Errorf("Invalid node group auto discovery spec specified via --node-group-auto-discovery: %s", spec)
+	}
+	discoverer := tokens[0]
+	if discoverer != "asg" {
+		return nil, fmt.Errorf("Unsupported discoverer specified: %s", discoverer)
+	}
+	param := tokens[1]
+	paramTokens := strings.Split(param, "=")
+	parameterKey := paramTokens[0]
+	if parameterKey != "tag" {
+		return nil, fmt.Errorf("Unsupported parameter key \"%s\" is specified for discoverer \"%s\". The only supported key is \"tag\"", parameterKey, discoverer)
+	}
+	tag := paramTokens[1]
+	if tag == "" {
+		return nil, errors.New("Invalid ASG tag for auto discovery specified: ASG tag must not be empty")
+	}
+	asgs, err := awsManager.getAutoscalingGroupsByTag(tag)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to get ASGs: %v", err)
+	}
+
+	aws := &awsCloudProvider{
+		awsManager: awsManager,
+		asgs:       make([]*Asg, 0),
+	}
+	for _, asg := range asgs {
+		aws.addAsg(buildAsg(aws.awsManager, int(*asg.MinSize), int(*asg.MaxSize), *asg.AutoScalingGroupName))
+	}
+	return aws, nil
+}
+
+func buildStaticallyDiscoveringProvider(awsManager *AwsManager, specs []string) (*awsCloudProvider, error) {
+	aws := &awsCloudProvider{
 		awsManager: awsManager,
 		asgs:       make([]*Asg, 0),
 	}
@@ -49,23 +97,28 @@ func BuildAwsCloudProvider(awsManager *AwsManager, specs []string) (*AwsCloudPro
 
 // addNodeGroup adds node group defined in string spec. Format:
 // minNodes:maxNodes:asgName
-func (aws *AwsCloudProvider) addNodeGroup(spec string) error {
-	asg, err := buildAsg(spec, aws.awsManager)
+func (aws *awsCloudProvider) addNodeGroup(spec string) error {
+	asg, err := buildAsgFromSpec(spec, aws.awsManager)
 	if err != nil {
 		return err
 	}
-	aws.asgs = append(aws.asgs, asg)
-	aws.awsManager.RegisterAsg(asg)
+	aws.addAsg(asg)
 	return nil
 }
 
+// addAsg adds and registers an asg to this cloud provider
+func (aws *awsCloudProvider) addAsg(asg *Asg) {
+	aws.asgs = append(aws.asgs, asg)
+	aws.awsManager.RegisterAsg(asg)
+}
+
 // Name returns name of the cloud provider.
-func (aws *AwsCloudProvider) Name() string {
+func (aws *awsCloudProvider) Name() string {
 	return "aws"
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
-func (aws *AwsCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
+func (aws *awsCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 	result := make([]cloudprovider.NodeGroup, 0, len(aws.asgs))
 	for _, asg := range aws.asgs {
 		result = append(result, asg)
@@ -74,7 +127,7 @@ func (aws *AwsCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 }
 
 // NodeGroupForNode returns the node group for the given node.
-func (aws *AwsCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+func (aws *awsCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	ref, err := AwsRefFromProviderId(node.Spec.ProviderID)
 	if err != nil {
 		return nil, err
@@ -233,21 +286,25 @@ func (asg *Asg) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
-func buildAsg(value string, awsManager *AwsManager) (*Asg, error) {
+func buildAsgFromSpec(value string, awsManager *AwsManager) (*Asg, error) {
 	spec, err := dynamic.SpecFromString(value)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse node group spec: %v", err)
 	}
 
-	asg := Asg{
+	asg := buildAsg(awsManager, spec.MinSize, spec.MaxSize, spec.Name)
+
+	return asg, nil
+}
+
+func buildAsg(awsManager *AwsManager, minSize int, maxSize int, name string) *Asg {
+	return &Asg{
 		awsManager: awsManager,
-		minSize:    spec.MinSize,
-		maxSize:    spec.MaxSize,
+		minSize:    minSize,
+		maxSize:    maxSize,
 		AwsRef: AwsRef{
-			Name: spec.Name,
+			Name: name,
 		},
 	}
-
-	return &asg, nil
 }
