@@ -21,6 +21,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	policyv1 "k8s.io/kubernetes/pkg/apis/policy/v1beta1"
 	"k8s.io/kubernetes/pkg/kubelet/types"
@@ -44,11 +45,9 @@ func TestFastGetPodsToMove(t *testing.T) {
 	// Replicated pod
 	pod2 := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "pod2",
-			Namespace: "ns",
-			Annotations: map[string]string{
-				"kubernetes.io/created-by": "{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1\",\"reference\":{\"kind\":\"ReplicaSet\"}}",
-			},
+			Name:        "pod2",
+			Namespace:   "ns",
+			Annotations: GetReplicaSetAnnotation(),
 		},
 	}
 	r2, err := FastGetPodsToMove(schedulercache.NewNodeInfo(pod2), true, true, nil)
@@ -88,11 +87,9 @@ func TestFastGetPodsToMove(t *testing.T) {
 	// Kube-system
 	pod5 := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "pod5",
-			Namespace: "kube-system",
-			Annotations: map[string]string{
-				"kubernetes.io/created-by": "{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1\",\"reference\":{\"kind\":\"ReplicaSet\"}}",
-			},
+			Name:        "pod5",
+			Namespace:   "kube-system",
+			Annotations: GetReplicaSetAnnotation(),
 		},
 	}
 	_, err = FastGetPodsToMove(schedulercache.NewNodeInfo(pod5), true, true, nil)
@@ -101,11 +98,9 @@ func TestFastGetPodsToMove(t *testing.T) {
 	// Local storage
 	pod6 := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "pod6",
-			Namespace: "ns",
-			Annotations: map[string]string{
-				"kubernetes.io/created-by": "{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1\",\"reference\":{\"kind\":\"ReplicaSet\"}}",
-			},
+			Name:        "pod6",
+			Namespace:   "ns",
+			Annotations: GetReplicaSetAnnotation(),
 		},
 		Spec: apiv1.PodSpec{
 			Volumes: []apiv1.Volume{
@@ -123,11 +118,9 @@ func TestFastGetPodsToMove(t *testing.T) {
 	// Non-local storage
 	pod7 := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "pod7",
-			Namespace: "ns",
-			Annotations: map[string]string{
-				"kubernetes.io/created-by": "{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1\",\"reference\":{\"kind\":\"ReplicaSet\"}}",
-			},
+			Name:        "pod7",
+			Namespace:   "ns",
+			Annotations: GetReplicaSetAnnotation(),
 		},
 		Spec: apiv1.PodSpec{
 			Volumes: []apiv1.Volume{
@@ -148,11 +141,9 @@ func TestFastGetPodsToMove(t *testing.T) {
 	// Pdb blocking
 	pod8 := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "pod8",
-			Namespace: "ns",
-			Annotations: map[string]string{
-				"kubernetes.io/created-by": "{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1\",\"reference\":{\"kind\":\"ReplicaSet\"}}",
-			},
+			Name:        "pod8",
+			Namespace:   "ns",
+			Annotations: GetReplicaSetAnnotation(),
 			Labels: map[string]string{
 				"critical": "true",
 			},
@@ -183,11 +174,9 @@ func TestFastGetPodsToMove(t *testing.T) {
 	// Pdb allowing
 	pod9 := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "pod9",
-			Namespace: "ns",
-			Annotations: map[string]string{
-				"kubernetes.io/created-by": "{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1\",\"reference\":{\"kind\":\"ReplicaSet\"}}",
-			},
+			Name:        "pod9",
+			Namespace:   "ns",
+			Annotations: GetReplicaSetAnnotation(),
 			Labels: map[string]string{
 				"critical": "true",
 			},
