@@ -13,7 +13,7 @@ We strongly recommend using Cluster Autoscaler with version for which it was mea
 do ANY cross version testing so if you put the newest Cluster Autoscaler on an old cluster
 there is a big chance that it won't work as expected.
 
-| Kubernets Version  | CA Version   |
+| Kubernetes Version  | CA Version   |
 |--------|--------|
 | 1.6.X  | 0.5.X  |
 | 1.5.X  | 0.4.X  |
