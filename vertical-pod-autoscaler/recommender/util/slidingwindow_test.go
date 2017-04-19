@@ -22,8 +22,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCircularBuffer(t *testing.T) {
-	b := NewCircularBuffer(3)
+func TestFloatSlidingWindow(t *testing.T) {
+	b := NewFloatSlidingWindow(3)
 	overflow, discarded := b.Push(1.0)
 	assert.False(t, overflow)
 	assert.Equal(t, 1.0, *b.Head())

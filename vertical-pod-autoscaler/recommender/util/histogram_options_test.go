@@ -22,10 +22,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var (
+	epsilon = 0.001
+)
+
 // Test all methods of LinearHistogramOptions using a sample bucketing scheme.
 func TestLinearHistogramOptions(t *testing.T) {
-	o, err := NewLinearHistogramOptions(5.0, 0.3)
+	o, err := NewLinearHistogramOptions(5.0, 0.3, epsilon)
 	assert.Nil(t, err)
+	assert.Equal(t, epsilon, o.Epsilon())
 	assert.Equal(t, 17, o.NumBuckets())
 
 	assert.Equal(t, 0.0, o.GetBucketStart(0))
@@ -39,8 +44,9 @@ func TestLinearHistogramOptions(t *testing.T) {
 
 // Test all methods of ExponentialHistogramOptions using a sample bucketing scheme.
 func TestExponentialHistogramOptions(t *testing.T) {
-	o, err := NewExponentialHistogramOptions(100.0, 10.0, 2.0)
+	o, err := NewExponentialHistogramOptions(100.0, 10.0, 2.0, epsilon)
 	assert.Nil(t, err)
+	assert.Equal(t, epsilon, o.Epsilon())
 	assert.Equal(t, 5, o.NumBuckets())
 
 	assert.Equal(t, 0.0, o.GetBucketStart(0))

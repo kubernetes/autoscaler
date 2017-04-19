@@ -23,6 +23,7 @@ import (
 
 // HistogramOptions define the number and size of buckets of a histogram.
 type HistogramOptions interface {
+	// Returns the number of buckets in the histogram.
 	NumBuckets() int
 	// Returns the index of the bucket to which the given value falls.
 	// If the value is outside of the range covered by the histogram, it
@@ -31,44 +32,48 @@ type HistogramOptions interface {
 	// Returns the start of the bucket with a given index. If the index is
 	// outside the [0..NumBuckets() - 1] range, the result is undefined.
 	GetBucketStart(bucket int) float64
+	// Returns the minimum weight for a bucket to be considered non-empty.
+	Epsilon() float64
 }
 
 // NewLinearHistogramOptions returns HistogramOptions describing a histogram
 // with a given number of fixed-size buckets, with the first bucket starting
-// at 0.0. Requires maxValue > 0, bucketSize > 0.
+// at 0.0. Requires maxValue > 0, bucketSize > 0, epsilon > 0.
 func NewLinearHistogramOptions(
-	maxValue float64, bucketSize float64) (HistogramOptions, error) {
-	if maxValue <= 0.0 || bucketSize <= 0.0 {
+	maxValue float64, bucketSize float64, epsilon float64) (HistogramOptions, error) {
+	if maxValue <= 0.0 || bucketSize <= 0.0 || epsilon <= 0.0 {
 		return nil, errors.New("maxValue and bucketSize must both be positive")
 	}
 	numBuckets := int(math.Ceil(maxValue / bucketSize))
-	return &linearHistogramOptions{numBuckets, bucketSize}, nil
+	return &linearHistogramOptions{numBuckets, bucketSize, epsilon}, nil
 }
 
 // NewExponentialHistogramOptions returns HistogramOptions describing a
 // histogram with exponentially growing bucket boundaries. The first bucket
 // covers the range [0..firstBucketSize). Consecutive buckets are of the form
 // [x(n)..x(n) * ratio) for n = 1 .. numBuckets - 1.
-// Requires maxValue > 0, firstBucketSize > 0, ratio > 1.
+// Requires maxValue > 0, firstBucketSize > 0, ratio > 1, epsilon > 0.
 func NewExponentialHistogramOptions(
-	maxValue float64, firstBucketSize float64, ratio float64) (HistogramOptions, error) {
-	if maxValue <= 0.0 || firstBucketSize <= 0.0 || ratio <= 1.0 {
+	maxValue float64, firstBucketSize float64, ratio float64, epsilon float64) (HistogramOptions, error) {
+	if maxValue <= 0.0 || firstBucketSize <= 0.0 || ratio <= 1.0 || epsilon <= 0.0 {
 		return nil, errors.New(
-			"maxValue and firstBucketSize must be > 0.0, ratio must be > 1.0")
+			"maxValue, firstBucketSize and epsilon must be > 0.0, ratio must be > 1.0")
 	}
 	numBuckets := int(math.Ceil(math.Log(maxValue/firstBucketSize)/math.Log(ratio))) + 1
-	return &exponentialHistogramOptions{numBuckets, firstBucketSize, ratio}, nil
+	return &exponentialHistogramOptions{numBuckets, firstBucketSize, ratio, epsilon}, nil
 }
 
 type linearHistogramOptions struct {
 	numBuckets int
 	bucketSize float64
+	epsilon    float64
 }
 
 type exponentialHistogramOptions struct {
 	numBuckets      int
 	firstBucketSize float64
 	ratio           float64
+	epsilon         float64
 }
 
 func (o *linearHistogramOptions) NumBuckets() int {
@@ -88,6 +93,10 @@ func (o *linearHistogramOptions) FindBucket(value float64) int {
 
 func (o *linearHistogramOptions) GetBucketStart(bucket int) float64 {
 	return float64(bucket) * o.bucketSize
+}
+
+func (o *linearHistogramOptions) Epsilon() float64 {
+	return o.epsilon
 }
 
 func (o *exponentialHistogramOptions) NumBuckets() int {
@@ -110,4 +119,8 @@ func (o *exponentialHistogramOptions) GetBucketStart(bucket int) float64 {
 		return 0.0
 	}
 	return o.firstBucketSize * math.Pow(o.ratio, float64(bucket-1))
+}
+
+func (o *exponentialHistogramOptions) Epsilon() float64 {
+	return o.epsilon
 }

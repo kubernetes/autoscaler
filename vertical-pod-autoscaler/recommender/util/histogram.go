@@ -25,10 +25,12 @@ type Histogram interface {
 	// If the histogram is empty, Percentile() returns 0.0.
 	Percentile(percentile float64) float64
 
-	// Add a sample with a given value and weight. A sample can have
-	// negative weight, as long as the total weight of samples with the
-	// given value is not negative.
+	// Add a sample with a given value and weight.
 	AddSample(value float64, weight float64)
+
+	// Remove a sample with a given value and weight. Note that the total
+	// weight of samples with a given value cannot be negative.
+	SubtractSample(value float64, weight float64)
 
 	// Returns true if the histogram is empty.
 	Empty() bool
@@ -41,18 +43,19 @@ func NewHistogram(options HistogramOptions) Histogram {
 		options.NumBuckets() - 1, 0}
 }
 
-// Simple bucket-based implementation of the Histogram interface. Samples added
-// to the histogram are rounded down to the bucket boundary. Each bucket holds
-// the total weight of samples that belong to it.
+// Simple bucket-based implementation of the Histogram interface. Each bucket
+// holds the total weight of samples that belong to it.
+// Percentile() returns the middle of the correspodning bucket.
 // Resolution (bucket boundaries) of the histogram depends on the options.
 // There's no interpolation within buckets (i.e. one sample falls to exactly one
 // bucket).
+// A bucket is considered empty if its weight is smaller than options.Epsilon().
 type histogram struct {
 	// Bucketing scheme.
 	options *HistogramOptions
-	// Weight of samples in each bucket.
-	buckets []float64
-	// Weight of samples in all buckets.
+	// Cumulative weight of samples in each bucket.
+	bucketWeight []float64
+	// Total cumulative weight of samples in all buckets.
 	totalWeight float64
 	// Index of the first non-empty bucket if there's any. Otherwise index
 	// of the last bucket.
@@ -62,18 +65,36 @@ type histogram struct {
 }
 
 func (h *histogram) AddSample(value float64, weight float64) {
+	if weight < 0.0 {
+		panic("sample weight must be non-negative")
+	}
 	bucket := (*h.options).FindBucket(value)
-	if h.buckets[bucket]+weight <= 0.0 {
-		h.clearBucket(bucket)
-	} else {
-		h.buckets[bucket] += weight
-		h.totalWeight += weight
-		if bucket < h.minBucket {
-			h.minBucket = bucket
-		}
-		if bucket > h.maxBucket {
-			h.maxBucket = bucket
-		}
+	h.bucketWeight[bucket] += weight
+	h.totalWeight += weight
+	if bucket < h.minBucket {
+		h.minBucket = bucket
+	}
+	if bucket > h.maxBucket {
+		h.maxBucket = bucket
+	}
+}
+func (h *histogram) SubtractSample(value float64, weight float64) {
+	if weight < 0.0 {
+		panic("sample weight must be non-negative")
+	}
+	bucket := (*h.options).FindBucket(value)
+	epsilon := (*h.options).Epsilon()
+	if weight > h.bucketWeight[bucket]-epsilon {
+		weight = h.bucketWeight[bucket]
+	}
+	h.totalWeight -= weight
+	h.bucketWeight[bucket] -= weight
+	lastBucket := (*h.options).NumBuckets() - 1
+	for h.bucketWeight[h.minBucket] < epsilon && h.minBucket < lastBucket {
+		h.minBucket++
+	}
+	for h.bucketWeight[h.maxBucket] < epsilon && h.maxBucket > 0 {
+		h.maxBucket--
 	}
 }
 
@@ -85,26 +106,21 @@ func (h *histogram) Percentile(percentile float64) float64 {
 	threshold := percentile * h.totalWeight
 	bucket := h.minBucket
 	for ; bucket < h.maxBucket; bucket++ {
-		partialSum += h.buckets[bucket]
+		partialSum += h.bucketWeight[bucket]
 		if partialSum >= threshold {
 			break
 		}
 	}
-	return (*h.options).GetBucketStart(bucket)
+	bucketStart := (*h.options).GetBucketStart(bucket)
+	if bucket < (*h.options).NumBuckets()-1 {
+		// Return the middle of the bucket.
+		nextBucketStart := (*h.options).GetBucketStart(bucket + 1)
+		return (bucketStart + nextBucketStart) / 2.0
+	}
+	// For the last bucket return the bucket start.
+	return bucketStart
 }
 
 func (h *histogram) Empty() bool {
-	return h.totalWeight == 0.0
-}
-
-func (h *histogram) clearBucket(bucket int) {
-	h.totalWeight -= h.buckets[bucket]
-	h.buckets[bucket] = 0.0
-	lastBucket := (*h.options).NumBuckets() - 1
-	for h.buckets[h.minBucket] == 0.0 && h.minBucket < lastBucket {
-		h.minBucket++
-	}
-	for h.buckets[h.maxBucket] == 0.0 && h.maxBucket > 0 {
-		h.maxBucket--
-	}
+	return h.bucketWeight[h.minBucket] < (*h.options).Epsilon()
 }
