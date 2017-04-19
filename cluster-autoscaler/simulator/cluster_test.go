@@ -22,6 +22,7 @@ import (
 
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	policyv1 "k8s.io/kubernetes/pkg/apis/policy/v1beta1"
 	"k8s.io/kubernetes/pkg/kubelet/types"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 
@@ -183,4 +184,93 @@ func TestFindEmptyNodes(t *testing.T) {
 
 	emptyNodes := FindEmptyNodesToRemove([]*apiv1.Node{node1, node2, node3, node4}, []*apiv1.Pod{pod1, pod2})
 	assert.Equal(t, []*apiv1.Node{node2, node3, node4}, emptyNodes)
+}
+
+func TestFindNodesToRemove(t *testing.T) {
+	emptyNode := BuildTestNode("n1", 1000, 2000000)
+
+	// two small pods backed by ReplicaSet
+	drainableNode := BuildTestNode("n2", 1000, 2000000)
+
+	// one small pod, not backed by anything
+	nonDrainableNode := BuildTestNode("n3", 1000, 2000000)
+
+	// one very large pod
+	fullNode := BuildTestNode("n4", 1000, 2000000)
+
+	SetNodeReadyState(emptyNode, true, time.Time{})
+	SetNodeReadyState(drainableNode, true, time.Time{})
+	SetNodeReadyState(nonDrainableNode, true, time.Time{})
+	SetNodeReadyState(fullNode, true, time.Time{})
+
+	pod1 := BuildTestPod("p1", 100, 100000)
+	pod1.ObjectMeta.Annotations = GetReplicaSetAnnotation()
+	pod1.Spec.NodeName = "n2"
+	pod2 := BuildTestPod("p2", 100, 100000)
+	pod2.ObjectMeta.Annotations = GetReplicaSetAnnotation()
+	pod2.Spec.NodeName = "n2"
+	pod3 := BuildTestPod("p3", 100, 100000)
+	pod3.Spec.NodeName = "n3"
+	pod4 := BuildTestPod("p4", 1000, 100000)
+	pod4.Spec.NodeName = "n4"
+
+	emptyNodeToRemove := NodeToBeRemoved{
+		Node:             emptyNode,
+		PodsToReschedule: []*apiv1.Pod{},
+	}
+	drainableNodeToRemove := NodeToBeRemoved{
+		Node:             drainableNode,
+		PodsToReschedule: []*apiv1.Pod{pod1, pod2},
+	}
+
+	var candidates, allNodes []*apiv1.Node
+	pods := []*apiv1.Pod{pod1, pod2, pod3, pod4}
+	predicateChecker := NewTestPredicateChecker()
+	tracker := NewUsageTracker()
+
+	// just an empty node, should be removed
+	candidates = []*apiv1.Node{emptyNode}
+	allNodes = []*apiv1.Node{emptyNode}
+	toRemove, _, err := FindNodesToRemove(
+		candidates, allNodes, pods, nil, predicateChecker, len(allNodes),
+		true, map[string]string{}, tracker, time.Now(), []*policyv1.PodDisruptionBudget{})
+	assert.NoError(t, err)
+	assert.Equal(t, toRemove, []NodeToBeRemoved{emptyNodeToRemove})
+
+	// just a drainable node, but nowhere for pods to go to
+	candidates = []*apiv1.Node{drainableNode}
+	allNodes = []*apiv1.Node{drainableNode}
+	toRemove, _, err = FindNodesToRemove(
+		candidates, allNodes, pods, nil, predicateChecker, len(allNodes),
+		true, map[string]string{}, tracker, time.Now(), []*policyv1.PodDisruptionBudget{})
+	assert.NoError(t, err)
+	assert.Equal(t, toRemove, []NodeToBeRemoved{})
+
+	// drainable node, and a mostly empty node that can take its pods
+	candidates = []*apiv1.Node{drainableNode, nonDrainableNode}
+	allNodes = []*apiv1.Node{drainableNode, nonDrainableNode}
+	toRemove, _, err = FindNodesToRemove(
+		candidates, allNodes, pods, nil, predicateChecker, len(allNodes),
+		true, map[string]string{}, tracker, time.Now(), []*policyv1.PodDisruptionBudget{})
+	assert.NoError(t, err)
+	assert.Equal(t, toRemove, []NodeToBeRemoved{drainableNodeToRemove})
+
+	// drainable node, and a full node that cannot fit anymore pods
+	candidates = []*apiv1.Node{drainableNode}
+	allNodes = []*apiv1.Node{drainableNode, fullNode}
+	toRemove, _, err = FindNodesToRemove(
+		candidates, allNodes, pods, nil, predicateChecker, len(allNodes),
+		true, map[string]string{}, tracker, time.Now(), []*policyv1.PodDisruptionBudget{})
+	assert.NoError(t, err)
+	assert.Equal(t, toRemove, []NodeToBeRemoved{})
+
+	// 4 nodes, 1 empty, 1 drainable
+	candidates = []*apiv1.Node{emptyNode, drainableNode}
+	allNodes = []*apiv1.Node{emptyNode, drainableNode, fullNode, nonDrainableNode}
+	toRemove, _, err = FindNodesToRemove(
+		candidates, allNodes, pods, nil, predicateChecker, len(allNodes),
+		true, map[string]string{}, tracker, time.Now(), []*policyv1.PodDisruptionBudget{})
+	assert.NoError(t, err)
+	assert.Equal(t, toRemove, []NodeToBeRemoved{emptyNodeToRemove, drainableNodeToRemove})
+
 }

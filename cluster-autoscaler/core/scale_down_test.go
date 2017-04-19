@@ -46,20 +46,14 @@ func TestFindUnneededNodes(t *testing.T) {
 
 	p2 := BuildTestPod("p2", 300, 0)
 	p2.Spec.NodeName = "n2"
-	p2.Annotations = map[string]string{
-		"kubernetes.io/created-by": "{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1\",\"reference\":{\"kind\":\"ReplicaSet\"}}",
-	}
+	p2.Annotations = GetReplicaSetAnnotation()
 
 	p3 := BuildTestPod("p3", 400, 0)
-	p3.Annotations = map[string]string{
-		"kubernetes.io/created-by": "{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1\",\"reference\":{\"kind\":\"ReplicaSet\"}}",
-	}
+	p3.Annotations = GetReplicaSetAnnotation()
 	p3.Spec.NodeName = "n3"
 
 	p4 := BuildTestPod("p4", 2000, 0)
-	p4.Annotations = map[string]string{
-		"kubernetes.io/created-by": "{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1\",\"reference\":{\"kind\":\"ReplicaSet\"}}",
-	}
+	p4.Annotations = GetReplicaSetAnnotation()
 	p4.Spec.NodeName = "n4"
 
 	n1 := BuildTestNode("n1", 1000, 10)

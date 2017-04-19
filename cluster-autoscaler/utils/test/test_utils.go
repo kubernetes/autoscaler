@@ -120,3 +120,10 @@ func RefJSON(o runtime.Object) string {
 	json := runtime.EncodeOrDie(codec, &apiv1.SerializedReference{Reference: *ref})
 	return string(json)
 }
+
+// GetReplicaSetAnnotation returns a map containing annotation simulating pod being created by ReplicaSet
+func GetReplicaSetAnnotation() map[string]string {
+	return map[string]string{
+		"kubernetes.io/created-by": "{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1\",\"reference\":{\"kind\":\"ReplicaSet\"}}",
+	}
+}
