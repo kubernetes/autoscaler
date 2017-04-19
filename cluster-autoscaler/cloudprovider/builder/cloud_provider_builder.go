@@ -41,9 +41,11 @@ func NewCloudProviderBuilder(cloudProviderFlag string, cloudConfig string) Cloud
 }
 
 // Build a cloud provider from static settings contained in the builder and dynamic settings passed via args
-func (b CloudProviderBuilder) Build(nodeGroupsFlag []string) cloudprovider.CloudProvider {
+func (b CloudProviderBuilder) Build(discoveryOpts cloudprovider.NodeGroupDiscoveryOptions) cloudprovider.CloudProvider {
 	var err error
 	var cloudProvider cloudprovider.CloudProvider
+
+	nodeGroupsFlag := discoveryOpts.NodeGroupSpecs
 
 	if b.cloudProviderFlag == "gce" {
 		// GCE Manager
@@ -84,7 +86,7 @@ func (b CloudProviderBuilder) Build(nodeGroupsFlag []string) cloudprovider.Cloud
 		if awsError != nil {
 			glog.Fatalf("Failed to create AWS Manager: %v", err)
 		}
-		cloudProvider, err = aws.BuildAwsCloudProvider(awsManager, nodeGroupsFlag)
+		cloudProvider, err = aws.BuildAwsCloudProvider(awsManager, discoveryOpts)
 		if err != nil {
 			glog.Fatalf("Failed to create AWS cloud provider: %v", err)
 		}
