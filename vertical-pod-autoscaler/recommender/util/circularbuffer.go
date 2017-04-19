@@ -42,10 +42,13 @@ func NewCircularBuffer(size int) CircularBuffer {
 }
 
 type circularBuffer struct {
-	buffer   []float64
-	head     int  // Index of the most recently added element.
-	capacity int  // Max number of elements.
-	isFull   bool // The number of elements in the buffer equals capacity.
+	buffer []float64
+	// Index of the most recently added element.
+	head int
+	// Max number of elements.
+	capacity int
+	// The number of elements in the buffer equals capacity.
+	isFull bool
 }
 
 // Head returns a pointer to the most recently added element. The pointer can be

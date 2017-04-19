@@ -45,9 +45,12 @@ func NewHistogram(options HistogramOptions) Histogram {
 // There's no interpolation within buckets (i.e. one sample falls to exactly one
 // bucket).
 type histogram struct {
-	options     *HistogramOptions // Bucketing scheme.
-	buckets     []float64         // Weight of samples in each bucket.
-	totalWeight float64           // Weight of samples in all buckets.
+	// Bucketing scheme.
+	options *HistogramOptions
+	// Weight of samples in each bucket.
+	buckets []float64
+	// Weight of samples in all buckets.
+	totalWeight float64
 	// Index of the first non-empty bucket if there's any. Otherwise index
 	// of the last bucket.
 	minBucket int
