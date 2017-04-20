@@ -18,6 +18,7 @@ package util
 
 import (
 	"errors"
+	"fmt"
 	"math"
 )
 
@@ -94,6 +95,9 @@ func (o *linearHistogramOptions) FindBucket(value float64) int {
 }
 
 func (o *linearHistogramOptions) GetBucketStart(bucket int) float64 {
+	if bucket < 0 || bucket >= o.numBuckets {
+		panic(fmt.Sprintf("index %d out of range [0..%d]", bucket, o.numBuckets-1))
+	}
 	return float64(bucket) * o.bucketSize
 }
 
@@ -117,6 +121,9 @@ func (o *exponentialHistogramOptions) FindBucket(value float64) int {
 }
 
 func (o *exponentialHistogramOptions) GetBucketStart(bucket int) float64 {
+	if bucket < 0 || bucket >= o.numBuckets {
+		panic(fmt.Sprintf("index %d out of range [0..%d]", bucket, o.numBuckets-1))
+	}
 	if bucket == 0 {
 		return 0.0
 	}
