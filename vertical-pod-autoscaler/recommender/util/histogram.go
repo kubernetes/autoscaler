@@ -33,7 +33,7 @@ type Histogram interface {
 	SubtractSample(value float64, weight float64)
 
 	// Returns true if the histogram is empty.
-	Empty() bool
+	IsEmpty() bool
 }
 
 // NewHistogram returns a new Histogram instance using given options.
@@ -99,7 +99,7 @@ func (h *histogram) SubtractSample(value float64, weight float64) {
 }
 
 func (h *histogram) Percentile(percentile float64) float64 {
-	if h.Empty() {
+	if h.IsEmpty() {
 		return 0.0
 	}
 	partialSum := 0.0
@@ -113,14 +113,15 @@ func (h *histogram) Percentile(percentile float64) float64 {
 	}
 	bucketStart := (*h.options).GetBucketStart(bucket)
 	if bucket < (*h.options).NumBuckets()-1 {
-		// Return the middle of the bucket.
-		nextBucketStart := (*h.options).GetBucketStart(bucket + 1)
-		return (bucketStart + nextBucketStart) / 2.0
+		// Return the middle point between the bucket boundaries.
+		bucketEnd := (*h.options).GetBucketStart(bucket + 1)
+		return (bucketStart + bucketEnd) / 2.0
 	}
-	// For the last bucket return the bucket start.
+	// Return the start of the last bucket (note that the last bucket
+	// doesn't have an upper bound).
 	return bucketStart
 }
 
-func (h *histogram) Empty() bool {
+func (h *histogram) IsEmpty() bool {
 	return h.bucketWeight[h.minBucket] < (*h.options).Epsilon()
 }

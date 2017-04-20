@@ -75,19 +75,25 @@ func TestPercentileOutOfBounds(t *testing.T) {
 
 	assert.InEpsilon(t, 0.15, h.Percentile(-0.1), valueEpsilon)
 	assert.InEpsilon(t, 0.25, h.Percentile(1.1), valueEpsilon)
+
+	// Fill the boundary buckets.
+	h.AddSample(0.0, 0.1)
+	h.AddSample(1.0, 0.2)
+	assert.InEpsilon(t, 0.05, h.Percentile(-0.1), valueEpsilon)
+	assert.InEpsilon(t, 1.0, h.Percentile(1.1), valueEpsilon)
 }
 
-// Verifies that Empty() returns true on an empty histogram and false otherwise.
+// Verifies that IsEmpty() returns true on an empty histogram and false otherwise.
 func TestEmptyHistogram(t *testing.T) {
 	options, err := NewLinearHistogramOptions(1.0, 0.1, weightEpsilon)
 	assert.Nil(t, err)
 	h := NewHistogram(options)
 	assert.Nil(t, err)
-	assert.True(t, h.Empty())
+	assert.True(t, h.IsEmpty())
 	h.AddSample(0.1, weightEpsilon*2.5) // Sample weight = epsilon * 2.5.
-	assert.False(t, h.Empty())
+	assert.False(t, h.IsEmpty())
 	h.SubtractSample(0.1, weightEpsilon) // Sample weight = epsilon * 1.5.
-	assert.False(t, h.Empty())
+	assert.False(t, h.IsEmpty())
 	h.SubtractSample(0.1, weightEpsilon) // Sample weight = epsilon * 0.5.
-	assert.True(t, h.Empty())
+	assert.True(t, h.IsEmpty())
 }
