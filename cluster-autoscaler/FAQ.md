@@ -4,28 +4,28 @@
 
 ### What is Cluster Autoscaler?
 
-Cluster Autoscaler is a standalone program that adjusts the size of a Kubernetes cluster to the current needs.
+Cluster Autoscaler is a standalone program that adjusts the size of a Kubernetes cluster to meet the current needs.
 
-### When Cluster Autoscaler changes the size of a cluster?
+### When does Cluster Autoscaler change the size of a cluster?
 
 Cluster Autoscaler increases the size of the cluster when:
 * there are pods that failed to schedule on any of the current nodes due to insufficient resources.
 * adding a node similar to the nodes currently present in the cluster would help.
 
-Cluster Autoscaler decreases the size of the cluster when some nodes are consistently unneeded for a significant amount of time. A node is unneeded when it has low utilization and all of its important pod can be moved elsewhere.
+Cluster Autoscaler decreases the size of the cluster when some nodes are consistently unneeded for a significant amount of time. A node is unneeded when it has low utilization and all of its important pods can be moved elsewhere.
 
 ### What types of pods can prevent CA from removing a node?
 
 * Kube-system pods that are not run on the node by default.
-* Pods that are not backed by a controller objects (so not created by deployment, replica set, job, stateful set etc).
+* Pods that are not backed by a controller object (so not created by deployment, replica set, job, stateful set etc).
 * Pods with local storage.
 
-### How Horizontal Pod Autoscaler works with Cluster Autoscaler?
+### How does Horizontal Pod Autoscaler work with Cluster Autoscaler?
 
 Horizontal Pod Autoscaler changes the deployment's or replicaset's number of replicas based on the current
 CPU load.
-If the load increases HPA will create new replicas, for which there may or may not be enough
-space in the cluster. If there is no enough resources then CA will try to bring up some nodes so that the
+If the load increases HPA will create new replicas for which there may or may not be enough
+space in the cluster. If there are not enough resources then CA will try to bring up some nodes so that the
 HPA-created pods have a place to run.
 If the load decreases, HPA will stop some of the replicas. As a result, some nodes may start to be
 underutilized or completely empty and then CA will delete such unneeded nodes.
@@ -38,18 +38,18 @@ underutilized or completely empty and then CA will delete such unneeded nodes.
 * Check if your cloud provider's quota is big enough before specifying min/max settings for your node pools.
 * Do not run any additional node group autoscalers (especially those from your cloud provider).
 
-### Should I use CPU-usage-based node autoscaler with Kubernetes.
+### Should I use a CPU-usage-based node autoscaler with Kubernetes?
 
 No.
 
-### How Cluster Autoscaler is different from CPU-usage-based node autoscalers?
+### How is Cluster Autoscaler different from CPU-usage-based node autoscalers?
 
 Cluster Autoscaler makes sure that all of the pods in a cluster have a place to run, no matter if
 there is any load in the cluster or not. Moreover it tries to ensure that there are no unneeded nodes
 in the cluster.
 
 CPU-usage-based (or any metric-based) cluster/node group autoscalers don't care about pods when scaling up 
-and down. As a result they may add a node, that will not have any pods, or remove a node, that 
+and down. As a result, they may add a node that will not have any pods, or remove a node that
 has some system-critical pods on it, like kube-dns. Usage of these autoscalers with Kubernetes is discouraged.
 
 ### Is Cluster Autoscaler compatible with CPU-usage-based node autoscalers?
@@ -70,15 +70,15 @@ No. We reserve the right to update them in the future if needed.
 
 Scale up creates a watch on the api server looking for all pods. It checks for any unschedulable
 pods every 10 seconds (configurable). A pod is unschedulable when the Kubernetes scheduler is unable
-to find a node that can accommodate the pod. For example a pod can request more CPU that is
+to find a node that can accommodate the pod. For example, a pod can request more CPU that is
 available on any of the cluster nodes. Unschedulable pods are recognized by their PodCondition.
 Whenever a kubernetes scheduler fails to find a place to run a pod it sets "schedulable"
 PodCondition to false and reason to "unschedulable".  If there are any items on the unschedulable
 lists Cluster Autoscaler tries to find a new place to run them.
 
-It is assumed that the underlying cluster is run on top of some kind of node groups.
+It is assumed that the underlying cluster is run on top of some kind of node group.
 Inside a node group all machines have identical capacity and have the same set of assigned labels.
-Thus increasing a size of a node pool will bring a couple of new machines that will be similar
+Thus increasing a size of a node pool will bring in new machines that will be similar
 to these that are already in the cluster - they will just not have the user-created pods (but
 will have all pods run from the node manifest or daemon sets).
 
@@ -150,13 +150,13 @@ A strict requirement for performing any scale operations is that the size of a n
 measured on the cloud provider side, matches the number of nodes in Kubernetes that belong to this
 node group. If this condition is not met then all scaling operations are postponed until it is
 fulfilled.
-Also, any scale down will happen only after at least 10 min after the last scale up.
+Also, any scale down will happen only after at least 10 min have passed since the last scale up.
 
 ### How does CA deal with unready nodes in version >=0.5.0 ?
 
 From 0.5 CA (K8S 1.6) continues the work even if some (up to 33% or not greater than 3, configurable via flag) percentage of nodes
 is unavailable. Once there are more unready nodes in the cluster, CA pauses all operations until the situation
-improves. If there is less unready nodes but they are concentrated in a particular node group
+improves. If there are fewer unready nodes but they are concentrated in a particular node group
 then this node group may be excluded from scale-ups.
 Prior to 0.5, CA stopped all operations when a single node became unready.
 
@@ -167,11 +167,11 @@ Scale down is executed (by default) 10 min (or later) after a node becomes unnee
 
 ### How fast is HPA when combined with CA?
 
-By default, Pod CPU usage is scraped by kubelets every 10 sec, CPU usage is obtained from kubelets by Heapster every 1 min.
+By default, Pod CPU usage is scraped by kubelets every 10 sec, and CPU usage is obtained from kubelets by Heapster every 1 min.
 HPA checks cpu load metrics in Heapster every 30 sec, and CA looks for unschedulable pods every 10 sec. So the max reaction
 time, measured from the time CPU spikes in the pods to the time CA asks the cloud provider for a new node is 2 min. On average
 it should be around 1 min.
-The amount of time the cloud provider needs to start a new node, boot it up is measured in minutes. On GCE/GKE it is around 1.5-2 min
+The amount of time the cloud provider needs to start a new node and boot it up is measured in minutes. On GCE/GKE it is around 1.5-2 min -
 however this depends on the data center location and machine type.
 Then it may take up to 30 sec to register the node in the Kubernetes master and finalize all of the necessary network settings.
 
@@ -197,17 +197,17 @@ relevant node groups are at their maximum size.
 
 ### CA doesn’t work but it used to work yesterday. Why?
 
-Hopefully it is not a bug in Cluster Autoscaler but most likely a problem with the cluster.
+Hopefully it is not a bug in Cluster Autoscaler, but most likely a problem with the cluster.
 
 * Check If cluster autoscaler is up and running. In version 0.5 it periodically publishes the kube-system/cluster-autoscaler-status config map. Check last update time annotation. Should be no more than 3 min (usually 10 sec old).
 * Check kube-system/cluster-autoscaler-status if the cluster and node groups are in the healthy state. If not, check the unready nodes.
 
 * If you expect some nodes to be deleted but they are not deleted for a long time check:
     * if they contain pods that prevent the node from being deleted (see the corresponding question in the faq).
-    * if min/max boundaries you declared for a particular node group allow the scale up.
+    * if the min/max boundaries you declared for a particular node group allow the scale up.
     * the content of /var/log/cluster-autoscaler.log.
 
-* If you expect some nodes to be added to help some pending pods, but they are not added for a long time check:
+* If you expect some nodes to be added to help some pending pods, but they are not added for a long time, check:
     * if the node groups that could potentially accommodate the pods are on their max size.
     * events added by CA to the pod.
     * events on the kube-system/cluster-autoscaler-status config map.
@@ -274,7 +274,7 @@ the scale-up-triggering pods are removed.
 
 ### How can I run e2e tests?
 
-1. Set up environment and build e2e.go as described in [Kubernetes docs](https://github.com/kubernetes/community/blob/master/contributors/devel/e2e-tests.md#building-and-running-the-tests).
+1. Set up environment and build e2e.go as described in the [Kubernetes docs](https://github.com/kubernetes/community/blob/master/contributors/devel/e2e-tests.md#building-and-running-the-tests).
 2. Set up the following env variables:
     ```sh
     export KUBE_AUTOSCALER_MIN_NODES=3
