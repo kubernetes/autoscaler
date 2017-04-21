@@ -3,7 +3,7 @@
 # Introduction
 
 Cluster Autoscaler is a tool that automatically adjusts the size of the Kubernetes cluster when:
-* there is a pod that doesn’t have enough space to run in the cluster
+* there are pods that failed to run in the cluster due to insufficient resources.
 * some nodes in the cluster are so underutilized, for an extended period of time,
 that they can be deleted and their pods will be easily placed on some other, existing nodes.
 
@@ -48,7 +48,7 @@ on them) and mark with `scheduler.alpha.kubernetes.io/critical-pod` annotation (
 if enabled, will kill other pods to make space for it to run).
 
 Right now it is possible to run Cluster Autoscaler on:
-* GCE http://kubernetes.io/docs/admin/cluster-management/#cluster-autoscaling
+* GCE https://kubernetes.io/docs/concepts/cluster-administration/cluster-management/
 * GKE https://cloud.google.com/container-engine/docs/cluster-autoscaler
 * AWS https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md
 * Azure
