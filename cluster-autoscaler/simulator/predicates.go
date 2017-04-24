@@ -38,7 +38,7 @@ type PredicateChecker struct {
 }
 
 // NewPredicateChecker builds PredicateChecker.
-func NewPredicateChecker(kubeClient kube_client.Interface) (*PredicateChecker, error) {
+func NewPredicateChecker(kubeClient kube_client.Interface, stop <-chan struct{}) (*PredicateChecker, error) {
 	provider, err := factory.GetAlgorithmProvider(factory.DefaultProvider)
 	if err != nil {
 		return nil, err
@@ -56,6 +56,8 @@ func NewPredicateChecker(kubeClient kube_client.Interface) (*PredicateChecker, e
 		informerFactory.Core().V1().Services(),
 		apiv1.DefaultHardPodAffinitySymmetricWeight,
 	)
+
+	informerFactory.Start(stop)
 
 	predicates, err := schedulerConfigFactory.GetPredicates(provider.FitPredicateKeys)
 	predicates["ready"] = isNodeReadyAndSchedulablePredicate
