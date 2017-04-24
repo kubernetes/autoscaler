@@ -170,12 +170,13 @@ func run(_ <-chan struct{}) {
 	kubeClient := createKubeClient()
 	kubeEventRecorder := kube_util.CreateEventRecorder(kubeClient)
 	opts := createAutoscalerOptions()
-	predicateChecker, err := simulator.NewPredicateChecker(kubeClient)
+	predicateCheckerStopChannel := make(chan struct{})
+	predicateChecker, err := simulator.NewPredicateChecker(kubeClient, predicateCheckerStopChannel)
 	if err != nil {
 		glog.Fatalf("Failed to create predicate checker: %v", err)
 	}
-	stopChannel := make(chan struct{})
-	listerRegistry := kube_util.NewListerRegistryWithDefaultListers(kubeClient, stopChannel)
+	listerRegistryStopChannel := make(chan struct{})
+	listerRegistry := kube_util.NewListerRegistryWithDefaultListers(kubeClient, listerRegistryStopChannel)
 	autoscaler := core.NewAutoscaler(opts, predicateChecker, kubeClient, kubeEventRecorder, listerRegistry)
 
 	autoscaler.CleanUp()
