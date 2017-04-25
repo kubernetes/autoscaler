@@ -87,7 +87,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) {
 		return
 	}
 	if len(readyNodes) == 0 {
-		glog.Errorf("No ready nodes in the cluster")
+		glog.Error("No ready nodes in the cluster")
 		scaleDown.CleanUpUnneededNodes()
 		return
 	}
@@ -98,12 +98,18 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) {
 		return
 	}
 	if len(allNodes) == 0 {
-		glog.Errorf("No nodes in the cluster")
+		glog.Error("No nodes in the cluster")
 		scaleDown.CleanUpUnneededNodes()
 		return
 	}
 
-	a.ClusterStateRegistry.UpdateNodes(allNodes, currentTime)
+	err = a.ClusterStateRegistry.UpdateNodes(allNodes, currentTime)
+	if err != nil {
+		glog.Errorf("Failed to update node registry: %v", err)
+		scaleDown.CleanUpUnneededNodes()
+		return
+	}
+
 	// Update status information when the loop is done (regardless of reason)
 	defer func() {
 		if autoscalingContext.WriteStatusConfigMap {
@@ -112,7 +118,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) {
 		}
 	}()
 	if !a.ClusterStateRegistry.IsClusterHealthy() {
-		glog.Warningf("Cluster is not ready for autoscaling: %v", err)
+		glog.Warning("Cluster is not ready for autoscaling")
 		scaleDown.CleanUpUnneededNodes()
 		return
 	}
