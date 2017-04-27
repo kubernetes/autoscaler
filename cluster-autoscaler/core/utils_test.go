@@ -26,6 +26,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 
 	"github.com/stretchr/testify/assert"
@@ -102,6 +103,16 @@ func TestRemoveOldUnregisteredNodes(t *testing.T) {
 	assert.True(t, removed)
 	deletedNode := getStringFromChan(deletedNodes)
 	assert.Equal(t, "ng1/ng1-2", deletedNode)
+}
+
+func testSanitizeLabels(t *testing.T) {
+	node := BuildTestNode("ng1-1", 1000, 1000)
+	node.Labels[metav1.LabelHostname] = "abc"
+	node.Labels["x"] = "y"
+	node, err := sanitizeTemplateNodeLables(node)
+	assert.NoError(t, err)
+	assert.NotEqual(t, node.Labels[metav1.LabelHostname], "abc")
+	assert.Equal(t, node.Labels["x"], "y")
 }
 
 func TestRemoveFixNodeTargetSize(t *testing.T) {

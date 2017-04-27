@@ -18,6 +18,7 @@ package core
 
 import (
 	"fmt"
+	"math/rand"
 	"reflect"
 	"time"
 
@@ -26,6 +27,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	api "k8s.io/kubernetes/pkg/api"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
@@ -142,7 +144,12 @@ func GetNodeInfosForGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.Clou
 		}
 		id := nodeGroup.Id()
 		if _, found := result[id]; !found {
-			nodeInfo, err := simulator.BuildNodeInfoForNode(node, kubeClient)
+			sanitizedNode, err := sanitizeTemplateNodeLables(node)
+			if err != nil {
+				return map[string]*schedulercache.NodeInfo{}, err
+			}
+
+			nodeInfo, err := simulator.BuildNodeInfoForNode(sanitizedNode, kubeClient)
 			if err != nil {
 				return map[string]*schedulercache.NodeInfo{}, err
 			}
@@ -150,6 +157,23 @@ func GetNodeInfosForGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.Clou
 		}
 	}
 	return result, nil
+}
+
+func sanitizeTemplateNodeLables(node *apiv1.Node) (*apiv1.Node, error) {
+	obj, err := api.Scheme.DeepCopy(node)
+	if err != nil {
+		return nil, err
+	}
+	newNode := obj.(*apiv1.Node)
+	newNode.Labels = make(map[string]string, len(node.Labels))
+	for k, v := range node.Labels {
+		if k != metav1.LabelHostname {
+			newNode.Labels[k] = v
+		} else {
+			newNode.Labels[k] = fmt.Sprintf("template-node-for-cluster-autoscaler-%d", rand.Int63())
+		}
+	}
+	return newNode, nil
 }
 
 // Removes unregisterd nodes if needed. Returns true if anything was removed and error if such occurred.
