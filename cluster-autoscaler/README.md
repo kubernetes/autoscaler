@@ -21,6 +21,12 @@ there is a big chance that it won't work as expected.
 
 # Notable changes:
 
+CA Version 0.5.2:
+* Fix problems with pods using persistent volume claims in scale up https://github.com/kubernetes/contrib/issues/2507.
+
+CA Version 0.5.1:
+* Fix problems with slow network route creations on cluster scale up https://github.com/kubernetes/kubernetes/issues/43709.
+
 CA Version 0.5:
 * CA continues to operate even if some nodes are unready and is able to scale-down them.
 * CA exports its status to kube-system/cluster-autoscaler-status config map.
