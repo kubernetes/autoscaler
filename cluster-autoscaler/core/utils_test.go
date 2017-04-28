@@ -105,14 +105,18 @@ func TestRemoveOldUnregisteredNodes(t *testing.T) {
 	assert.Equal(t, "ng1/ng1-2", deletedNode)
 }
 
-func testSanitizeLabels(t *testing.T) {
-	node := BuildTestNode("ng1-1", 1000, 1000)
-	node.Labels[metav1.LabelHostname] = "abc"
-	node.Labels["x"] = "y"
-	node, err := sanitizeTemplateNodeLables(node)
+func TestSanitizeLabels(t *testing.T) {
+	oldNode := BuildTestNode("ng1-1", 1000, 1000)
+	oldNode.Labels = map[string]string{
+		metav1.LabelHostname: "abc",
+		"x":                  "y",
+	}
+	node, err := sanitizeTemplateNode(oldNode, "bzium")
 	assert.NoError(t, err)
 	assert.NotEqual(t, node.Labels[metav1.LabelHostname], "abc")
 	assert.Equal(t, node.Labels["x"], "y")
+	assert.NotEqual(t, node.Name, oldNode.Name)
+	assert.Equal(t, node.Labels[metav1.LabelHostname], node.Name)
 }
 
 func TestRemoveFixNodeTargetSize(t *testing.T) {

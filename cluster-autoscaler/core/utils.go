@@ -144,35 +144,58 @@ func GetNodeInfosForGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.Clou
 		}
 		id := nodeGroup.Id()
 		if _, found := result[id]; !found {
-			sanitizedNode, err := sanitizeTemplateNodeLables(node)
+			// Build nodeInfo.
+			nodeInfo, err := simulator.BuildNodeInfoForNode(node, kubeClient)
 			if err != nil {
 				return map[string]*schedulercache.NodeInfo{}, err
 			}
 
-			nodeInfo, err := simulator.BuildNodeInfoForNode(sanitizedNode, kubeClient)
+			// Sanitize node name.
+			sanitizedNode, err := sanitizeTemplateNode(node, id)
 			if err != nil {
 				return map[string]*schedulercache.NodeInfo{}, err
 			}
-			result[id] = nodeInfo
+
+			// Update nodename in pods.
+			sanitizedPods := make([]*apiv1.Pod, 0)
+			for _, pod := range nodeInfo.Pods() {
+				obj, err := api.Scheme.DeepCopy(pod)
+				if err != nil {
+					return nil, err
+				}
+				sanitizedPod := obj.(*apiv1.Pod)
+				sanitizedPod.Spec.NodeName = sanitizedNode.Name
+				sanitizedPods = append(sanitizedPods, sanitizedPod)
+			}
+
+			// Build a new node info.
+			sanitizedNodeInfo := schedulercache.NewNodeInfo(sanitizedPods...)
+			if err := sanitizedNodeInfo.SetNode(sanitizedNode); err != nil {
+				return nil, err
+			}
+
+			result[id] = sanitizedNodeInfo
 		}
 	}
 	return result, nil
 }
 
-func sanitizeTemplateNodeLables(node *apiv1.Node) (*apiv1.Node, error) {
+func sanitizeTemplateNode(node *apiv1.Node, nodeGroup string) (*apiv1.Node, error) {
 	obj, err := api.Scheme.DeepCopy(node)
 	if err != nil {
 		return nil, err
 	}
+	nodeName := fmt.Sprintf("template-node-for-%s-%d", nodeGroup, rand.Int63())
 	newNode := obj.(*apiv1.Node)
 	newNode.Labels = make(map[string]string, len(node.Labels))
 	for k, v := range node.Labels {
 		if k != metav1.LabelHostname {
 			newNode.Labels[k] = v
 		} else {
-			newNode.Labels[k] = fmt.Sprintf("template-node-for-cluster-autoscaler-%d", rand.Int63())
+			newNode.Labels[k] = nodeName
 		}
 	}
+	newNode.Name = nodeName
 	return newNode, nil
 }
 
