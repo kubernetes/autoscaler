@@ -49,4 +49,4 @@ build: go
 docker: build
 
 push: docker
-	gcloud docker push ${PREFIX}/addon-resizer:$(TAG)
+	gcloud docker -- push ${PREFIX}/addon-resizer:$(TAG)
