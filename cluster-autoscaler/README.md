@@ -21,6 +21,9 @@ there is a big chance that it won't work as expected.
 
 # Notable changes:
 
+CA Version 0.5.4:
+* Fixes problems with node drain when pods are ignoring SIGTERM.
+
 CA Version 0.5.3:
 * Fixes problems with pod anti-affinity in scale up https://github.com/kubernetes/autoscaler/issues/33.
 

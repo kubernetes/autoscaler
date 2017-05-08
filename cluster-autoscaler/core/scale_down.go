@@ -62,6 +62,9 @@ const (
 	MaxPodEvictionTime = 2 * time.Minute
 	// EvictionRetryTime is the time after CA retries failed pod eviction.
 	EvictionRetryTime = 10 * time.Second
+	// PodEvictionHeadroom is the extra time we wait to catch situations when the pod is ignoring SIGTERM and
+	// is killed with SIGKILL after MaxGracefulTerminationTime
+	PodEvictionHeadroom = 20 * time.Second
 )
 
 // ScaleDown is responsible for maintaining the state needed to perform unneded node removals.
@@ -431,9 +434,9 @@ func drainNode(node *apiv1.Node, pods []*apiv1.Pod, client kube_client.Interface
 		return fmt.Errorf("Failed to drain node %s/%s, due to following errors: %v", node.Namespace, node.Name, evictionErrs)
 	}
 
-	// Evictions created successfully, wait maxGratefulTerminationSec to see if nodes really disappeared
+	// Evictions created successfully, wait maxGratefulTerminationSec + PodEvictionHeadroom to see if pods really disappeared.
 	allGone := true
-	for start := time.Now(); time.Now().Sub(start) < time.Duration(maxGratefulTerminationSec)*time.Second; time.Sleep(5 * time.Second) {
+	for start := time.Now(); time.Now().Sub(start) < time.Duration(maxGratefulTerminationSec)*time.Second+PodEvictionHeadroom; time.Sleep(5 * time.Second) {
 		allGone = true
 		for _, pod := range pods {
 			podreturned, err := client.Core().Pods(pod.Namespace).Get(pod.Name, metav1.GetOptions{})
