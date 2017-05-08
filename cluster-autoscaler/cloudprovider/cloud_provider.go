@@ -17,7 +17,10 @@ limitations under the License.
 package cloudprovider
 
 import (
+	"fmt"
+
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 )
 
 // CloudProvider contains configuration info and functions for interacting with
@@ -34,6 +37,9 @@ type CloudProvider interface {
 	// occurred.
 	NodeGroupForNode(*apiv1.Node) (NodeGroup, error)
 }
+
+// ErrNotImplemented is returned if a method is not implemented.
+var ErrNotImplemented error = fmt.Errorf("Not implemented")
 
 // NodeGroup contains configuration info and functions to control a set
 // of nodes that have the same capacity and set of labels.
@@ -75,4 +81,12 @@ type NodeGroup interface {
 
 	// Nodes returns a list of all nodes that belong to this node group.
 	Nodes() ([]string, error)
+
+	// TemplateNodeInfo returns a schedulercache.NodeInfo structure of an empty
+	// (as if just strarted) node. This will be used in scale-up simulations to
+	// predict what would a new node look like if a node group was expanded. The returned
+	// NodeInfo is expected to have a fully populated Node object, with all of the labels,
+	// capacity and allocatable information as well as all pods that are started on
+	// the node by default, using manifest (most likely only kube-proxy).
+	TemplateNodeInfo() (*schedulercache.NodeInfo, error)
 }
