@@ -23,6 +23,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 )
 
 // GceCloudProvider implements CloudProvider interface.
@@ -228,6 +229,11 @@ func (mig *Mig) Debug() string {
 // Nodes returns a list of all nodes that belong to this node group.
 func (mig *Mig) Nodes() ([]string, error) {
 	return mig.gceManager.GetMigNodes(mig)
+}
+
+// TemplateNodeInfo returns a node template for this node group.
+func (mig *Mig) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
+	return nil, cloudprovider.ErrNotImplemented
 }
 
 func buildMig(value string, gceManager *GceManager) (*Mig, error) {
