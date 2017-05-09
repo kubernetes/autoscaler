@@ -23,6 +23,7 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 )
 
 // AzureCloudProvider provides implementation of CloudProvider interface for Azure.
@@ -226,6 +227,11 @@ func (scaleSet *ScaleSet) Id() string {
 // Debug returns a debug string for the Scale Set.
 func (scaleSet *ScaleSet) Debug() string {
 	return fmt.Sprintf("%s (%d:%d)", scaleSet.Id(), scaleSet.MinSize(), scaleSet.MaxSize())
+}
+
+// TemplateNodeInfo returns a node template for this scale set.
+func (scaleSet *ScaleSet) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
+	return nil, cloudprovider.ErrNotImplemented
 }
 
 // Create ScaleSet from provided spec.

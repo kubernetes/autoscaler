@@ -24,6 +24,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 )
 
 // AwsCloudProvider implements CloudProvider interface.
@@ -225,6 +226,11 @@ func (asg *Asg) Debug() string {
 // Nodes returns a list of all nodes that belong to this node group.
 func (asg *Asg) Nodes() ([]string, error) {
 	return asg.awsManager.GetAsgNodes(asg)
+}
+
+// TemplateNodeInfo returns a node template for this node group.
+func (asg *Asg) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
+	return nil, cloudprovider.ErrNotImplemented
 }
 
 func buildAsg(value string, awsManager *AwsManager) (*Asg, error) {
