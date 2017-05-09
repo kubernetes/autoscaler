@@ -19,6 +19,9 @@ package gce
 import (
 	"fmt"
 	"io"
+	"math/rand"
+	"net/url"
+	"path"
 	"strings"
 	"sync"
 	"time"
@@ -29,7 +32,10 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	gce "google.golang.org/api/compute/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
+	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	provider_gce "k8s.io/kubernetes/pkg/cloudprovider/providers/gce"
 )
 
@@ -101,6 +107,17 @@ func (m *GceManager) RegisterMig(mig *Mig) {
 	m.migs = append(m.migs, &migInformation{
 		config: mig,
 	})
+
+	template, err := m.getMigTemplate(mig)
+	if err != nil {
+		glog.Errorf("Failed to build template for %s", mig.Name)
+	}
+
+	node, err := m.buildNodeFromTemplate(mig, template)
+	if err != nil {
+		glog.Errorf("Failed to build template for %s", mig.Name)
+	}
+	glog.V(4).Infof("Node template for mig %s - %#v", mig.Name, node)
 }
 
 // GetMigSize gets MIG size.
@@ -247,4 +264,139 @@ func (m *GceManager) GetMigNodes(mig *Mig) ([]string, error) {
 		result = append(result, fmt.Sprintf("gce://%s/%s/%s", project, zone, name))
 	}
 	return result, nil
+}
+
+func (m *GceManager) getMigTemplate(mig *Mig) (*gce.InstanceTemplate, error) {
+	igm, err := m.service.InstanceGroupManagers.Get(mig.Project, mig.Zone, mig.Name).Do()
+	if err != nil {
+		return nil, err
+	}
+	templateUrl, err := url.Parse(igm.InstanceTemplate)
+	if err != nil {
+		return nil, err
+	}
+	_, templateName := path.Split(templateUrl.EscapedPath())
+	instanceTemplate, err := m.service.InstanceTemplates.Get(mig.Project, templateName).Do()
+	if err != nil {
+		return nil, err
+	}
+	return instanceTemplate, nil
+}
+
+func (m *GceManager) buildNodeFromTemplate(mig *Mig, template *gce.InstanceTemplate) (*apiv1.Node, error) {
+
+	if template.Properties == nil {
+		return nil, fmt.Errorf("instance template %s has no properties", template.Name)
+	}
+
+	node := apiv1.Node{}
+	nodeName := fmt.Sprintf("%s-template-%d", template.Name, rand.Int63())
+
+	node.ObjectMeta = metav1.ObjectMeta{
+		Name:     nodeName,
+		SelfLink: fmt.Sprintf("/api/v1/nodes/%s", nodeName),
+		Labels:   map[string]string{},
+	}
+	node.Status = apiv1.NodeStatus{
+		Capacity: apiv1.ResourceList{},
+	}
+	// TODO: get a real value.
+	node.Status.Capacity[apiv1.ResourcePods] = *resource.NewQuantity(110, resource.DecimalSI)
+
+	// TODO: handle custom !!!!
+	// TODO: handle GPU
+	machineType, err := m.service.MachineTypes.Get(mig.Project, mig.Zone, template.Properties.MachineType).Do()
+	if err != nil {
+		return nil, err
+	}
+	node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewQuantity(machineType.GuestCpus, resource.DecimalSI)
+	node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(machineType.MemoryMb, resource.DecimalSI)
+
+	// TODO: use proper allocatable!!
+	node.Status.Allocatable = node.Status.Capacity
+
+	// KubeEnvLabels
+	if template.Properties.Metadata == nil {
+		return nil, fmt.Errorf("instance template %s has no metadata", template.Name)
+	}
+	for _, item := range template.Properties.Metadata.Items {
+		if item.Key == "kube-env" {
+			if item.Value == nil {
+				return nil, fmt.Errorf("no kube-env content in metadata")
+			}
+			kubeEnvLabels, err := extractLabelsFromKubeEnv(*item.Value)
+			if err != nil {
+				return nil, err
+			}
+			node.Labels = joinStringMaps(node.Labels, kubeEnvLabels)
+		}
+	}
+	// GenericLabels
+	labels, err := buildGenericLabels(mig.GceRef, template.Properties.MachineType, nodeName)
+	if err != nil {
+		return nil, err
+	}
+	node.Labels = joinStringMaps(node.Labels, labels)
+	// TODO - setup status
+	return &node, nil
+}
+
+const (
+	defaultArch = "amd64"
+	defaultOS   = "linux"
+)
+
+func buildGenericLabels(ref GceRef, machineType string, nodeName string) (map[string]string, error) {
+	result := make(map[string]string)
+
+	// TODO: extract it somehow
+	result[metav1.LabelArch] = defaultArch
+	result[metav1.LabelOS] = defaultOS
+
+	result[metav1.LabelInstanceType] = machineType
+	ix := strings.LastIndex(ref.Zone, "-")
+	if ix == -1 {
+		return nil, fmt.Errorf("unexpected zone: %s", ref.Zone)
+	}
+	result[metav1.LabelZoneRegion] = ref.Zone[:ix]
+	result[metav1.LabelZoneFailureDomain] = ref.Zone
+	result[metav1.LabelHostname] = nodeName
+	return result, nil
+}
+
+func extractLabelsFromKubeEnv(kubeEnv string) (map[string]string, error) {
+	result := make(map[string]string)
+
+	for line, env := range strings.Split(kubeEnv, "\n") {
+		env = strings.Trim(env, " ")
+		if len(env) == 0 {
+			continue
+		}
+		items := strings.SplitN(env, ":", 2)
+		if len(items) != 2 {
+			return nil, fmt.Errorf("wrong content in kube-env at line: %d", line)
+		}
+		key := strings.Trim(items[0], " ")
+		value := strings.Trim(items[1], " \"'")
+		if key == "NODE_LABELS" {
+			for _, label := range strings.Split(value, ",") {
+				labelItems := strings.SplitN(label, "=", 2)
+				if len(labelItems) != 2 {
+					return nil, fmt.Errorf("error while parsing label: %s", label)
+				}
+				result[labelItems[0]] = labelItems[1]
+			}
+		}
+	}
+	return result, nil
+}
+
+func joinStringMaps(items ...map[string]string) map[string]string {
+	result := make(map[string]string)
+	for _, m := range items {
+		for k, v := range m {
+			result[k] = v
+		}
+	}
+	return result
 }
