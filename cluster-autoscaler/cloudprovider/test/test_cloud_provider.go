@@ -22,6 +22,7 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 )
 
 // TestCloudProvider is a dummy cloud provider to be used in tests.
@@ -210,4 +211,9 @@ func (tng *TestNodeGroup) Nodes() ([]string, error) {
 		}
 	}
 	return result, nil
+}
+
+// TemplateNodeInfo returns a node template for this node group.
+func (tng *TestNodeGroup) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
+	return nil, cloudprovider.ErrNotImplemented
 }

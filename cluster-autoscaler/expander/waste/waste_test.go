@@ -20,6 +20,7 @@ import (
 	"testing"
 	"time"
 
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
 	"github.com/stretchr/testify/assert"
@@ -42,6 +43,9 @@ func (f *FakeNodeGroup) DeleteNodes([]*apiv1.Node) error    { return nil }
 func (f *FakeNodeGroup) Id() string                         { return f.id }
 func (f *FakeNodeGroup) Debug() string                      { return f.id }
 func (f *FakeNodeGroup) Nodes() ([]string, error)           { return []string{}, nil }
+func (f *FakeNodeGroup) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
+	return nil, cloudprovider.ErrNotImplemented
+}
 
 func makeNodeInfo(cpu int64, memory int64, pods int64) *schedulercache.NodeInfo {
 	node := &apiv1.Node{
