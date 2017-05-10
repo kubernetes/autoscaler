@@ -101,7 +101,7 @@ func AwsRefFromProviderId(id string) (*AwsRef, error) {
 	}, nil
 }
 
-// Asg implements NodeGroup interfrace.
+// Asg implements NodeGroup interface.
 type Asg struct {
 	AwsRef
 

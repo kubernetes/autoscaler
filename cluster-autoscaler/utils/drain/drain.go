@@ -54,7 +54,7 @@ func GetPodsForDeletionOnNodeDrain(
 		}
 
 		// Possibly skip a pod under deletion but only if it was being deleted for long enough
-		// to aviod a situation when we delete the empty node immediately after the pod was marked for
+		// to avoid a situation when we delete the empty node immediately after the pod was marked for
 		// deletion without respecting any graceful termination.
 		if pod.DeletionTimestamp != nil && pod.DeletionTimestamp.Time.Before(currentTime.Add(-1*PodDeletionTimeout)) {
 			// pod is being deleted for long enough - no need to care about it.
