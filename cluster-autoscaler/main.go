@@ -218,6 +218,10 @@ func main() {
 		glog.Fatalf("Unrecognized estimator: %v", *estimatorFlag)
 	}
 
+	if *expanderFlag == expander.NodeCountBalanceExpanderName {
+		glog.Warningf("%s expander is used for prioritizing high availability more than heterogeneousness. It is meant to work well only when every set of target node groups for each node is homogeneous except the zone")
+	}
+
 	go func() {
 		http.Handle("/metrics", prometheus.Handler())
 		err := http.ListenAndServe(*address, nil)

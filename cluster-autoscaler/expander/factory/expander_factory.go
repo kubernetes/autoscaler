@@ -19,6 +19,7 @@ package factory
 import (
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/mostpods"
+	"k8s.io/autoscaler/cluster-autoscaler/expander/nodecountbalance"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/random"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/waste"
 )
@@ -28,6 +29,8 @@ func ExpanderStrategyFromString(expanderFlag string) expander.Strategy {
 	var expanderStrategy expander.Strategy
 	{
 		switch expanderFlag {
+		case expander.NodeCountBalanceExpanderName:
+			expanderStrategy = nodecountbalance.NewStrategy()
 		case expander.RandomExpanderName:
 			expanderStrategy = random.NewStrategy()
 		case expander.MostPodsExpanderName:
