@@ -105,7 +105,7 @@ candidateloop:
 				break candidateloop
 			}
 		} else {
-			glog.V(2).Infof("%s: node %s is not suitable for removal %v", evaluationType, node.Name, err)
+			glog.V(2).Infof("%s: node %s is not suitable for removal: %v", evaluationType, node.Name, findProblems)
 		}
 	}
 	return result, newHints, nil
