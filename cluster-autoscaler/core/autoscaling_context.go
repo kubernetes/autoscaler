@@ -67,6 +67,8 @@ type AutoscalingOptions struct {
 	ScaleDownUnreadyTime time.Duration
 	// MaxNodesTotal sets the maximum number of nodes in the whole cluster
 	MaxNodesTotal int
+	// NodeGroupAutoDiscovery represents one or more definition(s) of node group auto-discovery
+	NodeGroupAutoDiscovery string
 	// UnregisteredNodeRemovalTime represents how long CA waits before removing nodes that are not registered in Kubernetes")
 	UnregisteredNodeRemovalTime time.Duration
 	// EstimatorName is the estimator used to estimate the number of needed nodes in scale up.
@@ -105,7 +107,10 @@ type AutoscalingOptions struct {
 func NewAutoscalingContext(options AutoscalingOptions, predicateChecker *simulator.PredicateChecker,
 	kubeClient kube_client.Interface, kubeEventRecorder kube_record.EventRecorder, logEventRecorder *utils.LogEventRecorder) *AutoscalingContext {
 	cloudProviderBuilder := builder.NewCloudProviderBuilder(options.CloudProviderName, options.CloudConfig)
-	cloudProvider := cloudProviderBuilder.Build(options.NodeGroups)
+	cloudProvider := cloudProviderBuilder.Build(cloudprovider.NodeGroupDiscoveryOptions{
+		NodeGroupSpecs:             options.NodeGroups,
+		NodeGroupAutoDiscoverySpec: options.NodeGroupAutoDiscovery,
+	})
 	expanderStrategy := factory.ExpanderStrategyFromString(options.ExpanderName)
 	clusterStateConfig := clusterstate.ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: options.MaxTotalUnreadyPercentage,
