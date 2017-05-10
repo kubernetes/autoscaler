@@ -20,6 +20,7 @@ import (
 	"testing"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -51,4 +52,15 @@ func TestExtractLabelsFromKubeEnv(t *testing.T) {
 	assert.Equal(t, "d", labels["c"])
 	assert.Equal(t, "pool-3", labels["cloud.google.com/gke-nodepool"])
 	assert.Equal(t, "true", labels["cloud.google.com/gke-preemptible"])
+}
+
+func TestBuildReadyConditions(t *testing.T) {
+	conditions := buildReadyConditions()
+	foundReady := false
+	for _, condition := range conditions {
+		if condition.Type == apiv1.NodeReady && condition.Status == apiv1.ConditionTrue {
+			foundReady = true
+		}
+	}
+	assert.True(t, foundReady)
 }
