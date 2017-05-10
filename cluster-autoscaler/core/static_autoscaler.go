@@ -190,7 +190,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) {
 	// which is supposed to schedule on an existing node.
 	//
 	// Without below check cluster might be unnecessary scaled up to the max allowed size
-	// in the describe situation.
+	// in the described situation.
 	schedulablePodsPresent := false
 	if a.VerifyUnschedulablePods {
 

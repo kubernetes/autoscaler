@@ -23,7 +23,7 @@ import (
 )
 
 var (
-	// AvailableExpanders is a list of avaialble expander options
+	// AvailableExpanders is a list of available expander options
 	AvailableExpanders = []string{RandomExpanderName, MostPodsExpanderName, LeastWasteExpanderName}
 	// RandomExpanderName selects a node group at random
 	RandomExpanderName = "random"

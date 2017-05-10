@@ -83,7 +83,7 @@ type NodeGroup interface {
 	Nodes() ([]string, error)
 
 	// TemplateNodeInfo returns a schedulercache.NodeInfo structure of an empty
-	// (as if just strarted) node. This will be used in scale-up simulations to
+	// (as if just started) node. This will be used in scale-up simulations to
 	// predict what would a new node look like if a node group was expanded. The returned
 	// NodeInfo is expected to have a fully populated Node object, with all of the labels,
 	// capacity and allocatable information as well as all pods that are started on
