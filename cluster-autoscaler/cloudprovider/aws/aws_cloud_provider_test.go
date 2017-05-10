@@ -48,6 +48,20 @@ func (a *AutoScalingMock) DescribeAutoScalingGroups(i *autoscaling.DescribeAutoS
 	}, nil
 }
 
+func (a *AutoScalingMock) DescribeTags(i *autoscaling.DescribeTagsInput) (*autoscaling.DescribeTagsOutput, error) {
+	return &autoscaling.DescribeTagsOutput{
+		Tags: []*autoscaling.TagDescription{
+			{
+				Key:               aws.String("foo"),
+				Value:             aws.String("bar"),
+				ResourceId:        aws.String("asg-123456"),
+				ResourceType:      aws.String("auto-scaling-group"),
+				PropagateAtLaunch: aws.Bool(false),
+			},
+		},
+	}, nil
+}
+
 func (a *AutoScalingMock) SetDesiredCapacity(input *autoscaling.SetDesiredCapacityInput) (*autoscaling.SetDesiredCapacityOutput, error) {
 	args := a.Called(input)
 	return args.Get(0).(*autoscaling.SetDesiredCapacityOutput), nil
@@ -64,18 +78,18 @@ var testAwsManager = &AwsManager{
 	asgCache: make(map[AwsRef]*Asg),
 }
 
-func testProvider(t *testing.T, m *AwsManager) *AwsCloudProvider {
-	provider, err := BuildAwsCloudProvider(m, nil)
+func testProvider(t *testing.T, m *AwsManager) *awsCloudProvider {
+	provider, err := buildStaticallyDiscoveringProvider(m, nil)
 	assert.NoError(t, err)
 	return provider
 }
 
 func TestBuildAwsCloudProvider(t *testing.T) {
 	m := testAwsManager
-	_, err := BuildAwsCloudProvider(m, []string{"bad spec"})
+	_, err := buildStaticallyDiscoveringProvider(m, []string{"bad spec"})
 	assert.Error(t, err)
 
-	_, err = BuildAwsCloudProvider(m, nil)
+	_, err = buildStaticallyDiscoveringProvider(m, nil)
 	assert.NoError(t, err)
 }
 
@@ -261,16 +275,16 @@ func TestDebug(t *testing.T) {
 }
 
 func TestBuildAsg(t *testing.T) {
-	_, err := buildAsg("a", nil)
+	_, err := buildAsgFromSpec("a", nil)
 	assert.Error(t, err)
-	_, err = buildAsg("a:b:c", nil)
+	_, err = buildAsgFromSpec("a:b:c", nil)
 	assert.Error(t, err)
-	_, err = buildAsg("1:", nil)
+	_, err = buildAsgFromSpec("1:", nil)
 	assert.Error(t, err)
-	_, err = buildAsg("1:2:", nil)
+	_, err = buildAsgFromSpec("1:2:", nil)
 	assert.Error(t, err)
 
-	asg, err := buildAsg("111:222:test-name", nil)
+	asg, err := buildAsgFromSpec("111:222:test-name", nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 111, asg.MinSize())
 	assert.Equal(t, 222, asg.MaxSize())
