@@ -24,9 +24,9 @@ import (
 
 var (
 	// AvailableExpanders is a list of avaialble expander options
-	AvailableExpanders = []string{BalanceExpanderName, RandomExpanderName, MostPodsExpanderName, LeastWasteExpanderName}
-	// BalanceExpanderName is the name of expander which selects a node group to balance node groups in their node counts
-	BalanceExpanderName = "balance"
+	AvailableExpanders = []string{NodeCountBalanceExpanderName, RandomExpanderName, MostPodsExpanderName, LeastWasteExpanderName}
+	// NodeCountBalanceExpanderName is the name of expander which selects a node group to balance node groups in their node counts
+	NodeCountBalanceExpanderName = "node-count-balance"
 	// RandomExpanderName is the name of expander which selects a node group at random
 	RandomExpanderName = "random"
 	// MostPodsExpanderName is the name of expander which selects a node group that fits the most pods

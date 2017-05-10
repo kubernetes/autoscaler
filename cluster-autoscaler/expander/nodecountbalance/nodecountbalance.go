@@ -14,23 +14,23 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package balance
+package nodecountbalance
 
 import (
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 )
 
-type balance struct {
+type nodecountbalance struct {
 }
 
 // NewStrategy returns an expansion strategy that randomly picks between node groups
 func NewStrategy() expander.Strategy {
-	return &balance{}
+	return &nodecountbalance{}
 }
 
 // BestOption selects from the expansion options to balance node groups in their node counts
-func (r *balance) BestOption(expansionOptions []expander.Option, nodeInfo map[string]*schedulercache.NodeInfo) *expander.Option {
+func (r *nodecountbalance) BestOption(expansionOptions []expander.Option, nodeInfo map[string]*schedulercache.NodeInfo) *expander.Option {
 	pos := 0
 	for i, o := range expansionOptions {
 		if i == 0 {
