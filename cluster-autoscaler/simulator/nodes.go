@@ -29,7 +29,7 @@ import (
 )
 
 // GetRequiredPodsForNode returns a list od pods that would appear on the node if the
-// node was just created (like deamonset and manifest-run pods). It reuses kubectl
+// node was just created (like daemonset and manifest-run pods). It reuses kubectl
 // drain command to get the list.
 func GetRequiredPodsForNode(nodename string, client kube_client.Interface) ([]*apiv1.Pod, error) {
 
