@@ -337,7 +337,10 @@ func (m *GceManager) buildNodeFromTemplate(mig *Mig, template *gce.InstanceTempl
 		return nil, err
 	}
 	node.Labels = joinStringMaps(node.Labels, labels)
-	// TODO - setup status
+
+	// Ready status
+	node.Status.Conditions = buildReadyConditions()
+
 	return &node, nil
 }
 
@@ -362,6 +365,37 @@ func buildGenericLabels(ref GceRef, machineType string, nodeName string) (map[st
 	result[metav1.LabelZoneFailureDomain] = ref.Zone
 	result[metav1.LabelHostname] = nodeName
 	return result, nil
+}
+
+func buildReadyConditions() []apiv1.NodeCondition {
+	lastTransition := time.Now().Add(-time.Minute)
+	return []apiv1.NodeCondition{
+		{
+			Type:               apiv1.NodeReady,
+			Status:             apiv1.ConditionTrue,
+			LastTransitionTime: metav1.Time{Time: lastTransition},
+		},
+		{
+			Type:               apiv1.NodeNetworkUnavailable,
+			Status:             apiv1.ConditionFalse,
+			LastTransitionTime: metav1.Time{Time: lastTransition},
+		},
+		{
+			Type:               apiv1.NodeOutOfDisk,
+			Status:             apiv1.ConditionFalse,
+			LastTransitionTime: metav1.Time{Time: lastTransition},
+		},
+		{
+			Type:               apiv1.NodeMemoryPressure,
+			Status:             apiv1.ConditionFalse,
+			LastTransitionTime: metav1.Time{Time: lastTransition},
+		},
+		{
+			Type:               apiv1.NodeInodePressure,
+			Status:             apiv1.ConditionFalse,
+			LastTransitionTime: metav1.Time{Time: lastTransition},
+		},
+	}
 }
 
 func extractLabelsFromKubeEnv(kubeEnv string) (map[string]string, error) {
