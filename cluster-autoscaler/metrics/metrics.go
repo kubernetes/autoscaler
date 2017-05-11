@@ -58,53 +58,44 @@ var (
 		},
 	)
 
-	lastTimestamp = prometheus.NewGaugeVec(
+	/**** Metrics related to autoscaler execution ****/
+	lastActivity = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Namespace: caNamespace,
-			Name:      "last_time_seconds",
-			Help:      "Last time CA run some main loop fragment.",
-		}, []string{"main"},
+			Name:      "last_activity",
+			Help:      "Last time certain part of CA logic executed.",
+		}, []string{"activity"},
 	)
 
-	lastDuration = prometheus.NewGaugeVec(
-		prometheus.GaugeOpts{
-			Namespace: caNamespace,
-			Name:      "last_duration_microseconds",
-			Help:      "Time spent in last main loop fragments in microseconds.",
-		}, []string{"main"},
-	)
-
-	duration = prometheus.NewSummaryVec(
+	functionDuration = prometheus.NewSummaryVec(
 		prometheus.SummaryOpts{
 			Namespace: caNamespace,
-			Name:      "duration_microseconds",
-			Help:      "Time spent in main loop fragments in microseconds.",
-		}, []string{"main"},
+			Name:      "function_duration_seconds",
+			Help:      "Time taken by various parts of CA main loop.",
+		}, []string{"function"},
 	)
 )
 
 func init() {
-	prometheus.MustRegister(duration)
-	prometheus.MustRegister(lastDuration)
-	prometheus.MustRegister(lastTimestamp)
 	prometheus.MustRegister(clusterSafeToAutoscale)
 	prometheus.MustRegister(nodesCount)
 	prometheus.MustRegister(unschedulablePodsCount)
+	prometheus.MustRegister(lastActivity)
+	prometheus.MustRegister(functionDuration)
 }
 
-func durationToMicro(start time.Time) float64 {
-	return float64(time.Now().Sub(start).Nanoseconds() / 1000)
+func getDuration(start time.Time) float64 {
+	return time.Now().Sub(start).Seconds()
 }
 
 // UpdateDuration records the duration of the step identified by the label
 func UpdateDuration(label string, start time.Time) {
-	duration.WithLabelValues(label).Observe(durationToMicro(start))
-	lastDuration.WithLabelValues(label).Set(durationToMicro(start))
+	functionDuration.WithLabelValues(label).Observe(getDuration(start))
 }
 
 // UpdateLastTime records the time the step identified by the label was started
-func UpdateLastTime(label string) {
-	lastTimestamp.WithLabelValues(label).Set(float64(time.Now().Unix()))
+func UpdateLastTime(label string, now time.Time) {
+	lastActivity.WithLabelValues(label).Set(float64(now.Unix()))
 }
 
 // UpdateClusterState updates metrics related to cluster state

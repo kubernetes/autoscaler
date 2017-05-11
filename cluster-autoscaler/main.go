@@ -189,7 +189,7 @@ func run(_ <-chan struct{}) {
 		case <-time.After(*scanInterval):
 			{
 				loopStart := time.Now()
-				metrics.UpdateLastTime("main")
+				metrics.UpdateLastTime("main", loopStart)
 
 				autoscaler.RunOnce(loopStart)
 

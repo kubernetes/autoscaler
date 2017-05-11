@@ -80,6 +80,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) {
 	pdbLister := a.PodDisruptionBudgetLister()
 	scaleDown := a.scaleDown
 	autoscalingContext := a.AutoscalingContext
+	runStart := time.Now()
 
 	readyNodes, err := readyNodeLister.List()
 	if err != nil {
@@ -123,6 +124,9 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) {
 		scaleDown.CleanUpUnneededNodes()
 		return
 	}
+
+	metrics.UpdateDuration("updateClusterState", runStart)
+	metrics.UpdateLastTime("autoscaling", time.Now())
 
 	// Check if there are any nodes that failed to register in kuberentes
 	// master.
@@ -215,7 +219,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) {
 		glog.V(1).Info("Max total nodes in cluster reached")
 	} else {
 		scaleUpStart := time.Now()
-		metrics.UpdateLastTime("scaleup")
+		metrics.UpdateLastTime("scaleUp", scaleUpStart)
 		scaledUp, err := ScaleUp(autoscalingContext, unschedulablePodsToHelp, readyNodes)
 
 		metrics.UpdateDuration("scaleup", scaleUpStart)
@@ -248,7 +252,6 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) {
 			"lastScaleDownFailedTrail=%s schedulablePodsPresent=%v", calculateUnneededOnly,
 			a.lastScaleUpTime, a.lastScaleDownFailedTrial, schedulablePodsPresent)
 
-		metrics.UpdateLastTime("findUnneeded")
 		glog.V(4).Infof("Calculating unneeded nodes")
 
 		scaleDown.CleanUp(time.Now())
@@ -270,9 +273,9 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) {
 			glog.V(4).Infof("Starting scale down")
 
 			scaleDownStart := time.Now()
-			metrics.UpdateLastTime("scaledown")
+			metrics.UpdateLastTime("scaleDown", scaleDownStart)
 			result, err := scaleDown.TryToScaleDown(allNodes, allScheduled, pdbs)
-			metrics.UpdateDuration("scaledown", scaleDownStart)
+			metrics.UpdateDuration("scaleDown", scaleDownStart)
 
 			// TODO: revisit result handling
 			if err != nil {
