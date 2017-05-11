@@ -21,13 +21,13 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 
 	kube_record "k8s.io/client-go/tools/record"
 	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 
 	"github.com/golang/glog"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 )
 
 // StaticAutoscaler is an autoscaler which has all the core functionality of a CA but without the reconfiguration feature
@@ -176,6 +176,20 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) {
 	allNodesAvailableTime := GetAllNodesAvailableTime(readyNodes)
 	podsToReset, unschedulablePodsToHelp := SlicePodsByPodScheduledTime(allUnschedulablePods, allNodesAvailableTime)
 	ResetPodScheduledCondition(a.AutoscalingContext.ClientSet, podsToReset)
+
+	if autoscalingContext.MinExtraCapacityRate > 0.0 {
+		scheduledPlaceholderPods, unscheduledPlaceholderPods, err := CreateAndSchedulePlaceholderPods(readyNodes, allScheduled, autoscalingContext, a.PredicateChecker)
+
+		if err != nil {
+			glog.Errorf("Failed to schedule placeholder pods: %v", err)
+			return
+		}
+
+		// Unscheduled placeholder pods should be considered as actual unschedulable pods to advance scaling up for producing resource slack
+		unschedulablePodsToHelp = append(unschedulablePodsToHelp, unscheduledPlaceholderPods...)
+		// Scheduled placeholder pods should be considered as actual scheduled pods to delay scaling down for keeping resource slack
+		allScheduled = append(allScheduled, scheduledPlaceholderPods...)
+	}
 
 	// We need to check whether pods marked as unschedulable are actually unschedulable.
 	// This should prevent from adding unnecessary nodes. Example of such situation:
