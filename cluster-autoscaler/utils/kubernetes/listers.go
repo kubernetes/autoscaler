@@ -23,9 +23,11 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/tools/cache"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	extensionsv1 "k8s.io/kubernetes/pkg/apis/extensions/v1beta1"
 	policyv1 "k8s.io/kubernetes/pkg/apis/policy/v1beta1"
 	client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	v1lister "k8s.io/kubernetes/pkg/client/listers/core/v1"
+	v1extensionslister "k8s.io/kubernetes/pkg/client/listers/extensions/v1beta1"
 	v1policylister "k8s.io/kubernetes/pkg/client/listers/policy/v1beta1"
 )
 
@@ -36,6 +38,7 @@ type ListerRegistry interface {
 	ScheduledPodLister() *ScheduledPodLister
 	UnschedulablePodLister() *UnschedulablePodLister
 	PodDisruptionBudgetLister() *PodDisruptionBudgetLister
+	DaemonSetLister() *DaemonSetLister
 }
 
 type listerRegistryImpl struct {
@@ -44,17 +47,20 @@ type listerRegistryImpl struct {
 	scheduledPodLister        *ScheduledPodLister
 	unschedulablePodLister    *UnschedulablePodLister
 	podDisruptionBudgetLister *PodDisruptionBudgetLister
+	daemonSetLister           *DaemonSetLister
 }
 
 // NewListerRegistry returns a registry providing various listers to list pods or nodes matching conditions
 func NewListerRegistry(allNode *AllNodeLister, readyNode *ReadyNodeLister, scheduledPod *ScheduledPodLister,
-	unschedulablePod *UnschedulablePodLister, podDisruptionBudgetLister *PodDisruptionBudgetLister) ListerRegistry {
+	unschedulablePod *UnschedulablePodLister, podDisruptionBudgetLister *PodDisruptionBudgetLister,
+	daemonSetLister *DaemonSetLister) ListerRegistry {
 	return listerRegistryImpl{
 		allNodeLister:             allNode,
 		readyNodeLister:           readyNode,
 		scheduledPodLister:        scheduledPod,
 		unschedulablePodLister:    unschedulablePod,
 		podDisruptionBudgetLister: podDisruptionBudgetLister,
+		daemonSetLister:           daemonSetLister,
 	}
 }
 
@@ -65,8 +71,9 @@ func NewListerRegistryWithDefaultListers(kubeClient client.Interface, stopChanne
 	readyNodeLister := NewReadyNodeLister(kubeClient, stopChannel)
 	allNodeLister := NewAllNodeLister(kubeClient, stopChannel)
 	podDisruptionBudgetLister := NewPodDisruptionBudgetLister(kubeClient, stopChannel)
+	daemonSetLister := NewDaemonSetLister(kubeClient, stopChannel)
 	return NewListerRegistry(allNodeLister, readyNodeLister, scheduledPodLister,
-		unschedulablePodLister, podDisruptionBudgetLister)
+		unschedulablePodLister, podDisruptionBudgetLister, daemonSetLister)
 }
 
 // AllNodeLister returns the AllNodeLister registered to this registry
@@ -92,6 +99,11 @@ func (r listerRegistryImpl) UnschedulablePodLister() *UnschedulablePodLister {
 // PodDisruptionBudgetLister returns the podDisruptionBudgetLister registered to this registry
 func (r listerRegistryImpl) PodDisruptionBudgetLister() *PodDisruptionBudgetLister {
 	return r.podDisruptionBudgetLister
+}
+
+// DaemonSetLister returns the daemonSetLister registered to this registry
+func (r listerRegistryImpl) DaemonSetLister() *DaemonSetLister {
+	return r.daemonSetLister
 }
 
 // UnschedulablePodLister lists unscheduled pods
@@ -228,7 +240,7 @@ type PodDisruptionBudgetLister struct {
 	pdbLister v1policylister.PodDisruptionBudgetLister
 }
 
-// List returns all nodes
+// List returns all pdbs
 func (lister *PodDisruptionBudgetLister) List() ([]*policyv1.PodDisruptionBudget, error) {
 	return lister.pdbLister.List(labels.Everything())
 }
@@ -242,5 +254,27 @@ func NewPodDisruptionBudgetLister(kubeClient client.Interface, stopchannel <-cha
 	reflector.RunUntil(stopchannel)
 	return &PodDisruptionBudgetLister{
 		pdbLister: pdbLister,
+	}
+}
+
+// DaemonSetLister lists all daemonsets.
+type DaemonSetLister struct {
+	daemonSetLister v1extensionslister.DaemonSetLister
+}
+
+// List returns all daemon sets
+func (lister *DaemonSetLister) List() ([]*extensionsv1.DaemonSet, error) {
+	return lister.daemonSetLister.List(labels.Everything())
+}
+
+// NewDaemonSetLister builds a daemonset lister.
+func NewDaemonSetLister(kubeClient client.Interface, stopchannel <-chan struct{}) *DaemonSetLister {
+	listWatcher := cache.NewListWatchFromClient(kubeClient.Extensions().RESTClient(), "daemonsets", apiv1.NamespaceAll, fields.Everything())
+	store := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
+	lister := v1extensionslister.NewDaemonSetLister(store)
+	reflector := cache.NewReflector(listWatcher, &extensionsv1.DaemonSet{}, store, time.Hour)
+	reflector.RunUntil(stopchannel)
+	return &DaemonSetLister{
+		daemonSetLister: lister,
 	}
 }
