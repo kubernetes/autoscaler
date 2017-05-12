@@ -69,7 +69,7 @@ func TestFastGetPodsToMove(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(r3))
 
-	// DeamonSet pod
+	// DaemonSet pod
 	pod4 := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "pod4",
