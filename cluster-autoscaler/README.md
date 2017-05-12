@@ -19,7 +19,7 @@ there is a big chance that it won't work as expected.
 | 1.5.X  | 0.4.X  |
 | 1.4.X  | 0.3.X  |
 
-# Notable changes:
+# Notable changes
 
 CA Version 0.5.4:
 * Fixes problems with node drain when pods are ignoring SIGTERM.
