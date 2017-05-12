@@ -50,7 +50,7 @@ func (a *PollingAutoscaler) ExitCleanUp() {
 // RunOnce represents a single iteration of a polling autoscaler inside the CA's control-loop
 func (a *PollingAutoscaler) RunOnce(currentTime time.Time) {
 	reconfigureStart := time.Now()
-	metrics.UpdateLastTime("poll")
+	metrics.UpdateLastTime("poll", reconfigureStart)
 	if err := a.Poll(); err != nil {
 		glog.Errorf("Failed to poll : %v", err)
 	}
