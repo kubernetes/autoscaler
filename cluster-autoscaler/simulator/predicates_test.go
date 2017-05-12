@@ -17,6 +17,7 @@ limitations under the License.
 package simulator
 
 import (
+	"strings"
 	"testing"
 	"time"
 
@@ -55,6 +56,8 @@ func TestPredicates(t *testing.T) {
 	_, err = predicateChecker.FitsAny(p3, nodeInfos)
 	assert.Error(t, err)
 
+	err = predicateChecker.CheckPredicates(p2, ni1)
+	assert.True(t, strings.Contains(err.Error(), "Insufficient cpu"))
 	assert.Error(t, predicateChecker.CheckPredicates(p2, ni1))
 	assert.NoError(t, predicateChecker.CheckPredicates(p4, ni1))
 	assert.NoError(t, predicateChecker.CheckPredicates(p2, ni2))
