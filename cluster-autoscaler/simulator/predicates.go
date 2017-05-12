@@ -17,6 +17,7 @@ limitations under the License.
 package simulator
 
 import (
+	"bytes"
 	"fmt"
 
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -105,7 +106,7 @@ func (p *PredicateChecker) FitsAny(pod *apiv1.Pod, nodeInfos map[string]*schedul
 
 // CheckPredicates checks if the given pod can be placed on the given node.
 func (p *PredicateChecker) CheckPredicates(pod *apiv1.Pod, nodeInfo *schedulercache.NodeInfo) error {
-	for _, predicate := range p.predicates {
+	for name, predicate := range p.predicates {
 		match, failureReason, err := predicate(pod, nil, nodeInfo)
 
 		nodename := "unknown"
@@ -113,10 +114,19 @@ func (p *PredicateChecker) CheckPredicates(pod *apiv1.Pod, nodeInfo *schedulerca
 			nodename = nodeInfo.Node().Name
 		}
 		if err != nil {
-			return fmt.Errorf("cannot put %s on %s due to %v", pod.Name, nodename, err)
+			return fmt.Errorf("%s predicate error, cannot put %s/%s on %s due to, error %v", name, pod.Namespace,
+				pod.Name, nodename, err)
 		}
 		if !match {
-			return fmt.Errorf("cannot put %s on %s, reason: %v", pod.Name, nodename, failureReason)
+			var buffer bytes.Buffer
+			for i, reason := range failureReason {
+				if i > 0 {
+					buffer.WriteString(",")
+				}
+				buffer.WriteString(reason.GetReason())
+			}
+			return fmt.Errorf("%s predicate mismatch, cannot put %s/%s on %s, reason: %s", name, pod.Namespace,
+				pod.Name, nodename, buffer.String())
 		}
 	}
 	return nil
