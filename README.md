@@ -4,9 +4,17 @@
 
 This repository contains autoscaling-related components for Kubernetes.
 
+## What's inside
+
+[Cluster Autoscaler](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler) - a component that automagically adjusts the size of a Kubernetes
+Cluster so that all pods have a place to run and there are no unneeded nodes. Works with GCP, AWS and Azure. Current state - late beta, moving towards GA.
+
+[Vertical Pod Autoscaler](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler) - a set of components to automagically adjust the 
+amount of CPU and memory requested by pods running in a Kubernetes Cluster. Current state - under development.
+
 ## Contact Info
 
-Interested in Autoscaling? Want to talk? Have questions, concenrns or great ideas?
+Interested in autoscaling? Want to talk? Have questions, concenrns or great ideas?
 
 Please join us on #sig-autoscaling at https://kubernetes.slack.com/.
 Moreover, every Thursday we host a 30min sig-autoscaling meeting on 
