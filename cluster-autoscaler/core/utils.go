@@ -25,10 +25,12 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/daemonset"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	api "k8s.io/kubernetes/pkg/api"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	extensionsv1 "k8s.io/kubernetes/pkg/apis/extensions/v1beta1"
 	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 
@@ -131,10 +133,12 @@ func createNodeNameToInfoMap(pods []*apiv1.Pod, nodes []*apiv1.Node) map[string]
 
 // GetNodeInfosForGroups finds NodeInfos for all node groups used to manage the given nodes. It also returns a node group to sample node mapping.
 // TODO(mwielgus): This returns map keyed by url, while most code (including scheduler) uses node.Name for a key.
-func GetNodeInfosForGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.CloudProvider, kubeClient kube_client.Interface) (map[string]*schedulercache.NodeInfo, error) {
+//
+// TODO(mwielgus): Review error policy - sometimes we may continue with partial errors.
+func GetNodeInfosForGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.CloudProvider, kubeClient kube_client.Interface,
+	daemonsets []*extensionsv1.DaemonSet, predicateChecker *simulator.PredicateChecker) (map[string]*schedulercache.NodeInfo, error) {
 	result := make(map[string]*schedulercache.NodeInfo)
 	for _, node := range nodes {
-
 		nodeGroup, err := cloudProvider.NodeGroupForNode(node)
 		if err != nil {
 			return map[string]*schedulercache.NodeInfo{}, err
@@ -149,35 +153,70 @@ func GetNodeInfosForGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.Clou
 			if err != nil {
 				return map[string]*schedulercache.NodeInfo{}, err
 			}
-
-			// Sanitize node name.
-			sanitizedNode, err := sanitizeTemplateNode(node, id)
+			sanitizedNodeInfo, err := sanitizeNodeInfo(nodeInfo, id)
 			if err != nil {
 				return map[string]*schedulercache.NodeInfo{}, err
 			}
-
-			// Update nodename in pods.
-			sanitizedPods := make([]*apiv1.Pod, 0)
-			for _, pod := range nodeInfo.Pods() {
-				obj, err := api.Scheme.DeepCopy(pod)
-				if err != nil {
-					return nil, err
-				}
-				sanitizedPod := obj.(*apiv1.Pod)
-				sanitizedPod.Spec.NodeName = sanitizedNode.Name
-				sanitizedPods = append(sanitizedPods, sanitizedPod)
-			}
-
-			// Build a new node info.
-			sanitizedNodeInfo := schedulercache.NewNodeInfo(sanitizedPods...)
-			if err := sanitizedNodeInfo.SetNode(sanitizedNode); err != nil {
-				return nil, err
-			}
-
 			result[id] = sanitizedNodeInfo
 		}
 	}
+	for _, nodeGroup := range cloudProvider.NodeGroups() {
+		id := nodeGroup.Id()
+		if _, found := result[id]; found {
+			continue
+		}
+
+		// No good template, trying to generate one. This is called only if there are no
+		// working nodes in the node groups. By default CA tries to usa a real-world example.
+		baseNodeInfo, err := nodeGroup.TemplateNodeInfo()
+		if err != nil {
+			glog.Warningf("Unable to build template node for %s: %v", id, err)
+			if err == cloudprovider.ErrNotImplemented {
+				continue
+			} else {
+				return map[string]*schedulercache.NodeInfo{}, err
+			}
+		}
+
+		pods := daemonset.GetDaemonSetPodsForNode(baseNodeInfo, daemonsets, predicateChecker)
+		pods = append(pods, baseNodeInfo.Pods()...)
+		fullNodeInfo := schedulercache.NewNodeInfo(pods...)
+		fullNodeInfo.SetNode(baseNodeInfo.Node())
+		sanitizedNodeInfo, err := sanitizeNodeInfo(fullNodeInfo, id)
+		if err != nil {
+			return map[string]*schedulercache.NodeInfo{}, err
+		}
+		result[id] = sanitizedNodeInfo
+	}
 	return result, nil
+}
+
+func sanitizeNodeInfo(nodeInfo *schedulercache.NodeInfo, nodeGroupName string) (*schedulercache.NodeInfo, error) {
+	// Sanitize node name.
+	sanitizedNode, err := sanitizeTemplateNode(nodeInfo.Node(), nodeGroupName)
+	if err != nil {
+		return nil, err
+	}
+
+	// Update nodename in pods.
+	sanitizedPods := make([]*apiv1.Pod, 0)
+	for _, pod := range nodeInfo.Pods() {
+
+		obj, err := api.Scheme.DeepCopy(pod)
+		if err != nil {
+			return nil, err
+		}
+		sanitizedPod := obj.(*apiv1.Pod)
+		sanitizedPod.Spec.NodeName = sanitizedNode.Name
+		sanitizedPods = append(sanitizedPods, sanitizedPod)
+	}
+
+	// Build a new node info.
+	sanitizedNodeInfo := schedulercache.NewNodeInfo(sanitizedPods...)
+	if err := sanitizedNodeInfo.SetNode(sanitizedNode); err != nil {
+		return nil, err
+	}
+	return sanitizedNodeInfo, nil
 }
 
 func sanitizeTemplateNode(node *apiv1.Node, nodeGroup string) (*apiv1.Node, error) {

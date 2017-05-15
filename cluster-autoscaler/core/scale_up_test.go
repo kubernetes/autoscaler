@@ -36,6 +36,7 @@ import (
 	core "k8s.io/client-go/testing"
 	kube_record "k8s.io/client-go/tools/record"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	extensionsv1 "k8s.io/kubernetes/pkg/apis/extensions/v1beta1"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset/fake"
 )
 
@@ -93,7 +94,7 @@ func TestScaleUpOK(t *testing.T) {
 	}
 	p3 := BuildTestPod("p-new", 500, 0)
 
-	result, err := ScaleUp(context, []*apiv1.Pod{p3}, []*apiv1.Node{n1, n2})
+	result, err := ScaleUp(context, []*apiv1.Pod{p3}, []*apiv1.Node{n1, n2}, []*extensionsv1.DaemonSet{})
 	assert.NoError(t, err)
 	assert.True(t, result)
 	assert.Equal(t, "ng2-1", getStringFromChan(expandedGroups))
@@ -170,7 +171,7 @@ func TestScaleUpNodeComingNoScale(t *testing.T) {
 	}
 	p3 := BuildTestPod("p-new", 550, 0)
 
-	result, err := ScaleUp(context, []*apiv1.Pod{p3}, []*apiv1.Node{n1, n2})
+	result, err := ScaleUp(context, []*apiv1.Pod{p3}, []*apiv1.Node{n1, n2}, []*extensionsv1.DaemonSet{})
 	assert.NoError(t, err)
 	// A node is already coming - no need for scale up.
 	assert.False(t, result)
@@ -235,7 +236,7 @@ func TestScaleUpNodeComingHasScale(t *testing.T) {
 	}
 	p3 := BuildTestPod("p-new", 550, 0)
 
-	result, err := ScaleUp(context, []*apiv1.Pod{p3, p3}, []*apiv1.Node{n1, n2})
+	result, err := ScaleUp(context, []*apiv1.Pod{p3, p3}, []*apiv1.Node{n1, n2}, []*extensionsv1.DaemonSet{})
 	assert.NoError(t, err)
 	// Twho nodes needed but one node is already coming, so it should increase by one.
 	assert.True(t, result)
@@ -293,7 +294,7 @@ func TestScaleUpUnhealthy(t *testing.T) {
 	}
 	p3 := BuildTestPod("p-new", 550, 0)
 
-	result, err := ScaleUp(context, []*apiv1.Pod{p3}, []*apiv1.Node{n1, n2})
+	result, err := ScaleUp(context, []*apiv1.Pod{p3}, []*apiv1.Node{n1, n2}, []*extensionsv1.DaemonSet{})
 	assert.NoError(t, err)
 	// Node group is unhealthy.
 	assert.False(t, result)
@@ -342,7 +343,7 @@ func TestScaleUpNoHelp(t *testing.T) {
 	}
 	p3 := BuildTestPod("p-new", 500, 0)
 
-	result, err := ScaleUp(context, []*apiv1.Pod{p3}, []*apiv1.Node{n1})
+	result, err := ScaleUp(context, []*apiv1.Pod{p3}, []*apiv1.Node{n1}, []*extensionsv1.DaemonSet{})
 	assert.NoError(t, err)
 	assert.False(t, result)
 	var event string
