@@ -25,11 +25,21 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
+// NodeScaleDownReason describes reason for removing node
+type NodeScaleDownReason string
+
 const (
 	caNamespace   = "cluster_autoscaler"
 	readyLabel    = "ready"
 	unreadyLabel  = "unready"
 	startingLabel = "notStarted"
+
+	// Underutilized node was removed because of low utilization
+	Underutilized NodeScaleDownReason = "underutilized"
+	// Empty node was removed
+	Empty NodeScaleDownReason = "empty"
+	// Unready node was removed
+	Unready NodeScaleDownReason = "unready"
 )
 
 var (
@@ -74,6 +84,39 @@ var (
 			Help:      "Time taken by various parts of CA main loop.",
 		}, []string{"function"},
 	)
+
+	/**** Metrics related to autoscaler operations ****/
+	scaleUpCount = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Namespace: caNamespace,
+			Name:      "scaled_up_nodes_total",
+			Help:      "Number of nodes added by CA.",
+		},
+	)
+
+	scaleDownCount = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: caNamespace,
+			Name:      "scaled_down_nodes_total",
+			Help:      "Number of nodes removed by CA.",
+		}, []string{"reason"},
+	)
+
+	evictionsCount = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Namespace: caNamespace,
+			Name:      "evicted_pods_total",
+			Help:      "Number of pods evicted by CA",
+		},
+	)
+
+	unneededNodesCount = prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Namespace: caNamespace,
+			Name:      "unneeded_nodes_count",
+			Help:      "Number of nodes currently considered unneeded by CA.",
+		},
+	)
 )
 
 func init() {
@@ -82,6 +125,10 @@ func init() {
 	prometheus.MustRegister(unschedulablePodsCount)
 	prometheus.MustRegister(lastActivity)
 	prometheus.MustRegister(functionDuration)
+	prometheus.MustRegister(scaleUpCount)
+	prometheus.MustRegister(scaleDownCount)
+	prometheus.MustRegister(evictionsCount)
+	prometheus.MustRegister(unneededNodesCount)
 }
 
 func getDuration(start time.Time) float64 {
@@ -117,4 +164,24 @@ func UpdateClusterState(csr *clusterstate.ClusterStateRegistry) {
 // UpdateUnschedulablePodsCount records number of currently unschedulable pods
 func UpdateUnschedulablePodsCount(podsCount int) {
 	unschedulablePodsCount.Set(float64(podsCount))
+}
+
+// RegisterScaleUp records number of nodes added by scale up
+func RegisterScaleUp(nodesCount int) {
+	scaleUpCount.Add(float64(nodesCount))
+}
+
+// RegisterScaleDown records number of nodes removed by scale down
+func RegisterScaleDown(nodesCount int, reason NodeScaleDownReason) {
+	scaleDownCount.WithLabelValues(string(reason)).Add(float64(nodesCount))
+}
+
+// RegisterEvictions records number of evicted pods
+func RegisterEvictions(podsCount int) {
+	evictionsCount.Add(float64(podsCount))
+}
+
+// UpdateUnneededNodesCount records number of currently unneeded nodes
+func UpdateUnneededNodesCount(nodesCount int) {
+	unneededNodesCount.Set(float64(nodesCount))
 }
