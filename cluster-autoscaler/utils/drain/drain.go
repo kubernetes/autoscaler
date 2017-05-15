@@ -34,7 +34,7 @@ const (
 )
 
 // GetPodsForDeletionOnNodeDrain returns pods that should be deleted on node drain as well as some extra information
-// about possibly problematic pods (unreplicated and deamon sets).
+// about possibly problematic pods (unreplicated and daemonsets).
 func GetPodsForDeletionOnNodeDrain(
 	podList []*apiv1.Pod,
 	decoder runtime.Decoder,
@@ -106,7 +106,7 @@ func GetPodsForDeletionOnNodeDrain(
 					// daemonset pods, probably using taints.
 					daemonsetPod = true
 				} else {
-					return []*apiv1.Pod{}, fmt.Errorf("deamonset for %s/%s is not present, err: %v", pod.Namespace, pod.Name, err)
+					return []*apiv1.Pod{}, fmt.Errorf("daemonset for %s/%s is not present, err: %v", pod.Namespace, pod.Name, err)
 				}
 			} else {
 				daemonsetPod = true
@@ -169,7 +169,7 @@ func GetPodsForDeletionOnNodeDrain(
 				return []*apiv1.Pod{}, fmt.Errorf("%s/%s is not replicated", pod.Namespace, pod.Name)
 			}
 			if pod.Namespace == "kube-system" && skipNodesWithSystemPods {
-				return []*apiv1.Pod{}, fmt.Errorf("non-deamons set, non-mirrored, kube-system pod present: %s", pod.Name)
+				return []*apiv1.Pod{}, fmt.Errorf("non-daemonset, non-mirrored, kube-system pod present: %s", pod.Name)
 			}
 			if HasLocalStorage(pod) && skipNodesWithLocalStorage {
 				return []*apiv1.Pod{}, fmt.Errorf("pod with local storage present: %s", pod.Name)

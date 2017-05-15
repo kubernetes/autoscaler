@@ -34,7 +34,7 @@ import (
 
 var (
 	skipNodesWithSystemPods = flag.Bool("skip-nodes-with-system-pods", true,
-		"If true cluster autoscaler will never delete nodes with pods from kube-system (except for DeamonSet "+
+		"If true cluster autoscaler will never delete nodes with pods from kube-system (except for DaemonSet "+
 			"or mirror pods)")
 	skipNodesWithLocalStorage = flag.Bool("skip-nodes-with-local-storage", true,
 		"If true cluster autoscaler will never delete nodes with pods with local storage, e.g. EmptyDir or HostPath")
