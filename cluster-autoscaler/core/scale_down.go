@@ -24,6 +24,7 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
+	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -183,6 +184,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	sd.podLocationHints = newHints
 	sd.nodeUtilizationMap = utilizationMap
 	sd.context.ClusterStateRegistry.UpdateScaleDownCandidates(sd.unneededNodesList, timestamp)
+	metrics.UpdateUnneededNodesCount(len(sd.unneededNodesList))
 	return nil
 }
 
@@ -192,12 +194,15 @@ func (sd *ScaleDown) TryToScaleDown(nodes []*apiv1.Node, pods []*apiv1.Pod, pdbs
 
 	now := time.Now()
 	candidates := make([]*apiv1.Node, 0)
+	readinessMap := make(map[string]bool)
+
 	for _, node := range nodes {
 		if val, found := sd.unneededNodes[node.Name]; found {
 
 			glog.V(2).Infof("%s was unneeded for %s", node.Name, now.Sub(val).String())
 
 			ready, _, _ := kube_util.GetReadinessState(node)
+			readinessMap[node.Name] = ready
 
 			// Check how long the node was underutilized.
 			if ready && !val.Add(sd.context.ScaleDownUnneededTime).Before(now) {
@@ -249,8 +254,17 @@ func (sd *ScaleDown) TryToScaleDown(nodes []*apiv1.Node, pods []*apiv1.Pod, pdbs
 			sd.context.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaleDownEmpty", "Scale-down: removing empty node %s", node.Name)
 			simulator.RemoveNodeFromTracker(sd.usageTracker, node.Name, sd.unneededNodes)
 			go func(nodeToDelete *apiv1.Node) {
-				confirmation <- deleteNodeFromCloudProvider(nodeToDelete, sd.context.CloudProvider,
+
+				deleteErr := deleteNodeFromCloudProvider(nodeToDelete, sd.context.CloudProvider,
 					sd.context.Recorder, sd.context.ClusterStateRegistry)
+				if deleteErr == nil {
+					if readinessMap[nodeToDelete.Name] {
+						metrics.RegisterScaleDown(1, metrics.Empty)
+					} else {
+						metrics.RegisterScaleDown(1, metrics.Unready)
+					}
+				}
+				confirmation <- deleteErr
 			}(node)
 		}
 		var finalError error
@@ -307,6 +321,11 @@ func (sd *ScaleDown) TryToScaleDown(nodes []*apiv1.Node, pods []*apiv1.Pod, pdbs
 	err = deleteNode(sd.context, toRemove.Node, toRemove.PodsToReschedule)
 	if err != nil {
 		return ScaleDownError, fmt.Errorf("Failed to delete %s: %v", toRemove.Node.Name, err)
+	}
+	if readinessMap[toRemove.Node.Name] {
+		metrics.RegisterScaleDown(1, metrics.Underutilized)
+	} else {
+		metrics.RegisterScaleDown(1, metrics.Unready)
 	}
 
 	return ScaleDownNodeDeleted, nil
@@ -425,6 +444,8 @@ func drainNode(node *apiv1.Node, pods []*apiv1.Pod, client kube_client.Interface
 		case err := <-confirmations:
 			if err != nil {
 				evictionErrs = append(evictionErrs, err)
+			} else {
+				metrics.RegisterEvictions(1)
 			}
 		case <-time.After(retryUntil.Sub(time.Now()) + 5*time.Second):
 			return fmt.Errorf("Failed to drain node %s/%s: timeout when waiting for creating evictions", node.Namespace, node.Name)
