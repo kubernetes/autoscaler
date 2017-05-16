@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -86,6 +87,14 @@ var (
 	)
 
 	/**** Metrics related to autoscaler operations ****/
+	errorsCount = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: caNamespace,
+			Name:      "errors_total",
+			Help:      "The number of CA loops failed due to an error.",
+		}, []string{"type"},
+	)
+
 	scaleUpCount = prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Namespace: caNamespace,
@@ -125,6 +134,7 @@ func init() {
 	prometheus.MustRegister(unschedulablePodsCount)
 	prometheus.MustRegister(lastActivity)
 	prometheus.MustRegister(functionDuration)
+	prometheus.MustRegister(errorsCount)
 	prometheus.MustRegister(scaleUpCount)
 	prometheus.MustRegister(scaleDownCount)
 	prometheus.MustRegister(evictionsCount)
@@ -164,6 +174,12 @@ func UpdateClusterState(csr *clusterstate.ClusterStateRegistry) {
 // UpdateUnschedulablePodsCount records number of currently unschedulable pods
 func UpdateUnschedulablePodsCount(podsCount int) {
 	unschedulablePodsCount.Set(float64(podsCount))
+}
+
+// RegisterError records any errors preventing Cluster Autoscaler from working.
+// No more than one error should be recorded per loop.
+func RegisterError(err *errors.AutoscalerError) {
+	errorsCount.WithLabelValues(string(err.Type())).Add(1.0)
 }
 
 // RegisterScaleUp records number of nodes added by scale up
