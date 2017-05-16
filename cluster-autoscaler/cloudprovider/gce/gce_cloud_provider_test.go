@@ -20,6 +20,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 )
 
 func TestBuildMig(t *testing.T) {
@@ -38,4 +39,12 @@ func TestBuildMig(t *testing.T) {
 	assert.Equal(t, 222, mig.MaxSize())
 	assert.Equal(t, "test-zone", mig.Zone)
 	assert.Equal(t, "test-name", mig.Name)
+}
+
+func TestBuildKubeProxy(t *testing.T) {
+	mig, _ := buildMig("1:20:https://content.googleapis.com/compute/v1/projects/test-project/zones/test-zone/instanceGroups/test-name", nil)
+	pod := buildKubeProxy(mig)
+	assert.Equal(t, 1, len(pod.Spec.Containers))
+	cpu := pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceCPU]
+	assert.Equal(t, int64(100), cpu.MilliValue())
 }
