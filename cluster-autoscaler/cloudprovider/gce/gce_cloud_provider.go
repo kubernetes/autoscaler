@@ -237,7 +237,7 @@ func (mig *Mig) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
 }
 
 func buildMig(value string, gceManager *GceManager) (*Mig, error) {
-	spec, err := dynamic.SpecFromString(value)
+	spec, err := dynamic.SpecFromString(value, true)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse node group spec: %v", err)
