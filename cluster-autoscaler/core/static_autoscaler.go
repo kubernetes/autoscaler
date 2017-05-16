@@ -220,7 +220,14 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) {
 	} else {
 		scaleUpStart := time.Now()
 		metrics.UpdateLastTime("scaleUp", scaleUpStart)
-		scaledUp, err := ScaleUp(autoscalingContext, unschedulablePodsToHelp, readyNodes)
+
+		daemonsets, err := a.ListerRegistry.DaemonSetLister().List()
+		if err != nil {
+			glog.Errorf("Failed to get daemonset list")
+			return
+		}
+
+		scaledUp, err := ScaleUp(autoscalingContext, unschedulablePodsToHelp, readyNodes, daemonsets)
 
 		metrics.UpdateDuration("scaleup", scaleUpStart)
 
