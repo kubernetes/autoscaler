@@ -287,7 +287,7 @@ func (asg *Asg) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
 }
 
 func buildAsgFromSpec(value string, awsManager *AwsManager) (*Asg, error) {
-	spec, err := dynamic.SpecFromString(value)
+	spec, err := dynamic.SpecFromString(value, false)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse node group spec: %v", err)
