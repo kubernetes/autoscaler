@@ -67,3 +67,14 @@ func (e *AutoscalerError) Error() string {
 func (e *AutoscalerError) Type() AutoscalerErrorType {
 	return e.errorType
 }
+
+// AddPrefix adds a prefix to error message.
+// Returns the error it's called for convienient inline use.
+// Example:
+// if err := DoSomething(myObject); err != nil {
+//	return err.AddPrefix("can't do something with %v: ", myObject)
+// }
+func (e *AutoscalerError) AddPrefix(msg string, args ...interface{}) *AutoscalerError {
+	e.msg = fmt.Sprintf(msg, args...) + e.msg
+	return e
+}

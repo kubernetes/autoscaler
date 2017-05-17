@@ -225,17 +225,16 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) *errors.AutoscalerErro
 		daemonsets, err := a.ListerRegistry.DaemonSetLister().List()
 		if err != nil {
 			glog.Errorf("Failed to get daemonset list")
-			return
+			return errors.ToAutoscalerError(errors.ApiCallError, err)
 		}
 
-		scaledUp, err := ScaleUp(autoscalingContext, unschedulablePodsToHelp, readyNodes, daemonsets)
+		scaledUp, typedErr := ScaleUp(autoscalingContext, unschedulablePodsToHelp, readyNodes, daemonsets)
 
 		metrics.UpdateDuration("scaleup", scaleUpStart)
 
-		if err != nil {
-			glog.Errorf("Failed to scale up: %v", err)
-			// TODO(maciekpytel): temporary hack, fix this
-			return nil
+		if typedErr != nil {
+			glog.Errorf("Failed to scale up: %v", typedErr)
+			return typedErr
 		} else if scaledUp {
 			a.lastScaleUpTime = time.Now()
 			// No scale down in this iteration.
