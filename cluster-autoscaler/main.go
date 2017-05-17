@@ -99,6 +99,7 @@ var (
 		"Type of node group expander to be used in scale up. Available values: ["+strings.Join(expander.AvailableExpanders, ",")+"]")
 
 	writeStatusConfigMapFlag = flag.Bool("write-status-configmap", true, "Should CA write status information to a configmap")
+	maxInactivityFlag        = flag.Duration("max-inactivity", 10*time.Minute, "Maximum time from last recorded autoscaler activity before automatic restart")
 )
 
 func createAutoscalerOptions() core.AutoscalerOptions {
@@ -166,10 +167,7 @@ func registerSignalHandlers(autoscaler core.Autoscaler) {
 	}()
 }
 
-// In order to meet interface criteria for LeaderElectionConfig we need to
-// take stop channel as an argument. However, since we are committing a suicide
-// after loosing mastership we can safely ignore it.
-func run(_ <-chan struct{}) {
+func run(healthCheck *metrics.HealthCheck) {
 	kubeClient := createKubeClient()
 	kubeEventRecorder := kube_util.CreateEventRecorder(kubeClient)
 	opts := createAutoscalerOptions()
@@ -184,6 +182,7 @@ func run(_ <-chan struct{}) {
 
 	autoscaler.CleanUp()
 	registerSignalHandlers(autoscaler)
+	healthCheck.StartMonitoring()
 
 	for {
 		select {
@@ -191,6 +190,7 @@ func run(_ <-chan struct{}) {
 			{
 				loopStart := time.Now()
 				metrics.UpdateLastTime("main", loopStart)
+				healthCheck.UpdateLastActivity(loopStart)
 
 				err := autoscaler.RunOnce(loopStart)
 				if err != nil && err.Type() != errors.TransientError {
@@ -212,6 +212,8 @@ func main() {
 		"Can be used multiple times. Format: <min>:<max>:<other...>")
 	kube_flag.InitFlags()
 
+	healthCheck := metrics.NewHealthCheck(*maxInactivityFlag)
+
 	glog.Infof("Cluster Autoscaler %s", ClusterAutoscalerVersion)
 
 	correctEstimator := false
@@ -226,12 +228,13 @@ func main() {
 
 	go func() {
 		http.Handle("/metrics", prometheus.Handler())
+		http.Handle("/health-check", healthCheck)
 		err := http.ListenAndServe(*address, nil)
 		glog.Fatalf("Failed to start metrics: %v", err)
 	}()
 
 	if !leaderElection.LeaderElect {
-		run(nil)
+		run(healthCheck)
 	} else {
 		id, err := os.Hostname()
 		if err != nil {
@@ -262,7 +265,11 @@ func main() {
 			RenewDeadline: leaderElection.RenewDeadline.Duration,
 			RetryPeriod:   leaderElection.RetryPeriod.Duration,
 			Callbacks: kube_leaderelection.LeaderCallbacks{
-				OnStartedLeading: run,
+				OnStartedLeading: func(_ <-chan struct{}) {
+					// Since we are committing a suicide after losing
+					// mastership, we can safely ignore the argument.
+					run(healthCheck)
+				},
 				OnStoppedLeading: func() {
 					glog.Fatalf("lost master")
 				},
