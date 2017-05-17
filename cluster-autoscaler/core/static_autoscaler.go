@@ -263,11 +263,10 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) *errors.AutoscalerErro
 		glog.V(4).Infof("Calculating unneeded nodes")
 
 		scaleDown.CleanUp(time.Now())
-		err = scaleDown.UpdateUnneededNodes(allNodes, allScheduled, time.Now(), pdbs)
-		if err != nil {
-			glog.Warningf("Failed to scale down: %v", err)
-			// TODO(maciekpytel): temporary hack, fix this
-			return nil
+		typedErr := scaleDown.UpdateUnneededNodes(allNodes, allScheduled, time.Now(), pdbs)
+		if typedErr != nil {
+			glog.Errorf("Failed to scale down: %v", typedErr)
+			return typedErr
 		}
 
 		metrics.UpdateDuration("findUnneeded", unneededStart)
@@ -283,16 +282,16 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) *errors.AutoscalerErro
 
 			scaleDownStart := time.Now()
 			metrics.UpdateLastTime("scaleDown", scaleDownStart)
-			result, err := scaleDown.TryToScaleDown(allNodes, allScheduled, pdbs)
+			result, typedErr := scaleDown.TryToScaleDown(allNodes, allScheduled, pdbs)
 			metrics.UpdateDuration("scaleDown", scaleDownStart)
 
 			// TODO: revisit result handling
-			if err != nil {
+			if typedErr != nil {
 				glog.Errorf("Failed to scale down: %v", err)
-			} else {
-				if result == ScaleDownError || result == ScaleDownNoNodeDeleted {
-					a.lastScaleDownFailedTrial = time.Now()
-				}
+				return typedErr
+			}
+			if result == ScaleDownError || result == ScaleDownNoNodeDeleted {
+				a.lastScaleDownFailedTrial = time.Now()
 			}
 		}
 	}
