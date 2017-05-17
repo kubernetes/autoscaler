@@ -89,7 +89,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) *errors.AutoscalerErro
 		return errors.ToAutoscalerError(errors.ApiCallError, err)
 	}
 	if len(readyNodes) == 0 {
-		glog.Error("No ready nodes in the cluster")
+		glog.Warningf("No ready nodes in the cluster")
 		scaleDown.CleanUpUnneededNodes()
 		return nil
 	}
@@ -100,7 +100,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) *errors.AutoscalerErro
 		return errors.ToAutoscalerError(errors.ApiCallError, err)
 	}
 	if len(allNodes) == 0 {
-		glog.Error("No nodes in the cluster")
+		glog.Warningf("No nodes in the cluster")
 		scaleDown.CleanUpUnneededNodes()
 		return nil
 	}
@@ -140,7 +140,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) *errors.AutoscalerErro
 			if removedAny {
 				glog.Warningf("Some unregistered nodes were removed, but got error: %v", err)
 			} else {
-				glog.Warningf("Failed to remove unregistered nodes: %v", err)
+				glog.Errorf("Failed to remove unregistered nodes: %v", err)
 
 			}
 			return errors.ToAutoscalerError(errors.CloudProviderError, err)
@@ -157,7 +157,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) *errors.AutoscalerErro
 	// TODO: andrewskim - add protection for ready AWS nodes.
 	fixedSomething, err := fixNodeGroupSize(autoscalingContext, time.Now())
 	if err != nil {
-		glog.Warningf("Failed to fix node group sizes: %v", err)
+		glog.Errorf("Failed to fix node group sizes: %v", err)
 		return errors.ToAutoscalerError(errors.CloudProviderError, err)
 	}
 	if fixedSomething {
