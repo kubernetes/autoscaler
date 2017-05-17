@@ -18,12 +18,22 @@ package gce
 
 import (
 	"fmt"
+	"math/rand"
 	"strings"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
+
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	kubetypes "k8s.io/kubernetes/pkg/kubelet/types"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
+)
+
+const (
+	// KubeProxyCpuRequestMillis is the amount of cpu requested by Kubeproxy
+	KubeProxyCpuRequestMillis = 100
 )
 
 // GceCloudProvider implements CloudProvider interface.
@@ -233,7 +243,61 @@ func (mig *Mig) Nodes() ([]string, error) {
 
 // TemplateNodeInfo returns a node template for this node group.
 func (mig *Mig) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
-	return nil, cloudprovider.ErrNotImplemented
+	template, err := mig.gceManager.getMigTemplate(mig)
+	if err != nil {
+		return nil, err
+	}
+	node, err := mig.gceManager.buildNodeFromTemplate(mig, template)
+	if err != nil {
+		return nil, err
+	}
+	nodeInfo := schedulercache.NewNodeInfo(buildKubeProxy(mig))
+	nodeInfo.SetNode(node)
+	return nodeInfo, nil
+}
+
+// Builds KubeProxy pod definition
+func buildKubeProxy(mig *Mig) *apiv1.Pod {
+	// TODO: make cpu a flag.
+
+	return &apiv1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      fmt.Sprintf("kube-proxy-%s-%d", mig.Id(), rand.Int63()),
+			Namespace: "kube-system",
+			Annotations: map[string]string{
+				kubetypes.ConfigSourceAnnotationKey: kubetypes.FileSource,
+				kubetypes.CriticalPodAnnotationKey:  "true",
+				kubetypes.ConfigMirrorAnnotationKey: "1234567890abcdef",
+			},
+			Labels: map[string]string{
+				"component": "kube-proxy",
+				"tier":      "node",
+			},
+		},
+		Spec: apiv1.PodSpec{
+			Containers: []apiv1.Container{
+				{
+					Image: "kubeproxy",
+					Resources: apiv1.ResourceRequirements{
+						Requests: apiv1.ResourceList{
+							apiv1.ResourceCPU: *resource.NewMilliQuantity(
+								int64(100),
+								resource.DecimalSI),
+						},
+					},
+				},
+			},
+		},
+		Status: apiv1.PodStatus{
+			Phase: apiv1.PodRunning,
+			Conditions: []apiv1.PodCondition{
+				{
+					Type:   apiv1.PodReady,
+					Status: apiv1.ConditionTrue,
+				},
+			},
+		},
+	}
 }
 
 func buildMig(value string, gceManager *GceManager) (*Mig, error) {
