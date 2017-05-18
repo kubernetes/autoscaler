@@ -305,12 +305,21 @@ func (m *GceManager) buildNodeFromTemplate(mig *Mig, template *gce.InstanceTempl
 
 	// TODO: handle custom !!!!
 	// TODO: handle GPU
-	machineType, err := m.service.MachineTypes.Get(mig.Project, mig.Zone, template.Properties.MachineType).Do()
-	if err != nil {
-		return nil, err
+	if strings.HasPrefix(template.Properties.MachineType, "custom-") {
+		cpu, mem, err := parseCustomMachineType(template.Properties.MachineType)
+		if err != nil {
+			return nil, err
+		}
+		node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewQuantity(cpu, resource.DecimalSI)
+		node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(mem, resource.DecimalSI)
+	} else {
+		machineType, err := m.service.MachineTypes.Get(mig.Project, mig.Zone, template.Properties.MachineType).Do()
+		if err != nil {
+			return nil, err
+		}
+		node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewQuantity(machineType.GuestCpus, resource.DecimalSI)
+		node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(machineType.MemoryMb*1024*1024, resource.DecimalSI)
 	}
-	node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewQuantity(machineType.GuestCpus, resource.DecimalSI)
-	node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(machineType.MemoryMb, resource.DecimalSI)
 
 	// TODO: use proper allocatable!!
 	node.Status.Allocatable = node.Status.Capacity
@@ -365,6 +374,21 @@ func buildGenericLabels(ref GceRef, machineType string, nodeName string) (map[st
 	result[metav1.LabelZoneFailureDomain] = ref.Zone
 	result[metav1.LabelHostname] = nodeName
 	return result, nil
+}
+
+func parseCustomMachineType(machineType string) (cpu, mem int64, err error) {
+	// example custom-2-2816
+	var count int
+	count, err = fmt.Sscanf(machineType, "custom-%d-%d", &cpu, &mem)
+	if err != nil {
+		return
+	}
+	if count != 2 {
+		return 0, 0, fmt.Errorf("failed to parse all params in %s", machineType)
+	}
+	// Mb to bytes
+	mem = mem * 1024 * 1024
+	return
 }
 
 func buildReadyConditions() []apiv1.NodeCondition {
