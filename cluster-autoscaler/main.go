@@ -89,6 +89,7 @@ var (
 	maxTotalUnreadyPercentage   = flag.Float64("max-total-unready-percentage", 33, "Maximum percentage of unready nodes after which CA halts operations")
 	okTotalUnreadyCount         = flag.Int("ok-total-unready-count", 3, "Number of allowed unready nodes, irrespective of max-total-unready-percentage")
 	maxNodeProvisionTime        = flag.Duration("max-node-provision-time", 15*time.Minute, "Maximum time CA waits for node to be provisioned")
+	minExtraCapacityRateFlag    = flag.Float64("min-extra-capacity-rate", 0.0, "The rate of the amount of extra cpu/memory, compared to your cluster's total capacity, used to create resource slacks for faster pod startup. For example, 0.1 means 10% at minimum - CA tries to keep more nodes to make at least 10% of free capacity")
 	unregisteredNodeRemovalTime = flag.Duration("unregistered-node-removal-time", 15*time.Minute, "Time that CA waits before removing nodes that are not registered in Kubernetes")
 
 	estimatorFlag = flag.String("estimator", estimator.BinpackingEstimatorName,
@@ -113,6 +114,7 @@ func createAutoscalerOptions() core.AutoscalerOptions {
 		MaxGratefulTerminationSec:     *maxGratefulTerminationFlag,
 		MaxNodeProvisionTime:          *maxNodeProvisionTime,
 		MaxNodesTotal:                 *maxNodesTotal,
+		MinExtraCapacityRate:          *minExtraCapacityRateFlag,
 		NodeGroups:                    nodeGroupsFlag,
 		UnregisteredNodeRemovalTime:   *unregisteredNodeRemovalTime,
 		ScaleDownDelay:                *scaleDownDelay,

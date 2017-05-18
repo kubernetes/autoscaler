@@ -75,6 +75,8 @@ type AutoscalingOptions struct {
 	EstimatorName string
 	// ExpanderName sets the type of node group expander to be used in scale up
 	ExpanderName string
+	// MinExtraCapacityRate is the rate of the amount of extra cpu/memory, compared to your cluster's total capacity, used to create resource slacks for faster pod startup
+	MinExtraCapacityRate float64
 	// MaxGratefulTerminationSec is maximum number of seconds scale down waits for pods to terminante before
 	// removing the node from cloud provider.
 	MaxGratefulTerminationSec int
