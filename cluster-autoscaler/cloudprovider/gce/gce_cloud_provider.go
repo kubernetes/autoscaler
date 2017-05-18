@@ -281,7 +281,7 @@ func buildKubeProxy(mig *Mig) *apiv1.Pod {
 					Resources: apiv1.ResourceRequirements{
 						Requests: apiv1.ResourceList{
 							apiv1.ResourceCPU: *resource.NewMilliQuantity(
-								int64(100),
+								int64(KubeProxyCpuRequestMillis),
 								resource.DecimalSI),
 						},
 					},
