@@ -24,31 +24,58 @@ They are created to virtually request certain amounts of CPU and memory so that 
 
 Version 1
 
-* [R1] Works on relatively large clusters today's CA used to work (dozens of nodes, hundreds of pods? Correct me if necessary!)
+* [R1] Works on relatively large clusters today's CA used to work
+  * dozens of nodes, hundreds of pods
   * In general we don't want to have O(pods * nodes) operations every single loop
-* [R2] Keep the specified amount of extra capacity at minimum 
+  * [R1-1] On large cluster there is a huge number of pods to be scheduled. And the pods are mostly the same. If a pod from one replica set X failed to schedule on node A then there is no point to in trying to fit the next pod from X on A. Thus there should be just a single loop over all nodes (ref https://github.com/kubernetes/autoscaler/pull/56#discussion_r115942312)
+  * [R1-2] The scale down performance strongly depends that the pods don't change every iteration. So if you placed placeholder-X-123 on node A then in the next iteration it should also land on A or the scale down performance will be heavily impacted (ref https://github.com/kubernetes/autoscaler/pull/56#discussion_r115942312)
+* [R2] Keep the specified amount of extra capacity at minimum
+  * If we allowed users to annotate their k8s pods so that they are mirrored to equivalent placeholder pods like https://github.com/kubernetes/autoscaler/pull/77#discussion_r117084488,
+    CA may actually produce much more extra capacity than specified by the user.
+
+    Let's say an user specified CA to reserve 10% extra capacity, but also marked a pod which requests cpu and memory more than 10% of current capacity. CA will result in creating a placeholder pod which consumes resource more than 10%.
+    So, the "10%" in this case is just a minimum requirement. CA may reserve more if the user instructed CA to do so by annotations. That's why I wrote `at minimum`. It is impossible to specify CA an exact rate of extra capacity when we want to suppoprt [R6] and [R7].
 * [R3] Ensure full compatibility with scale down
 * [R4] Only expose necessary and sufficient knobs to users
 
 Version 2
 
+contains [R1]-[R4] and also what is below:
+
 * [R5] Don't add unnecessarily large node
-* [R6] Provide extra space even for the "biggest" pod in term of memory and cpu
-* [R7] Provide extra space even for every pod which is not biggest but do request some cpu(< max(pod_request_cpu)) and memory(< max(pod_request_mmory))
+  * A node is unnecessarily large when:
+    * Any pod that is intended to be scheduled faster by resource slack fit within a smaller node
+* [R6] Possible to provide extra space even for the "biggest" pod in term of memory and cpu
+  * However, if the biggest pod in the cluster was a database, we won't want to keep a hot standby node for the pod to move to
+* [R7] Possible to provide extra space even for every pod which is not biggest but do request some cpu(< max(pod_request_cpu)) and memory(< max(pod_request_mmory))
   * Say, the "biggest pods" request 1000m cpu/1G mem, 10m cpu/10G mem respectively
   * Even if they could fit within existing free space, a 500m(<1000m cpu)/5G mem pod has chances not to fit any node 
+* [R8] Reserve space even for the pods having anti pod affinity
+* [R9] Reserve space even for the pods having node selector/node affinity
 
 Version 3
 
-* [R8] Reserve space even for the pods having tolerations
-* [R9] Reserve space even for the pods having nodeSelector/nodeAffinity
+contains [R1]-[R9] and also what is below:
+
+* [R10] Works on considerably large clusters
+  * To move CA from beta to GA we need to handle 5000 nodes and 150 000 pods.
  
 ### Specifications
 
 Version 1
 
-* [S1] On large cluster there is a huge number of pods to be scheduled. And the pods are mostly the same. If a pod from one replica set X failed to schedule on node A then there is no point to in trying to fit the next pod from X on A. Thus there should be just a single loop over all nodes (ref https://github.com/kubernetes/autoscaler/pull/56#discussion_r115942312) [R1]
-* [S2] The scale down performance strongly depends that the pods don't change every iteration. So if you placed placeholder-X-123 on node A then in the next iteration it should also land on A or the scale down performance will be heavily impacted (ref https://github.com/kubernetes/autoscaler/pull/56#discussion_r115942312) [R1]
+* [S1] TBD [R1-1]
+* [S2] Retain placeholder pods among iterations of CA and remove/re-assign/add only necessary placeholder pods. [R1-2]
+  * More concretely, for each CA iteration:
+  * Step 1: Calculate a `list of pushed-out placeholder pods`
+    * Iterate over existing placeholder pods to determine which one is "pushed out of the node" by actual pod(s)
+       * Iterate over ready nodes and see if `sum(pod requested cpu/mem)` exceeds a node's capacity. If it exceeds, push out placeholders until the sum becomes less than or equal to the node capacity.
+    * Disassociate the pushed-out placeholder pods with the formerly associated nodes
+  * Step 2: Calculate `desired extra capacity`
+  * Step 3: Calculate `desired number of placeholder pods` from `desired extra capacity`
+  * Step 4: Remove more placeholder pods if current extra capacity is larger than desired. Add more placeholder pods if desired extra capacity is increased.
+  * Step 5: Do usual scale-up/down
+  * Step 5: Retain the list of placeholder pods for the next iteration...
 * [S3] Every place holder pod should be small enough to fit within at least one of nodes [R2]
   * Otherwise CA will produce no resource slack because it will be unable to add any node
 * [S4] Create exactly one placeholder replicaset which looks like managing all the placeholder pods [R3]
@@ -56,12 +83,16 @@ Version 1
 
 Version 2
 
+contains [S1]-[S5] and also what is below:
+
 * [S6] Every placeholder pod should have the same or smaller size compared to the pod with most requested resource [R5]
   * Otherwise CA will produce too much resource slack by adding an unnecessarily large node
-* [S7] Create exactly one placeholder pod dedicated for the biggest cpu pod. It should request the same amount of cpu and memory requested by the pod with the most requested cpu [R6]
-* [S8] Create exactly one placeholder pod dedicated for the biggest memory pod. It should request the same amount of cpu and memory requested by the pod with the most requested memory [R6]
+* [S7] Pods/Deploypments/ReplicaSets/Jobs marked via specific annotations are tried to pre-reserve space for them [R6]-[R9]
+  * Those pods are mirrored to equivalent placeholder pods, that can be bigger than standard placeholder pods, so that we can ensure the cluster to have extra space for them
 
 Version 3
+
+contains [S1]-[S7] and also what is below:
 
 * TBD
 
