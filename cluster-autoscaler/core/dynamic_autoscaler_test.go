@@ -19,6 +19,7 @@ package core
 import (
 	"github.com/stretchr/testify/mock"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"testing"
 	"time"
 )
@@ -27,8 +28,9 @@ type AutoscalerMock struct {
 	mock.Mock
 }
 
-func (m *AutoscalerMock) RunOnce(currentTime time.Time) {
+func (m *AutoscalerMock) RunOnce(currentTime time.Time) *errors.AutoscalerError {
 	m.Called(currentTime)
+	return nil
 }
 
 func (m *AutoscalerMock) CleanUp() {

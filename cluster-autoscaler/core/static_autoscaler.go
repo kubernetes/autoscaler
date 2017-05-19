@@ -21,6 +21,7 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 
 	kube_record "k8s.io/client-go/tools/record"
@@ -72,7 +73,7 @@ func (a *StaticAutoscaler) CleanUp() {
 }
 
 // RunOnce iterates over node groups and scales them up/down if necessary
-func (a *StaticAutoscaler) RunOnce(currentTime time.Time) {
+func (a *StaticAutoscaler) RunOnce(currentTime time.Time) *errors.AutoscalerError {
 	readyNodeLister := a.ReadyNodeLister()
 	allNodeLister := a.AllNodeLister()
 	unschedulablePodLister := a.UnschedulablePodLister()
@@ -85,30 +86,30 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) {
 	readyNodes, err := readyNodeLister.List()
 	if err != nil {
 		glog.Errorf("Failed to list ready nodes: %v", err)
-		return
+		return errors.ToAutoscalerError(errors.ApiCallError, err)
 	}
 	if len(readyNodes) == 0 {
-		glog.Error("No ready nodes in the cluster")
+		glog.Warningf("No ready nodes in the cluster")
 		scaleDown.CleanUpUnneededNodes()
-		return
+		return nil
 	}
 
 	allNodes, err := allNodeLister.List()
 	if err != nil {
 		glog.Errorf("Failed to list all nodes: %v", err)
-		return
+		return errors.ToAutoscalerError(errors.ApiCallError, err)
 	}
 	if len(allNodes) == 0 {
-		glog.Error("No nodes in the cluster")
+		glog.Warningf("No nodes in the cluster")
 		scaleDown.CleanUpUnneededNodes()
-		return
+		return nil
 	}
 
 	err = a.ClusterStateRegistry.UpdateNodes(allNodes, currentTime)
 	if err != nil {
 		glog.Errorf("Failed to update node registry: %v", err)
 		scaleDown.CleanUpUnneededNodes()
-		return
+		return errors.ToAutoscalerError(errors.CloudProviderError, err)
 	}
 	metrics.UpdateClusterState(a.ClusterStateRegistry)
 
@@ -122,7 +123,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) {
 	if !a.ClusterStateRegistry.IsClusterHealthy() {
 		glog.Warning("Cluster is not ready for autoscaling")
 		scaleDown.CleanUpUnneededNodes()
-		return
+		return nil
 	}
 
 	metrics.UpdateDuration("updateClusterState", runStart)
@@ -139,15 +140,15 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) {
 			if removedAny {
 				glog.Warningf("Some unregistered nodes were removed, but got error: %v", err)
 			} else {
-				glog.Warningf("Failed to remove unregistered nodes: %v", err)
+				glog.Errorf("Failed to remove unregistered nodes: %v", err)
 
 			}
-			return
+			return errors.ToAutoscalerError(errors.CloudProviderError, err)
 		}
 		// Some nodes were removed. Let's skip this iteration, the next one should be better.
 		if removedAny {
 			glog.V(0).Infof("Some unregistered nodes were removed, skipping iteration")
-			return
+			return nil
 		}
 	}
 
@@ -156,25 +157,25 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) {
 	// TODO: andrewskim - add protection for ready AWS nodes.
 	fixedSomething, err := fixNodeGroupSize(autoscalingContext, time.Now())
 	if err != nil {
-		glog.Warningf("Failed to fix node group sizes: %v", err)
-		return
+		glog.Errorf("Failed to fix node group sizes: %v", err)
+		return errors.ToAutoscalerError(errors.CloudProviderError, err)
 	}
 	if fixedSomething {
 		glog.V(0).Infof("Some node group target size was fixed, skipping the iteration")
-		return
+		return nil
 	}
 
 	allUnschedulablePods, err := unschedulablePodLister.List()
 	if err != nil {
 		glog.Errorf("Failed to list unscheduled pods: %v", err)
-		return
+		return errors.ToAutoscalerError(errors.ApiCallError, err)
 	}
 	metrics.UpdateUnschedulablePodsCount(len(allUnschedulablePods))
 
 	allScheduled, err := scheduledPodLister.List()
 	if err != nil {
 		glog.Errorf("Failed to list scheduled pods: %v", err)
-		return
+		return errors.ToAutoscalerError(errors.ApiCallError, err)
 	}
 
 	// We need to reset all pods that have been marked as unschedulable not after
@@ -224,20 +225,20 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) {
 		daemonsets, err := a.ListerRegistry.DaemonSetLister().List()
 		if err != nil {
 			glog.Errorf("Failed to get daemonset list")
-			return
+			return errors.ToAutoscalerError(errors.ApiCallError, err)
 		}
 
-		scaledUp, err := ScaleUp(autoscalingContext, unschedulablePodsToHelp, readyNodes, daemonsets)
+		scaledUp, typedErr := ScaleUp(autoscalingContext, unschedulablePodsToHelp, readyNodes, daemonsets)
 
 		metrics.UpdateDuration("scaleup", scaleUpStart)
 
-		if err != nil {
-			glog.Errorf("Failed to scale up: %v", err)
-			return
+		if typedErr != nil {
+			glog.Errorf("Failed to scale up: %v", typedErr)
+			return typedErr
 		} else if scaledUp {
 			a.lastScaleUpTime = time.Now()
 			// No scale down in this iteration.
-			return
+			return nil
 		}
 	}
 
@@ -247,7 +248,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) {
 		pdbs, err := pdbLister.List()
 		if err != nil {
 			glog.Errorf("Failed to list pod disruption budgets: %v", err)
-			return
+			return errors.ToAutoscalerError(errors.ApiCallError, err)
 		}
 
 		// In dry run only utilization is updated
@@ -262,10 +263,10 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) {
 		glog.V(4).Infof("Calculating unneeded nodes")
 
 		scaleDown.CleanUp(time.Now())
-		err = scaleDown.UpdateUnneededNodes(allNodes, allScheduled, time.Now(), pdbs)
-		if err != nil {
-			glog.Warningf("Failed to scale down: %v", err)
-			return
+		typedErr := scaleDown.UpdateUnneededNodes(allNodes, allScheduled, time.Now(), pdbs)
+		if typedErr != nil {
+			glog.Errorf("Failed to scale down: %v", typedErr)
+			return typedErr
 		}
 
 		metrics.UpdateDuration("findUnneeded", unneededStart)
@@ -281,19 +282,20 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) {
 
 			scaleDownStart := time.Now()
 			metrics.UpdateLastTime("scaleDown", scaleDownStart)
-			result, err := scaleDown.TryToScaleDown(allNodes, allScheduled, pdbs)
+			result, typedErr := scaleDown.TryToScaleDown(allNodes, allScheduled, pdbs)
 			metrics.UpdateDuration("scaleDown", scaleDownStart)
 
 			// TODO: revisit result handling
-			if err != nil {
+			if typedErr != nil {
 				glog.Errorf("Failed to scale down: %v", err)
-			} else {
-				if result == ScaleDownError || result == ScaleDownNoNodeDeleted {
-					a.lastScaleDownFailedTrial = time.Now()
-				}
+				return typedErr
+			}
+			if result == ScaleDownError || result == ScaleDownNoNodeDeleted {
+				a.lastScaleDownFailedTrial = time.Now()
 			}
 		}
 	}
+	return nil
 }
 
 // ExitCleanUp removes status configmap.

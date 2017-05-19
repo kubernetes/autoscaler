@@ -17,13 +17,13 @@ limitations under the License.
 package core
 
 import (
-	"fmt"
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	extensionsv1 "k8s.io/kubernetes/pkg/apis/extensions/v1beta1"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
@@ -35,7 +35,7 @@ import (
 // false if it didn't and error if an error occured. Assumes that all nodes in the cluster are
 // ready and in sync with instance groups.
 func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes []*apiv1.Node,
-	daemonSets []*extensionsv1.DaemonSet) (bool, error) {
+	daemonSets []*extensionsv1.DaemonSet) (bool, *errors.AutoscalerError) {
 	// From now on we only care about unschedulable pods that were marked after the newest
 	// node became available for the scheduler.
 	if len(unschedulablePods) == 0 {
@@ -49,14 +49,17 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 	nodeInfos, err := GetNodeInfosForGroups(nodes, context.CloudProvider, context.ClientSet,
 		daemonSets, context.PredicateChecker)
 	if err != nil {
-		return false, fmt.Errorf("failed to build node infos for node groups: %v", err)
+		return false, err.AddPrefix("failed to build node infos for node groups: ")
 	}
 
 	upcomingNodes := make([]*schedulercache.NodeInfo, 0)
 	for nodeGroup, numberOfNodes := range context.ClusterStateRegistry.GetUpcomingNodes() {
 		nodeTemplate, found := nodeInfos[nodeGroup]
 		if !found {
-			return false, fmt.Errorf("failed to find template node for node group %s", nodeGroup)
+			return false, errors.NewAutoscalerError(
+				errors.InternalError,
+				"failed to find template node for node group %s",
+				nodeGroup)
 		}
 		for i := 0; i < numberOfNodes; i++ {
 			upcomingNodes = append(upcomingNodes, nodeTemplate)
@@ -153,7 +156,9 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 
 		currentSize, err := bestOption.NodeGroup.TargetSize()
 		if err != nil {
-			return false, fmt.Errorf("failed to get node group size: %v", err)
+			return false, errors.NewAutoscalerError(
+				errors.CloudProviderError,
+				"failed to get node group size: %v", err)
 		}
 		newSize := currentSize + bestOption.NodeCount
 		if newSize >= bestOption.NodeGroup.MaxSize() {
@@ -165,14 +170,17 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 			glog.V(1).Infof("Capping size to max cluster total size (%d)", context.MaxNodesTotal)
 			newSize = context.MaxNodesTotal - len(nodes) + currentSize
 			if newSize < currentSize {
-				return false, fmt.Errorf("max node total count already reached")
+				return false, errors.NewAutoscalerError(
+					errors.TransientError,
+					"max node total count already reached")
 			}
 		}
 
 		glog.V(0).Infof("Scale-up: setting group %s size to %d", bestOption.NodeGroup.Id(), newSize)
 		increase := newSize - currentSize
 		if err := bestOption.NodeGroup.IncreaseSize(increase); err != nil {
-			return false, fmt.Errorf("failed to increase node group size: %v", err)
+			return false, errors.NewAutoscalerError(
+				errors.CloudProviderError, "failed to increase node group size: %v", err)
 		}
 		context.ClusterStateRegistry.RegisterScaleUp(
 			&clusterstate.ScaleUpRequest{

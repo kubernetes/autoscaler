@@ -21,6 +21,7 @@ import (
 
 	"github.com/golang/glog"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 )
 
 // PollingAutoscaler is a variant of autoscaler which polls the source-of-truth every time RunOnce is invoked
@@ -48,14 +49,14 @@ func (a *PollingAutoscaler) ExitCleanUp() {
 }
 
 // RunOnce represents a single iteration of a polling autoscaler inside the CA's control-loop
-func (a *PollingAutoscaler) RunOnce(currentTime time.Time) {
+func (a *PollingAutoscaler) RunOnce(currentTime time.Time) *errors.AutoscalerError {
 	reconfigureStart := time.Now()
 	metrics.UpdateLastTime("poll", reconfigureStart)
 	if err := a.Poll(); err != nil {
 		glog.Errorf("Failed to poll : %v", err)
 	}
 	metrics.UpdateDuration("poll", reconfigureStart)
-	a.autoscaler.RunOnce(currentTime)
+	return a.autoscaler.RunOnce(currentTime)
 }
 
 // Poll latest data from cloud provider to recreate this autoscaler

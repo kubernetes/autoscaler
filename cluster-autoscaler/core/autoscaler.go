@@ -22,6 +22,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	kube_record "k8s.io/client-go/tools/record"
 	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
@@ -37,7 +38,7 @@ type AutoscalerOptions struct {
 // The configuration can be injected at the creation of an autoscaler
 type Autoscaler interface {
 	// RunOnce represents an iteration in the control-loop of CA
-	RunOnce(currentTime time.Time)
+	RunOnce(currentTime time.Time) *errors.AutoscalerError
 	// CleanUp represents a clean-up required before the first invocation of RunOnce
 	CleanUp()
 	// ExitCleanUp is a clean-up performed just before process termination.
