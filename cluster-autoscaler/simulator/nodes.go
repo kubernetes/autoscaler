@@ -22,6 +22,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	api "k8s.io/kubernetes/pkg/api"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
@@ -31,12 +32,13 @@ import (
 // GetRequiredPodsForNode returns a list od pods that would appear on the node if the
 // node was just created (like daemonset and manifest-run pods). It reuses kubectl
 // drain command to get the list.
-func GetRequiredPodsForNode(nodename string, client kube_client.Interface) ([]*apiv1.Pod, error) {
+func GetRequiredPodsForNode(nodename string, client kube_client.Interface) ([]*apiv1.Pod, *errors.AutoscalerError) {
 
+	// TODO: we should change this to use informer
 	podListResult, err := client.Core().Pods(apiv1.NamespaceAll).List(
 		metav1.ListOptions{FieldSelector: fields.SelectorFromSet(fields.Set{"spec.nodeName": nodename}).String()})
 	if err != nil {
-		return []*apiv1.Pod{}, err
+		return []*apiv1.Pod{}, errors.ToAutoscalerError(errors.ApiCallError, err)
 	}
 	allPods := make([]*apiv1.Pod, 0)
 	for i := range podListResult.Items {
@@ -54,7 +56,7 @@ func GetRequiredPodsForNode(nodename string, client kube_client.Interface) ([]*a
 		0,
 		time.Now())
 	if err != nil {
-		return []*apiv1.Pod{}, err
+		return []*apiv1.Pod{}, errors.ToAutoscalerError(errors.InternalError, err)
 	}
 
 	podsToRemoveMap := make(map[string]struct{})
@@ -76,14 +78,14 @@ func GetRequiredPodsForNode(nodename string, client kube_client.Interface) ([]*a
 }
 
 // BuildNodeInfoForNode build a NodeInfo structure for the given node as if the node was just created.
-func BuildNodeInfoForNode(node *apiv1.Node, client kube_client.Interface) (*schedulercache.NodeInfo, error) {
+func BuildNodeInfoForNode(node *apiv1.Node, client kube_client.Interface) (*schedulercache.NodeInfo, *errors.AutoscalerError) {
 	requiredPods, err := GetRequiredPodsForNode(node.Name, client)
 	if err != nil {
 		return nil, err
 	}
 	result := schedulercache.NewNodeInfo(requiredPods...)
 	if err := result.SetNode(node); err != nil {
-		return nil, err
+		return nil, errors.ToAutoscalerError(errors.InternalError, err)
 	}
 	return result, nil
 }

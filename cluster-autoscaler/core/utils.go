@@ -26,6 +26,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/daemonset"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -137,14 +138,14 @@ func createNodeNameToInfoMap(pods []*apiv1.Pod, nodes []*apiv1.Node) map[string]
 //
 // TODO(mwielgus): Review error policy - sometimes we may continue with partial errors.
 func GetNodeInfosForGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.CloudProvider, kubeClient kube_client.Interface,
-	daemonsets []*extensionsv1.DaemonSet, predicateChecker *simulator.PredicateChecker) (map[string]*schedulercache.NodeInfo, error) {
+	daemonsets []*extensionsv1.DaemonSet, predicateChecker *simulator.PredicateChecker) (map[string]*schedulercache.NodeInfo, *errors.AutoscalerError) {
 	result := make(map[string]*schedulercache.NodeInfo)
 
 	// processNode returns information whether the nodeTemplate was generated and if there was an error.
-	processNode := func(node *apiv1.Node) (bool, error) {
+	processNode := func(node *apiv1.Node) (bool, *errors.AutoscalerError) {
 		nodeGroup, err := cloudProvider.NodeGroupForNode(node)
 		if err != nil {
-			return false, err
+			return false, errors.ToAutoscalerError(errors.CloudProviderError, err)
 		}
 		if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
 			return false, nil
@@ -171,9 +172,9 @@ func GetNodeInfosForGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.Clou
 		if !kube_util.IsNodeReadyAndSchedulable(node) {
 			continue
 		}
-		_, err := processNode(node)
-		if err != nil {
-			return map[string]*schedulercache.NodeInfo{}, err
+		_, typedErr := processNode(node)
+		if typedErr != nil {
+			return map[string]*schedulercache.NodeInfo{}, typedErr
 		}
 	}
 	for _, nodeGroup := range cloudProvider.NodeGroups() {
@@ -190,16 +191,17 @@ func GetNodeInfosForGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.Clou
 				continue
 			} else {
 				glog.Errorf("Unable to build proper template node for %s: %v", id, err)
-				return map[string]*schedulercache.NodeInfo{}, err
+				return map[string]*schedulercache.NodeInfo{}, errors.ToAutoscalerError(
+					errors.CloudProviderError, err)
 			}
 		}
 		pods := daemonset.GetDaemonSetPodsForNode(baseNodeInfo, daemonsets, predicateChecker)
 		pods = append(pods, baseNodeInfo.Pods()...)
 		fullNodeInfo := schedulercache.NewNodeInfo(pods...)
 		fullNodeInfo.SetNode(baseNodeInfo.Node())
-		sanitizedNodeInfo, err := sanitizeNodeInfo(fullNodeInfo, id)
-		if err != nil {
-			return map[string]*schedulercache.NodeInfo{}, err
+		sanitizedNodeInfo, typedErr := sanitizeNodeInfo(fullNodeInfo, id)
+		if typedErr != nil {
+			return map[string]*schedulercache.NodeInfo{}, typedErr
 		}
 		result[id] = sanitizedNodeInfo
 	}
@@ -208,13 +210,14 @@ func GetNodeInfosForGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.Clou
 	for _, node := range nodes {
 		// Allowing broken nodes
 		if !kube_util.IsNodeReadyAndSchedulable(node) {
-			added, err := processNode(node)
-			if err != nil {
-				return map[string]*schedulercache.NodeInfo{}, err
+			added, typedErr := processNode(node)
+			if typedErr != nil {
+				return map[string]*schedulercache.NodeInfo{}, typedErr
 			}
 			nodeGroup, err := cloudProvider.NodeGroupForNode(node)
 			if err != nil {
-				return map[string]*schedulercache.NodeInfo{}, err
+				return map[string]*schedulercache.NodeInfo{}, errors.ToAutoscalerError(
+					errors.CloudProviderError, err)
 			}
 			if added {
 				glog.Warningf("Built template for %s based on unready/unschedulable node %s", nodeGroup.Id(), node.Name)
@@ -225,7 +228,7 @@ func GetNodeInfosForGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.Clou
 	return result, nil
 }
 
-func sanitizeNodeInfo(nodeInfo *schedulercache.NodeInfo, nodeGroupName string) (*schedulercache.NodeInfo, error) {
+func sanitizeNodeInfo(nodeInfo *schedulercache.NodeInfo, nodeGroupName string) (*schedulercache.NodeInfo, *errors.AutoscalerError) {
 	// Sanitize node name.
 	sanitizedNode, err := sanitizeTemplateNode(nodeInfo.Node(), nodeGroupName)
 	if err != nil {
@@ -237,7 +240,7 @@ func sanitizeNodeInfo(nodeInfo *schedulercache.NodeInfo, nodeGroupName string) (
 	for _, pod := range nodeInfo.Pods() {
 		obj, err := api.Scheme.DeepCopy(pod)
 		if err != nil {
-			return nil, err
+			return nil, errors.ToAutoscalerError(errors.InternalError, err)
 		}
 		sanitizedPod := obj.(*apiv1.Pod)
 		sanitizedPod.Spec.NodeName = sanitizedNode.Name
@@ -247,15 +250,15 @@ func sanitizeNodeInfo(nodeInfo *schedulercache.NodeInfo, nodeGroupName string) (
 	// Build a new node info.
 	sanitizedNodeInfo := schedulercache.NewNodeInfo(sanitizedPods...)
 	if err := sanitizedNodeInfo.SetNode(sanitizedNode); err != nil {
-		return nil, err
+		return nil, errors.ToAutoscalerError(errors.InternalError, err)
 	}
 	return sanitizedNodeInfo, nil
 }
 
-func sanitizeTemplateNode(node *apiv1.Node, nodeGroup string) (*apiv1.Node, error) {
+func sanitizeTemplateNode(node *apiv1.Node, nodeGroup string) (*apiv1.Node, *errors.AutoscalerError) {
 	obj, err := api.Scheme.DeepCopy(node)
 	if err != nil {
-		return nil, err
+		return nil, errors.ToAutoscalerError(errors.InternalError, err)
 	}
 	nodeName := fmt.Sprintf("template-node-for-%s-%d", nodeGroup, rand.Int63())
 	newNode := obj.(*apiv1.Node)
