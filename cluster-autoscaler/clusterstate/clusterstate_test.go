@@ -81,6 +81,38 @@ func TestOKWithScaleUp(t *testing.T) {
 	assert.True(t, ng2Checked)
 }
 
+func TestEmptyOK(t *testing.T) {
+	now := time.Now()
+
+	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider.AddNodeGroup("ng1", 0, 10, 0)
+	assert.NotNil(t, provider)
+
+	clusterstate := NewClusterStateRegistry(provider, ClusterStateRegistryConfig{
+		MaxTotalUnreadyPercentage: 10,
+		OkTotalUnreadyCount:       1,
+	})
+	err := clusterstate.UpdateNodes([]*apiv1.Node{}, now.Add(-5*time.Second))
+	assert.NoError(t, err)
+	assert.True(t, clusterstate.IsClusterHealthy())
+	assert.True(t, clusterstate.IsNodeGroupHealthy("ng1"))
+	assert.False(t, clusterstate.IsNodeGroupScalingUp("ng1"))
+
+	provider.AddNodeGroup("ng1", 0, 10, 3)
+	clusterstate.RegisterScaleUp(&ScaleUpRequest{
+		NodeGroupName:   "ng1",
+		Increase:        3,
+		Time:            now.Add(-3 * time.Second),
+		ExpectedAddTime: now.Add(1 * time.Minute),
+	})
+	err = clusterstate.UpdateNodes([]*apiv1.Node{}, now)
+
+	assert.NoError(t, err)
+	assert.True(t, clusterstate.IsClusterHealthy())
+	assert.True(t, clusterstate.IsNodeGroupHealthy("ng1"))
+	assert.True(t, clusterstate.IsNodeGroupScalingUp("ng1"))
+}
+
 func TestOKOneUnreadyNode(t *testing.T) {
 	now := time.Now()
 
