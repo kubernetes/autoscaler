@@ -184,6 +184,7 @@ func (csr *ClusterStateRegistry) UpdateNodes(nodes []*apiv1.Node, currentTime ti
 
 	csr.cleanUp(currentTime)
 	csr.nodes = nodes
+
 	csr.updateReadinessStats(currentTime)
 	csr.updateAcceptableRanges(targetSizes)
 	csr.updateIncorrectNodeGroupSizes(currentTime)
@@ -221,14 +222,19 @@ func (csr *ClusterStateRegistry) IsClusterHealthy() bool {
 
 // IsNodeGroupHealthy returns true if the node group health is within the acceptable limits
 func (csr *ClusterStateRegistry) IsNodeGroupHealthy(nodeGroupName string) bool {
-	readiness, found := csr.perNodeGroupReadiness[nodeGroupName]
-	if !found {
-		glog.Warningf("Failed to find readiness information for %v", nodeGroupName)
-		return false
-	}
 	acceptable, found := csr.acceptableRanges[nodeGroupName]
 	if !found {
 		glog.Warningf("Failed to find acceptable ranges for %v", nodeGroupName)
+		return false
+	}
+
+	readiness, found := csr.perNodeGroupReadiness[nodeGroupName]
+	if !found {
+		// No nodes but target == 0 or just scaling up.
+		if acceptable.CurrentTarget == 0 || (acceptable.MinNodes == 0 && acceptable.CurrentTarget > 0) {
+			return true
+		}
+		glog.Warningf("Failed to find readiness information for %v", nodeGroupName)
 		return false
 	}
 
@@ -250,14 +256,19 @@ func (csr *ClusterStateRegistry) IsNodeGroupHealthy(nodeGroupName string) bool {
 
 // IsNodeGroupScalingUp returns true if the node group is currently scaling up.
 func (csr *ClusterStateRegistry) IsNodeGroupScalingUp(nodeGroupName string) bool {
-	readiness, found := csr.perNodeGroupReadiness[nodeGroupName]
-	if !found {
-		glog.Warningf("Failed to find readiness information for %v", nodeGroupName)
-		return false
-	}
 	acceptable, found := csr.acceptableRanges[nodeGroupName]
 	if !found {
 		glog.Warningf("Failed to find acceptable ranges for %v", nodeGroupName)
+		return false
+	}
+
+	readiness, found := csr.perNodeGroupReadiness[nodeGroupName]
+	if !found {
+		// No nodes yet but an active scale up present.
+		if acceptable.CurrentTarget > 0 && acceptable.MinNodes == 0 {
+			return true
+		}
+		glog.Warningf("Failed to find readiness information for %v", nodeGroupName)
 		return false
 	}
 
