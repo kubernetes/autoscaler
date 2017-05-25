@@ -3,12 +3,12 @@
 # Table of Contents:
 <!--- TOC BEGIN -->
 * [What is Cluster Autoscaler?](#what-is-cluster-autoscaler)
-* [When Cluster Autoscaler changes the size of a cluster?](#when-cluster-autoscaler-changes-the-size-of-a-cluster)
+* [When does Cluster Autoscaler change the size of a cluster?](#when-does-cluster-autoscaler-change-the-size-of-a-cluster)
 * [What types of pods can prevent CA from removing a node?](#what-types-of-pods-can-prevent-ca-from-removing-a-node)
-* [How Horizontal Pod Autoscaler works with Cluster Autoscaler?](#how-horizontal-pod-autoscaler-works-with-cluster-autoscaler)
+* [How does Horizontal Pod Autoscaler work with Cluster Autoscaler?](#how-does-horizontal-pod-autoscaler-work-with-cluster-autoscaler)
 * [What are the key best practices for running Cluster Autoscaler?](#what-are-the-key-best-practices-for-running-cluster-autoscaler)
-* [Should I use CPU-usage-based node autoscaler with Kubernetes.](#should-i-use-cpuusagebased-node-autoscaler-with-kubernetes)
-* [How Cluster Autoscaler is different from CPU-usage-based node autoscalers?](#how-cluster-autoscaler-is-different-from-cpuusagebased-node-autoscalers)
+* [Should I use a CPU-usage-based node autoscaler with Kubernetes?](#should-i-use-a-cpuusagebased-node-autoscaler-with-kubernetes)
+* [How is Cluster Autoscaler different from CPU-usage-based node autoscalers?](#how-is-cluster-autoscaler-different-from-cpuusagebased-node-autoscalers)
 * [Is Cluster Autoscaler compatible with CPU-usage-based node autoscalers?](#is-cluster-autoscaler-compatible-with-cpuusagebased-node-autoscalers)
 * [Are all of the mentioned heuristics and timings final?](#are-all-of-the-mentioned-heuristics-and-timings-final)
 * [How does scale up work?](#how-does-scale-up-work)
@@ -26,6 +26,7 @@
 * [What events are emitted by CA?](#what-events-are-emitted-by-ca)
 * [What happens in scale up when I have no more quota in the cloud provider?](#what-happens-in-scale-up-when-i-have-no-more-quota-in-the-cloud-provider)
 * [How can I run e2e tests?](#how-can-i-run-e2e-tests)
+* [How should I test my code before submitting PR?](#how-should-i-test-my-code-before-submitting-pr)
 <!--- TOC END -->
 
 # Basics
@@ -76,7 +77,7 @@ Cluster Autoscaler makes sure that all of the pods in a cluster have a place to 
 there is any load in the cluster or not. Moreover it tries to ensure that there are no unneeded nodes
 in the cluster.
 
-CPU-usage-based (or any metric-based) cluster/node group autoscalers don't care about pods when scaling up 
+CPU-usage-based (or any metric-based) cluster/node group autoscalers don't care about pods when scaling up
 and down. As a result, they may add a node that will not have any pods, or remove a node that
 has some system-critical pods on it, like kube-dns. Usage of these autoscalers with Kubernetes is discouraged.
 
@@ -319,7 +320,7 @@ the scale-up-triggering pods are removed.
     go run hack/e2e.go -- -v --test --test_args="--ginkgo.focus=\[Feature:ClusterSizeAutoscaling"
     ```
     It will take >1 hour to run the full suite. You may want to redirect output to file, as there will be plenty of it.
-    
+
     Test runner may be missing default credentials. On GCE they can be provided with:
     ```sh
     gcloud beta auth application-default login
@@ -330,3 +331,31 @@ different provider.
 
 Please open an issue if you find a failing or flaky test (a PR will be even more welcome).
 
+### How should I test my code before submitting PR?
+This answer only applies to pull requests containing non-trivial code changes.
+
+Unfortunately we can't automatically run e2e tests on every pull request yet, so
+for now we need to follow a few manual steps to test that PR doesn't break
+basic Cluster Autoscaler functionality. We don't require you to follow this
+whole process for trivial bugfixes or minor changes that don't affect main loop. Just
+use common sense to decide what is and what isn't required for your change.
+
+To test your PR:
+1. Run Cluster Autoscaler e2e tests if you can. We are running our e2e tests on GCE and we
+   can't guarantee the tests are passing on every cloud provider.
+2. If you can't run e2e we ask you to do a following manual test at the
+minimum, using Cluster-Autoscaler build with your changes and using config
+required to activate them:
+  i. Create a deployment. Scale it up, so that some pods don't fit onto existing
+  nodes. Wait for new nodes to be added by Cluster-Autoscaler and confirm all
+  pods have scheduled successfully.
+  ii. Scale the deployment back down to a single replica and confirm that the
+  cluster scales down.
+3. Run a manual test following the basic use-case of your change. Confirm that
+   nodes are added or removed as expected. Once again we ask you to use common
+   sense to decide what needs to be tested.
+4. Describe your testing in PR description or in a separate comment on your PR
+   (example:
+   https://github.com/kubernetes/autoscaler/pull/74#issuecomment-302434795).
+
+We are aware that this process is tedious and we will work to improve it.
