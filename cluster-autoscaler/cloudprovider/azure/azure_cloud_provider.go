@@ -84,6 +84,11 @@ func (azure *AzureCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovid
 	return scaleSet, err
 }
 
+// Pricing returns pricing model for this cloud provider or error if not available.
+func (azure *AzureCloudProvider) Pricing() (cloudprovider.PricingModel, error) {
+	return nil, cloudprovider.ErrNotImplemented
+}
+
 // AzureRef contains a reference to some entity in Azure world.
 type AzureRef struct {
 	Name string
