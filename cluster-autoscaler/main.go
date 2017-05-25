@@ -99,7 +99,8 @@ var (
 		"Type of node group expander to be used in scale up. Available values: ["+strings.Join(expander.AvailableExpanders, ",")+"]")
 
 	writeStatusConfigMapFlag = flag.Bool("write-status-configmap", true, "Should CA write status information to a configmap")
-	maxInactivityFlag        = flag.Duration("max-inactivity", 10*time.Minute, "Maximum time from last recorded autoscaler activity before automatic restart")
+	maxInactivityTimeFlag    = flag.Duration("max-inactivity", 10*time.Minute, "Maximum time from last recorded autoscaler activity before automatic restart")
+	maxFailingTimeFlag       = flag.Duration("max-failing-time", 15*time.Minute, "Maximum time from last recorded successful autoscaler run before automatic restart")
 )
 
 func createAutoscalerOptions() core.AutoscalerOptions {
@@ -195,6 +196,8 @@ func run(healthCheck *metrics.HealthCheck) {
 				err := autoscaler.RunOnce(loopStart)
 				if err != nil && err.Type() != errors.TransientError {
 					metrics.RegisterError(err)
+				} else {
+					healthCheck.UpdateLastSuccessfulRun(time.Now())
 				}
 
 				metrics.UpdateDuration("main", loopStart)
@@ -212,7 +215,7 @@ func main() {
 		"Can be used multiple times. Format: <min>:<max>:<other...>")
 	kube_flag.InitFlags()
 
-	healthCheck := metrics.NewHealthCheck(*maxInactivityFlag)
+	healthCheck := metrics.NewHealthCheck(*maxInactivityTimeFlag, *maxFailingTimeFlag)
 
 	glog.Infof("Cluster Autoscaler %s", ClusterAutoscalerVersion)
 
