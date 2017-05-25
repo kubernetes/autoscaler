@@ -94,7 +94,7 @@ func (gce *GceCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.N
 
 // Pricing returns pricing model for this cloud provider or error if not available.
 func (gce *GceCloudProvider) Pricing() (cloudprovider.PricingModel, error) {
-	return nil, cloudprovider.ErrNotImplemented
+	return &GcePriceModel{}, nil
 }
 
 // GceRef contains s reference to some entity in GCE/GKE world.
