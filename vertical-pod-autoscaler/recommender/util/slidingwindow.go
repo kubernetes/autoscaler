@@ -99,4 +99,3 @@ func (b *floatSlidingWindow) Clear() {
 	b.head = -1
 	b.isFull = false
 }
-

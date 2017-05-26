@@ -20,26 +20,30 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+// MockHistogram is a mock implementation of Histogram interface.
 type MockHistogram struct {
 	mock.Mock
 }
 
+// Percentile is a mock implementation of Histogram.Percentile.
 func (m *MockHistogram) Percentile(percentile float64) float64 {
 	args := m.Called(percentile)
 	return args.Get(0).(float64)
 }
 
+// AddSample is a mock implementation of Histogram.AddSample.
 func (m *MockHistogram) AddSample(value float64, weight float64) {
 	m.Called(value, weight)
 }
 
+// SubtractSample is a mock implementation of Histogram.SubtractSample.
 func (m *MockHistogram) SubtractSample(value float64, weight float64) {
 	m.Called(value, weight)
 }
 
+// IsEmpty is a mock implementation of Histogram.IsEmpty.
 func (m *MockHistogram) IsEmpty() bool {
 	args := m.Called()
 	return args.Bool(0)
 
 }
-
