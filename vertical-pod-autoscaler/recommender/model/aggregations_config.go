@@ -16,7 +16,7 @@ package model
 import (
 	"time"
 
-	"k8s.io/kubernetes/autoscaler/vertical-pod-autoscaler/recommender/util"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/util"
 )
 
 var (

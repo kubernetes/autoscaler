@@ -17,7 +17,7 @@ import (
 	"math"
 	"time"
 
-	"k8s.io/kubernetes/autoscaler/vertical-pod-autoscaler/recommender/util"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/util"
 )
 
 // ContainerUsageSample is a measure of resource usage of a container over some
