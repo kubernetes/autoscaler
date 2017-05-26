@@ -18,6 +18,7 @@ package cloudprovider
 
 import (
 	"fmt"
+	"time"
 
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
@@ -36,6 +37,9 @@ type CloudProvider interface {
 	// should not be processed by cluster autoscaler, or non-nil error if such
 	// occurred.
 	NodeGroupForNode(*apiv1.Node) (NodeGroup, error)
+
+	// Pricing returns pricing model for this cloud provider or error if not available.
+	Pricing() (PricingModel, error)
 }
 
 // ErrNotImplemented is returned if a method is not implemented.
@@ -89,4 +93,15 @@ type NodeGroup interface {
 	// capacity and allocatable information as well as all pods that are started on
 	// the node by default, using manifest (most likely only kube-proxy).
 	TemplateNodeInfo() (*schedulercache.NodeInfo, error)
+}
+
+// PricingModel contains information about the node price and how it changes in time.
+type PricingModel interface {
+	// NodePrice returns a price of running the given node for a given period of time.
+	// All prices returned by the structure should be in the same currency.
+	NodePrice(node *apiv1.Node, startTime time.Time, endTime time.Time) (float64, error)
+
+	// PodePrice returns a theoretical minimum priece of running a pod for a given
+	// period of time on a perfectly matching machine.
+	PodPrice(pod *apiv1.Pod, startTime time.Time, endTime time.Time) (float64, error)
 }

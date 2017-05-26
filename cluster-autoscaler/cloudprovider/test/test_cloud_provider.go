@@ -86,6 +86,11 @@ func (tcp *TestCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.
 	return group, nil
 }
 
+// Pricing returns pricing model for this cloud provider or error if not available.
+func (tcp *TestCloudProvider) Pricing() (cloudprovider.PricingModel, error) {
+	return nil, cloudprovider.ErrNotImplemented
+}
+
 // AddNodeGroup adds node group to test cloud provider.
 func (tcp *TestCloudProvider) AddNodeGroup(id string, min int, max int, size int) {
 	tcp.Lock()

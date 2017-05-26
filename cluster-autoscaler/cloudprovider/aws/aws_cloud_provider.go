@@ -136,6 +136,11 @@ func (aws *awsCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.N
 	return asg, err
 }
 
+// Pricing returns pricing model for this cloud provider or error if not available.
+func (aws *awsCloudProvider) Pricing() (cloudprovider.PricingModel, error) {
+	return nil, cloudprovider.ErrNotImplemented
+}
+
 // AwsRef contains a reference to some entity in AWS/GKE world.
 type AwsRef struct {
 	Name string
