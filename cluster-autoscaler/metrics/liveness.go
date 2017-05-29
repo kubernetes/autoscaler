@@ -25,19 +25,24 @@ import (
 
 // HealthCheck contains information about last time of autoscaler activity and timeout
 type HealthCheck struct {
-	lastActivity time.Time
-	mutex        *sync.Mutex
-	timeout      time.Duration
-	checkTimeout bool
+	lastActivity      time.Time
+	lastSuccessfulRun time.Time
+	mutex             *sync.Mutex
+	activityTimeout   time.Duration
+	successTimeout    time.Duration
+	checkTimeout      bool
 }
 
 // NewHealthCheck builds new HealthCheck object with given timeout
-func NewHealthCheck(timeout time.Duration) *HealthCheck {
+func NewHealthCheck(activityTimeout, successTimeout time.Duration) *HealthCheck {
+	now := time.Now()
 	return &HealthCheck{
-		lastActivity: time.Now(),
-		mutex:        &sync.Mutex{},
-		timeout:      timeout,
-		checkTimeout: false,
+		lastActivity:      now,
+		lastSuccessfulRun: now,
+		mutex:             &sync.Mutex{},
+		activityTimeout:   activityTimeout,
+		successTimeout:    successTimeout,
+		checkTimeout:      false,
 	}
 }
 
@@ -50,18 +55,27 @@ func (hc *HealthCheck) StartMonitoring() {
 	if now.After(hc.lastActivity) {
 		hc.lastActivity = now
 	}
+	if now.After(hc.lastSuccessfulRun) {
+		hc.lastSuccessfulRun = now
+	}
 }
 
 // ServeHTTP implements http.Handler interface to provide a health-check endpoint
 func (hc *HealthCheck) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	hc.mutex.Lock()
+
 	lastActivity := hc.lastActivity
-	timedOut := hc.checkTimeout && time.Now().After(lastActivity.Add(hc.timeout))
+	lastSuccessfulRun := hc.lastSuccessfulRun
+	now := time.Now()
+	activityTimedOut := now.After(lastActivity.Add(hc.activityTimeout))
+	successTimedOut := now.After(lastSuccessfulRun.Add(hc.successTimeout))
+	timedOut := hc.checkTimeout && (activityTimedOut || successTimedOut)
+
 	hc.mutex.Unlock()
 
 	if timedOut {
 		w.WriteHeader(500)
-		w.Write([]byte(fmt.Sprintf("Error: last activity more than %v ago", time.Now().Sub(lastActivity).String())))
+		w.Write([]byte(fmt.Sprintf("Error: last activity more %v ago, last success more than %v ago", time.Now().Sub(lastActivity).String(), time.Now().Sub(lastSuccessfulRun).String())))
 	} else {
 		w.WriteHeader(200)
 		w.Write([]byte("OK"))
@@ -72,6 +86,19 @@ func (hc *HealthCheck) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (hc *HealthCheck) UpdateLastActivity(timestamp time.Time) {
 	hc.mutex.Lock()
 	defer hc.mutex.Unlock()
+	if timestamp.After(hc.lastActivity) {
+		hc.lastActivity = timestamp
+	}
+}
+
+// UpdateLastSuccessfulRun updates last time of successful (i.e. not ending in error) activity
+func (hc *HealthCheck) UpdateLastSuccessfulRun(timestamp time.Time) {
+	hc.mutex.Lock()
+	defer hc.mutex.Unlock()
+	if timestamp.After(hc.lastSuccessfulRun) {
+		hc.lastSuccessfulRun = timestamp
+	}
+	// finishing successful run is also a sign of activity
 	if timestamp.After(hc.lastActivity) {
 		hc.lastActivity = timestamp
 	}
