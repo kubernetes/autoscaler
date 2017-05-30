@@ -173,6 +173,11 @@ func NewScheduledPodLister(kubeClient client.Interface, stopchannel <-chan struc
 	}
 }
 
+// NodeLister lists nodes.
+type NodeLister interface {
+	List() ([]*apiv1.Node, error)
+}
+
 // ReadyNodeLister lists ready nodes.
 type ReadyNodeLister struct {
 	nodeLister v1lister.NodeLister
