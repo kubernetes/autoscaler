@@ -19,6 +19,7 @@
 * [How does CA deal with unready nodes in version >=0.5.0 ?](#how-does-ca-deal-with-unready-nodes-in-version-050-)
 * [How fast is Cluster Autoscaler?](#how-fast-is-cluster-autoscaler)
 * [How fast is HPA when combined with CA?](#how-fast-is-hpa-when-combined-with-ca)
+* [Where can I find the designs of the upcoming features.](#where-can-i-find-the-designs-of-the-upcoming-features)
 * [I have a couple of nodes with low utilization, but they are not scaled down. Why?](#i-have-a-couple-of-nodes-with-low-utilization-but-they-are-not-scaled-down-why)
 * [I have a couple of pending pods, but there was no scale up?](#i-have-a-couple-of-pending-pods-but-there-was-no-scale-up)
 * [CA doesn’t work but it used to work yesterday. Why?](#ca-doesnt-work-but-it-used-to-work-yesterday-why)
@@ -206,6 +207,13 @@ Then it may take up to 30 sec to register the node in the Kubernetes master and 
 
 All in all the total reaction time is around 4 min.
 
+### Where can I find the designs of the upcoming features.
+
+CA team follows the generic Kuberntes process and submits design proposals [HERE](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler/proposals)
+before starting any bigger/significant effort.
+Some of the not-yet-fully-approved proposals may be hidden among [PRs](https://github.com/kubernetes/autoscaler/pulls).
+
+
 ************
 
 # Troubleshooting:
@@ -359,3 +367,4 @@ required to activate them:
    https://github.com/kubernetes/autoscaler/pull/74#issuecomment-302434795).
 
 We are aware that this process is tedious and we will work to improve it.
+
