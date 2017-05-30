@@ -50,9 +50,17 @@ func (tpm *testPricingModel) PodPrice(node *apiv1.Pod, startTime time.Time, endT
 	return 0.0, fmt.Errorf("price for pod %v not found", node.Name)
 }
 
+type testPreferredNodeProvider struct {
+	preferred *apiv1.Node
+}
+
+func (tpnp *testPreferredNodeProvider) Node() (*apiv1.Node, error) {
+	return tpnp.preferred, nil
+}
+
 func TestPriceExpander(t *testing.T) {
 	n1 := BuildTestNode("n1", 1000, 1000)
-	n2 := BuildTestNode("n2", 10000, 1000)
+	n2 := BuildTestNode("n2", 4000, 1000)
 
 	p1 := BuildTestPod("p1", 1000, 0)
 	p2 := BuildTestPod("p2", 500, 0)
@@ -79,39 +87,107 @@ func TestPriceExpander(t *testing.T) {
 			NodeGroup: ng1,
 			NodeCount: 2,
 			Pods:      []*apiv1.Pod{p1, p2},
-			Debug:     "1",
+			Debug:     "ng1",
 		},
 		{
 			NodeGroup: ng2,
 			NodeCount: 1,
 			Pods:      []*apiv1.Pod{p1, p2},
-			Debug:     "2",
+			Debug:     "ng2",
 		},
 	}
 
 	// First node group is cheapter
-	assert.Equal(t, "1", NewStrategy(&testPricingModel{
-		podPrice: map[string]float64{
-			"p1": 20.0,
-			"p2": 10.0,
+	assert.Contains(t, NewStrategy(
+		&testPricingModel{
+			podPrice: map[string]float64{
+				"p1":        20.0,
+				"p2":        10.0,
+				"stabilize": 10,
+			},
+			nodePrice: map[string]float64{
+				"n1": 20.0,
+				"n2": 200.0,
+			},
 		},
-		nodePrice: map[string]float64{
-			"n1": 20.0,
-			"n2": 200.0,
+		&testPreferredNodeProvider{
+			preferred: buildNode(2000, 1024*1024*1024),
 		},
-	}).BestOption(options, nodeInfosForGroups).Debug)
+		simpleNodeUnfitness,
+	).BestOption(options, nodeInfosForGroups).Debug, "ng1")
+
+	// First node group is cheapter however the second is preferred.
+	assert.Contains(t, NewStrategy(
+		&testPricingModel{
+			podPrice: map[string]float64{
+				"p1":        20.0,
+				"p2":        10.0,
+				"stabilize": 10,
+			},
+			nodePrice: map[string]float64{
+				"n1": 50.0,
+				"n2": 200.0,
+			},
+		},
+		&testPreferredNodeProvider{
+			preferred: buildNode(4000, 1024*1024*1024),
+		},
+		simpleNodeUnfitness,
+	).BestOption(options, nodeInfosForGroups).Debug, "ng2")
+
+	// All node groups accept the same set of pods. Lots of nodes.
+	options1b := []expander.Option{
+		{
+			NodeGroup: ng1,
+			NodeCount: 80,
+			Pods:      []*apiv1.Pod{p1, p2},
+			Debug:     "ng1",
+		},
+		{
+			NodeGroup: ng2,
+			NodeCount: 40,
+			Pods:      []*apiv1.Pod{p1, p2},
+			Debug:     "ng2",
+		},
+	}
+	// First node group is cheapter, the second is preferred
+	// but there is lots of nodes to be created.
+	assert.Contains(t, NewStrategy(
+		&testPricingModel{
+			podPrice: map[string]float64{
+				"p1":        20.0,
+				"p2":        10.0,
+				"stabilize": 10,
+			},
+			nodePrice: map[string]float64{
+				"n1": 20.0,
+				"n2": 200.0,
+			},
+		},
+		&testPreferredNodeProvider{
+			preferred: buildNode(4000, 1024*1024*1024),
+		},
+		simpleNodeUnfitness,
+	).BestOption(options1b, nodeInfosForGroups).Debug, "ng1")
 
 	// Second node group is cheapter
-	assert.Equal(t, "2", NewStrategy(&testPricingModel{
-		podPrice: map[string]float64{
-			"p1": 20.0,
-			"p2": 10.0,
+	assert.Contains(t, NewStrategy(
+		&testPricingModel{
+			podPrice: map[string]float64{
+				"p1":        20.0,
+				"p2":        10.0,
+				"stabilize": 10,
+			},
+			nodePrice: map[string]float64{
+				"n1": 200.0,
+				"n2": 100.0,
+			},
 		},
-		nodePrice: map[string]float64{
-			"n1": 200.0,
-			"n2": 100.0,
+		&testPreferredNodeProvider{
+			preferred: buildNode(2000, 1024*1024*1024),
 		},
-	}).BestOption(options, nodeInfosForGroups).Debug)
+		simpleNodeUnfitness,
+	).BestOption(options, nodeInfosForGroups).Debug, "ng2")
 
 	// First group accept 1 pod and second accepts 2.
 	options2 := []expander.Option{
@@ -119,32 +195,45 @@ func TestPriceExpander(t *testing.T) {
 			NodeGroup: ng1,
 			NodeCount: 2,
 			Pods:      []*apiv1.Pod{p1},
-			Debug:     "1",
+			Debug:     "ng1",
 		},
 		{
 			NodeGroup: ng2,
 			NodeCount: 1,
 			Pods:      []*apiv1.Pod{p1, p2},
-			Debug:     "2",
+			Debug:     "ng2",
 		},
 	}
 
 	// Both node groups are equally expensive. However 2
 	// accept two pods.
-	assert.Equal(t, "2", NewStrategy(&testPricingModel{
-		podPrice: map[string]float64{
-			"p1": 20.0,
-			"p2": 10.0,
+	assert.Contains(t, NewStrategy(
+		&testPricingModel{
+			podPrice: map[string]float64{
+				"p1":        20.0,
+				"p2":        10.0,
+				"stabilize": 10,
+			},
+			nodePrice: map[string]float64{
+				"n1": 200.0,
+				"n2": 200.0,
+			},
 		},
-		nodePrice: map[string]float64{
-			"n1": 200.0,
-			"n2": 200.0,
+		&testPreferredNodeProvider{
+			preferred: buildNode(2000, 1024*1024*1024),
 		},
-	}).BestOption(options2, nodeInfosForGroups).Debug)
+		simpleNodeUnfitness,
+	).BestOption(options2, nodeInfosForGroups).Debug, "ng2")
 
 	// Errors are expected
-	assert.Nil(t, NewStrategy(&testPricingModel{
-		podPrice:  map[string]float64{},
-		nodePrice: map[string]float64{},
-	}).BestOption(options2, nodeInfosForGroups))
+	assert.Nil(t, NewStrategy(
+		&testPricingModel{
+			podPrice:  map[string]float64{},
+			nodePrice: map[string]float64{},
+		},
+		&testPreferredNodeProvider{
+			preferred: buildNode(2000, 1024*1024*1024),
+		},
+		simpleNodeUnfitness,
+	).BestOption(options2, nodeInfosForGroups))
 }

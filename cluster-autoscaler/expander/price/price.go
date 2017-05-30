@@ -17,24 +17,51 @@ limitations under the License.
 package price
 
 import (
+	"fmt"
+	"math"
 	"time"
 
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
+	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 
 	"github.com/golang/glog"
 )
 
-// TODO: add preferred node
+// *************
+// The detailed description of what is going on in this expander can be found
+// here:
+// https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/proposals/pricing.md
+// **********
+
 type priceBased struct {
-	pricingModel cloudprovider.PricingModel
+	pricingModel          cloudprovider.PricingModel
+	preferredNodeProvider PreferredNodeProvider
+	nodeUnfitness         NodeUnfitness
 }
 
+var (
+	// defaultPreferredNode is the node that is preferred if PreferredNodeProvider fails.
+	// 4 cpu, 16gb ram.
+	defaultPreferredNode = buildNode(4*1000, 4*4*1024*1024*1024)
+
+	// priceStabilizationPod is the pod cost to stabilize node_cost/pod_cost ratio a bit.
+	// 0.5 cpu, 500 mb ram
+	priceStabilizationPod = buildPod("stabilize", 500, 500*1024*1024)
+)
+
 // NewStrategy returns an expansion strategy that picks nodes based on price and preferred node type.
-func NewStrategy(pricingModel cloudprovider.PricingModel) expander.Strategy {
+func NewStrategy(pricingModel cloudprovider.PricingModel,
+	preferredNodeProvider PreferredNodeProvider,
+	nodeUnfitness NodeUnfitness,
+) expander.Strategy {
 	return &priceBased{
-		pricingModel: pricingModel,
+		pricingModel:          pricingModel,
+		preferredNodeProvider: preferredNodeProvider,
+		nodeUnfitness:         nodeUnfitness,
 	}
 }
 
@@ -45,8 +72,19 @@ func (p *priceBased) BestOption(expansionOptions []expander.Option, nodeInfos ma
 	now := time.Now()
 	then := now.Add(time.Hour)
 
+	preferredNode, err := p.preferredNodeProvider.Node()
+	if err != nil {
+		glog.Errorf("Failed to get preferred node, switching to default: %v", err)
+		preferredNode = defaultPreferredNode
+	}
+	stabilizationPrice, err := p.pricingModel.PodPrice(priceStabilizationPod, now, then)
+	if err != nil {
+		glog.Errorf("Failed to get price for stabilization pod: %v", err)
+		// continuing without stabilization.
+	}
+
 nextoption:
-	for i, option := range expansionOptions {
+	for _, option := range expansionOptions {
 		nodeInfo, found := nodeInfos[option.NodeGroup.Id()]
 		if !found {
 			glog.Warningf("No node info for %s", option.NodeGroup.Id())
@@ -72,13 +110,59 @@ nextoption:
 			continue
 		}
 
-		optionScore := totalNodePrice / totalPodPrice
-		glog.V(5).Infof("Price of %s expansion is %f - ratio %f", option.NodeGroup.Id(), totalNodePrice)
+		// How well the money is spent.
+		priceSubScore := (totalNodePrice + stabilizationPrice) / (totalPodPrice + stabilizationPrice)
+		// How well the node matches generic cluster needs
+		nodeUnfitness := p.nodeUnfitness(preferredNode, nodeInfo.Node())
+
+		// TODO: normalize node count against preferred node.
+		supressedUnfitness := (nodeUnfitness-1.0)*(1.0-math.Tanh(float64(option.NodeCount-1)/15.0)) + 1.0
+
+		optionScore := supressedUnfitness * priceSubScore
+
+		debug := fmt.Sprintf("all_nodes_price=%f pods_price=%f stabilized_ratio=%f unfitness=%f supressed=%f final_score=%f",
+			totalNodePrice,
+			totalPodPrice,
+			priceSubScore,
+			nodeUnfitness,
+			supressedUnfitness,
+			optionScore,
+		)
+
+		glog.V(5).Infof("Price expander for %s: %s", option.NodeGroup.Id(), debug)
 
 		if bestOption == nil || bestOptionScore > optionScore {
-			bestOption = &expansionOptions[i]
+			bestOption = &expander.Option{
+				NodeGroup: option.NodeGroup,
+				NodeCount: option.NodeCount,
+				Debug:     fmt.Sprintf("%s | price-expander: %s", option.Debug, debug),
+				Pods:      option.Pods,
+			}
 			bestOptionScore = optionScore
 		}
 	}
 	return bestOption
+}
+
+// buildPod creates a pod with specified resources.
+func buildPod(name string, millicpu int64, mem int64) *apiv1.Pod {
+	return &apiv1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "default",
+			Name:      name,
+			SelfLink:  fmt.Sprintf("/api/v1/namespaces/default/pods/%s", name),
+		},
+		Spec: apiv1.PodSpec{
+			Containers: []apiv1.Container{
+				{
+					Resources: apiv1.ResourceRequirements{
+						Requests: apiv1.ResourceList{
+							apiv1.ResourceCPU:    *resource.NewMilliQuantity(millicpu, resource.DecimalSI),
+							apiv1.ResourceMemory: *resource.NewQuantity(mem, resource.DecimalSI),
+						},
+					},
+				},
+			},
+		},
+	}
 }
