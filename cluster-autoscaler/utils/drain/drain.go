@@ -21,9 +21,11 @@ import (
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	api "k8s.io/kubernetes/pkg/api"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	policyv1 "k8s.io/kubernetes/pkg/apis/policy/v1beta1"
 	client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	"k8s.io/kubernetes/pkg/kubelet/types"
 )
@@ -37,7 +39,7 @@ const (
 // about possibly problematic pods (unreplicated and daemonsets).
 func GetPodsForDeletionOnNodeDrain(
 	podList []*apiv1.Pod,
-	decoder runtime.Decoder,
+	pdbs []*policyv1.PodDisruptionBudget,
 	deleteAll bool,
 	skipNodesWithSystemPods bool,
 	skipNodesWithLocalStorage bool,
@@ -47,6 +49,13 @@ func GetPodsForDeletionOnNodeDrain(
 	currentTime time.Time) ([]*apiv1.Pod, error) {
 
 	pods := []*apiv1.Pod{}
+	// filter kube-system PDBs to avoid doing it for every kube-system pod
+	kubeSystemPDBs := make([]*policyv1.PodDisruptionBudget, 0)
+	for _, pdb := range pdbs {
+		if pdb.Namespace == "kube-system" {
+			kubeSystemPDBs = append(kubeSystemPDBs, pdb)
+		}
+	}
 
 	for _, pod := range podList {
 		if IsMirrorPod(pod) {
@@ -169,7 +178,13 @@ func GetPodsForDeletionOnNodeDrain(
 				return []*apiv1.Pod{}, fmt.Errorf("%s/%s is not replicated", pod.Namespace, pod.Name)
 			}
 			if pod.Namespace == "kube-system" && skipNodesWithSystemPods {
-				return []*apiv1.Pod{}, fmt.Errorf("non-daemonset, non-mirrored, kube-system pod present: %s", pod.Name)
+				hasPDB, err := checkKubeSystemPDBs(pod, kubeSystemPDBs)
+				if err != nil {
+					return []*apiv1.Pod{}, fmt.Errorf("error matching pods to pdbs: %v", err)
+				}
+				if !hasPDB {
+					return []*apiv1.Pod{}, fmt.Errorf("non-daemonset, non-mirrored, non-pdb-assigned kube-system pod present: %s", pod.Name)
+				}
 			}
 			if HasLocalStorage(pod) && skipNodesWithLocalStorage {
 				return []*apiv1.Pod{}, fmt.Errorf("pod with local storage present: %s", pod.Name)
@@ -223,4 +238,20 @@ func HasLocalStorage(pod *apiv1.Pod) bool {
 
 func isLocalVolume(volume *apiv1.Volume) bool {
 	return volume.HostPath != nil || volume.EmptyDir != nil
+}
+
+// This only checks if a matching PDB exist and therefore if it makes sense to attempt drain simulation,
+// as we check for allowed-disruptions later anyway (for all pods with PDB, not just in kube-system)
+func checkKubeSystemPDBs(pod *apiv1.Pod, pdbs []*policyv1.PodDisruptionBudget) (bool, error) {
+	for _, pdb := range pdbs {
+		selector, err := metav1.LabelSelectorAsSelector(pdb.Spec.Selector)
+		if err != nil {
+			return false, err
+		}
+		if selector.Matches(labels.Set(pod.Labels)) {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }
