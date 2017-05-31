@@ -37,7 +37,7 @@ If you'd like to auto-discover node groups by specifing the `--node-group-auto-d
             "Action": [
                 "autoscaling:DescribeAutoScalingGroups",
                 "autoscaling:DescribeAutoScalingInstances",
-                "autoscaling:DescribeAutoScalingTags",
+                "autoscaling:DescribeTags",
                 "autoscaling:SetDesiredCapacity",
                 "autoscaling:TerminateInstanceInAutoScalingGroup"
             ],
