@@ -63,6 +63,7 @@ func BuildTestNode(name string, millicpu int64, mem int64) *apiv1.Node {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:     name,
 			SelfLink: fmt.Sprintf("/api/v1/nodes/%s", name),
+			Labels:   map[string]string{},
 		},
 		Status: apiv1.NodeStatus{
 			Capacity: apiv1.ResourceList{
@@ -78,7 +79,10 @@ func BuildTestNode(name string, millicpu int64, mem int64) *apiv1.Node {
 		node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(mem, resource.DecimalSI)
 	}
 
-	node.Status.Allocatable = node.Status.Capacity
+	node.Status.Allocatable = apiv1.ResourceList{}
+	for k, v := range node.Status.Capacity {
+		node.Status.Allocatable[k] = v
+	}
 
 	return node
 }
