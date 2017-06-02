@@ -25,12 +25,12 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	core "k8s.io/client-go/testing"
-	api "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/testapi"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	appsv1beta1 "k8s.io/kubernetes/pkg/apis/apps/v1beta1"
 	batchv1 "k8s.io/kubernetes/pkg/apis/batch/v1"
 	extensions "k8s.io/kubernetes/pkg/apis/extensions/v1beta1"
+	policyv1 "k8s.io/kubernetes/pkg/apis/policy/v1beta1"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset/fake"
 )
 
@@ -53,6 +53,20 @@ func TestDrain(t *testing.T) {
 			Name:        "bar",
 			Namespace:   "default",
 			Annotations: map[string]string{apiv1.CreatedByAnnotation: RefJSON(&rc)},
+		},
+		Spec: apiv1.PodSpec{
+			NodeName: "node",
+		},
+	}
+
+	kubeSystemRcPod := &apiv1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        "bar",
+			Namespace:   "kube-system",
+			Annotations: map[string]string{apiv1.CreatedByAnnotation: RefJSON(&rc)},
+			Labels: map[string]string{
+				"k8s-app": "bar",
+			},
 		},
 		Spec: apiv1.PodSpec{
 			NodeName: "node",
@@ -170,9 +184,51 @@ func TestDrain(t *testing.T) {
 		},
 	}
 
+	emptyPDB := &policyv1.PodDisruptionBudget{}
+
+	kubeSystemPDB := &policyv1.PodDisruptionBudget{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "kube-system",
+		},
+		Spec: policyv1.PodDisruptionBudgetSpec{
+			Selector: &metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					"k8s-app": "bar",
+				},
+			},
+		},
+	}
+
+	kubeSystemFakePDB := &policyv1.PodDisruptionBudget{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "kube-system",
+		},
+		Spec: policyv1.PodDisruptionBudgetSpec{
+			Selector: &metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					"k8s-app": "foo",
+				},
+			},
+		},
+	}
+
+	defaultNamespacePDB := &policyv1.PodDisruptionBudget{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "default",
+		},
+		Spec: policyv1.PodDisruptionBudgetSpec{
+			Selector: &metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					"k8s-app": "PDB-managed pod",
+				},
+			},
+		},
+	}
+
 	tests := []struct {
 		description string
 		pods        []*apiv1.Pod
+		pdbs        []*policyv1.PodDisruptionBudget
 		rcs         []apiv1.ReplicationController
 		replicaSets []extensions.ReplicaSet
 		expectFatal bool
@@ -181,6 +237,7 @@ func TestDrain(t *testing.T) {
 		{
 			description: "RC-managed pod",
 			pods:        []*apiv1.Pod{rcPod},
+			pdbs:        []*policyv1.PodDisruptionBudget{},
 			rcs:         []apiv1.ReplicationController{rc},
 			expectFatal: false,
 			expectPods:  []*apiv1.Pod{rcPod},
@@ -188,12 +245,14 @@ func TestDrain(t *testing.T) {
 		{
 			description: "DS-managed pod",
 			pods:        []*apiv1.Pod{dsPod},
+			pdbs:        []*policyv1.PodDisruptionBudget{},
 			expectFatal: false,
 			expectPods:  []*apiv1.Pod{},
 		},
 		{
 			description: "Job-managed pod",
 			pods:        []*apiv1.Pod{jobPod},
+			pdbs:        []*policyv1.PodDisruptionBudget{},
 			rcs:         []apiv1.ReplicationController{rc},
 			expectFatal: false,
 			expectPods:  []*apiv1.Pod{jobPod},
@@ -201,6 +260,7 @@ func TestDrain(t *testing.T) {
 		{
 			description: "SS-managed pod",
 			pods:        []*apiv1.Pod{ssPod},
+			pdbs:        []*policyv1.PodDisruptionBudget{},
 			rcs:         []apiv1.ReplicationController{rc},
 			expectFatal: false,
 			expectPods:  []*apiv1.Pod{ssPod},
@@ -208,6 +268,7 @@ func TestDrain(t *testing.T) {
 		{
 			description: "RS-managed pod",
 			pods:        []*apiv1.Pod{rsPod},
+			pdbs:        []*policyv1.PodDisruptionBudget{},
 			replicaSets: []extensions.ReplicaSet{rs},
 			expectFatal: false,
 			expectPods:  []*apiv1.Pod{rsPod},
@@ -215,6 +276,7 @@ func TestDrain(t *testing.T) {
 		{
 			description: "RS-managed pod that is being deleted",
 			pods:        []*apiv1.Pod{rsPodDeleted},
+			pdbs:        []*policyv1.PodDisruptionBudget{},
 			replicaSets: []extensions.ReplicaSet{rs},
 			expectFatal: false,
 			expectPods:  []*apiv1.Pod{},
@@ -222,19 +284,60 @@ func TestDrain(t *testing.T) {
 		{
 			description: "naked pod",
 			pods:        []*apiv1.Pod{nakedPod},
+			pdbs:        []*policyv1.PodDisruptionBudget{},
 			expectFatal: true,
 			expectPods:  []*apiv1.Pod{},
 		},
 		{
 			description: "pod with EmptyDir",
 			pods:        []*apiv1.Pod{emptydirPod},
+			pdbs:        []*policyv1.PodDisruptionBudget{},
+			expectFatal: true,
+			expectPods:  []*apiv1.Pod{},
+		},
+		{
+			description: "empty PDB with RC-managed pod",
+			pods:        []*apiv1.Pod{rcPod},
+			pdbs:        []*policyv1.PodDisruptionBudget{emptyPDB},
+			rcs:         []apiv1.ReplicationController{rc},
+			expectFatal: false,
+			expectPods:  []*apiv1.Pod{rcPod},
+		},
+		{
+			description: "kube-system PDB with matching kube-system pod",
+			pods:        []*apiv1.Pod{kubeSystemRcPod},
+			pdbs:        []*policyv1.PodDisruptionBudget{kubeSystemPDB},
+			rcs:         []apiv1.ReplicationController{rc},
+			expectFatal: false,
+			expectPods:  []*apiv1.Pod{kubeSystemRcPod},
+		},
+		{
+			description: "kube-system PDB with non-matching kube-system pod",
+			pods:        []*apiv1.Pod{kubeSystemRcPod},
+			pdbs:        []*policyv1.PodDisruptionBudget{kubeSystemFakePDB},
+			rcs:         []apiv1.ReplicationController{rc},
+			expectFatal: true,
+			expectPods:  []*apiv1.Pod{},
+		},
+		{
+			description: "kube-system PDB with default namespace pod",
+			pods:        []*apiv1.Pod{rcPod},
+			pdbs:        []*policyv1.PodDisruptionBudget{kubeSystemPDB},
+			rcs:         []apiv1.ReplicationController{rc},
+			expectFatal: false,
+			expectPods:  []*apiv1.Pod{rcPod},
+		},
+		{
+			description: "default namespace PDB with matching labels kube-system pod",
+			pods:        []*apiv1.Pod{kubeSystemRcPod},
+			pdbs:        []*policyv1.PodDisruptionBudget{defaultNamespacePDB},
+			rcs:         []apiv1.ReplicationController{rc},
 			expectFatal: true,
 			expectPods:  []*apiv1.Pod{},
 		},
 	}
 
 	for _, test := range tests {
-
 		fakeClient := &fake.Clientset{}
 		register := func(resource string, obj runtime.Object, meta metav1.ObjectMeta) {
 			fakeClient.Fake.AddReactor("get", resource, func(action core.Action) (bool, runtime.Object, error) {
@@ -255,7 +358,7 @@ func TestDrain(t *testing.T) {
 		if len(test.replicaSets) > 0 {
 			register("replicasets", &test.replicaSets[0], test.replicaSets[0].ObjectMeta)
 		}
-		pods, err := GetPodsForDeletionOnNodeDrain(test.pods, api.Codecs.UniversalDecoder(),
+		pods, err := GetPodsForDeletionOnNodeDrain(test.pods, test.pdbs,
 			false, true, true, true, fakeClient, 0, time.Now())
 
 		if test.expectFatal {
