@@ -18,9 +18,9 @@ MAINTAINER Marcin Wielgus "mwielgus@google.com"
 RUN apt-get update && apt-get install --yes git wget make\
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
-RUN wget https://storage.googleapis.com/golang/go1.7.5.linux-amd64.tar.gz \
-   && tar -xvf go1.7.5.linux-amd64.tar.gz \
-   && rm go1.7.5.linux-amd64.tar.gz
+RUN wget https://storage.googleapis.com/golang/go1.8.3.linux-amd64.tar.gz \
+   && tar -xvf go1.8.3.linux-amd64.tar.gz \
+   && rm go1.8.3.linux-amd64.tar.gz
 
 ENV GOROOT /go
 ENV GOPATH /gopath/
