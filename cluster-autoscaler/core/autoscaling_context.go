@@ -101,6 +101,8 @@ type AutoscalingOptions struct {
 	ScaleDownTrialInterval time.Duration
 	// WriteStatusConfigMap tells if the status information should be written to a ConfigMap
 	WriteStatusConfigMap bool
+	// BalanceSimilarNodeGroups enables logic that identifies node groups with similar machines and tries to balance node count between them.
+	BalanceSimilarNodeGroups bool
 }
 
 // NewAutoscalingContext returns an autoscaling context from all the necessary parameters passed via arguments

@@ -17,13 +17,16 @@ limitations under the License.
 package core
 
 import (
+	"bytes"
 	"time"
 
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/nodegroupset"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	extensionsv1 "k8s.io/kubernetes/pkg/apis/extensions/v1beta1"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
@@ -67,6 +70,7 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 	}
 	glog.V(4).Infof("Upcoming %d nodes", len(upcomingNodes))
 
+	podsPassingPredicates := make(map[string][]*apiv1.Pod)
 	podsRemainUnschedulable := make(map[*apiv1.Pod]bool)
 	expansionOptions := make([]expander.Option, 0)
 
@@ -111,6 +115,10 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 				}
 			}
 		}
+		passingPods := make([]*apiv1.Pod, len(option.Pods))
+		copy(passingPods, option.Pods)
+		podsPassingPredicates[nodeGroup.Id()] = passingPods
+
 		if len(option.Pods) > 0 {
 			if context.EstimatorName == estimator.BinpackingEstimatorName {
 				binpackingEstimator := estimator.NewBinpackingNodeEstimator(context.PredicateChecker)
@@ -154,48 +162,52 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 		}
 		glog.V(1).Infof("Estimated %d nodes needed in %s", bestOption.NodeCount, bestOption.NodeGroup.Id())
 
-		currentSize, err := bestOption.NodeGroup.TargetSize()
-		if err != nil {
-			return false, errors.NewAutoscalerError(
-				errors.CloudProviderError,
-				"failed to get node group size: %v", err)
-		}
-		newSize := currentSize + bestOption.NodeCount
-		if newSize >= bestOption.NodeGroup.MaxSize() {
-			glog.V(1).Infof("Capping size to MAX (%d)", bestOption.NodeGroup.MaxSize())
-			newSize = bestOption.NodeGroup.MaxSize()
-		}
-
-		if context.MaxNodesTotal > 0 && len(nodes)+(newSize-currentSize) > context.MaxNodesTotal {
+		newNodes := bestOption.NodeCount
+		if context.MaxNodesTotal > 0 && len(nodes)+newNodes > context.MaxNodesTotal {
 			glog.V(1).Infof("Capping size to max cluster total size (%d)", context.MaxNodesTotal)
-			newSize = context.MaxNodesTotal - len(nodes) + currentSize
-			if newSize < currentSize {
+			newNodes = context.MaxNodesTotal - len(nodes)
+			if newNodes < 1 {
 				return false, errors.NewAutoscalerError(
 					errors.TransientError,
 					"max node total count already reached")
 			}
 		}
 
-		glog.V(0).Infof("Scale-up: setting group %s size to %d", bestOption.NodeGroup.Id(), newSize)
-		increase := newSize - currentSize
-		if err := bestOption.NodeGroup.IncreaseSize(increase); err != nil {
-			return false, errors.NewAutoscalerError(
-				errors.CloudProviderError, "failed to increase node group size: %v", err)
+		targetNodeGroups := []cloudprovider.NodeGroup{bestOption.NodeGroup}
+		if context.BalanceSimilarNodeGroups {
+			similarNodeGroups, typedErr := nodegroupset.FindSimilarNodeGroups(bestOption.NodeGroup, context.CloudProvider, nodeInfos)
+			if typedErr != nil {
+				return false, typedErr.AddPrefix("Failed to find matching node groups: ")
+			}
+			similarNodeGroups = filterNodeGroupsByPods(similarNodeGroups, bestOption.Pods, podsPassingPredicates)
+			targetNodeGroups = append(targetNodeGroups, similarNodeGroups...)
+			if len(targetNodeGroups) > 1 {
+				var buffer bytes.Buffer
+				for i, ng := range targetNodeGroups {
+					if i > 0 {
+						buffer.WriteString(", ")
+					}
+					buffer.WriteString(ng.Id())
+				}
+				glog.V(1).Infof("Splitting scale-up between %v similar node groups: {%v}", len(targetNodeGroups), buffer.String())
+			}
 		}
-		context.ClusterStateRegistry.RegisterScaleUp(
-			&clusterstate.ScaleUpRequest{
-				NodeGroupName:   bestOption.NodeGroup.Id(),
-				Increase:        increase,
-				Time:            time.Now(),
-				ExpectedAddTime: time.Now().Add(context.MaxNodeProvisionTime),
-			})
-		metrics.RegisterScaleUp(increase)
-		context.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaledUpGroup",
-			"Scale-up: group %s size set to %d", bestOption.NodeGroup.Id(), newSize)
+		scaleUpInfos, typedErr := nodegroupset.BalanceScaleUpBetweenGroups(
+			targetNodeGroups, newNodes)
+		if typedErr != nil {
+			return false, typedErr
+		}
+		glog.V(1).Infof("Final scale-up plan: %v", scaleUpInfos)
+		for _, info := range scaleUpInfos {
+			typedErr := executeScaleUp(context, info)
+			if typedErr != nil {
+				return false, typedErr
+			}
+		}
 
 		for _, pod := range bestOption.Pods {
 			context.Recorder.Eventf(pod, apiv1.EventTypeNormal, "TriggeredScaleUp",
-				"pod triggered scale-up, group: %s, sizes (current/new): %d/%d", bestOption.NodeGroup.Id(), currentSize, newSize)
+				"pod triggered scale-up: %v", scaleUpInfos)
 		}
 
 		return true, nil
@@ -208,4 +220,49 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 	}
 
 	return false, nil
+}
+
+func filterNodeGroupsByPods(groups []cloudprovider.NodeGroup, podsRequiredToFit []*apiv1.Pod,
+	fittingPodsPerNodeGroup map[string][]*apiv1.Pod) []cloudprovider.NodeGroup {
+	result := make([]cloudprovider.NodeGroup, 0)
+groupsloop:
+	for _, group := range groups {
+		fittingPods, found := fittingPodsPerNodeGroup[group.Id()]
+		if !found {
+			glog.V(1).Infof("No info about pods passing predicates found for group %v, skipping it from scale-up consideration", group.Id())
+			continue
+		}
+		podSet := make(map[*apiv1.Pod]bool, len(fittingPods))
+		for _, pod := range fittingPods {
+			podSet[pod] = true
+		}
+		for _, pod := range podsRequiredToFit {
+			if _, found = podSet[pod]; !found {
+				glog.V(1).Infof("Group %v, can't fit pod %v/%v, removing from scale-up consideration", group.Id(), pod.Namespace, pod.Name)
+				continue groupsloop
+			}
+		}
+		result = append(result, group)
+	}
+	return result
+}
+
+func executeScaleUp(context *AutoscalingContext, info nodegroupset.ScaleUpInfo) *errors.AutoscalerError {
+	glog.V(0).Infof("Scale-up: setting group %s size to %d", info.Group.Id(), info.NewSize)
+	increase := info.NewSize - info.CurrentSize
+	if err := info.Group.IncreaseSize(increase); err != nil {
+		return errors.NewAutoscalerError(errors.CloudProviderError,
+			"failed to increase node group size: %v", err)
+	}
+	context.ClusterStateRegistry.RegisterScaleUp(
+		&clusterstate.ScaleUpRequest{
+			NodeGroupName:   info.Group.Id(),
+			Increase:        increase,
+			Time:            time.Now(),
+			ExpectedAddTime: time.Now().Add(context.MaxNodeProvisionTime),
+		})
+	metrics.RegisterScaleUp(increase)
+	context.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaledUpGroup",
+		"Scale-up: group %s size set to %d", info.Group.Id(), info.NewSize)
+	return nil
 }

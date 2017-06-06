@@ -25,6 +25,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
@@ -353,4 +354,91 @@ func TestScaleUpNoHelp(t *testing.T) {
 		t.Fatal("No Event recorded, expected NotTriggerScaleUp event")
 	}
 	assert.Regexp(t, regexp.MustCompile("NotTriggerScaleUp"), event)
+}
+
+func TestScaleUpBalanceGroups(t *testing.T) {
+	fakeClient := &fake.Clientset{}
+	provider := testprovider.NewTestCloudProvider(func(string, int) error {
+		return nil
+	}, nil)
+
+	type ngInfo struct {
+		min, max, size int
+	}
+	testCfg := map[string]ngInfo{
+		"ng1": {min: 1, max: 1, size: 1},
+		"ng2": {min: 1, max: 2, size: 1},
+		"ng3": {min: 1, max: 5, size: 1},
+		"ng4": {min: 1, max: 5, size: 3},
+	}
+	podMap := make(map[string]*apiv1.Pod, len(testCfg))
+	nodes := make([]*apiv1.Node, 0)
+
+	for gid, gconf := range testCfg {
+		provider.AddNodeGroup(gid, gconf.min, gconf.max, gconf.size)
+		for i := 0; i < gconf.size; i++ {
+			nodeName := fmt.Sprintf("%v-node-%v", gid, i)
+			node := BuildTestNode(nodeName, 100, 1000)
+			SetNodeReadyState(node, true, time.Now())
+			nodes = append(nodes, node)
+
+			pod := BuildTestPod(fmt.Sprintf("%v-pod-%v", gid, i), 80, 0)
+			pod.Spec.NodeName = nodeName
+			podMap[gid] = pod
+
+			provider.AddNode(gid, node)
+		}
+	}
+
+	fakeClient.Fake.AddReactor("list", "pods", func(action core.Action) (bool, runtime.Object, error) {
+		list := action.(core.ListAction)
+		fieldstring := list.GetListRestrictions().Fields.String()
+		matcher, err := regexp.Compile("ng[0-9]")
+		if err != nil {
+			return false, &apiv1.PodList{Items: []apiv1.Pod{}}, err
+		}
+		matches := matcher.FindStringSubmatch(fieldstring)
+		if len(matches) != 1 {
+			return false, &apiv1.PodList{Items: []apiv1.Pod{}}, fmt.Errorf("parse error")
+		}
+		return true, &apiv1.PodList{Items: []apiv1.Pod{*(podMap[matches[0]])}}, nil
+	})
+
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{})
+	clusterState.UpdateNodes(nodes, time.Now())
+	fakeRecorder := kube_record.NewFakeRecorder(5)
+	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, kube_record.NewFakeRecorder(5), false)
+	context := &AutoscalingContext{
+		AutoscalingOptions: AutoscalingOptions{
+			EstimatorName:            estimator.BinpackingEstimatorName,
+			BalanceSimilarNodeGroups: true,
+		},
+		PredicateChecker:     simulator.NewTestPredicateChecker(),
+		CloudProvider:        provider,
+		ClientSet:            fakeClient,
+		Recorder:             fakeRecorder,
+		ExpanderStrategy:     random.NewStrategy(),
+		ClusterStateRegistry: clusterState,
+		LogRecorder:          fakeLogRecorder,
+	}
+
+	pods := make([]*apiv1.Pod, 0)
+	for i := 0; i < 2; i++ {
+		pods = append(pods, BuildTestPod(fmt.Sprintf("test-pod-%v", i), 80, 0))
+	}
+
+	result, typedErr := ScaleUp(context, pods, nodes, []*extensionsv1.DaemonSet{})
+	assert.NoError(t, typedErr)
+	assert.True(t, result)
+	groupMap := make(map[string]cloudprovider.NodeGroup, 3)
+	for _, group := range provider.NodeGroups() {
+		groupMap[group.Id()] = group
+	}
+
+	ng2size, err := groupMap["ng2"].TargetSize()
+	assert.NoError(t, err)
+	ng3size, err := groupMap["ng3"].TargetSize()
+	assert.NoError(t, err)
+	assert.Equal(t, 2, ng2size)
+	assert.Equal(t, 2, ng3size)
 }
