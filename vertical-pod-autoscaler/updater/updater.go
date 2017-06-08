@@ -19,18 +19,19 @@ package main
 import (
 	"time"
 
-	"k8s.io/autoscaler/vertical-pod-autoscaler/updater/apimock"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/apimock"
+	recommender "k8s.io/autoscaler/vertical-pod-autoscaler/recommender_mock"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/updater/eviction"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/updater/priority"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/updater/recommender"
 
-	"github.com/golang/glog"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/tools/cache"
 	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	v1lister "k8s.io/kubernetes/pkg/client/listers/core/v1"
+
+	"github.com/golang/glog"
 )
 
 // Updater performs updates on pods if recommended by Vertical Pod Autoscaler
