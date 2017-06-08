@@ -18,10 +18,11 @@ package recommender
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/updater/test"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/test"
 )
 
 func TestGetWithCache(t *testing.T) {

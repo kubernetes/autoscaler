@@ -27,7 +27,7 @@ import (
 	extensions "k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/updater/test"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/test"
 	core "k8s.io/client-go/testing"
 	"k8s.io/kubernetes/pkg/api/testapi"
 	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"

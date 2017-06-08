@@ -22,7 +22,7 @@ import (
 	"runtime"
 	"time"
 
-	"k8s.io/autoscaler/vertical-pod-autoscaler/updater/apimock"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/apimock"
 
 	apiv1 "k8s.io/api/core/v1"
 	hashutil "k8s.io/kubernetes/pkg/util/hash"

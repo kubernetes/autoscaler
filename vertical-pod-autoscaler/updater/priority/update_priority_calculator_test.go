@@ -19,11 +19,13 @@ package priority
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/apimock"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/test"
+
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/updater/apimock"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/updater/test"
+
+	"github.com/stretchr/testify/assert"
 )
 
 const (
