@@ -26,6 +26,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/factory"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	kube_record "k8s.io/client-go/tools/record"
 	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 )
@@ -107,13 +108,20 @@ type AutoscalingOptions struct {
 
 // NewAutoscalingContext returns an autoscaling context from all the necessary parameters passed via arguments
 func NewAutoscalingContext(options AutoscalingOptions, predicateChecker *simulator.PredicateChecker,
-	kubeClient kube_client.Interface, kubeEventRecorder kube_record.EventRecorder, logEventRecorder *utils.LogEventRecorder) *AutoscalingContext {
+	kubeClient kube_client.Interface, kubeEventRecorder kube_record.EventRecorder,
+	logEventRecorder *utils.LogEventRecorder, listerRegistry kube_util.ListerRegistry) (*AutoscalingContext, error) {
+
 	cloudProviderBuilder := builder.NewCloudProviderBuilder(options.CloudProviderName, options.CloudConfig)
 	cloudProvider := cloudProviderBuilder.Build(cloudprovider.NodeGroupDiscoveryOptions{
 		NodeGroupSpecs:             options.NodeGroups,
 		NodeGroupAutoDiscoverySpec: options.NodeGroupAutoDiscovery,
 	})
-	expanderStrategy := factory.ExpanderStrategyFromString(options.ExpanderName)
+	expanderStrategy, err := factory.ExpanderStrategyFromString(options.ExpanderName,
+		cloudProvider, listerRegistry.AllNodeLister())
+	if err != nil {
+		return nil, err
+	}
+
 	clusterStateConfig := clusterstate.ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: options.MaxTotalUnreadyPercentage,
 		OkTotalUnreadyCount:       options.OkTotalUnreadyCount,
@@ -132,5 +140,5 @@ func NewAutoscalingContext(options AutoscalingOptions, predicateChecker *simulat
 		LogRecorder:          logEventRecorder,
 	}
 
-	return &autoscalingContext
+	return &autoscalingContext, nil
 }

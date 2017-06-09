@@ -27,7 +27,7 @@ import (
 // AutoscalerBuilder builds an instance of Autoscaler which is the core of CA
 type AutoscalerBuilder interface {
 	SetDynamicConfig(config dynamic.Config) AutoscalerBuilder
-	Build() Autoscaler
+	Build() (Autoscaler, error)
 }
 
 // AutoscalerBuilderImpl builds new autoscalers from its state including initial `AutoscalingOptions` given at startup and
@@ -42,7 +42,8 @@ type AutoscalerBuilderImpl struct {
 }
 
 // NewAutoscalerBuilder builds an AutoscalerBuilder from required parameters
-func NewAutoscalerBuilder(autoscalingOptions AutoscalingOptions, predicateChecker *simulator.PredicateChecker, kubeClient kube_client.Interface, kubeEventRecorder kube_record.EventRecorder, listerRegistry kube_util.ListerRegistry) *AutoscalerBuilderImpl {
+func NewAutoscalerBuilder(autoscalingOptions AutoscalingOptions, predicateChecker *simulator.PredicateChecker,
+	kubeClient kube_client.Interface, kubeEventRecorder kube_record.EventRecorder, listerRegistry kube_util.ListerRegistry) *AutoscalerBuilderImpl {
 	return &AutoscalerBuilderImpl{
 		autoscalingOptions: autoscalingOptions,
 		kubeClient:         kubeClient,
@@ -60,7 +61,7 @@ func (b *AutoscalerBuilderImpl) SetDynamicConfig(config dynamic.Config) Autoscal
 }
 
 // Build an autoscaler according to the builder's state
-func (b *AutoscalerBuilderImpl) Build() Autoscaler {
+func (b *AutoscalerBuilderImpl) Build() (Autoscaler, error) {
 	options := b.autoscalingOptions
 	if b.dynamicConfig != nil {
 		c := *(b.dynamicConfig)

@@ -31,11 +31,16 @@ type PollingAutoscaler struct {
 }
 
 // NewPollingAutoscaler builds a PollingAutoscaler from required parameters
-func NewPollingAutoscaler(autoscalerBuilder AutoscalerBuilder) *PollingAutoscaler {
-	return &PollingAutoscaler{
-		autoscaler:        autoscalerBuilder.Build(),
-		autoscalerBuilder: autoscalerBuilder,
+func NewPollingAutoscaler(autoscalerBuilder AutoscalerBuilder) (*PollingAutoscaler, error) {
+	autoscaler, err := autoscalerBuilder.Build()
+	if err != nil {
+		return nil, err
 	}
+
+	return &PollingAutoscaler{
+		autoscaler:        autoscaler,
+		autoscalerBuilder: autoscalerBuilder,
+	}, err
 }
 
 // CleanUp does the work required before all the iterations of a polling autoscaler run
@@ -63,8 +68,11 @@ func (a *PollingAutoscaler) RunOnce(currentTime time.Time) *errors.AutoscalerErr
 func (a *PollingAutoscaler) Poll() error {
 	// For safety, any config change should stop and recreate all the stuff running in CA hence recreating all the Autoscaler instance here
 	// See https://github.com/kubernetes/contrib/pull/2226#discussion_r94126064
-	a.autoscaler = a.autoscalerBuilder.Build()
+	autoscaler, err := a.autoscalerBuilder.Build()
+	if err != nil {
+		return err
+	}
+	a.autoscaler = autoscaler
 	glog.V(4).Infof("Poll finished")
-
 	return nil
 }
