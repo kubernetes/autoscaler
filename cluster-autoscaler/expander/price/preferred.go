@@ -26,11 +26,18 @@ import (
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 )
 
-type simplePreferredNodeProvider struct {
+// SimplePreferredNodeProvider returns preferred node based on the cluster size.
+type SimplePreferredNodeProvider struct {
 	nodeLister kube_util.NodeLister
 }
 
-func (spnp *simplePreferredNodeProvider) Node() (*apiv1.Node, error) {
+func NewSimplePreferredNodeProvider(nodeLister kube_util.NodeLister) *SimplePreferredNodeProvider {
+	return &SimplePreferredNodeProvider{
+		nodeLister: nodeLister,
+	}
+}
+
+func (spnp *SimplePreferredNodeProvider) Node() (*apiv1.Node, error) {
 	nodes, err := spnp.nodeLister.List()
 	if err != nil {
 		return nil, err
@@ -74,7 +81,8 @@ func buildNode(millicpu int64, mem int64) *apiv1.Node {
 	return node
 }
 
-func simpleNodeUnfitness(preferredNode, evaluatedNode *apiv1.Node) float64 {
+// SimpleNodeUnfitness returns unfitness based on cpu only.
+func SimpleNodeUnfitness(preferredNode, evaluatedNode *apiv1.Node) float64 {
 	preferredCpu := preferredNode.Status.Capacity[apiv1.ResourceCPU]
 	evaluatedCpu := evaluatedNode.Status.Capacity[apiv1.ResourceCPU]
 	return math.Max(float64(preferredCpu.MilliValue())/float64(evaluatedCpu.MilliValue()),

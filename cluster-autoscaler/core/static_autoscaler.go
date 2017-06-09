@@ -43,7 +43,7 @@ type StaticAutoscaler struct {
 
 // NewStaticAutoscaler creates an instance of Autoscaler filled with provided parameters
 func NewStaticAutoscaler(opts AutoscalingOptions, predicateChecker *simulator.PredicateChecker,
-	kubeClient kube_client.Interface, kubeEventRecorder kube_record.EventRecorder, listerRegistry kube_util.ListerRegistry) *StaticAutoscaler {
+	kubeClient kube_client.Interface, kubeEventRecorder kube_record.EventRecorder, listerRegistry kube_util.ListerRegistry) (*StaticAutoscaler, error) {
 	logRecorder, err := utils.NewStatusMapRecorder(kubeClient, kubeEventRecorder, opts.WriteStatusConfigMap)
 	if err != nil {
 		glog.Error("Failed to initialize status configmap, unable to write status events")
@@ -51,7 +51,10 @@ func NewStaticAutoscaler(opts AutoscalingOptions, predicateChecker *simulator.Pr
 		// TODO(maciekpytel): recover from this after successfull status configmap update?
 		logRecorder, _ = utils.NewStatusMapRecorder(kubeClient, kubeEventRecorder, false)
 	}
-	autoscalingContext := NewAutoscalingContext(opts, predicateChecker, kubeClient, kubeEventRecorder, logRecorder)
+	autoscalingContext, err := NewAutoscalingContext(opts, predicateChecker, kubeClient, kubeEventRecorder, logRecorder, listerRegistry)
+	if err != nil {
+		return nil, err
+	}
 
 	scaleDown := NewScaleDown(autoscalingContext)
 
@@ -61,7 +64,7 @@ func NewStaticAutoscaler(opts AutoscalingOptions, predicateChecker *simulator.Pr
 		lastScaleUpTime:          time.Now(),
 		lastScaleDownFailedTrial: time.Now(),
 		scaleDown:                scaleDown,
-	}
+	}, nil
 }
 
 // CleanUp cleans up ToBeDeleted taints added by the previously run and then failed CA
