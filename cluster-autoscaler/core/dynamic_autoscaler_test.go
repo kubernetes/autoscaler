@@ -28,7 +28,7 @@ type AutoscalerMock struct {
 	mock.Mock
 }
 
-func (m *AutoscalerMock) RunOnce(currentTime time.Time) *errors.AutoscalerError {
+func (m *AutoscalerMock) RunOnce(currentTime time.Time) errors.AutoscalerError {
 	m.Called(currentTime)
 	return nil
 }
@@ -59,9 +59,9 @@ func (m *AutoscalerBuilderMock) SetDynamicConfig(config dynamic.Config) Autoscal
 	return args.Get(0).(AutoscalerBuilder)
 }
 
-func (m *AutoscalerBuilderMock) Build() Autoscaler {
+func (m *AutoscalerBuilderMock) Build() (Autoscaler, errors.AutoscalerError) {
 	args := m.Called()
-	return args.Get(0).(Autoscaler)
+	return args.Get(0).(Autoscaler), nil
 }
 
 func TestRunOnceWhenNoUpdate(t *testing.T) {
@@ -76,7 +76,7 @@ func TestRunOnceWhenNoUpdate(t *testing.T) {
 	builder := &AutoscalerBuilderMock{}
 	builder.On("Build").Return(autoscaler).Once()
 
-	a := NewDynamicAutoscaler(builder, configFetcher)
+	a, _ := NewDynamicAutoscaler(builder, configFetcher)
 	a.RunOnce(currentTime)
 
 	autoscaler.AssertExpectations(t)
@@ -102,7 +102,7 @@ func TestRunOnceWhenUpdated(t *testing.T) {
 	builder.On("SetDynamicConfig", newConfig).Return(builder).Once()
 	builder.On("Build").Return(newAutoscaler).Once()
 
-	a := NewDynamicAutoscaler(builder, configFetcher)
+	a, _ := NewDynamicAutoscaler(builder, configFetcher)
 	a.RunOnce(currentTime)
 
 	initialAutoscaler.AssertNotCalled(t, "RunOnce", mock.AnythingOfType("time.Time"))

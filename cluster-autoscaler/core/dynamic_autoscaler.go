@@ -34,12 +34,16 @@ type DynamicAutoscaler struct {
 }
 
 // NewDynamicAutoscaler builds a DynamicAutoscaler from required parameters
-func NewDynamicAutoscaler(autoscalerBuilder AutoscalerBuilder, configFetcher dynamic.ConfigFetcher) *DynamicAutoscaler {
+func NewDynamicAutoscaler(autoscalerBuilder AutoscalerBuilder, configFetcher dynamic.ConfigFetcher) (*DynamicAutoscaler, errors.AutoscalerError) {
+	autoscaler, err := autoscalerBuilder.Build()
+	if err != nil {
+		return nil, err
+	}
 	return &DynamicAutoscaler{
-		autoscaler:        autoscalerBuilder.Build(),
+		autoscaler:        autoscaler,
 		autoscalerBuilder: autoscalerBuilder,
 		configFetcher:     configFetcher,
-	}
+	}, nil
 }
 
 // CleanUp does the work required before all the iterations of a dynamic autoscaler run
@@ -53,7 +57,7 @@ func (a *DynamicAutoscaler) ExitCleanUp() {
 }
 
 // RunOnce represents a single iteration of a dynamic autoscaler inside the CA's control-loop
-func (a *DynamicAutoscaler) RunOnce(currentTime time.Time) *errors.AutoscalerError {
+func (a *DynamicAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError {
 	reconfigureStart := time.Now()
 	metrics.UpdateLastTime("reconfigure", reconfigureStart)
 	if err := a.Reconfigure(); err != nil {
@@ -75,7 +79,10 @@ func (a *DynamicAutoscaler) Reconfigure() error {
 	if updatedConfig != nil {
 		// For safety, any config change should stop and recreate all the stuff running in CA hence recreating all the Autoscaler instance here
 		// See https://github.com/kubernetes/contrib/pull/2226#discussion_r94126064
-		a.autoscaler = a.autoscalerBuilder.SetDynamicConfig(*updatedConfig).Build()
+		a.autoscaler, err = a.autoscalerBuilder.SetDynamicConfig(*updatedConfig).Build()
+		if err != nil {
+			return err
+		}
 		glog.V(4).Infof("Dynamic reconfiguration finished: updatedConfig=%v", updatedConfig)
 	}
 

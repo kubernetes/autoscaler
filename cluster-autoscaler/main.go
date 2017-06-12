@@ -181,8 +181,10 @@ func run(healthCheck *metrics.HealthCheck) {
 	}
 	listerRegistryStopChannel := make(chan struct{})
 	listerRegistry := kube_util.NewListerRegistryWithDefaultListers(kubeClient, listerRegistryStopChannel)
-	autoscaler := core.NewAutoscaler(opts, predicateChecker, kubeClient, kubeEventRecorder, listerRegistry)
-
+	autoscaler, err := core.NewAutoscaler(opts, predicateChecker, kubeClient, kubeEventRecorder, listerRegistry)
+	if err != nil {
+		glog.Fatal("Failed to create autoscaler: %v", err)
+	}
 	autoscaler.CleanUp()
 	registerSignalHandlers(autoscaler)
 	healthCheck.StartMonitoring()

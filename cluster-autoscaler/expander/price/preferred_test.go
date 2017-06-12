@@ -38,7 +38,7 @@ func TestPreferred(t *testing.T) {
 	n2 := BuildTestNode("n2", 2000, 2000)
 	n3 := BuildTestNode("n2", 2000, 2000)
 
-	provider := simplePreferredNodeProvider{
+	provider := SimplePreferredNodeProvider{
 		nodeLister: &testNodeLister{
 			list: []*apiv1.Node{n1, n2, n3},
 		},
@@ -47,7 +47,7 @@ func TestPreferred(t *testing.T) {
 	assert.NoError(t, err)
 	cpu := node.Status.Capacity[apiv1.ResourceCPU]
 	assert.Equal(t, int64(2), cpu.Value())
-	assert.Equal(t, 2.0, simpleNodeUnfitness(n1, n2))
-	assert.Equal(t, 2.0, simpleNodeUnfitness(n2, n1))
-	assert.Equal(t, 1.0, simpleNodeUnfitness(n1, n1))
+	assert.Equal(t, 2.0, SimpleNodeUnfitness(n1, n2))
+	assert.Equal(t, 2.0, SimpleNodeUnfitness(n2, n1))
+	assert.Equal(t, 1.0, SimpleNodeUnfitness(n1, n1))
 }

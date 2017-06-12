@@ -35,7 +35,7 @@ func TestRunOnce(t *testing.T) {
 	builder.On("Build").Return(initialAutoscaler).Once()
 	builder.On("Build").Return(newAutoscaler).Once()
 
-	a := NewPollingAutoscaler(builder)
+	a, _ := NewPollingAutoscaler(builder)
 	a.RunOnce(currentTime)
 
 	initialAutoscaler.AssertNotCalled(t, "RunOnce", mock.AnythingOfType("time.Time"))

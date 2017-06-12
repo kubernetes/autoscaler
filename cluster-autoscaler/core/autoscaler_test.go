@@ -67,7 +67,7 @@ func TestNewAutoscalerStatic(t *testing.T) {
 	}
 	predicateChecker := simulator.NewTestPredicateChecker()
 	listerRegistry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil)
-	a := NewAutoscaler(opts, predicateChecker, fakeClient, kubeEventRecorder, listerRegistry)
+	a, _ := NewAutoscaler(opts, predicateChecker, fakeClient, kubeEventRecorder, listerRegistry)
 	assert.IsType(t, &StaticAutoscaler{}, a)
 }
 
@@ -104,6 +104,6 @@ func TestNewAutoscalerDynamic(t *testing.T) {
 	}
 	predicateChecker := simulator.NewTestPredicateChecker()
 	listerRegistry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil)
-	a := NewAutoscaler(opts, predicateChecker, fakeClient, kubeEventRecorder, listerRegistry)
+	a, _ := NewAutoscaler(opts, predicateChecker, fakeClient, kubeEventRecorder, listerRegistry)
 	assert.IsType(t, &DynamicAutoscaler{}, a)
 }

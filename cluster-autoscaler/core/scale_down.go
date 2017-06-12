@@ -114,7 +114,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	nodes []*apiv1.Node,
 	pods []*apiv1.Pod,
 	timestamp time.Time,
-	pdbs []*policyv1.PodDisruptionBudget) *errors.AutoscalerError {
+	pdbs []*policyv1.PodDisruptionBudget) errors.AutoscalerError {
 
 	currentlyUnneededNodes := make([]*apiv1.Node, 0)
 	nodeNameToNodeInfo := schedulercache.CreateNodeNameToInfoMap(pods, nodes)
@@ -191,7 +191,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 
 // TryToScaleDown tries to scale down the cluster. It returns ScaleDownResult indicating if any node was
 // removed and error if such occured.
-func (sd *ScaleDown) TryToScaleDown(nodes []*apiv1.Node, pods []*apiv1.Pod, pdbs []*policyv1.PodDisruptionBudget) (ScaleDownResult, *errors.AutoscalerError) {
+func (sd *ScaleDown) TryToScaleDown(nodes []*apiv1.Node, pods []*apiv1.Pod, pdbs []*policyv1.PodDisruptionBudget) (ScaleDownResult, errors.AutoscalerError) {
 
 	now := time.Now()
 	candidates := make([]*apiv1.Node, 0)
@@ -249,7 +249,7 @@ func (sd *ScaleDown) TryToScaleDown(nodes []*apiv1.Node, pods []*apiv1.Pod, pdbs
 	// to recreate on other nodes.
 	emptyNodes := getEmptyNodes(candidates, pods, sd.context.MaxEmptyBulkDelete, sd.context.CloudProvider)
 	if len(emptyNodes) > 0 {
-		confirmation := make(chan *errors.AutoscalerError, len(emptyNodes))
+		confirmation := make(chan errors.AutoscalerError, len(emptyNodes))
 		for _, node := range emptyNodes {
 			glog.V(0).Infof("Scale-down: removing empty node %s", node.Name)
 			sd.context.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaleDownEmpty", "Scale-down: removing empty node %s", node.Name)
@@ -268,7 +268,7 @@ func (sd *ScaleDown) TryToScaleDown(nodes []*apiv1.Node, pods []*apiv1.Pod, pdbs
 				confirmation <- deleteErr
 			}(node)
 		}
-		var finalError *errors.AutoscalerError
+		var finalError errors.AutoscalerError
 
 		startTime := time.Now()
 		for range emptyNodes {
@@ -374,7 +374,7 @@ func getEmptyNodes(candidates []*apiv1.Node, pods []*apiv1.Pod, maxEmptyBulkDele
 	return result[:limit]
 }
 
-func deleteNode(context *AutoscalingContext, node *apiv1.Node, pods []*apiv1.Pod) *errors.AutoscalerError {
+func deleteNode(context *AutoscalingContext, node *apiv1.Node, pods []*apiv1.Pod) errors.AutoscalerError {
 	if err := drainNode(node, pods, context.ClientSet, context.Recorder, context.MaxGratefulTerminationSec,
 		MaxPodEvictionTime, EvictionRetryTime); err != nil {
 		return err
@@ -411,7 +411,7 @@ func evictPod(podToEvict *apiv1.Pod, client kube_client.Interface, recorder kube
 // Performs drain logic on the node. Marks the node as unschedulable and later removes all pods, giving
 // them up to MaxGracefulTerminationTime to finish.
 func drainNode(node *apiv1.Node, pods []*apiv1.Pod, client kube_client.Interface, recorder kube_record.EventRecorder,
-	maxGratefulTerminationSec int, maxPodEvictionTime time.Duration, waitBetweenRetries time.Duration) *errors.AutoscalerError {
+	maxGratefulTerminationSec int, maxPodEvictionTime time.Duration, waitBetweenRetries time.Duration) errors.AutoscalerError {
 
 	drainSuccessful := false
 	toEvict := len(pods)
@@ -503,7 +503,7 @@ func cleanToBeDeleted(nodes []*apiv1.Node, client kube_client.Interface, recorde
 // Removes the given node from cloud provider. No extra pre-deletion actions are executed on
 // the Kubernetes side.
 func deleteNodeFromCloudProvider(node *apiv1.Node, cloudProvider cloudprovider.CloudProvider,
-	recorder kube_record.EventRecorder, registry *clusterstate.ClusterStateRegistry) *errors.AutoscalerError {
+	recorder kube_record.EventRecorder, registry *clusterstate.ClusterStateRegistry) errors.AutoscalerError {
 	nodeGroup, err := cloudProvider.NodeGroupForNode(node)
 	if err != nil {
 		return errors.NewAutoscalerError(
