@@ -17,13 +17,13 @@ limitations under the License.
 package aws
 
 import (
-	"errors"
 	"fmt"
 	"regexp"
 	"strings"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 )
@@ -45,7 +45,7 @@ func BuildAwsCloudProvider(awsManager *AwsManager, discoveryOpts cloudprovider.N
 	if discoveryOpts.AutoDiscoverySpecified() {
 		return buildAutoDiscoveringProvider(awsManager, discoveryOpts.NodeGroupAutoDiscoverySpec)
 	}
-	return nil, errors.New("Failed to build an aws cloud provider: Either node group specs or node group auto discovery spec must be specified")
+	return nil, fmt.Errorf("Failed to build an aws cloud provider: Either node group specs or node group auto discovery spec must be specified")
 }
 
 func buildAutoDiscoveringProvider(awsManager *AwsManager, spec string) (*awsCloudProvider, error) {
@@ -65,7 +65,7 @@ func buildAutoDiscoveringProvider(awsManager *AwsManager, spec string) (*awsClou
 	}
 	tag := paramTokens[1]
 	if tag == "" {
-		return nil, errors.New("Invalid ASG tag for auto discovery specified: ASG tag must not be empty")
+		return nil, fmt.Errorf("Invalid ASG tag for auto discovery specified: ASG tag must not be empty")
 	}
 	asgs, err := awsManager.getAutoscalingGroupsByTag(tag)
 	if err != nil {
@@ -137,7 +137,7 @@ func (aws *awsCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.N
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.
-func (aws *awsCloudProvider) Pricing() (cloudprovider.PricingModel, error) {
+func (aws *awsCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 

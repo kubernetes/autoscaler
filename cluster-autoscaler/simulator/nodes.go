@@ -32,7 +32,7 @@ import (
 // GetRequiredPodsForNode returns a list od pods that would appear on the node if the
 // node was just created (like daemonset and manifest-run pods). It reuses kubectl
 // drain command to get the list.
-func GetRequiredPodsForNode(nodename string, client kube_client.Interface) ([]*apiv1.Pod, *errors.AutoscalerError) {
+func GetRequiredPodsForNode(nodename string, client kube_client.Interface) ([]*apiv1.Pod, errors.AutoscalerError) {
 
 	// TODO: we should change this to use informer
 	podListResult, err := client.Core().Pods(apiv1.NamespaceAll).List(
@@ -78,7 +78,7 @@ func GetRequiredPodsForNode(nodename string, client kube_client.Interface) ([]*a
 }
 
 // BuildNodeInfoForNode build a NodeInfo structure for the given node as if the node was just created.
-func BuildNodeInfoForNode(node *apiv1.Node, client kube_client.Interface) (*schedulercache.NodeInfo, *errors.AutoscalerError) {
+func BuildNodeInfoForNode(node *apiv1.Node, client kube_client.Interface) (*schedulercache.NodeInfo, errors.AutoscalerError) {
 	requiredPods, err := GetRequiredPodsForNode(node.Name, client)
 	if err != nil {
 		return nil, err

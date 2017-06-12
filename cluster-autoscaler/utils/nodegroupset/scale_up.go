@@ -52,7 +52,7 @@ func (s ScaleUpInfo) String() string {
 // MaxSize of each group will be respected. If newNodes > total free capacity
 // of all NodeGroups it will be capped to total capacity. In particular if all
 // group already have MaxSize, empty list will be returned.
-func BalanceScaleUpBetweenGroups(groups []cloudprovider.NodeGroup, newNodes int) ([]ScaleUpInfo, *errors.AutoscalerError) {
+func BalanceScaleUpBetweenGroups(groups []cloudprovider.NodeGroup, newNodes int) ([]ScaleUpInfo, errors.AutoscalerError) {
 	if len(groups) == 0 {
 		return []ScaleUpInfo{}, errors.NewAutoscalerError(
 			errors.InternalError, "Can't balance scale up between 0 groups")

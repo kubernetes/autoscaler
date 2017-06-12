@@ -31,7 +31,7 @@ type PollingAutoscaler struct {
 }
 
 // NewPollingAutoscaler builds a PollingAutoscaler from required parameters
-func NewPollingAutoscaler(autoscalerBuilder AutoscalerBuilder) (*PollingAutoscaler, error) {
+func NewPollingAutoscaler(autoscalerBuilder AutoscalerBuilder) (*PollingAutoscaler, errors.AutoscalerError) {
 	autoscaler, err := autoscalerBuilder.Build()
 	if err != nil {
 		return nil, err
@@ -40,7 +40,7 @@ func NewPollingAutoscaler(autoscalerBuilder AutoscalerBuilder) (*PollingAutoscal
 	return &PollingAutoscaler{
 		autoscaler:        autoscaler,
 		autoscalerBuilder: autoscalerBuilder,
-	}, err
+	}, nil
 }
 
 // CleanUp does the work required before all the iterations of a polling autoscaler run
@@ -54,7 +54,7 @@ func (a *PollingAutoscaler) ExitCleanUp() {
 }
 
 // RunOnce represents a single iteration of a polling autoscaler inside the CA's control-loop
-func (a *PollingAutoscaler) RunOnce(currentTime time.Time) *errors.AutoscalerError {
+func (a *PollingAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError {
 	reconfigureStart := time.Now()
 	metrics.UpdateLastTime("poll", reconfigureStart)
 	if err := a.Poll(); err != nil {

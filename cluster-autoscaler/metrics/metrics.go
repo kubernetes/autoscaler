@@ -178,7 +178,7 @@ func UpdateUnschedulablePodsCount(podsCount int) {
 
 // RegisterError records any errors preventing Cluster Autoscaler from working.
 // No more than one error should be recorded per loop.
-func RegisterError(err *errors.AutoscalerError) {
+func RegisterError(err errors.AutoscalerError) {
 	errorsCount.WithLabelValues(string(err.Type())).Add(1.0)
 }
 

@@ -28,7 +28,7 @@ type AutoscalerMock struct {
 	mock.Mock
 }
 
-func (m *AutoscalerMock) RunOnce(currentTime time.Time) *errors.AutoscalerError {
+func (m *AutoscalerMock) RunOnce(currentTime time.Time) errors.AutoscalerError {
 	m.Called(currentTime)
 	return nil
 }
@@ -59,7 +59,7 @@ func (m *AutoscalerBuilderMock) SetDynamicConfig(config dynamic.Config) Autoscal
 	return args.Get(0).(AutoscalerBuilder)
 }
 
-func (m *AutoscalerBuilderMock) Build() (Autoscaler, error) {
+func (m *AutoscalerBuilderMock) Build() (Autoscaler, errors.AutoscalerError) {
 	args := m.Called()
 	return args.Get(0).(Autoscaler), nil
 }

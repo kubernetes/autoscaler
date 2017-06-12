@@ -27,7 +27,7 @@ import (
 // FindSimilarNodeGroups returns a list of NodeGroups similar to the given one.
 // Two groups are similar if the NodeInfos for them compare equal using IsNodeInfoSimilar.
 func FindSimilarNodeGroups(nodeGroup cloudprovider.NodeGroup, cloudProvider cloudprovider.CloudProvider,
-	nodeInfosForGroups map[string]*schedulercache.NodeInfo) ([]cloudprovider.NodeGroup, *errors.AutoscalerError) {
+	nodeInfosForGroups map[string]*schedulercache.NodeInfo) ([]cloudprovider.NodeGroup, errors.AutoscalerError) {
 	result := []cloudprovider.NodeGroup{}
 	nodeGroupId := nodeGroup.Id()
 	nodeInfo, found := nodeInfosForGroups[nodeGroupId]
