@@ -59,7 +59,7 @@ func FindNodesToRemove(candidates []*apiv1.Node, allNodes []*apiv1.Node, pods []
 	fastCheck bool, oldHints map[string]string, usageTracker *UsageTracker,
 	timestamp time.Time,
 	podDisruptionBudgets []*policyv1.PodDisruptionBudget,
-) (nodesToRemove []NodeToBeRemoved, podReschedulingHints map[string]string, finalError *errors.AutoscalerError) {
+) (nodesToRemove []NodeToBeRemoved, podReschedulingHints map[string]string, finalError errors.AutoscalerError) {
 
 	nodeNameToNodeInfo := schedulercache.CreateNodeNameToInfoMap(pods, allNodes)
 	result := make([]NodeToBeRemoved, 0)

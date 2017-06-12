@@ -17,9 +17,9 @@ limitations under the License.
 package cloudprovider
 
 import (
-	"fmt"
 	"time"
 
+	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 )
@@ -39,11 +39,11 @@ type CloudProvider interface {
 	NodeGroupForNode(*apiv1.Node) (NodeGroup, error)
 
 	// Pricing returns pricing model for this cloud provider or error if not available.
-	Pricing() (PricingModel, error)
+	Pricing() (PricingModel, errors.AutoscalerError)
 }
 
 // ErrNotImplemented is returned if a method is not implemented.
-var ErrNotImplemented error = fmt.Errorf("Not implemented")
+var ErrNotImplemented errors.AutoscalerError = errors.NewAutoscalerError(errors.InternalError, "Not implemented")
 
 // NodeGroup contains configuration info and functions to control a set
 // of nodes that have the same capacity and set of labels.

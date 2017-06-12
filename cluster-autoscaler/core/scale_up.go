@@ -38,7 +38,7 @@ import (
 // false if it didn't and error if an error occured. Assumes that all nodes in the cluster are
 // ready and in sync with instance groups.
 func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes []*apiv1.Node,
-	daemonSets []*extensionsv1.DaemonSet) (bool, *errors.AutoscalerError) {
+	daemonSets []*extensionsv1.DaemonSet) (bool, errors.AutoscalerError) {
 	// From now on we only care about unschedulable pods that were marked after the newest
 	// node became available for the scheduler.
 	if len(unschedulablePods) == 0 {
@@ -247,7 +247,7 @@ groupsloop:
 	return result
 }
 
-func executeScaleUp(context *AutoscalingContext, info nodegroupset.ScaleUpInfo) *errors.AutoscalerError {
+func executeScaleUp(context *AutoscalingContext, info nodegroupset.ScaleUpInfo) errors.AutoscalerError {
 	glog.V(0).Infof("Scale-up: setting group %s size to %d", info.Group.Id(), info.NewSize)
 	increase := info.NewSize - info.CurrentSize
 	if err := info.Group.IncreaseSize(increase); err != nil {

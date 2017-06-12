@@ -113,7 +113,7 @@ func TestPriceExpander(t *testing.T) {
 		&testPreferredNodeProvider{
 			preferred: buildNode(2000, 1024*1024*1024),
 		},
-		simpleNodeUnfitness,
+		SimpleNodeUnfitness,
 	).BestOption(options, nodeInfosForGroups).Debug, "ng1")
 
 	// First node group is cheapter however the second is preferred.
@@ -132,7 +132,7 @@ func TestPriceExpander(t *testing.T) {
 		&testPreferredNodeProvider{
 			preferred: buildNode(4000, 1024*1024*1024),
 		},
-		simpleNodeUnfitness,
+		SimpleNodeUnfitness,
 	).BestOption(options, nodeInfosForGroups).Debug, "ng2")
 
 	// All node groups accept the same set of pods. Lots of nodes.
@@ -167,7 +167,7 @@ func TestPriceExpander(t *testing.T) {
 		&testPreferredNodeProvider{
 			preferred: buildNode(4000, 1024*1024*1024),
 		},
-		simpleNodeUnfitness,
+		SimpleNodeUnfitness,
 	).BestOption(options1b, nodeInfosForGroups).Debug, "ng1")
 
 	// Second node group is cheapter
@@ -186,7 +186,7 @@ func TestPriceExpander(t *testing.T) {
 		&testPreferredNodeProvider{
 			preferred: buildNode(2000, 1024*1024*1024),
 		},
-		simpleNodeUnfitness,
+		SimpleNodeUnfitness,
 	).BestOption(options, nodeInfosForGroups).Debug, "ng2")
 
 	// First group accept 1 pod and second accepts 2.
@@ -222,7 +222,7 @@ func TestPriceExpander(t *testing.T) {
 		&testPreferredNodeProvider{
 			preferred: buildNode(2000, 1024*1024*1024),
 		},
-		simpleNodeUnfitness,
+		SimpleNodeUnfitness,
 	).BestOption(options2, nodeInfosForGroups).Debug, "ng2")
 
 	// Errors are expected
@@ -234,6 +234,6 @@ func TestPriceExpander(t *testing.T) {
 		&testPreferredNodeProvider{
 			preferred: buildNode(2000, 1024*1024*1024),
 		},
-		simpleNodeUnfitness,
+		SimpleNodeUnfitness,
 	).BestOption(options2, nodeInfosForGroups))
 }

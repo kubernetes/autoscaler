@@ -19,6 +19,7 @@ package core
 import (
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	kube_record "k8s.io/client-go/tools/record"
 	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
@@ -27,7 +28,7 @@ import (
 // AutoscalerBuilder builds an instance of Autoscaler which is the core of CA
 type AutoscalerBuilder interface {
 	SetDynamicConfig(config dynamic.Config) AutoscalerBuilder
-	Build() Autoscaler
+	Build() (Autoscaler, errors.AutoscalerError)
 }
 
 // AutoscalerBuilderImpl builds new autoscalers from its state including initial `AutoscalingOptions` given at startup and
@@ -42,7 +43,8 @@ type AutoscalerBuilderImpl struct {
 }
 
 // NewAutoscalerBuilder builds an AutoscalerBuilder from required parameters
-func NewAutoscalerBuilder(autoscalingOptions AutoscalingOptions, predicateChecker *simulator.PredicateChecker, kubeClient kube_client.Interface, kubeEventRecorder kube_record.EventRecorder, listerRegistry kube_util.ListerRegistry) *AutoscalerBuilderImpl {
+func NewAutoscalerBuilder(autoscalingOptions AutoscalingOptions, predicateChecker *simulator.PredicateChecker,
+	kubeClient kube_client.Interface, kubeEventRecorder kube_record.EventRecorder, listerRegistry kube_util.ListerRegistry) *AutoscalerBuilderImpl {
 	return &AutoscalerBuilderImpl{
 		autoscalingOptions: autoscalingOptions,
 		kubeClient:         kubeClient,
@@ -60,7 +62,7 @@ func (b *AutoscalerBuilderImpl) SetDynamicConfig(config dynamic.Config) Autoscal
 }
 
 // Build an autoscaler according to the builder's state
-func (b *AutoscalerBuilderImpl) Build() Autoscaler {
+func (b *AutoscalerBuilderImpl) Build() (Autoscaler, errors.AutoscalerError) {
 	options := b.autoscalingOptions
 	if b.dynamicConfig != nil {
 		c := *(b.dynamicConfig)
