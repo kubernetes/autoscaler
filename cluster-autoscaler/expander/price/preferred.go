@@ -31,12 +31,14 @@ type SimplePreferredNodeProvider struct {
 	nodeLister kube_util.NodeLister
 }
 
+// NewSimplePreferredNodeProvider returns simple PreferredNodeProvider
 func NewSimplePreferredNodeProvider(nodeLister kube_util.NodeLister) *SimplePreferredNodeProvider {
 	return &SimplePreferredNodeProvider{
 		nodeLister: nodeLister,
 	}
 }
 
+// Node returns preferred node.
 func (spnp *SimplePreferredNodeProvider) Node() (*apiv1.Node, error) {
 	nodes, err := spnp.nodeLister.List()
 	if err != nil {
