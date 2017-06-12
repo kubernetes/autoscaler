@@ -30,7 +30,7 @@ import (
 
 // ExpanderStrategyFromString creates an expander.Strategy according to its name
 func ExpanderStrategyFromString(expanderFlag string, cloudProvider cloudprovider.CloudProvider,
-	nodeLister kube_util.NodeLister) (expander.Strategy, error) {
+	nodeLister kube_util.NodeLister) (expander.Strategy, errors.AutoscalerError) {
 	switch expanderFlag {
 	case expander.RandomExpanderName:
 		return random.NewStrategy(), nil

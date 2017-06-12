@@ -138,11 +138,11 @@ func createNodeNameToInfoMap(pods []*apiv1.Pod, nodes []*apiv1.Node) map[string]
 //
 // TODO(mwielgus): Review error policy - sometimes we may continue with partial errors.
 func GetNodeInfosForGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.CloudProvider, kubeClient kube_client.Interface,
-	daemonsets []*extensionsv1.DaemonSet, predicateChecker *simulator.PredicateChecker) (map[string]*schedulercache.NodeInfo, *errors.AutoscalerError) {
+	daemonsets []*extensionsv1.DaemonSet, predicateChecker *simulator.PredicateChecker) (map[string]*schedulercache.NodeInfo, errors.AutoscalerError) {
 	result := make(map[string]*schedulercache.NodeInfo)
 
 	// processNode returns information whether the nodeTemplate was generated and if there was an error.
-	processNode := func(node *apiv1.Node) (bool, *errors.AutoscalerError) {
+	processNode := func(node *apiv1.Node) (bool, errors.AutoscalerError) {
 		nodeGroup, err := cloudProvider.NodeGroupForNode(node)
 		if err != nil {
 			return false, errors.ToAutoscalerError(errors.CloudProviderError, err)
@@ -228,7 +228,7 @@ func GetNodeInfosForGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.Clou
 	return result, nil
 }
 
-func sanitizeNodeInfo(nodeInfo *schedulercache.NodeInfo, nodeGroupName string) (*schedulercache.NodeInfo, *errors.AutoscalerError) {
+func sanitizeNodeInfo(nodeInfo *schedulercache.NodeInfo, nodeGroupName string) (*schedulercache.NodeInfo, errors.AutoscalerError) {
 	// Sanitize node name.
 	sanitizedNode, err := sanitizeTemplateNode(nodeInfo.Node(), nodeGroupName)
 	if err != nil {
@@ -255,7 +255,7 @@ func sanitizeNodeInfo(nodeInfo *schedulercache.NodeInfo, nodeGroupName string) (
 	return sanitizedNodeInfo, nil
 }
 
-func sanitizeTemplateNode(node *apiv1.Node, nodeGroup string) (*apiv1.Node, *errors.AutoscalerError) {
+func sanitizeTemplateNode(node *apiv1.Node, nodeGroup string) (*apiv1.Node, errors.AutoscalerError) {
 	obj, err := api.Scheme.DeepCopy(node)
 	if err != nil {
 		return nil, errors.ToAutoscalerError(errors.InternalError, err)

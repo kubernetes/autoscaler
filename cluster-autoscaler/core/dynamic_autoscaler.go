@@ -34,7 +34,7 @@ type DynamicAutoscaler struct {
 }
 
 // NewDynamicAutoscaler builds a DynamicAutoscaler from required parameters
-func NewDynamicAutoscaler(autoscalerBuilder AutoscalerBuilder, configFetcher dynamic.ConfigFetcher) (*DynamicAutoscaler, error) {
+func NewDynamicAutoscaler(autoscalerBuilder AutoscalerBuilder, configFetcher dynamic.ConfigFetcher) (*DynamicAutoscaler, errors.AutoscalerError) {
 	autoscaler, err := autoscalerBuilder.Build()
 	if err != nil {
 		return nil, err
@@ -43,7 +43,7 @@ func NewDynamicAutoscaler(autoscalerBuilder AutoscalerBuilder, configFetcher dyn
 		autoscaler:        autoscaler,
 		autoscalerBuilder: autoscalerBuilder,
 		configFetcher:     configFetcher,
-	}, err
+	}, nil
 }
 
 // CleanUp does the work required before all the iterations of a dynamic autoscaler run
@@ -57,7 +57,7 @@ func (a *DynamicAutoscaler) ExitCleanUp() {
 }
 
 // RunOnce represents a single iteration of a dynamic autoscaler inside the CA's control-loop
-func (a *DynamicAutoscaler) RunOnce(currentTime time.Time) *errors.AutoscalerError {
+func (a *DynamicAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError {
 	reconfigureStart := time.Now()
 	metrics.UpdateLastTime("reconfigure", reconfigureStart)
 	if err := a.Reconfigure(); err != nil {

@@ -38,7 +38,7 @@ type AutoscalerOptions struct {
 // The configuration can be injected at the creation of an autoscaler
 type Autoscaler interface {
 	// RunOnce represents an iteration in the control-loop of CA
-	RunOnce(currentTime time.Time) *errors.AutoscalerError
+	RunOnce(currentTime time.Time) errors.AutoscalerError
 	// CleanUp represents a clean-up required before the first invocation of RunOnce
 	CleanUp()
 	// ExitCleanUp is a clean-up performed just before process termination.
@@ -47,7 +47,7 @@ type Autoscaler interface {
 
 // NewAutoscaler creates an autoscaler of an appropriate type according to the parameters
 func NewAutoscaler(opts AutoscalerOptions, predicateChecker *simulator.PredicateChecker, kubeClient kube_client.Interface,
-	kubeEventRecorder kube_record.EventRecorder, listerRegistry kube_util.ListerRegistry) (Autoscaler, error) {
+	kubeEventRecorder kube_record.EventRecorder, listerRegistry kube_util.ListerRegistry) (Autoscaler, errors.AutoscalerError) {
 
 	autoscalerBuilder := NewAutoscalerBuilder(opts.AutoscalingOptions, predicateChecker, kubeClient, kubeEventRecorder, listerRegistry)
 	if opts.ConfigMapName != "" {
