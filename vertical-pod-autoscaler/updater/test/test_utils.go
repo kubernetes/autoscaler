@@ -28,6 +28,7 @@ import (
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/testapi"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	refv1 "k8s.io/kubernetes/pkg/api/v1/ref"
 	v1 "k8s.io/kubernetes/pkg/client/listers/core/v1"
 )
 
@@ -116,7 +117,7 @@ func BuildTestVerticalPodAutoscaler(containerName, minCpu, maxCpu, minMemory, ma
 
 // RefJSON builds string reference to
 func RefJSON(o runtime.Object) string {
-	ref, err := apiv1.GetReference(api.Scheme, o)
+	ref, err := refv1.GetReference(api.Scheme, o)
 	if err != nil {
 		panic(err)
 	}
