@@ -63,23 +63,23 @@ type Mounter struct {
 // currently come from mount(8), e.g. "ro", "remount", "bind", etc. If no more option is
 // required, call Mount with an empty string list or nil.
 func (mounter *Mounter) Mount(source string, target string, fstype string, options []string) error {
-	// Path to mounter binary. Set to mount accessible via $PATH by default.
+	// Path to mounter binary if containerized mounter is needed. Otherwise, it is set to empty.
 	// All Linux distros are expected to be shipped with a mount utility that an support bind mounts.
-	mounterPath := defaultMountCommand
+	mounterPath := ""
 	bind, bindRemountOpts := isBind(options)
 	if bind {
-		err := doMount(mounterPath, source, target, fstype, []string{"bind"})
+		err := doMount(mounterPath, defaultMountCommand, source, target, fstype, []string{"bind"})
 		if err != nil {
 			return err
 		}
-		return doMount(mounterPath, source, target, fstype, bindRemountOpts)
+		return doMount(mounterPath, defaultMountCommand, source, target, fstype, bindRemountOpts)
 	}
 	// The list of filesystems that require containerized mounter on GCI image cluster
-	fsTypesNeedMounter := sets.NewString("nfs", "glusterfs")
+	fsTypesNeedMounter := sets.NewString("nfs", "glusterfs", "ceph", "cifs")
 	if fsTypesNeedMounter.Has(fstype) {
 		mounterPath = mounter.mounterPath
 	}
-	return doMount(mounterPath, source, target, fstype, options)
+	return doMount(mounterPath, defaultMountCommand, source, target, fstype, options)
 }
 
 // isBind detects whether a bind mount is being requested and makes the remount options to
@@ -107,10 +107,13 @@ func isBind(options []string) (bool, []string) {
 	return bind, bindRemountOpts
 }
 
-// doMount runs the mount command.
-func doMount(mountCmd string, source string, target string, fstype string, options []string) error {
-	glog.V(4).Infof("Mounting %s %s %s %v with command: %q", source, target, fstype, options, mountCmd)
+// doMount runs the mount command. mounterPath is the path to mounter binary if containerized mounter is used.
+func doMount(mounterPath string, mountCmd string, source string, target string, fstype string, options []string) error {
 	mountArgs := makeMountArgs(source, target, fstype, options)
+	if len(mounterPath) > 0 {
+		mountArgs = append([]string{mountCmd}, mountArgs...)
+		mountCmd = mounterPath
+	}
 
 	glog.V(4).Infof("Mounting cmd (%s) with arguments (%s)", mountCmd, mountArgs)
 	command := exec.Command(mountCmd, mountArgs...)
@@ -383,7 +386,7 @@ func (mounter *SafeFormatAndMount) formatAndMount(source string, target string, 
 				return mountErr
 			} else {
 				// Block device is formatted with unexpected filesystem, let the user know
-				return fmt.Errorf("failed to mount the volume as %q, it's already formatted with %q. Mount error: %v", fstype, existingFormat, mountErr)
+				return fmt.Errorf("failed to mount the volume as %q, it already contains %s. Mount error: %v", fstype, existingFormat, mountErr)
 			}
 		}
 	}
@@ -392,19 +395,33 @@ func (mounter *SafeFormatAndMount) formatAndMount(source string, target string, 
 
 // diskLooksUnformatted uses 'lsblk' to see if the given disk is unformated
 func (mounter *SafeFormatAndMount) getDiskFormat(disk string) (string, error) {
-	args := []string{"-nd", "-o", "FSTYPE", disk}
+	args := []string{"-n", "-o", "FSTYPE", disk}
 	cmd := mounter.Runner.Command("lsblk", args...)
 	glog.V(4).Infof("Attempting to determine if disk %q is formatted using lsblk with args: (%v)", disk, args)
 	dataOut, err := cmd.CombinedOutput()
-	output := strings.TrimSpace(string(dataOut))
-
-	// TODO (#13212): check if this disk has partitions and return false, and
-	// an error if so.
+	output := string(dataOut)
+	glog.V(4).Infof("Output: %q", output)
 
 	if err != nil {
 		glog.Errorf("Could not determine if disk %q is formatted (%v)", disk, err)
 		return "", err
 	}
 
-	return strings.TrimSpace(output), nil
+	// Split lsblk output into lines. Unformatted devices should contain only
+	// "\n". Beware of "\n\n", that's a device with one empty partition.
+	output = strings.TrimSuffix(output, "\n") // Avoid last empty line
+	lines := strings.Split(output, "\n")
+	if lines[0] != "" {
+		// The device is formatted
+		return lines[0], nil
+	}
+
+	if len(lines) == 1 {
+		// The device is unformatted and has no dependent devices
+		return "", nil
+	}
+
+	// The device has dependent devices, most probably partitions (LVM, LUKS
+	// and MD RAID are reported as FSTYPE and caught above).
+	return "unknown data, probably partitions", nil
 }

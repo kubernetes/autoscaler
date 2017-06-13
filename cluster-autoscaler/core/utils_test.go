@@ -26,8 +26,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -108,15 +108,15 @@ func TestRemoveOldUnregisteredNodes(t *testing.T) {
 func TestSanitizeLabels(t *testing.T) {
 	oldNode := BuildTestNode("ng1-1", 1000, 1000)
 	oldNode.Labels = map[string]string{
-		metav1.LabelHostname: "abc",
-		"x":                  "y",
+		kubeletapis.LabelHostname: "abc",
+		"x": "y",
 	}
 	node, err := sanitizeTemplateNode(oldNode, "bzium")
 	assert.NoError(t, err)
-	assert.NotEqual(t, node.Labels[metav1.LabelHostname], "abc")
+	assert.NotEqual(t, node.Labels[kubeletapis.LabelHostname], "abc")
 	assert.Equal(t, node.Labels["x"], "y")
 	assert.NotEqual(t, node.Name, oldNode.Name)
-	assert.Equal(t, node.Labels[metav1.LabelHostname], node.Name)
+	assert.Equal(t, node.Labels[kubeletapis.LabelHostname], node.Name)
 }
 
 func TestRemoveFixNodeTargetSize(t *testing.T) {

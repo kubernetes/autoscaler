@@ -17,15 +17,10 @@ limitations under the License.
 package volume
 
 import (
-	"io"
-	"io/ioutil"
-	"os"
-	filepath "path/filepath"
-	"runtime"
 	"time"
 
-	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/kubernetes/pkg/api/v1"
 )
@@ -52,6 +47,9 @@ type MetricsProvider interface {
 
 // Metrics represents the used and available bytes of the Volume.
 type Metrics struct {
+	// The time at which these stats were updated.
+	Time metav1.Time
+
 	// Used represents the total bytes used by the Volume.
 	// Note: For block devices this maybe more than the total size of the files.
 	Used *resource.Quantity
@@ -111,14 +109,14 @@ type Mounter interface {
 	// content should be owned by 'fsGroup' so that it can be
 	// accessed by the pod. This may be called more than once, so
 	// implementations must be idempotent.
-	SetUp(fsGroup *int64) error
+	SetUp(fsGroup *types.UnixGroupID) error
 	// SetUpAt prepares and mounts/unpacks the volume to the
 	// specified directory path, which may or may not exist yet.
 	// The mount point and its content should be owned by
 	// 'fsGroup' so that it can be accessed by the pod. This may
 	// be called more than once, so implementations must be
 	// idempotent.
-	SetUpAt(dir string, fsGroup *int64) error
+	SetUpAt(dir string, fsGroup *types.UnixGroupID) error
 	// GetAttributes returns the attributes of the mounter.
 	GetAttributes() Attributes
 }
@@ -187,6 +185,14 @@ type Attacher interface {
 	MountDevice(spec *Spec, devicePath string, deviceMountPath string) error
 }
 
+type BulkVolumeVerifier interface {
+	// BulkVerifyVolumes checks whether the list of volumes still attached to the
+	// the clusters in the node. It returns a map which maps from the volume spec to the checking result.
+	// If an error occurs during check - error should be returned and volume on nodes
+	// should be assumed as still attached.
+	BulkVerifyVolumes(volumesByNode map[types.NodeName][]*Spec) (map[types.NodeName]map[*Spec]bool, error)
+}
+
 // Detacher can detach a volume from a node.
 type Detacher interface {
 	// Detach the given device from the node with the given Name.
@@ -221,97 +227,4 @@ func IsDeletedVolumeInUse(err error) bool {
 
 func (err deletedVolumeInUseError) Error() string {
 	return string(err)
-}
-
-func RenameDirectory(oldPath, newName string) (string, error) {
-	newPath, err := ioutil.TempDir(filepath.Dir(oldPath), newName)
-	if err != nil {
-		return "", err
-	}
-
-	// os.Rename call fails on windows (https://github.com/golang/go/issues/14527)
-	// Replacing with copyFolder to the newPath and deleting the oldPath directory
-	if runtime.GOOS == "windows" {
-		err = copyFolder(oldPath, newPath)
-		if err != nil {
-			glog.Errorf("Error copying folder from: %s to: %s with error: %v", oldPath, newPath, err)
-			return "", err
-		}
-		os.RemoveAll(oldPath)
-		return newPath, nil
-	}
-
-	err = os.Rename(oldPath, newPath)
-	if err != nil {
-		return "", err
-	}
-	return newPath, nil
-}
-
-func copyFolder(source string, dest string) (err error) {
-	fi, err := os.Lstat(source)
-	if err != nil {
-		glog.Errorf("Error getting stats for %s. %v", source, err)
-		return err
-	}
-
-	err = os.MkdirAll(dest, fi.Mode())
-	if err != nil {
-		glog.Errorf("Unable to create %s directory %v", dest, err)
-	}
-
-	directory, _ := os.Open(source)
-
-	defer directory.Close()
-
-	objects, err := directory.Readdir(-1)
-
-	for _, obj := range objects {
-		if obj.Mode()&os.ModeSymlink != 0 {
-			continue
-		}
-
-		sourceFilePointer := source + "\\" + obj.Name()
-		destinationFilePointer := dest + "\\" + obj.Name()
-
-		if obj.IsDir() {
-			err = copyFolder(sourceFilePointer, destinationFilePointer)
-			if err != nil {
-				return err
-			}
-		} else {
-			err = copyFile(sourceFilePointer, destinationFilePointer)
-			if err != nil {
-				return err
-			}
-		}
-
-	}
-	return
-}
-
-func copyFile(source string, dest string) (err error) {
-	sourceFile, err := os.Open(source)
-	if err != nil {
-		return err
-	}
-
-	defer sourceFile.Close()
-
-	destFile, err := os.Create(dest)
-	if err != nil {
-		return err
-	}
-
-	defer destFile.Close()
-
-	_, err = io.Copy(destFile, sourceFile)
-	if err == nil {
-		sourceInfo, err := os.Stat(source)
-		if err != nil {
-			err = os.Chmod(dest, sourceInfo.Mode())
-		}
-
-	}
-	return
 }

@@ -20,8 +20,8 @@ import (
 	"math"
 
 	"k8s.io/apimachinery/pkg/api/resource"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 )
 
@@ -89,13 +89,13 @@ func IsNodeInfoSimilar(n1, n2 *schedulercache.NodeInfo) bool {
 	labels := make(map[string][]string)
 	for _, node := range nodes {
 		for label, value := range node.Node().ObjectMeta.Labels {
-			if label == metav1.LabelHostname {
+			if label == kubeletapis.LabelHostname {
 				continue
 			}
-			if label == metav1.LabelZoneFailureDomain {
+			if label == kubeletapis.LabelZoneFailureDomain {
 				continue
 			}
-			if label == metav1.LabelZoneRegion {
+			if label == kubeletapis.LabelZoneRegion {
 				continue
 			}
 			labels[label] = append(labels[label], value)
