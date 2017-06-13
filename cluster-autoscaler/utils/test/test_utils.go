@@ -26,6 +26,7 @@ import (
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/testapi"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	refv1 "k8s.io/kubernetes/pkg/api/v1/ref"
 )
 
 // BuildTestPod creates a pod with specified resources.
@@ -115,7 +116,7 @@ func SetNodeReadyState(node *apiv1.Node, ready bool, lastTransition time.Time) {
 
 // RefJSON builds string reference to
 func RefJSON(o runtime.Object) string {
-	ref, err := apiv1.GetReference(api.Scheme, o)
+	ref, err := refv1.GetReference(api.Scheme, o)
 	if err != nil {
 		panic(err)
 	}

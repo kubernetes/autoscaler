@@ -32,8 +32,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	api "k8s.io/kubernetes/pkg/api"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	podv1 "k8s.io/kubernetes/pkg/api/v1/pod"
 	extensionsv1 "k8s.io/kubernetes/pkg/apis/extensions/v1beta1"
 	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
+	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 
 	"github.com/golang/glog"
@@ -56,7 +58,7 @@ func GetAllNodesAvailableTime(nodes []*apiv1.Node) time.Time {
 // Each pod must be in condition "Scheduled: False; Reason: Unschedulable"
 func SlicePodsByPodScheduledTime(pods []*apiv1.Pod, threshold time.Time) (oldPods []*apiv1.Pod, newPods []*apiv1.Pod) {
 	for _, pod := range pods {
-		_, condition := apiv1.GetPodCondition(&pod.Status, apiv1.PodScheduled)
+		_, condition := podv1.GetPodCondition(&pod.Status, apiv1.PodScheduled)
 		if condition != nil {
 			if condition.LastTransitionTime.After(threshold) {
 				newPods = append(newPods, pod)
@@ -79,7 +81,7 @@ func ResetPodScheduledCondition(kubeClient kube_client.Interface, pods []*apiv1.
 }
 
 func resetPodScheduledConditionForPod(kubeClient kube_client.Interface, pod *apiv1.Pod) error {
-	_, condition := apiv1.GetPodCondition(&pod.Status, apiv1.PodScheduled)
+	_, condition := podv1.GetPodCondition(&pod.Status, apiv1.PodScheduled)
 	if condition != nil {
 		glog.V(4).Infof("Reseting pod condition for %s/%s, last transition: %s",
 			pod.Namespace, pod.Name, condition.LastTransitionTime.Time.String())
@@ -264,7 +266,7 @@ func sanitizeTemplateNode(node *apiv1.Node, nodeGroup string) (*apiv1.Node, erro
 	newNode := obj.(*apiv1.Node)
 	newNode.Labels = make(map[string]string, len(node.Labels))
 	for k, v := range node.Labels {
-		if k != metav1.LabelHostname {
+		if k != kubeletapis.LabelHostname {
 			newNode.Labels[k] = v
 		} else {
 			newNode.Labels[k] = nodeName

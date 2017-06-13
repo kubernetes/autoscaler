@@ -22,10 +22,8 @@ import (
 	"net/url"
 	"strconv"
 
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	kube_rest "k8s.io/client-go/rest"
 	kube_client_cmd "k8s.io/client-go/tools/clientcmd"
-	kube_client_cmd_api "k8s.io/client-go/tools/clientcmd/api"
 )
 
 // This code was borrowed from Heapster to push the work forward and contains some functionality
@@ -33,38 +31,16 @@ import (
 // TODO(mwielgus): revisit this once we have the basic structur ready.
 
 const (
-	// APIVersion to be used.
-	APIVersion = "v1"
-
 	defaultUseServiceAccount  = false
 	defaultServiceAccountFile = "/var/run/secrets/kubernetes.io/serviceaccount/token"
 	defaultInClusterConfig    = true
 )
 
 func getConfigOverrides(uri *url.URL) (*kube_client_cmd.ConfigOverrides, error) {
-	kubeConfigOverride := kube_client_cmd.ConfigOverrides{
-		ClusterInfo: kube_client_cmd_api.Cluster{
-			APIVersion: APIVersion,
-		},
-	}
+	kubeConfigOverride := kube_client_cmd.ConfigOverrides{}
 	if len(uri.Scheme) != 0 && len(uri.Host) != 0 {
 		kubeConfigOverride.ClusterInfo.Server = fmt.Sprintf("%s://%s", uri.Scheme, uri.Host)
 	}
-
-	opts := uri.Query()
-
-	if len(opts["apiVersion"]) >= 1 {
-		kubeConfigOverride.ClusterInfo.APIVersion = opts["apiVersion"][0]
-	}
-
-	if len(opts["insecure"]) > 0 {
-		insecure, err := strconv.ParseBool(opts["insecure"][0])
-		if err != nil {
-			return nil, err
-		}
-		kubeConfigOverride.ClusterInfo.InsecureSkipTLSVerify = insecure
-	}
-
 	return &kubeConfigOverride, nil
 }
 
@@ -98,11 +74,6 @@ func GetKubeClientConfig(uri *url.URL) (*kube_rest.Config, error) {
 		if configOverrides.ClusterInfo.Server != "" {
 			kubeConfig.Host = configOverrides.ClusterInfo.Server
 		}
-		kubeConfig.GroupVersion = &schema.GroupVersion{Version: configOverrides.ClusterInfo.APIVersion}
-		kubeConfig.Insecure = configOverrides.ClusterInfo.InsecureSkipTLSVerify
-		if configOverrides.ClusterInfo.InsecureSkipTLSVerify {
-			kubeConfig.TLSClientConfig.CAFile = ""
-		}
 	} else {
 		authFile := ""
 		if len(opts["auth"]) > 0 {
@@ -117,10 +88,8 @@ func GetKubeClientConfig(uri *url.URL) (*kube_rest.Config, error) {
 			}
 		} else {
 			kubeConfig = &kube_rest.Config{
-				Host:     configOverrides.ClusterInfo.Server,
-				Insecure: configOverrides.ClusterInfo.InsecureSkipTLSVerify,
+				Host: configOverrides.ClusterInfo.Server,
 			}
-			kubeConfig.GroupVersion = &schema.GroupVersion{Version: configOverrides.ClusterInfo.APIVersion}
 		}
 	}
 	if len(kubeConfig.Host) == 0 {

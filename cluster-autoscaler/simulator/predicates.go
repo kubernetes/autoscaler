@@ -50,10 +50,12 @@ func NewPredicateChecker(kubeClient kube_client.Interface, stop <-chan struct{})
 		"cluster-autoscaler",
 		kubeClient,
 		informerFactory.Core().V1().Nodes(),
+		informerFactory.Core().V1().Pods(),
 		informerFactory.Core().V1().PersistentVolumes(),
 		informerFactory.Core().V1().PersistentVolumeClaims(),
 		informerFactory.Core().V1().ReplicationControllers(),
 		informerFactory.Extensions().V1beta1().ReplicaSets(),
+		informerFactory.Apps().V1beta1().StatefulSets(),
 		informerFactory.Core().V1().Services(),
 		apiv1.DefaultHardPodAffinitySymmetricWeight,
 	)
@@ -65,7 +67,8 @@ func NewPredicateChecker(kubeClient kube_client.Interface, stop <-chan struct{})
 	if err != nil {
 		return nil, err
 	}
-	schedulerConfigFactory.Run()
+	// TODO: Verify that run is not needed anymore.
+	// schedulerConfigFactory.Run()
 	return &PredicateChecker{
 		predicates: predicates,
 	}, nil

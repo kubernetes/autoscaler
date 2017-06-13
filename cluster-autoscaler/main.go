@@ -262,7 +262,7 @@ func main() {
 					Namespace: *namespace,
 					Name:      "cluster-autoscaler",
 				},
-				Client: kubeClient,
+				Client: kubeClient.Core(),
 				LockConfig: resourcelock.ResourceLockConfig{
 					Identity:      id,
 					EventRecorder: kube_util.CreateEventRecorder(kubeClient),
