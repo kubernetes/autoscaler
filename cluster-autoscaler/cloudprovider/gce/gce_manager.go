@@ -34,6 +34,8 @@ import (
 	gce "google.golang.org/api/compute/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
+
 	"k8s.io/apimachinery/pkg/util/wait"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	provider_gce "k8s.io/kubernetes/pkg/cloudprovider/providers/gce"
@@ -362,17 +364,17 @@ func buildGenericLabels(ref GceRef, machineType string, nodeName string) (map[st
 	result := make(map[string]string)
 
 	// TODO: extract it somehow
-	result[metav1.LabelArch] = defaultArch
-	result[metav1.LabelOS] = defaultOS
+	result[kubeletapis.LabelArch] = defaultArch
+	result[kubeletapis.LabelOS] = defaultOS
 
-	result[metav1.LabelInstanceType] = machineType
+	result[kubeletapis.LabelInstanceType] = machineType
 	ix := strings.LastIndex(ref.Zone, "-")
 	if ix == -1 {
 		return nil, fmt.Errorf("unexpected zone: %s", ref.Zone)
 	}
-	result[metav1.LabelZoneRegion] = ref.Zone[:ix]
-	result[metav1.LabelZoneFailureDomain] = ref.Zone
-	result[metav1.LabelHostname] = nodeName
+	result[kubeletapis.LabelZoneRegion] = ref.Zone[:ix]
+	result[kubeletapis.LabelZoneFailureDomain] = ref.Zone
+	result[kubeletapis.LabelHostname] = nodeName
 	return result, nil
 }
 

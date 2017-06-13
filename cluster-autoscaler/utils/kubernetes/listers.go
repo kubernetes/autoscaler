@@ -23,6 +23,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/tools/cache"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	podv1 "k8s.io/kubernetes/pkg/api/v1/pod"
 	extensionsv1 "k8s.io/kubernetes/pkg/apis/extensions/v1beta1"
 	policyv1 "k8s.io/kubernetes/pkg/apis/policy/v1beta1"
 	client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
@@ -119,7 +120,7 @@ func (unschedulablePodLister *UnschedulablePodLister) List() ([]*apiv1.Pod, erro
 		return unschedulablePods, err
 	}
 	for _, pod := range allPods {
-		_, condition := apiv1.GetPodCondition(&pod.Status, apiv1.PodScheduled)
+		_, condition := podv1.GetPodCondition(&pod.Status, apiv1.PodScheduled)
 		if condition != nil && condition.Status == apiv1.ConditionFalse && condition.Reason == "Unschedulable" {
 			unschedulablePods = append(unschedulablePods, pod)
 		}

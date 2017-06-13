@@ -27,10 +27,12 @@ import (
 	"github.com/golang/glog"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/conversion/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/json"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 )
 
 // Unstructured allows objects that do not have Golang structs registered to be manipulated
@@ -126,6 +128,20 @@ func getNestedString(obj map[string]interface{}, fields ...string) string {
 	return ""
 }
 
+func getNestedInt64(obj map[string]interface{}, fields ...string) int64 {
+	if str, ok := getNestedField(obj, fields...).(int64); ok {
+		return str
+	}
+	return 0
+}
+
+func getNestedInt64Pointer(obj map[string]interface{}, fields ...string) *int64 {
+	if str, ok := getNestedField(obj, fields...).(*int64); ok {
+		return str
+	}
+	return nil
+}
+
 func getNestedSlice(obj map[string]interface{}, fields ...string) []string {
 	if m, ok := getNestedField(obj, fields...).([]interface{}); ok {
 		strSlice := make([]string, 0, len(m))
@@ -204,36 +220,49 @@ func (u *Unstructured) setNestedMap(value map[string]string, fields ...string) {
 
 func extractOwnerReference(src interface{}) metav1.OwnerReference {
 	v := src.(map[string]interface{})
-	controllerPtr, ok := (getNestedField(v, "controller")).(*bool)
+	// though this field is a *bool, but when decoded from JSON, it's
+	// unmarshalled as bool.
+	var controllerPtr *bool
+	controller, ok := (getNestedField(v, "controller")).(bool)
 	if !ok {
 		controllerPtr = nil
 	} else {
-		if controllerPtr != nil {
-			controller := *controllerPtr
-			controllerPtr = &controller
-		}
+		controllerCopy := controller
+		controllerPtr = &controllerCopy
+	}
+	var blockOwnerDeletionPtr *bool
+	blockOwnerDeletion, ok := (getNestedField(v, "blockOwnerDeletion")).(bool)
+	if !ok {
+		blockOwnerDeletionPtr = nil
+	} else {
+		blockOwnerDeletionCopy := blockOwnerDeletion
+		blockOwnerDeletionPtr = &blockOwnerDeletionCopy
 	}
 	return metav1.OwnerReference{
-		Kind:       getNestedString(v, "kind"),
-		Name:       getNestedString(v, "name"),
-		APIVersion: getNestedString(v, "apiVersion"),
-		UID:        (types.UID)(getNestedString(v, "uid")),
-		Controller: controllerPtr,
+		Kind:               getNestedString(v, "kind"),
+		Name:               getNestedString(v, "name"),
+		APIVersion:         getNestedString(v, "apiVersion"),
+		UID:                (types.UID)(getNestedString(v, "uid")),
+		Controller:         controllerPtr,
+		BlockOwnerDeletion: blockOwnerDeletionPtr,
 	}
 }
 
 func setOwnerReference(src metav1.OwnerReference) map[string]interface{} {
 	ret := make(map[string]interface{})
-	controllerPtr := src.Controller
-	if controllerPtr != nil {
-		controller := *controllerPtr
-		controllerPtr = &controller
-	}
 	setNestedField(ret, src.Kind, "kind")
 	setNestedField(ret, src.Name, "name")
 	setNestedField(ret, src.APIVersion, "apiVersion")
 	setNestedField(ret, string(src.UID), "uid")
-	setNestedField(ret, controllerPtr, "controller")
+	// json.Unmarshal() extracts boolean json fields as bool, not as *bool and hence extractOwnerReference()
+	// expects bool or a missing field, not *bool. So if pointer is nil, fields are omitted from the ret object.
+	// If pointer is non-nil, they are set to the referenced value.
+	if src.Controller != nil {
+		setNestedField(ret, *src.Controller, "controller")
+	}
+	if src.BlockOwnerDeletion != nil {
+		setNestedField(ret, *src.BlockOwnerDeletion, "blockOwnerDeletion")
+	}
 	return ret
 }
 
@@ -339,6 +368,14 @@ func (u *Unstructured) SetResourceVersion(version string) {
 	u.setNestedField(version, "metadata", "resourceVersion")
 }
 
+func (u *Unstructured) GetGeneration() int64 {
+	return getNestedInt64(u.Object, "metadata", "generation")
+}
+
+func (u *Unstructured) SetGeneration(generation int64) {
+	u.setNestedField(generation, "metadata", "generation")
+}
+
 func (u *Unstructured) GetSelfLink() string {
 	return getNestedString(u.Object, "metadata", "selfLink")
 }
@@ -368,8 +405,20 @@ func (u *Unstructured) GetDeletionTimestamp() *metav1.Time {
 }
 
 func (u *Unstructured) SetDeletionTimestamp(timestamp *metav1.Time) {
+	if timestamp == nil {
+		u.setNestedField(nil, "metadata", "deletionTimestamp")
+		return
+	}
 	ts, _ := timestamp.MarshalQueryParameter()
 	u.setNestedField(ts, "metadata", "deletionTimestamp")
+}
+
+func (u *Unstructured) GetDeletionGracePeriodSeconds() *int64 {
+	return getNestedInt64Pointer(u.Object, "metadata", "deletionGracePeriodSeconds")
+}
+
+func (u *Unstructured) SetDeletionGracePeriodSeconds(deletionGracePeriodSeconds *int64) {
+	u.setNestedField(deletionGracePeriodSeconds, "metadata", "deletionGracePeriodSeconds")
 }
 
 func (u *Unstructured) GetLabels() map[string]string {
@@ -402,6 +451,36 @@ func (u *Unstructured) GroupVersionKind() schema.GroupVersionKind {
 	return gvk
 }
 
+var converter = unstructured.NewConverter(false)
+
+func (u *Unstructured) GetInitializers() *metav1.Initializers {
+	field := getNestedField(u.Object, "metadata", "initializers")
+	if field == nil {
+		return nil
+	}
+	obj, ok := field.(map[string]interface{})
+	if !ok {
+		return nil
+	}
+	out := &metav1.Initializers{}
+	if err := converter.FromUnstructured(obj, out); err != nil {
+		utilruntime.HandleError(fmt.Errorf("unable to retrieve initializers for object: %v", err))
+	}
+	return out
+}
+
+func (u *Unstructured) SetInitializers(initializers *metav1.Initializers) {
+	if initializers == nil {
+		setNestedField(u.Object, nil, "metadata", "initializers")
+		return
+	}
+	out := make(map[string]interface{})
+	if err := converter.ToUnstructured(initializers, &out); err != nil {
+		utilruntime.HandleError(fmt.Errorf("unable to retrieve initializers for object: %v", err))
+	}
+	setNestedField(u.Object, out, "metadata", "initializers")
+}
+
 func (u *Unstructured) GetFinalizers() []string {
 	return getNestedSlice(u.Object, "metadata", "finalizers")
 }
@@ -425,7 +504,7 @@ type UnstructuredList struct {
 	Object map[string]interface{}
 
 	// Items is a list of unstructured objects.
-	Items []*Unstructured `json:"items"`
+	Items []Unstructured `json:"items"`
 }
 
 // MarshalJSON ensures that the unstructured list object produces proper
@@ -626,7 +705,7 @@ func (s unstructuredJSONScheme) decodeToList(data []byte, list *UnstructuredList
 			unstruct.SetKind(itemKind)
 			unstruct.SetAPIVersion(listAPIVersion)
 		}
-		list.Items = append(list.Items, unstruct)
+		list.Items = append(list.Items, *unstruct)
 	}
 	return nil
 }

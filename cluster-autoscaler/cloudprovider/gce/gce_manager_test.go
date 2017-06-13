@@ -19,8 +19,8 @@ package gce
 import (
 	"testing"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -32,12 +32,12 @@ func TestBuildGenericLabels(t *testing.T) {
 		Zone:    "us-central1-b"},
 		"n1-standard-8", "sillyname")
 	assert.Nil(t, err)
-	assert.Equal(t, "us-central1", labels[metav1.LabelZoneRegion])
-	assert.Equal(t, "us-central1-b", labels[metav1.LabelZoneFailureDomain])
-	assert.Equal(t, "sillyname", labels[metav1.LabelHostname])
-	assert.Equal(t, "n1-standard-8", labels[metav1.LabelInstanceType])
-	assert.Equal(t, defaultArch, labels[metav1.LabelArch])
-	assert.Equal(t, defaultOS, labels[metav1.LabelOS])
+	assert.Equal(t, "us-central1", labels[kubeletapis.LabelZoneRegion])
+	assert.Equal(t, "us-central1-b", labels[kubeletapis.LabelZoneFailureDomain])
+	assert.Equal(t, "sillyname", labels[kubeletapis.LabelHostname])
+	assert.Equal(t, "n1-standard-8", labels[kubeletapis.LabelInstanceType])
+	assert.Equal(t, defaultArch, labels[kubeletapis.LabelArch])
+	assert.Equal(t, defaultOS, labels[kubeletapis.LabelOS])
 }
 
 func TestExtractLabelsFromKubeEnv(t *testing.T) {

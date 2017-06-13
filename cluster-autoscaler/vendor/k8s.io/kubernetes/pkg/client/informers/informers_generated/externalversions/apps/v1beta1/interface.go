@@ -24,6 +24,10 @@ import (
 
 // Interface provides access to all the informers in this group version.
 type Interface interface {
+	// ControllerRevisions returns a ControllerRevisionInformer.
+	ControllerRevisions() ControllerRevisionInformer
+	// Deployments returns a DeploymentInformer.
+	Deployments() DeploymentInformer
 	// StatefulSets returns a StatefulSetInformer.
 	StatefulSets() StatefulSetInformer
 }
@@ -35,6 +39,16 @@ type version struct {
 // New returns a new Interface.
 func New(f internalinterfaces.SharedInformerFactory) Interface {
 	return &version{f}
+}
+
+// ControllerRevisions returns a ControllerRevisionInformer.
+func (v *version) ControllerRevisions() ControllerRevisionInformer {
+	return &controllerRevisionInformer{factory: v.SharedInformerFactory}
+}
+
+// Deployments returns a DeploymentInformer.
+func (v *version) Deployments() DeploymentInformer {
+	return &deploymentInformer{factory: v.SharedInformerFactory}
 }
 
 // StatefulSets returns a StatefulSetInformer.

@@ -150,13 +150,14 @@ func TestFastGetPodsToMove(t *testing.T) {
 		},
 		Spec: apiv1.PodSpec{},
 	}
+	one := intstr.FromInt(1)
 	pdb8 := &policyv1.PodDisruptionBudget{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "foobar",
 			Namespace: "ns",
 		},
 		Spec: policyv1.PodDisruptionBudgetSpec{
-			MinAvailable: intstr.FromInt(1),
+			MinAvailable: &one,
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
 					"critical": "true",
@@ -189,7 +190,7 @@ func TestFastGetPodsToMove(t *testing.T) {
 			Namespace: "ns",
 		},
 		Spec: policyv1.PodDisruptionBudgetSpec{
-			MinAvailable: intstr.FromInt(1),
+			MinAvailable: &one,
 			Selector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
 					"critical": "true",

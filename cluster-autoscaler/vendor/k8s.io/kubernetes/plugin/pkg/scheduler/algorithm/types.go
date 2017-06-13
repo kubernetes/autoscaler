@@ -19,6 +19,7 @@ package algorithm
 import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/kubernetes/pkg/api/v1"
+	apps "k8s.io/kubernetes/pkg/apis/apps/v1beta1"
 	extensions "k8s.io/kubernetes/pkg/apis/extensions/v1beta1"
 	schedulerapi "k8s.io/kubernetes/plugin/pkg/scheduler/api"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
@@ -40,7 +41,7 @@ type PriorityMapFunction func(pod *v1.Pod, meta interface{}, nodeInfo *scheduler
 // TODO: Change interface{} to a specific type.
 type PriorityReduceFunction func(pod *v1.Pod, meta interface{}, nodeNameToInfo map[string]*schedulercache.NodeInfo, result schedulerapi.HostPriorityList) error
 
-// MetdataProducer is a function that computes metadata for a given pod.
+// MetadataProducer is a function that computes metadata for a given pod.
 type MetadataProducer func(pod *v1.Pod, nodeNameToInfo map[string]*schedulercache.NodeInfo) interface{}
 
 // DEPRECATED
@@ -125,5 +126,21 @@ type EmptyReplicaSetLister struct{}
 
 // GetPodReplicaSets returns nil
 func (f EmptyReplicaSetLister) GetPodReplicaSets(pod *v1.Pod) (rss []*extensions.ReplicaSet, err error) {
+	return nil, nil
+}
+
+// StatefulSetLister interface represents anything that can produce a list of StatefulSet; the list is consumed by a scheduler.
+type StatefulSetLister interface {
+	// Gets the StatefulSet for the given pod.
+	GetPodStatefulSets(*v1.Pod) ([]*apps.StatefulSet, error)
+}
+
+var _ StatefulSetLister = &EmptyStatefulSetLister{}
+
+// EmptyStatefulSetLister implements StatefulSetLister on []apps.StatefulSet returning empty data.
+type EmptyStatefulSetLister struct{}
+
+// GetPodStatefulSets of EmptyStatefulSetLister returns nil.
+func (f EmptyStatefulSetLister) GetPodStatefulSets(pod *v1.Pod) (sss []*apps.StatefulSet, err error) {
 	return nil, nil
 }
