@@ -93,6 +93,9 @@ func WriteStatusConfigMap(kubeClient kube_client.Interface, msg string, logRecor
 	configMap, getStatusError = maps.Get(StatusConfigMapName, metav1.GetOptions{})
 	if getStatusError == nil {
 		configMap.Data["status"] = statusMsg
+		if configMap.ObjectMeta.Annotations == nil {
+			configMap.ObjectMeta.Annotations = make(map[string]string)
+		}
 		configMap.ObjectMeta.Annotations[ConfigMapLastUpdatedKey] = fmt.Sprintf("%v", statusUpdateTime)
 		configMap, writeStatusError = maps.Update(configMap)
 	} else if kube_errors.IsNotFound(getStatusError) {
@@ -110,10 +113,10 @@ func WriteStatusConfigMap(kubeClient kube_client.Interface, msg string, logRecor
 		}
 		configMap, writeStatusError = maps.Create(configMap)
 	} else {
-		errMsg = "Failed to retrieve status configmap for update"
+		errMsg = fmt.Sprintf("Failed to retrieve status configmap for update: %v", getStatusError)
 	}
 	if writeStatusError != nil {
-		errMsg = "Failed to write status configmap"
+		errMsg = fmt.Sprintf("Failed to write status configmap: %v", writeStatusError)
 	}
 	if errMsg != "" {
 		glog.Error(errMsg)

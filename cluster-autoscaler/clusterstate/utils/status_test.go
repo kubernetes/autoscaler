@@ -45,9 +45,8 @@ func setUpTest(t *testing.T) *testInfo {
 		client: &fake.Clientset{},
 		configMap: &apiv1.ConfigMap{
 			ObjectMeta: metav1.ObjectMeta{
-				Namespace:   StatusConfigMapNamespace,
-				Name:        StatusConfigMapName,
-				Annotations: map[string]string{},
+				Namespace: StatusConfigMapNamespace,
+				Name:      StatusConfigMapName,
 			},
 			Data: map[string]string{},
 		},
@@ -112,6 +111,7 @@ func TestWriteStatusConfigMapError(t *testing.T) {
 	ti.getError = errors.New("stuff bad")
 	result, err := WriteStatusConfigMap(ti.client, "TEST_MSG", nil)
 	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "stuff bad")
 	assert.Nil(t, result)
 	assert.True(t, ti.getCalled)
 	assert.False(t, ti.updateCalled)
