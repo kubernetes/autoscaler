@@ -36,6 +36,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/serializer/recognizer"
 	"k8s.io/kubernetes/federation/apis/federation"
 	"k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/apis/admission"
+	"k8s.io/kubernetes/pkg/apis/admissionregistration"
 	"k8s.io/kubernetes/pkg/apis/apps"
 	"k8s.io/kubernetes/pkg/apis/authorization"
 	"k8s.io/kubernetes/pkg/apis/autoscaling"
@@ -43,12 +45,16 @@ import (
 	"k8s.io/kubernetes/pkg/apis/certificates"
 	"k8s.io/kubernetes/pkg/apis/extensions"
 	"k8s.io/kubernetes/pkg/apis/imagepolicy"
+	"k8s.io/kubernetes/pkg/apis/networking"
 	"k8s.io/kubernetes/pkg/apis/policy"
 	"k8s.io/kubernetes/pkg/apis/rbac"
+	"k8s.io/kubernetes/pkg/apis/settings"
 	"k8s.io/kubernetes/pkg/apis/storage"
 
 	_ "k8s.io/kubernetes/federation/apis/federation/install"
 	_ "k8s.io/kubernetes/pkg/api/install"
+	_ "k8s.io/kubernetes/pkg/apis/admission/install"
+	_ "k8s.io/kubernetes/pkg/apis/admissionregistration/install"
 	_ "k8s.io/kubernetes/pkg/apis/apps/install"
 	_ "k8s.io/kubernetes/pkg/apis/authentication/install"
 	_ "k8s.io/kubernetes/pkg/apis/authorization/install"
@@ -58,8 +64,10 @@ import (
 	_ "k8s.io/kubernetes/pkg/apis/componentconfig/install"
 	_ "k8s.io/kubernetes/pkg/apis/extensions/install"
 	_ "k8s.io/kubernetes/pkg/apis/imagepolicy/install"
+	_ "k8s.io/kubernetes/pkg/apis/networking/install"
 	_ "k8s.io/kubernetes/pkg/apis/policy/install"
 	_ "k8s.io/kubernetes/pkg/apis/rbac/install"
+	_ "k8s.io/kubernetes/pkg/apis/settings/install"
 	_ "k8s.io/kubernetes/pkg/apis/storage/install"
 )
 
@@ -75,8 +83,11 @@ var (
 	Federation    TestGroup
 	Rbac          TestGroup
 	Certificates  TestGroup
+	Settings      TestGroup
 	Storage       TestGroup
 	ImagePolicy   TestGroup
+	Admission     TestGroup
+	Networking    TestGroup
 
 	serializer        runtime.SerializerInfo
 	storageSerializer runtime.SerializerInfo
@@ -230,6 +241,15 @@ func init() {
 			externalTypes:        api.Scheme.KnownTypes(externalGroupVersion),
 		}
 	}
+	if _, ok := Groups[settings.GroupName]; !ok {
+		externalGroupVersion := schema.GroupVersion{Group: settings.GroupName, Version: api.Registry.GroupOrDie(settings.GroupName).GroupVersion.Version}
+		Groups[settings.GroupName] = TestGroup{
+			externalGroupVersion: externalGroupVersion,
+			internalGroupVersion: settings.SchemeGroupVersion,
+			internalTypes:        api.Scheme.KnownTypes(settings.SchemeGroupVersion),
+			externalTypes:        api.Scheme.KnownTypes(externalGroupVersion),
+		}
+	}
 	if _, ok := Groups[storage.GroupName]; !ok {
 		externalGroupVersion := schema.GroupVersion{Group: storage.GroupName, Version: api.Registry.GroupOrDie(storage.GroupName).GroupVersion.Version}
 		Groups[storage.GroupName] = TestGroup{
@@ -266,6 +286,33 @@ func init() {
 			externalTypes:        api.Scheme.KnownTypes(externalGroupVersion),
 		}
 	}
+	if _, ok := Groups[admissionregistration.GroupName]; !ok {
+		externalGroupVersion := schema.GroupVersion{Group: admissionregistration.GroupName, Version: api.Registry.GroupOrDie(admissionregistration.GroupName).GroupVersion.Version}
+		Groups[admissionregistration.GroupName] = TestGroup{
+			externalGroupVersion: externalGroupVersion,
+			internalGroupVersion: admissionregistration.SchemeGroupVersion,
+			internalTypes:        api.Scheme.KnownTypes(admissionregistration.SchemeGroupVersion),
+			externalTypes:        api.Scheme.KnownTypes(externalGroupVersion),
+		}
+	}
+	if _, ok := Groups[admission.GroupName]; !ok {
+		externalGroupVersion := schema.GroupVersion{Group: admission.GroupName, Version: api.Registry.GroupOrDie(admission.GroupName).GroupVersion.Version}
+		Groups[admission.GroupName] = TestGroup{
+			externalGroupVersion: externalGroupVersion,
+			internalGroupVersion: admission.SchemeGroupVersion,
+			internalTypes:        api.Scheme.KnownTypes(admission.SchemeGroupVersion),
+			externalTypes:        api.Scheme.KnownTypes(externalGroupVersion),
+		}
+	}
+	if _, ok := Groups[networking.GroupName]; !ok {
+		externalGroupVersion := schema.GroupVersion{Group: networking.GroupName, Version: api.Registry.GroupOrDie(networking.GroupName).GroupVersion.Version}
+		Groups[networking.GroupName] = TestGroup{
+			externalGroupVersion: externalGroupVersion,
+			internalGroupVersion: networking.SchemeGroupVersion,
+			internalTypes:        api.Scheme.KnownTypes(networking.SchemeGroupVersion),
+			externalTypes:        api.Scheme.KnownTypes(externalGroupVersion),
+		}
+	}
 
 	Default = Groups[api.GroupName]
 	Autoscaling = Groups[autoscaling.GroupName]
@@ -276,9 +323,12 @@ func init() {
 	Extensions = Groups[extensions.GroupName]
 	Federation = Groups[federation.GroupName]
 	Rbac = Groups[rbac.GroupName]
+	Settings = Groups[settings.GroupName]
 	Storage = Groups[storage.GroupName]
 	ImagePolicy = Groups[imagepolicy.GroupName]
 	Authorization = Groups[authorization.GroupName]
+	Admission = Groups[admission.GroupName]
+	Networking = Groups[networking.GroupName]
 }
 
 func (g TestGroup) ContentConfig() (string, *schema.GroupVersion, runtime.Codec) {
@@ -336,7 +386,7 @@ func (g TestGroup) StorageCodec() runtime.Codec {
 	// etcd2 only supports string data - we must wrap any result before returning
 	// TODO: remove for etcd3 / make parameterizable
 	if !storageSerializer.EncodesAsText {
-		s = runtime.NewBase64Serializer(s)
+		s = runtime.NewBase64Serializer(s, s)
 	}
 	ds := recognizer.NewDecoder(s, api.Codecs.UniversalDeserializer())
 
@@ -417,6 +467,17 @@ func (g TestGroup) ResourcePathWithPrefix(prefix, resource, namespace, name stri
 // /api/v1/namespaces/foo/pods/pod0 for v1.
 func (g TestGroup) ResourcePath(resource, namespace, name string) string {
 	return g.ResourcePathWithPrefix("", resource, namespace, name)
+}
+
+// SubResourcePath returns the appropriate path for the given resource, namespace,
+// name and subresource.
+func (g TestGroup) SubResourcePath(resource, namespace, name, sub string) string {
+	path := g.ResourcePathWithPrefix("", resource, namespace, name)
+	if sub != "" {
+		path = path + "/" + sub
+	}
+
+	return path
 }
 
 func (g TestGroup) RESTMapper() meta.RESTMapper {

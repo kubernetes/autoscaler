@@ -52,6 +52,7 @@ type AuthOverrideFlags struct {
 	ClientKey         FlagInfo
 	Token             FlagInfo
 	Impersonate       FlagInfo
+	ImpersonateGroups FlagInfo
 	Username          FlagInfo
 	Password          FlagInfo
 }
@@ -85,16 +86,36 @@ type FlagInfo struct {
 	Description string
 }
 
+// AddSecretAnnotation add secret flag to Annotation.
+func (f FlagInfo) AddSecretAnnotation(flags *pflag.FlagSet) FlagInfo {
+	flags.SetAnnotation(f.LongName, "classified", []string{"true"})
+	return f
+}
+
 // BindStringFlag binds the flag based on the provided info.  If LongName == "", nothing is registered
-func (f FlagInfo) BindStringFlag(flags *pflag.FlagSet, target *string) {
+func (f FlagInfo) BindStringFlag(flags *pflag.FlagSet, target *string) FlagInfo {
 	// you can't register a flag without a long name
 	if len(f.LongName) > 0 {
 		flags.StringVarP(target, f.LongName, f.ShortName, f.Default, f.Description)
 	}
+	return f
+}
+
+// BindStringSliceFlag binds the flag based on the provided info.  If LongName == "", nothing is registered
+func (f FlagInfo) BindStringArrayFlag(flags *pflag.FlagSet, target *[]string) FlagInfo {
+	// you can't register a flag without a long name
+	if len(f.LongName) > 0 {
+		sliceVal := []string{}
+		if len(f.Default) > 0 {
+			sliceVal = []string{f.Default}
+		}
+		flags.StringArrayVarP(target, f.LongName, f.ShortName, sliceVal, f.Description)
+	}
+	return f
 }
 
 // BindBoolFlag binds the flag based on the provided info.  If LongName == "", nothing is registered
-func (f FlagInfo) BindBoolFlag(flags *pflag.FlagSet, target *bool) {
+func (f FlagInfo) BindBoolFlag(flags *pflag.FlagSet, target *bool) FlagInfo {
 	// you can't register a flag without a long name
 	if len(f.LongName) > 0 {
 		// try to parse Default as a bool.  If it fails, assume false
@@ -105,25 +126,26 @@ func (f FlagInfo) BindBoolFlag(flags *pflag.FlagSet, target *bool) {
 
 		flags.BoolVarP(target, f.LongName, f.ShortName, boolVal, f.Description)
 	}
+	return f
 }
 
 const (
-	FlagClusterName  = "cluster"
-	FlagAuthInfoName = "user"
-	FlagContext      = "context"
-	FlagNamespace    = "namespace"
-	FlagAPIServer    = "server"
-	FlagAPIVersion   = "api-version"
-	FlagInsecure     = "insecure-skip-tls-verify"
-	FlagCertFile     = "client-certificate"
-	FlagKeyFile      = "client-key"
-	FlagCAFile       = "certificate-authority"
-	FlagEmbedCerts   = "embed-certs"
-	FlagBearerToken  = "token"
-	FlagImpersonate  = "as"
-	FlagUsername     = "username"
-	FlagPassword     = "password"
-	FlagTimeout      = "request-timeout"
+	FlagClusterName      = "cluster"
+	FlagAuthInfoName     = "user"
+	FlagContext          = "context"
+	FlagNamespace        = "namespace"
+	FlagAPIServer        = "server"
+	FlagInsecure         = "insecure-skip-tls-verify"
+	FlagCertFile         = "client-certificate"
+	FlagKeyFile          = "client-key"
+	FlagCAFile           = "certificate-authority"
+	FlagEmbedCerts       = "embed-certs"
+	FlagBearerToken      = "token"
+	FlagImpersonate      = "as"
+	FlagImpersonateGroup = "as-group"
+	FlagUsername         = "username"
+	FlagPassword         = "password"
+	FlagTimeout          = "request-timeout"
 )
 
 // RecommendedConfigOverrideFlags is a convenience method to return recommended flag names prefixed with a string of your choosing
@@ -145,6 +167,7 @@ func RecommendedAuthOverrideFlags(prefix string) AuthOverrideFlags {
 		ClientKey:         FlagInfo{prefix + FlagKeyFile, "", "", "Path to a client key file for TLS"},
 		Token:             FlagInfo{prefix + FlagBearerToken, "", "", "Bearer token for authentication to the API server"},
 		Impersonate:       FlagInfo{prefix + FlagImpersonate, "", "", "Username to impersonate for the operation"},
+		ImpersonateGroups: FlagInfo{prefix + FlagImpersonateGroup, "", "", "Group to impersonate for the operation, this flag can be repeated to specify multiple groups."},
 		Username:          FlagInfo{prefix + FlagUsername, "", "", "Username for basic authentication to the API server"},
 		Password:          FlagInfo{prefix + FlagPassword, "", "", "Password for basic authentication to the API server"},
 	}
@@ -154,8 +177,7 @@ func RecommendedAuthOverrideFlags(prefix string) AuthOverrideFlags {
 func RecommendedClusterOverrideFlags(prefix string) ClusterOverrideFlags {
 	return ClusterOverrideFlags{
 		APIServer:             FlagInfo{prefix + FlagAPIServer, "", "", "The address and port of the Kubernetes API server"},
-		APIVersion:            FlagInfo{prefix + FlagAPIVersion, "", "", "DEPRECATED: The API version to use when talking to the server"},
-		CertificateAuthority:  FlagInfo{prefix + FlagCAFile, "", "", "Path to a cert. file for the certificate authority"},
+		CertificateAuthority:  FlagInfo{prefix + FlagCAFile, "", "", "Path to a cert file for the certificate authority"},
 		InsecureSkipTLSVerify: FlagInfo{prefix + FlagInsecure, "", "false", "If true, the server's certificate will not be checked for validity. This will make your HTTPS connections insecure"},
 	}
 }
@@ -180,20 +202,18 @@ func BindOverrideFlags(overrides *ConfigOverrides, flags *pflag.FlagSet, flagNam
 
 // BindAuthInfoFlags is a convenience method to bind the specified flags to their associated variables
 func BindAuthInfoFlags(authInfo *clientcmdapi.AuthInfo, flags *pflag.FlagSet, flagNames AuthOverrideFlags) {
-	flagNames.ClientCertificate.BindStringFlag(flags, &authInfo.ClientCertificate)
-	flagNames.ClientKey.BindStringFlag(flags, &authInfo.ClientKey)
-	flagNames.Token.BindStringFlag(flags, &authInfo.Token)
-	flagNames.Impersonate.BindStringFlag(flags, &authInfo.Impersonate)
-	flagNames.Username.BindStringFlag(flags, &authInfo.Username)
-	flagNames.Password.BindStringFlag(flags, &authInfo.Password)
+	flagNames.ClientCertificate.BindStringFlag(flags, &authInfo.ClientCertificate).AddSecretAnnotation(flags)
+	flagNames.ClientKey.BindStringFlag(flags, &authInfo.ClientKey).AddSecretAnnotation(flags)
+	flagNames.Token.BindStringFlag(flags, &authInfo.Token).AddSecretAnnotation(flags)
+	flagNames.Impersonate.BindStringFlag(flags, &authInfo.Impersonate).AddSecretAnnotation(flags)
+	flagNames.ImpersonateGroups.BindStringArrayFlag(flags, &authInfo.ImpersonateGroups).AddSecretAnnotation(flags)
+	flagNames.Username.BindStringFlag(flags, &authInfo.Username).AddSecretAnnotation(flags)
+	flagNames.Password.BindStringFlag(flags, &authInfo.Password).AddSecretAnnotation(flags)
 }
 
 // BindClusterFlags is a convenience method to bind the specified flags to their associated variables
 func BindClusterFlags(clusterInfo *clientcmdapi.Cluster, flags *pflag.FlagSet, flagNames ClusterOverrideFlags) {
 	flagNames.APIServer.BindStringFlag(flags, &clusterInfo.Server)
-	// TODO: remove --api-version flag in 1.3.
-	flagNames.APIVersion.BindStringFlag(flags, &clusterInfo.APIVersion)
-	flags.MarkDeprecated(FlagAPIVersion, "flag is no longer respected and will be deleted in the next release")
 	flagNames.CertificateAuthority.BindStringFlag(flags, &clusterInfo.CertificateAuthority)
 	flagNames.InsecureSkipTLSVerify.BindBoolFlag(flags, &clusterInfo.InsecureSkipTLSVerify)
 }

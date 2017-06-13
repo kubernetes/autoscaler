@@ -20,9 +20,9 @@ import (
 	"testing"
 
 	"k8s.io/apimachinery/pkg/api/resource"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 
 	"github.com/stretchr/testify/assert"
@@ -111,12 +111,12 @@ func TestNodesSimilarVariousLabels(t *testing.T) {
 	checkNodesSimilar(t, n1, n2, true)
 
 	// Different hostname labels shouldn't matter
-	n1.ObjectMeta.Labels[metav1.LabelHostname] = "node1"
-	n2.ObjectMeta.Labels[metav1.LabelHostname] = "node2"
+	n1.ObjectMeta.Labels[kubeletapis.LabelHostname] = "node1"
+	n2.ObjectMeta.Labels[kubeletapis.LabelHostname] = "node2"
 	checkNodesSimilar(t, n1, n2, true)
 
 	// Different zone shouldn't matter either
-	n1.ObjectMeta.Labels[metav1.LabelZoneFailureDomain] = "mars-olympus-mons1-b"
-	n2.ObjectMeta.Labels[metav1.LabelZoneFailureDomain] = "us-houston1-a"
+	n1.ObjectMeta.Labels[kubeletapis.LabelZoneFailureDomain] = "mars-olympus-mons1-b"
+	n2.ObjectMeta.Labels[kubeletapis.LabelZoneFailureDomain] = "us-houston1-a"
 	checkNodesSimilar(t, n1, n2, true)
 }

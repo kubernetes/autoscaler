@@ -20,8 +20,8 @@ import (
 	"math"
 	"time"
 
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 )
 
 // GcePriceModel implements PriceModel interface for GCE.
@@ -95,7 +95,7 @@ func (model *GcePriceModel) NodePrice(node *apiv1.Node, startTime time.Time, end
 	price := 0.0
 	basePriceFound := false
 	if node.Labels != nil {
-		if machineType, found := node.Labels[metav1.LabelInstanceType]; found {
+		if machineType, found := node.Labels[kubeletapis.LabelInstanceType]; found {
 			var priceMapToUse map[string]float64
 			if node.Labels[preemptibleLabel] == "true" {
 				priceMapToUse = preemptiblePrices

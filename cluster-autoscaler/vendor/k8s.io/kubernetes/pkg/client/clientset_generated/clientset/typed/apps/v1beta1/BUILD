@@ -11,19 +11,22 @@ go_library(
     name = "go_default_library",
     srcs = [
         "apps_client.go",
+        "controllerrevision.go",
+        "deployment.go",
         "doc.go",
         "generated_expansion.go",
+        "scale.go",
         "statefulset.go",
     ],
     tags = ["automanaged"],
     deps = [
         "//pkg/apis/apps/v1beta1:go_default_library",
         "//pkg/client/clientset_generated/clientset/scheme:go_default_library",
-        "//vendor:k8s.io/apimachinery/pkg/apis/meta/v1",
-        "//vendor:k8s.io/apimachinery/pkg/runtime/serializer",
-        "//vendor:k8s.io/apimachinery/pkg/types",
-        "//vendor:k8s.io/apimachinery/pkg/watch",
-        "//vendor:k8s.io/client-go/rest",
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime/serializer:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/types:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/watch:go_default_library",
+        "//vendor/k8s.io/client-go/rest:go_default_library",
     ],
 )
 
