@@ -77,9 +77,9 @@ type AutoscalingOptions struct {
 	EstimatorName string
 	// ExpanderName sets the type of node group expander to be used in scale up
 	ExpanderName string
-	// MaxGratefulTerminationSec is maximum number of seconds scale down waits for pods to terminante before
+	// MaxGracefulTerminationSec is maximum number of seconds scale down waits for pods to terminante before
 	// removing the node from cloud provider.
-	MaxGratefulTerminationSec int
+	MaxGracefulTerminationSec int
 	//  Maximum time CA waits for node to be provisioned
 	MaxNodeProvisionTime time.Duration
 	// MaxTotalUnreadyPercentage is the maximum percentage of unready nodes after which CA halts operations
