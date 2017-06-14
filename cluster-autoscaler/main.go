@@ -128,6 +128,7 @@ func createAutoscalerOptions() core.AutoscalerOptions {
 		VerifyUnschedulablePods:       *verifyUnschedulablePods,
 		WriteStatusConfigMap:          *writeStatusConfigMapFlag,
 		BalanceSimilarNodeGroups:      *balanceSimilarNodeGroupsFlag,
+		ConfigNamespace:               *namespace,
 	}
 
 	configFetcherOpts := dynamic.ConfigFetcherOptions{
