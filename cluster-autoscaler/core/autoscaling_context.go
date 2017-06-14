@@ -105,6 +105,8 @@ type AutoscalingOptions struct {
 	WriteStatusConfigMap bool
 	// BalanceSimilarNodeGroups enables logic that identifies node groups with similar machines and tries to balance node count between them.
 	BalanceSimilarNodeGroups bool
+	// ConfigNamespace is the namesapce cluster-autoscaler is running in and all related configmaps live in
+	ConfigNamespace string
 }
 
 // NewAutoscalingContext returns an autoscaling context from all the necessary parameters passed via arguments
