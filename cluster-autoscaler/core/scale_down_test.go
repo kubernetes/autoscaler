@@ -68,7 +68,7 @@ func TestFindUnneededNodes(t *testing.T) {
 
 	fakeClient := &fake.Clientset{}
 	fakeRecorder := kube_util.CreateEventRecorder(fakeClient)
-	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, fakeRecorder, false)
+	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false)
 
 	provider := testprovider.NewTestCloudProvider(nil, nil)
 	provider.AddNodeGroup("ng1", 1, 10, 2)
@@ -273,7 +273,7 @@ func TestScaleDown(t *testing.T) {
 	assert.NotNil(t, provider)
 
 	fakeRecorder := kube_util.CreateEventRecorder(fakeClient)
-	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, fakeRecorder, false)
+	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false)
 	context := &AutoscalingContext{
 		AutoscalingOptions: AutoscalingOptions{
 			ScaleDownUtilizationThreshold: 0.5,
@@ -331,7 +331,7 @@ func TestNoScaleDownUnready(t *testing.T) {
 	provider.AddNode("ng1", n2)
 
 	fakeRecorder := kube_util.CreateEventRecorder(fakeClient)
-	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, fakeRecorder, false)
+	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false)
 	context := &AutoscalingContext{
 		AutoscalingOptions: AutoscalingOptions{
 			ScaleDownUtilizationThreshold: 0.5,
@@ -435,7 +435,7 @@ func TestScaleDownNoMove(t *testing.T) {
 	assert.NotNil(t, provider)
 
 	fakeRecorder := kube_util.CreateEventRecorder(fakeClient)
-	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, fakeRecorder, false)
+	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false)
 	context := &AutoscalingContext{
 		AutoscalingOptions: AutoscalingOptions{
 			ScaleDownUtilizationThreshold: 0.5,

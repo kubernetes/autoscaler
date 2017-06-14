@@ -44,12 +44,12 @@ type StaticAutoscaler struct {
 // NewStaticAutoscaler creates an instance of Autoscaler filled with provided parameters
 func NewStaticAutoscaler(opts AutoscalingOptions, predicateChecker *simulator.PredicateChecker,
 	kubeClient kube_client.Interface, kubeEventRecorder kube_record.EventRecorder, listerRegistry kube_util.ListerRegistry) (*StaticAutoscaler, errors.AutoscalerError) {
-	logRecorder, err := utils.NewStatusMapRecorder(kubeClient, kubeEventRecorder, opts.WriteStatusConfigMap)
+	logRecorder, err := utils.NewStatusMapRecorder(kubeClient, opts.ConfigNamespace, kubeEventRecorder, opts.WriteStatusConfigMap)
 	if err != nil {
 		glog.Error("Failed to initialize status configmap, unable to write status events")
 		// Get a dummy, so we can at least safely call the methods
 		// TODO(maciekpytel): recover from this after successfull status configmap update?
-		logRecorder, _ = utils.NewStatusMapRecorder(kubeClient, kubeEventRecorder, false)
+		logRecorder, _ = utils.NewStatusMapRecorder(kubeClient, opts.ConfigNamespace, kubeEventRecorder, false)
 	}
 	autoscalingContext, errctx := NewAutoscalingContext(opts, predicateChecker, kubeClient, kubeEventRecorder, logRecorder, listerRegistry)
 	if errctx != nil {
@@ -120,7 +120,8 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	defer func() {
 		if autoscalingContext.WriteStatusConfigMap {
 			status := a.ClusterStateRegistry.GetStatus(time.Now())
-			utils.WriteStatusConfigMap(autoscalingContext.ClientSet, status.GetReadableString(), a.AutoscalingContext.LogRecorder)
+			utils.WriteStatusConfigMap(autoscalingContext.ClientSet, autoscalingContext.ConfigNamespace,
+				status.GetReadableString(), a.AutoscalingContext.LogRecorder)
 		}
 	}()
 	if !a.ClusterStateRegistry.IsClusterHealthy() {
@@ -306,5 +307,5 @@ func (a *StaticAutoscaler) ExitCleanUp() {
 	if !a.AutoscalingContext.WriteStatusConfigMap {
 		return
 	}
-	utils.DeleteStatusConfigMap(a.AutoscalingContext.ClientSet)
+	utils.DeleteStatusConfigMap(a.AutoscalingContext.ClientSet, a.AutoscalingContext.ConfigNamespace)
 }
