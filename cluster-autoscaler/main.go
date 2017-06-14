@@ -86,7 +86,7 @@ var (
 	maxNodesTotal               = flag.Int("max-nodes-total", 0, "Maximum number of nodes in all node groups. Cluster autoscaler will not grow the cluster beyond this number.")
 	cloudProviderFlag           = flag.String("cloud-provider", "gce", "Cloud provider type. Allowed values: gce, aws, azure")
 	maxEmptyBulkDeleteFlag      = flag.Int("max-empty-bulk-delete", 10, "Maximum number of empty nodes that can be deleted at the same time.")
-	maxGratefulTerminationFlag  = flag.Int("max-grateful-termination-sec", 60, "Maximum number of seconds CA waints for pod termination when trying to scale down a node.")
+	maxGracefulTerminationFlag  = flag.Int("max-graceful-termination-sec", 60, "Maximum number of seconds CA waints for pod termination when trying to scale down a node.")
 	maxTotalUnreadyPercentage   = flag.Float64("max-total-unready-percentage", 33, "Maximum percentage of unready nodes after which CA halts operations")
 	okTotalUnreadyCount         = flag.Int("ok-total-unready-count", 3, "Number of allowed unready nodes, irrespective of max-total-unready-percentage")
 	maxNodeProvisionTime        = flag.Duration("max-node-provision-time", 15*time.Minute, "Maximum time CA waits for node to be provisioned")
@@ -114,7 +114,7 @@ func createAutoscalerOptions() core.AutoscalerOptions {
 		EstimatorName:                 *estimatorFlag,
 		ExpanderName:                  *expanderFlag,
 		MaxEmptyBulkDelete:            *maxEmptyBulkDeleteFlag,
-		MaxGratefulTerminationSec:     *maxGratefulTerminationFlag,
+		MaxGracefulTerminationSec:     *maxGracefulTerminationFlag,
 		MaxNodeProvisionTime:          *maxNodeProvisionTime,
 		MaxNodesTotal:                 *maxNodesTotal,
 		NodeGroups:                    nodeGroupsFlag,
