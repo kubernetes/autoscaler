@@ -33,6 +33,7 @@ import (
 type testInfo struct {
 	client       *fake.Clientset
 	configMap    *apiv1.ConfigMap
+	namespace    string
 	getError     error
 	getCalled    bool
 	updateCalled bool
@@ -41,16 +42,17 @@ type testInfo struct {
 }
 
 func setUpTest(t *testing.T) *testInfo {
+	namespace := "kube-system"
 	result := testInfo{
 		client: &fake.Clientset{},
 		configMap: &apiv1.ConfigMap{
 			ObjectMeta: metav1.ObjectMeta{
-				Namespace:   StatusConfigMapNamespace,
-				Name:        StatusConfigMapName,
-				Annotations: map[string]string{},
+				Namespace: namespace,
+				Name:      StatusConfigMapName,
 			},
 			Data: map[string]string{},
 		},
+		namespace:    namespace,
 		getCalled:    false,
 		updateCalled: false,
 		createCalled: false,
@@ -58,7 +60,7 @@ func setUpTest(t *testing.T) *testInfo {
 	}
 	result.client.Fake.AddReactor("get", "configmaps", func(action core.Action) (bool, runtime.Object, error) {
 		get := action.(core.GetAction)
-		assert.Equal(result.t, StatusConfigMapNamespace, get.GetNamespace())
+		assert.Equal(result.t, namespace, get.GetNamespace())
 		assert.Equal(result.t, StatusConfigMapName, get.GetName())
 		result.getCalled = true
 		if result.getError != nil {
@@ -68,13 +70,13 @@ func setUpTest(t *testing.T) *testInfo {
 	})
 	result.client.Fake.AddReactor("update", "configmaps", func(action core.Action) (bool, runtime.Object, error) {
 		update := action.(core.UpdateAction)
-		assert.Equal(result.t, StatusConfigMapNamespace, update.GetNamespace())
+		assert.Equal(result.t, namespace, update.GetNamespace())
 		result.updateCalled = true
 		return true, result.configMap, nil
 	})
 	result.client.Fake.AddReactor("create", "configmaps", func(action core.Action) (bool, runtime.Object, error) {
 		create := action.(core.CreateAction)
-		assert.Equal(result.t, StatusConfigMapNamespace, create.GetNamespace())
+		assert.Equal(result.t, namespace, create.GetNamespace())
 		configMap := create.GetObject().(*apiv1.ConfigMap)
 		assert.Equal(result.t, StatusConfigMapName, configMap.ObjectMeta.Name)
 		result.createCalled = true
@@ -85,7 +87,7 @@ func setUpTest(t *testing.T) *testInfo {
 
 func TestWriteStatusConfigMapExisting(t *testing.T) {
 	ti := setUpTest(t)
-	result, err := WriteStatusConfigMap(ti.client, "TEST_MSG", nil)
+	result, err := WriteStatusConfigMap(ti.client, ti.namespace, "TEST_MSG", nil)
 	assert.Equal(t, ti.configMap, result)
 	assert.Contains(t, result.Data["status"], "TEST_MSG")
 	assert.Contains(t, result.ObjectMeta.Annotations, ConfigMapLastUpdatedKey)
@@ -98,7 +100,7 @@ func TestWriteStatusConfigMapExisting(t *testing.T) {
 func TestWriteStatusConfigMapCreate(t *testing.T) {
 	ti := setUpTest(t)
 	ti.getError = kube_errors.NewNotFound(apiv1.Resource("configmap"), "nope, not found")
-	result, err := WriteStatusConfigMap(ti.client, "TEST_MSG", nil)
+	result, err := WriteStatusConfigMap(ti.client, ti.namespace, "TEST_MSG", nil)
 	assert.Contains(t, result.Data["status"], "TEST_MSG")
 	assert.Contains(t, result.ObjectMeta.Annotations, ConfigMapLastUpdatedKey)
 	assert.Nil(t, err)
@@ -110,8 +112,9 @@ func TestWriteStatusConfigMapCreate(t *testing.T) {
 func TestWriteStatusConfigMapError(t *testing.T) {
 	ti := setUpTest(t)
 	ti.getError = errors.New("stuff bad")
-	result, err := WriteStatusConfigMap(ti.client, "TEST_MSG", nil)
+	result, err := WriteStatusConfigMap(ti.client, ti.namespace, "TEST_MSG", nil)
 	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "stuff bad")
 	assert.Nil(t, result)
 	assert.True(t, ti.getCalled)
 	assert.False(t, ti.updateCalled)
