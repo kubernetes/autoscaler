@@ -20,6 +20,7 @@ this document:
   * [Is Cluster Autoscaler compatible with CPU-usage-based node autoscalers?](#is-cluster-autoscaler-compatible-with-cpuusagebased-node-autoscalers)
 * [How to?](#how-to)
   * [I'm running cluster with nodes in multiple zones for HA purposes. Is that supported by Cluster Autoscaler?](#im-running-cluster-with-nodes-in-multiple-zones-for-ha-purposes-is-that-supported-by-cluster-autoscaler)
+  * [How can I monitor Cluster Autoscaler?](#how-can-i-monitor-cluster-autoscaler)
 * [Internals](#internals)
   * [Are all of the mentioned heuristics and timings final?](#are-all-of-the-mentioned-heuristics-and-timings-final)
   * [How does scale up work?](#how-does-scale-up-work)
@@ -125,6 +126,14 @@ This does not guarantee similar node groups will have exactly the same sizes:
 
 You can opt-out a node group from being automatically balanced with other node
 groups using the same instance type by giving it any custom label.
+
+### How can I monitor Cluster Autoscaler?
+Cluster Autoscaler provides metrics and livenessProbe endpoints. By
+default they're available on port 8085 (configurable with `--address` flag),
+respectively under /metrics and /health-check.
+
+Metrics are provided in Prometheus format and their detailed description is
+available [here](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/proposals/metrics.md).
 
 ****************
 
@@ -405,6 +414,7 @@ required to activate them:
    https://github.com/kubernetes/autoscaler/pull/74#issuecomment-302434795).
 
 We are aware that this process is tedious and we will work to improve it.
+
 
 
 
