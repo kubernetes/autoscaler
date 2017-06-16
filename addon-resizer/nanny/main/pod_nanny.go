@@ -23,7 +23,7 @@ import (
 	log "github.com/golang/glog"
 	flag "github.com/spf13/pflag"
 
-	"k8s.io/contrib/addon-resizer/nanny"
+	"k8s.io/autoscaler/addon-resizer/nanny"
 	resource "k8s.io/kubernetes/pkg/api/resource"
 
 	client "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_3"
