@@ -2,32 +2,36 @@
 
 # Table of Contents:
 <!--- TOC BEGIN -->
-* [What is Cluster Autoscaler?](#what-is-cluster-autoscaler)
-* [When does Cluster Autoscaler change the size of a cluster?](#when-does-cluster-autoscaler-change-the-size-of-a-cluster)
-* [What types of pods can prevent CA from removing a node?](#what-types-of-pods-can-prevent-ca-from-removing-a-node)
-* [How does Horizontal Pod Autoscaler work with Cluster Autoscaler?](#how-does-horizontal-pod-autoscaler-work-with-cluster-autoscaler)
-* [What are the key best practices for running Cluster Autoscaler?](#what-are-the-key-best-practices-for-running-cluster-autoscaler)
-* [Should I use a CPU-usage-based node autoscaler with Kubernetes?](#should-i-use-a-cpuusagebased-node-autoscaler-with-kubernetes)
-* [How is Cluster Autoscaler different from CPU-usage-based node autoscalers?](#how-is-cluster-autoscaler-different-from-cpuusagebased-node-autoscalers)
-* [Is Cluster Autoscaler compatible with CPU-usage-based node autoscalers?](#is-cluster-autoscaler-compatible-with-cpuusagebased-node-autoscalers)
-* [Are all of the mentioned heuristics and timings final?](#are-all-of-the-mentioned-heuristics-and-timings-final)
-* [How does scale up work?](#how-does-scale-up-work)
-* [How does scale down work?](#how-does-scale-down-work)
-* [Does CA work with PodDisruptionBudget in scale down?](#does-ca-work-with-poddisruptionbudget-in-scale-down)
-* [Does CA respect GracefulTermination in scale down?](#does-ca-respect-gracefultermination-in-scale-down)
-* [How does CA deal with unready nodes in version <= 0.4.0?](#how-does-ca-deal-with-unready-nodes-in-version--040)
-* [How does CA deal with unready nodes in version >=0.5.0 ?](#how-does-ca-deal-with-unready-nodes-in-version-050-)
-* [How fast is Cluster Autoscaler?](#how-fast-is-cluster-autoscaler)
-* [How fast is HPA when combined with CA?](#how-fast-is-hpa-when-combined-with-ca)
-* [Where can I find the designs of the upcoming features.](#where-can-i-find-the-designs-of-the-upcoming-features)
-* [I have a couple of nodes with low utilization, but they are not scaled down. Why?](#i-have-a-couple-of-nodes-with-low-utilization-but-they-are-not-scaled-down-why)
-* [I have a couple of pending pods, but there was no scale up?](#i-have-a-couple-of-pending-pods-but-there-was-no-scale-up)
-* [CA doesn’t work but it used to work yesterday. Why?](#ca-doesnt-work-but-it-used-to-work-yesterday-why)
-* [How can I check what is going on in CA ?](#how-can-i-check-what-is-going-on-in-ca-)
-* [What events are emitted by CA?](#what-events-are-emitted-by-ca)
-* [What happens in scale up when I have no more quota in the cloud provider?](#what-happens-in-scale-up-when-i-have-no-more-quota-in-the-cloud-provider)
-* [How can I run e2e tests?](#how-can-i-run-e2e-tests)
-* [How should I test my code before submitting PR?](#how-should-i-test-my-code-before-submitting-pr)
+* [Basics](#basics)
+  * [What is Cluster Autoscaler?](#what-is-cluster-autoscaler)
+  * [When does Cluster Autoscaler change the size of a cluster?](#when-does-cluster-autoscaler-change-the-size-of-a-cluster)
+  * [What types of pods can prevent CA from removing a node?](#what-types-of-pods-can-prevent-ca-from-removing-a-node)
+  * [How does Horizontal Pod Autoscaler work with Cluster Autoscaler?](#how-does-horizontal-pod-autoscaler-work-with-cluster-autoscaler)
+  * [What are the key best practices for running Cluster Autoscaler?](#what-are-the-key-best-practices-for-running-cluster-autoscaler)
+  * [Should I use a CPU-usage-based node autoscaler with Kubernetes?](#should-i-use-a-cpuusagebased-node-autoscaler-with-kubernetes)
+  * [How is Cluster Autoscaler different from CPU-usage-based node autoscalers?](#how-is-cluster-autoscaler-different-from-cpuusagebased-node-autoscalers)
+  * [Is Cluster Autoscaler compatible with CPU-usage-based node autoscalers?](#is-cluster-autoscaler-compatible-with-cpuusagebased-node-autoscalers)
+* [Internals](#internals)
+  * [Are all of the mentioned heuristics and timings final?](#are-all-of-the-mentioned-heuristics-and-timings-final)
+  * [How does scale up work?](#how-does-scale-up-work)
+  * [How does scale down work?](#how-does-scale-down-work)
+  * [Does CA work with PodDisruptionBudget in scale down?](#does-ca-work-with-poddisruptionbudget-in-scale-down)
+  * [Does CA respect GracefulTermination in scale down?](#does-ca-respect-gracefultermination-in-scale-down)
+  * [How does CA deal with unready nodes in version <= 0.4.0?](#how-does-ca-deal-with-unready-nodes-in-version--040)
+  * [How does CA deal with unready nodes in version >=0.5.0 ?](#how-does-ca-deal-with-unready-nodes-in-version-050-)
+  * [How fast is Cluster Autoscaler?](#how-fast-is-cluster-autoscaler)
+  * [How fast is HPA when combined with CA?](#how-fast-is-hpa-when-combined-with-ca)
+  * [Where can I find the designs of the upcoming features.](#where-can-i-find-the-designs-of-the-upcoming-features)
+* [Troubleshooting](#troubleshooting)
+  * [I have a couple of nodes with low utilization, but they are not scaled down. Why?](#i-have-a-couple-of-nodes-with-low-utilization-but-they-are-not-scaled-down-why)
+  * [I have a couple of pending pods, but there was no scale up?](#i-have-a-couple-of-pending-pods-but-there-was-no-scale-up)
+  * [CA doesn’t work but it used to work yesterday. Why?](#ca-doesnt-work-but-it-used-to-work-yesterday-why)
+  * [How can I check what is going on in CA ?](#how-can-i-check-what-is-going-on-in-ca-)
+  * [What events are emitted by CA?](#what-events-are-emitted-by-ca)
+  * [What happens in scale up when I have no more quota in the cloud provider?](#what-happens-in-scale-up-when-i-have-no-more-quota-in-the-cloud-provider)
+* [Developer](#developer)
+  * [How can I run e2e tests?](#how-can-i-run-e2e-tests)
+  * [How should I test my code before submitting PR?](#how-should-i-test-my-code-before-submitting-pr)
 <!--- TOC END -->
 
 # Basics
@@ -367,4 +371,8 @@ required to activate them:
    https://github.com/kubernetes/autoscaler/pull/74#issuecomment-302434795).
 
 We are aware that this process is tedious and we will work to improve it.
+
+
+
+
 
