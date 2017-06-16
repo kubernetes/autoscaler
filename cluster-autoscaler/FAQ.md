@@ -11,6 +11,8 @@
   * [Should I use a CPU-usage-based node autoscaler with Kubernetes?](#should-i-use-a-cpuusagebased-node-autoscaler-with-kubernetes)
   * [How is Cluster Autoscaler different from CPU-usage-based node autoscalers?](#how-is-cluster-autoscaler-different-from-cpuusagebased-node-autoscalers)
   * [Is Cluster Autoscaler compatible with CPU-usage-based node autoscalers?](#is-cluster-autoscaler-compatible-with-cpuusagebased-node-autoscalers)
+* [How to?](#how-to)
+  * [I'm running cluster with nodes in multiple zones for HA purposes. Is that supported by Cluster Autoscaler?](#im-running-cluster-with-nodes-in-multiple-zones-for-ha-purposes-is-that-supported-by-cluster-autoscaler)
 * [Internals](#internals)
   * [Are all of the mentioned heuristics and timings final?](#are-all-of-the-mentioned-heuristics-and-timings-final)
   * [How does scale up work?](#how-does-scale-up-work)
@@ -91,6 +93,31 @@ has some system-critical pods on it, like kube-dns. Usage of these autoscalers w
 No. CPU-based (or any metric-based) cluster/node group autoscalers, like
 [GCE Instance Group Autoscaler](https://cloud.google.com/compute/docs/autoscaler/), are NOT compatible with CA.
 They are also not particularly suited to use with Kubernetes in general.
+
+****************
+
+# How to?
+
+### I'm running cluster with nodes in multiple zones for HA purposes. Is that supported by Cluster Autoscaler?
+CA 0.6 introduced `--balance-similar-node-groups` flag to support this use-case. If you set the flag to true
+CA will automatically identify node groups using the same instance types and
+having the same set of labels (except for automatically added zone labels) and try to
+keep the size of those node groups balanced.
+
+This does not guarantee similar node groups will have exactly the same sizes:
+* Currently the balancing is only done at scale-up. Cluster Autoscaler will
+  still scale-down underutilized nodes regardless of relative size of underlying
+  node groups. We plan to take balancing into account in scale-down in the future.
+* Cluster Autoscaler will only add as many nodes as required to run all existing
+  pods. If the number of nodes is not divisible by number of balanced node
+  groups some groups will get 1 more node than others.
+* Cluster Autoscaler will only balance between node groups that can support the
+  same set of pending pods. If you run pods that can only go to a single node group
+  (for example due to nodeSelector on zone label) CA will only add nodes to
+  this particular node group.
+
+You can opt-out a node group from being automatically balanced with other node
+groups using the same instance type by giving it any custom label.
 
 ****************
 
@@ -371,7 +398,6 @@ required to activate them:
    https://github.com/kubernetes/autoscaler/pull/74#issuecomment-302434795).
 
 We are aware that this process is tedious and we will work to improve it.
-
 
 
 
