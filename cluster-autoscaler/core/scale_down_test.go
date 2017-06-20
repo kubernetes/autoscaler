@@ -86,7 +86,7 @@ func TestFindUnneededNodes(t *testing.T) {
 		LogRecorder:          fakeLogRecorder,
 	}
 	sd := NewScaleDown(&context)
-	sd.UpdateUnneededNodes([]*apiv1.Node{n1, n2, n3, n4}, []*apiv1.Pod{p1, p2, p3, p4}, time.Now(), nil)
+	sd.UpdateUnneededNodes([]*apiv1.Node{n1, n2, n3, n4}, []*apiv1.Node{n1, n2, n3, n4}, []*apiv1.Pod{p1, p2, p3, p4}, time.Now(), nil)
 
 	assert.Equal(t, 1, len(sd.unneededNodes))
 	addTime, found := sd.unneededNodes["n2"]
@@ -95,13 +95,16 @@ func TestFindUnneededNodes(t *testing.T) {
 	assert.Equal(t, 4, len(sd.nodeUtilizationMap))
 
 	sd.unneededNodes["n1"] = time.Now()
-	sd.UpdateUnneededNodes([]*apiv1.Node{n1, n2, n3, n4}, []*apiv1.Pod{p1, p2, p3, p4}, time.Now(), nil)
+	sd.UpdateUnneededNodes([]*apiv1.Node{n1, n2, n3, n4}, []*apiv1.Node{n1, n2, n3, n4}, []*apiv1.Pod{p1, p2, p3, p4}, time.Now(), nil)
 
 	assert.Equal(t, 1, len(sd.unneededNodes))
 	addTime2, found := sd.unneededNodes["n2"]
 	assert.True(t, found)
 	assert.Equal(t, addTime, addTime2)
 	assert.Equal(t, 4, len(sd.nodeUtilizationMap))
+
+	sd.UpdateUnneededNodes([]*apiv1.Node{n1, n2, n3, n4}, []*apiv1.Node{n1, n3, n4}, []*apiv1.Pod{p1, p2, p3, p4}, time.Now(), nil)
+	assert.Equal(t, 0, len(sd.unneededNodes))
 }
 
 func TestDrainNode(t *testing.T) {
@@ -288,7 +291,8 @@ func TestScaleDown(t *testing.T) {
 		LogRecorder:          fakeLogRecorder,
 	}
 	scaleDown := NewScaleDown(context)
-	scaleDown.UpdateUnneededNodes([]*apiv1.Node{n1, n2}, []*apiv1.Pod{p1, p2}, time.Now().Add(-5*time.Minute), nil)
+	scaleDown.UpdateUnneededNodes([]*apiv1.Node{n1, n2},
+		[]*apiv1.Node{n1, n2}, []*apiv1.Pod{p1, p2}, time.Now().Add(-5*time.Minute), nil)
 	result, err := scaleDown.TryToScaleDown([]*apiv1.Node{n1, n2}, []*apiv1.Pod{p1, p2}, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, ScaleDownNodeDeleted, result)
@@ -349,7 +353,8 @@ func TestNoScaleDownUnready(t *testing.T) {
 
 	// N1 is unready so it requires a bigger unneeded time.
 	scaleDown := NewScaleDown(context)
-	scaleDown.UpdateUnneededNodes([]*apiv1.Node{n1, n2}, []*apiv1.Pod{p2}, time.Now().Add(-5*time.Minute), nil)
+	scaleDown.UpdateUnneededNodes([]*apiv1.Node{n1, n2},
+		[]*apiv1.Node{n1, n2}, []*apiv1.Pod{p2}, time.Now().Add(-5*time.Minute), nil)
 	result, err := scaleDown.TryToScaleDown([]*apiv1.Node{n1, n2}, []*apiv1.Pod{p2}, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, ScaleDownNoUnneeded, result)
@@ -368,7 +373,8 @@ func TestNoScaleDownUnready(t *testing.T) {
 	// N1 has been unready for 2 hours, ok to delete.
 	context.CloudProvider = provider
 	scaleDown = NewScaleDown(context)
-	scaleDown.UpdateUnneededNodes([]*apiv1.Node{n1, n2}, []*apiv1.Pod{p2}, time.Now().Add(-2*time.Hour), nil)
+	scaleDown.UpdateUnneededNodes([]*apiv1.Node{n1, n2}, []*apiv1.Node{n1, n2},
+		[]*apiv1.Pod{p2}, time.Now().Add(-2*time.Hour), nil)
 	result, err = scaleDown.TryToScaleDown([]*apiv1.Node{n1, n2}, []*apiv1.Pod{p2}, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, ScaleDownNodeDeleted, result)
@@ -451,7 +457,8 @@ func TestScaleDownNoMove(t *testing.T) {
 		LogRecorder:          fakeLogRecorder,
 	}
 	scaleDown := NewScaleDown(context)
-	scaleDown.UpdateUnneededNodes([]*apiv1.Node{n1, n2}, []*apiv1.Pod{p1, p2}, time.Now().Add(5*time.Minute), nil)
+	scaleDown.UpdateUnneededNodes([]*apiv1.Node{n1, n2}, []*apiv1.Node{n1, n2},
+		[]*apiv1.Pod{p1, p2}, time.Now().Add(5*time.Minute), nil)
 	result, err := scaleDown.TryToScaleDown([]*apiv1.Node{n1, n2}, []*apiv1.Pod{p1, p2}, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, ScaleDownNoUnneeded, result)

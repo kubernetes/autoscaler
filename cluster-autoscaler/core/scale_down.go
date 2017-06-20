@@ -109,9 +109,11 @@ func (sd *ScaleDown) CleanUpUnneededNodes() {
 
 // UpdateUnneededNodes calculates which nodes are not needed, i.e. all pods can be scheduled somewhere else,
 // and updates unneededNodes map accordingly. It also computes information where pods can be rescheduled and
-// node utilization level. Timestamp is the current timestamp.
+// node utilization level. Timestamp is the current timestamp. The computations are made only for the nodes
+// managed by CA.
 func (sd *ScaleDown) UpdateUnneededNodes(
 	nodes []*apiv1.Node,
+	managedNodes []*apiv1.Node,
 	pods []*apiv1.Pod,
 	timestamp time.Time,
 	pdbs []*policyv1.PodDisruptionBudget) errors.AutoscalerError {
@@ -120,8 +122,9 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	nodeNameToNodeInfo := schedulercache.CreateNodeNameToInfoMap(pods, nodes)
 	utilizationMap := make(map[string]float64)
 
-	// Phase1 - look at the nodes utilization.
-	for _, node := range nodes {
+	// Phase1 - look at the nodes utilization. Calculate the utilization
+	// only for the managed nodes.
+	for _, node := range managedNodes {
 
 		// Skip nodes marked to be deleted, if they were marked recently.
 		// Old-time marked nodes are again eligible for deletion - something went wrong with them

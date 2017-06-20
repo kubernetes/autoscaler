@@ -329,3 +329,21 @@ func fixNodeGroupSize(context *AutoscalingContext, currentTime time.Time) (bool,
 	}
 	return fixed, nil
 }
+
+// getManagedNodes returns the nodes managed by the cluster autoscaler.
+func getManagedNodes(context *AutoscalingContext, nodes []*apiv1.Node) []*apiv1.Node {
+	result := make([]*apiv1.Node, 0, len(nodes))
+	for _, node := range nodes {
+		nodeGroup, err := context.CloudProvider.NodeGroupForNode(node)
+		if err != nil {
+			glog.Warningf("Error while checking node group for %s: %v", node.Name, err)
+			continue
+		}
+		if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
+			glog.V(4).Infof("Skipping %s - no node group config", node.Name)
+			continue
+		}
+		result = append(result, node)
+	}
+	return result
+}
