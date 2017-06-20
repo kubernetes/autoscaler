@@ -267,7 +267,9 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		glog.V(4).Infof("Calculating unneeded nodes")
 
 		scaleDown.CleanUp(time.Now())
-		typedErr := scaleDown.UpdateUnneededNodes(allNodes, allScheduled, time.Now(), pdbs)
+		managedNodes := getManagedNodes(autoscalingContext, allNodes)
+
+		typedErr := scaleDown.UpdateUnneededNodes(allNodes, managedNodes, allScheduled, time.Now(), pdbs)
 		if typedErr != nil {
 			glog.Errorf("Failed to scale down: %v", typedErr)
 			return typedErr
