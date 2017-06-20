@@ -24,39 +24,47 @@ import (
 	"time"
 
 	log "github.com/golang/glog"
-	inf "gopkg.in/inf.v0"
 	api "k8s.io/kubernetes/pkg/api/v1"
 )
 
 // checkResource determines whether a specific resource needs to be over-written.
-func checkResource(threshold int64, actual, expected api.ResourceList, res api.ResourceName) bool {
+func checkResource(estimatorResult *EstimatorResult, actual api.ResourceList, res api.ResourceName) *api.ResourceList {
 	val, ok := actual[res]
-	expVal, expOk := expected[res]
-	if ok != expOk {
-		return true
+	expMinVal, expMinOk := estimatorResult.AcceptableRange.lower[res]
+	expMaxVal, expMaxOk := estimatorResult.AcceptableRange.upper[res]
+	if ok != expMinOk || ok != expMaxOk {
+		// Something changed, but we don't know whether lower or upper bound should be used.
+		// It doesn't matter in the long term, so we just pick lower bound arbitrarily here.
+		return &estimatorResult.RecommendedRange.lower
 	}
-	if !ok && !expOk {
-		return false
+	if !ok && !expMinOk && !expMaxOk {
+		return nil
 	}
-	q := new(inf.Dec).QuoRound(val.AsDec(), expVal.AsDec(), 2, inf.RoundDown)
-	lower := inf.NewDec(100-threshold, 2)
-	upper := inf.NewDec(100+threshold, 2)
-	if q.Cmp(lower) == -1 || q.Cmp(upper) == 1 {
-		return true
+	if val.Cmp(expMinVal) == -1 {
+		return &estimatorResult.RecommendedRange.lower
 	}
-	return false
+	if val.Cmp(expMaxVal) == 1 {
+		return &estimatorResult.RecommendedRange.upper
+	}
+	return nil
 }
 
 // shouldOverwriteResources determines if we should over-write the container's
 // resource limits. We'll over-write the resource limits if the limited
-// resources are different, or if any limit is violated by a threshold.
-func shouldOverwriteResources(threshold int64, limits, reqs, expLimits, expReqs api.ResourceList) bool {
-	return checkResource(threshold, limits, expLimits, api.ResourceCPU) ||
-		checkResource(threshold, limits, expLimits, api.ResourceMemory) ||
-		checkResource(threshold, limits, expLimits, api.ResourceStorage) ||
-		checkResource(threshold, reqs, expReqs, api.ResourceCPU) ||
-		checkResource(threshold, reqs, expReqs, api.ResourceMemory) ||
-		checkResource(threshold, reqs, expReqs, api.ResourceStorage)
+// resources are different, or if any limit is outside of the accepted range.
+// Returns null when no resources should be overriden.
+// Otherwise, returns ResourceList that should be used.
+func shouldOverwriteResources(estimatorResult *EstimatorResult, limits, reqs api.ResourceList) *api.ResourceRequirements {
+	for _, list := range []api.ResourceList{limits, reqs} {
+		for _, resourceType := range []api.ResourceName{api.ResourceCPU, api.ResourceMemory, api.ResourceStorage} {
+			newReqs := checkResource(estimatorResult, list, resourceType)
+			if newReqs != nil {
+				log.V(4).Infof("Resource %s is out of bounds.", resourceType)
+				return &api.ResourceRequirements{Limits: *newReqs, Requests: *newReqs}
+			}
+		}
+	}
+	return nil
 }
 
 // KubernetesClient is an object that performs the nanny's requisite interactions with Kubernetes.
@@ -66,15 +74,16 @@ type KubernetesClient interface {
 	UpdateDeployment(resources *api.ResourceRequirements) error
 }
 
-// ResourceEstimator estimates ResourceRequirements for a given criteria.
+// ResourceEstimator estimates ResourceRequirements for a given criteria. Returned value is a list
+// with acceptable values. First element on that list is the recommended one.
 type ResourceEstimator interface {
-	scaleWithNodes(numNodes uint64) *api.ResourceRequirements
+	scaleWithNodes(numNodes uint64) *EstimatorResult
 }
 
 // PollAPIServer periodically counts the number of nodes, estimates the expected
 // ResourceRequirements, compares them to the actual ResourceRequirements, and
 // updates the deployment with the expected ResourceRequirements if necessary.
-func PollAPIServer(k8s KubernetesClient, est ResourceEstimator, contName string, pollPeriod time.Duration, threshold uint64) {
+func PollAPIServer(k8s KubernetesClient, est ResourceEstimator, contName string, pollPeriod time.Duration) {
 	for i := 0; true; i++ {
 		if i != 0 {
 			// Sleep for the poll period.
@@ -97,16 +106,17 @@ func PollAPIServer(k8s KubernetesClient, est ResourceEstimator, contName string,
 		}
 
 		// Get the expected resource limits.
-		expResources := est.scaleWithNodes(num)
+		estimation := est.scaleWithNodes(num)
 
 		// If there's a difference, go ahead and set the new values.
-		if !shouldOverwriteResources(int64(threshold), resources.Limits, resources.Requests, expResources.Limits, expResources.Requests) {
-			log.V(4).Infof("Resources are within the expected limits. Actual: %+v Expected: %+v", *resources, *expResources)
+		overwrite := shouldOverwriteResources(estimation, resources.Limits, resources.Requests)
+		if overwrite == nil {
+			log.V(4).Infof("Resources are within the expected limits. Actual: %+v, accepted range: %+v", *resources, estimation.AcceptableRange)
 			continue
 		}
 
-		log.Infof("Resources are not within the expected limits, updating the deployment. Actual: %+v Expected: %+v", *resources, *expResources)
-		if err := k8s.UpdateDeployment(expResources); err != nil {
+		log.Infof("Resources are not within the expected limits, updating the deployment. Actual: %+v New: %+v", *resources, *overwrite)
+		if err := k8s.UpdateDeployment(overwrite); err != nil {
 			log.Error(err)
 			continue
 		}
