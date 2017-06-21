@@ -17,9 +17,12 @@ limitations under the License.
 package core
 
 import (
+	"reflect"
+	"sort"
 	"time"
 
 	"github.com/golang/glog"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 )
@@ -48,6 +51,11 @@ func (a *PollingAutoscaler) CleanUp() {
 	a.autoscaler.CleanUp()
 }
 
+// CloudProvider returns the cloud provider associated to this autoscaler
+func (a *PollingAutoscaler) CloudProvider() cloudprovider.CloudProvider {
+	return a.autoscaler.CloudProvider()
+}
+
 // ExitCleanUp cleans-up after autoscaler, so no mess remains after process termination.
 func (a *PollingAutoscaler) ExitCleanUp() {
 	a.autoscaler.ExitCleanUp()
@@ -66,13 +74,43 @@ func (a *PollingAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerErro
 
 // Poll latest data from cloud provider to recreate this autoscaler
 func (a *PollingAutoscaler) Poll() error {
+	prevAutoscaler := a.autoscaler
+
 	// For safety, any config change should stop and recreate all the stuff running in CA hence recreating all the Autoscaler instance here
 	// See https://github.com/kubernetes/contrib/pull/2226#discussion_r94126064
-	autoscaler, err := a.autoscalerBuilder.Build()
+	currentAutoscaler, err := a.autoscalerBuilder.Build()
 	if err != nil {
 		return err
 	}
-	a.autoscaler = autoscaler
+
+	// Not to complicate the work, we replace the autoscaler/reset autoscaler state only when the list of target node groups are changed.
+	// We consider it changed only when:
+	// (1) auto-discovery is enabled and
+	// (2) list of node groups matching the criteria(e.g. asg tag for aws provider) changed
+	//
+	// We should not consider it changed when:
+	// *  min/max/target/current size of node group(s) changed
+	//
+	// See https://github.com/kubernetes/autoscaler/pull/107#issuecomment-307518602 for more context
+	prevNodeGroupIds := sortedIdsOfNodeGroups(prevAutoscaler.CloudProvider().NodeGroups())
+	currentNodeGroupIds := sortedIdsOfNodeGroups(currentAutoscaler.CloudProvider().NodeGroups())
+
+	if !reflect.DeepEqual(prevNodeGroupIds, currentNodeGroupIds) {
+		glog.V(4).Infof("Detected change(s) in node group definitions. Recreating autoscaler...")
+
+		// For safety, any config change should stop and recreate all the stuff running in CA hence recreating all the Autoscaler instance here
+		// See https://github.com/kubernetes/contrib/pull/2226#discussion_r94126064
+		a.autoscaler = currentAutoscaler
+	}
 	glog.V(4).Infof("Poll finished")
 	return nil
+}
+
+func sortedIdsOfNodeGroups(nodeGroups []cloudprovider.NodeGroup) []string {
+	ids := []string{}
+	for _, g := range nodeGroups {
+		ids = append(ids, g.Id())
+	}
+	sort.Strings(ids)
+	return ids
 }
