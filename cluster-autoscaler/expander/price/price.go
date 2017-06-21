@@ -105,10 +105,10 @@ nextoption:
 			}
 			totalPodPrice += podPrice
 		}
-		if totalPodPrice == 0 {
-			glog.Warningf("Total pod price is 0, skipping %s", option.NodeGroup.Id())
-			continue
-		}
+		// Total pod price is 0 when the pods have no requests. The pods must have some other
+		// requirements that prevent them from scheduling like AntiAffinity, HostPort or the
+		// pods quota on all nodes has been already used. We use stabilizationPrice in the formula
+		// below so this should not be a problem.
 
 		// How well the money is spent.
 		priceSubScore := (totalNodePrice + stabilizationPrice) / (totalPodPrice + stabilizationPrice)
