@@ -17,6 +17,7 @@ limitations under the License.
 package nanny
 
 import (
+	"reflect"
 	"testing"
 
 	resource "k8s.io/kubernetes/pkg/api/resource"
@@ -30,18 +31,9 @@ var (
 		"memory":  resource.MustParse("200Mi"),
 		"storage": resource.MustParse("10Gi"),
 	}
-	siStandard = api.ResourceList{
-		"cpu":     resource.MustParse("0.3"),
-		"memory":  resource.MustParse("200M"),
-		"storage": resource.MustParse("10G"),
-	}
 	noStorage = api.ResourceList{
 		"cpu":    resource.MustParse("0.3"),
 		"memory": resource.MustParse("200Mi"),
-	}
-	siNoStorage = api.ResourceList{
-		"cpu":    resource.MustParse("0.3"),
-		"memory": resource.MustParse("200M"),
 	}
 	smallMemoryNoStorage = api.ResourceList{
 		"cpu":    resource.MustParse("0.3"),
@@ -70,122 +62,179 @@ var (
 		"memory":  resource.MustParse("200Mi"),
 		"storage": resource.MustParse("10Gi"),
 	}
+	bigStorage = api.ResourceList{
+		"cpu":     resource.MustParse("0.3"),
+		"memory":  resource.MustParse("200Mi"),
+		"storage": resource.MustParse("50Gi"),
+	}
+	bigMemory = api.ResourceList{
+		"cpu":     resource.MustParse("0.3"),
+		"memory":  resource.MustParse("900Mi"),
+		"storage": resource.MustParse("10Gi"),
+	}
+	bigCPU = api.ResourceList{
+		"cpu":     resource.MustParse("0.9"),
+		"memory":  resource.MustParse("200Mi"),
+		"storage": resource.MustParse("10Gi"),
+	}
+	belowStandard = api.ResourceList{
+		"cpu":     resource.MustParse("0.2"),
+		"memory":  resource.MustParse("150Mi"),
+		"storage": resource.MustParse("8Gi"),
+	}
+	wayBelowStandard = api.ResourceList{
+		"cpu":     resource.MustParse("0.1"),
+		"memory":  resource.MustParse("100Mi"),
+		"storage": resource.MustParse("4Gi"),
+	}
+	aboveStandard = api.ResourceList{
+		"cpu":     resource.MustParse("0.4"),
+		"memory":  resource.MustParse("250Mi"),
+		"storage": resource.MustParse("12Gi"),
+	}
+	wayAboveStandard = api.ResourceList{
+		"cpu":     resource.MustParse("0.5"),
+		"memory":  resource.MustParse("300Mi"),
+		"storage": resource.MustParse("16Gi"),
+	}
+	belowStandardNoStorage = api.ResourceList{
+		"cpu":    resource.MustParse("0.2"),
+		"memory": resource.MustParse("150Mi"),
+	}
+	aboveStandardNoStorage = api.ResourceList{
+		"cpu":    resource.MustParse("0.4"),
+		"memory": resource.MustParse("250Mi"),
+	}
+
+	standardRecommended = &EstimatorResult{
+		AcceptableRange:  ResourceListPair{belowStandard, aboveStandard},
+		RecommendedRange: ResourceListPair{belowStandard, aboveStandard},
+	}
+	standardAcceptableBelowRecommended = &EstimatorResult{
+		AcceptableRange:  ResourceListPair{belowStandard, wayAboveStandard},
+		RecommendedRange: ResourceListPair{aboveStandard, wayAboveStandard},
+	}
+	standardAcceptableAboveRecommended = &EstimatorResult{
+		AcceptableRange:  ResourceListPair{wayBelowStandard, aboveStandard},
+		RecommendedRange: ResourceListPair{wayBelowStandard, belowStandard},
+	}
+	standardBelowAcceptable = &EstimatorResult{
+		AcceptableRange:  ResourceListPair{aboveStandard, wayAboveStandard},
+		RecommendedRange: ResourceListPair{aboveStandard, wayAboveStandard},
+	}
+	standardAboveAcceptable = &EstimatorResult{
+		AcceptableRange:  ResourceListPair{wayBelowStandard, belowStandard},
+		RecommendedRange: ResourceListPair{wayBelowStandard, belowStandard},
+	}
+	standardRecommendedNoStorage = &EstimatorResult{
+		AcceptableRange:  ResourceListPair{belowStandardNoStorage, aboveStandardNoStorage},
+		RecommendedRange: ResourceListPair{belowStandardNoStorage, aboveStandardNoStorage},
+	}
 )
 
 func TestCheckResources(t *testing.T) {
 	testCases := []struct {
-		th   int64
-		x, y api.ResourceList
+		x    api.ResourceList
+		e    *EstimatorResult
 		res  api.ResourceName
-		want bool
+		want *api.ResourceList
 	}{
-		// Test no threshold for the CPU resource type.
-		{0, standard, standard, "cpu", false},
-		{0, standard, siStandard, "cpu", false},
-		{0, standard, noStorage, "cpu", false},
-		{0, standard, noMemory, "cpu", false},
-		{0, standard, noCPU, "cpu", true},
-		{0, standard, smallStorage, "cpu", false},
-		{0, standard, smallMemory, "cpu", false},
-		{0, standard, smallCPU, "cpu", true},
+		// Test for the CPU resource type.
+		{standard, standardRecommended, "cpu", nil},
+		{belowStandard, standardRecommended, "cpu", nil},
+		{aboveStandard, standardRecommended, "cpu", nil},
+		{standard, standardAcceptableAboveRecommended, "cpu", nil},
+		{standard, standardAcceptableBelowRecommended, "cpu", nil},
+		{standard, standardAboveAcceptable, "cpu", &belowStandard},
+		{standard, standardBelowAcceptable, "cpu", &aboveStandard},
+		{noStorage, standardRecommended, "cpu", nil},
+		{noMemory, standardRecommended, "cpu", nil},
+		{noCPU, standardRecommended, "cpu", &belowStandard},
+		{smallStorage, standardRecommended, "cpu", nil},
+		{smallMemory, standardRecommended, "cpu", nil},
+		{smallCPU, standardRecommended, "cpu", &belowStandard},
+		{bigStorage, standardRecommended, "cpu", nil},
+		{bigMemory, standardRecommended, "cpu", nil},
+		{bigCPU, standardRecommended, "cpu", &aboveStandard},
 
-		// Test no threshold for the memory resource type.
-		{0, standard, standard, "memory", false},
-		{0, standard, siStandard, "memory", true},
-		{0, standard, noStorage, "memory", false},
-		{0, standard, noMemory, "memory", true},
-		{0, standard, noCPU, "memory", false},
-		{0, standard, smallStorage, "memory", false},
-		{0, standard, smallMemory, "memory", true},
-		{0, standard, smallCPU, "memory", false},
+		// Test for the memory resource type.
+		{standard, standardRecommended, "memory", nil},
+		{belowStandard, standardRecommended, "memory", nil},
+		{aboveStandard, standardRecommended, "memory", nil},
+		{standard, standardAcceptableAboveRecommended, "memory", nil},
+		{standard, standardAcceptableBelowRecommended, "memory", nil},
+		{standard, standardAboveAcceptable, "memory", &belowStandard},
+		{standard, standardBelowAcceptable, "memory", &aboveStandard},
+		{noStorage, standardRecommended, "memory", nil},
+		{noMemory, standardRecommended, "memory", &belowStandard},
+		{noCPU, standardRecommended, "memory", nil},
+		{smallStorage, standardRecommended, "memory", nil},
+		{smallMemory, standardRecommended, "memory", &belowStandard},
+		{smallCPU, standardRecommended, "memory", nil},
+		{bigStorage, standardRecommended, "memory", nil},
+		{bigMemory, standardRecommended, "memory", &aboveStandard},
+		{bigCPU, standardRecommended, "memory", nil},
 
-		// Test no threshold for the storage resource type.
-		{0, standard, standard, "storage", false},
-		{0, standard, siStandard, "storage", true},
-		{0, standard, noStorage, "storage", true},
-		{0, standard, noMemory, "storage", false},
-		{0, standard, noCPU, "storage", false},
-		{0, standard, smallStorage, "storage", true},
-		{0, standard, smallMemory, "storage", false},
-		{0, standard, smallCPU, "storage", false},
-
-		// Test large threshold for the CPU resource type.
-		{10, standard, standard, "cpu", false},
-		{10, standard, siStandard, "cpu", false},
-		{10, standard, noStorage, "cpu", false},
-		{10, standard, noMemory, "cpu", false},
-		{10, standard, noCPU, "cpu", true},
-		{10, standard, smallStorage, "cpu", false},
-		{10, standard, smallMemory, "cpu", false},
-		{10, standard, smallCPU, "cpu", true},
-
-		// Test large threshold for the memory resource type.
-		{10, standard, standard, "memory", false},
-		{10, standard, siStandard, "memory", false},
-		{10, standard, noStorage, "memory", false},
-		{10, standard, noMemory, "memory", true},
-		{10, standard, noCPU, "memory", false},
-		{10, standard, smallStorage, "memory", false},
-		{10, standard, smallMemory, "memory", true},
-		{10, standard, smallCPU, "memory", false},
-
-		// Test large threshold for the storage resource type.
-		{10, standard, standard, "storage", false},
-		{10, standard, siStandard, "storage", false},
-		{10, standard, noStorage, "storage", true},
-		{10, standard, noMemory, "storage", false},
-		{10, standard, noCPU, "storage", false},
-		{10, standard, smallStorage, "storage", true},
-		{10, standard, smallMemory, "storage", false},
-		{10, standard, smallCPU, "storage", false},
+		// Test for the storage resource type.
+		{standard, standardRecommended, "storage", nil},
+		{belowStandard, standardRecommended, "storage", nil},
+		{aboveStandard, standardRecommended, "storage", nil},
+		{standard, standardAcceptableAboveRecommended, "storage", nil},
+		{standard, standardAcceptableBelowRecommended, "storage", nil},
+		{standard, standardAboveAcceptable, "storage", &belowStandard},
+		{standard, standardBelowAcceptable, "storage", &aboveStandard},
+		{noStorage, standardRecommended, "storage", &belowStandard},
+		{noMemory, standardRecommended, "storage", nil},
+		{noCPU, standardRecommended, "storage", nil},
+		{smallStorage, standardRecommended, "storage", &belowStandard},
+		{smallMemory, standardRecommended, "storage", nil},
+		{smallCPU, standardRecommended, "storage", nil},
+		{bigStorage, standardRecommended, "storage", &aboveStandard},
+		{bigMemory, standardRecommended, "storage", nil},
+		{bigCPU, standardRecommended, "storage", nil},
 
 		// Test successful comparison when not all ResourceNames are present.
-		{0, noStorage, siNoStorage, "cpu", false},
-		{0, noStorage, siNoStorage, "memory", true},
-		{10, noStorage, siNoStorage, "cpu", false},
-		{10, noStorage, siNoStorage, "memory", false},
-		{10, noStorage, smallMemoryNoStorage, "memory", true},
+		{smallMemoryNoStorage, standardRecommendedNoStorage, "memory", &belowStandardNoStorage},
 	}
 
 	for i, tc := range testCases {
-		if tc.want != checkResource(tc.th, tc.x, tc.y, tc.res) {
-			t.Errorf("checkResource got %t, want %t for test case %d.", !tc.want, tc.want, i)
+		got := checkResource(tc.e, tc.x, tc.res)
+		if !reflect.DeepEqual(tc.want, got) {
+			t.Errorf("checkResource got %v, want %v for test case %d.", got, tc.want, i)
 		}
 	}
 }
 
 func TestShouldOverwriteResources(t *testing.T) {
 	testCases := []struct {
-		th   int64
-		x, y api.ResourceList
-		want bool
+		res  api.ResourceList
+		e    *EstimatorResult
+		want *api.ResourceRequirements
 	}{
-		// Test no threshold.
-		{0, standard, standard, false}, // A threshold of 0 should be exact.
-		{0, standard, siStandard, true},
-		{0, standard, noStorage, true}, // Overwrite on qualitative differences.
-		{0, standard, noMemory, true},
-		{0, standard, noCPU, true},
-		{0, standard, smallStorage, true}, // Overwrite past the threshold.
-		{0, standard, smallMemory, true},
-		{0, standard, smallCPU, true},
-
-		// Test a large threshold.
-		{10, standard, standard, false},
-		{10, standard, siStandard, false}, // A threshold of 10 gives leeway.
-		{10, standard, noStorage, true},
-		{10, standard, noMemory, true},
-		{10, standard, noCPU, true},
-		{10, standard, smallStorage, true}, // The differences are larger than the threshold.
-		{10, standard, smallMemory, true},
-		{10, standard, smallCPU, true},
+		{standard, standardRecommended, nil},
+		{belowStandard, standardRecommended, nil},
+		{aboveStandard, standardRecommended, nil},
+		{standard, standardAcceptableAboveRecommended, nil},
+		{standard, standardAcceptableBelowRecommended, nil},
+		{standard, standardAboveAcceptable, &api.ResourceRequirements{belowStandard, belowStandard}},
+		{standard, standardBelowAcceptable, &api.ResourceRequirements{aboveStandard, aboveStandard}},
+		{noStorage, standardRecommended, &api.ResourceRequirements{belowStandard, belowStandard}},
+		{noMemory, standardRecommended, &api.ResourceRequirements{belowStandard, belowStandard}},
+		{noCPU, standardRecommended, &api.ResourceRequirements{belowStandard, belowStandard}},
+		{smallStorage, standardRecommended, &api.ResourceRequirements{belowStandard, belowStandard}},
+		{smallMemory, standardRecommended, &api.ResourceRequirements{belowStandard, belowStandard}},
+		{smallCPU, standardRecommended, &api.ResourceRequirements{belowStandard, belowStandard}},
+		{bigStorage, standardRecommended, &api.ResourceRequirements{aboveStandard, aboveStandard}},
+		{bigMemory, standardRecommended, &api.ResourceRequirements{aboveStandard, aboveStandard}},
+		{bigCPU, standardRecommended, &api.ResourceRequirements{aboveStandard, aboveStandard}},
 
 		// Test successful comparison when not all ResourceNames are present.
-		{10, noStorage, siNoStorage, false},
+		{smallMemoryNoStorage, standardRecommendedNoStorage, &api.ResourceRequirements{belowStandardNoStorage, belowStandardNoStorage}},
 	}
 	for i, tc := range testCases {
-		if tc.want != shouldOverwriteResources(tc.th, tc.x, tc.y, tc.x, tc.x) {
-			t.Errorf("shouldOverwriteResources got %t, want %t for test case %d.", !tc.want, tc.want, i)
+		got := shouldOverwriteResources(tc.e, tc.res, tc.res)
+		if !reflect.DeepEqual(tc.want, got) {
+			t.Errorf("shouldOverwriteResources got %v, want %v for test case %d.", got, tc.want, i)
 		}
 	}
 }
