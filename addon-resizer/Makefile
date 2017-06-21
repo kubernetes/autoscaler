@@ -14,26 +14,27 @@
 
 # Procedure for change:
 # 1. Bump the tag number.
-# 2. Create an image for the kubernetes user on Dockerhub and push there: make build push
+# 2. Create an image for the kubernetes user on Dockerhub and push there: make dev-release
 # 3. Temporarily adjust any config files etc. that reference gcr.io/google_containers/addon-resizer:$(TAG)
 #    to use kubernetes/addon-resizer:$(TAG) instead.
 # 4. Test etc.
 # 5. Issue PR.
-# 6. When PR is approved make the gcr.io version of the image: make build push
-# 7. Revert the references to kubernetes/addon-resizer:$(TAG) to gcr.io/google_containers/addon-resizer:$(TAG) 
+# 6. When PR is approved make the gcr.io version of the image (Change REGISTRY variable below first): make release
+# 7. Revert the references to kubernetes/addon-resizer:$(TAG) to gcr.io/google_containers/addon-resizer:$(TAG)
 
-OUT_DIR = build
-PACKAGE = k8s.io/contrib/addon-resizer
-PREFIX = gcr.io/google_containers
+all: build
+
+PACKAGE = k8s.io/autoscaler/addon-resizer
+REGISTRY = kubernetes
+# Uncomment for release
+# REGISTRY = gcr.io/google_containers
 TAG = 2.0
-
-# Rules for building the real image for deployment to gcr.io
 
 deps:
 		go get -u github.com/tools/godep
 
 compile: nanny/ deps
-		GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -o $(OUT_DIR)/pod_nanny nanny/main/pod_nanny.go
+		GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -o pod_nanny nanny/main/pod_nanny.go
 
 test: nanny/
 		godep go test ${PACKAGE}/nanny -v
@@ -41,12 +42,30 @@ test: nanny/
 go: compile test
 
 clean:
-	rm -rf build
+	rm -rf pod_nanny
 
 build: go
-	docker build --pull -t ${PREFIX}/addon-resizer:$(TAG) .
 
-docker: build
+dev-release: build execute-release
+	echo "Release ${TAG} completed"
 
-push: docker
-	gcloud docker -- push ${PREFIX}/addon-resizer:$(TAG)
+# Rules for building the real image for deployment to gcr.io
+
+execute-release:
+ifndef REGISTRY
+	ERR = $(error REGISTRY is undefined)
+	$(ERR)
+endif
+	docker build --pull -t ${REGISTRY}/addon-resizer:${TAG} .
+	gcloud docker -- push ${REGISTRY}/addon-resizer:${TAG}
+
+docker-builder:
+	docker build -t autoscaling-builder ../builder
+
+build-in-docker: clean docker-builder
+	docker run -v `pwd`:/gopath/src/k8s.io/autoscaler/addon-resizer/ autoscaling-builder:latest bash -c 'cd /gopath/src/k8s.io/autoscaler/addon-resizer && make'
+
+release: build-in-docker execute-release
+	echo "Full in-docker release ${TAG} completed"
+
+
