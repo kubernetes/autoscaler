@@ -15,9 +15,9 @@ this document:
   * [What types of pods can prevent CA from removing a node?](#what-types-of-pods-can-prevent-ca-from-removing-a-node)
   * [How does Horizontal Pod Autoscaler work with Cluster Autoscaler?](#how-does-horizontal-pod-autoscaler-work-with-cluster-autoscaler)
   * [What are the key best practices for running Cluster Autoscaler?](#what-are-the-key-best-practices-for-running-cluster-autoscaler)
-  * [Should I use a CPU-usage-based node autoscaler with Kubernetes?](#should-i-use-a-cpuusagebased-node-autoscaler-with-kubernetes)
-  * [How is Cluster Autoscaler different from CPU-usage-based node autoscalers?](#how-is-cluster-autoscaler-different-from-cpuusagebased-node-autoscalers)
-  * [Is Cluster Autoscaler compatible with CPU-usage-based node autoscalers?](#is-cluster-autoscaler-compatible-with-cpuusagebased-node-autoscalers)
+  * [Should I use a CPU-usage-based node autoscaler with Kubernetes?](#should-i-use-a-cpu-usage-based-node-autoscaler-with-kubernetes)
+  * [How is Cluster Autoscaler different from CPU-usage-based node autoscalers?](#how-is-cluster-autoscaler-different-from-cpu-usage-based-node-autoscalers)
+  * [Is Cluster Autoscaler compatible with CPU-usage-based node autoscalers?](#is-cluster-autoscaler-compatible-with-cpu-usage-based-node-autoscalers)
 * [How to?](#how-to)
   * [I'm running cluster with nodes in multiple zones for HA purposes. Is that supported by Cluster Autoscaler?](#im-running-cluster-with-nodes-in-multiple-zones-for-ha-purposes-is-that-supported-by-cluster-autoscaler)
   * [How can I monitor Cluster Autoscaler?](#how-can-i-monitor-cluster-autoscaler)
@@ -188,8 +188,8 @@ knows where each pod can be moved and which nodes depend on which other nodes in
 pod migration. Of course, it may happen that eventually the scheduler will place the pods
 somewhere else.
 
-* There are no kube-system pods on the node (except these that run on all nodes by default like
-manifest-run pods or pods created by daemonsets).
+* All system pods running on the node (except these that run on all nodes by default like
+manifest-run pods or pods created by daemonsets) have a PodDisruptionBudget.
 
 * There are no pods with local storage. Applications with local storage would lose their
 data if a node is deleted, even if they are replicated.
@@ -267,10 +267,31 @@ Some of the not-yet-fully-approved proposals may be hidden among [PRs](https://g
 
 ### I have a couple of nodes with low utilization, but they are not scaled down. Why?
 
-CA doesn't remove nodes if they are running system pods, pods without a controller or pods with local storage.
+CA doesn't remove nodes if they are running system pods without a PodDisruptionBudget, pods without a controller or pods with 
+local storage.
 Also it won't remove a node which has pods that cannot be run elsewhere due to limited resources. Another possibility
 is that the corresponding node group already has the minimum size. Finally, CA doesn't scale down if there was a scale up
 in the last 10 min.
+
+If the reason your cluster isn't scaled down is due to system pods without a PodDisruptionBudget spread across multiple nodes,
+you can manually add PDBs for the pods that can be safely rescheduled elsewhere:
+
+```
+kubectl create poddisruptionbudget <pdb name> --namespace=kube-system --selector app:<app name> --max-unavailable 1 
+```
+
+Here's how to do it for some common pods:
+
+* kube-dns can safely be rescheduled as long as there are supposed to be at least 2 of these pods. In 1.7, this will always be 
+the case. For 1.6 and earlier, edit kube-dns-autoscaler config map as described
+[here](https://kubernetes.io/docs/tasks/administer-cluster/dns-horizontal-autoscaling/#tuning-autoscaling-parameters), 
+adding preventSinglePointFailure parameter. For example:
+```
+linear:'{"coresPerReplica":256,"nodesPerReplica":16,"preventSinglePointFailure":true}'
+```
+
+* Heapster is best left alone, as restarting it causes the loss of metrics for >1 minute, as well as metrics
+in dashboard from the last 15 minutes. Add PDB only if you're sure you don't mind it. App name is k8s-heapster.
 
 ### I have a couple of pending pods, but there was no scale up?
 
@@ -414,6 +435,7 @@ required to activate them:
    https://github.com/kubernetes/autoscaler/pull/74#issuecomment-302434795).
 
 We are aware that this process is tedious and we will work to improve it.
+
 
 
 
