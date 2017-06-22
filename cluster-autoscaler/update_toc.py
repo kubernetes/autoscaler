@@ -45,7 +45,7 @@ def updateFAQ():
                 in_toc = True
                 faq_file.write(line +"\n")
                 for question, indent in toc_elements:
-                    faq_file.write("%s* [%s](#%s)\n" % (' ' * 2 * indent, question, re.sub("[^a-z0-9 ]+", "", question.lower()).replace(" ","-")))
+                    faq_file.write("%s* [%s](#%s)\n" % (' ' * 2 * indent, question, re.sub("[^a-z0-9\- ]+", "", question.lower()).replace(" ","-")))
             if line.strip() == "<!--- TOC END -->":
                 in_toc = False
             if not in_toc:
