@@ -159,8 +159,11 @@ spec:
 
 As of version v0.5.1, docker images including the support for `--node-group-auto-discovery` is not yet published to official repository.
 Please checkout the latest source of this project locally and run `REGISTRY=<your docker repo> make release` to build and push an image yourself.
-Then, a manifest like below would run a cluster-autoscaler which auto-discovers ASGs tagged with `k8s.io/cluster-autoscaler/enabled` to be node groups.
-Please notice that there are no `--nodes` flags passed to cluster-autoscaler in this setup.
+Then, a manifest like below would run a cluster-autoscaler which auto-discovers ASGs tagged with `k8s.io/cluster-autoscaler/enabled` and `kubernetes.io/cluster/<YOUR CLUSTER NAME>` to be node groups.
+Note that:
+ 
+* `kubernetes.io/cluster/<YOUR CLUSTER NAME>` is required when `k8s.io/cluster-autoscaler/enabled` is used across many clusters to prevent ASGs from different clusters recognized as the node groups
+* There are no `--nodes` flags passed to cluster-autoscaler because the node groups are automatically discovered by tags
  
 ```yaml
 ---
@@ -198,7 +201,7 @@ spec:
             - --cloud-provider=aws
             - --skip-nodes-with-local-storage=false
             - --expander=least-waste
-            - --node-group-auto-discovery=asg:tag=k8s.io/cluster-autoscaler/enabled
+            - --node-group-auto-discovery=asg:tag=k8s.io/cluster-autoscaler/enabled,kubernetes.io/cluster/<YOUR CLUSTER NAME>
           env:
             - name: AWS_REGION
               value: us-east-1

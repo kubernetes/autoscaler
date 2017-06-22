@@ -67,7 +67,11 @@ func buildAutoDiscoveringProvider(awsManager *AwsManager, spec string) (*awsClou
 	if tag == "" {
 		return nil, fmt.Errorf("Invalid ASG tag for auto discovery specified: ASG tag must not be empty")
 	}
-	asgs, err := awsManager.getAutoscalingGroupsByTag(tag)
+	// Use the k8s cluster name tag to only discover asgs of the cluster denoted by clusterName
+	// See https://github.com/kubernetes/kubernetes/blob/9ef85a7/pkg/cloudprovider/providers/aws/tags.go#L30-L34
+	// for more information about the tag
+	tags := strings.Split(tag, ",")
+	asgs, err := awsManager.getAutoscalingGroupsByTags(tags)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to get ASGs: %v", err)
 	}
