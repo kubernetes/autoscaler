@@ -18,6 +18,7 @@ package core
 
 import (
 	"github.com/stretchr/testify/mock"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"testing"
@@ -35,6 +36,11 @@ func (m *AutoscalerMock) RunOnce(currentTime time.Time) errors.AutoscalerError {
 
 func (m *AutoscalerMock) CleanUp() {
 	m.Called()
+}
+
+func (m *AutoscalerMock) CloudProvider() cloudprovider.CloudProvider {
+	args := m.Called()
+	return args.Get(0).(cloudprovider.CloudProvider)
 }
 
 func (m *AutoscalerMock) ExitCleanUp() {

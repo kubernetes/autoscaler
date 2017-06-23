@@ -21,14 +21,14 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
-
 	kube_record "k8s.io/client-go/tools/record"
 	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 
 	"github.com/golang/glog"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 )
 
 // StaticAutoscaler is an autoscaler which has all the core functionality of a CA but without the reconfiguration feature
@@ -73,6 +73,11 @@ func (a *StaticAutoscaler) CleanUp() {
 	if readyNodes, err := a.ReadyNodeLister().List(); err != nil {
 		cleanToBeDeleted(readyNodes, a.AutoscalingContext.ClientSet, a.Recorder)
 	}
+}
+
+// CloudProvider returns the cloud provider associated to this autoscaler
+func (a *StaticAutoscaler) CloudProvider() cloudprovider.CloudProvider {
+	return a.AutoscalingContext.CloudProvider
 }
 
 // RunOnce iterates over node groups and scales them up/down if necessary
