@@ -31,21 +31,8 @@ type AutoScalingMock struct {
 }
 
 func (a *AutoScalingMock) DescribeAutoScalingGroups(i *autoscaling.DescribeAutoScalingGroupsInput) (*autoscaling.DescribeAutoScalingGroupsOutput, error) {
-	return &autoscaling.DescribeAutoScalingGroupsOutput{
-		AutoScalingGroups: []*autoscaling.Group{
-			{
-				DesiredCapacity: aws.Int64(2),
-				Instances: []*autoscaling.Instance{
-					{
-						InstanceId: aws.String("test-instance-id"),
-					},
-					{
-						InstanceId: aws.String("second-test-instance-id"),
-					},
-				},
-			},
-		},
-	}, nil
+	args := a.Called(i)
+	return args.Get(0).(*autoscaling.DescribeAutoScalingGroupsOutput), nil
 }
 
 func (a *AutoScalingMock) DescribeTags(i *autoscaling.DescribeTagsInput) (*autoscaling.DescribeTagsOutput, error) {
@@ -72,10 +59,45 @@ func (a *AutoScalingMock) TerminateInstanceInAutoScalingGroup(input *autoscaling
 	return args.Get(0).(*autoscaling.TerminateInstanceInAutoScalingGroupOutput), nil
 }
 
+var testService = autoScalingWrapper{&AutoScalingMock{}}
+
 var testAwsManager = &AwsManager{
-	asgs:     make([]*asgInformation, 0),
-	service:  &AutoScalingMock{},
-	asgCache: make(map[AwsRef]*Asg),
+	asgs: &autoScalingGroups{
+		registeredAsgs:           make([]*asgInformation, 0),
+		instanceToAsg:            make(map[AwsRef]*Asg),
+		instancesNotInManagedAsg: make(map[AwsRef]struct{}),
+	},
+	service: testService,
+}
+
+func newTestAwsManagerWithService(service autoScaling) *AwsManager {
+	wrapper := autoScalingWrapper{service}
+	return &AwsManager{
+		service: wrapper,
+		asgs: &autoScalingGroups{
+			registeredAsgs:           make([]*asgInformation, 0),
+			instanceToAsg:            make(map[AwsRef]*Asg),
+			instancesNotInManagedAsg: make(map[AwsRef]struct{}),
+			service:                  wrapper,
+		},
+	}
+}
+
+func testDescribeAutoScalingGroupsOutput(desiredCap int64, instanceIds ...string) *autoscaling.DescribeAutoScalingGroupsOutput {
+	instances := []*autoscaling.Instance{}
+	for _, id := range instanceIds {
+		instances = append(instances, &autoscaling.Instance{
+			InstanceId: aws.String(id),
+		})
+	}
+	return &autoscaling.DescribeAutoScalingGroupsOutput{
+		AutoScalingGroups: []*autoscaling.Group{
+			{
+				DesiredCapacity: aws.Int64(desiredCap),
+				Instances:       instances,
+			},
+		},
+	}
 }
 
 func testProvider(t *testing.T, m *AwsManager) *awsCloudProvider {
@@ -123,15 +145,24 @@ func TestNodeGroupForNode(t *testing.T) {
 			ProviderID: "aws:///us-east-1a/test-instance-id",
 		},
 	}
-	provider := testProvider(t, testAwsManager)
+	service := &AutoScalingMock{}
+	m := newTestAwsManagerWithService(service)
+	provider := testProvider(t, m)
 	err := provider.addNodeGroup("1:5:test-asg")
 	assert.NoError(t, err)
+
+	service.On("DescribeAutoScalingGroups", &autoscaling.DescribeAutoScalingGroupsInput{
+		AutoScalingGroupNames: aws.StringSlice([]string{provider.asgs[0].Name}),
+		MaxRecords:            aws.Int64(1),
+	}).Return(testDescribeAutoScalingGroupsOutput(1, "test-instance-id"))
+
 	group, err := provider.NodeGroupForNode(node)
 
 	assert.NoError(t, err)
 	assert.Equal(t, group.Id(), "test-asg")
 	assert.Equal(t, group.MinSize(), 1)
 	assert.Equal(t, group.MaxSize(), 5)
+	service.AssertNumberOfCalls(t, "DescribeAutoScalingGroups", 1)
 
 	// test node in cluster that is not in a group managed by cluster autoscaler
 	nodeNotInGroup := &apiv1.Node{
@@ -141,8 +172,10 @@ func TestNodeGroupForNode(t *testing.T) {
 	}
 
 	group, err = provider.NodeGroupForNode(nodeNotInGroup)
+
 	assert.NoError(t, err)
 	assert.Nil(t, group)
+	service.AssertNumberOfCalls(t, "DescribeAutoScalingGroups", 2)
 }
 
 func TestAwsRefFromProviderId(t *testing.T) {
@@ -173,21 +206,27 @@ func TestMinSize(t *testing.T) {
 }
 
 func TestTargetSize(t *testing.T) {
-	provider := testProvider(t, testAwsManager)
+	service := &AutoScalingMock{}
+	m := newTestAwsManagerWithService(service)
+	provider := testProvider(t, m)
 	err := provider.addNodeGroup("1:5:test-asg")
 	assert.NoError(t, err)
+
+	service.On("DescribeAutoScalingGroups", &autoscaling.DescribeAutoScalingGroupsInput{
+		AutoScalingGroupNames: aws.StringSlice([]string{provider.asgs[0].Name}),
+		MaxRecords:            aws.Int64(1),
+	}).Return(testDescribeAutoScalingGroupsOutput(2, "test-instance-id", "second-test-instance-id"))
+
 	targetSize, err := provider.asgs[0].TargetSize()
 	assert.Equal(t, targetSize, 2)
 	assert.NoError(t, err)
+
+	service.AssertNumberOfCalls(t, "DescribeAutoScalingGroups", 1)
 }
 
 func TestIncreaseSize(t *testing.T) {
 	service := &AutoScalingMock{}
-	m := &AwsManager{
-		asgs:     make([]*asgInformation, 0),
-		service:  service,
-		asgCache: make(map[AwsRef]*Asg),
-	}
+	m := newTestAwsManagerWithService(service)
 	provider := testProvider(t, m)
 	err := provider.addNodeGroup("1:5:test-asg")
 	assert.NoError(t, err)
@@ -199,15 +238,28 @@ func TestIncreaseSize(t *testing.T) {
 		HonorCooldown:        aws.Bool(false),
 	}).Return(&autoscaling.SetDesiredCapacityOutput{})
 
+	service.On("DescribeAutoScalingGroups", &autoscaling.DescribeAutoScalingGroupsInput{
+		AutoScalingGroupNames: aws.StringSlice([]string{provider.asgs[0].Name}),
+		MaxRecords:            aws.Int64(1),
+	}).Return(testDescribeAutoScalingGroupsOutput(2, "test-instance-id", "second-test-instance-id"))
+
 	err = provider.asgs[0].IncreaseSize(1)
 	assert.NoError(t, err)
 	service.AssertNumberOfCalls(t, "SetDesiredCapacity", 1)
+	service.AssertNumberOfCalls(t, "DescribeAutoScalingGroups", 1)
 }
 
 func TestBelongs(t *testing.T) {
-	provider := testProvider(t, testAwsManager)
+	service := &AutoScalingMock{}
+	m := newTestAwsManagerWithService(service)
+	provider := testProvider(t, m)
 	err := provider.addNodeGroup("1:5:test-asg")
 	assert.NoError(t, err)
+
+	service.On("DescribeAutoScalingGroups", &autoscaling.DescribeAutoScalingGroupsInput{
+		AutoScalingGroupNames: aws.StringSlice([]string{provider.asgs[0].Name}),
+		MaxRecords:            aws.Int64(1),
+	}).Return(testDescribeAutoScalingGroupsOutput(1, "test-instance-id"))
 
 	invalidNode := &apiv1.Node{
 		Spec: apiv1.NodeSpec{
@@ -216,6 +268,7 @@ func TestBelongs(t *testing.T) {
 	}
 	_, err = provider.asgs[0].Belongs(invalidNode)
 	assert.Error(t, err)
+	service.AssertNumberOfCalls(t, "DescribeAutoScalingGroups", 1)
 
 	validNode := &apiv1.Node{
 		Spec: apiv1.NodeSpec{
@@ -225,15 +278,14 @@ func TestBelongs(t *testing.T) {
 	belongs, err := provider.asgs[0].Belongs(validNode)
 	assert.Equal(t, belongs, true)
 	assert.NoError(t, err)
+	// As "test-instance-id" is already known to be managed by test-asg since the first `Belongs` call,
+	// No additional DescribAutoScalingGroup call is made
+	service.AssertNumberOfCalls(t, "DescribeAutoScalingGroups", 1)
 }
 
 func TestDeleteNodes(t *testing.T) {
 	service := &AutoScalingMock{}
-	m := &AwsManager{
-		asgs:     make([]*asgInformation, 0),
-		service:  service,
-		asgCache: make(map[AwsRef]*Asg),
-	}
+	m := newTestAwsManagerWithService(service)
 
 	service.On("TerminateInstanceInAutoScalingGroup", &autoscaling.TerminateInstanceInAutoScalingGroupInput{
 		InstanceId:                     aws.String("test-instance-id"),
@@ -246,6 +298,11 @@ func TestDeleteNodes(t *testing.T) {
 	err := provider.addNodeGroup("1:5:test-asg")
 	assert.NoError(t, err)
 
+	service.On("DescribeAutoScalingGroups", &autoscaling.DescribeAutoScalingGroupsInput{
+		AutoScalingGroupNames: aws.StringSlice([]string{provider.asgs[0].Name}),
+		MaxRecords:            aws.Int64(1),
+	}).Return(testDescribeAutoScalingGroupsOutput(2, "test-instance-id", "second-test-instance-id"))
+
 	node := &apiv1.Node{
 		Spec: apiv1.NodeSpec{
 			ProviderID: "aws:///us-east-1a/test-instance-id",
@@ -254,6 +311,7 @@ func TestDeleteNodes(t *testing.T) {
 	err = provider.asgs[0].DeleteNodes([]*apiv1.Node{node})
 	assert.NoError(t, err)
 	service.AssertNumberOfCalls(t, "TerminateInstanceInAutoScalingGroup", 1)
+	service.AssertNumberOfCalls(t, "DescribeAutoScalingGroups", 2)
 }
 
 func TestId(t *testing.T) {
