@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/golang/glog"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
@@ -41,6 +42,8 @@ type Autoscaler interface {
 	RunOnce(currentTime time.Time) errors.AutoscalerError
 	// CleanUp represents a clean-up required before the first invocation of RunOnce
 	CleanUp()
+	// CloudProvider returns the cloud provider associated to this autoscaler
+	CloudProvider() cloudprovider.CloudProvider
 	// ExitCleanUp is a clean-up performed just before process termination.
 	ExitCleanUp()
 }

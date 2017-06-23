@@ -39,8 +39,6 @@ type AutoscalingContext struct {
 	AutoscalingOptions
 	// CloudProvider used in CA.
 	CloudProvider cloudprovider.CloudProvider
-	// CloudProviderBuilder is used to new CloudProvider
-	CloudProviderBuilder builder.CloudProviderBuilder
 	// ClientSet interface.
 	ClientSet kube_client.Interface
 	// ClusterState for maintaining the state of custer nodes.
@@ -134,7 +132,6 @@ func NewAutoscalingContext(options AutoscalingOptions, predicateChecker *simulat
 	autoscalingContext := AutoscalingContext{
 		AutoscalingOptions:   options,
 		CloudProvider:        cloudProvider,
-		CloudProviderBuilder: cloudProviderBuilder,
 		ClusterStateRegistry: clusterStateRegistry,
 		ClientSet:            kubeClient,
 		Recorder:             kubeEventRecorder,
