@@ -38,7 +38,7 @@ of various parts of Cluster Autoscaler loop.
 | Metric name | Metric type | Labels | Description |
 | ----------- | ----------- | ------ | ----------- |
 | last_activity | Gauge | `activity`=&lt;autoscaler-activity&gt; | Last time certain part of CA logic executed |
-| function_duration_seconds | Summary | `function`=&lt;autoscaler-function&gt; | Time taken by various parts of CA main loop. |
+| function_duration_seconds | Histogram | `function`=&lt;autoscaler-function&gt; | Time taken by various parts of CA main loop. |
 
 * `last_activity` records last time certain part of cluster autoscaler logic
 executed. Represented with unix timestamp. autoscaler-activity values are:
