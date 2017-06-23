@@ -78,8 +78,8 @@ var (
 		}, []string{"activity"},
 	)
 
-	functionDuration = prometheus.NewSummaryVec(
-		prometheus.SummaryOpts{
+	functionDuration = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
 			Namespace: caNamespace,
 			Name:      "function_duration_seconds",
 			Help:      "Time taken by various parts of CA main loop.",
