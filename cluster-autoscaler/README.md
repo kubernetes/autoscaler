@@ -15,11 +15,23 @@ there is a big chance that it won't work as expected.
 
 | Kubernetes Version  | CA Version   |
 |--------|--------|
+| 1.7.X  | 0.6.X  |
 | 1.6.X  | 0.5.X  |
 | 1.5.X  | 0.4.X  |
 | 1.4.X  | 0.3.X  |
 
 # Notable changes
+
+CA Version 0.6:
+* Allows scaling node groups to 0 (currently only in GCE/GKE, other cloud providers are coming).
+* Price-based expander (currently only in GCE/GKE, other cloud providers are coming).
+* Similar node groups are balanced (to be enabled with a flag).
+* It is possible to scale-down nodes with kube-system pods if PodDisruptionBudget is provided.
+* Automatic node group discovery on AWS (to be enabled with a flag).
+* CA exposes runtime metrics.
+* CA exposes an endpoint for liveness probe.
+* max-grateful-termination-sec flag renamed to max-graceful-termination-sec.
+* Lower AWS API traffic to DescribeAutoscalingGroup.
 
 CA Version 0.5.4:
 * Fixes problems with node drain when pods are ignoring SIGTERM.
