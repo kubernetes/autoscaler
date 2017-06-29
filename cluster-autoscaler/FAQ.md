@@ -31,7 +31,9 @@ this document:
   * [How does CA deal with unready nodes in version >=0.5.0 ?](#how-does-ca-deal-with-unready-nodes-in-version-050-)
   * [How fast is Cluster Autoscaler?](#how-fast-is-cluster-autoscaler)
   * [How fast is HPA when combined with CA?](#how-fast-is-hpa-when-combined-with-ca)
-  * [Where can I find the designs of the upcoming features.](#where-can-i-find-the-designs-of-the-upcoming-features)
+  * [Where can I find the designs of the upcoming features?](#where-can-i-find-the-designs-of-the-upcoming-features)
+  * [What are Expanders?](#what-are-expanders)
+  * [What Expanders are available?](#what-expanders-are-available)
 * [Troubleshooting](#troubleshooting)
   * [I have a couple of nodes with low utilization, but they are not scaled down. Why?](#i-have-a-couple-of-nodes-with-low-utilization-but-they-are-not-scaled-down-why)
   * [I have a couple of pending pods, but there was no scale up?](#i-have-a-couple-of-pending-pods-but-there-was-no-scale-up)
@@ -254,12 +256,44 @@ Then it may take up to 30 sec to register the node in the Kubernetes master and 
 
 All in all the total reaction time is around 4 min.
 
-### Where can I find the designs of the upcoming features.
+### Where can I find the designs of the upcoming features?
 
 CA team follows the generic Kuberntes process and submits design proposals [HERE](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler/proposals)
 before starting any bigger/significant effort.
 Some of the not-yet-fully-approved proposals may be hidden among [PRs](https://github.com/kubernetes/autoscaler/pulls).
 
+### What are Expanders?
+
+When Cluster Autoscaler identifies that it needs to scale up a cluster due to unscheduable pods, 
+it increases the nodes in a node group. When there is one Node Group, this strategy is trivial.
+
+When there are more than one Node Group, which group should be grown or 'expanded'?
+
+Expanders provide different strategies for selecting which Node Group to grow.
+
+Expanders can be selected by passing the name to the `--expander` flag. i.e. 
+`./cluster-autoscaler --expander=random`
+
+### What Expanders are available?
+
+Currently Cluster Autoscaler has 4 expanders:
+
+* `random` - this is the default expander, and should be used when you don't have a particular
+need for the node groups to scale differently
+
+* `most-pods` - selects the node group that would be able to schedule the most pods when scaling
+up. This is useful when you are using nodeSelector to make sure certain pods land on certain nodes. 
+Note that this won't cause the autoscaler to select bigger nodes vs. smaller, as it can grow multiple
+smaller nodes at once
+
+* `least-waste` - selects the node group that will have the least idle CPU (and if tied, unused Memory) node group
+when scaling up. This is useful when you have different classes of nodes, for example, high CPU or high Memory nodes,
+and only want to expand those when pods that need those requirements are to be launched.
+
+* `price` - select the node group that will cost the least and, in the same time, whose machines 
+would match the cluster size. This expander is described in more details 
+[HERE](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/proposals/pricing.md). Currently
+it works only for GCE and GKE.
 
 ************
 
@@ -435,6 +469,8 @@ required to activate them:
    https://github.com/kubernetes/autoscaler/pull/74#issuecomment-302434795).
 
 We are aware that this process is tedious and we will work to improve it.
+
+
 
 
 
