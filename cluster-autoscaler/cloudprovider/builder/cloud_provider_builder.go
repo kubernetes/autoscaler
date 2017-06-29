@@ -17,13 +17,19 @@ limitations under the License.
 package builder
 
 import (
-	"github.com/golang/glog"
+	"os"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce"
-	// Placeholder
-	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/kubemark"
-	"os"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/kubemark"
+	"k8s.io/client-go/informers"
+	kubeclient "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
+	kubemarkcontroller "k8s.io/kubernetes/pkg/kubemark"
+
+	"github.com/golang/glog"
 )
 
 // CloudProviderBuilder builds a cloud provider from all the necessary parameters including the name of a cloud provider e.g. aws, gce
@@ -92,5 +98,46 @@ func (b CloudProviderBuilder) Build(discoveryOpts cloudprovider.NodeGroupDiscove
 			glog.Fatalf("Failed to create AWS cloud provider: %v", err)
 		}
 	}
+
+	if b.cloudProviderFlag == kubemark.ProviderName {
+		glog.Infof("Building kubemark cloud provider.")
+		externalConfig, err := rest.InClusterConfig()
+		if err != nil {
+			glog.Fatalf("Failed to get kubeclient config for external cluster: %v", err)
+		}
+
+		kubemarkConfig, err := clientcmd.BuildConfigFromFlags("", "/kubeconfig/cluster_autoscaler.kubeconfig")
+		if err != nil {
+			glog.Fatalf("Failed to get kubeclient config for kubemark cluster: %v", err)
+		}
+
+		stop := make(chan struct{})
+
+		externalClient := kubeclient.NewForConfigOrDie(externalConfig)
+		kubemarkClient := kubeclient.NewForConfigOrDie(kubemarkConfig)
+
+		externalInformerFactory := informers.NewSharedInformerFactory(externalClient, 0)
+		kubemarkInformerFactory := informers.NewSharedInformerFactory(kubemarkClient, 0)
+		kubemarkNodeInformer := kubemarkInformerFactory.Core().V1().Nodes()
+		go kubemarkNodeInformer.Informer().Run(stop)
+
+		kubemarkController, err := kubemarkcontroller.NewKubemarkController(externalClient, externalInformerFactory,
+			kubemarkClient, kubemarkNodeInformer)
+		if err != nil {
+			glog.Fatalf("Failed to create Kubemark cloud provider: %v", err)
+		}
+
+		externalInformerFactory.Start(stop)
+		if !kubemarkController.WaitForCacheSync(stop) {
+			glog.Fatalf("Failed to sync caches for kubemark controller")
+		}
+		go kubemarkController.Run(stop)
+
+		cloudProvider, err = kubemark.BuildKubemarkCloudProvider(kubemarkController, nodeGroupsFlag)
+		if err != nil {
+			glog.Fatalf("Failed to create Kubemark cloud provider: %v", err)
+		}
+	}
+
 	return cloudProvider
 }
