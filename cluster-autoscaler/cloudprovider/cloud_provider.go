@@ -73,8 +73,8 @@ type NodeGroup interface {
 	// DecreaseTargetSize decreases the target size of the node group. This function
 	// doesn't permit to delete any existing node and can be used only to reduce the
 	// request for new nodes that have not been yet fulfilled. Delta should be negative.
-	// It is assumed that cloud provider will not delete the existing nodes if the size
-	// when there is an option to just decrease the target.
+	// It is assumed that cloud provider will not delete the existing nodes when there
+	// is an option to just decrease the target.
 	DecreaseTargetSize(delta int) error
 
 	// Id returns an unique identifier of the node group.
