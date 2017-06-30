@@ -493,14 +493,3 @@ required to activate them:
    https://github.com/kubernetes/autoscaler/pull/74#issuecomment-302434795).
 
 We are aware that this process is tedious and we will work to improve it.
-
-
-
-
-
-
-
-
-
-
-
