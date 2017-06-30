@@ -7,6 +7,10 @@ Cluster Autoscaler is a tool that automatically adjusts the size of the Kubernet
 * some nodes in the cluster are so underutilized, for an extended period of time,
 that they can be deleted and their pods will be easily placed on some other, existing nodes.
 
+# FAQ/Documentation
+
+Is available [HERE](./FAQ.md).
+
 # Releases
 
 We strongly recommend using Cluster Autoscaler with version for which it was meant. We don't
@@ -77,8 +81,5 @@ Right now it is possible to run Cluster Autoscaler on:
 * AWS https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md
 * Azure
 
-# FAQ
-
-Is available [HERE](./FAQ.md).
 
 
