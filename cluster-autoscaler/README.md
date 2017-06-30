@@ -23,12 +23,12 @@ there is a big chance that it won't work as expected.
 # Notable changes
 
 CA Version 0.6:
-* Allows scaling node groups to 0 (currently only in GCE/GKE, other cloud providers are coming).
-* Price-based expander (currently only in GCE/GKE, other cloud providers are coming).
-* Similar node groups are balanced (to be enabled with a flag).
-* It is possible to scale-down nodes with kube-system pods if PodDisruptionBudget is provided.
-* Automatic node group discovery on AWS (to be enabled with a flag).
-* CA exposes runtime metrics.
+* Allows scaling node groups to 0 (currently only in GCE/GKE, other cloud providers are coming). See: [How can I scale a node group to 0?](FAQ.md#how-can-i-scale-a-node-group-to-0)
+* Price-based expander (currently only in GCE/GKE, other cloud providers are coming). See: [What are Expanders?](FAQ.md#what-are-expanders)
+* Similar node groups are balanced (to be enabled with a flag). See: [I'm running cluster with nodes in multiple zones for HA purposes. Is that supported by Cluster Autoscaler?](FAQ.md#im-running-cluster-with-nodes-in-multiple-zones-for-ha-purposes-is-that-supported-by-cluster-autoscaler)
+* It is possible to scale-down nodes with kube-system pods if PodDisruptionBudget is provided. See: [How can I scale my cluster to just 1 node?](FAQ.md#how-can-i-scale-my-cluster-to-just-1-node)
+* Automatic node group discovery on AWS (to be enabled with a flag). See: [AWS doc](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler/cloudprovider/aws).
+* CA exposes runtime metrics. See: [How can I monitor Cluster Autoscaler?](FAQ.md#how-can-i-monitor-cluster-autoscaler)
 * CA exposes an endpoint for liveness probe.
 * max-grateful-termination-sec flag renamed to max-graceful-termination-sec.
 * Lower AWS API traffic to DescribeAutoscalingGroup.
