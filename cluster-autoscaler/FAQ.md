@@ -22,6 +22,7 @@ this document:
   * [I'm running cluster with nodes in multiple zones for HA purposes. Is that supported by Cluster Autoscaler?](#im-running-cluster-with-nodes-in-multiple-zones-for-ha-purposes-is-that-supported-by-cluster-autoscaler)
   * [How can I monitor Cluster Autoscaler?](#how-can-i-monitor-cluster-autoscaler)
   * [How can I scale my cluster to just 1 node?](#how-can-i-scale-my-cluster-to-just-1-node)
+  * [How can I scale a node group to 0?](#how-can-i-scale-a-node-group-to-0)
 * [Internals](#internals)
   * [Are all of the mentioned heuristics and timings final?](#are-all-of-the-mentioned-heuristics-and-timings-final)
   * [How does scale up work?](#how-does-scale-up-work)
@@ -156,6 +157,9 @@ is overwritten with PDB settings. So, to enable kube-system pods migration one s
 to 0 (or <= N if there are N+1 pod replicas).
 See also [I have a couple of nodes with low utilization, but they are not scaled down. Why?](#i-have-a-couple-of-nodes-with-low-utilization-but-they-are-not-scaled-down-why)
 
+### How can I scale a node group to 0?
+
+From CA 0.6 it is possible to scale a node group to 0 (and obviously from 0), assuming that all scale-down conditions are met. Currently it is only supported on GCE/GKE.
 
 ****************
 
@@ -489,6 +493,8 @@ required to activate them:
    https://github.com/kubernetes/autoscaler/pull/74#issuecomment-302434795).
 
 We are aware that this process is tedious and we will work to improve it.
+
+
 
 
 
