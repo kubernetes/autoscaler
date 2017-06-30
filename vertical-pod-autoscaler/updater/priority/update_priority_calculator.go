@@ -17,21 +17,23 @@ limitations under the License.
 package priority
 
 import (
-	"github.com/golang/glog"
-	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/updater/apimock"
-	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	"math"
 	"sort"
+
+	"k8s.io/autoscaler/vertical-pod-autoscaler/updater/apimock"
+
+	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/api/resource"
+	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 )
 
 const (
-	// ignore change smaller than 10%
+	// ignore change priority that is smaller than 10%
 	defaultUpdateThreshod = 0.10
 )
 
 // UpdatePriorityCalculator is responsible for prioritizing updates on pods.
-// Can return sorted list of pods in order of update priority.
+// It can returns a sorted list of pods in order of update priority.
 // Update priority is proportional to fraction by which resources should be increased / decreased.
 // i.e. pod with 10M current memory and recommendation 20M will have higher update priority
 // than pod with pod with 100M current memory and and 150M recommendation (100% increase vs 50% increase)
@@ -44,34 +46,35 @@ type UpdatePriorityCalculator struct {
 
 // UpdateConfig holds configuration for UpdatePriorityCalculator
 type UpdateConfig struct {
-	// Minimum change of resources recommended vs actual that will trigger update
+	// MinChangePriority is the minimum change priority that will trigger a update.
 	// TODO: should have separate for Mem and CPU?
-	MinChange float64
+	MinChangePriority float64
 }
 
-// NewUpdatePriorityCalculator creates new UpdatePriorityCalculator for given sesources policy and configuration.
-// Policy nil means no policy restriction on update.
-// If configuration is nil, default values are used.
+// NewUpdatePriorityCalculator creates new UpdatePriorityCalculator for the given resources policy and configuration.
+// If the given policy is nil, there will be no policy restriction on update.
+// If the given config is nil, default values are used.
 func NewUpdatePriorityCalculator(policy *apimock.ResourcesPolicy, config *UpdateConfig) UpdatePriorityCalculator {
 	if config == nil {
-		config = &UpdateConfig{MinChange: defaultUpdateThreshod}
+		config = &UpdateConfig{MinChangePriority: defaultUpdateThreshod}
 	}
 	return UpdatePriorityCalculator{resourcesPolicy: policy, config: config}
 }
 
-// AddPod adds pod to priority list
+// AddPod adds pod to the UpdatePriorityCalculator.
 func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, recommendation *apimock.Recommendation) {
 	updatePriority := calc.getUpdatePriority(pod, recommendation)
-	if updatePriority >= calc.config.MinChange {
-		glog.V(2).Infof("pod accepted for update %v with priority %v", pod.Name, updatePriority)
-		calc.pods = append(calc.pods, podPriority{pod, updatePriority})
 
-	} else {
+	if updatePriority < calc.config.MinChangePriority {
 		glog.V(2).Infof("pod not accepted for update %v, priority too low: %v", pod.Name, updatePriority)
+		return
 	}
+
+	glog.V(2).Infof("pod accepted for update %v with priority %v", pod.Name, updatePriority)
+	calc.pods = append(calc.pods, podPriority{pod, updatePriority})
 }
 
-// GetSortedPods returns list of pods ordered by priority (highest update priority first)
+// GetSortedPods returns a list of pods ordered by update priority (highest update priority first)
 func (calc *UpdatePriorityCalculator) GetSortedPods() []*apiv1.Pod {
 	sort.Sort(byPriority(calc.pods))
 
@@ -87,26 +90,25 @@ func (calc *UpdatePriorityCalculator) getUpdatePriority(pod *apiv1.Pod, recommen
 	var priority float64
 
 	for _, podContainer := range pod.Spec.Containers {
-
-		containerRecommendation := getContainerRecommendation(podContainer.Name, recommendation)
-		if containerRecommendation == nil {
+		cr := getContainerRecommendation(podContainer.Name, recommendation)
+		if cr == nil {
 			glog.V(2).Infof("no recommendation for container %v in pod %v", podContainer.Name, pod.Name)
 			continue
 		}
 
 		containerPolicy := getContainerPolicy(podContainer.Name, calc.resourcesPolicy)
 
-		for resourceName, recommended := range containerRecommendation.Resources {
-			var resourceRequested *resource.Quantity
-			var resourcePolicy *apimock.Policy
+		for resourceName, recommended := range cr.Resources {
+			var (
+				resourceRequested *resource.Quantity
+				resourcePolicy    *apimock.Policy
+			)
 
-			request, found := podContainer.Resources.Requests[resourceName]
-			if found {
+			if request, ok := podContainer.Resources.Requests[resourceName]; ok {
 				resourceRequested = &request
 			}
 			if containerPolicy != nil {
-				policy, found := (*containerPolicy)[resourceName]
-				if found {
+				if policy, ok := (*containerPolicy)[resourceName]; ok {
 					resourcePolicy = &policy
 				}
 			}
@@ -114,12 +116,11 @@ func (calc *UpdatePriorityCalculator) getUpdatePriority(pod *apiv1.Pod, recommen
 			priority += math.Abs(resourceDiff)
 		}
 	}
-	// test priority threshold
 	return priority
 }
 
-func getPercentageDiff(actual *resource.Quantity, policy *apimock.Policy, recommendation *resource.Quantity) float64 {
-	if actual == nil {
+func getPercentageDiff(request *resource.Quantity, policy *apimock.Policy, recommendation *resource.Quantity) float64 {
+	if request == nil {
 		// resource requirement is not currently specified
 		// any recommendation for this resource we will treat as 100% change
 		return 1.0
@@ -140,8 +141,8 @@ func getPercentageDiff(actual *resource.Quantity, policy *apimock.Policy, recomm
 			recommended = policy.Max.Value()
 		}
 	}
-	diff := recommended - actual.Value()
-	return float64(diff) / float64(actual.Value())
+	diff := recommended - request.Value()
+	return float64(diff) / float64(request.Value())
 }
 
 func getContainerPolicy(containerName string, policy *apimock.ResourcesPolicy) *map[apiv1.ResourceName]apimock.Policy {
