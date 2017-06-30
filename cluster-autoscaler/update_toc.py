@@ -22,11 +22,14 @@ QUESTION_PREFIX = "### "
 def updateFAQ():
     with open("FAQ.md","r") as faq_file:
         faq_content = faq_file.read()
+    faq_lines = faq_content.splitlines()
+    while faq_lines and faq_lines[-1] == '':
+      faq_lines = faq_lines[:-1]
 
     prefixes = (SECTION_PREFIX, QUESTION_PREFIX)
     toc_elements = []
     after_toc = False
-    for line in faq_content.splitlines():
+    for line in faq_lines:
         if line.strip() == "<!--- TOC END -->":
             after_toc = True
         if not after_toc:
@@ -40,7 +43,7 @@ def updateFAQ():
     in_toc = False
 
     with open("FAQ.md","w") as faq_file:
-        for line in faq_content.split("\n"):
+        for line in faq_lines:
             if line.strip() == "<!--- TOC BEGIN -->":
                 in_toc = True
                 faq_file.write(line +"\n")
