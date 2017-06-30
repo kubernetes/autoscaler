@@ -21,6 +21,7 @@ this document:
 * [How to?](#how-to)
   * [I'm running cluster with nodes in multiple zones for HA purposes. Is that supported by Cluster Autoscaler?](#im-running-cluster-with-nodes-in-multiple-zones-for-ha-purposes-is-that-supported-by-cluster-autoscaler)
   * [How can I monitor Cluster Autoscaler?](#how-can-i-monitor-cluster-autoscaler)
+  * [How can I scale my cluster to just 1 node?](#how-can-i-scale-my-cluster-to-just-1-node)
 * [Internals](#internals)
   * [Are all of the mentioned heuristics and timings final?](#are-all-of-the-mentioned-heuristics-and-timings-final)
   * [How does scale up work?](#how-does-scale-up-work)
@@ -62,9 +63,14 @@ Cluster Autoscaler decreases the size of the cluster when some nodes are consist
 
 ### What types of pods can prevent CA from removing a node?
 
-* Kube-system pods that are not run on the node by default.
+* Pods with restrictive PodDisruptionBudget.
+* Kube-system pods that:
+  * are not run on the node by default,
+  * don't have PDB or their PDB is too restrictive (since CA 0.6).
 * Pods that are not backed by a controller object (so not created by deployment, replica set, job, stateful set etc).
 * Pods with local storage.
+* Pods that cannot be moved elsewhere due to various constraints (lack of resources, non-matching node selctors or affinity,
+matching anti-affinity, etc)
 
 ### How does Horizontal Pod Autoscaler work with Cluster Autoscaler?
 
@@ -136,6 +142,20 @@ respectively under /metrics and /health-check.
 
 Metrics are provided in Prometheus format and their detailed description is
 available [here](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/proposals/metrics.md).
+
+### How can I scale my cluster to just 1 node?
+
+Prior to version 0.6, Cluster Autoscaler was not touching nodes that were running important
+kube-system pods like DNS, Heapster, Dashboard etc. If these pods landed on different nodes, 
+CA could not scale the cluster down and the user could end up with a completely empty 
+3 node cluser. In 0.6 we added an option to tell CA that some system pods can be moved around.
+If a K8S user configure a [PodDisruptionBudget](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/)
+for the kube-system pod then the default strategy of not touching the node running this pod
+is overwritten with PDB settings. So, to enable kube-system pods migration one should set
+[minAvailable](https://kubernetes.io/docs/api-reference/v1.7/#poddisruptionbudgetspec-v1beta1-policy)
+to 0 (or <= N if there are N+1 pod replicas).
+See also [I have a couple of nodes with low utilization, but they are not scaled down. Why?](#i-have-a-couple-of-nodes-with-low-utilization-but-they-are-not-scaled-down-why)
+
 
 ****************
 
@@ -302,7 +322,7 @@ it works only for GCE and GKE.
 ### I have a couple of nodes with low utilization, but they are not scaled down. Why?
 
 CA doesn't remove nodes if they are running system pods without a PodDisruptionBudget, pods without a controller or pods with 
-local storage.
+local storage (see [What types of pods can prevent CA from removing a node?](#what-types-of-pods-can-prevent-ca-from-removing-a-node) )
 Also it won't remove a node which has pods that cannot be run elsewhere due to limited resources. Another possibility
 is that the corresponding node group already has the minimum size. Finally, CA doesn't scale down if there was a scale up
 in the last 10 min.
@@ -469,6 +489,7 @@ required to activate them:
    https://github.com/kubernetes/autoscaler/pull/74#issuecomment-302434795).
 
 We are aware that this process is tedious and we will work to improve it.
+
 
 
 
