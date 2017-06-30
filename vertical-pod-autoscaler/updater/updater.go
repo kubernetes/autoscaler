@@ -17,20 +17,20 @@ limitations under the License.
 package main
 
 import (
-	"k8s.io/apimachinery/pkg/fields"
-	"k8s.io/client-go/tools/cache"
-	apiv1 "k8s.io/kubernetes/pkg/api/v1"
-
-	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
-	v1lister "k8s.io/kubernetes/pkg/client/listers/core/v1"
 	"time"
 
-	"github.com/golang/glog"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/updater/apimock"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/updater/eviction"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/updater/priority"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/updater/recommender"
+
+	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/fields"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/client-go/tools/cache"
+	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
+	v1lister "k8s.io/kubernetes/pkg/client/listers/core/v1"
 )
 
 // Updater performs updates on pods if recommended by Vertical Pod Autoscaler
@@ -46,11 +46,21 @@ type updater struct {
 	evictionFactrory eviction.PodsEvictionRestrictionFactory
 }
 
+// NewUpdater creates Updater with given configuration
+func NewUpdater(kubeClient kube_client.Interface, cacheTTl time.Duration, minReplicasForEvicition int, evictionToleranceFraction float64) Updater {
+	return &updater{
+		vpaLister:        newVpaLister(kubeClient),
+		podLister:        newPodLister(kubeClient),
+		recommender:      recommender.NewCachingRecommender(cacheTTl, apimock.NewRecommenderAPI()),
+		evictionFactrory: eviction.NewPodsEvictionRestrictionFactory(kubeClient, minReplicasForEvicition, evictionToleranceFraction),
+	}
+}
+
 // RunOnce represents single iteration in the main-loop of Updater
 func (u *updater) RunOnce() {
 	vpaList, err := u.vpaLister.List()
 	if err != nil {
-		glog.Fatalf("failed get vpa list: %v", err)
+		glog.Fatalf("failed get VPA list: %v", err)
 	}
 
 	if len(vpaList) == 0 {
@@ -79,10 +89,7 @@ func (u *updater) RunOnce() {
 		}
 
 		evictionLimiter := u.evictionFactrory.NewPodsEvictionRestriction(livePods)
-
-		podsEvictable := filterNonEvictablePods(livePods, evictionLimiter)
-
-		podsForUpdate := u.getPodsForUpdate(podsEvictable, vpa)
+		podsForUpdate := u.getPodsForUpdate(filterNonEvictablePods(livePods, evictionLimiter), vpa)
 
 		for _, pod := range podsForUpdate {
 			if !evictionLimiter.CanEvict(pod) {
@@ -91,7 +98,7 @@ func (u *updater) RunOnce() {
 			glog.V(2).Infof("evicting pod %v", pod.Name)
 			evictErr := evictionLimiter.Evict(pod)
 			if evictErr != nil {
-				glog.Warningf("evicting pod %v failed", pod.Name, evictErr)
+				glog.Warningf("evicting pod %v failed: %v", pod.Name, evictErr)
 			}
 		}
 	}
@@ -99,7 +106,6 @@ func (u *updater) RunOnce() {
 
 // getPodsForUpdate returns list of pods that should be updated ordered by update priority
 func (u *updater) getPodsForUpdate(pods []*apiv1.Pod, vpa *apimock.VerticalPodAutoscaler) []*apiv1.Pod {
-
 	priorityCalculator := priority.NewUpdatePriorityCalculator(&vpa.Spec.ResourcesPolicy, nil)
 
 	for _, pod := range pods {
@@ -108,17 +114,20 @@ func (u *updater) getPodsForUpdate(pods []*apiv1.Pod, vpa *apimock.VerticalPodAu
 			glog.Errorf("error while getting recommendation for pod %v: %v", pod.Name, err)
 			continue
 		}
+
 		if recommendation == nil {
 			if len(vpa.Status.Recommendation.Containers) == 0 {
-				glog.Warningf("no recommendation for pod %v: %v", pod.Name)
+				glog.Warningf("no recommendation for pod: %v", pod.Name)
 				continue
-			} else {
-				glog.Warningf("fallback to default VPA recommendation for pod : %v", pod.Name)
-				recommendation = vpa.Status.Recommendation
 			}
+
+			glog.Warningf("fallback to default VPA recommendation for pod: %v", pod.Name)
+			recommendation = vpa.Status.Recommendation
 		}
+
 		priorityCalculator.AddPod(pod, recommendation)
 	}
+
 	return priorityCalculator.GetSortedPods()
 }
 
@@ -140,16 +149,6 @@ func filterDeletedPods(pods []*apiv1.Pod) []*apiv1.Pod {
 		}
 	}
 	return result
-}
-
-// NewUpdater creates Updater with given configuration
-func NewUpdater(kubeClient kube_client.Interface, cacheTTl time.Duration, minReplicasForEvicition int, evictionToleranceFraction float64) Updater {
-	return &updater{
-		vpaLister:        newVpaLister(kubeClient),
-		podLister:        newPodLister(kubeClient),
-		recommender:      recommender.NewCachingRecommender(cacheTTl, apimock.NewRecommenderAPI()),
-		evictionFactrory: eviction.NewPodsEvictionRestrictionFactory(kubeClient, minReplicasForEvicition, evictionToleranceFraction),
-	}
 }
 
 func newVpaLister(kubeClient kube_client.Interface) apimock.VerticalPodAutoscalerLister {
