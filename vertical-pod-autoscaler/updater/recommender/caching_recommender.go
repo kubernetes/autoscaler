@@ -17,18 +17,19 @@ limitations under the License.
 package recommender
 
 import (
+	"crypto/sha1"
 	"fmt"
 	"runtime"
 	"time"
 
-	"crypto/sha1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/updater/apimock"
+
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	hashutil "k8s.io/kubernetes/pkg/util/hash"
 )
 
 // CachingRecommender provides VPA recommendations for pods.
-// VPA responses are cashed
+// VPA responses are cached.
 type CachingRecommender interface {
 	// Get returns VPA recommendation for given pod
 	Get(spec *apiv1.PodSpec) (*apimock.Recommendation, error)
@@ -42,9 +43,9 @@ type cachingRecommenderImpl struct {
 // NewCachingRecommender creates CachingRecommender with given cache TTL
 func NewCachingRecommender(ttl time.Duration, api apimock.RecommenderAPI) CachingRecommender {
 	ca := NewTTLCache(ttl)
-	result := &cachingRecommenderImpl{api: api, cache: ca}
-
 	ca.StartCacheGC(ttl)
+
+	result := &cachingRecommenderImpl{api: api, cache: ca}
 	// We need to stop background cacheGC worker if cachingRecommenderImpl gets destryed.
 	// If we forget this, background go routine will forever run and hold a reference to TTLCache object.
 	runtime.SetFinalizer(result, stopChacheGC)
@@ -52,18 +53,18 @@ func NewCachingRecommender(ttl time.Duration, api apimock.RecommenderAPI) Cachin
 	return result
 }
 
-// Get returns VPA recommendation for given pod. If recommendation is not in cache, sends request to RecommenderAPI
+// Get returns VPA recommendation for the given pod. If recommendation is not in cache, sends request to RecommenderAPI
 func (c *cachingRecommenderImpl) Get(spec *apiv1.PodSpec) (*apimock.Recommendation, error) {
 	cacheKey := getCacheKey(spec)
 	if cacheKey != nil {
-		cached := c.cache.Get(cacheKey)
-		if cached != nil {
+		if cached := c.cache.Get(cacheKey); cached != nil {
 			return cached.(*apimock.Recommendation), nil
 		}
 	}
+
 	response, err := c.api.GetRecommendation(spec)
 	if err != nil {
-		return nil, fmt.Errorf("error fetching recommendation", err)
+		return nil, fmt.Errorf("error fetching recommendation %v", err)
 	}
 	if response != nil && cacheKey != nil {
 		c.cache.Set(cacheKey, response)
