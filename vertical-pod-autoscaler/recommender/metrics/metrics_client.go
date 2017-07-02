@@ -25,13 +25,17 @@ import (
 	"k8s.io/metrics/pkg/apis/metrics/v1alpha1"
 )
 
+type MetricsClient interface {
+	GetContainersUtilization() ([]*ContainerUtilizationSnapshot, error)
+}
+
 type metricsClient struct {
 	metricsGetter   resourceclient.PodMetricsesGetter
 	podLister       v1lister.PodLister
 	namespaceLister v1lister.NamespaceLister
 }
 
-func CreateMetricsClient(metricsGetter resourceclient.PodMetricsesGetter, podLister v1lister.PodLister, namespaceLister v1lister.NamespaceLister) *metricsClient {
+func NewMetricsClient(metricsGetter resourceclient.PodMetricsesGetter, podLister v1lister.PodLister, namespaceLister v1lister.NamespaceLister) MetricsClient {
 	return &metricsClient{
 		metricsGetter:   metricsGetter,
 		podLister:       podLister,

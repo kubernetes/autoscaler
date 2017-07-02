@@ -34,7 +34,7 @@ func TestGetEmptyContainersUtilization(t *testing.T) {
 
 func TestGetEmptyNamespaces(t *testing.T) {
 	tc := newEmptyMetricsClientTestCase()
-	metricsClient := tc.createFakeMetricsClient()
+	metricsClient := tc.createFakeMetricsClient().(*metricsClient)
 
 	namespaces, err := metricsClient.getAllNamespaces()
 
@@ -44,7 +44,7 @@ func TestGetEmptyNamespaces(t *testing.T) {
 
 func TestGetEmptyContainersSpec(t *testing.T) {
 	tc := newEmptyMetricsClientTestCase()
-	metricsClient := tc.createFakeMetricsClient()
+	metricsClient := tc.createFakeMetricsClient().(*metricsClient)
 
 	specs, err := metricsClient.getContainersSpec()
 
@@ -54,7 +54,7 @@ func TestGetEmptyContainersSpec(t *testing.T) {
 
 func TestGetEmptyContainersUsage(t *testing.T) {
 	tc := newEmptyMetricsClientTestCase()
-	metricsClient := tc.createFakeMetricsClient()
+	metricsClient := tc.createFakeMetricsClient().(*metricsClient)
 
 	usages, err := metricsClient.getContainersUsage()
 

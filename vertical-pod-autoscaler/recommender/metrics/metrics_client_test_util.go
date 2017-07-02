@@ -112,7 +112,7 @@ func (tc *metricsClientTestCase) newContainerUtilizationSnapshot(id containerId,
 	}
 }
 
-func (tc *metricsClientTestCase) createFakeMetricsClient() *metricsClient {
+func (tc *metricsClientTestCase) createFakeMetricsClient() MetricsClient {
 	fakeMetricsGetter := &fake.Clientset{}
 	fakeMetricsGetter.AddReactor("list", "podmetricses", func(action core.Action) (handled bool, ret runtime.Object, err error) {
 		return true, tc.getFakePodMetricsList(), nil
@@ -124,7 +124,7 @@ func (tc *metricsClientTestCase) createFakeMetricsClient() *metricsClient {
 	namespaceListerMock := new(NamespaceListerMock)
 	namespaceListerMock.On("List").Return(tc.getFakeNamespaces(), nil)
 
-	return CreateMetricsClient(fakeMetricsGetter.MetricsV1alpha1(), podListerMock, namespaceListerMock)
+	return NewMetricsClient(fakeMetricsGetter.MetricsV1alpha1(), podListerMock, namespaceListerMock)
 }
 
 func (tc *metricsClientTestCase) getFakeNamespaces() []*v1.Namespace {
