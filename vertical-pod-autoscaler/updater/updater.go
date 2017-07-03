@@ -25,10 +25,10 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/updater/recommender"
 
 	"github.com/golang/glog"
+	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/tools/cache"
-	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	v1lister "k8s.io/kubernetes/pkg/client/listers/core/v1"
 )

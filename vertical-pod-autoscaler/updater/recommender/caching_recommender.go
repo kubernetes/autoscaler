@@ -24,7 +24,7 @@ import (
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/updater/apimock"
 
-	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	apiv1 "k8s.io/api/core/v1"
 	hashutil "k8s.io/kubernetes/pkg/util/hash"
 )
 

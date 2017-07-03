@@ -19,11 +19,11 @@ package eviction
 import (
 	"fmt"
 	"github.com/golang/glog"
+	apiv1 "k8s.io/api/core/v1"
+	policyv1 "k8s.io/api/policy/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	api "k8s.io/kubernetes/pkg/api"
-	apiv1 "k8s.io/kubernetes/pkg/api/v1"
-	policyv1 "k8s.io/kubernetes/pkg/apis/policy/v1beta1"
 	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 )
 

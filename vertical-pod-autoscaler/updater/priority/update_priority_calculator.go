@@ -18,9 +18,9 @@ package priority
 
 import (
 	"github.com/golang/glog"
+	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/updater/apimock"
-	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	"math"
 	"sort"
 )
