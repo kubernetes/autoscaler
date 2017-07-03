@@ -24,9 +24,9 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/selection"
 
+	"k8s.io/api/core/v1"
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/helper"
-	"k8s.io/kubernetes/pkg/api/v1"
 )
 
 // IsOpaqueIntResourceName returns true if the resource name has the opaque
@@ -443,21 +443,6 @@ func RemoveTaint(node *v1.Node, taint *v1.Taint) (*v1.Node, bool, error) {
 	newTaints, _ := DeleteTaint(nodeTaints, taint)
 	newNode.Spec.Taints = newTaints
 	return newNode, true, nil
-}
-
-// GetAffinityFromPodAnnotations gets the json serialized affinity data from Pod.Annotations
-// and converts it to the Affinity type in api.
-// TODO: remove when alpha support for affinity is removed
-func GetAffinityFromPodAnnotations(annotations map[string]string) (*v1.Affinity, error) {
-	if len(annotations) > 0 && annotations[v1.AffinityAnnotationKey] != "" {
-		var affinity v1.Affinity
-		err := json.Unmarshal([]byte(annotations[v1.AffinityAnnotationKey]), &affinity)
-		if err != nil {
-			return nil, err
-		}
-		return &affinity, nil
-	}
-	return nil, nil
 }
 
 // GetPersistentVolumeClass returns StorageClassName.

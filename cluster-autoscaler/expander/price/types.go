@@ -17,7 +17,7 @@ limitations under the License.
 package price
 
 import (
-	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	apiv1 "k8s.io/api/core/v1"
 )
 
 // PreferredNodeProvider provides a node that would be, in-longer run, the most suited to the cluster
