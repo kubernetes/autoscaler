@@ -77,10 +77,10 @@ func newMetricsClientTestCase() *metricsClientTestCase {
 		namespace:            &v1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: namespaceName}},
 	}
 
-	id1 := containerId{Namespace: namespaceName, PodName: "Pod1", ContainerName: "Name1"}
-	id2 := containerId{Namespace: namespaceName, PodName: "Pod1", ContainerName: "Name2"}
-	id3 := containerId{Namespace: namespaceName, PodName: "Pod2", ContainerName: "Name1"}
-	id4 := containerId{Namespace: namespaceName, PodName: "Pod2", ContainerName: "Name2"}
+	id1 := containerID{Namespace: namespaceName, PodName: "Pod1", ContainerName: "Name1"}
+	id2 := containerID{Namespace: namespaceName, PodName: "Pod1", ContainerName: "Name2"}
+	id3 := containerID{Namespace: namespaceName, PodName: "Pod2", ContainerName: "Name1"}
+	id4 := containerID{Namespace: namespaceName, PodName: "Pod2", ContainerName: "Name2"}
 
 	testCase.pod1Snaps = append(testCase.pod1Snaps, testCase.newContainerUtilizationSnapshot(id1, 500, 512, 400, 333))
 	testCase.pod1Snaps = append(testCase.pod1Snaps, testCase.newContainerUtilizationSnapshot(id2, 1000, 1024, 800, 666))
@@ -94,9 +94,9 @@ func newEmptyMetricsClientTestCase() *metricsClientTestCase {
 	return &metricsClientTestCase{}
 }
 
-func (tc *metricsClientTestCase) newContainerUtilizationSnapshot(id containerId, cpuReq int64, memReq int64, cpuUsage int64, memUsage int64) *ContainerUtilizationSnapshot {
+func (tc *metricsClientTestCase) newContainerUtilizationSnapshot(id containerID, cpuReq int64, memReq int64, cpuUsage int64, memUsage int64) *ContainerUtilizationSnapshot {
 	return &ContainerUtilizationSnapshot{
-		Id:             id,
+		ID:             id,
 		CreationTime:   tc.podCreationTimestamp,
 		SnapshotTime:   tc.snapshotTimestamp,
 		SnapshotWindow: tc.snapshotWindow,
@@ -112,7 +112,7 @@ func (tc *metricsClientTestCase) newContainerUtilizationSnapshot(id containerId,
 	}
 }
 
-func (tc *metricsClientTestCase) createFakeMetricsClient() MetricsClient {
+func (tc *metricsClientTestCase) createFakeMetricsClient() Client {
 	fakeMetricsGetter := &fake.Clientset{}
 	fakeMetricsGetter.AddReactor("list", "podmetricses", func(action core.Action) (handled bool, ret runtime.Object, err error) {
 		return true, tc.getFakePodMetricsList(), nil
@@ -170,8 +170,8 @@ func newPod(snaps []*ContainerUtilizationSnapshot) *v1.Pod {
 	firstSnap := snaps[0]
 	pod := &v1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Namespace:         firstSnap.Id.Namespace,
-			Name:              firstSnap.Id.PodName,
+			Namespace:         firstSnap.ID.Namespace,
+			Name:              firstSnap.ID.PodName,
 			CreationTimestamp: metav1.Time{firstSnap.CreationTime},
 		},
 		Spec: v1.PodSpec{
@@ -181,10 +181,10 @@ func newPod(snaps []*ContainerUtilizationSnapshot) *v1.Pod {
 
 	for i, snap := range snaps {
 		pod.Spec.Containers[i] = v1.Container{
-			Name:  snap.Id.ContainerName,
+			Name:  snap.ID.ContainerName,
 			Image: snap.Image,
 			Resources: v1.ResourceRequirements{
-				Requests: convertToKubernetesApi(snap.Request),
+				Requests: convertResourceListToKubernetesApi(snap.Request),
 			},
 		}
 	}
@@ -195,8 +195,8 @@ func makePodMetrics(snaps []*ContainerUtilizationSnapshot) metricsapi.PodMetrics
 	firstSnap := snaps[0]
 	podMetrics := metricsapi.PodMetrics{
 		ObjectMeta: metav1.ObjectMeta{
-			Namespace: firstSnap.Id.Namespace,
-			Name:      firstSnap.Id.PodName,
+			Namespace: firstSnap.ID.Namespace,
+			Name:      firstSnap.ID.PodName,
 		},
 		Timestamp:  metav1.Time{Time: firstSnap.SnapshotTime},
 		Window:     metav1.Duration{Duration: firstSnap.SnapshotWindow},
@@ -205,7 +205,7 @@ func makePodMetrics(snaps []*ContainerUtilizationSnapshot) metricsapi.PodMetrics
 
 	for i, snap := range snaps {
 		podMetrics.Containers[i] = metricsapi.ContainerMetrics{
-			Name:  snap.Id.ContainerName,
+			Name:  snap.ID.ContainerName,
 			Usage: snap.Usage,
 		}
 	}

@@ -24,55 +24,44 @@ import (
 	"time"
 )
 
+// Utilization of resources for a single container, in a given (short) period of time
 type ContainerUtilizationSnapshot struct {
-	Id containerId
+	// Metadata identifying container
+	ID containerID
 
-	SnapshotTime   time.Time
+	// Time when the snapshot was taken
+	SnapshotTime time.Time
+	// duration, which this snapshot represents
 	SnapshotWindow time.Duration
 
+	// When the container was created
 	CreationTime time.Time
-	Image        string
+	// Image name running in the container
+	Image string
 
+	// Currently requested resources for this container
 	Request clientapiv1.ResourceList
-	Usage   clientapiv1.ResourceList
+	// Actual usage of resources, during the SnapshotWindow.
+	Usage clientapiv1.ResourceList
 }
 
-func NewContainerUtilizationSnapshot(snap *containerUsageSnapshot, spec *containerSpecification) (*ContainerUtilizationSnapshot, error) {
-	if snap.Id.PodName != spec.Id.PodName || snap.Id.ContainerName != spec.Id.ContainerName || snap.Id.Namespace != spec.Id.Namespace {
-		return nil, errors.New("Specification and Snapshot are comming from different containers!")
+func NewContainerUtilizationSnapshot(snap *containerUsageSnapshot, spec *containerSpec) (*ContainerUtilizationSnapshot, error) {
+	if snap.ID.PodName != spec.Id.PodName || snap.ID.ContainerName != spec.Id.ContainerName || snap.ID.Namespace != spec.Id.Namespace {
+		return nil, errors.New("spec and snap are from different containers!")
 	}
 	return &ContainerUtilizationSnapshot{
-		Id:             spec.Id,
+		ID:             spec.Id,
 		CreationTime:   spec.CreationTime.Time,
 		Image:          spec.Image,
 		SnapshotTime:   snap.SnapshotTime.Time,
 		SnapshotWindow: snap.SnapshotWindow.Duration,
-		Request:        convertToClientApi(spec.Request),
+		Request:        convertResourceListToClientApi(spec.Request),
 		Usage:          snap.Usage,
 	}, nil
 }
 
-// type conversion is needed, since ResourceList is coming from different packages in containerUsageSnapshot and containerSpecification
-func convertToClientApi(input k8sapiv1.ResourceList) clientapiv1.ResourceList {
-	output := make(clientapiv1.ResourceList, len(input))
-	for name, quantity := range input {
-		var newName clientapiv1.ResourceName = clientapiv1.ResourceName(name.String())
-		output[newName] = quantity
-	}
-	return output
-}
-
-func convertToKubernetesApi(input clientapiv1.ResourceList) k8sapiv1.ResourceList {
-	output := make(k8sapiv1.ResourceList, len(input))
-	for name, quantity := range input {
-		var newName k8sapiv1.ResourceName = k8sapiv1.ResourceName(name.String())
-		output[newName] = quantity
-	}
-	return output
-}
-
 type containerUsageSnapshot struct {
-	Id containerId
+	ID containerID
 
 	SnapshotTime   metav1.Time
 	SnapshotWindow metav1.Duration
@@ -80,15 +69,15 @@ type containerUsageSnapshot struct {
 	Usage clientapiv1.ResourceList
 }
 
-type containerSpecification struct {
-	Id           containerId
+type containerSpec struct {
+	Id           containerID
 	CreationTime metav1.Time
 	Image        string
 
 	Request k8sapiv1.ResourceList
 }
 
-type containerId struct {
+type containerID struct {
 	Namespace     string
 	PodName       string
 	ContainerName string

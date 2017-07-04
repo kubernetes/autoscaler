@@ -25,26 +25,26 @@ import (
 )
 
 type containerUtilizationTestCase struct {
-	id1, id2 containerId
+	id1, id2 containerID
 }
 
 func newContainerUtilizationTestCase() *containerUtilizationTestCase {
 	return &containerUtilizationTestCase{
-		id1: containerId{"a", "b", "c"},
-		id2: containerId{"a", "b", "cs"},
+		id1: containerID{"a", "b", "c"},
+		id2: containerID{"a", "b", "cs"},
 	}
 }
 
-func (tc *containerUtilizationTestCase) newContainerSpec() *containerSpecification {
-	return &containerSpecification{Id: tc.id1}
+func (tc *containerUtilizationTestCase) newContainerSpec() *containerSpec {
+	return &containerSpec{Id: tc.id1}
 }
 
 func (tc *containerUtilizationTestCase) newMatchingSnap() *containerUsageSnapshot {
-	return &containerUsageSnapshot{Id: tc.id1}
+	return &containerUsageSnapshot{ID: tc.id1}
 }
 
 func (tc *containerUtilizationTestCase) newNonMatchingSnap() *containerUsageSnapshot {
-	return &containerUsageSnapshot{Id: tc.id2}
+	return &containerUsageSnapshot{ID: tc.id2}
 }
 
 func TestCreatingUtilizationSnapshotFromDifferentContainers(t *testing.T) {
@@ -69,7 +69,7 @@ func TestTypeConversionToGoClient(t *testing.T) {
 	input[k8sapiv1.ResourceCPU] = quantity1
 	input[k8sapiv1.ResourceMemory] = quantity2
 
-	output := convertToClientApi(input)
+	output := convertResourceListToClientApi(input)
 
 	assert.Equal(t, quantity1, output[clientapiv1.ResourceCPU])
 	assert.Equal(t, quantity2, output[clientapiv1.ResourceMemory])

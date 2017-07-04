@@ -18,14 +18,14 @@ package metrics
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	v1lister "k8s.io/kubernetes/pkg/client/listers/core/v1"
-	resourceclient "k8s.io/metrics/pkg/client/clientset_generated/clientset/typed/metrics/v1alpha1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/kubernetes/pkg/api/v1"
+	v1lister "k8s.io/kubernetes/pkg/client/listers/core/v1"
 	"k8s.io/metrics/pkg/apis/metrics/v1alpha1"
+	resourceclient "k8s.io/metrics/pkg/client/clientset_generated/clientset/typed/metrics/v1alpha1"
 )
 
-type MetricsClient interface {
+type Client interface {
 	GetContainersUtilization() ([]*ContainerUtilizationSnapshot, error)
 }
 
@@ -35,7 +35,7 @@ type metricsClient struct {
 	namespaceLister v1lister.NamespaceLister
 }
 
-func NewMetricsClient(metricsGetter resourceclient.PodMetricsesGetter, podLister v1lister.PodLister, namespaceLister v1lister.NamespaceLister) MetricsClient {
+func NewMetricsClient(metricsGetter resourceclient.PodMetricsesGetter, podLister v1lister.PodLister, namespaceLister v1lister.NamespaceLister) Client {
 	return &metricsClient{
 		metricsGetter:   metricsGetter,
 		podLister:       podLister,
@@ -44,8 +44,10 @@ func NewMetricsClient(metricsGetter resourceclient.PodMetricsesGetter, podLister
 }
 
 func (client *metricsClient) GetContainersUtilization() ([]*ContainerUtilizationSnapshot, error) {
-
 	usageSnapshots, err := client.getContainersUsage()
+	if err != nil {
+		return nil, err
+	}
 	containerSpecs, err := client.getContainersSpec()
 	if err != nil {
 		return nil, err
@@ -58,9 +60,8 @@ func (client *metricsClient) GetContainersUtilization() ([]*ContainerUtilization
 	return utilizationSnapshots, nil
 }
 
-func (client *metricsClient) getContainersSpec() ([]*containerSpecification, error) {
-
-	var containerSpecs []*containerSpecification
+func (client *metricsClient) getContainersSpec() ([]*containerSpec, error) {
+	var containerSpecs []*containerSpec
 
 	pods, err := client.podLister.List(labels.Everything())
 	if err != nil {
@@ -75,11 +76,9 @@ func (client *metricsClient) getContainersSpec() ([]*containerSpecification, err
 	}
 
 	return containerSpecs, nil
-
 }
 
 func (client *metricsClient) getContainersUsage() ([]*containerUsageSnapshot, error) {
-
 	var usageSnapshots []*containerUsageSnapshot
 
 	namespaces, err := client.getAllNamespaces()
@@ -108,8 +107,8 @@ func createContainerUsageSnapshots(podMetrics v1alpha1.PodMetrics) []*containerU
 	return snapshots
 }
 
-func mergeIntoUtilization(snapshots []*containerUsageSnapshot, specifications []*containerSpecification) ([]*ContainerUtilizationSnapshot, error) {
-	specsMap := make(map[containerId]*containerSpecification, len(specifications))
+func mergeIntoUtilization(snapshots []*containerUsageSnapshot, specifications []*containerSpec) ([]*ContainerUtilizationSnapshot, error) {
+	specsMap := make(map[containerID]*containerSpec, len(specifications))
 	for _, spec := range specifications {
 		specsMap[spec.Id] = spec
 	}
@@ -117,21 +116,21 @@ func mergeIntoUtilization(snapshots []*containerUsageSnapshot, specifications []
 	result := make([]*ContainerUtilizationSnapshot, len(snapshots))
 
 	for i, snap := range snapshots {
-		spec := specsMap[snap.Id]
+		spec := specsMap[snap.ID]
 		utilizationSnapshot, err := NewContainerUtilizationSnapshot(snap, spec)
-		if err == nil {
-			result[i] = utilizationSnapshot
-		} else {
+		if err != nil {
 			return nil, err
+		} else {
+			result[i] = utilizationSnapshot
 		}
 	}
 
 	return result, nil
 }
 
-func newContainerSpec(container v1.Container, pod *v1.Pod) *containerSpecification {
-	return &containerSpecification{
-		Id: containerId{
+func newContainerSpec(container v1.Container, pod *v1.Pod) *containerSpec {
+	return &containerSpec{
+		Id: containerID{
 			PodName:       pod.Name,
 			Namespace:     pod.Namespace,
 			ContainerName: container.Name,
@@ -145,7 +144,7 @@ func newContainerSpec(container v1.Container, pod *v1.Pod) *containerSpecificati
 
 func newContainerUsageSnapshot(containerMetrics v1alpha1.ContainerMetrics, podMetrics v1alpha1.PodMetrics) *containerUsageSnapshot {
 	return &containerUsageSnapshot{
-		Id: containerId{
+		ID: containerID{
 			ContainerName: containerMetrics.Name,
 			Namespace:     podMetrics.Namespace,
 			PodName:       podMetrics.Name,
