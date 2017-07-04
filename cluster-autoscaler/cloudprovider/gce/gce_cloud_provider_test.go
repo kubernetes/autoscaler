@@ -20,7 +20,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	apiv1 "k8s.io/api/core/v1"
 )
 
 func TestBuildMig(t *testing.T) {

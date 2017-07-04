@@ -23,7 +23,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	apiv1 "k8s.io/api/core/v1"
 )
 
 type AutoScalingMock struct {
