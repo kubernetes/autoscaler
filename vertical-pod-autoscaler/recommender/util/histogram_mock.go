@@ -45,5 +45,4 @@ func (m *MockHistogram) SubtractSample(value float64, weight float64) {
 func (m *MockHistogram) IsEmpty() bool {
 	args := m.Called()
 	return args.Bool(0)
-
 }
