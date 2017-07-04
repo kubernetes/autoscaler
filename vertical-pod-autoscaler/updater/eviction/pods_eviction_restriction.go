@@ -18,6 +18,7 @@ package eviction
 
 import (
 	"fmt"
+
 	"github.com/golang/glog"
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1beta1"
@@ -27,10 +28,11 @@ import (
 	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 )
 
-// PodsEvictionRestriction controls pods evictions. Ensures that we will not evict too many pods from one replica set.
-// For replica set will allow to evict one pod or more if evictionToleranceFraction is configured.
+// PodsEvictionRestriction controls pods evictions. It ensures that we will not evict too
+// many pods from one replica set. For replica set will allow to evict one pod or more if
+// evictionToleranceFraction is configured.
 type PodsEvictionRestriction interface {
-	// Evict sends eviction instruction to api client.
+	// Evict sends eviction instruction to the api client.
 	// Retrurns error if pod cannot be evicted or if client returned error.
 	Evict(pod *apiv1.Pod) error
 	// CanEvict checks if pod can be safely evicted
@@ -63,7 +65,7 @@ type podReplicaCreator struct {
 
 // CanEvict checks if pod can be safely evicted
 func (e *podsEvictionRestrictionImpl) CanEvict(pod *apiv1.Pod) bool {
-	cr, present := e.podsCreators[getPodId(pod)]
+	cr, present := e.podsCreators[getPodID(pod)]
 	if present {
 		return e.evictionBudget[cr] > 0
 	}
@@ -73,7 +75,7 @@ func (e *podsEvictionRestrictionImpl) CanEvict(pod *apiv1.Pod) bool {
 // Evict sends eviction instruction to api client. Retrurns error if pod cannot be evicted or if client returned error
 // Does not check if pod was actually evicted after eviction grace period.
 func (e *podsEvictionRestrictionImpl) Evict(podToEvict *apiv1.Pod) error {
-	cr, present := e.podsCreators[getPodId(podToEvict)]
+	cr, present := e.podsCreators[getPodID(podToEvict)]
 	if !present {
 		return fmt.Errorf("pod not suitable for eviction %v : not in replicated pods map", podToEvict.Name)
 	}
@@ -101,7 +103,7 @@ func NewPodsEvictionRestrictionFactory(client kube_client.Interface, minReplicas
 	return &podsEvictionRestrictionFactoryImpl{client: client, minReplicas: minReplicas, evictionToleranceFraction: evictionToleranceFraction}
 }
 
-// NewPodsEvictionRestriction creates PodsEvictionRestriction for given set of pods.
+// NewPodsEvictionRestriction creates PodsEvictionRestriction for a given set of pods.
 func (f *podsEvictionRestrictionFactoryImpl) NewPodsEvictionRestriction(pods []*apiv1.Pod) PodsEvictionRestriction {
 	// We can evict pod only if it is a part of replica set
 	// For each replica set we can evict only a fraction of pods.
@@ -112,11 +114,11 @@ func (f *podsEvictionRestrictionFactoryImpl) NewPodsEvictionRestriction(pods []*
 	for _, pod := range pods {
 		creator, err := getPodReplicaCreator(pod)
 		if err != nil {
-			glog.Errorf("failed to obtain replication info for pod: %v", pod.Name, err)
+			glog.Errorf("failed to obtain replication info for pod %s: %v", pod.Name, err)
 			continue
 		}
 		if creator == nil {
-			glog.V(2).Infof("pod not replicated %v", pod.Name)
+			glog.V(2).Infof("pod %s not replicated", pod.Name)
 			continue
 		}
 		livePods[*creator] = append(livePods[*creator], pod)
@@ -131,6 +133,7 @@ func (f *podsEvictionRestrictionFactoryImpl) NewPodsEvictionRestriction(pods []*
 				creator.Kind, creator.Namespace, creator.Name, actual)
 			continue
 		}
+
 		var configured int
 		if creator.Kind == "Job" {
 			// Job has no replicas configuration, so we will use actual number of live pods as replicas count.
@@ -158,7 +161,7 @@ func (f *podsEvictionRestrictionFactoryImpl) NewPodsEvictionRestriction(pods []*
 		}
 
 		for _, pod := range replicas {
-			podsCreators[getPodId(pod)] = creator
+			podsCreators[getPodID(pod)] = creator
 		}
 	}
 	return &podsEvictionRestrictionImpl{client: f.client, podsCreators: podsCreators, evictionBudget: creatorsEvictionBudget}
@@ -177,7 +180,7 @@ func getPodReplicaCreator(pod *apiv1.Pod) (*podReplicaCreator, error) {
 		Kind: creator.Reference.Kind}, nil
 }
 
-func getPodId(pod *apiv1.Pod) string {
+func getPodID(pod *apiv1.Pod) string {
 	if pod == nil {
 		return ""
 	}
@@ -185,8 +188,8 @@ func getPodId(pod *apiv1.Pod) string {
 }
 
 func getReplicaCount(creator podReplicaCreator, client kube_client.Interface) (int, error) {
-
-	if creator.Kind == "ReplicationController" {
+	switch creator.Kind {
+	case "ReplicationController":
 		rc, err := client.CoreV1().ReplicationControllers(creator.Namespace).Get(creator.Name, metav1.GetOptions{})
 
 		if err != nil || rc == nil {
@@ -197,7 +200,7 @@ func getReplicaCount(creator podReplicaCreator, client kube_client.Interface) (i
 		}
 		return int(*rc.Spec.Replicas), nil
 
-	} else if creator.Kind == "ReplicaSet" {
+	case "ReplicaSet":
 		rs, err := client.ExtensionsV1beta1().ReplicaSets(creator.Namespace).Get(creator.Name, metav1.GetOptions{})
 
 		if err != nil || rs == nil {
@@ -208,7 +211,7 @@ func getReplicaCount(creator podReplicaCreator, client kube_client.Interface) (i
 		}
 		return int(*rs.Spec.Replicas), nil
 
-	} else if creator.Kind == "StatefulSet" {
+	case "StatefulSet":
 		ss, err := client.AppsV1beta1().StatefulSets(creator.Namespace).Get(creator.Name, metav1.GetOptions{})
 		if err != nil || ss == nil {
 			return 0, fmt.Errorf("stateful set %s/%s is not available, err: %v", creator.Namespace, creator.Name, err)
@@ -217,8 +220,8 @@ func getReplicaCount(creator podReplicaCreator, client kube_client.Interface) (i
 			return 0, fmt.Errorf("stateful set %s/%s has no replicas config", creator.Namespace, creator.Name)
 		}
 		return int(*ss.Spec.Replicas), nil
-
 	}
+
 	return 0, nil
 }
 
