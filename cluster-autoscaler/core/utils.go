@@ -41,6 +41,11 @@ import (
 	"github.com/golang/glog"
 )
 
+const (
+	// ReschedulerTaintKey is the name of the taint created by rescheduler.
+	ReschedulerTaintKey = "CriticalAddonsOnly"
+)
+
 // GetAllNodesAvailableTime returns time when the newest node became available for scheduler.
 // TODO: This function should use LastTransitionTime from NodeReady condition.
 func GetAllNodesAvailableTime(nodes []*apiv1.Node) time.Time {
@@ -273,6 +278,18 @@ func sanitizeTemplateNode(node *apiv1.Node, nodeGroup string) (*apiv1.Node, erro
 		}
 	}
 	newNode.Name = nodeName
+	newTaints := make([]apiv1.Taint, 0)
+	for _, taint := range node.Spec.Taints {
+		// Rescheduler can put this taint on a node while evicting non-critical pods.
+		// New nodes will not have this taint and so we should strip it when creating
+		// template node.
+		if taint.Key == ReschedulerTaintKey {
+			glog.V(4).Infof("Removing rescheduler taint when creating template from node %s", node.Name)
+		} else {
+			newTaints = append(newTaints, taint)
+		}
+	}
+	newNode.Spec.Taints = newTaints
 	return newNode, nil
 }
 
