@@ -53,6 +53,8 @@ const (
 	ScaleDownNoNodeDeleted ScaleDownResult = iota
 	// ScaleDownNodeDeleted - a node was deleted.
 	ScaleDownNodeDeleted ScaleDownResult = iota
+	// ScaleDownDisabledKey is the name of annotation marking node as not eligible for scale down.
+	ScaleDownDisabledKey = "cluster-autoscaler.kubernetes.io/scale-down-disabled"
 )
 
 const (
@@ -135,6 +137,12 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 			continue
 		}
 
+		// Skip nodes marked with no scale down annotatation
+		if hasNoScaleDownAnnotation(node) {
+			glog.V(1).Info("Skipping %s from delete consideration - the node is marked as no scale down")
+			continue
+		}
+
 		nodeInfo, found := nodeNameToNodeInfo[node.Name]
 		if !found {
 			glog.Errorf("Node info for %s not found", node.Name)
@@ -204,6 +212,12 @@ func (sd *ScaleDown) TryToScaleDown(nodes []*apiv1.Node, pods []*apiv1.Pod, pdbs
 		if val, found := sd.unneededNodes[node.Name]; found {
 
 			glog.V(2).Infof("%s was unneeded for %s", node.Name, now.Sub(val).String())
+
+			// Check if node is marked with no scale down annotatation.
+			if hasNoScaleDownAnnotation(node) {
+				glog.V(4).Infof("Skipping %s - scale down disabled annotation found", node.Name)
+				continue
+			}
 
 			ready, _, _ := kube_util.GetReadinessState(node)
 			readinessMap[node.Name] = ready
@@ -526,4 +540,8 @@ func deleteNodeFromCloudProvider(node *apiv1.Node, cloudProvider cloudprovider.C
 		ExpectedDeleteTime: time.Now().Add(MaxCloudProviderNodeDeletionTime),
 	})
 	return nil
+}
+
+func hasNoScaleDownAnnotation(node *apiv1.Node) bool {
+	return node.Annotations[ScaleDownDisabledKey] == "true"
 }
