@@ -17,9 +17,10 @@ limitations under the License.
 package metrics
 
 import (
-	"github.com/stretchr/testify/assert"
 	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGetEmptyContainersUtilization(t *testing.T) {

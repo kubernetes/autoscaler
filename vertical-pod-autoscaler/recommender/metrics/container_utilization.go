@@ -18,10 +18,11 @@ package metrics
 
 import (
 	"errors"
+	"time"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientapiv1 "k8s.io/client-go/pkg/api/v1"
 	k8sapiv1 "k8s.io/kubernetes/pkg/api/v1"
-	"time"
 )
 
 // Utilization of resources for a single container, in a given (short) period of time
@@ -46,16 +47,16 @@ type ContainerUtilizationSnapshot struct {
 }
 
 func NewContainerUtilizationSnapshot(snap *containerUsageSnapshot, spec *containerSpec) (*ContainerUtilizationSnapshot, error) {
-	if snap.ID.PodName != spec.Id.PodName || snap.ID.ContainerName != spec.Id.ContainerName || snap.ID.Namespace != spec.Id.Namespace {
+	if snap.ID.PodName != spec.ID.PodName || snap.ID.ContainerName != spec.ID.ContainerName || snap.ID.Namespace != spec.ID.Namespace {
 		return nil, errors.New("spec and snap are from different containers!")
 	}
 	return &ContainerUtilizationSnapshot{
-		ID:             spec.Id,
+		ID:             spec.ID,
 		CreationTime:   spec.CreationTime.Time,
 		Image:          spec.Image,
 		SnapshotTime:   snap.SnapshotTime.Time,
 		SnapshotWindow: snap.SnapshotWindow.Duration,
-		Request:        convertResourceListToClientApi(spec.Request),
+		Request:        convertResourceListToClientApiType(spec.Request),
 		Usage:          snap.Usage,
 	}, nil
 }
@@ -70,7 +71,7 @@ type containerUsageSnapshot struct {
 }
 
 type containerSpec struct {
-	Id           containerID
+	ID           containerID
 	CreationTime metav1.Time
 	Image        string
 

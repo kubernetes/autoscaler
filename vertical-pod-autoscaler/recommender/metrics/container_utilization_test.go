@@ -17,11 +17,12 @@ limitations under the License.
 package metrics
 
 import (
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/api/resource"
 	clientapiv1 "k8s.io/client-go/pkg/api/v1"
 	k8sapiv1 "k8s.io/kubernetes/pkg/api/v1"
-	"testing"
 )
 
 type containerUtilizationTestCase struct {
@@ -36,7 +37,7 @@ func newContainerUtilizationTestCase() *containerUtilizationTestCase {
 }
 
 func (tc *containerUtilizationTestCase) newContainerSpec() *containerSpec {
-	return &containerSpec{Id: tc.id1}
+	return &containerSpec{ID: tc.id1}
 }
 
 func (tc *containerUtilizationTestCase) newMatchingSnap() *containerUsageSnapshot {
@@ -69,7 +70,7 @@ func TestTypeConversionToGoClient(t *testing.T) {
 	input[k8sapiv1.ResourceCPU] = quantity1
 	input[k8sapiv1.ResourceMemory] = quantity2
 
-	output := convertResourceListToClientApi(input)
+	output := convertResourceListToClientApiType(input)
 
 	assert.Equal(t, quantity1, output[clientapiv1.ResourceCPU])
 	assert.Equal(t, quantity2, output[clientapiv1.ResourceMemory])

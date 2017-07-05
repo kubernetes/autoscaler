@@ -17,6 +17,8 @@ limitations under the License.
 package metrics
 
 import (
+	"time"
+
 	"github.com/stretchr/testify/mock"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -28,7 +30,6 @@ import (
 	v1lister "k8s.io/kubernetes/pkg/client/listers/core/v1"
 	metricsapi "k8s.io/metrics/pkg/apis/metrics/v1alpha1"
 	"k8s.io/metrics/pkg/client/clientset_generated/clientset/fake"
-	"time"
 )
 
 type PodListerMock struct {
@@ -124,7 +125,7 @@ func (tc *metricsClientTestCase) createFakeMetricsClient() Client {
 	namespaceListerMock := new(NamespaceListerMock)
 	namespaceListerMock.On("List").Return(tc.getFakeNamespaces(), nil)
 
-	return NewMetricsClient(fakeMetricsGetter.MetricsV1alpha1(), podListerMock, namespaceListerMock)
+	return NewClient(fakeMetricsGetter.MetricsV1alpha1(), podListerMock, namespaceListerMock)
 }
 
 func (tc *metricsClientTestCase) getFakeNamespaces() []*v1.Namespace {
@@ -184,7 +185,7 @@ func newPod(snaps []*ContainerUtilizationSnapshot) *v1.Pod {
 			Name:  snap.ID.ContainerName,
 			Image: snap.Image,
 			Resources: v1.ResourceRequirements{
-				Requests: convertResourceListToKubernetesApi(snap.Request),
+				Requests: convertResourceListToServerApiType(snap.Request),
 			},
 		}
 	}

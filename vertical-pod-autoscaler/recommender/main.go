@@ -18,11 +18,12 @@ package main
 
 import (
 	"flag"
+	"time"
+
 	"github.com/golang/glog"
 	kube_flag "k8s.io/apiserver/pkg/util/flag"
 	kube_restclient "k8s.io/client-go/rest"
 	"k8s.io/kubernetes/staging/src/k8s.io/client-go/rest"
-	"time"
 )
 
 var (

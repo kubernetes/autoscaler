@@ -25,7 +25,10 @@ import (
 	resourceclient "k8s.io/metrics/pkg/client/clientset_generated/clientset/typed/metrics/v1alpha1"
 )
 
+//Client providing utilization metrics and metadata for all containers within cluster
 type Client interface {
+	// Returns ContainerUtilizationSnapshot for each container in the cluster.
+	// Snapshot window depends on the configuration of metrics server.
 	GetContainersUtilization() ([]*ContainerUtilizationSnapshot, error)
 }
 
@@ -35,7 +38,7 @@ type metricsClient struct {
 	namespaceLister v1lister.NamespaceLister
 }
 
-func NewMetricsClient(metricsGetter resourceclient.PodMetricsesGetter, podLister v1lister.PodLister, namespaceLister v1lister.NamespaceLister) Client {
+func NewClient(metricsGetter resourceclient.PodMetricsesGetter, podLister v1lister.PodLister, namespaceLister v1lister.NamespaceLister) Client {
 	return &metricsClient{
 		metricsGetter:   metricsGetter,
 		podLister:       podLister,
@@ -53,7 +56,7 @@ func (client *metricsClient) GetContainersUtilization() ([]*ContainerUtilization
 		return nil, err
 	}
 
-	utilizationSnapshots, err := mergeIntoUtilization(usageSnapshots, containerSpecs)
+	utilizationSnapshots, err := calculateUtilization(usageSnapshots, containerSpecs)
 	if err != nil {
 		return nil, err
 	}
@@ -107,10 +110,10 @@ func createContainerUsageSnapshots(podMetrics v1alpha1.PodMetrics) []*containerU
 	return snapshots
 }
 
-func mergeIntoUtilization(snapshots []*containerUsageSnapshot, specifications []*containerSpec) ([]*ContainerUtilizationSnapshot, error) {
+func calculateUtilization(snapshots []*containerUsageSnapshot, specifications []*containerSpec) ([]*ContainerUtilizationSnapshot, error) {
 	specsMap := make(map[containerID]*containerSpec, len(specifications))
 	for _, spec := range specifications {
-		specsMap[spec.Id] = spec
+		specsMap[spec.ID] = spec
 	}
 
 	result := make([]*ContainerUtilizationSnapshot, len(snapshots))
@@ -130,7 +133,7 @@ func mergeIntoUtilization(snapshots []*containerUsageSnapshot, specifications []
 
 func newContainerSpec(container v1.Container, pod *v1.Pod) *containerSpec {
 	return &containerSpec{
-		Id: containerID{
+		ID: containerID{
 			PodName:       pod.Name,
 			Namespace:     pod.Namespace,
 			ContainerName: container.Name,

@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"time"
+
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/metrics"
 	"k8s.io/client-go/rest"
@@ -11,7 +13,6 @@ import (
 	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	v1lister "k8s.io/kubernetes/pkg/client/listers/core/v1"
 	resourceclient "k8s.io/metrics/pkg/client/clientset_generated/clientset/typed/metrics/v1alpha1"
-	"time"
 )
 
 // Recommender recommend resources for certain containers, based on utilization periodically got from metrics api.
@@ -27,11 +28,10 @@ type recommender struct {
 func (r *recommender) Run() {
 	utilizations, err := r.metricsClient.GetContainersUtilization()
 	if err != nil {
-		glog.Error("Cannot get containers utilization. Reason: %+v", err)
-	} else {
-		for n, utilization := range utilizations {
-			fmt.Printf("Utilization #%v: %+v", n, utilization)
-		}
+		glog.Errorf("Cannot get containers utilization. Reason: %+v", err)
+	}
+	for n, utilization := range utilizations {
+		fmt.Printf("Utilization #%v: %+v", n, utilization)
 	}
 }
 
@@ -49,7 +49,7 @@ func newMetricsClient(config *rest.Config) metrics.Client {
 	podLister := newPodLister(kubeClient)
 	namespaceLister := newNamespaceLister(kubeClient)
 
-	return metrics.NewMetricsClient(metricsGetter, podLister, namespaceLister)
+	return metrics.NewClient(metricsGetter, podLister, namespaceLister)
 }
 
 func newPodLister(kubeClient kube_client.Interface) v1lister.PodLister {

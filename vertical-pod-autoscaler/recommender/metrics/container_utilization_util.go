@@ -22,7 +22,7 @@ import (
 )
 
 // type conversions are needed, since ResourceList is coming from different packages in containerUsageSnapshot and containerSpec
-func convertResourceListToClientApi(input k8sapiv1.ResourceList) clientapiv1.ResourceList {
+func convertResourceListToClientApiType(input k8sapiv1.ResourceList) clientapiv1.ResourceList {
 	output := make(clientapiv1.ResourceList, len(input))
 	for name, quantity := range input {
 		var newName clientapiv1.ResourceName = clientapiv1.ResourceName(name.String())
@@ -31,7 +31,7 @@ func convertResourceListToClientApi(input k8sapiv1.ResourceList) clientapiv1.Res
 	return output
 }
 
-func convertResourceListToKubernetesApi(input clientapiv1.ResourceList) k8sapiv1.ResourceList {
+func convertResourceListToServerApiType(input clientapiv1.ResourceList) k8sapiv1.ResourceList {
 	output := make(k8sapiv1.ResourceList, len(input))
 	for name, quantity := range input {
 		var newName k8sapiv1.ResourceName = k8sapiv1.ResourceName(name.String())
