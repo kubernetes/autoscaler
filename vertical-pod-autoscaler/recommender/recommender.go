@@ -31,7 +31,7 @@ func (r *recommender) Run() {
 		glog.Errorf("Cannot get containers utilization. Reason: %+v", err)
 	}
 	for n, utilization := range utilizations {
-		fmt.Printf("Utilization #%v: %+v", n, utilization)
+		glog.Infof("Utilization #%v: %+v", n, utilization)
 	}
 }
 

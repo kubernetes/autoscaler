@@ -185,7 +185,7 @@ func newPod(snaps []*ContainerUtilizationSnapshot) *v1.Pod {
 			Name:  snap.ID.ContainerName,
 			Image: snap.Image,
 			Resources: v1.ResourceRequirements{
-				Requests: convertResourceListToServerApiType(snap.Request),
+				Requests: convertResourceListToServerAPIType(snap.Request),
 			},
 		}
 	}

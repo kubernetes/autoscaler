@@ -56,7 +56,7 @@ func NewContainerUtilizationSnapshot(snap *containerUsageSnapshot, spec *contain
 		Image:          spec.Image,
 		SnapshotTime:   snap.SnapshotTime.Time,
 		SnapshotWindow: snap.SnapshotWindow.Duration,
-		Request:        convertResourceListToClientApiType(spec.Request),
+		Request:        convertResourceListToClientAPIType(spec.Request),
 		Usage:          snap.Usage,
 	}, nil
 }

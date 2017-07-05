@@ -70,7 +70,7 @@ func TestTypeConversionToGoClient(t *testing.T) {
 	input[k8sapiv1.ResourceCPU] = quantity1
 	input[k8sapiv1.ResourceMemory] = quantity2
 
-	output := convertResourceListToClientApiType(input)
+	output := convertResourceListToClientAPIType(input)
 
 	assert.Equal(t, quantity1, output[clientapiv1.ResourceCPU])
 	assert.Equal(t, quantity2, output[clientapiv1.ResourceMemory])
