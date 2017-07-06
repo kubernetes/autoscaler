@@ -17,6 +17,7 @@ limitations under the License.
 package simulator
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -186,6 +187,14 @@ func TestFindEmptyNodes(t *testing.T) {
 	assert.Equal(t, []*apiv1.Node{node2, node3, node4}, emptyNodes)
 }
 
+type findNodesToRemoveTestConfig struct {
+	name        string
+	candidates  []*apiv1.Node
+	allNodes    []*apiv1.Node
+	toRemove    []NodeToBeRemoved
+	unremovable []*apiv1.Node
+}
+
 func TestFindNodesToRemove(t *testing.T) {
 	emptyNode := BuildTestNode("n1", 1000, 2000000)
 
@@ -225,61 +234,62 @@ func TestFindNodesToRemove(t *testing.T) {
 		PodsToReschedule: []*apiv1.Pod{pod1, pod2},
 	}
 
-	var candidates, allNodes []*apiv1.Node
 	pods := []*apiv1.Pod{pod1, pod2, pod3, pod4}
 	predicateChecker := NewTestPredicateChecker()
 	tracker := NewUsageTracker()
 
-	// just an empty node, should be removed
-	candidates = []*apiv1.Node{emptyNode}
-	allNodes = []*apiv1.Node{emptyNode}
-	toRemove, unremovable, _, err := FindNodesToRemove(
-		candidates, allNodes, pods, nil, predicateChecker, len(allNodes),
-		true, map[string]string{}, tracker, time.Now(), []*policyv1.PodDisruptionBudget{})
-	assert.NoError(t, err)
-	assert.Equal(t, toRemove, []NodeToBeRemoved{emptyNodeToRemove})
-	assert.Equal(t, len(unremovable), 0)
+	tests := []findNodesToRemoveTestConfig{
+		// just an empty node, should be removed
+		{
+			name:        "just an empty node, should be removed",
+			candidates:  []*apiv1.Node{emptyNode},
+			allNodes:    []*apiv1.Node{emptyNode},
+			toRemove:    []NodeToBeRemoved{emptyNodeToRemove},
+			unremovable: []*apiv1.Node{},
+		},
+		// just a drainable node, but nowhere for pods to go to
+		{
+			name:        "just a drainable node, but nowhere for pods to go to",
+			candidates:  []*apiv1.Node{drainableNode},
+			allNodes:    []*apiv1.Node{drainableNode},
+			toRemove:    []NodeToBeRemoved{},
+			unremovable: []*apiv1.Node{drainableNode},
+		},
+		// drainable node, and a mostly empty node that can take its pods
+		{
+			name:        "drainable node, and a mostly empty node that can take its pods",
+			candidates:  []*apiv1.Node{drainableNode, nonDrainableNode},
+			allNodes:    []*apiv1.Node{drainableNode, nonDrainableNode},
+			toRemove:    []NodeToBeRemoved{drainableNodeToRemove},
+			unremovable: []*apiv1.Node{nonDrainableNode},
+		},
+		// drainable node, and a full node that cannot fit anymore pods
+		{
+			name:        "drainable node, and a full node that cannot fit anymore pods",
+			candidates:  []*apiv1.Node{drainableNode},
+			allNodes:    []*apiv1.Node{drainableNode, fullNode},
+			toRemove:    []NodeToBeRemoved{},
+			unremovable: []*apiv1.Node{drainableNode},
+		},
+		// 4 nodes, 1 empty, 1 drainable
+		{
+			name:        "4 nodes, 1 empty, 1 drainable",
+			candidates:  []*apiv1.Node{emptyNode, drainableNode},
+			allNodes:    []*apiv1.Node{emptyNode, drainableNode, fullNode, nonDrainableNode},
+			toRemove:    []NodeToBeRemoved{emptyNodeToRemove, drainableNodeToRemove},
+			unremovable: []*apiv1.Node{},
+		},
+	}
 
-	// just a drainable node, but nowhere for pods to go to
-	candidates = []*apiv1.Node{drainableNode}
-	allNodes = []*apiv1.Node{drainableNode}
-	toRemove, unremovable, _, err = FindNodesToRemove(
-		candidates, allNodes, pods, nil, predicateChecker, len(allNodes),
-		true, map[string]string{}, tracker, time.Now(), []*policyv1.PodDisruptionBudget{})
-	assert.NoError(t, err)
-	assert.Equal(t, toRemove, []NodeToBeRemoved{})
-	assert.Equal(t, len(unremovable), 1)
-	assert.Equal(t, unremovable[0].Name, "n2")
+	for _, test := range tests {
+		toRemove, unremovable, _, err := FindNodesToRemove(
+			test.candidates, test.allNodes, pods, nil,
+			predicateChecker, len(test.allNodes), true, map[string]string{},
+			tracker, time.Now(), []*policyv1.PodDisruptionBudget{})
+		assert.NoError(t, err)
+		fmt.Printf("Test scenario: %s, found len(toRemove)=%v, expected len(test.toRemove)=%v\n", test.name, len(toRemove), len(test.toRemove))
+		assert.Equal(t, toRemove, test.toRemove)
+		assert.Equal(t, unremovable, test.unremovable)
+	}
 
-	// drainable node, and a mostly empty node that can take its pods
-	candidates = []*apiv1.Node{drainableNode, nonDrainableNode}
-	allNodes = []*apiv1.Node{drainableNode, nonDrainableNode}
-	toRemove, unremovable, _, err = FindNodesToRemove(
-		candidates, allNodes, pods, nil, predicateChecker, len(allNodes),
-		true, map[string]string{}, tracker, time.Now(), []*policyv1.PodDisruptionBudget{})
-	assert.NoError(t, err)
-	assert.Equal(t, toRemove, []NodeToBeRemoved{drainableNodeToRemove})
-	assert.Equal(t, len(unremovable), 1)
-	assert.Equal(t, unremovable[0].Name, "n3")
-
-	// drainable node, and a full node that cannot fit anymore pods
-	candidates = []*apiv1.Node{drainableNode}
-	allNodes = []*apiv1.Node{drainableNode, fullNode}
-	toRemove, unremovable, _, err = FindNodesToRemove(
-		candidates, allNodes, pods, nil, predicateChecker, len(allNodes),
-		true, map[string]string{}, tracker, time.Now(), []*policyv1.PodDisruptionBudget{})
-	assert.NoError(t, err)
-	assert.Equal(t, toRemove, []NodeToBeRemoved{})
-	assert.Equal(t, len(unremovable), 1)
-	assert.Equal(t, unremovable[0].Name, "n2")
-
-	// 4 nodes, 1 empty, 1 drainable
-	candidates = []*apiv1.Node{emptyNode, drainableNode}
-	allNodes = []*apiv1.Node{emptyNode, drainableNode, fullNode, nonDrainableNode}
-	toRemove, unremovable, _, err = FindNodesToRemove(
-		candidates, allNodes, pods, nil, predicateChecker, len(allNodes),
-		true, map[string]string{}, tracker, time.Now(), []*policyv1.PodDisruptionBudget{})
-	assert.NoError(t, err)
-	assert.Equal(t, toRemove, []NodeToBeRemoved{emptyNodeToRemove, drainableNodeToRemove})
-	assert.Equal(t, len(unremovable), 0)
 }
