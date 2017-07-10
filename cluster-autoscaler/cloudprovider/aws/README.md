@@ -216,6 +216,24 @@ spec:
             path: "/etc/ssl/certs/ca-certificates.crt"
 ```
 
+## Scaling a node group to 0
+
+From CA 0.6.1 - it is possible to scale a node group to 0 (and obviously from 0), assuming that all scale-down conditions are met.
+
+If you are using `nodeSelector` you need to tag the ASG with a node-template key `"k8s.io/cluster-autoscaler/node-template/label/"`
+
+For example for a node label of `foo=bar` you would tag the ASG with:
+
+```
+{
+    "ResourceType": "auto-scaling-group",
+    "ResourceId": "foo.example.com",
+    "PropagateAtLaunch": true,
+    "Value": "bar",
+    "Key": "k8s.io/cluster-autoscaler/node-template/label/foo"
+}
+```
+
 Common Notes and Gotchas:
 - The `/etc/ssl/certs/ca-certificates.crt` should exist by default on your ec2 instance.
 - Cluster autoscaler is not zone aware (for now), so if you wish to span multiple availability zones in your autoscaling groups beware that cluster autoscaler will not evenly distribute them. For more information, see https://github.com/kubernetes/contrib/pull/1552#r75532949.

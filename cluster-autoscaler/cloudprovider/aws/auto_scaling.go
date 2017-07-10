@@ -28,6 +28,7 @@ import (
 // autoScaling is the interface represents a specific aspect of the auto-scaling service provided by AWS SDK for use in CA
 type autoScaling interface {
 	DescribeAutoScalingGroups(input *autoscaling.DescribeAutoScalingGroupsInput) (*autoscaling.DescribeAutoScalingGroupsOutput, error)
+	DescribeLaunchConfigurations(*autoscaling.DescribeLaunchConfigurationsInput) (*autoscaling.DescribeLaunchConfigurationsOutput, error)
 	DescribeTags(input *autoscaling.DescribeTagsInput) (*autoscaling.DescribeTagsOutput, error)
 	SetDesiredCapacity(input *autoscaling.SetDesiredCapacityInput) (*autoscaling.SetDesiredCapacityOutput, error)
 	TerminateInstanceInAutoScalingGroup(input *autoscaling.TerminateInstanceInAutoScalingGroupInput) (*autoscaling.TerminateInstanceInAutoScalingGroupOutput, error)
@@ -36,6 +37,23 @@ type autoScaling interface {
 // autoScalingWrapper provides several utility methods over the auto-scaling service provided by AWS SDK
 type autoScalingWrapper struct {
 	autoScaling
+}
+
+func (m autoScalingWrapper) getInstanceTypeByLCName(name string) (string, error) {
+	params := &autoscaling.DescribeLaunchConfigurationsInput{
+		LaunchConfigurationNames: []*string{aws.String(name)},
+		MaxRecords:               aws.Int64(1),
+	}
+	launchConfigurations, err := m.DescribeLaunchConfigurations(params)
+	if err != nil {
+		glog.V(4).Infof("Failed LaunchConfiguration info request for %s: %v", name, err)
+		return "", err
+	}
+	if len(launchConfigurations.LaunchConfigurations) < 1 {
+		return "", fmt.Errorf("Unable to get first LaunchConfiguration for %s", name)
+	}
+
+	return *launchConfigurations.LaunchConfigurations[0].InstanceType, nil
 }
 
 func (m autoScalingWrapper) getAutoscalingGroupByName(name string) (*autoscaling.Group, error) {

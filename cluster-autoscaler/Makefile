@@ -29,6 +29,9 @@ endif
 clean:
 	rm -f cluster-autoscaler
 
+generate:
+	go generate ./cloudprovider/aws
+
 format:
 	test -z "$$(find . -path ./vendor -prune -type f -o -name '*.go' -exec gofmt -s -d {} + | tee /dev/stderr)" || \
     test -z "$$(find . -path ./vendor -prune -type f -o -name '*.go' -exec gofmt -s -w {} + | tee /dev/stderr)"
@@ -42,5 +45,5 @@ build-in-docker: clean docker-builder
 release: build-in-docker execute-release
 	echo "Full in-docker release ${TAG} completed"
 
-.PHONY: all deps build test-unit clean format execute-release dev-release docker-builder build-in-docker release
+.PHONY: all deps build test-unit clean format execute-release dev-release docker-builder build-in-docker release generate
 

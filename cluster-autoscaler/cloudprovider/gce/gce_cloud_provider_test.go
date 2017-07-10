@@ -21,6 +21,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 )
 
 func TestBuildMig(t *testing.T) {
@@ -43,7 +44,7 @@ func TestBuildMig(t *testing.T) {
 
 func TestBuildKubeProxy(t *testing.T) {
 	mig, _ := buildMig("1:20:https://content.googleapis.com/compute/v1/projects/test-project/zones/test-zone/instanceGroups/test-name", nil)
-	pod := buildKubeProxy(mig)
+	pod := cloudprovider.BuildKubeProxy(mig.Id())
 	assert.Equal(t, 1, len(pod.Spec.Containers))
 	cpu := pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceCPU]
 	assert.Equal(t, int64(100), cpu.MilliValue())

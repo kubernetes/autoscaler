@@ -34,6 +34,7 @@ import (
 	gce "google.golang.org/api/compute/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -339,7 +340,7 @@ func (m *GceManager) buildNodeFromTemplate(mig *Mig, template *gce.InstanceTempl
 			if err != nil {
 				return nil, err
 			}
-			node.Labels = joinStringMaps(node.Labels, kubeEnvLabels)
+			node.Labels = cloudprovider.JoinStringMaps(node.Labels, kubeEnvLabels)
 		}
 	}
 	// GenericLabels
@@ -347,25 +348,20 @@ func (m *GceManager) buildNodeFromTemplate(mig *Mig, template *gce.InstanceTempl
 	if err != nil {
 		return nil, err
 	}
-	node.Labels = joinStringMaps(node.Labels, labels)
+	node.Labels = cloudprovider.JoinStringMaps(node.Labels, labels)
 
 	// Ready status
-	node.Status.Conditions = buildReadyConditions()
+	node.Status.Conditions = cloudprovider.BuildReadyConditions()
 
 	return &node, nil
 }
-
-const (
-	defaultArch = "amd64"
-	defaultOS   = "linux"
-)
 
 func buildGenericLabels(ref GceRef, machineType string, nodeName string) (map[string]string, error) {
 	result := make(map[string]string)
 
 	// TODO: extract it somehow
-	result[kubeletapis.LabelArch] = defaultArch
-	result[kubeletapis.LabelOS] = defaultOS
+	result[kubeletapis.LabelArch] = cloudprovider.DefaultArch
+	result[kubeletapis.LabelOS] = cloudprovider.DefaultOS
 
 	result[kubeletapis.LabelInstanceType] = machineType
 	ix := strings.LastIndex(ref.Zone, "-")
@@ -393,37 +389,6 @@ func parseCustomMachineType(machineType string) (cpu, mem int64, err error) {
 	return
 }
 
-func buildReadyConditions() []apiv1.NodeCondition {
-	lastTransition := time.Now().Add(-time.Minute)
-	return []apiv1.NodeCondition{
-		{
-			Type:               apiv1.NodeReady,
-			Status:             apiv1.ConditionTrue,
-			LastTransitionTime: metav1.Time{Time: lastTransition},
-		},
-		{
-			Type:               apiv1.NodeNetworkUnavailable,
-			Status:             apiv1.ConditionFalse,
-			LastTransitionTime: metav1.Time{Time: lastTransition},
-		},
-		{
-			Type:               apiv1.NodeOutOfDisk,
-			Status:             apiv1.ConditionFalse,
-			LastTransitionTime: metav1.Time{Time: lastTransition},
-		},
-		{
-			Type:               apiv1.NodeMemoryPressure,
-			Status:             apiv1.ConditionFalse,
-			LastTransitionTime: metav1.Time{Time: lastTransition},
-		},
-		{
-			Type:               apiv1.NodeInodePressure,
-			Status:             apiv1.ConditionFalse,
-			LastTransitionTime: metav1.Time{Time: lastTransition},
-		},
-	}
-}
-
 func extractLabelsFromKubeEnv(kubeEnv string) (map[string]string, error) {
 	result := make(map[string]string)
 
@@ -449,14 +414,4 @@ func extractLabelsFromKubeEnv(kubeEnv string) (map[string]string, error) {
 		}
 	}
 	return result, nil
-}
-
-func joinStringMaps(items ...map[string]string) map[string]string {
-	result := make(map[string]string)
-	for _, m := range items {
-		for k, v := range m {
-			result[k] = v
-		}
-	}
-	return result
 }

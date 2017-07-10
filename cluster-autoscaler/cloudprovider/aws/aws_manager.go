@@ -14,20 +14,28 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+//go:generate go run ec2_instance_types/gen.go
+
 package aws
 
 import (
 	"fmt"
 	"io"
+	"math/rand"
+	"strings"
 	"time"
-
-	"gopkg.in/gcfg.v1"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/golang/glog"
+	"gopkg.in/gcfg.v1"
+	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	provider_aws "k8s.io/kubernetes/pkg/cloudprovider/providers/aws"
+	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 )
 
 const (
@@ -45,6 +53,13 @@ type asgInformation struct {
 type AwsManager struct {
 	service autoScalingWrapper
 	asgs    *autoScalingGroups
+}
+
+type asgTemplate struct {
+	InstanceType *instanceType
+	Region       string
+	Zone         string
+	Tags         []*autoscaling.TagDescription
 }
 
 // CreateAwsManager constructs awsManager object.
@@ -162,4 +177,97 @@ func (m *AwsManager) GetAsgNodes(asg *Asg) ([]string, error) {
 			fmt.Sprintf("aws:///%s/%s", *instance.AvailabilityZone, *instance.InstanceId))
 	}
 	return result, nil
+}
+
+func (m *AwsManager) getAsgTemplate(name string) (*asgTemplate, error) {
+	asg, err := m.service.getAutoscalingGroupByName(name)
+	if err != nil {
+		return nil, err
+	}
+
+	instanceTypeName, err := m.service.getInstanceTypeByLCName(*asg.LaunchConfigurationName)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(asg.AvailabilityZones) < 1 {
+		return nil, fmt.Errorf("Unable to get first AvailabilityZone for %s", name)
+	}
+
+	az := *asg.AvailabilityZones[0]
+	region := az[0 : len(az)-1]
+
+	if len(asg.AvailabilityZones) > 1 {
+		glog.Warningf("Found multiple availability zones, using %s\n", az)
+	}
+
+	return &asgTemplate{
+		InstanceType: InstanceTypes[instanceTypeName],
+		Region:       region,
+		Zone:         az,
+		Tags:         asg.Tags,
+	}, nil
+}
+
+func (m *AwsManager) buildNodeFromTemplate(asg *Asg, template *asgTemplate) (*apiv1.Node, error) {
+	node := apiv1.Node{}
+	nodeName := fmt.Sprintf("%s-asg-%d", asg.Name, rand.Int63())
+
+	node.ObjectMeta = metav1.ObjectMeta{
+		Name:     nodeName,
+		SelfLink: fmt.Sprintf("/api/v1/nodes/%s", nodeName),
+		Labels:   map[string]string{},
+	}
+
+	node.Status = apiv1.NodeStatus{
+		Capacity: apiv1.ResourceList{},
+	}
+
+	// TODO: get a real value.
+	node.Status.Capacity[apiv1.ResourcePods] = *resource.NewQuantity(110, resource.DecimalSI)
+	node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewQuantity(template.InstanceType.VCPU, resource.DecimalSI)
+	node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(template.InstanceType.MemoryMb*1024*1024, resource.DecimalSI)
+
+	// TODO: use proper allocatable!!
+	node.Status.Allocatable = node.Status.Capacity
+
+	// NodeLabels
+	node.Labels = cloudprovider.JoinStringMaps(node.Labels, extractLabelsFromAsg(template.Tags))
+	// GenericLabels
+	node.Labels = cloudprovider.JoinStringMaps(node.Labels, buildGenericLabels(template, nodeName))
+
+	node.Status.Conditions = cloudprovider.BuildReadyConditions()
+	return &node, nil
+}
+
+func buildGenericLabels(template *asgTemplate, nodeName string) map[string]string {
+	result := make(map[string]string)
+	// TODO: extract it somehow
+	result[kubeletapis.LabelArch] = cloudprovider.DefaultArch
+	result[kubeletapis.LabelOS] = cloudprovider.DefaultOS
+
+	result[kubeletapis.LabelInstanceType] = template.InstanceType.InstanceType
+
+	result[kubeletapis.LabelZoneRegion] = template.Region
+	result[kubeletapis.LabelZoneFailureDomain] = template.Zone
+	result[kubeletapis.LabelHostname] = nodeName
+	return result
+}
+
+func extractLabelsFromAsg(tags []*autoscaling.TagDescription) map[string]string {
+	result := make(map[string]string)
+
+	for _, tag := range tags {
+		k := *tag.Key
+		v := *tag.Value
+		splits := strings.Split(k, "k8s.io/cluster-autoscaler/node-template/label/")
+		if len(splits) > 1 {
+			label := splits[1]
+			if label != "" {
+				result[label] = v
+			}
+		}
+	}
+
+	return result
 }
