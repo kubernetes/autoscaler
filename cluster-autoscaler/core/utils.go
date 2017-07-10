@@ -293,7 +293,7 @@ func sanitizeTemplateNode(node *apiv1.Node, nodeGroup string) (*apiv1.Node, erro
 	return newNode, nil
 }
 
-// Removes unregisterd nodes if needed. Returns true if anything was removed and error if such occurred.
+// Removes unregistered nodes if needed. Returns true if anything was removed and error if such occurred.
 func removeOldUnregisteredNodes(unregisteredNodes []clusterstate.UnregisteredNode, context *AutoscalingContext,
 	currentTime time.Time) (bool, error) {
 	removedAny := false
