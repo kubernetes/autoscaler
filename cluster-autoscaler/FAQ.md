@@ -159,8 +159,21 @@ See also [I have a couple of nodes with low utilization, but they are not scaled
 
 ### How can I scale a node group to 0?
 
-From CA 0.6 it is possible to scale a node group to 0 (and obviously from 0), assuming that all scale-down conditions are met. Currently it is only supported on GCE/GKE.
+From CA 0.6 for GCE/GKE and CA 0.6.1 for AWS - it is possible to scale a node group to 0 (and obviously from 0), assuming that all scale-down conditions are met.
 
+For AWS if you are using `nodeSelector` you need to tag the ASG with a node-template key `"k8s.io/cluster-autoscaler/node-template/label/"`
+
+For example for a node label of `foo=bar` you would tag the ASG with:
+
+```
+{
+    "ResourceType": "auto-scaling-group",
+    "ResourceId": "foo.example.com",
+    "PropagateAtLaunch": true,
+    "Value": "bar",
+    "Key": "k8s.io/cluster-autoscaler/node-template/label/foo"
+}
+```
 ****************
 
 # Internals
