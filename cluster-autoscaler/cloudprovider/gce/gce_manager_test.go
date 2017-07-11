@@ -19,10 +19,9 @@ package gce
 import (
 	"testing"
 
-	apiv1 "k8s.io/api/core/v1"
-	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
-
 	"github.com/stretchr/testify/assert"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 )
 
 func TestBuildGenericLabels(t *testing.T) {
@@ -36,8 +35,8 @@ func TestBuildGenericLabels(t *testing.T) {
 	assert.Equal(t, "us-central1-b", labels[kubeletapis.LabelZoneFailureDomain])
 	assert.Equal(t, "sillyname", labels[kubeletapis.LabelHostname])
 	assert.Equal(t, "n1-standard-8", labels[kubeletapis.LabelInstanceType])
-	assert.Equal(t, defaultArch, labels[kubeletapis.LabelArch])
-	assert.Equal(t, defaultOS, labels[kubeletapis.LabelOS])
+	assert.Equal(t, cloudprovider.DefaultArch, labels[kubeletapis.LabelArch])
+	assert.Equal(t, cloudprovider.DefaultOS, labels[kubeletapis.LabelOS])
 }
 
 func TestExtractLabelsFromKubeEnv(t *testing.T) {
@@ -52,17 +51,6 @@ func TestExtractLabelsFromKubeEnv(t *testing.T) {
 	assert.Equal(t, "d", labels["c"])
 	assert.Equal(t, "pool-3", labels["cloud.google.com/gke-nodepool"])
 	assert.Equal(t, "true", labels["cloud.google.com/gke-preemptible"])
-}
-
-func TestBuildReadyConditions(t *testing.T) {
-	conditions := buildReadyConditions()
-	foundReady := false
-	for _, condition := range conditions {
-		if condition.Type == apiv1.NodeReady && condition.Status == apiv1.ConditionTrue {
-			foundReady = true
-		}
-	}
-	assert.True(t, foundReady)
 }
 
 func TestParseCustomMachineType(t *testing.T) {
