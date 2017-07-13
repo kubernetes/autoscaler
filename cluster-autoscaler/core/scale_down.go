@@ -137,7 +137,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 			continue
 		}
 
-		// Skip nodes marked with no scale down annotatation
+		// Skip nodes marked with no scale down annotation
 		if hasNoScaleDownAnnotation(node) {
 			glog.V(1).Info("Skipping %s from delete consideration - the node is marked as no scale down")
 			continue
@@ -201,7 +201,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 }
 
 // TryToScaleDown tries to scale down the cluster. It returns ScaleDownResult indicating if any node was
-// removed and error if such occured.
+// removed and error if such occurred.
 func (sd *ScaleDown) TryToScaleDown(nodes []*apiv1.Node, pods []*apiv1.Pod, pdbs []*policyv1.PodDisruptionBudget) (ScaleDownResult, errors.AutoscalerError) {
 
 	now := time.Now()
@@ -213,7 +213,7 @@ func (sd *ScaleDown) TryToScaleDown(nodes []*apiv1.Node, pods []*apiv1.Pod, pdbs
 
 			glog.V(2).Infof("%s was unneeded for %s", node.Name, now.Sub(val).String())
 
-			// Check if node is marked with no scale down annotatation.
+			// Check if node is marked with no scale down annotation.
 			if hasNoScaleDownAnnotation(node) {
 				glog.V(4).Infof("Skipping %s - scale down disabled annotation found", node.Name)
 				continue
@@ -493,7 +493,7 @@ func drainNode(node *apiv1.Node, pods []*apiv1.Pod, client kube_client.Interface
 		}
 		if allGone {
 			glog.V(1).Infof("All pods removed from %s", node.Name)
-			// Let the defered function know there is no need for cleanup
+			// Let the deferred function know there is no need for cleanup
 			drainSuccessful = true
 			return nil
 		}
