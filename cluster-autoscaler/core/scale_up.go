@@ -35,7 +35,7 @@ import (
 )
 
 // ScaleUp tries to scale the cluster up. Return true if it found a way to increase the size,
-// false if it didn't and error if an error occured. Assumes that all nodes in the cluster are
+// false if it didn't and error if an error occurred. Assumes that all nodes in the cluster are
 // ready and in sync with instance groups.
 func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes []*apiv1.Node,
 	daemonSets []*extensionsv1.DaemonSet) (bool, errors.AutoscalerError) {
