@@ -24,7 +24,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
+	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 

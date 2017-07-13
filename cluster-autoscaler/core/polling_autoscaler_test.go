@@ -21,7 +21,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/mock"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
+	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 )
 
