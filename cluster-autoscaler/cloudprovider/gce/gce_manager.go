@@ -26,7 +26,7 @@ import (
 	"sync"
 	"time"
 
-	"gopkg.in/gcfg.v1"
+	gcfg "gopkg.in/gcfg.v1"
 
 	"github.com/golang/glog"
 	"golang.org/x/oauth2"
@@ -327,7 +327,7 @@ func (m *GceManager) buildNodeFromTemplate(mig *Mig, template *gce.InstanceTempl
 	// TODO: use proper allocatable!!
 	node.Status.Allocatable = node.Status.Capacity
 
-	// KubeEnvLabels
+	// KubeEnv labels & taints
 	if template.Properties.Metadata == nil {
 		return nil, fmt.Errorf("instance template %s has no metadata", template.Name)
 	}
@@ -336,11 +336,18 @@ func (m *GceManager) buildNodeFromTemplate(mig *Mig, template *gce.InstanceTempl
 			if item.Value == nil {
 				return nil, fmt.Errorf("no kube-env content in metadata")
 			}
+			// Extract labels
 			kubeEnvLabels, err := extractLabelsFromKubeEnv(*item.Value)
 			if err != nil {
 				return nil, err
 			}
 			node.Labels = cloudprovider.JoinStringMaps(node.Labels, kubeEnvLabels)
+			// Extract taints
+			kubeEnvTaints, err := extractTaintsFromKubeEnv(*item.Value)
+			if err != nil {
+				return nil, err
+			}
+			node.Spec.Taints = append(node.Spec.Taints, kubeEnvTaints...)
 		}
 	}
 	// GenericLabels
@@ -390,6 +397,18 @@ func parseCustomMachineType(machineType string) (cpu, mem int64, err error) {
 }
 
 func extractLabelsFromKubeEnv(kubeEnv string) (map[string]string, error) {
+	return extractFromKubeEnv(kubeEnv, "NODE_LABELS")
+}
+
+func extractTaintsFromKubeEnv(kubeEnv string) ([]apiv1.Taint, error) {
+	taintMap, err := extractFromKubeEnv(kubeEnv, "NODE_TAINTS")
+	if err != nil {
+		return nil, err
+	}
+	return buildTaints(taintMap)
+}
+
+func extractFromKubeEnv(kubeEnv, resource string) (map[string]string, error) {
 	result := make(map[string]string)
 
 	for line, env := range strings.Split(kubeEnv, "\n") {
@@ -403,15 +422,31 @@ func extractLabelsFromKubeEnv(kubeEnv string) (map[string]string, error) {
 		}
 		key := strings.Trim(items[0], " ")
 		value := strings.Trim(items[1], " \"'")
-		if key == "NODE_LABELS" {
-			for _, label := range strings.Split(value, ",") {
-				labelItems := strings.SplitN(label, "=", 2)
-				if len(labelItems) != 2 {
-					return nil, fmt.Errorf("error while parsing label: %s", label)
+		if key == resource {
+			for _, val := range strings.Split(value, ",") {
+				valItems := strings.SplitN(val, "=", 2)
+				if len(valItems) != 2 {
+					return nil, fmt.Errorf("error while parsing kube env value: %s", val)
 				}
-				result[labelItems[0]] = labelItems[1]
+				result[valItems[0]] = valItems[1]
 			}
 		}
 	}
 	return result, nil
+}
+
+func buildTaints(kubeEnvTaints map[string]string) ([]apiv1.Taint, error) {
+	taints := make([]apiv1.Taint, 0)
+	for key, value := range kubeEnvTaints {
+		values := strings.SplitN(value, ":", 2)
+		if len(values) != 2 {
+			return nil, fmt.Errorf("error while parsing node taint value and effect: %s", value)
+		}
+		taints = append(taints, apiv1.Taint{
+			Key:    key,
+			Value:  values[0],
+			Effect: apiv1.TaintEffect(values[1]),
+		})
+	}
+	return taints, nil
 }
