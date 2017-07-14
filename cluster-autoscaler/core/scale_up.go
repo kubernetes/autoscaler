@@ -138,7 +138,7 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 				glog.V(2).Infof("No need for any nodes in %s", nodeGroup.Id())
 			}
 		} else {
-			glog.V(4).Info("No pod can fit to %s", nodeGroup.Id())
+			glog.V(4).Infof("No pod can fit to %s", nodeGroup.Id())
 		}
 	}
 
