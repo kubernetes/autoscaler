@@ -234,7 +234,29 @@ For example for a node label of `foo=bar` you would tag the ASG with:
 }
 ```
 
-Common Notes and Gotchas:
+If you'd like to scale node groups from 0, a `DescribeLaunchConfigurations` permission is also required:
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "autoscaling:DescribeAutoScalingGroups",
+                "autoscaling:DescribeAutoScalingInstances",
+                "autoscaling:DescribeTags",
+                "autoscaling:DescribeLaunchConfigurations",
+                "autoscaling:SetDesiredCapacity",
+                "autoscaling:TerminateInstanceInAutoScalingGroup"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+```
+
+## Common Notes and Gotchas:
 - The `/etc/ssl/certs/ca-certificates.crt` should exist by default on your ec2 instance.
 - Cluster autoscaler is not zone aware (for now), so if you wish to span multiple availability zones in your autoscaling groups beware that cluster autoscaler will not evenly distribute them. For more information, see https://github.com/kubernetes/contrib/pull/1552#r75532949.
 - By default, cluster autoscaler will not terminate nodes running pods in the kube-system namespace. You can override this default behaviour by passing in the `--skip-nodes-with-system-pods=false` flag.
