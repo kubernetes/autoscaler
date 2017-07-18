@@ -228,18 +228,18 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	} else if a.MaxNodesTotal > 0 && len(readyNodes) >= a.MaxNodesTotal {
 		glog.V(1).Info("Max total nodes in cluster reached")
 	} else {
-		scaleUpStart := time.Now()
-		metrics.UpdateLastTime("scaleUp", scaleUpStart)
-
 		daemonsets, err := a.ListerRegistry.DaemonSetLister().List()
 		if err != nil {
 			glog.Errorf("Failed to get daemonset list")
 			return errors.ToAutoscalerError(errors.ApiCallError, err)
 		}
 
+		scaleUpStart := time.Now()
+		metrics.UpdateLastTime("scaleUp", scaleUpStart)
+
 		scaledUp, typedErr := ScaleUp(autoscalingContext, unschedulablePodsToHelp, readyNodes, daemonsets)
 
-		metrics.UpdateDuration("scaleup", scaleUpStart)
+		metrics.UpdateDuration("scaleUp", scaleUpStart)
 
 		if typedErr != nil {
 			glog.Errorf("Failed to scale up: %v", typedErr)
