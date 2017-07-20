@@ -12,60 +12,85 @@
 # See the License for the specific language governing permissions and
 # limitations under the License..
 
-# Procedure for change:
-# 1. Bump the tag number.
-# 2. Create an image for the kubernetes user on Dockerhub and push there: make dev-release
-# 3. Temporarily adjust any config files etc. that reference gcr.io/google_containers/addon-resizer:$(TAG)
-#    to use kubernetes/addon-resizer:$(TAG) instead.
-# 4. Test etc.
-# 5. Issue PR.
-# 6. When PR is approved make the gcr.io version of the image (Change REGISTRY variable below first): make release
-# 7. Revert the references to kubernetes/addon-resizer:$(TAG) to gcr.io/google_containers/addon-resizer:$(TAG)
+# Usage:
+# Build docker image for all the architecture - make all
+# Build and push images for all the architecture - make all-push
+# Build for specific architecture(ppc64le) - make container ARCH=ppc64le
 
-all: build
+ALL_ARCH = amd64 arm arm64 ppc64le s390x
+ARCH ?= amd64
 
-PACKAGE = k8s.io/autoscaler/addon-resizer
-REGISTRY = kubernetes
-# Uncomment for release
-# REGISTRY = gcr.io/google_containers
-TAG = 2.0
+GOARM=7
+GOLANG_VERSION = 1.8.3
+REGISTRY = gcr.io/google_containers
+IMGNAME = addon-resizer
+IMAGE = $(REGISTRY)/$(IMGNAME)
+MULTI_ARCH_IMG = $(IMAGE)-$(ARCH)
+TAG = 2.1
 
-deps:
-		go get -u github.com/tools/godep
-
-compile: nanny/ deps
-		GOOS=linux GOARCH=amd64 CGO_ENABLED=0 godep go build -a -o pod_nanny nanny/main/pod_nanny.go
-
-test: nanny/
-		godep go test ${PACKAGE}/nanny -v
-
-go: compile test
-
-clean:
-	rm -rf pod_nanny
-
-build: go
-
-dev-release: build execute-release
-	echo "Release ${TAG} completed"
-
-# Rules for building the real image for deployment to gcr.io
-
-execute-release:
-ifndef REGISTRY
-	ERR = $(error REGISTRY is undefined)
-	$(ERR)
+ifeq ($(ARCH),amd64)
+	BASEIMAGE=busybox
 endif
-	docker build --pull -t ${REGISTRY}/addon-resizer:${TAG} .
-	gcloud docker -- push ${REGISTRY}/addon-resizer:${TAG}
+ifeq ($(ARCH),arm)
+	BASEIMAGE=arm32v6/busybox
+endif
+ifeq ($(ARCH),arm64)
+	BASEIMAGE=arm64v8/busybox
+endif
+ifeq ($(ARCH),ppc64le)
+	BASEIMAGE=ppc64le/busybox
+endif
+ifeq ($(ARCH),s390x)
+	BASEIMAGE=s390x/busybox
+endif
 
-docker-builder:
-	docker build -t autoscaling-builder ../builder
+TEMP_DIR := $(shell mktemp -d)
 
-build-in-docker: clean docker-builder
-	docker run -v `pwd`:/gopath/src/k8s.io/autoscaler/addon-resizer/ autoscaling-builder:latest bash -c 'cd /gopath/src/k8s.io/autoscaler/addon-resizer && make'
+all: all-container
 
-release: build-in-docker execute-release
-	echo "Full in-docker release ${TAG} completed"
+sub-container-%:
+	$(MAKE) ARCH=$* container
 
+sub-push-%:
+	$(MAKE) ARCH=$* push
 
+all-container: test $(addprefix sub-container-,$(ALL_ARCH))
+
+all-push: $(addprefix sub-push-,$(ALL_ARCH))
+container: .container-$(ARCH)
+.container-$(ARCH):
+	cp -r * $(TEMP_DIR)
+	cd $(TEMP_DIR) && sed -i 's|BASEIMAGE|$(BASEIMAGE)|g' Dockerfile
+
+	docker run --rm -it -v $(TEMP_DIR):$(TEMP_DIR):Z -v `pwd`:/go/src/k8s.io/autoscaler/addon-resizer/:Z \
+        golang:${GOLANG_VERSION} \
+        /bin/bash -c "\
+		go get github.com/tools/godep && \
+                cd /go/src/k8s.io/autoscaler/addon-resizer/ && \
+                CGO_ENABLED=0 GOARM=$(GOARM) GOARCH=$(ARCH) godep go build -a -installsuffix cgo --ldflags '-w' -o $(TEMP_DIR)/pod_nanny nanny/main/pod_nanny.go"
+
+	docker build -t $(MULTI_ARCH_IMG):$(TAG) $(TEMP_DIR)
+
+ifeq ($(ARCH), amd64)
+	# This is for to maintain the backward compatibility
+	docker tag $(MULTI_ARCH_IMG):$(TAG) $(IMAGE):$(TAG)
+endif
+
+test:
+	docker run --rm -it -v `pwd`:/go/src/k8s.io/autoscaler/addon-resizer/:Z \
+	golang:${GOLANG_VERSION} \
+        /bin/bash -c "\
+                go get github.com/tools/godep && \
+                cd /go/src/k8s.io/autoscaler/addon-resizer/ && \
+		godep go test ./nanny -v"
+
+push: .push-$(ARCH)
+.push-$(ARCH): .container-$(ARCH)
+	gcloud docker -- push $(MULTI_ARCH_IMG):$(TAG)
+ifeq ($(ARCH), amd64)
+	gcloud docker -- push $(IMAGE):$(TAG)
+endif
+
+clean: $(addprefix sub-clean-,$(ALL_ARCH))
+sub-clean-%:
+	docker rmi -f $(IMAGE)-$*:$(TAG) || true
