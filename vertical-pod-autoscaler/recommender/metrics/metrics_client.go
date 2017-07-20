@@ -17,6 +17,7 @@ limitations under the License.
 package metrics
 
 import (
+	"github.com/golang/glog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/kubernetes/pkg/api/v1"
@@ -39,27 +40,37 @@ type metricsClient struct {
 }
 
 func NewClient(metricsGetter resourceclient.PodMetricsesGetter, podLister v1lister.PodLister, namespaceLister v1lister.NamespaceLister) Client {
-	return &metricsClient{
+	client := &metricsClient{
 		metricsGetter:   metricsGetter,
 		podLister:       podLister,
 		namespaceLister: namespaceLister,
 	}
+	glog.V(3).Infof("New metricsClient created %+v", client)
+
+	return client
 }
 
 func (client *metricsClient) GetContainersUtilization() ([]*ContainerUtilizationSnapshot, error) {
-	usageSnapshots, err := client.getContainersUsage()
-	if err != nil {
-		return nil, err
-	}
+	glog.V(3).Infof("Getting ContainersUtilization",)
+
 	containerSpecs, err := client.getContainersSpec()
 	if err != nil {
 		return nil, err
 	}
+	glog.V(3).Infof("%v containerSpecs retrived", len(containerSpecs))
+
+	usageSnapshots, err := client.getContainersUsage()
+	if err != nil {
+		return nil, err
+	}
+	glog.V(3).Infof("%v usageSnapshots retrived", len(usageSnapshots))
 
 	utilizationSnapshots, err := calculateUtilization(usageSnapshots, containerSpecs)
 	if err != nil {
 		return nil, err
 	}
+	glog.V(3).Infof("%v utilizationSnapshots calculated", len(utilizationSnapshots))
+
 	return utilizationSnapshots, nil
 }
 
@@ -88,11 +99,15 @@ func (client *metricsClient) getContainersUsage() ([]*containerUsageSnapshot, er
 	if err != nil {
 		return nil, err
 	}
+	glog.V(3).Infof("%v namespaces retrived: %+v", len(namespaces), namespaces)
+
 	for _, namespace := range namespaces {
-		podMetricsList, err := client.metricsGetter.PodMetricses(namespace).List(metav1.ListOptions{})
+		podMetricsInterface:= client.metricsGetter.PodMetricses(namespace)
+		podMetricsList, err := podMetricsInterface.List(metav1.ListOptions{LabelSelector: "k8s-app"})
 		if err != nil {
 			return nil, err
 		}
+		glog.V(3).Infof("podMetricsList retrived for: %+v", namespace)
 		for _, podMetrics := range podMetricsList.Items {
 			containerSnapshots := createContainerUsageSnapshots(podMetrics)
 			usageSnapshots = append(usageSnapshots, containerSnapshots...)
