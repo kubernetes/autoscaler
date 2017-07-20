@@ -133,13 +133,13 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		// and they have not been deleted.
 		deleteTime, _ := deletetaint.GetToBeDeletedTime(node)
 		if deleteTime != nil && (timestamp.Sub(*deleteTime) < MaxCloudProviderNodeDeletionTime || timestamp.Sub(*deleteTime) < MaxKubernetesEmptyNodeDeletionTime) {
-			glog.V(1).Info("Skipping %s from delete considerations - the node is currently being deleted", node.Name)
+			glog.V(1).Infof("Skipping %s from delete considerations - the node is currently being deleted", node.Name)
 			continue
 		}
 
 		// Skip nodes marked with no scale down annotation
 		if hasNoScaleDownAnnotation(node) {
-			glog.V(1).Info("Skipping %s from delete consideration - the node is marked as no scale down")
+			glog.V(1).Infof("Skipping %s from delete consideration - the node is marked as no scale down", node.Name)
 			continue
 		}
 
