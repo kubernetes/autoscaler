@@ -220,7 +220,7 @@ spec:
 
 From CA 0.6.1 - it is possible to scale a node group to 0 (and obviously from 0), assuming that all scale-down conditions are met.
 
-If you are using `nodeSelector` you need to tag the ASG with a node-template key `"k8s.io/cluster-autoscaler/node-template/label/"`
+If you are using `nodeSelector` you need to tag the ASG with a node-template key `"k8s.io/cluster-autoscaler/node-template/label/"` and `"k8s.io/cluster-autoscaler/node-template/taint/"` if you are using taints.
 
 For example for a node label of `foo=bar` you would tag the ASG with:
 
@@ -231,6 +231,18 @@ For example for a node label of `foo=bar` you would tag the ASG with:
     "PropagateAtLaunch": true,
     "Value": "bar",
     "Key": "k8s.io/cluster-autoscaler/node-template/label/foo"
+}
+```
+
+And for a taint of `"dedicated": "foo:NoSchedule"` you would tag the ASG with:
+
+```
+{
+    "ResourceType": "auto-scaling-group",
+    "ResourceId": "foo.example.com",
+    "PropagateAtLaunch": true,
+    "Value": "foo:NoSchedule",
+    "Key": "k8s.io/cluster-autoscaler/node-template/taint/dedicated"
 }
 ```
 
