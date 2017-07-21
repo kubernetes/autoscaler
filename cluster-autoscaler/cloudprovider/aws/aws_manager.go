@@ -236,6 +236,8 @@ func (m *AwsManager) buildNodeFromTemplate(asg *Asg, template *asgTemplate) (*ap
 	// GenericLabels
 	node.Labels = cloudprovider.JoinStringMaps(node.Labels, buildGenericLabels(template, nodeName))
 
+	node.Spec.Taints = extractTaintsFromAsg(template.Tags)
+
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()
 	return &node, nil
 }
@@ -270,4 +272,23 @@ func extractLabelsFromAsg(tags []*autoscaling.TagDescription) map[string]string 
 	}
 
 	return result
+}
+
+func extractTaintsFromAsg(tags []*autoscaling.TagDescription) []apiv1.Taint {
+	taints := make([]apiv1.Taint, 0)
+
+	for _, tag := range tags {
+		k := *tag.Key
+		v := *tag.Value
+		splits := strings.Split(k, "k8s.io/cluster-autoscaler/node-template/taint/")
+		if len(splits) > 1 {
+			values := strings.SplitN(v, ":", 2)
+			taints = append(taints, apiv1.Taint{
+				Key:    splits[1],
+				Value:  values[0],
+				Effect: apiv1.TaintEffect(values[1]),
+			})
+		}
+	}
+	return taints
 }
