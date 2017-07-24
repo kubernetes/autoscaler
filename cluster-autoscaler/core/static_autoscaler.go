@@ -17,8 +17,10 @@ limitations under the License.
 package core
 
 import (
+	"flag"
 	"time"
 
+	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
@@ -29,6 +31,11 @@ import (
 
 	"github.com/golang/glog"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+)
+
+var (
+	internalResetUnschedulablePodConfition = flag.Bool("internal-reset-unschedulable-pod-condition", true,
+		"Internal, for performance testing, reset unschedulable pod condition when a new node show up in the culster")
 )
 
 // StaticAutoscaler is an autoscaler which has all the core functionality of a CA but without the reconfiguration feature
@@ -187,11 +194,15 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		return errors.ToAutoscalerError(errors.ApiCallError, err)
 	}
 
+	unschedulablePodsToHelp := allUnschedulablePods
+	podsToReset := []*apiv1.Pod{}
 	// We need to reset all pods that have been marked as unschedulable not after
 	// the newest node became available for the scheduler.
-	allNodesAvailableTime := GetAllNodesAvailableTime(readyNodes)
-	podsToReset, unschedulablePodsToHelp := SlicePodsByPodScheduledTime(allUnschedulablePods, allNodesAvailableTime)
-	ResetPodScheduledCondition(a.AutoscalingContext.ClientSet, podsToReset)
+	if *internalResetUnschedulablePodConfition {
+		allNodesAvailableTime := GetAllNodesAvailableTime(readyNodes)
+		podsToReset, unschedulablePodsToHelp = SlicePodsByPodScheduledTime(allUnschedulablePods, allNodesAvailableTime)
+		ResetPodScheduledCondition(a.AutoscalingContext.ClientSet, podsToReset)
+	}
 
 	// We need to check whether pods marked as unschedulable are actually unschedulable.
 	// This should prevent from adding unnecessary nodes. Example of such situation:
