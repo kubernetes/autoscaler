@@ -202,21 +202,17 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	//
 	// With the check enabled the last point won't happen because CA will ignore a pod
 	// which is supposed to schedule on an existing node.
-	unschedulablePodsToHelp := allUnschedulablePods
 	schedulablePodsPresent := false
-	if a.VerifyUnschedulablePods {
 
-		glog.V(4).Infof("Filtering out schedulables")
-		newUnschedulablePodsToHelp := FilterOutSchedulable(unschedulablePodsToHelp, readyNodes, allScheduled,
-			a.PredicateChecker)
+	glog.V(4).Infof("Filtering out schedulables")
+	unschedulablePodsToHelp := FilterOutSchedulable(allUnschedulablePods, readyNodes, allScheduled,
+		a.PredicateChecker)
 
-		if len(newUnschedulablePodsToHelp) != len(unschedulablePodsToHelp) {
-			glog.V(2).Info("Schedulable pods present")
-			schedulablePodsPresent = true
-		} else {
-			glog.V(4).Info("No schedulable pods")
-		}
-		unschedulablePodsToHelp = newUnschedulablePodsToHelp
+	if len(unschedulablePodsToHelp) != len(allUnschedulablePods) {
+		glog.V(2).Info("Schedulable pods present")
+		schedulablePodsPresent = true
+	} else {
+		glog.V(4).Info("No schedulable pods")
 	}
 
 	if len(unschedulablePodsToHelp) == 0 {

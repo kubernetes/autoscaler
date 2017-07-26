@@ -62,18 +62,15 @@ func (flag *MultiStringFlag) Set(value string) error {
 }
 
 var (
-	nodeGroupsFlag          MultiStringFlag
-	address                 = flag.String("address", ":8085", "The address to expose prometheus metrics.")
-	kubernetes              = flag.String("kubernetes", "", "Kubernetes master location. Leave blank for default")
-	cloudConfig             = flag.String("cloud-config", "", "The path to the cloud provider configuration file.  Empty string for no configuration file.")
-	configMapName           = flag.String("configmap", "", "The name of the ConfigMap containing settings used for dynamic reconfiguration. Empty string for no ConfigMap.")
-	namespace               = flag.String("namespace", "kube-system", "Namespace in which cluster-autoscaler run. If a --configmap flag is also provided, ensure that the configmap exists in this namespace before CA runs.")
-	nodeGroupAutoDiscovery  = flag.String("node-group-auto-discovery", "", "One or more definition(s) of node group auto-discovery. A definition is expressed `<name of discoverer per cloud provider>:[<key>[=<value>]]`. Only the `aws` cloud provider is currently supported. The only valid discoverer for it is `asg` and the valid key is `tag`. For example, specifying `--cloud-provider aws` and `--node-group-auto-discovery asg:tag=cluster-autoscaler/auto-discovery/enabled,kubernetes.io/cluster/<YOUR CLUSTER NAME>` results in ASGs tagged with `cluster-autoscaler/auto-discovery/enabled` and `kubernetes.io/cluster/<YOUR CLUSTER NAME>` to be considered as target node groups")
-	verifyUnschedulablePods = flag.Bool("verify-unschedulable-pods", true,
-		"If enabled CA will ensure that each pod marked by Scheduler as unschedulable actually can't be scheduled on any node."+
-			"This prevents from adding unnecessary nodes in situation when CA and Scheduler have different configuration.")
-	scaleDownEnabled = flag.Bool("scale-down-enabled", true, "Should CA scale down the cluster")
-	scaleDownDelay   = flag.Duration("scale-down-delay", 10*time.Minute,
+	nodeGroupsFlag         MultiStringFlag
+	address                = flag.String("address", ":8085", "The address to expose prometheus metrics.")
+	kubernetes             = flag.String("kubernetes", "", "Kubernetes master location. Leave blank for default")
+	cloudConfig            = flag.String("cloud-config", "", "The path to the cloud provider configuration file.  Empty string for no configuration file.")
+	configMapName          = flag.String("configmap", "", "The name of the ConfigMap containing settings used for dynamic reconfiguration. Empty string for no ConfigMap.")
+	namespace              = flag.String("namespace", "kube-system", "Namespace in which cluster-autoscaler run. If a --configmap flag is also provided, ensure that the configmap exists in this namespace before CA runs.")
+	nodeGroupAutoDiscovery = flag.String("node-group-auto-discovery", "", "One or more definition(s) of node group auto-discovery. A definition is expressed `<name of discoverer per cloud provider>:[<key>[=<value>]]`. Only the `aws` cloud provider is currently supported. The only valid discoverer for it is `asg` and the valid key is `tag`. For example, specifying `--cloud-provider aws` and `--node-group-auto-discovery asg:tag=cluster-autoscaler/auto-discovery/enabled,kubernetes.io/cluster/<YOUR CLUSTER NAME>` results in ASGs tagged with `cluster-autoscaler/auto-discovery/enabled` and `kubernetes.io/cluster/<YOUR CLUSTER NAME>` to be considered as target node groups")
+	scaleDownEnabled       = flag.Bool("scale-down-enabled", true, "Should CA scale down the cluster")
+	scaleDownDelay         = flag.Duration("scale-down-delay", 10*time.Minute,
 		"Duration from the last scale up to the time when CA starts to check scale down options")
 	scaleDownUnneededTime = flag.Duration("scale-down-unneeded-time", 10*time.Minute,
 		"How long a node should be unneeded before it is eligible for scale down")
@@ -126,7 +123,6 @@ func createAutoscalerOptions() core.AutoscalerOptions {
 		ScaleDownUnneededTime:         *scaleDownUnneededTime,
 		ScaleDownUnreadyTime:          *scaleDownUnreadyTime,
 		ScaleDownUtilizationThreshold: *scaleDownUtilizationThreshold,
-		VerifyUnschedulablePods:       *verifyUnschedulablePods,
 		WriteStatusConfigMap:          *writeStatusConfigMapFlag,
 		BalanceSimilarNodeGroups:      *balanceSimilarNodeGroupsFlag,
 		ConfigNamespace:               *namespace,
