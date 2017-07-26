@@ -90,9 +90,6 @@ type AutoscalingOptions struct {
 	CloudProviderName string
 	// NodeGroups is the list of node groups a.k.a autoscaling targets
 	NodeGroups []string
-	// VerifyUnschedulable is used to enable verification to ensure that each pod marked by Scheduler as unschedulable actually can't be scheduled on any node.
-	// This prevents from adding unnecessary nodes in situation when CA and Scheduler have different configuration.
-	VerifyUnschedulablePods bool
 	// ScaleDownEnabled is used to allow CA to scale down the cluster
 	ScaleDownEnabled bool
 	// ScaleDownDelay sets the duration from the last scale up to the time when CA starts to check scale down options
