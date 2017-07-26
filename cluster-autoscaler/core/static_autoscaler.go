@@ -17,10 +17,8 @@ limitations under the License.
 package core
 
 import (
-	"flag"
 	"time"
 
-	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
@@ -31,11 +29,6 @@ import (
 
 	"github.com/golang/glog"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-)
-
-var (
-	internalResetUnschedulablePodConfition = flag.Bool("internal-reset-unschedulable-pod-condition", true,
-		"Internal, for performance testing, reset unschedulable pod condition when a new node show up in the culster")
 )
 
 // StaticAutoscaler is an autoscaler which has all the core functionality of a CA but without the reconfiguration feature
@@ -194,18 +187,12 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		return errors.ToAutoscalerError(errors.ApiCallError, err)
 	}
 
-	unschedulablePodsToHelp := allUnschedulablePods
-	podsToReset := []*apiv1.Pod{}
-	// We need to reset all pods that have been marked as unschedulable not after
-	// the newest node became available for the scheduler.
-	if *internalResetUnschedulablePodConfition {
-		allNodesAvailableTime := GetAllNodesAvailableTime(readyNodes)
-		podsToReset, unschedulablePodsToHelp = SlicePodsByPodScheduledTime(allUnschedulablePods, allNodesAvailableTime)
-		ResetPodScheduledCondition(a.AutoscalingContext.ClientSet, podsToReset)
-	}
-
 	// We need to check whether pods marked as unschedulable are actually unschedulable.
-	// This should prevent from adding unnecessary nodes. Example of such situation:
+	// It's likely we added a new node and the scheduler just haven't managed to put the
+	// pod on in yet. In this situation we don't want to trigger another scale-up.
+	//
+	// It's also important to prevent uncontrollable cluster growth if CA's simulated
+	// scheduler differs in opinion with real scheduler. Example of such situation:
 	// - CA and Scheduler has slightly different configuration
 	// - Scheduler can't schedule a pod and marks it as unschedulable
 	// - CA added a node which should help the pod
@@ -215,9 +202,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	//
 	// With the check enabled the last point won't happen because CA will ignore a pod
 	// which is supposed to schedule on an existing node.
-	//
-	// Without below check cluster might be unnecessary scaled up to the max allowed size
-	// in the described situation.
+	unschedulablePodsToHelp := allUnschedulablePods
 	schedulablePodsPresent := false
 	if a.VerifyUnschedulablePods {
 
