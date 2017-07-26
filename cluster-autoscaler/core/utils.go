@@ -52,7 +52,7 @@ func FilterOutSchedulable(unschedulableCandidates []*apiv1.Pod, nodes []*apiv1.N
 
 	for _, pod := range unschedulableCandidates {
 		if nodeName, err := predicateChecker.FitsAny(pod, nodeNameToNodeInfo); err == nil {
-			glog.Warningf("Pod %s marked as unschedulable can be scheduled on %s. Ignoring in scale up.", pod.Name, nodeName)
+			glog.V(4).Infof("Pod %s marked as unschedulable can be scheduled on %s. Ignoring in scale up.", pod.Name, nodeName)
 		} else {
 			unschedulablePods = append(unschedulablePods, pod)
 		}
