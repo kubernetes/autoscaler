@@ -184,7 +184,7 @@ func (asg *Asg) MinSize() int {
 }
 
 // TargetSize returns the current TARGET size of the node group. It is possible that the
-// number is different from the number of nodes registered in Kuberentes.
+// number is different from the number of nodes registered in Kubernetes.
 func (asg *Asg) TargetSize() (int, error) {
 	size, err := asg.awsManager.GetAsgSize(asg)
 	return int(size), err
