@@ -132,7 +132,7 @@ func (mig *Mig) MinSize() int {
 }
 
 // TargetSize returns the current TARGET size of the node group. It is possible that the
-// number is different from the number of nodes registered in Kuberentes.
+// number is different from the number of nodes registered in Kubernetes.
 func (mig *Mig) TargetSize() (int, error) {
 	size, err := mig.gceManager.GetMigSize(mig)
 	return int(size), err
