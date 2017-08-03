@@ -132,7 +132,7 @@ func (scaleSet *ScaleSet) MaxSize() int {
 }
 
 // TargetSize returns the current TARGET size of the node group. It is possible that the
-// number is different from the number of nodes registered in Kuberentes.
+// number is different from the number of nodes registered in Kubernetes.
 func (scaleSet *ScaleSet) TargetSize() (int, error) {
 	size, err := scaleSet.azureManager.GetScaleSetSize(scaleSet)
 	return int(size), err
