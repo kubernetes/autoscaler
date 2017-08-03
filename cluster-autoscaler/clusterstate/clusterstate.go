@@ -721,7 +721,7 @@ func (csr *ClusterStateRegistry) GetUpcomingNodes() map[string]int {
 	return result
 }
 
-// Calculates which of the existing cloud provider nodes are not registered in Kuberenetes.
+// Calculates which of the existing cloud provider nodes are not registered in Kubernetes.
 func getNotRegisteredNodes(allNodes []*apiv1.Node, cloudProvider cloudprovider.CloudProvider, time time.Time) ([]UnregisteredNode, error) {
 	registered := sets.NewString()
 	for _, node := range allNodes {
