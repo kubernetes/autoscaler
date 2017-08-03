@@ -145,7 +145,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	metrics.UpdateDuration("updateClusterState", runStart)
 	metrics.UpdateLastTime("autoscaling", time.Now())
 
-	// Check if there are any nodes that failed to register in kuberentes
+	// Check if there are any nodes that failed to register in Kubernetes
 	// master.
 	unregisteredNodes := a.ClusterStateRegistry.GetUnregisteredNodes()
 	if len(unregisteredNodes) > 0 {
