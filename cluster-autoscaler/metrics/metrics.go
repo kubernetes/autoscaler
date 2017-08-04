@@ -83,6 +83,7 @@ var (
 			Namespace: caNamespace,
 			Name:      "function_duration_seconds",
 			Help:      "Time taken by various parts of CA main loop.",
+			Buckets:   []float64{0.01, 0.05, 0.1, 0.5, 1.0, 2.5, 5.0, 7.5, 10.0, 12.5, 15.0, 17.5, 20.0, 22.5, 25.0, 27.5, 30.0, 50.0, 75.0, 100.0, 1000.0},
 		}, []string{"function"},
 	)
 
