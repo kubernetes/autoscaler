@@ -60,7 +60,7 @@ func main() {
 func createKubeClient() kube_client.Interface {
 	config, err := kube_restclient.InClusterConfig()
 	if err != nil {
-		glog.Fatalf("Failed to build Kuberentes client : fail to create config: %v", err)
+		glog.Fatalf("Failed to build Kubernetes client : fail to create config: %v", err)
 	}
 	return kube_client.NewForConfigOrDie(config)
 }

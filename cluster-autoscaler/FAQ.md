@@ -159,8 +159,21 @@ See also [I have a couple of nodes with low utilization, but they are not scaled
 
 ### How can I scale a node group to 0?
 
-From CA 0.6 it is possible to scale a node group to 0 (and obviously from 0), assuming that all scale-down conditions are met. Currently it is only supported on GCE/GKE.
+From CA 0.6 for GCE/GKE and CA 0.6.1 for AWS - it is possible to scale a node group to 0 (and obviously from 0), assuming that all scale-down conditions are met.
 
+For AWS if you are using `nodeSelector` you need to tag the ASG with a node-template key `"k8s.io/cluster-autoscaler/node-template/label/"`
+
+For example for a node label of `foo=bar` you would tag the ASG with:
+
+```
+{
+    "ResourceType": "auto-scaling-group",
+    "ResourceId": "foo.example.com",
+    "PropagateAtLaunch": true,
+    "Value": "bar",
+    "Key": "k8s.io/cluster-autoscaler/node-template/label/foo"
+}
+```
 ****************
 
 # Internals
@@ -303,12 +316,12 @@ Expanders can be selected by passing the name to the `--expander` flag. i.e.
 Currently Cluster Autoscaler has 4 expanders:
 
 * `random` - this is the default expander, and should be used when you don't have a particular
-need for the node groups to scale differently
+need for the node groups to scale differently.
 
 * `most-pods` - selects the node group that would be able to schedule the most pods when scaling
 up. This is useful when you are using nodeSelector to make sure certain pods land on certain nodes. 
 Note that this won't cause the autoscaler to select bigger nodes vs. smaller, as it can grow multiple
-smaller nodes at once
+smaller nodes at once.
 
 * `least-waste` - selects the node group that will have the least idle CPU (and if tied, unused Memory) node group
 when scaling up. This is useful when you have different classes of nodes, for example, high CPU or high Memory nodes,

@@ -17,8 +17,10 @@ limitations under the License.
 package core
 
 import (
+	"flag"
 	"time"
 
+	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
@@ -29,6 +31,11 @@ import (
 
 	"github.com/golang/glog"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+)
+
+var (
+	internalResetUnschedulablePodConfition = flag.Bool("internal-reset-unschedulable-pod-condition", true,
+		"Internal, for performance testing, reset unschedulable pod condition when a new node show up in the culster")
 )
 
 // StaticAutoscaler is an autoscaler which has all the core functionality of a CA but without the reconfiguration feature
@@ -138,7 +145,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	metrics.UpdateDuration("updateClusterState", runStart)
 	metrics.UpdateLastTime("autoscaling", time.Now())
 
-	// Check if there are any nodes that failed to register in kuberentes
+	// Check if there are any nodes that failed to register in Kubernetes
 	// master.
 	unregisteredNodes := a.ClusterStateRegistry.GetUnregisteredNodes()
 	if len(unregisteredNodes) > 0 {
@@ -187,11 +194,15 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		return errors.ToAutoscalerError(errors.ApiCallError, err)
 	}
 
+	unschedulablePodsToHelp := allUnschedulablePods
+	podsToReset := []*apiv1.Pod{}
 	// We need to reset all pods that have been marked as unschedulable not after
 	// the newest node became available for the scheduler.
-	allNodesAvailableTime := GetAllNodesAvailableTime(readyNodes)
-	podsToReset, unschedulablePodsToHelp := SlicePodsByPodScheduledTime(allUnschedulablePods, allNodesAvailableTime)
-	ResetPodScheduledCondition(a.AutoscalingContext.ClientSet, podsToReset)
+	if *internalResetUnschedulablePodConfition {
+		allNodesAvailableTime := GetAllNodesAvailableTime(readyNodes)
+		podsToReset, unschedulablePodsToHelp = SlicePodsByPodScheduledTime(allUnschedulablePods, allNodesAvailableTime)
+		ResetPodScheduledCondition(a.AutoscalingContext.ClientSet, podsToReset)
+	}
 
 	// We need to check whether pods marked as unschedulable are actually unschedulable.
 	// This should prevent from adding unnecessary nodes. Example of such situation:
@@ -228,18 +239,18 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	} else if a.MaxNodesTotal > 0 && len(readyNodes) >= a.MaxNodesTotal {
 		glog.V(1).Info("Max total nodes in cluster reached")
 	} else {
-		scaleUpStart := time.Now()
-		metrics.UpdateLastTime("scaleUp", scaleUpStart)
-
 		daemonsets, err := a.ListerRegistry.DaemonSetLister().List()
 		if err != nil {
 			glog.Errorf("Failed to get daemonset list")
 			return errors.ToAutoscalerError(errors.ApiCallError, err)
 		}
 
+		scaleUpStart := time.Now()
+		metrics.UpdateLastTime("scaleUp", scaleUpStart)
+
 		scaledUp, typedErr := ScaleUp(autoscalingContext, unschedulablePodsToHelp, readyNodes, daemonsets)
 
-		metrics.UpdateDuration("scaleup", scaleUpStart)
+		metrics.UpdateDuration("scaleUp", scaleUpStart)
 
 		if typedErr != nil {
 			glog.Errorf("Failed to scale up: %v", typedErr)
@@ -252,14 +263,13 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	}
 
 	if a.ScaleDownEnabled {
-		unneededStart := time.Now()
-
 		pdbs, err := pdbLister.List()
 		if err != nil {
 			glog.Errorf("Failed to list pod disruption budgets: %v", err)
 			return errors.ToAutoscalerError(errors.ApiCallError, err)
 		}
 
+		unneededStart := time.Now()
 		// In dry run only utilization is updated
 		calculateUnneededOnly := a.lastScaleUpTime.Add(a.ScaleDownDelay).After(time.Now()) ||
 			a.lastScaleDownFailedTrial.Add(a.ScaleDownTrialInterval).After(time.Now()) ||

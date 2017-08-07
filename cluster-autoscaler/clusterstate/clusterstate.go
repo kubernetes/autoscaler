@@ -27,9 +27,9 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 
+	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
-	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 
 	"github.com/golang/glog"
 )
@@ -264,9 +264,9 @@ func (csr *ClusterStateRegistry) IsNodeGroupScalingUp(nodeGroupName string) bool
 
 	readiness, found := csr.perNodeGroupReadiness[nodeGroupName]
 	if !found {
-		// No nodes yet but an active scale up present.
-		if acceptable.CurrentTarget > 0 && acceptable.MinNodes == 0 {
-			return true
+		// Node group has size 0 (was scaled to 0 before).
+		if acceptable.MinNodes == 0 {
+			return acceptable.CurrentTarget > 0
 		}
 		glog.Warningf("Failed to find readiness information for %v", nodeGroupName)
 		return false
@@ -392,14 +392,17 @@ func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 func (csr *ClusterStateRegistry) updateIncorrectNodeGroupSizes(currentTime time.Time) {
 	result := make(map[string]IncorrectNodeGroupSize)
 	for _, nodeGroup := range csr.cloudProvider.NodeGroups() {
-		readiness, found := csr.perNodeGroupReadiness[nodeGroup.Id()]
-		if !found {
-			glog.Warningf("Readiness for node group %s not found", nodeGroup.Id())
-			continue
-		}
 		acceptableRange, found := csr.acceptableRanges[nodeGroup.Id()]
 		if !found {
 			glog.Warningf("Acceptable range for node group %s not found", nodeGroup.Id())
+			continue
+		}
+		readiness, found := csr.perNodeGroupReadiness[nodeGroup.Id()]
+		if !found {
+			// if MinNodes == 0 node group has been scaled to 0 and everything's fine
+			if acceptableRange.MinNodes != 0 {
+				glog.Warningf("Readiness for node group %s not found", nodeGroup.Id())
+			}
 			continue
 		}
 		if readiness.Registered > acceptableRange.MaxNodes ||
@@ -718,7 +721,7 @@ func (csr *ClusterStateRegistry) GetUpcomingNodes() map[string]int {
 	return result
 }
 
-// Calculates which of the existing cloud provider nodes are not registered in Kuberenetes.
+// Calculates which of the existing cloud provider nodes are not registered in Kubernetes.
 func getNotRegisteredNodes(allNodes []*apiv1.Node, cloudProvider cloudprovider.CloudProvider, time time.Time) ([]UnregisteredNode, error) {
 	registered := sets.NewString()
 	for _, node := range allNodes {

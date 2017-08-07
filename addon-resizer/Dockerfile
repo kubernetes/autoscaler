@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM busybox
+FROM BASEIMAGE
 MAINTAINER Quintin Lee "qlee@google.com"
 
-ADD pod_nanny pod_nanny
+COPY pod_nanny /
 
-CMD ./pod_nanny
+CMD /pod_nanny

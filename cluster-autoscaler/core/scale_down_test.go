@@ -22,19 +22,19 @@ import (
 	"testing"
 	"time"
 
+	batchv1 "k8s.io/api/batch/v1"
+	apiv1 "k8s.io/api/core/v1"
+	policyv1 "k8s.io/api/policy/v1beta1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
+	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	core "k8s.io/client-go/testing"
-	apiv1 "k8s.io/kubernetes/pkg/api/v1"
-	batchv1 "k8s.io/kubernetes/pkg/apis/batch/v1"
-	policyv1 "k8s.io/kubernetes/pkg/apis/policy/v1beta1"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset/fake"
 
 	"github.com/stretchr/testify/assert"
@@ -56,15 +56,24 @@ func TestFindUnneededNodes(t *testing.T) {
 	p4.Annotations = GetReplicaSetAnnotation()
 	p4.Spec.NodeName = "n4"
 
+	p5 := BuildTestPod("p5", 100, 0)
+	p5.Annotations = GetReplicaSetAnnotation()
+	p5.Spec.NodeName = "n5"
+
 	n1 := BuildTestNode("n1", 1000, 10)
 	n2 := BuildTestNode("n2", 1000, 10)
 	n3 := BuildTestNode("n3", 1000, 10)
 	n4 := BuildTestNode("n4", 10000, 10)
+	n5 := BuildTestNode("n5", 1000, 10)
+	n5.Annotations = map[string]string{
+		ScaleDownDisabledKey: "true",
+	}
 
 	SetNodeReadyState(n1, true, time.Time{})
 	SetNodeReadyState(n2, true, time.Time{})
 	SetNodeReadyState(n3, true, time.Time{})
 	SetNodeReadyState(n4, true, time.Time{})
+	SetNodeReadyState(n5, true, time.Time{})
 
 	fakeClient := &fake.Clientset{}
 	fakeRecorder := kube_util.CreateEventRecorder(fakeClient)
@@ -76,6 +85,7 @@ func TestFindUnneededNodes(t *testing.T) {
 	provider.AddNode("ng1", n2)
 	provider.AddNode("ng1", n3)
 	provider.AddNode("ng1", n4)
+	provider.AddNode("ng1", n5)
 
 	context := AutoscalingContext{
 		AutoscalingOptions: AutoscalingOptions{
@@ -86,7 +96,7 @@ func TestFindUnneededNodes(t *testing.T) {
 		LogRecorder:          fakeLogRecorder,
 	}
 	sd := NewScaleDown(&context)
-	sd.UpdateUnneededNodes([]*apiv1.Node{n1, n2, n3, n4}, []*apiv1.Node{n1, n2, n3, n4}, []*apiv1.Pod{p1, p2, p3, p4}, time.Now(), nil)
+	sd.UpdateUnneededNodes([]*apiv1.Node{n1, n2, n3, n4, n5}, []*apiv1.Node{n1, n2, n3, n4, n5}, []*apiv1.Pod{p1, p2, p3, p4}, time.Now(), nil)
 
 	assert.Equal(t, 1, len(sd.unneededNodes))
 	addTime, found := sd.unneededNodes["n2"]

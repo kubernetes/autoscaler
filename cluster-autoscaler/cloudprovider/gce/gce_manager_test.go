@@ -19,10 +19,10 @@ package gce
 import (
 	"testing"
 
-	apiv1 "k8s.io/kubernetes/pkg/api/v1"
-	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
-
 	"github.com/stretchr/testify/assert"
+	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 )
 
 func TestBuildGenericLabels(t *testing.T) {
@@ -36,8 +36,8 @@ func TestBuildGenericLabels(t *testing.T) {
 	assert.Equal(t, "us-central1-b", labels[kubeletapis.LabelZoneFailureDomain])
 	assert.Equal(t, "sillyname", labels[kubeletapis.LabelHostname])
 	assert.Equal(t, "n1-standard-8", labels[kubeletapis.LabelInstanceType])
-	assert.Equal(t, defaultArch, labels[kubeletapis.LabelArch])
-	assert.Equal(t, defaultOS, labels[kubeletapis.LabelOS])
+	assert.Equal(t, cloudprovider.DefaultArch, labels[kubeletapis.LabelArch])
+	assert.Equal(t, cloudprovider.DefaultOS, labels[kubeletapis.LabelOS])
 }
 
 func TestExtractLabelsFromKubeEnv(t *testing.T) {
@@ -54,15 +54,43 @@ func TestExtractLabelsFromKubeEnv(t *testing.T) {
 	assert.Equal(t, "true", labels["cloud.google.com/gke-preemptible"])
 }
 
-func TestBuildReadyConditions(t *testing.T) {
-	conditions := buildReadyConditions()
-	foundReady := false
-	for _, condition := range conditions {
-		if condition.Type == apiv1.NodeReady && condition.Status == apiv1.ConditionTrue {
-			foundReady = true
-		}
+func TestExtractTaintsFromKubeEnv(t *testing.T) {
+	kubeenv := "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
+		"NODE_LABELS: a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true\n" +
+		"DNS_SERVER_IP: '10.0.0.10'\n" +
+		"NODE_TAINTS: 'dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c'\n"
+
+	expectedTaints := []apiv1.Taint{
+		{
+			Key:    "dedicated",
+			Value:  "ml",
+			Effect: apiv1.TaintEffectNoSchedule,
+		},
+		{
+			Key:    "test",
+			Value:  "dev",
+			Effect: apiv1.TaintEffectPreferNoSchedule,
+		},
+		{
+			Key:    "a",
+			Value:  "b",
+			Effect: apiv1.TaintEffect("c"),
+		},
 	}
-	assert.True(t, foundReady)
+
+	taints, err := extractTaintsFromKubeEnv(kubeenv)
+	assert.Nil(t, err)
+	assert.Equal(t, 3, len(taints))
+	assert.Equal(t, makeTaintSet(expectedTaints), makeTaintSet(taints))
+
+}
+
+func makeTaintSet(taints []apiv1.Taint) map[apiv1.Taint]bool {
+	set := make(map[apiv1.Taint]bool)
+	for _, taint := range taints {
+		set[taint] = true
+	}
+	return set
 }
 
 func TestParseCustomMachineType(t *testing.T) {

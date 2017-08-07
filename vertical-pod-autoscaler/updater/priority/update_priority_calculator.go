@@ -23,8 +23,8 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/updater/apimock"
 
 	"github.com/golang/glog"
+	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 )
 
 const (
