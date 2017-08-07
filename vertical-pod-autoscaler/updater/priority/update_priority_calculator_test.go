@@ -20,10 +20,10 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/updater/apimock"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/updater/test"
-	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 )
 
 const (

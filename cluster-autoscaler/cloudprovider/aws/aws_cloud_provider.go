@@ -21,10 +21,10 @@ import (
 	"regexp"
 	"strings"
 
+	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 )
 
@@ -184,7 +184,7 @@ func (asg *Asg) MinSize() int {
 }
 
 // TargetSize returns the current TARGET size of the node group. It is possible that the
-// number is different from the number of nodes registered in Kuberentes.
+// number is different from the number of nodes registered in Kubernetes.
 func (asg *Asg) TargetSize() (int, error) {
 	size, err := asg.awsManager.GetAsgSize(asg)
 	return int(size), err
@@ -292,11 +292,23 @@ func (asg *Asg) Nodes() ([]string, error) {
 
 // TemplateNodeInfo returns a node template for this node group.
 func (asg *Asg) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
-	return nil, cloudprovider.ErrNotImplemented
+	template, err := asg.awsManager.getAsgTemplate(asg.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	node, err := asg.awsManager.buildNodeFromTemplate(asg, template)
+	if err != nil {
+		return nil, err
+	}
+
+	nodeInfo := schedulercache.NewNodeInfo(cloudprovider.BuildKubeProxy(asg.Name))
+	nodeInfo.SetNode(node)
+	return nodeInfo, nil
 }
 
 func buildAsgFromSpec(value string, awsManager *AwsManager) (*Asg, error) {
-	spec, err := dynamic.SpecFromString(value, false)
+	spec, err := dynamic.SpecFromString(value, true)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse node group spec: %v", err)

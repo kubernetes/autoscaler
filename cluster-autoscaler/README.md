@@ -20,9 +20,11 @@ there is a big chance that it won't work as expected.
 | Kubernetes Version  | CA Version   |
 |--------|--------|
 | 1.7.X  | 0.6.X  |
-| 1.6.X  | 0.5.X  |
+| 1.6.X  | 0.5.X, 0.6.X<sup>*</sup>  |
 | 1.5.X  | 0.4.X  |
 | 1.4.X  | 0.3.X  |
+
+<sup>*</sup>Cluster Autoscaler 0.5.X is the official version shipped with k8s 1.6. We've done some basic tests using k8s 1.6 / CA 0.6 and we're not aware of any problems with this setup. However, CA internally simulates k8s scheduler and using different versions of scheduler code can lead to subtle issues.
 
 # Notable changes
 

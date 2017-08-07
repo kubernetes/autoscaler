@@ -21,12 +21,12 @@ import (
 	"testing"
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
+	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
-	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	apiv1 "k8s.io/api/core/v1"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 
 	"github.com/stretchr/testify/assert"
@@ -117,6 +117,26 @@ func TestSanitizeLabels(t *testing.T) {
 	assert.Equal(t, node.Labels["x"], "y")
 	assert.NotEqual(t, node.Name, oldNode.Name)
 	assert.Equal(t, node.Labels[kubeletapis.LabelHostname], node.Name)
+}
+
+func TestSanitizeTaints(t *testing.T) {
+	oldNode := BuildTestNode("ng1-1", 1000, 1000)
+	taints := make([]apiv1.Taint, 0)
+	taints = append(taints, apiv1.Taint{
+		Key:    ReschedulerTaintKey,
+		Value:  "test1",
+		Effect: apiv1.TaintEffectNoSchedule,
+	})
+	taints = append(taints, apiv1.Taint{
+		Key:    "test-taint",
+		Value:  "test2",
+		Effect: apiv1.TaintEffectNoSchedule,
+	})
+	oldNode.Spec.Taints = taints
+	node, err := sanitizeTemplateNode(oldNode, "bzium")
+	assert.NoError(t, err)
+	assert.Equal(t, len(node.Spec.Taints), 1)
+	assert.Equal(t, node.Spec.Taints[0].Key, "test-taint")
 }
 
 func TestRemoveFixNodeTargetSize(t *testing.T) {

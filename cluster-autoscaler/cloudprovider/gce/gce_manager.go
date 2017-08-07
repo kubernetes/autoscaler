@@ -26,7 +26,7 @@ import (
 	"sync"
 	"time"
 
-	"gopkg.in/gcfg.v1"
+	gcfg "gopkg.in/gcfg.v1"
 
 	"github.com/golang/glog"
 	"golang.org/x/oauth2"
@@ -34,10 +34,11 @@ import (
 	gce "google.golang.org/api/compute/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 
+	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
-	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	provider_gce "k8s.io/kubernetes/pkg/cloudprovider/providers/gce"
 )
 
@@ -326,7 +327,7 @@ func (m *GceManager) buildNodeFromTemplate(mig *Mig, template *gce.InstanceTempl
 	// TODO: use proper allocatable!!
 	node.Status.Allocatable = node.Status.Capacity
 
-	// KubeEnvLabels
+	// KubeEnv labels & taints
 	if template.Properties.Metadata == nil {
 		return nil, fmt.Errorf("instance template %s has no metadata", template.Name)
 	}
@@ -335,11 +336,18 @@ func (m *GceManager) buildNodeFromTemplate(mig *Mig, template *gce.InstanceTempl
 			if item.Value == nil {
 				return nil, fmt.Errorf("no kube-env content in metadata")
 			}
+			// Extract labels
 			kubeEnvLabels, err := extractLabelsFromKubeEnv(*item.Value)
 			if err != nil {
 				return nil, err
 			}
-			node.Labels = joinStringMaps(node.Labels, kubeEnvLabels)
+			node.Labels = cloudprovider.JoinStringMaps(node.Labels, kubeEnvLabels)
+			// Extract taints
+			kubeEnvTaints, err := extractTaintsFromKubeEnv(*item.Value)
+			if err != nil {
+				return nil, err
+			}
+			node.Spec.Taints = append(node.Spec.Taints, kubeEnvTaints...)
 		}
 	}
 	// GenericLabels
@@ -347,25 +355,20 @@ func (m *GceManager) buildNodeFromTemplate(mig *Mig, template *gce.InstanceTempl
 	if err != nil {
 		return nil, err
 	}
-	node.Labels = joinStringMaps(node.Labels, labels)
+	node.Labels = cloudprovider.JoinStringMaps(node.Labels, labels)
 
 	// Ready status
-	node.Status.Conditions = buildReadyConditions()
+	node.Status.Conditions = cloudprovider.BuildReadyConditions()
 
 	return &node, nil
 }
-
-const (
-	defaultArch = "amd64"
-	defaultOS   = "linux"
-)
 
 func buildGenericLabels(ref GceRef, machineType string, nodeName string) (map[string]string, error) {
 	result := make(map[string]string)
 
 	// TODO: extract it somehow
-	result[kubeletapis.LabelArch] = defaultArch
-	result[kubeletapis.LabelOS] = defaultOS
+	result[kubeletapis.LabelArch] = cloudprovider.DefaultArch
+	result[kubeletapis.LabelOS] = cloudprovider.DefaultOS
 
 	result[kubeletapis.LabelInstanceType] = machineType
 	ix := strings.LastIndex(ref.Zone, "-")
@@ -393,38 +396,19 @@ func parseCustomMachineType(machineType string) (cpu, mem int64, err error) {
 	return
 }
 
-func buildReadyConditions() []apiv1.NodeCondition {
-	lastTransition := time.Now().Add(-time.Minute)
-	return []apiv1.NodeCondition{
-		{
-			Type:               apiv1.NodeReady,
-			Status:             apiv1.ConditionTrue,
-			LastTransitionTime: metav1.Time{Time: lastTransition},
-		},
-		{
-			Type:               apiv1.NodeNetworkUnavailable,
-			Status:             apiv1.ConditionFalse,
-			LastTransitionTime: metav1.Time{Time: lastTransition},
-		},
-		{
-			Type:               apiv1.NodeOutOfDisk,
-			Status:             apiv1.ConditionFalse,
-			LastTransitionTime: metav1.Time{Time: lastTransition},
-		},
-		{
-			Type:               apiv1.NodeMemoryPressure,
-			Status:             apiv1.ConditionFalse,
-			LastTransitionTime: metav1.Time{Time: lastTransition},
-		},
-		{
-			Type:               apiv1.NodeInodePressure,
-			Status:             apiv1.ConditionFalse,
-			LastTransitionTime: metav1.Time{Time: lastTransition},
-		},
-	}
+func extractLabelsFromKubeEnv(kubeEnv string) (map[string]string, error) {
+	return extractFromKubeEnv(kubeEnv, "NODE_LABELS")
 }
 
-func extractLabelsFromKubeEnv(kubeEnv string) (map[string]string, error) {
+func extractTaintsFromKubeEnv(kubeEnv string) ([]apiv1.Taint, error) {
+	taintMap, err := extractFromKubeEnv(kubeEnv, "NODE_TAINTS")
+	if err != nil {
+		return nil, err
+	}
+	return buildTaints(taintMap)
+}
+
+func extractFromKubeEnv(kubeEnv, resource string) (map[string]string, error) {
 	result := make(map[string]string)
 
 	for line, env := range strings.Split(kubeEnv, "\n") {
@@ -438,25 +422,31 @@ func extractLabelsFromKubeEnv(kubeEnv string) (map[string]string, error) {
 		}
 		key := strings.Trim(items[0], " ")
 		value := strings.Trim(items[1], " \"'")
-		if key == "NODE_LABELS" {
-			for _, label := range strings.Split(value, ",") {
-				labelItems := strings.SplitN(label, "=", 2)
-				if len(labelItems) != 2 {
-					return nil, fmt.Errorf("error while parsing label: %s", label)
+		if key == resource {
+			for _, val := range strings.Split(value, ",") {
+				valItems := strings.SplitN(val, "=", 2)
+				if len(valItems) != 2 {
+					return nil, fmt.Errorf("error while parsing kube env value: %s", val)
 				}
-				result[labelItems[0]] = labelItems[1]
+				result[valItems[0]] = valItems[1]
 			}
 		}
 	}
 	return result, nil
 }
 
-func joinStringMaps(items ...map[string]string) map[string]string {
-	result := make(map[string]string)
-	for _, m := range items {
-		for k, v := range m {
-			result[k] = v
+func buildTaints(kubeEnvTaints map[string]string) ([]apiv1.Taint, error) {
+	taints := make([]apiv1.Taint, 0)
+	for key, value := range kubeEnvTaints {
+		values := strings.SplitN(value, ":", 2)
+		if len(values) != 2 {
+			return nil, fmt.Errorf("error while parsing node taint value and effect: %s", value)
 		}
+		taints = append(taints, apiv1.Taint{
+			Key:    key,
+			Value:  values[0],
+			Effect: apiv1.TaintEffect(values[1]),
+		})
 	}
-	return result
+	return taints, nil
 }

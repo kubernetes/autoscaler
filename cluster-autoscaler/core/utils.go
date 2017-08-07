@@ -29,16 +29,21 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 
+	apiv1 "k8s.io/api/core/v1"
+	extensionsv1 "k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	api "k8s.io/kubernetes/pkg/api"
-	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	podv1 "k8s.io/kubernetes/pkg/api/v1/pod"
-	extensionsv1 "k8s.io/kubernetes/pkg/apis/extensions/v1beta1"
 	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 
 	"github.com/golang/glog"
+)
+
+const (
+	// ReschedulerTaintKey is the name of the taint created by rescheduler.
+	ReschedulerTaintKey = "CriticalAddonsOnly"
 )
 
 // GetAllNodesAvailableTime returns time when the newest node became available for scheduler.
@@ -273,10 +278,22 @@ func sanitizeTemplateNode(node *apiv1.Node, nodeGroup string) (*apiv1.Node, erro
 		}
 	}
 	newNode.Name = nodeName
+	newTaints := make([]apiv1.Taint, 0)
+	for _, taint := range node.Spec.Taints {
+		// Rescheduler can put this taint on a node while evicting non-critical pods.
+		// New nodes will not have this taint and so we should strip it when creating
+		// template node.
+		if taint.Key == ReschedulerTaintKey {
+			glog.V(4).Infof("Removing rescheduler taint when creating template from node %s", node.Name)
+		} else {
+			newTaints = append(newTaints, taint)
+		}
+	}
+	newNode.Spec.Taints = newTaints
 	return newNode, nil
 }
 
-// Removes unregisterd nodes if needed. Returns true if anything was removed and error if such occurred.
+// Removes unregistered nodes if needed. Returns true if anything was removed and error if such occurred.
 func removeOldUnregisteredNodes(unregisteredNodes []clusterstate.UnregisteredNode, context *AutoscalingContext,
 	currentTime time.Time) (bool, error) {
 	removedAny := false

@@ -33,6 +33,9 @@ type FloatSlidingWindow interface {
 	// be used to modify the last element. It is only valid until the next
 	// call to Push(). Return nil if called on an empty buffer.
 	Head() *float64
+
+	// Reset the contents of the window.
+	Clear()
 }
 
 // NewFloatSlidingWindow returns a new instance of FloatSlidingWindowImpl with a
@@ -88,4 +91,11 @@ func (b *floatSlidingWindow) Push(value float64) (bool, float64) {
 	prevValue := b.buffer[b.head]
 	b.buffer[b.head] = value
 	return true, prevValue
+}
+
+// Clear resets the contents of the window.
+func (b *floatSlidingWindow) Clear() {
+	b.buffer = make([]float64, 0)
+	b.head = -1
+	b.isFull = false
 }

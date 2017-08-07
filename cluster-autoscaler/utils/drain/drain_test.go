@@ -21,16 +21,16 @@ import (
 	"testing"
 	"time"
 
+	appsv1beta1 "k8s.io/api/apps/v1beta1"
+	batchv1 "k8s.io/api/batch/v1"
+	apiv1 "k8s.io/api/core/v1"
+	extensions "k8s.io/api/extensions/v1beta1"
+	policyv1 "k8s.io/api/policy/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	core "k8s.io/client-go/testing"
 	"k8s.io/kubernetes/pkg/api/testapi"
-	apiv1 "k8s.io/kubernetes/pkg/api/v1"
-	appsv1beta1 "k8s.io/kubernetes/pkg/apis/apps/v1beta1"
-	batchv1 "k8s.io/kubernetes/pkg/apis/batch/v1"
-	extensions "k8s.io/kubernetes/pkg/apis/extensions/v1beta1"
-	policyv1 "k8s.io/kubernetes/pkg/apis/policy/v1beta1"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset/fake"
 )
 

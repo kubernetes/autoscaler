@@ -20,7 +20,7 @@ import (
 	"testing"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
+	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 
 	"github.com/stretchr/testify/assert"
 )
