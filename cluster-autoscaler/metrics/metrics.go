@@ -23,6 +23,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 
+	"github.com/golang/glog"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -41,6 +42,12 @@ const (
 	Empty NodeScaleDownReason = "empty"
 	// Unready node was removed
 	Unready NodeScaleDownReason = "unready"
+
+	// LogLongDurationThreshold defines the duration after which long function
+	// duration will be logged (in addition to being counted in metric).
+	// This is meant to help find unexpectedly long function execution times for
+	// debugging purposes.
+	LogLongDurationThreshold = 5 * time.Second
 )
 
 var (
@@ -142,13 +149,15 @@ func init() {
 	prometheus.MustRegister(unneededNodesCount)
 }
 
-func getDuration(start time.Time) float64 {
-	return time.Now().Sub(start).Seconds()
-}
-
 // UpdateDuration records the duration of the step identified by the label
 func UpdateDuration(label string, start time.Time) {
-	functionDuration.WithLabelValues(label).Observe(getDuration(start))
+	duration := time.Now().Sub(start)
+	// TODO(maciekpytel): remove second condition if we manage to get
+	// asynchronous node drain
+	if duration > LogLongDurationThreshold && label != "scaleDown" {
+		glog.Infof("Function %s took %v to complete", label, duration)
+	}
+	functionDuration.WithLabelValues(label).Observe(duration.Seconds())
 }
 
 // UpdateLastTime records the time the step identified by the label was started
