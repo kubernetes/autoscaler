@@ -17,12 +17,13 @@ limitations under the License.
 package priority
 
 import (
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/updater/apimock"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/updater/test"
-	"testing"
 )
 
 const (
@@ -64,7 +65,6 @@ func TestSortPriorityMultiResource(t *testing.T) {
 }
 
 func TestSortPriorityMultiContainers(t *testing.T) {
-
 	containerName2 := "container2"
 
 	pod1 := test.BuildTestPod("POD1", containerName, "3", "10M", nil)
