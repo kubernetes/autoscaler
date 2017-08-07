@@ -366,7 +366,7 @@ func getEmptyNodes(candidates []*apiv1.Node, pods []*apiv1.Pod, maxEmptyBulkDele
 		}
 		var available int
 		var found bool
-		if _, found = availabilityMap[nodeGroup.Id()]; !found {
+		if available, found = availabilityMap[nodeGroup.Id()]; !found {
 			size, err := nodeGroup.TargetSize()
 			if err != nil {
 				glog.Errorf("Failed to get size for %s: %v ", nodeGroup.Id(), err)
