@@ -310,6 +310,158 @@ func TestScaleDown(t *testing.T) {
 	assert.Equal(t, n1.Name, getStringFromChan(updatedNodes))
 }
 
+func assertSubset(t *testing.T, a []string, b []string) {
+	for _, x := range a {
+		found := false
+		for _, y := range b {
+			if x == y {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Fatalf("Failed to find %s (from %s) in %v", x, a, b)
+		}
+	}
+}
+
+func TestScaleDownEmptyMultipleNodeGroups(t *testing.T) {
+	updatedNodes := make(chan string, 10)
+	deletedNodes := make(chan string, 10)
+	fakeClient := &fake.Clientset{}
+
+	n1 := BuildTestNode("n1", 1000, 1000)
+	SetNodeReadyState(n1, true, time.Time{})
+	n2 := BuildTestNode("n2", 1000, 1000)
+	SetNodeReadyState(n2, true, time.Time{})
+	fakeClient.Fake.AddReactor("list", "pods", func(action core.Action) (bool, runtime.Object, error) {
+		return true, &apiv1.PodList{Items: []apiv1.Pod{}}, nil
+	})
+	fakeClient.Fake.AddReactor("get", "pods", func(action core.Action) (bool, runtime.Object, error) {
+		return true, nil, errors.NewNotFound(apiv1.Resource("pod"), "whatever")
+	})
+	fakeClient.Fake.AddReactor("get", "nodes", func(action core.Action) (bool, runtime.Object, error) {
+		getAction := action.(core.GetAction)
+		switch getAction.GetName() {
+		case n1.Name:
+			return true, n1, nil
+		case n2.Name:
+			return true, n2, nil
+		}
+		return true, nil, fmt.Errorf("Wrong node: %v", getAction.GetName())
+	})
+	fakeClient.Fake.AddReactor("update", "nodes", func(action core.Action) (bool, runtime.Object, error) {
+		update := action.(core.UpdateAction)
+		obj := update.GetObject().(*apiv1.Node)
+		updatedNodes <- obj.Name
+		return true, obj, nil
+	})
+
+	provider := testprovider.NewTestCloudProvider(nil, func(nodeGroup string, node string) error {
+		deletedNodes <- node
+		return nil
+	})
+	provider.AddNodeGroup("ng1", 0, 10, 2)
+	provider.AddNodeGroup("ng2", 0, 10, 2)
+	provider.AddNode("ng1", n1)
+	provider.AddNode("ng2", n2)
+	assert.NotNil(t, provider)
+
+	fakeRecorder := kube_util.CreateEventRecorder(fakeClient)
+	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false)
+	context := &AutoscalingContext{
+		AutoscalingOptions: AutoscalingOptions{
+			ScaleDownUtilizationThreshold: 0.5,
+			ScaleDownUnneededTime:         time.Minute,
+			MaxGracefulTerminationSec:     60,
+			MaxEmptyBulkDelete:            10,
+		},
+		PredicateChecker:     simulator.NewTestPredicateChecker(),
+		CloudProvider:        provider,
+		ClientSet:            fakeClient,
+		Recorder:             fakeRecorder,
+		ClusterStateRegistry: clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}),
+		LogRecorder:          fakeLogRecorder,
+	}
+	scaleDown := NewScaleDown(context)
+	scaleDown.UpdateUnneededNodes([]*apiv1.Node{n1, n2},
+		[]*apiv1.Node{n1, n2}, []*apiv1.Pod{}, time.Now().Add(-5*time.Minute), nil)
+	result, err := scaleDown.TryToScaleDown([]*apiv1.Node{n1, n2}, []*apiv1.Pod{}, nil)
+	assert.NoError(t, err)
+	assert.Equal(t, ScaleDownNodeDeleted, result)
+	d1 := getStringFromChan(deletedNodes)
+	d2 := getStringFromChan(deletedNodes)
+	assertSubset(t, []string{d1, d2}, []string{n1.Name, n2.Name})
+}
+
+func TestScaleDownEmptySingleNodeGroup(t *testing.T) {
+	updatedNodes := make(chan string, 10)
+	deletedNodes := make(chan string, 10)
+	fakeClient := &fake.Clientset{}
+
+	n1 := BuildTestNode("n1", 1000, 1000)
+	SetNodeReadyState(n1, true, time.Time{})
+	n2 := BuildTestNode("n2", 1000, 1000)
+	SetNodeReadyState(n2, true, time.Time{})
+	fakeClient.Fake.AddReactor("list", "pods", func(action core.Action) (bool, runtime.Object, error) {
+		return true, &apiv1.PodList{Items: []apiv1.Pod{}}, nil
+	})
+	fakeClient.Fake.AddReactor("get", "pods", func(action core.Action) (bool, runtime.Object, error) {
+		return true, nil, errors.NewNotFound(apiv1.Resource("pod"), "whatever")
+	})
+	fakeClient.Fake.AddReactor("get", "nodes", func(action core.Action) (bool, runtime.Object, error) {
+		getAction := action.(core.GetAction)
+		switch getAction.GetName() {
+		case n1.Name:
+			return true, n1, nil
+		case n2.Name:
+			return true, n2, nil
+		}
+		return true, nil, fmt.Errorf("Wrong node: %v", getAction.GetName())
+	})
+	fakeClient.Fake.AddReactor("update", "nodes", func(action core.Action) (bool, runtime.Object, error) {
+		update := action.(core.UpdateAction)
+		obj := update.GetObject().(*apiv1.Node)
+		updatedNodes <- obj.Name
+		return true, obj, nil
+	})
+
+	provider := testprovider.NewTestCloudProvider(nil, func(nodeGroup string, node string) error {
+		deletedNodes <- node
+		return nil
+	})
+	provider.AddNodeGroup("ng1", 0, 10, 2)
+	provider.AddNode("ng1", n1)
+	provider.AddNode("ng1", n2)
+	assert.NotNil(t, provider)
+
+	fakeRecorder := kube_util.CreateEventRecorder(fakeClient)
+	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false)
+	context := &AutoscalingContext{
+		AutoscalingOptions: AutoscalingOptions{
+			ScaleDownUtilizationThreshold: 0.5,
+			ScaleDownUnneededTime:         time.Minute,
+			MaxGracefulTerminationSec:     60,
+			MaxEmptyBulkDelete:            10,
+		},
+		PredicateChecker:     simulator.NewTestPredicateChecker(),
+		CloudProvider:        provider,
+		ClientSet:            fakeClient,
+		Recorder:             fakeRecorder,
+		ClusterStateRegistry: clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}),
+		LogRecorder:          fakeLogRecorder,
+	}
+	scaleDown := NewScaleDown(context)
+	scaleDown.UpdateUnneededNodes([]*apiv1.Node{n1, n2},
+		[]*apiv1.Node{n1, n2}, []*apiv1.Pod{}, time.Now().Add(-5*time.Minute), nil)
+	result, err := scaleDown.TryToScaleDown([]*apiv1.Node{n1, n2}, []*apiv1.Pod{}, nil)
+	assert.NoError(t, err)
+	assert.Equal(t, ScaleDownNodeDeleted, result)
+	d1 := getStringFromChan(deletedNodes)
+	d2 := getStringFromChan(deletedNodes)
+	assertSubset(t, []string{d1, d2}, []string{n1.Name, n2.Name})
+}
+
 func TestNoScaleDownUnready(t *testing.T) {
 	fakeClient := &fake.Clientset{}
 	n1 := BuildTestNode("n1", 1000, 1000)
