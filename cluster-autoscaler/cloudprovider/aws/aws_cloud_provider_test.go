@@ -23,7 +23,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	apiv1 "k8s.io/api/core/v1"
 )
 
 type AutoScalingMock struct {
@@ -33,6 +33,11 @@ type AutoScalingMock struct {
 func (a *AutoScalingMock) DescribeAutoScalingGroups(i *autoscaling.DescribeAutoScalingGroupsInput) (*autoscaling.DescribeAutoScalingGroupsOutput, error) {
 	args := a.Called(i)
 	return args.Get(0).(*autoscaling.DescribeAutoScalingGroupsOutput), nil
+}
+
+func (a *AutoScalingMock) DescribeLaunchConfigurations(i *autoscaling.DescribeLaunchConfigurationsInput) (*autoscaling.DescribeLaunchConfigurationsOutput, error) {
+	args := a.Called(i)
+	return args.Get(0).(*autoscaling.DescribeLaunchConfigurationsOutput), nil
 }
 
 func (a *AutoScalingMock) DescribeTags(i *autoscaling.DescribeTagsInput) (*autoscaling.DescribeTagsOutput, error) {

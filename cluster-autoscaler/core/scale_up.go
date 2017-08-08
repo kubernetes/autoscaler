@@ -20,6 +20,8 @@ import (
 	"bytes"
 	"time"
 
+	apiv1 "k8s.io/api/core/v1"
+	extensionsv1 "k8s.io/api/extensions/v1beta1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
@@ -27,15 +29,13 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/nodegroupset"
-	apiv1 "k8s.io/kubernetes/pkg/api/v1"
-	extensionsv1 "k8s.io/kubernetes/pkg/apis/extensions/v1beta1"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 
 	"github.com/golang/glog"
 )
 
 // ScaleUp tries to scale the cluster up. Return true if it found a way to increase the size,
-// false if it didn't and error if an error occured. Assumes that all nodes in the cluster are
+// false if it didn't and error if an error occurred. Assumes that all nodes in the cluster are
 // ready and in sync with instance groups.
 func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes []*apiv1.Node,
 	daemonSets []*extensionsv1.DaemonSet) (bool, errors.AutoscalerError) {

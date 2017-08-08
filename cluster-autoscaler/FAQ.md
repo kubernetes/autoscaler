@@ -21,6 +21,8 @@ this document:
 * [How to?](#how-to)
   * [I'm running cluster with nodes in multiple zones for HA purposes. Is that supported by Cluster Autoscaler?](#im-running-cluster-with-nodes-in-multiple-zones-for-ha-purposes-is-that-supported-by-cluster-autoscaler)
   * [How can I monitor Cluster Autoscaler?](#how-can-i-monitor-cluster-autoscaler)
+  * [How can I scale my cluster to just 1 node?](#how-can-i-scale-my-cluster-to-just-1-node)
+  * [How can I scale a node group to 0?](#how-can-i-scale-a-node-group-to-0)
 * [Internals](#internals)
   * [Are all of the mentioned heuristics and timings final?](#are-all-of-the-mentioned-heuristics-and-timings-final)
   * [How does scale up work?](#how-does-scale-up-work)
@@ -31,7 +33,9 @@ this document:
   * [How does CA deal with unready nodes in version >=0.5.0 ?](#how-does-ca-deal-with-unready-nodes-in-version-050-)
   * [How fast is Cluster Autoscaler?](#how-fast-is-cluster-autoscaler)
   * [How fast is HPA when combined with CA?](#how-fast-is-hpa-when-combined-with-ca)
-  * [Where can I find the designs of the upcoming features.](#where-can-i-find-the-designs-of-the-upcoming-features)
+  * [Where can I find the designs of the upcoming features?](#where-can-i-find-the-designs-of-the-upcoming-features)
+  * [What are Expanders?](#what-are-expanders)
+  * [What Expanders are available?](#what-expanders-are-available)
 * [Troubleshooting](#troubleshooting)
   * [I have a couple of nodes with low utilization, but they are not scaled down. Why?](#i-have-a-couple-of-nodes-with-low-utilization-but-they-are-not-scaled-down-why)
   * [I have a couple of pending pods, but there was no scale up?](#i-have-a-couple-of-pending-pods-but-there-was-no-scale-up)
@@ -60,9 +64,14 @@ Cluster Autoscaler decreases the size of the cluster when some nodes are consist
 
 ### What types of pods can prevent CA from removing a node?
 
-* Kube-system pods that are not run on the node by default.
+* Pods with restrictive PodDisruptionBudget.
+* Kube-system pods that:
+  * are not run on the node by default,
+  * don't have PDB or their PDB is too restrictive (since CA 0.6).
 * Pods that are not backed by a controller object (so not created by deployment, replica set, job, stateful set etc).
 * Pods with local storage.
+* Pods that cannot be moved elsewhere due to various constraints (lack of resources, non-matching node selctors or affinity,
+matching anti-affinity, etc)
 
 ### How does Horizontal Pod Autoscaler work with Cluster Autoscaler?
 
@@ -135,6 +144,36 @@ respectively under /metrics and /health-check.
 Metrics are provided in Prometheus format and their detailed description is
 available [here](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/proposals/metrics.md).
 
+### How can I scale my cluster to just 1 node?
+
+Prior to version 0.6, Cluster Autoscaler was not touching nodes that were running important
+kube-system pods like DNS, Heapster, Dashboard etc. If these pods landed on different nodes, 
+CA could not scale the cluster down and the user could end up with a completely empty 
+3 node cluser. In 0.6 we added an option to tell CA that some system pods can be moved around.
+If a K8S user configure a [PodDisruptionBudget](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/)
+for the kube-system pod then the default strategy of not touching the node running this pod
+is overwritten with PDB settings. So, to enable kube-system pods migration one should set
+[minAvailable](https://kubernetes.io/docs/api-reference/v1.7/#poddisruptionbudgetspec-v1beta1-policy)
+to 0 (or <= N if there are N+1 pod replicas).
+See also [I have a couple of nodes with low utilization, but they are not scaled down. Why?](#i-have-a-couple-of-nodes-with-low-utilization-but-they-are-not-scaled-down-why)
+
+### How can I scale a node group to 0?
+
+From CA 0.6 for GCE/GKE and CA 0.6.1 for AWS - it is possible to scale a node group to 0 (and obviously from 0), assuming that all scale-down conditions are met.
+
+For AWS if you are using `nodeSelector` you need to tag the ASG with a node-template key `"k8s.io/cluster-autoscaler/node-template/label/"`
+
+For example for a node label of `foo=bar` you would tag the ASG with:
+
+```
+{
+    "ResourceType": "auto-scaling-group",
+    "ResourceId": "foo.example.com",
+    "PropagateAtLaunch": true,
+    "Value": "bar",
+    "Key": "k8s.io/cluster-autoscaler/node-template/label/foo"
+}
+```
 ****************
 
 # Internals
@@ -254,12 +293,44 @@ Then it may take up to 30 sec to register the node in the Kubernetes master and 
 
 All in all the total reaction time is around 4 min.
 
-### Where can I find the designs of the upcoming features.
+### Where can I find the designs of the upcoming features?
 
 CA team follows the generic Kuberntes process and submits design proposals [HERE](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler/proposals)
 before starting any bigger/significant effort.
 Some of the not-yet-fully-approved proposals may be hidden among [PRs](https://github.com/kubernetes/autoscaler/pulls).
 
+### What are Expanders?
+
+When Cluster Autoscaler identifies that it needs to scale up a cluster due to unscheduable pods, 
+it increases the nodes in a node group. When there is one Node Group, this strategy is trivial.
+
+When there are more than one Node Group, which group should be grown or 'expanded'?
+
+Expanders provide different strategies for selecting which Node Group to grow.
+
+Expanders can be selected by passing the name to the `--expander` flag. i.e. 
+`./cluster-autoscaler --expander=random`
+
+### What Expanders are available?
+
+Currently Cluster Autoscaler has 4 expanders:
+
+* `random` - this is the default expander, and should be used when you don't have a particular
+need for the node groups to scale differently
+
+* `most-pods` - selects the node group that would be able to schedule the most pods when scaling
+up. This is useful when you are using nodeSelector to make sure certain pods land on certain nodes. 
+Note that this won't cause the autoscaler to select bigger nodes vs. smaller, as it can grow multiple
+smaller nodes at once
+
+* `least-waste` - selects the node group that will have the least idle CPU (and if tied, unused Memory) node group
+when scaling up. This is useful when you have different classes of nodes, for example, high CPU or high Memory nodes,
+and only want to expand those when pods that need those requirements are to be launched.
+
+* `price` - select the node group that will cost the least and, in the same time, whose machines 
+would match the cluster size. This expander is described in more details 
+[HERE](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/proposals/pricing.md). Currently
+it works only for GCE and GKE.
 
 ************
 
@@ -268,7 +339,7 @@ Some of the not-yet-fully-approved proposals may be hidden among [PRs](https://g
 ### I have a couple of nodes with low utilization, but they are not scaled down. Why?
 
 CA doesn't remove nodes if they are running system pods without a PodDisruptionBudget, pods without a controller or pods with 
-local storage.
+local storage (see [What types of pods can prevent CA from removing a node?](#what-types-of-pods-can-prevent-ca-from-removing-a-node) )
 Also it won't remove a node which has pods that cannot be run elsewhere due to limited resources. Another possibility
 is that the corresponding node group already has the minimum size. Finally, CA doesn't scale down if there was a scale up
 in the last 10 min.
@@ -435,9 +506,3 @@ required to activate them:
    https://github.com/kubernetes/autoscaler/pull/74#issuecomment-302434795).
 
 We are aware that this process is tedious and we will work to improve it.
-
-
-
-
-
-
