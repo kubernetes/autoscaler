@@ -5,17 +5,22 @@ services:
 
 language: go
 
-matrix:
-  include:
-    - go: 1.8
+go:
+  - 1.8
 
-install:
+before_script:
   - mkdir -p $HOME/gopath/src/k8s.io
   - mv $TRAVIS_BUILD_DIR $HOME/gopath/src/k8s.io/autoscaler
   - hack/install-verify-tools.sh
   - export PATH=$GOPATH/bin:$PATH
-  - hack/for-go-proj.sh install
 
-script:
-  - hack/verify-all.sh -v
-  - hack/for-go-proj.sh test
+install: true
+
+jobs:
+  include:
+    - stage: Install
+      script: hack/for-go-proj.sh install
+    - stage: Verify
+      script: hack/verify-all.sh -v
+    - stage: Test
+      script: hack/for-go-proj.sh test
