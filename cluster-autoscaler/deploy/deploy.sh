@@ -15,7 +15,7 @@
 # limitations under the License.
 
 # Usage:
-#   REGISTRY=<my_reg> MIG_LINK=<my_mig> [MIN=1] [MAX=4] [VERSION=v1.1] deploy.sh 
+#   REGISTRY=<my_reg> MIG_LINK=<my_mig> [MIN=1] [MAX=4] [VERSION=v0.6.0] deploy.sh
 
 set -e
 
