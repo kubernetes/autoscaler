@@ -72,7 +72,7 @@ spec:
         app: cluster-autoscaler
     spec:
       containers:
-        - image: gcr.io/google_containers/cluster-autoscaler:v0.5.4
+        - image: gcr.io/google_containers/cluster-autoscaler:v0.6.0
           name: cluster-autoscaler
           resources:
             limits:
@@ -123,7 +123,7 @@ spec:
         app: cluster-autoscaler
     spec:
       containers:
-        - image: gcr.io/google_containers/cluster-autoscaler:v0.5.4
+        - image: gcr.io/google_containers/cluster-autoscaler:v0.6.0
           name: cluster-autoscaler
           resources:
             limits:
