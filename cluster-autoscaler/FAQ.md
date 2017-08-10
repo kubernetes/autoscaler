@@ -454,7 +454,7 @@ the scale-up-triggering pods are removed.
 2. Set up the following env variables:
     ```sh
     export KUBE_AUTOSCALER_MIN_NODES=3
-    export KUBE_AUTOSCALER_MAX_NODES=5
+    export KUBE_AUTOSCALER_MAX_NODES=6
     export KUBE_ENABLE_CLUSTER_AUTOSCALER=true
     ```
     This is the minimum number of nodes required for all e2e tests to pass. The tests should also pass if you set higher quota.
