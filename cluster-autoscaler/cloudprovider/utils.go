@@ -60,11 +60,13 @@ func BuildReadyConditions() []apiv1.NodeCondition {
 			Status:             apiv1.ConditionFalse,
 			LastTransitionTime: metav1.Time{Time: lastTransition},
 		},
+		/* This has been recently renamed. For compatibility with 1.6 lets don't populate it at all.
 		{
 			Type:               apiv1.NodeInodePressure,
 			Status:             apiv1.ConditionFalse,
 			LastTransitionTime: metav1.Time{Time: lastTransition},
 		},
+		*/
 	}
 }
 

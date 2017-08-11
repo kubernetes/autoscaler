@@ -36,9 +36,9 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	"k8s.io/client-go/kubernetes/fake"
 	core "k8s.io/client-go/testing"
 	kube_record "k8s.io/client-go/tools/record"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset/fake"
 )
 
 func TestScaleUpOK(t *testing.T) {
