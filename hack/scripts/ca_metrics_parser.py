@@ -21,10 +21,9 @@ from __future__ import division
 from __future__ import print_function
 import argparse
 import json
-import sys
 
 
-class CAMetric:
+class CAMetric(object):
 
   def __init__(self, function_name):
     self.function_name = function_name
@@ -83,13 +82,13 @@ def parse_metrics_file(metrics_file):
   * buckets - list of tuples (# of samples, bucket upper bound)
   '''
   summary = {}
-  with open(sys.argv[1]) as metrics_file:
+  with open(metrics_file) as metrics_file:
     summary = {}
     metrics = json.load(metrics_file)
     ca_metrics = metrics['ClusterAutoscalerMetrics']
 
-    sum = ca_metrics['cluster_autoscaler_function_duration_seconds_sum']
-    for sample in sum:
+    total_sum = ca_metrics['cluster_autoscaler_function_duration_seconds_sum']
+    for sample in total_sum:
       function = function_name(sample)
       summary[function] = CAMetric(function)
       summary[function].sum = float(metric_value(sample))
