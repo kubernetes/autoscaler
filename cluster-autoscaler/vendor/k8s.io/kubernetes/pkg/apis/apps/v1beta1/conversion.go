@@ -20,7 +20,6 @@ import (
 	"fmt"
 
 	appsv1beta1 "k8s.io/api/apps/v1beta1"
-
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/conversion"
@@ -44,7 +43,7 @@ func addConversionFuncs(scheme *runtime.Scheme) error {
 		Convert_apps_StatefulSetUpdateStrategy_To_v1beta1_StatefulSetUpdateStrategy,
 		// extensions
 		// TODO: below conversions should be dropped in favor of auto-generated
-		// ones, see https://github.com/kubernetes/kubernetextensionsssues/39865
+		// ones, see https://github.com/kubernetes/kubernetes/issues/39865
 		Convert_v1beta1_ScaleStatus_To_extensions_ScaleStatus,
 		Convert_extensions_ScaleStatus_To_v1beta1_ScaleStatus,
 		Convert_v1beta1_DeploymentSpec_To_extensions_DeploymentSpec,
