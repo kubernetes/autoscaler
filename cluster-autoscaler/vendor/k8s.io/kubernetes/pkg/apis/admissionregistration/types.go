@@ -20,8 +20,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// +genclient=true
-// +nonNamespaced=true
+// +genclient
+// +genclient:nonNamespaced
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // InitializerConfiguration describes the configuration of initializers.
 type InitializerConfiguration struct {
@@ -39,6 +40,8 @@ type InitializerConfiguration struct {
 	// +optional
 	Initializers []Initializer
 }
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // InitializerConfigurationList is a list of InitializerConfiguration.
 type InitializerConfigurationList struct {
@@ -118,8 +121,9 @@ const (
 	Fail FailurePolicyType = "Fail"
 )
 
-// +genclient=true
-// +nonNamespaced=true
+// +genclient
+// +genclient:nonNamespaced
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // ExternalAdmissionHookConfiguration describes the configuration of initializers.
 type ExternalAdmissionHookConfiguration struct {
@@ -132,6 +136,8 @@ type ExternalAdmissionHookConfiguration struct {
 	// +optional
 	ExternalAdmissionHooks []ExternalAdmissionHook
 }
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // ExternalAdmissionHookConfigurationList is a list of ExternalAdmissionHookConfiguration.
 type ExternalAdmissionHookConfigurationList struct {

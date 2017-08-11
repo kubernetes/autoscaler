@@ -20,8 +20,8 @@ import (
 	"fmt"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	kube_client "k8s.io/client-go/kubernetes"
 	kube_record "k8s.io/client-go/tools/record"
-	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 )
 
 // ConfigFetcher fetches the up-to-date dynamic configuration from the apiserver
