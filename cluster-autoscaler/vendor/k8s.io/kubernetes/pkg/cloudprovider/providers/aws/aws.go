@@ -403,7 +403,7 @@ type CloudConfig struct {
 		Zone string
 
 		// The AWS VPC flag enables the possibility to run the master components
-		// on a different aws account, on a different cloud provider or on-premise.
+		// on a different aws account, on a different cloud provider or on-premises.
 		// If the flag is set also the KubernetesClusterTag must be provided
 		VPC string
 		// SubnetID enables using a specific subnet to use for ELB's
@@ -480,6 +480,20 @@ func (p *awsSDKProvider) addHandlers(regionName string, h *request.Handlers) {
 			Fn:   delayer.AfterRetry,
 		})
 	}
+
+	p.addAPILoggingHandlers(h)
+}
+
+func (p *awsSDKProvider) addAPILoggingHandlers(h *request.Handlers) {
+	h.Send.PushBackNamed(request.NamedHandler{
+		Name: "k8s/api-request",
+		Fn:   awsSendHandlerLogger,
+	})
+
+	h.ValidateResponse.PushFrontNamed(request.NamedHandler{
+		Name: "k8s/api-validate-response",
+		Fn:   awsValidateResponseHandlerLogger,
+	})
 }
 
 // Get a CrossRequestRetryDelay, scoped to the region, not to the request.
@@ -550,6 +564,7 @@ func (p *awsSDKProvider) Autoscaling(regionName string) (ASG, error) {
 
 func (p *awsSDKProvider) Metadata() (EC2Metadata, error) {
 	client := ec2metadata.New(session.New(&aws.Config{}))
+	p.addAPILoggingHandlers(&client.Handlers)
 	return client, nil
 }
 
@@ -876,9 +891,9 @@ func newAWSCloud(config io.Reader, awsServices Services) (*Cloud, error) {
 	awsCloud.instanceCache.cloud = awsCloud
 
 	if cfg.Global.VPC != "" && cfg.Global.SubnetID != "" && (cfg.Global.KubernetesClusterTag != "" || cfg.Global.KubernetesClusterID != "") {
-		// When the master is running on a different AWS account, cloud provider or on-premise
+		// When the master is running on a different AWS account, cloud provider or on-premises
 		// build up a dummy instance and use the VPC from the nodes account
-		glog.Info("Master is configured to run on a different AWS account, different cloud provider or on-premise")
+		glog.Info("Master is configured to run on a different AWS account, different cloud provider or on-premises")
 		awsCloud.selfAWSInstance = &awsInstance{
 			nodeName: "master-dummy",
 			vpcID:    cfg.Global.VPC,
@@ -954,6 +969,11 @@ func (c *Cloud) Zones() (cloudprovider.Zones, bool) {
 // Routes returns an implementation of Routes for Amazon Web Services.
 func (c *Cloud) Routes() (cloudprovider.Routes, bool) {
 	return c, true
+}
+
+// HasClusterID returns true if the cluster has a clusterID
+func (c *Cloud) HasClusterID() bool {
+	return len(c.tagging.clusterID()) > 0
 }
 
 // NodeAddresses is an implementation of Instances.NodeAddresses.
@@ -2086,6 +2106,11 @@ func isEqualUserGroupPair(l, r *ec2.UserIdGroupPair, compareGroupUserIDs bool) b
 // Returns true if and only if changes were made
 // The security group must already exist
 func (c *Cloud) setSecurityGroupIngress(securityGroupID string, permissions IPPermissionSet) (bool, error) {
+	// We do not want to make changes to the Global defined SG
+	if securityGroupID == c.cfg.Global.ElbSecurityGroup {
+		return false, nil
+	}
+
 	group, err := c.findSecurityGroup(securityGroupID)
 	if err != nil {
 		glog.Warningf("Error retrieving security group %q", err)
@@ -2156,6 +2181,11 @@ func (c *Cloud) setSecurityGroupIngress(securityGroupID string, permissions IPPe
 // Returns true if and only if changes were made
 // The security group must already exist
 func (c *Cloud) addSecurityGroupIngress(securityGroupID string, addPermissions []*ec2.IpPermission) (bool, error) {
+	// We do not want to make changes to the Global defined SG
+	if securityGroupID == c.cfg.Global.ElbSecurityGroup {
+		return false, nil
+	}
+
 	group, err := c.findSecurityGroup(securityGroupID)
 	if err != nil {
 		glog.Warningf("Error retrieving security group: %q", err)
@@ -2201,7 +2231,7 @@ func (c *Cloud) addSecurityGroupIngress(securityGroupID string, addPermissions [
 	request.IpPermissions = changes
 	_, err = c.ec2.AuthorizeSecurityGroupIngress(request)
 	if err != nil {
-		glog.Warning("Error authorizing security group ingress %q", err)
+		glog.Warningf("Error authorizing security group ingress %q", err)
 		return false, fmt.Errorf("error authorizing security group ingress: %q", err)
 	}
 
@@ -2212,6 +2242,11 @@ func (c *Cloud) addSecurityGroupIngress(securityGroupID string, addPermissions [
 // Returns true if and only if changes were made
 // If the security group no longer exists, will return (false, nil)
 func (c *Cloud) removeSecurityGroupIngress(securityGroupID string, removePermissions []*ec2.IpPermission) (bool, error) {
+	// We do not want to make changes to the Global defined SG
+	if securityGroupID == c.cfg.Global.ElbSecurityGroup {
+		return false, nil
+	}
+
 	group, err := c.findSecurityGroup(securityGroupID)
 	if err != nil {
 		glog.Warningf("Error retrieving security group: %q", err)
@@ -2539,7 +2574,7 @@ func getPortSets(annotation string) (ports *portSets) {
 
 // buildELBSecurityGroupList returns list of SecurityGroups which should be
 // attached to ELB created by a service. List always consist of at least
-// 1 member which is an SG created for this service. Extra groups can be
+// 1 member which is an SG created for this service or a SG from the Global config. Extra groups can be
 // specified via annotation
 func (c *Cloud) buildELBSecurityGroupList(serviceName types.NamespacedName, loadBalancerName, annotation string) ([]string, error) {
 	var err error

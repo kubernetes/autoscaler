@@ -66,7 +66,7 @@ func CreateGceManager(configReader io.Reader) (*GceManager, error) {
 	// Create Google Compute Engine token.
 	tokenSource := google.ComputeTokenSource("")
 	if configReader != nil {
-		var cfg provider_gce.Config
+		var cfg provider_gce.ConfigFile
 		if err := gcfg.ReadInto(&cfg, configReader); err != nil {
 			glog.Errorf("Couldn't read config: %v", err)
 			return nil, err
