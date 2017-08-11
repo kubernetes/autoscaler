@@ -37,9 +37,10 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
-	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
-	kube_leaderelection "k8s.io/kubernetes/pkg/client/leaderelection"
-	"k8s.io/kubernetes/pkg/client/leaderelection/resourcelock"
+	kube_client "k8s.io/client-go/kubernetes"
+	kube_leaderelection "k8s.io/client-go/tools/leaderelection"
+	"k8s.io/client-go/tools/leaderelection/resourcelock"
+	"k8s.io/kubernetes/pkg/apis/componentconfig"
 
 	"github.com/golang/glog"
 	"github.com/prometheus/client_golang/prometheus"
@@ -212,10 +213,10 @@ func run(healthCheck *metrics.HealthCheck) {
 }
 
 func main() {
-	leaderElection := kube_leaderelection.DefaultLeaderElectionConfiguration()
+	leaderElection := DefaultLeaderElectionConfiguration()
 	leaderElection.LeaderElect = true
 
-	kube_leaderelection.BindFlags(&leaderElection, pflag.CommandLine)
+	BindFlags(&leaderElection, pflag.CommandLine)
 	flag.Var(&nodeGroupsFlag, "nodes", "sets min,max size and other configuration data for a node group in a format accepted by cloud provider."+
 		"Can be used multiple times. Format: <min>:<max>:<other...>")
 	kube_flag.InitFlags()
@@ -285,3 +286,44 @@ func main() {
 		})
 	}
 }
+
+func DefaultLeaderElectionConfiguration() componentconfig.LeaderElectionConfiguration {
+	return componentconfig.LeaderElectionConfiguration{
+		LeaderElect:   false,
+		LeaseDuration: metav1.Duration{Duration: DefaultLeaseDuration},
+		RenewDeadline: metav1.Duration{Duration: DefaultRenewDeadline},
+		RetryPeriod:   metav1.Duration{Duration: DefaultRetryPeriod},
+		ResourceLock:  resourcelock.EndpointsResourceLock,
+	}
+}
+
+// BindFlags binds the common LeaderElectionCLIConfig flags to a flagset
+func BindFlags(l *componentconfig.LeaderElectionConfiguration, fs *pflag.FlagSet) {
+	fs.BoolVar(&l.LeaderElect, "leader-elect", l.LeaderElect, ""+
+		"Start a leader election client and gain leadership before "+
+		"executing the main loop. Enable this when running replicated "+
+		"components for high availability.")
+	fs.DurationVar(&l.LeaseDuration.Duration, "leader-elect-lease-duration", l.LeaseDuration.Duration, ""+
+		"The duration that non-leader candidates will wait after observing a leadership "+
+		"renewal until attempting to acquire leadership of a led but unrenewed leader "+
+		"slot. This is effectively the maximum duration that a leader can be stopped "+
+		"before it is replaced by another candidate. This is only applicable if leader "+
+		"election is enabled.")
+	fs.DurationVar(&l.RenewDeadline.Duration, "leader-elect-renew-deadline", l.RenewDeadline.Duration, ""+
+		"The interval between attempts by the acting master to renew a leadership slot "+
+		"before it stops leading. This must be less than or equal to the lease duration. "+
+		"This is only applicable if leader election is enabled.")
+	fs.DurationVar(&l.RetryPeriod.Duration, "leader-elect-retry-period", l.RetryPeriod.Duration, ""+
+		"The duration the clients should wait between attempting acquisition and renewal "+
+		"of a leadership. This is only applicable if leader election is enabled.")
+	fs.StringVar(&l.ResourceLock, "leader-elect-resource-lock", l.ResourceLock, ""+
+		"The type of resource resource object that is used for locking during"+
+		"leader election. Supported options are `endpoints` (default) and `configmap`.")
+}
+
+const (
+	JitterFactor         = 1.2
+	DefaultLeaseDuration = 15 * time.Second
+	DefaultRenewDeadline = 10 * time.Second
+	DefaultRetryPeriod   = 2 * time.Second
+)
