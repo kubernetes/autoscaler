@@ -213,10 +213,10 @@ func run(healthCheck *metrics.HealthCheck) {
 }
 
 func main() {
-	leaderElection := DefaultLeaderElectionConfiguration()
+	leaderElection := defaultLeaderElectionConfiguration()
 	leaderElection.LeaderElect = true
 
-	BindFlags(&leaderElection, pflag.CommandLine)
+	bindFlags(&leaderElection, pflag.CommandLine)
 	flag.Var(&nodeGroupsFlag, "nodes", "sets min,max size and other configuration data for a node group in a format accepted by cloud provider."+
 		"Can be used multiple times. Format: <min>:<max>:<other...>")
 	kube_flag.InitFlags()
@@ -287,18 +287,17 @@ func main() {
 	}
 }
 
-func DefaultLeaderElectionConfiguration() componentconfig.LeaderElectionConfiguration {
+func defaultLeaderElectionConfiguration() componentconfig.LeaderElectionConfiguration {
 	return componentconfig.LeaderElectionConfiguration{
 		LeaderElect:   false,
-		LeaseDuration: metav1.Duration{Duration: DefaultLeaseDuration},
-		RenewDeadline: metav1.Duration{Duration: DefaultRenewDeadline},
-		RetryPeriod:   metav1.Duration{Duration: DefaultRetryPeriod},
+		LeaseDuration: metav1.Duration{Duration: defaultLeaseDuration},
+		RenewDeadline: metav1.Duration{Duration: defaultRenewDeadline},
+		RetryPeriod:   metav1.Duration{Duration: defaultRetryPeriod},
 		ResourceLock:  resourcelock.EndpointsResourceLock,
 	}
 }
 
-// BindFlags binds the common LeaderElectionCLIConfig flags to a flagset
-func BindFlags(l *componentconfig.LeaderElectionConfiguration, fs *pflag.FlagSet) {
+func bindFlags(l *componentconfig.LeaderElectionConfiguration, fs *pflag.FlagSet) {
 	fs.BoolVar(&l.LeaderElect, "leader-elect", l.LeaderElect, ""+
 		"Start a leader election client and gain leadership before "+
 		"executing the main loop. Enable this when running replicated "+
@@ -322,8 +321,7 @@ func BindFlags(l *componentconfig.LeaderElectionConfiguration, fs *pflag.FlagSet
 }
 
 const (
-	JitterFactor         = 1.2
-	DefaultLeaseDuration = 15 * time.Second
-	DefaultRenewDeadline = 10 * time.Second
-	DefaultRetryPeriod   = 2 * time.Second
+	defaultLeaseDuration = 15 * time.Second
+	defaultRenewDeadline = 10 * time.Second
+	defaultRetryPeriod   = 2 * time.Second
 )
