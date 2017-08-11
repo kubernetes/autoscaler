@@ -22,13 +22,33 @@ go_test(
 go_library(
     name = "go_default_library",
     srcs = [
+        "doc.go",
         "helpers.go",
         "register.go",
         "types.go",
+        "zz_generated.deepcopy.go",
     ],
     tags = ["automanaged"],
     deps = [
+        "//vendor/k8s.io/apimachinery/pkg/conversion:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
     ],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//staging/src/k8s.io/client-go/tools/clientcmd/api/latest:all-srcs",
+        "//staging/src/k8s.io/client-go/tools/clientcmd/api/v1:all-srcs",
+    ],
+    tags = ["automanaged"],
 )

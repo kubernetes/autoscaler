@@ -24,9 +24,9 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	refv1 "k8s.io/client-go/tools/reference"
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/testapi"
-	refv1 "k8s.io/kubernetes/pkg/api/v1/ref"
 )
 
 // BuildTestPod creates a pod with specified resources.

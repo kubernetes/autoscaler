@@ -74,6 +74,8 @@ type KubeProxyConntrackConfiguration struct {
 	TCPCloseWaitTimeout metav1.Duration `json:"tcpCloseWaitTimeout"`
 }
 
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
 // KubeProxyConfiguration contains everything necessary to configure the
 // Kubernetes proxy server.
 type KubeProxyConfiguration struct {
@@ -143,6 +145,8 @@ const (
 	ProxyModeUserspace ProxyMode = "userspace"
 	ProxyModeIPTables  ProxyMode = "iptables"
 )
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 type KubeSchedulerConfiguration struct {
 	metav1.TypeMeta `json:",inline"`
@@ -241,6 +245,8 @@ type LeaderElectionConfiguration struct {
 	ResourceLock string `json:"resourceLock"`
 }
 
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
 // A configuration field should go in KubeletFlags instead of KubeletConfiguration if any of these are true:
 // - its value will never, or cannot safely be changed during the lifetime of a node
 // - its value cannot be safely shared between nodes at the same time (e.g. a hostname)
@@ -250,6 +256,18 @@ type LeaderElectionConfiguration struct {
 type KubeletConfiguration struct {
 	metav1.TypeMeta `json:",inline"`
 
+	// Only used for dynamic configuration.
+	// The length of the trial period for this configuration. If the Kubelet records CrashLoopThreshold or
+	// more startups during this period, the current configuration will be marked bad and the
+	// Kubelet will roll-back to the last-known-good. Default 10 minutes.
+	ConfigTrialDuration *metav1.Duration `json:"configTrialDuration"`
+	// Only used for dynamic configuration.
+	// If this number of Kubelet "crashes" during ConfigTrialDuration meets this threshold,
+	// the configuration fails the trial and the Kubelet rolls back to its last-known-good config.
+	// Crash-loops are detected by counting Kubelet startups, so one startup is implicitly added
+	// to this threshold to always allow a single restart per config change.
+	// Default 10, mimimum allowed is 0, maximum allowed is 10.
+	CrashLoopThreshold *int32 `json:"crashLoopThreshold"`
 	// podManifestPath is the path to the directory containing pod manifests to
 	// run, or the path to a single manifest file
 	PodManifestPath string `json:"podManifestPath"`
@@ -285,17 +303,10 @@ type KubeletConfiguration struct {
 	// tlsPrivateKeyFile is the ile containing x509 private key matching
 	// tlsCertFile.
 	TLSPrivateKeyFile string `json:"tlsPrivateKeyFile"`
-	// certDirectory is the directory where the TLS certs are located (by
-	// default /var/run/kubernetes). If tlsCertFile and tlsPrivateKeyFile
-	// are provided, this flag will be ignored.
-	CertDirectory string `json:"certDirectory"`
 	// authentication specifies how requests to the Kubelet's server are authenticated
 	Authentication KubeletAuthentication `json:"authentication"`
 	// authorization specifies how requests to the Kubelet's server are authorized
 	Authorization KubeletAuthorization `json:"authorization"`
-	// rootDirectory is the directory path to place kubelet files (volume
-	// mounts,etc).
-	RootDirectory string `json:"rootDirectory"`
 	// seccompProfileRoot is the directory path for seccomp profiles.
 	SeccompProfileRoot string `json:"seccompProfileRoot"`
 	// allowPrivileged enables containers to request privileged mode.
@@ -380,19 +391,11 @@ type KubeletConfiguration struct {
 	// image garbage collection is never run. Lowest disk usage to garbage
 	// collect to. The percent is calculated as this field value out of 100.
 	ImageGCLowThresholdPercent *int32 `json:"imageGCLowThresholdPercent"`
-	// lowDiskSpaceThresholdMB is the absolute free disk space, in MB, to
-	// maintain. When disk space falls below this threshold, new pods would
-	// be rejected.
-	LowDiskSpaceThresholdMB int32 `json:"lowDiskSpaceThresholdMB"`
 	// How frequently to calculate and cache volume disk usage for all pods
 	VolumeStatsAggPeriod metav1.Duration `json:"volumeStatsAggPeriod"`
 	// volumePluginDir is the full path of the directory in which to search
 	// for additional third party volume plugins
 	VolumePluginDir string `json:"volumePluginDir"`
-	// cloudProvider is the provider for cloud services.
-	CloudProvider string `json:"cloudProvider"`
-	// cloudConfigFile is the path to the cloud provider configuration file.
-	CloudConfigFile string `json:"cloudConfigFile"`
 	// kubeletCgroups is the absolute name of cgroups to isolate the kubelet in.
 	KubeletCgroups string `json:"kubeletCgroups"`
 	// runtimeCgroups are cgroups that container runtime is expected to be isolated in.
@@ -477,9 +480,6 @@ type KubeletConfiguration struct {
 	// run docker daemon with version  < 1.9 or an Aufs storage backend.
 	// Issue #10959 has more details.
 	SerializeImagePulls *bool `json:"serializeImagePulls"`
-	// outOfDiskTransitionFrequency is duration for which the kubelet has to
-	// wait before transitioning out of out-of-disk node condition status.
-	OutOfDiskTransitionFrequency metav1.Duration `json:"outOfDiskTransitionFrequency"`
 	// nodeLabels to add when registering the node in the cluster.
 	NodeLabels map[string]string `json:"nodeLabels"`
 	// nonMasqueradeCIDR configures masquerading: traffic to IPs outside this range will use IP masquerade.
@@ -531,9 +531,8 @@ type KubeletConfiguration struct {
 	// featureGates is a string of comma-separated key=value pairs that describe feature
 	// gates for alpha/experimental features.
 	FeatureGates string `json:"featureGates,omitempty"`
-	// TODO(#34726:1.8.0): Remove the opt-in for failing when swap is enabled.
 	// Tells the Kubelet to fail to start if swap is enabled on the node.
-	ExperimentalFailSwapOn bool `json:"experimentalFailSwapOn,omitempty"`
+	FailSwapOn bool `json:"failSwapOn,omitempty"`
 	// This flag, if set, enables a check prior to mount operations to verify that the required components
 	// (binaries, etc.) to mount the volume are available on the underlying node. If the check is enabled
 	// and fails the mount operation fails.

@@ -25,8 +25,8 @@ import (
 	kube_errors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/record"
-	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 
 	"github.com/golang/glog"
 )

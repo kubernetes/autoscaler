@@ -8,6 +8,12 @@ load(
     "go_test",
 )
 
+go_library(
+    name = "go_default_library",
+    srcs = ["json.go"],
+    tags = ["automanaged"],
+)
+
 go_test(
     name = "go_default_test",
     srcs = ["json_test.go"],
@@ -15,8 +21,15 @@ go_test(
     tags = ["automanaged"],
 )
 
-go_library(
-    name = "go_default_library",
-    srcs = ["json.go"],
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [":package-srcs"],
     tags = ["automanaged"],
 )

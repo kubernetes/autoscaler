@@ -78,6 +78,8 @@ type KubeProxyConntrackConfiguration struct {
 	TCPCloseWaitTimeout metav1.Duration
 }
 
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
 // KubeProxyConfiguration contains everything necessary to configure the
 // Kubernetes proxy server.
 type KubeProxyConfiguration struct {
@@ -166,6 +168,8 @@ const (
 	HairpinNone = "none"
 )
 
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
 // A configuration field should go in KubeletFlags instead of KubeletConfiguration if any of these are true:
 // - its value will never, or cannot safely be changed during the lifetime of a node
 // - its value cannot be safely shared between nodes at the same time (e.g. a hostname)
@@ -176,6 +180,18 @@ const (
 type KubeletConfiguration struct {
 	metav1.TypeMeta
 
+	// Only used for dynamic configuration.
+	// The length of the trial period for this configuration. If the Kubelet records CrashLoopThreshold or
+	// more startups during this period, the current configuration will be marked bad and the
+	// Kubelet will roll-back to the last-known-good. Default 10 minutes.
+	ConfigTrialDuration metav1.Duration
+	// Only used for dynamic configuration.
+	// If this number of Kubelet "crashes" during ConfigTrialDuration meets this threshold,
+	// the configuration fails the trial and the Kubelet rolls back to its last-known-good config.
+	// Crash-loops are detected by counting Kubelet startups, so one startup is implicitly added
+	// to this threshold to always allow a single restart per config change.
+	// Default 10, mimimum allowed is 0, maximum allowed is 10.
+	CrashLoopThreshold int32
 	// podManifestPath is the path to the directory containing pod manifests to
 	// run, or the path to a single manifest file
 	PodManifestPath string
@@ -211,17 +227,10 @@ type KubeletConfiguration struct {
 	// tlsPrivateKeyFile is the ile containing x509 private key matching
 	// tlsCertFile.
 	TLSPrivateKeyFile string
-	// certDirectory is the directory where the TLS certs are located (by
-	// default /var/run/kubernetes). If tlsCertFile and tlsPrivateKeyFile
-	// are provided, this flag will be ignored.
-	CertDirectory string
 	// authentication specifies how requests to the Kubelet's server are authenticated
 	Authentication KubeletAuthentication
 	// authorization specifies how requests to the Kubelet's server are authorized
 	Authorization KubeletAuthorization
-	// rootDirectory is the directory path to place kubelet files (volume
-	// mounts,etc).
-	RootDirectory string
 	// seccompProfileRoot is the directory path for seccomp profiles.
 	SeccompProfileRoot string
 	// allowPrivileged enables containers to request privileged mode.
@@ -305,21 +314,11 @@ type KubeletConfiguration struct {
 	// image garbage collection is never run. Lowest disk usage to garbage
 	// collect to.
 	ImageGCLowThresholdPercent int32
-	// lowDiskSpaceThresholdMB is the absolute free disk space, in MB, to
-	// maintain. When disk space falls below this threshold, new pods would
-	// be rejected.
-	LowDiskSpaceThresholdMB int32
 	// How frequently to calculate and cache volume disk usage for all pods
 	VolumeStatsAggPeriod metav1.Duration
 	// volumePluginDir is the full path of the directory in which to search
 	// for additional third party volume plugins
 	VolumePluginDir string
-	// cloudProvider is the provider for cloud services.
-	// +optional
-	CloudProvider string
-	// cloudConfigFile is the path to the cloud provider configuration file.
-	// +optional
-	CloudConfigFile string
 	// KubeletCgroups is the absolute name of cgroups to isolate the kubelet in.
 	// +optional
 	KubeletCgroups string
@@ -408,10 +407,6 @@ type KubeletConfiguration struct {
 	// run docker daemon with version  < 1.9 or an Aufs storage backend.
 	// Issue #10959 has more details.
 	SerializeImagePulls bool
-	// outOfDiskTransitionFrequency is duration for which the kubelet has to
-	// wait before transitioning out of out-of-disk node condition status.
-	// +optional
-	OutOfDiskTransitionFrequency metav1.Duration
 	// nodeLabels to add when registering the node in the cluster.
 	NodeLabels map[string]string
 	// nonMasqueradeCIDR configures masquerading: traffic to IPs outside this range will use IP masquerade.
@@ -469,9 +464,8 @@ type KubeletConfiguration struct {
 	// featureGates is a string of comma-separated key=value pairs that describe feature
 	// gates for alpha/experimental features.
 	FeatureGates string
-	// TODO(#34726:1.8.0): Remove the opt-in for failing when swap is enabled.
 	// Tells the Kubelet to fail to start if swap is enabled on the node.
-	ExperimentalFailSwapOn bool
+	FailSwapOn bool
 	// This flag, if set, enables a check prior to mount operations to verify that the required components
 	// (binaries, etc.) to mount the volume are available on the underlying node. If the check is enabled
 	// and fails the mount operation fails.
@@ -563,6 +557,8 @@ type KubeletAnonymousAuthentication struct {
 	Enabled bool
 }
 
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
 type KubeSchedulerConfiguration struct {
 	metav1.TypeMeta
 
@@ -650,6 +646,8 @@ type GroupResource struct {
 	Resource string
 }
 
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
 type KubeControllerManagerConfiguration struct {
 	metav1.TypeMeta
 
@@ -671,6 +669,8 @@ type KubeControllerManagerConfiguration struct {
 	CloudProvider string
 	// cloudConfigFile is the path to the cloud provider configuration file.
 	CloudConfigFile string
+	// run with untagged cloud instances
+	AllowUntaggedCloud bool
 	// concurrentEndpointSyncs is the number of endpoint syncing operations
 	// that will be done concurrently. Larger number = faster endpoint updating,
 	// but more CPU (and network) load.

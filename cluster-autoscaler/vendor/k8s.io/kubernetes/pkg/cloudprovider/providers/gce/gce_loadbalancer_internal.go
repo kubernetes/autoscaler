@@ -376,7 +376,12 @@ func (gce *GCECloud) ensureInternalInstanceGroup(name, zone string, nodes []*v1.
 	gceNodes := sets.NewString()
 	if ig == nil {
 		glog.V(2).Infof("ensureInternalInstanceGroup(%v, %v): creating instance group", name, zone)
-		ig, err = gce.CreateInstanceGroup(name, zone)
+		newIG := &compute.InstanceGroup{Name: name}
+		if err = gce.CreateInstanceGroup(newIG, zone); err != nil {
+			return "", err
+		}
+
+		ig, err = gce.GetInstanceGroup(name, zone)
 		if err != nil {
 			return "", err
 		}
@@ -624,7 +629,7 @@ func getPortsAndProtocol(svcPorts []v1.ServicePort) (ports []string, protocol v1
 }
 
 func (gce *GCECloud) getBackendServiceLink(name string) string {
-	return fmt.Sprintf("https://www.googleapis.com/compute/v1/projects/%s/regions/%s/backendServices/%s", gce.projectID, gce.region, name)
+	return gce.service.BasePath + strings.Join([]string{gce.projectID, "regions", gce.region, "backendServices", name}, "/")
 }
 
 func getNameFromLink(link string) string {
