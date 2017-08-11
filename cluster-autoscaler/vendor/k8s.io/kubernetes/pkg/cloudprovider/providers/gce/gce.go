@@ -25,9 +25,9 @@ import (
 	"sync"
 	"time"
 
-	"cloud.google.com/go/compute/metadata"
+	gcfg "gopkg.in/gcfg.v1"
 
-	"gopkg.in/gcfg.v1"
+	"cloud.google.com/go/compute/metadata"
 
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -38,6 +38,8 @@ import (
 	"github.com/golang/glog"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
+	cloudkms "google.golang.org/api/cloudkms/v1"
+	computealpha "google.golang.org/api/compute/v0.alpha"
 	computebeta "google.golang.org/api/compute/v0.beta"
 	compute "google.golang.org/api/compute/v1"
 	container "google.golang.org/api/container/v1"
@@ -74,6 +76,8 @@ const (
 	gceHcHealthyThreshold = int64(1)
 	// Defaults to 5 * 2 = 10 seconds before the LB will steer traffic away
 	gceHcUnhealthyThreshold = int64(5)
+
+	gceComputeAPIEndpoint = "https://www.googleapis.com/compute/v1/"
 )
 
 // GCECloud is an implementation of Interface, LoadBalancer and Instances for Google Compute Engine.
@@ -84,7 +88,9 @@ type GCECloud struct {
 
 	service                  *compute.Service
 	serviceBeta              *computebeta.Service
+	serviceAlpha             *computealpha.Service
 	containerService         *container.Service
+	cloudkmsService          *cloudkms.Service
 	clientBuilder            controller.ControllerClientBuilder
 	projectID                string
 	region                   string
@@ -127,7 +133,7 @@ type GCEServiceManager struct {
 	gce *GCECloud
 }
 
-type Config struct {
+type ConfigFile struct {
 	Global struct {
 		TokenURL           string   `gcfg:"token-url"`
 		TokenBody          string   `gcfg:"token-body"`
@@ -137,8 +143,25 @@ type Config struct {
 		NodeTags           []string `gcfg:"node-tags"`
 		NodeInstancePrefix string   `gcfg:"node-instance-prefix"`
 		Multizone          bool     `gcfg:"multizone"`
-		ApiEndpoint        string   `gcfg:"api-endpoint"`
+		// Specifying ApiEndpoint will override the default GCE compute API endpoint.
+		ApiEndpoint string `gcfg:"api-endpoint"`
+		LocalZone   string `gcfg:"local-zone"`
 	}
+}
+
+// CloudConfig includes all the necessary configuration for creating GCECloud
+type CloudConfig struct {
+	ApiEndpoint        string
+	ProjectID          string
+	Region             string
+	Zone               string
+	ManagedZones       []string
+	NetworkURL         string
+	SubnetworkURL      string
+	NodeTags           []string
+	NodeInstancePrefix string
+	TokenSource        oauth2.TokenSource
+	UseMetadataServer  bool
 }
 
 func init() {
@@ -154,96 +177,166 @@ func (g *GCECloud) GetComputeService() *compute.Service {
 	return g.service
 }
 
+// Raw access to the cloudkmsService of GCE cloud. Required for encryption of etcd using Google KMS.
+func (g *GCECloud) GetKMSService() *cloudkms.Service {
+	return g.cloudkmsService
+}
+
+// Returns the ProjectID corresponding to the project this cloud is in.
+func (g *GCECloud) GetProjectID() string {
+	return g.projectID
+}
+
 // newGCECloud creates a new instance of GCECloud.
-func newGCECloud(config io.Reader) (*GCECloud, error) {
-	apiEndpoint := ""
-	projectID, zone, err := getProjectAndZone()
-	if err != nil {
-		return nil, err
-	}
+func newGCECloud(config io.Reader) (gceCloud *GCECloud, err error) {
+	var cloudConfig *CloudConfig
+	var configFile *ConfigFile
 
-	region, err := GetGCERegion(zone)
-	if err != nil {
-		return nil, err
-	}
-
-	networkName, err := getNetworkNameViaMetadata()
-	if err != nil {
-		return nil, err
-	}
-	networkURL := gceNetworkURL(apiEndpoint, projectID, networkName)
-	subnetworkURL := ""
-
-	// By default, Kubernetes clusters only run against one zone
-	managedZones := []string{zone}
-
-	tokenSource := google.ComputeTokenSource("")
-	var nodeTags []string
-	var nodeInstancePrefix string
 	if config != nil {
-		var cfg Config
-		if err := gcfg.ReadInto(&cfg, config); err != nil {
-			glog.Errorf("Couldn't read config: %v", err)
+		configFile, err = readConfig(config)
+		if err != nil {
 			return nil, err
 		}
-		glog.Infof("Using GCE provider config %+v", cfg)
-		if cfg.Global.ApiEndpoint != "" {
-			apiEndpoint = cfg.Global.ApiEndpoint
-		}
-		if cfg.Global.ProjectID != "" {
-			projectID = cfg.Global.ProjectID
+		glog.Infof("Using GCE provider config %+v", configFile)
+	}
+
+	cloudConfig, err = generateCloudConfig(configFile)
+	if err != nil {
+		return nil, err
+	}
+	return CreateGCECloud(cloudConfig)
+
+}
+
+func readConfig(reader io.Reader) (*ConfigFile, error) {
+	cfg := &ConfigFile{}
+	if err := gcfg.FatalOnly(gcfg.ReadInto(cfg, reader)); err != nil {
+		glog.Errorf("Couldn't read config: %v", err)
+		return nil, err
+	}
+	return cfg, nil
+}
+
+func generateCloudConfig(configFile *ConfigFile) (cloudConfig *CloudConfig, err error) {
+	cloudConfig = &CloudConfig{}
+	// By default, fetch token from GCE metadata server
+	cloudConfig.TokenSource = google.ComputeTokenSource("")
+	cloudConfig.UseMetadataServer = true
+
+	if configFile != nil {
+		if configFile.Global.ApiEndpoint != "" {
+			cloudConfig.ApiEndpoint = configFile.Global.ApiEndpoint
 		}
 
-		if cfg.Global.NetworkName != "" && strings.Contains(cfg.Global.NetworkName, "/") {
-			networkURL = cfg.Global.NetworkName
-		} else {
-			networkURL = gceNetworkURL(apiEndpoint, projectID, networkName)
+		if configFile.Global.TokenURL != "" {
+			// if tokenURL is nil, set tokenSource to nil. This will force the OAuth client to fall
+			// back to use DefaultTokenSource. This allows running gceCloud remotely.
+			if configFile.Global.TokenURL == "nil" {
+				cloudConfig.TokenSource = nil
+			} else {
+				cloudConfig.TokenSource = NewAltTokenSource(configFile.Global.TokenURL, configFile.Global.TokenBody)
+			}
 		}
 
-		if cfg.Global.SubnetworkName != "" && strings.Contains(cfg.Global.SubnetworkName, "/") {
-			subnetworkURL = cfg.Global.SubnetworkName
-		} else {
-			subnetworkURL = gceSubnetworkURL(apiEndpoint, cfg.Global.ProjectID, region, cfg.Global.SubnetworkName)
+		cloudConfig.NodeTags = configFile.Global.NodeTags
+		cloudConfig.NodeInstancePrefix = configFile.Global.NodeInstancePrefix
+	}
+
+	// retrieve projectID and zone
+	if configFile == nil || configFile.Global.ProjectID == "" || configFile.Global.LocalZone == "" {
+		cloudConfig.ProjectID, cloudConfig.Zone, err = getProjectAndZone()
+		if err != nil {
+			return nil, err
 		}
-		if cfg.Global.TokenURL != "" {
-			tokenSource = NewAltTokenSource(cfg.Global.TokenURL, cfg.Global.TokenBody)
+	}
+	if configFile != nil {
+		if configFile.Global.ProjectID != "" {
+			cloudConfig.ProjectID = configFile.Global.ProjectID
 		}
-		nodeTags = cfg.Global.NodeTags
-		nodeInstancePrefix = cfg.Global.NodeInstancePrefix
-		if cfg.Global.Multizone {
-			managedZones = nil // Use all zones in region
+		if configFile.Global.LocalZone != "" {
+			cloudConfig.Zone = configFile.Global.LocalZone
 		}
 	}
 
-	return CreateGCECloud(apiEndpoint, projectID, region, zone, managedZones, networkURL, subnetworkURL,
-		nodeTags, nodeInstancePrefix, tokenSource, true /* useMetadataServer */)
+	// retrieve region
+	cloudConfig.Region, err = GetGCERegion(cloudConfig.Zone)
+	if err != nil {
+		return nil, err
+	}
+
+	// generate managedZones
+	cloudConfig.ManagedZones = []string{cloudConfig.Zone}
+	if configFile != nil && configFile.Global.Multizone {
+		cloudConfig.ManagedZones = nil // Use all zones in region
+	}
+
+	// generate networkURL
+	if configFile != nil && configFile.Global.NetworkName != "" {
+		if strings.Contains(configFile.Global.NetworkName, "/") {
+			cloudConfig.NetworkURL = configFile.Global.NetworkName
+		} else {
+			cloudConfig.NetworkURL = gceNetworkURL(cloudConfig.ApiEndpoint, cloudConfig.ProjectID, configFile.Global.NetworkName)
+		}
+	} else {
+		networkName, err := getNetworkNameViaMetadata()
+		if err != nil {
+			return nil, err
+		}
+		cloudConfig.NetworkURL = gceNetworkURL("", cloudConfig.ProjectID, networkName)
+	}
+
+	// generate subnetworkURL
+	if configFile != nil && configFile.Global.SubnetworkName != "" {
+		if strings.Contains(configFile.Global.SubnetworkName, "/") {
+			cloudConfig.SubnetworkURL = configFile.Global.SubnetworkName
+		} else {
+			cloudConfig.SubnetworkURL = gceSubnetworkURL(cloudConfig.ApiEndpoint, cloudConfig.ProjectID, cloudConfig.Region, configFile.Global.SubnetworkName)
+		}
+	}
+	return cloudConfig, err
 }
 
 // Creates a GCECloud object using the specified parameters.
 // If no networkUrl is specified, loads networkName via rest call.
 // If no tokenSource is specified, uses oauth2.DefaultTokenSource.
 // If managedZones is nil / empty all zones in the region will be managed.
-func CreateGCECloud(apiEndpoint, projectID, region, zone string, managedZones []string, networkURL, subnetworkURL string, nodeTags []string,
-	nodeInstancePrefix string, tokenSource oauth2.TokenSource, useMetadataServer bool) (*GCECloud, error) {
+func CreateGCECloud(config *CloudConfig) (*GCECloud, error) {
 
-	client, err := newOauthClient(tokenSource)
+	client, err := newOauthClient(config.TokenSource)
 	if err != nil {
 		return nil, err
 	}
-
 	service, err := compute.New(client)
 	if err != nil {
 		return nil, err
 	}
 
-	if apiEndpoint != "" {
-		service.BasePath = fmt.Sprintf("%sprojects/", apiEndpoint)
+	client, err = newOauthClient(config.TokenSource)
+	if err != nil {
+		return nil, err
 	}
-
-	client, err = newOauthClient(tokenSource)
 	serviceBeta, err := computebeta.New(client)
 	if err != nil {
 		return nil, err
+	}
+
+	client, err = newOauthClient(config.TokenSource)
+	if err != nil {
+		return nil, err
+	}
+	serviceAlpha, err := computealpha.New(client)
+	if err != nil {
+		return nil, err
+	}
+
+	// Expect override api endpoint to always be v1 api and follows the same pattern as prod.
+	// Generate alpha and beta api endpoints based on override v1 api endpoint.
+	// For example,
+	// staging API endpoint: https://www.googleapis.com/compute/staging_v1/
+	if config.ApiEndpoint != "" {
+		service.BasePath = fmt.Sprintf("%sprojects/", config.ApiEndpoint)
+		serviceBeta.BasePath = fmt.Sprintf("%sprojects/", strings.Replace(config.ApiEndpoint, "v1", "beta", -1))
+		serviceAlpha.BasePath = fmt.Sprintf("%sprojects/", strings.Replace(config.ApiEndpoint, "v1", "alpha", -1))
 	}
 
 	containerService, err := container.New(client)
@@ -251,47 +344,54 @@ func CreateGCECloud(apiEndpoint, projectID, region, zone string, managedZones []
 		return nil, err
 	}
 
-	if networkURL == "" {
-		networkName, err := getNetworkNameViaAPICall(service, projectID)
-		if err != nil {
-			return nil, err
-		}
-		networkURL = gceNetworkURL(apiEndpoint, projectID, networkName)
-	}
-
-	networkProjectID, err := getProjectIDInURL(networkURL)
+	cloudkmsService, err := cloudkms.New(client)
 	if err != nil {
 		return nil, err
 	}
-	onXPN := networkProjectID != projectID
 
-	if len(managedZones) == 0 {
-		managedZones, err = getZonesForRegion(service, projectID, region)
+	if config.NetworkURL == "" {
+		networkName, err := getNetworkNameViaAPICall(service, config.ProjectID)
+		if err != nil {
+			return nil, err
+		}
+		config.NetworkURL = gceNetworkURL(config.ApiEndpoint, config.ProjectID, networkName)
+	}
+
+	networkProjectID, err := getProjectIDInURL(config.NetworkURL)
+	if err != nil {
+		return nil, err
+	}
+	onXPN := networkProjectID != config.ProjectID
+
+	if len(config.ManagedZones) == 0 {
+		config.ManagedZones, err = getZonesForRegion(service, config.ProjectID, config.Region)
 		if err != nil {
 			return nil, err
 		}
 	}
-	if len(managedZones) != 1 {
-		glog.Infof("managing multiple zones: %v", managedZones)
+	if len(config.ManagedZones) != 1 {
+		glog.Infof("managing multiple zones: %v", config.ManagedZones)
 	}
 
 	operationPollRateLimiter := flowcontrol.NewTokenBucketRateLimiter(10, 100) // 10 qps, 100 bucket size.
 
 	gce := &GCECloud{
 		service:                  service,
+		serviceAlpha:             serviceAlpha,
 		serviceBeta:              serviceBeta,
 		containerService:         containerService,
-		projectID:                projectID,
+		cloudkmsService:          cloudkmsService,
+		projectID:                config.ProjectID,
 		networkProjectID:         networkProjectID,
 		onXPN:                    onXPN,
-		region:                   region,
-		localZone:                zone,
-		managedZones:             managedZones,
-		networkURL:               networkURL,
-		subnetworkURL:            subnetworkURL,
-		nodeTags:                 nodeTags,
-		nodeInstancePrefix:       nodeInstancePrefix,
-		useMetadataServer:        useMetadataServer,
+		region:                   config.Region,
+		localZone:                config.Zone,
+		managedZones:             config.ManagedZones,
+		networkURL:               config.NetworkURL,
+		subnetworkURL:            config.SubnetworkURL,
+		nodeTags:                 config.NodeTags,
+		nodeInstancePrefix:       config.NodeInstancePrefix,
+		useMetadataServer:        config.UseMetadataServer,
 		operationPollRateLimiter: operationPollRateLimiter,
 	}
 
@@ -369,21 +469,26 @@ func (gce *GCECloud) ScrubDNS(nameservers, searches []string) (nsOut, srchOut []
 	return nameservers, srchOut
 }
 
+// HasClusterID returns true if the cluster has a clusterID
+func (gce *GCECloud) HasClusterID() bool {
+	return true
+}
+
 // GCECloud implements cloudprovider.Interface.
 var _ cloudprovider.Interface = (*GCECloud)(nil)
 
-func gceNetworkURL(api_endpoint, project, network string) string {
-	if api_endpoint == "" {
-		api_endpoint = "https://www.googleapis.com/compute/v1/"
+func gceNetworkURL(apiEndpoint, project, network string) string {
+	if apiEndpoint == "" {
+		apiEndpoint = gceComputeAPIEndpoint
 	}
-	return fmt.Sprintf("%sprojects/%s/global/networks/%s", api_endpoint, project, network)
+	return apiEndpoint + strings.Join([]string{"projects", project, "global", "networks", network}, "/")
 }
 
-func gceSubnetworkURL(api_endpoint, project, region, subnetwork string) string {
-	if api_endpoint == "" {
-		api_endpoint = "https://www.googleapis.com/compute/v1/"
+func gceSubnetworkURL(apiEndpoint, project, region, subnetwork string) string {
+	if apiEndpoint == "" {
+		apiEndpoint = gceComputeAPIEndpoint
 	}
-	return fmt.Sprintf("%sprojects/%s/regions/%s/subnetworks/%s", api_endpoint, project, region, subnetwork)
+	return apiEndpoint + strings.Join([]string{"projects", project, "regions", region, "subnetworks", subnetwork}, "/")
 }
 
 // getProjectIDInURL parses typical full resource URLS and shorter URLS
