@@ -28,7 +28,6 @@ go_test(
         "//vendor/k8s.io/apimachinery/pkg/api/equality:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/errors:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/labels:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime/serializer:go_default_library",
@@ -58,6 +57,7 @@ go_library(
         "url_utils.go",
         "urlbackoff.go",
         "versions.go",
+        "zz_generated.deepcopy.go",
     ],
     tags = ["automanaged"],
     deps = [
@@ -65,8 +65,7 @@ go_library(
         "//vendor/k8s.io/api/core/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/errors:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/fields:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/labels:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/conversion:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime/serializer/streaming:go_default_library",
@@ -82,4 +81,21 @@ go_library(
         "//vendor/k8s.io/client-go/util/cert:go_default_library",
         "//vendor/k8s.io/client-go/util/flowcontrol:go_default_library",
     ],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//staging/src/k8s.io/client-go/rest/fake:all-srcs",
+        "//staging/src/k8s.io/client-go/rest/watch:all-srcs",
+    ],
+    tags = ["automanaged"],
 )

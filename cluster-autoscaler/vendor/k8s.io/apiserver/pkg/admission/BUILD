@@ -13,10 +13,12 @@ go_test(
     srcs = [
         "chain_test.go",
         "config_test.go",
+        "errors_test.go",
     ],
     library = ":go_default_library",
     tags = ["automanaged"],
     deps = [
+        "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
         "//vendor/k8s.io/apiserver/pkg/apis/apiserver:go_default_library",
     ],
@@ -51,4 +53,21 @@ go_library(
         "//vendor/k8s.io/apiserver/pkg/apis/apiserver/v1alpha1:go_default_library",
         "//vendor/k8s.io/apiserver/pkg/authentication/user:go_default_library",
     ],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//staging/src/k8s.io/apiserver/pkg/admission/initializer:all-srcs",
+        "//staging/src/k8s.io/apiserver/pkg/admission/plugin/namespace/lifecycle:all-srcs",
+    ],
+    tags = ["automanaged"],
 )

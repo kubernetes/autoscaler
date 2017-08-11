@@ -56,6 +56,7 @@ go_library(
         "mutation_cache.go",
         "mutation_detector.go",
         "reflector.go",
+        "reflector_metrics.go",
         "shared_informer.go",
         "store.go",
         "thread_safe_store.go",
@@ -81,4 +82,20 @@ go_library(
         "//vendor/k8s.io/client-go/kubernetes/scheme:go_default_library",
         "//vendor/k8s.io/client-go/rest:go_default_library",
     ],
+)
+
+filegroup(
+    name = "package-srcs",
+    srcs = glob(["**"]),
+    tags = ["automanaged"],
+    visibility = ["//visibility:private"],
+)
+
+filegroup(
+    name = "all-srcs",
+    srcs = [
+        ":package-srcs",
+        "//staging/src/k8s.io/client-go/tools/cache/testing:all-srcs",
+    ],
+    tags = ["automanaged"],
 )
