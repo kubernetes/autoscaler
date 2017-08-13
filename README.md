@@ -17,7 +17,7 @@ resource requests of a deployment based on the number of nodes in the Kubernetes
 
 ## Contact Info
 
-Interested in autoscaling? Want to talk? Have questions, concenrns or great ideas?
+Interested in autoscaling? Want to talk? Have questions, concerns or great ideas?
 
 Please join us on #sig-autoscaling at https://kubernetes.slack.com/.
 Moreover, every Thursday we host a 30min sig-autoscaling meeting on
