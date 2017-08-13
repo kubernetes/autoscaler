@@ -142,7 +142,7 @@ func NewUnschedulablePodInNamespaceLister(kubeClient client.Interface, namespace
 	store := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
 	podLister := v1lister.NewPodLister(store)
 	podReflector := cache.NewReflector(podListWatch, &apiv1.Pod{}, store, time.Hour)
-	podReflector.Run(stopchannel)
+	go podReflector.Run(stopchannel)
 	return &UnschedulablePodLister{
 		podLister: podLister,
 	}
@@ -167,7 +167,7 @@ func NewScheduledPodLister(kubeClient client.Interface, stopchannel <-chan struc
 	store := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
 	podLister := v1lister.NewPodLister(store)
 	podReflector := cache.NewReflector(podListWatch, &apiv1.Pod{}, store, time.Hour)
-	podReflector.Run(stopchannel)
+	go podReflector.Run(stopchannel)
 
 	return &ScheduledPodLister{
 		podLister: podLister,
@@ -205,7 +205,7 @@ func NewReadyNodeLister(kubeClient client.Interface, stopChannel <-chan struct{}
 	store := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
 	nodeLister := v1lister.NewNodeLister(store)
 	reflector := cache.NewReflector(listWatcher, &apiv1.Node{}, store, time.Hour)
-	reflector.Run(stopChannel)
+	go reflector.Run(stopChannel)
 	return &ReadyNodeLister{
 		nodeLister: nodeLister,
 	}
@@ -235,7 +235,7 @@ func NewAllNodeLister(kubeClient client.Interface, stopchannel <-chan struct{}) 
 	store := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
 	nodeLister := v1lister.NewNodeLister(store)
 	reflector := cache.NewReflector(listWatcher, &apiv1.Node{}, store, time.Hour)
-	reflector.Run(stopchannel)
+	go reflector.Run(stopchannel)
 	return &AllNodeLister{
 		nodeLister: nodeLister,
 	}
@@ -257,7 +257,7 @@ func NewPodDisruptionBudgetLister(kubeClient client.Interface, stopchannel <-cha
 	store := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
 	pdbLister := v1policylister.NewPodDisruptionBudgetLister(store)
 	reflector := cache.NewReflector(listWatcher, &policyv1.PodDisruptionBudget{}, store, time.Hour)
-	reflector.Run(stopchannel)
+	go reflector.Run(stopchannel)
 	return &PodDisruptionBudgetLister{
 		pdbLister: pdbLister,
 	}
@@ -279,7 +279,7 @@ func NewDaemonSetLister(kubeClient client.Interface, stopchannel <-chan struct{}
 	store := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
 	lister := v1extensionslister.NewDaemonSetLister(store)
 	reflector := cache.NewReflector(listWatcher, &extensionsv1.DaemonSet{}, store, time.Hour)
-	reflector.Run(stopchannel)
+	go reflector.Run(stopchannel)
 	return &DaemonSetLister{
 		daemonSetLister: lister,
 	}
