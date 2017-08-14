@@ -25,11 +25,11 @@ import (
 	"time"
 
 	"github.com/golang/glog"
-	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/strategicpatch"
 	"k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 )
@@ -41,9 +41,8 @@ const (
 	NodeUnreachablePodMessage = "Node %v which was running pod %v is unresponsive"
 )
 
-// GetHostname returns OS's hostname if 'hostnameOverride' is empty; otherwise, return 'hostnameOverride'.
 func GetHostname(hostnameOverride string) string {
-	hostname := hostnameOverride
+	var hostname string = hostnameOverride
 	if hostname == "" {
 		nodename, err := os.Hostname()
 		if err != nil {
@@ -110,8 +109,8 @@ func InternalGetNodeHostIP(node *api.Node) (net.IP, error) {
 	return nil, fmt.Errorf("host IP unknown; known addresses: %v", addresses)
 }
 
-// GetZoneKey is a helper function that builds a string identifier that is unique per failure-zone;
-// it returns empty-string for no zone.
+// Helper function that builds a string identifier that is unique per failure-zone
+// Returns empty-string for no zone
 func GetZoneKey(node *v1.Node) string {
 	labels := node.Labels
 	if labels == nil {

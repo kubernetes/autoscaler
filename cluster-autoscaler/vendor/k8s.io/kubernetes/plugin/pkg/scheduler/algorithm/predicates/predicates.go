@@ -17,6 +17,7 @@ limitations under the License.
 package predicates
 
 import (
+	"errors"
 	"fmt"
 	"math/rand"
 	"strconv"
@@ -24,13 +25,13 @@ import (
 	"time"
 
 	"github.com/golang/glog"
-	"k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
 	"k8s.io/client-go/util/workqueue"
+	"k8s.io/kubernetes/pkg/api/v1"
 	v1helper "k8s.io/kubernetes/pkg/api/v1/helper"
 	v1qos "k8s.io/kubernetes/pkg/api/v1/helper/qos"
 	corelisters "k8s.io/kubernetes/pkg/client/listers/core/v1"
@@ -564,9 +565,6 @@ func podName(pod *v1.Pod) string {
 	return pod.Namespace + "/" + pod.Name
 }
 
-// PodFitsResources checks if a node has sufficient resources, such as cpu, memory, gpu, opaque int resources etc to run a pod.
-// First return value indicates whether a node has sufficient resources to run a pod while the second return value indicates the
-// predicate failure reasons if the node has insufficient resources to run the pod.
 func PodFitsResources(pod *v1.Pod, meta interface{}, nodeInfo *schedulercache.NodeInfo) (bool, []algorithm.PredicateFailureReason, error) {
 	node := nodeInfo.Node()
 	if node == nil {
@@ -586,7 +584,7 @@ func PodFitsResources(pod *v1.Pod, meta interface{}, nodeInfo *schedulercache.No
 		// We couldn't parse metadata - fallback to computing it.
 		podRequest = GetResourceRequest(pod)
 	}
-	if podRequest.MilliCPU == 0 && podRequest.Memory == 0 && podRequest.NvidiaGPU == 0 && podRequest.StorageOverlay == 0 && podRequest.StorageScratch == 0 && len(podRequest.OpaqueIntResources) == 0 {
+	if podRequest.MilliCPU == 0 && podRequest.Memory == 0 && podRequest.NvidiaGPU == 0 && len(podRequest.OpaqueIntResources) == 0 {
 		return len(predicateFails) == 0, predicateFails, nil
 	}
 
@@ -623,13 +621,11 @@ func PodFitsResources(pod *v1.Pod, meta interface{}, nodeInfo *schedulercache.No
 		}
 	}
 
-	if glog.V(10) {
-		if len(predicateFails) == 0 {
-			// We explicitly don't do glog.V(10).Infof() to avoid computing all the parameters if this is
-			// not logged. There is visible performance gain from it.
-			glog.Infof("Schedule Pod %+v on Node %+v is allowed, Node is running only %v out of %v Pods.",
-				podName(pod), node.Name, len(nodeInfo.Pods()), allowedPodNumber)
-		}
+	if glog.V(10) && len(predicateFails) == 0 {
+		// We explicitly don't do glog.V(10).Infof() to avoid computing all the parameters if this is
+		// not logged. There is visible performance gain from it.
+		glog.Infof("Schedule Pod %+v on Node %+v is allowed, Node is running only %v out of %v Pods.",
+			podName(pod), node.Name, len(nodeInfo.Pods()), allowedPodNumber)
 	}
 	return len(predicateFails) == 0, predicateFails, nil
 }
@@ -667,7 +663,7 @@ func podMatchesNodeLabels(pod *v1.Pod, node *v1.Node) bool {
 	// 5. zero-length non-nil []NodeSelectorRequirement matches no nodes also, just for simplicity
 	// 6. non-nil empty NodeSelectorRequirement is not allowed
 	nodeAffinityMatches := true
-	affinity := pod.Spec.Affinity
+	affinity := schedulercache.ReconcileAffinity(pod)
 	if affinity != nil && affinity.NodeAffinity != nil {
 		nodeAffinity := affinity.NodeAffinity
 		// if no required NodeAffinity requirements, will do no-op, means select all nodes.
@@ -696,7 +692,6 @@ func podMatchesNodeLabels(pod *v1.Pod, node *v1.Node) bool {
 	return nodeAffinityMatches
 }
 
-// PodMatchNodeSelector checks if a pod node selector matches the node label.
 func PodMatchNodeSelector(pod *v1.Pod, meta interface{}, nodeInfo *schedulercache.NodeInfo) (bool, []algorithm.PredicateFailureReason, error) {
 	node := nodeInfo.Node()
 	if node == nil {
@@ -708,7 +703,6 @@ func PodMatchNodeSelector(pod *v1.Pod, meta interface{}, nodeInfo *schedulercach
 	return false, []algorithm.PredicateFailureReason{ErrNodeSelectorNotMatch}, nil
 }
 
-// PodFitsHost checks if a pod spec node name matches the current node.
 func PodFitsHost(pod *v1.Pod, meta interface{}, nodeInfo *schedulercache.NodeInfo) (bool, []algorithm.PredicateFailureReason, error) {
 	if len(pod.Spec.NodeName) == 0 {
 		return true, nil, nil
@@ -869,7 +863,6 @@ func (s *ServiceAffinity) checkServiceAffinity(pod *v1.Pod, meta interface{}, no
 	return false, []algorithm.PredicateFailureReason{ErrServiceAffinityViolated}, nil
 }
 
-// PodFitsHostPorts checks if a node has free ports for the requested pod ports.
 func PodFitsHostPorts(pod *v1.Pod, meta interface{}, nodeInfo *schedulercache.NodeInfo) (bool, []algorithm.PredicateFailureReason, error) {
 	var wantPorts map[int]bool
 	if predicateMeta, ok := meta.(*predicateMetadata); ok {
@@ -903,8 +896,6 @@ func haveSame(a1, a2 []string) bool {
 	return false
 }
 
-// GeneralPredicates checks whether noncriticalPredicates and EssentialPredicates pass. noncriticalPredicates are the predicates
-// that only non-critical pods need and EssentialPredicates are the predicates that all pods, including critical pods, need
 func GeneralPredicates(pod *v1.Pod, meta interface{}, nodeInfo *schedulercache.NodeInfo) (bool, []algorithm.PredicateFailureReason, error) {
 	var predicateFails []algorithm.PredicateFailureReason
 	fit, reasons, err := noncriticalPredicates(pod, meta, nodeInfo)
@@ -984,9 +975,6 @@ func NewPodAffinityPredicate(info NodeInfo, podLister algorithm.PodLister) algor
 	return checker.InterPodAffinityMatches
 }
 
-// InterPodAffinityMatches checks if a pod can be scheduled on the specified node with pod affinity/anti-affinity configuration.
-// First return value indicates whether a pod can be scheduled on the specified node while the second return value indicates the
-// predicate failure reasons if the pod cannot be scheduled on the specified node.
 func (c *PodAffinityChecker) InterPodAffinityMatches(pod *v1.Pod, meta interface{}, nodeInfo *schedulercache.NodeInfo) (bool, []algorithm.PredicateFailureReason, error) {
 	node := nodeInfo.Node()
 	if node == nil {
@@ -997,7 +985,7 @@ func (c *PodAffinityChecker) InterPodAffinityMatches(pod *v1.Pod, meta interface
 	}
 
 	// Now check if <pod> requirements will be satisfied on this node.
-	affinity := pod.Spec.Affinity
+	affinity := schedulercache.ReconcileAffinity(pod)
 	if affinity == nil || (affinity.PodAffinity == nil && affinity.PodAntiAffinity == nil) {
 		return true, nil, nil
 	}
@@ -1020,7 +1008,7 @@ func (c *PodAffinityChecker) InterPodAffinityMatches(pod *v1.Pod, meta interface
 // TODO: Do we really need any pod matching, or all pods matching? I think the latter.
 func (c *PodAffinityChecker) anyPodMatchesPodAffinityTerm(pod *v1.Pod, allPods []*v1.Pod, node *v1.Node, term *v1.PodAffinityTerm) (bool, bool, error) {
 	if len(term.TopologyKey) == 0 {
-		return false, false, fmt.Errorf("empty topologyKey is not allowed except for PreferredDuringScheduling pod anti-affinity")
+		return false, false, errors.New("Empty topologyKey is not allowed except for PreferredDuringScheduling pod anti-affinity")
 	}
 	matchingPodExists := false
 	namespaces := priorityutil.GetNamespacesFromPodAffinityTerm(pod, term)
@@ -1101,7 +1089,7 @@ func getMatchingAntiAffinityTerms(pod *v1.Pod, nodeInfoMap map[string]*scheduler
 		}
 		var nodeResult []matchingPodAntiAffinityTerm
 		for _, existingPod := range nodeInfo.PodsWithAffinity() {
-			affinity := existingPod.Spec.Affinity
+			affinity := schedulercache.ReconcileAffinity(existingPod)
 			if affinity == nil {
 				continue
 			}
@@ -1128,7 +1116,7 @@ func getMatchingAntiAffinityTerms(pod *v1.Pod, nodeInfoMap map[string]*scheduler
 func (c *PodAffinityChecker) getMatchingAntiAffinityTerms(pod *v1.Pod, allPods []*v1.Pod) ([]matchingPodAntiAffinityTerm, error) {
 	var result []matchingPodAntiAffinityTerm
 	for _, existingPod := range allPods {
-		affinity := existingPod.Spec.Affinity
+		affinity := schedulercache.ReconcileAffinity(existingPod)
 		if affinity != nil && affinity.PodAntiAffinity != nil {
 			existingPodNode, err := c.info.GetNodeInfo(existingPod.Spec.NodeName)
 			if err != nil {
@@ -1245,7 +1233,6 @@ func (c *PodAffinityChecker) satisfiesPodsAffinityAntiAffinity(pod *v1.Pod, node
 	return true
 }
 
-// PodToleratesNodeTaints checks if a pod tolertaions can tolerate the node taints
 func PodToleratesNodeTaints(pod *v1.Pod, meta interface{}, nodeInfo *schedulercache.NodeInfo) (bool, []algorithm.PredicateFailureReason, error) {
 	return podToleratesNodeTaints(pod, nodeInfo, func(t *v1.Taint) bool {
 		// PodToleratesNodeTaints is only interested in NoSchedule and NoExecute taints.
@@ -1272,7 +1259,7 @@ func podToleratesNodeTaints(pod *v1.Pod, nodeInfo *schedulercache.NodeInfo, filt
 	return false, []algorithm.PredicateFailureReason{ErrTaintsTolerationsNotMatch}, nil
 }
 
-// isPodBestEffort checks if pod is scheduled with best-effort QoS
+// Determine if a pod is scheduled with best-effort QoS
 func isPodBestEffort(pod *v1.Pod) bool {
 	return v1qos.GetPodQOS(pod) == v1.PodQOSBestEffort
 }
@@ -1292,7 +1279,7 @@ func CheckNodeMemoryPressurePredicate(pod *v1.Pod, meta interface{}, nodeInfo *s
 		return true, nil, nil
 	}
 
-	// check if node is under memory preasure
+	// is node under presure?
 	if nodeInfo.MemoryPressureCondition() == v1.ConditionTrue {
 		return false, []algorithm.PredicateFailureReason{ErrNodeUnderMemoryPressure}, nil
 	}
@@ -1302,7 +1289,7 @@ func CheckNodeMemoryPressurePredicate(pod *v1.Pod, meta interface{}, nodeInfo *s
 // CheckNodeDiskPressurePredicate checks if a pod can be scheduled on a node
 // reporting disk pressure condition.
 func CheckNodeDiskPressurePredicate(pod *v1.Pod, meta interface{}, nodeInfo *schedulercache.NodeInfo) (bool, []algorithm.PredicateFailureReason, error) {
-	// check if node is under disk preasure
+	// is node under presure?
 	if nodeInfo.DiskPressureCondition() == v1.ConditionTrue {
 		return false, []algorithm.PredicateFailureReason{ErrNodeUnderDiskPressure}, nil
 	}

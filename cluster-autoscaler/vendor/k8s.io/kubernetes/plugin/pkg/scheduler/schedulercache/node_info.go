@@ -21,9 +21,9 @@ import (
 
 	"github.com/golang/glog"
 
-	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	clientcache "k8s.io/client-go/tools/cache"
+	"k8s.io/kubernetes/pkg/api/v1"
 	v1helper "k8s.io/kubernetes/pkg/api/v1/helper"
 	priorityutil "k8s.io/kubernetes/plugin/pkg/scheduler/algorithm/priorities/util"
 )
@@ -80,6 +80,7 @@ func (r *Resource) ResourceList() v1.ResourceList {
 		v1.ResourceMemory:         *resource.NewQuantity(r.Memory, resource.BinarySI),
 		v1.ResourceNvidiaGPU:      *resource.NewQuantity(r.NvidiaGPU, resource.DecimalSI),
 		v1.ResourceStorageOverlay: *resource.NewQuantity(r.StorageOverlay, resource.BinarySI),
+		v1.ResourceStorageScratch: *resource.NewQuantity(r.StorageScratch, resource.BinarySI),
 	}
 	for rName, rQuant := range r.OpaqueIntResources {
 		result[rName] = *resource.NewQuantity(rQuant, resource.DecimalSI)
@@ -257,7 +258,7 @@ func (n *NodeInfo) String() string {
 }
 
 func hasPodAffinityConstraints(pod *v1.Pod) bool {
-	affinity := pod.Spec.Affinity
+	affinity := ReconcileAffinity(pod)
 	return affinity != nil && (affinity.PodAffinity != nil || affinity.PodAntiAffinity != nil)
 }
 
@@ -407,7 +408,7 @@ func (n *NodeInfo) SetNode(node *v1.Node) error {
 			n.allocatableResource.NvidiaGPU = rQuant.Value()
 		case v1.ResourcePods:
 			n.allowedPodNumber = int(rQuant.Value())
-		case v1.ResourceStorage:
+		case v1.ResourceStorageScratch:
 			n.allocatableResource.StorageScratch = rQuant.Value()
 		case v1.ResourceStorageOverlay:
 			n.allocatableResource.StorageOverlay = rQuant.Value()

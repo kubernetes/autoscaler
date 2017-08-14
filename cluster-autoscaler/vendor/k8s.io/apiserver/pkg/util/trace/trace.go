@@ -19,7 +19,6 @@ package trace
 import (
 	"bytes"
 	"fmt"
-	"math/rand"
 	"time"
 
 	"github.com/golang/glog"
@@ -49,38 +48,22 @@ func (t *Trace) Step(msg string) {
 }
 
 func (t *Trace) Log() {
-	// an explicit logging request should dump all the steps out at the higher level
-	t.logWithStepThreshold(0)
-}
-
-func (t *Trace) logWithStepThreshold(stepThreshold time.Duration) {
-	var buffer bytes.Buffer
-	tracenum := rand.Int31()
 	endTime := time.Now()
+	var buffer bytes.Buffer
 
-	totalTime := endTime.Sub(t.startTime)
-	buffer.WriteString(fmt.Sprintf("Trace[%d]: %q (started: %v) (total time: %v):\n", tracenum, t.name, t.startTime, totalTime))
+	buffer.WriteString(fmt.Sprintf("Trace %q (started %v):\n", t.name, t.startTime))
 	lastStepTime := t.startTime
 	for _, step := range t.steps {
-		stepDuration := step.stepTime.Sub(lastStepTime)
-		if stepThreshold == 0 || stepDuration > stepThreshold || glog.V(4) {
-			buffer.WriteString(fmt.Sprintf("Trace[%d]: [%v] [%v] %v\n", tracenum, step.stepTime.Sub(t.startTime), stepDuration, step.msg))
-		}
+		buffer.WriteString(fmt.Sprintf("[%v] [%v] %v\n", step.stepTime.Sub(t.startTime), step.stepTime.Sub(lastStepTime), step.msg))
 		lastStepTime = step.stepTime
 	}
-	stepDuration := endTime.Sub(lastStepTime)
-	if stepThreshold == 0 || stepDuration > stepThreshold || glog.V(4) {
-		buffer.WriteString(fmt.Sprintf("Trace[%d]: [%v] [%v] END\n", tracenum, endTime.Sub(t.startTime), stepDuration))
-	}
-
+	buffer.WriteString(fmt.Sprintf("%q [%v] [%v] END\n", t.name, endTime.Sub(t.startTime), endTime.Sub(lastStepTime)))
 	glog.Info(buffer.String())
 }
 
 func (t *Trace) LogIfLong(threshold time.Duration) {
 	if time.Since(t.startTime) >= threshold {
-		// if any step took more than it's share of the total allowed time, it deserves a higher log level
-		stepThreshold := threshold / time.Duration(len(t.steps)+1)
-		t.logWithStepThreshold(stepThreshold)
+		t.Log()
 	}
 }
 

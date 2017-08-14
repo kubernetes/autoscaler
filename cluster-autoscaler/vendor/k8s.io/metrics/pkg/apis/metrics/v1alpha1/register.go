@@ -34,9 +34,8 @@ func Resource(resource string) schema.GroupResource {
 }
 
 var (
-	SchemeBuilder      = runtime.NewSchemeBuilder(addKnownTypes)
-	localSchemeBuilder = &SchemeBuilder
-	AddToScheme        = SchemeBuilder.AddToScheme
+	SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes)
+	AddToScheme   = SchemeBuilder.AddToScheme
 )
 
 func addKnownTypes(scheme *runtime.Scheme) error {
