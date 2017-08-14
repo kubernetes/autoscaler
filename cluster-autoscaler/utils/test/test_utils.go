@@ -20,12 +20,12 @@ import (
 	"fmt"
 	"time"
 
-	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/testapi"
+	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	refv1 "k8s.io/kubernetes/pkg/api/v1/ref"
 )
 

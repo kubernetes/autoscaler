@@ -22,8 +22,8 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 
-	apiv1 "k8s.io/api/core/v1"
-	extensionsv1 "k8s.io/api/extensions/v1beta1"
+	apiv1 "k8s.io/kubernetes/pkg/api/v1"
+	extensionsv1 "k8s.io/kubernetes/pkg/apis/extensions/v1beta1"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 )
 

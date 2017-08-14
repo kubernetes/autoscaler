@@ -20,10 +20,10 @@ import (
 	"fmt"
 	"math"
 
-	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
+	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 )
 
 // SimplePreferredNodeProvider returns preferred node based on the cluster size.

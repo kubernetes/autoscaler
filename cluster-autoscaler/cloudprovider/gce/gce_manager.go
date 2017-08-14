@@ -37,8 +37,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 
-	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
+	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	provider_gce "k8s.io/kubernetes/pkg/cloudprovider/providers/gce"
 )
 
