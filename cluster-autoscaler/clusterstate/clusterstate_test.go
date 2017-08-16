@@ -345,7 +345,7 @@ func TestRegisterScaleDown(t *testing.T) {
 		Time:               now,
 	})
 	assert.Equal(t, 1, len(clusterstate.scaleDownRequests))
-	clusterstate.cleanUp(now.Add(5 * time.Minute))
+	clusterstate.updateScaleRequests(now.Add(5 * time.Minute))
 	assert.Equal(t, 0, len(clusterstate.scaleDownRequests))
 }
 
@@ -553,4 +553,80 @@ func TestUpdateLastTransitionTimes(t *testing.T) {
 			assert.Equal(t, expectations[ngCondition.Type], ngCondition.LastTransitionTime)
 		}
 	}
+}
+
+func TestScaleUpBackoff(t *testing.T) {
+	now := time.Now()
+
+	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
+	SetNodeReadyState(ng1_1, true, now.Add(-time.Minute))
+	ng1_2 := BuildTestNode("ng1-2", 1000, 1000)
+	SetNodeReadyState(ng1_2, true, now.Add(-time.Minute))
+	ng1_3 := BuildTestNode("ng1-3", 1000, 1000)
+	SetNodeReadyState(ng1_3, true, now.Add(-time.Minute))
+
+	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider.AddNodeGroup("ng1", 1, 10, 4)
+	provider.AddNode("ng1", ng1_1)
+	provider.AddNode("ng1", ng1_2)
+	provider.AddNode("ng1", ng1_3)
+	assert.NotNil(t, provider)
+
+	clusterstate := NewClusterStateRegistry(provider, ClusterStateRegistryConfig{
+		MaxTotalUnreadyPercentage: 10,
+		OkTotalUnreadyCount:       1,
+	})
+
+	// Fail a scale-up, node group should be still healthy, but should backoff from scale-ups
+	clusterstate.RegisterScaleUp(&ScaleUpRequest{
+		NodeGroupName:   "ng1",
+		Increase:        1,
+		Time:            now.Add(-3 * time.Minute),
+		ExpectedAddTime: now.Add(-1 * time.Minute),
+	})
+	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng1_2, ng1_3}, now)
+	assert.NoError(t, err)
+	assert.True(t, clusterstate.IsClusterHealthy())
+	assert.True(t, clusterstate.IsNodeGroupHealthy("ng1"))
+	assert.False(t, clusterstate.IsNodeGroupSafeToScaleUp("ng1", now))
+
+	// Backoff should expire after timeout
+	now = now.Add(InitialNodeGroupBackoffDuration).Add(time.Second)
+	assert.True(t, clusterstate.IsClusterHealthy())
+	assert.True(t, clusterstate.IsNodeGroupHealthy("ng1"))
+	assert.True(t, clusterstate.IsNodeGroupSafeToScaleUp("ng1", now))
+
+	// Another failed scale up should cause longer backoff
+	clusterstate.RegisterScaleUp(&ScaleUpRequest{
+		NodeGroupName:   "ng1",
+		Increase:        1,
+		Time:            now.Add(-2 * time.Minute),
+		ExpectedAddTime: now.Add(-1 * time.Second),
+	})
+	err = clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng1_2, ng1_3}, now)
+	assert.NoError(t, err)
+	assert.True(t, clusterstate.IsClusterHealthy())
+	assert.True(t, clusterstate.IsNodeGroupHealthy("ng1"))
+	assert.False(t, clusterstate.IsNodeGroupSafeToScaleUp("ng1", now))
+
+	now = now.Add(InitialNodeGroupBackoffDuration).Add(time.Second)
+	assert.False(t, clusterstate.IsNodeGroupSafeToScaleUp("ng1", now))
+
+	// The backoff should be cleared after a successfull scale-up
+	clusterstate.RegisterScaleUp(&ScaleUpRequest{
+		NodeGroupName:   "ng1",
+		Increase:        1,
+		Time:            now,
+		ExpectedAddTime: now.Add(time.Second),
+	})
+	ng1_4 := BuildTestNode("ng1-4", 1000, 1000)
+	SetNodeReadyState(ng1_4, true, now.Add(-1*time.Minute))
+	provider.AddNode("ng1", ng1_4)
+	err = clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng1_2, ng1_3, ng1_4}, now)
+	assert.NoError(t, err)
+	assert.True(t, clusterstate.IsClusterHealthy())
+	assert.True(t, clusterstate.IsNodeGroupHealthy("ng1"))
+	assert.True(t, clusterstate.IsNodeGroupSafeToScaleUp("ng1", now))
+	_, found := clusterstate.nodeGroupBackoffInfo["ng1"]
+	assert.False(t, found)
 }

@@ -65,6 +65,8 @@ const (
 	ClusterAutoscalerInProgress ClusterAutoscalerConditionStatus = "InProgress"
 	// ClusterAutoscalerNoActivity status means that there has been no scale up activity recently.
 	ClusterAutoscalerNoActivity ClusterAutoscalerConditionStatus = "NoActivity"
+	// ClusterAutoscalerBackoff status means that due to a recently failed scale-up no further scale-ups attempts will be made for some time.
+	ClusterAutoscalerBackoff ClusterAutoscalerConditionStatus = "Backoff"
 )
 
 // ClusterAutoscalerCondition describes some aspect of ClusterAutoscaler work.
