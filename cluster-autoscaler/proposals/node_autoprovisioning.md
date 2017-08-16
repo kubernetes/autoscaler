@@ -98,14 +98,15 @@ Then we calculate the stats of all node selectors of the pods. For each signific
 
 Example:
 
- * `S1: x in (“a”, “b”,”c”) and y not in (“z”)`
- * `S2: x in (“b”, “d”) and y in (“m”)`
- * `S3: x notexists`
- * `S4: y exists`
+ * `S1: x = "a" and machine_type="n1-standard-2"
+ * `S2: y = "b"
+ * `S3: x = "c"
+ * `S4: machine_type = "n1-standard-16"
 
-S1 is compatible with S2 and S4. S2 is compatible with S1 and S4. S3 is compatible with S4.
+S1 is compatible with S2 and S4. S2 is compatible with S1, S3 and S4. S3 is compatible with S4 and S2.
 
-The label selector that would come from S1, S2 and S4 would be x in (“b”, “d”) and y in (“m”). If multiple options are allowed for a single label then the most popular value for the label wins (in the existing nodes), in case of tie - the lexicographically smaller. So for S1, S2 and S4 it would be x = “b” and y = “m” (assuming that there are no nodes with x).
+The label selector that would come from S1, S2 and S4 would be x="a" and y="b" and machine_type = "n1-standard-2", however
+depending on popularity, the other option is S2, S3, S4 => x="c", y="b" and machine_type = "n1-standard-16".
 
 # Testing 
 
