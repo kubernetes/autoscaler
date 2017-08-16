@@ -225,12 +225,12 @@ func (m *AzureManager) RegisterScaleSet(scaleSet *ScaleSet) {
 
 // GetScaleSetSize gets Scale Set size.
 func (m *AzureManager) GetScaleSetSize(asConfig *ScaleSet) (int64, error) {
-	fmt.Printf("Get scale set size: %v\n", asConfig)
+	glog.Infof("Get scale set size: %v\n", asConfig)
 	set, err := m.scaleSetClient.Get(m.resourceGroupName, asConfig.Name)
 	if err != nil {
 		return -1, err
 	}
-	fmt.Printf("Returning scale set capacity: %d\n", *set.Sku.Capacity)
+	glog.Infof("Returning scale set capacity: %d\n", *set.Sku.Capacity)
 	return *set.Sku.Capacity, nil
 }
 
@@ -253,12 +253,12 @@ func (m *AzureManager) SetScaleSetSize(asConfig *ScaleSet, size int64) error {
 
 // GetScaleSetForInstance returns ScaleSetConfig of the given Instance
 func (m *AzureManager) GetScaleSetForInstance(instance *AzureRef) (*ScaleSet, error) {
-	fmt.Printf("Looking for scale set for instance: %v\n", instance)
+	glog.Infof("Looking for scale set for instance: %v\n", instance)
 	//if m.resourceGroupName == "" {
 	//	m.resourceGroupName = instance.ResourceGroup
 	//}
 
-	fmt.Printf("Cache BEFORE: %v\n", m.scaleSetCache)
+	glog.Infof("Cache BEFORE: %v\n", m.scaleSetCache)
 
 	m.cacheMutex.Lock()
 	defer m.cacheMutex.Unlock()
@@ -269,7 +269,7 @@ func (m *AzureManager) GetScaleSetForInstance(instance *AzureRef) (*ScaleSet, er
 		return nil, fmt.Errorf("Error while looking for ScaleSet for instance %+v, error: %v", *instance, err)
 	}
 
-	fmt.Printf("Cache AFTER: %v\n", m.scaleSetCache)
+	glog.Infof("Cache AFTER: %v\n", m.scaleSetCache)
 
 	if config, found := m.scaleSetCache[*instance]; found {
 		return config, nil
