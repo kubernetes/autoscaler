@@ -44,11 +44,11 @@ func BuildTestPod(name, containerName, cpu, mem string, creator runtime.Object) 
 			Containers: []apiv1.Container{BuildTestContainer(containerName, cpu, mem)},
 		},
 	}
-
+	/*
 	if creator != nil {
 		pod.ObjectMeta.Annotations = map[string]string{apiv1.CreatedByAnnotation: RefJSON(creator)}
 	}
-
+	*/
 	if len(cpu) > 0 {
 		cpuVal, _ := resource.ParseQuantity(cpu)
 		pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceCPU] = cpuVal

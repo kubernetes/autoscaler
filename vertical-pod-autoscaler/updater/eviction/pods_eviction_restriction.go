@@ -23,8 +23,6 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	api "k8s.io/kubernetes/pkg/api"
 	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 )
 
@@ -41,8 +39,8 @@ type PodsEvictionRestriction interface {
 
 type podsEvictionRestrictionImpl struct {
 	client         kube_client.Interface
-	podsCreators   map[string]podReplicaCreator
-	evictionBudget map[podReplicaCreator]int
+	podsControllers   map[string]podReplicaController
+	evictionBudget map[podReplicaController]int
 }
 
 // PodsEvictionRestrictionFactory creates PodsEvictionRestriction
@@ -57,7 +55,7 @@ type podsEvictionRestrictionFactoryImpl struct {
 	evictionToleranceFraction float64
 }
 
-type podReplicaCreator struct {
+type podReplicaController struct {
 	Namespace string
 	Name      string
 	Kind      string
@@ -65,7 +63,7 @@ type podReplicaCreator struct {
 
 // CanEvict checks if pod can be safely evicted
 func (e *podsEvictionRestrictionImpl) CanEvict(pod *apiv1.Pod) bool {
-	cr, present := e.podsCreators[getPodID(pod)]
+	cr, present := e.podsControllers[getPodID(pod)]
 	if present {
 		return e.evictionBudget[cr] > 0
 	}
@@ -75,7 +73,7 @@ func (e *podsEvictionRestrictionImpl) CanEvict(pod *apiv1.Pod) bool {
 // Evict sends eviction instruction to api client. Retrurns error if pod cannot be evicted or if client returned error
 // Does not check if pod was actually evicted after eviction grace period.
 func (e *podsEvictionRestrictionImpl) Evict(podToEvict *apiv1.Pod) error {
-	cr, present := e.podsCreators[getPodID(podToEvict)]
+	cr, present := e.podsControllers[getPodID(podToEvict)]
 	if !present {
 		return fmt.Errorf("pod not suitable for eviction %v : not in replicated pods map", podToEvict.Name)
 	}
@@ -109,41 +107,41 @@ func (f *podsEvictionRestrictionFactoryImpl) NewPodsEvictionRestriction(pods []*
 	// For each replica set we can evict only a fraction of pods.
 	// Evictions may be later limited by pod disruption budget if configured.
 
-	livePods := make(map[podReplicaCreator][]*apiv1.Pod)
+	livePods := make(map[podReplicaController][]*apiv1.Pod)
 
 	for _, pod := range pods {
-		creator, err := getPodReplicaCreator(pod)
+		controller, err := getPodReplicaController(pod, &f.client)
 		if err != nil {
 			glog.Errorf("failed to obtain replication info for pod %s: %v", pod.Name, err)
 			continue
 		}
-		if creator == nil {
+		if controller == nil {
 			glog.V(2).Infof("pod %s not replicated", pod.Name)
 			continue
 		}
-		livePods[*creator] = append(livePods[*creator], pod)
+		livePods[*controller] = append(livePods[*controller], pod)
 	}
 
-	podsCreators := make(map[string]podReplicaCreator)
-	creatorsEvictionBudget := make(map[podReplicaCreator]int)
-	for creator, replicas := range livePods {
+	podsControllers := make(map[string]podReplicaController)
+	controllersEvictionBudget := make(map[podReplicaController]int)
+	for controller, replicas := range livePods {
 		actual := len(replicas)
 		if actual < f.minReplicas {
 			glog.V(2).Infof("too few replicas for %v %v/%v. Found %v live pods",
-				creator.Kind, creator.Namespace, creator.Name, actual)
+				controller.Kind, controller.Namespace, controller.Name, actual)
 			continue
 		}
 
 		var configured int
-		if creator.Kind == "Job" {
+		if controller.Kind == "Job" {
 			// Job has no replicas configuration, so we will use actual number of live pods as replicas count.
 			configured = actual
 		} else {
 			var err error
-			configured, err = getReplicaCount(creator, f.client)
+			configured, err = getReplicaCount(controller, f.client)
 			if err != nil {
 				glog.Errorf("failed to obtain replication info for %v %v/%v. %v",
-					creator.Kind, creator.Namespace, creator.Name, err)
+					controller.Kind, controller.Namespace, controller.Name, err)
 				continue
 			}
 		}
@@ -153,31 +151,31 @@ func (f *podsEvictionRestrictionFactoryImpl) NewPodsEvictionRestriction(pods []*
 		evictionBudget := evictionTolerance - currentlyEvicted
 
 		if evictionBudget > 0 {
-			creatorsEvictionBudget[creator] = evictionBudget
+			controllersEvictionBudget[controller] = evictionBudget
 		} else {
-			creatorsEvictionBudget[creator] = 1
+			controllersEvictionBudget[controller] = 1
 			glog.V(2).Infof("configured eviction tolerance for pods from %v %v/%v too low. Setting eviction budget to 1",
-				creator.Kind, creator.Namespace, creator.Name)
+				controller.Kind, controller.Namespace, controller.Name)
 		}
 
 		for _, pod := range replicas {
-			podsCreators[getPodID(pod)] = creator
+			podsControllers[getPodID(pod)] = controller
 		}
 	}
-	return &podsEvictionRestrictionImpl{client: f.client, podsCreators: podsCreators, evictionBudget: creatorsEvictionBudget}
+	return &podsEvictionRestrictionImpl{client: f.client, podsControllers: podsControllers, evictionBudget: controllersEvictionBudget}
 }
 
-func getPodReplicaCreator(pod *apiv1.Pod) (*podReplicaCreator, error) {
-	creator, err := creatorRef(pod)
+func getPodReplicaController(pod *apiv1.Pod, client *kube_client.Interface) (*podReplicaController, error) {
+	controllerRef, err := controllerRef(pod, client)
 	if err != nil {
-		return nil, fmt.Errorf("failed to obtain pod creator reference: %v", err)
+		return nil, fmt.Errorf("failed to obtain pod controller reference: %v", err)
 	}
-	if creator == nil {
+	if controllerRef == nil {
 		return nil, nil
 	}
-	return &podReplicaCreator{Namespace: creator.Reference.Namespace,
-		Name: creator.Reference.Name,
-		Kind: creator.Reference.Kind}, nil
+	return &podReplicaController{Namespace: pod.Namespace,
+		Name: controllerRef.Name,
+		Kind: controllerRef.Kind}, nil
 }
 
 func getPodID(pod *apiv1.Pod) string {
@@ -187,37 +185,37 @@ func getPodID(pod *apiv1.Pod) string {
 	return pod.Namespace + "/" + pod.Name
 }
 
-func getReplicaCount(creator podReplicaCreator, client kube_client.Interface) (int, error) {
-	switch creator.Kind {
+func getReplicaCount(controller podReplicaController, client kube_client.Interface) (int, error) {
+	switch controller.Kind {
 	case "ReplicationController":
-		rc, err := client.CoreV1().ReplicationControllers(creator.Namespace).Get(creator.Name, metav1.GetOptions{})
+		rc, err := client.CoreV1().ReplicationControllers(controller.Namespace).Get(controller.Name, metav1.GetOptions{})
 
 		if err != nil || rc == nil {
-			return 0, fmt.Errorf("replication controller %s/%s is not available, err: %v", creator.Namespace, creator.Name, err)
+			return 0, fmt.Errorf("replication controller %s/%s is not available, err: %v", controller.Namespace, controller.Name, err)
 		}
 		if rc.Spec.Replicas == nil || *rc.Spec.Replicas == 0 {
-			return 0, fmt.Errorf("replication controller %s/%s has no replicas config", creator.Namespace, creator.Name)
+			return 0, fmt.Errorf("replication controller %s/%s has no replicas config", controller.Namespace, controller.Name)
 		}
 		return int(*rc.Spec.Replicas), nil
 
 	case "ReplicaSet":
-		rs, err := client.ExtensionsV1beta1().ReplicaSets(creator.Namespace).Get(creator.Name, metav1.GetOptions{})
+		rs, err := client.ExtensionsV1beta1().ReplicaSets(controller.Namespace).Get(controller.Name, metav1.GetOptions{})
 
 		if err != nil || rs == nil {
-			return 0, fmt.Errorf("replica set %s/%s is not available, err: %v", creator.Namespace, creator.Name, err)
+			return 0, fmt.Errorf("replica set %s/%s is not available, err: %v", controller.Namespace, controller.Name, err)
 		}
 		if rs.Spec.Replicas == nil || *rs.Spec.Replicas == 0 {
-			return 0, fmt.Errorf("replica set %s/%s has no replicas config", creator.Namespace, creator.Name)
+			return 0, fmt.Errorf("replica set %s/%s has no replicas config", controller.Namespace, controller.Name)
 		}
 		return int(*rs.Spec.Replicas), nil
 
 	case "StatefulSet":
-		ss, err := client.AppsV1beta1().StatefulSets(creator.Namespace).Get(creator.Name, metav1.GetOptions{})
+		ss, err := client.AppsV1beta1().StatefulSets(controller.Namespace).Get(controller.Name, metav1.GetOptions{})
 		if err != nil || ss == nil {
-			return 0, fmt.Errorf("stateful set %s/%s is not available, err: %v", creator.Namespace, creator.Name, err)
+			return 0, fmt.Errorf("stateful set %s/%s is not available, err: %v", controller.Namespace, controller.Name, err)
 		}
 		if ss.Spec.Replicas == nil || *ss.Spec.Replicas == 0 {
-			return 0, fmt.Errorf("stateful set %s/%s has no replicas config", creator.Namespace, creator.Name)
+			return 0, fmt.Errorf("stateful set %s/%s has no replicas config", controller.Namespace, controller.Name)
 		}
 		return int(*ss.Spec.Replicas), nil
 	}
@@ -225,15 +223,62 @@ func getReplicaCount(creator podReplicaCreator, client kube_client.Interface) (i
 	return 0, nil
 }
 
-// creatorRef returns the kind of the creator reference of the pod.
-func creatorRef(pod *apiv1.Pod) (*apiv1.SerializedReference, error) {
-	creatorRef, found := pod.ObjectMeta.Annotations[apiv1.CreatedByAnnotation]
+/*
+// controllerRef returns the kind of the controller reference of the pod.
+func controllerRef(pod *apiv1.Pod) (*apiv1.SerializedReference, error) {
+	controllerRef, found := pod.ObjectMeta.Annotations[apiv1.CreatedByAnnotation]
 	if !found {
 		return nil, nil
 	}
 	var sr apiv1.SerializedReference
-	if err := runtime.DecodeInto(api.Codecs.UniversalDecoder(), []byte(creatorRef), &sr); err != nil {
+	if err := runtime.DecodeInto(api.Codecs.UniversalDecoder(), []byte(controllerRef), &sr); err != nil {
 		return nil, err
 	}
 	return &sr, nil
+}
+*/
+
+// controllerRef returns the kind of the controller reference of the pod.
+func controllerRef(pod *apiv1.Pod, client *kube_client.Interface) (*metav1.OwnerReference, error) {
+	controllerRef := getControllerOf(pod)
+	if controllerRef == nil {
+		return nil, nil
+	}
+
+	// We assume the only reason for an error is because the controller is
+	// gone/missing, not for any other cause.
+	// TODO(mml): something more sophisticated than this
+	// TODO(juntee): determine if it's safe to remove getController(),
+	// so that drain can work for controller types that we don't know about
+	_, err := getController(pod.Namespace, controllerRef, client)
+	if err != nil {
+		return nil, err
+	}
+	return controllerRef, nil
+}
+
+// getControllerOf returns a pointer to a copy of the controllerRef if controllee has a controller
+func getControllerOf(controllee metav1.Object) *metav1.OwnerReference {
+	for _, ref := range controllee.GetOwnerReferences() {
+		if ref.Controller != nil && *ref.Controller {
+			return &ref
+		}
+	}
+	return nil
+}
+
+func getController(namespace string, controllerRef *metav1.OwnerReference, client *kube_client.Interface) (interface{}, error) {
+	switch controllerRef.Kind {
+	case "ReplicationController":
+		return (*client).Core().ReplicationControllers(namespace).Get(controllerRef.Name, metav1.GetOptions{})
+	case "DaemonSet":
+		return (*client).Extensions().DaemonSets(namespace).Get(controllerRef.Name, metav1.GetOptions{})
+	case "Job":
+		return (*client).Batch().Jobs(namespace).Get(controllerRef.Name, metav1.GetOptions{})
+	case "ReplicaSet":
+		return (*client).Extensions().ReplicaSets(namespace).Get(controllerRef.Name, metav1.GetOptions{})
+	case "StatefulSet":
+		return (*client).Apps().StatefulSets(namespace).Get(controllerRef.Name, metav1.GetOptions{})
+	}
+	return nil, fmt.Errorf("Unknown controller kind %q", controllerRef.Kind)
 }
