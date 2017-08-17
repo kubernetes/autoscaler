@@ -77,7 +77,7 @@ func (azure *AzureCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 
 // NodeGroupForNode returns the node group for the given node.
 func (azure *AzureCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
-	glog.Infof("Searching for node group for the node: %s, %s\n", node.Spec.ExternalID, node.Spec.ProviderID)
+	glog.V(6).Infof("Searching for node group for the node: %s, %s\n", node.Spec.ExternalID, node.Spec.ProviderID)
 	ref := &AzureRef{
 		Name: node.Spec.ProviderID,
 	}
@@ -181,7 +181,7 @@ func (scaleSet *ScaleSet) DecreaseTargetSize(delta int) error {
 
 // Belongs returns true if the given node belongs to the NodeGroup.
 func (scaleSet *ScaleSet) Belongs(node *apiv1.Node) (bool, error) {
-	glog.Infof("Check if node belongs to this scale set: scaleset:%v, node:%v\n", scaleSet, node)
+	glog.V(6).Infof("Check if node belongs to this scale set: scaleset:%v, node:%v\n", scaleSet, node)
 
 	ref := &AzureRef{
 		Name: node.Spec.ProviderID,
@@ -202,7 +202,7 @@ func (scaleSet *ScaleSet) Belongs(node *apiv1.Node) (bool, error) {
 
 // DeleteNodes deletes the nodes from the group.
 func (scaleSet *ScaleSet) DeleteNodes(nodes []*apiv1.Node) error {
-	glog.Infof("Delete nodes requested: %v\n", nodes)
+	glog.V(8).Infof("Delete nodes requested: %v\n", nodes)
 	size, err := scaleSet.azureManager.GetScaleSetSize(scaleSet)
 	if err != nil {
 		return err
