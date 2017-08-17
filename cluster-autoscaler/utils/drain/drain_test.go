@@ -50,18 +50,18 @@ func TestDrain(t *testing.T) {
 
 	rcPod := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        "bar",
-			Namespace:   "default",
+			Name:      "bar",
+			Namespace: "default",
 			//Annotations: map[string]string{apiv1.CreatedByAnnotation: RefJSON(&rc)},
 			OwnerReferences: []metav1.OwnerReference{
- 				{
- 					APIVersion:         "core/v1",
- 					Kind:               "ReplicationController",
- 					Name:               "rc",
- 					BlockOwnerDeletion: boolptr(true),
- 					Controller:         boolptr(true),
- 				},
- 			},
+				{
+					APIVersion:         "core/v1",
+					Kind:               "ReplicationController",
+					Name:               "rc",
+					BlockOwnerDeletion: boolptr(true),
+					Controller:         boolptr(true),
+				},
+			},
 		},
 		Spec: apiv1.PodSpec{
 			NodeName: "node",
@@ -70,21 +70,21 @@ func TestDrain(t *testing.T) {
 
 	kubeSystemRcPod := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        "bar",
-			Namespace:   "kube-system",
+			Name:      "bar",
+			Namespace: "kube-system",
 			//Annotations: map[string]string{apiv1.CreatedByAnnotation: RefJSON(&rc)},
 			Labels: map[string]string{
 				"k8s-app": "bar",
 			},
 			OwnerReferences: []metav1.OwnerReference{
- 				{
- 					APIVersion:         "core/v1",
- 					Kind:               "ReplicationController",
- 					Name:               "rc",
- 					BlockOwnerDeletion: boolptr(true),
- 					Controller:         boolptr(true),
- 				},
- 			},
+				{
+					APIVersion:         "core/v1",
+					Kind:               "ReplicationController",
+					Name:               "rc",
+					BlockOwnerDeletion: boolptr(true),
+					Controller:         boolptr(true),
+				},
+			},
 		},
 		Spec: apiv1.PodSpec{
 			NodeName: "node",
@@ -101,18 +101,18 @@ func TestDrain(t *testing.T) {
 
 	dsPod := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        "bar",
-			Namespace:   "default",
+			Name:      "bar",
+			Namespace: "default",
 			//Annotations: map[string]string{apiv1.CreatedByAnnotation: RefJSON(&ds)},
 			OwnerReferences: []metav1.OwnerReference{
- 				{
- 					APIVersion:         "extensions/v1beta1",
- 					Kind:               "DaemonSet",
- 					Name:               "ds",
- 					BlockOwnerDeletion: boolptr(true),
- 					Controller:         boolptr(true),
- 				},
- 			},
+				{
+					APIVersion:         "extensions/v1beta1",
+					Kind:               "DaemonSet",
+					Name:               "ds",
+					BlockOwnerDeletion: boolptr(true),
+					Controller:         boolptr(true),
+				},
+			},
 		},
 		Spec: apiv1.PodSpec{
 			NodeName: "node",
@@ -125,60 +125,60 @@ func TestDrain(t *testing.T) {
 			Namespace: "default",
 			SelfLink:  "/apiv1s/extensions/v1beta1/namespaces/default/jobs/job",
 			OwnerReferences: []metav1.OwnerReference{
- 				{
- 					APIVersion:         "extensions/v1beta1",
- 					Kind:               "Job",
- 					Name:               "job",
- 					BlockOwnerDeletion: boolptr(true),
- 					Controller:         boolptr(true),
- 				},
- 			},
+				{
+					APIVersion:         "extensions/v1beta1",
+					Kind:               "Job",
+					Name:               "job",
+					BlockOwnerDeletion: boolptr(true),
+					Controller:         boolptr(true),
+				},
+			},
 		},
 	}
 
 	jobPod := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        "bar",
-			Namespace:   "default",
+			Name:      "bar",
+			Namespace: "default",
 			//Annotations: map[string]string{apiv1.CreatedByAnnotation: RefJSON(&job)},
 			OwnerReferences: []metav1.OwnerReference{
- 				{
- 					APIVersion:         "extensions/v1beta1",
- 					Kind:               "Job",
- 					Name:               "job",
- 					BlockOwnerDeletion: boolptr(true),
- 					Controller:         boolptr(true),
- 				},
- 			},
+				{
+					APIVersion:         "extensions/v1beta1",
+					Kind:               "Job",
+					Name:               "job",
+					BlockOwnerDeletion: boolptr(true),
+					Controller:         boolptr(true),
+				},
+			},
 		},
 	}
 
 	/*	Disable stateful set test for a moment due to fake client problems with handling v1beta1 SS
 
-		statefulset := appsv1beta1.StatefulSet{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "ss",
-				Namespace: "default",
-				SelfLink:  "/apiv1s/extensions/v1beta1/namespaces/default/statefulsets/ss",
-			},
-		}
+			statefulset := appsv1beta1.StatefulSet{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "ss",
+					Namespace: "default",
+					SelfLink:  "/apiv1s/extensions/v1beta1/namespaces/default/statefulsets/ss",
+				},
+			}
 
-		ssPod := &apiv1.Pod{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:        "bar",
-				Namespace:   "default",
-				Annotations: map[string]string{apiv1.CreatedByAnnotation: RefJSON(&statefulset)},
-				OwnerReferences: []metav1.OwnerReference{
- 				{
- 					APIVersion:         "extensions/v1beta1",
- 					Kind:               "StatefulSet",
- 					Name:               "ss",
- 					BlockOwnerDeletion: boolptr(true),
- 					Controller:         boolptr(true),
- 				},
- 			},
-			},
-		}
+			ssPod := &apiv1.Pod{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:        "bar",
+					Namespace:   "default",
+					Annotations: map[string]string{apiv1.CreatedByAnnotation: RefJSON(&statefulset)},
+					OwnerReferences: []metav1.OwnerReference{
+	 				{
+	 					APIVersion:         "extensions/v1beta1",
+	 					Kind:               "StatefulSet",
+	 					Name:               "ss",
+	 					BlockOwnerDeletion: boolptr(true),
+	 					Controller:         boolptr(true),
+	 				},
+	 			},
+				},
+			}
 	*/
 	rs := extensions.ReplicaSet{
 		ObjectMeta: metav1.ObjectMeta{
@@ -193,18 +193,18 @@ func TestDrain(t *testing.T) {
 
 	rsPod := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        "bar",
-			Namespace:   "default",
+			Name:      "bar",
+			Namespace: "default",
 			//Annotations: map[string]string{apiv1.CreatedByAnnotation: RefJSON(&rs)},
 			OwnerReferences: []metav1.OwnerReference{
- 				{
- 					APIVersion:         "extensions/v1beta1",
- 					Kind:               "ReplicaSet",
- 					Name:               "rs",
- 					BlockOwnerDeletion: boolptr(true),
- 					Controller:         boolptr(true),
- 				},
- 			},
+				{
+					APIVersion:         "extensions/v1beta1",
+					Kind:               "ReplicaSet",
+					Name:               "rs",
+					BlockOwnerDeletion: boolptr(true),
+					Controller:         boolptr(true),
+				},
+			},
 		},
 		Spec: apiv1.PodSpec{
 			NodeName: "node",
@@ -213,19 +213,19 @@ func TestDrain(t *testing.T) {
 
 	rsPodDeleted := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:              "bar",
-			Namespace:         "default",
+			Name:      "bar",
+			Namespace: "default",
 			//Annotations:       map[string]string{apiv1.CreatedByAnnotation: RefJSON(&rs)},
 			DeletionTimestamp: &metav1.Time{Time: time.Now().Add(-time.Hour)},
 			OwnerReferences: []metav1.OwnerReference{
- 				{
- 					APIVersion:         "extensions/v1beta1",
- 					Kind:               "ReplicaSet",
- 					Name:               "rs",
- 					BlockOwnerDeletion: boolptr(true),
- 					Controller:         boolptr(true),
- 				},
- 			},
+				{
+					APIVersion:         "extensions/v1beta1",
+					Kind:               "ReplicaSet",
+					Name:               "rs",
+					BlockOwnerDeletion: boolptr(true),
+					Controller:         boolptr(true),
+				},
+			},
 		},
 		Spec: apiv1.PodSpec{
 			NodeName: "node",

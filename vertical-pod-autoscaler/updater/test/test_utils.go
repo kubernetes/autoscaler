@@ -45,9 +45,9 @@ func BuildTestPod(name, containerName, cpu, mem string, creator runtime.Object) 
 		},
 	}
 	/*
-	if creator != nil {
-		pod.ObjectMeta.Annotations = map[string]string{apiv1.CreatedByAnnotation: RefJSON(creator)}
-	}
+		if creator != nil {
+			pod.ObjectMeta.Annotations = map[string]string{apiv1.CreatedByAnnotation: RefJSON(creator)}
+		}
 	*/
 	if len(cpu) > 0 {
 		cpuVal, _ := resource.ParseQuantity(cpu)

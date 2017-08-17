@@ -38,9 +38,9 @@ type PodsEvictionRestriction interface {
 }
 
 type podsEvictionRestrictionImpl struct {
-	client         kube_client.Interface
-	podsControllers   map[string]podReplicaController
-	evictionBudget map[podReplicaController]int
+	client          kube_client.Interface
+	podsControllers map[string]podReplicaController
+	evictionBudget  map[podReplicaController]int
 }
 
 // PodsEvictionRestrictionFactory creates PodsEvictionRestriction
