@@ -155,30 +155,30 @@ func TestDrain(t *testing.T) {
 
 	/*	Disable stateful set test for a moment due to fake client problems with handling v1beta1 SS
 
-			statefulset := appsv1beta1.StatefulSet{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "ss",
-					Namespace: "default",
-					SelfLink:  "/apiv1s/extensions/v1beta1/namespaces/default/statefulsets/ss",
-				},
-			}
+				statefulset := appsv1beta1.StatefulSet{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "ss",
+						Namespace: "default",
+						SelfLink:  "/apiv1s/extensions/v1beta1/namespaces/default/statefulsets/ss",
+					},
+				}
 
-			ssPod := &apiv1.Pod{
-				ObjectMeta: metav1.ObjectMeta{
-					Name:        "bar",
-					Namespace:   "default",
-					Annotations: map[string]string{apiv1.CreatedByAnnotation: RefJSON(&statefulset)},
-					OwnerReferences: []metav1.OwnerReference{
-	 				{
-	 					APIVersion:         "extensions/v1beta1",
-	 					Kind:               "StatefulSet",
-	 					Name:               "ss",
-	 					BlockOwnerDeletion: boolptr(true),
-	 					Controller:         boolptr(true),
-	 				},
-	 			},
-				},
-			}
+				ssPod := &apiv1.Pod{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:        "bar",
+						Namespace:   "default",
+						Annotations: map[string]string{apiv1.CreatedByAnnotation: RefJSON(&statefulset)},
+						OwnerReferences: []metav1.OwnerReference{
+		 				{
+		 					APIVersion:         "extensions/v1beta1",
+		 					Kind:               "StatefulSet",
+		 					Name:               "ss",
+		 					BlockOwnerDeletion: boolptr(true),
+		 					Controller:         boolptr(true),
+		 				},
+		 			},
+					},
+				}
 	*/
 	rs := extensions.ReplicaSet{
 		ObjectMeta: metav1.ObjectMeta{
