@@ -20,6 +20,7 @@ import (
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 )
@@ -35,15 +36,28 @@ type CloudProvider interface {
 
 	// NodeGroupForNode returns the node group for the given node, nil if the node
 	// should not be processed by cluster autoscaler, or non-nil error if such
-	// occurred.
+	// occurred. Must be implemented.
 	NodeGroupForNode(*apiv1.Node) (NodeGroup, error)
 
 	// Pricing returns pricing model for this cloud provider or error if not available.
+	// Implementation optional.
 	Pricing() (PricingModel, errors.AutoscalerError)
+
+	// GetAvilableMachineTypes get all machine types that can be requested from the cloud provider.
+	// Implementation optional.
+	GetAvilableMachineTypes() ([]string, error)
+
+	// NewNodeGroup builds a theoretical node group based on the node definition provided. The node group is not automatically
+	// created on the cloud provider side. The node group is not returned by NodeGroups() until it is created.
+	// Implementation optional.
+	NewNodeGroup(name string, machineType string, labels map[string]string, extraResources map[string]resource.Quantity) (NodeGroup, error)
 }
 
 // ErrNotImplemented is returned if a method is not implemented.
 var ErrNotImplemented errors.AutoscalerError = errors.NewAutoscalerError(errors.InternalError, "Not implemented")
+
+// ErrAlreadyExist is returned if a method is not implemented.
+var ErrAlreadyExist errors.AutoscalerError = errors.NewAutoscalerError(errors.InternalError, "Already exist")
 
 // NodeGroup contains configuration info and functions to control a set
 // of nodes that have the same capacity and set of labels.
@@ -57,24 +71,24 @@ type NodeGroup interface {
 	// TargetSize returns the current target size of the node group. It is possible that the
 	// number of nodes in Kubernetes is different at the moment but should be equal
 	// to Size() once everything stabilizes (new nodes finish startup and registration or
-	// removed nodes are deleted completely)
+	// removed nodes are deleted completely). Implementation required.
 	TargetSize() (int, error)
 
 	// IncreaseSize increases the size of the node group. To delete a node you need
 	// to explicitly name it and use DeleteNode. This function should wait until
-	// node group size is updated.
+	// node group size is updated. Implementation required.
 	IncreaseSize(delta int) error
 
 	// DeleteNodes deletes nodes from this node group. Error is returned either on
 	// failure or if the given node doesn't belong to this node group. This function
-	// should wait until node group size is updated.
+	// should wait until node group size is updated. Implementation required.
 	DeleteNodes([]*apiv1.Node) error
 
 	// DecreaseTargetSize decreases the target size of the node group. This function
 	// doesn't permit to delete any existing node and can be used only to reduce the
 	// request for new nodes that have not been yet fulfilled. Delta should be negative.
 	// It is assumed that cloud provider will not delete the existing nodes when there
-	// is an option to just decrease the target.
+	// is an option to just decrease the target. Implementation required.
 	DecreaseTargetSize(delta int) error
 
 	// Id returns an unique identifier of the node group.
@@ -91,8 +105,20 @@ type NodeGroup interface {
 	// predict what would a new node look like if a node group was expanded. The returned
 	// NodeInfo is expected to have a fully populated Node object, with all of the labels,
 	// capacity and allocatable information as well as all pods that are started on
-	// the node by default, using manifest (most likely only kube-proxy).
+	// the node by default, using manifest (most likely only kube-proxy). Implementation optional.
 	TemplateNodeInfo() (*schedulercache.NodeInfo, error)
+
+	// Exist checks if the node group really exists on the cloud provider side. Allows to tell the
+	// theoretical node group from the real one. Implementation required.
+	Exist() (bool, error)
+
+	// Create creates the node group on the cloud provider side. Implementation optional.
+	Create() error
+
+	// Delete deletes the node group on the cloud provider side.
+	// This will be executed only for autoprovisioned node groups, once their size drops to 0.
+	// Implementation optional.
+	Delete() error
 }
 
 // PricingModel contains information about the node price and how it changes in time.
