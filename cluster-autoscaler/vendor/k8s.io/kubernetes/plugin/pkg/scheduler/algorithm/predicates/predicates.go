@@ -533,10 +533,10 @@ func GetResourceRequest(pod *v1.Pod) *schedulercache.Resource {
 					result.StorageOverlay = overlay
 				}
 			default:
-				if v1helper.IsOpaqueIntResourceName(rName) {
+				if v1helper.IsExtendedResourceName(rName) {
 					value := rQuantity.Value()
-					if value > result.OpaqueIntResources[rName] {
-						result.SetOpaque(rName, value)
+					if value > result.ExtendedResources[rName] {
+						result.SetExtended(rName, value)
 					}
 				}
 			}
@@ -572,7 +572,7 @@ func PodFitsResources(pod *v1.Pod, meta interface{}, nodeInfo *schedulercache.No
 		// We couldn't parse metadata - fallback to computing it.
 		podRequest = GetResourceRequest(pod)
 	}
-	if podRequest.MilliCPU == 0 && podRequest.Memory == 0 && podRequest.NvidiaGPU == 0 && podRequest.StorageOverlay == 0 && podRequest.StorageScratch == 0 && len(podRequest.OpaqueIntResources) == 0 {
+	if podRequest.MilliCPU == 0 && podRequest.Memory == 0 && podRequest.NvidiaGPU == 0 && podRequest.StorageOverlay == 0 && podRequest.StorageScratch == 0 && len(podRequest.ExtendedResources) == 0 {
 		return len(predicateFails) == 0, predicateFails, nil
 	}
 
@@ -603,9 +603,9 @@ func PodFitsResources(pod *v1.Pod, meta interface{}, nodeInfo *schedulercache.No
 		predicateFails = append(predicateFails, NewInsufficientResourceError(v1.ResourceStorageOverlay, podRequest.StorageOverlay, nodeInfo.RequestedResource().StorageOverlay, allocatable.StorageOverlay))
 	}
 
-	for rName, rQuant := range podRequest.OpaqueIntResources {
-		if allocatable.OpaqueIntResources[rName] < rQuant+nodeInfo.RequestedResource().OpaqueIntResources[rName] {
-			predicateFails = append(predicateFails, NewInsufficientResourceError(rName, podRequest.OpaqueIntResources[rName], nodeInfo.RequestedResource().OpaqueIntResources[rName], allocatable.OpaqueIntResources[rName]))
+	for rName, rQuant := range podRequest.ExtendedResources {
+		if allocatable.ExtendedResources[rName] < rQuant+nodeInfo.RequestedResource().ExtendedResources[rName] {
+			predicateFails = append(predicateFails, NewInsufficientResourceError(rName, podRequest.ExtendedResources[rName], nodeInfo.RequestedResource().ExtendedResources[rName], allocatable.ExtendedResources[rName]))
 		}
 	}
 
@@ -1299,6 +1299,37 @@ func CheckNodeDiskPressurePredicate(pod *v1.Pod, meta interface{}, nodeInfo *sch
 		return false, []algorithm.PredicateFailureReason{ErrNodeUnderDiskPressure}, nil
 	}
 	return true, nil, nil
+}
+
+// CheckNodeConditionPredicate checks if a pod can be scheduled on a node reporting out of disk,
+// network unavailable and not ready condition. Only node conditions are accounted in this predicate.
+func CheckNodeConditionPredicate(pod *v1.Pod, meta interface{}, nodeInfo *schedulercache.NodeInfo) (bool, []algorithm.PredicateFailureReason, error) {
+	reasons := []algorithm.PredicateFailureReason{}
+
+	if nodeInfo == nil || nodeInfo.Node() == nil {
+		return false, []algorithm.PredicateFailureReason{ErrNodeUnknownCondition}, nil
+	}
+
+	node := nodeInfo.Node()
+	for _, cond := range node.Status.Conditions {
+		// We consider the node for scheduling only when its:
+		// - NodeReady condition status is ConditionTrue,
+		// - NodeOutOfDisk condition status is ConditionFalse,
+		// - NodeNetworkUnavailable condition status is ConditionFalse.
+		if cond.Type == v1.NodeReady && cond.Status != v1.ConditionTrue {
+			reasons = append(reasons, ErrNodeNotReady)
+		} else if cond.Type == v1.NodeOutOfDisk && cond.Status != v1.ConditionFalse {
+			reasons = append(reasons, ErrNodeOutOfDisk)
+		} else if cond.Type == v1.NodeNetworkUnavailable && cond.Status != v1.ConditionFalse {
+			reasons = append(reasons, ErrNodeNetworkUnavailable)
+		}
+	}
+
+	if node.Spec.Unschedulable {
+		reasons = append(reasons, ErrNodeUnschedulable)
+	}
+
+	return len(reasons) == 0, reasons, nil
 }
 
 type VolumeNodeChecker struct {

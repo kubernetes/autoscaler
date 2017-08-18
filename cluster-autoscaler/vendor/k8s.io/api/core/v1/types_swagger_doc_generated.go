@@ -744,16 +744,6 @@ func (LimitRangeSpec) SwaggerDoc() map[string]string {
 	return map_LimitRangeSpec
 }
 
-var map_List = map[string]string{
-	"":         "List holds a list of objects, which may not be known by the server.",
-	"metadata": "Standard list metadata. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
-	"items":    "List of objects",
-}
-
-func (List) SwaggerDoc() map[string]string {
-	return map_List
-}
-
 var map_ListOptions = map[string]string{
 	"":                     "ListOptions is the query options to a standard REST list call. DEPRECATED: This type has been moved to meta/v1 and will be removed soon.",
 	"labelSelector":        "A selector to restrict the list of returned objects by their labels. Defaults to everything.",
@@ -1937,7 +1927,7 @@ func (TCPSocketAction) SwaggerDoc() map[string]string {
 }
 
 var map_Taint = map[string]string{
-	"":          "The node this Taint is attached to has the effect \"effect\" on any pod that that does not tolerate the Taint.",
+	"":          "The node this Taint is attached to has the \"effect\" on any pod that does not tolerate the Taint.",
 	"key":       "Required. The taint key to be applied to a node.",
 	"value":     "Required. The taint value corresponding to the taint key.",
 	"effect":    "Required. The effect of the taint on pods that do not tolerate the taint. Valid effects are NoSchedule, PreferNoSchedule and NoExecute.",
