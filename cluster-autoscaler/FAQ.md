@@ -46,6 +46,7 @@ this document:
 * [Developer](#developer)
   * [How can I run e2e tests?](#how-can-i-run-e2e-tests)
   * [How should I test my code before submitting PR?](#how-should-i-test-my-code-before-submitting-pr)
+  * [How can I update CA dependencies (particularly k8s.io/kubernetes)?](#how-can-i-update-ca-dependencies-particularly-k8siokubernetes)
 <!--- TOC END -->
 
 # Basics
@@ -506,3 +507,28 @@ required to activate them:
    https://github.com/kubernetes/autoscaler/pull/74#issuecomment-302434795).
 
 We are aware that this process is tedious and we will work to improve it.
+
+### How can I update CA dependencies (particularly k8s.io/kubernetes)?
+
+CA depends on `k8s.io/kubernetes` internals as well as the "official" k8s.io libs like 
+`k8s.io/apimachinery`. However `k8s.io/kubernetes` has its own/newer version of these libraries
+(in a `staging` directory) which may not always be compatibile with what has been published.
+This leads to various conflicts that are hard to resolve in a "proper" way. So until a better solution 
+is proposed (or we stop migrating stuff between `k8s.io/kubernets` and other projects on a daily basis),
+the following hack has to be used to make the things easier to handle.
+
+1. Create a new `$GOPATH` directory.
+2. Get `k8s.io/kubernetes` and `k8s.io/autoscaler` source code (via `git clone` or `go get`).
+3. Make sure that you use the correct branch/tag in `k8s.io/kubernetes`. For example, regular dev updates
+   should be done against `k8s.io/kubernetes` HEAD, while updates in CA release branches should be done 
+   against the latest release tag of the corresponding `k8s.io/kubernetes` branch.
+4. Do `godep restore` in `k8s.io/kubernetes`.
+5. Remove Godeps and vendor from `k8s.io/autoscaler/cluster-autoscaler`.
+6. Invoke `fix-gopath.sh`. This will update `k8s.io/api`, `k8s.io/apimachinery` etc with the content of 
+   `k8s.io/kubernetes/staging` and remove all vendor directories from your gopath.
+7. Add some other dependencies, if needed and make sure that the code in `k8s.io/autoscaler/cluster-autoscaler`
+   refers to them somehow (may be a blank import).
+8. Check if everything compiles with `go test ./...` in `k8s.io/autoscaler/cluster-autoscaler`.
+9. `godep save ./...` in `k8s.io/autoscaler/cluster-autoscaler`,
+10. Send a PR with 2 commits - one that covers `Godep` and `vendor/` and the other one with all 
+   required real code changes.
