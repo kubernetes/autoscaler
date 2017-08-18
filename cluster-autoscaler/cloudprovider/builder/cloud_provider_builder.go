@@ -21,6 +21,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce"
+	// Placeholder
 	_ "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/kubemark"
 	"os"
 )
