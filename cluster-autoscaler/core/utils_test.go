@@ -27,10 +27,87 @@ import (
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
 	apiv1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/kubernetes/pkg/api/testapi"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 
 	"github.com/stretchr/testify/assert"
 )
+
+func TestPodSchedulableMap(t *testing.T) {
+	rc1 := apiv1.ReplicationController{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "rc1",
+			Namespace: "default",
+			SelfLink:  testapi.Default.SelfLink("replicationcontrollers", "rc"),
+			UID:       "12345678-1234-1234-1234-123456789012",
+		},
+	}
+
+	rc2 := apiv1.ReplicationController{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "rc2",
+			Namespace: "default",
+			SelfLink:  testapi.Default.SelfLink("replicationcontrollers", "rc"),
+			UID:       "12345678-1234-1234-1234-12345678901a",
+		},
+	}
+
+	pMap := make(podSchedulableMap)
+
+	podInRc1_1 := BuildTestPod("podInRc1_1", 500, 1000)
+	podInRc1_1.Annotations = map[string]string{apiv1.CreatedByAnnotation: RefJSON(&rc1)}
+
+	podInRc2 := BuildTestPod("podInRc2", 500, 1000)
+	podInRc2.Annotations = map[string]string{apiv1.CreatedByAnnotation: RefJSON(&rc2)}
+
+	// Basic sanity checks
+	_, found := pMap.get(podInRc1_1)
+	assert.False(t, found)
+	pMap.set(podInRc1_1, true)
+	sched, found := pMap.get(podInRc1_1)
+	assert.True(t, found)
+	assert.True(t, sched)
+
+	// Pod in different RC
+	_, found = pMap.get(podInRc2)
+	assert.False(t, found)
+	pMap.set(podInRc2, false)
+	sched, found = pMap.get(podInRc2)
+	assert.True(t, found)
+	assert.False(t, sched)
+
+	// Another replica in rc1
+	podInRc1_2 := BuildTestPod("podInRc1_1", 500, 1000)
+	podInRc1_2.Annotations = map[string]string{apiv1.CreatedByAnnotation: RefJSON(&rc1)}
+	sched, found = pMap.get(podInRc1_2)
+	assert.True(t, found)
+	assert.True(t, sched)
+
+	// A pod in rc1, but with different requests
+	differentPodInRc1 := BuildTestPod("differentPodInRc1", 1000, 1000)
+	differentPodInRc1.Annotations = map[string]string{apiv1.CreatedByAnnotation: RefJSON(&rc1)}
+	_, found = pMap.get(differentPodInRc1)
+	assert.False(t, found)
+	pMap.set(differentPodInRc1, false)
+	sched, found = pMap.get(differentPodInRc1)
+	assert.True(t, found)
+	assert.False(t, sched)
+
+	// A non-repliated pod
+	nonReplicatedPod := BuildTestPod("nonReplicatedPod", 1000, 1000)
+	_, found = pMap.get(nonReplicatedPod)
+	assert.False(t, found)
+	pMap.set(nonReplicatedPod, false)
+	_, found = pMap.get(nonReplicatedPod)
+	assert.False(t, found)
+
+	// Verify information about first pod has not been overwritten by adding
+	// other pods
+	sched, found = pMap.get(podInRc1_1)
+	assert.True(t, found)
+	assert.True(t, sched)
+}
 
 func TestFilterOutSchedulable(t *testing.T) {
 	p1 := BuildTestPod("p1", 1500, 200000)
