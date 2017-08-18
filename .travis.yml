@@ -8,6 +8,9 @@ language: go
 go:
   - 1.8
 
+before_install:
+  - sudo apt-get install libseccomp-dev -qq
+
 before_script:
   - mkdir -p $HOME/gopath/src/k8s.io
   - mv $TRAVIS_BUILD_DIR $HOME/gopath/src/k8s.io/autoscaler
