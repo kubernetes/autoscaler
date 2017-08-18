@@ -15,7 +15,7 @@
 FROM gcr.io/google-containers/ubuntu-slim:0.8
 MAINTAINER Marcin Wielgus "mwielgus@google.com"
 
-RUN apt-get update && apt-get install --yes git wget make gcc \
+RUN apt-get update && apt-get install --yes git wget make gcc libseccomp-dev \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 RUN wget https://storage.googleapis.com/golang/go1.8.3.linux-amd64.tar.gz \
