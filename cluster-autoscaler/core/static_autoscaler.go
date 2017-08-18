@@ -135,7 +135,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		return nil
 	}
 
-	metrics.UpdateDuration("updateClusterState", runStart)
+	metrics.UpdateDurationFromStart("updateClusterState", runStart)
 	metrics.UpdateLastTime("autoscaling", time.Now())
 
 	// Check if there are any nodes that failed to register in Kubernetes
@@ -231,7 +231,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 
 		scaledUp, typedErr := ScaleUp(autoscalingContext, unschedulablePodsToHelp, readyNodes, daemonsets)
 
-		metrics.UpdateDuration("scaleUp", scaleUpStart)
+		metrics.UpdateDurationFromStart("scaleUp", scaleUpStart)
 
 		if typedErr != nil {
 			glog.Errorf("Failed to scale up: %v", typedErr)
@@ -271,7 +271,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 			return typedErr
 		}
 
-		metrics.UpdateDuration("findUnneeded", unneededStart)
+		metrics.UpdateDurationFromStart("findUnneeded", unneededStart)
 
 		for key, val := range scaleDown.unneededNodes {
 			if glog.V(4) {
@@ -285,7 +285,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 			scaleDownStart := time.Now()
 			metrics.UpdateLastTime("scaleDown", scaleDownStart)
 			result, typedErr := scaleDown.TryToScaleDown(allNodes, allScheduled, pdbs)
-			metrics.UpdateDuration("scaleDown", scaleDownStart)
+			metrics.UpdateDurationFromStart("scaleDown", scaleDownStart)
 
 			// TODO: revisit result handling
 			if typedErr != nil {

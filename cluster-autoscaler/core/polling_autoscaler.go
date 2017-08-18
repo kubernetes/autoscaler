@@ -68,7 +68,7 @@ func (a *PollingAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerErro
 	if err := a.Poll(); err != nil {
 		glog.Errorf("Failed to poll : %v", err)
 	}
-	metrics.UpdateDuration("poll", reconfigureStart)
+	metrics.UpdateDurationFromStart("poll", reconfigureStart)
 	return a.autoscaler.RunOnce(currentTime)
 }
 

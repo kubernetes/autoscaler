@@ -69,7 +69,7 @@ func (a *DynamicAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerErro
 	if err := a.Reconfigure(); err != nil {
 		glog.Errorf("Failed to reconfigure : %v", err)
 	}
-	metrics.UpdateDuration("reconfigure", reconfigureStart)
+	metrics.UpdateDurationFromStart("reconfigure", reconfigureStart)
 	return a.autoscaler.RunOnce(currentTime)
 }
 
