@@ -14,6 +14,8 @@ limitations under the License.
 package kubemark
 
 import (
+	// Placeholder
 	_ "k8s.io/kubernetes/pkg/kubemark"
+	// Placeholder
 	_ "k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 )
