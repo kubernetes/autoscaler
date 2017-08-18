@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
@@ -145,6 +146,17 @@ func (aws *awsCloudProvider) Pricing() (cloudprovider.PricingModel, errors.Autos
 	return nil, cloudprovider.ErrNotImplemented
 }
 
+// GetAvilableMachineTypes get all machine types that can be requested from the cloud provider.
+func (aws *awsCloudProvider) GetAvilableMachineTypes() ([]string, error) {
+	return []string{}, nil
+}
+
+// NewNodeGroup builds a theoretical node group based on the node definition provided. The node group is not automatically
+// created on the cloud provider side. The node group is not returned by NodeGroups() until it is created.
+func (aws *awsCloudProvider) NewNodeGroup(name string, machineType string, labels map[string]string, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
+	return nil, cloudprovider.ErrNotImplemented
+}
+
 // AwsRef contains a reference to some entity in AWS/GKE world.
 type AwsRef struct {
 	Name string
@@ -188,6 +200,23 @@ func (asg *Asg) MinSize() int {
 func (asg *Asg) TargetSize() (int, error) {
 	size, err := asg.awsManager.GetAsgSize(asg)
 	return int(size), err
+}
+
+// Exist checks if the node group really exists on the cloud provider side. Allows to tell the
+// theoretical node group from the real one.
+func (asg *Asg) Exist() (bool, error) {
+	return true, nil
+}
+
+// Create creates the node group on the cloud provider side.
+func (asg *Asg) Create() error {
+	return cloudprovider.ErrAlreadyExist
+}
+
+// Delete deletes the node group on the cloud provider side.
+// This will be executed only for autoprovisioned node groups, once their size drops to 0.
+func (asg *Asg) Delete() error {
+	return cloudprovider.ErrNotImplemented
 }
 
 // IncreaseSize increases Asg size

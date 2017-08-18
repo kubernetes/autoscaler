@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
@@ -86,6 +87,17 @@ func (gce *GceCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.N
 // Pricing returns pricing model for this cloud provider or error if not available.
 func (gce *GceCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
 	return &GcePriceModel{}, nil
+}
+
+// GetAvilableMachineTypes get all machine types that can be requested from the cloud provider.
+func (gce *GceCloudProvider) GetAvilableMachineTypes() ([]string, error) {
+	return []string{}, nil
+}
+
+// NewNodeGroup builds a theoretical node group based on the node definition provided. The node group is not automatically
+// created on the cloud provider side. The node group is not returned by NodeGroups() until it is created.
+func (gce *GceCloudProvider) NewNodeGroup(name string, machineType string, labels map[string]string, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
+	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GceRef contains s reference to some entity in GCE/GKE world.
@@ -235,6 +247,23 @@ func (mig *Mig) Debug() string {
 // Nodes returns a list of all nodes that belong to this node group.
 func (mig *Mig) Nodes() ([]string, error) {
 	return mig.gceManager.GetMigNodes(mig)
+}
+
+// Exist checks if the node group really exists on the cloud provider side. Allows to tell the
+// theoretical node group from the real one.
+func (mig *Mig) Exist() (bool, error) {
+	return true, nil
+}
+
+// Create creates the node group on the cloud provider side.
+func (mig *Mig) Create() error {
+	return cloudprovider.ErrAlreadyExist
+}
+
+// Delete deletes the node group on the cloud provider side.
+// This will be executed only for autoprovisioned node groups, once their size drops to 0.
+func (mig *Mig) Delete() error {
+	return cloudprovider.ErrNotImplemented
 }
 
 // TemplateNodeInfo returns a node template for this node group.

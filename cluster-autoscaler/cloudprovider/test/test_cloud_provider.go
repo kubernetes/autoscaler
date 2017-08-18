@@ -21,6 +21,7 @@ import (
 	"sync"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
@@ -92,6 +93,17 @@ func (tcp *TestCloudProvider) Pricing() (cloudprovider.PricingModel, errors.Auto
 	return nil, cloudprovider.ErrNotImplemented
 }
 
+// GetAvilableMachineTypes get all machine types that can be requested from the cloud provider.
+func (tcp *TestCloudProvider) GetAvilableMachineTypes() ([]string, error) {
+	return []string{}, nil
+}
+
+// NewNodeGroup builds a theoretical node group based on the node definition provided. The node group is not automatically
+// created on the cloud provider side. The node group is not returned by NodeGroups() until it is created.
+func (tcp *TestCloudProvider) NewNodeGroup(name string, machineType string, labels map[string]string, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
+	return nil, cloudprovider.ErrNotImplemented
+}
+
 // AddNodeGroup adds node group to test cloud provider.
 func (tcp *TestCloudProvider) AddNodeGroup(id string, min int, max int, size int) {
 	tcp.Lock()
@@ -159,6 +171,23 @@ func (tng *TestNodeGroup) IncreaseSize(delta int) error {
 	tng.Unlock()
 
 	return tng.cloudProvider.onIncrease(tng.id, delta)
+}
+
+// Exist checks if the node group really exists on the cloud provider side. Allows to tell the
+// theoretical node group from the real one.
+func (tng *TestNodeGroup) Exist() (bool, error) {
+	return true, nil
+}
+
+// Create creates the node group on the cloud provider side.
+func (tng *TestNodeGroup) Create() error {
+	return cloudprovider.ErrAlreadyExist
+}
+
+// Delete deletes the node group on the cloud provider side.
+// This will be executed only for autoprovisioned node groups, once their size drops to 0.
+func (tng *TestNodeGroup) Delete() error {
+	return cloudprovider.ErrNotImplemented
 }
 
 // DecreaseTargetSize decreases the target size of the node group. This function
