@@ -203,8 +203,10 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 // TryToScaleDown tries to scale down the cluster. It returns ScaleDownResult indicating if any node was
 // removed and error if such occurred.
 func (sd *ScaleDown) TryToScaleDown(nodes []*apiv1.Node, pods []*apiv1.Pod, pdbs []*policyv1.PodDisruptionBudget) (ScaleDownResult, errors.AutoscalerError) {
-
 	now := time.Now()
+	nodeDeletionDuration := time.Duration(0)
+	findNodesToRemoveDuration := time.Duration(0)
+	defer updateScaleDownMetrics(now, &findNodesToRemoveDuration, &nodeDeletionDuration)
 	candidates := make([]*apiv1.Node, 0)
 	readinessMap := make(map[string]bool)
 
@@ -266,6 +268,7 @@ func (sd *ScaleDown) TryToScaleDown(nodes []*apiv1.Node, pods []*apiv1.Pod, pdbs
 	// to recreate on other nodes.
 	emptyNodes := getEmptyNodes(candidates, pods, sd.context.MaxEmptyBulkDelete, sd.context.CloudProvider)
 	if len(emptyNodes) > 0 {
+		nodeDeletionStart := time.Now()
 		confirmation := make(chan errors.AutoscalerError, len(emptyNodes))
 		for _, node := range emptyNodes {
 			glog.V(0).Infof("Scale-down: removing empty node %s", node.Name)
@@ -305,16 +308,19 @@ func (sd *ScaleDown) TryToScaleDown(nodes []*apiv1.Node, pods []*apiv1.Pod, pdbs
 				finalError = errors.NewAutoscalerError(errors.TransientError, "Failed to delete nodes in time")
 			}
 		}
+		nodeDeletionDuration = time.Now().Sub(nodeDeletionStart)
 		if finalError == nil {
 			return ScaleDownNodeDeleted, nil
 		}
 		return ScaleDownError, finalError.AddPrefix("failed to delete at least one empty node: ")
 	}
 
+	findNodesToRemoveStart := time.Now()
 	// We look for only 1 node so new hints may be incomplete.
 	nodesToRemove, _, err := simulator.FindNodesToRemove(candidates, nodes, pods, sd.context.ClientSet,
 		sd.context.PredicateChecker, 1, false,
 		sd.podLocationHints, sd.usageTracker, time.Now(), pdbs)
+	findNodesToRemoveDuration = time.Now().Sub(findNodesToRemoveStart)
 
 	if err != nil {
 		return ScaleDownError, err.AddPrefix("Find node to remove failed: ")
@@ -336,7 +342,9 @@ func (sd *ScaleDown) TryToScaleDown(nodes []*apiv1.Node, pods []*apiv1.Pod, pdbs
 
 	// Nothing super-bad should happen if the node is removed from tracker prematurely.
 	simulator.RemoveNodeFromTracker(sd.usageTracker, toRemove.Node.Name, sd.unneededNodes)
+	nodeDeletionStart := time.Now()
 	err = deleteNode(sd.context, toRemove.Node, toRemove.PodsToReschedule)
+	nodeDeletionDuration = time.Now().Sub(nodeDeletionStart)
 	if err != nil {
 		return ScaleDownError, err.AddPrefix("Failed to delete %s: ", toRemove.Node.Name)
 	}
@@ -347,6 +355,16 @@ func (sd *ScaleDown) TryToScaleDown(nodes []*apiv1.Node, pods []*apiv1.Pod, pdbs
 	}
 
 	return ScaleDownNodeDeleted, nil
+}
+
+// updateScaleDownMetrics registers duration of different parts of scale down.
+// Separates time spent on finding nodes to remove, deleting nodes and other operations.
+func updateScaleDownMetrics(scaleDownStart time.Time, findNodesToRemoveDuration *time.Duration, nodeDeletionDuration *time.Duration) {
+	stop := time.Now()
+	miscDuration := stop.Sub(scaleDownStart) - *nodeDeletionDuration - *findNodesToRemoveDuration
+	metrics.UpdateDuration(metrics.ScaleDownNodeDeletion, *nodeDeletionDuration)
+	metrics.UpdateDuration(metrics.ScaleDownFindNodesToRemove, *findNodesToRemoveDuration)
+	metrics.UpdateDuration(metrics.ScaleDownMiscOperations, miscDuration)
 }
 
 // This functions finds empty nodes among passed candidates and returns a list of empty nodes

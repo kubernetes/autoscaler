@@ -202,7 +202,7 @@ func run(healthCheck *metrics.HealthCheck) {
 					healthCheck.UpdateLastSuccessfulRun(time.Now())
 				}
 
-				metrics.UpdateDuration("main", loopStart)
+				metrics.UpdateDurationFromStart("main", loopStart)
 			}
 		}
 	}

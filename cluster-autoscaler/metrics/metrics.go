@@ -50,6 +50,12 @@ const (
 	LogLongDurationThreshold = 5 * time.Second
 )
 
+const (
+	ScaleDownNodeDeletion      = "scaleDown:nodeDeletion"
+	ScaleDownFindNodesToRemove = "scaleDown:findNodesToRemove"
+	ScaleDownMiscOperations    = "scaleDown:miscOperations"
+)
+
 var (
 	/**** Metrics related to cluster state ****/
 	clusterSafeToAutoscale = prometheus.NewGauge(
@@ -149,9 +155,15 @@ func init() {
 	prometheus.MustRegister(unneededNodesCount)
 }
 
-// UpdateDuration records the duration of the step identified by the label
-func UpdateDuration(label string, start time.Time) {
+// UpdateDurationFromStart records the duration of the step identified by the
+// label using start time
+func UpdateDurationFromStart(label string, start time.Time) {
 	duration := time.Now().Sub(start)
+	UpdateDuration(label, duration)
+}
+
+// UpdateDuration records the duration of the step identified by the label
+func UpdateDuration(label string, duration time.Duration) {
 	// TODO(maciekpytel): remove second condition if we manage to get
 	// asynchronous node drain
 	if duration > LogLongDurationThreshold && label != "scaleDown" {
