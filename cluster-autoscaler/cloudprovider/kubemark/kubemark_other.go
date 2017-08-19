@@ -14,11 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package kubemark
+// +build !linux
 
-import (
-	// Placeholder
-	_ "k8s.io/kubernetes/pkg/kubemark"
-	// Placeholder
-	_ "k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
-)
+// Dummy implementation. Real one should be build on linux.
+
+package kubemark
