@@ -237,7 +237,7 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes []*apiv1.Node, no
 				}
 			}
 			if !foundPlace {
-				return fmt.Errorf("failed to find place for %s", podKey)
+				return fmt.Errorf("failed to find place for %s", podKey(pod))
 			}
 		}
 
