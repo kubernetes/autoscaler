@@ -26,6 +26,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/daemonset"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 
@@ -33,6 +34,7 @@ import (
 	extensionsv1 "k8s.io/api/extensions/v1beta1"
 	kube_client "k8s.io/client-go/kubernetes"
 	api "k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/api/helper"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 
@@ -44,17 +46,83 @@ const (
 	ReschedulerTaintKey = "CriticalAddonsOnly"
 )
 
+// Following data structure is used to avoid running predicates #pending_pods * #nodes
+// times (which turned out to be very expensive if there are thousands of pending pods).
+// This optimization is based on the assumption that if there are that many pods they're
+// likely created by controllers (deployment, replication controller, ...).
+// So instead of running all predicates for every pod we first check whether we've
+// already seen identical pod (in this step we're not binpacking, just checking if
+// the pod would fit anywhere right now) and if so we use the result we already
+// calculated.
+// To decide if two pods are similar enough we check if they have identical label
+// and spec and are owned by the same controller. The problem is the whole
+// podSchedulableInfo struct is not hashable and keeping a list and runnig deep
+// equality checks would likely also be expensive. So instead we use controller
+// UID as a key in initial lookup and only run full comparison on a set of
+// podSchedulableInfos created for pods owned by this controller.
+type podSchedulableInfo struct {
+	spec        apiv1.PodSpec
+	labels      map[string]string
+	schedulable bool
+}
+
+type podSchedulableMap map[string][]podSchedulableInfo
+
+func (psi *podSchedulableInfo) match(pod *apiv1.Pod) bool {
+	return reflect.DeepEqual(pod.Labels, psi.labels) && helper.Semantic.DeepEqual(pod.Spec, psi.spec)
+}
+
+func (podMap podSchedulableMap) get(pod *apiv1.Pod) (bool, bool) {
+	ref, err := drain.CreatorRef(pod)
+	if err != nil || ref == nil {
+		return false, false
+	}
+	uid := string(ref.Reference.UID)
+	if infos, found := podMap[uid]; found {
+		for _, info := range infos {
+			if info.match(pod) {
+				return info.schedulable, true
+			}
+		}
+	}
+	return false, false
+}
+
+func (podMap podSchedulableMap) set(pod *apiv1.Pod, schedulable bool) {
+	ref, err := drain.CreatorRef(pod)
+	if err != nil || ref == nil {
+		return
+	}
+	uid := string(ref.Reference.UID)
+	podMap[uid] = append(podMap[uid], podSchedulableInfo{
+		spec:        pod.Spec,
+		labels:      pod.Labels,
+		schedulable: schedulable,
+	})
+}
+
 // FilterOutSchedulable checks whether pods from <unschedulableCandidates> marked as unschedulable
 // by Scheduler actually can't be scheduled on any node and filter out the ones that can.
 func FilterOutSchedulable(unschedulableCandidates []*apiv1.Pod, nodes []*apiv1.Node, allPods []*apiv1.Pod, predicateChecker *simulator.PredicateChecker) []*apiv1.Pod {
 	unschedulablePods := []*apiv1.Pod{}
 	nodeNameToNodeInfo := createNodeNameToInfoMap(allPods, nodes)
+	podSchedulable := make(podSchedulableMap)
 
 	for _, pod := range unschedulableCandidates {
+		if schedulable, found := podSchedulable.get(pod); found {
+			if !schedulable {
+				unschedulablePods = append(unschedulablePods, pod)
+			} else {
+				glog.V(4).Infof("Pod %s marked as unschedulable can be scheduled (based on simulation run for other pod owned by the same controller). Ignoring in scale up.", pod.Name)
+			}
+			continue
+		}
 		if nodeName, err := predicateChecker.FitsAny(pod, nodeNameToNodeInfo); err == nil {
 			glog.V(4).Infof("Pod %s marked as unschedulable can be scheduled on %s. Ignoring in scale up.", pod.Name, nodeName)
+			podSchedulable.set(pod, true)
 		} else {
 			unschedulablePods = append(unschedulablePods, pod)
+			podSchedulable.set(pod, false)
 		}
 	}
 
