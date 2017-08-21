@@ -36,7 +36,7 @@ const (
 // It can returns a sorted list of pods in order of update priority.
 // Update priority is proportional to fraction by which resources should be increased / decreased.
 // i.e. pod with 10M current memory and recommendation 20M will have higher update priority
-// than pod with pod with 100M current memory and and 150M recommendation (100% increase vs 50% increase)
+// than pod with 100M current memory and 150M recommendation (100% increase vs 50% increase)
 type UpdatePriorityCalculator struct {
 	resourcesPolicy *apimock.ResourcesPolicy
 	cpuPolicy       *apimock.Policy
