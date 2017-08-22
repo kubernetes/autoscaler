@@ -30,6 +30,10 @@ import (
 // NodeScaleDownReason describes reason for removing node
 type NodeScaleDownReason string
 
+// FunctionLabel is a name of Cluster Autoscaler operation for which
+// we measure duration
+type FunctionLabel string
+
 const (
 	caNamespace   = "cluster_autoscaler"
 	readyLabel    = "ready"
@@ -48,6 +52,21 @@ const (
 	// This is meant to help find unexpectedly long function execution times for
 	// debugging purposes.
 	LogLongDurationThreshold = 5 * time.Second
+)
+
+// Names of Cluster Autoscaler operations
+const (
+	ScaleDown                  FunctionLabel = "scaleDown"
+	ScaleDownNodeDeletion      FunctionLabel = "scaleDown:nodeDeletion"
+	ScaleDownFindNodesToRemove FunctionLabel = "scaleDown:findNodesToRemove"
+	ScaleDownMiscOperations    FunctionLabel = "scaleDown:miscOperations"
+	ScaleUp                    FunctionLabel = "scaleUp"
+	FindUnneeded               FunctionLabel = "findUnneeded"
+	UpdateState                FunctionLabel = "updateClusterState"
+	Main                       FunctionLabel = "main"
+	Poll                       FunctionLabel = "poll"
+	Reconfigure                FunctionLabel = "reconfigure"
+	Autoscaling                FunctionLabel = "autoscaling"
 )
 
 var (
@@ -149,20 +168,26 @@ func init() {
 	prometheus.MustRegister(unneededNodesCount)
 }
 
-// UpdateDuration records the duration of the step identified by the label
-func UpdateDuration(label string, start time.Time) {
+// UpdateDurationFromStart records the duration of the step identified by the
+// label using start time
+func UpdateDurationFromStart(label FunctionLabel, start time.Time) {
 	duration := time.Now().Sub(start)
+	UpdateDuration(label, duration)
+}
+
+// UpdateDuration records the duration of the step identified by the label
+func UpdateDuration(label FunctionLabel, duration time.Duration) {
 	// TODO(maciekpytel): remove second condition if we manage to get
 	// asynchronous node drain
-	if duration > LogLongDurationThreshold && label != "scaleDown" {
+	if duration > LogLongDurationThreshold && label != ScaleDown {
 		glog.Infof("Function %s took %v to complete", label, duration)
 	}
-	functionDuration.WithLabelValues(label).Observe(duration.Seconds())
+	functionDuration.WithLabelValues(string(label)).Observe(duration.Seconds())
 }
 
 // UpdateLastTime records the time the step identified by the label was started
-func UpdateLastTime(label string, now time.Time) {
-	lastActivity.WithLabelValues(label).Set(float64(now.Unix()))
+func UpdateLastTime(label FunctionLabel, now time.Time) {
+	lastActivity.WithLabelValues(string(label)).Set(float64(now.Unix()))
 }
 
 // UpdateClusterState updates metrics related to cluster state
