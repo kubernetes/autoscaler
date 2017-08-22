@@ -186,10 +186,11 @@ func run(healthCheck *metrics.HealthCheck) {
 	autoscaler.CleanUp()
 	registerSignalHandlers(autoscaler)
 	healthCheck.StartMonitoring()
+	loopDuration := time.Duration(0)
 
 	for {
 		select {
-		case <-time.After(*scanInterval):
+		case <-time.After(*scanInterval - loopDuration):
 			{
 				loopStart := time.Now()
 				metrics.UpdateLastTime(metrics.Main, loopStart)
@@ -202,7 +203,8 @@ func run(healthCheck *metrics.HealthCheck) {
 					healthCheck.UpdateLastSuccessfulRun(time.Now())
 				}
 
-				metrics.UpdateDurationFromStart(metrics.Main, loopStart)
+				loopDuration = time.Now().Sub(loopStart)
+				metrics.UpdateDuration(metrics.Main, loopDuration)
 			}
 		}
 	}
