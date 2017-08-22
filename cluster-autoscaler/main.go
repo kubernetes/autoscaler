@@ -192,7 +192,7 @@ func run(healthCheck *metrics.HealthCheck) {
 		case <-time.After(*scanInterval):
 			{
 				loopStart := time.Now()
-				metrics.UpdateLastTime("main", loopStart)
+				metrics.UpdateLastTime(metrics.Main, loopStart)
 				healthCheck.UpdateLastActivity(loopStart)
 
 				err := autoscaler.RunOnce(loopStart)
@@ -202,7 +202,7 @@ func run(healthCheck *metrics.HealthCheck) {
 					healthCheck.UpdateLastSuccessfulRun(time.Now())
 				}
 
-				metrics.UpdateDurationFromStart("main", loopStart)
+				metrics.UpdateDurationFromStart(metrics.Main, loopStart)
 			}
 		}
 	}
