@@ -205,8 +205,10 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	schedulablePodsPresent := false
 
 	glog.V(4).Infof("Filtering out schedulables")
+	filterOutSchedulableStart := time.Now()
 	unschedulablePodsToHelp := FilterOutSchedulable(allUnschedulablePods, readyNodes, allScheduled,
 		a.PredicateChecker)
+	metrics.UpdateDurationFromStart(metrics.FilterOutSchedulable, filterOutSchedulableStart)
 
 	if len(unschedulablePodsToHelp) != len(allUnschedulablePods) {
 		glog.V(2).Info("Schedulable pods present")
