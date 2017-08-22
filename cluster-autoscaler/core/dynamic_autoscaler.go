@@ -65,11 +65,11 @@ func (a *DynamicAutoscaler) ExitCleanUp() {
 // RunOnce represents a single iteration of a dynamic autoscaler inside the CA's control-loop
 func (a *DynamicAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError {
 	reconfigureStart := time.Now()
-	metrics.UpdateLastTime("reconfigure", reconfigureStart)
+	metrics.UpdateLastTime(metrics.Reconfigure, reconfigureStart)
 	if err := a.Reconfigure(); err != nil {
 		glog.Errorf("Failed to reconfigure : %v", err)
 	}
-	metrics.UpdateDuration("reconfigure", reconfigureStart)
+	metrics.UpdateDurationFromStart(metrics.Reconfigure, reconfigureStart)
 	return a.autoscaler.RunOnce(currentTime)
 }
 
