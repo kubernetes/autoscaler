@@ -73,25 +73,31 @@ func NewPredicateChecker(kubeClient kube_client.Interface, stop <-chan struct{})
 
 	informerFactory.Start(stop)
 
-	predicates, err := schedulerConfigFactory.GetPredicates(provider.FitPredicateKeys)
-	predicates["ready"] = isNodeReadyAndSchedulablePredicate
+	predicateMap, err := schedulerConfigFactory.GetPredicates(provider.FitPredicateKeys)
+	predicateMap["ready"] = isNodeReadyAndSchedulablePredicate
 	if err != nil {
 		return nil, err
+	}
+	// We always want to have PodFitsResources as a first predicate we run
+	// as this is cheap to check and it should be enough to fail predicates
+	// in most of our simulations (especially binpacking).
+	if _, found := predicateMap["PodFitsResources"]; !found {
+		predicateMap["PodFitsResources"] = predicates.PodFitsResources
 	}
 
 	predicateList := make([]predicateInfo, 0)
 	for _, predicateName := range priorityPredicates {
-		if predicate, found := predicates[predicateName]; found {
+		if predicate, found := predicateMap[predicateName]; found {
 			predicateList = append(predicateList, predicateInfo{name: predicateName, predicate: predicate})
-			delete(predicates, predicateName)
+			delete(predicateMap, predicateName)
 		}
 	}
-	for predicateName, predicate := range predicates {
+	for predicateName, predicate := range predicateMap {
 		predicateList = append(predicateList, predicateInfo{name: predicateName, predicate: predicate})
 	}
 
 	for _, predInfo := range predicateList {
-		glog.Infof("Using predicate %s", predInfo.name)
+		glog.V(1).Infof("Using predicate %s", predInfo.name)
 	}
 
 	// TODO: Verify that run is not needed anymore.
