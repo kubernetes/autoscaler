@@ -31,12 +31,22 @@ import (
 
 	// We need to import provider to intialize default scheduler.
 	_ "k8s.io/kubernetes/plugin/pkg/scheduler/algorithmprovider"
+
+	"github.com/golang/glog"
 )
+
+type predicateInfo struct {
+	name      string
+	predicate algorithm.FitPredicate
+}
 
 // PredicateChecker checks whether all required predicates are matched for given Pod and Node
 type PredicateChecker struct {
-	predicates map[string]algorithm.FitPredicate
+	predicates []predicateInfo
 }
+
+// there are no const arrays in go, this is meant to be used as a const
+var priorityPredicates = []string{"PodFitsResources", "GeneralPredicates", "PodToleratesNodeTaints"}
 
 // NewPredicateChecker builds PredicateChecker.
 func NewPredicateChecker(kubeClient kube_client.Interface, stop <-chan struct{}) (*PredicateChecker, error) {
@@ -68,10 +78,27 @@ func NewPredicateChecker(kubeClient kube_client.Interface, stop <-chan struct{})
 	if err != nil {
 		return nil, err
 	}
+
+	predicateList := make([]predicateInfo, 0)
+	for _, predicateName := range priorityPredicates {
+		if predicate, found := predicates[predicateName]; found {
+			predicateList = append(predicateList, predicateInfo{name: predicateName, predicate: predicate})
+			delete(predicates, predicateName)
+		}
+	}
+	for predicateName, predicate := range predicates {
+		predicateList = append(predicateList, predicateInfo{name: predicateName, predicate: predicate})
+	}
+
+	for _, predInfo := range predicateList {
+		glog.Infof("Using predicate %s", predInfo.name)
+	}
+
 	// TODO: Verify that run is not needed anymore.
 	// schedulerConfigFactory.Run()
+
 	return &PredicateChecker{
-		predicates: predicates,
+		predicates: predicateList,
 	}, nil
 }
 
@@ -87,9 +114,9 @@ func isNodeReadyAndSchedulablePredicate(pod *apiv1.Pod, meta interface{}, nodeIn
 // NewTestPredicateChecker builds test version of PredicateChecker.
 func NewTestPredicateChecker() *PredicateChecker {
 	return &PredicateChecker{
-		predicates: map[string]algorithm.FitPredicate{
-			"default": predicates.GeneralPredicates,
-			"ready":   isNodeReadyAndSchedulablePredicate,
+		predicates: []predicateInfo{
+			{name: "default", predicate: predicates.GeneralPredicates},
+			{name: "ready", predicate: isNodeReadyAndSchedulablePredicate},
 		},
 	}
 }
@@ -110,15 +137,15 @@ func (p *PredicateChecker) FitsAny(pod *apiv1.Pod, nodeInfos map[string]*schedul
 
 // CheckPredicates checks if the given pod can be placed on the given node.
 func (p *PredicateChecker) CheckPredicates(pod *apiv1.Pod, nodeInfo *schedulercache.NodeInfo) error {
-	for name, predicate := range p.predicates {
-		match, failureReason, err := predicate(pod, nil, nodeInfo)
+	for _, predInfo := range p.predicates {
+		match, failureReason, err := predInfo.predicate(pod, nil, nodeInfo)
 
 		nodename := "unknown"
 		if nodeInfo.Node() != nil {
 			nodename = nodeInfo.Node().Name
 		}
 		if err != nil {
-			return fmt.Errorf("%s predicate error, cannot put %s/%s on %s due to, error %v", name, pod.Namespace,
+			return fmt.Errorf("%s predicate error, cannot put %s/%s on %s due to, error %v", predInfo.name, pod.Namespace,
 				pod.Name, nodename, err)
 		}
 		if !match {
@@ -129,7 +156,7 @@ func (p *PredicateChecker) CheckPredicates(pod *apiv1.Pod, nodeInfo *schedulerca
 				}
 				buffer.WriteString(reason.GetReason())
 			}
-			return fmt.Errorf("%s predicate mismatch, cannot put %s/%s on %s, reason: %s", name, pod.Namespace,
+			return fmt.Errorf("%s predicate mismatch, cannot put %s/%s on %s, reason: %s", predInfo.name, pod.Namespace,
 				pod.Name, nodename, buffer.String())
 		}
 	}
