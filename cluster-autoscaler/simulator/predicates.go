@@ -18,6 +18,7 @@ package simulator
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -33,6 +34,18 @@ import (
 	_ "k8s.io/kubernetes/plugin/pkg/scheduler/algorithmprovider"
 
 	"github.com/golang/glog"
+)
+
+// ErrorVerbosity defines the verbosity of error messages returned by PredicateChecker
+type ErrorVerbosity bool
+
+const (
+	// ReturnVerboseError causes informative error messages to be returned.
+	ReturnVerboseError ErrorVerbosity = true
+	// ReturnSimpleError causes simple, detail-free error messages to be returned.
+	// This significantly improves performance and is useful if the error message
+	// is discarded anyway.
+	ReturnSimpleError ErrorVerbosity = false
 )
 
 type predicateInfo struct {
@@ -134,7 +147,7 @@ func (p *PredicateChecker) FitsAny(pod *apiv1.Pod, nodeInfos map[string]*schedul
 		if nodeInfo.Node().Spec.Unschedulable {
 			continue
 		}
-		if err := p.CheckPredicates(pod, nodeInfo); err == nil {
+		if err := p.CheckPredicates(pod, nodeInfo, ReturnSimpleError); err == nil {
 			return name, nil
 		}
 	}
@@ -142,9 +155,16 @@ func (p *PredicateChecker) FitsAny(pod *apiv1.Pod, nodeInfos map[string]*schedul
 }
 
 // CheckPredicates checks if the given pod can be placed on the given node.
-func (p *PredicateChecker) CheckPredicates(pod *apiv1.Pod, nodeInfo *schedulercache.NodeInfo) error {
+// We're running a ton of predicates and more often than not we only care whether
+// they pass or not and don't care for a reason. Turns out formatting nice error
+// messages gets very expensive, so we only do it if verbose is set to ReturnVerboseError.
+func (p *PredicateChecker) CheckPredicates(pod *apiv1.Pod, nodeInfo *schedulercache.NodeInfo, verbosity ErrorVerbosity) error {
 	for _, predInfo := range p.predicates {
 		match, failureReason, err := predInfo.predicate(pod, nil, nodeInfo)
+
+		if verbosity == ReturnSimpleError && (err != nil || !match) {
+			return errors.New("Predicates failed")
+		}
 
 		nodename := "unknown"
 		if nodeInfo.Node() != nil {
