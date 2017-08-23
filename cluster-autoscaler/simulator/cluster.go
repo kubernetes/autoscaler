@@ -188,7 +188,7 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes []*apiv1.Node, no
 				return false
 			}
 			nodeInfo.Node().Status.Allocatable = nodeInfo.Node().Status.Capacity
-			err := predicateChecker.CheckPredicates(pod, nodeInfo)
+			err := predicateChecker.CheckPredicates(pod, nodeInfo, ReturnVerboseError)
 			glog.V(4).Infof("Evaluation %s for %s/%s -> %v", nodename, pod.Namespace, pod.Name, err)
 			if err == nil {
 				// TODO(mwielgus): Optimize it.
