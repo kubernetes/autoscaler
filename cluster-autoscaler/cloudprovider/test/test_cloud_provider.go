@@ -248,6 +248,11 @@ func (tng *TestNodeGroup) Nodes() ([]string, error) {
 	return result, nil
 }
 
+// Autoprovisioned returns true if the node group is autoprovisioned.
+func (tng *TestNodeGroup) Autoprovisioned() bool {
+	return false
+}
+
 // TemplateNodeInfo returns a node template for this node group.
 func (tng *TestNodeGroup) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
 	return nil, cloudprovider.ErrNotImplemented
