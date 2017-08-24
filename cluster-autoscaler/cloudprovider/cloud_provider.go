@@ -119,6 +119,10 @@ type NodeGroup interface {
 	// This will be executed only for autoprovisioned node groups, once their size drops to 0.
 	// Implementation optional.
 	Delete() error
+
+	// Autoprovisioned returns true if the node group is autoprovisioned. An autoprovisioned group
+	// was created by CA and can be deleted when scaled to 0.
+	Autoprovisioned() bool
 }
 
 // PricingModel contains information about the node price and how it changes in time.

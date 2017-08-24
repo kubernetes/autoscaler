@@ -28,6 +28,11 @@ import (
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 )
 
+const (
+	maxAutoprovisionedSize = 1000
+	minAutoprovisionedSize = 0
+)
+
 // GceCloudProvider implements CloudProvider interface.
 type GceCloudProvider struct {
 	gceManager *GceManager
@@ -129,8 +134,9 @@ type Mig struct {
 
 	gceManager *GceManager
 
-	minSize int
-	maxSize int
+	minSize         int
+	maxSize         int
+	autoprovisioned bool
 }
 
 // MaxSize returns maximum size of the node group.
@@ -264,6 +270,11 @@ func (mig *Mig) Create() error {
 // This will be executed only for autoprovisioned node groups, once their size drops to 0.
 func (mig *Mig) Delete() error {
 	return cloudprovider.ErrNotImplemented
+}
+
+// Autoprovisioned returns true if the node group is autoprovisioned.
+func (mig *Mig) Autoprovisioned() bool {
+	return mig.autoprovisioned
 }
 
 // TemplateNodeInfo returns a node template for this node group.
