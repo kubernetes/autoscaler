@@ -27,6 +27,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/nodegroupset"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
@@ -106,7 +107,7 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 		}
 
 		for _, pod := range unschedulablePods {
-			err = context.PredicateChecker.CheckPredicates(pod, nodeInfo)
+			err = context.PredicateChecker.CheckPredicates(pod, nodeInfo, simulator.ReturnVerboseError)
 			if err == nil {
 				option.Pods = append(option.Pods, pod)
 				podsRemainUnschedulable[pod] = false
