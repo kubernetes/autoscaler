@@ -308,6 +308,21 @@ func (m *GceManager) getCpuAndMemoryForMachineType(machineType string) (cpu int6
 	return machine.GuestCpus, machine.MemoryMb * 1024 * 1024, nil
 }
 
+func (m *GceManager) buildCapacity(machineType string) (apiv1.ResourceList, error) {
+	capacity := apiv1.ResourceList{}
+	// TODO: get a real value.
+	// TODO: handle GPU
+	capacity[apiv1.ResourcePods] = *resource.NewQuantity(110, resource.DecimalSI)
+
+	cpu, mem, err := m.getCpuAndMemoryForMachineType(machineType)
+	if err != nil {
+		return apiv1.ResourceList{}, err
+	}
+	capacity[apiv1.ResourceCPU] = *resource.NewQuantity(cpu, resource.DecimalSI)
+	capacity[apiv1.ResourceMemory] = *resource.NewQuantity(mem, resource.DecimalSI)
+	return capacity, nil
+}
+
 func (m *GceManager) buildNodeFromTemplate(mig *Mig, template *gce.InstanceTemplate) (*apiv1.Node, error) {
 
 	if template.Properties == nil {
@@ -322,21 +337,13 @@ func (m *GceManager) buildNodeFromTemplate(mig *Mig, template *gce.InstanceTempl
 		SelfLink: fmt.Sprintf("/api/v1/nodes/%s", nodeName),
 		Labels:   map[string]string{},
 	}
-	node.Status = apiv1.NodeStatus{
-		Capacity: apiv1.ResourceList{},
-	}
-	// TODO: get a real value.
-	// TODO: handle GPU
-
-	node.Status.Capacity[apiv1.ResourcePods] = *resource.NewQuantity(110, resource.DecimalSI)
-
-	cpu, mem, err := m.getCpuAndMemoryForMachineType(template.Properties.MachineType)
+	capacity, err := m.buildCapacity(template.Properties.MachineType)
 	if err != nil {
 		return nil, err
 	}
-	node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewQuantity(cpu, resource.DecimalSI)
-	node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(mem, resource.DecimalSI)
-
+	node.Status = apiv1.NodeStatus{
+		Capacity: capacity,
+	}
 	// TODO: use proper allocatable!!
 	node.Status.Allocatable = node.Status.Capacity
 
@@ -372,8 +379,62 @@ func (m *GceManager) buildNodeFromTemplate(mig *Mig, template *gce.InstanceTempl
 
 	// Ready status
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()
-
 	return &node, nil
+}
+
+func (m *GceManager) buildNodeFromAutoprovisioningSpec(mig *Mig) (*apiv1.Node, error) {
+
+	if mig.spec == nil {
+		return nil, fmt.Errorf("no spec in mig %s", mig.Name)
+	}
+
+	node := apiv1.Node{}
+	nodeName := fmt.Sprintf("%s-autoprovisioned-template-%d", mig.Name, rand.Int63())
+
+	node.ObjectMeta = metav1.ObjectMeta{
+		Name:     nodeName,
+		SelfLink: fmt.Sprintf("/api/v1/nodes/%s", nodeName),
+		Labels:   map[string]string{},
+	}
+	capacity, err := m.buildCapacity(mig.spec.machineType)
+	if err != nil {
+		return nil, err
+	}
+	node.Status = apiv1.NodeStatus{
+		Capacity: capacity,
+	}
+	// TODO: use proper allocatable!!
+	node.Status.Allocatable = node.Status.Capacity
+
+	labels, err := buildLablesForAutoprovisionedMig(mig, nodeName)
+	if err != nil {
+		return nil, err
+	}
+	node.Labels = labels
+	// Ready status
+	node.Status.Conditions = cloudprovider.BuildReadyConditions()
+	return &node, nil
+}
+
+func buildLablesForAutoprovisionedMig(mig *Mig, nodeName string) (map[string]string, error) {
+	// GenericLabels
+	labels, err := buildGenericLabels(mig.GceRef, mig.spec.machineType, nodeName)
+	if err != nil {
+		return nil, err
+	}
+	if mig.spec.labels != nil {
+		for k, v := range mig.spec.labels {
+			if existingValue, found := labels[k]; found {
+				if v != existingValue {
+					return map[string]string{}, fmt.Errorf("conflict in labels requested: %s=%s  present: %s=%s",
+						k, v, k, existingValue)
+				}
+			} else {
+				labels[k] = v
+			}
+		}
+	}
+	return labels, nil
 }
 
 func buildGenericLabels(ref GceRef, machineType string, nodeName string) (map[string]string, error) {
