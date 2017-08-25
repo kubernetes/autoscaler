@@ -33,6 +33,30 @@ const (
 	minAutoprovisionedSize = 0
 )
 
+// Big machines are temporairly commented out.
+// TODO(mwielgus): get this list programatically
+var autoprovisionedMachineTypes = []string{
+	"n1-standard-1",
+	"n1-standard-2",
+	"n1-standard-4",
+	"n1-standard-8",
+	"n1-standard-16",
+	//"n1-standard-32",
+	//"n1-standard-64",
+	"n1-highcpu-2",
+	"n1-highcpu-4",
+	"n1-highcpu-8",
+	"n1-highcpu-16",
+	//"n1-highcpu-32",
+	// "n1-highcpu-64",
+	"n1-highmem-2",
+	"n1-highmem-4",
+	"n1-highmem-8",
+	"n1-highmem-16",
+	//"n1-highmem-32",
+	//"n1-highmem-64",
+}
+
 // GceCloudProvider implements CloudProvider interface.
 type GceCloudProvider struct {
 	gceManager *GceManager
@@ -96,7 +120,7 @@ func (gce *GceCloudProvider) Pricing() (cloudprovider.PricingModel, errors.Autos
 
 // GetAvilableMachineTypes get all machine types that can be requested from the cloud provider.
 func (gce *GceCloudProvider) GetAvilableMachineTypes() ([]string, error) {
-	return []string{}, nil
+	return autoprovisionedMachineTypes, nil
 }
 
 // NewNodeGroup builds a theoretical node group based on the node definition provided. The node group is not automatically
@@ -128,15 +152,23 @@ func GceRefFromProviderId(id string) (*GceRef, error) {
 	}, nil
 }
 
+// Information about what autosprovisioning would like from this mig.
+type autoprovisioningSpec struct {
+	machineType    string
+	labels         map[string]string
+	extraResources map[string]string
+}
+
 // Mig implements NodeGroup interfrace.
 type Mig struct {
 	GceRef
 
-	gceManager *GceManager
-
+	gceManager      *GceManager
 	minSize         int
 	maxSize         int
 	autoprovisioned bool
+	exist           bool
+	spec            *autoprovisioningSpec
 }
 
 // MaxSize returns maximum size of the node group.
@@ -258,7 +290,7 @@ func (mig *Mig) Nodes() ([]string, error) {
 // Exist checks if the node group really exists on the cloud provider side. Allows to tell the
 // theoretical node group from the real one.
 func (mig *Mig) Exist() (bool, error) {
-	return true, nil
+	return mig.exist, nil
 }
 
 // Create creates the node group on the cloud provider side.
@@ -279,13 +311,29 @@ func (mig *Mig) Autoprovisioned() bool {
 
 // TemplateNodeInfo returns a node template for this node group.
 func (mig *Mig) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
-	template, err := mig.gceManager.getMigTemplate(mig)
+
+	var node *apiv1.Node
+	exists, err := mig.Exist()
 	if err != nil {
 		return nil, err
 	}
-	node, err := mig.gceManager.buildNodeFromTemplate(mig, template)
-	if err != nil {
-		return nil, err
+	if exists {
+		template, err := mig.gceManager.getMigTemplate(mig)
+		if err != nil {
+			return nil, err
+		}
+		node, err = mig.gceManager.buildNodeFromTemplate(mig, template)
+		if err != nil {
+			return nil, err
+		}
+	} else if mig.Autoprovisioned() {
+		var err error
+		node, err = mig.gceManager.buildNodeFromAutoprovisioningSpec(mig)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		return nil, fmt.Errorf("unable to get node info for %s/%s/%s", mig.Project, mig.Zone, mig.Name)
 	}
 	nodeInfo := schedulercache.NewNodeInfo(cloudprovider.BuildKubeProxy(mig.Id()))
 	nodeInfo.SetNode(node)
@@ -300,9 +348,11 @@ func buildMig(value string, gceManager *GceManager) (*Mig, error) {
 	}
 
 	mig := Mig{
-		gceManager: gceManager,
-		minSize:    spec.MinSize,
-		maxSize:    spec.MaxSize,
+		gceManager:      gceManager,
+		minSize:         spec.MinSize,
+		maxSize:         spec.MaxSize,
+		exist:           true,
+		autoprovisioned: false,
 	}
 
 	if mig.Project, mig.Zone, mig.Name, err = ParseMigUrl(spec.Name); err != nil {
