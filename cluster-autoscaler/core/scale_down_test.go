@@ -104,8 +104,10 @@ func TestFindUnneededNodes(t *testing.T) {
 	assert.Contains(t, sd.podLocationHints, p2.Namespace+"/"+p2.Name)
 	assert.Equal(t, 4, len(sd.nodeUtilizationMap))
 
+	sd.unremovableNodes = make(map[string]time.Time)
 	sd.unneededNodes["n1"] = time.Now()
 	sd.UpdateUnneededNodes([]*apiv1.Node{n1, n2, n3, n4}, []*apiv1.Node{n1, n2, n3, n4}, []*apiv1.Pod{p1, p2, p3, p4}, time.Now(), nil)
+	sd.unremovableNodes = make(map[string]time.Time)
 
 	assert.Equal(t, 1, len(sd.unneededNodes))
 	addTime2, found := sd.unneededNodes["n2"]
@@ -113,8 +115,17 @@ func TestFindUnneededNodes(t *testing.T) {
 	assert.Equal(t, addTime, addTime2)
 	assert.Equal(t, 4, len(sd.nodeUtilizationMap))
 
+	sd.unremovableNodes = make(map[string]time.Time)
 	sd.UpdateUnneededNodes([]*apiv1.Node{n1, n2, n3, n4}, []*apiv1.Node{n1, n3, n4}, []*apiv1.Pod{p1, p2, p3, p4}, time.Now(), nil)
 	assert.Equal(t, 0, len(sd.unneededNodes))
+
+	// Node n1 is unneeded, but should be skipped because it has just recently been found to be unremovable
+	sd.UpdateUnneededNodes([]*apiv1.Node{n1}, []*apiv1.Node{n1}, []*apiv1.Pod{}, time.Now(), nil)
+	assert.Equal(t, 0, len(sd.unneededNodes))
+
+	// But it should be checked after timeout
+	sd.UpdateUnneededNodes([]*apiv1.Node{n1}, []*apiv1.Node{n1}, []*apiv1.Pod{}, time.Now().Add(UnremovableNodeRecheckTimeout+time.Second), nil)
+	assert.Equal(t, 1, len(sd.unneededNodes))
 }
 
 func TestDrainNode(t *testing.T) {
