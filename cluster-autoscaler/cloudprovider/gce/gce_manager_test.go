@@ -40,6 +40,52 @@ func TestBuildGenericLabels(t *testing.T) {
 	assert.Equal(t, cloudprovider.DefaultOS, labels[kubeletapis.LabelOS])
 }
 
+func TestBuildLabelsForAutoscaledMigOK(t *testing.T) {
+	labels, err := buildLablesForAutoprovisionedMig(
+		&Mig{
+			autoprovisioned: true,
+			spec: &autoprovisioningSpec{
+				machineType: "n1-standard-8",
+				labels: map[string]string{
+					"A": "B",
+				},
+			},
+			GceRef: GceRef{
+				Name:    "kubernetes-minion-autoprovisioned-group",
+				Project: "mwielgus-proj",
+				Zone:    "us-central1-b"}},
+		"sillyname",
+	)
+
+	assert.Nil(t, err)
+	assert.Equal(t, "B", labels["A"])
+	assert.Equal(t, "us-central1", labels[kubeletapis.LabelZoneRegion])
+	assert.Equal(t, "us-central1-b", labels[kubeletapis.LabelZoneFailureDomain])
+	assert.Equal(t, "sillyname", labels[kubeletapis.LabelHostname])
+	assert.Equal(t, "n1-standard-8", labels[kubeletapis.LabelInstanceType])
+	assert.Equal(t, cloudprovider.DefaultArch, labels[kubeletapis.LabelArch])
+	assert.Equal(t, cloudprovider.DefaultOS, labels[kubeletapis.LabelOS])
+}
+
+func TestBuildLabelsForAutoscaledMigConflict(t *testing.T) {
+	_, err := buildLablesForAutoprovisionedMig(
+		&Mig{
+			autoprovisioned: true,
+			spec: &autoprovisioningSpec{
+				machineType: "n1-standard-8",
+				labels: map[string]string{
+					kubeletapis.LabelOS: "windows",
+				},
+			},
+			GceRef: GceRef{
+				Name:    "kubernetes-minion-autoprovisioned-group",
+				Project: "mwielgus-proj",
+				Zone:    "us-central1-b"}},
+		"sillyname",
+	)
+	assert.Error(t, err)
+}
+
 func TestExtractLabelsFromKubeEnv(t *testing.T) {
 	kubeenv := "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
 		"NODE_LABELS: a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true\n" +
