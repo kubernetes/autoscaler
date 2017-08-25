@@ -39,6 +39,8 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
+
+	"cloud.google.com/go/compute/metadata"
 	provider_gce "k8s.io/kubernetes/pkg/cloudprovider/providers/gce"
 )
 
@@ -59,6 +61,8 @@ type GceManager struct {
 
 	service    *gce.Service
 	cacheMutex sync.Mutex
+	zone       string
+	projectId  string
 }
 
 // CreateGceManager constructs gceManager object.
@@ -80,6 +84,11 @@ func CreateGceManager(configReader io.Reader) (*GceManager, error) {
 	} else {
 		glog.Infof("Using default TokenSource %#v", tokenSource)
 	}
+	projectId, zone, err := getProjectAndZone()
+	if err != nil {
+		return nil, err
+	}
+	glog.V(1).Infof("GCE projectId=%s zone=%s", projectId, zone)
 
 	// Create Google Compute Engine service.
 	client := oauth2.NewClient(oauth2.NoContext, tokenSource)
@@ -88,9 +97,11 @@ func CreateGceManager(configReader io.Reader) (*GceManager, error) {
 		return nil, err
 	}
 	manager := &GceManager{
-		migs:     make([]*migInformation, 0),
-		service:  gceService,
-		migCache: make(map[GceRef]*Mig),
+		migs:      make([]*migInformation, 0),
+		service:   gceService,
+		migCache:  make(map[GceRef]*Mig),
+		zone:      zone,
+		projectId: projectId,
 	}
 	go wait.Forever(func() {
 		manager.cacheMutex.Lock()
@@ -286,6 +297,17 @@ func (m *GceManager) getMigTemplate(mig *Mig) (*gce.InstanceTemplate, error) {
 	return instanceTemplate, nil
 }
 
+func (m *GceManager) getCpuAndMemoryForMachineType(machineType string) (cpu int64, mem int64, err error) {
+	if strings.HasPrefix(machineType, "custom-") {
+		return parseCustomMachineType(machineType)
+	}
+	machine, geterr := m.service.MachineTypes.Get(m.projectId, m.zone, machineType).Do()
+	if geterr != nil {
+		return 0, 0, geterr
+	}
+	return machine.GuestCpus, machine.MemoryMb * 1024 * 1024, nil
+}
+
 func (m *GceManager) buildNodeFromTemplate(mig *Mig, template *gce.InstanceTemplate) (*apiv1.Node, error) {
 
 	if template.Properties == nil {
@@ -304,25 +326,16 @@ func (m *GceManager) buildNodeFromTemplate(mig *Mig, template *gce.InstanceTempl
 		Capacity: apiv1.ResourceList{},
 	}
 	// TODO: get a real value.
+	// TODO: handle GPU
+
 	node.Status.Capacity[apiv1.ResourcePods] = *resource.NewQuantity(110, resource.DecimalSI)
 
-	// TODO: handle custom !!!!
-	// TODO: handle GPU
-	if strings.HasPrefix(template.Properties.MachineType, "custom-") {
-		cpu, mem, err := parseCustomMachineType(template.Properties.MachineType)
-		if err != nil {
-			return nil, err
-		}
-		node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewQuantity(cpu, resource.DecimalSI)
-		node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(mem, resource.DecimalSI)
-	} else {
-		machineType, err := m.service.MachineTypes.Get(mig.Project, mig.Zone, template.Properties.MachineType).Do()
-		if err != nil {
-			return nil, err
-		}
-		node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewQuantity(machineType.GuestCpus, resource.DecimalSI)
-		node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(machineType.MemoryMb*1024*1024, resource.DecimalSI)
+	cpu, mem, err := m.getCpuAndMemoryForMachineType(template.Properties.MachineType)
+	if err != nil {
+		return nil, err
 	}
+	node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewQuantity(cpu, resource.DecimalSI)
+	node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(mem, resource.DecimalSI)
 
 	// TODO: use proper allocatable!!
 	node.Status.Allocatable = node.Status.Capacity
@@ -449,4 +462,22 @@ func buildTaints(kubeEnvTaints map[string]string) ([]apiv1.Taint, error) {
 		})
 	}
 	return taints, nil
+}
+
+// Code borrowed from gce cloud provider. Reuse the original as soon as it becomes public.
+func getProjectAndZone() (string, string, error) {
+	result, err := metadata.Get("instance/zone")
+	if err != nil {
+		return "", "", err
+	}
+	parts := strings.Split(result, "/")
+	if len(parts) != 4 {
+		return "", "", fmt.Errorf("unexpected response: %s", result)
+	}
+	zone := parts[3]
+	projectID, err := metadata.ProjectID()
+	if err != nil {
+		return "", "", err
+	}
+	return projectID, zone, nil
 }

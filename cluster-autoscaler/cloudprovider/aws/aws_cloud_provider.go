@@ -213,6 +213,11 @@ func (asg *Asg) Create() error {
 	return cloudprovider.ErrAlreadyExist
 }
 
+// Autoprovisioned returns true if the node group is autoprovisioned.
+func (asg *Asg) Autoprovisioned() bool {
+	return false
+}
+
 // Delete deletes the node group on the cloud provider side.
 // This will be executed only for autoprovisioned node groups, once their size drops to 0.
 func (asg *Asg) Delete() error {

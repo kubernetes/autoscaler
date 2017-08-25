@@ -46,9 +46,10 @@ func (f *FakeNodeGroup) Nodes() ([]string, error)           { return []string{},
 func (f *FakeNodeGroup) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
-func (f *FakeNodeGroup) Exist() (bool, error) { return true, nil }
-func (f *FakeNodeGroup) Create() error        { return cloudprovider.ErrAlreadyExist }
-func (f *FakeNodeGroup) Delete() error        { return cloudprovider.ErrNotImplemented }
+func (f *FakeNodeGroup) Exist() (bool, error)  { return true, nil }
+func (f *FakeNodeGroup) Create() error         { return cloudprovider.ErrAlreadyExist }
+func (f *FakeNodeGroup) Delete() error         { return cloudprovider.ErrNotImplemented }
+func (f *FakeNodeGroup) Autoprovisioned() bool { return false }
 
 func makeNodeInfo(cpu int64, memory int64, pods int64) *schedulercache.NodeInfo {
 	node := &apiv1.Node{
