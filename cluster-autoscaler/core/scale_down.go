@@ -69,6 +69,8 @@ const (
 	// PodEvictionHeadroom is the extra time we wait to catch situations when the pod is ignoring SIGTERM and
 	// is killed with SIGKILL after MaxGracefulTerminationTime
 	PodEvictionHeadroom = 20 * time.Second
+	// UnremovableNodeRecheckTimeout is the timeout before we check again a node that couldn't be removed before
+	UnremovableNodeRecheckTimeout = 5 * time.Minute
 )
 
 // ScaleDown is responsible for maintaining the state needed to perform unneded node removals.
@@ -76,6 +78,7 @@ type ScaleDown struct {
 	context            *AutoscalingContext
 	unneededNodes      map[string]time.Time
 	unneededNodesList  []*apiv1.Node
+	unremovableNodes   map[string]time.Time
 	podLocationHints   map[string]string
 	nodeUtilizationMap map[string]float64
 	usageTracker       *simulator.UsageTracker
@@ -86,6 +89,7 @@ func NewScaleDown(context *AutoscalingContext) *ScaleDown {
 	return &ScaleDown{
 		context:            context,
 		unneededNodes:      make(map[string]time.Time),
+		unremovableNodes:   make(map[string]time.Time),
 		podLocationHints:   make(map[string]string),
 		nodeUtilizationMap: make(map[string]float64),
 		usageTracker:       simulator.NewUsageTracker(),
@@ -124,9 +128,25 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	nodeNameToNodeInfo := schedulercache.CreateNodeNameToInfoMap(pods, nodes)
 	utilizationMap := make(map[string]float64)
 
+	// Filter out nodes that were recently checked
+	nodesToCheck := make([]*apiv1.Node, 0)
+	for _, node := range managedNodes {
+		if unremovableTimestamp, found := sd.unremovableNodes[node.Name]; found {
+			if unremovableTimestamp.After(timestamp) {
+				continue
+			}
+			delete(sd.unremovableNodes, node.Name)
+		}
+		nodesToCheck = append(nodesToCheck, node)
+	}
+	skipped := len(managedNodes) - len(nodesToCheck)
+	if skipped > 0 {
+		glog.V(1).Infof("Scale-down calculation: ignoring %v nodes, that were unremovable in the last %v", skipped, UnremovableNodeRecheckTimeout)
+	}
+
 	// Phase1 - look at the nodes utilization. Calculate the utilization
 	// only for the managed nodes.
-	for _, node := range managedNodes {
+	for _, node := range nodesToCheck {
 
 		// Skip nodes marked to be deleted, if they were marked recently.
 		// Old-time marked nodes are again eligible for deletion - something went wrong with them
@@ -164,7 +184,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	}
 
 	// Phase2 - check which nodes can be probably removed using fast drain.
-	nodesToRemove, newHints, simulatorErr := simulator.FindNodesToRemove(currentlyUnneededNodes, nodes, pods,
+	nodesToRemove, unremovable, newHints, simulatorErr := simulator.FindNodesToRemove(currentlyUnneededNodes, nodes, pods,
 		nil, sd.context.PredicateChecker,
 		len(currentlyUnneededNodes), true, sd.podLocationHints, sd.usageTracker, timestamp, pdbs)
 	if simulatorErr != nil {
@@ -189,6 +209,15 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		} else {
 			result[name] = val
 		}
+	}
+
+	// Add noded to unremovable map
+	if len(unremovable) > 0 {
+		unremovableTimeout := timestamp.Add(UnremovableNodeRecheckTimeout)
+		for _, node := range unremovable {
+			sd.unremovableNodes[node.Name] = unremovableTimeout
+		}
+		glog.V(1).Infof("%v nodes found unremovable in simulation, will re-check them at %v", len(unremovable), unremovableTimeout)
 	}
 
 	sd.unneededNodesList = unneadedNodeList
@@ -281,7 +310,7 @@ func (sd *ScaleDown) TryToScaleDown(nodes []*apiv1.Node, pods []*apiv1.Pod, pdbs
 
 	findNodesToRemoveStart := time.Now()
 	// We look for only 1 node so new hints may be incomplete.
-	nodesToRemove, _, err := simulator.FindNodesToRemove(candidates, nodes, pods, sd.context.ClientSet,
+	nodesToRemove, _, _, err := simulator.FindNodesToRemove(candidates, nodes, pods, sd.context.ClientSet,
 		sd.context.PredicateChecker, 1, false,
 		sd.podLocationHints, sd.usageTracker, time.Now(), pdbs)
 	findNodesToRemoveDuration = time.Now().Sub(findNodesToRemoveStart)

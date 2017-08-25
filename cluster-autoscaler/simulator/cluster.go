@@ -59,10 +59,11 @@ func FindNodesToRemove(candidates []*apiv1.Node, allNodes []*apiv1.Node, pods []
 	fastCheck bool, oldHints map[string]string, usageTracker *UsageTracker,
 	timestamp time.Time,
 	podDisruptionBudgets []*policyv1.PodDisruptionBudget,
-) (nodesToRemove []NodeToBeRemoved, podReschedulingHints map[string]string, finalError errors.AutoscalerError) {
+) (nodesToRemove []NodeToBeRemoved, unremovableNodes []*apiv1.Node, podReschedulingHints map[string]string, finalError errors.AutoscalerError) {
 
 	nodeNameToNodeInfo := schedulercache.CreateNodeNameToInfoMap(pods, allNodes)
 	result := make([]NodeToBeRemoved, 0)
+	unremovable := make([]*apiv1.Node, 0)
 
 	evaluationType := "Detailed evaluation"
 	if fastCheck {
@@ -87,10 +88,12 @@ candidateloop:
 			}
 			if err != nil {
 				glog.V(2).Infof("%s: node %s cannot be removed: %v", evaluationType, node.Name, err)
+				unremovable = append(unremovable, node)
 				continue candidateloop
 			}
 		} else {
 			glog.V(2).Infof("%s: nodeInfo for %s not found", evaluationType, node.Name)
+			unremovable = append(unremovable, node)
 			continue candidateloop
 		}
 		findProblems := findPlaceFor(node.Name, podsToRemove, allNodes, nodeNameToNodeInfo, predicateChecker, oldHints, newHints,
@@ -107,9 +110,10 @@ candidateloop:
 			}
 		} else {
 			glog.V(2).Infof("%s: node %s is not suitable for removal: %v", evaluationType, node.Name, findProblems)
+			unremovable = append(unremovable, node)
 		}
 	}
-	return result, newHints, nil
+	return result, unremovable, newHints, nil
 }
 
 // FindEmptyNodesToRemove finds empty nodes that can be removed.
