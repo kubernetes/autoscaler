@@ -94,3 +94,6 @@ endif
 clean: $(addprefix sub-clean-,$(ALL_ARCH))
 sub-clean-%:
 	docker rmi -f $(IMAGE)-$*:$(TAG) || true
+ifeq ($(ARCH), amd64)
+	docker rmi -f $(IMAGE):$(TAG)
+endif
