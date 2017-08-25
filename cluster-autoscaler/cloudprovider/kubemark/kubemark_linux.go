@@ -239,6 +239,11 @@ func (nodeGroup *NodeGroup) Delete() error {
 	return cloudprovider.ErrNotImplemented
 }
 
+// Autoprovisioned returns true if the node group is autoprovisioned.
+func (nodeGroup *NodeGroup) Autoprovisioned() bool {
+	return false
+}
+
 func buildNodeGroup(value string, kubemarkController *kubemark.KubemarkController) (*NodeGroup, error) {
 	spec, err := dynamic.SpecFromString(value, true)
 	if err != nil {
