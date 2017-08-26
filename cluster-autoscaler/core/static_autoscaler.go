@@ -294,7 +294,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 				glog.Errorf("Failed to scale down: %v", err)
 				return typedErr
 			}
-			if result == ScaleDownError || result == ScaleDownNoNodeDeleted {
+			if result == ScaleDownError {
 				a.lastScaleDownFailedTrial = time.Now()
 			}
 		}
