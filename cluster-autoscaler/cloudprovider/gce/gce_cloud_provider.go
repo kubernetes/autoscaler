@@ -318,17 +318,17 @@ func (mig *Mig) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
 		return nil, err
 	}
 	if exists {
-		template, err := mig.gceManager.getMigTemplate(mig)
+		template, err := mig.gceManager.templates.getMigTemplate(mig)
 		if err != nil {
 			return nil, err
 		}
-		node, err = mig.gceManager.buildNodeFromTemplate(mig, template)
+		node, err = mig.gceManager.templates.buildNodeFromTemplate(mig, template)
 		if err != nil {
 			return nil, err
 		}
 	} else if mig.Autoprovisioned() {
 		var err error
-		node, err = mig.gceManager.buildNodeFromAutoprovisioningSpec(mig)
+		node, err = mig.gceManager.templates.buildNodeFromAutoprovisioningSpec(mig)
 		if err != nil {
 			return nil, err
 		}
