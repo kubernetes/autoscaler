@@ -315,10 +315,20 @@ func TestScaleDown(t *testing.T) {
 	scaleDown.UpdateUnneededNodes([]*apiv1.Node{n1, n2},
 		[]*apiv1.Node{n1, n2}, []*apiv1.Pod{p1, p2}, time.Now().Add(-5*time.Minute), nil)
 	result, err := scaleDown.TryToScaleDown([]*apiv1.Node{n1, n2}, []*apiv1.Pod{p1, p2}, nil)
+	waitForDeleteToFinish(t, scaleDown)
 	assert.NoError(t, err)
-	assert.Equal(t, ScaleDownNodeDeleted, result)
+	assert.Equal(t, ScaleDownNodeDeleteStarted, result)
 	assert.Equal(t, n1.Name, getStringFromChan(deletedNodes))
 	assert.Equal(t, n1.Name, getStringFromChan(updatedNodes))
+}
+
+func waitForDeleteToFinish(t *testing.T, sd *ScaleDown) {
+	for start := time.Now(); time.Now().Sub(start) < 20*time.Second; time.Sleep(100 * time.Millisecond) {
+		if !sd.nodeDeleteStatus.IsDeleteInProgress() {
+			return
+		}
+	}
+	t.Fatalf("Node delete not finished")
 }
 
 func assertSubset(t *testing.T, a []string, b []string) {
@@ -398,6 +408,8 @@ func TestScaleDownEmptyMultipleNodeGroups(t *testing.T) {
 	scaleDown.UpdateUnneededNodes([]*apiv1.Node{n1, n2},
 		[]*apiv1.Node{n1, n2}, []*apiv1.Pod{}, time.Now().Add(-5*time.Minute), nil)
 	result, err := scaleDown.TryToScaleDown([]*apiv1.Node{n1, n2}, []*apiv1.Pod{}, nil)
+	waitForDeleteToFinish(t, scaleDown)
+
 	assert.NoError(t, err)
 	assert.Equal(t, ScaleDownNodeDeleted, result)
 	d1 := getStringFromChan(deletedNodes)
@@ -466,6 +478,8 @@ func TestScaleDownEmptySingleNodeGroup(t *testing.T) {
 	scaleDown.UpdateUnneededNodes([]*apiv1.Node{n1, n2},
 		[]*apiv1.Node{n1, n2}, []*apiv1.Pod{}, time.Now().Add(-5*time.Minute), nil)
 	result, err := scaleDown.TryToScaleDown([]*apiv1.Node{n1, n2}, []*apiv1.Pod{}, nil)
+	waitForDeleteToFinish(t, scaleDown)
+
 	assert.NoError(t, err)
 	assert.Equal(t, ScaleDownNodeDeleted, result)
 	d1 := getStringFromChan(deletedNodes)
@@ -529,6 +543,8 @@ func TestNoScaleDownUnready(t *testing.T) {
 	scaleDown.UpdateUnneededNodes([]*apiv1.Node{n1, n2},
 		[]*apiv1.Node{n1, n2}, []*apiv1.Pod{p2}, time.Now().Add(-5*time.Minute), nil)
 	result, err := scaleDown.TryToScaleDown([]*apiv1.Node{n1, n2}, []*apiv1.Pod{p2}, nil)
+	waitForDeleteToFinish(t, scaleDown)
+
 	assert.NoError(t, err)
 	assert.Equal(t, ScaleDownNoUnneeded, result)
 
@@ -549,8 +565,10 @@ func TestNoScaleDownUnready(t *testing.T) {
 	scaleDown.UpdateUnneededNodes([]*apiv1.Node{n1, n2}, []*apiv1.Node{n1, n2},
 		[]*apiv1.Pod{p2}, time.Now().Add(-2*time.Hour), nil)
 	result, err = scaleDown.TryToScaleDown([]*apiv1.Node{n1, n2}, []*apiv1.Pod{p2}, nil)
+	waitForDeleteToFinish(t, scaleDown)
+
 	assert.NoError(t, err)
-	assert.Equal(t, ScaleDownNodeDeleted, result)
+	assert.Equal(t, ScaleDownNodeDeleteStarted, result)
 	assert.Equal(t, n1.Name, getStringFromChan(deletedNodes))
 }
 
@@ -633,6 +651,8 @@ func TestScaleDownNoMove(t *testing.T) {
 	scaleDown.UpdateUnneededNodes([]*apiv1.Node{n1, n2}, []*apiv1.Node{n1, n2},
 		[]*apiv1.Pod{p1, p2}, time.Now().Add(5*time.Minute), nil)
 	result, err := scaleDown.TryToScaleDown([]*apiv1.Node{n1, n2}, []*apiv1.Pod{p1, p2}, nil)
+	waitForDeleteToFinish(t, scaleDown)
+
 	assert.NoError(t, err)
 	assert.Equal(t, ScaleDownNoUnneeded, result)
 }

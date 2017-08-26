@@ -256,7 +256,8 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		// In dry run only utilization is updated
 		calculateUnneededOnly := a.lastScaleUpTime.Add(a.ScaleDownDelay).After(time.Now()) ||
 			a.lastScaleDownFailedTrial.Add(a.ScaleDownTrialInterval).After(time.Now()) ||
-			schedulablePodsPresent
+			schedulablePodsPresent ||
+			scaleDown.nodeDeleteStatus.IsDeleteInProgress()
 
 		glog.V(4).Infof("Scale down status: unneededOnly=%v lastScaleUpTime=%s "+
 			"lastScaleDownFailedTrail=%s schedulablePodsPresent=%v", calculateUnneededOnly,
