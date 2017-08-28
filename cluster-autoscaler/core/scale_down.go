@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"sync"
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -53,6 +54,8 @@ const (
 	ScaleDownNoNodeDeleted ScaleDownResult = iota
 	// ScaleDownNodeDeleted - a node was deleted.
 	ScaleDownNodeDeleted ScaleDownResult = iota
+	// ScaleDownNodeDeleteStarted - a node deletion process was started.
+	ScaleDownNodeDeleteStarted ScaleDownResult = iota
 	// ScaleDownDisabledKey is the name of annotation marking node as not eligible for scale down.
 	ScaleDownDisabledKey = "cluster-autoscaler.kubernetes.io/scale-down-disabled"
 )
@@ -68,10 +71,30 @@ const (
 	EvictionRetryTime = 10 * time.Second
 	// PodEvictionHeadroom is the extra time we wait to catch situations when the pod is ignoring SIGTERM and
 	// is killed with SIGKILL after MaxGracefulTerminationTime
-	PodEvictionHeadroom = 20 * time.Second
+	PodEvictionHeadroom = 30 * time.Second
 	// UnremovableNodeRecheckTimeout is the timeout before we check again a node that couldn't be removed before
 	UnremovableNodeRecheckTimeout = 5 * time.Minute
 )
+
+// NodeDeleteStatus tells whether a node is being deleted right now.
+type NodeDeleteStatus struct {
+	sync.Mutex
+	deleteInProgress bool
+}
+
+// IsDeleteInProgress returns true if a node is being deleted.
+func (n *NodeDeleteStatus) IsDeleteInProgress() bool {
+	n.Lock()
+	defer n.Unlock()
+	return n.deleteInProgress
+}
+
+// SetDeleteInProgress sets deletion process status
+func (n *NodeDeleteStatus) SetDeleteInProgress(status bool) {
+	n.Lock()
+	defer n.Unlock()
+	n.deleteInProgress = status
+}
 
 // ScaleDown is responsible for maintaining the state needed to perform unneded node removals.
 type ScaleDown struct {
@@ -82,6 +105,7 @@ type ScaleDown struct {
 	podLocationHints   map[string]string
 	nodeUtilizationMap map[string]float64
 	usageTracker       *simulator.UsageTracker
+	nodeDeleteStatus   *NodeDeleteStatus
 }
 
 // NewScaleDown builds new ScaleDown object.
@@ -94,6 +118,7 @@ func NewScaleDown(context *AutoscalingContext) *ScaleDown {
 		nodeUtilizationMap: make(map[string]float64),
 		usageTracker:       simulator.NewUsageTracker(),
 		unneededNodesList:  make([]*apiv1.Node, 0),
+		nodeDeleteStatus:   &NodeDeleteStatus{},
 	}
 }
 
@@ -336,18 +361,27 @@ func (sd *ScaleDown) TryToScaleDown(nodes []*apiv1.Node, pods []*apiv1.Pod, pdbs
 	// Nothing super-bad should happen if the node is removed from tracker prematurely.
 	simulator.RemoveNodeFromTracker(sd.usageTracker, toRemove.Node.Name, sd.unneededNodes)
 	nodeDeletionStart := time.Now()
-	err = deleteNode(sd.context, toRemove.Node, toRemove.PodsToReschedule)
-	nodeDeletionDuration = time.Now().Sub(nodeDeletionStart)
-	if err != nil {
-		return ScaleDownError, err.AddPrefix("Failed to delete %s: ", toRemove.Node.Name)
-	}
-	if readinessMap[toRemove.Node.Name] {
-		metrics.RegisterScaleDown(1, metrics.Underutilized)
-	} else {
-		metrics.RegisterScaleDown(1, metrics.Unready)
-	}
 
-	return ScaleDownNodeDeleted, nil
+	// Starting deletion.
+	nodeDeletionDuration = time.Now().Sub(nodeDeletionStart)
+	sd.nodeDeleteStatus.SetDeleteInProgress(true)
+
+	go func() {
+		// Finishing the delete probess once this goroutine is over.
+		defer sd.nodeDeleteStatus.SetDeleteInProgress(false)
+		err := deleteNode(sd.context, toRemove.Node, toRemove.PodsToReschedule)
+		if err != nil {
+			glog.Errorf("Failed to delete %s: %v", toRemove.Node.Name, err)
+			return
+		}
+		if readinessMap[toRemove.Node.Name] {
+			metrics.RegisterScaleDown(1, metrics.Underutilized)
+		} else {
+			metrics.RegisterScaleDown(1, metrics.Unready)
+		}
+	}()
+
+	return ScaleDownNodeDeleteStarted, nil
 }
 
 // updateScaleDownMetrics registers duration of different parts of scale down.
