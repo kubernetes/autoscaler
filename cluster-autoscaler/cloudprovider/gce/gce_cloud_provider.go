@@ -93,8 +93,9 @@ func (gce *GceCloudProvider) Name() string {
 
 // NodeGroups returns all node groups configured for this cloud provider.
 func (gce *GceCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
-	result := make([]cloudprovider.NodeGroup, 0, len(gce.gceManager.migs))
-	for _, mig := range gce.gceManager.migs {
+	migs := gce.gceManager.getMigs()
+	result := make([]cloudprovider.NodeGroup, 0, len(migs))
+	for _, mig := range migs {
 		result = append(result, mig.config)
 	}
 	return result
