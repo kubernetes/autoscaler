@@ -37,13 +37,15 @@ import (
 type CloudProviderBuilder struct {
 	cloudProviderFlag string
 	cloudConfig       string
+	clusterName       string
 }
 
 // NewCloudProviderBuilder builds a new builder from static settings
-func NewCloudProviderBuilder(cloudProviderFlag string, cloudConfig string) CloudProviderBuilder {
+func NewCloudProviderBuilder(cloudProviderFlag string, cloudConfig string, clusterName string) CloudProviderBuilder {
 	return CloudProviderBuilder{
 		cloudProviderFlag: cloudProviderFlag,
 		cloudConfig:       cloudConfig,
+		clusterName:       clusterName,
 	}
 }
 
@@ -54,19 +56,24 @@ func (b CloudProviderBuilder) Build(discoveryOpts cloudprovider.NodeGroupDiscove
 
 	nodeGroupsFlag := discoveryOpts.NodeGroupSpecs
 
-	if b.cloudProviderFlag == "gce" {
+	if b.cloudProviderFlag == "gce" || b.cloudProviderFlag == "gke" {
 		// GCE Manager
 		var gceManager *gce.GceManager
 		var gceError error
+		mode := gce.ModeGCE
+		if b.cloudProviderFlag == "gke" {
+			mode = gce.ModeGKE
+		}
+
 		if b.cloudConfig != "" {
 			config, fileErr := os.Open(b.cloudConfig)
 			if fileErr != nil {
 				glog.Fatalf("Couldn't open cloud provider configuration %s: %#v", b.cloudConfig, err)
 			}
 			defer config.Close()
-			gceManager, gceError = gce.CreateGceManager(config)
+			gceManager, gceError = gce.CreateGceManager(config, mode, b.clusterName)
 		} else {
-			gceManager, gceError = gce.CreateGceManager(nil)
+			gceManager, gceError = gce.CreateGceManager(nil, mode, b.clusterName)
 		}
 		if gceError != nil {
 			glog.Fatalf("Failed to create GCE Manager: %v", err)

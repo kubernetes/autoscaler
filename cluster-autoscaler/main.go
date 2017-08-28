@@ -63,6 +63,7 @@ func (flag *MultiStringFlag) Set(value string) error {
 
 var (
 	nodeGroupsFlag         MultiStringFlag
+	clusterName            = flag.String("clusterName", "", "Autoscaled cluster name, if available")
 	address                = flag.String("address", ":8085", "The address to expose prometheus metrics.")
 	kubernetes             = flag.String("kubernetes", "", "Kubernetes master location. Leave blank for default")
 	cloudConfig            = flag.String("cloud-config", "", "The path to the cloud provider configuration file.  Empty string for no configuration file.")
@@ -126,6 +127,7 @@ func createAutoscalerOptions() core.AutoscalerOptions {
 		WriteStatusConfigMap:          *writeStatusConfigMapFlag,
 		BalanceSimilarNodeGroups:      *balanceSimilarNodeGroupsFlag,
 		ConfigNamespace:               *namespace,
+		ClusterName:                   *clusterName,
 	}
 
 	configFetcherOpts := dynamic.ConfigFetcherOptions{

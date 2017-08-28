@@ -102,6 +102,8 @@ type AutoscalingOptions struct {
 	BalanceSimilarNodeGroups bool
 	// ConfigNamespace is the namesapce cluster-autoscaler is running in and all related configmaps live in
 	ConfigNamespace string
+	// ClusterName if available
+	ClusterName string
 }
 
 // NewAutoscalingContext returns an autoscaling context from all the necessary parameters passed via arguments
@@ -109,7 +111,7 @@ func NewAutoscalingContext(options AutoscalingOptions, predicateChecker *simulat
 	kubeClient kube_client.Interface, kubeEventRecorder kube_record.EventRecorder,
 	logEventRecorder *utils.LogEventRecorder, listerRegistry kube_util.ListerRegistry) (*AutoscalingContext, errors.AutoscalerError) {
 
-	cloudProviderBuilder := builder.NewCloudProviderBuilder(options.CloudProviderName, options.CloudConfig)
+	cloudProviderBuilder := builder.NewCloudProviderBuilder(options.CloudProviderName, options.CloudConfig, options.ClusterName)
 	cloudProvider := cloudProviderBuilder.Build(cloudprovider.NodeGroupDiscoveryOptions{
 		NodeGroupSpecs:             options.NodeGroups,
 		NodeGroupAutoDiscoverySpec: options.NodeGroupAutoDiscovery,
