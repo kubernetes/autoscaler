@@ -55,7 +55,8 @@ type predicateInfo struct {
 
 // PredicateChecker checks whether all required predicates are matched for given Pod and Node
 type PredicateChecker struct {
-	predicates []predicateInfo
+	predicates                []predicateInfo
+	predicateMetadataProducer algorithm.MetadataProducer
 }
 
 // there are no const arrays in go, this is meant to be used as a const
@@ -86,6 +87,10 @@ func NewPredicateChecker(kubeClient kube_client.Interface, stop <-chan struct{})
 
 	informerFactory.Start(stop)
 
+	metadataProducer, err := schedulerConfigFactory.GetPredicateMetadataProducer()
+	if err != nil {
+		return nil, err
+	}
 	predicateMap, err := schedulerConfigFactory.GetPredicates(provider.FitPredicateKeys)
 	predicateMap["ready"] = isNodeReadyAndSchedulablePredicate
 	if err != nil {
@@ -117,7 +122,8 @@ func NewPredicateChecker(kubeClient kube_client.Interface, stop <-chan struct{})
 	// schedulerConfigFactory.Run()
 
 	return &PredicateChecker{
-		predicates: predicateList,
+		predicates:                predicateList,
+		predicateMetadataProducer: metadataProducer,
 	}, nil
 }
 
@@ -137,7 +143,19 @@ func NewTestPredicateChecker() *PredicateChecker {
 			{name: "default", predicate: predicates.GeneralPredicates},
 			{name: "ready", predicate: isNodeReadyAndSchedulablePredicate},
 		},
+		predicateMetadataProducer: func(_ *apiv1.Pod, _ map[string]*schedulercache.NodeInfo) interface{} {
+			return nil
+		},
 	}
+}
+
+// GetPredicateMetadata precomputes some information useful for running predicates on a given pod in a given state
+// of the cluster (represented by nodeInfos map). Passing the result of this function to CheckPredicates can significantly
+// improve the performance of running predicates, especially MatchInterPodAffinity predicate. However, calculating
+// predicateMetadata is also quite expensive, so it's not always the best option to run this method.
+// Please refer to https://github.com/kubernetes/autoscaler/issues/257 for more details.
+func (p *PredicateChecker) GetPredicateMetadata(pod *apiv1.Pod, nodeInfos map[string]*schedulercache.NodeInfo) interface{} {
+	return p.predicateMetadataProducer(pod, nodeInfos)
 }
 
 // FitsAny checks if the given pod can be place on any of the given nodes.
@@ -147,7 +165,7 @@ func (p *PredicateChecker) FitsAny(pod *apiv1.Pod, nodeInfos map[string]*schedul
 		if nodeInfo.Node().Spec.Unschedulable {
 			continue
 		}
-		if err := p.CheckPredicates(pod, nodeInfo, ReturnSimpleError); err == nil {
+		if err := p.CheckPredicates(pod, nil, nodeInfo, ReturnSimpleError); err == nil {
 			return name, nil
 		}
 	}
@@ -158,9 +176,14 @@ func (p *PredicateChecker) FitsAny(pod *apiv1.Pod, nodeInfos map[string]*schedul
 // We're running a ton of predicates and more often than not we only care whether
 // they pass or not and don't care for a reason. Turns out formatting nice error
 // messages gets very expensive, so we only do it if verbose is set to ReturnVerboseError.
-func (p *PredicateChecker) CheckPredicates(pod *apiv1.Pod, nodeInfo *schedulercache.NodeInfo, verbosity ErrorVerbosity) error {
+// To improve performance predicateMetadata can be calculated using GetPredicateMetadata
+// method and passed to CheckPredicates, however, this may lead to incorrect results if
+// it was calculated using NodeInfo map representing different cluster state and the
+// performance gains of CheckPredicates won't always offset the cost of GetPredicateMetadata.
+// Alternatively you can pass nil as predicateMetadata.
+func (p *PredicateChecker) CheckPredicates(pod *apiv1.Pod, predicateMetadata interface{}, nodeInfo *schedulercache.NodeInfo, verbosity ErrorVerbosity) error {
 	for _, predInfo := range p.predicates {
-		match, failureReason, err := predInfo.predicate(pod, nil, nodeInfo)
+		match, failureReason, err := predInfo.predicate(pod, predicateMetadata, nodeInfo)
 
 		if verbosity == ReturnSimpleError && (err != nil || !match) {
 			return errors.New("Predicates failed")
