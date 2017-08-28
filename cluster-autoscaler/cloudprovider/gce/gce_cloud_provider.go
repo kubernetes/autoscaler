@@ -168,6 +168,7 @@ type Mig struct {
 	maxSize         int
 	autoprovisioned bool
 	exist           bool
+	nodePoolName    string
 	spec            *autoprovisioningSpec
 }
 
