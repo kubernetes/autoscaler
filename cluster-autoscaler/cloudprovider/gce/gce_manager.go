@@ -65,7 +65,9 @@ type GceManager struct {
 	gceService *gce.Service
 	gkeService *gke.Service
 
-	cacheMutex  sync.Mutex
+	cacheMutex sync.Mutex
+	migsMutex  sync.Mutex
+
 	zone        string
 	projectId   string
 	clusterName string
@@ -195,8 +197,8 @@ func (m *GceManager) fetchAllNodePools() error {
 
 // RegisterMig registers mig in Gce Manager. Returns true if the node group didn't exist before.
 func (m *GceManager) RegisterMig(mig *Mig) bool {
-	m.cacheMutex.Lock()
-	defer m.cacheMutex.Unlock()
+	m.migsMutex.Lock()
+	defer m.migsMutex.Unlock()
 
 	updated := false
 	for i := range m.migs {
@@ -299,6 +301,19 @@ func (m *GceManager) DeleteInstances(instances []*GceRef) error {
 	return nil
 }
 
+func (m *GceManager) getMigs() []*migInformation {
+	m.migsMutex.Lock()
+	defer m.migsMutex.Unlock()
+	migs := make([]*migInformation, 0, len(m.migs))
+	for _, mig := range m.migs {
+		migs = append(migs, &migInformation{
+			basename: mig.basename,
+			config:   mig.config,
+		})
+	}
+	return migs
+}
+
 // GetMigForInstance returns MigConfig of the given Instance
 func (m *GceManager) GetMigForInstance(instance *GceRef) (*Mig, error) {
 	m.cacheMutex.Lock()
@@ -307,7 +322,7 @@ func (m *GceManager) GetMigForInstance(instance *GceRef) (*Mig, error) {
 		return mig, nil
 	}
 
-	for _, mig := range m.migs {
+	for _, mig := range m.getMigs() {
 		if mig.config.Project == instance.Project &&
 			mig.config.Zone == instance.Zone &&
 			strings.HasPrefix(instance.Name, mig.basename) {
@@ -327,7 +342,7 @@ func (m *GceManager) GetMigForInstance(instance *GceRef) (*Mig, error) {
 func (m *GceManager) regenerateCache() error {
 	newMigCache := make(map[GceRef]*Mig)
 
-	for _, migInfo := range m.migs {
+	for _, migInfo := range m.getMigs() {
 		mig := migInfo.config
 		glog.V(4).Infof("Regenerating MIG information for %s %s %s", mig.Project, mig.Zone, mig.Name)
 
