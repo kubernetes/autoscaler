@@ -359,8 +359,10 @@ func fixNodeGroupSize(context *AutoscalingContext, currentTime time.Time) (bool,
 	return fixed, nil
 }
 
-// getManagedNodes returns the nodes managed by the cluster autoscaler.
-func getManagedNodes(context *AutoscalingContext, nodes []*apiv1.Node) []*apiv1.Node {
+// getPotentiallyUnneededNodes returns nodes that are:
+// - managed by the cluster autoscaler
+// - in groups with size > min size
+func getPotentiallyUnneededNodes(context *AutoscalingContext, nodes []*apiv1.Node) []*apiv1.Node {
 	result := make([]*apiv1.Node, 0, len(nodes))
 	for _, node := range nodes {
 		nodeGroup, err := context.CloudProvider.NodeGroupForNode(node)
@@ -370,6 +372,15 @@ func getManagedNodes(context *AutoscalingContext, nodes []*apiv1.Node) []*apiv1.
 		}
 		if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
 			glog.V(4).Infof("Skipping %s - no node group config", node.Name)
+			continue
+		}
+		size, err := nodeGroup.TargetSize()
+		if err != nil {
+			glog.Errorf("Error while checking node group size %s: %v", nodeGroup.Id(), err)
+			continue
+		}
+		if size <= nodeGroup.MinSize() {
+			glog.V(1).Infof("Skipping %s - node group min size reached", node.Name)
 			continue
 		}
 		result = append(result, node)

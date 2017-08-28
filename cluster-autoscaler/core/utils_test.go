@@ -256,3 +256,26 @@ func TestRemoveFixNodeTargetSize(t *testing.T) {
 	change := getStringFromChan(sizeChanges)
 	assert.Equal(t, "ng1/-2", change)
 }
+
+func TestGetPotentiallyUnneededNodes(t *testing.T) {
+	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
+	ng1_2 := BuildTestNode("ng1-2", 1000, 1000)
+	ng2_1 := BuildTestNode("ng2-1", 1000, 1000)
+	noNg := BuildTestNode("no-ng", 1000, 1000)
+	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider.AddNodeGroup("ng1", 1, 10, 2)
+	provider.AddNodeGroup("ng2", 1, 10, 1)
+	provider.AddNode("ng1", ng1_1)
+	provider.AddNode("ng1", ng1_2)
+	provider.AddNode("ng2", ng2_1)
+
+	context := &AutoscalingContext{
+		CloudProvider: provider,
+	}
+
+	result := getPotentiallyUnneededNodes(context, []*apiv1.Node{ng1_1, ng1_2, ng2_1, noNg})
+	assert.Equal(t, 2, len(result))
+	ok1 := result[0].Name == "ng1-1" && result[1].Name == "ng1-2"
+	ok2 := result[1].Name == "ng1-1" && result[0].Name == "ng1-2"
+	assert.True(t, ok1 || ok2)
+}
