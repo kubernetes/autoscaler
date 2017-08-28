@@ -144,7 +144,7 @@ func (sd *ScaleDown) CleanUpUnneededNodes() {
 // managed by CA.
 func (sd *ScaleDown) UpdateUnneededNodes(
 	nodes []*apiv1.Node,
-	managedNodes []*apiv1.Node,
+	nodesToCheck []*apiv1.Node,
 	pods []*apiv1.Pod,
 	timestamp time.Time,
 	pdbs []*policyv1.PodDisruptionBudget) errors.AutoscalerError {
@@ -154,24 +154,24 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	utilizationMap := make(map[string]float64)
 
 	// Filter out nodes that were recently checked
-	nodesToCheck := make([]*apiv1.Node, 0)
-	for _, node := range managedNodes {
+	filteredNodesToCheck := make([]*apiv1.Node, 0)
+	for _, node := range nodesToCheck {
 		if unremovableTimestamp, found := sd.unremovableNodes[node.Name]; found {
 			if unremovableTimestamp.After(timestamp) {
 				continue
 			}
 			delete(sd.unremovableNodes, node.Name)
 		}
-		nodesToCheck = append(nodesToCheck, node)
+		filteredNodesToCheck = append(filteredNodesToCheck, node)
 	}
-	skipped := len(managedNodes) - len(nodesToCheck)
+	skipped := len(nodesToCheck) - len(filteredNodesToCheck)
 	if skipped > 0 {
 		glog.V(1).Infof("Scale-down calculation: ignoring %v nodes, that were unremovable in the last %v", skipped, UnremovableNodeRecheckTimeout)
 	}
 
 	// Phase1 - look at the nodes utilization. Calculate the utilization
 	// only for the managed nodes.
-	for _, node := range nodesToCheck {
+	for _, node := range filteredNodesToCheck {
 
 		// Skip nodes marked to be deleted, if they were marked recently.
 		// Old-time marked nodes are again eligible for deletion - something went wrong with them
