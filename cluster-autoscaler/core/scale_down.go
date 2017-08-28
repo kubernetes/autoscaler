@@ -492,7 +492,16 @@ func deleteNode(context *AutoscalingContext, node *apiv1.Node, pods []*apiv1.Pod
 func evictPod(podToEvict *apiv1.Pod, client kube_client.Interface, recorder kube_record.EventRecorder,
 	maxGracefulTerminationSec int, retryUntil time.Time, waitBetweenRetries time.Duration) error {
 	recorder.Eventf(podToEvict, apiv1.EventTypeNormal, "ScaleDown", "deleting pod for node scale down")
-	maxGraceful64 := int64(maxGracefulTerminationSec)
+
+	maxTermination := int64(apiv1.DefaultTerminationGracePeriodSeconds)
+	if podToEvict.Spec.TerminationGracePeriodSeconds != nil {
+		if *podToEvict.Spec.TerminationGracePeriodSeconds < int64(maxGracefulTerminationSec) {
+			maxTermination = *podToEvict.Spec.TerminationGracePeriodSeconds
+		} else {
+			maxTermination = int64(maxGracefulTerminationSec)
+		}
+	}
+
 	var lastError error
 	for first := true; first || time.Now().Before(retryUntil); time.Sleep(waitBetweenRetries) {
 		first = false
@@ -502,7 +511,7 @@ func evictPod(podToEvict *apiv1.Pod, client kube_client.Interface, recorder kube
 				Name:      podToEvict.Name,
 			},
 			DeleteOptions: &metav1.DeleteOptions{
-				GracePeriodSeconds: &maxGraceful64,
+				GracePeriodSeconds: &maxTermination,
 			},
 		}
 		lastError = client.Core().Pods(podToEvict.Namespace).Evict(eviction)
