@@ -173,16 +173,16 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes []*apiv1.Node, no
 	timestamp time.Time) error {
 
 	newNodeInfos := make(map[string]*schedulercache.NodeInfo)
+	for k, v := range nodeInfos {
+		newNodeInfos[k] = v
+	}
 
 	podKey := func(pod *apiv1.Pod) string {
 		return fmt.Sprintf("%s/%s", pod.Namespace, pod.Name)
 	}
 
-	tryNodeForPod := func(nodename string, pod *apiv1.Pod) bool {
+	tryNodeForPod := func(nodename string, pod *apiv1.Pod, predicateMeta interface{}) bool {
 		nodeInfo, found := newNodeInfos[nodename]
-		if !found {
-			nodeInfo, found = nodeInfos[nodename]
-		}
 		if found {
 			if nodeInfo.Node() == nil {
 				// NodeInfo is generated based on pods. It is possible that node is removed from
@@ -192,7 +192,7 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes []*apiv1.Node, no
 				return false
 			}
 			nodeInfo.Node().Status.Allocatable = nodeInfo.Node().Status.Capacity
-			err := predicateChecker.CheckPredicates(pod, nodeInfo, ReturnVerboseError)
+			err := predicateChecker.CheckPredicates(pod, predicateMeta, nodeInfo, ReturnVerboseError)
 			glog.V(4).Infof("Evaluation %s for %s/%s -> %v", nodename, pod.Namespace, pod.Name, err)
 			if err == nil {
 				// TODO(mwielgus): Optimize it.
@@ -219,12 +219,13 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes []*apiv1.Node, no
 
 		foundPlace := false
 		targetNode := ""
+		predicateMeta := predicateChecker.GetPredicateMetadata(pod, newNodeInfos)
 
 		glog.V(4).Infof("Looking for place for %s/%s", pod.Namespace, pod.Name)
 
 		hintedNode, hasHint := oldHints[podKey(pod)]
 		if hasHint {
-			if hintedNode != removedNode && tryNodeForPod(hintedNode, pod) {
+			if hintedNode != removedNode && tryNodeForPod(hintedNode, pod, predicateMeta) {
 				foundPlace = true
 				targetNode = hintedNode
 			}
@@ -234,7 +235,7 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes []*apiv1.Node, no
 				if node.Name == removedNode {
 					continue
 				}
-				if tryNodeForPod(node.Name, pod) {
+				if tryNodeForPod(node.Name, pod, predicateMeta) {
 					foundPlace = true
 					targetNode = node.Name
 					break
