@@ -107,7 +107,7 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 		}
 
 		for _, pod := range unschedulablePods {
-			err = context.PredicateChecker.CheckPredicates(pod, nodeInfo, simulator.ReturnVerboseError)
+			err = context.PredicateChecker.CheckPredicates(pod, nil, nodeInfo, simulator.ReturnVerboseError)
 			if err == nil {
 				option.Pods = append(option.Pods, pod)
 				podsRemainUnschedulable[pod] = false
