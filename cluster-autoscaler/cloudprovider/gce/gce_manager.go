@@ -184,6 +184,7 @@ func (m *GceManager) fetchAllNodePools() error {
 				gceManager:      m,
 				exist:           true,
 				autoprovisioned: autoprovisioned,
+				nodePoolName:    nodePool.Name,
 			}
 			existingMigs[mig.GceRef] = struct{}{}
 
@@ -258,6 +259,24 @@ func (m *GceManager) UnregisterMig(toBeRemoved *Mig) bool {
 	return found
 }
 
+func (m *GceManager) deleteNodePool(toBeRemoved *Mig) error {
+	m.assertGKE()
+	if !toBeRemoved.Autoprovisioned() {
+		return fmt.Errorf("only autoprovisioned node pools can be deleted")
+	}
+	// TODO: handle multi-zonal node pools.
+	deleteOp, err := m.gkeService.Projects.Zones.Clusters.NodePools.Delete(m.projectId, m.zone, m.clusterName,
+		toBeRemoved.nodePoolName).Do()
+	if err != nil {
+		return err
+	}
+	err = m.waitForGkeOp(deleteOp)
+	if err != nil {
+		return err
+	}
+	return m.fetchAllNodePools()
+}
+
 // GetMigSize gets MIG size.
 func (m *GceManager) GetMigSize(mig *Mig) (int64, error) {
 	igm, err := m.gceService.InstanceGroupManagers.Get(mig.Project, mig.Zone, mig.Name).Do()
@@ -280,11 +299,28 @@ func (m *GceManager) SetMigSize(mig *Mig, size int64) error {
 	return nil
 }
 
+// GCE
 func (m *GceManager) waitForOp(operation *gce.Operation, project string, zone string) error {
 	for start := time.Now(); time.Since(start) < operationWaitTimeout; time.Sleep(operationPollInterval) {
 		glog.V(4).Infof("Waiting for operation %s %s %s", project, zone, operation.Name)
 		if op, err := m.gceService.ZoneOperations.Get(project, zone, operation.Name).Do(); err == nil {
 			glog.V(4).Infof("Operation %s %s %s status: %s", project, zone, operation.Name, op.Status)
+			if op.Status == "DONE" {
+				return nil
+			}
+		} else {
+			glog.Warningf("Error while getting operation %s on %s: %v", operation.Name, operation.TargetLink, err)
+		}
+	}
+	return fmt.Errorf("Timeout while waiting for operation %s on %s to complete.", operation.Name, operation.TargetLink)
+}
+
+//  GKE
+func (m *GceManager) waitForGkeOp(operation *gke.Operation) error {
+	for start := time.Now(); time.Since(start) < operationWaitTimeout; time.Sleep(operationPollInterval) {
+		glog.V(4).Infof("Waiting for operation %s %s %s", m.projectId, m.zone, operation.Name)
+		if op, err := m.gkeService.Projects.Zones.Operations.Get(m.projectId, m.zone, operation.Name).Do(); err == nil {
+			glog.V(4).Infof("Operation %s %s %s status: %s", m.projectId, m.zone, operation.Name, op.Status)
 			if op.Status == "DONE" {
 				return nil
 			}
