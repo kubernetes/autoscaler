@@ -64,6 +64,10 @@ type GceCloudProvider struct {
 
 // BuildGceCloudProvider builds CloudProvider implementation for GCE.
 func BuildGceCloudProvider(gceManager *GceManager, specs []string) (*GceCloudProvider, error) {
+	if gceManager.mode == ModeGKE && len(specs) != 0 {
+		return nil, fmt.Errorf("GKE gets nodegroup specification via API, command line specs are not allowed")
+	}
+
 	gce := &GceCloudProvider{
 		gceManager: gceManager,
 	}
