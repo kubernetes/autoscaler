@@ -8,13 +8,8 @@
 	"Deps": [
 		{
 			"ImportPath": "cloud.google.com/go/compute/metadata",
-			"Comment": "v0.1.0-115-g3b1ae45",
-			"Rev": "3b1ae45394a234c385be014e9a488f2bb6eef821"
-		},
-		{
-			"ImportPath": "cloud.google.com/go/internal",
-			"Comment": "v0.1.0-115-g3b1ae45",
-			"Rev": "3b1ae45394a234c385be014e9a488f2bb6eef821"
+			"Comment": "v0.11.0-31-g06f11ff",
+			"Rev": "06f11fffc537c4aef126d9fd3a92e2d7968f118f"
 		},
 		{
 			"ImportPath": "github.com/Azure/azure-sdk-for-go/arm/compute",
