@@ -45,9 +45,9 @@ func TestFastGetPodsToMove(t *testing.T) {
 	// Replicated pod
 	pod2 := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        "pod2",
-			Namespace:   "ns",
-			Annotations: GetReplicaSetAnnotation(),
+			Name:            "pod2",
+			Namespace:       "ns",
+			OwnerReferences: GenerateOwnerReferences("rs", "ReplicaSet", "extensions/v1beta1", ""),
 		},
 	}
 	r2, err := FastGetPodsToMove(schedulercache.NewNodeInfo(pod2), true, true, nil)
@@ -72,11 +72,9 @@ func TestFastGetPodsToMove(t *testing.T) {
 	// DaemonSet pod
 	pod4 := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "pod4",
-			Namespace: "ns",
-			Annotations: map[string]string{
-				"kubernetes.io/created-by": "{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1\",\"reference\":{\"kind\":\"DaemonSet\"}}",
-			},
+			Name:            "pod4",
+			Namespace:       "ns",
+			OwnerReferences: GenerateOwnerReferences("ds", "DaemonSet", "extensions/v1beta1", ""),
 		},
 	}
 	r4, err := FastGetPodsToMove(schedulercache.NewNodeInfo(pod2, pod3, pod4), true, true, nil)
@@ -87,9 +85,9 @@ func TestFastGetPodsToMove(t *testing.T) {
 	// Kube-system
 	pod5 := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        "pod5",
-			Namespace:   "kube-system",
-			Annotations: GetReplicaSetAnnotation(),
+			Name:            "pod5",
+			Namespace:       "kube-system",
+			OwnerReferences: GenerateOwnerReferences("rs", "ReplicaSet", "extensions/v1beta1", ""),
 		},
 	}
 	_, err = FastGetPodsToMove(schedulercache.NewNodeInfo(pod5), true, true, nil)
@@ -98,9 +96,9 @@ func TestFastGetPodsToMove(t *testing.T) {
 	// Local storage
 	pod6 := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        "pod6",
-			Namespace:   "ns",
-			Annotations: GetReplicaSetAnnotation(),
+			Name:            "pod6",
+			Namespace:       "ns",
+			OwnerReferences: GenerateOwnerReferences("rs", "ReplicaSet", "extensions/v1beta1", ""),
 		},
 		Spec: apiv1.PodSpec{
 			Volumes: []apiv1.Volume{
@@ -118,9 +116,9 @@ func TestFastGetPodsToMove(t *testing.T) {
 	// Non-local storage
 	pod7 := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        "pod7",
-			Namespace:   "ns",
-			Annotations: GetReplicaSetAnnotation(),
+			Name:            "pod7",
+			Namespace:       "ns",
+			OwnerReferences: GenerateOwnerReferences("rs", "ReplicaSet", "extensions/v1beta1", ""),
 		},
 		Spec: apiv1.PodSpec{
 			Volumes: []apiv1.Volume{
@@ -141,9 +139,9 @@ func TestFastGetPodsToMove(t *testing.T) {
 	// Pdb blocking
 	pod8 := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        "pod8",
-			Namespace:   "ns",
-			Annotations: GetReplicaSetAnnotation(),
+			Name:            "pod8",
+			Namespace:       "ns",
+			OwnerReferences: GenerateOwnerReferences("rs", "ReplicaSet", "extensions/v1beta1", ""),
 			Labels: map[string]string{
 				"critical": "true",
 			},
@@ -175,9 +173,9 @@ func TestFastGetPodsToMove(t *testing.T) {
 	// Pdb allowing
 	pod9 := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        "pod9",
-			Namespace:   "ns",
-			Annotations: GetReplicaSetAnnotation(),
+			Name:            "pod9",
+			Namespace:       "ns",
+			OwnerReferences: GenerateOwnerReferences("rs", "ReplicaSet", "extensions/v1beta1", ""),
 			Labels: map[string]string{
 				"critical": "true",
 			},
