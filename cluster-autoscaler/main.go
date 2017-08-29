@@ -38,6 +38,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	kube_client "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
 	kube_leaderelection "k8s.io/client-go/tools/leaderelection"
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
 	"k8s.io/kubernetes/pkg/apis/componentconfig"
@@ -65,6 +66,7 @@ var (
 	nodeGroupsFlag         MultiStringFlag
 	address                = flag.String("address", ":8085", "The address to expose prometheus metrics.")
 	kubernetes             = flag.String("kubernetes", "", "Kubernetes master location. Leave blank for default")
+	kubeConfigFile         = flag.String("kubeconfig", "", "Path to kubeconfig file with authorization and master location information.")
 	cloudConfig            = flag.String("cloud-config", "", "The path to the cloud provider configuration file.  Empty string for no configuration file.")
 	configMapName          = flag.String("configmap", "", "The name of the ConfigMap containing settings used for dynamic reconfiguration. Empty string for no ConfigMap.")
 	namespace              = flag.String("namespace", "kube-system", "Namespace in which cluster-autoscaler run. If a --configmap flag is also provided, ensure that the configmap exists in this namespace before CA runs.")
@@ -140,6 +142,19 @@ func createAutoscalerOptions() core.AutoscalerOptions {
 }
 
 func createKubeClient() kube_client.Interface {
+	if *kubeConfigFile != "" {
+		glog.Infof("Using kubeconfig file: %s", *kubeConfigFile)
+		// use the current context in kubeconfig
+		config, err := clientcmd.BuildConfigFromFlags("", *kubeConfigFile)
+		if err != nil {
+			glog.Fatalf("Failed to build config: %v", err)
+		}
+		clientset, err := kube_client.NewForConfig(config)
+		if err != nil {
+			glog.Fatalf("Create clientset error: %v", err)
+		}
+		return clientset
+	}
 	url, err := url.Parse(*kubernetes)
 	if err != nil {
 		glog.Fatalf("Failed to parse Kubernetes url: %v", err)
