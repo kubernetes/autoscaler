@@ -56,11 +56,11 @@ func TestPredicates(t *testing.T) {
 	_, err = predicateChecker.FitsAny(p3, nodeInfos)
 	assert.Error(t, err)
 
-	err = predicateChecker.CheckPredicates(p2, ni1, ReturnVerboseError)
+	err = predicateChecker.CheckPredicates(p2, nil, ni1, ReturnVerboseError)
 	assert.True(t, strings.Contains(err.Error(), "Insufficient cpu"))
-	assert.Error(t, predicateChecker.CheckPredicates(p2, ni1, ReturnVerboseError))
-	assert.NoError(t, predicateChecker.CheckPredicates(p4, ni1, ReturnVerboseError))
-	assert.NoError(t, predicateChecker.CheckPredicates(p2, ni2, ReturnVerboseError))
-	assert.NoError(t, predicateChecker.CheckPredicates(p4, ni2, ReturnVerboseError))
-	assert.Error(t, predicateChecker.CheckPredicates(p3, ni2, ReturnVerboseError))
+	assert.Error(t, predicateChecker.CheckPredicates(p2, nil, ni1, ReturnVerboseError))
+	assert.NoError(t, predicateChecker.CheckPredicates(p4, nil, ni1, ReturnVerboseError))
+	assert.NoError(t, predicateChecker.CheckPredicates(p2, nil, ni2, ReturnVerboseError))
+	assert.NoError(t, predicateChecker.CheckPredicates(p4, nil, ni2, ReturnVerboseError))
+	assert.Error(t, predicateChecker.CheckPredicates(p3, nil, ni2, ReturnVerboseError))
 }
