@@ -60,14 +60,12 @@ var autoprovisionedMachineTypes = []string{
 // GceCloudProvider implements CloudProvider interface.
 type GceCloudProvider struct {
 	gceManager *GceManager
-	migs       []*Mig
 }
 
 // BuildGceCloudProvider builds CloudProvider implementation for GCE.
 func BuildGceCloudProvider(gceManager *GceManager, specs []string) (*GceCloudProvider, error) {
 	gce := &GceCloudProvider{
 		gceManager: gceManager,
-		migs:       make([]*Mig, 0),
 	}
 	for _, spec := range specs {
 		if err := gce.addNodeGroup(spec); err != nil {
@@ -84,7 +82,6 @@ func (gce *GceCloudProvider) addNodeGroup(spec string) error {
 	if err != nil {
 		return err
 	}
-	gce.migs = append(gce.migs, mig)
 	gce.gceManager.RegisterMig(mig)
 	return nil
 }
@@ -96,9 +93,10 @@ func (gce *GceCloudProvider) Name() string {
 
 // NodeGroups returns all node groups configured for this cloud provider.
 func (gce *GceCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
-	result := make([]cloudprovider.NodeGroup, 0, len(gce.migs))
-	for _, mig := range gce.migs {
-		result = append(result, mig)
+	migs := gce.gceManager.getMigs()
+	result := make([]cloudprovider.NodeGroup, 0, len(migs))
+	for _, mig := range migs {
+		result = append(result, mig.config)
 	}
 	return result
 }
@@ -168,6 +166,7 @@ type Mig struct {
 	maxSize         int
 	autoprovisioned bool
 	exist           bool
+	nodePoolName    string
 	spec            *autoprovisioningSpec
 }
 
