@@ -315,6 +315,16 @@ func (m *GceManager) getMigs() []*migInformation {
 	return migs
 }
 
+func (m *GceManager) updateMigBasename(ref GceRef, basename string) {
+	m.migsMutex.Lock()
+	defer m.migsMutex.Unlock()
+	for _, mig := range m.migs {
+		if mig.config.GceRef == ref {
+			mig.basename = basename
+		}
+	}
+}
+
 // GetMigForInstance returns MigConfig of the given Instance
 func (m *GceManager) GetMigForInstance(instance *GceRef) (*Mig, error) {
 	m.cacheMutex.Lock()
@@ -351,7 +361,7 @@ func (m *GceManager) regenerateCache() error {
 		if err != nil {
 			return err
 		}
-		migInfo.basename = instanceGroupManager.BaseInstanceName
+		m.updateMigBasename(migInfo.config.GceRef, instanceGroupManager.BaseInstanceName)
 
 		instances, err := m.gceService.InstanceGroupManagers.ListManagedInstances(mig.Project, mig.Zone, mig.Name).Do()
 		if err != nil {
