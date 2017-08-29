@@ -129,7 +129,8 @@ func CreateGceManager(configReader io.Reader, mode GcpCloudProviderMode, cluster
 		manager.gkeService = gkeService
 		err = manager.fetchAllNodePools()
 		if err != nil {
-			glog.Errorf("Failed to fech node pools: %v", err)
+			glog.Errorf("Failed to fetch node pools: %v", err)
+			return nil, err
 		}
 	}
 
@@ -146,7 +147,7 @@ func CreateGceManager(configReader io.Reader, mode GcpCloudProviderMode, cluster
 
 func (m *GceManager) assertGKE() {
 	if m.mode != ModeGKE {
-		panic(fmt.Errorf("This should run only in GKE mode"))
+		glog.Fatalf("This should run only in GKE mode")
 	}
 }
 
