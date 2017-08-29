@@ -177,7 +177,7 @@ func registerSignalHandlers(autoscaler core.Autoscaler) {
 
 	go func() {
 		<-sigs
-		glog.Info("Receieved signal, attempting cleanup")
+		glog.Info("Received signal, attempting cleanup")
 		autoscaler.ExitCleanUp()
 		glog.Info("Cleaned up, exiting...")
 		glog.Flush()
@@ -198,7 +198,7 @@ func run(healthCheck *metrics.HealthCheck) {
 	listerRegistry := kube_util.NewListerRegistryWithDefaultListers(kubeClient, listerRegistryStopChannel)
 	autoscaler, err := core.NewAutoscaler(opts, predicateChecker, kubeClient, kubeEventRecorder, listerRegistry)
 	if err != nil {
-		glog.Fatal("Failed to create autoscaler: %v", err)
+		glog.Fatalf("Failed to create autoscaler: %v", err)
 	}
 	autoscaler.CleanUp()
 	registerSignalHandlers(autoscaler)
