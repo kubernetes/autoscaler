@@ -44,20 +44,23 @@ func TestFindUnneededNodes(t *testing.T) {
 	p1 := BuildTestPod("p1", 100, 0)
 	p1.Spec.NodeName = "n1"
 
+	// shared owner reference
+	ownerRef := GenerateOwnerReferences("rs", "ReplicaSet", "extensions/v1beta1", "")
+
 	p2 := BuildTestPod("p2", 300, 0)
 	p2.Spec.NodeName = "n2"
-	p2.Annotations = GetReplicaSetAnnotation()
+	p2.OwnerReferences = ownerRef
 
 	p3 := BuildTestPod("p3", 400, 0)
-	p3.Annotations = GetReplicaSetAnnotation()
+	p3.OwnerReferences = ownerRef
 	p3.Spec.NodeName = "n3"
 
 	p4 := BuildTestPod("p4", 2000, 0)
-	p4.Annotations = GetReplicaSetAnnotation()
+	p4.OwnerReferences = ownerRef
 	p4.Spec.NodeName = "n4"
 
 	p5 := BuildTestPod("p5", 100, 0)
-	p5.Annotations = GetReplicaSetAnnotation()
+	p5.OwnerReferences = ownerRef
 	p5.Spec.NodeName = "n5"
 
 	n1 := BuildTestNode("n1", 1000, 10)
@@ -251,9 +254,7 @@ func TestScaleDown(t *testing.T) {
 	n2 := BuildTestNode("n2", 1000, 1000)
 	SetNodeReadyState(n2, true, time.Time{})
 	p1 := BuildTestPod("p1", 100, 0)
-	p1.Annotations = map[string]string{
-		"kubernetes.io/created-by": RefJSON(&job),
-	}
+	p1.OwnerReferences = GenerateOwnerReferences(job.Name, "Job", "extensions/v1beta1", "")
 
 	p2 := BuildTestPod("p2", 800, 0)
 	p1.Spec.NodeName = "n1"
@@ -590,9 +591,7 @@ func TestScaleDownNoMove(t *testing.T) {
 	SetNodeReadyState(n2, false, time.Time{})
 
 	p1 := BuildTestPod("p1", 100, 0)
-	p1.Annotations = map[string]string{
-		"kubernetes.io/created-by": RefJSON(&job),
-	}
+	p1.OwnerReferences = GenerateOwnerReferences(job.Name, "Job", "extensions/v1beta1", "")
 
 	p2 := BuildTestPod("p2", 800, 0)
 	p1.Spec.NodeName = "n1"

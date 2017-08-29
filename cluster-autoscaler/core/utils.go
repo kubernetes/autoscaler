@@ -73,11 +73,11 @@ func (psi *podSchedulableInfo) match(pod *apiv1.Pod) bool {
 }
 
 func (podMap podSchedulableMap) get(pod *apiv1.Pod) (bool, bool) {
-	ref, err := drain.CreatorRef(pod)
-	if err != nil || ref == nil {
+	ref := drain.ControllerRef(pod)
+	if ref == nil {
 		return false, false
 	}
-	uid := string(ref.Reference.UID)
+	uid := string(ref.UID)
 	if infos, found := podMap[uid]; found {
 		for _, info := range infos {
 			if info.match(pod) {
@@ -89,11 +89,11 @@ func (podMap podSchedulableMap) get(pod *apiv1.Pod) (bool, bool) {
 }
 
 func (podMap podSchedulableMap) set(pod *apiv1.Pod, schedulable bool) {
-	ref, err := drain.CreatorRef(pod)
-	if err != nil || ref == nil {
+	ref := drain.ControllerRef(pod)
+	if ref == nil {
 		return
 	}
-	uid := string(ref.Reference.UID)
+	uid := string(ref.UID)
 	podMap[uid] = append(podMap[uid], podSchedulableInfo{
 		spec:        pod.Spec,
 		labels:      pod.Labels,

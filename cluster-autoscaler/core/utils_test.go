@@ -56,10 +56,10 @@ func TestPodSchedulableMap(t *testing.T) {
 	pMap := make(podSchedulableMap)
 
 	podInRc1_1 := BuildTestPod("podInRc1_1", 500, 1000)
-	podInRc1_1.Annotations = map[string]string{apiv1.CreatedByAnnotation: RefJSON(&rc1)}
+	podInRc1_1.OwnerReferences = GenerateOwnerReferences(rc1.Name, "ReplicationController", "extensions/v1beta1", rc1.UID)
 
 	podInRc2 := BuildTestPod("podInRc2", 500, 1000)
-	podInRc2.Annotations = map[string]string{apiv1.CreatedByAnnotation: RefJSON(&rc2)}
+	podInRc2.OwnerReferences = GenerateOwnerReferences(rc2.Name, "ReplicationController", "extensions/v1beta1", rc2.UID)
 
 	// Basic sanity checks
 	_, found := pMap.get(podInRc1_1)
@@ -79,14 +79,14 @@ func TestPodSchedulableMap(t *testing.T) {
 
 	// Another replica in rc1
 	podInRc1_2 := BuildTestPod("podInRc1_1", 500, 1000)
-	podInRc1_2.Annotations = map[string]string{apiv1.CreatedByAnnotation: RefJSON(&rc1)}
+	podInRc1_2.OwnerReferences = GenerateOwnerReferences(rc1.Name, "ReplicationController", "extensions/v1beta1", rc1.UID)
 	sched, found = pMap.get(podInRc1_2)
 	assert.True(t, found)
 	assert.True(t, sched)
 
 	// A pod in rc1, but with different requests
 	differentPodInRc1 := BuildTestPod("differentPodInRc1", 1000, 1000)
-	differentPodInRc1.Annotations = map[string]string{apiv1.CreatedByAnnotation: RefJSON(&rc1)}
+	differentPodInRc1.OwnerReferences = GenerateOwnerReferences(rc1.Name, "ReplicationController", "extensions/v1beta1", rc1.UID)
 	_, found = pMap.get(differentPodInRc1)
 	assert.False(t, found)
 	pMap.set(differentPodInRc1, false)

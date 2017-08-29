@@ -24,6 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	refv1 "k8s.io/client-go/tools/reference"
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/testapi"
@@ -126,9 +127,21 @@ func RefJSON(o runtime.Object) string {
 	return string(json)
 }
 
-// GetReplicaSetAnnotation returns a map containing annotation simulating pod being created by ReplicaSet
-func GetReplicaSetAnnotation() map[string]string {
-	return map[string]string{
-		"kubernetes.io/created-by": "{\"kind\":\"SerializedReference\",\"apiVersion\":\"v1\",\"reference\":{\"kind\":\"ReplicaSet\"}}",
+// GenerateOwnerReferences builds OwnerReferences with a single reference
+func GenerateOwnerReferences(name, kind, api string, uid types.UID) []metav1.OwnerReference {
+	return []metav1.OwnerReference{
+		{
+			APIVersion:         api,
+			Kind:               kind,
+			Name:               name,
+			BlockOwnerDeletion: boolptr(true),
+			Controller:         boolptr(true),
+			UID:                uid,
+		},
 	}
+}
+
+func boolptr(val bool) *bool {
+	b := val
+	return &b
 }
