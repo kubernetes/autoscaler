@@ -50,20 +50,31 @@ func TestDrain(t *testing.T) {
 
 	rcPod := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        "bar",
-			Namespace:   "default",
-			Annotations: map[string]string{apiv1.CreatedByAnnotation: RefJSON(&rc)},
+			Name:            "bar",
+			Namespace:       "default",
+			OwnerReferences: GenerateOwnerReferences(rc.Name, "ReplicationController", "extensions/v1beta1", ""),
 		},
 		Spec: apiv1.PodSpec{
 			NodeName: "node",
 		},
 	}
 
+	kubeSystemRc := apiv1.ReplicationController{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "rc",
+			Namespace: "kube-system",
+			SelfLink:  testapi.Default.SelfLink("replicationcontrollers", "rc"),
+		},
+		Spec: apiv1.ReplicationControllerSpec{
+			Replicas: &replicas,
+		},
+	}
+
 	kubeSystemRcPod := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        "bar",
-			Namespace:   "kube-system",
-			Annotations: map[string]string{apiv1.CreatedByAnnotation: RefJSON(&rc)},
+			Name:            "bar",
+			Namespace:       "kube-system",
+			OwnerReferences: GenerateOwnerReferences(kubeSystemRc.Name, "ReplicationController", "extensions/v1beta1", ""),
 			Labels: map[string]string{
 				"k8s-app": "bar",
 			},
@@ -83,9 +94,9 @@ func TestDrain(t *testing.T) {
 
 	dsPod := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        "bar",
-			Namespace:   "default",
-			Annotations: map[string]string{apiv1.CreatedByAnnotation: RefJSON(&ds)},
+			Name:            "bar",
+			Namespace:       "default",
+			OwnerReferences: GenerateOwnerReferences(ds.Name, "DaemonSet", "extensions/v1beta1", ""),
 		},
 		Spec: apiv1.PodSpec{
 			NodeName: "node",
@@ -102,9 +113,9 @@ func TestDrain(t *testing.T) {
 
 	jobPod := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        "bar",
-			Namespace:   "default",
-			Annotations: map[string]string{apiv1.CreatedByAnnotation: RefJSON(&job)},
+			Name:            "bar",
+			Namespace:       "default",
+			OwnerReferences: GenerateOwnerReferences(job.Name, "Job", "extensions/v1beta1", ""),
 		},
 	}
 
@@ -139,9 +150,9 @@ func TestDrain(t *testing.T) {
 
 	rsPod := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        "bar",
-			Namespace:   "default",
-			Annotations: map[string]string{apiv1.CreatedByAnnotation: RefJSON(&rs)},
+			Name:            "bar",
+			Namespace:       "default",
+			OwnerReferences: GenerateOwnerReferences(rs.Name, "ReplicaSet", "extensions/v1beta1", ""),
 		},
 		Spec: apiv1.PodSpec{
 			NodeName: "node",
@@ -152,7 +163,7 @@ func TestDrain(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:              "bar",
 			Namespace:         "default",
-			Annotations:       map[string]string{apiv1.CreatedByAnnotation: RefJSON(&rs)},
+			OwnerReferences:   GenerateOwnerReferences(rs.Name, "ReplicaSet", "extensions/v1beta1", ""),
 			DeletionTimestamp: &metav1.Time{Time: time.Now().Add(-time.Hour)},
 		},
 		Spec: apiv1.PodSpec{
