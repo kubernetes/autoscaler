@@ -24,9 +24,7 @@ import (
 	policyv1 "k8s.io/api/policy/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/runtime"
 	client "k8s.io/client-go/kubernetes"
-	api "k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/kubelet/types"
 )
 
@@ -73,18 +71,18 @@ func GetPodsForDeletionOnNodeDrain(
 		daemonsetPod := false
 		replicated := false
 
-		sr, err := CreatorRef(pod)
+		controllerRef, err := ControllerRef(pod, &client)
 		if err != nil {
 			return []*apiv1.Pod{}, fmt.Errorf("failed to obtain refkind: %v", err)
 		}
 		refKind := ""
-		if sr != nil {
-			refKind = sr.Reference.Kind
+		if controllerRef != nil {
+			refKind = controllerRef.Kind
 		}
 
 		if refKind == "ReplicationController" {
 			if checkReferences {
-				rc, err := client.Core().ReplicationControllers(sr.Reference.Namespace).Get(sr.Reference.Name, metav1.GetOptions{})
+				rc, err := client.Core().ReplicationControllers(pod.Namespace).Get(controllerRef.Name, metav1.GetOptions{})
 				// Assume a reason for an error is because the RC is either
 				// gone/missing or that the rc has too few replicas configured.
 				// TODO: replace the minReplica check with pod disruption budget.
@@ -103,7 +101,7 @@ func GetPodsForDeletionOnNodeDrain(
 			}
 		} else if refKind == "DaemonSet" {
 			if checkReferences {
-				ds, err := client.Extensions().DaemonSets(sr.Reference.Namespace).Get(sr.Reference.Name, metav1.GetOptions{})
+				ds, err := client.Extensions().DaemonSets(pod.Namespace).Get(controllerRef.Name, metav1.GetOptions{})
 
 				// Assume the only reason for an error is because the DaemonSet is
 				// gone/missing, not for any other cause.  TODO(mml): something more
@@ -122,7 +120,7 @@ func GetPodsForDeletionOnNodeDrain(
 			}
 		} else if refKind == "Job" {
 			if checkReferences {
-				job, err := client.Batch().Jobs(sr.Reference.Namespace).Get(sr.Reference.Name, metav1.GetOptions{})
+				job, err := client.Batch().Jobs(pod.Namespace).Get(controllerRef.Name, metav1.GetOptions{})
 
 				// Assume the only reason for an error is because the Job is
 				// gone/missing, not for any other cause.  TODO(mml): something more
@@ -137,7 +135,7 @@ func GetPodsForDeletionOnNodeDrain(
 			}
 		} else if refKind == "ReplicaSet" {
 			if checkReferences {
-				rs, err := client.Extensions().ReplicaSets(sr.Reference.Namespace).Get(sr.Reference.Name, metav1.GetOptions{})
+				rs, err := client.Extensions().ReplicaSets(pod.Namespace).Get(controllerRef.Name, metav1.GetOptions{})
 
 				// Assume the only reason for an error is because the RS is
 				// gone/missing, not for any other cause.  TODO(mml): something more
@@ -156,7 +154,7 @@ func GetPodsForDeletionOnNodeDrain(
 			}
 		} else if refKind == "StatefulSet" {
 			if checkReferences {
-				ss, err := client.Apps().StatefulSets(sr.Reference.Namespace).Get(sr.Reference.Name, metav1.GetOptions{})
+				ss, err := client.Apps().StatefulSets(pod.Namespace).Get(controllerRef.Name, metav1.GetOptions{})
 
 				// Assume the only reason for an error is because the StatefulSet is
 				// gone/missing, not for any other cause.  TODO(mml): something more
@@ -195,18 +193,19 @@ func GetPodsForDeletionOnNodeDrain(
 	return pods, nil
 }
 
-// CreatorRefKind returns the kind of the creator of the pod.
-func CreatorRefKind(pod *apiv1.Pod) (string, error) {
-	sr, err := CreatorRef(pod)
+// ControllerRefKind returns the kind of the creator of the pod.
+func ControllerRefKind(pod *apiv1.Pod, client *client.Interface) (string, error) {
+	controllerRef, err := ControllerRef(pod, client)
 	if err != nil {
 		return "", err
 	}
-	if sr == nil {
+	if controllerRef == nil {
 		return "", nil
 	}
-	return sr.Reference.Kind, nil
+	return controllerRef.Kind, nil
 }
 
+/*
 // CreatorRef returns the kind of the creator reference of the pod.
 func CreatorRef(pod *apiv1.Pod) (*apiv1.SerializedReference, error) {
 	creatorRef, found := pod.ObjectMeta.Annotations[apiv1.CreatedByAnnotation]
@@ -218,6 +217,42 @@ func CreatorRef(pod *apiv1.Pod) (*apiv1.SerializedReference, error) {
 		return nil, err
 	}
 	return &sr, nil
+}
+*/
+
+// ControllerRef returns the kind of the controller reference of the pod.
+func ControllerRef(pod *apiv1.Pod, client *client.Interface) (*metav1.OwnerReference, error) {
+	controllerRef := metav1.GetControllerOf(pod)
+	if controllerRef == nil {
+		return nil, nil
+	}
+
+	// We assume the only reason for an error is because the controller is
+	// gone/missing, not for any other cause.
+	// TODO(mml): something more sophisticated than this
+	// TODO(juntee): determine if it's safe to remove getController(),
+	// so that drain can work for controller types that we don't know about
+	_, err := getController(pod.Namespace, controllerRef, client)
+	if err != nil {
+		return nil, err
+	}
+	return controllerRef, nil
+}
+
+func getController(namespace string, controllerRef *metav1.OwnerReference, client *client.Interface) (interface{}, error) {
+	switch controllerRef.Kind {
+	case "ReplicationController":
+		return (*client).Core().ReplicationControllers(namespace).Get(controllerRef.Name, metav1.GetOptions{})
+	case "DaemonSet":
+		return (*client).Extensions().DaemonSets(namespace).Get(controllerRef.Name, metav1.GetOptions{})
+	case "Job":
+		return (*client).Batch().Jobs(namespace).Get(controllerRef.Name, metav1.GetOptions{})
+	case "ReplicaSet":
+		return (*client).Extensions().ReplicaSets(namespace).Get(controllerRef.Name, metav1.GetOptions{})
+	case "StatefulSet":
+		return (*client).Apps().StatefulSets(namespace).Get(controllerRef.Name, metav1.GetOptions{})
+	}
+	return nil, fmt.Errorf("Unknown controller kind %q", controllerRef.Kind)
 }
 
 // IsMirrorPod checks whether the pod is a mirror pod.
