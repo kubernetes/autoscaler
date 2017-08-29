@@ -159,6 +159,9 @@ func (m *GceManager) fetchAllNodePools() error {
 	if err != nil {
 		return err
 	}
+
+	existingMigs := map[GceRef]struct{}{}
+
 	for _, nodePool := range nodePoolsResponse.NodePools {
 		autoprovisioned := strings.Contains("name", nodeAutoprovisioningPrefix)
 		autoscaled := nodePool.Autoscaling != nil && nodePool.Autoscaling.Enabled
@@ -182,6 +185,8 @@ func (m *GceManager) fetchAllNodePools() error {
 				exist:           true,
 				autoprovisioned: autoprovisioned,
 			}
+			existingMigs[mig.GceRef] = struct{}{}
+
 			if autoscaled {
 				mig.minSize = int(nodePool.Autoscaling.MinNodeCount)
 				mig.maxSize = int(nodePool.Autoscaling.MaxNodeCount)
@@ -191,7 +196,11 @@ func (m *GceManager) fetchAllNodePools() error {
 			}
 			m.RegisterMig(mig)
 		}
-		// TODO - unregister migs
+	}
+	for _, mig := range m.getMigs() {
+		if _, found := existingMigs[mig.config.GceRef]; !found {
+			m.UnregisterMig(mig.config)
+		}
 	}
 	return nil
 }
@@ -227,6 +236,26 @@ func (m *GceManager) RegisterMig(mig *Mig) bool {
 		glog.Errorf("Failed to build template for %s", mig.Name)
 	}
 	return !updated
+}
+
+// UnregisterMig unregisters mig in Gce Manager. Returns true if the node group has been removed.
+func (m *GceManager) UnregisterMig(toBeRemoved *Mig) bool {
+	m.migsMutex.Lock()
+	defer m.migsMutex.Unlock()
+
+	newMigs := make([]*migInformation, 0, len(m.migs))
+	found := false
+	for _, mig := range m.migs {
+		if mig.config.GceRef == toBeRemoved.GceRef {
+			glog.V(4).Infof("Unregistered Mig %s/%s/%s", toBeRemoved.GceRef.Project, toBeRemoved.GceRef.Zone,
+				toBeRemoved.GceRef.Name)
+			found = true
+		} else {
+			newMigs = append(newMigs, mig)
+		}
+	}
+	m.migs = newMigs
+	return found
 }
 
 // GetMigSize gets MIG size.
