@@ -58,6 +58,9 @@ const (
 	ScaleDownNodeDeleteStarted ScaleDownResult = iota
 	// ScaleDownDisabledKey is the name of annotation marking node as not eligible for scale down.
 	ScaleDownDisabledKey = "cluster-autoscaler.kubernetes.io/scale-down-disabled"
+	// ScaleDownNonEmptyCandidatesCount is the maximum number of non empty nodes
+	// considered at once as candidates for scale down.
+	ScaleDownNonEmptyCandidatesCount = 30
 )
 
 const (
@@ -209,26 +212,44 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	}
 
 	// Phase2 - check which nodes can be probably removed using fast drain.
-	nodesToRemove, unremovable, newHints, simulatorErr := simulator.FindNodesToRemove(currentlyUnneededNodes, nodes, pods,
-		nil, sd.context.PredicateChecker,
-		len(currentlyUnneededNodes), true, sd.podLocationHints, sd.usageTracker, timestamp, pdbs)
+	currentCandidates, currentNonCandidates := sd.chooseCandidates(currentlyUnneededNodes)
+
+	// Look for nodes to remove in the current candidates
+	nodesToRemove, unremovable, newHints, simulatorErr := simulator.FindNodesToRemove(
+		currentCandidates, nodes, pods, nil, sd.context.PredicateChecker,
+		len(currentCandidates), true, sd.podLocationHints, sd.usageTracker, timestamp, pdbs)
 	if simulatorErr != nil {
-		glog.Errorf("Error while simulating node drains: %v", simulatorErr)
+		return sd.markSimulationError(simulatorErr, timestamp)
+	}
 
-		sd.unneededNodesList = make([]*apiv1.Node, 0)
-		sd.unneededNodes = make(map[string]time.Time)
-		sd.nodeUtilizationMap = make(map[string]float64)
-		sd.context.ClusterStateRegistry.UpdateScaleDownCandidates(sd.unneededNodesList, timestamp)
-
-		return simulatorErr.AddPrefix("error while simulating node drains: ")
+	// Check how many candidates we are still missing
+	additionalCandidatesCount := ScaleDownNonEmptyCandidatesCount - len(nodesToRemove)
+	if additionalCandidatesCount > len(currentNonCandidates) {
+		additionalCandidatesCount = len(currentNonCandidates)
+	}
+	if additionalCandidatesCount > 0 {
+		// Look for addidtional nodes to remove among the rest of nodes
+		glog.V(3).Infof("Finding additional %v candidates for scale down.", additionalCandidatesCount)
+		additionalNodesToRemove, additionalUnremovable, additionalNewHints, simulatorErr :=
+			simulator.FindNodesToRemove(currentNonCandidates, nodes, pods, nil,
+				sd.context.PredicateChecker, additionalCandidatesCount, true,
+				sd.podLocationHints, sd.usageTracker, timestamp, pdbs)
+		if simulatorErr != nil {
+			return sd.markSimulationError(simulatorErr, timestamp)
+		}
+		nodesToRemove = append(nodesToRemove, additionalNodesToRemove...)
+		unremovable = append(unremovable, additionalUnremovable...)
+		for key, value := range additionalNewHints {
+			newHints[key] = value
+		}
 	}
 
 	// Update the timestamp map.
 	result := make(map[string]time.Time)
-	unneadedNodeList := make([]*apiv1.Node, 0, len(nodesToRemove))
+	unneededNodesList := make([]*apiv1.Node, 0, len(nodesToRemove))
 	for _, node := range nodesToRemove {
 		name := node.Node.Name
-		unneadedNodeList = append(unneadedNodeList, node.Node)
+		unneededNodesList = append(unneededNodesList, node.Node)
 		if val, found := sd.unneededNodes[name]; !found {
 			result[name] = timestamp
 		} else {
@@ -236,7 +257,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		}
 	}
 
-	// Add noded to unremovable map
+	// Add nodes to unremovable map
 	if len(unremovable) > 0 {
 		unremovableTimeout := timestamp.Add(UnremovableNodeRecheckTimeout)
 		for _, node := range unremovable {
@@ -245,13 +266,42 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		glog.V(1).Infof("%v nodes found unremovable in simulation, will re-check them at %v", len(unremovable), unremovableTimeout)
 	}
 
-	sd.unneededNodesList = unneadedNodeList
+	// Update state and metrics
+	sd.unneededNodesList = unneededNodesList
 	sd.unneededNodes = result
 	sd.podLocationHints = newHints
 	sd.nodeUtilizationMap = utilizationMap
 	sd.context.ClusterStateRegistry.UpdateScaleDownCandidates(sd.unneededNodesList, timestamp)
 	metrics.UpdateUnneededNodesCount(len(sd.unneededNodesList))
 	return nil
+}
+
+// markSimulationError indicates a simulation error by clearing  relevant scale
+// down state and returning an apropriate error.
+func (sd *ScaleDown) markSimulationError(simulatorErr errors.AutoscalerError,
+	timestamp time.Time) errors.AutoscalerError {
+	glog.Errorf("Error while simulating node drains: %v", simulatorErr)
+	sd.unneededNodesList = make([]*apiv1.Node, 0)
+	sd.unneededNodes = make(map[string]time.Time)
+	sd.nodeUtilizationMap = make(map[string]float64)
+	sd.context.ClusterStateRegistry.UpdateScaleDownCandidates(sd.unneededNodesList, timestamp)
+	return simulatorErr.AddPrefix("error while simulating node drains: ")
+}
+
+// chooseCandidates splits nodes into current candidates for scaledown and the
+// rest. Current candidates are unneeded nodes from the previous run that are
+// still in the nodes list.
+func (sd *ScaleDown) chooseCandidates(nodes []*apiv1.Node) ([]*apiv1.Node, []*apiv1.Node) {
+	currentCandidates := make([]*apiv1.Node, 0, len(sd.unneededNodesList))
+	currentNonCandidates := make([]*apiv1.Node, 0, len(nodes))
+	for _, node := range nodes {
+		if _, found := sd.unneededNodes[node.Name]; found {
+			currentCandidates = append(currentCandidates, node)
+		} else {
+			currentNonCandidates = append(currentNonCandidates, node)
+		}
+	}
+	return currentCandidates, currentNonCandidates
 }
 
 // TryToScaleDown tries to scale down the cluster. It returns ScaleDownResult indicating if any node was
