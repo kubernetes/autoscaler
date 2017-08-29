@@ -203,11 +203,13 @@ func TestFindNodesToRemove(t *testing.T) {
 	SetNodeReadyState(nonDrainableNode, true, time.Time{})
 	SetNodeReadyState(fullNode, true, time.Time{})
 
+	ownerRefs := GenerateOwnerReferences("rs", "ReplicaSet", "extensions/v1beta1", "")
+
 	pod1 := BuildTestPod("p1", 100, 100000)
-	pod1.ObjectMeta.Annotations = GetReplicaSetAnnotation()
+	pod1.OwnerReferences = ownerRefs
 	pod1.Spec.NodeName = "n2"
 	pod2 := BuildTestPod("p2", 100, 100000)
-	pod2.ObjectMeta.Annotations = GetReplicaSetAnnotation()
+	pod2.OwnerReferences = ownerRefs
 	pod2.Spec.NodeName = "n2"
 	pod3 := BuildTestPod("p3", 100, 100000)
 	pod3.Spec.NodeName = "n3"
