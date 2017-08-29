@@ -54,7 +54,7 @@ var (
 
 func checkPercentageFlagBounds(flagName string, flagValue int) {
 	if flagValue < 0 || flagValue > 100 {
-		log.Fatal("%s flag must be between 0 and 100 inclusively, was %d.", flagName, flagValue)
+		log.Fatalf("%s flag must be between 0 and 100 inclusively, was %d.", flagName, flagValue)
 	}
 }
 

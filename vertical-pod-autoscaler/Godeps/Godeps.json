@@ -1152,6 +1152,7 @@
 			"ImportPath": "k8s.io/kubernetes/pkg/util/parsers",
 			"Comment": "v1.8.0-alpha.1-711-gc662e1d7d8",
 			"Rev": "c662e1d7d8730c569a04102295aff11bece92c64"
+		},
 		{
 			"ImportPath": "k8s.io/metrics/pkg/apis/metrics",
 			"Rev": "8efbc8e22d00b9c600afec5f1c14073fd2412fce"
