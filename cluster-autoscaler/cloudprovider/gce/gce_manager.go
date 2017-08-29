@@ -52,6 +52,14 @@ const (
 	nodeAutoprovisioningPrefix = "nodeautoprovisioning"
 )
 
+var (
+	defaultOAuthScopes []string = []string{
+		"https://www.googleapis.com/auth/compute",
+		"https://www.googleapis.com/auth/devstorage.read_only",
+		"https://www.googleapis.com/auth/service.management.readonly",
+		"https://www.googleapis.com/auth/servicecontrol"}
+)
+
 type migInformation struct {
 	config   *Mig
 	basename string
@@ -271,6 +279,41 @@ func (m *GceManager) deleteNodePool(toBeRemoved *Mig) error {
 		return err
 	}
 	err = m.waitForGkeOp(deleteOp)
+	if err != nil {
+		return err
+	}
+	return m.fetchAllNodePools()
+}
+
+func (m *GceManager) createNodePool(spec *autoprovisioningSpec) error {
+	m.assertGKE()
+
+	// Todo: handle preemptable
+	// Todo: handle ssd
+	// Todo: handle taints
+
+	nodePoolName := fmt.Sprintf("%s-%s-%d", nodeAutoprovisioningPrefix, spec.machineType, time.Now().Unix())
+
+	config := gke.NodeConfig{
+		MachineType: spec.machineType,
+		OauthScopes: defaultOAuthScopes,
+		Labels:      spec.labels,
+	}
+
+	createRequest := gke.CreateNodePoolRequest{
+		NodePool: &gke.NodePool{
+			Name:             nodePoolName,
+			InitialNodeCount: 0,
+			Config:           &config,
+		},
+	}
+
+	createOp, err := m.gkeService.Projects.Zones.Clusters.NodePools.Create(m.projectId, m.zone, m.clusterName,
+		&createRequest).Do()
+	if err != nil {
+		return err
+	}
+	err = m.waitForGkeOp(createOp)
 	if err != nil {
 		return err
 	}
