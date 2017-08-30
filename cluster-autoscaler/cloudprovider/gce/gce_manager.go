@@ -285,24 +285,22 @@ func (m *GceManager) deleteNodePool(toBeRemoved *Mig) error {
 	return m.fetchAllNodePools()
 }
 
-func (m *GceManager) createNodePool(spec *autoprovisioningSpec) error {
+func (m *GceManager) createNodePool(mig *Mig) error {
 	m.assertGKE()
 
 	// TODO: handle preemptable
 	// TODO: handle ssd
 	// TODO: handle taints
 
-	nodePoolName := fmt.Sprintf("%s-%s-%d", nodeAutoprovisioningPrefix, spec.machineType, time.Now().Unix())
-
 	config := gke.NodeConfig{
-		MachineType: spec.machineType,
+		MachineType: mig.spec.machineType,
 		OauthScopes: defaultOAuthScopes,
-		Labels:      spec.labels,
+		Labels:      mig.spec.labels,
 	}
 
 	createRequest := gke.CreateNodePoolRequest{
 		NodePool: &gke.NodePool{
-			Name:             nodePoolName,
+			Name:             mig.nodePoolName,
 			InitialNodeCount: 0,
 			Config:           &config,
 		},
@@ -317,7 +315,17 @@ func (m *GceManager) createNodePool(spec *autoprovisioningSpec) error {
 	if err != nil {
 		return err
 	}
-	return m.fetchAllNodePools()
+	err = m.fetchAllNodePools()
+	if err != nil {
+		return err
+	}
+	for _, existingMig := range m.getMigs() {
+		if existingMig.config.nodePoolName == mig.nodePoolName {
+			*mig = *existingMig.config
+			return nil
+		}
+	}
+	return fmt.Errorf("node pool %s not found", mig.nodePoolName)
 }
 
 // GetMigSize gets MIG size.
