@@ -75,6 +75,11 @@ func (m autoScalingWrapper) getAutoscalingGroupByName(name string) (*autoscaling
 func (m *autoScalingWrapper) getAutoscalingGroupsByNames(names []string) ([]*autoscaling.Group, error) {
 	glog.V(6).Infof("Starting getAutoscalingGroupsByNames with names=%v", names)
 
+	if len(names) < 1 {
+		glog.V(4).Info("Failed to describe ASGs: Must specify at least one ASG name.")
+		return nil, fmt.Errorf("List of ASG names was empty. Must specify at least one ASG name")
+	}
+
 	nameRefs := []*string{}
 	for _, n := range names {
 		nameRefs = append(nameRefs, aws.String(n))
