@@ -24,7 +24,7 @@ import (
 type MetricName string
 
 // ResourceAmount represents quantity of a certain resource within a container.
-type ResourceAmount int
+type ResourceAmount int64
 
 // Resources is a map from resource name to the corresponding ResourceAmount.
 type Resources map[MetricName]ResourceAmount
