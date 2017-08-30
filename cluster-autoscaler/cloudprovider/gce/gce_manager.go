@@ -256,7 +256,7 @@ func (m *GceManager) UnregisterMig(toBeRemoved *Mig) bool {
 	found := false
 	for _, mig := range m.migs {
 		if mig.config.GceRef == toBeRemoved.GceRef {
-			glog.V(4).Infof("Unregistered Mig %s/%s/%s", toBeRemoved.GceRef.Project, toBeRemoved.GceRef.Zone,
+			glog.V(1).Infof("Unregistered Mig %s/%s/%s", toBeRemoved.GceRef.Project, toBeRemoved.GceRef.Zone,
 				toBeRemoved.GceRef.Name)
 			found = true
 		} else {
@@ -288,9 +288,9 @@ func (m *GceManager) deleteNodePool(toBeRemoved *Mig) error {
 func (m *GceManager) createNodePool(spec *autoprovisioningSpec) error {
 	m.assertGKE()
 
-	// Todo: handle preemptable
-	// Todo: handle ssd
-	// Todo: handle taints
+	// TODO: handle preemptable
+	// TODO: handle ssd
+	// TODO: handle taints
 
 	nodePoolName := fmt.Sprintf("%s-%s-%d", nodeAutoprovisioningPrefix, spec.machineType, time.Now().Unix())
 

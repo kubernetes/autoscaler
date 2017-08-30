@@ -298,7 +298,7 @@ func (mig *Mig) Exist() (bool, error) {
 
 // Create creates the node group on the cloud provider side.
 func (mig *Mig) Create() error {
-	if mig.exist == false && mig.autoprovisioned == true {
+	if !mig.exist && mig.autoprovisioned {
 		return mig.gceManager.createNodePool(mig.spec)
 	}
 	return fmt.Errorf("Cannot create non-autoprovisioned node group")
@@ -307,7 +307,7 @@ func (mig *Mig) Create() error {
 // Delete deletes the node group on the cloud provider side.
 // This will be executed only for autoprovisioned node groups, once their size drops to 0.
 func (mig *Mig) Delete() error {
-	if mig.exist == true && mig.autoprovisioned == true {
+	if mig.exist && mig.autoprovisioned {
 		return mig.gceManager.deleteNodePool(mig)
 	}
 	return fmt.Errorf("Cannot delete non-autoprovisioned node group")
