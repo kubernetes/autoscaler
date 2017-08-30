@@ -58,9 +58,6 @@ const (
 	ScaleDownNodeDeleteStarted ScaleDownResult = iota
 	// ScaleDownDisabledKey is the name of annotation marking node as not eligible for scale down.
 	ScaleDownDisabledKey = "cluster-autoscaler.kubernetes.io/scale-down-disabled"
-	// ScaleDownNonEmptyCandidatesCount is the maximum number of non empty nodes
-	// considered at once as candidates for scale down.
-	ScaleDownNonEmptyCandidatesCount = 30
 )
 
 const (
@@ -222,8 +219,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		return sd.markSimulationError(simulatorErr, timestamp)
 	}
 
-	// Check how many candidates we are still missing
-	additionalCandidatesCount := ScaleDownNonEmptyCandidatesCount - len(nodesToRemove)
+	additionalCandidatesCount := sd.context.AutoscalingOptions.ScaleDownNonEmptyCandidatesCount - len(nodesToRemove)
 	if additionalCandidatesCount > len(currentNonCandidates) {
 		additionalCandidatesCount = len(currentNonCandidates)
 	}
@@ -292,6 +288,11 @@ func (sd *ScaleDown) markSimulationError(simulatorErr errors.AutoscalerError,
 // rest. Current candidates are unneeded nodes from the previous run that are
 // still in the nodes list.
 func (sd *ScaleDown) chooseCandidates(nodes []*apiv1.Node) ([]*apiv1.Node, []*apiv1.Node) {
+	// Number of candidates should not be capped. We will look for nodes to remove
+	// from the whole set of nodes.
+	if sd.context.AutoscalingOptions.ScaleDownNonEmptyCandidatesCount <= 0 {
+		return nodes, []*apiv1.Node{}
+	}
 	currentCandidates := make([]*apiv1.Node, 0, len(sd.unneededNodesList))
 	currentNonCandidates := make([]*apiv1.Node, 0, len(nodes))
 	for _, node := range nodes {

@@ -144,11 +144,14 @@ func TestFindUnneededMaxCandidates(t *testing.T) {
 		nodes = append(nodes, n)
 	}
 
+	// shared owner reference
+	ownerRef := GenerateOwnerReferences("rs", "ReplicaSet", "extensions/v1beta1", "")
+
 	pods := make([]*apiv1.Pod, 0, numNodes)
 	for i := 0; i < numNodes; i++ {
 		p := BuildTestPod(fmt.Sprintf("p%v", i), 100, 0)
-		p.Annotations = GetReplicaSetAnnotation()
 		p.Spec.NodeName = fmt.Sprintf("n%v", i)
+		p.OwnerReferences = ownerRef
 		pods = append(pods, p)
 	}
 
@@ -156,9 +159,12 @@ func TestFindUnneededMaxCandidates(t *testing.T) {
 	fakeRecorder := kube_util.CreateEventRecorder(fakeClient)
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false)
 
+	numCandidates := 30
+
 	context := AutoscalingContext{
 		AutoscalingOptions: AutoscalingOptions{
-			ScaleDownUtilizationThreshold: 0.35,
+			ScaleDownUtilizationThreshold:    0.35,
+			ScaleDownNonEmptyCandidatesCount: numCandidates,
 		},
 		ClusterStateRegistry: clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}),
 		PredicateChecker:     simulator.NewTestPredicateChecker(),
@@ -167,7 +173,7 @@ func TestFindUnneededMaxCandidates(t *testing.T) {
 	sd := NewScaleDown(&context)
 
 	sd.UpdateUnneededNodes(nodes, nodes, pods, time.Now(), nil)
-	assert.Equal(t, ScaleDownNonEmptyCandidatesCount, len(sd.unneededNodes))
+	assert.Equal(t, numCandidates, len(sd.unneededNodes))
 	// Simulate one of the unneeded nodes got deleted
 	deleted := sd.unneededNodesList[len(sd.unneededNodesList)-1]
 	for i, node := range nodes {
@@ -189,7 +195,7 @@ func TestFindUnneededMaxCandidates(t *testing.T) {
 
 	sd.UpdateUnneededNodes(nodes, nodes, pods, time.Now(), nil)
 	// Check that the deleted node was replaced
-	assert.Equal(t, ScaleDownNonEmptyCandidatesCount, len(sd.unneededNodes))
+	assert.Equal(t, numCandidates, len(sd.unneededNodes))
 	assert.NotContains(t, sd.unneededNodes, deleted)
 }
 
