@@ -52,6 +52,14 @@ const (
 	nodeAutoprovisioningPrefix = "nodeautoprovisioning"
 )
 
+var (
+	defaultOAuthScopes []string = []string{
+		"https://www.googleapis.com/auth/compute",
+		"https://www.googleapis.com/auth/devstorage.read_only",
+		"https://www.googleapis.com/auth/service.management.readonly",
+		"https://www.googleapis.com/auth/servicecontrol"}
+)
+
 type migInformation struct {
 	config   *Mig
 	basename string
@@ -159,6 +167,9 @@ func (m *GceManager) fetchAllNodePools() error {
 	if err != nil {
 		return err
 	}
+
+	existingMigs := map[GceRef]struct{}{}
+
 	for _, nodePool := range nodePoolsResponse.NodePools {
 		autoprovisioned := strings.Contains("name", nodeAutoprovisioningPrefix)
 		autoscaled := nodePool.Autoscaling != nil && nodePool.Autoscaling.Enabled
@@ -181,7 +192,10 @@ func (m *GceManager) fetchAllNodePools() error {
 				gceManager:      m,
 				exist:           true,
 				autoprovisioned: autoprovisioned,
+				nodePoolName:    nodePool.Name,
 			}
+			existingMigs[mig.GceRef] = struct{}{}
+
 			if autoscaled {
 				mig.minSize = int(nodePool.Autoscaling.MinNodeCount)
 				mig.maxSize = int(nodePool.Autoscaling.MaxNodeCount)
@@ -191,7 +205,11 @@ func (m *GceManager) fetchAllNodePools() error {
 			}
 			m.RegisterMig(mig)
 		}
-		// TODO - unregister migs
+	}
+	for _, mig := range m.getMigs() {
+		if _, found := existingMigs[mig.config.GceRef]; !found {
+			m.UnregisterMig(mig.config)
+		}
 	}
 	return nil
 }
@@ -229,6 +247,79 @@ func (m *GceManager) RegisterMig(mig *Mig) bool {
 	return !updated
 }
 
+// UnregisterMig unregisters mig in Gce Manager. Returns true if the node group has been removed.
+func (m *GceManager) UnregisterMig(toBeRemoved *Mig) bool {
+	m.migsMutex.Lock()
+	defer m.migsMutex.Unlock()
+
+	newMigs := make([]*migInformation, 0, len(m.migs))
+	found := false
+	for _, mig := range m.migs {
+		if mig.config.GceRef == toBeRemoved.GceRef {
+			glog.V(1).Infof("Unregistered Mig %s/%s/%s", toBeRemoved.GceRef.Project, toBeRemoved.GceRef.Zone,
+				toBeRemoved.GceRef.Name)
+			found = true
+		} else {
+			newMigs = append(newMigs, mig)
+		}
+	}
+	m.migs = newMigs
+	return found
+}
+
+func (m *GceManager) deleteNodePool(toBeRemoved *Mig) error {
+	m.assertGKE()
+	if !toBeRemoved.Autoprovisioned() {
+		return fmt.Errorf("only autoprovisioned node pools can be deleted")
+	}
+	// TODO: handle multi-zonal node pools.
+	deleteOp, err := m.gkeService.Projects.Zones.Clusters.NodePools.Delete(m.projectId, m.zone, m.clusterName,
+		toBeRemoved.nodePoolName).Do()
+	if err != nil {
+		return err
+	}
+	err = m.waitForGkeOp(deleteOp)
+	if err != nil {
+		return err
+	}
+	return m.fetchAllNodePools()
+}
+
+func (m *GceManager) createNodePool(spec *autoprovisioningSpec) error {
+	m.assertGKE()
+
+	// TODO: handle preemptable
+	// TODO: handle ssd
+	// TODO: handle taints
+
+	nodePoolName := fmt.Sprintf("%s-%s-%d", nodeAutoprovisioningPrefix, spec.machineType, time.Now().Unix())
+
+	config := gke.NodeConfig{
+		MachineType: spec.machineType,
+		OauthScopes: defaultOAuthScopes,
+		Labels:      spec.labels,
+	}
+
+	createRequest := gke.CreateNodePoolRequest{
+		NodePool: &gke.NodePool{
+			Name:             nodePoolName,
+			InitialNodeCount: 0,
+			Config:           &config,
+		},
+	}
+
+	createOp, err := m.gkeService.Projects.Zones.Clusters.NodePools.Create(m.projectId, m.zone, m.clusterName,
+		&createRequest).Do()
+	if err != nil {
+		return err
+	}
+	err = m.waitForGkeOp(createOp)
+	if err != nil {
+		return err
+	}
+	return m.fetchAllNodePools()
+}
+
 // GetMigSize gets MIG size.
 func (m *GceManager) GetMigSize(mig *Mig) (int64, error) {
 	igm, err := m.gceService.InstanceGroupManagers.Get(mig.Project, mig.Zone, mig.Name).Do()
@@ -251,11 +342,28 @@ func (m *GceManager) SetMigSize(mig *Mig, size int64) error {
 	return nil
 }
 
+// GCE
 func (m *GceManager) waitForOp(operation *gce.Operation, project string, zone string) error {
 	for start := time.Now(); time.Since(start) < operationWaitTimeout; time.Sleep(operationPollInterval) {
 		glog.V(4).Infof("Waiting for operation %s %s %s", project, zone, operation.Name)
 		if op, err := m.gceService.ZoneOperations.Get(project, zone, operation.Name).Do(); err == nil {
 			glog.V(4).Infof("Operation %s %s %s status: %s", project, zone, operation.Name, op.Status)
+			if op.Status == "DONE" {
+				return nil
+			}
+		} else {
+			glog.Warningf("Error while getting operation %s on %s: %v", operation.Name, operation.TargetLink, err)
+		}
+	}
+	return fmt.Errorf("Timeout while waiting for operation %s on %s to complete.", operation.Name, operation.TargetLink)
+}
+
+//  GKE
+func (m *GceManager) waitForGkeOp(operation *gke.Operation) error {
+	for start := time.Now(); time.Since(start) < operationWaitTimeout; time.Sleep(operationPollInterval) {
+		glog.V(4).Infof("Waiting for operation %s %s %s", m.projectId, m.zone, operation.Name)
+		if op, err := m.gkeService.Projects.Zones.Operations.Get(m.projectId, m.zone, operation.Name).Do(); err == nil {
+			glog.V(4).Infof("Operation %s %s %s status: %s", m.projectId, m.zone, operation.Name, op.Status)
 			if op.Status == "DONE" {
 				return nil
 			}
