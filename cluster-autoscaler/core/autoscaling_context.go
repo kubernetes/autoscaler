@@ -104,6 +104,8 @@ type AutoscalingOptions struct {
 	ConfigNamespace string
 	// ClusterName if available
 	ClusterName string
+	// NodeAutoprovisioningEnabled tells whether the node auto-provisioning is enabled for this cluster.
+	NodeAutoprovisioningEnabled bool
 }
 
 // NewAutoscalingContext returns an autoscaling context from all the necessary parameters passed via arguments
