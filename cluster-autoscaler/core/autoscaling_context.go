@@ -96,6 +96,9 @@ type AutoscalingOptions struct {
 	ScaleDownDelay time.Duration
 	// ScaleDownTrialInterval sets how often scale down possibility is check
 	ScaleDownTrialInterval time.Duration
+	// ScaleDownNonEmptyCandidatesCount is the maximum number of non empty nodes
+	// considered at once as candidates for scale down.
+	ScaleDownNonEmptyCandidatesCount int
 	// WriteStatusConfigMap tells if the status information should be written to a ConfigMap
 	WriteStatusConfigMap bool
 	// BalanceSimilarNodeGroups enables logic that identifies node groups with similar machines and tries to balance node count between them.
