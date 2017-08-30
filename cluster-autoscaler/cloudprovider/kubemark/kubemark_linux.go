@@ -111,7 +111,7 @@ func (kubemark *KubemarkCloudProvider) GetAvilableMachineTypes() ([]string, erro
 }
 
 // NewNodeGroup builds a theoretical node group based on the node definition provided.
-func (kubemark *KubemarkCloudProvider) NewNodeGroup(name string, machineType string, labels map[string]string, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
+func (kubemark *KubemarkCloudProvider) NewNodeGroup(machineType string, labels map[string]string, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 

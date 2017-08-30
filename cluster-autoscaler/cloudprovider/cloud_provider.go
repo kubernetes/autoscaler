@@ -50,7 +50,7 @@ type CloudProvider interface {
 	// NewNodeGroup builds a theoretical node group based on the node definition provided. The node group is not automatically
 	// created on the cloud provider side. The node group is not returned by NodeGroups() until it is created.
 	// Implementation optional.
-	NewNodeGroup(name string, machineType string, labels map[string]string, extraResources map[string]resource.Quantity) (NodeGroup, error)
+	NewNodeGroup(machineType string, labels map[string]string, extraResources map[string]resource.Quantity) (NodeGroup, error)
 }
 
 // ErrNotImplemented is returned if a method is not implemented.
