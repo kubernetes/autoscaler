@@ -64,6 +64,10 @@ type GceCloudProvider struct {
 
 // BuildGceCloudProvider builds CloudProvider implementation for GCE.
 func BuildGceCloudProvider(gceManager *GceManager, specs []string) (*GceCloudProvider, error) {
+	if gceManager.mode == ModeGKE && len(specs) != 0 {
+		return nil, fmt.Errorf("GKE gets nodegroup specification via API, command line specs are not allowed")
+	}
+
 	gce := &GceCloudProvider{
 		gceManager: gceManager,
 	}
@@ -294,13 +298,19 @@ func (mig *Mig) Exist() (bool, error) {
 
 // Create creates the node group on the cloud provider side.
 func (mig *Mig) Create() error {
-	return cloudprovider.ErrAlreadyExist
+	if !mig.exist && mig.autoprovisioned {
+		return mig.gceManager.createNodePool(mig.spec)
+	}
+	return fmt.Errorf("Cannot create non-autoprovisioned node group")
 }
 
 // Delete deletes the node group on the cloud provider side.
 // This will be executed only for autoprovisioned node groups, once their size drops to 0.
 func (mig *Mig) Delete() error {
-	return cloudprovider.ErrNotImplemented
+	if mig.exist && mig.autoprovisioned {
+		return mig.gceManager.deleteNodePool(mig)
+	}
+	return fmt.Errorf("Cannot delete non-autoprovisioned node group")
 }
 
 // Autoprovisioned returns true if the node group is autoprovisioned.
