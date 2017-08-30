@@ -103,6 +103,7 @@ var (
 	maxInactivityTimeFlag        = flag.Duration("max-inactivity", 10*time.Minute, "Maximum time from last recorded autoscaler activity before automatic restart")
 	maxFailingTimeFlag           = flag.Duration("max-failing-time", 15*time.Minute, "Maximum time from last recorded successful autoscaler run before automatic restart")
 	balanceSimilarNodeGroupsFlag = flag.Bool("balance-similar-node-groups", false, "Detect similar node groups and balance the number of nodes between them")
+	nodeAutoprovisioningEnabled  = flag.Bool("node-autoprovisioning-enabled", false, "Should CA autoprovision node groups when needed")
 )
 
 func createAutoscalerOptions() core.AutoscalerOptions {
@@ -130,6 +131,7 @@ func createAutoscalerOptions() core.AutoscalerOptions {
 		BalanceSimilarNodeGroups:      *balanceSimilarNodeGroupsFlag,
 		ConfigNamespace:               *namespace,
 		ClusterName:                   *clusterName,
+		NodeAutoprovisioningEnabled:   *nodeAutoprovisioningEnabled,
 	}
 
 	configFetcherOpts := dynamic.ConfigFetcherOptions{
