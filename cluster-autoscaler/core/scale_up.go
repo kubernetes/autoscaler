@@ -29,6 +29,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/labels"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/nodegroupset"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 
@@ -77,8 +78,26 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 	podsRemainUnschedulable := make(map[*apiv1.Pod]bool)
 	expansionOptions := make([]expander.Option, 0)
 
-	for _, nodeGroup := range context.CloudProvider.NodeGroups() {
+	nodeGroups := context.CloudProvider.NodeGroups()
 
+	if context.AutoscalingOptions.NodeAutoprovisioningEnabled {
+		machines, err := context.CloudProvider.GetAvilableMachineTypes()
+		if err != nil {
+			glog.Warningf("Failed to get machine types: %v", err)
+		} else {
+			bestLabels := labels.BestLabelSet(unschedulablePods)
+			for _, machineType := range machines {
+				nodeGroup, err := context.CloudProvider.NewNodeGroup(machineType, bestLabels, nil)
+				if err != nil {
+					glog.Warningf("Unable to build temporary node group for %s: %v", machineType, err)
+				} else {
+					nodeGroups = append(nodeGroups, nodeGroup)
+				}
+			}
+		}
+	}
+
+	for _, nodeGroup := range nodeGroups {
 		if !context.ClusterStateRegistry.IsNodeGroupSafeToScaleUp(nodeGroup.Id(), now) {
 			glog.Warningf("Node group %s is not ready for scaleup", nodeGroup.Id())
 			continue
@@ -173,6 +192,14 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 				return false, errors.NewAutoscalerError(
 					errors.TransientError,
 					"max node total count already reached")
+			}
+		}
+		if context.AutoscalingOptions.NodeAutoprovisioningEnabled {
+			if exist, err := bestOption.NodeGroup.Exist(); err == nil && !exist {
+				err := bestOption.NodeGroup.Create()
+				if err != nil {
+					return false, errors.ToAutoscalerError(errors.CloudProviderError, err)
+				}
 			}
 		}
 
