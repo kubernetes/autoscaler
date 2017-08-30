@@ -387,3 +387,27 @@ func getPotentiallyUnneededNodes(context *AutoscalingContext, nodes []*apiv1.Nod
 	}
 	return result
 }
+
+// ConfigurePredicateCheckerForLoop can be run to update predicateChecker configuration
+// based on current state of the cluster.
+func ConfigurePredicateCheckerForLoop(unschedulablePods []*apiv1.Pod, schedulablePods []*apiv1.Pod, predicateChecker *simulator.PredicateChecker) {
+	podsWithAffinityFound := false
+	for _, pod := range unschedulablePods {
+		if pod.Spec.Affinity != nil {
+			podsWithAffinityFound = true
+			break
+		}
+	}
+	if !podsWithAffinityFound {
+		for _, pod := range schedulablePods {
+			if pod.Spec.Affinity != nil {
+				podsWithAffinityFound = true
+				break
+			}
+		}
+	}
+	predicateChecker.SetAffinityPredicateEnabled(podsWithAffinityFound)
+	if !podsWithAffinityFound {
+		glog.V(1).Info("No pod using affinity / antiaffinity found in cluster, disabling affinity predicate for this loop")
+	}
+}
