@@ -81,20 +81,7 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 	nodeGroups := context.CloudProvider.NodeGroups()
 
 	if context.AutoscalingOptions.NodeAutoprovisioningEnabled {
-		machines, err := context.CloudProvider.GetAvilableMachineTypes()
-		if err != nil {
-			glog.Warningf("Failed to get machine types: %v", err)
-		} else {
-			bestLabels := labels.BestLabelSet(unschedulablePods)
-			for _, machineType := range machines {
-				nodeGroup, err := context.CloudProvider.NewNodeGroup(machineType, bestLabels, nil)
-				if err != nil {
-					glog.Warningf("Unable to build temporary node group for %s: %v", machineType, err)
-				} else {
-					nodeGroups = append(nodeGroups, nodeGroup)
-				}
-			}
-		}
+		addAutoprovisionedCandidates(context, nodeGroups, unschedulablePods)
 	}
 
 	for _, nodeGroup := range nodeGroups {
@@ -305,4 +292,21 @@ func executeScaleUp(context *AutoscalingContext, info nodegroupset.ScaleUpInfo) 
 	context.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaledUpGroup",
 		"Scale-up: group %s size set to %d", info.Group.Id(), info.NewSize)
 	return nil
+}
+
+func addAutoprovisionedCandidates(context *AutoscalingContext, nodeGroups []cloudprovider.NodeGroup, unschedulablePods []*apiv1.Pod) {
+	machines, err := context.CloudProvider.GetAvilableMachineTypes()
+	if err != nil {
+		glog.Warningf("Failed to get machine types: %v", err)
+	} else {
+		bestLabels := labels.BestLabelSet(unschedulablePods)
+		for _, machineType := range machines {
+			nodeGroup, err := context.CloudProvider.NewNodeGroup(machineType, bestLabels, nil)
+			if err != nil {
+				glog.Warningf("Unable to build temporary node group for %s: %v", machineType, err)
+			} else {
+				nodeGroups = append(nodeGroups, nodeGroup)
+			}
+		}
+	}
 }
