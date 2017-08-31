@@ -57,7 +57,7 @@ func MarkToBeDeleted(node *apiv1.Node, client kube_client.Interface) error {
 func addToBeDeletedTaint(node *apiv1.Node) (bool, error) {
 	for _, taint := range node.Spec.Taints {
 		if taint.Key == ToBeDeletedTaint {
-			glog.Infof("ToBeDeletedTaint already present on on node %v", taint, node.Name)
+			glog.V(2).Infof("ToBeDeletedTaint already present on on node %v", taint, node.Name)
 			return false, nil
 		}
 	}
