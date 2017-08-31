@@ -204,8 +204,8 @@ func (asg *Asg) TargetSize() (int, error) {
 
 // Exist checks if the node group really exists on the cloud provider side. Allows to tell the
 // theoretical node group from the real one.
-func (asg *Asg) Exist() (bool, error) {
-	return true, nil
+func (asg *Asg) Exist() bool {
+	return true
 }
 
 // Create creates the node group on the cloud provider side.
