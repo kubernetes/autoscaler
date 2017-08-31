@@ -182,7 +182,7 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 			}
 		}
 		if context.AutoscalingOptions.NodeAutoprovisioningEnabled {
-			if exist, err := bestOption.NodeGroup.Exist(); err == nil && !exist {
+			if !bestOption.NodeGroup.Exist() {
 				err := bestOption.NodeGroup.Create()
 				if err != nil {
 					return false, errors.ToAutoscalerError(errors.CloudProviderError, err)
