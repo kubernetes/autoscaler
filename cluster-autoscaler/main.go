@@ -83,6 +83,11 @@ var (
 		"Node utilization level, defined as sum of requested resources divided by capacity, below which a node can be considered for scale down")
 	scaleDownTrialInterval = flag.Duration("scale-down-trial-interval", 1*time.Minute,
 		"How often scale down possiblity is check")
+	scaleDownNonEmptyCandidatesCount = flag.Int("scale-down-non-empty-candidates-count", 30,
+		"Maximum number of non empty nodes considered in one iteration as candidates for scale down with drain."+
+			"Lower value means better CA responsiveness but possible slower scale down latency."+
+			"Higher value can affect CA performance with big clusters (hundreds of nodes)."+
+			"Set to non posistive value to turn this heuristic off - CA will not limit the number of nodes it considers.")
 	scanInterval                = flag.Duration("scan-interval", 10*time.Second, "How often cluster is reevaluated for scale up or down")
 	maxNodesTotal               = flag.Int("max-nodes-total", 0, "Maximum number of nodes in all node groups. Cluster autoscaler will not grow the cluster beyond this number.")
 	cloudProviderFlag           = flag.String("cloud-provider", "gce", "Cloud provider type. Allowed values: gce, aws, kubemark")
@@ -108,30 +113,31 @@ var (
 
 func createAutoscalerOptions() core.AutoscalerOptions {
 	autoscalingOpts := core.AutoscalingOptions{
-		CloudConfig:                   *cloudConfig,
-		CloudProviderName:             *cloudProviderFlag,
-		NodeGroupAutoDiscovery:        *nodeGroupAutoDiscovery,
-		MaxTotalUnreadyPercentage:     *maxTotalUnreadyPercentage,
-		OkTotalUnreadyCount:           *okTotalUnreadyCount,
-		EstimatorName:                 *estimatorFlag,
-		ExpanderName:                  *expanderFlag,
-		MaxEmptyBulkDelete:            *maxEmptyBulkDeleteFlag,
-		MaxGracefulTerminationSec:     *maxGracefulTerminationFlag,
-		MaxNodeProvisionTime:          *maxNodeProvisionTime,
-		MaxNodesTotal:                 *maxNodesTotal,
-		NodeGroups:                    nodeGroupsFlag,
-		UnregisteredNodeRemovalTime:   *unregisteredNodeRemovalTime,
-		ScaleDownDelay:                *scaleDownDelay,
-		ScaleDownEnabled:              *scaleDownEnabled,
-		ScaleDownTrialInterval:        *scaleDownTrialInterval,
-		ScaleDownUnneededTime:         *scaleDownUnneededTime,
-		ScaleDownUnreadyTime:          *scaleDownUnreadyTime,
-		ScaleDownUtilizationThreshold: *scaleDownUtilizationThreshold,
-		WriteStatusConfigMap:          *writeStatusConfigMapFlag,
-		BalanceSimilarNodeGroups:      *balanceSimilarNodeGroupsFlag,
-		ConfigNamespace:               *namespace,
-		ClusterName:                   *clusterName,
-		NodeAutoprovisioningEnabled:   *nodeAutoprovisioningEnabled,
+		CloudConfig:                      *cloudConfig,
+		CloudProviderName:                *cloudProviderFlag,
+		NodeGroupAutoDiscovery:           *nodeGroupAutoDiscovery,
+		MaxTotalUnreadyPercentage:        *maxTotalUnreadyPercentage,
+		OkTotalUnreadyCount:              *okTotalUnreadyCount,
+		EstimatorName:                    *estimatorFlag,
+		ExpanderName:                     *expanderFlag,
+		MaxEmptyBulkDelete:               *maxEmptyBulkDeleteFlag,
+		MaxGracefulTerminationSec:        *maxGracefulTerminationFlag,
+		MaxNodeProvisionTime:             *maxNodeProvisionTime,
+		MaxNodesTotal:                    *maxNodesTotal,
+		NodeGroups:                       nodeGroupsFlag,
+		UnregisteredNodeRemovalTime:      *unregisteredNodeRemovalTime,
+		ScaleDownDelay:                   *scaleDownDelay,
+		ScaleDownEnabled:                 *scaleDownEnabled,
+		ScaleDownTrialInterval:           *scaleDownTrialInterval,
+		ScaleDownUnneededTime:            *scaleDownUnneededTime,
+		ScaleDownUnreadyTime:             *scaleDownUnreadyTime,
+		ScaleDownUtilizationThreshold:    *scaleDownUtilizationThreshold,
+		ScaleDownNonEmptyCandidatesCount: *scaleDownNonEmptyCandidatesCount,
+		WriteStatusConfigMap:             *writeStatusConfigMapFlag,
+		BalanceSimilarNodeGroups:         *balanceSimilarNodeGroupsFlag,
+		ConfigNamespace:                  *namespace,
+		ClusterName:                      *clusterName,
+		NodeAutoprovisioningEnabled:      *nodeAutoprovisioningEnabled,
 	}
 
 	configFetcherOpts := dynamic.ConfigFetcherOptions{
