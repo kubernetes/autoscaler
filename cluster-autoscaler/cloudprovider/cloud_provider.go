@@ -110,7 +110,7 @@ type NodeGroup interface {
 
 	// Exist checks if the node group really exists on the cloud provider side. Allows to tell the
 	// theoretical node group from the real one. Implementation required.
-	Exist() (bool, error)
+	Exist() bool
 
 	// Create creates the node group on the cloud provider side. Implementation optional.
 	Create() error
