@@ -99,6 +99,16 @@ type AutoscalingOptions struct {
 	// ScaleDownNonEmptyCandidatesCount is the maximum number of non empty nodes
 	// considered at once as candidates for scale down.
 	ScaleDownNonEmptyCandidatesCount int
+	// ScaleDownCandidatesPoolRatio is a ratio of nodes that are considered
+	// as additional non empty candidates for scale down when some candidates from
+	// previous iteration are no longer valid.
+	ScaleDownCandidatesPoolRatio float64
+	// ScaleDownCandidatesPoolMinCount is the minimum number of nodes that are
+	// considered as additional non empty candidates for scale down when some
+	// candidates from previous iteration are no longer valid.
+	// The formula to calculate additional candidates number is following:
+	// max(#nodes * ScaleDownCandidatesPoolRatio, ScaleDownCandidatesPoolMinCount)
+	ScaleDownCandidatesPoolMinCount int
 	// WriteStatusConfigMap tells if the status information should be written to a ConfigMap
 	WriteStatusConfigMap bool
 	// BalanceSimilarNodeGroups enables logic that identifies node groups with similar machines and tries to balance node count between them.

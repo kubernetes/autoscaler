@@ -18,6 +18,7 @@ package core
 
 import (
 	"fmt"
+	"math"
 	"reflect"
 	"strings"
 	"sync"
@@ -219,15 +220,23 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		return sd.markSimulationError(simulatorErr, timestamp)
 	}
 
-	additionalCandidatesCount := sd.context.AutoscalingOptions.ScaleDownNonEmptyCandidatesCount - len(nodesToRemove)
+	additionalCandidatesCount := sd.context.ScaleDownNonEmptyCandidatesCount - len(nodesToRemove)
 	if additionalCandidatesCount > len(currentNonCandidates) {
 		additionalCandidatesCount = len(currentNonCandidates)
+	}
+	// Limit the additional candidates pool size for better performance.
+	additionalCandidatesPoolSize := int(math.Ceil(float64(len(nodes)) * sd.context.ScaleDownCandidatesPoolRatio))
+	if additionalCandidatesPoolSize < sd.context.ScaleDownCandidatesPoolMinCount {
+		additionalCandidatesPoolSize = sd.context.ScaleDownCandidatesPoolMinCount
+	}
+	if additionalCandidatesPoolSize > len(currentNonCandidates) {
+		additionalCandidatesPoolSize = len(currentNonCandidates)
 	}
 	if additionalCandidatesCount > 0 {
 		// Look for addidtional nodes to remove among the rest of nodes
 		glog.V(3).Infof("Finding additional %v candidates for scale down.", additionalCandidatesCount)
 		additionalNodesToRemove, additionalUnremovable, additionalNewHints, simulatorErr :=
-			simulator.FindNodesToRemove(currentNonCandidates, nodes, pods, nil,
+			simulator.FindNodesToRemove(currentNonCandidates[:additionalCandidatesPoolSize], nodes, pods, nil,
 				sd.context.PredicateChecker, additionalCandidatesCount, true,
 				sd.podLocationHints, sd.usageTracker, timestamp, pdbs)
 		if simulatorErr != nil {
@@ -290,7 +299,7 @@ func (sd *ScaleDown) markSimulationError(simulatorErr errors.AutoscalerError,
 func (sd *ScaleDown) chooseCandidates(nodes []*apiv1.Node) ([]*apiv1.Node, []*apiv1.Node) {
 	// Number of candidates should not be capped. We will look for nodes to remove
 	// from the whole set of nodes.
-	if sd.context.AutoscalingOptions.ScaleDownNonEmptyCandidatesCount <= 0 {
+	if sd.context.ScaleDownNonEmptyCandidatesCount <= 0 {
 		return nodes, []*apiv1.Node{}
 	}
 	currentCandidates := make([]*apiv1.Node, 0, len(sd.unneededNodesList))
