@@ -51,6 +51,11 @@ var (
 	// priceStabilizationPod is the pod cost to stabilize node_cost/pod_cost ratio a bit.
 	// 0.5 cpu, 500 mb ram
 	priceStabilizationPod = buildPod("stabilize", 500, 500*1024*1024)
+
+	// Penalty given to node groups that are yet to be created.
+	// TODO: make it a flag
+	// TODO: investigate what a proper value should be
+	notExistCoeficient = 2.0
 )
 
 // NewStrategy returns an expansion strategy that picks nodes based on price and preferred node type.
@@ -119,6 +124,10 @@ nextoption:
 		supressedUnfitness := (nodeUnfitness-1.0)*(1.0-math.Tanh(float64(option.NodeCount-1)/15.0)) + 1.0
 
 		optionScore := supressedUnfitness * priceSubScore
+
+		if exist, err := option.NodeGroup.Exist(); err != nil && !exist {
+			optionScore *= notExistCoeficient
+		}
 
 		debug := fmt.Sprintf("all_nodes_price=%f pods_price=%f stabilized_ratio=%f unfitness=%f supressed=%f final_score=%f",
 			totalNodePrice,

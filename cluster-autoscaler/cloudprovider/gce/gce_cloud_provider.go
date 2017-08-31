@@ -19,6 +19,7 @@ package gce
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -127,8 +128,31 @@ func (gce *GceCloudProvider) GetAvilableMachineTypes() ([]string, error) {
 
 // NewNodeGroup builds a theoretical node group based on the node definition provided. The node group is not automatically
 // created on the cloud provider side. The node group is not returned by NodeGroups() until it is created.
-func (gce *GceCloudProvider) NewNodeGroup(name string, machineType string, labels map[string]string, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
-	return nil, cloudprovider.ErrNotImplemented
+func (gce *GceCloudProvider) NewNodeGroup(machineType string, labels map[string]string, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
+	nodePoolName := fmt.Sprintf("%s-%s-%d", nodeAutoprovisioningPrefix, machineType, time.Now().Unix())
+	mig := &Mig{
+		autoprovisioned: true,
+		exist:           false,
+		nodePoolName:    nodePoolName,
+		GceRef: GceRef{
+			Project: gce.gceManager.projectId,
+			Zone:    gce.gceManager.zone,
+			Name:    nodePoolName + "-temporary-mig",
+		},
+		minSize: minAutoprovisionedSize,
+		maxSize: maxAutoprovisionedSize,
+		spec: &autoprovisioningSpec{
+			machineType:    machineType,
+			labels:         labels,
+			extraResources: extraResources,
+		},
+		gceManager: gce.gceManager,
+	}
+	_, err := gce.gceManager.templates.buildNodeFromAutoprovisioningSpec(mig)
+	if err != nil {
+		return nil, err
+	}
+	return mig, nil
 }
 
 // GceRef contains s reference to some entity in GCE/GKE world.
@@ -158,7 +182,7 @@ func GceRefFromProviderId(id string) (*GceRef, error) {
 type autoprovisioningSpec struct {
 	machineType    string
 	labels         map[string]string
-	extraResources map[string]string
+	extraResources map[string]resource.Quantity
 }
 
 // Mig implements NodeGroup interfrace.
@@ -299,7 +323,7 @@ func (mig *Mig) Exist() (bool, error) {
 // Create creates the node group on the cloud provider side.
 func (mig *Mig) Create() error {
 	if !mig.exist && mig.autoprovisioned {
-		return mig.gceManager.createNodePool(mig.spec)
+		return mig.gceManager.createNodePool(mig)
 	}
 	return fmt.Errorf("Cannot create non-autoprovisioned node group")
 }
