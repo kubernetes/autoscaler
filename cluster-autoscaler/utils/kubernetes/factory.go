@@ -30,7 +30,7 @@ import (
 // CreateEventRecorder creates an event recorder to send custom events to Kubernetes to be recorded for targeted Kubernetes objects
 func CreateEventRecorder(kubeClient clientset.Interface) kube_record.EventRecorder {
 	eventBroadcaster := kube_record.NewBroadcaster()
-	eventBroadcaster.StartLogging(glog.Infof)
+	eventBroadcaster.StartLogging(glog.V(4).Infof)
 	if _, isfake := kubeClient.(*fake.Clientset); !isfake {
 		eventBroadcaster.StartRecordingToSink(&v1core.EventSinkImpl{Interface: v1core.New(kubeClient.Core().RESTClient()).Events("")})
 	}

@@ -107,7 +107,7 @@ func (b CloudProviderBuilder) Build(discoveryOpts cloudprovider.NodeGroupDiscove
 	}
 
 	if b.cloudProviderFlag == kubemark.ProviderName {
-		glog.Infof("Building kubemark cloud provider.")
+		glog.V(1).Infof("Building kubemark cloud provider.")
 		externalConfig, err := rest.InClusterConfig()
 		if err != nil {
 			glog.Fatalf("Failed to get kubeclient config for external cluster: %v", err)

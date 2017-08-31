@@ -103,7 +103,7 @@ func main() {
 	for _, p := range partitions {
 		for _, r := range p.Regions() {
 			url := "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonEC2/current/" + r.ID() + "/index.json"
-			glog.Infof("fetching %s\n", url)
+			glog.V(1).Infof("fetching %s\n", url)
 			res, err := http.Get(url)
 			if err != nil {
 				glog.Warningf("Error fetching %s skipping...\n", url)
