@@ -46,6 +46,10 @@ const (
 	// This significantly improves performance and is useful if the error message
 	// is discarded anyway.
 	ReturnSimpleError ErrorVerbosity = false
+
+	// We want to disable affinity predicate for performance reasons if no ppod
+	// requires it
+	affinityPredicateName = "MatchInterPodAffinity"
 )
 
 type predicateInfo struct {
@@ -57,6 +61,7 @@ type predicateInfo struct {
 type PredicateChecker struct {
 	predicates                []predicateInfo
 	predicateMetadataProducer algorithm.MetadataProducer
+	enableAffinityPredicate   bool
 }
 
 // there are no const arrays in go, this is meant to be used as a const
@@ -124,6 +129,7 @@ func NewPredicateChecker(kubeClient kube_client.Interface, stop <-chan struct{})
 	return &PredicateChecker{
 		predicates:                predicateList,
 		predicateMetadataProducer: metadataProducer,
+		enableAffinityPredicate:   true,
 	}, nil
 }
 
@@ -149,12 +155,24 @@ func NewTestPredicateChecker() *PredicateChecker {
 	}
 }
 
+// SetAffinityPredicateEnabled can be used to enable or disable checking MatchInterPodAffinity
+// predicate. This will cause incorrect CA behavior if there is at least a single pod in
+// cluster using affinity/antiaffinity. However, checking affinity predicate is extremly
+// costly even if no pod is using it, so it may be worth disabling it in such situation.
+func (p *PredicateChecker) SetAffinityPredicateEnabled(enable bool) {
+	p.enableAffinityPredicate = enable
+}
+
 // GetPredicateMetadata precomputes some information useful for running predicates on a given pod in a given state
 // of the cluster (represented by nodeInfos map). Passing the result of this function to CheckPredicates can significantly
 // improve the performance of running predicates, especially MatchInterPodAffinity predicate. However, calculating
 // predicateMetadata is also quite expensive, so it's not always the best option to run this method.
 // Please refer to https://github.com/kubernetes/autoscaler/issues/257 for more details.
 func (p *PredicateChecker) GetPredicateMetadata(pod *apiv1.Pod, nodeInfos map[string]*schedulercache.NodeInfo) interface{} {
+	// skip precomputation if affinity predicate is disabled - it's not worth it performance wise
+	if !p.enableAffinityPredicate {
+		return nil
+	}
 	return p.predicateMetadataProducer(pod, nodeInfos)
 }
 
@@ -183,6 +201,12 @@ func (p *PredicateChecker) FitsAny(pod *apiv1.Pod, nodeInfos map[string]*schedul
 // Alternatively you can pass nil as predicateMetadata.
 func (p *PredicateChecker) CheckPredicates(pod *apiv1.Pod, predicateMetadata interface{}, nodeInfo *schedulercache.NodeInfo, verbosity ErrorVerbosity) error {
 	for _, predInfo := range p.predicates {
+
+		// skip affinity predicate if it has been disabled
+		if !p.enableAffinityPredicate && predInfo.name == affinityPredicateName {
+			continue
+		}
+
 		match, failureReason, err := predInfo.predicate(pod, predicateMetadata, nodeInfo)
 
 		if verbosity == ReturnSimpleError && (err != nil || !match) {
