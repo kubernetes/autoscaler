@@ -225,8 +225,8 @@ func (nodeGroup *NodeGroup) TemplateNodeInfo() (*schedulercache.NodeInfo, error)
 }
 
 // Exist checks if the node group really exists on the cloud provider side.
-func (nodeGroup *NodeGroup) Exist() (bool, error) {
-	return true, nil
+func (nodeGroup *NodeGroup) Exist() bool {
+	return true
 }
 
 // Create creates the node group on the cloud provider side.

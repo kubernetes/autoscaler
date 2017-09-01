@@ -125,7 +125,7 @@ nextoption:
 
 		optionScore := supressedUnfitness * priceSubScore
 
-		if exist, err := option.NodeGroup.Exist(); err != nil && !exist {
+		if !option.NodeGroup.Exist() {
 			optionScore *= notExistCoeficient
 		}
 
