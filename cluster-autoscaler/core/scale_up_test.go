@@ -44,28 +44,135 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+type nodeConfig struct {
+	name   string
+	cpu    int64
+	memory int64
+	ready  bool
+	group  string
+}
+
+type podConfig struct {
+	name   string
+	cpu    int64
+	memory int64
+	node   string
+}
+
+type scaleUpConfig struct {
+	nodes                []nodeConfig
+	pods                 []podConfig
+	extraPods            []podConfig
+	expectedScaleUp      string
+	expectedScaleUpGroup string
+	options              AutoscalingOptions
+}
+
+var defaultOptions = AutoscalingOptions{
+	EstimatorName:  estimator.BinpackingEstimatorName,
+	MaxCoresTotal:  5000 * 64,
+	MaxMemoryTotal: 5000 * 64 * 20,
+}
+
 func TestScaleUpOK(t *testing.T) {
+	config := &scaleUpConfig{
+		nodes: []nodeConfig{
+			{"n1", 100, 100, true, "ng1"},
+			{"n2", 1000, 1000, true, "ng2"},
+		},
+		pods: []podConfig{
+			{"p1", 80, 0, "n1"},
+			{"p2", 800, 0, "n2"},
+		},
+		extraPods: []podConfig{
+			{"p-new", 500, 0, ""},
+		},
+		expectedScaleUp:      "ng2-1",
+		expectedScaleUpGroup: "ng2",
+		options:              defaultOptions,
+	}
+
+	simpleScaleUpTest(t, config)
+}
+
+func TestScaleUpMaxCoresLimitHit(t *testing.T) {
+	options := defaultOptions
+	options.MaxCoresTotal = 9
+	config := &scaleUpConfig{
+		nodes: []nodeConfig{
+			{"n1", 2000, 100, true, "ng1"},
+			{"n2", 4000, 1000, true, "ng2"},
+		},
+		pods: []podConfig{
+			{"p1", 1000, 0, "n1"},
+			{"p2", 3000, 0, "n2"},
+		},
+		extraPods: []podConfig{
+			{"p-new-1", 2000, 0, ""},
+			{"p-new-2", 2000, 0, ""},
+		},
+		expectedScaleUp:      "ng1-1",
+		expectedScaleUpGroup: "ng1",
+		options:              options,
+	}
+
+	simpleScaleUpTest(t, config)
+}
+
+const MB = 1024 * 1024
+
+func TestScaleUpMaxMemoryLimitHit(t *testing.T) {
+	options := defaultOptions
+	options.MaxMemoryTotal = 1300 // set in mb
+	config := &scaleUpConfig{
+		nodes: []nodeConfig{
+			{"n1", 2000, 100 * MB, true, "ng1"},
+			{"n2", 4000, 1000 * MB, true, "ng2"},
+		},
+		pods: []podConfig{
+			{"p1", 1000, 0, "n1"},
+			{"p2", 3000, 0, "n2"},
+		},
+		extraPods: []podConfig{
+			{"p-new-1", 2000, 100 * MB, ""},
+			{"p-new-2", 2000, 100 * MB, ""},
+			{"p-new-3", 2000, 100 * MB, ""},
+		},
+		expectedScaleUp:      "ng1-2",
+		expectedScaleUpGroup: "ng1",
+		options:              options,
+	}
+
+	simpleScaleUpTest(t, config)
+}
+
+func simpleScaleUpTest(t *testing.T, config *scaleUpConfig) {
 	expandedGroups := make(chan string, 10)
 	fakeClient := &fake.Clientset{}
 
-	n1 := BuildTestNode("n1", 100, 1000)
-	SetNodeReadyState(n1, true, time.Now())
-	n2 := BuildTestNode("n2", 1000, 1000)
-	SetNodeReadyState(n2, true, time.Now())
+	groups := make(map[string][]*apiv1.Node)
+	nodes := make([]*apiv1.Node, len(config.nodes))
+	for i, n := range config.nodes {
+		node := BuildTestNode(n.name, n.cpu, n.memory)
+		SetNodeReadyState(node, n.ready, time.Now())
+		nodes[i] = node
+		groups[n.group] = append(groups[n.group], node)
+	}
 
-	p1 := BuildTestPod("p1", 80, 0)
-	p2 := BuildTestPod("p2", 800, 0)
-	p1.Spec.NodeName = "n1"
-	p2.Spec.NodeName = "n2"
+	pods := make(map[string][]apiv1.Pod)
+	for _, p := range config.pods {
+		pod := *BuildTestPod(p.name, p.cpu, p.memory)
+		pod.Spec.NodeName = p.node
+		pods[p.node] = append(pods[p.node], pod)
+	}
 
 	fakeClient.Fake.AddReactor("list", "pods", func(action core.Action) (bool, runtime.Object, error) {
 		list := action.(core.ListAction)
 		fieldstring := list.GetListRestrictions().Fields.String()
-		if strings.Contains(fieldstring, "n1") {
-			return true, &apiv1.PodList{Items: []apiv1.Pod{*p1}}, nil
-		}
-		if strings.Contains(fieldstring, "n2") {
-			return true, &apiv1.PodList{Items: []apiv1.Pod{*p2}}, nil
+		for _, node := range nodes {
+			if strings.Contains(fieldstring, node.Name) {
+				return true, &apiv1.PodList{Items: pods[node.Name]}, nil
+			}
 		}
 		return true, nil, fmt.Errorf("Failed to list: %v", list)
 	})
@@ -74,21 +181,23 @@ func TestScaleUpOK(t *testing.T) {
 		expandedGroups <- fmt.Sprintf("%s-%d", nodeGroup, increase)
 		return nil
 	}, nil)
-	provider.AddNodeGroup("ng1", 1, 10, 1)
-	provider.AddNodeGroup("ng2", 1, 10, 1)
-	provider.AddNode("ng1", n1)
-	provider.AddNode("ng2", n2)
+
+	for name, nodesInGroup := range groups {
+		provider.AddNodeGroup(name, 1, 10, len(nodesInGroup))
+		for _, n := range nodesInGroup {
+			provider.AddNode(name, n)
+		}
+	}
 	assert.NotNil(t, provider)
 
 	fakeRecorder := kube_record.NewFakeRecorder(5)
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false)
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder)
-	clusterState.UpdateNodes([]*apiv1.Node{n1, n2}, time.Now())
+
+	clusterState.UpdateNodes(nodes, time.Now())
 
 	context := &AutoscalingContext{
-		AutoscalingOptions: AutoscalingOptions{
-			EstimatorName: estimator.BinpackingEstimatorName,
-		},
+		AutoscalingOptions:   config.options,
 		PredicateChecker:     simulator.NewTestPredicateChecker(),
 		CloudProvider:        provider,
 		ClientSet:            fakeClient,
@@ -97,17 +206,24 @@ func TestScaleUpOK(t *testing.T) {
 		ClusterStateRegistry: clusterState,
 		LogRecorder:          fakeLogRecorder,
 	}
-	p3 := BuildTestPod("p-new", 500, 0)
 
-	result, err := ScaleUp(context, []*apiv1.Pod{p3}, []*apiv1.Node{n1, n2}, []*extensionsv1.DaemonSet{})
+	extraPods := make([]*apiv1.Pod, len(config.extraPods))
+	for i, p := range config.extraPods {
+		pod := BuildTestPod(p.name, p.cpu, p.memory)
+		extraPods[i] = pod
+	}
+
+	result, err := ScaleUp(context, extraPods, nodes, []*extensionsv1.DaemonSet{})
 	assert.NoError(t, err)
 	assert.True(t, result)
-	assert.Equal(t, "ng2-1", getStringFromChan(expandedGroups))
+
+	assert.Equal(t, config.expectedScaleUp, getStringFromChan(expandedGroups))
+
 	nodeEventSeen := false
 	for eventsLeft := true; eventsLeft; {
 		select {
 		case event := <-fakeRecorder.Events:
-			if strings.Contains(event, "TriggeredScaleUp") && strings.Contains(event, "ng2") {
+			if strings.Contains(event, "TriggeredScaleUp") && strings.Contains(event, config.expectedScaleUpGroup) {
 				nodeEventSeen = true
 			}
 			assert.NotRegexp(t, regexp.MustCompile("NotTriggerScaleUp"), event)
@@ -164,7 +280,9 @@ func TestScaleUpNodeComingNoScale(t *testing.T) {
 
 	context := &AutoscalingContext{
 		AutoscalingOptions: AutoscalingOptions{
-			EstimatorName: estimator.BinpackingEstimatorName,
+			EstimatorName:  estimator.BinpackingEstimatorName,
+			MaxCoresTotal:  5000 * 64,
+			MaxMemoryTotal: 5000 * 64 * 20,
 		},
 		PredicateChecker:     simulator.NewTestPredicateChecker(),
 		CloudProvider:        provider,
@@ -228,9 +346,7 @@ func TestScaleUpNodeComingHasScale(t *testing.T) {
 	clusterState.UpdateNodes([]*apiv1.Node{n1, n2}, time.Now())
 
 	context := &AutoscalingContext{
-		AutoscalingOptions: AutoscalingOptions{
-			EstimatorName: estimator.BinpackingEstimatorName,
-		},
+		AutoscalingOptions:   defaultOptions,
 		PredicateChecker:     simulator.NewTestPredicateChecker(),
 		CloudProvider:        provider,
 		ClientSet:            fakeClient,
@@ -287,7 +403,9 @@ func TestScaleUpUnhealthy(t *testing.T) {
 	clusterState.UpdateNodes([]*apiv1.Node{n1, n2}, time.Now())
 	context := &AutoscalingContext{
 		AutoscalingOptions: AutoscalingOptions{
-			EstimatorName: estimator.BinpackingEstimatorName,
+			EstimatorName:  estimator.BinpackingEstimatorName,
+			MaxCoresTotal:  5000 * 64,
+			MaxMemoryTotal: 5000 * 64 * 20,
 		},
 		PredicateChecker:     simulator.NewTestPredicateChecker(),
 		CloudProvider:        provider,
@@ -336,7 +454,9 @@ func TestScaleUpNoHelp(t *testing.T) {
 	clusterState.UpdateNodes([]*apiv1.Node{n1}, time.Now())
 	context := &AutoscalingContext{
 		AutoscalingOptions: AutoscalingOptions{
-			EstimatorName: estimator.BinpackingEstimatorName,
+			EstimatorName:  estimator.BinpackingEstimatorName,
+			MaxCoresTotal:  5000 * 64,
+			MaxMemoryTotal: 5000 * 64 * 20,
 		},
 		PredicateChecker:     simulator.NewTestPredicateChecker(),
 		CloudProvider:        provider,
@@ -416,6 +536,8 @@ func TestScaleUpBalanceGroups(t *testing.T) {
 		AutoscalingOptions: AutoscalingOptions{
 			EstimatorName:            estimator.BinpackingEstimatorName,
 			BalanceSimilarNodeGroups: true,
+			MaxCoresTotal:            5000 * 64,
+			MaxMemoryTotal:           5000 * 64 * 20,
 		},
 		PredicateChecker:     simulator.NewTestPredicateChecker(),
 		CloudProvider:        provider,
