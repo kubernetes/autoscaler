@@ -18,6 +18,8 @@ package core
 
 import (
 	"bytes"
+	"fmt"
+	"math"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -59,6 +61,11 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 		return false, err.AddPrefix("failed to build node infos for node groups: ")
 	}
 
+	nodeGroups := context.CloudProvider.NodeGroups()
+
+	// calculate current cores & gigabytes of memory
+	coresTotal, memoryTotal := calculateCPUAndMemory(nodeGroups, nodeInfos)
+
 	upcomingNodes := make([]*schedulercache.NodeInfo, 0)
 	for nodeGroup, numberOfNodes := range context.ClusterStateRegistry.GetUpcomingNodes() {
 		nodeTemplate, found := nodeInfos[nodeGroup]
@@ -78,8 +85,6 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 	podsRemainUnschedulable := make(map[*apiv1.Pod]bool)
 	expansionOptions := make([]expander.Option, 0)
 
-	nodeGroups := context.CloudProvider.NodeGroups()
-
 	if context.AutoscalingOptions.NodeAutoprovisioningEnabled {
 		nodeGroups, nodeInfos = addAutoprovisionedCandidates(context, nodeGroups, nodeInfos, unschedulablePods)
 	}
@@ -90,26 +95,41 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 			continue
 		}
 
-		currentSize, err := nodeGroup.TargetSize()
+		currentTargetSize, err := nodeGroup.TargetSize()
 		if err != nil {
 			glog.Errorf("Failed to get node group size: %v", err)
 			continue
 		}
-		if currentSize >= nodeGroup.MaxSize() {
+		if currentTargetSize >= nodeGroup.MaxSize() {
 			// skip this node group.
 			glog.V(4).Infof("Skipping node group %s - max size reached", nodeGroup.Id())
 			continue
-		}
-
-		option := expander.Option{
-			NodeGroup: nodeGroup,
-			Pods:      make([]*apiv1.Pod, 0),
 		}
 
 		nodeInfo, found := nodeInfos[nodeGroup.Id()]
 		if !found {
 			glog.Errorf("No node info for: %s", nodeGroup.Id())
 			continue
+		}
+
+		nodeCPU, nodeMemory, err := getNodeCPUAndMemory(nodeInfo)
+		if err != nil {
+			glog.Errorf("Failed to get node resources: %v", err)
+		}
+		if nodeCPU > (context.MaxCoresTotal - coresTotal) {
+			// skip this node group
+			glog.V(4).Infof("Skipping node group %s - not enough cores limit left", nodeGroup.Id())
+			continue
+		}
+		if nodeMemory > (context.MaxMemoryTotal - memoryTotal) {
+			// skip this node group
+			glog.V(4).Infof("Skipping node group %s - not enough memory limit left", nodeGroup.Id())
+			continue
+		}
+
+		option := expander.Option{
+			NodeGroup: nodeGroup,
+			Pods:      make([]*apiv1.Pod, 0),
 		}
 
 		for _, pod := range unschedulablePods {
@@ -172,6 +192,7 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 		glog.V(1).Infof("Estimated %d nodes needed in %s", bestOption.NodeCount, bestOption.NodeGroup.Id())
 
 		newNodes := bestOption.NodeCount
+
 		if context.MaxNodesTotal > 0 && len(nodes)+newNodes > context.MaxNodesTotal {
 			glog.V(1).Infof("Capping size to max cluster total size (%d)", context.MaxNodesTotal)
 			newNodes = context.MaxNodesTotal - len(nodes)
@@ -188,6 +209,22 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 					return false, errors.ToAutoscalerError(errors.CloudProviderError, err)
 				}
 			}
+		}
+
+		nodeInfo, found := nodeInfos[bestOption.NodeGroup.Id()]
+		if !found {
+			// This should never happen, as we already should have retrieved
+			// nodeInfo for any considered nodegroup.
+			glog.Errorf("No node info for: %s", bestOption.NodeGroup.Id())
+			return false, errors.NewAutoscalerError(
+				errors.CloudProviderError,
+				"No node info for best expansion option!")
+		}
+
+		// apply upper limits for CPU and memory
+		newNodes, err = applyCPUAndMemoryLimit(newNodes, coresTotal, memoryTotal, context.MaxCoresTotal, context.MaxMemoryTotal, nodeInfo)
+		if err != nil {
+			return false, err
 		}
 
 		targetNodeGroups := []cloudprovider.NodeGroup{bestOption.NodeGroup}
@@ -331,4 +368,97 @@ func addAutoprovisionedCandidates(context *AutoscalingContext, nodeGroups []clou
 		}
 	}
 	return nodeGroups, nodeInfos
+}
+
+func calculateCPUAndMemory(nodeGroups []cloudprovider.NodeGroup, nodeInfos map[string]*schedulercache.NodeInfo) (int64, int64) {
+	var coresTotal int64
+	var memoryTotal int64
+	for _, nodeGroup := range nodeGroups {
+		currentSize, err := nodeGroup.TargetSize()
+		if err != nil {
+			glog.Errorf("Failed to get node group size of %v: %v", nodeGroup.Id(), err)
+			continue
+		}
+		nodeInfo, found := nodeInfos[nodeGroup.Id()]
+		if !found {
+			glog.Errorf("No node info for: %s", nodeGroup.Id())
+			continue
+		}
+		if currentSize > 0 {
+			nodeCPU, nodeMemory, err := getNodeCPUAndMemory(nodeInfo)
+			if err != nil {
+				glog.Errorf("Failed to get node resources: %v", err)
+				continue
+			}
+			coresTotal = coresTotal + int64(currentSize)*nodeCPU
+			memoryTotal = memoryTotal + int64(currentSize)*nodeMemory
+		}
+	}
+
+	return coresTotal, memoryTotal
+}
+
+func applyCPUAndMemoryLimit(newNodes int, coresTotal, memoryTotal, maxCoresTotal, maxMemoryTotal int64, nodeInfo *schedulercache.NodeInfo) (int, errors.AutoscalerError) {
+	newNodeCPU, newNodeMemory, err := getNodeCPUAndMemory(nodeInfo)
+	if err != nil {
+		// This is not very elegant, but it allows us to proceed even if we're
+		// unable to compute cpu/memory limits (not breaking current functionality)
+		glog.Errorf("Failed to get node resources: %v", err)
+		return newNodes, nil
+	}
+	if coresTotal+newNodeCPU*int64(newNodes) > maxCoresTotal {
+		glog.V(1).Infof("Capping size to max cluster cores (%d)", maxCoresTotal)
+		newNodes = int((maxCoresTotal - coresTotal) / newNodeCPU)
+		if newNodes < 1 {
+			// This should never happen, as we already check that
+			// at least one node will fit when considering nodegroup
+			return 0, errors.NewAutoscalerError(
+				errors.TransientError,
+				"max cores already reached")
+		}
+	}
+	if memoryTotal+newNodeMemory*int64(newNodes) > maxMemoryTotal {
+		glog.V(1).Infof("Capping size to max cluster memory allowed (%d)", maxMemoryTotal)
+		newNodes = int((maxMemoryTotal - memoryTotal) / newNodeMemory)
+		if newNodes < 1 {
+			// This should never happen, as we already check that
+			// at least one node will fit when considering nodegroup
+			return 0, errors.NewAutoscalerError(
+				errors.TransientError,
+				"max memory already reached")
+		}
+	}
+	return newNodes, nil
+}
+
+const (
+	// Megabyte is 2^20 bytes.
+	Megabyte float64 = 1024 * 1024
+)
+
+func getNodeCPUAndMemory(nodeInfo *schedulercache.NodeInfo) (int64, int64, error) {
+	nodeCPU, err := getNodeResource(nodeInfo, apiv1.ResourceCPU)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	nodeMemory, err := getNodeResource(nodeInfo, apiv1.ResourceMemory)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	if nodeCPU <= 0 || nodeMemory <= 0 {
+		return 0, 0, fmt.Errorf("Invalid node CPU/memory values - cpu %v, memory %v", nodeCPU, nodeMemory)
+	}
+
+	nodeMemoryMb := math.Ceil(float64(nodeMemory) / Megabyte)
+	return nodeCPU, int64(nodeMemoryMb), nil
+}
+
+func getNodeResource(nodeInfo *schedulercache.NodeInfo, resource apiv1.ResourceName) (int64, error) {
+	nodeCapacity, found := nodeInfo.Node().Status.Capacity[resource]
+	if !found {
+		return 0, fmt.Errorf("Failed to get %v for node %v", resource, nodeInfo.Node().Name)
+	}
+	return nodeCapacity.Value(), nil
 }

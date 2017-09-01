@@ -67,6 +67,14 @@ type AutoscalingOptions struct {
 	ScaleDownUnreadyTime time.Duration
 	// MaxNodesTotal sets the maximum number of nodes in the whole cluster
 	MaxNodesTotal int
+	// MaxCoresTotal sets the maximum number of cores in the whole cluster
+	MaxCoresTotal int64
+	// MinCoresTotal sets the minimum number of cores in the whole cluster
+	MinCoresTotal int64
+	// MaxMemoryTotal sets the maximum memory (in megabytes) in the whole cluster
+	MaxMemoryTotal int64
+	// MinMemoryTotal sets the maximum memory (in megabytes) in the whole cluster
+	MinMemoryTotal int64
 	// NodeGroupAutoDiscovery represents one or more definition(s) of node group auto-discovery
 	NodeGroupAutoDiscovery string
 	// UnregisteredNodeRemovalTime represents how long CA waits before removing nodes that are not registered in Kubernetes")

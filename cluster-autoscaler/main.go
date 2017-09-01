@@ -18,10 +18,12 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"net/http"
 	"net/url"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -101,6 +103,8 @@ var (
 			"max(#nodes * scale-down-candidates-pool-ratio, scale-down-candidates-pool-min-count).")
 	scanInterval                = flag.Duration("scan-interval", 10*time.Second, "How often cluster is reevaluated for scale up or down")
 	maxNodesTotal               = flag.Int("max-nodes-total", 0, "Maximum number of nodes in all node groups. Cluster autoscaler will not grow the cluster beyond this number.")
+	coresTotal                  = flag.String("cores-total", "0:320000", "Minimum and maximum number of cores in cluster, in the format <min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers.")
+	memoryTotal                 = flag.String("memory-total", "0:6400000", "Minimum and maximum number of gigabytes of memory in cluster, in the format <min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers.")
 	cloudProviderFlag           = flag.String("cloud-provider", "gce", "Cloud provider type. Allowed values: gce, aws, kubemark")
 	maxEmptyBulkDeleteFlag      = flag.Int("max-empty-bulk-delete", 10, "Maximum number of empty nodes that can be deleted at the same time.")
 	maxGracefulTerminationFlag  = flag.Int("max-graceful-termination-sec", 10*60, "Maximum number of seconds CA waits for pod termination when trying to scale down a node.")
@@ -124,6 +128,18 @@ var (
 )
 
 func createAutoscalerOptions() core.AutoscalerOptions {
+	minCoresTotal, maxCoresTotal, err := parseMinMaxFlag(*coresTotal)
+	if err != nil {
+		glog.Fatalf("Failed to parse flags: %v", err)
+	}
+	minMemoryTotal, maxMemoryTotal, err := parseMinMaxFlag(*memoryTotal)
+	if err != nil {
+		glog.Fatalf("Failed to parse flags: %v", err)
+	}
+	// Convert memory limits to megabytes.
+	minMemoryTotal = minMemoryTotal * 1024
+	maxMemoryTotal = maxMemoryTotal * 1024
+
 	autoscalingOpts := core.AutoscalingOptions{
 		CloudConfig:                      *cloudConfig,
 		CloudProviderName:                *cloudProviderFlag,
@@ -136,6 +152,10 @@ func createAutoscalerOptions() core.AutoscalerOptions {
 		MaxGracefulTerminationSec:        *maxGracefulTerminationFlag,
 		MaxNodeProvisionTime:             *maxNodeProvisionTime,
 		MaxNodesTotal:                    *maxNodesTotal,
+		MaxCoresTotal:                    maxCoresTotal,
+		MinCoresTotal:                    minCoresTotal,
+		MaxMemoryTotal:                   maxMemoryTotal,
+		MinMemoryTotal:                   minMemoryTotal,
 		NodeGroups:                       nodeGroupsFlag,
 		UnregisteredNodeRemovalTime:      *unregisteredNodeRemovalTime,
 		ScaleDownDelay:                   *scaleDownDelay,
@@ -365,3 +385,37 @@ const (
 	defaultRenewDeadline = 10 * time.Second
 	defaultRetryPeriod   = 2 * time.Second
 )
+
+func parseMinMaxFlag(flag string) (int64, int64, error) {
+	tokens := strings.SplitN(flag, ":", 2)
+	if len(tokens) != 2 {
+		return 0, 0, fmt.Errorf("wrong nodes configuration: %s", flag)
+	}
+
+	min, err := strconv.ParseInt(tokens[0], 10, 64)
+	if err != nil {
+		return 0, 0, fmt.Errorf("failed to set min size: %s, expected integer, err: %v", tokens[0], err)
+	}
+
+	max, err := strconv.ParseInt(tokens[1], 10, 64)
+	if err != nil {
+		return 0, 0, fmt.Errorf("failed to set max size: %s, expected integer, err: %v", tokens[1], err)
+	}
+
+	err = validateMinMaxFlag(min, max)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return min, max, nil
+}
+
+func validateMinMaxFlag(min, max int64) error {
+	if min < 0 {
+		return fmt.Errorf("min size must be greater or equal to  0")
+	}
+	if max < min {
+		return fmt.Errorf("max size must be greater or equal to min size")
+	}
+	return nil
+}
