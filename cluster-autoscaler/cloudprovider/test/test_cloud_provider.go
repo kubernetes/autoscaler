@@ -175,8 +175,8 @@ func (tng *TestNodeGroup) IncreaseSize(delta int) error {
 
 // Exist checks if the node group really exists on the cloud provider side. Allows to tell the
 // theoretical node group from the real one.
-func (tng *TestNodeGroup) Exist() (bool, error) {
-	return true, nil
+func (tng *TestNodeGroup) Exist() bool {
+	return true
 }
 
 // Create creates the node group on the cloud provider side.
