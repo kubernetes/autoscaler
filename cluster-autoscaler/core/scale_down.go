@@ -364,7 +364,7 @@ func (sd *ScaleDown) TryToScaleDown(nodes []*apiv1.Node, pods []*apiv1.Pod, pdbs
 		}
 	}
 	if len(candidates) == 0 {
-		glog.Infof("No candidates for scale down")
+		glog.V(1).Infof("No candidates for scale down")
 		return ScaleDownNoUnneeded, nil
 	}
 

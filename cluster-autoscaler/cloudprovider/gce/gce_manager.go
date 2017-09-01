@@ -96,11 +96,11 @@ func CreateGceManager(configReader io.Reader, mode GcpCloudProviderMode, cluster
 		if cfg.Global.TokenURL == "" {
 			glog.Warning("Empty tokenUrl in cloud config")
 		} else {
-			glog.Infof("Using TokenSource from config %#v", tokenSource)
+			glog.V(1).Infof("Using TokenSource from config %#v", tokenSource)
 			tokenSource = provider_gce.NewAltTokenSource(cfg.Global.TokenURL, cfg.Global.TokenBody)
 		}
 	} else {
-		glog.Infof("Using default TokenSource %#v", tokenSource)
+		glog.V(1).Infof("Using default TokenSource %#v", tokenSource)
 	}
 	projectId, zone, err := getProjectAndZone()
 	if err != nil {
