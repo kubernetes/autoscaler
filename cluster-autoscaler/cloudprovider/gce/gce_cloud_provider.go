@@ -316,8 +316,8 @@ func (mig *Mig) Nodes() ([]string, error) {
 
 // Exist checks if the node group really exists on the cloud provider side. Allows to tell the
 // theoretical node group from the real one.
-func (mig *Mig) Exist() (bool, error) {
-	return mig.exist, nil
+func (mig *Mig) Exist() bool {
+	return mig.exist
 }
 
 // Create creates the node group on the cloud provider side.
@@ -344,13 +344,8 @@ func (mig *Mig) Autoprovisioned() bool {
 
 // TemplateNodeInfo returns a node template for this node group.
 func (mig *Mig) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
-
 	var node *apiv1.Node
-	exists, err := mig.Exist()
-	if err != nil {
-		return nil, err
-	}
-	if exists {
+	if mig.Exist() {
 		template, err := mig.gceManager.templates.getMigTemplate(mig)
 		if err != nil {
 			return nil, err
