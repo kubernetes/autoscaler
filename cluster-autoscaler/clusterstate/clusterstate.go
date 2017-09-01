@@ -24,6 +24,7 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/api"
+	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 
@@ -128,10 +129,11 @@ type ClusterStateRegistry struct {
 	nodeGroupBackoffInfo    map[string]scaleUpBackoff
 	lastStatus              *api.ClusterAutoscalerStatus
 	lastScaleDownUpdateTime time.Time
+	logRecorder             *utils.LogEventRecorder
 }
 
 // NewClusterStateRegistry creates new ClusterStateRegistry.
-func NewClusterStateRegistry(cloudProvider cloudprovider.CloudProvider, config ClusterStateRegistryConfig) *ClusterStateRegistry {
+func NewClusterStateRegistry(cloudProvider cloudprovider.CloudProvider, config ClusterStateRegistryConfig, logRecorder *utils.LogEventRecorder) *ClusterStateRegistry {
 	emptyStatus := &api.ClusterAutoscalerStatus{
 		ClusterwideConditions: make([]api.ClusterAutoscalerCondition, 0),
 		NodeGroupStatuses:     make([]api.NodeGroupStatus, 0),
@@ -149,6 +151,7 @@ func NewClusterStateRegistry(cloudProvider cloudprovider.CloudProvider, config C
 		candidatesForScaleDown:  make(map[string][]string),
 		nodeGroupBackoffInfo:    make(map[string]scaleUpBackoff),
 		lastStatus:              emptyStatus,
+		logRecorder:             logRecorder,
 	}
 }
 
@@ -201,6 +204,9 @@ func (csr *ClusterStateRegistry) updateScaleRequests(currentTime time.Time) {
 		// so we consider it a failed scale-up
 		if !csr.IsNodeGroupScalingUp(sur.NodeGroupName) {
 			glog.Warningf("Scale-up timed out for node group %v after %v",
+				sur.NodeGroupName, currentTime.Sub(sur.Time))
+			csr.logRecorder.Eventf(apiv1.EventTypeWarning, "ScaleUpTimedOut",
+				"Nodes added to group %s failed to register within %v",
 				sur.NodeGroupName, currentTime.Sub(sur.Time))
 			csr.backoffNodeGroup(sur.NodeGroupName, currentTime)
 		}
