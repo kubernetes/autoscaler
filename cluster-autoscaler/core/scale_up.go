@@ -296,6 +296,17 @@ func executeScaleUp(context *AutoscalingContext, info nodegroupset.ScaleUpInfo) 
 }
 
 func addAutoprovisionedCandidates(context *AutoscalingContext, nodeGroups []cloudprovider.NodeGroup, unschedulablePods []*apiv1.Pod) {
+	autoprovisionedNodeGroupCount := 0
+	for _, group := range nodeGroups {
+		if group.Autoprovisioned() {
+			autoprovisionedNodeGroupCount++
+		}
+	}
+	if autoprovisionedNodeGroupCount >= context.MaxAutoprovisionedNodeGroupCount {
+		glog.V(4).Infof("Max autoprovisioned node group count reached")
+		return
+	}
+
 	machines, err := context.CloudProvider.GetAvilableMachineTypes()
 	if err != nil {
 		glog.Warningf("Failed to get machine types: %v", err)
