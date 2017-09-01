@@ -109,6 +109,8 @@ type AutoscalingOptions struct {
 	ClusterName string
 	// NodeAutoprovisioningEnabled tells whether the node auto-provisioning is enabled for this cluster.
 	NodeAutoprovisioningEnabled bool
+	// MaxAutoprovisionedNodeGroupCount is the maximum number of autoprovisioned groups in the cluster.
+	MaxAutoprovisionedNodeGroupCount int
 }
 
 // NewAutoscalingContext returns an autoscaling context from all the necessary parameters passed via arguments
