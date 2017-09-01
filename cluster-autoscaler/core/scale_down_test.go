@@ -94,7 +94,7 @@ func TestFindUnneededNodes(t *testing.T) {
 		AutoscalingOptions: AutoscalingOptions{
 			ScaleDownUtilizationThreshold: 0.35,
 		},
-		ClusterStateRegistry: clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}),
+		ClusterStateRegistry: clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder),
 		PredicateChecker:     simulator.NewTestPredicateChecker(),
 		LogRecorder:          fakeLogRecorder,
 	}
@@ -166,7 +166,7 @@ func TestFindUnneededMaxCandidates(t *testing.T) {
 			ScaleDownUtilizationThreshold:    0.35,
 			ScaleDownNonEmptyCandidatesCount: numCandidates,
 		},
-		ClusterStateRegistry: clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}),
+		ClusterStateRegistry: clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder),
 		PredicateChecker:     simulator.NewTestPredicateChecker(),
 		LogRecorder:          fakeLogRecorder,
 	}
@@ -377,7 +377,7 @@ func TestScaleDown(t *testing.T) {
 		CloudProvider:        provider,
 		ClientSet:            fakeClient,
 		Recorder:             fakeRecorder,
-		ClusterStateRegistry: clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}),
+		ClusterStateRegistry: clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder),
 		LogRecorder:          fakeLogRecorder,
 	}
 	scaleDown := NewScaleDown(context)
@@ -470,7 +470,7 @@ func TestScaleDownEmptyMultipleNodeGroups(t *testing.T) {
 		CloudProvider:        provider,
 		ClientSet:            fakeClient,
 		Recorder:             fakeRecorder,
-		ClusterStateRegistry: clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}),
+		ClusterStateRegistry: clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder),
 		LogRecorder:          fakeLogRecorder,
 	}
 	scaleDown := NewScaleDown(context)
@@ -540,7 +540,7 @@ func TestScaleDownEmptySingleNodeGroup(t *testing.T) {
 		CloudProvider:        provider,
 		ClientSet:            fakeClient,
 		Recorder:             fakeRecorder,
-		ClusterStateRegistry: clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}),
+		ClusterStateRegistry: clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder),
 		LogRecorder:          fakeLogRecorder,
 	}
 	scaleDown := NewScaleDown(context)
@@ -603,7 +603,7 @@ func TestNoScaleDownUnready(t *testing.T) {
 		CloudProvider:        provider,
 		ClientSet:            fakeClient,
 		Recorder:             fakeRecorder,
-		ClusterStateRegistry: clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}),
+		ClusterStateRegistry: clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder),
 		LogRecorder:          fakeLogRecorder,
 	}
 
@@ -711,7 +711,7 @@ func TestScaleDownNoMove(t *testing.T) {
 		CloudProvider:        provider,
 		ClientSet:            fakeClient,
 		Recorder:             fakeRecorder,
-		ClusterStateRegistry: clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}),
+		ClusterStateRegistry: clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder),
 		LogRecorder:          fakeLogRecorder,
 	}
 	scaleDown := NewScaleDown(context)
