@@ -153,7 +153,7 @@ func createAutoscalerOptions() core.AutoscalerOptions {
 
 func createKubeClient() kube_client.Interface {
 	if *kubeConfigFile != "" {
-		glog.Infof("Using kubeconfig file: %s", *kubeConfigFile)
+		glog.V(1).Infof("Using kubeconfig file: %s", *kubeConfigFile)
 		// use the current context in kubeconfig
 		config, err := clientcmd.BuildConfigFromFlags("", *kubeConfigFile)
 		if err != nil {
@@ -181,13 +181,13 @@ func createKubeClient() kube_client.Interface {
 func registerSignalHandlers(autoscaler core.Autoscaler) {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, os.Interrupt, os.Kill, syscall.SIGTERM, syscall.SIGQUIT)
-	glog.Info("Registered cleanup signal handler")
+	glog.V(1).Info("Registered cleanup signal handler")
 
 	go func() {
 		<-sigs
-		glog.Info("Received signal, attempting cleanup")
+		glog.V(1).Info("Received signal, attempting cleanup")
 		autoscaler.ExitCleanUp()
-		glog.Info("Cleaned up, exiting...")
+		glog.V(1).Info("Cleaned up, exiting...")
 		glog.Flush()
 		os.Exit(0)
 	}()
@@ -244,7 +244,7 @@ func main() {
 
 	healthCheck := metrics.NewHealthCheck(*maxInactivityTimeFlag, *maxFailingTimeFlag)
 
-	glog.Infof("Cluster Autoscaler %s", ClusterAutoscalerVersion)
+	glog.V(1).Infof("Cluster Autoscaler %s", ClusterAutoscalerVersion)
 
 	correctEstimator := false
 	for _, availableEstimator := range estimator.AvailableEstimators {

@@ -82,7 +82,7 @@ func BalanceScaleUpBetweenGroups(groups []cloudprovider.NodeGroup, newNodes int)
 		totalCapacity += maxSize - currentSize
 	}
 	if totalCapacity < newNodes {
-		glog.Infof("Requested scale-up (%v) exceeds node group set capacity, capping to %v", newNodes, totalCapacity)
+		glog.V(2).Infof("Requested scale-up (%v) exceeds node group set capacity, capping to %v", newNodes, totalCapacity)
 		newNodes = totalCapacity
 	}
 
