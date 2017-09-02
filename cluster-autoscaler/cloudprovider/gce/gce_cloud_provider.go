@@ -193,6 +193,7 @@ type Mig struct {
 	minSize         int
 	maxSize         int
 	autoprovisioned bool
+	unmanaged       bool
 	exist           bool
 	nodePoolName    string
 	spec            *autoprovisioningSpec
@@ -296,6 +297,9 @@ func (mig *Mig) DeleteNodes(nodes []*apiv1.Node) error {
 		}
 		refs = append(refs, gceref)
 	}
+	if mig.unmanaged {
+		return mig.gceManager.StopInstances(refs)
+	}
 	return mig.gceManager.DeleteInstances(refs)
 }
 
@@ -385,6 +389,9 @@ func buildMig(value string, gceManager *GceManager) (*Mig, error) {
 
 	if mig.Project, mig.Zone, mig.Name, err = ParseMigUrl(spec.Name); err != nil {
 		return nil, fmt.Errorf("failed to parse mig url: %s got error: %v", spec.Name, err)
+	}
+	if _, err := gceManager.gceService.InstanceGroupManagers.Get(mig.Project, mig.Zone, mig.Name).Do(); err != nil {
+		mig.unmanaged = true
 	}
 	return &mig, nil
 }
