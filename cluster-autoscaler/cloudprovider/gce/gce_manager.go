@@ -19,6 +19,7 @@ package gce
 import (
 	"fmt"
 	"io"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -86,7 +87,15 @@ type GceManager struct {
 // CreateGceManager constructs gceManager object.
 func CreateGceManager(configReader io.Reader, mode GcpCloudProviderMode, clusterName string) (*GceManager, error) {
 	// Create Google Compute Engine token.
+	var err error
 	tokenSource := google.ComputeTokenSource("")
+	if len(os.Getenv("GOOGLE_APPLICATION_CREDENTIALS")) > 0 {
+		tokenSource, err = google.DefaultTokenSource(oauth2.NoContext, gce.ComputeScope)
+		if err != nil {
+			return nil, err
+		}
+	}
+	var projectId, zone string
 	if configReader != nil {
 		var cfg provider_gce.ConfigFile
 		if err := gcfg.ReadInto(&cfg, configReader); err != nil {
@@ -96,15 +105,19 @@ func CreateGceManager(configReader io.Reader, mode GcpCloudProviderMode, cluster
 		if cfg.Global.TokenURL == "" {
 			glog.Warning("Empty tokenUrl in cloud config")
 		} else {
-			glog.V(1).Infof("Using TokenSource from config %#v", tokenSource)
 			tokenSource = provider_gce.NewAltTokenSource(cfg.Global.TokenURL, cfg.Global.TokenBody)
+			glog.V(1).Infof("Using TokenSource from config %#v", tokenSource)
 		}
+		projectId = cfg.Global.ProjectID
+		zone = cfg.Global.LocalZone
 	} else {
 		glog.V(1).Infof("Using default TokenSource %#v", tokenSource)
 	}
-	projectId, zone, err := getProjectAndZone()
-	if err != nil {
-		return nil, err
+	if len(projectId) == 0 || len(zone) == 0 {
+		projectId, zone, err = getProjectAndZone()
+		if err != nil {
+			return nil, err
+		}
 	}
 	glog.V(1).Infof("GCE projectId=%s zone=%s", projectId, zone)
 
@@ -238,11 +251,11 @@ func (m *GceManager) RegisterMig(mig *Mig) bool {
 	template, err := m.templates.getMigTemplate(mig)
 	if err != nil {
 		glog.Errorf("Failed to build template for %s", mig.Name)
-	}
-
-	_, err = m.templates.buildNodeFromTemplate(mig, template)
-	if err != nil {
-		glog.Errorf("Failed to build template for %s", mig.Name)
+	} else {
+		_, err = m.templates.buildNodeFromTemplate(mig, template)
+		if err != nil {
+			glog.Errorf("Failed to build template for %s", mig.Name)
+		}
 	}
 	return !updated
 }
