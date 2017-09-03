@@ -281,18 +281,22 @@ func main() {
 			glog.Fatalf("Failed to get nodes from apiserver: %v", err)
 		}
 
-		kube_leaderelection.RunOrDie(kube_leaderelection.LeaderElectionConfig{
-			Lock: &resourcelock.EndpointsLock{
-				EndpointsMeta: metav1.ObjectMeta{
-					Namespace: *namespace,
-					Name:      "cluster-autoscaler",
-				},
-				Client: kubeClient.Core(),
-				LockConfig: resourcelock.ResourceLockConfig{
-					Identity:      id,
-					EventRecorder: kube_util.CreateEventRecorder(kubeClient),
-				},
+		lock, err := resourcelock.New(
+			leaderElection.ResourceLock,
+			*namespace,
+			"cluster-autoscaler",
+			kubeClient.Core(),
+			resourcelock.ResourceLockConfig{
+				Identity:      id,
+				EventRecorder: kube_util.CreateEventRecorder(kubeClient),
 			},
+		)
+		if err != nil {
+			glog.Fatalf("Unable to create leader election lock: %v", err)
+		}
+
+		kube_leaderelection.RunOrDie(kube_leaderelection.LeaderElectionConfig{
+			Lock:          lock,
 			LeaseDuration: leaderElection.LeaseDuration.Duration,
 			RenewDeadline: leaderElection.RenewDeadline.Duration,
 			RetryPeriod:   leaderElection.RetryPeriod.Duration,
