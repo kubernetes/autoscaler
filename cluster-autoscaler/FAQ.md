@@ -259,7 +259,9 @@ From 0.5 CA (K8S 1.6) respects PDB. Before starting to delete a node CA makes su
 
 ### Does CA respect GracefulTermination in scale down?
 
-CA gives pods at most 1 min graceful termination time. If the pod is not stopped within this 1 min the node is deleted anyway.
+CA, from version 0.7, gives pods at most 10 min graceful termination time. If the pod is not stopped within 
+these 10 min then the node is deleted anyway. Earlier versions of CA gave 1 min or didn't respect graceful
+termination at all.
 
 ### How does CA deal with unready nodes in version <= 0.4.0?
 
