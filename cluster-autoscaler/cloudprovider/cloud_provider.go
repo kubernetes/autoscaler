@@ -43,9 +43,9 @@ type CloudProvider interface {
 	// Implementation optional.
 	Pricing() (PricingModel, errors.AutoscalerError)
 
-	// GetAvilableMachineTypes get all machine types that can be requested from the cloud provider.
+	// GetAvailableMachineTypes get all machine types that can be requested from the cloud provider.
 	// Implementation optional.
-	GetAvilableMachineTypes() ([]string, error)
+	GetAvailableMachineTypes() ([]string, error)
 
 	// NewNodeGroup builds a theoretical node group based on the node definition provided. The node group is not automatically
 	// created on the cloud provider side. The node group is not returned by NodeGroups() until it is created.
