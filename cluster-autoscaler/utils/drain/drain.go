@@ -83,7 +83,7 @@ func GetPodsForDeletionOnNodeDrain(
 
 		if refKind == "ReplicationController" {
 			if checkReferences {
-				rc, err := client.Core().ReplicationControllers(controllerNamespace).Get(controllerRef.Name, metav1.GetOptions{})
+				rc, err := client.CoreV1().ReplicationControllers(controllerNamespace).Get(controllerRef.Name, metav1.GetOptions{})
 				// Assume a reason for an error is because the RC is either
 				// gone/missing or that the rc has too few replicas configured.
 				// TODO: replace the minReplica check with pod disruption budget.
