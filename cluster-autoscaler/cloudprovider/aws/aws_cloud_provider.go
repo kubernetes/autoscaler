@@ -146,8 +146,8 @@ func (aws *awsCloudProvider) Pricing() (cloudprovider.PricingModel, errors.Autos
 	return nil, cloudprovider.ErrNotImplemented
 }
 
-// GetAvilableMachineTypes get all machine types that can be requested from the cloud provider.
-func (aws *awsCloudProvider) GetAvilableMachineTypes() ([]string, error) {
+// GetAvailableMachineTypes get all machine types that can be requested from the cloud provider.
+func (aws *awsCloudProvider) GetAvailableMachineTypes() ([]string, error) {
 	return []string{}, nil
 }
 

@@ -104,9 +104,9 @@ func (kubemark *KubemarkCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloud
 	return nil, nil
 }
 
-// GetAvilableMachineTypes get all machine types that can be requested from the cloud provider.
+// GetAvailableMachineTypes get all machine types that can be requested from the cloud provider.
 // Implementation optional.
-func (kubemark *KubemarkCloudProvider) GetAvilableMachineTypes() ([]string, error) {
+func (kubemark *KubemarkCloudProvider) GetAvailableMachineTypes() ([]string, error) {
 	return []string{}, cloudprovider.ErrNotImplemented
 }
 
