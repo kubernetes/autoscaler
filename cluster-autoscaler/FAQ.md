@@ -13,6 +13,7 @@ this document:
   * [What is Cluster Autoscaler?](#what-is-cluster-autoscaler)
   * [When does Cluster Autoscaler change the size of a cluster?](#when-does-cluster-autoscaler-change-the-size-of-a-cluster)
   * [What types of pods can prevent CA from removing a node?](#what-types-of-pods-can-prevent-ca-from-removing-a-node)
+  * [Which version on Cluster Autoscaler should I use in my cluster?](#which-version-on-cluster-autoscaler-should-i-use-in-my-cluster)
   * [How does Horizontal Pod Autoscaler work with Cluster Autoscaler?](#how-does-horizontal-pod-autoscaler-work-with-cluster-autoscaler)
   * [What are the key best practices for running Cluster Autoscaler?](#what-are-the-key-best-practices-for-running-cluster-autoscaler)
   * [Should I use a CPU-usage-based node autoscaler with Kubernetes?](#should-i-use-a-cpu-usage-based-node-autoscaler-with-kubernetes)
@@ -73,6 +74,21 @@ Cluster Autoscaler decreases the size of the cluster when some nodes are consist
 * Pods with local storage.
 * Pods that cannot be moved elsewhere due to various constraints (lack of resources, non-matching node selctors or affinity,
 matching anti-affinity, etc)
+
+### Which version on Cluster Autoscaler should I use in my cluster?
+
+We strongly recommend using Cluster Autoscaler with version for which it was meant. Usually, we don't
+do ANY cross version testing so if you put the newest Cluster Autoscaler on an old cluster
+there is a big chance that it won't work as expected.
+
+| Kubernetes Version  | CA Version   |
+|--------|--------|
+| 1.7.X  | 0.6.X  |
+| 1.6.X  | 0.5.X, 0.6.X<sup>*</sup>  |
+| 1.5.X  | 0.4.X  |
+| 1.4.X  | 0.3.X  |
+
+<sup>*</sup>Cluster Autoscaler 0.5.X is the official version shipped with k8s 1.6. We've done some basic tests using k8s 1.6 / CA 0.6 and we're not aware of any problems with this setup. However, CA internally simulates k8s scheduler and using different versions of scheduler code can lead to subtle issues.
 
 ### How does Horizontal Pod Autoscaler work with Cluster Autoscaler?
 
