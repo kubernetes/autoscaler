@@ -287,6 +287,15 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		if !calculateUnneededOnly {
 			glog.V(4).Infof("Starting scale down")
 
+			// We want to delete unneeded Node Groups only if there was no recent scale up,
+			// and there is no current delete in progress and there was no recent errors.
+			if a.AutoscalingContext.NodeAutoprovisioningEnabled {
+				err := cleanUpNodeAutoprovisionedGroups(a.AutoscalingContext.CloudProvider)
+				if err != nil {
+					glog.Warningf("Failed to clean up unneded node groups: %v", err)
+				}
+			}
+
 			scaleDownStart := time.Now()
 			metrics.UpdateLastTime(metrics.ScaleDown, scaleDownStart)
 			result, typedErr := scaleDown.TryToScaleDown(allNodes, allScheduled, pdbs)
