@@ -235,7 +235,7 @@ func (mig *Mig) IncreaseSize(delta int) error {
 // request for new nodes that have not been yet fulfilled. Delta should be negative.
 func (mig *Mig) DecreaseTargetSize(delta int) error {
 	if delta >= 0 {
-		return fmt.Errorf("size decrease must be netative")
+		return fmt.Errorf("size decrease must be negative")
 	}
 	size, err := mig.gceManager.GetMigSize(mig)
 	if err != nil {
