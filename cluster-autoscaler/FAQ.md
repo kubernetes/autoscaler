@@ -25,6 +25,7 @@ this document:
   * [How can I monitor Cluster Autoscaler?](#how-can-i-monitor-cluster-autoscaler)
   * [How can I scale my cluster to just 1 node?](#how-can-i-scale-my-cluster-to-just-1-node)
   * [How can I scale a node group to 0?](#how-can-i-scale-a-node-group-to-0)
+  * [How can I prevent Cluster Autoscaler from scaling down a particular node?](#how-can-i-prevent-cluster-autoscaler-from-scaling-down-a-particular-node)
 * [Internals](#internals)
   * [Are all of the mentioned heuristics and timings final?](#are-all-of-the-mentioned-heuristics-and-timings-final)
   * [How does scale up work?](#how-does-scale-up-work)
@@ -192,6 +193,22 @@ For example for a node label of `foo=bar` you would tag the ASG with:
     "Key": "k8s.io/cluster-autoscaler/node-template/label/foo"
 }
 ```
+
+### How can I prevent Cluster Autoscaler from scaling down a particular node?
+
+From CA 0.7 node will be excluded from scale down if it has no scale down
+annotation:
+
+```
+"cluster-autoscaler.kubernetes.io/scale-down-disabled": "true"
+```
+
+It can be added to, or removed from a node using kubectl:
+
+```
+kubectl annotate node <nodename> cluster-autoscaler.kubernetes.io/scale-down-disabled=true
+```
+
 ****************
 
 # Internals
@@ -250,6 +267,8 @@ manifest-run pods or pods created by daemonsets) have a PodDisruptionBudget.
 
 * There are no pods with local storage. Applications with local storage would lose their
 data if a node is deleted, even if they are replicated.
+
+* It doesn't have scale down disabled annotation (see [How can I prevent Cluster Autoscaler from scaling down a particular node?](#how-can-i-prevent-cluster-autoscaler-from-scaling-down-a-particular-node))
 
 If a node is not needed for more than 10 min (configurable) then it can be deleted. Cluster Autoscaler
 deletes one node at a time to reduce the risk of creating new unschedulable pods. The next node
@@ -359,9 +378,11 @@ it works only for GCE and GKE.
 ### I have a couple of nodes with low utilization, but they are not scaled down. Why?
 
 CA doesn't remove nodes if they are running system pods without a PodDisruptionBudget, pods without a controller or pods with 
-local storage (see [What types of pods can prevent CA from removing a node?](#what-types-of-pods-can-prevent-ca-from-removing-a-node) )
+local storage (see [What types of pods can prevent CA from removing a node?](#what-types-of-pods-can-prevent-ca-from-removing-a-node)) 
 Also it won't remove a node which has pods that cannot be run elsewhere due to limited resources. Another possibility
-is that the corresponding node group already has the minimum size. Finally, CA doesn't scale down if there was a scale up
+is that the corresponding node group already has the minimum size. 
+Scale down disabled annotation will also protect the node from removal (see [How can I prevent Cluster Autoscaler from scaling down a particular node?](#how-can-i-prevent-cluster-autoscaler-from-scaling-down-a-particular-node)) 
+Finally, CA doesn't scale down if there was a scale up
 in the last 10 min.
 
 If the reason your cluster isn't scaled down is due to system pods without a PodDisruptionBudget spread across multiple nodes,
