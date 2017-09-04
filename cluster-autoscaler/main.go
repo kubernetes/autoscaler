@@ -276,7 +276,7 @@ func main() {
 		kubeClient := createKubeClient()
 
 		// Validate that the client is ok.
-		_, err = kubeClient.Core().Nodes().List(metav1.ListOptions{})
+		_, err = kubeClient.CoreV1().Nodes().List(metav1.ListOptions{})
 		if err != nil {
 			glog.Fatalf("Failed to get nodes from apiserver: %v", err)
 		}
@@ -285,7 +285,7 @@ func main() {
 			leaderElection.ResourceLock,
 			*namespace,
 			"cluster-autoscaler",
-			kubeClient.Core(),
+			kubeClient.CoreV1(),
 			resourcelock.ResourceLockConfig{
 				Identity:      id,
 				EventRecorder: kube_util.CreateEventRecorder(kubeClient),

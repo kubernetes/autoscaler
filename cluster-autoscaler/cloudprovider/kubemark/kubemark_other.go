@@ -52,7 +52,7 @@ func (kubemark *KubemarkCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloud
 	return nil, cloudprovider.ErrNotImplemented
 }
 
-func (kubemark *KubemarkCloudProvider) GetAvilableMachineTypes() ([]string, error) {
+func (kubemark *KubemarkCloudProvider) GetAvailableMachineTypes() ([]string, error) {
 	return []string{}, cloudprovider.ErrNotImplemented
 }
 

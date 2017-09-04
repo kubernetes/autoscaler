@@ -307,7 +307,7 @@ func addAutoprovisionedCandidates(context *AutoscalingContext, nodeGroups []clou
 		return
 	}
 
-	machines, err := context.CloudProvider.GetAvilableMachineTypes()
+	machines, err := context.CloudProvider.GetAvailableMachineTypes()
 	if err != nil {
 		glog.Warningf("Failed to get machine types: %v", err)
 	} else {

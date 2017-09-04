@@ -565,7 +565,7 @@ func evictPod(podToEvict *apiv1.Pod, client kube_client.Interface, recorder kube
 				GracePeriodSeconds: &maxTermination,
 			},
 		}
-		lastError = client.Core().Pods(podToEvict.Namespace).Evict(eviction)
+		lastError = client.CoreV1().Pods(podToEvict.Namespace).Evict(eviction)
 		if lastError == nil {
 			return nil
 		}
@@ -630,7 +630,7 @@ func drainNode(node *apiv1.Node, pods []*apiv1.Pod, client kube_client.Interface
 	for start := time.Now(); time.Now().Sub(start) < time.Duration(maxGracefulTerminationSec)*time.Second+PodEvictionHeadroom; time.Sleep(5 * time.Second) {
 		allGone = true
 		for _, pod := range pods {
-			podreturned, err := client.Core().Pods(pod.Namespace).Get(pod.Name, metav1.GetOptions{})
+			podreturned, err := client.CoreV1().Pods(pod.Namespace).Get(pod.Name, metav1.GetOptions{})
 			if err == nil {
 				glog.Errorf("Not deleted yet %v", podreturned)
 				allGone = false

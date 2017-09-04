@@ -93,8 +93,8 @@ func (tcp *TestCloudProvider) Pricing() (cloudprovider.PricingModel, errors.Auto
 	return nil, cloudprovider.ErrNotImplemented
 }
 
-// GetAvilableMachineTypes get all machine types that can be requested from the cloud provider.
-func (tcp *TestCloudProvider) GetAvilableMachineTypes() ([]string, error) {
+// GetAvailableMachineTypes get all machine types that can be requested from the cloud provider.
+func (tcp *TestCloudProvider) GetAvailableMachineTypes() ([]string, error) {
 	return []string{}, nil
 }
 

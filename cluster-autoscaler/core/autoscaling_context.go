@@ -57,10 +57,10 @@ type AutoscalingContext struct {
 type AutoscalingOptions struct {
 	// MaxEmptyBulkDelete is a number of empty nodes that can be removed at the same time.
 	MaxEmptyBulkDelete int
-	// ScaleDownUtilizationThreshold sets threshould for nodes to be considered for scale down.
+	// ScaleDownUtilizationThreshold sets threshold for nodes to be considered for scale down.
 	// Well-utilized nodes are not touched.
 	ScaleDownUtilizationThreshold float64
-	// ScaleDownUnneededTime sets the duriation CA exepects a node to be unneded/eligible for removal
+	// ScaleDownUnneededTime sets the duration CA expects a node to be unneeded/eligible for removal
 	// before scaling down the node.
 	ScaleDownUnneededTime time.Duration
 	// ScaleDownUnreadyTime represents how long an unready node should be unneeded before it is eligible for scale down
@@ -75,7 +75,7 @@ type AutoscalingOptions struct {
 	EstimatorName string
 	// ExpanderName sets the type of node group expander to be used in scale up
 	ExpanderName string
-	// MaxGracefulTerminationSec is maximum number of seconds scale down waits for pods to terminante before
+	// MaxGracefulTerminationSec is maximum number of seconds scale down waits for pods to terminate before
 	// removing the node from cloud provider.
 	MaxGracefulTerminationSec int
 	//  Maximum time CA waits for node to be provisioned
@@ -103,7 +103,7 @@ type AutoscalingOptions struct {
 	WriteStatusConfigMap bool
 	// BalanceSimilarNodeGroups enables logic that identifies node groups with similar machines and tries to balance node count between them.
 	BalanceSimilarNodeGroups bool
-	// ConfigNamespace is the namesapce cluster-autoscaler is running in and all related configmaps live in
+	// ConfigNamespace is the namespace cluster-autoscaler is running in and all related configmaps live in
 	ConfigNamespace string
 	// ClusterName if available
 	ClusterName string

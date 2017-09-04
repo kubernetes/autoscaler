@@ -121,27 +121,27 @@ func (basicEstimator *BasicNodeEstimator) Estimate(node *apiv1.Node, comingNodes
 		resources[apiv1.ResourcePods] = pods
 	}
 
-	if cpuCapcaity, ok := node.Status.Capacity[apiv1.ResourceCPU]; ok {
+	if cpuCapacity, ok := node.Status.Capacity[apiv1.ResourceCPU]; ok {
 		comingCpu := resources[apiv1.ResourceCPU]
 		prop := int(math.Ceil(float64(
 			basicEstimator.cpuSum.MilliValue()-comingCpu.MilliValue()) /
-			float64(cpuCapcaity.MilliValue())))
+			float64(cpuCapacity.MilliValue())))
 
 		buffer.WriteString(fmt.Sprintf("CPU: %d\n", prop))
 		result = maxInt(result, prop)
 	}
-	if memCapcaity, ok := node.Status.Capacity[apiv1.ResourceMemory]; ok {
+	if memCapacity, ok := node.Status.Capacity[apiv1.ResourceMemory]; ok {
 		comingMem := resources[apiv1.ResourceMemory]
 		prop := int(math.Ceil(float64(
 			basicEstimator.memorySum.Value()-comingMem.Value()) /
-			float64(memCapcaity.Value())))
+			float64(memCapacity.Value())))
 		buffer.WriteString(fmt.Sprintf("Mem: %d\n", prop))
 		result = maxInt(result, prop)
 	}
-	if podCapcaity, ok := node.Status.Capacity[apiv1.ResourcePods]; ok {
+	if podCapacity, ok := node.Status.Capacity[apiv1.ResourcePods]; ok {
 		comingPods := resources[apiv1.ResourcePods]
 		prop := int(math.Ceil(float64(basicEstimator.GetCount()-int(comingPods.Value())) /
-			float64(podCapcaity.Value())))
+			float64(podCapacity.Value())))
 		buffer.WriteString(fmt.Sprintf("Pods: %d\n", prop))
 		result = maxInt(result, prop)
 	}
