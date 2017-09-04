@@ -72,9 +72,7 @@ func (estimator *BinpackingNodeEstimator) Estimate(pods []*apiv1.Pod, nodeTempla
 	}
 
 	newNodes := make([]*schedulercache.NodeInfo, 0)
-	for _, node := range comingNodes {
-		newNodes = append(newNodes, node)
-	}
+	newNodes = append(newNodes, comingNodes...)
 
 	for _, podInfo := range podInfos {
 		found := false
