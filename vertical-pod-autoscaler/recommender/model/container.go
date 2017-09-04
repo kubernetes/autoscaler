@@ -57,7 +57,7 @@ type ContainerStats struct {
 	lastSampleStart time.Time
 }
 
-// NewContainerStats returns a new, empty Con
+// NewContainerStats returns a new, empty ContainerStats.
 func NewContainerStats() *ContainerStats {
 	return &ContainerStats{
 		util.NewHistogram(cpuHistogramOptions()), // cpuUsage
