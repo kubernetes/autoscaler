@@ -121,8 +121,8 @@ func (gce *GceCloudProvider) Pricing() (cloudprovider.PricingModel, errors.Autos
 	return &GcePriceModel{}, nil
 }
 
-// GetAvilableMachineTypes get all machine types that can be requested from the cloud provider.
-func (gce *GceCloudProvider) GetAvilableMachineTypes() ([]string, error) {
+// GetAvailableMachineTypes get all machine types that can be requested from the cloud provider.
+func (gce *GceCloudProvider) GetAvailableMachineTypes() ([]string, error) {
 	return autoprovisionedMachineTypes, nil
 }
 
