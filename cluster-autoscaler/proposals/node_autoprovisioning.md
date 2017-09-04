@@ -80,7 +80,7 @@ Then it will add these labels to all machine types available in the cloud provid
 
 To allow this the following extensions will be made in CloudProvider interface:
 
- * `GetAvilableMachineTypes() ([]string, error)` returns all node types that could be requested from the cloud provider.
+ * `GetAvailableMachineTypes() ([]string, error)` returns all node types that could be requested from the cloud provider.
  * `NewNodeGroup(name string, machineType string, labels map[string]string, extraResources map[Resource]Quantity) (NodeGroup, error)` builds a theoretical node group based on the node definition provided. The node group is not automatically created on the cloud provider side. The argument list will probably be expanded with GPU specific stuff.
  * `NodeGroups` will only return created node groups. Theoretical/temporary node groups will not be included.
 
