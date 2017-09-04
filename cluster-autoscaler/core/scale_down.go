@@ -695,3 +695,22 @@ func deleteNodeFromCloudProvider(node *apiv1.Node, cloudProvider cloudprovider.C
 func hasNoScaleDownAnnotation(node *apiv1.Node) bool {
 	return node.Annotations[ScaleDownDisabledKey] == "true"
 }
+
+func cleanUpNodeAutoprovisionedGroups(cloudProvider cloudprovider.CloudProvider) error {
+	nodeGroups := cloudProvider.NodeGroups()
+	for _, nodeGroup := range nodeGroups {
+		if !nodeGroup.Autoprovisioned() {
+			continue
+		}
+		size, err := nodeGroup.TargetSize()
+		if err != nil {
+			return err
+		}
+		if size == 0 {
+			if err := nodeGroup.Delete(); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
