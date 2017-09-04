@@ -222,10 +222,7 @@ func (allNodeLister *AllNodeLister) List() ([]*apiv1.Node, error) {
 	if err != nil {
 		return []*apiv1.Node{}, err
 	}
-	allNodes := make([]*apiv1.Node, 0, len(nodes))
-	for _, node := range nodes {
-		allNodes = append(allNodes, node)
-	}
+	allNodes := append(make([]*apiv1.Node, 0, len(nodes)), nodes...)
 	return allNodes, nil
 }
 
