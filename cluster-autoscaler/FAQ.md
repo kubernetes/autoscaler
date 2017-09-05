@@ -1,11 +1,12 @@
 # Frequently Asked Questions
 
 # Older versions
-The answers in this FAQ apply to the newest version of Cluster Autoscaler. If
+The answers in this FAQ apply to the newest (HEAD) version of Cluster Autoscaler. If
 you're using an older version of CA please refer to corresponding version of
 this document:
 
-[Cluster Autoscaler 0.5.X](https://github.com/kubernetes/autoscaler/blob/cluster-autoscaler-release-0.5/cluster-autoscaler/FAQ.md)
+* [Cluster Autoscaler 0.5.X](https://github.com/kubernetes/autoscaler/blob/cluster-autoscaler-release-0.5/cluster-autoscaler/FAQ.md)
+* [Cluster Autoscaler 0.6.X](https://github.com/kubernetes/autoscaler/blob/cluster-autoscaler-release-0.6/cluster-autoscaler/FAQ.md)
 
 # Table of Contents:
 <!--- TOC BEGIN -->
