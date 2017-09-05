@@ -81,7 +81,7 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 	nodeGroups := context.CloudProvider.NodeGroups()
 
 	if context.AutoscalingOptions.NodeAutoprovisioningEnabled {
-		addAutoprovisionedCandidates(context, nodeGroups, unschedulablePods)
+		addAutoprovisionedCandidates(context, nodeGroups, nodeInfos, unschedulablePods)
 	}
 
 	for _, nodeGroup := range nodeGroups {
@@ -295,7 +295,9 @@ func executeScaleUp(context *AutoscalingContext, info nodegroupset.ScaleUpInfo) 
 	return nil
 }
 
-func addAutoprovisionedCandidates(context *AutoscalingContext, nodeGroups []cloudprovider.NodeGroup, unschedulablePods []*apiv1.Pod) {
+func addAutoprovisionedCandidates(context *AutoscalingContext, nodeGroups []cloudprovider.NodeGroup,
+	nodeInfos map[string]*schedulercache.NodeInfo, unschedulablePods []*apiv1.Pod) {
+
 	autoprovisionedNodeGroupCount := 0
 	for _, group := range nodeGroups {
 		if group.Autoprovisioned() {
@@ -316,9 +318,15 @@ func addAutoprovisionedCandidates(context *AutoscalingContext, nodeGroups []clou
 			nodeGroup, err := context.CloudProvider.NewNodeGroup(machineType, bestLabels, nil)
 			if err != nil {
 				glog.Warningf("Unable to build temporary node group for %s: %v", machineType, err)
-			} else {
-				nodeGroups = append(nodeGroups, nodeGroup)
+				continue
 			}
+			nodeInfo, err := nodeGroup.TemplateNodeInfo()
+			if err != nil {
+				glog.Warningf("Unable to build template for node group for %s: %v", nodeGroup.Id(), err)
+				continue
+			}
+			nodeInfos[nodeGroup.Id()] = nodeInfo
+			nodeGroups = append(nodeGroups, nodeGroup)
 		}
 	}
 }
