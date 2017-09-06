@@ -165,6 +165,8 @@ func TestFindUnneededMaxCandidates(t *testing.T) {
 		AutoscalingOptions: AutoscalingOptions{
 			ScaleDownUtilizationThreshold:    0.35,
 			ScaleDownNonEmptyCandidatesCount: numCandidates,
+			ScaleDownCandidatesPoolRatio:     1,
+			ScaleDownCandidatesPoolMinCount:  1000,
 		},
 		ClusterStateRegistry: clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder),
 		PredicateChecker:     simulator.NewTestPredicateChecker(),
@@ -197,6 +199,53 @@ func TestFindUnneededMaxCandidates(t *testing.T) {
 	// Check that the deleted node was replaced
 	assert.Equal(t, numCandidates, len(sd.unneededNodes))
 	assert.NotContains(t, sd.unneededNodes, deleted)
+}
+
+func TestFindUnneededAdditionalNodePool(t *testing.T) {
+	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider.AddNodeGroup("ng1", 1, 100, 2)
+
+	numNodes := 100
+	nodes := make([]*apiv1.Node, 0, numNodes)
+	for i := 0; i < numNodes; i++ {
+		n := BuildTestNode(fmt.Sprintf("n%v", i), 1000, 10)
+		SetNodeReadyState(n, true, time.Time{})
+		provider.AddNode("ng1", n)
+		nodes = append(nodes, n)
+	}
+
+	// shared owner reference
+	ownerRef := GenerateOwnerReferences("rs", "ReplicaSet", "extensions/v1beta1", "")
+
+	pods := make([]*apiv1.Pod, 0, numNodes)
+	for i := 0; i < numNodes; i++ {
+		p := BuildTestPod(fmt.Sprintf("p%v", i), 100, 0)
+		p.Spec.NodeName = fmt.Sprintf("n%v", i)
+		p.OwnerReferences = ownerRef
+		pods = append(pods, p)
+	}
+
+	fakeClient := &fake.Clientset{}
+	fakeRecorder := kube_util.CreateEventRecorder(fakeClient)
+	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false)
+
+	numCandidates := 30
+
+	context := AutoscalingContext{
+		AutoscalingOptions: AutoscalingOptions{
+			ScaleDownUtilizationThreshold:    0.35,
+			ScaleDownNonEmptyCandidatesCount: numCandidates,
+			ScaleDownCandidatesPoolRatio:     0.1,
+			ScaleDownCandidatesPoolMinCount:  10,
+		},
+		ClusterStateRegistry: clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder),
+		PredicateChecker:     simulator.NewTestPredicateChecker(),
+		LogRecorder:          fakeLogRecorder,
+	}
+	sd := NewScaleDown(&context)
+
+	sd.UpdateUnneededNodes(nodes, nodes, pods, time.Now(), nil)
+	assert.NotEmpty(t, sd.unneededNodes)
 }
 
 func TestDrainNode(t *testing.T) {

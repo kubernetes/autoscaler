@@ -88,6 +88,17 @@ var (
 			"Lower value means better CA responsiveness but possible slower scale down latency."+
 			"Higher value can affect CA performance with big clusters (hundreds of nodes)."+
 			"Set to non posistive value to turn this heuristic off - CA will not limit the number of nodes it considers.")
+	scaleDownCandidatesPoolRatio = flag.Float64("scale-down-candidates-pool-ratio", 0.1,
+		"A ratio of nodes that are considered as additional non empty candidates for"+
+			"scale down when some candidates from previous iteration are no longer valid."+
+			"Lower value means better CA responsiveness but possible slower scale down latency."+
+			"Higher value can affect CA performance with big clusters (hundreds of nodes)."+
+			"Set to 1.0 to turn this heuristics off - CA will take all nodes as additional candidates.")
+	scaleDownCandidatesPoolMinCount = flag.Int("scale-down-candidates-pool-min-count", 50,
+		"Minimum number of nodes that are considered as additional non empty candidates"+
+			"for scale down when some candidates from previous iteration are no longer valid."+
+			"When calculating the pool size for additional candidates we take"+
+			"max(#nodes * scale-down-candidates-pool-ratio, scale-down-candidates-pool-min-count).")
 	scanInterval                = flag.Duration("scan-interval", 10*time.Second, "How often cluster is reevaluated for scale up or down")
 	maxNodesTotal               = flag.Int("max-nodes-total", 0, "Maximum number of nodes in all node groups. Cluster autoscaler will not grow the cluster beyond this number.")
 	cloudProviderFlag           = flag.String("cloud-provider", "gce", "Cloud provider type. Allowed values: gce, aws, kubemark")
@@ -134,6 +145,8 @@ func createAutoscalerOptions() core.AutoscalerOptions {
 		ScaleDownUnreadyTime:             *scaleDownUnreadyTime,
 		ScaleDownUtilizationThreshold:    *scaleDownUtilizationThreshold,
 		ScaleDownNonEmptyCandidatesCount: *scaleDownNonEmptyCandidatesCount,
+		ScaleDownCandidatesPoolRatio:     *scaleDownCandidatesPoolRatio,
+		ScaleDownCandidatesPoolMinCount:  *scaleDownCandidatesPoolMinCount,
 		WriteStatusConfigMap:             *writeStatusConfigMapFlag,
 		BalanceSimilarNodeGroups:         *balanceSimilarNodeGroupsFlag,
 		ConfigNamespace:                  *namespace,
