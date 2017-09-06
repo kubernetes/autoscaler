@@ -163,6 +163,11 @@ func (p *PredicateChecker) SetAffinityPredicateEnabled(enable bool) {
 	p.enableAffinityPredicate = enable
 }
 
+// IsAffinityPredicateEnabled checks if affinity predicate is enabled.
+func (p *PredicateChecker) IsAffinityPredicateEnabled() bool {
+	return p.enableAffinityPredicate
+}
+
 // GetPredicateMetadata precomputes some information useful for running predicates on a given pod in a given state
 // of the cluster (represented by nodeInfos map). Passing the result of this function to CheckPredicates can significantly
 // improve the performance of running predicates, especially MatchInterPodAffinity predicate. However, calculating
