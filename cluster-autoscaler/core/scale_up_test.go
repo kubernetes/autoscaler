@@ -23,10 +23,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
-	apiv1 "k8s.io/api/core/v1"
-	extensionsv1 "k8s.io/api/extensions/v1beta1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
@@ -36,9 +32,16 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+
+	apiv1 "k8s.io/api/core/v1"
+	extensionsv1 "k8s.io/api/extensions/v1beta1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/fake"
 	core "k8s.io/client-go/testing"
 	kube_record "k8s.io/client-go/tools/record"
+	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestScaleUpOK(t *testing.T) {
@@ -442,4 +445,66 @@ func TestScaleUpBalanceGroups(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 2, ng2size)
 	assert.Equal(t, 2, ng3size)
+}
+
+func TestAddAutoprovisionedCandidatesOK(t *testing.T) {
+	t1 := BuildTestNode("t1", 4000, 1000000)
+	ti1 := schedulercache.NewNodeInfo()
+	ti1.SetNode(t1)
+	p1 := BuildTestPod("p1", 100, 100)
+
+	n1 := BuildTestNode("ng1-xxx", 4000, 1000000)
+	ni1 := schedulercache.NewNodeInfo()
+	ni1.SetNode(n1)
+
+	provider := testprovider.NewTestAutoprovisioningCloudProvider(nil, nil,
+		nil, nil,
+		[]string{"T1"}, map[string]*schedulercache.NodeInfo{"T1": ti1})
+	provider.AddNodeGroup("ng1", 1, 5, 3)
+
+	context := &AutoscalingContext{
+		AutoscalingOptions: AutoscalingOptions{
+			MaxAutoprovisionedNodeGroupCount: 1,
+		},
+		CloudProvider: provider,
+	}
+	nodeGroups := provider.NodeGroups()
+	nodeInfos := map[string]*schedulercache.NodeInfo{
+		"ng1": ni1,
+	}
+	nodeGroups, nodeInfos = addAutoprovisionedCandidates(context, nodeGroups, nodeInfos, []*apiv1.Pod{p1})
+
+	assert.Equal(t, 2, len(nodeGroups))
+	assert.Equal(t, 2, len(nodeInfos))
+}
+
+func TestAddAutoprovisionedCandidatesToMany(t *testing.T) {
+	t1 := BuildTestNode("T1-abc", 4000, 1000000)
+	ti1 := schedulercache.NewNodeInfo()
+	ti1.SetNode(t1)
+
+	x1 := BuildTestNode("X1-cde", 4000, 1000000)
+	xi1 := schedulercache.NewNodeInfo()
+	xi1.SetNode(x1)
+
+	p1 := BuildTestPod("p1", 100, 100)
+
+	provider := testprovider.NewTestAutoprovisioningCloudProvider(nil, nil,
+		nil, nil,
+		[]string{"T1", "X1"},
+		map[string]*schedulercache.NodeInfo{"T1": ti1, "X1": xi1})
+	provider.AddAutoprovisionedNodeGroup("autoprovisioned-X1", 0, 1000, 0, "X1")
+
+	context := &AutoscalingContext{
+		AutoscalingOptions: AutoscalingOptions{
+			MaxAutoprovisionedNodeGroupCount: 1,
+		},
+		CloudProvider: provider,
+	}
+	nodeGroups := provider.NodeGroups()
+	nodeInfos := map[string]*schedulercache.NodeInfo{"X1": xi1}
+	nodeGroups, nodeInfos = addAutoprovisionedCandidates(context, nodeGroups, nodeInfos, []*apiv1.Pod{p1})
+
+	assert.Equal(t, 1, len(nodeGroups))
+	assert.Equal(t, 1, len(nodeInfos))
 }
