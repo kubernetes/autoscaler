@@ -81,7 +81,7 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 	nodeGroups := context.CloudProvider.NodeGroups()
 
 	if context.AutoscalingOptions.NodeAutoprovisioningEnabled {
-		addAutoprovisionedCandidates(context, nodeGroups, nodeInfos, unschedulablePods)
+		nodeGroups, nodeInfos = addAutoprovisionedCandidates(context, nodeGroups, nodeInfos, unschedulablePods)
 	}
 
 	for _, nodeGroup := range nodeGroups {
@@ -296,7 +296,8 @@ func executeScaleUp(context *AutoscalingContext, info nodegroupset.ScaleUpInfo) 
 }
 
 func addAutoprovisionedCandidates(context *AutoscalingContext, nodeGroups []cloudprovider.NodeGroup,
-	nodeInfos map[string]*schedulercache.NodeInfo, unschedulablePods []*apiv1.Pod) {
+	nodeInfos map[string]*schedulercache.NodeInfo, unschedulablePods []*apiv1.Pod) ([]cloudprovider.NodeGroup,
+	map[string]*schedulercache.NodeInfo) {
 
 	autoprovisionedNodeGroupCount := 0
 	for _, group := range nodeGroups {
@@ -306,7 +307,7 @@ func addAutoprovisionedCandidates(context *AutoscalingContext, nodeGroups []clou
 	}
 	if autoprovisionedNodeGroupCount >= context.MaxAutoprovisionedNodeGroupCount {
 		glog.V(4).Infof("Max autoprovisioned node group count reached")
-		return
+		return nodeGroups, nodeInfos
 	}
 
 	machines, err := context.CloudProvider.GetAvailableMachineTypes()
@@ -329,4 +330,5 @@ func addAutoprovisionedCandidates(context *AutoscalingContext, nodeGroups []clou
 			nodeGroups = append(nodeGroups, nodeGroup)
 		}
 	}
+	return nodeGroups, nodeInfos
 }
