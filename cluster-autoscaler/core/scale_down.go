@@ -209,8 +209,22 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		currentlyUnneededNodes = append(currentlyUnneededNodes, node)
 	}
 
+	emptyNodes := make(map[string]bool)
+
+	emptyNodesList := getEmptyNodes(currentlyUnneededNodes, pods, len(currentlyUnneededNodes), sd.context.CloudProvider)
+	for _, node := range emptyNodesList {
+		emptyNodes[node.Name] = true
+	}
+
+	currentlyUnneededNonEmptyNodes := make([]*apiv1.Node, 0, len(currentlyUnneededNodes))
+	for _, node := range currentlyUnneededNodes {
+		if !emptyNodes[node.Name] {
+			currentlyUnneededNonEmptyNodes = append(currentlyUnneededNonEmptyNodes, node)
+		}
+	}
+
 	// Phase2 - check which nodes can be probably removed using fast drain.
-	currentCandidates, currentNonCandidates := sd.chooseCandidates(currentlyUnneededNodes)
+	currentCandidates, currentNonCandidates := sd.chooseCandidates(currentlyUnneededNonEmptyNodes)
 
 	// Look for nodes to remove in the current candidates
 	nodesToRemove, unremovable, newHints, simulatorErr := simulator.FindNodesToRemove(
@@ -249,6 +263,9 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		}
 	}
 
+	for _, node := range emptyNodesList {
+		nodesToRemove = append(nodesToRemove, simulator.NodeToBeRemoved{Node: node, PodsToReschedule: []*apiv1.Pod{}})
+	}
 	// Update the timestamp map.
 	result := make(map[string]time.Time)
 	unneededNodesList := make([]*apiv1.Node, 0, len(nodesToRemove))
