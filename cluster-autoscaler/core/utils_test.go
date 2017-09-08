@@ -190,7 +190,7 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 	tni := schedulercache.NewNodeInfo()
 	tni.SetNode(tn)
 
-	// Cloud provider
+	// Cloud provider with TemplateNodeInfo implemented.
 	provider1 := testprovider.NewTestAutoprovisioningCloudProvider(nil, nil,
 		nil, nil,
 		nil, map[string]*schedulercache.NodeInfo{"n3": tni, "n4": tni})
@@ -203,6 +203,7 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 	provider1.AddNode("n2", n3)
 	provider1.AddNode("n3", n4)
 
+	// Cloud provider with TemplateNodeInfo not implemented.
 	provider2 := testprovider.NewTestAutoprovisioningCloudProvider(nil, nil,
 		nil, nil,
 		nil, nil)
