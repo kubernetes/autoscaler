@@ -25,15 +25,20 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/util/initialization"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/apiserver/pkg/admission"
+	"k8s.io/apiserver/pkg/features"
+	utilfeature "k8s.io/apiserver/pkg/util/feature"
 	"k8s.io/client-go/informers"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/helper/qos"
 	k8s_api_v1 "k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/api/validation"
+	"k8s.io/kubernetes/pkg/kubeapiserver/admission/util"
 	"k8s.io/kubernetes/pkg/quota"
 	"k8s.io/kubernetes/pkg/quota/generic"
 )
@@ -42,10 +47,13 @@ import (
 var podResources = []api.ResourceName{
 	api.ResourceCPU,
 	api.ResourceMemory,
+	api.ResourceEphemeralStorage,
 	api.ResourceRequestsCPU,
 	api.ResourceRequestsMemory,
+	api.ResourceRequestsEphemeralStorage,
 	api.ResourceLimitsCPU,
 	api.ResourceLimitsMemory,
+	api.ResourceLimitsEphemeralStorage,
 	api.ResourcePods,
 }
 
@@ -131,10 +139,20 @@ func (p *podEvaluator) GroupKind() schema.GroupKind {
 	return api.Kind("Pod")
 }
 
-// Handles returns true of the evaluator should handle the specified operation.
-func (p *podEvaluator) Handles(operation admission.Operation) bool {
-	// TODO: update this if/when pods support resizing resource requirements.
-	return admission.Create == operation
+// Handles returns true if the evaluator should handle the specified attributes.
+func (p *podEvaluator) Handles(a admission.Attributes) bool {
+	op := a.GetOperation()
+	if op == admission.Create {
+		return true
+	}
+	initializationCompletion, err := util.IsInitializationCompletion(a)
+	if err != nil {
+		// fail closed, will try to give an evaluation.
+		utilruntime.HandleError(err)
+		return true
+	}
+	// only uninitialized pods might be updated.
+	return initializationCompletion
 }
 
 // Matches returns true if the evaluator matches the specified quota with the provided input item
@@ -191,6 +209,13 @@ func podUsageHelper(requests api.ResourceList, limits api.ResourceList) api.Reso
 	if limit, found := limits[api.ResourceMemory]; found {
 		result[api.ResourceLimitsMemory] = limit
 	}
+	if request, found := requests[api.ResourceEphemeralStorage]; found {
+		result[api.ResourceEphemeralStorage] = request
+		result[api.ResourceRequestsEphemeralStorage] = request
+	}
+	if limit, found := limits[api.ResourceEphemeralStorage]; found {
+		result[api.ResourceLimitsEphemeralStorage] = limit
+	}
 	return result
 }
 
@@ -234,9 +259,18 @@ func PodUsageFunc(obj runtime.Object) (api.ResourceList, error) {
 	if err != nil {
 		return api.ResourceList{}, err
 	}
+
 	// by convention, we do not quota pods that have reached an end-of-life state
 	if !QuotaPod(pod) {
 		return api.ResourceList{}, nil
+	}
+	// Only charge pod count for uninitialized pod.
+	if utilfeature.DefaultFeatureGate.Enabled(features.Initializers) {
+		if !initialization.IsInitialized(pod.Initializers) {
+			result := api.ResourceList{}
+			result[api.ResourcePods] = resource.MustParse("1")
+			return result, nil
+		}
 	}
 	requests := api.ResourceList{}
 	limits := api.ResourceList{}
