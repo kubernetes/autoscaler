@@ -79,8 +79,12 @@ type RealFsInfo struct {
 	// Map from label to block device path.
 	// Labels are intent-specific tags that are auto-detected.
 	labels map[string]string
+	// Map from mountpoint to mount information.
+	mounts map[string]*mount.Info
 	// devicemapper client
 	dmsetup devicemapper.DmsetupClient
+	// fsUUIDToDeviceName is a map from the filesystem UUID to its device name.
+	fsUUIDToDeviceName map[string]string
 }
 
 type Context struct {
@@ -101,12 +105,23 @@ func NewFsInfo(context Context) (FsInfo, error) {
 		return nil, err
 	}
 
+	fsUUIDToDeviceName, err := getFsUUIDToDeviceNameMap()
+	if err != nil {
+		return nil, err
+	}
+
 	// Avoid devicemapper container mounts - these are tracked by the ThinPoolWatcher
 	excluded := []string{fmt.Sprintf("%s/devicemapper/mnt", context.Docker.Root)}
 	fsInfo := &RealFsInfo{
-		partitions: processMounts(mounts, excluded),
-		labels:     make(map[string]string, 0),
-		dmsetup:    devicemapper.NewDmsetupClient(),
+		partitions:         processMounts(mounts, excluded),
+		labels:             make(map[string]string, 0),
+		mounts:             make(map[string]*mount.Info, 0),
+		dmsetup:            devicemapper.NewDmsetupClient(),
+		fsUUIDToDeviceName: fsUUIDToDeviceName,
+	}
+
+	for _, mount := range mounts {
+		fsInfo.mounts[mount.Mountpoint] = mount
 	}
 
 	fsInfo.addRktImagesLabel(context, mounts)
@@ -114,9 +129,42 @@ func NewFsInfo(context Context) (FsInfo, error) {
 	// add a "partition" for devicemapper to fsInfo.partitions
 	fsInfo.addDockerImagesLabel(context, mounts)
 
+	glog.Infof("Filesystem UUIDs: %+v", fsInfo.fsUUIDToDeviceName)
 	glog.Infof("Filesystem partitions: %+v", fsInfo.partitions)
 	fsInfo.addSystemRootLabel(mounts)
 	return fsInfo, nil
+}
+
+// getFsUUIDToDeviceNameMap creates the filesystem uuid to device name map
+// using the information in /dev/disk/by-uuid. If the directory does not exist,
+// this function will return an empty map.
+func getFsUUIDToDeviceNameMap() (map[string]string, error) {
+	const dir = "/dev/disk/by-uuid"
+
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		return make(map[string]string), nil
+	}
+
+	files, err := ioutil.ReadDir(dir)
+	if err != nil {
+		return nil, err
+	}
+
+	fsUUIDToDeviceName := make(map[string]string)
+	for _, file := range files {
+		path := filepath.Join(dir, file.Name())
+		target, err := os.Readlink(path)
+		if err != nil {
+			glog.Infof("Failed to resolve symlink for %q", path)
+			continue
+		}
+		device, err := filepath.Abs(filepath.Join(dir, target))
+		if err != nil {
+			return nil, fmt.Errorf("failed to resolve the absolute path of %q", filepath.Join(dir, target))
+		}
+		fsUUIDToDeviceName[file.Name()] = device
+	}
+	return fsUUIDToDeviceName, nil
 }
 
 func processMounts(mounts []*mount.Info, excludedMountpointPrefixes []string) map[string]partition {
@@ -125,6 +173,7 @@ func processMounts(mounts []*mount.Info, excludedMountpointPrefixes []string) ma
 	supportedFsType := map[string]bool{
 		// all ext systems are checked through prefix.
 		"btrfs": true,
+		"tmpfs": true,
 		"xfs":   true,
 		"zfs":   true,
 	}
@@ -152,25 +201,12 @@ func processMounts(mounts []*mount.Info, excludedMountpointPrefixes []string) ma
 		// btrfs fix: following workaround fixes wrong btrfs Major and Minor Ids reported in /proc/self/mountinfo.
 		// instead of using values from /proc/self/mountinfo we use stat to get Ids from btrfs mount point
 		if mount.Fstype == "btrfs" && mount.Major == 0 && strings.HasPrefix(mount.Source, "/dev/") {
-
-			buf := new(syscall.Stat_t)
-			err := syscall.Stat(mount.Source, buf)
+			major, minor, err := getBtrfsMajorMinorIds(mount)
 			if err != nil {
-				glog.Warningf("stat failed on %s with error: %s", mount.Source, err)
+				glog.Warningf("%s", err)
 			} else {
-				glog.Infof("btrfs mount %#v", mount)
-				if buf.Mode&syscall.S_IFMT == syscall.S_IFBLK {
-					err := syscall.Stat(mount.Mountpoint, buf)
-					if err != nil {
-						glog.Warningf("stat failed on %s with error: %s", mount.Mountpoint, err)
-					} else {
-						glog.Infof("btrfs dev major:minor %d:%d\n", int(major(buf.Dev)), int(minor(buf.Dev)))
-						glog.Infof("btrfs rdev major:minor %d:%d\n", int(major(buf.Rdev)), int(minor(buf.Rdev)))
-
-						mount.Major = int(major(buf.Dev))
-						mount.Minor = int(minor(buf.Dev))
-					}
-				}
+				mount.Major = major
+				mount.Minor = minor
 			}
 		}
 
@@ -438,17 +474,40 @@ func minor(devNumber uint64) uint {
 	return uint((devNumber & 0xff) | ((devNumber >> 12) & 0xfff00))
 }
 
+func (self *RealFsInfo) GetDeviceInfoByFsUUID(uuid string) (*DeviceInfo, error) {
+	deviceName, found := self.fsUUIDToDeviceName[uuid]
+	if !found {
+		return nil, ErrNoSuchDevice
+	}
+	p, found := self.partitions[deviceName]
+	if !found {
+		return nil, fmt.Errorf("cannot find device %q in partitions", deviceName)
+	}
+	return &DeviceInfo{deviceName, p.major, p.minor}, nil
+}
+
 func (self *RealFsInfo) GetDirFsDevice(dir string) (*DeviceInfo, error) {
 	buf := new(syscall.Stat_t)
 	err := syscall.Stat(dir, buf)
 	if err != nil {
 		return nil, fmt.Errorf("stat failed on %s with error: %s", dir, err)
 	}
+
 	major := major(buf.Dev)
 	minor := minor(buf.Dev)
 	for device, partition := range self.partitions {
 		if partition.major == major && partition.minor == minor {
 			return &DeviceInfo{device, major, minor}, nil
+		}
+	}
+
+	mount, found := self.mounts[dir]
+	if found && mount.Fstype == "btrfs" && mount.Major == 0 && strings.HasPrefix(mount.Source, "/dev/") {
+		major, minor, err := getBtrfsMajorMinorIds(mount)
+		if err != nil {
+			glog.Warningf("%s", err)
+		} else {
+			return &DeviceInfo{mount.Source, uint(major), uint(minor)}, nil
 		}
 	}
 	return nil, fmt.Errorf("could not find device with major: %d, minor: %d in cached partitions map", major, minor)
@@ -643,4 +702,33 @@ type byteCounter struct{ bytesWritten uint64 }
 func (b *byteCounter) Write(p []byte) (int, error) {
 	b.bytesWritten += uint64(len(p))
 	return len(p), nil
+}
+
+// Get major and minor Ids for a mount point using btrfs as filesystem.
+func getBtrfsMajorMinorIds(mount *mount.Info) (int, int, error) {
+	// btrfs fix: following workaround fixes wrong btrfs Major and Minor Ids reported in /proc/self/mountinfo.
+	// instead of using values from /proc/self/mountinfo we use stat to get Ids from btrfs mount point
+
+	buf := new(syscall.Stat_t)
+	err := syscall.Stat(mount.Source, buf)
+	if err != nil {
+		err = fmt.Errorf("stat failed on %s with error: %s", mount.Source, err)
+		return 0, 0, err
+	}
+
+	glog.Infof("btrfs mount %#v", mount)
+	if buf.Mode&syscall.S_IFMT == syscall.S_IFBLK {
+		err := syscall.Stat(mount.Mountpoint, buf)
+		if err != nil {
+			err = fmt.Errorf("stat failed on %s with error: %s", mount.Mountpoint, err)
+			return 0, 0, err
+		}
+
+		glog.Infof("btrfs dev major:minor %d:%d\n", int(major(buf.Dev)), int(minor(buf.Dev)))
+		glog.Infof("btrfs rdev major:minor %d:%d\n", int(major(buf.Rdev)), int(minor(buf.Rdev)))
+
+		return int(major(buf.Dev)), int(minor(buf.Dev)), nil
+	} else {
+		return 0, 0, fmt.Errorf("%s is not a block device", mount.Source)
+	}
 }

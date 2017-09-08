@@ -470,6 +470,12 @@ func (pc *PCCloud) ExternalID(nodeName k8stypes.NodeName) (string, error) {
 	}
 }
 
+// InstanceExistsByProviderID returns true if the instance with the given provider id still exists and is running.
+// If false is returned with no error, the instance will be immediately deleted by the cloud controller manager.
+func (pc *PCCloud) InstanceExistsByProviderID(providerID string) (bool, error) {
+	return false, errors.New("unimplemented")
+}
+
 // InstanceID returns the cloud provider ID of the specified instance.
 func (pc *PCCloud) InstanceID(nodeName k8stypes.NodeName) (string, error) {
 	name := string(nodeName)
@@ -519,6 +525,20 @@ func (pc *PCCloud) Zones() (cloudprovider.Zones, bool) {
 
 func (pc *PCCloud) GetZone() (cloudprovider.Zone, error) {
 	return pc.Zone, nil
+}
+
+// GetZoneByProviderID implements Zones.GetZoneByProviderID
+// This is particularly useful in external cloud providers where the kubelet
+// does not initialize node data.
+func (pc *PCCloud) GetZoneByProviderID(providerID string) (cloudprovider.Zone, error) {
+	return cloudprovider.Zone{}, errors.New("GetZoneByProviderID not implemented")
+}
+
+// GetZoneByNodeName implements Zones.GetZoneByNodeName
+// This is particularly useful in external cloud providers where the kubelet
+// does not initialize node data.
+func (pc *PCCloud) GetZoneByNodeName(nodeName k8stypes.NodeName) (cloudprovider.Zone, error) {
+	return cloudprovider.Zone{}, errors.New("GetZoneByNodeName not imeplemented")
 }
 
 // Routes returns a false since the interface is not supported for photon controller.

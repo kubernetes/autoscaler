@@ -23,12 +23,13 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/algorithm"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/algorithm/predicates"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/algorithm/priorities"
 	schedulerapi "k8s.io/kubernetes/plugin/pkg/scheduler/api"
+
+	"github.com/golang/glog"
 )
 
 // PluginFactoryArgs are passed to all plugin factory functions.
@@ -142,7 +143,7 @@ func RegisterCustomFitPredicate(policy schedulerapi.PredicatePolicy) string {
 				)
 
 				// Once we generate the predicate we should also Register the Precomputation
-				predicates.RegisterPredicatePrecomputation(policy.Name, precomputationFunction)
+				predicates.RegisterPredicateMetadataProducer(policy.Name, precomputationFunction)
 				return predicate
 			}
 		} else if policy.Argument.LabelsPresence != nil {

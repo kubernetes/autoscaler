@@ -19,7 +19,7 @@ package openstack
 import (
 	"errors"
 	"fmt"
-	"net/url"
+	"regexp"
 
 	"github.com/golang/glog"
 	"github.com/gophercloud/gophercloud"
@@ -110,6 +110,12 @@ func (i *Instances) ExternalID(name types.NodeName) (string, error) {
 	return srv.ID, nil
 }
 
+// InstanceExistsByProviderID returns true if the instance with the given provider id still exists and is running.
+// If false is returned with no error, the instance will be immediately deleted by the cloud controller manager.
+func (i *Instances) InstanceExistsByProviderID(providerID string) (bool, error) {
+	return false, errors.New("unimplemented")
+}
+
 // InstanceID returns the kubelet's cloud provider ID.
 func (os *OpenStack) InstanceID() (string, error) {
 	if len(os.localInstanceID) == 0 {
@@ -126,6 +132,9 @@ func (os *OpenStack) InstanceID() (string, error) {
 func (i *Instances) InstanceID(name types.NodeName) (string, error) {
 	srv, err := getServerByName(i.compute, name)
 	if err != nil {
+		if err == ErrNotFound {
+			return "", cloudprovider.InstanceNotFound
+		}
 		return "", err
 	}
 	// In the future it is possible to also return an endpoint as:
@@ -177,14 +186,16 @@ func srvInstanceType(srv *servers.Server) (string, error) {
 	return "", fmt.Errorf("flavor name/id not found")
 }
 
+// instanceIDFromProviderID splits a provider's id and return instanceID.
+// A providerID is build out of '${ProviderName}:///${instance-id}'which contains ':///'.
+// See cloudprovider.GetInstanceProviderID and Instances.InstanceID.
 func instanceIDFromProviderID(providerID string) (instanceID string, err error) {
-	parsedID, err := url.Parse(providerID)
-	if err != nil {
-		return "", err
-	}
-	if parsedID.Scheme != ProviderName {
-		return "", fmt.Errorf("unrecognized provider %q", parsedID.Scheme)
-	}
+	// If Instances.InstanceID or cloudprovider.GetInstanceProviderID is changed, the regexp should be changed too.
+	var providerIdRegexp = regexp.MustCompile(`^` + ProviderName + `:///([^/]+)$`)
 
-	return parsedID.Host, nil
+	matches := providerIdRegexp.FindStringSubmatch(providerID)
+	if len(matches) != 2 {
+		return "", fmt.Errorf("ProviderID \"%s\" didn't match expected format \"openstack:///InstanceID\"", providerID)
+	}
+	return matches[1], nil
 }
