@@ -10,6 +10,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "doc.go",
+        "exec.go",
         "fake.go",
         "mount.go",
         "mount_unsupported.go",
@@ -26,6 +27,7 @@ go_library(
         "//vendor/k8s.io/utils/exec:go_default_library",
     ] + select({
         "@io_bazel_rules_go//go/platform:linux_amd64": [
+            "//pkg/util/io:go_default_library",
             "//vendor/golang.org/x/sys/unix:go_default_library",
             "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
         ],
@@ -45,10 +47,7 @@ go_test(
         "//conditions:default": [],
     }),
     library = ":go_default_library",
-    deps = [
-        "//vendor/k8s.io/utils/exec:go_default_library",
-        "//vendor/k8s.io/utils/exec/testing:go_default_library",
-    ],
+    deps = ["//vendor/k8s.io/utils/exec/testing:go_default_library"],
 )
 
 filegroup(
