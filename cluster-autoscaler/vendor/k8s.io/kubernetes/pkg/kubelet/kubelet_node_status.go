@@ -137,6 +137,7 @@ func (kl *Kubelet) tryRegisterWithAPIServer(node *v1.Node) bool {
 		// the value of the controller-managed attach-detach
 		// annotation.
 		requiresUpdate := kl.reconcileCMADAnnotationWithExistingNode(node, existingNode)
+		requiresUpdate = kl.updateDefaultLabels(node, existingNode) || requiresUpdate
 		if requiresUpdate {
 			if _, err := nodeutil.PatchNodeStatus(kl.kubeClient, types.NodeName(kl.nodeName),
 				originalNode, existingNode); err != nil {
@@ -159,6 +160,33 @@ func (kl *Kubelet) tryRegisterWithAPIServer(node *v1.Node) bool {
 	}
 
 	return false
+}
+
+// updateDefaultLabels will set the default labels on the node
+func (kl *Kubelet) updateDefaultLabels(initialNode, existingNode *v1.Node) bool {
+	defaultLabels := []string{
+		kubeletapis.LabelHostname,
+		kubeletapis.LabelZoneFailureDomain,
+		kubeletapis.LabelZoneRegion,
+		kubeletapis.LabelInstanceType,
+		kubeletapis.LabelOS,
+		kubeletapis.LabelArch,
+	}
+
+	var needsUpdate bool = false
+	//Set default labels but make sure to not set labels with empty values
+	for _, label := range defaultLabels {
+		if existingNode.Labels[label] != initialNode.Labels[label] {
+			existingNode.Labels[label] = initialNode.Labels[label]
+			needsUpdate = true
+		}
+
+		if existingNode.Labels[label] == "" {
+			delete(existingNode.Labels, label)
+		}
+	}
+
+	return needsUpdate
 }
 
 // reconcileCMADAnnotationWithExistingNode reconciles the controller-managed
@@ -441,14 +469,16 @@ func (kl *Kubelet) setNodeAddress(node *v1.Node) error {
 			return fmt.Errorf("failed to get node address from cloud provider: %v", err)
 		}
 		if kl.nodeIP != nil {
+			enforcedNodeAddresses := []v1.NodeAddress{}
 			for _, nodeAddress := range nodeAddresses {
 				if nodeAddress.Address == kl.nodeIP.String() {
-					node.Status.Addresses = []v1.NodeAddress{
-						{Type: nodeAddress.Type, Address: nodeAddress.Address},
-						{Type: v1.NodeHostName, Address: kl.GetHostname()},
-					}
-					return nil
+					enforcedNodeAddresses = append(enforcedNodeAddresses, v1.NodeAddress{Type: nodeAddress.Type, Address: nodeAddress.Address})
 				}
+			}
+			if len(enforcedNodeAddresses) > 0 {
+				enforcedNodeAddresses = append(enforcedNodeAddresses, v1.NodeAddress{Type: v1.NodeHostName, Address: kl.GetHostname()})
+				node.Status.Addresses = enforcedNodeAddresses
+				return nil
 			}
 			return fmt.Errorf("failed to get node address from cloud provider that matches ip: %v", kl.nodeIP)
 		}
@@ -564,10 +594,15 @@ func (kl *Kubelet) setNodeStatusMachineInfo(node *v1.Node) {
 			// capacity for every node status request
 			initialCapacity := kl.containerManager.GetCapacity()
 			if initialCapacity != nil {
-				node.Status.Capacity[v1.ResourceStorageScratch] = initialCapacity[v1.ResourceStorageScratch]
-				imageCapacity, ok := initialCapacity[v1.ResourceStorageOverlay]
-				if ok {
-					node.Status.Capacity[v1.ResourceStorageOverlay] = imageCapacity
+				node.Status.Capacity[v1.ResourceEphemeralStorage] = initialCapacity[v1.ResourceEphemeralStorage]
+			}
+		}
+
+		initialCapacity := kl.containerManager.GetCapacity()
+		if initialCapacity != nil {
+			for k, v := range initialCapacity {
+				if v1helper.IsExtendedResourceName(k) {
+					node.Status.Capacity[k] = v
 				}
 			}
 		}
@@ -596,6 +631,19 @@ func (kl *Kubelet) setNodeStatusMachineInfo(node *v1.Node) {
 			value.Set(0)
 		}
 		node.Status.Allocatable[k] = value
+	}
+	// for every huge page reservation, we need to remove it from allocatable memory
+	for k, v := range node.Status.Capacity {
+		if v1helper.IsHugePageResourceName(k) {
+			allocatableMemory := node.Status.Allocatable[v1.ResourceMemory]
+			value := *(v.Copy())
+			allocatableMemory.Sub(value)
+			if allocatableMemory.Sign() < 0 {
+				// Negative Allocatable resources don't make sense.
+				allocatableMemory.Set(0)
+			}
+			node.Status.Allocatable[v1.ResourceMemory] = allocatableMemory
+		}
 	}
 }
 

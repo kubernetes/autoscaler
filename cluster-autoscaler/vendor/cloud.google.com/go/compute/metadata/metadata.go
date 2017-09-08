@@ -34,6 +34,8 @@ import (
 
 	"golang.org/x/net/context"
 	"golang.org/x/net/context/ctxhttp"
+
+	"cloud.google.com/go/internal"
 )
 
 const (
@@ -46,8 +48,6 @@ const (
 	// This is variable name is not defined by any spec, as far as
 	// I know; it was made up for the Go package.
 	metadataHostEnv = "GCE_METADATA_HOST"
-
-	userAgent = "gcloud-golang/0.1"
 )
 
 type cachedValue struct {
@@ -65,20 +65,24 @@ var (
 
 var (
 	metaClient = &http.Client{
-		Transport: &http.Transport{
-			Dial: (&net.Dialer{
-				Timeout:   2 * time.Second,
-				KeepAlive: 30 * time.Second,
-			}).Dial,
-			ResponseHeaderTimeout: 2 * time.Second,
+		Transport: &internal.Transport{
+			Base: &http.Transport{
+				Dial: (&net.Dialer{
+					Timeout:   2 * time.Second,
+					KeepAlive: 30 * time.Second,
+				}).Dial,
+				ResponseHeaderTimeout: 2 * time.Second,
+			},
 		},
 	}
 	subscribeClient = &http.Client{
-		Transport: &http.Transport{
-			Dial: (&net.Dialer{
-				Timeout:   2 * time.Second,
-				KeepAlive: 30 * time.Second,
-			}).Dial,
+		Transport: &internal.Transport{
+			Base: &http.Transport{
+				Dial: (&net.Dialer{
+					Timeout:   2 * time.Second,
+					KeepAlive: 30 * time.Second,
+				}).Dial,
+			},
 		},
 	}
 )
@@ -128,7 +132,6 @@ func getETag(client *http.Client, suffix string) (value, etag string, err error)
 	url := "http://" + host + "/computeMetadata/v1/" + suffix
 	req, _ := http.NewRequest("GET", url, nil)
 	req.Header.Set("Metadata-Flavor", "Google")
-	req.Header.Set("User-Agent", userAgent)
 	res, err := client.Do(req)
 	if err != nil {
 		return "", "", err
@@ -199,9 +202,7 @@ func testOnGCE() bool {
 	// Try two strategies in parallel.
 	// See https://github.com/GoogleCloudPlatform/google-cloud-go/issues/194
 	go func() {
-		req, _ := http.NewRequest("GET", "http://"+metadataIP, nil)
-		req.Header.Set("User-Agent", userAgent)
-		res, err := ctxhttp.Do(ctx, metaClient, req)
+		res, err := ctxhttp.Get(ctx, metaClient, "http://"+metadataIP)
 		if err != nil {
 			resc <- false
 			return

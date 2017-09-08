@@ -50,6 +50,8 @@ func autoConvert_v1beta1_StorageClass_To_storage_StorageClass(in *v1beta1.Storag
 	out.Provisioner = in.Provisioner
 	out.Parameters = *(*map[string]string)(unsafe.Pointer(&in.Parameters))
 	out.ReclaimPolicy = (*api.PersistentVolumeReclaimPolicy)(unsafe.Pointer(in.ReclaimPolicy))
+	out.MountOptions = *(*[]string)(unsafe.Pointer(&in.MountOptions))
+	out.AllowVolumeExpansion = (*bool)(unsafe.Pointer(in.AllowVolumeExpansion))
 	return nil
 }
 
@@ -63,6 +65,8 @@ func autoConvert_storage_StorageClass_To_v1beta1_StorageClass(in *storage.Storag
 	out.Provisioner = in.Provisioner
 	out.Parameters = *(*map[string]string)(unsafe.Pointer(&in.Parameters))
 	out.ReclaimPolicy = (*v1.PersistentVolumeReclaimPolicy)(unsafe.Pointer(in.ReclaimPolicy))
+	out.MountOptions = *(*[]string)(unsafe.Pointer(&in.MountOptions))
+	out.AllowVolumeExpansion = (*bool)(unsafe.Pointer(in.AllowVolumeExpansion))
 	return nil
 }
 
@@ -84,11 +88,7 @@ func Convert_v1beta1_StorageClassList_To_storage_StorageClassList(in *v1beta1.St
 
 func autoConvert_storage_StorageClassList_To_v1beta1_StorageClassList(in *storage.StorageClassList, out *v1beta1.StorageClassList, s conversion.Scope) error {
 	out.ListMeta = in.ListMeta
-	if in.Items == nil {
-		out.Items = make([]v1beta1.StorageClass, 0)
-	} else {
-		out.Items = *(*[]v1beta1.StorageClass)(unsafe.Pointer(&in.Items))
-	}
+	out.Items = *(*[]v1beta1.StorageClass)(unsafe.Pointer(&in.Items))
 	return nil
 }
 

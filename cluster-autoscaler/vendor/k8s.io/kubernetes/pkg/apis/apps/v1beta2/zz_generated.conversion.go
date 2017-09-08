@@ -162,7 +162,7 @@ func autoConvert_apps_ControllerRevisionList_To_v1beta2_ControllerRevisionList(i
 			}
 		}
 	} else {
-		out.Items = make([]v1beta2.ControllerRevision, 0)
+		out.Items = nil
 	}
 	return nil
 }
@@ -226,7 +226,7 @@ func autoConvert_extensions_DaemonSetList_To_v1beta2_DaemonSetList(in *extension
 			}
 		}
 	} else {
-		out.Items = make([]v1beta2.DaemonSet, 0)
+		out.Items = nil
 	}
 	return nil
 }
@@ -272,7 +272,7 @@ func autoConvert_v1beta2_DaemonSetStatus_To_extensions_DaemonSetStatus(in *v1bet
 	out.UpdatedNumberScheduled = in.UpdatedNumberScheduled
 	out.NumberAvailable = in.NumberAvailable
 	out.NumberUnavailable = in.NumberUnavailable
-	out.CollisionCount = (*int64)(unsafe.Pointer(in.CollisionCount))
+	out.CollisionCount = (*int32)(unsafe.Pointer(in.CollisionCount))
 	return nil
 }
 
@@ -290,7 +290,7 @@ func autoConvert_extensions_DaemonSetStatus_To_v1beta2_DaemonSetStatus(in *exten
 	out.UpdatedNumberScheduled = in.UpdatedNumberScheduled
 	out.NumberAvailable = in.NumberAvailable
 	out.NumberUnavailable = in.NumberUnavailable
-	out.CollisionCount = (*int64)(unsafe.Pointer(in.CollisionCount))
+	out.CollisionCount = (*int32)(unsafe.Pointer(in.CollisionCount))
 	return nil
 }
 
@@ -411,7 +411,7 @@ func autoConvert_extensions_DeploymentList_To_v1beta2_DeploymentList(in *extensi
 			}
 		}
 	} else {
-		out.Items = make([]v1beta2.Deployment, 0)
+		out.Items = nil
 	}
 	return nil
 }
@@ -466,7 +466,7 @@ func autoConvert_v1beta2_DeploymentStatus_To_extensions_DeploymentStatus(in *v1b
 	out.AvailableReplicas = in.AvailableReplicas
 	out.UnavailableReplicas = in.UnavailableReplicas
 	out.Conditions = *(*[]extensions.DeploymentCondition)(unsafe.Pointer(&in.Conditions))
-	out.CollisionCount = (*int64)(unsafe.Pointer(in.CollisionCount))
+	out.CollisionCount = (*int32)(unsafe.Pointer(in.CollisionCount))
 	return nil
 }
 
@@ -483,7 +483,7 @@ func autoConvert_extensions_DeploymentStatus_To_v1beta2_DeploymentStatus(in *ext
 	out.AvailableReplicas = in.AvailableReplicas
 	out.UnavailableReplicas = in.UnavailableReplicas
 	out.Conditions = *(*[]v1beta2.DeploymentCondition)(unsafe.Pointer(&in.Conditions))
-	out.CollisionCount = (*int64)(unsafe.Pointer(in.CollisionCount))
+	out.CollisionCount = (*int32)(unsafe.Pointer(in.CollisionCount))
 	return nil
 }
 
@@ -612,7 +612,7 @@ func autoConvert_extensions_ReplicaSetList_To_v1beta2_ReplicaSetList(in *extensi
 			}
 		}
 	} else {
-		out.Items = make([]v1beta2.ReplicaSet, 0)
+		out.Items = nil
 	}
 	return nil
 }
@@ -851,7 +851,7 @@ func autoConvert_apps_StatefulSetList_To_v1beta2_StatefulSetList(in *apps.Statef
 			}
 		}
 	} else {
-		out.Items = make([]v1beta2.StatefulSet, 0)
+		out.Items = nil
 	}
 	return nil
 }
@@ -905,7 +905,7 @@ func autoConvert_v1beta2_StatefulSetStatus_To_apps_StatefulSetStatus(in *v1beta2
 	out.UpdatedReplicas = in.UpdatedReplicas
 	out.CurrentRevision = in.CurrentRevision
 	out.UpdateRevision = in.UpdateRevision
-	out.CollisionCount = (*int64)(unsafe.Pointer(in.CollisionCount))
+	out.CollisionCount = (*int32)(unsafe.Pointer(in.CollisionCount))
 	return nil
 }
 
@@ -917,7 +917,7 @@ func autoConvert_apps_StatefulSetStatus_To_v1beta2_StatefulSetStatus(in *apps.St
 	out.UpdatedReplicas = in.UpdatedReplicas
 	out.CurrentRevision = in.CurrentRevision
 	out.UpdateRevision = in.UpdateRevision
-	out.CollisionCount = (*int64)(unsafe.Pointer(in.CollisionCount))
+	out.CollisionCount = (*int32)(unsafe.Pointer(in.CollisionCount))
 	return nil
 }
 
