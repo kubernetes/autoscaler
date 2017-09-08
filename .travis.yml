@@ -6,7 +6,7 @@ services:
 language: go
 
 go:
-  - 1.8
+  - 1.8.3
 
 before_install:
   - sudo apt-get install libseccomp-dev -qq
@@ -16,6 +16,7 @@ before_script:
   - mv $TRAVIS_BUILD_DIR $HOME/gopath/src/k8s.io/autoscaler
   - hack/install-verify-tools.sh
   - export PATH=$GOPATH/bin:$PATH
+  - go version
 
 install: true
 
