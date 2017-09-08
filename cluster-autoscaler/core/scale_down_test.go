@@ -97,6 +97,7 @@ func TestFindUnneededNodes(t *testing.T) {
 		ClusterStateRegistry: clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder),
 		PredicateChecker:     simulator.NewTestPredicateChecker(),
 		LogRecorder:          fakeLogRecorder,
+		CloudProvider:        provider,
 	}
 	sd := NewScaleDown(&context)
 	sd.UpdateUnneededNodes([]*apiv1.Node{n1, n2, n3, n4, n5}, []*apiv1.Node{n1, n2, n3, n4, n5}, []*apiv1.Pod{p1, p2, p3, p4}, time.Now(), nil)
@@ -171,6 +172,7 @@ func TestFindUnneededMaxCandidates(t *testing.T) {
 		ClusterStateRegistry: clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder),
 		PredicateChecker:     simulator.NewTestPredicateChecker(),
 		LogRecorder:          fakeLogRecorder,
+		CloudProvider:        provider,
 	}
 	sd := NewScaleDown(&context)
 
@@ -201,9 +203,62 @@ func TestFindUnneededMaxCandidates(t *testing.T) {
 	assert.NotContains(t, sd.unneededNodes, deleted)
 }
 
-func TestFindUnneededAdditionalNodePool(t *testing.T) {
+func TestFindUnneededEmptyNodes(t *testing.T) {
 	provider := testprovider.NewTestCloudProvider(nil, nil)
-	provider.AddNodeGroup("ng1", 1, 100, 2)
+	provider.AddNodeGroup("ng1", 1, 100, 100)
+
+	// 30 empty nodes and 70 heavily underutilized.
+	numNodes := 100
+	numEmpty := 30
+	nodes := make([]*apiv1.Node, 0, numNodes)
+	for i := 0; i < numNodes; i++ {
+		n := BuildTestNode(fmt.Sprintf("n%v", i), 1000, 10)
+		SetNodeReadyState(n, true, time.Time{})
+		provider.AddNode("ng1", n)
+		nodes = append(nodes, n)
+	}
+
+	// shared owner reference
+	ownerRef := GenerateOwnerReferences("rs", "ReplicaSet", "extensions/v1beta1", "")
+
+	pods := make([]*apiv1.Pod, 0, numNodes)
+	for i := 0; i < numNodes-numEmpty; i++ {
+		p := BuildTestPod(fmt.Sprintf("p%v", i), 100, 0)
+		p.Spec.NodeName = fmt.Sprintf("n%v", i)
+		p.OwnerReferences = ownerRef
+		pods = append(pods, p)
+	}
+
+	fakeClient := &fake.Clientset{}
+	fakeRecorder := kube_util.CreateEventRecorder(fakeClient)
+	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false)
+
+	numCandidates := 30
+
+	context := AutoscalingContext{
+		AutoscalingOptions: AutoscalingOptions{
+			ScaleDownUtilizationThreshold:    0.35,
+			ScaleDownNonEmptyCandidatesCount: numCandidates,
+			ScaleDownCandidatesPoolRatio:     1.0,
+			ScaleDownCandidatesPoolMinCount:  1000,
+		},
+		ClusterStateRegistry: clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder),
+		PredicateChecker:     simulator.NewTestPredicateChecker(),
+		LogRecorder:          fakeLogRecorder,
+		CloudProvider:        provider,
+	}
+	sd := NewScaleDown(&context)
+
+	sd.UpdateUnneededNodes(nodes, nodes, pods, time.Now(), nil)
+	for _, node := range sd.unneededNodesList {
+		t.Log(node.Name)
+	}
+	assert.Equal(t, numEmpty+numCandidates, len(sd.unneededNodes))
+}
+
+func TestFindUnneededNodePool(t *testing.T) {
+	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider.AddNodeGroup("ng1", 1, 100, 100)
 
 	numNodes := 100
 	nodes := make([]*apiv1.Node, 0, numNodes)
@@ -241,6 +296,7 @@ func TestFindUnneededAdditionalNodePool(t *testing.T) {
 		ClusterStateRegistry: clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder),
 		PredicateChecker:     simulator.NewTestPredicateChecker(),
 		LogRecorder:          fakeLogRecorder,
+		CloudProvider:        provider,
 	}
 	sd := NewScaleDown(&context)
 
