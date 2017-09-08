@@ -73,6 +73,9 @@ func IsNodeInfoSimilar(n1, n2 *schedulercache.NodeInfo) bool {
 			free[res] = append(free[res], freeRes)
 		}
 	}
+	// For capacity we require exact match.
+	// If this is ever changed, enforcing MaxCoresTotal and MaxMemoryTotal limits
+	// as it is now may no longer work.
 	for _, qtyList := range capacity {
 		if len(qtyList) != 2 || qtyList[0].Cmp(qtyList[1]) != 0 {
 			return false
