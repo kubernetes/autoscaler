@@ -34,6 +34,8 @@ type ContainerUtilizationSnapshot struct {
 	// duration, which this snapshot represents
 	SnapshotWindow time.Duration
 
+	// Labels of the pod container belongs to. It is used to match pods with certain VPA opjects.
+	PodLabels map[string]string
 	// When the container was created
 	CreationTime time.Time
 	// Image name running in the container
@@ -59,6 +61,7 @@ func NewContainerUtilizationSnapshot(snap *containerUsageSnapshot, spec *contain
 		SnapshotWindow: snap.SnapshotWindow.Duration,
 		Request:        spec.Request,
 		Usage:          snap.Usage,
+		PodLabels:      spec.PodLabels,
 	}, nil
 }
 
@@ -74,9 +77,11 @@ type containerUsageSnapshot struct {
 
 // Basic info about container specification
 type containerSpec struct {
-	ID           containerID
+	ID containerID
+
 	CreationTime metav1.Time
 	Image        string
+	PodLabels    map[string]string
 
 	Request k8sapiv1.ResourceList
 }

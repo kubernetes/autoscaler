@@ -154,7 +154,7 @@ func newContainerSpec(container v1.Container, pod *v1.Pod) *containerSpec {
 			Namespace:     pod.Namespace,
 			ContainerName: container.Name,
 		},
-
+		PodLabels:    pod.Labels,
 		CreationTime: pod.CreationTimestamp,
 		Image:        container.Image,
 		Request:      container.Resources.Requests,

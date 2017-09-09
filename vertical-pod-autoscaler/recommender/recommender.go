@@ -56,7 +56,7 @@ func (r *recommender) RunOnce() {
 func (r *recommender) Run() {
 	for {
 		select {
-		case <-time.After(time.Second * 5):
+		case <-time.After(time.Second * 30):
 			{
 				r.RunOnce()
 			}

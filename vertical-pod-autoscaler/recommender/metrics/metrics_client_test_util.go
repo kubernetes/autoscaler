@@ -101,6 +101,7 @@ func (tc *metricsClientTestCase) newContainerUtilizationSnapshot(id containerID,
 		SnapshotTime:   tc.snapshotTimestamp,
 		SnapshotWindow: tc.snapshotWindow,
 		Image:          id.ContainerName + "Image",
+		PodLabels:      map[string]string{"podName": id.PodName, "namespaceName": id.Namespace, "otherKey": "otherValue"},
 		Request: v1.ResourceList{
 			v1.ResourceCPU:    *resource.NewQuantity(cpuReq, resource.DecimalSI),
 			v1.ResourceMemory: *resource.NewQuantity(memReq, resource.DecimalSI),
@@ -173,6 +174,7 @@ func newPod(snaps []*ContainerUtilizationSnapshot) *v1.Pod {
 			Namespace:         firstSnap.ID.Namespace,
 			Name:              firstSnap.ID.PodName,
 			CreationTimestamp: metav1.Time{firstSnap.CreationTime},
+			Labels:            firstSnap.PodLabels,
 		},
 		Spec: v1.PodSpec{
 			Containers: make([]v1.Container, len(snaps)),
