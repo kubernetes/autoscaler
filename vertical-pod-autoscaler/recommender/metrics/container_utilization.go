@@ -24,7 +24,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// Utilization of resources for a single container, in a given (short) period of time
+// ContainerUtilizationSnapshot represents utilization of resources for a single container, in a given (short) period of time
 type ContainerUtilizationSnapshot struct {
 	// Metadata identifying container
 	ID containerID
@@ -45,7 +45,7 @@ type ContainerUtilizationSnapshot struct {
 	Usage k8sapiv1.ResourceList
 }
 
-// Merges containerUsageSnapshot and containerSpec into single ContainerUtilizationSnapshot.
+// NewContainerUtilizationSnapshot merges containerUsageSnapshot and containerSpec into single ContainerUtilizationSnapshot.
 // Both snap and spec need to have the same container name, pod name and namespace; otherwise error will be returned.
 func NewContainerUtilizationSnapshot(snap *containerUsageSnapshot, spec *containerSpec) (*ContainerUtilizationSnapshot, error) {
 	if snap.ID.PodName != spec.ID.PodName || snap.ID.ContainerName != spec.ID.ContainerName || snap.ID.Namespace != spec.ID.Namespace {

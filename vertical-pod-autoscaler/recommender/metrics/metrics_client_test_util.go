@@ -31,30 +31,30 @@ import (
 	"k8s.io/metrics/pkg/client/clientset_generated/clientset/fake"
 )
 
-type PodListerMock struct {
+type podListerMock struct {
 	mock.Mock
 }
 
-func (m *PodListerMock) List(selector labels.Selector) (ret []*v1.Pod, err error) {
+func (m *podListerMock) List(selector labels.Selector) (ret []*v1.Pod, err error) {
 	args := m.Called()
 	return args.Get(0).([]*v1.Pod), args.Error(1)
 }
 
-func (m *PodListerMock) Pods(namespace string) v1lister.PodNamespaceLister {
+func (m *podListerMock) Pods(namespace string) v1lister.PodNamespaceLister {
 	args := m.Called()
 	return args.Get(0).(v1lister.PodNamespaceLister)
 }
 
-type NamespaceListerMock struct {
+type namespaceListerMock struct {
 	mock.Mock
 }
 
-func (m *NamespaceListerMock) List(selector labels.Selector) (ret []*v1.Namespace, err error) {
+func (m *namespaceListerMock) List(selector labels.Selector) (ret []*v1.Namespace, err error) {
 	args := m.Called()
 	return args.Get(0).([]*v1.Namespace), args.Error(1)
 }
 
-func (m *NamespaceListerMock) Get(name string) (*v1.Namespace, error) {
+func (m *namespaceListerMock) Get(name string) (*v1.Namespace, error) {
 	args := m.Called()
 	return args.Get(0).(*v1.Namespace), args.Error(1)
 }
@@ -118,10 +118,10 @@ func (tc *metricsClientTestCase) createFakeMetricsClient() Client {
 		return true, tc.getFakePodMetricsList(), nil
 	})
 
-	podListerMock := new(PodListerMock)
+	podListerMock := new(podListerMock)
 	podListerMock.On("List").Return(tc.getFakePods(), nil)
 
-	namespaceListerMock := new(NamespaceListerMock)
+	namespaceListerMock := new(namespaceListerMock)
 	namespaceListerMock.On("List").Return(tc.getFakeNamespaces(), nil)
 
 	return NewClient(fakeMetricsGetter.MetricsV1alpha1(), podListerMock, namespaceListerMock)

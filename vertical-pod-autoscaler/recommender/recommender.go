@@ -64,6 +64,9 @@ func (r *recommender) Run() {
 	}
 }
 
+// NewRecommender creates a new recommender instance,
+// which can be run in order to provide continuous resource recommendations for containers.
+// It requires cluster configuration object and duration between recommender intervals.
 func NewRecommender(config *rest.Config, metricsFetcherInterval time.Duration) Recommender {
 	recommender := &recommender{
 		metricsClient:           newMetricsClient(config),
@@ -94,6 +97,7 @@ func newPodLister(kubeClient kube_client.Interface) v1lister.PodLister {
 	podReflector.Run()
 	return podLister
 }
+
 // Creates NamespaceLister, listing all namespaces.
 func newNamespaceLister(kubeClient kube_client.Interface) v1lister.NamespaceLister {
 	namespaceListWatch := cache.NewListWatchFromClient(kubeClient.CoreV1().RESTClient(), "namespaces", apiv1.NamespaceAll, fields.Everything())

@@ -39,6 +39,8 @@ type metricsClient struct {
 	namespaceLister v1lister.NamespaceLister
 }
 
+// NewClient creates new metrics client, which can be used to calculate containers utilization.
+// It requires PodLister, NamespaceLister for get containers metadata and PodMetricsesGetter to get actual metrics.
 func NewClient(metricsGetter resourceclient.PodMetricsesGetter, podLister v1lister.PodLister, namespaceLister v1lister.NamespaceLister) Client {
 	client := &metricsClient{
 		metricsGetter:   metricsGetter,
@@ -138,9 +140,8 @@ func calculateUtilization(snapshots []*containerUsageSnapshot, specifications []
 		utilizationSnapshot, err := NewContainerUtilizationSnapshot(snap, spec)
 		if err != nil {
 			return nil, err
-		} else {
-			result[i] = utilizationSnapshot
 		}
+		result[i] = utilizationSnapshot
 	}
 
 	return result, nil
