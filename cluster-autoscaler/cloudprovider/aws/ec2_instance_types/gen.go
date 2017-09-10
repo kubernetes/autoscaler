@@ -79,7 +79,7 @@ type instanceType struct {
 	InstanceType string
 	VCPU         int64
 	MemoryMb     int64
-	GPU 				 int64
+	GPU          int64
 }
 
 // InstanceTypes is a map of ec2 resources
