@@ -45,12 +45,14 @@ type productAttributes struct {
 	InstanceType string `json:"instanceType"`
 	VCPU         string `json:"vcpu"`
 	Memory       string `json:"memory"`
+	GPU          string `json:"gpu`
 }
 
 type instanceType struct {
 	InstanceType string
 	VCPU         int64
 	Memory       int64
+	GPU          int64
 }
 
 var packageTemplate = template.Must(template.New("").Parse(`/*
@@ -77,6 +79,7 @@ type instanceType struct {
 	InstanceType string
 	VCPU         int64
 	MemoryMb     int64
+	GPU 				 int64
 }
 
 // InstanceTypes is a map of ec2 resources
@@ -86,6 +89,7 @@ var InstanceTypes = map[string]*instanceType{
 		InstanceType: "{{ .InstanceType }}",
 		VCPU:         {{ .VCPU }},
 		MemoryMb:     {{ .Memory }},
+		GPU:          {{ .GPU }},
 	},
 {{- end }}
 }
@@ -127,11 +131,18 @@ func main() {
 
 			for _, product := range unmarshalled.Products {
 				attr := product.Attributes
-				if attr.InstanceType != "" && attr.Memory != "" && attr.VCPU != "" {
+				if attr.InstanceType != "" {
 					instanceTypes[attr.InstanceType] = &instanceType{
 						InstanceType: attr.InstanceType,
-						VCPU:         parseCPU(attr.VCPU),
-						Memory:       parseMemory(attr.Memory),
+					}
+					if attr.Memory != "" && attr.Memory != "NA" {
+						instanceTypes[attr.InstanceType].Memory = parseMemory(attr.Memory)
+					}
+					if attr.VCPU != "" {
+						instanceTypes[attr.InstanceType].VCPU = parseCPU(attr.VCPU)
+					}
+					if attr.GPU != "" {
+						instanceTypes[attr.InstanceType].GPU = parseCPU(attr.GPU)
 					}
 				}
 			}
