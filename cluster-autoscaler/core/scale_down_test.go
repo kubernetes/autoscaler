@@ -37,7 +37,10 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 	core "k8s.io/client-go/testing"
 
+	"strconv"
+
 	"github.com/stretchr/testify/assert"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 )
 
 func TestFindUnneededNodes(t *testing.T) {
@@ -63,6 +66,10 @@ func TestFindUnneededNodes(t *testing.T) {
 	p5.OwnerReferences = ownerRef
 	p5.Spec.NodeName = "n5"
 
+	p6 := BuildTestPod("p6", 500, 0)
+	p6.OwnerReferences = ownerRef
+	p6.Spec.NodeName = "n7"
+
 	n1 := BuildTestNode("n1", 1000, 10)
 	n2 := BuildTestNode("n2", 1000, 10)
 	n3 := BuildTestNode("n3", 1000, 10)
@@ -71,12 +78,22 @@ func TestFindUnneededNodes(t *testing.T) {
 	n5.Annotations = map[string]string{
 		ScaleDownDisabledKey: "true",
 	}
+	n6 := BuildTestNode("n6", 1000, 10)
+	n7 := BuildTestNode("n7", 0, 10) // Node without utilization
+	n8 := BuildTestNode("n8", 1000, 10)
+	n8.Spec.Taints = []apiv1.Taint{{Key: deletetaint.ToBeDeletedTaint, Value: strconv.FormatInt(time.Now().Unix()-301, 10)}}
+	n9 := BuildTestNode("n9", 1000, 10)
+	n9.Spec.Taints = []apiv1.Taint{{Key: deletetaint.ToBeDeletedTaint, Value: strconv.FormatInt(time.Now().Unix()-60, 10)}}
 
 	SetNodeReadyState(n1, true, time.Time{})
 	SetNodeReadyState(n2, true, time.Time{})
 	SetNodeReadyState(n3, true, time.Time{})
 	SetNodeReadyState(n4, true, time.Time{})
 	SetNodeReadyState(n5, true, time.Time{})
+	SetNodeReadyState(n6, true, time.Time{})
+	SetNodeReadyState(n7, true, time.Time{})
+	SetNodeReadyState(n8, true, time.Time{})
+	SetNodeReadyState(n9, true, time.Time{})
 
 	fakeClient := &fake.Clientset{}
 	fakeRecorder := kube_util.CreateEventRecorder(fakeClient)
@@ -89,6 +106,9 @@ func TestFindUnneededNodes(t *testing.T) {
 	provider.AddNode("ng1", n3)
 	provider.AddNode("ng1", n4)
 	provider.AddNode("ng1", n5)
+	provider.AddNode("ng1", n7)
+	provider.AddNode("ng1", n8)
+	provider.AddNode("ng1", n9)
 
 	context := AutoscalingContext{
 		AutoscalingOptions: AutoscalingOptions{
@@ -99,14 +119,20 @@ func TestFindUnneededNodes(t *testing.T) {
 		LogRecorder:          fakeLogRecorder,
 		CloudProvider:        provider,
 	}
-	sd := NewScaleDown(&context)
-	sd.UpdateUnneededNodes([]*apiv1.Node{n1, n2, n3, n4, n5}, []*apiv1.Node{n1, n2, n3, n4, n5}, []*apiv1.Pod{p1, p2, p3, p4}, time.Now(), nil)
 
-	assert.Equal(t, 1, len(sd.unneededNodes))
+	sd := NewScaleDown(&context)
+	sd.UpdateUnneededNodes([]*apiv1.Node{n1, n2, n3, n4, n5, n7, n8, n9}, []*apiv1.Node{n1, n2, n3, n4, n5, n6, n7, n8, n9},
+		[]*apiv1.Pod{p1, p2, p3, p4, p5, p6}, time.Now(), nil)
+
+	assert.Equal(t, 3, len(sd.unneededNodes))
 	addTime, found := sd.unneededNodes["n2"]
 	assert.True(t, found)
+	addTime, found = sd.unneededNodes["n7"]
+	assert.True(t, found)
+	addTime, found = sd.unneededNodes["n8"]
+	assert.True(t, found)
 	assert.Contains(t, sd.podLocationHints, p2.Namespace+"/"+p2.Name)
-	assert.Equal(t, 4, len(sd.nodeUtilizationMap))
+	assert.Equal(t, 6, len(sd.nodeUtilizationMap))
 
 	sd.unremovableNodes = make(map[string]time.Time)
 	sd.unneededNodes["n1"] = time.Now()
@@ -836,4 +862,60 @@ func getStringFromChan(c chan string) string {
 	case <-time.After(time.Second * 10):
 		return "Nothing returned"
 	}
+}
+
+func TestCleanToBeDeleted(t *testing.T) {
+	n1 := BuildTestNode("n1", 1000, 10)
+	n2 := BuildTestNode("n2", 1000, 10)
+	n2.Spec.Taints = []apiv1.Taint{{Key: deletetaint.ToBeDeletedTaint, Value: strconv.FormatInt(time.Now().Unix()-301, 10)}}
+
+	fakeClient := &fake.Clientset{}
+	fakeClient.Fake.AddReactor("get", "nodes", func(action core.Action) (bool, runtime.Object, error) {
+		getAction := action.(core.GetAction)
+		switch getAction.GetName() {
+		case n1.Name:
+			return true, n1, nil
+		case n2.Name:
+			return true, n2, nil
+		}
+		return true, nil, fmt.Errorf("Wrong node: %v", getAction.GetName())
+	})
+	fakeClient.Fake.AddReactor("update", "nodes", func(action core.Action) (bool, runtime.Object, error) {
+		update := action.(core.UpdateAction)
+		obj := update.GetObject().(*apiv1.Node)
+		switch obj.Name {
+		case n1.Name:
+			n1 = obj
+		case n2.Name:
+			n2 = obj
+		}
+		return true, obj, nil
+	})
+	fakeRecorder := kube_util.CreateEventRecorder(fakeClient)
+
+	cleanToBeDeleted([]*apiv1.Node{n1, n2}, fakeClient, fakeRecorder)
+
+	assert.Equal(t, 0, len(n1.Spec.Taints))
+	assert.Equal(t, 0, len(n2.Spec.Taints))
+}
+
+func TestCleanUpNodeAutoprovisionedGroups(t *testing.T) {
+	n1 := BuildTestNode("n1", 1000, 1000)
+
+	provider := testprovider.NewTestAutoprovisioningCloudProvider(
+		nil, nil,
+		nil, func(id string) error {
+			if id == "ng2" {
+				return nil
+			}
+			return fmt.Errorf("Node group %s shouldn't be deleted", id)
+		},
+		nil, nil)
+	provider.AddNodeGroup("ng1", 1, 10, 1)
+	provider.AddAutoprovisionedNodeGroup("ng2", 0, 10, 0, "mt1")
+	provider.AddAutoprovisionedNodeGroup("ng3", 0, 10, 1, "mt1")
+	provider.AddNode("ng3", n1)
+	assert.NotNil(t, provider)
+
+	assert.NoError(t, cleanUpNodeAutoprovisionedGroups(provider))
 }
