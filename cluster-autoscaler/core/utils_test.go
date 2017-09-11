@@ -18,6 +18,7 @@ package core
 
 import (
 	"fmt"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 	"testing"
 	"time"
 
@@ -322,6 +323,11 @@ func TestSanitizeTaints(t *testing.T) {
 	taints = append(taints, apiv1.Taint{
 		Key:    "test-taint",
 		Value:  "test2",
+		Effect: apiv1.TaintEffectNoSchedule,
+	})
+	taints = append(taints, apiv1.Taint{
+		Key:    deletetaint.ToBeDeletedTaint,
+		Value:  "1",
 		Effect: apiv1.TaintEffectNoSchedule,
 	})
 	oldNode.Spec.Taints = taints
