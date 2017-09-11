@@ -26,6 +26,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/daemonset"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -302,9 +303,12 @@ func sanitizeTemplateNode(node *apiv1.Node, nodeGroup string) (*apiv1.Node, erro
 		// Rescheduler can put this taint on a node while evicting non-critical pods.
 		// New nodes will not have this taint and so we should strip it when creating
 		// template node.
-		if taint.Key == ReschedulerTaintKey {
+		switch taint.Key {
+		case ReschedulerTaintKey:
 			glog.V(4).Infof("Removing rescheduler taint when creating template from node %s", node.Name)
-		} else {
+		case deletetaint.ToBeDeletedTaint:
+			glog.V(4).Infof("Removing autoscaler taint when creating template from node %s", node.Name)
+		default:
 			newTaints = append(newTaints, taint)
 		}
 	}
