@@ -592,7 +592,7 @@ func evictPod(podToEvict *apiv1.Pod, client kube_client.Interface, recorder kube
 			},
 		}
 		lastError = client.CoreV1().Pods(podToEvict.Namespace).Evict(eviction)
-		if lastError == nil {
+		if lastError == nil || kube_errors.IsNotFound(lastError) {
 			return nil
 		}
 	}
