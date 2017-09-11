@@ -18,6 +18,7 @@ package core
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 	"reflect"
 	"time"
@@ -414,4 +415,37 @@ func ConfigurePredicateCheckerForLoop(unschedulablePods []*apiv1.Pod, schedulabl
 	if !podsWithAffinityFound {
 		glog.V(1).Info("No pod using affinity / antiaffinity found in cluster, disabling affinity predicate for this loop")
 	}
+}
+
+// Getting node cores/memory
+const (
+	// Megabyte is 2^20 bytes.
+	Megabyte float64 = 1024 * 1024
+)
+
+func getNodeCoresAndMemory(node *apiv1.Node) (int64, int64, error) {
+	cores, err := getNodeResource(node, apiv1.ResourceCPU)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	memory, err := getNodeResource(node, apiv1.ResourceMemory)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	if cores <= 0 || memory <= 0 {
+		return 0, 0, fmt.Errorf("Invalid node CPU/memory values - cpu %v, memory %v", cores, memory)
+	}
+
+	memoryMb := math.Ceil(float64(memory) / Megabyte)
+	return cores, int64(memoryMb), nil
+}
+
+func getNodeResource(node *apiv1.Node, resource apiv1.ResourceName) (int64, error) {
+	nodeCapacity, found := node.Status.Capacity[resource]
+	if !found {
+		return 0, fmt.Errorf("Failed to get %v for node %v", resource, node.Name)
+	}
+	return nodeCapacity.Value(), nil
 }

@@ -27,6 +27,7 @@ import (
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/random"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
@@ -59,23 +60,24 @@ type podConfig struct {
 	node   string
 }
 
-type scaleUpConfig struct {
+type scaleTestConfig struct {
 	nodes                []nodeConfig
 	pods                 []podConfig
 	extraPods            []podConfig
 	expectedScaleUp      string
 	expectedScaleUpGroup string
+	expectedScaleDowns   []string
 	options              AutoscalingOptions
 }
 
 var defaultOptions = AutoscalingOptions{
 	EstimatorName:  estimator.BinpackingEstimatorName,
-	MaxCoresTotal:  5000 * 64,
-	MaxMemoryTotal: 5000 * 64 * 20,
+	MaxCoresTotal:  config.DefaultMaxClusterCores,
+	MaxMemoryTotal: config.DefaultMaxClusterMemory,
 }
 
 func TestScaleUpOK(t *testing.T) {
-	config := &scaleUpConfig{
+	config := &scaleTestConfig{
 		nodes: []nodeConfig{
 			{"n1", 100, 100, true, "ng1"},
 			{"n2", 1000, 1000, true, "ng2"},
@@ -98,7 +100,7 @@ func TestScaleUpOK(t *testing.T) {
 func TestScaleUpMaxCoresLimitHit(t *testing.T) {
 	options := defaultOptions
 	options.MaxCoresTotal = 9
-	config := &scaleUpConfig{
+	config := &scaleTestConfig{
 		nodes: []nodeConfig{
 			{"n1", 2000, 100, true, "ng1"},
 			{"n2", 4000, 1000, true, "ng2"},
@@ -124,7 +126,7 @@ const MB = 1024 * 1024
 func TestScaleUpMaxMemoryLimitHit(t *testing.T) {
 	options := defaultOptions
 	options.MaxMemoryTotal = 1300 // set in mb
-	config := &scaleUpConfig{
+	config := &scaleTestConfig{
 		nodes: []nodeConfig{
 			{"n1", 2000, 100 * MB, true, "ng1"},
 			{"n2", 4000, 1000 * MB, true, "ng2"},
@@ -146,7 +148,7 @@ func TestScaleUpMaxMemoryLimitHit(t *testing.T) {
 	simpleScaleUpTest(t, config)
 }
 
-func simpleScaleUpTest(t *testing.T, config *scaleUpConfig) {
+func simpleScaleUpTest(t *testing.T, config *scaleTestConfig) {
 	expandedGroups := make(chan string, 10)
 	fakeClient := &fake.Clientset{}
 
@@ -281,8 +283,8 @@ func TestScaleUpNodeComingNoScale(t *testing.T) {
 	context := &AutoscalingContext{
 		AutoscalingOptions: AutoscalingOptions{
 			EstimatorName:  estimator.BinpackingEstimatorName,
-			MaxCoresTotal:  5000 * 64,
-			MaxMemoryTotal: 5000 * 64 * 20,
+			MaxCoresTotal:  config.DefaultMaxClusterCores,
+			MaxMemoryTotal: config.DefaultMaxClusterMemory,
 		},
 		PredicateChecker:     simulator.NewTestPredicateChecker(),
 		CloudProvider:        provider,
@@ -404,8 +406,8 @@ func TestScaleUpUnhealthy(t *testing.T) {
 	context := &AutoscalingContext{
 		AutoscalingOptions: AutoscalingOptions{
 			EstimatorName:  estimator.BinpackingEstimatorName,
-			MaxCoresTotal:  5000 * 64,
-			MaxMemoryTotal: 5000 * 64 * 20,
+			MaxCoresTotal:  config.DefaultMaxClusterCores,
+			MaxMemoryTotal: config.DefaultMaxClusterMemory,
 		},
 		PredicateChecker:     simulator.NewTestPredicateChecker(),
 		CloudProvider:        provider,
@@ -455,8 +457,8 @@ func TestScaleUpNoHelp(t *testing.T) {
 	context := &AutoscalingContext{
 		AutoscalingOptions: AutoscalingOptions{
 			EstimatorName:  estimator.BinpackingEstimatorName,
-			MaxCoresTotal:  5000 * 64,
-			MaxMemoryTotal: 5000 * 64 * 20,
+			MaxCoresTotal:  config.DefaultMaxClusterCores,
+			MaxMemoryTotal: config.DefaultMaxClusterMemory,
 		},
 		PredicateChecker:     simulator.NewTestPredicateChecker(),
 		CloudProvider:        provider,
@@ -536,8 +538,8 @@ func TestScaleUpBalanceGroups(t *testing.T) {
 		AutoscalingOptions: AutoscalingOptions{
 			EstimatorName:            estimator.BinpackingEstimatorName,
 			BalanceSimilarNodeGroups: true,
-			MaxCoresTotal:            5000 * 64,
-			MaxMemoryTotal:           5000 * 64 * 20,
+			MaxCoresTotal:            config.DefaultMaxClusterCores,
+			MaxMemoryTotal:           config.DefaultMaxClusterMemory,
 		},
 		PredicateChecker:     simulator.NewTestPredicateChecker(),
 		CloudProvider:        provider,

@@ -18,8 +18,6 @@ package core
 
 import (
 	"bytes"
-	"fmt"
-	"math"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -64,7 +62,7 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 	nodeGroups := context.CloudProvider.NodeGroups()
 
 	// calculate current cores & gigabytes of memory
-	coresTotal, memoryTotal := calculateCPUAndMemory(nodeGroups, nodeInfos)
+	coresTotal, memoryTotal := calculateClusterCoresMemoryTotal(nodeGroups, nodeInfos)
 
 	upcomingNodes := make([]*schedulercache.NodeInfo, 0)
 	for nodeGroup, numberOfNodes := range context.ClusterStateRegistry.GetUpcomingNodes() {
@@ -113,7 +111,7 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 			continue
 		}
 
-		nodeCPU, nodeMemory, err := getNodeCPUAndMemory(nodeInfo)
+		nodeCPU, nodeMemory, err := getNodeInfoCoresAndMemory(nodeInfo)
 		if err != nil {
 			glog.Errorf("Failed to get node resources: %v", err)
 		}
@@ -223,7 +221,7 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 		}
 
 		// apply upper limits for CPU and memory
-		newNodes, err = applyCPUAndMemoryLimit(newNodes, coresTotal, memoryTotal, context.MaxCoresTotal, context.MaxMemoryTotal, nodeInfo)
+		newNodes, err = applyMaxClusterCoresMemoryLimits(newNodes, coresTotal, memoryTotal, context.MaxCoresTotal, context.MaxMemoryTotal, nodeInfo)
 		if err != nil {
 			return false, err
 		}
@@ -371,7 +369,7 @@ func addAutoprovisionedCandidates(context *AutoscalingContext, nodeGroups []clou
 	return nodeGroups, nodeInfos
 }
 
-func calculateCPUAndMemory(nodeGroups []cloudprovider.NodeGroup, nodeInfos map[string]*schedulercache.NodeInfo) (int64, int64) {
+func calculateClusterCoresMemoryTotal(nodeGroups []cloudprovider.NodeGroup, nodeInfos map[string]*schedulercache.NodeInfo) (int64, int64) {
 	var coresTotal int64
 	var memoryTotal int64
 	for _, nodeGroup := range nodeGroups {
@@ -386,7 +384,7 @@ func calculateCPUAndMemory(nodeGroups []cloudprovider.NodeGroup, nodeInfos map[s
 			continue
 		}
 		if currentSize > 0 {
-			nodeCPU, nodeMemory, err := getNodeCPUAndMemory(nodeInfo)
+			nodeCPU, nodeMemory, err := getNodeInfoCoresAndMemory(nodeInfo)
 			if err != nil {
 				glog.Errorf("Failed to get node resources: %v", err)
 				continue
@@ -399,8 +397,8 @@ func calculateCPUAndMemory(nodeGroups []cloudprovider.NodeGroup, nodeInfos map[s
 	return coresTotal, memoryTotal
 }
 
-func applyCPUAndMemoryLimit(newNodes int, coresTotal, memoryTotal, maxCoresTotal, maxMemoryTotal int64, nodeInfo *schedulercache.NodeInfo) (int, errors.AutoscalerError) {
-	newNodeCPU, newNodeMemory, err := getNodeCPUAndMemory(nodeInfo)
+func applyMaxClusterCoresMemoryLimits(newNodes int, coresTotal, memoryTotal, maxCoresTotal, maxMemoryTotal int64, nodeInfo *schedulercache.NodeInfo) (int, errors.AutoscalerError) {
+	newNodeCPU, newNodeMemory, err := getNodeInfoCoresAndMemory(nodeInfo)
 	if err != nil {
 		// This is not very elegant, but it allows us to proceed even if we're
 		// unable to compute cpu/memory limits (not breaking current functionality)
@@ -432,34 +430,6 @@ func applyCPUAndMemoryLimit(newNodes int, coresTotal, memoryTotal, maxCoresTotal
 	return newNodes, nil
 }
 
-const (
-	// Megabyte is 2^20 bytes.
-	Megabyte float64 = 1024 * 1024
-)
-
-func getNodeCPUAndMemory(nodeInfo *schedulercache.NodeInfo) (int64, int64, error) {
-	nodeCPU, err := getNodeResource(nodeInfo, apiv1.ResourceCPU)
-	if err != nil {
-		return 0, 0, err
-	}
-
-	nodeMemory, err := getNodeResource(nodeInfo, apiv1.ResourceMemory)
-	if err != nil {
-		return 0, 0, err
-	}
-
-	if nodeCPU <= 0 || nodeMemory <= 0 {
-		return 0, 0, fmt.Errorf("Invalid node CPU/memory values - cpu %v, memory %v", nodeCPU, nodeMemory)
-	}
-
-	nodeMemoryMb := math.Ceil(float64(nodeMemory) / Megabyte)
-	return nodeCPU, int64(nodeMemoryMb), nil
-}
-
-func getNodeResource(nodeInfo *schedulercache.NodeInfo, resource apiv1.ResourceName) (int64, error) {
-	nodeCapacity, found := nodeInfo.Node().Status.Capacity[resource]
-	if !found {
-		return 0, fmt.Errorf("Failed to get %v for node %v", resource, nodeInfo.Node().Name)
-	}
-	return nodeCapacity.Value(), nil
+func getNodeInfoCoresAndMemory(nodeInfo *schedulercache.NodeInfo) (int64, int64, error) {
+	return getNodeCoresAndMemory(nodeInfo.Node())
 }
