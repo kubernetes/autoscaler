@@ -357,18 +357,17 @@ func (sd *ScaleDown) chooseCandidates(nodes []*apiv1.Node) ([]*apiv1.Node, []*ap
 
 // TryToScaleDown tries to scale down the cluster. It returns ScaleDownResult indicating if any node was
 // removed and error if such occurred.
-func (sd *ScaleDown) TryToScaleDown(nodes []*apiv1.Node, pods []*apiv1.Pod, pdbs []*policyv1.PodDisruptionBudget) (ScaleDownResult, errors.AutoscalerError) {
-	now := time.Now()
+func (sd *ScaleDown) TryToScaleDown(nodes []*apiv1.Node, pods []*apiv1.Pod, pdbs []*policyv1.PodDisruptionBudget, currentTime time.Time) (ScaleDownResult, errors.AutoscalerError) {
 	nodeDeletionDuration := time.Duration(0)
 	findNodesToRemoveDuration := time.Duration(0)
-	defer updateScaleDownMetrics(now, &findNodesToRemoveDuration, &nodeDeletionDuration)
+	defer updateScaleDownMetrics(time.Now(), &findNodesToRemoveDuration, &nodeDeletionDuration)
 	candidates := make([]*apiv1.Node, 0)
 	readinessMap := make(map[string]bool)
 
 	for _, node := range nodes {
 		if val, found := sd.unneededNodes[node.Name]; found {
 
-			glog.V(2).Infof("%s was unneeded for %s", node.Name, now.Sub(val).String())
+			glog.V(2).Infof("%s was unneeded for %s", node.Name, currentTime.Sub(val).String())
 
 			// Check if node is marked with no scale down annotation.
 			if hasNoScaleDownAnnotation(node) {
@@ -380,12 +379,12 @@ func (sd *ScaleDown) TryToScaleDown(nodes []*apiv1.Node, pods []*apiv1.Pod, pdbs
 			readinessMap[node.Name] = ready
 
 			// Check how long the node was underutilized.
-			if ready && !val.Add(sd.context.ScaleDownUnneededTime).Before(now) {
+			if ready && !val.Add(sd.context.ScaleDownUnneededTime).Before(currentTime) {
 				continue
 			}
 
 			// Unready nodes may be deleted after a different time than unrerutilized.
-			if !ready && !val.Add(sd.context.ScaleDownUnreadyTime).Before(now) {
+			if !ready && !val.Add(sd.context.ScaleDownUnreadyTime).Before(currentTime) {
 				continue
 			}
 
