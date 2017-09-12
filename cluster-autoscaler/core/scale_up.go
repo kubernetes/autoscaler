@@ -46,6 +46,8 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 		return false, nil
 	}
 
+	now := time.Now()
+
 	for _, pod := range unschedulablePods {
 		glog.V(1).Infof("Pod %s/%s is unschedulable", pod.Namespace, pod.Name)
 	}
@@ -76,8 +78,8 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 
 	for _, nodeGroup := range context.CloudProvider.NodeGroups() {
 
-		if !context.ClusterStateRegistry.IsNodeGroupHealthy(nodeGroup.Id()) {
-			glog.Warningf("Node group %s is unhealthy", nodeGroup.Id())
+		if !context.ClusterStateRegistry.IsNodeGroupSafeToScaleUp(nodeGroup.Id(), now) {
+			glog.Warningf("Node group %s is not ready for scaleup", nodeGroup.Id())
 			continue
 		}
 
@@ -180,7 +182,16 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 				return false, typedErr.AddPrefix("Failed to find matching node groups: ")
 			}
 			similarNodeGroups = filterNodeGroupsByPods(similarNodeGroups, bestOption.Pods, podsPassingPredicates)
-			targetNodeGroups = append(targetNodeGroups, similarNodeGroups...)
+			for _, ng := range similarNodeGroups {
+				if context.ClusterStateRegistry.IsNodeGroupSafeToScaleUp(ng.Id(), now) {
+					targetNodeGroups = append(targetNodeGroups, ng)
+				} else {
+					// This should never happen, as we will filter out the node group earlier on
+					// because of missing entry in podsPassingPredicates, but double checking doesn't
+					// really cost us anything
+					glog.V(2).Infof("Ignoring node group %s when balancing: group is not ready for scaleup", ng.Id())
+				}
+			}
 			if len(targetNodeGroups) > 1 {
 				var buffer bytes.Buffer
 				for i, ng := range targetNodeGroups {
@@ -251,6 +262,8 @@ func executeScaleUp(context *AutoscalingContext, info nodegroupset.ScaleUpInfo) 
 	glog.V(0).Infof("Scale-up: setting group %s size to %d", info.Group.Id(), info.NewSize)
 	increase := info.NewSize - info.CurrentSize
 	if err := info.Group.IncreaseSize(increase); err != nil {
+		context.LogRecorder.Eventf(apiv1.EventTypeWarning, "FailedToScaleUpGroup", "Scale-up failed for group %s: %v", info.Group.Id(), err)
+		context.ClusterStateRegistry.RegisterFailedScaleUp(info.Group.Id())
 		return errors.NewAutoscalerError(errors.CloudProviderError,
 			"failed to increase node group size: %v", err)
 	}

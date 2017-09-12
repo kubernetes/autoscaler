@@ -77,10 +77,11 @@ func TestScaleUpOK(t *testing.T) {
 	provider.AddNode("ng2", n2)
 	assert.NotNil(t, provider)
 
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{})
-	clusterState.UpdateNodes([]*apiv1.Node{n1, n2}, time.Now())
 	fakeRecorder := kube_record.NewFakeRecorder(5)
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false)
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder)
+	clusterState.UpdateNodes([]*apiv1.Node{n1, n2}, time.Now())
+
 	context := &AutoscalingContext{
 		AutoscalingOptions: AutoscalingOptions{
 			EstimatorName: estimator.BinpackingEstimatorName,
@@ -147,7 +148,9 @@ func TestScaleUpNodeComingNoScale(t *testing.T) {
 	provider.AddNode("ng1", n1)
 	provider.AddNode("ng2", n2)
 
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{})
+	fakeRecorder := kube_util.CreateEventRecorder(fakeClient)
+	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false)
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder)
 	clusterState.RegisterScaleUp(&clusterstate.ScaleUpRequest{
 		NodeGroupName:   "ng2",
 		Increase:        1,
@@ -156,8 +159,6 @@ func TestScaleUpNodeComingNoScale(t *testing.T) {
 	})
 	clusterState.UpdateNodes([]*apiv1.Node{n1, n2}, time.Now())
 
-	fakeRecorder := kube_util.CreateEventRecorder(fakeClient)
-	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false)
 	context := &AutoscalingContext{
 		AutoscalingOptions: AutoscalingOptions{
 			EstimatorName: estimator.BinpackingEstimatorName,
@@ -212,7 +213,9 @@ func TestScaleUpNodeComingHasScale(t *testing.T) {
 	provider.AddNode("ng1", n1)
 	provider.AddNode("ng2", n2)
 
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{})
+	fakeRecorder := kube_util.CreateEventRecorder(fakeClient)
+	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false)
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder)
 	clusterState.RegisterScaleUp(&clusterstate.ScaleUpRequest{
 		NodeGroupName:   "ng2",
 		Increase:        1,
@@ -221,8 +224,6 @@ func TestScaleUpNodeComingHasScale(t *testing.T) {
 	})
 	clusterState.UpdateNodes([]*apiv1.Node{n1, n2}, time.Now())
 
-	fakeRecorder := kube_util.CreateEventRecorder(fakeClient)
-	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false)
 	context := &AutoscalingContext{
 		AutoscalingOptions: AutoscalingOptions{
 			EstimatorName: estimator.BinpackingEstimatorName,
@@ -277,10 +278,10 @@ func TestScaleUpUnhealthy(t *testing.T) {
 	provider.AddNode("ng1", n1)
 	provider.AddNode("ng2", n2)
 
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{})
-	clusterState.UpdateNodes([]*apiv1.Node{n1, n2}, time.Now())
 	fakeRecorder := kube_util.CreateEventRecorder(fakeClient)
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false)
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder)
+	clusterState.UpdateNodes([]*apiv1.Node{n1, n2}, time.Now())
 	context := &AutoscalingContext{
 		AutoscalingOptions: AutoscalingOptions{
 			EstimatorName: estimator.BinpackingEstimatorName,
@@ -326,10 +327,10 @@ func TestScaleUpNoHelp(t *testing.T) {
 	provider.AddNode("ng1", n1)
 	assert.NotNil(t, provider)
 
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{})
-	clusterState.UpdateNodes([]*apiv1.Node{n1}, time.Now())
 	fakeRecorder := kube_record.NewFakeRecorder(5)
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false)
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder)
+	clusterState.UpdateNodes([]*apiv1.Node{n1}, time.Now())
 	context := &AutoscalingContext{
 		AutoscalingOptions: AutoscalingOptions{
 			EstimatorName: estimator.BinpackingEstimatorName,
@@ -404,10 +405,10 @@ func TestScaleUpBalanceGroups(t *testing.T) {
 		return true, &apiv1.PodList{Items: []apiv1.Pod{*(podMap[matches[0]])}}, nil
 	})
 
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{})
-	clusterState.UpdateNodes(nodes, time.Now())
 	fakeRecorder := kube_record.NewFakeRecorder(5)
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false)
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder)
+	clusterState.UpdateNodes(nodes, time.Now())
 	context := &AutoscalingContext{
 		AutoscalingOptions: AutoscalingOptions{
 			EstimatorName:            estimator.BinpackingEstimatorName,
