@@ -53,14 +53,14 @@ func TestGetEmptyContainersSpec(t *testing.T) {
 	assert.Empty(t, specs, "should be empty for empty PodLister")
 }
 
-func TestGetEmptyContainersUsage(t *testing.T) {
+func TestGetEmptyContainersMetrics(t *testing.T) {
 	tc := newEmptyMetricsClientTestCase()
 	metricsClient := tc.createFakeMetricsClient().(*metricsClient)
 
-	usages, err := metricsClient.getContainersUsage()
+	containerMetricsSnapshots, err := metricsClient.getContainersMetrics()
 
 	assert.NoError(t, err)
-	assert.Empty(t, usages, "should be empty for empty MetricsGetter")
+	assert.Empty(t, containerMetricsSnapshots, "should be empty for empty MetricsGetter")
 }
 
 func TestGetContainersUtilization(t *testing.T) {
@@ -105,12 +105,12 @@ func TestGetContainersSpec(t *testing.T) {
 	assert.Len(t, specs, len(tc.getAllSnaps()), "It should return right number of ContainerSpecs")
 }
 
-func TestGetContainersUsage(t *testing.T) {
+func TestGetContainersMetrics(t *testing.T) {
 	tc := newMetricsClientTestCase()
 	metricsClient := tc.createFakeMetricsClient().(*metricsClient)
 
-	usages, err := metricsClient.getContainersUsage()
+	containerMetricsSnapshots, err := metricsClient.getContainersMetrics()
 
 	assert.NoError(t, err)
-	assert.Len(t, usages, len(tc.getAllSnaps()), "It should return right number of ContainerUsages")
+	assert.Len(t, containerMetricsSnapshots, len(tc.getAllSnaps()), "It should return right number of containerMetricsSnapshots")
 }

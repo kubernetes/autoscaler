@@ -23,39 +23,36 @@ import (
 )
 
 type containerUtilizationTestCase struct {
-	id1, id2 containerID
+	id1, id2                      containerID
+	containerSpec                 *basicContainerSpec
+	matchingSnap, nonMatchingSnap *containerMetricsSnapshot
 }
 
 func newContainerUtilizationTestCase() *containerUtilizationTestCase {
+	id1 := containerID{"a", "b", "c"}
+	id2 := containerID{"a", "b", "cs"}
+
 	return &containerUtilizationTestCase{
-		id1: containerID{"a", "b", "c"},
-		id2: containerID{"a", "b", "cs"},
+		id1:             id1,
+		id2:             id2,
+		containerSpec:   &basicContainerSpec{ID: id1},
+		matchingSnap:    &containerMetricsSnapshot{ID: id1},
+		nonMatchingSnap: &containerMetricsSnapshot{ID: id2},
 	}
-}
-
-func (tc *containerUtilizationTestCase) newContainerSpec() *containerSpec {
-	return &containerSpec{ID: tc.id1}
-}
-
-func (tc *containerUtilizationTestCase) newMatchingSnap() *containerUsageSnapshot {
-	return &containerUsageSnapshot{ID: tc.id1}
-}
-
-func (tc *containerUtilizationTestCase) newNonMatchingSnap() *containerUsageSnapshot {
-	return &containerUsageSnapshot{ID: tc.id2}
 }
 
 func TestCreatingUtilizationSnapshotFromDifferentContainers(t *testing.T) {
 	tc := newContainerUtilizationTestCase()
 
-	_, err := NewContainerUtilizationSnapshot(tc.newNonMatchingSnap(), tc.newContainerSpec())
+	_, err := NewContainerUtilizationSnapshot(tc.nonMatchingSnap, tc.containerSpec)
 
 	assert.Error(t, err)
 }
+
 func TestCreatingUtilizationSnapshotFromSameContainer(t *testing.T) {
 	tc := newContainerUtilizationTestCase()
 
-	_, err := NewContainerUtilizationSnapshot(tc.newMatchingSnap(), tc.newContainerSpec())
+	_, err := NewContainerUtilizationSnapshot(tc.matchingSnap, tc.containerSpec)
 
 	assert.NoError(t, err)
 }

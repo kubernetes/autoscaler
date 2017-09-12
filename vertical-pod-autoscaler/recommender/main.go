@@ -34,8 +34,6 @@ func main() {
 	glog.Infof("Running VPA Recommender")
 	kube_flag.InitFlags()
 
-	// TODO monitoring
-
 	config := createKubeConfig()
 	recommender := NewRecommender(config, metricsFetcherInterval)
 	recommender.Run()

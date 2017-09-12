@@ -47,9 +47,9 @@ type ContainerUtilizationSnapshot struct {
 	Usage k8sapiv1.ResourceList
 }
 
-// NewContainerUtilizationSnapshot merges containerUsageSnapshot and containerSpec into single ContainerUtilizationSnapshot.
+// NewContainerUtilizationSnapshot merges containerMetricsSnapshot and basicContainerSpec into single ContainerUtilizationSnapshot.
 // Both snap and spec need to have the same container name, pod name and namespace; otherwise error will be returned.
-func NewContainerUtilizationSnapshot(snap *containerUsageSnapshot, spec *containerSpec) (*ContainerUtilizationSnapshot, error) {
+func NewContainerUtilizationSnapshot(snap *containerMetricsSnapshot, spec *basicContainerSpec) (*ContainerUtilizationSnapshot, error) {
 	if snap.ID.PodName != spec.ID.PodName || snap.ID.ContainerName != spec.ID.ContainerName || snap.ID.Namespace != spec.ID.Namespace {
 		return nil, errors.New("spec and snap are from different containers!")
 	}
@@ -66,7 +66,7 @@ func NewContainerUtilizationSnapshot(snap *containerUsageSnapshot, spec *contain
 }
 
 // information about usage of certain container withing defined time window
-type containerUsageSnapshot struct {
+type containerMetricsSnapshot struct {
 	ID containerID
 
 	SnapshotTime   metav1.Time
@@ -76,7 +76,7 @@ type containerUsageSnapshot struct {
 }
 
 // Basic info about container specification
-type containerSpec struct {
+type basicContainerSpec struct {
 	ID containerID
 
 	CreationTime metav1.Time

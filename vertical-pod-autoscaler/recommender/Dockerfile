@@ -1,4 +1,4 @@
-# Copyright 2016 The Kubernetes Authors. All rights reserved
+# Copyright 2017 The Kubernetes Authors. All rights reserved
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,10 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 FROM gcr.io/google_containers/ubuntu-slim:0.1
 MAINTAINER Karol Kraskiewicz "karol.kraskiewicz@gmail.com"
-
 
 ADD recommender recommender
 
