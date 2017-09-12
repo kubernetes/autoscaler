@@ -154,6 +154,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	nodeNameToNodeInfo := schedulercache.CreateNodeNameToInfoMap(pods, nodes)
 	utilizationMap := make(map[string]float64)
 
+	sd.updateUnremovableNodes(nodes)
 	// Filter out nodes that were recently checked
 	filteredNodesToCheck := make([]*apiv1.Node, 0)
 	for _, node := range nodesToCheck {
@@ -296,6 +297,29 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	sd.context.ClusterStateRegistry.UpdateScaleDownCandidates(sd.unneededNodesList, timestamp)
 	metrics.UpdateUnneededNodesCount(len(sd.unneededNodesList))
 	return nil
+}
+
+// updateUnremovableNodes updates unremovableNodes map according to current
+// state of the cluster. Removes from the map nodes that are no longer in the
+// nodes list.
+func (sd *ScaleDown) updateUnremovableNodes(nodes []*apiv1.Node) {
+	if len(sd.unremovableNodes) <= 0 {
+		return
+	}
+	// A set of nodes to delete from unremovableNodes map.
+	nodesToDelete := make(map[string]struct{}, len(sd.unremovableNodes))
+	for name := range sd.unremovableNodes {
+		nodesToDelete[name] = struct{}{}
+	}
+	// Nodes that are in the cluster should not be deleted.
+	for _, node := range nodes {
+		if _, ok := nodesToDelete[node.Name]; ok {
+			delete(nodesToDelete, node.Name)
+		}
+	}
+	for nodeName := range nodesToDelete {
+		delete(sd.unremovableNodes, nodeName)
+	}
 }
 
 // markSimulationError indicates a simulation error by clearing  relevant scale

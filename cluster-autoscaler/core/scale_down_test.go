@@ -126,10 +126,14 @@ func TestFindUnneededNodes(t *testing.T) {
 	// Node n1 is unneeded, but should be skipped because it has just recently been found to be unremovable
 	sd.UpdateUnneededNodes([]*apiv1.Node{n1}, []*apiv1.Node{n1}, []*apiv1.Pod{}, time.Now(), nil)
 	assert.Equal(t, 0, len(sd.unneededNodes))
+	// Verify that no other nodes are in unremovable map.
+	assert.Equal(t, 1, len(sd.unremovableNodes))
 
 	// But it should be checked after timeout
 	sd.UpdateUnneededNodes([]*apiv1.Node{n1}, []*apiv1.Node{n1}, []*apiv1.Pod{}, time.Now().Add(UnremovableNodeRecheckTimeout+time.Second), nil)
 	assert.Equal(t, 1, len(sd.unneededNodes))
+	// Verify that nodes that are no longer unremovable are removed.
+	assert.Equal(t, 0, len(sd.unremovableNodes))
 }
 
 func TestFindUnneededMaxCandidates(t *testing.T) {
