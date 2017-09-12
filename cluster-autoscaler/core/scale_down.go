@@ -424,7 +424,7 @@ func (sd *ScaleDown) TryToScaleDown(nodes []*apiv1.Node, pods []*apiv1.Pod, pdbs
 	if len(emptyNodes) > 0 {
 		nodeDeletionStart := time.Now()
 		confirmation := make(chan errors.AutoscalerError, len(emptyNodes))
-		sd.scheduleDeleteEmptyNodes(emptyNodes, readinessMap, confirmation)
+		sd.scheduleDeleteEmptyNodes(emptyNodes, sd.context.ClientSet, sd.context.Recorder, readinessMap, confirmation)
 		err := sd.waitForEmptyNodesDeleted(emptyNodes, confirmation)
 		nodeDeletionDuration = time.Now().Sub(nodeDeletionStart)
 		if err == nil {
@@ -536,15 +536,30 @@ func getEmptyNodes(candidates []*apiv1.Node, pods []*apiv1.Pod, maxEmptyBulkDele
 	return result[:limit]
 }
 
-func (sd *ScaleDown) scheduleDeleteEmptyNodes(emptyNodes []*apiv1.Node,
-	readinessMap map[string]bool, confirmation chan errors.AutoscalerError) {
+func (sd *ScaleDown) scheduleDeleteEmptyNodes(emptyNodes []*apiv1.Node, client kube_client.Interface,
+	recorder kube_record.EventRecorder, readinessMap map[string]bool, confirmation chan errors.AutoscalerError) {
 	for _, node := range emptyNodes {
 		glog.V(0).Infof("Scale-down: removing empty node %s", node.Name)
 		sd.context.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaleDownEmpty", "Scale-down: removing empty node %s", node.Name)
 		simulator.RemoveNodeFromTracker(sd.usageTracker, node.Name, sd.unneededNodes)
 		go func(nodeToDelete *apiv1.Node) {
+			taintErr := deletetaint.MarkToBeDeleted(nodeToDelete, client)
+			if taintErr != nil {
+				recorder.Eventf(nodeToDelete, apiv1.EventTypeWarning, "ScaleDownFailed", "failed to mark the node as toBeDeleted/unschedulable: %v", taintErr)
+				confirmation <- errors.ToAutoscalerError(errors.ApiCallError, taintErr)
+				return
+			}
 
-			deleteErr := deleteNodeFromCloudProvider(nodeToDelete, sd.context.CloudProvider,
+			var deleteErr errors.AutoscalerError
+			// If we fail to delete the node we want to remove delete taint
+			defer func() {
+				if deleteErr != nil {
+					deletetaint.CleanToBeDeleted(nodeToDelete, client)
+					recorder.Eventf(nodeToDelete, apiv1.EventTypeWarning, "ScaleDownFailed", "failed to delete empty node: %v", deleteErr)
+				}
+			}()
+
+			deleteErr = deleteNodeFromCloudProvider(nodeToDelete, sd.context.CloudProvider,
 				sd.context.Recorder, sd.context.ClusterStateRegistry)
 			if deleteErr == nil {
 				if readinessMap[nodeToDelete.Name] {
