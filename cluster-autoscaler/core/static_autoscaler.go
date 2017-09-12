@@ -280,7 +280,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 
 		for key, val := range scaleDown.unneededNodes {
 			if glog.V(4) {
-				glog.V(4).Infof("%s is unneeded since %s duration %s", key, val.String(), time.Now().Sub(val).String())
+				glog.V(4).Infof("%s is unneeded since %s duration %s", key, val.String(), currentTime.Sub(val).String())
 			}
 		}
 
