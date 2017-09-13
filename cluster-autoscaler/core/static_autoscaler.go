@@ -90,6 +90,8 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	scaleDown := a.scaleDown
 	autoscalingContext := a.AutoscalingContext
 	runStart := time.Now()
+	
+	glog.V(4).Infof("Starting main loop at %s", runStart.String())
 
 	readyNodes, err := readyNodeLister.List()
 	if err != nil {
@@ -255,15 +257,6 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		}
 
 		unneededStart := time.Now()
-		// In dry run only utilization is updated
-		calculateUnneededOnly := a.lastScaleUpTime.Add(a.ScaleDownDelay).After(currentTime) ||
-			a.lastScaleDownFailedTrial.Add(a.ScaleDownTrialInterval).After(currentTime) ||
-			schedulablePodsPresent ||
-			scaleDown.nodeDeleteStatus.IsDeleteInProgress()
-
-		glog.V(4).Infof("Scale down status: unneededOnly=%v lastScaleUpTime=%s "+
-			"lastScaleDownFailedTrail=%s schedulablePodsPresent=%v", calculateUnneededOnly,
-			a.lastScaleUpTime, a.lastScaleDownFailedTrial, schedulablePodsPresent)
 
 		glog.V(4).Infof("Calculating unneeded nodes")
 
@@ -283,6 +276,16 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 				glog.V(4).Infof("%s is unneeded since %s duration %s", key, val.String(), time.Now().Sub(val).String())
 			}
 		}
+
+		// In dry run only utilization is updated
+		calculateUnneededOnly := a.lastScaleUpTime.Add(a.ScaleDownDelay).After(currentTime) ||
+			a.lastScaleDownFailedTrial.Add(a.ScaleDownTrialInterval).After(currentTime) ||
+			schedulablePodsPresent ||
+			scaleDown.nodeDeleteStatus.IsDeleteInProgress()
+
+		glog.V(4).Infof("Scale down status: unneededOnly=%v lastScaleUpTime=%s "+
+			"lastScaleDownFailedTrail=%s schedulablePodsPresent=%v", calculateUnneededOnly,
+			a.lastScaleUpTime, a.lastScaleDownFailedTrial, schedulablePodsPresent)
 
 		if !calculateUnneededOnly {
 			glog.V(4).Infof("Starting scale down")
