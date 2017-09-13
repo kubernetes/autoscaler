@@ -90,7 +90,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	scaleDown := a.scaleDown
 	autoscalingContext := a.AutoscalingContext
 	runStart := time.Now()
-	
+
 	glog.V(4).Infof("Starting main loop at %s", runStart.String())
 
 	readyNodes, err := readyNodeLister.List()
