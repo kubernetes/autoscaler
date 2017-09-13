@@ -18,7 +18,6 @@ package core
 
 import (
 	"fmt"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 	"testing"
 	"time"
 
@@ -26,6 +25,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -421,4 +421,41 @@ func TestConfigurePredicateCheckerForLoop(t *testing.T) {
 
 	ConfigurePredicateCheckerForLoop([]*apiv1.Pod{p2}, []*apiv1.Pod{p3}, predicateChecker)
 	assert.False(t, predicateChecker.IsAffinityPredicateEnabled())
+}
+
+func TestGetNodeResource(t *testing.T) {
+	node := BuildTestNode("n1", 1000, 2*MB)
+
+	cores, err := getNodeResource(node, apiv1.ResourceCPU)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(1), cores)
+
+	memory, err := getNodeResource(node, apiv1.ResourceMemory)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(2*MB), memory)
+
+	_, err = getNodeResource(node, "custom resource")
+	assert.Error(t, err)
+
+	node.Status.Capacity = apiv1.ResourceList{}
+
+	_, err = getNodeResource(node, apiv1.ResourceCPU)
+	assert.Error(t, err)
+
+	_, err = getNodeResource(node, apiv1.ResourceMemory)
+	assert.Error(t, err)
+}
+
+func TestGetNodeCoresAndMemory(t *testing.T) {
+	node := BuildTestNode("n1", 2000, 2048*MB)
+
+	cores, memory, err := getNodeCoresAndMemory(node)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(2), cores)
+	assert.Equal(t, int64(2048), memory)
+
+	node.Status.Capacity = apiv1.ResourceList{}
+
+	_, _, err = getNodeCoresAndMemory(node)
+	assert.Error(t, err)
 }
