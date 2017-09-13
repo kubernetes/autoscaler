@@ -371,6 +371,7 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 	coresLeft := coresTotal - sd.context.MinCoresTotal
 	memoryLeft := memoryTotal - sd.context.MinMemoryTotal
 
+	nodeGroupSize := getNodeGroupSizeMap(sd.context.CloudProvider)
 	for _, node := range nodesWithoutMaster {
 		if val, found := sd.unneededNodes[node.Name]; found {
 
@@ -405,9 +406,9 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 				continue
 			}
 
-			size, err := nodeGroup.TargetSize()
-			if err != nil {
-				glog.Errorf("Error while checking node group size %s: %v", nodeGroup.Id(), err)
+			size, found := nodeGroupSize[nodeGroup.Id()]
+			if !found {
+				glog.Errorf("Error while checking node group size %s: group size not found in cache", nodeGroup.Id())
 				continue
 			}
 
@@ -538,6 +539,7 @@ func getEmptyNodes(candidates []*apiv1.Node, pods []*apiv1.Pod, maxEmptyBulkDele
 		var available int
 		var found bool
 		if available, found = availabilityMap[nodeGroup.Id()]; !found {
+			// Will be cached.
 			size, err := nodeGroup.TargetSize()
 			if err != nil {
 				glog.Errorf("Failed to get size for %s: %v ", nodeGroup.Id(), err)
