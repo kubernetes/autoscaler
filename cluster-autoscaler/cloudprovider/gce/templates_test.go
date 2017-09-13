@@ -17,13 +17,102 @@ limitations under the License.
 package gce
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	gce "google.golang.org/api/compute/v1"
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
+	"k8s.io/kubernetes/pkg/quota"
 )
+
+func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
+	type testCase struct {
+		kubeEnv           string
+		name              string
+		machineType       string
+		mig               *Mig
+		capacityCpu       string
+		capacityMemory    string
+		allocatableCpu    string
+		allocatableMemory string
+		expectedErr       bool
+	}
+	testCases := []testCase{{
+		kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
+			"NODE_LABELS: a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true\n" +
+			"DNS_SERVER_IP: '10.0.0.10'\n" +
+			fmt.Sprintf("KUBELET_TEST_ARGS: --experimental-allocatable-ignore-eviction --kube-reserved=cpu=1000m,memory=%v\n", 1024*1024) +
+			"NODE_TAINTS: 'dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c'\n",
+		name:        "nodeName",
+		machineType: "custom-8-2",
+		mig: &Mig{GceRef: GceRef{
+			Name:    "some-name",
+			Project: "some-proj",
+			Zone:    "us-central1-b"}},
+		capacityCpu:       "8000m",
+		capacityMemory:    fmt.Sprintf("%v", 2*1024*1024),
+		allocatableCpu:    "7000m",
+		allocatableMemory: fmt.Sprintf("%v", 1024*1024),
+		expectedErr:       false,
+	}, {
+		kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
+			"NODE_LABELS: a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true\n" +
+			"DNS_SERVER_IP: '10.0.0.10'\n" +
+			"NODE_TAINTS: 'dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c'\n",
+		name:        "nodeName",
+		machineType: "custom-8-2",
+		mig: &Mig{GceRef: GceRef{
+			Name:    "some-name",
+			Project: "some-proj",
+			Zone:    "us-central1-b"}},
+		capacityCpu:       "8000m",
+		capacityMemory:    fmt.Sprintf("%v", 2*1024*1024),
+		allocatableCpu:    "8000m",
+		allocatableMemory: fmt.Sprintf("%v", 2*1024*1024),
+		expectedErr:       false,
+	}, {
+		kubeEnv:     "This kube-env is totally messed up",
+		name:        "nodeName",
+		machineType: "custom-8-2",
+		mig: &Mig{GceRef: GceRef{
+			Name:    "some-name",
+			Project: "some-proj",
+			Zone:    "us-central1-b"}},
+		expectedErr: true,
+	},
+	}
+	for _, tc := range testCases {
+		tb := &templateBuilder{}
+		template := &gce.InstanceTemplate{
+			Name: tc.name,
+			Properties: &gce.InstanceProperties{
+				Metadata: &gce.Metadata{
+					Items: []*gce.MetadataItems{{Key: "kube-env", Value: &tc.kubeEnv}},
+				},
+				MachineType: tc.machineType,
+			},
+		}
+		node, err := tb.buildNodeFromTemplate(tc.mig, template)
+		if tc.expectedErr {
+			assert.Error(t, err)
+		} else {
+			assert.NoError(t, err)
+			podsQuantity, _ := resource.ParseQuantity("110")
+			capacity, err := makeResourceList(tc.capacityCpu, tc.capacityMemory)
+			capacity[apiv1.ResourcePods] = podsQuantity
+			assert.NoError(t, err)
+			allocatable, err := makeResourceList(tc.allocatableCpu, tc.allocatableMemory)
+			allocatable[apiv1.ResourcePods] = podsQuantity
+			assert.NoError(t, err)
+			assertEqualResourceLists(t, "Capacity", capacity, node.Status.Capacity)
+			assertEqualResourceLists(t, "Allocatable", allocatable, node.Status.Allocatable)
+		}
+	}
+}
 
 func TestBuildGenericLabels(t *testing.T) {
 	labels, err := buildGenericLabels(GceRef{
@@ -86,6 +175,51 @@ func TestBuildLabelsForAutoscaledMigConflict(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestBuildAllocatable(t *testing.T) {
+	type testCase struct {
+		kubeEnv        string
+		capacityCpu    string
+		capacityMemory string
+		expectedCpu    string
+		expectedMemory string
+		expectedErr    bool
+	}
+	testCases := []testCase{{
+		kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
+			"NODE_LABELS: a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true\n" +
+			"DNS_SERVER_IP: '10.0.0.10'\n" +
+			"KUBELET_TEST_ARGS: --experimental-allocatable-ignore-eviction --kube-reserved=cpu=1000m,memory=300000Mi\n" +
+			"NODE_TAINTS: 'dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c'\n",
+		capacityCpu:    "4000m",
+		capacityMemory: "700000Mi",
+		expectedCpu:    "3000m",
+		expectedMemory: "400000Mi",
+		expectedErr:    false,
+	}, {
+		kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
+			"NODE_LABELS: a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true\n" +
+			"DNS_SERVER_IP: '10.0.0.10'\n" +
+			"NODE_TAINTS: 'dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c'\n",
+		capacityCpu:    "4000m",
+		capacityMemory: "700000Mi",
+		expectedErr:    true,
+	}}
+	for _, tc := range testCases {
+		capacity, err := makeResourceList(tc.capacityCpu, tc.capacityMemory)
+		assert.NoError(t, err)
+		tb := templateBuilder{}
+		allocatable, err := tb.buildAllocatable(capacity, tc.kubeEnv)
+		if tc.expectedErr {
+			assert.Error(t, err)
+		} else {
+			assert.NoError(t, err)
+			expectedResources, err := makeResourceList(tc.expectedCpu, tc.expectedMemory)
+			assert.NoError(t, err)
+			assert.Equal(t, expectedResources, allocatable)
+		}
+	}
+}
+
 func TestExtractLabelsFromKubeEnv(t *testing.T) {
 	kubeenv := "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
 		"NODE_LABELS: a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true\n" +
@@ -131,12 +265,108 @@ func TestExtractTaintsFromKubeEnv(t *testing.T) {
 
 }
 
+func TestExtractKubeReservedFromKubeEnv(t *testing.T) {
+	type testCase struct {
+		kubeEnv          string
+		expectedReserved string
+		expectedErr      bool
+	}
+
+	testCases := []testCase{{
+		kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
+			"NODE_LABELS: a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true\n" +
+			"DNS_SERVER_IP: '10.0.0.10'\n" +
+			"KUBELET_TEST_ARGS: --experimental-allocatable-ignore-eviction --kube-reserved=cpu=1000m,memory=300000Mi\n" +
+			"NODE_TAINTS: 'dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c'\n",
+		expectedReserved: "cpu=1000m,memory=300000Mi",
+		expectedErr:      false,
+	}, {
+		kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
+			"NODE_LABELS: a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true\n" +
+			"DNS_SERVER_IP: '10.0.0.10'\n" +
+			"KUBELET_TEST_ARGS: --experimental-allocatable-ignore-eviction\n" +
+			"NODE_TAINTS: 'dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c'\n",
+		expectedReserved: "",
+		expectedErr:      true,
+	}, {
+		kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
+			"NODE_LABELS: a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true\n" +
+			"DNS_SERVER_IP: '10.0.0.10'\n" +
+			"NODE_TAINTS: 'dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c'\n",
+		expectedReserved: "",
+		expectedErr:      true}}
+
+	for _, tc := range testCases {
+		reserved, err := extractKubeReservedFromKubeEnv(tc.kubeEnv)
+		assert.Equal(t, tc.expectedReserved, reserved)
+		if tc.expectedErr {
+			assert.Error(t, err)
+		} else {
+			assert.NoError(t, err)
+		}
+	}
+}
+
+func TestParseKubeReserved(t *testing.T) {
+	type testCase struct {
+		reserved       string
+		expectedCpu    string
+		expectedMemory string
+		expectedErr    bool
+	}
+	testCases := []testCase{{
+		reserved:       "cpu=1000m,memory=300000Mi",
+		expectedCpu:    "1000m",
+		expectedMemory: "300000Mi",
+		expectedErr:    false,
+	}, {
+		reserved:       "cpu=1000m,ignored=300Mi,memory=0",
+		expectedCpu:    "1000m",
+		expectedMemory: "0",
+		expectedErr:    false,
+	}, {
+		reserved:    "This is a wrong reserved",
+		expectedErr: true,
+	}}
+	for _, tc := range testCases {
+		resources, err := parseKubeReserved(tc.reserved)
+		if tc.expectedErr {
+			assert.Error(t, err)
+			assert.Nil(t, resources)
+		} else {
+			assert.NoError(t, err)
+			expectedResources, err := makeResourceList(tc.expectedCpu, tc.expectedMemory)
+			assert.NoError(t, err)
+			assertEqualResourceLists(t, "Resources", expectedResources, resources)
+		}
+	}
+}
+
 func makeTaintSet(taints []apiv1.Taint) map[apiv1.Taint]bool {
 	set := make(map[apiv1.Taint]bool)
 	for _, taint := range taints {
 		set[taint] = true
 	}
 	return set
+}
+
+func makeResourceList(cpu string, memory string) (apiv1.ResourceList, error) {
+	result := apiv1.ResourceList{}
+	resultCpu, err := resource.ParseQuantity(cpu)
+	if err != nil {
+		return nil, err
+	}
+	resultMemory, err := resource.ParseQuantity(memory)
+	if err != nil {
+		return nil, err
+	}
+	result[apiv1.ResourceCPU] = resultCpu
+	result[apiv1.ResourceMemory] = resultMemory
+	return result, nil
+}
+
+func assertEqualResourceLists(t *testing.T, name string, expected, actual apiv1.ResourceList) {
+	assert.True(t, quota.V1Equals(expected, actual), "%q unequal:\nExpected:%v\nActual:%v", name, expected, actual)
 }
 
 func TestParseCustomMachineType(t *testing.T) {
