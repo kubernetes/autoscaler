@@ -33,3 +33,17 @@ func TestBuildReadyConditions(t *testing.T) {
 	}
 	assert.True(t, foundReady)
 }
+
+func TestBuildKubeProxy(t *testing.T) {
+
+	pod := BuildKubeProxy("kube-proxy")
+	assert.NotNil(t, pod)
+}
+
+func TestJoinStringMaps(t *testing.T) {
+	map1 := map[string]string{"1": "a", "2": "b"}
+	map2 := map[string]string{"3": "c", "2": "d"}
+	map3 := map[string]string{"5": "e"}
+	result := JoinStringMaps(map1, map2, map3)
+	assert.Equal(t, map[string]string{"1": "a", "2": "d", "3": "c", "5": "e"}, result)
+}
