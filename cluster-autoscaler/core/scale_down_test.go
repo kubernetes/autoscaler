@@ -527,7 +527,7 @@ func TestScaleDown(t *testing.T) {
 }
 
 func waitForDeleteToFinish(t *testing.T, sd *ScaleDown) {
-	for start := time.Now(); time.Now().Sub(start) < 20*time.Second; time.Sleep(100 * time.Millisecond) {
+	for start := time.Now(); time.Since(start) < 20*time.Second; time.Sleep(100 * time.Millisecond) {
 		if !sd.nodeDeleteStatus.IsDeleteInProgress() {
 			return
 		}
@@ -535,6 +535,13 @@ func waitForDeleteToFinish(t *testing.T, sd *ScaleDown) {
 	t.Fatalf("Node delete not finished")
 }
 
+// this IGNORES duplicates
+func assertEqualSet(t *testing.T, a []string, b []string) {
+	assertSubset(t, a, b)
+	assertSubset(t, b, a)
+}
+
+// this IGNORES duplicates
 func assertSubset(t *testing.T, a []string, b []string) {
 	for _, x := range a {
 		found := false
@@ -550,86 +557,84 @@ func assertSubset(t *testing.T, a []string, b []string) {
 	}
 }
 
+var defaultScaleDownOptions = AutoscalingOptions{
+	ScaleDownUtilizationThreshold: 0.5,
+	ScaleDownUnneededTime:         time.Minute,
+	MaxGracefulTerminationSec:     60,
+	MaxEmptyBulkDelete:            10,
+	MinCoresTotal:                 0,
+	MinMemoryTotal:                0,
+}
+
 func TestScaleDownEmptyMultipleNodeGroups(t *testing.T) {
-	updatedNodes := make(chan string, 10)
-	deletedNodes := make(chan string, 10)
-	fakeClient := &fake.Clientset{}
-
-	n1 := BuildTestNode("n1", 1000, 1000)
-	SetNodeReadyState(n1, true, time.Time{})
-	n2 := BuildTestNode("n2", 1000, 1000)
-	SetNodeReadyState(n2, true, time.Time{})
-	fakeClient.Fake.AddReactor("list", "pods", func(action core.Action) (bool, runtime.Object, error) {
-		return true, &apiv1.PodList{Items: []apiv1.Pod{}}, nil
-	})
-	fakeClient.Fake.AddReactor("get", "pods", func(action core.Action) (bool, runtime.Object, error) {
-		return true, nil, errors.NewNotFound(apiv1.Resource("pod"), "whatever")
-	})
-	fakeClient.Fake.AddReactor("get", "nodes", func(action core.Action) (bool, runtime.Object, error) {
-		getAction := action.(core.GetAction)
-		switch getAction.GetName() {
-		case n1.Name:
-			return true, n1, nil
-		case n2.Name:
-			return true, n2, nil
-		}
-		return true, nil, fmt.Errorf("Wrong node: %v", getAction.GetName())
-	})
-	fakeClient.Fake.AddReactor("update", "nodes", func(action core.Action) (bool, runtime.Object, error) {
-		update := action.(core.UpdateAction)
-		obj := update.GetObject().(*apiv1.Node)
-		updatedNodes <- obj.Name
-		return true, obj, nil
-	})
-
-	provider := testprovider.NewTestCloudProvider(nil, func(nodeGroup string, node string) error {
-		deletedNodes <- node
-		return nil
-	})
-	provider.AddNodeGroup("ng1", 0, 10, 2)
-	provider.AddNodeGroup("ng2", 0, 10, 2)
-	provider.AddNode("ng1", n1)
-	provider.AddNode("ng2", n2)
-	assert.NotNil(t, provider)
-
-	fakeRecorder := kube_util.CreateEventRecorder(fakeClient)
-	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false)
-	context := &AutoscalingContext{
-		AutoscalingOptions: AutoscalingOptions{
-			ScaleDownUtilizationThreshold: 0.5,
-			ScaleDownUnneededTime:         time.Minute,
-			MaxGracefulTerminationSec:     60,
-			MaxEmptyBulkDelete:            10,
+	config := &scaleTestConfig{
+		nodes: []nodeConfig{
+			{"n1", 1000, 1000, true, "ng1"},
+			{"n2", 1000, 1000, true, "ng2"},
 		},
-		PredicateChecker:     simulator.NewTestPredicateChecker(),
-		CloudProvider:        provider,
-		ClientSet:            fakeClient,
-		Recorder:             fakeRecorder,
-		ClusterStateRegistry: clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder),
-		LogRecorder:          fakeLogRecorder,
+		options:            defaultScaleDownOptions,
+		expectedScaleDowns: []string{"n1", "n2"},
 	}
-	scaleDown := NewScaleDown(context)
-	scaleDown.UpdateUnneededNodes([]*apiv1.Node{n1, n2},
-		[]*apiv1.Node{n1, n2}, []*apiv1.Pod{}, time.Now().Add(-5*time.Minute), nil)
-	result, err := scaleDown.TryToScaleDown([]*apiv1.Node{n1, n2}, []*apiv1.Pod{}, nil, time.Now())
-	waitForDeleteToFinish(t, scaleDown)
-
-	assert.NoError(t, err)
-	assert.Equal(t, ScaleDownNodeDeleted, result)
-	d1 := getStringFromChan(deletedNodes)
-	d2 := getStringFromChan(deletedNodes)
-	assertSubset(t, []string{d1, d2}, []string{n1.Name, n2.Name})
+	simpleScaleDownEmpty(t, config)
 }
 
 func TestScaleDownEmptySingleNodeGroup(t *testing.T) {
+	config := &scaleTestConfig{
+		nodes: []nodeConfig{
+			{"n1", 1000, 1000, true, "ng1"},
+			{"n2", 1000, 1000, true, "ng1"},
+		},
+		options:            defaultScaleDownOptions,
+		expectedScaleDowns: []string{"n1", "n2"},
+	}
+	simpleScaleDownEmpty(t, config)
+}
+
+func TestScaleDownEmptyMinCoresLimitHit(t *testing.T) {
+	options := defaultScaleDownOptions
+	options.MinCoresTotal = 2
+	config := &scaleTestConfig{
+		nodes: []nodeConfig{
+			{"n1", 2000, 1000, true, "ng1"},
+			{"n2", 1000, 1000, true, "ng1"},
+		},
+		options:            options,
+		expectedScaleDowns: []string{"n2"},
+	}
+	simpleScaleDownEmpty(t, config)
+}
+
+func TestScaleDownEmptyMinMemoryLimitHit(t *testing.T) {
+	options := defaultScaleDownOptions
+	options.MinMemoryTotal = 1
+	config := &scaleTestConfig{
+		nodes: []nodeConfig{
+			{"n1", 2000, 1000 * MB, true, "ng1"},
+			{"n2", 1000, 1000 * MB, true, "ng1"},
+			{"n3", 1000, 1000 * MB, true, "ng1"},
+		},
+		options:            options,
+		expectedScaleDowns: []string{"n1", "n2"},
+	}
+	simpleScaleDownEmpty(t, config)
+}
+
+func simpleScaleDownEmpty(t *testing.T, config *scaleTestConfig) {
 	updatedNodes := make(chan string, 10)
 	deletedNodes := make(chan string, 10)
 	fakeClient := &fake.Clientset{}
 
-	n1 := BuildTestNode("n1", 1000, 1000)
-	SetNodeReadyState(n1, true, time.Time{})
-	n2 := BuildTestNode("n2", 1000, 1000)
-	SetNodeReadyState(n2, true, time.Time{})
+	nodes := make([]*apiv1.Node, len(config.nodes))
+	nodesMap := make(map[string]*apiv1.Node)
+	groups := make(map[string][]*apiv1.Node)
+	for i, n := range config.nodes {
+		node := BuildTestNode(n.name, n.cpu, n.memory)
+		SetNodeReadyState(node, n.ready, time.Time{})
+		nodesMap[n.name] = node
+		nodes[i] = node
+		groups[n.group] = append(groups[n.group], node)
+	}
+
 	fakeClient.Fake.AddReactor("list", "pods", func(action core.Action) (bool, runtime.Object, error) {
 		return true, &apiv1.PodList{Items: []apiv1.Pod{}}, nil
 	})
@@ -638,13 +643,11 @@ func TestScaleDownEmptySingleNodeGroup(t *testing.T) {
 	})
 	fakeClient.Fake.AddReactor("get", "nodes", func(action core.Action) (bool, runtime.Object, error) {
 		getAction := action.(core.GetAction)
-		switch getAction.GetName() {
-		case n1.Name:
-			return true, n1, nil
-		case n2.Name:
-			return true, n2, nil
+		if node, found := nodesMap[getAction.GetName()]; found {
+			return true, node, nil
 		}
 		return true, nil, fmt.Errorf("Wrong node: %v", getAction.GetName())
+
 	})
 	fakeClient.Fake.AddReactor("update", "nodes", func(action core.Action) (bool, runtime.Object, error) {
 		update := action.(core.UpdateAction)
@@ -657,20 +660,20 @@ func TestScaleDownEmptySingleNodeGroup(t *testing.T) {
 		deletedNodes <- node
 		return nil
 	})
-	provider.AddNodeGroup("ng1", 0, 10, 2)
-	provider.AddNode("ng1", n1)
-	provider.AddNode("ng1", n2)
+
+	for name, nodesInGroup := range groups {
+		provider.AddNodeGroup(name, 0, 10, len(nodesInGroup))
+		for _, n := range nodesInGroup {
+			provider.AddNode(name, n)
+		}
+	}
+
 	assert.NotNil(t, provider)
 
 	fakeRecorder := kube_util.CreateEventRecorder(fakeClient)
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false)
 	context := &AutoscalingContext{
-		AutoscalingOptions: AutoscalingOptions{
-			ScaleDownUtilizationThreshold: 0.5,
-			ScaleDownUnneededTime:         time.Minute,
-			MaxGracefulTerminationSec:     60,
-			MaxEmptyBulkDelete:            10,
-		},
+		AutoscalingOptions:   config.options,
 		PredicateChecker:     simulator.NewTestPredicateChecker(),
 		CloudProvider:        provider,
 		ClientSet:            fakeClient,
@@ -679,16 +682,34 @@ func TestScaleDownEmptySingleNodeGroup(t *testing.T) {
 		LogRecorder:          fakeLogRecorder,
 	}
 	scaleDown := NewScaleDown(context)
-	scaleDown.UpdateUnneededNodes([]*apiv1.Node{n1, n2},
-		[]*apiv1.Node{n1, n2}, []*apiv1.Pod{}, time.Now().Add(-5*time.Minute), nil)
-	result, err := scaleDown.TryToScaleDown([]*apiv1.Node{n1, n2}, []*apiv1.Pod{}, nil, time.Now())
+	scaleDown.UpdateUnneededNodes(nodes,
+		nodes, []*apiv1.Pod{}, time.Now().Add(-5*time.Minute), nil)
+	result, err := scaleDown.TryToScaleDown(nodes, []*apiv1.Pod{}, nil, time.Now())
 	waitForDeleteToFinish(t, scaleDown)
+	// This helps to verify that TryToScaleDown doesn't attempt to remove anything
+	// after delete in progress status is gone.
+	close(deletedNodes)
 
 	assert.NoError(t, err)
 	assert.Equal(t, ScaleDownNodeDeleted, result)
-	d1 := getStringFromChan(deletedNodes)
-	d2 := getStringFromChan(deletedNodes)
-	assertSubset(t, []string{d1, d2}, []string{n1.Name, n2.Name})
+
+	// Check the channel (and make sure there isn't more than there should be).
+	deleted := make([]string, 0, len(config.expectedScaleDowns)+10)
+	empty := false
+	for i := 0; i < len(config.expectedScaleDowns)+10 && !empty; i++ {
+		select {
+		case d := <-deletedNodes:
+			if d == "" { // a closed channel yields empty value
+				empty = true
+			} else {
+				deleted = append(deleted, d)
+			}
+		default:
+			empty = true
+		}
+	}
+
+	assertEqualSet(t, config.expectedScaleDowns, deleted)
 }
 
 func TestNoScaleDownUnready(t *testing.T) {
@@ -922,4 +943,78 @@ func TestCleanUpNodeAutoprovisionedGroups(t *testing.T) {
 	assert.NotNil(t, provider)
 
 	assert.NoError(t, cleanUpNodeAutoprovisionedGroups(provider))
+}
+
+func TestCalculateCoresAndMemoryTotal(t *testing.T) {
+	nodeConfigs := []nodeConfig{
+		{"n1", 2000, 7500 * MB, true, "ng1"},
+		{"n2", 2000, 7500 * MB, true, "ng1"},
+		{"n3", 2000, 7500 * MB, true, "ng1"},
+		{"n4", 12000, 8000 * MB, true, "ng1"},
+		{"n5", 16000, 7500 * MB, true, "ng1"},
+		{"n6", 8000, 6000 * MB, true, "ng1"},
+		{"n7", 6000, 16000 * MB, true, "ng1"},
+	}
+	nodes := make([]*apiv1.Node, len(nodeConfigs))
+	for i, n := range nodeConfigs {
+		node := BuildTestNode(n.name, n.cpu, n.memory)
+		SetNodeReadyState(node, n.ready, time.Now())
+		nodes[i] = node
+	}
+
+	nodes[6].Spec.Taints = []apiv1.Taint{
+		{
+			Key:    deletetaint.ToBeDeletedTaint,
+			Value:  fmt.Sprint(time.Now().Unix()),
+			Effect: apiv1.TaintEffectNoSchedule,
+		},
+	}
+
+	coresTotal, memoryTotal := calculateCoresAndMemoryTotal(nodes, time.Now())
+
+	assert.Equal(t, int64(42), coresTotal)
+	assert.Equal(t, int64(44000), memoryTotal)
+}
+
+func TestFilterOutMasters(t *testing.T) {
+	nodeConfigs := []nodeConfig{
+		{"n1", 2000, 4000, false, "ng1"},
+		{"n2", 2000, 4000, true, "ng2"},
+		{"n3", 2000, 8000, true, ""}, // real master
+		{"n4", 1000, 2000, true, "ng3"},
+		{"n5", 1000, 2000, true, "ng3"},
+		{"n6", 2000, 8000, true, ""}, // same machine type, no node group, no api server
+		{"n7", 2000, 8000, true, ""}, // real master
+	}
+	nodes := make([]*apiv1.Node, len(nodeConfigs))
+	for i, n := range nodeConfigs {
+		node := BuildTestNode(n.name, n.cpu, n.memory)
+		SetNodeReadyState(node, n.ready, time.Now())
+		nodes[i] = node
+	}
+
+	BuildTestPodWithExtra := func(name, namespace, node string, labels map[string]string) *apiv1.Pod {
+		pod := BuildTestPod(name, 100, 200)
+		pod.Spec.NodeName = node
+		pod.Namespace = namespace
+		pod.Labels = labels
+		return pod
+	}
+
+	pods := []*apiv1.Pod{
+		BuildTestPodWithExtra("kube-apiserver-kubernetes-master", "kube-system", "n2", map[string]string{}),                                          // without label
+		BuildTestPodWithExtra("kube-apiserver-kubernetes-master", "fake-kube-system", "n6", map[string]string{"component": "kube-apiserver"}),        // wrong namespace
+		BuildTestPodWithExtra("kube-apiserver-kubernetes-master", "kube-system", "n3", map[string]string{"component": "kube-apiserver"}),             // real api server
+		BuildTestPodWithExtra("hidden-name", "kube-system", "n7", map[string]string{"component": "kube-apiserver"}),                                  // also a real api server
+		BuildTestPodWithExtra("kube-apiserver-kubernetes-master", "kube-system", "n1", map[string]string{"component": "kube-apiserver-dev"}),         // wrong label
+		BuildTestPodWithExtra("custom-deployment", "custom", "n5", map[string]string{"component": "custom-component", "custom-key": "custom-value"}), // unrelated pod
+	}
+
+	withoutMasters := filterOutMasters(nodes, pods)
+
+	withoutMastersNames := make([]string, len(withoutMasters))
+	for i, n := range withoutMasters {
+		withoutMastersNames[i] = n.Name
+	}
+	assertEqualSet(t, []string{"n1", "n2", "n4", "n5", "n6"}, withoutMastersNames)
 }
