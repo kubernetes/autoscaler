@@ -336,12 +336,12 @@ const managedInstancesResponse2 = `{
   ]
 }`
 
-func newTestGceManager(t *testing.T, testServerURL string, mode GcpCloudProviderMode) *GceManager {
+func newTestGceManager(t *testing.T, testServerURL string, mode GcpCloudProviderMode) *gceManagerImpl {
 	client := &http.Client{}
 	gceService, err := gce.New(client)
 	assert.NoError(t, err)
 	gceService.BasePath = testServerURL
-	manager := &GceManager{
+	manager := &gceManagerImpl{
 		migs:        make([]*migInformation, 0),
 		gceService:  gceService,
 		migCache:    make(map[GceRef]*Mig),

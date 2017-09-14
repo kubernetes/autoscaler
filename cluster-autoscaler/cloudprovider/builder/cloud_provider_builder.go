@@ -58,7 +58,7 @@ func (b CloudProviderBuilder) Build(discoveryOpts cloudprovider.NodeGroupDiscove
 
 	if b.cloudProviderFlag == "gce" || b.cloudProviderFlag == "gke" {
 		// GCE Manager
-		var gceManager *gce.GceManager
+		var gceManager gce.GceManager
 		var gceError error
 		mode := gce.ModeGCE
 		if b.cloudProviderFlag == "gke" {
