@@ -66,8 +66,33 @@ type migInformation struct {
 	basename string
 }
 
-// GceManager is handles gce communication and data caching.
-type GceManager struct {
+// GceManager handles gce communication and data caching.
+type GceManager interface {
+	// RegisterMig registers mig in Gce Manager. Returns true if the node group didn't exist before.
+	RegisterMig(mig *Mig) bool
+	// UnregisterMig unregisters mig in Gce Manager. Returns true if the node group has been removed.
+	UnregisterMig(toBeRemoved *Mig) bool
+	// GetMigSize gets MIG size.
+	GetMigSize(mig *Mig) (int64, error)
+	// SetMigSize sets MIG size.
+	SetMigSize(mig *Mig, size int64) error
+	// DeleteInstances deletes the given instances. All instances must be controlled by the same MIG.
+	DeleteInstances(instances []*GceRef) error
+	// GetMigForInstance returns MigConfig of the given Instance
+	GetMigForInstance(instance *GceRef) (*Mig, error)
+	// GetMigNodes returns mig nodes.
+	GetMigNodes(mig *Mig) ([]string, error)
+	getMigs() []*migInformation
+	createNodePool(mig *Mig) error
+	deleteNodePool(toBeRemoved *Mig) error
+	getZone() string
+	getProjectId() string
+	getMode() GcpCloudProviderMode
+	getTemplates() *templateBuilder
+}
+
+// gceManagerImpl handles gce communication and data caching.
+type gceManagerImpl struct {
 	migs     []*migInformation
 	migCache map[GceRef]*Mig
 
@@ -85,7 +110,7 @@ type GceManager struct {
 }
 
 // CreateGceManager constructs gceManager object.
-func CreateGceManager(configReader io.Reader, mode GcpCloudProviderMode, clusterName string) (*GceManager, error) {
+func CreateGceManager(configReader io.Reader, mode GcpCloudProviderMode, clusterName string) (GceManager, error) {
 	// Create Google Compute Engine token.
 	var err error
 	tokenSource := google.ComputeTokenSource("")
@@ -127,7 +152,7 @@ func CreateGceManager(configReader io.Reader, mode GcpCloudProviderMode, cluster
 	if err != nil {
 		return nil, err
 	}
-	manager := &GceManager{
+	manager := &gceManagerImpl{
 		migs:        make([]*migInformation, 0),
 		gceService:  gceService,
 		migCache:    make(map[GceRef]*Mig),
@@ -166,14 +191,14 @@ func CreateGceManager(configReader io.Reader, mode GcpCloudProviderMode, cluster
 	return manager, nil
 }
 
-func (m *GceManager) assertGKE() {
+func (m *gceManagerImpl) assertGKE() {
 	if m.mode != ModeGKE {
 		glog.Fatalf("This should run only in GKE mode")
 	}
 }
 
 // Gets all registered node pools
-func (m *GceManager) fetchAllNodePools() error {
+func (m *gceManagerImpl) fetchAllNodePools() error {
 	m.assertGKE()
 
 	nodePoolsResponse, err := m.gkeService.Projects.Zones.Clusters.NodePools.List(m.projectId, m.zone, m.clusterName).Do()
@@ -228,7 +253,7 @@ func (m *GceManager) fetchAllNodePools() error {
 }
 
 // RegisterMig registers mig in Gce Manager. Returns true if the node group didn't exist before.
-func (m *GceManager) RegisterMig(mig *Mig) bool {
+func (m *gceManagerImpl) RegisterMig(mig *Mig) bool {
 	m.migsMutex.Lock()
 	defer m.migsMutex.Unlock()
 
@@ -261,7 +286,7 @@ func (m *GceManager) RegisterMig(mig *Mig) bool {
 }
 
 // UnregisterMig unregisters mig in Gce Manager. Returns true if the node group has been removed.
-func (m *GceManager) UnregisterMig(toBeRemoved *Mig) bool {
+func (m *gceManagerImpl) UnregisterMig(toBeRemoved *Mig) bool {
 	m.migsMutex.Lock()
 	defer m.migsMutex.Unlock()
 
@@ -280,7 +305,7 @@ func (m *GceManager) UnregisterMig(toBeRemoved *Mig) bool {
 	return found
 }
 
-func (m *GceManager) deleteNodePool(toBeRemoved *Mig) error {
+func (m *gceManagerImpl) deleteNodePool(toBeRemoved *Mig) error {
 	m.assertGKE()
 	if !toBeRemoved.Autoprovisioned() {
 		return fmt.Errorf("only autoprovisioned node pools can be deleted")
@@ -298,7 +323,7 @@ func (m *GceManager) deleteNodePool(toBeRemoved *Mig) error {
 	return m.fetchAllNodePools()
 }
 
-func (m *GceManager) createNodePool(mig *Mig) error {
+func (m *gceManagerImpl) createNodePool(mig *Mig) error {
 	m.assertGKE()
 
 	// TODO: handle preemptable
@@ -342,7 +367,7 @@ func (m *GceManager) createNodePool(mig *Mig) error {
 }
 
 // GetMigSize gets MIG size.
-func (m *GceManager) GetMigSize(mig *Mig) (int64, error) {
+func (m *gceManagerImpl) GetMigSize(mig *Mig) (int64, error) {
 	igm, err := m.gceService.InstanceGroupManagers.Get(mig.Project, mig.Zone, mig.Name).Do()
 	if err != nil {
 		return -1, err
@@ -351,7 +376,7 @@ func (m *GceManager) GetMigSize(mig *Mig) (int64, error) {
 }
 
 // SetMigSize sets MIG size.
-func (m *GceManager) SetMigSize(mig *Mig, size int64) error {
+func (m *gceManagerImpl) SetMigSize(mig *Mig, size int64) error {
 	glog.V(0).Infof("Setting mig size %s to %d", mig.Id(), size)
 	op, err := m.gceService.InstanceGroupManagers.Resize(mig.Project, mig.Zone, mig.Name, size).Do()
 	if err != nil {
@@ -361,7 +386,7 @@ func (m *GceManager) SetMigSize(mig *Mig, size int64) error {
 }
 
 // GCE
-func (m *GceManager) waitForOp(operation *gce.Operation, project string, zone string) error {
+func (m *gceManagerImpl) waitForOp(operation *gce.Operation, project string, zone string) error {
 	for start := time.Now(); time.Since(start) < operationWaitTimeout; time.Sleep(operationPollInterval) {
 		glog.V(4).Infof("Waiting for operation %s %s %s", project, zone, operation.Name)
 		if op, err := m.gceService.ZoneOperations.Get(project, zone, operation.Name).Do(); err == nil {
@@ -377,7 +402,7 @@ func (m *GceManager) waitForOp(operation *gce.Operation, project string, zone st
 }
 
 //  GKE
-func (m *GceManager) waitForGkeOp(operation *gke.Operation) error {
+func (m *gceManagerImpl) waitForGkeOp(operation *gke.Operation) error {
 	for start := time.Now(); time.Since(start) < operationWaitTimeout; time.Sleep(operationPollInterval) {
 		glog.V(4).Infof("Waiting for operation %s %s %s", m.projectId, m.zone, operation.Name)
 		if op, err := m.gkeService.Projects.Zones.Operations.Get(m.projectId, m.zone, operation.Name).Do(); err == nil {
@@ -393,7 +418,7 @@ func (m *GceManager) waitForGkeOp(operation *gke.Operation) error {
 }
 
 // DeleteInstances deletes the given instances. All instances must be controlled by the same MIG.
-func (m *GceManager) DeleteInstances(instances []*GceRef) error {
+func (m *gceManagerImpl) DeleteInstances(instances []*GceRef) error {
 	if len(instances) == 0 {
 		return nil
 	}
@@ -425,7 +450,7 @@ func (m *GceManager) DeleteInstances(instances []*GceRef) error {
 	return m.waitForOp(op, commonMig.Project, commonMig.Zone)
 }
 
-func (m *GceManager) getMigs() []*migInformation {
+func (m *gceManagerImpl) getMigs() []*migInformation {
 	m.migsMutex.Lock()
 	defer m.migsMutex.Unlock()
 	migs := make([]*migInformation, 0, len(m.migs))
@@ -437,8 +462,7 @@ func (m *GceManager) getMigs() []*migInformation {
 	}
 	return migs
 }
-
-func (m *GceManager) updateMigBasename(ref GceRef, basename string) {
+func (m *gceManagerImpl) updateMigBasename(ref GceRef, basename string) {
 	m.migsMutex.Lock()
 	defer m.migsMutex.Unlock()
 	for _, mig := range m.migs {
@@ -449,7 +473,7 @@ func (m *GceManager) updateMigBasename(ref GceRef, basename string) {
 }
 
 // GetMigForInstance returns MigConfig of the given Instance
-func (m *GceManager) GetMigForInstance(instance *GceRef) (*Mig, error) {
+func (m *gceManagerImpl) GetMigForInstance(instance *GceRef) (*Mig, error) {
 	m.cacheMutex.Lock()
 	defer m.cacheMutex.Unlock()
 	if mig, found := m.migCache[*instance]; found {
@@ -473,7 +497,7 @@ func (m *GceManager) GetMigForInstance(instance *GceRef) (*Mig, error) {
 	return nil, nil
 }
 
-func (m *GceManager) regenerateCache() error {
+func (m *gceManagerImpl) regenerateCache() error {
 	newMigCache := make(map[GceRef]*Mig)
 
 	for _, migInfo := range m.getMigs() {
@@ -505,7 +529,7 @@ func (m *GceManager) regenerateCache() error {
 }
 
 // GetMigNodes returns mig nodes.
-func (m *GceManager) GetMigNodes(mig *Mig) ([]string, error) {
+func (m *gceManagerImpl) GetMigNodes(mig *Mig) ([]string, error) {
 	instances, err := m.gceService.InstanceGroupManagers.ListManagedInstances(mig.Project, mig.Zone, mig.Name).Do()
 	if err != nil {
 		return []string{}, err
@@ -519,6 +543,19 @@ func (m *GceManager) GetMigNodes(mig *Mig) ([]string, error) {
 		result = append(result, fmt.Sprintf("gce://%s/%s/%s", project, zone, name))
 	}
 	return result, nil
+}
+
+func (m *gceManagerImpl) getZone() string {
+	return m.zone
+}
+func (m *gceManagerImpl) getProjectId() string {
+	return m.projectId
+}
+func (m *gceManagerImpl) getMode() GcpCloudProviderMode {
+	return m.mode
+}
+func (m *gceManagerImpl) getTemplates() *templateBuilder {
+	return m.templates
 }
 
 // Code borrowed from gce cloud provider. Reuse the original as soon as it becomes public.
