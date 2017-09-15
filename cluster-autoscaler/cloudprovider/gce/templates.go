@@ -21,14 +21,18 @@ import (
 	"math/rand"
 	"net/url"
 	"path"
+	"regexp"
 	"strings"
+
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 
 	gce "google.golang.org/api/compute/v1"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
+
+	"github.com/golang/glog"
 )
 
 // builds templates for gce cloud provider
@@ -81,6 +85,34 @@ func (t *templateBuilder) buildCapacity(machineType string) (apiv1.ResourceList,
 	return capacity, nil
 }
 
+// buildAllocatable builds node allocatable based on capacity of the node and
+// value of kubeEnv.
+// KubeEnv is a multi line string containing entries in the form of
+// <RESOURCE_NAME>:<string>. One of the resources it contains is a list of
+// kubelet arguments from which we can extract the resources reseved by
+// the kubelet for its operation. Allocated resources are capacity - reserved.
+// If we fail to extract the reserved resources from kubeEnv (e.g it is in a
+// wrong format or does not contain kubelet arguments), we return an error.
+func (t *templateBuilder) buildAllocatable(capacity apiv1.ResourceList, kubeEnv string) (apiv1.ResourceList, error) {
+	kubeReserved, err := extractKubeReservedFromKubeEnv(kubeEnv)
+	if err != nil {
+		return nil, err
+	}
+	reserved, err := parseKubeReserved(kubeReserved)
+	if err != nil {
+		return nil, err
+	}
+	allocatable := apiv1.ResourceList{}
+	for key, value := range capacity {
+		quantity := *value.Copy()
+		if reservedQuantity, found := reserved[key]; found {
+			quantity.Sub(reservedQuantity)
+		}
+		allocatable[key] = quantity
+	}
+	return allocatable, nil
+}
+
 func (t *templateBuilder) buildNodeFromTemplate(mig *Mig, template *gce.InstanceTemplate) (*apiv1.Node, error) {
 
 	if template.Properties == nil {
@@ -102,9 +134,8 @@ func (t *templateBuilder) buildNodeFromTemplate(mig *Mig, template *gce.Instance
 	node.Status = apiv1.NodeStatus{
 		Capacity: capacity,
 	}
-	// TODO: use proper allocatable!!
-	node.Status.Allocatable = node.Status.Capacity
 
+	var nodeAllocatable apiv1.ResourceList
 	// KubeEnv labels & taints
 	if template.Properties.Metadata == nil {
 		return nil, fmt.Errorf("instance template %s has no metadata", template.Name)
@@ -126,7 +157,17 @@ func (t *templateBuilder) buildNodeFromTemplate(mig *Mig, template *gce.Instance
 				return nil, err
 			}
 			node.Spec.Taints = append(node.Spec.Taints, kubeEnvTaints...)
+
+			if allocatable, err := t.buildAllocatable(node.Status.Capacity, *item.Value); err == nil {
+				nodeAllocatable = allocatable
+			}
 		}
+	}
+	if nodeAllocatable == nil {
+		glog.Warningf("could not extract kube-reserved from kubeEnv for mig %q, setting allocatable to capacity.", mig.Name)
+		node.Status.Allocatable = node.Status.Capacity
+	} else {
+		node.Status.Allocatable = nodeAllocatable
 	}
 	// GenericLabels
 	labels, err := buildGenericLabels(mig.GceRef, template.Properties.MachineType, nodeName)
@@ -228,20 +269,63 @@ func parseCustomMachineType(machineType string) (cpu, mem int64, err error) {
 	return
 }
 
+func parseKubeReserved(kubeReserved string) (apiv1.ResourceList, error) {
+	resourcesMap, err := parseKeyValueListToMap([]string{kubeReserved})
+	if err != nil {
+		return nil, fmt.Errorf("failed to extract kube-reserved from kube-env: %q", err)
+	}
+	reservedResources := apiv1.ResourceList{}
+	for name, quantity := range resourcesMap {
+		switch apiv1.ResourceName(name) {
+		case apiv1.ResourceCPU, apiv1.ResourceMemory, apiv1.ResourceEphemeralStorage:
+			if q, err := resource.ParseQuantity(quantity); err == nil && q.Sign() >= 0 {
+				reservedResources[apiv1.ResourceName(name)] = q
+			}
+		default:
+			glog.Warningf("ignoring resource from kube-reserved: %q", name)
+		}
+	}
+	return reservedResources, nil
+}
+
 func extractLabelsFromKubeEnv(kubeEnv string) (map[string]string, error) {
-	return extractFromKubeEnv(kubeEnv, "NODE_LABELS")
+	labels, err := extractFromKubeEnv(kubeEnv, "NODE_LABELS")
+	if err != nil {
+		return nil, err
+	}
+	return parseKeyValueListToMap(labels)
 }
 
 func extractTaintsFromKubeEnv(kubeEnv string) ([]apiv1.Taint, error) {
-	taintMap, err := extractFromKubeEnv(kubeEnv, "NODE_TAINTS")
+	taints, err := extractFromKubeEnv(kubeEnv, "NODE_TAINTS")
+	if err != nil {
+		return nil, err
+	}
+	taintMap, err := parseKeyValueListToMap(taints)
 	if err != nil {
 		return nil, err
 	}
 	return buildTaints(taintMap)
 }
 
-func extractFromKubeEnv(kubeEnv, resource string) (map[string]string, error) {
-	result := make(map[string]string)
+func extractKubeReservedFromKubeEnv(kubeEnv string) (string, error) {
+	kubeletArgs, err := extractFromKubeEnv(kubeEnv, "KUBELET_TEST_ARGS")
+	if err != nil {
+		return "", err
+	}
+	resourcesRegexp := regexp.MustCompile(`--kube-reserved=([^ ]+)`)
+
+	for _, value := range kubeletArgs {
+		matches := resourcesRegexp.FindStringSubmatch(value)
+		if len(matches) > 1 {
+			return matches[1], nil
+		}
+	}
+	return "", fmt.Errorf("kube-reserved not in kubelet args in kube-env: %q", strings.Join(kubeletArgs, " "))
+}
+
+func extractFromKubeEnv(kubeEnv, resource string) ([]string, error) {
+	result := make([]string, 0)
 
 	for line, env := range strings.Split(kubeEnv, "\n") {
 		env = strings.Trim(env, " ")
@@ -255,13 +339,21 @@ func extractFromKubeEnv(kubeEnv, resource string) (map[string]string, error) {
 		key := strings.Trim(items[0], " ")
 		value := strings.Trim(items[1], " \"'")
 		if key == resource {
-			for _, val := range strings.Split(value, ",") {
-				valItems := strings.SplitN(val, "=", 2)
-				if len(valItems) != 2 {
-					return nil, fmt.Errorf("error while parsing kube env value: %s", val)
-				}
-				result[valItems[0]] = valItems[1]
+			result = append(result, value)
+		}
+	}
+	return result, nil
+}
+
+func parseKeyValueListToMap(values []string) (map[string]string, error) {
+	result := make(map[string]string)
+	for _, value := range values {
+		for _, val := range strings.Split(value, ",") {
+			valItems := strings.SplitN(val, "=", 2)
+			if len(valItems) != 2 {
+				return nil, fmt.Errorf("error while parsing kube env value: %s", val)
 			}
+			result[valItems[0]] = valItems[1]
 		}
 	}
 	return result, nil
