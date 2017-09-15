@@ -184,7 +184,7 @@ func (m *GceManager) fetchAllNodePools() error {
 	existingMigs := map[GceRef]struct{}{}
 
 	for _, nodePool := range nodePoolsResponse.NodePools {
-		autoprovisioned := strings.Contains("name", nodeAutoprovisioningPrefix)
+		autoprovisioned := strings.Contains(nodePool.Name, nodeAutoprovisioningPrefix)
 		autoscaled := nodePool.Autoscaling != nil && nodePool.Autoscaling.Enabled
 		if !autoprovisioned && !autoscaled {
 			continue
