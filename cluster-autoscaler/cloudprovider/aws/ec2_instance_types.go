@@ -439,13 +439,13 @@ var InstanceTypes = map[string]*instanceType{
 		InstanceType: "p2.8xlarge",
 		VCPU:         32,
 		MemoryMb:     499712,
-		GPU:          0,
+		GPU:          8,
 	},
 	"p2.xlarge": {
 		InstanceType: "p2.xlarge",
 		VCPU:         4,
 		MemoryMb:     62464,
-		GPU:          0,
+		GPU:          1,
 	},
 	"r3": {
 		InstanceType: "r3",
