@@ -20,8 +20,8 @@ resource requests of a deployment based on the number of nodes in the Kubernetes
 Interested in autoscaling? Want to talk? Have questions, concerns or great ideas?
 
 Please join us on #sig-autoscaling at https://kubernetes.slack.com/.
-Moreover, every Thursday we host a 30min sig-autoscaling meeting on
-https://zoom.us/j/176352399 at 17:30 CEST/CET,  8:30 am PST/PDT.
+Moreover, every Monday we host a 30min sig-autoscaling meeting on
+https://zoom.us/j/176352399 at 16:00 CEST/CET, 7:00 am PST/PDT.
 
 ## Getting the Code
 
