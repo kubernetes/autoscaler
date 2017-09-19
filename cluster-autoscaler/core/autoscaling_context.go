@@ -100,10 +100,12 @@ type AutoscalingOptions struct {
 	NodeGroups []string
 	// ScaleDownEnabled is used to allow CA to scale down the cluster
 	ScaleDownEnabled bool
-	// ScaleDownDelay sets the duration from the last scale up to the time when CA starts to check scale down options
-	ScaleDownDelay time.Duration
-	// ScaleDownTrialInterval sets how often scale down possibility is check
-	ScaleDownTrialInterval time.Duration
+	// ScaleDownDelayAfterAdd sets the duration from the last scale up to the time when CA starts to check scale down options
+	ScaleDownDelayAfterAdd time.Duration
+	// ScaleDownDelayAfterDelete sets the duration between scale down attempts if scale down removes one or more nodes
+	ScaleDownDelayAfterDelete time.Duration
+	// ScaleDownDelayAfterFailure sets the duration before the next scale down attempt if scale down results in an error
+	ScaleDownDelayAfterFailure time.Duration
 	// ScaleDownNonEmptyCandidatesCount is the maximum number of non empty nodes
 	// considered at once as candidates for scale down.
 	ScaleDownNonEmptyCandidatesCount int
