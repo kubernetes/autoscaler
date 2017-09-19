@@ -36,9 +36,10 @@ type StaticAutoscaler struct {
 	// AutoscalingContext consists of validated settings and options for this autoscaler
 	*AutoscalingContext
 	kube_util.ListerRegistry
-	lastScaleUpTime          time.Time
-	lastScaleDownFailedTrial time.Time
-	scaleDown                *ScaleDown
+	lastScaleUpTime         time.Time
+	lastScaleDownDeleteTime time.Time
+	lastScaleDownFailTime   time.Time
+	scaleDown               *ScaleDown
 }
 
 // NewStaticAutoscaler creates an instance of Autoscaler filled with provided parameters
@@ -59,11 +60,12 @@ func NewStaticAutoscaler(opts AutoscalingOptions, predicateChecker *simulator.Pr
 	scaleDown := NewScaleDown(autoscalingContext)
 
 	return &StaticAutoscaler{
-		AutoscalingContext:       autoscalingContext,
-		ListerRegistry:           listerRegistry,
-		lastScaleUpTime:          time.Now(),
-		lastScaleDownFailedTrial: time.Now(),
-		scaleDown:                scaleDown,
+		AutoscalingContext:      autoscalingContext,
+		ListerRegistry:          listerRegistry,
+		lastScaleUpTime:         time.Now(),
+		lastScaleDownDeleteTime: time.Now(),
+		lastScaleDownFailTime:   time.Now(),
+		scaleDown:               scaleDown,
 	}, nil
 }
 
@@ -278,14 +280,16 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		}
 
 		// In dry run only utilization is updated
-		calculateUnneededOnly := a.lastScaleUpTime.Add(a.ScaleDownDelay).After(currentTime) ||
-			a.lastScaleDownFailedTrial.Add(a.ScaleDownTrialInterval).After(currentTime) ||
+		calculateUnneededOnly := a.lastScaleUpTime.Add(a.ScaleDownDelayAfterAdd).After(currentTime) ||
+			a.lastScaleDownFailTime.Add(a.ScaleDownDelayAfterFailure).After(currentTime) ||
+			a.lastScaleDownDeleteTime.Add(a.ScaleDownDelayAfterDelete).After(currentTime) ||
 			schedulablePodsPresent ||
 			scaleDown.nodeDeleteStatus.IsDeleteInProgress()
 
 		glog.V(4).Infof("Scale down status: unneededOnly=%v lastScaleUpTime=%s "+
-			"lastScaleDownFailedTrail=%s schedulablePodsPresent=%v", calculateUnneededOnly,
-			a.lastScaleUpTime, a.lastScaleDownFailedTrial, schedulablePodsPresent)
+			"lastScaleDownDeleteTime=%v lastScaleDownFailTime=%s schedulablePodsPresent=%v isDeleteInProgress=%v",
+			calculateUnneededOnly, a.lastScaleUpTime, a.lastScaleDownDeleteTime, a.lastScaleDownFailTime,
+			schedulablePodsPresent, scaleDown.nodeDeleteStatus.IsDeleteInProgress())
 
 		if !calculateUnneededOnly {
 			glog.V(4).Infof("Starting scale down")
@@ -310,7 +314,9 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 				return typedErr
 			}
 			if result == ScaleDownError {
-				a.lastScaleDownFailedTrial = currentTime
+				a.lastScaleDownFailTime = currentTime
+			} else if result == ScaleDownNodeDeleted {
+				a.lastScaleDownDeleteTime = currentTime
 			}
 		}
 	}

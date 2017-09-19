@@ -75,16 +75,18 @@ var (
 	namespace              = flag.String("namespace", "kube-system", "Namespace in which cluster-autoscaler run. If a --configmap flag is also provided, ensure that the configmap exists in this namespace before CA runs.")
 	nodeGroupAutoDiscovery = flag.String("node-group-auto-discovery", "", "One or more definition(s) of node group auto-discovery. A definition is expressed `<name of discoverer per cloud provider>:[<key>[=<value>]]`. Only the `aws` cloud provider is currently supported. The only valid discoverer for it is `asg` and the valid key is `tag`. For example, specifying `--cloud-provider aws` and `--node-group-auto-discovery asg:tag=cluster-autoscaler/auto-discovery/enabled,kubernetes.io/cluster/<YOUR CLUSTER NAME>` results in ASGs tagged with `cluster-autoscaler/auto-discovery/enabled` and `kubernetes.io/cluster/<YOUR CLUSTER NAME>` to be considered as target node groups")
 	scaleDownEnabled       = flag.Bool("scale-down-enabled", true, "Should CA scale down the cluster")
-	scaleDownDelay         = flag.Duration("scale-down-delay", 10*time.Minute,
-		"Duration from the last scale up to the time when CA starts to check scale down options")
+	scaleDownDelayAfterAdd = flag.Duration("scale-down-delay-after-add", 10*time.Minute,
+		"How long after scale up that scale down evaluation resumes")
+	scaleDownDelayAfterDelete = flag.Duration("scale-down-delay-after-delete", *scanInterval,
+		"How long after node deletion that scale down evaluation resumes, defaults to scanInterval")
+	scaleDownDelayAfterFailure = flag.Duration("scale-down-delay-after-failure", 3*time.Minute,
+		"How long after scale down failure that scale down evaluation resumes")
 	scaleDownUnneededTime = flag.Duration("scale-down-unneeded-time", 10*time.Minute,
 		"How long a node should be unneeded before it is eligible for scale down")
 	scaleDownUnreadyTime = flag.Duration("scale-down-unready-time", 20*time.Minute,
 		"How long an unready node should be unneeded before it is eligible for scale down")
 	scaleDownUtilizationThreshold = flag.Float64("scale-down-utilization-threshold", 0.5,
 		"Node utilization level, defined as sum of requested resources divided by capacity, below which a node can be considered for scale down")
-	scaleDownTrialInterval = flag.Duration("scale-down-trial-interval", 1*time.Minute,
-		"How often scale down possiblity is check")
 	scaleDownNonEmptyCandidatesCount = flag.Int("scale-down-non-empty-candidates-count", 30,
 		"Maximum number of non empty nodes considered in one iteration as candidates for scale down with drain."+
 			"Lower value means better CA responsiveness but possible slower scale down latency."+
@@ -158,9 +160,10 @@ func createAutoscalerOptions() core.AutoscalerOptions {
 		MinMemoryTotal:                   minMemoryTotal,
 		NodeGroups:                       nodeGroupsFlag,
 		UnregisteredNodeRemovalTime:      *unregisteredNodeRemovalTime,
-		ScaleDownDelay:                   *scaleDownDelay,
+		ScaleDownDelayAfterAdd:           *scaleDownDelayAfterAdd,
+		ScaleDownDelayAfterDelete:        *scaleDownDelayAfterDelete,
+		ScaleDownDelayAfterFailure:       *scaleDownDelayAfterFailure,
 		ScaleDownEnabled:                 *scaleDownEnabled,
-		ScaleDownTrialInterval:           *scaleDownTrialInterval,
 		ScaleDownUnneededTime:            *scaleDownUnneededTime,
 		ScaleDownUnreadyTime:             *scaleDownUnreadyTime,
 		ScaleDownUtilizationThreshold:    *scaleDownUtilizationThreshold,

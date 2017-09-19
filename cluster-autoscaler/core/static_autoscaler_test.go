@@ -188,10 +188,10 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 	sd := NewScaleDown(context)
 
 	autoscaler := &StaticAutoscaler{AutoscalingContext: context,
-		ListerRegistry:           listerRegistry,
-		lastScaleUpTime:          time.Now(),
-		lastScaleDownFailedTrial: time.Now(),
-		scaleDown:                sd}
+		ListerRegistry:        listerRegistry,
+		lastScaleUpTime:       time.Now(),
+		lastScaleDownFailTime: time.Now(),
+		scaleDown:             sd}
 
 	// MaxNodesTotal reached.
 	readyNodeListerMock.On("List").Return([]*apiv1.Node{n1}, nil).Once()
@@ -360,10 +360,10 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 	sd := NewScaleDown(context)
 
 	autoscaler := &StaticAutoscaler{AutoscalingContext: context,
-		ListerRegistry:           listerRegistry,
-		lastScaleUpTime:          time.Now(),
-		lastScaleDownFailedTrial: time.Now(),
-		scaleDown:                sd}
+		ListerRegistry:        listerRegistry,
+		lastScaleUpTime:       time.Now(),
+		lastScaleDownFailTime: time.Now(),
+		scaleDown:             sd}
 
 	// Scale up.
 	readyNodeListerMock.On("List").Return([]*apiv1.Node{n1}, nil).Once()
