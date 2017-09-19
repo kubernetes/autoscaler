@@ -357,10 +357,7 @@ func (m *GceManager) SetMigSize(mig *Mig, size int64) error {
 	if err != nil {
 		return err
 	}
-	if err := m.waitForOp(op, mig.Project, mig.Zone); err != nil {
-		return err
-	}
-	return nil
+	return m.waitForOp(op, mig.Project, mig.Zone)
 }
 
 // GCE
@@ -425,10 +422,7 @@ func (m *GceManager) DeleteInstances(instances []*GceRef) error {
 	if err != nil {
 		return err
 	}
-	if err := m.waitForOp(op, commonMig.Project, commonMig.Zone); err != nil {
-		return err
-	}
-	return nil
+	return m.waitForOp(op, commonMig.Project, commonMig.Zone)
 }
 
 func (m *GceManager) getMigs() []*migInformation {
