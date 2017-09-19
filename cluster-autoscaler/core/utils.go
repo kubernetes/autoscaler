@@ -188,6 +188,7 @@ func GetNodeInfosForGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.Clou
 		return false, nil
 	}
 
+	var lastErr errors.AutoscalerError
 	for _, node := range nodes {
 		// Broken nodes might have some stuff missing. Skipping.
 		if !kube_util.IsNodeReadyAndSchedulable(node) {
@@ -195,9 +196,11 @@ func GetNodeInfosForGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.Clou
 		}
 		_, typedErr := processNode(node)
 		if typedErr != nil {
-			return map[string]*schedulercache.NodeInfo{}, typedErr
+			lastErr = typedErr
+			continue
 		}
 	}
+
 	for _, nodeGroup := range cloudProvider.NodeGroups() {
 		id := nodeGroup.Id()
 		if _, found := result[id]; found {
@@ -244,6 +247,10 @@ func GetNodeInfosForGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.Clou
 				glog.Warningf("Built template for %s based on unready/unschedulable node %s", nodeGroup.Id(), node.Name)
 			}
 		}
+	}
+
+	if len(result) == 0 && lastErr != nil {
+		return map[string]*schedulercache.NodeInfo{}, lastErr
 	}
 
 	return result, nil

@@ -60,6 +60,8 @@ const (
 	ScaleDownNodeDeleteStarted ScaleDownResult = iota
 	// ScaleDownDisabledKey is the name of annotation marking node as not eligible for scale down.
 	ScaleDownDisabledKey = "cluster-autoscaler.kubernetes.io/scale-down-disabled"
+	// ScaleDownWhenUnreadyDisabledKey is the name of annotation marking node as not eligible for scale down when unready.
+	ScaleDownWhenUnreadyDisabledKey = "cluster-autoscaler.kubernetes.io/scale-down-when-unready-disabled"
 )
 
 const (
@@ -175,6 +177,11 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	// Phase1 - look at the nodes utilization. Calculate the utilization
 	// only for the managed nodes.
 	for _, node := range filteredNodesToCheck {
+		// Skip nodes that do not expect to be deleted, just stopped
+		if hasNoScaleDownWhenDeletedAnnotation(node) {
+			glog.V(4).Infof("Skipping %s from delete considerations - the node is marked as being down when deleted and unready", node.Name)
+			continue
+		}
 
 		// Skip nodes marked to be deleted, if they were marked recently.
 		// Old-time marked nodes are again eligible for deletion - something went wrong with them
@@ -799,6 +806,17 @@ func deleteNodeFromCloudProvider(node *apiv1.Node, cloudProvider cloudprovider.C
 
 func hasNoScaleDownAnnotation(node *apiv1.Node) bool {
 	return node.Annotations[ScaleDownDisabledKey] == "true"
+}
+
+func hasNoScaleDownWhenDeletedAnnotation(node *apiv1.Node) bool {
+	if !deletetaint.HasToBeDeletedTaint(node) {
+		return false
+	}
+	ready, _, _ := kube_util.GetReadinessState(node)
+	if ready {
+		return false
+	}
+	return node.Annotations[ScaleDownWhenUnreadyDisabledKey] == "true"
 }
 
 func cleanUpNodeAutoprovisionedGroups(cloudProvider cloudprovider.CloudProvider) error {

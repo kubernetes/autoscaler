@@ -90,7 +90,7 @@ func CreateGceManager(configReader io.Reader, mode GcpCloudProviderMode, cluster
 	var err error
 	tokenSource := google.ComputeTokenSource("")
 	if len(os.Getenv("GOOGLE_APPLICATION_CREDENTIALS")) > 0 {
-		tokenSource, err = google.DefaultTokenSource(oauth2.NoContext, gce.ComputeScope)
+		tokenSource, err = google.DefaultTokenSource(oauth2.NoContext, defaultOAuthScopes...)
 		if err != nil {
 			return nil, err
 		}
@@ -343,6 +343,9 @@ func (m *GceManager) createNodePool(mig *Mig) error {
 
 // GetMigSize gets MIG size.
 func (m *GceManager) GetMigSize(mig *Mig) (int64, error) {
+	if mig.unmanaged {
+		return m.GetMigInstanceSize(mig)
+	}
 	igm, err := m.gceService.InstanceGroupManagers.Get(mig.Project, mig.Zone, mig.Name).Do()
 	if err != nil {
 		return -1, err
@@ -353,6 +356,9 @@ func (m *GceManager) GetMigSize(mig *Mig) (int64, error) {
 // SetMigSize sets MIG size.
 func (m *GceManager) SetMigSize(mig *Mig, size int64) error {
 	glog.V(0).Infof("Setting mig size %s to %d", mig.Id(), size)
+	if mig.unmanaged {
+		return m.SetMigInstanceSize(mig, size)
+	}
 	op, err := m.gceService.InstanceGroupManagers.Resize(mig.Project, mig.Zone, mig.Name, size).Do()
 	if err != nil {
 		return err
@@ -456,10 +462,26 @@ func (m *GceManager) GetMigForInstance(instance *GceRef) (*Mig, error) {
 		return mig, nil
 	}
 
+	refreshedUnmanaged := false
 	for _, mig := range m.getMigs() {
-		if mig.config.Project == instance.Project &&
-			mig.config.Zone == instance.Zone &&
-			strings.HasPrefix(instance.Name, mig.basename) {
+		if mig.config.Project != instance.Project || mig.config.Zone != instance.Zone {
+			continue
+		}
+		// refresh the cache exactly once in case this instance is new, otherwise ignore
+		if mig.config.unmanaged {
+			if !refreshedUnmanaged {
+				refreshedUnmanaged = true
+				if err := m.regenerateCache(); err != nil {
+					return nil, fmt.Errorf("Error while looking for MIG for instance %+v, error: %v", *instance, err)
+				}
+				if mig, found := m.migCache[*instance]; found {
+					return mig, nil
+				}
+			}
+			// we cannot depend on basename
+			continue
+		}
+		if strings.HasPrefix(instance.Name, mig.basename) {
 			if err := m.regenerateCache(); err != nil {
 				return nil, fmt.Errorf("Error while looking for MIG for instance %+v, error: %v", *instance, err)
 			}
@@ -480,23 +502,38 @@ func (m *GceManager) regenerateCache() error {
 		mig := migInfo.config
 		glog.V(4).Infof("Regenerating MIG information for %s %s %s", mig.Project, mig.Zone, mig.Name)
 
-		instanceGroupManager, err := m.gceService.InstanceGroupManagers.Get(mig.Project, mig.Zone, mig.Name).Do()
-		if err != nil {
-			return err
-		}
-		m.updateMigBasename(migInfo.config.GceRef, instanceGroupManager.BaseInstanceName)
-
-		instances, err := m.gceService.InstanceGroupManagers.ListManagedInstances(mig.Project, mig.Zone, mig.Name).Do()
-		if err != nil {
-			glog.V(4).Infof("Failed MIG info request for %s %s %s: %v", mig.Project, mig.Zone, mig.Name, err)
-			return err
-		}
-		for _, instance := range instances.ManagedInstances {
-			project, zone, name, err := ParseInstanceUrl(instance.Instance)
+		if mig.unmanaged {
+			instances, running, _, err := m.ListInstances(mig)
 			if err != nil {
 				return err
 			}
-			newMigCache[GceRef{Project: project, Zone: zone, Name: name}] = mig
+			glog.V(4).Infof("Found %d/%d running instances for group %s", len(running), len(instances), mig.Name)
+			for _, instance := range instances {
+				project, zone, name, err := ParseInstanceUrl(instance)
+				if err != nil {
+					return err
+				}
+				newMigCache[GceRef{Project: project, Zone: zone, Name: name}] = mig
+			}
+		} else {
+			instanceGroupManager, err := m.gceService.InstanceGroupManagers.Get(mig.Project, mig.Zone, mig.Name).Do()
+			if err != nil {
+				return err
+			}
+			m.updateMigBasename(migInfo.config.GceRef, instanceGroupManager.BaseInstanceName)
+
+			instances, err := m.gceService.InstanceGroupManagers.ListManagedInstances(mig.Project, mig.Zone, mig.Name).Do()
+			if err != nil {
+				glog.V(4).Infof("Failed MIG info request for %s %s %s: %v", mig.Project, mig.Zone, mig.Name, err)
+				return err
+			}
+			for _, instance := range instances.ManagedInstances {
+				project, zone, name, err := ParseInstanceUrl(instance.Instance)
+				if err != nil {
+					return err
+				}
+				newMigCache[GceRef{Project: project, Zone: zone, Name: name}] = mig
+			}
 		}
 	}
 
@@ -506,6 +543,22 @@ func (m *GceManager) regenerateCache() error {
 
 // GetMigNodes returns mig nodes.
 func (m *GceManager) GetMigNodes(mig *Mig) ([]string, error) {
+	if mig.unmanaged {
+		_, running, _, err := m.ListInstances(mig)
+		if err != nil {
+			return nil, err
+		}
+		result := make([]string, 0)
+		for _, instance := range running {
+			project, zone, name, err := ParseInstanceUrl(instance)
+			if err != nil {
+				return []string{}, err
+			}
+			result = append(result, fmt.Sprintf("gce://%s/%s/%s", project, zone, name))
+		}
+		return result, nil
+	}
+
 	instances, err := m.gceService.InstanceGroupManagers.ListManagedInstances(mig.Project, mig.Zone, mig.Name).Do()
 	if err != nil {
 		return []string{}, err
