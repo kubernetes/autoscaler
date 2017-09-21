@@ -638,11 +638,42 @@ func (sd *ScaleDown) waitForEmptyNodesDeleted(emptyNodes []*apiv1.Node, confirma
 }
 
 func deleteNode(context *AutoscalingContext, node *apiv1.Node, pods []*apiv1.Pod) errors.AutoscalerError {
-	if err := drainNode(node, pods, context.ClientSet, context.Recorder, context.MaxGracefulTerminationSec,
-		MaxPodEvictionTime, EvictionRetryTime); err != nil {
+	deleteSuccessful := false
+	drainSuccessful := false
+
+	if err := deletetaint.MarkToBeDeleted(node, context.ClientSet); err != nil {
+		context.Recorder.Eventf(node, apiv1.EventTypeWarning, "ScaleDownFailed", "failed to mark the node as toBeDeleted/unschedulable: %v", err)
+		return errors.ToAutoscalerError(errors.ApiCallError, err)
+	}
+
+	// If we fail to evict all the pods from the node we want to remove delete taint
+	defer func() {
+		if !deleteSuccessful {
+			deletetaint.CleanToBeDeleted(node, context.ClientSet)
+			if !drainSuccessful {
+				context.Recorder.Eventf(node, apiv1.EventTypeWarning, "ScaleDownFailed", "failed to drain the node, aborting ScaleDown")
+			} else {
+				context.Recorder.Eventf(node, apiv1.EventTypeWarning, "ScaleDownFailed", "failed to delete the node")
+			}
+		}
+	}()
+
+	context.Recorder.Eventf(node, apiv1.EventTypeNormal, "ScaleDown", "marked the node as toBeDeleted/unschedulable")
+
+	// attempt drain
+	if err := drainNode(node, pods, context.ClientSet, context.Recorder, context.MaxGracefulTerminationSec, MaxPodEvictionTime, EvictionRetryTime); err != nil {
 		return err
 	}
-	return deleteNodeFromCloudProvider(node, context.CloudProvider, context.Recorder, context.ClusterStateRegistry)
+	drainSuccessful = true
+
+	// attempt delete from cloud provider
+	err := deleteNodeFromCloudProvider(node, context.CloudProvider, context.Recorder, context.ClusterStateRegistry)
+	if err != nil {
+		return err
+	}
+
+	deleteSuccessful = true // Let the deferred function know there is no need to cleanup
+	return nil
 }
 
 func evictPod(podToEvict *apiv1.Pod, client kube_client.Interface, recorder kube_record.EventRecorder,
@@ -685,23 +716,7 @@ func evictPod(podToEvict *apiv1.Pod, client kube_client.Interface, recorder kube
 func drainNode(node *apiv1.Node, pods []*apiv1.Pod, client kube_client.Interface, recorder kube_record.EventRecorder,
 	maxGracefulTerminationSec int, maxPodEvictionTime time.Duration, waitBetweenRetries time.Duration) errors.AutoscalerError {
 
-	drainSuccessful := false
 	toEvict := len(pods)
-	if err := deletetaint.MarkToBeDeleted(node, client); err != nil {
-		recorder.Eventf(node, apiv1.EventTypeWarning, "ScaleDownFailed", "failed to mark the node as toBeDeleted/unschedulable: %v", err)
-		return errors.ToAutoscalerError(errors.ApiCallError, err)
-	}
-
-	// If we fail to evict all the pods from the node we want to remove delete taint
-	defer func() {
-		if !drainSuccessful {
-			deletetaint.CleanToBeDeleted(node, client)
-			recorder.Eventf(node, apiv1.EventTypeWarning, "ScaleDownFailed", "failed to drain the node, aborting ScaleDown")
-		}
-	}()
-
-	recorder.Eventf(node, apiv1.EventTypeNormal, "ScaleDown", "marked the node as toBeDeleted/unschedulable")
-
 	retryUntil := time.Now().Add(maxPodEvictionTime)
 	confirmations := make(chan error, toEvict)
 	for _, pod := range pods {
@@ -749,7 +764,6 @@ func drainNode(node *apiv1.Node, pods []*apiv1.Pod, client kube_client.Interface
 		if allGone {
 			glog.V(1).Infof("All pods removed from %s", node.Name)
 			// Let the deferred function know there is no need for cleanup
-			drainSuccessful = true
 			return nil
 		}
 	}

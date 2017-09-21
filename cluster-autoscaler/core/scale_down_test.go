@@ -334,9 +334,169 @@ func TestFindUnneededNodePool(t *testing.T) {
 	assert.NotEmpty(t, sd.unneededNodes)
 }
 
+func TestDeleteNode(t *testing.T) {
+	// common parameters
+	nothingReturned := "Nothing returned"
+	nodeDeleteFailedFunc :=
+		func(string, string) error {
+			return fmt.Errorf("won't remove node")
+		}
+	podNotFoundFunc :=
+		func(action core.Action) (bool, runtime.Object, error) {
+			return true, nil, errors.NewNotFound(apiv1.Resource("pod"), "whatever")
+		}
+
+	// scenarios
+	testScenarios := []struct {
+		name              string
+		pods              []string
+		drainSuccess      bool
+		nodeDeleteSuccess bool
+		expectedDeletion  bool
+	}{
+		{
+			name:              "successful attempt to delete node with pods",
+			pods:              []string{"p1", "p2"},
+			drainSuccess:      true,
+			nodeDeleteSuccess: true,
+			expectedDeletion:  true,
+		},
+		/* Temporarily disabled as it takes several minutes due to hardcoded timeout.
+		* TODO(aleksandra-malinowska): move MaxPodEvictionTime to AutoscalingContext.
+		{
+			name:              "failed on drain",
+			pods:              []string{"p1", "p2"},
+			drainSuccess:      false,
+			nodeDeleteSuccess: true,
+			expectedDeletion:  false,
+		},
+		*/
+		{
+			name:              "failed on node delete",
+			pods:              []string{"p1", "p2"},
+			drainSuccess:      true,
+			nodeDeleteSuccess: false,
+			expectedDeletion:  false,
+		},
+		{
+			name:              "successful attempt to delete empty node",
+			pods:              []string{},
+			drainSuccess:      true,
+			nodeDeleteSuccess: true,
+			expectedDeletion:  true,
+		},
+		{
+			name:              "failed attempt to delete empty node",
+			pods:              []string{},
+			drainSuccess:      true,
+			nodeDeleteSuccess: false,
+			expectedDeletion:  false,
+		},
+	}
+
+	for _, scenario := range testScenarios {
+		// run each scenario as an independent test
+		t.Run(scenario.name, func(t *testing.T) {
+			// set up test channels
+			updatedNodes := make(chan string, 10)
+			deletedNodes := make(chan string, 10)
+			deletedPods := make(chan string, 10)
+
+			// set up test data
+			n1 := BuildTestNode("n1", 1000, 1000)
+			SetNodeReadyState(n1, true, time.Time{})
+			pods := make([]*apiv1.Pod, len(scenario.pods))
+			for i, podName := range scenario.pods {
+				pod := BuildTestPod(podName, 100, 0)
+				pods[i] = pod
+			}
+
+			// set up fake provider
+			deleteNodeHandler := nodeDeleteFailedFunc
+			if scenario.nodeDeleteSuccess {
+				deleteNodeHandler =
+					func(nodeGroup string, node string) error {
+						deletedNodes <- node
+						return nil
+					}
+			}
+			provider := testprovider.NewTestCloudProvider(nil, deleteNodeHandler)
+			provider.AddNodeGroup("ng1", 1, 100, 100)
+			provider.AddNode("ng1", n1)
+
+			// set up fake client
+			fakeClient := &fake.Clientset{}
+			fakeClient.Fake.AddReactor("get", "nodes", func(action core.Action) (bool, runtime.Object, error) {
+				return true, n1, nil
+			})
+			fakeClient.Fake.AddReactor("update", "nodes",
+				func(action core.Action) (bool, runtime.Object, error) {
+					update := action.(core.UpdateAction)
+					obj := update.GetObject().(*apiv1.Node)
+					taints := make([]string, 0, len(obj.Spec.Taints))
+					for _, taint := range obj.Spec.Taints {
+						taints = append(taints, taint.Key)
+					}
+					updatedNodes <- fmt.Sprintf("%s-%s", obj.Name, taints)
+					return true, obj, nil
+				})
+			fakeClient.Fake.AddReactor("create", "pods",
+				func(action core.Action) (bool, runtime.Object, error) {
+					if !scenario.drainSuccess {
+						return true, nil, fmt.Errorf("won't evict")
+					}
+					createAction := action.(core.CreateAction)
+					if createAction == nil {
+						return false, nil, nil
+					}
+					eviction := createAction.GetObject().(*policyv1.Eviction)
+					if eviction == nil {
+						return false, nil, nil
+					}
+					deletedPods <- eviction.Name
+					return true, nil, nil
+				})
+			fakeClient.Fake.AddReactor("get", "pods", podNotFoundFunc)
+
+			// set up fake recorders
+			fakeRecorder := kube_util.CreateEventRecorder(fakeClient)
+			fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false)
+
+			// build context
+			context := &AutoscalingContext{
+				AutoscalingOptions:   AutoscalingOptions{},
+				ClientSet:            fakeClient,
+				Recorder:             fakeRecorder,
+				LogRecorder:          fakeLogRecorder,
+				CloudProvider:        provider,
+				ClusterStateRegistry: clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder),
+			}
+
+			// attempt delete
+			err := deleteNode(context, n1, pods)
+
+			// verify
+			if scenario.expectedDeletion {
+				assert.NoError(t, err)
+				assert.Equal(t, n1.Name, getStringFromChan(deletedNodes))
+			} else {
+				assert.NotNil(t, err)
+			}
+			assert.Equal(t, nothingReturned, getStringFromChanImmediately(deletedNodes))
+
+			taintedUpdate := fmt.Sprintf("%s-%s", n1.Name, []string{deletetaint.ToBeDeletedTaint})
+			assert.Equal(t, taintedUpdate, getStringFromChan(updatedNodes))
+			if !scenario.expectedDeletion {
+				untaintedUpdate := fmt.Sprintf("%s-%s", n1.Name, []string{})
+				assert.Equal(t, untaintedUpdate, getStringFromChan(updatedNodes))
+			}
+			assert.Equal(t, nothingReturned, getStringFromChanImmediately(updatedNodes))
+		})
+	}
+}
+
 func TestDrainNode(t *testing.T) {
 	deletedPods := make(chan string, 10)
-	updatedNodes := make(chan string, 10)
 	fakeClient := &fake.Clientset{}
 
 	p1 := BuildTestPod("p1", 100, 0)
@@ -346,9 +506,6 @@ func TestDrainNode(t *testing.T) {
 
 	fakeClient.Fake.AddReactor("get", "pods", func(action core.Action) (bool, runtime.Object, error) {
 		return true, nil, errors.NewNotFound(apiv1.Resource("pod"), "whatever")
-	})
-	fakeClient.Fake.AddReactor("get", "nodes", func(action core.Action) (bool, runtime.Object, error) {
-		return true, n1, nil
 	})
 	fakeClient.Fake.AddReactor("create", "pods", func(action core.Action) (bool, runtime.Object, error) {
 		createAction := action.(core.CreateAction)
@@ -362,12 +519,6 @@ func TestDrainNode(t *testing.T) {
 		deletedPods <- eviction.Name
 		return true, nil, nil
 	})
-	fakeClient.Fake.AddReactor("update", "nodes", func(action core.Action) (bool, runtime.Object, error) {
-		update := action.(core.UpdateAction)
-		obj := update.GetObject().(*apiv1.Node)
-		updatedNodes <- obj.Name
-		return true, obj, nil
-	})
 	err := drainNode(n1, []*apiv1.Pod{p1, p2}, fakeClient, kube_util.CreateEventRecorder(fakeClient), 20, 5*time.Second, 0*time.Second)
 	assert.NoError(t, err)
 	deleted := make([]string, 0)
@@ -376,12 +527,10 @@ func TestDrainNode(t *testing.T) {
 	sort.Strings(deleted)
 	assert.Equal(t, p1.Name, deleted[0])
 	assert.Equal(t, p2.Name, deleted[1])
-	assert.Equal(t, n1.Name, getStringFromChan(updatedNodes))
 }
 
 func TestDrainNodeWithRetries(t *testing.T) {
 	deletedPods := make(chan string, 10)
-	updatedNodes := make(chan string, 10)
 	// Simulate pdb of size 1, by making them goroutine succeed sequentially
 	// and fail/retry before they can proceed.
 	ticket := make(chan bool, 1)
@@ -395,9 +544,6 @@ func TestDrainNodeWithRetries(t *testing.T) {
 
 	fakeClient.Fake.AddReactor("get", "pods", func(action core.Action) (bool, runtime.Object, error) {
 		return true, nil, errors.NewNotFound(apiv1.Resource("pod"), "whatever")
-	})
-	fakeClient.Fake.AddReactor("get", "nodes", func(action core.Action) (bool, runtime.Object, error) {
-		return true, n1, nil
 	})
 	fakeClient.Fake.AddReactor("create", "pods", func(action core.Action) (bool, runtime.Object, error) {
 		createAction := action.(core.CreateAction)
@@ -420,12 +566,6 @@ func TestDrainNodeWithRetries(t *testing.T) {
 			return true, nil, fmt.Errorf("Too many concurrent evictions")
 		}
 	})
-	fakeClient.Fake.AddReactor("update", "nodes", func(action core.Action) (bool, runtime.Object, error) {
-		update := action.(core.UpdateAction)
-		obj := update.GetObject().(*apiv1.Node)
-		updatedNodes <- obj.Name
-		return true, obj, nil
-	})
 	err := drainNode(n1, []*apiv1.Pod{p1, p2, p3}, fakeClient, kube_util.CreateEventRecorder(fakeClient), 20, 5*time.Second, 0*time.Second)
 	assert.NoError(t, err)
 	deleted := make([]string, 0)
@@ -436,7 +576,6 @@ func TestDrainNodeWithRetries(t *testing.T) {
 	assert.Equal(t, p1.Name, deleted[0])
 	assert.Equal(t, p2.Name, deleted[1])
 	assert.Equal(t, p3.Name, deleted[2])
-	assert.Equal(t, n1.Name, getStringFromChan(updatedNodes))
 }
 
 func TestScaleDown(t *testing.T) {
@@ -694,19 +833,14 @@ func simpleScaleDownEmpty(t *testing.T, config *scaleTestConfig) {
 	assert.Equal(t, ScaleDownNodeDeleted, result)
 
 	// Check the channel (and make sure there isn't more than there should be).
+	// Report only up to 10 extra nodes found.
 	deleted := make([]string, 0, len(config.expectedScaleDowns)+10)
-	empty := false
-	for i := 0; i < len(config.expectedScaleDowns)+10 && !empty; i++ {
-		select {
-		case d := <-deletedNodes:
-			if d == "" { // a closed channel yields empty value
-				empty = true
-			} else {
-				deleted = append(deleted, d)
-			}
-		default:
-			empty = true
+	for i := 0; i < len(config.expectedScaleDowns)+10; i++ {
+		d := getStringFromChanImmediately(deletedNodes)
+		if d == "" { // a closed channel yields empty value
+			break
 		}
+		deleted = append(deleted, d)
 	}
 
 	assertEqualSet(t, config.expectedScaleDowns, deleted)
@@ -884,7 +1018,16 @@ func getStringFromChan(c chan string) string {
 	select {
 	case val := <-c:
 		return val
-	case <-time.After(time.Second * 10):
+	case <-time.After(10 * time.Second):
+		return "Nothing returned"
+	}
+}
+
+func getStringFromChanImmediately(c chan string) string {
+	select {
+	case val := <-c:
+		return val
+	default:
 		return "Nothing returned"
 	}
 }
