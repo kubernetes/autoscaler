@@ -29,8 +29,8 @@ import (
 )
 
 const (
-	// PodDeletionTimeout - maximum time after which a to be deleted pod is not included in the list of pods for drain.
-	PodDeletionTimeout = 5 * time.Minute
+	// PodDeletionTimeout - time after which a pod to be deleted is not included in the list of pods for drain.
+	PodDeletionTimeout = 12 * time.Minute
 )
 
 // GetPodsForDeletionOnNodeDrain returns pods that should be deleted on node drain as well as some extra information
