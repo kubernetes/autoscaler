@@ -193,9 +193,10 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes []*apiv1.Node, no
 			}
 			nodeInfo.Node().Status.Allocatable = nodeInfo.Node().Status.Capacity
 			err := predicateChecker.CheckPredicates(pod, predicateMeta, nodeInfo, ReturnVerboseError)
-			glog.V(4).Infof("Evaluation %s for %s/%s -> %v", nodename, pod.Namespace, pod.Name, err)
+			glog.V(5).Infof("Evaluation %s for %s/%s -> %v", nodename, pod.Namespace, pod.Name, err)
 			if err == nil {
 				// TODO(mwielgus): Optimize it.
+				glog.V(4).Infof("Pod %s/%s can be moved to %s", pod.Namespace, pod.Name, nodename)
 				podsOnNode := nodeInfo.Pods()
 				podsOnNode = append(podsOnNode, pod)
 				newNodeInfo := schedulercache.NewNodeInfo(podsOnNode...)
@@ -221,7 +222,7 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes []*apiv1.Node, no
 		targetNode := ""
 		predicateMeta := predicateChecker.GetPredicateMetadata(pod, newNodeInfos)
 
-		glog.V(4).Infof("Looking for place for %s/%s", pod.Namespace, pod.Name)
+		glog.V(5).Infof("Looking for place for %s/%s", pod.Namespace, pod.Name)
 
 		hintedNode, hasHint := oldHints[podKey(pod)]
 		if hasHint {
