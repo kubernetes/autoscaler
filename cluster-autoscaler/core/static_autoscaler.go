@@ -123,7 +123,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		scaleDown.CleanUpUnneededNodes()
 		return errors.ToAutoscalerError(errors.CloudProviderError, err)
 	}
-	metrics.UpdateClusterState(a.ClusterStateRegistry)
+	UpdateClusterStateMetrics(a.ClusterStateRegistry)
 
 	// Update status information when the loop is done (regardless of reason)
 	defer func() {
