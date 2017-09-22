@@ -28,6 +28,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	client "k8s.io/client-go/kubernetes"
+	"k8s.io/kubernetes/plugin/pkg/scheduler/algorithm"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 
 	"github.com/golang/glog"
@@ -181,7 +182,7 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes []*apiv1.Node, no
 		return fmt.Sprintf("%s/%s", pod.Namespace, pod.Name)
 	}
 
-	tryNodeForPod := func(nodename string, pod *apiv1.Pod, predicateMeta interface{}) bool {
+	tryNodeForPod := func(nodename string, pod *apiv1.Pod, predicateMeta algorithm.PredicateMetadata) bool {
 		nodeInfo, found := newNodeInfos[nodename]
 		if found {
 			if nodeInfo.Node() == nil {
