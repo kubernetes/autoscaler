@@ -25,6 +25,7 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
+	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/daemonset"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
@@ -464,4 +465,14 @@ func getNodeGroupSizeMap(cloudProvider cloudprovider.CloudProvider) map[string]i
 		nodeGroupSize[nodeGroup.Id()] = size
 	}
 	return nodeGroupSize
+}
+
+// UpdateClusterStateMetrics updates metrics related to cluster state
+func UpdateClusterStateMetrics(csr *clusterstate.ClusterStateRegistry) {
+	if csr == nil || reflect.ValueOf(csr).IsNil() {
+		return
+	}
+	metrics.UpdateClusterSafeToAutoscale(csr.IsClusterHealthy())
+	readiness := csr.GetClusterReadiness()
+	metrics.UpdateNodesCount(readiness.Ready, readiness.Unready+readiness.LongNotStarted, readiness.NotStarted)
 }
