@@ -22,8 +22,6 @@ install: true
 
 jobs:
   include:
-    - stage: Install
-      script: hack/for-go-proj.sh install
     - stage: Verify
       script: hack/verify-all.sh -v
     - stage: Test
