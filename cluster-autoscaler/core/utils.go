@@ -25,6 +25,7 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
+	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/daemonset"
@@ -313,7 +314,7 @@ func sanitizeTemplateNode(node *apiv1.Node, nodeGroup string) (*apiv1.Node, erro
 
 // Removes unregistered nodes if needed. Returns true if anything was removed and error if such occurred.
 func removeOldUnregisteredNodes(unregisteredNodes []clusterstate.UnregisteredNode, context *AutoscalingContext,
-	currentTime time.Time) (bool, error) {
+	currentTime time.Time, logRecorder *utils.LogEventRecorder) (bool, error) {
 	removedAny := false
 	for _, unregisteredNode := range unregisteredNodes {
 		if unregisteredNode.UnregisteredSince.Add(context.UnregisteredNodeRemovalTime).Before(currentTime) {
@@ -327,6 +328,8 @@ func removeOldUnregisteredNodes(unregisteredNodes []clusterstate.UnregisteredNod
 				glog.Warningf("No node group for node %s, skipping", unregisteredNode.Node.Name)
 				continue
 			}
+			logRecorder.Eventf(apiv1.EventTypeNormal, "DeleteUnregistered",
+				"Removing unregistered node %v", unregisteredNode.Node.Name)
 			err = nodeGroup.DeleteNodes([]*apiv1.Node{unregisteredNode.Node})
 			if err != nil {
 				glog.Warningf("Failed to remove node %s: %v", unregisteredNode.Node.Name, err)
