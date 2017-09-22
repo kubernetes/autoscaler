@@ -25,6 +25,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/api"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
+	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 
@@ -208,6 +209,7 @@ func (csr *ClusterStateRegistry) updateScaleRequests(currentTime time.Time) {
 			csr.logRecorder.Eventf(apiv1.EventTypeWarning, "ScaleUpTimedOut",
 				"Nodes added to group %s failed to register within %v",
 				sur.NodeGroupName, currentTime.Sub(sur.Time))
+			metrics.RegisterFailedScaleUp()
 			csr.backoffNodeGroup(sur.NodeGroupName, currentTime)
 		}
 	}
@@ -251,6 +253,7 @@ func (csr *ClusterStateRegistry) RegisterFailedScaleUp(nodeGroupName string) {
 	csr.Lock()
 	defer csr.Unlock()
 
+	metrics.RegisterFailedScaleUp()
 	csr.backoffNodeGroup(nodeGroupName, time.Now())
 }
 
