@@ -129,12 +129,12 @@ var (
 		},
 	)
 
-	failedScaleUpCount = prometheus.NewCounter(
+	failedScaleUpCount = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Namespace: caNamespace,
 			Name:      "failed_scale_ups_total",
 			Help:      "Number of times scale-up operation has failed.",
-		},
+		}, []string{"reason"},
 	)
 
 	scaleDownCount = prometheus.NewCounterVec(
@@ -232,7 +232,8 @@ func RegisterScaleUp(nodesCount int) {
 
 // RegisterFailedScaleUp records a failed scale-up operation
 func RegisterFailedScaleUp() {
-	failedScaleUpCount.Inc()
+	// TODO(maciekpytel): add real reasons
+	failedScaleUpCount.WithLabelValues("unknown").Inc()
 }
 
 // RegisterScaleDown records number of nodes removed by scale down
