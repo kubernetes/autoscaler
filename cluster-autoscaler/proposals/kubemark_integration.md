@@ -2,7 +2,7 @@
 
 ## Background
 
-In order to perform scalability testing of Cluster Autoscaler we want to be able to run tests on clusters with thousands of nodes. This is possible relatively cheaply using [kubemark](https://github.com/kubernetes/community/blob/master/contributors/design-proposals/kubemark.md). Therefore it is desirable to make Cluster Autoscaler work with kubemark clusters.
+In order to perform scalability testing of Cluster Autoscaler we want to be able to run tests on clusters with thousands of nodes. This is possible relatively cheaply using [kubemark](https://github.com/kubernetes/community/blob/master/contributors/design-proposals/scalability/kubemark.md). Therefore it is desirable to make Cluster Autoscaler work with kubemark clusters.
 
 ## Kubemark concepts
 
