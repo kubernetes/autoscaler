@@ -708,11 +708,13 @@ var defaultScaleDownOptions = AutoscalingOptions{
 func TestScaleDownEmptyMultipleNodeGroups(t *testing.T) {
 	config := &scaleTestConfig{
 		nodes: []nodeConfig{
-			{"n1", 1000, 1000, true, "ng1"},
-			{"n2", 1000, 1000, true, "ng2"},
+			{"n1_1", 1000, 1000, true, "ng1"},
+			{"n1_2", 1000, 1000, true, "ng1"},
+			{"n2_1", 1000, 1000, true, "ng2"},
+			{"n2_2", 1000, 1000, true, "ng2"},
 		},
 		options:            defaultScaleDownOptions,
-		expectedScaleDowns: []string{"n1", "n2"},
+		expectedScaleDowns: []string{"n1_1", "n2_1"},
 	}
 	simpleScaleDownEmpty(t, config)
 }
@@ -724,7 +726,7 @@ func TestScaleDownEmptySingleNodeGroup(t *testing.T) {
 			{"n2", 1000, 1000, true, "ng1"},
 		},
 		options:            defaultScaleDownOptions,
-		expectedScaleDowns: []string{"n1", "n2"},
+		expectedScaleDowns: []string{"n1"},
 	}
 	simpleScaleDownEmpty(t, config)
 }
@@ -745,12 +747,13 @@ func TestScaleDownEmptyMinCoresLimitHit(t *testing.T) {
 
 func TestScaleDownEmptyMinMemoryLimitHit(t *testing.T) {
 	options := defaultScaleDownOptions
-	options.MinMemoryTotal = 1
+	options.MinMemoryTotal = 4000
 	config := &scaleTestConfig{
 		nodes: []nodeConfig{
 			{"n1", 2000, 1000 * MB, true, "ng1"},
 			{"n2", 1000, 1000 * MB, true, "ng1"},
 			{"n3", 1000, 1000 * MB, true, "ng1"},
+			{"n4", 1000, 3000 * MB, true, "ng1"},
 		},
 		options:            options,
 		expectedScaleDowns: []string{"n1", "n2"},
@@ -758,6 +761,17 @@ func TestScaleDownEmptyMinMemoryLimitHit(t *testing.T) {
 	simpleScaleDownEmpty(t, config)
 }
 
+func TestScaleDownEmptyMinGroupSizeLimitHit(t *testing.T) {
+	options := defaultScaleDownOptions
+	config := &scaleTestConfig{
+		nodes: []nodeConfig{
+			{"n1", 2000, 1000, true, "ng1"},
+		},
+		options:            options,
+		expectedScaleDowns: []string{},
+	}
+	simpleScaleDownEmpty(t, config)
+}
 func simpleScaleDownEmpty(t *testing.T, config *scaleTestConfig) {
 	updatedNodes := make(chan string, 10)
 	deletedNodes := make(chan string, 10)
@@ -801,7 +815,7 @@ func simpleScaleDownEmpty(t *testing.T, config *scaleTestConfig) {
 	})
 
 	for name, nodesInGroup := range groups {
-		provider.AddNodeGroup(name, 0, 10, len(nodesInGroup))
+		provider.AddNodeGroup(name, 1, 10, len(nodesInGroup))
 		for _, n := range nodesInGroup {
 			provider.AddNode(name, n)
 		}
@@ -830,7 +844,13 @@ func simpleScaleDownEmpty(t *testing.T, config *scaleTestConfig) {
 	close(deletedNodes)
 
 	assert.NoError(t, err)
-	assert.Equal(t, ScaleDownNodeDeleted, result)
+	var expectedScaleDownResult ScaleDownResult
+	if len(config.expectedScaleDowns) > 0 {
+		expectedScaleDownResult = ScaleDownNodeDeleted
+	} else {
+		expectedScaleDownResult = ScaleDownNoUnneeded
+	}
+	assert.Equal(t, expectedScaleDownResult, result)
 
 	// Check the channel (and make sure there isn't more than there should be).
 	// Report only up to 10 extra nodes found.

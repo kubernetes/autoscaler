@@ -148,6 +148,31 @@ func TestScaleUpMaxMemoryLimitHit(t *testing.T) {
 	simpleScaleUpTest(t, config)
 }
 
+func TestScaleUpCapToMaxTotalNodesLimit(t *testing.T) {
+	options := defaultOptions
+	options.MaxNodesTotal = 3
+	config := &scaleTestConfig{
+		nodes: []nodeConfig{
+			{"n1", 2000, 100 * MB, true, "ng1"},
+			{"n2", 4000, 1000 * MB, true, "ng2"},
+		},
+		pods: []podConfig{
+			{"p1", 1000, 0, "n1"},
+			{"p2", 3000, 0, "n2"},
+		},
+		extraPods: []podConfig{
+			{"p-new-1", 4000, 100 * MB, ""},
+			{"p-new-2", 4000, 100 * MB, ""},
+			{"p-new-3", 4000, 100 * MB, ""},
+		},
+		expectedScaleUp:      "ng2-1",
+		expectedScaleUpGroup: "ng2",
+		options:              options,
+	}
+
+	simpleScaleUpTest(t, config)
+}
+
 func simpleScaleUpTest(t *testing.T, config *scaleTestConfig) {
 	expandedGroups := make(chan string, 10)
 	fakeClient := &fake.Clientset{}
