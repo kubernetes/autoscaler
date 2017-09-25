@@ -328,6 +328,15 @@ func removeOldUnregisteredNodes(unregisteredNodes []clusterstate.UnregisteredNod
 				glog.Warningf("No node group for node %s, skipping", unregisteredNode.Node.Name)
 				continue
 			}
+			size, err := nodeGroup.TargetSize()
+			if err != nil {
+				glog.Warningf("Failed to get node group size, err: %v", err)
+				continue
+			}
+			if nodeGroup.MinSize() >= size {
+				glog.Warningf("Failed to remove node %s: node group min size reached, skipping unregistered node removal", unregisteredNode.Node.Name)
+				continue
+			}
 			logRecorder.Eventf(apiv1.EventTypeNormal, "DeleteUnregistered",
 				"Removing unregistered node %v", unregisteredNode.Node.Name)
 			err = nodeGroup.DeleteNodes([]*apiv1.Node{unregisteredNode.Node})
@@ -359,7 +368,8 @@ func fixNodeGroupSize(context *AutoscalingContext, currentTime time.Time) (bool,
 					incorrectSize.CurrentSize,
 					delta)
 				if err := nodeGroup.DecreaseTargetSize(delta); err != nil {
-					return fixed, fmt.Errorf("Failed to decrease %s: %v", nodeGroup.Id(), err)
+					glog.Errorf("Failed to decrease %s: %v", nodeGroup.Id(), err)
+					continue
 				}
 				fixed = true
 			}
