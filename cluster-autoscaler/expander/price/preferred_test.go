@@ -33,20 +33,36 @@ func (n *testNodeLister) List() ([]*apiv1.Node, error) {
 	return n.list, nil
 }
 
-func TestPreferred(t *testing.T) {
-	n1 := BuildTestNode("n1", 1000, 1000)
-	n2 := BuildTestNode("n2", 2000, 2000)
-	n3 := BuildTestNode("n2", 2000, 2000)
-
+func testPreferredNodeSingleCase(t *testing.T, currentNodes int, expectedNodeSize int) {
+	nodes := []*apiv1.Node{}
+	for i := 1; i <= currentNodes; i++ {
+		nodes = append(nodes, BuildTestNode("n1", 1000, 1000))
+	}
 	provider := SimplePreferredNodeProvider{
 		nodeLister: &testNodeLister{
-			list: []*apiv1.Node{n1, n2, n3},
+			list: nodes,
 		},
 	}
 	node, err := provider.Node()
 	assert.NoError(t, err)
 	cpu := node.Status.Capacity[apiv1.ResourceCPU]
-	assert.Equal(t, int64(2), cpu.Value())
+	assert.Equal(t, int64(expectedNodeSize), cpu.Value())
+
+}
+func TestPreferredNode(t *testing.T) {
+	testPreferredNodeSingleCase(t, 1, 1)
+	testPreferredNodeSingleCase(t, 3, 2)
+	testPreferredNodeSingleCase(t, 9, 4)
+	testPreferredNodeSingleCase(t, 27, 8)
+	testPreferredNodeSingleCase(t, 81, 16)
+	testPreferredNodeSingleCase(t, 243, 32)
+	testPreferredNodeSingleCase(t, 500, 32)
+}
+
+func TestSimpleNodeUnfitness(t *testing.T) {
+	n1 := BuildTestNode("n1", 1000, 1000)
+	n2 := BuildTestNode("n2", 2000, 2000)
+
 	assert.Equal(t, 2.0, SimpleNodeUnfitness(n1, n2))
 	assert.Equal(t, 2.0, SimpleNodeUnfitness(n2, n1))
 	assert.Equal(t, 1.0, SimpleNodeUnfitness(n1, n1))
