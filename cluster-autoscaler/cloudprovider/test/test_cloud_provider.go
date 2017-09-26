@@ -219,6 +219,13 @@ func (tng *TestNodeGroup) TargetSize() (int, error) {
 	return tng.targetSize, nil
 }
 
+// SetTargetSize sets target size for group. Function is used only in tests.
+func (tng *TestNodeGroup) SetTargetSize(size int) {
+	tng.Lock()
+	defer tng.Unlock()
+	tng.targetSize = size
+}
+
 // IncreaseSize increases the size of the node group. To delete a node you need
 // to explicitly name it and use DeleteNode. This function should wait until
 // node group size is updated.
