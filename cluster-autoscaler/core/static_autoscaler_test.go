@@ -17,6 +17,7 @@ limitations under the License.
 package core
 
 import (
+	"reflect"
 	"testing"
 	"time"
 
@@ -154,6 +155,7 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 		nil, map[string]*schedulercache.NodeInfo{"ng1": tni})
 	provider.AddNodeGroup("ng1", 1, 10, 1)
 	provider.AddNode("ng1", n1)
+	ng1 := reflect.ValueOf(provider.NodeGroups()[0]).Interface().(*testprovider.TestNodeGroup)
 	assert.NotNil(t, provider)
 
 	fakeClient := &fake.Clientset{}
@@ -227,6 +229,7 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 	podDisruptionBudgetListerMock.On("List").Return([]*policyv1.PodDisruptionBudget{}, nil).Once()
 
 	provider.AddNode("ng1", n2)
+	ng1.SetTargetSize(2)
 
 	err = autoscaler.RunOnce(time.Now().Add(2 * time.Hour))
 	assert.NoError(t, err)
@@ -255,6 +258,7 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 	podDisruptionBudgetListerMock.On("List").Return([]*policyv1.PodDisruptionBudget{}, nil).Once()
 
 	provider.AddNode("ng1", n3)
+	ng1.SetTargetSize(3)
 
 	err = autoscaler.RunOnce(time.Now().Add(4 * time.Hour))
 	assert.NoError(t, err)
@@ -323,6 +327,7 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 		[]string{"TN1", "TN2"}, map[string]*schedulercache.NodeInfo{"TN1": tni1, "TN2": tni2, "ng1": tni3})
 	provider.AddNodeGroup("ng1", 1, 10, 1)
 	provider.AddAutoprovisionedNodeGroup("autoprovisioned-TN1", 0, 10, 0, "TN1")
+	autoprovisionedTN1 := reflect.ValueOf(provider.NodeGroups()[1]).Interface().(*testprovider.TestNodeGroup)
 	provider.AddNode("ng1,", n1)
 	assert.NotNil(t, provider)
 
@@ -378,6 +383,9 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, readyNodeListerMock, allNodeListerMock, scheduledPodMock, unschedulablePodMock,
 		podDisruptionBudgetListerMock, daemonSetListerMock, onScaleUpMock, onScaleDownMock)
+
+	// Fix target size.
+	autoprovisionedTN1.SetTargetSize(0)
 
 	// Remove autoprovisioned node group and mark unneeded nodes.
 	readyNodeListerMock.On("List").Return([]*apiv1.Node{n1, n2}, nil).Once()
