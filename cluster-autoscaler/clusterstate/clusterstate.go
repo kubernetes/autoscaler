@@ -209,7 +209,7 @@ func (csr *ClusterStateRegistry) updateScaleRequests(currentTime time.Time) {
 			csr.logRecorder.Eventf(apiv1.EventTypeWarning, "ScaleUpTimedOut",
 				"Nodes added to group %s failed to register within %v",
 				sur.NodeGroupName, currentTime.Sub(sur.Time))
-			metrics.RegisterFailedScaleUp()
+			metrics.RegisterFailedScaleUp(metrics.Timeout)
 			csr.backoffNodeGroup(sur.NodeGroupName, currentTime)
 		}
 	}
@@ -249,11 +249,11 @@ func (csr *ClusterStateRegistry) backoffNodeGroup(nodeGroupName string, currentT
 // RegisterFailedScaleUp should be called after getting error from cloudprovider
 // when trying to scale-up node group. It will mark this group as not safe to autoscale
 // for some time.
-func (csr *ClusterStateRegistry) RegisterFailedScaleUp(nodeGroupName string) {
+func (csr *ClusterStateRegistry) RegisterFailedScaleUp(nodeGroupName string, reason metrics.FailedScaleUpReason) {
 	csr.Lock()
 	defer csr.Unlock()
 
-	metrics.RegisterFailedScaleUp()
+	metrics.RegisterFailedScaleUp(reason)
 	csr.backoffNodeGroup(nodeGroupName, time.Now())
 }
 
