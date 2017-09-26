@@ -28,6 +28,9 @@ import (
 // NodeScaleDownReason describes reason for removing node
 type NodeScaleDownReason string
 
+// FailedScaleUpReason describes reason of failed scale-up
+type FailedScaleUpReason string
+
 // FunctionLabel is a name of Cluster Autoscaler operation for which
 // we measure duration
 type FunctionLabel string
@@ -44,6 +47,11 @@ const (
 	Empty NodeScaleDownReason = "empty"
 	// Unready node was removed
 	Unready NodeScaleDownReason = "unready"
+
+	// APIError caused scale-up to fail
+	APIError FailedScaleUpReason = "apiCallError"
+	// Timeout was encountered when trying to scale-up
+	Timeout FailedScaleUpReason = "timeout"
 
 	// LogLongDurationThreshold defines the duration after which long function
 	// duration will be logged (in addition to being counted in metric).
@@ -231,9 +239,8 @@ func RegisterScaleUp(nodesCount int) {
 }
 
 // RegisterFailedScaleUp records a failed scale-up operation
-func RegisterFailedScaleUp() {
-	// TODO(maciekpytel): add real reasons
-	failedScaleUpCount.WithLabelValues("unknown").Inc()
+func RegisterFailedScaleUp(reason FailedScaleUpReason) {
+	failedScaleUpCount.WithLabelValues(string(reason)).Inc()
 }
 
 // RegisterScaleDown records number of nodes removed by scale down
