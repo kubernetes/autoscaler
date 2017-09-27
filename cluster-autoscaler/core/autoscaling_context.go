@@ -152,6 +152,7 @@ func NewAutoscalingContext(options AutoscalingOptions, predicateChecker *simulat
 	clusterStateConfig := clusterstate.ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: options.MaxTotalUnreadyPercentage,
 		OkTotalUnreadyCount:       options.OkTotalUnreadyCount,
+		MaxNodeProvisionTime:      options.MaxNodeProvisionTime,
 	}
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(cloudProvider, clusterStateConfig, logEventRecorder)
 
