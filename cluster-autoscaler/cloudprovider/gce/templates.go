@@ -35,6 +35,11 @@ import (
 	"github.com/golang/glog"
 )
 
+const (
+	mbPerGB           = 1000
+	millicoresPerCore = 1000
+)
+
 // builds templates for gce cloud provider
 type templateBuilder struct {
 	service   *gce.Service
@@ -85,7 +90,7 @@ func (t *templateBuilder) buildCapacity(machineType string) (apiv1.ResourceList,
 	return capacity, nil
 }
 
-// buildAllocatable builds node allocatable based on capacity of the node and
+// buildAllocatableFromKubeEnv builds node allocatable based on capacity of the node and
 // value of kubeEnv.
 // KubeEnv is a multi line string containing entries in the form of
 // <RESOURCE_NAME>:<string>. One of the resources it contains is a list of
@@ -93,7 +98,7 @@ func (t *templateBuilder) buildCapacity(machineType string) (apiv1.ResourceList,
 // the kubelet for its operation. Allocated resources are capacity - reserved.
 // If we fail to extract the reserved resources from kubeEnv (e.g it is in a
 // wrong format or does not contain kubelet arguments), we return an error.
-func (t *templateBuilder) buildAllocatable(capacity apiv1.ResourceList, kubeEnv string) (apiv1.ResourceList, error) {
+func (t *templateBuilder) buildAllocatableFromKubeEnv(capacity apiv1.ResourceList, kubeEnv string) (apiv1.ResourceList, error) {
 	kubeReserved, err := extractKubeReservedFromKubeEnv(kubeEnv)
 	if err != nil {
 		return nil, err
@@ -102,6 +107,21 @@ func (t *templateBuilder) buildAllocatable(capacity apiv1.ResourceList, kubeEnv 
 	if err != nil {
 		return nil, err
 	}
+	return t.getAllocatable(capacity, reserved), nil
+}
+
+// buildAllocatableFromCapacity builds node allocatable based only on node capacity.
+// Calculates reserved as a ratio of capacity. See calculateReserved for more details
+func (t *templateBuilder) buildAllocatableFromCapacity(capacity apiv1.ResourceList) apiv1.ResourceList {
+	memoryReserved := memoryReservedMB(capacity.Memory().Value() / (1024 * 1024))
+	cpuReserved := cpuReservedMillicores(capacity.Cpu().MilliValue())
+	reserved := apiv1.ResourceList{}
+	reserved[apiv1.ResourceCPU] = *resource.NewMilliQuantity(cpuReserved, resource.DecimalSI)
+	reserved[apiv1.ResourceMemory] = *resource.NewQuantity(memoryReserved*1024*1024, resource.BinarySI)
+	return t.getAllocatable(capacity, reserved)
+}
+
+func (t *templateBuilder) getAllocatable(capacity, reserved apiv1.ResourceList) apiv1.ResourceList {
 	allocatable := apiv1.ResourceList{}
 	for key, value := range capacity {
 		quantity := *value.Copy()
@@ -110,7 +130,7 @@ func (t *templateBuilder) buildAllocatable(capacity apiv1.ResourceList, kubeEnv 
 		}
 		allocatable[key] = quantity
 	}
-	return allocatable, nil
+	return allocatable
 }
 
 func (t *templateBuilder) buildNodeFromTemplate(mig *Mig, template *gce.InstanceTemplate) (*apiv1.Node, error) {
@@ -158,7 +178,7 @@ func (t *templateBuilder) buildNodeFromTemplate(mig *Mig, template *gce.Instance
 			}
 			node.Spec.Taints = append(node.Spec.Taints, kubeEnvTaints...)
 
-			if allocatable, err := t.buildAllocatable(node.Status.Capacity, *item.Value); err == nil {
+			if allocatable, err := t.buildAllocatableFromKubeEnv(node.Status.Capacity, *item.Value); err == nil {
 				nodeAllocatable = allocatable
 			}
 		}
@@ -200,10 +220,9 @@ func (t *templateBuilder) buildNodeFromAutoprovisioningSpec(mig *Mig) (*apiv1.No
 		return nil, err
 	}
 	node.Status = apiv1.NodeStatus{
-		Capacity: capacity,
+		Capacity:    capacity,
+		Allocatable: t.buildAllocatableFromCapacity(capacity),
 	}
-	// TODO: use proper allocatable!!
-	node.Status.Allocatable = node.Status.Capacity
 
 	labels, err := buildLablesForAutoprovisionedMig(mig, nodeName)
 	if err != nil {
@@ -373,4 +392,82 @@ func buildTaints(kubeEnvTaints map[string]string) ([]apiv1.Taint, error) {
 		})
 	}
 	return taints, nil
+}
+
+type allocatableBracket struct {
+	threshold            int64
+	marginalReservedRate float64
+}
+
+func memoryReservedMB(memoryCapacityMB int64) int64 {
+	if memoryCapacityMB <= 1*mbPerGB {
+		// do not set any memory reserved for nodes with less than 1 Gb of capacity
+		return 0
+	}
+	return calculateReserved(memoryCapacityMB, []allocatableBracket{
+		{
+			threshold:            0,
+			marginalReservedRate: 0.25,
+		},
+		{
+			threshold:            4 * mbPerGB,
+			marginalReservedRate: 0.2,
+		},
+		{
+			threshold:            8 * mbPerGB,
+			marginalReservedRate: 0.1,
+		},
+		{
+			threshold:            16 * mbPerGB,
+			marginalReservedRate: 0.06,
+		},
+		{
+			threshold:            128 * mbPerGB,
+			marginalReservedRate: 0.02,
+		},
+	})
+}
+
+func cpuReservedMillicores(cpuCapacityMillicores int64) int64 {
+	return calculateReserved(cpuCapacityMillicores, []allocatableBracket{
+		{
+			threshold:            0,
+			marginalReservedRate: 0.06,
+		},
+		{
+			threshold:            1 * millicoresPerCore,
+			marginalReservedRate: 0.01,
+		},
+		{
+			threshold:            2 * millicoresPerCore,
+			marginalReservedRate: 0.005,
+		},
+		{
+			threshold:            4 * millicoresPerCore,
+			marginalReservedRate: 0.0025,
+		},
+	})
+}
+
+// calculateReserved calculates reserved using capacity and a series of
+// brackets as follows:  the marginalReservedRate applies to all capacity
+// greater than the bracket, but less than the next bracket.  For example, if
+// the first bracket is threshold: 0, rate:0.1, and the second bracket has
+// threshold: 100, rate: 0.4, a capacity of 100 results in a reserved of
+// 100*0.1 = 10, but a capacity of 200 results in a reserved of
+// 10 + (200-100)*.4 = 50.  Using brackets with marginal rates ensures that as
+// capacity increases, reserved always increases, and never decreases.
+func calculateReserved(capacity int64, brackets []allocatableBracket) int64 {
+	var reserved float64
+	for i, bracket := range brackets {
+		c := capacity
+		if i < len(brackets)-1 && brackets[i+1].threshold < capacity {
+			c = brackets[i+1].threshold
+		}
+		additionalReserved := float64(c-bracket.threshold) * bracket.marginalReservedRate
+		if additionalReserved > 0 {
+			reserved += additionalReserved
+		}
+	}
+	return int64(reserved)
 }
