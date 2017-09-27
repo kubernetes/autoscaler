@@ -84,6 +84,8 @@ type ClusterStateRegistryConfig struct {
 	MaxTotalUnreadyPercentage float64
 	// Number of nodes that can be unready in total. If the number is higher than that then MaxTotalUnreadyPercentage applies.
 	OkTotalUnreadyCount int
+	//  Maximum time CA waits for node to be provisioned
+	MaxNodeProvisionTime time.Duration
 }
 
 // IncorrectNodeGroupSize contains information about how much the current size of the node group
@@ -273,6 +275,7 @@ func (csr *ClusterStateRegistry) UpdateNodes(nodes []*apiv1.Node, currentTime ti
 
 	csr.nodes = nodes
 
+	csr.updateUnregisteredNodes(notRegistered)
 	csr.updateReadinessStats(currentTime)
 
 	// update acceptable ranges based on requests from last loop and targetSizes
@@ -282,7 +285,6 @@ func (csr *ClusterStateRegistry) UpdateNodes(nodes []*apiv1.Node, currentTime ti
 	//  recalculate acceptable ranges after removing timed out requests
 	csr.updateAcceptableRanges(targetSizes)
 	csr.updateIncorrectNodeGroupSizes(currentTime)
-	csr.updateUnregisteredNodes(notRegistered)
 	return nil
 }
 
@@ -304,7 +306,7 @@ func (csr *ClusterStateRegistry) IsClusterHealthy() bool {
 	csr.Lock()
 	defer csr.Unlock()
 
-	totalUnready := csr.totalReadiness.Unready + csr.totalReadiness.LongNotStarted
+	totalUnready := csr.totalReadiness.Unready + csr.totalReadiness.LongNotStarted + csr.totalReadiness.LongUnregistered
 
 	if totalUnready > csr.config.OkTotalUnreadyCount &&
 		float64(totalUnready) > csr.config.MaxTotalUnreadyPercentage/100.0*float64(len(csr.nodes)) {
@@ -410,8 +412,9 @@ func (csr *ClusterStateRegistry) updateAcceptableRanges(targetSize map[string]in
 	result := make(map[string]AcceptableRange)
 	for _, nodeGroup := range csr.cloudProvider.NodeGroups() {
 		size := targetSize[nodeGroup.Id()]
+		readiness := csr.perNodeGroupReadiness[nodeGroup.Id()]
 		result[nodeGroup.Id()] = AcceptableRange{
-			MinNodes:      size,
+			MinNodes:      size - readiness.LongUnregistered,
 			MaxNodes:      size,
 			CurrentTarget: size,
 		}
@@ -444,6 +447,8 @@ type Readiness struct {
 	NotStarted int
 	// Number of all registered nodes in the group (ready/unready/deleted/etc).
 	Registered int
+	// Number of nodes that failed to register within a reasonable limit.
+	LongUnregistered int
 	// Time when the readiness was measured.
 	Time time.Time
 }
@@ -486,6 +491,21 @@ func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 		}
 		total = update(total, node, ready)
 	}
+
+	for _, unregistered := range csr.unregisteredNodes {
+		if unregistered.UnregisteredSince.Add(csr.config.MaxNodeProvisionTime).Before(currentTime) {
+			nodeGroup, errNg := csr.cloudProvider.NodeGroupForNode(unregistered.Node)
+			if errNg != nil {
+				glog.Warningf("Failed to get nodegroup for %s: %v", unregistered.Node.Name, errNg)
+				continue
+			}
+			perNgCopy := perNodeGroup[nodeGroup.Id()]
+			perNgCopy.LongUnregistered += 1
+			perNodeGroup[nodeGroup.Id()] = perNgCopy
+			total.LongUnregistered += 1
+		}
+	}
+
 	for ngId, ngReadiness := range perNodeGroup {
 		ngReadiness.Time = currentTime
 		perNodeGroup[ngId] = ngReadiness
@@ -624,12 +644,13 @@ func (csr *ClusterStateRegistry) GetClusterReadiness() Readiness {
 func buildHealthStatusNodeGroup(isReady bool, readiness Readiness, acceptable AcceptableRange, minSize, maxSize int) api.ClusterAutoscalerCondition {
 	condition := api.ClusterAutoscalerCondition{
 		Type: api.ClusterAutoscalerHealth,
-		Message: fmt.Sprintf("ready=%d unready=%d notStarted=%d longNotStarted=%d registered=%d cloudProviderTarget=%d (minSize=%d, maxSize=%d)",
+		Message: fmt.Sprintf("ready=%d unready=%d notStarted=%d longNotStarted=%d registered=%d longUnregistered=%d cloudProviderTarget=%d (minSize=%d, maxSize=%d)",
 			readiness.Ready,
 			readiness.Unready,
 			readiness.NotStarted,
 			readiness.LongNotStarted,
 			readiness.Registered,
+			readiness.LongUnregistered,
 			acceptable.CurrentTarget,
 			minSize,
 			maxSize),
@@ -678,12 +699,13 @@ func buildScaleDownStatusNodeGroup(candidates []string, lastProbed time.Time) ap
 func buildHealthStatusClusterwide(isReady bool, readiness Readiness) api.ClusterAutoscalerCondition {
 	condition := api.ClusterAutoscalerCondition{
 		Type: api.ClusterAutoscalerHealth,
-		Message: fmt.Sprintf("ready=%d unready=%d notStarted=%d longNotStarted=%d registered=%d",
+		Message: fmt.Sprintf("ready=%d unready=%d notStarted=%d longNotStarted=%d registered=%d longUnregistered=%d",
 			readiness.Ready,
 			readiness.Unready,
 			readiness.NotStarted,
 			readiness.LongNotStarted,
 			readiness.Registered,
+			readiness.LongUnregistered,
 		),
 		LastProbeTime: metav1.Time{Time: readiness.Time},
 	}
@@ -822,7 +844,7 @@ func (csr *ClusterStateRegistry) GetUpcomingNodes() map[string]int {
 		readiness := csr.perNodeGroupReadiness[id]
 		ar := csr.acceptableRanges[id]
 		// newNodes is the number of nodes that
-		newNodes := ar.CurrentTarget - (readiness.Ready + readiness.Unready + readiness.LongNotStarted)
+		newNodes := ar.CurrentTarget - (readiness.Ready + readiness.Unready + readiness.LongNotStarted + readiness.LongUnregistered)
 		if newNodes <= 0 {
 			// Negative value is unlikely but theoretically possible.
 			continue

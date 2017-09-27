@@ -72,6 +72,9 @@ func BuildTestNode(name string, millicpu int64, mem int64) *apiv1.Node {
 			SelfLink: fmt.Sprintf("/api/v1/nodes/%s", name),
 			Labels:   map[string]string{},
 		},
+		Spec: apiv1.NodeSpec{
+			ProviderID: name,
+		},
 		Status: apiv1.NodeStatus{
 			Capacity: apiv1.ResourceList{
 				apiv1.ResourcePods: *resource.NewQuantity(100, resource.DecimalSI),
