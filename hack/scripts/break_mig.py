@@ -80,17 +80,30 @@ def break_node(master, instance, broken_ips, verbose):
         broken_ips.add(ip)
 
 
-def run(master, ng, existing, upcoming, broken_ips, verbose):
+def run(master, ng, existing, upcoming, max_nodes_to_break, broken_ips, verbose):
     '''
     Poll for new nodes and break them as required.
 
     Runs an endless loop.
     '''
+
+    # can't assign to local variable from nested function in python 2
+    # but can mutate a list (standard hack)
+    broken = [0]
+
+    def maybe_break_node(*args, **kwargs):
+        if max_nodes_to_break >= 0 and broken[0] >= max_nodes_to_break:
+            if verbose:
+                print 'Maximum number of instances already broken, will not break {}'.format(args[1])
+        else:
+            break_node(*args, **kwargs)
+            broken[0] += 1
+
     instances = get_instances(master, ng)
     known = set()
     for inst in instances:
         if existing:
-            break_node(master, inst, broken_ips, verbose)
+            maybe_break_node(master, inst, broken_ips, verbose)
         known.add(inst.name)
     while True:
         instances = get_instances(master, ng)
@@ -100,7 +113,7 @@ def run(master, ng, existing, upcoming, broken_ips, verbose):
             if verbose:
                 print 'New instance observed: {}'.format(inst.name)
             if upcoming:
-                break_node(master, inst, broken_ips, verbose)
+                maybe_break_node(master, inst, broken_ips, verbose)
             known.add(inst.name)
         time.sleep(5)
 
@@ -124,6 +137,7 @@ def main():
     parser.add_argument('node_group_name', help='name of node group to break')
     parser.add_argument('-e', '--existing', help='break existing nodes (they will become unavailable)', action='store_true')
     parser.add_argument('-u', '--upcoming', help='break any new nodes added to this node group (they will not register at all)', action='store_true')
+    parser.add_argument('-m', '--max-nodes-to-break', help='break at most a given number of nodes', type=int, default=-1)
     parser.add_argument('-v', '--verbose', action='store_true')
     parser.add_argument('-y', '--yes', action='store_true')
     args = parser.parse_args()
@@ -143,7 +157,7 @@ def main():
 
     broken = set()
     atexit.register(clean_up, args.master_name, broken, args.verbose)
-    run(args.master_name, args.node_group_name, args.existing, args.upcoming, broken, args.verbose)
+    run(args.master_name, args.node_group_name, args.existing, args.upcoming, args.max_nodes_to_break, broken, args.verbose)
 
 
 if __name__ == '__main__':
