@@ -35,7 +35,7 @@ func makeTestUsageSample() *ContainerUsageSampleWithKey {
 
 func TestClusterAddSample(t *testing.T) {
 	// Create a pod with a single container.
-	cluster := NewCluster()
+	cluster := NewClusterState()
 	labels := make(map[string]string)
 	cluster.AddOrUpdatePod(testPodID, labels)
 	assert.NoError(t, cluster.AddOrUpdateContainer(testContainerID))
@@ -51,7 +51,7 @@ func TestClusterAddSample(t *testing.T) {
 // Verifies that AddSample and AddOrUpdateContainer methods return a proper
 // KeyError when refering to a non-existent pod.
 func TestMissingKeys(t *testing.T) {
-	cluster := NewCluster()
+	cluster := NewClusterState()
 	err := cluster.AddSample(makeTestUsageSample())
 	assert.EqualError(t, err, "KeyError: {namespace-1 pod-1}")
 
