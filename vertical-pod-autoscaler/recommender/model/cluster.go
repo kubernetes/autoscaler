@@ -17,27 +17,31 @@ import (
 	labels "k8s.io/apimachinery/pkg/labels"
 )
 
-// Cluster holds all runtime information about resources in the cluster
-// required for VPA operations.
-type Cluster struct {
+// ClusterState holds all runtime information about the cluster required for the
+// VPA operations, i.e. configuration of resources (pods, containers,
+// VPA objects), aggregated utilization of compute resources (CPU, memory) and
+// events (container OOMs).
+// All input to the VPA Recommender algorithm lives in this structure.
+type ClusterState struct {
 	// Pods in the cluster.
-	Pods map[PodID]*Pod
+	Pods map[PodID]*PodState
+	// TODO(kgrygiel): Add VPA objects.
 }
 
-// Pod holds runtime information about a single Pod.
-type Pod struct {
+// PodState holds runtime information about a single Pod.
+type PodState struct {
 	// Unique id of the Pod.
 	ID PodID
 	// Set of labels attached to the Pod.
 	Labels labels.Set
 	// Containers that belong to the Pod, keyed by the container name.
-	Containers map[string]*ContainerStats
+	Containers map[string]*ContainerState
 }
 
-// NewCluster returns a new Cluster with no pods.
-func NewCluster() *Cluster {
-	return &Cluster{
-		make(map[PodID]*Pod), // empty pods map.
+// NewClusterState returns a new ClusterState with no pods.
+func NewClusterState() *ClusterState {
+	return &ClusterState{
+		make(map[PodID]*PodState), // empty pods map.
 	}
 }
 
@@ -51,7 +55,7 @@ type ContainerUsageSampleWithKey struct {
 // AddOrUpdatePod udpates the state of the pod with a given PodID, if it is
 // present in the cluster object. Otherwise a new pod is created and added to
 // the Cluster object.
-func (cluster *Cluster) AddOrUpdatePod(podID PodID, labels labels.Set) {
+func (cluster *ClusterState) AddOrUpdatePod(podID PodID, labels labels.Set) {
 	if _, podExists := cluster.Pods[podID]; !podExists {
 		cluster.Pods[podID] = newPod(podID)
 	}
@@ -59,40 +63,40 @@ func (cluster *Cluster) AddOrUpdatePod(podID PodID, labels labels.Set) {
 }
 
 // AddOrUpdateContainer creates a new container with the given ContainerID and
-// adds it to the parent pod in the Cluster object, if not yet present.
-// Requires the pod to be added to the Cluster first. Otherwise an error is
+// adds it to the parent pod in the ClusterState object, if not yet present.
+// Requires the pod to be added to the ClusterState first. Otherwise an error is
 // returned.
-func (cluster *Cluster) AddOrUpdateContainer(containerID ContainerID) error {
+func (cluster *ClusterState) AddOrUpdateContainer(containerID ContainerID) error {
 	pod, podExists := cluster.Pods[containerID.PodID]
 	if !podExists {
 		return NewKeyError(containerID.PodID)
 	}
 	if _, containerExists := pod.Containers[containerID.ContainerName]; !containerExists {
-		pod.Containers[containerID.ContainerName] = NewContainerStats()
+		pod.Containers[containerID.ContainerName] = NewContainerState()
 	}
 	return nil
 }
 
-// AddSample adds a new usage sample to the proper container in the Cluster
+// AddSample adds a new usage sample to the proper container in the ClusterState
 // object. Requires the container as well as the parent pod to be added to the
-// Cluster first. Otherwise an error is returned.
-func (cluster *Cluster) AddSample(sample *ContainerUsageSampleWithKey) error {
+// ClusterState first. Otherwise an error is returned.
+func (cluster *ClusterState) AddSample(sample *ContainerUsageSampleWithKey) error {
 	pod, podExists := cluster.Pods[sample.Container.PodID]
 	if !podExists {
 		return NewKeyError(sample.Container.PodID)
 	}
-	containerStats, containerExists := pod.Containers[sample.Container.ContainerName]
+	containerState, containerExists := pod.Containers[sample.Container.ContainerName]
 	if !containerExists {
 		return NewKeyError(sample.Container)
 	}
-	containerStats.AddSample(&sample.ContainerUsageSample)
+	containerState.AddSample(&sample.ContainerUsageSample)
 	return nil
 }
 
-func newPod(id PodID) *Pod {
-	return &Pod{
+func newPod(id PodID) *PodState {
+	return &PodState{
 		id,
 		make(map[string]string),          // empty labels.
-		make(map[string]*ContainerStats), // empty containers.
+		make(map[string]*ContainerState), // empty containers.
 	}
 }
