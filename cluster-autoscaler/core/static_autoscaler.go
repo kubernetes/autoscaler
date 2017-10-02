@@ -36,9 +36,10 @@ type StaticAutoscaler struct {
 	// AutoscalingContext consists of validated settings and options for this autoscaler
 	*AutoscalingContext
 	kube_util.ListerRegistry
-	lastScaleUpTime          time.Time
-	lastScaleDownFailedTrial time.Time
-	scaleDown                *ScaleDown
+	lastScaleUpTime         time.Time
+	lastScaleDownDeleteTime time.Time
+	lastScaleDownFailTime   time.Time
+	scaleDown               *ScaleDown
 }
 
 // NewStaticAutoscaler creates an instance of Autoscaler filled with provided parameters
@@ -59,11 +60,12 @@ func NewStaticAutoscaler(opts AutoscalingOptions, predicateChecker *simulator.Pr
 	scaleDown := NewScaleDown(autoscalingContext)
 
 	return &StaticAutoscaler{
-		AutoscalingContext:       autoscalingContext,
-		ListerRegistry:           listerRegistry,
-		lastScaleUpTime:          time.Now(),
-		lastScaleDownFailedTrial: time.Now(),
-		scaleDown:                scaleDown,
+		AutoscalingContext:      autoscalingContext,
+		ListerRegistry:          listerRegistry,
+		lastScaleUpTime:         time.Now(),
+		lastScaleDownDeleteTime: time.Now(),
+		lastScaleDownFailTime:   time.Now(),
+		scaleDown:               scaleDown,
 	}, nil
 }
 
@@ -90,6 +92,8 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	scaleDown := a.scaleDown
 	autoscalingContext := a.AutoscalingContext
 	runStart := time.Now()
+
+	glog.V(4).Info("Starting main loop")
 
 	readyNodes, err := readyNodeLister.List()
 	if err != nil {
@@ -119,12 +123,12 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		scaleDown.CleanUpUnneededNodes()
 		return errors.ToAutoscalerError(errors.CloudProviderError, err)
 	}
-	metrics.UpdateClusterState(a.ClusterStateRegistry)
+	UpdateClusterStateMetrics(a.ClusterStateRegistry)
 
 	// Update status information when the loop is done (regardless of reason)
 	defer func() {
 		if autoscalingContext.WriteStatusConfigMap {
-			status := a.ClusterStateRegistry.GetStatus(time.Now())
+			status := a.ClusterStateRegistry.GetStatus(currentTime)
 			utils.WriteStatusConfigMap(autoscalingContext.ClientSet, autoscalingContext.ConfigNamespace,
 				status.GetReadableString(), a.AutoscalingContext.LogRecorder)
 		}
@@ -143,7 +147,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	unregisteredNodes := a.ClusterStateRegistry.GetUnregisteredNodes()
 	if len(unregisteredNodes) > 0 {
 		glog.V(1).Infof("%d unregistered nodes present", len(unregisteredNodes))
-		removedAny, err := removeOldUnregisteredNodes(unregisteredNodes, autoscalingContext, time.Now())
+		removedAny, err := removeOldUnregisteredNodes(unregisteredNodes, autoscalingContext, currentTime, autoscalingContext.LogRecorder)
 		// There was a problem with removing unregistered nodes. Retry in the next loop.
 		if err != nil {
 			if removedAny {
@@ -164,7 +168,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	// Check if there has been a constant difference between the number of nodes in k8s and
 	// the number of nodes on the cloud provider side.
 	// TODO: andrewskim - add protection for ready AWS nodes.
-	fixedSomething, err := fixNodeGroupSize(autoscalingContext, time.Now())
+	fixedSomething, err := fixNodeGroupSize(autoscalingContext, currentTime)
 	if err != nil {
 		glog.Errorf("Failed to fix node group sizes: %v", err)
 		return errors.ToAutoscalerError(errors.CloudProviderError, err)
@@ -241,7 +245,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 			glog.Errorf("Failed to scale up: %v", typedErr)
 			return typedErr
 		} else if scaledUp {
-			a.lastScaleUpTime = time.Now()
+			a.lastScaleUpTime = currentTime
 			// No scale down in this iteration.
 			return nil
 		}
@@ -255,22 +259,13 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		}
 
 		unneededStart := time.Now()
-		// In dry run only utilization is updated
-		calculateUnneededOnly := a.lastScaleUpTime.Add(a.ScaleDownDelay).After(time.Now()) ||
-			a.lastScaleDownFailedTrial.Add(a.ScaleDownTrialInterval).After(time.Now()) ||
-			schedulablePodsPresent ||
-			scaleDown.nodeDeleteStatus.IsDeleteInProgress()
-
-		glog.V(4).Infof("Scale down status: unneededOnly=%v lastScaleUpTime=%s "+
-			"lastScaleDownFailedTrail=%s schedulablePodsPresent=%v", calculateUnneededOnly,
-			a.lastScaleUpTime, a.lastScaleDownFailedTrial, schedulablePodsPresent)
 
 		glog.V(4).Infof("Calculating unneeded nodes")
 
-		scaleDown.CleanUp(time.Now())
+		scaleDown.CleanUp(currentTime)
 		potentiallyUnneeded := getPotentiallyUnneededNodes(autoscalingContext, allNodes)
 
-		typedErr := scaleDown.UpdateUnneededNodes(allNodes, potentiallyUnneeded, allScheduled, time.Now(), pdbs)
+		typedErr := scaleDown.UpdateUnneededNodes(allNodes, potentiallyUnneeded, allScheduled, currentTime, pdbs)
 		if typedErr != nil {
 			glog.Errorf("Failed to scale down: %v", typedErr)
 			return typedErr
@@ -280,16 +275,37 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 
 		for key, val := range scaleDown.unneededNodes {
 			if glog.V(4) {
-				glog.V(4).Infof("%s is unneeded since %s duration %s", key, val.String(), time.Now().Sub(val).String())
+				glog.V(4).Infof("%s is unneeded since %s duration %s", key, val.String(), currentTime.Sub(val).String())
 			}
 		}
+
+		// In dry run only utilization is updated
+		calculateUnneededOnly := a.lastScaleUpTime.Add(a.ScaleDownDelayAfterAdd).After(currentTime) ||
+			a.lastScaleDownFailTime.Add(a.ScaleDownDelayAfterFailure).After(currentTime) ||
+			a.lastScaleDownDeleteTime.Add(a.ScaleDownDelayAfterDelete).After(currentTime) ||
+			schedulablePodsPresent ||
+			scaleDown.nodeDeleteStatus.IsDeleteInProgress()
+
+		glog.V(4).Infof("Scale down status: unneededOnly=%v lastScaleUpTime=%s "+
+			"lastScaleDownDeleteTime=%v lastScaleDownFailTime=%s schedulablePodsPresent=%v isDeleteInProgress=%v",
+			calculateUnneededOnly, a.lastScaleUpTime, a.lastScaleDownDeleteTime, a.lastScaleDownFailTime,
+			schedulablePodsPresent, scaleDown.nodeDeleteStatus.IsDeleteInProgress())
 
 		if !calculateUnneededOnly {
 			glog.V(4).Infof("Starting scale down")
 
+			// We want to delete unneeded Node Groups only if there was no recent scale up,
+			// and there is no current delete in progress and there was no recent errors.
+			if a.AutoscalingContext.NodeAutoprovisioningEnabled {
+				err := cleanUpNodeAutoprovisionedGroups(a.AutoscalingContext.CloudProvider)
+				if err != nil {
+					glog.Warningf("Failed to clean up unneded node groups: %v", err)
+				}
+			}
+
 			scaleDownStart := time.Now()
 			metrics.UpdateLastTime(metrics.ScaleDown, scaleDownStart)
-			result, typedErr := scaleDown.TryToScaleDown(allNodes, allScheduled, pdbs)
+			result, typedErr := scaleDown.TryToScaleDown(allNodes, allScheduled, pdbs, currentTime)
 			metrics.UpdateDurationFromStart(metrics.ScaleDown, scaleDownStart)
 
 			// TODO: revisit result handling
@@ -298,7 +314,9 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 				return typedErr
 			}
 			if result == ScaleDownError {
-				a.lastScaleDownFailedTrial = time.Now()
+				a.lastScaleDownFailTime = currentTime
+			} else if result == ScaleDownNodeDeleted {
+				a.lastScaleDownDeleteTime = currentTime
 			}
 		}
 	}

@@ -18,14 +18,18 @@ package core
 
 import (
 	"fmt"
+	"math"
 	"math/rand"
 	"reflect"
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
+	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
+	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/daemonset"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -295,9 +299,12 @@ func sanitizeTemplateNode(node *apiv1.Node, nodeGroup string) (*apiv1.Node, erro
 		// Rescheduler can put this taint on a node while evicting non-critical pods.
 		// New nodes will not have this taint and so we should strip it when creating
 		// template node.
-		if taint.Key == ReschedulerTaintKey {
+		switch taint.Key {
+		case ReschedulerTaintKey:
 			glog.V(4).Infof("Removing rescheduler taint when creating template from node %s", node.Name)
-		} else {
+		case deletetaint.ToBeDeletedTaint:
+			glog.V(4).Infof("Removing autoscaler taint when creating template from node %s", node.Name)
+		default:
 			newTaints = append(newTaints, taint)
 		}
 	}
@@ -307,7 +314,7 @@ func sanitizeTemplateNode(node *apiv1.Node, nodeGroup string) (*apiv1.Node, erro
 
 // Removes unregistered nodes if needed. Returns true if anything was removed and error if such occurred.
 func removeOldUnregisteredNodes(unregisteredNodes []clusterstate.UnregisteredNode, context *AutoscalingContext,
-	currentTime time.Time) (bool, error) {
+	currentTime time.Time, logRecorder *utils.LogEventRecorder) (bool, error) {
 	removedAny := false
 	for _, unregisteredNode := range unregisteredNodes {
 		if unregisteredNode.UnregisteredSince.Add(context.UnregisteredNodeRemovalTime).Before(currentTime) {
@@ -321,6 +328,17 @@ func removeOldUnregisteredNodes(unregisteredNodes []clusterstate.UnregisteredNod
 				glog.Warningf("No node group for node %s, skipping", unregisteredNode.Node.Name)
 				continue
 			}
+			size, err := nodeGroup.TargetSize()
+			if err != nil {
+				glog.Warningf("Failed to get node group size, err: %v", err)
+				continue
+			}
+			if nodeGroup.MinSize() >= size {
+				glog.Warningf("Failed to remove node %s: node group min size reached, skipping unregistered node removal", unregisteredNode.Node.Name)
+				continue
+			}
+			logRecorder.Eventf(apiv1.EventTypeNormal, "DeleteUnregistered",
+				"Removing unregistered node %v", unregisteredNode.Node.Name)
 			err = nodeGroup.DeleteNodes([]*apiv1.Node{unregisteredNode.Node})
 			if err != nil {
 				glog.Warningf("Failed to remove node %s: %v", unregisteredNode.Node.Name, err)
@@ -364,6 +382,9 @@ func fixNodeGroupSize(context *AutoscalingContext, currentTime time.Time) (bool,
 // - in groups with size > min size
 func getPotentiallyUnneededNodes(context *AutoscalingContext, nodes []*apiv1.Node) []*apiv1.Node {
 	result := make([]*apiv1.Node, 0, len(nodes))
+
+	nodeGroupSize := getNodeGroupSizeMap(context.CloudProvider)
+
 	for _, node := range nodes {
 		nodeGroup, err := context.CloudProvider.NodeGroupForNode(node)
 		if err != nil {
@@ -374,9 +395,9 @@ func getPotentiallyUnneededNodes(context *AutoscalingContext, nodes []*apiv1.Nod
 			glog.V(4).Infof("Skipping %s - no node group config", node.Name)
 			continue
 		}
-		size, err := nodeGroup.TargetSize()
-		if err != nil {
-			glog.Errorf("Error while checking node group size %s: %v", nodeGroup.Id(), err)
+		size, found := nodeGroupSize[nodeGroup.Id()]
+		if !found {
+			glog.Errorf("Error while checking node group size %s: group size not found", nodeGroup.Id())
 			continue
 		}
 		if size <= nodeGroup.MinSize() {
@@ -410,4 +431,60 @@ func ConfigurePredicateCheckerForLoop(unschedulablePods []*apiv1.Pod, schedulabl
 	if !podsWithAffinityFound {
 		glog.V(1).Info("No pod using affinity / antiaffinity found in cluster, disabling affinity predicate for this loop")
 	}
+}
+
+// Getting node cores/memory
+const (
+	// Megabyte is 2^20 bytes.
+	Megabyte float64 = 1024 * 1024
+)
+
+func getNodeCoresAndMemory(node *apiv1.Node) (int64, int64, error) {
+	cores, err := getNodeResource(node, apiv1.ResourceCPU)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	memory, err := getNodeResource(node, apiv1.ResourceMemory)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	if cores <= 0 || memory <= 0 {
+		return 0, 0, fmt.Errorf("Invalid node CPU/memory values - cpu %v, memory %v", cores, memory)
+	}
+
+	memoryMb := math.Ceil(float64(memory) / Megabyte)
+	return cores, int64(memoryMb), nil
+}
+
+func getNodeResource(node *apiv1.Node, resource apiv1.ResourceName) (int64, error) {
+	nodeCapacity, found := node.Status.Capacity[resource]
+	if !found {
+		return 0, fmt.Errorf("Failed to get %v for node %v", resource, node.Name)
+	}
+	return nodeCapacity.Value(), nil
+}
+
+func getNodeGroupSizeMap(cloudProvider cloudprovider.CloudProvider) map[string]int {
+	nodeGroupSize := make(map[string]int)
+	for _, nodeGroup := range cloudProvider.NodeGroups() {
+		size, err := nodeGroup.TargetSize()
+		if err != nil {
+			glog.Errorf("Error while checking node group size %s: %v", nodeGroup.Id(), err)
+			continue
+		}
+		nodeGroupSize[nodeGroup.Id()] = size
+	}
+	return nodeGroupSize
+}
+
+// UpdateClusterStateMetrics updates metrics related to cluster state
+func UpdateClusterStateMetrics(csr *clusterstate.ClusterStateRegistry) {
+	if csr == nil || reflect.ValueOf(csr).IsNil() {
+		return
+	}
+	metrics.UpdateClusterSafeToAutoscale(csr.IsClusterHealthy())
+	readiness := csr.GetClusterReadiness()
+	metrics.UpdateNodesCount(readiness.Ready, readiness.Unready+readiness.LongNotStarted, readiness.NotStarted)
 }

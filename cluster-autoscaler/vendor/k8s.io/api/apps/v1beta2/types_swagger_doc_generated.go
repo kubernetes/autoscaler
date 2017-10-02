@@ -153,7 +153,7 @@ var map_DeploymentSpec = map[string]string{
 	"minReadySeconds":         "Minimum number of seconds for which a newly created pod should be ready without any of its container crashing, for it to be considered available. Defaults to 0 (pod will be considered available as soon as it is ready)",
 	"revisionHistoryLimit":    "The number of old ReplicaSets to retain to allow rollback. This is a pointer to distinguish between explicit zero and not specified. Defaults to 10.",
 	"paused":                  "Indicates that the deployment is paused.",
-	"progressDeadlineSeconds": "The maximum time in seconds for a deployment to make progress before it is considered to be failed. The deployment controller will continue to process failed deployments and a condition with a ProgressDeadlineExceeded reason will be surfaced in the deployment status. Once autoRollback is implemented, the deployment controller will automatically rollback failed deployments. Note that progress will not be estimated during the time a deployment is paused. Defaults to 600s.",
+	"progressDeadlineSeconds": "The maximum time in seconds for a deployment to make progress before it is considered to be failed. The deployment controller will continue to process failed deployments and a condition with a ProgressDeadlineExceeded reason will be surfaced in the deployment status. Note that progress will not be estimated during the time a deployment is paused. Defaults to 600s.",
 }
 
 func (DeploymentSpec) SwaggerDoc() map[string]string {
@@ -167,7 +167,7 @@ var map_DeploymentStatus = map[string]string{
 	"updatedReplicas":     "Total number of non-terminated pods targeted by this deployment that have the desired template spec.",
 	"readyReplicas":       "Total number of ready pods targeted by this deployment.",
 	"availableReplicas":   "Total number of available pods (ready for at least minReadySeconds) targeted by this deployment.",
-	"unavailableReplicas": "Total number of unavailable pods targeted by this deployment.",
+	"unavailableReplicas": "Total number of unavailable pods targeted by this deployment. This is the total number of pods that are still required for the deployment to have 100% available capacity. They may either be pods that are running but not yet available or pods that still have not been created.",
 	"conditions":          "Represents the latest available observations of a deployment's current state.",
 	"collisionCount":      "Count of hash collisions for the Deployment. The Deployment controller uses this field as a collision avoidance mechanism when it needs to create the name for the newest ReplicaSet.",
 }

@@ -20,6 +20,9 @@ import (
 	"fmt"
 	"time"
 
+	"net/http"
+	"net/http/httptest"
+
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -28,6 +31,8 @@ import (
 	refv1 "k8s.io/client-go/tools/reference"
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/testapi"
+
+	"github.com/stretchr/testify/mock"
 )
 
 // BuildTestPod creates a pod with specified resources.
@@ -66,6 +71,9 @@ func BuildTestNode(name string, millicpu int64, mem int64) *apiv1.Node {
 			Name:     name,
 			SelfLink: fmt.Sprintf("/api/v1/nodes/%s", name),
 			Labels:   map[string]string{},
+		},
+		Spec: apiv1.NodeSpec{
+			ProviderID: name,
 		},
 		Status: apiv1.NodeStatus{
 			Capacity: apiv1.ResourceList{
@@ -144,4 +152,43 @@ func GenerateOwnerReferences(name, kind, api string, uid types.UID) []metav1.Own
 func boolptr(val bool) *bool {
 	b := val
 	return &b
+}
+
+// HttpServerMock mocks server HTTP.
+//
+// Example:
+// // Create HttpServerMock.
+// server := NewHttpServerMock()
+// defer server.Close()
+// // Use server.URL to point your code to HttpServerMock.
+// g := newTestGceManager(t, server.URL, ModeGKE)
+// // Declare handled urls and results for them.
+// server.On("handle", "/project1/zones/us-central1-b/listManagedInstances").Return("<managedInstances>").Once()
+// // Call http server in your code.
+// instances, err := g.GetManagedInstances()
+// // Check if expected calls were executed.
+// 	mock.AssertExpectationsForObjects(t, server)
+type HttpServerMock struct {
+	mock.Mock
+	*httptest.Server
+}
+
+// NewHttpServerMock creates new HttpServerMock.
+func NewHttpServerMock() *HttpServerMock {
+	httpServerMock := &HttpServerMock{}
+	mux := http.NewServeMux()
+	mux.HandleFunc("/",
+		func(w http.ResponseWriter, req *http.Request) {
+			result := httpServerMock.handle(req.URL.Path)
+			w.Write([]byte(result))
+		})
+
+	server := httptest.NewServer(mux)
+	httpServerMock.Server = server
+	return httpServerMock
+}
+
+func (l *HttpServerMock) handle(url string) string {
+	args := l.Called(url)
+	return args.String(0)
 }
