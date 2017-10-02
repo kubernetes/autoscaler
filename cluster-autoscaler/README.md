@@ -19,6 +19,7 @@ there is a big chance that it won't work as expected.
 
 | Kubernetes Version  | CA Version   |
 |--------|--------|
+| 1.8.X  | 1.0.X  |
 | 1.7.X  | 0.6.X  |
 | 1.6.X  | 0.5.X, 0.6.X<sup>*</sup>  |
 | 1.5.X  | 0.4.X  |
@@ -27,6 +28,19 @@ there is a big chance that it won't work as expected.
 <sup>*</sup>Cluster Autoscaler 0.5.X is the official version shipped with k8s 1.6. We've done some basic tests using k8s 1.6 / CA 0.6 and we're not aware of any problems with this setup. However, CA internally simulates k8s scheduler and using different versions of scheduler code can lead to subtle issues.
 
 # Notable changes
+
+CA Version 1.0:
+With this release we graduated Cluster Autoscaler to GA.
+
+* Support for 1000 nodes running 30 pods each.
+* Support for 10 min graceful termination.
+* Improved eventing and monitoring.
+* Node allocatable support.
+* Removed Azure support. See: [PR removing support with reasoning behind this decision](https://github.com/kubernetes/autoscaler/pull/229)
+* cluster-autoscaler.kubernetes.io/scale-down-disabled` annotation for marking
+  nodes that should not be scaled down.
+* scale-down-delay-after-delete` and `scale-down-delay-after-failure` flags
+    replaced `scale-down-trial-interval`
 
 CA Version 0.6:
 * Allows scaling node groups to 0 (currently only in GCE/GKE, other cloud providers are coming). See: [How can I scale a node group to 0?](FAQ.md#how-can-i-scale-a-node-group-to-0)
@@ -81,7 +95,3 @@ Right now it is possible to run Cluster Autoscaler on:
 * GCE https://kubernetes.io/docs/concepts/cluster-administration/cluster-management/
 * GKE https://cloud.google.com/container-engine/docs/cluster-autoscaler
 * AWS https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md
-* Azure
-
-
-

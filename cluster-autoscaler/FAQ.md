@@ -166,8 +166,8 @@ available [here](https://github.com/kubernetes/autoscaler/blob/master/cluster-au
 ### How can I scale my cluster to just 1 node?
 
 Prior to version 0.6, Cluster Autoscaler was not touching nodes that were running important
-kube-system pods like DNS, Heapster, Dashboard etc. If these pods landed on different nodes, 
-CA could not scale the cluster down and the user could end up with a completely empty 
+kube-system pods like DNS, Heapster, Dashboard etc. If these pods landed on different nodes,
+CA could not scale the cluster down and the user could end up with a completely empty
 3 node cluser. In 0.6 we added an option to tell CA that some system pods can be moved around.
 If a K8S user configure a [PodDisruptionBudget](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/)
 for the kube-system pod then the default strategy of not touching the node running this pod
@@ -196,7 +196,7 @@ For example for a node label of `foo=bar` you would tag the ASG with:
 
 ### How can I prevent Cluster Autoscaler from scaling down a particular node?
 
-From CA 0.7 node will be excluded from scale down if it has no scale down
+From CA 1.0 node will be excluded from scale down if it has no scale down
 annotation:
 
 ```
@@ -295,7 +295,7 @@ From 0.5 CA (K8S 1.6) respects PDB. Before starting to delete a node CA makes su
 
 ### Does CA respect GracefulTermination in scale down?
 
-CA, from version 0.7, gives pods at most 10 min graceful termination time. If the pod is not stopped within 
+CA, from version 1.0, gives pods at most 10 min graceful termination time. If the pod is not stopped within
 these 10 min then the node is deleted anyway. Earlier versions of CA gave 1 min or didn't respect graceful
 termination at all.
 
@@ -340,14 +340,14 @@ Some of the not-yet-fully-approved proposals may be hidden among [PRs](https://g
 
 ### What are Expanders?
 
-When Cluster Autoscaler identifies that it needs to scale up a cluster due to unscheduable pods, 
+When Cluster Autoscaler identifies that it needs to scale up a cluster due to unscheduable pods,
 it increases the nodes in a node group. When there is one Node Group, this strategy is trivial.
 
 When there are more than one Node Group, which group should be grown or 'expanded'?
 
 Expanders provide different strategies for selecting which Node Group to grow.
 
-Expanders can be selected by passing the name to the `--expander` flag. i.e. 
+Expanders can be selected by passing the name to the `--expander` flag. i.e.
 `./cluster-autoscaler --expander=random`
 
 ### What Expanders are available?
@@ -358,7 +358,7 @@ Currently Cluster Autoscaler has 4 expanders:
 need for the node groups to scale differently.
 
 * `most-pods` - selects the node group that would be able to schedule the most pods when scaling
-up. This is useful when you are using nodeSelector to make sure certain pods land on certain nodes. 
+up. This is useful when you are using nodeSelector to make sure certain pods land on certain nodes.
 Note that this won't cause the autoscaler to select bigger nodes vs. smaller, as it can grow multiple
 smaller nodes at once.
 
@@ -366,8 +366,8 @@ smaller nodes at once.
 when scaling up. This is useful when you have different classes of nodes, for example, high CPU or high Memory nodes,
 and only want to expand those when pods that need those requirements are to be launched.
 
-* `price` - select the node group that will cost the least and, in the same time, whose machines 
-would match the cluster size. This expander is described in more details 
+* `price` - select the node group that will cost the least and, in the same time, whose machines
+would match the cluster size. This expander is described in more details
 [HERE](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/proposals/pricing.md). Currently
 it works only for GCE and GKE.
 
@@ -377,11 +377,11 @@ it works only for GCE and GKE.
 
 ### I have a couple of nodes with low utilization, but they are not scaled down. Why?
 
-CA doesn't remove nodes if they are running system pods without a PodDisruptionBudget, pods without a controller or pods with 
-local storage (see [What types of pods can prevent CA from removing a node?](#what-types-of-pods-can-prevent-ca-from-removing-a-node)) 
+CA doesn't remove nodes if they are running system pods without a PodDisruptionBudget, pods without a controller or pods with
+local storage (see [What types of pods can prevent CA from removing a node?](#what-types-of-pods-can-prevent-ca-from-removing-a-node))
 Also it won't remove a node which has pods that cannot be run elsewhere due to limited resources. Another possibility
-is that the corresponding node group already has the minimum size. 
-Scale down disabled annotation will also protect the node from removal (see [How can I prevent Cluster Autoscaler from scaling down a particular node?](#how-can-i-prevent-cluster-autoscaler-from-scaling-down-a-particular-node)) 
+is that the corresponding node group already has the minimum size.
+Scale down disabled annotation will also protect the node from removal (see [How can I prevent Cluster Autoscaler from scaling down a particular node?](#how-can-i-prevent-cluster-autoscaler-from-scaling-down-a-particular-node))
 Finally, CA doesn't scale down if there was a scale up
 in the last 10 min.
 
@@ -389,14 +389,14 @@ If the reason your cluster isn't scaled down is due to system pods without a Pod
 you can manually add PDBs for the pods that can be safely rescheduled elsewhere:
 
 ```
-kubectl create poddisruptionbudget <pdb name> --namespace=kube-system --selector app:<app name> --max-unavailable 1 
+kubectl create poddisruptionbudget <pdb name> --namespace=kube-system --selector app:<app name> --max-unavailable 1
 ```
 
 Here's how to do it for some common pods:
 
-* kube-dns can safely be rescheduled as long as there are supposed to be at least 2 of these pods. In 1.7, this will always be 
+* kube-dns can safely be rescheduled as long as there are supposed to be at least 2 of these pods. In 1.7, this will always be
 the case. For 1.6 and earlier, edit kube-dns-autoscaler config map as described
-[here](https://kubernetes.io/docs/tasks/administer-cluster/dns-horizontal-autoscaling/#tuning-autoscaling-parameters), 
+[here](https://kubernetes.io/docs/tasks/administer-cluster/dns-horizontal-autoscaling/#tuning-autoscaling-parameters),
 adding preventSinglePointFailure parameter. For example:
 ```
 linear:'{"coresPerReplica":256,"nodesPerReplica":16,"preventSinglePointFailure":true}'
@@ -550,25 +550,25 @@ We are aware that this process is tedious and we will work to improve it.
 
 ### How can I update CA dependencies (particularly k8s.io/kubernetes)?
 
-CA depends on `k8s.io/kubernetes` internals as well as the "official" k8s.io libs like 
+CA depends on `k8s.io/kubernetes` internals as well as the "official" k8s.io libs like
 `k8s.io/apimachinery`. However `k8s.io/kubernetes` has its own/newer version of these libraries
 (in a `staging` directory) which may not always be compatibile with what has been published.
-This leads to various conflicts that are hard to resolve in a "proper" way. So until a better solution 
+This leads to various conflicts that are hard to resolve in a "proper" way. So until a better solution
 is proposed (or we stop migrating stuff between `k8s.io/kubernets` and other projects on a daily basis),
 the following hack has to be used to make the things easier to handle.
 
 1. Create a new `$GOPATH` directory.
 2. Get `k8s.io/kubernetes` and `k8s.io/autoscaler` source code (via `git clone` or `go get`).
 3. Make sure that you use the correct branch/tag in `k8s.io/kubernetes`. For example, regular dev updates
-   should be done against `k8s.io/kubernetes` HEAD, while updates in CA release branches should be done 
+   should be done against `k8s.io/kubernetes` HEAD, while updates in CA release branches should be done
    against the latest release tag of the corresponding `k8s.io/kubernetes` branch.
 4. Do `godep restore` in `k8s.io/kubernetes`.
 5. Remove Godeps and vendor from `k8s.io/autoscaler/cluster-autoscaler`.
-6. Invoke `fix-gopath.sh`. This will update `k8s.io/api`, `k8s.io/apimachinery` etc with the content of 
+6. Invoke `fix-gopath.sh`. This will update `k8s.io/api`, `k8s.io/apimachinery` etc with the content of
    `k8s.io/kubernetes/staging` and remove all vendor directories from your gopath.
 7. Add some other dependencies, if needed and make sure that the code in `k8s.io/autoscaler/cluster-autoscaler`
    refers to them somehow (may be a blank import).
 8. Check if everything compiles with `go test ./...` in `k8s.io/autoscaler/cluster-autoscaler`.
 9. `godep save ./...` in `k8s.io/autoscaler/cluster-autoscaler`,
-10. Send a PR with 2 commits - one that covers `Godep` and `vendor/` and the other one with all 
+10. Send a PR with 2 commits - one that covers `Godep` and `vendor/` and the other one with all
    required real code changes.
