@@ -29,8 +29,8 @@ import (
 )
 
 const (
-	// PodDeletionTimeout - maximum time after which a to be deleted pod is not included in the list of pods for drain.
-	PodDeletionTimeout = 5 * time.Minute
+	// PodDeletionTimeout - time after which a pod to be deleted is not included in the list of pods for drain.
+	PodDeletionTimeout = 12 * time.Minute
 )
 
 // GetPodsForDeletionOnNodeDrain returns pods that should be deleted on node drain as well as some extra information
@@ -83,7 +83,7 @@ func GetPodsForDeletionOnNodeDrain(
 
 		if refKind == "ReplicationController" {
 			if checkReferences {
-				rc, err := client.Core().ReplicationControllers(controllerNamespace).Get(controllerRef.Name, metav1.GetOptions{})
+				rc, err := client.CoreV1().ReplicationControllers(controllerNamespace).Get(controllerRef.Name, metav1.GetOptions{})
 				// Assume a reason for an error is because the RC is either
 				// gone/missing or that the rc has too few replicas configured.
 				// TODO: replace the minReplica check with pod disruption budget.

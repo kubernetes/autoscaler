@@ -18,10 +18,12 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"net/http"
 	"net/url"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -73,23 +75,38 @@ var (
 	namespace              = flag.String("namespace", "kube-system", "Namespace in which cluster-autoscaler run. If a --configmap flag is also provided, ensure that the configmap exists in this namespace before CA runs.")
 	nodeGroupAutoDiscovery = flag.String("node-group-auto-discovery", "", "One or more definition(s) of node group auto-discovery. A definition is expressed `<name of discoverer per cloud provider>:[<key>[=<value>]]`. Only the `aws` cloud provider is currently supported. The only valid discoverer for it is `asg` and the valid key is `tag`. For example, specifying `--cloud-provider aws` and `--node-group-auto-discovery asg:tag=cluster-autoscaler/auto-discovery/enabled,kubernetes.io/cluster/<YOUR CLUSTER NAME>` results in ASGs tagged with `cluster-autoscaler/auto-discovery/enabled` and `kubernetes.io/cluster/<YOUR CLUSTER NAME>` to be considered as target node groups")
 	scaleDownEnabled       = flag.Bool("scale-down-enabled", true, "Should CA scale down the cluster")
-	scaleDownDelay         = flag.Duration("scale-down-delay", 10*time.Minute,
-		"Duration from the last scale up to the time when CA starts to check scale down options")
+	scaleDownDelayAfterAdd = flag.Duration("scale-down-delay-after-add", 10*time.Minute,
+		"How long after scale up that scale down evaluation resumes")
+	scaleDownDelayAfterDelete = flag.Duration("scale-down-delay-after-delete", *scanInterval,
+		"How long after node deletion that scale down evaluation resumes, defaults to scanInterval")
+	scaleDownDelayAfterFailure = flag.Duration("scale-down-delay-after-failure", 3*time.Minute,
+		"How long after scale down failure that scale down evaluation resumes")
 	scaleDownUnneededTime = flag.Duration("scale-down-unneeded-time", 10*time.Minute,
 		"How long a node should be unneeded before it is eligible for scale down")
 	scaleDownUnreadyTime = flag.Duration("scale-down-unready-time", 20*time.Minute,
 		"How long an unready node should be unneeded before it is eligible for scale down")
 	scaleDownUtilizationThreshold = flag.Float64("scale-down-utilization-threshold", 0.5,
 		"Node utilization level, defined as sum of requested resources divided by capacity, below which a node can be considered for scale down")
-	scaleDownTrialInterval = flag.Duration("scale-down-trial-interval", 1*time.Minute,
-		"How often scale down possiblity is check")
 	scaleDownNonEmptyCandidatesCount = flag.Int("scale-down-non-empty-candidates-count", 30,
 		"Maximum number of non empty nodes considered in one iteration as candidates for scale down with drain."+
 			"Lower value means better CA responsiveness but possible slower scale down latency."+
 			"Higher value can affect CA performance with big clusters (hundreds of nodes)."+
 			"Set to non posistive value to turn this heuristic off - CA will not limit the number of nodes it considers.")
+	scaleDownCandidatesPoolRatio = flag.Float64("scale-down-candidates-pool-ratio", 0.1,
+		"A ratio of nodes that are considered as additional non empty candidates for"+
+			"scale down when some candidates from previous iteration are no longer valid."+
+			"Lower value means better CA responsiveness but possible slower scale down latency."+
+			"Higher value can affect CA performance with big clusters (hundreds of nodes)."+
+			"Set to 1.0 to turn this heuristics off - CA will take all nodes as additional candidates.")
+	scaleDownCandidatesPoolMinCount = flag.Int("scale-down-candidates-pool-min-count", 50,
+		"Minimum number of nodes that are considered as additional non empty candidates"+
+			"for scale down when some candidates from previous iteration are no longer valid."+
+			"When calculating the pool size for additional candidates we take"+
+			"max(#nodes * scale-down-candidates-pool-ratio, scale-down-candidates-pool-min-count).")
 	scanInterval                = flag.Duration("scan-interval", 10*time.Second, "How often cluster is reevaluated for scale up or down")
 	maxNodesTotal               = flag.Int("max-nodes-total", 0, "Maximum number of nodes in all node groups. Cluster autoscaler will not grow the cluster beyond this number.")
+	coresTotal                  = flag.String("cores-total", minMaxFlagString(0, config.DefaultMaxClusterCores), "Minimum and maximum number of cores in cluster, in the format <min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers.")
+	memoryTotal                 = flag.String("memory-total", minMaxFlagString(0, config.DefaultMaxClusterMemory), "Minimum and maximum number of gigabytes of memory in cluster, in the format <min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers.")
 	cloudProviderFlag           = flag.String("cloud-provider", "gce", "Cloud provider type. Allowed values: gce, aws, kubemark")
 	maxEmptyBulkDeleteFlag      = flag.Int("max-empty-bulk-delete", 10, "Maximum number of empty nodes that can be deleted at the same time.")
 	maxGracefulTerminationFlag  = flag.Int("max-graceful-termination-sec", 10*60, "Maximum number of seconds CA waits for pod termination when trying to scale down a node.")
@@ -113,6 +130,18 @@ var (
 )
 
 func createAutoscalerOptions() core.AutoscalerOptions {
+	minCoresTotal, maxCoresTotal, err := parseMinMaxFlag(*coresTotal)
+	if err != nil {
+		glog.Fatalf("Failed to parse flags: %v", err)
+	}
+	minMemoryTotal, maxMemoryTotal, err := parseMinMaxFlag(*memoryTotal)
+	if err != nil {
+		glog.Fatalf("Failed to parse flags: %v", err)
+	}
+	// Convert memory limits to megabytes.
+	minMemoryTotal = minMemoryTotal * 1024
+	maxMemoryTotal = maxMemoryTotal * 1024
+
 	autoscalingOpts := core.AutoscalingOptions{
 		CloudConfig:                      *cloudConfig,
 		CloudProviderName:                *cloudProviderFlag,
@@ -125,15 +154,22 @@ func createAutoscalerOptions() core.AutoscalerOptions {
 		MaxGracefulTerminationSec:        *maxGracefulTerminationFlag,
 		MaxNodeProvisionTime:             *maxNodeProvisionTime,
 		MaxNodesTotal:                    *maxNodesTotal,
+		MaxCoresTotal:                    maxCoresTotal,
+		MinCoresTotal:                    minCoresTotal,
+		MaxMemoryTotal:                   maxMemoryTotal,
+		MinMemoryTotal:                   minMemoryTotal,
 		NodeGroups:                       nodeGroupsFlag,
 		UnregisteredNodeRemovalTime:      *unregisteredNodeRemovalTime,
-		ScaleDownDelay:                   *scaleDownDelay,
+		ScaleDownDelayAfterAdd:           *scaleDownDelayAfterAdd,
+		ScaleDownDelayAfterDelete:        *scaleDownDelayAfterDelete,
+		ScaleDownDelayAfterFailure:       *scaleDownDelayAfterFailure,
 		ScaleDownEnabled:                 *scaleDownEnabled,
-		ScaleDownTrialInterval:           *scaleDownTrialInterval,
 		ScaleDownUnneededTime:            *scaleDownUnneededTime,
 		ScaleDownUnreadyTime:             *scaleDownUnreadyTime,
 		ScaleDownUtilizationThreshold:    *scaleDownUtilizationThreshold,
 		ScaleDownNonEmptyCandidatesCount: *scaleDownNonEmptyCandidatesCount,
+		ScaleDownCandidatesPoolRatio:     *scaleDownCandidatesPoolRatio,
+		ScaleDownCandidatesPoolMinCount:  *scaleDownCandidatesPoolMinCount,
 		WriteStatusConfigMap:             *writeStatusConfigMapFlag,
 		BalanceSimilarNodeGroups:         *balanceSimilarNodeGroupsFlag,
 		ConfigNamespace:                  *namespace,
@@ -276,23 +312,27 @@ func main() {
 		kubeClient := createKubeClient()
 
 		// Validate that the client is ok.
-		_, err = kubeClient.Core().Nodes().List(metav1.ListOptions{})
+		_, err = kubeClient.CoreV1().Nodes().List(metav1.ListOptions{})
 		if err != nil {
 			glog.Fatalf("Failed to get nodes from apiserver: %v", err)
 		}
 
-		kube_leaderelection.RunOrDie(kube_leaderelection.LeaderElectionConfig{
-			Lock: &resourcelock.EndpointsLock{
-				EndpointsMeta: metav1.ObjectMeta{
-					Namespace: *namespace,
-					Name:      "cluster-autoscaler",
-				},
-				Client: kubeClient.Core(),
-				LockConfig: resourcelock.ResourceLockConfig{
-					Identity:      id,
-					EventRecorder: kube_util.CreateEventRecorder(kubeClient),
-				},
+		lock, err := resourcelock.New(
+			leaderElection.ResourceLock,
+			*namespace,
+			"cluster-autoscaler",
+			kubeClient.CoreV1(),
+			resourcelock.ResourceLockConfig{
+				Identity:      id,
+				EventRecorder: kube_util.CreateEventRecorder(kubeClient),
 			},
+		)
+		if err != nil {
+			glog.Fatalf("Unable to create leader election lock: %v", err)
+		}
+
+		kube_leaderelection.RunOrDie(kube_leaderelection.LeaderElectionConfig{
+			Lock:          lock,
 			LeaseDuration: leaderElection.LeaseDuration.Duration,
 			RenewDeadline: leaderElection.RenewDeadline.Duration,
 			RetryPeriod:   leaderElection.RetryPeriod.Duration,
@@ -348,3 +388,41 @@ const (
 	defaultRenewDeadline = 10 * time.Second
 	defaultRetryPeriod   = 2 * time.Second
 )
+
+func parseMinMaxFlag(flag string) (int64, int64, error) {
+	tokens := strings.SplitN(flag, ":", 2)
+	if len(tokens) != 2 {
+		return 0, 0, fmt.Errorf("wrong nodes configuration: %s", flag)
+	}
+
+	min, err := strconv.ParseInt(tokens[0], 10, 64)
+	if err != nil {
+		return 0, 0, fmt.Errorf("failed to set min size: %s, expected integer, err: %v", tokens[0], err)
+	}
+
+	max, err := strconv.ParseInt(tokens[1], 10, 64)
+	if err != nil {
+		return 0, 0, fmt.Errorf("failed to set max size: %s, expected integer, err: %v", tokens[1], err)
+	}
+
+	err = validateMinMaxFlag(min, max)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return min, max, nil
+}
+
+func validateMinMaxFlag(min, max int64) error {
+	if min < 0 {
+		return fmt.Errorf("min size must be greater or equal to  0")
+	}
+	if max < min {
+		return fmt.Errorf("max size must be greater or equal to min size")
+	}
+	return nil
+}
+
+func minMaxFlagString(min, max int64) string {
+	return fmt.Sprintf("%v:%v", min, max)
+}

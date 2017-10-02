@@ -19,6 +19,8 @@ package cloudprovider
 import (
 	"fmt"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNodeGroupDiscoveryOptionsValidate(t *testing.T) {
@@ -35,4 +37,14 @@ func TestNodeGroupDiscoveryOptionsValidate(t *testing.T) {
 	if msg := fmt.Sprintf("%v", err); msg != `Either node group specs([myasg:0:10]) or node group auto discovery spec(asg:tag=foobar) can be specified but not both` {
 		t.Errorf("Unexpected validation error message: %s", msg)
 	}
+
+	o = NodeGroupDiscoveryOptions{
+		NodeGroupAutoDiscoverySpec: "asg:tag=foobar",
+	}
+	assert.NoError(t, o.Validate())
+
+	o = NodeGroupDiscoveryOptions{
+		NodeGroupSpecs: []string{"myasg:0:10"},
+	}
+	assert.NoError(t, o.Validate())
 }

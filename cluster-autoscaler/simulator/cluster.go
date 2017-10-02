@@ -28,6 +28,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	client "k8s.io/client-go/kubernetes"
+	"k8s.io/kubernetes/plugin/pkg/scheduler/algorithm"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 
 	"github.com/golang/glog"
@@ -181,7 +182,7 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes []*apiv1.Node, no
 		return fmt.Sprintf("%s/%s", pod.Namespace, pod.Name)
 	}
 
-	tryNodeForPod := func(nodename string, pod *apiv1.Pod, predicateMeta interface{}) bool {
+	tryNodeForPod := func(nodename string, pod *apiv1.Pod, predicateMeta algorithm.PredicateMetadata) bool {
 		nodeInfo, found := newNodeInfos[nodename]
 		if found {
 			if nodeInfo.Node() == nil {
@@ -191,11 +192,11 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes []*apiv1.Node, no
 				glog.Warningf("No node in nodeInfo %s -> %v", nodename, nodeInfo)
 				return false
 			}
-			nodeInfo.Node().Status.Allocatable = nodeInfo.Node().Status.Capacity
 			err := predicateChecker.CheckPredicates(pod, predicateMeta, nodeInfo, ReturnVerboseError)
-			glog.V(4).Infof("Evaluation %s for %s/%s -> %v", nodename, pod.Namespace, pod.Name, err)
+			glog.V(5).Infof("Evaluation %s for %s/%s -> %v", nodename, pod.Namespace, pod.Name, err)
 			if err == nil {
 				// TODO(mwielgus): Optimize it.
+				glog.V(4).Infof("Pod %s/%s can be moved to %s", pod.Namespace, pod.Name, nodename)
 				podsOnNode := nodeInfo.Pods()
 				podsOnNode = append(podsOnNode, pod)
 				newNodeInfo := schedulercache.NewNodeInfo(podsOnNode...)
@@ -221,7 +222,7 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes []*apiv1.Node, no
 		targetNode := ""
 		predicateMeta := predicateChecker.GetPredicateMetadata(pod, newNodeInfos)
 
-		glog.V(4).Infof("Looking for place for %s/%s", pod.Namespace, pod.Name)
+		glog.V(5).Infof("Looking for place for %s/%s", pod.Namespace, pod.Name)
 
 		hintedNode, hasHint := oldHints[podKey(pod)]
 		if hasHint {

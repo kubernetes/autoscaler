@@ -58,7 +58,7 @@ func NewConfigFetcher(options ConfigFetcherOptions, kubeClient kube_client.Inter
 // Returns the config if it has changed since the last sync. Returns nil if it has not changed.
 func (c *configFetcherImpl) FetchConfigIfUpdated() (*Config, error) {
 	opts := metav1.GetOptions{}
-	cm, err := c.kubeClient.Core().ConfigMaps(c.namespace).Get(c.configMapName, opts)
+	cm, err := c.kubeClient.CoreV1().ConfigMaps(c.namespace).Get(c.configMapName, opts)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch config map named %s in namespace %s. please confirm if the configmap name and the namespace are correctly spelled and you've already created the configmap: %v", c.configMapName, c.namespace, err)
 	}

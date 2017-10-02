@@ -457,7 +457,7 @@ func TestUnregisteredNodes(t *testing.T) {
 	ng1_2 := BuildTestNode("ng1-2", 1000, 1000)
 	ng1_2.Spec.ProviderID = "ng1-2"
 	provider := testprovider.NewTestCloudProvider(nil, nil)
-	provider.AddNodeGroup("ng1", 1, 10, 1)
+	provider.AddNodeGroup("ng1", 1, 10, 2)
 	provider.AddNode("ng1", ng1_1)
 	provider.AddNode("ng1", ng1_2)
 
@@ -466,14 +466,26 @@ func TestUnregisteredNodes(t *testing.T) {
 	clusterstate := NewClusterStateRegistry(provider, ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
+		MaxNodeProvisionTime:      10 * time.Second,
 	}, fakeLogRecorder)
 	err := clusterstate.UpdateNodes([]*apiv1.Node{ng1_1}, time.Now().Add(-time.Minute))
 
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(clusterstate.GetUnregisteredNodes()))
 	assert.Equal(t, "ng1-2", clusterstate.GetUnregisteredNodes()[0].Node.Name)
+	upcomingNodes := clusterstate.GetUpcomingNodes()
+	assert.Equal(t, 1, upcomingNodes["ng1"])
 
-	err = clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng1_2}, time.Now().Add(-time.Minute))
+	// The node didn't come up in MaxNodeProvisionTime, it should no longer be
+	// counted as upcoming (but it is still an unregistered node)
+	err = clusterstate.UpdateNodes([]*apiv1.Node{ng1_1}, time.Now().Add(time.Minute))
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(clusterstate.GetUnregisteredNodes()))
+	assert.Equal(t, "ng1-2", clusterstate.GetUnregisteredNodes()[0].Node.Name)
+	upcomingNodes = clusterstate.GetUpcomingNodes()
+	assert.Equal(t, 0, len(upcomingNodes))
+
+	err = clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng1_2}, time.Now().Add(time.Minute))
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(clusterstate.GetUnregisteredNodes()))
 }

@@ -58,7 +58,7 @@ func (b CloudProviderBuilder) Build(discoveryOpts cloudprovider.NodeGroupDiscove
 
 	if b.cloudProviderFlag == "gce" || b.cloudProviderFlag == "gke" {
 		// GCE Manager
-		var gceManager *gce.GceManager
+		var gceManager gce.GceManager
 		var gceError error
 		mode := gce.ModeGCE
 		if b.cloudProviderFlag == "gke" {
@@ -76,7 +76,7 @@ func (b CloudProviderBuilder) Build(discoveryOpts cloudprovider.NodeGroupDiscove
 			gceManager, gceError = gce.CreateGceManager(nil, mode, b.clusterName)
 		}
 		if gceError != nil {
-			glog.Fatalf("Failed to create GCE Manager: %v", err)
+			glog.Fatalf("Failed to create GCE Manager: %v", gceError)
 		}
 		cloudProvider, err = gce.BuildGceCloudProvider(gceManager, nodeGroupsFlag)
 		if err != nil {

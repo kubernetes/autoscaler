@@ -60,12 +60,12 @@ var autoprovisionedMachineTypes = []string{
 
 // GceCloudProvider implements CloudProvider interface.
 type GceCloudProvider struct {
-	gceManager *GceManager
+	gceManager GceManager
 }
 
 // BuildGceCloudProvider builds CloudProvider implementation for GCE.
-func BuildGceCloudProvider(gceManager *GceManager, specs []string) (*GceCloudProvider, error) {
-	if gceManager.mode == ModeGKE && len(specs) != 0 {
+func BuildGceCloudProvider(gceManager GceManager, specs []string) (*GceCloudProvider, error) {
+	if gceManager.getMode() == ModeGKE && len(specs) != 0 {
 		return nil, fmt.Errorf("GKE gets nodegroup specification via API, command line specs are not allowed")
 	}
 
@@ -121,8 +121,8 @@ func (gce *GceCloudProvider) Pricing() (cloudprovider.PricingModel, errors.Autos
 	return &GcePriceModel{}, nil
 }
 
-// GetAvilableMachineTypes get all machine types that can be requested from the cloud provider.
-func (gce *GceCloudProvider) GetAvilableMachineTypes() ([]string, error) {
+// GetAvailableMachineTypes get all machine types that can be requested from the cloud provider.
+func (gce *GceCloudProvider) GetAvailableMachineTypes() ([]string, error) {
 	return autoprovisionedMachineTypes, nil
 }
 
@@ -135,8 +135,8 @@ func (gce *GceCloudProvider) NewNodeGroup(machineType string, labels map[string]
 		exist:           false,
 		nodePoolName:    nodePoolName,
 		GceRef: GceRef{
-			Project: gce.gceManager.projectId,
-			Zone:    gce.gceManager.zone,
+			Project: gce.gceManager.getProjectId(),
+			Zone:    gce.gceManager.getZone(),
 			Name:    nodePoolName + "-temporary-mig",
 		},
 		minSize: minAutoprovisionedSize,
@@ -148,7 +148,7 @@ func (gce *GceCloudProvider) NewNodeGroup(machineType string, labels map[string]
 		},
 		gceManager: gce.gceManager,
 	}
-	_, err := gce.gceManager.templates.buildNodeFromAutoprovisioningSpec(mig)
+	_, err := gce.gceManager.getTemplates().buildNodeFromAutoprovisioningSpec(mig)
 	if err != nil {
 		return nil, err
 	}
@@ -189,7 +189,7 @@ type autoprovisioningSpec struct {
 type Mig struct {
 	GceRef
 
-	gceManager      *GceManager
+	gceManager      GceManager
 	minSize         int
 	maxSize         int
 	autoprovisioned bool
@@ -235,7 +235,7 @@ func (mig *Mig) IncreaseSize(delta int) error {
 // request for new nodes that have not been yet fulfilled. Delta should be negative.
 func (mig *Mig) DecreaseTargetSize(delta int) error {
 	if delta >= 0 {
-		return fmt.Errorf("size decrease must be netative")
+		return fmt.Errorf("size decrease must be negative")
 	}
 	size, err := mig.gceManager.GetMigSize(mig)
 	if err != nil {
@@ -346,17 +346,17 @@ func (mig *Mig) Autoprovisioned() bool {
 func (mig *Mig) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
 	var node *apiv1.Node
 	if mig.Exist() {
-		template, err := mig.gceManager.templates.getMigTemplate(mig)
+		template, err := mig.gceManager.getTemplates().getMigTemplate(mig)
 		if err != nil {
 			return nil, err
 		}
-		node, err = mig.gceManager.templates.buildNodeFromTemplate(mig, template)
+		node, err = mig.gceManager.getTemplates().buildNodeFromTemplate(mig, template)
 		if err != nil {
 			return nil, err
 		}
 	} else if mig.Autoprovisioned() {
 		var err error
-		node, err = mig.gceManager.templates.buildNodeFromAutoprovisioningSpec(mig)
+		node, err = mig.gceManager.getTemplates().buildNodeFromAutoprovisioningSpec(mig)
 		if err != nil {
 			return nil, err
 		}
@@ -368,7 +368,7 @@ func (mig *Mig) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
 	return nodeInfo, nil
 }
 
-func buildMig(value string, gceManager *GceManager) (*Mig, error) {
+func buildMig(value string, gceManager GceManager) (*Mig, error) {
 	spec, err := dynamic.SpecFromString(value, true)
 
 	if err != nil {

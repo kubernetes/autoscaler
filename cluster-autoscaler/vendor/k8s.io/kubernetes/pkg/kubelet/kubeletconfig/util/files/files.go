@@ -21,7 +21,7 @@ import (
 	"os"
 	"path/filepath"
 
-	utilfs "k8s.io/kubernetes/pkg/kubelet/kubeletconfig/util/filesystem"
+	utilfs "k8s.io/kubernetes/pkg/util/filesystem"
 )
 
 const defaultPerm = 0666
@@ -81,6 +81,10 @@ func ReplaceFile(fs utilfs.Filesystem, path string, data []byte) error {
 
 	// write data
 	if _, err := tmpFile.Write(data); err != nil {
+		return err
+	}
+	// sync file, to ensure it's written in case a hard reset happens
+	if err := tmpFile.Sync(); err != nil {
 		return err
 	}
 	if err := tmpFile.Close(); err != nil {

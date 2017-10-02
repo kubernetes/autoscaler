@@ -17,10 +17,8 @@ limitations under the License.
 package metrics
 
 import (
-	"reflect"
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 
 	"github.com/golang/glog"
@@ -29,6 +27,9 @@ import (
 
 // NodeScaleDownReason describes reason for removing node
 type NodeScaleDownReason string
+
+// FailedScaleUpReason describes reason of failed scale-up
+type FailedScaleUpReason string
 
 // FunctionLabel is a name of Cluster Autoscaler operation for which
 // we measure duration
@@ -46,6 +47,11 @@ const (
 	Empty NodeScaleDownReason = "empty"
 	// Unready node was removed
 	Unready NodeScaleDownReason = "unready"
+
+	// APIError caused scale-up to fail
+	APIError FailedScaleUpReason = "apiCallError"
+	// Timeout was encountered when trying to scale-up
+	Timeout FailedScaleUpReason = "timeout"
 
 	// LogLongDurationThreshold defines the duration after which long function
 	// duration will be logged (in addition to being counted in metric).
@@ -131,6 +137,14 @@ var (
 		},
 	)
 
+	failedScaleUpCount = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: caNamespace,
+			Name:      "failed_scale_ups_total",
+			Help:      "Number of times scale-up operation has failed.",
+		}, []string{"reason"},
+	)
+
 	scaleDownCount = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Namespace: caNamespace,
@@ -164,6 +178,7 @@ func init() {
 	prometheus.MustRegister(functionDuration)
 	prometheus.MustRegister(errorsCount)
 	prometheus.MustRegister(scaleUpCount)
+	prometheus.MustRegister(failedScaleUpCount)
 	prometheus.MustRegister(scaleDownCount)
 	prometheus.MustRegister(evictionsCount)
 	prometheus.MustRegister(unneededNodesCount)
@@ -191,20 +206,20 @@ func UpdateLastTime(label FunctionLabel, now time.Time) {
 	lastActivity.WithLabelValues(string(label)).Set(float64(now.Unix()))
 }
 
-// UpdateClusterState updates metrics related to cluster state
-func UpdateClusterState(csr *clusterstate.ClusterStateRegistry) {
-	if csr == nil || reflect.ValueOf(csr).IsNil() {
-		return
-	}
-	if csr.IsClusterHealthy() {
+// UpdateClusterSafeToAutoscale records if cluster is safe to autoscale
+func UpdateClusterSafeToAutoscale(safe bool) {
+	if safe {
 		clusterSafeToAutoscale.Set(1)
 	} else {
 		clusterSafeToAutoscale.Set(0)
 	}
-	readiness := csr.GetClusterReadiness()
-	nodesCount.WithLabelValues(readyLabel).Set(float64(readiness.Ready))
-	nodesCount.WithLabelValues(unreadyLabel).Set(float64(readiness.Unready + readiness.LongNotStarted))
-	nodesCount.WithLabelValues(startingLabel).Set(float64(readiness.NotStarted))
+}
+
+// UpdateNodesCount records the number of nodes in cluster
+func UpdateNodesCount(ready, unready, starting int) {
+	nodesCount.WithLabelValues(readyLabel).Set(float64(ready))
+	nodesCount.WithLabelValues(unreadyLabel).Set(float64(unready))
+	nodesCount.WithLabelValues(startingLabel).Set(float64(starting))
 }
 
 // UpdateUnschedulablePodsCount records number of currently unschedulable pods
@@ -221,6 +236,11 @@ func RegisterError(err errors.AutoscalerError) {
 // RegisterScaleUp records number of nodes added by scale up
 func RegisterScaleUp(nodesCount int) {
 	scaleUpCount.Add(float64(nodesCount))
+}
+
+// RegisterFailedScaleUp records a failed scale-up operation
+func RegisterFailedScaleUp(reason FailedScaleUpReason) {
+	failedScaleUpCount.WithLabelValues(string(reason)).Inc()
 }
 
 // RegisterScaleDown records number of nodes removed by scale down
