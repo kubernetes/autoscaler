@@ -16,6 +16,7 @@ this document:
   * [What types of pods can prevent CA from removing a node?](#what-types-of-pods-can-prevent-ca-from-removing-a-node)
   * [Which version on Cluster Autoscaler should I use in my cluster?](#which-version-on-cluster-autoscaler-should-i-use-in-my-cluster)
   * [Is Cluster Autoscaler an Alpha, Beta or GA product?](#is-cluster-autoscaler-an-alpha-beta-or-ga-product)
+  * [What are the Service Level Objectives for Cluster Autoscaler?](#what-are-the-service-level-objectives-for-cluster-autoscaler)
   * [How does Horizontal Pod Autoscaler work with Cluster Autoscaler?](#how-does-horizontal-pod-autoscaler-work-with-cluster-autoscaler)
   * [What are the key best practices for running Cluster Autoscaler?](#what-are-the-key-best-practices-for-running-cluster-autoscaler)
   * [Should I use a CPU-usage-based node autoscaler with Kubernetes?](#should-i-use-a-cpu-usage-based-node-autoscaler-with-kubernetes)
@@ -114,6 +115,34 @@ Sice version 1.0.0 we consider CA as GA. It means that:
  * CA developers are committed to maintaining and supporting CA in the foreseeble future. 
 
 All of the previous versions (earlier that 1.0.0) are considered beta.
+
+### What are the Service Level Objectives for Cluster Autoscaler?
+
+The main purpose of Cluster Autoscaler is to get pending pods a place to run. Cluster Autoscaler periodically checks whether
+there are any pending pods and increases the size of the cluster if it makes sense and if the scaled-up cluster is still 
+within the user-provided constraints. The time of new node provisioning doesn't depend on CA but rather on 
+the cloud provider and other Kubernetes components. 
+
+So, the main SLO for CA would be expressed in the latency time measured
+from the time a pod is marked as unschedulable (by K8S scheduler) to the time CA issues scale-up request to the cloud provider
+(assuming that it is permitted). During our scalability tests (described 
+[here](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/proposals/scalability_tests.md)) we aimed at 
+max 20sec latency, even in the big clusters. We reach these goals on GCE on our test cases, however in practice the 
+performance may differ. Hence, users should expect:
+
+* No more than 30 sec latency on small clusters (less than 100 nodes with up to 30 pods each), with the average latency less in around 5 sec.
+* No more than 60 sec latency on big clusters (more than 100 nodes but less than 1000), with average latency around 15 sec.
+
+Please note, that the above performance can be achieved only if NO pod affinity and antiaffinity is used on any of the pods.
+Unfortunately the current implementation of the affinity scheduler predicate is about 3 orders of magnitude slower than 
+all other predicates combined and it makes CA hardly usable on big clusters.
+
+It is also important to request full 1 core (or make it available) on bigger clusters. Putting CA on an overloaded node would 
+not allow to reach the declared performance.
+
+We didn't run any performance tests on clusters bigger than 1000 nodes and supporting them was not a goal for 1.0. 
+
+More SLO may be defined in the future.
 
 ### How does Horizontal Pod Autoscaler work with Cluster Autoscaler?
 
