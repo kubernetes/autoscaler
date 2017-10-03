@@ -15,6 +15,7 @@ this document:
   * [When does Cluster Autoscaler change the size of a cluster?](#when-does-cluster-autoscaler-change-the-size-of-a-cluster)
   * [What types of pods can prevent CA from removing a node?](#what-types-of-pods-can-prevent-ca-from-removing-a-node)
   * [Which version on Cluster Autoscaler should I use in my cluster?](#which-version-on-cluster-autoscaler-should-i-use-in-my-cluster)
+  * [Is Cluster Autoscaler an Alpha, Beta or GA product?](#is-cluster-autoscaler-an-alpha-beta-or-ga-product)
   * [How does Horizontal Pod Autoscaler work with Cluster Autoscaler?](#how-does-horizontal-pod-autoscaler-work-with-cluster-autoscaler)
   * [What are the key best practices for running Cluster Autoscaler?](#what-are-the-key-best-practices-for-running-cluster-autoscaler)
   * [Should I use a CPU-usage-based node autoscaler with Kubernetes?](#should-i-use-a-cpu-usage-based-node-autoscaler-with-kubernetes)
@@ -85,12 +86,34 @@ there is a big chance that it won't work as expected.
 
 | Kubernetes Version  | CA Version   |
 |--------|--------|
+| 1.8.X  | 1.0.X  |
 | 1.7.X  | 0.6.X  |
 | 1.6.X  | 0.5.X, 0.6.X<sup>*</sup>  |
 | 1.5.X  | 0.4.X  |
 | 1.4.X  | 0.3.X  |
 
 <sup>*</sup>Cluster Autoscaler 0.5.X is the official version shipped with k8s 1.6. We've done some basic tests using k8s 1.6 / CA 0.6 and we're not aware of any problems with this setup. However, CA internally simulates k8s scheduler and using different versions of scheduler code can lead to subtle issues.
+
+### Is Cluster Autoscaler an Alpha, Beta or GA product?
+
+Sice version 1.0.0 we consider CA as GA. It means that:
+
+ * We have enough confidence that it does what it is expected to do. Each commit goes through a big suite of unit tests
+   with more than 75% coverage (on average). We have a series of e2e tests that validate that CA works well on
+   [GCE](https://k8s-testgrid.appspot.com/sig-autoscaling#gce-autoscaling)
+   and [GKE](https://k8s-testgrid.appspot.com/sig-autoscaling#gke-autoscaling). 
+   Due to the missing testing infrastructure, AWS (or any other cloud provider) compatiblitiy 
+   tests are not the part of the standard development or release procedure. 
+   However there is a number of AWS users who run CA in their production environment and submit new code, patches and bug reports.
+ * It was tested that CA scales well. CA should handle up to 1000 nodes running 30 pods each. Our testing procedure is described 
+   [here](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/proposals/scalability_tests.md).
+ * Most of the pain-points reported by the users (like too short graceful termination support) were fixed, however
+   some of the less critical feature requests are yet to be implemented.
+ * CA has decent monitoring, logging and eventing.
+ * CA tries to handle most of the error situations in the cluster (like cloud provider stockouts, broken nodes, etc).
+ * CA developers are committed to maintaining and supporting CA in the foreseeble future. 
+
+All of the previous versions (earlier that 1.0.0) are considered beta.
 
 ### How does Horizontal Pod Autoscaler work with Cluster Autoscaler?
 
