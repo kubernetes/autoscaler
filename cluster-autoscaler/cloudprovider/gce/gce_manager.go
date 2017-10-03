@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"reflect"
 	"strings"
 	"sync"
 	"time"
@@ -218,6 +219,7 @@ func (m *gceManagerImpl) fetchAllNodePools() error {
 	}
 
 	existingMigs := map[GceRef]struct{}{}
+	changed := false
 
 	for _, nodePool := range nodePoolsResponse.NodePools {
 		autoprovisioned := strings.Contains(nodePool.Name, nodeAutoprovisioningPrefix)
@@ -252,37 +254,48 @@ func (m *gceManagerImpl) fetchAllNodePools() error {
 				mig.minSize = minAutoprovisionedSize
 				mig.maxSize = maxAutoprovisionedSize
 			}
-			m.RegisterMig(mig)
+			if m.RegisterMig(mig) {
+				changed = true
+			}
 		}
 	}
 	for _, mig := range m.getMigs() {
 		if _, found := existingMigs[mig.config.GceRef]; !found {
 			m.UnregisterMig(mig.config)
+			changed = true
+		}
+	}
+	if changed {
+		m.cacheMutex.Lock()
+		defer m.cacheMutex.Unlock()
+
+		if err := m.regenerateCache(); err != nil {
+			return err
 		}
 	}
 	return nil
 }
 
-// RegisterMig registers mig in Gce Manager. Returns true if the node group didn't exist before.
+// RegisterMig registers mig in Gce Manager. Returns true if the node group didn't exist before or its config has changed.
 func (m *gceManagerImpl) RegisterMig(mig *Mig) bool {
 	m.migsMutex.Lock()
 	defer m.migsMutex.Unlock()
 
-	updated := false
 	for i := range m.migs {
-		if m.migs[i].config.GceRef == mig.GceRef {
-			m.migs[i].config = mig
-			glog.V(8).Infof("Updated Mig %s/%s/%s", mig.GceRef.Project, mig.GceRef.Zone, mig.GceRef.Name)
-			updated = true
+		if oldMig := m.migs[i].config; oldMig.GceRef == mig.GceRef {
+			if !reflect.DeepEqual(oldMig, mig) {
+				m.migs[i].config = mig
+				glog.V(4).Infof("Updated Mig %s/%s/%s", mig.GceRef.Project, mig.GceRef.Zone, mig.GceRef.Name)
+				return true
+			}
+			return false
 		}
 	}
 
-	if !updated {
-		glog.V(1).Infof("Registering %s/%s/%s", mig.GceRef.Project, mig.GceRef.Zone, mig.GceRef.Name)
-		m.migs = append(m.migs, &migInformation{
-			config: mig,
-		})
-	}
+	glog.V(1).Infof("Registering %s/%s/%s", mig.GceRef.Project, mig.GceRef.Zone, mig.GceRef.Name)
+	m.migs = append(m.migs, &migInformation{
+		config: mig,
+	})
 
 	template, err := m.templates.getMigTemplate(mig)
 	if err != nil {
@@ -293,7 +306,7 @@ func (m *gceManagerImpl) RegisterMig(mig *Mig) bool {
 			glog.Errorf("Failed to build template for %s", mig.Name)
 		}
 	}
-	return !updated
+	return true
 }
 
 // UnregisterMig unregisters mig in Gce Manager. Returns true if the node group has been removed.
