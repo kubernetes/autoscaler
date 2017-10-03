@@ -34,7 +34,7 @@ type ContainerUsageSample struct {
 	memoryUsage float64
 }
 
-// ContainerStats stores information about a single container instance.
+// ContainerState stores information about a single container instance.
 // It holds the recent history of CPU and memory utilization.
 // * CPU is stored in form of a distribution (histogram).
 //   Currently we're using fixed weight samples in the CPU histogram (i.e. old
@@ -45,7 +45,7 @@ type ContainerUsageSample struct {
 //   For example if window legth is one week and aggregation interval is one day
 //   it will store 7 peaks, one per day, for the last week.
 //   Note: samples are added to intervals based on their start timestamps.
-type ContainerStats struct {
+type ContainerState struct {
 	// Distribution of CPU usage. The measurement unit is 1 CPU core.
 	cpuUsage util.Histogram
 	// Memory peaks stored in the intervals belonging to the aggregation window
@@ -57,9 +57,9 @@ type ContainerStats struct {
 	lastSampleStart time.Time
 }
 
-// NewContainerStats returns a new, empty Con
-func NewContainerStats() *ContainerStats {
-	return &ContainerStats{
+// NewContainerState returns a new, empty ContainerState.
+func NewContainerState() *ContainerState {
+	return &ContainerState{
 		util.NewHistogram(cpuHistogramOptions()), // cpuUsage
 		util.NewFloatSlidingWindow( // memoryUsagePeaks
 			int(MemoryAggregationWindowLength / MemoryAggregationInterval)),
@@ -71,13 +71,13 @@ func (sample *ContainerUsageSample) isValid() bool {
 	return sample.cpuUsage >= 0.0 && sample.memoryUsage >= 0.0
 }
 
-// AddSample adds a usage sample to the given ContainerStats. Requires samples
+// AddSample adds a usage sample to the given ContainerState. Requires samples
 // to be passed in chronological order (i.e. in order of growing measureStart).
 // Invalid samples (out of order or measure out of legal range) are discarded.
 // Returns true if the sample was aggregated, false if it was discarded.
 // Note: usage samples don't hold their end timestamp / duration. They are
 // implicitly assumed to be disjoint when aggregating.
-func (container *ContainerStats) AddSample(sample *ContainerUsageSample) bool {
+func (container *ContainerState) AddSample(sample *ContainerUsageSample) bool {
 	ts := sample.measureStart
 	if !sample.isValid() || !ts.After(container.lastSampleStart) {
 		return false // Discard invalid or out-of-order samples.

@@ -42,7 +42,7 @@ func TestAggregateContainerUsageSamples(t *testing.T) {
 	mockCPUHistogram := new(util.MockHistogram)
 	memoryUsagePeaks := util.NewFloatSlidingWindow(
 		int(MemoryAggregationWindowLength / MemoryAggregationInterval))
-	c := &ContainerStats{
+	c := &ContainerState{
 		mockCPUHistogram,
 		memoryUsagePeaks,
 		time.Unix(0, 0),
