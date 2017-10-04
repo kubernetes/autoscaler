@@ -13,14 +13,11 @@ The cluster size is periodically checked, and used to calculate the expected res
 
 ```
 Usage of pod_nanny:
+      --config-dir="": The name of directory used to specify resources for scaled container.
       --container="pod-nanny": The name of the container to watch. This defaults to the nanny itself.
-      --cpu="MISSING": The base CPU resource requirement.
       --deployment="": The name of the deployment being monitored. This is required.
-      --extra-cpu="0": The amount of CPU to add per node.
-      --extra-memory="0Mi": The amount of memory to add per node.
       --extra-storage="0Gi": The amount of storage to add per node.
       --log-flush-frequency=5s: Maximum number of seconds between log flushes
-      --memory="MISSING": The base memory resource requirement.
       --namespace=$MY_POD_NAMESPACE: The namespace of the ward. This defaults to the nanny's own pod.
       --pod=$MY_POD_NAME: The name of the pod to watch. This defaults to the nanny's own pod.
       --poll-period=10000: The time, in milliseconds, to poll the dependent container.
@@ -33,6 +30,20 @@ Usage of pod_nanny:
 The following yaml is an example deployment where the nanny watches and resizes itself.
 
 ```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nannyconfig
+  namespace: default
+data:
+  NannyConfiguration: |-
+    apiVersion: nannyconfig/v1alpha1
+    kind: NannyConfiguration
+    baseCPU: "80m"
+    cpuPerNode: "0.5"
+    baseMemory: "140Mi"
+    memoryPerNode: "4"
+---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -55,7 +66,7 @@ spec:
         kubernetes.io/cluster-service: "true"
     spec:
       containers:
-        - image: gcr.io/google_containers/addon-resizer:1.0
+        - image: gcr.io/google_containers/addon-resizer:1.7
           imagePullPolicy: Always
           name: pod-nanny
           resources:
@@ -74,12 +85,16 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
+          volumeMounts:
+            name: nanny-config-volume
+            mountPath: /etc/config
           command:
             - /pod_nanny
-            - --cpu=300m
-            - --extra-cpu=20m
-            - --memory=200Mi
-            - --extra-memory=10Mi
+            - --config-dir=/etc/config
             - --threshold=5
             - --deployment=nanny-v1
+        volumes:
+        - name: nanny-config-volume
+          configMap:
+            name: nannyconfig
 ```
