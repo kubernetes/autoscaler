@@ -20,14 +20,14 @@ import (
 	"os"
 	"time"
 
-	log "github.com/golang/glog"
+	"github.com/golang/glog"
 	flag "github.com/spf13/pflag"
 
 	"k8s.io/autoscaler/addon-resizer/nanny"
-	resource "k8s.io/kubernetes/pkg/api/resource"
+	"k8s.io/apimachinery/pkg/api/resource"
 
-	client "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_3"
-	"k8s.io/kubernetes/pkg/client/restclient"
+	client "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 )
 
 const noValue = "MISSING"
@@ -53,30 +53,30 @@ var (
 
 func main() {
 	// First log our starting config, and then set up.
-	log.Infof("Invoked by %v", os.Args)
+	glog.Infof("Invoked by %v", os.Args)
 	flag.Parse()
 
 	// Perform further validation of flags.
 	if *deployment == "" {
-		log.Fatal("Must specify a deployment.")
+		glog.Fatal("Must specify a deployment.")
 	}
 
 	if *threshold < 0 || *threshold > 100 {
-		log.Fatalf("Threshold must be between 0 and 100 inclusively, was %d.", threshold)
+		glog.Fatalf("Threshold must be between 0 and 100 inclusively, was %d.", threshold)
 	}
 
-	log.Infof("Watching namespace: %s, pod: %s, container: %s.", *podNamespace, *podName, *containerName)
-	log.Infof("cpu: %s, extra_cpu: %s, memory: %s, extra_memory: %s, storage: %s, extra_storage: %s", *baseCPU, *cpuPerNode, *baseMemory, *memoryPerNode, *baseStorage, *storagePerNode)
+	glog.Infof("Watching namespace: %s, pod: %s, container: %s.", *podNamespace, *podName, *containerName)
+	glog.Infof("cpu: %s, extra_cpu: %s, memory: %s, extra_memory: %s, storage: %s, extra_storage: %s", *baseCPU, *cpuPerNode, *baseMemory, *memoryPerNode, *baseStorage, *storagePerNode)
 
 	// Set up work objects.
-	config, err := restclient.InClusterConfig()
+	config, err := rest.InClusterConfig()
 	if err != nil {
-		log.Fatal(err)
+		glog.Fatal(err)
 	}
 
 	clientset, err := client.NewForConfig(config)
 	if err != nil {
-		log.Fatal(err)
+		glog.Fatal(err)
 	}
 	k8s := nanny.NewKubernetesClient(*podNamespace, *deployment, *podName, *containerName, clientset)
 
@@ -107,7 +107,7 @@ func main() {
 		})
 	}
 
-	log.Infof("Resources: %+v", resources)
+	glog.Infof("Resources: %+v", resources)
 
 	var est nanny.ResourceEstimator
 	if *estimator == "linear" {
@@ -120,7 +120,7 @@ func main() {
 			ScaleFactor: 1.5,
 		}
 	} else {
-		log.Fatalf("Estimator %s not supported", *estimator)
+		glog.Fatalf("Estimator %s not supported", *estimator)
 	}
 
 	// Begin nannying.

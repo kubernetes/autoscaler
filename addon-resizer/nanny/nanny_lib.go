@@ -25,11 +25,11 @@ import (
 
 	log "github.com/golang/glog"
 	inf "gopkg.in/inf.v0"
-	api "k8s.io/kubernetes/pkg/api/v1"
+	corev1 "k8s.io/api/core/v1"
 )
 
 // checkResource determines whether a specific resource needs to be over-written.
-func checkResource(threshold int64, actual, expected api.ResourceList, res api.ResourceName) bool {
+func checkResource(threshold int64, actual, expected corev1.ResourceList, res corev1.ResourceName) bool {
 	val, ok := actual[res]
 	expVal, expOk := expected[res]
 	if ok != expOk {
@@ -50,25 +50,25 @@ func checkResource(threshold int64, actual, expected api.ResourceList, res api.R
 // shouldOverwriteResources determines if we should over-write the container's
 // resource limits. We'll over-write the resource limits if the limited
 // resources are different, or if any limit is violated by a threshold.
-func shouldOverwriteResources(threshold int64, limits, reqs, expLimits, expReqs api.ResourceList) bool {
-	return checkResource(threshold, limits, expLimits, api.ResourceCPU) ||
-		checkResource(threshold, limits, expLimits, api.ResourceMemory) ||
-		checkResource(threshold, limits, expLimits, api.ResourceStorage) ||
-		checkResource(threshold, reqs, expReqs, api.ResourceCPU) ||
-		checkResource(threshold, reqs, expReqs, api.ResourceMemory) ||
-		checkResource(threshold, reqs, expReqs, api.ResourceStorage)
+func shouldOverwriteResources(threshold int64, limits, reqs, expLimits, expReqs corev1.ResourceList) bool {
+	return checkResource(threshold, limits, expLimits, corev1.ResourceCPU) ||
+		checkResource(threshold, limits, expLimits, corev1.ResourceMemory) ||
+		checkResource(threshold, limits, expLimits, corev1.ResourceStorage) ||
+		checkResource(threshold, reqs, expReqs, corev1.ResourceCPU) ||
+		checkResource(threshold, reqs, expReqs, corev1.ResourceMemory) ||
+		checkResource(threshold, reqs, expReqs, corev1.ResourceStorage)
 }
 
 // KubernetesClient is an object that performs the nanny's requisite interactions with Kubernetes.
 type KubernetesClient interface {
 	CountNodes() (uint64, error)
-	ContainerResources() (*api.ResourceRequirements, error)
-	UpdateDeployment(resources *api.ResourceRequirements) error
+	ContainerResources() (*corev1.ResourceRequirements, error)
+	UpdateDeployment(resources *corev1.ResourceRequirements) error
 }
 
 // ResourceEstimator estimates ResourceRequirements for a given criteria.
 type ResourceEstimator interface {
-	scaleWithNodes(numNodes uint64) *api.ResourceRequirements
+	scaleWithNodes(numNodes uint64) *corev1.ResourceRequirements
 }
 
 // PollAPIServer periodically counts the number of nodes, estimates the expected
