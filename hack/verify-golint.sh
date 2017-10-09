@@ -34,7 +34,7 @@ PACKAGES=($(go list ./... | grep -v /vendor/))
 bad_files=()
 for package in "${PACKAGES[@]}"; do
   out=$("${GOLINT}" -min_confidence=0.9 "${package}")
-  if [[ -n "${out}" ]]; then
+  if [[ -n "${out}" && ! "${out}" =~ .*zz_generated.* ]]; then
     bad_files+=("${out}")
   fi
 done
