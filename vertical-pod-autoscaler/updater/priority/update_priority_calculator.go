@@ -20,11 +20,12 @@ import (
 	"math"
 	"sort"
 
-	"k8s.io/autoscaler/vertical-pod-autoscaler/updater/apimock"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/apimock"
 
-	"github.com/golang/glog"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+
+	"github.com/golang/glog"
 )
 
 const (
