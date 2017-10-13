@@ -32,7 +32,7 @@ there is a big chance that it won't work as expected.
 CA Version 1.0:
 With this release we graduated Cluster Autoscaler to GA.
 
-* Support for 1000 nodes running 30 pods each.
+* Support for 1000 nodes running 30 pods each. See: [Scalability testing  report](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/proposals/scalability_tests.md)
 * Support for 10 min graceful termination.
 * Improved eventing and monitoring.
 * Node allocatable support.
