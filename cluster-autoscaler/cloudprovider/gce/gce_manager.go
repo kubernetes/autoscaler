@@ -140,9 +140,20 @@ func CreateGceManager(configReader io.Reader, mode GcpCloudProviderMode, cluster
 		glog.V(1).Infof("Using default TokenSource %#v", tokenSource)
 	}
 	if len(projectId) == 0 || len(zone) == 0 {
-		projectId, zone, err = getProjectAndZone()
+		// XXX: On GKE discoveredProjectId is hosted master project and
+		// not the project we want to use, however, zone seems to not
+		// be specified in config. For now we can just assume that hosted
+		// master project is in the same zone as cluster and only use
+		// discoveredZone.
+		discoveredProjectId, discoveredZone, err := getProjectAndZone()
 		if err != nil {
 			return nil, err
+		}
+		if len(projectId) == 0 {
+			projectId = discoveredProjectId
+		}
+		if len(zone) == 0 {
+			zone = discoveredZone
 		}
 	}
 	glog.V(1).Infof("GCE projectId=%s zone=%s", projectId, zone)
