@@ -328,6 +328,7 @@ func TestMig(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, nodeGroup)
 	mig1 := reflect.ValueOf(nodeGroup).Interface().(*Mig)
+	mig1.exist = true
 	assert.True(t, strings.HasPrefix(mig1.Id(), "https://content.googleapis.com/compute/v1/projects/project1/zones/us-central1-b/instanceGroups/nodeautoprovisioning-n1-standard-1"))
 	assert.Equal(t, true, mig1.Autoprovisioned())
 	assert.Equal(t, 0, mig1.MinSize())
@@ -450,6 +451,7 @@ func TestMig(t *testing.T) {
 	mock.AssertExpectationsForObjects(t, gceManagerMock)
 
 	// Test Create.
+	mig1.exist = false
 	gceManagerMock.On("createNodePool", mock.AnythingOfType("*gce.Mig")).Return(nil).Once()
 	err = mig1.Create()
 	assert.NoError(t, err)
