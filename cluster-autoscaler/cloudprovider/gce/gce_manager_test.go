@@ -124,7 +124,11 @@ const allNodePools2 = `{
         "serviceAccount": "default"
       },
       "initialNodeCount": 3,
-      "autoscaling": {},
+      "autoscaling": {
+         "Enabled": true,
+         "MinNodeCount": 0,
+         "MaxNodeCount": 1000
+      },
       "management": {},
       "selfLink": "https://container.googleapis.com/v1/projects/project1/zones/us-central1-b/clusters/cluster-1/nodePools/nodeautoprovisioning-323233232",
       "version": "1.6.9",
@@ -418,8 +422,7 @@ func TestFetchAllNodePools(t *testing.T) {
 	assert.NoError(t, err)
 	migs = g.getMigs()
 	assert.Equal(t, 2, len(migs))
-	validateMig(t, migs[0].config, "gke-cluster-1-default-pool", 1,
-		11)
+	validateMig(t, migs[0].config, "gke-cluster-1-default-pool", 1, 11)
 	validateMig(t, migs[1].config, "gke-cluster-1-nodeautoprovisioning-323233232", 0, 1000)
 	mock.AssertExpectationsForObjects(t, server)
 
