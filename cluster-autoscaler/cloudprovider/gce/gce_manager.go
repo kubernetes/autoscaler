@@ -50,8 +50,11 @@ const (
 
 const (
 	operationWaitTimeout       = 5 * time.Second
+	gkeOperationWaitTimeout    = 120 * time.Second
 	operationPollInterval      = 100 * time.Millisecond
-	nodeAutoprovisioningPrefix = "nodeautoprovisioning"
+	nodeAutoprovisioningPrefix = "nap"
+	napMaxNodes                = 1000
+	napMinNodes                = 0
 )
 
 var (
@@ -250,9 +253,6 @@ func (m *gceManagerImpl) fetchAllNodePools() error {
 			if autoscaled {
 				mig.minSize = int(nodePool.Autoscaling.MinNodeCount)
 				mig.maxSize = int(nodePool.Autoscaling.MaxNodeCount)
-			} else if autoprovisioned {
-				mig.minSize = minAutoprovisionedSize
-				mig.maxSize = maxAutoprovisionedSize
 			}
 			if m.RegisterMig(mig) {
 				changed = true
@@ -360,11 +360,18 @@ func (m *gceManagerImpl) createNodePool(mig *Mig) error {
 		Labels:      mig.spec.labels,
 	}
 
+	autoscaling := gke.NodePoolAutoscaling{
+		Enabled:      true,
+		MinNodeCount: napMinNodes,
+		MaxNodeCount: napMaxNodes,
+	}
+
 	createRequest := gke.CreateNodePoolRequest{
 		NodePool: &gke.NodePool{
 			Name:             mig.nodePoolName,
 			InitialNodeCount: 0,
 			Config:           &config,
+			Autoscaling:      &autoscaling,
 		},
 	}
 
@@ -427,7 +434,7 @@ func (m *gceManagerImpl) waitForOp(operation *gce.Operation, project string, zon
 
 //  GKE
 func (m *gceManagerImpl) waitForGkeOp(operation *gke.Operation) error {
-	for start := time.Now(); time.Since(start) < operationWaitTimeout; time.Sleep(operationPollInterval) {
+	for start := time.Now(); time.Since(start) < gkeOperationWaitTimeout; time.Sleep(operationPollInterval) {
 		glog.V(4).Infof("Waiting for operation %s %s %s", m.projectId, m.zone, operation.Name)
 		if op, err := m.gkeService.Projects.Zones.Operations.Get(m.projectId, m.zone, operation.Name).Do(); err == nil {
 			glog.V(4).Infof("Operation %s %s %s status: %s", m.projectId, m.zone, operation.Name, op.Status)
