@@ -33,6 +33,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
+	scheduler_util "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 
 	apiv1 "k8s.io/api/core/v1"
 	extensionsv1 "k8s.io/api/extensions/v1beta1"
@@ -107,9 +108,13 @@ func (podMap podSchedulableMap) set(pod *apiv1.Pod, schedulable bool) {
 
 // FilterOutSchedulable checks whether pods from <unschedulableCandidates> marked as unschedulable
 // by Scheduler actually can't be scheduled on any node and filter out the ones that can.
-func FilterOutSchedulable(unschedulableCandidates []*apiv1.Pod, nodes []*apiv1.Node, allPods []*apiv1.Pod, predicateChecker *simulator.PredicateChecker) []*apiv1.Pod {
+// It takes into account pods that are bound to node and will be scheduled after lower priority pod preemption.
+func FilterOutSchedulable(unschedulableCandidates []*apiv1.Pod, nodes []*apiv1.Node, allScheduled []*apiv1.Pod, podsWaitingForLowerPriorityPreemption []*apiv1.Pod,
+	predicateChecker *simulator.PredicateChecker, expendablePodsPriorityCutoff int) []*apiv1.Pod {
+
 	unschedulablePods := []*apiv1.Pod{}
-	nodeNameToNodeInfo := createNodeNameToInfoMap(allPods, nodes)
+	nonExpendableScheduled := FilterOutExpendablePods(allScheduled, expendablePodsPriorityCutoff)
+	nodeNameToNodeInfo := scheduler_util.CreateNodeNameToInfoMap(append(nonExpendableScheduled, podsWaitingForLowerPriorityPreemption...), nodes)
 	podSchedulable := make(podSchedulableMap)
 
 	for _, pod := range unschedulableCandidates {
@@ -133,27 +138,34 @@ func FilterOutSchedulable(unschedulableCandidates []*apiv1.Pod, nodes []*apiv1.N
 	return unschedulablePods
 }
 
-// TODO: move this function to scheduler utils.
-func createNodeNameToInfoMap(pods []*apiv1.Pod, nodes []*apiv1.Node) map[string]*schedulercache.NodeInfo {
-	nodeNameToNodeInfo := schedulercache.CreateNodeNameToInfoMap(pods, nodes)
-	for _, node := range nodes {
-		if nodeInfo, found := nodeNameToNodeInfo[node.Name]; found {
-			nodeInfo.SetNode(node)
+// FilterOutExpendableAndSplit filters out expendable pods and splits into:
+//   - waiting for lower priority pods preemption
+//   - other pods.
+func FilterOutExpendableAndSplit(unschedulableCandidates []*apiv1.Pod, expendablePodsPriorityCutoff int) ([]*apiv1.Pod, []*apiv1.Pod) {
+	unschedulableNonExpendable := []*apiv1.Pod{}
+	waitingForLowerPriorityPreemption := []*apiv1.Pod{}
+	for _, pod := range unschedulableCandidates {
+		if pod.Spec.Priority != nil && int(*pod.Spec.Priority) < expendablePodsPriorityCutoff {
+			glog.V(4).Infof("Pod %s has priority below %d (%d) and will scheduled when enough resources is free. Ignoring in scale up.", pod.Name, expendablePodsPriorityCutoff, *pod.Spec.Priority)
+		} else if annot, found := pod.Annotations[scheduler_util.NominatedNodeAnnotationKey]; found && len(annot) > 0 {
+			waitingForLowerPriorityPreemption = append(waitingForLowerPriorityPreemption, pod)
+			glog.V(4).Infof("Pod %s will be scheduled after low prioity pods are preempted on %s. Ignoring in scale up.", pod.Name, annot)
+		} else {
+			unschedulableNonExpendable = append(unschedulableNonExpendable, pod)
 		}
 	}
+	return unschedulableNonExpendable, waitingForLowerPriorityPreemption
+}
 
-	// Some pods may be out of sync with node lists. Removing incomplete node infos.
-	keysToRemove := make([]string, 0)
-	for key, nodeInfo := range nodeNameToNodeInfo {
-		if nodeInfo.Node() == nil {
-			keysToRemove = append(keysToRemove, key)
+// FilterOutExpendablePods filters out expendable pods.
+func FilterOutExpendablePods(pods []*apiv1.Pod, expendablePodsPriorityCutoff int) []*apiv1.Pod {
+	result := []*apiv1.Pod{}
+	for _, pod := range pods {
+		if pod.Spec.Priority == nil || int(*pod.Spec.Priority) >= expendablePodsPriorityCutoff {
+			result = append(result, pod)
 		}
 	}
-	for _, key := range keysToRemove {
-		delete(nodeNameToNodeInfo, key)
-	}
-
-	return nodeNameToNodeInfo
+	return result
 }
 
 // GetNodeInfosForGroups finds NodeInfos for all node groups used to manage the given nodes. It also returns a node group to sample node mapping.
