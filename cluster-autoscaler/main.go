@@ -127,6 +127,8 @@ var (
 	balanceSimilarNodeGroupsFlag     = flag.Bool("balance-similar-node-groups", false, "Detect similar node groups and balance the number of nodes between them")
 	nodeAutoprovisioningEnabled      = flag.Bool("node-autoprovisioning-enabled", false, "Should CA autoprovision node groups when needed")
 	maxAutoprovisionedNodeGroupCount = flag.Int("max-autoprovisioned-node-group-count", 15, "The maximum number of autoprovisioned groups in the cluster.")
+
+	expendablePodsPriorityCutoff = flag.Int("expendable-pods-priority_cutoff", 0, "Pods with priority below cutoff will be expendable. They can be killed without any consideration during scale down and they don't cause scale up. Pods with null priority (PodPriority disabled) are non expendable.")
 )
 
 func createAutoscalerOptions() core.AutoscalerOptions {
@@ -176,6 +178,7 @@ func createAutoscalerOptions() core.AutoscalerOptions {
 		ClusterName:                      *clusterName,
 		NodeAutoprovisioningEnabled:      *nodeAutoprovisioningEnabled,
 		MaxAutoprovisionedNodeGroupCount: *maxAutoprovisionedNodeGroupCount,
+		ExpendablePodsPriorityCutoff:     *expendablePodsPriorityCutoff,
 	}
 
 	configFetcherOpts := dynamic.ConfigFetcherOptions{
