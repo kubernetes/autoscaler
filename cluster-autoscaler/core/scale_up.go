@@ -203,9 +203,20 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 		}
 		if context.AutoscalingOptions.NodeAutoprovisioningEnabled {
 			if !bestOption.NodeGroup.Exist() {
+				// Node group id may change when we create node group and we need to update
+				// our data structures
+				oldId := bestOption.NodeGroup.Id()
 				err := bestOption.NodeGroup.Create()
 				if err != nil {
 					return false, errors.ToAutoscalerError(errors.CloudProviderError, err)
+				}
+				newId := bestOption.NodeGroup.Id()
+				if newId != oldId {
+					glog.V(2).Infof("Created node group %s based on template node group %s, will use new node group in scale-up", newId, oldId)
+					podsPassingPredicates[newId] = podsPassingPredicates[oldId]
+					delete(podsPassingPredicates, oldId)
+					nodeInfos[newId] = nodeInfos[oldId]
+					delete(nodeInfos, oldId)
 				}
 			}
 		}
