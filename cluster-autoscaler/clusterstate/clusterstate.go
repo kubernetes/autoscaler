@@ -288,6 +288,18 @@ func (csr *ClusterStateRegistry) UpdateNodes(nodes []*apiv1.Node, currentTime ti
 	return nil
 }
 
+// Recalculate cluster state after scale-ups or scale-downs were registered.
+func (csr *ClusterStateRegistry) Recalculate() {
+	targetSizes, err := getTargetSizes(csr.cloudProvider)
+	if err != nil {
+		glog.Warningf("Failed to get target sizes, when trying to recalculate cluster state: %v", err)
+	}
+
+	csr.Lock()
+	defer csr.Unlock()
+	csr.updateAcceptableRanges(targetSizes)
+}
+
 // getTargetSizes gets target sizes of node groups.
 func getTargetSizes(cp cloudprovider.CloudProvider) (map[string]int, error) {
 	result := make(map[string]int)
