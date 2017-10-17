@@ -48,6 +48,11 @@ type ContainerID struct {
 	ContainerName string
 }
 
+// VpaID contains information needed to identify a VPA API object within a cluster.
+type VpaID struct {
+	VpaName string
+}
+
 // ContainerMetricsSnapshot contains information about usage of certain container withing defined time window.
 type ContainerMetricsSnapshot struct {
 	// ID identifies a specific container those metrics are comming from.
