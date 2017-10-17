@@ -283,6 +283,7 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 				"pod triggered scale-up: %v", scaleUpInfos)
 		}
 
+		context.ClusterStateRegistry.Recalculate()
 		return true, nil
 	}
 	for pod, unschedulable := range podsRemainUnschedulable {
