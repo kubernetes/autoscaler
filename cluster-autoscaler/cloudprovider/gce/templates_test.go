@@ -175,7 +175,7 @@ func TestBuildLabelsForAutoscaledMigConflict(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func TestBuildAllocatable(t *testing.T) {
+func TestBuildAllocatableFromKubeEnv(t *testing.T) {
 	type testCase struct {
 		kubeEnv        string
 		capacityCpu    string
@@ -208,7 +208,7 @@ func TestBuildAllocatable(t *testing.T) {
 		capacity, err := makeResourceList(tc.capacityCpu, tc.capacityMemory)
 		assert.NoError(t, err)
 		tb := templateBuilder{}
-		allocatable, err := tb.buildAllocatable(capacity, tc.kubeEnv)
+		allocatable, err := tb.buildAllocatableFromKubeEnv(capacity, tc.kubeEnv)
 		if tc.expectedErr {
 			assert.Error(t, err)
 		} else {
@@ -217,6 +217,35 @@ func TestBuildAllocatable(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, expectedResources, allocatable)
 		}
+	}
+}
+
+func TestBuildAllocatableFromCapacity(t *testing.T) {
+	type testCase struct {
+		capacityCpu       string
+		capacityMemory    string
+		allocatableCpu    string
+		allocatableMemory string
+	}
+	testCases := []testCase{{
+		capacityCpu:       "16000m",
+		capacityMemory:    fmt.Sprintf("%v", 1*1024*1024*1024),
+		allocatableCpu:    "15890m",
+		allocatableMemory: fmt.Sprintf("%v", 0.75*1024*1024*1024),
+	}, {
+		capacityCpu:       "500m",
+		capacityMemory:    fmt.Sprintf("%v", 200*1000*1024*1024),
+		allocatableCpu:    "470m",
+		allocatableMemory: fmt.Sprintf("%v", (200*1000-10760)*1024*1024),
+	}}
+	for _, tc := range testCases {
+		tb := templateBuilder{}
+		capacity, err := makeResourceList(tc.capacityCpu, tc.capacityMemory)
+		assert.NoError(t, err)
+		expectedAllocatable, err := makeResourceList(tc.allocatableCpu, tc.allocatableMemory)
+		assert.NoError(t, err)
+		allocatable := tb.buildAllocatableFromCapacity(capacity)
+		assertEqualResourceLists(t, "Allocatable", expectedAllocatable, allocatable)
 	}
 }
 
@@ -338,6 +367,52 @@ func TestParseKubeReserved(t *testing.T) {
 			expectedResources, err := makeResourceList(tc.expectedCpu, tc.expectedMemory)
 			assert.NoError(t, err)
 			assertEqualResourceLists(t, "Resources", expectedResources, resources)
+		}
+	}
+}
+
+func TestCalculateReserved(t *testing.T) {
+	type testCase struct {
+		name             string
+		function         func(capacity int64) int64
+		capacity         int64
+		expectedReserved int64
+	}
+	testCases := []testCase{
+		{
+			name:             "zero memory capacity",
+			function:         memoryReservedMB,
+			capacity:         0,
+			expectedReserved: 0,
+		},
+		{
+			name:             "between memory thresholds",
+			function:         memoryReservedMB,
+			capacity:         2 * mbPerGB,
+			expectedReserved: 500, // 0.5 Gb
+		},
+		{
+			name:             "at a memory threshold boundary",
+			function:         memoryReservedMB,
+			capacity:         8 * mbPerGB,
+			expectedReserved: 1800, // 1.8 Gb
+		},
+		{
+			name:             "exceeds highest memory threshold",
+			function:         memoryReservedMB,
+			capacity:         200 * mbPerGB,
+			expectedReserved: 10760, // 10.8 Gb
+		},
+		{
+			name:             "cpu sanity check",
+			function:         cpuReservedMillicores,
+			capacity:         4 * millicoresPerCore,
+			expectedReserved: 80,
+		},
+	}
+	for _, tc := range testCases {
+		if actualReserved := tc.function(tc.capacity); actualReserved != tc.expectedReserved {
+			t.Errorf("Test case: %s, Got f(%d Mb) = %d.  Want %d", tc.name, tc.capacity, actualReserved, tc.expectedReserved)
 		}
 	}
 }
