@@ -20,13 +20,13 @@ import (
 	"fmt"
 	"time"
 
-	api "k8s.io/kubernetes/pkg/api"
-	apiv1 "k8s.io/kubernetes/pkg/api/v1"
-	cache "k8s.io/kubernetes/pkg/client/cache"
-	client "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_3"
-	runtime "k8s.io/kubernetes/pkg/runtime"
-	wait "k8s.io/kubernetes/pkg/util/wait"
-	watch "k8s.io/kubernetes/pkg/watch"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/apimachinery/pkg/watch"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/cache"
 )
 
 type kubernetesClient struct {
@@ -34,7 +34,7 @@ type kubernetesClient struct {
 	deployment string
 	pod        string
 	container  string
-	clientset  *client.Clientset
+	clientset  *kubernetes.Clientset
 	nodeStore  cache.Store
 	reflector  *cache.Reflector
 }
@@ -52,9 +52,8 @@ func (k *kubernetesClient) CountNodes() (uint64, error) {
 	return uint64(len(k.nodeStore.List())), nil
 }
 
-func (k *kubernetesClient) ContainerResources() (*apiv1.ResourceRequirements, error) {
-	pod, err := k.clientset.CoreClient.Pods(k.namespace).Get(k.pod)
-
+func (k *kubernetesClient) ContainerResources() (*corev1.ResourceRequirements, error) {
+	pod, err := k.clientset.Core().Pods(k.namespace).Get(k.pod, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -66,9 +65,9 @@ func (k *kubernetesClient) ContainerResources() (*apiv1.ResourceRequirements, er
 	return nil, fmt.Errorf("Container %s was not found in deployment %s in namespace %s.", k.container, k.deployment, k.namespace)
 }
 
-func (k *kubernetesClient) UpdateDeployment(resources *apiv1.ResourceRequirements) error {
+func (k *kubernetesClient) UpdateDeployment(resources *corev1.ResourceRequirements) error {
 	// First, get the Deployment.
-	dep, err := k.clientset.Extensions().Deployments(k.namespace).Get(k.deployment)
+	dep, err := k.clientset.Extensions().Deployments(k.namespace).Get(k.deployment, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -78,7 +77,7 @@ func (k *kubernetesClient) UpdateDeployment(resources *apiv1.ResourceRequirement
 		if container.Name == k.container {
 			// Update the deployment.
 			dep.Spec.Template.Spec.Containers[i].Resources = *resources
-			_, err = k.clientset.ExtensionsClient.Deployments(k.namespace).Update(dep)
+			_, err = k.clientset.Extensions().Deployments(k.namespace).Update(dep)
 			return err
 		}
 	}
@@ -87,7 +86,7 @@ func (k *kubernetesClient) UpdateDeployment(resources *apiv1.ResourceRequirement
 }
 
 // NewKubernetesClient gives a KubernetesClient with the given dependencies.
-func NewKubernetesClient(namespace, deployment, pod, container string, clientset *client.Clientset) KubernetesClient {
+func NewKubernetesClient(namespace, deployment, pod, container string, clientset *kubernetes.Clientset) KubernetesClient {
 	result := &kubernetesClient{
 		namespace:  namespace,
 		deployment: deployment,
@@ -98,14 +97,14 @@ func NewKubernetesClient(namespace, deployment, pod, container string, clientset
 	}
 	// Start propagating contents of the nodeStore.
 	nodeListWatch := &cache.ListWatch{
-		ListFunc: func(options api.ListOptions) (runtime.Object, error) {
+		ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
 			return clientset.Core().Nodes().List(options)
 		},
-		WatchFunc: func(options api.ListOptions) (watch.Interface, error) {
+		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
 			return clientset.Core().Nodes().Watch(options)
 		},
 	}
-	result.reflector = cache.NewReflector(nodeListWatch, &apiv1.Node{}, result.nodeStore, 0)
-	result.reflector.Run()
+	result.reflector = cache.NewReflector(nodeListWatch, &corev1.Node{}, result.nodeStore, 0)
+	go result.reflector.Run(wait.NeverStop)
 	return result
 }

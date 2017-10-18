@@ -23,7 +23,7 @@
 # 7. Revert the references to kubernetes/addon-resizer:$(TAG) to gcr.io/google_containers/addon-resizer:$(TAG) 
 
 OUT_DIR = build
-PACKAGE = k8s.io/contrib/addon-resizer
+PACKAGE = k8s.io/autoscaler/addon-resizer
 PREFIX = gcr.io/google_containers
 TAG = 1.7
 

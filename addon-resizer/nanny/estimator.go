@@ -19,9 +19,8 @@ package nanny
 import (
 	"fmt"
 
-	api "k8s.io/kubernetes/pkg/api/v1"
-
-	"k8s.io/kubernetes/pkg/api/resource"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 const (
@@ -31,7 +30,7 @@ const (
 // Resource defines the name of a resource, the quantity, and the marginal value.
 type Resource struct {
 	Base, ExtraPerNode resource.Quantity
-	Name               api.ResourceName
+	Name               corev1.ResourceName
 }
 
 // LinearEstimator estimates the amount of resources as r = base + extra*nodes.
@@ -39,7 +38,7 @@ type LinearEstimator struct {
 	Resources []Resource
 }
 
-func (e LinearEstimator) scaleWithNodes(numNodes uint64) *api.ResourceRequirements {
+func (e LinearEstimator) scaleWithNodes(numNodes uint64) *corev1.ResourceRequirements {
 	return calculateResources(numNodes, e.Resources)
 }
 
@@ -51,7 +50,7 @@ type ExponentialEstimator struct {
 	ScaleFactor float64
 }
 
-func (e ExponentialEstimator) scaleWithNodes(numNodes uint64) *api.ResourceRequirements {
+func (e ExponentialEstimator) scaleWithNodes(numNodes uint64) *corev1.ResourceRequirements {
 	n := uint64(16)
 	for n < numNodes {
 		n = uint64(float64(n)*e.ScaleFactor + eps)
@@ -59,9 +58,9 @@ func (e ExponentialEstimator) scaleWithNodes(numNodes uint64) *api.ResourceRequi
 	return calculateResources(n, e.Resources)
 }
 
-func calculateResources(numNodes uint64, resources []Resource) *api.ResourceRequirements {
-	limits := make(api.ResourceList)
-	requests := make(api.ResourceList)
+func calculateResources(numNodes uint64, resources []Resource) *corev1.ResourceRequirements {
+	limits := make(corev1.ResourceList)
+	requests := make(corev1.ResourceList)
 	for _, r := range resources {
 		// Since we want to enable passing values smaller than e.g. 1 millicore per node,
 		// we need to have some more hacky solution here than operating on MilliValues.
@@ -76,7 +75,7 @@ func calculateResources(numNodes uint64, resources []Resource) *api.ResourceRequ
 		limits[r.Name] = newRes
 		requests[r.Name] = newRes
 	}
-	return &api.ResourceRequirements{
+	return &corev1.ResourceRequirements{
 		Limits:   limits,
 		Requests: requests,
 	}

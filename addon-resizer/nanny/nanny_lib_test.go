@@ -19,53 +19,53 @@ package nanny
 import (
 	"testing"
 
-	resource "k8s.io/kubernetes/pkg/api/resource"
-	api "k8s.io/kubernetes/pkg/api/v1"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 var (
 	// ResourcesLists to compose test cases.
-	standard = api.ResourceList{
+	standard = corev1.ResourceList{
 		"cpu":     resource.MustParse("0.3"),
 		"memory":  resource.MustParse("200Mi"),
 		"storage": resource.MustParse("10Gi"),
 	}
-	siStandard = api.ResourceList{
+	siStandard = corev1.ResourceList{
 		"cpu":     resource.MustParse("0.3"),
 		"memory":  resource.MustParse("200M"),
 		"storage": resource.MustParse("10G"),
 	}
-	noStorage = api.ResourceList{
+	noStorage = corev1.ResourceList{
 		"cpu":    resource.MustParse("0.3"),
 		"memory": resource.MustParse("200Mi"),
 	}
-	siNoStorage = api.ResourceList{
+	siNoStorage = corev1.ResourceList{
 		"cpu":    resource.MustParse("0.3"),
 		"memory": resource.MustParse("200M"),
 	}
-	smallMemoryNoStorage = api.ResourceList{
+	smallMemoryNoStorage = corev1.ResourceList{
 		"cpu":    resource.MustParse("0.3"),
 		"memory": resource.MustParse("100Mi"),
 	}
-	noMemory = api.ResourceList{
+	noMemory = corev1.ResourceList{
 		"cpu":     resource.MustParse("0.3"),
 		"storage": resource.MustParse("10Gi"),
 	}
-	noCPU = api.ResourceList{
+	noCPU = corev1.ResourceList{
 		"memory":  resource.MustParse("200Mi"),
 		"storage": resource.MustParse("10Gi"),
 	}
-	smallStorage = api.ResourceList{
+	smallStorage = corev1.ResourceList{
 		"cpu":     resource.MustParse("0.3"),
 		"memory":  resource.MustParse("200Mi"),
 		"storage": resource.MustParse("1Gi"),
 	}
-	smallMemory = api.ResourceList{
+	smallMemory = corev1.ResourceList{
 		"cpu":     resource.MustParse("0.3"),
 		"memory":  resource.MustParse("100Mi"),
 		"storage": resource.MustParse("10Gi"),
 	}
-	smallCPU = api.ResourceList{
+	smallCPU = corev1.ResourceList{
 		"cpu":     resource.MustParse("0.1"),
 		"memory":  resource.MustParse("200Mi"),
 		"storage": resource.MustParse("10Gi"),
@@ -75,8 +75,8 @@ var (
 func TestCheckResources(t *testing.T) {
 	testCases := []struct {
 		th   int64
-		x, y api.ResourceList
-		res  api.ResourceName
+		x, y corev1.ResourceList
+		res  corev1.ResourceName
 		want bool
 	}{
 		// Test no threshold for the CPU resource type.
@@ -157,7 +157,7 @@ func TestCheckResources(t *testing.T) {
 func TestShouldOverwriteResources(t *testing.T) {
 	testCases := []struct {
 		th   int64
-		x, y api.ResourceList
+		x, y corev1.ResourceList
 		want bool
 	}{
 		// Test no threshold.

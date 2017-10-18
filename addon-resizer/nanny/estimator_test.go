@@ -19,8 +19,8 @@ package nanny
 import (
 	"testing"
 
-	resource "k8s.io/kubernetes/pkg/api/resource"
-	api "k8s.io/kubernetes/pkg/api/v1"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 var (
@@ -129,62 +129,62 @@ var (
 		ScaleFactor: 1.5,
 	}
 
-	baseResources = api.ResourceList{
+	baseResources = corev1.ResourceList{
 		"cpu":     resource.MustParse("0.3"),
 		"memory":  resource.MustParse("30Mi"),
 		"storage": resource.MustParse("30Gi"),
 	}
 
-	noCPUBaseResources = api.ResourceList{
+	noCPUBaseResources = corev1.ResourceList{
 		"memory":  resource.MustParse("30Mi"),
 		"storage": resource.MustParse("30Gi"),
 	}
-	noMemoryBaseResources = api.ResourceList{
+	noMemoryBaseResources = corev1.ResourceList{
 		"cpu":     resource.MustParse("0.3"),
 		"storage": resource.MustParse("30Gi"),
 	}
-	noStorageBaseResources = api.ResourceList{
+	noStorageBaseResources = corev1.ResourceList{
 		"cpu":    resource.MustParse("0.3"),
 		"memory": resource.MustParse("30Mi"),
 	}
-	threeNodeResources = api.ResourceList{
+	threeNodeResources = corev1.ResourceList{
 		"cpu":     resource.MustParse("3.3"),
 		"memory":  resource.MustParse("33Mi"),
 		"storage": resource.MustParse("33Gi"),
 	}
-	threeNodeNoCPUResources = api.ResourceList{
+	threeNodeNoCPUResources = corev1.ResourceList{
 		"memory":  resource.MustParse("33Mi"),
 		"storage": resource.MustParse("33Gi"),
 	}
-	threeNodeNoMemoryResources = api.ResourceList{
+	threeNodeNoMemoryResources = corev1.ResourceList{
 		"cpu":     resource.MustParse("3.3"),
 		"storage": resource.MustParse("33Gi"),
 	}
-	threeNodeNoStorageResources = api.ResourceList{
+	threeNodeNoStorageResources = corev1.ResourceList{
 		"cpu":    resource.MustParse("3.3"),
 		"memory": resource.MustParse("33Mi"),
 	}
-	threeNodeLessThanMilliResources = api.ResourceList{
+	threeNodeLessThanMilliResources = corev1.ResourceList{
 		"cpu": resource.MustParse("0.3015"),
 	}
-	threeNodeLessThanMilliExpResources = api.ResourceList{
+	threeNodeLessThanMilliExpResources = corev1.ResourceList{
 		"cpu": resource.MustParse("0.308"),
 	}
-	noResources = api.ResourceList{}
+	noResources = corev1.ResourceList{}
 
-	sixteenNodeResources = api.ResourceList{
+	sixteenNodeResources = corev1.ResourceList{
 		"cpu":     resource.MustParse("16.3"),
 		"memory":  resource.MustParse("46Mi"),
 		"storage": resource.MustParse("46Gi"),
 	}
-	twentyFourNodeResources = api.ResourceList{
+	twentyFourNodeResources = corev1.ResourceList{
 		"cpu":     resource.MustParse("24.3"),
 		"memory":  resource.MustParse("54Mi"),
 		"storage": resource.MustParse("54Gi"),
 	}
 )
 
-func verifyResources(t *testing.T, kind string, got, want api.ResourceList) {
+func verifyResources(t *testing.T, kind string, got, want corev1.ResourceList) {
 	if len(got) != len(want) {
 		t.Errorf("%s not equal got: %+v want: %+v", kind, got, want)
 	}
@@ -203,8 +203,8 @@ func TestEstimateResources(t *testing.T) {
 	testCases := []struct {
 		e        ResourceEstimator
 		numNodes uint64
-		limits   api.ResourceList
-		requests api.ResourceList
+		limits   corev1.ResourceList
+		requests corev1.ResourceList
 	}{
 		{fullEstimator, 0, baseResources, baseResources},
 		{fullEstimator, 3, threeNodeResources, threeNodeResources},
@@ -231,7 +231,7 @@ func TestEstimateResources(t *testing.T) {
 
 	for _, tc := range testCases {
 		got := tc.e.scaleWithNodes(tc.numNodes)
-		want := &api.ResourceRequirements{
+		want := &corev1.ResourceRequirements{
 			Limits:   tc.limits,
 			Requests: tc.requests,
 		}

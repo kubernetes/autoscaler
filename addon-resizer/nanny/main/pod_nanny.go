@@ -17,28 +17,31 @@ limitations under the License.
 package main
 
 import (
+	"fmt"
+	"io/ioutil"
 	"os"
 	"time"
 
-	log "github.com/golang/glog"
 	flag "github.com/spf13/pflag"
 
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/addon-resizer/nanny"
-	resource "k8s.io/kubernetes/pkg/api/resource"
 
-	client "k8s.io/kubernetes/pkg/client/clientset_generated/release_1_3"
-	"k8s.io/kubernetes/pkg/client/restclient"
+	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/serializer"
+	"k8s.io/autoscaler/addon-resizer/nanny/apis/nannyconfig"
+	nannyscheme "k8s.io/autoscaler/addon-resizer/nanny/apis/nannyconfig/scheme"
+	nannyconfigalpha "k8s.io/autoscaler/addon-resizer/nanny/apis/nannyconfig/v1alpha1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
+	"path/filepath"
 )
-
-const noValue = "MISSING"
 
 var (
 	// Flags to define the resource requirements.
-	baseCPU        = flag.String("cpu", noValue, "The base CPU resource requirement.")
-	cpuPerNode     = flag.String("extra-cpu", "0", "The amount of CPU to add per node.")
-	baseMemory     = flag.String("memory", noValue, "The base memory resource requirement.")
-	memoryPerNode  = flag.String("extra-memory", "0Mi", "The amount of memory to add per node.")
-	baseStorage    = flag.String("storage", noValue, "The base storage resource requirement.")
+	configDir      = flag.String("config-dir", nannyconfig.NoValue, "Path of configuration containing base resource requirements.")
+	baseStorage    = flag.String("storage", nannyconfig.NoValue, "The base storage resource requirement.")
 	storagePerNode = flag.String("extra-storage", "0Gi", "The amount of storage to add per node.")
 	threshold      = flag.Int("threshold", 0, "A number between 0-100. The dependent's resources are rewritten when they deviate from expected by more than threshold.")
 	// Flags to identify the container to nanny.
@@ -53,61 +56,67 @@ var (
 
 func main() {
 	// First log our starting config, and then set up.
-	log.Infof("Invoked by %v", os.Args)
+	glog.Infof("Invoked by %v", os.Args)
 	flag.Parse()
 
 	// Perform further validation of flags.
 	if *deployment == "" {
-		log.Fatal("Must specify a deployment.")
+		glog.Fatal("Must specify a deployment.")
 	}
 
 	if *threshold < 0 || *threshold > 100 {
-		log.Fatalf("Threshold must be between 0 and 100 inclusively, was %d.", threshold)
+		glog.Fatalf("Threshold must be between 0 and 100 inclusively, was %d.", threshold)
 	}
 
-	log.Infof("Watching namespace: %s, pod: %s, container: %s.", *podNamespace, *podName, *containerName)
-	log.Infof("cpu: %s, extra_cpu: %s, memory: %s, extra_memory: %s, storage: %s, extra_storage: %s", *baseCPU, *cpuPerNode, *baseMemory, *memoryPerNode, *baseStorage, *storagePerNode)
+	glog.Infof("Watching namespace: %s, pod: %s, container: %s.", *podNamespace, *podName, *containerName)
+	glog.Infof("storage: %s, extra_storage: %s", *baseStorage, *storagePerNode)
 
 	// Set up work objects.
-	config, err := restclient.InClusterConfig()
+	config, err := rest.InClusterConfig()
 	if err != nil {
-		log.Fatal(err)
+		glog.Fatal(err)
 	}
 
-	clientset, err := client.NewForConfig(config)
+	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		log.Fatal(err)
+		glog.Fatal(err)
 	}
 	k8s := nanny.NewKubernetesClient(*podNamespace, *deployment, *podName, *containerName, clientset)
+
+	nannycfg, err := loadNannyConfiguration(*configDir)
+	if err != nil {
+		glog.Fatal(err)
+	}
+	glog.Infof("cpu: %s, extra_cpu: %s, memory: %s, extra_memory: %s", nannycfg.BaseCPU, nannycfg.CPUPerNode, nannycfg.BaseMemory, nannycfg.MemoryPerNode)
 
 	var resources []nanny.Resource
 
 	// Monitor only the resources specified.
-	if *baseCPU != noValue {
+	if nannycfg.BaseCPU != nannyconfig.NoValue {
 		resources = append(resources, nanny.Resource{
-			Base:         resource.MustParse(*baseCPU),
-			ExtraPerNode: resource.MustParse(*cpuPerNode),
+			Base:         resource.MustParse(nannycfg.BaseCPU),
+			ExtraPerNode: resource.MustParse(nannycfg.CPUPerNode),
 			Name:         "cpu",
 		})
 	}
 
-	if *baseMemory != noValue {
+	if nannycfg.BaseMemory != nannyconfig.NoValue {
 		resources = append(resources, nanny.Resource{
-			Base:         resource.MustParse(*baseMemory),
-			ExtraPerNode: resource.MustParse(*memoryPerNode),
+			Base:         resource.MustParse(nannycfg.BaseMemory),
+			ExtraPerNode: resource.MustParse(nannycfg.MemoryPerNode),
 			Name:         "memory",
 		})
 	}
 
-	if *baseStorage != noValue {
+	if *baseStorage != nannyconfig.NoValue {
 		resources = append(resources, nanny.Resource{
 			Base:         resource.MustParse(*baseStorage),
-			ExtraPerNode: resource.MustParse(*memoryPerNode),
+			ExtraPerNode: resource.MustParse(nannycfg.MemoryPerNode),
 			Name:         "storage",
 		})
 	}
 
-	log.Infof("Resources: %+v", resources)
+	glog.Infof("Resources: %+v", resources)
 
 	var est nanny.ResourceEstimator
 	if *estimator == "linear" {
@@ -120,9 +129,47 @@ func main() {
 			ScaleFactor: 1.5,
 		}
 	} else {
-		log.Fatalf("Estimator %s not supported", *estimator)
+		glog.Fatalf("Estimator %s not supported", *estimator)
 	}
 
 	// Begin nannying.
 	nanny.PollAPIServer(k8s, est, *containerName, pollPeriod, uint64(*threshold))
+}
+
+func loadNannyConfiguration(configDir string) (*nannyconfig.NannyConfiguration, error) {
+	path := filepath.Join(configDir, "NannyConfiguration")
+	scheme, codecs, err := nannyscheme.NewSchemeAndCodecs()
+	if err != nil {
+		return nil, err
+	}
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		glog.V(0).Infof("Failed to read data from config file %q: %v, using default parameters", path, err)
+		config := &nannyconfigalpha.NannyConfiguration{}
+		nannyconfigalpha.SetDefaults_NannyConfiguration(config)
+		return convertNannyConfiguration(config, scheme)
+	}
+
+	return decodeNannyConfiguration(data, scheme, codecs)
+}
+
+func convertNannyConfiguration(configAlpha *nannyconfigalpha.NannyConfiguration, scheme *runtime.Scheme) (*nannyconfig.NannyConfiguration, error) {
+	config := &nannyconfig.NannyConfiguration{}
+	err := scheme.Convert(configAlpha, config, nil)
+	if err != nil {
+		return nil, err
+	}
+	return config, nil
+}
+
+func decodeNannyConfiguration(data []byte, scheme *runtime.Scheme, codecs *serializer.CodecFactory) (*nannyconfig.NannyConfiguration, error) {
+	obj, err := runtime.Decode(codecs.UniversalDecoder(nannyconfigalpha.SchemeGroupVersion), data)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode, error: %v", err)
+	}
+	externalHC, ok := obj.(*nannyconfigalpha.NannyConfiguration)
+	if !ok {
+		return nil, fmt.Errorf("failed to cast object to NannyConfiguration, object: %#v", obj)
+	}
+	return convertNannyConfiguration(externalHC, scheme)
 }
