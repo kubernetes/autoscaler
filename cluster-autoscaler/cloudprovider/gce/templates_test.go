@@ -486,7 +486,7 @@ func makeResourceList(cpu string, memory string, gpu int64) (apiv1.ResourceList,
 		if err != nil {
 			return nil, err
 		}
-		result[apiv1.ResourceNvidiaGPU] = resultGpu
+		result[resourceNvidiaGPU] = resultGpu
 	}
 	return result, nil
 }
