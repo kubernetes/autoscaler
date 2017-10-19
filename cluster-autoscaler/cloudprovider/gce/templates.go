@@ -38,6 +38,7 @@ import (
 const (
 	mbPerGB           = 1000
 	millicoresPerCore = 1000
+	resourceNvidiaGPU = "nvidia.com/gpu"
 )
 
 // builds templates for gce cloud provider
@@ -98,7 +99,7 @@ func (t *templateBuilder) buildCapacity(machineType string, accelerators []*gce.
 	capacity[apiv1.ResourceMemory] = *resource.NewQuantity(mem, resource.DecimalSI)
 
 	if accelerators != nil && len(accelerators) > 0 {
-		capacity[apiv1.ResourceNvidiaGPU] = *resource.NewQuantity(t.getAcceleratorCount(accelerators), resource.DecimalSI)
+		capacity[resourceNvidiaGPU] = *resource.NewQuantity(t.getAcceleratorCount(accelerators), resource.DecimalSI)
 	}
 
 	return capacity, nil
