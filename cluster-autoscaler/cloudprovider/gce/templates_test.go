@@ -190,7 +190,7 @@ func TestBuildAllocatableFromKubeEnv(t *testing.T) {
 		capacityMemory string
 		expectedCpu    string
 		expectedMemory string
-		gcuCount       int64
+		gpuCount       int64
 		expectedErr    bool
 	}
 	testCases := []testCase{{
@@ -203,7 +203,7 @@ func TestBuildAllocatableFromKubeEnv(t *testing.T) {
 		capacityMemory: "700000Mi",
 		expectedCpu:    "3000m",
 		expectedMemory: "400000Mi",
-		gcuCount:       10,
+		gpuCount:       10,
 		expectedErr:    false,
 	}, {
 		kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
@@ -215,7 +215,7 @@ func TestBuildAllocatableFromKubeEnv(t *testing.T) {
 		expectedErr:    true,
 	}}
 	for _, tc := range testCases {
-		capacity, err := makeResourceList(tc.capacityCpu, tc.capacityMemory, tc.gcuCount)
+		capacity, err := makeResourceList(tc.capacityCpu, tc.capacityMemory, tc.gpuCount)
 		assert.NoError(t, err)
 		tb := templateBuilder{}
 		allocatable, err := tb.buildAllocatableFromKubeEnv(capacity, tc.kubeEnv)
@@ -223,7 +223,7 @@ func TestBuildAllocatableFromKubeEnv(t *testing.T) {
 			assert.Error(t, err)
 		} else {
 			assert.NoError(t, err)
-			expectedResources, err := makeResourceList(tc.expectedCpu, tc.expectedMemory, tc.gcuCount)
+			expectedResources, err := makeResourceList(tc.expectedCpu, tc.expectedMemory, tc.gpuCount)
 			assert.NoError(t, err)
 			assert.Equal(t, expectedResources, allocatable)
 		}
