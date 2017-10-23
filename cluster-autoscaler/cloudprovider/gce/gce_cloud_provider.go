@@ -60,17 +60,19 @@ var autoprovisionedMachineTypes = []string{
 
 // GceCloudProvider implements CloudProvider interface.
 type GceCloudProvider struct {
-	gceManager GceManager
+	gceManager      GceManager
+	resourceLimiter *cloudprovider.ResourceLimiter
 }
 
 // BuildGceCloudProvider builds CloudProvider implementation for GCE.
-func BuildGceCloudProvider(gceManager GceManager, specs []string) (*GceCloudProvider, error) {
+func BuildGceCloudProvider(gceManager GceManager, specs []string, resourceLimiter *cloudprovider.ResourceLimiter) (*GceCloudProvider, error) {
 	if gceManager.getMode() == ModeGKE && len(specs) != 0 {
 		return nil, fmt.Errorf("GKE gets nodegroup specification via API, command line specs are not allowed")
 	}
 
 	gce := &GceCloudProvider{
-		gceManager: gceManager,
+		gceManager:      gceManager,
+		resourceLimiter: resourceLimiter,
 	}
 	for _, spec := range specs {
 		if err := gce.addNodeGroup(spec); err != nil {
@@ -153,6 +155,11 @@ func (gce *GceCloudProvider) NewNodeGroup(machineType string, labels map[string]
 		return nil, err
 	}
 	return mig, nil
+}
+
+// GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
+func (gce *GceCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+	return gce.resourceLimiter, nil
 }
 
 // GceRef contains s reference to some entity in GCE/GKE world.

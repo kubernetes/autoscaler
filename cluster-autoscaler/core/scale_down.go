@@ -367,9 +367,15 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 	candidates := make([]*apiv1.Node, 0)
 	readinessMap := make(map[string]bool)
 
+	resourceLimiter, errCP := sd.context.CloudProvider.GetResourceLimiter()
+	if errCP != nil {
+		return ScaleDownError, errors.ToAutoscalerError(
+			errors.CloudProviderError,
+			errCP)
+	}
 	coresTotal, memoryTotal := calculateCoresAndMemoryTotal(nodesWithoutMaster, currentTime)
-	coresLeft := coresTotal - sd.context.MinCoresTotal
-	memoryLeft := memoryTotal - sd.context.MinMemoryTotal
+	coresLeft := coresTotal - resourceLimiter.GetMin(cloudprovider.ResourceNameCores)
+	memoryLeft := memoryTotal - resourceLimiter.GetMin(cloudprovider.ResourceNameMemory)
 
 	nodeGroupSize := getNodeGroupSizeMap(sd.context.CloudProvider)
 	for _, node := range nodesWithoutMaster {
