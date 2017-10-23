@@ -24,6 +24,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 )
 
 type AutoScalingMock struct {
@@ -106,17 +107,25 @@ func testDescribeAutoScalingGroupsOutput(desiredCap int64, instanceIds ...string
 }
 
 func testProvider(t *testing.T, m *AwsManager) *awsCloudProvider {
-	provider, err := buildStaticallyDiscoveringProvider(m, nil)
+	resourceLimiter := cloudprovider.NewResourceLimiter(
+		map[string]int64{cloudprovider.ResourceNameCores: 1, cloudprovider.ResourceNameMemory: 10000000},
+		map[string]int64{cloudprovider.ResourceNameCores: 10, cloudprovider.ResourceNameMemory: 100000000})
+
+	provider, err := buildStaticallyDiscoveringProvider(m, nil, resourceLimiter)
 	assert.NoError(t, err)
 	return provider
 }
 
 func TestBuildAwsCloudProvider(t *testing.T) {
+	resourceLimiter := cloudprovider.NewResourceLimiter(
+		map[string]int64{cloudprovider.ResourceNameCores: 1, cloudprovider.ResourceNameMemory: 10000000},
+		map[string]int64{cloudprovider.ResourceNameCores: 10, cloudprovider.ResourceNameMemory: 100000000})
+
 	m := testAwsManager
-	_, err := buildStaticallyDiscoveringProvider(m, []string{"bad spec"})
+	_, err := buildStaticallyDiscoveringProvider(m, []string{"bad spec"}, resourceLimiter)
 	assert.Error(t, err)
 
-	_, err = buildStaticallyDiscoveringProvider(m, nil)
+	_, err = buildStaticallyDiscoveringProvider(m, nil, resourceLimiter)
 	assert.NoError(t, err)
 }
 
@@ -317,6 +326,15 @@ func TestDeleteNodes(t *testing.T) {
 	assert.NoError(t, err)
 	service.AssertNumberOfCalls(t, "TerminateInstanceInAutoScalingGroup", 1)
 	service.AssertNumberOfCalls(t, "DescribeAutoScalingGroups", 2)
+}
+
+func TestGetResourceLimiter(t *testing.T) {
+	service := &AutoScalingMock{}
+	m := newTestAwsManagerWithService(service)
+
+	provider := testProvider(t, m)
+	_, err := provider.GetResourceLimiter()
+	assert.NoError(t, err)
 }
 
 func TestId(t *testing.T) {

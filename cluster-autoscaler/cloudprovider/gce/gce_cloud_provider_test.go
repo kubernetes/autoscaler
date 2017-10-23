@@ -113,6 +113,10 @@ func TestBuildGceCloudProvider(t *testing.T) {
 	ng1Name := "https://content.googleapis.com/compute/v1/projects/project1/zones/us-central1-b/instanceGroups/ng1"
 	ng2Name := "https://content.googleapis.com/compute/v1/projects/project1/zones/us-central1-b/instanceGroups/ng2"
 
+	resourceLimiter := cloudprovider.NewResourceLimiter(
+		map[string]int64{cloudprovider.ResourceNameCores: 1, cloudprovider.ResourceNameMemory: 10000000},
+		map[string]int64{cloudprovider.ResourceNameCores: 10, cloudprovider.ResourceNameMemory: 100000000})
+
 	// GCE mode.
 	gceManagerMock.On("getMode").Return(ModeGCE).Once()
 	gceManagerMock.On("RegisterMig",
@@ -121,7 +125,8 @@ func TestBuildGceCloudProvider(t *testing.T) {
 		})).Return(true).Times(2)
 
 	provider, err := BuildGceCloudProvider(gceManagerMock,
-		[]string{"0:10:" + ng1Name, "0:5:https:" + ng2Name})
+		[]string{"0:10:" + ng1Name, "0:5:https:" + ng2Name},
+		resourceLimiter)
 	assert.NoError(t, err)
 	assert.NotNil(t, provider)
 	mock.AssertExpectationsForObjects(t, gceManagerMock)
@@ -129,7 +134,7 @@ func TestBuildGceCloudProvider(t *testing.T) {
 	// GKE mode.
 	gceManagerMock.On("getMode").Return(ModeGKE).Once()
 
-	provider, err = BuildGceCloudProvider(gceManagerMock, []string{})
+	provider, err = BuildGceCloudProvider(gceManagerMock, []string{}, resourceLimiter)
 	assert.NoError(t, err)
 	assert.NotNil(t, provider)
 	mock.AssertExpectationsForObjects(t, gceManagerMock)
@@ -138,7 +143,8 @@ func TestBuildGceCloudProvider(t *testing.T) {
 	gceManagerMock.On("getMode").Return(ModeGKE).Once()
 
 	provider, err = BuildGceCloudProvider(gceManagerMock,
-		[]string{"0:10:" + ng1Name, "0:5:https:" + ng2Name})
+		[]string{"0:10:" + ng1Name, "0:5:https:" + ng2Name},
+		resourceLimiter)
 	assert.Error(t, err)
 	assert.Equal(t, "GKE gets nodegroup specification via API, command line specs are not allowed", err.Error())
 	mock.AssertExpectationsForObjects(t, gceManagerMock)
@@ -170,6 +176,18 @@ func TestNodeGroupForNode(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, mig, *reflect.ValueOf(nodeGroup).Interface().(*Mig))
 	mock.AssertExpectationsForObjects(t, gceManagerMock)
+}
+
+func TestGetResourceLimiter(t *testing.T) {
+	resourceLimiter := cloudprovider.NewResourceLimiter(
+		map[string]int64{cloudprovider.ResourceNameCores: 1, cloudprovider.ResourceNameMemory: 10000000},
+		map[string]int64{cloudprovider.ResourceNameCores: 10, cloudprovider.ResourceNameMemory: 100000000})
+	gce := &GceCloudProvider{
+		resourceLimiter: resourceLimiter,
+	}
+
+	_, err := gce.GetResourceLimiter()
+	assert.NoError(t, err)
 }
 
 const getMachineTypeResponse = `{
