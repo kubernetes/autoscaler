@@ -34,7 +34,15 @@ func TestNewAutoscalingContext(t *testing.T) {
 	fakeRecorder := kube_record.NewFakeRecorder(5)
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false)
 
-	autoscalingContext, err := NewAutoscalingContext(AutoscalingOptions{ExpanderName: expander.RandomExpanderName}, simulator.NewTestPredicateChecker(),
+	autoscalingContext, err := NewAutoscalingContext(
+		AutoscalingOptions{
+			ExpanderName:   expander.RandomExpanderName,
+			MaxCoresTotal:  10,
+			MinCoresTotal:  1,
+			MaxMemoryTotal: 10000000000,
+			MinMemoryTotal: 1000000000,
+		},
+		simulator.NewTestPredicateChecker(),
 		fakeClient, fakeRecorder,
 		fakeLogRecorder, kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil))
 	assert.NoError(t, err)
