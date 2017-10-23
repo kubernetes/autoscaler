@@ -74,6 +74,8 @@ var defaultOptions = AutoscalingOptions{
 	EstimatorName:  estimator.BinpackingEstimatorName,
 	MaxCoresTotal:  config.DefaultMaxClusterCores,
 	MaxMemoryTotal: config.DefaultMaxClusterMemory,
+	MinCoresTotal:  0,
+	MinMemoryTotal: 0,
 }
 
 func TestScaleUpOK(t *testing.T) {
@@ -215,6 +217,12 @@ func simpleScaleUpTest(t *testing.T, config *scaleTestConfig) {
 			provider.AddNode(name, n)
 		}
 	}
+
+	resourceLimiter := cloudprovider.NewResourceLimiter(
+		map[string]int64{cloudprovider.ResourceNameCores: config.options.MinCoresTotal, cloudprovider.ResourceNameMemory: config.options.MinMemoryTotal},
+		map[string]int64{cloudprovider.ResourceNameCores: config.options.MaxCoresTotal, cloudprovider.ResourceNameMemory: config.options.MaxMemoryTotal})
+	provider.SetResourceLimiter(resourceLimiter)
+
 	assert.NotNil(t, provider)
 
 	fakeRecorder := kube_record.NewFakeRecorder(5)
