@@ -33,6 +33,7 @@ import (
 	"golang.org/x/oauth2/google"
 	gce "google.golang.org/api/compute/v1"
 	gke "google.golang.org/api/container/v1"
+	gke_alpha "google.golang.org/api/container/v1alpha1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	provider_gce "k8s.io/kubernetes/pkg/cloudprovider/providers/gce"
 )
@@ -46,6 +47,10 @@ const (
 
 	// ModeGKE means that the cluster is running
 	ModeGKE GcpCloudProviderMode = "gke"
+
+	// ModeGKENAP means that the cluster is running on GKE with autoprovisioning enabled.
+	// TODO(maciekpytel): remove this when NAP API is availiable in normal client
+	ModeGKENAP GcpCloudProviderMode = "gke_nap"
 )
 
 const (
@@ -100,8 +105,9 @@ type gceManagerImpl struct {
 	migs     []*migInformation
 	migCache map[GceRef]*Mig
 
-	gceService *gce.Service
-	gkeService *gke.Service
+	gceService      *gce.Service
+	gkeService      *gke.Service
+	gkeAlphaService *gke_alpha.Service
 
 	cacheMutex sync.Mutex
 	migsMutex  sync.Mutex
@@ -195,6 +201,20 @@ func CreateGceManager(configReader io.Reader, mode GcpCloudProviderMode, cluster
 		}
 	}
 
+	if mode == ModeGKENAP {
+		gkeAlphaService, err := gke_alpha.New(client)
+		if err != nil {
+			return nil, err
+		}
+		manager.gkeAlphaService = gkeAlphaService
+		err = manager.fetchAllNodePools()
+		if err != nil {
+			glog.Errorf("Failed to fetch node pools: %v", err)
+			return nil, err
+		}
+		glog.V(1).Info("Using GKE-NAP mode")
+	}
+
 	go wait.Forever(func() {
 		manager.cacheMutex.Lock()
 		defer manager.cacheMutex.Unlock()
@@ -212,8 +232,25 @@ func (m *gceManagerImpl) assertGKE() {
 	}
 }
 
-// Gets all registered node pools
+// Following section is a mess, because we need to use GKE v1alpha1 for NAP
+// and v1 otherwise.
+// TODO(maciekpytel): Clean this up once NAP fields are promoted to v1beta1
+
+func (m *gceManagerImpl) assertGKENAP() {
+	if m.mode != ModeGKENAP {
+		glog.Fatalf("This should run only in GKE mode with autoprovisioning enabled")
+	}
+}
+
 func (m *gceManagerImpl) fetchAllNodePools() error {
+	if m.mode == ModeGKENAP {
+		return m.fetchAllNodePoolsGkeNapImpl()
+	}
+	return m.fetchAllNodePoolsGkeImpl()
+}
+
+// Gets all registered node pools
+func (m *gceManagerImpl) fetchAllNodePoolsGkeImpl() error {
 	m.assertGKE()
 
 	nodePoolsResponse, err := m.gkeService.Projects.Zones.Clusters.NodePools.List(m.projectId, m.zone, m.clusterName).Do()
@@ -225,9 +262,73 @@ func (m *gceManagerImpl) fetchAllNodePools() error {
 	changed := false
 
 	for _, nodePool := range nodePoolsResponse.NodePools {
-		autoprovisioned := strings.Contains(nodePool.Name, nodeAutoprovisioningPrefix)
 		autoscaled := nodePool.Autoscaling != nil && nodePool.Autoscaling.Enabled
-		if !autoprovisioned && !autoscaled {
+		if !autoscaled {
+			continue
+		}
+		// format is
+		// "https://www.googleapis.com/compute/v1/projects/mwielgus-proj/zones/europe-west1-b/instanceGroupManagers/gke-cluster-1-default-pool-ba78a787-grp"
+		for _, igurl := range nodePool.InstanceGroupUrls {
+			project, zone, name, err := parseGceUrl(igurl, "instanceGroupManagers")
+			if err != nil {
+				return err
+			}
+			mig := &Mig{
+				GceRef: GceRef{
+					Name:    name,
+					Zone:    zone,
+					Project: project,
+				},
+				gceManager:      m,
+				exist:           true,
+				autoprovisioned: false, // NAP is disabled
+				nodePoolName:    nodePool.Name,
+				minSize:         int(nodePool.Autoscaling.MinNodeCount),
+				maxSize:         int(nodePool.Autoscaling.MaxNodeCount),
+			}
+			existingMigs[mig.GceRef] = struct{}{}
+
+			if m.RegisterMig(mig) {
+				changed = true
+			}
+		}
+	}
+	for _, mig := range m.getMigs() {
+		if _, found := existingMigs[mig.config.GceRef]; !found {
+			m.UnregisterMig(mig.config)
+			changed = true
+		}
+	}
+	if changed {
+		m.cacheMutex.Lock()
+		defer m.cacheMutex.Unlock()
+
+		if err := m.regenerateCache(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// Gets all registered node pools
+func (m *gceManagerImpl) fetchAllNodePoolsGkeNapImpl() error {
+	m.assertGKENAP()
+
+	nodePoolsResponse, err := m.gkeAlphaService.Projects.Zones.Clusters.NodePools.List(m.projectId, m.zone, m.clusterName).Do()
+	if err != nil {
+		return err
+	}
+
+	existingMigs := map[GceRef]struct{}{}
+	changed := false
+
+	for _, nodePool := range nodePoolsResponse.NodePools {
+		autoprovisioned := nodePool.Autoscaling != nil && nodePool.Autoscaling.Autoprovisioned
+		autoscaled := nodePool.Autoscaling != nil && nodePool.Autoscaling.Enabled
+		if !autoscaled {
+			if autoprovisioned {
+				glog.Warningf("NodePool %v has invalid config - autoprovisioned, but not autoscaled. Ignoring this NodePool.", nodePool.Name)
+			}
 			continue
 		}
 		// format is
@@ -247,13 +348,11 @@ func (m *gceManagerImpl) fetchAllNodePools() error {
 				exist:           true,
 				autoprovisioned: autoprovisioned,
 				nodePoolName:    nodePool.Name,
+				minSize:         int(nodePool.Autoscaling.MinNodeCount),
+				maxSize:         int(nodePool.Autoscaling.MaxNodeCount),
 			}
 			existingMigs[mig.GceRef] = struct{}{}
 
-			if autoscaled {
-				mig.minSize = int(nodePool.Autoscaling.MinNodeCount)
-				mig.maxSize = int(nodePool.Autoscaling.MaxNodeCount)
-			}
 			if m.RegisterMig(mig) {
 				changed = true
 			}
@@ -330,12 +429,12 @@ func (m *gceManagerImpl) UnregisterMig(toBeRemoved *Mig) bool {
 }
 
 func (m *gceManagerImpl) deleteNodePool(toBeRemoved *Mig) error {
-	m.assertGKE()
+	m.assertGKENAP()
 	if !toBeRemoved.Autoprovisioned() {
 		return fmt.Errorf("only autoprovisioned node pools can be deleted")
 	}
 	// TODO: handle multi-zonal node pools.
-	deleteOp, err := m.gkeService.Projects.Zones.Clusters.NodePools.Delete(m.projectId, m.zone, m.clusterName,
+	deleteOp, err := m.gkeAlphaService.Projects.Zones.Clusters.NodePools.Delete(m.projectId, m.zone, m.clusterName,
 		toBeRemoved.nodePoolName).Do()
 	if err != nil {
 		return err
@@ -348,26 +447,27 @@ func (m *gceManagerImpl) deleteNodePool(toBeRemoved *Mig) error {
 }
 
 func (m *gceManagerImpl) createNodePool(mig *Mig) error {
-	m.assertGKE()
+	m.assertGKENAP()
 
 	// TODO: handle preemptable
 	// TODO: handle ssd
 	// TODO: handle taints
 
-	config := gke.NodeConfig{
+	config := gke_alpha.NodeConfig{
 		MachineType: mig.spec.machineType,
 		OauthScopes: defaultOAuthScopes,
 		Labels:      mig.spec.labels,
 	}
 
-	autoscaling := gke.NodePoolAutoscaling{
-		Enabled:      true,
-		MinNodeCount: napMinNodes,
-		MaxNodeCount: napMaxNodes,
+	autoscaling := gke_alpha.NodePoolAutoscaling{
+		Enabled:         true,
+		MinNodeCount:    napMinNodes,
+		MaxNodeCount:    napMaxNodes,
+		Autoprovisioned: true,
 	}
 
-	createRequest := gke.CreateNodePoolRequest{
-		NodePool: &gke.NodePool{
+	createRequest := gke_alpha.CreateNodePoolRequest{
+		NodePool: &gke_alpha.NodePool{
 			Name:             mig.nodePoolName,
 			InitialNodeCount: 0,
 			Config:           &config,
@@ -375,7 +475,7 @@ func (m *gceManagerImpl) createNodePool(mig *Mig) error {
 		},
 	}
 
-	createOp, err := m.gkeService.Projects.Zones.Clusters.NodePools.Create(m.projectId, m.zone, m.clusterName,
+	createOp, err := m.gkeAlphaService.Projects.Zones.Clusters.NodePools.Create(m.projectId, m.zone, m.clusterName,
 		&createRequest).Do()
 	if err != nil {
 		return err
@@ -396,6 +496,8 @@ func (m *gceManagerImpl) createNodePool(mig *Mig) error {
 	}
 	return fmt.Errorf("node pool %s not found", mig.nodePoolName)
 }
+
+// End of v1alpha1 mess
 
 // GetMigSize gets MIG size.
 func (m *gceManagerImpl) GetMigSize(mig *Mig) (int64, error) {
@@ -433,10 +535,10 @@ func (m *gceManagerImpl) waitForOp(operation *gce.Operation, project string, zon
 }
 
 //  GKE
-func (m *gceManagerImpl) waitForGkeOp(operation *gke.Operation) error {
+func (m *gceManagerImpl) waitForGkeOp(operation *gke_alpha.Operation) error {
 	for start := time.Now(); time.Since(start) < gkeOperationWaitTimeout; time.Sleep(operationPollInterval) {
 		glog.V(4).Infof("Waiting for operation %s %s %s", m.projectId, m.zone, operation.Name)
-		if op, err := m.gkeService.Projects.Zones.Operations.Get(m.projectId, m.zone, operation.Name).Do(); err == nil {
+		if op, err := m.gkeAlphaService.Projects.Zones.Operations.Get(m.projectId, m.zone, operation.Name).Do(); err == nil {
 			glog.V(4).Infof("Operation %s %s %s status: %s", m.projectId, m.zone, operation.Name, op.Status)
 			if op.Status == "DONE" {
 				return nil
