@@ -35,17 +35,19 @@ import (
 // CloudProviderBuilder builds a cloud provider from all the necessary parameters including the name of a cloud provider e.g. aws, gce
 // and the path to a config file
 type CloudProviderBuilder struct {
-	cloudProviderFlag string
-	cloudConfig       string
-	clusterName       string
+	cloudProviderFlag       string
+	cloudConfig             string
+	clusterName             string
+	autoprovisioningEnabled bool
 }
 
 // NewCloudProviderBuilder builds a new builder from static settings
-func NewCloudProviderBuilder(cloudProviderFlag string, cloudConfig string, clusterName string) CloudProviderBuilder {
+func NewCloudProviderBuilder(cloudProviderFlag string, cloudConfig string, clusterName string, autoprovisioningEnabled bool) CloudProviderBuilder {
 	return CloudProviderBuilder{
-		cloudProviderFlag: cloudProviderFlag,
-		cloudConfig:       cloudConfig,
-		clusterName:       clusterName,
+		cloudProviderFlag:       cloudProviderFlag,
+		cloudConfig:             cloudConfig,
+		clusterName:             clusterName,
+		autoprovisioningEnabled: autoprovisioningEnabled,
 	}
 }
 
@@ -62,7 +64,11 @@ func (b CloudProviderBuilder) Build(discoveryOpts cloudprovider.NodeGroupDiscove
 		var gceError error
 		mode := gce.ModeGCE
 		if b.cloudProviderFlag == "gke" {
-			mode = gce.ModeGKE
+			if b.autoprovisioningEnabled {
+				mode = gce.ModeGKENAP
+			} else {
+				mode = gce.ModeGKE
+			}
 		}
 
 		if b.cloudConfig != "" {
