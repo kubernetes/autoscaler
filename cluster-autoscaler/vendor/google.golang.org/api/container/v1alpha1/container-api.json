@@ -787,6 +787,10 @@
         "ipAllocationPolicy": {
           "$ref": "IPAllocationPolicy",
           "description": "Configuration for cluster IP allocation."
+        },
+        "autoscaling": {
+          "$ref": "ClusterAutoscaling",
+          "description": "Cluster-level autoscaling configuration."
         }
       },
       "id": "Cluster",
@@ -1192,6 +1196,45 @@
       },
       "id": "MaintenancePolicy"
     },
+    "ClusterAutoscaling": {
+      "properties": {
+        "nodeAutoprovisioningEnabled": {
+          "type": "boolean",
+          "description": "Enables automatic node pool creation and deletion."
+        },
+        "resourceLimits": {
+          "items": {
+            "$ref": "ResourceLimit"
+          },
+          "type": "array",
+          "description": "Contains global constraints regarding minimum and maximum\namount of resources in the cluster."
+        }
+      },
+      "id": "ClusterAutoscaling",
+      "type": "object",
+      "description": "ClusterAutoscaling contains global, per-cluster information\nrequired by Cluster Autoscaler to automatically adjust\nthe size of the cluster and create/delete\nnode pools based on the current needs."
+    },
+    "ResourceLimit": {
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Resource name \"cpu\", \"memory\" or gpu-specific string."
+        },
+        "minimum": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Minimum amount of the resource in the cluster."
+        },
+        "maximum": {
+          "type": "integer",
+          "format": "int64",
+          "description": "Maximum amount of the resource in the cluster."
+        }
+      },
+      "id": "ResourceLimit",
+      "type": "object",
+      "description": "Contains information about amount of some resource in the cluster."
+    },
     "IPAllocationPolicy": {
       "properties": {
         "nodeIpv4CidrBlock": {
@@ -1290,6 +1333,10 @@
         "desiredNodeVersion": {
           "description": "The Kubernetes version to change the nodes to (typically an\nupgrade). Use `-` to upgrade to the latest version supported by\nthe server.",
           "type": "string"
+        },
+        "desiredClusterAutoscaling": {
+          "description": "The desired cluster-level autoscaling configuration.",
+          "$ref": "ClusterAutoscaling"
         }
       }
     },
