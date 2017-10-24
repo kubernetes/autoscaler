@@ -32,6 +32,7 @@ import (
 	"gopkg.in/gcfg.v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	provider_aws "k8s.io/kubernetes/pkg/cloudprovider/providers/aws"
@@ -51,8 +52,9 @@ type asgInformation struct {
 
 // AwsManager is handles aws communication and data caching.
 type AwsManager struct {
-	service autoScalingWrapper
-	asgs    *autoScalingGroups
+	service   autoScalingWrapper
+	asgs      *autoScalingGroups
+	interrupt chan struct{}
 }
 
 type asgTemplate struct {
@@ -76,11 +78,24 @@ func CreateAwsManager(configReader io.Reader) (*AwsManager, error) {
 		autoscaling.New(session.New()),
 	}
 	manager := &AwsManager{
-		asgs:    newAutoScalingGroups(service),
-		service: service,
+		asgs:      newAutoScalingGroups(service),
+		service:   service,
+		interrupt: make(chan struct{}),
 	}
 
+	go wait.Until(func() {
+		manager.asgs.cacheMutex.Lock()
+		defer manager.asgs.cacheMutex.Unlock()
+		if err := manager.asgs.regenerateCache(); err != nil {
+			glog.Errorf("Error while regenerating Asg cache: %v", err)
+		}
+	}, time.Hour, manager.interrupt)
+
 	return manager, nil
+}
+
+func (m *AwsManager) Cleanup() {
+	m.interrupt <- struct{}{}
 }
 
 // RegisterAsg registers asg in Aws Manager.
