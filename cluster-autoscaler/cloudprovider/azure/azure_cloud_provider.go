@@ -74,7 +74,9 @@ func (azure *AzureCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 }
 
 // Cleanup cleans up all resources before the cloud provider is removed
-func (azure *AzureCloudProvider) Cleanup() error {}
+func (azure *AzureCloudProvider) Cleanup() error {
+	return nil
+}
 
 // NodeGroupForNode returns the node group for the given node.
 func (azure *AzureCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
