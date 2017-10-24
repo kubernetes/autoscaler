@@ -165,6 +165,12 @@ func (aws *awsCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimite
 	return aws.resourceLimiter, nil
 }
 
+// Refresh is called before every main loop and can be used to dynamically update cloud provider state.
+// In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
+func (aws *awsCloudProvider) Refresh() error {
+	return nil
+}
+
 // AwsRef contains a reference to some entity in AWS/GKE world.
 type AwsRef struct {
 	Name string
