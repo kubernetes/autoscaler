@@ -2194,10 +2194,10 @@ func (s *PodSecurityPolicyConfig) MarshalJSON() ([]byte, error) {
 // the cluster.
 type ResourceLimit struct {
 	// Maximum: Maximum amount of the resource in the cluster.
-	Maximum int64 `json:"maximum,omitempty"`
+	Maximum int64 `json:"maximum,omitempty,string"`
 
 	// Minimum: Minimum amount of the resource in the cluster.
-	Minimum int64 `json:"minimum,omitempty"`
+	Minimum int64 `json:"minimum,omitempty,string"`
 
 	// Name: Resource name "cpu", "memory" or gpu-specific string.
 	Name string `json:"name,omitempty"`
