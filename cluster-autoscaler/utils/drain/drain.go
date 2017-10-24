@@ -33,6 +33,12 @@ const (
 	PodDeletionTimeout = 12 * time.Minute
 )
 
+const (
+	// PodSafeToEvictKey - annotation that ignores constraints to evict a pod like not being replicated, being on
+	// kube-system namespace or having a local storage.
+	PodSafeToEvictKey = "cluster-autoscaler.kubernetes.io/safe-to-evict"
+)
+
 // GetPodsForDeletionOnNodeDrain returns pods that should be deleted on node drain as well as some extra information
 // about possibly problematic pods (unreplicated and daemonsets).
 func GetPodsForDeletionOnNodeDrain(
@@ -70,6 +76,7 @@ func GetPodsForDeletionOnNodeDrain(
 
 		daemonsetPod := false
 		replicated := false
+		safeToEvict := hasSaveToEvictAnnotation(pod)
 
 		controllerRef := ControllerRef(pod)
 		refKind := ""
@@ -172,7 +179,7 @@ func GetPodsForDeletionOnNodeDrain(
 		if daemonsetPod {
 			continue
 		}
-		if !deleteAll {
+		if !deleteAll && !safeToEvict {
 			if !replicated {
 				return []*apiv1.Pod{}, fmt.Errorf("%s/%s is not replicated", pod.Namespace, pod.Name)
 			}
@@ -233,4 +240,9 @@ func checkKubeSystemPDBs(pod *apiv1.Pod, pdbs []*policyv1.PodDisruptionBudget) (
 	}
 
 	return false, nil
+}
+
+// This checks if pod has PodSafeToEvictKey annotation
+func hasSaveToEvictAnnotation(pod *apiv1.Pod) bool {
+	return pod.GetAnnotations()[PodSafeToEvictKey] == "true"
 }
