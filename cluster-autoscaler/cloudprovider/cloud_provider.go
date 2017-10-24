@@ -56,6 +56,10 @@ type CloudProvider interface {
 
 	// GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
 	GetResourceLimiter() (*ResourceLimiter, error)
+
+	// Refresh is called before every main loop and can be used to dynamically update cloud provider state.
+	// In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
+	Refresh() error
 }
 
 // ErrNotImplemented is returned if a method is not implemented.
