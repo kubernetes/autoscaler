@@ -1221,12 +1221,12 @@
           "description": "Resource name \"cpu\", \"memory\" or gpu-specific string."
         },
         "minimum": {
-          "type": "integer",
+          "type": "string",
           "format": "int64",
           "description": "Minimum amount of the resource in the cluster."
         },
         "maximum": {
-          "type": "integer",
+          "type": "string",
           "format": "int64",
           "description": "Maximum amount of the resource in the cluster."
         }
