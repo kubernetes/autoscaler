@@ -17,9 +17,10 @@ limitations under the License.
 package cloudprovider
 
 import (
-	"time"
-
+	"bytes"
+	"fmt"
 	"math"
+	"time"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -147,9 +148,9 @@ type PricingModel interface {
 
 const (
 	// ResourceNameCores is string name for cores. It's used by ResourceLimiter.
-	ResourceNameCores = "resource_name_cores"
+	ResourceNameCores = "cpu"
 	// ResourceNameMemory is string name for memory. It's used by ResourceLimiter.
-	ResourceNameMemory = "resource_name_memory"
+	ResourceNameMemory = "memory"
 )
 
 // ResourceLimiter contains limits (max, min) for resources (cores, memory etc.).
@@ -187,4 +188,15 @@ func (r *ResourceLimiter) GetMax(resourceName string) int64 {
 		return result
 	}
 	return math.MaxInt64
+}
+
+func (r *ResourceLimiter) String() string {
+	var buffer bytes.Buffer
+	for name, maxLimit := range r.maxLimits {
+		if buffer.Len() > 0 {
+			buffer.WriteString(", ")
+		}
+		buffer.WriteString(fmt.Sprintf("{%s : %d - %d}", name, r.minLimits[name], maxLimit))
+	}
+	return buffer.String()
 }
