@@ -72,6 +72,11 @@ func (m *gceManagerMock) GetMigNodes(mig *Mig) ([]string, error) {
 	return args.Get(0).([]string), args.Error(1)
 }
 
+func (m *gceManagerMock) Refresh() error {
+	args := m.Called()
+	return args.Error(0)
+}
+
 func (m *gceManagerMock) getMigs() []*migInformation {
 	args := m.Called()
 	return args.Get(0).([]*migInformation)
