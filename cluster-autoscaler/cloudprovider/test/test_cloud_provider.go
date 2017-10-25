@@ -192,6 +192,12 @@ func (tcp *TestCloudProvider) SetResourceLimiter(resourceLimiter *cloudprovider.
 	tcp.resourceLimiter = resourceLimiter
 }
 
+// Refresh is called before every main loop and can be used to dynamically update cloud provider state.
+// In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
+func (tcp *TestCloudProvider) Refresh() error {
+	return nil
+}
+
 // TestNodeGroup is a node group used by TestCloudProvider.
 type TestNodeGroup struct {
 	sync.Mutex

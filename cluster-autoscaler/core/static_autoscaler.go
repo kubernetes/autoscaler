@@ -95,6 +95,12 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 
 	glog.V(4).Info("Starting main loop")
 
+	err := autoscalingContext.CloudProvider.Refresh()
+	if err != nil {
+		glog.Errorf("Failed to refresh cloud provider config: %v", err)
+		return errors.ToAutoscalerError(errors.CloudProviderError, err)
+	}
+
 	readyNodes, err := readyNodeLister.List()
 	if err != nil {
 		glog.Errorf("Failed to list ready nodes: %v", err)
