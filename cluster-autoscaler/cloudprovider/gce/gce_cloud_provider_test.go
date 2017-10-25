@@ -17,16 +17,16 @@ limitations under the License.
 package gce
 
 import (
+	"fmt"
 	"net/http"
 	"reflect"
+	"strings"
 	"testing"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
 	apiv1 "k8s.io/api/core/v1"
-
-	"strings"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -112,6 +112,11 @@ func (m *gceManagerMock) getTemplates() *templateBuilder {
 	return args.Get(0).(*templateBuilder)
 }
 
+func (m *gceManagerMock) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+	args := m.Called()
+	return args.Get(0).(*cloudprovider.ResourceLimiter), args.Error(1)
+}
+
 func TestBuildGceCloudProvider(t *testing.T) {
 	gceManagerMock := &gceManagerMock{}
 
@@ -184,15 +189,34 @@ func TestNodeGroupForNode(t *testing.T) {
 }
 
 func TestGetResourceLimiter(t *testing.T) {
+	gceManagerMock := &gceManagerMock{}
 	resourceLimiter := cloudprovider.NewResourceLimiter(
 		map[string]int64{cloudprovider.ResourceNameCores: 1, cloudprovider.ResourceNameMemory: 10000000},
 		map[string]int64{cloudprovider.ResourceNameCores: 10, cloudprovider.ResourceNameMemory: 100000000})
 	gce := &GceCloudProvider{
-		resourceLimiter: resourceLimiter,
+		gceManager:               gceManagerMock,
+		resourceLimiterFromFlags: resourceLimiter,
 	}
 
-	_, err := gce.GetResourceLimiter()
+	// Return default.
+	gceManagerMock.On("GetResourceLimiter").Return((*cloudprovider.ResourceLimiter)(nil), nil).Once()
+	returnedResourceLimiter, err := gce.GetResourceLimiter()
 	assert.NoError(t, err)
+	assert.Equal(t, resourceLimiter, returnedResourceLimiter)
+
+	// Return for GKE.
+	resourceLimiterGKE := cloudprovider.NewResourceLimiter(
+		map[string]int64{cloudprovider.ResourceNameCores: 2, cloudprovider.ResourceNameMemory: 20000000},
+		map[string]int64{cloudprovider.ResourceNameCores: 5, cloudprovider.ResourceNameMemory: 200000000})
+	gceManagerMock.On("GetResourceLimiter").Return(resourceLimiterGKE, nil).Once()
+	returnedResourceLimiterGKE, err := gce.GetResourceLimiter()
+	assert.NoError(t, err)
+	assert.Equal(t, returnedResourceLimiterGKE, resourceLimiterGKE)
+
+	// Error in GceManager.
+	gceManagerMock.On("GetResourceLimiter").Return((*cloudprovider.ResourceLimiter)(nil), fmt.Errorf("Some error")).Once()
+	returnedResourceLimiter, err = gce.GetResourceLimiter()
+	assert.Error(t, err)
 }
 
 const getMachineTypeResponse = `{

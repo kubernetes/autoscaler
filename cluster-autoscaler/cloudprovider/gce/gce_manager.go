@@ -35,6 +35,7 @@ import (
 	gke "google.golang.org/api/container/v1"
 	gke_alpha "google.golang.org/api/container/v1alpha1"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	provider_gce "k8s.io/kubernetes/pkg/cloudprovider/providers/gce"
 )
 
@@ -69,6 +70,7 @@ var (
 		"https://www.googleapis.com/auth/devstorage.read_only",
 		"https://www.googleapis.com/auth/service.management.readonly",
 		"https://www.googleapis.com/auth/servicecontrol"}
+	supportedResources = map[string]bool{cloudprovider.ResourceNameCores: true, cloudprovider.ResourceNameMemory: true}
 )
 
 type migInformation struct {
@@ -94,6 +96,8 @@ type GceManager interface {
 	GetMigNodes(mig *Mig) ([]string, error)
 	// Refresh updates config by calling GKE API (in GKE mode only).
 	Refresh() error
+	// GetResourceLimiter returns resource limiter.
+	GetResourceLimiter() (*cloudprovider.ResourceLimiter, error)
 	getMigs() []*migInformation
 	createNodePool(mig *Mig) error
 	deleteNodePool(toBeRemoved *Mig) error
@@ -120,6 +124,8 @@ type gceManagerImpl struct {
 	clusterName string
 	mode        GcpCloudProviderMode
 	templates   *templateBuilder
+
+	resourceLimiter *cloudprovider.ResourceLimiter
 
 	lastRefresh time.Time
 }
@@ -215,6 +221,11 @@ func CreateGceManager(configReader io.Reader, mode GcpCloudProviderMode, cluster
 		err = manager.fetchAllNodePools()
 		if err != nil {
 			glog.Errorf("Failed to fetch node pools: %v", err)
+			return nil, err
+		}
+		err = manager.fetchResourceLimiter()
+		if err != nil {
+			glog.Errorf("Failed to fetch resource limits: %v", err)
 			return nil, err
 		}
 		glog.V(1).Info("Using GKE-NAP mode")
@@ -704,11 +715,53 @@ func (m *gceManagerImpl) Refresh() error {
 	}
 	if m.lastRefresh.Add(refreshInterval).Before(time.Now()) {
 		err := m.fetchAllNodePools()
+		if err != nil {
+			return err
+		}
+
+		err = m.fetchResourceLimiter()
+		if err != nil {
+			return err
+		}
+
 		m.lastRefresh = time.Now()
-		glog.V(2).Infof("Refreshed NodePools list, next refresh after %v", m.lastRefresh.Add(refreshInterval))
-		return err
+		glog.V(2).Infof("Refreshed NodePools list and resource limits, next refresh after %v", m.lastRefresh.Add(refreshInterval))
+		return nil
 	}
 	return nil
+}
+
+func (m *gceManagerImpl) fetchResourceLimiter() error {
+	if m.mode == ModeGKENAP {
+		cluster, err := m.gkeAlphaService.Projects.Zones.Clusters.Get(m.projectId, m.zone, m.clusterName).Do()
+		if err != nil {
+			return nil
+		}
+
+		minLimits := make(map[string]int64)
+		maxLimits := make(map[string]int64)
+		for _, limit := range cluster.Autoscaling.ResourceLimits {
+			if _, found := supportedResources[limit.Name]; !found {
+				glog.Warning("Unsupported limit defined %s: %d - %d", limit.Name, limit.Minimum, limit.Maximum)
+			}
+			minLimits[limit.Name] = limit.Minimum
+			maxLimits[limit.Name] = limit.Maximum
+		}
+		resourceLimiter := cloudprovider.NewResourceLimiter(minLimits, maxLimits)
+		glog.V(2).Infof("Refreshed resource limits: %s", resourceLimiter.String())
+
+		m.cacheMutex.Lock()
+		defer m.cacheMutex.Unlock()
+		m.resourceLimiter = resourceLimiter
+	}
+	return nil
+}
+
+// GetResourceLimiter returns resource limiter.
+func (m *gceManagerImpl) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+	m.cacheMutex.Lock()
+	defer m.cacheMutex.Unlock()
+	return m.resourceLimiter, nil
 }
 
 // Code borrowed from gce cloud provider. Reuse the original as soon as it becomes public.
