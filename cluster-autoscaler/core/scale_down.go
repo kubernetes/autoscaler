@@ -26,6 +26,7 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
+	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
@@ -821,7 +822,7 @@ func hasNoScaleDownAnnotation(node *apiv1.Node) bool {
 	return node.Annotations[ScaleDownDisabledKey] == "true"
 }
 
-func cleanUpNodeAutoprovisionedGroups(cloudProvider cloudprovider.CloudProvider) error {
+func cleanUpNodeAutoprovisionedGroups(cloudProvider cloudprovider.CloudProvider, logRecorder *utils.LogEventRecorder) error {
 	nodeGroups := cloudProvider.NodeGroups()
 	for _, nodeGroup := range nodeGroups {
 		if !nodeGroup.Autoprovisioned() {
@@ -832,9 +833,14 @@ func cleanUpNodeAutoprovisionedGroups(cloudProvider cloudprovider.CloudProvider)
 			return err
 		}
 		if size == 0 {
+			ngId := nodeGroup.Id()
 			if err := nodeGroup.Delete(); err != nil {
+				logRecorder.Eventf(apiv1.EventTypeWarning, "FailedToDeleteNodeGroup",
+					"NodeAutoprovisioning: attempt to delete node group %v failed: %v", ngId, err)
 				return err
 			}
+			logRecorder.Eventf(apiv1.EventTypeNormal, "DeletedNodeGroup",
+				"NodeAutoprovisioning: removed node group %v", ngId)
 		}
 	}
 	return nil
