@@ -105,7 +105,7 @@ func CreateGceManager(configReader io.Reader) (*GceManager, error) {
 }
 
 func (m *GceManager) Cleanup() {
-	m.interrupt <- struct{}{}
+	close(m.interrupt)
 }
 
 // RegisterMig registers mig in Gce Manager.

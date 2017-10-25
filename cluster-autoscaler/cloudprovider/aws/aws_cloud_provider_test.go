@@ -72,7 +72,8 @@ var testAwsManager = &AwsManager{
 		instanceToAsg:            make(map[AwsRef]*Asg),
 		instancesNotInManagedAsg: make(map[AwsRef]struct{}),
 	},
-	service: testService,
+	service:   testService,
+	interrupt: make(chan struct{}),
 }
 
 func newTestAwsManagerWithService(service autoScaling) *AwsManager {
@@ -85,6 +86,7 @@ func newTestAwsManagerWithService(service autoScaling) *AwsManager {
 			instancesNotInManagedAsg: make(map[AwsRef]struct{}),
 			service:                  wrapper,
 		},
+		interrupt: make(chan struct{}),
 	}
 }
 
@@ -352,4 +354,10 @@ func TestBuildAsg(t *testing.T) {
 	assert.Equal(t, 111, asg.MinSize())
 	assert.Equal(t, 222, asg.MaxSize())
 	assert.Equal(t, "test-name", asg.Name)
+}
+
+func TestClose(t *testing.T) {
+	provider := testProvider(t, testAwsManager)
+	err := provider.Close()
+	assert.NoError(t, err)
 }

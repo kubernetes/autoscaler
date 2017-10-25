@@ -65,7 +65,7 @@ type asgTemplate struct {
 }
 
 // CreateAwsManager constructs awsManager object.
-func CreateAwsManager(configReader io.Reader) (*AwsManager, error) {
+func CreateAwsManager(configReader io.Reader, service *autoScalingWrapper) (*AwsManager, error) {
 	if configReader != nil {
 		var cfg provider_aws.CloudConfig
 		if err := gcfg.ReadInto(&cfg, configReader); err != nil {
@@ -74,12 +74,14 @@ func CreateAwsManager(configReader io.Reader) (*AwsManager, error) {
 		}
 	}
 
-	service := autoScalingWrapper{
-		autoscaling.New(session.New()),
+	if service == nil {
+		service = &autoScalingWrapper{
+			autoscaling.New(session.New()),
+		}
 	}
 	manager := &AwsManager{
-		asgs:      newAutoScalingGroups(service),
-		service:   service,
+		asgs:      newAutoScalingGroups(*service),
+		service:   *service,
 		interrupt: make(chan struct{}),
 	}
 
@@ -95,7 +97,7 @@ func CreateAwsManager(configReader io.Reader) (*AwsManager, error) {
 }
 
 func (m *AwsManager) Cleanup() {
-	m.interrupt <- struct{}{}
+	close(m.interrupt)
 }
 
 // RegisterAsg registers asg in Aws Manager.

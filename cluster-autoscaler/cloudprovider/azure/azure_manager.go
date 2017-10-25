@@ -213,7 +213,7 @@ func byInspecting() autorest.RespondDecorator {
 }
 
 func (m *AzureManager) Cleanup() {
-	m.interrupt <- struct{}{}
+	close(m.interrupt)
 }
 
 // RegisterScaleSet registers scale set in Azure Manager.
