@@ -57,6 +57,7 @@ const (
 	operationWaitTimeout       = 5 * time.Second
 	gkeOperationWaitTimeout    = 120 * time.Second
 	operationPollInterval      = 100 * time.Millisecond
+	refreshInterval            = 1 * time.Minute
 	nodeAutoprovisioningPrefix = "nap"
 	napMaxNodes                = 1000
 	napMinNodes                = 0
@@ -91,6 +92,8 @@ type GceManager interface {
 	GetMigForInstance(instance *GceRef) (*Mig, error)
 	// GetMigNodes returns mig nodes.
 	GetMigNodes(mig *Mig) ([]string, error)
+	// Refresh updates config by calling GKE API (in GKE mode only).
+	Refresh() error
 	getMigs() []*migInformation
 	createNodePool(mig *Mig) error
 	deleteNodePool(toBeRemoved *Mig) error
@@ -117,6 +120,8 @@ type gceManagerImpl struct {
 	clusterName string
 	mode        GcpCloudProviderMode
 	templates   *templateBuilder
+
+	lastRefresh time.Time
 }
 
 // CreateGceManager constructs gceManager object.
@@ -214,6 +219,8 @@ func CreateGceManager(configReader io.Reader, mode GcpCloudProviderMode, cluster
 		}
 		glog.V(1).Info("Using GKE-NAP mode")
 	}
+
+	manager.lastRefresh = time.Now()
 
 	go wait.Forever(func() {
 		manager.cacheMutex.Lock()
@@ -689,6 +696,19 @@ func (m *gceManagerImpl) getMode() GcpCloudProviderMode {
 }
 func (m *gceManagerImpl) getTemplates() *templateBuilder {
 	return m.templates
+}
+
+func (m *gceManagerImpl) Refresh() error {
+	if m.mode == ModeGCE {
+		return nil
+	}
+	if m.lastRefresh.Add(refreshInterval).Before(time.Now()) {
+		err := m.fetchAllNodePools()
+		m.lastRefresh = time.Now()
+		glog.V(2).Infof("Refreshed NodePools list, next refresh after %v", m.lastRefresh.Add(refreshInterval))
+		return err
+	}
+	return nil
 }
 
 // Code borrowed from gce cloud provider. Reuse the original as soon as it becomes public.
