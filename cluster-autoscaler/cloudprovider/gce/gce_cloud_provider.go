@@ -60,8 +60,9 @@ var autoprovisionedMachineTypes = []string{
 
 // GceCloudProvider implements CloudProvider interface.
 type GceCloudProvider struct {
-	gceManager      GceManager
-	resourceLimiter *cloudprovider.ResourceLimiter
+	gceManager GceManager
+	// This resource limiter is used if resource limits are not defined through cloud API.
+	resourceLimiterFromFlags *cloudprovider.ResourceLimiter
 }
 
 // BuildGceCloudProvider builds CloudProvider implementation for GCE.
@@ -71,8 +72,8 @@ func BuildGceCloudProvider(gceManager GceManager, specs []string, resourceLimite
 	}
 
 	gce := &GceCloudProvider{
-		gceManager:      gceManager,
-		resourceLimiter: resourceLimiter,
+		gceManager:               gceManager,
+		resourceLimiterFromFlags: resourceLimiter,
 	}
 	for _, spec := range specs {
 		if err := gce.addNodeGroup(spec); err != nil {
@@ -159,7 +160,14 @@ func (gce *GceCloudProvider) NewNodeGroup(machineType string, labels map[string]
 
 // GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
 func (gce *GceCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
-	return gce.resourceLimiter, nil
+	resourceLimiter, err := gce.gceManager.GetResourceLimiter()
+	if err != nil {
+		return nil, err
+	}
+	if resourceLimiter != nil {
+		return resourceLimiter, nil
+	}
+	return gce.resourceLimiterFromFlags, nil
 }
 
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
