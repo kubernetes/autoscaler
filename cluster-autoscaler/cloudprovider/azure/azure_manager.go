@@ -212,6 +212,7 @@ func byInspecting() autorest.RespondDecorator {
 	}
 }
 
+// Cleanup closes the channel to signal the go routine to stop that is handling the cache
 func (m *AzureManager) Cleanup() {
 	close(m.interrupt)
 }

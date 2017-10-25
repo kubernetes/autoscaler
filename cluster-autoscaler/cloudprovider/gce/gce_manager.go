@@ -104,6 +104,7 @@ func CreateGceManager(configReader io.Reader) (*GceManager, error) {
 	return manager, nil
 }
 
+// Cleanup closes the channel to signal the go routine to stop that is handling the cache
 func (m *GceManager) Cleanup() {
 	close(m.interrupt)
 }

@@ -96,6 +96,7 @@ func CreateAwsManager(configReader io.Reader, service *autoScalingWrapper) (*Aws
 	return manager, nil
 }
 
+// Cleanup closes the channel to signal the go routine to stop that is handling the cache
 func (m *AwsManager) Cleanup() {
 	close(m.interrupt)
 }
