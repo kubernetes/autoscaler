@@ -1114,7 +1114,10 @@ func TestCleanUpNodeAutoprovisionedGroups(t *testing.T) {
 	provider.AddNode("ng3", n1)
 	assert.NotNil(t, provider)
 
-	assert.NoError(t, cleanUpNodeAutoprovisionedGroups(provider))
+	fakeClient := &fake.Clientset{}
+	fakeRecorder := kube_util.CreateEventRecorder(fakeClient)
+	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false)
+	assert.NoError(t, cleanUpNodeAutoprovisionedGroups(provider, fakeLogRecorder))
 }
 
 func TestCalculateCoresAndMemoryTotal(t *testing.T) {
