@@ -17,11 +17,12 @@ limitations under the License.
 package aws
 
 import (
-	"testing"
-
 	"github.com/stretchr/testify/assert"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
+	"runtime"
+	"testing"
 )
 
 func TestBuildGenericLabels(t *testing.T) {
@@ -38,4 +39,12 @@ func TestBuildGenericLabels(t *testing.T) {
 	assert.Equal(t, "c4.large", labels[kubeletapis.LabelInstanceType])
 	assert.Equal(t, cloudprovider.DefaultArch, labels[kubeletapis.LabelArch])
 	assert.Equal(t, cloudprovider.DefaultOS, labels[kubeletapis.LabelOS])
+}
+
+func testCreateAWSManager(t *testing.T) {
+	manager, awsError := CreateAwsManager(nil, &testService)
+	assert.Nil(t, awsError, "Expected nil from the error when creating AWS Manager")
+	currentNumberRoutines := runtime.NumGoroutine()
+	manager.Cleanup()
+	assert.True(t, currentNumberRoutines-1 == runtime.NumGoroutine(), "current number of go routines should be one less since we called close")
 }

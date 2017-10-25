@@ -59,6 +59,7 @@ type GceManager struct {
 
 	service    *gce.Service
 	cacheMutex sync.Mutex
+	interrupt  chan struct{}
 }
 
 // CreateGceManager constructs gceManager object.
@@ -88,18 +89,24 @@ func CreateGceManager(configReader io.Reader) (*GceManager, error) {
 		return nil, err
 	}
 	manager := &GceManager{
-		migs:     make([]*migInformation, 0),
-		service:  gceService,
-		migCache: make(map[GceRef]*Mig),
+		migs:      make([]*migInformation, 0),
+		service:   gceService,
+		migCache:  make(map[GceRef]*Mig),
+		interrupt: make(chan struct{}),
 	}
-	go wait.Forever(func() {
+	go wait.Until(func() {
 		manager.cacheMutex.Lock()
 		defer manager.cacheMutex.Unlock()
 		if err := manager.regenerateCache(); err != nil {
 			glog.Errorf("Error while regenerating Mig cache: %v", err)
 		}
-	}, time.Hour)
+	}, time.Hour, manager.interrupt)
 	return manager, nil
+}
+
+// Cleanup closes the channel to signal the go routine to stop that is handling the cache
+func (m *GceManager) Cleanup() {
+	close(m.interrupt)
 }
 
 // RegisterMig registers mig in Gce Manager.
@@ -139,10 +146,7 @@ func (m *GceManager) SetMigSize(mig *Mig, size int64) error {
 	if err != nil {
 		return err
 	}
-	if err := m.waitForOp(op, mig.Project, mig.Zone); err != nil {
-		return err
-	}
-	return nil
+	return m.waitForOp(op, mig.Project, mig.Zone)
 }
 
 func (m *GceManager) waitForOp(operation *gce.Operation, project string, zone string) error {
@@ -190,10 +194,7 @@ func (m *GceManager) DeleteInstances(instances []*GceRef) error {
 	if err != nil {
 		return err
 	}
-	if err := m.waitForOp(op, commonMig.Project, commonMig.Zone); err != nil {
-		return err
-	}
-	return nil
+	return m.waitForOp(op, commonMig.Project, commonMig.Zone)
 }
 
 // GetMigForInstance returns MigConfig of the given Instance

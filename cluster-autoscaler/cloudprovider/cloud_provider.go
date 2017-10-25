@@ -40,6 +40,9 @@ type CloudProvider interface {
 
 	// Pricing returns pricing model for this cloud provider or error if not available.
 	Pricing() (PricingModel, errors.AutoscalerError)
+
+	// Close cleans up open resources before the cloud provider is destroyed, i.e. go routines
+	Close() error
 }
 
 // ErrNotImplemented is returned if a method is not implemented.

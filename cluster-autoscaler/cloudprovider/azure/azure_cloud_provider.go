@@ -73,6 +73,12 @@ func (azure *AzureCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 	return result
 }
 
+// Close cleans up all resources before the cloud provider is removed
+func (azure *AzureCloudProvider) Close() error {
+	azure.azureManager.Cleanup()
+	return nil
+}
+
 // NodeGroupForNode returns the node group for the given node.
 func (azure *AzureCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	fmt.Printf("Searching for node group for the node: %s, %s\n", node.Spec.ExternalID, node.Spec.ProviderID)

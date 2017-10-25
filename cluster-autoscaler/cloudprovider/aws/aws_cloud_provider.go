@@ -145,6 +145,12 @@ func (aws *awsCloudProvider) Pricing() (cloudprovider.PricingModel, errors.Autos
 	return nil, cloudprovider.ErrNotImplemented
 }
 
+// Cleanup stops the go routine that is handling the current view of the ASGs in the form of a cache
+func (aws *awsCloudProvider) Close() error {
+	aws.awsManager.Cleanup()
+	return nil
+}
+
 // AwsRef contains a reference to some entity in AWS/GKE world.
 type AwsRef struct {
 	Name string

@@ -32,6 +32,7 @@ import (
 	"gopkg.in/gcfg.v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	provider_aws "k8s.io/kubernetes/pkg/cloudprovider/providers/aws"
@@ -51,8 +52,9 @@ type asgInformation struct {
 
 // AwsManager is handles aws communication and data caching.
 type AwsManager struct {
-	service autoScalingWrapper
-	asgs    *autoScalingGroups
+	service   autoScalingWrapper
+	asgs      *autoScalingGroups
+	interrupt chan struct{}
 }
 
 type asgTemplate struct {
@@ -63,7 +65,7 @@ type asgTemplate struct {
 }
 
 // CreateAwsManager constructs awsManager object.
-func CreateAwsManager(configReader io.Reader) (*AwsManager, error) {
+func CreateAwsManager(configReader io.Reader, service *autoScalingWrapper) (*AwsManager, error) {
 	if configReader != nil {
 		var cfg provider_aws.CloudConfig
 		if err := gcfg.ReadInto(&cfg, configReader); err != nil {
@@ -72,15 +74,31 @@ func CreateAwsManager(configReader io.Reader) (*AwsManager, error) {
 		}
 	}
 
-	service := autoScalingWrapper{
-		autoscaling.New(session.New()),
+	if service == nil {
+		service = &autoScalingWrapper{
+			autoscaling.New(session.New()),
+		}
 	}
 	manager := &AwsManager{
-		asgs:    newAutoScalingGroups(service),
-		service: service,
+		asgs:      newAutoScalingGroups(*service),
+		service:   *service,
+		interrupt: make(chan struct{}),
 	}
 
+	go wait.Until(func() {
+		manager.asgs.cacheMutex.Lock()
+		defer manager.asgs.cacheMutex.Unlock()
+		if err := manager.asgs.regenerateCache(); err != nil {
+			glog.Errorf("Error while regenerating Asg cache: %v", err)
+		}
+	}, time.Hour, manager.interrupt)
+
 	return manager, nil
+}
+
+// Cleanup closes the channel to signal the go routine to stop that is handling the cache
+func (m *AwsManager) Cleanup() {
+	close(m.interrupt)
 }
 
 // RegisterAsg registers asg in Aws Manager.

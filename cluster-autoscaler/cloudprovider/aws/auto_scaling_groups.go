@@ -18,11 +18,8 @@ package aws
 
 import (
 	"fmt"
-	"sync"
-	"time"
-
 	"github.com/golang/glog"
-	"k8s.io/apimachinery/pkg/util/wait"
+	"sync"
 )
 
 type autoScalingGroups struct {
@@ -40,15 +37,6 @@ func newAutoScalingGroups(service autoScalingWrapper) *autoScalingGroups {
 		instanceToAsg:            make(map[AwsRef]*Asg),
 		instancesNotInManagedAsg: make(map[AwsRef]struct{}),
 	}
-
-	go wait.Forever(func() {
-		registry.cacheMutex.Lock()
-		defer registry.cacheMutex.Unlock()
-		if err := registry.regenerateCache(); err != nil {
-			glog.Errorf("Error while regenerating Asg cache: %v", err)
-		}
-	}, time.Hour)
-
 	return registry
 }
 

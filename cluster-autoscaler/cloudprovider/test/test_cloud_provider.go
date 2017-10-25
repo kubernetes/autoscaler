@@ -113,6 +113,11 @@ func (tcp *TestCloudProvider) AddNode(nodeGroupId string, node *apiv1.Node) {
 	tcp.nodes[node.Name] = nodeGroupId
 }
 
+//Close this is a function to close resources associated with the cloud provider
+func (tcp *TestCloudProvider) Close() error {
+	return nil
+}
+
 // TestNodeGroup is a node group used by TestCloudProvider.
 type TestNodeGroup struct {
 	sync.Mutex

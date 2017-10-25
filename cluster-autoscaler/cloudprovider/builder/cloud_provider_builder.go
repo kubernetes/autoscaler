@@ -79,9 +79,9 @@ func (b CloudProviderBuilder) Build(discoveryOpts cloudprovider.NodeGroupDiscove
 				glog.Fatalf("Couldn't open cloud provider configuration %s: %#v", b.cloudConfig, err)
 			}
 			defer config.Close()
-			awsManager, awsError = aws.CreateAwsManager(config)
+			awsManager, awsError = aws.CreateAwsManager(config, nil)
 		} else {
-			awsManager, awsError = aws.CreateAwsManager(nil)
+			awsManager, awsError = aws.CreateAwsManager(nil, nil)
 		}
 		if awsError != nil {
 			glog.Fatalf("Failed to create AWS Manager: %v", err)
