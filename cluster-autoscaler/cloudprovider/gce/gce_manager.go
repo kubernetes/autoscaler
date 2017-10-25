@@ -59,6 +59,7 @@ type GceManager struct {
 
 	service    *gce.Service
 	cacheMutex sync.Mutex
+	interrupt  chan struct{}
 }
 
 // CreateGceManager constructs gceManager object.
@@ -88,18 +89,23 @@ func CreateGceManager(configReader io.Reader) (*GceManager, error) {
 		return nil, err
 	}
 	manager := &GceManager{
-		migs:     make([]*migInformation, 0),
-		service:  gceService,
-		migCache: make(map[GceRef]*Mig),
+		migs:      make([]*migInformation, 0),
+		service:   gceService,
+		migCache:  make(map[GceRef]*Mig),
+		interrupt: make(chan struct{}),
 	}
-	go wait.Forever(func() {
+	go wait.Until(func() {
 		manager.cacheMutex.Lock()
 		defer manager.cacheMutex.Unlock()
 		if err := manager.regenerateCache(); err != nil {
 			glog.Errorf("Error while regenerating Mig cache: %v", err)
 		}
-	}, time.Hour)
+	}, time.Hour, manager.interrupt)
 	return manager, nil
+}
+
+func (m *GceManager) Cleanup() {
+	m.interrupt <- struct{}{}
 }
 
 // RegisterMig registers mig in Gce Manager.

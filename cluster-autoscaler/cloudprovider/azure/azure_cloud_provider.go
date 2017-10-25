@@ -74,7 +74,8 @@ func (azure *AzureCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 }
 
 // Cleanup cleans up all resources before the cloud provider is removed
-func (azure *AzureCloudProvider) Cleanup() error {
+func (azure *AzureCloudProvider) Close() error {
+	azure.azureManager.Cleanup()
 	return nil
 }
 

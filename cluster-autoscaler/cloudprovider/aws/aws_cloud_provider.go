@@ -146,7 +146,7 @@ func (aws *awsCloudProvider) Pricing() (cloudprovider.PricingModel, errors.Autos
 }
 
 // Cleanup stops the go routine that is handling the current view of the ASGs in the form of a cache
-func (aws *awsCloudProvider) Cleanup() error {
+func (aws *awsCloudProvider) Close() error {
 	aws.awsManager.Cleanup()
 	return nil
 }

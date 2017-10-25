@@ -64,6 +64,7 @@ type AzureManager struct {
 	scaleSetIdCache map[string]string
 
 	cacheMutex sync.Mutex
+	interrupt  chan struct{}
 }
 
 // Config holds the configuration parsed from the --cloud-config flag
@@ -169,15 +170,16 @@ func CreateAzureManager(configReader io.Reader) (*AzureManager, error) {
 		scaleSetVmClient:  scaleSetVMsClient,
 		scaleSets:         make([]*scaleSetInformation, 0),
 		scaleSetCache:     make(map[AzureRef]*ScaleSet),
+		interrupt:         make(chan struct{}),
 	}
 
-	go wait.Forever(func() {
+	go wait.Until(func() {
 		manager.cacheMutex.Lock()
 		defer manager.cacheMutex.Unlock()
 		if err := manager.regenerateCache(); err != nil {
 			glog.Errorf("Error while regenerating AS cache: %v", err)
 		}
-	}, time.Hour)
+	}, time.Hour, manager.interrupt)
 
 	return manager, nil
 }
@@ -208,6 +210,10 @@ func byInspecting() autorest.RespondDecorator {
 			return r.Respond(resp)
 		})
 	}
+}
+
+func (m *AzureManager) Cleanup() {
+	m.interrupt <- struct{}{}
 }
 
 // RegisterScaleSet registers scale set in Azure Manager.

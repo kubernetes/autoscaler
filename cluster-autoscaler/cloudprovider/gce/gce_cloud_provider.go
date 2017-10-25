@@ -48,7 +48,8 @@ func BuildGceCloudProvider(gceManager *GceManager, specs []string) (*GceCloudPro
 }
 
 // Cleanup cleans up all resources before the cloud provider is removed
-func (gce *GceCloudProvider) Cleanup() error {
+func (gce *GceCloudProvider) Close() error {
+	gce.gceManager.Cleanup()
 	return nil
 }
 
