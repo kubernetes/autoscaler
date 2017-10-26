@@ -17,6 +17,7 @@ limitations under the License.
 package gce
 
 import (
+	"flag"
 	"fmt"
 	"io"
 	"os"
@@ -36,6 +37,11 @@ import (
 	gke_alpha "google.golang.org/api/container/v1alpha1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	provider_gce "k8s.io/kubernetes/pkg/cloudprovider/providers/gce"
+)
+
+// TODO(krzysztof-jastrzebski): Move to main.go.
+var (
+	gkeAPIEndpoint = flag.String("gke-api-endpoint", "", "GKE API endpoint address. This flag is used by developers only. Users shouldn't change this flag.")
 )
 
 // GcpCloudProviderMode allows to pass information whether the cluster is GCE or GKE.
@@ -198,6 +204,9 @@ func CreateGceManager(configReader io.Reader, mode GcpCloudProviderMode, cluster
 		if err != nil {
 			return nil, err
 		}
+		if *gkeAPIEndpoint != "" {
+			gkeService.BasePath = *gkeAPIEndpoint
+		}
 		manager.gkeService = gkeService
 		err = manager.fetchAllNodePools()
 		if err != nil {
@@ -210,6 +219,9 @@ func CreateGceManager(configReader io.Reader, mode GcpCloudProviderMode, cluster
 		gkeAlphaService, err := gke_alpha.New(client)
 		if err != nil {
 			return nil, err
+		}
+		if *gkeAPIEndpoint != "" {
+			gkeAlphaService.BasePath = *gkeAPIEndpoint
 		}
 		manager.gkeAlphaService = gkeAlphaService
 		err = manager.fetchAllNodePools()
