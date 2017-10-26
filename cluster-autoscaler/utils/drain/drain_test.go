@@ -197,6 +197,51 @@ func TestDrain(t *testing.T) {
 		},
 	}
 
+	safePod := &apiv1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "bar",
+			Namespace: "default",
+			Annotations: map[string]string{
+				PodSafeToEvictKey: "true",
+			},
+		},
+		Spec: apiv1.PodSpec{
+			NodeName: "node",
+		},
+	}
+
+	kubeSystemSafePod := &apiv1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "bar",
+			Namespace: "kube-system",
+			Annotations: map[string]string{
+				PodSafeToEvictKey: "true",
+			},
+		},
+		Spec: apiv1.PodSpec{
+			NodeName: "node",
+		},
+	}
+
+	emptydirSafePod := &apiv1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "bar",
+			Namespace: "default",
+			Annotations: map[string]string{
+				PodSafeToEvictKey: "true",
+			},
+		},
+		Spec: apiv1.PodSpec{
+			NodeName: "node",
+			Volumes: []apiv1.Volume{
+				{
+					Name:         "scratch",
+					VolumeSource: apiv1.VolumeSource{EmptyDir: &apiv1.EmptyDirVolumeSource{Medium: ""}},
+				},
+			},
+		},
+	}
+
 	emptyPDB := &policyv1.PodDisruptionBudget{}
 
 	kubeSystemPDB := &policyv1.PodDisruptionBudget{
@@ -309,6 +354,27 @@ func TestDrain(t *testing.T) {
 			pdbs:        []*policyv1.PodDisruptionBudget{},
 			expectFatal: true,
 			expectPods:  []*apiv1.Pod{},
+		},
+		{
+			description: "pod with PodSafeToEvict annotation",
+			pods:        []*apiv1.Pod{safePod},
+			pdbs:        []*policyv1.PodDisruptionBudget{},
+			expectFatal: false,
+			expectPods:  []*apiv1.Pod{safePod},
+		},
+		{
+			description: "kube-system pod with PodSafeToEvict annotation",
+			pods:        []*apiv1.Pod{kubeSystemSafePod},
+			pdbs:        []*policyv1.PodDisruptionBudget{},
+			expectFatal: false,
+			expectPods:  []*apiv1.Pod{kubeSystemSafePod},
+		},
+		{
+			description: "pod with EmptyDir and PodSafeToEvict annotation",
+			pods:        []*apiv1.Pod{emptydirSafePod},
+			pdbs:        []*policyv1.PodDisruptionBudget{},
+			expectFatal: false,
+			expectPods:  []*apiv1.Pod{emptydirSafePod},
 		},
 		{
 			description: "empty PDB with RC-managed pod",
