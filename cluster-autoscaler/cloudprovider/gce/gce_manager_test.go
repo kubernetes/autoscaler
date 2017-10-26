@@ -457,13 +457,12 @@ func newTestGceManager(t *testing.T, testServerURL string, mode GcpCloudProvider
 		migs:        make([]*migInformation, 0),
 		gceService:  gceService,
 		migCache:    make(map[GceRef]*Mig),
-		zone:        zone,
+		location:    zone,
 		projectId:   projectId,
 		clusterName: clusterName,
 		mode:        mode,
 		templates: &templateBuilder{
 			projectId: projectId,
-			zone:      zone,
 			service:   gceService,
 		},
 	}
