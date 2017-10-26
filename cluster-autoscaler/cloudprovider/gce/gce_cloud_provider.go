@@ -139,7 +139,7 @@ func (gce *GceCloudProvider) NewNodeGroup(machineType string, labels map[string]
 		nodePoolName:    nodePoolName,
 		GceRef: GceRef{
 			Project: gce.gceManager.getProjectId(),
-			Zone:    gce.gceManager.getZone(),
+			Zone:    gce.gceManager.getLocation(),
 			Name:    nodePoolName + "-temporary-mig",
 		},
 		minSize: minAutoprovisionedSize,
