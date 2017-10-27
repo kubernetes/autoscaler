@@ -58,6 +58,9 @@ type CloudProvider interface {
 	// GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
 	GetResourceLimiter() (*ResourceLimiter, error)
 
+	// Close cleans up open resources before the cloud provider is destroyed, i.e. go routines etc.
+	Close() error
+
 	// Refresh is called before every main loop and can be used to dynamically update cloud provider state.
 	// In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
 	Refresh() error

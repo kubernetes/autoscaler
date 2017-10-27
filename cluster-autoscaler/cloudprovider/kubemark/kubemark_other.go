@@ -70,3 +70,8 @@ func (kubemark *KubemarkCloudProvider) GetResourceLimiter() (*cloudprovider.Reso
 func (kubemark *KubemarkCloudProvider) Refresh() error {
 	return cloudprovider.ErrNotImplemented
 }
+
+// Close cleans up all resources before the cloud provider is removed
+func (kubemark *KubemarkCloudProvider) Close() error {
+	return cloudprovider.ErrNotImplemented
+}
