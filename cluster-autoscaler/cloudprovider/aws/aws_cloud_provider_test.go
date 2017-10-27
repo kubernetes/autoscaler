@@ -374,8 +374,8 @@ func TestBuildAsg(t *testing.T) {
 	assert.Equal(t, "test-name", asg.Name)
 }
 
-func TestClose(t *testing.T) {
+func TestCleanup(t *testing.T) {
 	provider := testProvider(t, testAwsManager)
-	err := provider.Close()
+	err := provider.Cleanup()
 	assert.NoError(t, err)
 }

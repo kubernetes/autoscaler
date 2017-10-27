@@ -99,14 +99,14 @@ func (a *PollingAutoscaler) Poll() error {
 		glog.V(4).Infof("Detected change(s) in node group definitions. Recreating autoscaler...")
 
 		// See https://github.com/kubernetes/autoscaler/issues/252, we need to close any stray resources
-		a.autoscaler.CloudProvider().Close()
+		a.autoscaler.CloudProvider().Cleanup()
 
 		// For safety, any config change should stop and recreate all the stuff running in CA hence recreating all the Autoscaler instance here
 		// See https://github.com/kubernetes/contrib/pull/2226#discussion_r94126064
 		a.autoscaler = currentAutoscaler
 	} else {
 		// See https://github.com/kubernetes/autoscaler/issues/252, we need to close any stray resources
-		currentAutoscaler.CloudProvider().Close()
+		currentAutoscaler.CloudProvider().Cleanup()
 	}
 	glog.V(4).Infof("Poll finished")
 	return nil

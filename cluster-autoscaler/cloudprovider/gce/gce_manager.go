@@ -105,6 +105,7 @@ type GceManager interface {
 	Refresh() error
 	// GetResourceLimiter returns resource limiter.
 	GetResourceLimiter() (*cloudprovider.ResourceLimiter, error)
+	// Cleanup cleans up open resources before the cloud provider is destroyed, i.e. go routines etc.
 	Cleanup() error
 	getMigs() []*migInformation
 	createNodePool(mig *Mig) error
@@ -128,17 +129,15 @@ type gceManagerImpl struct {
 	cacheMutex sync.Mutex
 	migsMutex  sync.Mutex
 
-	location    string
-	projectId   string
-	clusterName string
-	mode        GcpCloudProviderMode
-	templates   *templateBuilder
-	isRegional  bool
-
+	location        string
+	projectId       string
+	clusterName     string
+	mode            GcpCloudProviderMode
+	templates       *templateBuilder
+	interrupt       chan struct{}
+	isRegional      bool
 	resourceLimiter *cloudprovider.ResourceLimiter
-
-	interrupt   chan struct{}
-	lastRefresh time.Time
+	lastRefresh     time.Time
 }
 
 // CreateGceManager constructs gceManager object.
