@@ -83,8 +83,8 @@ func BuildGceCloudProvider(gceManager GceManager, specs []string, resourceLimite
 	return gce, nil
 }
 
-// Close cleans up all resources before the cloud provider is removed
-func (gce *GceCloudProvider) Close() error {
+// Cleanup cleans up all resources before the cloud provider is removed
+func (gce *GceCloudProvider) Cleanup() error {
 	gce.gceManager.Cleanup()
 	return nil
 }
