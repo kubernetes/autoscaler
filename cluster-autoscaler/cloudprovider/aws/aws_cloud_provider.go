@@ -104,7 +104,7 @@ func buildStaticallyDiscoveringProvider(awsManager *AwsManager, specs []string, 
 }
 
 // Cleanup stops the go routine that is handling the current view of the ASGs in the form of a cache
-func (aws *awsCloudProvider) Close() error {
+func (aws *awsCloudProvider) Cleanup() error {
 	aws.awsManager.Cleanup()
 	return nil
 }
