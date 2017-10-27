@@ -42,7 +42,7 @@ func TestRunOnce(t *testing.T) {
 	newCloudProvider.AddNode("ng2", n2)
 
 	initialAutoscaler := &AutoscalerMock{}
-	initialAutoscaler.On("CloudProvider").Return(initialCloudProvider).Once()
+	initialAutoscaler.On("CloudProvider").Return(initialCloudProvider).Twice()
 
 	newAutoscaler := &AutoscalerMock{}
 	newAutoscaler.On("RunOnce", currentTime).Once()

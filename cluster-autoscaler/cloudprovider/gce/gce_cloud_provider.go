@@ -83,6 +83,12 @@ func BuildGceCloudProvider(gceManager GceManager, specs []string, resourceLimite
 	return gce, nil
 }
 
+// Close cleans up all resources before the cloud provider is removed
+func (gce *GceCloudProvider) Close() error {
+	gce.gceManager.Cleanup()
+	return nil
+}
+
 // addNodeGroup adds node group defined in string spec. Format:
 // minNodes:maxNodes:migUrl
 func (gce *GceCloudProvider) addNodeGroup(spec string) error {

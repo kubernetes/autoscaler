@@ -77,6 +77,11 @@ func (m *gceManagerMock) Refresh() error {
 	return args.Error(0)
 }
 
+func (m *gceManagerMock) Cleanup() error {
+	args := m.Called()
+	return args.Error(0)
+}
+
 func (m *gceManagerMock) getMigs() []*migInformation {
 	args := m.Called()
 	return args.Get(0).([]*migInformation)
