@@ -92,7 +92,7 @@ func (m *gceManagerMock) deleteNodePool(toBeRemoved *Mig) error {
 	return args.Error(0)
 }
 
-func (m *gceManagerMock) getZone() string {
+func (m *gceManagerMock) getLocation() string {
 	args := m.Called()
 	return args.String(0)
 }
@@ -361,14 +361,14 @@ func TestMig(t *testing.T) {
 	gceService, err := gcev1.New(client)
 	assert.NoError(t, err)
 	gceService.BasePath = server.URL
-	templateBuilder := &templateBuilder{gceService, "us-central1-b", "project1"}
+	templateBuilder := &templateBuilder{gceService, "project1"}
 	gce := &GceCloudProvider{
 		gceManager: gceManagerMock,
 	}
 
 	// Test NewNodeGroup.
 	gceManagerMock.On("getProjectId").Return("project1").Once()
-	gceManagerMock.On("getZone").Return("us-central1-b").Once()
+	gceManagerMock.On("getLocation").Return("us-central1-b").Once()
 	gceManagerMock.On("getTemplates").Return(templateBuilder).Once()
 	server.On("handle", "/project1/zones/us-central1-b/machineTypes/n1-standard-1").Return(getMachineTypeResponse).Once()
 	nodeGroup, err := gce.NewNodeGroup("n1-standard-1", nil, nil)
