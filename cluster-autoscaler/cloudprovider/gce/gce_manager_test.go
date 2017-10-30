@@ -345,6 +345,109 @@ const managedInstancesResponse2 = `{
   ]
 }`
 
+const getClusterResponse = `{
+  "name": "usertest",
+  "nodeConfig": {
+    "machineType": "n1-standard-1",
+    "diskSizeGb": 100,
+    "oauthScopes": [
+      "https://www.googleapis.com/auth/compute",
+      "https://www.googleapis.com/auth/devstorage.read_only",
+      "https://www.googleapis.com/auth/service.management.readonly",
+      "https://www.googleapis.com/auth/servicecontrol",
+      "https://www.googleapis.com/auth/logging.write",
+      "https://www.googleapis.com/auth/monitoring"
+    ],
+    "imageType": "COS",
+    "serviceAccount": "default",
+    "diskType": "pd-standard"
+  },
+  "masterAuth": {
+    "username": "admin",
+    "password": "pass",
+    "clusterCaCertificate": "cer1",
+    "clientCertificate": "cer1",
+    "clientKey": "cer1=="
+  },
+  "loggingService": "logging.googleapis.com",
+  "monitoringService": "monitoring.googleapis.com",
+  "network": "default",
+  "clusterIpv4Cidr": "10.32.0.0/14",
+  "addonsConfig": {
+    "networkPolicyConfig": {
+      "disabled": true
+    }
+  },
+  "nodePools": [
+    {
+      "name": "default-pool",
+      "config": {
+        "machineType": "n1-standard-1",
+        "diskSizeGb": 100,
+        "oauthScopes": [
+          "https://www.googleapis.com/auth/compute",
+          "https://www.googleapis.com/auth/devstorage.read_only",
+          "https://www.googleapis.com/auth/service.management.readonly",
+          "https://www.googleapis.com/auth/servicecontrol",
+          "https://www.googleapis.com/auth/logging.write",
+          "https://www.googleapis.com/auth/monitoring"
+        ],
+        "imageType": "COS",
+        "serviceAccount": "default",
+        "diskType": "pd-standard"
+      },
+      "initialNodeCount": 1,
+      "autoscaling": {
+        "enabled": true,
+        "maxNodeCount": 5
+      },
+      "management": {},
+      "selfLink": "https:///v1alpha1/projects/user-gke-dev/zones/us-central1-c/clusters/usertest/nodePools/default-pool",
+      "version": "1.8.0-gke.1",
+      "instanceGroupUrls": [
+        "https://www.googleapis.com/compute/v1/projects/user-gke-dev/zones/us-central1-c/instanceGroupManagers/gke-usertest-default-pool-fdsafds2d5-grp"
+      ],
+      "status": "RUNNING"
+    }
+  ],
+  "locations": [
+    "us-central1-c"
+  ],
+  "labelFingerprint": "fasdfds",
+  "legacyAbac": {},
+  "autoscaling": {
+    "resourceLimits": [
+      {
+        "name": "cpu",
+        "minimum": "2",
+        "maximum": "3"
+      },
+      {
+        "name": "memory",
+        "minimum": "2000000000",
+        "maximum": "3000000000"
+      }
+    ]
+  },
+  "networkConfig": {
+    "network": "https://www.googleapis.com/compute/v1/projects/user-gke-dev/global/networks/default"
+  },
+  "selfLink": "https:///v1alpha1/projects/user-gke-dev/zones/us-central1-c/clusters/usertest",
+  "zone": "us-central1-c",
+  "endpoint": "xxx",
+  "initialClusterVersion": "1.sdafsa",
+  "currentMasterVersion": "1fdsfdsfsauser",
+  "currentNodeVersion": "xxx",
+  "createTime": "2017-10-24T12:20:00+00:00",
+  "status": "RUNNING",
+  "nodeIpv4CidrSize": 24,
+  "servicesIpv4Cidr": "10.35.240.0/20",
+  "instanceGroupUrls": [
+    "https://www.googleapis.com/compute/v1/projects/user-gke-dev/zones/us-central1-c/instanceGroupManagers/gke-usertest-default-pool-323-grp"
+  ],
+  "currentNodeCount": 1
+}`
+
 func newTestGceManager(t *testing.T, testServerURL string, mode GcpCloudProviderMode) *gceManagerImpl {
 	client := &http.Client{}
 	gceService, err := gce.New(client)
@@ -882,5 +985,40 @@ func TestGetMigNodes(t *testing.T) {
 	assert.Equal(t, "gce://project1/us-central1-b/gke-cluster-1-default-pool-f7607aac-c63g", nodes[1])
 	assert.Equal(t, "gce://project1/us-central1-b/gke-cluster-1-default-pool-f7607aac-dck1", nodes[2])
 	assert.Equal(t, "gce://project1/us-central1-b/gke-cluster-1-default-pool-f7607aac-f1hm", nodes[3])
+	mock.AssertExpectationsForObjects(t, server)
+}
+
+func TestFetchResourceLimiter(t *testing.T) {
+	server := NewHttpServerMock()
+	defer server.Close()
+
+	// GCE.
+	g := newTestGceManager(t, server.URL, ModeGCE)
+
+	err := g.fetchResourceLimiter()
+	assert.NoError(t, err)
+	resourceLimiter, err := g.GetResourceLimiter()
+	assert.NoError(t, err)
+	assert.Nil(t, resourceLimiter)
+
+	// GKE.
+	g = newTestGceManager(t, server.URL, ModeGKE)
+
+	err = g.fetchResourceLimiter()
+	assert.NoError(t, err)
+	resourceLimiter, err = g.GetResourceLimiter()
+	assert.NoError(t, err)
+	assert.Nil(t, resourceLimiter)
+
+	// GKENAP.
+	g = newTestGceManager(t, server.URL, ModeGKENAP)
+	server.On("handle", "/v1alpha1/projects/project1/zones/us-central1-b/clusters/cluster1").Return(getClusterResponse).Once()
+
+	err = g.fetchResourceLimiter()
+	assert.NoError(t, err)
+	resourceLimiter, err = g.GetResourceLimiter()
+	assert.NoError(t, err)
+	assert.NotNil(t, resourceLimiter)
+
 	mock.AssertExpectationsForObjects(t, server)
 }
