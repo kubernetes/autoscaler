@@ -95,6 +95,12 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 
 	glog.V(4).Info("Starting main loop")
 
+	err := autoscalingContext.CloudProvider.Refresh()
+	if err != nil {
+		glog.Errorf("Failed to refresh cloud provider config: %v", err)
+		return errors.ToAutoscalerError(errors.CloudProviderError, err)
+	}
+
 	readyNodes, err := readyNodeLister.List()
 	if err != nil {
 		glog.Errorf("Failed to list ready nodes: %v", err)
@@ -297,7 +303,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 			// We want to delete unneeded Node Groups only if there was no recent scale up,
 			// and there is no current delete in progress and there was no recent errors.
 			if a.AutoscalingContext.NodeAutoprovisioningEnabled {
-				err := cleanUpNodeAutoprovisionedGroups(a.AutoscalingContext.CloudProvider)
+				err := cleanUpNodeAutoprovisionedGroups(a.AutoscalingContext.CloudProvider, a.AutoscalingContext.LogRecorder)
 				if err != nil {
 					glog.Warningf("Failed to clean up unneded node groups: %v", err)
 				}

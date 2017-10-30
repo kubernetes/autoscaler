@@ -51,15 +51,17 @@ type TestCloudProvider struct {
 	onNodeGroupDelete func(string) error
 	machineTypes      []string
 	machineTemplates  map[string]*schedulercache.NodeInfo
+	resourceLimiter   *cloudprovider.ResourceLimiter
 }
 
 // NewTestCloudProvider builds new TestCloudProvider
 func NewTestCloudProvider(onScaleUp OnScaleUpFunc, onScaleDown OnScaleDownFunc) *TestCloudProvider {
 	return &TestCloudProvider{
-		nodes:       make(map[string]string),
-		groups:      make(map[string]cloudprovider.NodeGroup),
-		onScaleUp:   onScaleUp,
-		onScaleDown: onScaleDown,
+		nodes:           make(map[string]string),
+		groups:          make(map[string]cloudprovider.NodeGroup),
+		onScaleUp:       onScaleUp,
+		onScaleDown:     onScaleDown,
+		resourceLimiter: cloudprovider.NewResourceLimiter(make(map[string]int64), make(map[string]int64)),
 	}
 }
 
@@ -76,6 +78,7 @@ func NewTestAutoprovisioningCloudProvider(onScaleUp OnScaleUpFunc, onScaleDown O
 		onNodeGroupDelete: onNodeGroupDelete,
 		machineTypes:      machineTypes,
 		machineTemplates:  machineTemplates,
+		resourceLimiter:   cloudprovider.NewResourceLimiter(make(map[string]int64), make(map[string]int64)),
 	}
 }
 
@@ -177,6 +180,22 @@ func (tcp *TestCloudProvider) AddNode(nodeGroupId string, node *apiv1.Node) {
 	tcp.Lock()
 	defer tcp.Unlock()
 	tcp.nodes[node.Name] = nodeGroupId
+}
+
+// GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
+func (tcp *TestCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+	return tcp.resourceLimiter, nil
+}
+
+// SetResourceLimiter sets resource limiter.
+func (tcp *TestCloudProvider) SetResourceLimiter(resourceLimiter *cloudprovider.ResourceLimiter) {
+	tcp.resourceLimiter = resourceLimiter
+}
+
+// Refresh is called before every main loop and can be used to dynamically update cloud provider state.
+// In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
+func (tcp *TestCloudProvider) Refresh() error {
+	return nil
 }
 
 // TestNodeGroup is a node group used by TestCloudProvider.

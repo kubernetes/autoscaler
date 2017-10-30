@@ -61,16 +61,19 @@ var autoprovisionedMachineTypes = []string{
 // GceCloudProvider implements CloudProvider interface.
 type GceCloudProvider struct {
 	gceManager GceManager
+	// This resource limiter is used if resource limits are not defined through cloud API.
+	resourceLimiterFromFlags *cloudprovider.ResourceLimiter
 }
 
 // BuildGceCloudProvider builds CloudProvider implementation for GCE.
-func BuildGceCloudProvider(gceManager GceManager, specs []string) (*GceCloudProvider, error) {
+func BuildGceCloudProvider(gceManager GceManager, specs []string, resourceLimiter *cloudprovider.ResourceLimiter) (*GceCloudProvider, error) {
 	if gceManager.getMode() == ModeGKE && len(specs) != 0 {
 		return nil, fmt.Errorf("GKE gets nodegroup specification via API, command line specs are not allowed")
 	}
 
 	gce := &GceCloudProvider{
-		gceManager: gceManager,
+		gceManager:               gceManager,
+		resourceLimiterFromFlags: resourceLimiter,
 	}
 	for _, spec := range specs {
 		if err := gce.addNodeGroup(spec); err != nil {
@@ -153,6 +156,24 @@ func (gce *GceCloudProvider) NewNodeGroup(machineType string, labels map[string]
 		return nil, err
 	}
 	return mig, nil
+}
+
+// GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
+func (gce *GceCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+	resourceLimiter, err := gce.gceManager.GetResourceLimiter()
+	if err != nil {
+		return nil, err
+	}
+	if resourceLimiter != nil {
+		return resourceLimiter, nil
+	}
+	return gce.resourceLimiterFromFlags, nil
+}
+
+// Refresh is called before every main loop and can be used to dynamically update cloud provider state.
+// In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
+func (gce *GceCloudProvider) Refresh() error {
+	return gce.gceManager.Refresh()
 }
 
 // GceRef contains s reference to some entity in GCE/GKE world.

@@ -26,6 +26,7 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
+	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
@@ -367,9 +368,15 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 	candidates := make([]*apiv1.Node, 0)
 	readinessMap := make(map[string]bool)
 
+	resourceLimiter, errCP := sd.context.CloudProvider.GetResourceLimiter()
+	if errCP != nil {
+		return ScaleDownError, errors.ToAutoscalerError(
+			errors.CloudProviderError,
+			errCP)
+	}
 	coresTotal, memoryTotal := calculateCoresAndMemoryTotal(nodesWithoutMaster, currentTime)
-	coresLeft := coresTotal - sd.context.MinCoresTotal
-	memoryLeft := memoryTotal - sd.context.MinMemoryTotal
+	coresLeft := coresTotal - resourceLimiter.GetMin(cloudprovider.ResourceNameCores)
+	memoryLeft := memoryTotal - resourceLimiter.GetMin(cloudprovider.ResourceNameMemory)
 
 	nodeGroupSize := getNodeGroupSizeMap(sd.context.CloudProvider)
 	for _, node := range nodesWithoutMaster {
@@ -815,7 +822,7 @@ func hasNoScaleDownAnnotation(node *apiv1.Node) bool {
 	return node.Annotations[ScaleDownDisabledKey] == "true"
 }
 
-func cleanUpNodeAutoprovisionedGroups(cloudProvider cloudprovider.CloudProvider) error {
+func cleanUpNodeAutoprovisionedGroups(cloudProvider cloudprovider.CloudProvider, logRecorder *utils.LogEventRecorder) error {
 	nodeGroups := cloudProvider.NodeGroups()
 	for _, nodeGroup := range nodeGroups {
 		if !nodeGroup.Autoprovisioned() {
@@ -826,9 +833,14 @@ func cleanUpNodeAutoprovisionedGroups(cloudProvider cloudprovider.CloudProvider)
 			return err
 		}
 		if size == 0 {
+			ngId := nodeGroup.Id()
 			if err := nodeGroup.Delete(); err != nil {
+				logRecorder.Eventf(apiv1.EventTypeWarning, "FailedToDeleteNodeGroup",
+					"NodeAutoprovisioning: attempt to delete node group %v failed: %v", ngId, err)
 				return err
 			}
+			logRecorder.Eventf(apiv1.EventTypeNormal, "DeletedNodeGroup",
+				"NodeAutoprovisioning: removed node group %v", ngId)
 		}
 	}
 	return nil

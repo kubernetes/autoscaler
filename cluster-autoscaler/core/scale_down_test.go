@@ -28,9 +28,11 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
@@ -703,6 +705,8 @@ var defaultScaleDownOptions = AutoscalingOptions{
 	MaxEmptyBulkDelete:            10,
 	MinCoresTotal:                 0,
 	MinMemoryTotal:                0,
+	MaxCoresTotal:                 config.DefaultMaxClusterCores,
+	MaxMemoryTotal:                config.DefaultMaxClusterMemory,
 }
 
 func TestScaleDownEmptyMultipleNodeGroups(t *testing.T) {
@@ -820,6 +824,11 @@ func simpleScaleDownEmpty(t *testing.T, config *scaleTestConfig) {
 			provider.AddNode(name, n)
 		}
 	}
+
+	resourceLimiter := cloudprovider.NewResourceLimiter(
+		map[string]int64{cloudprovider.ResourceNameCores: config.options.MinCoresTotal, cloudprovider.ResourceNameMemory: config.options.MinMemoryTotal},
+		map[string]int64{cloudprovider.ResourceNameCores: config.options.MaxCoresTotal, cloudprovider.ResourceNameMemory: config.options.MaxMemoryTotal})
+	provider.SetResourceLimiter(resourceLimiter)
 
 	assert.NotNil(t, provider)
 
@@ -1105,7 +1114,10 @@ func TestCleanUpNodeAutoprovisionedGroups(t *testing.T) {
 	provider.AddNode("ng3", n1)
 	assert.NotNil(t, provider)
 
-	assert.NoError(t, cleanUpNodeAutoprovisionedGroups(provider))
+	fakeClient := &fake.Clientset{}
+	fakeRecorder := kube_util.CreateEventRecorder(fakeClient)
+	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false)
+	assert.NoError(t, cleanUpNodeAutoprovisionedGroups(provider, fakeLogRecorder))
 }
 
 func TestCalculateCoresAndMemoryTotal(t *testing.T) {

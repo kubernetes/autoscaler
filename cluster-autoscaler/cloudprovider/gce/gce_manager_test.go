@@ -26,12 +26,17 @@ import (
 	"github.com/stretchr/testify/mock"
 	gce "google.golang.org/api/compute/v1"
 	gke "google.golang.org/api/container/v1"
+	gke_alpha "google.golang.org/api/container/v1alpha1"
 )
 
 const (
-	projectId   = "project1"
-	zone        = "us-central1-b"
-	clusterName = "cluster1"
+	projectId              = "project1"
+	zone                   = "us-central1-b"
+	defaultPoolMig         = "gke-cluster-1-default-pool"
+	defaultPool            = "default-pool"
+	autoprovisionedPoolMig = "gke-cluster-1-nodeautoprovisioning-323233232"
+	autoprovisionedPool    = "nodeautoprovisioning-323233232"
+	clusterName            = "cluster1"
 )
 
 const allNodePools1 = `{
@@ -120,7 +125,11 @@ const allNodePools2 = `{
         "serviceAccount": "default"
       },
       "initialNodeCount": 3,
-      "autoscaling": {},
+      "autoscaling": {
+         "Enabled": true,
+         "MinNodeCount": 0,
+         "MaxNodeCount": 1000
+      },
       "management": {},
       "selfLink": "https://container.googleapis.com/v1/projects/project1/zones/us-central1-b/clusters/cluster-1/nodePools/nodeautoprovisioning-323233232",
       "version": "1.6.9",
@@ -336,6 +345,109 @@ const managedInstancesResponse2 = `{
   ]
 }`
 
+const getClusterResponse = `{
+  "name": "usertest",
+  "nodeConfig": {
+    "machineType": "n1-standard-1",
+    "diskSizeGb": 100,
+    "oauthScopes": [
+      "https://www.googleapis.com/auth/compute",
+      "https://www.googleapis.com/auth/devstorage.read_only",
+      "https://www.googleapis.com/auth/service.management.readonly",
+      "https://www.googleapis.com/auth/servicecontrol",
+      "https://www.googleapis.com/auth/logging.write",
+      "https://www.googleapis.com/auth/monitoring"
+    ],
+    "imageType": "COS",
+    "serviceAccount": "default",
+    "diskType": "pd-standard"
+  },
+  "masterAuth": {
+    "username": "admin",
+    "password": "pass",
+    "clusterCaCertificate": "cer1",
+    "clientCertificate": "cer1",
+    "clientKey": "cer1=="
+  },
+  "loggingService": "logging.googleapis.com",
+  "monitoringService": "monitoring.googleapis.com",
+  "network": "default",
+  "clusterIpv4Cidr": "10.32.0.0/14",
+  "addonsConfig": {
+    "networkPolicyConfig": {
+      "disabled": true
+    }
+  },
+  "nodePools": [
+    {
+      "name": "default-pool",
+      "config": {
+        "machineType": "n1-standard-1",
+        "diskSizeGb": 100,
+        "oauthScopes": [
+          "https://www.googleapis.com/auth/compute",
+          "https://www.googleapis.com/auth/devstorage.read_only",
+          "https://www.googleapis.com/auth/service.management.readonly",
+          "https://www.googleapis.com/auth/servicecontrol",
+          "https://www.googleapis.com/auth/logging.write",
+          "https://www.googleapis.com/auth/monitoring"
+        ],
+        "imageType": "COS",
+        "serviceAccount": "default",
+        "diskType": "pd-standard"
+      },
+      "initialNodeCount": 1,
+      "autoscaling": {
+        "enabled": true,
+        "maxNodeCount": 5
+      },
+      "management": {},
+      "selfLink": "https:///v1alpha1/projects/user-gke-dev/zones/us-central1-c/clusters/usertest/nodePools/default-pool",
+      "version": "1.8.0-gke.1",
+      "instanceGroupUrls": [
+        "https://www.googleapis.com/compute/v1/projects/user-gke-dev/zones/us-central1-c/instanceGroupManagers/gke-usertest-default-pool-fdsafds2d5-grp"
+      ],
+      "status": "RUNNING"
+    }
+  ],
+  "locations": [
+    "us-central1-c"
+  ],
+  "labelFingerprint": "fasdfds",
+  "legacyAbac": {},
+  "autoscaling": {
+    "resourceLimits": [
+      {
+        "name": "cpu",
+        "minimum": "2",
+        "maximum": "3"
+      },
+      {
+        "name": "memory",
+        "minimum": "2000000000",
+        "maximum": "3000000000"
+      }
+    ]
+  },
+  "networkConfig": {
+    "network": "https://www.googleapis.com/compute/v1/projects/user-gke-dev/global/networks/default"
+  },
+  "selfLink": "https:///v1alpha1/projects/user-gke-dev/zones/us-central1-c/clusters/usertest",
+  "zone": "us-central1-c",
+  "endpoint": "xxx",
+  "initialClusterVersion": "1.sdafsa",
+  "currentMasterVersion": "1fdsfdsfsauser",
+  "currentNodeVersion": "xxx",
+  "createTime": "2017-10-24T12:20:00+00:00",
+  "status": "RUNNING",
+  "nodeIpv4CidrSize": 24,
+  "servicesIpv4Cidr": "10.35.240.0/20",
+  "instanceGroupUrls": [
+    "https://www.googleapis.com/compute/v1/projects/user-gke-dev/zones/us-central1-c/instanceGroupManagers/gke-usertest-default-pool-323-grp"
+  ],
+  "currentNodeCount": 1
+}`
+
 func newTestGceManager(t *testing.T, testServerURL string, mode GcpCloudProviderMode) *gceManagerImpl {
 	client := &http.Client{}
 	gceService, err := gce.New(client)
@@ -363,6 +475,14 @@ func newTestGceManager(t *testing.T, testServerURL string, mode GcpCloudProvider
 		manager.gkeService = gkeService
 
 	}
+
+	if mode == ModeGKENAP {
+		gkeService, err := gke_alpha.New(client)
+		assert.NoError(t, err)
+		gkeService.BasePath = testServerURL
+		manager.gkeAlphaService = gkeService
+	}
+
 	return manager
 }
 
@@ -383,6 +503,8 @@ func TestFetchAllNodePools(t *testing.T) {
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool").Return(instanceGroupManager).Once()
 	server.On("handle", "/project1/global/instanceTemplates/gke-cluster-1-default-pool").Return(instanceTemplate).Once()
 	server.On("handle", "/project1/zones/us-central1-b/machineTypes/n1-standard-1").Return(machineType).Once()
+	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool").Return(instanceGroupManager).Once()
+	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool/listManagedInstances").Return(managedInstancesResponse1).Once()
 
 	err := g.fetchAllNodePools()
 	assert.NoError(t, err)
@@ -392,6 +514,10 @@ func TestFetchAllNodePools(t *testing.T) {
 	mock.AssertExpectationsForObjects(t, server)
 
 	// Fetch three node pools, skip one.
+
+	// Clean up previous mig list, as it impacts what we do
+	g.migs = make([]*migInformation, 0)
+
 	server.On("handle", "/v1/projects/project1/zones/us-central1-b/clusters/cluster1/nodePools").Return(allNodePools2).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool").Return(instanceGroupManager).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-nodeautoprovisioning-323233232").Return(instanceGroupManager).Once()
@@ -399,21 +525,25 @@ func TestFetchAllNodePools(t *testing.T) {
 	server.On("handle", "/project1/global/instanceTemplates/gke-cluster-1-default-pool").Return(instanceTemplate).Once()
 	server.On("handle", "/project1/zones/us-central1-b/machineTypes/n1-standard-1").Return(machineType).Once()
 	server.On("handle", "/project1/zones/us-central1-b/machineTypes/n1-standard-1").Return(machineType).Once()
+	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool").Return(instanceGroupManager).Once()
+	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool/listManagedInstances").Return(managedInstancesResponse1).Once()
+	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-nodeautoprovisioning-323233232").Return(instanceGroupManager).Once()
+	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-nodeautoprovisioning-323233232/listManagedInstances").Return(managedInstancesResponse2).Once()
 
 	err = g.fetchAllNodePools()
 	assert.NoError(t, err)
 	migs = g.getMigs()
 	assert.Equal(t, 2, len(migs))
-	validateMig(t, migs[0].config, "gke-cluster-1-default-pool", 1,
-		11)
+	validateMig(t, migs[0].config, "gke-cluster-1-default-pool", 1, 11)
 	validateMig(t, migs[1].config, "gke-cluster-1-nodeautoprovisioning-323233232", 0, 1000)
 	mock.AssertExpectationsForObjects(t, server)
 
 	// Fetch one node pool, remove node pool registered in previous step.
+
 	server.On("handle", "/v1/projects/project1/zones/us-central1-b/clusters/cluster1/nodePools").Return(allNodePools1).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool").Return(instanceGroupManager).Once()
-	server.On("handle", "/project1/global/instanceTemplates/gke-cluster-1-default-pool").Return(instanceTemplate).Once()
-	server.On("handle", "/project1/zones/us-central1-b/machineTypes/n1-standard-1").Return(machineType).Once()
+	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool/listManagedInstances").Return(managedInstancesResponse1).Once()
+
 	err = g.fetchAllNodePools()
 	assert.NoError(t, err)
 	migs = g.getMigs()
@@ -445,17 +575,21 @@ const deleteNodePoolOperationResponse = `{
 func TestDeleteNodePool(t *testing.T) {
 	server := NewHttpServerMock()
 	defer server.Close()
-	g := newTestGceManager(t, server.URL, ModeGKE)
+	g := newTestGceManager(t, server.URL, ModeGKENAP)
 
-	server.On("handle", "/v1/projects/project1/zones/us-central1-b/clusters/cluster1/nodePools/nodeautoprovisioning-323233232").Return(deleteNodePoolResponse).Once()
-	server.On("handle", "/v1/projects/project1/zones/us-central1-b/operations/operation-1505732351373-819ed94e").Return(deleteNodePoolOperationResponse).Once()
-	server.On("handle", "/v1/projects/project1/zones/us-central1-b/clusters/cluster1/nodePools").Return(allNodePools2).Once()
+	server.On("handle", "/v1alpha1/projects/project1/zones/us-central1-b/clusters/cluster1/nodePools/nodeautoprovisioning-323233232").Return(deleteNodePoolResponse).Once()
+	server.On("handle", "/v1alpha1/projects/project1/zones/us-central1-b/operations/operation-1505732351373-819ed94e").Return(deleteNodePoolOperationResponse).Once()
+	server.On("handle", "/v1alpha1/projects/project1/zones/us-central1-b/clusters/cluster1/nodePools").Return(allNodePools2).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool").Return(instanceGroupManager).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-nodeautoprovisioning-323233232").Return(instanceGroupManager).Once()
 	server.On("handle", "/project1/global/instanceTemplates/gke-cluster-1-default-pool").Return(instanceTemplate).Once()
 	server.On("handle", "/project1/global/instanceTemplates/gke-cluster-1-default-pool").Return(instanceTemplate).Once()
 	server.On("handle", "/project1/zones/us-central1-b/machineTypes/n1-standard-1").Return(machineType).Once()
 	server.On("handle", "/project1/zones/us-central1-b/machineTypes/n1-standard-1").Return(machineType).Once()
+	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool").Return(instanceGroupManager).Once()
+	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool/listManagedInstances").Return(managedInstancesResponse1).Once()
+	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-nodeautoprovisioning-323233232").Return(instanceGroupManager).Once()
+	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-nodeautoprovisioning-323233232/listManagedInstances").Return(managedInstancesResponse2).Once()
 
 	mig := &Mig{
 		GceRef: GceRef{
@@ -500,17 +634,21 @@ const createNodePoolOperationResponse = `{
 func TestCreateNodePool(t *testing.T) {
 	server := NewHttpServerMock()
 	defer server.Close()
-	g := newTestGceManager(t, server.URL, ModeGKE)
+	g := newTestGceManager(t, server.URL, ModeGKENAP)
 
-	server.On("handle", "/v1/projects/project1/zones/us-central1-b/operations/operation-1505728466148-d16f5197").Return(createNodePoolOperationResponse).Once()
-	server.On("handle", "/v1/projects/project1/zones/us-central1-b/clusters/cluster1/nodePools").Return(createNodePoolResponse).Once()
-	server.On("handle", "/v1/projects/project1/zones/us-central1-b/clusters/cluster1/nodePools").Return(allNodePools2).Once()
+	server.On("handle", "/v1alpha1/projects/project1/zones/us-central1-b/operations/operation-1505728466148-d16f5197").Return(createNodePoolOperationResponse).Once()
+	server.On("handle", "/v1alpha1/projects/project1/zones/us-central1-b/clusters/cluster1/nodePools").Return(createNodePoolResponse).Once()
+	server.On("handle", "/v1alpha1/projects/project1/zones/us-central1-b/clusters/cluster1/nodePools").Return(allNodePools2).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool").Return(instanceGroupManager).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-nodeautoprovisioning-323233232").Return(instanceGroupManager).Once()
 	server.On("handle", "/project1/global/instanceTemplates/gke-cluster-1-default-pool").Return(instanceTemplate).Once()
 	server.On("handle", "/project1/global/instanceTemplates/gke-cluster-1-default-pool").Return(instanceTemplate).Once()
 	server.On("handle", "/project1/zones/us-central1-b/machineTypes/n1-standard-1").Return(machineType).Once()
 	server.On("handle", "/project1/zones/us-central1-b/machineTypes/n1-standard-1").Return(machineType).Once()
+	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool").Return(instanceGroupManager).Once()
+	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool/listManagedInstances").Return(managedInstancesResponse1).Once()
+	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-nodeautoprovisioning-323233232").Return(instanceGroupManager).Once()
+	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-nodeautoprovisioning-323233232/listManagedInstances").Return(managedInstancesResponse2).Once()
 
 	mig := &Mig{
 		GceRef: GceRef{
@@ -574,11 +712,11 @@ func TestWaitForOp(t *testing.T) {
 func TestWaitForGkeOp(t *testing.T) {
 	server := NewHttpServerMock()
 	defer server.Close()
-	g := newTestGceManager(t, server.URL, ModeGKE)
-	server.On("handle", "/v1/projects/project1/zones/us-central1-b/operations/operation-1505728466148-d16f5197").Return(operationRunningResponse).Once()
-	server.On("handle", "/v1/projects/project1/zones/us-central1-b/operations/operation-1505728466148-d16f5197").Return(operationDoneResponse).Once()
+	g := newTestGceManager(t, server.URL, ModeGKENAP)
+	server.On("handle", "/v1alpha1/projects/project1/zones/us-central1-b/operations/operation-1505728466148-d16f5197").Return(operationRunningResponse).Once()
+	server.On("handle", "/v1alpha1/projects/project1/zones/us-central1-b/operations/operation-1505728466148-d16f5197").Return(operationDoneResponse).Once()
 
-	operation := &gke.Operation{Name: "operation-1505728466148-d16f5197"}
+	operation := &gke_alpha.Operation{Name: "operation-1505728466148-d16f5197"}
 
 	err := g.waitForGkeOp(operation)
 	assert.NoError(t, err)
@@ -620,22 +758,47 @@ const deleteInstancesOperationResponse = `
   "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-a/operations/operation-1505802641136-55984ff86d980-a99e8c2b-0c8aaaaa"
 }`
 
+func setupTestNodePool(manager *gceManagerImpl) {
+	mig := &Mig{
+		GceRef: GceRef{
+			Name:    defaultPoolMig,
+			Zone:    zone,
+			Project: projectId,
+		},
+		gceManager:      manager,
+		exist:           true,
+		autoprovisioned: false,
+		nodePoolName:    defaultPool,
+		minSize:         1,
+		maxSize:         11,
+	}
+	manager.migs = append(manager.migs, &migInformation{config: mig})
+}
+
+func setupTestAutoprovisionedPool(manager *gceManagerImpl) {
+	mig := &Mig{
+		GceRef: GceRef{
+			Name:    autoprovisionedPoolMig,
+			Zone:    zone,
+			Project: projectId,
+		},
+		gceManager:      manager,
+		exist:           true,
+		autoprovisioned: true,
+		nodePoolName:    autoprovisionedPool,
+		minSize:         minAutoprovisionedSize,
+		maxSize:         maxAutoprovisionedSize,
+	}
+	manager.migs = append(manager.migs, &migInformation{config: mig})
+}
+
 func TestDeleteInstances(t *testing.T) {
 	server := NewHttpServerMock()
 	defer server.Close()
 	g := newTestGceManager(t, server.URL, ModeGKE)
 
-	// Fetch node pools.
-	server.On("handle", "/v1/projects/project1/zones/us-central1-b/clusters/cluster1/nodePools").Return(allNodePools2).Once()
-	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool").Return(instanceGroupManager).Once()
-	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-nodeautoprovisioning-323233232").Return(instanceGroupManager).Once()
-	server.On("handle", "/project1/global/instanceTemplates/gke-cluster-1-default-pool").Return(instanceTemplate).Once()
-	server.On("handle", "/project1/global/instanceTemplates/gke-cluster-1-default-pool").Return(instanceTemplate).Once()
-	server.On("handle", "/project1/zones/us-central1-b/machineTypes/n1-standard-1").Return(machineType).Once()
-	server.On("handle", "/project1/zones/us-central1-b/machineTypes/n1-standard-1").Return(machineType).Once()
-
-	err := g.fetchAllNodePools()
-	assert.NoError(t, err)
+	setupTestNodePool(g)
+	setupTestAutoprovisionedPool(g)
 
 	// Test DeleteInstance function.
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool").Return(instanceGroupManager).Once()
@@ -658,7 +821,7 @@ func TestDeleteInstances(t *testing.T) {
 		},
 	}
 
-	err = g.DeleteInstances(instances)
+	err := g.DeleteInstances(instances)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, server)
 
@@ -775,14 +938,7 @@ func TestGetMigForInstance(t *testing.T) {
 	defer server.Close()
 	g := newTestGceManager(t, server.URL, ModeGKE)
 
-	// Fetch one node pool.
-	server.On("handle", "/v1/projects/project1/zones/us-central1-b/clusters/cluster1/nodePools").Return(allNodePools1).Once()
-	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool").Return(instanceGroupManager).Once()
-	server.On("handle", "/project1/global/instanceTemplates/gke-cluster-1-default-pool").Return(instanceTemplate).Once()
-	server.On("handle", "/project1/zones/us-central1-b/machineTypes/n1-standard-1").Return(machineType).Once()
-
-	err := g.fetchAllNodePools()
-	assert.NoError(t, err)
+	setupTestNodePool(g)
 
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool").Return(instanceGroupManager).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool/listManagedInstances").Return(managedInstancesResponse1).Once()
@@ -829,5 +985,40 @@ func TestGetMigNodes(t *testing.T) {
 	assert.Equal(t, "gce://project1/us-central1-b/gke-cluster-1-default-pool-f7607aac-c63g", nodes[1])
 	assert.Equal(t, "gce://project1/us-central1-b/gke-cluster-1-default-pool-f7607aac-dck1", nodes[2])
 	assert.Equal(t, "gce://project1/us-central1-b/gke-cluster-1-default-pool-f7607aac-f1hm", nodes[3])
+	mock.AssertExpectationsForObjects(t, server)
+}
+
+func TestFetchResourceLimiter(t *testing.T) {
+	server := NewHttpServerMock()
+	defer server.Close()
+
+	// GCE.
+	g := newTestGceManager(t, server.URL, ModeGCE)
+
+	err := g.fetchResourceLimiter()
+	assert.NoError(t, err)
+	resourceLimiter, err := g.GetResourceLimiter()
+	assert.NoError(t, err)
+	assert.Nil(t, resourceLimiter)
+
+	// GKE.
+	g = newTestGceManager(t, server.URL, ModeGKE)
+
+	err = g.fetchResourceLimiter()
+	assert.NoError(t, err)
+	resourceLimiter, err = g.GetResourceLimiter()
+	assert.NoError(t, err)
+	assert.Nil(t, resourceLimiter)
+
+	// GKENAP.
+	g = newTestGceManager(t, server.URL, ModeGKENAP)
+	server.On("handle", "/v1alpha1/projects/project1/zones/us-central1-b/clusters/cluster1").Return(getClusterResponse).Once()
+
+	err = g.fetchResourceLimiter()
+	assert.NoError(t, err)
+	resourceLimiter, err = g.GetResourceLimiter()
+	assert.NoError(t, err)
+	assert.NotNil(t, resourceLimiter)
+
 	mock.AssertExpectationsForObjects(t, server)
 }

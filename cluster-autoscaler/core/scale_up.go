@@ -61,6 +61,12 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 
 	nodeGroups := context.CloudProvider.NodeGroups()
 
+	resourceLimiter, errCP := context.CloudProvider.GetResourceLimiter()
+	if errCP != nil {
+		return false, errors.ToAutoscalerError(
+			errors.CloudProviderError,
+			errCP)
+	}
 	// calculate current cores & gigabytes of memory
 	coresTotal, memoryTotal := calculateClusterCoresMemoryTotal(nodeGroups, nodeInfos)
 
@@ -115,12 +121,12 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 		if err != nil {
 			glog.Errorf("Failed to get node resources: %v", err)
 		}
-		if nodeCPU > (context.MaxCoresTotal - coresTotal) {
+		if nodeCPU > (resourceLimiter.GetMax(cloudprovider.ResourceNameCores) - coresTotal) {
 			// skip this node group
 			glog.V(4).Infof("Skipping node group %s - not enough cores limit left", nodeGroup.Id())
 			continue
 		}
-		if nodeMemory > (context.MaxMemoryTotal - memoryTotal) {
+		if nodeMemory > (resourceLimiter.GetMax(cloudprovider.ResourceNameMemory) - memoryTotal) {
 			// skip this node group
 			glog.V(4).Infof("Skipping node group %s - not enough memory limit left", nodeGroup.Id())
 			continue
@@ -203,10 +209,26 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 		}
 		if context.AutoscalingOptions.NodeAutoprovisioningEnabled {
 			if !bestOption.NodeGroup.Exist() {
+				// Node group id may change when we create node group and we need to update
+				// our data structures
+				oldId := bestOption.NodeGroup.Id()
 				err := bestOption.NodeGroup.Create()
 				if err != nil {
+					context.LogRecorder.Eventf(apiv1.EventTypeWarning, "FailedToCreateNodeGroup",
+						"NodeAutoprovisioning: attempt to create node group %v failed: %v", oldId, err)
 					return false, errors.ToAutoscalerError(errors.CloudProviderError, err)
 				}
+				newId := bestOption.NodeGroup.Id()
+				if newId != oldId {
+					glog.V(2).Infof("Created node group %s based on template node group %s, will use new node group in scale-up", newId, oldId)
+					podsPassingPredicates[newId] = podsPassingPredicates[oldId]
+					delete(podsPassingPredicates, oldId)
+					nodeInfos[newId] = nodeInfos[oldId]
+					delete(nodeInfos, oldId)
+				}
+				context.LogRecorder.Eventf(apiv1.EventTypeNormal, "CreatedNodeGroup",
+					"NodeAutoprovisioning: created new node group %v", newId)
+
 			}
 		}
 
@@ -221,7 +243,7 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 		}
 
 		// apply upper limits for CPU and memory
-		newNodes, err = applyMaxClusterCoresMemoryLimits(newNodes, coresTotal, memoryTotal, context.MaxCoresTotal, context.MaxMemoryTotal, nodeInfo)
+		newNodes, err = applyMaxClusterCoresMemoryLimits(newNodes, coresTotal, memoryTotal, resourceLimiter.GetMax(cloudprovider.ResourceNameCores), resourceLimiter.GetMax(cloudprovider.ResourceNameMemory), nodeInfo)
 		if err != nil {
 			return false, err
 		}
@@ -272,6 +294,7 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 				"pod triggered scale-up: %v", scaleUpInfos)
 		}
 
+		context.ClusterStateRegistry.Recalculate()
 		return true, nil
 	}
 	for pod, unschedulable := range podsRemainUnschedulable {

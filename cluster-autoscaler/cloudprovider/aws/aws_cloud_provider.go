@@ -31,25 +31,26 @@ import (
 
 // awsCloudProvider implements CloudProvider interface.
 type awsCloudProvider struct {
-	awsManager *AwsManager
-	asgs       []*Asg
+	awsManager      *AwsManager
+	asgs            []*Asg
+	resourceLimiter *cloudprovider.ResourceLimiter
 }
 
 // BuildAwsCloudProvider builds CloudProvider implementation for AWS.
-func BuildAwsCloudProvider(awsManager *AwsManager, discoveryOpts cloudprovider.NodeGroupDiscoveryOptions) (cloudprovider.CloudProvider, error) {
+func BuildAwsCloudProvider(awsManager *AwsManager, discoveryOpts cloudprovider.NodeGroupDiscoveryOptions, resourceLimiter *cloudprovider.ResourceLimiter) (cloudprovider.CloudProvider, error) {
 	if err := discoveryOpts.Validate(); err != nil {
 		return nil, fmt.Errorf("Failed to build an aws cloud provider: %v", err)
 	}
 	if discoveryOpts.StaticDiscoverySpecified() {
-		return buildStaticallyDiscoveringProvider(awsManager, discoveryOpts.NodeGroupSpecs)
+		return buildStaticallyDiscoveringProvider(awsManager, discoveryOpts.NodeGroupSpecs, resourceLimiter)
 	}
 	if discoveryOpts.AutoDiscoverySpecified() {
-		return buildAutoDiscoveringProvider(awsManager, discoveryOpts.NodeGroupAutoDiscoverySpec)
+		return buildAutoDiscoveringProvider(awsManager, discoveryOpts.NodeGroupAutoDiscoverySpec, resourceLimiter)
 	}
 	return nil, fmt.Errorf("Failed to build an aws cloud provider: Either node group specs or node group auto discovery spec must be specified")
 }
 
-func buildAutoDiscoveringProvider(awsManager *AwsManager, spec string) (*awsCloudProvider, error) {
+func buildAutoDiscoveringProvider(awsManager *AwsManager, spec string, resourceLimiter *cloudprovider.ResourceLimiter) (*awsCloudProvider, error) {
 	tokens := strings.Split(spec, ":")
 	if len(tokens) != 2 {
 		return nil, fmt.Errorf("Invalid node group auto discovery spec specified via --node-group-auto-discovery: %s", spec)
@@ -78,8 +79,9 @@ func buildAutoDiscoveringProvider(awsManager *AwsManager, spec string) (*awsClou
 	}
 
 	aws := &awsCloudProvider{
-		awsManager: awsManager,
-		asgs:       make([]*Asg, 0),
+		awsManager:      awsManager,
+		asgs:            make([]*Asg, 0),
+		resourceLimiter: resourceLimiter,
 	}
 	for _, asg := range asgs {
 		aws.addAsg(buildAsg(aws.awsManager, int(*asg.MinSize), int(*asg.MaxSize), *asg.AutoScalingGroupName))
@@ -87,10 +89,11 @@ func buildAutoDiscoveringProvider(awsManager *AwsManager, spec string) (*awsClou
 	return aws, nil
 }
 
-func buildStaticallyDiscoveringProvider(awsManager *AwsManager, specs []string) (*awsCloudProvider, error) {
+func buildStaticallyDiscoveringProvider(awsManager *AwsManager, specs []string, resourceLimiter *cloudprovider.ResourceLimiter) (*awsCloudProvider, error) {
 	aws := &awsCloudProvider{
-		awsManager: awsManager,
-		asgs:       make([]*Asg, 0),
+		awsManager:      awsManager,
+		asgs:            make([]*Asg, 0),
+		resourceLimiter: resourceLimiter,
 	}
 	for _, spec := range specs {
 		if err := aws.addNodeGroup(spec); err != nil {
@@ -155,6 +158,17 @@ func (aws *awsCloudProvider) GetAvailableMachineTypes() ([]string, error) {
 // created on the cloud provider side. The node group is not returned by NodeGroups() until it is created.
 func (aws *awsCloudProvider) NewNodeGroup(machineType string, labels map[string]string, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
+}
+
+// GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
+func (aws *awsCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+	return aws.resourceLimiter, nil
+}
+
+// Refresh is called before every main loop and can be used to dynamically update cloud provider state.
+// In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
+func (aws *awsCloudProvider) Refresh() error {
+	return nil
 }
 
 // AwsRef contains a reference to some entity in AWS/GKE world.
