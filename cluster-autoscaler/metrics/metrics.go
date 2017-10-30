@@ -35,6 +35,9 @@ type FailedScaleUpReason string
 // we measure duration
 type FunctionLabel string
 
+// NodeGroupType describes node group relation to CA
+type NodeGroupType string
+
 const (
 	caNamespace   = "cluster_autoscaler"
 	readyLabel    = "ready"
@@ -52,6 +55,12 @@ const (
 	APIError FailedScaleUpReason = "apiCallError"
 	// Timeout was encountered when trying to scale-up
 	Timeout FailedScaleUpReason = "timeout"
+
+	// autoscaledGroup is managed by CA
+	autoscaledGroup NodeGroupType = "autoscaled"
+	// autoprovisionedGroup have been created by CA (Node Autoprovisioning),
+	// is currently autoscaled and can be removed by CA if it's no longer needed
+	autoprovisionedGroup NodeGroupType = "autoprovisioned"
 
 	// LogLongDurationThreshold defines the duration after which long function
 	// duration will be logged (in addition to being counted in metric).
@@ -92,6 +101,14 @@ var (
 			Name:      "nodes_count",
 			Help:      "Number of nodes in cluster.",
 		}, []string{"state"},
+	)
+
+	nodeGroupsCount = prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Namespace: caNamespace,
+			Name:      "node_groups_count",
+			Help:      "Number of node groups managed by CA.",
+		}, []string{"node_group_type"},
 	)
 
 	unschedulablePodsCount = prometheus.NewGauge(
@@ -168,11 +185,37 @@ var (
 			Help:      "Number of nodes currently considered unneeded by CA.",
 		},
 	)
+
+	/**** Metrics related to NodeAutoprovisioning ****/
+	napEnabled = prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Namespace: caNamespace,
+			Name:      "nap_enabled",
+			Help:      "Whether or not Node Autoprovisioning is enabled. 1 if it is, 0 otherwise.",
+		},
+	)
+
+	nodeGroupCreationCount = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Namespace: caNamespace,
+			Name:      "created_node_groups_total",
+			Help:      "Number of node groups created by Node Autoprovisioning.",
+		},
+	)
+
+	nodeGroupDeletionCount = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Namespace: caNamespace,
+			Name:      "deleted_node_groups_total",
+			Help:      "Number of node groups deleted by Node Autoprovisioning.",
+		},
+	)
 )
 
 func init() {
 	prometheus.MustRegister(clusterSafeToAutoscale)
 	prometheus.MustRegister(nodesCount)
+	prometheus.MustRegister(nodeGroupsCount)
 	prometheus.MustRegister(unschedulablePodsCount)
 	prometheus.MustRegister(lastActivity)
 	prometheus.MustRegister(functionDuration)
@@ -182,6 +225,9 @@ func init() {
 	prometheus.MustRegister(scaleDownCount)
 	prometheus.MustRegister(evictionsCount)
 	prometheus.MustRegister(unneededNodesCount)
+	prometheus.MustRegister(napEnabled)
+	prometheus.MustRegister(nodeGroupCreationCount)
+	prometheus.MustRegister(nodeGroupDeletionCount)
 }
 
 // UpdateDurationFromStart records the duration of the step identified by the
@@ -222,6 +268,12 @@ func UpdateNodesCount(ready, unready, starting int) {
 	nodesCount.WithLabelValues(startingLabel).Set(float64(starting))
 }
 
+// UpdateNodeGroupsCount records the number of node groups managed by CA
+func UpdateNodeGroupsCount(autoscaled, autoprovisioned int) {
+	nodeGroupsCount.WithLabelValues(string(autoscaledGroup)).Set(float64(autoscaled))
+	nodeGroupsCount.WithLabelValues(string(autoprovisionedGroup)).Set(float64(autoprovisioned))
+}
+
 // UpdateUnschedulablePodsCount records number of currently unschedulable pods
 func UpdateUnschedulablePodsCount(podsCount int) {
 	unschedulablePodsCount.Set(float64(podsCount))
@@ -256,4 +308,23 @@ func RegisterEvictions(podsCount int) {
 // UpdateUnneededNodesCount records number of currently unneeded nodes
 func UpdateUnneededNodesCount(nodesCount int) {
 	unneededNodesCount.Set(float64(nodesCount))
+}
+
+// UpdateNapEnabled records if NodeAutoprovisioning is enabled
+func UpdateNapEnabled(enabled bool) {
+	if enabled {
+		napEnabled.Set(1)
+	} else {
+		napEnabled.Set(0)
+	}
+}
+
+// RegisterNodeGroupCreation registers node group creation
+func RegisterNodeGroupCreation() {
+	nodeGroupCreationCount.Add(1.0)
+}
+
+// RegisterNodeGroupDeletion registers node group deletion
+func RegisterNodeGroupDeletion() {
+	nodeGroupDeletionCount.Add(1.0)
 }

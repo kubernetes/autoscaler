@@ -235,6 +235,7 @@ func run(healthCheck *metrics.HealthCheck) {
 	kubeClient := createKubeClient()
 	kubeEventRecorder := kube_util.CreateEventRecorder(kubeClient)
 	opts := createAutoscalerOptions()
+	metrics.UpdateNapEnabled(opts.NodeAutoprovisioningEnabled)
 	predicateCheckerStopChannel := make(chan struct{})
 	predicateChecker, err := simulator.NewPredicateChecker(kubeClient, predicateCheckerStopChannel)
 	if err != nil {
