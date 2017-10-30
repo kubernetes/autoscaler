@@ -838,6 +838,15 @@ func (m *gceManagerImpl) fetchResourceLimiter() error {
 			minLimits[limit.Name] = limit.Minimum
 			maxLimits[limit.Name] = limit.Maximum
 		}
+
+		// GKE API provides memory in GB, but ResourceLimiter expects them in MB
+		if _, found := minLimits[cloudprovider.ResourceNameMemory]; found {
+			minLimits[cloudprovider.ResourceNameMemory] = minLimits[cloudprovider.ResourceNameMemory] * 1024
+		}
+		if _, found := maxLimits[cloudprovider.ResourceNameMemory]; found {
+			maxLimits[cloudprovider.ResourceNameMemory] = maxLimits[cloudprovider.ResourceNameMemory] * 1024
+		}
+
 		resourceLimiter := cloudprovider.NewResourceLimiter(minLimits, maxLimits)
 		glog.V(2).Infof("Refreshed resource limits: %s", resourceLimiter.String())
 
