@@ -44,7 +44,6 @@ const (
 // builds templates for gce cloud provider
 type templateBuilder struct {
 	service   *gce.Service
-	zone      string
 	projectId string
 }
 
@@ -65,11 +64,11 @@ func (t *templateBuilder) getMigTemplate(mig *Mig) (*gce.InstanceTemplate, error
 	return instanceTemplate, nil
 }
 
-func (t *templateBuilder) getCpuAndMemoryForMachineType(machineType string) (cpu int64, mem int64, err error) {
+func (t *templateBuilder) getCpuAndMemoryForMachineType(machineType string, zone string) (cpu int64, mem int64, err error) {
 	if strings.HasPrefix(machineType, "custom-") {
 		return parseCustomMachineType(machineType)
 	}
-	machine, geterr := t.service.MachineTypes.Get(t.projectId, t.zone, machineType).Do()
+	machine, geterr := t.service.MachineTypes.Get(t.projectId, zone, machineType).Do()
 	if geterr != nil {
 		return 0, 0, geterr
 	}
@@ -86,12 +85,12 @@ func (t *templateBuilder) getAcceleratorCount(accelerators []*gce.AcceleratorCon
 	return count
 }
 
-func (t *templateBuilder) buildCapacity(machineType string, accelerators []*gce.AcceleratorConfig) (apiv1.ResourceList, error) {
+func (t *templateBuilder) buildCapacity(machineType string, accelerators []*gce.AcceleratorConfig, zone string) (apiv1.ResourceList, error) {
 	capacity := apiv1.ResourceList{}
 	// TODO: get a real value.
 	capacity[apiv1.ResourcePods] = *resource.NewQuantity(110, resource.DecimalSI)
 
-	cpu, mem, err := t.getCpuAndMemoryForMachineType(machineType)
+	cpu, mem, err := t.getCpuAndMemoryForMachineType(machineType, zone)
 	if err != nil {
 		return apiv1.ResourceList{}, err
 	}
@@ -163,7 +162,7 @@ func (t *templateBuilder) buildNodeFromTemplate(mig *Mig, template *gce.Instance
 		Labels:   map[string]string{},
 	}
 
-	capacity, err := t.buildCapacity(template.Properties.MachineType, template.Properties.GuestAccelerators)
+	capacity, err := t.buildCapacity(template.Properties.MachineType, template.Properties.GuestAccelerators, mig.GceRef.Zone)
 	if err != nil {
 		return nil, err
 	}
@@ -232,7 +231,7 @@ func (t *templateBuilder) buildNodeFromAutoprovisioningSpec(mig *Mig) (*apiv1.No
 		Labels:   map[string]string{},
 	}
 	// TODO: Handle GPU
-	capacity, err := t.buildCapacity(mig.spec.machineType, nil)
+	capacity, err := t.buildCapacity(mig.spec.machineType, nil, mig.GceRef.Zone)
 	if err != nil {
 		return nil, err
 	}
