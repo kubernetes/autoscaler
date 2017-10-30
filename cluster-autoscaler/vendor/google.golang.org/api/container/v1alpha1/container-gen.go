@@ -712,9 +712,9 @@ func (s *Cluster) MarshalJSON() ([]byte, error) {
 // the size of the cluster and create/delete
 // node pools based on the current needs.
 type ClusterAutoscaling struct {
-	// NodeAutoprovisioningEnabled: Enables automatic node pool creation and
+	// EnableNodeAutoprovisioning: Enables automatic node pool creation and
 	// deletion.
-	NodeAutoprovisioningEnabled bool `json:"nodeAutoprovisioningEnabled,omitempty"`
+	EnableNodeAutoprovisioning bool `json:"enableNodeAutoprovisioning,omitempty"`
 
 	// ResourceLimits: Contains global constraints regarding minimum and
 	// maximum
@@ -722,7 +722,7 @@ type ClusterAutoscaling struct {
 	ResourceLimits []*ResourceLimit `json:"resourceLimits,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g.
-	// "NodeAutoprovisioningEnabled") to unconditionally include in API
+	// "EnableNodeAutoprovisioning") to unconditionally include in API
 	// requests. By default, fields with empty values are omitted from API
 	// requests. However, any non-pointer, non-interface field appearing in
 	// ForceSendFields will be sent to the server regardless of whether the
@@ -731,7 +731,7 @@ type ClusterAutoscaling struct {
 	ForceSendFields []string `json:"-"`
 
 	// NullFields is a list of field names (e.g.
-	// "NodeAutoprovisioningEnabled") to include in API requests with the
+	// "EnableNodeAutoprovisioning") to include in API requests with the
 	// JSON null value. By default, fields with empty values are omitted
 	// from API requests. However, any field with an empty value appearing
 	// in NullFields will be sent to the server as null. It is an error if a
@@ -2191,7 +2191,7 @@ func (s *PodSecurityPolicyConfig) MarshalJSON() ([]byte, error) {
 }
 
 // ResourceLimit: Contains information about amount of some resource in
-// the cluster.
+// the cluster. For memory, value should be in GB.
 type ResourceLimit struct {
 	// Maximum: Maximum amount of the resource in the cluster.
 	Maximum int64 `json:"maximum,omitempty,string"`
