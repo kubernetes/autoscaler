@@ -1198,7 +1198,7 @@
     },
     "ClusterAutoscaling": {
       "properties": {
-        "nodeAutoprovisioningEnabled": {
+        "enableNodeAutoprovisioning": {
           "type": "boolean",
           "description": "Enables automatic node pool creation and deletion."
         },
@@ -1233,7 +1233,7 @@
       },
       "id": "ResourceLimit",
       "type": "object",
-      "description": "Contains information about amount of some resource in the cluster."
+      "description": "Contains information about amount of some resource in the cluster. For memory, value should be in GB."
     },
     "IPAllocationPolicy": {
       "properties": {
