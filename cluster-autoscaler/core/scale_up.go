@@ -216,6 +216,7 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 				if err != nil {
 					context.LogRecorder.Eventf(apiv1.EventTypeWarning, "FailedToCreateNodeGroup",
 						"NodeAutoprovisioning: attempt to create node group %v failed: %v", oldId, err)
+					// TODO(maciekpytel): add some metric here after figuring out failure scenarios
 					return false, errors.ToAutoscalerError(errors.CloudProviderError, err)
 				}
 				newId := bestOption.NodeGroup.Id()
@@ -228,6 +229,7 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 				}
 				context.LogRecorder.Eventf(apiv1.EventTypeNormal, "CreatedNodeGroup",
 					"NodeAutoprovisioning: created new node group %v", newId)
+				metrics.RegisterNodeGroupCreation()
 
 			}
 		}

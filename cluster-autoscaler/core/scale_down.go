@@ -837,10 +837,12 @@ func cleanUpNodeAutoprovisionedGroups(cloudProvider cloudprovider.CloudProvider,
 			if err := nodeGroup.Delete(); err != nil {
 				logRecorder.Eventf(apiv1.EventTypeWarning, "FailedToDeleteNodeGroup",
 					"NodeAutoprovisioning: attempt to delete node group %v failed: %v", ngId, err)
+				// TODO(maciekpytel): add some metric here after figuring out failure scenarios
 				return err
 			}
 			logRecorder.Eventf(apiv1.EventTypeNormal, "DeletedNodeGroup",
 				"NodeAutoprovisioning: removed node group %v", ngId)
+			metrics.RegisterNodeGroupDeletion()
 		}
 	}
 	return nil
