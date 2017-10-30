@@ -150,6 +150,7 @@ const (
 	// ResourceNameCores is string name for cores. It's used by ResourceLimiter.
 	ResourceNameCores = "cpu"
 	// ResourceNameMemory is string name for memory. It's used by ResourceLimiter.
+	// Memory should always be provided in megabytes.
 	ResourceNameMemory = "memory"
 )
 
