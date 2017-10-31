@@ -386,7 +386,7 @@ All in all the total reaction time is around 4 min.
 
 ### Where can I find the designs of the upcoming features?
 
-CA team follows the generic Kuberntes process and submits design proposals [HERE](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler/proposals)
+CA team follows the generic Kubernetes process and submits design proposals [HERE](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler/proposals)
 before starting any bigger/significant effort.
 Some of the not-yet-fully-approved proposals may be hidden among [PRs](https://github.com/kubernetes/autoscaler/pulls).
 
