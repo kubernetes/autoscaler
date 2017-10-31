@@ -826,6 +826,9 @@ func (m *gceManagerImpl) fetchResourceLimiter() error {
 	if m.mode == ModeGKENAP {
 		cluster, err := m.gkeAlphaService.Projects.Zones.Clusters.Get(m.projectId, m.location, m.clusterName).Do()
 		if err != nil {
+			return err
+		}
+		if cluster.Autoscaling == nil {
 			return nil
 		}
 
