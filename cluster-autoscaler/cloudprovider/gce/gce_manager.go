@@ -362,7 +362,7 @@ func (m *gceManagerImpl) fetchAllNodePoolsGkeImpl() error {
 func (m *gceManagerImpl) fetchAllNodePoolsGkeRegionalImpl() error {
 	m.assertGKE()
 
-	nodePoolsResponse, err := m.gkeBetaService.Projects.Zones.Clusters.NodePools.List(m.projectId, m.location, m.clusterName).Do()
+	nodePoolsResponse, err := m.gkeBetaService.Projects.Locations.Clusters.NodePools.List(fmt.Sprintf("projects/%s/locations/%s/clusters/%s", m.projectId, m.location, m.clusterName)).Do()
 	if err != nil {
 		return err
 	}
