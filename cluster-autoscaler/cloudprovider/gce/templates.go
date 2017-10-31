@@ -38,6 +38,7 @@ import (
 const (
 	mbPerGB           = 1000
 	millicoresPerCore = 1000
+	resourceNvidiaGPU = "nvidia.com/gpu"
 )
 
 // builds templates for gce cloud provider
@@ -75,10 +76,19 @@ func (t *templateBuilder) getCpuAndMemoryForMachineType(machineType string) (cpu
 	return machine.GuestCpus, machine.MemoryMb * 1024 * 1024, nil
 }
 
-func (t *templateBuilder) buildCapacity(machineType string) (apiv1.ResourceList, error) {
+func (t *templateBuilder) getAcceleratorCount(accelerators []*gce.AcceleratorConfig) int64 {
+	count := int64(0)
+	for _, accelerator := range accelerators {
+		if strings.HasPrefix(accelerator.AcceleratorType, "nvidia-") {
+			count += accelerator.AcceleratorCount
+		}
+	}
+	return count
+}
+
+func (t *templateBuilder) buildCapacity(machineType string, accelerators []*gce.AcceleratorConfig) (apiv1.ResourceList, error) {
 	capacity := apiv1.ResourceList{}
 	// TODO: get a real value.
-	// TODO: handle GPU
 	capacity[apiv1.ResourcePods] = *resource.NewQuantity(110, resource.DecimalSI)
 
 	cpu, mem, err := t.getCpuAndMemoryForMachineType(machineType)
@@ -87,6 +97,11 @@ func (t *templateBuilder) buildCapacity(machineType string) (apiv1.ResourceList,
 	}
 	capacity[apiv1.ResourceCPU] = *resource.NewQuantity(cpu, resource.DecimalSI)
 	capacity[apiv1.ResourceMemory] = *resource.NewQuantity(mem, resource.DecimalSI)
+
+	if accelerators != nil && len(accelerators) > 0 {
+		capacity[resourceNvidiaGPU] = *resource.NewQuantity(t.getAcceleratorCount(accelerators), resource.DecimalSI)
+	}
+
 	return capacity, nil
 }
 
@@ -147,7 +162,8 @@ func (t *templateBuilder) buildNodeFromTemplate(mig *Mig, template *gce.Instance
 		SelfLink: fmt.Sprintf("/api/v1/nodes/%s", nodeName),
 		Labels:   map[string]string{},
 	}
-	capacity, err := t.buildCapacity(template.Properties.MachineType)
+
+	capacity, err := t.buildCapacity(template.Properties.MachineType, template.Properties.GuestAccelerators)
 	if err != nil {
 		return nil, err
 	}
@@ -215,7 +231,8 @@ func (t *templateBuilder) buildNodeFromAutoprovisioningSpec(mig *Mig) (*apiv1.No
 		SelfLink: fmt.Sprintf("/api/v1/nodes/%s", nodeName),
 		Labels:   map[string]string{},
 	}
-	capacity, err := t.buildCapacity(mig.spec.machineType)
+	// TODO: Handle GPU
+	capacity, err := t.buildCapacity(mig.spec.machineType, nil)
 	if err != nil {
 		return nil, err
 	}
