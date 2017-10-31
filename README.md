@@ -21,7 +21,7 @@ Interested in autoscaling? Want to talk? Have questions, concerns or great ideas
 
 Please join us on #sig-autoscaling at https://kubernetes.slack.com/.
 Moreover, every Monday we host a 30min sig-autoscaling meeting on
-https://zoom.us/j/176352399 at 16:00 CEST/CET, 7:00 am PST/PDT.
+https://zoom.us/my/k8s.sig.autoscaling at 16:00 CEST/CET, 7:00 am PST/PDT.
 
 ## Getting the Code
 
