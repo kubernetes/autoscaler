@@ -105,6 +105,8 @@ type GceManager interface {
 	Refresh() error
 	// GetResourceLimiter returns resource limiter.
 	GetResourceLimiter() (*cloudprovider.ResourceLimiter, error)
+	// Cleanup cleans up open resources before the cloud provider is destroyed, i.e. go routines etc.
+	Cleanup() error
 	getMigs() []*migInformation
 	createNodePool(mig *Mig) error
 	deleteNodePool(toBeRemoved *Mig) error
@@ -127,16 +129,15 @@ type gceManagerImpl struct {
 	cacheMutex sync.Mutex
 	migsMutex  sync.Mutex
 
-	location    string
-	projectId   string
-	clusterName string
-	mode        GcpCloudProviderMode
-	templates   *templateBuilder
-	isRegional  bool
-
+	location        string
+	projectId       string
+	clusterName     string
+	mode            GcpCloudProviderMode
+	templates       *templateBuilder
+	interrupt       chan struct{}
+	isRegional      bool
 	resourceLimiter *cloudprovider.ResourceLimiter
-
-	lastRefresh time.Time
+	lastRefresh     time.Time
 }
 
 // CreateGceManager constructs gceManager object.
@@ -208,6 +209,7 @@ func CreateGceManager(configReader io.Reader, mode GcpCloudProviderMode, cluster
 			projectId: projectId,
 			service:   gceService,
 		},
+		interrupt: make(chan struct{}),
 	}
 
 	if mode == ModeGKE {
@@ -260,15 +262,21 @@ func CreateGceManager(configReader io.Reader, mode GcpCloudProviderMode, cluster
 
 	manager.lastRefresh = time.Now()
 
-	go wait.Forever(func() {
+	go wait.Until(func() {
 		manager.cacheMutex.Lock()
 		defer manager.cacheMutex.Unlock()
 		if err := manager.regenerateCache(); err != nil {
 			glog.Errorf("Error while regenerating Mig cache: %v", err)
 		}
-	}, time.Hour)
+	}, time.Hour, manager.interrupt)
 
 	return manager, nil
+}
+
+// Cleanup closes the channel to signal the go routine to stop that is handling the cache
+func (m *gceManagerImpl) Cleanup() error {
+	close(m.interrupt)
+	return nil
 }
 
 func (m *gceManagerImpl) assertGKE() {
