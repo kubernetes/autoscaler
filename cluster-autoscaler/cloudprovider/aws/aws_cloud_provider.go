@@ -103,6 +103,12 @@ func buildStaticallyDiscoveringProvider(awsManager *AwsManager, specs []string, 
 	return aws, nil
 }
 
+// Cleanup stops the go routine that is handling the current view of the ASGs in the form of a cache
+func (aws *awsCloudProvider) Cleanup() error {
+	aws.awsManager.Cleanup()
+	return nil
+}
+
 // addNodeGroup adds node group defined in string spec. Format:
 // minNodes:maxNodes:asgName
 func (aws *awsCloudProvider) addNodeGroup(spec string) error {

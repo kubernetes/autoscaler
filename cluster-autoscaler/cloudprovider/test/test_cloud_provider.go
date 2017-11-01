@@ -192,6 +192,11 @@ func (tcp *TestCloudProvider) SetResourceLimiter(resourceLimiter *cloudprovider.
 	tcp.resourceLimiter = resourceLimiter
 }
 
+// Cleanup this is a function to close resources associated with the cloud provider
+func (tcp *TestCloudProvider) Cleanup() error {
+	return nil
+}
+
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
 // In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
 func (tcp *TestCloudProvider) Refresh() error {

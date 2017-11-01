@@ -128,6 +128,11 @@ func (kubemark *KubemarkCloudProvider) Refresh() error {
 	return nil
 }
 
+// Cleanup cleans up all resources before the cloud provider is removed
+func (kubemark *KubemarkCloudProvider) Cleanup() error {
+	return nil
+}
+
 // NodeGroup implements NodeGroup interfrace.
 type NodeGroup struct {
 	Name               string
