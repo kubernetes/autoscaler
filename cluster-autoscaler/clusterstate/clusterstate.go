@@ -261,6 +261,7 @@ func (csr *ClusterStateRegistry) RegisterFailedScaleUp(nodeGroupName string, rea
 
 // UpdateNodes updates the state of the nodes in the ClusterStateRegistry and recalculates the statss
 func (csr *ClusterStateRegistry) UpdateNodes(nodes []*apiv1.Node, currentTime time.Time) error {
+	csr.updateNodeGroupMetrics()
 	targetSizes, err := getTargetSizes(csr.cloudProvider)
 	if err != nil {
 		return err
@@ -360,6 +361,23 @@ func (csr *ClusterStateRegistry) IsNodeGroupHealthy(nodeGroupName string) bool {
 	}
 
 	return true
+}
+
+// updateNodeGroupMetrics looks at NodeGroups provided by cloudprovider and updates corresponding metrics
+func (csr *ClusterStateRegistry) updateNodeGroupMetrics() {
+	autoscaled := 0
+	autoprovisioned := 0
+	for _, nodeGroup := range csr.cloudProvider.NodeGroups() {
+		if !nodeGroup.Exist() {
+			continue
+		}
+		if nodeGroup.Autoprovisioned() {
+			autoprovisioned += 1
+		} else {
+			autoscaled += 1
+		}
+	}
+	metrics.UpdateNodeGroupsCount(autoscaled, autoprovisioned)
 }
 
 // IsNodeGroupSafeToScaleUp returns true if node group can be scaled up now.
