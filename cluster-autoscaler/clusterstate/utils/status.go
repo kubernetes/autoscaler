@@ -79,7 +79,7 @@ func NewStatusMapRecorder(kubeClient kube_client.Interface, namespace string, re
 }
 
 // WriteStatusConfigMap writes updates status ConfigMap with a given message or creates a new
-// ConfigMap if it doesn't exist. If logRecorder is passed and configmap update is successfull
+// ConfigMap if it doesn't exist. If logRecorder is passed and configmap update is successful
 // logRecorder's internal reference will be updated.
 func WriteStatusConfigMap(kubeClient kube_client.Interface, namespace string, msg string, logRecorder *LogEventRecorder) (*apiv1.ConfigMap, error) {
 	statusUpdateTime := time.Now()
@@ -120,7 +120,7 @@ func WriteStatusConfigMap(kubeClient kube_client.Interface, namespace string, ms
 		glog.Error(errMsg)
 		return nil, errors.New(errMsg)
 	}
-	glog.V(8).Infof("Succesfully wrote status configmap with body \"%v\"", statusMsg)
+	glog.V(8).Infof("Successfully wrote status configmap with body \"%v\"", statusMsg)
 	// Having this as a side-effect is somewhat ugly
 	// But it makes error handling easier, as we get a free retry each loop
 	if logRecorder != nil {

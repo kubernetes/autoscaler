@@ -326,7 +326,7 @@ func (sd *ScaleDown) updateUnremovableNodes(nodes []*apiv1.Node) {
 }
 
 // markSimulationError indicates a simulation error by clearing  relevant scale
-// down state and returning an apropriate error.
+// down state and returning an appropriate error.
 func (sd *ScaleDown) markSimulationError(simulatorErr errors.AutoscalerError,
 	timestamp time.Time) errors.AutoscalerError {
 	glog.Errorf("Error while simulating node drains: %v", simulatorErr)

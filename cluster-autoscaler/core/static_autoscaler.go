@@ -49,7 +49,7 @@ func NewStaticAutoscaler(opts AutoscalingOptions, predicateChecker *simulator.Pr
 	if err != nil {
 		glog.Error("Failed to initialize status configmap, unable to write status events")
 		// Get a dummy, so we can at least safely call the methods
-		// TODO(maciekpytel): recover from this after successfull status configmap update?
+		// TODO(maciekpytel): recover from this after successful status configmap update?
 		logRecorder, _ = utils.NewStatusMapRecorder(kubeClient, opts.ConfigNamespace, kubeEventRecorder, false)
 	}
 	autoscalingContext, errctx := NewAutoscalingContext(opts, predicateChecker, kubeClient, kubeEventRecorder, logRecorder, listerRegistry)
