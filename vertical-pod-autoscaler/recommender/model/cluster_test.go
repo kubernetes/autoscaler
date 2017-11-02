@@ -49,7 +49,7 @@ func TestClusterAddSample(t *testing.T) {
 }
 
 // Verifies that AddSample and AddOrUpdateContainer methods return a proper
-// KeyError when refering to a non-existent pod.
+// KeyError when referring to a non-existent pod.
 func TestMissingKeys(t *testing.T) {
 	cluster := NewClusterState()
 	err := cluster.AddSample(makeTestUsageSample())
