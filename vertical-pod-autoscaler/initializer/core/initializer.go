@@ -58,7 +58,7 @@ const (
 // On startup initializers registers itself with API Server by creating a VPA
 // initializer configuration.
 type Initializer interface {
-	// Run runs the initalizer by syncing caches and registering with the API server
+	// Run runs the initializer by syncing caches and registering with the API server
 	Run(stopCh <-chan struct{})
 }
 
@@ -126,7 +126,7 @@ func (initializer *initializer) updateResourceRequests(obj interface{}) {
 
 	if err != nil {
 		glog.Errorf("unable to initialize pod: %v", pod.Name)
-		// Mark failed initalization for pod.
+		// Mark failed initialization for pod.
 		failedPod, err := markAsFailed(pod)
 		if err != nil {
 			glog.Errorf("unable to mark failed initialization for pod %v: %v", pod.Name, err)
@@ -202,7 +202,7 @@ func shouldInitialize(pod *v1.Pod) bool {
 	return pod.ObjectMeta.Initializers != nil && len(pod.ObjectMeta.Initializers.Pending) > 0 && pod.ObjectMeta.Initializers.Pending[0].Name == VPAInitializerName
 }
 
-// markInitializationSuccess denotes successfull initalization for pod
+// markInitializationSuccess denotes successful initialization for pod
 func markInitializationSuccess(pod *v1.Pod) {
 	if len(pod.ObjectMeta.Initializers.Pending) == 1 {
 		pod.ObjectMeta.Initializers = nil
@@ -211,7 +211,7 @@ func markInitializationSuccess(pod *v1.Pod) {
 	}
 }
 
-// markInitializationFailure denotes failed initalization for pod
+// markInitializationFailure denotes failed initialization for pod
 func markInitializationFailure(pod *v1.Pod) {
 	pod.ObjectMeta.Initializers.Result = &metav1.Status{Status: metav1.StatusFailure}
 }
@@ -358,7 +358,7 @@ func newConfiguration() *v1alpha1.InitializerConfiguration {
 		APIVersions: []string{"*"},
 		Resources:   []string{"pods"},
 	}
-	// If initalizer fails, allow for pod creation.
+	// If initializer fails, allow for pod creation.
 	failPolicy := v1alpha1.Ignore
 	vpaInitializer := v1alpha1.Initializer{
 		Name:          VPAInitializerName,
