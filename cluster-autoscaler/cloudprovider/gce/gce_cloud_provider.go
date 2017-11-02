@@ -34,7 +34,7 @@ const (
 	minAutoprovisionedSize = 0
 )
 
-// Big machines are temporairly commented out.
+// Big machines are temporarily commented out.
 // TODO(mwielgus): get this list programatically
 var autoprovisionedMachineTypes = []string{
 	"n1-standard-1",

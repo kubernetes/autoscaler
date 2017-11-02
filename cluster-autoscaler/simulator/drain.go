@@ -32,7 +32,7 @@ import (
 // FastGetPodsToMove returns a list of pods that should be moved elsewhere if the node
 // is drained. Raises error if there is an unreplicated pod.
 // Based on kubectl drain code. It makes an assumption that RC, DS, Jobs and RS were deleted
-// along with their pods (no abandoned pods with dangling created-by annotation). Usefull for fast
+// along with their pods (no abandoned pods with dangling created-by annotation). Useful for fast
 // checks.
 func FastGetPodsToMove(nodeInfo *schedulercache.NodeInfo, skipNodesWithSystemPods bool, skipNodesWithLocalStorage bool,
 	pdbs []*policyv1.PodDisruptionBudget) ([]*apiv1.Pod, error) {
