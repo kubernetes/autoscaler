@@ -25,6 +25,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
+	"runtime"
 )
 
 func TestBuildGenericLabels(t *testing.T) {
@@ -92,4 +93,12 @@ func makeTaintSet(taints []apiv1.Taint) map[apiv1.Taint]bool {
 		set[taint] = true
 	}
 	return set
+}
+
+func testCreateAWSManager(t *testing.T) {
+	manager, awsError := createAWSManagerInternal(nil, &testService)
+	assert.Nil(t, awsError, "Expected nil from the error when creating AWS Manager")
+	currentNumberRoutines := runtime.NumGoroutine()
+	manager.Cleanup()
+	assert.True(t, currentNumberRoutines-1 == runtime.NumGoroutine(), "current number of go routines should be one less since we called close")
 }
