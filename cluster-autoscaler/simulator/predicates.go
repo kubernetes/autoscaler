@@ -157,7 +157,7 @@ func NewTestPredicateChecker() *PredicateChecker {
 
 // SetAffinityPredicateEnabled can be used to enable or disable checking MatchInterPodAffinity
 // predicate. This will cause incorrect CA behavior if there is at least a single pod in
-// cluster using affinity/antiaffinity. However, checking affinity predicate is extremly
+// cluster using affinity/antiaffinity. However, checking affinity predicate is extremely
 // costly even if no pod is using it, so it may be worth disabling it in such situation.
 func (p *PredicateChecker) SetAffinityPredicateEnabled(enable bool) {
 	p.enableAffinityPredicate = enable

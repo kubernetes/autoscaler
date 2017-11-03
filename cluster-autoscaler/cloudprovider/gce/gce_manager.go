@@ -57,7 +57,7 @@ const (
 	ModeGKE GcpCloudProviderMode = "gke"
 
 	// ModeGKENAP means that the cluster is running on GKE with autoprovisioning enabled.
-	// TODO(maciekpytel): remove this when NAP API is availiable in normal client
+	// TODO(maciekpytel): remove this when NAP API is available in normal client
 	ModeGKENAP GcpCloudProviderMode = "gke_nap"
 )
 

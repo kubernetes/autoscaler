@@ -45,7 +45,7 @@ func BestLabelSet(pods []*apiv1.Pod) map[string]string {
 	selector := nodeSelectors[0].nodeSelector
 
 	// Expand the list of labels so that the other pods can fit as well. However as infrastructure
-	// related labels might not be compatibile with each other let's skip these selectors that
+	// related labels might not be compatible with each other let's skip these selectors that
 	// require new infrastructure labels (like kubernetes.io/preemptive=true). New generic
 	// labels that are unlikely to cause problems when mixed are ok. And obviously skip pods that
 	// require conflicting labels.

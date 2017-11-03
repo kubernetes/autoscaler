@@ -32,7 +32,7 @@ type AutoscalerError interface {
 	Type() AutoscalerErrorType
 
 	// AddPrefix adds a prefix to error message.
-	// Returns the error it's called for convienient inline use.
+	// Returns the error it's called for convenient inline use.
 	// Example:
 	// if err := DoSomething(myObject); err != nil {
 	//	return err.AddPrefix("can't do something with %v: ", myObject)
@@ -85,7 +85,7 @@ func (e autoscalerErrorImpl) Type() AutoscalerErrorType {
 }
 
 // AddPrefix adds a prefix to error message.
-// Returns the error it's called for convienient inline use.
+// Returns the error it's called for convenient inline use.
 // Example:
 // if err := DoSomething(myObject); err != nil {
 //	return err.AddPrefix("can't do something with %v: ", myObject)
