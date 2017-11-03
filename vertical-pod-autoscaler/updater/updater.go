@@ -70,7 +70,7 @@ func (u *updater) RunOnce() {
 	}
 
 	for _, vpa := range vpaList {
-		glog.V(2).Infof("processing VPA object targetting %v", vpa.Spec.Target.Selector)
+		glog.V(2).Infof("processing VPA object targeting %v", vpa.Spec.Target.Selector)
 		selector, err := labels.Parse(vpa.Spec.Target.Selector)
 		if err != nil {
 			glog.Errorf("error processing VPA object: failed to create pod selector: %v", err)
