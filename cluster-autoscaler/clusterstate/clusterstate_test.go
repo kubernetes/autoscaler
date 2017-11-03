@@ -382,7 +382,7 @@ func TestUpcomingNodes(t *testing.T) {
 	provider.AddNode("ng1", ng1_1)
 
 	// One node is expected to come. One node is unready for the long time
-	// but this should not make any differnece.
+	// but this should not make any difference.
 	ng2_1 := BuildTestNode("ng2-1", 1000, 1000)
 	SetNodeReadyState(ng2_1, false, now.Add(-time.Minute))
 	provider.AddNodeGroup("ng2", 1, 10, 2)
@@ -654,7 +654,7 @@ func TestScaleUpBackoff(t *testing.T) {
 	now = now.Add(InitialNodeGroupBackoffDuration).Add(time.Second)
 	assert.False(t, clusterstate.IsNodeGroupSafeToScaleUp("ng1", now))
 
-	// The backoff should be cleared after a successfull scale-up
+	// The backoff should be cleared after a successful scale-up
 	clusterstate.RegisterScaleUp(&ScaleUpRequest{
 		NodeGroupName:   "ng1",
 		Increase:        1,

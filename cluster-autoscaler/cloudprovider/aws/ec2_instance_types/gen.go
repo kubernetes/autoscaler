@@ -1,3 +1,5 @@
+// +build ignore
+
 /*
 Copyright 2017 The Kubernetes Authors.
 
@@ -13,8 +15,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-
-// +build ignore
 
 package main
 
@@ -45,7 +45,7 @@ type productAttributes struct {
 	InstanceType string `json:"instanceType"`
 	VCPU         string `json:"vcpu"`
 	Memory       string `json:"memory"`
-	GPU          string `json:"gpu`
+	GPU          string `json:"gpu"`
 }
 
 type instanceType struct {
