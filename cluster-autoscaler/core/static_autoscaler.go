@@ -19,16 +19,17 @@ package core
 import (
 	"time"
 
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	kube_client "k8s.io/client-go/kubernetes"
 	kube_record "k8s.io/client-go/tools/record"
 
 	"github.com/golang/glog"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 )
 
 // StaticAutoscaler is an autoscaler which has all the core functionality of a CA but without the reconfiguration feature
@@ -106,6 +107,10 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		glog.Errorf("Failed to list ready nodes: %v", err)
 		return errors.ToAutoscalerError(errors.ApiCallError, err)
 	}
+	// Handle GPU case - allocatable GPU may be equal to 0 up to 15 minutes after
+	// node registers as ready. See https://github.com/kubernetes/kubernetes/issues/54959
+	// TODO: Remove this call when we handle dynamically provisioned resources.
+	readyNodes = gpu.SetGPUAllocatableToCapacity(readyNodes)
 	if len(readyNodes) == 0 {
 		glog.Warningf("No ready nodes in the cluster")
 		scaleDown.CleanUpUnneededNodes()
