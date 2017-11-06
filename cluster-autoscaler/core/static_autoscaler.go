@@ -110,7 +110,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	// Handle GPU case - allocatable GPU may be equal to 0 up to 15 minutes after
 	// node registers as ready. See https://github.com/kubernetes/kubernetes/issues/54959
 	// TODO: Remove this call when we handle dynamically provisioned resources.
-	readyNodes = gpu.SetGPUAllocatableToCapacity(readyNodes)
+	readyNodes = gpu.SetGPUAllocatableToCapacity(readyNodes, autoscalingContext.CloudProvider)
 	if len(readyNodes) == 0 {
 		glog.Warningf("No ready nodes in the cluster")
 		scaleDown.CleanUpUnneededNodes()
