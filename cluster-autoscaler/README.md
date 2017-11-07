@@ -30,7 +30,7 @@ there is a big chance that it won't work as expected.
 # Notable changes
 
 CA Version 1.0.2:
-* Fixes issues with autoscaling node groups using GPU on GKE (https://github.com/kubernetes/kubernetes/issues/54959, https://github.com/kubernetes/autoscaler/pull/401) and AWS (https://github.com/kubernetes/autoscaler/issues/321).
+* Fixes issues with scaling node groups using GPU from 0 to 1 on GKE (https://github.com/kubernetes/autoscaler/pull/401) and AWS (https://github.com/kubernetes/autoscaler/issues/321).
 * Fixes a bug where goroutines performing API calls were leaking when using dynamic config on AWS (https://github.com/kubernetes/autoscaler/issues/252).
 * Node Autoprovisioning support for GKE (the implementation was included in 1.0.0, but this release includes some bugfixes and introduces metrics and events).
 
