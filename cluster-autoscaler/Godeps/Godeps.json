@@ -18,28 +18,28 @@
 		},
 		{
 			"ImportPath": "github.com/Azure/azure-sdk-for-go/arm/compute",
-			"Comment": "v10.0.4-beta-1-g786cc84",
-			"Rev": "786cc84138518bf7fd6d60e92fad1ac9d1a117ad"
+			"Comment": "v11.1.1-beta",
+			"Rev": "509eea43b93cec2f3f17acbe2578ef58703923f8"
 		},
 		{
 			"ImportPath": "github.com/Azure/azure-sdk-for-go/arm/containerregistry",
-			"Comment": "v10.0.4-beta-1-g786cc84",
-			"Rev": "786cc84138518bf7fd6d60e92fad1ac9d1a117ad"
+			"Comment": "v11.1.1-beta",
+			"Rev": "509eea43b93cec2f3f17acbe2578ef58703923f8"
 		},
 		{
 			"ImportPath": "github.com/Azure/azure-sdk-for-go/arm/disk",
-			"Comment": "v10.0.4-beta-1-g786cc84",
-			"Rev": "786cc84138518bf7fd6d60e92fad1ac9d1a117ad"
+			"Comment": "v11.1.1-beta",
+			"Rev": "509eea43b93cec2f3f17acbe2578ef58703923f8"
 		},
 		{
 			"ImportPath": "github.com/Azure/azure-sdk-for-go/arm/network",
-			"Comment": "v10.0.4-beta-1-g786cc84",
-			"Rev": "786cc84138518bf7fd6d60e92fad1ac9d1a117ad"
+			"Comment": "v11.1.1-beta",
+			"Rev": "509eea43b93cec2f3f17acbe2578ef58703923f8"
 		},
 		{
 			"ImportPath": "github.com/Azure/azure-sdk-for-go/arm/storage",
-			"Comment": "v10.0.4-beta-1-g786cc84",
-			"Rev": "786cc84138518bf7fd6d60e92fad1ac9d1a117ad"
+			"Comment": "v11.1.1-beta",
+			"Rev": "509eea43b93cec2f3f17acbe2578ef58703923f8"
 		},
 		{
 			"ImportPath": "github.com/Azure/azure-sdk-for-go/storage",
