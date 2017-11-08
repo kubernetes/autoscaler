@@ -131,6 +131,9 @@ type AutoscalingOptions struct {
 	NodeAutoprovisioningEnabled bool
 	// MaxAutoprovisionedNodeGroupCount is the maximum number of autoprovisioned groups in the cluster.
 	MaxAutoprovisionedNodeGroupCount int
+	// Pods with priority below cutoff are expendable. They can be killed without any consideration during scale down and they don't cause scale up.
+	// Pods with null priority (PodPriority disabled) are non expendable.
+	ExpendablePodsPriorityCutoff int
 }
 
 // NewAutoscalingContext returns an autoscaling context from all the necessary parameters passed via arguments

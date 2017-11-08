@@ -35,12 +35,14 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
+	scheduler_util "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/client-go/kubernetes/fake"
 	core "k8s.io/client-go/testing"
 
 	"strconv"
 
+	"github.com/golang/glog"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 )
@@ -72,18 +74,27 @@ func TestFindUnneededNodes(t *testing.T) {
 	p6.OwnerReferences = ownerRef
 	p6.Spec.NodeName = "n7"
 
+	// Node with not replicated pod.
 	n1 := BuildTestNode("n1", 1000, 10)
+	// Node can be deleted.
 	n2 := BuildTestNode("n2", 1000, 10)
+	// Node with high utilization.
 	n3 := BuildTestNode("n3", 1000, 10)
+	// Node with big pod.
 	n4 := BuildTestNode("n4", 10000, 10)
+	// No scale down node.
 	n5 := BuildTestNode("n5", 1000, 10)
 	n5.Annotations = map[string]string{
 		ScaleDownDisabledKey: "true",
 	}
+	// Node info not found.
 	n6 := BuildTestNode("n6", 1000, 10)
-	n7 := BuildTestNode("n7", 0, 10) // Node without utilization
+	// Node without utilization.
+	n7 := BuildTestNode("n7", 0, 10)
+	// Node being deleted.
 	n8 := BuildTestNode("n8", 1000, 10)
 	n8.Spec.Taints = []apiv1.Taint{{Key: deletetaint.ToBeDeletedTaint, Value: strconv.FormatInt(time.Now().Unix()-301, 10)}}
+	// Nod being deleted recently.
 	n9 := BuildTestNode("n9", 1000, 10)
 	n9.Spec.Taints = []apiv1.Taint{{Key: deletetaint.ToBeDeletedTaint, Value: strconv.FormatInt(time.Now().Unix()-60, 10)}}
 
@@ -115,6 +126,7 @@ func TestFindUnneededNodes(t *testing.T) {
 	context := AutoscalingContext{
 		AutoscalingOptions: AutoscalingOptions{
 			ScaleDownUtilizationThreshold: 0.35,
+			ExpendablePodsPriorityCutoff:  10,
 		},
 		ClusterStateRegistry: clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder),
 		PredicateChecker:     simulator.NewTestPredicateChecker(),
@@ -162,6 +174,98 @@ func TestFindUnneededNodes(t *testing.T) {
 	assert.Equal(t, 1, len(sd.unneededNodes))
 	// Verify that nodes that are no longer unremovable are removed.
 	assert.Equal(t, 0, len(sd.unremovableNodes))
+}
+
+func TestPodsWithPrioritiesFindUnneededNodes(t *testing.T) {
+	// shared owner reference
+	ownerRef := GenerateOwnerReferences("rs", "ReplicaSet", "extensions/v1beta1", "")
+	var priority100 int32 = 100
+	var priority1 int32 = 1
+
+	p1 := BuildTestPod("p1", 600, 0)
+	p1.OwnerReferences = ownerRef
+	p1.Spec.Priority = &priority100
+	p1.Annotations = map[string]string{scheduler_util.NominatedNodeAnnotationKey: "n1"}
+
+	p2 := BuildTestPod("p2", 400, 0)
+	p2.OwnerReferences = ownerRef
+	p2.Spec.NodeName = "n2"
+	p2.Spec.Priority = &priority1
+
+	p3 := BuildTestPod("p3", 100, 0)
+	p3.OwnerReferences = ownerRef
+	p3.Spec.NodeName = "n2"
+	p3.Spec.Priority = &priority100
+
+	p4 := BuildTestPod("p4", 100, 0)
+	p4.OwnerReferences = ownerRef
+	p4.Spec.Priority = &priority100
+	p4.Annotations = map[string]string{scheduler_util.NominatedNodeAnnotationKey: "n2"}
+
+	p5 := BuildTestPod("p5", 400, 0)
+	p5.OwnerReferences = ownerRef
+	p5.Spec.NodeName = "n3"
+	p5.Spec.Priority = &priority1
+
+	p6 := BuildTestPod("p6", 400, 0)
+	p6.OwnerReferences = ownerRef
+	p6.Spec.NodeName = "n3"
+	p6.Spec.Priority = &priority1
+
+	p7 := BuildTestPod("p7", 1200, 0)
+	p7.OwnerReferences = ownerRef
+	p7.Spec.Priority = &priority100
+	p7.Annotations = map[string]string{scheduler_util.NominatedNodeAnnotationKey: "n4"}
+
+	// Node with pod waiting for lower priority pod preemption, highly utilized. Can't be deleted.
+	n1 := BuildTestNode("n1", 1000, 10)
+	// Node with big expendable pod and two small non expendable pods that can be moved.
+	n2 := BuildTestNode("n2", 1000, 10)
+	// Pod with two expendable pods.
+	n3 := BuildTestNode("n3", 1000, 10)
+	// Node with big pod waiting for lower priority pod preemption. Can't be deleted.
+	n4 := BuildTestNode("n4", 10000, 10)
+
+	SetNodeReadyState(n1, true, time.Time{})
+	SetNodeReadyState(n2, true, time.Time{})
+	SetNodeReadyState(n3, true, time.Time{})
+	SetNodeReadyState(n4, true, time.Time{})
+
+	fakeClient := &fake.Clientset{}
+	fakeRecorder := kube_util.CreateEventRecorder(fakeClient)
+	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false)
+
+	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider.AddNodeGroup("ng1", 1, 10, 2)
+	provider.AddNode("ng1", n1)
+	provider.AddNode("ng1", n2)
+	provider.AddNode("ng1", n3)
+	provider.AddNode("ng1", n4)
+
+	context := AutoscalingContext{
+		AutoscalingOptions: AutoscalingOptions{
+			ScaleDownUtilizationThreshold: 0.35,
+			ExpendablePodsPriorityCutoff:  10,
+		},
+		ClusterStateRegistry: clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder),
+		PredicateChecker:     simulator.NewTestPredicateChecker(),
+		LogRecorder:          fakeLogRecorder,
+		CloudProvider:        provider,
+	}
+
+	sd := NewScaleDown(&context)
+
+	sd.UpdateUnneededNodes([]*apiv1.Node{n1, n2, n3, n4}, []*apiv1.Node{n1, n2, n3, n4},
+		[]*apiv1.Pod{p1, p2, p3, p4, p5, p6, p7}, time.Now(), nil)
+	assert.Equal(t, 2, len(sd.unneededNodes))
+	glog.Warningf("Unneeded nodes %v", sd.unneededNodes)
+	_, found := sd.unneededNodes["n2"]
+	assert.True(t, found)
+	_, found = sd.unneededNodes["n3"]
+	assert.True(t, found)
+	assert.Contains(t, sd.podLocationHints, p3.Namespace+"/"+p3.Name)
+	assert.Contains(t, sd.podLocationHints, p4.Namespace+"/"+p4.Name)
+	assert.Equal(t, 4, len(sd.nodeUtilizationMap))
 }
 
 func TestFindUnneededMaxCandidates(t *testing.T) {
@@ -601,11 +705,17 @@ func TestScaleDown(t *testing.T) {
 	p1.OwnerReferences = GenerateOwnerReferences(job.Name, "Job", "extensions/v1beta1", "")
 
 	p2 := BuildTestPod("p2", 800, 0)
+	var priority int32 = 1
+	p2.Spec.Priority = &priority
+
+	p3 := BuildTestPod("p3", 800, 0)
+
 	p1.Spec.NodeName = "n1"
-	p2.Spec.NodeName = "n2"
+	p2.Spec.NodeName = "n1"
+	p3.Spec.NodeName = "n2"
 
 	fakeClient.Fake.AddReactor("list", "pods", func(action core.Action) (bool, runtime.Object, error) {
-		return true, &apiv1.PodList{Items: []apiv1.Pod{*p1, *p2}}, nil
+		return true, &apiv1.PodList{Items: []apiv1.Pod{*p1, *p2, *p3}}, nil
 	})
 	fakeClient.Fake.AddReactor("get", "pods", func(action core.Action) (bool, runtime.Object, error) {
 		return true, nil, errors.NewNotFound(apiv1.Resource("pod"), "whatever")
@@ -648,6 +758,7 @@ func TestScaleDown(t *testing.T) {
 			ScaleDownUtilizationThreshold: 0.5,
 			ScaleDownUnneededTime:         time.Minute,
 			MaxGracefulTerminationSec:     60,
+			ExpendablePodsPriorityCutoff:  10,
 		},
 		PredicateChecker:     simulator.NewTestPredicateChecker(),
 		CloudProvider:        provider,
@@ -658,8 +769,8 @@ func TestScaleDown(t *testing.T) {
 	}
 	scaleDown := NewScaleDown(context)
 	scaleDown.UpdateUnneededNodes([]*apiv1.Node{n1, n2},
-		[]*apiv1.Node{n1, n2}, []*apiv1.Pod{p1, p2}, time.Now().Add(-5*time.Minute), nil)
-	result, err := scaleDown.TryToScaleDown([]*apiv1.Node{n1, n2}, []*apiv1.Pod{p1, p2}, nil, time.Now())
+		[]*apiv1.Node{n1, n2}, []*apiv1.Pod{p1, p2, p3}, time.Now().Add(-5*time.Minute), nil)
+	result, err := scaleDown.TryToScaleDown([]*apiv1.Node{n1, n2}, []*apiv1.Pod{p1, p2, p3}, nil, time.Now())
 	waitForDeleteToFinish(t, scaleDown)
 	assert.NoError(t, err)
 	assert.Equal(t, ScaleDownNodeDeleteStarted, result)

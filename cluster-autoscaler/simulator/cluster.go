@@ -27,6 +27,7 @@ import (
 	policyv1 "k8s.io/api/policy/v1beta1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	scheduler_util "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 	client "k8s.io/client-go/kubernetes"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/algorithm"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
@@ -62,7 +63,7 @@ func FindNodesToRemove(candidates []*apiv1.Node, allNodes []*apiv1.Node, pods []
 	podDisruptionBudgets []*policyv1.PodDisruptionBudget,
 ) (nodesToRemove []NodeToBeRemoved, unremovableNodes []*apiv1.Node, podReschedulingHints map[string]string, finalError errors.AutoscalerError) {
 
-	nodeNameToNodeInfo := schedulercache.CreateNodeNameToInfoMap(pods, allNodes)
+	nodeNameToNodeInfo := scheduler_util.CreateNodeNameToInfoMap(pods, allNodes)
 	result := make([]NodeToBeRemoved, 0)
 	unremovable := make([]*apiv1.Node, 0)
 
@@ -119,7 +120,7 @@ candidateloop:
 
 // FindEmptyNodesToRemove finds empty nodes that can be removed.
 func FindEmptyNodesToRemove(candidates []*apiv1.Node, pods []*apiv1.Pod) []*apiv1.Node {
-	nodeNameToNodeInfo := schedulercache.CreateNodeNameToInfoMap(pods, candidates)
+	nodeNameToNodeInfo := scheduler_util.CreateNodeNameToInfoMap(pods, candidates)
 	result := make([]*apiv1.Node, 0)
 	for _, node := range candidates {
 		if nodeInfo, found := nodeNameToNodeInfo[node.Name]; found {
