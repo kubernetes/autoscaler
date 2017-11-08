@@ -20,7 +20,7 @@ A minimum IAM policy would look like:
                 "autoscaling:SetDesiredCapacity",
                 "autoscaling:TerminateInstanceInAutoScalingGroup"
             ],
-            "Resource": "*"
+            "Resource": "arn:aws:autoscaling:*"
         }
     ]
 }
@@ -41,13 +41,13 @@ If you'd like to auto-discover node groups by specifing the `--node-group-auto-d
                 "autoscaling:SetDesiredCapacity",
                 "autoscaling:TerminateInstanceInAutoScalingGroup"
             ],
-            "Resource": "*"
+            "Resource": "arn:aws:autoscaling:*"
         }
     ]
 }
 ```
 
-Unfortunately AWS does not support ARNs for autoscaling groups yet so you must use "*" as the resource. More information [here](http://docs.aws.amazon.com/autoscaling/latest/userguide/IAM.html#UsingWithAutoScaling_Actions).
+AWS IAM policy above limits permission only to autoscaling resources. More information [here](http://docs.aws.amazon.com/autoscaling/latest/userguide/IAM.html#UsingWithAutoScaling_Actions).
 
 ## Deployment Specification
 
