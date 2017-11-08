@@ -22,6 +22,7 @@ this document:
   * [Should I use a CPU-usage-based node autoscaler with Kubernetes?](#should-i-use-a-cpu-usage-based-node-autoscaler-with-kubernetes)
   * [How is Cluster Autoscaler different from CPU-usage-based node autoscalers?](#how-is-cluster-autoscaler-different-from-cpu-usage-based-node-autoscalers)
   * [Is Cluster Autoscaler compatible with CPU-usage-based node autoscalers?](#is-cluster-autoscaler-compatible-with-cpu-usage-based-node-autoscalers)
+  * [How Cluster Autoscaler works with Pod Priority and Preemption?](#how-cluster-autoscaler-works-with-pod-priority-and-preemption)
 * [How to?](#how-to)
   * [I'm running cluster with nodes in multiple zones for HA purposes. Is that supported by Cluster Autoscaler?](#im-running-cluster-with-nodes-in-multiple-zones-for-ha-purposes-is-that-supported-by-cluster-autoscaler)
   * [How can I monitor Cluster Autoscaler?](#how-can-i-monitor-cluster-autoscaler)
@@ -181,6 +182,33 @@ has some system-critical pods on it, like kube-dns. Usage of these autoscalers w
 No. CPU-based (or any metric-based) cluster/node group autoscalers, like
 [GCE Instance Group Autoscaler](https://cloud.google.com/compute/docs/autoscaler/), are NOT compatible with CA.
 They are also not particularly suited to use with Kubernetes in general.
+
+
+### How Cluster Autoscaler works with Pod Priority and Preemption?
+
+Since 1.9 CA takes pod priorities into account.
+
+Pod Priority and Preemption feature enables K8S users to schedule pods based on priorities if there is not enough resources.
+On the other hand Cluster Autoscaler makes sure that there is enough resources to run all pods.
+We introduced priority cut off to Cluster Autoscaler which tells which pods should trigger Cluster Autoscaler actions.
+
+Pods with priority lower than cut off:
+* don't trigger scale ups, no new node is added in order to run them,
+* don't prevent scale downs, nodes running such pods can be deleted.
+
+Nothing changes for Pods with priority greater or equal to cut off and pods without priority.
+
+Default priority cut off is 0. It can be changed using flag but we discourage it.
+Cluster Autoscaler also don't trigger scale up if an unschedulable pod is waiting for lower priority pod preemption.
+
+Prior 1.9 CA didn't take priorities into account.
+
+More about Pod Priority and Preemption:
+ * [Priority in Kubernetes API](https://github.com/kubernetes/community/blob/master/contributors/design-proposals/scheduling/pod-priority-api.md),
+ * [Pod Preemption in Kubernetes](https://github.com/kubernetes/community/blob/master/contributors/design-proposals/scheduling/pod-preemption.md),
+ * [Pod Priority and Preemption turorial](https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/).
+
+
 
 ****************
 
