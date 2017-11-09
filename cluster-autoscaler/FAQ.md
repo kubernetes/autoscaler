@@ -201,7 +201,7 @@ Nothing changes for Pods with priority greater or equal to cut off and pods with
 Default priority cut off is 0. It can be changed using flag but we discourage it.
 Cluster Autoscaler also don't trigger scale up if an unschedulable pod is waiting for lower priority pod preemption.
 
-Prior 1.9 CA didn't take priorities into account.
+Prior to 1.9 CA didn't take priorities into account.
 
 More about Pod Priority and Preemption:
  * [Priority in Kubernetes API](https://github.com/kubernetes/community/blob/master/contributors/design-proposals/scheduling/pod-priority-api.md),
