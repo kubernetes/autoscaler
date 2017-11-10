@@ -21,6 +21,7 @@ import (
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 )
 
@@ -156,7 +157,7 @@ func getAdditionalPrice(resources apiv1.ResourceList, startTime time.Time, endTi
 	}
 	hours := getHours(startTime, endTime)
 	price := 0.0
-	gpu := resources[apiv1.ResourceNvidiaGPU]
+	gpu := resources[gpu.ResourceNvidiaGPU]
 	price += float64(gpu.MilliValue()) / 1000.0 * gpuPricePerHour * hours
 	return price
 }
