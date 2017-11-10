@@ -21,8 +21,8 @@ import (
 	"testing"
 	"time"
 
-	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
 	"github.com/stretchr/testify/assert"
@@ -69,14 +69,14 @@ func TestGetNodePrice(t *testing.T) {
 
 	// regular with gpu
 	node4 := BuildTestNode("sillyname4", 8000, 30*1024*1024*1024)
-	node4.Status.Capacity[apiv1.ResourceNvidiaGPU] = *resource.NewQuantity(1, resource.DecimalSI)
+	node4.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(1, resource.DecimalSI)
 	node4.Labels = labels1
 	price4, err := model.NodePrice(node4, now, now.Add(time.Hour))
 
 	// preemptable with gpu
 	node5 := BuildTestNode("sillyname5", 8000, 30*1024*1024*1024)
 	node5.Labels = labels2
-	node5.Status.Capacity[apiv1.ResourceNvidiaGPU] = *resource.NewQuantity(1, resource.DecimalSI)
+	node5.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(1, resource.DecimalSI)
 	price5, err := model.NodePrice(node5, now, now.Add(time.Hour))
 
 	// Nodes with GPU are way more expensive than regular.
