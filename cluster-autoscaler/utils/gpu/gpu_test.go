@@ -17,7 +17,9 @@ limitations under the License.
 package gpu
 
 import (
+	"fmt"
 	"testing"
+	"time"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -26,30 +28,124 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestSetGPUAllocatableToCapacity(t *testing.T) {
-	nodeGPU := &apiv1.Node{ObjectMeta: metav1.ObjectMeta{Name: "nodeGpu"}, Status: apiv1.NodeStatus{Capacity: apiv1.ResourceList{}, Allocatable: apiv1.ResourceList{}}}
-	nodeGPU.Status.Allocatable[ResourceNvidiaGPU] = *resource.NewQuantity(1, resource.DecimalSI)
-	nodeGPU.Status.Capacity[ResourceNvidiaGPU] = *resource.NewQuantity(1, resource.DecimalSI)
-	nodeGPUUnready := &apiv1.Node{ObjectMeta: metav1.ObjectMeta{Name: "nodeGpuUnready"}, Status: apiv1.NodeStatus{Capacity: apiv1.ResourceList{}, Allocatable: apiv1.ResourceList{}}}
-	nodeGPUUnready.Status.Allocatable[ResourceNvidiaGPU] = *resource.NewQuantity(0, resource.DecimalSI)
-	nodeGPUUnready.Status.Capacity[ResourceNvidiaGPU] = *resource.NewQuantity(2, resource.DecimalSI)
-	nodeGPUNoAllocatable := &apiv1.Node{ObjectMeta: metav1.ObjectMeta{Name: "nodeGpuNoAllocatable"}, Status: apiv1.NodeStatus{Capacity: apiv1.ResourceList{}, Allocatable: apiv1.ResourceList{}}}
-	nodeGPUNoAllocatable.Status.Capacity[ResourceNvidiaGPU] = *resource.NewQuantity(1, resource.DecimalSI)
-	nodeNoGPU := &apiv1.Node{ObjectMeta: metav1.ObjectMeta{Name: "nodeGpuUnready"}, Status: apiv1.NodeStatus{Capacity: apiv1.ResourceList{}, Allocatable: apiv1.ResourceList{}}}
-	nodeNoGPU.Status.Allocatable[apiv1.ResourceCPU] = *resource.NewQuantity(1, resource.DecimalSI)
-	nodeNoGPU.Status.Capacity[apiv1.ResourceCPU] = *resource.NewQuantity(2, resource.DecimalSI)
-	result := SetGPUAllocatableToCapacity([]*apiv1.Node{nodeGPU, nodeGPUUnready, nodeGPUNoAllocatable, nodeNoGPU})
-	assertAllocatableAndCapacity(t, ResourceNvidiaGPU, 1, 1, result[0])
-	assertAllocatableAndCapacity(t, ResourceNvidiaGPU, 2, 2, result[1])
-	assertAllocatableAndCapacity(t, ResourceNvidiaGPU, 1, 1, result[2])
-	assertAllocatableAndCapacity(t, apiv1.ResourceCPU, 1, 2, result[3])
-}
+func TestFilterOutNodesWithUnreadyGpus(t *testing.T) {
+	start := time.Now()
+	later := start.Add(10 * time.Minute)
+	expectedReadiness := make(map[string]bool)
+	gpuLabels := map[string]string{
+		GPULabel: "nvidia-tesla-k80",
+	}
+	readyCondition := apiv1.NodeCondition{
+		Type:               apiv1.NodeReady,
+		Status:             apiv1.ConditionTrue,
+		LastTransitionTime: metav1.NewTime(later),
+	}
+	unreadyCondition := apiv1.NodeCondition{
+		Type:               apiv1.NodeReady,
+		Status:             apiv1.ConditionFalse,
+		LastTransitionTime: metav1.NewTime(later),
+	}
 
-func assertAllocatableAndCapacity(t *testing.T, resourceName apiv1.ResourceName, allocatable, capacity int64, node *apiv1.Node) {
-	allocatableResource := *resource.NewQuantity(allocatable, resource.DecimalSI)
-	capacityResource := *resource.NewQuantity(capacity, resource.DecimalSI)
-	assert.Equal(t, node.Status.Allocatable[resourceName], allocatableResource,
-		"Node %v, expected allocatable %v: %v got: %v", node.ObjectMeta.Name, resourceName, node.Status.Allocatable[resourceName], allocatableResource)
-	assert.Equal(t, node.Status.Capacity[resourceName], capacityResource,
-		"Node %v, expected capacity %v: %v got: %v", node.ObjectMeta.Name, resourceName, node.Status.Capacity[resourceName], capacityResource)
+	nodeGpuReady := &apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              "nodeGpuReady",
+			Labels:            gpuLabels,
+			CreationTimestamp: metav1.NewTime(start),
+		},
+		Status: apiv1.NodeStatus{
+			Capacity:    apiv1.ResourceList{},
+			Allocatable: apiv1.ResourceList{},
+			Conditions:  []apiv1.NodeCondition{readyCondition},
+		},
+	}
+	nodeGpuReady.Status.Allocatable[ResourceNvidiaGPU] = *resource.NewQuantity(1, resource.DecimalSI)
+	nodeGpuReady.Status.Capacity[ResourceNvidiaGPU] = *resource.NewQuantity(1, resource.DecimalSI)
+	expectedReadiness[nodeGpuReady.Name] = true
+
+	nodeGpuUnready := &apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              "nodeGpuUnready",
+			Labels:            gpuLabels,
+			CreationTimestamp: metav1.NewTime(start),
+		},
+		Status: apiv1.NodeStatus{
+			Capacity:    apiv1.ResourceList{},
+			Allocatable: apiv1.ResourceList{},
+			Conditions:  []apiv1.NodeCondition{readyCondition},
+		},
+	}
+	nodeGpuUnready.Status.Allocatable[ResourceNvidiaGPU] = *resource.NewQuantity(0, resource.DecimalSI)
+	nodeGpuUnready.Status.Capacity[ResourceNvidiaGPU] = *resource.NewQuantity(0, resource.DecimalSI)
+	expectedReadiness[nodeGpuUnready.Name] = false
+
+	nodeGpuUnready2 := &apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              "nodeGpuUnready2",
+			Labels:            gpuLabels,
+			CreationTimestamp: metav1.NewTime(start),
+		},
+		Status: apiv1.NodeStatus{
+			Conditions: []apiv1.NodeCondition{readyCondition},
+		},
+	}
+	expectedReadiness[nodeGpuUnready2.Name] = false
+
+	nodeNoGpuReady := &apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              "nodeNoGpuReady",
+			Labels:            make(map[string]string),
+			CreationTimestamp: metav1.NewTime(start),
+		},
+		Status: apiv1.NodeStatus{
+			Conditions: []apiv1.NodeCondition{readyCondition},
+		},
+	}
+	expectedReadiness[nodeNoGpuReady.Name] = true
+
+	nodeNoGpuUnready := &apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:              "nodeNoGpuUnready",
+			Labels:            make(map[string]string),
+			CreationTimestamp: metav1.NewTime(start),
+		},
+		Status: apiv1.NodeStatus{
+			Conditions: []apiv1.NodeCondition{unreadyCondition},
+		},
+	}
+	expectedReadiness[nodeNoGpuUnready.Name] = false
+
+	initialReadyNodes := []*apiv1.Node{
+		nodeGpuReady,
+		nodeGpuUnready,
+		nodeGpuUnready2,
+		nodeNoGpuReady,
+	}
+	initialAllNodes := []*apiv1.Node{
+		nodeGpuReady,
+		nodeGpuUnready,
+		nodeGpuUnready2,
+		nodeNoGpuReady,
+		nodeNoGpuUnready,
+	}
+
+	newAllNodes, newReadyNodes := FilterOutNodesWithUnreadyGpus(initialAllNodes, initialReadyNodes)
+
+	foundInReady := make(map[string]bool)
+	for _, node := range newReadyNodes {
+		foundInReady[node.Name] = true
+		assert.True(t, expectedReadiness[node.Name], fmt.Sprintf("Node %s found in ready nodes list (it shouldn't be there)", node.Name))
+	}
+	for nodeName, expected := range expectedReadiness {
+		if expected {
+			assert.True(t, foundInReady[nodeName], fmt.Sprintf("Node %s expected ready, but not found in ready nodes list", nodeName))
+		}
+	}
+	for _, node := range newAllNodes {
+		assert.Equal(t, len(node.Status.Conditions), 1)
+		if expectedReadiness[node.Name] {
+			assert.Equal(t, node.Status.Conditions[0].Status, apiv1.ConditionTrue, fmt.Sprintf("Unexpected ready condition value for node %s", node.Name))
+		} else {
+			assert.Equal(t, node.Status.Conditions[0].Status, apiv1.ConditionFalse, fmt.Sprintf("Unexpected ready condition value for node %s", node.Name))
+		}
+	}
 }

@@ -102,21 +102,6 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		return errors.ToAutoscalerError(errors.CloudProviderError, err)
 	}
 
-	readyNodes, err := readyNodeLister.List()
-	if err != nil {
-		glog.Errorf("Failed to list ready nodes: %v", err)
-		return errors.ToAutoscalerError(errors.ApiCallError, err)
-	}
-	// Handle GPU case - allocatable GPU may be equal to 0 up to 15 minutes after
-	// node registers as ready. See https://github.com/kubernetes/kubernetes/issues/54959
-	// TODO: Remove this call when we handle dynamically provisioned resources.
-	readyNodes = gpu.SetGPUAllocatableToCapacity(readyNodes)
-	if len(readyNodes) == 0 {
-		glog.Warningf("No ready nodes in the cluster")
-		scaleDown.CleanUpUnneededNodes()
-		return nil
-	}
-
 	allNodes, err := allNodeLister.List()
 	if err != nil {
 		glog.Errorf("Failed to list all nodes: %v", err)
@@ -124,6 +109,23 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	}
 	if len(allNodes) == 0 {
 		glog.Warningf("No nodes in the cluster")
+		scaleDown.CleanUpUnneededNodes()
+		return nil
+	}
+
+	readyNodes, err := readyNodeLister.List()
+	if err != nil {
+		glog.Errorf("Failed to list ready nodes: %v", err)
+		return errors.ToAutoscalerError(errors.ApiCallError, err)
+	}
+	// Handle GPU case - allocatable GPU may be equal to 0 up to 15 minutes after
+	// node registers as ready. See https://github.com/kubernetes/kubernetes/issues/54959
+	// Treat those nodes as unready until GPU actually becomes available and let
+	// our normal handling for booting up nodes deal with this.
+	// TODO: Remove this call when we handle dynamically provisioned resources.
+	allNodes, readyNodes = gpu.FilterOutNodesWithUnreadyGpus(allNodes, readyNodes)
+	if len(readyNodes) == 0 {
+		glog.Warningf("No ready nodes in the cluster")
 		scaleDown.CleanUpUnneededNodes()
 		return nil
 	}
