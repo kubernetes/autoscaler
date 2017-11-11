@@ -85,7 +85,7 @@ func (b CloudProviderBuilder) Build(discoveryOpts cloudprovider.NodeGroupDiscove
 		if gceError != nil {
 			glog.Fatalf("Failed to create GCE Manager: %v", gceError)
 		}
-		cloudProvider, err = gce.BuildGceCloudProvider(gceManager, nodeGroupsFlag, resourceLimiter)
+		cloudProvider, err = gce.BuildGceCloudProvider(gceManager, discoveryOpts, resourceLimiter)
 		if err != nil {
 			glog.Fatalf("Failed to create GCE cloud provider: %v", err)
 		}

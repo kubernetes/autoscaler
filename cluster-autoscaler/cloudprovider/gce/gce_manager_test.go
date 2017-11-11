@@ -19,6 +19,7 @@ package gce
 import (
 	"fmt"
 	"net/http"
+	"regexp"
 	"testing"
 
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
@@ -215,7 +216,7 @@ const instanceGroupManager = `{
   "kind": "compute#instanceGroupManager",
   "id": "3213213219",
   "creationTimestamp": "2017-09-15T04:47:24.687-07:00",
-  "name": "gke-cluster-1-default-pool",
+  "name": "%s",
   "zone": "https://www.googleapis.com/compute/v1/projects/project1/zones/%s",
   "instanceTemplate": "https://www.googleapis.com/compute/v1/projects/project1/global/instanceTemplates/gke-cluster-1-default-pool",
   "instanceGroup": "https://www.googleapis.com/compute/v1/projects/project1/zones/%s/instanceGroups/gke-cluster-1-default-pool",
@@ -232,9 +233,10 @@ const instanceGroupManager = `{
     "refreshing": 0
   },
   "targetSize": 3,
-  "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/zones/%s/instanceGroupManagers/gke-cluster-1-default-pool"
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/zones/%s/instanceGroupManagers/%s"
 }
 `
+
 const instanceTemplate = `
 {
  "kind": "compute#instanceTemplate",
@@ -492,7 +494,11 @@ const getClusterResponse = `{
 }`
 
 func getInstanceGroupManager(zone string) string {
-	return fmt.Sprintf(instanceGroupManager, zone, zone, zone)
+	return getInstanceGroupManagerNamed("gke-cluster-1-default-pool", zone)
+}
+
+func getInstanceGroupManagerNamed(name, zone string) string {
+	return fmt.Sprintf(instanceGroupManager, name, zone, zone, zone, name)
 }
 
 func getMachineType(zone string) string {
@@ -936,7 +942,7 @@ func TestDeleteInstances(t *testing.T) {
 
 	err = g.DeleteInstances(instances)
 	assert.Error(t, err)
-	assert.Equal(t, "Connot delete instances which don't belong to the same MIG.", err.Error())
+	assert.Equal(t, "Cannot delete instances which don't belong to the same MIG.", err.Error())
 	mock.AssertExpectationsForObjects(t, server)
 }
 
@@ -1114,5 +1120,100 @@ func TestFetchResourceLimiter(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, resourceLimiter)
 
+	mock.AssertExpectationsForObjects(t, server)
+}
+
+const instanceGroup = `{
+  "kind": "compute#instanceGroup",
+  "id": "1121230570947910218",
+  "name": "%s",
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/zones/%s/instanceGroups/%s",
+  "size": 1
+}`
+
+func getInstanceGroup(zone string) string {
+	return getInstanceGroupNamed("gke-cluster-1-default-pool", zone)
+}
+
+func getInstanceGroupNamed(name, zone string) string {
+	return fmt.Sprintf(instanceGroup, name, zone, name)
+}
+
+const instanceGroupList = `{
+  "kind": "compute#instanceGroupList",
+  "id": "projects/project1a/zones/%s/instanceGroups",
+  "items": [%s, %s],
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/zones/%s/instanceGroups"
+}`
+
+func listInstanceGroups(zone string) string {
+	return fmt.Sprintf(instanceGroupList,
+		zone,
+		getInstanceGroupNamed("gce-pool-a", zone),
+		getInstanceGroupNamed("gce-pool-b", zone),
+		zone,
+	)
+}
+
+func TestFindMigsNamedZonal(t *testing.T) {
+	server := NewHttpServerMock()
+	defer server.Close()
+
+	server.On("handle", "/project1/zones/us-central1-b/instanceGroups").Return(listInstanceGroups("us-central1-b")).Once()
+
+	regional := false
+	g := newTestGceManager(t, server.URL, ModeGCE, regional)
+	links, err := g.findMigsNamed(regexp.MustCompile("^UNUSED"))
+	assert.NoError(t, err)
+
+	assert.Equal(t, 2, len(links))
+	assert.Equal(t, "https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-b/instanceGroups/gce-pool-a", links[0])
+	assert.Equal(t, "https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-b/instanceGroups/gce-pool-b", links[1])
+	mock.AssertExpectationsForObjects(t, server)
+}
+
+const getRegion = `{
+ "kind": "compute#region",
+ "id": "1000",
+ "creationTimestamp": "1969-12-31T16:00:00.000-08:00",
+ "name": "us-central1",
+ "description": "us-central1",
+ "status": "UP",
+ "zones": [
+  "https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-a",
+  "https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-b",
+  "https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-c",
+  "https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-f"
+ ],
+ "quotas": [],
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/regions/us-central1"
+}`
+
+func TestFindMigsNamedRegional(t *testing.T) {
+	server := NewHttpServerMock()
+	defer server.Close()
+
+	server.On("handle", "/project1/regions/us-central1").Return(getRegion).Once()
+	server.On("handle", "/project1/zones/us-central1-a/instanceGroups").Return(listInstanceGroups("us-central1-a")).Once()
+	server.On("handle", "/project1/zones/us-central1-b/instanceGroups").Return(listInstanceGroups("us-central1-b")).Once()
+	server.On("handle", "/project1/zones/us-central1-c/instanceGroups").Return(listInstanceGroups("us-central1-c")).Once()
+	server.On("handle", "/project1/zones/us-central1-f/instanceGroups").Return(listInstanceGroups("us-central1-f")).Once()
+
+	regional := true
+	g := newTestGceManager(t, server.URL, ModeGCE, regional)
+	got, err := g.findMigsNamed(regexp.MustCompile("^UNUSED"))
+	assert.NoError(t, err)
+
+	want := []string{
+		"https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-a/instanceGroups/gce-pool-a",
+		"https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-a/instanceGroups/gce-pool-b",
+		"https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-b/instanceGroups/gce-pool-a",
+		"https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-b/instanceGroups/gce-pool-b",
+		"https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-c/instanceGroups/gce-pool-a",
+		"https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-c/instanceGroups/gce-pool-b",
+		"https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-f/instanceGroups/gce-pool-a",
+		"https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-f/instanceGroups/gce-pool-b",
+	}
+	assert.Equal(t, want, got)
 	mock.AssertExpectationsForObjects(t, server)
 }

@@ -131,6 +131,25 @@ func TestBuildAwsCloudProvider(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestParseAutoDiscoverySpec(t *testing.T) {
+	want := []string{"coolTag", "anotherTag"}
+	got, err := parseAutoDiscoverySpec("asg:tag=coolTag,anotherTag")
+	assert.NoError(t, err)
+	assert.Equal(t, want, got)
+
+	badSpecs := []string{
+		"asg",
+		"tag=coolTag,anotherTag",
+		"mig:tag=coolTag,anotherTag",
+		"asg:notatag=coolTag,anotherTag",
+	}
+
+	for _, spec := range badSpecs {
+		_, err = parseAutoDiscoverySpec(spec)
+		assert.Error(t, err)
+	}
+}
+
 func TestAddNodeGroup(t *testing.T) {
 	provider := testProvider(t, testAwsManager)
 	err := provider.addNodeGroup("bad spec")

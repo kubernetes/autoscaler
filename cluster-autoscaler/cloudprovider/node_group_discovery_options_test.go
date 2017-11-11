@@ -25,8 +25,8 @@ import (
 
 func TestNodeGroupDiscoveryOptionsValidate(t *testing.T) {
 	o := NodeGroupDiscoveryOptions{
-		NodeGroupAutoDiscoverySpec: "asg:tag=foobar",
-		NodeGroupSpecs:             []string{"myasg:0:10"},
+		NodeGroupAutoDiscoverySpecs: []string{"asg:tag=foobar"},
+		NodeGroupSpecs:              []string{"myasg:0:10"},
 	}
 
 	err := o.Validate()
@@ -34,12 +34,15 @@ func TestNodeGroupDiscoveryOptionsValidate(t *testing.T) {
 		t.Errorf("Expected validation error didn't occur with NodeGroupDiscoveryOptions: %+v", o)
 		t.FailNow()
 	}
-	if msg := fmt.Sprintf("%v", err); msg != `Either node group specs([myasg:0:10]) or node group auto discovery spec(asg:tag=foobar) can be specified but not both` {
+	if msg := fmt.Sprintf("%v", err); msg != `Either node group specs([myasg:0:10]) or node group auto discovery spec([asg:tag=foobar]) can be specified but not both` {
 		t.Errorf("Unexpected validation error message: %s", msg)
 	}
 
 	o = NodeGroupDiscoveryOptions{
-		NodeGroupAutoDiscoverySpec: "asg:tag=foobar",
+		NodeGroupAutoDiscoverySpecs: []string{
+			"mig:prefix=iga,min=0,max=10",
+			"mig:prefix=igb,min=0,max=20",
+		},
 	}
 	assert.NoError(t, o.Validate())
 

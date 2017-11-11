@@ -45,12 +45,12 @@ func BuildAwsCloudProvider(awsManager *AwsManager, discoveryOpts cloudprovider.N
 		return buildStaticallyDiscoveringProvider(awsManager, discoveryOpts.NodeGroupSpecs, resourceLimiter)
 	}
 	if discoveryOpts.AutoDiscoverySpecified() {
-		return buildAutoDiscoveringProvider(awsManager, discoveryOpts.NodeGroupAutoDiscoverySpec, resourceLimiter)
+		return buildAutoDiscoveringProvider(awsManager, discoveryOpts.NodeGroupAutoDiscoverySpecs, resourceLimiter)
 	}
 	return nil, fmt.Errorf("Failed to build an aws cloud provider: Either node group specs or node group auto discovery spec must be specified")
 }
 
-func buildAutoDiscoveringProvider(awsManager *AwsManager, spec string, resourceLimiter *cloudprovider.ResourceLimiter) (*awsCloudProvider, error) {
+func parseAutoDiscoverySpec(spec string) ([]string, error) {
 	tokens := strings.Split(spec, ":")
 	if len(tokens) != 2 {
 		return nil, fmt.Errorf("Invalid node group auto discovery spec specified via --node-group-auto-discovery: %s", spec)
@@ -72,20 +72,36 @@ func buildAutoDiscoveringProvider(awsManager *AwsManager, spec string, resourceL
 	// Use the k8s cluster name tag to only discover asgs of the cluster denoted by clusterName
 	// See https://github.com/kubernetes/kubernetes/blob/9ef85a7/pkg/cloudprovider/providers/aws/tags.go#L30-L34
 	// for more information about the tag
-	tags := strings.Split(tag, ",")
-	asgs, err := awsManager.getAutoscalingGroupsByTags(tags)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to get ASGs: %v", err)
-	}
-
+	return strings.Split(tag, ","), nil
+}
+func buildAutoDiscoveringProvider(awsManager *AwsManager, specs []string, resourceLimiter *cloudprovider.ResourceLimiter) (*awsCloudProvider, error) {
 	aws := &awsCloudProvider{
 		awsManager:      awsManager,
 		asgs:            make([]*Asg, 0),
 		resourceLimiter: resourceLimiter,
 	}
-	for _, asg := range asgs {
-		aws.addAsg(buildAsg(aws.awsManager, int(*asg.MinSize), int(*asg.MaxSize), *asg.AutoScalingGroupName))
+
+	seen := make(map[string]bool)
+	for _, spec := range specs {
+		tags, err := parseAutoDiscoverySpec(spec)
+		if err != nil {
+			return nil, err
+		}
+		asgs, err := awsManager.getAutoscalingGroupsByTags(tags)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to get ASGs: %v", err)
+		}
+		for _, asg := range asgs {
+			// An ASG might match more than one provided spec, but we only ever
+			// want to add it once.
+			if seen[*asg.AutoScalingGroupARN] {
+				continue
+			}
+			seen[*asg.AutoScalingGroupARN] = true
+			aws.addAsg(buildAsg(aws.awsManager, int(*asg.MinSize), int(*asg.MaxSize), *asg.AutoScalingGroupName))
+		}
 	}
+
 	return aws, nil
 }
 
