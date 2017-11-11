@@ -76,7 +76,7 @@ type AutoscalingOptions struct {
 	// MinMemoryTotal sets the maximum memory (in megabytes) in the whole cluster
 	MinMemoryTotal int64
 	// NodeGroupAutoDiscovery represents one or more definition(s) of node group auto-discovery
-	NodeGroupAutoDiscovery string
+	NodeGroupAutoDiscovery []string
 	// EstimatorName is the estimator used to estimate the number of needed nodes in scale up.
 	EstimatorName string
 	// ExpanderName sets the type of node group expander to be used in scale up
@@ -141,8 +141,8 @@ func NewAutoscalingContext(options AutoscalingOptions, predicateChecker *simulat
 
 	cloudProviderBuilder := builder.NewCloudProviderBuilder(options.CloudProviderName, options.CloudConfig, options.ClusterName, options.NodeAutoprovisioningEnabled)
 	cloudProvider := cloudProviderBuilder.Build(cloudprovider.NodeGroupDiscoveryOptions{
-		NodeGroupSpecs:             options.NodeGroups,
-		NodeGroupAutoDiscoverySpec: options.NodeGroupAutoDiscovery},
+		NodeGroupSpecs:              options.NodeGroups,
+		NodeGroupAutoDiscoverySpecs: options.NodeGroupAutoDiscovery},
 		cloudprovider.NewResourceLimiter(
 			map[string]int64{cloudprovider.ResourceNameCores: int64(options.MinCoresTotal), cloudprovider.ResourceNameMemory: options.MinMemoryTotal},
 			map[string]int64{cloudprovider.ResourceNameCores: options.MaxCoresTotal, cloudprovider.ResourceNameMemory: options.MaxMemoryTotal}))

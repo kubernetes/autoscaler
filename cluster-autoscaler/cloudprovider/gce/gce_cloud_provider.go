@@ -18,6 +18,8 @@ package gce
 
 import (
 	"fmt"
+	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -33,7 +35,18 @@ import (
 const (
 	maxAutoprovisionedSize = 1000
 	minAutoprovisionedSize = 0
+
+	autoDiscovererTypeMIG     = "mig"
+	autoDiscovererKeyPrefix   = "prefix"
+	autoDiscovererKeyMinNodes = "min"
+	autoDiscovererKeyMaxNodes = "max"
 )
+
+var validAutoDiscovererKeys = strings.Join([]string{
+	autoDiscovererKeyPrefix,
+	autoDiscovererKeyMinNodes,
+	autoDiscovererKeyMaxNodes,
+}, ", ")
 
 // Big machines are temporarily commented out.
 // TODO(mwielgus): get this list programatically
@@ -67,11 +80,20 @@ type GceCloudProvider struct {
 }
 
 // BuildGceCloudProvider builds CloudProvider implementation for GCE.
-func BuildGceCloudProvider(gceManager GceManager, specs []string, resourceLimiter *cloudprovider.ResourceLimiter) (*GceCloudProvider, error) {
-	if gceManager.getMode() == ModeGKE && len(specs) != 0 {
+func BuildGceCloudProvider(gceManager GceManager, do cloudprovider.NodeGroupDiscoveryOptions, resourceLimiter *cloudprovider.ResourceLimiter) (*GceCloudProvider, error) {
+	if err := do.Validate(); err != nil {
+		return nil, fmt.Errorf("Failed to build a GCE cloud provider: %v", err)
+	}
+	if gceManager.getMode() == ModeGKE && !do.NoDiscoverySpecified() {
 		return nil, fmt.Errorf("GKE gets nodegroup specification via API, command line specs are not allowed")
 	}
+	if do.AutoDiscoverySpecified() {
+		return buildAutoDiscoveringProvider(gceManager, do.NodeGroupAutoDiscoverySpecs, resourceLimiter)
+	}
+	return buildStaticallyDiscoveringProvider(gceManager, do.NodeGroupSpecs, resourceLimiter)
+}
 
+func buildStaticallyDiscoveringProvider(gceManager GceManager, specs []string, resourceLimiter *cloudprovider.ResourceLimiter) (*GceCloudProvider, error) {
 	gce := &GceCloudProvider{
 		gceManager:               gceManager,
 		resourceLimiterFromFlags: resourceLimiter,
@@ -79,6 +101,80 @@ func BuildGceCloudProvider(gceManager GceManager, specs []string, resourceLimite
 	for _, spec := range specs {
 		if err := gce.addNodeGroup(spec); err != nil {
 			return nil, err
+		}
+	}
+	return gce, nil
+}
+
+type autoDiscovererConfig struct {
+	migRe    *regexp.Regexp
+	minNodes string
+	maxNodes string
+}
+
+func parseAutoDiscoverySpec(spec string) (autoDiscovererConfig, error) {
+	cfg := autoDiscovererConfig{}
+
+	tokens := strings.Split(spec, ":")
+	if len(tokens) != 2 {
+		return cfg, fmt.Errorf("spec \"%s\" should be discoverer:key=value,key=value", spec)
+	}
+	discoverer := tokens[0]
+	if discoverer != autoDiscovererTypeMIG {
+		return cfg, fmt.Errorf("unsupported discoverer specified: %s", discoverer)
+	}
+
+	for _, arg := range strings.Split(tokens[1], ",") {
+		kv := strings.Split(arg, "=")
+		k, v := kv[0], kv[1]
+
+		switch k {
+		case autoDiscovererKeyPrefix:
+			var err error
+			if cfg.migRe, err = regexp.Compile(fmt.Sprintf("^%s.+", v)); err != nil {
+				return cfg, fmt.Errorf("invalid instance group name prefix \"%s\" - \"^%s.+\" must be a valid RE2 regexp", v, v)
+			}
+		case autoDiscovererKeyMinNodes:
+			if _, err := strconv.Atoi(v); err != nil {
+				return cfg, fmt.Errorf("invalid minimum nodes: %s", v)
+			}
+			cfg.minNodes = v
+		case autoDiscovererKeyMaxNodes:
+			if _, err := strconv.Atoi(v); err != nil {
+				return cfg, fmt.Errorf("invalid maximum nodes: %s", v)
+			}
+			cfg.maxNodes = v
+		default:
+			return cfg, fmt.Errorf("unsupported key \"%s\" is specified for discoverer \"%s\". Supported keys are \"%s\"", k, discoverer, validAutoDiscovererKeys)
+		}
+	}
+	return cfg, nil
+}
+
+func buildAutoDiscoveringProvider(gceManager GceManager, specs []string, resourceLimiter *cloudprovider.ResourceLimiter) (*GceCloudProvider, error) {
+	gce := &GceCloudProvider{gceManager: gceManager, resourceLimiterFromFlags: resourceLimiter}
+
+	seen := make(map[string]bool)
+	for _, spec := range specs {
+		cfg, err := parseAutoDiscoverySpec(spec)
+		if err != nil {
+			return nil, fmt.Errorf("invalid node group auto discovery spec \"%s\": %v", spec, err)
+		}
+		links, err := gceManager.findMigsNamed(cfg.migRe)
+		if err != nil {
+			return nil, fmt.Errorf("cannot autodiscover managed instance groups: %s", err)
+		}
+		for _, link := range links {
+			// A MIG might match more than one provided spec, but we only ever
+			// want to add it once.
+			if seen[link] {
+				continue
+			}
+			seen[link] = true
+			spec := fmt.Sprintf("%s:%s:%s", cfg.minNodes, cfg.maxNodes, link)
+			if err := gce.addNodeGroup(spec); err != nil {
+				return nil, err
+			}
 		}
 	}
 	return gce, nil
