@@ -54,13 +54,13 @@ func NewAutoscaler(opts AutoscalerOptions, predicateChecker *simulator.Predicate
 
 	autoscalerBuilder := NewAutoscalerBuilder(opts.AutoscalingOptions, predicateChecker, kubeClient, kubeEventRecorder, listerRegistry)
 	if opts.ConfigMapName != "" {
-		if opts.NodeGroupAutoDiscovery != "" {
+		if len(opts.NodeGroupAutoDiscovery) > 0 {
 			glog.Warning("Both --configmap and --node-group-auto-discovery were specified but only the former is going to take effect")
 		}
 		configFetcher := dynamic.NewConfigFetcher(opts.ConfigFetcherOptions, kubeClient, kubeEventRecorder)
 		return NewDynamicAutoscaler(autoscalerBuilder, configFetcher)
 	}
-	if opts.NodeGroupAutoDiscovery != "" {
+	if len(opts.NodeGroupAutoDiscovery) > 0 {
 		return NewPollingAutoscaler(autoscalerBuilder)
 	}
 	return autoscalerBuilder.Build()

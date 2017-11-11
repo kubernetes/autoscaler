@@ -17,11 +17,15 @@ limitations under the License.
 package gce
 
 import (
+	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
 	"os"
+	"path"
 	"reflect"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -125,6 +129,7 @@ type GceManager interface {
 	getProjectId() string
 	getMode() GcpCloudProviderMode
 	getTemplates() *templateBuilder
+	findMigsNamed(name *regexp.Regexp) ([]string, error)
 }
 
 // gceManagerImpl handles gce communication and data caching.
@@ -730,7 +735,7 @@ func (m *gceManagerImpl) DeleteInstances(instances []*GceRef) error {
 			return err
 		}
 		if mig != commonMig {
-			return fmt.Errorf("Connot delete instances which don't belong to the same MIG.")
+			return errors.New("Cannot delete instances which don't belong to the same MIG.")
 		}
 	}
 
@@ -945,4 +950,58 @@ func getProjectAndLocation(isRegional bool) (string, string, error) {
 		return "", "", err
 	}
 	return projectID, location, nil
+}
+
+func (m *gceManagerImpl) findMigsNamed(name *regexp.Regexp) ([]string, error) {
+	if m.isRegional {
+		return m.findMigsInRegion(m.location, name)
+	}
+	return m.findMigsInZone(m.location, name)
+}
+
+func (m *gceManagerImpl) getZones(region string) ([]string, error) {
+	r, err := m.gceService.Regions.Get(m.getProjectId(), region).Do()
+	if err != nil {
+		return nil, fmt.Errorf("cannot get zones for GCE region %s: %v", region, err)
+	}
+	zones := make([]string, len(r.Zones))
+	for i, link := range r.Zones {
+		zones[i] = path.Base(link)
+	}
+	return zones, nil
+}
+
+func (m *gceManagerImpl) findMigsInRegion(region string, name *regexp.Regexp) ([]string, error) {
+	links := make([]string, 0)
+	zones, err := m.getZones(region)
+	if err != nil {
+		return nil, err
+	}
+	for _, z := range zones {
+		zl, err := m.findMigsInZone(z, name)
+		if err != nil {
+			return nil, err
+		}
+		for _, link := range zl {
+			links = append(links, link)
+		}
+	}
+
+	return links, nil
+}
+
+func (m *gceManagerImpl) findMigsInZone(zone string, name *regexp.Regexp) ([]string, error) {
+	filter := fmt.Sprintf("name eq %s", name)
+	links := make([]string, 0)
+	req := m.gceService.InstanceGroups.List(m.getProjectId(), zone).Filter(filter)
+	if err := req.Pages(context.TODO(), func(page *gce.InstanceGroupList) error {
+		for _, ig := range page.Items {
+			links = append(links, ig.SelfLink)
+			glog.V(3).Infof("autodiscovered managed instance group %s using regexp %s", ig.Name, name)
+		}
+		return nil
+	}); err != nil {
+		return nil, fmt.Errorf("cannot list managed instance groups: %v", err)
+	}
+	return links, nil
 }

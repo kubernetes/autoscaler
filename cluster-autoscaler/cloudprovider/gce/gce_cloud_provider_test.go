@@ -17,9 +17,11 @@ limitations under the License.
 package gce
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"reflect"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -122,7 +124,12 @@ func (m *gceManagerMock) GetResourceLimiter() (*cloudprovider.ResourceLimiter, e
 	return args.Get(0).(*cloudprovider.ResourceLimiter), args.Error(1)
 }
 
-func TestBuildGceCloudProvider(t *testing.T) {
+func (m *gceManagerMock) findMigsNamed(name *regexp.Regexp) ([]string, error) {
+	args := m.Called()
+	return args.Get(0).([]string), args.Error(1)
+}
+
+func TestBuildStaticGceCloudProvider(t *testing.T) {
 	gceManagerMock := &gceManagerMock{}
 
 	ng1Name := "https://content.googleapis.com/compute/v1/projects/project1/zones/us-central1-b/instanceGroups/ng1"
@@ -132,37 +139,122 @@ func TestBuildGceCloudProvider(t *testing.T) {
 		map[string]int64{cloudprovider.ResourceNameCores: 1, cloudprovider.ResourceNameMemory: 10000000},
 		map[string]int64{cloudprovider.ResourceNameCores: 10, cloudprovider.ResourceNameMemory: 100000000})
 
-	// GCE mode.
+	// GCE mode with explicit node groups.
 	gceManagerMock.On("getMode").Return(ModeGCE).Once()
 	gceManagerMock.On("RegisterMig",
 		mock.MatchedBy(func(mig *Mig) bool {
 			return mig.Name == "ng1" || mig.Name == "ng2"
 		})).Return(true).Times(2)
 
-	provider, err := BuildGceCloudProvider(gceManagerMock,
-		[]string{"0:10:" + ng1Name, "0:5:https:" + ng2Name},
-		resourceLimiter)
-	assert.NoError(t, err)
-	assert.NotNil(t, provider)
-	mock.AssertExpectationsForObjects(t, gceManagerMock)
-
-	// GKE mode.
-	gceManagerMock.On("getMode").Return(ModeGKE).Once()
-
-	provider, err = BuildGceCloudProvider(gceManagerMock, []string{}, resourceLimiter)
+	do := cloudprovider.NodeGroupDiscoveryOptions{
+		NodeGroupSpecs: []string{"0:10:" + ng1Name, "0:5:https:" + ng2Name},
+	}
+	provider, err := BuildGceCloudProvider(gceManagerMock, do, resourceLimiter)
 	assert.NoError(t, err)
 	assert.NotNil(t, provider)
 	mock.AssertExpectationsForObjects(t, gceManagerMock)
 
 	// Error on GKE mode with specs.
 	gceManagerMock.On("getMode").Return(ModeGKE).Once()
-
-	provider, err = BuildGceCloudProvider(gceManagerMock,
-		[]string{"0:10:" + ng1Name, "0:5:https:" + ng2Name},
-		resourceLimiter)
+	_, err = BuildGceCloudProvider(gceManagerMock, do, resourceLimiter)
 	assert.Error(t, err)
 	assert.Equal(t, "GKE gets nodegroup specification via API, command line specs are not allowed", err.Error())
 	mock.AssertExpectationsForObjects(t, gceManagerMock)
+
+	// Ensure GKE mode works with no specs.
+	gceManagerMock.On("getMode").Return(ModeGKE).Once()
+	do = cloudprovider.NodeGroupDiscoveryOptions{}
+	provider, err = BuildGceCloudProvider(gceManagerMock, do, resourceLimiter)
+	assert.NoError(t, err)
+	assert.NotNil(t, provider)
+	mock.AssertExpectationsForObjects(t, gceManagerMock)
+
+	// Error with both explicit and autodiscovery specs.
+	do = cloudprovider.NodeGroupDiscoveryOptions{
+		NodeGroupSpecs:              []string{"0:10:" + ng1Name, "0:5:https:" + ng2Name},
+		NodeGroupAutoDiscoverySpecs: []string{"mig:prefix=pfx,min=0,max=10"},
+	}
+	_, err = BuildGceCloudProvider(gceManagerMock, do, resourceLimiter)
+	assert.Error(t, err)
+	mock.AssertExpectationsForObjects(t, gceManagerMock)
+}
+func TestBuildAutodiscoveringGceCloudProvider(t *testing.T) {
+	gceManagerMock := &gceManagerMock{}
+
+	ng1Name := "https://content.googleapis.com/compute/v1/projects/project1/zones/us-central1-b/instanceGroups/ng1"
+	ng2Name := "https://content.googleapis.com/compute/v1/projects/project1/zones/us-central1-b/instanceGroups/ng2"
+
+	resourceLimiter := cloudprovider.NewResourceLimiter(
+		map[string]int64{cloudprovider.ResourceNameCores: 1, cloudprovider.ResourceNameMemory: 10000000},
+		map[string]int64{cloudprovider.ResourceNameCores: 10, cloudprovider.ResourceNameMemory: 100000000})
+
+	// GCE mode with autodiscovery.
+	gceManagerMock.On("getMode").Return(ModeGCE).Once()
+	gceManagerMock.On("findMigsNamed").Return([]string{ng1Name, ng2Name}, nil).Twice()
+	gceManagerMock.On("RegisterMig",
+		mock.MatchedBy(func(mig *Mig) bool {
+			return mig.Name == "ng1" || mig.Name == "ng2"
+		})).Return(true).Times(2)
+
+	do := cloudprovider.NodeGroupDiscoveryOptions{
+		NodeGroupAutoDiscoverySpecs: []string{
+			"mig:prefix=ng,min=0,max=10",
+			"mig:prefix=n,min=1,max=2",
+		},
+	}
+	provider, err := BuildGceCloudProvider(gceManagerMock, do, resourceLimiter)
+	assert.NoError(t, err)
+	assert.NotNil(t, provider)
+	mock.AssertExpectationsForObjects(t, gceManagerMock)
+
+	// Error finding instance groups
+	gceManagerMock.On("getMode").Return(ModeGCE).Once()
+	gceManagerMock.On("findMigsNamed").Return([]string{}, errors.New("nope")).Once()
+	_, err = BuildGceCloudProvider(gceManagerMock, do, resourceLimiter)
+	assert.Error(t, err)
+	assert.Equal(t, "cannot autodiscover managed instance groups: nope", err.Error())
+	mock.AssertExpectationsForObjects(t, gceManagerMock)
+
+	// Error on GKE mode with autodiscovery specs.
+	gceManagerMock.On("getMode").Return(ModeGKE).Once()
+	_, err = BuildGceCloudProvider(gceManagerMock, do, resourceLimiter)
+	assert.Error(t, err)
+	assert.Equal(t, "GKE gets nodegroup specification via API, command line specs are not allowed", err.Error())
+	mock.AssertExpectationsForObjects(t, gceManagerMock)
+
+	// Bad autodiscovery spec
+	do = cloudprovider.NodeGroupDiscoveryOptions{
+		NodeGroupAutoDiscoverySpecs: []string{"mig"},
+	}
+	gceManagerMock.On("getMode").Return(ModeGCE).Once()
+	_, err = BuildGceCloudProvider(gceManagerMock, do, resourceLimiter)
+	assert.Error(t, err)
+	mock.AssertExpectationsForObjects(t, gceManagerMock)
+}
+
+func TestParseAutoDiscoverySpec(t *testing.T) {
+	want := autoDiscovererConfig{
+		migRe:    regexp.MustCompile("^pfx.+"),
+		minNodes: "0",
+		maxNodes: "10",
+	}
+	got, err := parseAutoDiscoverySpec("mig:prefix=pfx,min=0,max=10")
+	assert.NoError(t, err)
+	assert.Equal(t, want, got)
+
+	badSpecs := []string{
+		"prefix=pfx,min=0,max=10",
+		"asg:prefix=pfx,min=0,max=10",
+		"mig:prefix=pfx,min=0,max=10,unknown=hi",
+		"mig:prefix=pfx,min=a,max=10",
+		"mig:prefix=pfx,min=10,max=donkey",
+		"mig:prefix=(a,min=1,max=10",
+	}
+
+	for _, spec := range badSpecs {
+		_, err = parseAutoDiscoverySpec(spec)
+		assert.Error(t, err)
+	}
 }
 
 func TestNodeGroups(t *testing.T) {

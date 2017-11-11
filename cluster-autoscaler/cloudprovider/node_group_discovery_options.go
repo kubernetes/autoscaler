@@ -23,23 +23,29 @@ type NodeGroupDiscoveryOptions struct {
 	// NodeGroupSpecs is specified to statically discover node groups listed in it
 	NodeGroupSpecs []string
 	// NodeGroupAutoDiscoverySpec is specified for automatically discovering node groups according to the specs
-	NodeGroupAutoDiscoverySpec string
+	NodeGroupAutoDiscoverySpecs []string
 }
 
-// StaticDiscoverySpecified returns true only when there are 1 or more --nodes flags are specified
+// StaticDiscoverySpecified returns true only when there are 1 or more --nodes flags specified
 func (o NodeGroupDiscoveryOptions) StaticDiscoverySpecified() bool {
 	return len(o.NodeGroupSpecs) > 0
 }
 
-// AutoDiscoverySpecified returns true only when there is --node-group-auto-discovery specified
+// AutoDiscoverySpecified returns true only when there are 1 or more --node-group-auto-discovery flags specified
 func (o NodeGroupDiscoveryOptions) AutoDiscoverySpecified() bool {
-	return o.NodeGroupAutoDiscoverySpec != ""
+	return len(o.NodeGroupAutoDiscoverySpecs) > 0
+}
+
+// NoDiscoverySpecified returns true expected nly when there were no --nodes or
+// --node-group-auto-discovery flags specified. This is expected in GKE.
+func (o NodeGroupDiscoveryOptions) NoDiscoverySpecified() bool {
+	return !o.StaticDiscoverySpecified() && !o.AutoDiscoverySpecified()
 }
 
 // Validate returns and error when both --nodes and --node-group-auto-discovery are specified
 func (o NodeGroupDiscoveryOptions) Validate() error {
 	if o.StaticDiscoverySpecified() && o.AutoDiscoverySpecified() {
-		return fmt.Errorf("Either node group specs(%v) or node group auto discovery spec(%v) can be specified but not both", o.NodeGroupSpecs, o.NodeGroupAutoDiscoverySpec)
+		return fmt.Errorf("Either node group specs(%v) or node group auto discovery spec(%v) can be specified but not both", o.NodeGroupSpecs, o.NodeGroupAutoDiscoverySpecs)
 	}
 	return nil
 }
