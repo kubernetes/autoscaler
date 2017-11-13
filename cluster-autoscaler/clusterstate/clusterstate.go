@@ -38,7 +38,7 @@ import (
 
 const (
 	// MaxNodeStartupTime is the maximum time from the moment the node is registered to the time the node is ready.
-	MaxNodeStartupTime = 5 * time.Minute
+	MaxNodeStartupTime = 15 * time.Minute
 
 	// MaxStatusSettingDelayAfterCreation is the maximum time for node to set its initial status after the
 	// node is registered.
