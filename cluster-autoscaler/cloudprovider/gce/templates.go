@@ -30,6 +30,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 
 	"github.com/golang/glog"
@@ -38,7 +39,6 @@ import (
 const (
 	mbPerGB           = 1000
 	millicoresPerCore = 1000
-	resourceNvidiaGPU = "nvidia.com/gpu"
 )
 
 // builds templates for gce cloud provider
@@ -98,7 +98,7 @@ func (t *templateBuilder) buildCapacity(machineType string, accelerators []*gce.
 	capacity[apiv1.ResourceMemory] = *resource.NewQuantity(mem, resource.DecimalSI)
 
 	if accelerators != nil && len(accelerators) > 0 {
-		capacity[resourceNvidiaGPU] = *resource.NewQuantity(t.getAcceleratorCount(accelerators), resource.DecimalSI)
+		capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(t.getAcceleratorCount(accelerators), resource.DecimalSI)
 	}
 
 	return capacity, nil
