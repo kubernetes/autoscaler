@@ -52,7 +52,7 @@ func checkResource(estimatorResult *EstimatorResult, actual api.ResourceList, re
 // shouldOverwriteResources determines if we should over-write the container's
 // resource limits. We'll over-write the resource limits if the limited
 // resources are different, or if any limit is outside of the accepted range.
-// Returns null when no resources should be overriden.
+// Returns null when no resources should be overridden.
 // Otherwise, returns ResourceList that should be used.
 func shouldOverwriteResources(estimatorResult *EstimatorResult, limits, reqs api.ResourceList) *api.ResourceRequirements {
 	for _, list := range []api.ResourceList{limits, reqs} {

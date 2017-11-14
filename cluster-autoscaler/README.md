@@ -29,10 +29,21 @@ there is a big chance that it won't work as expected.
 
 # Notable changes
 
+CA Version 1.0.2:
+* Fixes issues with scaling node groups using GPU from 0 to 1 on GKE (https://github.com/kubernetes/autoscaler/pull/401) and AWS (https://github.com/kubernetes/autoscaler/issues/321).
+* Fixes a bug where goroutines performing API calls were leaking when using dynamic config on AWS (https://github.com/kubernetes/autoscaler/issues/252).
+* Node Autoprovisioning support for GKE (the implementation was included in 1.0.0, but this release includes some bugfixes and introduces metrics and events).
+
+CA Version 1.0.1:
+* Fixes a bug in handling nodes that, at the same time, fail to register in Kubernetes and can't be deleted from cloud provider (https://github.com/kubernetes/autoscaler/issues/369).
+* Improves estimation of resources available on a node when performing scale-from-0 on GCE (https://github.com/kubernetes/autoscaler/issues/326).
+* Bugfixes in the new GKE cloud provider implementation.
+
 CA Version 1.0:
+
 With this release we graduated Cluster Autoscaler to GA.
 
-* Support for 1000 nodes running 30 pods each.
+* Support for 1000 nodes running 30 pods each. See: [Scalability testing  report](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/proposals/scalability_tests.md)
 * Support for 10 min graceful termination.
 * Improved eventing and monitoring.
 * Node allocatable support.

@@ -34,7 +34,7 @@ const (
 
 type KubemarkCloudProvider struct{}
 
-func BuildKubemarkCloudProvider(kubemarkController interface{}, specs []string) (*KubemarkCloudProvider, error) {
+func BuildKubemarkCloudProvider(kubemarkController interface{}, specs []string, resourceLimiter *cloudprovider.ResourceLimiter) (*KubemarkCloudProvider, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
@@ -58,4 +58,20 @@ func (kubemark *KubemarkCloudProvider) GetAvailableMachineTypes() ([]string, err
 
 func (kubemark *KubemarkCloudProvider) NewNodeGroup(machineType string, labels map[string]string, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
+}
+
+// GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
+func (kubemark *KubemarkCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+	return nil, cloudprovider.ErrNotImplemented
+}
+
+// Refresh is called before every main loop and can be used to dynamically update cloud provider state.
+// In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
+func (kubemark *KubemarkCloudProvider) Refresh() error {
+	return cloudprovider.ErrNotImplemented
+}
+
+// Cleanup cleans up all resources before the cloud provider is removed
+func (kubemark *KubemarkCloudProvider) Cleanup() error {
+	return cloudprovider.ErrNotImplemented
 }

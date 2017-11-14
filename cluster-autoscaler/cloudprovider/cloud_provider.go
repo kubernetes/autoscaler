@@ -17,6 +17,9 @@ limitations under the License.
 package cloudprovider
 
 import (
+	"bytes"
+	"fmt"
+	"math"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -51,6 +54,16 @@ type CloudProvider interface {
 	// created on the cloud provider side. The node group is not returned by NodeGroups() until it is created.
 	// Implementation optional.
 	NewNodeGroup(machineType string, labels map[string]string, extraResources map[string]resource.Quantity) (NodeGroup, error)
+
+	// GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
+	GetResourceLimiter() (*ResourceLimiter, error)
+
+	// Cleanup cleans up open resources before the cloud provider is destroyed, i.e. go routines etc.
+	Cleanup() error
+
+	// Refresh is called before every main loop and can be used to dynamically update cloud provider state.
+	// In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
+	Refresh() error
 }
 
 // ErrNotImplemented is returned if a method is not implemented.
@@ -134,4 +147,60 @@ type PricingModel interface {
 	// PodePrice returns a theoretical minimum priece of running a pod for a given
 	// period of time on a perfectly matching machine.
 	PodPrice(pod *apiv1.Pod, startTime time.Time, endTime time.Time) (float64, error)
+}
+
+const (
+	// ResourceNameCores is string name for cores. It's used by ResourceLimiter.
+	ResourceNameCores = "cpu"
+	// ResourceNameMemory is string name for memory. It's used by ResourceLimiter.
+	// Memory should always be provided in megabytes.
+	ResourceNameMemory = "memory"
+)
+
+// ResourceLimiter contains limits (max, min) for resources (cores, memory etc.).
+type ResourceLimiter struct {
+	minLimits map[string]int64
+	maxLimits map[string]int64
+}
+
+// NewResourceLimiter creates new ResourceLimiter for map. Maps are deep copied.
+func NewResourceLimiter(minLimits map[string]int64, maxLimits map[string]int64) *ResourceLimiter {
+	minLimitsCopy := make(map[string]int64)
+	maxLimitsCopy := make(map[string]int64)
+	for key, value := range minLimits {
+		minLimitsCopy[key] = value
+	}
+	for key, value := range maxLimits {
+		maxLimitsCopy[key] = value
+	}
+	return &ResourceLimiter{minLimitsCopy, maxLimitsCopy}
+}
+
+// GetMin returns minimal number of resources for a given resource type.
+func (r *ResourceLimiter) GetMin(resourceName string) int64 {
+	result, found := r.minLimits[resourceName]
+	if found {
+		return result
+	}
+	return 0
+}
+
+// GetMax returns maximal number of resources for a given resource type.
+func (r *ResourceLimiter) GetMax(resourceName string) int64 {
+	result, found := r.maxLimits[resourceName]
+	if found {
+		return result
+	}
+	return math.MaxInt64
+}
+
+func (r *ResourceLimiter) String() string {
+	var buffer bytes.Buffer
+	for name, maxLimit := range r.maxLimits {
+		if buffer.Len() > 0 {
+			buffer.WriteString(", ")
+		}
+		buffer.WriteString(fmt.Sprintf("{%s : %d - %d}", name, r.minLimits[name], maxLimit))
+	}
+	return buffer.String()
 }

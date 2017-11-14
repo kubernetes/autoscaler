@@ -439,13 +439,37 @@ var InstanceTypes = map[string]*instanceType{
 		InstanceType: "p2.8xlarge",
 		VCPU:         32,
 		MemoryMb:     499712,
-		GPU:          0,
+		GPU:          8,
 	},
 	"p2.xlarge": {
 		InstanceType: "p2.xlarge",
 		VCPU:         4,
 		MemoryMb:     62464,
-		GPU:          0,
+		GPU:          1,
+	},
+	"p3": {
+		InstanceType: "p3",
+		VCPU:         64,
+		MemoryMb:     499712,
+		GPU:          8,
+	},
+	"p3.16xlarge": {
+		InstanceType: "p3.16xlarge",
+		VCPU:         64,
+		MemoryMb:     499712,
+		GPU:          8,
+	},
+	"p3.2xlarge": {
+		InstanceType: "p3.2xlarge",
+		VCPU:         8,
+		MemoryMb:     62464,
+		GPU:          1,
+	},
+	"p3.8xlarge": {
+		InstanceType: "p3.8xlarge",
+		VCPU:         32,
+		MemoryMb:     249856,
+		GPU:          4,
 	},
 	"r3": {
 		InstanceType: "r3",
@@ -589,6 +613,18 @@ var InstanceTypes = map[string]*instanceType{
 		InstanceType: "x1.32xlarge",
 		VCPU:         128,
 		MemoryMb:     1998848,
+		GPU:          0,
+	},
+	"x1e": {
+		InstanceType: "x1e",
+		VCPU:         128,
+		MemoryMb:     0,
+		GPU:          0,
+	},
+	"x1e.32xlarge": {
+		InstanceType: "x1e.32xlarge",
+		VCPU:         128,
+		MemoryMb:     3997696,
 		GPU:          0,
 	},
 }

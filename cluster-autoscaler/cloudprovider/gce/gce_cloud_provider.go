@@ -34,7 +34,7 @@ const (
 	minAutoprovisionedSize = 0
 )
 
-// Big machines are temporairly commented out.
+// Big machines are temporarily commented out.
 // TODO(mwielgus): get this list programatically
 var autoprovisionedMachineTypes = []string{
 	"n1-standard-1",
@@ -61,16 +61,19 @@ var autoprovisionedMachineTypes = []string{
 // GceCloudProvider implements CloudProvider interface.
 type GceCloudProvider struct {
 	gceManager GceManager
+	// This resource limiter is used if resource limits are not defined through cloud API.
+	resourceLimiterFromFlags *cloudprovider.ResourceLimiter
 }
 
 // BuildGceCloudProvider builds CloudProvider implementation for GCE.
-func BuildGceCloudProvider(gceManager GceManager, specs []string) (*GceCloudProvider, error) {
+func BuildGceCloudProvider(gceManager GceManager, specs []string, resourceLimiter *cloudprovider.ResourceLimiter) (*GceCloudProvider, error) {
 	if gceManager.getMode() == ModeGKE && len(specs) != 0 {
 		return nil, fmt.Errorf("GKE gets nodegroup specification via API, command line specs are not allowed")
 	}
 
 	gce := &GceCloudProvider{
-		gceManager: gceManager,
+		gceManager:               gceManager,
+		resourceLimiterFromFlags: resourceLimiter,
 	}
 	for _, spec := range specs {
 		if err := gce.addNodeGroup(spec); err != nil {
@@ -78,6 +81,12 @@ func BuildGceCloudProvider(gceManager GceManager, specs []string) (*GceCloudProv
 		}
 	}
 	return gce, nil
+}
+
+// Cleanup cleans up all resources before the cloud provider is removed
+func (gce *GceCloudProvider) Cleanup() error {
+	gce.gceManager.Cleanup()
+	return nil
 }
 
 // addNodeGroup adds node group defined in string spec. Format:
@@ -136,7 +145,7 @@ func (gce *GceCloudProvider) NewNodeGroup(machineType string, labels map[string]
 		nodePoolName:    nodePoolName,
 		GceRef: GceRef{
 			Project: gce.gceManager.getProjectId(),
-			Zone:    gce.gceManager.getZone(),
+			Zone:    gce.gceManager.getLocation(),
 			Name:    nodePoolName + "-temporary-mig",
 		},
 		minSize: minAutoprovisionedSize,
@@ -153,6 +162,24 @@ func (gce *GceCloudProvider) NewNodeGroup(machineType string, labels map[string]
 		return nil, err
 	}
 	return mig, nil
+}
+
+// GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
+func (gce *GceCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+	resourceLimiter, err := gce.gceManager.GetResourceLimiter()
+	if err != nil {
+		return nil, err
+	}
+	if resourceLimiter != nil {
+		return resourceLimiter, nil
+	}
+	return gce.resourceLimiterFromFlags, nil
+}
+
+// Refresh is called before every main loop and can be used to dynamically update cloud provider state.
+// In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
+func (gce *GceCloudProvider) Refresh() error {
+	return gce.gceManager.Refresh()
 }
 
 // GceRef contains s reference to some entity in GCE/GKE world.
@@ -211,6 +238,9 @@ func (mig *Mig) MinSize() int {
 // TargetSize returns the current TARGET size of the node group. It is possible that the
 // number is different from the number of nodes registered in Kubernetes.
 func (mig *Mig) TargetSize() (int, error) {
+	if !mig.exist {
+		return 0, nil
+	}
 	size, err := mig.gceManager.GetMigSize(mig)
 	return int(size), err
 }

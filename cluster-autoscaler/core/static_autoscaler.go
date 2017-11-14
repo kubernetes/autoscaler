@@ -19,16 +19,17 @@ package core
 import (
 	"time"
 
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	kube_client "k8s.io/client-go/kubernetes"
 	kube_record "k8s.io/client-go/tools/record"
 
 	"github.com/golang/glog"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 )
 
 // StaticAutoscaler is an autoscaler which has all the core functionality of a CA but without the reconfiguration feature
@@ -49,7 +50,7 @@ func NewStaticAutoscaler(opts AutoscalingOptions, predicateChecker *simulator.Pr
 	if err != nil {
 		glog.Error("Failed to initialize status configmap, unable to write status events")
 		// Get a dummy, so we can at least safely call the methods
-		// TODO(maciekpytel): recover from this after successfull status configmap update?
+		// TODO(maciekpytel): recover from this after successful status configmap update?
 		logRecorder, _ = utils.NewStatusMapRecorder(kubeClient, opts.ConfigNamespace, kubeEventRecorder, false)
 	}
 	autoscalingContext, errctx := NewAutoscalingContext(opts, predicateChecker, kubeClient, kubeEventRecorder, logRecorder, listerRegistry)
@@ -95,15 +96,10 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 
 	glog.V(4).Info("Starting main loop")
 
-	readyNodes, err := readyNodeLister.List()
+	err := autoscalingContext.CloudProvider.Refresh()
 	if err != nil {
-		glog.Errorf("Failed to list ready nodes: %v", err)
-		return errors.ToAutoscalerError(errors.ApiCallError, err)
-	}
-	if len(readyNodes) == 0 {
-		glog.Warningf("No ready nodes in the cluster")
-		scaleDown.CleanUpUnneededNodes()
-		return nil
+		glog.Errorf("Failed to refresh cloud provider config: %v", err)
+		return errors.ToAutoscalerError(errors.CloudProviderError, err)
 	}
 
 	allNodes, err := allNodeLister.List()
@@ -113,6 +109,23 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	}
 	if len(allNodes) == 0 {
 		glog.Warningf("No nodes in the cluster")
+		scaleDown.CleanUpUnneededNodes()
+		return nil
+	}
+
+	readyNodes, err := readyNodeLister.List()
+	if err != nil {
+		glog.Errorf("Failed to list ready nodes: %v", err)
+		return errors.ToAutoscalerError(errors.ApiCallError, err)
+	}
+	// Handle GPU case - allocatable GPU may be equal to 0 up to 15 minutes after
+	// node registers as ready. See https://github.com/kubernetes/kubernetes/issues/54959
+	// Treat those nodes as unready until GPU actually becomes available and let
+	// our normal handling for booting up nodes deal with this.
+	// TODO: Remove this call when we handle dynamically provisioned resources.
+	allNodes, readyNodes = gpu.FilterOutNodesWithUnreadyGpus(allNodes, readyNodes)
+	if len(readyNodes) == 0 {
+		glog.Warningf("No ready nodes in the cluster")
 		scaleDown.CleanUpUnneededNodes()
 		return nil
 	}
@@ -210,13 +223,17 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	// which is supposed to schedule on an existing node.
 	schedulablePodsPresent := false
 
+	// Some unschedulable pods can be waiting for lower priority pods preemption so they have nominated node to run.
+	// Such pods don't require scale up but should be considered during scale down.
+	unschedulablePods, unschedulableWaitingForLowerPriorityPreemption := FilterOutExpendableAndSplit(allUnschedulablePods, a.ExpendablePodsPriorityCutoff)
+
 	glog.V(4).Infof("Filtering out schedulables")
 	filterOutSchedulableStart := time.Now()
-	unschedulablePodsToHelp := FilterOutSchedulable(allUnschedulablePods, readyNodes, allScheduled,
-		a.PredicateChecker)
+	unschedulablePodsToHelp := FilterOutSchedulable(unschedulablePods, readyNodes, allScheduled,
+		unschedulableWaitingForLowerPriorityPreemption, a.PredicateChecker, a.ExpendablePodsPriorityCutoff)
 	metrics.UpdateDurationFromStart(metrics.FilterOutSchedulable, filterOutSchedulableStart)
 
-	if len(unschedulablePodsToHelp) != len(allUnschedulablePods) {
+	if len(unschedulablePodsToHelp) != len(unschedulablePods) {
 		glog.V(2).Info("Schedulable pods present")
 		schedulablePodsPresent = true
 	} else {
@@ -265,7 +282,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		scaleDown.CleanUp(currentTime)
 		potentiallyUnneeded := getPotentiallyUnneededNodes(autoscalingContext, allNodes)
 
-		typedErr := scaleDown.UpdateUnneededNodes(allNodes, potentiallyUnneeded, allScheduled, currentTime, pdbs)
+		typedErr := scaleDown.UpdateUnneededNodes(allNodes, potentiallyUnneeded, append(allScheduled, unschedulableWaitingForLowerPriorityPreemption...), currentTime, pdbs)
 		if typedErr != nil {
 			glog.Errorf("Failed to scale down: %v", typedErr)
 			return typedErr
@@ -297,7 +314,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 			// We want to delete unneeded Node Groups only if there was no recent scale up,
 			// and there is no current delete in progress and there was no recent errors.
 			if a.AutoscalingContext.NodeAutoprovisioningEnabled {
-				err := cleanUpNodeAutoprovisionedGroups(a.AutoscalingContext.CloudProvider)
+				err := cleanUpNodeAutoprovisionedGroups(a.AutoscalingContext.CloudProvider, a.AutoscalingContext.LogRecorder)
 				if err != nil {
 					glog.Warningf("Failed to clean up unneded node groups: %v", err)
 				}
