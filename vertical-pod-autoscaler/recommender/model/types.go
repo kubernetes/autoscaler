@@ -53,9 +53,9 @@ type VpaID struct {
 	VpaName string
 }
 
-// ContainerMetricsSnapshot contains information about usage of certain container withing defined time window.
+// ContainerMetricsSnapshot contains information about usage of certain container within defined time window.
 type ContainerMetricsSnapshot struct {
-	// ID identifies a specific container those metrics are comming from.
+	// ID identifies a specific container those metrics are coming from.
 	ID ContainerID
 	// End time of the measurement interval.
 	SnapshotTime time.Time

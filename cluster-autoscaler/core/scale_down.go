@@ -26,12 +26,14 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
+	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
+	scheduler_util "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1beta1"
@@ -39,7 +41,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kube_client "k8s.io/client-go/kubernetes"
 	kube_record "k8s.io/client-go/tools/record"
-	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 
 	"github.com/golang/glog"
 )
@@ -152,7 +153,9 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	pdbs []*policyv1.PodDisruptionBudget) errors.AutoscalerError {
 
 	currentlyUnneededNodes := make([]*apiv1.Node, 0)
-	nodeNameToNodeInfo := schedulercache.CreateNodeNameToInfoMap(pods, nodes)
+	// Only scheduled non expendable pods and pods waiting for lower priority pods preemption can prevent node delete.
+	nonExpendablePods := FilterOutExpendablePods(pods, sd.context.ExpendablePodsPriorityCutoff)
+	nodeNameToNodeInfo := scheduler_util.CreateNodeNameToInfoMap(nonExpendablePods, nodes)
 	utilizationMap := make(map[string]float64)
 
 	sd.updateUnremovableNodes(nodes)
@@ -231,7 +234,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 
 	// Look for nodes to remove in the current candidates
 	nodesToRemove, unremovable, newHints, simulatorErr := simulator.FindNodesToRemove(
-		currentCandidates, nodes, pods, nil, sd.context.PredicateChecker,
+		currentCandidates, nodes, nonExpendablePods, nil, sd.context.PredicateChecker,
 		len(currentCandidates), true, sd.podLocationHints, sd.usageTracker, timestamp, pdbs)
 	if simulatorErr != nil {
 		return sd.markSimulationError(simulatorErr, timestamp)
@@ -253,7 +256,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		// Look for addidtional nodes to remove among the rest of nodes
 		glog.V(3).Infof("Finding additional %v candidates for scale down.", additionalCandidatesCount)
 		additionalNodesToRemove, additionalUnremovable, additionalNewHints, simulatorErr :=
-			simulator.FindNodesToRemove(currentNonCandidates[:additionalCandidatesPoolSize], nodes, pods, nil,
+			simulator.FindNodesToRemove(currentNonCandidates[:additionalCandidatesPoolSize], nodes, nonExpendablePods, nil,
 				sd.context.PredicateChecker, additionalCandidatesCount, true,
 				sd.podLocationHints, sd.usageTracker, timestamp, pdbs)
 		if simulatorErr != nil {
@@ -325,7 +328,7 @@ func (sd *ScaleDown) updateUnremovableNodes(nodes []*apiv1.Node) {
 }
 
 // markSimulationError indicates a simulation error by clearing  relevant scale
-// down state and returning an apropriate error.
+// down state and returning an appropriate error.
 func (sd *ScaleDown) markSimulationError(simulatorErr errors.AutoscalerError,
 	timestamp time.Time) errors.AutoscalerError {
 	glog.Errorf("Error while simulating node drains: %v", simulatorErr)
@@ -367,9 +370,15 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 	candidates := make([]*apiv1.Node, 0)
 	readinessMap := make(map[string]bool)
 
+	resourceLimiter, errCP := sd.context.CloudProvider.GetResourceLimiter()
+	if errCP != nil {
+		return ScaleDownError, errors.ToAutoscalerError(
+			errors.CloudProviderError,
+			errCP)
+	}
 	coresTotal, memoryTotal := calculateCoresAndMemoryTotal(nodesWithoutMaster, currentTime)
-	coresLeft := coresTotal - sd.context.MinCoresTotal
-	memoryLeft := memoryTotal - sd.context.MinMemoryTotal
+	coresLeft := coresTotal - resourceLimiter.GetMin(cloudprovider.ResourceNameCores)
+	memoryLeft := memoryTotal - resourceLimiter.GetMin(cloudprovider.ResourceNameMemory)
 
 	nodeGroupSize := getNodeGroupSizeMap(sd.context.CloudProvider)
 	for _, node := range nodesWithoutMaster {
@@ -455,8 +464,10 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 	}
 
 	findNodesToRemoveStart := time.Now()
+	// Only scheduled non expendable pods are taken into account and have to be moved.
+	nonExpendablePods := FilterOutExpendablePods(pods, sd.context.ExpendablePodsPriorityCutoff)
 	// We look for only 1 node so new hints may be incomplete.
-	nodesToRemove, _, _, err := simulator.FindNodesToRemove(candidates, nodesWithoutMaster, pods, sd.context.ClientSet,
+	nodesToRemove, _, _, err := simulator.FindNodesToRemove(candidates, nodesWithoutMaster, nonExpendablePods, sd.context.ClientSet,
 		sd.context.PredicateChecker, 1, false,
 		sd.podLocationHints, sd.usageTracker, time.Now(), pdbs)
 	findNodesToRemoveDuration = time.Now().Sub(findNodesToRemoveStart)
@@ -815,7 +826,7 @@ func hasNoScaleDownAnnotation(node *apiv1.Node) bool {
 	return node.Annotations[ScaleDownDisabledKey] == "true"
 }
 
-func cleanUpNodeAutoprovisionedGroups(cloudProvider cloudprovider.CloudProvider) error {
+func cleanUpNodeAutoprovisionedGroups(cloudProvider cloudprovider.CloudProvider, logRecorder *utils.LogEventRecorder) error {
 	nodeGroups := cloudProvider.NodeGroups()
 	for _, nodeGroup := range nodeGroups {
 		if !nodeGroup.Autoprovisioned() {
@@ -826,9 +837,16 @@ func cleanUpNodeAutoprovisionedGroups(cloudProvider cloudprovider.CloudProvider)
 			return err
 		}
 		if size == 0 {
+			ngId := nodeGroup.Id()
 			if err := nodeGroup.Delete(); err != nil {
+				logRecorder.Eventf(apiv1.EventTypeWarning, "FailedToDeleteNodeGroup",
+					"NodeAutoprovisioning: attempt to delete node group %v failed: %v", ngId, err)
+				// TODO(maciekpytel): add some metric here after figuring out failure scenarios
 				return err
 			}
+			logRecorder.Eventf(apiv1.EventTypeNormal, "DeletedNodeGroup",
+				"NodeAutoprovisioning: removed node group %v", ngId)
+			metrics.RegisterNodeGroupDeletion()
 		}
 	}
 	return nil

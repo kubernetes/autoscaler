@@ -44,14 +44,16 @@ const (
 type KubemarkCloudProvider struct {
 	kubemarkController *kubemark.KubemarkController
 	nodeGroups         []*NodeGroup
+	resourceLimiter    *cloudprovider.ResourceLimiter
 }
 
 // BuildKubemarkCloudProvider builds a CloudProvider for kubemark. Builds
 // node groups from passed in specs.
-func BuildKubemarkCloudProvider(kubemarkController *kubemark.KubemarkController, specs []string) (*KubemarkCloudProvider, error) {
+func BuildKubemarkCloudProvider(kubemarkController *kubemark.KubemarkController, specs []string, resourceLimiter *cloudprovider.ResourceLimiter) (*KubemarkCloudProvider, error) {
 	kubemark := &KubemarkCloudProvider{
 		kubemarkController: kubemarkController,
 		nodeGroups:         make([]*NodeGroup, 0),
+		resourceLimiter:    resourceLimiter,
 	}
 	for _, spec := range specs {
 		if err := kubemark.addNodeGroup(spec); err != nil {
@@ -113,6 +115,22 @@ func (kubemark *KubemarkCloudProvider) GetAvailableMachineTypes() ([]string, err
 // NewNodeGroup builds a theoretical node group based on the node definition provided.
 func (kubemark *KubemarkCloudProvider) NewNodeGroup(machineType string, labels map[string]string, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
+}
+
+// GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
+func (kubemark *KubemarkCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+	return kubemark.resourceLimiter, nil
+}
+
+// Refresh is called before every main loop and can be used to dynamically update cloud provider state.
+// In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
+func (kubemark *KubemarkCloudProvider) Refresh() error {
+	return nil
+}
+
+// Cleanup cleans up all resources before the cloud provider is removed
+func (kubemark *KubemarkCloudProvider) Cleanup() error {
+	return nil
 }
 
 // NodeGroup implements NodeGroup interfrace.

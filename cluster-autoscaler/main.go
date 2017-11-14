@@ -66,7 +66,7 @@ func (flag *MultiStringFlag) Set(value string) error {
 
 var (
 	nodeGroupsFlag         MultiStringFlag
-	clusterName            = flag.String("clusterName", "", "Autoscaled cluster name, if available")
+	clusterName            = flag.String("cluster-name", "", "Autoscaled cluster name, if available")
 	address                = flag.String("address", ":8085", "The address to expose prometheus metrics.")
 	kubernetes             = flag.String("kubernetes", "", "Kubernetes master location. Leave blank for default")
 	kubeConfigFile         = flag.String("kubeconfig", "", "Path to kubeconfig file with authorization and master location information.")
@@ -127,6 +127,8 @@ var (
 	balanceSimilarNodeGroupsFlag     = flag.Bool("balance-similar-node-groups", false, "Detect similar node groups and balance the number of nodes between them")
 	nodeAutoprovisioningEnabled      = flag.Bool("node-autoprovisioning-enabled", false, "Should CA autoprovision node groups when needed")
 	maxAutoprovisionedNodeGroupCount = flag.Int("max-autoprovisioned-node-group-count", 15, "The maximum number of autoprovisioned groups in the cluster.")
+
+	expendablePodsPriorityCutoff = flag.Int("expendable-pods-priority_cutoff", 0, "Pods with priority below cutoff will be expendable. They can be killed without any consideration during scale down and they don't cause scale up. Pods with null priority (PodPriority disabled) are non expendable.")
 )
 
 func createAutoscalerOptions() core.AutoscalerOptions {
@@ -176,6 +178,7 @@ func createAutoscalerOptions() core.AutoscalerOptions {
 		ClusterName:                      *clusterName,
 		NodeAutoprovisioningEnabled:      *nodeAutoprovisioningEnabled,
 		MaxAutoprovisionedNodeGroupCount: *maxAutoprovisionedNodeGroupCount,
+		ExpendablePodsPriorityCutoff:     *expendablePodsPriorityCutoff,
 	}
 
 	configFetcherOpts := dynamic.ConfigFetcherOptions{
@@ -235,6 +238,7 @@ func run(healthCheck *metrics.HealthCheck) {
 	kubeClient := createKubeClient()
 	kubeEventRecorder := kube_util.CreateEventRecorder(kubeClient)
 	opts := createAutoscalerOptions()
+	metrics.UpdateNapEnabled(opts.NodeAutoprovisioningEnabled)
 	predicateCheckerStopChannel := make(chan struct{})
 	predicateChecker, err := simulator.NewPredicateChecker(kubeClient, predicateCheckerStopChannel)
 	if err != nil {

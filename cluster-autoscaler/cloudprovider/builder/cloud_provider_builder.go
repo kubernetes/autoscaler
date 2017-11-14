@@ -35,22 +35,24 @@ import (
 // CloudProviderBuilder builds a cloud provider from all the necessary parameters including the name of a cloud provider e.g. aws, gce
 // and the path to a config file
 type CloudProviderBuilder struct {
-	cloudProviderFlag string
-	cloudConfig       string
-	clusterName       string
+	cloudProviderFlag       string
+	cloudConfig             string
+	clusterName             string
+	autoprovisioningEnabled bool
 }
 
 // NewCloudProviderBuilder builds a new builder from static settings
-func NewCloudProviderBuilder(cloudProviderFlag string, cloudConfig string, clusterName string) CloudProviderBuilder {
+func NewCloudProviderBuilder(cloudProviderFlag string, cloudConfig string, clusterName string, autoprovisioningEnabled bool) CloudProviderBuilder {
 	return CloudProviderBuilder{
-		cloudProviderFlag: cloudProviderFlag,
-		cloudConfig:       cloudConfig,
-		clusterName:       clusterName,
+		cloudProviderFlag:       cloudProviderFlag,
+		cloudConfig:             cloudConfig,
+		clusterName:             clusterName,
+		autoprovisioningEnabled: autoprovisioningEnabled,
 	}
 }
 
 // Build a cloud provider from static settings contained in the builder and dynamic settings passed via args
-func (b CloudProviderBuilder) Build(discoveryOpts cloudprovider.NodeGroupDiscoveryOptions) cloudprovider.CloudProvider {
+func (b CloudProviderBuilder) Build(discoveryOpts cloudprovider.NodeGroupDiscoveryOptions, resourceLimiter *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	var err error
 	var cloudProvider cloudprovider.CloudProvider
 
@@ -62,7 +64,11 @@ func (b CloudProviderBuilder) Build(discoveryOpts cloudprovider.NodeGroupDiscove
 		var gceError error
 		mode := gce.ModeGCE
 		if b.cloudProviderFlag == "gke" {
-			mode = gce.ModeGKE
+			if b.autoprovisioningEnabled {
+				mode = gce.ModeGKENAP
+			} else {
+				mode = gce.ModeGKE
+			}
 		}
 
 		if b.cloudConfig != "" {
@@ -78,7 +84,7 @@ func (b CloudProviderBuilder) Build(discoveryOpts cloudprovider.NodeGroupDiscove
 		if gceError != nil {
 			glog.Fatalf("Failed to create GCE Manager: %v", gceError)
 		}
-		cloudProvider, err = gce.BuildGceCloudProvider(gceManager, nodeGroupsFlag)
+		cloudProvider, err = gce.BuildGceCloudProvider(gceManager, nodeGroupsFlag, resourceLimiter)
 		if err != nil {
 			glog.Fatalf("Failed to create GCE cloud provider: %v", err)
 		}
@@ -100,7 +106,7 @@ func (b CloudProviderBuilder) Build(discoveryOpts cloudprovider.NodeGroupDiscove
 		if awsError != nil {
 			glog.Fatalf("Failed to create AWS Manager: %v", err)
 		}
-		cloudProvider, err = aws.BuildAwsCloudProvider(awsManager, discoveryOpts)
+		cloudProvider, err = aws.BuildAwsCloudProvider(awsManager, discoveryOpts, resourceLimiter)
 		if err != nil {
 			glog.Fatalf("Failed to create AWS cloud provider: %v", err)
 		}
@@ -140,7 +146,7 @@ func (b CloudProviderBuilder) Build(discoveryOpts cloudprovider.NodeGroupDiscove
 		}
 		go kubemarkController.Run(stop)
 
-		cloudProvider, err = kubemark.BuildKubemarkCloudProvider(kubemarkController, nodeGroupsFlag)
+		cloudProvider, err = kubemark.BuildKubemarkCloudProvider(kubemarkController, nodeGroupsFlag, resourceLimiter)
 		if err != nil {
 			glog.Fatalf("Failed to create Kubemark cloud provider: %v", err)
 		}

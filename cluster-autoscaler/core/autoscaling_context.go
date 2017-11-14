@@ -131,6 +131,9 @@ type AutoscalingOptions struct {
 	NodeAutoprovisioningEnabled bool
 	// MaxAutoprovisionedNodeGroupCount is the maximum number of autoprovisioned groups in the cluster.
 	MaxAutoprovisionedNodeGroupCount int
+	// Pods with priority below cutoff are expendable. They can be killed without any consideration during scale down and they don't cause scale up.
+	// Pods with null priority (PodPriority disabled) are non expendable.
+	ExpendablePodsPriorityCutoff int
 }
 
 // NewAutoscalingContext returns an autoscaling context from all the necessary parameters passed via arguments
@@ -138,11 +141,13 @@ func NewAutoscalingContext(options AutoscalingOptions, predicateChecker *simulat
 	kubeClient kube_client.Interface, kubeEventRecorder kube_record.EventRecorder,
 	logEventRecorder *utils.LogEventRecorder, listerRegistry kube_util.ListerRegistry) (*AutoscalingContext, errors.AutoscalerError) {
 
-	cloudProviderBuilder := builder.NewCloudProviderBuilder(options.CloudProviderName, options.CloudConfig, options.ClusterName)
+	cloudProviderBuilder := builder.NewCloudProviderBuilder(options.CloudProviderName, options.CloudConfig, options.ClusterName, options.NodeAutoprovisioningEnabled)
 	cloudProvider := cloudProviderBuilder.Build(cloudprovider.NodeGroupDiscoveryOptions{
 		NodeGroupSpecs:             options.NodeGroups,
-		NodeGroupAutoDiscoverySpec: options.NodeGroupAutoDiscovery,
-	})
+		NodeGroupAutoDiscoverySpec: options.NodeGroupAutoDiscovery},
+		cloudprovider.NewResourceLimiter(
+			map[string]int64{cloudprovider.ResourceNameCores: int64(options.MinCoresTotal), cloudprovider.ResourceNameMemory: options.MinMemoryTotal},
+			map[string]int64{cloudprovider.ResourceNameCores: options.MaxCoresTotal, cloudprovider.ResourceNameMemory: options.MaxMemoryTotal}))
 	expanderStrategy, err := factory.ExpanderStrategyFromString(options.ExpanderName,
 		cloudProvider, listerRegistry.AllNodeLister())
 	if err != nil {

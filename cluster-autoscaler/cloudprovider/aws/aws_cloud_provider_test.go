@@ -24,6 +24,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 )
 
 type AutoScalingMock struct {
@@ -72,7 +73,8 @@ var testAwsManager = &AwsManager{
 		instanceToAsg:            make(map[AwsRef]*Asg),
 		instancesNotInManagedAsg: make(map[AwsRef]struct{}),
 	},
-	service: testService,
+	service:   testService,
+	interrupt: make(chan struct{}),
 }
 
 func newTestAwsManagerWithService(service autoScaling) *AwsManager {
@@ -85,6 +87,7 @@ func newTestAwsManagerWithService(service autoScaling) *AwsManager {
 			instancesNotInManagedAsg: make(map[AwsRef]struct{}),
 			service:                  wrapper,
 		},
+		interrupt: make(chan struct{}),
 	}
 }
 
@@ -106,17 +109,25 @@ func testDescribeAutoScalingGroupsOutput(desiredCap int64, instanceIds ...string
 }
 
 func testProvider(t *testing.T, m *AwsManager) *awsCloudProvider {
-	provider, err := buildStaticallyDiscoveringProvider(m, nil)
+	resourceLimiter := cloudprovider.NewResourceLimiter(
+		map[string]int64{cloudprovider.ResourceNameCores: 1, cloudprovider.ResourceNameMemory: 10000000},
+		map[string]int64{cloudprovider.ResourceNameCores: 10, cloudprovider.ResourceNameMemory: 100000000})
+
+	provider, err := buildStaticallyDiscoveringProvider(m, nil, resourceLimiter)
 	assert.NoError(t, err)
 	return provider
 }
 
 func TestBuildAwsCloudProvider(t *testing.T) {
+	resourceLimiter := cloudprovider.NewResourceLimiter(
+		map[string]int64{cloudprovider.ResourceNameCores: 1, cloudprovider.ResourceNameMemory: 10000000},
+		map[string]int64{cloudprovider.ResourceNameCores: 10, cloudprovider.ResourceNameMemory: 100000000})
+
 	m := testAwsManager
-	_, err := buildStaticallyDiscoveringProvider(m, []string{"bad spec"})
+	_, err := buildStaticallyDiscoveringProvider(m, []string{"bad spec"}, resourceLimiter)
 	assert.Error(t, err)
 
-	_, err = buildStaticallyDiscoveringProvider(m, nil)
+	_, err = buildStaticallyDiscoveringProvider(m, nil, resourceLimiter)
 	assert.NoError(t, err)
 }
 
@@ -319,6 +330,15 @@ func TestDeleteNodes(t *testing.T) {
 	service.AssertNumberOfCalls(t, "DescribeAutoScalingGroups", 2)
 }
 
+func TestGetResourceLimiter(t *testing.T) {
+	service := &AutoScalingMock{}
+	m := newTestAwsManagerWithService(service)
+
+	provider := testProvider(t, m)
+	_, err := provider.GetResourceLimiter()
+	assert.NoError(t, err)
+}
+
 func TestId(t *testing.T) {
 	provider := testProvider(t, testAwsManager)
 	err := provider.addNodeGroup("1:5:test-asg")
@@ -352,4 +372,10 @@ func TestBuildAsg(t *testing.T) {
 	assert.Equal(t, 111, asg.MinSize())
 	assert.Equal(t, 222, asg.MaxSize())
 	assert.Equal(t, "test-name", asg.Name)
+}
+
+func TestCleanup(t *testing.T) {
+	provider := testProvider(t, testAwsManager)
+	err := provider.Cleanup()
+	assert.NoError(t, err)
 }

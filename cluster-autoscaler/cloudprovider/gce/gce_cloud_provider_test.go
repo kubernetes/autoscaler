@@ -17,16 +17,16 @@ limitations under the License.
 package gce
 
 import (
+	"fmt"
 	"net/http"
 	"reflect"
+	"strings"
 	"testing"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
 	apiv1 "k8s.io/api/core/v1"
-
-	"strings"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -72,6 +72,16 @@ func (m *gceManagerMock) GetMigNodes(mig *Mig) ([]string, error) {
 	return args.Get(0).([]string), args.Error(1)
 }
 
+func (m *gceManagerMock) Refresh() error {
+	args := m.Called()
+	return args.Error(0)
+}
+
+func (m *gceManagerMock) Cleanup() error {
+	args := m.Called()
+	return args.Error(0)
+}
+
 func (m *gceManagerMock) getMigs() []*migInformation {
 	args := m.Called()
 	return args.Get(0).([]*migInformation)
@@ -87,7 +97,7 @@ func (m *gceManagerMock) deleteNodePool(toBeRemoved *Mig) error {
 	return args.Error(0)
 }
 
-func (m *gceManagerMock) getZone() string {
+func (m *gceManagerMock) getLocation() string {
 	args := m.Called()
 	return args.String(0)
 }
@@ -107,11 +117,20 @@ func (m *gceManagerMock) getTemplates() *templateBuilder {
 	return args.Get(0).(*templateBuilder)
 }
 
+func (m *gceManagerMock) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+	args := m.Called()
+	return args.Get(0).(*cloudprovider.ResourceLimiter), args.Error(1)
+}
+
 func TestBuildGceCloudProvider(t *testing.T) {
 	gceManagerMock := &gceManagerMock{}
 
 	ng1Name := "https://content.googleapis.com/compute/v1/projects/project1/zones/us-central1-b/instanceGroups/ng1"
 	ng2Name := "https://content.googleapis.com/compute/v1/projects/project1/zones/us-central1-b/instanceGroups/ng2"
+
+	resourceLimiter := cloudprovider.NewResourceLimiter(
+		map[string]int64{cloudprovider.ResourceNameCores: 1, cloudprovider.ResourceNameMemory: 10000000},
+		map[string]int64{cloudprovider.ResourceNameCores: 10, cloudprovider.ResourceNameMemory: 100000000})
 
 	// GCE mode.
 	gceManagerMock.On("getMode").Return(ModeGCE).Once()
@@ -121,7 +140,8 @@ func TestBuildGceCloudProvider(t *testing.T) {
 		})).Return(true).Times(2)
 
 	provider, err := BuildGceCloudProvider(gceManagerMock,
-		[]string{"0:10:" + ng1Name, "0:5:https:" + ng2Name})
+		[]string{"0:10:" + ng1Name, "0:5:https:" + ng2Name},
+		resourceLimiter)
 	assert.NoError(t, err)
 	assert.NotNil(t, provider)
 	mock.AssertExpectationsForObjects(t, gceManagerMock)
@@ -129,7 +149,7 @@ func TestBuildGceCloudProvider(t *testing.T) {
 	// GKE mode.
 	gceManagerMock.On("getMode").Return(ModeGKE).Once()
 
-	provider, err = BuildGceCloudProvider(gceManagerMock, []string{})
+	provider, err = BuildGceCloudProvider(gceManagerMock, []string{}, resourceLimiter)
 	assert.NoError(t, err)
 	assert.NotNil(t, provider)
 	mock.AssertExpectationsForObjects(t, gceManagerMock)
@@ -138,7 +158,8 @@ func TestBuildGceCloudProvider(t *testing.T) {
 	gceManagerMock.On("getMode").Return(ModeGKE).Once()
 
 	provider, err = BuildGceCloudProvider(gceManagerMock,
-		[]string{"0:10:" + ng1Name, "0:5:https:" + ng2Name})
+		[]string{"0:10:" + ng1Name, "0:5:https:" + ng2Name},
+		resourceLimiter)
 	assert.Error(t, err)
 	assert.Equal(t, "GKE gets nodegroup specification via API, command line specs are not allowed", err.Error())
 	mock.AssertExpectationsForObjects(t, gceManagerMock)
@@ -170,6 +191,37 @@ func TestNodeGroupForNode(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, mig, *reflect.ValueOf(nodeGroup).Interface().(*Mig))
 	mock.AssertExpectationsForObjects(t, gceManagerMock)
+}
+
+func TestGetResourceLimiter(t *testing.T) {
+	gceManagerMock := &gceManagerMock{}
+	resourceLimiter := cloudprovider.NewResourceLimiter(
+		map[string]int64{cloudprovider.ResourceNameCores: 1, cloudprovider.ResourceNameMemory: 10000000},
+		map[string]int64{cloudprovider.ResourceNameCores: 10, cloudprovider.ResourceNameMemory: 100000000})
+	gce := &GceCloudProvider{
+		gceManager:               gceManagerMock,
+		resourceLimiterFromFlags: resourceLimiter,
+	}
+
+	// Return default.
+	gceManagerMock.On("GetResourceLimiter").Return((*cloudprovider.ResourceLimiter)(nil), nil).Once()
+	returnedResourceLimiter, err := gce.GetResourceLimiter()
+	assert.NoError(t, err)
+	assert.Equal(t, resourceLimiter, returnedResourceLimiter)
+
+	// Return for GKE.
+	resourceLimiterGKE := cloudprovider.NewResourceLimiter(
+		map[string]int64{cloudprovider.ResourceNameCores: 2, cloudprovider.ResourceNameMemory: 20000000},
+		map[string]int64{cloudprovider.ResourceNameCores: 5, cloudprovider.ResourceNameMemory: 200000000})
+	gceManagerMock.On("GetResourceLimiter").Return(resourceLimiterGKE, nil).Once()
+	returnedResourceLimiterGKE, err := gce.GetResourceLimiter()
+	assert.NoError(t, err)
+	assert.Equal(t, returnedResourceLimiterGKE, resourceLimiterGKE)
+
+	// Error in GceManager.
+	gceManagerMock.On("GetResourceLimiter").Return((*cloudprovider.ResourceLimiter)(nil), fmt.Errorf("Some error")).Once()
+	returnedResourceLimiter, err = gce.GetResourceLimiter()
+	assert.Error(t, err)
 }
 
 const getMachineTypeResponse = `{
@@ -314,21 +366,22 @@ func TestMig(t *testing.T) {
 	gceService, err := gcev1.New(client)
 	assert.NoError(t, err)
 	gceService.BasePath = server.URL
-	templateBuilder := &templateBuilder{gceService, "us-central1-b", "project1"}
+	templateBuilder := &templateBuilder{gceService, "project1"}
 	gce := &GceCloudProvider{
 		gceManager: gceManagerMock,
 	}
 
 	// Test NewNodeGroup.
 	gceManagerMock.On("getProjectId").Return("project1").Once()
-	gceManagerMock.On("getZone").Return("us-central1-b").Once()
+	gceManagerMock.On("getLocation").Return("us-central1-b").Once()
 	gceManagerMock.On("getTemplates").Return(templateBuilder).Once()
 	server.On("handle", "/project1/zones/us-central1-b/machineTypes/n1-standard-1").Return(getMachineTypeResponse).Once()
 	nodeGroup, err := gce.NewNodeGroup("n1-standard-1", nil, nil)
 	assert.NoError(t, err)
 	assert.NotNil(t, nodeGroup)
 	mig1 := reflect.ValueOf(nodeGroup).Interface().(*Mig)
-	assert.True(t, strings.HasPrefix(mig1.Id(), "https://content.googleapis.com/compute/v1/projects/project1/zones/us-central1-b/instanceGroups/nodeautoprovisioning-n1-standard-1"))
+	mig1.exist = true
+	assert.True(t, strings.HasPrefix(mig1.Id(), "https://content.googleapis.com/compute/v1/projects/project1/zones/us-central1-b/instanceGroups/"+nodeAutoprovisioningPrefix+"-n1-standard-1"))
 	assert.Equal(t, true, mig1.Autoprovisioned())
 	assert.Equal(t, 0, mig1.MinSize())
 	assert.Equal(t, 1000, mig1.MaxSize())
@@ -450,6 +503,7 @@ func TestMig(t *testing.T) {
 	mock.AssertExpectationsForObjects(t, gceManagerMock)
 
 	// Test Create.
+	mig1.exist = false
 	gceManagerMock.On("createNodePool", mock.AnythingOfType("*gce.Mig")).Return(nil).Once()
 	err = mig1.Create()
 	assert.NoError(t, err)

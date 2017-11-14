@@ -33,6 +33,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	provider_aws "k8s.io/kubernetes/pkg/cloudprovider/providers/aws"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
@@ -51,8 +52,9 @@ type asgInformation struct {
 
 // AwsManager is handles aws communication and data caching.
 type AwsManager struct {
-	service autoScalingWrapper
-	asgs    *autoScalingGroups
+	service   autoScalingWrapper
+	asgs      *autoScalingGroups
+	interrupt chan struct{}
 }
 
 type asgTemplate struct {
@@ -62,8 +64,8 @@ type asgTemplate struct {
 	Tags         []*autoscaling.TagDescription
 }
 
-// CreateAwsManager constructs awsManager object.
-func CreateAwsManager(configReader io.Reader) (*AwsManager, error) {
+// createAwsManagerInternal allows for a customer autoScalingWrapper to be passed in by tests
+func createAWSManagerInternal(configReader io.Reader, service *autoScalingWrapper) (*AwsManager, error) {
 	if configReader != nil {
 		var cfg provider_aws.CloudConfig
 		if err := gcfg.ReadInto(&cfg, configReader); err != nil {
@@ -72,15 +74,32 @@ func CreateAwsManager(configReader io.Reader) (*AwsManager, error) {
 		}
 	}
 
-	service := autoScalingWrapper{
-		autoscaling.New(session.New()),
-	}
-	manager := &AwsManager{
-		asgs:    newAutoScalingGroups(service),
-		service: service,
+	if service == nil {
+		service = &autoScalingWrapper{
+			autoscaling.New(session.New()),
+		}
 	}
 
+	manager := &AwsManager{
+		asgs:      newAutoScalingGroups(*service),
+		service:   *service,
+		interrupt: make(chan struct{}),
+	}
+
+	go wait.Until(func() {
+		manager.asgs.cacheMutex.Lock()
+		defer manager.asgs.cacheMutex.Unlock()
+		if err := manager.asgs.regenerateCache(); err != nil {
+			glog.Errorf("Error while regenerating Asg cache: %v", err)
+		}
+	}, time.Hour, manager.interrupt)
+
 	return manager, nil
+}
+
+// CreateAwsManager constructs awsManager object.
+func CreateAwsManager(configReader io.Reader) (*AwsManager, error) {
+	return createAWSManagerInternal(configReader, nil)
 }
 
 // RegisterAsg registers asg in Aws Manager.
@@ -91,6 +110,11 @@ func (m *AwsManager) RegisterAsg(asg *Asg) {
 // GetAsgForInstance returns AsgConfig of the given Instance
 func (m *AwsManager) GetAsgForInstance(instance *AwsRef) (*Asg, error) {
 	return m.asgs.FindForInstance(instance)
+}
+
+// Cleanup closes the channel to signal the go routine to stop that is handling the cache
+func (m *AwsManager) Cleanup() {
+	close(m.interrupt)
 }
 
 func (m *AwsManager) getAutoscalingGroupsByTags(keys []string) ([]*autoscaling.Group, error) {
