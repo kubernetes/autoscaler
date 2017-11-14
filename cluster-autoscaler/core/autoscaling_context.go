@@ -77,8 +77,6 @@ type AutoscalingOptions struct {
 	MinMemoryTotal int64
 	// NodeGroupAutoDiscovery represents one or more definition(s) of node group auto-discovery
 	NodeGroupAutoDiscovery string
-	// UnregisteredNodeRemovalTime represents how long CA waits before removing nodes that are not registered in Kubernetes")
-	UnregisteredNodeRemovalTime time.Duration
 	// EstimatorName is the estimator used to estimate the number of needed nodes in scale up.
 	EstimatorName string
 	// ExpanderName sets the type of node group expander to be used in scale up
