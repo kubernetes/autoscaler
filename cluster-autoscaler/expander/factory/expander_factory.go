@@ -19,6 +19,7 @@ package factory
 import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
+	"k8s.io/autoscaler/cluster-autoscaler/expander/fewestnodes"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/mostpods"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/price"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/random"
@@ -46,6 +47,9 @@ func ExpanderStrategyFromString(expanderFlag string, cloudProvider cloudprovider
 		return price.NewStrategy(pricing,
 			price.NewSimplePreferredNodeProvider(nodeLister),
 			price.SimpleNodeUnfitness), nil
+	case expander.FewestNodesExpanderName:
+		return fewestnodes.NewStrategy(), nil
 	}
+
 	return nil, errors.NewAutoscalerError(errors.InternalError, "Expander %s not supported", expanderFlag)
 }
