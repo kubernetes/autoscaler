@@ -451,6 +451,8 @@ would match the cluster size. This expander is described in more details
 [HERE](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/proposals/pricing.md). Currently
 it works only for GCE and GKE.
 
+* `fewest-nodes` - selects the node group with the fewest nodes. Falls back to the random expander if all node groups are the same size.
+
 ************
 
 # Troubleshooting:
