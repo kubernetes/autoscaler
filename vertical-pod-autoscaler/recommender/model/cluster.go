@@ -25,10 +25,12 @@ import (
 // VPA objects), aggregated utilization of compute resources (CPU, memory) and
 // events (container OOMs).
 // All input to the VPA Recommender algorithm lives in this structure.
+// TODO(kgrygiel): Limit the ClusterState object to a single namespace.
 type ClusterState struct {
 	// Pods in the cluster.
 	Pods map[PodID]*PodState
-	// TODO(kgrygiel): Add VPA objects.
+	// VPA objects in the cluster.
+	Vpas map[VpaID]*Vpa
 }
 
 // PodState holds runtime information about a single Pod.
@@ -39,12 +41,20 @@ type PodState struct {
 	Labels labels.Set
 	// Containers that belong to the Pod, keyed by the container name.
 	Containers map[string]*ContainerState
+	// VPA managing this pod (can be nil).
+	Vpa *Vpa
+	// All VPA objects that match this Pod. While it is incorrect to let
+	// multiple VPA objects match the same pod, the model has no means to
+	// prevent such situation. In such case the pod is controlled by one of the
+	// matching VPAs.
+	MatchingVpas map[VpaID]*Vpa
 }
 
 // NewClusterState returns a new ClusterState with no pods.
 func NewClusterState() *ClusterState {
 	return &ClusterState{
 		make(map[PodID]*PodState), // empty pods map.
+		make(map[VpaID]*Vpa),      // empty vpas map.
 	}
 }
 
@@ -58,11 +68,36 @@ type ContainerUsageSampleWithKey struct {
 // AddOrUpdatePod udpates the state of the pod with a given PodID, if it is
 // present in the cluster object. Otherwise a new pod is created and added to
 // the Cluster object.
-func (cluster *ClusterState) AddOrUpdatePod(podID PodID, labels labels.Set) {
-	if _, podExists := cluster.Pods[podID]; !podExists {
-		cluster.Pods[podID] = newPod(podID)
+// If the labels of the pod have changed, it updates the links between the pod
+// and the matching Vpa.
+func (cluster *ClusterState) AddOrUpdatePod(podID PodID, newLabels labels.Set) {
+	pod, podExists := cluster.Pods[podID]
+	if !podExists {
+		pod = newPod(podID)
+		cluster.Pods[podID] = pod
 	}
-	cluster.Pods[podID].Labels = labels
+	if !podExists || !labels.Equals(pod.Labels, newLabels) {
+		// Update the labels and the links between the pod and Vpas.
+		pod.Labels = newLabels
+		for _, vpa := range cluster.Vpas {
+			vpa.UpdatePodLink(pod)
+		}
+	}
+}
+
+// DeletePod removes an existing pod from the cluster.
+func (cluster *ClusterState) DeletePod(podID PodID) error {
+	pod, podExists := cluster.Pods[podID]
+	if !podExists {
+		return NewKeyError(podID)
+	}
+	// Set labels to nil so that no VPA matches the pod.
+	pod.Labels = nil
+	for _, vpa := range pod.MatchingVpas {
+		vpa.UpdatePodLink(pod)
+	}
+	delete(cluster.Pods, podID)
+	return nil
 }
 
 // AddOrUpdateContainer creates a new container with the given ContainerID and
@@ -96,10 +131,53 @@ func (cluster *ClusterState) AddSample(sample *ContainerUsageSampleWithKey) erro
 	return nil
 }
 
+// AddOrUpdateVpa adds a new VPA with a given ID to the ClusterState if it
+// didn't yet exist. If the VPA already existed but had a different pod
+// selector, the pod selector is updated. Updates the links between the VPA and
+// all pods it matches.
+func (cluster *ClusterState) AddOrUpdateVpa(vpaID VpaID, podSelectorStr string) error {
+	vpa, vpaExists := cluster.Vpas[vpaID]
+	if vpaExists && vpa.PodSelectorStr != podSelectorStr {
+		// Pod selector was changed. Delete the VPA object and recreate
+		// it with the new selector.
+		if err := cluster.DeleteVpa(vpaID); err != nil {
+			return err
+		}
+		vpaExists = false
+	}
+	if !vpaExists {
+		vpa, err := NewVpa(vpaID, podSelectorStr)
+		if err != nil {
+			return err
+		}
+		cluster.Vpas[vpaID] = vpa
+		for _, pod := range cluster.Pods {
+			vpa.UpdatePodLink(pod)
+		}
+	}
+	return nil
+}
+
+// DeleteVpa removes a VPA with the given ID from the ClusterState.
+func (cluster *ClusterState) DeleteVpa(vpaID VpaID) error {
+	vpa, vpaExists := cluster.Vpas[vpaID]
+	if !vpaExists {
+		return NewKeyError(vpaID)
+	}
+	// Change the selector to not match any pod and detach all pods.
+	vpa.SetPodSelectorStr("0=1")
+	for _, pod := range vpa.Pods {
+		vpa.UpdatePodLink(pod)
+	}
+	return nil
+}
+
 func newPod(id PodID) *PodState {
 	return &PodState{
 		id,
 		make(map[string]string),          // empty labels.
 		make(map[string]*ContainerState), // empty containers.
+		nil,                  // Vpa.
+		make(map[VpaID]*Vpa), // empty MatchingVpas.
 	}
 }
