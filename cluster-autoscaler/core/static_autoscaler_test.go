@@ -152,7 +152,8 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 		nil, map[string]*schedulercache.NodeInfo{"ng1": tni})
 	provider.AddNodeGroup("ng1", 1, 10, 1)
 	provider.AddNode("ng1", n1)
-	ng1 := reflect.ValueOf(provider.NodeGroups()[0]).Interface().(*testprovider.TestNodeGroup)
+	ng1 := reflect.ValueOf(provider.GetNodeGroup("ng1")).Interface().(*testprovider.TestNodeGroup)
+	assert.NotNil(t, ng1)
 	assert.NotNil(t, provider)
 
 	fakeClient := &fake.Clientset{}
@@ -327,7 +328,8 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 		[]string{"TN1", "TN2"}, map[string]*schedulercache.NodeInfo{"TN1": tni1, "TN2": tni2, "ng1": tni3})
 	provider.AddNodeGroup("ng1", 1, 10, 1)
 	provider.AddAutoprovisionedNodeGroup("autoprovisioned-TN1", 0, 10, 0, "TN1")
-	autoprovisionedTN1 := reflect.ValueOf(provider.NodeGroups()[1]).Interface().(*testprovider.TestNodeGroup)
+	autoprovisionedTN1 := reflect.ValueOf(provider.GetNodeGroup("autoprovisioned-TN1")).Interface().(*testprovider.TestNodeGroup)
+	assert.NotNil(t, autoprovisionedTN1)
 	provider.AddNode("ng1,", n1)
 	assert.NotNil(t, provider)
 
@@ -460,7 +462,8 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 	brokenNode := BuildTestNode("broken", 1000, 1000)
 	provider.AddNode("ng1", brokenNode)
 
-	ng1 := reflect.ValueOf(provider.NodeGroups()[0]).Interface().(*testprovider.TestNodeGroup)
+	ng1 := reflect.ValueOf(provider.GetNodeGroup("ng1")).Interface().(*testprovider.TestNodeGroup)
+	assert.NotNil(t, ng1)
 	assert.NotNil(t, provider)
 
 	fakeClient := &fake.Clientset{}
