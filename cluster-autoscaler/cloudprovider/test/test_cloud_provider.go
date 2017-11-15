@@ -99,6 +99,13 @@ func (tcp *TestCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 	return result
 }
 
+// GetNodeGroup returns node group with the given name.
+func (tcp *TestCloudProvider) GetNodeGroup(name string) cloudprovider.NodeGroup {
+	tcp.Lock()
+	defer tcp.Unlock()
+	return tcp.groups[name]
+}
+
 // NodeGroupForNode returns the node group for the given node, nil if the node
 // should not be processed by cluster autoscaler, or non-nil error if such
 // occurred.
