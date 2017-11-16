@@ -142,6 +142,7 @@ func (gce *GceCloudProvider) NewNodeGroup(machineType string, labels map[string]
 	extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
 	nodePoolName := fmt.Sprintf("%s-%s-%d", nodeAutoprovisioningPrefix, machineType, time.Now().Unix())
 	zone := gce.gceManager.getLocation()
+	taints := make([]apiv1.Taint, 0)
 
 	if gpuRequest, found := extraResources[gpu.ResourceNvidiaGPU]; found {
 		gpuType, found := systemLabels[gpu.GPULabel]
@@ -159,6 +160,13 @@ func (gce *GceCloudProvider) NewNodeGroup(machineType string, labels map[string]
 		}
 		nodePoolName = fmt.Sprintf("%s-%s-gpu-%d", nodeAutoprovisioningPrefix, machineType, time.Now().Unix())
 		labels[gpu.GPULabel] = gpuType
+
+		taint := apiv1.Taint{
+			Effect: apiv1.TaintEffectNoSchedule,
+			Key:    "gke-accelerator",
+			Value:  gpuType,
+		}
+		taints = append(taints, taint)
 	}
 
 	mig := &Mig{
@@ -175,6 +183,7 @@ func (gce *GceCloudProvider) NewNodeGroup(machineType string, labels map[string]
 		spec: &autoprovisioningSpec{
 			machineType:    machineType,
 			labels:         labels,
+			taints:         taints,
 			extraResources: extraResources,
 		},
 		gceManager: gce.gceManager,
@@ -231,6 +240,7 @@ func GceRefFromProviderId(id string) (*GceRef, error) {
 type autoprovisioningSpec struct {
 	machineType    string
 	labels         map[string]string
+	taints         []apiv1.Taint
 	extraResources map[string]resource.Quantity
 }
 
