@@ -332,7 +332,7 @@ func TestRemoveOldUnregisteredNodes(t *testing.T) {
 
 	context := &AutoscalingContext{
 		AutoscalingOptions: AutoscalingOptions{
-			UnregisteredNodeRemovalTime: 45 * time.Minute,
+			MaxNodeProvisionTime: 45 * time.Minute,
 		},
 		CloudProvider:        provider,
 		ClusterStateRegistry: clusterState,
@@ -430,7 +430,7 @@ func TestRemoveFixNodeTargetSize(t *testing.T) {
 
 	context := &AutoscalingContext{
 		AutoscalingOptions: AutoscalingOptions{
-			UnregisteredNodeRemovalTime: 45 * time.Minute,
+			MaxNodeProvisionTime: 45 * time.Minute,
 		},
 		CloudProvider:        provider,
 		ClusterStateRegistry: clusterState,
