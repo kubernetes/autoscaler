@@ -72,12 +72,17 @@ Cluster Autoscaler decreases the size of the cluster when some nodes are consist
 
 * Pods with restrictive PodDisruptionBudget.
 * Kube-system pods that:
-  * are not run on the node by default,
+  * are not run on the node by default, *
   * don't have PDB or their PDB is too restrictive (since CA 0.6).
-* Pods that are not backed by a controller object (so not created by deployment, replica set, job, stateful set etc).
-* Pods with local storage.
+* Pods that are not backed by a controller object (so not created by deployment, replica set, job, stateful set etc). *
+* Pods with local storage. *
 * Pods that cannot be moved elsewhere due to various constraints (lack of resources, non-matching node selctors or affinity,
 matching anti-affinity, etc)
+
+<sup>*</sup>Unless the pod has the following annotation:
+```
+"cluster-autoscaler.kubernetes.io/safe-to-evict": "true"
+```
 
 ### Which version on Cluster Autoscaler should I use in my cluster?
 
