@@ -17,7 +17,6 @@ limitations under the License.
 package azure
 
 import (
-	"fmt"
 	"net/http"
 	"testing"
 
@@ -37,11 +36,9 @@ type VirtualMachineScaleSetsClientMock struct {
 
 func (client *VirtualMachineScaleSetsClientMock) Get(resourceGroupName string,
 	vmScaleSetName string) (result compute.VirtualMachineScaleSet, err error) {
-	fmt.Printf("Called VirtualMachineScaleSetsClientMock.Get(%s,%s)\n", resourceGroupName, vmScaleSetName)
 	capacity := int64(2)
 	properties := compute.VirtualMachineScaleSetProperties{}
 	return compute.VirtualMachineScaleSet{
-
 		Name: &vmScaleSetName,
 		Sku: &compute.Sku{
 			Capacity: &capacity,
@@ -51,9 +48,7 @@ func (client *VirtualMachineScaleSetsClientMock) Get(resourceGroupName string,
 }
 
 func (client *VirtualMachineScaleSetsClientMock) CreateOrUpdate(
-	resourceGroupName string, name string, parameters compute.VirtualMachineScaleSet, cancel <-chan struct{}) (<-chan compute.VirtualMachineScaleSet, <-chan error) {
-	fmt.Printf("Called VirtualMachineScaleSetsClientMock.CreateOrUpdate(%s,%s)\n", resourceGroupName, name)
-
+	resourceGroupName string, vmScaleSetName string, parameters compute.VirtualMachineScaleSet, cancel <-chan struct{}) (<-chan compute.VirtualMachineScaleSet, <-chan error) {
 	errChan := make(chan error)
 	go func() {
 		errChan <- nil
@@ -63,7 +58,6 @@ func (client *VirtualMachineScaleSetsClientMock) CreateOrUpdate(
 
 func (client *VirtualMachineScaleSetsClientMock) DeleteInstances(resourceGroupName string, vmScaleSetName string,
 	vmInstanceIDs compute.VirtualMachineScaleSetVMInstanceRequiredIDs, cancel <-chan struct{}) (<-chan compute.OperationStatusResponse, <-chan error) {
-
 	args := client.Called(resourceGroupName, vmScaleSetName, vmInstanceIDs, cancel)
 	errChan := make(chan error)
 	go func() {
@@ -78,14 +72,14 @@ type VirtualMachineScaleSetVMsClientMock struct {
 }
 
 func (m *VirtualMachineScaleSetVMsClientMock) List(resourceGroupName string, virtualMachineScaleSetName string, filter string, selectParameter string, expand string) (result compute.VirtualMachineScaleSetVMListResult, err error) {
-
 	value := make([]compute.VirtualMachineScaleSetVM, 1)
-	vmInstanceId := "test-instance-id"
+	vmInstanceID := "test-instance-id"
 	properties := compute.VirtualMachineScaleSetVMProperties{}
-	vmId := "67453E12-9BE8-D312-A456-426655440000"
-	properties.VMID = &vmId
+	vmID := "123E4567-E89B-12D3-A456-426655440000"
+	properties.VMID = &vmID
 	value[0] = compute.VirtualMachineScaleSetVM{
-		InstanceID:                         &vmInstanceId,
+		ID:                                 &vmID,
+		InstanceID:                         &vmInstanceID,
 		VirtualMachineScaleSetVMProperties: &properties,
 	}
 
@@ -112,7 +106,7 @@ func testProvider(t *testing.T, m *AzureManager) *AzureCloudProvider {
 	return provider
 }
 
-func TestBuildAwsCloudProvider(t *testing.T) {
+func TestBuildAzureCloudProvider(t *testing.T) {
 	resourceLimiter := cloudprovider.NewResourceLimiter(
 		map[string]int64{cloudprovider.ResourceNameCores: 1, cloudprovider.ResourceNameMemory: 10000000},
 		map[string]int64{cloudprovider.ResourceNameCores: 10, cloudprovider.ResourceNameMemory: 100000000})
@@ -151,7 +145,7 @@ func TestNodeGroups(t *testing.T) {
 func TestNodeGroupForNode(t *testing.T) {
 	node := &apiv1.Node{
 		Spec: apiv1.NodeSpec{
-			ProviderID: "azure:////123E4567-E89B-12D3-A456-426655440000",
+			ProviderID: "azure://123E4567-E89B-12D3-A456-426655440000",
 		},
 	}
 
@@ -232,9 +226,7 @@ func TestTargetSize(t *testing.T) {
 }
 
 func TestIncreaseSize(t *testing.T) {
-
 	var testAzureManager = &AzureManager{
-
 		scaleSets:        make([]*scaleSetInformation, 0),
 		scaleSetClient:   &VirtualMachineScaleSetsClientMock{},
 		scaleSetVmClient: &VirtualMachineScaleSetVMsClientMock{},
@@ -249,13 +241,10 @@ func TestIncreaseSize(t *testing.T) {
 
 	err = provider.scaleSets[0].IncreaseSize(1)
 	assert.NoError(t, err)
-
 }
 
 func TestBelongs(t *testing.T) {
-
 	var testAzureManager = &AzureManager{
-
 		scaleSets:        make([]*scaleSetInformation, 0),
 		scaleSetClient:   &VirtualMachineScaleSetsClientMock{},
 		scaleSetVmClient: &VirtualMachineScaleSetVMsClientMock{},
@@ -277,13 +266,12 @@ func TestBelongs(t *testing.T) {
 
 	validNode := &apiv1.Node{
 		Spec: apiv1.NodeSpec{
-			ProviderID: "azure:////123E4567-E89B-12D3-A456-426655440000",
+			ProviderID: "azure://123E4567-E89B-12D3-A456-426655440000",
 		},
 	}
 	belongs, err := provider.scaleSets[0].Belongs(validNode)
 	assert.Equal(t, belongs, true)
 	assert.NoError(t, err)
-
 }
 
 func TestDeleteNodes(t *testing.T) {
@@ -295,16 +283,8 @@ func TestDeleteNodes(t *testing.T) {
 		scaleSetCache:    make(map[AzureRef]*ScaleSet),
 	}
 
-	//(resourceGroupName string, vmScaleSetName string,
-	// vmInstanceIDs compute.VirtualMachineScaleSetVMInstanceRequiredIDs, cancel <-chan struct{})
-	// (result autorest.Response, err error)
-	//cancel := make(<-chan struct{})
 	instanceIds := make([]string, 1)
 	instanceIds[0] = "test-instance-id"
-
-	//requiredIds := compute.VirtualMachineScaleSetVMInstanceRequiredIDs{
-	//	InstanceIds: &instanceIds,
-	//}
 	response := autorest.Response{
 		Response: &http.Response{
 			Status: "OK",
@@ -318,7 +298,7 @@ func TestDeleteNodes(t *testing.T) {
 
 	node := &apiv1.Node{
 		Spec: apiv1.NodeSpec{
-			ProviderID: "azure:////123E4567-E89B-12D3-A456-426655440000",
+			ProviderID: "azure://123E4567-E89B-12D3-A456-426655440000",
 		},
 	}
 	err = provider.scaleSets[0].DeleteNodes([]*apiv1.Node{node})
