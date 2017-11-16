@@ -38,6 +38,7 @@ import (
 	gke_beta "google.golang.org/api/container/v1beta1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	provider_gce "k8s.io/kubernetes/pkg/cloudprovider/providers/gce"
 )
 
@@ -570,10 +571,31 @@ func (m *gceManagerImpl) createNodePool(mig *Mig) error {
 	// TODO: handle ssd
 	// TODO: handle taints
 
+	accelerators := []*gke_alpha.AcceleratorConfig{}
+	if gpuRequest, found := mig.spec.extraResources[gpu.ResourceNvidiaGPU]; found {
+		gpuType, found := mig.spec.labels[gpu.GPULabel]
+		if !found {
+			return fmt.Errorf("failed to create node pool %v with gpu request of unspecified type", mig.nodePoolName)
+		}
+		gpu := &gke_alpha.AcceleratorConfig{
+			AcceleratorType:  gpuType,
+			AcceleratorCount: gpuRequest.Value(),
+		}
+		accelerators = append(accelerators, gpu)
+	}
+
+	labels := make(map[string]string)
+	for k, v := range mig.spec.labels {
+		if k != gpu.GPULabel {
+			labels[k] = v
+		}
+	}
+
 	config := gke_alpha.NodeConfig{
-		MachineType: mig.spec.machineType,
-		OauthScopes: defaultOAuthScopes,
-		Labels:      mig.spec.labels,
+		MachineType:  mig.spec.machineType,
+		OauthScopes:  defaultOAuthScopes,
+		Labels:       labels,
+		Accelerators: accelerators,
 	}
 
 	autoscaling := gke_alpha.NodePoolAutoscaling{
