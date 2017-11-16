@@ -26,6 +26,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 )
 
@@ -140,13 +141,33 @@ func (gce *GceCloudProvider) GetAvailableMachineTypes() ([]string, error) {
 func (gce *GceCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string,
 	extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
 	nodePoolName := fmt.Sprintf("%s-%s-%d", nodeAutoprovisioningPrefix, machineType, time.Now().Unix())
+	zone := gce.gceManager.getLocation()
+
+	if gpuRequest, found := extraResources[gpu.ResourceNvidiaGPU]; found {
+		gpuType, found := systemLabels[gpu.GPULabel]
+		if !found {
+			return nil, cloudprovider.ErrIllegalConfiguration
+		}
+		gpuCount, err := getNormalizedGpuCount(gpuRequest.Value())
+		if err != nil {
+			return nil, err
+		}
+		extraResources[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(gpuCount, resource.DecimalSI)
+		err = validateGpuConfig(gpuType, gpuCount, zone, machineType)
+		if err != nil {
+			return nil, err
+		}
+		nodePoolName = fmt.Sprintf("%s-%s-gpu-%d", nodeAutoprovisioningPrefix, machineType, time.Now().Unix())
+		labels[gpu.GPULabel] = gpuType
+	}
+
 	mig := &Mig{
 		autoprovisioned: true,
 		exist:           false,
 		nodePoolName:    nodePoolName,
 		GceRef: GceRef{
 			Project: gce.gceManager.getProjectId(),
-			Zone:    gce.gceManager.getLocation(),
+			Zone:    zone,
 			Name:    nodePoolName + "-temporary-mig",
 		},
 		minSize: minAutoprovisionedSize,
