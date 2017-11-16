@@ -250,6 +250,9 @@ func (t *templateBuilder) buildNodeFromAutoprovisioningSpec(mig *Mig) (*apiv1.No
 		return nil, err
 	}
 	node.Labels = labels
+
+	node.Spec.Taints = mig.spec.taints
+
 	// Ready status
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()
 	return &node, nil
