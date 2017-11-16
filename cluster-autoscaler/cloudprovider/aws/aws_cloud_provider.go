@@ -29,6 +29,11 @@ import (
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 )
 
+const (
+	// ProviderName is the cloud provider name for AWS
+	ProviderName = "aws"
+)
+
 // awsCloudProvider implements CloudProvider interface.
 type awsCloudProvider struct {
 	awsManager      *AwsManager
@@ -144,7 +149,7 @@ func (aws *awsCloudProvider) addAsg(asg *Asg) {
 
 // Name returns name of the cloud provider.
 func (aws *awsCloudProvider) Name() string {
-	return "aws"
+	return ProviderName
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
