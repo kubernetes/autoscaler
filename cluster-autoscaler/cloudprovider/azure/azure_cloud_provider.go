@@ -88,7 +88,7 @@ func (azure *AzureCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 func (azure *AzureCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	glog.V(6).Infof("Searching for node group for the node: %s, %s\n", node.Spec.ExternalID, node.Spec.ProviderID)
 	ref := &AzureRef{
-		Name: node.Spec.ProviderID,
+		Name: strings.ToLower(node.Spec.ProviderID),
 	}
 
 	scaleSet, err := azure.azureManager.GetScaleSetForInstance(ref)
@@ -138,7 +138,7 @@ func (m *AzureRef) GetKey() string {
 func AzureRefFromProviderId(id string) (*AzureRef, error) {
 	splitted := strings.Split(id[9:], "/")
 	if len(splitted) != 2 {
-		return nil, fmt.Errorf("Wrong id: expected format azure:////<unique-id>, got %v", id)
+		return nil, fmt.Errorf("Wrong id: expected format azure:///<unique-id>, got %v", id)
 	}
 	return &AzureRef{
 		Name: splitted[len(splitted)-1],
@@ -237,7 +237,7 @@ func (scaleSet *ScaleSet) Belongs(node *apiv1.Node) (bool, error) {
 	glog.V(6).Infof("Check if node belongs to this scale set: scaleset:%v, node:%v\n", scaleSet, node)
 
 	ref := &AzureRef{
-		Name: node.Spec.ProviderID,
+		Name: strings.ToLower(node.Spec.ProviderID),
 	}
 
 	targetAsg, err := scaleSet.azureManager.GetScaleSetForInstance(ref)
@@ -273,7 +273,7 @@ func (scaleSet *ScaleSet) DeleteNodes(nodes []*apiv1.Node) error {
 			return fmt.Errorf("%s belongs to a different asg than %s", node.Name, scaleSet.Id())
 		}
 		azureRef := &AzureRef{
-			Name: node.Spec.ProviderID,
+			Name: strings.ToLower(node.Spec.ProviderID),
 		}
 		refs = append(refs, azureRef)
 	}
