@@ -329,7 +329,7 @@ func removeOldUnregisteredNodes(unregisteredNodes []clusterstate.UnregisteredNod
 	currentTime time.Time, logRecorder *utils.LogEventRecorder) (bool, error) {
 	removedAny := false
 	for _, unregisteredNode := range unregisteredNodes {
-		if unregisteredNode.UnregisteredSince.Add(context.UnregisteredNodeRemovalTime).Before(currentTime) {
+		if unregisteredNode.UnregisteredSince.Add(context.MaxNodeProvisionTime).Before(currentTime) {
 			glog.V(0).Infof("Removing unregistered node %v", unregisteredNode.Node.Name)
 			nodeGroup, err := context.CloudProvider.NodeGroupForNode(unregisteredNode.Node)
 			if err != nil {
@@ -372,7 +372,7 @@ func fixNodeGroupSize(context *AutoscalingContext, currentTime time.Time) (bool,
 		if incorrectSize == nil {
 			continue
 		}
-		if incorrectSize.FirstObserved.Add(context.UnregisteredNodeRemovalTime).Before(currentTime) {
+		if incorrectSize.FirstObserved.Add(context.MaxNodeProvisionTime).Before(currentTime) {
 			delta := incorrectSize.CurrentSize - incorrectSize.ExpectedSize
 			if delta < 0 {
 				glog.V(0).Infof("Decreasing size of %s, expected=%d current=%d delta=%d", nodeGroup.Id(),
