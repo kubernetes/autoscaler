@@ -17,7 +17,6 @@ limitations under the License.
 package azure
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"net/http"
@@ -253,9 +252,6 @@ func (m *AzureManager) SetScaleSetSize(asConfig *ScaleSet, size int64) error {
 // GetScaleSetForInstance returns ScaleSetConfig of the given Instance
 func (m *AzureManager) GetScaleSetForInstance(instance *AzureRef) (*ScaleSet, error) {
 	glog.V(5).Infof("Looking for scale set for instance: %v\n", instance)
-	//if m.resourceGroupName == "" {
-	//	m.resourceGroupName = instance.ResourceGroup
-	//}
 
 	glog.V(8).Infof("Cache BEFORE: %v\n", m.scaleSetCache)
 
@@ -264,6 +260,7 @@ func (m *AzureManager) GetScaleSetForInstance(instance *AzureRef) (*ScaleSet, er
 	if config, found := m.scaleSetCache[*instance]; found {
 		return config, nil
 	}
+
 	if err := m.regenerateCache(); err != nil {
 		return nil, fmt.Errorf("Error while looking for ScaleSet for instance %+v, error: %v", *instance, err)
 	}
@@ -309,34 +306,31 @@ func (m *AzureManager) DeleteInstances(instances []*AzureRef) error {
 }
 
 func (m *AzureManager) regenerateCache() error {
-
 	newCache := make(map[AzureRef]*ScaleSet)
 	newScaleSetIdCache := make(map[string]string)
+
 	for _, sset := range m.scaleSets {
-
 		glog.V(4).Infof("Regenerating Scale Set information for %s", sset.config.Name)
-
 		scaleSet, err := m.scaleSetClient.Get(m.resourceGroupName, sset.config.Name)
 		if err != nil {
-			glog.V(4).Infof("Failed AS info request for %s: %v", sset.config.Name, err)
+			glog.Errorf("Failed to get scaleSet with name %s: %v", sset.config.Name, err)
 			return err
 		}
 		sset.basename = *scaleSet.Name
 
 		result, err := m.scaleSetVmClient.List(m.resourceGroupName, sset.basename, "", "", "")
-
 		if err != nil {
-			glog.V(4).Infof("Failed AS info request for %s: %v", sset.config.Name, err)
+			glog.Errorf("Failed to list vm for scaleSet %s: %v", sset.config.Name, err)
 			return err
 		}
 
 		for _, instance := range *result.Value {
-			var name = "azure:////" + fixEndiannessUUID(string(strings.ToUpper(*instance.VirtualMachineScaleSetVMProperties.VMID)))
+			// Convert to lower because instance.ID is in different in different API calls (e.g. GET and LIST).
+			name := "azure://" + strings.ToLower(*instance.ID)
 			ref := AzureRef{
 				Name: name,
 			}
 			newCache[ref] = sset.config
-
 			newScaleSetIdCache[name] = *instance.InstanceID
 		}
 	}
@@ -356,8 +350,8 @@ func (m *AzureManager) GetScaleSetVms(scaleSet *ScaleSet) ([]string, error) {
 	}
 	result := make([]string, 0)
 	for _, instance := range *instances.Value {
-		var name = "azure:////" + fixEndiannessUUID(string(strings.ToUpper(*instance.VirtualMachineScaleSetVMProperties.VMID)))
-
+		// Convert to lower because instance.ID is in different in different API calls (e.g. GET and LIST).
+		name := "azure://" + strings.ToLower(*instance.ID)
 		result = append(result, name)
 	}
 	return result, nil
@@ -367,48 +361,4 @@ func (m *AzureManager) GetScaleSetVms(scaleSet *ScaleSet) ([]string, error) {
 // Cleanup closes the channel to signal the go routine to stop that is handling the cache
 func (m *AzureManager) Cleanup() {
 	close(m.interrupt)
-}
-
-// fixEndiannessUUID fixes UUID representation broken because of the bug in linux kernel.
-// According to RFC 4122 (http://tools.ietf.org/html/rfc4122), Section 4.1.2 first three fields have Big Endian encoding.
-// There is a bug in DMI code in Linux kernel (https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1551419) which
-// prevents proper reading of UUID, so, there is a situation, when VMID read by kubernetes on the host is different from
-// VMID reported by Azure REST API. To fix it, we need manually fix Big Endianness on first three fields of UUID.
-func fixEndiannessUUID(uuid string) string {
-	if len(uuid) != 36 {
-		panic("Passed string is not an UUID: " + uuid)
-	}
-	sections := strings.Split(uuid, "-")
-	if len(sections) != 5 {
-		panic("Passed string is not an UUID: " + uuid)
-	}
-
-	var buffer bytes.Buffer
-	buffer.WriteString(reverseBytes(sections[0]))
-	buffer.WriteString("-")
-	buffer.WriteString(reverseBytes(sections[1]))
-	buffer.WriteString("-")
-	buffer.WriteString(reverseBytes(sections[2]))
-	buffer.WriteString("-")
-	buffer.WriteString(sections[3])
-	buffer.WriteString("-")
-	buffer.WriteString(sections[4])
-	return buffer.String()
-}
-
-// reverseBytes is a helper function used by fixEndiannessUUID.
-// it reverses order of pairs of bytes in string. i.e. passing ABCD will produce CDAB.
-func reverseBytes(s string) string {
-	// string length should be even.
-	if len(s)%2 != 0 {
-		panic("Passed string should have even length: " + s)
-	}
-	var buffer bytes.Buffer
-
-	var l int = len(s) / 2
-	for i := l; i > 0; i-- {
-		var startIndex int = (i - 1) * 2
-		buffer.WriteString(s[startIndex : startIndex+2])
-	}
-	return buffer.String()
 }
