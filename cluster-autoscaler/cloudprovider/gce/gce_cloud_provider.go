@@ -32,6 +32,12 @@ import (
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 )
 
+// The 'GCE' cloud provider actually implements both the GCE and GKE providers.
+const (
+	ProviderNameGCE = "gce"
+	ProviderNameGKE = "gke"
+)
+
 const (
 	maxAutoprovisionedSize = 1000
 	minAutoprovisionedSize = 0
@@ -199,7 +205,10 @@ func (gce *GceCloudProvider) addNodeGroup(spec string) error {
 
 // Name returns name of the cloud provider.
 func (gce *GceCloudProvider) Name() string {
-	return "gce"
+	// Technically we're both ProviderNameGCE and ProviderNameGKE...
+	// Perhaps we should return a different name depending on
+	// gce.gceManager.getMode()?
+	return ProviderNameGCE
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
