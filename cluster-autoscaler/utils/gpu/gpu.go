@@ -98,6 +98,9 @@ type GpuRequestInfo struct {
 	MaxRequest resource.Quantity
 	// Pods is a list of pods requesting GPU
 	Pods []*apiv1.Pod
+	// SystemLabels is a set of system labels corresponding to selected GPU
+	// that needs to be passed to cloudprovider
+	SystemLabels map[string]string
 }
 
 // GetGpuRequests returns a GpuRequestInfo for each type of GPU requested by
@@ -127,6 +130,9 @@ func GetGpuRequests(pods []*apiv1.Pod) map[string]GpuRequestInfo {
 			requestInfo = GpuRequestInfo{
 				MaxRequest: podGpu,
 				Pods:       make([]*apiv1.Pod, 0),
+				SystemLabels: map[string]string{
+					GPULabel: gpuType,
+				},
 			}
 		}
 		if podGpu.Cmp(requestInfo.MaxRequest) > 0 {
