@@ -56,7 +56,8 @@ func (kubemark *KubemarkCloudProvider) GetAvailableMachineTypes() ([]string, err
 	return []string{}, cloudprovider.ErrNotImplemented
 }
 
-func (kubemark *KubemarkCloudProvider) NewNodeGroup(machineType string, labels map[string]string, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
+func (kubemark *KubemarkCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string,
+	extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
