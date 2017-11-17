@@ -72,6 +72,9 @@ func (b CloudProviderBuilder) Build(discoveryOpts cloudprovider.NodeGroupDiscove
 	case gce.ProviderNameGCE:
 		return b.buildGCE(discoveryOpts, resourceLimiter, gce.ModeGCE)
 	case gce.ProviderNameGKE:
+		if discoveryOpts.DiscoverySpecified() {
+			glog.Fatalf("GKE gets nodegroup specification via API, command line specs are not allowed")
+		}
 		if b.autoprovisioningEnabled {
 			return b.buildGCE(discoveryOpts, resourceLimiter, gce.ModeGKENAP)
 		}
@@ -104,16 +107,16 @@ func (b CloudProviderBuilder) buildGCE(do cloudprovider.NodeGroupDiscoveryOption
 		defer config.Close()
 	}
 
-	m, err := gce.CreateGceManager(config, mode, b.clusterName)
+	manager, err := gce.CreateGceManager(config, mode, b.clusterName, do)
 	if err != nil {
 		glog.Fatalf("Failed to create GCE Manager: %v", err)
 	}
 
-	p, err := gce.BuildGceCloudProvider(m, do, rl)
+	provider, err := gce.BuildGceCloudProvider(manager, rl)
 	if err != nil {
 		glog.Fatalf("Failed to create GCE cloud provider: %v", err)
 	}
-	return p
+	return provider
 }
 
 func (b CloudProviderBuilder) buildAWS(do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
@@ -127,16 +130,16 @@ func (b CloudProviderBuilder) buildAWS(do cloudprovider.NodeGroupDiscoveryOption
 		defer config.Close()
 	}
 
-	m, err := aws.CreateAwsManager(config)
+	manager, err := aws.CreateAwsManager(config, do)
 	if err != nil {
 		glog.Fatalf("Failed to create AWS Manager: %v", err)
 	}
 
-	p, err := aws.BuildAwsCloudProvider(m, do, rl)
+	provider, err := aws.BuildAwsCloudProvider(manager, rl)
 	if err != nil {
 		glog.Fatalf("Failed to create AWS cloud provider: %v", err)
 	}
-	return p
+	return provider
 }
 
 func (b CloudProviderBuilder) buildAzure(do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
@@ -152,15 +155,15 @@ func (b CloudProviderBuilder) buildAzure(do cloudprovider.NodeGroupDiscoveryOpti
 	} else {
 		glog.Info("Creating Azure Manager with default configuration.")
 	}
-	m, err := azure.CreateAzureManager(config)
+	manager, err := azure.CreateAzureManager(config)
 	if err != nil {
 		glog.Fatalf("Failed to create Azure Manager: %v", err)
 	}
-	p, err := azure.BuildAzureCloudProvider(m, do.NodeGroupSpecs, rl)
+	provider, err := azure.BuildAzureCloudProvider(manager, do.NodeGroupSpecs, rl)
 	if err != nil {
 		glog.Fatalf("Failed to create Azure cloud provider: %v", err)
 	}
-	return p
+	return provider
 }
 
 func (b CloudProviderBuilder) buildKubemark(do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
@@ -196,9 +199,9 @@ func (b CloudProviderBuilder) buildKubemark(do cloudprovider.NodeGroupDiscoveryO
 	}
 	go kubemarkController.Run(stop)
 
-	p, err := kubemark.BuildKubemarkCloudProvider(kubemarkController, do.NodeGroupSpecs, rl)
+	provider, err := kubemark.BuildKubemarkCloudProvider(kubemarkController, do.NodeGroupSpecs, rl)
 	if err != nil {
 		glog.Fatalf("Failed to create Kubemark cloud provider: %v", err)
 	}
-	return p
+	return provider
 }
