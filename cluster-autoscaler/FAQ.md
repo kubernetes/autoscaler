@@ -79,7 +79,7 @@ Cluster Autoscaler decreases the size of the cluster when some nodes are consist
 * Pods that cannot be moved elsewhere due to various constraints (lack of resources, non-matching node selctors or affinity,
 matching anti-affinity, etc)
 
-<sup>*</sup>Unless the pod has the following annotation:
+<sup>*</sup>Unless the pod has the following annotation (supported in CA 1.0.3 or later):
 ```
 "cluster-autoscaler.kubernetes.io/safe-to-evict": "true"
 ```
