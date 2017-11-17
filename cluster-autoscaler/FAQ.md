@@ -70,12 +70,17 @@ Cluster Autoscaler decreases the size of the cluster when some nodes are consist
 
 * Pods with restrictive PodDisruptionBudget.
 * Kube-system pods that:
-  * are not run on the node by default,
+  * are not run on the node by default, *
   * don't have PDB or their PDB is too restrictive (since CA 0.6).
-* Pods that are not backed by a controller object (so not created by deployment, replica set, job, stateful set etc).
-* Pods with local storage.
+* Pods that are not backed by a controller object (so not created by deployment, replica set, job, stateful set etc). *
+* Pods with local storage. *
 * Pods that cannot be moved elsewhere due to various constraints (lack of resources, non-matching node selctors or affinity,
 matching anti-affinity, etc)
+
+<sup>*</sup>Unless the pod has the following annotation:
+```
+"cluster-autoscaler.kubernetes.io/safe-to-evict": "true"
+```
 
 ### Which version on Cluster Autoscaler should I use in my cluster?
 
@@ -497,6 +502,7 @@ the scale-up-triggering pods are removed.
     export KUBE_AUTOSCALER_MIN_NODES=3
     export KUBE_AUTOSCALER_MAX_NODES=6
     export KUBE_ENABLE_CLUSTER_AUTOSCALER=true
+    export KUBE_AUTOSCALER_ENABLE_SCALE_DOWN=true
     ```
     This is the minimum number of nodes required for all e2e tests to pass. The tests should also pass if you set higher quota.
 3. Run `go run hack/e2e.go -- -v --up` to bring up your cluster.
