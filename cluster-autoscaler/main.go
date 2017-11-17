@@ -286,7 +286,7 @@ func main() {
 	flag.Var(&nodeGroupAutoDiscoveryFlag, "node-group-auto-discovery", "One or more definition(s) of node group auto-discovery. "+
 		"A definition is expressed `<name of discoverer>:[<key>[=<value>]]`. "+
 		"The `aws` and `gce` cloud providers are currently supported. AWS matches by ASG tags, e.g. `asg:tag=tagKey,anotherTagKey`. "+
-		"GCE matches by IG prefix, and requires you to specify min and max nodes per IG, e.g. `mig:prefix=pfx,min=0,max=10` "+
+		"GCE matches by IG name prefix, and requires you to specify min and max nodes per IG, e.g. `mig:namePrefix=pfx,min=0,max=10` "+
 		"Can be used multiple times.")
 	kube_flag.InitFlags()
 
