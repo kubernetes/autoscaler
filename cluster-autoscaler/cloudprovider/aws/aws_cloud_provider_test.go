@@ -77,6 +77,12 @@ var testAwsManager = &AwsManager{
 	interrupt: make(chan struct{}),
 }
 
+type testPriceDescriptor struct{}
+
+func (pd *testPriceDescriptor) Price(asgName string) (price float64, err error) {
+	return
+}
+
 func newTestAwsManagerWithService(service autoScaling) *AwsManager {
 	wrapper := autoScalingWrapper{service}
 	return &AwsManager{
@@ -113,7 +119,7 @@ func testProvider(t *testing.T, m *AwsManager) *awsCloudProvider {
 		map[string]int64{cloudprovider.ResourceNameCores: 1, cloudprovider.ResourceNameMemory: 10000000},
 		map[string]int64{cloudprovider.ResourceNameCores: 10, cloudprovider.ResourceNameMemory: 100000000})
 
-	provider, err := buildStaticallyDiscoveringProvider(m, nil, resourceLimiter)
+	provider, err := buildStaticallyDiscoveringProvider(m, nil, resourceLimiter, &testPriceDescriptor{})
 	assert.NoError(t, err)
 	return provider
 }
@@ -124,10 +130,10 @@ func TestBuildAwsCloudProvider(t *testing.T) {
 		map[string]int64{cloudprovider.ResourceNameCores: 10, cloudprovider.ResourceNameMemory: 100000000})
 
 	m := testAwsManager
-	_, err := buildStaticallyDiscoveringProvider(m, []string{"bad spec"}, resourceLimiter)
+	_, err := buildStaticallyDiscoveringProvider(m, []string{"bad spec"}, resourceLimiter, &testPriceDescriptor{})
 	assert.Error(t, err)
 
-	_, err = buildStaticallyDiscoveringProvider(m, nil, resourceLimiter)
+	_, err = buildStaticallyDiscoveringProvider(m, nil, resourceLimiter, &testPriceDescriptor{})
 	assert.NoError(t, err)
 }
 
