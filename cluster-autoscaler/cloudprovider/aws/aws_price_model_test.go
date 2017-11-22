@@ -37,17 +37,17 @@ func TestPriceModel_NodePrice(t *testing.T) {
 	pm := &priceModel{
 		asgs: &fakeInstanceFinder{
 			c: map[string]*Asg{
-				"node-a": &Asg{
+				"node-a": {
 					AwsRef: AwsRef{
 						Name: "k8s-AutoscalingGroupWorker-AAAAAA",
 					},
 				},
-				"node-b": &Asg{
+				"node-b": {
 					AwsRef: AwsRef{
 						Name: "k8s-AutoscalingGroupWorker-BBBBBB",
 					},
 				},
-				"node-c": &Asg{
+				"node-c": {
 					AwsRef: AwsRef{
 						Name: "k8s-AutoscalingGroupWorker-CCCCCC",
 					},
