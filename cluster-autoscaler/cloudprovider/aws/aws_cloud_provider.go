@@ -24,6 +24,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/price"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
@@ -33,24 +34,25 @@ import (
 type awsCloudProvider struct {
 	awsManager      *AwsManager
 	asgs            []*Asg
+	priceDescriptor price.ShapeDescriptor
 	resourceLimiter *cloudprovider.ResourceLimiter
 }
 
 // BuildAwsCloudProvider builds CloudProvider implementation for AWS.
-func BuildAwsCloudProvider(awsManager *AwsManager, discoveryOpts cloudprovider.NodeGroupDiscoveryOptions, resourceLimiter *cloudprovider.ResourceLimiter) (cloudprovider.CloudProvider, error) {
+func BuildAwsCloudProvider(awsManager *AwsManager, discoveryOpts cloudprovider.NodeGroupDiscoveryOptions, resourceLimiter *cloudprovider.ResourceLimiter, descriptor price.ShapeDescriptor) (cloudprovider.CloudProvider, error) {
 	if err := discoveryOpts.Validate(); err != nil {
 		return nil, fmt.Errorf("Failed to build an aws cloud provider: %v", err)
 	}
 	if discoveryOpts.StaticDiscoverySpecified() {
-		return buildStaticallyDiscoveringProvider(awsManager, discoveryOpts.NodeGroupSpecs, resourceLimiter)
+		return buildStaticallyDiscoveringProvider(awsManager, discoveryOpts.NodeGroupSpecs, resourceLimiter, descriptor)
 	}
 	if discoveryOpts.AutoDiscoverySpecified() {
-		return buildAutoDiscoveringProvider(awsManager, discoveryOpts.NodeGroupAutoDiscoverySpec, resourceLimiter)
+		return buildAutoDiscoveringProvider(awsManager, discoveryOpts.NodeGroupAutoDiscoverySpec, resourceLimiter, descriptor)
 	}
 	return nil, fmt.Errorf("Failed to build an aws cloud provider: Either node group specs or node group auto discovery spec must be specified")
 }
 
-func buildAutoDiscoveringProvider(awsManager *AwsManager, spec string, resourceLimiter *cloudprovider.ResourceLimiter) (*awsCloudProvider, error) {
+func buildAutoDiscoveringProvider(awsManager *AwsManager, spec string, resourceLimiter *cloudprovider.ResourceLimiter, descriptor price.ShapeDescriptor) (*awsCloudProvider, error) {
 	tokens := strings.Split(spec, ":")
 	if len(tokens) != 2 {
 		return nil, fmt.Errorf("Invalid node group auto discovery spec specified via --node-group-auto-discovery: %s", spec)
@@ -82,6 +84,7 @@ func buildAutoDiscoveringProvider(awsManager *AwsManager, spec string, resourceL
 		awsManager:      awsManager,
 		asgs:            make([]*Asg, 0),
 		resourceLimiter: resourceLimiter,
+		priceDescriptor: descriptor,
 	}
 	for _, asg := range asgs {
 		aws.addAsg(buildAsg(aws.awsManager, int(*asg.MinSize), int(*asg.MaxSize), *asg.AutoScalingGroupName))
@@ -89,11 +92,12 @@ func buildAutoDiscoveringProvider(awsManager *AwsManager, spec string, resourceL
 	return aws, nil
 }
 
-func buildStaticallyDiscoveringProvider(awsManager *AwsManager, specs []string, resourceLimiter *cloudprovider.ResourceLimiter) (*awsCloudProvider, error) {
+func buildStaticallyDiscoveringProvider(awsManager *AwsManager, specs []string, resourceLimiter *cloudprovider.ResourceLimiter, descriptor price.ShapeDescriptor) (*awsCloudProvider, error) {
 	aws := &awsCloudProvider{
 		awsManager:      awsManager,
 		asgs:            make([]*Asg, 0),
 		resourceLimiter: resourceLimiter,
+		priceDescriptor: descriptor,
 	}
 	for _, spec := range specs {
 		if err := aws.addNodeGroup(spec); err != nil {
@@ -152,7 +156,8 @@ func (aws *awsCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.N
 
 // Pricing returns pricing model for this cloud provider or error if not available.
 func (aws *awsCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
-	return nil, cloudprovider.ErrNotImplemented
+	// aws.awsManager.asgs.FindForInstance()
+	return &priceModel{}, nil
 }
 
 // GetAvailableMachineTypes get all machine types that can be requested from the cloud provider.

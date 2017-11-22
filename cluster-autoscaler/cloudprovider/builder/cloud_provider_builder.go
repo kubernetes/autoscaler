@@ -29,7 +29,9 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	kubemarkcontroller "k8s.io/kubernetes/pkg/kubemark"
 
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/golang/glog"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/price"
 )
 
 // CloudProviderBuilder builds a cloud provider from all the necessary parameters including the name of a cloud provider e.g. aws, gce
@@ -93,6 +95,7 @@ func (b CloudProviderBuilder) Build(discoveryOpts cloudprovider.NodeGroupDiscove
 	if b.cloudProviderFlag == "aws" {
 		var awsManager *aws.AwsManager
 		var awsError error
+		awsSession := session.New()
 		if b.cloudConfig != "" {
 			config, fileErr := os.Open(b.cloudConfig)
 			if fileErr != nil {
@@ -106,7 +109,8 @@ func (b CloudProviderBuilder) Build(discoveryOpts cloudprovider.NodeGroupDiscove
 		if awsError != nil {
 			glog.Fatalf("Failed to create AWS Manager: %v", err)
 		}
-		cloudProvider, err = aws.BuildAwsCloudProvider(awsManager, discoveryOpts, resourceLimiter)
+		priceDescriptor := price.NewDescriptor(awsSession)
+		cloudProvider, err = aws.BuildAwsCloudProvider(awsManager, discoveryOpts, resourceLimiter, priceDescriptor)
 		if err != nil {
 			glog.Fatalf("Failed to create AWS cloud provider: %v", err)
 		}
