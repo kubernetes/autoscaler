@@ -111,6 +111,48 @@ var InstanceTypes = map[string]*instanceType{
 		MemoryMb:     7680,
 		GPU:          0,
 	},
+	"c5": {
+		InstanceType: "c5",
+		VCPU:         72,
+		MemoryMb:     0,
+		GPU:          0,
+	},
+	"c5.18xlarge": {
+		InstanceType: "c5.18xlarge",
+		VCPU:         72,
+		MemoryMb:     147456,
+		GPU:          0,
+	},
+	"c5.2xlarge": {
+		InstanceType: "c5.2xlarge",
+		VCPU:         8,
+		MemoryMb:     16384,
+		GPU:          0,
+	},
+	"c5.4xlarge": {
+		InstanceType: "c5.4xlarge",
+		VCPU:         16,
+		MemoryMb:     32768,
+		GPU:          0,
+	},
+	"c5.9xlarge": {
+		InstanceType: "c5.9xlarge",
+		VCPU:         36,
+		MemoryMb:     73728,
+		GPU:          0,
+	},
+	"c5.large": {
+		InstanceType: "c5.large",
+		VCPU:         2,
+		MemoryMb:     4096,
+		GPU:          0,
+	},
+	"c5.xlarge": {
+		InstanceType: "c5.xlarge",
+		VCPU:         4,
+		MemoryMb:     8192,
+		GPU:          0,
+	},
 	"cc1.4xlarge": {
 		InstanceType: "cc1.4xlarge",
 		VCPU:         16,
@@ -224,12 +266,6 @@ var InstanceTypes = map[string]*instanceType{
 		VCPU:         32,
 		MemoryMb:     249856,
 		GPU:          2,
-	},
-	"hi1.4xlarge": {
-		InstanceType: "hi1.4xlarge",
-		VCPU:         16,
-		MemoryMb:     61952,
-		GPU:          0,
 	},
 	"hs1.8xlarge": {
 		InstanceType: "hs1.8xlarge",
@@ -621,10 +657,40 @@ var InstanceTypes = map[string]*instanceType{
 		MemoryMb:     0,
 		GPU:          0,
 	},
+	"x1e.16xlarge": {
+		InstanceType: "x1e.16xlarge",
+		VCPU:         64,
+		MemoryMb:     1998848,
+		GPU:          0,
+	},
+	"x1e.2xlarge": {
+		InstanceType: "x1e.2xlarge",
+		VCPU:         8,
+		MemoryMb:     249856,
+		GPU:          0,
+	},
 	"x1e.32xlarge": {
 		InstanceType: "x1e.32xlarge",
 		VCPU:         128,
 		MemoryMb:     3997696,
+		GPU:          0,
+	},
+	"x1e.4xlarge": {
+		InstanceType: "x1e.4xlarge",
+		VCPU:         16,
+		MemoryMb:     499712,
+		GPU:          0,
+	},
+	"x1e.8xlarge": {
+		InstanceType: "x1e.8xlarge",
+		VCPU:         32,
+		MemoryMb:     999424,
+		GPU:          0,
+	},
+	"x1e.xlarge": {
+		InstanceType: "x1e.xlarge",
+		VCPU:         4,
+		MemoryMb:     124928,
 		GPU:          0,
 	},
 }
