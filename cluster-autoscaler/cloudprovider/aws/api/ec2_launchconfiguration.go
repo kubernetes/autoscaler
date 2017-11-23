@@ -28,10 +28,14 @@ type awsEC2LaunchConfigurationService interface {
 
 // EC2LaunchConfiguration holds AWS EC2 Launch Configuration information
 type EC2LaunchConfiguration struct {
+	// HasSpotMarkedBid is true if the launch configuration uses the spot marked
 	HasSpotMarkedBid bool
-	SpotPrice        float64
-	Name             string
-	InstanceType     string
+	// SpotPrice is the bid price on the spot marked the autoscaling group uses
+	SpotPrice float64
+	// Name of the launch configuration
+	Name string
+	// InstanceType of the underlying instance described in the launch configuration
+	InstanceType string
 }
 
 // NewEC2LaunchConfigurationService is the constructor of launchConfigurationService which is a wrapper for
