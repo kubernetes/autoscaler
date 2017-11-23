@@ -18,6 +18,8 @@ package api
 
 import "strconv"
 
+// stringRefToFloat64 converts fields of type *float64 to float64 (fallback to zero value if nil)
+// it's mostly used to handle aws api responds nicely
 func stringRefToFloat64(p *string) (float64, error) {
 	if p == nil {
 		return 0, nil
@@ -25,6 +27,8 @@ func stringRefToFloat64(p *string) (float64, error) {
 	return strconv.ParseFloat(*p, 64)
 }
 
+// stringRefToStringSlice converts ...*string to []string (fallback to zero value if nil)
+// it's mostly used to handle aws api responds nicely
 func stringRefToStringSlice(in ...*string) []string {
 	vs := make([]string, len(in))
 
@@ -35,6 +39,8 @@ func stringRefToStringSlice(in ...*string) []string {
 	return vs
 }
 
+// stringToStringSliceRef converts ...string to []*string
+// it's mostly used to handle aws api responds nicely
 func stringToStringSliceRef(in ...string) []*string {
 	vs := make([]*string, len(in))
 
