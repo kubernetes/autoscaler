@@ -28,8 +28,12 @@ import (
 	"time"
 )
 
-const instanceInfoCacheMaxAge = time.Hour * 6
-const awsPricingAPIURLTemplate = "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonEC2/current/%s/index.json"
+const (
+	instanceInfoCacheMaxAge      = time.Hour * 6
+	awsPricingAPIURLTemplate     = "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonEC2/current/%s/index.json"
+	instanceOperatingSystemLinux = "Linux"
+	instanceTenancyShared        = "Shared"
+)
 
 // InstanceInfo holds AWS EC2 instance information
 type InstanceInfo struct {
@@ -106,56 +110,86 @@ func (s *instanceInfoService) sync(availabilityZone string) error {
 	}
 
 	instances := make([]InstanceInfo, 0)
+	now := time.Now()
 
 	for _, product := range response.Products {
 		sku := product.SKU
 		attr := product.Attributes
-		if attr.InstanceType != "" {
 
-			i := InstanceInfo{
-				InstanceType: attr.InstanceType,
+		// TODO <mrcrgl> find better solution for the case of windows installations for instance.
+		if attr.OperatingSystem != instanceOperatingSystemLinux {
+			continue
+		}
+
+		// We do actually only support Shared tenancy instances.
+		// See for more information: http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-purchasing-options.html
+		if attr.Tenancy != instanceTenancyShared {
+			continue
+		}
+
+		if len(attr.InstanceType) == 0 {
+			continue
+		}
+
+		i := InstanceInfo{
+			InstanceType: attr.InstanceType,
+		}
+
+		var err error
+		if attr.Memory != "" && attr.Memory != "NA" {
+			if i.MemoryMb, err = parseMemory(attr.Memory); err != nil {
+				return fmt.Errorf("parser error %v", err)
+			}
+		}
+
+		if attr.VCPU != "" {
+			if i.VCPU, err = parseCPU(attr.VCPU); err != nil {
+				return fmt.Errorf("parser error %v", err)
+			}
+		}
+		if attr.GPU != "" {
+			if i.GPU, err = parseCPU(attr.GPU); err != nil {
+				return fmt.Errorf("parser error %v", err)
+			}
+		}
+
+		for priceSKU, offers := range response.Terms.OnDemand {
+			if priceSKU != sku {
+				continue
 			}
 
-			var err error
-			if attr.Memory != "" && attr.Memory != "NA" {
-				if i.MemoryMb, err = parseMemory(attr.Memory); err != nil {
-					return fmt.Errorf("parser error %v", err)
-				}
-			}
+			var lastOfferTime time.Time
+			var lastOfferPrice float64
 
-			if attr.VCPU != "" {
-				if i.VCPU, err = parseCPU(attr.VCPU); err != nil {
-					return fmt.Errorf("parser error %v", err)
-				}
-			}
-			if attr.GPU != "" {
-				if i.GPU, err = parseCPU(attr.GPU); err != nil {
-					return fmt.Errorf("parser error %v", err)
-				}
-			}
-
-			for priceSKU, offers := range response.Terms.OnDemand {
-				if priceSKU != sku {
+			for _, offer := range offers {
+				if offer.EffectiveDate.After(now) {
 					continue
 				}
 
-				for _, offer := range offers {
-					for _, price := range offer.PriceDimensions {
-						if price.EndRange != "Inf" || price.Unit != "Hrs" {
-							continue
-						}
-						p, err := strconv.ParseFloat(price.PricePerUnit.USD, 64)
-						if err != nil {
-							return fmt.Errorf("error parsing price for SKU %s [%s] %v", sku, price.PricePerUnit.USD, err)
-						}
+				for _, price := range offer.PriceDimensions {
+					if price.EndRange != "Inf" || price.Unit != "Hrs" {
+						continue
+					}
+					p, err := strconv.ParseFloat(price.PricePerUnit.USD, 64)
+					if err != nil {
+						return fmt.Errorf("error parsing price for SKU %s [%s] %v", sku, price.PricePerUnit.USD, err)
+					}
 
-						i.OnDemandPrice = p
+					if p == 0.0 {
+						continue
+					}
+
+					if lastOfferTime.IsZero() || lastOfferTime.After(offer.EffectiveDate) {
+						lastOfferTime = offer.EffectiveDate
+						lastOfferPrice = p
 					}
 				}
 			}
 
-			instances = append(instances, i)
+			i.OnDemandPrice = lastOfferPrice
 		}
+
+		instances = append(instances, i)
 	}
 
 	bucket.Clear()
@@ -252,6 +286,7 @@ type productOffers map[string]productOffer
 
 type productOffer struct {
 	OfferTermCode   string                           `json:"offerTermCode"`
+	EffectiveDate   time.Time                        `json:"effectiveDate"`
 	SKU             string                           `json:"sku"`
 	PriceDimensions map[string]productPriceDimension `json:"priceDimensions"`
 }
@@ -275,6 +310,7 @@ type product struct {
 }
 
 type productAttributes struct {
+	Tenancy         string `json:"tenancy"`
 	InstanceType    string `json:"instanceType"`
 	VCPU            string `json:"vcpu"`
 	Memory          string `json:"memory"`

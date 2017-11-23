@@ -48,9 +48,6 @@ func TestInstanceInfoService_DescribeInstanceInfo(t *testing.T) {
 	usWestOneURL, err := url.Parse(fmt.Sprintf(awsPricingAPIURLTemplate, "us-west-1"))
 	assert.NoError(t, err)
 
-	//usWestTwoURL, err := url.Parse(fmt.Sprintf(awsPricingAPIURLTemplate, "us-west-2"))
-	//assert.NoError(t, err)
-
 	mc := &mockClient{m: make(map[string]mockResponse)}
 	mc.m[usEastOneURL.Path] = mockResponse{pricingBody, 200}
 	mc.m[usWestOneURL.Path] = mockResponse{[]byte("some non-json stuff"), 200}
@@ -69,7 +66,7 @@ func TestInstanceInfoService_DescribeInstanceInfo(t *testing.T) {
 			"m4.xlarge",
 			"us-east-1",
 			false,
-			0,
+			0.2,
 			4,
 		},
 		{ // error case: unknown availability zone
@@ -103,9 +100,9 @@ func TestInstanceInfoService_DescribeInstanceInfo(t *testing.T) {
 			assert.Error(t, err, fmt.Sprintf("case %d", n))
 		} else {
 			assert.NoError(t, err, fmt.Sprintf("case %d", n))
-			assert.Equal(t, tc.expectOnDemandPrice, info.OnDemandPrice)
-			assert.Equal(t, tc.expectCPU, info.VCPU)
 			assert.Equal(t, tc.instanceType, info.InstanceType)
+			assert.Equal(t, tc.expectCPU, info.VCPU)
+			assert.Equal(t, tc.expectOnDemandPrice, info.OnDemandPrice)
 		}
 
 	}
