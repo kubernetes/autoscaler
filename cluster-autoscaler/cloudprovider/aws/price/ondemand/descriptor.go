@@ -25,6 +25,7 @@ import (
 
 // Descriptor describes the price interface
 type Descriptor interface {
+	// Price returns the current instance price per hour in USD.
 	Price(instanceType string, availabilityZones ...string) (float64, error)
 }
 

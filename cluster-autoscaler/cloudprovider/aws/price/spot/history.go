@@ -35,13 +35,13 @@ type History struct {
 	items    api.SpotPriceItems
 	lastSync time.Time
 	maxAge   time.Duration
-	mu       sync.RWMutex
+	sync.RWMutex
 }
 
 // Slice returns a copy of the internal spot price item list
 func (h *History) Slice() api.SpotPriceItems {
-	h.mu.RLock()
-	defer h.mu.RUnlock()
+	h.RLock()
+	defer h.RUnlock()
 
 	return h.items[:]
 }
@@ -53,16 +53,16 @@ func (h *History) Empty() bool {
 
 // Len returns the length of the history
 func (h *History) Len() int {
-	h.mu.RLock()
-	defer h.mu.RUnlock()
+	h.RLock()
+	defer h.RUnlock()
 
 	return h.items.Len()
 }
 
 // Housekeep drops items older than maxAge and sorts the history
 func (h *History) Housekeep() {
-	h.mu.Lock()
-	defer h.mu.Unlock()
+	h.Lock()
+	defer h.Unlock()
 
 	c := make(api.SpotPriceItems, 0)
 
@@ -83,8 +83,8 @@ func (h *History) Housekeep() {
 
 // Add adds sorted api.SpotPriceItems and sets the last-sync to current time
 func (h *History) Add(items api.SpotPriceItems) {
-	h.mu.Lock()
-	defer h.mu.Unlock()
+	h.Lock()
+	defer h.Unlock()
 
 	sort.Sort(items)
 
@@ -100,23 +100,23 @@ func (h *History) LastItem() (api.SpotPriceItem, error) {
 
 	idx := h.items.Len() - 1
 
-	h.mu.RLock()
-	defer h.mu.RUnlock()
+	h.RLock()
+	defer h.RUnlock()
 	return h.items[idx], nil
 }
 
 // SetLastSync sets last-sync to current time
 func (h *History) SetLastSync() {
-	h.mu.Lock()
-	defer h.mu.Unlock()
+	h.Lock()
+	defer h.Unlock()
 
 	h.lastSync = time.Now()
 }
 
 // LastSync returns the time of the last sync
 func (h *History) LastSync() time.Time {
-	h.mu.RLock()
-	defer h.mu.RUnlock()
+	h.RLock()
+	defer h.RUnlock()
 
 	return h.lastSync
 }

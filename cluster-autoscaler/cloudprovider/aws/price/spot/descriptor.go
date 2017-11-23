@@ -39,6 +39,9 @@ type spotPriceBucket map[instanceTypeInZone]*History
 
 // Descriptor describes the price interface
 type Descriptor interface {
+	// Price returns the current price, average over the availability zones but the max value within 30 minutes of a zone,
+	// of the given instanceType.
+	// It returns an error if the current price is greater than the bid price.
 	Price(instanceType string, bidPrice float64, availabilityZones ...string) (float64, error)
 }
 

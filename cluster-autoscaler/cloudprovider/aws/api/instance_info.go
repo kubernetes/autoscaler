@@ -37,11 +37,16 @@ const (
 
 // InstanceInfo holds AWS EC2 instance information
 type InstanceInfo struct {
-	InstanceType  string
+	// InstanceType of the described instance
+	InstanceType string
+	// OnDemandPrice in USD of the ec2 instance
 	OnDemandPrice float64
-	VCPU          int64
-	MemoryMb      int64
-	GPU           int64
+	// VCPU count of this instance
+	VCPU int64
+	// MemoryMb size in megabytes of this instance
+	MemoryMb int64
+	// GPU count of this instance
+	GPU int64
 }
 
 type httpClient interface {
@@ -59,7 +64,7 @@ func NewEC2InstanceInfoService(client httpClient) *instanceInfoService {
 type instanceInfoService struct {
 	client httpClient
 	cache  instanceInfoCache
-	mu     sync.RWMutex
+	sync.RWMutex
 }
 
 // DescribeInstanceInfo returns the corresponding aws instance info by given instance type and availability zone.
@@ -90,8 +95,8 @@ func (s *instanceInfoService) shouldSync(availabilityZone string) bool {
 }
 
 func (s *instanceInfoService) sync(availabilityZone string) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+	s.Lock()
+	defer s.Unlock()
 
 	bucket, found := s.cache[availabilityZone]
 	if !found {
@@ -239,36 +244,36 @@ func (s *instanceInfoService) fetch(availabilityZone string, etag string) (*resp
 type instanceInfoCache map[string]*regionalInstanceInfoBucket
 
 type regionalInstanceInfoBucket struct {
+	sync.RWMutex
 	lastSync time.Time
 	ETag     string
-	mu       sync.RWMutex
 	info     []InstanceInfo
 }
 
 func (b *regionalInstanceInfoBucket) SetLastSync() {
-	b.mu.Lock()
-	defer b.mu.Unlock()
+	b.Lock()
+	defer b.Unlock()
 
 	b.lastSync = time.Now()
 }
 
 func (b *regionalInstanceInfoBucket) LastSync() time.Time {
-	b.mu.RLock()
-	defer b.mu.RUnlock()
+	b.RLock()
+	defer b.RUnlock()
 
 	return b.lastSync
 }
 
 func (b *regionalInstanceInfoBucket) Clear() {
-	b.mu.Lock()
-	defer b.mu.Unlock()
+	b.Lock()
+	defer b.Unlock()
 
 	b.info = make([]InstanceInfo, 0)
 }
 
 func (b *regionalInstanceInfoBucket) Add(info ...InstanceInfo) {
-	b.mu.Lock()
-	defer b.mu.Unlock()
+	b.Lock()
+	defer b.Unlock()
 
 	b.info = append(b.info, info...)
 }

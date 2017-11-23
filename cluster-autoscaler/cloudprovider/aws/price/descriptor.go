@@ -29,6 +29,7 @@ import (
 
 // ShapeDescriptor describes an interface to appraise an instance price of any shape
 type ShapeDescriptor interface {
+	// Price calls, depending whether the asg has a spot price or not, the spot or the on-demand price descriptor
 	Price(asgName string) (price float64, err error)
 }
 

@@ -35,13 +35,9 @@ func TestLaunchConfigurationService_DescribeLaunchConfiguration(t *testing.T) {
 	}
 	type cases []testCase
 
-	var (
-		lcName1 = "k8s-LaunchConfigurationWorker-TTTTTTTTTTTTT"
-		lcName2 = "k8s-LaunchConfigurationWorker-YYYYYYYYYYYYY"
-		lcName3 = "k8s-LaunchConfigurationWorker-XXXXXXXXXXXXX"
-	)
-
-	//NewEC2LaunchConfigurationService()
+	lcName1 := "k8s-LaunchConfigurationWorker-TTTTTTTTTTTTT"
+	lcName2 := "k8s-LaunchConfigurationWorker-YYYYYYYYYYYYY"
+	lcName3 := "k8s-LaunchConfigurationWorker-XXXXXXXXXXXXX"
 
 	tcs := cases{
 		{ // good case: common case
@@ -75,12 +71,7 @@ func TestLaunchConfigurationService_DescribeLaunchConfiguration(t *testing.T) {
 	}
 }
 
-func newLCFakeService(
-	name string,
-	instanceType string,
-	tokens []string,
-	err error,
-) *fakeLCService {
+func newLCFakeService(name string, instanceType string, tokens []string, err error) *fakeLCService {
 	return &fakeLCService{
 		mocks: map[string]*autoscaling.LaunchConfiguration{
 			name: {

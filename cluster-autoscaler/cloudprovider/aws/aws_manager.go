@@ -86,6 +86,7 @@ func createAWSManagerInternal(configReader io.Reader, service *autoScalingWrappe
 		interrupt: make(chan struct{}),
 	}
 
+	// TODO <mrcrgl> should this be moved inside asgs
 	go wait.Until(func() {
 		manager.asgs.cacheMutex.Lock()
 		defer manager.asgs.cacheMutex.Unlock()

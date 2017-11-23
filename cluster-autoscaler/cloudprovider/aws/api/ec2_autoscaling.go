@@ -28,9 +28,12 @@ type awsEC2AutoscalingGroupService interface {
 
 // EC2AutoscalingGroup holds AWS Autoscaling Group information
 type EC2AutoscalingGroup struct {
-	Name                    string
+	// Name of the autoscaling group
+	Name string
+	// LaunchConfigurationName describes the name of the corresponding launch configuration
 	LaunchConfigurationName string
-	AvailabilityZones       []string
+	// AvailabilityZones that are used by this autoscaling group
+	AvailabilityZones []string
 }
 
 // NewEC2AutoscalingService is the constructor of autoscalingService which is a wrapper for the AWS EC2

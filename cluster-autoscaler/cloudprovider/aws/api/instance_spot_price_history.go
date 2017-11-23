@@ -32,6 +32,7 @@ type awsSpotPriceHistoryService interface {
 
 // SpotPriceHistory is the output returned by DescribeSpotPriceHistory
 type SpotPriceHistory struct {
+	// HistoryItems is a slice of spot price items that implements sort.Interface
 	HistoryItems SpotPriceItems
 }
 
@@ -85,22 +86,27 @@ func newSpotPriceItem(price float64, ts time.Time) SpotPriceItem {
 
 // SpotPriceItem consists of a timestamp and a price
 type SpotPriceItem struct {
+	// Timestamp indicating the occurrence of the price change
 	Timestamp time.Time
-	Price     float64
+	// Price of the spot instance at given time
+	Price float64
 }
 
 // SpotPriceItems is a list of SpotPriceItem
 // Implements sort.Interface
 type SpotPriceItems []SpotPriceItem
 
+// Len of spot price items
 func (sps SpotPriceItems) Len() int {
 	return len(sps)
 }
 
+// Less returns true if the spot price on the left side is younger than the right one
 func (sps SpotPriceItems) Less(i, j int) bool {
 	return sps[i].Timestamp.Before(sps[j].Timestamp)
 }
 
+// Swap the spot price elements of the given idx
 func (sps SpotPriceItems) Swap(i, j int) {
 	sps[i], sps[j] = sps[j], sps[i]
 }

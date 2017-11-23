@@ -35,15 +35,13 @@ func TestAutoscalingService_DescribeAutoscalingGroup(t *testing.T) {
 	}
 	type cases []testCase
 
-	var (
-		asName1 = "k8s-AutoscalingGroupWorker-TTTTTTTTTTTTT"
-		asName2 = "k8s-AutoscalingGroupWorker-YYYYYYYYYYYYY"
-		asName3 = "k8s-AutoscalingGroupWorker-XXXXXXXXXXXXX"
-		lcName1 = "k8s-LaunchConfigurationWorker-TTTTTTTTTTTTT"
-		lcName2 = "k8s-LaunchConfigurationWorker-YYYYYYYYYYYYY"
-		azName1 = "us-east-1a"
-		azName2 = "us-east-1b"
-	)
+	asName1 := "k8s-AutoscalingGroupWorker-TTTTTTTTTTTTT"
+	asName2 := "k8s-AutoscalingGroupWorker-YYYYYYYYYYYYY"
+	asName3 := "k8s-AutoscalingGroupWorker-XXXXXXXXXXXXX"
+	lcName1 := "k8s-LaunchConfigurationWorker-TTTTTTTTTTTTT"
+	lcName2 := "k8s-LaunchConfigurationWorker-YYYYYYYYYYYYY"
+	azName1 := "us-east-1a"
+	azName2 := "us-east-1b"
 
 	service := NewEC2AutoscalingService(newFakeAutoscalingService(
 		newAutoscalingMock(asName1, lcName1, azName1, azName2),
