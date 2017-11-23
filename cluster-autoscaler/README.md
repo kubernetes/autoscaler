@@ -29,6 +29,12 @@ there is a big chance that it won't work as expected.
 
 # Notable changes
 
+CA version 1.0.3:
+* Adds support for safe-to-evict annotation on pod. Pods with this annotation
+  can be evicted even if they don't meet other requirements for it.
+* Fixes an issue when too many nodes with GPUs could be added during scale-up
+    (https://github.com/kubernetes/kubernetes/issues/54959).
+
 CA Version 1.0.2:
 * Fixes issues with scaling node groups using GPU from 0 to 1 on GKE (https://github.com/kubernetes/autoscaler/pull/401) and AWS (https://github.com/kubernetes/autoscaler/issues/321).
 * Fixes a bug where goroutines performing API calls were leaking when using dynamic config on AWS (https://github.com/kubernetes/autoscaler/issues/252).
@@ -106,3 +112,4 @@ Right now it is possible to run Cluster Autoscaler on:
 * GCE https://kubernetes.io/docs/concepts/cluster-administration/cluster-management/
 * GKE https://cloud.google.com/container-engine/docs/cluster-autoscaler
 * AWS https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md
+* Azure https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/azure/README.md
