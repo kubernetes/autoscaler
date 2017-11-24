@@ -59,7 +59,7 @@ spec:
         app: cluster-autoscaler
     spec:
       containers:
-      - image: feisky/cluster-autoscaler:dev
+      - image: gcr.io/google_containers/cluster-autoscaler:{{ ca_version }}
         name: cluster-autoscaler
         resources:
           limits:
@@ -144,7 +144,7 @@ spec:
       nodeSelector:
         kubernetes.io/role: master
       containers:
-      - image: feisky/cluster-autoscaler:dev
+      - image: gcr.io/google_containers/cluster-autoscaler:{{ ca_version }}
         name: cluster-autoscaler
         resources:
           limits:
