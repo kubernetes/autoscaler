@@ -27,7 +27,7 @@ import (
 const (
 	lookupWindow = time.Minute * 30
 	cacheWindow  = time.Hour * 24 * 3
-	cacheMaxAge  = time.Minute * 5
+	cacheMaxAge  = time.Second * 30
 )
 
 type instanceTypeInZone struct {

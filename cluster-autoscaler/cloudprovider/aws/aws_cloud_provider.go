@@ -34,7 +34,7 @@ import (
 type awsCloudProvider struct {
 	awsManager      *AwsManager
 	asgs            []*Asg
-	priceDescriptor price.ShapeDescriptor
+	priceModel      cloudprovider.PricingModel
 	resourceLimiter *cloudprovider.ResourceLimiter
 }
 
@@ -84,7 +84,7 @@ func buildAutoDiscoveringProvider(awsManager *AwsManager, spec string, resourceL
 		awsManager:      awsManager,
 		asgs:            make([]*Asg, 0),
 		resourceLimiter: resourceLimiter,
-		priceDescriptor: descriptor,
+		priceModel:      NewPriceModel(awsManager.asgs, descriptor),
 	}
 	for _, asg := range asgs {
 		aws.addAsg(buildAsg(aws.awsManager, int(*asg.MinSize), int(*asg.MaxSize), *asg.AutoScalingGroupName))
@@ -97,7 +97,7 @@ func buildStaticallyDiscoveringProvider(awsManager *AwsManager, specs []string, 
 		awsManager:      awsManager,
 		asgs:            make([]*Asg, 0),
 		resourceLimiter: resourceLimiter,
-		priceDescriptor: descriptor,
+		priceModel:      NewPriceModel(awsManager.asgs, descriptor),
 	}
 	for _, spec := range specs {
 		if err := aws.addNodeGroup(spec); err != nil {
@@ -157,7 +157,7 @@ func (aws *awsCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.N
 // Pricing returns pricing model for this cloud provider or error if not available.
 func (aws *awsCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
 	// aws.awsManager.asgs.FindForInstance()
-	return &priceModel{}, nil
+	return aws.priceModel, nil
 }
 
 // GetAvailableMachineTypes get all machine types that can be requested from the cloud provider.
