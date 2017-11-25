@@ -26,6 +26,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/golang/glog"
 )
 
 const (
@@ -71,6 +73,7 @@ type instanceInfoService struct {
 func (s *instanceInfoService) DescribeInstanceInfo(instanceType string, availabilityZone string) (*InstanceInfo, error) {
 	if s.shouldSync(availabilityZone) {
 		if err := s.sync(availabilityZone); err != nil {
+			// TODO <mrcrgl> may this be tolerated for resilience
 			return nil, fmt.Errorf("failed to sync aws product and price information: %v", err)
 		}
 	}
@@ -98,6 +101,8 @@ func (s *instanceInfoService) sync(availabilityZone string) error {
 	s.Lock()
 	defer s.Unlock()
 
+	start := time.Now()
+
 	bucket, found := s.cache[availabilityZone]
 	if !found {
 		bucket = new(regionalInstanceInfoBucket)
@@ -108,6 +113,10 @@ func (s *instanceInfoService) sync(availabilityZone string) error {
 	if err != nil {
 		return err
 	}
+
+	defer func() {
+		glog.V(4).Infof("Synchronized aws ec2 instance information for availability zone %s - took %s", availabilityZone, time.Now().Sub(start).String())
+	}()
 
 	if response == nil {
 		bucket.SetLastSync()
