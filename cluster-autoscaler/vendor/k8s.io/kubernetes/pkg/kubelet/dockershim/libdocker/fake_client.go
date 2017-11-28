@@ -83,6 +83,9 @@ const (
 	fakeDockerVersion = "1.11.2"
 
 	fakeImageSize = 1024
+
+	// Docker prepends '/' to the container name.
+	dockerNamePrefix = "/"
 )
 
 func NewFakeDockerClient() *FakeDockerClient {
@@ -289,11 +292,7 @@ func (f *FakeDockerClient) AssertCallDetails(calls ...calledDetail) (err error) 
 func (f *FakeDockerClient) idsToNames(ids []string) ([]string, error) {
 	names := []string{}
 	for _, id := range ids {
-		dockerName, _, err := ParseDockerName(f.ContainerMap[id].Name)
-		if err != nil {
-			return nil, fmt.Errorf("unexpected error: %v", err)
-		}
-		names = append(names, dockerName.ContainerName)
+		names = append(names, strings.TrimPrefix(f.ContainerMap[id].Name, dockerNamePrefix))
 	}
 	return names, nil
 }
@@ -373,9 +372,8 @@ func (f *FakeDockerClient) popError(op string) error {
 	if ok {
 		delete(f.Errors, op)
 		return err
-	} else {
-		return nil
 	}
+	return nil
 }
 
 // ListContainers is a test-spy implementation of Interface.ListContainers.
@@ -462,6 +460,23 @@ func (f *FakeDockerClient) InspectContainer(id string) (*dockertypes.ContainerJS
 	return nil, fmt.Errorf("container %q not found", id)
 }
 
+// InspectContainerWithSize is a test-spy implementation of Interface.InspectContainerWithSize.
+// It adds an entry "inspect" to the internal method call record.
+func (f *FakeDockerClient) InspectContainerWithSize(id string) (*dockertypes.ContainerJSON, error) {
+	f.Lock()
+	defer f.Unlock()
+	f.appendCalled(calledDetail{name: "inspect_container_withsize"})
+	err := f.popError("inspect_container_withsize")
+	if container, ok := f.ContainerMap[id]; ok {
+		return container, err
+	}
+	if err != nil {
+		// Use the custom error if it exists.
+		return nil, err
+	}
+	return nil, fmt.Errorf("container %q not found", id)
+}
+
 // InspectImageByRef is a test-spy implementation of Interface.InspectImageByRef.
 // It adds an entry "inspect" to the internal method call record.
 func (f *FakeDockerClient) InspectImageByRef(name string) (*dockertypes.ImageInspect, error) {
@@ -523,8 +538,7 @@ func (f *FakeDockerClient) CreateContainer(c dockertypes.ContainerCreateConfig) 
 		return nil, err
 	}
 	// This is not a very good fake. We'll just add this container's name to the list.
-	// Docker likes to add a '/', so copy that behavior.
-	name := "/" + c.Name
+	name := dockerNamePrefix + c.Name
 	id := GetFakeContainerID(name)
 	f.appendContainerTrace("Created", id)
 	timestamp := f.Clock.Now()
@@ -853,4 +867,11 @@ func (f *FakeDockerPuller) GetImageRef(image string) (string, error) {
 		return "", nil
 	}
 	return image, err
+}
+
+func (f *FakeDockerClient) GetContainerStats(id string) (*dockertypes.StatsJSON, error) {
+	f.Lock()
+	defer f.Unlock()
+	f.appendCalled(calledDetail{name: "getContainerStats"})
+	return nil, fmt.Errorf("not implemented")
 }
