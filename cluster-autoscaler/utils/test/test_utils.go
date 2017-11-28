@@ -28,8 +28,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/kubernetes/scheme"
 	refv1 "k8s.io/client-go/tools/reference"
-	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/testapi"
 
 	"github.com/stretchr/testify/mock"
@@ -125,7 +125,7 @@ func SetNodeReadyState(node *apiv1.Node, ready bool, lastTransition time.Time) {
 
 // RefJSON builds string reference to
 func RefJSON(o runtime.Object) string {
-	ref, err := refv1.GetReference(api.Scheme, o)
+	ref, err := refv1.GetReference(scheme.Scheme, o)
 	if err != nil {
 		panic(err)
 	}
