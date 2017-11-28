@@ -18,7 +18,6 @@ package gpu
 
 import (
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/kubernetes/pkg/api"
 
 	"github.com/golang/glog"
 )
@@ -73,11 +72,7 @@ func FilterOutNodesWithUnreadyGpus(allNodes, readyNodes []*apiv1.Node) ([]*apiv1
 }
 
 func getUnreadyNodeCopy(node *apiv1.Node) (*apiv1.Node, error) {
-	nodeCopy, err := api.Scheme.DeepCopy(node)
-	if err != nil {
-		return nil, err
-	}
-	newNode := nodeCopy.(*apiv1.Node)
+	newNode := node.DeepCopy()
 	newReadyCondition := apiv1.NodeCondition{
 		Type:               apiv1.NodeReady,
 		Status:             apiv1.ConditionFalse,
