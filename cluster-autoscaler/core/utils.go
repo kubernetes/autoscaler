@@ -37,9 +37,8 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	extensionsv1 "k8s.io/api/extensions/v1beta1"
+	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	kube_client "k8s.io/client-go/kubernetes"
-	api "k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/helper"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 
@@ -74,7 +73,7 @@ type podSchedulableInfo struct {
 type podSchedulableMap map[string][]podSchedulableInfo
 
 func (psi *podSchedulableInfo) match(pod *apiv1.Pod) bool {
-	return reflect.DeepEqual(pod.Labels, psi.labels) && helper.Semantic.DeepEqual(pod.Spec, psi.spec)
+	return reflect.DeepEqual(pod.Labels, psi.labels) && apiequality.Semantic.DeepEqual(pod.Spec, psi.spec)
 }
 
 func (podMap podSchedulableMap) get(pod *apiv1.Pod) (bool, bool) {
@@ -273,11 +272,7 @@ func sanitizeNodeInfo(nodeInfo *schedulercache.NodeInfo, nodeGroupName string) (
 	// Update nodename in pods.
 	sanitizedPods := make([]*apiv1.Pod, 0)
 	for _, pod := range nodeInfo.Pods() {
-		obj, err := api.Scheme.DeepCopy(pod)
-		if err != nil {
-			return nil, errors.ToAutoscalerError(errors.InternalError, err)
-		}
-		sanitizedPod := obj.(*apiv1.Pod)
+		sanitizedPod := pod.DeepCopy()
 		sanitizedPod.Spec.NodeName = sanitizedNode.Name
 		sanitizedPods = append(sanitizedPods, sanitizedPod)
 	}
@@ -291,12 +286,8 @@ func sanitizeNodeInfo(nodeInfo *schedulercache.NodeInfo, nodeGroupName string) (
 }
 
 func sanitizeTemplateNode(node *apiv1.Node, nodeGroup string) (*apiv1.Node, errors.AutoscalerError) {
-	obj, err := api.Scheme.DeepCopy(node)
-	if err != nil {
-		return nil, errors.ToAutoscalerError(errors.InternalError, err)
-	}
+	newNode := node.DeepCopy()
 	nodeName := fmt.Sprintf("template-node-for-%s-%d", nodeGroup, rand.Int63())
-	newNode := obj.(*apiv1.Node)
 	newNode.Labels = make(map[string]string, len(node.Labels))
 	for k, v := range node.Labels {
 		if k != kubeletapis.LabelHostname {
