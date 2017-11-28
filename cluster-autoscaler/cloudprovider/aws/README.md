@@ -158,7 +158,7 @@ spec:
 
 To run a CA pod in master node - CA deployment should tolerate the master `taint` and `nodeSelector` should be used to schedule the pods in master node.
 
-```
+```yaml
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -282,7 +282,7 @@ If you are using `nodeSelector` you need to tag the ASG with a node-template key
 
 For example for a node label of `foo=bar` you would tag the ASG with:
 
-```
+```json
 {
     "ResourceType": "auto-scaling-group",
     "ResourceId": "foo.example.com",
@@ -294,7 +294,7 @@ For example for a node label of `foo=bar` you would tag the ASG with:
 
 And for a taint of `"dedicated": "foo:NoSchedule"` you would tag the ASG with:
 
-```
+```json
 {
     "ResourceType": "auto-scaling-group",
     "ResourceId": "foo.example.com",
