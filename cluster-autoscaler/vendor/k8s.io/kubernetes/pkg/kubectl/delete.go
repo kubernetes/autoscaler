@@ -28,9 +28,9 @@ import (
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/uuid"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/apis/apps"
 	"k8s.io/kubernetes/pkg/apis/batch"
+	api "k8s.io/kubernetes/pkg/apis/core"
 	"k8s.io/kubernetes/pkg/apis/extensions"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
 	appsclient "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/apps/internalversion"
@@ -72,7 +72,7 @@ func ReaperFor(kind schema.GroupKind, c internalclientset.Interface) (Reaper, er
 	case api.Kind("ReplicationController"):
 		return &ReplicationControllerReaper{c.Core(), Interval, Timeout}, nil
 
-	case extensions.Kind("ReplicaSet"):
+	case extensions.Kind("ReplicaSet"), apps.Kind("ReplicaSet"):
 		return &ReplicaSetReaper{c.Extensions(), Interval, Timeout}, nil
 
 	case extensions.Kind("DaemonSet"), apps.Kind("DaemonSet"):

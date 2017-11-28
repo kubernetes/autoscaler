@@ -22,3 +22,9 @@ for item in $with_vendor; do
     rm -rf $item
     git commit -a -m no_vendor
 done
+
+echo Overriding GKE API
+cp $GOPATH/src/k8s.io/autoscaler/cluster-autoscaler/_override/google.golang.org/api/container/v1alpha1/*  $GOPATH/src/google.golang.org/api/container/v1alpha1
+cp $GOPATH/src/k8s.io/autoscaler/cluster-autoscaler/_override/google.golang.org/api/container/v1beta1/*  $GOPATH/src/google.golang.org/api/container/v1beta1
+cd $GOPATH/src/google.golang.org/api/
+git commit -a -m "Api override for NAP"

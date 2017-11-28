@@ -7,7 +7,7 @@
 //   import "google.golang.org/api/container/v1alpha1"
 //   ...
 //   containerService, err := container.New(oauthHttpClient)
-package container // import "google.golang.org/api/container/v1alpha1"
+package container
 
 import (
 	"bytes"
