@@ -86,6 +86,8 @@ func NewPredicateChecker(kubeClient kube_client.Interface, stop <-chan struct{})
 		informerFactory.Extensions().V1beta1().ReplicaSets(),
 		informerFactory.Apps().V1beta1().StatefulSets(),
 		informerFactory.Core().V1().Services(),
+		informerFactory.Policy().V1beta1().PodDisruptionBudgets(),
+		informerFactory.Storage().V1().StorageClasses(),
 		apiv1.DefaultHardPodAffinitySymmetricWeight,
 		false,
 	)
