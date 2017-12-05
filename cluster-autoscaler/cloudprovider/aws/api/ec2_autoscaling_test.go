@@ -116,29 +116,15 @@ type fakeAutoscalingService struct {
 func (lcs *fakeAutoscalingService) DescribeAutoScalingGroups(input *autoscaling.DescribeAutoScalingGroupsInput) (output *autoscaling.DescribeAutoScalingGroupsOutput, err error) {
 	output = new(autoscaling.DescribeAutoScalingGroupsOutput)
 
-	if len(lcs.tokens) != 0 {
-		if input.NextToken == nil {
-			output.NextToken = &lcs.tokens[0]
-			return
-		}
-
-		for i, token := range lcs.tokens {
-			if *input.NextToken == token {
-				next := i + 1
-				if next < len(lcs.tokens) {
-					nextToken := lcs.tokens[next]
-					output.NextToken = &nextToken
-				} else {
-					goto respond
-				}
-				return
-			}
-		}
-
-		return nil, errors.New("invalid token")
+	output.NextToken, err = nextToken(lcs.tokens, input.NextToken)
+	if err != nil {
+		return
 	}
 
-respond:
+	if output.NextToken != nil {
+		return
+	}
+
 	output.AutoScalingGroups = make([]*autoscaling.Group, 0)
 	for _, name := range input.AutoScalingGroupNames {
 		if item, found := lcs.mocks[*name]; found {
@@ -147,4 +133,27 @@ respond:
 	}
 
 	return
+}
+
+func nextToken(tokenChain []string, userToken *string) (*string, error) {
+	tokenChainLen := len(tokenChain)
+	if tokenChainLen == 0 {
+		return nil, nil
+	}
+
+	if userToken == nil {
+		return &tokenChain[0], nil
+	}
+
+	for i, token := range tokenChain {
+		if *userToken == token {
+			next := i + 1
+			if next < tokenChainLen {
+				return &tokenChain[next], nil
+			}
+			return nil, nil
+		}
+	}
+
+	return nil, errors.New("invalid token")
 }
