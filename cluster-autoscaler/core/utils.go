@@ -18,7 +18,6 @@ package core
 
 import (
 	"fmt"
-	"math"
 	"math/rand"
 	"reflect"
 	"time"
@@ -458,12 +457,6 @@ func ConfigurePredicateCheckerForLoop(unschedulablePods []*apiv1.Pod, schedulabl
 	}
 }
 
-// Getting node cores/memory
-const (
-	// Megabyte is 2^20 bytes.
-	Megabyte float64 = 1024 * 1024
-)
-
 func getNodeCoresAndMemory(node *apiv1.Node) (int64, int64, error) {
 	cores, err := getNodeResource(node, apiv1.ResourceCPU)
 	if err != nil {
@@ -479,8 +472,7 @@ func getNodeCoresAndMemory(node *apiv1.Node) (int64, int64, error) {
 		return 0, 0, fmt.Errorf("Invalid node CPU/memory values - cpu %v, memory %v", cores, memory)
 	}
 
-	memoryMb := math.Ceil(float64(memory) / Megabyte)
-	return cores, int64(memoryMb), nil
+	return cores, memory, nil
 }
 
 func getNodeResource(node *apiv1.Node, resource apiv1.ResourceName) (int64, error) {

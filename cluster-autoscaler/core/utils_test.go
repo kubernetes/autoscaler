@@ -555,7 +555,7 @@ func TestGetNodeCoresAndMemory(t *testing.T) {
 	cores, memory, err := getNodeCoresAndMemory(node)
 	assert.NoError(t, err)
 	assert.Equal(t, int64(2), cores)
-	assert.Equal(t, int64(2048), memory)
+	assert.Equal(t, int64(2048*MB), memory)
 
 	node.Status.Capacity = apiv1.ResourceList{}
 
