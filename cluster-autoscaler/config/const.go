@@ -17,8 +17,15 @@ limitations under the License.
 package config
 
 const (
+	// Defaults.
+
 	// DefaultMaxClusterCores is the default maximum number of cores in the cluster.
 	DefaultMaxClusterCores = 5000 * 64
 	// DefaultMaxClusterMemory is the default maximum number of gigabytes of memory in cluster.
 	DefaultMaxClusterMemory = 5000 * 64 * 20
+
+	// Useful universal constants.
+
+	// Gigabyte is 2^30 bytes.
+	Gigabyte = 1024 * 1024 * 1024
 )
