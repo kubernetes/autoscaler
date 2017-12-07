@@ -32,6 +32,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	scheduler_util "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 
@@ -455,6 +456,7 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 	if err != nil {
 		return ScaleDownError, err.AddPrefix("failed to obtain nodes resources: ")
 	}
+	gpusTotal := calculateGpusTotal(nodesWithoutMaster, sd.context.CloudProvider, currentTime)
 
 	nodeGroupSize := getNodeGroupSizeMap(sd.context.CloudProvider)
 	for _, node := range nodesWithoutMaster {
@@ -511,6 +513,16 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 			exceededResource := scaleDownResourcesLeft.checkDeltaWithinLimits(scaleDownResourcesDelta)
 			if exceededResource != nil {
 				glog.V(4).Infof("Skipping %s - not enough %s limit left", node.Name, exceededResource)
+			}
+
+			gpuType, gpuCount, errGpu := gpu.GetNodeTargetGpus(node, nodeGroup)
+			if errGpu != nil {
+				glog.Errorf("Failed to get node %v gpu: %v", node.Name, errGpu)
+				continue
+			}
+			if gpuCount > 0 && gpuCount > gpusTotal[gpuType]-resourceLimiter.GetMin(gpuType) {
+				glog.V(4).Infof("Skipping %s - not enough gpu %v limit left", node.Name, gpuType)
+				continue
 			}
 
 			candidates = append(candidates, node)
@@ -951,6 +963,52 @@ func calculateCoresAndMemoryTotal(nodes []*apiv1.Node, timestamp time.Time) (int
 	}
 
 	return coresTotal, memoryTotal
+}
+
+func calculateGpusTotal(nodes []*apiv1.Node, cp cloudprovider.CloudProvider, timestamp time.Time) map[string]int64 {
+	type gpuInfo struct {
+		name  string
+		count int64
+	}
+
+	result := make(map[string]int64)
+	ngCache := make(map[string]gpuInfo)
+	for _, node := range nodes {
+		deleteTime, _ := deletetaint.GetToBeDeletedTime(node)
+		if deleteTime != nil && (timestamp.Sub(*deleteTime) < MaxCloudProviderNodeDeletionTime || timestamp.Sub(*deleteTime) < MaxKubernetesEmptyNodeDeletionTime) {
+			// Nodes being deleted do not count towards total cluster resources
+			continue
+		}
+		nodeGroup, err := cp.NodeGroupForNode(node)
+		if err != nil {
+			glog.Errorf("Error while getting node group for node %v when calculating cluster gpu usage", node.Name)
+			continue
+		}
+		if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
+			continue
+		}
+
+		ngId := nodeGroup.Id()
+		var gpuType string
+		var gpuCount int64
+		if cached, found := ngCache[ngId]; found {
+			gpuType = cached.name
+			gpuCount = cached.count
+		} else {
+			gpuType, gpuCount, err = gpu.GetNodeTargetGpus(node, nodeGroup)
+			if err != nil {
+				glog.Errorf("Error while getting gpu count for node %v when calculating cluster gpu usage", node.Name)
+				continue
+			}
+			ngCache[ngId] = gpuInfo{name: gpuType, count: gpuCount}
+		}
+		if gpuType == "" || gpuCount == 0 {
+			continue
+		}
+		result[gpuType] += gpuCount
+	}
+
+	return result
 }
 
 const (

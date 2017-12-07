@@ -112,6 +112,7 @@ var (
 	maxNodesTotal     = flag.Int("max-nodes-total", 0, "Maximum number of nodes in all node groups. Cluster autoscaler will not grow the cluster beyond this number.")
 	coresTotal        = flag.String("cores-total", minMaxFlagString(0, config.DefaultMaxClusterCores), "Minimum and maximum number of cores in cluster, in the format <min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers.")
 	memoryTotal       = flag.String("memory-total", minMaxFlagString(0, config.DefaultMaxClusterMemory), "Minimum and maximum number of gigabytes of memory in cluster, in the format <min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers.")
+	gpuTotal          = multiStringFlag("gpu-total", "Minimum and maximum number of different GPUs in cluster, in the format <gpu_type>:<min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers. Can be passed multiple times. CURRENTLY THIS FLAG ONLY WORKS ON GKE.")
 	cloudProviderFlag = flag.String("cloud-provider", cloudBuilder.DefaultCloudProvider,
 		"Cloud provider type. Available values: ["+strings.Join(cloudBuilder.AvailableCloudProviders, ",")+"]")
 	maxEmptyBulkDeleteFlag     = flag.Int("max-empty-bulk-delete", 10, "Maximum number of empty nodes that can be deleted at the same time.")
@@ -176,6 +177,7 @@ func createAutoscalingOptions() context.AutoscalingOptions {
 		MinCoresTotal:                    minCoresTotal,
 		MaxMemoryTotal:                   maxMemoryTotal,
 		MinMemoryTotal:                   minMemoryTotal,
+		GpuTotal:                         *gpuTotal,
 		NodeGroups:                       *nodeGroupsFlag,
 		ScaleDownDelayAfterAdd:           *scaleDownDelayAfterAdd,
 		ScaleDownDelayAfterDelete:        *scaleDownDelayAfterDelete,

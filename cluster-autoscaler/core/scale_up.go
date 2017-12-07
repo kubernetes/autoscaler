@@ -18,6 +18,7 @@ package core
 
 import (
 	"bytes"
+	"fmt"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -31,6 +32,7 @@ import (
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/glogx"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/nodegroupset"
 	"k8s.io/kubernetes/pkg/scheduler/schedulercache"
 
@@ -74,8 +76,17 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 			errors.CloudProviderError,
 			errCP)
 	}
-	// calculate current cores & gigabytes of memory
+
+	// calculate current resources
 	coresTotal, memoryTotal := calculateClusterCoresMemoryTotal(nodeGroups, nodeInfos)
+	gpusTotal, errGpu := calculateClusterGpusTotal(nodeGroups, nodeInfos)
+	if errGpu != nil {
+		glog.Errorf("Failed to calculate number of GPUs in cluster: %v", errGpu)
+		// TODO(maciekpytel): ignore this in normal CA operation (as we do with
+		// other limits), but block if using NAP? This sounds evil, but it's not
+		// safe to just let NAP go on GPU rampage.
+	}
+	glog.V(4).Infof("Currently used GPUs in cluster: %v", gpusTotal)
 
 	upcomingNodes := make([]*schedulercache.NodeInfo, 0)
 	for nodeGroup, numberOfNodes := range clusterStateRegistry.GetUpcomingNodes() {
@@ -140,6 +151,15 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 		if nodeMemory > (resourceLimiter.GetMax(cloudprovider.ResourceNameMemory) - memoryTotal) {
 			// skip this node group
 			glog.V(4).Infof("Skipping node group %s - not enough memory limit left", nodeGroup.Id())
+			continue
+		}
+		gpuType, gpuCount, errGpu := gpu.GetNodeTargetGpus(nodeInfo.Node(), nodeGroup)
+		if errGpu != nil {
+			glog.Errorf("Failed to get node gpu: %v", errGpu)
+		}
+		if gpuCount > (resourceLimiter.GetMax(gpuType) - gpusTotal[gpuType]) {
+			// skip this node group
+			glog.V(4).Infof("Skipping node group %s - not enough gpu %v limit left", nodeGroup.Id(), gpuType)
 			continue
 		}
 
@@ -247,8 +267,8 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 				"No node info for best expansion option!")
 		}
 
-		// apply upper limits for CPU and memory
-		newNodes, err = applyMaxClusterCoresMemoryLimits(newNodes, coresTotal, memoryTotal, resourceLimiter.GetMax(cloudprovider.ResourceNameCores), resourceLimiter.GetMax(cloudprovider.ResourceNameMemory), nodeInfo)
+		// apply upper limits for cluster resources (CPU, memory, GPU, ...)
+		newNodes, err = applyMaxClusterResourceLimits(newNodes, coresTotal, memoryTotal, gpusTotal, resourceLimiter, nodeInfo, bestOption.NodeGroup)
 		if err != nil {
 			return false, err
 		}
@@ -387,7 +407,47 @@ func calculateClusterCoresMemoryTotal(nodeGroups []cloudprovider.NodeGroup, node
 	return coresTotal, memoryTotal
 }
 
-func applyMaxClusterCoresMemoryLimits(newNodes int, coresTotal, memoryTotal, maxCoresTotal, maxMemoryTotal int64, nodeInfo *schedulercache.NodeInfo) (int, errors.AutoscalerError) {
+func calculateClusterGpusTotal(nodeGroups []cloudprovider.NodeGroup, nodeInfos map[string]*schedulercache.NodeInfo) (map[string]int64, error) {
+	result := make(map[string]int64)
+	errHappened := false
+	for _, nodeGroup := range nodeGroups {
+		currentSize, err := nodeGroup.TargetSize()
+		if err != nil {
+			glog.Errorf("Failed to get node group size of %v: %v", nodeGroup.Id(), err)
+			errHappened = true
+			continue
+		}
+		nodeInfo, found := nodeInfos[nodeGroup.Id()]
+		if !found {
+			glog.Errorf("No node info for: %s", nodeGroup.Id())
+			errHappened = true
+			continue
+		}
+		if currentSize > 0 {
+			gpuType, gpuCount, err := gpu.GetNodeTargetGpus(nodeInfo.Node(), nodeGroup)
+			if err != nil {
+				glog.Errorf("Failed to get target gpu for node group %v: %v", nodeGroup.Id(), err)
+				errHappened = true
+				continue
+			}
+			if gpuType == "" {
+				continue
+			}
+			result[gpuType] += gpuCount * int64(currentSize)
+		}
+	}
+	var finalErr error
+	if errHappened {
+		finalErr = fmt.Errorf("Error happened while calculating current number of gpus in cluster")
+	}
+	return result, finalErr
+}
+
+func applyMaxClusterResourceLimits(newNodes int, coresTotal, memoryTotal int64, gpusTotal map[string]int64, limits *cloudprovider.ResourceLimiter,
+	nodeInfo *schedulercache.NodeInfo, nodeGroup cloudprovider.NodeGroup) (int, errors.AutoscalerError) {
+
+	maxCoresTotal := limits.GetMax(cloudprovider.ResourceNameCores)
+	maxMemoryTotal := limits.GetMax(cloudprovider.ResourceNameMemory)
 	newNodeCPU, newNodeMemory, err := getNodeInfoCoresAndMemory(nodeInfo)
 	if err != nil {
 		// This is not very elegant, but it allows us to proceed even if we're
@@ -416,6 +476,27 @@ func applyMaxClusterCoresMemoryLimits(newNodes int, coresTotal, memoryTotal, max
 				errors.TransientError,
 				"max memory already reached")
 		}
+	}
+
+	gpuType, gpuCount, err := gpu.GetNodeTargetGpus(nodeInfo.Node(), nodeGroup)
+	if err != nil {
+		// This is not very elegant, but it allows us to proceed even if we're
+		// unable to compute cpu/memory limits (not breaking current functionality)
+		glog.Errorf("Failed to get node gpus: %v", err)
+		return newNodes, nil
+	}
+	maxGpusTotal := limits.GetMax(gpuType)
+	if gpusTotal[gpuType]+gpuCount*int64(newNodes) > maxGpusTotal {
+		glog.V(1).Infof("Capping size to max cluster gpu %v allowed (%d)", gpuType, maxGpusTotal)
+		newNodes = int((maxGpusTotal - gpusTotal[gpuType]) / gpuCount)
+		if newNodes < 1 {
+			// This should never happen, as we already check that
+			// at least one node will fit when considering nodegroup
+			return 0, errors.NewAutoscalerError(
+				errors.TransientError,
+				"max gpus already reached")
+		}
+
 	}
 	return newNodes, nil
 }

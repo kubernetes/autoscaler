@@ -26,6 +26,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/expander/factory"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	kube_client "k8s.io/client-go/kubernetes"
 	kube_record "k8s.io/client-go/tools/record"
@@ -73,6 +74,8 @@ type AutoscalingOptions struct {
 	MaxMemoryTotal int64
 	// MinMemoryTotal sets the maximum memory (in megabytes) in the whole cluster
 	MinMemoryTotal int64
+	// GpuTotal is a list of strings with configuration of min/max limits for differend GPUs.
+	GpuTotal []string
 	// NodeGroupAutoDiscovery represents one or more definition(s) of node group auto-discovery
 	NodeGroupAutoDiscovery []string
 	// EstimatorName is the estimator used to estimate the number of needed nodes in scale up.
@@ -139,13 +142,20 @@ func NewAutoscalingContext(options AutoscalingOptions, predicateChecker *simulat
 	kubeClient kube_client.Interface, kubeEventRecorder kube_record.EventRecorder,
 	logEventRecorder *utils.LogEventRecorder, listerRegistry kube_util.ListerRegistry) (*AutoscalingContext, errors.AutoscalerError) {
 
+	minResources, maxResources, gpuErr := gpu.ParseGpuLimits(options.GpuTotal)
+	if gpuErr != nil {
+		return nil, errors.ToAutoscalerError(errors.InternalError, gpuErr)
+	}
+	minResources[cloudprovider.ResourceNameCores] = options.MinCoresTotal
+	minResources[cloudprovider.ResourceNameMemory] = options.MinMemoryTotal
+	maxResources[cloudprovider.ResourceNameCores] = options.MaxCoresTotal
+	maxResources[cloudprovider.ResourceNameMemory] = options.MaxMemoryTotal
+
 	cloudProviderBuilder := builder.NewCloudProviderBuilder(options.CloudProviderName, options.CloudConfig, options.ClusterName, options.NodeAutoprovisioningEnabled, options.Regional)
 	cloudProvider := cloudProviderBuilder.Build(cloudprovider.NodeGroupDiscoveryOptions{
 		NodeGroupSpecs:              options.NodeGroups,
 		NodeGroupAutoDiscoverySpecs: options.NodeGroupAutoDiscovery},
-		cloudprovider.NewResourceLimiter(
-			map[string]int64{cloudprovider.ResourceNameCores: int64(options.MinCoresTotal), cloudprovider.ResourceNameMemory: options.MinMemoryTotal},
-			map[string]int64{cloudprovider.ResourceNameCores: options.MaxCoresTotal, cloudprovider.ResourceNameMemory: options.MaxMemoryTotal}))
+		cloudprovider.NewResourceLimiter(minResources, maxResources))
 	expanderStrategy, err := factory.ExpanderStrategyFromString(options.ExpanderName,
 		cloudProvider, listerRegistry.AllNodeLister())
 	if err != nil {
