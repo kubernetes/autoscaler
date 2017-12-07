@@ -51,6 +51,16 @@ type AutoscalingContext struct {
 	LogRecorder *utils.LogEventRecorder
 }
 
+// GpuLimits define lower and upper bound on GPU instances of given type in cluster
+type GpuLimits struct {
+	// Type of the GPU (e.g. nvidia-tesla-k80)
+	GpuType string
+	// Lower bound on number of GPUs of given type in cluster
+	Min int64
+	// Upper bound on number of GPUs of given type in cluster
+	Max int64
+}
+
 // AutoscalingOptions contain various options to customize how autoscaling works
 type AutoscalingOptions struct {
 	// MaxEmptyBulkDelete is a number of empty nodes that can be removed at the same time.
@@ -73,6 +83,8 @@ type AutoscalingOptions struct {
 	MaxMemoryTotal int64
 	// MinMemoryTotal sets the maximum memory (in megabytes) in the whole cluster
 	MinMemoryTotal int64
+	// GpuTotal is a list of strings with configuration of min/max limits for different GPUs.
+	GpuTotal []GpuLimits
 	// NodeGroupAutoDiscovery represents one or more definition(s) of node group auto-discovery
 	NodeGroupAutoDiscovery []string
 	// EstimatorName is the estimator used to estimate the number of needed nodes in scale up.
@@ -134,6 +146,25 @@ type AutoscalingOptions struct {
 	Regional bool
 }
 
+// NewResourceLimiterFromAutoscalingOptions creates new instance of cloudprovider.ResourceLimiter
+// reading limits from AutoscalingOptions struct.
+func NewResourceLimiterFromAutoscalingOptions(options AutoscalingOptions) *cloudprovider.ResourceLimiter {
+	// build min/max maps for resources limits
+	minResources := make(map[string]int64)
+	maxResources := make(map[string]int64)
+
+	minResources[cloudprovider.ResourceNameCores] = options.MinCoresTotal
+	minResources[cloudprovider.ResourceNameMemory] = options.MinMemoryTotal
+	maxResources[cloudprovider.ResourceNameCores] = options.MaxCoresTotal
+	maxResources[cloudprovider.ResourceNameMemory] = options.MaxMemoryTotal
+
+	for _, gpuLimits := range options.GpuTotal {
+		minResources[gpuLimits.GpuType] = gpuLimits.Min
+		maxResources[gpuLimits.GpuType] = gpuLimits.Max
+	}
+	return cloudprovider.NewResourceLimiter(minResources, maxResources)
+}
+
 // NewAutoscalingContext returns an autoscaling context from all the necessary parameters passed via arguments
 func NewAutoscalingContext(options AutoscalingOptions, predicateChecker *simulator.PredicateChecker,
 	kubeClient kube_client.Interface, kubeEventRecorder kube_record.EventRecorder,
@@ -143,9 +174,7 @@ func NewAutoscalingContext(options AutoscalingOptions, predicateChecker *simulat
 	cloudProvider := cloudProviderBuilder.Build(cloudprovider.NodeGroupDiscoveryOptions{
 		NodeGroupSpecs:              options.NodeGroups,
 		NodeGroupAutoDiscoverySpecs: options.NodeGroupAutoDiscovery},
-		cloudprovider.NewResourceLimiter(
-			map[string]int64{cloudprovider.ResourceNameCores: int64(options.MinCoresTotal), cloudprovider.ResourceNameMemory: options.MinMemoryTotal},
-			map[string]int64{cloudprovider.ResourceNameCores: options.MaxCoresTotal, cloudprovider.ResourceNameMemory: options.MaxMemoryTotal}))
+		NewResourceLimiterFromAutoscalingOptions(options))
 	expanderStrategy, err := factory.ExpanderStrategyFromString(options.ExpanderName,
 		cloudProvider, listerRegistry.AllNodeLister())
 	if err != nil {

@@ -32,6 +32,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	scheduler_util "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 
@@ -106,11 +107,22 @@ type resourceName string
 type scaleDownResourcesLimits map[resourceName]int64
 type scaleDownResourcesDelta map[resourceName]int64
 
-func computeScaleDownResourcesLeftLimits(nodes []*apiv1.Node, resourceLimiter *cloudprovider.ResourceLimiter, timestamp time.Time) (scaleDownResourcesLimits, errors.AutoscalerError) {
+func computeScaleDownResourcesLeftLimits(nodes []*apiv1.Node, cp cloudprovider.CloudProvider, timestamp time.Time) (scaleDownResourcesLimits, errors.AutoscalerError) {
+	resourceLimiter, err := cp.GetResourceLimiter()
+	if err != nil {
+		return scaleDownResourcesLimits{}, errors.ToAutoscalerError(
+			errors.CloudProviderError,
+			err)
+	}
+
 	totals := make(map[resourceName]int64)
 	totals[cloudprovider.ResourceNameCores], totals[cloudprovider.ResourceNameMemory] = calculateCoresAndMemoryTotal(nodes, timestamp)
-	resultScaleDownLimits := make(scaleDownResourcesLimits)
 
+	for gpuName, gpuCount := range calculateGpusTotal(nodes, cp, timestamp) {
+		totals[resourceName(gpuName)] = gpuCount
+	}
+
+	resultScaleDownLimits := make(scaleDownResourcesLimits)
 	for _, resource := range resourceLimiter.GetResources() {
 		total := totals[resourceName(resource)]
 		min := resourceLimiter.GetMin(resource)
@@ -134,15 +146,21 @@ func copyScaleDownResourcesLimits(source scaleDownResourcesLimits) scaleDownReso
 	}
 	return copy
 }
-func computeScaleDownResourcesDelta(node *apiv1.Node) (scaleDownResourcesDelta, errors.AutoscalerError) {
+func computeScaleDownResourcesDelta(node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) (scaleDownResourcesDelta, errors.AutoscalerError) {
 	nodeCPU, nodeMemory, err := getNodeCoresAndMemory(node)
 	if err != nil {
 		return scaleDownResourcesDelta{}, errors.ToAutoscalerError(errors.ApiCallError, err)
 	}
 
+	gpuType, gpuCount, err := gpu.GetNodeTargetGpus(node, nodeGroup)
+	if err != nil {
+		return scaleDownResourcesDelta{}, errors.ToAutoscalerError(errors.ApiCallError, err).AddPrefix("Failed to get node %v gpu: %v", node.Name)
+	}
+
 	return scaleDownResourcesDelta{
 		cloudprovider.ResourceNameCores:  nodeCPU,
 		cloudprovider.ResourceNameMemory: nodeMemory,
+		resourceName(gpuType):            gpuCount,
 	}, nil
 }
 
@@ -444,14 +462,7 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 	candidates := make([]*apiv1.Node, 0)
 	readinessMap := make(map[string]bool)
 
-	resourceLimiter, errCP := sd.context.CloudProvider.GetResourceLimiter()
-	if errCP != nil {
-		return ScaleDownError, errors.ToAutoscalerError(
-			errors.CloudProviderError,
-			errCP)
-	}
-
-	scaleDownResourcesLeft, err := computeScaleDownResourcesLeftLimits(nodesWithoutMaster, resourceLimiter, currentTime)
+	scaleDownResourcesLeft, err := computeScaleDownResourcesLeftLimits(nodesWithoutMaster, sd.context.CloudProvider, currentTime)
 	if err != nil {
 		return ScaleDownError, err.AddPrefix("failed to obtain nodes resources: ")
 	}
@@ -502,7 +513,7 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 				continue
 			}
 
-			scaleDownResourcesDelta, err := computeScaleDownResourcesDelta(node)
+			scaleDownResourcesDelta, err := computeScaleDownResourcesDelta(node, nodeGroup)
 			if err != nil {
 				glog.Errorf("Error getting node resources: %v", err)
 				continue
@@ -639,7 +650,7 @@ func getEmptyNodes(candidates []*apiv1.Node, pods []*apiv1.Pod, maxEmptyBulkDele
 			availabilityMap[nodeGroup.Id()] = available
 		}
 		if available > 0 {
-			resourcesDelta, err := computeScaleDownResourcesDelta(node)
+			resourcesDelta, err := computeScaleDownResourcesDelta(node, nodeGroup)
 			if err != nil {
 				glog.Errorf("Error: %v", err)
 				continue
@@ -951,6 +962,52 @@ func calculateCoresAndMemoryTotal(nodes []*apiv1.Node, timestamp time.Time) (int
 	}
 
 	return coresTotal, memoryTotal
+}
+
+func calculateGpusTotal(nodes []*apiv1.Node, cp cloudprovider.CloudProvider, timestamp time.Time) map[string]int64 {
+	type gpuInfo struct {
+		name  string
+		count int64
+	}
+
+	result := make(map[string]int64)
+	ngCache := make(map[string]gpuInfo)
+	for _, node := range nodes {
+		deleteTime, _ := deletetaint.GetToBeDeletedTime(node)
+		if deleteTime != nil && (timestamp.Sub(*deleteTime) < MaxCloudProviderNodeDeletionTime || timestamp.Sub(*deleteTime) < MaxKubernetesEmptyNodeDeletionTime) {
+			// Nodes being deleted do not count towards total cluster resources
+			continue
+		}
+		nodeGroup, err := cp.NodeGroupForNode(node)
+		if err != nil {
+			glog.Errorf("Error while getting node group for node %v when calculating cluster gpu usage", node.Name)
+			continue
+		}
+		if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
+			continue
+		}
+
+		ngId := nodeGroup.Id()
+		var gpuType string
+		var gpuCount int64
+		if cached, found := ngCache[ngId]; found {
+			gpuType = cached.name
+			gpuCount = cached.count
+		} else {
+			gpuType, gpuCount, err = gpu.GetNodeTargetGpus(node, nodeGroup)
+			if err != nil {
+				glog.Errorf("Error while getting gpu count for node %v when calculating cluster gpu usage", node.Name)
+				continue
+			}
+			ngCache[ngId] = gpuInfo{name: gpuType, count: gpuCount}
+		}
+		if gpuType == "" || gpuCount == 0 {
+			continue
+		}
+		result[gpuType] += gpuCount
+	}
+
+	return result
 }
 
 const (
