@@ -137,7 +137,8 @@ func FindEmptyNodesToRemove(candidates []*apiv1.Node, pods []*apiv1.Pod) []*apiv
 	return result
 }
 
-// CalculateUtilization calculates utilization of a node, defined as total amount of requested resources divided by capacity.
+// CalculateUtilization calculates utilization of a node, defined as maximum of (cpu, memory) utilization.
+// Per resource utilization is the sum of requests for it divided by allocatable.
 func CalculateUtilization(node *apiv1.Node, nodeInfo *schedulercache.NodeInfo) (float64, error) {
 	cpu, err := calculateUtilizationOfResource(node, nodeInfo, apiv1.ResourceCPU)
 	if err != nil {
@@ -151,11 +152,11 @@ func CalculateUtilization(node *apiv1.Node, nodeInfo *schedulercache.NodeInfo) (
 }
 
 func calculateUtilizationOfResource(node *apiv1.Node, nodeInfo *schedulercache.NodeInfo, resourceName apiv1.ResourceName) (float64, error) {
-	nodeCapacity, found := node.Status.Capacity[resourceName]
+	nodeAllocatable, found := node.Status.Allocatable[resourceName]
 	if !found {
 		return 0, fmt.Errorf("Failed to get %v from %s", resourceName, node.Name)
 	}
-	if nodeCapacity.MilliValue() == 0 {
+	if nodeAllocatable.MilliValue() == 0 {
 		return 0, fmt.Errorf("%v is 0 at %s", resourceName, node.Name)
 	}
 	podsRequest := resource.MustParse("0")
@@ -166,7 +167,7 @@ func calculateUtilizationOfResource(node *apiv1.Node, nodeInfo *schedulercache.N
 			}
 		}
 	}
-	return float64(podsRequest.MilliValue()) / float64(nodeCapacity.MilliValue()), nil
+	return float64(podsRequest.MilliValue()) / float64(nodeAllocatable.MilliValue()), nil
 }
 
 // TODO: We don't need to pass list of nodes here as they are already available in nodeInfos.

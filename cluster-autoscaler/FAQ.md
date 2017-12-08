@@ -351,7 +351,8 @@ Every 10 seconds (configurable by `--scan-interval` flag), if no scale-up is
 needed, Cluster Autoscaler checks which nodes are unneeded. A node is considered for removal when:
 
 * The sum of cpu and memory requests of all pods running on this node is smaller
-  than 50% of the node's capacity. Utilization threshold can be configured using
+  than 50% of the node's allocatable. (Before 1.1.0, node capacity was used
+  instead of allocatable.) Utilization threshold can be configured using
   `--scale-down-utilization-threshold` flag.
 
 * All pods running on the node (except these that run on all nodes by default, like manifest-run pods
