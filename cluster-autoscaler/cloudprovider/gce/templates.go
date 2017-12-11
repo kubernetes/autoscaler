@@ -230,11 +230,16 @@ func (t *templateBuilder) buildNodeFromAutoprovisioningSpec(mig *Mig) (*apiv1.No
 		SelfLink: fmt.Sprintf("/api/v1/nodes/%s", nodeName),
 		Labels:   map[string]string{},
 	}
-	// TODO: Handle GPU
+
 	capacity, err := t.buildCapacity(mig.spec.machineType, nil, mig.GceRef.Zone)
 	if err != nil {
 		return nil, err
 	}
+
+	if gpuRequest, found := mig.spec.extraResources[gpu.ResourceNvidiaGPU]; found {
+		capacity[gpu.ResourceNvidiaGPU] = gpuRequest.DeepCopy()
+	}
+
 	node.Status = apiv1.NodeStatus{
 		Capacity:    capacity,
 		Allocatable: t.buildAllocatableFromCapacity(capacity),
@@ -245,6 +250,9 @@ func (t *templateBuilder) buildNodeFromAutoprovisioningSpec(mig *Mig) (*apiv1.No
 		return nil, err
 	}
 	node.Labels = labels
+
+	node.Spec.Taints = mig.spec.taints
+
 	// Ready status
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()
 	return &node, nil

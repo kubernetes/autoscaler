@@ -36,14 +36,25 @@ import (
 	gke "google.golang.org/api/container/v1"
 	gke_alpha "google.golang.org/api/container/v1alpha1"
 	gke_beta "google.golang.org/api/container/v1beta1"
+	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	provider_gce "k8s.io/kubernetes/pkg/cloudprovider/providers/gce"
 )
 
 // TODO(krzysztof-jastrzebski): Move to main.go.
 var (
 	gkeAPIEndpoint = flag.String("gke-api-endpoint", "", "GKE API endpoint address. This flag is used by developers only. Users shouldn't change this flag.")
+)
+
+var (
+	// This makes me so sad
+	taintEffectsMap = map[apiv1.TaintEffect]string{
+		apiv1.TaintEffectNoSchedule:       "NO_SCHEDULE",
+		apiv1.TaintEffectPreferNoSchedule: "PREFER_NO_SCHEDULE",
+		apiv1.TaintEffectNoExecute:        "NO_EXECUTE",
+	}
 )
 
 // GcpCloudProviderMode allows to pass information whether the cluster is GCE or GKE.
@@ -568,12 +579,49 @@ func (m *gceManagerImpl) createNodePool(mig *Mig) error {
 
 	// TODO: handle preemptable
 	// TODO: handle ssd
-	// TODO: handle taints
+
+	accelerators := []*gke_alpha.AcceleratorConfig{}
+
+	if gpuRequest, found := mig.spec.extraResources[gpu.ResourceNvidiaGPU]; found {
+		gpuType, found := mig.spec.labels[gpu.GPULabel]
+		if !found {
+			return fmt.Errorf("failed to create node pool %v with gpu request of unspecified type", mig.nodePoolName)
+		}
+		gpuConfig := &gke_alpha.AcceleratorConfig{
+			AcceleratorType:  gpuType,
+			AcceleratorCount: gpuRequest.Value(),
+		}
+		accelerators = append(accelerators, gpuConfig)
+
+	}
+
+	taints := []*gke_alpha.NodeTaint{}
+	for _, taint := range mig.spec.taints {
+		effect, found := taintEffectsMap[taint.Effect]
+		if !found {
+			effect = "EFFECT_UNSPECIFIED"
+		}
+		taint := &gke_alpha.NodeTaint{
+			Effect: effect,
+			Key:    taint.Key,
+			Value:  taint.Value,
+		}
+		taints = append(taints, taint)
+	}
+
+	labels := make(map[string]string)
+	for k, v := range mig.spec.labels {
+		if k != gpu.GPULabel {
+			labels[k] = v
+		}
+	}
 
 	config := gke_alpha.NodeConfig{
-		MachineType: mig.spec.machineType,
-		OauthScopes: defaultOAuthScopes,
-		Labels:      mig.spec.labels,
+		MachineType:  mig.spec.machineType,
+		OauthScopes:  defaultOAuthScopes,
+		Labels:       labels,
+		Accelerators: accelerators,
+		Taints:       taints,
 	}
 
 	autoscaling := gke_alpha.NodePoolAutoscaling{
