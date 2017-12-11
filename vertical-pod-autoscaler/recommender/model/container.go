@@ -27,11 +27,11 @@ import (
 // interval.
 type ContainerUsageSample struct {
 	// Start of the measurement interval.
-	measureStart time.Time
+	MeasureStart time.Time
 	// Average CPU usage in cores.
-	cpuUsage float64
+	CPUUsage float64
 	// Randomly sampled instant memory usage in bytes.
-	memoryUsage float64
+	MemoryUsage float64
 }
 
 // ContainerState stores information about a single container instance.
@@ -47,10 +47,10 @@ type ContainerUsageSample struct {
 //   Note: samples are added to intervals based on their start timestamps.
 type ContainerState struct {
 	// Distribution of CPU usage. The measurement unit is 1 CPU core.
-	cpuUsage util.Histogram
+	CPUUsage util.Histogram
 	// Memory peaks stored in the intervals belonging to the aggregation window
 	// (one value per interval). The measurement unit is a byte.
-	memoryUsagePeaks util.FloatSlidingWindow
+	MemoryUsagePeaks util.FloatSlidingWindow
 	// End time of the most recent interval covered by the aggregation window.
 	windowEnd time.Time
 	// Start of the latest usage sample that was aggregated.
@@ -60,7 +60,7 @@ type ContainerState struct {
 // NewContainerState returns a new, empty ContainerState.
 func NewContainerState() *ContainerState {
 	return &ContainerState{
-		util.NewHistogram(CPUHistogramOptions), // cpuUsage
+		util.NewHistogram(CPUHistogramOptions), // CPUUsage
 		util.NewFloatSlidingWindow( // memoryUsagePeaks
 			int(MemoryAggregationWindowLength / MemoryAggregationInterval)),
 		time.Unix(0, 0),
@@ -68,17 +68,17 @@ func NewContainerState() *ContainerState {
 }
 
 func (sample *ContainerUsageSample) isValid() bool {
-	return sample.cpuUsage >= 0.0 && sample.memoryUsage >= 0.0
+	return sample.CPUUsage >= 0.0 && sample.MemoryUsage >= 0.0
 }
 
 // AddSample adds a usage sample to the given ContainerState. Requires samples
-// to be passed in chronological order (i.e. in order of growing measureStart).
+// to be passed in chronological order (i.e. in order of growing MeasureStart).
 // Invalid samples (out of order or measure out of legal range) are discarded.
 // Returns true if the sample was aggregated, false if it was discarded.
 // Note: usage samples don't hold their end timestamp / duration. They are
 // implicitly assumed to be disjoint when aggregating.
 func (container *ContainerState) AddSample(sample *ContainerUsageSample) bool {
-	ts := sample.measureStart
+	ts := sample.MeasureStart
 	if !sample.isValid() || !ts.After(container.lastSampleStart) {
 		return false // Discard invalid or out-of-order samples.
 	}
@@ -86,25 +86,25 @@ func (container *ContainerState) AddSample(sample *ContainerUsageSample) bool {
 		// The gap between this sample and the previous interval is so
 		// large that the whole sliding window gets reset.
 		// This also happens on the first memory usage sample.
-		container.memoryUsagePeaks.Clear()
+		container.MemoryUsagePeaks.Clear()
 		container.windowEnd = ts.Add(MemoryAggregationInterval)
 	} else {
 		for !ts.Before(container.windowEnd) {
 			// Shift the memory aggregation window to the next interval.
-			container.memoryUsagePeaks.Push(0.0)
+			container.MemoryUsagePeaks.Push(0.0)
 			container.windowEnd =
 				container.windowEnd.Add(MemoryAggregationInterval)
 		}
 	}
 	// Update the memory peak for the current interval.
-	if container.memoryUsagePeaks.Head() == nil {
+	if container.MemoryUsagePeaks.Head() == nil {
 		// Window is empty.
-		container.memoryUsagePeaks.Push(0.0)
+		container.MemoryUsagePeaks.Push(0.0)
 	}
-	*container.memoryUsagePeaks.Head() = math.Max(
-		*container.memoryUsagePeaks.Head(), sample.memoryUsage)
+	*container.MemoryUsagePeaks.Head() = math.Max(
+		*container.MemoryUsagePeaks.Head(), sample.MemoryUsage)
 	// Update the CPU usage distribution.
-	container.cpuUsage.AddSample(sample.cpuUsage, 1.0)
+	container.CPUUsage.AddSample(sample.CPUUsage, 1.0)
 	container.lastSampleStart = ts
 	return true
 }
