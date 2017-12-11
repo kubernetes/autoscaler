@@ -18,6 +18,7 @@ package gpu
 
 import (
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 
 	"github.com/golang/glog"
 )
@@ -27,6 +28,9 @@ const (
 	ResourceNvidiaGPU = "nvidia.com/gpu"
 	// GPULabel is the label added to nodes with GPU resource on GKE.
 	GPULabel = "cloud.google.com/gke-accelerator"
+	// DefaultGPUType is the type of GPU used in NAP if the user
+	// don't specify what type of GPU his pod wants.
+	DefaultGPUType = "nvidia-tesla-k80"
 )
 
 // FilterOutNodesWithUnreadyGpus removes nodes that should have GPU, but don't have it in allocatable
@@ -86,4 +90,56 @@ func getUnreadyNodeCopy(node *apiv1.Node) (*apiv1.Node, error) {
 	}
 	newNode.Status.Conditions = newNodeConditions
 	return newNode, nil
+}
+
+// GpuRequestInfo contains an information about a set of pods requesting a GPU.
+type GpuRequestInfo struct {
+	// MaxRequest is maximum GPU request among pods
+	MaxRequest resource.Quantity
+	// Pods is a list of pods requesting GPU
+	Pods []*apiv1.Pod
+	// SystemLabels is a set of system labels corresponding to selected GPU
+	// that needs to be passed to cloudprovider
+	SystemLabels map[string]string
+}
+
+// GetGpuRequests returns a GpuRequestInfo for each type of GPU requested by
+// any pod in pods argument. If the pod requests GPU, but doesn't specify what
+// type of GPU it wants (via NodeSelector) it assumes it's DefaultGPUType.
+func GetGpuRequests(pods []*apiv1.Pod) map[string]GpuRequestInfo {
+	result := make(map[string]GpuRequestInfo)
+	for _, pod := range pods {
+		var podGpu resource.Quantity
+		for _, container := range pod.Spec.Containers {
+			if container.Resources.Requests != nil {
+				containerGpu := container.Resources.Requests[ResourceNvidiaGPU]
+				podGpu.Add(containerGpu)
+			}
+		}
+		if podGpu.Value() == 0 {
+			continue
+		}
+
+		gpuType := DefaultGPUType
+		if gpuTypeFromSelector, found := pod.Spec.NodeSelector[GPULabel]; found {
+			gpuType = gpuTypeFromSelector
+		}
+
+		requestInfo, found := result[gpuType]
+		if !found {
+			requestInfo = GpuRequestInfo{
+				MaxRequest: podGpu,
+				Pods:       make([]*apiv1.Pod, 0),
+				SystemLabels: map[string]string{
+					GPULabel: gpuType,
+				},
+			}
+		}
+		if podGpu.Cmp(requestInfo.MaxRequest) > 0 {
+			requestInfo.MaxRequest = podGpu
+		}
+		requestInfo.Pods = append(requestInfo.Pods, pod)
+		result[gpuType] = requestInfo
+	}
+	return result
 }
