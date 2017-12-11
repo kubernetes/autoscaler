@@ -85,6 +85,19 @@ func (cluster *ClusterState) AddOrUpdatePod(podID PodID, newLabels labels.Set) {
 	}
 }
 
+// GetContainer returns the ContainerState object for a given ContainerID or
+// null if it's not present in the model.
+func (cluster *ClusterState) GetContainer(containerID ContainerID) *ContainerState {
+	pod, podExists := cluster.Pods[containerID.PodID]
+	if podExists {
+		container, containerExists := pod.Containers[containerID.ContainerName]
+		if containerExists {
+			return container
+		}
+	}
+	return nil
+}
+
 // DeletePod removes an existing pod from the cluster.
 func (cluster *ClusterState) DeletePod(podID PodID) error {
 	pod, podExists := cluster.Pods[podID]
