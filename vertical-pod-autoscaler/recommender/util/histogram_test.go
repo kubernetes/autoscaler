@@ -34,7 +34,7 @@ var (
 func TestPercentilesEmptyHistogram(t *testing.T) {
 	options, err := NewLinearHistogramOptions(1.0, 0.1, weightEpsilon)
 	assert.Nil(t, err)
-	h := NewHistogram(options)
+	h := NewHistogram(&options)
 	for p := -0.5; p <= 1.5; p += 0.5 {
 		assert.Equal(t, 0.0, h.Percentile(p))
 	}
@@ -45,7 +45,7 @@ func TestPercentilesEmptyHistogram(t *testing.T) {
 func TestPercentiles(t *testing.T) {
 	options, err := NewLinearHistogramOptions(10.0, 1.0, weightEpsilon)
 	assert.Nil(t, err)
-	h := NewHistogram(options)
+	h := NewHistogram(&options)
 	for i := 1; i <= 4; i++ {
 		h.AddSample(float64(i), float64(i))
 	}
@@ -68,7 +68,7 @@ func TestPercentiles(t *testing.T) {
 func TestPercentileOutOfBounds(t *testing.T) {
 	options, err := NewLinearHistogramOptions(1.0, 0.1, weightEpsilon)
 	assert.Nil(t, err)
-	h := NewHistogram(options)
+	h := NewHistogram(&options)
 	assert.Nil(t, err)
 	h.AddSample(0.1, 0.1)
 	h.AddSample(0.2, 0.2)
@@ -87,7 +87,7 @@ func TestPercentileOutOfBounds(t *testing.T) {
 func TestEmptyHistogram(t *testing.T) {
 	options, err := NewLinearHistogramOptions(1.0, 0.1, weightEpsilon)
 	assert.Nil(t, err)
-	h := NewHistogram(options)
+	h := NewHistogram(&options)
 	assert.Nil(t, err)
 	assert.True(t, h.IsEmpty())
 	h.AddSample(0.1, weightEpsilon*2.5) // Sample weight = epsilon * 2.5.
