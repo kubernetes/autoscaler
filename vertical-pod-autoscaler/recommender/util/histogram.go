@@ -16,6 +16,11 @@ limitations under the License.
 
 package util
 
+import (
+	"fmt"
+	"strings"
+)
+
 // Histogram represents an approximate distribution of some variable.
 type Histogram interface {
 	// Returns an approximation of the given percentile of the distribution.
@@ -32,15 +37,22 @@ type Histogram interface {
 	// weight of samples with a given value cannot be negative.
 	SubtractSample(value float64, weight float64)
 
+	// Add all samples from another histogram. Requires the histograms to be
+	// of the exact same type.
+	Merge(other *Histogram)
+
 	// Returns true if the histogram is empty.
 	IsEmpty() bool
+
+	// Returns a human-readable text description of the histogram.
+	String() string
 }
 
 // NewHistogram returns a new Histogram instance using given options.
-func NewHistogram(options HistogramOptions) Histogram {
+func NewHistogram(options *HistogramOptions) Histogram {
 	return &histogram{
-		&options, make([]float64, options.NumBuckets()), 0.0,
-		options.NumBuckets() - 1, 0}
+		options, make([]float64, (*options).NumBuckets()), 0.0,
+		(*options).NumBuckets() - 1, 0}
 }
 
 // Simple bucket-based implementation of the Histogram interface. Each bucket
@@ -78,6 +90,7 @@ func (h *histogram) AddSample(value float64, weight float64) {
 		h.maxBucket = bucket
 	}
 }
+
 func (h *histogram) SubtractSample(value float64, weight float64) {
 	if weight < 0.0 {
 		panic("sample weight must be non-negative")
@@ -95,6 +108,23 @@ func (h *histogram) SubtractSample(value float64, weight float64) {
 	}
 	for h.bucketWeight[h.maxBucket] < epsilon && h.maxBucket > 0 {
 		h.maxBucket--
+	}
+}
+
+func (h *histogram) Merge(other *Histogram) {
+	o := (*other).(*histogram)
+	if h.options != o.options {
+		panic("can't merge histograms with different options")
+	}
+	for bucket := o.minBucket; bucket <= o.maxBucket; bucket++ {
+		h.bucketWeight[bucket] += o.bucketWeight[bucket]
+	}
+	h.totalWeight += o.totalWeight
+	if o.minBucket < h.minBucket {
+		h.minBucket = o.minBucket
+	}
+	if o.maxBucket > h.maxBucket {
+		h.maxBucket = o.maxBucket
 	}
 }
 
@@ -124,4 +154,28 @@ func (h *histogram) Percentile(percentile float64) float64 {
 
 func (h *histogram) IsEmpty() bool {
 	return h.bucketWeight[h.minBucket] < (*h.options).Epsilon()
+}
+
+func (h *histogram) String() string {
+	lines := []string{"%-tile\tvalue"}
+	for i := 0; i <= 100; i += 5 {
+		lines = append(lines, fmt.Sprintf("%d\t%.3f", i, h.Percentile(0.01*float64(i))))
+	}
+	return strings.Join(lines, "\n")
+}
+
+// HistogramsEqual is a helper function for comparing 2 histograms.
+func HistogramsEqual(histogram1 Histogram, histogram2 Histogram) bool {
+	h1 := (histogram1).(*histogram)
+	h2 := (histogram2).(*histogram)
+	if h1.options != h2.options || h1.minBucket != h2.minBucket || h1.maxBucket != h2.maxBucket {
+		return false
+	}
+	for bucket := h1.minBucket; bucket <= h1.maxBucket; bucket++ {
+		diff := h1.bucketWeight[bucket] - h2.bucketWeight[bucket]
+		if diff > 1e-15 || diff < -1e-15 {
+			return false
+		}
+	}
+	return true
 }
