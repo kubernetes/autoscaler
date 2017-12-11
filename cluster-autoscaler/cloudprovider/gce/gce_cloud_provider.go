@@ -26,6 +26,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 )
 
@@ -137,15 +138,44 @@ func (gce *GceCloudProvider) GetAvailableMachineTypes() ([]string, error) {
 
 // NewNodeGroup builds a theoretical node group based on the node definition provided. The node group is not automatically
 // created on the cloud provider side. The node group is not returned by NodeGroups() until it is created.
-func (gce *GceCloudProvider) NewNodeGroup(machineType string, labels map[string]string, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
+func (gce *GceCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string,
+	extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
 	nodePoolName := fmt.Sprintf("%s-%s-%d", nodeAutoprovisioningPrefix, machineType, time.Now().Unix())
+	zone := gce.gceManager.getLocation()
+	taints := make([]apiv1.Taint, 0)
+
+	if gpuRequest, found := extraResources[gpu.ResourceNvidiaGPU]; found {
+		gpuType, found := systemLabels[gpu.GPULabel]
+		if !found {
+			return nil, cloudprovider.ErrIllegalConfiguration
+		}
+		gpuCount, err := getNormalizedGpuCount(gpuRequest.Value())
+		if err != nil {
+			return nil, err
+		}
+		extraResources[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(gpuCount, resource.DecimalSI)
+		err = validateGpuConfig(gpuType, gpuCount, zone, machineType)
+		if err != nil {
+			return nil, err
+		}
+		nodePoolName = fmt.Sprintf("%s-%s-gpu-%d", nodeAutoprovisioningPrefix, machineType, time.Now().Unix())
+		labels[gpu.GPULabel] = gpuType
+
+		taint := apiv1.Taint{
+			Effect: apiv1.TaintEffectNoSchedule,
+			Key:    "gke-accelerator",
+			Value:  gpuType,
+		}
+		taints = append(taints, taint)
+	}
+
 	mig := &Mig{
 		autoprovisioned: true,
 		exist:           false,
 		nodePoolName:    nodePoolName,
 		GceRef: GceRef{
 			Project: gce.gceManager.getProjectId(),
-			Zone:    gce.gceManager.getLocation(),
+			Zone:    zone,
 			Name:    nodePoolName + "-temporary-mig",
 		},
 		minSize: minAutoprovisionedSize,
@@ -153,6 +183,7 @@ func (gce *GceCloudProvider) NewNodeGroup(machineType string, labels map[string]
 		spec: &autoprovisioningSpec{
 			machineType:    machineType,
 			labels:         labels,
+			taints:         taints,
 			extraResources: extraResources,
 		},
 		gceManager: gce.gceManager,
@@ -209,6 +240,7 @@ func GceRefFromProviderId(id string) (*GceRef, error) {
 type autoprovisioningSpec struct {
 	machineType    string
 	labels         map[string]string
+	taints         []apiv1.Taint
 	extraResources map[string]resource.Quantity
 }
 

@@ -136,7 +136,8 @@ func (tcp *TestCloudProvider) GetAvailableMachineTypes() ([]string, error) {
 
 // NewNodeGroup builds a theoretical node group based on the node definition provided. The node group is not automatically
 // created on the cloud provider side. The node group is not returned by NodeGroups() until it is created.
-func (tcp *TestCloudProvider) NewNodeGroup(machineType string, labels map[string]string, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
+func (tcp *TestCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string,
+	extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
 	return &TestNodeGroup{
 		cloudProvider:   tcp,
 		id:              "autoprovisioned-" + machineType,
