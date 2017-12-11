@@ -26,12 +26,25 @@ type MetricName string
 // ResourceAmount represents quantity of a certain resource within a container.
 type ResourceAmount int
 
+// Resources is a map from resource name to the corresponding ResourceAmount.
+type Resources map[MetricName]ResourceAmount
+
 const (
 	// ResourceCPU represents CPU in millicores (1core = 1000millicores).
 	ResourceCPU MetricName = "cpu"
 	// ResourceMemory represents memory, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024).
 	ResourceMemory MetricName = "memory"
 )
+
+// CPUAmountFromCores converts CPU cores to a ResourceAmount.
+func CPUAmountFromCores(cores float64) ResourceAmount {
+	return ResourceAmount(cores * 1000.0)
+}
+
+// MemoryAmountFromBytes converts memory bytes to a ResourceAmount.
+func MemoryAmountFromBytes(bytes float64) ResourceAmount {
+	return ResourceAmount(bytes)
+}
 
 // PodID contains information needed to identify a Pod within a cluster.
 type PodID struct {
@@ -62,7 +75,7 @@ type ContainerMetricsSnapshot struct {
 	// Duration of the measurement interval, which is [SnapshotTime - SnapshotWindow, SnapshotTime].
 	SnapshotWindow time.Duration
 	// Actual usage of the resources over the measurement interval.
-	Usage map[MetricName]ResourceAmount
+	Usage Resources
 }
 
 // BasicPodSpec contains basic information defining a pod and its containers.
@@ -82,5 +95,5 @@ type BasicContainerSpec struct {
 	// Name of the image running within the container.
 	Image string
 	// Currently requested resources for this container.
-	Request map[MetricName]ResourceAmount
+	Request Resources
 }
