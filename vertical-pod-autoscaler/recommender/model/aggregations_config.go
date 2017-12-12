@@ -33,24 +33,37 @@ var (
 	// day).
 	// Note: AggregationWindowLength must be integrally divisible by this value.
 	MemoryAggregationInterval = time.Hour * 24
+	// CPUHistogramOptions are options to be used by histograms that store
+	// CPU measures expressed in cores.
+	CPUHistogramOptions = cpuHistogramOptions()
+	// MemoryHistogramOptions are options to be used by histograms that
+	// store memory measures expressed in bytes.
+	MemoryHistogramOptions = memoryHistogramOptions()
+
+	// HistogramBucketSizeRatio is the relative size of the histogram buckets
+	// (the ratio between the upper and the lower bound of the bucket).
+	HistogramBucketSizeRatio = 0.05
+	// HistogramRelativeError is the maximum relative error introduced by
+	// the histogram (except for the boundary buckets).
+	HistogramRelativeError = HistogramBucketSizeRatio / 2.
 )
 
-func cpuHistogramOptions() util.HistogramOptions {
+func cpuHistogramOptions() *util.HistogramOptions {
 	// CPU histograms use exponential bucketing scheme with the smallest bucket
-	// size of 0.1 core, max of 1000.0 cores and the relative error of 5%.
-	options, err := util.NewExponentialHistogramOptions(1000.0, 0.1, 1.05, 0.1)
+	// size of 0.1 core, max of 1000.0 cores and the relative error of HistogramRelativeError.
+	options, err := util.NewExponentialHistogramOptions(1000.0, 0.1, 1.+HistogramBucketSizeRatio, 0.1)
 	if err != nil {
 		panic("Invalid CPU histogram options") // Should not happen.
 	}
-	return options
+	return &options
 }
 
-func memoryHistogramOptions() util.HistogramOptions {
+func memoryHistogramOptions() *util.HistogramOptions {
 	// Memory histograms use exponential bucketing scheme with the smallest
-	// bucket size of 10MB, max of 1TB and the relative error of 5%.
-	options, err := util.NewExponentialHistogramOptions(1e12, 1e7, 1.05, 0.1)
+	// bucket size of 10MB, max of 1TB and the relative error of HistogramRelativeError.
+	options, err := util.NewExponentialHistogramOptions(1e12, 1e7, 1.+HistogramBucketSizeRatio, 0.1)
 	if err != nil {
 		panic("Invalid memory histogram options") // Should not happen.
 	}
-	return options
+	return &options
 }
