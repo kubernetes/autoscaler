@@ -46,3 +46,14 @@ func (m *MockHistogram) IsEmpty() bool {
 	args := m.Called()
 	return args.Bool(0)
 }
+
+// Merge is a mock implementation of Histogram.Merge.
+func (m *MockHistogram) Merge(other *Histogram) {
+	m.Called(other)
+}
+
+// String is a mock implementation of Histogram.String.
+func (m *MockHistogram) String() string {
+	args := m.Called()
+	return args.String(0)
+}
