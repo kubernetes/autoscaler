@@ -1,3 +1,5 @@
+// +build !gke
+
 /*
 Copyright 2016 The Kubernetes Authors.
 
@@ -32,25 +34,6 @@ import (
 
 	"github.com/golang/glog"
 )
-
-// CloudProviderBuilder builds a cloud provider from all the necessary parameters including the name of a cloud provider e.g. aws, gce
-// and the path to a config file
-type CloudProviderBuilder struct {
-	cloudProviderFlag       string
-	cloudConfig             string
-	clusterName             string
-	autoprovisioningEnabled bool
-}
-
-// NewCloudProviderBuilder builds a new builder from static settings
-func NewCloudProviderBuilder(cloudProviderFlag string, cloudConfig string, clusterName string, autoprovisioningEnabled bool) CloudProviderBuilder {
-	return CloudProviderBuilder{
-		cloudProviderFlag:       cloudProviderFlag,
-		cloudConfig:             cloudConfig,
-		clusterName:             clusterName,
-		autoprovisioningEnabled: autoprovisioningEnabled,
-	}
-}
 
 // Build a cloud provider from static settings contained in the builder and dynamic settings passed via args
 func (b CloudProviderBuilder) Build(discoveryOpts cloudprovider.NodeGroupDiscoveryOptions, resourceLimiter *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {

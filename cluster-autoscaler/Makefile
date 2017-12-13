@@ -4,6 +4,11 @@ TAG?=dev
 FLAGS=
 ENVVAR=
 GOOS?=linux
+ifdef BUILD_TAGS
+	PROVIDER=-${BUILD_TAGS}
+	FOR_PROVIDERS=" for ${BUILD_TAGS}"
+endif
+
 
 deps:
 	go get github.com/tools/godep
@@ -13,21 +18,21 @@ build: clean deps
 	$(ENVVAR) GOOS=$(GOOS) godep go build -o cluster-autoscaler
 
 build-binary: clean deps
-	$(ENVVAR) GOOS=$(GOOS) godep go build -o cluster-autoscaler
+	$(ENVVAR) GOOS=$(GOOS) godep go build -tags '${BUILD_TAGS}' -o cluster-autoscaler
 
 test-unit: clean deps build
 	$(ENVVAR) godep go test --test.short -race ./... $(FLAGS)
 
 dev-release: build-binary execute-release
-	echo "Release ${TAG} completed"
+	@echo "Release ${TAG}${FOR_PROVIDERS} completed"
 
 execute-release:
 ifndef REGISTRY
 	ERR = $(error REGISTRY is undefined)
 	$(ERR)
 endif
-	docker build --pull -t ${REGISTRY}/cluster-autoscaler:${TAG} .
-	./push_image.sh ${REGISTRY}/cluster-autoscaler:${TAG}
+	docker build --pull -t ${REGISTRY}/cluster-autoscaler${PROVIDER}:${TAG} .
+	./push_image.sh ${REGISTRY}/cluster-autoscaler${PROVIDER}:${TAG}
 
 clean:
 	rm -f cluster-autoscaler
@@ -46,7 +51,7 @@ build-in-docker: clean docker-builder
 	docker run -v `pwd`:/gopath/src/k8s.io/autoscaler/cluster-autoscaler/ autoscaling-builder:latest bash -c 'cd /gopath/src/k8s.io/autoscaler/cluster-autoscaler && make build-binary'
 
 release: build-in-docker execute-release
-	echo "Full in-docker release ${TAG} completed"
+	@echo "Full in-docker release ${TAG} completed"
 
 test-in-docker: clean docker-builder
 	docker run -v `pwd`:/gopath/src/k8s.io/autoscaler/cluster-autoscaler/ autoscaling-builder:latest bash -c 'cd /gopath/src/k8s.io/autoscaler/cluster-autoscaler && godep go test ./... '
