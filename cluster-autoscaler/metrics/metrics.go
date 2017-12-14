@@ -212,7 +212,8 @@ var (
 	)
 )
 
-func init() {
+// RegisterAll registers all metrics.
+func RegisterAll() {
 	prometheus.MustRegister(clusterSafeToAutoscale)
 	prometheus.MustRegister(nodesCount)
 	prometheus.MustRegister(nodeGroupsCount)
