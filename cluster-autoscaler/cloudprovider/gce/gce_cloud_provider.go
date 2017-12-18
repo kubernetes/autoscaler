@@ -24,10 +24,15 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
+)
+
+// The 'GCE' cloud provider actually implements both the GCE and GKE providers.
+const (
+	ProviderNameGCE = "gce"
+	ProviderNameGKE = "gke"
 )
 
 const (
@@ -67,21 +72,8 @@ type GceCloudProvider struct {
 }
 
 // BuildGceCloudProvider builds CloudProvider implementation for GCE.
-func BuildGceCloudProvider(gceManager GceManager, specs []string, resourceLimiter *cloudprovider.ResourceLimiter) (*GceCloudProvider, error) {
-	if gceManager.getMode() == ModeGKE && len(specs) != 0 {
-		return nil, fmt.Errorf("GKE gets nodegroup specification via API, command line specs are not allowed")
-	}
-
-	gce := &GceCloudProvider{
-		gceManager:               gceManager,
-		resourceLimiterFromFlags: resourceLimiter,
-	}
-	for _, spec := range specs {
-		if err := gce.addNodeGroup(spec); err != nil {
-			return nil, err
-		}
-	}
-	return gce, nil
+func BuildGceCloudProvider(gceManager GceManager, resourceLimiter *cloudprovider.ResourceLimiter) (*GceCloudProvider, error) {
+	return &GceCloudProvider{gceManager: gceManager, resourceLimiterFromFlags: resourceLimiter}, nil
 }
 
 // Cleanup cleans up all resources before the cloud provider is removed
@@ -90,20 +82,12 @@ func (gce *GceCloudProvider) Cleanup() error {
 	return nil
 }
 
-// addNodeGroup adds node group defined in string spec. Format:
-// minNodes:maxNodes:migUrl
-func (gce *GceCloudProvider) addNodeGroup(spec string) error {
-	mig, err := buildMig(spec, gce.gceManager)
-	if err != nil {
-		return err
-	}
-	gce.gceManager.RegisterMig(mig)
-	return nil
-}
-
 // Name returns name of the cloud provider.
 func (gce *GceCloudProvider) Name() string {
-	return "gce"
+	// Technically we're both ProviderNameGCE and ProviderNameGKE...
+	// Perhaps we should return a different name depending on
+	// gce.gceManager.getMode()?
+	return ProviderNameGCE
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
@@ -428,25 +412,4 @@ func (mig *Mig) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
 	nodeInfo := schedulercache.NewNodeInfo(cloudprovider.BuildKubeProxy(mig.Id()))
 	nodeInfo.SetNode(node)
 	return nodeInfo, nil
-}
-
-func buildMig(value string, gceManager GceManager) (*Mig, error) {
-	spec, err := dynamic.SpecFromString(value, true)
-
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse node group spec: %v", err)
-	}
-
-	mig := Mig{
-		gceManager:      gceManager,
-		minSize:         spec.MinSize,
-		maxSize:         spec.MaxSize,
-		exist:           true,
-		autoprovisioned: false,
-	}
-
-	if mig.Project, mig.Zone, mig.Name, err = ParseMigUrl(spec.Name); err != nil {
-		return nil, fmt.Errorf("failed to parse mig url: %s got error: %v", spec.Name, err)
-	}
-	return &mig, nil
 }

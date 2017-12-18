@@ -19,7 +19,10 @@ package gce
 import (
 	"fmt"
 	"net/http"
+	"regexp"
 	"testing"
+
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
@@ -42,6 +45,9 @@ const (
 	autoprovisionedPoolMig = "gke-cluster-1-nodeautoprovisioning-323233232"
 	autoprovisionedPool    = "nodeautoprovisioning-323233232"
 	clusterName            = "cluster1"
+
+	gceMigA = "gce-mig-a"
+	gceMigB = "gce-mig-b"
 )
 
 const allNodePools1 = `{
@@ -215,10 +221,10 @@ const instanceGroupManager = `{
   "kind": "compute#instanceGroupManager",
   "id": "3213213219",
   "creationTimestamp": "2017-09-15T04:47:24.687-07:00",
-  "name": "gke-cluster-1-default-pool",
+  "name": "%s",
   "zone": "https://www.googleapis.com/compute/v1/projects/project1/zones/%s",
-  "instanceTemplate": "https://www.googleapis.com/compute/v1/projects/project1/global/instanceTemplates/gke-cluster-1-default-pool",
-  "instanceGroup": "https://www.googleapis.com/compute/v1/projects/project1/zones/%s/instanceGroups/gke-cluster-1-default-pool",
+  "instanceTemplate": "https://www.googleapis.com/compute/v1/projects/project1/global/instanceTemplates/%s",
+  "instanceGroup": "https://www.googleapis.com/compute/v1/projects/project1/zones/%s/instanceGroups/%s",
   "baseInstanceName": "gke-cluster-1-default-pool-f23aac-grp",
   "fingerprint": "kfdsuH",
   "currentActions": {
@@ -232,9 +238,10 @@ const instanceGroupManager = `{
     "refreshing": 0
   },
   "targetSize": 3,
-  "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/zones/%s/instanceGroupManagers/gke-cluster-1-default-pool"
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/zones/%s/instanceGroupManagers/%s"
 }
 `
+
 const instanceTemplate = `
 {
  "kind": "compute#instanceTemplate",
@@ -350,26 +357,26 @@ const machineType = `{
 const managedInstancesResponse1 = `{
   "managedInstances": [
     {
-      "instance": "https://www.googleapis.com/compute/v1/projects/project1/zones/%s/instances/gke-cluster-1-default-pool-f7607aac-9j4g",
+      "instance": "https://www.googleapis.com/compute/v1/projects/project1/zones/%s/instances/%s-f7607aac-9j4g",
       "id": "1974815549671473983",
       "instanceStatus": "RUNNING",
       "currentAction": "NONE"
     },
     {
-      "instance": "https://www.googleapis.com/compute/v1/projects/project1/zones/%s/instances/gke-cluster-1-default-pool-f7607aac-c63g",
+      "instance": "https://www.googleapis.com/compute/v1/projects/project1/zones/%s/instances/%s-f7607aac-c63g",
       "currentAction": "RUNNING",
       "id": "197481554967143333",
       "instanceStatus": "RUNNING",
       "currentAction": "NONE"
     },
     {
-      "instance": "https://www.googleapis.com/compute/v1/projects/project1/zones/%s/instances/gke-cluster-1-default-pool-f7607aac-dck1",
+      "instance": "https://www.googleapis.com/compute/v1/projects/project1/zones/%s/instances/%s-f7607aac-dck1",
       "id": "4462422841867240255",
       "instanceStatus": "RUNNING",
       "currentAction": "NONE"
     },
     {
-      "instance": "https://www.googleapis.com/compute/v1/projects/project1/zones/%s/instances/gke-cluster-1-default-pool-f7607aac-f1hm",
+      "instance": "https://www.googleapis.com/compute/v1/projects/project1/zones/%s/instances/%s-f7607aac-f1hm",
       "id": "6309299611401323327",
       "instanceStatus": "RUNNING",
       "currentAction": "NONE"
@@ -380,7 +387,7 @@ const managedInstancesResponse1 = `{
 const managedInstancesResponse2 = `{
   "managedInstances": [
     {
-      "instance": "https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-b/instances/gke-cluster-1-nodeautoprovisioning-323233232-gdf607aac-9j4g",
+      "instance": "https://www.googleapis.com/compute/v1/projects/project1/zones/%s/instances/%s-gdf607aac-9j4g",
       "id": "1974815323221473983",
       "instanceStatus": "RUNNING",
       "currentAction": "NONE"
@@ -492,7 +499,11 @@ const getClusterResponse = `{
 }`
 
 func getInstanceGroupManager(zone string) string {
-	return fmt.Sprintf(instanceGroupManager, zone, zone, zone)
+	return getInstanceGroupManagerNamed(defaultPoolMig, zone)
+}
+
+func getInstanceGroupManagerNamed(name, zone string) string {
+	return fmt.Sprintf(instanceGroupManager, name, zone, name, zone, name, zone, name)
 }
 
 func getMachineType(zone string) string {
@@ -500,7 +511,19 @@ func getMachineType(zone string) string {
 }
 
 func getManagedInstancesResponse1(zone string) string {
-	return fmt.Sprintf(managedInstancesResponse1, zone, zone, zone, zone)
+	return getManagedInstancesResponse1Named(defaultPoolMig, zone)
+}
+
+func getManagedInstancesResponse1Named(name, zone string) string {
+	return fmt.Sprintf(managedInstancesResponse1, zone, name, zone, name, zone, name, zone, name)
+}
+
+func getManagedInstancesResponse2(zone string) string {
+	return getManagedInstancesResponse2Named(autoprovisionedPoolMig, zone)
+}
+
+func getManagedInstancesResponse2Named(name, zone string) string {
+	return fmt.Sprintf(managedInstancesResponse2, zone, name)
 }
 
 func newTestGceManager(t *testing.T, testServerURL string, mode GcpCloudProviderMode, isRegional bool) *gceManagerImpl {
@@ -520,6 +543,7 @@ func newTestGceManager(t *testing.T, testServerURL string, mode GcpCloudProvider
 			projectId: projectId,
 			service:   gceService,
 		},
+		explicitlyConfigured: make(map[GceRef]bool),
 	}
 
 	if isRegional {
@@ -593,7 +617,7 @@ func TestFetchAllNodePools(t *testing.T) {
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool").Return(instanceGroupManager).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool/listManagedInstances").Return(getManagedInstancesResponse1(zoneB)).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-nodeautoprovisioning-323233232").Return(getInstanceGroupManager(zoneB)).Once()
-	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-nodeautoprovisioning-323233232/listManagedInstances").Return(managedInstancesResponse2).Once()
+	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-nodeautoprovisioning-323233232/listManagedInstances").Return(getManagedInstancesResponse2(zoneB)).Once()
 
 	err = g.fetchAllNodePools()
 	assert.NoError(t, err)
@@ -684,7 +708,7 @@ func TestDeleteNodePool(t *testing.T) {
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool").Return(instanceGroupManager).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool/listManagedInstances").Return(getManagedInstancesResponse1(zoneB)).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-nodeautoprovisioning-323233232").Return(getInstanceGroupManager(zoneB)).Once()
-	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-nodeautoprovisioning-323233232/listManagedInstances").Return(managedInstancesResponse2).Once()
+	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-nodeautoprovisioning-323233232/listManagedInstances").Return(getManagedInstancesResponse2(zoneB)).Once()
 
 	mig := &Mig{
 		GceRef: GceRef{
@@ -743,7 +767,7 @@ func TestCreateNodePool(t *testing.T) {
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool").Return(getInstanceGroupManager(zoneB)).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool/listManagedInstances").Return(getManagedInstancesResponse1(zoneB)).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-nodeautoprovisioning-323233232").Return(getInstanceGroupManager(zoneB)).Once()
-	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-nodeautoprovisioning-323233232/listManagedInstances").Return(managedInstancesResponse2).Once()
+	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-nodeautoprovisioning-323233232/listManagedInstances").Return(getManagedInstancesResponse2(zoneB)).Once()
 
 	mig := &Mig{
 		GceRef: GceRef{
@@ -899,7 +923,7 @@ func TestDeleteInstances(t *testing.T) {
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool").Return(getInstanceGroupManager(zoneB)).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool/listManagedInstances").Return(getManagedInstancesResponse1(zoneB)).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-nodeautoprovisioning-323233232").Return(getInstanceGroupManager(zoneB)).Once()
-	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-nodeautoprovisioning-323233232/listManagedInstances").Return(managedInstancesResponse2).Once()
+	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-nodeautoprovisioning-323233232/listManagedInstances").Return(getManagedInstancesResponse2(zoneB)).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool/deleteInstances").Return(deleteInstancesResponse).Once()
 	server.On("handle", "/project1/zones/us-central1-b/operations/operation-1505802641136-55984ff86d980-a99e8c2b-0c8aaaaa").Return(deleteInstancesOperationResponse).Once()
 
@@ -936,7 +960,7 @@ func TestDeleteInstances(t *testing.T) {
 
 	err = g.DeleteInstances(instances)
 	assert.Error(t, err)
-	assert.Equal(t, "Connot delete instances which don't belong to the same MIG.", err.Error())
+	assert.Equal(t, "Cannot delete instances which don't belong to the same MIG.", err.Error())
 	mock.AssertExpectationsForObjects(t, server)
 }
 
@@ -1086,33 +1110,218 @@ func TestFetchResourceLimiter(t *testing.T) {
 	server := NewHttpServerMock()
 	defer server.Close()
 
-	// GCE.
-	g := newTestGceManager(t, server.URL, ModeGCE, false)
+	g := newTestGceManager(t, server.URL, ModeGKENAP, false)
+	server.On("handle", "/v1alpha1/projects/project1/zones/us-central1-b/clusters/cluster1").Return(getClusterResponse).Once()
 
 	err := g.fetchResourceLimiter()
 	assert.NoError(t, err)
 	resourceLimiter, err := g.GetResourceLimiter()
 	assert.NoError(t, err)
-	assert.Nil(t, resourceLimiter)
-
-	// GKE.
-	g = newTestGceManager(t, server.URL, ModeGKE, false)
-
-	err = g.fetchResourceLimiter()
-	assert.NoError(t, err)
-	resourceLimiter, err = g.GetResourceLimiter()
-	assert.NoError(t, err)
-	assert.Nil(t, resourceLimiter)
-
-	// GKENAP.
-	g = newTestGceManager(t, server.URL, ModeGKENAP, false)
-	server.On("handle", "/v1alpha1/projects/project1/zones/us-central1-b/clusters/cluster1").Return(getClusterResponse).Once()
-
-	err = g.fetchResourceLimiter()
-	assert.NoError(t, err)
-	resourceLimiter, err = g.GetResourceLimiter()
-	assert.NoError(t, err)
 	assert.NotNil(t, resourceLimiter)
 
+	mock.AssertExpectationsForObjects(t, server)
+}
+
+const instanceGroup = `{
+  "kind": "compute#instanceGroup",
+  "id": "1121230570947910218",
+  "name": "%s",
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/zones/%s/instanceGroups/%s",
+  "size": 1
+}`
+
+func getInstanceGroup(zone string) string {
+	return getInstanceGroupNamed("gke-cluster-1-default-pool", zone)
+}
+
+func getInstanceGroupNamed(name, zone string) string {
+	return fmt.Sprintf(instanceGroup, name, zone, name)
+}
+
+const instanceGroupList = `{
+  "kind": "compute#instanceGroupList",
+  "id": "projects/project1a/zones/%s/instanceGroups",
+  "items": [%s, %s],
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/zones/%s/instanceGroups"
+}`
+
+func listInstanceGroups(zone string) string {
+	return fmt.Sprintf(instanceGroupList,
+		zone,
+		getInstanceGroupNamed(gceMigA, zone),
+		getInstanceGroupNamed(gceMigB, zone),
+		zone,
+	)
+}
+
+const noInstanceGroupList = `{
+  "kind": "compute#instanceGroupList",
+  "id": "projects/project1a/zones/%s/instanceGroups",
+  "items": [],
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/zones/%s/instanceGroups"
+}`
+
+func listNoInstanceGroups(zone string) string {
+	return fmt.Sprintf(noInstanceGroupList, zone, zone)
+}
+
+const getRegion = `{
+ "kind": "compute#region",
+ "id": "1000",
+ "creationTimestamp": "1969-12-31T16:00:00.000-08:00",
+ "name": "us-central1",
+ "description": "us-central1",
+ "status": "UP",
+ "zones": [
+  "https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-b"
+ ],
+ "quotas": [],
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/regions/us-central1"
+}`
+
+func TestFetchAutoMigsZonal(t *testing.T) {
+	server := NewHttpServerMock()
+	defer server.Close()
+
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroups").Return(listInstanceGroups(zoneB)).Once()
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA).Return(getInstanceGroupManagerNamed(gceMigA, zoneB)).Once()
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigB).Return(getInstanceGroupManagerNamed(gceMigB, zoneB)).Once()
+
+	server.On("handle", "/project1/global/instanceTemplates/"+gceMigA).Return(instanceTemplate).Once()
+	server.On("handle", "/project1/global/instanceTemplates/"+gceMigB).Return(instanceTemplate).Once()
+	server.On("handle", "/project1/zones/"+zoneB+"/machineTypes/n1-standard-1").Return(getMachineType(zoneB)).Once()
+	server.On("handle", "/project1/zones/"+zoneB+"/machineTypes/n1-standard-1").Return(getMachineType(zoneB)).Once()
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA).Return(getInstanceGroupManagerNamed(gceMigA, zoneB)).Once()
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA+"/listManagedInstances").Return(getManagedInstancesResponse1Named(gceMigA, zoneB)).Once()
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigB).Return(getInstanceGroupManagerNamed(gceMigB, zoneB)).Once()
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigB+"/listManagedInstances").Return(getManagedInstancesResponse2Named(gceMigB, zoneB)).Once()
+
+	regional := false
+	g := newTestGceManager(t, server.URL, ModeGCE, regional)
+
+	min, max := 0, 100
+	g.migAutoDiscoverySpecs = []cloudprovider.MIGAutoDiscoveryConfig{
+		{Re: regexp.MustCompile("UNUSED"), MinSize: min, MaxSize: max},
+	}
+
+	assert.NoError(t, g.fetchAutoMigs())
+
+	migs := g.getMigs()
+	assert.Equal(t, 2, len(migs))
+	validateMig(t, migs[0].config, zoneB, gceMigA, min, max)
+	validateMig(t, migs[1].config, zoneB, gceMigB, min, max)
+	mock.AssertExpectationsForObjects(t, server)
+}
+func TestFetchAutoMigsUnregistersMissingMigs(t *testing.T) {
+	server := NewHttpServerMock()
+	defer server.Close()
+
+	// Register explicit instance group
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA).Return(getInstanceGroupManagerNamed(gceMigA, zoneB)).Once()
+	server.On("handle", "/project1/global/instanceTemplates/"+gceMigA).Return(instanceTemplate).Once()
+	server.On("handle", "/project1/zones/"+zoneB+"/machineTypes/n1-standard-1").Return(getMachineType(zoneB)).Once()
+
+	// Regenerate cache for explicit instance group
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA).Return(getInstanceGroupManagerNamed(gceMigA, zoneB)).Twice()
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA+"/listManagedInstances").Return(getManagedInstancesResponse1Named(gceMigA, zoneB)).Twice()
+
+	// Register 'previously autodetected' instance group
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigB).Return(getInstanceGroupManagerNamed(gceMigB, zoneB)).Once()
+	server.On("handle", "/project1/global/instanceTemplates/"+gceMigB).Return(instanceTemplate).Once()
+	server.On("handle", "/project1/zones/"+zoneB+"/machineTypes/n1-standard-1").Return(getMachineType(zoneB)).Once()
+
+	regional := false
+	g := newTestGceManager(t, server.URL, ModeGCE, regional)
+
+	// This MIG should never be unregistered because it is explicitly configured.
+	minA, maxA := 0, 100
+	specs := []string{fmt.Sprintf("%d:%d:https://content.googleapis.com/compute/v1/projects/project1/zones/%s/instanceGroups/%s", minA, maxA, zoneB, gceMigA)}
+	assert.NoError(t, g.fetchExplicitMigs(specs))
+
+	// This MIG was previously autodetected but is now gone.
+	// It should be unregistered.
+	unregister := &Mig{
+		gceManager: g,
+		GceRef:     GceRef{Project: projectId, Zone: zoneB, Name: gceMigB},
+		minSize:    1,
+		maxSize:    10,
+		exist:      true,
+	}
+	assert.True(t, g.RegisterMig(unregister))
+
+	assert.NoError(t, g.fetchAutoMigs())
+
+	migs := g.getMigs()
+	assert.Equal(t, 1, len(migs))
+	validateMig(t, migs[0].config, zoneB, gceMigA, minA, maxA)
+	mock.AssertExpectationsForObjects(t, server)
+}
+
+func TestFetchAutoMigsRegional(t *testing.T) {
+	server := NewHttpServerMock()
+	defer server.Close()
+
+	server.On("handle", "/project1/regions/us-central1").Return(getRegion).Once()
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroups").Return(listInstanceGroups(zoneB)).Once()
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA).Return(getInstanceGroupManagerNamed(gceMigA, zoneB)).Once()
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigB).Return(getInstanceGroupManagerNamed(gceMigB, zoneB)).Once()
+
+	server.On("handle", "/project1/global/instanceTemplates/"+gceMigA).Return(instanceTemplate).Once()
+	server.On("handle", "/project1/global/instanceTemplates/"+gceMigB).Return(instanceTemplate).Once()
+	server.On("handle", "/project1/zones/"+zoneB+"/machineTypes/n1-standard-1").Return(getMachineType(zoneB)).Twice()
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA).Return(getInstanceGroupManagerNamed(gceMigA, zoneB)).Once()
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA+"/listManagedInstances").Return(getManagedInstancesResponse1Named(gceMigA, zoneB)).Once()
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigB).Return(getInstanceGroupManagerNamed(gceMigB, zoneB)).Once()
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigB+"/listManagedInstances").Return(getManagedInstancesResponse2Named(gceMigB, zoneB)).Once()
+
+	regional := true
+	g := newTestGceManager(t, server.URL, ModeGCE, regional)
+
+	min, max := 0, 100
+	g.migAutoDiscoverySpecs = []cloudprovider.MIGAutoDiscoveryConfig{
+		{Re: regexp.MustCompile("UNUSED"), MinSize: min, MaxSize: max},
+	}
+
+	assert.NoError(t, g.fetchAutoMigs())
+
+	migs := g.getMigs()
+	assert.Equal(t, 2, len(migs))
+	validateMig(t, migs[0].config, zoneB, gceMigA, min, max)
+	validateMig(t, migs[1].config, zoneB, gceMigB, min, max)
+	mock.AssertExpectationsForObjects(t, server)
+}
+
+func TestFetchExplicitMigs(t *testing.T) {
+	server := NewHttpServerMock()
+	defer server.Close()
+
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA).Return(getInstanceGroupManagerNamed(gceMigA, zoneB)).Once()
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigB).Return(getInstanceGroupManagerNamed(gceMigB, zoneB)).Once()
+
+	server.On("handle", "/project1/global/instanceTemplates/"+gceMigA).Return(instanceTemplate).Once()
+	server.On("handle", "/project1/global/instanceTemplates/"+gceMigB).Return(instanceTemplate).Once()
+	server.On("handle", "/project1/zones/"+zoneB+"/machineTypes/n1-standard-1").Return(getMachineType(zoneB)).Twice()
+
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA).Return(getInstanceGroupManagerNamed(gceMigA, zoneB)).Once()
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA+"/listManagedInstances").Return(getManagedInstancesResponse1Named(gceMigA, zoneB)).Once()
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigB).Return(getInstanceGroupManagerNamed(gceMigB, zoneB)).Once()
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigB+"/listManagedInstances").Return(getManagedInstancesResponse2Named(gceMigB, zoneB)).Once()
+
+	regional := false
+	g := newTestGceManager(t, server.URL, ModeGCE, regional)
+
+	minA, maxA := 0, 100
+	minB, maxB := 1, 10
+	specs := []string{
+		fmt.Sprintf("%d:%d:https://content.googleapis.com/compute/v1/projects/project1/zones/%s/instanceGroups/%s", minA, maxA, zoneB, gceMigA),
+		fmt.Sprintf("%d:%d:https://content.googleapis.com/compute/v1/projects/project1/zones/%s/instanceGroups/%s", minB, maxB, zoneB, gceMigB),
+	}
+
+	assert.NoError(t, g.fetchExplicitMigs(specs))
+
+	migs := g.getMigs()
+	assert.Equal(t, 2, len(migs))
+	validateMig(t, migs[0].config, zoneB, gceMigA, minA, maxA)
+	validateMig(t, migs[1].config, zoneB, gceMigB, minB, maxB)
 	mock.AssertExpectationsForObjects(t, server)
 }
