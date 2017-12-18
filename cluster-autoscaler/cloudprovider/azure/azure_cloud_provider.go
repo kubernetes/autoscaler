@@ -30,6 +30,11 @@ import (
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 )
 
+const (
+	// ProviderName is the cloud provider name for Azure
+	ProviderName = "azure"
+)
+
 // AzureCloudProvider provides implementation of CloudProvider interface for Azure.
 type AzureCloudProvider struct {
 	azureManager    *AzureManager
