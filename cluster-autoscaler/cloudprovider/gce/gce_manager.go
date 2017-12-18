@@ -17,11 +17,14 @@ limitations under the License.
 package gce
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"io"
 	"os"
+	"path"
 	"reflect"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -39,6 +42,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	provider_gce "k8s.io/kubernetes/pkg/cloudprovider/providers/gce"
 )
@@ -80,6 +84,7 @@ const (
 	nodeAutoprovisioningPrefix = "nap"
 	napMaxNodes                = 1000
 	napMinNodes                = 0
+	scaleToZeroSupported       = true
 )
 
 var (
@@ -125,6 +130,7 @@ type GceManager interface {
 	getProjectId() string
 	getMode() GcpCloudProviderMode
 	getTemplates() *templateBuilder
+	findMigsNamed(name *regexp.Regexp) ([]string, error)
 }
 
 // gceManagerImpl handles gce communication and data caching.
@@ -140,19 +146,21 @@ type gceManagerImpl struct {
 	cacheMutex sync.Mutex
 	migsMutex  sync.Mutex
 
-	location        string
-	projectId       string
-	clusterName     string
-	mode            GcpCloudProviderMode
-	templates       *templateBuilder
-	interrupt       chan struct{}
-	isRegional      bool
-	resourceLimiter *cloudprovider.ResourceLimiter
-	lastRefresh     time.Time
+	location              string
+	projectId             string
+	clusterName           string
+	mode                  GcpCloudProviderMode
+	templates             *templateBuilder
+	interrupt             chan struct{}
+	isRegional            bool
+	explicitlyConfigured  map[GceRef]bool
+	migAutoDiscoverySpecs []cloudprovider.MIGAutoDiscoveryConfig
+	resourceLimiter       *cloudprovider.ResourceLimiter
+	lastRefresh           time.Time
 }
 
 // CreateGceManager constructs gceManager object.
-func CreateGceManager(configReader io.Reader, mode GcpCloudProviderMode, clusterName string) (GceManager, error) {
+func CreateGceManager(configReader io.Reader, mode GcpCloudProviderMode, clusterName string, discoveryOpts cloudprovider.NodeGroupDiscoveryOptions) (GceManager, error) {
 	// Create Google Compute Engine token.
 	var err error
 	tokenSource := google.ComputeTokenSource("")
@@ -220,10 +228,20 @@ func CreateGceManager(configReader io.Reader, mode GcpCloudProviderMode, cluster
 			projectId: projectId,
 			service:   gceService,
 		},
-		interrupt: make(chan struct{}),
+		interrupt:            make(chan struct{}),
+		explicitlyConfigured: make(map[GceRef]bool),
 	}
 
-	if mode == ModeGKE {
+	switch mode {
+	case ModeGCE:
+		var err error
+		if err = manager.fetchExplicitMigs(discoveryOpts.NodeGroupSpecs); err != nil {
+			return nil, fmt.Errorf("failed to fetch MIGs: %v", err)
+		}
+		if manager.migAutoDiscoverySpecs, err = discoveryOpts.ParseMIGAutoDiscoverySpecs(); err != nil {
+			return nil, err
+		}
+	case ModeGKE:
 		gkeService, err := gke.New(client)
 		if err != nil {
 			return nil, err
@@ -242,14 +260,7 @@ func CreateGceManager(configReader io.Reader, mode GcpCloudProviderMode, cluster
 			}
 			manager.gkeBetaService = gkeBetaService
 		}
-		err = manager.fetchAllNodePools()
-		if err != nil {
-			glog.Errorf("Failed to fetch node pools: %v", err)
-			return nil, err
-		}
-	}
-
-	if mode == ModeGKENAP {
+	case ModeGKENAP:
 		gkeAlphaService, err := gke_alpha.New(client)
 		if err != nil {
 			return nil, err
@@ -258,20 +269,12 @@ func CreateGceManager(configReader io.Reader, mode GcpCloudProviderMode, cluster
 			gkeAlphaService.BasePath = *gkeAPIEndpoint
 		}
 		manager.gkeAlphaService = gkeAlphaService
-		err = manager.fetchAllNodePools()
-		if err != nil {
-			glog.Errorf("Failed to fetch node pools: %v", err)
-			return nil, err
-		}
-		err = manager.fetchResourceLimiter()
-		if err != nil {
-			glog.Errorf("Failed to fetch resource limits: %v", err)
-			return nil, err
-		}
 		glog.V(1).Info("Using GKE-NAP mode")
 	}
 
-	manager.lastRefresh = time.Now()
+	if err := manager.forceRefresh(); err != nil {
+		return nil, err
+	}
 
 	go wait.Until(func() {
 		manager.cacheMutex.Lock()
@@ -288,6 +291,12 @@ func CreateGceManager(configReader io.Reader, mode GcpCloudProviderMode, cluster
 func (m *gceManagerImpl) Cleanup() error {
 	close(m.interrupt)
 	return nil
+}
+
+func (m *gceManagerImpl) assertGCE() {
+	if m.mode != ModeGCE {
+		glog.Fatalf("This should run only in GCE mode")
+	}
 }
 
 func (m *gceManagerImpl) assertGKE() {
@@ -730,7 +739,7 @@ func (m *gceManagerImpl) DeleteInstances(instances []*GceRef) error {
 			return err
 		}
 		if mig != commonMig {
-			return fmt.Errorf("Connot delete instances which don't belong to the same MIG.")
+			return fmt.Errorf("Cannot delete instances which don't belong to the same MIG.")
 		}
 	}
 
@@ -857,25 +866,143 @@ func (m *gceManagerImpl) getTemplates() *templateBuilder {
 }
 
 func (m *gceManagerImpl) Refresh() error {
-	if m.mode == ModeGCE {
+	if m.lastRefresh.Add(refreshInterval).After(time.Now()) {
 		return nil
 	}
-	if m.lastRefresh.Add(refreshInterval).Before(time.Now()) {
-		err := m.fetchAllNodePools()
+	return m.forceRefresh()
+}
+
+func (m *gceManagerImpl) forceRefresh() error {
+	switch m.mode {
+	case ModeGCE:
+		if err := m.fetchAutoMigs(); err != nil {
+			glog.Errorf("Failed to fetch MIGs: %v", err)
+			return err
+		}
+	case ModeGKENAP:
+		if err := m.fetchResourceLimiter(); err != nil {
+			glog.Errorf("Failed to fetch resource limits: %v", err)
+			return err
+		}
+		fallthrough
+	case ModeGKE:
+		if err := m.fetchAllNodePools(); err != nil {
+			glog.Errorf("Failed to fetch node pools: %v", err)
+			return err
+		}
+	}
+	m.lastRefresh = time.Now()
+	glog.V(2).Infof("Refreshed GCE resources, next refresh after %v", m.lastRefresh.Add(refreshInterval))
+	return nil
+}
+
+// Fetch explicitly configured MIGs. These MIGs should never be unregistered
+// during refreshes, even if they no longer exist in GCE.
+func (m *gceManagerImpl) fetchExplicitMigs(specs []string) error {
+	m.assertGCE()
+
+	changed := false
+	for _, spec := range specs {
+		mig, err := m.buildMigFromSpec(spec)
 		if err != nil {
 			return err
 		}
+		if m.RegisterMig(mig) {
+			changed = true
+		}
+		m.explicitlyConfigured[mig.GceRef] = true
+	}
 
-		err = m.fetchResourceLimiter()
-		if err != nil {
+	if changed {
+		m.cacheMutex.Lock()
+		defer m.cacheMutex.Unlock()
+
+		if err := m.regenerateCache(); err != nil {
 			return err
 		}
-
-		m.lastRefresh = time.Now()
-		glog.V(2).Infof("Refreshed NodePools list and resource limits, next refresh after %v", m.lastRefresh.Add(refreshInterval))
-		return nil
 	}
 	return nil
+}
+
+func (m *gceManagerImpl) buildMigFromSpec(spec string) (*Mig, error) {
+	s, err := dynamic.SpecFromString(spec, scaleToZeroSupported)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse node group spec: %v", err)
+	}
+	mig := &Mig{gceManager: m, minSize: s.MinSize, maxSize: s.MaxSize, exist: true}
+	if mig.Project, mig.Zone, mig.Name, err = ParseMigUrl(s.Name); err != nil {
+		return nil, fmt.Errorf("failed to parse mig url: %s got error: %v", s.Name, err)
+	}
+	return mig, nil
+}
+
+// Fetch automatically discovered MIGs. These MIGs should be unregistered if
+// they no longer exist in GCE.
+func (m *gceManagerImpl) fetchAutoMigs() error {
+	m.assertGCE()
+
+	exists := make(map[GceRef]bool)
+	changed := false
+	for _, cfg := range m.migAutoDiscoverySpecs {
+		links, err := m.findMigsNamed(cfg.Re)
+		if err != nil {
+			return fmt.Errorf("cannot autodiscover managed instance groups: %s", err)
+		}
+		for _, link := range links {
+			mig, err := m.buildMigFromAutoCfg(link, cfg)
+			if err != nil {
+				return err
+			}
+			exists[mig.GceRef] = true
+			if m.explicitlyConfigured[mig.GceRef] {
+				// This MIG was explicitly configured, but would also be
+				// autodiscovered. We want the explicitly configured min and max
+				// nodes to take precedence.
+				glog.V(3).Infof("Ignoring explicitly configured MIG %s for autodiscovery.", mig.GceRef.Name)
+				continue
+			}
+			if m.RegisterMig(mig) {
+				glog.V(3).Infof("Autodiscovered MIG %s using regexp %s", mig.GceRef.Name, cfg.Re.String())
+				changed = true
+			}
+		}
+	}
+
+	for _, mig := range m.getMigs() {
+		if !exists[mig.config.GceRef] && !m.explicitlyConfigured[mig.config.GceRef] {
+			m.UnregisterMig(mig.config)
+			changed = true
+		}
+	}
+
+	if changed {
+		m.cacheMutex.Lock()
+		defer m.cacheMutex.Unlock()
+
+		if err := m.regenerateCache(); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (m *gceManagerImpl) buildMigFromAutoCfg(link string, cfg cloudprovider.MIGAutoDiscoveryConfig) (*Mig, error) {
+	spec := dynamic.NodeGroupSpec{
+		Name:               link,
+		MinSize:            cfg.MinSize,
+		MaxSize:            cfg.MaxSize,
+		SupportScaleToZero: scaleToZeroSupported,
+	}
+	if verr := spec.Validate(); verr != nil {
+		return nil, fmt.Errorf("failed to create node group spec: %v", verr)
+	}
+	mig := &Mig{gceManager: m, minSize: spec.MinSize, maxSize: spec.MaxSize, exist: true}
+	var err error
+	if mig.Project, mig.Zone, mig.Name, err = ParseMigUrl(spec.Name); err != nil {
+		return nil, fmt.Errorf("failed to parse mig url: %s got error: %v", spec.Name, err)
+	}
+	return mig, nil
 }
 
 func (m *gceManagerImpl) fetchResourceLimiter() error {
@@ -945,4 +1072,58 @@ func getProjectAndLocation(isRegional bool) (string, string, error) {
 		return "", "", err
 	}
 	return projectID, location, nil
+}
+
+func (m *gceManagerImpl) findMigsNamed(name *regexp.Regexp) ([]string, error) {
+	if m.isRegional {
+		return m.findMigsInRegion(m.location, name)
+	}
+	return m.findMigsInZone(m.location, name)
+}
+
+func (m *gceManagerImpl) getZones(region string) ([]string, error) {
+	r, err := m.gceService.Regions.Get(m.getProjectId(), region).Do()
+	if err != nil {
+		return nil, fmt.Errorf("cannot get zones for GCE region %s: %v", region, err)
+	}
+	zones := make([]string, len(r.Zones))
+	for i, link := range r.Zones {
+		zones[i] = path.Base(link)
+	}
+	return zones, nil
+}
+
+func (m *gceManagerImpl) findMigsInRegion(region string, name *regexp.Regexp) ([]string, error) {
+	links := make([]string, 0)
+	zones, err := m.getZones(region)
+	if err != nil {
+		return nil, err
+	}
+	for _, z := range zones {
+		zl, err := m.findMigsInZone(z, name)
+		if err != nil {
+			return nil, err
+		}
+		for _, link := range zl {
+			links = append(links, link)
+		}
+	}
+
+	return links, nil
+}
+
+func (m *gceManagerImpl) findMigsInZone(zone string, name *regexp.Regexp) ([]string, error) {
+	filter := fmt.Sprintf("name eq %s", name)
+	links := make([]string, 0)
+	req := m.gceService.InstanceGroups.List(m.getProjectId(), zone).Filter(filter)
+	if err := req.Pages(context.TODO(), func(page *gce.InstanceGroupList) error {
+		for _, ig := range page.Items {
+			links = append(links, ig.SelfLink)
+			glog.V(3).Infof("autodiscovered managed instance group %s using regexp %s", ig.Name, name)
+		}
+		return nil
+	}); err != nil {
+		return nil, fmt.Errorf("cannot list managed instance groups: %v", err)
+	}
+	return links, nil
 }

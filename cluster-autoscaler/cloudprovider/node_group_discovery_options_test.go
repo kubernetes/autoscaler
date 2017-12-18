@@ -17,34 +17,171 @@ limitations under the License.
 package cloudprovider
 
 import (
-	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func TestNodeGroupDiscoveryOptionsValidate(t *testing.T) {
-	o := NodeGroupDiscoveryOptions{
-		NodeGroupAutoDiscoverySpec: "asg:tag=foobar",
-		NodeGroupSpecs:             []string{"myasg:0:10"},
+func TestParseMIGAutoDiscoverySpecs(t *testing.T) {
+	cases := []struct {
+		name    string
+		specs   []string
+		want    []MIGAutoDiscoveryConfig
+		wantErr bool
+	}{
+		{
+			name: "GoodSpecs",
+			specs: []string{
+				"mig:namePrefix=pfx,min=0,max=10",
+				"mig:namePrefix=anotherpfx,min=1,max=2",
+			},
+			want: []MIGAutoDiscoveryConfig{
+				{Re: regexp.MustCompile("^pfx.+"), MinSize: 0, MaxSize: 10},
+				{Re: regexp.MustCompile("^anotherpfx.+"), MinSize: 1, MaxSize: 2},
+			},
+		},
+		{
+			name:    "MissingMIGType",
+			specs:   []string{"namePrefix=pfx,min=0,max=10"},
+			wantErr: true,
+		},
+		{
+			name:    "WrongType",
+			specs:   []string{"asg:namePrefix=pfx,min=0,max=10"},
+			wantErr: true,
+		},
+		{
+			name:    "UnknownKey",
+			specs:   []string{"mig:namePrefix=pfx,min=0,max=10,unknown=hi"},
+			wantErr: true,
+		},
+		{
+			name:    "NonIntegerMin",
+			specs:   []string{"mig:namePrefix=pfx,min=a,max=10"},
+			wantErr: true,
+		},
+		{
+			name:    "NonIntegerMax",
+			specs:   []string{"mig:namePrefix=pfx,min=1,max=donkey"},
+			wantErr: true,
+		},
+		{
+			name:    "PrefixDoesNotCompileToRegexp",
+			specs:   []string{"mig:namePrefix=a),min=1,max=10"},
+			wantErr: true,
+		},
+		{
+			name:    "KeyMissingValue",
+			specs:   []string{"mig:namePrefix=prefix,min=,max=10"},
+			wantErr: true,
+		},
+		{
+			name:    "ValueMissingKey",
+			specs:   []string{"mig:namePrefix=prefix,=0,max=10"},
+			wantErr: true,
+		},
+		{
+			name:    "KeyMissingSeparator",
+			specs:   []string{"mig:namePrefix=prefix,min,max=10"},
+			wantErr: true,
+		},
+		{
+			name:    "TooManySeparators",
+			specs:   []string{"mig:namePrefix=prefix,min=0,max=10=20"},
+			wantErr: true,
+		},
+		{
+			name:    "PrefixIsEmpty",
+			specs:   []string{"mig:namePrefix=,min=0,max=10"},
+			wantErr: true,
+		},
+		{
+			name:    "PrefixIsMissing",
+			specs:   []string{"mig:min=0,max=10"},
+			wantErr: true,
+		},
+		{
+			name:    "MaxBelowMin",
+			specs:   []string{"mig:namePrefix=prefix,min=10,max=1"},
+			wantErr: true,
+		},
+		{
+			name:    "MaxIsZero",
+			specs:   []string{"mig:namePrefix=prefix,min=0,max=0"},
+			wantErr: true,
+		},
 	}
 
-	err := o.Validate()
-	if err == nil {
-		t.Errorf("Expected validation error didn't occur with NodeGroupDiscoveryOptions: %+v", o)
-		t.FailNow()
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			do := NodeGroupDiscoveryOptions{NodeGroupAutoDiscoverySpecs: tc.specs}
+			got, err := do.ParseMIGAutoDiscoverySpecs()
+			if tc.wantErr {
+				assert.Error(t, err)
+				return
+			}
+			assert.NoError(t, err)
+			assert.True(t, assert.ObjectsAreEqualValues(tc.want, got), "\ngot: %#v\nwant: %#v", got, tc.want)
+		})
 	}
-	if msg := fmt.Sprintf("%v", err); msg != `Either node group specs([myasg:0:10]) or node group auto discovery spec(asg:tag=foobar) can be specified but not both` {
-		t.Errorf("Unexpected validation error message: %s", msg)
+}
+
+func TestParseASGAutoDiscoverySpecs(t *testing.T) {
+	cases := []struct {
+		name    string
+		specs   []string
+		want    []ASGAutoDiscoveryConfig
+		wantErr bool
+	}{
+		{
+			name: "GoodSpecs",
+			specs: []string{
+				"asg:tag=tag,anothertag",
+				"asg:tag=cooltag,anothertag",
+			},
+			want: []ASGAutoDiscoveryConfig{
+				{TagKeys: []string{"tag", "anothertag"}},
+				{TagKeys: []string{"cooltag", "anothertag"}},
+			},
+		},
+		{
+			name:    "MissingASGType",
+			specs:   []string{"tag=tag,anothertag"},
+			wantErr: true,
+		},
+		{
+			name:    "WrongType",
+			specs:   []string{"mig:tag=tag,anothertag"},
+			wantErr: true,
+		},
+		{
+			name:    "KeyMissingValue",
+			specs:   []string{"asg:tag="},
+			wantErr: true,
+		},
+		{
+			name:    "ValueMissingKey",
+			specs:   []string{"asg:=tag"},
+			wantErr: true,
+		},
+		{
+			name:    "KeyMissingSeparator",
+			specs:   []string{"asg:tag"},
+			wantErr: true,
+		},
 	}
 
-	o = NodeGroupDiscoveryOptions{
-		NodeGroupAutoDiscoverySpec: "asg:tag=foobar",
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			do := NodeGroupDiscoveryOptions{NodeGroupAutoDiscoverySpecs: tc.specs}
+			got, err := do.ParseASGAutoDiscoverySpecs()
+			if tc.wantErr {
+				assert.Error(t, err)
+				return
+			}
+			assert.NoError(t, err)
+			assert.True(t, assert.ObjectsAreEqualValues(tc.want, got), "\ngot: %#v\nwant: %#v", got, tc.want)
+		})
 	}
-	assert.NoError(t, o.Validate())
-
-	o = NodeGroupDiscoveryOptions{
-		NodeGroupSpecs: []string{"myasg:0:10"},
-	}
-	assert.NoError(t, o.Validate())
 }
