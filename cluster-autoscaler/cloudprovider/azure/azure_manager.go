@@ -144,12 +144,7 @@ func CreateAzureManager(configReader io.Reader) (*AzureManager, error) {
 	scaleSetAPI = compute.NewVirtualMachineScaleSetsClient(subscriptionId)
 	scaleSetsClient := scaleSetAPI.(compute.VirtualMachineScaleSetsClient)
 	scaleSetsClient.Authorizer = autorest.NewBearerAuthorizer(spt)
-	scaleSetsClient.Sender = autorest.CreateSender(
-	//autorest.WithLogging(log.New(os.Stdout, "sdk-example: ", log.LstdFlags)),
-	)
-
-	//scaleSetsClient.RequestInspector = withInspection()
-	//scaleSetsClient.ResponseInspector = byInspecting()
+	scaleSetsClient.Sender = autorest.CreateSender()
 
 	glog.Infof("Created scale set client with authorizer: %v", scaleSetsClient)
 
@@ -289,7 +284,7 @@ func (m *AzureManager) DeleteInstances(instances []*AzureRef) error {
 			return err
 		}
 		if asg != commonAsg {
-			return fmt.Errorf("Cannot delete instances which don't belong to the same Scale Set.")
+			return fmt.Errorf("cannot delete instance (%s) which don't belong to the same Scale Set", instance.GetKey())
 		}
 	}
 
