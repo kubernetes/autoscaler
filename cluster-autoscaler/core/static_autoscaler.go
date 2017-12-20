@@ -32,6 +32,11 @@ import (
 	"github.com/golang/glog"
 )
 
+const (
+	// How old the oldest unschedulable pod should be before starting scale up.
+	unschedulablePodTimeBuffer = 2 * time.Second
+)
+
 // StaticAutoscaler is an autoscaler which has all the core functionality of a CA but without the reconfiguration feature
 type StaticAutoscaler struct {
 	// AutoscalingContext consists of validated settings and options for this autoscaler
@@ -239,10 +244,19 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		glog.V(4).Info("No schedulable pods")
 	}
 
+	// If all pending pods are new we may want to skip a real scale down (just like if the pods were handled).
+	allPendingPodsToHelpAreNew := false
+
 	if len(unschedulablePodsToHelp) == 0 {
 		glog.V(1).Info("No unschedulable pods")
 	} else if a.MaxNodesTotal > 0 && len(readyNodes) >= a.MaxNodesTotal {
 		glog.V(1).Info("Max total nodes in cluster reached")
+	} else if getOldestCreateTime(unschedulablePodsToHelp).Add(unschedulablePodTimeBuffer).After(currentTime) {
+		// The assumption here is that these pods have been created very recently and probably there
+		// is more pods to come. In theory we could check the newest pod time but then if pod were created
+		// slowly but at the pace of 1 every 2 seconds then no scale up would be triggered for long time.
+		allPendingPodsToHelpAreNew = true
+		glog.V(1).Info("Unschedulable pods are very new, waiting one iteration for more")
 	} else {
 		daemonsets, err := a.ListerRegistry.DaemonSetLister().List()
 		if err != nil {
@@ -300,7 +314,8 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 			a.lastScaleDownFailTime.Add(a.ScaleDownDelayAfterFailure).After(currentTime) ||
 			a.lastScaleDownDeleteTime.Add(a.ScaleDownDelayAfterDelete).After(currentTime) ||
 			schedulablePodsPresent ||
-			scaleDown.nodeDeleteStatus.IsDeleteInProgress()
+			scaleDown.nodeDeleteStatus.IsDeleteInProgress() ||
+			allPendingPodsToHelpAreNew
 
 		glog.V(4).Infof("Scale down status: unneededOnly=%v lastScaleUpTime=%s "+
 			"lastScaleDownDeleteTime=%v lastScaleDownFailTime=%s schedulablePodsPresent=%v isDeleteInProgress=%v",
