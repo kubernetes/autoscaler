@@ -491,3 +491,13 @@ func UpdateClusterStateMetrics(csr *clusterstate.ClusterStateRegistry) {
 	readiness := csr.GetClusterReadiness()
 	metrics.UpdateNodesCount(readiness.Ready, readiness.Unready+readiness.LongNotStarted, readiness.NotStarted)
 }
+
+func getOldestCreateTime(pods []*apiv1.Pod) time.Time {
+	oldest := time.Now()
+	for _, pod := range pods {
+		if oldest.After(pod.CreationTimestamp.Time) {
+			oldest = pod.CreationTimestamp.Time
+		}
+	}
+	return oldest
+}

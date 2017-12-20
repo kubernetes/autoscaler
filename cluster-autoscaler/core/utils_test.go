@@ -527,3 +527,15 @@ func TestGetNodeCoresAndMemory(t *testing.T) {
 	_, _, err = getNodeCoresAndMemory(node)
 	assert.Error(t, err)
 }
+
+func TestGetOldestPod(t *testing.T) {
+	p1 := BuildTestPod("p1", 500, 1000)
+	p1.CreationTimestamp = metav1.NewTime(time.Now().Add(-1 * time.Minute))
+	p2 := BuildTestPod("p2", 500, 1000)
+	p2.CreationTimestamp = metav1.NewTime(time.Now().Add(+1 * time.Minute))
+	p3 := BuildTestPod("p3", 500, 1000)
+	p3.CreationTimestamp = metav1.NewTime(time.Now())
+
+	assert.Equal(t, p1.CreationTimestamp.Time, getOldestCreateTime([]*apiv1.Pod{p1, p2, p3}))
+	assert.Equal(t, p1.CreationTimestamp.Time, getOldestCreateTime([]*apiv1.Pod{p3, p2, p1}))
+}
