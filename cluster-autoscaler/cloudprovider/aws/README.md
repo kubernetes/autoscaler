@@ -72,7 +72,7 @@ spec:
         app: cluster-autoscaler
     spec:
       containers:
-        - image: gcr.io/google_containers/cluster-autoscaler:v0.6.0
+        - image: k8s.gcr.io/cluster-autoscaler:v0.6.0
           name: cluster-autoscaler
           resources:
             limits:
@@ -123,7 +123,7 @@ spec:
         app: cluster-autoscaler
     spec:
       containers:
-        - image: gcr.io/google_containers/cluster-autoscaler:v0.6.0
+        - image: k8s.gcr.io/cluster-autoscaler:v0.6.0
           name: cluster-autoscaler
           resources:
             limits:
@@ -183,7 +183,7 @@ spec:
       nodeSelector:
         kubernetes.io/role: master
       containers:
-        - image: gcr.io/google_containers/cluster-autoscaler:{{ ca_version }}
+        - image: k8s.gcr.io/cluster-autoscaler:{{ ca_version }}
           name: cluster-autoscaler
           resources:
             limits:
