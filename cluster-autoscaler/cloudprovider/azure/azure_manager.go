@@ -418,7 +418,7 @@ func (m *AzureManager) regenerateCache() (err error) {
 	case vmTypeVMSS:
 		newCache, newInstanceIDsCache, err = m.listScaleSets()
 	case vmTypeStandard:
-		// TODO: FIXME
+		newCache, newInstanceIDsCache, err = m.listAgentPools()
 	default:
 		err = fmt.Errorf("vmType %q not supported", m.config.VMType)
 	}
@@ -439,6 +439,42 @@ func (m *AzureManager) getNodeGroupByID(id string) cloudprovider.NodeGroup {
 	}
 
 	return nil
+}
+
+func (m *AzureManager) listAgentPools() (map[AzureRef]cloudprovider.NodeGroup, map[string]string, error) {
+	as := make(map[AzureRef]cloudprovider.NodeGroup)
+	instanceIDs := make(map[string]string)
+
+	for _, nodeGroup := range m.nodeGroups {
+		agentPool, ok := nodeGroup.(*AgentPool)
+		if !ok {
+			return nil, nil, fmt.Errorf("node group %q is not AgentPool", nodeGroup)
+		}
+
+		_, vmIndex, err := agentPool.GetVMIndexes()
+		if err != nil {
+			glog.Errorf("GetVMIndexes for node group %q failed: %v", nodeGroup.Id(), err)
+			return nil, nil, err
+		}
+
+		for idx := range vmIndex {
+			id := vmIndex[idx].ID
+			vmID := vmIndex[idx].VMID
+
+			idRef := AzureRef{
+				Name: id,
+			}
+			vmIDRef := AzureRef{
+				Name: vmID,
+			}
+			as[idRef] = nodeGroup
+			as[vmIDRef] = nodeGroup
+			instanceIDs[id] = fmt.Sprintf("%d", idx)
+			instanceIDs[vmID] = fmt.Sprintf("%d", idx)
+		}
+	}
+
+	return as, instanceIDs, nil
 }
 
 // listScaleSets gets a list of scale sets and instanceIDs.
