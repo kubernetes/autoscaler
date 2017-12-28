@@ -130,11 +130,13 @@ func (initializer *initializer) updateResourceRequests(obj interface{}) {
 		failedPod, err := markAsFailed(pod)
 		if err != nil {
 			glog.Errorf("unable to mark failed initialization for pod %v: %v", pod.Name, err)
+			return
 		}
 		err = initializer.doUpdatePod(failedPod)
 		if err != nil {
-			glog.Errorf("unable to mark failed initialization for pod %v: %v", pod.Name, err)
+			glog.Errorf("unable to update pod %v after failed initialization: %v", pod.Name, err)
 		}
+		return
 	}
 	err = initializer.doUpdatePod(initializedPod)
 	if err != nil {
