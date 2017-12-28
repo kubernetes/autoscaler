@@ -1,10 +1,13 @@
 # Cluster Autoscaler on Azure
 
-The cluster autoscaler on Azure scales worker nodes within any specified autoscaling group. It will run as a `Deployment` in your cluster. This README will go over some of the necessary steps required to get the cluster autoscaler up and running.
+The cluster autoscaler on Azure scales worker nodes within any specified autoscaling group. It will run as a Kubernetes deployment in your cluster. This README will go over some of the necessary steps required to get the cluster autoscaler up and running.
 
 ## Kubernetes Version
 
-Cluster autoscaler must run on Kubernetes with Azure VMSS support ([kubernetes#43287](https://github.com/kubernetes/kubernetes/issues/43287)). It is planed in Kubernetes v1.10.
+Cluster autoscaler support two VM types with Azure cloud provider:
+
+- vmss: For kubernetes cluster running on VMSS instances. Azure cloud provider's `vmType` parameter must be configured as 'vmss'. It requires Kubernetes with Azure VMSS support ([kubernetes#43287](https://github.com/kubernetes/kubernetes/issues/43287)), which is planed in Kubernetes v1.10.
+- standard: For kubernetes cluster running on VMAS instances. Azure cloud provider's `vmType` parameter must be configured as 'standard'. It only supports Kubernetes cluster deployed via [acs-engine](https://github.com/Azure/acs-engine).
 
 ## Permissions
 
@@ -15,188 +18,77 @@ Get azure credentials by running the following command
 az ad sp create-for-rbac --role="Contributor" --scopes="/subscriptions/<subscription-id>" --output json
 ```
 
-And fill the values with the result you got into the configmap
+## Deployment manifests
 
-```yaml
-apiVersion: v1
-data:
-  ClientID: <client-id>
-  ClientSecret: <client-secret>
-  ResourceGroup: <resource-group>
-  SubscriptionID: <subscription-id>
-  TenantID: <tenand-id>
-  ScaleSetName: <scale-set-name>
-kind: ConfigMap
-metadata:
-  name: cluster-autoscaler-azure
-  namespace: kube-system
-```
+### VMSS deployment
 
-Create the configmap by running
+Pre-requirements:
+
+- Get credentials from above `permissions` step.
+- Get the scale set name which is used for nodes scaling.
+- Encode each data with base64.
+
+Fill the values of cluster-autoscaler-azure secret in [cluster-autoscaler-vmss.yaml](cluster-autoscaler-vmss.yaml), including
+
+- ClientID: `<base64-encoded-client-id>`
+- ClientSecret: `<base64-encoded-client-secret>`
+- ResourceGroup: `<base64-encoded-resource-group>`
+- SubscriptionID: `<base64-encode-subscription-id>`
+- TenantID: `<base64-encoded-tenant-id>`
+- NodeGroup: `<base64-encoded-scale-set-name>`
+
+Note that all data should be encoded with base64.
+
+Then deploy cluster-autoscaler by running
 
 ```sh
-kubectl create -f cluster-autoscaler-azure-configmap.yaml
+kubectl create -f cluster-autoscaler-vmss.yaml
 ```
-
-## Deployment
-
-```yaml
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  name: cluster-autoscaler
-  namespace: kube-system
-  labels:
-    app: cluster-autoscaler
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: cluster-autoscaler
-  template:
-    metadata:
-      labels:
-        app: cluster-autoscaler
-    spec:
-      containers:
-      - image: k8s.gcr.io/cluster-autoscaler:{{ ca_version }}
-        name: cluster-autoscaler
-        resources:
-          limits:
-            cpu: 100m
-            memory: 300Mi
-          requests:
-            cpu: 100m
-            memory: 300Mi
-        env:
-        - name: ARM_SUBSCRIPTION_ID
-          valueFrom:
-            configMapKeyRef:
-              name: cluster-autoscaler-azure
-              key: SubscriptionID
-        - name: ARM_RESOURCE_GROUP
-          valueFrom:
-            configMapKeyRef:
-              name: cluster-autoscaler-azure
-              key: ResourceGroup
-        - name: ARM_TENANT_ID
-          valueFrom:
-            configMapKeyRef:
-              name: cluster-autoscaler-azure
-              key: TenantID
-        - name: ARM_CLIENT_ID
-          valueFrom:
-            configMapKeyRef:
-              name: cluster-autoscaler-azure
-              key: ClientID
-        - name: ARM_CLIENT_SECRET
-          valueFrom:
-            configMapKeyRef:
-              name: cluster-autoscaler-azure
-              key: ClientSecret
-        - name: ARM_SCALE_SET_NAME
-          valueFrom:
-            configMapKeyRef:
-              name: cluster-autoscaler-azure
-              key: ScaleSetName
-        command:
-          - ./cluster-autoscaler
-          - --v=4
-          - --cloud-provider=azure
-          - --skip-nodes-with-local-storage=false
-          - --nodes="1:10:$(ARM_SCALE_SET_NAME)"
-        volumeMounts:
-          - name: ssl-certs
-            mountPath: /etc/ssl/certs/ca-certificates.crt
-            readOnly: true
-        imagePullPolicy: "Always"
-      volumes:
-      - name: ssl-certs
-        hostPath:
-          path: "/etc/ssl/certs/ca-certificates.crt"
-```
-
-## Deploy in master node
 
 To run a CA pod in master node - CA deployment should tolerate the master `taint` and `nodeSelector` should be used to schedule the pods in master node.
 
-```yaml
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  name: cluster-autoscaler
-  namespace: kube-system
-  labels:
-    app: cluster-autoscaler
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: cluster-autoscaler
-  template:
-    metadata:
-      labels:
-        app: cluster-autoscaler
-    spec:
-      tolerations:
-      - effect: NoSchedule
-        key: node-role.kubernetes.io/master
-      nodeSelector:
-        kubernetes.io/role: master
-      containers:
-      - image: k8s.gcr.io/cluster-autoscaler:{{ ca_version }}
-        name: cluster-autoscaler
-        resources:
-          limits:
-            cpu: 100m
-            memory: 300Mi
-          requests:
-            cpu: 100m
-            memory: 300Mi
-        env:
-        - name: ARM_SUBSCRIPTION_ID
-          valueFrom:
-            configMapKeyRef:
-              name: cluster-autoscaler-azure
-              key: SubscriptionID
-        - name: ARM_RESOURCE_GROUP
-          valueFrom:
-            configMapKeyRef:
-              name: cluster-autoscaler-azure
-              key: ResourceGroup
-        - name: ARM_TENANT_ID
-          valueFrom:
-            configMapKeyRef:
-              name: cluster-autoscaler-azure
-              key: TenantID
-        - name: ARM_CLIENT_ID
-          valueFrom:
-            configMapKeyRef:
-              name: cluster-autoscaler-azure
-              key: ClientID
-        - name: ARM_CLIENT_SECRET
-          valueFrom:
-            configMapKeyRef:
-              name: cluster-autoscaler-azure
-              key: ClientSecret
-        - name: ARM_SCALE_SET_NAME
-          valueFrom:
-            configMapKeyRef:
-              name: cluster-autoscaler-azure
-              key: ScaleSetName
-        command:
-          - ./cluster-autoscaler
-          - --v=4
-          - --cloud-provider=azure
-          - --skip-nodes-with-local-storage=false
-          - --nodes="1:10:$(ARM_SCALE_SET_NAME)"
-        volumeMounts:
-          - name: ssl-certs
-            mountPath: /etc/ssl/certs/ca-certificates.crt
-            readOnly: true
-        imagePullPolicy: "Always"
-      volumes:
-      - name: ssl-certs
-        hostPath:
-          path: "/etc/ssl/certs/ca-certificates.crt"
+```sh
+kubectl create -f cluster-autoscaler-vmss-master.yaml
 ```
+
+### Standard deployment
+
+Pre-requirements:
+
+- Get credentials from above `permissions` step.
+- Get the required paramters from acs-engine deployments (usually under directory `_output/<master-dns-prefix>` after running `acs-engine deploy` command)
+  - Get `APIServerPrivateKey`, `CAPrivateKey`, `ClientPrivateKey` and `KubeConfigPrivateKey` from `azuredeploy.parameters.json`
+  - If windows nodes are included, also get `WindowsAdminPassword` from acs-engine deployment manifests
+  - Get the initial Azure deployment name from azure portal. If you have multiple deployments (e.g. have run `acs-engine scale` command), make sure to get the first one
+  - Get a node pool name for nodes scaling from acs-engine deployment manifests
+- Encode each data with base64.
+
+Fill the values of cluster-autoscaler-azure secret in [cluster-autoscaler-standard.yaml](cluster-autoscaler-standard.yaml), including
+
+- ClientID: `<base64-encoded-client-id>`
+- ClientSecret: `<base64-encoded-client-secret>`
+- ResourceGroup: `<base64-encoded-resource-group>`
+- SubscriptionID: `<base64-encode-subscription-id>`
+- TenantID: `<base64-encoded-tenant-id>`
+- NodeGroup: `<base64-encoded-node-pool-name>`
+- Deployment: `<base64-encoded-azure-initial-deploy-name>`
+- APIServerPrivateKey: `<base64-encoded-apiserver-private-key>`
+- CAPrivateKey: `<base64-encoded-ca-private-key>`
+- ClientPrivateKey: `<base64-encoded-client-private-key>`
+- KubeConfigPrivateKey: `<base64-encoded-kubeconfig-private-key>`
+- WindowsAdminPassword: `<base64-encoded-windows-admin-password>`
+
+Note that all data should be encoded with base64.
+
+Then deploy cluster-autoscaler by running
+
+```sh
+kubectl create -f cluster-autoscaler-standard.yaml
+```
+
+To run a CA pod in master node - CA deployment should tolerate the master `taint` and `nodeSelector` should be used to schedule the pods in master node.
+
+```sh
+kubectl create -f cluster-autoscaler-standard-master.yaml
+```
+
