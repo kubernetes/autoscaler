@@ -34,6 +34,7 @@ type VirtualMachineScaleSetsClientMock struct {
 	mock.Mock
 }
 
+// Get gets the VirtualMachineScaleSet by vmScaleSetName.
 func (client *VirtualMachineScaleSetsClientMock) Get(resourceGroupName string,
 	vmScaleSetName string) (result compute.VirtualMachineScaleSet, err error) {
 	capacity := int64(2)
@@ -47,6 +48,7 @@ func (client *VirtualMachineScaleSetsClientMock) Get(resourceGroupName string,
 	}, nil
 }
 
+// CreateOrUpdate creates or updates the VirtualMachineScaleSet.
 func (client *VirtualMachineScaleSetsClientMock) CreateOrUpdate(
 	resourceGroupName string, vmScaleSetName string, parameters compute.VirtualMachineScaleSet, cancel <-chan struct{}) (<-chan compute.VirtualMachineScaleSet, <-chan error) {
 	errChan := make(chan error)
@@ -56,6 +58,7 @@ func (client *VirtualMachineScaleSetsClientMock) CreateOrUpdate(
 	return nil, errChan
 }
 
+// DeleteInstances deletes a set of instances for specified VirtualMachineScaleSet.
 func (client *VirtualMachineScaleSetsClientMock) DeleteInstances(resourceGroupName string, vmScaleSetName string,
 	vmInstanceIDs compute.VirtualMachineScaleSetVMInstanceRequiredIDs, cancel <-chan struct{}) (<-chan compute.OperationStatusResponse, <-chan error) {
 	args := client.Called(resourceGroupName, vmScaleSetName, vmInstanceIDs, cancel)
@@ -71,6 +74,7 @@ type VirtualMachineScaleSetVMsClientMock struct {
 	mock.Mock
 }
 
+// List gets a list of VirtualMachineScaleSetVMs.
 func (m *VirtualMachineScaleSetVMsClientMock) List(resourceGroupName string, virtualMachineScaleSetName string, filter string, selectParameter string, expand string) (result compute.VirtualMachineScaleSetVMListResult, err error) {
 	value := make([]compute.VirtualMachineScaleSetVM, 1)
 	vmInstanceID := "test-instance-id"
@@ -88,6 +92,7 @@ func (m *VirtualMachineScaleSetVMsClientMock) List(resourceGroupName string, vir
 	}, nil
 }
 
+// ListNextResults gets more results from previous VirtualMachineScaleSetVMListResult.
 func (m *VirtualMachineScaleSetVMsClientMock) ListNextResults(lastResults compute.VirtualMachineScaleSetVMListResult) (result compute.VirtualMachineScaleSetVMListResult, err error) {
 	return result, nil
 }
@@ -100,6 +105,7 @@ type VirtualMachinesClientMock struct {
 	FakeStore map[string]map[string]compute.VirtualMachine
 }
 
+// CreateOrUpdate creates or updates the VirtualMachine.
 func (m *VirtualMachinesClientMock) CreateOrUpdate(resourceGroupName string, VMName string, parameters compute.VirtualMachine, cancel <-chan struct{}) (<-chan compute.VirtualMachine, <-chan error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
@@ -125,6 +131,7 @@ func (m *VirtualMachinesClientMock) CreateOrUpdate(resourceGroupName string, VMN
 	return resultChan, errChan
 }
 
+// Get gets the VirtualMachine by VMName.
 func (m *VirtualMachinesClientMock) Get(resourceGroupName string, VMName string, expand compute.InstanceViewTypes) (result compute.VirtualMachine, err error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
@@ -139,6 +146,7 @@ func (m *VirtualMachinesClientMock) Get(resourceGroupName string, VMName string,
 	}
 }
 
+// List gets a lit of VirtualMachine inside the resource group.
 func (m *VirtualMachinesClientMock) List(resourceGroupName string) (result compute.VirtualMachineListResult, err error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
@@ -158,12 +166,14 @@ func (m *VirtualMachinesClientMock) List(resourceGroupName string) (result compu
 	return result, nil
 }
 
+// ListNextResults gets more results from previous VirtualMachineListResult.
 func (m *VirtualMachinesClientMock) ListNextResults(lastResults compute.VirtualMachineListResult) (result compute.VirtualMachineListResult, err error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 	return compute.VirtualMachineListResult{}, nil
 }
 
+// Delete deletes the VirtualMachine by VMName.
 func (m *VirtualMachinesClientMock) Delete(resourceGroupName string, VMName string, cancel <-chan struct{}) (<-chan compute.OperationStatusResponse, <-chan error) {
 	args := m.Called(resourceGroupName, VMName, cancel)
 	errChan := make(chan error)
@@ -178,6 +188,7 @@ type InterfacesClientMock struct {
 	mock.Mock
 }
 
+// Delete deletes the interface by networkInterfaceName.
 func (m *InterfacesClientMock) Delete(resourceGroupName string, networkInterfaceName string, cancel <-chan struct{}) (<-chan autorest.Response, <-chan error) {
 	args := m.Called(resourceGroupName, networkInterfaceName, cancel)
 	errChan := make(chan error)
@@ -192,6 +203,7 @@ type DisksClientMock struct {
 	mock.Mock
 }
 
+// Delete deletes the disk by diskName.
 func (m *DisksClientMock) Delete(resourceGroupName string, diskName string, cancel <-chan struct{}) (<-chan disk.OperationStatusResponse, <-chan error) {
 	args := m.Called(resourceGroupName, diskName, cancel)
 	errChan := make(chan error)
@@ -206,6 +218,7 @@ type AccountsClientMock struct {
 	mock.Mock
 }
 
+// ListKeys get a list of keys by accountName.
 func (m *AccountsClientMock) ListKeys(resourceGroupName string, accountName string) (result storage.AccountListKeysResult, err error) {
 	args := m.Called(resourceGroupName, accountName)
 	return storage.AccountListKeysResult{}, args.Error(1)
@@ -219,6 +232,7 @@ type DeploymentsClientMock struct {
 	FakeStore map[string]resources.DeploymentExtended
 }
 
+// Get gets the DeploymentExtended by deploymentName.
 func (m *DeploymentsClientMock) Get(resourceGroupName string, deploymentName string) (result resources.DeploymentExtended, err error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
@@ -231,6 +245,7 @@ func (m *DeploymentsClientMock) Get(resourceGroupName string, deploymentName str
 	return deploy, nil
 }
 
+// ExportTemplate exports the deployment's template.
 func (m *DeploymentsClientMock) ExportTemplate(resourceGroupName string, deploymentName string) (result resources.DeploymentExportResult, err error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
@@ -245,6 +260,7 @@ func (m *DeploymentsClientMock) ExportTemplate(resourceGroupName string, deploym
 	}, nil
 }
 
+// CreateOrUpdate creates or updates the Deployment.
 func (m *DeploymentsClientMock) CreateOrUpdate(resourceGroupName string, deploymentName string, parameters resources.Deployment, cancel <-chan struct{}) (<-chan resources.DeploymentExtended, <-chan error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
