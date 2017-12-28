@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-FROM gcr.io/google_containers/ubuntu-slim:0.1
+FROM k8s.gcr.io/ubuntu-slim:0.1
 MAINTAINER Gabriela Filipek "gfilipek@google.com"
 MAINTAINER Marcin Wielgus "mwielgus@google.com"
 

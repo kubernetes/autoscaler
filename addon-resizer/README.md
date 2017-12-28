@@ -55,7 +55,7 @@ spec:
         kubernetes.io/cluster-service: "true"
     spec:
       containers:
-        - image: gcr.io/google_containers/addon-resizer:1.0
+        - image: k8s.gcr.io/addon-resizer:1.0
           imagePullPolicy: Always
           name: pod-nanny
           resources:
