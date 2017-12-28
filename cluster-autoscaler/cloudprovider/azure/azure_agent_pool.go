@@ -111,7 +111,9 @@ func (as *AgentPool) preprocessParameters() {
 	as.parameters["kubeConfigPrivateKey"] = map[string]string{"value": as.config.KubeConfigPrivateKey}
 	as.parameters["servicePrincipalClientId"] = map[string]string{"value": as.config.AADClientID}
 	as.parameters["servicePrincipalClientSecret"] = map[string]string{"value": as.config.AADClientSecret}
-	as.parameters["windowsAdminPassword"] = map[string]string{"value": as.config.WindowsAdminPassword}
+	if as.config.WindowsAdminPassword != "" {
+		as.parameters["windowsAdminPassword"] = map[string]string{"value": as.config.WindowsAdminPassword}
+	}
 }
 
 // MinSize returns minimum size of the node group.
