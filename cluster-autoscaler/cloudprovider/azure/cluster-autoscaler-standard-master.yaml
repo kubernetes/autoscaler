@@ -1,0 +1,137 @@
+apiVersion: v1
+data:
+  ClientID: <base64-encoded-client-id>
+  ClientSecret: <base64-encoded-client-secret>
+  ResourceGroup: <base64-encoded-resource-group>
+  SubscriptionID: <base64-encode-subscription-id>
+  TenantID: <base64-encoded-tenant-id>
+  NodeGroup: <base64-encoded-node-pool-name>
+  Deployment: <base64-encoded-azure-initial-deploy-name>
+  APIServerPrivateKey: <base64-encoded-apiserver-private-key>
+  CAPrivateKey: <base64-encoded-ca-private-key>
+  ClientPrivateKey: <base64-encoded-client-private-key>
+  KubeConfigPrivateKey: <base64-encoded-kubeconfig-private-key>
+  WindowsAdminPassword: <base64-encoded-windows-admin-password>
+  VMType: c3RhbmRhcmQ=
+kind: Secret
+metadata:
+  name: cluster-autoscaler-azure
+  namespace: kube-system
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: cluster-autoscaler
+  name: cluster-autoscaler
+  namespace: kube-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cluster-autoscaler
+  template:
+    metadata:
+      labels:
+        app: cluster-autoscaler
+    spec:
+      tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+      nodeSelector:
+        kubernetes.io/role: master
+      containers:
+      - command:
+        - ./cluster-autoscaler
+        - --v=3
+        - --logtostderr=true
+        - --cloud-provider=azure
+        - --skip-nodes-with-local-storage=false
+        - --nodes=1:10:$(ARM_NODE_GROUP)
+        env:
+        - name: ARM_SUBSCRIPTION_ID
+          valueFrom:
+            secretKeyRef:
+              key: SubscriptionID
+              name: cluster-autoscaler-azure
+        - name: ARM_RESOURCE_GROUP
+          valueFrom:
+            secretKeyRef:
+              key: ResourceGroup
+              name: cluster-autoscaler-azure
+        - name: ARM_TENANT_ID
+          valueFrom:
+            secretKeyRef:
+              key: TenantID
+              name: cluster-autoscaler-azure
+        - name: ARM_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              key: ClientID
+              name: cluster-autoscaler-azure
+        - name: ARM_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              key: ClientSecret
+              name: cluster-autoscaler-azure
+        - name: ARM_NODE_GROUP
+          valueFrom:
+            secretKeyRef:
+              key: NodeGroup
+              name: cluster-autoscaler-azure
+        - name: ARM_VM_TYPE
+          valueFrom:
+            secretKeyRef:
+              key: VMType
+              name: cluster-autoscaler-azure
+        - name: ARM_DEPLOYMENT
+          valueFrom:
+            secretKeyRef:
+              key: Deployment
+              name: cluster-autoscaler-azure
+        - name: ARM_APISEVER_PRIVATE_KEY
+          valueFrom:
+            secretKeyRef:
+              key: APIServerPrivateKey
+              name: cluster-autoscaler-azure
+        - name: ARM_CA_PRIVATE_KEY
+          valueFrom:
+            secretKeyRef:
+              key: CAPrivateKey
+              name: cluster-autoscaler-azure
+        - name: ARM_CLIENT_PRIVATE_KEY
+          valueFrom:
+            secretKeyRef:
+              key: ClientPrivateKey
+              name: cluster-autoscaler-azure
+        - name: ARM_KUBECONFIG_PRIVATE_KEY
+          valueFrom:
+            secretKeyRef:
+              key: KubeConfigPrivateKey
+              name: cluster-autoscaler-azure
+        - name: ARM_WINDOWS_ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: WindowsAdminPassword
+              name: cluster-autoscaler-azure
+        image: gcr.io/google_containers/cluster-autoscaler:{{ ca_version }}
+        imagePullPolicy: Always
+        name: cluster-autoscaler
+        resources:
+          limits:
+            cpu: 100m
+            memory: 300Mi
+          requests:
+            cpu: 100m
+            memory: 300Mi
+        volumeMounts:
+        - mountPath: /etc/ssl/certs/ca-certificates.crt
+          name: ssl-certs
+          readOnly: true
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      volumes:
+      - hostPath:
+          path: /etc/ssl/certs/ca-certificates.crt
+          type: ""
+        name: ssl-certs
