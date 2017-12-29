@@ -49,14 +49,14 @@ func (r *recommender) RunOnce() {
 		glog.Errorf("Cannot get SimplePodSpecs. Reason: %+v", err)
 	}
 	for n, spec := range podSpecs {
-		glog.Infof("SimplePodSpec #%v: %+v", n, spec)
+		glog.V(3).Infof("SimplePodSpec #%v: %+v", n, spec)
 	}
 }
 
 func (r *recommender) Run() {
 	for {
 		select {
-		case <-time.After(time.Second * 30):
+		case <-time.After(r.metricsFetchingInterval):
 			{
 				r.RunOnce()
 			}
@@ -85,7 +85,7 @@ func newSpecClient(config *rest.Config) cluster.SpecClient {
 
 // Creates PodLister, listing only not terminated pods.
 func newPodLister(kubeClient kube_client.Interface) v1lister.PodLister {
-	selector := fields.ParseSelectorOrDie("status.phase!=" + string(apiv1.PodSucceeded) + ",status.phase!=" + string(apiv1.PodFailed))
+	selector := fields.ParseSelectorOrDie("status.phase!=" + string(apiv1.PodPending) + ",status.phase!=" + string(apiv1.PodUnknown))
 	podListWatch := cache.NewListWatchFromClient(kubeClient.CoreV1().RESTClient(), "pods", apiv1.NamespaceAll, selector)
 	store := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
 	podLister := v1lister.NewPodLister(store)
