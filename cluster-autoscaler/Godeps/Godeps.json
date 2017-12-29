@@ -37,6 +37,11 @@
 			"Rev": "509eea43b93cec2f3f17acbe2578ef58703923f8"
 		},
 		{
+			"ImportPath": "github.com/Azure/azure-sdk-for-go/arm/resources/resources",
+			"Comment": "v11.1.1-beta",
+			"Rev": "509eea43b93cec2f3f17acbe2578ef58703923f8"
+		},
+		{
 			"ImportPath": "github.com/Azure/azure-sdk-for-go/arm/storage",
 			"Comment": "v11.1.1-beta",
 			"Rev": "509eea43b93cec2f3f17acbe2578ef58703923f8"
