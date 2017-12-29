@@ -19,7 +19,7 @@ spec:
       serviceAccountName: recommender
       containers:
       - name: recommender
-        image: gcr.io/karol-kubernetes/recommender:0.0.1
+        image: gcr.io/kubernetes-develop/recommender:0.0.1
         imagePullPolicy: Always
         resources:
           limits:
