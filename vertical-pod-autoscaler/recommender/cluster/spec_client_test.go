@@ -35,7 +35,7 @@ func TestGetPodSpecsReturnsNoResults(t *testing.T) {
 	assert.Empty(t, podSpecs)
 }
 
-func TestTestGetPodSpecsReturnsSpecs(t *testing.T) {
+func TestGetPodSpecsReturnsSpecs(t *testing.T) {
 	// given
 	tc := newSpecClientTestCase()
 	client := tc.createFakeSpecClient()

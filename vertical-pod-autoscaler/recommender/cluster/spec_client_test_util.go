@@ -17,19 +17,63 @@ limitations under the License.
 package cluster
 
 import (
-	"math/big"
-	"time"
+	"fmt"
 
 	"github.com/stretchr/testify/mock"
 
 	"k8s.io/api/core/v1"
-	k8sapiv1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/model"
+	"k8s.io/kubernetes/pkg/api"
+	_ "k8s.io/kubernetes/pkg/api/install"             //to decode yaml
+	_ "k8s.io/kubernetes/pkg/apis/extensions/install" //to decode yaml
 	v1lister "k8s.io/kubernetes/pkg/client/listers/core/v1"
 )
+
+const pod1Yaml = `
+apiVersion: v1
+kind: Pod
+metadata:
+  name: Pod1
+  labels:
+    Pod1LabelKey: Pod1LabelValue
+spec:
+  containers:
+  - name: Name11
+    image: Name11Image
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "500m"
+  - name: Name12
+    image: Name12Image
+    resources:
+      requests:
+        memory: "1024Mi"
+        cpu: "1000m"
+`
+const pod2Yaml = `
+apiVersion: v1
+kind: Pod
+metadata:
+  name: Pod2
+  labels:
+    Pod2LabelKey: Pod2LabelValue
+spec:
+  containers:
+  - name: Name21
+    image: Name21Image
+    resources:
+      requests:
+        memory: "2048Mi"
+        cpu: "2000m"
+  - name: Name22
+    image: Name22Image
+    resources:
+      requests:
+        memory: "4096Mi"
+        cpu: "4000m"
+`
 
 type podListerMock struct {
 	mock.Mock
@@ -46,8 +90,8 @@ func (m *podListerMock) Pods(namespace string) v1lister.PodNamespaceLister {
 }
 
 type specClientTestCase struct {
-	namespace *v1.Namespace
-	podSpecs  []*model.BasicPodSpec
+	podSpecs []*model.BasicPodSpec
+	podYamls []string
 }
 
 func newEmptySpecClientTestCase() *specClientTestCase {
@@ -55,24 +99,21 @@ func newEmptySpecClientTestCase() *specClientTestCase {
 }
 
 func newSpecClientTestCase() *specClientTestCase {
-	namespaceName := "test-namespace"
+	podID1 := model.PodID{Namespace: "", PodName: "Pod1"}
+	podID2 := model.PodID{Namespace: "", PodName: "Pod2"}
 
-	testCase := &specClientTestCase{
-		namespace: &v1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: namespaceName}},
+	containerSpec11 := newTestContainerSpec(podID1, "Name11", 500, 512*1024*1024)
+	containerSpec12 := newTestContainerSpec(podID1, "Name12", 1000, 1024*1024*1024)
+	containerSpec21 := newTestContainerSpec(podID2, "Name21", 2000, 2048*1024*1024)
+	containerSpec22 := newTestContainerSpec(podID2, "Name22", 4000, 4096*1024*1024)
+
+	podSpec1 := newTestPodSpec(podID1, containerSpec11, containerSpec12)
+	podSpec2 := newTestPodSpec(podID2, containerSpec21, containerSpec22)
+
+	return &specClientTestCase{
+		podSpecs: []*model.BasicPodSpec{podSpec1, podSpec2},
+		podYamls: []string{pod1Yaml, pod2Yaml},
 	}
-
-	podID1 := model.PodID{Namespace: namespaceName, PodName: "Pod1"}
-	podID2 := model.PodID{Namespace: namespaceName, PodName: "Pod2"}
-
-	containerSpec11 := newTestContainerSpec(podID1, "Name11", 500, 512)
-	containerSpec12 := newTestContainerSpec(podID1, "Name12", 1000, 1024)
-	containerSpec21 := newTestContainerSpec(podID2, "Name21", 2000, 2048)
-	containerSpec22 := newTestContainerSpec(podID2, "Name22", 4000, 4096)
-
-	testCase.podSpecs = append(testCase.podSpecs, newTestPodSpec(podID1, containerSpec11, containerSpec12))
-	testCase.podSpecs = append(testCase.podSpecs, newTestPodSpec(podID2, containerSpec21, containerSpec22))
-
-	return testCase
 }
 func newTestContainerSpec(podID model.PodID, containerName string, milicores int, memory int) model.BasicContainerSpec {
 	containerID := model.ContainerID{
@@ -107,48 +148,17 @@ func (tc *specClientTestCase) createFakeSpecClient() SpecClient {
 
 func (tc *specClientTestCase) getFakePods() []*v1.Pod {
 	pods := []*v1.Pod{}
-	for _, podSpec := range tc.podSpecs {
-		pods = append(pods, newPod(podSpec))
+	for _, yaml := range tc.podYamls {
+		pods = append(pods, newPod(yaml))
 	}
 	return pods
 }
 
-func newPod(podSpec *model.BasicPodSpec) *v1.Pod {
-
-	pod := &v1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace:         podSpec.ID.Namespace,
-			Name:              podSpec.ID.PodName,
-			CreationTimestamp: metav1.Time{time.Now()},
-			Labels:            podSpec.PodLabels,
-		},
-		Spec: v1.PodSpec{
-			Containers: make([]v1.Container, len(podSpec.Containers)),
-		},
+func newPod(yaml string) *v1.Pod {
+	decode := api.Codecs.UniversalDeserializer().Decode
+	obj, _, err := decode([]byte(yaml), nil, nil)
+	if err != nil {
+		fmt.Printf("%#v", err)
 	}
-
-	for i, containerSpec := range podSpec.Containers {
-		pod.Spec.Containers[i] = v1.Container{
-			Name:  containerSpec.ID.ContainerName,
-			Image: containerSpec.Image,
-			Resources: v1.ResourceRequirements{
-				Requests: calculateResourceList(containerSpec.Request),
-			},
-		}
-	}
-	return pod
-}
-
-func calculateResourceList(usage map[model.MetricName]model.ResourceAmount) k8sapiv1.ResourceList {
-	cpuCores := big.NewRat(int64(usage[model.ResourceCPU]), 1000)
-	cpuQuantityString := cpuCores.FloatString(3)
-
-	memoryBytes := big.NewInt(int64(usage[model.ResourceMemory]))
-	memoryQuantityString := memoryBytes.String()
-
-	resourceMap := map[k8sapiv1.ResourceName]resource.Quantity{
-		k8sapiv1.ResourceCPU:    resource.MustParse(cpuQuantityString),
-		k8sapiv1.ResourceMemory: resource.MustParse(memoryQuantityString),
-	}
-	return k8sapiv1.ResourceList(resourceMap)
+	return obj.(*v1.Pod)
 }
