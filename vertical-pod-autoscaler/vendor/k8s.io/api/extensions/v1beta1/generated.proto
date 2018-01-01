@@ -32,11 +32,23 @@ import "k8s.io/apimachinery/pkg/util/intstr/generated.proto";
 // Package-wide variables from generator "generated".
 option go_package = "v1beta1";
 
-// An APIVersion represents a single concrete version of an object model.
-message APIVersion {
-  // Name of this version (e.g. 'v1').
-  // +optional
-  optional string name = 1;
+// AllowedFlexVolume represents a single Flexvolume that is allowed to be used.
+message AllowedFlexVolume {
+  // Driver is the name of the Flexvolume driver.
+  optional string driver = 1;
+}
+
+// defines the host volume conditions that will be enabled by a policy
+// for pods to use. It requires the path prefix to be defined.
+message AllowedHostPath {
+  // is the path prefix that the host volume must match.
+  // It does not support `*`.
+  // Trailing slashes are trimmed when validating the path prefix with a host path.
+  // 
+  // Examples:
+  // `/foo` would allow `/foo`, `/foo/` and `/foo/bar`
+  // `/foo` would not allow `/food` or `/etc/foo`
+  optional string pathPrefix = 1;
 }
 
 message CustomMetricCurrentStatus {
@@ -64,6 +76,8 @@ message CustomMetricTargetList {
   repeated CustomMetricTarget items = 1;
 }
 
+// DEPRECATED - This group version of DaemonSet is deprecated by apps/v1beta2/DaemonSet. See the release notes for
+// more information.
 // DaemonSet represents the configuration of a daemon set.
 message DaemonSet {
   // Standard object's metadata.
@@ -83,6 +97,27 @@ message DaemonSet {
   // More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#spec-and-status
   // +optional
   optional DaemonSetStatus status = 3;
+}
+
+// DaemonSetCondition describes the state of a DaemonSet at a certain point.
+message DaemonSetCondition {
+  // Type of DaemonSet condition.
+  optional string type = 1;
+
+  // Status of the condition, one of True, False, Unknown.
+  optional string status = 2;
+
+  // Last time the condition transitioned from one status to another.
+  // +optional
+  optional k8s.io.apimachinery.pkg.apis.meta.v1.Time lastTransitionTime = 3;
+
+  // The reason for the condition's last transition.
+  // +optional
+  optional string reason = 4;
+
+  // A human readable message indicating details about the transition.
+  // +optional
+  optional string message = 5;
 }
 
 // DaemonSetList is a collection of daemon sets.
@@ -181,7 +216,13 @@ message DaemonSetStatus {
   // uses this field as a collision avoidance mechanism when it needs to
   // create the name for the newest ControllerRevision.
   // +optional
-  optional int64 collisionCount = 9;
+  optional int32 collisionCount = 9;
+
+  // Represents the latest available observations of a DaemonSet's current state.
+  // +optional
+  // +patchMergeKey=type
+  // +patchStrategy=merge
+  repeated DaemonSetCondition conditions = 10;
 }
 
 message DaemonSetUpdateStrategy {
@@ -199,6 +240,8 @@ message DaemonSetUpdateStrategy {
   optional RollingUpdateDaemonSet rollingUpdate = 2;
 }
 
+// DEPRECATED - This group version of Deployment is deprecated by apps/v1beta2/Deployment. See the release notes for
+// more information.
 // Deployment enables declarative updates for Pods and ReplicaSets.
 message Deployment {
   // Standard object metadata.
@@ -245,6 +288,7 @@ message DeploymentList {
   repeated Deployment items = 2;
 }
 
+// DEPRECATED.
 // DeploymentRollback stores the information required to rollback a deployment.
 message DeploymentRollback {
   // Required: This must match the Name of a deployment.
@@ -275,6 +319,7 @@ message DeploymentSpec {
 
   // The deployment strategy to use to replace existing pods with new ones.
   // +optional
+  // +patchStrategy=retainKeys
   optional DeploymentStrategy strategy = 4;
 
   // Minimum number of seconds for which a newly created pod should be ready
@@ -293,6 +338,7 @@ message DeploymentSpec {
   // +optional
   optional bool paused = 7;
 
+  // DEPRECATED.
   // The config this deployment is rolling back to. Will be cleared after rollback is done.
   // +optional
   optional RollbackConfig rollbackTo = 8;
@@ -300,10 +346,10 @@ message DeploymentSpec {
   // The maximum time in seconds for a deployment to make progress before it
   // is considered to be failed. The deployment controller will continue to
   // process failed deployments and a condition with a ProgressDeadlineExceeded
-  // reason will be surfaced in the deployment status. Once autoRollback is
-  // implemented, the deployment controller will automatically rollback failed
-  // deployments. Note that progress will not be estimated during the time a
-  // deployment is paused. This is not set by default.
+  // reason will be surfaced in the deployment status. Note that progress will
+  // not be estimated during the time a deployment is paused. This is not set
+  // by default.
+  // +optional
   optional int32 progressDeadlineSeconds = 9;
 }
 
@@ -329,7 +375,9 @@ message DeploymentStatus {
   // +optional
   optional int32 availableReplicas = 4;
 
-  // Total number of unavailable pods targeted by this deployment.
+  // Total number of unavailable pods targeted by this deployment. This is the total number of
+  // pods that are still required for the deployment to have 100% available capacity. They may
+  // either be pods that are running but not yet available or pods that still have not been created.
   // +optional
   optional int32 unavailableReplicas = 5;
 
@@ -342,7 +390,7 @@ message DeploymentStatus {
   // field as a collision avoidance mechanism when it needs to create the name for the
   // newest ReplicaSet.
   // +optional
-  optional int64 collisionCount = 8;
+  optional int32 collisionCount = 8;
 }
 
 // DeploymentStrategy describes how to replace existing pods with new ones.
@@ -417,6 +465,22 @@ message IDRange {
 
   // Max is the end of the range, inclusive.
   optional int64 max = 2;
+}
+
+// DEPRECATED 1.9 - This group version of IPBlock is deprecated by networking/v1/IPBlock.
+// IPBlock describes a particular CIDR (Ex. "192.168.1.1/24") that is allowed to the pods
+// matched by a NetworkPolicySpec's podSelector. The except entry describes CIDRs that should
+// not be included within this rule.
+message IPBlock {
+  // CIDR is a string representing the IP Block
+  // Valid examples are "192.168.1.1/24"
+  optional string cidr = 1;
+
+  // Except is a slice of CIDRs that should not be included within an IP Block
+  // Valid examples are "192.168.1.1/24"
+  // Except values will be rejected if they are outside the CIDR range
+  // +optional
+  repeated string except = 2;
 }
 
 // Ingress is a collection of rules that allow inbound connections to reach the
@@ -545,6 +609,7 @@ message IngressTLS {
   optional string secretName = 2;
 }
 
+// DEPRECATED 1.9 - This group version of NetworkPolicy is deprecated by networking/v1/NetworkPolicy.
 // NetworkPolicy describes what network traffic is allowed for a set of Pods
 message NetworkPolicy {
   // Standard object's metadata.
@@ -557,6 +622,29 @@ message NetworkPolicy {
   optional NetworkPolicySpec spec = 2;
 }
 
+// DEPRECATED 1.9 - This group version of NetworkPolicyEgressRule is deprecated by networking/v1/NetworkPolicyEgressRule.
+// NetworkPolicyEgressRule describes a particular set of traffic that is allowed out of pods
+// matched by a NetworkPolicySpec's podSelector. The traffic must match both ports and to.
+// This type is beta-level in 1.8
+message NetworkPolicyEgressRule {
+  // List of destination ports for outgoing traffic.
+  // Each item in this list is combined using a logical OR. If this field is
+  // empty or missing, this rule matches all ports (traffic not restricted by port).
+  // If this field is present and contains at least one item, then this rule allows
+  // traffic only if the traffic matches at least one port in the list.
+  // +optional
+  repeated NetworkPolicyPort ports = 1;
+
+  // List of destinations for outgoing traffic of pods selected for this rule.
+  // Items in this list are combined using a logical OR operation. If this field is
+  // empty or missing, this rule matches all destinations (traffic not restricted by
+  // destination). If this field is present and contains at least one item, this rule
+  // allows traffic only if the traffic matches at least one item in the to list.
+  // +optional
+  repeated NetworkPolicyPeer to = 2;
+}
+
+// DEPRECATED 1.9 - This group version of NetworkPolicyIngressRule is deprecated by networking/v1/NetworkPolicyIngressRule.
 // This NetworkPolicyIngressRule matches traffic if and only if the traffic matches both ports AND from.
 message NetworkPolicyIngressRule {
   // List of ports which should be made accessible on the pods selected for this rule.
@@ -576,6 +664,7 @@ message NetworkPolicyIngressRule {
   repeated NetworkPolicyPeer from = 2;
 }
 
+// DEPRECATED 1.9 - This group version of NetworkPolicyList is deprecated by networking/v1/NetworkPolicyList.
 // Network Policy List is a list of NetworkPolicy objects.
 message NetworkPolicyList {
   // Standard list metadata.
@@ -587,6 +676,7 @@ message NetworkPolicyList {
   repeated NetworkPolicy items = 2;
 }
 
+// DEPRECATED 1.9 - This group version of NetworkPolicyPeer is deprecated by networking/v1/NetworkPolicyPeer.
 message NetworkPolicyPeer {
   // This is a label selector which selects Pods in this namespace.
   // This field follows standard label selector semantics.
@@ -600,8 +690,13 @@ message NetworkPolicyPeer {
   // If present but empty, this selector selects all namespaces.
   // +optional
   optional k8s.io.apimachinery.pkg.apis.meta.v1.LabelSelector namespaceSelector = 2;
+
+  // IPBlock defines policy on a particular IPBlock
+  // +optional
+  optional IPBlock ipBlock = 3;
 }
 
+// DEPRECATED 1.9 - This group version of NetworkPolicyPort is deprecated by networking/v1/NetworkPolicyPort.
 message NetworkPolicyPort {
   // Optional.  The protocol (TCP or UDP) which traffic must match.
   // If not specified, this field defaults to TCP.
@@ -617,6 +712,7 @@ message NetworkPolicyPort {
   optional k8s.io.apimachinery.pkg.util.intstr.IntOrString port = 2;
 }
 
+// DEPRECATED 1.9 - This group version of NetworkPolicySpec is deprecated by networking/v1/NetworkPolicySpec.
 message NetworkPolicySpec {
   // Selects the pods to which this NetworkPolicy object applies.  The array of ingress rules
   // is applied to any pods selected by this field. Multiple network policies can select the
@@ -634,6 +730,29 @@ message NetworkPolicySpec {
   // (and serves solely to ensure that the pods it selects are isolated by default).
   // +optional
   repeated NetworkPolicyIngressRule ingress = 2;
+
+  // List of egress rules to be applied to the selected pods. Outgoing traffic is
+  // allowed if there are no NetworkPolicies selecting the pod (and cluster policy
+  // otherwise allows the traffic), OR if the traffic matches at least one egress rule
+  // across all of the NetworkPolicy objects whose podSelector matches the pod. If
+  // this field is empty then this NetworkPolicy limits all outgoing traffic (and serves
+  // solely to ensure that the pods it selects are isolated by default).
+  // This field is beta-level in 1.8
+  // +optional
+  repeated NetworkPolicyEgressRule egress = 3;
+
+  // List of rule types that the NetworkPolicy relates to.
+  // Valid options are Ingress, Egress, or Ingress,Egress.
+  // If this field is not specified, it will default based on the existence of Ingress or Egress rules;
+  // policies that contain an Egress section are assumed to affect Egress, and all policies
+  // (whether or not they contain an Ingress section) are assumed to affect Ingress.
+  // If you want to write an egress-only policy, you must explicitly specify policyTypes [ "Egress" ].
+  // Likewise, if you want to write a policy that specifies that no egress is allowed,
+  // you must specify a policyTypes value that include "Egress" (since such a policy would not include
+  // an Egress section and would otherwise default to just [ "Ingress" ]).
+  // This field is beta-level in 1.8
+  // +optional
+  repeated string policyTypes = 4;
 }
 
 // Pod Security Policy governs the ability to make requests that affect the Security Context
@@ -667,8 +786,9 @@ message PodSecurityPolicySpec {
   optional bool privileged = 1;
 
   // DefaultAddCapabilities is the default set of capabilities that will be added to the container
-  // unless the pod spec specifically drops the capability.  You may not list a capabiility in both
-  // DefaultAddCapabilities and RequiredDropCapabilities.
+  // unless the pod spec specifically drops the capability.  You may not list a capability in both
+  // DefaultAddCapabilities and RequiredDropCapabilities. Capabilities added here are implicitly
+  // allowed, and need not be included in the AllowedCapabilities list.
   // +optional
   repeated string defaultAddCapabilities = 2;
 
@@ -723,9 +843,31 @@ message PodSecurityPolicySpec {
   // will not be forced to.
   // +optional
   optional bool readOnlyRootFilesystem = 14;
+
+  // DefaultAllowPrivilegeEscalation controls the default setting for whether a
+  // process can gain more privileges than its parent process.
+  // +optional
+  optional bool defaultAllowPrivilegeEscalation = 15;
+
+  // AllowPrivilegeEscalation determines if a pod can request to allow
+  // privilege escalation. If unspecified, defaults to true.
+  // +optional
+  optional bool allowPrivilegeEscalation = 16;
+
+  // is a white list of allowed host paths. Empty indicates that all host paths may be used.
+  // +optional
+  repeated AllowedHostPath allowedHostPaths = 17;
+
+  // AllowedFlexVolumes is a whitelist of allowed Flexvolumes.  Empty or nil indicates that all
+  // Flexvolumes may be used.  This parameter is effective only when the usage of the Flexvolumes
+  // is allowed in the "Volumes" field.
+  // +optional
+  repeated AllowedFlexVolume allowedFlexVolumes = 18;
 }
 
-// ReplicaSet represents the configuration of a ReplicaSet.
+// DEPRECATED - This group version of ReplicaSet is deprecated by apps/v1beta2/ReplicaSet. See the release notes for
+// more information.
+// ReplicaSet ensures that a specified number of pod replicas are running at any given time.
 message ReplicaSet {
   // If the Labels of a ReplicaSet are empty, they are defaulted to
   // be the same as the Pod(s) that the ReplicaSet manages.
@@ -842,6 +984,7 @@ message ReplicaSetStatus {
 message ReplicationControllerDummy {
 }
 
+// DEPRECATED.
 message RollbackConfig {
   // The revision to rollback to. If set to 0, rollback to the last revision.
   // +optional
@@ -914,7 +1057,7 @@ message SELinuxStrategyOptions {
   optional string rule = 1;
 
   // seLinuxOptions required to run as; required for MustRunAs
-  // More info: https://git.k8s.io/community/contributors/design-proposals/security_context.md
+  // More info: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
   // +optional
   optional k8s.io.api.core.v1.SELinuxOptions seLinuxOptions = 2;
 }
@@ -970,53 +1113,5 @@ message SupplementalGroupsStrategyOptions {
   // supplemental group then supply a single range with the same start and end.
   // +optional
   repeated IDRange ranges = 2;
-}
-
-// A ThirdPartyResource is a generic representation of a resource, it is used by add-ons and plugins to add new resource
-// types to the API.  It consists of one or more Versions of the api.
-message ThirdPartyResource {
-  // Standard object metadata
-  // +optional
-  optional k8s.io.apimachinery.pkg.apis.meta.v1.ObjectMeta metadata = 1;
-
-  // Description is the description of this object.
-  // +optional
-  optional string description = 2;
-
-  // Versions are versions for this third party object
-  // +optional
-  repeated APIVersion versions = 3;
-}
-
-// An internal object, used for versioned storage in etcd.  Not exposed to the end user.
-message ThirdPartyResourceData {
-  // Standard object metadata.
-  // +optional
-  optional k8s.io.apimachinery.pkg.apis.meta.v1.ObjectMeta metadata = 1;
-
-  // Data is the raw JSON data for this data.
-  // +optional
-  optional bytes data = 2;
-}
-
-// ThirdPartyResrouceDataList is a list of ThirdPartyResourceData.
-message ThirdPartyResourceDataList {
-  // Standard list metadata
-  // More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata
-  // +optional
-  optional k8s.io.apimachinery.pkg.apis.meta.v1.ListMeta metadata = 1;
-
-  // Items is the list of ThirdpartyResourceData.
-  repeated ThirdPartyResourceData items = 2;
-}
-
-// ThirdPartyResourceList is a list of ThirdPartyResources.
-message ThirdPartyResourceList {
-  // Standard list metadata.
-  // +optional
-  optional k8s.io.apimachinery.pkg.apis.meta.v1.ListMeta metadata = 1;
-
-  // Items is the list of ThirdPartyResources.
-  repeated ThirdPartyResource items = 2;
 }
 

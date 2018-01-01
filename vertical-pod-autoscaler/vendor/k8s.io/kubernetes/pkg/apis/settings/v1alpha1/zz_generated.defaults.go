@@ -23,7 +23,7 @@ package v1alpha1
 import (
 	v1alpha1 "k8s.io/api/settings/v1alpha1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
-	v1 "k8s.io/kubernetes/pkg/api/v1"
+	v1 "k8s.io/kubernetes/pkg/apis/core/v1"
 )
 
 // RegisterDefaults adds defaulters functions to the given scheme.
@@ -47,6 +47,9 @@ func SetObjectDefaults_PodPreset(in *v1alpha1.PodPreset) {
 	for i := range in.Spec.Volumes {
 		a := &in.Spec.Volumes[i]
 		v1.SetDefaults_Volume(a)
+		if a.VolumeSource.HostPath != nil {
+			v1.SetDefaults_HostPathVolumeSource(a.VolumeSource.HostPath)
+		}
 		if a.VolumeSource.Secret != nil {
 			v1.SetDefaults_SecretVolumeSource(a.VolumeSource.Secret)
 		}

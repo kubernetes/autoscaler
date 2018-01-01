@@ -23,8 +23,8 @@ import (
 
 	"k8s.io/apimachinery/pkg/conversion"
 	"k8s.io/apimachinery/pkg/runtime"
-	k8s_api_v1 "k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/apis/batch"
+	k8s_api_v1 "k8s.io/kubernetes/pkg/apis/core/v1"
 )
 
 func addConversionFuncs(scheme *runtime.Scheme) error {
@@ -53,6 +53,7 @@ func Convert_batch_JobSpec_To_v1_JobSpec(in *batch.JobSpec, out *batchv1.JobSpec
 	out.Parallelism = in.Parallelism
 	out.Completions = in.Completions
 	out.ActiveDeadlineSeconds = in.ActiveDeadlineSeconds
+	out.BackoffLimit = in.BackoffLimit
 	out.Selector = in.Selector
 	if in.ManualSelector != nil {
 		out.ManualSelector = new(bool)
@@ -61,7 +62,7 @@ func Convert_batch_JobSpec_To_v1_JobSpec(in *batch.JobSpec, out *batchv1.JobSpec
 		out.ManualSelector = nil
 	}
 
-	if err := k8s_api_v1.Convert_api_PodTemplateSpec_To_v1_PodTemplateSpec(&in.Template, &out.Template, s); err != nil {
+	if err := k8s_api_v1.Convert_core_PodTemplateSpec_To_v1_PodTemplateSpec(&in.Template, &out.Template, s); err != nil {
 		return err
 	}
 	return nil
@@ -71,6 +72,7 @@ func Convert_v1_JobSpec_To_batch_JobSpec(in *batchv1.JobSpec, out *batch.JobSpec
 	out.Parallelism = in.Parallelism
 	out.Completions = in.Completions
 	out.ActiveDeadlineSeconds = in.ActiveDeadlineSeconds
+	out.BackoffLimit = in.BackoffLimit
 	out.Selector = in.Selector
 	if in.ManualSelector != nil {
 		out.ManualSelector = new(bool)
@@ -79,7 +81,7 @@ func Convert_v1_JobSpec_To_batch_JobSpec(in *batchv1.JobSpec, out *batch.JobSpec
 		out.ManualSelector = nil
 	}
 
-	if err := k8s_api_v1.Convert_v1_PodTemplateSpec_To_api_PodTemplateSpec(&in.Template, &out.Template, s); err != nil {
+	if err := k8s_api_v1.Convert_v1_PodTemplateSpec_To_core_PodTemplateSpec(&in.Template, &out.Template, s); err != nil {
 		return err
 	}
 	return nil

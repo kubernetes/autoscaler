@@ -50,8 +50,9 @@ type ScaleStatus struct {
 	TargetSelector string `json:"targetSelector,omitempty" protobuf:"bytes,3,opt,name=targetSelector"`
 }
 
-// +genclient=true
-// +noMethods=true
+// +genclient
+// +genclient:noVerbs
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // represents a scaling request for a resource.
 type Scale struct {
@@ -68,6 +69,8 @@ type Scale struct {
 	// +optional
 	Status ScaleStatus `json:"status,omitempty" protobuf:"bytes,3,opt,name=status"`
 }
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // Dummy definition
 type ReplicationControllerDummy struct {
@@ -97,60 +100,13 @@ type CustomMetricCurrentStatusList struct {
 	Items []CustomMetricCurrentStatus `json:"items" protobuf:"bytes,1,rep,name=items"`
 }
 
-// +genclient=true
-// +nonNamespaced=true
+// +genclient
+// +genclient:method=GetScale,verb=get,subresource=scale,result=Scale
+// +genclient:method=UpdateScale,verb=update,subresource=scale,input=Scale,result=Scale
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// A ThirdPartyResource is a generic representation of a resource, it is used by add-ons and plugins to add new resource
-// types to the API.  It consists of one or more Versions of the api.
-type ThirdPartyResource struct {
-	metav1.TypeMeta `json:",inline"`
-
-	// Standard object metadata
-	// +optional
-	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
-
-	// Description is the description of this object.
-	// +optional
-	Description string `json:"description,omitempty" protobuf:"bytes,2,opt,name=description"`
-
-	// Versions are versions for this third party object
-	// +optional
-	Versions []APIVersion `json:"versions,omitempty" protobuf:"bytes,3,rep,name=versions"`
-}
-
-// ThirdPartyResourceList is a list of ThirdPartyResources.
-type ThirdPartyResourceList struct {
-	metav1.TypeMeta `json:",inline"`
-
-	// Standard list metadata.
-	// +optional
-	metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
-
-	// Items is the list of ThirdPartyResources.
-	Items []ThirdPartyResource `json:"items" protobuf:"bytes,2,rep,name=items"`
-}
-
-// An APIVersion represents a single concrete version of an object model.
-type APIVersion struct {
-	// Name of this version (e.g. 'v1').
-	// +optional
-	Name string `json:"name,omitempty" protobuf:"bytes,1,opt,name=name"`
-}
-
-// An internal object, used for versioned storage in etcd.  Not exposed to the end user.
-type ThirdPartyResourceData struct {
-	metav1.TypeMeta `json:",inline"`
-	// Standard object metadata.
-	// +optional
-	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
-
-	// Data is the raw JSON data for this data.
-	// +optional
-	Data []byte `json:"data,omitempty" protobuf:"bytes,2,opt,name=data"`
-}
-
-// +genclient=true
-
+// DEPRECATED - This group version of Deployment is deprecated by apps/v1beta2/Deployment. See the release notes for
+// more information.
 // Deployment enables declarative updates for Pods and ReplicaSets.
 type Deployment struct {
 	metav1.TypeMeta `json:",inline"`
@@ -184,7 +140,8 @@ type DeploymentSpec struct {
 
 	// The deployment strategy to use to replace existing pods with new ones.
 	// +optional
-	Strategy DeploymentStrategy `json:"strategy,omitempty" protobuf:"bytes,4,opt,name=strategy"`
+	// +patchStrategy=retainKeys
+	Strategy DeploymentStrategy `json:"strategy,omitempty" patchStrategy:"retainKeys" protobuf:"bytes,4,opt,name=strategy"`
 
 	// Minimum number of seconds for which a newly created pod should be ready
 	// without any of its container crashing, for it to be considered available.
@@ -202,6 +159,7 @@ type DeploymentSpec struct {
 	// +optional
 	Paused bool `json:"paused,omitempty" protobuf:"varint,7,opt,name=paused"`
 
+	// DEPRECATED.
 	// The config this deployment is rolling back to. Will be cleared after rollback is done.
 	// +optional
 	RollbackTo *RollbackConfig `json:"rollbackTo,omitempty" protobuf:"bytes,8,opt,name=rollbackTo"`
@@ -209,13 +167,16 @@ type DeploymentSpec struct {
 	// The maximum time in seconds for a deployment to make progress before it
 	// is considered to be failed. The deployment controller will continue to
 	// process failed deployments and a condition with a ProgressDeadlineExceeded
-	// reason will be surfaced in the deployment status. Once autoRollback is
-	// implemented, the deployment controller will automatically rollback failed
-	// deployments. Note that progress will not be estimated during the time a
-	// deployment is paused. This is not set by default.
+	// reason will be surfaced in the deployment status. Note that progress will
+	// not be estimated during the time a deployment is paused. This is not set
+	// by default.
+	// +optional
 	ProgressDeadlineSeconds *int32 `json:"progressDeadlineSeconds,omitempty" protobuf:"varint,9,opt,name=progressDeadlineSeconds"`
 }
 
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// DEPRECATED.
 // DeploymentRollback stores the information required to rollback a deployment.
 type DeploymentRollback struct {
 	metav1.TypeMeta `json:",inline"`
@@ -228,6 +189,7 @@ type DeploymentRollback struct {
 	RollbackTo RollbackConfig `json:"rollbackTo" protobuf:"bytes,3,opt,name=rollbackTo"`
 }
 
+// DEPRECATED.
 type RollbackConfig struct {
 	// The revision to rollback to. If set to 0, rollback to the last revision.
 	// +optional
@@ -318,7 +280,9 @@ type DeploymentStatus struct {
 	// +optional
 	AvailableReplicas int32 `json:"availableReplicas,omitempty" protobuf:"varint,4,opt,name=availableReplicas"`
 
-	// Total number of unavailable pods targeted by this deployment.
+	// Total number of unavailable pods targeted by this deployment. This is the total number of
+	// pods that are still required for the deployment to have 100% available capacity. They may
+	// either be pods that are running but not yet available or pods that still have not been created.
 	// +optional
 	UnavailableReplicas int32 `json:"unavailableReplicas,omitempty" protobuf:"varint,5,opt,name=unavailableReplicas"`
 
@@ -331,7 +295,7 @@ type DeploymentStatus struct {
 	// field as a collision avoidance mechanism when it needs to create the name for the
 	// newest ReplicaSet.
 	// +optional
-	CollisionCount *int64 `json:"collisionCount,omitempty" protobuf:"varint,8,opt,name=collisionCount"`
+	CollisionCount *int32 `json:"collisionCount,omitempty" protobuf:"varint,8,opt,name=collisionCount"`
 }
 
 type DeploymentConditionType string
@@ -366,6 +330,8 @@ type DeploymentCondition struct {
 	// A human readable message indicating details about the transition.
 	Message string `json:"message,omitempty" protobuf:"bytes,5,opt,name=message"`
 }
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // DeploymentList is a list of Deployments.
 type DeploymentList struct {
@@ -508,11 +474,41 @@ type DaemonSetStatus struct {
 	// uses this field as a collision avoidance mechanism when it needs to
 	// create the name for the newest ControllerRevision.
 	// +optional
-	CollisionCount *int64 `json:"collisionCount,omitempty" protobuf:"varint,9,opt,name=collisionCount"`
+	CollisionCount *int32 `json:"collisionCount,omitempty" protobuf:"varint,9,opt,name=collisionCount"`
+
+	// Represents the latest available observations of a DaemonSet's current state.
+	// +optional
+	// +patchMergeKey=type
+	// +patchStrategy=merge
+	Conditions []DaemonSetCondition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type" protobuf:"bytes,10,rep,name=conditions"`
 }
 
-// +genclient=true
+type DaemonSetConditionType string
 
+// TODO: Add valid condition types of a DaemonSet.
+
+// DaemonSetCondition describes the state of a DaemonSet at a certain point.
+type DaemonSetCondition struct {
+	// Type of DaemonSet condition.
+	Type DaemonSetConditionType `json:"type" protobuf:"bytes,1,opt,name=type,casttype=DaemonSetConditionType"`
+	// Status of the condition, one of True, False, Unknown.
+	Status v1.ConditionStatus `json:"status" protobuf:"bytes,2,opt,name=status,casttype=k8s.io/api/core/v1.ConditionStatus"`
+	// Last time the condition transitioned from one status to another.
+	// +optional
+	LastTransitionTime metav1.Time `json:"lastTransitionTime,omitempty" protobuf:"bytes,3,opt,name=lastTransitionTime"`
+	// The reason for the condition's last transition.
+	// +optional
+	Reason string `json:"reason,omitempty" protobuf:"bytes,4,opt,name=reason"`
+	// A human readable message indicating details about the transition.
+	// +optional
+	Message string `json:"message,omitempty" protobuf:"bytes,5,opt,name=message"`
+}
+
+// +genclient
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// DEPRECATED - This group version of DaemonSet is deprecated by apps/v1beta2/DaemonSet. See the release notes for
+// more information.
 // DaemonSet represents the configuration of a daemon set.
 type DaemonSet struct {
 	metav1.TypeMeta `json:",inline"`
@@ -548,6 +544,8 @@ const (
 	DefaultDaemonSetUniqueLabelKey = appsv1beta1.ControllerRevisionHashLabelKey
 )
 
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
 // DaemonSetList is a collection of daemon sets.
 type DaemonSetList struct {
 	metav1.TypeMeta `json:",inline"`
@@ -560,19 +558,8 @@ type DaemonSetList struct {
 	Items []DaemonSet `json:"items" protobuf:"bytes,2,rep,name=items"`
 }
 
-// ThirdPartyResrouceDataList is a list of ThirdPartyResourceData.
-type ThirdPartyResourceDataList struct {
-	metav1.TypeMeta `json:",inline"`
-	// Standard list metadata
-	// More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata
-	// +optional
-	metav1.ListMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
-
-	// Items is the list of ThirdpartyResourceData.
-	Items []ThirdPartyResourceData `json:"items" protobuf:"bytes,2,rep,name=items"`
-}
-
-// +genclient=true
+// +genclient
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // Ingress is a collection of rules that allow inbound connections to reach the
 // endpoints defined by a backend. An Ingress can be configured to give services
@@ -595,6 +582,8 @@ type Ingress struct {
 	// +optional
 	Status IngressStatus `json:"status,omitempty" protobuf:"bytes,3,opt,name=status"`
 }
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // IngressList is a collection of Ingress.
 type IngressList struct {
@@ -738,9 +727,14 @@ type IngressBackend struct {
 	ServicePort intstr.IntOrString `json:"servicePort" protobuf:"bytes,2,opt,name=servicePort"`
 }
 
-// +genclient=true
+// +genclient
+// +genclient:method=GetScale,verb=get,subresource=scale,result=Scale
+// +genclient:method=UpdateScale,verb=update,subresource=scale,input=Scale,result=Scale
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
-// ReplicaSet represents the configuration of a ReplicaSet.
+// DEPRECATED - This group version of ReplicaSet is deprecated by apps/v1beta2/ReplicaSet. See the release notes for
+// more information.
+// ReplicaSet ensures that a specified number of pod replicas are running at any given time.
 type ReplicaSet struct {
 	metav1.TypeMeta `json:",inline"`
 
@@ -763,6 +757,8 @@ type ReplicaSet struct {
 	// +optional
 	Status ReplicaSetStatus `json:"status,omitempty" protobuf:"bytes,3,opt,name=status"`
 }
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // ReplicaSetList is a collection of ReplicaSets.
 type ReplicaSetList struct {
@@ -862,8 +858,9 @@ type ReplicaSetCondition struct {
 	Message string `json:"message,omitempty" protobuf:"bytes,5,opt,name=message"`
 }
 
-// +genclient=true
-// +nonNamespaced=true
+// +genclient
+// +genclient:nonNamespaced
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // Pod Security Policy governs the ability to make requests that affect the Security Context
 // that will be applied to a pod and container.
@@ -885,8 +882,9 @@ type PodSecurityPolicySpec struct {
 	// +optional
 	Privileged bool `json:"privileged,omitempty" protobuf:"varint,1,opt,name=privileged"`
 	// DefaultAddCapabilities is the default set of capabilities that will be added to the container
-	// unless the pod spec specifically drops the capability.  You may not list a capabiility in both
-	// DefaultAddCapabilities and RequiredDropCapabilities.
+	// unless the pod spec specifically drops the capability.  You may not list a capability in both
+	// DefaultAddCapabilities and RequiredDropCapabilities. Capabilities added here are implicitly
+	// allowed, and need not be included in the AllowedCapabilities list.
 	// +optional
 	DefaultAddCapabilities []v1.Capability `json:"defaultAddCapabilities,omitempty" protobuf:"bytes,2,rep,name=defaultAddCapabilities,casttype=k8s.io/api/core/v1.Capability"`
 	// RequiredDropCapabilities are the capabilities that will be dropped from the container.  These
@@ -929,6 +927,35 @@ type PodSecurityPolicySpec struct {
 	// will not be forced to.
 	// +optional
 	ReadOnlyRootFilesystem bool `json:"readOnlyRootFilesystem,omitempty" protobuf:"varint,14,opt,name=readOnlyRootFilesystem"`
+	// DefaultAllowPrivilegeEscalation controls the default setting for whether a
+	// process can gain more privileges than its parent process.
+	// +optional
+	DefaultAllowPrivilegeEscalation *bool `json:"defaultAllowPrivilegeEscalation,omitempty" protobuf:"varint,15,opt,name=defaultAllowPrivilegeEscalation"`
+	// AllowPrivilegeEscalation determines if a pod can request to allow
+	// privilege escalation. If unspecified, defaults to true.
+	// +optional
+	AllowPrivilegeEscalation *bool `json:"allowPrivilegeEscalation,omitempty" protobuf:"varint,16,opt,name=allowPrivilegeEscalation"`
+	// is a white list of allowed host paths. Empty indicates that all host paths may be used.
+	// +optional
+	AllowedHostPaths []AllowedHostPath `json:"allowedHostPaths,omitempty" protobuf:"bytes,17,rep,name=allowedHostPaths"`
+	// AllowedFlexVolumes is a whitelist of allowed Flexvolumes.  Empty or nil indicates that all
+	// Flexvolumes may be used.  This parameter is effective only when the usage of the Flexvolumes
+	// is allowed in the "Volumes" field.
+	// +optional
+	AllowedFlexVolumes []AllowedFlexVolume `json:"allowedFlexVolumes,omitempty" protobuf:"bytes,18,rep,name=allowedFlexVolumes"`
+}
+
+// defines the host volume conditions that will be enabled by a policy
+// for pods to use. It requires the path prefix to be defined.
+type AllowedHostPath struct {
+	// is the path prefix that the host volume must match.
+	// It does not support `*`.
+	// Trailing slashes are trimmed when validating the path prefix with a host path.
+	//
+	// Examples:
+	// `/foo` would allow `/foo`, `/foo/` and `/foo/bar`
+	// `/foo` would not allow `/food` or `/etc/foo`
+	PathPrefix string `json:"pathPrefix,omitempty" protobuf:"bytes,1,rep,name=pathPrefix"`
 }
 
 // FS Type gives strong typing to different file systems that are used by volumes.
@@ -959,6 +986,12 @@ var (
 	All                   FSType = "*"
 )
 
+// AllowedFlexVolume represents a single Flexvolume that is allowed to be used.
+type AllowedFlexVolume struct {
+	// Driver is the name of the Flexvolume driver.
+	Driver string `json:"driver" protobuf:"bytes,1,opt,name=driver"`
+}
+
 // Host Port Range defines a range of host ports that will be enabled by a policy
 // for pods to use.  It requires both the start and end to be defined.
 type HostPortRange struct {
@@ -973,7 +1006,7 @@ type SELinuxStrategyOptions struct {
 	// type is the strategy that will dictate the allowable labels that may be set.
 	Rule SELinuxStrategy `json:"rule" protobuf:"bytes,1,opt,name=rule,casttype=SELinuxStrategy"`
 	// seLinuxOptions required to run as; required for MustRunAs
-	// More info: https://git.k8s.io/community/contributors/design-proposals/security_context.md
+	// More info: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
 	// +optional
 	SELinuxOptions *v1.SELinuxOptions `json:"seLinuxOptions,omitempty" protobuf:"bytes,2,opt,name=seLinuxOptions"`
 }
@@ -1063,6 +1096,8 @@ const (
 	SupplementalGroupsStrategyRunAsAny SupplementalGroupsStrategyType = "RunAsAny"
 )
 
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
 // Pod Security Policy List is a list of PodSecurityPolicy objects.
 type PodSecurityPolicyList struct {
 	metav1.TypeMeta `json:",inline"`
@@ -1075,6 +1110,9 @@ type PodSecurityPolicyList struct {
 	Items []PodSecurityPolicy `json:"items" protobuf:"bytes,2,rep,name=items"`
 }
 
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// DEPRECATED 1.9 - This group version of NetworkPolicy is deprecated by networking/v1/NetworkPolicy.
 // NetworkPolicy describes what network traffic is allowed for a set of Pods
 type NetworkPolicy struct {
 	metav1.TypeMeta `json:",inline"`
@@ -1088,6 +1126,19 @@ type NetworkPolicy struct {
 	Spec NetworkPolicySpec `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
 }
 
+// DEPRECATED 1.9 - This group version of PolicyType is deprecated by networking/v1/PolicyType.
+// Policy Type string describes the NetworkPolicy type
+// This type is beta-level in 1.8
+type PolicyType string
+
+const (
+	// PolicyTypeIngress is a NetworkPolicy that affects ingress traffic on selected pods
+	PolicyTypeIngress PolicyType = "Ingress"
+	// PolicyTypeEgress is a NetworkPolicy that affects egress traffic on selected pods
+	PolicyTypeEgress PolicyType = "Egress"
+)
+
+// DEPRECATED 1.9 - This group version of NetworkPolicySpec is deprecated by networking/v1/NetworkPolicySpec.
 type NetworkPolicySpec struct {
 	// Selects the pods to which this NetworkPolicy object applies.  The array of ingress rules
 	// is applied to any pods selected by this field. Multiple network policies can select the
@@ -1105,8 +1156,32 @@ type NetworkPolicySpec struct {
 	// (and serves solely to ensure that the pods it selects are isolated by default).
 	// +optional
 	Ingress []NetworkPolicyIngressRule `json:"ingress,omitempty" protobuf:"bytes,2,rep,name=ingress"`
+
+	// List of egress rules to be applied to the selected pods. Outgoing traffic is
+	// allowed if there are no NetworkPolicies selecting the pod (and cluster policy
+	// otherwise allows the traffic), OR if the traffic matches at least one egress rule
+	// across all of the NetworkPolicy objects whose podSelector matches the pod. If
+	// this field is empty then this NetworkPolicy limits all outgoing traffic (and serves
+	// solely to ensure that the pods it selects are isolated by default).
+	// This field is beta-level in 1.8
+	// +optional
+	Egress []NetworkPolicyEgressRule `json:"egress,omitempty" protobuf:"bytes,3,rep,name=egress"`
+
+	// List of rule types that the NetworkPolicy relates to.
+	// Valid options are Ingress, Egress, or Ingress,Egress.
+	// If this field is not specified, it will default based on the existence of Ingress or Egress rules;
+	// policies that contain an Egress section are assumed to affect Egress, and all policies
+	// (whether or not they contain an Ingress section) are assumed to affect Ingress.
+	// If you want to write an egress-only policy, you must explicitly specify policyTypes [ "Egress" ].
+	// Likewise, if you want to write a policy that specifies that no egress is allowed,
+	// you must specify a policyTypes value that include "Egress" (since such a policy would not include
+	// an Egress section and would otherwise default to just [ "Ingress" ]).
+	// This field is beta-level in 1.8
+	// +optional
+	PolicyTypes []PolicyType `json:"policyTypes,omitempty" protobuf:"bytes,4,rep,name=policyTypes,casttype=PolicyType"`
 }
 
+// DEPRECATED 1.9 - This group version of NetworkPolicyIngressRule is deprecated by networking/v1/NetworkPolicyIngressRule.
 // This NetworkPolicyIngressRule matches traffic if and only if the traffic matches both ports AND from.
 type NetworkPolicyIngressRule struct {
 	// List of ports which should be made accessible on the pods selected for this rule.
@@ -1126,6 +1201,29 @@ type NetworkPolicyIngressRule struct {
 	From []NetworkPolicyPeer `json:"from,omitempty" protobuf:"bytes,2,rep,name=from"`
 }
 
+// DEPRECATED 1.9 - This group version of NetworkPolicyEgressRule is deprecated by networking/v1/NetworkPolicyEgressRule.
+// NetworkPolicyEgressRule describes a particular set of traffic that is allowed out of pods
+// matched by a NetworkPolicySpec's podSelector. The traffic must match both ports and to.
+// This type is beta-level in 1.8
+type NetworkPolicyEgressRule struct {
+	// List of destination ports for outgoing traffic.
+	// Each item in this list is combined using a logical OR. If this field is
+	// empty or missing, this rule matches all ports (traffic not restricted by port).
+	// If this field is present and contains at least one item, then this rule allows
+	// traffic only if the traffic matches at least one port in the list.
+	// +optional
+	Ports []NetworkPolicyPort `json:"ports,omitempty" protobuf:"bytes,1,rep,name=ports"`
+
+	// List of destinations for outgoing traffic of pods selected for this rule.
+	// Items in this list are combined using a logical OR operation. If this field is
+	// empty or missing, this rule matches all destinations (traffic not restricted by
+	// destination). If this field is present and contains at least one item, this rule
+	// allows traffic only if the traffic matches at least one item in the to list.
+	// +optional
+	To []NetworkPolicyPeer `json:"to,omitempty" protobuf:"bytes,2,rep,name=to"`
+}
+
+// DEPRECATED 1.9 - This group version of NetworkPolicyPort is deprecated by networking/v1/NetworkPolicyPort.
 type NetworkPolicyPort struct {
 	// Optional.  The protocol (TCP or UDP) which traffic must match.
 	// If not specified, this field defaults to TCP.
@@ -1141,6 +1239,22 @@ type NetworkPolicyPort struct {
 	Port *intstr.IntOrString `json:"port,omitempty" protobuf:"bytes,2,opt,name=port"`
 }
 
+// DEPRECATED 1.9 - This group version of IPBlock is deprecated by networking/v1/IPBlock.
+// IPBlock describes a particular CIDR (Ex. "192.168.1.1/24") that is allowed to the pods
+// matched by a NetworkPolicySpec's podSelector. The except entry describes CIDRs that should
+// not be included within this rule.
+type IPBlock struct {
+	// CIDR is a string representing the IP Block
+	// Valid examples are "192.168.1.1/24"
+	CIDR string `json:"cidr" protobuf:"bytes,1,name=cidr"`
+	// Except is a slice of CIDRs that should not be included within an IP Block
+	// Valid examples are "192.168.1.1/24"
+	// Except values will be rejected if they are outside the CIDR range
+	// +optional
+	Except []string `json:"except,omitempty" protobuf:"bytes,2,rep,name=except"`
+}
+
+// DEPRECATED 1.9 - This group version of NetworkPolicyPeer is deprecated by networking/v1/NetworkPolicyPeer.
 type NetworkPolicyPeer struct {
 	// Exactly one of the following must be specified.
 
@@ -1156,8 +1270,15 @@ type NetworkPolicyPeer struct {
 	// If present but empty, this selector selects all namespaces.
 	// +optional
 	NamespaceSelector *metav1.LabelSelector `json:"namespaceSelector,omitempty" protobuf:"bytes,2,opt,name=namespaceSelector"`
+
+	// IPBlock defines policy on a particular IPBlock
+	// +optional
+	IPBlock *IPBlock `json:"ipBlock,omitempty" protobuf:"bytes,3,rep,name=ipBlock"`
 }
 
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// DEPRECATED 1.9 - This group version of NetworkPolicyList is deprecated by networking/v1/NetworkPolicyList.
 // Network Policy List is a list of NetworkPolicy objects.
 type NetworkPolicyList struct {
 	metav1.TypeMeta `json:",inline"`
