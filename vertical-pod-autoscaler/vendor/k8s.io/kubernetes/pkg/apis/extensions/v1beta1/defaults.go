@@ -63,6 +63,15 @@ func SetDefaults_DaemonSet(obj *extensionsv1beta1.DaemonSet) {
 	}
 }
 
+func SetDefaults_PodSecurityPolicySpec(obj *extensionsv1beta1.PodSecurityPolicySpec) {
+	// This field was added after PodSecurityPolicy was released.
+	// Policies that do not include this field must remain as permissive as they were prior to the introduction of this field.
+	if obj.AllowPrivilegeEscalation == nil {
+		t := true
+		obj.AllowPrivilegeEscalation = &t
+	}
+}
+
 func SetDefaults_Deployment(obj *extensionsv1beta1.Deployment) {
 	// Default labels and selector to labels from pod template spec.
 	labels := obj.Spec.Template.Labels
@@ -131,6 +140,14 @@ func SetDefaults_NetworkPolicy(obj *extensionsv1beta1.NetworkPolicy) {
 				proto := v1.ProtocolTCP
 				p.Protocol = &proto
 			}
+		}
+	}
+
+	if len(obj.Spec.PolicyTypes) == 0 {
+		// Any policy that does not specify policyTypes implies at least "Ingress".
+		obj.Spec.PolicyTypes = []extensionsv1beta1.PolicyType{extensionsv1beta1.PolicyTypeIngress}
+		if len(obj.Spec.Egress) != 0 {
+			obj.Spec.PolicyTypes = append(obj.Spec.PolicyTypes, extensionsv1beta1.PolicyTypeEgress)
 		}
 	}
 }

@@ -103,10 +103,15 @@ message JobSpec {
   // +optional
   optional int32 completions = 2;
 
-  // Optional duration in seconds relative to the startTime that the job may be active
+  // Specifies the duration in seconds relative to the startTime that the job may be active
   // before the system tries to terminate it; value must be positive integer
   // +optional
   optional int64 activeDeadlineSeconds = 3;
+
+  // Specifies the number of retries before marking this job failed.
+  // Defaults to 6
+  // +optional
+  optional int32 backoffLimit = 7;
 
   // A label query over pods that should match the pod count.
   // Normally, the system sets this field for you.
@@ -123,7 +128,7 @@ message JobSpec {
   // and other jobs to not function correctly.  However, You may see
   // `manualSelector=true` in jobs that were created with the old `extensions/v1beta1`
   // API.
-  // More info: https://git.k8s.io/community/contributors/design-proposals/selector-generation.md
+  // More info: https://kubernetes.io/docs/concepts/workloads/controllers/jobs-run-to-completion/#specifying-your-own-pod-selector
   // +optional
   optional bool manualSelector = 5;
 
