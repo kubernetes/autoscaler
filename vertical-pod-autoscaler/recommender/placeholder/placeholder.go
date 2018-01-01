@@ -17,17 +17,17 @@ limitations under the License.
 package placeholder
 
 import (
-	metrics "k8s.io/metrics/pkg/apis/metrics/v1alpha1"
-	resourceclient "k8s.io/metrics/pkg/client/clientset_generated/clientset/typed/metrics/v1alpha1"
-	"k8s.io/metrics/pkg/client/clientset_generated/clientset/fake"
 	"k8s.io/client-go/rest"
-
+	metrics "k8s.io/metrics/pkg/apis/metrics/v1alpha1"
+	"k8s.io/metrics/pkg/client/clientset_generated/clientset/fake"
+	resourceclient "k8s.io/metrics/pkg/client/clientset_generated/clientset/typed/metrics/v1alpha1"
 )
 
 var (
 	_ = metrics.NodeMetrics{}
 	_ = &fake.Clientset{}
 )
+
 func Nothing(config *rest.Config) {
 	_ = resourceclient.NewForConfigOrDie(config)
 }

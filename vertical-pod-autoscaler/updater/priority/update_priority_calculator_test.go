@@ -35,10 +35,10 @@ const (
 func TestSortPriority(t *testing.T) {
 	calculator := NewUpdatePriorityCalculator(nil, nil)
 
-	pod1 := test.BuildTestPod("POD1", containerName, "2", "", nil)
-	pod2 := test.BuildTestPod("POD2", containerName, "4", "", nil)
-	pod3 := test.BuildTestPod("POD3", containerName, "1", "", nil)
-	pod4 := test.BuildTestPod("POD4", containerName, "3", "", nil)
+	pod1 := test.BuildTestPod("POD1", containerName, "2", "", nil, nil)
+	pod2 := test.BuildTestPod("POD2", containerName, "4", "", nil, nil)
+	pod3 := test.BuildTestPod("POD3", containerName, "1", "", nil, nil)
+	pod4 := test.BuildTestPod("POD4", containerName, "3", "", nil, nil)
 
 	recommendation := test.Recommendation(containerName, "10", "")
 
@@ -54,8 +54,8 @@ func TestSortPriority(t *testing.T) {
 func TestSortPriorityMultiResource(t *testing.T) {
 	calculator := NewUpdatePriorityCalculator(nil, nil)
 
-	pod1 := test.BuildTestPod("POD1", containerName, "4", "60M", nil)
-	pod2 := test.BuildTestPod("POD2", containerName, "3", "90M", nil)
+	pod1 := test.BuildTestPod("POD1", containerName, "4", "60M", nil, nil)
+	pod2 := test.BuildTestPod("POD2", containerName, "3", "90M", nil, nil)
 
 	recommendation := test.Recommendation(containerName, "6", "100M")
 
@@ -69,9 +69,9 @@ func TestSortPriorityMultiResource(t *testing.T) {
 func TestSortPriorityMultiContainers(t *testing.T) {
 	containerName2 := "container2"
 
-	pod1 := test.BuildTestPod("POD1", containerName, "3", "10M", nil)
+	pod1 := test.BuildTestPod("POD1", containerName, "3", "10M", nil, nil)
 
-	pod2 := test.BuildTestPod("POD2", containerName, "4", "10M", nil)
+	pod2 := test.BuildTestPod("POD2", containerName, "4", "10M", nil, nil)
 	container2 := test.BuildTestContainer(containerName2, "3", "20M")
 	pod2.Spec.Containers = append(pod1.Spec.Containers, container2)
 
@@ -94,8 +94,8 @@ func TestSortPriorityMultiContainers(t *testing.T) {
 func TestSortPriorityResorucesDecrease(t *testing.T) {
 	calculator := NewUpdatePriorityCalculator(nil, nil)
 
-	pod1 := test.BuildTestPod("POD1", containerName, "4", "", nil)
-	pod2 := test.BuildTestPod("POD2", containerName, "10", "", nil)
+	pod1 := test.BuildTestPod("POD1", containerName, "4", "", nil, nil)
+	pod2 := test.BuildTestPod("POD2", containerName, "10", "", nil, nil)
 
 	recommendation := test.Recommendation(containerName, "5", "")
 
@@ -109,7 +109,7 @@ func TestSortPriorityResorucesDecrease(t *testing.T) {
 func TestUpdateNotRequired(t *testing.T) {
 	calculator := NewUpdatePriorityCalculator(nil, nil)
 
-	pod1 := test.BuildTestPod("POD1", containerName, "4", "", nil)
+	pod1 := test.BuildTestPod("POD1", containerName, "4", "", nil, nil)
 
 	recommendation := test.Recommendation(containerName, "4", "")
 
@@ -123,7 +123,7 @@ func TestUsePolicy(t *testing.T) {
 	calculator := NewUpdatePriorityCalculator(
 		test.BuildTestPolicy(containerName, "1", "4", "10M", "100M"), nil)
 
-	pod1 := test.BuildTestPod("POD1", containerName, "4", "10M", nil)
+	pod1 := test.BuildTestPod("POD1", containerName, "4", "10M", nil, nil)
 
 	recommendation := test.Recommendation(containerName, "5", "5M")
 
@@ -136,8 +136,8 @@ func TestUsePolicy(t *testing.T) {
 func TestChangeTooSmall(t *testing.T) {
 	calculator := NewUpdatePriorityCalculator(nil, &UpdateConfig{0.5})
 
-	pod1 := test.BuildTestPod("POD1", containerName, "4", "", nil)
-	pod2 := test.BuildTestPod("POD2", containerName, "1", "", nil)
+	pod1 := test.BuildTestPod("POD1", containerName, "4", "", nil, nil)
+	pod2 := test.BuildTestPod("POD2", containerName, "1", "", nil, nil)
 
 	recommendation := test.Recommendation(containerName, "5", "")
 
