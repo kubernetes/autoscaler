@@ -31,10 +31,9 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	watch "k8s.io/apimachinery/pkg/watch"
+	kubeclient "k8s.io/client-go/kubernetes"
+	admissionregistrationv1alpha1 "k8s.io/client-go/kubernetes/typed/admissionregistration/v1alpha1"
 	"k8s.io/client-go/tools/cache"
-	"k8s.io/kubernetes/pkg/api"
-	kubeclient "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
-	admissionregistrationv1alpha1 "k8s.io/kubernetes/pkg/client/clientset_generated/clientset/typed/admissionregistration/v1alpha1"
 
 	"github.com/golang/glog"
 )
@@ -156,11 +155,7 @@ func (initializer *initializer) doUpdatePod(pod *v1.Pod) error {
 }
 
 func markAsFailed(pod *v1.Pod) (*v1.Pod, error) {
-	failedPodCopy, err := api.Scheme.Copy(pod)
-	if err != nil {
-		return nil, err
-	}
-	failedPod := failedPodCopy.(*v1.Pod)
+	failedPod := pod.DeepCopy()
 	markInitializationFailure(failedPod)
 	return failedPod, nil
 }
@@ -170,11 +165,7 @@ func markAsFailed(pod *v1.Pod) (*v1.Pod, error) {
 func (initializer *initializer) initializePod(pod *v1.Pod) (*v1.Pod, error) {
 	glog.V(2).Infof("updating requirements for pod %v.", pod.Name)
 
-	updatedPodCopy, err := api.Scheme.Copy(pod)
-	if err != nil {
-		return nil, err
-	}
-	updatedPod := updatedPodCopy.(*v1.Pod)
+	updatedPod := pod.DeepCopy()
 	markInitializationSuccess(updatedPod)
 
 	vpaConfig := initializer.getMatchingVPA(pod)
@@ -360,12 +351,9 @@ func newConfiguration() *v1alpha1.InitializerConfiguration {
 		APIVersions: []string{"*"},
 		Resources:   []string{"pods"},
 	}
-	// If initializer fails, allow for pod creation.
-	failPolicy := v1alpha1.Ignore
 	vpaInitializer := v1alpha1.Initializer{
-		Name:          VPAInitializerName,
-		Rules:         []v1alpha1.Rule{allPodsRule},
-		FailurePolicy: &failPolicy,
+		Name:  VPAInitializerName,
+		Rules: []v1alpha1.Rule{allPodsRule},
 	}
 	configuration := &v1alpha1.InitializerConfiguration{
 		ObjectMeta: metav1.ObjectMeta{
