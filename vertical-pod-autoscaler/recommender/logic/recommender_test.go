@@ -60,10 +60,10 @@ func TestBuildAggregateResourcesMap(t *testing.T) {
 
 	// Create 4 containers: 2 with the same name and 2 with different names.
 	containers := []model.ContainerID{
-		model.ContainerID{testPodID1, "app-A"},
-		model.ContainerID{testPodID1, "app-B"},
-		model.ContainerID{testPodID2, "app-A"},
-		model.ContainerID{testPodID2, "app-C"},
+		{testPodID1, "app-A"},
+		{testPodID1, "app-B"},
+		{testPodID2, "app-A"},
+		{testPodID2, "app-C"},
 	}
 	for _, c := range containers {
 		assert.NoError(t, cluster.AddOrUpdateContainer(c))
