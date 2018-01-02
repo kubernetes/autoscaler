@@ -534,6 +534,29 @@ So one of the reasons it doesn't scale up the cluster may be that the pod has to
 available node types.
 Another possible reason is that all suitable node groups are already at their maximum size.
 
+If the pending pods are in a [stateful set](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset)
+and the cluster spans multiple zones, CA may not be able to scale up the cluster,
+even if it has not yet reached the upper scaling limit in all zones. Stateful
+set pods require an associated Persistent Volume (PV), which is created
+before scheduling the pod and CA has no way of influencing the zone choice. The
+pending pod has a strict constraint to be scheduled in the same zone that the PV
+is in, so if it is a zone that has already reached the upper scaling limit, CA
+will not be able to perform a scale-up, even if there are other zones in which
+nodes could be added. This will manifest itself by following events on the pod:
+
+```
+Events:
+  Type     Reason             Age   From                Message
+  ----     ------             ----  -------             -------
+  Normal   NotTriggerScaleUp  ..    cluster-autoscaler  pod didn't trigger scale-up (it wouldn't fit if a new node is added)
+  Warning  FailedScheduling   ..    default-scheduler   No nodes are available that match all of the following predicates:: Insufficient cpu (4), NoVolumeZoneConflict (2)
+```
+
+This limitation will go away with
+[volume topological scheduling](https://github.com/kubernetes/community/blob/master/contributors/design-proposals/storage/volume-topology-scheduling.md)
+support in Kubernetes. Currently, we advice to set CA upper limits in a way to
+allow for some slack capacity.
+
 ### CA doesn’t work, but it used to work yesterday. Why?
 
 Most likely it's due to a problem with the cluster. Steps to debug:
