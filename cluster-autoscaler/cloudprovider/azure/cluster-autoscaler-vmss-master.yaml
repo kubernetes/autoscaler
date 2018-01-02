@@ -31,6 +31,8 @@ spec:
     spec:
       tolerations:
       - effect: NoSchedule
+        operator: "Equal"
+        value: "true"
         key: node-role.kubernetes.io/master
       nodeSelector:
         kubernetes.io/role: master
@@ -78,7 +80,7 @@ spec:
             secretKeyRef:
               key: VMType
               name: cluster-autoscaler-azure
-      - image: gcr.io/google_containers/cluster-autoscaler:{{ ca_version }}
+      - image: k8s.gcr.io/cluster-autoscaler:{{ ca_version }}
         imagePullPolicy: Always
         name: cluster-autoscaler
         resources:
