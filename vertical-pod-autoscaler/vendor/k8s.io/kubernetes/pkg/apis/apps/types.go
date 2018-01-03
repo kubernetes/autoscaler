@@ -19,10 +19,13 @@ package apps
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/kubernetes/pkg/api"
+	api "k8s.io/kubernetes/pkg/apis/core"
 )
 
-// +genclient=true
+// +genclient
+// +genclient:method=GetScale,verb=get,subresource=scale,result=k8s.io/kubernetes/pkg/apis/autoscaling.Scale
+// +genclient:method=UpdateScale,verb=update,subresource=scale,input=k8s.io/kubernetes/pkg/apis/autoscaling.Scale,result=k8s.io/kubernetes/pkg/apis/autoscaling.Scale
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // StatefulSet represents a set of pods with consistent identities.
 // Identities are defined as:
@@ -186,7 +189,36 @@ type StatefulSetStatus struct {
 	// updateRevision, if not empty, indicates the version of the StatefulSet used to generate Pods in the sequence
 	// [replicas-updatedReplicas,replicas)
 	UpdateRevision string
+
+	// collisionCount is the count of hash collisions for the StatefulSet. The StatefulSet controller
+	// uses this field as a collision avoidance mechanism when it needs to create the name for the
+	// newest ControllerRevision.
+	// +optional
+	CollisionCount *int32
+
+	// Represents the latest available observations of a statefulset's current state.
+	Conditions []StatefulSetCondition
 }
+
+type StatefulSetConditionType string
+
+// TODO: Add valid condition types for Statefulsets.
+
+// StatefulSetCondition describes the state of a statefulset at a certain point.
+type StatefulSetCondition struct {
+	// Type of statefulset condition.
+	Type StatefulSetConditionType
+	// Status of the condition, one of True, False, Unknown.
+	Status api.ConditionStatus
+	// The last time this condition was updated.
+	LastTransitionTime metav1.Time
+	// The reason for the condition's last transition.
+	Reason string
+	// A human readable message indicating details about the transition.
+	Message string
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // StatefulSetList is a collection of StatefulSets.
 type StatefulSetList struct {
@@ -196,7 +228,8 @@ type StatefulSetList struct {
 	Items []StatefulSet
 }
 
-// +genclient=true
+// +genclient
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // ControllerRevision implements an immutable snapshot of state data. Clients
 // are responsible for serializing and deserializing the objects that contain
@@ -217,6 +250,8 @@ type ControllerRevision struct {
 	// Revision indicates the revision of the state represented by Data.
 	Revision int64
 }
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // ControllerRevisionList is a resource containing a list of ControllerRevision objects.
 type ControllerRevisionList struct {

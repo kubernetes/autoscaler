@@ -26,8 +26,8 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes/fake"
 	core "k8s.io/client-go/testing"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset/fake"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -48,14 +48,14 @@ func TestUpdateResourceRequests(t *testing.T) {
 	recommender := &test.RecommenderMock{}
 	rec := test.Recommendation(containerName, "2", "200M")
 
-	uninitialized := test.BuildTestPod("test_uninitialized", containerName, "1", "100M", nil)
+	uninitialized := test.BuildTestPod("test_uninitialized", containerName, "1", "100M", nil, nil)
 	uninitialized.ObjectMeta.Labels = labels
 	uninitialized.ObjectMeta.Initializers = &metav1.Initializers{
 		Pending: []metav1.Initializer{{Name: VPAInitializerName}},
 	}
 	recommender.On("Get", &uninitialized.Spec).Return(rec, nil)
 
-	initialized := test.BuildTestPod("test_initialized", containerName, "1", "100M", nil)
+	initialized := test.BuildTestPod("test_initialized", containerName, "1", "100M", nil, nil)
 	initialized.ObjectMeta.Labels = labels
 	recommender.On("Get", &initialized.Spec).Return(rec, nil)
 

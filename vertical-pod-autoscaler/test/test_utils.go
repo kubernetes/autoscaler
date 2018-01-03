@@ -24,16 +24,12 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/apimock"
-	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/testapi"
-	refv1 "k8s.io/kubernetes/pkg/api/v1/ref"
-	v1 "k8s.io/kubernetes/pkg/client/listers/core/v1"
+	v1 "k8s.io/client-go/listers/core/v1"
 )
 
 // BuildTestPod creates a pod with specified resources.
-func BuildTestPod(name, containerName, cpu, mem string, creator runtime.Object) *apiv1.Pod {
+func BuildTestPod(name, containerName, cpu, mem string, creatorObjectMeta *metav1.ObjectMeta, creatorTypeMeta *metav1.TypeMeta) *apiv1.Pod {
 	pod := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "default",
@@ -45,8 +41,17 @@ func BuildTestPod(name, containerName, cpu, mem string, creator runtime.Object) 
 		},
 	}
 
-	if creator != nil {
-		pod.ObjectMeta.Annotations = map[string]string{apiv1.CreatedByAnnotation: RefJSON(creator)}
+	if creatorObjectMeta != nil && creatorTypeMeta != nil {
+		isController := true
+		pod.ObjectMeta.OwnerReferences = []metav1.OwnerReference{
+			{
+				UID:        creatorObjectMeta.UID,
+				Name:       creatorObjectMeta.Name,
+				APIVersion: creatorObjectMeta.ResourceVersion,
+				Kind:       creatorTypeMeta.Kind,
+				Controller: &isController,
+			},
+		}
 	}
 
 	if len(cpu) > 0 {
@@ -113,18 +118,6 @@ func BuildTestVerticalPodAutoscaler(containerName, minCpu, maxCpu, minMemory, ma
 		},
 	}
 
-}
-
-// RefJSON builds string reference to
-func RefJSON(o runtime.Object) string {
-	ref, err := refv1.GetReference(api.Scheme, o)
-	if err != nil {
-		panic(err)
-	}
-
-	codec := testapi.Default.Codec()
-	json := runtime.EncodeOrDie(codec, &apiv1.SerializedReference{Reference: *ref})
-	return string(json)
 }
 
 // Recommendation creates Recommendation with specified container name and resources

@@ -50,7 +50,7 @@ func TestRunOnce(t *testing.T) {
 	rec := test.Recommendation(containerName, "2", "200M")
 
 	for i := range pods {
-		pods[i] = test.BuildTestPod("test"+string(i), containerName, "1", "100M", &rc)
+		pods[i] = test.BuildTestPod("test"+string(i), containerName, "1", "100M", &rc.ObjectMeta, &rc.TypeMeta)
 		pods[i].Spec.NodeSelector = labels
 		eviction.On("CanEvict", pods[i]).Return(true)
 		eviction.On("Evict", pods[i]).Return(nil)
