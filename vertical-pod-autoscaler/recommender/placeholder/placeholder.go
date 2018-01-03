@@ -28,6 +28,8 @@ var (
 	_ = &fake.Clientset{}
 )
 
+// Nothing just uses some of imported packages in order for Godep to include them in vendor directory.
+// Will be removed when metrics are actually used within VPA recommender.
 func Nothing(config *rest.Config) {
 	_ = resourceclient.NewForConfigOrDie(config)
 }
