@@ -37,6 +37,8 @@ spec:
     spec:
       tolerations:
       - effect: NoSchedule
+        operator: "Equal"
+        value: "true"
         key: node-role.kubernetes.io/master
       nodeSelector:
         kubernetes.io/role: master
