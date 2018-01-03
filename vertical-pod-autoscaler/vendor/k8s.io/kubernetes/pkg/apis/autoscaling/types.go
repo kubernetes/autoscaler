@@ -19,8 +19,10 @@ package autoscaling
 import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/kubernetes/pkg/api"
+	api "k8s.io/kubernetes/pkg/apis/core"
 )
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // Scale represents a scaling request for a resource.
 type Scale struct {
@@ -114,7 +116,8 @@ var (
 // MetricSpec specifies how to scale based on a single metric
 // (only `type` and one other matching field should be set at once).
 type MetricSpec struct {
-	// Type is the type of metric source.  It should match one of the fields below.
+	// Type is the type of metric source.  It should be one of "Object",
+	// "Pods" or "Resource", each mapping to a matching field in the object.
 	Type MetricSourceType
 
 	// Object refers to a metric describing a single kubernetes object
@@ -229,7 +232,7 @@ var (
 	// ScalingActive indicates that the HPA controller is able to scale if necessary:
 	// it's correctly configured, can fetch the desired metrics, and isn't disabled.
 	ScalingActive HorizontalPodAutoscalerConditionType = "ScalingActive"
-	// AbleToScale indicates a lack of transient issues which prevent scaling from occuring,
+	// AbleToScale indicates a lack of transient issues which prevent scaling from occurring,
 	// such as being in a backoff window, or being unable to access/update the target scale.
 	AbleToScale HorizontalPodAutoscalerConditionType = "AbleToScale"
 	// ScalingLimited indicates that the calculated scale based on metrics would be above or
@@ -259,7 +262,8 @@ type HorizontalPodAutoscalerCondition struct {
 
 // MetricStatus describes the last-read state of a single metric.
 type MetricStatus struct {
-	// Type is the type of metric source.  It will match one of the fields below.
+	// Type is the type of metric source.  It will be one of "Object",
+	// "Pods" or "Resource", each corresponds to a matching field in the object.
 	Type MetricSourceType
 
 	// Object refers to a metric describing a single kubernetes object
@@ -324,7 +328,8 @@ type ResourceMetricStatus struct {
 	CurrentAverageValue resource.Quantity
 }
 
-// +genclient=true
+// +genclient
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // HorizontalPodAutoscaler is the configuration for a horizontal pod
 // autoscaler, which automatically manages the replica count of any resource
@@ -346,7 +351,9 @@ type HorizontalPodAutoscaler struct {
 	Status HorizontalPodAutoscalerStatus
 }
 
-// HorizontalPodAutoscaler is a list of horizontal pod autoscaler objects.
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// HorizontalPodAutoscalerList is a list of horizontal pod autoscaler objects.
 type HorizontalPodAutoscalerList struct {
 	metav1.TypeMeta
 	// Metadata is the standard list metadata.

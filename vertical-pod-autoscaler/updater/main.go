@@ -20,8 +20,8 @@ import (
 	"flag"
 	"github.com/golang/glog"
 	kube_flag "k8s.io/apiserver/pkg/util/flag"
+	kube_client "k8s.io/client-go/kubernetes"
 	kube_restclient "k8s.io/client-go/rest"
-	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	"time"
 )
 

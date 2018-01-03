@@ -23,9 +23,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	api "k8s.io/kubernetes/pkg/api"
-	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
+	kube_client "k8s.io/client-go/kubernetes"
 )
 
 // PodsEvictionRestriction controls pods evictions. It ensures that we will not evict too
@@ -168,16 +166,16 @@ func (f *podsEvictionRestrictionFactoryImpl) NewPodsEvictionRestriction(pods []*
 }
 
 func getPodReplicaCreator(pod *apiv1.Pod) (*podReplicaCreator, error) {
-	creator, err := creatorRef(pod)
-	if err != nil {
-		return nil, fmt.Errorf("failed to obtain pod creator reference: %v", err)
-	}
+	creator := managingControllerRef(pod)
 	if creator == nil {
 		return nil, nil
 	}
-	return &podReplicaCreator{Namespace: creator.Reference.Namespace,
-		Name: creator.Reference.Name,
-		Kind: creator.Reference.Kind}, nil
+	podReplicaCreator := &podReplicaCreator{
+		Namespace: pod.Namespace,
+		Name:      creator.Name,
+		Kind:      creator.Kind,
+	}
+	return podReplicaCreator, nil
 }
 
 func getPodID(pod *apiv1.Pod) string {
@@ -225,15 +223,13 @@ func getReplicaCount(creator podReplicaCreator, client kube_client.Interface) (i
 	return 0, nil
 }
 
-// creatorRef returns the kind of the creator reference of the pod.
-func creatorRef(pod *apiv1.Pod) (*apiv1.SerializedReference, error) {
-	creatorRef, found := pod.ObjectMeta.Annotations[apiv1.CreatedByAnnotation]
-	if !found {
-		return nil, nil
+func managingControllerRef(pod *apiv1.Pod) *metav1.OwnerReference {
+	var managingController metav1.OwnerReference
+	for _, ownerReference := range pod.ObjectMeta.GetOwnerReferences() {
+		if *ownerReference.Controller {
+			managingController = ownerReference
+			break
+		}
 	}
-	var sr apiv1.SerializedReference
-	if err := runtime.DecodeInto(api.Codecs.UniversalDecoder(), []byte(creatorRef), &sr); err != nil {
-		return nil, err
-	}
-	return &sr, nil
+	return &managingController
 }

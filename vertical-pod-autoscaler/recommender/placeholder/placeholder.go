@@ -17,9 +17,19 @@ limitations under the License.
 package placeholder
 
 import (
+	"k8s.io/client-go/rest"
 	metrics "k8s.io/metrics/pkg/apis/metrics/v1alpha1"
+	"k8s.io/metrics/pkg/client/clientset_generated/clientset/fake"
+	resourceclient "k8s.io/metrics/pkg/client/clientset_generated/clientset/typed/metrics/v1alpha1"
 )
 
 var (
 	_ = metrics.NodeMetrics{}
+	_ = &fake.Clientset{}
 )
+
+// Nothing just uses some of imported packages in order for Godep to include them in vendor directory.
+// Will be removed when metrics are actually used within VPA recommender.
+func Nothing(config *rest.Config) {
+	_ = resourceclient.NewForConfigOrDie(config)
+}

@@ -27,9 +27,9 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
+	kube_client "k8s.io/client-go/kubernetes"
+	v1lister "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/tools/cache"
-	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
-	v1lister "k8s.io/kubernetes/pkg/client/listers/core/v1"
 
 	"github.com/golang/glog"
 )
@@ -163,7 +163,8 @@ func newPodLister(kubeClient kube_client.Interface) v1lister.PodLister {
 	store := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
 	podLister := v1lister.NewPodLister(store)
 	podReflector := cache.NewReflector(podListWatch, &apiv1.Pod{}, store, time.Hour)
-	podReflector.Run()
+	stopCh := make(chan struct{})
+	podReflector.Run(stopCh)
 
 	return podLister
 }
