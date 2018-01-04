@@ -5,6 +5,8 @@ vertically scales the dependent container up and down. Currently the only
 option is to scale it linearly based on the number of nodes, and it only works
 for a singleton.
 
+Currently recommended version is 1.8, on addon-resizer-release-1.8 branch.
+
 ## Nanny program and arguments
 
 The nanny scales resources linearly with the number of nodes in the cluster. The base and marginal resource requirements are given as command line arguments, but you cannot give a marginal requirement without a base requirement.
@@ -55,7 +57,7 @@ spec:
         kubernetes.io/cluster-service: "true"
     spec:
       containers:
-        - image: k8s.gcr.io/addon-resizer:1.0
+        - image: k8s.gcr.io/addon-resizer:1.8
           imagePullPolicy: Always
           name: pod-nanny
           resources:
