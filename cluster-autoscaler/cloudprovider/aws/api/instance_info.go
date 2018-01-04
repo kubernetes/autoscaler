@@ -67,26 +67,26 @@ type instanceInfoService struct {
 	sync.RWMutex
 }
 
-// DescribeInstanceInfo returns the corresponding aws instance info by given instance type and availability zone.
-func (s *instanceInfoService) DescribeInstanceInfo(instanceType string, availabilityZone string) (*InstanceInfo, error) {
-	if s.shouldSync(availabilityZone) {
-		if err := s.sync(availabilityZone); err != nil {
+// DescribeInstanceInfo returns the corresponding aws instance info by given instance type and region.
+func (s *instanceInfoService) DescribeInstanceInfo(instanceType string, region string) (*InstanceInfo, error) {
+	if s.shouldSync(region) {
+		if err := s.sync(region); err != nil {
 			return nil, fmt.Errorf("failed to sync aws product and price information: %v", err)
 		}
 	}
 
-	if bucket, found := s.cache[availabilityZone]; found {
+	if bucket, found := s.cache[region]; found {
 		for _, info := range bucket.info {
 			if info.InstanceType == instanceType {
 				return &info, nil
 			}
 		}
 	}
-	return nil, fmt.Errorf("instance info not available for instance type %s in zone %s", instanceType, availabilityZone)
+	return nil, fmt.Errorf("instance info not available for instance type %s in region %s", instanceType, region)
 }
 
-func (s *instanceInfoService) shouldSync(availabilityZone string) bool {
-	bucket, found := s.cache[availabilityZone]
+func (s *instanceInfoService) shouldSync(region string) bool {
+	bucket, found := s.cache[region]
 	if !found {
 		return true
 	}
@@ -94,17 +94,17 @@ func (s *instanceInfoService) shouldSync(availabilityZone string) bool {
 	return bucket.LastSync().Before(time.Now().Truncate(instanceInfoCacheMaxAge))
 }
 
-func (s *instanceInfoService) sync(availabilityZone string) error {
+func (s *instanceInfoService) sync(region string) error {
 	s.Lock()
 	defer s.Unlock()
 
-	bucket, found := s.cache[availabilityZone]
+	bucket, found := s.cache[region]
 	if !found {
 		bucket = new(regionalInstanceInfoBucket)
-		s.cache[availabilityZone] = bucket
+		s.cache[region] = bucket
 	}
 
-	response, err := s.fetch(availabilityZone, bucket.ETag)
+	response, err := s.fetch(region, bucket.ETag)
 	if err != nil {
 		return err
 	}
@@ -204,8 +204,8 @@ func (s *instanceInfoService) sync(availabilityZone string) error {
 	return nil
 }
 
-func (s *instanceInfoService) fetch(availabilityZone string, etag string) (*response, error) {
-	url := fmt.Sprintf(awsPricingAPIURLTemplate, availabilityZone)
+func (s *instanceInfoService) fetch(region string, etag string) (*response, error) {
+	url := fmt.Sprintf(awsPricingAPIURLTemplate, region)
 
 	req, err := http.NewRequest("GET", url, nil)
 

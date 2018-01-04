@@ -20,8 +20,8 @@ import "time"
 
 // InstanceInfoDescriber is an interface to describe instance information
 type InstanceInfoDescriber interface {
-	// DescribeInstanceInfo returns the corresponding aws instance info by given instance type and availability zone.
-	DescribeInstanceInfo(instanceType string, availabilityZone string) (*InstanceInfo, error)
+	// DescribeInstanceInfo returns the corresponding aws instance info by given instance type and region.
+	DescribeInstanceInfo(instanceType string, region string) (*InstanceInfo, error)
 }
 
 // SpotPriceHistoryDescriber is an interface to describe spot price history information

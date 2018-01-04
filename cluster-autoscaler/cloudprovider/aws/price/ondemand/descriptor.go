@@ -45,10 +45,15 @@ func (d *descriptor) Price(instanceType string, availabilityZones ...string) (fl
 	if len(availabilityZones) == 0 {
 		return 0, errors.New("no availability zone given")
 	}
-	info, err := d.service.DescribeInstanceInfo(instanceType, availabilityZones[0])
+	region := regionOfAvailabilityZone(availabilityZones[0])
+	info, err := d.service.DescribeInstanceInfo(instanceType, region)
 	if err != nil {
-		return 0, fmt.Errorf("failed to obtain instance info for %s in zone %s: %v", instanceType, availabilityZones[0], err)
+		return 0, fmt.Errorf("failed to obtain instance info for %s in zone %s: %v", instanceType, region, err)
 	}
 
 	return info.OnDemandPrice, nil
+}
+
+func regionOfAvailabilityZone(availabilityZone string) string {
+	return availabilityZone[0 : len(availabilityZone)-1]
 }

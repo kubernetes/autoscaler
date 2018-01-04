@@ -49,7 +49,7 @@ type spotPriceHistoryService struct {
 func (spd *spotPriceHistoryService) DescribeSpotPriceHistory(instanceType string, availabilityZone string, startTime time.Time) (*SpotPriceHistory, error) {
 	req := &ec2.DescribeSpotPriceHistoryInput{
 		Filters: []*ec2.Filter{
-			spotPriceFilter("availability-zone", availabilityZone),
+			spotPriceFilter("availability-region", availabilityZone),
 			spotPriceFilter("product-description", "Linux/UNIX"),
 			spotPriceFilter("instance-type", instanceType),
 		},

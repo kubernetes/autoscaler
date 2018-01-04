@@ -54,7 +54,7 @@ func TestInstanceInfoService_DescribeInstanceInfo(t *testing.T) {
 
 	type testCase struct {
 		instanceType        string
-		availabilityZone    string
+		region              string
 		expectError         bool
 		expectOnDemandPrice float64
 		expectCPU           int64
@@ -69,7 +69,7 @@ func TestInstanceInfoService_DescribeInstanceInfo(t *testing.T) {
 			0.2,
 			4,
 		},
-		{ // error case: unknown availability zone
+		{ // error case: unknown availability region
 			"m4.xlarge",
 			"eu-east-2",
 			true,
@@ -95,7 +95,7 @@ func TestInstanceInfoService_DescribeInstanceInfo(t *testing.T) {
 	service := NewEC2InstanceInfoService(mc)
 
 	for n, tc := range tcs {
-		info, err := service.DescribeInstanceInfo(tc.instanceType, tc.availabilityZone)
+		info, err := service.DescribeInstanceInfo(tc.instanceType, tc.region)
 		if tc.expectError {
 			assert.Error(t, err, fmt.Sprintf("case %d", n))
 		} else {
