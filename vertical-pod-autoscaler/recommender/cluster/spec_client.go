@@ -20,7 +20,7 @@ import (
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/model"
-	v1lister "k8s.io/kubernetes/pkg/client/listers/core/v1"
+	v1lister "k8s.io/client-go/listers/core/v1"
 )
 
 //SpecClient provides information about pods and containers Specification
