@@ -39,3 +39,18 @@ func SetDefaults_NannyConfiguration(obj *NannyConfiguration) {
 		obj.MemoryPerNode = "0"
 	}
 }
+
+func FillInDefaults_NannyConfiguration(obj *NannyConfiguration, defaults *NannyConfiguration) {
+	if obj.BaseCPU == nannyconfig.NoValue {
+		obj.BaseCPU = defaults.BaseCPU
+	}
+	if obj.CPUPerNode == "0" {
+		obj.CPUPerNode = defaults.CPUPerNode
+	}
+	if obj.BaseMemory == nannyconfig.NoValue {
+		obj.BaseMemory = defaults.BaseMemory
+	}
+	if obj.MemoryPerNode == "0" {
+		obj.MemoryPerNode = defaults.MemoryPerNode
+	}
+}

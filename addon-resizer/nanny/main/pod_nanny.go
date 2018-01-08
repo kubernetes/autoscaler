@@ -40,7 +40,12 @@ import (
 
 var (
 	// Flags to define the resource requirements.
-	configDir      = flag.String("config-dir", nannyconfig.NoValue, "Path of configuration containing base resource requirements.")
+	configDir = flag.String("config-dir", nannyconfig.NoValue, "Path of configuration containing base resource requirements.")
+	// Following empty values ("") will be overwritten by defaults specified in apis/nannyconfig/v1alpha1/defaults.go
+	baseCPU        = flag.String("cpu", "", "The base CPU resource requirement.")
+	cpuPerNode     = flag.String("extra-cpu", "", "The amount of CPU to add per node.")
+	baseMemory     = flag.String("memory", "", "The base memory resource requirement.")
+	memoryPerNode  = flag.String("extra-memory", "", "The amount of memory to add per node.")
 	baseStorage    = flag.String("storage", nannyconfig.NoValue, "The base storage resource requirement.")
 	storagePerNode = flag.String("extra-storage", "0Gi", "The amount of storage to add per node.")
 	threshold      = flag.Int("threshold", 0, "A number between 0-100. The dependent's resources are rewritten when they deviate from expected by more than threshold.")
@@ -83,7 +88,13 @@ func main() {
 	}
 	k8s := nanny.NewKubernetesClient(*podNamespace, *deployment, *podName, *containerName, clientset)
 
-	nannycfg, err := loadNannyConfiguration(*configDir)
+	nannyConfigurationFromFlags := &nannyconfigalpha.NannyConfiguration{
+		BaseCPU:       *baseCPU,
+		CPUPerNode:    *cpuPerNode,
+		BaseMemory:    *baseMemory,
+		MemoryPerNode: *memoryPerNode,
+	}
+	nannycfg, err := loadNannyConfiguration(*configDir, nannyConfigurationFromFlags)
 	if err != nil {
 		glog.Fatal(err)
 	}
@@ -136,21 +147,26 @@ func main() {
 	nanny.PollAPIServer(k8s, est, *containerName, pollPeriod, uint64(*threshold))
 }
 
-func loadNannyConfiguration(configDir string) (*nannyconfig.NannyConfiguration, error) {
+func loadNannyConfiguration(configDir string, defaultConfig *nannyconfigalpha.NannyConfiguration) (*nannyconfig.NannyConfiguration, error) {
 	path := filepath.Join(configDir, "NannyConfiguration")
 	scheme, codecs, err := nannyscheme.NewSchemeAndCodecs()
 	if err != nil {
 		return nil, err
 	}
+	// overwrite defaults with flag-specified parameters
+	nannyconfigalpha.SetDefaults_NannyConfiguration(defaultConfig)
+	// retrieve config map parameters if present
+	configMapConfig := &nannyconfigalpha.NannyConfiguration{}
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
 		glog.V(0).Infof("Failed to read data from config file %q: %v, using default parameters", path, err)
-		config := &nannyconfigalpha.NannyConfiguration{}
-		nannyconfigalpha.SetDefaults_NannyConfiguration(config)
-		return convertNannyConfiguration(config, scheme)
+	} else if configMapConfig, err = decodeNannyConfiguration(data, scheme, codecs); err != nil {
+		glog.V(0).Infof("Unable to decode Nanny Configuration from config map, using default parameters")
 	}
-
-	return decodeNannyConfiguration(data, scheme, codecs)
+	glog.Infof("%s", configMapConfig.BaseCPU)
+	// overwrite defaults with config map parameters
+	nannyconfigalpha.FillInDefaults_NannyConfiguration(configMapConfig, defaultConfig)
+	return convertNannyConfiguration(configMapConfig, scheme)
 }
 
 func convertNannyConfiguration(configAlpha *nannyconfigalpha.NannyConfiguration, scheme *runtime.Scheme) (*nannyconfig.NannyConfiguration, error) {
@@ -162,7 +178,7 @@ func convertNannyConfiguration(configAlpha *nannyconfigalpha.NannyConfiguration,
 	return config, nil
 }
 
-func decodeNannyConfiguration(data []byte, scheme *runtime.Scheme, codecs *serializer.CodecFactory) (*nannyconfig.NannyConfiguration, error) {
+func decodeNannyConfiguration(data []byte, scheme *runtime.Scheme, codecs *serializer.CodecFactory) (*nannyconfigalpha.NannyConfiguration, error) {
 	obj, err := runtime.Decode(codecs.UniversalDecoder(nannyconfigalpha.SchemeGroupVersion), data)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode, error: %v", err)
@@ -171,5 +187,5 @@ func decodeNannyConfiguration(data []byte, scheme *runtime.Scheme, codecs *seria
 	if !ok {
 		return nil, fmt.Errorf("failed to cast object to NannyConfiguration, object: %#v", obj)
 	}
-	return convertNannyConfiguration(externalHC, scheme)
+	return externalHC, nil
 }
