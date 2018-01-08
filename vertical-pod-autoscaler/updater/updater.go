@@ -164,7 +164,7 @@ func newPodLister(kubeClient kube_client.Interface) v1lister.PodLister {
 	podLister := v1lister.NewPodLister(store)
 	podReflector := cache.NewReflector(podListWatch, &apiv1.Pod{}, store, time.Hour)
 	stopCh := make(chan struct{})
-	podReflector.Run(stopCh)
+	go podReflector.Run(stopCh)
 
 	return podLister
 }
