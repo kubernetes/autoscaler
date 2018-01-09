@@ -1,0 +1,6 @@
+apiVersion: "autoscaling.poc/v2alpha1"
+kind: VerticalPodAutoscaler
+metadata:
+  name: pupa1
+spec:
+  a: b
