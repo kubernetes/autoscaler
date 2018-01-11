@@ -28,6 +28,7 @@ import (
 
 var (
 	metricsFetcherInterval = *flag.Duration("recommender-interval", 1*time.Minute, `How often metrics should be fetched`)
+	prometheusAddress      = *flag.String("prometheus-address", "", `Where to reach for Prometheus metrics`)
 )
 
 func main() {
@@ -35,7 +36,7 @@ func main() {
 	kube_flag.InitFlags()
 
 	config := createKubeConfig()
-	recommender := NewRecommender(config, metricsFetcherInterval)
+	recommender := NewRecommender(config, metricsFetcherInterval, prometheusAddress)
 	recommender.Run()
 }
 
