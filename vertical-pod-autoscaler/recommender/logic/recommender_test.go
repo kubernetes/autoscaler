@@ -41,8 +41,14 @@ func addTestSample(cluster *model.ClusterState, container model.ContainerID, cpu
 	var sample model.ContainerUsageSampleWithKey
 	sample.Container = container
 	sample.MeasureStart = testTimestamp
-	sample.CPUUsage = cpu
-	sample.MemoryUsage = memory
+	sample.Usage = cpu
+	sample.Resource = model.ResourceCPU
+	err := cluster.AddSample(&sample)
+	if err != nil {
+		return err
+	}
+	sample.Usage = memory
+	sample.Resource = model.ResourceMemory
 	return cluster.AddSample(&sample)
 }
 
