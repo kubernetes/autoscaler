@@ -135,6 +135,25 @@ type Config struct {
 	WindowsAdminPassword string `json:"windowsAdminPassword" yaml:"windowsAdminPassword"`
 }
 
+// TrimSpace removes all leading and trailing white spaces.
+func (c *Config) TrimSpace() {
+	c.Cloud = strings.TrimSpace(c.Cloud)
+	c.TenantID = strings.TrimSpace(c.TenantID)
+	c.SubscriptionID = strings.TrimSpace(c.SubscriptionID)
+	c.ResourceGroup = strings.TrimSpace(c.ResourceGroup)
+	c.VMType = strings.TrimSpace(c.VMType)
+	c.AADClientID = strings.TrimSpace(c.AADClientID)
+	c.AADClientSecret = strings.TrimSpace(c.AADClientSecret)
+	c.AADClientCertPath = strings.TrimSpace(c.AADClientCertPath)
+	c.AADClientCertPassword = strings.TrimSpace(c.AADClientCertPassword)
+	c.Deployment = strings.TrimSpace(c.Deployment)
+	c.APIServerPrivateKey = strings.TrimSpace(c.APIServerPrivateKey)
+	c.CAPrivateKey = strings.TrimSpace(c.CAPrivateKey)
+	c.ClientPrivateKey = strings.TrimSpace(c.ClientPrivateKey)
+	c.KubeConfigPrivateKey = strings.TrimSpace(c.KubeConfigPrivateKey)
+	c.WindowsAdminPassword = strings.TrimSpace(c.WindowsAdminPassword)
+}
+
 // CreateAzureManager creates Azure Manager object to work with Azure.
 func CreateAzureManager(configReader io.Reader) (*AzureManager, error) {
 	var err error
@@ -170,6 +189,7 @@ func CreateAzureManager(configReader io.Reader) (*AzureManager, error) {
 			}
 		}
 	}
+	cfg.TrimSpace()
 
 	// Defaulting vmType to vmss.
 	if cfg.VMType == "" {
