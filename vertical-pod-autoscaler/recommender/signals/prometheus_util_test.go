@@ -1,5 +1,6 @@
 /*
-Copyright 2017 The Kubernetes Authors.
+Copyright 2018 The Kubernetes Authors.
+
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -36,12 +37,12 @@ func TestSingleTimeseries(t *testing.T) {
 			    [1515422620.45,"0"]]}]}}"`
 	res, err := decodeTimeseriesFromResponse(strings.NewReader(s))
 	assert.Nil(t, err)
-	assert.Equal(t, res, []Timeseries{Timeseries{
+	assert.Equal(t, res, []Timeseries{{
 		Labels: map[string]string{"__name__": "up", "x": "y"},
 		Samples: []Sample{
-			Sample{Value: 0, Timestamp: time.Unix(1515422500, 0)},
-			Sample{Value: 1, Timestamp: time.Unix(1515422560, 0)},
-			Sample{Value: 0, Timestamp: time.Unix(1515422620, 0)},
+			{Value: 0, Timestamp: time.Unix(1515422500, 0)},
+			{Value: 1, Timestamp: time.Unix(1515422560, 0)},
+			{Value: 0, Timestamp: time.Unix(1515422620, 0)},
 		}}})
 }
 
@@ -78,10 +79,10 @@ func TestTwoTimeseries(t *testing.T) {
 	res, err := decodeTimeseriesFromResponse(strings.NewReader(s))
 	assert.Nil(t, err)
 	assert.Equal(t, res, []Timeseries{
-		Timeseries{
-			Labels: map[string]string{"x": "y"},
-			Samples: []Sample{Sample{Value: 15, Timestamp: time.Unix(1515422620, 0)}}},
-		Timeseries{
-			Labels: map[string]string{"x":"z"},
+		{
+			Labels:  map[string]string{"x": "y"},
+			Samples: []Sample{{Value: 15, Timestamp: time.Unix(1515422620, 0)}}},
+		{
+			Labels:  map[string]string{"x": "z"},
 			Samples: []Sample{}}})
 }

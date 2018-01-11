@@ -28,7 +28,7 @@ import (
 
 var (
 	metricsFetcherInterval = *flag.Duration("recommender-interval", 1*time.Minute, `How often metrics should be fetched`)
-	prometheusAddress = *flag.String("prometheus-address", "", `Where to reach for Prometheus metrics`)
+	prometheusAddress      = *flag.String("prometheus-address", "", `Where to reach for Prometheus metrics`)
 )
 
 func main() {

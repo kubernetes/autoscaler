@@ -1,5 +1,6 @@
 /*
-Copyright 2017 The Kubernetes Authors.
+Copyright 2018 The Kubernetes Authors.
+
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -21,7 +22,7 @@ import (
 	"net/url"
 )
 
-// A client that talks to Prometheus using its HTTP API.
+// PrometheusClient talks to Prometheus using its HTTP API.
 type PrometheusClient interface {
 	// Given a particular query (that's supposed to return range vectors
 	// in Prometheus terminology), gets the results from Prometheus.
@@ -34,6 +35,7 @@ type prometheusClient struct {
 	address    string
 }
 
+// NewPrometheusClient constructs a prometheusClient.
 func NewPrometheusClient(httpClient *http.Client, address string) PrometheusClient {
 	return &prometheusClient{httpClient: httpClient, address: address}
 }

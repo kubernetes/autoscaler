@@ -1,5 +1,6 @@
 /*
-Copyright 2017 The Kubernetes Authors.
+Copyright 2018 The Kubernetes Authors.
+
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -13,13 +14,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-
 package signals
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
-	"encoding/json"
 	"time"
 )
 
@@ -37,9 +37,9 @@ type responseType struct {
 type dataType struct {
 	// For range vectors, this will be "matrix". Other possibilities are:
 	// "vector","scalar","string".
-	ResultType string          `json:resultType`
+	ResultType string `json:resultType`
 	// This has different types depending on ResultType.
-	Result     json.RawMessage `json:result`
+	Result json.RawMessage `json:result`
 }
 
 // dataType.Result has this type when ResultType="matrix".
@@ -49,7 +49,7 @@ type matrixType struct {
 	// List of samples. Each sample is represented as a two-item list with
 	// floating point timestamp in seconds and a string holding the value
 	// of the metric.
-	Values [][]interface{}   `json:values`
+	Values [][]interface{} `json:values`
 }
 
 // Decodes the list of samples from the format of matrixType.Values field.
