@@ -66,6 +66,8 @@ func getContainerIDFromLabels(labels map[string]string) (*model.ContainerID, err
 }
 
 func (r *recommender) readHistory() {
+	// TODO: Add one more layer of abstraction so that recommender does not know it's
+	// talking to Prometheus and does not have to hardcode queries.
 	// TODO: This should also read memory data and merge those two.
 	tss, err := r.prometheusClient.GetTimeseries("container_cpu_usage_seconds_total[1d]")
 	if err != nil {

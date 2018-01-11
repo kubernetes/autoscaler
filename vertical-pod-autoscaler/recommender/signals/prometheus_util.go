@@ -24,6 +24,10 @@ import (
 )
 
 // Helper types used for parsing json returned by Prometheus.
+// It would be nice if there was a public go library with these, but currently
+// there's none. The server side implementation is at:
+// https://github.com/prometheus/prometheus/blob/2d73d2b892853e95dbf157561e9df56ac220875e/web/api/v1/api.go#L92
+
 // This is the top-level structure of the response.
 type responseType struct {
 	// Should be "success".
