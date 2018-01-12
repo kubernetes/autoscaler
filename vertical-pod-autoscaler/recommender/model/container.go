@@ -28,10 +28,10 @@ import (
 type ContainerUsageSample struct {
 	// Start of the measurement interval.
 	MeasureStart time.Time
-	// Average CPU usage in cores.
-	CPUUsage float64
-	// Randomly sampled instant memory usage in bytes.
-	MemoryUsage float64
+	// Average CPU usage in cores or memory usage in bytes.
+	Usage float64
+	// Which resource is this sample for.
+	Resource MetricName
 }
 
 // ContainerState stores information about a single container instance.
@@ -48,39 +48,48 @@ type ContainerUsageSample struct {
 type ContainerState struct {
 	// Distribution of CPU usage. The measurement unit is 1 CPU core.
 	CPUUsage util.Histogram
+	// Start of the latest CPU usage sample that was aggregated.
+	lastCPUSampleStart time.Time
+
 	// Memory peaks stored in the intervals belonging to the aggregation window
 	// (one value per interval). The measurement unit is a byte.
 	MemoryUsagePeaks util.FloatSlidingWindow
 	// End time of the most recent interval covered by the aggregation window.
 	windowEnd time.Time
-	// Start of the latest usage sample that was aggregated.
-	lastSampleStart time.Time
+	// Start of the latest memory usage sample that was aggregated.
+	lastMemorySampleStart time.Time
 }
 
 // NewContainerState returns a new, empty ContainerState.
 func NewContainerState() *ContainerState {
 	return &ContainerState{
 		util.NewHistogram(CPUHistogramOptions), // CPUUsage
+		time.Unix(0, 0),
 		util.NewFloatSlidingWindow( // memoryUsagePeaks
 			int(MemoryAggregationWindowLength / MemoryAggregationInterval)),
 		time.Unix(0, 0),
 		time.Unix(0, 0)}
 }
 
-func (sample *ContainerUsageSample) isValid() bool {
-	return sample.CPUUsage >= 0.0 && sample.MemoryUsage >= 0.0
+func (sample *ContainerUsageSample) isValid(expectedResource MetricName) bool {
+	return sample.Usage >= 0.0 && sample.Resource == expectedResource
 }
 
-// AddSample adds a usage sample to the given ContainerState. Requires samples
-// to be passed in chronological order (i.e. in order of growing MeasureStart).
-// Invalid samples (out of order or measure out of legal range) are discarded.
-// Returns true if the sample was aggregated, false if it was discarded.
-// Note: usage samples don't hold their end timestamp / duration. They are
-// implicitly assumed to be disjoint when aggregating.
-func (container *ContainerState) AddSample(sample *ContainerUsageSample) bool {
+func (container *ContainerState) addCPUSample(sample *ContainerUsageSample) bool {
+	// Order should not matter for the histogram, other than deduplication.
+	// TODO: Timestamp should be used to properly weigh the samples.
+	if !sample.isValid(ResourceCPU) || !sample.MeasureStart.After(container.lastCPUSampleStart) {
+		return false // Discard invalid, duplicate or out-of-order samples.
+	}
+	container.CPUUsage.AddSample(sample.Usage, 1.0)
+	container.lastCPUSampleStart = sample.MeasureStart
+	return true
+}
+
+func (container *ContainerState) addMemorySample(sample *ContainerUsageSample) bool {
 	ts := sample.MeasureStart
-	if !sample.isValid() || !ts.After(container.lastSampleStart) {
-		return false // Discard invalid or out-of-order samples.
+	if !sample.isValid(ResourceMemory) || !ts.After(container.lastMemorySampleStart) {
+		return false // Discard invalid, duplicate or out-of-order samples.
 	}
 	if !ts.Before(container.windowEnd.Add(MemoryAggregationWindowLength)) {
 		// The gap between this sample and the previous interval is so
@@ -102,9 +111,25 @@ func (container *ContainerState) AddSample(sample *ContainerUsageSample) bool {
 		container.MemoryUsagePeaks.Push(0.0)
 	}
 	*container.MemoryUsagePeaks.Head() = math.Max(
-		*container.MemoryUsagePeaks.Head(), sample.MemoryUsage)
-	// Update the CPU usage distribution.
-	container.CPUUsage.AddSample(sample.CPUUsage, 1.0)
-	container.lastSampleStart = ts
+		*container.MemoryUsagePeaks.Head(), sample.Usage)
+	container.lastMemorySampleStart = ts
 	return true
+}
+
+// AddSample adds a usage sample to the given ContainerState. Requires samples
+// for a single resource to be passed in chronological order (i.e. in order of
+// growing MeasureStart). Invalid samples (out of order or measure out of legal
+// range) are discarded. Returns true if the sample was aggregated, false if it
+// was discarded.
+// Note: usage samples don't hold their end timestamp / duration. They are
+// implicitly assumed to be disjoint when aggregating.
+func (container *ContainerState) AddSample(sample *ContainerUsageSample) bool {
+	switch sample.Resource {
+	case ResourceCPU:
+		return container.addCPUSample(sample)
+	case ResourceMemory:
+		return container.addMemorySample(sample)
+	default:
+		return false
+	}
 }

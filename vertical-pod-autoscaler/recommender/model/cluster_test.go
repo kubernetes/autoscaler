@@ -34,7 +34,7 @@ var (
 )
 
 func makeTestUsageSample() *ContainerUsageSampleWithKey {
-	return &ContainerUsageSampleWithKey{ContainerUsageSample{testTimestamp, 1.0, 1.0}, testContainerID}
+	return &ContainerUsageSampleWithKey{ContainerUsageSample{testTimestamp, 1.0, ResourceCPU}, testContainerID}
 }
 
 func TestClusterAddSample(t *testing.T) {
@@ -48,7 +48,7 @@ func TestClusterAddSample(t *testing.T) {
 
 	// Verify that the sample was aggregated into the container stats.
 	containerStats := cluster.Pods[testPodID].Containers["container-1"]
-	assert.Equal(t, testTimestamp, containerStats.lastSampleStart)
+	assert.Equal(t, testTimestamp, containerStats.lastCPUSampleStart)
 }
 
 // Verifies that AddSample and AddOrUpdateContainer methods return a proper
