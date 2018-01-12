@@ -70,7 +70,6 @@ func TestAggregateContainerUsageSamples(t *testing.T) {
 	assert.True(t, c.AddSample(newUsageSample(
 		testTimestamp.Add(MemoryAggregationInterval), 2.5, ResourceMemory)))
 
-
 	// Discard invalid samples.
 	assert.False(t, c.AddSample(newUsageSample( // Out of order sample.
 		testTimestamp.Add(MemoryAggregationInterval), 1.0, ResourceCPU)))
