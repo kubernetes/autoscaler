@@ -23,7 +23,10 @@ import (
 
 	"github.com/golang/glog"
 	apiv1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
+	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
+	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/poc.autoscaling.k8s.io/v1alpha1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/cluster"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/model"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/signals"
@@ -43,6 +46,7 @@ type recommender struct {
 	specClient              cluster.SpecClient
 	metricsFetchingInterval time.Duration
 	prometheusClient        signals.PrometheusClient
+	vpaClient               vpa_api.VerticalPodAutoscalerInterface
 }
 
 func getContainerIDFromLabels(labels map[string]string) (*model.ContainerID, error) {
@@ -96,6 +100,16 @@ func (r *recommender) readHistory() {
 func (r *recommender) runOnce() {
 	glog.V(3).Infof("Recommender Run")
 
+	vpas, err := r.vpaClient.List(metav1.ListOptions{})
+	if err != nil {
+		glog.Errorf("Cannot list VPAs. Reason: %+v", err)
+	} else {
+		glog.V(3).Infof("Fetched VPAs.")
+	}
+	for n, vpa := range vpas.Items {
+		glog.V(3).Infof("VPA #%v: %+v", n, vpa)
+	}
+
 	podSpecs, err := r.specClient.GetPodSpecs()
 	if err != nil {
 		glog.Errorf("Cannot get SimplePodSpecs. Reason: %+v", err)
@@ -120,11 +134,12 @@ func (r *recommender) Run() {
 // NewRecommender creates a new recommender instance,
 // which can be run in order to provide continuous resource recommendations for containers.
 // It requires cluster configuration object and duration between recommender intervals.
-func NewRecommender(config *rest.Config, metricsFetcherInterval time.Duration, prometheusAddress string) Recommender {
+func NewRecommender(namespace string, config *rest.Config, metricsFetcherInterval time.Duration, prometheusAddress string) Recommender {
 	recommender := &recommender{
 		specClient:              newSpecClient(config),
 		metricsFetchingInterval: metricsFetcherInterval,
 		prometheusClient:        signals.NewPrometheusClient(&http.Client{}, prometheusAddress),
+		vpaClient:               vpa_clientset.NewForConfigOrDie(config).PocV1alpha1().VerticalPodAutoscalers(namespace),
 	}
 	glog.V(3).Infof("New Recommender created %+v", recommender)
 
