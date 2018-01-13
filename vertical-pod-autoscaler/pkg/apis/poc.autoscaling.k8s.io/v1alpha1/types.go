@@ -14,13 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package api contains definitions of Vertical Pod Autoscaler related objects.
-package api
+// Package v1alpha1 contains definitions of Vertical Pod Autoscaler related objects.
+package v1alpha1
 
 import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
+
+// +genclient
+// +genclient:noStatus
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // VerticalPodAutoscaler is the configuration for a vertical pod
 // autoscaler, which automatically manages pod resources based on historical and
@@ -39,6 +43,15 @@ type VerticalPodAutoscaler struct {
 	// Current information about the autoscaler.
 	// +optional
 	Status VerticalPodAutoscalerStatus `json:"status,omitempty" protobuf:"bytes,3,opt,name=status"`
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// VerticalPodAutoscalerList is a list of VerticalPodAutoscaler objects.
+type VerticalPodAutoscalerList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata"`
+	Items           []VerticalPodAutoscaler `json:"items"`
 }
 
 // VerticalPodAutoscalerSpec is the specification of the behavior of the autoscaler.
