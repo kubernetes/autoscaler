@@ -28,6 +28,7 @@ import (
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/poc.autoscaling.k8s.io/v1alpha1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/cluster"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/logic"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/model"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/signals"
 	kube_client "k8s.io/client-go/kubernetes"
@@ -47,6 +48,7 @@ type recommender struct {
 	metricsFetchingInterval time.Duration
 	prometheusClient        signals.PrometheusClient
 	vpaClient               vpa_api.VerticalPodAutoscalerInterface
+	podResourceRecommender  logic.PodResourceRecommender
 }
 
 func getContainerIDFromLabels(labels map[string]string) (*model.ContainerID, error) {
@@ -131,6 +133,28 @@ func (r *recommender) Run() {
 	}
 }
 
+func createPodResourceRecommender() logic.PodResourceRecommender {
+	// Create a fake recommender that returns a hard-coded recommendation.
+	// TODO: Replace with a real recommender based on past usage.
+	var MiB float64 = 1024 * 1024
+	target := model.Resources{
+		model.ResourceCPU:    model.CPUAmountFromCores(0.5),
+		model.ResourceMemory: model.MemoryAmountFromBytes(200. * MiB),
+	}
+	lowerBound := model.Resources{
+		model.ResourceCPU:    model.CPUAmountFromCores(0.4),
+		model.ResourceMemory: model.MemoryAmountFromBytes(150. * MiB),
+	}
+	upperBound := model.Resources{
+		model.ResourceCPU:    model.CPUAmountFromCores(0.6),
+		model.ResourceMemory: model.MemoryAmountFromBytes(250. * MiB),
+	}
+	return logic.NewPodResourceRecommender(
+		logic.NewConstEstimator(target),
+		logic.NewConstEstimator(lowerBound),
+		logic.NewConstEstimator(upperBound))
+}
+
 // NewRecommender creates a new recommender instance,
 // which can be run in order to provide continuous resource recommendations for containers.
 // It requires cluster configuration object and duration between recommender intervals.
@@ -140,6 +164,7 @@ func NewRecommender(namespace string, config *rest.Config, metricsFetcherInterva
 		metricsFetchingInterval: metricsFetcherInterval,
 		prometheusClient:        signals.NewPrometheusClient(&http.Client{}, prometheusAddress),
 		vpaClient:               vpa_clientset.NewForConfigOrDie(config).PocV1alpha1().VerticalPodAutoscalers(namespace),
+		podResourceRecommender:  createPodResourceRecommender(),
 	}
 	glog.V(3).Infof("New Recommender created %+v", recommender)
 

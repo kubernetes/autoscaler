@@ -27,6 +27,12 @@ type ResourceEstimator interface {
 	GetResourceEstimation(s *AggregateContainerState) model.Resources
 }
 
+// Implementation of ResourceEstimator that returns constant amount of
+// resources. This can be used as by a fake recommender for test purposes.
+type constEstimator struct {
+	resources model.Resources
+}
+
 // Simple implementation of the ResourceEstimator interface. It returns specific
 // percentiles of CPU usage distribution and memory peaks distribution.
 type percentileEstimator struct {
@@ -34,9 +40,19 @@ type percentileEstimator struct {
 	memoryPercentile float64
 }
 
+// NewConstEstimator returns a new constEstimator with given resources.
+func NewConstEstimator(resources model.Resources) ResourceEstimator {
+	return &constEstimator{resources}
+}
+
 // NewPercentileEstimator returns a new percentileEstimator that uses provided percentiles.
 func NewPercentileEstimator(cpuPercentile float64, memoryPercentile float64) ResourceEstimator {
 	return &percentileEstimator{cpuPercentile, memoryPercentile}
+}
+
+// Returns a constant amount of resources.
+func (e *constEstimator) GetResourceEstimation(s *AggregateContainerState) model.Resources {
+	return e.resources
 }
 
 // Returns specific percentiles of CPU and memory peaks distributions.
