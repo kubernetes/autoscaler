@@ -31,6 +31,7 @@ import (
 	v1lister "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
+	resourceclient "k8s.io/metrics/pkg/client/clientset_generated/clientset/typed/metrics/v1beta1"
 )
 
 // Recommender recommend resources for certain containers, based on utilization periodically got from metrics api.
@@ -41,6 +42,7 @@ type Recommender interface {
 type recommender struct {
 	clusterState            model.ClusterState
 	specClient              cluster.SpecClient
+	metricsClient           cluster.MetricsClient
 	metricsFetchingInterval time.Duration
 	prometheusClient        signals.PrometheusClient
 }
@@ -103,6 +105,15 @@ func (r *recommender) runOnce() {
 	for n, spec := range podSpecs {
 		glog.V(3).Infof("SimplePodSpec #%v: %+v", n, spec)
 	}
+
+	metricsSnapshots, err := r.metricsClient.GetContainersMetrics()
+	if err != nil {
+		glog.Errorf("Cannot get containers metrics. Reason: %+v", err)
+	}
+	for n, snap := range metricsSnapshots {
+		glog.V(3).Infof("ContainerMetricsSnapshot #%v: %+v", n, snap)
+	}
+
 }
 
 func (r *recommender) Run() {
@@ -123,6 +134,7 @@ func (r *recommender) Run() {
 func NewRecommender(config *rest.Config, metricsFetcherInterval time.Duration, prometheusAddress string) Recommender {
 	recommender := &recommender{
 		specClient:              newSpecClient(config),
+		metricsClient:           newMetricsClient(config),
 		metricsFetchingInterval: metricsFetcherInterval,
 		prometheusClient:        signals.NewPrometheusClient(&http.Client{}, prometheusAddress),
 	}
@@ -135,6 +147,11 @@ func newSpecClient(config *rest.Config) cluster.SpecClient {
 	kubeClient := kube_client.NewForConfigOrDie(config)
 	podLister := newPodLister(kubeClient)
 	return cluster.NewSpecClient(podLister)
+}
+
+func newMetricsClient(config *rest.Config) cluster.MetricsClient {
+	metricsGetter := resourceclient.NewForConfigOrDie(config)
+	return cluster.NewMetricsClient(metricsGetter)
 }
 
 // Creates PodLister, listing only not terminated pods.
