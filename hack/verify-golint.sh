@@ -30,7 +30,7 @@ fi
 cd "${KUBE_ROOT}"
 
 GOLINT=${GOLINT:-"golint"}
-PACKAGES=($(go list ./... | grep -v /vendor/))
+PACKAGES=($(go list ./... | grep -v /vendor/ | grep -v vertical-pod-autoscaler/pkg/client | grep -v vertical-pod-autoscaler/pkg/apis))
 bad_files=()
 for package in "${PACKAGES[@]}"; do
   out=$("${GOLINT}" -min_confidence=0.9 "${package}")
