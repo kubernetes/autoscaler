@@ -30,6 +30,7 @@ import (
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/golang/glog"
 	"golang.org/x/crypto/pkcs12"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/client-go/pkg/version"
 )
 
@@ -346,4 +347,65 @@ func GetVMNameIndex(osType compute.OperatingSystemTypes, vmName string) (int, er
 	}
 
 	return agentIndex, nil
+}
+
+func matchDiscoveryConfig(labels map[string]*string, configs []cloudprovider.LabelAutoDiscoveryConfig) bool {
+	for _, c := range configs {
+		for k, v := range c.Selector {
+			value, ok := labels[k]
+			if !ok {
+				return false
+			}
+
+			if len(v) > 0 {
+				if value == nil || *value != v {
+					return false
+				}
+			}
+		}
+	}
+
+	return true
+}
+
+func validateConfig(cfg *Config) error {
+	if cfg.ResourceGroup == "" {
+		return fmt.Errorf("resource group not set")
+	}
+
+	if cfg.SubscriptionID == "" {
+		return fmt.Errorf("subscription ID not set")
+	}
+
+	if cfg.TenantID == "" {
+		return fmt.Errorf("tenant ID not set")
+	}
+
+	if cfg.AADClientID == "" {
+		return fmt.Errorf("ARM Client ID not set")
+	}
+
+	if cfg.VMType == vmTypeStandard {
+		if cfg.Deployment == "" {
+			return fmt.Errorf("deployment not set")
+		}
+
+		if cfg.APIServerPrivateKey == "" {
+			return fmt.Errorf("apiServerPrivateKey not set")
+		}
+
+		if cfg.CAPrivateKey == "" {
+			return fmt.Errorf("caPrivateKey not set")
+		}
+
+		if cfg.ClientPrivateKey == "" {
+			return fmt.Errorf("clientPrivateKey not set")
+		}
+
+		if cfg.KubeConfigPrivateKey == "" {
+			return fmt.Errorf("kubeConfigPrivateKey not set")
+		}
+	}
+
+	return nil
 }

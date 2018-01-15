@@ -25,8 +25,9 @@ import (
 )
 
 const (
-	autoDiscovererTypeMIG = "mig"
-	autoDiscovererTypeASG = "asg"
+	autoDiscovererTypeMIG   = "mig"
+	autoDiscovererTypeASG   = "asg"
+	autoDiscovererTypeLabel = "label"
 
 	migAutoDiscovererKeyPrefix   = "namePrefix"
 	migAutoDiscovererKeyMinNodes = "min"
@@ -86,6 +87,20 @@ func (o NodeGroupDiscoveryOptions) ParseASGAutoDiscoverySpecs() ([]ASGAutoDiscov
 	var err error
 	for i, spec := range o.NodeGroupAutoDiscoverySpecs {
 		cfgs[i], err = parseASGAutoDiscoverySpec(spec)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return cfgs, nil
+}
+
+// ParseLabelAutoDiscoverySpecs returns any provided NodeGroupAutoDiscoverySpecs
+// parsed into configuration appropriate for ASG autodiscovery.
+func (o NodeGroupDiscoveryOptions) ParseLabelAutoDiscoverySpecs() ([]LabelAutoDiscoveryConfig, error) {
+	cfgs := make([]LabelAutoDiscoveryConfig, len(o.NodeGroupAutoDiscoverySpecs))
+	var err error
+	for i, spec := range o.NodeGroupAutoDiscoverySpecs {
+		cfgs[i], err = parseLabelAutoDiscoverySpec(spec)
 		if err != nil {
 			return nil, err
 		}
@@ -155,7 +170,7 @@ func parseMIGAutoDiscoverySpec(spec string) (MIGAutoDiscoveryConfig, error) {
 // An ASGAutoDiscoveryConfig specifies how to autodiscover AWS ASGs.
 type ASGAutoDiscoveryConfig struct {
 	// TagKeys to match on.
-	// Any ASG with all of the provided tag keys will be autoscaled.
+	// Any ASG with all of the provided tag keys wMIGAutoDiscoveryConfigill be autoscaled.
 	TagKeys []string
 }
 
@@ -186,5 +201,38 @@ func parseASGAutoDiscoverySpec(spec string) (ASGAutoDiscoveryConfig, error) {
 	if len(cfg.TagKeys) == 0 {
 		return cfg, fmt.Errorf("Invalid ASG tag for auto discovery specified: ASG tag must not be empty")
 	}
+	return cfg, nil
+}
+
+// A LabelAutoDiscoveryConfig specifies how to autodiscover Azure scale sets.
+type LabelAutoDiscoveryConfig struct {
+	// Key-values to match on.
+	Selector map[string]string
+}
+
+func parseLabelAutoDiscoverySpec(spec string) (LabelAutoDiscoveryConfig, error) {
+	cfg := LabelAutoDiscoveryConfig{
+		Selector: make(map[string]string),
+	}
+
+	tokens := strings.Split(spec, ":")
+	if len(tokens) != 2 {
+		return cfg, fmt.Errorf("spec \"%s\" should be discoverer:key=value,key=value", spec)
+	}
+	discoverer := tokens[0]
+	if discoverer != autoDiscovererTypeLabel {
+		return cfg, fmt.Errorf("unsupported discoverer specified: %s", discoverer)
+	}
+
+	for _, arg := range strings.Split(tokens[1], ",") {
+		kv := strings.Split(arg, "=")
+		if len(kv) != 2 {
+			return cfg, fmt.Errorf("invalid key=value pair %s", kv)
+		}
+
+		k, v := kv[0], kv[1]
+		cfg.Selector[k] = v
+	}
+
 	return cfg, nil
 }
