@@ -25,27 +25,28 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 )
 
 // ScaleSet implements NodeGroup interface.
 type ScaleSet struct {
-	AzureRef
-	*AzureManager
+	azureRef
+	manager *AzureManager
 
 	minSize int
 	maxSize int
 }
 
 // NewScaleSet creates a new NewScaleSet.
-func NewScaleSet(name string, minSize, maxSize int, az *AzureManager) (*ScaleSet, error) {
+func NewScaleSet(spec *dynamic.NodeGroupSpec, az *AzureManager) (*ScaleSet, error) {
 	scaleSet := &ScaleSet{
-		AzureRef: AzureRef{
-			Name: name,
+		azureRef: azureRef{
+			Name: spec.Name,
 		},
-		minSize:      minSize,
-		maxSize:      maxSize,
-		AzureManager: az,
+		minSize: spec.MinSize,
+		maxSize: spec.MaxSize,
+		manager: az,
 	}
 
 	return scaleSet, nil
@@ -86,8 +87,8 @@ func (scaleSet *ScaleSet) MaxSize() int {
 // GetScaleSetSize gets Scale Set size.
 func (scaleSet *ScaleSet) GetScaleSetSize() (int64, error) {
 	glog.V(5).Infof("Get scale set size for %q", scaleSet.Name)
-	resourceGroup := scaleSet.config.ResourceGroup
-	set, err := scaleSet.virtualMachineScaleSetsClient.Get(resourceGroup, scaleSet.Name)
+	resourceGroup := scaleSet.manager.config.ResourceGroup
+	set, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.Get(resourceGroup, scaleSet.Name)
 	if err != nil {
 		return -1, err
 	}
@@ -97,8 +98,8 @@ func (scaleSet *ScaleSet) GetScaleSetSize() (int64, error) {
 
 // SetScaleSetSize sets ScaleSet size.
 func (scaleSet *ScaleSet) SetScaleSetSize(size int64) error {
-	resourceGroup := scaleSet.config.ResourceGroup
-	op, err := scaleSet.virtualMachineScaleSetsClient.Get(resourceGroup, scaleSet.Name)
+	resourceGroup := scaleSet.manager.config.ResourceGroup
+	op, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.Get(resourceGroup, scaleSet.Name)
 	if err != nil {
 		return err
 	}
@@ -107,7 +108,7 @@ func (scaleSet *ScaleSet) SetScaleSetSize(size int64) error {
 	op.VirtualMachineScaleSetProperties.ProvisioningState = nil
 	cancel := make(chan struct{})
 
-	_, errChan := scaleSet.virtualMachineScaleSetsClient.CreateOrUpdate(resourceGroup, scaleSet.Name, op, cancel)
+	_, errChan := scaleSet.manager.azClient.virtualMachineScaleSetsClient.CreateOrUpdate(resourceGroup, scaleSet.Name, op, cancel)
 	return <-errChan
 }
 
@@ -137,23 +138,28 @@ func (scaleSet *ScaleSet) IncreaseSize(delta int) error {
 }
 
 // GetScaleSetVms returns list of nodes for the given scale set.
-func (scaleSet *ScaleSet) GetScaleSetVms() ([]string, error) {
-	resourceGroup := scaleSet.config.ResourceGroup
-	instances, err := scaleSet.virtualMachineScaleSetVMsClient.List(resourceGroup, scaleSet.Name, "", "", "")
-
+func (scaleSet *ScaleSet) GetScaleSetVms() ([]compute.VirtualMachineScaleSetVM, error) {
+	allVMs := make([]compute.VirtualMachineScaleSetVM, 0)
+	resourceGroup := scaleSet.manager.config.ResourceGroup
+	result, err := scaleSet.manager.azClient.virtualMachineScaleSetVMsClient.List(resourceGroup, scaleSet.Name, "", "", "")
 	if err != nil {
 		glog.V(4).Infof("VirtualMachineScaleSetVMsClient.List failed for %s: %v", scaleSet.Name, err)
-		return []string{}, err
+		return nil, err
 	}
 
-	result := make([]string, 0)
-	for _, instance := range *instances.Value {
-		// Convert to lower because instance.ID is in different in different API calls (e.g. GET and LIST).
-		name := "azure://" + strings.ToLower(*instance.ID)
-		result = append(result, name)
-	}
-	return result, nil
+	moreResults := (result.Value != nil && len(*result.Value) > 0)
+	for moreResults {
+		allVMs = append(allVMs, *result.Value...)
+		moreResults = false
 
+		result, err = scaleSet.manager.azClient.virtualMachineScaleSetVMsClient.ListNextResults(result)
+		if err != nil {
+			return nil, err
+		}
+		moreResults = (result.Value != nil && len(*result.Value) > 0)
+	}
+
+	return allVMs, nil
 }
 
 // DecreaseTargetSize decreases the target size of the node group. This function
@@ -171,7 +177,7 @@ func (scaleSet *ScaleSet) DecreaseTargetSize(delta int) error {
 		return err
 	}
 
-	nodes, err := scaleSet.GetScaleSetVms()
+	nodes, err := scaleSet.Nodes()
 	if err != nil {
 		return err
 	}
@@ -188,11 +194,11 @@ func (scaleSet *ScaleSet) DecreaseTargetSize(delta int) error {
 func (scaleSet *ScaleSet) Belongs(node *apiv1.Node) (bool, error) {
 	glog.V(6).Infof("Check if node belongs to this scale set: scaleset:%v, node:%v\n", scaleSet, node)
 
-	ref := &AzureRef{
+	ref := &azureRef{
 		Name: strings.ToLower(node.Spec.ProviderID),
 	}
 
-	targetAsg, err := scaleSet.GetNodeGroupForInstance(ref)
+	targetAsg, err := scaleSet.manager.GetAsgForInstance(ref)
 	if err != nil {
 		return false, err
 	}
@@ -206,18 +212,18 @@ func (scaleSet *ScaleSet) Belongs(node *apiv1.Node) (bool, error) {
 }
 
 // DeleteInstances deletes the given instances. All instances must be controlled by the same ASG.
-func (scaleSet *ScaleSet) DeleteInstances(instances []*AzureRef) error {
+func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef) error {
 	if len(instances) == 0 {
 		return nil
 	}
 
-	commonAsg, err := scaleSet.GetNodeGroupForInstance(instances[0])
+	commonAsg, err := scaleSet.manager.GetAsgForInstance(instances[0])
 	if err != nil {
 		return err
 	}
 
 	for _, instance := range instances {
-		asg, err := scaleSet.GetNodeGroupForInstance(instance)
+		asg, err := scaleSet.manager.GetAsgForInstance(instance)
 		if err != nil {
 			return err
 		}
@@ -227,13 +233,13 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*AzureRef) error {
 		}
 	}
 
-	instanceIds := scaleSet.GetInstanceIDs(instances)
+	instanceIds := scaleSet.manager.getInstanceIDs(instances)
 	requiredIds := &compute.VirtualMachineScaleSetVMInstanceRequiredIDs{
 		InstanceIds: &instanceIds,
 	}
 	cancel := make(chan struct{})
-	resourceGroup := scaleSet.config.ResourceGroup
-	_, errChan := scaleSet.virtualMachineScaleSetsClient.DeleteInstances(resourceGroup, commonAsg.Id(), *requiredIds, cancel)
+	resourceGroup := scaleSet.manager.config.ResourceGroup
+	_, errChan := scaleSet.manager.azClient.virtualMachineScaleSetsClient.DeleteInstances(resourceGroup, commonAsg.Id(), *requiredIds, cancel)
 	return <-errChan
 }
 
@@ -249,7 +255,7 @@ func (scaleSet *ScaleSet) DeleteNodes(nodes []*apiv1.Node) error {
 		return fmt.Errorf("min size reached, nodes will not be deleted")
 	}
 
-	refs := make([]*AzureRef, 0, len(nodes))
+	refs := make([]*azureRef, 0, len(nodes))
 	for _, node := range nodes {
 		belongs, err := scaleSet.Belongs(node)
 		if err != nil {
@@ -260,10 +266,10 @@ func (scaleSet *ScaleSet) DeleteNodes(nodes []*apiv1.Node) error {
 			return fmt.Errorf("%s belongs to a different asg than %s", node.Name, scaleSet.Id())
 		}
 
-		azureRef := &AzureRef{
+		ref := &azureRef{
 			Name: strings.ToLower(node.Spec.ProviderID),
 		}
-		refs = append(refs, azureRef)
+		refs = append(refs, ref)
 	}
 
 	return scaleSet.DeleteInstances(refs)
@@ -286,5 +292,40 @@ func (scaleSet *ScaleSet) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
 
 // Nodes returns a list of all nodes that belong to this node group.
 func (scaleSet *ScaleSet) Nodes() ([]string, error) {
-	return scaleSet.GetScaleSetVms()
+	vms, err := scaleSet.GetScaleSetVms()
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]string, len(vms))
+	for i := range vms {
+		// Convert to lower because instance.ID is in different in different API calls (e.g. GET and LIST).
+		name := "azure://" + strings.ToLower(*vms[i].ID)
+		result = append(result, name)
+	}
+
+	return result, nil
+}
+
+func (scaleSet *ScaleSet) getInstanceIDs() (map[azureRef]string, error) {
+	vms, err := scaleSet.GetScaleSetVms()
+	if err != nil {
+		return nil, err
+	}
+
+	result := make(map[azureRef]string)
+	for i := range vms {
+		// Convert to lower because instance.ID is in different in different API calls (e.g. GET and LIST).
+		ref := azureRef{
+			Name: "azure://" + strings.ToLower(*vms[i].ID),
+		}
+		result[ref] = *vms[i].InstanceID
+	}
+
+	return result, nil
+}
+
+// GetAzureRef gets AzureRef fot the scale set.
+func (scaleSet *ScaleSet) getAzureRef() azureRef {
+	return scaleSet.azureRef
 }

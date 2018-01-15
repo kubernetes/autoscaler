@@ -28,105 +28,112 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 )
 
-func TestMaxSize(t *testing.T) {
-	provider, err := newTestProvider()
-	assert.NoError(t, err)
+func newTestScaleSet(manager *AzureManager, name string) *ScaleSet {
+	return &ScaleSet{
+		azureRef: azureRef{
+			Name: name,
+		},
+		manager: manager,
+		minSize: 1,
+		maxSize: 5,
+	}
+}
 
-	err = provider.addNodeGroup("1:5:test-asg")
-	assert.NoError(t, err)
-	assert.Equal(t, len(provider.nodeGroups), 1)
-	assert.Equal(t, provider.nodeGroups[0].MaxSize(), 5)
+func TestMaxSize(t *testing.T) {
+	provider := newTestProvider(t)
+	registered := provider.azureManager.RegisterAsg(
+		newTestScaleSet(provider.azureManager, "test-asg"))
+	assert.True(t, registered)
+	assert.Equal(t, len(provider.NodeGroups()), 1)
+	assert.Equal(t, provider.NodeGroups()[0].MaxSize(), 5)
 }
 
 func TestMinSize(t *testing.T) {
-	provider, err := newTestProvider()
-	assert.NoError(t, err)
-
-	err = provider.addNodeGroup("1:5:test-asg")
-	assert.NoError(t, err)
-	assert.Equal(t, len(provider.nodeGroups), 1)
-	assert.Equal(t, provider.nodeGroups[0].MinSize(), 1)
+	provider := newTestProvider(t)
+	registered := provider.azureManager.RegisterAsg(
+		newTestScaleSet(provider.azureManager, "test-asg"))
+	assert.True(t, registered)
+	assert.Equal(t, len(provider.NodeGroups()), 1)
+	assert.Equal(t, provider.NodeGroups()[0].MinSize(), 1)
 }
 
 func TestTargetSize(t *testing.T) {
-	provider, err := newTestProvider()
-	assert.NoError(t, err)
+	provider := newTestProvider(t)
+	registered := provider.azureManager.RegisterAsg(
+		newTestScaleSet(provider.azureManager, "test-asg"))
+	assert.True(t, registered)
+	assert.Equal(t, len(provider.NodeGroups()), 1)
 
-	err = provider.addNodeGroup("1:5:test-asg")
+	targetSize, err := provider.NodeGroups()[0].TargetSize()
 	assert.NoError(t, err)
-	targetSize, err := provider.nodeGroups[0].TargetSize()
 	assert.Equal(t, targetSize, 2)
-	assert.NoError(t, err)
 }
 
 func TestIncreaseSize(t *testing.T) {
-	provider, err := newTestProvider()
-	assert.NoError(t, err)
+	provider := newTestProvider(t)
+	registered := provider.azureManager.RegisterAsg(
+		newTestScaleSet(provider.azureManager, "test-asg"))
+	assert.True(t, registered)
+	assert.Equal(t, len(provider.NodeGroups()), 1)
 
-	err = provider.addNodeGroup("1:5:test-asg")
-	assert.NoError(t, err)
-	assert.Equal(t, len(provider.nodeGroups), 1)
-
-	err = provider.nodeGroups[0].IncreaseSize(1)
+	err := provider.NodeGroups()[0].IncreaseSize(1)
 	assert.NoError(t, err)
 }
 
 func TestBelongs(t *testing.T) {
-	provider, err := newTestProvider()
-	assert.NoError(t, err)
+	provider := newTestProvider(t)
+	registered := provider.azureManager.RegisterAsg(
+		newTestScaleSet(provider.azureManager, "test-asg"))
+	assert.True(t, registered)
 
-	err = provider.addNodeGroup("1:5:test-asg")
-	assert.NoError(t, err)
-
-	scaleSet, ok := provider.nodeGroups[0].(*ScaleSet)
+	scaleSet, ok := provider.NodeGroups()[0].(*ScaleSet)
 	assert.True(t, ok)
 
 	invalidNode := &apiv1.Node{
 		Spec: apiv1.NodeSpec{
-			ProviderID: "azure:///subscriptions/subscriptionId/resourceGroups/kubernetes/providers/Microsoft.Compute/virtualMachines/invalid-instance-id",
+			ProviderID: "azure:///subscriptions/test-subscrition-id/resourceGroups/invalid-asg/providers/Microsoft.Compute/virtualMachineScaleSets/agents/virtualMachines/0",
 		},
 	}
-	_, err = scaleSet.Belongs(invalidNode)
+	_, err := scaleSet.Belongs(invalidNode)
 	assert.Error(t, err)
 
 	validNode := &apiv1.Node{
 		Spec: apiv1.NodeSpec{
-			ProviderID: "azure://123E4567-E89B-12D3-A456-426655440000",
+			ProviderID: "azure://" + fakeVirtualMachineScaleSetVMID,
 		},
 	}
-
 	belongs, err := scaleSet.Belongs(validNode)
 	assert.Equal(t, true, belongs)
 	assert.NoError(t, err)
 }
 
 func TestDeleteNodes(t *testing.T) {
-	manager := newTestAzureManager()
+	manager := newTestAzureManager(t)
 	scaleSetClient := &VirtualMachineScaleSetsClientMock{}
-	instanceIds := make([]string, 1)
-	instanceIds[0] = "test-instance-id"
 	response := autorest.Response{
 		Response: &http.Response{
 			Status: "OK",
 		},
 	}
 	scaleSetClient.On("DeleteInstances", mock.Anything, "test-asg", mock.Anything, mock.Anything).Return(response, nil)
-	manager.virtualMachineScaleSetsClient = scaleSetClient
+	manager.azClient.virtualMachineScaleSetsClient = scaleSetClient
 
 	resourceLimiter := cloudprovider.NewResourceLimiter(
 		map[string]int64{cloudprovider.ResourceNameCores: 1, cloudprovider.ResourceNameMemory: 10000000},
 		map[string]int64{cloudprovider.ResourceNameCores: 10, cloudprovider.ResourceNameMemory: 100000000})
-	provider, err := BuildAzureCloudProvider(manager, nil, resourceLimiter)
+	provider, err := BuildAzureCloudProvider(manager, resourceLimiter)
 	assert.NoError(t, err)
-	err = provider.addNodeGroup("1:5:test-asg")
-	assert.NoError(t, err)
+
+	registered := manager.RegisterAsg(
+		newTestScaleSet(manager, "test-asg"))
+	assert.True(t, registered)
 
 	node := &apiv1.Node{
 		Spec: apiv1.NodeSpec{
-			ProviderID: "azure://123E4567-E89B-12D3-A456-426655440000",
+			ProviderID: "azure://" + fakeVirtualMachineScaleSetVMID,
 		},
 	}
-	scaleSet, ok := provider.nodeGroups[0].(*ScaleSet)
+	scaleSet, ok := provider.NodeGroups()[0].(*ScaleSet)
 	assert.True(t, ok)
 	err = scaleSet.DeleteNodes([]*apiv1.Node{node})
 	assert.NoError(t, err)
@@ -134,19 +141,19 @@ func TestDeleteNodes(t *testing.T) {
 }
 
 func TestId(t *testing.T) {
-	provider, err := newTestProvider()
-	assert.NoError(t, err)
-	err = provider.addNodeGroup("1:5:test-asg")
-	assert.NoError(t, err)
-	assert.Equal(t, len(provider.nodeGroups), 1)
-	assert.Equal(t, provider.nodeGroups[0].Id(), "test-asg")
+	provider := newTestProvider(t)
+	registered := provider.azureManager.RegisterAsg(
+		newTestScaleSet(provider.azureManager, "test-asg"))
+	assert.True(t, registered)
+	assert.Equal(t, len(provider.NodeGroups()), 1)
+	assert.Equal(t, provider.NodeGroups()[0].Id(), "test-asg")
 }
 
 func TestDebug(t *testing.T) {
 	asg := ScaleSet{
-		AzureManager: newTestAzureManager(),
-		minSize:      5,
-		maxSize:      55,
+		manager: newTestAzureManager(t),
+		minSize: 5,
+		maxSize: 55,
 	}
 	asg.Name = "test-scale-set"
 	assert.Equal(t, asg.Debug(), "test-scale-set (5:55)")

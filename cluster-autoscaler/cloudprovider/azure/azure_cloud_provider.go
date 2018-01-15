@@ -17,8 +17,6 @@ limitations under the License.
 package azure
 
 import (
-	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/golang/glog"
@@ -37,20 +35,14 @@ const (
 // AzureCloudProvider provides implementation of CloudProvider interface for Azure.
 type AzureCloudProvider struct {
 	azureManager    *AzureManager
-	nodeGroups      []cloudprovider.NodeGroup
 	resourceLimiter *cloudprovider.ResourceLimiter
 }
 
 // BuildAzureCloudProvider creates new AzureCloudProvider
-func BuildAzureCloudProvider(azureManager *AzureManager, specs []string, resourceLimiter *cloudprovider.ResourceLimiter) (*AzureCloudProvider, error) {
+func BuildAzureCloudProvider(azureManager *AzureManager, resourceLimiter *cloudprovider.ResourceLimiter) (cloudprovider.CloudProvider, error) {
 	azure := &AzureCloudProvider{
 		azureManager:    azureManager,
 		resourceLimiter: resourceLimiter,
-	}
-	for _, spec := range specs {
-		if err := azure.addNodeGroup(spec); err != nil {
-			return nil, err
-		}
 	}
 
 	return azure, nil
@@ -62,19 +54,6 @@ func (azure *AzureCloudProvider) Cleanup() error {
 	return nil
 }
 
-// addNodeGroup adds node group defined in string spec. Format:
-// minNodes:maxNodes:scaleSetName
-func (azure *AzureCloudProvider) addNodeGroup(spec string) error {
-	nodeGroup, err := azure.buildNodeGroup(spec)
-	if err != nil {
-		return err
-	}
-
-	azure.nodeGroups = append(azure.nodeGroups, nodeGroup)
-	azure.azureManager.RegisterNodeGroup(nodeGroup)
-	return nil
-}
-
 // Name returns name of the cloud provider.
 func (azure *AzureCloudProvider) Name() string {
 	return "azure"
@@ -82,21 +61,23 @@ func (azure *AzureCloudProvider) Name() string {
 
 // NodeGroups returns all node groups configured for this cloud provider.
 func (azure *AzureCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
-	result := make([]cloudprovider.NodeGroup, 0, len(azure.nodeGroups))
-	for _, nodeGroup := range azure.nodeGroups {
-		result = append(result, nodeGroup)
+	asgs := azure.azureManager.getAsgs()
+
+	ngs := make([]cloudprovider.NodeGroup, len(asgs))
+	for i, asg := range asgs {
+		ngs[i] = asg
 	}
-	return result
+	return ngs
 }
 
 // NodeGroupForNode returns the node group for the given node.
 func (azure *AzureCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	glog.V(6).Infof("Searching for node group for the node: %s, %s\n", node.Spec.ExternalID, node.Spec.ProviderID)
-	ref := &AzureRef{
+	ref := &azureRef{
 		Name: strings.ToLower(node.Spec.ProviderID),
 	}
 
-	return azure.azureManager.GetNodeGroupForInstance(ref)
+	return azure.azureManager.GetAsgForInstance(ref)
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.
@@ -123,55 +104,15 @@ func (azure *AzureCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLi
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
 // In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
 func (azure *AzureCloudProvider) Refresh() error {
-	return nil
+	return azure.azureManager.Refresh()
 }
 
-// Create nodeGroup from provided spec.
-// spec is in the following format: min-size:max-size:scale-set-name.
-func (azure *AzureCloudProvider) buildNodeGroup(spec string) (cloudprovider.NodeGroup, error) {
-	tokens := strings.SplitN(spec, ":", 3)
-	if len(tokens) != 3 {
-		return nil, fmt.Errorf("wrong nodes configuration: %s", spec)
-	}
-
-	minSize := 0
-	maxSize := 0
-	name := tokens[2]
-	if size, err := strconv.Atoi(tokens[0]); err == nil {
-		if size <= 0 {
-			return nil, fmt.Errorf("min size must be >= 1, got: %d", size)
-		}
-		minSize = size
-	} else {
-		return nil, fmt.Errorf("failed to set min size: %s, expected integer", tokens[0])
-	}
-
-	if size, err := strconv.Atoi(tokens[1]); err == nil {
-		if size < minSize {
-			return nil, fmt.Errorf("max size must be greater or equal to min size")
-		}
-		maxSize = size
-	} else {
-		return nil, fmt.Errorf("failed to set max size: %s, expected integer", tokens[1])
-	}
-
-	if tokens[2] == "" {
-		return nil, fmt.Errorf("scale set name must not be blank, got spec: %s", spec)
-	}
-
-	if azure.azureManager.config.VMType == vmTypeStandard {
-		return NewAgentPool(name, minSize, maxSize, azure.azureManager)
-	}
-
-	return NewScaleSet(name, minSize, maxSize, azure.azureManager)
-}
-
-// AzureRef contains a reference to some entity in Azure world.
-type AzureRef struct {
+// azureRef contains a reference to some entity in Azure world.
+type azureRef struct {
 	Name string
 }
 
 // GetKey returns key of the given azure reference.
-func (m *AzureRef) GetKey() string {
+func (m *azureRef) GetKey() string {
 	return m.Name
 }

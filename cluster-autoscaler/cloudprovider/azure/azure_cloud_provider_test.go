@@ -19,6 +19,8 @@ package azure
 import (
 	"testing"
 
+	"github.com/Azure/azure-sdk-for-go/arm/compute"
+	"github.com/Azure/azure-sdk-for-go/arm/resources/resources"
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/stretchr/testify/assert"
 
@@ -26,85 +28,84 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 )
 
-func newTestAzureManager() *AzureManager {
-	return &AzureManager{
-		config:           &Config{VMType: vmTypeVMSS},
-		env:              azure.PublicCloud,
-		interrupt:        make(chan struct{}),
-		instanceIDsCache: make(map[string]string),
-		nodeGroups:       make([]cloudprovider.NodeGroup, 0),
-		nodeGroupsCache:  make(map[AzureRef]cloudprovider.NodeGroup),
+func newTestAzureManager(t *testing.T) *AzureManager {
+	manager := &AzureManager{
+		env:                  azure.PublicCloud,
+		explicitlyConfigured: make(map[azureRef]bool),
+		config: &Config{
+			ResourceGroup: "test",
+			VMType:        vmTypeVMSS,
+		},
 
-		disksClient:                     &DisksClientMock{},
-		interfacesClient:                &InterfacesClientMock{},
-		storageAccountsClient:           &AccountsClientMock{},
-		deploymentsClient:               &DeploymentsClientMock{},
-		virtualMachinesClient:           &VirtualMachinesClientMock{},
-		virtualMachineScaleSetsClient:   &VirtualMachineScaleSetsClientMock{},
-		virtualMachineScaleSetVMsClient: &VirtualMachineScaleSetVMsClientMock{},
+		azClient: &azClient{
+			disksClient:           &DisksClientMock{},
+			interfacesClient:      &InterfacesClientMock{},
+			storageAccountsClient: &AccountsClientMock{},
+			deploymentsClient: &DeploymentsClientMock{
+				FakeStore: make(map[string]resources.DeploymentExtended),
+			},
+			virtualMachinesClient: &VirtualMachinesClientMock{
+				FakeStore: make(map[string]map[string]compute.VirtualMachine),
+			},
+			virtualMachineScaleSetsClient: &VirtualMachineScaleSetsClientMock{
+				FakeStore: make(map[string]map[string]compute.VirtualMachineScaleSet),
+			},
+			virtualMachineScaleSetVMsClient: &VirtualMachineScaleSetVMsClientMock{},
+		},
 	}
+	cache, error := newAsgCache()
+	assert.NoError(t, error)
+
+	manager.asgCache = cache
+	return manager
 }
 
-func newTestProvider() (*AzureCloudProvider, error) {
-	manager := newTestAzureManager()
+func newTestProvider(t *testing.T) *AzureCloudProvider {
+	manager := newTestAzureManager(t)
 	resourceLimiter := cloudprovider.NewResourceLimiter(
 		map[string]int64{cloudprovider.ResourceNameCores: 1, cloudprovider.ResourceNameMemory: 10000000},
 		map[string]int64{cloudprovider.ResourceNameCores: 10, cloudprovider.ResourceNameMemory: 100000000})
-	return BuildAzureCloudProvider(manager, nil, resourceLimiter)
+
+	return &AzureCloudProvider{
+		azureManager:    manager,
+		resourceLimiter: resourceLimiter,
+	}
 }
 
 func TestBuildAzureCloudProvider(t *testing.T) {
 	resourceLimiter := cloudprovider.NewResourceLimiter(
 		map[string]int64{cloudprovider.ResourceNameCores: 1, cloudprovider.ResourceNameMemory: 10000000},
 		map[string]int64{cloudprovider.ResourceNameCores: 10, cloudprovider.ResourceNameMemory: 100000000})
-	m := newTestAzureManager()
-	_, err := BuildAzureCloudProvider(m, []string{"bad spec"}, resourceLimiter)
-	assert.Error(t, err)
-
-	_, err = BuildAzureCloudProvider(m, nil, resourceLimiter)
+	m := newTestAzureManager(t)
+	_, err := BuildAzureCloudProvider(m, resourceLimiter)
 	assert.NoError(t, err)
-}
-
-func TestAddNodeGroup(t *testing.T) {
-	provider, err := newTestProvider()
-	assert.NoError(t, err)
-
-	err = provider.addNodeGroup("bad spec")
-	assert.Error(t, err)
-	assert.Equal(t, len(provider.nodeGroups), 0)
-
-	err = provider.addNodeGroup("1:5:test-asg")
-	assert.NoError(t, err)
-	assert.Equal(t, len(provider.nodeGroups), 1)
 }
 
 func TestName(t *testing.T) {
-	provider, err := newTestProvider()
-	assert.NoError(t, err)
+	provider := newTestProvider(t)
 	assert.Equal(t, provider.Name(), "azure")
 }
 
 func TestNodeGroups(t *testing.T) {
-	provider, err := newTestProvider()
-	assert.NoError(t, err)
+	provider := newTestProvider(t)
 	assert.Equal(t, len(provider.NodeGroups()), 0)
 
-	err = provider.addNodeGroup("1:5:test-asg")
-	assert.NoError(t, err)
+	registered := provider.azureManager.RegisterAsg(
+		newTestScaleSet(provider.azureManager, "test-asg"))
+	assert.True(t, registered)
 	assert.Equal(t, len(provider.NodeGroups()), 1)
 }
 
 func TestNodeGroupForNode(t *testing.T) {
-	provider, err := newTestProvider()
-	assert.NoError(t, err)
-
-	err = provider.addNodeGroup("1:5:test-asg")
-	assert.NoError(t, err)
-	assert.Equal(t, len(provider.nodeGroups), 1)
+	provider := newTestProvider(t)
+	registered := provider.azureManager.RegisterAsg(
+		newTestScaleSet(provider.azureManager, "test-asg"))
+	assert.True(t, registered)
+	assert.Equal(t, len(provider.NodeGroups()), 1)
 
 	node := &apiv1.Node{
 		Spec: apiv1.NodeSpec{
-			ProviderID: "azure://123E4567-E89B-12D3-A456-426655440000",
+			ProviderID: "azure://" + fakeVirtualMachineScaleSetVMID,
 		},
 	}
 	group, err := provider.NodeGroupForNode(node)
@@ -123,33 +124,4 @@ func TestNodeGroupForNode(t *testing.T) {
 	group, err = provider.NodeGroupForNode(nodeNotInGroup)
 	assert.NoError(t, err)
 	assert.Nil(t, group)
-}
-
-func TestBuildNodeGroup(t *testing.T) {
-	provider, err := newTestProvider()
-	assert.NoError(t, err)
-
-	_, err = provider.buildNodeGroup("a")
-	assert.Error(t, err)
-	_, err = provider.buildNodeGroup("a:b:c")
-	assert.Error(t, err)
-	_, err = provider.buildNodeGroup("1:")
-	assert.Error(t, err)
-	_, err = provider.buildNodeGroup("1:2:")
-	assert.Error(t, err)
-
-	_, err = provider.buildNodeGroup("-1:2:")
-	assert.Error(t, err)
-
-	_, err = provider.buildNodeGroup("5:3:")
-	assert.Error(t, err)
-
-	_, err = provider.buildNodeGroup("5:ddd:test-name")
-	assert.Error(t, err)
-
-	asg, err := provider.buildNodeGroup("111:222:test-name")
-	assert.NoError(t, err)
-	assert.Equal(t, 111, asg.MinSize())
-	assert.Equal(t, 222, asg.MaxSize())
-	assert.Equal(t, "test-name", asg.Id())
 }

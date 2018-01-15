@@ -155,11 +155,11 @@ func (b CloudProviderBuilder) buildAzure(do cloudprovider.NodeGroupDiscoveryOpti
 	} else {
 		glog.Info("Creating Azure Manager with default configuration.")
 	}
-	manager, err := azure.CreateAzureManager(config)
+	manager, err := azure.CreateAzureManager(config, do)
 	if err != nil {
 		glog.Fatalf("Failed to create Azure Manager: %v", err)
 	}
-	provider, err := azure.BuildAzureCloudProvider(manager, do.NodeGroupSpecs, rl)
+	provider, err := azure.BuildAzureCloudProvider(manager, rl)
 	if err != nil {
 		glog.Fatalf("Failed to create Azure cloud provider: %v", err)
 	}
