@@ -18,6 +18,15 @@ rules:
   verbs:
   - get
   - list
+- apiGroups:
+  - "poc.autoscaling.k8s.io"
+  resources:
+  - verticalpodautoscalers
+  verbs:
+  - get
+  - list
+  - watch
+  - update
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
