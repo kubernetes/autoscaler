@@ -222,6 +222,7 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef) error {
 		return err
 	}
 
+	instanceIDs := []string{}
 	for _, instance := range instances {
 		asg, err := scaleSet.manager.GetAsgForInstance(instance)
 		if err != nil {
@@ -231,11 +232,18 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef) error {
 		if asg != commonAsg {
 			return fmt.Errorf("cannot delete instance (%s) which don't belong to the same Scale Set (%q)", instance.GetKey(), commonAsg)
 		}
+
+		instanceID, err := getLastSegment(instance.GetKey())
+		if err != nil {
+			glog.Errorf("getLastSegment failed with error: %v", err)
+			return err
+		}
+
+		instanceIDs = append(instanceIDs, instanceID)
 	}
 
-	instanceIds := scaleSet.manager.getInstanceIDs(instances)
 	requiredIds := &compute.VirtualMachineScaleSetVMInstanceRequiredIDs{
-		InstanceIds: &instanceIds,
+		InstanceIds: &instanceIDs,
 	}
 	cancel := make(chan struct{})
 	resourceGroup := scaleSet.manager.config.ResourceGroup
@@ -299,8 +307,8 @@ func (scaleSet *ScaleSet) Nodes() ([]string, error) {
 
 	result := make([]string, len(vms))
 	for i := range vms {
-		// Convert to lower because instance.ID is in different in different API calls (e.g. GET and LIST).
-		name := "azure://" + strings.ToLower(*vms[i].ID)
+		// To keep consistent with providerID from kubernetes cloud provider, do not convert ID to lower case.
+		name := "azure://" + *vms[i].ID
 		result = append(result, name)
 	}
 

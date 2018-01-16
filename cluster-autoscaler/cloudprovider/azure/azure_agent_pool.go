@@ -52,12 +52,6 @@ type AgentPool struct {
 	provisioning bool
 }
 
-// VirtualMachineID contains VMID and ID of a virtual machine.
-type VirtualMachineID struct {
-	ID   string
-	VMID string
-}
-
 // NewAgentPool creates a new AgentPool.
 func NewAgentPool(spec *dynamic.NodeGroupSpec, az *AzureManager) (*AgentPool, error) {
 	as := &AgentPool{
@@ -150,14 +144,14 @@ func (as *AgentPool) MaxSize() int {
 }
 
 // GetVMIndexes gets indexes of all virtual machines belongting to the agent pool.
-func (as *AgentPool) GetVMIndexes() ([]int, map[int]VirtualMachineID, error) {
+func (as *AgentPool) GetVMIndexes() ([]int, map[int]string, error) {
 	instances, err := as.GetVirtualMachines()
 	if err != nil {
 		return nil, nil, err
 	}
 
 	indexes := make([]int, 0)
-	indexToVM := make(map[int]VirtualMachineID)
+	indexToVM := make(map[int]string)
 	for _, instance := range instances {
 		index, err := GetVMNameIndex(instance.StorageProfile.OsDisk.OsType, *instance.Name)
 		if err != nil {
@@ -165,10 +159,7 @@ func (as *AgentPool) GetVMIndexes() ([]int, map[int]VirtualMachineID, error) {
 		}
 
 		indexes = append(indexes, index)
-		indexToVM[index] = VirtualMachineID{
-			ID:   "azure://" + strings.ToLower(*instance.ID),
-			VMID: "azure://" + strings.ToLower(*instance.VMID),
-		}
+		indexToVM[index] = "azure://" + strings.ToLower(*instance.ID)
 	}
 
 	sortedIndexes := sort.IntSlice(indexes)
@@ -415,8 +406,8 @@ func (as *AgentPool) Nodes() ([]string, error) {
 
 	nodes := make([]string, 0, len(instances))
 	for _, instance := range instances {
-		// Convert to lower because instance.ID is in different in different API calls (e.g. GET and LIST).
-		name := "azure://" + strings.ToLower(*instance.ID)
+		// To keep consistent with providerID from kubernetes cloud provider, do not convert ID to lower case.
+		name := "azure://" + *instance.ID
 		nodes = append(nodes, name)
 	}
 
@@ -516,21 +507,4 @@ func (as *AgentPool) deleteVirtualMachine(name string) error {
 // getAzureRef gets AzureRef fot the as.
 func (as *AgentPool) getAzureRef() azureRef {
 	return as.azureRef
-}
-
-func (as *AgentPool) getInstanceIDs() (map[azureRef]string, error) {
-	_, indexToVM, err := as.GetVMIndexes()
-	if err != nil {
-		return nil, err
-	}
-
-	result := make(map[azureRef]string)
-	for i, vm := range indexToVM {
-		ref := azureRef{
-			Name: vm.ID,
-		}
-		result[ref] = fmt.Sprintf("%d", i)
-	}
-
-	return result, nil
 }

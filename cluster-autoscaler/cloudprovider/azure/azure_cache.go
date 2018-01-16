@@ -19,6 +19,7 @@ package azure
 import (
 	"fmt"
 	"reflect"
+	"strings"
 	"sync"
 	"time"
 
@@ -32,13 +33,11 @@ type Asg interface {
 	cloudprovider.NodeGroup
 
 	getAzureRef() azureRef
-	getInstanceIDs() (map[azureRef]string, error)
 }
 
 type asgCache struct {
 	registeredAsgs     []Asg
 	instanceToAsg      map[azureRef]Asg
-	instanceToID       map[azureRef]string
 	notInRegisteredAsg map[azureRef]bool
 	mutex              sync.Mutex
 	interrupt          chan struct{}
@@ -48,7 +47,6 @@ func newAsgCache() (*asgCache, error) {
 	cache := &asgCache{
 		registeredAsgs:     make([]Asg, 0),
 		instanceToAsg:      make(map[azureRef]Asg),
-		instanceToID:       make(map[azureRef]string),
 		notInRegisteredAsg: make(map[azureRef]bool),
 		interrupt:          make(chan struct{}),
 	}
@@ -119,18 +117,6 @@ func (m *asgCache) get() []Asg {
 	return m.registeredAsgs
 }
 
-func (m *asgCache) getInstanceIDs(instances []*azureRef) []string {
-	m.mutex.Lock()
-	defer m.mutex.Unlock()
-
-	instanceIds := make([]string, len(instances))
-	for i, instance := range instances {
-		instanceIds[i] = m.instanceToID[*instance]
-	}
-
-	return instanceIds
-}
-
 // FindForInstance returns Asg of the given Instance
 func (m *asgCache) FindForInstance(instance *azureRef) (Asg, error) {
 	m.mutex.Lock()
@@ -172,7 +158,8 @@ func (m *asgCache) regenerate() error {
 		}
 
 		for _, instance := range instances {
-			ref := azureRef{Name: instance}
+			// Convert to lower because instance.ID is in different in different API calls (e.g. GET and LIST).
+			ref := azureRef{Name: strings.ToLower(instance)}
 			newCache[ref] = nsg
 		}
 	}
