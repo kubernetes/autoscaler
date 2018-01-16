@@ -39,10 +39,11 @@ type FunctionLabel string
 type NodeGroupType string
 
 const (
-	caNamespace   = "cluster_autoscaler"
-	readyLabel    = "ready"
-	unreadyLabel  = "unready"
-	startingLabel = "notStarted"
+	caNamespace           = "cluster_autoscaler"
+	readyLabel            = "ready"
+	unreadyLabel          = "unready"
+	startingLabel         = "notStarted"
+	longUnregisteredLabel = "longUnregistered"
 
 	// Underutilized node was removed because of low utilization
 	Underutilized NodeScaleDownReason = "underutilized"
@@ -263,10 +264,11 @@ func UpdateClusterSafeToAutoscale(safe bool) {
 }
 
 // UpdateNodesCount records the number of nodes in cluster
-func UpdateNodesCount(ready, unready, starting int) {
+func UpdateNodesCount(ready, unready, starting, longUnregistered int) {
 	nodesCount.WithLabelValues(readyLabel).Set(float64(ready))
 	nodesCount.WithLabelValues(unreadyLabel).Set(float64(unready))
 	nodesCount.WithLabelValues(startingLabel).Set(float64(starting))
+	nodesCount.WithLabelValues(longUnregisteredLabel).Set(float64(longUnregistered))
 }
 
 // UpdateNodeGroupsCount records the number of node groups managed by CA
