@@ -49,7 +49,7 @@ type AzureManager struct {
 	asgCache              *asgCache
 	lastRefresh           time.Time
 	asgAutoDiscoverySpecs []cloudprovider.LabelAutoDiscoveryConfig
-	explicitlyConfigured  map[azureRef]bool
+	explicitlyConfigured  map[string]bool
 }
 
 // Config holds the configuration parsed from the --cloud-config flag
@@ -161,7 +161,7 @@ func CreateAzureManager(configReader io.Reader, discoveryOpts cloudprovider.Node
 		config:               &cfg,
 		env:                  env,
 		azClient:             azClient,
-		explicitlyConfigured: make(map[azureRef]bool),
+		explicitlyConfigured: make(map[string]bool),
 	}
 
 	cache, err := newAsgCache()
@@ -197,7 +197,7 @@ func (m *AzureManager) fetchExplicitAsgs(specs []string) error {
 		if m.RegisterAsg(asg) {
 			changed = true
 		}
-		m.explicitlyConfigured[asg.getAzureRef()] = true
+		m.explicitlyConfigured[asg.Id()] = true
 	}
 
 	if changed {
@@ -208,7 +208,7 @@ func (m *AzureManager) fetchExplicitAsgs(specs []string) error {
 	return nil
 }
 
-func (m *AzureManager) buildAsgFromSpec(spec string) (Asg, error) {
+func (m *AzureManager) buildAsgFromSpec(spec string) (cloudprovider.NodeGroup, error) {
 	s, err := dynamic.SpecFromString(spec, scaleToZeroSupported)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse node group spec: %v", err)
@@ -252,11 +252,11 @@ func (m *AzureManager) fetchAutoAsgs() error {
 	}
 
 	changed := false
-	exists := make(map[azureRef]bool)
+	exists := make(map[string]bool)
 	for _, asg := range groups {
-		azRef := asg.getAzureRef()
-		exists[azRef] = true
-		if m.explicitlyConfigured[azRef] {
+		asgID := asg.Id()
+		exists[asgID] = true
+		if m.explicitlyConfigured[asgID] {
 			// This ASG was explicitly configured, but would also be
 			// autodiscovered. We want the explicitly configured min and max
 			// nodes to take precedence.
@@ -270,8 +270,8 @@ func (m *AzureManager) fetchAutoAsgs() error {
 	}
 
 	for _, asg := range m.getAsgs() {
-		azRef := asg.getAzureRef()
-		if !exists[azRef] && !m.explicitlyConfigured[azRef] {
+		asgID := asg.Id()
+		if !exists[asgID] && !m.explicitlyConfigured[asgID] {
 			m.UnregisterAsg(asg)
 			changed = true
 		}
@@ -286,23 +286,23 @@ func (m *AzureManager) fetchAutoAsgs() error {
 	return nil
 }
 
-func (m *AzureManager) getAsgs() []Asg {
+func (m *AzureManager) getAsgs() []cloudprovider.NodeGroup {
 	return m.asgCache.get()
 }
 
 // RegisterAsg registers an ASG.
-func (m *AzureManager) RegisterAsg(asg Asg) bool {
+func (m *AzureManager) RegisterAsg(asg cloudprovider.NodeGroup) bool {
 	return m.asgCache.Register(asg)
 }
 
 // UnregisterAsg unregisters an ASG.
-func (m *AzureManager) UnregisterAsg(asg Asg) bool {
+func (m *AzureManager) UnregisterAsg(asg cloudprovider.NodeGroup) bool {
 	return m.asgCache.Unregister(asg)
 }
 
 // GetAsgForInstance returns AsgConfig of the given Instance
-func (m *AzureManager) GetAsgForInstance(instance *azureRef) (Asg, error) {
-	return m.asgCache.FindForInstance(instance)
+func (m *AzureManager) GetAsgForInstance(instance *azureRef) (cloudprovider.NodeGroup, error) {
+	return m.asgCache.FindForInstance(instance, m.config.VMType)
 }
 
 func (m *AzureManager) regenerateCache() error {
@@ -316,7 +316,11 @@ func (m *AzureManager) Cleanup() {
 	m.asgCache.Cleanup()
 }
 
-func (m *AzureManager) getFilteredAutoscalingGroups(filter []cloudprovider.LabelAutoDiscoveryConfig) (asgs []Asg, err error) {
+func (m *AzureManager) getFilteredAutoscalingGroups(filter []cloudprovider.LabelAutoDiscoveryConfig) (asgs []cloudprovider.NodeGroup, err error) {
+	if len(filter) == 0 {
+		return nil, nil
+	}
+
 	switch m.config.VMType {
 	case vmTypeVMSS:
 		asgs, err = m.listScaleSets(filter)
@@ -333,7 +337,7 @@ func (m *AzureManager) getFilteredAutoscalingGroups(filter []cloudprovider.Label
 }
 
 // listScaleSets gets a list of scale sets and instanceIDs.
-func (m *AzureManager) listScaleSets(filter []cloudprovider.LabelAutoDiscoveryConfig) (asgs []Asg, err error) {
+func (m *AzureManager) listScaleSets(filter []cloudprovider.LabelAutoDiscoveryConfig) (asgs []cloudprovider.NodeGroup, err error) {
 	result, err := m.azClient.virtualMachineScaleSetsClient.List(m.config.ResourceGroup)
 	if err != nil {
 		glog.Errorf("VirtualMachineScaleSetsClient.List for %v failed: %v", m.config.ResourceGroup, err)
@@ -381,7 +385,7 @@ func (m *AzureManager) listScaleSets(filter []cloudprovider.LabelAutoDiscoveryCo
 
 // listAgentPools gets a list of agent pools and instanceIDs.
 // Note: filter won't take effect for agent pools.
-func (m *AzureManager) listAgentPools(filter []cloudprovider.LabelAutoDiscoveryConfig) (asgs []Asg, err error) {
+func (m *AzureManager) listAgentPools(filter []cloudprovider.LabelAutoDiscoveryConfig) (asgs []cloudprovider.NodeGroup, err error) {
 	deploy, err := m.azClient.deploymentsClient.Get(m.config.ResourceGroup, m.config.Deployment)
 	if err != nil {
 		glog.Errorf("deploymentsClient.Get(%s, %s) failed: %v", m.config.ResourceGroup, m.config.Deployment, err)
