@@ -290,10 +290,6 @@ func (m *AzureManager) getAsgs() []Asg {
 	return m.asgCache.get()
 }
 
-func (m *AzureManager) getInstanceIDs(instances []*azureRef) []string {
-	return m.asgCache.getInstanceIDs(instances)
-}
-
 // RegisterAsg registers an ASG.
 func (m *AzureManager) RegisterAsg(asg Asg) bool {
 	return m.asgCache.Register(asg)
