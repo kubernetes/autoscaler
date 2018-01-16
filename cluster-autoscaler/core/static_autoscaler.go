@@ -26,6 +26,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
+
+	apiv1 "k8s.io/api/core/v1"
 	kube_client "k8s.io/client-go/kubernetes"
 	kube_record "k8s.io/client-go/tools/record"
 
@@ -120,6 +122,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 			status := "Cluster has no nodes."
 			utils.WriteStatusConfigMap(autoscalingContext.ClientSet, autoscalingContext.ConfigNamespace, status, a.AutoscalingContext.LogRecorder)
 		}
+		autoscalingContext.LogRecorder.Eventf(apiv1.EventTypeWarning, "ClusterUnhealthy", "Cluster has no nodes")
 		return nil
 	}
 
@@ -139,9 +142,10 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		scaleDown.CleanUpUnneededNodes()
 		UpdateEmptyClusterStateMetrics()
 		if autoscalingContext.WriteStatusConfigMap {
-			status := "No ready nodes in the cluster."
+			status := "Cluster has no ready nodes."
 			utils.WriteStatusConfigMap(autoscalingContext.ClientSet, autoscalingContext.ConfigNamespace, status, a.AutoscalingContext.LogRecorder)
 		}
+		autoscalingContext.LogRecorder.Eventf(apiv1.EventTypeWarning, "ClusterUnhealthy", "Cluster has no ready nodes")
 		return nil
 	}
 
@@ -164,6 +168,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	if !a.ClusterStateRegistry.IsClusterHealthy() {
 		glog.Warning("Cluster is not ready for autoscaling")
 		scaleDown.CleanUpUnneededNodes()
+		autoscalingContext.LogRecorder.Eventf(apiv1.EventTypeWarning, "ClusterUnhealthy", "Cluster is unhealthy")
 		return nil
 	}
 
