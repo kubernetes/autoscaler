@@ -172,6 +172,7 @@ func registerSignalHandlers(autoscaler core.Autoscaler) {
 }
 
 func run(healthCheck *metrics.HealthCheck) {
+	metrics.RegisterAll()
 	kubeClient := createKubeClient()
 	kubeEventRecorder := kube_util.CreateEventRecorder(kubeClient)
 	opts := createAutoscalerOptions()
