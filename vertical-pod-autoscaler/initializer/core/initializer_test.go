@@ -20,7 +20,7 @@ import (
 	"testing"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/apimock"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	recommender "k8s.io/autoscaler/vertical-pod-autoscaler/recommender_mock"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -43,23 +43,23 @@ func TestUpdateResourceRequests(t *testing.T) {
 	}
 	containerName := "container1"
 	labels := map[string]string{"app": "testingApp"}
-	vpa := utils.BuildTestVerticalPodAutoscaler(containerName, "1", "3", "100M", "1G", "app = testingApp")
+	vpa := test.BuildTestVerticalPodAutoscaler(containerName, "1", "3", "100M", "1G", "app = testingApp")
 
-	recommender := &utils.RecommenderMock{}
-	rec := utils.Recommendation(containerName, "2", "200M")
+	recommender := &test.RecommenderMock{}
+	rec := test.Recommendation(containerName, "2", "200M")
 
-	uninitialized := utils.BuildTestPod("test_uninitialized", containerName, "1", "100M", nil, nil)
+	uninitialized := test.BuildTestPod("test_uninitialized", containerName, "1", "100M", nil, nil)
 	uninitialized.ObjectMeta.Labels = labels
 	uninitialized.ObjectMeta.Initializers = &metav1.Initializers{
 		Pending: []metav1.Initializer{{Name: VPAInitializerName}},
 	}
 	recommender.On("Get", &uninitialized.Spec).Return(rec, nil)
 
-	initialized := utils.BuildTestPod("test_initialized", containerName, "1", "100M", nil, nil)
+	initialized := test.BuildTestPod("test_initialized", containerName, "1", "100M", nil, nil)
 	initialized.ObjectMeta.Labels = labels
 	recommender.On("Get", &initialized.Spec).Return(rec, nil)
 
-	mismatchedVPA := utils.BuildTestVerticalPodAutoscaler(containerName, "1", "3", "100M", "1G", "app = differentApp")
+	mismatchedVPA := test.BuildTestVerticalPodAutoscaler(containerName, "1", "3", "100M", "1G", "app = differentApp")
 
 	testCases := []testCase{{
 		pod:            uninitialized,
@@ -80,7 +80,7 @@ func TestUpdateResourceRequests(t *testing.T) {
 		expectedAction: false,
 	}}
 	for _, tc := range testCases {
-		vpaLister := &utils.VerticalPodAutoscalerListerMock{}
+		vpaLister := &test.VerticalPodAutoscalerListerMock{}
 		vpaLister.On("List").Return([]*apimock.VerticalPodAutoscaler{tc.vpa}, nil)
 
 		podList := apiv1.PodList{Items: []apiv1.Pod{*tc.pod}}
