@@ -135,7 +135,7 @@ func (m *asgCache) FindForInstance(instance *azureRef, vmType string) (cloudprov
 
 	if vmType == vmTypeStandard {
 		// Omit virtual machines with providerID not in Azure resource ID format.
-		if ok := virtualMachineRE.Match([]byte(instance.Name)); ok {
+		if ok := virtualMachineRE.Match([]byte(instance.Name)); !ok {
 			glog.V(3).Infof("Instance %q is not in Azure resource ID format, omit it in autoscaler", instance.Name)
 			m.notInRegisteredAsg[*instance] = true
 			return nil, nil
