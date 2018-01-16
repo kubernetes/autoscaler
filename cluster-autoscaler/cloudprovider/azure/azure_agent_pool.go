@@ -47,9 +47,9 @@ type AgentPool struct {
 	template   map[string]interface{}
 	parameters map[string]interface{}
 
-	mutex        sync.Mutex
-	targetSize   int
-	provisioning bool
+	mutex       sync.Mutex
+	lastRefresh time.Time
+	curSize     int64
 }
 
 // NewAgentPool creates a new AgentPool.
@@ -58,10 +58,9 @@ func NewAgentPool(spec *dynamic.NodeGroupSpec, az *AzureManager) (*AgentPool, er
 		azureRef: azureRef{
 			Name: spec.Name,
 		},
-		minSize:    spec.MinSize,
-		maxSize:    spec.MaxSize,
-		targetSize: -1,
-		manager:    az,
+		minSize: spec.MinSize,
+		maxSize: spec.MaxSize,
+		manager: az,
 	}
 
 	if err := as.initialize(); err != nil {
@@ -167,23 +166,35 @@ func (as *AgentPool) GetVMIndexes() ([]int, map[int]string, error) {
 	return sortedIndexes, indexToVM, nil
 }
 
-// TargetSize returns the current TARGET size of the node group. It is possible that the
-// number is different from the number of nodes registered in Kubernetes.
-func (as *AgentPool) TargetSize() (int, error) {
+func (as *AgentPool) getCurSize() (int64, error) {
 	as.mutex.Lock()
 	defer as.mutex.Unlock()
 
-	if as.targetSize != -1 {
-		return as.targetSize, nil
+	if as.lastRefresh.Add(15 * time.Second).After(time.Now()) {
+		return as.curSize, nil
 	}
 
+	glog.V(5).Infof("Get agent pool size for %q", as.Name)
 	indexes, _, err := as.GetVMIndexes()
 	if err != nil {
 		return 0, err
 	}
+	glog.V(5).Infof("Returning agent pool (%q) size: %d\n", as.Name, len(indexes))
 
-	as.targetSize = len(indexes)
-	return as.targetSize, nil
+	as.curSize = int64(len(indexes))
+	as.lastRefresh = time.Now()
+	return as.curSize, nil
+}
+
+// TargetSize returns the current TARGET size of the node group. It is possible that the
+// number is different from the number of nodes registered in Kubernetes.
+func (as *AgentPool) TargetSize() (int, error) {
+	size, err := as.getCurSize()
+	if err != nil {
+		return -1, err
+	}
+
+	return int(size), nil
 }
 
 // IncreaseSize increases agent pool size
@@ -206,8 +217,8 @@ func (as *AgentPool) IncreaseSize(delta int) error {
 	}
 
 	highestUsedIndex := indexes[len(indexes)-1]
-	countForTemplate := curSize + delta
-	as.targetSize = countForTemplate
+	expectedSize := curSize + delta
+	countForTemplate := expectedSize
 	if highestUsedIndex != 0 {
 		countForTemplate += highestUsedIndex + 1 - curSize
 	}
@@ -225,7 +236,14 @@ func (as *AgentPool) IncreaseSize(delta int) error {
 	}
 	_, errChan := as.manager.azClient.deploymentsClient.CreateOrUpdate(as.manager.config.ResourceGroup, newDeploymentName, newDeployment, cancel)
 	glog.V(3).Infof("Waiting for deploymentsClient.CreateOrUpdate(%s, %s, %s)", as.manager.config.ResourceGroup, newDeploymentName, newDeployment)
-	return <-errChan
+	err = <-errChan
+	if err != nil {
+		return err
+	}
+
+	as.curSize = int64(expectedSize)
+	as.lastRefresh = time.Now()
+	return err
 }
 
 // GetVirtualMachines returns list of nodes for the given agent pool.
@@ -280,13 +298,14 @@ func (as *AgentPool) DecreaseTargetSize(delta int) error {
 		return err
 	}
 
-	curTargetSize := as.targetSize
+	curTargetSize := int(as.curSize)
 	if curTargetSize+delta < len(nodes) {
 		return fmt.Errorf("attempt to delete existing nodes targetSize:%d delta:%d existingNodes: %d",
 			curTargetSize, delta, len(nodes))
 	}
 
-	as.targetSize = curTargetSize + delta
+	as.curSize = int64(curTargetSize + delta)
+	as.lastRefresh = time.Now()
 	return nil
 }
 
@@ -406,6 +425,10 @@ func (as *AgentPool) Nodes() ([]string, error) {
 
 	nodes := make([]string, 0, len(instances))
 	for _, instance := range instances {
+		if len(*instance.ID) == 0 {
+			continue
+		}
+
 		// To keep consistent with providerID from kubernetes cloud provider, do not convert ID to lower case.
 		name := "azure://" + *instance.ID
 		nodes = append(nodes, name)

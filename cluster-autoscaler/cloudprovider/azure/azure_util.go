@@ -350,7 +350,15 @@ func GetVMNameIndex(osType compute.OperatingSystemTypes, vmName string) (int, er
 }
 
 func matchDiscoveryConfig(labels map[string]*string, configs []cloudprovider.LabelAutoDiscoveryConfig) bool {
+	if len(configs) == 0 {
+		return false
+	}
+
 	for _, c := range configs {
+		if len(c.Selector) == 0 {
+			return false
+		}
+
 		for k, v := range c.Selector {
 			value, ok := labels[k]
 			if !ok {
