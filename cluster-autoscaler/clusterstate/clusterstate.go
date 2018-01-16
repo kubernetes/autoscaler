@@ -479,6 +479,8 @@ type Readiness struct {
 	Registered int
 	// Number of nodes that failed to register within a reasonable limit.
 	LongUnregistered int
+	// Number of nodes that haven't yet registered.
+	Unregistered int
 	// Time when the readiness was measured.
 	Time time.Time
 }
@@ -523,17 +525,20 @@ func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 	}
 
 	for _, unregistered := range csr.unregisteredNodes {
-		if unregistered.UnregisteredSince.Add(csr.config.MaxNodeProvisionTime).Before(currentTime) {
-			nodeGroup, errNg := csr.cloudProvider.NodeGroupForNode(unregistered.Node)
-			if errNg != nil {
-				glog.Warningf("Failed to get nodegroup for %s: %v", unregistered.Node.Name, errNg)
-				continue
-			}
-			perNgCopy := perNodeGroup[nodeGroup.Id()]
-			perNgCopy.LongUnregistered += 1
-			perNodeGroup[nodeGroup.Id()] = perNgCopy
-			total.LongUnregistered += 1
+		nodeGroup, errNg := csr.cloudProvider.NodeGroupForNode(unregistered.Node)
+		if errNg != nil {
+			glog.Warningf("Failed to get nodegroup for %s: %v", unregistered.Node.Name, errNg)
+			continue
 		}
+		perNgCopy := perNodeGroup[nodeGroup.Id()]
+		if unregistered.UnregisteredSince.Add(csr.config.MaxNodeProvisionTime).Before(currentTime) {
+			perNgCopy.LongUnregistered += 1
+			total.LongUnregistered += 1
+		} else {
+			perNgCopy.Unregistered += 1
+			total.Unregistered += 1
+		}
+		perNodeGroup[nodeGroup.Id()] = perNgCopy
 	}
 
 	for ngId, ngReadiness := range perNodeGroup {
