@@ -22,7 +22,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/apimock"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/test"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/updater/eviction"
 	"k8s.io/kubernetes/pkg/api/testapi"
 )
@@ -44,13 +44,13 @@ func TestRunOnce(t *testing.T) {
 		},
 	}
 	pods := make([]*apiv1.Pod, livePods)
-	eviction := &test.PodsEvictionRestrictionMock{}
+	eviction := &utils.PodsEvictionRestrictionMock{}
 
-	recommender := &test.RecommenderMock{}
-	rec := test.Recommendation(containerName, "2", "200M")
+	recommender := &utils.RecommenderMock{}
+	rec := utils.Recommendation(containerName, "2", "200M")
 
 	for i := range pods {
-		pods[i] = test.BuildTestPod("test"+string(i), containerName, "1", "100M", &rc.ObjectMeta, &rc.TypeMeta)
+		pods[i] = utils.BuildTestPod("test"+string(i), containerName, "1", "100M", &rc.ObjectMeta, &rc.TypeMeta)
 		pods[i].Spec.NodeSelector = labels
 		eviction.On("CanEvict", pods[i]).Return(true)
 		eviction.On("Evict", pods[i]).Return(nil)
@@ -58,11 +58,11 @@ func TestRunOnce(t *testing.T) {
 	}
 
 	factory := &fakeEvictFactory{eviction}
-	vpaLister := &test.VerticalPodAutoscalerListerMock{}
-	podLister := &test.PodListerMock{}
+	vpaLister := &utils.VerticalPodAutoscalerListerMock{}
+	podLister := &utils.PodListerMock{}
 	podLister.On("List").Return(pods, nil)
 
-	vpaObj := test.BuildTestVerticalPodAutoscaler(containerName, "1", "3", "100M", "1G", selector)
+	vpaObj := utils.BuildTestVerticalPodAutoscaler(containerName, "1", "3", "100M", "1G", selector)
 	vpaLister.On("List").Return([]*apimock.VerticalPodAutoscaler{vpaObj}, nil).Once()
 
 	updater := &updater{
@@ -77,11 +77,11 @@ func TestRunOnce(t *testing.T) {
 }
 
 func TestRunOnceNotingToProcess(t *testing.T) {
-	recommender := &test.RecommenderMock{}
-	eviction := &test.PodsEvictionRestrictionMock{}
+	recommender := &utils.RecommenderMock{}
+	eviction := &utils.PodsEvictionRestrictionMock{}
 	factory := &fakeEvictFactory{eviction}
-	vpaLister := &test.VerticalPodAutoscalerListerMock{}
-	podLister := &test.PodListerMock{}
+	vpaLister := &utils.VerticalPodAutoscalerListerMock{}
+	podLister := &utils.PodListerMock{}
 	podLister.On("List").Return(nil, nil).Once()
 	vpaLister.On("List").Return(nil, nil).Once()
 
