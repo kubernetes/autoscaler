@@ -22,7 +22,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/apimock"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/test"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/updater/eviction"
 	"k8s.io/kubernetes/pkg/api/testapi"
 )
