@@ -43,6 +43,7 @@ const (
 	readyLabel            = "ready"
 	unreadyLabel          = "unready"
 	startingLabel         = "notStarted"
+	unregisteredLabel     = "unregistered"
 	longUnregisteredLabel = "longUnregistered"
 
 	// Underutilized node was removed because of low utilization
@@ -264,11 +265,12 @@ func UpdateClusterSafeToAutoscale(safe bool) {
 }
 
 // UpdateNodesCount records the number of nodes in cluster
-func UpdateNodesCount(ready, unready, starting, longUnregistered int) {
+func UpdateNodesCount(ready, unready, starting, longUnregistered, unregistered int) {
 	nodesCount.WithLabelValues(readyLabel).Set(float64(ready))
 	nodesCount.WithLabelValues(unreadyLabel).Set(float64(unready))
 	nodesCount.WithLabelValues(startingLabel).Set(float64(starting))
 	nodesCount.WithLabelValues(longUnregisteredLabel).Set(float64(longUnregistered))
+	nodesCount.WithLabelValues(unregisteredLabel).Set(float64(unregistered))
 }
 
 // UpdateNodeGroupsCount records the number of node groups managed by CA

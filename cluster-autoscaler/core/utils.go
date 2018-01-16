@@ -489,7 +489,7 @@ func UpdateClusterStateMetrics(csr *clusterstate.ClusterStateRegistry) {
 	}
 	metrics.UpdateClusterSafeToAutoscale(csr.IsClusterHealthy())
 	readiness := csr.GetClusterReadiness()
-	metrics.UpdateNodesCount(readiness.Ready, readiness.Unready+readiness.LongNotStarted, readiness.NotStarted, readiness.LongUnregistered)
+	metrics.UpdateNodesCount(readiness.Ready, readiness.Unready+readiness.LongNotStarted, readiness.NotStarted, readiness.LongUnregistered, readiness.Unregistered)
 }
 
 func getOldestCreateTime(pods []*apiv1.Pod) time.Time {
@@ -506,5 +506,5 @@ func getOldestCreateTime(pods []*apiv1.Pod) time.Time {
 // TODO(aleksandra-malinowska): use long unregistered value from ClusterStateRegistry.
 func UpdateEmptyClusterStateMetrics() {
 	metrics.UpdateClusterSafeToAutoscale(false)
-	metrics.UpdateNodesCount(0, 0, 0, 0)
+	metrics.UpdateNodesCount(0, 0, 0, 0, 0)
 }
