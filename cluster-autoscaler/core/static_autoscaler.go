@@ -37,6 +37,8 @@ import (
 const (
 	// How old the oldest unschedulable pod should be before starting scale up.
 	unschedulablePodTimeBuffer = 2 * time.Second
+	// How long should Cluster Autoscaler wait for nodes to become ready after start.
+	nodesNotReadyAfterStartTimeout = 10 * time.Minute
 )
 
 // StaticAutoscaler is an autoscaler which has all the core functionality of a CA but without the reconfiguration feature
@@ -44,6 +46,7 @@ type StaticAutoscaler struct {
 	// AutoscalingContext consists of validated settings and options for this autoscaler
 	*AutoscalingContext
 	kube_util.ListerRegistry
+	startTime               time.Time
 	lastScaleUpTime         time.Time
 	lastScaleDownDeleteTime time.Time
 	lastScaleDownFailTime   time.Time
@@ -70,6 +73,7 @@ func NewStaticAutoscaler(opts AutoscalingOptions, predicateChecker *simulator.Pr
 	return &StaticAutoscaler{
 		AutoscalingContext:      autoscalingContext,
 		ListerRegistry:          listerRegistry,
+		startTime:               time.Now(),
 		lastScaleUpTime:         time.Now(),
 		lastScaleDownDeleteTime: time.Now(),
 		lastScaleDownFailTime:   time.Now(),
@@ -145,7 +149,11 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 			status := "Cluster has no ready nodes."
 			utils.WriteStatusConfigMap(autoscalingContext.ClientSet, autoscalingContext.ConfigNamespace, status, a.AutoscalingContext.LogRecorder)
 		}
-		autoscalingContext.LogRecorder.Eventf(apiv1.EventTypeWarning, "ClusterUnhealthy", "Cluster has no ready nodes")
+		// Cluster Autoscaler may start running before nodes are ready.
+		// Timeout ensures no ClusterUnhealthy events are published immediately in this case.
+		if currentTime.After(a.startTime.Add(nodesNotReadyAfterStartTimeout)) {
+			autoscalingContext.LogRecorder.Eventf(apiv1.EventTypeWarning, "ClusterUnhealthy", "Cluster has no ready nodes")
+		}
 		return nil
 	}
 
