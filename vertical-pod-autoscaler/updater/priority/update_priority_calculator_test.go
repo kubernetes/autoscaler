@@ -20,7 +20,7 @@ import (
 	"testing"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/apimock"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -35,12 +35,12 @@ const (
 func TestSortPriority(t *testing.T) {
 	calculator := NewUpdatePriorityCalculator(nil, nil)
 
-	pod1 := utils.BuildTestPod("POD1", containerName, "2", "", nil, nil)
-	pod2 := utils.BuildTestPod("POD2", containerName, "4", "", nil, nil)
-	pod3 := utils.BuildTestPod("POD3", containerName, "1", "", nil, nil)
-	pod4 := utils.BuildTestPod("POD4", containerName, "3", "", nil, nil)
+	pod1 := test.BuildTestPod("POD1", containerName, "2", "", nil, nil)
+	pod2 := test.BuildTestPod("POD2", containerName, "4", "", nil, nil)
+	pod3 := test.BuildTestPod("POD3", containerName, "1", "", nil, nil)
+	pod4 := test.BuildTestPod("POD4", containerName, "3", "", nil, nil)
 
-	recommendation := utils.Recommendation(containerName, "10", "")
+	recommendation := test.Recommendation(containerName, "10", "")
 
 	calculator.AddPod(pod1, recommendation)
 	calculator.AddPod(pod2, recommendation)
@@ -54,10 +54,10 @@ func TestSortPriority(t *testing.T) {
 func TestSortPriorityMultiResource(t *testing.T) {
 	calculator := NewUpdatePriorityCalculator(nil, nil)
 
-	pod1 := utils.BuildTestPod("POD1", containerName, "4", "60M", nil, nil)
-	pod2 := utils.BuildTestPod("POD2", containerName, "3", "90M", nil, nil)
+	pod1 := test.BuildTestPod("POD1", containerName, "4", "60M", nil, nil)
+	pod2 := test.BuildTestPod("POD2", containerName, "3", "90M", nil, nil)
 
-	recommendation := utils.Recommendation(containerName, "6", "100M")
+	recommendation := test.Recommendation(containerName, "6", "100M")
 
 	calculator.AddPod(pod1, recommendation)
 	calculator.AddPod(pod2, recommendation)
@@ -69,13 +69,13 @@ func TestSortPriorityMultiResource(t *testing.T) {
 func TestSortPriorityMultiContainers(t *testing.T) {
 	containerName2 := "container2"
 
-	pod1 := utils.BuildTestPod("POD1", containerName, "3", "10M", nil, nil)
+	pod1 := test.BuildTestPod("POD1", containerName, "3", "10M", nil, nil)
 
-	pod2 := utils.BuildTestPod("POD2", containerName, "4", "10M", nil, nil)
-	container2 := utils.BuildTestContainer(containerName2, "3", "20M")
+	pod2 := test.BuildTestPod("POD2", containerName, "4", "10M", nil, nil)
+	container2 := test.BuildTestContainer(containerName2, "3", "20M")
 	pod2.Spec.Containers = append(pod1.Spec.Containers, container2)
 
-	recommendation := utils.Recommendation(containerName, "6", "20M")
+	recommendation := test.Recommendation(containerName, "6", "20M")
 	cpuRec, _ := resource.ParseQuantity("4")
 	memRec, _ := resource.ParseQuantity("20M")
 	container2rec := apimock.ContainerRecommendation{
@@ -94,10 +94,10 @@ func TestSortPriorityMultiContainers(t *testing.T) {
 func TestSortPriorityResorucesDecrease(t *testing.T) {
 	calculator := NewUpdatePriorityCalculator(nil, nil)
 
-	pod1 := utils.BuildTestPod("POD1", containerName, "4", "", nil, nil)
-	pod2 := utils.BuildTestPod("POD2", containerName, "10", "", nil, nil)
+	pod1 := test.BuildTestPod("POD1", containerName, "4", "", nil, nil)
+	pod2 := test.BuildTestPod("POD2", containerName, "10", "", nil, nil)
 
-	recommendation := utils.Recommendation(containerName, "5", "")
+	recommendation := test.Recommendation(containerName, "5", "")
 
 	calculator.AddPod(pod1, recommendation)
 	calculator.AddPod(pod2, recommendation)
@@ -109,9 +109,9 @@ func TestSortPriorityResorucesDecrease(t *testing.T) {
 func TestUpdateNotRequired(t *testing.T) {
 	calculator := NewUpdatePriorityCalculator(nil, nil)
 
-	pod1 := utils.BuildTestPod("POD1", containerName, "4", "", nil, nil)
+	pod1 := test.BuildTestPod("POD1", containerName, "4", "", nil, nil)
 
-	recommendation := utils.Recommendation(containerName, "4", "")
+	recommendation := test.Recommendation(containerName, "4", "")
 
 	calculator.AddPod(pod1, recommendation)
 
@@ -121,11 +121,11 @@ func TestUpdateNotRequired(t *testing.T) {
 
 func TestUsePolicy(t *testing.T) {
 	calculator := NewUpdatePriorityCalculator(
-		utils.BuildTestPolicy(containerName, "1", "4", "10M", "100M"), nil)
+		test.BuildTestPolicy(containerName, "1", "4", "10M", "100M"), nil)
 
-	pod1 := utils.BuildTestPod("POD1", containerName, "4", "10M", nil, nil)
+	pod1 := test.BuildTestPod("POD1", containerName, "4", "10M", nil, nil)
 
-	recommendation := utils.Recommendation(containerName, "5", "5M")
+	recommendation := test.Recommendation(containerName, "5", "5M")
 
 	calculator.AddPod(pod1, recommendation)
 
@@ -136,10 +136,10 @@ func TestUsePolicy(t *testing.T) {
 func TestChangeTooSmall(t *testing.T) {
 	calculator := NewUpdatePriorityCalculator(nil, &UpdateConfig{0.5})
 
-	pod1 := utils.BuildTestPod("POD1", containerName, "4", "", nil, nil)
-	pod2 := utils.BuildTestPod("POD2", containerName, "1", "", nil, nil)
+	pod1 := test.BuildTestPod("POD1", containerName, "4", "", nil, nil)
+	pod2 := test.BuildTestPod("POD2", containerName, "1", "", nil, nil)
 
-	recommendation := utils.Recommendation(containerName, "5", "")
+	recommendation := test.Recommendation(containerName, "5", "")
 
 	calculator.AddPod(pod1, recommendation)
 	calculator.AddPod(pod2, recommendation)
