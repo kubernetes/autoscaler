@@ -26,6 +26,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
+
+	apiv1 "k8s.io/api/core/v1"
 	kube_client "k8s.io/client-go/kubernetes"
 	kube_record "k8s.io/client-go/tools/record"
 
@@ -35,6 +37,8 @@ import (
 const (
 	// How old the oldest unschedulable pod should be before starting scale up.
 	unschedulablePodTimeBuffer = 2 * time.Second
+	// How long should Cluster Autoscaler wait for nodes to become ready after start.
+	nodesNotReadyAfterStartTimeout = 10 * time.Minute
 )
 
 // StaticAutoscaler is an autoscaler which has all the core functionality of a CA but without the reconfiguration feature
@@ -42,6 +46,7 @@ type StaticAutoscaler struct {
 	// AutoscalingContext consists of validated settings and options for this autoscaler
 	*AutoscalingContext
 	kube_util.ListerRegistry
+	startTime               time.Time
 	lastScaleUpTime         time.Time
 	lastScaleDownDeleteTime time.Time
 	lastScaleDownFailTime   time.Time
@@ -68,6 +73,7 @@ func NewStaticAutoscaler(opts AutoscalingOptions, predicateChecker *simulator.Pr
 	return &StaticAutoscaler{
 		AutoscalingContext:      autoscalingContext,
 		ListerRegistry:          listerRegistry,
+		startTime:               time.Now(),
 		lastScaleUpTime:         time.Now(),
 		lastScaleDownDeleteTime: time.Now(),
 		lastScaleDownFailTime:   time.Now(),
@@ -115,6 +121,12 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	if len(allNodes) == 0 {
 		glog.Warningf("No nodes in the cluster")
 		scaleDown.CleanUpUnneededNodes()
+		UpdateEmptyClusterStateMetrics()
+		if autoscalingContext.WriteStatusConfigMap {
+			status := "Cluster has no nodes."
+			utils.WriteStatusConfigMap(autoscalingContext.ClientSet, autoscalingContext.ConfigNamespace, status, a.AutoscalingContext.LogRecorder)
+		}
+		autoscalingContext.LogRecorder.Eventf(apiv1.EventTypeWarning, "ClusterUnhealthy", "Cluster has no nodes")
 		return nil
 	}
 
@@ -132,6 +144,16 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	if len(readyNodes) == 0 {
 		glog.Warningf("No ready nodes in the cluster")
 		scaleDown.CleanUpUnneededNodes()
+		UpdateEmptyClusterStateMetrics()
+		if autoscalingContext.WriteStatusConfigMap {
+			status := "Cluster has no ready nodes."
+			utils.WriteStatusConfigMap(autoscalingContext.ClientSet, autoscalingContext.ConfigNamespace, status, a.AutoscalingContext.LogRecorder)
+		}
+		// Cluster Autoscaler may start running before nodes are ready.
+		// Timeout ensures no ClusterUnhealthy events are published immediately in this case.
+		if currentTime.After(a.startTime.Add(nodesNotReadyAfterStartTimeout)) {
+			autoscalingContext.LogRecorder.Eventf(apiv1.EventTypeWarning, "ClusterUnhealthy", "Cluster has no ready nodes")
+		}
 		return nil
 	}
 
@@ -154,6 +176,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	if !a.ClusterStateRegistry.IsClusterHealthy() {
 		glog.Warning("Cluster is not ready for autoscaling")
 		scaleDown.CleanUpUnneededNodes()
+		autoscalingContext.LogRecorder.Eventf(apiv1.EventTypeWarning, "ClusterUnhealthy", "Cluster is unhealthy")
 		return nil
 	}
 
