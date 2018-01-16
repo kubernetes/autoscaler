@@ -489,7 +489,7 @@ func UpdateClusterStateMetrics(csr *clusterstate.ClusterStateRegistry) {
 	}
 	metrics.UpdateClusterSafeToAutoscale(csr.IsClusterHealthy())
 	readiness := csr.GetClusterReadiness()
-	metrics.UpdateNodesCount(readiness.Ready, readiness.Unready+readiness.LongNotStarted, readiness.NotStarted)
+	metrics.UpdateNodesCount(readiness.Ready, readiness.Unready+readiness.LongNotStarted, readiness.NotStarted, readiness.LongUnregistered)
 }
 
 func getOldestCreateTime(pods []*apiv1.Pod) time.Time {
