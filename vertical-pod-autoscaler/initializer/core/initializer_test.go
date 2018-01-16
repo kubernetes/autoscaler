@@ -20,8 +20,8 @@ import (
 	"testing"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/apimock"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	recommender "k8s.io/autoscaler/vertical-pod-autoscaler/recommender_mock"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/test"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
