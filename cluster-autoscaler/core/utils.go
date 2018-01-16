@@ -501,3 +501,10 @@ func getOldestCreateTime(pods []*apiv1.Pod) time.Time {
 	}
 	return oldest
 }
+
+// UpdateEmptyClusterStateMetrics updates metrics related to empty cluster's state.
+// TODO(aleksandra-malinowska): use long unregistered value from ClusterStateRegistry.
+func UpdateEmptyClusterStateMetrics() {
+	metrics.UpdateClusterSafeToAutoscale(false)
+	metrics.UpdateNodesCount(0, 0, 0, 0)
+}

@@ -115,6 +115,11 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	if len(allNodes) == 0 {
 		glog.Warningf("No nodes in the cluster")
 		scaleDown.CleanUpUnneededNodes()
+		UpdateEmptyClusterStateMetrics()
+		if autoscalingContext.WriteStatusConfigMap {
+			status := "Cluster has no nodes."
+			utils.WriteStatusConfigMap(autoscalingContext.ClientSet, autoscalingContext.ConfigNamespace, status, a.AutoscalingContext.LogRecorder)
+		}
 		return nil
 	}
 
@@ -132,6 +137,11 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	if len(readyNodes) == 0 {
 		glog.Warningf("No ready nodes in the cluster")
 		scaleDown.CleanUpUnneededNodes()
+		UpdateEmptyClusterStateMetrics()
+		if autoscalingContext.WriteStatusConfigMap {
+			status := "No ready nodes in the cluster."
+			utils.WriteStatusConfigMap(autoscalingContext.ClientSet, autoscalingContext.ConfigNamespace, status, a.AutoscalingContext.LogRecorder)
+		}
 		return nil
 	}
 
