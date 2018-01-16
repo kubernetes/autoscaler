@@ -22,13 +22,13 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/test"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils"
 )
 
 func TestGetWithCache(t *testing.T) {
-	apiMock := &test.RecommenderAPIMock{}
-	rec := test.Recommendation("test", "", "")
-	pod := test.BuildTestPod("test", "", "", "", nil, nil)
+	apiMock := &utils.RecommenderAPIMock{}
+	rec := utils.Recommendation("test", "", "")
+	pod := utils.BuildTestPod("test", "", "", "", nil, nil)
 	apiMock.On("GetRecommendation", &pod.Spec).Return(rec, nil)
 	recommender := NewCachingRecommender(10*time.Second, apiMock)
 
@@ -45,9 +45,9 @@ func TestGetWithCache(t *testing.T) {
 }
 
 func TestGetCacheExpired(t *testing.T) {
-	apiMock := &test.RecommenderAPIMock{}
-	rec := test.Recommendation("test", "", "")
-	pod := test.BuildTestPod("test", "", "", "", nil, nil)
+	apiMock := &utils.RecommenderAPIMock{}
+	rec := utils.Recommendation("test", "", "")
+	pod := utils.BuildTestPod("test", "", "", "", nil, nil)
 	apiMock.On("GetRecommendation", &pod.Spec).Return(rec, nil)
 	recommender := NewCachingRecommender(time.Second, apiMock)
 
@@ -63,8 +63,8 @@ func TestGetCacheExpired(t *testing.T) {
 }
 
 func TestNoRec(t *testing.T) {
-	apiMock := &test.RecommenderAPIMock{}
-	pod := test.BuildTestPod("test", "", "", "", nil, nil)
+	apiMock := &utils.RecommenderAPIMock{}
+	pod := utils.BuildTestPod("test", "", "", "", nil, nil)
 	apiMock.On("GetRecommendation", &pod.Spec).Return(nil, nil)
 	recommender := NewCachingRecommender(time.Second, apiMock)
 
@@ -78,8 +78,8 @@ func TestNoRec(t *testing.T) {
 }
 
 func TestError(t *testing.T) {
-	apiMock := &test.RecommenderAPIMock{}
-	pod := test.BuildTestPod("test", "", "", "", nil, nil)
+	apiMock := &utils.RecommenderAPIMock{}
+	pod := utils.BuildTestPod("test", "", "", "", nil, nil)
 	err := fmt.Errorf("Expected Fail")
 	apiMock.On("GetRecommendation", &pod.Spec).Return(nil, err)
 	recommender := NewCachingRecommender(time.Second, apiMock)
