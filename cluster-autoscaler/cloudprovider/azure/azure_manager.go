@@ -73,6 +73,9 @@ type Config struct {
 	ClientPrivateKey     string `json:"clientPrivateKey" yaml:"clientPrivateKey"`
 	KubeConfigPrivateKey string `json:"kubeConfigPrivateKey" yaml:"kubeConfigPrivateKey"`
 	WindowsAdminPassword string `json:"windowsAdminPassword" yaml:"windowsAdminPassword"`
+	// etcd TLS parameters (for acs-engine >= v0.12.0).
+	EtcdClientPrivateKey string `json:"etcdClientPrivateKey" yaml:"etcdClientPrivateKey"`
+	EtcdServerPrivateKey string `json:"etcdServerPrivateKey" yaml:"etcdServerPrivateKey"`
 }
 
 // TrimSpace removes all leading and trailing white spaces.
@@ -92,6 +95,8 @@ func (c *Config) TrimSpace() {
 	c.ClientPrivateKey = strings.TrimSpace(c.ClientPrivateKey)
 	c.KubeConfigPrivateKey = strings.TrimSpace(c.KubeConfigPrivateKey)
 	c.WindowsAdminPassword = strings.TrimSpace(c.WindowsAdminPassword)
+	c.EtcdClientPrivateKey = strings.TrimSpace(c.EtcdClientPrivateKey)
+	c.EtcdServerPrivateKey = strings.TrimSpace(c.EtcdServerPrivateKey)
 }
 
 // CreateAzureManager creates Azure Manager object to work with Azure.
@@ -120,6 +125,8 @@ func CreateAzureManager(configReader io.Reader, discoveryOpts cloudprovider.Node
 		cfg.ClientPrivateKey = os.Getenv("ARM_CLIENT_PRIVATE_KEY")
 		cfg.KubeConfigPrivateKey = os.Getenv("ARM_KUBECONFIG_PRIVATE_KEY")
 		cfg.WindowsAdminPassword = os.Getenv("ARM_WINDOWS_ADMIN_PASSWORD")
+		cfg.EtcdClientPrivateKey = os.Getenv("ARM_ETCD_CLIENT_RPIVATE_KEY")
+		cfg.EtcdServerPrivateKey = os.Getenv("ARM_ETCD_SERVER_PRIVATE_KEY")
 
 		useManagedIdentityExtensionFromEnv := os.Getenv("ARM_USE_MANAGED_IDENTITY_EXTENSION")
 		if len(useManagedIdentityExtensionFromEnv) > 0 {
