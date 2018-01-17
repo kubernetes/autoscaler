@@ -5,13 +5,14 @@ data:
   ResourceGroup: <base64-encoded-resource-group>
   SubscriptionID: <base64-encode-subscription-id>
   TenantID: <base64-encoded-tenant-id>
-  NodeGroup: <base64-encoded-node-pool-name>
   Deployment: <base64-encoded-azure-initial-deploy-name>
   APIServerPrivateKey: <base64-encoded-apiserver-private-key>
   CAPrivateKey: <base64-encoded-ca-private-key>
   ClientPrivateKey: <base64-encoded-client-private-key>
   KubeConfigPrivateKey: <base64-encoded-kubeconfig-private-key>
   WindowsAdminPassword: <base64-encoded-windows-admin-password>
+  EtcdClientPrivateKey: <base64-encoded-etcd-client-private-key>
+  EtcdServerPrivateKey: <base64-encoded-etcd-server-private-key>
   VMType: c3RhbmRhcmQ=
 kind: Secret
 metadata:
@@ -49,7 +50,8 @@ spec:
         - --logtostderr=true
         - --cloud-provider=azure
         - --skip-nodes-with-local-storage=false
-        - --nodes=1:10:$(ARM_NODE_GROUP)
+        - --nodes=1:10:agentpool1
+        - --nodes=1:10:agentpool2
         env:
         - name: ARM_SUBSCRIPTION_ID
           valueFrom:
@@ -75,11 +77,6 @@ spec:
           valueFrom:
             secretKeyRef:
               key: ClientSecret
-              name: cluster-autoscaler-azure
-        - name: ARM_NODE_GROUP
-          valueFrom:
-            secretKeyRef:
-              key: NodeGroup
               name: cluster-autoscaler-azure
         - name: ARM_VM_TYPE
           valueFrom:
@@ -115,6 +112,16 @@ spec:
           valueFrom:
             secretKeyRef:
               key: WindowsAdminPassword
+              name: cluster-autoscaler-azure
+        - name: ARM_ETCD_CLIENT_RPIVATE_KEY
+          valueFrom:
+            secretKeyRef:
+              key: EtcdClientPrivateKey
+              name: cluster-autoscaler-azure
+        - name: ARM_ETCD_SERVER_PRIVATE_KEY
+          valueFrom:
+            secretKeyRef:
+              key: EtcdServerPrivateKey
               name: cluster-autoscaler-azure
         image: gcr.io/google_containers/cluster-autoscaler:{{ ca_version }}
         imagePullPolicy: Always
