@@ -350,7 +350,15 @@ func GetVMNameIndex(osType compute.OperatingSystemTypes, vmName string) (int, er
 }
 
 func matchDiscoveryConfig(labels map[string]*string, configs []cloudprovider.LabelAutoDiscoveryConfig) bool {
+	if len(configs) == 0 {
+		return false
+	}
+
 	for _, c := range configs {
+		if len(c.Selector) == 0 {
+			return false
+		}
+
 		for k, v := range c.Selector {
 			value, ok := labels[k]
 			if !ok {
@@ -408,4 +416,15 @@ func validateConfig(cfg *Config) error {
 	}
 
 	return nil
+}
+
+// getLastSegment gets the last segment splited by '/'.
+func getLastSegment(ID string) (string, error) {
+	parts := strings.Split(strings.TrimSpace(ID), "/")
+	name := parts[len(parts)-1]
+	if len(name) == 0 {
+		return "", fmt.Errorf("identifier '/' not found in resource name %q", ID)
+	}
+
+	return name, nil
 }

@@ -19,6 +19,8 @@ package azure
 import (
 	"fmt"
 	"reflect"
+	"regexp"
+	"strings"
 	"sync"
 	"time"
 
@@ -27,18 +29,11 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 )
 
-// Asg is a wrapper over NodeGroup interface.
-type Asg interface {
-	cloudprovider.NodeGroup
-
-	getAzureRef() azureRef
-	getInstanceIDs() (map[azureRef]string, error)
-}
+var virtualMachineRE = regexp.MustCompile(`^azure://(?:.*)/providers/microsoft.compute/virtualmachines/(.+)$`)
 
 type asgCache struct {
-	registeredAsgs     []Asg
-	instanceToAsg      map[azureRef]Asg
-	instanceToID       map[azureRef]string
+	registeredAsgs     []cloudprovider.NodeGroup
+	instanceToAsg      map[azureRef]cloudprovider.NodeGroup
 	notInRegisteredAsg map[azureRef]bool
 	mutex              sync.Mutex
 	interrupt          chan struct{}
@@ -46,9 +41,8 @@ type asgCache struct {
 
 func newAsgCache() (*asgCache, error) {
 	cache := &asgCache{
-		registeredAsgs:     make([]Asg, 0),
-		instanceToAsg:      make(map[azureRef]Asg),
-		instanceToID:       make(map[azureRef]string),
+		registeredAsgs:     make([]cloudprovider.NodeGroup, 0),
+		instanceToAsg:      make(map[azureRef]cloudprovider.NodeGroup),
 		notInRegisteredAsg: make(map[azureRef]bool),
 		interrupt:          make(chan struct{}),
 	}
@@ -65,7 +59,7 @@ func newAsgCache() (*asgCache, error) {
 }
 
 // Register registers a node group if it hasn't been registered.
-func (m *asgCache) Register(asg Asg) bool {
+func (m *asgCache) Register(asg cloudprovider.NodeGroup) bool {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -94,11 +88,11 @@ func (m *asgCache) invalidateUnownedInstanceCache() {
 }
 
 // Unregister ASG. Returns true if the ASG was unregistered.
-func (m *asgCache) Unregister(asg Asg) bool {
+func (m *asgCache) Unregister(asg cloudprovider.NodeGroup) bool {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	updated := make([]Asg, 0, len(m.registeredAsgs))
+	updated := make([]cloudprovider.NodeGroup, 0, len(m.registeredAsgs))
 	changed := false
 	for _, existing := range m.registeredAsgs {
 		if existing.Id() == asg.Id() {
@@ -112,27 +106,15 @@ func (m *asgCache) Unregister(asg Asg) bool {
 	return changed
 }
 
-func (m *asgCache) get() []Asg {
+func (m *asgCache) get() []cloudprovider.NodeGroup {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	return m.registeredAsgs
 }
 
-func (m *asgCache) getInstanceIDs(instances []*azureRef) []string {
-	m.mutex.Lock()
-	defer m.mutex.Unlock()
-
-	instanceIds := make([]string, len(instances))
-	for i, instance := range instances {
-		instanceIds[i] = m.instanceToID[*instance]
-	}
-
-	return instanceIds
-}
-
 // FindForInstance returns Asg of the given Instance
-func (m *asgCache) FindForInstance(instance *azureRef) (Asg, error) {
+func (m *asgCache) FindForInstance(instance *azureRef, vmType string) (cloudprovider.NodeGroup, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -140,6 +122,24 @@ func (m *asgCache) FindForInstance(instance *azureRef) (Asg, error) {
 		// We already know we don't own this instance. Return early and avoid
 		// additional calls.
 		return nil, nil
+	}
+
+	if vmType == vmTypeVMSS {
+		// Omit virtual machines not managed by vmss.
+		if ok := virtualMachineRE.Match([]byte(instance.Name)); ok {
+			glog.V(3).Infof("Instance %q is not managed by vmss, omit it in autoscaler", instance.Name)
+			m.notInRegisteredAsg[*instance] = true
+			return nil, nil
+		}
+	}
+
+	if vmType == vmTypeStandard {
+		// Omit virtual machines with providerID not in Azure resource ID format.
+		if ok := virtualMachineRE.Match([]byte(instance.Name)); !ok {
+			glog.V(3).Infof("Instance %q is not in Azure resource ID format, omit it in autoscaler", instance.Name)
+			m.notInRegisteredAsg[*instance] = true
+			return nil, nil
+		}
 	}
 
 	if asg, found := m.instanceToAsg[*instance]; found {
@@ -163,7 +163,7 @@ func (m *asgCache) Cleanup() {
 }
 
 func (m *asgCache) regenerate() error {
-	newCache := make(map[azureRef]Asg)
+	newCache := make(map[azureRef]cloudprovider.NodeGroup)
 
 	for _, nsg := range m.registeredAsgs {
 		instances, err := nsg.Nodes()
@@ -172,7 +172,8 @@ func (m *asgCache) regenerate() error {
 		}
 
 		for _, instance := range instances {
-			ref := azureRef{Name: instance}
+			// Convert to lower because instance.ID is in different in different API calls (e.g. GET and LIST).
+			ref := azureRef{Name: strings.ToLower(instance)}
 			newCache[ref] = nsg
 		}
 	}
