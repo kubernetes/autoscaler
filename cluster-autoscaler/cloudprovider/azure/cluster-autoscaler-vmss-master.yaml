@@ -5,7 +5,6 @@ data:
   ResourceGroup: <base64-encoded-resource-group>
   SubscriptionID: <base64-encode-subscription-id>
   TenantID: <base64-encoded-tenant-id>
-  NodeGroup: <base64-encoded-scale-set-name>
   VMType: dm1zcw==
 kind: Secret
 metadata:
@@ -43,7 +42,8 @@ spec:
         - --logtostderr=true
         - --cloud-provider=azure
         - --skip-nodes-with-local-storage=false
-        - --nodes=1:10:$(ARM_NODE_GROUP)
+        - --nodes=1:10:vmss1
+        - --nodes=1:10:vmss2
         env:
         - name: ARM_SUBSCRIPTION_ID
           valueFrom:
@@ -69,11 +69,6 @@ spec:
           valueFrom:
             secretKeyRef:
               key: ClientSecret
-              name: cluster-autoscaler-azure
-        - name: ARM_NODE_GROUP
-          valueFrom:
-            secretKeyRef:
-              key: NodeGroup
               name: cluster-autoscaler-azure
         - name: ARM_VM_TYPE
           valueFrom:
