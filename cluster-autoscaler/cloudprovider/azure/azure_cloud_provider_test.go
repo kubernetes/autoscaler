@@ -31,7 +31,7 @@ import (
 func newTestAzureManager(t *testing.T) *AzureManager {
 	manager := &AzureManager{
 		env:                  azure.PublicCloud,
-		explicitlyConfigured: make(map[azureRef]bool),
+		explicitlyConfigured: make(map[string]bool),
 		config: &Config{
 			ResourceGroup: "test",
 			VMType:        vmTypeVMSS,
