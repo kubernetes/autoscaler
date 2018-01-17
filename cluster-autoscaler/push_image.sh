@@ -21,7 +21,7 @@ if [ -z $IMAGE_TO_PUSH ]; then
 fi
 
 docker_push_cmd=("docker")
-if [[ "${IMAGE_TO_PUSH}" == "gcr.io/"* ]] || [[ "${IMAGE_TO_PUSH}" == "k8s.gcr.io/"* ]] ; then
+if [[ "${IMAGE_TO_PUSH}" == "gcr.io/"* ]] || [[ "${IMAGE_TO_PUSH}" == "staging-k8s.gcr.io/"* ]] ; then
     docker_push_cmd=("gcloud" "docker" "--")
 fi
 
