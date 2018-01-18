@@ -1,0 +1,9 @@
+apiVersion: poc.autoscaling.k8s.io/v1alpha1
+kind: VerticalPodAutoscaler
+metadata:
+  name: sample-vpa
+spec:
+  selector:
+    matchLabels:
+      autoscaling: enabled
+
