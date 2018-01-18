@@ -203,5 +203,5 @@ type RecommendedContainerResources struct {
 	// Maximum recommended amount of resources.
 	// Any resources allocated beyond this value are likely wasted.
 	// +optional
-	MaxRecommended apiv1.ResourceList `json:"minRecommended,omitempty" protobuf:"bytes,3,rep,name=maxRecommended,casttype=ResourceList,castkey=ResourceName"`
+	MaxRecommended apiv1.ResourceList `json:"maxRecommended,omitempty" protobuf:"bytes,3,rep,name=maxRecommended,casttype=ResourceList,castkey=ResourceName"`
 }
