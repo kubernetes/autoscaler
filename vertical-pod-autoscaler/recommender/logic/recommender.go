@@ -59,7 +59,7 @@ func NewPodResourceRecommender(
 // Returns recommended resources for a given Vpa object.
 func (r *podResourceRecommender) GetRecommendedPodResources(vpa *model.Vpa) RecommendedPodResources {
 	aggregateContainerStateMap := buildAggregateContainerStateMap(&vpa.Pods)
-	var recommendation RecommendedPodResources
+	var recommendation RecommendedPodResources = make(RecommendedPodResources)
 	for containerName, aggregatedContainerState := range aggregateContainerStateMap {
 		recommendation[containerName] = r.getRecommendedContainerResources(aggregatedContainerState)
 	}
