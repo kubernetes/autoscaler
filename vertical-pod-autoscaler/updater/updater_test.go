@@ -17,11 +17,12 @@ limitations under the License.
 package main
 
 import (
+	"strconv"
 	"testing"
 
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/apimock"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/updater/eviction"
 	"k8s.io/kubernetes/pkg/api/testapi"
@@ -46,15 +47,11 @@ func TestRunOnce(t *testing.T) {
 	pods := make([]*apiv1.Pod, livePods)
 	eviction := &test.PodsEvictionRestrictionMock{}
 
-	recommender := &test.RecommenderMock{}
-	rec := test.Recommendation(containerName, "2", "200M")
-
 	for i := range pods {
-		pods[i] = test.BuildTestPod("test"+string(i), containerName, "1", "100M", &rc.ObjectMeta, &rc.TypeMeta)
+		pods[i] = test.BuildTestPod("test_"+strconv.Itoa(i), containerName, "1", "100M", &rc.ObjectMeta, &rc.TypeMeta)
 		pods[i].Spec.NodeSelector = labels
 		eviction.On("CanEvict", pods[i]).Return(true)
 		eviction.On("Evict", pods[i]).Return(nil)
-		recommender.On("Get", &pods[i].Spec).Return(rec, nil)
 	}
 
 	factory := &fakeEvictFactory{eviction}
@@ -62,13 +59,12 @@ func TestRunOnce(t *testing.T) {
 	podLister := &test.PodListerMock{}
 	podLister.On("List").Return(pods, nil)
 
-	vpaObj := test.BuildTestVerticalPodAutoscaler(containerName, "1", "3", "100M", "1G", selector)
-	vpaLister.On("List").Return([]*apimock.VerticalPodAutoscaler{vpaObj}, nil).Once()
+	vpaObj := test.BuildTestVerticalPodAutoscaler(containerName, "2", "1", "3", "200M", "100M", "1G", selector)
+	vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpaObj}, nil).Once()
 
 	updater := &updater{
 		vpaLister:        vpaLister,
 		podLister:        podLister,
-		recommender:      recommender,
 		evictionFactrory: factory,
 	}
 
@@ -77,7 +73,6 @@ func TestRunOnce(t *testing.T) {
 }
 
 func TestRunOnceNotingToProcess(t *testing.T) {
-	recommender := &test.RecommenderMock{}
 	eviction := &test.PodsEvictionRestrictionMock{}
 	factory := &fakeEvictFactory{eviction}
 	vpaLister := &test.VerticalPodAutoscalerListerMock{}
@@ -88,7 +83,6 @@ func TestRunOnceNotingToProcess(t *testing.T) {
 	updater := &updater{
 		vpaLister:        vpaLister,
 		podLister:        podLister,
-		recommender:      recommender,
 		evictionFactrory: factory,
 	}
 	updater.RunOnce()
