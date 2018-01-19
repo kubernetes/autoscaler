@@ -6,16 +6,11 @@ spec:
   selector:
     matchLabels:
       app: redis
-      role: master
-      tier: backend
   replicas: 1
   template:
     metadata:
       labels:
         app: redis
-        role: master
-        tier: backend
-        autoscaling: enabled
     spec:
       containers:
       - name: master
