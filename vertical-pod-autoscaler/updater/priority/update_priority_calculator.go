@@ -20,7 +20,7 @@ import (
 	"math"
 	"sort"
 
-	"k8s.io/autoscaler/vertical-pod-autoscaler/apimock"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -39,8 +39,7 @@ const (
 // i.e. pod with 10M current memory and recommendation 20M will have higher update priority
 // than pod with 100M current memory and 150M recommendation (100% increase vs 50% increase)
 type UpdatePriorityCalculator struct {
-	resourcesPolicy *apimock.ResourcesPolicy
-	cpuPolicy       *apimock.Policy
+	resourcesPolicy *vpa_types.PodResourcePolicy
 	pods            []podPriority
 	config          *UpdateConfig
 }
@@ -55,7 +54,7 @@ type UpdateConfig struct {
 // NewUpdatePriorityCalculator creates new UpdatePriorityCalculator for the given resources policy and configuration.
 // If the given policy is nil, there will be no policy restriction on update.
 // If the given config is nil, default values are used.
-func NewUpdatePriorityCalculator(policy *apimock.ResourcesPolicy, config *UpdateConfig) UpdatePriorityCalculator {
+func NewUpdatePriorityCalculator(policy *vpa_types.PodResourcePolicy, config *UpdateConfig) UpdatePriorityCalculator {
 	if config == nil {
 		config = &UpdateConfig{MinChangePriority: defaultUpdateThreshod}
 	}
@@ -63,7 +62,7 @@ func NewUpdatePriorityCalculator(policy *apimock.ResourcesPolicy, config *Update
 }
 
 // AddPod adds pod to the UpdatePriorityCalculator.
-func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, recommendation *apimock.Recommendation) {
+func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, recommendation *vpa_types.RecommendedPodResources) {
 	updatePriority := calc.getUpdatePriority(pod, recommendation)
 
 	if updatePriority < calc.config.MinChangePriority {
@@ -87,7 +86,7 @@ func (calc *UpdatePriorityCalculator) GetSortedPods() []*apiv1.Pod {
 	return result
 }
 
-func (calc *UpdatePriorityCalculator) getUpdatePriority(pod *apiv1.Pod, recommendation *apimock.Recommendation) float64 {
+func (calc *UpdatePriorityCalculator) getUpdatePriority(pod *apiv1.Pod, recommendation *vpa_types.RecommendedPodResources) float64 {
 	var priority float64
 
 	for _, podContainer := range pod.Spec.Containers {
@@ -99,28 +98,28 @@ func (calc *UpdatePriorityCalculator) getUpdatePriority(pod *apiv1.Pod, recommen
 
 		containerPolicy := getContainerPolicy(podContainer.Name, calc.resourcesPolicy)
 
-		for resourceName, recommended := range cr.Resources {
-			var (
-				resourceRequested *resource.Quantity
-				resourcePolicy    *apimock.Policy
-			)
+		for resourceName, recommended := range cr.Target {
+			var requested, min, max *resource.Quantity
 
 			if request, ok := podContainer.Resources.Requests[resourceName]; ok {
-				resourceRequested = &request
+				requested = &request
 			}
 			if containerPolicy != nil {
-				if policy, ok := (*containerPolicy)[resourceName]; ok {
-					resourcePolicy = &policy
+				if minAllowed, ok := containerPolicy.MinAllowed[resourceName]; ok {
+					min = &minAllowed
+				}
+				if maxAllowed, ok := containerPolicy.MaxAllowed[resourceName]; ok {
+					max = &maxAllowed
 				}
 			}
-			resourceDiff := getPercentageDiff(resourceRequested, resourcePolicy, &recommended)
+			resourceDiff := getPercentageDiff(requested, min, max, &recommended)
 			priority += math.Abs(resourceDiff)
 		}
 	}
 	return priority
 }
 
-func getPercentageDiff(request *resource.Quantity, policy *apimock.Policy, recommendation *resource.Quantity) float64 {
+func getPercentageDiff(request, min, max, recommendation *resource.Quantity) float64 {
 	if request == nil {
 		// resource requirement is not currently specified
 		// any recommendation for this resource we will treat as 100% change
@@ -130,35 +129,33 @@ func getPercentageDiff(request *resource.Quantity, policy *apimock.Policy, recom
 		return 0
 	}
 	recommended := recommendation.Value()
-	if policy != nil {
-		if !policy.Min.IsZero() && recommendation.Value() < policy.Min.Value() {
-			glog.Warningf("recommendation outside of policy bounds : min value : %v recommended : %v",
-				policy.Min.Value(), recommended)
-			recommended = policy.Min.Value()
-		}
-		if !policy.Max.IsZero() && recommendation.Value() > policy.Max.Value() {
-			glog.Warningf("recommendation outside of policy bounds : max value : %v recommended : %v",
-				policy.Max.Value(), recommended)
-			recommended = policy.Max.Value()
-		}
+	if min != nil && !min.IsZero() && recommendation.Value() < min.Value() {
+		glog.Warningf("recommendation outside of policy bounds : min value : %v recommended : %v",
+			min.Value(), recommended)
+		recommended = min.Value()
+	}
+	if max != nil && !max.IsZero() && recommendation.Value() > max.Value() {
+		glog.Warningf("recommendation outside of policy bounds : max value : %v recommended : %v",
+			max.Value(), recommended)
+		recommended = max.Value()
 	}
 	diff := recommended - request.Value()
 	return float64(diff) / float64(request.Value())
 }
 
-func getContainerPolicy(containerName string, policy *apimock.ResourcesPolicy) *map[apiv1.ResourceName]apimock.Policy {
+func getContainerPolicy(containerName string, policy *vpa_types.PodResourcePolicy) *vpa_types.ContainerResourcePolicy {
 	if policy != nil {
-		for _, container := range policy.Containers {
+		for _, container := range policy.ContainerPolicies {
 			if containerName == container.Name {
-				return &container.ResourcePolicy
+				return &container
 			}
 		}
 	}
 	return nil
 }
 
-func getContainerRecommendation(containerName string, recommendation *apimock.Recommendation) *apimock.ContainerRecommendation {
-	for _, container := range recommendation.Containers {
+func getContainerRecommendation(containerName string, recommendation *vpa_types.RecommendedPodResources) *vpa_types.RecommendedContainerResources {
+	for _, container := range recommendation.ContainerRecommendations {
 		if containerName == container.Name {
 			return &container
 		}

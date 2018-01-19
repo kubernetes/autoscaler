@@ -19,14 +19,16 @@ package main
 import (
 	"time"
 
-	"k8s.io/autoscaler/vertical-pod-autoscaler/apimock"
-	recommender "k8s.io/autoscaler/vertical-pod-autoscaler/recommender_mock"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/updater/eviction"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/updater/priority"
 
 	apiv1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
+	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
+	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/poc.autoscaling.k8s.io/v1alpha1"
 	kube_client "k8s.io/client-go/kubernetes"
 	v1lister "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/tools/cache"
@@ -41,25 +43,23 @@ type Updater interface {
 }
 
 type updater struct {
-	vpaLister        apimock.VerticalPodAutoscalerLister // wait for VPA api
+	vpaLister        vpa_lister.VerticalPodAutoscalerLister
 	podLister        v1lister.PodLister
-	recommender      recommender.CachingRecommender
 	evictionFactrory eviction.PodsEvictionRestrictionFactory
 }
 
 // NewUpdater creates Updater with given configuration
-func NewUpdater(kubeClient kube_client.Interface, cacheTTl time.Duration, minReplicasForEvicition int, evictionToleranceFraction float64) Updater {
+func NewUpdater(kubeClient kube_client.Interface, vpaClient *vpa_clientset.Clientset, cacheTTl time.Duration, minReplicasForEvicition int, evictionToleranceFraction float64) Updater {
 	return &updater{
-		vpaLister:        newVpaLister(kubeClient),
+		vpaLister:        newVpaLister(vpaClient),
 		podLister:        newPodLister(kubeClient),
-		recommender:      recommender.NewCachingRecommender(cacheTTl, apimock.NewRecommenderAPI()),
 		evictionFactrory: eviction.NewPodsEvictionRestrictionFactory(kubeClient, minReplicasForEvicition, evictionToleranceFraction),
 	}
 }
 
 // RunOnce represents single iteration in the main-loop of Updater
 func (u *updater) RunOnce() {
-	vpaList, err := u.vpaLister.List()
+	vpaList, err := u.vpaLister.List(labels.Everything())
 	if err != nil {
 		glog.Fatalf("failed get VPA list: %v", err)
 	}
@@ -70,8 +70,8 @@ func (u *updater) RunOnce() {
 	}
 
 	for _, vpa := range vpaList {
-		glog.V(2).Infof("processing VPA object targeting %v", vpa.Spec.Target.Selector)
-		selector, err := labels.Parse(vpa.Spec.Target.Selector)
+		glog.V(2).Infof("processing VPA object targeting %v", vpa.Spec.Selector)
+		selector, err := metav1.LabelSelectorAsSelector(vpa.Spec.Selector)
 		if err != nil {
 			glog.Errorf("error processing VPA object: failed to create pod selector: %v", err)
 			continue
@@ -106,27 +106,12 @@ func (u *updater) RunOnce() {
 }
 
 // getPodsForUpdate returns list of pods that should be updated ordered by update priority
-func (u *updater) getPodsForUpdate(pods []*apiv1.Pod, vpa *apimock.VerticalPodAutoscaler) []*apiv1.Pod {
-	priorityCalculator := priority.NewUpdatePriorityCalculator(&vpa.Spec.ResourcesPolicy, nil)
+func (u *updater) getPodsForUpdate(pods []*apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler) []*apiv1.Pod {
+	priorityCalculator := priority.NewUpdatePriorityCalculator(&vpa.Spec.ResourcePolicy, nil)
+	recommendation := vpa.Status.Recommendation
 
 	for _, pod := range pods {
-		recommendation, err := u.recommender.Get(&pod.Spec)
-		if err != nil {
-			glog.Errorf("error while getting recommendation for pod %v: %v", pod.Name, err)
-			continue
-		}
-
-		if recommendation == nil {
-			if len(vpa.Status.Recommendation.Containers) == 0 {
-				glog.Warningf("no recommendation for pod: %v", pod.Name)
-				continue
-			}
-
-			glog.Warningf("fallback to default VPA recommendation for pod: %v", pod.Name)
-			recommendation = vpa.Status.Recommendation
-		}
-
-		priorityCalculator.AddPod(pod, recommendation)
+		priorityCalculator.AddPod(pod, &recommendation)
 	}
 
 	return priorityCalculator.GetSortedPods()
@@ -152,8 +137,14 @@ func filterDeletedPods(pods []*apiv1.Pod) []*apiv1.Pod {
 	return result
 }
 
-func newVpaLister(kubeClient kube_client.Interface) apimock.VerticalPodAutoscalerLister {
-	return apimock.NewVpaLister(kubeClient)
+func newVpaLister(vpaClient *vpa_clientset.Clientset) vpa_lister.VerticalPodAutoscalerLister {
+	vpaListWatch := cache.NewListWatchFromClient(vpaClient.Poc().RESTClient(), "vpa", apiv1.NamespaceAll, fields.Everything())
+	store := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
+	vpaLister := vpa_lister.NewVerticalPodAutoscalerLister(store)
+	vpaReflector := cache.NewReflector(vpaListWatch, &vpa_types.VerticalPodAutoscaler{}, store, time.Hour)
+	stopCh := make(chan struct{})
+	go vpaReflector.Run(stopCh)
+	return vpaLister
 }
 
 func newPodLister(kubeClient kube_client.Interface) v1lister.PodLister {

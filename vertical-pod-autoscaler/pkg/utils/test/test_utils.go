@@ -18,13 +18,15 @@ package test
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/stretchr/testify/mock"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/apimock"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
+	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/poc.autoscaling.k8s.io/v1alpha1"
 	v1 "k8s.io/client-go/listers/core/v1"
 )
 
@@ -88,52 +90,72 @@ func BuildTestContainer(containerName, cpu, mem string) apiv1.Container {
 }
 
 // BuildTestPolicy creates ResourcesPolicy with specified constraints
-func BuildTestPolicy(containerName, minCpu, maxCpu, minMemory, maxMemory string) *apimock.ResourcesPolicy {
+func BuildTestPolicy(containerName, minCpu, maxCpu, minMemory, maxMemory string) *vpa_types.PodResourcePolicy {
 	minCpuVal, _ := resource.ParseQuantity(minCpu)
 	maxCpuVal, _ := resource.ParseQuantity(maxCpu)
 	minMemVal, _ := resource.ParseQuantity(minMemory)
 	maxMemVal, _ := resource.ParseQuantity(maxMemory)
-	return &apimock.ResourcesPolicy{Containers: []apimock.ContainerPolicy{{
+	return &vpa_types.PodResourcePolicy{ContainerPolicies: []vpa_types.ContainerResourcePolicy{{
 		Name: containerName,
-		ResourcePolicy: map[apiv1.ResourceName]apimock.Policy{
-			apiv1.ResourceMemory: {
-				Min: minMemVal,
-				Max: maxMemVal},
-			apiv1.ResourceCPU: {
-				Min: minCpuVal,
-				Max: maxCpuVal}},
+		MinAllowed: apiv1.ResourceList{
+			apiv1.ResourceMemory: minMemVal,
+			apiv1.ResourceCPU:    minCpuVal,
+		},
+		MaxAllowed: apiv1.ResourceList{
+			apiv1.ResourceMemory: maxMemVal,
+			apiv1.ResourceCPU:    maxCpuVal,
+		},
 	},
 	}}
 }
 
 // BuildTestVerticalPodAutoscaler creates VerticalPodAutoscaler withs specified policy constraints
-func BuildTestVerticalPodAutoscaler(containerName, minCpu, maxCpu, minMemory, maxMemory string, selector string) *apimock.VerticalPodAutoscaler {
+func BuildTestVerticalPodAutoscaler(containerName, targetCpu, minCpu, maxCpu, targetMemory, minMemory, maxMemory string, selector string) *vpa_types.VerticalPodAutoscaler {
 	resourcesPolicy := BuildTestPolicy(containerName, minCpu, maxCpu, minMemory, maxMemory)
 
-	return &apimock.VerticalPodAutoscaler{
-		Spec: apimock.Spec{
-			Target:          apimock.Target{Selector: selector},
-			UpdatePolicy:    apimock.UpdatePolicy{Mode: apimock.Mode{}},
-			ResourcesPolicy: *resourcesPolicy,
+	labelSelector, err := metav1.ParseToLabelSelector(selector)
+	if err != nil {
+		log.Fatal(err)
+	}
+	targetCpuVal, _ := resource.ParseQuantity(targetCpu)
+	targetMemoryVal, _ := resource.ParseQuantity(targetMemory)
+
+	return &vpa_types.VerticalPodAutoscaler{
+		Spec: vpa_types.VerticalPodAutoscalerSpec{
+			Selector:       labelSelector,
+			UpdatePolicy:   vpa_types.PodUpdatePolicy{},
+			ResourcePolicy: *resourcesPolicy,
+		},
+		Status: vpa_types.VerticalPodAutoscalerStatus{
+			Recommendation: vpa_types.RecommendedPodResources{
+				ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+					{
+						Name: containerName,
+						Target: apiv1.ResourceList{
+							apiv1.ResourceMemory: targetMemoryVal,
+							apiv1.ResourceCPU:    targetCpuVal,
+						},
+					},
+				},
+			},
 		},
 	}
-
 }
 
 // Recommendation creates Recommendation with specified container name and resources
-func Recommendation(containerName, cpu, mem string) *apimock.Recommendation {
-	result := &apimock.Recommendation{Containers: []apimock.ContainerRecommendation{
+func Recommendation(containerName, cpu, mem string) *vpa_types.RecommendedPodResources {
+	result := &vpa_types.RecommendedPodResources{ContainerRecommendations: []vpa_types.RecommendedContainerResources{
 		{Name: containerName,
-			Resources: make(map[apiv1.ResourceName]resource.Quantity, 0)}},
+			Target: make(map[apiv1.ResourceName]resource.Quantity, 0)}},
 	}
 	if len(cpu) > 0 {
 		cpuVal, _ := resource.ParseQuantity(cpu)
-		result.Containers[0].Resources[apiv1.ResourceCPU] = cpuVal
+		result.ContainerRecommendations[0].Target[apiv1.ResourceCPU] = cpuVal
 	}
 
 	if len(mem) > 0 {
 		memVal, _ := resource.ParseQuantity(mem)
-		result.Containers[0].Resources[apiv1.ResourceMemory] = memVal
+		result.ContainerRecommendations[0].Target[apiv1.ResourceMemory] = memVal
 	}
 
 	return result
@@ -145,11 +167,11 @@ type RecommenderAPIMock struct {
 }
 
 // GetRecommendation is mock implementation of RecommenderAPI.GetRecommendation
-func (m *RecommenderAPIMock) GetRecommendation(spec *apiv1.PodSpec) (*apimock.Recommendation, error) {
+func (m *RecommenderAPIMock) GetRecommendation(spec *apiv1.PodSpec) (*vpa_types.RecommendedPodResources, error) {
 	args := m.Called(spec)
-	var returnArg *apimock.Recommendation
+	var returnArg *vpa_types.RecommendedPodResources
 	if args.Get(0) != nil {
-		returnArg = args.Get(0).(*apimock.Recommendation)
+		returnArg = args.Get(0).(*vpa_types.RecommendedPodResources)
 	}
 	return returnArg, args.Error(1)
 }
@@ -160,11 +182,11 @@ type RecommenderMock struct {
 }
 
 // Get is a mock implementation of Recommender.Get
-func (m *RecommenderMock) Get(spec *apiv1.PodSpec) (*apimock.Recommendation, error) {
+func (m *RecommenderMock) Get(spec *apiv1.PodSpec) (*vpa_types.RecommendedPodResources, error) {
 	args := m.Called(spec)
-	var returnArg *apimock.Recommendation
+	var returnArg *vpa_types.RecommendedPodResources
 	if args.Get(0) != nil {
-		returnArg = args.Get(0).(*apimock.Recommendation)
+		returnArg = args.Get(0).(*vpa_types.RecommendedPodResources)
 	}
 	return returnArg, args.Error(1)
 }
@@ -217,11 +239,16 @@ type VerticalPodAutoscalerListerMock struct {
 }
 
 // List is a mock implementation of VerticalPodAutoscalerLister.List
-func (m *VerticalPodAutoscalerListerMock) List() (ret []*apimock.VerticalPodAutoscaler, err error) {
+func (m *VerticalPodAutoscalerListerMock) List(selector labels.Selector) (ret []*vpa_types.VerticalPodAutoscaler, err error) {
 	args := m.Called()
-	var returnArg []*apimock.VerticalPodAutoscaler
+	var returnArg []*vpa_types.VerticalPodAutoscaler
 	if args.Get(0) != nil {
-		returnArg = args.Get(0).([]*apimock.VerticalPodAutoscaler)
+		returnArg = args.Get(0).([]*vpa_types.VerticalPodAutoscaler)
 	}
 	return returnArg, args.Error(1)
+}
+
+// VerticalPodAutoscalers is not implemented for this mock
+func (m *VerticalPodAutoscalerListerMock) VerticalPodAutoscalers(namespace string) vpa_lister.VerticalPodAutoscalerNamespaceLister {
+	return nil
 }
