@@ -100,6 +100,7 @@ func TestDeleteVpa(t *testing.T) {
 	pod := addTestPod(cluster)
 	cluster.DeleteVpa(vpa.ID)
 	assert.Nil(t, pod.Vpa)
+	assert.NotContains(t, cluster.Vpas, vpa.ID)
 }
 
 // Creates a VPA and a matching pod. Verifies that after deleting the pod the
