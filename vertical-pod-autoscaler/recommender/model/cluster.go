@@ -182,6 +182,7 @@ func (cluster *ClusterState) DeleteVpa(vpaID VpaID) error {
 	for _, pod := range vpa.Pods {
 		vpa.UpdatePodLink(pod)
 	}
+	delete(cluster.Vpas, vpaID)
 	return nil
 }
 
