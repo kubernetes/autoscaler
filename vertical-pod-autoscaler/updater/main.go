@@ -20,6 +20,7 @@ import (
 	"flag"
 	"github.com/golang/glog"
 	kube_flag "k8s.io/apiserver/pkg/util/flag"
+	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	kube_client "k8s.io/client-go/kubernetes"
 	kube_restclient "k8s.io/client-go/rest"
 	"time"
@@ -45,8 +46,8 @@ func main() {
 
 	// TODO monitoring
 
-	kubeClient := createKubeClient()
-	updater := NewUpdater(kubeClient, *recommendationsCacheTtl, *minReplicas, *evictionToleranceFraction)
+	kubeClient, vpaClient := createKubeClients()
+	updater := NewUpdater(kubeClient, vpaClient, *recommendationsCacheTtl, *minReplicas, *evictionToleranceFraction)
 	for {
 		select {
 		case <-time.After(*updaterInterval):
@@ -57,10 +58,10 @@ func main() {
 	}
 }
 
-func createKubeClient() kube_client.Interface {
+func createKubeClients() (kube_client.Interface, *vpa_clientset.Clientset) {
 	config, err := kube_restclient.InClusterConfig()
 	if err != nil {
 		glog.Fatalf("Failed to build Kubernetes client : fail to create config: %v", err)
 	}
-	return kube_client.NewForConfigOrDie(config)
+	return kube_client.NewForConfigOrDie(config), vpa_clientset.NewForConfigOrDie(config)
 }

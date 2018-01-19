@@ -19,7 +19,7 @@ package priority
 import (
 	"testing"
 
-	"k8s.io/autoscaler/vertical-pod-autoscaler/apimock"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -78,10 +78,10 @@ func TestSortPriorityMultiContainers(t *testing.T) {
 	recommendation := test.Recommendation(containerName, "6", "20M")
 	cpuRec, _ := resource.ParseQuantity("4")
 	memRec, _ := resource.ParseQuantity("20M")
-	container2rec := apimock.ContainerRecommendation{
-		Name:      containerName2,
-		Resources: map[apiv1.ResourceName]resource.Quantity{apiv1.ResourceCPU: cpuRec, apiv1.ResourceMemory: memRec}}
-	recommendation.Containers = append(recommendation.Containers, container2rec)
+	container2rec := vpa_types.RecommendedContainerResources{
+		Name:   containerName2,
+		Target: map[apiv1.ResourceName]resource.Quantity{apiv1.ResourceCPU: cpuRec, apiv1.ResourceMemory: memRec}}
+	recommendation.ContainerRecommendations = append(recommendation.ContainerRecommendations, container2rec)
 
 	calculator := NewUpdatePriorityCalculator(nil, nil)
 	calculator.AddPod(pod1, recommendation)
