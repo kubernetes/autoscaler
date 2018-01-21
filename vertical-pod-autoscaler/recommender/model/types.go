@@ -17,7 +17,6 @@ limitations under the License.
 package model
 
 import (
-	"fmt"
 	"time"
 )
 
@@ -36,38 +35,6 @@ const (
 	// ResourceMemory represents memory, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024).
 	ResourceMemory MetricName = "memory"
 )
-
-// CPUAmountFromCores converts CPU cores to a ResourceAmount.
-func CPUAmountFromCores(cores float64) ResourceAmount {
-	return ResourceAmount(cores * 1000.0)
-}
-
-// CoresFromCPUAmount converts ResourceAmount to number of cores expressed as float64
-func CoresFromCPUAmount(cpuAmunt ResourceAmount) float64 {
-	return float64(cpuAmunt) / 1000.0
-}
-
-// MemoryAmountFromBytes converts memory bytes to a ResourceAmount.
-func MemoryAmountFromBytes(bytes float64) ResourceAmount {
-	return ResourceAmount(bytes)
-}
-
-// BytesFromMemoryAmount converts ResourceAmount to number byts expressed as float64
-func BytesFromMemoryAmount(memoryAmount ResourceAmount) float64 {
-	return float64(memoryAmount)
-}
-
-// UsageFromResourceAmount converts given ResourceAmount to usage expressed in floaf64, based on given MetricName.
-func UsageFromResourceAmount(metric MetricName, ammount ResourceAmount) (float64, error) {
-	switch metric {
-	case ResourceCPU:
-		return CoresFromCPUAmount(ammount), nil
-	case ResourceMemory:
-		return BytesFromMemoryAmount(ammount), nil
-	default:
-		return 0, fmt.Errorf("Type conversion for MetricName '+%v' is not defined", metric)
-	}
-}
 
 // PodID contains information needed to identify a Pod within a cluster.
 type PodID struct {
