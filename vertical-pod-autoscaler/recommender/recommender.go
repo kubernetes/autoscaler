@@ -27,7 +27,7 @@ import (
 	"k8s.io/apimachinery/pkg/fields"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/poc.autoscaling.k8s.io/v1alpha1"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/cluster"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/clients"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/logic"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/model"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/signals"
@@ -45,7 +45,7 @@ type Recommender interface {
 
 type recommender struct {
 	clusterState            *model.ClusterState
-	clusterFeeder           cluster.ClusterStateFeeder
+	clusterFeeder           clients.ClusterStateFeeder
 	metricsFetchingInterval time.Duration
 	prometheusClient        signals.PrometheusClient
 	vpaClient               vpa_api.VerticalPodAutoscalerInterface
@@ -157,7 +157,7 @@ func createPodResourceRecommender() logic.PodResourceRecommender {
 // It requires cluster configuration object and duration between recommender intervals.
 func NewRecommender(namespace string, config *rest.Config, metricsFetcherInterval time.Duration, prometheusAddress string) Recommender {
 	clusterState := model.NewClusterState()
-	feeder := cluster.NewClusterStateFeeder(newSpecClient(config), newMetricsClient(config))
+	feeder := clients.NewClusterStateFeeder(newSpecClient(config), newMetricsClient(config))
 	feeder.Subscribe(clusterState)
 
 	recommender := &recommender{
@@ -173,15 +173,15 @@ func NewRecommender(namespace string, config *rest.Config, metricsFetcherInterva
 	return recommender
 }
 
-func newSpecClient(config *rest.Config) cluster.SpecClient {
+func newSpecClient(config *rest.Config) clients.SpecClient {
 	kubeClient := kube_client.NewForConfigOrDie(config)
 	podLister := newPodLister(kubeClient)
-	return cluster.NewSpecClient(podLister)
+	return clients.NewSpecClient(podLister)
 }
 
-func newMetricsClient(config *rest.Config) cluster.MetricsClient {
+func newMetricsClient(config *rest.Config) clients.MetricsClient {
 	metricsGetter := resourceclient.NewForConfigOrDie(config)
-	return cluster.NewMetricsClient(metricsGetter)
+	return clients.NewMetricsClient(metricsGetter)
 }
 
 // Creates PodLister, listing only not terminated pods.
