@@ -42,7 +42,7 @@ type metricsClientTestCase struct {
 }
 
 func newMetricsClientTestCase() *metricsClientTestCase {
-	namespaceName := "test-namespace"
+	namespaceName := ""
 
 	testCase := &metricsClientTestCase{
 		snapshotTimestamp: time.Now(),
@@ -50,10 +50,10 @@ func newMetricsClientTestCase() *metricsClientTestCase {
 		namespace:         &v1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: namespaceName}},
 	}
 
-	id1 := model.ContainerID{PodID: model.PodID{Namespace: namespaceName, PodName: "Pod1"}, ContainerName: "Name1"}
-	id2 := model.ContainerID{PodID: model.PodID{Namespace: namespaceName, PodName: "Pod1"}, ContainerName: "Name2"}
-	id3 := model.ContainerID{PodID: model.PodID{Namespace: namespaceName, PodName: "Pod2"}, ContainerName: "Name1"}
-	id4 := model.ContainerID{PodID: model.PodID{Namespace: namespaceName, PodName: "Pod2"}, ContainerName: "Name2"}
+	id1 := model.ContainerID{PodID: model.PodID{Namespace: namespaceName, PodName: "Pod1"}, ContainerName: "Name11"}
+	id2 := model.ContainerID{PodID: model.PodID{Namespace: namespaceName, PodName: "Pod1"}, ContainerName: "Name12"}
+	id3 := model.ContainerID{PodID: model.PodID{Namespace: namespaceName, PodName: "Pod2"}, ContainerName: "Name21"}
+	id4 := model.ContainerID{PodID: model.PodID{Namespace: namespaceName, PodName: "Pod2"}, ContainerName: "Name22"}
 
 	testCase.pod1Snaps = append(testCase.pod1Snaps, testCase.newContainerMetricsSnapshot(id1, 400, 333))
 	testCase.pod1Snaps = append(testCase.pod1Snaps, testCase.newContainerMetricsSnapshot(id2, 800, 666))

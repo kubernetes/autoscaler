@@ -44,9 +44,8 @@ type Recommender interface {
 }
 
 type recommender struct {
-	clusterState            model.ClusterState
-	specClient              cluster.SpecClient
-	metricsClient           cluster.MetricsClient
+	clusterState            *model.ClusterState
+	clusterFeeder           cluster.ClusterStateFeeder
 	metricsFetchingInterval time.Duration
 	prometheusClient        signals.PrometheusClient
 	vpaClient               vpa_api.VerticalPodAutoscalerInterface
@@ -101,6 +100,7 @@ func (r *recommender) readHistory() {
 
 // Currently it just prints out current utilization to the console.
 // It will be soon replaced by something more useful.
+
 func (r *recommender) runOnce() {
 	glog.V(3).Infof("Recommender Run")
 
@@ -114,22 +114,8 @@ func (r *recommender) runOnce() {
 		glog.V(3).Infof("VPA #%v: %+v", n, vpa)
 	}
 
-	podSpecs, err := r.specClient.GetPodSpecs()
-	if err != nil {
-		glog.Errorf("Cannot get SimplePodSpecs. Reason: %+v", err)
-	}
-	for n, spec := range podSpecs {
-		glog.V(3).Infof("SimplePodSpec #%v: %+v", n, spec)
-	}
-
-	metricsSnapshots, err := r.metricsClient.GetContainersMetrics()
-	if err != nil {
-		glog.Errorf("Cannot get containers metrics. Reason: %+v", err)
-	}
-	for n, snap := range metricsSnapshots {
-		glog.V(3).Infof("ContainerMetricsSnapshot #%v: %+v", n, snap)
-	}
-
+	r.clusterFeeder.Feed()
+	glog.V(3).Infof("Current ClusterState:  %+v", r.clusterState)
 }
 
 func (r *recommender) Run() {
@@ -170,9 +156,13 @@ func createPodResourceRecommender() logic.PodResourceRecommender {
 // which can be run in order to provide continuous resource recommendations for containers.
 // It requires cluster configuration object and duration between recommender intervals.
 func NewRecommender(namespace string, config *rest.Config, metricsFetcherInterval time.Duration, prometheusAddress string) Recommender {
+	clusterState := model.NewClusterState()
+	feeder := cluster.NewClusterStateFeeder(newSpecClient(config), newMetricsClient(config))
+	feeder.Subscribe(clusterState)
+
 	recommender := &recommender{
-		specClient:              newSpecClient(config),
-		metricsClient:           newMetricsClient(config),
+		clusterState:            clusterState,
+		clusterFeeder:           feeder,
 		metricsFetchingInterval: metricsFetcherInterval,
 		prometheusClient:        signals.NewPrometheusClient(&http.Client{}, prometheusAddress),
 		vpaClient:               vpa_clientset.NewForConfigOrDie(config).PocV1alpha1().VerticalPodAutoscalers(namespace),
