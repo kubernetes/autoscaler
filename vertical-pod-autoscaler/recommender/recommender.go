@@ -58,6 +58,12 @@ type recommender struct {
 	podResourceRecommender  logic.PodResourceRecommender
 }
 
+type patchRecord struct {
+	Op    string      `json:"op,inline"`
+	Path  string      `json:"path,inline"`
+	Value interface{} `json:"value"`
+}
+
 type verticalPodAutoscalerStatusPatch struct {
 	Status vpa_types.VerticalPodAutoscalerStatus `json:"status,omitempty" protobuf:"bytes,3,opt,name=status"`
 }
@@ -108,6 +114,31 @@ func (r *recommender) readHistory() {
 	}
 }
 
+func initVPAStatus(vpaClient vpa_api.VerticalPodAutoscalerInterface, vpaName string) {
+	patchVPA(vpaClient, vpaName, []patchRecord{{
+		Op:    "add",
+		Path:  "/status",
+		Value: vpa_types.VerticalPodAutoscalerStatus{},
+	},
+	})
+}
+
+func patchVPA(vpaClient vpa_api.VerticalPodAutoscalerInterface, vpaName string, patches []patchRecord) {
+	bytes, err := json.Marshal(patches)
+	if err != nil {
+		glog.Errorf("Cannot marshal VPA status patches %+v. Reason: %+v", patches, err)
+		return
+	}
+
+	_, err = vpaClient.Patch(vpaName, types.JSONPatchType, bytes)
+	if err != nil {
+		glog.Errorf("Cannot patch VPA %v. Reason: %+v", vpaName, err)
+	} else {
+		glog.V(3).Infof("VPA %v patched", vpaName)
+	}
+
+}
+
 // Fetch VPA objects and load them into the cluster state.
 func (r *recommender) loadVPAs() {
 	vpaCRDs, err := r.vpaClient.List(metav1.ListOptions{})
@@ -127,7 +158,13 @@ func (r *recommender) loadVPAs() {
 				vpaCRD.Spec.Selector, err)
 			continue
 		}
-		vpas[model.VpaID{vpaCRD.ObjectMeta.Name}] = selector
+		vpaName := vpaCRD.ObjectMeta.Name
+		vpas[model.VpaID{vpaName}] = selector
+		if vpaCRD.Status.LastUpdateTime.IsZero() {
+			glog.V(3).Infof("Empty status in %v, initializing", vpaName)
+			initVPAStatus(r.vpaClient, vpaName)
+
+		}
 	}
 	for key := range r.clusterState.Vpas {
 		if _, exists := vpas[key]; !exists {
@@ -206,25 +243,20 @@ func (r *recommender) updateVPAs() {
 
 		recommendation := vpa_types.RecommendedPodResources{contanerResources}
 
-		status := vpa_types.VerticalPodAutoscalerStatus{
-			LastUpdateTime: metav1.Time{time.Now()},
-			Recommendation: recommendation,
+		patches := []patchRecord{
+			{
+				Op:    "add",
+				Path:  "/status/lastUpdateTime",
+				Value: metav1.Time{time.Now()},
+			},
+			{
+				Op:    "add",
+				Path:  "/status/recommendation",
+				Value: recommendation,
+			},
 		}
+		patchVPA(r.vpaClient, vpaName, patches)
 
-		vpaPatch := verticalPodAutoscalerStatusPatch{Status: status}
-
-		bytes, err := json.Marshal(vpaPatch)
-		if err != nil {
-			glog.Errorf("Cannot marshal VPA status update %v. Reason: %+v", vpaPatch, err)
-			continue
-		}
-
-		_, err = r.vpaClient.Patch(vpaName, types.MergePatchType, bytes)
-		if err != nil {
-			glog.Errorf("Cannot patch VPA %v. Reason: %+v", vpaName, err)
-		} else {
-			glog.V(3).Infof("VPA %v patched", vpaName)
-		}
 	}
 
 }
