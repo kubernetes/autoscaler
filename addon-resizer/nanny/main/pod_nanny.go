@@ -161,6 +161,7 @@ func loadNannyConfiguration(configDir string, defaultConfig *nannyconfigalpha.Na
 	if err != nil {
 		glog.V(0).Infof("Failed to read data from config file %q: %v, using default parameters", path, err)
 	} else if configMapConfig, err = decodeNannyConfiguration(data, scheme, codecs); err != nil {
+		configMapConfig = &nannyconfigalpha.NannyConfiguration{}
 		glog.V(0).Infof("Unable to decode Nanny Configuration from config map, using default parameters")
 	}
 	nannyconfigalpha.SetDefaults_NannyConfiguration(configMapConfig)
