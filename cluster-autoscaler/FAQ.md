@@ -76,7 +76,7 @@ Cluster Autoscaler decreases the size of the cluster when some nodes are consist
   * don't have PDB or their PDB is too restrictive (since CA 0.6).
 * Pods that are not backed by a controller object (so not created by deployment, replica set, job, stateful set etc). *
 * Pods with local storage. *
-* Pods that cannot be moved elsewhere due to various constraints (lack of resources, non-matching node selctors or affinity,
+* Pods that cannot be moved elsewhere due to various constraints (lack of resources, non-matching node selectors or affinity,
 matching anti-affinity, etc)
 
 <sup>*</sup>Unless the pod has the following annotation (supported in CA 1.0.3 or later):
@@ -102,7 +102,7 @@ there is a big chance that it won't work as expected.
 
 ### Is Cluster Autoscaler an Alpha, Beta or GA product?
 
-Sice version 1.0.0 we consider CA as GA. It means that:
+Since version 1.0.0 we consider CA as GA. It means that:
 
  * We have enough confidence that it does what it is expected to do. Each commit goes through a big suite of unit tests
    with more than 75% coverage (on average). We have a series of e2e tests that validate that CA works well on
@@ -117,7 +117,7 @@ Sice version 1.0.0 we consider CA as GA. It means that:
    some of the less critical feature requests are yet to be implemented.
  * CA has decent monitoring, logging and eventing.
  * CA tries to handle most of the error situations in the cluster (like cloud provider stockouts, broken nodes, etc).
- * CA developers are committed to maintaining and supporting CA in the foreseeble future.
+ * CA developers are committed to maintaining and supporting CA in the foreseeable future.
 
 All of the previous versions (earlier that 1.0.0) are considered beta.
 
@@ -386,7 +386,7 @@ on Y.
 
 Node A was deleted. OK, but what about B and C, which were also eligible for deletion? Well, it depends.
 
-Pods from B may no longer fit on X after pods from A were moved there. Cluster Autoscaler has to find place for them somewhere else, and it is not sure that if A had been deleted much earlier than B, there would always have been a place for them. So the condition of having been unneded unneeded for 10 min may not be true for B anymore.
+Pods from B may no longer fit on X after pods from A were moved there. Cluster Autoscaler has to find place for them somewhere else, and it is not sure that if A had been deleted much earlier than B, there would always have been a place for them. So the condition of having been unneeded for 10 min may not be true for B anymore.
 
 But for node C, it's still true as long as nothing happened to Y. So C can be deleted immediately after A, but B may not.
 
@@ -454,7 +454,7 @@ Some of the not-yet-fully-approved proposals may be hidden among [PRs](https://g
 
 ### What are Expanders?
 
-When Cluster Autoscaler identifies that it needs to scale up a cluster due to unscheduable pods,
+When Cluster Autoscaler identifies that it needs to scale up a cluster due to unschedulable pods,
 it increases the number of nodes in some node group. When there is one node group, this strategy is trivial. When there is more than one node group, it has to decide which to expand.
 
 Expanders provide different strategies for selecting the node group to which
