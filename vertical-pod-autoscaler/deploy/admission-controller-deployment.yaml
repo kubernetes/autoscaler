@@ -28,7 +28,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: hpa-webhook
+  name: vpa-webhook
   namespace: kube-system
 spec:
   ports:

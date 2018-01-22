@@ -31,7 +31,7 @@ import (
 )
 
 const (
-	webhookConfigName = "hpa-webhook-config"
+	webhookConfigName = "vpa-webhook-config"
 )
 
 // get a clientset with in-cluster config.
@@ -75,12 +75,13 @@ func configTLS(clientset *kubernetes.Clientset) *tls.Config {
 	return &tls.Config{
 		Certificates: []tls.Certificate{sCert},
 		ClientCAs:    apiserverCA,
-		ClientAuth:   tls.NoClientCert, //RequireAndVerifyClientCert,
+		// Consider changing to tls.RequireAndVerifyClientCert.
+		ClientAuth: tls.NoClientCert,
 	}
 }
 
-// register this example webhook admission controller with the kube-apiserver
-// by creating externalAdmissionHookConfigurations.
+// register this webhook admission controller with the kube-apiserver
+// by creating MutatingWebhookConfiguration.
 func selfRegistration(clientset *kubernetes.Clientset, caCert []byte) {
 	time.Sleep(10 * time.Second)
 	client := clientset.AdmissionregistrationV1beta1().MutatingWebhookConfigurations()
@@ -96,7 +97,7 @@ func selfRegistration(clientset *kubernetes.Clientset, caCert []byte) {
 		},
 		Webhooks: []v1beta1.Webhook{
 			{
-				Name: "hpa.k8s.io",
+				Name: "vpa.k8s.io",
 				Rules: []v1beta1.RuleWithOperations{{
 					Operations: []v1beta1.OperationType{v1beta1.Create, v1beta1.Update},
 					Rule: v1beta1.Rule{
@@ -108,7 +109,7 @@ func selfRegistration(clientset *kubernetes.Clientset, caCert []byte) {
 				ClientConfig: v1beta1.WebhookClientConfig{
 					Service: &v1beta1.ServiceReference{
 						Namespace: "kube-system",
-						Name:      "hpa-webhook",
+						Name:      "vpa-webhook",
 					},
 					CABundle: caCert,
 				},
