@@ -215,14 +215,12 @@ spec:
 
 ### Auto-Discovery Setup
 
-As of version v0.5.1, docker images including the support for `--node-group-auto-discovery` is not yet published to official repository.
-Please checkout the latest source of this project locally and run `REGISTRY=<your docker repo> make release` to build and push an image yourself.
-Then, a manifest like below would run a cluster-autoscaler which auto-discovers ASGs tagged with `k8s.io/cluster-autoscaler/enabled` and `kubernetes.io/cluster/<YOUR CLUSTER NAME>` to be node groups.
+To run a cluster-autoscaler which auto-discovers ASGs with nodes use the `--node-group-auto-discovery` flag and tag the ASGs with _key_ `k8s.io/cluster-autoscaler/enabled` and _key_ `kubernetes.io/cluster/<YOUR CLUSTER NAME>`.
 Note that:
- 
+
 * `kubernetes.io/cluster/<YOUR CLUSTER NAME>` is required when `k8s.io/cluster-autoscaler/enabled` is used across many clusters to prevent ASGs from different clusters recognized as the node groups
 * There are no `--nodes` flags passed to cluster-autoscaler because the node groups are automatically discovered by tags
- 
+
 ```yaml
 ---
 apiVersion: extensions/v1beta1
@@ -243,7 +241,7 @@ spec:
         app: cluster-autoscaler
     spec:
       containers:
-        - image: <your docker repo>/cluster-autoscaler:dev
+        - image: gcr.io/google_containers/cluster-autoscaler:v1.1.0
           name: cluster-autoscaler
           resources:
             limits:
