@@ -165,7 +165,6 @@ func loadNannyConfiguration(configDir string, defaultConfig *nannyconfigalpha.Na
 		glog.V(0).Infof("Unable to decode Nanny Configuration from config map, using default parameters")
 	}
 	nannyconfigalpha.SetDefaults_NannyConfiguration(configMapConfig)
-	glog.Infof("%s", configMapConfig.BaseCPU)
 	// overwrite defaults with config map parameters
 	nannyconfigalpha.FillInDefaults_NannyConfiguration(configMapConfig, defaultConfig)
 	return convertNannyConfiguration(configMapConfig, scheme)
