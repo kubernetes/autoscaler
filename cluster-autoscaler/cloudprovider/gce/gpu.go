@@ -34,6 +34,7 @@ var (
 			"us-east1-c":     true,
 			"us-east1-d":     true,
 			"us-west1-b":     true,
+			"us-central-1c":  true,
 		},
 		"nvidia-tesla-p100": {
 			"europe-west1-b": true,
@@ -41,6 +42,8 @@ var (
 			"asia-east1-a":   true,
 			"us-east1-c":     true,
 			"us-west1-b":     true,
+			"us-central-1c":  true,
+			"us-central-1f":  true,
 		},
 	}
 
