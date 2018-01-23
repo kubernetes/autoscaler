@@ -63,7 +63,7 @@ func getAPIServerCert(clientset *kubernetes.Clientset) []byte {
 	return []byte(pem)
 }
 
-func configTLS(clientset *kubernetes.Clientset) *tls.Config {
+func configTLS(clientset *kubernetes.Clientset, serverCert, serverKey []byte) *tls.Config {
 	cert := getAPIServerCert(clientset)
 	apiserverCA := x509.NewCertPool()
 	apiserverCA.AppendCertsFromPEM(cert)

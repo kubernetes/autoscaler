@@ -23,9 +23,9 @@ import (
 	"github.com/golang/glog"
 )
 
-var (
+type certsContainer struct {
 	caKey, caCert, serverKey, serverCert []byte
-)
+}
 
 func readFile(filePath string) []byte {
 	file, err := os.Open(filePath)
@@ -43,9 +43,11 @@ func readFile(filePath string) []byte {
 	return res
 }
 
-func initCerts(certsDir string) {
-	caKey = readFile(path.Join(certsDir, "caKey.pem"))
-	caCert = readFile(path.Join(certsDir, "caCert.pem"))
-	serverKey = readFile(path.Join(certsDir, "serverKey.pem"))
-	serverCert = readFile(path.Join(certsDir, "serverCert.pem"))
+func initCerts(certsDir string) certsContainer {
+	res := certsContainer{}
+	res.caKey = readFile(path.Join(certsDir, "caKey.pem"))
+	res.caCert = readFile(path.Join(certsDir, "caCert.pem"))
+	res.serverKey = readFile(path.Join(certsDir, "serverKey.pem"))
+	res.serverCert = readFile(path.Join(certsDir, "serverCert.pem"))
+	return res
 }

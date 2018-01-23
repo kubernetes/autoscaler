@@ -53,7 +53,7 @@ func newReadyVPALister(stopChannel <-chan struct{}) vpa_lister.VerticalPodAutosc
 
 func main() {
 	flag.Parse()
-	initCerts(certsDir)
+	certs := initCerts(certsDir)
 	stopChannel := make(chan struct{})
 	vpaLister := newReadyVPALister(stopChannel)
 	as := &admissionServer{logic.NewRecommendationProvider(vpaLister)}
@@ -63,8 +63,8 @@ func main() {
 	clientset := getClient()
 	server := &http.Server{
 		Addr:      ":8000",
-		TLSConfig: configTLS(clientset),
+		TLSConfig: configTLS(clientset, certs.serverCert, certs.serverKey),
 	}
-	go selfRegistration(clientset, caCert)
+	go selfRegistration(clientset, certs.caCert)
 	server.ListenAndServeTLS("", "")
 }
