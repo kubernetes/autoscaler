@@ -15,6 +15,10 @@ spec:
       - name: admission-controller
         image: gcr.io/kubernetes-develop/admission-controller:0.0.1
         imagePullPolicy: Always
+        volumeMounts:
+          - name: tls-certs
+            mountPath: "/etc/tls-certs"
+            readOnly: true
         resources:
           limits:
             cpu: 500m
@@ -24,6 +28,10 @@ spec:
             memory: 500Mi
         ports:
         - containerPort: 8000
+      volumes:
+        - name: tls-certs
+          secret:
+            secretName: vpa-tls-certs
 ---
 apiVersion: v1
 kind: Service

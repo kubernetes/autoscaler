@@ -13,102 +13,39 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-// This file was generated using openssl by the gencerts.sh script
 
 package main
 
-var caKey = []byte(`-----BEGIN RSA PRIVATE KEY-----
-MIIEpQIBAAKCAQEAwdIglFc807zHnfdOurgspF3HeqsD6JLny3j/2YSxjND0y2dS
-84rOjtBI0JzsBfVbXvdaI3F8SB+YI7uxpcMLaa8bvJ+tt5f1dnlQi8oHgpar7r6X
-p3UmIoYS+nHXAQuF79Nv+UwLzszndCltWp3pH1+AVY8Stg40/zf+DpgXa9aHCXCl
-Wvqa+zgZt7iZFTG48E/1MdXyogiDm1jn+q8byUDHq8U2fdtwWy675ztCkh380/WS
-MuOpOlpVelY2eXgzMItGZ+0GzNevHWmrKk1nQeOYfe1mjHeJkQm/41Fnt+XCu4W5
-6zvm+nlIggHKvtdCxIjIgF6QHFJHUS7UtkSslwIDAQABAoIBAQCYjkwWdpPqFS0J
-qR7O2ShKN4ZLh1AMP5UzEopPK6KUs+P6NdmU2Cy9PDQT/2/HQNgqZ4cLXsfz/OpD
-Nfkd/+d7x9iNHyIc3/7UwagkX2CJ6Q5rXJkBtbPOeLl3ZyNULz29By+bib/Bhoan
-Z/Qq3yAfEYxxy6tuoMAWInxWAGBu/42cPCHPeIEpFZBEeGDfwQJnx0Vheo5pJyAc
-d/qXvqrtwtGaDhm494Jd6bPBbPjU478g71CNE31AX3yXV35ghgn7slf4v2zroTu6
-qBnBZ+JH89iT7mqUVa6LdZjIsrx8i8N9P6L94Yahg4ee1O1MPaXA1NuWCPQumKoO
-hTv+AgQBAoGBAOE0Jdll0N4tGgvsuE1GEgxTHxyacY+FTbUzogMfBfnKZMZ94UjY
-AJ6rkJL86eWVYXoGmMd3WezJrVKpigxkcIFM6Y2Fdakdsd3jDWhyxW2VpMbZf1IV
-R1IP9Mxk6uXCHxbuBudIFQ4XkVfFHVaPIzA5qxxWIWheEAydCjdiXFvzAoGBANxT
-Vo7q3mEqHSJPFlgTj5+09tDELTOcJXrakpIzCf4zrK7F3zmGAejEC1Uq8w8pYPAK
-HVcjOF/qLkvpyiagwo+T7YkHMZ7mV847Iqukd0g0ZMWIwzV784maT9kj0njVBT3c
-ub1ehhw0zQ5sZLYWFLKhIDsyohtl5a4fQ18O/onNAoGBAOC8gpztjz94sMp/o/hx
-Wad099I6ieMYu1B9w0rsFbGN+X1ft4dTD2NIgNE+lUeoCAuXM7WydEnphQ694+a0
-ANX35AZ3zdBDsvFkGUhHaKAQOsy51eYbF/5bsAadGxDH5PCj/r2lYGWcvU1ihwGP
-fCUvF4QCq/oUDF4aBUz52oNjAoGATwl+ZaqPt995sBMa+uGZhjtOxzl41ajQMTAz
-oEq67PvwmInXODWAfdXGEvljVC8N3U5jlBzIXnANx6HIqO7GnOb+MUfpXw1Wtl60
-Y0qOl9JjzBDxpkAe71/yAP0+xaX1SWnjH7HG/ltarC/qOP/W0PXIMDRLvvRg3oPM
-kU85tIkCgYEAjBtVS4NRz3igZlTO5Kcf0XW2Ik07zyrcM76uzwHvsrU9cWPYC8jq
-eQlWYgrJx0xkY/ZWBlOd1HU4Ru4swWeOX9RapreBK+Gf4+SZk29Nukrg+lR9iLuK
-BijdgrYa9V3hcjWGZkLJeVFwtfxS1YsMPlS60nottZckNydJ5KFPDww=
------END RSA PRIVATE KEY-----`)
+import (
+	"os"
+	"path"
 
-var caCert = []byte(`-----BEGIN CERTIFICATE-----
-MIIDBzCCAe+gAwIBAgIJAOaD2zfyh/EWMA0GCSqGSIb3DQEBCwUAMBkxFzAVBgNV
-BAMMDnZwYV93ZWJob29rX2NhMCAXDTE4MDEyMzEzNDcyOVoYDzIyOTExMTA4MTM0
-NzI5WjAZMRcwFQYDVQQDDA52cGFfd2ViaG9va19jYTCCASIwDQYJKoZIhvcNAQEB
-BQADggEPADCCAQoCggEBAMHSIJRXPNO8x533Trq4LKRdx3qrA+iS58t4/9mEsYzQ
-9MtnUvOKzo7QSNCc7AX1W173WiNxfEgfmCO7saXDC2mvG7yfrbeX9XZ5UIvKB4KW
-q+6+l6d1JiKGEvpx1wELhe/Tb/lMC87M53QpbVqd6R9fgFWPErYONP83/g6YF2vW
-hwlwpVr6mvs4Gbe4mRUxuPBP9THV8qIIg5tY5/qvG8lAx6vFNn3bcFsuu+c7QpId
-/NP1kjLjqTpaVXpWNnl4MzCLRmftBszXrx1pqypNZ0HjmH3tZox3iZEJv+NRZ7fl
-wruFues75vp5SIIByr7XQsSIyIBekBxSR1Eu1LZErJcCAwEAAaNQME4wHQYDVR0O
-BBYEFMhcHUyZewzZ9tRARhIsBD7ldQMZMB8GA1UdIwQYMBaAFMhcHUyZewzZ9tRA
-RhIsBD7ldQMZMAwGA1UdEwQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAEgJNtsx
-YNIL0WRMm0OWcR1tYp8GFGjoSIRSpxRrLtYxxCEQxTCRyg/anikYCD39w9XNXwYw
-tzefoXEj2j3mg3bumSYwsEMwSKqwLCX7CgabswSBVYteTnzhUjPCx90YdbcvUbf4
-fh4v/b0q42H/iEdTv6e9eRDyF4jGM/pqeH3qdnmBDenNpQM89slU6KV9N+FcuWkl
-tcPYnjd+A9yyrgeEcBiqQC1yhKeImynEQehN7cGI2iN3mqNJ/+T8MafPtVvTDA2R
-YVWLri4w+XGN44VuZNzSIw14xXWHz8+/ZNQWGfH4+vAbNuQhKl3bGycHaG+UsZDL
-dp1lEsWSkyT13mQ=
------END CERTIFICATE-----`)
+	"github.com/golang/glog"
+)
 
-var serverKey = []byte(`-----BEGIN RSA PRIVATE KEY-----
-MIIEogIBAAKCAQEAn2uPCCRJ6/9kxWNxzX+fOHNVVJF325kUy7Z6OM6WqyB+FFm5
-M+ZaK3ANTNH5jsIn9cNWyZu35olb7sZe8BxfftRWNUnPkCcBGGYhu4Bo0A84pUW+
-SwkaaqLfo8WZ3+Pzp5COV7yr0aGeBNqUt3nhcSFwNIVMhVQIqC0LtkWDFZpTyMy2
-MnD5Wc0dhLaXvBdYtHsNlt2QY91aqXhuDZ6jNuIb9DgCeUKXygFKvpg6k3N40bph
-V52ChCBMtWyT7tX+xho9sNdT7q4R7NKoLeEzkU6IYaWYNmFl2JMTBrOxto2kAOB9
-rahddhK0Hen5fVHowHuGfwgnckps+aqu6Hq09wIDAQABAoIBAA2GWoQeUActi6cT
-YLxGb4OihUK/dKO0wQbnXEclf7LU9t1TH1s/17aHsxkpVzq9ThaTk/FWvKtaS+pd
-+f/06EUiTo4GzQ01weoIACSgKEQ+hle/Kv3Cr/MMDl0ejodoF2vH38uhvhHy3C0d
-PjCyrmWiqJpMFMna70EVUUENdKmIY/qRaSWhtIPdzlUIZdqLRprnE1NE38RXGCQQ
-LmIRhaYl6iPnD/PR16IlmviZVMgDvRufYiVL+PhORH/cshz9fZbvZl3I69og9cpC
-vavua+/7sbB+9R8cwTRg6tTKgs5LuXzhbcxrwWK9IjcgtWXKgvWEG5BUAgVMeJPM
-u4B3rkECgYEAzdidrxQOpUUUyOTFIlyn7WI4m29QR4wNhwSZLFoTC7c+CT8/+ind
-cDEVjoBXfLsalJjQeYwkiSyNStt7LIPrACEDo6+SvZiTpq1BQugdUogs4q/bknOK
-zVPOqDiIYXGjMYrO6UU1kGeQSJ4JijPqr/FXOMiOqw2hVHR+FouCBsMCgYEAxkMu
-fQiFOO9pCPu4O2g5ODSHxsQW5+mLef2g5MZV043XoM32A2OSTVpt5NgF7Uy4bOho
-WcQxOflQHZA4CQsqmYO1HUP4ofujFCunIY7gnbOxOZOOF4fRDlZCDzFgX7Pa/JAW
-Pq67GQFRM67j6OjmooXiUe2+/rovo74F83kv/b0CgYAkLiGxByZ32AeKM+OOYZjG
-eZAXid4jZTNvethtWjukwIVv3KUjFD6unIH8dQRrkPtgCOgDpSU60xDWinNA5MLm
-V+cq2w5AstOo5STmXKPiwLqa8Wv3dsV7x3I4UQ9viSi06X/qslZy1jEfAmAM4Ykr
-eZDqEx44ZIHptTwAPG8TPwKBgAZmvOWElOiVskp79iLU5qQN7iRYyHSMcdhqe/tm
-+/Zsqf2jKMJLQLoGpW2yG97hj0LU7imX0A8TIacStPx1w9ZZDkv3mduBCG7qSecn
-edEdsCcvwHK6C+HunwtmiLoOUI+/BzjW42uXQ0vr5afrfSbaM8h5aKVI1ajvxblq
-vEXxAoGAXNS5OIwkuwEJvfePFajvXpG6uUr+1xoYf8y6HNBorNnPZF6Gz/DXyKJB
-nFIzV5A7IPWtTZG5jBOeNrzx0CpR1JeJccNoIgBD1leaZe9PM8gHhxH7fs6tZTKd
-ngvewVJbQOR3U+UTI9374BLLM0KuH/8DriVVVSVUdu1hPxr1Zhw=
------END RSA PRIVATE KEY-----`)
+var (
+	caKey, caCert, serverKey, serverCert []byte
+)
 
-var serverCert = []byte(`-----BEGIN CERTIFICATE-----
-MIIC/TCCAeWgAwIBAgIJAO25Je3k6PDaMA0GCSqGSIb3DQEBCwUAMBkxFzAVBgNV
-BAMMDnZwYV93ZWJob29rX2NhMCAXDTE4MDEyMzEzNDcyOVoYDzIyOTExMTA4MTM0
-NzI5WjAmMSQwIgYDVQQDExt2cGEtd2ViaG9vay5rdWJlLXN5c3RlbS5zdmMwggEi
-MA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCfa48IJEnr/2TFY3HNf584c1VU
-kXfbmRTLtno4zparIH4UWbkz5lorcA1M0fmOwif1w1bJm7fmiVvuxl7wHF9+1FY1
-Sc+QJwEYZiG7gGjQDzilRb5LCRpqot+jxZnf4/OnkI5XvKvRoZ4E2pS3eeFxIXA0
-hUyFVAioLQu2RYMVmlPIzLYycPlZzR2Etpe8F1i0ew2W3ZBj3VqpeG4NnqM24hv0
-OAJ5QpfKAUq+mDqTc3jRumFXnYKEIEy1bJPu1f7GGj2w11PurhHs0qgt4TORTohh
-pZg2YWXYkxMGs7G2jaQA4H2tqF12ErQd6fl9UejAe4Z/CCdySmz5qq7oerT3AgMB
-AAGjOTA3MAkGA1UdEwQCMAAwCwYDVR0PBAQDAgXgMB0GA1UdJQQWMBQGCCsGAQUF
-BwMCBggrBgEFBQcDATANBgkqhkiG9w0BAQsFAAOCAQEAX6Qi7EKRCrfBjFxwXlCa
-2X91ai372YuWkU6QdykHdTCnjPU2A5S3xEIXa4boLuhzVo03o4oS9jEP6IjiH0KZ
-9x1RmDYqfv3LzbKopJUQ1ZT67w9e85kXIlHX83WmwK7ftnv7d0QOUfsdWZ1ELaPB
-2j0pJyAutEO2hxooLsmAnXh89fZJLcPli7TEiPOXxuuRO0nbdeF0HDiohcNCcRgL
-Cgg7Q+AToJcWYPZ9zC33t0gyKnpH+ztLG9CGqaHXg9cU6bIdzOrF2LFNHpOKSnHN
-U1PhCpEN+DPBdf9Jn/Leh25IwsWI11Xg7ZKrsEVVcpRm/cMzX0pEpVO4jwZ07KQy
-Pg==
------END CERTIFICATE-----`)
+func readFile(filePath string) []byte {
+	file, err := os.Open(filePath)
+	if err != nil {
+		glog.Error(err)
+		return nil
+	}
+	res := make([]byte, 5000)
+	count, err := file.Read(res)
+	if err != nil {
+		glog.Error(err)
+		return nil
+	}
+	glog.Infof("Successfuly read %d bytes from %v", count, filePath)
+	return res
+}
+
+func initCerts(certsDir string) {
+	caKey = readFile(path.Join(certsDir, "caKey.pem"))
+	caCert = readFile(path.Join(certsDir, "caCert.pem"))
+	serverKey = readFile(path.Join(certsDir, "serverKey.pem"))
+	serverCert = readFile(path.Join(certsDir, "serverCert.pem"))
+}

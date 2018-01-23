@@ -32,6 +32,10 @@ import (
 	"k8s.io/client-go/tools/cache"
 )
 
+var (
+	certsDir = *flag.String("certs-dir", "/etc/tls-certs", `Where the TLS cert files are stored.`)
+)
+
 func newReadyVPALister(stopChannel <-chan struct{}) vpa_lister.VerticalPodAutoscalerLister {
 	config, err := rest.InClusterConfig()
 	if err != nil {
@@ -49,6 +53,7 @@ func newReadyVPALister(stopChannel <-chan struct{}) vpa_lister.VerticalPodAutosc
 
 func main() {
 	flag.Parse()
+	initCerts(certsDir)
 	stopChannel := make(chan struct{})
 	vpaLister := newReadyVPALister(stopChannel)
 	as := &admissionServer{logic.NewRecommendationProvider(vpaLister)}

@@ -42,34 +42,7 @@ openssl genrsa -out serverKey.pem 2048
 openssl req -new -key serverKey.pem -out server.csr -subj "/CN=vpa-webhook.kube-system.svc" -config server.conf
 openssl x509 -req -in server.csr -CA caCert.pem -CAkey caKey.pem -CAcreateserial -out serverCert.pem -days 100000 -extensions v3_req -extfile server.conf
 
-outfile=certs.go
-
-cat > $outfile << EOF
-/*
-Copyright 2018 The Kubernetes Authors.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-EOF
-
-echo "// This file was generated using openssl by the gencerts.sh script" >> $outfile
-echo "" >> $outfile
-echo "package main" >> $outfile
-for file in caKey caCert serverKey serverCert; do
-  data=$(cat ${file}.pem)
-  echo "" >> $outfile
-  echo "var $file = []byte(\`$data\`)" >> $outfile
-done
+kubectl create secret --namespace=kube-system generic vpa-tls-certs --from-file=caKey.pem --from-file=caCert.pem --from-file=serverKey.pem --from-file=serverCert.pem
 
 # Clean up after we're done.
 rm *.pem
