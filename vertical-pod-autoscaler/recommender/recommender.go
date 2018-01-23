@@ -157,8 +157,7 @@ func createPodResourceRecommender() logic.PodResourceRecommender {
 // It requires cluster configuration object and duration between recommender intervals.
 func NewRecommender(namespace string, config *rest.Config, metricsFetcherInterval time.Duration, prometheusAddress string) Recommender {
 	clusterState := model.NewClusterState()
-	feeder := clients.NewClusterStateFeeder(newSpecClient(config), newMetricsClient(config))
-	feeder.Subscribe(clusterState)
+	feeder := clients.NewClusterStateFeeder(clusterState, newSpecClient(config), newMetricsClient(config))
 
 	recommender := &recommender{
 		clusterState:            clusterState,

@@ -1,5 +1,5 @@
 /*
-Copyright 2017 The Kubernetes Authors.
+Copyright 2018 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -24,9 +24,7 @@ import (
 
 // ClusterStateFeeder can update state of ClusterState object.
 type ClusterStateFeeder interface {
-	// Subscribe saves a pointer to a ClusterState object which will be updated.
-	Subscribe(cluster *model.ClusterState)
-	// Feed uptades state of subscribed ClusterState
+	// Feed method uptades state ClusterState with data provided by clients
 	Feed()
 }
 
@@ -34,38 +32,27 @@ type clusterStateFeeder struct {
 	specClient    SpecClient
 	metricsClient MetricsClient
 	vpaClient     vpa_api.VerticalPodAutoscalerInterface
-	subscriber    *model.ClusterState
+	clusterState  *model.ClusterState
 }
 
-// NewClusterStateFeeder takes SpecClient and MetricsClient and creates new instance of ClusterStateFeeder,
-// which can be used to update state of subscribed ClusterState
-func NewClusterStateFeeder(specClient SpecClient, metricsClient MetricsClient) ClusterStateFeeder {
+// NewClusterStateFeeder can update ClusterState with data provided by SpecClient and MetricsClient
+func NewClusterStateFeeder(clusterState *model.ClusterState, specClient SpecClient, metricsClient MetricsClient) ClusterStateFeeder {
 	return &clusterStateFeeder{
+		clusterState:  clusterState,
 		specClient:    specClient,
 		metricsClient: metricsClient,
 	}
 }
 
-func (feeder *clusterStateFeeder) Subscribe(cluster *model.ClusterState) {
-	if feeder.subscriber != nil {
-		glog.Warning("One cluster is already subscribed to the feeder. Replacing with a new one.")
-	}
-	feeder.subscriber = cluster
-}
-
 func (feeder *clusterStateFeeder) Feed() {
 	// TODO: Add feeding ClusterState with VPAObjects.
 	// Currently it only feeds container specs and metrics.
-	if feeder.subscriber != nil {
-		feeder.feedSpecs()
-		feeder.feedMetrics()
-	} else {
-		glog.Warning("No cluster state has subscribed. Feeding skipped.")
-	}
+	feeder.feedSpecs()
+	feeder.feedMetrics()
 }
 
 func (feeder *clusterStateFeeder) feedSpecs() {
-	// TODO: distinguish remove pods and remove them from our ClusterState
+	// TODO: distinguish removed pods and remove them from our ClusterState
 	podSpecs, err := feeder.specClient.GetPodSpecs()
 	if err != nil {
 		glog.Errorf("Cannot get SimplePodSpecs from SpecClient. Reason: %+v", err)
@@ -73,9 +60,9 @@ func (feeder *clusterStateFeeder) feedSpecs() {
 
 	containerCount := 0
 	for _, podSpec := range podSpecs {
-		feeder.subscriber.AddOrUpdatePod(podSpec.ID, podSpec.PodLabels)
+		feeder.clusterState.AddOrUpdatePod(podSpec.ID, podSpec.PodLabels)
 		for _, containerSpec := range podSpec.Containers {
-			feeder.subscriber.AddOrUpdateContainer(containerSpec.ID)
+			feeder.clusterState.AddOrUpdateContainer(containerSpec.ID)
 			containerCount++
 		}
 	}
@@ -91,7 +78,7 @@ func (feeder *clusterStateFeeder) feedMetrics() {
 	sampleCount := 0
 	for _, containerMetrics := range containersMetrics {
 		for _, sample := range newContainerUsageSampleWithKey(containerMetrics) {
-			feeder.subscriber.AddSample(sample)
+			feeder.clusterState.AddSample(sample)
 			sampleCount++
 		}
 	}

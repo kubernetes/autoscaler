@@ -1,5 +1,5 @@
 /*
-Copyright 2017 The Kubernetes Authors.
+Copyright 2018 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -31,10 +31,9 @@ func TestFeedingSpecsAndMetrics(t *testing.T) {
 	specClient := specTc.createFakeSpecClient()
 	metricsClient := metricTc.createFakeMetricsClient()
 	cluster := model.NewClusterState()
-	feeder := NewClusterStateFeeder(specClient, metricsClient)
+	feeder := NewClusterStateFeeder(cluster, specClient, metricsClient)
 
 	// When
-	feeder.Subscribe(cluster)
 	feeder.Feed()
 	aContainer := cluster.GetContainer(specTc.podSpecs[0].Containers[0].ID)
 
