@@ -33,6 +33,23 @@ rules:
   - list
   - watch
   - patch
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: system:evictioner
+rules:
+- apiGroups:
+  - "extensions"
+  resources:
+  - replicasets
+  verbs:
+  - get
+- apiGroups:
+  - ""
+  resources:
+  - pods/eviction
+  verbs:
+  - create
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -59,6 +76,19 @@ subjects:
 - kind: ServiceAccount
   name: recommender
   namespace: kube-system
+- kind: ServiceAccount
+  name: updater
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: system:replicasets-reader
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:evictioner
+subjects:
 - kind: ServiceAccount
   name: updater
   namespace: kube-system
