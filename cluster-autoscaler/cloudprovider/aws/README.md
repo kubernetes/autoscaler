@@ -26,7 +26,7 @@ A minimum IAM policy would look like:
 }
 ```
 
-If you'd like to auto-discover node groups by specifing the `--node-group-auto-discover` flag, a `DescribeTags` permission is also required. We highly recommend you specify the ASGs explicitly in your IAM Roles for production systems. The autoscaler will only be able to modify ASGs you give it access to.
+If you'd like to auto-discover node groups by specifing the `--node-group-auto-discovery` flag, a `DescribeTags` permission is also required. We highly recommend you specify the ASGs explicitly in your IAM Roles for production systems. The autoscaler will only be able to modify ASGs you give it access to.
 
 ```json
 {
