@@ -29,6 +29,7 @@ import (
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/poc.autoscaling.k8s.io/v1alpha1"
+	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 	kube_client "k8s.io/client-go/kubernetes"
 	v1lister "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/tools/cache"
@@ -51,7 +52,7 @@ type updater struct {
 // NewUpdater creates Updater with given configuration
 func NewUpdater(kubeClient kube_client.Interface, vpaClient *vpa_clientset.Clientset, cacheTTl time.Duration, minReplicasForEvicition int, evictionToleranceFraction float64) Updater {
 	return &updater{
-		vpaLister:        newVpaLister(vpaClient),
+		vpaLister:        vpa_api_util.NewAllVpasLister(vpaClient, make(chan struct{})),
 		podLister:        newPodLister(kubeClient),
 		evictionFactrory: eviction.NewPodsEvictionRestrictionFactory(kubeClient, minReplicasForEvicition, evictionToleranceFraction),
 	}
@@ -135,16 +136,6 @@ func filterDeletedPods(pods []*apiv1.Pod) []*apiv1.Pod {
 		}
 	}
 	return result
-}
-
-func newVpaLister(vpaClient *vpa_clientset.Clientset) vpa_lister.VerticalPodAutoscalerLister {
-	vpaListWatch := cache.NewListWatchFromClient(vpaClient.PocV1alpha1().RESTClient(), "verticalpodautoscalers", apiv1.NamespaceAll, fields.Everything())
-	store := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
-	vpaLister := vpa_lister.NewVerticalPodAutoscalerLister(store)
-	vpaReflector := cache.NewReflector(vpaListWatch, &vpa_types.VerticalPodAutoscaler{}, store, time.Hour)
-	stopCh := make(chan struct{})
-	go vpaReflector.Run(stopCh)
-	return vpaLister
 }
 
 func newPodLister(kubeClient kube_client.Interface) v1lister.PodLister {
