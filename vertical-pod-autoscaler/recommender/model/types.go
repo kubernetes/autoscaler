@@ -36,16 +36,6 @@ const (
 	ResourceMemory MetricName = "memory"
 )
 
-// CPUAmountFromCores converts CPU cores to a ResourceAmount.
-func CPUAmountFromCores(cores float64) ResourceAmount {
-	return ResourceAmount(cores * 1000.0)
-}
-
-// MemoryAmountFromBytes converts memory bytes to a ResourceAmount.
-func MemoryAmountFromBytes(bytes float64) ResourceAmount {
-	return ResourceAmount(bytes)
-}
-
 // PodID contains information needed to identify a Pod within a cluster.
 type PodID struct {
 	// Namespaces where the Pod is defined.
