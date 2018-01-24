@@ -33,7 +33,7 @@ import (
 )
 
 var (
-	certsDir = *flag.String("certs-dir", "/etc/tls-certs", `Where the TLS cert files are stored.`)
+	certsDir = flag.String("certs-dir", "/etc/tls-certs", `Where the TLS cert files are stored.`)
 )
 
 func newReadyVPALister(stopChannel <-chan struct{}) vpa_lister.VerticalPodAutoscalerLister {
@@ -53,7 +53,7 @@ func newReadyVPALister(stopChannel <-chan struct{}) vpa_lister.VerticalPodAutosc
 
 func main() {
 	flag.Parse()
-	certs := initCerts(certsDir)
+	certs := initCerts(*certsDir)
 	stopChannel := make(chan struct{})
 	vpaLister := newReadyVPALister(stopChannel)
 	as := &admissionServer{logic.NewRecommendationProvider(vpaLister)}
