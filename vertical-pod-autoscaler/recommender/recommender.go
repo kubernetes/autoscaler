@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/golang/glog"
@@ -145,6 +146,55 @@ func (r *recommender) loadPods() {
 	}
 }
 
+func (r *recommender) loadRealTimeMetrics() {
+	containersMetrics, err := r.metricsClient.GetContainersMetrics()
+	if err != nil {
+		glog.Errorf("Cannot get ContainerMetricsSnapshot from MetricsClient. Reason: %+v", err)
+	}
+
+	sampleCount := 0
+	for _, containerMetrics := range containersMetrics {
+		for _, sample := range newContainerUsageSamplesWithKey(containerMetrics) {
+			r.clusterState.AddSample(sample)
+			sampleCount++
+		}
+	}
+	glog.V(3).Infof("ClusterSpec fed with #%v ContainerUsageSamples for #%v containers", sampleCount, len(containersMetrics))
+}
+
+func newContainerUsageSamplesWithKey(metrics *model.ContainerMetricsSnapshot) []*model.ContainerUsageSampleWithKey {
+	var samples []*model.ContainerUsageSampleWithKey
+
+	for metricName, resourceAmmount := range metrics.Usage {
+		usage, err := usageFromResourceAmount(metricName, resourceAmmount)
+		if err != nil {
+			glog.Errorf("Cannot calculate resource usage. Skipping this sample. Reason: %+v", err)
+		} else {
+			sample := &model.ContainerUsageSampleWithKey{
+				Container: metrics.ID,
+				ContainerUsageSample: model.ContainerUsageSample{
+					MeasureStart: metrics.SnapshotTime,
+					Resource:     metricName,
+					Usage:        usage,
+				},
+			}
+			samples = append(samples, sample)
+		}
+	}
+	return samples
+}
+
+func usageFromResourceAmount(metric model.MetricName, ammount model.ResourceAmount) (float64, error) {
+	switch metric {
+	case model.ResourceCPU:
+		return model.CoresFromCPUAmount(ammount), nil
+	case model.ResourceMemory:
+		return model.BytesFromMemoryAmount(ammount), nil
+	default:
+		return 0, fmt.Errorf("Type conversion for MetricName '+%v' is not defined", metric)
+	}
+}
+
 // Updates VPA CRD objects' statuses.
 func (r *recommender) updateVPAs() {
 	for key, vpa := range r.clusterState.Vpas {
@@ -180,15 +230,9 @@ func (r *recommender) runOnce() {
 	glog.V(3).Infof("Recommender Run")
 	r.loadVPAs()
 	r.loadPods()
-
-	metricsSnapshots, err := r.metricsClient.GetContainersMetrics()
-	if err != nil {
-		glog.Errorf("Cannot get containers metrics. Reason: %+v", err)
-	}
-	for n, snap := range metricsSnapshots {
-		glog.V(3).Infof("ContainerMetricsSnapshot #%v: %+v", n, snap)
-	}
+	r.loadRealTimeMetrics()
 	r.updateVPAs()
+	glog.V(3).Infof("ClusterState is tracking  %v PodStates and %v VPAs", len(r.clusterState.Pods), len(r.clusterState.Vpas))
 }
 
 func (r *recommender) Run() {
