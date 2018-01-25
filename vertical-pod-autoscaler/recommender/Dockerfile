@@ -17,4 +17,4 @@ MAINTAINER Karol Kraskiewicz "karol.kraskiewicz@gmail.com"
 
 ADD recommender recommender
 
-CMD ./recommender --v=4 --stderrthreshold=info
+CMD ./recommender --v=4 --stderrthreshold=info --prometheus-address=http://prometheus.monitoring.svc
