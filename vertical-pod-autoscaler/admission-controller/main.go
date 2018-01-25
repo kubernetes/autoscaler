@@ -19,17 +19,13 @@ package main
 import (
 	"flag"
 	"net/http"
-	"time"
 
 	"github.com/golang/glog"
-	"k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/admission-controller/logic"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/poc.autoscaling.k8s.io/v1alpha1"
+	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/cache"
 )
 
 var (
@@ -41,14 +37,8 @@ func newReadyVPALister(stopChannel <-chan struct{}) vpa_lister.VerticalPodAutosc
 	if err != nil {
 		glog.Fatal(err)
 	}
-	listWatcher := cache.NewListWatchFromClient(
-		vpa_clientset.NewForConfigOrDie(config).PocV1alpha1().RESTClient(),
-		"verticalpodautoscalers", v1.NamespaceAll, fields.Everything())
-	store := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
-	lister := vpa_lister.NewVerticalPodAutoscalerLister(store)
-	reflector := cache.NewReflector(listWatcher, &v1alpha1.VerticalPodAutoscaler{}, store, time.Hour)
-	go reflector.Run(stopChannel)
-	return lister
+	vpaClient := vpa_clientset.NewForConfigOrDie(config)
+	return vpa_api_util.NewAllVpasLister(vpaClient, stopChannel)
 }
 
 func main() {
