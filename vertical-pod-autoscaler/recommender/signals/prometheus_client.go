@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"time"
 )
 
 // PrometheusClient talks to Prometheus using its HTTP API.
@@ -46,10 +47,24 @@ func getUrlWithQuery(address, query string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	url.Path = "api/v1/query"
 	queryValues := url.Query()
 	queryValues.Set("query", query)
 	url.RawQuery = queryValues.Encode()
 	return url.String(), nil
+}
+
+func retry(callback func() error, attempts int, delay time.Duration) error {
+	for i := 1; ; i++ {
+		err := callback()
+		if err == nil {
+			return nil
+		}
+		if i >= attempts {
+			return fmt.Errorf("tried %d times, last error: %v", attempts, err)
+		}
+		time.Sleep(delay)
+	}
 }
 
 func (c *prometheusClient) GetTimeseries(query string) ([]Timeseries, error) {
@@ -57,12 +72,16 @@ func (c *prometheusClient) GetTimeseries(query string) ([]Timeseries, error) {
 	if err != nil {
 		return nil, fmt.Errorf("couldn't construct url to Prometheus: %v", err)
 	}
-	resp, err := c.httpClient.Get(url)
-	if err != nil {
-		return nil, fmt.Errorf("error getting data from Prometheus: %v", err)
-	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("bad HTTP status: %v %s", resp.StatusCode, http.StatusText(resp.StatusCode))
-	}
+	var resp *http.Response
+	err = retry(func() error {
+		resp, err = c.httpClient.Get(url)
+		if err != nil {
+			return fmt.Errorf("error getting data from Prometheus: %v", err)
+		}
+		if resp.StatusCode != http.StatusOK {
+			return fmt.Errorf("bad HTTP status: %v %s", resp.StatusCode, http.StatusText(resp.StatusCode))
+		}
+		return nil
+	}, 10, 3*time.Second)
 	return decodeTimeseriesFromResponse(resp.Body)
 }

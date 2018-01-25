@@ -17,8 +17,6 @@ limitations under the License.
 package main
 
 import (
-	"fmt"
-	"net/http"
 	"time"
 
 	"github.com/golang/glog"
@@ -53,54 +51,31 @@ type recommender struct {
 	specClient              cluster.SpecClient
 	metricsClient           cluster.MetricsClient
 	metricsFetchingInterval time.Duration
-	prometheusClient        signals.PrometheusClient
+	historyProvider         signals.HistoryProvider
 	vpaClient               vpa_api.VerticalPodAutoscalerInterface
 	vpaLister               vpa_lister.VerticalPodAutoscalerLister
 	podResourceRecommender  logic.PodResourceRecommender
 }
 
-func getContainerIDFromLabels(labels map[string]string) (*model.ContainerID, error) {
-	namespace, ok := labels["namespace"]
-	if !ok {
-		return nil, fmt.Errorf("no namespace label")
-	}
-	podName, ok := labels["pod_name"]
-	if !ok {
-		return nil, fmt.Errorf("no pod_name label")
-	}
-	containerName, ok := labels["name"]
-	if !ok {
-		return nil, fmt.Errorf("no name label on container data")
-	}
-	return &model.ContainerID{
-		PodID: model.PodID{
-			Namespace: namespace,
-			PodName:   podName},
-		ContainerName: containerName}, nil
-}
-
 func (r *recommender) readHistory() {
-	// TODO: Add one more layer of abstraction so that recommender does not know it's
-	// talking to Prometheus and does not have to hardcode queries.
-	// TODO: This should also read memory data.
-	tss, err := r.prometheusClient.GetTimeseries("container_cpu_usage_seconds_total[1d]")
+	clusterHistory, err := r.historyProvider.GetClusterHistory()
 	if err != nil {
-		glog.Errorf("Cannot get timeseries: %v", err)
+		glog.Errorf("Cannot get cluster history: %v", err)
 	}
-	for _, ts := range tss {
-		containerID, err := getContainerIDFromLabels(ts.Labels)
-		if err != nil {
-			glog.Errorf("Cannot get container ID from labels: %v", ts.Labels)
-			continue
-		}
-		for _, sample := range ts.Samples {
-			r.clusterState.AddSample(
-				&model.ContainerUsageSampleWithKey{
-					ContainerUsageSample: model.ContainerUsageSample{
-						MeasureStart: sample.Timestamp,
-						Usage:        sample.Value,
-						Resource:     model.ResourceCPU},
-					Container: *containerID})
+	for podID, podHistory := range clusterHistory {
+		glog.V(4).Infof("Adding pod %v with labels %v", podID, podHistory.LastLabels)
+		r.clusterState.AddOrUpdatePod(podID, podHistory.LastLabels)
+		for containerName, sampleList := range podHistory.Samples {
+			containerID := model.ContainerID{
+				PodID:         podID,
+				ContainerName: containerName}
+			glog.V(4).Infof("Adding %d samples for container %v", len(sampleList), containerID)
+			for _, sample := range sampleList {
+				r.clusterState.AddSample(
+					&model.ContainerUsageSampleWithKey{
+						ContainerUsageSample: sample,
+						Container:            containerID})
+			}
 		}
 	}
 }
@@ -274,13 +249,13 @@ func createPodResourceRecommender() logic.PodResourceRecommender {
 // NewRecommender creates a new recommender instance,
 // which can be run in order to provide continuous resource recommendations for containers.
 // It requires cluster configuration object and duration between recommender intervals.
-func NewRecommender(namespace string, config *rest.Config, metricsFetcherInterval time.Duration, prometheusAddress string) Recommender {
+func NewRecommender(namespace string, config *rest.Config, metricsFetcherInterval time.Duration, historyProvider signals.HistoryProvider) Recommender {
 	recommender := &recommender{
 		clusterState:            model.NewClusterState(),
 		specClient:              newSpecClient(config),
 		metricsClient:           newMetricsClient(config),
 		metricsFetchingInterval: metricsFetcherInterval,
-		prometheusClient:        signals.NewPrometheusClient(&http.Client{}, prometheusAddress),
+		historyProvider:         historyProvider,
 		vpaClient:               vpa_clientset.NewForConfigOrDie(config).PocV1alpha1().VerticalPodAutoscalers(namespace),
 		vpaLister:               vpa_api_util.NewAllVpasLister(vpa_clientset.NewForConfigOrDie(config), make(chan struct{})),
 		podResourceRecommender:  createPodResourceRecommender(),
