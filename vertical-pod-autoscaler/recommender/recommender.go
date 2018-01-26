@@ -17,9 +17,6 @@ limitations under the License.
 package main
 
 import (
-	"encoding/json"
-	"fmt"
-	"net/http"
 	"time"
 
 	"github.com/golang/glog"
@@ -27,10 +24,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
-	types "k8s.io/apimachinery/pkg/types"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/poc.autoscaling.k8s.io/v1alpha1"
+	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/poc.autoscaling.k8s.io/v1alpha1"
+	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/cluster"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/logic"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/model"
@@ -52,95 +50,38 @@ type recommender struct {
 	specClient              cluster.SpecClient
 	metricsClient           cluster.MetricsClient
 	metricsFetchingInterval time.Duration
-	prometheusClient        signals.PrometheusClient
+	historyProvider         signals.HistoryProvider
 	vpaClient               vpa_api.VerticalPodAutoscalerInterface
+	vpaLister               vpa_lister.VerticalPodAutoscalerLister
 	podResourceRecommender  logic.PodResourceRecommender
 }
 
-type patchRecord struct {
-	Op    string      `json:"op,inline"`
-	Path  string      `json:"path,inline"`
-	Value interface{} `json:"value"`
-}
-
-type verticalPodAutoscalerStatusPatch struct {
-	Status vpa_types.VerticalPodAutoscalerStatus `json:"status,omitempty" protobuf:"bytes,3,opt,name=status"`
-}
-
-func getContainerIDFromLabels(labels map[string]string) (*model.ContainerID, error) {
-	namespace, ok := labels["namespace"]
-	if !ok {
-		return nil, fmt.Errorf("no namespace label")
-	}
-	podName, ok := labels["pod_name"]
-	if !ok {
-		return nil, fmt.Errorf("no pod_name label")
-	}
-	containerName, ok := labels["name"]
-	if !ok {
-		return nil, fmt.Errorf("no name label on container data")
-	}
-	return &model.ContainerID{
-		PodID: model.PodID{
-			Namespace: namespace,
-			PodName:   podName},
-		ContainerName: containerName}, nil
-}
-
 func (r *recommender) readHistory() {
-	// TODO: Add one more layer of abstraction so that recommender does not know it's
-	// talking to Prometheus and does not have to hardcode queries.
-	// TODO: This should also read memory data.
-	tss, err := r.prometheusClient.GetTimeseries("container_cpu_usage_seconds_total[1d]")
+	clusterHistory, err := r.historyProvider.GetClusterHistory()
 	if err != nil {
-		glog.Errorf("Cannot get timeseries: %v", err)
+		glog.Errorf("Cannot get cluster history: %v", err)
 	}
-	for _, ts := range tss {
-		containerID, err := getContainerIDFromLabels(ts.Labels)
-		if err != nil {
-			glog.Errorf("Cannot get container ID from labels: %v", ts.Labels)
-			continue
-		}
-		for _, sample := range ts.Samples {
-			r.clusterState.AddSample(
-				&model.ContainerUsageSampleWithKey{
-					ContainerUsageSample: model.ContainerUsageSample{
-						MeasureStart: sample.Timestamp,
-						Usage:        sample.Value,
-						Resource:     model.ResourceCPU},
-					Container: *containerID})
+	for podID, podHistory := range clusterHistory {
+		glog.V(4).Infof("Adding pod %v with labels %v", podID, podHistory.LastLabels)
+		r.clusterState.AddOrUpdatePod(podID, podHistory.LastLabels)
+		for containerName, sampleList := range podHistory.Samples {
+			containerID := model.ContainerID{
+				PodID:         podID,
+				ContainerName: containerName}
+			glog.V(4).Infof("Adding %d samples for container %v", len(sampleList), containerID)
+			for _, sample := range sampleList {
+				r.clusterState.AddSample(
+					&model.ContainerUsageSampleWithKey{
+						ContainerUsageSample: sample,
+						Container:            containerID})
+			}
 		}
 	}
-}
-
-func initVPAStatus(vpaClient vpa_api.VerticalPodAutoscalerInterface, vpaName string) {
-	patchVPA(vpaClient, vpaName, []patchRecord{{
-		Op:    "add",
-		Path:  "/status",
-		Value: vpa_types.VerticalPodAutoscalerStatus{},
-	},
-	})
-}
-
-func patchVPA(vpaClient vpa_api.VerticalPodAutoscalerInterface, vpaName string, patches []patchRecord) {
-	bytes, err := json.Marshal(patches)
-	if err != nil {
-		glog.Errorf("Cannot marshal VPA status patches %+v. Reason: %+v", patches, err)
-		return
-	}
-
-	_, err = vpaClient.Patch(vpaName, types.JSONPatchType, bytes)
-	if err != nil {
-		glog.Errorf("Cannot patch VPA %v. Reason: %+v", vpaName, err)
-	} else {
-		glog.V(3).Infof("VPA %v patched", vpaName)
-	}
-
 }
 
 // Fetch VPA objects and load them into the cluster state.
 func (r *recommender) loadVPAs() {
-	vpaCRDs, err := r.vpaClient.List(metav1.ListOptions{})
+	vpaCRDs, err := r.vpaLister.List(labels.Everything())
 	if err != nil {
 		glog.Errorf("Cannot list VPAs. Reason: %+v", err)
 	} else {
@@ -148,7 +89,7 @@ func (r *recommender) loadVPAs() {
 	}
 
 	vpaNameToSelector := make(map[model.VpaID]labels.Selector)
-	for n, vpaCRD := range vpaCRDs.Items {
+	for n, vpaCRD := range vpaCRDs {
 		glog.V(3).Infof("VPA CRD #%v: %+v", n, vpaCRD)
 		selector, err := metav1.LabelSelectorAsSelector(vpaCRD.Spec.Selector)
 		if err != nil {
@@ -160,7 +101,11 @@ func (r *recommender) loadVPAs() {
 			vpaNameToSelector[model.VpaID{VpaName: vpaName}] = selector
 			if vpaCRD.Status.LastUpdateTime.IsZero() {
 				glog.V(3).Infof("Empty status in %v, initializing", vpaName)
-				initVPAStatus(r.vpaClient, vpaName)
+				_, err := vpa_api_util.InitVpaStatus(r.vpaClient, vpaName)
+				if err != nil {
+					glog.Errorf(
+						"Cannot initialize VPA %v. Reason: %+v", vpaName, err)
+				}
 			}
 		}
 	}
@@ -220,21 +165,11 @@ func (r *recommender) updateVPAs() {
 		}
 
 		recommendation := vpa_types.RecommendedPodResources{containerResources}
-
-		patches := []patchRecord{
-			{
-				Op:    "add",
-				Path:  "/status/lastUpdateTime",
-				Value: metav1.Time{time.Now()},
-			},
-			{
-				Op:    "add",
-				Path:  "/status/recommendation",
-				Value: recommendation,
-			},
+		_, err := vpa_api_util.UpdateVpaRecommendation(r.vpaClient, vpaName, recommendation)
+		if err != nil {
+			glog.Errorf(
+				"Cannot update VPA %v object. Reason: %+v", vpaName, err)
 		}
-		patchVPA(r.vpaClient, vpaName, patches)
-
 	}
 
 }
@@ -293,14 +228,15 @@ func createPodResourceRecommender() logic.PodResourceRecommender {
 // NewRecommender creates a new recommender instance,
 // which can be run in order to provide continuous resource recommendations for containers.
 // It requires cluster configuration object and duration between recommender intervals.
-func NewRecommender(namespace string, config *rest.Config, metricsFetcherInterval time.Duration, prometheusAddress string) Recommender {
+func NewRecommender(namespace string, config *rest.Config, metricsFetcherInterval time.Duration, historyProvider signals.HistoryProvider) Recommender {
 	recommender := &recommender{
 		clusterState:            model.NewClusterState(),
 		specClient:              newSpecClient(config),
 		metricsClient:           newMetricsClient(config),
 		metricsFetchingInterval: metricsFetcherInterval,
-		prometheusClient:        signals.NewPrometheusClient(&http.Client{}, prometheusAddress),
+		historyProvider:         historyProvider,
 		vpaClient:               vpa_clientset.NewForConfigOrDie(config).PocV1alpha1().VerticalPodAutoscalers(namespace),
+		vpaLister:               vpa_api_util.NewAllVpasLister(vpa_clientset.NewForConfigOrDie(config), make(chan struct{})),
 		podResourceRecommender:  createPodResourceRecommender(),
 	}
 	glog.V(3).Infof("New Recommender created %+v", recommender)

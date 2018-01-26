@@ -22,14 +22,16 @@ import (
 
 	"github.com/golang/glog"
 	kube_flag "k8s.io/apiserver/pkg/util/flag"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/signals"
 	"k8s.io/client-go/rest"
 	kube_restclient "k8s.io/client-go/rest"
 )
 
 var (
-	namespace              = *flag.String("namespace", "default", `Namespace to manage`)
-	metricsFetcherInterval = *flag.Duration("recommender-interval", 1*time.Minute, `How often metrics should be fetched`)
-	prometheusAddress      = *flag.String("prometheus-address", "", `Where to reach for Prometheus metrics`)
+	// TODO: Remove the namespace flag. Recommender should control all namespaces.
+	namespace              = flag.String("namespace", "default", `Namespace to manage`)
+	metricsFetcherInterval = flag.Duration("recommender-interval", 1*time.Minute, `How often metrics should be fetched`)
+	prometheusAddress      = flag.String("prometheus-address", "", `Where to reach for Prometheus metrics`)
 )
 
 func main() {
@@ -37,7 +39,7 @@ func main() {
 	kube_flag.InitFlags()
 
 	config := createKubeConfig()
-	recommender := NewRecommender(namespace, config, metricsFetcherInterval, prometheusAddress)
+	recommender := NewRecommender(*namespace, config, *metricsFetcherInterval, signals.NewPrometheusHistoryProvider(*prometheusAddress))
 	recommender.Run()
 }
 
