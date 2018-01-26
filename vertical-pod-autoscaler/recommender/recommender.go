@@ -196,7 +196,8 @@ func newMetricsClient(config *rest.Config) cluster.MetricsClient {
 
 // Creates PodLister, listing only not terminated pods.
 func newPodLister(kubeClient kube_client.Interface) v1lister.PodLister {
-	podListWatch := cache.NewListWatchFromClient(kubeClient.CoreV1().RESTClient(), "pods", apiv1.NamespaceAll, fields.Everything())
+	selector := fields.ParseSelectorOrDie("status.phase!=" + string(apiv1.PodPending))
+	podListWatch := cache.NewListWatchFromClient(kubeClient.CoreV1().RESTClient(), "pods", apiv1.NamespaceAll, selector)
 	store := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
 	podLister := v1lister.NewPodLister(store)
 	podReflector := cache.NewReflector(podListWatch, &apiv1.Pod{}, store, time.Hour)
