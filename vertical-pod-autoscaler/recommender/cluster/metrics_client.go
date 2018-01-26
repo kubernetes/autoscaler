@@ -17,6 +17,8 @@ limitations under the License.
 package cluster
 
 import (
+	"time"
+
 	"github.com/golang/glog"
 	k8sapiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -26,11 +28,23 @@ import (
 	resourceclient "k8s.io/metrics/pkg/client/clientset_generated/clientset/typed/metrics/v1beta1"
 )
 
+// ContainerMetricsSnapshot contains information about usage of certain container within defined time window.
+type ContainerMetricsSnapshot struct {
+	// ID identifies a specific container those metrics are coming from.
+	ID model.ContainerID
+	// End time of the measurement interval.
+	SnapshotTime time.Time
+	// Duration of the measurement interval, which is [SnapshotTime - SnapshotWindow, SnapshotTime].
+	SnapshotWindow time.Duration
+	// Actual usage of the resources over the measurement interval.
+	Usage model.Resources
+}
+
 // MetricsClient provides simple metrics on resources usage on containter level.
 type MetricsClient interface {
 	// GetContainersMetrics returns an array of ContainerMetricsSnapshots,
 	// representing resource usage for every running container in the cluster
-	GetContainersMetrics() ([]*model.ContainerMetricsSnapshot, error)
+	GetContainersMetrics() ([]*ContainerMetricsSnapshot, error)
 }
 
 type metricsClient struct {
@@ -45,8 +59,8 @@ func NewMetricsClient(metricsGetter resourceclient.PodMetricsesGetter) MetricsCl
 	}
 }
 
-func (c *metricsClient) GetContainersMetrics() ([]*model.ContainerMetricsSnapshot, error) {
-	var metricsSnapshots []*model.ContainerMetricsSnapshot
+func (c *metricsClient) GetContainersMetrics() ([]*ContainerMetricsSnapshot, error) {
+	var metricsSnapshots []*ContainerMetricsSnapshot
 
 	podMetricsInterface := c.metricsGetter.PodMetricses(api.NamespaceAll)
 	podMetricsList, err := podMetricsInterface.List(metav1.ListOptions{})
@@ -62,18 +76,18 @@ func (c *metricsClient) GetContainersMetrics() ([]*model.ContainerMetricsSnapsho
 	return metricsSnapshots, nil
 }
 
-func createContainerMetricsSnapshots(podMetrics v1beta1.PodMetrics) []*model.ContainerMetricsSnapshot {
-	snapshots := make([]*model.ContainerMetricsSnapshot, len(podMetrics.Containers))
+func createContainerMetricsSnapshots(podMetrics v1beta1.PodMetrics) []*ContainerMetricsSnapshot {
+	snapshots := make([]*ContainerMetricsSnapshot, len(podMetrics.Containers))
 	for i, containerMetrics := range podMetrics.Containers {
 		snapshots[i] = newContainerMetricsSnapshot(containerMetrics, podMetrics)
 	}
 	return snapshots
 }
 
-func newContainerMetricsSnapshot(containerMetrics v1beta1.ContainerMetrics, podMetrics v1beta1.PodMetrics) *model.ContainerMetricsSnapshot {
+func newContainerMetricsSnapshot(containerMetrics v1beta1.ContainerMetrics, podMetrics v1beta1.PodMetrics) *ContainerMetricsSnapshot {
 	usage := calculateUsage(containerMetrics.Usage)
 
-	return &model.ContainerMetricsSnapshot{
+	return &ContainerMetricsSnapshot{
 		ID: model.ContainerID{
 			ContainerName: containerMetrics.Name,
 			PodID: model.PodID{
@@ -87,14 +101,14 @@ func newContainerMetricsSnapshot(containerMetrics v1beta1.ContainerMetrics, podM
 	}
 }
 
-func calculateUsage(containerUsage k8sapiv1.ResourceList) map[model.MetricName]model.ResourceAmount {
+func calculateUsage(containerUsage k8sapiv1.ResourceList) model.Resources {
 	cpuQuantity := containerUsage[k8sapiv1.ResourceCPU]
 	cpuMillicores := cpuQuantity.MilliValue()
 
 	memoryQuantity := containerUsage[k8sapiv1.ResourceMemory]
 	memoryBytes := memoryQuantity.Value()
 
-	return map[model.MetricName]model.ResourceAmount{
+	return model.Resources{
 		model.ResourceCPU:    model.ResourceAmount(cpuMillicores),
 		model.ResourceMemory: model.ResourceAmount(memoryBytes),
 	}

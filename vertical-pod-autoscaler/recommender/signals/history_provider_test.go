@@ -86,7 +86,7 @@ func TestGetCPUSamples(t *testing.T) {
 		LastLabels: map[string]string{},
 		Samples: map[string][]model.ContainerUsageSample{"container": {{
 			MeasureStart: time.Unix(1, 0),
-			Usage:        5.5,
+			Usage:        model.CPUAmountFromCores(5.5),
 			Resource:     model.ResourceCPU}}}}
 	histories, err := historyProvider.GetClusterHistory()
 	assert.Nil(t, err)
@@ -112,7 +112,7 @@ func TestGetMemorySamples(t *testing.T) {
 		LastLabels: map[string]string{},
 		Samples: map[string][]model.ContainerUsageSample{"container": {{
 			MeasureStart: time.Unix(1, 0),
-			Usage:        12345,
+			Usage:        model.MemoryAmountFromBytes(12345),
 			Resource:     model.ResourceMemory}}}}
 	histories, err := historyProvider.GetClusterHistory()
 	assert.Nil(t, err)
