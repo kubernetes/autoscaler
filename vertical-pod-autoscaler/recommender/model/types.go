@@ -17,27 +17,27 @@ limitations under the License.
 package model
 
 import (
-	"time"
-
 	"github.com/golang/glog"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
-// MetricName represents the name of the resource monitored by recommender.
-type MetricName string
+// ResourceName represents the name of the resource monitored by recommender.
+type ResourceName string
 
 // ResourceAmount represents quantity of a certain resource within a container.
+// Note this keeps CPU in millicores (which is not a standard unit in APIs)
+// and memory in bytes.
 type ResourceAmount int64
 
 // Resources is a map from resource name to the corresponding ResourceAmount.
-type Resources map[MetricName]ResourceAmount
+type Resources map[ResourceName]ResourceAmount
 
 const (
 	// ResourceCPU represents CPU in millicores (1core = 1000millicores).
-	ResourceCPU MetricName = "cpu"
+	ResourceCPU ResourceName = "cpu"
 	// ResourceMemory represents memory, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024).
-	ResourceMemory MetricName = "memory"
+	ResourceMemory ResourceName = "memory"
 )
 
 // CPUAmountFromCores converts CPU cores to a ResourceAmount.
@@ -98,36 +98,4 @@ type ContainerID struct {
 type VpaID struct {
 	Namespace string
 	VpaName   string
-}
-
-// ContainerMetricsSnapshot contains information about usage of certain container within defined time window.
-type ContainerMetricsSnapshot struct {
-	// ID identifies a specific container those metrics are coming from.
-	ID ContainerID
-	// End time of the measurement interval.
-	SnapshotTime time.Time
-	// Duration of the measurement interval, which is [SnapshotTime - SnapshotWindow, SnapshotTime].
-	SnapshotWindow time.Duration
-	// Actual usage of the resources over the measurement interval.
-	Usage Resources
-}
-
-// BasicPodSpec contains basic information defining a pod and its containers.
-type BasicPodSpec struct {
-	// ID identifies a pod within a cluster.
-	ID PodID
-	// Labels of the pod. It is used to match pods with certain VPA opjects.
-	PodLabels map[string]string
-	// List of containers within this pod.
-	Containers []BasicContainerSpec
-}
-
-// BasicContainerSpec contains basic information defining a container.
-type BasicContainerSpec struct {
-	// ID identifies the container within a cluster.
-	ID ContainerID
-	// Name of the image running within the container.
-	Image string
-	// Currently requested resources for this container.
-	Request Resources
 }

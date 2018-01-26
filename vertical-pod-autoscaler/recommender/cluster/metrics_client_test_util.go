@@ -38,7 +38,7 @@ type metricsClientTestCase struct {
 	snapshotTimestamp    time.Time
 	snapshotWindow       time.Duration
 	namespace            *v1.Namespace
-	pod1Snaps, pod2Snaps []*model.ContainerMetricsSnapshot
+	pod1Snaps, pod2Snaps []*ContainerMetricsSnapshot
 }
 
 func newMetricsClientTestCase() *metricsClientTestCase {
@@ -67,12 +67,12 @@ func newEmptyMetricsClientTestCase() *metricsClientTestCase {
 	return &metricsClientTestCase{}
 }
 
-func (tc *metricsClientTestCase) newContainerMetricsSnapshot(id model.ContainerID, cpuUsage int64, memUsage int64) *model.ContainerMetricsSnapshot {
-	return &model.ContainerMetricsSnapshot{
+func (tc *metricsClientTestCase) newContainerMetricsSnapshot(id model.ContainerID, cpuUsage int64, memUsage int64) *ContainerMetricsSnapshot {
+	return &ContainerMetricsSnapshot{
 		ID:             id,
 		SnapshotTime:   tc.snapshotTimestamp,
 		SnapshotWindow: tc.snapshotWindow,
-		Usage: map[model.MetricName]model.ResourceAmount{
+		Usage: model.Resources{
 			model.ResourceCPU:    model.ResourceAmount(cpuUsage),
 			model.ResourceMemory: model.ResourceAmount(memUsage),
 		},
@@ -96,7 +96,7 @@ func (tc *metricsClientTestCase) getFakePodMetricsList() *metricsapi.PodMetricsL
 	return metrics
 }
 
-func makePodMetrics(snaps []*model.ContainerMetricsSnapshot) metricsapi.PodMetrics {
+func makePodMetrics(snaps []*ContainerMetricsSnapshot) metricsapi.PodMetrics {
 	firstSnap := snaps[0]
 	podMetrics := metricsapi.PodMetrics{
 		ObjectMeta: metav1.ObjectMeta{
@@ -118,7 +118,7 @@ func makePodMetrics(snaps []*model.ContainerMetricsSnapshot) metricsapi.PodMetri
 	return podMetrics
 }
 
-func calculateResourceList(usage map[model.MetricName]model.ResourceAmount) k8sapiv1.ResourceList {
+func calculateResourceList(usage model.Resources) k8sapiv1.ResourceList {
 	cpuCores := big.NewRat(int64(usage[model.ResourceCPU]), 1000)
 	cpuQuantityString := cpuCores.FloatString(3)
 
@@ -132,6 +132,6 @@ func calculateResourceList(usage map[model.MetricName]model.ResourceAmount) k8sa
 	return k8sapiv1.ResourceList(resourceMap)
 }
 
-func (tc *metricsClientTestCase) getAllSnaps() []*model.ContainerMetricsSnapshot {
+func (tc *metricsClientTestCase) getAllSnaps() []*ContainerMetricsSnapshot {
 	return append(tc.pod1Snaps, tc.pod2Snaps...)
 }

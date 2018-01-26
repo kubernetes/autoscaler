@@ -91,7 +91,7 @@ func (m *podListerMock) Pods(namespace string) v1lister.PodNamespaceLister {
 }
 
 type specClientTestCase struct {
-	podSpecs []*model.BasicPodSpec
+	podSpecs []*BasicPodSpec
 	podYamls []string
 }
 
@@ -112,28 +112,28 @@ func newSpecClientTestCase() *specClientTestCase {
 	podSpec2 := newTestPodSpec(podID2, containerSpec21, containerSpec22)
 
 	return &specClientTestCase{
-		podSpecs: []*model.BasicPodSpec{podSpec1, podSpec2},
+		podSpecs: []*BasicPodSpec{podSpec1, podSpec2},
 		podYamls: []string{pod1Yaml, pod2Yaml},
 	}
 }
-func newTestContainerSpec(podID model.PodID, containerName string, milicores int, memory int) model.BasicContainerSpec {
+func newTestContainerSpec(podID model.PodID, containerName string, milicores int, memory int) BasicContainerSpec {
 	containerID := model.ContainerID{
 		PodID:         podID,
 		ContainerName: containerName,
 	}
-	requestedResources := map[model.MetricName]model.ResourceAmount{
+	requestedResources := model.Resources{
 		model.ResourceCPU:    model.ResourceAmount(milicores),
 		model.ResourceMemory: model.ResourceAmount(memory),
 	}
-	return model.BasicContainerSpec{
+	return BasicContainerSpec{
 		ID:      containerID,
 		Image:   containerName + "Image",
 		Request: requestedResources,
 	}
 }
 
-func newTestPodSpec(podId model.PodID, containerSpecs ...model.BasicContainerSpec) *model.BasicPodSpec {
-	return &model.BasicPodSpec{
+func newTestPodSpec(podId model.PodID, containerSpecs ...BasicContainerSpec) *BasicPodSpec {
+	return &BasicPodSpec{
 		ID:         podId,
 		PodLabels:  map[string]string{podId.PodName + "LabelKey": podId.PodName + "LabelValue"},
 		Containers: containerSpecs,
