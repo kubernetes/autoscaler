@@ -21,7 +21,6 @@ import (
 
 	"github.com/golang/glog"
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
@@ -89,7 +88,7 @@ func (r *recommender) loadVPAs() {
 		glog.V(3).Infof("Fetched VPAs.")
 	}
 
-	vpas := make(map[model.VpaID]labels.Selector)
+	vpaNameToSelector := make(map[model.VpaID]labels.Selector)
 	for n, vpaCRD := range vpaCRDs {
 		glog.V(3).Infof("VPA CRD #%v: %+v", n, vpaCRD)
 		selector, err := metav1.LabelSelectorAsSelector(vpaCRD.Spec.Selector)
@@ -97,26 +96,26 @@ func (r *recommender) loadVPAs() {
 			glog.Errorf(
 				"Cannot convert VPA Selector %+v to internal representation. Reason: %+v",
 				vpaCRD.Spec.Selector, err)
-			continue
-		}
-		vpaName := vpaCRD.ObjectMeta.Name
-		vpas[model.VpaID{vpaName}] = selector
-		if vpaCRD.Status.LastUpdateTime.IsZero() {
-			glog.V(3).Infof("Empty status in %v, initializing", vpaName)
-			_, err := vpa_api_util.InitVpaStatus(r.vpaClient, vpaName)
-			if err != nil {
-				glog.Errorf(
-					"Cannot initialize VPA %v. Reason: %+v", vpaName, err)
+		} else {
+			vpaName := vpaCRD.ObjectMeta.Name
+			vpaNameToSelector[model.VpaID{VpaName: vpaName}] = selector
+			if vpaCRD.Status.LastUpdateTime.IsZero() {
+				glog.V(3).Infof("Empty status in %v, initializing", vpaName)
+				_, err := vpa_api_util.InitVpaStatus(r.vpaClient, vpaName)
+				if err != nil {
+					glog.Errorf(
+						"Cannot initialize VPA %v. Reason: %+v", vpaName, err)
+				}
 			}
 		}
 	}
 	for key := range r.clusterState.Vpas {
-		if _, exists := vpas[key]; !exists {
+		if _, exists := vpaNameToSelector[key]; !exists {
 			glog.V(3).Infof("Deleting VPA %v", key)
 			r.clusterState.DeleteVpa(key)
 		}
 	}
-	for key, selector := range vpas {
+	for key, selector := range vpaNameToSelector {
 		r.clusterState.AddOrUpdateVpa(key, selector.String())
 	}
 }
@@ -146,26 +145,6 @@ func (r *recommender) loadPods() {
 	}
 }
 
-// Converts internal Resources representation to ResourcesList.
-func resoucesAsResourceList(resources model.Resources) apiv1.ResourceList {
-	result := make(apiv1.ResourceList)
-	for key, value := range resources {
-		var newKey apiv1.ResourceName
-		switch key {
-		case model.ResourceCPU:
-			newKey = apiv1.ResourceCPU
-		case model.ResourceMemory:
-			newKey = apiv1.ResourceMemory
-		default:
-			glog.Errorf("Cannot translate %v resource name", key)
-			continue
-		}
-		result[newKey] = *resource.NewScaledQuantity(int64(value), 0)
-	}
-
-	return result
-}
-
 // Updates VPA CRD objects' statuses.
 func (r *recommender) updateVPAs() {
 	for key, vpa := range r.clusterState.Vpas {
@@ -174,18 +153,18 @@ func (r *recommender) updateVPAs() {
 		resources := r.podResourceRecommender.GetRecommendedPodResources(vpa)
 		vpaName := vpa.ID.VpaName
 
-		contanerResources := make([]vpa_types.RecommendedContainerResources, 0, len(resources))
+		containerResources := make([]vpa_types.RecommendedContainerResources, 0, len(resources))
 		for containerId, res := range resources {
-			contanerResources = append(contanerResources, vpa_types.RecommendedContainerResources{
+			containerResources = append(containerResources, vpa_types.RecommendedContainerResources{
 				Name:           containerId,
-				Target:         resoucesAsResourceList(res.Target),
-				MinRecommended: resoucesAsResourceList(res.MinRecommended),
-				MaxRecommended: resoucesAsResourceList(res.MaxRecommended),
+				Target:         model.ResoucesAsResourceList(res.Target),
+				MinRecommended: model.ResoucesAsResourceList(res.MinRecommended),
+				MaxRecommended: model.ResoucesAsResourceList(res.MaxRecommended),
 			})
 
 		}
 
-		recommendation := vpa_types.RecommendedPodResources{contanerResources}
+		recommendation := vpa_types.RecommendedPodResources{containerResources}
 		_, err := vpa_api_util.UpdateVpaRecommendation(r.vpaClient, vpaName, recommendation)
 		if err != nil {
 			glog.Errorf(

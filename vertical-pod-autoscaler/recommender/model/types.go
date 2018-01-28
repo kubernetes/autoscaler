@@ -18,6 +18,10 @@ package model
 
 import (
 	"time"
+
+	"github.com/golang/glog"
+	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 // MetricName represents the name of the resource monitored by recommender.
@@ -44,6 +48,25 @@ func CPUAmountFromCores(cores float64) ResourceAmount {
 // MemoryAmountFromBytes converts memory bytes to a ResourceAmount.
 func MemoryAmountFromBytes(bytes float64) ResourceAmount {
 	return ResourceAmount(bytes)
+}
+
+// ResoucesAsResourceList converts internal Resources representation to ResourcesList.
+func ResoucesAsResourceList(resources Resources) apiv1.ResourceList {
+	result := make(apiv1.ResourceList)
+	for key, value := range resources {
+		var newKey apiv1.ResourceName
+		switch key {
+		case ResourceCPU:
+			newKey = apiv1.ResourceCPU
+		case ResourceMemory:
+			newKey = apiv1.ResourceMemory
+		default:
+			glog.Errorf("Cannot translate %v resource name", key)
+			continue
+		}
+		result[newKey] = *resource.NewScaledQuantity(int64(value), 0)
+	}
+	return result
 }
 
 // PodID contains information needed to identify a Pod within a cluster.
