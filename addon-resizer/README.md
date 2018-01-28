@@ -23,7 +23,7 @@ Usage of pod_nanny:
       --extra-storage="0Gi": The amount of storage to add per node.
       --log-flush-frequency=5s: Maximum number of seconds between log flushes
       --memory="MISSING": The base memory resource requirement.
-      --namespace=$MY_POD_NAMESPACE: The namespace of the ward. This defaults to the nanny's own pod.
+      --namespace=$MY_POD_NAMESPACE: The namespace of the ward. This defaults to the nanny pod's own namespace.
       --pod=$MY_POD_NAME: The name of the pod to watch. This defaults to the nanny's own pod.
       --poll-period=10000: The time, in milliseconds, to poll the dependent container.
       --storage="MISSING": The base storage resource requirement.
