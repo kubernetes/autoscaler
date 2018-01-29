@@ -56,10 +56,14 @@ func TestRunOnce(t *testing.T) {
 
 	factory := &fakeEvictFactory{eviction}
 	vpaLister := &test.VerticalPodAutoscalerListerMock{}
+	podDefaultNamespaceLister := &test.PodListerMock{}
+	podDefaultNamespaceLister.On("List").Return(pods, nil)
+
 	podLister := &test.PodListerMock{}
-	podLister.On("List").Return(pods, nil)
+	podLister.On("Pods", "default").Return(podDefaultNamespaceLister)
 
 	vpaObj := test.BuildTestVerticalPodAutoscaler(containerName, "2", "1", "3", "200M", "100M", "1G", selector)
+	vpaObj.Namespace = "default"
 	vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpaObj}, nil).Once()
 
 	updater := &updater{
@@ -77,7 +81,7 @@ func TestRunOnceNotingToProcess(t *testing.T) {
 	factory := &fakeEvictFactory{eviction}
 	vpaLister := &test.VerticalPodAutoscalerListerMock{}
 	podLister := &test.PodListerMock{}
-	podLister.On("List").Return(nil, nil).Once()
+	//podLister.On("List").Return(nil, nil).Once()
 	vpaLister.On("List").Return(nil, nil).Once()
 
 	updater := &updater{

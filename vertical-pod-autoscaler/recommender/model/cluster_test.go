@@ -27,7 +27,7 @@ var (
 	testTimestamp, _ = time.Parse(TimeLayout, "2017-04-18 17:35:05")
 	testPodID        = PodID{"namespace-1", "pod-1"}
 	testContainerID  = ContainerID{testPodID, "container-1"}
-	testVpaID        = VpaID{"vpa-1"}
+	testVpaID        = VpaID{"namespace-1", "vpa-1"}
 	testLabels       = map[string]string{"label-1": "value-1"}
 	emptyLabels      = map[string]string{}
 	testSelectorStr  = "label-1 = value-1"
@@ -161,16 +161,16 @@ func TestUpdatePodSelector(t *testing.T) {
 // longer controlled by any VPA.
 func TestTwoVpasForPod(t *testing.T) {
 	cluster := NewClusterState()
-	cluster.AddOrUpdateVpa(VpaID{"vpa-1"}, "label-1 = value-1")
+	cluster.AddOrUpdateVpa(VpaID{"namespace-1", "vpa-1"}, "label-1 = value-1")
 	pod := addTestPod(cluster)
-	cluster.AddOrUpdateVpa(VpaID{"vpa-2"}, "label-1 in (value-1,value-2)")
-	assert.Equal(t, cluster.Vpas[VpaID{"vpa-1"}], pod.Vpa)
+	cluster.AddOrUpdateVpa(VpaID{"namespace-1", "vpa-2"}, "label-1 in (value-1,value-2)")
+	assert.Equal(t, cluster.Vpas[VpaID{"namespace-1", "vpa-1"}], pod.Vpa)
 	// Delete the VPA that currently controls the Pod. Expect that it will
 	// switch to the remaining one.
-	assert.NoError(t, cluster.DeleteVpa(VpaID{"vpa-1"}))
-	assert.Equal(t, cluster.Vpas[VpaID{"vpa-2"}], pod.Vpa)
+	assert.NoError(t, cluster.DeleteVpa(VpaID{"namespace-1", "vpa-1"}))
+	assert.Equal(t, cluster.Vpas[VpaID{"namespace-1", "vpa-2"}], pod.Vpa)
 	// Delete the other VPA. The Pod is no longer vertically-scaled by anyone.
-	assert.NoError(t, cluster.DeleteVpa(VpaID{"vpa-2"}))
+	assert.NoError(t, cluster.DeleteVpa(VpaID{"namespace-1", "vpa-2"}))
 	assert.Nil(t, pod.Vpa)
 }
 

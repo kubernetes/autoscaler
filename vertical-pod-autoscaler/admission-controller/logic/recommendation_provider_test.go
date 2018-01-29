@@ -63,8 +63,11 @@ func TestUpdateResourceRequests(t *testing.T) {
 		expectedAction: false,
 	}}
 	for _, tc := range testCases {
+		vpaNamespaceLister := &test.VerticalPodAutoscalerListerMock{}
+		vpaNamespaceLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{tc.vpa}, nil)
+
 		vpaLister := &test.VerticalPodAutoscalerListerMock{}
-		vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{tc.vpa}, nil)
+		vpaLister.On("VerticalPodAutoscalers", "default").Return(vpaNamespaceLister)
 
 		recommendationProvider := &recommendationProvider{
 			vpaLister: vpaLister,
