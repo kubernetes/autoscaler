@@ -45,9 +45,19 @@ func CPUAmountFromCores(cores float64) ResourceAmount {
 	return ResourceAmount(cores * 1000.0)
 }
 
+// CoresFromCPUAmount converts ResourceAmount to number of cores expressed as float64.
+func CoresFromCPUAmount(cpuAmunt ResourceAmount) float64 {
+	return float64(cpuAmunt) / 1000.0
+}
+
 // MemoryAmountFromBytes converts memory bytes to a ResourceAmount.
 func MemoryAmountFromBytes(bytes float64) ResourceAmount {
 	return ResourceAmount(bytes)
+}
+
+// BytesFromMemoryAmount converts ResourceAmount to number of bytes expressed as float64.
+func BytesFromMemoryAmount(memoryAmount ResourceAmount) float64 {
+	return float64(memoryAmount)
 }
 
 // ResoucesAsResourceList converts internal Resources representation to ResourcesList.
