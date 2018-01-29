@@ -62,6 +62,9 @@ func (vpa *Vpa) SetPodSelectorStr(podSelectorStr string) error {
 
 // MatchesPod returns true iff a given pod is matched by the Vpa pod selector.
 func (vpa *Vpa) MatchesPod(pod *PodState) bool {
+	if vpa.ID.Namespace != pod.ID.Namespace {
+		return false
+	}
 	return pod.Labels != nil && vpa.PodSelector.Matches(pod.Labels)
 }
 
