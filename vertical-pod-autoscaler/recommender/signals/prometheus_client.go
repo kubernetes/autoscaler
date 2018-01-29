@@ -23,6 +23,11 @@ import (
 	"time"
 )
 
+var (
+	numRetries = 10
+	retryDelay = 3 * time.Second
+)
+
 // PrometheusClient talks to Prometheus using its HTTP API.
 type PrometheusClient interface {
 	// Given a particular query (that's supposed to return range vectors
@@ -30,14 +35,18 @@ type PrometheusClient interface {
 	GetTimeseries(query string) ([]Timeseries, error)
 }
 
+type httpGetter interface {
+	Get(url string) (*http.Response, error)
+}
+
 // An implementation of PrometheusClient.
 type prometheusClient struct {
-	httpClient *http.Client
+	httpClient httpGetter
 	address    string
 }
 
 // NewPrometheusClient constructs a prometheusClient.
-func NewPrometheusClient(httpClient *http.Client, address string) PrometheusClient {
+func NewPrometheusClient(httpClient httpGetter, address string) PrometheusClient {
 	return &prometheusClient{httpClient: httpClient, address: address}
 }
 
@@ -82,6 +91,9 @@ func (c *prometheusClient) GetTimeseries(query string) ([]Timeseries, error) {
 			return fmt.Errorf("bad HTTP status: %v %s", resp.StatusCode, http.StatusText(resp.StatusCode))
 		}
 		return nil
-	}, 10, 3*time.Second)
+	}, numRetries, retryDelay)
+	if err != nil {
+		return nil, fmt.Errorf("Retrying GetTimeseries unsuccessful: %v", err)
+	}
 	return decodeTimeseriesFromResponse(resp.Body)
 }
