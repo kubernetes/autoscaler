@@ -112,7 +112,7 @@ func getContainerPolicy(containerName string, policy *v1alpha1.PodResourcePolicy
 }
 
 func (p *recommendationProvider) getMatchingVPA(pod *v1.Pod) *v1alpha1.VerticalPodAutoscaler {
-	configs, err := p.vpaLister.List(labels.Everything())
+	configs, err := p.vpaLister.VerticalPodAutoscalers(pod.Namespace).List(labels.Everything())
 	if err != nil {
 		glog.Error("failed to get vpa configs: %v", err)
 		return nil

@@ -78,9 +78,9 @@ func (u *updater) RunOnce() {
 			continue
 		}
 
-		podsList, err := u.podLister.List(selector)
+		podsList, err := u.podLister.Pods(vpa.Namespace).List(selector)
 		if err != nil {
-			glog.Errorf("failed get pods list for selector %v: %v", selector, err)
+			glog.Errorf("failed get pods list for namespace %v and selector %v: %v", vpa.Namespace, selector, err)
 			continue
 		}
 
