@@ -50,6 +50,11 @@ func CoresFromCPUAmount(cpuAmunt ResourceAmount) float64 {
 	return float64(cpuAmunt) / 1000.0
 }
 
+// QuantityFromCPUAmount converts CPU cores to a resource.Quantity.
+func QuantityFromCPUAmount(cpuAmount ResourceAmount) resource.Quantity {
+	return *resource.NewScaledQuantity(int64(cpuAmount), -3)
+}
+
 // MemoryAmountFromBytes converts memory bytes to a ResourceAmount.
 func MemoryAmountFromBytes(bytes float64) ResourceAmount {
 	return ResourceAmount(bytes)
@@ -60,21 +65,29 @@ func BytesFromMemoryAmount(memoryAmount ResourceAmount) float64 {
 	return float64(memoryAmount)
 }
 
-// ResoucesAsResourceList converts internal Resources representation to ResourcesList.
-func ResoucesAsResourceList(resources Resources) apiv1.ResourceList {
+// QuantityFromMemoryAmount converts memory bytes to a resource.Quantity.
+func QuantityFromMemoryAmount(memoryAmount ResourceAmount) resource.Quantity {
+	return *resource.NewScaledQuantity(int64(memoryAmount), 0)
+}
+
+// ResourcesAsResourceList converts internal Resources representation to ResourcesList.
+func ResourcesAsResourceList(resources Resources) apiv1.ResourceList {
 	result := make(apiv1.ResourceList)
-	for key, value := range resources {
+	for key, resourceAmount := range resources {
 		var newKey apiv1.ResourceName
+		var quantity resource.Quantity
 		switch key {
 		case ResourceCPU:
 			newKey = apiv1.ResourceCPU
+			quantity = QuantityFromCPUAmount(resourceAmount)
 		case ResourceMemory:
 			newKey = apiv1.ResourceMemory
+			quantity = QuantityFromMemoryAmount(resourceAmount)
 		default:
 			glog.Errorf("Cannot translate %v resource name", key)
 			continue
 		}
-		result[newKey] = *resource.NewScaledQuantity(int64(value), 0)
+		result[newKey] = quantity
 	}
 	return result
 }
