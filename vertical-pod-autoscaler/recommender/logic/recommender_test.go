@@ -31,7 +31,7 @@ var (
 	testPodID1       = model.PodID{"namespace-1", "pod-1"}
 	testPodID2       = model.PodID{"namespace-1", "pod-2"}
 	testContainerID1 = model.ContainerID{testPodID1, "container-1"}
-	testVpaID        = model.VpaID{"vpa-1"}
+	testVpaID        = model.VpaID{"namespace-1", "vpa-1"}
 	testLabels       = map[string]string{"label-1": "value-1"}
 	emptyLabels      = map[string]string{}
 	testSelectorStr  = "label-1 = value-1"

@@ -233,7 +233,13 @@ func (m *PodListerMock) List(selector labels.Selector) (ret []*apiv1.Pod, err er
 	return returnArg, args.Error(1)
 }
 
-// VerticalPodAutoscalerListerMock is a mock of VerticalPodAutoscalerLister
+// Get is not implemented for this mock
+func (m *PodListerMock) Get(name string) (*apiv1.Pod, error) {
+	return nil, fmt.Errorf("unimplemented")
+}
+
+// VerticalPodAutoscalerListerMock is a mock of VerticalPodAutoscalerLister or
+// VerticalPodAutoscalerNamespaceLister - the crucial List method is the same.
 type VerticalPodAutoscalerListerMock struct {
 	mock.Mock
 }
@@ -248,7 +254,17 @@ func (m *VerticalPodAutoscalerListerMock) List(selector labels.Selector) (ret []
 	return returnArg, args.Error(1)
 }
 
-// VerticalPodAutoscalers is not implemented for this mock
+// VerticalPodAutoscalers is a mock implementation of returning a lister for namespace.
 func (m *VerticalPodAutoscalerListerMock) VerticalPodAutoscalers(namespace string) vpa_lister.VerticalPodAutoscalerNamespaceLister {
-	return nil
+	args := m.Called(namespace)
+	var returnArg vpa_lister.VerticalPodAutoscalerNamespaceLister
+	if args.Get(0) != nil {
+		returnArg = args.Get(0).(vpa_lister.VerticalPodAutoscalerNamespaceLister)
+	}
+	return returnArg
+}
+
+// Get is not implemented for this mock
+func (m *VerticalPodAutoscalerListerMock) Get(name string) (*vpa_types.VerticalPodAutoscaler, error) {
+	return nil, fmt.Errorf("unimplemented")
 }

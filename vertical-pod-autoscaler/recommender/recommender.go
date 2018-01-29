@@ -52,7 +52,7 @@ type recommender struct {
 	metricsClient           cluster.MetricsClient
 	metricsFetchingInterval time.Duration
 	historyProvider         signals.HistoryProvider
-	vpaClient               vpa_api.VerticalPodAutoscalerInterface
+	vpaClient               vpa_api.VerticalPodAutoscalersGetter
 	vpaLister               vpa_lister.VerticalPodAutoscalerLister
 	podResourceRecommender  logic.PodResourceRecommender
 }
@@ -89,7 +89,7 @@ func (r *recommender) loadVPAs() {
 		glog.V(3).Infof("Fetched VPAs.")
 	}
 
-	vpaNameToSelector := make(map[model.VpaID]labels.Selector)
+	vpaToSelector := make(map[model.VpaID]labels.Selector)
 	for n, vpaCRD := range vpaCRDs {
 		glog.V(3).Infof("VPA CRD #%v: %+v", n, vpaCRD)
 		selector, err := metav1.LabelSelectorAsSelector(vpaCRD.Spec.Selector)
@@ -98,25 +98,29 @@ func (r *recommender) loadVPAs() {
 				"Cannot convert VPA Selector %+v to internal representation. Reason: %+v",
 				vpaCRD.Spec.Selector, err)
 		} else {
-			vpaName := vpaCRD.ObjectMeta.Name
-			vpaNameToSelector[model.VpaID{VpaName: vpaName}] = selector
+			vpaToSelector[model.VpaID{
+				Namespace: vpaCRD.Namespace,
+				VpaName:   vpaCRD.Name}] = selector
 			if vpaCRD.Status.LastUpdateTime.IsZero() {
-				glog.V(3).Infof("Empty status in %v, initializing", vpaName)
-				_, err := vpa_api_util.InitVpaStatus(r.vpaClient, vpaName)
+				glog.V(3).Infof("Empty status in %v, initializing", vpaCRD.Name)
+				_, err := vpa_api_util.InitVpaStatus(
+					r.vpaClient.VerticalPodAutoscalers(vpaCRD.Namespace),
+					vpaCRD.Name)
 				if err != nil {
 					glog.Errorf(
-						"Cannot initialize VPA %v. Reason: %+v", vpaName, err)
+						"Cannot initialize VPA %v. Reason: %+v",
+						vpaCRD.Name, err)
 				}
 			}
 		}
 	}
 	for key := range r.clusterState.Vpas {
-		if _, exists := vpaNameToSelector[key]; !exists {
+		if _, exists := vpaToSelector[key]; !exists {
 			glog.V(3).Infof("Deleting VPA %v", key)
 			r.clusterState.DeleteVpa(key)
 		}
 	}
-	for key, selector := range vpaNameToSelector {
+	for key, selector := range vpaToSelector {
 		r.clusterState.AddOrUpdateVpa(key, selector.String())
 	}
 }
@@ -215,7 +219,7 @@ func (r *recommender) updateVPAs() {
 		}
 
 		recommendation := vpa_types.RecommendedPodResources{containerResources}
-		_, err := vpa_api_util.UpdateVpaRecommendation(r.vpaClient, vpaName, recommendation)
+		_, err := vpa_api_util.UpdateVpaRecommendation(r.vpaClient.VerticalPodAutoscalers(vpa.ID.Namespace), vpaName, recommendation)
 		if err != nil {
 			glog.Errorf(
 				"Cannot update VPA %v object. Reason: %+v", vpaName, err)
@@ -272,14 +276,14 @@ func createPodResourceRecommender() logic.PodResourceRecommender {
 // NewRecommender creates a new recommender instance,
 // which can be run in order to provide continuous resource recommendations for containers.
 // It requires cluster configuration object and duration between recommender intervals.
-func NewRecommender(namespace string, config *rest.Config, metricsFetcherInterval time.Duration, historyProvider signals.HistoryProvider) Recommender {
+func NewRecommender(config *rest.Config, metricsFetcherInterval time.Duration, historyProvider signals.HistoryProvider) Recommender {
 	recommender := &recommender{
 		clusterState:            model.NewClusterState(),
 		specClient:              newSpecClient(config),
 		metricsClient:           newMetricsClient(config),
 		metricsFetchingInterval: metricsFetcherInterval,
 		historyProvider:         historyProvider,
-		vpaClient:               vpa_clientset.NewForConfigOrDie(config).PocV1alpha1().VerticalPodAutoscalers(namespace),
+		vpaClient:               vpa_clientset.NewForConfigOrDie(config).PocV1alpha1(),
 		vpaLister:               vpa_api_util.NewAllVpasLister(vpa_clientset.NewForConfigOrDie(config), make(chan struct{})),
 		podResourceRecommender:  createPodResourceRecommender(),
 	}

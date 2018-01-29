@@ -28,8 +28,6 @@ import (
 )
 
 var (
-	// TODO: Remove the namespace flag. Recommender should control all namespaces.
-	namespace              = flag.String("namespace", "default", `Namespace to manage`)
 	metricsFetcherInterval = flag.Duration("recommender-interval", 1*time.Minute, `How often metrics should be fetched`)
 	prometheusAddress      = flag.String("prometheus-address", "", `Where to reach for Prometheus metrics`)
 )
@@ -39,7 +37,7 @@ func main() {
 	kube_flag.InitFlags()
 
 	config := createKubeConfig()
-	recommender := NewRecommender(*namespace, config, *metricsFetcherInterval, signals.NewPrometheusHistoryProvider(*prometheusAddress))
+	recommender := NewRecommender(config, *metricsFetcherInterval, signals.NewPrometheusHistoryProvider(*prometheusAddress))
 	recommender.Run()
 }
 
