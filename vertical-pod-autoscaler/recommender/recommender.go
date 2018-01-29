@@ -208,12 +208,12 @@ func (r *recommender) updateVPAs() {
 		vpaName := vpa.ID.VpaName
 
 		containerResources := make([]vpa_types.RecommendedContainerResources, 0, len(resources))
-		for containerId, res := range resources {
+		for containerID, res := range resources {
 			containerResources = append(containerResources, vpa_types.RecommendedContainerResources{
-				Name:           containerId,
-				Target:         model.ResoucesAsResourceList(res.Target),
-				MinRecommended: model.ResoucesAsResourceList(res.MinRecommended),
-				MaxRecommended: model.ResoucesAsResourceList(res.MaxRecommended),
+				Name:           containerID,
+				Target:         model.ResourcesAsResourceList(res.Target),
+				MinRecommended: model.ResourcesAsResourceList(res.MinRecommended),
+				MaxRecommended: model.ResourcesAsResourceList(res.MaxRecommended),
 			})
 
 		}
