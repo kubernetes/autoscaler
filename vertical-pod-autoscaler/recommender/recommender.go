@@ -252,25 +252,18 @@ func (r *recommender) Run() {
 }
 
 func createPodResourceRecommender() logic.PodResourceRecommender {
-	// Create a fake recommender that returns a hard-coded recommendation.
-	// TODO: Replace with a real recommender based on past usage.
-	var MiB float64 = 1024 * 1024
-	target := model.Resources{
-		model.ResourceCPU:    model.CPUAmountFromCores(0.5),
-		model.ResourceMemory: model.MemoryAmountFromBytes(200. * MiB),
-	}
-	lowerBound := model.Resources{
-		model.ResourceCPU:    model.CPUAmountFromCores(0.4),
-		model.ResourceMemory: model.MemoryAmountFromBytes(150. * MiB),
-	}
-	upperBound := model.Resources{
-		model.ResourceCPU:    model.CPUAmountFromCores(0.6),
-		model.ResourceMemory: model.MemoryAmountFromBytes(250. * MiB),
-	}
+	targetCPUPercentile := 0.9
+	lowerBoundCPUPercentile := 0.5
+	upperBoundCPUPercentile := 0.95
+
+	targetMemoryPeaksPercentile := 0.9
+	lowerBoundMemoryPeaksPercentile := 0.5
+	upperBoundMemoryPeaksPercentile := 0.95
+
 	return logic.NewPodResourceRecommender(
-		logic.NewConstEstimator(target),
-		logic.NewConstEstimator(lowerBound),
-		logic.NewConstEstimator(upperBound))
+		logic.NewPercentileEstimator(targetCPUPercentile, targetMemoryPeaksPercentile),
+		logic.NewPercentileEstimator(lowerBoundCPUPercentile, lowerBoundMemoryPeaksPercentile),
+		logic.NewPercentileEstimator(upperBoundCPUPercentile, upperBoundMemoryPeaksPercentile))
 }
 
 // NewRecommender creates a new recommender instance,
