@@ -19,7 +19,7 @@ spec:
       serviceAccountName: updater
       containers:
       - name: updater
-        image: gcr.io/kubernetes-develop/updater:dev1
+        image: gcr.io/kubernetes-develop/updater:0.0.1
         imagePullPolicy: Always
         resources:
           limits:
