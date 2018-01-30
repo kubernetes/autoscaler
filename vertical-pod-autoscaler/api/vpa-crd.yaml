@@ -12,3 +12,42 @@ spec:
     kind: VerticalPodAutoscaler
     shortNames:
     - vpa
+  validation:
+    # openAPIV3Schema is the schema for validating custom objects.
+    openAPIV3Schema:
+      properties:
+        spec:
+          required:
+            - selector
+          properties:
+            selector:
+              type: object
+            updatePolicy:
+              properties:
+                updateMode:
+                  type: string
+                  enum:
+                    - "Off"
+                    - "Initial"
+                    - "Auto"
+            resourcePolicy:
+              properties:
+                containerPolicies:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - name
+                    properties:
+                      name:
+                        type: string
+                      mode:
+                        type: string
+                        enum:
+                          - "On"
+                          - "Off"
+                      minAllowed:
+                        type: object
+                      maxAllowed:
+                        type: object
+
