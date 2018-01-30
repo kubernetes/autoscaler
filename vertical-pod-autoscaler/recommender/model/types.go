@@ -46,11 +46,11 @@ func CPUAmountFromCores(cores float64) ResourceAmount {
 }
 
 // CoresFromCPUAmount converts ResourceAmount to number of cores expressed as float64.
-func CoresFromCPUAmount(cpuAmunt ResourceAmount) float64 {
-	return float64(cpuAmunt) / 1000.0
+func CoresFromCPUAmount(cpuAmount ResourceAmount) float64 {
+	return float64(cpuAmount) / 1000.0
 }
 
-// QuantityFromCPUAmount converts CPU cores to a resource.Quantity.
+// QuantityFromCPUAmount converts CPU ResourceAmount to a resource.Quantity.
 func QuantityFromCPUAmount(cpuAmount ResourceAmount) resource.Quantity {
 	return *resource.NewScaledQuantity(int64(cpuAmount), -3)
 }
@@ -65,7 +65,7 @@ func BytesFromMemoryAmount(memoryAmount ResourceAmount) float64 {
 	return float64(memoryAmount)
 }
 
-// QuantityFromMemoryAmount converts memory bytes to a resource.Quantity.
+// QuantityFromMemoryAmount converts memory ResourceAmount to a resource.Quantity.
 func QuantityFromMemoryAmount(memoryAmount ResourceAmount) resource.Quantity {
 	return *resource.NewScaledQuantity(int64(memoryAmount), 0)
 }
