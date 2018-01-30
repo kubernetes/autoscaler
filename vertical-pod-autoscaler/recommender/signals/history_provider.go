@@ -104,18 +104,30 @@ func getPodLabelsMap(metricLabels map[string]string) map[string]string {
 	return podLabels
 }
 
-func getContainerUsageSamplesFromSamples(samples []Sample, resource model.MetricName) []model.ContainerUsageSample {
+func resourceAmountFromValue(value float64, resource model.ResourceName) model.ResourceAmount {
+	// This assumes CPU value is in cores and memory in bytes, which is true
+	// for the metrics this class queries from Prometheus.
+	switch resource {
+	case model.ResourceCPU:
+		return model.CPUAmountFromCores(value)
+	case model.ResourceMemory:
+		return model.MemoryAmountFromBytes(value)
+	}
+	return model.ResourceAmount(0)
+}
+
+func getContainerUsageSamplesFromSamples(samples []Sample, resource model.ResourceName) []model.ContainerUsageSample {
 	res := make([]model.ContainerUsageSample, 0)
 	for _, sample := range samples {
 		res = append(res, model.ContainerUsageSample{
 			MeasureStart: sample.Timestamp,
-			Usage:        sample.Value,
+			Usage:        resourceAmountFromValue(sample.Value, resource),
 			Resource:     resource})
 	}
 	return res
 }
 
-func (p *prometheusHistoryProvider) readResourceHistory(res map[model.PodID]*PodHistory, query string, resource model.MetricName) error {
+func (p *prometheusHistoryProvider) readResourceHistory(res map[model.PodID]*PodHistory, query string, resource model.ResourceName) error {
 	tss, err := p.prometheusClient.GetTimeseries(query)
 	if err != nil {
 		return fmt.Errorf("cannot get timeseries for %v: %v", resource, err)

@@ -17,7 +17,6 @@ limitations under the License.
 package main
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/golang/glog"
@@ -131,7 +130,7 @@ func (r *recommender) loadPods() {
 	if err != nil {
 		glog.Errorf("Cannot get SimplePodSpecs. Reason: %+v", err)
 	}
-	pods := make(map[model.PodID]*model.BasicPodSpec)
+	pods := make(map[model.PodID]*cluster.BasicPodSpec)
 	for n, spec := range podSpecs {
 		glog.V(3).Infof("SimplePodSpec #%v: %+v", n, spec)
 		pods[spec.ID] = spec
@@ -166,37 +165,21 @@ func (r *recommender) loadRealTimeMetrics() {
 	glog.V(3).Infof("ClusterSpec fed with #%v ContainerUsageSamples for #%v containers", sampleCount, len(containersMetrics))
 }
 
-func newContainerUsageSamplesWithKey(metrics *model.ContainerMetricsSnapshot) []*model.ContainerUsageSampleWithKey {
+func newContainerUsageSamplesWithKey(metrics *cluster.ContainerMetricsSnapshot) []*model.ContainerUsageSampleWithKey {
 	var samples []*model.ContainerUsageSampleWithKey
 
-	for metricName, resourceAmmount := range metrics.Usage {
-		usage, err := usageFromResourceAmount(metricName, resourceAmmount)
-		if err != nil {
-			glog.Errorf("Cannot calculate resource usage. Skipping this sample. Reason: %+v", err)
-		} else {
-			sample := &model.ContainerUsageSampleWithKey{
-				Container: metrics.ID,
-				ContainerUsageSample: model.ContainerUsageSample{
-					MeasureStart: metrics.SnapshotTime,
-					Resource:     metricName,
-					Usage:        usage,
-				},
-			}
-			samples = append(samples, sample)
+	for metricName, resourceAmount := range metrics.Usage {
+		sample := &model.ContainerUsageSampleWithKey{
+			Container: metrics.ID,
+			ContainerUsageSample: model.ContainerUsageSample{
+				MeasureStart: metrics.SnapshotTime,
+				Resource:     metricName,
+				Usage:        resourceAmount,
+			},
 		}
+		samples = append(samples, sample)
 	}
 	return samples
-}
-
-func usageFromResourceAmount(metric model.MetricName, ammount model.ResourceAmount) (float64, error) {
-	switch metric {
-	case model.ResourceCPU:
-		return model.CoresFromCPUAmount(ammount), nil
-	case model.ResourceMemory:
-		return model.BytesFromMemoryAmount(ammount), nil
-	default:
-		return 0, fmt.Errorf("Type conversion for MetricName '+%v' is not defined", metric)
-	}
 }
 
 // Updates VPA CRD objects' statuses.

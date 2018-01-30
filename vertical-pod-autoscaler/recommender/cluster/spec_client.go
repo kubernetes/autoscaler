@@ -23,10 +23,30 @@ import (
 	v1lister "k8s.io/client-go/listers/core/v1"
 )
 
+// BasicPodSpec contains basic information defining a pod and its containers.
+type BasicPodSpec struct {
+	// ID identifies a pod within a cluster.
+	ID model.PodID
+	// Labels of the pod. It is used to match pods with certain VPA opjects.
+	PodLabels map[string]string
+	// List of containers within this pod.
+	Containers []BasicContainerSpec
+}
+
+// BasicContainerSpec contains basic information defining a container.
+type BasicContainerSpec struct {
+	// ID identifies the container within a cluster.
+	ID model.ContainerID
+	// Name of the image running within the container.
+	Image string
+	// Currently requested resources for this container.
+	Request model.Resources
+}
+
 //SpecClient provides information about pods and containers Specification
 type SpecClient interface {
 	// Returns BasicPodSpec for each pod in the cluster
-	GetPodSpecs() ([]*model.BasicPodSpec, error)
+	GetPodSpecs() ([]*BasicPodSpec, error)
 }
 
 type specClient struct {
@@ -41,8 +61,8 @@ func NewSpecClient(podLister v1lister.PodLister) SpecClient {
 	}
 }
 
-func (client *specClient) GetPodSpecs() ([]*model.BasicPodSpec, error) {
-	var podSpecs []*model.BasicPodSpec
+func (client *specClient) GetPodSpecs() ([]*BasicPodSpec, error) {
+	var podSpecs []*BasicPodSpec
 
 	pods, err := client.podLister.List(labels.Everything())
 	if err != nil {
@@ -54,14 +74,14 @@ func (client *specClient) GetPodSpecs() ([]*model.BasicPodSpec, error) {
 	}
 	return podSpecs, nil
 }
-func newBasicPodSpec(pod *v1.Pod) *model.BasicPodSpec {
+func newBasicPodSpec(pod *v1.Pod) *BasicPodSpec {
 	podId := model.PodID{
 		PodName:   pod.Name,
 		Namespace: pod.Namespace,
 	}
 	containerSpecs := newContainerSpecs(podId, pod)
 
-	basicPodSpec := &model.BasicPodSpec{
+	basicPodSpec := &BasicPodSpec{
 		ID:         podId,
 		PodLabels:  pod.Labels,
 		Containers: containerSpecs,
@@ -69,8 +89,8 @@ func newBasicPodSpec(pod *v1.Pod) *model.BasicPodSpec {
 	return basicPodSpec
 }
 
-func newContainerSpecs(podID model.PodID, pod *v1.Pod) []model.BasicContainerSpec {
-	var containerSpecs []model.BasicContainerSpec
+func newContainerSpecs(podID model.PodID, pod *v1.Pod) []BasicContainerSpec {
+	var containerSpecs []BasicContainerSpec
 
 	for _, container := range pod.Spec.Containers {
 		containerSpec := newContainerSpec(podID, container)
@@ -80,8 +100,8 @@ func newContainerSpecs(podID model.PodID, pod *v1.Pod) []model.BasicContainerSpe
 	return containerSpecs
 }
 
-func newContainerSpec(podID model.PodID, container v1.Container) model.BasicContainerSpec {
-	containerSpec := model.BasicContainerSpec{
+func newContainerSpec(podID model.PodID, container v1.Container) BasicContainerSpec {
+	containerSpec := BasicContainerSpec{
 		ID: model.ContainerID{
 			PodID:         podID,
 			ContainerName: container.Name,
@@ -92,14 +112,14 @@ func newContainerSpec(podID model.PodID, container v1.Container) model.BasicCont
 	return containerSpec
 }
 
-func calculateRequestedResources(container v1.Container) map[model.MetricName]model.ResourceAmount {
+func calculateRequestedResources(container v1.Container) model.Resources {
 	cpuQuantity := container.Resources.Requests[v1.ResourceCPU]
 	cpuMillicores := cpuQuantity.MilliValue()
 
 	memoryQuantity := container.Resources.Requests[v1.ResourceMemory]
 	memoryBytes := memoryQuantity.Value()
 
-	return map[model.MetricName]model.ResourceAmount{
+	return model.Resources{
 		model.ResourceCPU:    model.ResourceAmount(cpuMillicores),
 		model.ResourceMemory: model.ResourceAmount(memoryBytes),
 	}

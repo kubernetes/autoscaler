@@ -29,9 +29,9 @@ type ContainerUsageSample struct {
 	// Start of the measurement interval.
 	MeasureStart time.Time
 	// Average CPU usage in cores or memory usage in bytes.
-	Usage float64
+	Usage ResourceAmount
 	// Which resource is this sample for.
-	Resource MetricName
+	Resource ResourceName
 }
 
 // ContainerState stores information about a single container instance.
@@ -63,16 +63,16 @@ type ContainerState struct {
 // NewContainerState returns a new, empty ContainerState.
 func NewContainerState() *ContainerState {
 	return &ContainerState{
-		util.NewHistogram(CPUHistogramOptions), // CPUUsage
-		time.Unix(0, 0),
-		util.NewFloatSlidingWindow( // memoryUsagePeaks
+		CPUUsage:           util.NewHistogram(CPUHistogramOptions),
+		lastCPUSampleStart: time.Unix(0, 0),
+		MemoryUsagePeaks: util.NewFloatSlidingWindow(
 			int(MemoryAggregationWindowLength / MemoryAggregationInterval)),
-		time.Unix(0, 0),
-		time.Unix(0, 0)}
+		windowEnd:             time.Unix(0, 0),
+		lastMemorySampleStart: time.Unix(0, 0)}
 }
 
-func (sample *ContainerUsageSample) isValid(expectedResource MetricName) bool {
-	return sample.Usage >= 0.0 && sample.Resource == expectedResource
+func (sample *ContainerUsageSample) isValid(expectedResource ResourceName) bool {
+	return sample.Usage >= 0 && sample.Resource == expectedResource
 }
 
 func (container *ContainerState) addCPUSample(sample *ContainerUsageSample) bool {
@@ -81,7 +81,7 @@ func (container *ContainerState) addCPUSample(sample *ContainerUsageSample) bool
 	if !sample.isValid(ResourceCPU) || !sample.MeasureStart.After(container.lastCPUSampleStart) {
 		return false // Discard invalid, duplicate or out-of-order samples.
 	}
-	container.CPUUsage.AddSample(sample.Usage, 1.0)
+	container.CPUUsage.AddSample(CoresFromCPUAmount(sample.Usage), 1.0)
 	container.lastCPUSampleStart = sample.MeasureStart
 	return true
 }
@@ -111,7 +111,7 @@ func (container *ContainerState) addMemorySample(sample *ContainerUsageSample) b
 		container.MemoryUsagePeaks.Push(0.0)
 	}
 	*container.MemoryUsagePeaks.Head() = math.Max(
-		*container.MemoryUsagePeaks.Head(), sample.Usage)
+		*container.MemoryUsagePeaks.Head(), BytesFromMemoryAmount(sample.Usage))
 	container.lastMemorySampleStart = ts
 	return true
 }
