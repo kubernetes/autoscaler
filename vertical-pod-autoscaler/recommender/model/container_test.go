@@ -28,8 +28,8 @@ var (
 	TimeLayout = "2006-01-02 15:04:05"
 )
 
-func newUsageSample(timestamp time.Time, usage float64, resource MetricName) *ContainerUsageSample {
-	return &ContainerUsageSample{timestamp, usage, resource}
+func newUsageSample(timestamp time.Time, usage int64, resource ResourceName) *ContainerUsageSample {
+	return &ContainerUsageSample{timestamp, ResourceAmount(usage), resource}
 }
 
 // Add 6 usage samples (3 valid, 3 invalid) to a container. Verifies that for
@@ -56,28 +56,28 @@ func TestAggregateContainerUsageSamples(t *testing.T) {
 
 	// Add three usage samples.
 	assert.True(t, c.AddSample(newUsageSample(
-		testTimestamp, 3.14, ResourceCPU)))
+		testTimestamp, 3140, ResourceCPU)))
 	assert.True(t, c.AddSample(newUsageSample(
-		testTimestamp, 5.0, ResourceMemory)))
+		testTimestamp, 5, ResourceMemory)))
 
 	assert.True(t, c.AddSample(newUsageSample(
-		testTimestamp.Add(MemoryAggregationInterval/2), 6.28, ResourceCPU)))
+		testTimestamp.Add(MemoryAggregationInterval/2), 6280, ResourceCPU)))
 	assert.True(t, c.AddSample(newUsageSample(
-		testTimestamp.Add(MemoryAggregationInterval/2), 10.0, ResourceMemory)))
+		testTimestamp.Add(MemoryAggregationInterval/2), 10, ResourceMemory)))
 
 	assert.True(t, c.AddSample(newUsageSample(
-		testTimestamp.Add(MemoryAggregationInterval), 1.57, ResourceCPU)))
+		testTimestamp.Add(MemoryAggregationInterval), 1570, ResourceCPU)))
 	assert.True(t, c.AddSample(newUsageSample(
-		testTimestamp.Add(MemoryAggregationInterval), 2.5, ResourceMemory)))
+		testTimestamp.Add(MemoryAggregationInterval), 2, ResourceMemory)))
 
 	// Discard invalid samples.
 	assert.False(t, c.AddSample(newUsageSample( // Out of order sample.
-		testTimestamp.Add(MemoryAggregationInterval), 1.0, ResourceCPU)))
+		testTimestamp.Add(MemoryAggregationInterval), 1000, ResourceCPU)))
 	assert.False(t, c.AddSample(newUsageSample( // Negative CPU usage.
-		testTimestamp.Add(MemoryAggregationInterval*2), -1.0, ResourceCPU)))
+		testTimestamp.Add(MemoryAggregationInterval*2), -1000, ResourceCPU)))
 	assert.False(t, c.AddSample(newUsageSample( // Negative memory usage.
-		testTimestamp.Add(MemoryAggregationInterval*2), -1.0, ResourceMemory)))
+		testTimestamp.Add(MemoryAggregationInterval*2), -1000, ResourceMemory)))
 
 	// Verify that memory peak samples were aggregated properly.
-	assert.Equal(t, []float64{10.0, 2.5}, memoryUsagePeaks.Contents())
+	assert.Equal(t, []float64{10, 2}, memoryUsagePeaks.Contents())
 }
