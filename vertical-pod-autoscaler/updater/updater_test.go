@@ -67,9 +67,9 @@ func TestRunOnce(t *testing.T) {
 	vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpaObj}, nil).Once()
 
 	updater := &updater{
-		vpaLister:        vpaLister,
-		podLister:        podLister,
-		evictionFactrory: factory,
+		vpaLister:       vpaLister,
+		podLister:       podLister,
+		evictionFactory: factory,
 	}
 
 	updater.RunOnce()
@@ -81,13 +81,12 @@ func TestRunOnceNotingToProcess(t *testing.T) {
 	factory := &fakeEvictFactory{eviction}
 	vpaLister := &test.VerticalPodAutoscalerListerMock{}
 	podLister := &test.PodListerMock{}
-	//podLister.On("List").Return(nil, nil).Once()
 	vpaLister.On("List").Return(nil, nil).Once()
 
 	updater := &updater{
-		vpaLister:        vpaLister,
-		podLister:        podLister,
-		evictionFactrory: factory,
+		vpaLister:       vpaLister,
+		podLister:       podLister,
+		evictionFactory: factory,
 	}
 	updater.RunOnce()
 }

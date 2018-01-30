@@ -30,9 +30,6 @@ var (
 	updaterInterval = flag.Duration("updater-interval", 1*time.Minute,
 		`How often updater should run`)
 
-	recommendationsCacheTtl = flag.Duration("recommendation-cache-ttl", 2*time.Minute,
-		`TTL for cached VPA recommendations`)
-
 	minReplicas = flag.Int("min-replicas", 2,
 		`Minimum number of replicas to perform update`)
 
@@ -47,7 +44,7 @@ func main() {
 	// TODO monitoring
 
 	kubeClient, vpaClient := createKubeClients()
-	updater := NewUpdater(kubeClient, vpaClient, *recommendationsCacheTtl, *minReplicas, *evictionToleranceFraction)
+	updater := NewUpdater(kubeClient, vpaClient, *minReplicas, *evictionToleranceFraction)
 	for {
 		select {
 		case <-time.After(*updaterInterval):
