@@ -66,7 +66,7 @@ type VerticalPodAutoscalerSpec struct {
 
 	// Controls how the autoscaler computes recommended resources.
 	// +optional
-	ResourcePolicy PodResourcePolicy `json:"podResourcePolicy,omitempty" protobuf:"bytes,3,opt,name=podResourcePolicy"`
+	ResourcePolicy PodResourcePolicy `json:"resourcePolicy,omitempty" protobuf:"bytes,3,opt,name=resourcePolicy"`
 }
 
 // VerticalPodAutoscalerStatus describes the runtime state of the autoscaler.

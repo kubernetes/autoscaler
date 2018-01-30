@@ -33,8 +33,8 @@ var (
 )
 
 func main() {
-	glog.Infof("Running VPA Recommender")
 	kube_flag.InitFlags()
+	glog.Infof("Running VPA Recommender")
 
 	config := createKubeConfig()
 	recommender := NewRecommender(config, *metricsFetcherInterval, signals.NewPrometheusHistoryProvider(*prometheusAddress))
