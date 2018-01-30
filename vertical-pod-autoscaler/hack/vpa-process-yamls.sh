@@ -20,7 +20,29 @@ set -o pipefail
 
 SCRIPT_ROOT=$(dirname ${BASH_SOURCE})/..
 
+function print_help {
+  echo "ERROR! Usage: vpa-process-yamls.sh <action> [<component>]"
+  echo "<action> should be either 'create' or 'delete'."
+  echo "<component> might be on of 'admission-controller', 'updater', 'recommender'."
+  echo "If <component> is set, only the deployment of that component will be processed,"
+  echo "otherwise all components and configs will be processed."
+}
+
+if [ $# -eq 0 ]; then
+  print_help
+  exit 1
+fi
+
+if [ $# -gt 2 ]; then
+  print_help
+  exit 1
+fi
+
 YAMLS="api/vpa-crd.yaml deploy/vpa-rbac.yaml deploy/admission-controller-rbac.yaml deploy/updater-deployment.yaml deploy/recommender-deployment.yaml deploy/admission-controller-deployment.yaml"
+
+if [ $# -gt 1 ]; then
+  YAMLS="deploy/$2-deployment.yaml"
+fi
 
 REGISTRY_TO_APPLY=${REGISTRY-gcr.io/kubernetes-develop}
 TAG_TO_APPLY=${TAG-0.0.1}
