@@ -44,17 +44,17 @@ type Updater interface {
 }
 
 type updater struct {
-	vpaLister        vpa_lister.VerticalPodAutoscalerLister
-	podLister        v1lister.PodLister
-	evictionFactrory eviction.PodsEvictionRestrictionFactory
+	vpaLister       vpa_lister.VerticalPodAutoscalerLister
+	podLister       v1lister.PodLister
+	evictionFactory eviction.PodsEvictionRestrictionFactory
 }
 
 // NewUpdater creates Updater with given configuration
-func NewUpdater(kubeClient kube_client.Interface, vpaClient *vpa_clientset.Clientset, cacheTTl time.Duration, minReplicasForEvicition int, evictionToleranceFraction float64) Updater {
+func NewUpdater(kubeClient kube_client.Interface, vpaClient *vpa_clientset.Clientset, minReplicasForEvicition int, evictionToleranceFraction float64) Updater {
 	return &updater{
-		vpaLister:        vpa_api_util.NewAllVpasLister(vpaClient, make(chan struct{})),
-		podLister:        newPodLister(kubeClient),
-		evictionFactrory: eviction.NewPodsEvictionRestrictionFactory(kubeClient, minReplicasForEvicition, evictionToleranceFraction),
+		vpaLister:       vpa_api_util.NewAllVpasLister(vpaClient, make(chan struct{})),
+		podLister:       newPodLister(kubeClient),
+		evictionFactory: eviction.NewPodsEvictionRestrictionFactory(kubeClient, minReplicasForEvicition, evictionToleranceFraction),
 	}
 }
 
@@ -90,7 +90,7 @@ func (u *updater) RunOnce() {
 			continue
 		}
 
-		evictionLimiter := u.evictionFactrory.NewPodsEvictionRestriction(livePods)
+		evictionLimiter := u.evictionFactory.NewPodsEvictionRestriction(livePods)
 		podsForUpdate := u.getPodsForUpdate(filterNonEvictablePods(livePods, evictionLimiter), vpa)
 
 		for _, pod := range podsForUpdate {
