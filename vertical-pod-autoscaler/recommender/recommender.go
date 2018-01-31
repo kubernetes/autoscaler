@@ -29,10 +29,11 @@ import (
 	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/poc.autoscaling.k8s.io/v1alpha1"
 	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/poc.autoscaling.k8s.io/v1alpha1"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/cluster"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/input/history"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/input/metrics"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/input/spec"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/logic"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/model"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/signals"
 	kube_client "k8s.io/client-go/kubernetes"
 	v1lister "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/rest"
@@ -47,10 +48,10 @@ type Recommender interface {
 
 type recommender struct {
 	clusterState            *model.ClusterState
-	specClient              cluster.SpecClient
-	metricsClient           cluster.MetricsClient
+	specClient              spec.SpecClient
+	metricsClient           metrics.MetricsClient
 	metricsFetchingInterval time.Duration
-	historyProvider         signals.HistoryProvider
+	historyProvider         history.HistoryProvider
 	vpaClient               vpa_api.VerticalPodAutoscalersGetter
 	vpaLister               vpa_lister.VerticalPodAutoscalerLister
 	podResourceRecommender  logic.PodResourceRecommender
@@ -130,7 +131,7 @@ func (r *recommender) loadPods() {
 	if err != nil {
 		glog.Errorf("Cannot get SimplePodSpecs. Reason: %+v", err)
 	}
-	pods := make(map[model.PodID]*cluster.BasicPodSpec)
+	pods := make(map[model.PodID]*spec.BasicPodSpec)
 	for n, spec := range podSpecs {
 		glog.V(3).Infof("SimplePodSpec #%v: %+v", n, spec)
 		pods[spec.ID] = spec
@@ -165,7 +166,7 @@ func (r *recommender) loadRealTimeMetrics() {
 	glog.V(3).Infof("ClusterSpec fed with #%v ContainerUsageSamples for #%v containers", sampleCount, len(containersMetrics))
 }
 
-func newContainerUsageSamplesWithKey(metrics *cluster.ContainerMetricsSnapshot) []*model.ContainerUsageSampleWithKey {
+func newContainerUsageSamplesWithKey(metrics *metrics.ContainerMetricsSnapshot) []*model.ContainerUsageSampleWithKey {
 	var samples []*model.ContainerUsageSampleWithKey
 
 	for metricName, resourceAmount := range metrics.Usage {
@@ -252,7 +253,7 @@ func createPodResourceRecommender() logic.PodResourceRecommender {
 // NewRecommender creates a new recommender instance,
 // which can be run in order to provide continuous resource recommendations for containers.
 // It requires cluster configuration object and duration between recommender intervals.
-func NewRecommender(config *rest.Config, metricsFetcherInterval time.Duration, historyProvider signals.HistoryProvider) Recommender {
+func NewRecommender(config *rest.Config, metricsFetcherInterval time.Duration, historyProvider history.HistoryProvider) Recommender {
 	recommender := &recommender{
 		clusterState:            model.NewClusterState(),
 		specClient:              newSpecClient(config),
@@ -268,15 +269,15 @@ func NewRecommender(config *rest.Config, metricsFetcherInterval time.Duration, h
 	return recommender
 }
 
-func newSpecClient(config *rest.Config) cluster.SpecClient {
+func newSpecClient(config *rest.Config) spec.SpecClient {
 	kubeClient := kube_client.NewForConfigOrDie(config)
 	podLister := newPodLister(kubeClient)
-	return cluster.NewSpecClient(podLister)
+	return spec.NewSpecClient(podLister)
 }
 
-func newMetricsClient(config *rest.Config) cluster.MetricsClient {
+func newMetricsClient(config *rest.Config) metrics.MetricsClient {
 	metricsGetter := resourceclient.NewForConfigOrDie(config)
-	return cluster.NewMetricsClient(metricsGetter)
+	return metrics.NewMetricsClient(metricsGetter)
 }
 
 // Creates PodLister, listing only not terminated pods.
