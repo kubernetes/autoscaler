@@ -124,7 +124,7 @@ func JoinStringMaps(items ...map[string]string) map[string]string {
 	return result
 }
 
-// JoinStringMaps joins resource lists
+// JoinResourceLists joins resource lists
 func JoinResourceLists(items ...apiv1.ResourceList) apiv1.ResourceList {
 	result := make(apiv1.ResourceList)
 	for _, m := range items {
