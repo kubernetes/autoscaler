@@ -406,6 +406,7 @@ func (m *AwsManager) buildNodeFromTemplate(asg *Asg, template *asgTemplate) (*ap
 	node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewQuantity(template.InstanceType.VCPU, resource.DecimalSI)
 	node.Status.Capacity[apiv1.ResourceNvidiaGPU] = *resource.NewQuantity(template.InstanceType.GPU, resource.DecimalSI)
 	node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(template.InstanceType.MemoryMb*1024*1024, resource.DecimalSI)
+	node.Status.Capacity = cloudprovider.JoinResourceLists(node.Status.Capacity, extractCapacityFromAsg(template.Tags))
 
 	// TODO: use proper allocatable!!
 	node.Status.Allocatable = node.Status.Capacity
@@ -432,6 +433,29 @@ func buildGenericLabels(template *asgTemplate, nodeName string) map[string]strin
 	result[kubeletapis.LabelZoneRegion] = template.Region
 	result[kubeletapis.LabelZoneFailureDomain] = template.Zone
 	result[kubeletapis.LabelHostname] = nodeName
+	return result
+}
+
+func extractCapacityFromAsg(tags []*autoscaling.TagDescription) apiv1.ResourceList {
+	result := make(apiv1.ResourceList)
+
+	for _, tag := range tags {
+		k := *tag.Key
+		v := *tag.Value
+		splits := strings.Split(k, "k8s.io/cluster-autoscaler/node-template/resource-capacity/")
+		if len(splits) > 1 {
+			label := splits[1]
+			if label != "" {
+				if quantity, err := resource.ParseQuantity(v); err == nil {
+					resource := apiv1.ResourceName(label)
+					result[resource] = quantity
+				} else {
+					glog.Warningf("Problem parsing quanitity from resource-capacity tag %s:%s %v\n", label, v, err)
+				}
+			}
+		}
+	}
+
 	return result
 }
 
