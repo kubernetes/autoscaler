@@ -23,8 +23,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
-	vpalister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/poc.autoscaling.k8s.io/v1alpha1"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
+	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/poc.autoscaling.k8s.io/v1alpha1"
 )
 
 // RecommendationProvider gets current recommendation for the given pod.
@@ -33,16 +33,16 @@ type RecommendationProvider interface {
 }
 
 type recommendationProvider struct {
-	vpaLister vpalister.VerticalPodAutoscalerLister
+	vpaLister vpa_lister.VerticalPodAutoscalerLister
 }
 
 // NewRecommendationProvider constructs the recommendation provider that list VPAs and can be used to determine recommendations for pods.
-func NewRecommendationProvider(vpaLister vpalister.VerticalPodAutoscalerLister) *recommendationProvider {
+func NewRecommendationProvider(vpaLister vpa_lister.VerticalPodAutoscalerLister) *recommendationProvider {
 	return &recommendationProvider{vpaLister: vpaLister}
 }
 
 // getRecomendedResources overwrites pod resources Request field with recommended values.
-func getRecomendedResources(pod *v1.Pod, podRecommendation v1alpha1.RecommendedPodResources, policy v1alpha1.PodResourcePolicy) []v1.ResourceList {
+func getRecomendedResources(pod *v1.Pod, podRecommendation vpa_types.RecommendedPodResources, policy vpa_types.PodResourcePolicy) []v1.ResourceList {
 	res := make([]v1.ResourceList, len(pod.Spec.Containers))
 	for i, container := range pod.Spec.Containers {
 		containerRecommendation := getRecommendationForContainer(podRecommendation, container)
@@ -71,7 +71,7 @@ func getRecomendedResources(pod *v1.Pod, podRecommendation v1alpha1.RecommendedP
 }
 
 // applyVPAPolicy updates recommendation if recommended resources exceed limits defined in VPA resources policy
-func applyVPAPolicy(recommendation *v1alpha1.RecommendedContainerResources, policy *v1alpha1.ContainerResourcePolicy) {
+func applyVPAPolicy(recommendation *vpa_types.RecommendedContainerResources, policy *vpa_types.ContainerResourcePolicy) {
 	for resourceName, recommended := range recommendation.Target {
 		if policy == nil {
 			continue
@@ -91,7 +91,7 @@ func applyVPAPolicy(recommendation *v1alpha1.RecommendedContainerResources, poli
 	}
 }
 
-func getRecommendationForContainer(recommendation v1alpha1.RecommendedPodResources, container v1.Container) *v1alpha1.RecommendedContainerResources {
+func getRecommendationForContainer(recommendation vpa_types.RecommendedPodResources, container v1.Container) *vpa_types.RecommendedContainerResources {
 	for i, containerRec := range recommendation.ContainerRecommendations {
 		if containerRec.Name == container.Name {
 			return &recommendation.ContainerRecommendations[i]
@@ -100,7 +100,7 @@ func getRecommendationForContainer(recommendation v1alpha1.RecommendedPodResourc
 	return nil
 }
 
-func getContainerPolicy(containerName string, policy *v1alpha1.PodResourcePolicy) *v1alpha1.ContainerResourcePolicy {
+func getContainerPolicy(containerName string, policy *vpa_types.PodResourcePolicy) *vpa_types.ContainerResourcePolicy {
 	if policy != nil {
 		for i, container := range policy.ContainerPolicies {
 			if containerName == container.Name {
@@ -111,7 +111,7 @@ func getContainerPolicy(containerName string, policy *v1alpha1.PodResourcePolicy
 	return nil
 }
 
-func (p *recommendationProvider) getMatchingVPA(pod *v1.Pod) *v1alpha1.VerticalPodAutoscaler {
+func (p *recommendationProvider) getMatchingVPA(pod *v1.Pod) *vpa_types.VerticalPodAutoscaler {
 	configs, err := p.vpaLister.VerticalPodAutoscalers(pod.Namespace).List(labels.Everything())
 	if err != nil {
 		glog.Error("failed to get vpa configs: %v", err)
@@ -122,11 +122,16 @@ func (p *recommendationProvider) getMatchingVPA(pod *v1.Pod) *v1alpha1.VerticalP
 		if err != nil {
 			continue
 		}
-		glog.Infof("trying to match %v - selector %v", vpaConfig.Name, selector)
-		if selector.Matches(labels.Set(pod.GetLabels())) {
-			return vpaConfig
+		glog.V(5).Infof("trying to match %v - selector %v", vpaConfig.Name, selector)
+		if !selector.Matches(labels.Set(pod.GetLabels())) {
+			glog.V(5).Infof("pod %v didn't match selector. Selector: %+v, labels: %+v", pod.Name, selector, pod.GetLabels())
+			continue
 		}
-		glog.V(4).Infof("pod %v didn't match selector. Selector: %+v, labels: %+v", pod.Name, selector, pod.GetLabels())
+		if vpaConfig.Spec.UpdatePolicy.UpdateMode == vpa_types.UpdateModeOff {
+			glog.V(2).Infof("pod %v matched VPA %v but it was discarded because it's mode is Off", pod.Name, vpaConfig.Name)
+			continue
+		}
+		return vpaConfig
 	}
 	return nil
 }
