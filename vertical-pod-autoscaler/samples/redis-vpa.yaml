@@ -1,9 +1,0 @@
-apiVersion: poc.autoscaling.k8s.io/v1alpha1
-kind: VerticalPodAutoscaler
-metadata:
-  name: redis-vpa
-spec:
-  selector:
-    matchLabels:
-      app: redis
-
