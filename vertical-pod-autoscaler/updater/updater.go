@@ -71,6 +71,10 @@ func (u *updater) RunOnce() {
 	}
 
 	for _, vpa := range vpaList {
+		if vpa.Spec.UpdatePolicy.UpdateMode != vpa_types.UpdateModeAuto {
+			glog.V(3).Infof("skipping VPA object %v because its mode is not \"Auto\"", vpa.Name)
+			continue
+		}
 		glog.V(2).Infof("processing VPA object targeting %v", vpa.Spec.Selector)
 		selector, err := metav1.LabelSelectorAsSelector(vpa.Spec.Selector)
 		if err != nil {
