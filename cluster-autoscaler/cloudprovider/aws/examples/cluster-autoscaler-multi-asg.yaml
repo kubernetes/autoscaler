@@ -99,26 +99,13 @@ subjects:
     namespace: kube-system
 
 ---
-apiVersion: v1
-data:
-  ClientID: <base64-encoded-client-id>
-  ClientSecret: <base64-encoded-client-secret>
-  ResourceGroup: <base64-encoded-resource-group>
-  SubscriptionID: <base64-encode-subscription-id>
-  TenantID: <base64-encoded-tenant-id>
-  VMType: dm1zcw==
-kind: Secret
-metadata:
-  name: cluster-autoscaler-azure
-  namespace: kube-system
----
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  labels:
-    app: cluster-autoscaler
   name: cluster-autoscaler
   namespace: kube-system
+  labels:
+    app: cluster-autoscaler
 spec:
   replicas: 1
   selector:
@@ -131,62 +118,33 @@ spec:
     spec:
       serviceAccountName: cluster-autoscaler
       containers:
-      - image: gcr.io/google_containers/cluster-autoscaler:{{ ca_version }}
-        imagePullPolicy: Always
-        name: cluster-autoscaler
-        resources:
-          limits:
-            cpu: 100m
-            memory: 300Mi
-          requests:
-            cpu: 100m
-            memory: 300Mi
-        command:
-        - ./cluster-autoscaler
-        - --v=3
-        - --logtostderr=true
-        - --cloud-provider=azure
-        - --skip-nodes-with-local-storage=false
-        - --nodes=1:10:vmss1
-        - --nodes=1:10:vmss2
-        env:
-        - name: ARM_SUBSCRIPTION_ID
-          valueFrom:
-            secretKeyRef:
-              key: SubscriptionID
-              name: cluster-autoscaler-azure
-        - name: ARM_RESOURCE_GROUP
-          valueFrom:
-            secretKeyRef:
-              key: ResourceGroup
-              name: cluster-autoscaler-azure
-        - name: ARM_TENANT_ID
-          valueFrom:
-            secretKeyRef:
-              key: TenantID
-              name: cluster-autoscaler-azure
-        - name: ARM_CLIENT_ID
-          valueFrom:
-            secretKeyRef:
-              key: ClientID
-              name: cluster-autoscaler-azure
-        - name: ARM_CLIENT_SECRET
-          valueFrom:
-            secretKeyRef:
-              key: ClientSecret
-              name: cluster-autoscaler-azure
-        - name: ARM_VM_TYPE
-          valueFrom:
-            secretKeyRef:
-              key: VMType
-              name: cluster-autoscaler-azure
-        volumeMounts:
-        - mountPath: /etc/ssl/certs/ca-certificates.crt
-          name: ssl-certs
-          readOnly: true
-      restartPolicy: Always
+        - image: k8s.gcr.io/cluster-autoscaler:v0.6.0
+          name: cluster-autoscaler
+          resources:
+            limits:
+              cpu: 100m
+              memory: 300Mi
+            requests:
+              cpu: 100m
+              memory: 300Mi
+          command:
+            - ./cluster-autoscaler
+            - --v=4
+            - --stderrthreshold=info
+            - --cloud-provider=aws
+            - --skip-nodes-with-local-storage=false
+            - --expander=least-waste
+            - --nodes=1:10:k8s-worker-asg-1
+            - --nodes=1:3:k8s-worker-asg-2
+          env:
+            - name: AWS_REGION
+              value: us-east-1
+          volumeMounts:
+            - name: ssl-certs
+              mountPath: /etc/ssl/certs/ca-certificates.crt
+              readOnly: true
+          imagePullPolicy: "Always"
       volumes:
-      - hostPath:
-          path: /etc/ssl/certs/ca-certificates.crt
-          type: ""
-        name: ssl-certs
+        - name: ssl-certs
+          hostPath:
+            path: "/etc/ssl/certs/ca-certificates.crt"

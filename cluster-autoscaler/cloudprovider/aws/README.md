@@ -52,166 +52,22 @@ Unfortunately AWS does not support ARNs for autoscaling groups yet so you must u
 ## Deployment Specification
 
 ### 1 ASG Setup (min: 1, max: 10, ASG Name: k8s-worker-asg-1)
-```yaml
----
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  name: cluster-autoscaler
-  namespace: kube-system
-  labels:
-    app: cluster-autoscaler
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: cluster-autoscaler
-  template:
-    metadata:
-      labels:
-        app: cluster-autoscaler
-    spec:
-      containers:
-        - image: k8s.gcr.io/cluster-autoscaler:v0.6.0
-          name: cluster-autoscaler
-          resources:
-            limits:
-              cpu: 100m
-              memory: 300Mi
-            requests:
-              cpu: 100m
-              memory: 300Mi
-          command:
-            - ./cluster-autoscaler
-            - --v=4
-            - --stderrthreshold=info
-            - --cloud-provider=aws
-            - --skip-nodes-with-local-storage=false
-            - --nodes=1:10:k8s-worker-asg-1
-          env:
-            - name: AWS_REGION
-              value: us-east-1
-          volumeMounts:
-            - name: ssl-certs
-              mountPath: /etc/ssl/certs/ca-certificates.crt
-              readOnly: true
-          imagePullPolicy: "Always"
-      volumes:
-        - name: ssl-certs
-          hostPath:
-            path: "/etc/ssl/certs/ca-certificates.crt"
+```
+kubectl apply -f examples/cluster-autoscaler-one-asg.yaml
 ```
 
 ### Multiple ASG Setup
-```yaml
----
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  name: cluster-autoscaler
-  namespace: kube-system
-  labels:
-    app: cluster-autoscaler
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: cluster-autoscaler
-  template:
-    metadata:
-      labels:
-        app: cluster-autoscaler
-    spec:
-      containers:
-        - image: k8s.gcr.io/cluster-autoscaler:v0.6.0
-          name: cluster-autoscaler
-          resources:
-            limits:
-              cpu: 100m
-              memory: 300Mi
-            requests:
-              cpu: 100m
-              memory: 300Mi
-          command:
-            - ./cluster-autoscaler
-            - --v=4
-            - --stderrthreshold=info
-            - --cloud-provider=aws
-            - --skip-nodes-with-local-storage=false
-            - --expander=least-waste
-            - --nodes=1:10:k8s-worker-asg-1
-            - --nodes=1:3:k8s-worker-asg-2
-          env:
-            - name: AWS_REGION
-              value: us-east-1
-          volumeMounts:
-            - name: ssl-certs
-              mountPath: /etc/ssl/certs/ca-certificates.crt
-              readOnly: true
-          imagePullPolicy: "Always"
-      volumes:
-        - name: ssl-certs
-          hostPath:
-            path: "/etc/ssl/certs/ca-certificates.crt"
 ```
+kubectl apply -f examples/cluster-autoscaler-multi-asg.yaml
+```
+
 ### Master Node Setup
 
 To run a CA pod in master node - CA deployment should tolerate the master `taint` and `nodeSelector` should be used to schedule the pods in master node.
-
-```yaml
----
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  name: cluster-autoscaler
-  namespace: kube-system
-  labels:
-    app: cluster-autoscaler
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: cluster-autoscaler
-  template:
-    metadata:
-      labels:
-        app: cluster-autoscaler
-    spec:
-      tolerations:
-      - effect: NoSchedule
-        key: node-role.kubernetes.io/master
-      nodeSelector:
-        kubernetes.io/role: master
-      containers:
-        - image: k8s.gcr.io/cluster-autoscaler:{{ ca_version }}
-          name: cluster-autoscaler
-          resources:
-            limits:
-              cpu: 100m
-              memory: 300Mi
-            requests:
-              cpu: 100m
-              memory: 300Mi
-          command:
-            - ./cluster-autoscaler
-            - --v=4
-            - --stderrthreshold=info
-            - --cloud-provider=aws
-            - --skip-nodes-with-local-storage=false
-            - --nodes={{ node_asg_min }}:{{ node_asg_max }}:{{ name }}
-          env:
-            - name: AWS_REGION
-              value: {{ region }}
-          volumeMounts:
-            - name: ssl-certs
-              mountPath: /etc/ssl/certs/ca-certificates.crt
-              readOnly: true
-          imagePullPolicy: "Always"
-      volumes:
-        - name: ssl-certs
-          hostPath:
-            path: "/etc/ssl/certs/ca-certificates.crt"
 ```
+kubectl apply -f examples/cluster-autoscaler-run-on-master.yaml
+```
+
 
 ### Auto-Discovery Setup
 
@@ -221,55 +77,8 @@ Note that:
 * `kubernetes.io/cluster/<YOUR CLUSTER NAME>` is required when `k8s.io/cluster-autoscaler/enabled` is used across many clusters to prevent ASGs from different clusters recognized as the node groups
 * There are no `--nodes` flags passed to cluster-autoscaler because the node groups are automatically discovered by tags
 
-```yaml
----
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  name: cluster-autoscaler
-  namespace: kube-system
-  labels:
-    app: cluster-autoscaler
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: cluster-autoscaler
-  template:
-    metadata:
-      labels:
-        app: cluster-autoscaler
-    spec:
-      containers:
-        - image: gcr.io/google_containers/cluster-autoscaler:v1.1.0
-          name: cluster-autoscaler
-          resources:
-            limits:
-              cpu: 100m
-              memory: 300Mi
-            requests:
-              cpu: 100m
-              memory: 300Mi
-          command:
-            - ./cluster-autoscaler
-            - --v=4
-            - --stderrthreshold=info
-            - --cloud-provider=aws
-            - --skip-nodes-with-local-storage=false
-            - --expander=least-waste
-            - --node-group-auto-discovery=asg:tag=k8s.io/cluster-autoscaler/enabled,kubernetes.io/cluster/<YOUR CLUSTER NAME>
-          env:
-            - name: AWS_REGION
-              value: us-east-1
-          volumeMounts:
-            - name: ssl-certs
-              mountPath: /etc/ssl/certs/ca-certificates.crt
-              readOnly: true
-          imagePullPolicy: "Always"
-      volumes:
-        - name: ssl-certs
-          hostPath:
-            path: "/etc/ssl/certs/ca-certificates.crt"
+```
+kubectl apply -f examples/cluster-autoscaler-run-on-master.yaml
 ```
 
 ## Scaling a node group to 0
