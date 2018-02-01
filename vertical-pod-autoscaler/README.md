@@ -66,19 +66,22 @@ spec:
     updateMode: "Auto"
 ```
 
-### Known limitations
+### Known limitations of the alpha version
 
 * The VPA admission controller is an admission webhook. The order of admission
   controllers is defined by flag on APIserver.
   VPA admission controller might have **relations to other admission controllers**,
   e.g. running it after quota admission might cause making incorrect decisions.
-* Out-of-memory events / pod evictions are not taken into account for memory
+* Out-of-memory events / pod evictions are not yet taken into account for memory
   usage data. **Containers dying because of lack of memory might not get bigger
   recommendations**.
-* Recommender reads some amount of history (currently one day) and treats all
+* Recommender reads some amount of history (currently eight days) and treats all
   samples from that period identically, **no matter how recent they are**. Also, it
-  does not forget samples after they go out of the one day window, so the
-  **history length will grow during the lifetime of the recommender binary**.
+  does not forget CPU samples after they go out of the one day window, so the
+  **CPU history length will grow during the lifetime of the recommender binary**.
+* VPA recommendation might exceed available resources (e.g. Node size, available
+  size, available quota) and cause Pods to go pending.
+* Multiple VPA resources matching the same Pod have undefined behavior.
 
 # For developers
 
