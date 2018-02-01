@@ -17,7 +17,7 @@ metadata:
   name: hamster
   namespace: default
 spec:
-  replicas: 1
+  replicas: 2
   template:
     metadata:
       labels:
