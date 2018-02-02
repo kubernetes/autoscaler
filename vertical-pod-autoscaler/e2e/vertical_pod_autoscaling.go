@@ -22,24 +22,24 @@ import (
 	extensions "k8s.io/api/extensions/v1beta1"
 	"k8s.io/kubernetes/test/e2e/framework"
 
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
+	"github.com/onsi/ginkgo"
+	"github.com/onsi/gomega"
 )
 
-func SIGDescribe(text string, body func()) bool {
-	return Describe("[vpa] "+text, body)
+func testDescribe(text string, body func()) bool {
+	return ginkgo.Describe("[VPA] "+text, body)
 }
 
-var _ = SIGDescribe("[VPA] Vertical pod autoscaling dummy test", func() {
+var _ = testDescribe("Vertical pod autoscaling dummy test", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
 
-	SIGDescribe("Deployment", func() {
-		It("test", func() {
+	testDescribe("Deployment", func() {
+		ginkgo.It("test", func() {
 			c := f.ClientSet
 			ns := f.Namespace.Name
 			d := framework.NewDeployment("vpa-recommender", 1, map[string]string{"test": "app"}, "recommender", "eu.gcr.io/kubernetes-schylek-vpa/recommender:0.0.1", extensions.RollingUpdateDeploymentStrategyType)
 			_, err := c.ExtensionsV1beta1().Deployments(ns).Create(d)
-			Expect(err).NotTo(HaveOccurred())
+			gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 			time.Sleep(1 * time.Minute)
 
