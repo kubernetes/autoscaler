@@ -41,8 +41,6 @@ type PodState struct {
 	Labels labels.Set
 	// Containers that belong to the Pod, keyed by the container name.
 	Containers map[string]*ContainerState
-	// VPA managing this pod (can be nil).
-	Vpa *Vpa
 	// All VPA objects that match this Pod. While it is incorrect to let
 	// multiple VPA objects match the same pod, the model has no means to
 	// prevent such situation. In such case the pod is controlled by one of the
@@ -188,10 +186,9 @@ func (cluster *ClusterState) DeleteVpa(vpaID VpaID) error {
 
 func newPod(id PodID) *PodState {
 	return &PodState{
-		id,
-		make(map[string]string),          // empty labels.
-		make(map[string]*ContainerState), // empty containers.
-		nil,                  // Vpa.
-		make(map[VpaID]*Vpa), // empty MatchingVpas.
+		ID:           id,
+		Labels:       make(map[string]string),
+		Containers:   make(map[string]*ContainerState),
+		MatchingVpas: make(map[VpaID]*Vpa),
 	}
 }
