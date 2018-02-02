@@ -83,24 +83,10 @@ func (vpa *Vpa) UpdatePodLink(pod *PodState) bool {
 		// Create links between VPA and pod.
 		vpa.Pods[pod.ID] = pod
 		pod.MatchingVpas[vpa.ID] = vpa
-		if pod.Vpa == nil {
-			pod.Vpa = vpa
-		}
 	} else {
 		// Delete the links between VPA and pod.
 		delete(vpa.Pods, pod.ID)
 		delete(pod.MatchingVpas, vpa.ID)
-		if pod.Vpa == vpa {
-			pod.Vpa = getAnyVpa(pod.MatchingVpas)
-		}
 	}
 	return true
-}
-
-// Returns any VPA from the map or nil if the map is empty.
-func getAnyVpa(vpas map[VpaID]*Vpa) *Vpa {
-	for _, vpa := range vpas {
-		return vpa
-	}
-	return nil
 }
