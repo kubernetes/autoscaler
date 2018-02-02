@@ -79,7 +79,7 @@ func TestAddVpaThenAddPod(t *testing.T) {
 	vpa := addTestVpa(cluster)
 	pod := addTestPod(cluster)
 	assert.Equal(t, pod, vpa.Pods[testPodID])
-	assert.Equal(t, vpa, pod.Vpa)
+	assert.Equal(t, map[VpaID]*Vpa{testVpaID: vpa}, pod.MatchingVpas)
 }
 
 // Creates a pod followed by a matching VPA. Verifies that the links between the
@@ -89,7 +89,7 @@ func TestAddPodThenAddVpa(t *testing.T) {
 	pod := addTestPod(cluster)
 	vpa := addTestVpa(cluster)
 	assert.Equal(t, pod, vpa.Pods[testPodID])
-	assert.Equal(t, vpa, pod.Vpa)
+	assert.Equal(t, map[VpaID]*Vpa{testVpaID: vpa}, pod.MatchingVpas)
 }
 
 // Creates a VPA and a matching pod. Verifies that after deleting the VPA the
@@ -99,7 +99,7 @@ func TestDeleteVpa(t *testing.T) {
 	vpa := addTestVpa(cluster)
 	pod := addTestPod(cluster)
 	cluster.DeleteVpa(vpa.ID)
-	assert.Nil(t, pod.Vpa)
+	assert.Empty(t, pod.MatchingVpas)
 	assert.NotContains(t, cluster.Vpas, vpa.ID)
 }
 
@@ -123,7 +123,7 @@ func TestChangePodLabels(t *testing.T) {
 	// Update Pod labels to no longer match the VPA.
 	cluster.AddOrUpdatePod(testPodID, emptyLabels)
 	assert.Empty(t, vpa.Pods)
-	assert.Nil(t, pod.Vpa)
+	assert.Empty(t, pod.MatchingVpas)
 }
 
 // Creates a VPA and a matching pod, then change the VPA pod selector 3 times:
@@ -139,24 +139,24 @@ func TestUpdatePodSelector(t *testing.T) {
 	assert.NoError(t, cluster.AddOrUpdateVpa(testVpaID, "label-1 in (value-1,value-2)"))
 	vpa = cluster.Vpas[testVpaID]
 	assert.Equal(t, pod, vpa.Pods[testPodID])
-	assert.Equal(t, vpa, pod.Vpa)
+	assert.Equal(t, map[VpaID]*Vpa{testVpaID: vpa}, pod.MatchingVpas)
 
 	// Update the VPA selector to no longer match the Pod.
 	assert.NoError(t, cluster.AddOrUpdateVpa(testVpaID, "label-1 = value-2"))
 	vpa = cluster.Vpas[testVpaID]
 	assert.Empty(t, vpa.Pods)
-	assert.Nil(t, pod.Vpa)
+	assert.Empty(t, pod.MatchingVpas)
 
 	// Update the VPA selector to match the Pod again.
 	assert.NoError(t, cluster.AddOrUpdateVpa(testVpaID, "label-1 = value-1"))
 	vpa = cluster.Vpas[testVpaID]
 	assert.Equal(t, pod, vpa.Pods[testPodID])
-	assert.Equal(t, vpa, pod.Vpa)
+	assert.Equal(t, map[VpaID]*Vpa{testVpaID: vpa}, pod.MatchingVpas)
 }
 
 // Creates a VPA and a matching pod, then add another VPA matching the same pod.
-// Verifies that the pod is controlled by the first VPA.
-// Next deletes the first VPA and verfies that the pod is controlled by the
+// Verifies that the pod knows about both of them.
+// Next deletes one of them and verfies that the pod is controlled by the
 // remaning VPA. Finally deletes the other VPA and verifies that the pod is no
 // longer controlled by any VPA.
 func TestTwoVpasForPod(t *testing.T) {
@@ -164,14 +164,19 @@ func TestTwoVpasForPod(t *testing.T) {
 	cluster.AddOrUpdateVpa(VpaID{"namespace-1", "vpa-1"}, "label-1 = value-1")
 	pod := addTestPod(cluster)
 	cluster.AddOrUpdateVpa(VpaID{"namespace-1", "vpa-2"}, "label-1 in (value-1,value-2)")
-	assert.Equal(t, cluster.Vpas[VpaID{"namespace-1", "vpa-1"}], pod.Vpa)
-	// Delete the VPA that currently controls the Pod. Expect that it will
-	// switch to the remaining one.
+	assert.Equal(t, map[VpaID]*Vpa{
+		{"namespace-1", "vpa-1"}: cluster.Vpas[VpaID{"namespace-1", "vpa-1"}],
+		{"namespace-1", "vpa-2"}: cluster.Vpas[VpaID{"namespace-1", "vpa-2"}]},
+		pod.MatchingVpas)
+	// Delete the first VPA from the Pod. Expect that it will still
+	// have the other one.
 	assert.NoError(t, cluster.DeleteVpa(VpaID{"namespace-1", "vpa-1"}))
-	assert.Equal(t, cluster.Vpas[VpaID{"namespace-1", "vpa-2"}], pod.Vpa)
+	assert.Equal(t, map[VpaID]*Vpa{
+		{"namespace-1", "vpa-2"}: cluster.Vpas[VpaID{"namespace-1", "vpa-2"}]},
+		pod.MatchingVpas)
 	// Delete the other VPA. The Pod is no longer vertically-scaled by anyone.
 	assert.NoError(t, cluster.DeleteVpa(VpaID{"namespace-1", "vpa-2"}))
-	assert.Nil(t, pod.Vpa)
+	assert.Empty(t, pod.MatchingVpas)
 }
 
 // Verifies that a VPA with an empty selector (matching all pods) matches a pod
@@ -186,6 +191,8 @@ func TestEmptySelector(t *testing.T) {
 	anotherPodID := PodID{"namespace-1", "pod-2"}
 	cluster.AddOrUpdatePod(anotherPodID, emptyLabels)
 	// Both pods should be matched by the VPA.
-	assert.Equal(t, cluster.Vpas[testVpaID], cluster.Pods[testPodID].Vpa)
-	assert.Equal(t, cluster.Vpas[testVpaID], cluster.Pods[anotherPodID].Vpa)
+	assert.Equal(t, map[VpaID]*Vpa{testVpaID: cluster.Vpas[testVpaID]},
+		cluster.Pods[testPodID].MatchingVpas)
+	assert.Equal(t, map[VpaID]*Vpa{testVpaID: cluster.Vpas[testVpaID]},
+		cluster.Pods[anotherPodID].MatchingVpas)
 }
