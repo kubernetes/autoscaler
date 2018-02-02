@@ -28,7 +28,7 @@ import (
 func TestUpdateResourceRequests(t *testing.T) {
 	type testCase struct {
 		pod            *apiv1.Pod
-		vpa            *vpa_types.VerticalPodAutoscaler
+		vpas           []*vpa_types.VerticalPodAutoscaler
 		expectedAction bool
 		expectedMem    string
 		expectedCPU    string
@@ -44,27 +44,39 @@ func TestUpdateResourceRequests(t *testing.T) {
 	initialized.ObjectMeta.Labels = labels
 
 	mismatchedVPA := test.BuildTestVerticalPodAutoscaler(containerName, "2", "1", "3", "200M", "100M", "1G", "app = differentApp")
+	offVPA := test.BuildTestVerticalPodAutoscaler(containerName, "2.5", "1", "3", "250M", "100M", "1G", "app = testingApp")
+	offVPA.Spec.UpdatePolicy.UpdateMode = vpa_types.UpdateModeOff
 
 	testCases := []testCase{{
 		pod:            uninitialized,
-		vpa:            vpa,
+		vpas:           []*vpa_types.VerticalPodAutoscaler{vpa},
 		expectedAction: true,
 		expectedMem:    "200M",
 		expectedCPU:    "2",
 	}, {
 		pod:            initialized,
-		vpa:            vpa,
+		vpas:           []*vpa_types.VerticalPodAutoscaler{vpa},
 		expectedAction: true,
 		expectedMem:    "200M",
 		expectedCPU:    "2",
 	}, {
 		pod:            uninitialized,
-		vpa:            mismatchedVPA,
+		vpas:           []*vpa_types.VerticalPodAutoscaler{mismatchedVPA},
 		expectedAction: false,
+	}, {
+		pod:            uninitialized,
+		vpas:           []*vpa_types.VerticalPodAutoscaler{offVPA},
+		expectedAction: false,
+	}, {
+		pod:            uninitialized,
+		vpas:           []*vpa_types.VerticalPodAutoscaler{offVPA, vpa},
+		expectedAction: true,
+		expectedMem:    "200M",
+		expectedCPU:    "2",
 	}}
 	for _, tc := range testCases {
 		vpaNamespaceLister := &test.VerticalPodAutoscalerListerMock{}
-		vpaNamespaceLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{tc.vpa}, nil)
+		vpaNamespaceLister.On("List").Return(tc.vpas, nil)
 
 		vpaLister := &test.VerticalPodAutoscalerListerMock{}
 		vpaLister.On("VerticalPodAutoscalers", "default").Return(vpaNamespaceLister)
