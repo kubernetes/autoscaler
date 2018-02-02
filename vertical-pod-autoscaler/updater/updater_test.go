@@ -64,6 +64,7 @@ func TestRunOnce(t *testing.T) {
 
 	vpaObj := test.BuildTestVerticalPodAutoscaler(containerName, "2", "1", "3", "200M", "100M", "1G", selector)
 	vpaObj.Namespace = "default"
+	vpaObj.Spec.UpdatePolicy.UpdateMode = vpa_types.UpdateModeAuto
 	vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpaObj}, nil).Once()
 
 	updater := &updater{
@@ -74,6 +75,44 @@ func TestRunOnce(t *testing.T) {
 
 	updater.RunOnce()
 	eviction.AssertNumberOfCalls(t, "Evict", 5)
+}
+
+func TestVPAOff(t *testing.T) {
+	livePods := 5
+	labels := map[string]string{"app": "testingApp"}
+	selector := "app = testingApp"
+	containerName := "container1"
+	pods := make([]*apiv1.Pod, livePods)
+	eviction := &test.PodsEvictionRestrictionMock{}
+
+	for i := range pods {
+		pods[i] = test.BuildTestPod("test_"+strconv.Itoa(i), containerName, "1", "100M", nil, nil)
+		pods[i].Spec.NodeSelector = labels
+		eviction.On("CanEvict", pods[i]).Return(true)
+		eviction.On("Evict", pods[i]).Return(nil)
+	}
+
+	factory := &fakeEvictFactory{eviction}
+	vpaLister := &test.VerticalPodAutoscalerListerMock{}
+	podDefaultNamespaceLister := &test.PodListerMock{}
+	podDefaultNamespaceLister.On("List").Return(pods, nil)
+
+	podLister := &test.PodListerMock{}
+	podLister.On("Pods", "default").Return(podDefaultNamespaceLister)
+
+	vpaObj := test.BuildTestVerticalPodAutoscaler(containerName, "2", "1", "3", "200M", "100M", "1G", selector)
+	vpaObj.Namespace = "default"
+	vpaObj.Spec.UpdatePolicy.UpdateMode = vpa_types.UpdateModeInitial
+	vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpaObj}, nil).Once()
+
+	updater := &updater{
+		vpaLister:       vpaLister,
+		podLister:       podLister,
+		evictionFactory: factory,
+	}
+
+	updater.RunOnce()
+	eviction.AssertNumberOfCalls(t, "Evict", 0)
 }
 
 func TestRunOnceNotingToProcess(t *testing.T) {
