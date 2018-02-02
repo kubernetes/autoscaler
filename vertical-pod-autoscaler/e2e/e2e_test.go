@@ -26,6 +26,6 @@ func init() {
 	framework.ViperizeFlags()
 }
 
-func TestE2E(t *testing.T) {
+func TestVpaE2E(t *testing.T) {
 	RunE2ETests(t)
 }

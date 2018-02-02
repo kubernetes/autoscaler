@@ -47,6 +47,13 @@ for godep_file in ${godep_projects}; do
     project="${godep_file%Godeps/Godeps.json}"
     echo "${CMD}ing ${project}"
     cd "${project}"
-    godep go "${CMD}" ./...
+    case "${CMD}" in
+      "test")
+        godep go "${CMD}" $(go list ./... | grep -v /vendor/ | grep -v vertical-pod-autoscaler/e2e )
+        ;;
+      *)
+        godep go "${CMD}" ./...
+        ;;
+    esac
   )
 done;
