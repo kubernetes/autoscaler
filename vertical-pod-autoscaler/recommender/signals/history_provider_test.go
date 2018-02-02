@@ -27,9 +27,9 @@ import (
 )
 
 const (
-	cpuQuery    = "container_cpu_usage_seconds_total{job=\"kubernetes-cadvisor\", pod_name=~\".+\"}[1d]"
-	memoryQuery = "container_memory_usage_bytes{job=\"kubernetes-cadvisor\", pod_name=~\".+\"}[1d]"
-	labelsQuery = "up{job=\"kubernetes-pods\"}[1d]"
+	cpuQuery    = "container_cpu_usage_seconds_total{job=\"kubernetes-cadvisor\", pod_name=~\".+\"}[8d]"
+	memoryQuery = "container_memory_usage_bytes{job=\"kubernetes-cadvisor\", pod_name=~\".+\"}[8d]"
+	labelsQuery = "up{job=\"kubernetes-pods\"}[8d]"
 )
 
 type mockPrometheusClient struct {
