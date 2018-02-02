@@ -173,16 +173,6 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 				status.GetReadableString(), a.AutoscalingContext.LogRecorder)
 		}
 	}()
-	if !a.ClusterStateRegistry.IsClusterHealthy() {
-		glog.Warning("Cluster is not ready for autoscaling")
-		scaleDown.CleanUpUnneededNodes()
-		autoscalingContext.LogRecorder.Eventf(apiv1.EventTypeWarning, "ClusterUnhealthy", "Cluster is unhealthy")
-		return nil
-	}
-
-	metrics.UpdateDurationFromStart(metrics.UpdateState, runStart)
-	metrics.UpdateLastTime(metrics.Autoscaling, time.Now())
-
 	// Check if there are any nodes that failed to register in Kubernetes
 	// master.
 	unregisteredNodes := a.ClusterStateRegistry.GetUnregisteredNodes()
@@ -205,6 +195,15 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 			return nil
 		}
 	}
+	if !a.ClusterStateRegistry.IsClusterHealthy() {
+		glog.Warning("Cluster is not ready for autoscaling")
+		scaleDown.CleanUpUnneededNodes()
+		autoscalingContext.LogRecorder.Eventf(apiv1.EventTypeWarning, "ClusterUnhealthy", "Cluster is unhealthy")
+		return nil
+	}
+
+	metrics.UpdateDurationFromStart(metrics.UpdateState, runStart)
+	metrics.UpdateLastTime(metrics.Autoscaling, time.Now())
 
 	// Check if there has been a constant difference between the number of nodes in k8s and
 	// the number of nodes on the cloud provider side.
