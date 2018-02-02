@@ -27,7 +27,7 @@ import (
 )
 
 const (
-	historyLength  = "1d"
+	historyLength  = "8d"
 	podLabelPrefix = "pod_label_"
 )
 
