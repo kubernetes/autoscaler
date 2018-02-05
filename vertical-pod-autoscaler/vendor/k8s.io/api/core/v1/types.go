@@ -1730,6 +1730,12 @@ type CSIPersistentVolumeSource struct {
 	// Defaults to false (read/write).
 	// +optional
 	ReadOnly bool `json:"readOnly,omitempty" protobuf:"varint,3,opt,name=readOnly"`
+
+	// Filesystem type to mount.
+	// Must be a filesystem type supported by the host operating system.
+	// Ex. "ext4", "xfs", "ntfs". Implicitly inferred to be "ext4" if unspecified.
+	// +optional
+	FSType string `json:"fsType,omitempty" protobuf:"bytes,4,opt,name=fsType"`
 }
 
 // ContainerPort represents a network port in a single container.
@@ -3042,7 +3048,7 @@ type PodStatus struct {
 	ContainerStatuses []ContainerStatus `json:"containerStatuses,omitempty" protobuf:"bytes,8,rep,name=containerStatuses"`
 	// The Quality of Service (QOS) classification assigned to the pod based on resource requirements
 	// See PodQOSClass type for available QOS classes
-	// More info: https://github.com/kubernetes/kubernetes/blob/master/docs/design/resource-qos.md
+	// More info: https://git.k8s.io/community/contributors/design-proposals/node/resource-qos.md
 	// +optional
 	QOSClass PodQOSClass `json:"qosClass,omitempty" protobuf:"bytes,9,rep,name=qosClass"`
 }
@@ -4934,8 +4940,21 @@ type ConfigMap struct {
 
 	// Data contains the configuration data.
 	// Each key must consist of alphanumeric characters, '-', '_' or '.'.
+	// Values with non-UTF-8 byte sequences must use the BinaryData field.
+	// The keys stored in Data must not overlap with the keys in
+	// the BinaryData field, this is enforced during validation process.
 	// +optional
 	Data map[string]string `json:"data,omitempty" protobuf:"bytes,2,rep,name=data"`
+
+	// BinaryData contains the binary data.
+	// Each key must consist of alphanumeric characters, '-', '_' or '.'.
+	// BinaryData can contain byte sequences that are not in the UTF-8 range.
+	// The keys stored in BinaryData must not overlap with the ones in
+	// the Data field, this is enforced during validation process.
+	// Using this field will require 1.10+ apiserver and
+	// kubelet.
+	// +optional
+	BinaryData map[string][]byte `json:"binaryData,omitempty" protobuf:"bytes,3,rep,name=binaryData"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
