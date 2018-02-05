@@ -38,9 +38,17 @@ If you'd like to auto-discover node groups by specifing the `--node-group-auto-d
                 "autoscaling:SetDesiredCapacity",
                 "autoscaling:TerminateInstanceInAutoScalingGroup"
             ],
+            "Condition": {
+                "StringEquals": {
+                    "autoscaling:ResourceTag/<some-optional-tag-you-give-your-asgs-to-identify-them>": "<some-value>"
+                },
+                "Bool": {
+                    "autoscaling:ResourceTag/k8s.io/cluster-autoscaler/enabled": "true"
+                }
+            },
             "Resource": [
-                "arn:aws:autoscaling:<REGION>:<ACCOUNTID>:autoScalingGroup:*:autoScalingGroupName/<ASG-1-NAME>",
-                "arn:aws:autoscaling:<REGION>:<ACCOUNTID>:autoScalingGroup:*:autoScalingGroupName/<ASG-2-NAME>"
+                "arn:aws:autoscaling:<REGION>:<ACCOUNTID>:autoScalingGroup:*:autoScalingGroupName/<some-common-asg-name-prefix-1>*",
+                "arn:aws:autoscaling:<REGION>:<ACCOUNTID>:autoScalingGroup:*:autoScalingGroupName/<some-common-asg-name-prefix-2>*"
             ]
         },
         {
