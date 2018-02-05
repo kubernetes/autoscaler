@@ -129,6 +129,5 @@ func main() {
 			RecommendationOffset: int64(*recommendationOffset),
 			Resources:            resources,
 		},
-		*containerName,
 		pollPeriod)
 }
