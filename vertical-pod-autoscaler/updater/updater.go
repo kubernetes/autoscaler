@@ -23,7 +23,6 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/updater/priority"
 
 	apiv1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
@@ -65,35 +64,37 @@ func (u *updater) RunOnce() {
 		glog.Fatalf("failed get VPA list: %v", err)
 	}
 
-	if len(vpaList) == 0 {
-		glog.Warningf("no VPA objects to process")
-		return
-	}
+	vpas := make([]*vpa_types.VerticalPodAutoscaler, 0)
 
 	for _, vpa := range vpaList {
 		if vpa.Spec.UpdatePolicy.UpdateMode != vpa_types.UpdateModeAuto {
 			glog.V(3).Infof("skipping VPA object %v because its mode is not \"Auto\"", vpa.Name)
 			continue
 		}
-		glog.V(2).Infof("processing VPA object targeting %v", vpa.Spec.Selector)
-		selector, err := metav1.LabelSelectorAsSelector(vpa.Spec.Selector)
-		if err != nil {
-			glog.Errorf("error processing VPA object: failed to create pod selector: %v", err)
-			continue
-		}
+		vpas = append(vpas, vpa)
+	}
 
-		podsList, err := u.podLister.Pods(vpa.Namespace).List(selector)
-		if err != nil {
-			glog.Errorf("failed get pods list for namespace %v and selector %v: %v", vpa.Namespace, selector, err)
-			continue
-		}
+	if len(vpas) == 0 {
+		glog.Warningf("no VPA objects to process")
+		return
+	}
 
-		livePods := filterDeletedPods(podsList)
-		if len(livePods) == 0 {
-			glog.Warningf("no live pods matching selector %v", selector)
-			continue
-		}
+	podsList, err := u.podLister.List(labels.Everything())
+	if err != nil {
+		glog.Errorf("failed to get pods list: %v", err)
+		return
+	}
+	livePods := filterDeletedPods(podsList)
 
+	controlledPods := make(map[*vpa_types.VerticalPodAutoscaler][]*apiv1.Pod)
+	for _, pod := range livePods {
+		controllingVPA := vpa_api_util.GetControllingVPAForPod(pod, vpas)
+		if controllingVPA != nil {
+			controlledPods[controllingVPA] = append(controlledPods[controllingVPA], pod)
+		}
+	}
+
+	for vpa, livePods := range controlledPods {
 		evictionLimiter := u.evictionFactory.NewPodsEvictionRestriction(livePods)
 		podsForUpdate := u.getPodsForUpdate(filterNonEvictablePods(livePods, evictionLimiter), vpa)
 
