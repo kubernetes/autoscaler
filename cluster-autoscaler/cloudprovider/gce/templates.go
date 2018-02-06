@@ -245,7 +245,7 @@ func (t *templateBuilder) buildNodeFromAutoprovisioningSpec(mig *Mig) (*apiv1.No
 		Allocatable: t.buildAllocatableFromCapacity(capacity),
 	}
 
-	labels, err := buildLablesForAutoprovisionedMig(mig, nodeName)
+	labels, err := buildLabelsForAutoprovisionedMig(mig, nodeName)
 	if err != nil {
 		return nil, err
 	}
@@ -258,7 +258,7 @@ func (t *templateBuilder) buildNodeFromAutoprovisioningSpec(mig *Mig) (*apiv1.No
 	return &node, nil
 }
 
-func buildLablesForAutoprovisionedMig(mig *Mig, nodeName string) (map[string]string, error) {
+func buildLabelsForAutoprovisionedMig(mig *Mig, nodeName string) (map[string]string, error) {
 	// GenericLabels
 	labels, err := buildGenericLabels(mig.GceRef, mig.spec.machineType, nodeName)
 	if err != nil {

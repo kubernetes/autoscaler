@@ -141,7 +141,7 @@ func TestBuildGenericLabels(t *testing.T) {
 }
 
 func TestBuildLabelsForAutoscaledMigOK(t *testing.T) {
-	labels, err := buildLablesForAutoprovisionedMig(
+	labels, err := buildLabelsForAutoprovisionedMig(
 		&Mig{
 			autoprovisioned: true,
 			spec: &autoprovisioningSpec{
@@ -168,7 +168,7 @@ func TestBuildLabelsForAutoscaledMigOK(t *testing.T) {
 }
 
 func TestBuildLabelsForAutoscaledMigConflict(t *testing.T) {
-	_, err := buildLablesForAutoprovisionedMig(
+	_, err := buildLabelsForAutoprovisionedMig(
 		&Mig{
 			autoprovisioned: true,
 			spec: &autoprovisioningSpec{
