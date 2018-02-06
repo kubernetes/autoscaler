@@ -15,7 +15,7 @@ supported CA configuration. In particular we want to support both homogenous and
 allowing the user to easily choose or implement strategy for defining what kind
 of node should be added (i.e. large instance vs several small instances, etc).
 
-Those goals imply a few more specifc constraints that we want to keep:
+Those goals imply a few more specific constraints that we want to keep:
  * We want to avoid balancing size of node groups composed of different instances
 (there is no point in trying to balance the number of 2-CPU and 32-CPU
 machines).
@@ -39,10 +39,10 @@ possible. For example assume node group set made of node groups A (currently 1 n
 If we needed to add a new node to the cluster it would go to group A. If we
 needed to add 4 nodes, 3 of them would go to group A and 1 to group B.
 
-Note that this does not gurantee that node groups will always have the same
+Note that this does not guarantee that node groups will always have the same
 size. Cluster Autoscaler will add exactly as many nodes as are required for
 pending pods, which may not be divisible by number of node groups in node group
-set. Additionaly we scale down underutilized nodes, which may happen to be in
+set. Additionally we scale down underutilized nodes, which may happen to be in
 the same node group. Including relative sizes of similar node groups in scale
 down logic will be covered by a different proposal later on.
 
@@ -131,7 +131,7 @@ Pros:
    expansion options.
  * We could add additional methods to NodeGroupSet to split pending pods between
    underlying NodeGroups in a smart way, allowing to deal with pod antiaffinity
-   and zone based label selectors without completly skipping size balancing.
+   and zone based label selectors without completely skipping size balancing.
 
 Cons:
  * NodeGroup contract assumes all nodes in NodeGroup are identical. However we
