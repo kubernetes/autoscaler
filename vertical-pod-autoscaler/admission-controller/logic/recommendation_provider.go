@@ -20,11 +20,11 @@ import (
 	"github.com/golang/glog"
 
 	"k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/poc.autoscaling.k8s.io/v1alpha1"
+	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
 // RecommendationProvider gets current recommendation for the given pod.
@@ -117,23 +117,15 @@ func (p *recommendationProvider) getMatchingVPA(pod *v1.Pod) *vpa_types.Vertical
 		glog.Error("failed to get vpa configs: %v", err)
 		return nil
 	}
+	onConfigs := make([]*vpa_types.VerticalPodAutoscaler, 0)
 	for _, vpaConfig := range configs {
-		selector, err := metav1.LabelSelectorAsSelector(vpaConfig.Spec.Selector)
-		if err != nil {
-			continue
-		}
-		glog.V(5).Infof("trying to match %v - selector %v", vpaConfig.Name, selector)
-		if !selector.Matches(labels.Set(pod.GetLabels())) {
-			glog.V(5).Infof("pod %v didn't match selector. Selector: %+v, labels: %+v", pod.Name, selector, pod.GetLabels())
-			continue
-		}
 		if vpaConfig.Spec.UpdatePolicy.UpdateMode == vpa_types.UpdateModeOff {
-			glog.V(2).Infof("pod %v matched VPA %v but it was discarded because it's mode is Off", pod.Name, vpaConfig.Name)
 			continue
 		}
-		return vpaConfig
+		onConfigs = append(onConfigs, vpaConfig)
 	}
-	return nil
+	glog.Infof("Let's choose from %d configs", len(onConfigs))
+	return vpa_api_util.GetControllingVPAForPod(pod, onConfigs)
 }
 
 // GetRequestForPod returns recommended request for a given pod. The returned slice corresponds 1-1 to containers in the Pod.
