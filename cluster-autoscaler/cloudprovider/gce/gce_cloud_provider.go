@@ -228,7 +228,7 @@ type autoprovisioningSpec struct {
 	extraResources map[string]resource.Quantity
 }
 
-// Mig implements NodeGroup interfrace.
+// Mig implements NodeGroup interface.
 type Mig struct {
 	GceRef
 

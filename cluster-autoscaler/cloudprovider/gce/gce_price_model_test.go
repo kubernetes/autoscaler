@@ -89,7 +89,7 @@ func TestGetNodePrice(t *testing.T) {
 	node6 := BuildTestNode("sillyname6", 1000, 3750*1024*1024)
 	price6, err := model.NodePrice(node6, now, now.Add(time.Hour))
 	assert.NoError(t, err)
-	// 8 times smaller node shoul be 8 times less expensive.
+	// 8 times smaller node should be 8 times less expensive.
 	assert.True(t, math.Abs(price3-8*price6) < 0.1)
 }
 
