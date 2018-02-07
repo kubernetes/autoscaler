@@ -24,7 +24,8 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
-	types "k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/types"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/poc.autoscaling.k8s.io/v1alpha1"
@@ -84,4 +85,46 @@ func NewAllVpasLister(vpaClient *vpa_clientset.Clientset, stopChannel <-chan str
 	vpaReflector := cache.NewReflector(vpaListWatch, &vpa_types.VerticalPodAutoscaler{}, store, time.Hour)
 	go vpaReflector.Run(stopChannel)
 	return vpaLister
+}
+
+// PodMatchesVPA returns true iff the VPA's selector matches the Pod and they are in the same namespace.
+func PodMatchesVPA(pod *apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler) bool {
+	if pod.Namespace != vpa.Namespace {
+		return false
+	}
+	selector, err := metav1.LabelSelectorAsSelector(vpa.Spec.Selector)
+	if err != nil {
+		glog.Errorf("error processing VPA object: failed to create pod selector: %v", err)
+		return false
+	}
+	return selector.Matches(labels.Set(pod.GetLabels()))
+}
+
+// stronger returns true iff a is before b in the order to control a Pod (that matches both VPAs).
+func stronger(a, b *vpa_types.VerticalPodAutoscaler) bool {
+	// Assume a is not nil and each valid object is before nil object.
+	if b == nil {
+		return true
+	}
+	// Compare creation timestamps of the VPA objects. This is the clue of the stronger logic.
+	var aTime, bTime metav1.Time
+	aTime = a.GetCreationTimestamp()
+	bTime = b.GetCreationTimestamp()
+	if !aTime.Equal(&bTime) {
+		return aTime.Before(&bTime)
+	}
+	// If the timestamps are the same (unlikely, but possible e.g. in test environments): compare by name to have a complete deterministic order.
+	return a.GetName() < b.GetName()
+}
+
+// GetControllingVPAForPod chooses the earliest created VPA from the input list that matches the given Pod.
+func GetControllingVPAForPod(pod *apiv1.Pod, vpas []*vpa_types.VerticalPodAutoscaler) *vpa_types.VerticalPodAutoscaler {
+	var controlling *vpa_types.VerticalPodAutoscaler
+	// Choose the strongest VPA from the ones that match this Pod.
+	for _, vpa := range vpas {
+		if PodMatchesVPA(pod, vpa) && stronger(vpa, controlling) {
+			controlling = vpa
+		}
+	}
+	return controlling
 }

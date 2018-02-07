@@ -121,6 +121,9 @@ func BuildTestVerticalPodAutoscaler(containerName, targetCpu, minCpu, maxCpu, ta
 	targetMemoryVal, _ := resource.ParseQuantity(targetMemory)
 
 	return &vpa_types.VerticalPodAutoscaler{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: "default",
+		},
 		Spec: vpa_types.VerticalPodAutoscalerSpec{
 			Selector:       labelSelector,
 			UpdatePolicy:   vpa_types.PodUpdatePolicy{},
