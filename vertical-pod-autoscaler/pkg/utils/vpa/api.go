@@ -54,6 +54,7 @@ func patchVpa(vpaClient vpa_api.VerticalPodAutoscalerInterface, vpaName string, 
 func UpdateVpaStatus(vpaClient vpa_api.VerticalPodAutoscalerInterface, vpa *model.Vpa) (result *vpa_types.VerticalPodAutoscaler, err error) {
 	status := vpa_types.VerticalPodAutoscalerStatus{
 		LastUpdateTime:	metav1.Now(),
+		Conditions:	vpa.Conditions.AsList(),
 	}
 	if vpa.Recommendation != nil {
 		status.Recommendation = *vpa.Recommendation

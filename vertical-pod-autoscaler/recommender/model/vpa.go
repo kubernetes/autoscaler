@@ -17,10 +17,45 @@ limitations under the License.
 package model
 
 import (
+	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 )
+
+// Map from VPA condition type to condition.
+type vpaConditionsMap map[vpa_types.VerticalPodAutoscalerConditionType]vpa_types.VerticalPodAutoscalerCondition
+
+func (conditionsMap *vpaConditionsMap) Set(
+	conditionType vpa_types.VerticalPodAutoscalerConditionType,
+	status bool, reason string, message string) *vpaConditionsMap {
+	oldCondition, alreadyPresent := (*conditionsMap)[conditionType]
+	condition := vpa_types.VerticalPodAutoscalerCondition{
+		Type:    conditionType,
+		Reason:  reason,
+		Message: message,
+	}
+	if status {
+		condition.Status = apiv1.ConditionTrue
+	} else {
+		condition.Status = apiv1.ConditionFalse
+	}
+	if alreadyPresent && oldCondition.Status == condition.Status {
+		condition.LastTransitionTime = oldCondition.LastTransitionTime
+	} else {
+		condition.LastTransitionTime = metav1.Now()
+	}
+	(*conditionsMap)[conditionType] = condition
+	return conditionsMap
+}
+
+func (conditionsMap *vpaConditionsMap) AsList() []vpa_types.VerticalPodAutoscalerCondition {
+	conditions := make([]vpa_types.VerticalPodAutoscalerCondition, 0, len(*conditionsMap))
+	for _, condition := range *conditionsMap {
+		conditions = append(conditions, condition)
+	}
+	return conditions
+}
 
 // Vpa (Vertical Pod Autoscaler) object is responsible for vertical scaling of
 // Pods matching a given label selector.
@@ -29,6 +64,8 @@ type Vpa struct {
 	// Labels selector that determines which Pods are controlled by this VPA
 	// object. Can be nil, in which case no Pod is matched.
 	PodSelector labels.Selector
+	// Map of the status conditions (keys are condition types).
+	Conditions vpaConditionsMap
 	// Most recently computed recommendation. Can be nil.
 	Recommendation *vpa_types.RecommendedPodResources
 	// Pods controlled by this VPA object.
