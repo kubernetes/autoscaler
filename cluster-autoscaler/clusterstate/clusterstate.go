@@ -74,7 +74,7 @@ type ScaleDownRequest struct {
 	NodeGroupName string
 	// Time is the time when the node deletion was requested.
 	Time time.Time
-	// ExpectedDeleteTime is the time when the node is excpected to be deleted.
+	// ExpectedDeleteTime is the time when the node is expected to be deleted.
 	ExpectedDeleteTime time.Time
 }
 
@@ -259,7 +259,7 @@ func (csr *ClusterStateRegistry) RegisterFailedScaleUp(nodeGroupName string, rea
 	csr.backoffNodeGroup(nodeGroupName, time.Now())
 }
 
-// UpdateNodes updates the state of the nodes in the ClusterStateRegistry and recalculates the statss
+// UpdateNodes updates the state of the nodes in the ClusterStateRegistry and recalculates the stats
 func (csr *ClusterStateRegistry) UpdateNodes(nodes []*apiv1.Node, currentTime time.Time) error {
 	csr.updateNodeGroupMetrics()
 	targetSizes, err := getTargetSizes(csr.cloudProvider)
@@ -868,7 +868,7 @@ func (csr *ClusterStateRegistry) GetIncorrectNodeGroupSize(nodeGroupName string)
 }
 
 // GetUpcomingNodes returns how many new nodes will be added shortly to the node groups or should become ready soon.
-// The functiom may overestimate the number of nodes.
+// The function may overestimate the number of nodes.
 func (csr *ClusterStateRegistry) GetUpcomingNodes() map[string]int {
 	csr.Lock()
 	defer csr.Unlock()
