@@ -148,7 +148,7 @@ type PricingModel interface {
 	// All prices returned by the structure should be in the same currency.
 	NodePrice(node *apiv1.Node, startTime time.Time, endTime time.Time) (float64, error)
 
-	// PodePrice returns a theoretical minimum priece of running a pod for a given
+	// PodPrice returns a theoretical minimum price of running a pod for a given
 	// period of time on a perfectly matching machine.
 	PodPrice(pod *apiv1.Pod, startTime time.Time, endTime time.Time) (float64, error)
 }
