@@ -30,6 +30,7 @@ import (
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/poc.autoscaling.k8s.io/v1alpha1"
 	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/poc.autoscaling.k8s.io/v1alpha1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/model"
 	"k8s.io/client-go/tools/cache"
 )
 
@@ -49,32 +50,32 @@ func patchVpa(vpaClient vpa_api.VerticalPodAutoscalerInterface, vpaName string, 
 	return vpaClient.Patch(vpaName, types.JSONPatchType, bytes)
 }
 
-// InitVpaStatus inserts into VPA CRD object an empty VerticalPodAutoscalerStatus object, so later it can be filled with data.
-func InitVpaStatus(vpaClient vpa_api.VerticalPodAutoscalerInterface, vpaName string) (result *vpa_types.VerticalPodAutoscaler, err error) {
-	return patchVpa(vpaClient, vpaName, []patchRecord{{
+// UpdateVpa updates VPA object status.
+func UpdateVpaStatus(vpaClient vpa_api.VerticalPodAutoscalerInterface, vpa *model.Vpa) (result *vpa_types.VerticalPodAutoscaler, err error) {
+	status := vpa_types.VerticalPodAutoscalerStatus{
+		LastUpdateTime:	metav1.Now(),
+	}
+	if vpa.Recommendation != nil {
+		status.Recommendation = *vpa.Recommendation
+	}
+
+	patches := make([]patchRecord, 0)
+	if !vpa.LastUpdateTime.IsZero() {
+		// Verify that Status was not updated in the meantime.
+		patches = append(patches, patchRecord{
+			Op:    "test",
+			Path:  "/status/lastUpdateTime",
+			Value: vpa.LastUpdateTime,
+		})
+	}
+	patches = append(patches, patchRecord{
 		Op:    "add",
 		Path:  "/status",
-		Value: vpa_types.VerticalPodAutoscalerStatus{},
-	},
+		Value: status,
 	})
-}
 
-// UpdateVpaRecommendation updates VPA's status/recommendation object and status/lastUpdateTime.
-func UpdateVpaRecommendation(vpaClient vpa_api.VerticalPodAutoscalerInterface, vpaName string, recommendation vpa_types.RecommendedPodResources) (result *vpa_types.VerticalPodAutoscaler, err error) {
-	patches := []patchRecord{
-		{
-			Op:    "add",
-			Path:  "/status/lastUpdateTime",
-			Value: metav1.Time{time.Now()},
-		},
-		{
-			Op:    "add",
-			Path:  "/status/recommendation",
-			Value: recommendation,
-		},
-	}
-	return patchVpa(vpaClient, vpaName, patches)
-
+	
+	return patchVpa(vpaClient, (*vpa).ID.VpaName, patches)
 }
 
 // NewAllVpasLister returns VerticalPodAutoscalerLister configured to fetch all VPA objects.

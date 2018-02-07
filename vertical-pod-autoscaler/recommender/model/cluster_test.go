@@ -20,7 +20,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/golang/glog"
 	"github.com/stretchr/testify/assert"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 )
 
 var (
@@ -62,14 +65,25 @@ func TestMissingKeys(t *testing.T) {
 	assert.EqualError(t, err, "KeyError: {namespace-1 pod-1}")
 }
 
-func addTestPod(cluster *ClusterState) *PodState {
-	cluster.AddOrUpdatePod(testPodID, testLabels)
-	return cluster.Pods[testPodID]
+func addVpa(cluster *ClusterState, id VpaID, selector string) *Vpa {
+	var apiObject vpa_types.VerticalPodAutoscaler
+	apiObject.Namespace = id.Namespace
+	apiObject.Name = id.VpaName
+	apiObject.Spec.Selector, _ = metav1.ParseToLabelSelector(selector)
+	err := cluster.AddOrUpdateVpa(&apiObject)
+	if err != nil {
+		glog.Fatalf("AddOrUpdateVpa() failed: %v", err)
+	}
+	return cluster.Vpas[id]
 }
 
 func addTestVpa(cluster *ClusterState) *Vpa {
-	cluster.AddOrUpdateVpa(testVpaID, testSelectorStr)
-	return cluster.Vpas[testVpaID]
+	return addVpa(cluster, testVpaID, testSelectorStr)
+}
+
+func addTestPod(cluster *ClusterState) *PodState {
+	cluster.AddOrUpdatePod(testPodID, testLabels)
+	return cluster.Pods[testPodID]
 }
 
 // Creates a VPA followed by a matching pod. Verifies that the links between the
@@ -136,20 +150,17 @@ func TestUpdatePodSelector(t *testing.T) {
 	pod := addTestPod(cluster)
 
 	// Update the VPA selector such that it still matches the Pod.
-	assert.NoError(t, cluster.AddOrUpdateVpa(testVpaID, "label-1 in (value-1,value-2)"))
-	vpa = cluster.Vpas[testVpaID]
+	vpa = addVpa(cluster, testVpaID, "label-1 in (value-1,value-2)")
 	assert.Equal(t, pod, vpa.Pods[testPodID])
 	assert.Equal(t, map[VpaID]*Vpa{testVpaID: vpa}, pod.MatchingVpas)
 
 	// Update the VPA selector to no longer match the Pod.
-	assert.NoError(t, cluster.AddOrUpdateVpa(testVpaID, "label-1 = value-2"))
-	vpa = cluster.Vpas[testVpaID]
+	vpa = addVpa(cluster, testVpaID, "label-1 = value-2")
 	assert.Empty(t, vpa.Pods)
 	assert.Empty(t, pod.MatchingVpas)
 
 	// Update the VPA selector to match the Pod again.
-	assert.NoError(t, cluster.AddOrUpdateVpa(testVpaID, "label-1 = value-1"))
-	vpa = cluster.Vpas[testVpaID]
+	vpa = addVpa(cluster, testVpaID, "label-1 = value-1")
 	assert.Equal(t, pod, vpa.Pods[testPodID])
 	assert.Equal(t, map[VpaID]*Vpa{testVpaID: vpa}, pod.MatchingVpas)
 }
@@ -161,9 +172,9 @@ func TestUpdatePodSelector(t *testing.T) {
 // longer controlled by any VPA.
 func TestTwoVpasForPod(t *testing.T) {
 	cluster := NewClusterState()
-	cluster.AddOrUpdateVpa(VpaID{"namespace-1", "vpa-1"}, "label-1 = value-1")
+	addVpa(cluster, VpaID{"namespace-1", "vpa-1"}, "label-1 = value-1")
 	pod := addTestPod(cluster)
-	cluster.AddOrUpdateVpa(VpaID{"namespace-1", "vpa-2"}, "label-1 in (value-1,value-2)")
+	addVpa(cluster, VpaID{"namespace-1", "vpa-2"}, "label-1 in (value-1,value-2)")
 	assert.Equal(t, map[VpaID]*Vpa{
 		{"namespace-1", "vpa-1"}: cluster.Vpas[VpaID{"namespace-1", "vpa-1"}],
 		{"namespace-1", "vpa-2"}: cluster.Vpas[VpaID{"namespace-1", "vpa-2"}]},
@@ -184,7 +195,7 @@ func TestTwoVpasForPod(t *testing.T) {
 func TestEmptySelector(t *testing.T) {
 	cluster := NewClusterState()
 	// Create a VPA with an empty selector (matching all pods).
-	assert.NoError(t, cluster.AddOrUpdateVpa(testVpaID, ""))
+	addVpa(cluster, testVpaID, "")
 	// Create a pod with labels.
 	cluster.AddOrUpdatePod(testPodID, testLabels)
 	// Create a pod without labels.
