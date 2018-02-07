@@ -44,7 +44,7 @@ And fill the node groups in container command by `--nodes`, e.g.
         - --nodes=1:10:vmss1
 ```
 
-or multipe node groups:
+or multiple node groups:
 
 ```yaml
         - --nodes=1:10:vmss1
@@ -68,7 +68,7 @@ kubectl create -f cluster-autoscaler-vmss-master.yaml
 Pre-requirements:
 
 - Get credentials from above `permissions` step.
-- Get the required paramters from acs-engine deployments (usually under directory `_output/<master-dns-prefix>` after running `acs-engine deploy` command)
+- Get the required parameters from acs-engine deployments (usually under directory `_output/<master-dns-prefix>` after running `acs-engine deploy` command)
   - Get `APIServerPrivateKey`, `CAPrivateKey`, `ClientPrivateKey` and `KubeConfigPrivateKey` from `azuredeploy.parameters.json`
   - Get `EtcdClientPrivateKey` and `EtcdServerPrivateKey` if the cluster is deployed by acs-engine >= v0.12.0
   - If windows nodes are included, also get `WindowsAdminPassword` from acs-engine deployment manifests
@@ -101,7 +101,7 @@ And fill the node groups in container command by `--nodes`, e.g.
         - --nodes=1:10:agentpool1
 ```
 
-or multipe node groups:
+or multiple node groups:
 
 ```yaml
         - --nodes=1:10:agentpool1
