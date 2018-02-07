@@ -37,7 +37,7 @@ const (
 var AvailableEstimators = []string{BasicEstimatorName, BinpackingEstimatorName}
 
 // BasicNodeEstimator estimates the number of needed nodes to handle the given amount of pods.
-// It will never overestimate the number of nodes but is quite likekly to provide a number that
+// It will never overestimate the number of nodes but is quite likely to provide a number that
 // is too small.
 type BasicNodeEstimator struct {
 	cpuSum      resource.Quantity
