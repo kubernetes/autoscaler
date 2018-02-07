@@ -3,7 +3,7 @@
 ## Introduction
 Currently the options to monitor Cluster Autoscaler are limited to logs, status
 configmap and events. While useful for debugging, none of this options is
-paritcularly practical for monitoring Cluster Autoscaler behaviour over time.
+particularly practical for monitoring Cluster Autoscaler behaviour over time.
 This document describes a set of metrics (in Prometheus format) that will be
 added to 0.6 Cluster Autoscaler to allow better monitoring of its operations.
 
