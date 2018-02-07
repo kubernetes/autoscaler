@@ -353,7 +353,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 			if a.AutoscalingContext.NodeAutoprovisioningEnabled {
 				err := cleanUpNodeAutoprovisionedGroups(a.AutoscalingContext.CloudProvider, a.AutoscalingContext.LogRecorder)
 				if err != nil {
-					glog.Warningf("Failed to clean up unneded node groups: %v", err)
+					glog.Warningf("Failed to clean up unneeded node groups: %v", err)
 				}
 			}
 

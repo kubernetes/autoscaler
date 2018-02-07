@@ -99,7 +99,7 @@ func (n *NodeDeleteStatus) SetDeleteInProgress(status bool) {
 	n.deleteInProgress = status
 }
 
-// ScaleDown is responsible for maintaining the state needed to perform unneded node removals.
+// ScaleDown is responsible for maintaining the state needed to perform unneeded node removals.
 type ScaleDown struct {
 	context            *AutoscalingContext
 	unneededNodes      map[string]time.Time
