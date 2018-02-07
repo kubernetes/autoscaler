@@ -76,7 +76,7 @@ of long-missing nodes. Skip the rest of the iteration. Helps with [UC4], uses [S
 5. Check if there are any pending pods. Skip pending pods that can be scheduled on the currently available ready nodes (not including nodes that are to be deleted soon [UC7]). 
 6. If there are still some pending pods, find which of the node group can be expanded to accommodate them. Skip node groups that are not healthy (contains many unready nodes or nodes that failed to start). Helps with [UC3] uses [S2]. 
 7. Estimate the number of needed nodes, account yet-to-come nodes [UC1], [UC2], [S3]. Expand the chosen node group if needed.
-8. Calculate the unneeded nodes in the whole cluster, including the unready nodes [UC6]. Unneeded nodes must be monitored every iteration to be sure that they have been unneded for the prolonged time.
+8. Calculate the unneeded nodes in the whole cluster, including the unready nodes [UC6]. Unneeded nodes must be monitored every iteration to be sure that they have been unneeded for the prolonged time.
 9. Try to remove some unneeded node, if there was no recent scale up and the node has been unneeded for more than
 10 min. Use higher delay for unready nodes [UC6].
 
