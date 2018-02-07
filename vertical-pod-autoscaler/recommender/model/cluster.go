@@ -17,6 +17,8 @@ limitations under the License.
 package model
 
 import (
+	"fmt"
+	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
@@ -150,10 +152,20 @@ func (cluster *ClusterState) AddSample(sample *ContainerUsageSampleWithKey) erro
 // all pods it matches.
 func (cluster *ClusterState) AddOrUpdateVpa(apiObject *vpa_types.VerticalPodAutoscaler) error {
 	vpaID := VpaID{Namespace: apiObject.Namespace, VpaName: apiObject.Name}
-	var currentRecommendation *vpa_types.RecommendedPodResources =
-		&apiObject.Status.Recommendation
-	// TODO: Set a proper condition on error.
+	conditionsMap := make(vpaConditionsMap)
+	for _, condition := range apiObject.Status.Conditions {
+		conditionsMap[condition.Type] = condition
+	}
+	var currentRecommendation *vpa_types.RecommendedPodResources
+	if conditionsMap[vpa_types.RecommendationProvided].Status == apiv1.ConditionTrue {
+		currentRecommendation = &apiObject.Status.Recommendation
+	}
 	selector, err := metav1.LabelSelectorAsSelector(apiObject.Spec.Selector)
+	if err != nil {
+		errMsg := fmt.Sprintf("couldn't convert selector into a corresponding internal selector object: %v", err)
+		conditionsMap.Set(vpa_types.Configured, false, "InvalidSelector", errMsg)
+	}
+
 	vpa, vpaExists := cluster.Vpas[vpaID]
 	if vpaExists && (err != nil || vpa.PodSelector.String() != selector.String()) {
 		// Pod selector was changed. Delete the VPA object and recreate
@@ -170,6 +182,7 @@ func (cluster *ClusterState) AddOrUpdateVpa(apiObject *vpa_types.VerticalPodAuto
 			vpa.UpdatePodLink(pod)
 		}
 	}
+	vpa.Conditions = conditionsMap
 	vpa.Recommendation = currentRecommendation
 	vpa.LastUpdateTime = apiObject.Status.LastUpdateTime
 	return nil

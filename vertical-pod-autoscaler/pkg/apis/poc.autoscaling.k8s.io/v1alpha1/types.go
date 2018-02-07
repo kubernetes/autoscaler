@@ -88,6 +88,8 @@ type VerticalPodAutoscalerStatus struct {
 type VerticalPodAutoscalerConditionType string
 
 var (
+	// Configured indicates whether the VPA recommender was able to load a valid VPA spec.
+	Configured VerticalPodAutoscalerConditionType = "Configured"
 	// RecommendationProvided indicates whether the VPA recommender was able to calculate a recommendation.
 	RecommendationProvided VerticalPodAutoscalerConditionType = "RecommendationProvided"
 )

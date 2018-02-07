@@ -172,6 +172,7 @@ func newContainerUsageSamplesWithKey(metrics *metrics.ContainerMetricsSnapshot) 
 func (r *recommender) updateVPAs() {
 	for key, vpa := range r.clusterState.Vpas {
 		glog.V(3).Infof("VPA to update #%v: %+v", key, vpa)
+		vpa.Conditions.Set(vpa_types.Configured, true, "", "")
 		resources := r.podResourceRecommender.GetRecommendedPodResources(vpa)
 		containerResources := make([]vpa_types.RecommendedContainerResources, 0, len(resources))
 		for containerID, res := range resources {
@@ -184,6 +185,7 @@ func (r *recommender) updateVPAs() {
 
 		}
 		vpa.Recommendation = &vpa_types.RecommendedPodResources{containerResources}
+		vpa.Conditions.Set(vpa_types.RecommendationProvided, true, "", "")
 
 		_, err := vpa_api_util.UpdateVpaStatus(
 			r.vpaClient.VerticalPodAutoscalers(vpa.ID.Namespace), vpa)
