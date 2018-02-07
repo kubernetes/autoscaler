@@ -19,6 +19,7 @@ there is a big chance that it won't work as expected.
 
 | Kubernetes Version  | CA Version   |
 |--------|--------|
+| 1.9.X  | 1.1.X  |
 | 1.8.X  | 1.0.X  |
 | 1.7.X  | 0.6.X  |
 | 1.6.X  | 0.5.X, 0.6.X<sup>*</sup>  |
@@ -28,6 +29,14 @@ there is a big chance that it won't work as expected.
 <sup>*</sup>Cluster Autoscaler 0.5.X is the official version shipped with k8s 1.6. We've done some basic tests using k8s 1.6 / CA 0.6 and we're not aware of any problems with this setup. However, CA internally simulates k8s scheduler and using different versions of scheduler code can lead to subtle issues.
 
 # Notable changes
+
+CA version 1.1.1:
+* Fixes around metrics in the multi-master configuration.
+* Fixes for unready nodes issues when quota is overrun. 
+
+CA version 1.1.0:
+* Added [Azure support](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/azure/README.md).
+* Added support for pod priorities. More details [here](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#how-does-cluster-autoscaler-work-with-pod-priority-and-preemption). 
 
 CA version 1.0.3:
 * Adds support for safe-to-evict annotation on pod. Pods with this annotation
