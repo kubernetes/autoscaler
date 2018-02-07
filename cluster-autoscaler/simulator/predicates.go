@@ -30,7 +30,7 @@ import (
 	"k8s.io/kubernetes/plugin/pkg/scheduler/factory"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 
-	// We need to import provider to intialize default scheduler.
+	// We need to import provider to initialize default scheduler.
 	_ "k8s.io/kubernetes/plugin/pkg/scheduler/algorithmprovider"
 
 	"github.com/golang/glog"
@@ -47,7 +47,7 @@ const (
 	// is discarded anyway.
 	ReturnSimpleError ErrorVerbosity = false
 
-	// We want to disable affinity predicate for performance reasons if no ppod
+	// We want to disable affinity predicate for performance reasons if no pod
 	// requires it
 	affinityPredicateName = "MatchInterPodAffinity"
 )
