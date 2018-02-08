@@ -14,7 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+set -o errexit
 set -o nounset
+set -o pipefail
 
 SCRIPT_ROOT=$(dirname ${BASH_SOURCE})/..
 
@@ -43,6 +45,6 @@ if [ $# -gt 1 ]; then
 fi
 
 for i in $YAMLS; do
-  ${SCRIPT_ROOT}/hack/vpa-process-yaml.sh ${SCRIPT_ROOT}/$i | kubectl $1 -f -
+  ${SCRIPT_ROOT}/hack/vpa-process-yaml.sh ${SCRIPT_ROOT}/$i | kubectl $1 -f - || true
 done
 
