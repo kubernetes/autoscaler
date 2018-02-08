@@ -38,7 +38,7 @@ if [ $# -gt 2 ]; then
   exit 1
 fi
 
-YAMLS="api/vpa-crd.yaml deploy/vpa-rbac.yaml deploy/admission-controller-rbac.yaml deploy/updater-deployment.yaml deploy/recommender-deployment.yaml deploy/admission-controller-deployment.yaml"
+YAMLS="api/vpa-crd.yaml deploy/vpa-rbac.yaml deploy/admission-controller-rbac.yaml deploy/updater-deployment.yaml deploy/recommender-deployment.yaml"
 
 if [ $# -gt 1 ]; then
   YAMLS="deploy/$2-deployment.yaml"
