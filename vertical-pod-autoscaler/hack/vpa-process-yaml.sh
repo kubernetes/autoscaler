@@ -21,11 +21,9 @@ set -o pipefail
 SCRIPT_ROOT=$(dirname ${BASH_SOURCE})/..
 
 function print_help {
-  echo "ERROR! Usage: vpa-process-yamls.sh <action> [<component>]"
-  echo "<action> should be either 'create' or 'delete'."
-  echo "<component> might be on of 'admission-controller', 'updater', 'recommender'."
-  echo "If <component> is set, only the deployment of that component will be processed,"
-  echo "otherwise all components and configs will be processed."
+  echo "ERROR! Usage: vpa-process-yaml.sh <YAML files>+"
+  echo "Script will output content of YAML files separated with YAML document"
+  echo "separator and substituting REGISTRY and TAG for pod images"
 }
 
 if [ $# -eq 0 ]; then
@@ -33,18 +31,19 @@ if [ $# -eq 0 ]; then
   exit 1
 fi
 
-if [ $# -gt 2 ]; then
-  print_help
-  exit 1
+REGISTRY_TO_APPLY=${REGISTRY-gcr.io/kubernetes-develop}
+TAG_TO_APPLY=${TAG-0.0.1}
+
+if [ "x$REGISTRY" != "xgcr.io/kubernetes-develop" ]; then
+  (>&2 echo "WARNING! Using image repository from REGISTRY env variable (${REGISTRY_TO_APPLY}) instead of gcr.io/kubernetes-develop.")
 fi
 
-YAMLS="api/vpa-crd.yaml deploy/vpa-rbac.yaml deploy/updater-deployment.yaml deploy/recommender-deployment.yaml deploy/admission-controller-deployment.yaml"
-
-if [ $# -gt 1 ]; then
-  YAMLS="deploy/$2-deployment.yaml"
+if [ "x$TAG" != "x0.0.1" ]; then
+  (>&2 echo "WARNING! Using tag from TAG env variable (${TAG_TO_APPLY}) instead of the default (0.0.1).")
 fi
 
-for i in $YAMLS; do
-  ${SCRIPT_ROOT}/hack/vpa-process-yaml.sh ${SCRIPT_ROOT}/$i | kubectl $1 -f - || true
+for i in $*; do
+  sed -e "s,gcr.io/kubernetes-develop/\([a-z-]*\):.*,${REGISTRY_TO_APPLY}/\1:${TAG_TO_APPLY}," $i
+  echo ""
+  echo "---"
 done
-
