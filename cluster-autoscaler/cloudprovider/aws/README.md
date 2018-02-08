@@ -26,7 +26,7 @@ A minimum IAM policy would look like:
 }
 ```
 
-If you'd like to auto-discover node groups by specifing the `--node-group-auto-discover` flag, a `DescribeTags` permission is also required:
+If you'd like to auto-discover node groups by specifing the `--node-group-auto-discovery` flag, a `DescribeTags` permission is also required. We highly recommend you specify the ASGs explicitly in your IAM Roles for production systems. The autoscaler will only be able to modify ASGs you give it access to.
 
 ```json
 {
@@ -35,19 +35,35 @@ If you'd like to auto-discover node groups by specifing the `--node-group-auto-d
         {
             "Effect": "Allow",
             "Action": [
+                "autoscaling:SetDesiredCapacity",
+                "autoscaling:TerminateInstanceInAutoScalingGroup"
+            ],
+            "Condition": {
+                "StringEquals": {
+                    "autoscaling:ResourceTag/<some-optional-tag-you-give-your-asgs-to-identify-them>": "<some-value>"
+                },
+                "Bool": {
+                    "autoscaling:ResourceTag/k8s.io/cluster-autoscaler/enabled": "true"
+                }
+            },
+            "Resource": [
+                "arn:aws:autoscaling:<REGION>:<ACCOUNTID>:autoScalingGroup:*:autoScalingGroupName/<some-common-asg-name-prefix-1>*",
+                "arn:aws:autoscaling:<REGION>:<ACCOUNTID>:autoScalingGroup:*:autoScalingGroupName/<some-common-asg-name-prefix-2>*"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
                 "autoscaling:DescribeAutoScalingGroups",
                 "autoscaling:DescribeAutoScalingInstances",
                 "autoscaling:DescribeTags",
-                "autoscaling:SetDesiredCapacity",
-                "autoscaling:TerminateInstanceInAutoScalingGroup"
+                "autoscaling:DescribeLaunchConfigurations"
             ],
             "Resource": "*"
         }
     ]
 }
 ```
-
-Unfortunately AWS does not support ARNs for autoscaling groups yet so you must use "*" as the resource. More information [here](http://docs.aws.amazon.com/autoscaling/latest/userguide/IAM.html#UsingWithAutoScaling_Actions).
 
 ## Deployment Specification
 
