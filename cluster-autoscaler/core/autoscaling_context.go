@@ -146,6 +146,7 @@ func NewAutoscalingContext(options AutoscalingOptions, predicateChecker *simulat
 		cloudprovider.NewResourceLimiter(
 			map[string]int64{cloudprovider.ResourceNameCores: int64(options.MinCoresTotal), cloudprovider.ResourceNameMemory: options.MinMemoryTotal},
 			map[string]int64{cloudprovider.ResourceNameCores: options.MaxCoresTotal, cloudprovider.ResourceNameMemory: options.MaxMemoryTotal}))
+
 	expanderStrategy, err := factory.ExpanderStrategyFromString(options.ExpanderName,
 		cloudProvider, listerRegistry.AllNodeLister())
 	if err != nil {

@@ -101,7 +101,7 @@ func (b CloudProviderBuilder) Build(discoveryOpts cloudprovider.NodeGroupDiscove
 }
 
 func (b CloudProviderBuilder) buildAzTools(do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
-	provider, err := aztools.BuildAzToolsCloudProvider(b.clusterName, do)
+	provider, err := aztools.BuildAzToolsCloudProvider(b.clusterName, do, rl)
 	if err != nil {
 		glog.Fatalf("Failed to create aztools cloud provider: %v", err)
 	}

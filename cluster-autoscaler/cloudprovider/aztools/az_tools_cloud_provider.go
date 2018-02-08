@@ -22,12 +22,16 @@ import (
 	"sync"
 
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aztools/az"
+	cloudBuilder "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
+
+	"github.com/golang/glog"
 )
 
 const (
@@ -62,54 +66,59 @@ type AzToolsCloudProvider struct {
 	machineTypes      []string
 	machineTemplates  map[string]*schedulercache.NodeInfo
 	resourceLimiter   *cloudprovider.ResourceLimiter
+	kubeClient        kube_client.Interface
 }
 
-func BuildAzToolsCloudProvider(clusterName string, discoveryOpts cloudprovider.NodeGroupDiscoveryOptions) (*AzToolsCloudProvider, error) {
+func BuildAzToolsCloudProvider(clusterName string, discoveryOpts cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) (*AzToolsCloudProvider, error) {
 	// TODO(harry): Check if `az list` something works
-	provider := NewAzToolsCloudProvider(az.OnScaleUp, az.OnScaleDown)
+	provider := NewAzToolsCloudProvider(az.OnScaleUp, az.OnScaleDown, rl)
 
 	for i, spec := range discoveryOpts.NodeGroupSpecs {
 		if i > 0 {
-			return nil, fmt.Errorf("multiple node groups are provided, this is not supported for az tools for now")
+			return nil, fmt.Errorf("multiple node groups detected: this is not supported for az tools for now")
 		}
 		s, err := dynamic.SpecFromString(spec, scaleToZeroSupported)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse node group spec: %v: %v", spec, err)
 		}
 
+		grpID := clusterName + "-" + strconv.Itoa(i)
+
 		// min, max, targetSize
-		provider.AddNodeGroup(clusterName+"-"+strconv.Itoa(i), s.MinSize, s.MaxSize, 0)
+		provider.AddNodeGroup(grpID, s.MinSize, s.MaxSize, 0)
+
+		// Initializing: fetch all nodes in the cluster and add them into group.
+		nodes, err := provider.kubeClient.CoreV1().Nodes().List(metav1.ListOptions{})
+		if err != nil {
+			return nil, err
+		}
+
+		for node := range nodes.Items {
+			provider.AddNode(grpID, node.Name)
+		}
 	}
 
 	return provider, nil
 }
 
+func createInClusterKubeClient() kube_client.Interface {
+	kubeConfig, err := config.GetKubeClientConfig("")
+	if err != nil {
+		glog.Fatalf("Failed to build in cluster Kubernetes client configuration: %v", err)
+	}
+
+	return kube_client.NewForConfigOrDie(kubeConfig)
+}
+
 // NewAzToolsCloudProvider builds new AzToolsCloudProvider
-func NewAzToolsCloudProvider(onScaleUp OnScaleUpFunc, onScaleDown OnScaleDownFunc) *AzToolsCloudProvider {
+func NewAzToolsCloudProvider(onScaleUp OnScaleUpFunc, onScaleDown OnScaleDownFunc, rl *cloudprovider.ResourceLimiter) *AzToolsCloudProvider {
 	return &AzToolsCloudProvider{
 		nodes:           make(map[string]string),
 		groups:          make(map[string]cloudprovider.NodeGroup),
 		onScaleUp:       onScaleUp,
 		onScaleDown:     onScaleDown,
-		resourceLimiter: cloudprovider.NewResourceLimiter(make(map[string]int64), make(map[string]int64)),
-	}
-}
-
-// NOTE(harry): aztools does not support autoprovisioning for now, but let's keep this for potential feature change.
-// NewAzToolsAutoprovisioningCloudProvider builds new AzToolsCloudProvider with autoprovisioning support
-func NewAzToolsAutoprovisioningCloudProvider(onScaleUp OnScaleUpFunc, onScaleDown OnScaleDownFunc,
-	onNodeGroupCreate OnNodeGroupCreateFunc, onNodeGroupDelete OnNodeGroupDeleteFunc,
-	machineTypes []string, machineTemplates map[string]*schedulercache.NodeInfo) *AzToolsCloudProvider {
-	return &AzToolsCloudProvider{
-		nodes:             make(map[string]string),
-		groups:            make(map[string]cloudprovider.NodeGroup),
-		onScaleUp:         onScaleUp,
-		onScaleDown:       onScaleDown,
-		onNodeGroupCreate: onNodeGroupCreate,
-		onNodeGroupDelete: onNodeGroupDelete,
-		machineTypes:      machineTypes,
-		machineTemplates:  machineTemplates,
-		resourceLimiter:   cloudprovider.NewResourceLimiter(make(map[string]int64), make(map[string]int64)),
+		resourceLimiter: rl,
+		kubeClient:      createInClusterKubeClient(),
 	}
 }
 
@@ -165,22 +174,6 @@ func (azcp *AzToolsCloudProvider) GetAvailableMachineTypes() ([]string, error) {
 	return azcp.machineTypes, nil
 }
 
-// NewNodeGroup builds a theoretical node group based on the node definition provided. The node group is not automatically
-// created on the cloud provider side. The node group is not returned by NodeGroups() until it is created.
-func (azcp *AzToolsCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string,
-	extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
-	return &AzToolsNodeGroup{
-		cloudProvider:   azcp,
-		id:              "autoprovisioned-" + machineType,
-		minSize:         0,
-		maxSize:         1000,
-		targetSize:      0,
-		exist:           false,
-		autoprovisioned: true,
-		machineType:     machineType,
-	}, nil
-}
-
 // AddNodeGroup adds node group to test cloud provider.
 func (azcp *AzToolsCloudProvider) AddNodeGroup(id string, min int, max int, size int) {
 	azcp.Lock()
@@ -194,23 +187,6 @@ func (azcp *AzToolsCloudProvider) AddNodeGroup(id string, min int, max int, size
 		targetSize:      size,
 		exist:           true,
 		autoprovisioned: false,
-	}
-}
-
-// AddAutoprovisionedNodeGroup adds node group to test cloud provider.
-func (azcp *AzToolsCloudProvider) AddAutoprovisionedNodeGroup(id string, min int, max int, size int, machineType string) {
-	azcp.Lock()
-	defer azcp.Unlock()
-
-	azcp.groups[id] = &AzToolsNodeGroup{
-		cloudProvider:   azcp,
-		id:              id,
-		minSize:         min,
-		maxSize:         max,
-		targetSize:      size,
-		exist:           true,
-		autoprovisioned: true,
-		machineType:     machineType,
 	}
 }
 
@@ -239,6 +215,21 @@ func (azcp *AzToolsCloudProvider) Cleanup() error {
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
 // In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
 func (azcp *AzToolsCloudProvider) Refresh() error {
+	azcp.Lock()
+	defer azcp.Unlock()
+
+	nodes, err := provider.kubeClient.CoreV1().Nodes().List(metav1.ListOptions{})
+	if err != nil {
+		return err
+	}
+
+	// Clear all cached nodes in provider
+	azcp.nodes = map[string]string{}
+
+	// Add real world nodes into cache
+	for node := range nodes.Items {
+		azcp.AddNode(grpID, node.Name)
+	}
 	return nil
 }
 
@@ -310,11 +301,7 @@ func (aztng *AzToolsNodeGroup) Exist() bool {
 
 // Create creates the node group on the cloud provider side.
 func (aztng *AzToolsNodeGroup) Create() error {
-	if aztng.Exist() {
-		return fmt.Errorf("Group already exist")
-	}
-	aztng.cloudProvider.AddAutoprovisionedNodeGroup(aztng.id, aztng.minSize, aztng.maxSize, 0, aztng.machineType)
-	return aztng.cloudProvider.onNodeGroupCreate(aztng.id)
+	return fmt.Errorf("unimplemented")
 }
 
 // Delete deletes the node group on the cloud provider side.
