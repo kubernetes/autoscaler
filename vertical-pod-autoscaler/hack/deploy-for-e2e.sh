@@ -20,6 +20,22 @@ set -o pipefail
 
 SCRIPT_ROOT=$(dirname ${BASH_SOURCE})/..
 
-${SCRIPT_ROOT}/hack/deploy-for-e2e.sh $*
-go test ${SCRIPT_ROOT}/e2e/*go -v  --args --ginkgo.v=true --ginkgo.focus="\[VPA\]"
+REGISTRY=gcr.io/`gcloud config get-value core/project`
+TAG=latest
 
+COMPONENTS="recommender updater admission-controller"
+
+if [ $# -ne 0 ]; then
+  COMPONENTS=$*
+fi
+
+for i in ${COMPONENTS}; do
+  make --directory ${SCRIPT_ROOT}/${i} release
+done
+
+kubectl create -f ${SCRIPT_ROOT}/api/vpa-crd.yaml
+kubectl create -f ${SCRIPT_ROOT}/deploy/vpa-rbac.yaml
+
+for i in ${COMPONENTS}; do
+  ${SCRIPT_ROOT}/hack/vpa-process-yaml.sh  ${SCRIPT_ROOT}/deploy/${i}-deployment.yaml | kubectl create -f -
+done
