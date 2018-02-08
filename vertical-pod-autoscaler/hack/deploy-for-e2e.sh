@@ -14,8 +14,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+set -o errexit
 set -o nounset
+set -o pipefail
 
 SCRIPT_ROOT=$(dirname ${BASH_SOURCE})/..
 
-$SCRIPT_ROOT/hack/vpa-process-yamls.sh delete $*
+REGISTRY=gcr.io/`gcloud config get-value core/project`
+TAG=latest
+
+COMPONENTS="recommender updater admission-controller"
+
+if [ $# -ne 0 ]; then
+  COMPONENTS=$*
+fi
+
+for i in ${COMPONENTS}; do
+  (
+    cd ${SCRIPT_ROOT}/${i} && make release
+  )
+done
+
+kubectl create -f ${SCRIPT_ROOT}/api/vpa-crd.yaml
+kubectl create -f ${SCRIPT_ROOT}/deploy/vpa-rbac.yaml
+
+for i in ${COMPONENTS}; do
+  ${SCRIPT_ROOT}/hack/vpa-process-yaml.sh  ${SCRIPT_ROOT}/deploy/${i}-deployment.yaml | kubectl create -f -
+done

@@ -20,4 +20,6 @@ set -o pipefail
 
 SCRIPT_ROOT=$(dirname ${BASH_SOURCE})/..
 
+${SCRIPT_ROOT}/hack/deploy-for-e2e.sh $*
 go test ${SCRIPT_ROOT}/e2e/*go -v  --args --ginkgo.v=true --ginkgo.focus="\[VPA\]"
+
