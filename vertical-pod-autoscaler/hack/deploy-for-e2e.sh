@@ -30,9 +30,7 @@ if [ $# -ne 0 ]; then
 fi
 
 for i in ${COMPONENTS}; do
-  (
-    cd ${SCRIPT_ROOT}/${i} && make release
-  )
+  make --directory ${SCRIPT_ROOT}/${i} release
 done
 
 kubectl create -f ${SCRIPT_ROOT}/api/vpa-crd.yaml
