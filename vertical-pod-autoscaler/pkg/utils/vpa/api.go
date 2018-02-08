@@ -50,11 +50,13 @@ func patchVpa(vpaClient vpa_api.VerticalPodAutoscalerInterface, vpaName string, 
 	return vpaClient.Patch(vpaName, types.JSONPatchType, bytes)
 }
 
-// UpdateVpa updates VPA object status.
+// UpdateVpaStatus updates the status field of the VPA API object.
+// It prevents race conditions by verifying that the lastUpdateTime of the
+// API object and its model representation are equal.
 func UpdateVpaStatus(vpaClient vpa_api.VerticalPodAutoscalerInterface, vpa *model.Vpa) (result *vpa_types.VerticalPodAutoscaler, err error) {
 	status := vpa_types.VerticalPodAutoscalerStatus{
-		LastUpdateTime:	metav1.Now(),
-		Conditions:	vpa.Conditions.AsList(),
+		LastUpdateTime: metav1.Now(),
+		Conditions:     vpa.Conditions.AsList(),
 	}
 	if vpa.Recommendation != nil {
 		status.Recommendation = *vpa.Recommendation
@@ -75,7 +77,6 @@ func UpdateVpaStatus(vpaClient vpa_api.VerticalPodAutoscalerInterface, vpa *mode
 		Value: status,
 	})
 
-	
 	return patchVpa(vpaClient, (*vpa).ID.VpaName, patches)
 }
 
