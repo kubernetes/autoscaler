@@ -7,7 +7,7 @@ The cluster autoscaler on Azure scales worker nodes within any specified autosca
 Cluster autoscaler support two VM types with Azure cloud provider:
 
 - vmss: For kubernetes cluster running on VMSS instances. Azure cloud provider's `vmType` parameter must be configured as 'vmss'. It requires Kubernetes with Azure VMSS support ([kubernetes#43287](https://github.com/kubernetes/kubernetes/issues/43287)), which is planed in Kubernetes v1.10.
-- standard: For kubernetes cluster running on VMAS instances. Azure cloud provider's `vmType` parameter must be configured as 'standard'. It only supports Kubernetes cluster deployed via [acs-engine](https://github.com/Azure/acs-engine).
+- standard: For kubernetes cluster running on VMAS instances. Azure cloud provider's `vmType` parameter must be configured as 'standard'. It only supports Kubernetes cluster deployed via [acs-engine](https://github.com/Azure/acs-engine). And [useInstanceMetadata](https://github.com/Azure/acs-engine/blob/master/docs/clusterdefinition.md#kubernetesconfig) should be set to `false` for all nodes.
 
 ## Permissions
 
