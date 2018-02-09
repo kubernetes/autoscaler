@@ -21,6 +21,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
+	"time"
 )
 
 // Map from VPA condition type to condition.
@@ -71,7 +72,7 @@ type Vpa struct {
 	// Pods controlled by this VPA object.
 	Pods map[PodID]*PodState
 	// Value of the Status.LastUpdateTime fetched from the VPA API object.
-	LastUpdateTime metav1.Time
+	LastUpdateTime time.Time
 }
 
 // NewVpa returns a new Vpa with a given ID and pod selector. Doesn't set the
