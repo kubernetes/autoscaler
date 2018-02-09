@@ -412,23 +412,38 @@ func getPotentiallyUnneededNodes(context *AutoscalingContext, nodes []*apiv1.Nod
 	return result
 }
 
+func hasHardInterPodAffinity(affinity *apiv1.Affinity) bool {
+	if affinity == nil {
+		return false
+	}
+	if affinity.PodAffinity != nil {
+		if len(affinity.PodAffinity.RequiredDuringSchedulingIgnoredDuringExecution) > 0 {
+			return true
+		}
+	}
+	if affinity.PodAntiAffinity != nil {
+		if len(affinity.PodAntiAffinity.RequiredDuringSchedulingIgnoredDuringExecution) > 0 {
+			return true
+		}
+	}
+	return false
+}
+
+func anyPodHasHardInterPodAffinity(pods []*apiv1.Pod) bool {
+	for _, pod := range pods {
+		if hasHardInterPodAffinity(pod.Spec.Affinity) {
+			return true
+		}
+	}
+	return false
+}
+
 // ConfigurePredicateCheckerForLoop can be run to update predicateChecker configuration
 // based on current state of the cluster.
 func ConfigurePredicateCheckerForLoop(unschedulablePods []*apiv1.Pod, schedulablePods []*apiv1.Pod, predicateChecker *simulator.PredicateChecker) {
-	podsWithAffinityFound := false
-	for _, pod := range unschedulablePods {
-		if pod.Spec.Affinity != nil {
-			podsWithAffinityFound = true
-			break
-		}
-	}
+	podsWithAffinityFound := anyPodHasHardInterPodAffinity(unschedulablePods)
 	if !podsWithAffinityFound {
-		for _, pod := range schedulablePods {
-			if pod.Spec.Affinity != nil {
-				podsWithAffinityFound = true
-				break
-			}
-		}
+		podsWithAffinityFound = anyPodHasHardInterPodAffinity(schedulablePods)
 	}
 	predicateChecker.SetAffinityPredicateEnabled(podsWithAffinityFound)
 	if !podsWithAffinityFound {
