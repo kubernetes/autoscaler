@@ -101,7 +101,15 @@ func (b CloudProviderBuilder) Build(discoveryOpts cloudprovider.NodeGroupDiscove
 }
 
 func (b CloudProviderBuilder) buildAzTools(do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
-	provider, err := aztools.BuildAzToolsCloudProvider(b.clusterName, do, rl)
+	clientConfig, err := rest.InClusterConfig()
+	if err != nil {
+		glog.Fatalf("Failed to get kubeclient config for external cluster: %v", err)
+	}
+
+	// NOTE: that's why you can only use aztools scaler in Pod.
+	kubeClient := kubeclient.NewForConfigOrDie(clientConfig)
+
+	provider, err := aztools.BuildAzToolsCloudProvider(b.clusterName, do, rl, kubeClient)
 	if err != nil {
 		glog.Fatalf("Failed to create aztools cloud provider: %v", err)
 	}
