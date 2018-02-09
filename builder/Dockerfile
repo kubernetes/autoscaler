@@ -12,19 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/google-containers/ubuntu-slim:0.8
-MAINTAINER Marcin Wielgus "mwielgus@google.com"
+FROM golang:1.8.3
+LABEL maintainer="Marcin Wielgus <mwielgus@google.com>"
 
-RUN apt-get update && apt-get install --yes git wget make gcc libseccomp-dev \
-  && apt-get clean \
-  && rm -rf /var/lib/apt/lists/*
-RUN wget https://storage.googleapis.com/golang/go1.8.3.linux-amd64.tar.gz \
-   && tar -xvf go1.8.3.linux-amd64.tar.gz \
-   && rm go1.8.3.linux-amd64.tar.gz
-
-ENV GOROOT /go
 ENV GOPATH /gopath/
-ENV PATH $GOPATH/bin:$GOROOT/bin:$PATH
+ENV PATH $GOPATH/bin:$PATH
 RUN go version
 RUN go get github.com/tools/godep
 RUN godep version
