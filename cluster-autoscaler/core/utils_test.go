@@ -473,22 +473,56 @@ func TestGetPotentiallyUnneededNodes(t *testing.T) {
 }
 
 func TestConfigurePredicateCheckerForLoop(t *testing.T) {
-	p1 := BuildTestPod("p1", 500, 1000)
-	p1.Spec.Affinity = &apiv1.Affinity{}
-	p2 := BuildTestPod("p2", 500, 1000)
-	p3 := BuildTestPod("p3", 500, 1000)
+	testCases := []struct {
+		affinity         *apiv1.Affinity
+		predicateEnabled bool
+	}{
+		{
+			&apiv1.Affinity{
+				PodAffinity: &apiv1.PodAffinity{
+					RequiredDuringSchedulingIgnoredDuringExecution: []apiv1.PodAffinityTerm{
+						{},
+					},
+				},
+			}, true},
+		{
+			&apiv1.Affinity{
+				PodAffinity: &apiv1.PodAffinity{
+					PreferredDuringSchedulingIgnoredDuringExecution: []apiv1.WeightedPodAffinityTerm{
+						{},
+					},
+				},
+			}, false},
+		{
+			&apiv1.Affinity{
+				PodAntiAffinity: &apiv1.PodAntiAffinity{
+					RequiredDuringSchedulingIgnoredDuringExecution: []apiv1.PodAffinityTerm{
+						{},
+					},
+				},
+			}, true},
+		{
+			&apiv1.Affinity{
+				PodAntiAffinity: &apiv1.PodAntiAffinity{
+					PreferredDuringSchedulingIgnoredDuringExecution: []apiv1.WeightedPodAffinityTerm{
+						{},
+					},
+				},
+			}, false},
+		{
+			&apiv1.Affinity{
+				NodeAffinity: &apiv1.NodeAffinity{},
+			}, false},
+	}
 
-	predicateChecker := simulator.NewTestPredicateChecker()
-
-	predicateChecker.SetAffinityPredicateEnabled(false)
-	ConfigurePredicateCheckerForLoop([]*apiv1.Pod{p1}, []*apiv1.Pod{}, predicateChecker)
-	assert.True(t, predicateChecker.IsAffinityPredicateEnabled())
-
-	ConfigurePredicateCheckerForLoop([]*apiv1.Pod{}, []*apiv1.Pod{p1}, predicateChecker)
-	assert.True(t, predicateChecker.IsAffinityPredicateEnabled())
-
-	ConfigurePredicateCheckerForLoop([]*apiv1.Pod{p2}, []*apiv1.Pod{p3}, predicateChecker)
-	assert.False(t, predicateChecker.IsAffinityPredicateEnabled())
+	for _, tc := range testCases {
+		p := BuildTestPod("p", 500, 1000)
+		p.Spec.Affinity = tc.affinity
+		predicateChecker := simulator.NewTestPredicateChecker()
+		predicateChecker.SetAffinityPredicateEnabled(false)
+		ConfigurePredicateCheckerForLoop([]*apiv1.Pod{p}, []*apiv1.Pod{}, predicateChecker)
+		assert.Equal(t, tc.predicateEnabled, predicateChecker.IsAffinityPredicateEnabled())
+	}
 }
 
 func TestGetNodeResource(t *testing.T) {
