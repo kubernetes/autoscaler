@@ -17,7 +17,6 @@ limitations under the License.
 package api
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
@@ -57,7 +56,6 @@ func TestPodMatchesVPA(t *testing.T) {
 
 	for _, tc := range testCases {
 		actual := PodMatchesVPA(tc.pod, tc.vpa)
-		fmt.Printf("Matching pod %v against vpa %v", tc.pod, tc.vpa)
 		assert.Equal(t, tc.result, actual)
 	}
 }

@@ -184,7 +184,7 @@ func (cluster *ClusterState) AddOrUpdateVpa(apiObject *vpa_types.VerticalPodAuto
 	}
 	vpa.Conditions = conditionsMap
 	vpa.Recommendation = currentRecommendation
-	vpa.LastUpdateTime = apiObject.Status.LastUpdateTime
+	vpa.LastUpdateTime = apiObject.Status.LastUpdateTime.Time
 	return nil
 }
 

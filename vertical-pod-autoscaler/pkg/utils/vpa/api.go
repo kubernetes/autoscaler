@@ -18,6 +18,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/golang/glog"
@@ -54,8 +55,14 @@ func patchVpa(vpaClient vpa_api.VerticalPodAutoscalerInterface, vpaName string, 
 // It prevents race conditions by verifying that the lastUpdateTime of the
 // API object and its model representation are equal.
 func UpdateVpaStatus(vpaClient vpa_api.VerticalPodAutoscalerInterface, vpa *model.Vpa) (result *vpa_types.VerticalPodAutoscaler, err error) {
+	newUpdateTime := time.Now()
+	if !newUpdateTime.After(vpa.LastUpdateTime) {
+		return nil, fmt.Errorf(
+			"Local time (%v) is behind lastUpdateTime (%v)",
+			newUpdateTime, vpa.LastUpdateTime)
+	}
 	status := vpa_types.VerticalPodAutoscalerStatus{
-		LastUpdateTime: metav1.Now(),
+		LastUpdateTime: metav1.NewTime(newUpdateTime),
 		Conditions:     vpa.Conditions.AsList(),
 	}
 	if vpa.Recommendation != nil {
@@ -63,12 +70,21 @@ func UpdateVpaStatus(vpaClient vpa_api.VerticalPodAutoscalerInterface, vpa *mode
 	}
 
 	patches := make([]patchRecord, 0)
+
+	// Verify that Status was not updated in the meantime to avoid a race
+	// condition.
 	if !vpa.LastUpdateTime.IsZero() {
-		// Verify that Status was not updated in the meantime.
 		patches = append(patches, patchRecord{
 			Op:    "test",
 			Path:  "/status/lastUpdateTime",
-			Value: vpa.LastUpdateTime,
+			Value: metav1.NewTime(vpa.LastUpdateTime),
+		})
+	} else {
+		// Status field not set yet.
+		patches = append(patches, patchRecord{
+			Op:    "test",
+			Path:  "/status",
+			Value: nil,
 		})
 	}
 	patches = append(patches, patchRecord{
