@@ -17,8 +17,46 @@ limitations under the License.
 package model
 
 import (
+	apiv1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
+	"time"
 )
+
+// Map from VPA condition type to condition.
+type vpaConditionsMap map[vpa_types.VerticalPodAutoscalerConditionType]vpa_types.VerticalPodAutoscalerCondition
+
+func (conditionsMap *vpaConditionsMap) Set(
+	conditionType vpa_types.VerticalPodAutoscalerConditionType,
+	status bool, reason string, message string) *vpaConditionsMap {
+	oldCondition, alreadyPresent := (*conditionsMap)[conditionType]
+	condition := vpa_types.VerticalPodAutoscalerCondition{
+		Type:    conditionType,
+		Reason:  reason,
+		Message: message,
+	}
+	if status {
+		condition.Status = apiv1.ConditionTrue
+	} else {
+		condition.Status = apiv1.ConditionFalse
+	}
+	if alreadyPresent && oldCondition.Status == condition.Status {
+		condition.LastTransitionTime = oldCondition.LastTransitionTime
+	} else {
+		condition.LastTransitionTime = metav1.Now()
+	}
+	(*conditionsMap)[conditionType] = condition
+	return conditionsMap
+}
+
+func (conditionsMap *vpaConditionsMap) AsList() []vpa_types.VerticalPodAutoscalerCondition {
+	conditions := make([]vpa_types.VerticalPodAutoscalerCondition, 0, len(*conditionsMap))
+	for _, condition := range *conditionsMap {
+		conditions = append(conditions, condition)
+	}
+	return conditions
+}
 
 // Vpa (Vertical Pod Autoscaler) object is responsible for vertical scaling of
 // Pods matching a given label selector.
@@ -27,37 +65,25 @@ type Vpa struct {
 	// Labels selector that determines which Pods are controlled by this VPA
 	// object. Can be nil, in which case no Pod is matched.
 	PodSelector labels.Selector
-	// Original (string) representation of the PodSelector.
-	PodSelectorStr string
+	// Map of the status conditions (keys are condition types).
+	Conditions vpaConditionsMap
+	// Most recently computed recommendation. Can be nil.
+	Recommendation *vpa_types.RecommendedPodResources
 	// Pods controlled by this VPA object.
 	Pods map[PodID]*PodState
+	// Value of the Status.LastUpdateTime fetched from the VPA API object.
+	LastUpdateTime time.Time
 }
 
 // NewVpa returns a new Vpa with a given ID and pod selector. Doesn't set the
 // links to the matched pods.
-func NewVpa(id VpaID, podSelectorStr string) (*Vpa, error) {
+func NewVpa(id VpaID, selector labels.Selector) *Vpa {
 	vpa := &Vpa{
-		id, nil, "",
-		make(map[PodID]*PodState), // Empty pods map.
+		ID:          id,
+		PodSelector: selector,
+		Pods:        make(map[PodID]*PodState), // Empty pods map.
 	}
-	if err := vpa.SetPodSelectorStr(podSelectorStr); err != nil {
-		return nil, err
-	}
-	return vpa, nil
-}
-
-// SetPodSelectorStr sets the pod selector of the VPA to the given value, passed
-// in the text format (see apimachinery/pkg/labels for the syntax). It returns
-// an error if the string cannot be parsed. Doesn't update the links to the
-// matched pods.
-func (vpa *Vpa) SetPodSelectorStr(podSelectorStr string) error {
-	podSelector, err := labels.Parse(podSelectorStr)
-	if err != nil {
-		return err
-	}
-	vpa.PodSelectorStr = podSelectorStr
-	vpa.PodSelector = podSelector
-	return nil
+	return vpa
 }
 
 // MatchesPod returns true iff a given pod is matched by the Vpa pod selector.
@@ -65,7 +91,7 @@ func (vpa *Vpa) MatchesPod(pod *PodState) bool {
 	if vpa.ID.Namespace != pod.ID.Namespace {
 		return false
 	}
-	return pod.Labels != nil && vpa.PodSelector.Matches(pod.Labels)
+	return vpa.PodSelector != nil && pod.Labels != nil && vpa.PodSelector.Matches(pod.Labels)
 }
 
 // UpdatePodLink marks the Pod as controlled or not-controlled by the VPA

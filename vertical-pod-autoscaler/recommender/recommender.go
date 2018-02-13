@@ -21,7 +21,6 @@ import (
 
 	"github.com/golang/glog"
 	apiv1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
@@ -82,46 +81,32 @@ func (r *recommender) readHistory() {
 
 // Fetch VPA objects and load them into the cluster state.
 func (r *recommender) loadVPAs() {
+	// List VPA API objects.
 	vpaCRDs, err := r.vpaLister.List(labels.Everything())
 	if err != nil {
 		glog.Errorf("Cannot list VPAs. Reason: %+v", err)
 	} else {
 		glog.V(3).Infof("Fetched VPAs.")
 	}
-
-	vpaToSelector := make(map[model.VpaID]labels.Selector)
+	// Add or update existing VPAs in the model.
+	vpaKeys := make(map[model.VpaID]bool)
 	for n, vpaCRD := range vpaCRDs {
 		glog.V(3).Infof("VPA CRD #%v: %+v", n, vpaCRD)
-		selector, err := metav1.LabelSelectorAsSelector(vpaCRD.Spec.Selector)
-		if err != nil {
-			glog.Errorf(
-				"Cannot convert VPA Selector %+v to internal representation. Reason: %+v",
-				vpaCRD.Spec.Selector, err)
-		} else {
-			vpaToSelector[model.VpaID{
-				Namespace: vpaCRD.Namespace,
-				VpaName:   vpaCRD.Name}] = selector
-			if vpaCRD.Status.LastUpdateTime.IsZero() {
-				glog.V(3).Infof("Empty status in %v, initializing", vpaCRD.Name)
-				_, err := vpa_api_util.InitVpaStatus(
-					r.vpaClient.VerticalPodAutoscalers(vpaCRD.Namespace),
-					vpaCRD.Name)
-				if err != nil {
-					glog.Errorf(
-						"Cannot initialize VPA %v. Reason: %+v",
-						vpaCRD.Name, err)
-				}
-			}
+		vpaID := model.VpaID{
+			Namespace: vpaCRD.Namespace,
+			VpaName:   vpaCRD.Name}
+		if r.clusterState.AddOrUpdateVpa(vpaCRD) == nil {
+			// Successfully added VPA to the model.
+			vpaKeys[vpaID] = true
 		}
+
 	}
-	for key := range r.clusterState.Vpas {
-		if _, exists := vpaToSelector[key]; !exists {
-			glog.V(3).Infof("Deleting VPA %v", key)
-			r.clusterState.DeleteVpa(key)
+	// Delete non-existent VPAs from the model.
+	for vpaID := range r.clusterState.Vpas {
+		if _, exists := vpaKeys[vpaID]; !exists {
+			glog.V(3).Infof("Deleting VPA %v", vpaID)
+			r.clusterState.DeleteVpa(vpaID)
 		}
-	}
-	for key, selector := range vpaToSelector {
-		r.clusterState.AddOrUpdateVpa(key, selector.String())
 	}
 }
 
@@ -187,10 +172,8 @@ func newContainerUsageSamplesWithKey(metrics *metrics.ContainerMetricsSnapshot) 
 func (r *recommender) updateVPAs() {
 	for key, vpa := range r.clusterState.Vpas {
 		glog.V(3).Infof("VPA to update #%v: %+v", key, vpa)
-
+		vpa.Conditions.Set(vpa_types.Configured, true, "", "")
 		resources := r.podResourceRecommender.GetRecommendedPodResources(vpa)
-		vpaName := vpa.ID.VpaName
-
 		containerResources := make([]vpa_types.RecommendedContainerResources, 0, len(resources))
 		for containerID, res := range resources {
 			containerResources = append(containerResources, vpa_types.RecommendedContainerResources{
@@ -201,12 +184,14 @@ func (r *recommender) updateVPAs() {
 			})
 
 		}
+		vpa.Recommendation = &vpa_types.RecommendedPodResources{containerResources}
+		vpa.Conditions.Set(vpa_types.RecommendationProvided, true, "", "")
 
-		recommendation := vpa_types.RecommendedPodResources{containerResources}
-		_, err := vpa_api_util.UpdateVpaRecommendation(r.vpaClient.VerticalPodAutoscalers(vpa.ID.Namespace), vpaName, recommendation)
+		_, err := vpa_api_util.UpdateVpaStatus(
+			r.vpaClient.VerticalPodAutoscalers(vpa.ID.Namespace), vpa)
 		if err != nil {
 			glog.Errorf(
-				"Cannot update VPA %v object. Reason: %+v", vpaName, err)
+				"Cannot update VPA %v object. Reason: %+v", vpa.ID.VpaName, err)
 		}
 	}
 
