@@ -28,7 +28,7 @@ import (
 	"github.com/golang/glog"
 )
 
-const scaleToZeroSupported = false
+const scaleToZeroSupported = true
 
 type asgCache struct {
 	registeredAsgs     []*asgInformation
