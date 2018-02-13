@@ -20,8 +20,8 @@ set -o pipefail
 
 SCRIPT_ROOT=$(dirname ${BASH_SOURCE})/..
 
-REGISTRY=gcr.io/`gcloud config get-value core/project`
-TAG=latest
+export REGISTRY=gcr.io/`gcloud config get-value core/project`
+export TAG=latest
 
 COMPONENTS="recommender updater admission-controller"
 
