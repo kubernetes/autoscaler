@@ -18,7 +18,6 @@ package aztools
 
 import (
 	"fmt"
-	"strconv"
 	"sync"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -85,7 +84,7 @@ func BuildAzToolsCloudProvider(
 			return nil, fmt.Errorf("failed to parse node group spec: %v: %v", spec, err)
 		}
 
-		grpID := clusterName + "-" + strconv.Itoa(i)
+		grpID := s.Name
 
 		// min, max, targetSize
 		provider.AddNodeGroup(grpID, s.MinSize, s.MaxSize, 0)
