@@ -12,12 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/google-containers/ubuntu-slim:0.8
-MAINTAINER Marcin Wielgus "mwielgus@google.com"
+FROM gcr.io/google-containers/debian-base-amd64:0.3
+LABEL maintainer="Marcin Wielgus <mwielgus@google.com>"
 
-RUN apt-get update && apt-get install --yes ca-certificates \
-  && apt-get clean \
-  && rm -rf /var/lib/apt/lists/*
+ENV DEBIAN_FRONTEND noninteractive
+RUN clean-install ca-certificates
 
 ADD cluster-autoscaler cluster-autoscaler
 ADD run.sh run.sh
