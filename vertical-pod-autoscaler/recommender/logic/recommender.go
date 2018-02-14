@@ -75,10 +75,13 @@ type AggregateContainerState struct {
 
 // Merges the state of an individual container into AggregateContainerState.
 func (a *AggregateContainerState) mergeContainerState(container *model.ContainerState) {
-	a.aggregateCPUUsage.Merge(&container.CPUUsage)
-	for _, memoryPeak := range container.MemoryUsagePeaks.Contents() {
+	a.aggregateCPUUsage.Merge(container.CPUUsage)
+	memoryPeaks := container.MemoryUsagePeaks.Contents()
+	peakTime := container.WindowEnd
+	for i := len(memoryPeaks) - 1; i >= 0; i-- {
 		// TODO: may use exponential decay here.
-		a.aggregateMemoryPeaks.AddSample(float64(memoryPeak), 1.0)
+		a.aggregateMemoryPeaks.AddSample(float64(memoryPeaks[i]), 1.0, peakTime)
+		peakTime = peakTime.Add(-model.MemoryAggregationInterval)
 	}
 }
 

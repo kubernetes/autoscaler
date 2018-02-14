@@ -49,10 +49,11 @@ func TestAggregateContainerUsageSamples(t *testing.T) {
 		time.Unix(0, 0),
 		time.Unix(0, 0)}
 
-	// Verify that a CPU measures are added to the CPU histogram.
-	mockCPUHistogram.On("AddSample", 3.14, 1.0)
-	mockCPUHistogram.On("AddSample", 6.28, 1.0)
-	mockCPUHistogram.On("AddSample", 1.57, 1.0)
+	// Verify that CPU measures are added to the CPU histogram.
+	timeStep := MemoryAggregationInterval / 2
+	mockCPUHistogram.On("AddSample", 3.14, 1.0, testTimestamp)
+	mockCPUHistogram.On("AddSample", 6.28, 1.0, testTimestamp.Add(timeStep))
+	mockCPUHistogram.On("AddSample", 1.57, 1.0, testTimestamp.Add(2*timeStep))
 
 	// Add three usage samples.
 	assert.True(t, c.AddSample(newUsageSample(
@@ -61,22 +62,22 @@ func TestAggregateContainerUsageSamples(t *testing.T) {
 		testTimestamp, 5, ResourceMemory)))
 
 	assert.True(t, c.AddSample(newUsageSample(
-		testTimestamp.Add(MemoryAggregationInterval/2), 6280, ResourceCPU)))
+		testTimestamp.Add(timeStep), 6280, ResourceCPU)))
 	assert.True(t, c.AddSample(newUsageSample(
-		testTimestamp.Add(MemoryAggregationInterval/2), 10, ResourceMemory)))
+		testTimestamp.Add(timeStep), 10, ResourceMemory)))
 
 	assert.True(t, c.AddSample(newUsageSample(
-		testTimestamp.Add(MemoryAggregationInterval), 1570, ResourceCPU)))
+		testTimestamp.Add(2*timeStep), 1570, ResourceCPU)))
 	assert.True(t, c.AddSample(newUsageSample(
-		testTimestamp.Add(MemoryAggregationInterval), 2, ResourceMemory)))
+		testTimestamp.Add(2*timeStep), 2, ResourceMemory)))
 
 	// Discard invalid samples.
 	assert.False(t, c.AddSample(newUsageSample( // Out of order sample.
-		testTimestamp.Add(MemoryAggregationInterval), 1000, ResourceCPU)))
+		testTimestamp.Add(2*timeStep), 1000, ResourceCPU)))
 	assert.False(t, c.AddSample(newUsageSample( // Negative CPU usage.
-		testTimestamp.Add(MemoryAggregationInterval*2), -1000, ResourceCPU)))
+		testTimestamp.Add(4*timeStep), -1000, ResourceCPU)))
 	assert.False(t, c.AddSample(newUsageSample( // Negative memory usage.
-		testTimestamp.Add(MemoryAggregationInterval*2), -1000, ResourceMemory)))
+		testTimestamp.Add(4*timeStep), -1000, ResourceMemory)))
 
 	// Verify that memory peak samples were aggregated properly.
 	assert.Equal(t, []float64{10, 2}, memoryUsagePeaks.Contents())
