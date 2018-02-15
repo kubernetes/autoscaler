@@ -17,6 +17,8 @@ LABEL maintainer="Marcin Wielgus <mwielgus@google.com>"
 
 ENV GOPATH /gopath/
 ENV PATH $GOPATH/bin:$PATH
+
+RUN apt-get update && apt-get --yes install libseccomp-dev
 RUN go version
 RUN go get github.com/tools/godep
 RUN godep version
