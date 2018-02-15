@@ -71,22 +71,17 @@ func UpdateVpaStatus(vpaClient vpa_api.VerticalPodAutoscalerInterface, vpa *mode
 
 	patches := make([]patchRecord, 0)
 
-	// Verify that Status was not updated in the meantime to avoid a race
-	// condition.
+	// Verify that Status was not updated in the meantime to avoid a race condition.
+	// If LastUpdateTime is not set patch is executed unconditionally (it is a low
+	// risk race condition).
 	if !vpa.LastUpdateTime.IsZero() {
 		patches = append(patches, patchRecord{
 			Op:    "test",
 			Path:  "/status/lastUpdateTime",
 			Value: metav1.NewTime(vpa.LastUpdateTime),
 		})
-	} else {
-		// Status field not set yet.
-		patches = append(patches, patchRecord{
-			Op:    "test",
-			Path:  "/status",
-			Value: nil,
-		})
 	}
+
 	patches = append(patches, patchRecord{
 		Op:    "add",
 		Path:  "/status",
