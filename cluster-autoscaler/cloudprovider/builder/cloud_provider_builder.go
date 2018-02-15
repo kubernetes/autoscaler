@@ -53,15 +53,17 @@ type CloudProviderBuilder struct {
 	cloudConfig             string
 	clusterName             string
 	autoprovisioningEnabled bool
+	regional                bool
 }
 
 // NewCloudProviderBuilder builds a new builder from static settings
-func NewCloudProviderBuilder(cloudProviderFlag string, cloudConfig string, clusterName string, autoprovisioningEnabled bool) CloudProviderBuilder {
+func NewCloudProviderBuilder(cloudProviderFlag, cloudConfig, clusterName string, autoprovisioningEnabled, regional bool) CloudProviderBuilder {
 	return CloudProviderBuilder{
 		cloudProviderFlag:       cloudProviderFlag,
 		cloudConfig:             cloudConfig,
 		clusterName:             clusterName,
 		autoprovisioningEnabled: autoprovisioningEnabled,
+		regional:                regional,
 	}
 }
 
@@ -107,7 +109,7 @@ func (b CloudProviderBuilder) buildGCE(do cloudprovider.NodeGroupDiscoveryOption
 		defer config.Close()
 	}
 
-	manager, err := gce.CreateGceManager(config, mode, b.clusterName, do)
+	manager, err := gce.CreateGceManager(config, mode, b.clusterName, do, b.regional)
 	if err != nil {
 		glog.Fatalf("Failed to create GCE Manager: %v", err)
 	}
