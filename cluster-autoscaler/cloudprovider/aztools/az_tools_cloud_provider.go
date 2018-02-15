@@ -230,28 +230,32 @@ func (azcp *AzToolsCloudProvider) Cleanup() error {
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
 // In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
 func (azcp *AzToolsCloudProvider) Refresh() error {
-	azcp.Lock()
-	defer azcp.Unlock()
+	// azcp.Lock()
+	// defer azcp.Unlock()
 
-	nodes, err := azcp.kubeClient.CoreV1().Nodes().List(metav1.ListOptions{})
-	if err != nil {
-		return err
-	}
+	// fmt.Printf("harry: refresh begin: %v", azcp)
 
-	// Clear all cached nodes in provider
-	azcp.nodes = map[string]string{}
+	// nodes, err := azcp.kubeClient.CoreV1().Nodes().List(metav1.ListOptions{})
+	// if err != nil {
+	// 	return err
+	// }
 
-	// Add real world nodes into cache
-	for _, node := range nodes.Items {
-		groups := azcp.NodeGroups()
-		if len(groups) == 0 {
-			return fmt.Errorf("no group found in AzToolsCloudProvider, something should be wrong in its initialization")
-		}
-		if len(groups) > 1 {
-			return fmt.Errorf("for now, only one group is allowed in AzToolsCloudProvider, something should be wrong in its initialization")
-		}
-		azcp.AddNode(azcp.NodeGroups()[0].Id(), &node)
-	}
+	// fmt.Printf("harry: refresh got: %v", nodes)
+
+	// // Clear all cached nodes in provider
+	// azcp.nodes = map[string]string{}
+
+	// // Add real world nodes into cache
+	// for _, node := range nodes.Items {
+	// 	groups := azcp.NodeGroups()
+	// 	if len(groups) == 0 {
+	// 		return fmt.Errorf("no group found in AzToolsCloudProvider, something should be wrong in its initialization")
+	// 	}
+	// 	if len(groups) > 1 {
+	// 		return fmt.Errorf("for now, only one group is allowed in AzToolsCloudProvider, something should be wrong in its initialization")
+	// 	}
+	// 	azcp.AddNode(azcp.NodeGroups()[0].Id(), &node)
+	// }
 	return nil
 }
 
