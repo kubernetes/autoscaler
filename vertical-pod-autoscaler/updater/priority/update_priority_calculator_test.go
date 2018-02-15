@@ -119,6 +119,19 @@ func TestUpdateNotRequired(t *testing.T) {
 	assert.Exactly(t, []*apiv1.Pod{}, result, "Pod should not be updated")
 }
 
+func TestUpdateRequiredOnMilliQuantities(t *testing.T) {
+	calculator := NewUpdatePriorityCalculator(nil, nil)
+
+	pod1 := test.BuildTestPod("POD1", containerName, "10m", "", nil, nil)
+
+	recommendation := test.Recommendation(containerName, "900m", "")
+
+	calculator.AddPod(pod1, recommendation)
+
+	result := calculator.GetSortedPods()
+	assert.Exactly(t, []*apiv1.Pod{pod1}, result, "Pod should be updated")
+}
+
 func TestUsePolicy(t *testing.T) {
 	calculator := NewUpdatePriorityCalculator(
 		test.BuildTestPolicy(containerName, "1", "4", "10M", "100M"), nil)
