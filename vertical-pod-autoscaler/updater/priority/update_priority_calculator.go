@@ -128,19 +128,19 @@ func getPercentageDiff(request, min, max, recommendation *resource.Quantity) flo
 	if recommendation == nil || recommendation.IsZero() {
 		return 0
 	}
-	recommended := recommendation.Value()
-	if min != nil && !min.IsZero() && recommendation.Value() < min.Value() {
+	recommended := recommendation.MilliValue()
+	if min != nil && !min.IsZero() && recommendation.MilliValue() < min.MilliValue() {
 		glog.Warningf("recommendation outside of policy bounds : min value : %v recommended : %v",
-			min.Value(), recommended)
-		recommended = min.Value()
+			min.MilliValue(), recommended)
+		recommended = min.MilliValue()
 	}
-	if max != nil && !max.IsZero() && recommendation.Value() > max.Value() {
+	if max != nil && !max.IsZero() && recommendation.MilliValue() > max.MilliValue() {
 		glog.Warningf("recommendation outside of policy bounds : max value : %v recommended : %v",
-			max.Value(), recommended)
-		recommended = max.Value()
+			max.MilliValue(), recommended)
+		recommended = max.MilliValue()
 	}
-	diff := recommended - request.Value()
-	return float64(diff) / float64(request.Value())
+	diff := recommended - request.MilliValue()
+	return float64(diff) / float64(request.MilliValue())
 }
 
 func getContainerPolicy(containerName string, policy *vpa_types.PodResourcePolicy) *vpa_types.ContainerResourcePolicy {
