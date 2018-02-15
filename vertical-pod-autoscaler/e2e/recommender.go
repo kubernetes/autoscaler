@@ -1,5 +1,5 @@
 /*
-Copyright 2015 The Kubernetes Authors.
+Copyright 2018 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,11 +18,7 @@ package autoscaling
 
 import (
 	"fmt"
-	"time"
 
-	"k8s.io/api/core/v1"
-	extensions "k8s.io/api/extensions/v1beta1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
@@ -33,16 +29,7 @@ import (
 	"github.com/onsi/gomega"
 )
 
-func testDescribe(text string, body func()) bool {
-	return ginkgo.Describe("[VPA] "+text, body)
-}
-
-const (
-	pollInterval = framework.Poll
-	pollTimeout  = 5 * time.Minute
-)
-
-var _ = testDescribe("VPA CRD object", func() {
+var _ = recommenderE2eDescribe("VPA CRD object", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
 
 	ginkgo.It("serves recommendation", func() {
@@ -51,7 +38,10 @@ var _ = testDescribe("VPA CRD object", func() {
 		c := f.ClientSet
 		ns := f.Namespace.Name
 
-		d := hamsterDeployment(f)
+		cpuQuantity := parseQuantityOrDie("100m")
+		memoryQuantity := parseQuantityOrDie("100Mi")
+
+		d := hamsterDeployment(f, cpuQuantity, memoryQuantity)
 		_, err := c.ExtensionsV1beta1().Deployments(ns).Create(d)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		err = framework.WaitForDeploymentComplete(c, d)
@@ -78,38 +68,6 @@ var _ = testDescribe("VPA CRD object", func() {
 
 	})
 })
-
-func hamsterDeployment(f *framework.Framework) *extensions.Deployment {
-	d := framework.NewDeployment("hamster-deployment", 3, map[string]string{"app": "hamster"}, "hamster", "gcr.io/google_containers/ubuntu-slim:0.1", extensions.RollingUpdateDeploymentStrategyType)
-	d.ObjectMeta.Namespace = f.Namespace.Name
-	cpuQuantity, err := resource.ParseQuantity("100m")
-	gomega.Expect(err).NotTo(gomega.HaveOccurred())
-	memoryQuantity, err := resource.ParseQuantity("100Mi")
-	gomega.Expect(err).NotTo(gomega.HaveOccurred())
-	d.Spec.Template.Spec.Containers[0].Resources.Requests = v1.ResourceList{
-		v1.ResourceCPU:    cpuQuantity,
-		v1.ResourceMemory: memoryQuantity,
-	}
-	d.Spec.Template.Spec.Containers[0].Command = []string{"/bin/sh"}
-	d.Spec.Template.Spec.Containers[0].Args = []string{"-c", "/usr/bin/yes >/dev/null"}
-	return d
-}
-
-func newVPA(f *framework.Framework, name string, selector *metav1.LabelSelector) *vpa_types.VerticalPodAutoscaler {
-	vpa := vpa_types.VerticalPodAutoscaler{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: f.Namespace.Name,
-		},
-		Spec: vpa_types.VerticalPodAutoscalerSpec{
-			Selector: selector,
-			ResourcePolicy: vpa_types.PodResourcePolicy{
-				ContainerPolicies: []vpa_types.ContainerResourcePolicy{},
-			},
-		},
-	}
-	return &vpa
-}
 
 func waitForRecommendationPresent(c *vpa_clientset.Clientset, vpa *vpa_types.VerticalPodAutoscaler) error {
 	err := wait.PollImmediate(pollInterval, pollTimeout, func() (bool, error) {
