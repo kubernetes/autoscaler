@@ -41,74 +41,18 @@ func NewRecommendationProvider(vpaLister vpa_lister.VerticalPodAutoscalerLister)
 	return &recommendationProvider{vpaLister: vpaLister}
 }
 
-// getRecomendedResources overwrites pod resources Request field with recommended values.
+// getRecomendedResources returns the recommended resources Request for each container in the given pod.
 func getRecomendedResources(pod *v1.Pod, podRecommendation vpa_types.RecommendedPodResources, policy vpa_types.PodResourcePolicy) []v1.ResourceList {
 	res := make([]v1.ResourceList, len(pod.Spec.Containers))
 	for i, container := range pod.Spec.Containers {
-		containerRecommendation := getRecommendationForContainer(podRecommendation, container)
-		if containerRecommendation == nil {
+		recommendation, err := vpa_api_util.GetCappedRecommendationForContainer(container, &podRecommendation, &policy)
+		if err != nil {
+			glog.V(2).Infof("Recommendation not found for container %v: %v", container, err)
 			continue
 		}
-		containerPolicy := getContainerPolicy(container.Name, &policy)
-		applyVPAPolicy(containerRecommendation, containerPolicy)
-		res[i] = make(v1.ResourceList)
-		for resource, recommended := range containerRecommendation.Target {
-			requested, exists := container.Resources.Requests[resource]
-			if exists {
-				// overwriting existing resource spec
-				glog.V(2).Infof("updating resources request for pod %v container %v resource %v old value: %v new value: %v",
-					pod.Name, container.Name, resource, requested, recommended)
-			} else {
-				// adding new resource spec
-				glog.V(2).Infof("updating resources request for pod %v container %v resource %v old value: none new value: %v",
-					pod.Name, container.Name, resource, recommended)
-			}
-
-			res[i][resource] = recommended
-		}
+		res[i] = recommendation
 	}
 	return res
-}
-
-// applyVPAPolicy updates recommendation if recommended resources exceed limits defined in VPA resources policy
-func applyVPAPolicy(recommendation *vpa_types.RecommendedContainerResources, policy *vpa_types.ContainerResourcePolicy) {
-	for resourceName, recommended := range recommendation.Target {
-		if policy == nil {
-			continue
-		}
-		min, found := policy.MinAllowed[resourceName]
-		if found && !min.IsZero() && recommended.Value() < min.Value() {
-			glog.Warningf("recommendation outside of policy bounds : min value : %v recommended : %v",
-				min.Value(), recommended)
-			recommendation.Target[resourceName] = min
-		}
-		max, found := policy.MaxAllowed[resourceName]
-		if found && !max.IsZero() && recommended.Value() > max.Value() {
-			glog.Warningf("recommendation outside of policy bounds : max value : %v recommended : %v",
-				max.Value(), recommended)
-			recommendation.Target[resourceName] = max
-		}
-	}
-}
-
-func getRecommendationForContainer(recommendation vpa_types.RecommendedPodResources, container v1.Container) *vpa_types.RecommendedContainerResources {
-	for i, containerRec := range recommendation.ContainerRecommendations {
-		if containerRec.Name == container.Name {
-			return &recommendation.ContainerRecommendations[i]
-		}
-	}
-	return nil
-}
-
-func getContainerPolicy(containerName string, policy *vpa_types.PodResourcePolicy) *vpa_types.ContainerResourcePolicy {
-	if policy != nil {
-		for i, container := range policy.ContainerPolicies {
-			if containerName == container.Name {
-				return &policy.ContainerPolicies[i]
-			}
-		}
-	}
-	return nil
 }
 
 func (p *recommendationProvider) getMatchingVPA(pod *v1.Pod) *vpa_types.VerticalPodAutoscaler {
