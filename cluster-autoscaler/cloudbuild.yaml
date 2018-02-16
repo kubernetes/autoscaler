@@ -1,0 +1,60 @@
+options:
+  machineType: N1_HIGHCPU_32
+timeout: 10800s
+
+substitutions:
+  { "_TAG": "dev" }
+
+steps:
+- name: gcr.io/cloud-builders/git
+  id: git-clone
+  entrypoint: bash
+  args:
+  - "-c"
+  - |
+    set -ex
+    mkdir -p /workspace/src/k8s.io
+    cd /workspace/src/k8s.io
+    git clone https://github.com/kubernetes/autoscaler.git
+
+- name: gcr.io/cloud-builders/docker
+  id: build-build-container
+  entrypoint: bash
+  dir: "/workspace/src/k8s.io/autoscaler/cluster-autoscaler"
+  args:
+  - "-c"
+  - |
+    set -e
+    docker build -t autoscaling-builder ../builder
+
+- name: autoscaling-builder
+  id: run-tests
+  entrypoint: godep
+  dir: "/workspace/src/k8s.io/autoscaler/cluster-autoscaler"
+  env:
+  - "GOPATH=/workspace/"
+  args: ["go", "test", "./..."]
+
+- name: autoscaling-builder
+  id: run-build
+  entrypoint: godep
+  dir: "/workspace/src/k8s.io/autoscaler/cluster-autoscaler"
+  env:
+  - "GOPATH=/workspace/"
+  - "GOOS=linux"
+  args: ["go", "build", "-o", "cluster-autoscaler"]
+  waitFor: build-build-container
+
+- name: gcr.io/cloud-builders/docker
+  id: build-container
+  entrypoint: bash
+  dir: "/workspace/src/k8s.io/autoscaler/cluster-autoscaler"
+  args:
+  - "-c"
+  - |
+    set -e
+    docker build -t gcr.io/k8s-image-staging/cluster-autoscaler:${_TAG} .
+  waitFor: ["run-tests", "run-build"]
+
+images:
+  - "gcr.io/k8s-image-staging/cluster-autoscaler:${_TAG}"
