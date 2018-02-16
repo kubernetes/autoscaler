@@ -91,7 +91,7 @@ func TestSortPriorityMultiContainers(t *testing.T) {
 	assert.Exactly(t, []*apiv1.Pod{pod2, pod1}, result, "Wrong priority order")
 }
 
-func TestSortPriorityResorucesDecrease(t *testing.T) {
+func TestSortPriorityResourcesDecrease(t *testing.T) {
 	calculator := NewUpdatePriorityCalculator(nil, nil)
 
 	pod1 := test.BuildTestPod("POD1", containerName, "4", "", nil, nil)

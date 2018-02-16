@@ -20,12 +20,11 @@ import (
 	"math"
 	"sort"
 
-	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
-
+	"github.com/golang/glog"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-
-	"github.com/golang/glog"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
+	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
 const (
@@ -90,36 +89,25 @@ func (calc *UpdatePriorityCalculator) getUpdatePriority(pod *apiv1.Pod, recommen
 	var priority float64
 
 	for _, podContainer := range pod.Spec.Containers {
-		cr := getContainerRecommendation(podContainer.Name, recommendation)
-		if cr == nil {
+		recommendedRequest, err := vpa_api_util.GetCappedRecommendationForContainer(podContainer, recommendation, calc.resourcesPolicy)
+		if err != nil {
 			glog.V(2).Infof("no recommendation for container %v in pod %v", podContainer.Name, pod.Name)
 			continue
 		}
-
-		containerPolicy := getContainerPolicy(podContainer.Name, calc.resourcesPolicy)
-
-		for resourceName, recommended := range cr.Target {
-			var requested, min, max *resource.Quantity
+		for resourceName, recommended := range recommendedRequest {
+			var requested *resource.Quantity
 
 			if request, ok := podContainer.Resources.Requests[resourceName]; ok {
 				requested = &request
 			}
-			if containerPolicy != nil {
-				if minAllowed, ok := containerPolicy.MinAllowed[resourceName]; ok {
-					min = &minAllowed
-				}
-				if maxAllowed, ok := containerPolicy.MaxAllowed[resourceName]; ok {
-					max = &maxAllowed
-				}
-			}
-			resourceDiff := getPercentageDiff(requested, min, max, &recommended)
+			resourceDiff := getPercentageDiff(requested, &recommended)
 			priority += math.Abs(resourceDiff)
 		}
 	}
 	return priority
 }
 
-func getPercentageDiff(request, min, max, recommendation *resource.Quantity) float64 {
+func getPercentageDiff(request, recommendation *resource.Quantity) float64 {
 	if request == nil {
 		// resource requirement is not currently specified
 		// any recommendation for this resource we will treat as 100% change
@@ -128,39 +116,7 @@ func getPercentageDiff(request, min, max, recommendation *resource.Quantity) flo
 	if recommendation == nil || recommendation.IsZero() {
 		return 0
 	}
-	recommended := recommendation.MilliValue()
-	if min != nil && !min.IsZero() && recommendation.MilliValue() < min.MilliValue() {
-		glog.Warningf("recommendation outside of policy bounds : min value : %v recommended : %v",
-			min.MilliValue(), recommended)
-		recommended = min.MilliValue()
-	}
-	if max != nil && !max.IsZero() && recommendation.MilliValue() > max.MilliValue() {
-		glog.Warningf("recommendation outside of policy bounds : max value : %v recommended : %v",
-			max.MilliValue(), recommended)
-		recommended = max.MilliValue()
-	}
-	diff := recommended - request.MilliValue()
-	return float64(diff) / float64(request.MilliValue())
-}
-
-func getContainerPolicy(containerName string, policy *vpa_types.PodResourcePolicy) *vpa_types.ContainerResourcePolicy {
-	if policy != nil {
-		for _, container := range policy.ContainerPolicies {
-			if containerName == container.Name {
-				return &container
-			}
-		}
-	}
-	return nil
-}
-
-func getContainerRecommendation(containerName string, recommendation *vpa_types.RecommendedPodResources) *vpa_types.RecommendedContainerResources {
-	for _, container := range recommendation.ContainerRecommendations {
-		if containerName == container.Name {
-			return &container
-		}
-	}
-	return nil
+	return float64(recommendation.MilliValue()-request.MilliValue()) / float64(request.MilliValue())
 }
 
 type podPriority struct {
