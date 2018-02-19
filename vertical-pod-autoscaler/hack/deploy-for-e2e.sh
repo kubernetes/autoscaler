@@ -20,14 +20,43 @@ set -o pipefail
 
 SCRIPT_ROOT=$(dirname ${BASH_SOURCE})/..
 
+function print_help {
+  echo "ERROR! Usage: deploy-for-e2e.sh [suite]*"
+  echo "<suite> should be one of:"
+  echo " - recommender"
+  echo " - updater"
+  echo " - admission-controller"
+  echo " - full-vpa"
+  echo "If component is not specified all above will be started."
+}
+
+if [ $# -eq 0 ]; then
+  print_help
+  exit 1
+fi
+
+if [ $# -gt 1 ]; then
+  print_help
+  exit 1
+fi
+
+SUITE=$1
+
+case ${SUITE} in
+  recommender|updater|admission-controller)
+    COMPONENTS="${SUITE}"
+    ;;
+  full-vpa)
+    COMPONENTS="recommender updater admission-controller"
+    ;;
+  *)
+    print_help
+    exit 1
+    ;;
+esac
+
 export REGISTRY=gcr.io/`gcloud config get-value core/project`
 export TAG=latest
-
-COMPONENTS="recommender updater admission-controller"
-
-if [ $# -ne 0 ]; then
-  COMPONENTS=$*
-fi
 
 for i in ${COMPONENTS}; do
   make --directory ${SCRIPT_ROOT}/${i} release
@@ -39,3 +68,4 @@ kubectl create -f ${SCRIPT_ROOT}/deploy/vpa-rbac.yaml
 for i in ${COMPONENTS}; do
   ${SCRIPT_ROOT}/hack/vpa-process-yaml.sh  ${SCRIPT_ROOT}/deploy/${i}-deployment.yaml | kubectl create -f -
 done
+
