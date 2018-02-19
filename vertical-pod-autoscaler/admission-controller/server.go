@@ -40,13 +40,14 @@ type patchRecord struct {
 	Value interface{} `json:"value"`
 }
 
-func (s *admissionServer) getPatchesForPodResourceRequest(raw []byte) ([]patchRecord, error) {
+func (s *admissionServer) getPatchesForPodResourceRequest(raw []byte, namespace string) ([]patchRecord, error) {
 	pod := v1.Pod{}
 	if err := json.Unmarshal(raw, &pod); err != nil {
 		return nil, err
 	}
 	if len(pod.Name) == 0 {
 		pod.Name = pod.GenerateName + "%"
+		pod.Namespace = namespace
 	}
 	glog.V(4).Infof("Admitting pod %v", pod.ObjectMeta)
 	requests, err := s.recommendationProvider.GetRequestForPod(&pod)
@@ -99,7 +100,7 @@ func (s *admissionServer) admit(data []byte) *v1beta1.AdmissionResponse {
 
 	switch ar.Request.Resource {
 	case podResource:
-		patches, err = s.getPatchesForPodResourceRequest(ar.Request.Object.Raw)
+		patches, err = s.getPatchesForPodResourceRequest(ar.Request.Object.Raw, ar.Request.Namespace)
 	case vpaResource:
 		patches, err = getPatchesForVPADefaults(ar.Request.Object.Raw)
 	default:
