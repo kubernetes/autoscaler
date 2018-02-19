@@ -20,6 +20,36 @@ set -o pipefail
 
 SCRIPT_ROOT=$(dirname ${BASH_SOURCE})/..
 
-${SCRIPT_ROOT}/hack/deploy-for-e2e.sh $*
-go test ${SCRIPT_ROOT}/e2e/*go -v  --args --ginkgo.v=true --ginkgo.focus="\[VPA\]"
+function print_help {
+  echo "ERROR! Usage: run-e2e.sh <suite>"
+  echo "<suite> should be one of:"
+  echo " - recommender"
+  echo " - updater"
+  echo " - admission-controller"
+  echo " - full-vpa"
+}
+
+if [ $# -eq 0 ]; then
+  print_help
+  exit 1
+fi
+
+if [ $# -gt 1 ]; then
+  print_help
+  exit 1
+fi
+
+SUITE=$1
+
+case ${SUITE} in
+  recommender|updater|admission-controller|full-vpa)
+    ${SCRIPT_ROOT}/hack/vpa-down.sh
+    ${SCRIPT_ROOT}/hack/deploy-for-e2e.sh ${SUITE}
+    go test ${SCRIPT_ROOT}/e2e/*go -v  --args --ginkgo.v=true --ginkgo.focus="\[VPA\] \[${SUITE}\]"
+    ;;
+  *)
+    print_help
+    exit 1
+    ;;
+esac
 
