@@ -55,15 +55,15 @@ case ${SUITE} in
     ;;
 esac
 
+export REGISTRY=gcr.io/`gcloud config get-value core/project`
+export TAG=latest
+
 for i in ${COMPONENTS}; do
   make --directory ${SCRIPT_ROOT}/${i} release
 done
 
 kubectl create -f ${SCRIPT_ROOT}/api/vpa-crd.yaml
 kubectl create -f ${SCRIPT_ROOT}/deploy/vpa-rbac.yaml
-
-export REGISTRY=gcr.io/`gcloud config get-value core/project`
-export TAG=latest
 
 for i in ${COMPONENTS}; do
   ${SCRIPT_ROOT}/hack/vpa-process-yaml.sh  ${SCRIPT_ROOT}/deploy/${i}-deployment.yaml | kubectl create -f -
