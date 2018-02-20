@@ -24,19 +24,19 @@ import (
 
 var (
 	// When the decay factor exceeds 2^maxDecayExponent the histogram is
-	// renormalized by shifting the decay start time.
+	// renormalized by shifting the decay start time forward.
 	maxDecayExponent = 100
 )
 
 // A histogram that gives newer samples a higher weight than the old samples,
-// gradually "forgetting" the past samples. The weight of each sample is
-// multiplied by the factor of 2^((sampleTime - decayStart) / halfLife).
-// This means that the sample loses half of its weight ("importance") after
+// gradually decaying ("forgetting") the past samples. The weight of each sample
+// is multiplied by the factor of 2^((sampleTime - decayStart) / halfLife).
+// This means that the sample loses half of its weight ("importance") with
 // each halfLife period.
 // Since only relative (and not absolute) weights of samples matter, the
 // decayStart can be shifted at any time, which is equivalent to multiplying all
-// weights by a constant. In fact this happens whenever the exponents become too
-// large, to stay in the range of the floating point arithmentics.
+// weights by a constant. In practice the decayStart is shifted forward whenever
+// the exponents become too large, to avoid floating point arithmetics overflow.
 type decayingHistogram struct {
 	histogram
 	// Decay half life period.
@@ -95,13 +95,16 @@ func (h *decayingHistogram) String() string {
 }
 
 func (h *decayingHistogram) shiftDecayStart(newDecayStart time.Time) {
+	// Make sure the decay start is an integer multiple of halfLife.
 	newDecayStart = newDecayStart.Round(h.halfLife)
 	exponent := round(float64(h.decayStart.Sub(newDecayStart)) / float64(h.halfLife))
 	for bucket := h.histogram.minBucket; bucket <= h.histogram.maxBucket; bucket++ {
+		// Bucket weight *= 2^exponent.
 		h.histogram.bucketWeight[bucket] = math.Ldexp(h.histogram.bucketWeight[bucket], exponent)
 	}
 	h.histogram.totalWeight = math.Ldexp(h.histogram.totalWeight, exponent)
 	h.decayStart = newDecayStart
+	// Some buckets might become empty (weight < epsilon), so adjust min and max buckets.
 	h.updateMinAndMaxBucket()
 }
 
