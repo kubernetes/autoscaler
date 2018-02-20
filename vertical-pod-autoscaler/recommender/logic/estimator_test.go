@@ -18,10 +18,15 @@ package logic
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/model"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/util"
+)
+
+var (
+	anyTime = time.Time{}
 )
 
 // Verifies that the PercentileEstimator returns requested percentiles of CPU
@@ -29,14 +34,14 @@ import (
 func TestPercentileEstimator(t *testing.T) {
 	// Create a sample CPU histogram.
 	cpuHistogram := util.NewHistogram(model.CPUHistogramOptions)
-	cpuHistogram.AddSample(1.0, 1.0)
-	cpuHistogram.AddSample(2.0, 1.0)
-	cpuHistogram.AddSample(3.0, 1.0)
+	cpuHistogram.AddSample(1.0, 1.0, anyTime)
+	cpuHistogram.AddSample(2.0, 1.0, anyTime)
+	cpuHistogram.AddSample(3.0, 1.0, anyTime)
 	// Create a sample memory histogram.
 	memoryPeaksHistogram := util.NewHistogram(model.MemoryHistogramOptions)
-	memoryPeaksHistogram.AddSample(1e9, 1.0)
-	memoryPeaksHistogram.AddSample(2e9, 1.0)
-	memoryPeaksHistogram.AddSample(3e9, 1.0)
+	memoryPeaksHistogram.AddSample(1e9, 1.0, anyTime)
+	memoryPeaksHistogram.AddSample(2e9, 1.0, anyTime)
+	memoryPeaksHistogram.AddSample(3e9, 1.0, anyTime)
 	// Create an estimator.
 	CPUPercentile := 0.2
 	MemoryPercentile := 0.5
