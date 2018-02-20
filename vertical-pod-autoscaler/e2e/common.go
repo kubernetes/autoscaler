@@ -31,10 +31,11 @@ import (
 )
 
 const (
-	recommenderComponent = "recommender"
-	updateComponent      = "updater"
-	pollInterval         = framework.Poll
-	pollTimeout          = 5 * time.Minute
+	recommenderComponent         = "recommender"
+	updateComponent              = "updater"
+	admissionControllerComponent = "admission-controller"
+	pollInterval                 = framework.Poll
+	pollTimeout                  = 5 * time.Minute
 )
 
 func e2eDescribe(scenario, name string, body func()) bool {
@@ -47,6 +48,10 @@ func recommenderE2eDescribe(name string, body func()) bool {
 
 func updaterE2eDescribe(name string, body func()) bool {
 	return e2eDescribe(updateComponent, name, body)
+}
+
+func admissionControllerE2eDescribe(name string, body func()) bool {
+	return e2eDescribe(admissionControllerComponent, name, body)
 }
 
 func hamsterDeployment(f *framework.Framework, cpuQuantity, memoryQuantity resource.Quantity) *extensions.Deployment {
