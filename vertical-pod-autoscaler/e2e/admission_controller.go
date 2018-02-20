@@ -43,11 +43,15 @@ var _ = admissionControllerE2eDescribe("Admission-controller", func() {
 				"app": "hamster",
 			},
 		})
-		newCPUQuantity := parseQuantityOrDie("200m")
+		newCPUQuantity := parseQuantityOrDie("250m")
+		newMemoryQuantity := parseQuantityOrDie("200Mi")
 		vpaCRD.Status.Recommendation.ContainerRecommendations = []vpa_types.RecommendedContainerResources{
 			{
-				Name:   "hamster",
-				Target: apiv1.ResourceList{apiv1.ResourceCPU: newCPUQuantity},
+				Name: "hamster",
+				Target: apiv1.ResourceList{
+					apiv1.ResourceCPU:    newCPUQuantity,
+					apiv1.ResourceMemory: newMemoryQuantity,
+				},
 			},
 		}
 
@@ -70,9 +74,11 @@ var _ = admissionControllerE2eDescribe("Admission-controller", func() {
 		podList, err := framework.GetPodsForDeployment(c, d)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
-		// Originally Pods had 100m CPU, but admission controller should change it to recommended 200m CPU
+		// Originally Pods had 100m CPU, 100Mi of memory, but admission controller
+		// should change it to recommended 250m CPU and 200Mi of memory.
 		for _, pod := range podList.Items {
-			gomega.Ω(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceCPU]).Should(gomega.Equal(parseQuantityOrDie("200m")))
+			gomega.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(parseQuantityOrDie("250m")))
+			gomega.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(parseQuantityOrDie("200Mi")))
 		}
 
 	})
