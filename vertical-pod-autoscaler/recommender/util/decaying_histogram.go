@@ -98,14 +98,8 @@ func (h *decayingHistogram) shiftDecayStart(newDecayStart time.Time) {
 	// Make sure the decay start is an integer multiple of halfLife.
 	newDecayStart = newDecayStart.Round(h.halfLife)
 	exponent := round(float64(h.decayStart.Sub(newDecayStart)) / float64(h.halfLife))
-	for bucket := h.histogram.minBucket; bucket <= h.histogram.maxBucket; bucket++ {
-		// Bucket weight *= 2^exponent.
-		h.histogram.bucketWeight[bucket] = math.Ldexp(h.histogram.bucketWeight[bucket], exponent)
-	}
-	h.histogram.totalWeight = math.Ldexp(h.histogram.totalWeight, exponent)
+	h.histogram.scale(math.Ldexp(1., exponent)) // Scale all weights by 2^exponent.
 	h.decayStart = newDecayStart
-	// Some buckets might become empty (weight < epsilon), so adjust min and max buckets.
-	h.updateMinAndMaxBucket()
 }
 
 func (h *decayingHistogram) decayFactor(timestamp time.Time) float64 {

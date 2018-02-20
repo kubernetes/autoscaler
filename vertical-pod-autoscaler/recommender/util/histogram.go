@@ -198,3 +198,17 @@ func (h *histogram) updateMinAndMaxBucket() {
 		h.maxBucket--
 	}
 }
+
+// Multiplies all weights by a given factor. The factor must be non-negative.
+// (note: this operation does not affect the percentiles of the distribution)
+func (h *histogram) scale(factor float64) {
+	if factor < 0.0 {
+		panic("scale factor must be non-negative")
+	}
+	for bucket := h.minBucket; bucket <= h.maxBucket; bucket++ {
+		h.bucketWeight[bucket] *= factor
+	}
+	h.totalWeight *= factor
+	// Some buckets might become empty (weight < epsilon), so adjust min and max buckets.
+	h.updateMinAndMaxBucket()
+}
