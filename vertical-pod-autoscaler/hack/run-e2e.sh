@@ -47,9 +47,11 @@ case ${SUITE} in
     ${SCRIPT_ROOT}/hack/deploy-for-e2e.sh ${SUITE}
 
     # VPA creation and listing for debugging test-infra. DELETE AFTER DEBUG
-    kubectl create -f ${SCRIPT_ROOT}/examples/hamster.yaml
-    kubectl describe vpa
-    kubectl delete -f ${SCRIPT_ROOT}/examples/hamster.yaml
+    kubectl describe customresourcedefinition
+    kubectl create namespace default || true
+    kubectl --namespace default create -f ${SCRIPT_ROOT}/examples/hamster.yaml
+    kubectl describe --all-namespaces vpa
+    kubectl --namespace default delete -f ${SCRIPT_ROOT}/examples/hamster.yaml
 
     go test ${SCRIPT_ROOT}/e2e/*go -v  --args --ginkgo.v=true --ginkgo.focus="\[VPA\] \[${SUITE}\]"
     ;;
