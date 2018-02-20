@@ -47,7 +47,7 @@ type decayingHistogram struct {
 }
 
 // NewDecayingHistogram returns a new DecayingHistogram instance using given options.
-func NewDecayingHistogram(options *HistogramOptions, halfLife time.Duration) Histogram {
+func NewDecayingHistogram(options HistogramOptions, halfLife time.Duration) Histogram {
 	return &decayingHistogram{
 		histogram:  *NewHistogram(options).(*histogram),
 		halfLife:   halfLife,

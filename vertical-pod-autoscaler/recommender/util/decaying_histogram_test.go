@@ -30,7 +30,7 @@ var (
 // Verifies that Percentile() returns 0.0 when called on an empty decaying histogram
 // for any percentile.
 func TestPercentilesEmptyDecayingHistogram(t *testing.T) {
-	h := NewDecayingHistogram(&testHistogramOptions, time.Hour)
+	h := NewDecayingHistogram(testHistogramOptions, time.Hour)
 	for p := -0.5; p <= 1.5; p += 0.5 {
 		assert.Equal(t, 0.0, h.Percentile(p))
 	}
@@ -39,7 +39,7 @@ func TestPercentilesEmptyDecayingHistogram(t *testing.T) {
 // Verify that a sample with a large weight is almost entirely (but not 100%)
 // decayed after sufficient amount of time elapses.
 func TestSimpleDecay(t *testing.T) {
-	h := NewDecayingHistogram(&testHistogramOptions, time.Hour)
+	h := NewDecayingHistogram(testHistogramOptions, time.Hour)
 	// Add a sample with a very large weight.
 	h.AddSample(2, 1000, startTime)
 	// Add another sample 20 half life periods later. Its relative weight is
@@ -52,7 +52,7 @@ func TestSimpleDecay(t *testing.T) {
 // Verify that the decaying histogram behaves correctly after the decaying
 // factor grows by more than 2^maxDecayExponent.
 func TestLongtermDecay(t *testing.T) {
-	h := NewDecayingHistogram(&testHistogramOptions, time.Hour)
+	h := NewDecayingHistogram(testHistogramOptions, time.Hour)
 	// Add a sample with a very large weight.
 	h.AddSample(2, 1, startTime)
 	// Add another sample later, such that the relative decay factor of the
@@ -64,7 +64,7 @@ func TestLongtermDecay(t *testing.T) {
 // Verify specific values of percentiles on an example decaying histogram with
 // 4 samples added with different timestamps.
 func TestDecayingHistogramPercentiles(t *testing.T) {
-	h := NewDecayingHistogram(&testHistogramOptions, time.Hour)
+	h := NewDecayingHistogram(testHistogramOptions, time.Hour)
 	timestamp := startTime
 	// Add four samples with both values and weights equal to 1, 2, 3, 4,
 	// each separated by one half life period from the previous one.
@@ -90,7 +90,7 @@ func TestDecayingHistogramPercentiles(t *testing.T) {
 // Verifies that the decaying histogram behaves the same way as a regular
 // histogram if the time is fixed and no decaying happens.
 func TestNoDecay(t *testing.T) {
-	h := NewDecayingHistogram(&testHistogramOptions, time.Hour)
+	h := NewDecayingHistogram(testHistogramOptions, time.Hour)
 	for i := 1; i <= 4; i++ {
 		h.AddSample(float64(i), float64(i), startTime)
 	}
@@ -109,15 +109,15 @@ func TestNoDecay(t *testing.T) {
 
 // Verifies that Merge() works as expected on two sample decaying histograms.
 func TestDecayingHistogramMerge(t *testing.T) {
-	h1 := NewDecayingHistogram(&testHistogramOptions, time.Hour)
+	h1 := NewDecayingHistogram(testHistogramOptions, time.Hour)
 	h1.AddSample(1, 1, startTime)
 	h1.AddSample(2, 1, startTime.Add(time.Hour))
 
-	h2 := NewDecayingHistogram(&testHistogramOptions, time.Hour)
+	h2 := NewDecayingHistogram(testHistogramOptions, time.Hour)
 	h2.AddSample(2, 1, startTime.Add(time.Hour*2))
 	h2.AddSample(3, 1, startTime.Add(time.Hour))
 
-	expected := NewDecayingHistogram(&testHistogramOptions, time.Hour)
+	expected := NewDecayingHistogram(testHistogramOptions, time.Hour)
 	expected.AddSample(2, 1, startTime.Add(time.Hour*2))
 	expected.AddSample(2, 1, startTime.Add(time.Hour))
 	expected.AddSample(3, 1, startTime.Add(time.Hour))

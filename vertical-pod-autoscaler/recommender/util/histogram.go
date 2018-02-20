@@ -56,12 +56,12 @@ type Histogram interface {
 }
 
 // NewHistogram returns a new Histogram instance using given options.
-func NewHistogram(options *HistogramOptions) Histogram {
+func NewHistogram(options HistogramOptions) Histogram {
 	return &histogram{
 		options:      options,
-		bucketWeight: make([]float64, (*options).NumBuckets()),
+		bucketWeight: make([]float64, options.NumBuckets()),
 		totalWeight:  0.0,
-		minBucket:    (*options).NumBuckets() - 1,
+		minBucket:    options.NumBuckets() - 1,
 		maxBucket:    0}
 }
 
@@ -74,7 +74,7 @@ func NewHistogram(options *HistogramOptions) Histogram {
 // A bucket is considered empty if its weight is smaller than options.Epsilon().
 type histogram struct {
 	// Bucketing scheme.
-	options *HistogramOptions
+	options HistogramOptions
 	// Cumulative weight of samples in each bucket.
 	bucketWeight []float64
 	// Total cumulative weight of samples in all buckets.
@@ -90,7 +90,7 @@ func (h *histogram) AddSample(value float64, weight float64, time time.Time) {
 	if weight < 0.0 {
 		panic("sample weight must be non-negative")
 	}
-	bucket := (*h.options).FindBucket(value)
+	bucket := h.options.FindBucket(value)
 	h.bucketWeight[bucket] += weight
 	h.totalWeight += weight
 	if bucket < h.minBucket {
@@ -105,8 +105,8 @@ func (h *histogram) SubtractSample(value float64, weight float64, time time.Time
 	if weight < 0.0 {
 		panic("sample weight must be non-negative")
 	}
-	bucket := (*h.options).FindBucket(value)
-	epsilon := (*h.options).Epsilon()
+	bucket := h.options.FindBucket(value)
+	epsilon := h.options.Epsilon()
 	if weight > h.bucketWeight[bucket]-epsilon {
 		weight = h.bucketWeight[bucket]
 	}
@@ -145,10 +145,10 @@ func (h *histogram) Percentile(percentile float64) float64 {
 			break
 		}
 	}
-	bucketStart := (*h.options).GetBucketStart(bucket)
-	if bucket < (*h.options).NumBuckets()-1 {
+	bucketStart := h.options.GetBucketStart(bucket)
+	if bucket < h.options.NumBuckets()-1 {
 		// Return the middle point between the bucket boundaries.
-		bucketEnd := (*h.options).GetBucketStart(bucket + 1)
+		bucketEnd := h.options.GetBucketStart(bucket + 1)
 		return (bucketStart + bucketEnd) / 2.0
 	}
 	// Return the start of the last bucket (note that the last bucket
@@ -157,7 +157,7 @@ func (h *histogram) Percentile(percentile float64) float64 {
 }
 
 func (h *histogram) IsEmpty() bool {
-	return h.bucketWeight[h.minBucket] < (*h.options).Epsilon()
+	return h.bucketWeight[h.minBucket] < h.options.Epsilon()
 }
 
 func (h *histogram) String() string {
@@ -173,7 +173,7 @@ func (h *histogram) String() string {
 }
 
 func (h *histogram) Equals(other Histogram) bool {
-	h2, typesMatch := (other).(*histogram)
+	h2, typesMatch := other.(*histogram)
 	if !typesMatch || h.options != h2.options || h.minBucket != h2.minBucket || h.maxBucket != h2.maxBucket {
 		return false
 	}
@@ -189,8 +189,8 @@ func (h *histogram) Equals(other Histogram) bool {
 // Adjusts the value of minBucket and maxBucket after any operation that
 // decreases weights.
 func (h *histogram) updateMinAndMaxBucket() {
-	epsilon := (*h.options).Epsilon()
-	lastBucket := (*h.options).NumBuckets() - 1
+	epsilon := h.options.Epsilon()
+	lastBucket := h.options.NumBuckets() - 1
 	for h.bucketWeight[h.minBucket] < epsilon && h.minBucket < lastBucket {
 		h.minBucket++
 	}
