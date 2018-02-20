@@ -55,7 +55,7 @@ type ContainerState struct {
 	// (one value per interval). The measurement unit is a byte.
 	MemoryUsagePeaks util.FloatSlidingWindow
 	// End time of the most recent interval covered by the aggregation window.
-	windowEnd time.Time
+	WindowEnd time.Time
 	// Start of the latest memory usage sample that was aggregated.
 	lastMemorySampleStart time.Time
 }
@@ -67,7 +67,7 @@ func NewContainerState() *ContainerState {
 		lastCPUSampleStart: time.Unix(0, 0),
 		MemoryUsagePeaks: util.NewFloatSlidingWindow(
 			int(MemoryAggregationWindowLength / MemoryAggregationInterval)),
-		windowEnd:             time.Unix(0, 0),
+		WindowEnd:             time.Unix(0, 0),
 		lastMemorySampleStart: time.Unix(0, 0)}
 }
 
@@ -81,7 +81,7 @@ func (container *ContainerState) addCPUSample(sample *ContainerUsageSample) bool
 	if !sample.isValid(ResourceCPU) || !sample.MeasureStart.After(container.lastCPUSampleStart) {
 		return false // Discard invalid, duplicate or out-of-order samples.
 	}
-	container.CPUUsage.AddSample(CoresFromCPUAmount(sample.Usage), 1.0)
+	container.CPUUsage.AddSample(CoresFromCPUAmount(sample.Usage), 1.0, sample.MeasureStart)
 	container.lastCPUSampleStart = sample.MeasureStart
 	return true
 }
@@ -91,18 +91,18 @@ func (container *ContainerState) addMemorySample(sample *ContainerUsageSample) b
 	if !sample.isValid(ResourceMemory) || !ts.After(container.lastMemorySampleStart) {
 		return false // Discard invalid, duplicate or out-of-order samples.
 	}
-	if !ts.Before(container.windowEnd.Add(MemoryAggregationWindowLength)) {
+	if !ts.Before(container.WindowEnd.Add(MemoryAggregationWindowLength)) {
 		// The gap between this sample and the previous interval is so
 		// large that the whole sliding window gets reset.
 		// This also happens on the first memory usage sample.
 		container.MemoryUsagePeaks.Clear()
-		container.windowEnd = ts.Add(MemoryAggregationInterval)
+		container.WindowEnd = ts.Add(MemoryAggregationInterval)
 	} else {
-		for !ts.Before(container.windowEnd) {
+		for !ts.Before(container.WindowEnd) {
 			// Shift the memory aggregation window to the next interval.
 			container.MemoryUsagePeaks.Push(0.0)
-			container.windowEnd =
-				container.windowEnd.Add(MemoryAggregationInterval)
+			container.WindowEnd =
+				container.WindowEnd.Add(MemoryAggregationInterval)
 		}
 	}
 	// Update the memory peak for the current interval.

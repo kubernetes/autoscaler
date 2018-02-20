@@ -89,14 +89,14 @@ func TestBuildAggregateResourcesMap(t *testing.T) {
 
 	// Compute the expected histograms for the "app-A" containers.
 	expectedCPUHistogram := cluster.GetContainer(containers[0]).CPUUsage
-	expectedCPUHistogram.Merge(&cluster.GetContainer(containers[2]).CPUUsage)
+	expectedCPUHistogram.Merge(cluster.GetContainer(containers[2]).CPUUsage)
 	actualCPUHistogram := aggregateResources["app-A"].aggregateCPUUsage
 
 	expectedMemoryHistogram := util.NewHistogram(model.MemoryHistogramOptions)
-	expectedMemoryHistogram.AddSample(2e9, 1.0)
-	expectedMemoryHistogram.AddSample(4e9, 1.0)
+	expectedMemoryHistogram.AddSample(2e9, 1.0, anyTime)
+	expectedMemoryHistogram.AddSample(4e9, 1.0, anyTime)
 	actualMemoryHistogram := aggregateResources["app-A"].aggregateMemoryPeaks
 
-	assert.True(t, util.HistogramsEqual(expectedCPUHistogram, actualCPUHistogram), "Expected:\n%s\nActual:\n%s", expectedCPUHistogram, actualCPUHistogram)
-	assert.True(t, util.HistogramsEqual(expectedMemoryHistogram, actualMemoryHistogram), "Expected:\n%s\nActual:\n%s", expectedMemoryHistogram, actualMemoryHistogram)
+	assert.True(t, expectedCPUHistogram.Equals(actualCPUHistogram), "Expected:\n%s\nActual:\n%s", expectedCPUHistogram, actualCPUHistogram)
+	assert.True(t, expectedMemoryHistogram.Equals(actualMemoryHistogram), "Expected:\n%s\nActual:\n%s", expectedMemoryHistogram, actualMemoryHistogram)
 }
