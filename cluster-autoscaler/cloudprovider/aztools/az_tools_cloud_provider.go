@@ -163,6 +163,7 @@ func (azcp *AzToolsCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovi
 	}
 
 	groupName, found := azcp.nodes[id]
+
 	if !found {
 		return nil, nil
 	}
