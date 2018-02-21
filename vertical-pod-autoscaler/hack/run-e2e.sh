@@ -43,11 +43,10 @@ SUITE=$1
 
 case ${SUITE} in
   recommender|updater|admission-controller|full-vpa)
-    kubectl config current-context
-    kubectl version
     ${SCRIPT_ROOT}/hack/vpa-down.sh
     ${SCRIPT_ROOT}/hack/deploy-for-e2e.sh ${SUITE}
 
+    export KUBECONFIG=$HOME/.kube/config
     go test ${SCRIPT_ROOT}/e2e/*go -v  --args --ginkgo.v=true --ginkgo.focus="\[VPA\] \[${SUITE}\]"
     ;;
   *)
