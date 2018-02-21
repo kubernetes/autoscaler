@@ -18,6 +18,7 @@ package aztools
 
 import (
 	"fmt"
+	"regexp"
 	"sync"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -56,7 +57,7 @@ type OnNodeGroupDeleteFunc func(string) error
 // AzToolsCloudProvider is a cloud provider to be used with az_tools.
 type AzToolsCloudProvider struct {
 	sync.Mutex
-	nodes             map[string]string
+	nodes             map[string]string // {providerID: groupName}
 	groups            map[string]cloudprovider.NodeGroup
 	onScaleUp         func(string, int) error
 	onScaleDown       func(string, string) error
@@ -147,6 +148,8 @@ func (azcp *AzToolsCloudProvider) GetNodeGroup(name string) cloudprovider.NodeGr
 	return azcp.groups[name]
 }
 
+var validRefIdRegex = regexp.MustCompile(`^aztools\:\/\/[-0-9a-z]*$`)
+
 // NodeGroupForNode returns the node group for the given node, nil if the node
 // should not be processed by cluster autoscaler, or non-nil error if such
 // occurred.
@@ -154,7 +157,12 @@ func (azcp *AzToolsCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovi
 	azcp.Lock()
 	defer azcp.Unlock()
 
-	groupName, found := azcp.nodes[node.Name]
+	id := node.Spec.ProviderID
+	if validRefIdRegex.FindStringSubmatch(id) == nil {
+		return nil, fmt.Errorf("Wrong id: expected provider ID format aztools://<node-name>, got %v", id)
+	}
+
+	groupName, found := azcp.nodes[id]
 	if !found {
 		return nil, nil
 	}
@@ -207,11 +215,18 @@ func (azcp *AzToolsCloudProvider) AddNodeGroup(id string, min int, max int, kube
 	}
 }
 
+// getProviderID returns node name prefixed by cloud provider.
+// It is assumed to be the same as node.spec.providerID, otherwise, this node will be considered as
+// non-registered node.
+func getProviderID(nodeName string) string {
+	return "aztools://" + nodeName
+}
+
 // AddNode adds the given node to the group.
 func (azcp *AzToolsCloudProvider) AddNode(nodeGroupId string, node *apiv1.Node) {
 	azcp.Lock()
 	defer azcp.Unlock()
-	azcp.nodes[node.Name] = nodeGroupId
+	azcp.nodes[getProviderID(node.Name)] = nodeGroupId
 }
 
 // GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
@@ -232,7 +247,7 @@ func (azcp *AzToolsCloudProvider) Cleanup() error {
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
 // In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
 func (azcp *AzToolsCloudProvider) Refresh() error {
-	glog.Warningf("Refresh(): aztools only support one Node group so we will do nothing here")
+	glog.V(5).Infof("Refresh() skipped: aztools only support one NodeGroup for now, so we don't need to periodically update NodeGroup list")
 	return nil
 }
 
