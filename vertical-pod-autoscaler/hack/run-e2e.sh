@@ -43,15 +43,10 @@ SUITE=$1
 
 case ${SUITE} in
   recommender|updater|admission-controller|full-vpa)
+    kubectl config current-context
+    kubectl version
     ${SCRIPT_ROOT}/hack/vpa-down.sh
     ${SCRIPT_ROOT}/hack/deploy-for-e2e.sh ${SUITE}
-
-    # VPA creation and listing for debugging test-infra. DELETE AFTER DEBUG
-    kubectl describe customresourcedefinition
-    kubectl create namespace default || true
-    kubectl --namespace default create -f ${SCRIPT_ROOT}/examples/hamster.yaml
-    kubectl describe --all-namespaces vpa
-    kubectl --namespace default delete -f ${SCRIPT_ROOT}/examples/hamster.yaml
 
     go test ${SCRIPT_ROOT}/e2e/*go -v  --args --ginkgo.v=true --ginkgo.focus="\[VPA\] \[${SUITE}\]"
     ;;
