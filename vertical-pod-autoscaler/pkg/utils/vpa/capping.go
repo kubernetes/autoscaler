@@ -19,7 +19,6 @@ package api
 import (
 	"fmt"
 
-	"github.com/golang/glog"
 	apiv1 "k8s.io/api/core/v1"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 )
@@ -33,22 +32,13 @@ func GetCappedRecommendationForContainer(
 	if containerRecommendation == nil {
 		return nil, fmt.Errorf("no recommendation available for container name %v", container.Name)
 	}
-	capRecommendationToContainerLimit(containerRecommendation, container)
+	// containerPolicy can be nil (user does not have to configure it).
 	containerPolicy := getContainerPolicy(container.Name, policy)
 	applyVPAPolicy(containerRecommendation, containerPolicy)
+	// TODO: If limits and policy are conflicting, set some condition on the VPA.
+	capRecommendationToContainerLimit(containerRecommendation, container)
 	res := make(apiv1.ResourceList)
 	for resource, recommended := range containerRecommendation.Target {
-		requested, exists := container.Resources.Requests[resource]
-		if exists {
-			// overwriting existing resource spec
-			glog.V(2).Infof("updating resources request for pod %v container %v resource %v old value: %v new value: %v",
-				"", container.Name, resource, requested, recommended)
-		} else {
-			// adding new resource spec
-			glog.V(2).Infof("updating resources request for pod %v container %v resource %v old value: none new value: %v",
-				"", container.Name, resource, recommended)
-		}
-
 		res[resource] = recommended
 	}
 	return res, nil
@@ -65,22 +55,18 @@ func capRecommendationToContainerLimit(recommendation *vpa_types.RecommendedCont
 	}
 }
 
-// applyVPAPolicy updates recommendation if recommended resources exceed limits defined in VPA resources policy
+// applyVPAPolicy updates recommendation if recommended resources are outside of limits defined in VPA resources policy
 func applyVPAPolicy(recommendation *vpa_types.RecommendedContainerResources, policy *vpa_types.ContainerResourcePolicy) {
+	if policy == nil {
+		return
+	}
 	for resourceName, recommended := range recommendation.Target {
-		if policy == nil {
-			continue
-		}
 		min, found := policy.MinAllowed[resourceName]
 		if found && !min.IsZero() && recommended.MilliValue() < min.MilliValue() {
-			glog.Warningf("recommendation outside of policy bounds : min value : %v recommended : %v",
-				min.MilliValue(), recommended)
 			recommendation.Target[resourceName] = min
 		}
 		max, found := policy.MaxAllowed[resourceName]
 		if found && !max.IsZero() && recommended.MilliValue() > max.MilliValue() {
-			glog.Warningf("recommendation outside of policy bounds : max value : %v recommended : %v",
-				max.MilliValue(), recommended)
 			recommendation.Target[resourceName] = max
 		}
 	}
@@ -90,7 +76,8 @@ func getRecommendationForContainer(recommendation *vpa_types.RecommendedPodResou
 	if recommendation != nil {
 		for i, containerRec := range recommendation.ContainerRecommendations {
 			if containerRec.Name == container.Name {
-				return &recommendation.ContainerRecommendations[i]
+				recommendationCopy := recommendation.ContainerRecommendations[i]
+				return &recommendationCopy
 			}
 		}
 	}
