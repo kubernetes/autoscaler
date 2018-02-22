@@ -34,6 +34,7 @@ const (
 	recommenderComponent         = "recommender"
 	updateComponent              = "updater"
 	admissionControllerComponent = "admission-controller"
+	fullVpaSuite                 = "full-vpa"
 	pollInterval                 = framework.Poll
 	pollTimeout                  = 5 * time.Minute
 )
@@ -52,6 +53,10 @@ func updaterE2eDescribe(name string, body func()) bool {
 
 func admissionControllerE2eDescribe(name string, body func()) bool {
 	return e2eDescribe(admissionControllerComponent, name, body)
+}
+
+func fullVpaE2eDescribe(name string, body func()) bool {
+	return e2eDescribe(fullVpaSuite, name, body)
 }
 
 func hamsterDeployment(f *framework.Framework, cpuQuantity, memoryQuantity resource.Quantity) *extensions.Deployment {
