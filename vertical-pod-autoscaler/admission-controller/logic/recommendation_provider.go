@@ -41,13 +41,13 @@ func NewRecommendationProvider(vpaLister vpa_lister.VerticalPodAutoscalerLister)
 	return &recommendationProvider{vpaLister: vpaLister}
 }
 
-// getRecomendedResources returns the recommended resources Request for each container in the given pod.
+// getRecomendedResources returns the recommended resources Request for each container in the given pod in the same order they are specified in the pod.Spec.
 func getRecomendedResources(pod *v1.Pod, podRecommendation vpa_types.RecommendedPodResources, policy vpa_types.PodResourcePolicy) []v1.ResourceList {
 	res := make([]v1.ResourceList, len(pod.Spec.Containers))
 	for i, container := range pod.Spec.Containers {
 		recommendation, err := vpa_api_util.GetCappedRecommendationForContainer(container, &podRecommendation, &policy)
 		if err != nil {
-			glog.V(2).Infof("Recommendation not found for container %v: %v", container, err)
+			glog.V(2).Infof("%v", err)
 			continue
 		}
 		res[i] = recommendation
