@@ -92,9 +92,9 @@ func TestBuildAggregateResourcesMap(t *testing.T) {
 	expectedCPUHistogram.Merge(cluster.GetContainer(containers[2]).CPUUsage)
 	actualCPUHistogram := aggregateResources["app-A"].aggregateCPUUsage
 
-	expectedMemoryHistogram := util.NewHistogram(model.MemoryHistogramOptions)
-	expectedMemoryHistogram.AddSample(2e9, 1.0, anyTime)
-	expectedMemoryHistogram.AddSample(4e9, 1.0, anyTime)
+	expectedMemoryHistogram := util.NewDecayingHistogram(model.MemoryHistogramOptions, model.MemoryHistogramDecayHalfLife)
+	expectedMemoryHistogram.AddSample(2e9, 1.0, cluster.GetContainer(containers[0]).WindowEnd)
+	expectedMemoryHistogram.AddSample(4e9, 1.0, cluster.GetContainer(containers[2]).WindowEnd)
 	actualMemoryHistogram := aggregateResources["app-A"].aggregateMemoryPeaks
 
 	assert.True(t, expectedCPUHistogram.Equals(actualCPUHistogram), "Expected:\n%s\nActual:\n%s", expectedCPUHistogram, actualCPUHistogram)
