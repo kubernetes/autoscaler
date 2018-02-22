@@ -47,7 +47,7 @@ case ${SUITE} in
     ${SCRIPT_ROOT}/hack/deploy-for-e2e.sh ${SUITE}
 
     export KUBECONFIG=$HOME/.kube/config
-    go test ${SCRIPT_ROOT}/e2e/*go -v  --args --ginkgo.v=true --ginkgo.focus="\[VPA\] \[${SUITE}\]"
+    go test ${SCRIPT_ROOT}/e2e/*go -v  --args --ginkgo.v=true --ginkgo.focus="\[VPA\] \[${SUITE}\]" --report-dir=/workspace/_artifacts --disable-log-dump
     ;;
   *)
     print_help
