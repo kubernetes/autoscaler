@@ -79,7 +79,6 @@ func (a *AggregateContainerState) mergeContainerState(container *model.Container
 	memoryPeaks := container.MemoryUsagePeaks.Contents()
 	peakTime := container.WindowEnd
 	for i := len(memoryPeaks) - 1; i >= 0; i-- {
-		// TODO: may use exponential decay here.
 		a.aggregateMemoryPeaks.AddSample(float64(memoryPeaks[i]), 1.0, peakTime)
 		peakTime = peakTime.Add(-model.MemoryAggregationInterval)
 	}
@@ -88,8 +87,8 @@ func (a *AggregateContainerState) mergeContainerState(container *model.Container
 // Returns a new, empty AggregateContainerState.
 func newAggregateContainerState() *AggregateContainerState {
 	return &AggregateContainerState{
-		util.NewHistogram(model.CPUHistogramOptions),
-		util.NewHistogram(model.MemoryHistogramOptions),
+		util.NewDecayingHistogram(model.CPUHistogramOptions, model.CPUHistogramDecayHalfLife),
+		util.NewDecayingHistogram(model.MemoryHistogramOptions, model.MemoryHistogramDecayHalfLife),
 	}
 }
 
