@@ -63,7 +63,7 @@ type ContainerState struct {
 // NewContainerState returns a new, empty ContainerState.
 func NewContainerState() *ContainerState {
 	return &ContainerState{
-		CPUUsage:           util.NewHistogram(CPUHistogramOptions),
+		CPUUsage:           util.NewDecayingHistogram(CPUHistogramOptions, CPUHistogramDecayHalfLife),
 		lastCPUSampleStart: time.Unix(0, 0),
 		MemoryUsagePeaks: util.NewFloatSlidingWindow(
 			int(MemoryAggregationWindowLength / MemoryAggregationInterval)),
