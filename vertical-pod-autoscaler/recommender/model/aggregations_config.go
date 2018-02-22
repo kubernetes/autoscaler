@@ -39,13 +39,20 @@ var (
 	// MemoryHistogramOptions are options to be used by histograms that
 	// store memory measures expressed in bytes.
 	MemoryHistogramOptions = memoryHistogramOptions()
-
 	// HistogramBucketSizeRatio is the relative size of the histogram buckets
 	// (the ratio between the upper and the lower bound of the bucket).
 	HistogramBucketSizeRatio = 0.05
 	// HistogramRelativeError is the maximum relative error introduced by
 	// the histogram (except for the boundary buckets).
 	HistogramRelativeError = HistogramBucketSizeRatio / 2.
+	// MemoryHistogramDecayHalfLife is the amount of time it takes a historical
+	// memory usage sample to lose half of its weight. In other words, a fresh
+	// usage sample is twice as 'important' as one with age equal to the half
+	// life period.
+	MemoryHistogramDecayHalfLife = time.Hour * 24
+	// CPUHistogramDecayHalfLife is the amount of time it takes a historical
+	// CPU usage sample to lose half of its weight.
+	CPUHistogramDecayHalfLife = time.Hour * 24
 )
 
 func cpuHistogramOptions() util.HistogramOptions {
