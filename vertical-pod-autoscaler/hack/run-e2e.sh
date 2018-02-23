@@ -26,6 +26,7 @@ function print_help {
   echo " - recommender"
   echo " - updater"
   echo " - admission-controller"
+  echo " - actuation"
   echo " - full-vpa"
 }
 
@@ -42,7 +43,7 @@ fi
 SUITE=$1
 
 case ${SUITE} in
-  recommender|updater|admission-controller|full-vpa)
+  recommender|updater|admission-controller|actuation|full-vpa)
     ${SCRIPT_ROOT}/hack/vpa-down.sh
     ${SCRIPT_ROOT}/hack/deploy-for-e2e.sh ${SUITE}
 
