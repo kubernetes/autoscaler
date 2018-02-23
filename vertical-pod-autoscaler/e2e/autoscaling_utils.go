@@ -38,7 +38,7 @@ import (
 	"k8s.io/kubernetes/test/e2e/framework"
 	testutils "k8s.io/kubernetes/test/utils"
 
-	. "github.com/onsi/ginkgo"
+	ginkgo "github.com/onsi/ginkgo"
 	imageutils "k8s.io/kubernetes/test/utils/image"
 )
 
@@ -68,8 +68,11 @@ var (
 )
 
 var (
-	KindRC         = schema.GroupVersionKind{Version: "v1", Kind: "ReplicationController"}
+	// KindRC var
+	KindRC = schema.GroupVersionKind{Version: "v1", Kind: "ReplicationController"}
+	// KindDeployment var
 	KindDeployment = schema.GroupVersionKind{Group: "apps", Version: "v1beta2", Kind: "Deployment"}
+	// KindReplicaSet var
 	KindReplicaSet = schema.GroupVersionKind{Group: "apps", Version: "v1beta2", Kind: "ReplicaSet"}
 	subresource    = "scale"
 )
@@ -103,16 +106,18 @@ type ResourceConsumer struct {
 	requestSizeCustomMetric  int
 }
 
+// GetResourceConsumerImage func
 func GetResourceConsumerImage() string {
 	return resourceConsumerImage
 }
 
+// NewDynamicResourceConsumer func
 func NewDynamicResourceConsumer(name, nsName string, kind schema.GroupVersionKind, replicas, initCPUTotal, initMemoryTotal, initCustomMetric int, cpuRequest, memRequest resource.Quantity, clientset clientset.Interface, internalClientset *internalclientset.Clientset) *ResourceConsumer {
 	return newResourceConsumer(name, nsName, kind, replicas, initCPUTotal, initMemoryTotal, initCustomMetric, dynamicConsumptionTimeInSeconds,
 		dynamicRequestSizeInMillicores, dynamicRequestSizeInMegabytes, dynamicRequestSizeCustomMetric, cpuRequest, memRequest, clientset, internalClientset)
 }
 
-// TODO this still defaults to replication controller
+// NewStaticResourceConsumer TODO this still defaults to replication controller
 func NewStaticResourceConsumer(name, nsName string, replicas, initCPUTotal, initMemoryTotal, initCustomMetric int, cpuRequest, memRequest resource.Quantity, clientset clientset.Interface, internalClientset *internalclientset.Clientset) *ResourceConsumer {
 	return newResourceConsumer(name, nsName, KindRC, replicas, initCPUTotal, initMemoryTotal, initCustomMetric, staticConsumptionTimeInSeconds,
 		initCPUTotal/replicas, initMemoryTotal/replicas, initCustomMetric/replicas, cpuRequest, memRequest, clientset, internalClientset)
@@ -171,14 +176,14 @@ func (rc *ResourceConsumer) ConsumeMem(megabytes int) {
 	rc.mem <- megabytes
 }
 
-// ConsumeMem consumes given number of custom metric
+// ConsumeCustomMetric consumes given number of custom metric
 func (rc *ResourceConsumer) ConsumeCustomMetric(amount int) {
 	framework.Logf("RC %s: consume custom metric %v in total", rc.name, amount)
 	rc.customMetric <- amount
 }
 
 func (rc *ResourceConsumer) makeConsumeCPURequests() {
-	defer GinkgoRecover()
+	defer ginkgo.GinkgoRecover()
 	rc.stopWaitGroup.Add(1)
 	defer rc.stopWaitGroup.Done()
 	sleepTime := time.Duration(0)
@@ -199,7 +204,7 @@ func (rc *ResourceConsumer) makeConsumeCPURequests() {
 }
 
 func (rc *ResourceConsumer) makeConsumeMemRequests() {
-	defer GinkgoRecover()
+	defer ginkgo.GinkgoRecover()
 	rc.stopWaitGroup.Add(1)
 	defer rc.stopWaitGroup.Done()
 	sleepTime := time.Duration(0)
@@ -220,7 +225,7 @@ func (rc *ResourceConsumer) makeConsumeMemRequests() {
 }
 
 func (rc *ResourceConsumer) makeConsumeCustomMetric() {
-	defer GinkgoRecover()
+	defer ginkgo.GinkgoRecover()
 	rc.stopWaitGroup.Add(1)
 	defer rc.stopWaitGroup.Done()
 	sleepTime := time.Duration(0)
@@ -320,6 +325,7 @@ func (rc *ResourceConsumer) sendConsumeCustomMetric(delta int) {
 	framework.ExpectNoError(err)
 }
 
+// GetReplicas func
 func (rc *ResourceConsumer) GetReplicas() int {
 	switch rc.kind {
 	case KindRC:
@@ -349,6 +355,7 @@ func (rc *ResourceConsumer) GetReplicas() int {
 	return 0
 }
 
+// WaitForReplicas func
 func (rc *ResourceConsumer) WaitForReplicas(desiredReplicas int, duration time.Duration) {
 	interval := 20 * time.Second
 	err := wait.PollImmediate(interval, duration, func() (bool, error) {
@@ -359,6 +366,7 @@ func (rc *ResourceConsumer) WaitForReplicas(desiredReplicas int, duration time.D
 	framework.ExpectNoErrorWithOffset(1, err, "timeout waiting %v for %d replicas", duration, desiredReplicas)
 }
 
+// EnsureDesiredReplicas func
 func (rc *ResourceConsumer) EnsureDesiredReplicas(desiredReplicas int, duration time.Duration) {
 	interval := 10 * time.Second
 	err := wait.PollImmediate(interval, duration, func() (bool, error) {
@@ -366,9 +374,8 @@ func (rc *ResourceConsumer) EnsureDesiredReplicas(desiredReplicas int, duration 
 		framework.Logf("expecting there to be %d replicas (are: %d)", desiredReplicas, replicas)
 		if replicas != desiredReplicas {
 			return false, fmt.Errorf("number of replicas changed unexpectedly")
-		} else {
-			return false, nil // Expected number of replicas found. Continue polling until timeout.
 		}
+		return false, nil // Expected number of replicas found. Continue polling until timeout.
 	})
 	// The call above always returns an error, but if it is timeout, it's OK (condition satisfied all the time).
 	if err == wait.ErrWaitTimeout {
@@ -380,23 +387,24 @@ func (rc *ResourceConsumer) EnsureDesiredReplicas(desiredReplicas int, duration 
 
 // Pause stops background goroutines responsible for consuming resources.
 func (rc *ResourceConsumer) Pause() {
-	By(fmt.Sprintf("HPA pausing RC %s", rc.name))
+	ginkgo.By(fmt.Sprintf("HPA pausing RC %s", rc.name))
 	rc.stopCPU <- 0
 	rc.stopMem <- 0
 	rc.stopCustomMetric <- 0
 	rc.stopWaitGroup.Wait()
 }
 
-// Pause starts background goroutines responsible for consuming resources.
+// Resume starts background goroutines responsible for consuming resources.
 func (rc *ResourceConsumer) Resume() {
-	By(fmt.Sprintf("HPA resuming RC %s", rc.name))
+	ginkgo.By(fmt.Sprintf("HPA resuming RC %s", rc.name))
 	go rc.makeConsumeCPURequests()
 	go rc.makeConsumeMemRequests()
 	go rc.makeConsumeCustomMetric()
 }
 
+// CleanUp func
 func (rc *ResourceConsumer) CleanUp() {
-	By(fmt.Sprintf("Removing consuming RC %s", rc.name))
+	ginkgo.By(fmt.Sprintf("Removing consuming RC %s", rc.name))
 	close(rc.stopCPU)
 	close(rc.stopMem)
 	close(rc.stopCustomMetric)
@@ -411,7 +419,7 @@ func (rc *ResourceConsumer) CleanUp() {
 }
 
 func runServiceAndWorkloadForResourceConsumer(c clientset.Interface, internalClient internalclientset.Interface, ns, name string, kind schema.GroupVersionKind, replicas int, cpuLimit, memLimit resource.Quantity) {
-	By(fmt.Sprintf("Running consuming RC %s via %s with %v replicas", name, kind, replicas))
+	ginkgo.By(fmt.Sprintf("Running consuming RC %s via %s with %v replicas", name, kind, replicas))
 	_, err := c.CoreV1().Services(ns).Create(&v1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
@@ -455,14 +463,14 @@ func runServiceAndWorkloadForResourceConsumer(c clientset.Interface, internalCli
 		rsConfig := testutils.ReplicaSetConfig{
 			RCConfig: rcConfig,
 		}
-		By(fmt.Sprintf("creating replicaset %s in namespace %s", rsConfig.Name, rsConfig.Namespace))
+		ginkgo.By(fmt.Sprintf("creating replicaset %s in namespace %s", rsConfig.Name, rsConfig.Namespace))
 		framework.ExpectNoError(framework.RunReplicaSet(rsConfig))
 		break
 	default:
 		framework.Failf(invalidKind)
 	}
 
-	By(fmt.Sprintf("Running controller"))
+	ginkgo.By(fmt.Sprintf("Running controller"))
 	controllerName := name + "-ctrl"
 	_, err = c.CoreV1().Services(ns).Create(&v1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -499,6 +507,7 @@ func runServiceAndWorkloadForResourceConsumer(c clientset.Interface, internalCli
 		c, ns, controllerName, 1, startServiceInterval, startServiceTimeout))
 }
 
+// CreateCPUHorizontalPodAutoscaler func
 func CreateCPUHorizontalPodAutoscaler(rc *ResourceConsumer, cpu, minReplicas, maxRepl int32) *autoscalingv1.HorizontalPodAutoscaler {
 	hpa := &autoscalingv1.HorizontalPodAutoscaler{
 		ObjectMeta: metav1.ObjectMeta{
@@ -521,6 +530,7 @@ func CreateCPUHorizontalPodAutoscaler(rc *ResourceConsumer, cpu, minReplicas, ma
 	return hpa
 }
 
+// DeleteHorizontalPodAutoscaler func
 func DeleteHorizontalPodAutoscaler(rc *ResourceConsumer, autoscalerName string) {
 	rc.clientSet.AutoscalingV1().HorizontalPodAutoscalers(rc.nsName).Delete(autoscalerName, nil)
 }
