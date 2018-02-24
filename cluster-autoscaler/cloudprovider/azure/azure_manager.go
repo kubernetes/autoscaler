@@ -38,6 +38,9 @@ const (
 
 	scaleToZeroSupported = false
 	refreshInterval      = 1 * time.Minute
+
+	// The path of deployment parameters for standard vm.
+	deploymentParametersPath = "/var/lib/azure/azuredeploy.parameters.json"
 )
 
 // AzureManager handles Azure communication and data caching.
@@ -67,15 +70,8 @@ type Config struct {
 	UseManagedIdentityExtension bool   `json:"useManagedIdentityExtension" yaml:"useManagedIdentityExtension"`
 
 	// Configs only for standard vmType (agent pools).
-	Deployment           string `json:"deployment" yaml:"deployment"`
-	APIServerPrivateKey  string `json:"apiServerPrivateKey" yaml:"apiServerPrivateKey"`
-	CAPrivateKey         string `json:"caPrivateKey" yaml:"caPrivateKey"`
-	ClientPrivateKey     string `json:"clientPrivateKey" yaml:"clientPrivateKey"`
-	KubeConfigPrivateKey string `json:"kubeConfigPrivateKey" yaml:"kubeConfigPrivateKey"`
-	WindowsAdminPassword string `json:"windowsAdminPassword" yaml:"windowsAdminPassword"`
-	// etcd TLS parameters (for acs-engine >= v0.12.0).
-	EtcdClientPrivateKey string `json:"etcdClientPrivateKey" yaml:"etcdClientPrivateKey"`
-	EtcdServerPrivateKey string `json:"etcdServerPrivateKey" yaml:"etcdServerPrivateKey"`
+	Deployment           string                 `json:"deployment" yaml:"deployment"`
+	DeploymentParameters map[string]interface{} `json:"deploymentParameters" yaml:"deploymentParameters"`
 }
 
 // TrimSpace removes all leading and trailing white spaces.
@@ -90,13 +86,6 @@ func (c *Config) TrimSpace() {
 	c.AADClientCertPath = strings.TrimSpace(c.AADClientCertPath)
 	c.AADClientCertPassword = strings.TrimSpace(c.AADClientCertPassword)
 	c.Deployment = strings.TrimSpace(c.Deployment)
-	c.APIServerPrivateKey = strings.TrimSpace(c.APIServerPrivateKey)
-	c.CAPrivateKey = strings.TrimSpace(c.CAPrivateKey)
-	c.ClientPrivateKey = strings.TrimSpace(c.ClientPrivateKey)
-	c.KubeConfigPrivateKey = strings.TrimSpace(c.KubeConfigPrivateKey)
-	c.WindowsAdminPassword = strings.TrimSpace(c.WindowsAdminPassword)
-	c.EtcdClientPrivateKey = strings.TrimSpace(c.EtcdClientPrivateKey)
-	c.EtcdServerPrivateKey = strings.TrimSpace(c.EtcdServerPrivateKey)
 }
 
 // CreateAzureManager creates Azure Manager object to work with Azure.
@@ -120,13 +109,6 @@ func CreateAzureManager(configReader io.Reader, discoveryOpts cloudprovider.Node
 		cfg.AADClientCertPath = os.Getenv("ARM_CLIENT_CERT_PATH")
 		cfg.AADClientCertPassword = os.Getenv("ARM_CLIENT_CERT_PASSWORD")
 		cfg.Deployment = os.Getenv("ARM_DEPLOYMENT")
-		cfg.APIServerPrivateKey = os.Getenv("ARM_APISEVER_PRIVATE_KEY")
-		cfg.CAPrivateKey = os.Getenv("ARM_CA_PRIVATE_KEY")
-		cfg.ClientPrivateKey = os.Getenv("ARM_CLIENT_PRIVATE_KEY")
-		cfg.KubeConfigPrivateKey = os.Getenv("ARM_KUBECONFIG_PRIVATE_KEY")
-		cfg.WindowsAdminPassword = os.Getenv("ARM_WINDOWS_ADMIN_PASSWORD")
-		cfg.EtcdClientPrivateKey = os.Getenv("ARM_ETCD_CLIENT_RPIVATE_KEY")
-		cfg.EtcdServerPrivateKey = os.Getenv("ARM_ETCD_SERVER_PRIVATE_KEY")
 
 		useManagedIdentityExtensionFromEnv := os.Getenv("ARM_USE_MANAGED_IDENTITY_EXTENSION")
 		if len(useManagedIdentityExtensionFromEnv) > 0 {
@@ -141,6 +123,17 @@ func CreateAzureManager(configReader io.Reader, discoveryOpts cloudprovider.Node
 	// Defaulting vmType to vmss.
 	if cfg.VMType == "" {
 		cfg.VMType = vmTypeVMSS
+	}
+
+	// Read parameters from deploymentParametersPath if it is not set.
+	if cfg.VMType == vmTypeStandard && len(cfg.DeploymentParameters) == 0 {
+		parameters, err := readDeploymentParameters(deploymentParametersPath)
+		if err != nil {
+			glog.Errorf("readDeploymentParameters failed with error: %v", err)
+			return nil, err
+		}
+
+		cfg.DeploymentParameters = parameters
 	}
 
 	// Defaulting env to Azure Public Cloud.
