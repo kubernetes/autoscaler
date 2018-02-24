@@ -159,7 +159,7 @@ func (azcp *AzToolsCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovi
 
 	id := node.Spec.ProviderID
 	if validRefIdRegex.FindStringSubmatch(id) == nil {
-		return nil, fmt.Errorf("Wrong id: expected provider ID format aztools://<node-name>, got %v", id)
+		return nil, fmt.Errorf("Wrong id: expected provider ID with format 'aztools://<node_name>', but got: %v", id)
 	}
 
 	groupName, found := azcp.nodes[id]
@@ -183,7 +183,7 @@ func (azcp *AzToolsCloudProvider) GetAvailableMachineTypes() ([]string, error) {
 	return azcp.machineTypes, nil
 }
 
-// TODO(harry): we will not call this since autoprovisioned is not supported.
+// NOTE(harry): we will not call this since autoprovisioned is not supported.
 // NewNodeGroup builds a theoretical node group based on the node definition provided. The node group is not automatically
 // created on the cloud provider side. The node group is not returned by NodeGroups() until it is created.
 func (azcp *AzToolsCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string,
@@ -292,6 +292,11 @@ func (aztng *AzToolsNodeGroup) TargetSize() (int, error) {
 	nodes, err := aztng.kubeClient.CoreV1().Nodes().List(metav1.ListOptions{})
 	readyNodes := []apiv1.Node{}
 	for _, node := range nodes.Items {
+		// Skip unschedulable node.
+		if node.Spec.Unschedulable {
+			continue
+		}
+		// Add only consider node in ready condition.
 		for _, condition := range node.Status.Conditions {
 			if condition.Type == apiv1.NodeReady {
 				readyNodes = append(readyNodes, node)

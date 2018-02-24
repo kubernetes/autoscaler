@@ -22,6 +22,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	kubeclient "k8s.io/client-go/kubernetes"
 )
 
 const (
@@ -48,6 +50,8 @@ type NodeGroupDiscoveryOptions struct {
 	NodeGroupSpecs []string
 	// NodeGroupAutoDiscoverySpec is specified for automatically discovering node groups according to the specs
 	NodeGroupAutoDiscoverySpecs []string
+	// KubeClient is used for cloud provider to fetch node list.
+	KubeClient kubeclient.Interface
 }
 
 // StaticDiscoverySpecified returns true only when there are 1 or more --nodes flags specified

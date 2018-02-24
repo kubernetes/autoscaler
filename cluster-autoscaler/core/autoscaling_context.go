@@ -142,7 +142,9 @@ func NewAutoscalingContext(options AutoscalingOptions, predicateChecker *simulat
 	cloudProviderBuilder := builder.NewCloudProviderBuilder(options.CloudProviderName, options.CloudConfig, options.ClusterName, options.NodeAutoprovisioningEnabled)
 	cloudProvider := cloudProviderBuilder.Build(cloudprovider.NodeGroupDiscoveryOptions{
 		NodeGroupSpecs:              options.NodeGroups,
-		NodeGroupAutoDiscoverySpecs: options.NodeGroupAutoDiscovery},
+		NodeGroupAutoDiscoverySpecs: options.NodeGroupAutoDiscovery,
+		KubeClient:                  kubeClient,
+	},
 		cloudprovider.NewResourceLimiter(
 			map[string]int64{cloudprovider.ResourceNameCores: int64(options.MinCoresTotal), cloudprovider.ResourceNameMemory: options.MinMemoryTotal},
 			map[string]int64{cloudprovider.ResourceNameCores: options.MaxCoresTotal, cloudprovider.ResourceNameMemory: options.MaxMemoryTotal}))
