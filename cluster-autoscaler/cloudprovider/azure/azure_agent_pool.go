@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
-	"strings"
 	"sync"
 	"time"
 
@@ -166,7 +165,7 @@ func (as *AgentPool) GetVMIndexes() ([]int, map[int]string, error) {
 		}
 
 		indexes = append(indexes, index)
-		indexToVM[index] = "azure://" + strings.ToLower(*instance.ID)
+		indexToVM[index] = "azure://" + *instance.ID
 	}
 
 	sortedIndexes := sort.IntSlice(indexes)
@@ -322,7 +321,7 @@ func (as *AgentPool) Belongs(node *apiv1.Node) (bool, error) {
 	glog.V(6).Infof("Check if node belongs to this agent pool: AgentPool:%v, node:%v\n", as, node)
 
 	ref := &azureRef{
-		Name: strings.ToLower(node.Spec.ProviderID),
+		Name: node.Spec.ProviderID,
 	}
 
 	targetAsg, err := as.manager.GetAsgForInstance(ref)
@@ -401,7 +400,7 @@ func (as *AgentPool) DeleteNodes(nodes []*apiv1.Node) error {
 		}
 
 		ref := &azureRef{
-			Name: strings.ToLower(node.Spec.ProviderID),
+			Name: node.Spec.ProviderID,
 		}
 		refs = append(refs, ref)
 	}
