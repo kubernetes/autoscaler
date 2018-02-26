@@ -207,3 +207,70 @@ type RecommendedContainerResources struct {
 	// +optional
 	MaxRecommended apiv1.ResourceList `json:"maxRecommended,omitempty" protobuf:"bytes,3,rep,name=maxRecommended,casttype=ResourceList,castkey=ResourceName"`
 }
+
+// +genclient
+// +genclient:noStatus
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// VerticalPodAutoscalerCheckpoint is the checkpoint of the internal state of VPA that
+// is used for recovery after recommender's restart.
+type VerticalPodAutoscalerCheckpoint struct {
+	metav1.TypeMeta `json:",inline"`
+	// Standard object metadata. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata
+	// +optional
+	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
+
+	// Specification of the checkpoint.
+	// More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#spec-and-status.
+	// +optional
+	Spec VerticalPodAutoscalerCheckpointSpec `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
+
+	// Data of the checkpoint.
+	// +optional
+	Status VerticalPodAutoscalerCheckpointStatus `json:"status,omitempty" protobuf:"bytes,3,opt,name=status"`
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// VerticalPodAutoscalerCheckpointList is a list of VerticalPodAutoscalerCheckpoint objects.
+type VerticalPodAutoscalerCheckpointList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata"`
+	Items           []VerticalPodAutoscalerCheckpoint `json:"items"`
+}
+
+// VerticalPodAutoscalerCheckpointSpec is the specification of the checkpoint object.
+type VerticalPodAutoscalerCheckpointSpec struct {
+	// Name of the VPA object that stored VerticalPodAutoscalerCheckpoint object.
+	VPAObjectName string `json:"vpaObjectName,omitempty" protobuf:"bytes,1,opt,name=vpaObjectName"`
+}
+
+// VerticalPodAutoscalerCheckpointStatus contains data of the checkpoint.
+type VerticalPodAutoscalerCheckpointStatus struct {
+	// The time when the status was last refreshed.
+	LastUpdateTime metav1.Time `json:"lastUpdateTime,omitempty" protobuf:"bytes,1,opt,name=lastUpdateTime"`
+
+	// Version of the format of the stored data.
+	Version string `json:"version,omitempty" protobuf:"bytes,2,opt,name=version"`
+
+	// Checkpoint of histogram for consumption of CPU.
+	CPUHistogram HistogramCheckpoint `json:"cpuHistogram,omitempty" protobuf:"bytes,3,rep,name=cpuHistograms"`
+
+	// Checkpoint of histogram for consumption of memory.
+	MemoryHistogram HistogramCheckpoint `json:"memoryHistogram,omitempty" protobuf:"bytes,4,rep,name=memoryHistogram"`
+}
+
+// HistogramCheckpoint contains data needed to reconstruct the histogram.
+type HistogramCheckpoint struct {
+	// Name of the resource that this HistogramCheckpoint refers to.
+	Resource string `json:"resource,omitempty" protobuf:"bytes,1,opt,name=resource"`
+
+	// Reference timestamp for samples collected within this histogram.
+	ReferenceTimestamp metav1.Time `json:"referenceTimestamp,omitempty" protobuf:"bytes,2,opt,name=referenceTimestamp"`
+
+	// Map from bucket index to bucket weight.
+	BucketWeights map[int]uint32 `json:"bucketWeights,omitempty" protobuf:"bytes,3,opt,name=bucketWeights"`
+
+	// Sum of samples to be used as denominator for weights from BucketWeights.
+	TotalWeight float64 `json:"totalWeight,omitempty" protobuf:"bytes,4,opt,name=totalWeight"`
+}

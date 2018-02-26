@@ -26,6 +26,7 @@ import (
 type PocV1alpha1Interface interface {
 	RESTClient() rest.Interface
 	VerticalPodAutoscalersGetter
+	VerticalPodAutoscalerCheckpointsGetter
 }
 
 // PocV1alpha1Client is used to interact with features provided by the poc.autoscaling.k8s.io group.
@@ -35,6 +36,10 @@ type PocV1alpha1Client struct {
 
 func (c *PocV1alpha1Client) VerticalPodAutoscalers(namespace string) VerticalPodAutoscalerInterface {
 	return newVerticalPodAutoscalers(c, namespace)
+}
+
+func (c *PocV1alpha1Client) VerticalPodAutoscalerCheckpoints(namespace string) VerticalPodAutoscalerCheckpointInterface {
+	return newVerticalPodAutoscalerCheckpoints(c, namespace)
 }
 
 // NewForConfig creates a new PocV1alpha1Client for the given config.
