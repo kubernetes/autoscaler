@@ -18,6 +18,7 @@ package aztools
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"sync"
 
@@ -75,7 +76,15 @@ func BuildAzToolsCloudProvider(
 	rl *cloudprovider.ResourceLimiter,
 	kubeClient kubeclient.Interface,
 ) (*AzToolsCloudProvider, error) {
-	// TODO(harry): Check if `az list` something works
+
+	for _, file := range []string{"./az_tools.py", "./deploy.py", "./config.yaml"} {
+		if _, err := os.Stat(file); os.IsNotExist(err) {
+			return nil, fmt.Errorf("%v is not found. Please make sure you are under `DLworkspace/src/ClusterBootstrap`",
+				file,
+			)
+		}
+	}
+
 	provider := NewAzToolsCloudProvider(az.OnScaleUp, az.OnScaleDown, rl, kubeClient)
 
 	for i, spec := range discoveryOpts.NodeGroupSpecs {
