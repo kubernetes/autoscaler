@@ -17,8 +17,6 @@ limitations under the License.
 package azure
 
 import (
-	"strings"
-
 	"github.com/golang/glog"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -74,7 +72,7 @@ func (azure *AzureCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 func (azure *AzureCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	glog.V(6).Infof("Searching for node group for the node: %s, %s\n", node.Spec.ExternalID, node.Spec.ProviderID)
 	ref := &azureRef{
-		Name: strings.ToLower(node.Spec.ProviderID),
+		Name: node.Spec.ProviderID,
 	}
 
 	return azure.azureManager.GetAsgForInstance(ref)
