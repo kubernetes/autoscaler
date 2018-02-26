@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"reflect"
 	"regexp"
-	"strings"
 	"sync"
 	"time"
 
@@ -29,7 +28,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 )
 
-var virtualMachineRE = regexp.MustCompile(`^azure://(?:.*)/providers/microsoft.compute/virtualmachines/(.+)$`)
+var virtualMachineRE = regexp.MustCompile(`^azure://(?:.*)/providers/Microsoft.Compute/virtualMachines/(.+)$`)
 
 type asgCache struct {
 	registeredAsgs     []cloudprovider.NodeGroup
@@ -172,8 +171,7 @@ func (m *asgCache) regenerate() error {
 		}
 
 		for _, instance := range instances {
-			// Convert to lower because instance.ID is in different in different API calls (e.g. GET and LIST).
-			ref := azureRef{Name: strings.ToLower(instance)}
+			ref := azureRef{Name: instance}
 			newCache[ref] = nsg
 		}
 	}
