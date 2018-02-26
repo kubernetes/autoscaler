@@ -123,6 +123,20 @@ type VirtualMachineScaleSetVMsClientMock struct {
 	mock.Mock
 }
 
+// Get gets a VirtualMachineScaleSetVM by VMScaleSetName and instanceID.
+func (m *VirtualMachineScaleSetVMsClientMock) Get(resourceGroupName string, VMScaleSetName string, instanceID string) (result compute.VirtualMachineScaleSetVM, err error) {
+	ID := fakeVirtualMachineScaleSetVMID
+	vmID := "123E4567-E89B-12D3-A456-426655440000"
+	properties := compute.VirtualMachineScaleSetVMProperties{
+		VMID: &vmID,
+	}
+	return compute.VirtualMachineScaleSetVM{
+		ID:                                 &ID,
+		InstanceID:                         &instanceID,
+		VirtualMachineScaleSetVMProperties: &properties,
+	}, nil
+}
+
 // List gets a list of VirtualMachineScaleSetVMs.
 func (m *VirtualMachineScaleSetVMsClientMock) List(resourceGroupName string, virtualMachineScaleSetName string, filter string, selectParameter string, expand string) (result compute.VirtualMachineScaleSetVMListResult, err error) {
 	value := make([]compute.VirtualMachineScaleSetVM, 1)

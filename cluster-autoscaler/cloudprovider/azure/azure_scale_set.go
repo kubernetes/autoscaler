@@ -18,11 +18,12 @@ package azure
 
 import (
 	"fmt"
-	"strings"
+	"net/http"
 	"sync"
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/arm/compute"
+	"github.com/Azure/go-autorest/autorest"
 	"github.com/golang/glog"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -169,8 +170,11 @@ func (scaleSet *ScaleSet) IncreaseSize(delta int) error {
 }
 
 // GetScaleSetVms returns list of nodes for the given scale set.
+// Note that the list results is not used directly because their resource ID format
+// is not consistent with Get results.
+// TODO(feiskyer): use list results directly after the issue fixed in Azure VMSS API.
 func (scaleSet *ScaleSet) GetScaleSetVms() ([]compute.VirtualMachineScaleSetVM, error) {
-	allVMs := make([]compute.VirtualMachineScaleSetVM, 0)
+	instanceIDs := make([]string, 0)
 	resourceGroup := scaleSet.manager.config.ResourceGroup
 	result, err := scaleSet.manager.azClient.virtualMachineScaleSetVMsClient.List(resourceGroup, scaleSet.Name, "", "", "")
 	if err != nil {
@@ -180,7 +184,9 @@ func (scaleSet *ScaleSet) GetScaleSetVms() ([]compute.VirtualMachineScaleSetVM, 
 
 	moreResults := (result.Value != nil && len(*result.Value) > 0)
 	for moreResults {
-		allVMs = append(allVMs, *result.Value...)
+		for _, vm := range *result.Value {
+			instanceIDs = append(instanceIDs, *vm.InstanceID)
+		}
 		moreResults = false
 
 		result, err = scaleSet.manager.azClient.virtualMachineScaleSetVMsClient.ListNextResults(result)
@@ -188,6 +194,22 @@ func (scaleSet *ScaleSet) GetScaleSetVms() ([]compute.VirtualMachineScaleSetVM, 
 			return nil, err
 		}
 		moreResults = (result.Value != nil && len(*result.Value) > 0)
+	}
+
+	allVMs := make([]compute.VirtualMachineScaleSetVM, 0)
+	for _, instanceID := range instanceIDs {
+		vm, err := scaleSet.manager.azClient.virtualMachineScaleSetVMsClient.Get(resourceGroup, scaleSet.Name, instanceID)
+		if err != nil {
+			if v, ok := err.(autorest.DetailedError); ok && v.StatusCode == http.StatusNotFound {
+				glog.Warningf("Couldn't find VirtualMachineScaleSetVM by (%s,%s), assuming it has been removed", scaleSet.Name, instanceID)
+				continue
+			}
+
+			glog.Errorf("Failed to get VirtualMachineScaleSetVM by (%s,%s), error: %v", scaleSet.Name, instanceID, err)
+			return nil, err
+		}
+
+		allVMs = append(allVMs, vm)
 	}
 
 	return allVMs, nil
@@ -226,7 +248,7 @@ func (scaleSet *ScaleSet) Belongs(node *apiv1.Node) (bool, error) {
 	glog.V(6).Infof("Check if node belongs to this scale set: scaleset:%v, node:%v\n", scaleSet, node)
 
 	ref := &azureRef{
-		Name: strings.ToLower(node.Spec.ProviderID),
+		Name: node.Spec.ProviderID,
 	}
 
 	targetAsg, err := scaleSet.manager.GetAsgForInstance(ref)
@@ -308,7 +330,7 @@ func (scaleSet *ScaleSet) DeleteNodes(nodes []*apiv1.Node) error {
 		}
 
 		ref := &azureRef{
-			Name: strings.ToLower(node.Spec.ProviderID),
+			Name: node.Spec.ProviderID,
 		}
 		refs = append(refs, ref)
 	}
@@ -343,27 +365,8 @@ func (scaleSet *ScaleSet) Nodes() ([]string, error) {
 		if len(*vms[i].ID) == 0 {
 			continue
 		}
-		// To keep consistent with providerID from kubernetes cloud provider, do not convert ID to lower case.
 		name := "azure://" + *vms[i].ID
 		result = append(result, name)
-	}
-
-	return result, nil
-}
-
-func (scaleSet *ScaleSet) getInstanceIDs() (map[azureRef]string, error) {
-	vms, err := scaleSet.GetScaleSetVms()
-	if err != nil {
-		return nil, err
-	}
-
-	result := make(map[azureRef]string)
-	for i := range vms {
-		// Convert to lower because instance.ID is in different in different API calls (e.g. GET and LIST).
-		ref := azureRef{
-			Name: "azure://" + strings.ToLower(*vms[i].ID),
-		}
-		result[ref] = *vms[i].InstanceID
 	}
 
 	return result, nil
