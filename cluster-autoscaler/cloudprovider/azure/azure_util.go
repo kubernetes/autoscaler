@@ -19,7 +19,9 @@ package azure
 import (
 	"crypto/rsa"
 	"crypto/x509"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/url"
 	"regexp"
 	"sort"
@@ -398,20 +400,8 @@ func validateConfig(cfg *Config) error {
 			return fmt.Errorf("deployment not set")
 		}
 
-		if cfg.APIServerPrivateKey == "" {
-			return fmt.Errorf("apiServerPrivateKey not set")
-		}
-
-		if cfg.CAPrivateKey == "" {
-			return fmt.Errorf("caPrivateKey not set")
-		}
-
-		if cfg.ClientPrivateKey == "" {
-			return fmt.Errorf("clientPrivateKey not set")
-		}
-
-		if cfg.KubeConfigPrivateKey == "" {
-			return fmt.Errorf("kubeConfigPrivateKey not set")
+		if len(cfg.DeploymentParameters) == 0 {
+			return fmt.Errorf("deploymentParameters not set")
 		}
 	}
 
@@ -427,4 +417,25 @@ func getLastSegment(ID string) (string, error) {
 	}
 
 	return name, nil
+}
+
+// readDeploymentParameters gets deployment parameters from paramFilePath.
+func readDeploymentParameters(paramFilePath string) (map[string]interface{}, error) {
+	contents, err := ioutil.ReadFile(paramFilePath)
+	if err != nil {
+		glog.Errorf("Failed to read deployment parameters from file %q: %v", paramFilePath, err)
+		return nil, err
+	}
+
+	deploymentParameters := make(map[string]interface{})
+	if err := json.Unmarshal(contents, &deploymentParameters); err != nil {
+		glog.Errorf("Failed to unmarshal deployment parameters from file %q: %v", paramFilePath, err)
+		return nil, err
+	}
+
+	if v, ok := deploymentParameters["parameters"]; ok {
+		return v.(map[string]interface{}), nil
+	}
+
+	return nil, fmt.Errorf("failed to get deployment parameters from file %s", paramFilePath)
 }

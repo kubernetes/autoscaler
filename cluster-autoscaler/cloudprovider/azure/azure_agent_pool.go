@@ -71,51 +71,15 @@ func NewAgentPool(spec *dynamic.NodeGroupSpec, az *AzureManager) (*AgentPool, er
 }
 
 func (as *AgentPool) initialize() error {
-	deploy, err := as.manager.azClient.deploymentsClient.Get(as.manager.config.ResourceGroup, as.manager.config.Deployment)
-	if err != nil {
-		glog.Errorf("deploymentsClient.Get(%s, %s) failed: %v", as.manager.config.ResourceGroup, as.manager.config.Deployment, err)
-		return err
-	}
-
 	template, err := as.manager.azClient.deploymentsClient.ExportTemplate(as.manager.config.ResourceGroup, as.manager.config.Deployment)
 	if err != nil {
 		glog.Errorf("deploymentsClient.ExportTemplate(%s, %s) failed: %v", as.manager.config.ResourceGroup, as.manager.config.Deployment, err)
 		return err
 	}
 
-	as.parameters = *deploy.Properties.Parameters
-	as.preprocessParameters()
-
 	as.template = *template.Template
+	as.parameters = as.manager.config.DeploymentParameters
 	return normalizeForK8sVMASScalingUp(as.template)
-}
-
-func (as *AgentPool) preprocessParameters() {
-	// Delete type key from parameters.
-	for k := range as.parameters {
-		if v, ok := as.parameters[k].(map[string]interface{}); ok {
-			delete(v, "type")
-		}
-	}
-
-	// fulfill secure parameters.
-	as.parameters["apiServerPrivateKey"] = map[string]string{"value": as.manager.config.APIServerPrivateKey}
-	as.parameters["caPrivateKey"] = map[string]string{"value": as.manager.config.CAPrivateKey}
-	as.parameters["clientPrivateKey"] = map[string]string{"value": as.manager.config.ClientPrivateKey}
-	as.parameters["kubeConfigPrivateKey"] = map[string]string{"value": as.manager.config.KubeConfigPrivateKey}
-	as.parameters["servicePrincipalClientId"] = map[string]string{"value": as.manager.config.AADClientID}
-	as.parameters["servicePrincipalClientSecret"] = map[string]string{"value": as.manager.config.AADClientSecret}
-	if as.manager.config.WindowsAdminPassword != "" {
-		as.parameters["windowsAdminPassword"] = map[string]string{"value": as.manager.config.WindowsAdminPassword}
-	}
-
-	// etcd TLS parameters (for acs-engine >= v0.12.0).
-	if as.manager.config.EtcdClientPrivateKey != "" {
-		as.parameters["etcdClientPrivateKey"] = map[string]string{"value": as.manager.config.EtcdClientPrivateKey}
-	}
-	if as.manager.config.EtcdServerPrivateKey != "" {
-		as.parameters["etcdServerPrivateKey"] = map[string]string{"value": as.manager.config.EtcdServerPrivateKey}
-	}
 }
 
 // MinSize returns minimum size of the node group.
