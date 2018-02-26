@@ -41,7 +41,7 @@ var _ = recommenderE2eDescribe("VPA CRD object", func() {
 		cpuQuantity := parseQuantityOrDie("100m")
 		memoryQuantity := parseQuantityOrDie("100Mi")
 
-		d := hamsterDeployment(f, cpuQuantity, memoryQuantity)
+		d := newHamsterDeploymentWithResources(f, cpuQuantity, memoryQuantity)
 		_, err := c.ExtensionsV1beta1().Deployments(ns).Create(d)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		err = framework.WaitForDeploymentComplete(c, d)
