@@ -36,7 +36,7 @@ Fill the values of cluster-autoscaler-azure secret in [cluster-autoscaler-vmss.y
 - SubscriptionID: `<base64-encode-subscription-id>`
 - TenantID: `<base64-encoded-tenant-id>`
 
-Note that all data should be encoded with base64.
+> Note that all data above should be encoded with base64.
 
 And fill the node groups in container command by `--nodes`, e.g.
 
@@ -68,12 +68,8 @@ kubectl create -f cluster-autoscaler-vmss-master.yaml
 Pre-requirements:
 
 - Get credentials from above `permissions` step.
-- Get the required parameters from acs-engine deployments (usually under directory `_output/<master-dns-prefix>` after running `acs-engine deploy` command)
-  - Get `APIServerPrivateKey`, `CAPrivateKey`, `ClientPrivateKey` and `KubeConfigPrivateKey` from `azuredeploy.parameters.json`
-  - Get `EtcdClientPrivateKey` and `EtcdServerPrivateKey` if the cluster is deployed by acs-engine >= v0.12.0
-  - If windows nodes are included, also get `WindowsAdminPassword` from acs-engine deployment manifests
-  - Get the initial Azure deployment name from azure portal. If you have multiple deployments (e.g. have run `acs-engine scale` command), make sure to get the first one
-  - Get a node pool name for nodes scaling from acs-engine deployment manifests
+- Get the initial Azure deployment name from azure portal. If you have multiple deployments (e.g. have run `acs-engine scale` command), make sure to get the first one.
+- Get a node pool name for nodes scaling from acs-engine deployment manifests
 - Encode each data with base64.
 
 Fill the values of cluster-autoscaler-azure secret in [cluster-autoscaler-standard-master.yaml](cluster-autoscaler-standard-master.yaml), including
@@ -83,17 +79,9 @@ Fill the values of cluster-autoscaler-azure secret in [cluster-autoscaler-standa
 - ResourceGroup: `<base64-encoded-resource-group>`
 - SubscriptionID: `<base64-encode-subscription-id>`
 - TenantID: `<base64-encoded-tenant-id>`
-- NodeGroup: `<base64-encoded-node-pool-name>`
 - Deployment: `<base64-encoded-azure-initial-deploy-name>`
-- APIServerPrivateKey: `<base64-encoded-apiserver-private-key>`
-- CAPrivateKey: `<base64-encoded-ca-private-key>`
-- ClientPrivateKey: `<base64-encoded-client-private-key>`
-- KubeConfigPrivateKey: `<base64-encoded-kubeconfig-private-key>`
-- WindowsAdminPassword: `<base64-encoded-windows-admin-password>` (set `""` if no windows nodes in the cluster)
-- EtcdClientPrivateKey: `<base64-encoded-etcd-client-private-key>` (set `""` for acs-engine < v0.12.0)
-- EtcdServerPrivateKey: `<base64-encoded-etcd-server-private-key>` (set to `""` for acs-engine < v0.12.0)
 
-Note that all data should be encoded with base64.
+> Note that all data above should be encoded with base64.
 
 And fill the node groups in container command by `--nodes`, e.g.
 
@@ -106,6 +94,12 @@ or multiple node groups:
 ```yaml
         - --nodes=1:10:agentpool1
         - --nodes=1:10:agentpool2
+```
+
+Create Azure deploy parameters secret `cluster-autoscaler-azure-deploy-parameters` by running
+
+```sh
+kubectl -n kube-system create secret generic cluster-autoscaler-azure-deploy-parameters --from-file=deploy-parameters=./_output/<your-output-path>/azuredeploy.parameters.json
 ```
 
 Then deploy cluster-autoscaler by running
