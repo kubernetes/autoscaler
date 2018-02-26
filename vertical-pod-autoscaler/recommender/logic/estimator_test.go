@@ -26,7 +26,7 @@ import (
 )
 
 var (
-	anyTime = time.Time{}
+	anyTime = time.Unix(0, 0)
 )
 
 // Verifies that the PercentileEstimator returns requested percentiles of CPU
@@ -48,8 +48,60 @@ func TestPercentileEstimator(t *testing.T) {
 	estimator := NewPercentileEstimator(CPUPercentile, MemoryPercentile)
 
 	resourceEstimation := estimator.GetResourceEstimation(
-		&AggregateContainerState{cpuHistogram, memoryPeaksHistogram})
+		&AggregateContainerState{
+			aggregateCPUUsage:    cpuHistogram,
+			aggregateMemoryPeaks: memoryPeaksHistogram,
+		})
 
 	assert.InEpsilon(t, 1000, int(resourceEstimation[model.ResourceCPU]), model.HistogramRelativeError)
 	assert.InEpsilon(t, 2e9, int(resourceEstimation[model.ResourceMemory]), model.HistogramRelativeError)
+}
+
+// Verifies that the confidenceMultiplierEstimator calculates the internal
+// confidence based on the amount of historical samples and scales the resources
+// returned by the base estimator according to the formula, using the calculated
+// confidence.
+func TestConfidenceMultiplierEstimator(t *testing.T) {
+	baseEstimator := NewConstEstimator(model.Resources{
+		model.ResourceCPU:    model.CPUAmountFromCores(3.14),
+		model.ResourceMemory: model.MemoryAmountFromBytes(3.14e9),
+	})
+	testedEstimator := &confidenceMultiplierEstimator{2.0, baseEstimator}
+
+	container := model.NewContainerState()
+	// Add 9 CPU samples at the frequency of 1/(2 mins).
+	timestamp := anyTime
+	for i := 1; i <= 9; i++ {
+		container.AddSample(&model.ContainerUsageSample{
+			timestamp, model.CPUAmountFromCores(1.0), model.ResourceCPU})
+		timestamp = timestamp.Add(time.Minute * 2)
+	}
+	s := newAggregateContainerState()
+	s.mergeContainerState(container)
+
+	// Expected confidence = 9/(60*24) = 0.00625.
+	assert.Equal(t, 0.00625, getConfidence(s))
+	// Expected CPU estimation = 3.14 * (1 + 1/confidence)^exponent =
+	// 3.14 * (1 + 1/0.00625)^2 = 81391.94.
+	resourceEstimation := testedEstimator.GetResourceEstimation(s)
+	assert.Equal(t, 81391.94, model.CoresFromCPUAmount(resourceEstimation[model.ResourceCPU]))
+}
+
+// Verifies that the confidenceMultiplierEstimator works for the case of no
+// history. This corresponds to the multiplier of +INF or 0 (depending on the
+// sign of the exponent).
+func TestConfidenceMultiplierEstimatorNoHistory(t *testing.T) {
+	baseEstimator := NewConstEstimator(model.Resources{
+		model.ResourceCPU:    model.CPUAmountFromCores(3.14),
+		model.ResourceMemory: model.MemoryAmountFromBytes(3.14e9),
+	})
+	testedEstimator1 := &confidenceMultiplierEstimator{1.0, baseEstimator}
+	testedEstimator2 := &confidenceMultiplierEstimator{-1.0, baseEstimator}
+	s := newAggregateContainerState()
+	// Expect testedEstimator1 to return the maximum possible resource amount.
+	assert.Equal(t, 1e11, model.CoresFromCPUAmount(
+		testedEstimator1.GetResourceEstimation(s)[model.ResourceCPU]))
+	// Expect testedEstimator2 to return zero.
+	assert.Equal(t, 0.0, model.CoresFromCPUAmount(
+		testedEstimator2.GetResourceEstimation(s)[model.ResourceCPU]))
 }

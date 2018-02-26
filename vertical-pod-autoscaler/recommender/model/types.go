@@ -28,6 +28,7 @@ type ResourceName string
 // ResourceAmount represents quantity of a certain resource within a container.
 // Note this keeps CPU in millicores (which is not a standard unit in APIs)
 // and memory in bytes.
+// Allowed values are in the range from 0 to MaxResourceAmount.
 type ResourceAmount int64
 
 // Resources is a map from resource name to the corresponding ResourceAmount.
@@ -38,11 +39,13 @@ const (
 	ResourceCPU ResourceName = "cpu"
 	// ResourceMemory represents memory, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024).
 	ResourceMemory ResourceName = "memory"
+	// MaxResourceAmount is the maximum allowed value of resource amount.
+	MaxResourceAmount = ResourceAmount(1e14)
 )
 
 // CPUAmountFromCores converts CPU cores to a ResourceAmount.
 func CPUAmountFromCores(cores float64) ResourceAmount {
-	return ResourceAmount(cores * 1000.0)
+	return resourceAmountFromFloat(cores * 1000.0)
 }
 
 // CoresFromCPUAmount converts ResourceAmount to number of cores expressed as float64.
@@ -57,7 +60,7 @@ func QuantityFromCPUAmount(cpuAmount ResourceAmount) resource.Quantity {
 
 // MemoryAmountFromBytes converts memory bytes to a ResourceAmount.
 func MemoryAmountFromBytes(bytes float64) ResourceAmount {
-	return ResourceAmount(bytes)
+	return resourceAmountFromFloat(bytes)
 }
 
 // BytesFromMemoryAmount converts ResourceAmount to number of bytes expressed as float64.
@@ -68,6 +71,11 @@ func BytesFromMemoryAmount(memoryAmount ResourceAmount) float64 {
 // QuantityFromMemoryAmount converts memory ResourceAmount to a resource.Quantity.
 func QuantityFromMemoryAmount(memoryAmount ResourceAmount) resource.Quantity {
 	return *resource.NewScaledQuantity(int64(memoryAmount), 0)
+}
+
+// ScaleResource returns the resource amount multiplied by a given factor.
+func ScaleResource(amount ResourceAmount, factor float64) ResourceAmount {
+	return resourceAmountFromFloat(float64(amount) * factor)
 }
 
 // ResourcesAsResourceList converts internal Resources representation to ResourcesList.
@@ -90,6 +98,22 @@ func ResourcesAsResourceList(resources Resources) apiv1.ResourceList {
 		result[newKey] = quantity
 	}
 	return result
+}
+
+// RoundResourceAmount returns the given resource amount rounded down to the
+// whole multiple of another resource amount (unit).
+func RoundResourceAmount(amount ResourceAmount, unit ResourceAmount) ResourceAmount {
+	return ResourceAmount(int64(amount) - int64(amount)%int64(unit))
+}
+
+func resourceAmountFromFloat(amount float64) ResourceAmount {
+	if amount < 0 {
+		return ResourceAmount(0)
+	} else if amount > float64(MaxResourceAmount) {
+		return MaxResourceAmount
+	} else {
+		return ResourceAmount(amount)
+	}
 }
 
 // PodID contains information needed to identify a Pod within a cluster.
