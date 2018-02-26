@@ -49,7 +49,11 @@ type ContainerState struct {
 	// Distribution of CPU usage. The measurement unit is 1 CPU core.
 	CPUUsage util.Histogram
 	// Start of the latest CPU usage sample that was aggregated.
-	lastCPUSampleStart time.Time
+	LastCPUSampleStart time.Time
+	// Start of the first CPU usage sample that was aggregated.
+	FirstCPUSampleStart time.Time
+	// Number of CPU samples that were aggregated.
+	CPUSamplesCount int
 
 	// Memory peaks stored in the intervals belonging to the aggregation window
 	// (one value per interval). The measurement unit is a byte.
@@ -63,12 +67,14 @@ type ContainerState struct {
 // NewContainerState returns a new, empty ContainerState.
 func NewContainerState() *ContainerState {
 	return &ContainerState{
-		CPUUsage:           util.NewDecayingHistogram(CPUHistogramOptions, CPUHistogramDecayHalfLife),
-		lastCPUSampleStart: time.Unix(0, 0),
+		CPUUsage:            util.NewDecayingHistogram(CPUHistogramOptions, CPUHistogramDecayHalfLife),
+		LastCPUSampleStart:  time.Time{},
+		FirstCPUSampleStart: time.Time{},
+		CPUSamplesCount:     0,
 		MemoryUsagePeaks: util.NewFloatSlidingWindow(
 			int(MemoryAggregationWindowLength / MemoryAggregationInterval)),
-		WindowEnd:             time.Unix(0, 0),
-		lastMemorySampleStart: time.Unix(0, 0)}
+		WindowEnd:             time.Time{},
+		lastMemorySampleStart: time.Time{}}
 }
 
 func (sample *ContainerUsageSample) isValid(expectedResource ResourceName) bool {
@@ -78,11 +84,15 @@ func (sample *ContainerUsageSample) isValid(expectedResource ResourceName) bool 
 func (container *ContainerState) addCPUSample(sample *ContainerUsageSample) bool {
 	// Order should not matter for the histogram, other than deduplication.
 	// TODO: Timestamp should be used to properly weigh the samples.
-	if !sample.isValid(ResourceCPU) || !sample.MeasureStart.After(container.lastCPUSampleStart) {
+	if !sample.isValid(ResourceCPU) || !sample.MeasureStart.After(container.LastCPUSampleStart) {
 		return false // Discard invalid, duplicate or out-of-order samples.
 	}
 	container.CPUUsage.AddSample(CoresFromCPUAmount(sample.Usage), 1.0, sample.MeasureStart)
-	container.lastCPUSampleStart = sample.MeasureStart
+	container.LastCPUSampleStart = sample.MeasureStart
+	if container.FirstCPUSampleStart.IsZero() {
+		container.FirstCPUSampleStart = sample.MeasureStart
+	}
+	container.CPUSamplesCount++
 	return true
 }
 

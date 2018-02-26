@@ -17,6 +17,8 @@ limitations under the License.
 package logic
 
 import (
+	"time"
+
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/model"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/util"
 )
@@ -61,7 +63,9 @@ func (r *podResourceRecommender) GetRecommendedPodResources(vpa *model.Vpa) Reco
 	aggregateContainerStateMap := buildAggregateContainerStateMap(&vpa.Pods)
 	var recommendation RecommendedPodResources = make(RecommendedPodResources)
 	for containerName, aggregatedContainerState := range aggregateContainerStateMap {
-		recommendation[containerName] = r.getRecommendedContainerResources(aggregatedContainerState)
+		if aggregatedContainerState.totalSamplesCount > 0 {
+			recommendation[containerName] = r.getRecommendedContainerResources(aggregatedContainerState)
+		}
 	}
 	return recommendation
 }
@@ -71,6 +75,9 @@ func (r *podResourceRecommender) GetRecommendedPodResources(vpa *model.Vpa) Reco
 type AggregateContainerState struct {
 	aggregateCPUUsage    util.Histogram
 	aggregateMemoryPeaks util.Histogram
+	firstSampleStart     time.Time
+	lastSampleStart      time.Time
+	totalSamplesCount    int
 }
 
 // Merges the state of an individual container into AggregateContainerState.
@@ -82,13 +89,21 @@ func (a *AggregateContainerState) mergeContainerState(container *model.Container
 		a.aggregateMemoryPeaks.AddSample(float64(memoryPeaks[i]), 1.0, peakTime)
 		peakTime = peakTime.Add(-model.MemoryAggregationInterval)
 	}
+	// Note: we look at CPU samples to calculate the total lifespan and sample count.
+	if a.firstSampleStart.IsZero() || (!container.FirstCPUSampleStart.IsZero() && container.FirstCPUSampleStart.Before(a.firstSampleStart)) {
+		a.firstSampleStart = container.FirstCPUSampleStart
+	}
+	if container.LastCPUSampleStart.After(a.lastSampleStart) {
+		a.lastSampleStart = container.LastCPUSampleStart
+	}
+	a.totalSamplesCount += container.CPUSamplesCount
 }
 
 // Returns a new, empty AggregateContainerState.
 func newAggregateContainerState() *AggregateContainerState {
 	return &AggregateContainerState{
-		util.NewDecayingHistogram(model.CPUHistogramOptions, model.CPUHistogramDecayHalfLife),
-		util.NewDecayingHistogram(model.MemoryHistogramOptions, model.MemoryHistogramDecayHalfLife),
+		aggregateCPUUsage:    util.NewDecayingHistogram(model.CPUHistogramOptions, model.CPUHistogramDecayHalfLife),
+		aggregateMemoryPeaks: util.NewDecayingHistogram(model.MemoryHistogramOptions, model.MemoryHistogramDecayHalfLife),
 	}
 }
 

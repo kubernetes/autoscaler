@@ -105,10 +105,25 @@ func createPodResourceRecommender() logic.PodResourceRecommender {
 	lowerBoundMemoryPeaksPercentile := 0.5
 	upperBoundMemoryPeaksPercentile := 0.95
 
-	return logic.NewPodResourceRecommender(
-		logic.NewPercentileEstimator(targetCPUPercentile, targetMemoryPeaksPercentile),
-		logic.NewPercentileEstimator(lowerBoundCPUPercentile, lowerBoundMemoryPeaksPercentile),
+	// Using the confidence multiplier with exponent +1 or -1 means that
+	// the recommendation is multiplied or divided (respecitvely) by:
+	// (1 + 1/history-length-in-days).
+	// See estimator.go to see how the history length and the confidence
+	// multiplier are determined. The formula yeilds the following multipliers:
+	// No history   : *INF.
+	// After 12h    : *3
+	// After 1 day  : *2
+	// After 1 week : *1.14
+	targetEstimator := logic.NewPercentileEstimator(targetCPUPercentile, targetMemoryPeaksPercentile)
+	lowerBoundEstimator := logic.WithConfidenceMultiplier(-1,
+		logic.NewPercentileEstimator(lowerBoundCPUPercentile, lowerBoundMemoryPeaksPercentile))
+	upperBoundEstimator := logic.WithConfidenceMultiplier(1,
 		logic.NewPercentileEstimator(upperBoundCPUPercentile, upperBoundMemoryPeaksPercentile))
+
+	return logic.NewPodResourceRecommender(
+		targetEstimator,
+		lowerBoundEstimator,
+		upperBoundEstimator)
 }
 
 // NewRecommender creates a new recommender instance,

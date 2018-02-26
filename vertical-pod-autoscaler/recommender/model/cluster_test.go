@@ -51,7 +51,7 @@ func TestClusterAddSample(t *testing.T) {
 
 	// Verify that the sample was aggregated into the container stats.
 	containerStats := cluster.Pods[testPodID].Containers["container-1"]
-	assert.Equal(t, testTimestamp, containerStats.lastCPUSampleStart)
+	assert.Equal(t, testTimestamp, containerStats.LastCPUSampleStart)
 }
 
 // Verifies that AddSample and AddOrUpdateContainer methods return a proper
