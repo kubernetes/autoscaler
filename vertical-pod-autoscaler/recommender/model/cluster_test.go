@@ -22,6 +22,7 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/stretchr/testify/assert"
+	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 )
@@ -43,7 +44,7 @@ func makeTestUsageSample() *ContainerUsageSampleWithKey {
 func TestClusterAddSample(t *testing.T) {
 	// Create a pod with a single container.
 	cluster := NewClusterState()
-	cluster.AddOrUpdatePod(testPodID, testLabels)
+	cluster.AddOrUpdatePod(testPodID, testLabels, apiv1.PodRunning)
 	assert.NoError(t, cluster.AddOrUpdateContainer(testContainerID))
 
 	// Add a usage sample to the container.
@@ -82,7 +83,7 @@ func addTestVpa(cluster *ClusterState) *Vpa {
 }
 
 func addTestPod(cluster *ClusterState) *PodState {
-	cluster.AddOrUpdatePod(testPodID, testLabels)
+	cluster.AddOrUpdatePod(testPodID, testLabels, apiv1.PodRunning)
 	return cluster.Pods[testPodID]
 }
 
@@ -135,7 +136,7 @@ func TestChangePodLabels(t *testing.T) {
 	vpa := addTestVpa(cluster)
 	pod := addTestPod(cluster)
 	// Update Pod labels to no longer match the VPA.
-	cluster.AddOrUpdatePod(testPodID, emptyLabels)
+	cluster.AddOrUpdatePod(testPodID, emptyLabels, apiv1.PodRunning)
 	assert.Empty(t, vpa.Pods)
 	assert.Empty(t, pod.MatchingVpas)
 }
@@ -197,10 +198,10 @@ func TestEmptySelector(t *testing.T) {
 	// Create a VPA with an empty selector (matching all pods).
 	addVpa(cluster, testVpaID, "")
 	// Create a pod with labels.
-	cluster.AddOrUpdatePod(testPodID, testLabels)
+	cluster.AddOrUpdatePod(testPodID, testLabels, apiv1.PodRunning)
 	// Create a pod without labels.
 	anotherPodID := PodID{"namespace-1", "pod-2"}
-	cluster.AddOrUpdatePod(anotherPodID, emptyLabels)
+	cluster.AddOrUpdatePod(anotherPodID, emptyLabels, apiv1.PodRunning)
 	// Both pods should be matched by the VPA.
 	assert.Equal(t, map[VpaID]*Vpa{testVpaID: cluster.Vpas[testVpaID]},
 		cluster.Pods[testPodID].MatchingVpas)
