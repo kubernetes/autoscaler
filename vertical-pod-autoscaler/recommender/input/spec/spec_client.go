@@ -31,6 +31,8 @@ type BasicPodSpec struct {
 	PodLabels map[string]string
 	// List of containers within this pod.
 	Containers []BasicContainerSpec
+	// PodPhase describing current life cycle phase of the Pod.
+	Phase v1.PodPhase
 }
 
 // BasicContainerSpec contains basic information defining a container.
@@ -85,6 +87,7 @@ func newBasicPodSpec(pod *v1.Pod) *BasicPodSpec {
 		ID:         podId,
 		PodLabels:  pod.Labels,
 		Containers: containerSpecs,
+		Phase:      pod.Status.Phase,
 	}
 	return basicPodSpec
 }

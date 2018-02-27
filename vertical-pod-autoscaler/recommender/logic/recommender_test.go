@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/model"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/util"
 )
@@ -61,8 +62,8 @@ func addTestSample(cluster *model.ClusterState, container model.ContainerID, cpu
 // with the same name ('app-A') together.
 func TestBuildAggregateResourcesMap(t *testing.T) {
 	cluster := model.NewClusterState()
-	cluster.AddOrUpdatePod(testPodID1, testLabels)
-	cluster.AddOrUpdatePod(testPodID2, testLabels)
+	cluster.AddOrUpdatePod(testPodID1, testLabels, apiv1.PodRunning)
+	cluster.AddOrUpdatePod(testPodID2, testLabels, apiv1.PodRunning)
 
 	// Create 4 containers: 2 with the same name and 2 with different names.
 	containers := []model.ContainerID{
