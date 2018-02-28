@@ -94,7 +94,7 @@ func (calc *UpdatePriorityCalculator) getUpdatePriority(pod *apiv1.Pod, recommen
 			glog.V(2).Infof("no recommendation for container %v in pod %v", podContainer.Name, pod.Name)
 			continue
 		}
-		for resourceName, recommended := range recommendedRequest {
+		for resourceName, recommended := range recommendedRequest.Target {
 			var requested *resource.Quantity
 
 			if request, ok := podContainer.Resources.Requests[resourceName]; ok {
