@@ -25,3 +25,11 @@ type VerticalPodAutoscalerListerExpansion interface{}
 // VerticalPodAutoscalerNamespaceListerExpansion allows custom methods to be added to
 // VerticalPodAutoscalerNamespaceLister.
 type VerticalPodAutoscalerNamespaceListerExpansion interface{}
+
+// VerticalPodAutoscalerCheckpointListerExpansion allows custom methods to be added to
+// VerticalPodAutoscalerCheckpointLister.
+type VerticalPodAutoscalerCheckpointListerExpansion interface{}
+
+// VerticalPodAutoscalerCheckpointNamespaceListerExpansion allows custom methods to be added to
+// VerticalPodAutoscalerCheckpointNamespaceLister.
+type VerticalPodAutoscalerCheckpointNamespaceListerExpansion interface{}
