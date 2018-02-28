@@ -46,12 +46,14 @@ func OnScaleUp(id string, delta int) error {
 	}
 
 	// Run scripts in new workers
+	// TODO(harry): do we need to wait for this command finish?
 	_, err = execRun("./deploy.py", "scriptblocks", "add_scaled_worker")
 	if err != nil {
 		// TODO(harry): delete the new scaled node. Restore config.yaml cluster.yaml
 		return err
 	}
 	// TODO(harry): should we handle labels separately for `kubernetes labels`
+	glog.Infof("Scale up successes with %v nodes added", delta)
 	return nil
 }
 

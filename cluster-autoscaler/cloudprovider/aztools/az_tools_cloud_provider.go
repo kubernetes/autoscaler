@@ -358,7 +358,8 @@ func (aztng *AzToolsNodeGroup) DecreaseTargetSize(delta int) error {
 	aztng.Lock()
 	aztng.Unlock()
 
-	return aztng.cloudProvider.onScaleUp(aztng.id, delta)
+	// TODO(harry): should do nothing here? It seems only used to fix targetSize, which we did not cached.
+	return aztng.cloudProvider.onScaleDown(aztng.id, delta)
 }
 
 // DeleteNodes deletes nodes from this node group. Error is returned either on
