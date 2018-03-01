@@ -98,19 +98,30 @@ func BuildAzToolsCloudProvider(
 
 		grpID := s.Name
 
-		// min, max, kubeClient
-		provider.AddNodeGroup(grpID, s.MinSize, s.MaxSize, kubeClient)
-
-		// Initializing: fetch all nodes in the cluster and add them into group.
-		nodes, err := provider.kubeClient.CoreV1().Nodes().List(metav1.ListOptions{})
+		nodes, err := kubeClient.CoreV1().Nodes().List(metav1.ListOptions{})
 		if err != nil {
 			return nil, err
 		}
 
+		readyNodes := []*apiv1.Node{}
 		for _, node := range nodes.Items {
-			// Add one node to node group
-			provider.AddNode(grpID, &node)
+			// Skip unschedulable node.
+			if node.Spec.Unschedulable {
+				continue
+			}
+			// Add only consider node in ready condition.
+			for _, condition := range node.Status.Conditions {
+				if condition.Type == apiv1.NodeReady {
+					// Add one node to node group
+					provider.AddNode(grpID, &node)
+					readyNodes = append(readyNodes, &node)
+					break
+				}
+			}
 		}
+
+		// Initialize targetSize as ready nodes of the cluster. targetSize will be auto updated per scale up/down.
+		provider.AddNodeGroup(grpID, s.MinSize, s.MaxSize, kubeClient, len(readyNodes))
 	}
 
 	return provider, nil
@@ -203,6 +214,7 @@ func (azcp *AzToolsCloudProvider) NewNodeGroup(machineType string, labels map[st
 		id:              "autoprovisioned-" + machineType,
 		minSize:         0,
 		maxSize:         1000,
+		targetSize:      0,
 		exist:           false,
 		autoprovisioned: true,
 		machineType:     machineType,
@@ -210,7 +222,7 @@ func (azcp *AzToolsCloudProvider) NewNodeGroup(machineType string, labels map[st
 }
 
 // AddNodeGroup adds node group to test cloud provider.
-func (azcp *AzToolsCloudProvider) AddNodeGroup(id string, min int, max int, kubeClient kubeclient.Interface) {
+func (azcp *AzToolsCloudProvider) AddNodeGroup(id string, min int, max int, kubeClient kubeclient.Interface, size int) {
 	azcp.Lock()
 	defer azcp.Unlock()
 
@@ -222,6 +234,7 @@ func (azcp *AzToolsCloudProvider) AddNodeGroup(id string, min int, max int, kube
 		exist:           true,
 		autoprovisioned: false,
 		kubeClient:      kubeClient,
+		targetSize:      size,
 	}
 }
 
@@ -272,6 +285,9 @@ type AzToolsNodeGroup struct {
 	autoprovisioned bool
 	machineType     string
 	kubeClient      kubeclient.Interface
+
+	// targetSize should be desired size of node group.
+	targetSize int
 }
 
 // MaxSize returns maximum size of the node group.
@@ -298,28 +314,7 @@ func (aztng *AzToolsNodeGroup) TargetSize() (int, error) {
 	aztng.Lock()
 	defer aztng.Unlock()
 
-	// Only count ready nodes as target size.
-	nodes, err := aztng.kubeClient.CoreV1().Nodes().List(metav1.ListOptions{})
-	readyNodes := []apiv1.Node{}
-	for _, node := range nodes.Items {
-		// Skip unschedulable node.
-		if node.Spec.Unschedulable {
-			continue
-		}
-		// Add only consider node in ready condition.
-		for _, condition := range node.Status.Conditions {
-			if condition.Type == apiv1.NodeReady {
-				readyNodes = append(readyNodes, node)
-				break
-			}
-		}
-	}
-
-	if err != nil {
-		return 0, err
-	}
-
-	return len(readyNodes), nil
+	return aztng.targetSize, nil
 }
 
 // IncreaseSize increases the size of the node group. To delete a node you need
@@ -327,6 +322,7 @@ func (aztng *AzToolsNodeGroup) TargetSize() (int, error) {
 // node group size is updated.
 func (aztng *AzToolsNodeGroup) IncreaseSize(delta int) error {
 	aztng.Lock()
+	aztng.targetSize += delta
 	aztng.Unlock()
 
 	return aztng.cloudProvider.onScaleUp(aztng.id, delta)
@@ -356,10 +352,10 @@ func (aztng *AzToolsNodeGroup) Delete() error {
 // request for new nodes that have not been yet fulfilled. Delta should be negative.
 func (aztng *AzToolsNodeGroup) DecreaseTargetSize(delta int) error {
 	aztng.Lock()
+	aztng.targetSize += delta
 	aztng.Unlock()
 
-	// TODO(harry): should do nothing here? It seems only used to fix targetSize, which we did not cached.
-	return aztng.cloudProvider.onScaleDown(aztng.id, delta)
+	return nil
 }
 
 // DeleteNodes deletes nodes from this node group. Error is returned either on
@@ -368,6 +364,7 @@ func (aztng *AzToolsNodeGroup) DecreaseTargetSize(delta int) error {
 func (aztng *AzToolsNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	aztng.Lock()
 	id := aztng.id
+	aztng.targetSize -= len(nodes)
 	aztng.Unlock()
 	for _, node := range nodes {
 		err := aztng.cloudProvider.onScaleDown(id, node.Name)
@@ -391,7 +388,7 @@ func (aztng *AzToolsNodeGroup) Debug() string {
 	aztng.Lock()
 	defer aztng.Unlock()
 
-	return fmt.Sprintf("%s min:%d max:%d", aztng.id, aztng.minSize, aztng.maxSize)
+	return fmt.Sprintf("%s target: min:%d max:%d", aztng.id, aztng.targetSize, aztng.minSize, aztng.maxSize)
 }
 
 // Nodes returns a list of all nodes that belong to this node group.
