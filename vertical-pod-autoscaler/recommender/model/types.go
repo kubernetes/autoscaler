@@ -102,7 +102,7 @@ func ResourcesAsResourceList(resources Resources) apiv1.ResourceList {
 
 // RoundResourceAmount returns the given resource amount rounded down to the
 // whole multiple of another resource amount (unit).
-func RoundResourceAmount(amount ResourceAmount, unit ResourceAmount) ResourceAmount {
+func RoundResourceAmount(amount, unit ResourceAmount) ResourceAmount {
 	return ResourceAmount(int64(amount) - int64(amount)%int64(unit))
 }
 
