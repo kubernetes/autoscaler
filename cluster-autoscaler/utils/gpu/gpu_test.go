@@ -24,6 +24,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -191,4 +192,13 @@ func TestNodeHasGpu(t *testing.T) {
 		},
 	}
 	assert.False(t, NodeHasGpu(nodeNoGpu))
+}
+
+func TestPodRequestsGpu(t *testing.T) {
+	podNoGpu := test.BuildTestPod("podNoGpu", 0, 1000)
+	podWithGpu := test.BuildTestPod("pod1AnyGpu", 0, 1000)
+	podWithGpu.Spec.Containers[0].Resources.Requests[ResourceNvidiaGPU] = *resource.NewQuantity(1, resource.DecimalSI)
+
+	assert.False(t, PodRequestsGpu(podNoGpu))
+	assert.True(t, PodRequestsGpu(podWithGpu))
 }
