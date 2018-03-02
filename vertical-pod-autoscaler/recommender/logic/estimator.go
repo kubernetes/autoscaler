@@ -17,6 +17,9 @@ limitations under the License.
 package logic
 
 import (
+	"math"
+	"time"
+
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/model"
 )
 
@@ -40,6 +43,11 @@ type percentileEstimator struct {
 	memoryPercentile float64
 }
 
+type confidenceMultiplierEstimator struct {
+	exponent      float64
+	baseEstimator ResourceEstimator
+}
+
 // NewConstEstimator returns a new constEstimator with given resources.
 func NewConstEstimator(resources model.Resources) ResourceEstimator {
 	return &constEstimator{resources}
@@ -48,6 +56,11 @@ func NewConstEstimator(resources model.Resources) ResourceEstimator {
 // NewPercentileEstimator returns a new percentileEstimator that uses provided percentiles.
 func NewPercentileEstimator(cpuPercentile float64, memoryPercentile float64) ResourceEstimator {
 	return &percentileEstimator{cpuPercentile, memoryPercentile}
+}
+
+// WithConfidenceMultiplier returns a new confidenceMultiplierEstimator.
+func WithConfidenceMultiplier(exponent float64, baseEstimator ResourceEstimator) ResourceEstimator {
+	return &confidenceMultiplierEstimator{exponent, baseEstimator}
 }
 
 // Returns a constant amount of resources.
@@ -63,4 +76,36 @@ func (e *percentileEstimator) GetResourceEstimation(s *AggregateContainerState) 
 		model.ResourceMemory: model.MemoryAmountFromBytes(
 			s.aggregateMemoryPeaks.Percentile(e.memoryPercentile)),
 	}
+}
+
+// Returns a non-negative real number that heuristically measures how much
+// confidence the history aggregated in the AggregateContainerState provides.
+// For a workload producing a steady stream of samples over N days at the rate
+// of 1 sample per minute, this metric is equal to N.
+// This implementation is a very simple heuristic which looks at the total count
+// of samples and the time between the first and the last sample.
+func getConfidence(s *AggregateContainerState) float64 {
+	// Distance between the first and the last observed sample time, measured in days.
+	lifespanInDays := float64(s.lastSampleStart.Sub(s.firstSampleStart)) / float64(time.Hour*24)
+	// Total count of samples normalized such that it equals the number of days for
+	// frequency of 1 sample/minute.
+	samplesAmount := float64(s.totalSamplesCount) / (60 * 24)
+	return math.Min(lifespanInDays, samplesAmount)
+}
+
+// Returns resources computed by the underlying estimator, scaled based on the
+// confidence metric, which depends on the amount of available historical data.
+// Each resource is transformed as follows:
+//     scaledResource = originalResource * (1 + 1/confidence)^exponent.
+// This can be used to widen or narrow the gap between the lower and upper bound
+// estimators depending on how much input data is available to the estimators.
+func (e *confidenceMultiplierEstimator) GetResourceEstimation(s *AggregateContainerState) model.Resources {
+	confidence := getConfidence(s)
+	originalResources := e.baseEstimator.GetResourceEstimation(s)
+	scaledResources := make(model.Resources)
+	for resource, resourceAmount := range originalResources {
+		scaledResources[resource] = model.ScaleResource(
+			resourceAmount, math.Pow(1.+1./confidence, e.exponent))
+	}
+	return scaledResources
 }
