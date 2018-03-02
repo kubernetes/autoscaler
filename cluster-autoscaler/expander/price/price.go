@@ -26,6 +26,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 
 	"github.com/golang/glog"
@@ -56,6 +57,20 @@ var (
 	// TODO: make it a flag
 	// TODO: investigate what a proper value should be
 	notExistCoeficient = 2.0
+
+	// This value will be used as unfitness for node groups using GPU. This serves
+	// 2 purposes:
+	// - It makes nodes with GPU extremely unattractive to expander, so it will never
+	//   use nodes with expensive GPUs for pods that don't require it.
+	// - By overriding unfitness for node groups with GPU we ignore preferred cluster
+	//   shape when comparing such node groups. Node unfitness logic is meant to
+	//   minimize per-node cost (resources consumed by kubelet, kube-proxy, etc) and
+	//   resource fragmentation, while avoiding putting a significant fraction of all
+	//   pods on a single node for availability reasons.
+	//   Those goals don't apply well to nodes with GPUs that are generally dedicated
+	//   for specific workload and need to be optimized for GPU utilization, not CPU
+	//   utilization.
+	gpuUnfitnessOverride = 1000.0
 )
 
 // NewStrategy returns an expansion strategy that picks nodes based on price and preferred node type.
@@ -122,6 +137,13 @@ nextoption:
 
 		// TODO: normalize node count against preferred node.
 		supressedUnfitness := (nodeUnfitness-1.0)*(1.0-math.Tanh(float64(option.NodeCount-1)/15.0)) + 1.0
+
+		// Set constant, very high unfitness to make them unattractive for pods that doesn't need GPU and
+		// avoid optimizing them for CPU utilization.
+		if gpu.NodeHasGpu(nodeInfo.Node()) {
+			glog.V(4).Infof("Price expander overriding unfitness for node group with GPU %s", option.NodeGroup.Id())
+			supressedUnfitness = gpuUnfitnessOverride
+		}
 
 		optionScore := supressedUnfitness * priceSubScore
 
