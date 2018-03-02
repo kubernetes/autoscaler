@@ -101,6 +101,19 @@ func NodeHasGpu(node *apiv1.Node) bool {
 	return hasGpuLabel || (hasGpuAllocatable && !gpuAllocatable.IsZero())
 }
 
+// PodRequestsGpu returns true if a given pod has GPU request.
+func PodRequestsGpu(pod *apiv1.Pod) bool {
+	for _, container := range pod.Spec.Containers {
+		if container.Resources.Requests != nil {
+			_, gpuFound := container.Resources.Requests[ResourceNvidiaGPU]
+			if gpuFound {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 // GpuRequestInfo contains an information about a set of pods requesting a GPU.
 type GpuRequestInfo struct {
 	// MaxRequest is maximum GPU request among pods

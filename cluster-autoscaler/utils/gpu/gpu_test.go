@@ -194,6 +194,15 @@ func TestNodeHasGpu(t *testing.T) {
 	assert.False(t, NodeHasGpu(nodeNoGpu))
 }
 
+func TestPodRequestsGpu(t *testing.T) {
+	podNoGpu := test.BuildTestPod("podNoGpu", 0, 1000)
+	podWithGpu := test.BuildTestPod("pod1AnyGpu", 0, 1000)
+	podWithGpu.Spec.Containers[0].Resources.Requests[ResourceNvidiaGPU] = *resource.NewQuantity(1, resource.DecimalSI)
+
+	assert.False(t, PodRequestsGpu(podNoGpu))
+	assert.True(t, PodRequestsGpu(podWithGpu))
+}
+
 func TestGetGpuRequests(t *testing.T) {
 	podNoGpu := test.BuildTestPod("podNoGpu", 0, 1000)
 	podNoGpu.Spec.NodeSelector = map[string]string{}
