@@ -66,14 +66,24 @@ func TestSortPriorityMultiResource(t *testing.T) {
 	assert.Exactly(t, []*apiv1.Pod{pod1, pod2}, result, "Wrong priority order")
 }
 
+// Creates 2 pods:
+// POD1
+//   container1: request={3 CPU, 10 MB}, recommended={6 CPU, 20 MB}
+// POD2
+//   container1: request={4 CPU, 10 MB}, recommended={6 CPU, 20 MB}
+//   container2: request={2 CPU, 20 MB}, recommended={4 CPU, 20 MB}
+//   total:      request={6 CPU, 30 MB}, recommneded={10 CPU, 40 MB}
+//
+// Verify that the total resource diff is calculated as expected and that the
+// pods are ordered accordingly.
 func TestSortPriorityMultiContainers(t *testing.T) {
 	containerName2 := "container2"
 
 	pod1 := test.BuildTestPod("POD1", containerName, "3", "10M", nil, nil)
 
 	pod2 := test.BuildTestPod("POD2", containerName, "4", "10M", nil, nil)
-	container2 := test.BuildTestContainer(containerName2, "3", "20M")
-	pod2.Spec.Containers = append(pod1.Spec.Containers, container2)
+	container2 := test.BuildTestContainer(containerName2, "2", "20M")
+	pod2.Spec.Containers = append(pod2.Spec.Containers, container2)
 
 	recommendation := test.Recommendation(containerName, "6", "20M")
 	cpuRec, _ := resource.ParseQuantity("4")
@@ -87,8 +97,15 @@ func TestSortPriorityMultiContainers(t *testing.T) {
 	calculator.AddPod(pod1, recommendation)
 	calculator.AddPod(pod2, recommendation)
 
+	// Expect pod1 to have resourceDiff=2.0 (100% change to CPU, 100% change to memory).
+	podPriority1 := calculator.getUpdatePriority(pod1, recommendation)
+	assert.Equal(t, 2.0, podPriority1.resourceDiff)
+	// Expect pod2 to have resourceDiff=1.0 (66% change to CPU, 33% change to memory).
+	podPriority2 := calculator.getUpdatePriority(pod2, recommendation)
+	assert.Equal(t, 1.0, podPriority2.resourceDiff)
+
 	result := calculator.GetSortedPods()
-	assert.Exactly(t, []*apiv1.Pod{pod2, pod1}, result, "Wrong priority order")
+	assert.Exactly(t, []*apiv1.Pod{pod1, pod2}, result, "Wrong priority order")
 }
 
 func TestSortPriorityResourcesDecrease(t *testing.T) {
