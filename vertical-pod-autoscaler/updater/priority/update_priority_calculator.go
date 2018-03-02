@@ -90,6 +90,7 @@ func (calc *UpdatePriorityCalculator) GetSortedPods() []*apiv1.Pod {
 }
 
 func (calc *UpdatePriorityCalculator) getUpdatePriority(pod *apiv1.Pod, recommendation *vpa_types.RecommendedPodResources) podPriority {
+	scaleUp := false
 	// Sum of requests over all containers, per resource type.
 	totalRequestPerResource := make(map[apiv1.ResourceName]int64)
 	// Sum of recommendations over all containers, per resource type.
@@ -105,6 +106,11 @@ func (calc *UpdatePriorityCalculator) getUpdatePriority(pod *apiv1.Pod, recommen
 			totalRecommendedPerResource[resourceName] += recommended.MilliValue()
 			if request, ok := podContainer.Resources.Requests[resourceName]; ok {
 				totalRequestPerResource[resourceName] += request.MilliValue()
+				if recommended.MilliValue() > request.MilliValue() {
+					scaleUp = true
+				}
+			} else {
+				scaleUp = true
 			}
 		}
 	}
@@ -115,12 +121,15 @@ func (calc *UpdatePriorityCalculator) getUpdatePriority(pod *apiv1.Pod, recommen
 	}
 	return podPriority{
 		pod:          pod,
+		scaleUp:      scaleUp,
 		resourceDiff: resourceDiff,
 	}
 }
 
 type podPriority struct {
 	pod *apiv1.Pod
+	// Does any container want to grow.
+	scaleUp bool
 	// Relative difference between the total requested and total recommended resources.
 	resourceDiff float64
 }
@@ -135,5 +144,10 @@ func (list byPriority) Swap(i, j int) {
 }
 func (list byPriority) Less(i, j int) bool {
 	// Reverse ordering, highest priority first.
+	// 1. If any container wants to grow, the pod takes precedence.
+	if list[i].scaleUp != list[j].scaleUp {
+		return list[i].scaleUp
+	}
+	// 2. A pod with larger value of resourceDiff takes precedence.
 	return list[i].resourceDiff > list[j].resourceDiff
 }

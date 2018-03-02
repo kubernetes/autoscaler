@@ -112,15 +112,21 @@ func TestSortPriorityResourcesDecrease(t *testing.T) {
 	calculator := NewUpdatePriorityCalculator(nil, nil)
 
 	pod1 := test.BuildTestPod("POD1", containerName, "4", "", nil, nil)
-	pod2 := test.BuildTestPod("POD2", containerName, "10", "", nil, nil)
+	pod2 := test.BuildTestPod("POD2", containerName, "7", "", nil, nil)
+	pod3 := test.BuildTestPod("POD3", containerName, "10", "", nil, nil)
 
 	recommendation := test.Recommendation(containerName, "5", "")
 
 	calculator.AddPod(pod1, recommendation)
 	calculator.AddPod(pod2, recommendation)
+	calculator.AddPod(pod3, recommendation)
 
+	// Expect the following order:
+	// 1. pod1 - wants to grow by 1 unit.
+	// 2. pod3 - can reclaim 5 units.
+	// 3. pod2 - can reclaim 2 units.
 	result := calculator.GetSortedPods()
-	assert.Exactly(t, []*apiv1.Pod{pod2, pod1}, result, "Wrong priority order")
+	assert.Exactly(t, []*apiv1.Pod{pod1, pod3, pod2}, result, "Wrong priority order")
 }
 
 func TestUpdateNotRequired(t *testing.T) {
