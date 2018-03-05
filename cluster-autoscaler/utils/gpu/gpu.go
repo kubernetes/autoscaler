@@ -87,3 +87,25 @@ func getUnreadyNodeCopy(node *apiv1.Node) (*apiv1.Node, error) {
 	newNode.Status.Conditions = newNodeConditions
 	return newNode, nil
 }
+
+// NodeHasGpu returns true if a given node has GPU hardware.
+// The result will be true if there is hardware capability. It doesn't matter
+// if the drivers are installed and GPU is ready to use.
+func NodeHasGpu(node *apiv1.Node) bool {
+	_, hasGpuLabel := node.Labels[GPULabel]
+	gpuAllocatable, hasGpuAllocatable := node.Status.Allocatable[ResourceNvidiaGPU]
+	return hasGpuLabel || (hasGpuAllocatable && !gpuAllocatable.IsZero())
+}
+
+// PodRequestsGpu returns true if a given pod has GPU request.
+func PodRequestsGpu(pod *apiv1.Pod) bool {
+	for _, container := range pod.Spec.Containers {
+		if container.Resources.Requests != nil {
+			_, gpuFound := container.Resources.Requests[ResourceNvidiaGPU]
+			if gpuFound {
+				return true
+			}
+		}
+	}
+	return false
+}

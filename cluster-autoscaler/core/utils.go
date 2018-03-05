@@ -32,6 +32,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	scheduler_util "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 
@@ -490,4 +491,28 @@ func UpdateClusterStateMetrics(csr *clusterstate.ClusterStateRegistry) {
 	metrics.UpdateClusterSafeToAutoscale(csr.IsClusterHealthy())
 	readiness := csr.GetClusterReadiness()
 	metrics.UpdateNodesCount(readiness.Ready, readiness.Unready+readiness.LongNotStarted, readiness.NotStarted)
+}
+
+func getOldestCreateTime(pods []*apiv1.Pod) time.Time {
+	oldest := time.Now()
+	for _, pod := range pods {
+		if oldest.After(pod.CreationTimestamp.Time) {
+			oldest = pod.CreationTimestamp.Time
+		}
+	}
+	return oldest
+}
+
+func getOldestCreateTimeWithGpu(pods []*apiv1.Pod) (bool, time.Time) {
+	oldest := time.Now()
+	gpuFound := false
+	for _, pod := range pods {
+		if gpu.PodRequestsGpu(pod) {
+			gpuFound = true
+			if oldest.After(pod.CreationTimestamp.Time) {
+				oldest = pod.CreationTimestamp.Time
+			}
+		}
+	}
+	return gpuFound, oldest
 }
