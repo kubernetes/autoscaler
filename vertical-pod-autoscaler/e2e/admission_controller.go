@@ -107,11 +107,15 @@ var _ = admissionControllerE2eDescribe("Admission-controller", func() {
 					apiv1.ResourceCPU:    parseQuantityOrDie("250m"),
 					apiv1.ResourceMemory: parseQuantityOrDie("200Mi"),
 				},
-				MaxRecommended: apiv1.ResourceList{
-					apiv1.ResourceCPU:    parseQuantityOrDie("233m"),
-					apiv1.ResourceMemory: parseQuantityOrDie("150Mi"),
-				},
 			},
+		}
+		vpaCRD.Spec.ResourcePolicy.ContainerPolicies = []vpa_types.ContainerResourcePolicy{{
+			Name: "hamster",
+			MaxAllowed: apiv1.ResourceList{
+				apiv1.ResourceCPU:    parseQuantityOrDie("233m"),
+				apiv1.ResourceMemory: parseQuantityOrDie("150Mi"),
+			},
+		},
 		}
 		installVPA(f, vpaCRD)
 
@@ -141,11 +145,15 @@ var _ = admissionControllerE2eDescribe("Admission-controller", func() {
 					apiv1.ResourceCPU:    parseQuantityOrDie("50m"),
 					apiv1.ResourceMemory: parseQuantityOrDie("60Mi"),
 				},
-				MinRecommended: apiv1.ResourceList{
-					apiv1.ResourceCPU:    parseQuantityOrDie("90m"),
-					apiv1.ResourceMemory: parseQuantityOrDie("80Mi"),
-				},
 			},
+		}
+		vpaCRD.Spec.ResourcePolicy.ContainerPolicies = []vpa_types.ContainerResourcePolicy{{
+			Name: "hamster",
+			MinAllowed: apiv1.ResourceList{
+				apiv1.ResourceCPU:    parseQuantityOrDie("90m"),
+				apiv1.ResourceMemory: parseQuantityOrDie("80Mi"),
+			},
+		},
 		}
 		installVPA(f, vpaCRD)
 
