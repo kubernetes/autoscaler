@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 )
 
 var (
@@ -117,4 +118,146 @@ func TestHistogramMerge(t *testing.T) {
 
 	h1.Merge(h2)
 	assert.True(t, h1.Equals(expected))
+}
+
+func TestHistogramSaveToCheckpointEmpty(t *testing.T) {
+	h := NewHistogram(testHistogramOptions)
+	s, err := h.SaveToChekpoint()
+	assert.NoError(t, err)
+	assert.Equal(t, 0., s.TotalWeight)
+	assert.Len(t, s.BucketWeights, 0)
+}
+
+func TestHistogramSaveToCheckpoint(t *testing.T) {
+	h := NewHistogram(testHistogramOptions)
+	h.AddSample(1, 1, anyTime)
+	s, err := h.SaveToChekpoint()
+	assert.NoError(t, err)
+	bucket := testHistogramOptions.FindBucket(1)
+	assert.Equal(t, 1., s.TotalWeight)
+	assert.Len(t, s.BucketWeights, 1)
+	assert.Contains(t, s.BucketWeights, bucket)
+	assert.Equal(t, MaxCheckpointWeight, s.BucketWeights[bucket])
+}
+
+func TestHistogramSaveToCheckpointDropsRelativelySmallValues(t *testing.T) {
+	h := NewHistogram(testHistogramOptions)
+
+	v1, w1 := 1., 1.
+	v2, w2 := 2., 100000.
+
+	h.AddSample(v1, w1, anyTime)
+	h.AddSample(v2, w2, anyTime)
+
+	bucket1 := testHistogramOptions.FindBucket(v1)
+	bucket2 := testHistogramOptions.FindBucket(v2)
+	assert.NotEqualf(t, bucket1, bucket2, "For this test %v and %v have to be stored in different buckets", v1, v2)
+	assert.True(t, w1 < (w2/float64(MaxCheckpointWeight))/2, "w1 to be omitted has to be less than (0.5*w2)/MaxCheckpointWeight")
+
+	s, err := h.SaveToChekpoint()
+	assert.NoError(t, err)
+
+	assert.Equal(t, 100001. /*w1+w2*/, s.TotalWeight)
+	// Bucket 1 shouldn't be there
+	assert.Len(t, s.BucketWeights, 1)
+	assert.Contains(t, s.BucketWeights, bucket2)
+	assert.Equal(t, MaxCheckpointWeight, s.BucketWeights[bucket2])
+}
+
+func TestHistogramSaveToCheckpointForMultipleValues(t *testing.T) {
+	h := NewHistogram(testHistogramOptions)
+
+	v1, w1 := 1., 1.
+	v2, w2 := 2., 10000.
+	v3, w3 := 3., 50.
+
+	h.AddSample(v1, w1, anyTime)
+	h.AddSample(v2, w2, anyTime)
+	h.AddSample(v3, w3, anyTime)
+
+	bucket1 := testHistogramOptions.FindBucket(v1)
+	bucket2 := testHistogramOptions.FindBucket(v2)
+	bucket3 := testHistogramOptions.FindBucket(v3)
+
+	assert.Truef(t, areUnique(bucket1, bucket2, bucket3), "For this test values %v have to be stored in different buckets", []float64{v1, v2, v3})
+
+	s, err := h.SaveToChekpoint()
+	assert.NoError(t, err)
+	assert.Equal(t, 10051. /*w1 + w2 + w3*/, s.TotalWeight)
+	assert.Len(t, s.BucketWeights, 3)
+	assert.Equal(t, uint32(1), s.BucketWeights[bucket1])
+	assert.Equal(t, uint32(10000), s.BucketWeights[bucket2])
+	assert.Equal(t, uint32(50), s.BucketWeights[bucket3])
+}
+
+func TestHistogramLoadFromCheckpoint(t *testing.T) {
+	checkpoint := vpa_types.HistogramCheckpoint{
+		TotalWeight: 6.0,
+		BucketWeights: map[int]uint32{
+			0: 1,
+			1: 2,
+		},
+	}
+	h := histogram{
+		options:      testHistogramOptions,
+		bucketWeight: make([]float64, testHistogramOptions.NumBuckets()),
+		totalWeight:  0.0,
+		minBucket:    testHistogramOptions.NumBuckets() - 1,
+		maxBucket:    0}
+	err := h.LoadFromCheckpoint(&checkpoint)
+	assert.NoError(t, err)
+	assert.Equal(t, 6.0, h.totalWeight)
+	assert.Equal(t, 2.0, h.bucketWeight[0])
+	assert.Equal(t, 4.0, h.bucketWeight[1])
+}
+
+func TestHistogramLoadFromCheckpointReturnsErrorOnNegativeBucket(t *testing.T) {
+	checkpoint := vpa_types.HistogramCheckpoint{
+		TotalWeight: 1.0,
+		BucketWeights: map[int]uint32{
+			-1: 1,
+		},
+	}
+	h := NewHistogram(testHistogramOptions)
+	err := h.LoadFromCheckpoint(&checkpoint)
+	assert.Error(t, err)
+}
+
+func TestHistogramLoadFromCheckpointReturnsErrorOnInvalidBucket(t *testing.T) {
+	checkpoint := vpa_types.HistogramCheckpoint{
+		TotalWeight: 1.0,
+		BucketWeights: map[int]uint32{
+			99: 1,
+		},
+	}
+	h := NewHistogram(testHistogramOptions)
+	err := h.LoadFromCheckpoint(&checkpoint)
+	assert.Error(t, err)
+}
+
+func TestHistogramLoadFromCheckpointReturnsErrorNegativeTotaWeight(t *testing.T) {
+	checkpoint := vpa_types.HistogramCheckpoint{
+		TotalWeight:   -1.0,
+		BucketWeights: map[int]uint32{},
+	}
+	h := NewHistogram(testHistogramOptions)
+	err := h.LoadFromCheckpoint(&checkpoint)
+	assert.Error(t, err)
+}
+
+func TestHistogramLoadFromCheckpointReturnsErrorOnNilInput(t *testing.T) {
+	h := NewHistogram(testHistogramOptions)
+	err := h.LoadFromCheckpoint(nil)
+	assert.Error(t, err)
+}
+
+func areUnique(values ...interface{}) bool {
+	dict := make(map[interface{}]bool)
+	for i, v := range values {
+		dict[v] = true
+		if len(dict) != i+1 {
+			return false
+		}
+	}
+	return true
 }
