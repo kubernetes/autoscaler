@@ -131,16 +131,16 @@ func TestDecayingHistogramMerge(t *testing.T) {
 
 func TestDecayingHistogramSaveToCheckpoint(t *testing.T) {
 	d := &decayingHistogram{
-		histogram:  *NewHistogram(testHistogramOptions).(*histogram),
-		halfLife:   time.Hour,
-		decayStart: time.Time{},
+		histogram:          *NewHistogram(testHistogramOptions).(*histogram),
+		halfLife:           time.Hour,
+		referenceTimestamp: time.Time{},
 	}
 	d.AddSample(2, 1, startTime.Add(time.Hour*100))
-	assert.NotEqual(t, d.decayStart, time.Time{})
+	assert.NotEqual(t, d.referenceTimestamp, time.Time{})
 
 	checkpoint, err := d.SaveToChekpoint()
 	assert.NoError(t, err)
-	assert.Equal(t, checkpoint.ReferenceTimestamp.Time, d.decayStart)
+	assert.Equal(t, checkpoint.ReferenceTimestamp.Time, d.referenceTimestamp)
 	// Just check that buckets are not empty, actual testing of bucketing
 	// belongs to Histogram
 	assert.NotEmpty(t, checkpoint.BucketWeights)
@@ -159,12 +159,12 @@ func TestDecayingHistogramLoadFromCheckpoint(t *testing.T) {
 		ReferenceTimestamp: metav1.NewTime(timestamp),
 	}
 	d := &decayingHistogram{
-		histogram:  *NewHistogram(testHistogramOptions).(*histogram),
-		halfLife:   time.Hour,
-		decayStart: time.Time{},
+		histogram:          *NewHistogram(testHistogramOptions).(*histogram),
+		halfLife:           time.Hour,
+		referenceTimestamp: time.Time{},
 	}
 	d.LoadFromCheckpoint(&checkpoint)
 
 	assert.False(t, d.histogram.IsEmpty())
-	assert.Equal(t, timestamp, d.decayStart)
+	assert.Equal(t, timestamp, d.referenceTimestamp)
 }
