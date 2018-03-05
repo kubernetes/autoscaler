@@ -18,6 +18,7 @@ package priority
 
 import (
 	"testing"
+	"time"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
@@ -169,19 +170,56 @@ func TestUsePolicy(t *testing.T) {
 	assert.Exactly(t, []*apiv1.Pod{}, result, "Pod should not be updated")
 }
 
-func TestChangeTooSmall(t *testing.T) {
-	calculator := NewUpdatePriorityCalculator(nil, &UpdateConfig{0.5})
+// Verify that a pod that lives for more than podLifetimeUpdateThreshold is
+// updated if it has at least one container with the request:
+// 1. outside the [MinRecommended...MaxRecommended] range or
+// 2. diverging from the target by more than MinChangePriority.
+func TestUpdateLonglivedPods(t *testing.T) {
+	calculator := NewUpdatePriorityCalculator(
+		nil, &UpdateConfig{MinChangePriority: 0.5})
 
-	pod1 := test.BuildTestPod("POD1", containerName, "4", "", nil, nil)
-	pod2 := test.BuildTestPod("POD2", containerName, "1", "", nil, nil)
+	pods := []*apiv1.Pod{
+		test.BuildTestPod("POD1", containerName, "4", "", nil, nil),
+		test.BuildTestPod("POD2", containerName, "1", "", nil, nil),
+		test.BuildTestPod("POD3", containerName, "7", "", nil, nil),
+	}
 
 	recommendation := test.Recommendation(containerName, "5", "")
+	// Both pods are within the recommended range.
+	test.AddMinRecommended(recommendation, "1", "")
+	test.AddMaxRecommended(recommendation, "6", "")
 
-	calculator.AddPod(pod1, recommendation)
-	calculator.AddPod(pod2, recommendation)
-
+	for i := 0; i < 3; i++ {
+		pods[i].Status.StartTime.Time = time.Unix(0, 0) // The pods are long-lived.
+		calculator.AddPod(pods[i], recommendation)
+	}
 	result := calculator.GetSortedPods()
-	assert.Exactly(t, []*apiv1.Pod{pod2}, result, "Only POD2 should be updated")
+	assert.Exactly(t, []*apiv1.Pod{pods[1], pods[2]}, result, "Exactly POD2 and POD3 should be updated")
+}
+
+// Verify that a pod that lives for less than podLifetimeUpdateThreshold is
+// updated only if the request is outside the [MinRecommended...MaxRecommended]
+// range for at least one container.
+func TestUpdateShortlivedPods(t *testing.T) {
+	calculator := NewUpdatePriorityCalculator(
+		nil, &UpdateConfig{MinChangePriority: 0.5})
+
+	pods := []*apiv1.Pod{
+		test.BuildTestPod("POD1", containerName, "4", "", nil, nil),
+		test.BuildTestPod("POD2", containerName, "1", "", nil, nil),
+		test.BuildTestPod("POD3", containerName, "7", "", nil, nil),
+	}
+
+	recommendation := test.Recommendation(containerName, "5", "")
+	// Both pods are within the recommended range.
+	test.AddMinRecommended(recommendation, "1", "")
+	test.AddMaxRecommended(recommendation, "6", "")
+
+	for i := 0; i < 3; i++ {
+		calculator.AddPod(pods[i], recommendation)
+	}
+	result := calculator.GetSortedPods()
+	assert.Exactly(t, []*apiv1.Pod{pods[2]}, result, "Only POD3 should be updated")
 }
 
 func TestNoPods(t *testing.T) {

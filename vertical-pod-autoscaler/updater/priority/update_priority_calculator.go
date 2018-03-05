@@ -19,6 +19,7 @@ package priority
 import (
 	"math"
 	"sort"
+	"time"
 
 	"github.com/golang/glog"
 	apiv1 "k8s.io/api/core/v1"
@@ -27,8 +28,11 @@ import (
 )
 
 const (
-	// ignore change priority that is smaller than 10%
+	// Ignore change priority that is smaller than 10%.
 	defaultUpdateThreshold = 0.10
+	// Pods that live for at least that long can be evicted even if their
+	// request is within the [MinRecommended...MaxRecommended] range.
+	podLifetimeUpdateThreshold = time.Hour * 12
 )
 
 // UpdatePriorityCalculator is responsible for prioritizing updates on pods.
@@ -63,16 +67,24 @@ func NewUpdatePriorityCalculator(policy *vpa_types.PodResourcePolicy, config *Up
 func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, recommendation *vpa_types.RecommendedPodResources) {
 	updatePriority := calc.getUpdatePriority(pod, recommendation)
 
-	// TODO: if (the current request is within [lowerBound, upperBound] for all containers) and
-	//          (the pod lives less than Y hours) then do not update.
-	// TODO: if (the current request is within [lowerBound, upperBound] for all containers) and
-	//          (the current request differs from the target by less than X%) then do not update.
-
-	if updatePriority.resourceDiff < calc.config.MinChangePriority {
-		glog.V(2).Infof("pod not accepted for update %v, priority too low: %v", pod.Name, updatePriority)
-		return
+	// The update is allowed in either of the following two cases:
+	// 1. the request is outside the recommended range for some container.
+	// 2. the pod lives for at least 24h and the resource diff is >= MinChangePriority.
+	if !updatePriority.outsideRecommendedRange {
+		if pod.Status.StartTime == nil {
+			// TODO: Set proper condition on the VPA.
+			glog.V(2).Infof("not updating pod %v, missing field pod.Status.StartTime", pod.Name)
+			return
+		}
+		if time.Now().Before(pod.Status.StartTime.Add(podLifetimeUpdateThreshold)) {
+			glog.V(2).Infof("not updating a short-lived pod %v, request within recommended range", pod.Name)
+			return
+		}
+		if updatePriority.resourceDiff < calc.config.MinChangePriority {
+			glog.V(2).Infof("not updating pod %v, resource diff too low: %v", pod.Name, updatePriority)
+			return
+		}
 	}
-
 	glog.V(2).Infof("pod accepted for update %v with priority %v", pod.Name, updatePriority.resourceDiff)
 	calc.pods = append(calc.pods, updatePriority)
 }
@@ -90,6 +102,7 @@ func (calc *UpdatePriorityCalculator) GetSortedPods() []*apiv1.Pod {
 }
 
 func (calc *UpdatePriorityCalculator) getUpdatePriority(pod *apiv1.Pod, recommendation *vpa_types.RecommendedPodResources) podPriority {
+	outsideRecommendedRange := false
 	scaleUp := false
 	// Sum of requests over all containers, per resource type.
 	totalRequestPerResource := make(map[apiv1.ResourceName]int64)
@@ -104,13 +117,20 @@ func (calc *UpdatePriorityCalculator) getUpdatePriority(pod *apiv1.Pod, recommen
 		}
 		for resourceName, recommended := range recommendedRequest.Target {
 			totalRecommendedPerResource[resourceName] += recommended.MilliValue()
-			if request, ok := podContainer.Resources.Requests[resourceName]; ok {
+			minRecommneded, hasMin := recommendedRequest.MinRecommended[resourceName]
+			maxRecommneded, hasMax := recommendedRequest.MaxRecommended[resourceName]
+			if request, hasRequest := podContainer.Resources.Requests[resourceName]; hasRequest {
 				totalRequestPerResource[resourceName] += request.MilliValue()
 				if recommended.MilliValue() > request.MilliValue() {
 					scaleUp = true
 				}
+				if (hasMin && request.MilliValue() < minRecommneded.MilliValue()) ||
+					(hasMax && request.MilliValue() > maxRecommneded.MilliValue()) {
+					outsideRecommendedRange = true
+				}
 			} else {
 				scaleUp = true
+				outsideRecommendedRange = true
 			}
 		}
 	}
@@ -120,14 +140,17 @@ func (calc *UpdatePriorityCalculator) getUpdatePriority(pod *apiv1.Pod, recommen
 		resourceDiff += math.Abs(totalRequest-float64(totalRecommended)) / totalRequest
 	}
 	return podPriority{
-		pod:          pod,
-		scaleUp:      scaleUp,
-		resourceDiff: resourceDiff,
+		pod: pod,
+		outsideRecommendedRange: outsideRecommendedRange,
+		scaleUp:                 scaleUp,
+		resourceDiff:            resourceDiff,
 	}
 }
 
 type podPriority struct {
 	pod *apiv1.Pod
+	// Is any container outside of the recommended range.
+	outsideRecommendedRange bool
 	// Does any container want to grow.
 	scaleUp bool
 	// Relative difference between the total requested and total recommended resources.
