@@ -102,3 +102,146 @@ spec:
           configMap:
             name: nannyconfig
 ```
+
+## Addon resizer configuration
+
+To follow instructions in this section, set environment variable `ADDON_NAME` to
+name of your addon, for example:
+
+```
+ADDON_NAME=$ADDON_NAME
+```
+
+### Overview
+
+Some addons are scaled by Addon Resizer running as a sidecar container. The default
+configuration is passed to Addon Resizer via command-line flags and consists of
+parameters:
+
+1. CPU parameters:
+  ```
+  --cpu
+  --extra-cpu
+  ```
+
+  On n-node cluster, the total CPU assigned to the addon will be computed as:
+  ```
+  cpu + n * extra-cpu
+  ```
+
+2. Memory parameters:
+  ```
+  --memory
+  --extra-memory
+  ```
+
+  On n-node cluster, the total memory assigned to the addon will be computed as:
+  ```
+  memory + n * extra-memory
+  ```
+
+These resources are overwritten by analogous values specified in a ConfigMap
+`$ADDON_NAME-config` in kube-system namespace. By default the ConfigMap is empty.
+
+### View current defaults
+
+Find version of addon running in your cluster:
+```
+kubectl get deployments -n kube-system -l k8s-app=$ADDON_NAME -L version
+
+# set env variables to received values, for example:
+ADDON_DEPLOYMENT=$ADDON_NAME-v1.5.0
+ADDON_VERSION=v1.5.0
+```
+
+Find the resource parameters for version of the addon running in your clusters,
+for example:
+
+```
+kubectl logs -n kube-system -l k8s-app=$ADDON_NAME -l version=$ADDON_VERSION -c
+$ADDON_NAME-nanny | head -n 1
+```
+
+You can also see total values computed for addon container CPU and memory
+requirements by inspecting full deployment specification:
+```
+kubectl get deployment -n kube-system $ADDON_DEPLOYMENT -o yaml
+```
+
+### View current configuration
+
+```
+kubectl get configmap -n kube-system $ADDON_NAME-config -o yaml
+```
+
+By default the configuration is empty:
+
+```
+kind: ConfigMap
+apiVersion: v1
+data:
+  NannyConfiguration: |-
+    apiVersion: nannyconfig/v1alpha1
+    kind: NannyConfiguration
+metadata:
+[...]
+```
+
+### Edit a configuration
+
+Before you edit a configuration, make sure to check the default values. Don’t
+overwrite addons configuration with value lower than defaults, otherwise you may
+cause some Kubernetes components to stop working. If the configuration is
+missing, empty or incorrect, Addon Resizer will fall back to default
+configuration.
+
+```
+kubectl edit configmap -n kube-system $ADDON_NAME-config -o yaml
+```
+
+Set values for CPU and memory configuration using predefined options (they are
+specified as NannyConfiguration API):
+
+```
+baseCPU
+cpuPerNode
+baseMemory
+memoryPerNode
+```
+
+Example of edited configuration:
+
+```
+kind: ConfigMap
+apiVersion: v1
+data:
+  NannyConfiguration: |-
+    apiVersion: nannyconfig/v1alpha1
+    kind: NannyConfiguration
+    baseCPU: 100m
+    cpuPerNode: 1m
+    baseMemory: 200Mi
+metadata:
+[...]
+```
+
+Restart the addon. One way to do it is to delete addon deployment and wait for
+controller manager to re-create it:
+```
+kubectl delete deployment -n kube-system $ADDON_DEPLOYMENT
+```
+
+### Reset a configuration to default values
+
+To reset a configuration, just remove it and let it be recreated by addon
+manager:
+
+```
+kubectl delete configmap -n kube-system $ADDON_NAME-config
+```
+
+Then reset the addon itself using the same method:
+
+```
+kubectl delete deployment -n kube-system $ADDON_DEPLOYMENT
+```
