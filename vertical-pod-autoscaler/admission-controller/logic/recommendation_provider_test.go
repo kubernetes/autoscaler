@@ -21,6 +21,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
@@ -47,12 +48,28 @@ func TestUpdateResourceRequests(t *testing.T) {
 	offVPA := test.BuildTestVerticalPodAutoscaler(containerName, "2.5", "1", "3", "250M", "100M", "1G", "app = testingApp")
 	offVPA.Spec.UpdatePolicy.UpdateMode = vpa_types.UpdateModeOff
 
+	targetBelowMinVPA := test.BuildTestVerticalPodAutoscaler(containerName, "3", "4", "5", "150M", "300M", "1G", "app = testingApp")
+
+	targetAboveMaxVPA := test.BuildTestVerticalPodAutoscaler(containerName, "7", "4", "5", "2G", "300M", "1G", "app = testingApp")
+
 	testCases := []testCase{{
 		pod:            uninitialized,
 		vpas:           []*vpa_types.VerticalPodAutoscaler{vpa},
 		expectedAction: true,
 		expectedMem:    "200M",
 		expectedCPU:    "2",
+	}, {
+		pod:            uninitialized,
+		vpas:           []*vpa_types.VerticalPodAutoscaler{targetBelowMinVPA},
+		expectedAction: true,
+		expectedMem:    "300M", // MinMemory is expected to be used
+		expectedCPU:    "4",    // MinCpu is expected to be used
+	}, {
+		pod:            uninitialized,
+		vpas:           []*vpa_types.VerticalPodAutoscaler{targetAboveMaxVPA},
+		expectedAction: true,
+		expectedMem:    "1G", // MaxMemory is expected to be used
+		expectedCPU:    "5",  // MaxCpu is expected to be used
 	}, {
 		pod:            initialized,
 		vpas:           []*vpa_types.VerticalPodAutoscaler{vpa},
@@ -90,6 +107,13 @@ func TestUpdateResourceRequests(t *testing.T) {
 		if tc.expectedAction {
 			assert.Nil(t, err)
 			assert.Equal(t, len(requests), 1)
+			cpu, err := resource.ParseQuantity(tc.expectedCPU)
+			assert.NoError(t, err)
+			assert.Equal(t, cpu, requests[0][apiv1.ResourceCPU])
+			memory, err := resource.ParseQuantity(tc.expectedMem)
+			assert.NoError(t, err)
+			assert.Equal(t, memory, requests[0][apiv1.ResourceMemory])
+
 		} else {
 			assert.Equal(t, len(requests), 0)
 		}
