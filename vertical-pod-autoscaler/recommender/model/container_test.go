@@ -43,11 +43,11 @@ func TestAggregateContainerUsageSamples(t *testing.T) {
 	memoryUsagePeaks := util.NewFloatSlidingWindow(
 		int(MemoryAggregationWindowLength / MemoryAggregationInterval))
 	c := &ContainerState{
-		mockCPUHistogram,
-		time.Unix(0, 0),
-		memoryUsagePeaks,
-		time.Unix(0, 0),
-		time.Unix(0, 0)}
+		CPUUsage:              mockCPUHistogram,
+		LastCPUSampleStart:    time.Unix(0, 0),
+		MemoryUsagePeaks:      memoryUsagePeaks,
+		WindowEnd:             time.Unix(0, 0),
+		lastMemorySampleStart: time.Unix(0, 0)}
 
 	// Verify that CPU measures are added to the CPU histogram.
 	timeStep := MemoryAggregationInterval / 2

@@ -21,6 +21,8 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 )
 
 var (
@@ -125,4 +127,44 @@ func TestDecayingHistogramMerge(t *testing.T) {
 
 	h1.Merge(h2)
 	assert.True(t, h1.Equals(expected))
+}
+
+func TestDecayingHistogramSaveToCheckpoint(t *testing.T) {
+	d := &decayingHistogram{
+		histogram:          *NewHistogram(testHistogramOptions).(*histogram),
+		halfLife:           time.Hour,
+		referenceTimestamp: time.Time{},
+	}
+	d.AddSample(2, 1, startTime.Add(time.Hour*100))
+	assert.NotEqual(t, d.referenceTimestamp, time.Time{})
+
+	checkpoint, err := d.SaveToChekpoint()
+	assert.NoError(t, err)
+	assert.Equal(t, checkpoint.ReferenceTimestamp.Time, d.referenceTimestamp)
+	// Just check that buckets are not empty, actual testing of bucketing
+	// belongs to Histogram
+	assert.NotEmpty(t, checkpoint.BucketWeights)
+	assert.NotZero(t, checkpoint.TotalWeight)
+}
+
+func TestDecayingHistogramLoadFromCheckpoint(t *testing.T) {
+	location, _ := time.LoadLocation("UTC")
+	timestamp := time.Date(2018, time.January, 2, 3, 4, 5, 0, location)
+
+	checkpoint := vpa_types.HistogramCheckpoint{
+		TotalWeight: 6.0,
+		BucketWeights: map[int]uint32{
+			0: 1,
+		},
+		ReferenceTimestamp: metav1.NewTime(timestamp),
+	}
+	d := &decayingHistogram{
+		histogram:          *NewHistogram(testHistogramOptions).(*histogram),
+		halfLife:           time.Hour,
+		referenceTimestamp: time.Time{},
+	}
+	d.LoadFromCheckpoint(&checkpoint)
+
+	assert.False(t, d.histogram.IsEmpty())
+	assert.Equal(t, timestamp, d.referenceTimestamp)
 }

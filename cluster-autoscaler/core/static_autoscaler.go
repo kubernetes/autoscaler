@@ -37,6 +37,10 @@ import (
 const (
 	// How old the oldest unschedulable pod should be before starting scale up.
 	unschedulablePodTimeBuffer = 2 * time.Second
+	// How old the oldest unschedulable pod with GPU should be before starting scale up.
+	// The idea is that nodes with GPU are very expensive and we're ready to sacrifice
+	// a bit more latency to wait for more pods and make a more informed scale-up decision.
+	unschedulablePodWithGpuTimeBuffer = 30 * time.Second
 	// How long should Cluster Autoscaler wait for nodes to become ready after start.
 	nodesNotReadyAfterStartTimeout = 10 * time.Minute
 )
@@ -274,7 +278,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		glog.V(1).Info("No unschedulable pods")
 	} else if a.MaxNodesTotal > 0 && len(readyNodes) >= a.MaxNodesTotal {
 		glog.V(1).Info("Max total nodes in cluster reached")
-	} else if getOldestCreateTime(unschedulablePodsToHelp).Add(unschedulablePodTimeBuffer).After(currentTime) {
+	} else if allPodsAreNew(unschedulablePodsToHelp, currentTime) {
 		// The assumption here is that these pods have been created very recently and probably there
 		// is more pods to come. In theory we could check the newest pod time but then if pod were created
 		// slowly but at the pace of 1 every 2 seconds then no scale up would be triggered for long time.
@@ -383,4 +387,12 @@ func (a *StaticAutoscaler) ExitCleanUp() {
 		return
 	}
 	utils.DeleteStatusConfigMap(a.AutoscalingContext.ClientSet, a.AutoscalingContext.ConfigNamespace)
+}
+
+func allPodsAreNew(pods []*apiv1.Pod, currentTime time.Time) bool {
+	if getOldestCreateTime(pods).Add(unschedulablePodTimeBuffer).After(currentTime) {
+		return true
+	}
+	found, oldest := getOldestCreateTimeWithGpu(pods)
+	return found && oldest.Add(unschedulablePodWithGpuTimeBuffer).After(currentTime)
 }

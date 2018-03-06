@@ -37,8 +37,8 @@ const (
 	admissionControllerComponent = "admission-controller"
 	fullVpaSuite                 = "full-vpa"
 	actuationSuite               = "actuation"
-	pollInterval                 = framework.Poll
-	pollTimeout                  = 5 * time.Minute
+	pollInterval                 = 10 * time.Second
+	pollTimeout                  = 10 * time.Minute
 )
 
 func e2eDescribe(scenario, name string, body func()) bool {
