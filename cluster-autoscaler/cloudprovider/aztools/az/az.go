@@ -53,7 +53,6 @@ func GetWorkerList(clusterID string) ([]string, error) {
 		}
 	}
 	return machines, nil
-
 }
 
 // OnScaleUp is a function called on node group increase in AzToolsCloudProvider.

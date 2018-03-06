@@ -24,12 +24,10 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aztools/az"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	kubeclient "k8s.io/client-go/kubernetes"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 
 	"github.com/golang/glog"
@@ -67,17 +65,15 @@ type AzToolsCloudProvider struct {
 	machineTypes      []string
 	machineTemplates  map[string]*schedulercache.NodeInfo
 	resourceLimiter   *cloudprovider.ResourceLimiter
-	kubeClient        kubeclient.Interface
 }
 
 func BuildAzToolsCloudProvider(
 	clusterName string,
 	discoveryOpts cloudprovider.NodeGroupDiscoveryOptions,
 	rl *cloudprovider.ResourceLimiter,
-	kubeClient kubeclient.Interface,
 ) (*AzToolsCloudProvider, error) {
 
-	for _, file := range []string{"./az_tools.py", "./deploy.py", "./config.yaml"} {
+	for _, file := range []string{"./az_tools.py", "./deploy.py", "./config.yaml", "./cluster.yaml"} {
 		if _, err := os.Stat(file); os.IsNotExist(err) {
 			return nil, fmt.Errorf("%v is not found. Please make sure you are under `DLworkspace/src/ClusterBootstrap`",
 				file,
@@ -85,7 +81,7 @@ func BuildAzToolsCloudProvider(
 		}
 	}
 
-	provider := NewAzToolsCloudProvider(az.OnScaleUp, az.OnScaleDown, rl, kubeClient)
+	provider := NewAzToolsCloudProvider(az.OnScaleUp, az.OnScaleDown, rl)
 
 	for i, spec := range discoveryOpts.NodeGroupSpecs {
 		if i > 0 {
@@ -98,30 +94,19 @@ func BuildAzToolsCloudProvider(
 
 		grpID := s.Name
 
-		nodes, err := kubeClient.CoreV1().Nodes().List(metav1.ListOptions{})
+		// Fetch nodes from ./cluster.yaml
+		workers, err := az.GetWorkerList(grpID)
 		if err != nil {
 			return nil, err
 		}
 
-		readyNodes := []*apiv1.Node{}
-		for _, node := range nodes.Items {
-			// Skip unschedulable node.
-			if node.Spec.Unschedulable {
-				continue
-			}
-			// Add only consider node in ready condition.
-			for _, condition := range node.Status.Conditions {
-				if condition.Type == apiv1.NodeReady {
-					// Add one node to node group
-					provider.AddNode(grpID, &node)
-					readyNodes = append(readyNodes, &node)
-					break
-				}
-			}
+		// Add given node in node group.
+		for _, nodeName := range workers {
+			provider.AddNode(grpID, nodeName)
 		}
 
-		// Initialize targetSize as ready nodes of the cluster. targetSize will be auto updated per scale up/down.
-		provider.AddNodeGroup(grpID, s.MinSize, s.MaxSize, kubeClient, len(readyNodes))
+		// Initialize targetSize with nodes of the cluster. targetSize will be auto updated per scale up/down.
+		provider.AddNodeGroup(grpID, s.MinSize, s.MaxSize, len(workers))
 	}
 
 	return provider, nil
@@ -132,7 +117,6 @@ func NewAzToolsCloudProvider(
 	onScaleUp OnScaleUpFunc,
 	onScaleDown OnScaleDownFunc,
 	rl *cloudprovider.ResourceLimiter,
-	kubeClient kubeclient.Interface,
 ) *AzToolsCloudProvider {
 	return &AzToolsCloudProvider{
 		nodes:           make(map[string]string),
@@ -140,7 +124,6 @@ func NewAzToolsCloudProvider(
 		onScaleUp:       onScaleUp,
 		onScaleDown:     onScaleDown,
 		resourceLimiter: rl,
-		kubeClient:      kubeClient,
 	}
 }
 
@@ -222,7 +205,7 @@ func (azcp *AzToolsCloudProvider) NewNodeGroup(machineType string, labels map[st
 }
 
 // AddNodeGroup adds node group to test cloud provider.
-func (azcp *AzToolsCloudProvider) AddNodeGroup(id string, min int, max int, kubeClient kubeclient.Interface, size int) {
+func (azcp *AzToolsCloudProvider) AddNodeGroup(id string, min int, max int, size int) {
 	azcp.Lock()
 	defer azcp.Unlock()
 
@@ -233,7 +216,6 @@ func (azcp *AzToolsCloudProvider) AddNodeGroup(id string, min int, max int, kube
 		maxSize:         max,
 		exist:           true,
 		autoprovisioned: false,
-		kubeClient:      kubeClient,
 		targetSize:      size,
 	}
 }
@@ -246,10 +228,10 @@ func getProviderID(nodeName string) string {
 }
 
 // AddNode adds the given node to the group.
-func (azcp *AzToolsCloudProvider) AddNode(nodeGroupId string, node *apiv1.Node) {
+func (azcp *AzToolsCloudProvider) AddNode(nodeGroupId string, nodeName string) {
 	azcp.Lock()
 	defer azcp.Unlock()
-	azcp.nodes[getProviderID(node.Name)] = nodeGroupId
+	azcp.nodes[getProviderID(nodeName)] = nodeGroupId
 }
 
 // GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
@@ -284,7 +266,6 @@ type AzToolsNodeGroup struct {
 	exist           bool
 	autoprovisioned bool
 	machineType     string
-	kubeClient      kubeclient.Interface
 
 	// targetSize should be desired size of node group.
 	targetSize int
