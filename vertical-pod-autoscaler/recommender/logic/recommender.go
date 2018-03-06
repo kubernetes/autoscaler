@@ -17,8 +17,18 @@ limitations under the License.
 package logic
 
 import (
+	"fmt"
+	"time"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/model"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/util"
+)
+
+const (
+	// SupportedCheckpointVersion is the tag of the supported version of serialized checkpoints.
+	SupportedCheckpointVersion = "v1"
 )
 
 // PodResourceRecommender computes resource recommendation for a Vpa object.
@@ -61,7 +71,9 @@ func (r *podResourceRecommender) GetRecommendedPodResources(vpa *model.Vpa) Reco
 	aggregateContainerStateMap := buildAggregateContainerStateMap(&vpa.Pods)
 	var recommendation RecommendedPodResources = make(RecommendedPodResources)
 	for containerName, aggregatedContainerState := range aggregateContainerStateMap {
-		recommendation[containerName] = r.getRecommendedContainerResources(aggregatedContainerState)
+		if aggregatedContainerState.totalSamplesCount > 0 {
+			recommendation[containerName] = r.getRecommendedContainerResources(aggregatedContainerState)
+		}
 	}
 	return recommendation
 }
@@ -71,6 +83,9 @@ func (r *podResourceRecommender) GetRecommendedPodResources(vpa *model.Vpa) Reco
 type AggregateContainerState struct {
 	aggregateCPUUsage    util.Histogram
 	aggregateMemoryPeaks util.Histogram
+	firstSampleStart     time.Time
+	lastSampleStart      time.Time
+	totalSamplesCount    int
 }
 
 // Merges the state of an individual container into AggregateContainerState.
@@ -82,13 +97,21 @@ func (a *AggregateContainerState) mergeContainerState(container *model.Container
 		a.aggregateMemoryPeaks.AddSample(float64(memoryPeaks[i]), 1.0, peakTime)
 		peakTime = peakTime.Add(-model.MemoryAggregationInterval)
 	}
+	// Note: we look at CPU samples to calculate the total lifespan and sample count.
+	if a.firstSampleStart.IsZero() || (!container.FirstCPUSampleStart.IsZero() && container.FirstCPUSampleStart.Before(a.firstSampleStart)) {
+		a.firstSampleStart = container.FirstCPUSampleStart
+	}
+	if container.LastCPUSampleStart.After(a.lastSampleStart) {
+		a.lastSampleStart = container.LastCPUSampleStart
+	}
+	a.totalSamplesCount += container.CPUSamplesCount
 }
 
 // Returns a new, empty AggregateContainerState.
 func newAggregateContainerState() *AggregateContainerState {
 	return &AggregateContainerState{
-		util.NewDecayingHistogram(model.CPUHistogramOptions, model.CPUHistogramDecayHalfLife),
-		util.NewDecayingHistogram(model.MemoryHistogramOptions, model.MemoryHistogramDecayHalfLife),
+		aggregateCPUUsage:    util.NewDecayingHistogram(model.CPUHistogramOptions, model.CPUHistogramDecayHalfLife),
+		aggregateMemoryPeaks: util.NewDecayingHistogram(model.MemoryHistogramOptions, model.MemoryHistogramDecayHalfLife),
 	}
 }
 
@@ -116,4 +139,45 @@ func (r *podResourceRecommender) getRecommendedContainerResources(s *AggregateCo
 		r.lowerBoundEstimator.GetResourceEstimation(s),
 		r.upperBoundEstimator.GetResourceEstimation(s),
 	}
+}
+
+// SaveToCheckpoint serializes AggregateContainerState as VerticalPodAutoscalerCheckpointStatus.
+// The serialization may result in loss of precission of the histograms.
+func (a *AggregateContainerState) SaveToCheckpoint() (*vpa_types.VerticalPodAutoscalerCheckpointStatus, error) {
+	memory, err := a.aggregateMemoryPeaks.SaveToChekpoint()
+	if err != nil {
+		return nil, err
+	}
+	cpu, err := a.aggregateCPUUsage.SaveToChekpoint()
+	if err != nil {
+		return nil, err
+	}
+	return &vpa_types.VerticalPodAutoscalerCheckpointStatus{
+		FirstSampleStart:  metav1.NewTime(a.firstSampleStart),
+		LastSampleStart:   metav1.NewTime(a.lastSampleStart),
+		TotalSamplesCount: a.totalSamplesCount,
+		MemoryHistogram:   *memory,
+		CPUHistogram:      *cpu,
+		Version:           SupportedCheckpointVersion,
+	}, nil
+}
+
+// LoadFromCheckpoint deserializes data from VerticalPodAutoscalerCheckpointStatus
+// into the AggregateContainerState.
+func (a *AggregateContainerState) LoadFromCheckpoint(checkpoint *vpa_types.VerticalPodAutoscalerCheckpointStatus) error {
+	if checkpoint.Version != SupportedCheckpointVersion {
+		return fmt.Errorf("Unssuported checkpoint version %s", checkpoint.Version)
+	}
+	a.totalSamplesCount = checkpoint.TotalSamplesCount
+	a.firstSampleStart = checkpoint.FirstSampleStart.Time
+	a.lastSampleStart = checkpoint.LastSampleStart.Time
+	err := a.aggregateMemoryPeaks.LoadFromCheckpoint(&checkpoint.MemoryHistogram)
+	if err != nil {
+		return err
+	}
+	err = a.aggregateCPUUsage.LoadFromCheckpoint(&checkpoint.CPUHistogram)
+	if err != nil {
+		return err
+	}
+	return nil
 }

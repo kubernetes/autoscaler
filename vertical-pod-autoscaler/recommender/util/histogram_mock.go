@@ -17,8 +17,10 @@ limitations under the License.
 package util
 
 import (
-	"github.com/stretchr/testify/mock"
 	"time"
+
+	"github.com/stretchr/testify/mock"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 )
 
 // MockHistogram is a mock implementation of Histogram interface.
@@ -63,4 +65,14 @@ func (m *MockHistogram) Merge(other Histogram) {
 func (m *MockHistogram) String() string {
 	args := m.Called()
 	return args.String(0)
+}
+
+// SaveToChekpoint is a mock implementation of Histogram.SaveToChekpoint.
+func (m *MockHistogram) SaveToChekpoint() (*vpa_types.HistogramCheckpoint, error) {
+	return &vpa_types.HistogramCheckpoint{}, nil
+}
+
+// LoadFromCheckpoint is a mock implementation of Histogram.LoadFromCheckpoint.
+func (m *MockHistogram) LoadFromCheckpoint(checkpoint *vpa_types.HistogramCheckpoint) error {
+	return nil
 }
