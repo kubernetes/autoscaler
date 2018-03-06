@@ -243,6 +243,9 @@ type VerticalPodAutoscalerCheckpointList struct {
 type VerticalPodAutoscalerCheckpointSpec struct {
 	// Name of the VPA object that stored VerticalPodAutoscalerCheckpoint object.
 	VPAObjectName string `json:"vpaObjectName,omitempty" protobuf:"bytes,1,opt,name=vpaObjectName"`
+
+	// Name of the checkpointed container.
+	ContainerName string `json:"containerName,omitempty" protobuf:"bytes,2,opt,name=containerName"`
 }
 
 // VerticalPodAutoscalerCheckpointStatus contains data of the checkpoint.
@@ -258,19 +261,25 @@ type VerticalPodAutoscalerCheckpointStatus struct {
 
 	// Checkpoint of histogram for consumption of memory.
 	MemoryHistogram HistogramCheckpoint `json:"memoryHistogram,omitempty" protobuf:"bytes,4,rep,name=memoryHistogram"`
+
+	// Timestamp of the fist sample from the histograms.
+	FirstSampleStart metav1.Time `json:"firstSampleStart,omitempty" protobuf:"bytes,5,opt,name=firstSampleStart"`
+
+	// Timestamp of the last sample from the histograms.
+	LastSampleStart metav1.Time `json:"lastSampleStart,omitempty" protobuf:"bytes,6,opt,name=lastSampleStart"`
+
+	// Total number of samples in the histograms.
+	TotalSamplesCount int `json:"totalSamplesCount,omitempty" protobuf:"bytes,7,opt,name=totalSamplesCount"`
 }
 
 // HistogramCheckpoint contains data needed to reconstruct the histogram.
 type HistogramCheckpoint struct {
-	// Name of the resource that this HistogramCheckpoint refers to.
-	Resource string `json:"resource,omitempty" protobuf:"bytes,1,opt,name=resource"`
-
 	// Reference timestamp for samples collected within this histogram.
-	ReferenceTimestamp metav1.Time `json:"referenceTimestamp,omitempty" protobuf:"bytes,2,opt,name=referenceTimestamp"`
+	ReferenceTimestamp metav1.Time `json:"referenceTimestamp,omitempty" protobuf:"bytes,1,opt,name=referenceTimestamp"`
 
 	// Map from bucket index to bucket weight.
-	BucketWeights map[int]uint32 `json:"bucketWeights,omitempty" protobuf:"bytes,3,opt,name=bucketWeights"`
+	BucketWeights map[int]uint32 `json:"bucketWeights,omitempty" protobuf:"bytes,2,opt,name=bucketWeights"`
 
 	// Sum of samples to be used as denominator for weights from BucketWeights.
-	TotalWeight float64 `json:"totalWeight,omitempty" protobuf:"bytes,4,opt,name=totalWeight"`
+	TotalWeight float64 `json:"totalWeight,omitempty" protobuf:"bytes,3,opt,name=totalWeight"`
 }
