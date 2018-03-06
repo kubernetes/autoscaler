@@ -21,6 +21,8 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/model"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/util"
 )
@@ -99,4 +101,74 @@ func TestBuildAggregateResourcesMap(t *testing.T) {
 
 	assert.True(t, expectedCPUHistogram.Equals(actualCPUHistogram), "Expected:\n%s\nActual:\n%s", expectedCPUHistogram, actualCPUHistogram)
 	assert.True(t, expectedMemoryHistogram.Equals(actualMemoryHistogram), "Expected:\n%s\nActual:\n%s", expectedMemoryHistogram, actualMemoryHistogram)
+}
+
+func TestAggregateContainerStateSaveToCheckpoint(t *testing.T) {
+	location, _ := time.LoadLocation("UTC")
+	cs := newAggregateContainerState()
+	t1, t2 := time.Date(2018, time.January, 1, 2, 3, 4, 0, location), time.Date(2018, time.February, 1, 2, 3, 4, 0, location)
+	cs.firstSampleStart = t1
+	cs.lastSampleStart = t2
+	cs.totalSamplesCount = 10
+
+	cs.aggregateCPUUsage.AddSample(1, 33, t2)
+	cs.aggregateMemoryPeaks.AddSample(1, 55, t1)
+	cs.aggregateMemoryPeaks.AddSample(10000000, 55, t1)
+	checkpoint, err := cs.SaveToCheckpoint()
+
+	assert.NoError(t, err)
+	assert.Equal(t, t1, checkpoint.FirstSampleStart.Time)
+	assert.Equal(t, t2, checkpoint.LastSampleStart.Time)
+	assert.Equal(t, 10, checkpoint.TotalSamplesCount)
+
+	assert.Equal(t, SupportedCheckpointVersion, checkpoint.Version)
+
+	// Basic check that serialization of histograms happened.
+	// Full tests are part of the Histogram.
+	assert.Len(t, checkpoint.CPUHistogram.BucketWeights, 1)
+	assert.Len(t, checkpoint.MemoryHistogram.BucketWeights, 2)
+}
+
+func TestAggregateContainerStateLoadFromCheckpointFailsForVersionMismatch(t *testing.T) {
+	checkpoint := vpa_types.VerticalPodAutoscalerCheckpointStatus{
+		Version: "foo",
+	}
+	cs := newAggregateContainerState()
+	err := cs.LoadFromCheckpoint(&checkpoint)
+	assert.Error(t, err)
+}
+
+func TestAggregateContainerStateLoadFromCheckpoint(t *testing.T) {
+	location, _ := time.LoadLocation("UTC")
+
+	t1, t2 := time.Date(2018, time.January, 1, 2, 3, 4, 0, location), time.Date(2018, time.February, 1, 2, 3, 4, 0, location)
+
+	checkpoint := vpa_types.VerticalPodAutoscalerCheckpointStatus{
+		Version:           SupportedCheckpointVersion,
+		FirstSampleStart:  metav1.NewTime(t1),
+		LastSampleStart:   metav1.NewTime(t2),
+		TotalSamplesCount: 20,
+		MemoryHistogram: vpa_types.HistogramCheckpoint{
+			BucketWeights: map[int]uint32{
+				0: 10,
+			},
+			TotalWeight: 33.0,
+		},
+		CPUHistogram: vpa_types.HistogramCheckpoint{
+			BucketWeights: map[int]uint32{
+				0: 10,
+			},
+			TotalWeight: 44.0,
+		},
+	}
+
+	cs := newAggregateContainerState()
+	err := cs.LoadFromCheckpoint(&checkpoint)
+	assert.NoError(t, err)
+
+	assert.Equal(t, t1, cs.firstSampleStart)
+	assert.Equal(t, t2, cs.lastSampleStart)
+	assert.Equal(t, 20, cs.totalSamplesCount)
+	assert.False(t, cs.aggregateCPUUsage.IsEmpty())
+	assert.False(t, cs.aggregateMemoryPeaks.IsEmpty())
 }
