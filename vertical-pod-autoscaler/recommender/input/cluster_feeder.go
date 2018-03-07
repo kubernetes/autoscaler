@@ -105,7 +105,7 @@ func (feeder *clusterStateFeeder) LoadHistory() {
 	}
 	for podID, podHistory := range clusterHistory {
 		glog.V(4).Infof("Adding pod %v with labels %v", podID, podHistory.LastLabels)
-		feeder.clusterState.AddOrUpdatePod(podID, podHistory.LastLabels)
+		feeder.clusterState.AddOrUpdatePod(podID, podHistory.LastLabels, apiv1.PodUnknown)
 		for containerName, sampleList := range podHistory.Samples {
 			containerID := model.ContainerID{
 				PodID:         podID,
@@ -170,7 +170,7 @@ func (feeder *clusterStateFeeder) LoadPods() {
 		}
 	}
 	for _, pod := range pods {
-		feeder.clusterState.AddOrUpdatePod(pod.ID, pod.PodLabels)
+		feeder.clusterState.AddOrUpdatePod(pod.ID, pod.PodLabels, pod.Phase)
 		for _, container := range pod.Containers {
 			feeder.clusterState.AddOrUpdateContainer(container.ID)
 		}

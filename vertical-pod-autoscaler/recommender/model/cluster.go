@@ -18,6 +18,7 @@ package model
 
 import (
 	"fmt"
+
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
@@ -50,6 +51,8 @@ type PodState struct {
 	// prevent such situation. In such case the pod is controlled by one of the
 	// matching VPAs.
 	MatchingVpas map[VpaID]*Vpa
+	// PodPhase describing current life cycle phase of the Pod.
+	Phase apiv1.PodPhase
 }
 
 // NewClusterState returns a new ClusterState with no pods.
@@ -72,7 +75,7 @@ type ContainerUsageSampleWithKey struct {
 // the Cluster object.
 // If the labels of the pod have changed, it updates the links between the pod
 // and the matching Vpa.
-func (cluster *ClusterState) AddOrUpdatePod(podID PodID, newLabels labels.Set) {
+func (cluster *ClusterState) AddOrUpdatePod(podID PodID, newLabels labels.Set, phase apiv1.PodPhase) {
 	pod, podExists := cluster.Pods[podID]
 	if !podExists {
 		pod = newPod(podID)
@@ -85,6 +88,7 @@ func (cluster *ClusterState) AddOrUpdatePod(podID PodID, newLabels labels.Set) {
 			vpa.UpdatePodLink(pod)
 		}
 	}
+	pod.Phase = phase
 }
 
 // GetContainer returns the ContainerState object for a given ContainerID or
