@@ -64,7 +64,7 @@ func NewUpdatePriorityCalculator(policy *vpa_types.PodResourcePolicy, config *Up
 }
 
 // AddPod adds pod to the UpdatePriorityCalculator.
-func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, recommendation *vpa_types.RecommendedPodResources) {
+func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, recommendation *vpa_types.RecommendedPodResources, now time.Time) {
 	updatePriority := calc.getUpdatePriority(pod, recommendation)
 
 	// The update is allowed in either of the following two cases:
@@ -76,7 +76,7 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, recommendation *vpa
 			glog.V(2).Infof("not updating pod %v, missing field pod.Status.StartTime", pod.Name)
 			return
 		}
-		if time.Now().Before(pod.Status.StartTime.Add(podLifetimeUpdateThreshold)) {
+		if now.Before(pod.Status.StartTime.Add(podLifetimeUpdateThreshold)) {
 			glog.V(2).Infof("not updating a short-lived pod %v, request within recommended range", pod.Name)
 			return
 		}

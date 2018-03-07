@@ -43,10 +43,11 @@ func TestSortPriority(t *testing.T) {
 
 	recommendation := test.Recommendation(containerName, "10", "")
 
-	calculator.AddPod(pod1, recommendation)
-	calculator.AddPod(pod2, recommendation)
-	calculator.AddPod(pod3, recommendation)
-	calculator.AddPod(pod4, recommendation)
+	timestampNow := pod1.Status.StartTime.Time.Add(time.Hour * 24)
+	calculator.AddPod(pod1, recommendation, timestampNow)
+	calculator.AddPod(pod2, recommendation, timestampNow)
+	calculator.AddPod(pod3, recommendation, timestampNow)
+	calculator.AddPod(pod4, recommendation, timestampNow)
 
 	result := calculator.GetSortedPods()
 	assert.Exactly(t, []*apiv1.Pod{pod3, pod1, pod4, pod2}, result, "Wrong priority order")
@@ -60,8 +61,9 @@ func TestSortPriorityMultiResource(t *testing.T) {
 
 	recommendation := test.Recommendation(containerName, "6", "100M")
 
-	calculator.AddPod(pod1, recommendation)
-	calculator.AddPod(pod2, recommendation)
+	timestampNow := pod1.Status.StartTime.Time.Add(time.Hour * 24)
+	calculator.AddPod(pod1, recommendation, timestampNow)
+	calculator.AddPod(pod2, recommendation, timestampNow)
 
 	result := calculator.GetSortedPods()
 	assert.Exactly(t, []*apiv1.Pod{pod1, pod2}, result, "Wrong priority order")
@@ -94,9 +96,10 @@ func TestSortPriorityMultiContainers(t *testing.T) {
 		Target: map[apiv1.ResourceName]resource.Quantity{apiv1.ResourceCPU: cpuRec, apiv1.ResourceMemory: memRec}}
 	recommendation.ContainerRecommendations = append(recommendation.ContainerRecommendations, container2rec)
 
+	timestampNow := pod1.Status.StartTime.Time.Add(time.Hour * 24)
 	calculator := NewUpdatePriorityCalculator(nil, nil)
-	calculator.AddPod(pod1, recommendation)
-	calculator.AddPod(pod2, recommendation)
+	calculator.AddPod(pod1, recommendation, timestampNow)
+	calculator.AddPod(pod2, recommendation, timestampNow)
 
 	// Expect pod1 to have resourceDiff=2.0 (100% change to CPU, 100% change to memory).
 	podPriority1 := calculator.getUpdatePriority(pod1, recommendation)
@@ -118,9 +121,10 @@ func TestSortPriorityResourcesDecrease(t *testing.T) {
 
 	recommendation := test.Recommendation(containerName, "5", "")
 
-	calculator.AddPod(pod1, recommendation)
-	calculator.AddPod(pod2, recommendation)
-	calculator.AddPod(pod3, recommendation)
+	timestampNow := pod1.Status.StartTime.Time.Add(time.Hour * 24)
+	calculator.AddPod(pod1, recommendation, timestampNow)
+	calculator.AddPod(pod2, recommendation, timestampNow)
+	calculator.AddPod(pod3, recommendation, timestampNow)
 
 	// Expect the following order:
 	// 1. pod1 - wants to grow by 1 unit.
@@ -137,7 +141,8 @@ func TestUpdateNotRequired(t *testing.T) {
 
 	recommendation := test.Recommendation(containerName, "4", "")
 
-	calculator.AddPod(pod1, recommendation)
+	timestampNow := pod1.Status.StartTime.Time.Add(time.Hour * 24)
+	calculator.AddPod(pod1, recommendation, timestampNow)
 
 	result := calculator.GetSortedPods()
 	assert.Exactly(t, []*apiv1.Pod{}, result, "Pod should not be updated")
@@ -150,7 +155,8 @@ func TestUpdateRequiredOnMilliQuantities(t *testing.T) {
 
 	recommendation := test.Recommendation(containerName, "900m", "")
 
-	calculator.AddPod(pod1, recommendation)
+	timestampNow := pod1.Status.StartTime.Time.Add(time.Hour * 24)
+	calculator.AddPod(pod1, recommendation, timestampNow)
 
 	result := calculator.GetSortedPods()
 	assert.Exactly(t, []*apiv1.Pod{pod1}, result, "Pod should be updated")
@@ -164,7 +170,8 @@ func TestUsePolicy(t *testing.T) {
 
 	recommendation := test.Recommendation(containerName, "5", "5M")
 
-	calculator.AddPod(pod1, recommendation)
+	timestampNow := pod1.Status.StartTime.Time.Add(time.Hour * 24)
+	calculator.AddPod(pod1, recommendation, timestampNow)
 
 	result := calculator.GetSortedPods()
 	assert.Exactly(t, []*apiv1.Pod{}, result, "Pod should not be updated")
@@ -189,9 +196,10 @@ func TestUpdateLonglivedPods(t *testing.T) {
 	test.AddMinRecommended(recommendation, "1", "")
 	test.AddMaxRecommended(recommendation, "6", "")
 
+	// Pretend that the test pods started 13 hours ago.
+	timestampNow := pods[0].Status.StartTime.Time.Add(time.Hour * 13)
 	for i := 0; i < 3; i++ {
-		pods[i].Status.StartTime.Time = time.Unix(0, 0) // The pods are long-lived.
-		calculator.AddPod(pods[i], recommendation)
+		calculator.AddPod(pods[i], recommendation, timestampNow)
 	}
 	result := calculator.GetSortedPods()
 	assert.Exactly(t, []*apiv1.Pod{pods[1], pods[2]}, result, "Exactly POD2 and POD3 should be updated")
@@ -215,8 +223,10 @@ func TestUpdateShortlivedPods(t *testing.T) {
 	test.AddMinRecommended(recommendation, "1", "")
 	test.AddMaxRecommended(recommendation, "6", "")
 
+	// Pretend that the test pods started 11 hours ago.
+	timestampNow := pods[0].Status.StartTime.Time.Add(time.Hour * 11)
 	for i := 0; i < 3; i++ {
-		calculator.AddPod(pods[i], recommendation)
+		calculator.AddPod(pods[i], recommendation, timestampNow)
 	}
 	result := calculator.GetSortedPods()
 	assert.Exactly(t, []*apiv1.Pod{pods[2]}, result, "Only POD3 should be updated")

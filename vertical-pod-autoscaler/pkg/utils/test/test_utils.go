@@ -19,6 +19,7 @@ package test
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/stretchr/testify/mock"
 	apiv1 "k8s.io/api/core/v1"
@@ -30,9 +31,14 @@ import (
 	v1 "k8s.io/client-go/listers/core/v1"
 )
 
+var (
+	TimeLayout       = "2006-01-02 15:04:05"
+	testTimestamp, _ = time.Parse(TimeLayout, "2017-04-18 17:35:05")
+)
+
 // BuildTestPod creates a pod with specified resources.
 func BuildTestPod(name, containerName, cpu, mem string, creatorObjectMeta *metav1.ObjectMeta, creatorTypeMeta *metav1.TypeMeta) *apiv1.Pod {
-	startTime := metav1.Now()
+	startTime := metav1.Time{testTimestamp}
 	pod := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "default",
