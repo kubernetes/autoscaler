@@ -7,6 +7,87 @@ Cluster Autoscaler is a tool that automatically adjusts the size of the Kubernet
 * some nodes in the cluster are so underutilized, for an extended period of time,
 that they can be deleted and their pods will be easily placed on some other, existing nodes.
 
+# QuickStart
+
+The current development branch is `cluster`.
+
+## Build:
+```bash
+cd cluster-autoscaler
+git checkout cluster
+make build-binary
+```
+Put the binary under your `DLworkspace/src/ClusterBootstrap` directory.
+
+## Run:
+```bash
+./cluster-autoscaler --v=5 --stderrthreshold=error --logtostderr=true --cloud-provider=aztools --skip-nodes-with-local-storage=false --nodes=1:10:dlws-worker-asg --leader-elect=false --scale-down-enabled=false --kubeconfig=./deploy/kubeconfig.yaml
+```
+## Note:
+
+`--nodes=1:10:dlws-worker-asg`: dlws-worker-asg is the cluster name of you deploo
+y, with 1 node as min, 10 nodes as max for scaling.
+
+`--scale-down-enabled` if you want to enable scale down (this is a dangerous option)
+
+`./deploy/kubeconfii
+g.yaml` should be present if you are using latest DLworkspace to deploy your cluu
+ster.
+
+## Test
+
+Create a test Deployment:
+
+```
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.7.9
+        ports:
+        - containerPort: 80
+        resources:
+         requests:
+           memory: 4Gi
+         limits:
+           memory: 4Gi
+```
+
+```
+kubectl create -f nginx-deployment.yaml
+```
+
+
+
+#### Create some pending pods:
+
+```bash
+kubectl scale --replicas=8 deploy/nginx-deployment
+```
+Check the scale up happen.
+
+#### Reduce the replicas:
+
+```
+kubectl scale --replicas=1 deploy/nginx-deployment
+```
+
+Check the scale down happen.
+
+
 # FAQ/Documentation
 
 Is available [HERE](./FAQ.md).
