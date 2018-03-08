@@ -32,8 +32,8 @@ import (
 )
 
 var (
-	TimeLayout       = "2006-01-02 15:04:05"
-	testTimestamp, _ = time.Parse(TimeLayout, "2017-04-18 17:35:05")
+	timeLayout       = "2006-01-02 15:04:05"
+	testTimestamp, _ = time.Parse(timeLayout, "2017-04-18 17:35:05")
 )
 
 // BuildTestPod creates a pod with specified resources.
@@ -100,20 +100,20 @@ func BuildTestContainer(containerName, cpu, mem string) apiv1.Container {
 }
 
 // BuildTestPolicy creates ResourcesPolicy with specified constraints
-func BuildTestPolicy(containerName, minCpu, maxCpu, minMemory, maxMemory string) *vpa_types.PodResourcePolicy {
-	minCpuVal, _ := resource.ParseQuantity(minCpu)
-	maxCpuVal, _ := resource.ParseQuantity(maxCpu)
+func BuildTestPolicy(containerName, minCPU, maxCPU, minMemory, maxMemory string) *vpa_types.PodResourcePolicy {
+	minCPUVal, _ := resource.ParseQuantity(minCPU)
+	maxCPUVal, _ := resource.ParseQuantity(maxCPU)
 	minMemVal, _ := resource.ParseQuantity(minMemory)
 	maxMemVal, _ := resource.ParseQuantity(maxMemory)
 	return &vpa_types.PodResourcePolicy{ContainerPolicies: []vpa_types.ContainerResourcePolicy{{
 		Name: containerName,
 		MinAllowed: apiv1.ResourceList{
 			apiv1.ResourceMemory: minMemVal,
-			apiv1.ResourceCPU:    minCpuVal,
+			apiv1.ResourceCPU:    minCPUVal,
 		},
 		MaxAllowed: apiv1.ResourceList{
 			apiv1.ResourceMemory: maxMemVal,
-			apiv1.ResourceCPU:    maxCpuVal,
+			apiv1.ResourceCPU:    maxCPUVal,
 		},
 	},
 	}}
@@ -121,14 +121,14 @@ func BuildTestPolicy(containerName, minCpu, maxCpu, minMemory, maxMemory string)
 
 // BuildTestVerticalPodAutoscaler creates VerticalPodAutoscaler with specified policy constraints.
 // TODO: Allow passing arbitrary MinRecommended and MaxRecommended values.
-func BuildTestVerticalPodAutoscaler(containerName, targetCpu, minCpu, maxCpu, targetMemory, minMemory, maxMemory string, selector string) *vpa_types.VerticalPodAutoscaler {
-	resourcesPolicy := BuildTestPolicy(containerName, minCpu, maxCpu, minMemory, maxMemory)
+func BuildTestVerticalPodAutoscaler(containerName, targetCPU, minCPU, maxCPU, targetMemory, minMemory, maxMemory string, selector string) *vpa_types.VerticalPodAutoscaler {
+	resourcesPolicy := BuildTestPolicy(containerName, minCPU, maxCPU, minMemory, maxMemory)
 
 	labelSelector, err := metav1.ParseToLabelSelector(selector)
 	if err != nil {
 		log.Fatal(err)
 	}
-	recommendedResources := Resources(targetCpu, targetMemory)
+	recommendedResources := Resources(targetCPU, targetMemory)
 
 	return &vpa_types.VerticalPodAutoscaler{
 		ObjectMeta: metav1.ObjectMeta{
