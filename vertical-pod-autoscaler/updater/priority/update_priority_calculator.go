@@ -129,6 +129,10 @@ func (calc *UpdatePriorityCalculator) getUpdatePriority(pod *apiv1.Pod, recommen
 					outsideRecommendedRange = true
 				}
 			} else {
+				// Note: if the request is not specified, the container will use the
+				// namespace default request. Currently we ignore it and treat such
+				// containers as if they had 0 request. A more correct approach would
+				// be to always calculate the 'effective' request.
 				scaleUp = true
 				outsideRecommendedRange = true
 			}
@@ -165,9 +169,14 @@ func (list byPriority) Len() int {
 func (list byPriority) Swap(i, j int) {
 	list[i], list[j] = list[j], list[i]
 }
+
+// Less implements reverse ordering by priority (highest priority first).
 func (list byPriority) Less(i, j int) bool {
-	// Reverse ordering, highest priority first.
 	// 1. If any container wants to grow, the pod takes precedence.
+	// TODO: A better policy would be to prioritize scaling down when
+	// (a) the pod is pending
+	// (b) there is general resource shortage
+	// and prioritize scaling up otherwise.
 	if list[i].scaleUp != list[j].scaleUp {
 		return list[i].scaleUp
 	}
