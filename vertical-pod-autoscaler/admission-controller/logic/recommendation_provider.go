@@ -50,7 +50,7 @@ func getRecomendedResources(pod *v1.Pod, podRecommendation vpa_types.Recommended
 			glog.V(2).Infof("%v", err)
 			continue
 		}
-		res[i] = recommendation
+		res[i] = recommendation.Target
 	}
 	return res
 }

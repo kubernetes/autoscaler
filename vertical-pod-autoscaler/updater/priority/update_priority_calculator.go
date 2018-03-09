@@ -19,17 +19,20 @@ package priority
 import (
 	"math"
 	"sort"
+	"time"
 
 	"github.com/golang/glog"
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
 const (
-	// ignore change priority that is smaller than 10%
-	defaultUpdateThreshod = 0.10
+	// Ignore change priority that is smaller than 10%.
+	defaultUpdateThreshold = 0.10
+	// Pods that live for at least that long can be evicted even if their
+	// request is within the [MinRecommended...MaxRecommended] range.
+	podLifetimeUpdateThreshold = time.Hour * 12
 )
 
 // UpdatePriorityCalculator is responsible for prioritizing updates on pods.
@@ -55,22 +58,35 @@ type UpdateConfig struct {
 // If the given config is nil, default values are used.
 func NewUpdatePriorityCalculator(policy *vpa_types.PodResourcePolicy, config *UpdateConfig) UpdatePriorityCalculator {
 	if config == nil {
-		config = &UpdateConfig{MinChangePriority: defaultUpdateThreshod}
+		config = &UpdateConfig{MinChangePriority: defaultUpdateThreshold}
 	}
 	return UpdatePriorityCalculator{resourcesPolicy: policy, config: config}
 }
 
 // AddPod adds pod to the UpdatePriorityCalculator.
-func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, recommendation *vpa_types.RecommendedPodResources) {
+func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, recommendation *vpa_types.RecommendedPodResources, now time.Time) {
 	updatePriority := calc.getUpdatePriority(pod, recommendation)
 
-	if updatePriority < calc.config.MinChangePriority {
-		glog.V(2).Infof("pod not accepted for update %v, priority too low: %v", pod.Name, updatePriority)
-		return
+	// The update is allowed in either of the following two cases:
+	// 1. the request is outside the recommended range for some container.
+	// 2. the pod lives for at least 24h and the resource diff is >= MinChangePriority.
+	if !updatePriority.outsideRecommendedRange {
+		if pod.Status.StartTime == nil {
+			// TODO: Set proper condition on the VPA.
+			glog.V(2).Infof("not updating pod %v, missing field pod.Status.StartTime", pod.Name)
+			return
+		}
+		if now.Before(pod.Status.StartTime.Add(podLifetimeUpdateThreshold)) {
+			glog.V(2).Infof("not updating a short-lived pod %v, request within recommended range", pod.Name)
+			return
+		}
+		if updatePriority.resourceDiff < calc.config.MinChangePriority {
+			glog.V(2).Infof("not updating pod %v, resource diff too low: %v", pod.Name, updatePriority)
+			return
+		}
 	}
-
-	glog.V(2).Infof("pod accepted for update %v with priority %v", pod.Name, updatePriority)
-	calc.pods = append(calc.pods, podPriority{pod, updatePriority})
+	glog.V(2).Infof("pod accepted for update %v with priority %v", pod.Name, updatePriority.resourceDiff)
+	calc.pods = append(calc.pods, updatePriority)
 }
 
 // GetSortedPods returns a list of pods ordered by update priority (highest update priority first)
@@ -85,8 +101,13 @@ func (calc *UpdatePriorityCalculator) GetSortedPods() []*apiv1.Pod {
 	return result
 }
 
-func (calc *UpdatePriorityCalculator) getUpdatePriority(pod *apiv1.Pod, recommendation *vpa_types.RecommendedPodResources) float64 {
-	var priority float64
+func (calc *UpdatePriorityCalculator) getUpdatePriority(pod *apiv1.Pod, recommendation *vpa_types.RecommendedPodResources) podPriority {
+	outsideRecommendedRange := false
+	scaleUp := false
+	// Sum of requests over all containers, per resource type.
+	totalRequestPerResource := make(map[apiv1.ResourceName]int64)
+	// Sum of recommendations over all containers, per resource type.
+	totalRecommendedPerResource := make(map[apiv1.ResourceName]int64)
 
 	for _, podContainer := range pod.Spec.Containers {
 		recommendedRequest, err := vpa_api_util.GetCappedRecommendationForContainer(podContainer, recommendation, calc.resourcesPolicy)
@@ -94,35 +115,52 @@ func (calc *UpdatePriorityCalculator) getUpdatePriority(pod *apiv1.Pod, recommen
 			glog.V(2).Infof("no recommendation for container %v in pod %v", podContainer.Name, pod.Name)
 			continue
 		}
-		for resourceName, recommended := range recommendedRequest {
-			var requested *resource.Quantity
-
-			if request, ok := podContainer.Resources.Requests[resourceName]; ok {
-				requested = &request
+		for resourceName, recommended := range recommendedRequest.Target {
+			totalRecommendedPerResource[resourceName] += recommended.MilliValue()
+			minRecommneded, hasMin := recommendedRequest.MinRecommended[resourceName]
+			maxRecommneded, hasMax := recommendedRequest.MaxRecommended[resourceName]
+			if request, hasRequest := podContainer.Resources.Requests[resourceName]; hasRequest {
+				totalRequestPerResource[resourceName] += request.MilliValue()
+				if recommended.MilliValue() > request.MilliValue() {
+					scaleUp = true
+				}
+				if (hasMin && request.MilliValue() < minRecommneded.MilliValue()) ||
+					(hasMax && request.MilliValue() > maxRecommneded.MilliValue()) {
+					outsideRecommendedRange = true
+				}
+			} else {
+				// Note: if the request is not specified, the container will use the
+				// namespace default request. Currently we ignore it and treat such
+				// containers as if they had 0 request. A more correct approach would
+				// be to always calculate the 'effective' request.
+				scaleUp = true
+				outsideRecommendedRange = true
 			}
-			resourceDiff := getPercentageDiff(requested, &recommended)
-			priority += math.Abs(resourceDiff)
 		}
 	}
-	return priority
-}
-
-func getPercentageDiff(request, recommendation *resource.Quantity) float64 {
-	if request == nil {
-		// resource requirement is not currently specified
-		// any recommendation for this resource we will treat as 100% change
-		return 1.0
+	resourceDiff := 0.0
+	for resource, totalRecommended := range totalRecommendedPerResource {
+		totalRequest := math.Max(float64(totalRequestPerResource[resource]), 1.0)
+		resourceDiff += math.Abs(totalRequest-float64(totalRecommended)) / totalRequest
 	}
-	if recommendation == nil || recommendation.IsZero() {
-		return 0
+	return podPriority{
+		pod: pod,
+		outsideRecommendedRange: outsideRecommendedRange,
+		scaleUp:                 scaleUp,
+		resourceDiff:            resourceDiff,
 	}
-	return float64(recommendation.MilliValue()-request.MilliValue()) / float64(request.MilliValue())
 }
 
 type podPriority struct {
-	pod      *apiv1.Pod
-	priority float64
+	pod *apiv1.Pod
+	// Is any container outside of the recommended range.
+	outsideRecommendedRange bool
+	// Does any container want to grow.
+	scaleUp bool
+	// Relative difference between the total requested and total recommended resources.
+	resourceDiff float64
 }
+
 type byPriority []podPriority
 
 func (list byPriority) Len() int {
@@ -131,7 +169,17 @@ func (list byPriority) Len() int {
 func (list byPriority) Swap(i, j int) {
 	list[i], list[j] = list[j], list[i]
 }
+
+// Less implements reverse ordering by priority (highest priority first).
 func (list byPriority) Less(i, j int) bool {
-	// reverse ordering, highest priority first
-	return list[i].priority > list[j].priority
+	// 1. If any container wants to grow, the pod takes precedence.
+	// TODO: A better policy would be to prioritize scaling down when
+	// (a) the pod is pending
+	// (b) there is general resource shortage
+	// and prioritize scaling up otherwise.
+	if list[i].scaleUp != list[j].scaleUp {
+		return list[i].scaleUp
+	}
+	// 2. A pod with larger value of resourceDiff takes precedence.
+	return list[i].resourceDiff > list[j].resourceDiff
 }

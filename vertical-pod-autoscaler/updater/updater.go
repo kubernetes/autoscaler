@@ -117,7 +117,7 @@ func (u *updater) getPodsForUpdate(pods []*apiv1.Pod, vpa *vpa_types.VerticalPod
 	recommendation := vpa.Status.Recommendation
 
 	for _, pod := range pods {
-		priorityCalculator.AddPod(pod, &recommendation)
+		priorityCalculator.AddPod(pod, &recommendation, time.Now())
 	}
 
 	return priorityCalculator.GetSortedPods()
