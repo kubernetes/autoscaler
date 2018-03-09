@@ -69,10 +69,10 @@ func TestRecommendationChosenForProperContainer(t *testing.T) {
 
 	res, err := GetCappedRecommendationForContainer(container, &podRecommendation, &policy)
 	assert.Nil(t, err)
-	assert.Equal(t, res, apiv1.ResourceList{
+	assert.Equal(t, apiv1.ResourceList{
 		apiv1.ResourceCPU:    *resource.NewScaledQuantity(10, 1),
 		apiv1.ResourceMemory: *resource.NewScaledQuantity(5000, 1),
-	})
+	}, res.Target)
 }
 
 func TestRecommendationCappedToLimit(t *testing.T) {
@@ -93,6 +93,10 @@ func TestRecommendationCappedToLimit(t *testing.T) {
 					apiv1.ResourceCPU:    *resource.NewScaledQuantity(10, 1),
 					apiv1.ResourceMemory: *resource.NewScaledQuantity(5000, 1),
 				},
+				MaxRecommended: apiv1.ResourceList{
+					apiv1.ResourceCPU:    *resource.NewScaledQuantity(2, 1),
+					apiv1.ResourceMemory: *resource.NewScaledQuantity(9000, 1),
+				},
 			},
 		},
 	}
@@ -100,10 +104,14 @@ func TestRecommendationCappedToLimit(t *testing.T) {
 
 	res, err := GetCappedRecommendationForContainer(container, &podRecommendation, &policy)
 	assert.Nil(t, err)
-	assert.Equal(t, res, apiv1.ResourceList{
+	assert.Equal(t, apiv1.ResourceList{
 		apiv1.ResourceCPU:    *resource.NewScaledQuantity(3, 1),
 		apiv1.ResourceMemory: *resource.NewScaledQuantity(5000, 1),
-	})
+	}, res.Target)
+	assert.Equal(t, apiv1.ResourceList{
+		apiv1.ResourceCPU:    *resource.NewScaledQuantity(2, 1),
+		apiv1.ResourceMemory: *resource.NewScaledQuantity(7000, 1),
+	}, res.MaxRecommended)
 }
 
 func TestRecommendationCappedToMinMaxPolicy(t *testing.T) {
@@ -115,6 +123,10 @@ func TestRecommendationCappedToMinMaxPolicy(t *testing.T) {
 				Target: apiv1.ResourceList{
 					apiv1.ResourceCPU:    *resource.NewScaledQuantity(10, 1),
 					apiv1.ResourceMemory: *resource.NewScaledQuantity(5000, 1),
+				},
+				MinRecommended: apiv1.ResourceList{
+					apiv1.ResourceCPU:    *resource.NewScaledQuantity(50, 1),
+					apiv1.ResourceMemory: *resource.NewScaledQuantity(4300, 1),
 				},
 			},
 		},
@@ -137,8 +149,12 @@ func TestRecommendationCappedToMinMaxPolicy(t *testing.T) {
 
 	res, err := GetCappedRecommendationForContainer(container, &podRecommendation, &policy)
 	assert.Nil(t, err)
-	assert.Equal(t, res, apiv1.ResourceList{
+	assert.Equal(t, apiv1.ResourceList{
 		apiv1.ResourceCPU:    *resource.NewScaledQuantity(40, 1),
 		apiv1.ResourceMemory: *resource.NewScaledQuantity(4500, 1),
-	})
+	}, res.Target)
+	assert.Equal(t, apiv1.ResourceList{
+		apiv1.ResourceCPU:    *resource.NewScaledQuantity(45, 1),
+		apiv1.ResourceMemory: *resource.NewScaledQuantity(4300, 1),
+	}, res.MinRecommended)
 }

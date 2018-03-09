@@ -27,47 +27,53 @@ import (
 func GetCappedRecommendationForContainer(
 	container apiv1.Container,
 	podRecommendation *vpa_types.RecommendedPodResources,
-	policy *vpa_types.PodResourcePolicy) (apiv1.ResourceList, error) {
+	policy *vpa_types.PodResourcePolicy) (*vpa_types.RecommendedContainerResources, error) {
 	containerRecommendation := getRecommendationForContainer(podRecommendation, container)
 	if containerRecommendation == nil {
 		return nil, fmt.Errorf("no recommendation available for container name %v", container.Name)
 	}
 	// containerPolicy can be nil (user does not have to configure it).
 	containerPolicy := getContainerPolicy(container.Name, policy)
-	applyVPAPolicy(containerRecommendation, containerPolicy)
-	// TODO: If limits and policy are conflicting, set some condition on the VPA.
-	capRecommendationToContainerLimit(containerRecommendation, container)
-	res := make(apiv1.ResourceList)
-	for resource, recommended := range containerRecommendation.Target {
-		res[resource] = recommended
+
+	cappedRecommendations := containerRecommendation.DeepCopy()
+	cappedRecommendationsList := []apiv1.ResourceList{
+		cappedRecommendations.Target,
+		cappedRecommendations.MinRecommended,
+		cappedRecommendations.MaxRecommended,
 	}
-	return res, nil
+
+	for _, cappedRecommendation := range cappedRecommendationsList {
+		applyVPAPolicy(cappedRecommendation, containerPolicy)
+		// TODO: If limits and policy are conflicting, set some condition on the VPA.
+		capRecommendationToContainerLimit(cappedRecommendation, container)
+	}
+	return cappedRecommendations, nil
 }
 
 // capRecommendationToContainerLimit makes sure recommendation is not above current limit for the container.
-func capRecommendationToContainerLimit(recommendation *vpa_types.RecommendedContainerResources, container apiv1.Container) {
+func capRecommendationToContainerLimit(recommendation apiv1.ResourceList, container apiv1.Container) {
 	// Iterate over limits set in the container. Unset means Infinite limit.
 	for resourceName, limit := range container.Resources.Limits {
-		target, found := recommendation.Target[resourceName]
-		if found && target.MilliValue() > limit.MilliValue() {
-			recommendation.Target[resourceName] = limit
+		recommendedValue, found := recommendation[resourceName]
+		if found && recommendedValue.MilliValue() > limit.MilliValue() {
+			recommendation[resourceName] = limit
 		}
 	}
 }
 
 // applyVPAPolicy updates recommendation if recommended resources are outside of limits defined in VPA resources policy
-func applyVPAPolicy(recommendation *vpa_types.RecommendedContainerResources, policy *vpa_types.ContainerResourcePolicy) {
+func applyVPAPolicy(recommendation apiv1.ResourceList, policy *vpa_types.ContainerResourcePolicy) {
 	if policy == nil {
 		return
 	}
-	for resourceName, recommended := range recommendation.Target {
+	for resourceName, recommended := range recommendation {
 		min, found := policy.MinAllowed[resourceName]
 		if found && !min.IsZero() && recommended.MilliValue() < min.MilliValue() {
-			recommendation.Target[resourceName] = min
+			recommendation[resourceName] = min
 		}
 		max, found := policy.MaxAllowed[resourceName]
 		if found && !max.IsZero() && recommended.MilliValue() > max.MilliValue() {
-			recommendation.Target[resourceName] = max
+			recommendation[resourceName] = max
 		}
 	}
 }
