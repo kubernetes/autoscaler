@@ -152,7 +152,7 @@ type gceManagerImpl struct {
 	mode                  GcpCloudProviderMode
 	templates             *templateBuilder
 	interrupt             chan struct{}
-	isRegional            bool
+	regional              bool
 	explicitlyConfigured  map[GceRef]bool
 	migAutoDiscoverySpecs []cloudprovider.MIGAutoDiscoveryConfig
 	resourceLimiter       *cloudprovider.ResourceLimiter
@@ -160,7 +160,7 @@ type gceManagerImpl struct {
 }
 
 // CreateGceManager constructs gceManager object.
-func CreateGceManager(configReader io.Reader, mode GcpCloudProviderMode, clusterName string, discoveryOpts cloudprovider.NodeGroupDiscoveryOptions) (GceManager, error) {
+func CreateGceManager(configReader io.Reader, mode GcpCloudProviderMode, clusterName string, discoveryOpts cloudprovider.NodeGroupDiscoveryOptions, regional bool) (GceManager, error) {
 	// Create Google Compute Engine token.
 	var err error
 	tokenSource := google.ComputeTokenSource("")
@@ -171,7 +171,6 @@ func CreateGceManager(configReader io.Reader, mode GcpCloudProviderMode, cluster
 		}
 	}
 	var projectId, location string
-	var isRegional bool
 	if configReader != nil {
 		var cfg provider_gce.ConfigFile
 		if err := gcfg.ReadInto(&cfg, configReader); err != nil {
@@ -185,7 +184,6 @@ func CreateGceManager(configReader io.Reader, mode GcpCloudProviderMode, cluster
 			glog.V(1).Infof("Using TokenSource from config %#v", tokenSource)
 		}
 		projectId = cfg.Global.ProjectID
-		isRegional = cfg.Global.Multizone
 		location = cfg.Global.LocalZone
 	} else {
 		glog.V(1).Infof("Using default TokenSource %#v", tokenSource)
@@ -196,7 +194,7 @@ func CreateGceManager(configReader io.Reader, mode GcpCloudProviderMode, cluster
 		// be specified in config. For now we can just assume that hosted
 		// master project is in the same zone as cluster and only use
 		// discoveredZone.
-		discoveredProjectId, discoveredLocation, err := getProjectAndLocation(isRegional)
+		discoveredProjectId, discoveredLocation, err := getProjectAndLocation(regional)
 		if err != nil {
 			return nil, err
 		}
@@ -220,7 +218,7 @@ func CreateGceManager(configReader io.Reader, mode GcpCloudProviderMode, cluster
 		gceService:  gceService,
 		migCache:    make(map[GceRef]*Mig),
 		location:    location,
-		isRegional:  isRegional,
+		regional:    regional,
 		projectId:   projectId,
 		clusterName: clusterName,
 		mode:        mode,
@@ -250,7 +248,7 @@ func CreateGceManager(configReader io.Reader, mode GcpCloudProviderMode, cluster
 			gkeService.BasePath = *gkeAPIEndpoint
 		}
 		manager.gkeService = gkeService
-		if manager.isRegional {
+		if manager.regional {
 			gkeBetaService, err := gke_beta.New(client)
 			if err != nil {
 				return nil, err
@@ -319,7 +317,7 @@ func (m *gceManagerImpl) fetchAllNodePools() error {
 	if m.mode == ModeGKENAP {
 		return m.fetchAllNodePoolsGkeNapImpl()
 	}
-	if m.isRegional {
+	if m.regional {
 		return m.fetchAllNodePoolsGkeRegionalImpl()
 	}
 	return m.fetchAllNodePoolsGkeImpl()
@@ -1051,7 +1049,7 @@ func (m *gceManagerImpl) GetResourceLimiter() (*cloudprovider.ResourceLimiter, e
 }
 
 // Code borrowed from gce cloud provider. Reuse the original as soon as it becomes public.
-func getProjectAndLocation(isRegional bool) (string, string, error) {
+func getProjectAndLocation(regional bool) (string, string, error) {
 	result, err := metadata.Get("instance/zone")
 	if err != nil {
 		return "", "", err
@@ -1061,7 +1059,7 @@ func getProjectAndLocation(isRegional bool) (string, string, error) {
 		return "", "", fmt.Errorf("unexpected response: %s", result)
 	}
 	location := parts[3]
-	if isRegional {
+	if regional {
 		location, err = provider_gce.GetGCERegion(location)
 		if err != nil {
 			return "", "", err
@@ -1075,7 +1073,7 @@ func getProjectAndLocation(isRegional bool) (string, string, error) {
 }
 
 func (m *gceManagerImpl) findMigsNamed(name *regexp.Regexp) ([]string, error) {
-	if m.isRegional {
+	if m.regional {
 		return m.findMigsInRegion(m.location, name)
 	}
 	return m.findMigsInZone(m.location, name)
