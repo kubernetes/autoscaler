@@ -131,6 +131,7 @@ var (
 	maxAutoprovisionedNodeGroupCount = flag.Int("max-autoprovisioned-node-group-count", 15, "The maximum number of autoprovisioned groups in the cluster.")
 
 	expendablePodsPriorityCutoff = flag.Int("expendable-pods-priority-cutoff", 0, "Pods with priority below cutoff will be expendable. They can be killed without any consideration during scale down and they don't cause scale up. Pods with null priority (PodPriority disabled) are non expendable.")
+	regional                     = flag.Bool("regional", false, "Cluster is regional.")
 )
 
 func createAutoscalerOptions() core.AutoscalerOptions {
@@ -180,6 +181,7 @@ func createAutoscalerOptions() core.AutoscalerOptions {
 		NodeAutoprovisioningEnabled:      *nodeAutoprovisioningEnabled,
 		MaxAutoprovisionedNodeGroupCount: *maxAutoprovisionedNodeGroupCount,
 		ExpendablePodsPriorityCutoff:     *expendablePodsPriorityCutoff,
+		Regional:                         *regional,
 	}
 
 	configFetcherOpts := dynamic.ConfigFetcherOptions{

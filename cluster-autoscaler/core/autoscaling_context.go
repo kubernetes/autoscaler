@@ -132,6 +132,8 @@ type AutoscalingOptions struct {
 	// Pods with priority below cutoff are expendable. They can be killed without any consideration during scale down and they don't cause scale up.
 	// Pods with null priority (PodPriority disabled) are non expendable.
 	ExpendablePodsPriorityCutoff int
+	// Regional tells whether the cluster is regional.
+	Regional bool
 }
 
 // NewAutoscalingContext returns an autoscaling context from all the necessary parameters passed via arguments
@@ -139,7 +141,7 @@ func NewAutoscalingContext(options AutoscalingOptions, predicateChecker *simulat
 	kubeClient kube_client.Interface, kubeEventRecorder kube_record.EventRecorder,
 	logEventRecorder *utils.LogEventRecorder, listerRegistry kube_util.ListerRegistry) (*AutoscalingContext, errors.AutoscalerError) {
 
-	cloudProviderBuilder := builder.NewCloudProviderBuilder(options.CloudProviderName, options.CloudConfig, options.ClusterName, options.NodeAutoprovisioningEnabled)
+	cloudProviderBuilder := builder.NewCloudProviderBuilder(options.CloudProviderName, options.CloudConfig, options.ClusterName, options.NodeAutoprovisioningEnabled, options.Regional)
 	cloudProvider := cloudProviderBuilder.Build(cloudprovider.NodeGroupDiscoveryOptions{
 		NodeGroupSpecs:              options.NodeGroups,
 		NodeGroupAutoDiscoverySpecs: options.NodeGroupAutoDiscovery},
