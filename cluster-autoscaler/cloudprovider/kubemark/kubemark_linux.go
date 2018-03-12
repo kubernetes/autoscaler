@@ -209,7 +209,7 @@ func (nodeGroup *NodeGroup) IncreaseSize(delta int) error {
 }
 
 // TargetSize returns the current TARGET size of the node group. It is possible that the
-// number is different from the number of nodes registered in Kuberentes.
+// number is different from the number of nodes registered in Kubernetes.
 func (nodeGroup *NodeGroup) TargetSize() (int, error) {
 	size, err := nodeGroup.kubemarkController.GetNodeGroupTargetSize(nodeGroup.Name)
 	return int(size), err
