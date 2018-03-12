@@ -526,7 +526,7 @@ func getManagedInstancesResponse2Named(name, zone string) string {
 	return fmt.Sprintf(managedInstancesResponse2, zone, name)
 }
 
-func newTestGceManager(t *testing.T, testServerURL string, mode GcpCloudProviderMode, isRegional bool) *gceManagerImpl {
+func newTestGceManager(t *testing.T, testServerURL string, mode GcpCloudProviderMode, regional bool) *gceManagerImpl {
 	client := &http.Client{}
 	gceService, err := gce.New(client)
 	assert.NoError(t, err)
@@ -538,7 +538,7 @@ func newTestGceManager(t *testing.T, testServerURL string, mode GcpCloudProvider
 		projectId:   projectId,
 		clusterName: clusterName,
 		mode:        mode,
-		isRegional:  isRegional,
+		regional:    regional,
 		templates: &templateBuilder{
 			projectId: projectId,
 			service:   gceService,
@@ -546,7 +546,7 @@ func newTestGceManager(t *testing.T, testServerURL string, mode GcpCloudProvider
 		explicitlyConfigured: make(map[GceRef]bool),
 	}
 
-	if isRegional {
+	if regional {
 		manager.location = region
 	} else {
 		manager.location = zoneB
@@ -557,7 +557,7 @@ func newTestGceManager(t *testing.T, testServerURL string, mode GcpCloudProvider
 		assert.NoError(t, err)
 		gkeService.BasePath = testServerURL
 		manager.gkeService = gkeService
-		if isRegional {
+		if regional {
 			gkeService, err := gke_beta.New(client)
 			assert.NoError(t, err)
 			gkeService.BasePath = testServerURL
