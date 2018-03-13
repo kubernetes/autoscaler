@@ -28,7 +28,7 @@ type AutoscalerError interface {
 	// Error implements golang error interface
 	Error() string
 
-	// Type returns the typ of AutoscalerError
+	// Type returns the type of AutoscalerError
 	Type() AutoscalerErrorType
 
 	// AddPrefix adds a prefix to error message.
@@ -79,7 +79,7 @@ func (e autoscalerErrorImpl) Error() string {
 	return e.msg
 }
 
-// Type returns the typ of AutoscalerError
+// Type returns the type of AutoscalerError
 func (e autoscalerErrorImpl) Type() AutoscalerErrorType {
 	return e.errorType
 }
