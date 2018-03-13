@@ -296,27 +296,97 @@ func TestBuildAllocatableFromCapacity(t *testing.T) {
 	}
 }
 
-func TestExtractLabelsFromKubeEnv(t *testing.T) {
-	kubeenv := "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
-		"NODE_LABELS: a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true\n" +
-		"DNS_SERVER_IP: '10.0.0.10'\n"
+func TestExtractAutoscalerVarFromKubeEnv(t *testing.T) {
+	cases := []struct {
+		desc   string
+		name   string
+		env    string
+		expect []string
+		err    error
+	}{
+		{
+			desc:   "node_labels",
+			name:   "node_labels",
+			env:    "AUTOSCALER_ENV_VARS: node_labels=a=b,c=d;node_taints=a=b:c,d=e:f\n",
+			expect: []string{"a=b,c=d"},
+		},
+		{
+			desc:   "node_taints",
+			name:   "node_taints",
+			env:    "AUTOSCALER_ENV_VARS: node_labels=a=b,c=d;node_taints=a=b:c,d=e:f\n",
+			expect: []string{"a=b:c,d=e:f"},
+		},
+		{
+			desc: "malformed node_labels",
+			name: "node_labels",
+			env:  "AUTOSCALER_ENV_VARS: node_labels;node_taints=a=b:c,d=e:f\n",
+			err:  fmt.Errorf("malformed autoscaler var: node_labels"),
+		},
+	}
+	for _, c := range cases {
+		t.Run(c.desc, func(t *testing.T) {
+			vals, err := extractAutoscalerVarFromKubeEnv(c.env, c.name)
+			assert.Equal(t, c.err, err)
+			if err != nil {
+				return
+			}
+			assert.Equal(t, c.expect, vals)
+		})
+	}
+}
 
-	labels, err := extractLabelsFromKubeEnv(kubeenv)
-	assert.Nil(t, err)
-	assert.Equal(t, 4, len(labels))
-	assert.Equal(t, "b", labels["a"])
-	assert.Equal(t, "d", labels["c"])
-	assert.Equal(t, "pool-3", labels["cloud.google.com/gke-nodepool"])
-	assert.Equal(t, "true", labels["cloud.google.com/gke-preemptible"])
+func TestExtractLabelsFromKubeEnv(t *testing.T) {
+	expectedLabels := map[string]string{
+		"a": "b",
+		"c": "d",
+		"cloud.google.com/gke-nodepool":    "pool-3",
+		"cloud.google.com/gke-preemptible": "true",
+	}
+	cases := []struct {
+		desc   string
+		env    string
+		expect map[string]string
+		err    error
+	}{
+		{
+			desc: "from NODE_LABELS",
+			env: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
+				"NODE_LABELS: a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true\n" +
+				"DNS_SERVER_IP: '10.0.0.10'\n",
+			expect: expectedLabels,
+			err:    nil,
+		},
+		{
+			desc: "from AUTOSCALER_ENV_VARS.node_labels",
+			env: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
+				"AUTOSCALER_ENV_VARS: node_labels=a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true;" +
+				"node_taints='dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c';" +
+				"kube_reserved=cpu=1000m,memory=300000Mi\n" +
+				"DNS_SERVER_IP: '10.0.0.10'\n",
+			expect: expectedLabels,
+			err:    nil,
+		},
+		{
+			desc: "malformed key-value in AUTOSCALER_ENV_VARS.node_labels",
+			env:  "AUTOSCALER_ENV_VARS: node_labels=ab,c=d\n",
+			err:  fmt.Errorf("error while parsing key-value list, val: ab"),
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.desc, func(t *testing.T) {
+			labels, err := extractLabelsFromKubeEnv(c.env)
+			assert.Equal(t, c.err, err)
+			if c.err != nil {
+				return
+			}
+			assert.Equal(t, c.expect, labels)
+		})
+	}
 }
 
 func TestExtractTaintsFromKubeEnv(t *testing.T) {
-	kubeenv := "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
-		"NODE_LABELS: a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true\n" +
-		"DNS_SERVER_IP: '10.0.0.10'\n" +
-		"NODE_TAINTS: 'dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c'\n"
-
-	expectedTaints := []apiv1.Taint{
+	expectedTaints := makeTaintSet([]apiv1.Taint{
 		{
 			Key:    "dedicated",
 			Value:  "ml",
@@ -332,12 +402,56 @@ func TestExtractTaintsFromKubeEnv(t *testing.T) {
 			Value:  "b",
 			Effect: apiv1.TaintEffect("c"),
 		},
+	})
+
+	cases := []struct {
+		desc   string
+		env    string
+		expect map[apiv1.Taint]bool
+		err    error
+	}{
+		{
+			desc: "from NODE_TAINTS",
+			env: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
+				"NODE_LABELS: a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true\n" +
+				"DNS_SERVER_IP: '10.0.0.10'\n" +
+				"NODE_TAINTS: 'dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c'\n",
+			expect: expectedTaints,
+		},
+		{
+			desc: "from AUTOSCALER_ENV_VARS.node_taints",
+			env: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
+				"DNS_SERVER_IP: '10.0.0.10'\n" +
+				"AUTOSCALER_ENV_VARS: node_labels=a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true;" +
+				"node_taints='dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c';" +
+				"kube_reserved=cpu=1000m,memory=300000Mi\n",
+			expect: expectedTaints,
+		},
+		{
+			desc: "from empty AUTOSCALER_ENV_VARS.node_taints",
+			env: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
+				"DNS_SERVER_IP: '10.0.0.10'\n" +
+				"AUTOSCALER_ENV_VARS: node_labels=a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true;" +
+				"node_taints=\n",
+			expect: makeTaintSet([]apiv1.Taint{}),
+		},
+		{
+			desc: "malformed key-value in AUTOSCALER_ENV_VARS.node_taints",
+			env:  "AUTOSCALER_ENV_VARS: node_taints='dedicatedml:NoSchedule,test=dev:PreferNoSchedule,a=b:c'\n",
+			err:  fmt.Errorf("error while parsing key-value list, val: dedicatedml:NoSchedule"),
+		},
 	}
 
-	taints, err := extractTaintsFromKubeEnv(kubeenv)
-	assert.Nil(t, err)
-	assert.Equal(t, 3, len(taints))
-	assert.Equal(t, makeTaintSet(expectedTaints), makeTaintSet(taints))
+	for _, c := range cases {
+		t.Run(c.desc, func(t *testing.T) {
+			taints, err := extractTaintsFromKubeEnv(c.env)
+			assert.Equal(t, c.err, err)
+			if c.err != nil {
+				return
+			}
+			assert.Equal(t, c.expect, makeTaintSet(taints))
+		})
+	}
 
 }
 
@@ -348,29 +462,44 @@ func TestExtractKubeReservedFromKubeEnv(t *testing.T) {
 		expectedErr      bool
 	}
 
-	testCases := []testCase{{
-		kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
-			"NODE_LABELS: a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true\n" +
-			"DNS_SERVER_IP: '10.0.0.10'\n" +
-			"KUBELET_TEST_ARGS: --experimental-allocatable-ignore-eviction --kube-reserved=cpu=1000m,memory=300000Mi\n" +
-			"NODE_TAINTS: 'dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c'\n",
-		expectedReserved: "cpu=1000m,memory=300000Mi",
-		expectedErr:      false,
-	}, {
-		kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
-			"NODE_LABELS: a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true\n" +
-			"DNS_SERVER_IP: '10.0.0.10'\n" +
-			"KUBELET_TEST_ARGS: --experimental-allocatable-ignore-eviction\n" +
-			"NODE_TAINTS: 'dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c'\n",
-		expectedReserved: "",
-		expectedErr:      true,
-	}, {
-		kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
-			"NODE_LABELS: a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true\n" +
-			"DNS_SERVER_IP: '10.0.0.10'\n" +
-			"NODE_TAINTS: 'dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c'\n",
-		expectedReserved: "",
-		expectedErr:      true}}
+	testCases := []testCase{
+		{
+			kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
+				"NODE_LABELS: a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true\n" +
+				"DNS_SERVER_IP: '10.0.0.10'\n" +
+				"KUBELET_TEST_ARGS: --experimental-allocatable-ignore-eviction --kube-reserved=cpu=1000m,memory=300000Mi\n" +
+				"NODE_TAINTS: 'dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c'\n",
+			expectedReserved: "cpu=1000m,memory=300000Mi",
+			expectedErr:      false,
+		},
+		{
+			kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
+				"DNS_SERVER_IP: '10.0.0.10'\n" +
+				"AUTOSCALER_ENV_VARS: node_labels=a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true;" +
+				"node_taints='dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c';" +
+				"kube_reserved=cpu=1000m,memory=300000Mi\n" +
+				"KUBELET_TEST_ARGS: --experimental-allocatable-ignore-eviction\n",
+			expectedReserved: "cpu=1000m,memory=300000Mi",
+			expectedErr:      false,
+		},
+		{
+			kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
+				"NODE_LABELS: a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true\n" +
+				"DNS_SERVER_IP: '10.0.0.10'\n" +
+				"KUBELET_TEST_ARGS: --experimental-allocatable-ignore-eviction\n" +
+				"NODE_TAINTS: 'dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c'\n",
+			expectedReserved: "",
+			expectedErr:      true,
+		},
+		{
+			kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
+				"NODE_LABELS: a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true\n" +
+				"DNS_SERVER_IP: '10.0.0.10'\n" +
+				"NODE_TAINTS: 'dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c'\n",
+			expectedReserved: "",
+			expectedErr:      true,
+		},
+	}
 
 	for _, tc := range testCases {
 		reserved, err := extractKubeReservedFromKubeEnv(tc.kubeEnv)
