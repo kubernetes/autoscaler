@@ -45,14 +45,14 @@ type LogEventRecorder struct {
 	active       bool
 }
 
-// Event record an event on underlying object. This does nothing if the underlying object is not set.
+// Event records an event on underlying object. This does nothing if the underlying object is not set.
 func (ler *LogEventRecorder) Event(eventtype, reason, message string) {
 	if ler.active && ler.statusObject != nil {
 		ler.recorder.Event(ler.statusObject, eventtype, reason, message)
 	}
 }
 
-// Eventf record an event on underlying object. This does nothing if the underlying object is not set.
+// Eventf records an event on underlying object. This does nothing if the underlying object is not set.
 func (ler *LogEventRecorder) Eventf(eventtype, reason, message string, args ...interface{}) {
 	if ler.active && ler.statusObject != nil {
 		ler.recorder.Eventf(ler.statusObject, eventtype, reason, message, args...)
