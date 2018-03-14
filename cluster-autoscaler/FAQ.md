@@ -656,13 +656,13 @@ Depending on how long scale-ups have been failing, it may wait up to 30 minutes 
     export KUBE_AUTOSCALER_ENABLE_SCALE_DOWN=true
     ```
     This is the minimum number of nodes required for all e2e tests to pass. The tests should also pass if you set higher maximum nodes limit.
-3. Run `go run hack/e2e.go -- -v --up` to bring up your cluster.
+3. Run `go run hack/e2e.go -- --verbose-commands --up` to bring up your cluster.
 4. SSH to the master node and edit `/etc/kubernetes/manifests/cluster-autoscaler.manifest` (you will need sudo for this).
     * If you want to test your custom changes set `image` to point at your own CA image.
     * Make sure `--scale-down-enabled` parameter in `command` is set to `true`.
 5. Run CA tests with:
     ```sh
-    go run hack/e2e.go -- -v --test --test_args="--ginkgo.focus=\[Feature:ClusterSizeAutoscaling"
+    go run hack/e2e.go -- --verbose-commands --test --test_args="--ginkgo.focus=\[Feature:ClusterSizeAutoscaling"
     ```
     It will take >1 hour to run the full suite. You may want to redirect output to file, as there will be plenty of it.
 
