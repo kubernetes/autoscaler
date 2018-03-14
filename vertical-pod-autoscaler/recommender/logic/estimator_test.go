@@ -48,9 +48,9 @@ func TestPercentileEstimator(t *testing.T) {
 	estimator := NewPercentileEstimator(CPUPercentile, MemoryPercentile)
 
 	resourceEstimation := estimator.GetResourceEstimation(
-		&AggregateContainerState{
-			aggregateCPUUsage:    cpuHistogram,
-			aggregateMemoryPeaks: memoryPeaksHistogram,
+		&model.AggregateContainerState{
+			AggregateCPUUsage:    cpuHistogram,
+			AggregateMemoryPeaks: memoryPeaksHistogram,
 		})
 
 	assert.InEpsilon(t, 1000, int(resourceEstimation[model.ResourceCPU]), model.HistogramRelativeError)
@@ -76,8 +76,8 @@ func TestConfidenceMultiplierEstimator(t *testing.T) {
 			timestamp, model.CPUAmountFromCores(1.0), model.ResourceCPU})
 		timestamp = timestamp.Add(time.Minute * 2)
 	}
-	s := newAggregateContainerState()
-	s.mergeContainerState(container)
+	s := model.NewAggregateContainerState()
+	s.MergeContainerState(container, model.MergeForRecommendation, time.Unix(0, 0))
 
 	// Expected confidence = 9/(60*24) = 0.00625.
 	assert.Equal(t, 0.00625, getConfidence(s))
@@ -97,7 +97,7 @@ func TestConfidenceMultiplierEstimatorNoHistory(t *testing.T) {
 	})
 	testedEstimator1 := &confidenceMultiplierEstimator{1.0, baseEstimator}
 	testedEstimator2 := &confidenceMultiplierEstimator{-1.0, baseEstimator}
-	s := newAggregateContainerState()
+	s := model.NewAggregateContainerState()
 	// Expect testedEstimator1 to return the maximum possible resource amount.
 	assert.Equal(t, model.ResourceAmount(1e14),
 		testedEstimator1.GetResourceEstimation(s)[model.ResourceCPU])

@@ -21,6 +21,7 @@ import (
 
 	"github.com/golang/glog"
 	apiv1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
@@ -41,8 +42,11 @@ import (
 // ClusterStateFeeder can update state of ClusterState object.
 type ClusterStateFeeder interface {
 
-	// LoadHistory loads historical pod spec and metrics into clusterState.
-	LoadHistory()
+	// InitFromHistoryProvider loads historical pod spec into clusterState.
+	InitFromHistoryProvider()
+
+	// InitFromCheckpoints loads historical checkpoints into clusterState.
+	InitFromCheckpoints()
 
 	// LoadVPAs updtes clusterState with current state of VPAs.
 	LoadVPAs()
@@ -57,12 +61,13 @@ type ClusterStateFeeder interface {
 // NewClusterStateFeeder creates new ClusterStateFeeder with internal data providers, based on kube client config and a historyProvider.
 func NewClusterStateFeeder(config *rest.Config, historyProvider history.HistoryProvider, clusterState *model.ClusterState) ClusterStateFeeder {
 	return &clusterStateFeeder{
-		specClient:      newSpecClient(config),
-		metricsClient:   newMetricsClient(config),
-		vpaClient:       vpa_clientset.NewForConfigOrDie(config).PocV1alpha1(),
-		vpaLister:       vpa_api_util.NewAllVpasLister(vpa_clientset.NewForConfigOrDie(config), make(chan struct{})),
-		historyProvider: historyProvider,
-		clusterState:    clusterState,
+		specClient:          newSpecClient(config),
+		metricsClient:       newMetricsClient(config),
+		vpaClient:           vpa_clientset.NewForConfigOrDie(config).PocV1alpha1(),
+		vpaCheckpointClient: vpa_clientset.NewForConfigOrDie(config).PocV1alpha1(),
+		vpaLister:           vpa_api_util.NewAllVpasLister(vpa_clientset.NewForConfigOrDie(config), make(chan struct{})),
+		historyProvider:     historyProvider,
+		clusterState:        clusterState,
 	}
 }
 
@@ -90,15 +95,17 @@ func newPodLister(kubeClient kube_client.Interface) v1lister.PodLister {
 }
 
 type clusterStateFeeder struct {
-	specClient      spec.SpecClient
-	metricsClient   metrics.MetricsClient
-	vpaClient       vpa_api.VerticalPodAutoscalersGetter
-	vpaLister       vpa_lister.VerticalPodAutoscalerLister
-	historyProvider history.HistoryProvider
-	clusterState    *model.ClusterState
+	specClient          spec.SpecClient
+	metricsClient       metrics.MetricsClient
+	vpaClient           vpa_api.VerticalPodAutoscalersGetter
+	vpaCheckpointClient vpa_api.VerticalPodAutoscalerCheckpointsGetter
+	vpaLister           vpa_lister.VerticalPodAutoscalerLister
+	historyProvider     history.HistoryProvider
+	clusterState        *model.ClusterState
 }
 
-func (feeder *clusterStateFeeder) LoadHistory() {
+func (feeder *clusterStateFeeder) InitFromHistoryProvider() {
+	glog.V(3).Info("Initializing VPA from history provider")
 	clusterHistory, err := feeder.historyProvider.GetClusterHistory()
 	if err != nil {
 		glog.Errorf("Cannot get cluster history: %v", err)
@@ -121,6 +128,32 @@ func (feeder *clusterStateFeeder) LoadHistory() {
 	}
 }
 
+func (feeder *clusterStateFeeder) InitFromCheckpoints() {
+	glog.V(3).Info("Initializing VPA from checkpoints")
+	feeder.LoadVPAs()
+
+	namespaces := make(map[string]bool)
+	for _, v := range feeder.clusterState.Vpas {
+		namespaces[v.ID.Namespace] = true
+	}
+
+	for namespace := range namespaces {
+		glog.V(3).Infof("Fetching checkpoints from namespace %s", namespace)
+		checkpointList, err := feeder.vpaCheckpointClient.VerticalPodAutoscalerCheckpoints(namespace).List(metav1.ListOptions{})
+
+		if err != nil {
+			glog.Errorf("Cannot list VPA checkpoints from namespace %v. Reason: %+v", namespace, err)
+		}
+		for _, checkpoint := range checkpointList.Items {
+			err = feeder.clusterState.SetVpaCheckpoint(&checkpoint)
+			if err != nil {
+				glog.Errorf("Error while loading checkpoint. Reason: %+v", err)
+			}
+			glog.V(3).Infof("Loaded VPA %s/%s checkpoint for %s", checkpoint.ObjectMeta.Namespace, checkpoint.Spec.VPAObjectName, checkpoint.Spec.ContainerName)
+		}
+	}
+}
+
 // Fetch VPA objects and load them into the cluster state.
 func (feeder *clusterStateFeeder) LoadVPAs() {
 	// List VPA API objects.
@@ -128,7 +161,7 @@ func (feeder *clusterStateFeeder) LoadVPAs() {
 	if err != nil {
 		glog.Errorf("Cannot list VPAs. Reason: %+v", err)
 	} else {
-		glog.V(3).Infof("Fetched VPAs.")
+		glog.V(3).Infof("Fetched %d VPAs.", len(vpaCRDs))
 	}
 	// Add or update existing VPAs in the model.
 	vpaKeys := make(map[model.VpaID]bool)
@@ -141,7 +174,6 @@ func (feeder *clusterStateFeeder) LoadVPAs() {
 			// Successfully added VPA to the model.
 			vpaKeys[vpaID] = true
 		}
-
 	}
 	// Delete non-existent VPAs from the model.
 	for vpaID := range feeder.clusterState.Vpas {

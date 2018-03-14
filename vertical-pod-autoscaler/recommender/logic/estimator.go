@@ -27,7 +27,7 @@ import (
 // model.Resources, e.g. a prediction of resources needed by a group of
 // containers.
 type ResourceEstimator interface {
-	GetResourceEstimation(s *AggregateContainerState) model.Resources
+	GetResourceEstimation(s *model.AggregateContainerState) model.Resources
 }
 
 // Implementation of ResourceEstimator that returns constant amount of
@@ -64,17 +64,17 @@ func WithConfidenceMultiplier(exponent float64, baseEstimator ResourceEstimator)
 }
 
 // Returns a constant amount of resources.
-func (e *constEstimator) GetResourceEstimation(s *AggregateContainerState) model.Resources {
+func (e *constEstimator) GetResourceEstimation(s *model.AggregateContainerState) model.Resources {
 	return e.resources
 }
 
 // Returns specific percentiles of CPU and memory peaks distributions.
-func (e *percentileEstimator) GetResourceEstimation(s *AggregateContainerState) model.Resources {
+func (e *percentileEstimator) GetResourceEstimation(s *model.AggregateContainerState) model.Resources {
 	return model.Resources{
 		model.ResourceCPU: model.CPUAmountFromCores(
-			s.aggregateCPUUsage.Percentile(e.cpuPercentile)),
+			s.AggregateCPUUsage.Percentile(e.cpuPercentile)),
 		model.ResourceMemory: model.MemoryAmountFromBytes(
-			s.aggregateMemoryPeaks.Percentile(e.memoryPercentile)),
+			s.AggregateMemoryPeaks.Percentile(e.memoryPercentile)),
 	}
 }
 
@@ -84,12 +84,12 @@ func (e *percentileEstimator) GetResourceEstimation(s *AggregateContainerState) 
 // of 1 sample per minute, this metric is equal to N.
 // This implementation is a very simple heuristic which looks at the total count
 // of samples and the time between the first and the last sample.
-func getConfidence(s *AggregateContainerState) float64 {
+func getConfidence(s *model.AggregateContainerState) float64 {
 	// Distance between the first and the last observed sample time, measured in days.
-	lifespanInDays := float64(s.lastSampleStart.Sub(s.firstSampleStart)) / float64(time.Hour*24)
+	lifespanInDays := float64(s.LastSampleStart.Sub(s.FirstSampleStart)) / float64(time.Hour*24)
 	// Total count of samples normalized such that it equals the number of days for
 	// frequency of 1 sample/minute.
-	samplesAmount := float64(s.totalSamplesCount) / (60 * 24)
+	samplesAmount := float64(s.TotalSamplesCount) / (60 * 24)
 	return math.Min(lifespanInDays, samplesAmount)
 }
 
@@ -99,7 +99,7 @@ func getConfidence(s *AggregateContainerState) float64 {
 //     scaledResource = originalResource * (1 + 1/confidence)^exponent.
 // This can be used to widen or narrow the gap between the lower and upper bound
 // estimators depending on how much input data is available to the estimators.
-func (e *confidenceMultiplierEstimator) GetResourceEstimation(s *AggregateContainerState) model.Resources {
+func (e *confidenceMultiplierEstimator) GetResourceEstimation(s *model.AggregateContainerState) model.Resources {
 	confidence := getConfidence(s)
 	originalResources := e.baseEstimator.GetResourceEstimation(s)
 	scaledResources := make(model.Resources)
