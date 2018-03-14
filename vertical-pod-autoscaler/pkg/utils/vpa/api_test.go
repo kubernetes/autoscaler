@@ -22,7 +22,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
@@ -42,12 +41,16 @@ func TestPodMatchesVPA(t *testing.T) {
 	pod := test.BuildTestPod("test-pod", containerName, "1", "100M", nil, nil)
 	pod.Labels = map[string]string{"app": "testingApp"}
 
-	vpa := test.BuildTestVerticalPodAutoscaler(containerName, "2", "1", "3", "200M", "100M", "1G", selector)
+	vpaBuilder := test.VerticalPodAutoscaler().
+		WithContainer(containerName).
+		WithTarget("2", "200M").
+		WithMinAllowed("1", "100M").
+		WithMaxAllowed("3", "1G").
+		WithSelector(selector)
 
-	otherNamespaceVPA := test.BuildTestVerticalPodAutoscaler(containerName, "2", "1", "3", "200M", "100M", "1G", selector)
-	otherNamespaceVPA.Namespace = "other"
-
-	otherSelectorVPA := test.BuildTestVerticalPodAutoscaler(containerName, "2", "1", "3", "200M", "100M", "1G", "app = other")
+	vpa := vpaBuilder.Get()
+	otherNamespaceVPA := vpaBuilder.WithNamespace("other").Get()
+	otherSelectorVPA := vpaBuilder.WithSelector("app = other").Get()
 
 	testCases := []testCase{
 		{pod, vpa, true},
@@ -66,12 +69,15 @@ func TestGetControllingVPAForPod(t *testing.T) {
 	pod := test.BuildTestPod("test-pod", containerName, "1", "100M", nil, nil)
 	pod.Labels = map[string]string{"app": "testingApp"}
 
-	vpaA := test.BuildTestVerticalPodAutoscaler(containerName, "2", "1", "3", "200M", "100M", "1G", selector)
-	vpaA.CreationTimestamp = metav1.NewTime(time.Unix(5, 0))
-	vpaB := test.BuildTestVerticalPodAutoscaler(containerName, "20", "10", "30", "200M", "100M", "1G", selector)
-	vpaB.CreationTimestamp = metav1.NewTime(time.Unix(10, 0))
-	nonMatchingVPA := test.BuildTestVerticalPodAutoscaler(containerName, "2", "1", "3", "200M", "100M", "1G", "app = other")
-	nonMatchingVPA.CreationTimestamp = metav1.NewTime(time.Unix(2, 0))
+	vpaBuilder := test.VerticalPodAutoscaler().
+		WithContainer(containerName).
+		WithTarget("2", "200M").
+		WithMinAllowed("1", "100M").
+		WithMaxAllowed("3", "1G").
+		WithSelector(selector)
+	vpaA := vpaBuilder.WithCreationTimestamp(time.Unix(5, 0)).Get()
+	vpaB := vpaBuilder.WithCreationTimestamp(time.Unix(10, 0)).Get()
+	nonMatchingVPA := vpaBuilder.WithCreationTimestamp(time.Unix(2, 0)).WithSelector("app = other").Get()
 
 	chosen := GetControllingVPAForPod(pod, []*vpa_types.VerticalPodAutoscaler{vpaB, vpaA, nonMatchingVPA})
 	assert.Equal(t, vpaA, chosen)

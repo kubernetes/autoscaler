@@ -60,7 +60,12 @@ func TestRunOnce(t *testing.T) {
 	podLister := &test.PodListerMock{}
 	podLister.On("List").Return(pods, nil)
 
-	vpaObj := test.BuildTestVerticalPodAutoscaler(containerName, "2", "1", "3", "200M", "100M", "1G", selector)
+	vpaObj := test.VerticalPodAutoscaler().
+		WithContainer(containerName).
+		WithTarget("2", "200M").
+		WithMinAllowed("1", "100M").
+		WithMaxAllowed("3", "1G").
+		WithSelector(selector).Get()
 	vpaObj.Spec.UpdatePolicy.UpdateMode = vpa_types.UpdateModeAuto
 	vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpaObj}, nil).Once()
 
@@ -95,7 +100,12 @@ func TestVPAOff(t *testing.T) {
 	podLister := &test.PodListerMock{}
 	podLister.On("List").Return(pods, nil)
 
-	vpaObj := test.BuildTestVerticalPodAutoscaler(containerName, "2", "1", "3", "200M", "100M", "1G", selector)
+	vpaObj := test.VerticalPodAutoscaler().
+		WithContainer(containerName).
+		WithTarget("2", "200M").
+		WithMinAllowed("1", "100M").
+		WithMaxAllowed("3", "1G").
+		WithSelector(selector).Get()
 	vpaObj.Namespace = "default"
 	vpaObj.Spec.UpdatePolicy.UpdateMode = vpa_types.UpdateModeInitial
 	vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpaObj}, nil).Once()
