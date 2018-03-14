@@ -36,7 +36,13 @@ func TestUpdateResourceRequests(t *testing.T) {
 	}
 	containerName := "container1"
 	labels := map[string]string{"app": "testingApp"}
-	vpa := test.BuildTestVerticalPodAutoscaler(containerName, "2", "1", "3", "200M", "100M", "1G", "app = testingApp")
+	vpaBuilder := test.VerticalPodAutoscaler().
+		WithContainer(containerName).
+		WithTarget("2", "200M").
+		WithMinAllowed("1", "100M").
+		WithMaxAllowed("3", "1G").
+		WithSelector("app = testingApp")
+	vpa := vpaBuilder.Get()
 
 	uninitialized := test.BuildTestPod("test_uninitialized", containerName, "", "", nil, nil)
 	uninitialized.ObjectMeta.Labels = labels
@@ -44,13 +50,11 @@ func TestUpdateResourceRequests(t *testing.T) {
 	initialized := test.BuildTestPod("test_initialized", containerName, "1", "100M", nil, nil)
 	initialized.ObjectMeta.Labels = labels
 
-	mismatchedVPA := test.BuildTestVerticalPodAutoscaler(containerName, "2", "1", "3", "200M", "100M", "1G", "app = differentApp")
-	offVPA := test.BuildTestVerticalPodAutoscaler(containerName, "2.5", "1", "3", "250M", "100M", "1G", "app = testingApp")
-	offVPA.Spec.UpdatePolicy.UpdateMode = vpa_types.UpdateModeOff
+	mismatchedVPA := vpaBuilder.WithSelector("app = differentApp").Get()
+	offVPA := vpaBuilder.WithUpdateMode(vpa_types.UpdateModeOff).Get()
 
-	targetBelowMinVPA := test.BuildTestVerticalPodAutoscaler(containerName, "3", "4", "5", "150M", "300M", "1G", "app = testingApp")
-
-	targetAboveMaxVPA := test.BuildTestVerticalPodAutoscaler(containerName, "7", "4", "5", "2G", "300M", "1G", "app = testingApp")
+	targetBelowMinVPA := vpaBuilder.WithTarget("3", "150M").WithMinAllowed("4", "300M").WithMaxAllowed("5", "1G").Get()
+	targetAboveMaxVPA := vpaBuilder.WithTarget("7", "2G").WithMinAllowed("4", "300M").WithMaxAllowed("5", "1G").Get()
 
 	testCases := []testCase{{
 		pod:            uninitialized,
@@ -113,7 +117,6 @@ func TestUpdateResourceRequests(t *testing.T) {
 			memory, err := resource.ParseQuantity(tc.expectedMem)
 			assert.NoError(t, err)
 			assert.Equal(t, memory, requests[0][apiv1.ResourceMemory])
-
 		} else {
 			assert.Equal(t, len(requests), 0)
 		}
