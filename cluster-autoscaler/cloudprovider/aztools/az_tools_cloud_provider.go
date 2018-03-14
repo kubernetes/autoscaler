@@ -83,6 +83,9 @@ func BuildAzToolsCloudProvider(
 
 	provider := NewAzToolsCloudProvider(az.OnScaleUp, az.OnScaleDown, rl)
 
+	grouNames := []string{}
+
+	// TODO(harry): do we need to name node with nodeGroup name? Seems not.
 	for i, spec := range discoveryOpts.NodeGroupSpecs {
 		if i > 0 {
 			return nil, fmt.Errorf("multiple node groups detected: this is not supported for az tools for now")
@@ -93,6 +96,8 @@ func BuildAzToolsCloudProvider(
 		}
 
 		grpID := s.Name
+
+		grouNames = append(grouNames, grpID)
 
 		// Fetch nodes from ./cluster.yaml
 		workers, err := az.GetWorkerList(grpID)
@@ -107,6 +112,13 @@ func BuildAzToolsCloudProvider(
 
 		// Initialize targetSize with nodes of the cluster. targetSize will be auto updated per scale up/down.
 		provider.AddNodeGroup(grpID, s.MinSize, s.MaxSize, len(workers))
+	}
+
+	scalerYaml := "./deploy/scaler.yaml"
+	if _, err := os.Stat(scalerYaml); os.IsNotExist(err) {
+		if err = az.InitScalerFromConfig(grouNames); err != nil {
+			return nil, err
+		}
 	}
 
 	return provider, nil

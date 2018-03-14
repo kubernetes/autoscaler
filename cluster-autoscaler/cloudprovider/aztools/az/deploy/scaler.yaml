@@ -1,0 +1,7 @@
+node_groups:
+  Standard_D2_v2:
+    last_scaled_node_num: 0
+    worker_node_num: 0
+  Standard_D3_v2:
+    last_scaled_node_num: 0
+    worker_node_num: 2
