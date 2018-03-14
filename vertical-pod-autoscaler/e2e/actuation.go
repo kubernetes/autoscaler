@@ -61,12 +61,16 @@ var _ = actuationSuiteE2eDescribe("Actuation", func() {
 			},
 		})
 
+		resourceList := apiv1.ResourceList{
+			apiv1.ResourceCPU: parseQuantityOrDie("9999"), // Request 9999 CPUs to make POD pending
+		}
+
 		vpaCRD.Status.Recommendation.ContainerRecommendations = []vpa_types.RecommendedContainerResources{
 			{
-				Name: "hamster",
-				Target: apiv1.ResourceList{
-					apiv1.ResourceCPU: parseQuantityOrDie("9999"), // Request 9999 CPUs to make POD pending
-				},
+				Name:           "hamster",
+				Target:         resourceList,
+				MinRecommended: resourceList,
+				MaxRecommended: resourceList,
 			},
 		}
 
