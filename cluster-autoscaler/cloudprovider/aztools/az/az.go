@@ -86,6 +86,10 @@ func OnScaleUp(id string, delta int) error {
 	return nil
 }
 
+type scaler struct {
+	last_scaled_node_num int
+}
+
 // modifyConfigYaml modifies config.yaml
 // TODO(harry): consider use `sed` so we don't need to regenerate yaml
 func modifyConfigYaml(delta int) error {
