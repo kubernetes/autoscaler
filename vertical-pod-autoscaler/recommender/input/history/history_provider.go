@@ -46,6 +46,8 @@ func newEmptyHistory() *PodHistory {
 }
 
 // HistoryProvider gives history of all pods in a cluster.
+// TODO(schylek): this interface imposes how history is represented which doesn't work well with checkpoints.
+// Consider refactoring to passing ClusterState and create history provider working with checkpoints.
 type HistoryProvider interface {
 	GetClusterHistory() (map[model.PodID]*PodHistory, error)
 }

@@ -207,6 +207,22 @@ func (cluster *ClusterState) DeleteVpa(vpaID VpaID) error {
 	return nil
 }
 
+// SetVpaCheckpoint stores container's checkoint data in the cluster's VPA object.
+func (cluster *ClusterState) SetVpaCheckpoint(checkpoint *vpa_types.VerticalPodAutoscalerCheckpoint) error {
+	vpaID := VpaID{Namespace: checkpoint.Namespace, VpaName: checkpoint.Spec.VPAObjectName}
+	vpa, exists := cluster.Vpas[vpaID]
+	if !exists {
+		return fmt.Errorf("Cannot load checkpoint to missing VPA object %+v", vpaID)
+	}
+	cs := NewAggregateContainerState()
+	err := cs.LoadFromCheckpoint(&checkpoint.Status)
+	if err != nil {
+		return fmt.Errorf("Cannot load checkpoint for VPA %+v. Reason: %v", vpaID, err)
+	}
+	vpa.ContainerCheckpoints[checkpoint.Spec.ContainerName] = cs
+	return nil
+}
+
 func newPod(id PodID) *PodState {
 	return &PodState{
 		ID:           id,
