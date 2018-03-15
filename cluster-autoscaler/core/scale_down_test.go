@@ -637,8 +637,10 @@ func TestDrainNode(t *testing.T) {
 
 func TestDrainNodeWithRetries(t *testing.T) {
 	deletedPods := make(chan string, 10)
-	// Simulate pdb of size 1, by making them goroutine succeed sequentially
-	// and fail/retry before they can proceed.
+	// Simulate pdb of size 1 by making the 'eviction' goroutine:
+	// - read from (at first empty) channel
+	// - if it's empty, fail and write to it, then retry
+	// - succeed on successful read.
 	ticket := make(chan bool, 1)
 	fakeClient := &fake.Clientset{}
 

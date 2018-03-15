@@ -103,9 +103,9 @@ type migInformation struct {
 
 // GceManager handles gce communication and data caching.
 type GceManager interface {
-	// RegisterMig registers mig in Gce Manager. Returns true if the node group didn't exist before.
+	// RegisterMig registers mig in GceManager. Returns true if the node group didn't exist before.
 	RegisterMig(mig *Mig) bool
-	// UnregisterMig unregisters mig in Gce Manager. Returns true if the node group has been removed.
+	// UnregisterMig unregisters mig in GceManager. Returns true if the node group has been removed.
 	UnregisterMig(toBeRemoved *Mig) bool
 	// GetMigSize gets MIG size.
 	GetMigSize(mig *Mig) (int64, error)
@@ -510,7 +510,7 @@ func (m *gceManagerImpl) fetchAllNodePoolsGkeNapImpl() error {
 	return nil
 }
 
-// RegisterMig registers mig in Gce Manager. Returns true if the node group didn't exist before or its config has changed.
+// RegisterMig registers mig in GceManager. Returns true if the node group didn't exist before or its config has changed.
 func (m *gceManagerImpl) RegisterMig(mig *Mig) bool {
 	m.migsMutex.Lock()
 	defer m.migsMutex.Unlock()
@@ -543,7 +543,7 @@ func (m *gceManagerImpl) RegisterMig(mig *Mig) bool {
 	return true
 }
 
-// UnregisterMig unregisters mig in Gce Manager. Returns true if the node group has been removed.
+// UnregisterMig unregisters mig in GceManager. Returns true if the node group has been removed.
 func (m *gceManagerImpl) UnregisterMig(toBeRemoved *Mig) bool {
 	m.migsMutex.Lock()
 	defer m.migsMutex.Unlock()
@@ -584,8 +584,8 @@ func (m *gceManagerImpl) deleteNodePool(toBeRemoved *Mig) error {
 func (m *gceManagerImpl) createNodePool(mig *Mig) error {
 	m.assertGKENAP()
 
-	// TODO: handle preemptable
-	// TODO: handle ssd
+	// TODO: handle preemptible
+	// TODO: handle SSDs
 
 	accelerators := []*gke_alpha.AcceleratorConfig{}
 

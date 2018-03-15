@@ -106,10 +106,10 @@ func (t *templateBuilder) buildCapacity(machineType string, accelerators []*gce.
 
 // buildAllocatableFromKubeEnv builds node allocatable based on capacity of the node and
 // value of kubeEnv.
-// KubeEnv is a multi line string containing entries in the form of
+// KubeEnv is a multi-line string containing entries in the form of
 // <RESOURCE_NAME>:<string>. One of the resources it contains is a list of
-// kubelet arguments from which we can extract the resources reseved by
-// the kubelet for its operation. Allocated resources are capacity - reserved.
+// kubelet arguments from which we can extract the resources reserved by
+// the kubelet for its operation. Allocated resources are capacity minus reserved.
 // If we fail to extract the reserved resources from kubeEnv (e.g it is in a
 // wrong format or does not contain kubelet arguments), we return an error.
 func (t *templateBuilder) buildAllocatableFromKubeEnv(capacity apiv1.ResourceList, kubeEnv string) (apiv1.ResourceList, error) {

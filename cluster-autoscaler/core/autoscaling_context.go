@@ -41,7 +41,7 @@ type AutoscalingContext struct {
 	CloudProvider cloudprovider.CloudProvider
 	// ClientSet interface.
 	ClientSet kube_client.Interface
-	// ClusterState for maintaining the state of custer nodes.
+	// ClusterState for maintaining the state of cluster nodes.
 	ClusterStateRegistry *clusterstate.ClusterStateRegistry
 	// Recorder for recording events.
 	Recorder kube_record.EventRecorder
@@ -129,8 +129,8 @@ type AutoscalingOptions struct {
 	NodeAutoprovisioningEnabled bool
 	// MaxAutoprovisionedNodeGroupCount is the maximum number of autoprovisioned groups in the cluster.
 	MaxAutoprovisionedNodeGroupCount int
-	// Pods with priority below cutoff are expendable. They can be killed without any consideration during scale down and they don't cause scale up.
-	// Pods with null priority (PodPriority disabled) are non expendable.
+	// Pods with priority below cutoff are expendable. They can be killed without any consideration during scale down and they don't cause scale-up.
+	// Pods with null priority (PodPriority disabled) are non-expendable.
 	ExpendablePodsPriorityCutoff int
 	// Regional tells whether the cluster is regional.
 	Regional bool
