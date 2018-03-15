@@ -28,7 +28,7 @@ import (
 
 // This code was borrowed from Heapster to push the work forward and contains some functionality
 // that may not be needed in Kubernetes.
-// TODO(mwielgus): revisit this once we have the basic structur ready.
+// TODO(mwielgus): revisit this once we have the basic structure ready.
 
 const (
 	defaultUseServiceAccount  = false
