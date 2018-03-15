@@ -574,7 +574,7 @@ func TestUpdateLastTransitionTimes(t *testing.T) {
 	}
 
 	expectedNgTimestamps := make(map[string](map[api.ClusterAutoscalerConditionType]metav1.Time), 0)
-	// Same as clusterwide
+	// Same as cluster-wide
 	expectedNgTimestamps["ng1"] = map[api.ClusterAutoscalerConditionType]metav1.Time{
 		api.ClusterAutoscalerHealth:    now,
 		api.ClusterAutoscalerScaleUp:   later,
@@ -619,7 +619,7 @@ func TestScaleUpBackoff(t *testing.T) {
 		OkTotalUnreadyCount:       1,
 	}, fakeLogRecorder)
 
-	// Fail a scale-up, node group should be still healthy, but should backoff from scale-ups
+	// After failed scale-up, node group should be still healthy, but should backoff from scale-ups
 	clusterstate.RegisterScaleUp(&ScaleUpRequest{
 		NodeGroupName:   "ng1",
 		Increase:        1,

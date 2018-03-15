@@ -134,7 +134,7 @@ func (kubemark *KubemarkCloudProvider) Cleanup() error {
 	return nil
 }
 
-// NodeGroup implements NodeGroup interfrace.
+// NodeGroup implements NodeGroup interface.
 type NodeGroup struct {
 	Name               string
 	kubemarkController *kubemark.KubemarkController

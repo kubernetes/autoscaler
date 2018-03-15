@@ -41,7 +41,7 @@ const (
 )
 
 // Big machines are temporarily commented out.
-// TODO(mwielgus): get this list programatically
+// TODO(mwielgus): get this list programmatically
 var autoprovisionedMachineTypes = []string{
 	"n1-standard-1",
 	"n1-standard-2",
@@ -220,7 +220,7 @@ func GceRefFromProviderId(id string) (*GceRef, error) {
 	}, nil
 }
 
-// Information about what autosprovisioning would like from this mig.
+// Information about what machines in an autoprovisioned MIG would look like.
 type autoprovisioningSpec struct {
 	machineType    string
 	labels         map[string]string

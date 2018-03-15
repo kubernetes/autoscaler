@@ -34,7 +34,7 @@ type OnScaleUpFunc func(string, int) error
 // OnScaleDownFunc is a function called on cluster scale down
 type OnScaleDownFunc func(string, string) error
 
-// OnNodeGroupCreateFunc is a fuction called when a new node group is created.
+// OnNodeGroupCreateFunc is a function called when a new node group is created.
 type OnNodeGroupCreateFunc func(string) error
 
 // OnNodeGroupDeleteFunc is a function called when a node group is deleted.

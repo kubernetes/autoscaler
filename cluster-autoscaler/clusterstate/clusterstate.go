@@ -352,7 +352,7 @@ func (csr *ClusterStateRegistry) IsNodeGroupHealthy(nodeGroupName string) bool {
 	if readiness.Ready < acceptable.MinNodes {
 		unjustifiedUnready += acceptable.MinNodes - readiness.Ready
 	}
-	// TODO: verify against maxnodes as well.
+	// TODO: verify against max nodes as well.
 
 	if unjustifiedUnready > csr.config.OkTotalUnreadyCount &&
 		float64(unjustifiedUnready) > csr.config.MaxTotalUnreadyPercentage/100.0*
