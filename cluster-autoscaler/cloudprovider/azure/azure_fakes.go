@@ -93,7 +93,7 @@ func (client *VirtualMachineScaleSetsClientMock) DeleteInstances(resourceGroupNa
 	return nil, errChan
 }
 
-// List get a list of VirtualMachineScaleSets.
+// List gets a list of VirtualMachineScaleSets.
 func (client *VirtualMachineScaleSetsClientMock) List(resourceGroupName string) (result compute.VirtualMachineScaleSetListResult, err error) {
 	client.mutex.Lock()
 	defer client.mutex.Unlock()
