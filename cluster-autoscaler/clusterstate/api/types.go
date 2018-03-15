@@ -78,7 +78,7 @@ type ClusterAutoscalerCondition struct {
 	// Message is a free text extra information about the condition. It may contain some
 	// extra debugging data, like why the cluster is unhealthy.
 	Message string `json:"message,omitempty"`
-	// Reason is an unique, one-word, CamelCase reason for the condition's last transition.
+	// Reason is a unique, one-word, CamelCase reason for the condition's last transition.
 	Reason string `json:"reason,omitempty"`
 	// LastProbeTime is the last time we probed the condition.
 	LastProbeTime metav1.Time `json:"lastProbeTime,omitempty"`

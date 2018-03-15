@@ -113,7 +113,7 @@ func (as *AgentPool) MaxSize() int {
 	return as.maxSize
 }
 
-// GetVMIndexes gets indexes of all virtual machines belongting to the agent pool.
+// GetVMIndexes gets indexes of all virtual machines belonging to the agent pool.
 func (as *AgentPool) GetVMIndexes() ([]int, map[int]string, error) {
 	instances, err := as.GetVirtualMachines()
 	if err != nil {
@@ -498,7 +498,7 @@ func (as *AgentPool) deleteVirtualMachine(name string) error {
 	return nil
 }
 
-// getAzureRef gets AzureRef fot the as.
+// getAzureRef gets AzureRef for the as.
 func (as *AgentPool) getAzureRef() azureRef {
 	return as.azureRef
 }

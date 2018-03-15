@@ -278,8 +278,8 @@ func TestBelongs(t *testing.T) {
 	assert.Equal(t, belongs, true)
 	assert.NoError(t, err)
 	// As "test-instance-id" is already known to be managed by test-asg since
-	// the first `Belongs` call, No additional DescribAutoScalingGroupsPages
-	// call is made
+	// the first `Belongs` call, no additional DescribAutoScalingGroupsPages
+	// call is made.
 	service.AssertNumberOfCalls(t, "DescribeAutoScalingGroupsPages", 1)
 }
 

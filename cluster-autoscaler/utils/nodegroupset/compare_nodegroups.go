@@ -50,7 +50,7 @@ func compareResourceMapsWithTolerance(resources map[apiv1.ResourceName][]resourc
 }
 
 // IsNodeInfoSimilar returns true if two NodeInfos are similar enough to consider
-// the NodeGroups they come from part of the same NodeGroupSet. The criteria are
+// that the NodeGroups they come from are part of the same NodeGroupSet. The criteria are
 // somewhat arbitrary, but generally we check if resources provided by both nodes
 // are similar enough to likely be the same type of machine and if the set of labels
 // is the same (except for a pre-defined set of labels like hostname or zone).

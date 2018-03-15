@@ -61,7 +61,7 @@ const (
 // calculated.
 // To decide if two pods are similar enough we check if they have identical label
 // and spec and are owned by the same controller. The problem is the whole
-// podSchedulableInfo struct is not hashable and keeping a list and runnig deep
+// podSchedulableInfo struct is not hashable and keeping a list and running deep
 // equality checks would likely also be expensive. So instead we use controller
 // UID as a key in initial lookup and only run full comparison on a set of
 // podSchedulableInfos created for pods owned by this controller.
@@ -219,7 +219,7 @@ func GetNodeInfosForGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.Clou
 		}
 
 		// No good template, trying to generate one. This is called only if there are no
-		// working nodes in the node groups. By default CA tries to usa a real-world example.
+		// working nodes in the node groups. By default CA tries to use a real-world example.
 		baseNodeInfo, err := nodeGroup.TemplateNodeInfo()
 		if err != nil {
 			if err == cloudprovider.ErrNotImplemented {

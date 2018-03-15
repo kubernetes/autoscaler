@@ -85,7 +85,7 @@ func TestPriceExpander(t *testing.T) {
 		"ng1": ni1, "ng2": ni2,
 	}
 
-	// All node groups accept the same set of pods
+	// All node groups accept the same set of pods.
 	options := []expander.Option{
 		{
 			NodeGroup: ng1,
@@ -101,7 +101,7 @@ func TestPriceExpander(t *testing.T) {
 		},
 	}
 
-	// First node group is cheapter
+	// First node group is cheaper.
 	assert.Contains(t, NewStrategy(
 		&testPricingModel{
 			podPrice: map[string]float64{
@@ -120,7 +120,7 @@ func TestPriceExpander(t *testing.T) {
 		SimpleNodeUnfitness,
 	).BestOption(options, nodeInfosForGroups).Debug, "ng1")
 
-	// First node group is cheapter however the second is preferred.
+	// First node group is cheaper, however, the second one is preferred.
 	assert.Contains(t, NewStrategy(
 		&testPricingModel{
 			podPrice: map[string]float64{
@@ -154,7 +154,7 @@ func TestPriceExpander(t *testing.T) {
 			Debug:     "ng2",
 		},
 	}
-	// First node group is cheapter, the second is preferred
+	// First node group is cheaper, the second is preferred
 	// but there is lots of nodes to be created.
 	assert.Contains(t, NewStrategy(
 		&testPricingModel{
@@ -174,7 +174,7 @@ func TestPriceExpander(t *testing.T) {
 		SimpleNodeUnfitness,
 	).BestOption(options1b, nodeInfosForGroups).Debug, "ng1")
 
-	// Second node group is cheapter
+	// Second node group is cheaper
 	assert.Contains(t, NewStrategy(
 		&testPricingModel{
 			podPrice: map[string]float64{

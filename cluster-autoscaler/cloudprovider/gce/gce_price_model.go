@@ -115,7 +115,7 @@ func (model *GcePriceModel) NodePrice(node *apiv1.Node, startTime time.Time, end
 			price = price * preemptibleDiscount
 		}
 	}
-	// TODO: handle ssd.
+	// TODO: handle SSDs.
 
 	price += getAdditionalPrice(node.Status.Capacity, startTime, endTime)
 	return price, nil
@@ -127,7 +127,7 @@ func getHours(startTime time.Time, endTime time.Time) float64 {
 	return hours
 }
 
-// PodPrice returns a theoretical minimum priece of running a pod for a given
+// PodPrice returns a theoretical minimum price of running a pod for a given
 // period of time on a perfectly matching machine.
 func (model *GcePriceModel) PodPrice(pod *apiv1.Pod, startTime time.Time, endTime time.Time) (float64, error) {
 	price := 0.0

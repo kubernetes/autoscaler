@@ -408,7 +408,7 @@ func validateConfig(cfg *Config) error {
 	return nil
 }
 
-// getLastSegment gets the last segment splited by '/'.
+// getLastSegment gets the last segment (splitting by '/'.)
 func getLastSegment(ID string) (string, error) {
 	parts := strings.Split(strings.TrimSpace(ID), "/")
 	name := parts[len(parts)-1]
