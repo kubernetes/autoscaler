@@ -944,7 +944,7 @@ func TestDeleteInstances(t *testing.T) {
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, server)
 
-	// Fail on deleting instances from different Migs.
+	// Fail on deleting instances from different MIGs.
 	instances = []*GceRef{
 		{
 			Project: projectId,
