@@ -170,7 +170,7 @@ func parseMIGAutoDiscoverySpec(spec string) (MIGAutoDiscoveryConfig, error) {
 // An ASGAutoDiscoveryConfig specifies how to autodiscover AWS ASGs.
 type ASGAutoDiscoveryConfig struct {
 	// TagKeys to match on.
-	// Any ASG with all of the provided tag keys wMIGAutoDiscoveryConfigill be autoscaled.
+	// Any ASG with all of the provided tag keys will be autoscaled.
 	TagKeys []string
 }
 

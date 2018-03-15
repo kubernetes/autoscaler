@@ -103,7 +103,7 @@ func TestPodSchedulableMap(t *testing.T) {
 	assert.True(t, found)
 	assert.False(t, sched)
 
-	// A non-repliated pod
+	// A non-replicated pod
 	nonReplicatedPod := BuildTestPod("nonReplicatedPod", 1000, 1000)
 	_, found = pMap.get(nonReplicatedPod)
 	assert.False(t, found)
@@ -297,7 +297,7 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 	_, found = res["n4"]
 	assert.True(t, found)
 
-	// Test for a nodegroup without nodes and TempleteNodeInfo not implemented by cloud proivder
+	// Test for a nodegroup without nodes and TemplateNodeInfo not implemented by cloud proivder
 	res, err = GetNodeInfosForGroups([]*apiv1.Node{}, provider2, fakeClient,
 		[]*extensionsv1.DaemonSet{}, predicateChecker)
 	assert.NoError(t, err)

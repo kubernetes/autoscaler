@@ -19,6 +19,7 @@ package dynamic
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/golang/glog"
 	"k8s.io/api/core/v1"
 )
@@ -76,7 +77,7 @@ func (c Config) VersionMismatchesAgainst(other Config) bool {
 	return c.resourceVersion != other.resourceVersion
 }
 
-// NodeGroupSpecStrings returns node group specs represented in the form of `<minSize>:<maxSize>:<name>` to be passed to cloudprovider impls.
+// NodeGroupSpecStrings returns node group specs represented in the form of `<minSize>:<maxSize>:<name>` to be passed to cloudprovider.
 func (c Config) NodeGroupSpecStrings() []string {
 	return c.nodeGroupSpecStrings()
 }

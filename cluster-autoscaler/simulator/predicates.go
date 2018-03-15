@@ -176,7 +176,7 @@ func (p *PredicateChecker) IsAffinityPredicateEnabled() bool {
 // predicateMetadata is also quite expensive, so it's not always the best option to run this method.
 // Please refer to https://github.com/kubernetes/autoscaler/issues/257 for more details.
 func (p *PredicateChecker) GetPredicateMetadata(pod *apiv1.Pod, nodeInfos map[string]*schedulercache.NodeInfo) algorithm.PredicateMetadata {
-	// skip precomputation if affinity predicate is disabled - it's not worth it performance wise
+	// skip precomputation if affinity predicate is disabled - it's not worth it performance-wise
 	if !p.enableAffinityPredicate {
 		return nil
 	}
