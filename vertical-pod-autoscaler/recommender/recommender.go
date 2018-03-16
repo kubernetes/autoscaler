@@ -105,20 +105,36 @@ func createPodResourceRecommender() logic.PodResourceRecommender {
 	lowerBoundMemoryPeaksPercentile := 0.5
 	upperBoundMemoryPeaksPercentile := 0.95
 
-	// Using the confidence multiplier with exponent +1 or -1 means that
-	// the recommendation is multiplied or divided (respecitvely) by:
-	// (1 + 1/history-length-in-days).
-	// See estimator.go to see how the history length and the confidence
-	// multiplier are determined. The formula yeilds the following multipliers:
-	// No history   : *INF.
-	// After 12h    : *3
-	// After 1 day  : *2
-	// After 1 week : *1.14
 	targetEstimator := logic.NewPercentileEstimator(targetCPUPercentile, targetMemoryPeaksPercentile)
-	lowerBoundEstimator := logic.WithConfidenceMultiplier(-1,
-		logic.NewPercentileEstimator(lowerBoundCPUPercentile, lowerBoundMemoryPeaksPercentile))
-	upperBoundEstimator := logic.WithConfidenceMultiplier(1,
-		logic.NewPercentileEstimator(upperBoundCPUPercentile, upperBoundMemoryPeaksPercentile))
+	lowerBoundEstimator := logic.NewPercentileEstimator(lowerBoundCPUPercentile, lowerBoundMemoryPeaksPercentile)
+	upperBoundEstimator := logic.NewPercentileEstimator(upperBoundCPUPercentile, upperBoundMemoryPeaksPercentile)
+
+	// Apply confidence multiplier to the upper bound estimator. This means
+	// that the updater will be less eager to evict pods with short history
+	// in order to reclaim unused resources.
+	// Using the confidence multiplier 1 with exponent +1 means that
+	// the upper bound is multiplied by (1 + 1/history-length-in-days).
+	// See estimator.go to see how the history length and the confidence
+	// multiplier are determined. The formula yields the following multipliers:
+	// No history     : *INF  (do not force pod eviction)
+	// 12h history    : *3    (force pod eviction if the request is > 3 * upper bound)
+	// 24h history    : *2
+	// 1 week history : *1.14	
+	upperBoundEstimator = logic.WithConfidenceMultiplier(1.0, 1.0, upperBoundEstimator)
+
+	// Apply confidence multiplier to the lower bound estimator. This means
+	// that the updater will be less eager to evict pods with short history
+	// in order to provision them with more resources.
+	// Using the confidence multiplier 0.001 with exponent -2 means that
+	// the lower bound is multiplied by the factor (1 + 0.001/history-length-in-days)^-2
+	// (which is very rapidly converging to 1.0).
+	// See estimator.go to see how the history length and the confidence
+	// multiplier are determined. The formula yields the following multipliers:
+	// No history   : *0   (do not force pod eviction)
+	// 5m history   : *0.6 (force pod eviction if the request is < 0.6 * lower bound)
+	// 30m history  : *0.9
+	// 60m history  : *0.95
+	lowerBoundEstimator = logic.WithConfidenceMultiplier(0.001, -2.0, lowerBoundEstimator)
 
 	return logic.NewPodResourceRecommender(
 		targetEstimator,

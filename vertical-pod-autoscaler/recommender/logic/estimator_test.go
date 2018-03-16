@@ -57,16 +57,16 @@ func TestPercentileEstimator(t *testing.T) {
 	assert.InEpsilon(t, 2e9, int(resourceEstimation[model.ResourceMemory]), model.HistogramRelativeError)
 }
 
-// Verifies that the confidenceMultiplierEstimator calculates the internal
+// Verifies that the confidenceMultiplier calculates the internal
 // confidence based on the amount of historical samples and scales the resources
 // returned by the base estimator according to the formula, using the calculated
 // confidence.
-func TestConfidenceMultiplierEstimator(t *testing.T) {
+func TestConfidenceMultiplier(t *testing.T) {
 	baseEstimator := NewConstEstimator(model.Resources{
 		model.ResourceCPU:    model.CPUAmountFromCores(3.14),
 		model.ResourceMemory: model.MemoryAmountFromBytes(3.14e9),
 	})
-	testedEstimator := &confidenceMultiplierEstimator{2.0, baseEstimator}
+	testedEstimator := &confidenceMultiplier{0.1, 2.0, baseEstimator}
 
 	container := model.NewContainerState()
 	// Add 9 CPU samples at the frequency of 1/(2 mins).
@@ -82,21 +82,21 @@ func TestConfidenceMultiplierEstimator(t *testing.T) {
 	// Expected confidence = 9/(60*24) = 0.00625.
 	assert.Equal(t, 0.00625, getConfidence(s))
 	// Expected CPU estimation = 3.14 * (1 + 1/confidence)^exponent =
-	// 3.14 * (1 + 1/0.00625)^2 = 81391.94.
+	// 3.14 * (1 + 0.1/0.00625)^2 = 907.46.
 	resourceEstimation := testedEstimator.GetResourceEstimation(s)
-	assert.Equal(t, 81391.94, model.CoresFromCPUAmount(resourceEstimation[model.ResourceCPU]))
+	assert.Equal(t, 907.46, model.CoresFromCPUAmount(resourceEstimation[model.ResourceCPU]))
 }
 
-// Verifies that the confidenceMultiplierEstimator works for the case of no
+// Verifies that the confidenceMultiplier works for the case of no
 // history. This corresponds to the multiplier of +INF or 0 (depending on the
 // sign of the exponent).
-func TestConfidenceMultiplierEstimatorNoHistory(t *testing.T) {
+func TestConfidenceMultiplierNoHistory(t *testing.T) {
 	baseEstimator := NewConstEstimator(model.Resources{
 		model.ResourceCPU:    model.CPUAmountFromCores(3.14),
 		model.ResourceMemory: model.MemoryAmountFromBytes(3.14e9),
 	})
-	testedEstimator1 := &confidenceMultiplierEstimator{1.0, baseEstimator}
-	testedEstimator2 := &confidenceMultiplierEstimator{-1.0, baseEstimator}
+	testedEstimator1 := &confidenceMultiplier{1.0, 1.0, baseEstimator}
+	testedEstimator2 := &confidenceMultiplier{1.0, -1.0, baseEstimator}
 	s := newAggregateContainerState()
 	// Expect testedEstimator1 to return the maximum possible resource amount.
 	assert.Equal(t, model.ResourceAmount(1e14),

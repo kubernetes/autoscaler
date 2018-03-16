@@ -23,6 +23,8 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/model"
 )
 
+// TODO: Split the estimator to have a separate estimator object for CPU and memory.
+
 // ResourceEstimator is a function from AggregateContainerState to
 // model.Resources, e.g. a prediction of resources needed by a group of
 // containers.
@@ -43,7 +45,8 @@ type percentileEstimator struct {
 	memoryPercentile float64
 }
 
-type confidenceMultiplierEstimator struct {
+type confidenceMultiplier struct {
+	multiplier    float64
 	exponent      float64
 	baseEstimator ResourceEstimator
 }
@@ -58,9 +61,9 @@ func NewPercentileEstimator(cpuPercentile float64, memoryPercentile float64) Res
 	return &percentileEstimator{cpuPercentile, memoryPercentile}
 }
 
-// WithConfidenceMultiplier returns a new confidenceMultiplierEstimator.
-func WithConfidenceMultiplier(exponent float64, baseEstimator ResourceEstimator) ResourceEstimator {
-	return &confidenceMultiplierEstimator{exponent, baseEstimator}
+// WithConfidenceMultiplier returns a given ResourceEstimator with confidenceMultiplier applied.
+func WithConfidenceMultiplier(multiplier, exponent float64, baseEstimator ResourceEstimator) ResourceEstimator {
+	return &confidenceMultiplier{multiplier, exponent, baseEstimator}
 }
 
 // Returns a constant amount of resources.
@@ -99,13 +102,13 @@ func getConfidence(s *AggregateContainerState) float64 {
 //     scaledResource = originalResource * (1 + 1/confidence)^exponent.
 // This can be used to widen or narrow the gap between the lower and upper bound
 // estimators depending on how much input data is available to the estimators.
-func (e *confidenceMultiplierEstimator) GetResourceEstimation(s *AggregateContainerState) model.Resources {
+func (e *confidenceMultiplier) GetResourceEstimation(s *AggregateContainerState) model.Resources {
 	confidence := getConfidence(s)
 	originalResources := e.baseEstimator.GetResourceEstimation(s)
 	scaledResources := make(model.Resources)
 	for resource, resourceAmount := range originalResources {
 		scaledResources[resource] = model.ScaleResource(
-			resourceAmount, math.Pow(1.+1./confidence, e.exponent))
+			resourceAmount, math.Pow(1. + e.multiplier/confidence, e.exponent))
 	}
 	return scaledResources
 }
