@@ -45,6 +45,12 @@ type percentileEstimator struct {
 	memoryPercentile float64
 }
 
+type safetyMargin struct {
+	marginFraction float64
+	minMargin      model.Resources
+	baseEstimator  ResourceEstimator
+}
+
 type confidenceMultiplier struct {
 	multiplier    float64
 	exponent      float64
@@ -59,6 +65,13 @@ func NewConstEstimator(resources model.Resources) ResourceEstimator {
 // NewPercentileEstimator returns a new percentileEstimator that uses provided percentiles.
 func NewPercentileEstimator(cpuPercentile float64, memoryPercentile float64) ResourceEstimator {
 	return &percentileEstimator{cpuPercentile, memoryPercentile}
+}
+
+// WithSafetyMargin returns a given ResourceEstimator with safetyMargin applied.
+// The returned resources are equal to the original resources plus:
+//     max(originalResource * marginFraction, minMargin).
+func WithSafetyMargin(marginFraction float64, minMargin model.Resources, baseEstimator ResourceEstimator) ResourceEstimator {
+	return &safetyMargin{marginFraction, minMargin, baseEstimator}
 }
 
 // WithConfidenceMultiplier returns a given ResourceEstimator with confidenceMultiplier applied.
@@ -108,7 +121,23 @@ func (e *confidenceMultiplier) GetResourceEstimation(s *AggregateContainerState)
 	scaledResources := make(model.Resources)
 	for resource, resourceAmount := range originalResources {
 		scaledResources[resource] = model.ScaleResource(
-			resourceAmount, math.Pow(1. + e.multiplier/confidence, e.exponent))
+			resourceAmount, math.Pow(1.+e.multiplier/confidence, e.exponent))
 	}
 	return scaledResources
+}
+
+// Returns resources computed by the underlying estimator with the additional
+// "safety margin" applied. Each resource is transformed as follows:
+//     resource = originalResource + max(originalResource * marginFraction, minMargin).
+func (e *safetyMargin) GetResourceEstimation(s *AggregateContainerState) model.Resources {
+	originalResources := e.baseEstimator.GetResourceEstimation(s)
+	newResources := make(model.Resources)
+	for resource, resourceAmount := range originalResources {
+		margin := model.ScaleResource(resourceAmount, e.marginFraction)
+		if margin < e.minMargin[resource] {
+			margin = e.minMargin[resource]
+		}
+		newResources[resource] = originalResources[resource] + margin
+	}
+	return newResources
 }

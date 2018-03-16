@@ -109,6 +109,17 @@ func createPodResourceRecommender() logic.PodResourceRecommender {
 	lowerBoundEstimator := logic.NewPercentileEstimator(lowerBoundCPUPercentile, lowerBoundMemoryPeaksPercentile)
 	upperBoundEstimator := logic.NewPercentileEstimator(upperBoundCPUPercentile, upperBoundMemoryPeaksPercentile)
 
+	// Use 10% safety margin on top of the recommended resources.
+	safetyMarginFraction := 0.1
+	// Minimum safety margin is 0.2 core and 300MB memory.
+	minSafetyMargin := model.Resources{
+		model.ResourceCPU:    model.CPUAmountFromCores(0.2),
+		model.ResourceMemory: model.MemoryAmountFromBytes(300 * 1024 * 1024),
+	}
+	targetEstimator = logic.WithSafetyMargin(safetyMarginFraction, minSafetyMargin, targetEstimator)
+	lowerBoundEstimator = logic.WithSafetyMargin(safetyMarginFraction, minSafetyMargin, lowerBoundEstimator)
+	upperBoundEstimator = logic.WithSafetyMargin(safetyMarginFraction, minSafetyMargin, upperBoundEstimator)
+
 	// Apply confidence multiplier to the upper bound estimator. This means
 	// that the updater will be less eager to evict pods with short history
 	// in order to reclaim unused resources.
@@ -119,7 +130,7 @@ func createPodResourceRecommender() logic.PodResourceRecommender {
 	// No history     : *INF  (do not force pod eviction)
 	// 12h history    : *3    (force pod eviction if the request is > 3 * upper bound)
 	// 24h history    : *2
-	// 1 week history : *1.14	
+	// 1 week history : *1.14
 	upperBoundEstimator = logic.WithConfidenceMultiplier(1.0, 1.0, upperBoundEstimator)
 
 	// Apply confidence multiplier to the lower bound estimator. This means

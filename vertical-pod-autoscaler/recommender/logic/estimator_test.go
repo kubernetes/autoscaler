@@ -105,3 +105,30 @@ func TestConfidenceMultiplierNoHistory(t *testing.T) {
 	assert.Equal(t, model.ResourceAmount(0),
 		testedEstimator2.GetResourceEstimation(s)[model.ResourceCPU])
 }
+
+// Verifies that the confidenceMultiplier calculates the internal
+// confidence based on the amount of historical samples and scales the resources
+// returned by the base estimator according to the formula, using the calculated
+// confidence.
+func TestSafetyMargin(t *testing.T) {
+	// Use 10% safety margin on top of the recommended resources.
+	safetyMarginFraction := 0.1
+	// Minimum safety margin is 0.2 core and 400MB memory.
+	minSafetyMargin := model.Resources{
+		model.ResourceCPU:    model.CPUAmountFromCores(0.2),
+		model.ResourceMemory: model.MemoryAmountFromBytes(4e8),
+	}
+	baseEstimator := NewConstEstimator(model.Resources{
+		model.ResourceCPU:    model.CPUAmountFromCores(3.14),
+		model.ResourceMemory: model.MemoryAmountFromBytes(3.14e9),
+	})
+	testedEstimator := &safetyMargin{
+		marginFraction: safetyMarginFraction,
+		minMargin:      minSafetyMargin,
+		baseEstimator:  baseEstimator,
+	}
+	s := newAggregateContainerState()
+	resourceEstimation := testedEstimator.GetResourceEstimation(s)
+	assert.Equal(t, 3.14*1.1, model.CoresFromCPUAmount(resourceEstimation[model.ResourceCPU]))
+	assert.Equal(t, 3.14e9+4e8, model.BytesFromMemoryAmount(resourceEstimation[model.ResourceMemory]))
+}
