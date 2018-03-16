@@ -45,7 +45,7 @@ const (
 	// metadataHostEnv is the environment variable specifying the
 	// GCE metadata hostname.  If empty, the default value of
 	// metadataIP ("169.254.169.254") is used instead.
-	// This is variable name is not defined by any spec, as far as
+	// This variable name is not defined by any spec, as far as
 	// I know; it was made up for the Go package.
 	metadataHostEnv = "GCE_METADATA_HOST"
 )
