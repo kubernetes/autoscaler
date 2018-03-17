@@ -26,8 +26,8 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// GetWorkerList get the worker list from given cluster.
-func GetWorkerList(clusterID string) ([]string, error) {
+// GetWorkerList get the worker list from given group.
+func GetWorkerList(groupID string) ([]string, error) {
 	data, err := ioutil.ReadFile("./cluster.yaml")
 	if err != nil {
 		return nil, err
@@ -49,7 +49,7 @@ func GetWorkerList(clusterID string) ([]string, error) {
 	if machineMap, ok := m["machines"]; ok {
 		for vm, roleMap := range machineMap.(map[interface{}]interface{}) {
 			if roleMap.(map[interface{}]interface{})["role"] == "worker" &&
-				roleMap.(map[interface{}]interface{})["node-group"] == clusterID {
+				roleMap.(map[interface{}]interface{})["node-group"] == groupID {
 				machines = append(machines, vm.(string))
 			}
 		}
@@ -63,7 +63,7 @@ func OnScaleUp(id string, delta int) error {
 	// Backup config.yaml
 	output, err := execRun("cp", "deploy/scaler.yaml", "deploy/.scaler.yaml.bak")
 	if err != nil {
-		return fmt.Errorf("%v, %v", err, output)
+		return fmt.Errorf("%v, %s", err, output)
 	}
 
 	//1. Modify worker number in scaler.yaml
@@ -73,14 +73,14 @@ func OnScaleUp(id string, delta int) error {
 	output, err = execRun("./az_tools.py", "scaleup")
 	if err != nil {
 		restoreScalerConfig()
-		return fmt.Errorf("%v, %v", err, output)
+		return fmt.Errorf("%v, %s", err, output)
 	}
 
 	// Backup cluster.yaml
 	output, err = execRun("cp", "cluster.yaml", "deploy/.cluster.yaml.bak")
 	if err != nil {
 		restoreScalerConfig()
-		return fmt.Errorf("%v, %v", err, output)
+		return fmt.Errorf("%v, %s", err, output)
 	}
 
 	// 3. Generate new cluster.yaml
@@ -88,7 +88,7 @@ func OnScaleUp(id string, delta int) error {
 	if err != nil {
 		restoreScalerConfig()
 		restoreClusterConfig()
-		return fmt.Errorf("%v, %v", err, output)
+		return fmt.Errorf("%v, %s", err, output)
 	}
 
 	// 4. Run scripts in new workers
@@ -97,7 +97,7 @@ func OnScaleUp(id string, delta int) error {
 		// TODO(harry): delete the new scaled node.
 		restoreScalerConfig()
 		restoreClusterConfig()
-		return fmt.Errorf("%v, %v", err, output)
+		return fmt.Errorf("%v, %s", err, output)
 	}
 	// TODO(harry): should we handle labels separately for `kubernetes labels`
 	glog.Infof("Scale up successfully with %v nodes added", delta)
@@ -211,7 +211,7 @@ func modifyScalerConfigYaml(nodeGroupID string, delta int) error {
 
 	// This node group does not exist in scaler.yaml, it's not right!
 	if !found {
-		return fmt.Errorf("node group %v is not found in deploy/scaler.yaml", nodeGroupID)
+		return fmt.Errorf("node group %v is not found in cluster.yaml", nodeGroupID)
 	}
 
 	d, err := yaml.Marshal(&config)
@@ -235,7 +235,7 @@ func OnScaleDown(id string, nodeName string) error {
 	// Backup config.yaml
 	output, err := execRun("cp", "deploy/scaler.yaml", "deploy/.scaler.yaml.bak")
 	if err != nil {
-		return fmt.Errorf("%v, %v", err, output)
+		return fmt.Errorf("%v, %s", err, output)
 	}
 
 	// 1. Modify worker number in scaler.yaml
@@ -245,14 +245,14 @@ func OnScaleDown(id string, nodeName string) error {
 	output, err = execRun("./az_tools.py", "scaledown", nodeName)
 	if err != nil {
 		restoreScalerConfig()
-		return fmt.Errorf("%v, %v", err, output)
+		return fmt.Errorf("%v, %s", err, output)
 	}
 
 	// Backup cluster.yaml
 	output, err = execRun("cp", "cluster.yaml", "deploy/.cluster.yaml.bak")
 	if err != nil {
 		restoreScalerConfig()
-		return fmt.Errorf("%v, %v", err, output)
+		return fmt.Errorf("%v, %s", err, output)
 	}
 
 	// 3. Generate new cluster.yaml
@@ -260,13 +260,13 @@ func OnScaleDown(id string, nodeName string) error {
 	if err != nil {
 		restoreScalerConfig()
 		restoreClusterConfig()
-		return fmt.Errorf("%v, %v", err, output)
+		return fmt.Errorf("%v, %s", err, output)
 	}
 
 	// 4. Delete node from kubernetes cluster
 	output, err = execRun("./deploy.py", "kubectl", "delete", "node", nodeName)
 	if err != nil {
-		return fmt.Errorf("%v, %v", err, output)
+		return fmt.Errorf("%v, %s", err, output)
 	}
 
 	glog.Infof("Scale down node: %v successfully", nodeName)

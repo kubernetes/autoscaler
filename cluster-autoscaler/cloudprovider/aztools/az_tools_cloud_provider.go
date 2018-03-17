@@ -88,7 +88,7 @@ func BuildAzToolsCloudProvider(
 	// TODO(harry): do we need to name node with nodeGroup name? Seems not.
 	for i, spec := range discoveryOpts.NodeGroupSpecs {
 		if i > 0 {
-			return nil, fmt.Errorf("multiple node groups detected: this is not supported for az tools for now")
+			glog.Warningf("multiple node groups detected: this is not supported for az tools for now")
 		}
 		s, err := dynamic.SpecFromString(spec, scaleToZeroSupported)
 		if err != nil {
@@ -114,11 +114,8 @@ func BuildAzToolsCloudProvider(
 		provider.AddNodeGroup(grpID, s.MinSize, s.MaxSize, len(workers))
 	}
 
-	scalerYaml := "./deploy/scaler.yaml"
-	if _, err := os.Stat(scalerYaml); os.IsNotExist(err) {
-		if err = az.InitScalerFromConfig(grouNames); err != nil {
-			return nil, err
-		}
+	if err := az.InitScalerFromConfig(grouNames); err != nil {
+		return nil, err
 	}
 
 	return provider, nil
@@ -264,7 +261,36 @@ func (azcp *AzToolsCloudProvider) Cleanup() error {
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
 // In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
 func (azcp *AzToolsCloudProvider) Refresh() error {
-	glog.V(5).Infof("Refresh() skipped: aztools only support one NodeGroup for now, so we don't need to periodically update NodeGroup list")
+	for _, nodeGroup := range azcp.NodeGroups() {
+		grpID := nodeGroup.Id()
+
+		// Fetch nodes from ./cluster.yaml
+		workers, err := az.GetWorkerList(grpID)
+		if err != nil {
+			return err
+		}
+
+		oldGroup := azcp.GetNodeGroup(grpID)
+		oldNodes, err := oldGroup.Nodes()
+		if err != nil {
+			return err
+		}
+
+		// If current state of node group is not identical with cluster.yaml
+		// use cluster.yaml to recover it.
+		if len(workers) != len(oldNodes) {
+			for _, oldNode := range oldNodes {
+				delete(azcp.nodes, getProviderID(oldNode))
+			}
+
+			for _, nodeName := range workers {
+				azcp.AddNode(grpID, nodeName)
+			}
+
+			azcp.AddNodeGroup(grpID, oldGroup.MinSize(), oldGroup.MaxSize(), len(workers))
+		}
+
+	}
 	return nil
 }
 
