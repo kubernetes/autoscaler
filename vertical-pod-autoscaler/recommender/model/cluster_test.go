@@ -55,11 +55,28 @@ func TestClusterAddSample(t *testing.T) {
 	assert.Equal(t, testTimestamp, containerStats.LastCPUSampleStart)
 }
 
+func TestClusterRecordOOM(t *testing.T) {
+	// Create a pod with a single container.
+	cluster := NewClusterState()
+	cluster.AddOrUpdatePod(testPodID, testLabels, apiv1.PodRunning)
+	assert.NoError(t, cluster.AddOrUpdateContainer(testContainerID))
+
+	// RecordOOM
+	assert.NoError(t, cluster.RecordOOM(testContainerID, time.Unix(0, 0), ResourceAmount(10)))
+
+	// Verify that OOM was aggregated into the container stats.
+	containerStats := cluster.Pods[testPodID].Containers["container-1"]
+	assert.NotEmpty(t, containerStats.MemoryUsagePeaks.Contents)
+}
+
 // Verifies that AddSample and AddOrUpdateContainer methods return a proper
 // KeyError when referring to a non-existent pod.
 func TestMissingKeys(t *testing.T) {
 	cluster := NewClusterState()
 	err := cluster.AddSample(makeTestUsageSample())
+	assert.EqualError(t, err, "KeyError: {namespace-1 pod-1}")
+
+	err = cluster.RecordOOM(testContainerID, time.Unix(0, 0), ResourceAmount(10))
 	assert.EqualError(t, err, "KeyError: {namespace-1 pod-1}")
 
 	err = cluster.AddOrUpdateContainer(testContainerID)

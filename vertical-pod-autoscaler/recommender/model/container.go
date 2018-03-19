@@ -17,10 +17,16 @@ limitations under the License.
 package model
 
 import (
+	"fmt"
 	"math"
 	"time"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/util"
+)
+
+const (
+	// OOMBumpUpRatio specifies how much memory will be added after observing OOM.
+	OOMBumpUpRatio float64 = 1.2
 )
 
 // ContainerUsageSample is a measure of resource usage of a container over some
@@ -98,8 +104,8 @@ func (container *ContainerState) addCPUSample(sample *ContainerUsageSample) bool
 
 func (container *ContainerState) addMemorySample(sample *ContainerUsageSample) bool {
 	ts := sample.MeasureStart
-	if !sample.isValid(ResourceMemory) || !ts.After(container.lastMemorySampleStart) {
-		return false // Discard invalid, duplicate or out-of-order samples.
+	if !sample.isValid(ResourceMemory) || ts.Before(container.lastMemorySampleStart) {
+		return false // Discard invalid or outdated samples.
 	}
 	if !ts.Before(container.WindowEnd.Add(MemoryAggregationWindowLength)) {
 		// The gap between this sample and the previous interval is so
@@ -124,6 +130,30 @@ func (container *ContainerState) addMemorySample(sample *ContainerUsageSample) b
 		*container.MemoryUsagePeaks.Head(), BytesFromMemoryAmount(sample.Usage))
 	container.lastMemorySampleStart = ts
 	return true
+}
+
+// RecordOOM adds info regarding OOM event in the model as an artifical memory sample.
+func (container *ContainerState) RecordOOM(timestamp time.Time, requestedMemory ResourceAmount) error {
+	resourceAmount := float64(requestedMemory)
+	// Discard old OOM
+	if timestamp.Before(container.WindowEnd.Add(-1 * MemoryAggregationInterval)) {
+		return fmt.Errorf("OOM event will be discarded - it is too old (%v)", timestamp)
+	}
+	// If OOM is in current or next window max requested mem with last known sample.
+	if timestamp.Before(container.WindowEnd.Add(MemoryAggregationInterval)) &&
+		container.MemoryUsagePeaks.Head() != nil {
+		resourceAmount = math.Max(resourceAmount, *container.MemoryUsagePeaks.Head())
+	}
+	resourceAmount *= OOMBumpUpRatio
+	oomMemorySample := ContainerUsageSample{
+		MeasureStart: timestamp,
+		Usage:        ResourceAmount(resourceAmount),
+		Resource:     ResourceMemory,
+	}
+	if !container.addMemorySample(&oomMemorySample) {
+		return fmt.Errorf("Adding OOM sample failed")
+	}
+	return nil
 }
 
 // AddSample adds a usage sample to the given ContainerState. Requires samples

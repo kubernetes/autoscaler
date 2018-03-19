@@ -18,6 +18,7 @@ package model
 
 import (
 	"fmt"
+	"time"
 
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -147,6 +148,23 @@ func (cluster *ClusterState) AddSample(sample *ContainerUsageSampleWithKey) erro
 		return NewKeyError(sample.Container)
 	}
 	containerState.AddSample(&sample.ContainerUsageSample)
+	return nil
+}
+
+// RecordOOM adds info regarding OOM event in the model as an artifical memory sample.
+func (cluster *ClusterState) RecordOOM(containerID ContainerID, timestamp time.Time, requestedMemory ResourceAmount) error {
+	pod, podExists := cluster.Pods[containerID.PodID]
+	if !podExists {
+		return NewKeyError(containerID.PodID)
+	}
+	containerState, containerExists := pod.Containers[containerID.ContainerName]
+	if !containerExists {
+		return NewKeyError(containerID.ContainerName)
+	}
+	err := containerState.RecordOOM(timestamp, requestedMemory)
+	if err != nil {
+		return fmt.Errorf("Error while recording OOM for %v, Reason: %v", containerID, err)
+	}
 	return nil
 }
 
