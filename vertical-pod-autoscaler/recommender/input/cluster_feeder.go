@@ -75,7 +75,7 @@ func newMetricsClient(config *rest.Config) metrics.MetricsClient {
 	return metrics.NewMetricsClient(metricsGetter)
 }
 
-// Creates PodLister, listing only not terminated pods.
+// Creates clients watching pods: PodLister (listing only not terminated pods) and OOM observer.
 func newPodClients(kubeClient kube_client.Interface) (v1lister.PodLister, *oom.Observer) {
 	selector := fields.ParseSelectorOrDie("status.phase!=" + string(apiv1.PodPending))
 	podListWatch := cache.NewListWatchFromClient(kubeClient.CoreV1().RESTClient(), "pods", apiv1.NamespaceAll, selector)
