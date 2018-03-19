@@ -82,3 +82,77 @@ func TestAggregateContainerUsageSamples(t *testing.T) {
 	// Verify that memory peak samples were aggregated properly.
 	assert.Equal(t, []float64{10, 2}, memoryUsagePeaks.Contents())
 }
+
+func TestRecordOOMIncreasedByBumpUp(t *testing.T) {
+	testTimestamp, err := time.Parse(TimeLayout, "2017-04-18 17:35:05")
+	assert.Nil(t, err)
+	mockCPUHistogram := new(util.MockHistogram)
+	memoryUsagePeaks := util.NewFloatSlidingWindow(
+		int(MemoryAggregationWindowLength / MemoryAggregationInterval))
+	c := &ContainerState{
+		CPUUsage:              mockCPUHistogram,
+		LastCPUSampleStart:    time.Unix(0, 0),
+		MemoryUsagePeaks:      memoryUsagePeaks,
+		WindowEnd:             time.Unix(0, 0),
+		lastMemorySampleStart: time.Unix(0, 0)}
+
+	assert.NoError(t, c.RecordOOM(testTimestamp, ResourceAmount(1000)))
+	// Bump Up factor is 20%
+	assert.Equal(t, []float64{1200}, memoryUsagePeaks.Contents())
+}
+
+func TestRecordOOMMaxedWithKnownSample(t *testing.T) {
+	testTimestamp, err := time.Parse(TimeLayout, "2017-04-18 17:35:05")
+	assert.Nil(t, err)
+	mockCPUHistogram := new(util.MockHistogram)
+	memoryUsagePeaks := util.NewFloatSlidingWindow(
+		int(MemoryAggregationWindowLength / MemoryAggregationInterval))
+	c := &ContainerState{
+		CPUUsage:              mockCPUHistogram,
+		LastCPUSampleStart:    time.Unix(0, 0),
+		MemoryUsagePeaks:      memoryUsagePeaks,
+		WindowEnd:             time.Unix(0, 0),
+		lastMemorySampleStart: time.Unix(0, 0)}
+
+	assert.True(t, c.AddSample(newUsageSample(testTimestamp, 3000, ResourceMemory)))
+	assert.NoError(t, c.RecordOOM(testTimestamp, ResourceAmount(1000)))
+	// Last known sample is higher then request, so it is taken.
+	assert.Equal(t, []float64{3600}, memoryUsagePeaks.Contents())
+}
+
+func TestRecordOOMDiscardsOldSample(t *testing.T) {
+	testTimestamp, err := time.Parse(TimeLayout, "2017-04-18 17:35:05")
+	assert.Nil(t, err)
+	mockCPUHistogram := new(util.MockHistogram)
+	memoryUsagePeaks := util.NewFloatSlidingWindow(
+		int(MemoryAggregationWindowLength / MemoryAggregationInterval))
+	c := &ContainerState{
+		CPUUsage:              mockCPUHistogram,
+		LastCPUSampleStart:    time.Unix(0, 0),
+		MemoryUsagePeaks:      memoryUsagePeaks,
+		WindowEnd:             time.Unix(0, 0),
+		lastMemorySampleStart: time.Unix(0, 0)}
+
+	assert.True(t, c.AddSample(newUsageSample(testTimestamp, 1000, ResourceMemory)))
+	assert.Error(t, c.RecordOOM(testTimestamp.Add(-30*time.Hour), ResourceAmount(1000)))
+	// OOM is obsolete, mem not changed
+	assert.Equal(t, []float64{1000}, memoryUsagePeaks.Contents())
+}
+
+func TestRecordOOMInNewWindow(t *testing.T) {
+	testTimestamp, err := time.Parse(TimeLayout, "2017-04-18 17:35:05")
+	assert.Nil(t, err)
+	mockCPUHistogram := new(util.MockHistogram)
+	memoryUsagePeaks := util.NewFloatSlidingWindow(
+		int(MemoryAggregationWindowLength / MemoryAggregationInterval))
+	c := &ContainerState{
+		CPUUsage:              mockCPUHistogram,
+		LastCPUSampleStart:    time.Unix(0, 0),
+		MemoryUsagePeaks:      memoryUsagePeaks,
+		WindowEnd:             time.Unix(0, 0),
+		lastMemorySampleStart: time.Unix(0, 0)}
+
+	assert.True(t, c.AddSample(newUsageSample(testTimestamp, 2000, ResourceMemory)))
+	assert.NoError(t, c.RecordOOM(testTimestamp.Add(2*MemoryAggregationInterval), ResourceAmount(1000)))
+	assert.Equal(t, []float64{2000, 0, 1200}, memoryUsagePeaks.Contents())
+}
