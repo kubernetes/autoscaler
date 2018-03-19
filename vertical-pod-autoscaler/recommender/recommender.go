@@ -96,63 +96,6 @@ func (r *recommender) Run() {
 	}
 }
 
-func createPodResourceRecommender() logic.PodResourceRecommender {
-	targetCPUPercentile := 0.9
-	lowerBoundCPUPercentile := 0.5
-	upperBoundCPUPercentile := 0.95
-
-	targetMemoryPeaksPercentile := 0.9
-	lowerBoundMemoryPeaksPercentile := 0.5
-	upperBoundMemoryPeaksPercentile := 0.95
-
-	targetEstimator := logic.NewPercentileEstimator(targetCPUPercentile, targetMemoryPeaksPercentile)
-	lowerBoundEstimator := logic.NewPercentileEstimator(lowerBoundCPUPercentile, lowerBoundMemoryPeaksPercentile)
-	upperBoundEstimator := logic.NewPercentileEstimator(upperBoundCPUPercentile, upperBoundMemoryPeaksPercentile)
-
-	// Use 10% safety margin on top of the recommended resources.
-	safetyMarginFraction := 0.1
-	// Minimum safety margin is 0.2 core and 300MB memory.
-	minSafetyMargin := model.Resources{
-		model.ResourceCPU:    model.CPUAmountFromCores(0.2),
-		model.ResourceMemory: model.MemoryAmountFromBytes(300 * 1024 * 1024),
-	}
-	targetEstimator = logic.WithSafetyMargin(safetyMarginFraction, minSafetyMargin, targetEstimator)
-	lowerBoundEstimator = logic.WithSafetyMargin(safetyMarginFraction, minSafetyMargin, lowerBoundEstimator)
-	upperBoundEstimator = logic.WithSafetyMargin(safetyMarginFraction, minSafetyMargin, upperBoundEstimator)
-
-	// Apply confidence multiplier to the upper bound estimator. This means
-	// that the updater will be less eager to evict pods with short history
-	// in order to reclaim unused resources.
-	// Using the confidence multiplier 1 with exponent +1 means that
-	// the upper bound is multiplied by (1 + 1/history-length-in-days).
-	// See estimator.go to see how the history length and the confidence
-	// multiplier are determined. The formula yields the following multipliers:
-	// No history     : *INF  (do not force pod eviction)
-	// 12h history    : *3    (force pod eviction if the request is > 3 * upper bound)
-	// 24h history    : *2
-	// 1 week history : *1.14
-	upperBoundEstimator = logic.WithConfidenceMultiplier(1.0, 1.0, upperBoundEstimator)
-
-	// Apply confidence multiplier to the lower bound estimator. This means
-	// that the updater will be less eager to evict pods with short history
-	// in order to provision them with more resources.
-	// Using the confidence multiplier 0.001 with exponent -2 means that
-	// the lower bound is multiplied by the factor (1 + 0.001/history-length-in-days)^-2
-	// (which is very rapidly converging to 1.0).
-	// See estimator.go to see how the history length and the confidence
-	// multiplier are determined. The formula yields the following multipliers:
-	// No history   : *0   (do not force pod eviction)
-	// 5m history   : *0.6 (force pod eviction if the request is < 0.6 * lower bound)
-	// 30m history  : *0.9
-	// 60m history  : *0.95
-	lowerBoundEstimator = logic.WithConfidenceMultiplier(0.001, -2.0, lowerBoundEstimator)
-
-	return logic.NewPodResourceRecommender(
-		targetEstimator,
-		lowerBoundEstimator,
-		upperBoundEstimator)
-}
-
 // NewRecommender creates a new recommender instance,
 // which can be run in order to provide continuous resource recommendations for containers.
 // It requires cluster configuration object and duration between recommender intervals.
@@ -163,7 +106,7 @@ func NewRecommender(config *rest.Config, metricsFetcherInterval time.Duration, h
 		clusterStateFeeder:      input.NewClusterStateFeeder(config, historyProvider, clusterState),
 		metricsFetchingInterval: metricsFetcherInterval,
 		vpaClient:               vpa_clientset.NewForConfigOrDie(config).PocV1alpha1(),
-		podResourceRecommender:  createPodResourceRecommender(),
+		podResourceRecommender:  logic.CreatePodResourceRecommender(),
 	}
 	glog.V(3).Infof("New Recommender created %+v", recommender)
 	return recommender
