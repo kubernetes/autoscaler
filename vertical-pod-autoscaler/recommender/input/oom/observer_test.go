@@ -76,7 +76,7 @@ func newPod(yaml string) (*v1.Pod, error) {
 	return obj.(*v1.Pod), nil
 }
 
-func TestReceived(t *testing.T) {
+func TestOOMReceived(t *testing.T) {
 	p1, err := newPod(pod1Yaml)
 	assert.NoError(t, err)
 	p2, err := newPod(pod2Yaml)
