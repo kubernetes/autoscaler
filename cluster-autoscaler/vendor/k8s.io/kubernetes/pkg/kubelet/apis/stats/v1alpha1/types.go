@@ -56,6 +56,19 @@ type NodeStats struct {
 	// Stats about the underlying container runtime.
 	// +optional
 	Runtime *RuntimeStats `json:"runtime,omitempty"`
+	// Stats about the rlimit of system.
+	// +optional
+	Rlimit *RlimitStats `json:"rlimit,omitempty"`
+}
+
+// RlimitStats are stats rlimit of OS.
+type RlimitStats struct {
+	Time metav1.Time `json:"time"`
+
+	// The max PID of OS.
+	MaxPID *int64 `json:"maxpid,omitempty"`
+	// The number of running process in the OS.
+	NumOfRunningProcesses *int64 `json:"curproc,omitempty"`
 }
 
 // RuntimeStats are stats pertaining to the underlying container runtime.
@@ -74,6 +87,8 @@ const (
 	SystemContainerRuntime = "runtime"
 	// SystemContainerMisc is the container name for the system container tracking non-kubernetes processes.
 	SystemContainerMisc = "misc"
+	// SystemContainerPods is the container name for the system container tracking user pods.
+	SystemContainerPods = "pods"
 )
 
 // PodStats holds pod-level unprocessed sample stats.
@@ -141,10 +156,10 @@ type PodReference struct {
 	UID       string `json:"uid"`
 }
 
-// NetworkStats contains data about network resources.
-type NetworkStats struct {
-	// The time at which these stats were updated.
-	Time metav1.Time `json:"time"`
+// InterfaceStats contains resource value data about interface.
+type InterfaceStats struct {
+	// The name of the interface
+	Name string `json:"name"`
 	// Cumulative count of bytes received.
 	// +optional
 	RxBytes *uint64 `json:"rxBytes,omitempty"`
@@ -157,6 +172,17 @@ type NetworkStats struct {
 	// Cumulative count of transmit errors encountered.
 	// +optional
 	TxErrors *uint64 `json:"txErrors,omitempty"`
+}
+
+// NetworkStats contains data about network resources.
+type NetworkStats struct {
+	// The time at which these stats were updated.
+	Time metav1.Time `json:"time"`
+
+	// Stats for the default interface, if found
+	InterfaceStats `json:",inline"`
+
+	Interfaces []InterfaceStats `json:"interfaces,omitempty"`
 }
 
 // CPUStats contains data about CPU usage.
