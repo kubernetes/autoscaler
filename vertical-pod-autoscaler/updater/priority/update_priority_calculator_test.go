@@ -41,7 +41,7 @@ func TestSortPriority(t *testing.T) {
 	pod3 := test.BuildTestPod("POD3", containerName, "1", "", nil, nil)
 	pod4 := test.BuildTestPod("POD4", containerName, "3", "", nil, nil)
 
-	recommendation := test.Recommendation(containerName, "10", "")
+	recommendation := test.Recommendation().WithContainer(containerName).WithTarget("10", "").Get()
 
 	timestampNow := pod1.Status.StartTime.Time.Add(time.Hour * 24)
 	calculator.AddPod(pod1, recommendation, timestampNow)
@@ -59,7 +59,7 @@ func TestSortPriorityMultiResource(t *testing.T) {
 	pod1 := test.BuildTestPod("POD1", containerName, "4", "60M", nil, nil)
 	pod2 := test.BuildTestPod("POD2", containerName, "3", "90M", nil, nil)
 
-	recommendation := test.Recommendation(containerName, "6", "100M")
+	recommendation := test.Recommendation().WithContainer(containerName).WithTarget("6", "100M").Get()
 
 	timestampNow := pod1.Status.StartTime.Time.Add(time.Hour * 24)
 	calculator.AddPod(pod1, recommendation, timestampNow)
@@ -88,7 +88,7 @@ func TestSortPriorityMultiContainers(t *testing.T) {
 	container2 := test.BuildTestContainer(containerName2, "2", "20M")
 	pod2.Spec.Containers = append(pod2.Spec.Containers, container2)
 
-	recommendation := test.Recommendation(containerName, "6", "20M")
+	recommendation := test.Recommendation().WithContainer(containerName).WithTarget("6", "20M").Get()
 	cpuRec, _ := resource.ParseQuantity("4")
 	memRec, _ := resource.ParseQuantity("20M")
 	container2rec := vpa_types.RecommendedContainerResources{
@@ -119,7 +119,7 @@ func TestSortPriorityResourcesDecrease(t *testing.T) {
 	pod2 := test.BuildTestPod("POD2", containerName, "7", "", nil, nil)
 	pod3 := test.BuildTestPod("POD3", containerName, "10", "", nil, nil)
 
-	recommendation := test.Recommendation(containerName, "5", "")
+	recommendation := test.Recommendation().WithContainer(containerName).WithTarget("5", "").Get()
 
 	timestampNow := pod1.Status.StartTime.Time.Add(time.Hour * 24)
 	calculator.AddPod(pod1, recommendation, timestampNow)
@@ -139,7 +139,7 @@ func TestUpdateNotRequired(t *testing.T) {
 
 	pod1 := test.BuildTestPod("POD1", containerName, "4", "", nil, nil)
 
-	recommendation := test.Recommendation(containerName, "4", "")
+	recommendation := test.Recommendation().WithContainer(containerName).WithTarget("4", "").Get()
 
 	timestampNow := pod1.Status.StartTime.Time.Add(time.Hour * 24)
 	calculator.AddPod(pod1, recommendation, timestampNow)
@@ -153,7 +153,7 @@ func TestUpdateRequiredOnMilliQuantities(t *testing.T) {
 
 	pod1 := test.BuildTestPod("POD1", containerName, "10m", "", nil, nil)
 
-	recommendation := test.Recommendation(containerName, "900m", "")
+	recommendation := test.Recommendation().WithContainer(containerName).WithTarget("900m", "").Get()
 
 	timestampNow := pod1.Status.StartTime.Time.Add(time.Hour * 24)
 	calculator.AddPod(pod1, recommendation, timestampNow)
@@ -168,7 +168,7 @@ func TestUsePolicy(t *testing.T) {
 
 	pod1 := test.BuildTestPod("POD1", containerName, "4", "10M", nil, nil)
 
-	recommendation := test.Recommendation(containerName, "5", "5M")
+	recommendation := test.Recommendation().WithContainer(containerName).WithTarget("5", "5M").Get()
 
 	timestampNow := pod1.Status.StartTime.Time.Add(time.Hour * 24)
 	calculator.AddPod(pod1, recommendation, timestampNow)
@@ -191,10 +191,11 @@ func TestUpdateLonglivedPods(t *testing.T) {
 		test.BuildTestPod("POD3", containerName, "7", "", nil, nil),
 	}
 
-	recommendation := test.Recommendation(containerName, "5", "")
 	// Both pods are within the recommended range.
-	test.AddMinRecommended(recommendation, "1", "")
-	test.AddMaxRecommended(recommendation, "6", "")
+	recommendation := test.Recommendation().WithContainer(containerName).
+		WithTarget("5", "").
+		WithMinRecommended("1", "").
+		WithMaxRecommended("6", "").Get()
 
 	// Pretend that the test pods started 13 hours ago.
 	timestampNow := pods[0].Status.StartTime.Time.Add(time.Hour * 13)
@@ -218,10 +219,11 @@ func TestUpdateShortlivedPods(t *testing.T) {
 		test.BuildTestPod("POD3", containerName, "7", "", nil, nil),
 	}
 
-	recommendation := test.Recommendation(containerName, "5", "")
 	// Both pods are within the recommended range.
-	test.AddMinRecommended(recommendation, "1", "")
-	test.AddMaxRecommended(recommendation, "6", "")
+	recommendation := test.Recommendation().WithContainer(containerName).
+		WithTarget("5", "").
+		WithMinRecommended("1", "").
+		WithMaxRecommended("6", "").Get()
 
 	// Pretend that the test pods started 11 hours ago.
 	timestampNow := pods[0].Status.StartTime.Time.Add(time.Hour * 11)
