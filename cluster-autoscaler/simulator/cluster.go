@@ -29,8 +29,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	scheduler_util "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 	client "k8s.io/client-go/kubernetes"
-	"k8s.io/kubernetes/plugin/pkg/scheduler/algorithm"
-	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
+	"k8s.io/kubernetes/pkg/scheduler/algorithm"
+	"k8s.io/kubernetes/pkg/scheduler/schedulercache"
 
 	"github.com/golang/glog"
 )

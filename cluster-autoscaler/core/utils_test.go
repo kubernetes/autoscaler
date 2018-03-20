@@ -40,7 +40,7 @@ import (
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 
 	"github.com/stretchr/testify/assert"
-	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
+	"k8s.io/kubernetes/pkg/scheduler/schedulercache"
 )
 
 func TestPodSchedulableMap(t *testing.T) {

@@ -40,7 +40,7 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 	core "k8s.io/client-go/testing"
 	kube_record "k8s.io/client-go/tools/record"
-	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
+	"k8s.io/kubernetes/pkg/scheduler/schedulercache"
 
 	"github.com/stretchr/testify/assert"
 )
