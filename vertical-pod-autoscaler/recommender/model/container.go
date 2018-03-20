@@ -27,6 +27,8 @@ import (
 const (
 	// OOMBumpUpRatio specifies how much memory will be added after observing OOM.
 	OOMBumpUpRatio float64 = 1.2
+	// OOMMinBumpUp specifies minimal increase of memeory after observing OOM.
+	OOMMinBumpUp float64 = 100 * 1024 * 1024 // 100MB
 )
 
 // ContainerUsageSample is a measure of resource usage of a container over some
@@ -139,14 +141,13 @@ func (container *ContainerState) RecordOOM(timestamp time.Time, requestedMemory 
 	if timestamp.Before(container.WindowEnd.Add(-1 * MemoryAggregationInterval)) {
 		return fmt.Errorf("OOM event will be discarded - it is too old (%v)", timestamp)
 	}
-	// If OOM is in current or next window max requested mem with last known sample.
+	// If we have recent memory sample max it with request.
 	if timestamp.Before(container.WindowEnd.Add(MemoryAggregationInterval)) &&
 		container.MemoryUsagePeaks.Head() != nil {
 		resourceAmount = math.Max(resourceAmount, *container.MemoryUsagePeaks.Head())
 	}
 
-	// Incresa by 100MB or 20%
-	resourceAmount = math.Max(resourceAmount+100*1024*1024, resourceAmount*OOMBumpUpRatio)
+	resourceAmount = math.Max(resourceAmount+OOMMinBumpUp, resourceAmount*OOMBumpUpRatio)
 
 	oomMemorySample := ContainerUsageSample{
 		MeasureStart: timestamp,
