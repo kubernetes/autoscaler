@@ -25,13 +25,13 @@ import (
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	informers "k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
-	"k8s.io/kubernetes/plugin/pkg/scheduler/algorithm"
-	"k8s.io/kubernetes/plugin/pkg/scheduler/algorithm/predicates"
-	"k8s.io/kubernetes/plugin/pkg/scheduler/factory"
-	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
+	"k8s.io/kubernetes/pkg/scheduler/algorithm"
+	"k8s.io/kubernetes/pkg/scheduler/algorithm/predicates"
+	"k8s.io/kubernetes/pkg/scheduler/factory"
+	"k8s.io/kubernetes/pkg/scheduler/schedulercache"
 
 	// We need to import provider to initialize default scheduler.
-	_ "k8s.io/kubernetes/plugin/pkg/scheduler/algorithmprovider"
+	_ "k8s.io/kubernetes/pkg/scheduler/algorithmprovider"
 
 	"github.com/golang/glog"
 )

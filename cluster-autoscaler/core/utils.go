@@ -41,7 +41,7 @@ import (
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	kube_client "k8s.io/client-go/kubernetes"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
-	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
+	"k8s.io/kubernetes/pkg/scheduler/schedulercache"
 
 	"github.com/golang/glog"
 )
