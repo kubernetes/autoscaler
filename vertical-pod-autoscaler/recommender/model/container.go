@@ -144,7 +144,10 @@ func (container *ContainerState) RecordOOM(timestamp time.Time, requestedMemory 
 		container.MemoryUsagePeaks.Head() != nil {
 		resourceAmount = math.Max(resourceAmount, *container.MemoryUsagePeaks.Head())
 	}
-	resourceAmount *= OOMBumpUpRatio
+
+	// Incresa by 100MB or 20%
+	resourceAmount = math.Max(resourceAmount+100*1024*1024, resourceAmount*OOMBumpUpRatio)
+
 	oomMemorySample := ContainerUsageSample{
 		MeasureStart: timestamp,
 		Usage:        ResourceAmount(resourceAmount),
