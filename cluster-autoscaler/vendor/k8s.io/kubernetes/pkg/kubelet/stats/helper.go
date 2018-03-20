@@ -138,19 +138,29 @@ func cadvisorInfoToNetworkStats(name string, info *cadvisorapiv2.ContainerInfo) 
 	if !found {
 		return nil
 	}
-	for _, inter := range cstat.Network.Interfaces {
-		if inter.Name == network.DefaultInterfaceName {
-			return &statsapi.NetworkStats{
-				Time:     metav1.NewTime(cstat.Timestamp),
-				RxBytes:  &inter.RxBytes,
-				RxErrors: &inter.RxErrors,
-				TxBytes:  &inter.TxBytes,
-				TxErrors: &inter.TxErrors,
-			}
-		}
+
+	iStats := statsapi.NetworkStats{
+		Time: metav1.NewTime(cstat.Timestamp),
 	}
-	glog.V(4).Infof("Missing default interface %q for %s", network.DefaultInterfaceName, name)
-	return nil
+
+	for i := range cstat.Network.Interfaces {
+		inter := cstat.Network.Interfaces[i]
+		iStat := statsapi.InterfaceStats{
+			Name:     inter.Name,
+			RxBytes:  &inter.RxBytes,
+			RxErrors: &inter.RxErrors,
+			TxBytes:  &inter.TxBytes,
+			TxErrors: &inter.TxErrors,
+		}
+
+		if inter.Name == network.DefaultInterfaceName {
+			iStats.InterfaceStats = iStat
+		}
+
+		iStats.Interfaces = append(iStats.Interfaces, iStat)
+	}
+
+	return &iStats
 }
 
 // cadvisorInfoToUserDefinedMetrics returns the statsapi.UserDefinedMetric
@@ -228,11 +238,17 @@ func isMemoryUnlimited(v uint64) bool {
 
 // getCgroupInfo returns the information of the container with the specified
 // containerName from cadvisor.
-func getCgroupInfo(cadvisor cadvisor.Interface, containerName string) (*cadvisorapiv2.ContainerInfo, error) {
+func getCgroupInfo(cadvisor cadvisor.Interface, containerName string, updateStats bool) (*cadvisorapiv2.ContainerInfo, error) {
+	var maxAge *time.Duration
+	if updateStats {
+		age := 0 * time.Second
+		maxAge = &age
+	}
 	infoMap, err := cadvisor.ContainerInfoV2(containerName, cadvisorapiv2.RequestOptions{
 		IdType:    cadvisorapiv2.TypeName,
 		Count:     2, // 2 samples are needed to compute "instantaneous" CPU
 		Recursive: false,
+		MaxAge:    maxAge,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get container info for %q: %v", containerName, err)
@@ -246,8 +262,8 @@ func getCgroupInfo(cadvisor cadvisor.Interface, containerName string) (*cadvisor
 
 // getCgroupStats returns the latest stats of the container having the
 // specified containerName from cadvisor.
-func getCgroupStats(cadvisor cadvisor.Interface, containerName string) (*cadvisorapiv2.ContainerStats, error) {
-	info, err := getCgroupInfo(cadvisor, containerName)
+func getCgroupStats(cadvisor cadvisor.Interface, containerName string, updateStats bool) (*cadvisorapiv2.ContainerStats, error) {
+	info, err := getCgroupInfo(cadvisor, containerName, updateStats)
 	if err != nil {
 		return nil, err
 	}
