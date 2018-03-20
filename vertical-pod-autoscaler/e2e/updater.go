@@ -68,10 +68,14 @@ var _ = updaterE2eDescribe("Updater", func() {
 		newCPUQuantity, err := resource.ParseQuantity("200m")
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
+		resourceList := apiv1.ResourceList{apiv1.ResourceCPU: newCPUQuantity}
+
 		vpaCRD.Status.Recommendation.ContainerRecommendations = []vpa_types.RecommendedContainerResources{
 			{
-				Name:   "hamster",
-				Target: apiv1.ResourceList{apiv1.ResourceCPU: newCPUQuantity},
+				Name:           "hamster",
+				Target:         resourceList,
+				MinRecommended: resourceList,
+				MaxRecommended: resourceList,
 			},
 		}
 

@@ -18,7 +18,6 @@ package test
 
 import (
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/stretchr/testify/mock"
@@ -119,41 +118,6 @@ func BuildTestPolicy(containerName, minCPU, maxCPU, minMemory, maxMemory string)
 	}}
 }
 
-// BuildTestVerticalPodAutoscaler creates VerticalPodAutoscaler with specified policy constraints.
-// TODO: Allow passing arbitrary MinRecommended and MaxRecommended values.
-func BuildTestVerticalPodAutoscaler(containerName, targetCPU, minCPU, maxCPU, targetMemory, minMemory, maxMemory string, selector string) *vpa_types.VerticalPodAutoscaler {
-	resourcesPolicy := BuildTestPolicy(containerName, minCPU, maxCPU, minMemory, maxMemory)
-
-	labelSelector, err := metav1.ParseToLabelSelector(selector)
-	if err != nil {
-		log.Fatal(err)
-	}
-	recommendedResources := Resources(targetCPU, targetMemory)
-
-	return &vpa_types.VerticalPodAutoscaler{
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: "default",
-		},
-		Spec: vpa_types.VerticalPodAutoscalerSpec{
-			Selector:       labelSelector,
-			UpdatePolicy:   vpa_types.PodUpdatePolicy{},
-			ResourcePolicy: *resourcesPolicy,
-		},
-		Status: vpa_types.VerticalPodAutoscalerStatus{
-			Recommendation: vpa_types.RecommendedPodResources{
-				ContainerRecommendations: []vpa_types.RecommendedContainerResources{
-					{
-						Name:           containerName,
-						Target:         recommendedResources,
-						MinRecommended: recommendedResources,
-						MaxRecommended: recommendedResources,
-					},
-				},
-			},
-		},
-	}
-}
-
 // Resources creates a ResourceList with given amount of cpu and memory.
 func Resources(cpu, mem string) apiv1.ResourceList {
 	result := make(apiv1.ResourceList)
@@ -166,32 +130,6 @@ func Resources(cpu, mem string) apiv1.ResourceList {
 		result[apiv1.ResourceMemory] = memVal
 	}
 	return result
-}
-
-// Recommendation creates Recommendation with specified container name and Target resources.
-func Recommendation(containerName, cpu, mem string) *vpa_types.RecommendedPodResources {
-	return &vpa_types.RecommendedPodResources{ContainerRecommendations: []vpa_types.RecommendedContainerResources{
-		{
-			Name:           containerName,
-			Target:         Resources(cpu, mem),
-			MinRecommended: Resources(cpu, mem),
-			MaxRecommended: Resources(cpu, mem),
-		}},
-	}
-}
-
-// AddMinRecommended extends a RecommendedPodResources object returned by Recommendation()
-// with MinRecommended resources.
-// TODO: Replace with the builder pattern.
-func AddMinRecommended(recommendation *vpa_types.RecommendedPodResources, cpu, mem string) {
-	recommendation.ContainerRecommendations[0].MinRecommended = Resources(cpu, mem)
-}
-
-// AddMaxRecommended extends a RecommendedPodResources object returned by Recommendation()
-// with MaxRecommended resources.
-// TODO: Replace with the builder pattern.
-func AddMaxRecommended(recommendation *vpa_types.RecommendedPodResources, cpu, mem string) {
-	recommendation.ContainerRecommendations[0].MaxRecommended = Resources(cpu, mem)
 }
 
 // RecommenderAPIMock is a mock of RecommenderAPI

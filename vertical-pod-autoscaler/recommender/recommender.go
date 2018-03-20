@@ -106,36 +106,6 @@ func (r *recommender) Run() {
 	}
 }
 
-func createPodResourceRecommender() logic.PodResourceRecommender {
-	targetCPUPercentile := 0.9
-	lowerBoundCPUPercentile := 0.5
-	upperBoundCPUPercentile := 0.95
-
-	targetMemoryPeaksPercentile := 0.9
-	lowerBoundMemoryPeaksPercentile := 0.5
-	upperBoundMemoryPeaksPercentile := 0.95
-
-	// Using the confidence multiplier with exponent +1 or -1 means that
-	// the recommendation is multiplied or divided (respecitvely) by:
-	// (1 + 1/history-length-in-days).
-	// See estimator.go to see how the history length and the confidence
-	// multiplier are determined. The formula yeilds the following multipliers:
-	// No history   : *INF.
-	// After 12h    : *3
-	// After 1 day  : *2
-	// After 1 week : *1.14
-	targetEstimator := logic.NewPercentileEstimator(targetCPUPercentile, targetMemoryPeaksPercentile)
-	lowerBoundEstimator := logic.WithConfidenceMultiplier(-1,
-		logic.NewPercentileEstimator(lowerBoundCPUPercentile, lowerBoundMemoryPeaksPercentile))
-	upperBoundEstimator := logic.WithConfidenceMultiplier(1,
-		logic.NewPercentileEstimator(upperBoundCPUPercentile, upperBoundMemoryPeaksPercentile))
-
-	return logic.NewPodResourceRecommender(
-		targetEstimator,
-		lowerBoundEstimator,
-		upperBoundEstimator)
-}
-
 // NewRecommender creates a new recommender instance,
 // which can be run in order to provide continuous resource recommendations for containers.
 // It requires cluster configuration object and duration between recommender intervals.
@@ -147,7 +117,7 @@ func NewRecommender(config *rest.Config, metricsFetcherInterval time.Duration, h
 		checkpointWriter:        output.NewCheckpointWriter(clusterState, vpa_clientset.NewForConfigOrDie(config).PocV1alpha1()),
 		metricsFetchingInterval: metricsFetcherInterval,
 		vpaClient:               vpa_clientset.NewForConfigOrDie(config).PocV1alpha1(),
-		podResourceRecommender:  createPodResourceRecommender(),
+		podResourceRecommender:  logic.CreatePodResourceRecommender(),
 		useCheckpoints:          useCheckpoints,
 	}
 	glog.V(3).Infof("New Recommender created %+v", recommender)
