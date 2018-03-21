@@ -241,7 +241,7 @@ func (f *dockerFilter) AddLabel(key, value string) {
 	f.Add("label", fmt.Sprintf("%s=%s", key, value))
 }
 
-// parseUserFromImageUser splits the user out of an user:group string.
+// parseUserFromImageUser splits the user out of a user:group string.
 func parseUserFromImageUser(id string) string {
 	if id == "" {
 		return id
