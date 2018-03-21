@@ -43,7 +43,7 @@ type Interface interface {
 	DeleteRealServer(*VirtualServer, *RealServer) error
 }
 
-// VirtualServer is an user-oriented definition of an IPVS virtual server in its entirety.
+// VirtualServer is a user-oriented definition of an IPVS virtual server in its entirety.
 type VirtualServer struct {
 	Address   net.IP
 	Protocol  string
@@ -78,7 +78,7 @@ func (svc *VirtualServer) String() string {
 	return net.JoinHostPort(svc.Address.String(), strconv.Itoa(int(svc.Port))) + "/" + svc.Protocol
 }
 
-// RealServer is an user-oriented definition of an IPVS real server in its entirety.
+// RealServer is a user-oriented definition of an IPVS real server in its entirety.
 type RealServer struct {
 	Address net.IP
 	Port    uint16
