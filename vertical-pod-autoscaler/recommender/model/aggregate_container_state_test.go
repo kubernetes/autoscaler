@@ -22,6 +22,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/util"
 )
@@ -109,6 +110,9 @@ func TestAggregateContainerStateSaveToCheckpoint(t *testing.T) {
 	location, _ := time.LoadLocation("UTC")
 	cs := NewAggregateContainerState()
 	t1, t2 := time.Date(2018, time.January, 1, 2, 3, 4, 0, location), time.Date(2018, time.February, 1, 2, 3, 4, 0, location)
+	cs.FirstSampleStart = t1
+	cs.LastSampleStart = t2
+	cs.TotalSamplesCount = 10
 
 	cs.AggregateCPUUsage.AddSample(1, 33, t2)
 	cs.AggregateMemoryPeaks.AddSample(1, 55, t1)
@@ -116,6 +120,10 @@ func TestAggregateContainerStateSaveToCheckpoint(t *testing.T) {
 	checkpoint, err := cs.SaveToCheckpoint()
 
 	assert.NoError(t, err)
+
+	assert.Equal(t, t1, checkpoint.FirstSampleStart.Time)
+	assert.Equal(t, t2, checkpoint.LastSampleStart.Time)
+	assert.Equal(t, 10, checkpoint.TotalSamplesCount)
 
 	assert.Equal(t, SupportedCheckpointVersion, checkpoint.Version)
 
@@ -135,8 +143,14 @@ func TestAggregateContainerStateLoadFromCheckpointFailsForVersionMismatch(t *tes
 }
 
 func TestAggregateContainerStateLoadFromCheckpoint(t *testing.T) {
+	location, _ := time.LoadLocation("UTC")
+	t1, t2 := time.Date(2018, time.January, 1, 2, 3, 4, 0, location), time.Date(2018, time.February, 1, 2, 3, 4, 0, location)
+
 	checkpoint := vpa_types.VerticalPodAutoscalerCheckpointStatus{
-		Version: SupportedCheckpointVersion,
+		Version:           SupportedCheckpointVersion,
+		FirstSampleStart:  metav1.NewTime(t1),
+		LastSampleStart:   metav1.NewTime(t2),
+		TotalSamplesCount: 20,
 		MemoryHistogram: vpa_types.HistogramCheckpoint{
 			BucketWeights: map[int]uint32{
 				0: 10,
@@ -155,6 +169,9 @@ func TestAggregateContainerStateLoadFromCheckpoint(t *testing.T) {
 	err := cs.LoadFromCheckpoint(&checkpoint)
 	assert.NoError(t, err)
 
+	assert.Equal(t, t1, cs.FirstSampleStart)
+	assert.Equal(t, t2, cs.LastSampleStart)
+	assert.Equal(t, 20, cs.TotalSamplesCount)
 	assert.False(t, cs.AggregateCPUUsage.IsEmpty())
 	assert.False(t, cs.AggregateMemoryPeaks.IsEmpty())
 }

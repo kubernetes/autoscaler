@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"time"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/util"
 )
@@ -90,9 +91,12 @@ func (a *AggregateContainerState) SaveToCheckpoint() (*vpa_types.VerticalPodAuto
 		return nil, err
 	}
 	return &vpa_types.VerticalPodAutoscalerCheckpointStatus{
-		MemoryHistogram: *memory,
-		CPUHistogram:    *cpu,
-		Version:         SupportedCheckpointVersion,
+		FirstSampleStart:  metav1.NewTime(a.FirstSampleStart),
+		LastSampleStart:   metav1.NewTime(a.LastSampleStart),
+		TotalSamplesCount: a.TotalSamplesCount,
+		MemoryHistogram:   *memory,
+		CPUHistogram:      *cpu,
+		Version:           SupportedCheckpointVersion,
 	}, nil
 }
 
@@ -102,6 +106,9 @@ func (a *AggregateContainerState) LoadFromCheckpoint(checkpoint *vpa_types.Verti
 	if checkpoint.Version != SupportedCheckpointVersion {
 		return fmt.Errorf("Unssuported checkpoint version %s", checkpoint.Version)
 	}
+	a.TotalSamplesCount = checkpoint.TotalSamplesCount
+	a.FirstSampleStart = checkpoint.FirstSampleStart.Time
+	a.LastSampleStart = checkpoint.LastSampleStart.Time
 	err := a.AggregateMemoryPeaks.LoadFromCheckpoint(&checkpoint.MemoryHistogram)
 	if err != nil {
 		return err
