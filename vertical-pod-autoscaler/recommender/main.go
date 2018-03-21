@@ -30,6 +30,7 @@ import (
 var (
 	metricsFetcherInterval = flag.Duration("recommender-interval", 1*time.Minute, `How often metrics should be fetched`)
 	prometheusAddress      = flag.String("prometheus-address", "", `Where to reach for Prometheus metrics`)
+	storage                = flag.String("storage", "", `Specifies storage mode. Supported values: prometheus, checkpoint (default)`)
 )
 
 func main() {
@@ -37,7 +38,8 @@ func main() {
 	glog.Infof("Running VPA Recommender")
 
 	config := createKubeConfig()
-	recommender := NewRecommender(config, *metricsFetcherInterval, history.NewPrometheusHistoryProvider(*prometheusAddress))
+
+	recommender := NewRecommender(config, *metricsFetcherInterval, history.NewPrometheusHistoryProvider(*prometheusAddress), *storage != "prometheus")
 	recommender.Run()
 }
 
