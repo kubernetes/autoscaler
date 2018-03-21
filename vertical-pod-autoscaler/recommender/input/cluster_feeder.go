@@ -204,7 +204,14 @@ Loop:
 		select {
 		case oomInfo := <-feeder.oomObserver.ObservedOomsChannel:
 			glog.V(3).Infof("OOM detected %+v", oomInfo)
-			// TODO(schylek) Handle OOM
+			container := model.ContainerID{
+				PodID: model.PodID{
+					Namespace: oomInfo.Namespace,
+					PodName:   oomInfo.Pod,
+				},
+				ContainerName: oomInfo.Container,
+			}
+			feeder.clusterState.RecordOOM(container, oomInfo.Timestamp, model.ResourceAmount(oomInfo.MemoryRequest.Value()))
 		default:
 			break Loop
 		}
