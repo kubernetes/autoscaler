@@ -32,10 +32,10 @@ import (
 	"gopkg.in/gcfg.v1"
 
 	"github.com/golang/glog"
-	"golang.org/x/net/context"
+	//"golang.org/x/net/context"
+	"context"
 	"k8s.io/api/core/v1"
 	k8stypes "k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/tools/cache"
 	v1helper "k8s.io/kubernetes/pkg/apis/core/v1/helper"
@@ -54,8 +54,6 @@ const (
 	MacOuiVC                      = "00:50:56"
 	MacOuiEsx                     = "00:0c:29"
 	CleanUpDummyVMRoutineInterval = 5
-	UUIDPath                      = "/sys/class/dmi/id/product_serial"
-	UUIDPrefix                    = "VMware-"
 )
 
 var cleanUpRoutineInitialized = false
@@ -72,6 +70,7 @@ type VSphere struct {
 	vsphereInstanceMap map[string]*VSphereInstance
 	// Responsible for managing discovery of k8s node, their location etc.
 	nodeManager *NodeManager
+	vmUUID      string
 }
 
 // Represents a vSphere instance where one or more kubernetes nodes are running.
@@ -211,21 +210,23 @@ func init() {
 
 // Initialize passes a Kubernetes clientBuilder interface to the cloud provider
 func (vs *VSphere) Initialize(clientBuilder controller.ControllerClientBuilder) {
+}
+
+// Initialize Node Informers
+func (vs *VSphere) SetInformers(informerFactory informers.SharedInformerFactory) {
 	if vs.cfg == nil {
 		return
 	}
 
 	// Only on controller node it is required to register listeners.
 	// Register callbacks for node updates
-	client := clientBuilder.ClientOrDie("vSphere-cloud-provider")
-	factory := informers.NewSharedInformerFactory(client, 5*time.Minute)
-	nodeInformer := factory.Core().V1().Nodes()
-	nodeInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+	glog.V(4).Infof("Setting up node informers for vSphere Cloud Provider")
+	nodeInformer := informerFactory.Core().V1().Nodes().Informer()
+	nodeInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc:    vs.NodeAdded,
 		DeleteFunc: vs.NodeDeleted,
 	})
-	go nodeInformer.Informer().Run(wait.NeverStop)
-	glog.V(4).Infof("vSphere cloud provider initialized")
+	glog.V(4).Infof("Node informers in vSphere cloud provider initialized")
 }
 
 // Creates new worker node interface and returns
@@ -237,7 +238,11 @@ func newWorkerNode() (*VSphere, error) {
 		glog.Errorf("Failed to get hostname. err: %+v", err)
 		return nil, err
 	}
-
+	vs.vmUUID, err = GetVMUUID()
+	if err != nil {
+		glog.Errorf("Failed to get uuid. err: %+v", err)
+		return nil, err
+	}
 	return &vs, nil
 }
 
@@ -375,14 +380,6 @@ func newControllerNode(cfg VSphereConfig) (*VSphere, error) {
 	if cfg.Global.VCenterPort == "" {
 		cfg.Global.VCenterPort = "443"
 	}
-	if cfg.Global.VMUUID == "" {
-		// This needs root privileges on the host, and will fail otherwise.
-		cfg.Global.VMUUID, err = getvmUUID()
-		if err != nil {
-			glog.Errorf("Failed to get VM UUID. err: %+v", err)
-			return nil, err
-		}
-	}
 	vsphereInstanceMap, err := populateVsphereInstanceMap(&cfg)
 	if err != nil {
 		return nil, err
@@ -401,6 +398,11 @@ func newControllerNode(cfg VSphereConfig) (*VSphere, error) {
 	vs.hostName, err = os.Hostname()
 	if err != nil {
 		glog.Errorf("Failed to get hostname. err: %+v", err)
+		return nil, err
+	}
+	vs.vmUUID, err = GetVMUUID()
+	if err != nil {
+		glog.Errorf("Failed to get uuid. err: %+v", err)
 		return nil, err
 	}
 	runtime.SetFinalizer(&vs, logout)
@@ -495,7 +497,7 @@ func (vs *VSphere) getVMFromNodeName(ctx context.Context, nodeName k8stypes.Node
 }
 
 // NodeAddresses is an implementation of Instances.NodeAddresses.
-func (vs *VSphere) NodeAddresses(nodeName k8stypes.NodeName) ([]v1.NodeAddress, error) {
+func (vs *VSphere) NodeAddresses(ctx context.Context, nodeName k8stypes.NodeName) ([]v1.NodeAddress, error) {
 	// Get local IP addresses if node is local node
 	if vs.hostName == convertToString(nodeName) {
 		return getLocalIP()
@@ -554,17 +556,17 @@ func (vs *VSphere) NodeAddresses(nodeName k8stypes.NodeName) ([]v1.NodeAddress, 
 // NodeAddressesByProviderID returns the node addresses of an instances with the specified unique providerID
 // This method will not be called from the node that is requesting this ID. i.e. metadata service
 // and other local methods cannot be used here
-func (vs *VSphere) NodeAddressesByProviderID(providerID string) ([]v1.NodeAddress, error) {
-	return vs.NodeAddresses(convertToK8sType(providerID))
+func (vs *VSphere) NodeAddressesByProviderID(ctx context.Context, providerID string) ([]v1.NodeAddress, error) {
+	return vs.NodeAddresses(ctx, convertToK8sType(providerID))
 }
 
 // AddSSHKeyToAllInstances add SSH key to all instances
-func (vs *VSphere) AddSSHKeyToAllInstances(user string, keyData []byte) error {
+func (vs *VSphere) AddSSHKeyToAllInstances(ctx context.Context, user string, keyData []byte) error {
 	return cloudprovider.NotImplemented
 }
 
 // CurrentNodeName gives the current node name
-func (vs *VSphere) CurrentNodeName(hostname string) (k8stypes.NodeName, error) {
+func (vs *VSphere) CurrentNodeName(ctx context.Context, hostname string) (k8stypes.NodeName, error) {
 	return convertToK8sType(vs.hostName), nil
 }
 
@@ -577,14 +579,30 @@ func convertToK8sType(vmName string) k8stypes.NodeName {
 }
 
 // ExternalID returns the cloud provider ID of the node with the specified Name (deprecated).
-func (vs *VSphere) ExternalID(nodeName k8stypes.NodeName) (string, error) {
-	return vs.InstanceID(nodeName)
+func (vs *VSphere) ExternalID(ctx context.Context, nodeName k8stypes.NodeName) (string, error) {
+	return vs.InstanceID(ctx, nodeName)
 }
 
 // InstanceExistsByProviderID returns true if the instance with the given provider id still exists and is running.
 // If false is returned with no error, the instance will be immediately deleted by the cloud controller manager.
-func (vs *VSphere) InstanceExistsByProviderID(providerID string) (bool, error) {
-	_, err := vs.InstanceID(convertToK8sType(providerID))
+func (vs *VSphere) InstanceExistsByProviderID(ctx context.Context, providerID string) (bool, error) {
+	var nodeName string
+	nodes, err := vs.nodeManager.GetNodeDetails()
+	if err != nil {
+		glog.Errorf("Error while obtaining Kubernetes node nodeVmDetail details. error : %+v", err)
+		return false, err
+	}
+	for _, node := range nodes {
+		if node.VMUUID == GetUUIDFromProviderID(providerID) {
+			nodeName = node.NodeName
+			break
+		}
+	}
+	if nodeName == "" {
+		msg := fmt.Sprintf("Error while obtaining Kubernetes nodename for providerID %s.", providerID)
+		return false, errors.New(msg)
+	}
+	_, err = vs.InstanceID(ctx, convertToK8sType(nodeName))
 	if err == nil {
 		return true, nil
 	}
@@ -593,11 +611,11 @@ func (vs *VSphere) InstanceExistsByProviderID(providerID string) (bool, error) {
 }
 
 // InstanceID returns the cloud provider ID of the node with the specified Name.
-func (vs *VSphere) InstanceID(nodeName k8stypes.NodeName) (string, error) {
+func (vs *VSphere) InstanceID(ctx context.Context, nodeName k8stypes.NodeName) (string, error) {
 
 	instanceIDInternal := func() (string, error) {
 		if vs.hostName == convertToString(nodeName) {
-			return vs.hostName, nil
+			return vs.vmUUID, nil
 		}
 
 		// Below logic can be performed only on master node where VC details are preset.
@@ -631,7 +649,7 @@ func (vs *VSphere) InstanceID(nodeName k8stypes.NodeName) (string, error) {
 			return "", err
 		}
 		if isActive {
-			return convertToString(nodeName), nil
+			return vs.vmUUID, nil
 		}
 		glog.Warningf("The VM: %s is not in %s state", convertToString(nodeName), vclib.ActivePowerState)
 		return "", cloudprovider.InstanceNotFound
@@ -639,7 +657,8 @@ func (vs *VSphere) InstanceID(nodeName k8stypes.NodeName) (string, error) {
 
 	instanceID, err := instanceIDInternal()
 	if err != nil {
-		isManagedObjectNotFoundError, err := vs.retry(nodeName, err)
+		var isManagedObjectNotFoundError bool
+		isManagedObjectNotFoundError, err = vs.retry(nodeName, err)
 		if isManagedObjectNotFoundError {
 			if err == nil {
 				glog.V(4).Infof("InstanceID: Found node %q", convertToString(nodeName))
@@ -656,11 +675,11 @@ func (vs *VSphere) InstanceID(nodeName k8stypes.NodeName) (string, error) {
 // InstanceTypeByProviderID returns the cloudprovider instance type of the node with the specified unique providerID
 // This method will not be called from the node that is requesting this ID. i.e. metadata service
 // and other local methods cannot be used here
-func (vs *VSphere) InstanceTypeByProviderID(providerID string) (string, error) {
+func (vs *VSphere) InstanceTypeByProviderID(ctx context.Context, providerID string) (string, error) {
 	return "", nil
 }
 
-func (vs *VSphere) InstanceType(name k8stypes.NodeName) (string, error) {
+func (vs *VSphere) InstanceType(ctx context.Context, name k8stypes.NodeName) (string, error) {
 	return "", nil
 }
 
@@ -687,11 +706,6 @@ func (vs *VSphere) Zones() (cloudprovider.Zones, bool) {
 // Routes returns a false since the interface is not supported for vSphere.
 func (vs *VSphere) Routes() (cloudprovider.Routes, bool) {
 	return nil, false
-}
-
-// ScrubDNS filters DNS settings for pods.
-func (vs *VSphere) ScrubDNS(nameservers, searches []string) (nsOut, srchOut []string) {
-	return nameservers, searches
 }
 
 // AttachDisk attaches given virtual disk volume to the compute running kubelet.
@@ -729,14 +743,17 @@ func (vs *VSphere) AttachDisk(vmDiskPath string, storagePolicyName string, nodeN
 	requestTime := time.Now()
 	diskUUID, err = attachDiskInternal(vmDiskPath, storagePolicyName, nodeName)
 	if err != nil {
-		isManagedObjectNotFoundError, err := vs.retry(nodeName, err)
+		var isManagedObjectNotFoundError bool
+		isManagedObjectNotFoundError, err = vs.retry(nodeName, err)
 		if isManagedObjectNotFoundError {
 			if err == nil {
 				glog.V(4).Infof("AttachDisk: Found node %q", convertToString(nodeName))
 				diskUUID, err = attachDiskInternal(vmDiskPath, storagePolicyName, nodeName)
+				glog.V(4).Infof("AttachDisk: Retry: diskUUID %s, err +%v", convertToString(nodeName), diskUUID, err)
 			}
 		}
 	}
+	glog.V(4).Infof("AttachDisk executed for node %s and volume %s with diskUUID %s. Err: %s", convertToString(nodeName), vmDiskPath, diskUUID, err)
 	vclib.RecordvSphereMetric(vclib.OperationAttachVolume, requestTime, err)
 	return diskUUID, err
 }
@@ -792,7 +809,8 @@ func (vs *VSphere) DetachDisk(volPath string, nodeName k8stypes.NodeName) error 
 	requestTime := time.Now()
 	err := detachDiskInternal(volPath, nodeName)
 	if err != nil {
-		isManagedObjectNotFoundError, err := vs.retry(nodeName, err)
+		var isManagedObjectNotFoundError bool
+		isManagedObjectNotFoundError, err = vs.retry(nodeName, err)
 		if isManagedObjectNotFoundError {
 			if err == nil {
 				err = detachDiskInternal(volPath, nodeName)
@@ -835,6 +853,7 @@ func (vs *VSphere) DiskIsAttached(volPath string, nodeName k8stypes.NodeName) (b
 			glog.Errorf("Failed to get VM object for node: %q. err: +%v", vSphereInstance, err)
 			return false, err
 		}
+
 		volPath = vclib.RemoveStorageClusterORFolderNameFromVDiskPath(volPath)
 		attached, err := vm.IsDiskAttached(ctx, volPath)
 		if err != nil {
@@ -842,12 +861,14 @@ func (vs *VSphere) DiskIsAttached(volPath string, nodeName k8stypes.NodeName) (b
 				volPath,
 				vSphereInstance)
 		}
+		glog.V(4).Infof("DiskIsAttached result: %q and error: %q, for volume: %q", attached, err, volPath)
 		return attached, err
 	}
 	requestTime := time.Now()
 	isAttached, err := diskIsAttachedInternal(volPath, nodeName)
 	if err != nil {
-		isManagedObjectNotFoundError, err := vs.retry(nodeName, err)
+		var isManagedObjectNotFoundError bool
+		isManagedObjectNotFoundError, err = vs.retry(nodeName, err)
 		if isManagedObjectNotFoundError {
 			if err == vclib.ErrNoVMFound {
 				isAttached, err = false, nil
@@ -1163,4 +1184,11 @@ func (vs *VSphere) NodeDeleted(obj interface{}) {
 
 	glog.V(4).Infof("Node deleted: %+v", node)
 	vs.nodeManager.UnRegisterNode(node)
+}
+
+func (vs *VSphere) NodeManager() (nodeManager *NodeManager) {
+	if vs == nil {
+		return nil
+	}
+	return vs.nodeManager
 }
