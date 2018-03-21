@@ -26,7 +26,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
-	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
+	"k8s.io/kubernetes/pkg/scheduler/schedulercache"
 
 	"github.com/stretchr/testify/assert"
 )

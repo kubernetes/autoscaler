@@ -1,19 +1,5 @@
-commit 24042ce6e700be767176e2e9438d6d97de69f578 (origin/master, origin/HEAD)
-Merge: 52bd638e1a 99bfade485
-Author: Kubernetes Submit Queue <k8s-merge-robot@users.noreply.github.com>
-Date:   Mon Nov 27 16:53:11 2017 -0800
+commit c83dd0424f9866bfd364e31a431bade187970ce2 (origin/release-1.10)
+Author: caleb miles <calebmiles@google.com>
+Date:   Mon Mar 19 20:35:57 2018 -0400
 
-    Merge pull request #56435 from tallclair/aa-upgrade
-    
-    Automatic merge from submit-queue (batch tested with PRs 56356, 56435). If you want to cherry-pick this change to another branch, please follow the instructions <a href="https://github.com/kubernetes/community/blob/master/contributors/devel/cherry-picks.md">here</a>.
-    
-    Fix AppArmor upgrade test
-    
-    https://github.com/kubernetes/kubernetes/pull/52395 Introduced the `unconfined` AppArmor profile, but this feature should not be tested in the upgrade test since it doesn't exist prior to 1.9 (so the test always fails when checking it prior to the upgrade).
-    
-    Fixes #56422
-    
-    ```release-note
-    NONE
-    ```
-
+    Add/Update CHANGELOG-1.10.md for v1.10.0-rc.1.

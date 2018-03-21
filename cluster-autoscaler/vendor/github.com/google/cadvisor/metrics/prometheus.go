@@ -150,10 +150,18 @@ func NewPrometheusCollector(i infoProvider, f ContainerLabelsFunc) *PrometheusCo
 				},
 			}, {
 				name:        "container_cpu_usage_seconds_total",
-				help:        "Cumulative cpu time consumed per cpu in seconds.",
+				help:        "Cumulative cpu time consumed in seconds.",
 				valueType:   prometheus.CounterValue,
 				extraLabels: []string{"cpu"},
 				getValues: func(s *info.ContainerStats) metricValues {
+					if len(s.Cpu.Usage.PerCpu) == 0 {
+						if s.Cpu.Usage.Total > 0 {
+							return metricValues{{
+								value:  float64(s.Cpu.Usage.Total) / float64(time.Second),
+								labels: []string{"total"},
+							}}
+						}
+					}
 					values := make(metricValues, 0, len(s.Cpu.Usage.PerCpu))
 					for i, value := range s.Cpu.Usage.PerCpu {
 						if value > 0 {
@@ -820,11 +828,19 @@ func (c *PrometheusCollector) collectContainersInfo(ch chan<- prometheus.Metric)
 		glog.Warningf("Couldn't get containers: %s", err)
 		return
 	}
+	rawLabels := map[string]struct{}{}
 	for _, container := range containers {
-		labels, values := []string{}, []string{}
-		for l, v := range c.containerLabelsFunc(container) {
+		for l := range c.containerLabelsFunc(container) {
+			rawLabels[l] = struct{}{}
+		}
+	}
+	for _, container := range containers {
+		values := make([]string, 0, len(rawLabels))
+		labels := make([]string, 0, len(rawLabels))
+		containerLabels := c.containerLabelsFunc(container)
+		for l := range rawLabels {
 			labels = append(labels, sanitizeLabelName(l))
-			values = append(values, v)
+			values = append(values, containerLabels[l])
 		}
 
 		// Container spec

@@ -24,6 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/volume"
+	"k8s.io/kubernetes/pkg/volume/util"
 )
 
 type azureDiskProvisioner struct {
@@ -55,18 +56,17 @@ func (d *azureDiskDeleter) Delete() error {
 		return err
 	}
 
-	wasStandAlone := (*volumeSource.Kind != v1.AzureSharedBlobDisk)
 	managed := (*volumeSource.Kind == v1.AzureManagedDisk)
 
 	if managed {
 		return diskController.DeleteManagedDisk(volumeSource.DataDiskURI)
 	}
 
-	return diskController.DeleteBlobDisk(volumeSource.DataDiskURI, wasStandAlone)
+	return diskController.DeleteBlobDisk(volumeSource.DataDiskURI)
 }
 
 func (p *azureDiskProvisioner) Provision() (*v1.PersistentVolume, error) {
-	if !volume.AccessModesContainedInAll(p.plugin.GetAccessModes(), p.options.PVC.Spec.AccessModes) {
+	if !util.AccessModesContainedInAll(p.plugin.GetAccessModes(), p.options.PVC.Spec.AccessModes) {
 		return nil, fmt.Errorf("invalid AccessModes %v: only AccessModes %v are supported", p.options.PVC.Spec.AccessModes, p.plugin.GetAccessModes())
 	}
 	supportedModes := p.plugin.GetAccessModes()
@@ -94,10 +94,10 @@ func (p *azureDiskProvisioner) Provision() (*v1.PersistentVolume, error) {
 		err                        error
 	)
 	// maxLength = 79 - (4 for ".vhd") = 75
-	name := volume.GenerateVolumeName(p.options.ClusterName, p.options.PVName, 75)
+	name := util.GenerateVolumeName(p.options.ClusterName, p.options.PVName, 75)
 	capacity := p.options.PVC.Spec.Resources.Requests[v1.ResourceName(v1.ResourceStorage)]
 	requestBytes := capacity.Value()
-	requestGB := int(volume.RoundUpSize(requestBytes, 1024*1024*1024))
+	requestGB := int(util.RoundUpSize(requestBytes, 1024*1024*1024))
 
 	for k, v := range p.options.Parameters {
 		switch strings.ToLower(k) {
@@ -149,26 +149,13 @@ func (p *azureDiskProvisioner) Provision() (*v1.PersistentVolume, error) {
 			return nil, err
 		}
 	} else {
-		forceStandAlone := (kind == v1.AzureDedicatedBlobDisk)
 		if kind == v1.AzureDedicatedBlobDisk {
-			if location != "" && account != "" {
-				// use dedicated kind (by default) for compatibility
-				_, diskURI, _, err = diskController.CreateVolume(name, account, skuName, location, requestGB)
-				if err != nil {
-					return nil, err
-				}
-			} else {
-				if location != "" || account != "" {
-					return nil, fmt.Errorf("AzureDisk - location(%s) and account(%s) must be both empty or specified for dedicated kind, only one value specified is not allowed",
-						location, account)
-				}
-				diskURI, err = diskController.CreateBlobDisk(name, skuName, requestGB, forceStandAlone)
-				if err != nil {
-					return nil, err
-				}
+			_, diskURI, _, err = diskController.CreateVolume(name, account, storageAccountType, location, requestGB)
+			if err != nil {
+				return nil, err
 			}
 		} else {
-			diskURI, err = diskController.CreateBlobDisk(name, skuName, requestGB, forceStandAlone)
+			diskURI, err = diskController.CreateBlobDisk(name, skuName, requestGB)
 			if err != nil {
 				return nil, err
 			}
