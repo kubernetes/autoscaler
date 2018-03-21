@@ -19,6 +19,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/golang/glog"
@@ -91,13 +92,28 @@ func UpdateVpaStatus(vpaClient vpa_api.VerticalPodAutoscalerInterface, vpa *mode
 	return patchVpa(vpaClient, (*vpa).ID.VpaName, patches)
 }
 
+type nullResourceEventHandler struct{}
+
+func (*nullResourceEventHandler) OnAdd(obj interface{})               {}
+func (*nullResourceEventHandler) OnUpdate(oldObj, newObj interface{}) {}
+func (*nullResourceEventHandler) OnDelete(obj interface{})            {}
+
 // NewAllVpasLister returns VerticalPodAutoscalerLister configured to fetch all VPA objects.
+// The method blocks until vpaLister is initially populated.
 func NewAllVpasLister(vpaClient *vpa_clientset.Clientset, stopChannel <-chan struct{}) vpa_lister.VerticalPodAutoscalerLister {
 	vpaListWatch := cache.NewListWatchFromClient(vpaClient.PocV1alpha1().RESTClient(), "verticalpodautoscalers", apiv1.NamespaceAll, fields.Everything())
-	store := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
-	vpaLister := vpa_lister.NewVerticalPodAutoscalerLister(store)
-	vpaReflector := cache.NewReflector(vpaListWatch, &vpa_types.VerticalPodAutoscaler{}, store, time.Hour)
-	go vpaReflector.Run(stopChannel)
+	indexer, controller := cache.NewIndexerInformer(vpaListWatch,
+		&vpa_types.VerticalPodAutoscaler{},
+		1*time.Hour,
+		&nullResourceEventHandler{},
+		cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
+	vpaLister := vpa_lister.NewVerticalPodAutoscalerLister(indexer)
+	go controller.Run(stopChannel)
+	if !cache.WaitForCacheSync(make(chan struct{}), controller.HasSynced) {
+		glog.Fatalf("Failed to sync VPA cache during initialization")
+	} else {
+		glog.Info("Initial VPA synced sucessfully")
+	}
 	return vpaLister
 }
 
@@ -141,4 +157,28 @@ func GetControllingVPAForPod(pod *apiv1.Pod, vpas []*vpa_types.VerticalPodAutosc
 		}
 	}
 	return controlling
+}
+
+// CreateOrUpdateVpaCheckpoint updates the status field of the VPA Checkpoint API object.
+// If object doesn't exits it is created.
+func CreateOrUpdateVpaCheckpoint(vpaCheckpointClient vpa_api.VerticalPodAutoscalerCheckpointInterface,
+	vpaCheckpoint *vpa_types.VerticalPodAutoscalerCheckpoint) error {
+	patches := make([]patchRecord, 0)
+	patches = append(patches, patchRecord{
+		Op:    "replace",
+		Path:  "/status",
+		Value: vpaCheckpoint.Status,
+	})
+	bytes, err := json.Marshal(patches)
+	if err != nil {
+		return fmt.Errorf("Cannot marshal VPA checkpoint status patches %+v. Reason: %+v", patches, err)
+	}
+	_, err = vpaCheckpointClient.Patch(vpaCheckpoint.ObjectMeta.Name, types.JSONPatchType, bytes)
+	if err != nil && strings.Contains(err.Error(), fmt.Sprintf("\"%s\" not found", vpaCheckpoint.ObjectMeta.Name)) {
+		_, err = vpaCheckpointClient.Create(vpaCheckpoint)
+	}
+	if err != nil {
+		return fmt.Errorf("Cannot save checkpotint for vpa %v container %v. Reason: %+v", vpaCheckpoint.ObjectMeta.Name, vpaCheckpoint.Spec.ContainerName, err)
+	}
+	return nil
 }
