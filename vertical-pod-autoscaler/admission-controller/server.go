@@ -50,17 +50,32 @@ func (s *admissionServer) getPatchesForPodResourceRequest(raw []byte, namespace 
 		pod.Namespace = namespace
 	}
 	glog.V(4).Infof("Admitting pod %v", pod.ObjectMeta)
-	requests, err := s.recommendationProvider.GetRequestForPod(&pod)
+	containersResources, err := s.recommendationProvider.GetContainersResourcesForPod(&pod)
 	if err != nil {
 		return nil, err
 	}
 	patches := []patchRecord{}
-	for i, resources := range requests {
-		for resource, request := range resources {
+	for i, containerResources := range containersResources {
+		for resource, request := range containerResources.Requests {
 			patches = append(patches, patchRecord{
 				Op:    "add",
 				Path:  fmt.Sprintf("/spec/containers/%d/resources/requests/%s", i, resource),
 				Value: request.String()})
+		}
+		if _, limitSet := pod.Spec.Containers[i].Resources.Limits[v1.ResourceMemory]; !limitSet {
+			limit, found := containerResources.Limits[v1.ResourceMemory]
+			if found {
+				if pod.Spec.Containers[i].Resources.Limits == nil {
+					patches = append(patches, patchRecord{
+						Op:    "add",
+						Path:  fmt.Sprintf("/spec/containers/%d/resources/limits", i),
+						Value: v1.ResourceList{}})
+				}
+				patches = append(patches, patchRecord{
+					Op:    "add",
+					Path:  fmt.Sprintf("/spec/containers/%d/resources/limits/%s", i, v1.ResourceMemory),
+					Value: limit.String()})
+			}
 		}
 	}
 	return patches, nil
