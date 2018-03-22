@@ -78,7 +78,7 @@ Note that:
 * There are no `--nodes` flags passed to cluster-autoscaler because the node groups are automatically discovered by tags
 
 ```
-kubectl apply -f examples/cluster-autoscaler-run-on-master.yaml
+kubectl apply -f examples/cluster-autoscaler-autodiscover.yaml
 ```
 
 ## Scaling a node group to 0
