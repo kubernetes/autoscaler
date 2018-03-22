@@ -59,6 +59,9 @@ func TestUpdateResourceRequests(t *testing.T) {
 
 	vpaWithHighMemory := vpaBuilder.WithTarget("2", "1000Mi").WithMaxAllowed("3", "3Gi").Get()
 
+	vpaWithEmptyRecommendation := vpaBuilder.Get()
+	vpaWithEmptyRecommendation.Status.Recommendation = vpa_types.RecommendedPodResources{}
+
 	testCases := []testCase{{
 		pod:            uninitialized,
 		vpas:           []*vpa_types.VerticalPodAutoscaler{vpa},
@@ -109,6 +112,13 @@ func TestUpdateResourceRequests(t *testing.T) {
 		expectedMem:    "200Mi",
 		expectedCPU:    "2",
 		memLimit:       "300Mi",
+	}, {
+		pod:            initialized,
+		vpas:           []*vpa_types.VerticalPodAutoscaler{vpaWithEmptyRecommendation},
+		expectedAction: true,
+		expectedMem:    "0",
+		expectedCPU:    "0",
+		memLimit:       "200Mi",
 	}}
 	for _, tc := range testCases {
 		vpaNamespaceLister := &test.VerticalPodAutoscalerListerMock{}
@@ -126,16 +136,18 @@ func TestUpdateResourceRequests(t *testing.T) {
 		if tc.expectedAction {
 			assert.Nil(t, err)
 			assert.Equal(t, len(resources), 1)
-			cpu, err := resource.ParseQuantity(tc.expectedCPU)
+			expectedCPU, err := resource.ParseQuantity(tc.expectedCPU)
 			assert.NoError(t, err)
-			assert.Equal(t, cpu, resources[0].Requests[apiv1.ResourceCPU])
-			memory, err := resource.ParseQuantity(tc.expectedMem)
+			cpuRequest := resources[0].Requests[apiv1.ResourceCPU]
+			assert.Equal(t, expectedCPU.Value(), cpuRequest.Value(), "cpu request doesn't match")
+			expectedMemory, err := resource.ParseQuantity(tc.expectedMem)
 			assert.NoError(t, err)
-			assert.Equal(t, memory, resources[0].Requests[apiv1.ResourceMemory])
+			memoryRequest := resources[0].Requests[apiv1.ResourceMemory]
+			assert.Equal(t, expectedMemory.Value(), memoryRequest.Value(), "memory request doesn't match")
 			expectedMemoryLimit, err := resource.ParseQuantity(tc.memLimit)
 			assert.NoError(t, err)
 			memoryLimit := resources[0].Limits[apiv1.ResourceMemory]
-			assert.Equal(t, expectedMemoryLimit.Value(), memoryLimit.Value())
+			assert.Equal(t, expectedMemoryLimit.Value(), memoryLimit.Value(), "memory limit doesn't match")
 		} else {
 			assert.Equal(t, len(resources), 0)
 		}

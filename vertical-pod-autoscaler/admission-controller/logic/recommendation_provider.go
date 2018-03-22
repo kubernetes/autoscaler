@@ -70,17 +70,22 @@ func getContainersResources(pod *v1.Pod, podRecommendation vpa_types.Recommended
 	resources := make([]ContainerResources, len(pod.Spec.Containers))
 	for i, container := range pod.Spec.Containers {
 		resources[i] = newContainerResources()
+		setLimit := func(r v1.ResourceList) {
+			memoryLimit := getMemoryLimit(r)
+			if memoryLimit != nil {
+				resources[i].Limits[v1.ResourceMemory] = *memoryLimit
+				vpa_api_util.ApplyVPAContainerPolicy(resources[i].Limits, container, &policy)
+			}
+		}
+
 		recommendation, err := vpa_api_util.GetCappedRecommendationForContainer(container, &podRecommendation, &policy)
 		if err != nil {
 			glog.V(2).Infof("%v", err)
+			setLimit(pod.Spec.Containers[i].Resources.Requests)
 			continue
 		}
 		resources[i].Requests = recommendation.Target
-		memoryLimit := getMemoryLimit(resources[i].Requests)
-		if memoryLimit != nil {
-			resources[i].Limits[v1.ResourceMemory] = *memoryLimit
-			vpa_api_util.ApplyVPAContainerPolicy(resources[i].Limits, container, &policy)
-		}
+		setLimit(resources[i].Requests)
 	}
 	return resources
 }
