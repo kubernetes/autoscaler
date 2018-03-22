@@ -33,53 +33,70 @@ func TestUpdateResourceRequests(t *testing.T) {
 		expectedAction bool
 		expectedMem    string
 		expectedCPU    string
+		memLimit       string
 	}
 	containerName := "container1"
 	labels := map[string]string{"app": "testingApp"}
 	vpaBuilder := test.VerticalPodAutoscaler().
 		WithContainer(containerName).
-		WithTarget("2", "200M").
-		WithMinAllowed("1", "100M").
-		WithMaxAllowed("3", "1G").
+		WithTarget("2", "200Mi").
+		WithMinAllowed("1", "100Mi").
+		WithMaxAllowed("3", "1Gi").
 		WithSelector("app = testingApp")
 	vpa := vpaBuilder.Get()
 
 	uninitialized := test.BuildTestPod("test_uninitialized", containerName, "", "", nil, nil)
 	uninitialized.ObjectMeta.Labels = labels
 
-	initialized := test.BuildTestPod("test_initialized", containerName, "1", "100M", nil, nil)
+	initialized := test.BuildTestPod("test_initialized", containerName, "1", "100Mi", nil, nil)
 	initialized.ObjectMeta.Labels = labels
 
 	mismatchedVPA := vpaBuilder.WithSelector("app = differentApp").Get()
 	offVPA := vpaBuilder.WithUpdateMode(vpa_types.UpdateModeOff).Get()
 
-	targetBelowMinVPA := vpaBuilder.WithTarget("3", "150M").WithMinAllowed("4", "300M").WithMaxAllowed("5", "1G").Get()
-	targetAboveMaxVPA := vpaBuilder.WithTarget("7", "2G").WithMinAllowed("4", "300M").WithMaxAllowed("5", "1G").Get()
+	targetBelowMinVPA := vpaBuilder.WithTarget("3", "150Mi").WithMinAllowed("4", "300Mi").WithMaxAllowed("5", "1Gi").Get()
+	targetAboveMaxVPA := vpaBuilder.WithTarget("7", "2Gi").WithMinAllowed("4", "300Mi").WithMaxAllowed("5", "1Gi").Get()
+
+	vpaWithHighMemory := vpaBuilder.WithTarget("2", "1000Mi").WithMaxAllowed("3", "3Gi").Get()
+
+	vpaWithEmptyRecommendation := vpaBuilder.Get()
+	vpaWithEmptyRecommendation.Status.Recommendation = vpa_types.RecommendedPodResources{}
 
 	testCases := []testCase{{
 		pod:            uninitialized,
 		vpas:           []*vpa_types.VerticalPodAutoscaler{vpa},
 		expectedAction: true,
-		expectedMem:    "200M",
+		expectedMem:    "200Mi",
 		expectedCPU:    "2",
+		memLimit:       "300Mi", // Limit is expected to be +100Mi
 	}, {
 		pod:            uninitialized,
 		vpas:           []*vpa_types.VerticalPodAutoscaler{targetBelowMinVPA},
 		expectedAction: true,
-		expectedMem:    "300M", // MinMemory is expected to be used
-		expectedCPU:    "4",    // MinCpu is expected to be used
+		expectedMem:    "300Mi", // MinMemory is expected to be used
+		expectedCPU:    "4",     // MinCpu is expected to be used
+		memLimit:       "400Mi",
 	}, {
 		pod:            uninitialized,
 		vpas:           []*vpa_types.VerticalPodAutoscaler{targetAboveMaxVPA},
 		expectedAction: true,
-		expectedMem:    "1G", // MaxMemory is expected to be used
-		expectedCPU:    "5",  // MaxCpu is expected to be used
+		expectedMem:    "1Gi", // MaxMemory is expected to be used
+		expectedCPU:    "5",   // MaxCpu is expected to be used
+		memLimit:       "1Gi", // Limit is capped to Max Memory
 	}, {
 		pod:            initialized,
 		vpas:           []*vpa_types.VerticalPodAutoscaler{vpa},
 		expectedAction: true,
-		expectedMem:    "200M",
+		expectedMem:    "200Mi",
 		expectedCPU:    "2",
+		memLimit:       "300Mi",
+	}, {
+		pod:            initialized,
+		vpas:           []*vpa_types.VerticalPodAutoscaler{vpaWithHighMemory},
+		expectedAction: true,
+		expectedMem:    "1000Mi",
+		expectedCPU:    "2",
+		memLimit:       "1200Mi", // Limit is expected to be 20% higher
 	}, {
 		pod:            uninitialized,
 		vpas:           []*vpa_types.VerticalPodAutoscaler{mismatchedVPA},
@@ -92,8 +109,16 @@ func TestUpdateResourceRequests(t *testing.T) {
 		pod:            uninitialized,
 		vpas:           []*vpa_types.VerticalPodAutoscaler{offVPA, vpa},
 		expectedAction: true,
-		expectedMem:    "200M",
+		expectedMem:    "200Mi",
 		expectedCPU:    "2",
+		memLimit:       "300Mi",
+	}, {
+		pod:            initialized,
+		vpas:           []*vpa_types.VerticalPodAutoscaler{vpaWithEmptyRecommendation},
+		expectedAction: true,
+		expectedMem:    "0",
+		expectedCPU:    "0",
+		memLimit:       "200Mi",
 	}}
 	for _, tc := range testCases {
 		vpaNamespaceLister := &test.VerticalPodAutoscalerListerMock{}
@@ -106,19 +131,25 @@ func TestUpdateResourceRequests(t *testing.T) {
 			vpaLister: vpaLister,
 		}
 
-		requests, err := recommendationProvider.GetRequestForPod(tc.pod)
+		resources, err := recommendationProvider.GetContainersResourcesForPod(tc.pod)
 
 		if tc.expectedAction {
 			assert.Nil(t, err)
-			assert.Equal(t, len(requests), 1)
-			cpu, err := resource.ParseQuantity(tc.expectedCPU)
+			assert.Equal(t, len(resources), 1)
+			expectedCPU, err := resource.ParseQuantity(tc.expectedCPU)
 			assert.NoError(t, err)
-			assert.Equal(t, cpu, requests[0][apiv1.ResourceCPU])
-			memory, err := resource.ParseQuantity(tc.expectedMem)
+			cpuRequest := resources[0].Requests[apiv1.ResourceCPU]
+			assert.Equal(t, expectedCPU.Value(), cpuRequest.Value(), "cpu request doesn't match")
+			expectedMemory, err := resource.ParseQuantity(tc.expectedMem)
 			assert.NoError(t, err)
-			assert.Equal(t, memory, requests[0][apiv1.ResourceMemory])
+			memoryRequest := resources[0].Requests[apiv1.ResourceMemory]
+			assert.Equal(t, expectedMemory.Value(), memoryRequest.Value(), "memory request doesn't match")
+			expectedMemoryLimit, err := resource.ParseQuantity(tc.memLimit)
+			assert.NoError(t, err)
+			memoryLimit := resources[0].Limits[apiv1.ResourceMemory]
+			assert.Equal(t, expectedMemoryLimit.Value(), memoryLimit.Value(), "memory limit doesn't match")
 		} else {
-			assert.Equal(t, len(requests), 0)
+			assert.Equal(t, len(resources), 0)
 		}
 	}
 }

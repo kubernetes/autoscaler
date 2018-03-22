@@ -21,14 +21,8 @@ import (
 	"math"
 	"time"
 
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/common"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/util"
-)
-
-const (
-	// OOMBumpUpRatio specifies how much memory will be added after observing OOM.
-	OOMBumpUpRatio float64 = 1.2
-	// OOMMinBumpUp specifies minimal increase of memeory after observing OOM.
-	OOMMinBumpUp float64 = 100 * 1024 * 1024 // 100MB
 )
 
 // ContainerUsageSample is a measure of resource usage of a container over some
@@ -147,7 +141,8 @@ func (container *ContainerState) RecordOOM(timestamp time.Time, requestedMemory 
 		resourceAmount = math.Max(resourceAmount, *container.MemoryUsagePeaks.Head())
 	}
 
-	resourceAmount = math.Max(resourceAmount+OOMMinBumpUp, resourceAmount*OOMBumpUpRatio)
+	resourceAmount = math.Max(resourceAmount+common.OOMMinBumpUp,
+		resourceAmount*common.OOMBumpUpRatio)
 
 	oomMemorySample := ContainerUsageSample{
 		MeasureStart: timestamp,
