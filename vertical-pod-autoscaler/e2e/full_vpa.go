@@ -23,6 +23,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	e2e_common "k8s.io/kubernetes/test/e2e/common"
 	"k8s.io/kubernetes/test/e2e/framework"
@@ -38,7 +39,11 @@ const (
 var _ = fullVpaE2eDescribe("Pods under VPA", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
 
-	var rc *ResourceConsumer
+	var (
+		rc           *ResourceConsumer
+		vpaClientSet *vpa_clientset.Clientset
+		vpaCRD       *vpa_types.VerticalPodAutoscaler
+	)
 	replicas := 3
 
 	ginkgo.BeforeEach(func() {
@@ -58,13 +63,13 @@ var _ = fullVpaE2eDescribe("Pods under VPA", func() {
 		config, err := framework.LoadConfig()
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
-		vpaCRD := newVPA(f, "hamster-vpa", &metav1.LabelSelector{
+		vpaCRD = newVPA(f, "hamster-vpa", &metav1.LabelSelector{
 			MatchLabels: map[string]string{
 				"name": "hamster",
 			},
 		})
 
-		vpaClientSet := vpa_clientset.NewForConfigOrDie(config)
+		vpaClientSet = vpa_clientset.NewForConfigOrDie(config)
 		vpaClient := vpaClientSet.PocV1alpha1()
 		_, err = vpaClient.VerticalPodAutoscalers(ns).Create(vpaCRD)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
@@ -72,12 +77,21 @@ var _ = fullVpaE2eDescribe("Pods under VPA", func() {
 	})
 
 	ginkgo.It("stabilize at minimum CPU if doing nothing", func() {
-		waitForSpecificCPURequestInPods(f, metav1.ListOptions{LabelSelector: "name=hamster"}, parseQuantityOrDie(minimalCPU))
+		waitForResourceRequestAboveThresholdInPods(f, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU, parseQuantityOrDie(minimalCPU))
 	})
 
 	ginkgo.It("have cpu requests growing with usage", func() {
 		rc.ConsumeCPU(600 * replicas)
-		waitForCPURequestAboveThresholdInPods(f, metav1.ListOptions{LabelSelector: "name=hamster"}, parseQuantityOrDie("500m"))
+		waitForResourceRequestAboveThresholdInPods(f, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU, parseQuantityOrDie("500m"))
+	})
+
+	ginkgo.It("have memory requests growing with OOMs", func() {
+		// Wait for any recommendation
+		waitForRecommendationPresent(vpaClientSet, vpaCRD)
+		// Restart pods to have limits populated
+		deletePods(f, metav1.ListOptions{LabelSelector: "name=hamster"})
+		rc.ConsumeMem(1024 * replicas)
+		waitForResourceRequestAboveThresholdInPods(f, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceMemory, parseQuantityOrDie("600Mi"))
 	})
 })
 
@@ -92,6 +106,10 @@ func waitForPodsMatch(f *framework.Framework, listOptions metav1.ListOptions, ma
 			return false, err
 		}
 
+		if len(podList.Items) == 0 {
+			return false, nil
+		}
+
 		for _, pod := range podList.Items {
 			if !matcher(pod) {
 				return false, nil
@@ -102,27 +120,31 @@ func waitForPodsMatch(f *framework.Framework, listOptions metav1.ListOptions, ma
 	})
 }
 
-func waitForSpecificCPURequestInPods(f *framework.Framework, listOptions metav1.ListOptions, cpu resource.Quantity) error {
-	err := waitForPodsMatch(f, listOptions,
-		func(pod apiv1.Pod) bool {
-			return pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceCPU] != cpu
-		})
-
+func deletePods(f *framework.Framework, listOptions metav1.ListOptions) error {
+	ns := f.Namespace.Name
+	c := f.ClientSet
+	podList, err := c.CoreV1().Pods(ns).List(listOptions)
 	if err != nil {
-		return fmt.Errorf("error waiting for cpu request equal %v for pods: %+v", cpu, listOptions)
+		return err
+	}
+	for _, pod := range podList.Items {
+		err := c.CoreV1().Pods(ns).Delete(pod.Name, &metav1.DeleteOptions{})
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
 
-func waitForCPURequestAboveThresholdInPods(f *framework.Framework, listOptions metav1.ListOptions, cpuThreshold resource.Quantity) error {
+func waitForResourceRequestAboveThresholdInPods(f *framework.Framework, listOptions metav1.ListOptions, resourceName apiv1.ResourceName, threshold resource.Quantity) error {
 	err := waitForPodsMatch(f, listOptions,
 		func(pod apiv1.Pod) bool {
-			cpuRequest := pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceCPU]
-			return cpuRequest.MilliValue() > cpuThreshold.MilliValue()
+			cpuRequest, found := pod.Spec.Containers[0].Resources.Requests[resourceName]
+			return found && cpuRequest.MilliValue() > threshold.MilliValue()
 		})
 
 	if err != nil {
-		return fmt.Errorf("error waiting for cpu request above %v for pods: %+v", cpuThreshold, listOptions)
+		return fmt.Errorf("error waiting for %s request above %v for pods: %+v", resourceName, threshold, listOptions)
 	}
 	return nil
 }
