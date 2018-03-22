@@ -301,20 +301,20 @@ func TestExtractAutoscalerVarFromKubeEnv(t *testing.T) {
 		desc   string
 		name   string
 		env    string
-		expect []string
+		expect string
 		err    error
 	}{
 		{
 			desc:   "node_labels",
 			name:   "node_labels",
 			env:    "AUTOSCALER_ENV_VARS: node_labels=a=b,c=d;node_taints=a=b:c,d=e:f\n",
-			expect: []string{"a=b,c=d"},
+			expect: "a=b,c=d",
 		},
 		{
 			desc:   "node_taints",
 			name:   "node_taints",
 			env:    "AUTOSCALER_ENV_VARS: node_labels=a=b,c=d;node_taints=a=b:c,d=e:f\n",
-			expect: []string{"a=b:c,d=e:f"},
+			expect: "a=b:c,d=e:f",
 		},
 		{
 			desc: "malformed node_labels",
@@ -479,6 +479,18 @@ func TestExtractKubeReservedFromKubeEnv(t *testing.T) {
 				"node_taints='dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c';" +
 				"kube_reserved=cpu=1000m,memory=300000Mi\n" +
 				"KUBELET_TEST_ARGS: --experimental-allocatable-ignore-eviction\n",
+			expectedReserved: "cpu=1000m,memory=300000Mi",
+			expectedErr:      false,
+		},
+		{
+			// Multi-line KUBELET_ARGS
+			kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
+				"DNS_SERVER_IP: '10.0.0.10'\n" +
+				"AUTOSCALER_ENV_VARS: node_labels=a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true;" +
+				"node_taints='dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c';" +
+				"kube_reserved=cpu=1000m,memory=300000Mi\n" +
+				"KUBELET_ARGS: --experimental-allocatable-ignore-eviction\n" +
+				" --kube_reserved=cpu=1000m,memory=300000Mi\n",
 			expectedReserved: "cpu=1000m,memory=300000Mi",
 			expectedErr:      false,
 		},

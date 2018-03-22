@@ -33,6 +33,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 
+	"github.com/ghodss/yaml"
 	"github.com/golang/glog"
 )
 
@@ -313,7 +314,7 @@ func parseCustomMachineType(machineType string) (cpu, mem int64, err error) {
 }
 
 func parseKubeReserved(kubeReserved string) (apiv1.ResourceList, error) {
-	resourcesMap, err := parseKeyValueListToMap([]string{kubeReserved})
+	resourcesMap, err := parseKeyValueListToMap(kubeReserved)
 	if err != nil {
 		return nil, fmt.Errorf("failed to extract kube-reserved from kube-env: %q", err)
 	}
@@ -378,81 +379,54 @@ func extractKubeReservedFromKubeEnv(kubeEnv string) (string, error) {
 		}
 		resourcesRegexp := regexp.MustCompile(`--kube-reserved=([^ ]+)`)
 
-		for _, value := range kubeletArgs {
-			matches := resourcesRegexp.FindStringSubmatch(value)
-			if len(matches) > 1 {
-				return matches[1], nil
-			}
+		matches := resourcesRegexp.FindStringSubmatch(kubeletArgs)
+		if len(matches) > 1 {
+			return matches[1], nil
 		}
-		return "", fmt.Errorf("kube-reserved not in kubelet args in kube-env: %q", strings.Join(kubeletArgs, " "))
+		return "", fmt.Errorf("kube-reserved not in kubelet args in kube-env: %q", kubeletArgs)
 	}
-	return kubeReserved[0], nil
+	return kubeReserved, nil
 }
 
-func extractAutoscalerVarFromKubeEnv(kubeEnv, name string) ([]string, error) {
+func extractAutoscalerVarFromKubeEnv(kubeEnv, name string) (string, error) {
 	const autoscalerVars = "AUTOSCALER_ENV_VARS"
 	autoscalerVals, err := extractFromKubeEnv(kubeEnv, autoscalerVars)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	var result []string
-	for _, val := range autoscalerVals {
-		for _, v := range strings.Split(val, ";") {
-			v = strings.Trim(v, " ")
-			if len(v) == 0 {
-				continue
-			}
-			items := strings.SplitN(v, "=", 2)
-			if len(items) != 2 {
-				return nil, fmt.Errorf("malformed autoscaler var: %s", v)
-			}
-			if strings.Trim(items[0], " ") == name {
-				result = append(result, strings.Trim(items[1], " \"'"))
-			}
-		}
-	}
-	if len(result) == 0 {
-		return nil, fmt.Errorf("var %s not found in %s: %v", name, autoscalerVars, autoscalerVals)
-	}
-	return result, nil
-}
-
-func extractFromKubeEnv(kubeEnv, resource string) ([]string, error) {
-	result := make([]string, 0)
-
-	kubeEnv = strings.Replace(kubeEnv, "\n ", " ", -1)
-
-	for line, env := range strings.Split(kubeEnv, "\n") {
-		env = strings.Trim(env, " ")
-		if len(env) == 0 {
-			continue
-		}
-		items := strings.SplitN(env, ":", 2)
+	for _, val := range strings.Split(autoscalerVals, ";") {
+		val = strings.Trim(val, " ")
+		items := strings.SplitN(val, "=", 2)
 		if len(items) != 2 {
-			return nil, fmt.Errorf("wrong content in kube-env at line: %d", line)
+			return "", fmt.Errorf("malformed autoscaler var: %s", val)
 		}
-		key := strings.Trim(items[0], " ")
-		value := strings.Trim(items[1], " \"'")
-		if key == resource {
-			result = append(result, value)
+		if strings.Trim(items[0], " ") == name {
+			return strings.Trim(items[1], " \"'"), nil
 		}
 	}
-	return result, nil
+	return "", fmt.Errorf("var %s not found in %s: %v", name, autoscalerVars, autoscalerVals)
 }
 
-func parseKeyValueListToMap(values []string) (map[string]string, error) {
+func extractFromKubeEnv(kubeEnv, resource string) (string, error) {
+	kubeEnvMap := make(map[string]string)
+	err := yaml.Unmarshal([]byte(kubeEnv), &kubeEnvMap)
+	if err != nil {
+		return "", fmt.Errorf("Error unmarshalling kubeEnv: %v", err)
+	}
+	return kubeEnvMap[resource], nil
+}
+
+func parseKeyValueListToMap(kvList string) (map[string]string, error) {
 	result := make(map[string]string)
-	for _, value := range values {
-		if len(value) == 0 {
-			continue
+	if len(kvList) == 0 {
+		return result, nil
+	}
+	for _, keyValue := range strings.Split(kvList, ",") {
+		kvItems := strings.SplitN(keyValue, "=", 2)
+		if len(kvItems) != 2 {
+			return nil, fmt.Errorf("error while parsing key-value list, val: %s", keyValue)
 		}
-		for _, val := range strings.Split(value, ",") {
-			valItems := strings.SplitN(val, "=", 2)
-			if len(valItems) != 2 {
-				return nil, fmt.Errorf("error while parsing key-value list, val: %s", val)
-			}
-			result[valItems[0]] = valItems[1]
-		}
+		result[kvItems[0]] = kvItems[1]
 	}
 	return result, nil
 }
