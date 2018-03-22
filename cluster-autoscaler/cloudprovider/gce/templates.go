@@ -420,6 +420,8 @@ func extractAutoscalerVarFromKubeEnv(kubeEnv, name string) ([]string, error) {
 func extractFromKubeEnv(kubeEnv, resource string) ([]string, error) {
 	result := make([]string, 0)
 
+	kubeEnv = strings.Replace(kubeEnv, "\n ", " ", -1)
+
 	for line, env := range strings.Split(kubeEnv, "\n") {
 		env = strings.Trim(env, " ")
 		if len(env) == 0 {
