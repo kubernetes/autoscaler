@@ -48,6 +48,8 @@ type ContainerUsageSample struct {
 //   it will store 7 peaks, one per day, for the last week.
 //   Note: samples are added to intervals based on their start timestamps.
 type ContainerState struct {
+	// Current request.
+	Request Resources
 	// Distribution of CPU usage. The measurement unit is 1 CPU core.
 	CPUUsage util.Histogram
 	// Start of the latest CPU usage sample that was aggregated.
@@ -67,8 +69,9 @@ type ContainerState struct {
 }
 
 // NewContainerState returns a new, empty ContainerState.
-func NewContainerState() *ContainerState {
+func NewContainerState(request Resources) *ContainerState {
 	return &ContainerState{
+		Request:             request,
 		CPUUsage:            util.NewDecayingHistogram(CPUHistogramOptions, CPUHistogramDecayHalfLife),
 		LastCPUSampleStart:  time.Time{},
 		FirstCPUSampleStart: time.Time{},
