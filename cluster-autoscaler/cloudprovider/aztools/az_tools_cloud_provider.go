@@ -85,7 +85,6 @@ func BuildAzToolsCloudProvider(
 
 	grouNames := []string{}
 
-	// TODO(harry): do we need to name node with nodeGroup name? Seems not.
 	for i, spec := range discoveryOpts.NodeGroupSpecs {
 		if i > 0 {
 			glog.Warningf("multiple node groups detected: this is not supported for az tools for now")
@@ -110,8 +109,7 @@ func BuildAzToolsCloudProvider(
 			provider.AddNode(grpID, nodeName)
 		}
 
-		// Initialize targetSize with nodes of the cluster. targetSize will be auto updated per scale up/down.
-		provider.AddNodeGroup(grpID, s.MinSize, s.MaxSize, len(workers))
+		provider.AddNodeGroup(grpID, s.MinSize, s.MaxSize)
 	}
 
 	if err := az.InitScalerFromConfig(grouNames); err != nil {
@@ -206,7 +204,6 @@ func (azcp *AzToolsCloudProvider) NewNodeGroup(machineType string, labels map[st
 		id:              "autoprovisioned-" + machineType,
 		minSize:         0,
 		maxSize:         1000,
-		targetSize:      0,
 		exist:           false,
 		autoprovisioned: true,
 		machineType:     machineType,
@@ -214,7 +211,7 @@ func (azcp *AzToolsCloudProvider) NewNodeGroup(machineType string, labels map[st
 }
 
 // AddNodeGroup adds node group to test cloud provider.
-func (azcp *AzToolsCloudProvider) AddNodeGroup(id string, min int, max int, size int) {
+func (azcp *AzToolsCloudProvider) AddNodeGroup(id string, min int, max int) {
 	azcp.Lock()
 	defer azcp.Unlock()
 
@@ -225,7 +222,6 @@ func (azcp *AzToolsCloudProvider) AddNodeGroup(id string, min int, max int, size
 		maxSize:         max,
 		exist:           true,
 		autoprovisioned: false,
-		targetSize:      size,
 	}
 }
 
@@ -287,7 +283,9 @@ func (azcp *AzToolsCloudProvider) Refresh() error {
 				azcp.AddNode(grpID, nodeName)
 			}
 
-			azcp.AddNodeGroup(grpID, oldGroup.MinSize(), oldGroup.MaxSize(), len(workers))
+			azcp.AddNodeGroup(grpID, oldGroup.MinSize(), oldGroup.MaxSize())
+			glog.V(4).Infof("Adjusted outdated worker number from: %v, to: %v, in node group: %v.",
+				len(oldNodes), len(workers), grpID)
 		}
 
 	}
@@ -304,9 +302,6 @@ type AzToolsNodeGroup struct {
 	exist           bool
 	autoprovisioned bool
 	machineType     string
-
-	// targetSize should be desired size of node group.
-	targetSize int
 }
 
 // MaxSize returns maximum size of the node group.
@@ -331,9 +326,14 @@ func (aztng *AzToolsNodeGroup) MinSize() int {
 // removed nodes are deleted completely)
 func (aztng *AzToolsNodeGroup) TargetSize() (int, error) {
 	aztng.Lock()
+	id := aztng.id
 	defer aztng.Unlock()
 
-	return aztng.targetSize, nil
+	nodes, err := az.GetWorkerList(id)
+	if err != nil {
+		return 0, err
+	}
+	return len(nodes), nil
 }
 
 // IncreaseSize increases the size of the node group. To delete a node you need
@@ -341,10 +341,10 @@ func (aztng *AzToolsNodeGroup) TargetSize() (int, error) {
 // node group size is updated.
 func (aztng *AzToolsNodeGroup) IncreaseSize(delta int) error {
 	aztng.Lock()
-	aztng.targetSize += delta
-	aztng.Unlock()
+	id := aztng.id
+	defer aztng.Unlock()
 
-	return aztng.cloudProvider.onScaleUp(aztng.id, delta)
+	return aztng.cloudProvider.onScaleUp(id, delta)
 }
 
 // Exist checks if the node group really exists on the cloud provider side. Allows to tell the
@@ -370,10 +370,23 @@ func (aztng *AzToolsNodeGroup) Delete() error {
 // doesn't permit to delete any existing node and can be used only to reduce the
 // request for new nodes that have not been yet fulfilled. Delta should be negative.
 func (aztng *AzToolsNodeGroup) DecreaseTargetSize(delta int) error {
-	aztng.Lock()
-	aztng.targetSize += delta
-	aztng.Unlock()
-
+	// TODO(harry): this is used to fix wrong cluster.yaml: remove delta machines in cluster.yaml
+	if delta >= 0 {
+		return fmt.Errorf("size decrease must be negative")
+	}
+	// size, err := mig.gceManager.GetMigSize(mig)
+	// if err != nil {
+	// 	return err
+	// }
+	// nodes, err := mig.gceManager.GetMigNodes(mig)
+	// if err != nil {
+	// 	return err
+	// }
+	// if int(size)+delta < len(nodes) {
+	// 	return fmt.Errorf("attempt to delete existing nodes targetSize:%d delta:%d existingNodes: %d",
+	// 		size, delta, len(nodes))
+	// }
+	// return mig.gceManager.SetMigSize(mig, size+int64(delta))
 	return nil
 }
 
@@ -383,15 +396,21 @@ func (aztng *AzToolsNodeGroup) DecreaseTargetSize(delta int) error {
 func (aztng *AzToolsNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	aztng.Lock()
 	id := aztng.id
-	aztng.targetSize -= len(nodes)
-	aztng.Unlock()
+	defer aztng.Unlock()
+
 	for _, node := range nodes {
 		err := aztng.cloudProvider.onScaleDown(id, node.Name)
 		if err != nil {
 			return err
 		}
+		aztng.deleteNode(node.Name)
 	}
 	return nil
+}
+
+func (aztng *AzToolsNodeGroup) deleteNode(nodeName string) {
+	// TODO(harry): change every group has a az_manager is better. So we don't need to maintain cached
+	// nodes here. (Really?)
 }
 
 // Id returns an unique identifier of the node group.
@@ -407,7 +426,7 @@ func (aztng *AzToolsNodeGroup) Debug() string {
 	aztng.Lock()
 	defer aztng.Unlock()
 
-	return fmt.Sprintf("%s target: min:%d max:%d", aztng.id, aztng.targetSize, aztng.minSize, aztng.maxSize)
+	return fmt.Sprintf("group: %s: min:%d max:%d", aztng.id, aztng.minSize, aztng.maxSize)
 }
 
 // Nodes returns a list of all nodes that belong to this node group.

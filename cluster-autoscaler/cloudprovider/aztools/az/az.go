@@ -19,6 +19,7 @@ package az
 import (
 	"fmt"
 	"io/ioutil"
+	"strconv"
 
 	"k8s.io/utils/exec"
 
@@ -66,11 +67,9 @@ func OnScaleUp(id string, delta int) error {
 		return fmt.Errorf("%v, %s", err, output)
 	}
 
-	//1. Modify worker number in scaler.yaml
-	modifyScalerConfigYaml(id, delta)
-
-	// 2. Create new vm
-	output, err = execRun("./az_tools.py", "scaleup")
+	// 1. Scale up group id with delta nodes, it will modify scaler.yaml so we need to
+	// back up the file first.
+	output, err = execRun("./az_tools.py", "scaleup", id, strconv.Itoa(delta))
 	if err != nil {
 		restoreScalerConfig()
 		return fmt.Errorf("%v, %s", err, output)
@@ -83,7 +82,7 @@ func OnScaleUp(id string, delta int) error {
 		return fmt.Errorf("%v, %s", err, output)
 	}
 
-	// 3. Generate new cluster.yaml
+	// 2. Generate new cluster.yaml
 	output, err = execRun("./az_tools.py", "genconfig")
 	if err != nil {
 		restoreScalerConfig()
@@ -91,7 +90,7 @@ func OnScaleUp(id string, delta int) error {
 		return fmt.Errorf("%v, %s", err, output)
 	}
 
-	// 4. Run scripts in new workers
+	// 3. Run scripts in new workers
 	output, err = execRun("./deploy.py", "scriptblocks", "add_scaled_worker")
 	if err != nil {
 		// TODO(harry): delete the new scaled node.
@@ -109,8 +108,8 @@ type ScalerConfig struct {
 }
 
 type NodeGroupInfo struct {
-	LastScaledNodeNum int `yaml:"last_scaled_node_num"`
-	WorkerNodeNum     int `yaml:"worker_node_num"`
+	WorkerNodeNum     int      `yaml:"worker_node_num"`
+	LastScaledUpNodes []string `yaml:"last_scaled_up_nodes"`
 }
 
 // InitScalerFromConfig is used to initialize new deploy/scaler.yaml from cluster.yaml
@@ -129,9 +128,8 @@ func InitScalerFromConfig(grouNames []string) error {
 	// Initialize, so we don't need to check if exists later.
 	for _, grp := range grouNames {
 		config.NodeGroupInfos[grp] = NodeGroupInfo{
-			WorkerNodeNum: 0,
-			// LastScaledNodeNum will always be initialized as 0 during start up, this is fine.
-			LastScaledNodeNum: 0,
+			WorkerNodeNum:     0,
+			LastScaledUpNodes: []string{},
 		}
 	}
 
@@ -180,56 +178,6 @@ func restoreClusterConfig() {
 	execRun("cp", "deploy/.cluster.yaml.bak", "cluster.yaml")
 }
 
-// modifyScalerConfigYaml modifies config.yaml
-func modifyScalerConfigYaml(nodeGroupID string, delta int) error {
-	data, err := ioutil.ReadFile("./deploy/scaler.yaml")
-	if err != nil {
-		return err
-	}
-
-	config := ScalerConfig{}
-
-	err = yaml.Unmarshal(data, &config)
-	if err != nil {
-		return err
-	}
-
-	found := false
-	for groupName, nodeGroup := range config.NodeGroupInfos {
-		if groupName == nodeGroupID {
-			// Changes the nodes number to:
-			//   worker_node_num: curr + delta
-			nodeGroup.WorkerNodeNum = nodeGroup.WorkerNodeNum + delta
-			// Add delta in the file:
-			//   last_scaled_node_num: delta
-			nodeGroup.LastScaledNodeNum = delta
-			found = true
-			// Scale only happens to one node group at one time, so let's break.
-			break
-		}
-	}
-
-	// This node group does not exist in scaler.yaml, it's not right!
-	if !found {
-		return fmt.Errorf("node group %v is not found in cluster.yaml", nodeGroupID)
-	}
-
-	d, err := yaml.Marshal(&config)
-	if err != nil {
-		return err
-	}
-
-	// Write back
-	err = ioutil.WriteFile("./deploy/scaler.yaml", d, 0644)
-	if err != nil {
-		return err
-	}
-
-	glog.V(4).Infof("Updated ./deploy/scaler.yaml with node group and worker nodes change.")
-
-	return nil
-}
-
 // OnScaleDown is a function called on cluster scale down
 func OnScaleDown(id string, nodeName string) error {
 	// Backup config.yaml
@@ -238,11 +186,8 @@ func OnScaleDown(id string, nodeName string) error {
 		return fmt.Errorf("%v, %s", err, output)
 	}
 
-	// 1. Modify worker number in scaler.yaml
-	modifyScalerConfigYaml(id, -1)
-
-	// 2. Delete vm by name
-	output, err = execRun("./az_tools.py", "scaledown", nodeName)
+	// 1. Delete vm by group ID and name
+	output, err = execRun("./az_tools.py", "scaledown", id, nodeName)
 	if err != nil {
 		restoreScalerConfig()
 		return fmt.Errorf("%v, %s", err, output)
@@ -255,7 +200,7 @@ func OnScaleDown(id string, nodeName string) error {
 		return fmt.Errorf("%v, %s", err, output)
 	}
 
-	// 3. Generate new cluster.yaml
+	// 2. Generate new cluster.yaml
 	output, err = execRun("./az_tools.py", "genconfig")
 	if err != nil {
 		restoreScalerConfig()
@@ -263,7 +208,7 @@ func OnScaleDown(id string, nodeName string) error {
 		return fmt.Errorf("%v, %s", err, output)
 	}
 
-	// 4. Delete node from kubernetes cluster
+	// 3. Delete node from kubernetes cluster
 	output, err = execRun("./deploy.py", "kubectl", "delete", "node", nodeName)
 	if err != nil {
 		return fmt.Errorf("%v, %s", err, output)
