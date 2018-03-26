@@ -45,6 +45,8 @@ const (
 	operationPollInterval   = 100 * time.Millisecond
 	maxRecordsReturnedByAPI = 100
 	refreshInterval         = 1 * time.Minute
+
+	nodeTemplateASGAnnotation = "autoscaler.kubernetes.io/asg"
 )
 
 type asgInformation struct {
@@ -396,6 +398,9 @@ func (m *AwsManager) buildNodeFromTemplate(asg *Asg, template *asgTemplate) (*ap
 		Name:     nodeName,
 		SelfLink: fmt.Sprintf("/api/v1/nodes/%s", nodeName),
 		Labels:   map[string]string{},
+		Annotations:   map[string]string{
+			nodeTemplateASGAnnotation: asg.Name,
+		},
 	}
 
 	node.Status = apiv1.NodeStatus{

@@ -63,23 +63,32 @@ type priceModel struct {
 // NodePrice returns a price of running the given node for a given period of time.
 // All prices are in USD.
 func (pm *priceModel) NodePrice(node *apiv1.Node, startTime time.Time, endTime time.Time) (float64, error) {
-	instance, err := AwsRefFromProviderId(node.Spec.ProviderID)
-	if err != nil {
-		return 0, err
+	var (
+		asgName string
+		found bool
+	)
+
+	if asgName, found = node.ObjectMeta.Annotations[nodeTemplateASGAnnotation]; !found {
+		instance, err := AwsRefFromProviderId(node.Spec.ProviderID)
+		if err != nil {
+			return 0, err
+		}
+
+		asg, err := pm.asgs.GetAsgForInstance(instance)
+		if err != nil {
+			return 0, err
+		}
+
+		if asg == nil {
+			return 0, fmt.Errorf("asg for instance %s (%s) not found", instance, node.Spec.ProviderID)
+		}
+
+		asgName = asg.Name
 	}
 
-	asg, err := pm.asgs.GetAsgForInstance(instance)
+	hourlyPrice, err := pm.priceDescriptor.Price(asgName)
 	if err != nil {
-		return 0, err
-	}
-
-	if asg == nil {
-		return 0, fmt.Errorf("asg for instance %s (%s) not found", instance, node.Spec.ProviderID)
-	}
-
-	hourlyPrice, err := pm.priceDescriptor.Price(asg.Name)
-	if err != nil {
-		return 0, fmt.Errorf("failed to describe price for asg %s: %v", asg.Name, err)
+		return 0, fmt.Errorf("failed to describe price for asg %s: %v", asgName, err)
 	}
 
 	hours := getHours(startTime, endTime)
