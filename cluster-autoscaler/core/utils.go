@@ -32,16 +32,17 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/glogx"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	scheduler_util "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 
 	apiv1 "k8s.io/api/core/v1"
 	extensionsv1 "k8s.io/api/extensions/v1beta1"
+	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	kube_client "k8s.io/client-go/kubernetes"
-	api "k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/helper"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
-	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
+	"k8s.io/kubernetes/pkg/scheduler/schedulercache"
 
 	"github.com/golang/glog"
 )
@@ -61,7 +62,7 @@ const (
 // calculated.
 // To decide if two pods are similar enough we check if they have identical label
 // and spec and are owned by the same controller. The problem is the whole
-// podSchedulableInfo struct is not hashable and keeping a list and runnig deep
+// podSchedulableInfo struct is not hashable and keeping a list and running deep
 // equality checks would likely also be expensive. So instead we use controller
 // UID as a key in initial lookup and only run full comparison on a set of
 // podSchedulableInfos created for pods owned by this controller.
@@ -74,7 +75,7 @@ type podSchedulableInfo struct {
 type podSchedulableMap map[string][]podSchedulableInfo
 
 func (psi *podSchedulableInfo) match(pod *apiv1.Pod) bool {
-	return reflect.DeepEqual(pod.Labels, psi.labels) && helper.Semantic.DeepEqual(pod.Spec, psi.spec)
+	return reflect.DeepEqual(pod.Labels, psi.labels) && apiequality.Semantic.DeepEqual(pod.Spec, psi.spec)
 }
 
 func (podMap podSchedulableMap) get(pod *apiv1.Pod) (bool, bool) {
@@ -117,23 +118,27 @@ func FilterOutSchedulable(unschedulableCandidates []*apiv1.Pod, nodes []*apiv1.N
 	nodeNameToNodeInfo := scheduler_util.CreateNodeNameToInfoMap(append(nonExpendableScheduled, podsWaitingForLowerPriorityPreemption...), nodes)
 	podSchedulable := make(podSchedulableMap)
 
+	loggingQuota := glogx.PodsLoggingQuota()
+
 	for _, pod := range unschedulableCandidates {
 		if schedulable, found := podSchedulable.get(pod); found {
 			if !schedulable {
 				unschedulablePods = append(unschedulablePods, pod)
 			} else {
-				glog.V(4).Infof("Pod %s marked as unschedulable can be scheduled (based on simulation run for other pod owned by the same controller). Ignoring in scale up.", pod.Name)
+				glogx.V(4).UpTo(loggingQuota).Infof("Pod %s marked as unschedulable can be scheduled (based on simulation run for other pod owned by the same controller). Ignoring in scale up.", pod.Name)
 			}
 			continue
 		}
 		if nodeName, err := predicateChecker.FitsAny(pod, nodeNameToNodeInfo); err == nil {
-			glog.V(4).Infof("Pod %s marked as unschedulable can be scheduled on %s. Ignoring in scale up.", pod.Name, nodeName)
+			glogx.V(4).UpTo(loggingQuota).Infof("Pod %s marked as unschedulable can be scheduled on %s. Ignoring in scale up.", pod.Name, nodeName)
 			podSchedulable.set(pod, true)
 		} else {
 			unschedulablePods = append(unschedulablePods, pod)
 			podSchedulable.set(pod, false)
 		}
 	}
+
+	glogx.V(4).Over(loggingQuota).Infof("%v other pods marked as unschedulable can be scheduled.", -loggingQuota.Left())
 
 	return unschedulablePods
 }
@@ -219,7 +224,7 @@ func GetNodeInfosForGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.Clou
 		}
 
 		// No good template, trying to generate one. This is called only if there are no
-		// working nodes in the node groups. By default CA tries to usa a real-world example.
+		// working nodes in the node groups. By default CA tries to use a real-world example.
 		baseNodeInfo, err := nodeGroup.TemplateNodeInfo()
 		if err != nil {
 			if err == cloudprovider.ErrNotImplemented {
@@ -273,11 +278,7 @@ func sanitizeNodeInfo(nodeInfo *schedulercache.NodeInfo, nodeGroupName string) (
 	// Update nodename in pods.
 	sanitizedPods := make([]*apiv1.Pod, 0)
 	for _, pod := range nodeInfo.Pods() {
-		obj, err := api.Scheme.DeepCopy(pod)
-		if err != nil {
-			return nil, errors.ToAutoscalerError(errors.InternalError, err)
-		}
-		sanitizedPod := obj.(*apiv1.Pod)
+		sanitizedPod := pod.DeepCopy()
 		sanitizedPod.Spec.NodeName = sanitizedNode.Name
 		sanitizedPods = append(sanitizedPods, sanitizedPod)
 	}
@@ -291,12 +292,8 @@ func sanitizeNodeInfo(nodeInfo *schedulercache.NodeInfo, nodeGroupName string) (
 }
 
 func sanitizeTemplateNode(node *apiv1.Node, nodeGroup string) (*apiv1.Node, errors.AutoscalerError) {
-	obj, err := api.Scheme.DeepCopy(node)
-	if err != nil {
-		return nil, errors.ToAutoscalerError(errors.InternalError, err)
-	}
+	newNode := node.DeepCopy()
 	nodeName := fmt.Sprintf("template-node-for-%s-%d", nodeGroup, rand.Int63())
-	newNode := obj.(*apiv1.Node)
 	newNode.Labels = make(map[string]string, len(node.Labels))
 	for k, v := range node.Labels {
 		if k != kubeletapis.LabelHostname {
@@ -421,23 +418,38 @@ func getPotentiallyUnneededNodes(context *AutoscalingContext, nodes []*apiv1.Nod
 	return result
 }
 
+func hasHardInterPodAffinity(affinity *apiv1.Affinity) bool {
+	if affinity == nil {
+		return false
+	}
+	if affinity.PodAffinity != nil {
+		if len(affinity.PodAffinity.RequiredDuringSchedulingIgnoredDuringExecution) > 0 {
+			return true
+		}
+	}
+	if affinity.PodAntiAffinity != nil {
+		if len(affinity.PodAntiAffinity.RequiredDuringSchedulingIgnoredDuringExecution) > 0 {
+			return true
+		}
+	}
+	return false
+}
+
+func anyPodHasHardInterPodAffinity(pods []*apiv1.Pod) bool {
+	for _, pod := range pods {
+		if hasHardInterPodAffinity(pod.Spec.Affinity) {
+			return true
+		}
+	}
+	return false
+}
+
 // ConfigurePredicateCheckerForLoop can be run to update predicateChecker configuration
 // based on current state of the cluster.
 func ConfigurePredicateCheckerForLoop(unschedulablePods []*apiv1.Pod, schedulablePods []*apiv1.Pod, predicateChecker *simulator.PredicateChecker) {
-	podsWithAffinityFound := false
-	for _, pod := range unschedulablePods {
-		if pod.Spec.Affinity != nil {
-			podsWithAffinityFound = true
-			break
-		}
-	}
+	podsWithAffinityFound := anyPodHasHardInterPodAffinity(unschedulablePods)
 	if !podsWithAffinityFound {
-		for _, pod := range schedulablePods {
-			if pod.Spec.Affinity != nil {
-				podsWithAffinityFound = true
-				break
-			}
-		}
+		podsWithAffinityFound = anyPodHasHardInterPodAffinity(schedulablePods)
 	}
 	predicateChecker.SetAffinityPredicateEnabled(podsWithAffinityFound)
 	if !podsWithAffinityFound {
@@ -498,5 +510,36 @@ func UpdateClusterStateMetrics(csr *clusterstate.ClusterStateRegistry) {
 	}
 	metrics.UpdateClusterSafeToAutoscale(csr.IsClusterHealthy())
 	readiness := csr.GetClusterReadiness()
-	metrics.UpdateNodesCount(readiness.Ready, readiness.Unready+readiness.LongNotStarted, readiness.NotStarted)
+	metrics.UpdateNodesCount(readiness.Ready, readiness.Unready+readiness.LongNotStarted, readiness.NotStarted, readiness.LongUnregistered, readiness.Unregistered)
+}
+
+func getOldestCreateTime(pods []*apiv1.Pod) time.Time {
+	oldest := time.Now()
+	for _, pod := range pods {
+		if oldest.After(pod.CreationTimestamp.Time) {
+			oldest = pod.CreationTimestamp.Time
+		}
+	}
+	return oldest
+}
+
+func getOldestCreateTimeWithGpu(pods []*apiv1.Pod) (bool, time.Time) {
+	oldest := time.Now()
+	gpuFound := false
+	for _, pod := range pods {
+		if gpu.PodRequestsGpu(pod) {
+			gpuFound = true
+			if oldest.After(pod.CreationTimestamp.Time) {
+				oldest = pod.CreationTimestamp.Time
+			}
+		}
+	}
+	return gpuFound, oldest
+}
+
+// UpdateEmptyClusterStateMetrics updates metrics related to empty cluster's state.
+// TODO(aleksandra-malinowska): use long unregistered value from ClusterStateRegistry.
+func UpdateEmptyClusterStateMetrics() {
+	metrics.UpdateClusterSafeToAutoscale(false)
+	metrics.UpdateNodesCount(0, 0, 0, 0, 0)
 }

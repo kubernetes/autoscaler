@@ -27,7 +27,7 @@ import (
 	v1core "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/tools/record"
 	proxyapp "k8s.io/kubernetes/cmd/kube-proxy/app"
-	"k8s.io/kubernetes/pkg/api"
+	api "k8s.io/kubernetes/pkg/apis/core"
 	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
 	"k8s.io/kubernetes/pkg/proxy"
 	proxyconfig "k8s.io/kubernetes/pkg/proxy/config"
@@ -92,6 +92,7 @@ func NewHollowProxyOrDie(
 			getNodeIP(client, nodeName),
 			recorder,
 			nil,
+			[]string{},
 		)
 		if err != nil {
 			return nil, fmt.Errorf("unable to create proxier: %v", err)

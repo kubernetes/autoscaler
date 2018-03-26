@@ -1,7 +1,5 @@
-commit bfab46cf2543ac17f8c0e75b80631555ac7a6aed (origin/release-1.8)
-Merge: a213f6cf88 46ff2c44c7
-Author: Adam Worrall <abw@google.com>
-Date:   Thu Sep 21 16:17:36 2017 -0700
+commit c83dd0424f9866bfd364e31a431bade187970ce2 (origin/release-1.10)
+Author: caleb miles <calebmiles@google.com>
+Date:   Mon Mar 19 20:35:57 2018 -0400
 
-    Merge remote-tracking branch 'origin/master' into release-1.8
-
+    Add/Update CHANGELOG-1.10.md for v1.10.0-rc.1.

@@ -23,7 +23,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
+	"k8s.io/kubernetes/pkg/scheduler/schedulercache"
 )
 
 const (
@@ -37,7 +37,7 @@ const (
 var AvailableEstimators = []string{BasicEstimatorName, BinpackingEstimatorName}
 
 // BasicNodeEstimator estimates the number of needed nodes to handle the given amount of pods.
-// It will never overestimate the number of nodes but is quite likekly to provide a number that
+// It will never overestimate the number of nodes but is quite likely to provide a number that
 // is too small.
 type BasicNodeEstimator struct {
 	cpuSum      resource.Quantity

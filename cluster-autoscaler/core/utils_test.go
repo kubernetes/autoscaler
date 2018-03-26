@@ -40,7 +40,7 @@ import (
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 
 	"github.com/stretchr/testify/assert"
-	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
+	"k8s.io/kubernetes/pkg/scheduler/schedulercache"
 )
 
 func TestPodSchedulableMap(t *testing.T) {
@@ -103,7 +103,7 @@ func TestPodSchedulableMap(t *testing.T) {
 	assert.True(t, found)
 	assert.False(t, sched)
 
-	// A non-repliated pod
+	// A non-replicated pod
 	nonReplicatedPod := BuildTestPod("nonReplicatedPod", 1000, 1000)
 	_, found = pMap.get(nonReplicatedPod)
 	assert.False(t, found)
@@ -297,7 +297,7 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 	_, found = res["n4"]
 	assert.True(t, found)
 
-	// Test for a nodegroup without nodes and TempleteNodeInfo not implemented by cloud proivder
+	// Test for a nodegroup without nodes and TemplateNodeInfo not implemented by cloud proivder
 	res, err = GetNodeInfosForGroups([]*apiv1.Node{}, provider2, fakeClient,
 		[]*extensionsv1.DaemonSet{}, predicateChecker)
 	assert.NoError(t, err)
@@ -473,22 +473,56 @@ func TestGetPotentiallyUnneededNodes(t *testing.T) {
 }
 
 func TestConfigurePredicateCheckerForLoop(t *testing.T) {
-	p1 := BuildTestPod("p1", 500, 1000)
-	p1.Spec.Affinity = &apiv1.Affinity{}
-	p2 := BuildTestPod("p2", 500, 1000)
-	p3 := BuildTestPod("p3", 500, 1000)
+	testCases := []struct {
+		affinity         *apiv1.Affinity
+		predicateEnabled bool
+	}{
+		{
+			&apiv1.Affinity{
+				PodAffinity: &apiv1.PodAffinity{
+					RequiredDuringSchedulingIgnoredDuringExecution: []apiv1.PodAffinityTerm{
+						{},
+					},
+				},
+			}, true},
+		{
+			&apiv1.Affinity{
+				PodAffinity: &apiv1.PodAffinity{
+					PreferredDuringSchedulingIgnoredDuringExecution: []apiv1.WeightedPodAffinityTerm{
+						{},
+					},
+				},
+			}, false},
+		{
+			&apiv1.Affinity{
+				PodAntiAffinity: &apiv1.PodAntiAffinity{
+					RequiredDuringSchedulingIgnoredDuringExecution: []apiv1.PodAffinityTerm{
+						{},
+					},
+				},
+			}, true},
+		{
+			&apiv1.Affinity{
+				PodAntiAffinity: &apiv1.PodAntiAffinity{
+					PreferredDuringSchedulingIgnoredDuringExecution: []apiv1.WeightedPodAffinityTerm{
+						{},
+					},
+				},
+			}, false},
+		{
+			&apiv1.Affinity{
+				NodeAffinity: &apiv1.NodeAffinity{},
+			}, false},
+	}
 
-	predicateChecker := simulator.NewTestPredicateChecker()
-
-	predicateChecker.SetAffinityPredicateEnabled(false)
-	ConfigurePredicateCheckerForLoop([]*apiv1.Pod{p1}, []*apiv1.Pod{}, predicateChecker)
-	assert.True(t, predicateChecker.IsAffinityPredicateEnabled())
-
-	ConfigurePredicateCheckerForLoop([]*apiv1.Pod{}, []*apiv1.Pod{p1}, predicateChecker)
-	assert.True(t, predicateChecker.IsAffinityPredicateEnabled())
-
-	ConfigurePredicateCheckerForLoop([]*apiv1.Pod{p2}, []*apiv1.Pod{p3}, predicateChecker)
-	assert.False(t, predicateChecker.IsAffinityPredicateEnabled())
+	for _, tc := range testCases {
+		p := BuildTestPod("p", 500, 1000)
+		p.Spec.Affinity = tc.affinity
+		predicateChecker := simulator.NewTestPredicateChecker()
+		predicateChecker.SetAffinityPredicateEnabled(false)
+		ConfigurePredicateCheckerForLoop([]*apiv1.Pod{p}, []*apiv1.Pod{}, predicateChecker)
+		assert.Equal(t, tc.predicateEnabled, predicateChecker.IsAffinityPredicateEnabled())
+	}
 }
 
 func TestGetNodeResource(t *testing.T) {
@@ -526,4 +560,16 @@ func TestGetNodeCoresAndMemory(t *testing.T) {
 
 	_, _, err = getNodeCoresAndMemory(node)
 	assert.Error(t, err)
+}
+
+func TestGetOldestPod(t *testing.T) {
+	p1 := BuildTestPod("p1", 500, 1000)
+	p1.CreationTimestamp = metav1.NewTime(time.Now().Add(-1 * time.Minute))
+	p2 := BuildTestPod("p2", 500, 1000)
+	p2.CreationTimestamp = metav1.NewTime(time.Now().Add(+1 * time.Minute))
+	p3 := BuildTestPod("p3", 500, 1000)
+	p3.CreationTimestamp = metav1.NewTime(time.Now())
+
+	assert.Equal(t, p1.CreationTimestamp.Time, getOldestCreateTime([]*apiv1.Pod{p1, p2, p3}))
+	assert.Equal(t, p1.CreationTimestamp.Time, getOldestCreateTime([]*apiv1.Pod{p3, p2, p1}))
 }

@@ -42,11 +42,11 @@ const (
 )
 
 type instanceByASGFinder interface {
-	FindForInstance(ref *AwsRef) (*Asg, error)
+	GetAsgForInstance(instance *AwsRef) (*Asg, error)
 }
 
 // NewPriceModel is the constructor of priceModel which provides general access to price information
-func NewPriceModel(asgs *autoScalingGroups, pd price.ShapeDescriptor) *priceModel {
+func NewPriceModel(asgs instanceByASGFinder, pd price.ShapeDescriptor) *priceModel {
 	return &priceModel{
 		asgs:            asgs,
 		priceDescriptor: pd,
@@ -68,7 +68,7 @@ func (pm *priceModel) NodePrice(node *apiv1.Node, startTime time.Time, endTime t
 		return 0, err
 	}
 
-	asg, err := pm.asgs.FindForInstance(instance)
+	asg, err := pm.asgs.GetAsgForInstance(instance)
 	if err != nil {
 		return 0, err
 	}

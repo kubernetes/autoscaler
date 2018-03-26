@@ -19,17 +19,19 @@ package main
 import (
 	"time"
 
-	"k8s.io/autoscaler/vertical-pod-autoscaler/apimock"
-	recommender "k8s.io/autoscaler/vertical-pod-autoscaler/recommender_mock"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/updater/eviction"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/updater/priority"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
+	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
+	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/poc.autoscaling.k8s.io/v1alpha1"
+	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
+	kube_client "k8s.io/client-go/kubernetes"
+	v1lister "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/tools/cache"
-	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
-	v1lister "k8s.io/kubernetes/pkg/client/listers/core/v1"
 
 	"github.com/golang/glog"
 )
@@ -41,55 +43,59 @@ type Updater interface {
 }
 
 type updater struct {
-	vpaLister        apimock.VerticalPodAutoscalerLister // wait for VPA api
-	podLister        v1lister.PodLister
-	recommender      recommender.CachingRecommender
-	evictionFactrory eviction.PodsEvictionRestrictionFactory
+	vpaLister       vpa_lister.VerticalPodAutoscalerLister
+	podLister       v1lister.PodLister
+	evictionFactory eviction.PodsEvictionRestrictionFactory
 }
 
 // NewUpdater creates Updater with given configuration
-func NewUpdater(kubeClient kube_client.Interface, cacheTTl time.Duration, minReplicasForEvicition int, evictionToleranceFraction float64) Updater {
+func NewUpdater(kubeClient kube_client.Interface, vpaClient *vpa_clientset.Clientset, minReplicasForEvicition int, evictionToleranceFraction float64) Updater {
 	return &updater{
-		vpaLister:        newVpaLister(kubeClient),
-		podLister:        newPodLister(kubeClient),
-		recommender:      recommender.NewCachingRecommender(cacheTTl, apimock.NewRecommenderAPI()),
-		evictionFactrory: eviction.NewPodsEvictionRestrictionFactory(kubeClient, minReplicasForEvicition, evictionToleranceFraction),
+		vpaLister:       vpa_api_util.NewAllVpasLister(vpaClient, make(chan struct{})),
+		podLister:       newPodLister(kubeClient),
+		evictionFactory: eviction.NewPodsEvictionRestrictionFactory(kubeClient, minReplicasForEvicition, evictionToleranceFraction),
 	}
 }
 
 // RunOnce represents single iteration in the main-loop of Updater
 func (u *updater) RunOnce() {
-	vpaList, err := u.vpaLister.List()
+	vpaList, err := u.vpaLister.List(labels.Everything())
 	if err != nil {
 		glog.Fatalf("failed get VPA list: %v", err)
 	}
 
-	if len(vpaList) == 0 {
+	vpas := make([]*vpa_types.VerticalPodAutoscaler, 0)
+
+	for _, vpa := range vpaList {
+		if vpa.Spec.UpdatePolicy.UpdateMode != vpa_types.UpdateModeAuto {
+			glog.V(3).Infof("skipping VPA object %v because its mode is not \"Auto\"", vpa.Name)
+			continue
+		}
+		vpas = append(vpas, vpa)
+	}
+
+	if len(vpas) == 0 {
 		glog.Warningf("no VPA objects to process")
 		return
 	}
 
-	for _, vpa := range vpaList {
-		glog.V(2).Infof("processing VPA object targeting %v", vpa.Spec.Target.Selector)
-		selector, err := labels.Parse(vpa.Spec.Target.Selector)
-		if err != nil {
-			glog.Errorf("error processing VPA object: failed to create pod selector: %v", err)
-			continue
-		}
+	podsList, err := u.podLister.List(labels.Everything())
+	if err != nil {
+		glog.Errorf("failed to get pods list: %v", err)
+		return
+	}
+	livePods := filterDeletedPods(podsList)
 
-		podsList, err := u.podLister.List(selector)
-		if err != nil {
-			glog.Errorf("failed get pods list for selector %v: %v", selector, err)
-			continue
+	controlledPods := make(map[*vpa_types.VerticalPodAutoscaler][]*apiv1.Pod)
+	for _, pod := range livePods {
+		controllingVPA := vpa_api_util.GetControllingVPAForPod(pod, vpas)
+		if controllingVPA != nil {
+			controlledPods[controllingVPA] = append(controlledPods[controllingVPA], pod)
 		}
+	}
 
-		livePods := filterDeletedPods(podsList)
-		if len(livePods) == 0 {
-			glog.Warningf("no live pods matching selector %v", selector)
-			continue
-		}
-
-		evictionLimiter := u.evictionFactrory.NewPodsEvictionRestriction(livePods)
+	for vpa, livePods := range controlledPods {
+		evictionLimiter := u.evictionFactory.NewPodsEvictionRestriction(livePods)
 		podsForUpdate := u.getPodsForUpdate(filterNonEvictablePods(livePods, evictionLimiter), vpa)
 
 		for _, pod := range podsForUpdate {
@@ -106,27 +112,12 @@ func (u *updater) RunOnce() {
 }
 
 // getPodsForUpdate returns list of pods that should be updated ordered by update priority
-func (u *updater) getPodsForUpdate(pods []*apiv1.Pod, vpa *apimock.VerticalPodAutoscaler) []*apiv1.Pod {
-	priorityCalculator := priority.NewUpdatePriorityCalculator(&vpa.Spec.ResourcesPolicy, nil)
+func (u *updater) getPodsForUpdate(pods []*apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler) []*apiv1.Pod {
+	priorityCalculator := priority.NewUpdatePriorityCalculator(&vpa.Spec.ResourcePolicy, nil)
+	recommendation := vpa.Status.Recommendation
 
 	for _, pod := range pods {
-		recommendation, err := u.recommender.Get(&pod.Spec)
-		if err != nil {
-			glog.Errorf("error while getting recommendation for pod %v: %v", pod.Name, err)
-			continue
-		}
-
-		if recommendation == nil {
-			if len(vpa.Status.Recommendation.Containers) == 0 {
-				glog.Warningf("no recommendation for pod: %v", pod.Name)
-				continue
-			}
-
-			glog.Warningf("fallback to default VPA recommendation for pod: %v", pod.Name)
-			recommendation = vpa.Status.Recommendation
-		}
-
-		priorityCalculator.AddPod(pod, recommendation)
+		priorityCalculator.AddPod(pod, &recommendation, time.Now())
 	}
 
 	return priorityCalculator.GetSortedPods()
@@ -152,10 +143,6 @@ func filterDeletedPods(pods []*apiv1.Pod) []*apiv1.Pod {
 	return result
 }
 
-func newVpaLister(kubeClient kube_client.Interface) apimock.VerticalPodAutoscalerLister {
-	return apimock.NewVpaLister(kubeClient)
-}
-
 func newPodLister(kubeClient kube_client.Interface) v1lister.PodLister {
 	selector := fields.ParseSelectorOrDie("spec.nodeName!=" + "" + ",status.phase!=" +
 		string(apiv1.PodSucceeded) + ",status.phase!=" + string(apiv1.PodFailed))
@@ -163,7 +150,8 @@ func newPodLister(kubeClient kube_client.Interface) v1lister.PodLister {
 	store := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
 	podLister := v1lister.NewPodLister(store)
 	podReflector := cache.NewReflector(podListWatch, &apiv1.Pod{}, store, time.Hour)
-	podReflector.Run()
+	stopCh := make(chan struct{})
+	go podReflector.Run(stopCh)
 
 	return podLister
 }

@@ -106,10 +106,10 @@ func (t *templateBuilder) buildCapacity(machineType string, accelerators []*gce.
 
 // buildAllocatableFromKubeEnv builds node allocatable based on capacity of the node and
 // value of kubeEnv.
-// KubeEnv is a multi line string containing entries in the form of
+// KubeEnv is a multi-line string containing entries in the form of
 // <RESOURCE_NAME>:<string>. One of the resources it contains is a list of
-// kubelet arguments from which we can extract the resources reseved by
-// the kubelet for its operation. Allocated resources are capacity - reserved.
+// kubelet arguments from which we can extract the resources reserved by
+// the kubelet for its operation. Allocated resources are capacity minus reserved.
 // If we fail to extract the reserved resources from kubeEnv (e.g it is in a
 // wrong format or does not contain kubelet arguments), we return an error.
 func (t *templateBuilder) buildAllocatableFromKubeEnv(capacity apiv1.ResourceList, kubeEnv string) (apiv1.ResourceList, error) {
@@ -230,27 +230,35 @@ func (t *templateBuilder) buildNodeFromAutoprovisioningSpec(mig *Mig) (*apiv1.No
 		SelfLink: fmt.Sprintf("/api/v1/nodes/%s", nodeName),
 		Labels:   map[string]string{},
 	}
-	// TODO: Handle GPU
+
 	capacity, err := t.buildCapacity(mig.spec.machineType, nil, mig.GceRef.Zone)
 	if err != nil {
 		return nil, err
 	}
+
+	if gpuRequest, found := mig.spec.extraResources[gpu.ResourceNvidiaGPU]; found {
+		capacity[gpu.ResourceNvidiaGPU] = gpuRequest.DeepCopy()
+	}
+
 	node.Status = apiv1.NodeStatus{
 		Capacity:    capacity,
 		Allocatable: t.buildAllocatableFromCapacity(capacity),
 	}
 
-	labels, err := buildLablesForAutoprovisionedMig(mig, nodeName)
+	labels, err := buildLabelsForAutoprovisionedMig(mig, nodeName)
 	if err != nil {
 		return nil, err
 	}
 	node.Labels = labels
+
+	node.Spec.Taints = mig.spec.taints
+
 	// Ready status
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()
 	return &node, nil
 }
 
-func buildLablesForAutoprovisionedMig(mig *Mig, nodeName string) (map[string]string, error) {
+func buildLabelsForAutoprovisionedMig(mig *Mig, nodeName string) (map[string]string, error) {
 	// GenericLabels
 	labels, err := buildGenericLabels(mig.GceRef, mig.spec.machineType, nodeName)
 	if err != nil {
@@ -324,17 +332,31 @@ func parseKubeReserved(kubeReserved string) (apiv1.ResourceList, error) {
 }
 
 func extractLabelsFromKubeEnv(kubeEnv string) (map[string]string, error) {
-	labels, err := extractFromKubeEnv(kubeEnv, "NODE_LABELS")
+	// In v1.10+, labels are only exposed for the autoscaler via AUTOSCALER_ENV_VARS
+	// see kubernetes/kubernetes#61119. We try AUTOSCALER_ENV_VARS first, then
+	// fall back to the old way.
+	labels, err := extractAutoscalerVarFromKubeEnv(kubeEnv, "node_labels")
 	if err != nil {
-		return nil, err
+		glog.Errorf("node_labels not found via AUTOSCALER_ENV_VARS due to error, will try NODE_LABELS: %v", err)
+		labels, err = extractFromKubeEnv(kubeEnv, "NODE_LABELS")
+		if err != nil {
+			return nil, err
+		}
 	}
 	return parseKeyValueListToMap(labels)
 }
 
 func extractTaintsFromKubeEnv(kubeEnv string) ([]apiv1.Taint, error) {
-	taints, err := extractFromKubeEnv(kubeEnv, "NODE_TAINTS")
+	// In v1.10+, taints are only exposed for the autoscaler via AUTOSCALER_ENV_VARS
+	// see kubernetes/kubernetes#61119. We try AUTOSCALER_ENV_VARS first, then
+	// fall back to the old way.
+	taints, err := extractAutoscalerVarFromKubeEnv(kubeEnv, "node_taints")
 	if err != nil {
-		return nil, err
+		glog.Errorf("node_taints not found via AUTOSCALER_ENV_VARS due to error, will try NODE_TAINTS: %v", err)
+		taints, err = extractFromKubeEnv(kubeEnv, "NODE_TAINTS")
+		if err != nil {
+			return nil, err
+		}
 	}
 	taintMap, err := parseKeyValueListToMap(taints)
 	if err != nil {
@@ -344,23 +366,61 @@ func extractTaintsFromKubeEnv(kubeEnv string) ([]apiv1.Taint, error) {
 }
 
 func extractKubeReservedFromKubeEnv(kubeEnv string) (string, error) {
-	kubeletArgs, err := extractFromKubeEnv(kubeEnv, "KUBELET_TEST_ARGS")
+	// In v1.10+, kube-reserved is only exposed for the autoscaler via AUTOSCALER_ENV_VARS
+	// see kubernetes/kubernetes#61119. We try AUTOSCALER_ENV_VARS first, then
+	// fall back to the old way.
+	kubeReserved, err := extractAutoscalerVarFromKubeEnv(kubeEnv, "kube_reserved")
 	if err != nil {
-		return "", err
-	}
-	resourcesRegexp := regexp.MustCompile(`--kube-reserved=([^ ]+)`)
+		glog.Errorf("kube_reserved not found via AUTOSCALER_ENV_VARS due to error, will try kube-reserved in KUBELET_TEST_ARGS: %v", err)
+		kubeletArgs, err := extractFromKubeEnv(kubeEnv, "KUBELET_TEST_ARGS")
+		if err != nil {
+			return "", err
+		}
+		resourcesRegexp := regexp.MustCompile(`--kube-reserved=([^ ]+)`)
 
-	for _, value := range kubeletArgs {
-		matches := resourcesRegexp.FindStringSubmatch(value)
-		if len(matches) > 1 {
-			return matches[1], nil
+		for _, value := range kubeletArgs {
+			matches := resourcesRegexp.FindStringSubmatch(value)
+			if len(matches) > 1 {
+				return matches[1], nil
+			}
+		}
+		return "", fmt.Errorf("kube-reserved not in kubelet args in kube-env: %q", strings.Join(kubeletArgs, " "))
+	}
+	return kubeReserved[0], nil
+}
+
+func extractAutoscalerVarFromKubeEnv(kubeEnv, name string) ([]string, error) {
+	const autoscalerVars = "AUTOSCALER_ENV_VARS"
+	autoscalerVals, err := extractFromKubeEnv(kubeEnv, autoscalerVars)
+	if err != nil {
+		return nil, err
+	}
+	var result []string
+	for _, val := range autoscalerVals {
+		for _, v := range strings.Split(val, ";") {
+			v = strings.Trim(v, " ")
+			if len(v) == 0 {
+				continue
+			}
+			items := strings.SplitN(v, "=", 2)
+			if len(items) != 2 {
+				return nil, fmt.Errorf("malformed autoscaler var: %s", v)
+			}
+			if strings.Trim(items[0], " ") == name {
+				result = append(result, strings.Trim(items[1], " \"'"))
+			}
 		}
 	}
-	return "", fmt.Errorf("kube-reserved not in kubelet args in kube-env: %q", strings.Join(kubeletArgs, " "))
+	if len(result) == 0 {
+		return nil, fmt.Errorf("var %s not found in %s: %v", name, autoscalerVars, autoscalerVals)
+	}
+	return result, nil
 }
 
 func extractFromKubeEnv(kubeEnv, resource string) ([]string, error) {
 	result := make([]string, 0)
+
+	kubeEnv = strings.Replace(kubeEnv, "\n ", " ", -1)
 
 	for line, env := range strings.Split(kubeEnv, "\n") {
 		env = strings.Trim(env, " ")
@@ -383,10 +443,13 @@ func extractFromKubeEnv(kubeEnv, resource string) ([]string, error) {
 func parseKeyValueListToMap(values []string) (map[string]string, error) {
 	result := make(map[string]string)
 	for _, value := range values {
+		if len(value) == 0 {
+			continue
+		}
 		for _, val := range strings.Split(value, ",") {
 			valItems := strings.SplitN(val, "=", 2)
 			if len(valItems) != 2 {
-				return nil, fmt.Errorf("error while parsing kube env value: %s", val)
+				return nil, fmt.Errorf("error while parsing key-value list, val: %s", val)
 			}
 			result[valItems[0]] = valItems[1]
 		}

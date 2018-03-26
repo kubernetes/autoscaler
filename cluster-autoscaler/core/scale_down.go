@@ -99,7 +99,7 @@ func (n *NodeDeleteStatus) SetDeleteInProgress(status bool) {
 	n.deleteInProgress = status
 }
 
-// ScaleDown is responsible for maintaining the state needed to perform unneded node removals.
+// ScaleDown is responsible for maintaining the state needed to perform unneeded node removals.
 type ScaleDown struct {
 	context            *AutoscalingContext
 	unneededNodes      map[string]time.Time
@@ -253,7 +253,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		additionalCandidatesPoolSize = len(currentNonCandidates)
 	}
 	if additionalCandidatesCount > 0 {
-		// Look for addidtional nodes to remove among the rest of nodes
+		// Look for additional nodes to remove among the rest of nodes.
 		glog.V(3).Infof("Finding additional %v candidates for scale down.", additionalCandidatesCount)
 		additionalNodesToRemove, additionalUnremovable, additionalNewHints, simulatorErr :=
 			simulator.FindNodesToRemove(currentNonCandidates[:additionalCandidatesPoolSize], nodes, nonExpendablePods, nil,
@@ -339,7 +339,7 @@ func (sd *ScaleDown) markSimulationError(simulatorErr errors.AutoscalerError,
 	return simulatorErr.AddPrefix("error while simulating node drains: ")
 }
 
-// chooseCandidates splits nodes into current candidates for scaledown and the
+// chooseCandidates splits nodes into current candidates for scale-down and the
 // rest. Current candidates are unneeded nodes from the previous run that are
 // still in the nodes list.
 func (sd *ScaleDown) chooseCandidates(nodes []*apiv1.Node) ([]*apiv1.Node, []*apiv1.Node) {
@@ -400,7 +400,7 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 				continue
 			}
 
-			// Unready nodes may be deleted after a different time than unrerutilized.
+			// Unready nodes may be deleted after a different time than underutilized nodes.
 			if !ready && !val.Add(sd.context.ScaleDownUnreadyTime).Before(currentTime) {
 				continue
 			}
@@ -499,7 +499,7 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 	sd.nodeDeleteStatus.SetDeleteInProgress(true)
 
 	go func() {
-		// Finishing the delete probess once this goroutine is over.
+		// Finishing the delete process once this goroutine is over.
 		defer sd.nodeDeleteStatus.SetDeleteInProgress(false)
 		err := deleteNode(sd.context, toRemove.Node, toRemove.PodsToReschedule)
 		if err != nil {

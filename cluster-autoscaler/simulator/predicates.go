@@ -25,13 +25,13 @@ import (
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	informers "k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
-	"k8s.io/kubernetes/plugin/pkg/scheduler/algorithm"
-	"k8s.io/kubernetes/plugin/pkg/scheduler/algorithm/predicates"
-	"k8s.io/kubernetes/plugin/pkg/scheduler/factory"
-	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
+	"k8s.io/kubernetes/pkg/scheduler/algorithm"
+	"k8s.io/kubernetes/pkg/scheduler/algorithm/predicates"
+	"k8s.io/kubernetes/pkg/scheduler/factory"
+	"k8s.io/kubernetes/pkg/scheduler/schedulercache"
 
-	// We need to import provider to intialize default scheduler.
-	_ "k8s.io/kubernetes/plugin/pkg/scheduler/algorithmprovider"
+	// We need to import provider to initialize default scheduler.
+	_ "k8s.io/kubernetes/pkg/scheduler/algorithmprovider"
 
 	"github.com/golang/glog"
 )
@@ -47,7 +47,7 @@ const (
 	// is discarded anyway.
 	ReturnSimpleError ErrorVerbosity = false
 
-	// We want to disable affinity predicate for performance reasons if no ppod
+	// We want to disable affinity predicate for performance reasons if no pod
 	// requires it
 	affinityPredicateName = "MatchInterPodAffinity"
 )
@@ -86,6 +86,8 @@ func NewPredicateChecker(kubeClient kube_client.Interface, stop <-chan struct{})
 		informerFactory.Extensions().V1beta1().ReplicaSets(),
 		informerFactory.Apps().V1beta1().StatefulSets(),
 		informerFactory.Core().V1().Services(),
+		informerFactory.Policy().V1beta1().PodDisruptionBudgets(),
+		informerFactory.Storage().V1().StorageClasses(),
 		apiv1.DefaultHardPodAffinitySymmetricWeight,
 		false,
 	)
@@ -174,7 +176,7 @@ func (p *PredicateChecker) IsAffinityPredicateEnabled() bool {
 // predicateMetadata is also quite expensive, so it's not always the best option to run this method.
 // Please refer to https://github.com/kubernetes/autoscaler/issues/257 for more details.
 func (p *PredicateChecker) GetPredicateMetadata(pod *apiv1.Pod, nodeInfos map[string]*schedulercache.NodeInfo) algorithm.PredicateMetadata {
-	// skip precomputation if affinity predicate is disabled - it's not worth it performance wise
+	// skip precomputation if affinity predicate is disabled - it's not worth it performance-wise
 	if !p.enableAffinityPredicate {
 		return nil
 	}

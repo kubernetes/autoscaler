@@ -23,14 +23,16 @@ import (
 	"math/rand"
 	"time"
 
+	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/glogx"
+	scheduler_util "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
+
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1beta1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	scheduler_util "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 	client "k8s.io/client-go/kubernetes"
-	"k8s.io/kubernetes/plugin/pkg/scheduler/algorithm"
-	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
+	"k8s.io/kubernetes/pkg/scheduler/algorithm"
+	"k8s.io/kubernetes/pkg/scheduler/schedulercache"
 
 	"github.com/golang/glog"
 )
@@ -137,7 +139,8 @@ func FindEmptyNodesToRemove(candidates []*apiv1.Node, pods []*apiv1.Pod) []*apiv
 	return result
 }
 
-// CalculateUtilization calculates utilization of a node, defined as total amount of requested resources divided by capacity.
+// CalculateUtilization calculates utilization of a node, defined as maximum of (cpu, memory) utilization.
+// Per resource utilization is the sum of requests for it divided by allocatable.
 func CalculateUtilization(node *apiv1.Node, nodeInfo *schedulercache.NodeInfo) (float64, error) {
 	cpu, err := calculateUtilizationOfResource(node, nodeInfo, apiv1.ResourceCPU)
 	if err != nil {
@@ -151,11 +154,11 @@ func CalculateUtilization(node *apiv1.Node, nodeInfo *schedulercache.NodeInfo) (
 }
 
 func calculateUtilizationOfResource(node *apiv1.Node, nodeInfo *schedulercache.NodeInfo, resourceName apiv1.ResourceName) (float64, error) {
-	nodeCapacity, found := node.Status.Capacity[resourceName]
+	nodeAllocatable, found := node.Status.Allocatable[resourceName]
 	if !found {
 		return 0, fmt.Errorf("Failed to get %v from %s", resourceName, node.Name)
 	}
-	if nodeCapacity.MilliValue() == 0 {
+	if nodeAllocatable.MilliValue() == 0 {
 		return 0, fmt.Errorf("%v is 0 at %s", resourceName, node.Name)
 	}
 	podsRequest := resource.MustParse("0")
@@ -166,7 +169,7 @@ func calculateUtilizationOfResource(node *apiv1.Node, nodeInfo *schedulercache.N
 			}
 		}
 	}
-	return float64(podsRequest.MilliValue()) / float64(nodeCapacity.MilliValue()), nil
+	return float64(podsRequest.MilliValue()) / float64(nodeAllocatable.MilliValue()), nil
 }
 
 // TODO: We don't need to pass list of nodes here as they are already available in nodeInfos.
@@ -183,6 +186,8 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes []*apiv1.Node, no
 		return fmt.Sprintf("%s/%s", pod.Namespace, pod.Name)
 	}
 
+	loggingQuota := glogx.PodsLoggingQuota()
+
 	tryNodeForPod := func(nodename string, pod *apiv1.Pod, predicateMeta algorithm.PredicateMetadata) bool {
 		nodeInfo, found := newNodeInfos[nodename]
 		if found {
@@ -194,8 +199,9 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes []*apiv1.Node, no
 				return false
 			}
 			err := predicateChecker.CheckPredicates(pod, predicateMeta, nodeInfo, ReturnVerboseError)
-			glog.V(5).Infof("Evaluation %s for %s/%s -> %v", nodename, pod.Namespace, pod.Name, err)
-			if err == nil {
+			if err != nil {
+				glogx.V(4).UpTo(loggingQuota).Infof("Evaluation %s for %s/%s -> %v", nodename, pod.Namespace, pod.Name, err)
+			} else {
 				// TODO(mwielgus): Optimize it.
 				glog.V(4).Infof("Pod %s/%s can be moved to %s", pod.Namespace, pod.Name, nodename)
 				podsOnNode := nodeInfo.Pods()
@@ -222,6 +228,7 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes []*apiv1.Node, no
 		foundPlace := false
 		targetNode := ""
 		predicateMeta := predicateChecker.GetPredicateMetadata(pod, newNodeInfos)
+		loggingQuota.Reset()
 
 		glog.V(5).Infof("Looking for place for %s/%s", pod.Namespace, pod.Name)
 
@@ -244,6 +251,7 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes []*apiv1.Node, no
 				}
 			}
 			if !foundPlace {
+				glogx.V(4).Over(loggingQuota).Infof("% other nodes evaluated for %s/%s", -loggingQuota.Left(), pod.Namespace, pod.Name)
 				return fmt.Errorf("failed to find place for %s", podKey(pod))
 			}
 		}

@@ -1,0 +1,46 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: admission-controller
+  namespace: kube-system
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: admission-controller
+    spec:
+      serviceAccountName: admission-controller
+      containers:
+      - name: admission-controller
+        image: gcr.io/kubernetes-develop/admission-controller:0.0.1
+        imagePullPolicy: Always
+        volumeMounts:
+          - name: tls-certs
+            mountPath: "/etc/tls-certs"
+            readOnly: true
+        resources:
+          limits:
+            cpu: 500m
+            memory: 2000Mi
+          requests:
+            cpu: 250m
+            memory: 500Mi
+        ports:
+        - containerPort: 8000
+      volumes:
+        - name: tls-certs
+          secret:
+            secretName: vpa-tls-certs
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vpa-webhook
+  namespace: kube-system
+spec:
+  ports:
+    - port: 443
+      targetPort: 8000
+  selector:
+    app: admission-controller

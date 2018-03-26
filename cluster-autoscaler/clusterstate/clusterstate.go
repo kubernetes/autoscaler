@@ -74,7 +74,7 @@ type ScaleDownRequest struct {
 	NodeGroupName string
 	// Time is the time when the node deletion was requested.
 	Time time.Time
-	// ExpectedDeleteTime is the time when the node is excpected to be deleted.
+	// ExpectedDeleteTime is the time when the node is expected to be deleted.
 	ExpectedDeleteTime time.Time
 }
 
@@ -259,7 +259,7 @@ func (csr *ClusterStateRegistry) RegisterFailedScaleUp(nodeGroupName string, rea
 	csr.backoffNodeGroup(nodeGroupName, time.Now())
 }
 
-// UpdateNodes updates the state of the nodes in the ClusterStateRegistry and recalculates the statss
+// UpdateNodes updates the state of the nodes in the ClusterStateRegistry and recalculates the stats
 func (csr *ClusterStateRegistry) UpdateNodes(nodes []*apiv1.Node, currentTime time.Time) error {
 	csr.updateNodeGroupMetrics()
 	targetSizes, err := getTargetSizes(csr.cloudProvider)
@@ -352,7 +352,7 @@ func (csr *ClusterStateRegistry) IsNodeGroupHealthy(nodeGroupName string) bool {
 	if readiness.Ready < acceptable.MinNodes {
 		unjustifiedUnready += acceptable.MinNodes - readiness.Ready
 	}
-	// TODO: verify against maxnodes as well.
+	// TODO: verify against max nodes as well.
 
 	if unjustifiedUnready > csr.config.OkTotalUnreadyCount &&
 		float64(unjustifiedUnready) > csr.config.MaxTotalUnreadyPercentage/100.0*
@@ -479,6 +479,8 @@ type Readiness struct {
 	Registered int
 	// Number of nodes that failed to register within a reasonable limit.
 	LongUnregistered int
+	// Number of nodes that haven't yet registered.
+	Unregistered int
 	// Time when the readiness was measured.
 	Time time.Time
 }
@@ -523,17 +525,20 @@ func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 	}
 
 	for _, unregistered := range csr.unregisteredNodes {
-		if unregistered.UnregisteredSince.Add(csr.config.MaxNodeProvisionTime).Before(currentTime) {
-			nodeGroup, errNg := csr.cloudProvider.NodeGroupForNode(unregistered.Node)
-			if errNg != nil {
-				glog.Warningf("Failed to get nodegroup for %s: %v", unregistered.Node.Name, errNg)
-				continue
-			}
-			perNgCopy := perNodeGroup[nodeGroup.Id()]
-			perNgCopy.LongUnregistered += 1
-			perNodeGroup[nodeGroup.Id()] = perNgCopy
-			total.LongUnregistered += 1
+		nodeGroup, errNg := csr.cloudProvider.NodeGroupForNode(unregistered.Node)
+		if errNg != nil {
+			glog.Warningf("Failed to get nodegroup for %s: %v", unregistered.Node.Name, errNg)
+			continue
 		}
+		perNgCopy := perNodeGroup[nodeGroup.Id()]
+		if unregistered.UnregisteredSince.Add(csr.config.MaxNodeProvisionTime).Before(currentTime) {
+			perNgCopy.LongUnregistered += 1
+			total.LongUnregistered += 1
+		} else {
+			perNgCopy.Unregistered += 1
+			total.Unregistered += 1
+		}
+		perNodeGroup[nodeGroup.Id()] = perNgCopy
 	}
 
 	for ngId, ngReadiness := range perNodeGroup {
@@ -863,7 +868,7 @@ func (csr *ClusterStateRegistry) GetIncorrectNodeGroupSize(nodeGroupName string)
 }
 
 // GetUpcomingNodes returns how many new nodes will be added shortly to the node groups or should become ready soon.
-// The functiom may overestimate the number of nodes.
+// The function may overestimate the number of nodes.
 func (csr *ClusterStateRegistry) GetUpcomingNodes() map[string]int {
 	csr.Lock()
 	defer csr.Unlock()

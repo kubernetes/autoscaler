@@ -22,7 +22,7 @@ ARCH ?= amd64
 
 GOARM=7
 GOLANG_VERSION = 1.8.3
-REGISTRY = gcr.io/google_containers
+REGISTRY = staging-k8s.gcr.io
 IMGNAME = addon-resizer
 IMAGE = $(REGISTRY)/$(IMGNAME)
 MULTI_ARCH_IMG = $(IMAGE)-$(ARCH)

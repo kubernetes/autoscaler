@@ -17,7 +17,13 @@ limitations under the License.
 package model
 
 import (
+	"fmt"
+	"time"
+
+	apiv1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 )
 
 // ClusterState holds all runtime information about the cluster required for the
@@ -41,13 +47,13 @@ type PodState struct {
 	Labels labels.Set
 	// Containers that belong to the Pod, keyed by the container name.
 	Containers map[string]*ContainerState
-	// VPA managing this pod (can be nil).
-	Vpa *Vpa
 	// All VPA objects that match this Pod. While it is incorrect to let
 	// multiple VPA objects match the same pod, the model has no means to
 	// prevent such situation. In such case the pod is controlled by one of the
 	// matching VPAs.
 	MatchingVpas map[VpaID]*Vpa
+	// PodPhase describing current life cycle phase of the Pod.
+	Phase apiv1.PodPhase
 }
 
 // NewClusterState returns a new ClusterState with no pods.
@@ -70,7 +76,7 @@ type ContainerUsageSampleWithKey struct {
 // the Cluster object.
 // If the labels of the pod have changed, it updates the links between the pod
 // and the matching Vpa.
-func (cluster *ClusterState) AddOrUpdatePod(podID PodID, newLabels labels.Set) {
+func (cluster *ClusterState) AddOrUpdatePod(podID PodID, newLabels labels.Set, phase apiv1.PodPhase) {
 	pod, podExists := cluster.Pods[podID]
 	if !podExists {
 		pod = newPod(podID)
@@ -83,6 +89,20 @@ func (cluster *ClusterState) AddOrUpdatePod(podID PodID, newLabels labels.Set) {
 			vpa.UpdatePodLink(pod)
 		}
 	}
+	pod.Phase = phase
+}
+
+// GetContainer returns the ContainerState object for a given ContainerID or
+// null if it's not present in the model.
+func (cluster *ClusterState) GetContainer(containerID ContainerID) *ContainerState {
+	pod, podExists := cluster.Pods[containerID.PodID]
+	if podExists {
+		container, containerExists := pod.Containers[containerID.ContainerName]
+		if containerExists {
+			return container
+		}
+	}
+	return nil
 }
 
 // DeletePod removes an existing pod from the cluster.
@@ -131,13 +151,45 @@ func (cluster *ClusterState) AddSample(sample *ContainerUsageSampleWithKey) erro
 	return nil
 }
 
+// RecordOOM adds info regarding OOM event in the model as an artifical memory sample.
+func (cluster *ClusterState) RecordOOM(containerID ContainerID, timestamp time.Time, requestedMemory ResourceAmount) error {
+	pod, podExists := cluster.Pods[containerID.PodID]
+	if !podExists {
+		return NewKeyError(containerID.PodID)
+	}
+	containerState, containerExists := pod.Containers[containerID.ContainerName]
+	if !containerExists {
+		return NewKeyError(containerID.ContainerName)
+	}
+	err := containerState.RecordOOM(timestamp, requestedMemory)
+	if err != nil {
+		return fmt.Errorf("Error while recording OOM for %v, Reason: %v", containerID, err)
+	}
+	return nil
+}
+
 // AddOrUpdateVpa adds a new VPA with a given ID to the ClusterState if it
 // didn't yet exist. If the VPA already existed but had a different pod
 // selector, the pod selector is updated. Updates the links between the VPA and
 // all pods it matches.
-func (cluster *ClusterState) AddOrUpdateVpa(vpaID VpaID, podSelectorStr string) error {
+func (cluster *ClusterState) AddOrUpdateVpa(apiObject *vpa_types.VerticalPodAutoscaler) error {
+	vpaID := VpaID{Namespace: apiObject.Namespace, VpaName: apiObject.Name}
+	conditionsMap := make(vpaConditionsMap)
+	for _, condition := range apiObject.Status.Conditions {
+		conditionsMap[condition.Type] = condition
+	}
+	var currentRecommendation *vpa_types.RecommendedPodResources
+	if conditionsMap[vpa_types.RecommendationProvided].Status == apiv1.ConditionTrue {
+		currentRecommendation = &apiObject.Status.Recommendation
+	}
+	selector, err := metav1.LabelSelectorAsSelector(apiObject.Spec.Selector)
+	if err != nil {
+		errMsg := fmt.Sprintf("couldn't convert selector into a corresponding internal selector object: %v", err)
+		conditionsMap.Set(vpa_types.Configured, false, "InvalidSelector", errMsg)
+	}
+
 	vpa, vpaExists := cluster.Vpas[vpaID]
-	if vpaExists && vpa.PodSelectorStr != podSelectorStr {
+	if vpaExists && (err != nil || vpa.PodSelector.String() != selector.String()) {
 		// Pod selector was changed. Delete the VPA object and recreate
 		// it with the new selector.
 		if err := cluster.DeleteVpa(vpaID); err != nil {
@@ -146,15 +198,15 @@ func (cluster *ClusterState) AddOrUpdateVpa(vpaID VpaID, podSelectorStr string) 
 		vpaExists = false
 	}
 	if !vpaExists {
-		vpa, err := NewVpa(vpaID, podSelectorStr)
-		if err != nil {
-			return err
-		}
+		vpa = NewVpa(vpaID, selector)
 		cluster.Vpas[vpaID] = vpa
 		for _, pod := range cluster.Pods {
 			vpa.UpdatePodLink(pod)
 		}
 	}
+	vpa.Conditions = conditionsMap
+	vpa.Recommendation = currentRecommendation
+	vpa.LastUpdateTime = apiObject.Status.LastUpdateTime.Time
 	return nil
 }
 
@@ -165,19 +217,35 @@ func (cluster *ClusterState) DeleteVpa(vpaID VpaID) error {
 		return NewKeyError(vpaID)
 	}
 	// Change the selector to not match any pod and detach all pods.
-	vpa.SetPodSelectorStr("0=1")
+	vpa.PodSelector = nil
 	for _, pod := range vpa.Pods {
 		vpa.UpdatePodLink(pod)
 	}
+	delete(cluster.Vpas, vpaID)
+	return nil
+}
+
+// SetVpaCheckpoint stores container's checkoint data in the cluster's VPA object.
+func (cluster *ClusterState) SetVpaCheckpoint(checkpoint *vpa_types.VerticalPodAutoscalerCheckpoint) error {
+	vpaID := VpaID{Namespace: checkpoint.Namespace, VpaName: checkpoint.Spec.VPAObjectName}
+	vpa, exists := cluster.Vpas[vpaID]
+	if !exists {
+		return fmt.Errorf("Cannot load checkpoint to missing VPA object %+v", vpaID)
+	}
+	cs := NewAggregateContainerState()
+	err := cs.LoadFromCheckpoint(&checkpoint.Status)
+	if err != nil {
+		return fmt.Errorf("Cannot load checkpoint for VPA %+v. Reason: %v", vpaID, err)
+	}
+	vpa.ContainerCheckpoints[checkpoint.Spec.ContainerName] = cs
 	return nil
 }
 
 func newPod(id PodID) *PodState {
 	return &PodState{
-		id,
-		make(map[string]string),          // empty labels.
-		make(map[string]*ContainerState), // empty containers.
-		nil,                  // Vpa.
-		make(map[VpaID]*Vpa), // empty MatchingVpas.
+		ID:           id,
+		Labels:       make(map[string]string),
+		Containers:   make(map[string]*ContainerState),
+		MatchingVpas: make(map[VpaID]*Vpa),
 	}
 }

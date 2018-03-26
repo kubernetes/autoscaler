@@ -235,8 +235,8 @@ type fakeInstanceFinder struct {
 	c map[string]*Asg
 }
 
-func (i *fakeInstanceFinder) FindForInstance(ref *AwsRef) (*Asg, error) {
-	if asg, found := i.c[ref.Name]; found {
+func (i *fakeInstanceFinder) GetAsgForInstance(instance *AwsRef) (*Asg, error) {
+	if asg, found := i.c[instance.Name]; found {
 		return asg, nil
 	}
 

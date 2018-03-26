@@ -83,7 +83,7 @@ type ResourceEstimator interface {
 // PollAPIServer periodically counts the number of nodes, estimates the expected
 // ResourceRequirements, compares them to the actual ResourceRequirements, and
 // updates the deployment with the expected ResourceRequirements if necessary.
-func PollAPIServer(k8s KubernetesClient, est ResourceEstimator, contName string, pollPeriod time.Duration) {
+func PollAPIServer(k8s KubernetesClient, est ResourceEstimator, pollPeriod time.Duration) {
 	for i := 0; true; i++ {
 		if i != 0 {
 			// Sleep for the poll period.

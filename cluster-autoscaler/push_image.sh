@@ -20,15 +20,20 @@ if [ -z $IMAGE_TO_PUSH ]; then
   exit 1
 fi
 
+docker_push_cmd=("docker")
+if [[ "${IMAGE_TO_PUSH}" == "gcr.io/"* ]] || [[ "${IMAGE_TO_PUSH}" == "staging-k8s.gcr.io/"* ]] ; then
+    docker_push_cmd=("gcloud" "docker" "--")
+fi
+
 echo "About to push image $IMAGE_TO_PUSH"
 read -r -p "Are you sure? [y/N] " response
 if [[ "$response" =~ ^([yY])+$ ]]; then
-  gcloud docker -- pull $IMAGE_TO_PUSH
+  "${docker_push_cmd[@]}" pull $IMAGE_TO_PUSH
   if [ $? -eq 0 ]; then
     echo $IMAGE_TO_PUSH already exists
     exit 1
   fi
-  gcloud docker -- push $IMAGE_TO_PUSH
+  "${docker_push_cmd[@]}" push $IMAGE_TO_PUSH
 else
   echo Aborted
   exit 1

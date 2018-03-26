@@ -30,7 +30,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/kubernetes/pkg/kubemark"
-	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
+	"k8s.io/kubernetes/pkg/scheduler/schedulercache"
 
 	"github.com/golang/glog"
 )
@@ -113,7 +113,8 @@ func (kubemark *KubemarkCloudProvider) GetAvailableMachineTypes() ([]string, err
 }
 
 // NewNodeGroup builds a theoretical node group based on the node definition provided.
-func (kubemark *KubemarkCloudProvider) NewNodeGroup(machineType string, labels map[string]string, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
+func (kubemark *KubemarkCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string,
+	extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
@@ -133,7 +134,7 @@ func (kubemark *KubemarkCloudProvider) Cleanup() error {
 	return nil
 }
 
-// NodeGroup implements NodeGroup interfrace.
+// NodeGroup implements NodeGroup interface.
 type NodeGroup struct {
 	Name               string
 	kubemarkController *kubemark.KubemarkController
@@ -208,7 +209,7 @@ func (nodeGroup *NodeGroup) IncreaseSize(delta int) error {
 }
 
 // TargetSize returns the current TARGET size of the node group. It is possible that the
-// number is different from the number of nodes registered in Kuberentes.
+// number is different from the number of nodes registered in Kubernetes.
 func (nodeGroup *NodeGroup) TargetSize() (int, error) {
 	size, err := nodeGroup.kubemarkController.GetNodeGroupTargetSize(nodeGroup.Name)
 	return int(size), err
