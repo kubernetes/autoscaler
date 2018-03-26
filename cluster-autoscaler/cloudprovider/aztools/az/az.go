@@ -108,19 +108,11 @@ type ScalerConfig struct {
 }
 
 type NodeGroupInfo struct {
-	WorkerNodeNum     int      `yaml:"worker_node_num"`
 	LastScaledUpNodes []string `yaml:"last_scaled_up_nodes"`
 }
 
 // InitScalerFromConfig is used to initialize new deploy/scaler.yaml from cluster.yaml
 func InitScalerFromConfig(grouNames []string) error {
-	data, err := ioutil.ReadFile("./cluster.yaml")
-	if err != nil {
-		return err
-	}
-
-	m := make(map[interface{}]interface{})
-
 	config := ScalerConfig{
 		NodeGroupInfos: map[string]NodeGroupInfo{},
 	}
@@ -128,28 +120,8 @@ func InitScalerFromConfig(grouNames []string) error {
 	// Initialize, so we don't need to check if exists later.
 	for _, grp := range grouNames {
 		config.NodeGroupInfos[grp] = NodeGroupInfo{
-			WorkerNodeNum:     0,
 			LastScaledUpNodes: []string{},
 		}
-	}
-
-	err = yaml.Unmarshal(data, &m)
-	if err != nil {
-		return err
-	}
-
-	if machineMap, ok := m["machines"]; ok {
-		for _, machine := range machineMap.(map[interface{}]interface{}) {
-			if machine.(map[interface{}]interface{})["role"].(string) == "worker" {
-				nodeGroup := machine.(map[interface{}]interface{})["node-group"].(string)
-				// Maybe use pointer to avoid copy back?
-				ng := config.NodeGroupInfos[nodeGroup]
-				ng.WorkerNodeNum += 1
-				config.NodeGroupInfos[nodeGroup] = ng
-			}
-		}
-	} else {
-		return fmt.Errorf("no machines defined in cluster.yaml")
 	}
 
 	d, err := yaml.Marshal(&config)
@@ -163,7 +135,7 @@ func InitScalerFromConfig(grouNames []string) error {
 		return err
 	}
 
-	glog.V(4).Infof("Initialized deploy/scaler.yaml from cluster.yaml, with data: %#v", config)
+	glog.V(4).Infof("Initialized deploy/scaler.yaml with data: %#v", config)
 
 	return nil
 }

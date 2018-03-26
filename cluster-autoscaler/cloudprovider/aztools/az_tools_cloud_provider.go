@@ -20,10 +20,12 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"strings"
 	"sync"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aztools/az"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
@@ -272,22 +274,38 @@ func (azcp *AzToolsCloudProvider) Refresh() error {
 			return err
 		}
 
+		changed := false
+
+		if len(workers) != len(oldNodes) {
+			changed = true
+		} else {
+			// If length is equal, check the contents of node list.
+			nodeNameSet := sets.NewString()
+			for _, nodeID := range oldNodes {
+				nodeNameSet.Insert(strings.Split(nodeID, "://")[1])
+			}
+			if !nodeNameSet.HasAll(workers...) {
+				changed = true
+			}
+		}
+
 		// If current state of node group is not identical with cluster.yaml
 		// use cluster.yaml to recover it.
-		if len(workers) != len(oldNodes) {
+		if changed {
 			for _, oldNode := range oldNodes {
-				delete(azcp.nodes, getProviderID(oldNode))
+				// Old node name already has provider id as prefix.
+				delete(azcp.nodes, oldNode)
 			}
 
 			for _, nodeName := range workers {
+				// AddNode will automatically add provider id as prefix.
 				azcp.AddNode(grpID, nodeName)
 			}
 
 			azcp.AddNodeGroup(grpID, oldGroup.MinSize(), oldGroup.MaxSize())
-			glog.V(4).Infof("Adjusted outdated worker number from: %v, to: %v, in node group: %v.",
-				len(oldNodes), len(workers), grpID)
+			glog.V(4).Infof("Regenerated cached nodes list from: %v, to: %v, in node group: %v.",
+				oldNodes, workers, grpID)
 		}
-
 	}
 	return nil
 }
@@ -403,14 +421,8 @@ func (aztng *AzToolsNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 		if err != nil {
 			return err
 		}
-		aztng.deleteNode(node.Name)
 	}
 	return nil
-}
-
-func (aztng *AzToolsNodeGroup) deleteNode(nodeName string) {
-	// TODO(harry): change every group has a az_manager is better. So we don't need to maintain cached
-	// nodes here. (Really?)
 }
 
 // Id returns an unique identifier of the node group.
