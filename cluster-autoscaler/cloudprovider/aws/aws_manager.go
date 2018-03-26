@@ -403,7 +403,7 @@ func (m *AwsManager) buildNodeFromTemplate(asg *Asg, template *asgTemplate) (*ap
 		Name:     nodeName,
 		SelfLink: fmt.Sprintf("/api/v1/nodes/%s", nodeName),
 		Labels:   map[string]string{},
-		Annotations:   map[string]string{
+		Annotations: map[string]string{
 			nodeTemplateASGAnnotation: asg.Name,
 		},
 	}

@@ -65,7 +65,7 @@ type priceModel struct {
 func (pm *priceModel) NodePrice(node *apiv1.Node, startTime time.Time, endTime time.Time) (float64, error) {
 	var (
 		asgName string
-		found bool
+		found   bool
 	)
 
 	if asgName, found = node.ObjectMeta.Annotations[nodeTemplateASGAnnotation]; !found {
