@@ -28,8 +28,8 @@ import (
 func TestDescriptor_Price(t *testing.T) {
 	d := NewDescriptor(
 		newFakeInstanceInfoDescriber(
-			buildInfo("m4.xlarge", "us-east-1a", 4, 0, 16*1024, 0.111),
-			buildInfo("m4.2xlarge", "us-east-1a", 8, 0, 32*1024, 0.222),
+			buildInfo("m4.xlarge", "us-east-1", 4, 0, 16*1024, 0.111),
+			buildInfo("m4.2xlarge", "us-east-1", 8, 0, 32*1024, 0.222),
 		),
 	)
 
@@ -71,8 +71,8 @@ func TestDescriptor_Price(t *testing.T) {
 }
 
 type instanceInZone struct {
-	instanceType     string
-	availabilityZone string
+	instanceType string
+	region       string
 }
 
 type instanceInfoBundle struct {
@@ -80,9 +80,9 @@ type instanceInfoBundle struct {
 	info           *api.InstanceInfo
 }
 
-func buildInfo(instanceType, availabilityZone string, cpu, gpu, mem int64, onDemandPrice float64) instanceInfoBundle {
+func buildInfo(instanceType, region string, cpu, gpu, mem int64, onDemandPrice float64) instanceInfoBundle {
 	return instanceInfoBundle{
-		instanceInZone{instanceType, availabilityZone},
+		instanceInZone{instanceType, region},
 		&api.InstanceInfo{
 			InstanceType:  instanceType,
 			OnDemandPrice: onDemandPrice,
@@ -109,11 +109,11 @@ type fakeInstanceInfoDescriber struct {
 	c map[instanceInZone]*api.InstanceInfo
 }
 
-func (i *fakeInstanceInfoDescriber) DescribeInstanceInfo(instanceType string, availabilityZone string) (*api.InstanceInfo, error) {
-	iiz := instanceInZone{instanceType, availabilityZone}
+func (i *fakeInstanceInfoDescriber) DescribeInstanceInfo(instanceType string, region string) (*api.InstanceInfo, error) {
+	iiz := instanceInZone{instanceType, region}
 	if info, found := i.c[iiz]; found {
 		return info, nil
 	}
 
-	return nil, fmt.Errorf("instance info not available for instance type %s in zone %s", instanceType, availabilityZone)
+	return nil, fmt.Errorf("instance info not available for instance type %s in region %s", instanceType, region)
 }

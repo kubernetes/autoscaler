@@ -382,8 +382,13 @@ func (m *AwsManager) getAsgTemplate(name string) (*asgTemplate, error) {
 		glog.Warningf("Found multiple availability zones, using %s\n", az)
 	}
 
+	staticLinkedInstanceType, ok := InstanceTypes[instanceTypeName]
+	if !ok {
+		return nil, fmt.Errorf("instance of type %s not found in static database", instanceTypeName)
+	}
+
 	return &asgTemplate{
-		InstanceType: InstanceTypes[instanceTypeName],
+		InstanceType: staticLinkedInstanceType,
 		Region:       region,
 		Zone:         az,
 		Tags:         asg.Tags,
