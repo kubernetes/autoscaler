@@ -1,5 +1,5 @@
 /*
-Copyright 2017 The Kubernetes Authors.
+Copyright 2018 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,12 +28,17 @@ limitations under the License.
 		ExtraValue
 		LocalSubjectAccessReview
 		NonResourceAttributes
+		NonResourceRule
 		ResourceAttributes
+		ResourceRule
 		SelfSubjectAccessReview
 		SelfSubjectAccessReviewSpec
+		SelfSubjectRulesReview
+		SelfSubjectRulesReviewSpec
 		SubjectAccessReview
 		SubjectAccessReviewSpec
 		SubjectAccessReviewStatus
+		SubjectRulesReviewStatus
 */
 package v1beta1
 
@@ -73,44 +78,75 @@ func (m *NonResourceAttributes) Reset()                    { *m = NonResourceAtt
 func (*NonResourceAttributes) ProtoMessage()               {}
 func (*NonResourceAttributes) Descriptor() ([]byte, []int) { return fileDescriptorGenerated, []int{2} }
 
+func (m *NonResourceRule) Reset()                    { *m = NonResourceRule{} }
+func (*NonResourceRule) ProtoMessage()               {}
+func (*NonResourceRule) Descriptor() ([]byte, []int) { return fileDescriptorGenerated, []int{3} }
+
 func (m *ResourceAttributes) Reset()                    { *m = ResourceAttributes{} }
 func (*ResourceAttributes) ProtoMessage()               {}
-func (*ResourceAttributes) Descriptor() ([]byte, []int) { return fileDescriptorGenerated, []int{3} }
+func (*ResourceAttributes) Descriptor() ([]byte, []int) { return fileDescriptorGenerated, []int{4} }
+
+func (m *ResourceRule) Reset()                    { *m = ResourceRule{} }
+func (*ResourceRule) ProtoMessage()               {}
+func (*ResourceRule) Descriptor() ([]byte, []int) { return fileDescriptorGenerated, []int{5} }
 
 func (m *SelfSubjectAccessReview) Reset()                    { *m = SelfSubjectAccessReview{} }
 func (*SelfSubjectAccessReview) ProtoMessage()               {}
-func (*SelfSubjectAccessReview) Descriptor() ([]byte, []int) { return fileDescriptorGenerated, []int{4} }
+func (*SelfSubjectAccessReview) Descriptor() ([]byte, []int) { return fileDescriptorGenerated, []int{6} }
 
 func (m *SelfSubjectAccessReviewSpec) Reset()      { *m = SelfSubjectAccessReviewSpec{} }
 func (*SelfSubjectAccessReviewSpec) ProtoMessage() {}
 func (*SelfSubjectAccessReviewSpec) Descriptor() ([]byte, []int) {
-	return fileDescriptorGenerated, []int{5}
+	return fileDescriptorGenerated, []int{7}
+}
+
+func (m *SelfSubjectRulesReview) Reset()                    { *m = SelfSubjectRulesReview{} }
+func (*SelfSubjectRulesReview) ProtoMessage()               {}
+func (*SelfSubjectRulesReview) Descriptor() ([]byte, []int) { return fileDescriptorGenerated, []int{8} }
+
+func (m *SelfSubjectRulesReviewSpec) Reset()      { *m = SelfSubjectRulesReviewSpec{} }
+func (*SelfSubjectRulesReviewSpec) ProtoMessage() {}
+func (*SelfSubjectRulesReviewSpec) Descriptor() ([]byte, []int) {
+	return fileDescriptorGenerated, []int{9}
 }
 
 func (m *SubjectAccessReview) Reset()                    { *m = SubjectAccessReview{} }
 func (*SubjectAccessReview) ProtoMessage()               {}
-func (*SubjectAccessReview) Descriptor() ([]byte, []int) { return fileDescriptorGenerated, []int{6} }
+func (*SubjectAccessReview) Descriptor() ([]byte, []int) { return fileDescriptorGenerated, []int{10} }
 
-func (m *SubjectAccessReviewSpec) Reset()                    { *m = SubjectAccessReviewSpec{} }
-func (*SubjectAccessReviewSpec) ProtoMessage()               {}
-func (*SubjectAccessReviewSpec) Descriptor() ([]byte, []int) { return fileDescriptorGenerated, []int{7} }
+func (m *SubjectAccessReviewSpec) Reset()      { *m = SubjectAccessReviewSpec{} }
+func (*SubjectAccessReviewSpec) ProtoMessage() {}
+func (*SubjectAccessReviewSpec) Descriptor() ([]byte, []int) {
+	return fileDescriptorGenerated, []int{11}
+}
 
 func (m *SubjectAccessReviewStatus) Reset()      { *m = SubjectAccessReviewStatus{} }
 func (*SubjectAccessReviewStatus) ProtoMessage() {}
 func (*SubjectAccessReviewStatus) Descriptor() ([]byte, []int) {
-	return fileDescriptorGenerated, []int{8}
+	return fileDescriptorGenerated, []int{12}
+}
+
+func (m *SubjectRulesReviewStatus) Reset()      { *m = SubjectRulesReviewStatus{} }
+func (*SubjectRulesReviewStatus) ProtoMessage() {}
+func (*SubjectRulesReviewStatus) Descriptor() ([]byte, []int) {
+	return fileDescriptorGenerated, []int{13}
 }
 
 func init() {
 	proto.RegisterType((*ExtraValue)(nil), "k8s.io.api.authorization.v1beta1.ExtraValue")
 	proto.RegisterType((*LocalSubjectAccessReview)(nil), "k8s.io.api.authorization.v1beta1.LocalSubjectAccessReview")
 	proto.RegisterType((*NonResourceAttributes)(nil), "k8s.io.api.authorization.v1beta1.NonResourceAttributes")
+	proto.RegisterType((*NonResourceRule)(nil), "k8s.io.api.authorization.v1beta1.NonResourceRule")
 	proto.RegisterType((*ResourceAttributes)(nil), "k8s.io.api.authorization.v1beta1.ResourceAttributes")
+	proto.RegisterType((*ResourceRule)(nil), "k8s.io.api.authorization.v1beta1.ResourceRule")
 	proto.RegisterType((*SelfSubjectAccessReview)(nil), "k8s.io.api.authorization.v1beta1.SelfSubjectAccessReview")
 	proto.RegisterType((*SelfSubjectAccessReviewSpec)(nil), "k8s.io.api.authorization.v1beta1.SelfSubjectAccessReviewSpec")
+	proto.RegisterType((*SelfSubjectRulesReview)(nil), "k8s.io.api.authorization.v1beta1.SelfSubjectRulesReview")
+	proto.RegisterType((*SelfSubjectRulesReviewSpec)(nil), "k8s.io.api.authorization.v1beta1.SelfSubjectRulesReviewSpec")
 	proto.RegisterType((*SubjectAccessReview)(nil), "k8s.io.api.authorization.v1beta1.SubjectAccessReview")
 	proto.RegisterType((*SubjectAccessReviewSpec)(nil), "k8s.io.api.authorization.v1beta1.SubjectAccessReviewSpec")
 	proto.RegisterType((*SubjectAccessReviewStatus)(nil), "k8s.io.api.authorization.v1beta1.SubjectAccessReviewStatus")
+	proto.RegisterType((*SubjectRulesReviewStatus)(nil), "k8s.io.api.authorization.v1beta1.SubjectRulesReviewStatus")
 }
 func (m ExtraValue) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
@@ -213,6 +249,54 @@ func (m *NonResourceAttributes) MarshalTo(dAtA []byte) (int, error) {
 	return i, nil
 }
 
+func (m *NonResourceRule) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *NonResourceRule) MarshalTo(dAtA []byte) (int, error) {
+	var i int
+	_ = i
+	var l int
+	_ = l
+	if len(m.Verbs) > 0 {
+		for _, s := range m.Verbs {
+			dAtA[i] = 0xa
+			i++
+			l = len(s)
+			for l >= 1<<7 {
+				dAtA[i] = uint8(uint64(l)&0x7f | 0x80)
+				l >>= 7
+				i++
+			}
+			dAtA[i] = uint8(l)
+			i++
+			i += copy(dAtA[i:], s)
+		}
+	}
+	if len(m.NonResourceURLs) > 0 {
+		for _, s := range m.NonResourceURLs {
+			dAtA[i] = 0x12
+			i++
+			l = len(s)
+			for l >= 1<<7 {
+				dAtA[i] = uint8(uint64(l)&0x7f | 0x80)
+				l >>= 7
+				i++
+			}
+			dAtA[i] = uint8(l)
+			i++
+			i += copy(dAtA[i:], s)
+		}
+	}
+	return i, nil
+}
+
 func (m *ResourceAttributes) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -256,6 +340,84 @@ func (m *ResourceAttributes) MarshalTo(dAtA []byte) (int, error) {
 	i++
 	i = encodeVarintGenerated(dAtA, i, uint64(len(m.Name)))
 	i += copy(dAtA[i:], m.Name)
+	return i, nil
+}
+
+func (m *ResourceRule) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *ResourceRule) MarshalTo(dAtA []byte) (int, error) {
+	var i int
+	_ = i
+	var l int
+	_ = l
+	if len(m.Verbs) > 0 {
+		for _, s := range m.Verbs {
+			dAtA[i] = 0xa
+			i++
+			l = len(s)
+			for l >= 1<<7 {
+				dAtA[i] = uint8(uint64(l)&0x7f | 0x80)
+				l >>= 7
+				i++
+			}
+			dAtA[i] = uint8(l)
+			i++
+			i += copy(dAtA[i:], s)
+		}
+	}
+	if len(m.APIGroups) > 0 {
+		for _, s := range m.APIGroups {
+			dAtA[i] = 0x12
+			i++
+			l = len(s)
+			for l >= 1<<7 {
+				dAtA[i] = uint8(uint64(l)&0x7f | 0x80)
+				l >>= 7
+				i++
+			}
+			dAtA[i] = uint8(l)
+			i++
+			i += copy(dAtA[i:], s)
+		}
+	}
+	if len(m.Resources) > 0 {
+		for _, s := range m.Resources {
+			dAtA[i] = 0x1a
+			i++
+			l = len(s)
+			for l >= 1<<7 {
+				dAtA[i] = uint8(uint64(l)&0x7f | 0x80)
+				l >>= 7
+				i++
+			}
+			dAtA[i] = uint8(l)
+			i++
+			i += copy(dAtA[i:], s)
+		}
+	}
+	if len(m.ResourceNames) > 0 {
+		for _, s := range m.ResourceNames {
+			dAtA[i] = 0x22
+			i++
+			l = len(s)
+			for l >= 1<<7 {
+				dAtA[i] = uint8(uint64(l)&0x7f | 0x80)
+				l >>= 7
+				i++
+			}
+			dAtA[i] = uint8(l)
+			i++
+			i += copy(dAtA[i:], s)
+		}
+	}
 	return i, nil
 }
 
@@ -339,7 +501,7 @@ func (m *SelfSubjectAccessReviewSpec) MarshalTo(dAtA []byte) (int, error) {
 	return i, nil
 }
 
-func (m *SubjectAccessReview) Marshal() (dAtA []byte, err error) {
+func (m *SelfSubjectRulesReview) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
 	n, err := m.MarshalTo(dAtA)
@@ -349,7 +511,7 @@ func (m *SubjectAccessReview) Marshal() (dAtA []byte, err error) {
 	return dAtA[:n], nil
 }
 
-func (m *SubjectAccessReview) MarshalTo(dAtA []byte) (int, error) {
+func (m *SelfSubjectRulesReview) MarshalTo(dAtA []byte) (int, error) {
 	var i int
 	_ = i
 	var l int
@@ -381,6 +543,70 @@ func (m *SubjectAccessReview) MarshalTo(dAtA []byte) (int, error) {
 	return i, nil
 }
 
+func (m *SelfSubjectRulesReviewSpec) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *SelfSubjectRulesReviewSpec) MarshalTo(dAtA []byte) (int, error) {
+	var i int
+	_ = i
+	var l int
+	_ = l
+	dAtA[i] = 0xa
+	i++
+	i = encodeVarintGenerated(dAtA, i, uint64(len(m.Namespace)))
+	i += copy(dAtA[i:], m.Namespace)
+	return i, nil
+}
+
+func (m *SubjectAccessReview) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *SubjectAccessReview) MarshalTo(dAtA []byte) (int, error) {
+	var i int
+	_ = i
+	var l int
+	_ = l
+	dAtA[i] = 0xa
+	i++
+	i = encodeVarintGenerated(dAtA, i, uint64(m.ObjectMeta.Size()))
+	n12, err := m.ObjectMeta.MarshalTo(dAtA[i:])
+	if err != nil {
+		return 0, err
+	}
+	i += n12
+	dAtA[i] = 0x12
+	i++
+	i = encodeVarintGenerated(dAtA, i, uint64(m.Spec.Size()))
+	n13, err := m.Spec.MarshalTo(dAtA[i:])
+	if err != nil {
+		return 0, err
+	}
+	i += n13
+	dAtA[i] = 0x1a
+	i++
+	i = encodeVarintGenerated(dAtA, i, uint64(m.Status.Size()))
+	n14, err := m.Status.MarshalTo(dAtA[i:])
+	if err != nil {
+		return 0, err
+	}
+	i += n14
+	return i, nil
+}
+
 func (m *SubjectAccessReviewSpec) Marshal() (dAtA []byte, err error) {
 	size := m.Size()
 	dAtA = make([]byte, size)
@@ -400,21 +626,21 @@ func (m *SubjectAccessReviewSpec) MarshalTo(dAtA []byte) (int, error) {
 		dAtA[i] = 0xa
 		i++
 		i = encodeVarintGenerated(dAtA, i, uint64(m.ResourceAttributes.Size()))
-		n12, err := m.ResourceAttributes.MarshalTo(dAtA[i:])
+		n15, err := m.ResourceAttributes.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
-		i += n12
+		i += n15
 	}
 	if m.NonResourceAttributes != nil {
 		dAtA[i] = 0x12
 		i++
 		i = encodeVarintGenerated(dAtA, i, uint64(m.NonResourceAttributes.Size()))
-		n13, err := m.NonResourceAttributes.MarshalTo(dAtA[i:])
+		n16, err := m.NonResourceAttributes.MarshalTo(dAtA[i:])
 		if err != nil {
 			return 0, err
 		}
-		i += n13
+		i += n16
 	}
 	dAtA[i] = 0x1a
 	i++
@@ -459,13 +685,17 @@ func (m *SubjectAccessReviewSpec) MarshalTo(dAtA []byte) (int, error) {
 			dAtA[i] = 0x12
 			i++
 			i = encodeVarintGenerated(dAtA, i, uint64((&v).Size()))
-			n14, err := (&v).MarshalTo(dAtA[i:])
+			n17, err := (&v).MarshalTo(dAtA[i:])
 			if err != nil {
 				return 0, err
 			}
-			i += n14
+			i += n17
 		}
 	}
+	dAtA[i] = 0x32
+	i++
+	i = encodeVarintGenerated(dAtA, i, uint64(len(m.UID)))
+	i += copy(dAtA[i:], m.UID)
 	return i, nil
 }
 
@@ -497,6 +727,68 @@ func (m *SubjectAccessReviewStatus) MarshalTo(dAtA []byte) (int, error) {
 	i = encodeVarintGenerated(dAtA, i, uint64(len(m.Reason)))
 	i += copy(dAtA[i:], m.Reason)
 	dAtA[i] = 0x1a
+	i++
+	i = encodeVarintGenerated(dAtA, i, uint64(len(m.EvaluationError)))
+	i += copy(dAtA[i:], m.EvaluationError)
+	dAtA[i] = 0x20
+	i++
+	if m.Denied {
+		dAtA[i] = 1
+	} else {
+		dAtA[i] = 0
+	}
+	i++
+	return i, nil
+}
+
+func (m *SubjectRulesReviewStatus) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalTo(dAtA)
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *SubjectRulesReviewStatus) MarshalTo(dAtA []byte) (int, error) {
+	var i int
+	_ = i
+	var l int
+	_ = l
+	if len(m.ResourceRules) > 0 {
+		for _, msg := range m.ResourceRules {
+			dAtA[i] = 0xa
+			i++
+			i = encodeVarintGenerated(dAtA, i, uint64(msg.Size()))
+			n, err := msg.MarshalTo(dAtA[i:])
+			if err != nil {
+				return 0, err
+			}
+			i += n
+		}
+	}
+	if len(m.NonResourceRules) > 0 {
+		for _, msg := range m.NonResourceRules {
+			dAtA[i] = 0x12
+			i++
+			i = encodeVarintGenerated(dAtA, i, uint64(msg.Size()))
+			n, err := msg.MarshalTo(dAtA[i:])
+			if err != nil {
+				return 0, err
+			}
+			i += n
+		}
+	}
+	dAtA[i] = 0x18
+	i++
+	if m.Incomplete {
+		dAtA[i] = 1
+	} else {
+		dAtA[i] = 0
+	}
+	i++
+	dAtA[i] = 0x22
 	i++
 	i = encodeVarintGenerated(dAtA, i, uint64(len(m.EvaluationError)))
 	i += copy(dAtA[i:], m.EvaluationError)
@@ -564,6 +856,24 @@ func (m *NonResourceAttributes) Size() (n int) {
 	return n
 }
 
+func (m *NonResourceRule) Size() (n int) {
+	var l int
+	_ = l
+	if len(m.Verbs) > 0 {
+		for _, s := range m.Verbs {
+			l = len(s)
+			n += 1 + l + sovGenerated(uint64(l))
+		}
+	}
+	if len(m.NonResourceURLs) > 0 {
+		for _, s := range m.NonResourceURLs {
+			l = len(s)
+			n += 1 + l + sovGenerated(uint64(l))
+		}
+	}
+	return n
+}
+
 func (m *ResourceAttributes) Size() (n int) {
 	var l int
 	_ = l
@@ -581,6 +891,36 @@ func (m *ResourceAttributes) Size() (n int) {
 	n += 1 + l + sovGenerated(uint64(l))
 	l = len(m.Name)
 	n += 1 + l + sovGenerated(uint64(l))
+	return n
+}
+
+func (m *ResourceRule) Size() (n int) {
+	var l int
+	_ = l
+	if len(m.Verbs) > 0 {
+		for _, s := range m.Verbs {
+			l = len(s)
+			n += 1 + l + sovGenerated(uint64(l))
+		}
+	}
+	if len(m.APIGroups) > 0 {
+		for _, s := range m.APIGroups {
+			l = len(s)
+			n += 1 + l + sovGenerated(uint64(l))
+		}
+	}
+	if len(m.Resources) > 0 {
+		for _, s := range m.Resources {
+			l = len(s)
+			n += 1 + l + sovGenerated(uint64(l))
+		}
+	}
+	if len(m.ResourceNames) > 0 {
+		for _, s := range m.ResourceNames {
+			l = len(s)
+			n += 1 + l + sovGenerated(uint64(l))
+		}
+	}
 	return n
 }
 
@@ -607,6 +947,26 @@ func (m *SelfSubjectAccessReviewSpec) Size() (n int) {
 		l = m.NonResourceAttributes.Size()
 		n += 1 + l + sovGenerated(uint64(l))
 	}
+	return n
+}
+
+func (m *SelfSubjectRulesReview) Size() (n int) {
+	var l int
+	_ = l
+	l = m.ObjectMeta.Size()
+	n += 1 + l + sovGenerated(uint64(l))
+	l = m.Spec.Size()
+	n += 1 + l + sovGenerated(uint64(l))
+	l = m.Status.Size()
+	n += 1 + l + sovGenerated(uint64(l))
+	return n
+}
+
+func (m *SelfSubjectRulesReviewSpec) Size() (n int) {
+	var l int
+	_ = l
+	l = len(m.Namespace)
+	n += 1 + l + sovGenerated(uint64(l))
 	return n
 }
 
@@ -650,6 +1010,8 @@ func (m *SubjectAccessReviewSpec) Size() (n int) {
 			n += mapEntrySize + 1 + sovGenerated(uint64(mapEntrySize))
 		}
 	}
+	l = len(m.UID)
+	n += 1 + l + sovGenerated(uint64(l))
 	return n
 }
 
@@ -659,6 +1021,28 @@ func (m *SubjectAccessReviewStatus) Size() (n int) {
 	n += 2
 	l = len(m.Reason)
 	n += 1 + l + sovGenerated(uint64(l))
+	l = len(m.EvaluationError)
+	n += 1 + l + sovGenerated(uint64(l))
+	n += 2
+	return n
+}
+
+func (m *SubjectRulesReviewStatus) Size() (n int) {
+	var l int
+	_ = l
+	if len(m.ResourceRules) > 0 {
+		for _, e := range m.ResourceRules {
+			l = e.Size()
+			n += 1 + l + sovGenerated(uint64(l))
+		}
+	}
+	if len(m.NonResourceRules) > 0 {
+		for _, e := range m.NonResourceRules {
+			l = e.Size()
+			n += 1 + l + sovGenerated(uint64(l))
+		}
+	}
+	n += 2
 	l = len(m.EvaluationError)
 	n += 1 + l + sovGenerated(uint64(l))
 	return n
@@ -700,6 +1084,17 @@ func (this *NonResourceAttributes) String() string {
 	}, "")
 	return s
 }
+func (this *NonResourceRule) String() string {
+	if this == nil {
+		return "nil"
+	}
+	s := strings.Join([]string{`&NonResourceRule{`,
+		`Verbs:` + fmt.Sprintf("%v", this.Verbs) + `,`,
+		`NonResourceURLs:` + fmt.Sprintf("%v", this.NonResourceURLs) + `,`,
+		`}`,
+	}, "")
+	return s
+}
 func (this *ResourceAttributes) String() string {
 	if this == nil {
 		return "nil"
@@ -712,6 +1107,19 @@ func (this *ResourceAttributes) String() string {
 		`Resource:` + fmt.Sprintf("%v", this.Resource) + `,`,
 		`Subresource:` + fmt.Sprintf("%v", this.Subresource) + `,`,
 		`Name:` + fmt.Sprintf("%v", this.Name) + `,`,
+		`}`,
+	}, "")
+	return s
+}
+func (this *ResourceRule) String() string {
+	if this == nil {
+		return "nil"
+	}
+	s := strings.Join([]string{`&ResourceRule{`,
+		`Verbs:` + fmt.Sprintf("%v", this.Verbs) + `,`,
+		`APIGroups:` + fmt.Sprintf("%v", this.APIGroups) + `,`,
+		`Resources:` + fmt.Sprintf("%v", this.Resources) + `,`,
+		`ResourceNames:` + fmt.Sprintf("%v", this.ResourceNames) + `,`,
 		`}`,
 	}, "")
 	return s
@@ -735,6 +1143,28 @@ func (this *SelfSubjectAccessReviewSpec) String() string {
 	s := strings.Join([]string{`&SelfSubjectAccessReviewSpec{`,
 		`ResourceAttributes:` + strings.Replace(fmt.Sprintf("%v", this.ResourceAttributes), "ResourceAttributes", "ResourceAttributes", 1) + `,`,
 		`NonResourceAttributes:` + strings.Replace(fmt.Sprintf("%v", this.NonResourceAttributes), "NonResourceAttributes", "NonResourceAttributes", 1) + `,`,
+		`}`,
+	}, "")
+	return s
+}
+func (this *SelfSubjectRulesReview) String() string {
+	if this == nil {
+		return "nil"
+	}
+	s := strings.Join([]string{`&SelfSubjectRulesReview{`,
+		`ObjectMeta:` + strings.Replace(strings.Replace(this.ObjectMeta.String(), "ObjectMeta", "k8s_io_apimachinery_pkg_apis_meta_v1.ObjectMeta", 1), `&`, ``, 1) + `,`,
+		`Spec:` + strings.Replace(strings.Replace(this.Spec.String(), "SelfSubjectRulesReviewSpec", "SelfSubjectRulesReviewSpec", 1), `&`, ``, 1) + `,`,
+		`Status:` + strings.Replace(strings.Replace(this.Status.String(), "SubjectRulesReviewStatus", "SubjectRulesReviewStatus", 1), `&`, ``, 1) + `,`,
+		`}`,
+	}, "")
+	return s
+}
+func (this *SelfSubjectRulesReviewSpec) String() string {
+	if this == nil {
+		return "nil"
+	}
+	s := strings.Join([]string{`&SelfSubjectRulesReviewSpec{`,
+		`Namespace:` + fmt.Sprintf("%v", this.Namespace) + `,`,
 		`}`,
 	}, "")
 	return s
@@ -771,6 +1201,7 @@ func (this *SubjectAccessReviewSpec) String() string {
 		`User:` + fmt.Sprintf("%v", this.User) + `,`,
 		`Groups:` + fmt.Sprintf("%v", this.Groups) + `,`,
 		`Extra:` + mapStringForExtra + `,`,
+		`UID:` + fmt.Sprintf("%v", this.UID) + `,`,
 		`}`,
 	}, "")
 	return s
@@ -782,6 +1213,20 @@ func (this *SubjectAccessReviewStatus) String() string {
 	s := strings.Join([]string{`&SubjectAccessReviewStatus{`,
 		`Allowed:` + fmt.Sprintf("%v", this.Allowed) + `,`,
 		`Reason:` + fmt.Sprintf("%v", this.Reason) + `,`,
+		`EvaluationError:` + fmt.Sprintf("%v", this.EvaluationError) + `,`,
+		`Denied:` + fmt.Sprintf("%v", this.Denied) + `,`,
+		`}`,
+	}, "")
+	return s
+}
+func (this *SubjectRulesReviewStatus) String() string {
+	if this == nil {
+		return "nil"
+	}
+	s := strings.Join([]string{`&SubjectRulesReviewStatus{`,
+		`ResourceRules:` + strings.Replace(strings.Replace(fmt.Sprintf("%v", this.ResourceRules), "ResourceRule", "ResourceRule", 1), `&`, ``, 1) + `,`,
+		`NonResourceRules:` + strings.Replace(strings.Replace(fmt.Sprintf("%v", this.NonResourceRules), "NonResourceRule", "NonResourceRule", 1), `&`, ``, 1) + `,`,
+		`Incomplete:` + fmt.Sprintf("%v", this.Incomplete) + `,`,
 		`EvaluationError:` + fmt.Sprintf("%v", this.EvaluationError) + `,`,
 		`}`,
 	}, "")
@@ -1122,6 +1567,114 @@ func (m *NonResourceAttributes) Unmarshal(dAtA []byte) error {
 	}
 	return nil
 }
+func (m *NonResourceRule) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowGenerated
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= (uint64(b) & 0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: NonResourceRule: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: NonResourceRule: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Verbs", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenerated
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= (uint64(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthGenerated
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Verbs = append(m.Verbs, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NonResourceURLs", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenerated
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= (uint64(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthGenerated
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.NonResourceURLs = append(m.NonResourceURLs, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipGenerated(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthGenerated
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
 func (m *ResourceAttributes) Unmarshal(dAtA []byte) error {
 	l := len(dAtA)
 	iNdEx := 0
@@ -1353,6 +1906,172 @@ func (m *ResourceAttributes) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			m.Name = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipGenerated(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthGenerated
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *ResourceRule) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowGenerated
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= (uint64(b) & 0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: ResourceRule: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: ResourceRule: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Verbs", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenerated
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= (uint64(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthGenerated
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Verbs = append(m.Verbs, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field APIGroups", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenerated
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= (uint64(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthGenerated
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.APIGroups = append(m.APIGroups, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Resources", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenerated
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= (uint64(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthGenerated
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Resources = append(m.Resources, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ResourceNames", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenerated
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= (uint64(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthGenerated
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ResourceNames = append(m.ResourceNames, string(dAtA[iNdEx:postIndex]))
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -1609,6 +2328,225 @@ func (m *SelfSubjectAccessReviewSpec) Unmarshal(dAtA []byte) error {
 			if err := m.NonResourceAttributes.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipGenerated(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthGenerated
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *SelfSubjectRulesReview) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowGenerated
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= (uint64(b) & 0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: SelfSubjectRulesReview: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: SelfSubjectRulesReview: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ObjectMeta", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenerated
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthGenerated
+			}
+			postIndex := iNdEx + msglen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.ObjectMeta.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Spec", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenerated
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthGenerated
+			}
+			postIndex := iNdEx + msglen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Spec.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Status", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenerated
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthGenerated
+			}
+			postIndex := iNdEx + msglen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Status.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipGenerated(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthGenerated
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *SelfSubjectRulesReviewSpec) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowGenerated
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= (uint64(b) & 0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: SelfSubjectRulesReviewSpec: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: SelfSubjectRulesReviewSpec: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Namespace", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenerated
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= (uint64(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthGenerated
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Namespace = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
@@ -2045,6 +2983,35 @@ func (m *SubjectAccessReviewSpec) Unmarshal(dAtA []byte) error {
 				m.Extra[mapkey] = mapvalue
 			}
 			iNdEx = postIndex
+		case 6:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field UID", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenerated
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= (uint64(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthGenerated
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.UID = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipGenerated(dAtA[iNdEx:])
@@ -2145,6 +3112,187 @@ func (m *SubjectAccessReviewStatus) Unmarshal(dAtA []byte) error {
 			m.Reason = string(dAtA[iNdEx:postIndex])
 			iNdEx = postIndex
 		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field EvaluationError", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenerated
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= (uint64(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthGenerated
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.EvaluationError = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 4:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Denied", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenerated
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.Denied = bool(v != 0)
+		default:
+			iNdEx = preIndex
+			skippy, err := skipGenerated(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if skippy < 0 {
+				return ErrInvalidLengthGenerated
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *SubjectRulesReviewStatus) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowGenerated
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= (uint64(b) & 0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: SubjectRulesReviewStatus: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: SubjectRulesReviewStatus: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field ResourceRules", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenerated
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthGenerated
+			}
+			postIndex := iNdEx + msglen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.ResourceRules = append(m.ResourceRules, ResourceRule{})
+			if err := m.ResourceRules[len(m.ResourceRules)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NonResourceRules", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenerated
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthGenerated
+			}
+			postIndex := iNdEx + msglen
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.NonResourceRules = append(m.NonResourceRules, NonResourceRule{})
+			if err := m.NonResourceRules[len(m.NonResourceRules)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 3:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Incomplete", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenerated
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= (int(b) & 0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.Incomplete = bool(v != 0)
+		case 4:
 			if wireType != 2 {
 				return fmt.Errorf("proto: wrong wireType = %d for field EvaluationError", wireType)
 			}
@@ -2304,61 +3452,78 @@ func init() {
 }
 
 var fileDescriptorGenerated = []byte{
-	// 883 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xec, 0x56, 0xbf, 0x6f, 0x1c, 0x45,
-	0x14, 0xbe, 0xbd, 0x1f, 0xf6, 0xdd, 0x18, 0x70, 0x98, 0x28, 0x78, 0x63, 0xa4, 0xbd, 0xd3, 0x21,
-	0x21, 0x23, 0x25, 0xbb, 0x38, 0x04, 0x12, 0x82, 0x28, 0xbc, 0xc2, 0x42, 0x91, 0x20, 0xa0, 0xb1,
-	0x70, 0x41, 0x0a, 0x98, 0x5d, 0x3f, 0xdf, 0x2d, 0x77, 0xb7, 0xb3, 0x9a, 0x99, 0xdd, 0x60, 0x44,
-	0x91, 0x92, 0x92, 0x92, 0x92, 0x8a, 0x9e, 0x32, 0x0d, 0x12, 0x9d, 0xcb, 0x94, 0x29, 0xd0, 0x09,
-	0x2f, 0xff, 0x08, 0x9a, 0xd9, 0xb9, 0xdb, 0x5c, 0x6e, 0x9d, 0x8b, 0xdc, 0xa4, 0x49, 0xb7, 0xf3,
-	0xde, 0xf7, 0xbd, 0xf7, 0xe6, 0xcd, 0xb7, 0x6f, 0x06, 0xdd, 0x1d, 0xdd, 0x16, 0x6e, 0xc4, 0xbc,
-	0x51, 0x1a, 0x00, 0x8f, 0x41, 0x82, 0xf0, 0x32, 0x88, 0x8f, 0x18, 0xf7, 0x8c, 0x83, 0x26, 0x91,
-	0x47, 0x53, 0x39, 0x64, 0x3c, 0xfa, 0x89, 0xca, 0x88, 0xc5, 0x5e, 0xb6, 0x1b, 0x80, 0xa4, 0xbb,
-	0xde, 0x00, 0x62, 0xe0, 0x54, 0xc2, 0x91, 0x9b, 0x70, 0x26, 0x19, 0xee, 0x15, 0x0c, 0x97, 0x26,
-	0x91, 0xbb, 0xc0, 0x70, 0x0d, 0x63, 0xfb, 0xfa, 0x20, 0x92, 0xc3, 0x34, 0x70, 0x43, 0x36, 0xf1,
-	0x06, 0x6c, 0xc0, 0x3c, 0x4d, 0x0c, 0xd2, 0x63, 0xbd, 0xd2, 0x0b, 0xfd, 0x55, 0x04, 0xdc, 0xbe,
-	0x59, 0x96, 0x30, 0xa1, 0xe1, 0x30, 0x8a, 0x81, 0x9f, 0x78, 0xc9, 0x68, 0xa0, 0x0c, 0xc2, 0x9b,
-	0x80, 0xa4, 0x5e, 0xb6, 0x54, 0xc6, 0xb6, 0x77, 0x1e, 0x8b, 0xa7, 0xb1, 0x8c, 0x26, 0xb0, 0x44,
-	0xf8, 0x68, 0x15, 0x41, 0x84, 0x43, 0x98, 0xd0, 0x25, 0xde, 0x07, 0xe7, 0xf1, 0x52, 0x19, 0x8d,
-	0xbd, 0x28, 0x96, 0x42, 0xf2, 0x67, 0x49, 0xfd, 0x5b, 0x08, 0xed, 0xff, 0x28, 0x39, 0x3d, 0xa4,
-	0xe3, 0x14, 0x70, 0x17, 0xb5, 0x22, 0x09, 0x13, 0x61, 0x5b, 0xbd, 0xc6, 0x4e, 0xc7, 0xef, 0xe4,
-	0xd3, 0x6e, 0xeb, 0xae, 0x32, 0x90, 0xc2, 0x7e, 0xa7, 0xfd, 0xdb, 0xef, 0xdd, 0xda, 0xc3, 0x7f,
-	0x7a, 0xb5, 0xfe, 0x5f, 0x75, 0x64, 0x7f, 0xc1, 0x42, 0x3a, 0x3e, 0x48, 0x83, 0x1f, 0x20, 0x94,
-	0x7b, 0x61, 0x08, 0x42, 0x10, 0xc8, 0x22, 0x78, 0x80, 0xbf, 0x47, 0x6d, 0xd5, 0x8e, 0x23, 0x2a,
-	0xa9, 0x6d, 0xf5, 0xac, 0x9d, 0x8d, 0x1b, 0xef, 0xbb, 0xe5, 0x69, 0xcc, 0xab, 0x73, 0x93, 0xd1,
-	0x40, 0x19, 0x84, 0xab, 0xd0, 0x6e, 0xb6, 0xeb, 0x7e, 0xa5, 0x63, 0x7d, 0x09, 0x92, 0xfa, 0xf8,
-	0x74, 0xda, 0xad, 0xe5, 0xd3, 0x2e, 0x2a, 0x6d, 0x64, 0x1e, 0x15, 0xdf, 0x47, 0x4d, 0x91, 0x40,
-	0x68, 0xd7, 0x75, 0xf4, 0x8f, 0xdd, 0x55, 0x67, 0xed, 0x56, 0x94, 0x79, 0x90, 0x40, 0xe8, 0xbf,
-	0x66, 0xd2, 0x34, 0xd5, 0x8a, 0xe8, 0xa0, 0x38, 0x44, 0x6b, 0x42, 0x52, 0x99, 0x0a, 0xbb, 0xa1,
-	0xc3, 0x7f, 0x72, 0xb1, 0xf0, 0x3a, 0x84, 0xff, 0x86, 0x49, 0xb0, 0x56, 0xac, 0x89, 0x09, 0xdd,
-	0xbf, 0x8f, 0xae, 0xdc, 0x63, 0x31, 0x01, 0xc1, 0x52, 0x1e, 0xc2, 0x9e, 0x94, 0x3c, 0x0a, 0x52,
-	0x09, 0x02, 0xf7, 0x50, 0x33, 0xa1, 0x72, 0xa8, 0x1b, 0xd7, 0x29, 0xeb, 0xfb, 0x9a, 0xca, 0x21,
-	0xd1, 0x1e, 0x85, 0xc8, 0x80, 0x07, 0x7a, 0xf3, 0x4f, 0x21, 0x0e, 0x81, 0x07, 0x44, 0x7b, 0xd4,
-	0xe9, 0xe0, 0x8a, 0xd0, 0x1e, 0xea, 0xc4, 0x74, 0x02, 0x22, 0xa1, 0x21, 0x98, 0xf8, 0x6f, 0x1a,
-	0x76, 0xe7, 0xde, 0xcc, 0x41, 0x4a, 0xcc, 0xea, 0x4c, 0xf8, 0x1d, 0xd4, 0x1a, 0x70, 0x96, 0x26,
-	0xba, 0x55, 0x1d, 0xff, 0x75, 0x03, 0x69, 0x7d, 0xae, 0x8c, 0xa4, 0xf0, 0xe1, 0xf7, 0xd0, 0x7a,
-	0x06, 0x5c, 0x44, 0x2c, 0xb6, 0x9b, 0x1a, 0xb6, 0x69, 0x60, 0xeb, 0x87, 0x85, 0x99, 0xcc, 0xfc,
-	0xf8, 0x1a, 0x6a, 0x73, 0x53, 0xb8, 0xdd, 0xd2, 0xd8, 0x4b, 0x06, 0xdb, 0x9e, 0x6d, 0x88, 0xcc,
-	0x11, 0xf8, 0x43, 0xb4, 0x21, 0xd2, 0x60, 0x4e, 0x58, 0xd3, 0x84, 0xcb, 0x86, 0xb0, 0x71, 0x50,
-	0xba, 0xc8, 0xd3, 0x38, 0xb5, 0x2d, 0xb5, 0x47, 0x7b, 0x7d, 0x71, 0x5b, 0xaa, 0x05, 0x44, 0x7b,
-	0xfa, 0x7f, 0xd7, 0xd1, 0xd6, 0x01, 0x8c, 0x8f, 0x5f, 0x8e, 0xba, 0xbf, 0x5b, 0x50, 0xf7, 0xa7,
-	0x2f, 0x20, 0xbf, 0xea, 0x52, 0x5f, 0xae, 0xc2, 0xff, 0xa8, 0xa3, 0xb7, 0x9f, 0x53, 0x18, 0xfe,
-	0x19, 0x61, 0xbe, 0xa4, 0x51, 0xd3, 0xd1, 0x9b, 0xab, 0x0b, 0x5a, 0xd6, 0xb7, 0xff, 0x56, 0x3e,
-	0xed, 0x56, 0xe8, 0x9e, 0x54, 0xe4, 0xc1, 0xbf, 0x58, 0xe8, 0x4a, 0x5c, 0xf5, 0x03, 0x9a, 0xae,
-	0xdf, 0x5a, 0x5d, 0x41, 0xe5, 0xff, 0xeb, 0x5f, 0xcd, 0xa7, 0xdd, 0xea, 0x5f, 0x9b, 0x54, 0x27,
-	0xec, 0x3f, 0xaa, 0xa3, 0xcb, 0xaf, 0xc6, 0xe8, 0xc5, 0x44, 0xf6, 0xa8, 0x89, 0xb6, 0x5e, 0x09,
-	0xec, 0xf9, 0x02, 0x9b, 0x8f, 0xf1, 0xc6, 0xe2, 0xbc, 0xfb, 0x46, 0x00, 0x37, 0x63, 0xbc, 0x37,
-	0x1b, 0xe3, 0x4d, 0x7d, 0xf3, 0x23, 0xd5, 0x69, 0x3d, 0xc2, 0xc5, 0x6c, 0x86, 0x47, 0xa8, 0x05,
-	0xea, 0xa5, 0x60, 0xb7, 0x7a, 0x8d, 0x9d, 0x8d, 0x1b, 0x9f, 0x5d, 0x58, 0x2b, 0xae, 0x7e, 0x70,
-	0xec, 0xc7, 0x92, 0x9f, 0x94, 0xd7, 0x85, 0xb6, 0x91, 0x22, 0xc3, 0xf6, 0xb1, 0x79, 0x94, 0x68,
-	0x0c, 0xbe, 0x84, 0x1a, 0x23, 0x38, 0x29, 0xae, 0x2b, 0xa2, 0x3e, 0xb1, 0x8f, 0x5a, 0x99, 0x7a,
-	0xaf, 0x98, 0x46, 0x5e, 0x5b, 0x5d, 0x4a, 0xf9, 0xc6, 0x21, 0x05, 0xf5, 0x4e, 0xfd, 0xb6, 0xd5,
-	0xff, 0xd3, 0x42, 0x57, 0xcf, 0x55, 0x9c, 0xba, 0xb4, 0xe8, 0x78, 0xcc, 0x1e, 0xc0, 0x91, 0xce,
-	0xdd, 0x2e, 0x2f, 0xad, 0xbd, 0xc2, 0x4c, 0x66, 0x7e, 0xfc, 0x2e, 0x5a, 0xe3, 0x40, 0x05, 0x8b,
-	0xcd, 0x45, 0x39, 0x17, 0x2b, 0xd1, 0x56, 0x62, 0xbc, 0x78, 0x0f, 0x6d, 0x82, 0x4a, 0xaf, 0x8b,
-	0xdb, 0xe7, 0x9c, 0x71, 0x73, 0x24, 0x5b, 0x86, 0xb0, 0xb9, 0xbf, 0xe8, 0x26, 0xcf, 0xe2, 0xfd,
-	0xeb, 0xa7, 0x67, 0x4e, 0xed, 0xf1, 0x99, 0x53, 0x7b, 0x72, 0xe6, 0xd4, 0x1e, 0xe6, 0x8e, 0x75,
-	0x9a, 0x3b, 0xd6, 0xe3, 0xdc, 0xb1, 0x9e, 0xe4, 0x8e, 0xf5, 0x6f, 0xee, 0x58, 0xbf, 0xfe, 0xe7,
-	0xd4, 0xbe, 0x5d, 0x37, 0x1b, 0xff, 0x3f, 0x00, 0x00, 0xff, 0xff, 0xf6, 0xa0, 0x82, 0xfc, 0x50,
-	0x0b, 0x00, 0x00,
+	// 1154 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xec, 0x56, 0x4d, 0x6f, 0x1b, 0xc5,
+	0x1b, 0xf7, 0xfa, 0x25, 0xb1, 0xc7, 0xcd, 0x3f, 0xe9, 0x44, 0x69, 0xb6, 0xf9, 0x0b, 0xdb, 0x32,
+	0x12, 0x0a, 0xa2, 0xdd, 0x25, 0xa1, 0x90, 0x12, 0xe8, 0x21, 0x56, 0x22, 0x14, 0xa9, 0x2d, 0xd5,
+	0x44, 0xc9, 0x81, 0x4a, 0xc0, 0x78, 0x3d, 0xb1, 0x17, 0xdb, 0xbb, 0xcb, 0xcc, 0xac, 0x43, 0x10,
+	0x87, 0x1e, 0x39, 0x72, 0xe4, 0xc8, 0x89, 0xef, 0xc0, 0x05, 0x09, 0x4e, 0x39, 0xf6, 0x18, 0x24,
+	0x64, 0x91, 0xe5, 0x43, 0x70, 0x45, 0x33, 0x3b, 0xf6, 0xae, 0xe3, 0x75, 0x1c, 0xe7, 0x40, 0x2f,
+	0xbd, 0xed, 0x3c, 0xbf, 0xe7, 0x6d, 0x9e, 0x97, 0xd9, 0x1f, 0xd8, 0x6f, 0x3f, 0x64, 0x86, 0xed,
+	0x9a, 0x6d, 0xbf, 0x4e, 0xa8, 0x43, 0x38, 0x61, 0x66, 0x8f, 0x38, 0x0d, 0x97, 0x9a, 0x0a, 0xc0,
+	0x9e, 0x6d, 0x62, 0x9f, 0xb7, 0x5c, 0x6a, 0x7f, 0x8b, 0xb9, 0xed, 0x3a, 0x66, 0x6f, 0xa3, 0x4e,
+	0x38, 0xde, 0x30, 0x9b, 0xc4, 0x21, 0x14, 0x73, 0xd2, 0x30, 0x3c, 0xea, 0x72, 0x17, 0x56, 0x42,
+	0x0b, 0x03, 0x7b, 0xb6, 0x31, 0x62, 0x61, 0x28, 0x8b, 0xb5, 0xfb, 0x4d, 0x9b, 0xb7, 0xfc, 0xba,
+	0x61, 0xb9, 0x5d, 0xb3, 0xe9, 0x36, 0x5d, 0x53, 0x1a, 0xd6, 0xfd, 0x63, 0x79, 0x92, 0x07, 0xf9,
+	0x15, 0x3a, 0x5c, 0x7b, 0x10, 0xa5, 0xd0, 0xc5, 0x56, 0xcb, 0x76, 0x08, 0x3d, 0x35, 0xbd, 0x76,
+	0x53, 0x08, 0x98, 0xd9, 0x25, 0x1c, 0x9b, 0xbd, 0xb1, 0x34, 0xd6, 0xcc, 0x49, 0x56, 0xd4, 0x77,
+	0xb8, 0xdd, 0x25, 0x63, 0x06, 0x1f, 0x4c, 0x33, 0x60, 0x56, 0x8b, 0x74, 0xf1, 0x98, 0xdd, 0x7b,
+	0x93, 0xec, 0x7c, 0x6e, 0x77, 0x4c, 0xdb, 0xe1, 0x8c, 0xd3, 0xcb, 0x46, 0xd5, 0x2d, 0x00, 0xf6,
+	0xbe, 0xe1, 0x14, 0x1f, 0xe1, 0x8e, 0x4f, 0x60, 0x19, 0xe4, 0x6c, 0x4e, 0xba, 0x4c, 0xd7, 0x2a,
+	0x99, 0xf5, 0x42, 0xad, 0x10, 0xf4, 0xcb, 0xb9, 0x7d, 0x21, 0x40, 0xa1, 0x7c, 0x3b, 0xff, 0xe3,
+	0x4f, 0xe5, 0xd4, 0x8b, 0x3f, 0x2b, 0xa9, 0xea, 0xaf, 0x69, 0xa0, 0x3f, 0x76, 0x2d, 0xdc, 0x39,
+	0xf0, 0xeb, 0x5f, 0x11, 0x8b, 0xef, 0x58, 0x16, 0x61, 0x0c, 0x91, 0x9e, 0x4d, 0x4e, 0xe0, 0x97,
+	0x20, 0x2f, 0xca, 0xd1, 0xc0, 0x1c, 0xeb, 0x5a, 0x45, 0x5b, 0x2f, 0x6e, 0xbe, 0x6b, 0x44, 0xdd,
+	0x18, 0x66, 0x67, 0x78, 0xed, 0xa6, 0x10, 0x30, 0x43, 0x68, 0x1b, 0xbd, 0x0d, 0xe3, 0x53, 0xe9,
+	0xeb, 0x09, 0xe1, 0xb8, 0x06, 0xcf, 0xfa, 0xe5, 0x54, 0xd0, 0x2f, 0x83, 0x48, 0x86, 0x86, 0x5e,
+	0xe1, 0x73, 0x90, 0x65, 0x1e, 0xb1, 0xf4, 0xb4, 0xf4, 0xfe, 0xa1, 0x31, 0xad, 0xd7, 0x46, 0x42,
+	0x9a, 0x07, 0x1e, 0xb1, 0x6a, 0xb7, 0x54, 0x98, 0xac, 0x38, 0x21, 0xe9, 0x14, 0x5a, 0x60, 0x8e,
+	0x71, 0xcc, 0x7d, 0xa6, 0x67, 0xa4, 0xfb, 0x8f, 0x6e, 0xe6, 0x5e, 0xba, 0xa8, 0xfd, 0x4f, 0x05,
+	0x98, 0x0b, 0xcf, 0x48, 0xb9, 0xae, 0x3e, 0x07, 0x2b, 0x4f, 0x5d, 0x07, 0x11, 0xe6, 0xfa, 0xd4,
+	0x22, 0x3b, 0x9c, 0x53, 0xbb, 0xee, 0x73, 0xc2, 0x60, 0x05, 0x64, 0x3d, 0xcc, 0x5b, 0xb2, 0x70,
+	0x85, 0x28, 0xbf, 0x67, 0x98, 0xb7, 0x90, 0x44, 0x84, 0x46, 0x8f, 0xd0, 0xba, 0xbc, 0x7c, 0x4c,
+	0xe3, 0x88, 0xd0, 0x3a, 0x92, 0x48, 0xf5, 0x6b, 0xb0, 0x18, 0x73, 0x8e, 0xfc, 0x8e, 0xec, 0xad,
+	0x80, 0x46, 0x7a, 0x2b, 0x2c, 0x18, 0x0a, 0xe5, 0xf0, 0x11, 0x58, 0x74, 0x22, 0x9b, 0x43, 0xf4,
+	0x98, 0xe9, 0x69, 0xa9, 0xba, 0x1c, 0xf4, 0xcb, 0x71, 0x77, 0x02, 0x42, 0x97, 0x75, 0xc5, 0x40,
+	0xc0, 0x84, 0xdb, 0x98, 0xa0, 0xe0, 0xe0, 0x2e, 0x61, 0x1e, 0xb6, 0x88, 0xba, 0xd2, 0x6d, 0x95,
+	0x70, 0xe1, 0xe9, 0x00, 0x40, 0x91, 0xce, 0xf4, 0xcb, 0xc1, 0x37, 0x41, 0xae, 0x49, 0x5d, 0xdf,
+	0x93, 0xdd, 0x29, 0xd4, 0x16, 0x94, 0x4a, 0xee, 0x13, 0x21, 0x44, 0x21, 0x06, 0xdf, 0x06, 0xf3,
+	0x3d, 0x42, 0x99, 0xed, 0x3a, 0x7a, 0x56, 0xaa, 0x2d, 0x2a, 0xb5, 0xf9, 0xa3, 0x50, 0x8c, 0x06,
+	0x38, 0xbc, 0x07, 0xf2, 0x54, 0x25, 0xae, 0xe7, 0xa4, 0xee, 0x92, 0xd2, 0xcd, 0x0f, 0x2b, 0x38,
+	0xd4, 0x80, 0xef, 0x83, 0x22, 0xf3, 0xeb, 0x43, 0x83, 0x39, 0x69, 0xb0, 0xac, 0x0c, 0x8a, 0x07,
+	0x11, 0x84, 0xe2, 0x7a, 0xe2, 0x5a, 0xe2, 0x8e, 0xfa, 0xfc, 0xe8, 0xb5, 0x44, 0x09, 0x90, 0x44,
+	0xaa, 0xbf, 0x6b, 0xe0, 0xd6, 0x6c, 0x1d, 0x7b, 0x07, 0x14, 0xb0, 0x67, 0xcb, 0x6b, 0x0f, 0x7a,
+	0xb5, 0x20, 0xea, 0xba, 0xf3, 0x6c, 0x3f, 0x14, 0xa2, 0x08, 0x17, 0xca, 0x83, 0x64, 0xc4, 0x5c,
+	0x0f, 0x95, 0x07, 0x21, 0x19, 0x8a, 0x70, 0xb8, 0x05, 0x16, 0x06, 0x07, 0xd9, 0x24, 0x3d, 0x2b,
+	0x0d, 0x6e, 0x07, 0xfd, 0xf2, 0x02, 0x8a, 0x03, 0x68, 0x54, 0xaf, 0xfa, 0x5b, 0x1a, 0xac, 0x1e,
+	0x90, 0xce, 0xf1, 0xab, 0x79, 0x15, 0xbe, 0x18, 0x79, 0x15, 0x1e, 0x5d, 0x63, 0x6d, 0x93, 0x53,
+	0x7d, 0xb5, 0x2f, 0xc3, 0xcf, 0x69, 0xf0, 0xff, 0x2b, 0x12, 0x83, 0xdf, 0x01, 0x48, 0xc7, 0x16,
+	0x4d, 0x55, 0xf4, 0xc1, 0xf4, 0x84, 0xc6, 0x97, 0xb4, 0x76, 0x27, 0xe8, 0x97, 0x13, 0x96, 0x17,
+	0x25, 0xc4, 0x81, 0xdf, 0x6b, 0x60, 0xc5, 0x49, 0x7a, 0xb8, 0x54, 0xd5, 0xb7, 0xa6, 0x67, 0x90,
+	0xf8, 0xee, 0xd5, 0xee, 0x06, 0xfd, 0x72, 0xf2, 0x93, 0x88, 0x92, 0x03, 0x8a, 0x27, 0xe7, 0x4e,
+	0xac, 0x50, 0x62, 0x69, 0xfe, 0xbb, 0x59, 0xfb, 0x7c, 0x64, 0xd6, 0x3e, 0x9e, 0x69, 0xd6, 0x62,
+	0x99, 0x4e, 0x1c, 0xb5, 0xfa, 0xa5, 0x51, 0xdb, 0xbe, 0xf6, 0xa8, 0xc5, 0xbd, 0x5f, 0x3d, 0x69,
+	0x4f, 0xc0, 0xda, 0xe4, 0xac, 0x66, 0x7e, 0xba, 0xab, 0xbf, 0xa4, 0xc1, 0xf2, 0x6b, 0x3a, 0x70,
+	0xb3, 0xa5, 0x3f, 0xcf, 0x82, 0xd5, 0xd7, 0x0b, 0x7f, 0xf5, 0xc2, 0x8b, 0x9f, 0xa8, 0xcf, 0x08,
+	0x55, 0x3f, 0xfe, 0x61, 0xaf, 0x0e, 0x19, 0xa1, 0x48, 0x22, 0xb0, 0x32, 0xe0, 0x06, 0xe1, 0x0f,
+	0x0b, 0x88, 0x4a, 0xab, 0x7f, 0xa1, 0x22, 0x06, 0x36, 0xc8, 0x11, 0xc1, 0x78, 0xf5, 0x5c, 0x25,
+	0xb3, 0x5e, 0xdc, 0xdc, 0xbd, 0xf1, 0xac, 0x18, 0x92, 0x38, 0xef, 0x39, 0x9c, 0x9e, 0x46, 0x1c,
+	0x44, 0xca, 0x50, 0x18, 0x01, 0xbe, 0x01, 0x32, 0xbe, 0xdd, 0x50, 0x14, 0xa1, 0xa8, 0x54, 0x32,
+	0x87, 0xfb, 0xbb, 0x48, 0xc8, 0xd7, 0x8e, 0x15, 0xf7, 0x96, 0x2e, 0xe0, 0x12, 0xc8, 0xb4, 0xc9,
+	0x69, 0xb8, 0x67, 0x48, 0x7c, 0xc2, 0x1a, 0xc8, 0xf5, 0x04, 0x2d, 0x57, 0x75, 0xbe, 0x37, 0x3d,
+	0xd3, 0x88, 0xca, 0xa3, 0xd0, 0x74, 0x3b, 0xfd, 0x50, 0xab, 0xfe, 0xa1, 0x81, 0xbb, 0x13, 0x07,
+	0x52, 0x10, 0x25, 0xdc, 0xe9, 0xb8, 0x27, 0xa4, 0x21, 0x63, 0xe7, 0x23, 0xa2, 0xb4, 0x13, 0x8a,
+	0xd1, 0x00, 0x87, 0x6f, 0x81, 0x39, 0x4a, 0x30, 0x73, 0x1d, 0x45, 0xce, 0x86, 0xb3, 0x8c, 0xa4,
+	0x14, 0x29, 0x14, 0xee, 0x80, 0x45, 0x22, 0xc2, 0xcb, 0xe4, 0xf6, 0x28, 0x75, 0x07, 0x1d, 0x5b,
+	0x55, 0x06, 0x8b, 0x7b, 0xa3, 0x30, 0xba, 0xac, 0x2f, 0x42, 0x35, 0x88, 0x63, 0x93, 0x86, 0x64,
+	0x6f, 0xf9, 0x28, 0xd4, 0xae, 0x94, 0x22, 0x85, 0x56, 0xff, 0x49, 0x03, 0x7d, 0xd2, 0xb3, 0x07,
+	0xdb, 0x11, 0x8b, 0x91, 0xa0, 0x24, 0x52, 0xc5, 0x4d, 0xe3, 0xfa, 0x2b, 0x23, 0xcc, 0x6a, 0x2b,
+	0x2a, 0xf6, 0x42, 0x5c, 0x1a, 0x63, 0x3e, 0xf2, 0x08, 0x4f, 0xc0, 0x92, 0x33, 0x4a, 0xb9, 0x43,
+	0x4e, 0x56, 0xdc, 0xdc, 0x98, 0x69, 0x41, 0x64, 0x48, 0x5d, 0x85, 0x5c, 0xba, 0x04, 0x30, 0x34,
+	0x16, 0x04, 0x6e, 0x02, 0x60, 0x3b, 0x96, 0xdb, 0xf5, 0x3a, 0x84, 0x13, 0x59, 0xe8, 0x7c, 0xf4,
+	0x5a, 0xee, 0x0f, 0x11, 0x14, 0xd3, 0x4a, 0xea, 0x50, 0x76, 0xb6, 0x0e, 0xd5, 0xee, 0x9f, 0x5d,
+	0x94, 0x52, 0x2f, 0x2f, 0x4a, 0xa9, 0xf3, 0x8b, 0x52, 0xea, 0x45, 0x50, 0xd2, 0xce, 0x82, 0x92,
+	0xf6, 0x32, 0x28, 0x69, 0xe7, 0x41, 0x49, 0xfb, 0x2b, 0x28, 0x69, 0x3f, 0xfc, 0x5d, 0x4a, 0x7d,
+	0x36, 0xaf, 0x6e, 0xf8, 0x6f, 0x00, 0x00, 0x00, 0xff, 0xff, 0xcc, 0xb3, 0x5e, 0x05, 0xd9, 0x0f,
+	0x00, 0x00,
 }

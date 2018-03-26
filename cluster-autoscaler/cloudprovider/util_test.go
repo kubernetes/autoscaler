@@ -38,6 +38,9 @@ func TestBuildKubeProxy(t *testing.T) {
 
 	pod := BuildKubeProxy("kube-proxy")
 	assert.NotNil(t, pod)
+	assert.Equal(t, 1, len(pod.Spec.Containers))
+	cpu := pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceCPU]
+	assert.Equal(t, int64(100), cpu.MilliValue())
 }
 
 func TestJoinStringMaps(t *testing.T) {

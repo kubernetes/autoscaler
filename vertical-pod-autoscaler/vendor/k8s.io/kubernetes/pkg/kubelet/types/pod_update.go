@@ -21,7 +21,7 @@ import (
 
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	kubeapi "k8s.io/kubernetes/pkg/api"
+	kubeapi "k8s.io/kubernetes/pkg/apis/core"
 )
 
 const (
@@ -49,6 +49,8 @@ const (
 	// Pods with the given ids have unexpected status in this source,
 	// kubelet should reconcile status with this source
 	RECONCILE
+	// Pods with the given ids have been restored from a checkpoint.
+	RESTORE
 
 	// These constants identify the sources of pods
 	// Updates from a file
@@ -141,11 +143,17 @@ func (sp SyncPodType) String() string {
 // key. Both the rescheduler and the kubelet use this key to make admission
 // and scheduling decisions.
 func IsCriticalPod(pod *v1.Pod) bool {
+	return IsCritical(pod.Namespace, pod.Annotations)
+}
+
+// IsCritical returns true if parameters bear the critical pod annotation
+// key. The DaemonSetController use this key directly to make scheduling decisions.
+func IsCritical(ns string, annotations map[string]string) bool {
 	// Critical pods are restricted to "kube-system" namespace as of now.
-	if pod.Namespace != kubeapi.NamespaceSystem {
+	if ns != kubeapi.NamespaceSystem {
 		return false
 	}
-	val, ok := pod.Annotations[CriticalPodAnnotationKey]
+	val, ok := annotations[CriticalPodAnnotationKey]
 	if ok && val == "" {
 		return true
 	}

@@ -74,7 +74,7 @@ func getConditionsString(autoscalerConditions []ClusterAutoscalerCondition, pref
 	return buffer.String()
 }
 
-// GetReadableString produces human-redable description of status.
+// GetReadableString produces human-readable description of status.
 func (status ClusterAutoscalerStatus) GetReadableString() string {
 	var buffer bytes.Buffer
 	buffer.WriteString("Cluster-wide:\n")

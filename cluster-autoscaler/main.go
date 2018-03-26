@@ -30,6 +30,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kube_flag "k8s.io/apiserver/pkg/util/flag"
+	cloudBuilder "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/autoscaler/cluster-autoscaler/core"
@@ -65,7 +66,9 @@ func (flag *MultiStringFlag) Set(value string) error {
 }
 
 var (
-	nodeGroupsFlag         MultiStringFlag
+	nodeGroupsFlag             MultiStringFlag
+	nodeGroupAutoDiscoveryFlag MultiStringFlag
+
 	clusterName            = flag.String("cluster-name", "", "Autoscaled cluster name, if available")
 	address                = flag.String("address", ":8085", "The address to expose prometheus metrics.")
 	kubernetes             = flag.String("kubernetes", "", "Kubernetes master location. Leave blank for default")
@@ -73,7 +76,6 @@ var (
 	cloudConfig            = flag.String("cloud-config", "", "The path to the cloud provider configuration file.  Empty string for no configuration file.")
 	configMapName          = flag.String("configmap", "", "The name of the ConfigMap containing settings used for dynamic reconfiguration. Empty string for no ConfigMap.")
 	namespace              = flag.String("namespace", "kube-system", "Namespace in which cluster-autoscaler run. If a --configmap flag is also provided, ensure that the configmap exists in this namespace before CA runs.")
-	nodeGroupAutoDiscovery = flag.String("node-group-auto-discovery", "", "One or more definition(s) of node group auto-discovery. A definition is expressed `<name of discoverer per cloud provider>:[<key>[=<value>]]`. Only the `aws` cloud provider is currently supported. The only valid discoverer for it is `asg` and the valid key is `tag`. For example, specifying `--cloud-provider aws` and `--node-group-auto-discovery asg:tag=cluster-autoscaler/auto-discovery/enabled,kubernetes.io/cluster/<YOUR CLUSTER NAME>` results in ASGs tagged with `cluster-autoscaler/auto-discovery/enabled` and `kubernetes.io/cluster/<YOUR CLUSTER NAME>` to be considered as target node groups")
 	scaleDownEnabled       = flag.Bool("scale-down-enabled", true, "Should CA scale down the cluster")
 	scaleDownDelayAfterAdd = flag.Duration("scale-down-delay-after-add", 10*time.Minute,
 		"How long after scale up that scale down evaluation resumes")
@@ -103,11 +105,12 @@ var (
 			"for scale down when some candidates from previous iteration are no longer valid."+
 			"When calculating the pool size for additional candidates we take"+
 			"max(#nodes * scale-down-candidates-pool-ratio, scale-down-candidates-pool-min-count).")
-	scanInterval               = flag.Duration("scan-interval", 10*time.Second, "How often cluster is reevaluated for scale up or down")
-	maxNodesTotal              = flag.Int("max-nodes-total", 0, "Maximum number of nodes in all node groups. Cluster autoscaler will not grow the cluster beyond this number.")
-	coresTotal                 = flag.String("cores-total", minMaxFlagString(0, config.DefaultMaxClusterCores), "Minimum and maximum number of cores in cluster, in the format <min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers.")
-	memoryTotal                = flag.String("memory-total", minMaxFlagString(0, config.DefaultMaxClusterMemory), "Minimum and maximum number of gigabytes of memory in cluster, in the format <min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers.")
-	cloudProviderFlag          = flag.String("cloud-provider", "gce", "Cloud provider type. Allowed values: gce, aws, azure, kubemark")
+	scanInterval      = flag.Duration("scan-interval", 10*time.Second, "How often cluster is reevaluated for scale up or down")
+	maxNodesTotal     = flag.Int("max-nodes-total", 0, "Maximum number of nodes in all node groups. Cluster autoscaler will not grow the cluster beyond this number.")
+	coresTotal        = flag.String("cores-total", minMaxFlagString(0, config.DefaultMaxClusterCores), "Minimum and maximum number of cores in cluster, in the format <min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers.")
+	memoryTotal       = flag.String("memory-total", minMaxFlagString(0, config.DefaultMaxClusterMemory), "Minimum and maximum number of gigabytes of memory in cluster, in the format <min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers.")
+	cloudProviderFlag = flag.String("cloud-provider", cloudBuilder.DefaultCloudProvider,
+		"Cloud provider type. Available values: ["+strings.Join(cloudBuilder.AvailableCloudProviders, ",")+"]")
 	maxEmptyBulkDeleteFlag     = flag.Int("max-empty-bulk-delete", 10, "Maximum number of empty nodes that can be deleted at the same time.")
 	maxGracefulTerminationFlag = flag.Int("max-graceful-termination-sec", 10*60, "Maximum number of seconds CA waits for pod termination when trying to scale down a node.")
 	maxTotalUnreadyPercentage  = flag.Float64("max-total-unready-percentage", 33, "Maximum percentage of unready nodes after which CA halts operations")
@@ -128,6 +131,7 @@ var (
 	maxAutoprovisionedNodeGroupCount = flag.Int("max-autoprovisioned-node-group-count", 15, "The maximum number of autoprovisioned groups in the cluster.")
 
 	expendablePodsPriorityCutoff = flag.Int("expendable-pods-priority-cutoff", 0, "Pods with priority below cutoff will be expendable. They can be killed without any consideration during scale down and they don't cause scale up. Pods with null priority (PodPriority disabled) are non expendable.")
+	regional                     = flag.Bool("regional", false, "Cluster is regional.")
 )
 
 func createAutoscalerOptions() core.AutoscalerOptions {
@@ -146,7 +150,7 @@ func createAutoscalerOptions() core.AutoscalerOptions {
 	autoscalingOpts := core.AutoscalingOptions{
 		CloudConfig:                      *cloudConfig,
 		CloudProviderName:                *cloudProviderFlag,
-		NodeGroupAutoDiscovery:           *nodeGroupAutoDiscovery,
+		NodeGroupAutoDiscovery:           nodeGroupAutoDiscoveryFlag,
 		MaxTotalUnreadyPercentage:        *maxTotalUnreadyPercentage,
 		OkTotalUnreadyCount:              *okTotalUnreadyCount,
 		EstimatorName:                    *estimatorFlag,
@@ -177,6 +181,7 @@ func createAutoscalerOptions() core.AutoscalerOptions {
 		NodeAutoprovisioningEnabled:      *nodeAutoprovisioningEnabled,
 		MaxAutoprovisionedNodeGroupCount: *maxAutoprovisionedNodeGroupCount,
 		ExpendablePodsPriorityCutoff:     *expendablePodsPriorityCutoff,
+		Regional:                         *regional,
 	}
 
 	configFetcherOpts := dynamic.ConfigFetcherOptions{
@@ -233,6 +238,7 @@ func registerSignalHandlers(autoscaler core.Autoscaler) {
 }
 
 func run(healthCheck *metrics.HealthCheck) {
+	metrics.RegisterAll()
 	kubeClient := createKubeClient()
 	kubeEventRecorder := kube_util.CreateEventRecorder(kubeClient)
 	opts := createAutoscalerOptions()
@@ -280,6 +286,11 @@ func main() {
 	bindFlags(&leaderElection, pflag.CommandLine)
 	flag.Var(&nodeGroupsFlag, "nodes", "sets min,max size and other configuration data for a node group in a format accepted by cloud provider."+
 		"Can be used multiple times. Format: <min>:<max>:<other...>")
+	flag.Var(&nodeGroupAutoDiscoveryFlag, "node-group-auto-discovery", "One or more definition(s) of node group auto-discovery. "+
+		"A definition is expressed `<name of discoverer>:[<key>[=<value>]]`. "+
+		"The `aws` and `gce` cloud providers are currently supported. AWS matches by ASG tags, e.g. `asg:tag=tagKey,anotherTagKey`. "+
+		"GCE matches by IG name prefix, and requires you to specify min and max nodes per IG, e.g. `mig:namePrefix=pfx,min=0,max=10` "+
+		"Can be used multiple times.")
 	kube_flag.InitFlags()
 
 	healthCheck := metrics.NewHealthCheck(*maxInactivityTimeFlag, *maxFailingTimeFlag)
@@ -381,7 +392,7 @@ func bindFlags(l *componentconfig.LeaderElectionConfiguration, fs *pflag.FlagSet
 		"The duration the clients should wait between attempting acquisition and renewal "+
 		"of a leadership. This is only applicable if leader election is enabled.")
 	fs.StringVar(&l.ResourceLock, "leader-elect-resource-lock", l.ResourceLock, ""+
-		"The type of resource resource object that is used for locking during"+
+		"The type of resource object that is used for locking during"+
 		"leader election. Supported options are `endpoints` (default) and `configmap`.")
 }
 

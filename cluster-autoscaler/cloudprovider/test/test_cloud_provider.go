@@ -24,7 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
+	"k8s.io/kubernetes/pkg/scheduler/schedulercache"
 )
 
 // OnScaleUpFunc is a function called on node group increase in TestCloudProvider.
@@ -34,7 +34,7 @@ type OnScaleUpFunc func(string, int) error
 // OnScaleDownFunc is a function called on cluster scale down
 type OnScaleDownFunc func(string, string) error
 
-// OnNodeGroupCreateFunc is a fuction called when a new node group is created.
+// OnNodeGroupCreateFunc is a function called when a new node group is created.
 type OnNodeGroupCreateFunc func(string) error
 
 // OnNodeGroupDeleteFunc is a function called when a node group is deleted.
@@ -136,7 +136,8 @@ func (tcp *TestCloudProvider) GetAvailableMachineTypes() ([]string, error) {
 
 // NewNodeGroup builds a theoretical node group based on the node definition provided. The node group is not automatically
 // created on the cloud provider side. The node group is not returned by NodeGroups() until it is created.
-func (tcp *TestCloudProvider) NewNodeGroup(machineType string, labels map[string]string, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
+func (tcp *TestCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string,
+	extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
 	return &TestNodeGroup{
 		cloudProvider:   tcp,
 		id:              "autoprovisioned-" + machineType,

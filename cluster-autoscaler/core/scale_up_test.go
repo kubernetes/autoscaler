@@ -40,7 +40,7 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 	core "k8s.io/client-go/testing"
 	kube_record "k8s.io/client-go/tools/record"
-	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
+	"k8s.io/kubernetes/pkg/scheduler/schedulercache"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -394,7 +394,7 @@ func TestScaleUpNodeComingHasScale(t *testing.T) {
 
 	result, err := ScaleUp(context, []*apiv1.Pod{p3, p3}, []*apiv1.Node{n1, n2}, []*extensionsv1.DaemonSet{})
 	assert.NoError(t, err)
-	// Twho nodes needed but one node is already coming, so it should increase by one.
+	// Two nodes needed but one node is already coming, so it should increase by one.
 	assert.True(t, result)
 	assert.Equal(t, "ng2-1", getStringFromChan(expandedGroups))
 }

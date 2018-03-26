@@ -27,11 +27,11 @@ import (
 	extensions "k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/test"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
+	kube_client "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes/fake"
 	core "k8s.io/client-go/testing"
 	"k8s.io/kubernetes/pkg/api/testapi"
-	kube_client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset/fake"
 )
 
 func TestEvictReplicatedByController(t *testing.T) {
@@ -44,6 +44,9 @@ func TestEvictReplicatedByController(t *testing.T) {
 			Namespace: "default",
 			SelfLink:  testapi.Default.SelfLink("replicationcontrollers", "rc"),
 		},
+		TypeMeta: metav1.TypeMeta{
+			Kind: "ReplicationController",
+		},
 		Spec: apiv1.ReplicationControllerSpec{
 			Replicas: &replicas,
 		},
@@ -51,7 +54,7 @@ func TestEvictReplicatedByController(t *testing.T) {
 
 	pods := make([]*apiv1.Pod, livePods)
 	for i := range pods {
-		pods[i] = test.BuildTestPod("test"+string(i), "", "", "", &rc)
+		pods[i] = test.BuildTestPod("test"+string(i), "", "", "", &rc.ObjectMeta, &rc.TypeMeta)
 	}
 
 	eviction := NewPodsEvictionRestrictionFactory(fakeClient(&rc, nil, nil, nil, pods), 2, 0.5).NewPodsEvictionRestriction(pods)
@@ -80,6 +83,9 @@ func TestEvictReplicatedByReplicaSet(t *testing.T) {
 			Namespace: "default",
 			SelfLink:  testapi.Default.SelfLink("replicasets", "rs"),
 		},
+		TypeMeta: metav1.TypeMeta{
+			Kind: "ReplicaSet",
+		},
 		Spec: extensions.ReplicaSetSpec{
 			Replicas: &replicas,
 		},
@@ -87,7 +93,7 @@ func TestEvictReplicatedByReplicaSet(t *testing.T) {
 
 	pods := make([]*apiv1.Pod, livePods)
 	for i := range pods {
-		pods[i] = test.BuildTestPod("test"+string(i), "", "", "", &rs)
+		pods[i] = test.BuildTestPod("test"+string(i), "", "", "", &rs.ObjectMeta, &rs.TypeMeta)
 	}
 
 	eviction := NewPodsEvictionRestrictionFactory(fakeClient(nil, &rs, nil, nil, pods), 2, 0.5).NewPodsEvictionRestriction(pods)
@@ -116,6 +122,9 @@ func TestEvictReplicatedByStatefulSet(t *testing.T) {
 			Namespace: "default",
 			SelfLink:  "/apiv1s/extensions/v1beta1/namespaces/default/statefulsets/ss",
 		},
+		TypeMeta: metav1.TypeMeta{
+			Kind: "StatefulSet",
+		},
 		Spec: appsv1beta1.StatefulSetSpec{
 			Replicas: &replicas,
 		},
@@ -123,7 +132,7 @@ func TestEvictReplicatedByStatefulSet(t *testing.T) {
 
 	pods := make([]*apiv1.Pod, livePods)
 	for i := range pods {
-		pods[i] = test.BuildTestPod("test"+string(i), "", "", "", &ss)
+		pods[i] = test.BuildTestPod("test"+string(i), "", "", "", &ss.ObjectMeta, &ss.TypeMeta)
 	}
 
 	eviction := NewPodsEvictionRestrictionFactory(fakeClient(nil, nil, &ss, nil, pods), 2, 0.5).NewPodsEvictionRestriction(pods)
@@ -149,13 +158,16 @@ func TestEvictReplicatedByJob(t *testing.T) {
 			Namespace: "default",
 			SelfLink:  "/apiv1s/extensions/v1beta1/namespaces/default/jobs/job",
 		},
+		TypeMeta: metav1.TypeMeta{
+			Kind: "Job",
+		},
 	}
 
 	livePods := 5
 
 	pods := make([]*apiv1.Pod, livePods)
 	for i := range pods {
-		pods[i] = test.BuildTestPod("test"+string(i), "", "", "", &job)
+		pods[i] = test.BuildTestPod("test"+string(i), "", "", "", &job.ObjectMeta, &job.TypeMeta)
 	}
 
 	eviction := NewPodsEvictionRestrictionFactory(fakeClient(nil, nil, nil, &job, pods), 2, 0.5).NewPodsEvictionRestriction(pods)
@@ -184,6 +196,9 @@ func TestEvictTooFewReplicas(t *testing.T) {
 			Namespace: "default",
 			SelfLink:  testapi.Default.SelfLink("replicationcontrollers", "rc"),
 		},
+		TypeMeta: metav1.TypeMeta{
+			Kind: "ReplicationController",
+		},
 		Spec: apiv1.ReplicationControllerSpec{
 			Replicas: &replicas,
 		},
@@ -191,7 +206,7 @@ func TestEvictTooFewReplicas(t *testing.T) {
 
 	pods := make([]*apiv1.Pod, livePods)
 	for i := range pods {
-		pods[i] = test.BuildTestPod("test"+string(i), "", "", "", &rc)
+		pods[i] = test.BuildTestPod("test"+string(i), "", "", "", &rc.ObjectMeta, &rc.TypeMeta)
 	}
 
 	eviction := NewPodsEvictionRestrictionFactory(fakeClient(&rc, nil, nil, nil, pods), 10, 0.5).NewPodsEvictionRestriction(pods)
@@ -217,6 +232,9 @@ func TestEvictionTolerance(t *testing.T) {
 			Namespace: "default",
 			SelfLink:  testapi.Default.SelfLink("replicationcontrollers", "rc"),
 		},
+		TypeMeta: metav1.TypeMeta{
+			Kind: "ReplicationController",
+		},
 		Spec: apiv1.ReplicationControllerSpec{
 			Replicas: &replicas,
 		},
@@ -224,7 +242,7 @@ func TestEvictionTolerance(t *testing.T) {
 
 	pods := make([]*apiv1.Pod, livePods)
 	for i := range pods {
-		pods[i] = test.BuildTestPod("test"+string(i), "", "", "", &rc)
+		pods[i] = test.BuildTestPod("test"+string(i), "", "", "", &rc.ObjectMeta, &rc.TypeMeta)
 	}
 
 	eviction := NewPodsEvictionRestrictionFactory(fakeClient(&rc, nil, nil, nil, pods), 2, tolerance).NewPodsEvictionRestriction(pods)
@@ -254,6 +272,9 @@ func TestEvictAtLeastOne(t *testing.T) {
 			Namespace: "default",
 			SelfLink:  testapi.Default.SelfLink("replicationcontrollers", "rc"),
 		},
+		TypeMeta: metav1.TypeMeta{
+			Kind: "ReplicationController",
+		},
 		Spec: apiv1.ReplicationControllerSpec{
 			Replicas: &replicas,
 		},
@@ -261,7 +282,7 @@ func TestEvictAtLeastOne(t *testing.T) {
 
 	pods := make([]*apiv1.Pod, livePods)
 	for i := range pods {
-		pods[i] = test.BuildTestPod("test"+string(i), "", "", "", &rc)
+		pods[i] = test.BuildTestPod("test"+string(i), "", "", "", &rc.ObjectMeta, &rc.TypeMeta)
 	}
 
 	eviction := NewPodsEvictionRestrictionFactory(fakeClient(&rc, nil, nil, nil, pods), 2, tolerance).NewPodsEvictionRestriction(pods)

@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -122,47 +123,21 @@ func (m *gceManagerMock) GetResourceLimiter() (*cloudprovider.ResourceLimiter, e
 	return args.Get(0).(*cloudprovider.ResourceLimiter), args.Error(1)
 }
 
+func (m *gceManagerMock) findMigsNamed(name *regexp.Regexp) ([]string, error) {
+	args := m.Called()
+	return args.Get(0).([]string), args.Error(1)
+}
+
 func TestBuildGceCloudProvider(t *testing.T) {
 	gceManagerMock := &gceManagerMock{}
-
-	ng1Name := "https://content.googleapis.com/compute/v1/projects/project1/zones/us-central1-b/instanceGroups/ng1"
-	ng2Name := "https://content.googleapis.com/compute/v1/projects/project1/zones/us-central1-b/instanceGroups/ng2"
 
 	resourceLimiter := cloudprovider.NewResourceLimiter(
 		map[string]int64{cloudprovider.ResourceNameCores: 1, cloudprovider.ResourceNameMemory: 10000000},
 		map[string]int64{cloudprovider.ResourceNameCores: 10, cloudprovider.ResourceNameMemory: 100000000})
 
-	// GCE mode.
-	gceManagerMock.On("getMode").Return(ModeGCE).Once()
-	gceManagerMock.On("RegisterMig",
-		mock.MatchedBy(func(mig *Mig) bool {
-			return mig.Name == "ng1" || mig.Name == "ng2"
-		})).Return(true).Times(2)
-
-	provider, err := BuildGceCloudProvider(gceManagerMock,
-		[]string{"0:10:" + ng1Name, "0:5:https:" + ng2Name},
-		resourceLimiter)
+	provider, err := BuildGceCloudProvider(gceManagerMock, resourceLimiter)
 	assert.NoError(t, err)
 	assert.NotNil(t, provider)
-	mock.AssertExpectationsForObjects(t, gceManagerMock)
-
-	// GKE mode.
-	gceManagerMock.On("getMode").Return(ModeGKE).Once()
-
-	provider, err = BuildGceCloudProvider(gceManagerMock, []string{}, resourceLimiter)
-	assert.NoError(t, err)
-	assert.NotNil(t, provider)
-	mock.AssertExpectationsForObjects(t, gceManagerMock)
-
-	// Error on GKE mode with specs.
-	gceManagerMock.On("getMode").Return(ModeGKE).Once()
-
-	provider, err = BuildGceCloudProvider(gceManagerMock,
-		[]string{"0:10:" + ng1Name, "0:5:https:" + ng2Name},
-		resourceLimiter)
-	assert.Error(t, err)
-	assert.Equal(t, "GKE gets nodegroup specification via API, command line specs are not allowed", err.Error())
-	mock.AssertExpectationsForObjects(t, gceManagerMock)
 }
 
 func TestNodeGroups(t *testing.T) {
@@ -376,7 +351,7 @@ func TestMig(t *testing.T) {
 	gceManagerMock.On("getLocation").Return("us-central1-b").Once()
 	gceManagerMock.On("getTemplates").Return(templateBuilder).Once()
 	server.On("handle", "/project1/zones/us-central1-b/machineTypes/n1-standard-1").Return(getMachineTypeResponse).Once()
-	nodeGroup, err := gce.NewNodeGroup("n1-standard-1", nil, nil)
+	nodeGroup, err := gce.NewNodeGroup("n1-standard-1", nil, nil, nil)
 	assert.NoError(t, err)
 	assert.NotNil(t, nodeGroup)
 	mig1 := reflect.ValueOf(nodeGroup).Interface().(*Mig)
@@ -542,30 +517,4 @@ func TestGceRefFromProviderId(t *testing.T) {
 	ref, err := GceRefFromProviderId("gce://project1/us-central1-b/name1")
 	assert.NoError(t, err)
 	assert.Equal(t, GceRef{"project1", "us-central1-b", "name1"}, *ref)
-}
-
-func TestBuildMig(t *testing.T) {
-	_, err := buildMig("a", nil)
-	assert.Error(t, err)
-	_, err = buildMig("a:b:c", nil)
-	assert.Error(t, err)
-	_, err = buildMig("1:2:x", nil)
-	assert.Error(t, err)
-	_, err = buildMig("1:2:", nil)
-	assert.Error(t, err)
-
-	mig, err := buildMig("111:222:https://content.googleapis.com/compute/v1/projects/test-project/zones/test-zone/instanceGroups/test-name", nil)
-	assert.NoError(t, err)
-	assert.Equal(t, 111, mig.MinSize())
-	assert.Equal(t, 222, mig.MaxSize())
-	assert.Equal(t, "test-zone", mig.Zone)
-	assert.Equal(t, "test-name", mig.Name)
-}
-
-func TestBuildKubeProxy(t *testing.T) {
-	mig, _ := buildMig("1:20:https://content.googleapis.com/compute/v1/projects/test-project/zones/test-zone/instanceGroups/test-name", nil)
-	pod := cloudprovider.BuildKubeProxy(mig.Id())
-	assert.Equal(t, 1, len(pod.Spec.Containers))
-	cpu := pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceCPU]
-	assert.Equal(t, int64(100), cpu.MilliValue())
 }

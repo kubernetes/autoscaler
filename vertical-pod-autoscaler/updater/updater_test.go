@@ -17,12 +17,13 @@ limitations under the License.
 package main
 
 import (
+	"strconv"
 	"testing"
 
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/apimock"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/test"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/updater/eviction"
 	"k8s.io/kubernetes/pkg/api/testapi"
 )
@@ -46,50 +47,90 @@ func TestRunOnce(t *testing.T) {
 	pods := make([]*apiv1.Pod, livePods)
 	eviction := &test.PodsEvictionRestrictionMock{}
 
-	recommender := &test.RecommenderMock{}
-	rec := test.Recommendation(containerName, "2", "200M")
-
 	for i := range pods {
-		pods[i] = test.BuildTestPod("test"+string(i), containerName, "1", "100M", &rc)
-		pods[i].Spec.NodeSelector = labels
+		pods[i] = test.BuildTestPod("test_"+strconv.Itoa(i), containerName, "1", "100M", &rc.ObjectMeta, &rc.TypeMeta)
+		pods[i].Labels = labels
 		eviction.On("CanEvict", pods[i]).Return(true)
 		eviction.On("Evict", pods[i]).Return(nil)
-		recommender.On("Get", &pods[i].Spec).Return(rec, nil)
 	}
 
 	factory := &fakeEvictFactory{eviction}
 	vpaLister := &test.VerticalPodAutoscalerListerMock{}
+
 	podLister := &test.PodListerMock{}
 	podLister.On("List").Return(pods, nil)
 
-	vpaObj := test.BuildTestVerticalPodAutoscaler(containerName, "1", "3", "100M", "1G", selector)
-	vpaLister.On("List").Return([]*apimock.VerticalPodAutoscaler{vpaObj}, nil).Once()
+	vpaObj := test.VerticalPodAutoscaler().
+		WithContainer(containerName).
+		WithTarget("2", "200M").
+		WithMinAllowed("1", "100M").
+		WithMaxAllowed("3", "1G").
+		WithSelector(selector).Get()
+	vpaObj.Spec.UpdatePolicy.UpdateMode = vpa_types.UpdateModeAuto
+	vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpaObj}, nil).Once()
 
 	updater := &updater{
-		vpaLister:        vpaLister,
-		podLister:        podLister,
-		recommender:      recommender,
-		evictionFactrory: factory,
+		vpaLister:       vpaLister,
+		podLister:       podLister,
+		evictionFactory: factory,
 	}
 
 	updater.RunOnce()
 	eviction.AssertNumberOfCalls(t, "Evict", 5)
 }
 
+func TestVPAOff(t *testing.T) {
+	livePods := 5
+	labels := map[string]string{"app": "testingApp"}
+	selector := "app = testingApp"
+	containerName := "container1"
+	pods := make([]*apiv1.Pod, livePods)
+	eviction := &test.PodsEvictionRestrictionMock{}
+
+	for i := range pods {
+		pods[i] = test.BuildTestPod("test_"+strconv.Itoa(i), containerName, "1", "100M", nil, nil)
+		pods[i].Labels = labels
+		eviction.On("CanEvict", pods[i]).Return(true)
+		eviction.On("Evict", pods[i]).Return(nil)
+	}
+
+	factory := &fakeEvictFactory{eviction}
+	vpaLister := &test.VerticalPodAutoscalerListerMock{}
+
+	podLister := &test.PodListerMock{}
+	podLister.On("List").Return(pods, nil)
+
+	vpaObj := test.VerticalPodAutoscaler().
+		WithContainer(containerName).
+		WithTarget("2", "200M").
+		WithMinAllowed("1", "100M").
+		WithMaxAllowed("3", "1G").
+		WithSelector(selector).Get()
+	vpaObj.Namespace = "default"
+	vpaObj.Spec.UpdatePolicy.UpdateMode = vpa_types.UpdateModeInitial
+	vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpaObj}, nil).Once()
+
+	updater := &updater{
+		vpaLister:       vpaLister,
+		podLister:       podLister,
+		evictionFactory: factory,
+	}
+
+	updater.RunOnce()
+	eviction.AssertNumberOfCalls(t, "Evict", 0)
+}
+
 func TestRunOnceNotingToProcess(t *testing.T) {
-	recommender := &test.RecommenderMock{}
 	eviction := &test.PodsEvictionRestrictionMock{}
 	factory := &fakeEvictFactory{eviction}
 	vpaLister := &test.VerticalPodAutoscalerListerMock{}
 	podLister := &test.PodListerMock{}
-	podLister.On("List").Return(nil, nil).Once()
 	vpaLister.On("List").Return(nil, nil).Once()
 
 	updater := &updater{
-		vpaLister:        vpaLister,
-		podLister:        podLister,
-		recommender:      recommender,
-		evictionFactrory: factory,
+		vpaLister:       vpaLister,
+		podLister:       podLister,
+		evictionFactory: factory,
 	}
 	updater.RunOnce()
 }

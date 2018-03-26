@@ -47,231 +47,38 @@ If you'd like to auto-discover node groups by specifing the `--node-group-auto-d
 }
 ```
 
-Unfortunately AWS does not support ARNs for autoscaling groups yet so you must use "*" as the resource. More information [here](http://docs.aws.amazon.com/autoscaling/latest/userguide/IAM.html#UsingWithAutoScaling_Actions).
+AWS supports ARNs for autoscaling groups. More information [here](https://docs.aws.amazon.com/autoscaling/latest/userguide/control-access-using-iam.html#policy-auto-scaling-resources).
 
 ## Deployment Specification
 
 ### 1 ASG Setup (min: 1, max: 10, ASG Name: k8s-worker-asg-1)
-```yaml
----
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  name: cluster-autoscaler
-  namespace: kube-system
-  labels:
-    app: cluster-autoscaler
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: cluster-autoscaler
-  template:
-    metadata:
-      labels:
-        app: cluster-autoscaler
-    spec:
-      containers:
-        - image: gcr.io/google_containers/cluster-autoscaler:v0.6.0
-          name: cluster-autoscaler
-          resources:
-            limits:
-              cpu: 100m
-              memory: 300Mi
-            requests:
-              cpu: 100m
-              memory: 300Mi
-          command:
-            - ./cluster-autoscaler
-            - --v=4
-            - --stderrthreshold=info
-            - --cloud-provider=aws
-            - --skip-nodes-with-local-storage=false
-            - --nodes=1:10:k8s-worker-asg-1
-          env:
-            - name: AWS_REGION
-              value: us-east-1
-          volumeMounts:
-            - name: ssl-certs
-              mountPath: /etc/ssl/certs/ca-certificates.crt
-              readOnly: true
-          imagePullPolicy: "Always"
-      volumes:
-        - name: ssl-certs
-          hostPath:
-            path: "/etc/ssl/certs/ca-certificates.crt"
+```
+kubectl apply -f examples/cluster-autoscaler-one-asg.yaml
 ```
 
 ### Multiple ASG Setup
-```yaml
----
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  name: cluster-autoscaler
-  namespace: kube-system
-  labels:
-    app: cluster-autoscaler
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: cluster-autoscaler
-  template:
-    metadata:
-      labels:
-        app: cluster-autoscaler
-    spec:
-      containers:
-        - image: gcr.io/google_containers/cluster-autoscaler:v0.6.0
-          name: cluster-autoscaler
-          resources:
-            limits:
-              cpu: 100m
-              memory: 300Mi
-            requests:
-              cpu: 100m
-              memory: 300Mi
-          command:
-            - ./cluster-autoscaler
-            - --v=4
-            - --stderrthreshold=info
-            - --cloud-provider=aws
-            - --skip-nodes-with-local-storage=false
-            - --expander=least-waste
-            - --nodes=1:10:k8s-worker-asg-1
-            - --nodes=1:3:k8s-worker-asg-2
-          env:
-            - name: AWS_REGION
-              value: us-east-1
-          volumeMounts:
-            - name: ssl-certs
-              mountPath: /etc/ssl/certs/ca-certificates.crt
-              readOnly: true
-          imagePullPolicy: "Always"
-      volumes:
-        - name: ssl-certs
-          hostPath:
-            path: "/etc/ssl/certs/ca-certificates.crt"
 ```
+kubectl apply -f examples/cluster-autoscaler-multi-asg.yaml
+```
+
 ### Master Node Setup
 
 To run a CA pod in master node - CA deployment should tolerate the master `taint` and `nodeSelector` should be used to schedule the pods in master node.
+```
+kubectl apply -f examples/cluster-autoscaler-run-on-master.yaml
+```
 
-```
----
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  name: cluster-autoscaler
-  namespace: kube-system
-  labels:
-    app: cluster-autoscaler
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: cluster-autoscaler
-  template:
-    metadata:
-      labels:
-        app: cluster-autoscaler
-    spec:
-      tolerations:
-      - effect: NoSchedule
-        key: node-role.kubernetes.io/master
-      nodeSelector:
-        kubernetes.io/role: master
-      containers:
-        - image: gcr.io/google_containers/cluster-autoscaler:{{ ca_version }}
-          name: cluster-autoscaler
-          resources:
-            limits:
-              cpu: 100m
-              memory: 300Mi
-            requests:
-              cpu: 100m
-              memory: 300Mi
-          command:
-            - ./cluster-autoscaler
-            - --v=4
-            - --stderrthreshold=info
-            - --cloud-provider=aws
-            - --skip-nodes-with-local-storage=false
-            - --nodes={{ node_asg_min }}:{{ node_asg_max }}:{{ name }}
-          env:
-            - name: AWS_REGION
-              value: {{ region }}
-          volumeMounts:
-            - name: ssl-certs
-              mountPath: /etc/ssl/certs/ca-certificates.crt
-              readOnly: true
-          imagePullPolicy: "Always"
-      volumes:
-        - name: ssl-certs
-          hostPath:
-            path: "/etc/ssl/certs/ca-certificates.crt"
-```
 
 ### Auto-Discovery Setup
 
-As of version v0.5.1, docker images including the support for `--node-group-auto-discovery` is not yet published to official repository.
-Please checkout the latest source of this project locally and run `REGISTRY=<your docker repo> make release` to build and push an image yourself.
-Then, a manifest like below would run a cluster-autoscaler which auto-discovers ASGs tagged with `k8s.io/cluster-autoscaler/enabled` and `kubernetes.io/cluster/<YOUR CLUSTER NAME>` to be node groups.
+To run a cluster-autoscaler which auto-discovers ASGs with nodes use the `--node-group-auto-discovery` flag and tag the ASGs with _key_ `k8s.io/cluster-autoscaler/enabled` with value `yes` and _key_ `kubernetes.io/cluster/<YOUR CLUSTER NAME>`with value `true`.
 Note that:
- 
+
 * `kubernetes.io/cluster/<YOUR CLUSTER NAME>` is required when `k8s.io/cluster-autoscaler/enabled` is used across many clusters to prevent ASGs from different clusters recognized as the node groups
 * There are no `--nodes` flags passed to cluster-autoscaler because the node groups are automatically discovered by tags
- 
-```yaml
----
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  name: cluster-autoscaler
-  namespace: kube-system
-  labels:
-    app: cluster-autoscaler
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: cluster-autoscaler
-  template:
-    metadata:
-      labels:
-        app: cluster-autoscaler
-    spec:
-      containers:
-        - image: <your docker repo>/cluster-autoscaler:dev
-          name: cluster-autoscaler
-          resources:
-            limits:
-              cpu: 100m
-              memory: 300Mi
-            requests:
-              cpu: 100m
-              memory: 300Mi
-          command:
-            - ./cluster-autoscaler
-            - --v=4
-            - --stderrthreshold=info
-            - --cloud-provider=aws
-            - --skip-nodes-with-local-storage=false
-            - --expander=least-waste
-            - --node-group-auto-discovery=asg:tag=k8s.io/cluster-autoscaler/enabled,kubernetes.io/cluster/<YOUR CLUSTER NAME>
-          env:
-            - name: AWS_REGION
-              value: us-east-1
-          volumeMounts:
-            - name: ssl-certs
-              mountPath: /etc/ssl/certs/ca-certificates.crt
-              readOnly: true
-          imagePullPolicy: "Always"
-      volumes:
-        - name: ssl-certs
-          hostPath:
-            path: "/etc/ssl/certs/ca-certificates.crt"
+
+```
+kubectl apply -f examples/cluster-autoscaler-autodiscover.yaml
 ```
 
 ## Scaling a node group to 0
@@ -282,7 +89,7 @@ If you are using `nodeSelector` you need to tag the ASG with a node-template key
 
 For example for a node label of `foo=bar` you would tag the ASG with:
 
-```
+```json
 {
     "ResourceType": "auto-scaling-group",
     "ResourceId": "foo.example.com",
@@ -294,7 +101,7 @@ For example for a node label of `foo=bar` you would tag the ASG with:
 
 And for a taint of `"dedicated": "foo:NoSchedule"` you would tag the ASG with:
 
-```
+```json
 {
     "ResourceType": "auto-scaling-group",
     "ResourceId": "foo.example.com",
@@ -330,5 +137,5 @@ If you'd like to scale node groups from 0, a `DescribeLaunchConfigurations` perm
 - The `/etc/ssl/certs/ca-certificates.crt` should exist by default on your ec2 instance.
 - Cluster autoscaler is not zone aware (for now), so if you wish to span multiple availability zones in your autoscaling groups beware that cluster autoscaler will not evenly distribute them. For more information, see https://github.com/kubernetes/contrib/pull/1552#r75532949.
 - By default, cluster autoscaler will not terminate nodes running pods in the kube-system namespace. You can override this default behaviour by passing in the `--skip-nodes-with-system-pods=false` flag.
-- By default, cluster autoscaler will wait 10 minutes between scale down operations, you can adjust this using the `--scale-down-delay` flag. E.g. `--scale-down-delay=5m` to decrease the scale down delay to 5 minutes.
+- By default, cluster autoscaler will wait 10 minutes between scale down operations, you can adjust this using the `--scale-down-delay-after-add`, `--scale-down-delay-after-delete`, and `--scale-down-delay-after-failure` flag. E.g. `--scale-down-delay-after-add=5m` to decrease the scale down delay to 5 minutes after a node has been added.
 - If you're running multiple ASGs, the `--expander` flag supports three options: `random`, `most-pods` and `least-waste`. `random` will expand a random ASG on scale up. `most-pods` will scale up the ASG that will scheduable the most amount of pods. `least-waste` will expand the ASG that will waste the least amount of CPU/MEM resources. In the event of a tie, cluster autoscaler will fall back to `random`.

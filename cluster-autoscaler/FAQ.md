@@ -29,6 +29,7 @@ this document:
   * [How can I scale my cluster to just 1 node?](#how-can-i-scale-my-cluster-to-just-1-node)
   * [How can I scale a node group to 0?](#how-can-i-scale-a-node-group-to-0)
   * [How can I prevent Cluster Autoscaler from scaling down a particular node?](#how-can-i-prevent-cluster-autoscaler-from-scaling-down-a-particular-node)
+  * [How can I configure overprovisioning with Cluster Autoscaler?](#how-can-i-configure-overprovisioning-with-cluster-autoscaler)
 * [Internals](#internals)
   * [Are all of the mentioned heuristics and timings final?](#are-all-of-the-mentioned-heuristics-and-timings-final)
   * [How does scale-up work?](#how-does-scale-up-work)
@@ -76,7 +77,7 @@ Cluster Autoscaler decreases the size of the cluster when some nodes are consist
   * don't have PDB or their PDB is too restrictive (since CA 0.6).
 * Pods that are not backed by a controller object (so not created by deployment, replica set, job, stateful set etc). *
 * Pods with local storage. *
-* Pods that cannot be moved elsewhere due to various constraints (lack of resources, non-matching node selctors or affinity,
+* Pods that cannot be moved elsewhere due to various constraints (lack of resources, non-matching node selectors or affinity,
 matching anti-affinity, etc)
 
 <sup>*</sup>Unless the pod has the following annotation (supported in CA 1.0.3 or later):
@@ -102,7 +103,7 @@ there is a big chance that it won't work as expected.
 
 ### Is Cluster Autoscaler an Alpha, Beta or GA product?
 
-Sice version 1.0.0 we consider CA as GA. It means that:
+Since version 1.0.0 we consider CA as GA. It means that:
 
  * We have enough confidence that it does what it is expected to do. Each commit goes through a big suite of unit tests
    with more than 75% coverage (on average). We have a series of e2e tests that validate that CA works well on
@@ -117,7 +118,7 @@ Sice version 1.0.0 we consider CA as GA. It means that:
    some of the less critical feature requests are yet to be implemented.
  * CA has decent monitoring, logging and eventing.
  * CA tries to handle most of the error situations in the cluster (like cloud provider stockouts, broken nodes, etc).
- * CA developers are committed to maintaining and supporting CA in the foreseeble future.
+ * CA developers are committed to maintaining and supporting CA in the foreseeable future.
 
 All of the previous versions (earlier that 1.0.0) are considered beta.
 
@@ -304,6 +305,114 @@ It can be added to (or removed from) a node using kubectl:
 kubectl annotate node <nodename> cluster-autoscaler.kubernetes.io/scale-down-disabled=true
 ```
 
+### How can I configure overprovisioning with Cluster Autoscaler?
+
+Below solution works since version 1.1 (to be shipped with Kubernetes 1.9).
+
+Overprovisioning can be configured using deployment running pause pods with very low assigned
+priority (see [Priority Preemption](https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/)) 
+which keeps resources that can be used by other pods. If there is not enough resources then pause
+pods are premmpted and new pods take their place. Next pause pods become unschedulable and force CA
+ to scale up the cluster.
+
+The size of overprovisioned resources can be controlled by changing the size of pause pods and the
+number of replicas. This way you can configure static size of overprovisioning resources (i.e. 2
+additional cores). If we want to configure dynamic size (i.e. 20% of recources in the cluster)
+then we need to use [Horizontal Cluster Proportional Autoscaler](https://github.com/kubernetes-incubator/cluster-proportional-autoscaler)
+which will change number of pause pods depending on the size of the cluster. It will increase the
+number of replicas when cluster grows and decrease the number of replicas if cluster shrinks.
+
+Configuration of dynamic overprovisioning:
+
+1. Enable priority preemption in your cluster. It can be done by exporting following env
+variables before executing kube-up (more details [here](https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/)):
+```sh
+export KUBE_RUNTIME_CONFIG=scheduling.k8s.io/v1alpha1=true
+export ENABLE_POD_PRIORITY=true
+```
+
+2. Define priority class for overprovisioning pods. Priority -1 will be reserved for 
+overprovisioning pods as it is the lowest priority that triggers scaling clusters. Other pods need 
+to use priority 0 or higher in order to be able to preempt overprovisioning pods. You can use 
+following definitions:
+
+```yaml
+apiVersion: scheduling.k8s.io/v1alpha1
+kind: PriorityClass
+metadata:
+  name: overprovisioning
+value: -1
+globalDefault: false
+description: "Priority class used by overprovisioning."
+```
+
+3. Change pod priority cutoff in CA to -10 so pause pods are taken into account during scale down
+and scale up. Set flag ```expendable-pods-priority-cutoff``` to -10. If you already use priority
+preemption then pods with priorities between -10 and -1 won't be best effort anymore.
+
+4. Create service account that will be used by Horizontal Cluster Proportional Autoscaler which needs
+specific roles. More details [here](https://github.com/kubernetes-incubator/cluster-proportional-autoscaler/tree/master/examples#rbac-configurations)
+
+5. Create deployments that will reserve resources. "overprovisioning" deployment will reserve
+resources and "overprovisioning-autoscaler" deployment will change the size of reserved resources.
+You can use following definitions (you need to change service account for "overprovisioning-autoscaler" 
+deployment to the one created in the previous step):
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: overprovisioning
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: overprovisioning
+  template:
+    metadata:
+      labels:
+        run: overprovisioning
+    spec:
+      priorityClassName: overprovisioning
+      containers:
+      - name: reserve-resources
+        image: gcr.io/google_containers/pause
+        resources:
+          requests:
+            cpu: "200m"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: overprovisioning-autoscaler
+  namespace: default
+  labels:
+    app: overprovisioning-autoscaler
+spec:
+  selector:
+    matchLabels:
+      app: overprovisioning-autoscaler
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: overprovisioning-autoscaler
+    spec:
+      containers:
+        - image: gcr.io/google_containers/cluster-proportional-autoscaler-amd64:1.1.2
+          name: autoscaler
+          command:
+            - /cluster-proportional-autoscaler
+            - --namespace=default
+            - --configmap=overprovisioning-autoscaler
+            - --default-params={"linear":{"coresPerReplica":1}}
+            - --target=deployment/overprovisioning
+            - --logtostderr=true
+            - --v=2
+      serviceAccountName: cluster-proportional-autoscaler-service-account
+```
+
 ****************
 
 # Internals
@@ -351,7 +460,8 @@ Every 10 seconds (configurable by `--scan-interval` flag), if no scale-up is
 needed, Cluster Autoscaler checks which nodes are unneeded. A node is considered for removal when:
 
 * The sum of cpu and memory requests of all pods running on this node is smaller
-  than 50% of the node's capacity. Utilization threshold can be configured using
+  than 50% of the node's allocatable. (Before 1.1.0, node capacity was used
+  instead of allocatable.) Utilization threshold can be configured using
   `--scale-down-utilization-threshold` flag.
 
 * All pods running on the node (except these that run on all nodes by default, like manifest-run pods
@@ -385,7 +495,7 @@ on Y.
 
 Node A was deleted. OK, but what about B and C, which were also eligible for deletion? Well, it depends.
 
-Pods from B may no longer fit on X after pods from A were moved there. Cluster Autoscaler has to find place for them somewhere else, and it is not sure that if A had been deleted much earlier than B, there would always have been a place for them. So the condition of having been unneded unneeded for 10 min may not be true for B anymore.
+Pods from B may no longer fit on X after pods from A were moved there. Cluster Autoscaler has to find place for them somewhere else, and it is not sure that if A had been deleted much earlier than B, there would always have been a place for them. So the condition of having been unneeded for 10 min may not be true for B anymore.
 
 But for node C, it's still true as long as nothing happened to Y. So C can be deleted immediately after A, but B may not.
 
@@ -453,7 +563,7 @@ Some of the not-yet-fully-approved proposals may be hidden among [PRs](https://g
 
 ### What are Expanders?
 
-When Cluster Autoscaler identifies that it needs to scale up a cluster due to unscheduable pods,
+When Cluster Autoscaler identifies that it needs to scale up a cluster due to unschedulable pods,
 it increases the number of nodes in some node group. When there is one node group, this strategy is trivial. When there is more than one node group, it has to decide which to expand.
 
 Expanders provide different strategies for selecting the node group to which
@@ -532,6 +642,29 @@ So one of the reasons it doesn't scale up the cluster may be that the pod has to
 (e.g. 100 CPUs), or too specific requests (like node selector), and wouldn't fit on any of the
 available node types.
 Another possible reason is that all suitable node groups are already at their maximum size.
+
+If the pending pods are in a [stateful set](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset)
+and the cluster spans multiple zones, CA may not be able to scale up the cluster,
+even if it has not yet reached the upper scaling limit in all zones. Stateful
+set pods require an associated Persistent Volume (PV), which is created
+before scheduling the pod and CA has no way of influencing the zone choice. The
+pending pod has a strict constraint to be scheduled in the same zone that the PV
+is in, so if it is a zone that has already reached the upper scaling limit, CA
+will not be able to perform a scale-up, even if there are other zones in which
+nodes could be added. This will manifest itself by following events on the pod:
+
+```
+Events:
+  Type     Reason             Age   From                Message
+  ----     ------             ----  -------             -------
+  Normal   NotTriggerScaleUp  ..    cluster-autoscaler  pod didn't trigger scale-up (it wouldn't fit if a new node is added)
+  Warning  FailedScheduling   ..    default-scheduler   No nodes are available that match all of the following predicates:: Insufficient cpu (4), NoVolumeZoneConflict (2)
+```
+
+This limitation will go away with
+[volume topological scheduling](https://github.com/kubernetes/community/blob/master/contributors/design-proposals/storage/volume-topology-scheduling.md)
+support in Kubernetes. Currently, we advice to set CA upper limits in a way to
+allow for some slack capacity.
 
 ### CA doesn’t work, but it used to work yesterday. Why?
 
@@ -632,13 +765,13 @@ Depending on how long scale-ups have been failing, it may wait up to 30 minutes 
     export KUBE_AUTOSCALER_ENABLE_SCALE_DOWN=true
     ```
     This is the minimum number of nodes required for all e2e tests to pass. The tests should also pass if you set higher maximum nodes limit.
-3. Run `go run hack/e2e.go -- -v --up` to bring up your cluster.
+3. Run `go run hack/e2e.go -- --verbose-commands --up` to bring up your cluster.
 4. SSH to the master node and edit `/etc/kubernetes/manifests/cluster-autoscaler.manifest` (you will need sudo for this).
     * If you want to test your custom changes set `image` to point at your own CA image.
     * Make sure `--scale-down-enabled` parameter in `command` is set to `true`.
 5. Run CA tests with:
     ```sh
-    go run hack/e2e.go -- -v --test --test_args="--ginkgo.focus=\[Feature:ClusterSizeAutoscaling"
+    go run hack/e2e.go -- --verbose-commands --test --test_args="--ginkgo.focus=\[Feature:ClusterSizeAutoscaling"
     ```
     It will take >1 hour to run the full suite. You may want to redirect output to file, as there will be plenty of it.
 

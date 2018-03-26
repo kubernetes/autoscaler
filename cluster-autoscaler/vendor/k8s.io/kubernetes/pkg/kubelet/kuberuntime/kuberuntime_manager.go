@@ -32,10 +32,10 @@ import (
 	"k8s.io/client-go/tools/record"
 	ref "k8s.io/client-go/tools/reference"
 	"k8s.io/client-go/util/flowcontrol"
-	"k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/api/legacyscheme"
 	"k8s.io/kubernetes/pkg/credentialprovider"
 	internalapi "k8s.io/kubernetes/pkg/kubelet/apis/cri"
-	runtimeapi "k8s.io/kubernetes/pkg/kubelet/apis/cri/v1alpha1/runtime"
+	runtimeapi "k8s.io/kubernetes/pkg/kubelet/apis/cri/runtime/v1alpha2"
 	"k8s.io/kubernetes/pkg/kubelet/cm"
 	kubecontainer "k8s.io/kubernetes/pkg/kubelet/container"
 	"k8s.io/kubernetes/pkg/kubelet/events"
@@ -65,9 +65,10 @@ var (
 	ErrVersionNotSupported = errors.New("Runtime api version is not supported")
 )
 
-// podDeletionProvider can determine if a pod is deleted
-type podDeletionProvider interface {
+// podStateProvider can determine if a pod is deleted ir terminated
+type podStateProvider interface {
 	IsPodDeleted(kubetypes.UID) bool
+	IsPodTerminated(kubetypes.UID) bool
 }
 
 type kubeGenericRuntimeManager struct {
@@ -112,12 +113,21 @@ type kubeGenericRuntimeManager struct {
 
 	// Internal lifecycle event handlers for container resource management.
 	internalLifecycle cm.InternalContainerLifecycle
+
+	// A shim to legacy functions for backward compatibility.
+	legacyLogProvider LegacyLogProvider
 }
 
 type KubeGenericRuntime interface {
 	kubecontainer.Runtime
 	kubecontainer.IndirectStreamingRuntime
 	kubecontainer.ContainerCommandRunner
+}
+
+// LegacyLogProvider gives the ability to use unsupported docker log drivers (e.g. journald)
+type LegacyLogProvider interface {
+	// Get the last few lines of the logs for a specific container.
+	GetContainerLogTail(uid kubetypes.UID, name, namespace string, containerID kubecontainer.ContainerID) (string, error)
 }
 
 // NewKubeGenericRuntimeManager creates a new kubeGenericRuntimeManager
@@ -127,7 +137,7 @@ func NewKubeGenericRuntimeManager(
 	seccompProfileRoot string,
 	containerRefManager *kubecontainer.RefManager,
 	machineInfo *cadvisorapi.MachineInfo,
-	podDeletionProvider podDeletionProvider,
+	podStateProvider podStateProvider,
 	osInterface kubecontainer.OSInterface,
 	runtimeHelper kubecontainer.RuntimeHelper,
 	httpClient types.HttpGetter,
@@ -139,6 +149,7 @@ func NewKubeGenericRuntimeManager(
 	runtimeService internalapi.RuntimeService,
 	imageService internalapi.ImageManagerService,
 	internalLifecycle cm.InternalContainerLifecycle,
+	legacyLogProvider LegacyLogProvider,
 ) (KubeGenericRuntime, error) {
 	kubeRuntimeManager := &kubeGenericRuntimeManager{
 		recorder:            recorder,
@@ -153,6 +164,7 @@ func NewKubeGenericRuntimeManager(
 		imageService:        newInstrumentedImageManagerService(imageService),
 		keyring:             credentialprovider.NewDockerKeyring(),
 		internalLifecycle:   internalLifecycle,
+		legacyLogProvider:   legacyLogProvider,
 	}
 
 	typedVersion, err := kubeRuntimeManager.runtimeService.Version(kubeRuntimeAPIVersion)
@@ -193,7 +205,7 @@ func NewKubeGenericRuntimeManager(
 		imagePullQPS,
 		imagePullBurst)
 	kubeRuntimeManager.runner = lifecycle.NewHandlerRunner(httpClient, kubeRuntimeManager, kubeRuntimeManager)
-	kubeRuntimeManager.containerGC = NewContainerGC(runtimeService, podDeletionProvider, kubeRuntimeManager)
+	kubeRuntimeManager.containerGC = NewContainerGC(runtimeService, podStateProvider, kubeRuntimeManager)
 
 	kubeRuntimeManager.versionCache = cache.NewObjectCache(
 		func() (interface{}, error) {
@@ -211,7 +223,10 @@ func (m *kubeGenericRuntimeManager) Type() string {
 }
 
 func newRuntimeVersion(version string) (*utilversion.Version, error) {
-	return utilversion.ParseSemantic(version)
+	if ver, err := utilversion.ParseSemantic(version); err == nil {
+		return ver, err
+	}
+	return utilversion.ParseGeneric(version)
 }
 
 func (m *kubeGenericRuntimeManager) getTypedVersion() (*runtimeapi.VersionResponse, error) {
@@ -390,8 +405,7 @@ func (m *kubeGenericRuntimeManager) podSandboxChanged(pod *v1.Pod, podStatus *ku
 	}
 
 	// Needs to create a new sandbox when network namespace changed.
-	if sandboxStatus.Linux != nil && sandboxStatus.Linux.Namespaces != nil && sandboxStatus.Linux.Namespaces.Options != nil &&
-		sandboxStatus.Linux.Namespaces.Options.HostNetwork != kubecontainer.IsHostNetworkPod(pod) {
+	if sandboxStatus.GetLinux().GetNamespaces().GetOptions().GetNetwork() != networkNamespaceForPod(pod) {
 		glog.V(2).Infof("Sandbox for pod %q has changed. Need to start a new one", format.Pod(pod))
 		return true, sandboxStatus.Metadata.Attempt + 1, ""
 	}
@@ -555,7 +569,7 @@ func (m *kubeGenericRuntimeManager) SyncPod(pod *v1.Pod, _ v1.PodStatus, podStat
 	podContainerChanges := m.computePodActions(pod, podStatus)
 	glog.V(3).Infof("computePodActions got %+v for pod %q", podContainerChanges, format.Pod(pod))
 	if podContainerChanges.CreateSandbox {
-		ref, err := ref.GetReference(api.Scheme, pod)
+		ref, err := ref.GetReference(legacyscheme.Scheme, pod)
 		if err != nil {
 			glog.Errorf("Couldn't make a ref to pod %q: '%v'", format.Pod(pod), err)
 		}
@@ -599,7 +613,7 @@ func (m *kubeGenericRuntimeManager) SyncPod(pod *v1.Pod, _ v1.PodStatus, podStat
 	}
 
 	// Keep terminated init containers fairly aggressively controlled
-	// This is an optmization because container removals are typically handled
+	// This is an optimization because container removals are typically handled
 	// by container garbage collector.
 	m.pruneInitContainersBeforeStart(pod, podStatus)
 
@@ -630,17 +644,22 @@ func (m *kubeGenericRuntimeManager) SyncPod(pod *v1.Pod, _ v1.PodStatus, podStat
 		if err != nil {
 			createSandboxResult.Fail(kubecontainer.ErrCreatePodSandbox, msg)
 			glog.Errorf("createPodSandbox for pod %q failed: %v", format.Pod(pod), err)
-			ref, err := ref.GetReference(api.Scheme, pod)
-			if err != nil {
-				glog.Errorf("Couldn't make a ref to pod %q: '%v'", format.Pod(pod), err)
+			ref, referr := ref.GetReference(legacyscheme.Scheme, pod)
+			if referr != nil {
+				glog.Errorf("Couldn't make a ref to pod %q: '%v'", format.Pod(pod), referr)
 			}
-			m.recorder.Eventf(ref, v1.EventTypeWarning, events.FailedCreatePodSandBox, "Failed create pod sandbox.")
+			m.recorder.Eventf(ref, v1.EventTypeWarning, events.FailedCreatePodSandBox, "Failed create pod sandbox: %v", err)
 			return
 		}
 		glog.V(4).Infof("Created PodSandbox %q for pod %q", podSandboxID, format.Pod(pod))
 
 		podSandboxStatus, err := m.runtimeService.PodSandboxStatus(podSandboxID)
 		if err != nil {
+			ref, referr := ref.GetReference(legacyscheme.Scheme, pod)
+			if referr != nil {
+				glog.Errorf("Couldn't make a ref to pod %q: '%v'", format.Pod(pod), referr)
+			}
+			m.recorder.Eventf(ref, v1.EventTypeWarning, events.FailedStatusPodSandBox, "Unable to get pod sandbox status: %v", err)
 			glog.Errorf("Failed to get pod sandbox status: %v; Skipping pod %q", err, format.Pod(pod))
 			result.Fail(err)
 			return
@@ -679,7 +698,7 @@ func (m *kubeGenericRuntimeManager) SyncPod(pod *v1.Pod, _ v1.PodStatus, podStat
 		}
 
 		glog.V(4).Infof("Creating init container %+v in pod %v", container, format.Pod(pod))
-		if msg, err := m.startContainer(podSandboxID, podSandboxConfig, container, pod, podStatus, pullSecrets, podIP); err != nil {
+		if msg, err := m.startContainer(podSandboxID, podSandboxConfig, container, pod, podStatus, pullSecrets, podIP, kubecontainer.ContainerTypeInit); err != nil {
 			startContainerResult.Fail(err, msg)
 			utilruntime.HandleError(fmt.Errorf("init container start failed: %v: %s", err, msg))
 			return
@@ -703,7 +722,7 @@ func (m *kubeGenericRuntimeManager) SyncPod(pod *v1.Pod, _ v1.PodStatus, podStat
 		}
 
 		glog.V(4).Infof("Creating container %+v in pod %v", container, format.Pod(pod))
-		if msg, err := m.startContainer(podSandboxID, podSandboxConfig, container, pod, podStatus, pullSecrets, podIP); err != nil {
+		if msg, err := m.startContainer(podSandboxID, podSandboxConfig, container, pod, podStatus, pullSecrets, podIP, kubecontainer.ContainerTypeRegular); err != nil {
 			startContainerResult.Fail(err, msg)
 			// known errors that are logged in other places are logged at higher levels here to avoid
 			// repetitive log spam
@@ -795,8 +814,8 @@ func (m *kubeGenericRuntimeManager) isHostNetwork(podSandBoxID string, pod *v1.P
 		return false, err
 	}
 
-	if nsOpts := podStatus.GetLinux().GetNamespaces().GetOptions(); nsOpts != nil {
-		return nsOpts.HostNetwork, nil
+	if podStatus.GetLinux().GetNamespaces().GetOptions().GetNetwork() == runtimeapi.NamespaceMode_NODE {
+		return true, nil
 	}
 
 	return false, nil

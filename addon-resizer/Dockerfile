@@ -13,7 +13,6 @@
 # limitations under the License.
 
 FROM BASEIMAGE
-MAINTAINER Quintin Lee "qlee@google.com"
 
 COPY pod_nanny /
 

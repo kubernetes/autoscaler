@@ -17,21 +17,104 @@ limitations under the License.
 package model
 
 import (
-	"time"
+	"github.com/golang/glog"
+	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 )
 
-// MetricName represents the name of the resource monitored by recommender.
-type MetricName string
+// ResourceName represents the name of the resource monitored by recommender.
+type ResourceName string
 
 // ResourceAmount represents quantity of a certain resource within a container.
-type ResourceAmount int
+// Note this keeps CPU in millicores (which is not a standard unit in APIs)
+// and memory in bytes.
+// Allowed values are in the range from 0 to MaxResourceAmount.
+type ResourceAmount int64
+
+// Resources is a map from resource name to the corresponding ResourceAmount.
+type Resources map[ResourceName]ResourceAmount
 
 const (
 	// ResourceCPU represents CPU in millicores (1core = 1000millicores).
-	ResourceCPU MetricName = "cpu"
+	ResourceCPU ResourceName = "cpu"
 	// ResourceMemory represents memory, in bytes. (500Gi = 500GiB = 500 * 1024 * 1024 * 1024).
-	ResourceMemory MetricName = "memory"
+	ResourceMemory ResourceName = "memory"
+	// MaxResourceAmount is the maximum allowed value of resource amount.
+	MaxResourceAmount = ResourceAmount(1e14)
 )
+
+// CPUAmountFromCores converts CPU cores to a ResourceAmount.
+func CPUAmountFromCores(cores float64) ResourceAmount {
+	return resourceAmountFromFloat(cores * 1000.0)
+}
+
+// CoresFromCPUAmount converts ResourceAmount to number of cores expressed as float64.
+func CoresFromCPUAmount(cpuAmount ResourceAmount) float64 {
+	return float64(cpuAmount) / 1000.0
+}
+
+// QuantityFromCPUAmount converts CPU ResourceAmount to a resource.Quantity.
+func QuantityFromCPUAmount(cpuAmount ResourceAmount) resource.Quantity {
+	return *resource.NewScaledQuantity(int64(cpuAmount), -3)
+}
+
+// MemoryAmountFromBytes converts memory bytes to a ResourceAmount.
+func MemoryAmountFromBytes(bytes float64) ResourceAmount {
+	return resourceAmountFromFloat(bytes)
+}
+
+// BytesFromMemoryAmount converts ResourceAmount to number of bytes expressed as float64.
+func BytesFromMemoryAmount(memoryAmount ResourceAmount) float64 {
+	return float64(memoryAmount)
+}
+
+// QuantityFromMemoryAmount converts memory ResourceAmount to a resource.Quantity.
+func QuantityFromMemoryAmount(memoryAmount ResourceAmount) resource.Quantity {
+	return *resource.NewScaledQuantity(int64(memoryAmount), 0)
+}
+
+// ScaleResource returns the resource amount multiplied by a given factor.
+func ScaleResource(amount ResourceAmount, factor float64) ResourceAmount {
+	return resourceAmountFromFloat(float64(amount) * factor)
+}
+
+// ResourcesAsResourceList converts internal Resources representation to ResourcesList.
+func ResourcesAsResourceList(resources Resources) apiv1.ResourceList {
+	result := make(apiv1.ResourceList)
+	for key, resourceAmount := range resources {
+		var newKey apiv1.ResourceName
+		var quantity resource.Quantity
+		switch key {
+		case ResourceCPU:
+			newKey = apiv1.ResourceCPU
+			quantity = QuantityFromCPUAmount(resourceAmount)
+		case ResourceMemory:
+			newKey = apiv1.ResourceMemory
+			quantity = QuantityFromMemoryAmount(resourceAmount)
+		default:
+			glog.Errorf("Cannot translate %v resource name", key)
+			continue
+		}
+		result[newKey] = quantity
+	}
+	return result
+}
+
+// RoundResourceAmount returns the given resource amount rounded down to the
+// whole multiple of another resource amount (unit).
+func RoundResourceAmount(amount, unit ResourceAmount) ResourceAmount {
+	return ResourceAmount(int64(amount) - int64(amount)%int64(unit))
+}
+
+func resourceAmountFromFloat(amount float64) ResourceAmount {
+	if amount < 0 {
+		return ResourceAmount(0)
+	} else if amount > float64(MaxResourceAmount) {
+		return MaxResourceAmount
+	} else {
+		return ResourceAmount(amount)
+	}
+}
 
 // PodID contains information needed to identify a Pod within a cluster.
 type PodID struct {
@@ -50,37 +133,6 @@ type ContainerID struct {
 
 // VpaID contains information needed to identify a VPA API object within a cluster.
 type VpaID struct {
-	VpaName string
-}
-
-// ContainerMetricsSnapshot contains information about usage of certain container within defined time window.
-type ContainerMetricsSnapshot struct {
-	// ID identifies a specific container those metrics are coming from.
-	ID ContainerID
-	// End time of the measurement interval.
-	SnapshotTime time.Time
-	// Duration of the measurement interval, which is [SnapshotTime - SnapshotWindow, SnapshotTime].
-	SnapshotWindow time.Duration
-	// Actual usage of the resources over the measurement interval.
-	Usage map[MetricName]ResourceAmount
-}
-
-// BasicPodSpec contains basic information defining a pod and its containers.
-type BasicPodSpec struct {
-	// ID identifies a pod within a cluster.
-	ID PodID
-	// Labels of the pod. It is used to match pods with certain VPA opjects.
-	PodLabels map[string]string
-	// List of containers within this pod.
-	Containers []BasicContainerSpec
-}
-
-// BasicContainerSpec contains basic information defining a container.
-type BasicContainerSpec struct {
-	// ID identifies the container within a cluster.
-	ID ContainerID
-	// Name of the image running within the container.
-	Image string
-	// Currently requested resources for this container.
-	Request map[MetricName]ResourceAmount
+	Namespace string
+	VpaName   string
 }

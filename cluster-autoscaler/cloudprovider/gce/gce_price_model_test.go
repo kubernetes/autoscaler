@@ -51,12 +51,12 @@ func TestGetNodePrice(t *testing.T) {
 	price1, err := model.NodePrice(node1, now, now.Add(time.Hour))
 	assert.NoError(t, err)
 
-	// preemptable
+	// preemptible
 	node2 := BuildTestNode("sillyname2", 8000, 30*1024*1024*1024)
 	node2.Labels = labels2
 	price2, err := model.NodePrice(node2, now, now.Add(time.Hour))
 	assert.NoError(t, err)
-	// preemptable nodes should be way cheaper than regular.
+	// preemptible nodes should be way cheaper than regular.
 	assert.True(t, price1 > 3*price2)
 
 	// custom node
@@ -73,14 +73,14 @@ func TestGetNodePrice(t *testing.T) {
 	node4.Labels = labels1
 	price4, err := model.NodePrice(node4, now, now.Add(time.Hour))
 
-	// preemptable with gpu
+	// preemptible with gpu
 	node5 := BuildTestNode("sillyname5", 8000, 30*1024*1024*1024)
 	node5.Labels = labels2
 	node5.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(1, resource.DecimalSI)
 	price5, err := model.NodePrice(node5, now, now.Add(time.Hour))
 
 	// Nodes with GPU are way more expensive than regular.
-	// Being preemptable doesn't bring much of a discount (less than 50%).
+	// Being preemptible doesn't bring much of a discount (less than 50%).
 	assert.True(t, price4 > price5)
 	assert.True(t, price4 < 1.5*price5)
 	assert.True(t, price4 > 2*price1)
@@ -89,7 +89,7 @@ func TestGetNodePrice(t *testing.T) {
 	node6 := BuildTestNode("sillyname6", 1000, 3750*1024*1024)
 	price6, err := model.NodePrice(node6, now, now.Add(time.Hour))
 	assert.NoError(t, err)
-	// 8 times smaller node shoul be 8 times less expensive.
+	// 8 times smaller node should be 8 times less expensive.
 	assert.True(t, math.Abs(price3-8*price6) < 0.1)
 }
 

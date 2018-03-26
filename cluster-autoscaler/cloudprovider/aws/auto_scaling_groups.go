@@ -18,80 +18,155 @@ package aws
 
 import (
 	"fmt"
+	"reflect"
 	"sync"
+	"time"
 
+	"k8s.io/apimachinery/pkg/util/wait"
+
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/golang/glog"
 )
 
-type autoScalingGroups struct {
-	registeredAsgs           []*asgInformation
-	instanceToAsg            map[AwsRef]*Asg
-	cacheMutex               sync.Mutex
-	instancesNotInManagedAsg map[AwsRef]struct{}
-	service                  autoScalingWrapper
+const scaleToZeroSupported = true
+
+type asgCache struct {
+	registeredAsgs     []*asgInformation
+	instanceToAsg      map[AwsRef]*Asg
+	notInRegisteredAsg map[AwsRef]bool
+	mutex              sync.Mutex
+	service            autoScalingWrapper
+	interrupt          chan struct{}
 }
 
-func newAutoScalingGroups(service autoScalingWrapper) *autoScalingGroups {
-	registry := &autoScalingGroups{
-		registeredAsgs:           make([]*asgInformation, 0),
-		service:                  service,
-		instanceToAsg:            make(map[AwsRef]*Asg),
-		instancesNotInManagedAsg: make(map[AwsRef]struct{}),
+func newASGCache(service autoScalingWrapper) (*asgCache, error) {
+	registry := &asgCache{
+		registeredAsgs:     make([]*asgInformation, 0),
+		service:            service,
+		instanceToAsg:      make(map[AwsRef]*Asg),
+		notInRegisteredAsg: make(map[AwsRef]bool),
+		interrupt:          make(chan struct{}),
 	}
-	return registry
+	go wait.Until(func() {
+		registry.mutex.Lock()
+		defer registry.mutex.Unlock()
+		if err := registry.regenerate(); err != nil {
+			glog.Errorf("Error while regenerating Asg cache: %v", err)
+		}
+	}, time.Hour, registry.interrupt)
+
+	return registry, nil
 }
 
-// Register registers asg in Aws Manager.
-func (m *autoScalingGroups) Register(asg *Asg) {
-	m.cacheMutex.Lock()
-	defer m.cacheMutex.Unlock()
+// Register ASG. Returns true if the ASG was registered.
+func (m *asgCache) Register(asg *Asg) bool {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
 
+	for i := range m.registeredAsgs {
+		if existing := m.registeredAsgs[i].config; existing.AwsRef == asg.AwsRef {
+			if reflect.DeepEqual(existing, asg) {
+				return false
+			}
+			m.registeredAsgs[i].config = asg
+			glog.V(4).Infof("Updated ASG %s", asg.AwsRef.Name)
+			m.invalidateUnownedInstanceCache()
+			return true
+		}
+	}
+
+	glog.V(1).Infof("Registering ASG %s", asg.AwsRef.Name)
 	m.registeredAsgs = append(m.registeredAsgs, &asgInformation{
 		config: asg,
 	})
+	m.invalidateUnownedInstanceCache()
+	return true
+}
+
+// Unregister ASG. Returns true if the ASG was unregistered.
+func (m *asgCache) Unregister(asg *Asg) bool {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	updated := make([]*asgInformation, 0, len(m.registeredAsgs))
+	changed := false
+	for _, existing := range m.registeredAsgs {
+		if existing.config.AwsRef == asg.AwsRef {
+			glog.V(1).Infof("Unregistered ASG %s", asg.AwsRef.Name)
+			changed = true
+			continue
+		}
+		updated = append(updated, existing)
+	}
+	m.registeredAsgs = updated
+	return changed
+}
+
+func (m *asgCache) get() []*asgInformation {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	return m.registeredAsgs
 }
 
 // FindForInstance returns AsgConfig of the given Instance
-func (m *autoScalingGroups) FindForInstance(instance *AwsRef) (*Asg, error) {
-	m.cacheMutex.Lock()
-	defer m.cacheMutex.Unlock()
+func (m *asgCache) FindForInstance(instance *AwsRef) (*Asg, error) {
+	// TODO(negz): Prevent this calling describe ASGs too often.
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	if m.notInRegisteredAsg[*instance] {
+		// We already know we don't own this instance. Return early and avoid
+		// additional calls to describe ASGs.
+		return nil, nil
+	}
+
 	if config, found := m.instanceToAsg[*instance]; found {
 		return config, nil
 	}
-	if _, found := m.instancesNotInManagedAsg[*instance]; found {
-		// The instance is already known to not belong to any configured ASG
-		// Skip regenerateCache so that we won't unnecessarily call DescribeAutoScalingGroups
-		// See https://github.com/kubernetes/contrib/issues/2541
-		return nil, nil
-	}
-	if err := m.regenerateCache(); err != nil {
+	if err := m.regenerate(); err != nil {
 		return nil, fmt.Errorf("Error while looking for ASG for instance %+v, error: %v", *instance, err)
 	}
 	if config, found := m.instanceToAsg[*instance]; found {
 		return config, nil
 	}
-	// instance does not belong to any configured ASG
-	glog.V(6).Infof("Instance %+v is not in any ASG managed by CA. CA is now memorizing the fact not to unnecessarily call AWS API afterwards trying to find the unexistent managed ASG for the instance", *instance)
-	m.instancesNotInManagedAsg[*instance] = struct{}{}
+
+	m.notInRegisteredAsg[*instance] = true
 	return nil, nil
 }
 
-func (m *autoScalingGroups) regenerateCache() error {
+func (m *asgCache) invalidateUnownedInstanceCache() {
+	glog.V(4).Info("Invalidating unowned instance cache")
+	m.notInRegisteredAsg = make(map[AwsRef]bool)
+}
+
+func (m *asgCache) regenerate() error {
 	newCache := make(map[AwsRef]*Asg)
 
-	for _, asg := range m.registeredAsgs {
-		glog.V(4).Infof("Regenerating ASG information for %s", asg.config.Name)
+	names := make([]string, len(m.registeredAsgs))
+	configs := make(map[string]*Asg)
+	for i, asg := range m.registeredAsgs {
+		names[i] = asg.config.Name
+		configs[asg.config.Name] = asg.config
+	}
 
-		group, err := m.service.getAutoscalingGroupByName(asg.config.Name)
-		if err != nil {
-			return err
-		}
+	glog.V(4).Infof("Regenerating instance to ASG map for ASGs: %v", names)
+	groups, err := m.service.getAutoscalingGroupsByNames(names)
+	if err != nil {
+		return err
+	}
+	for _, group := range groups {
 		for _, instance := range group.Instances {
-			ref := AwsRef{Name: *instance.InstanceId}
-			newCache[ref] = asg.config
+			ref := AwsRef{Name: aws.StringValue(instance.InstanceId)}
+			newCache[ref] = configs[aws.StringValue(group.AutoScalingGroupName)]
 		}
 	}
 
 	m.instanceToAsg = newCache
 	return nil
+}
+
+// Cleanup closes the channel to signal the go routine to stop that is handling the cache
+func (m *asgCache) Cleanup() {
+	close(m.interrupt)
 }

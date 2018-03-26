@@ -20,9 +20,9 @@ import (
 	clientv1 "k8s.io/api/core/v1"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
+	"k8s.io/client-go/kubernetes/scheme"
 	v1core "k8s.io/client-go/kubernetes/typed/core/v1"
 	kube_record "k8s.io/client-go/tools/record"
-	"k8s.io/kubernetes/pkg/api"
 
 	"github.com/golang/glog"
 )
@@ -34,5 +34,5 @@ func CreateEventRecorder(kubeClient clientset.Interface) kube_record.EventRecord
 	if _, isfake := kubeClient.(*fake.Clientset); !isfake {
 		eventBroadcaster.StartRecordingToSink(&v1core.EventSinkImpl{Interface: v1core.New(kubeClient.CoreV1().RESTClient()).Events("")})
 	}
-	return eventBroadcaster.NewRecorder(api.Scheme, clientv1.EventSource{Component: "cluster-autoscaler"})
+	return eventBroadcaster.NewRecorder(scheme.Scheme, clientv1.EventSource{Component: "cluster-autoscaler"})
 }

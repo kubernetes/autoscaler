@@ -25,7 +25,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
+	"k8s.io/kubernetes/pkg/scheduler/schedulercache"
 )
 
 // CloudProvider contains configuration info and functions for interacting with
@@ -53,7 +53,7 @@ type CloudProvider interface {
 	// NewNodeGroup builds a theoretical node group based on the node definition provided. The node group is not automatically
 	// created on the cloud provider side. The node group is not returned by NodeGroups() until it is created.
 	// Implementation optional.
-	NewNodeGroup(machineType string, labels map[string]string, extraResources map[string]resource.Quantity) (NodeGroup, error)
+	NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string, extraResources map[string]resource.Quantity) (NodeGroup, error)
 
 	// GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
 	GetResourceLimiter() (*ResourceLimiter, error)
@@ -71,6 +71,10 @@ var ErrNotImplemented errors.AutoscalerError = errors.NewAutoscalerError(errors.
 
 // ErrAlreadyExist is returned if a method is not implemented.
 var ErrAlreadyExist errors.AutoscalerError = errors.NewAutoscalerError(errors.InternalError, "Already exist")
+
+// ErrIllegalConfiguration is returned when trying to create NewNodeGroup with
+// configuration that is not supported by cloudprovider.
+var ErrIllegalConfiguration errors.AutoscalerError = errors.NewAutoscalerError(errors.InternalError, "Configuration not allowed by cloud provider")
 
 // NodeGroup contains configuration info and functions to control a set
 // of nodes that have the same capacity and set of labels.
@@ -144,7 +148,7 @@ type PricingModel interface {
 	// All prices returned by the structure should be in the same currency.
 	NodePrice(node *apiv1.Node, startTime time.Time, endTime time.Time) (float64, error)
 
-	// PodePrice returns a theoretical minimum priece of running a pod for a given
+	// PodPrice returns a theoretical minimum price of running a pod for a given
 	// period of time on a perfectly matching machine.
 	PodPrice(pod *apiv1.Pod, startTime time.Time, endTime time.Time) (float64, error)
 }

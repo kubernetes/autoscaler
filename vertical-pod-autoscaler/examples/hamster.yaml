@@ -1,0 +1,35 @@
+# Hamster is a simple application that utilizes 1 CPU.
+apiVersion: "poc.autoscaling.k8s.io/v1alpha1"
+kind: VerticalPodAutoscaler
+metadata:
+  name: hamster-vpa
+spec:
+  selector:
+    matchLabels:
+      app: hamster
+  resourcePolicy:
+    containerPolicies:
+      - name: hamster
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: hamster
+  namespace: default
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: hamster
+    spec:            
+      containers:
+      - name: hamster
+        image: gcr.io/google_containers/ubuntu-slim:0.1
+        resources:
+          requests:
+            cpu: 500m
+            memory: 500Mi
+        command: ["/bin/sh"]
+        args: ["-c", "/usr/bin/yes >/dev/null"]
+
