@@ -19,6 +19,7 @@ there is a big chance that it won't work as expected.
 
 | Kubernetes Version  | CA Version   |
 |--------|--------|
+| 1.10.X | 1.2.X  |
 | 1.9.X  | 1.1.X  |
 | 1.8.X  | 1.0.X  |
 | 1.7.X  | 0.6.X  |
@@ -32,11 +33,11 @@ there is a big chance that it won't work as expected.
 
 CA version 1.1.1:
 * Fixes around metrics in the multi-master configuration.
-* Fixes for unready nodes issues when quota is overrun. 
+* Fixes for unready nodes issues when quota is overrun.
 
 CA version 1.1.0:
 * Added [Azure support](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/azure/README.md).
-* Added support for pod priorities. More details [here](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#how-does-cluster-autoscaler-work-with-pod-priority-and-preemption). 
+* Added support for pod priorities. More details [here](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#how-does-cluster-autoscaler-work-with-pod-priority-and-preemption).
 
 CA version 1.0.3:
 * Adds support for safe-to-evict annotation on pod. Pods with this annotation
