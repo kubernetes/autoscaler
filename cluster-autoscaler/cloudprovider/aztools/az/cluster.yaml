@@ -1,0 +1,35 @@
+admin_username: dlwsadmin
+basic_auth: b6a9502080734f07,admin,1000
+cluster_name: harrydevbox
+dataFolderAccessPoint: file://harrydevboxstorage.file.core.windows.net/files/storage/
+deploydockerETCD: false
+etcd_node_num: 1
+machines:
+  harrydevbox-infra01:
+    private-ip: 192.168.255.1
+    role: infrastructure
+  harrydevbox-worker01:
+    node-group: Standard_D3_v2
+    private-ip: 192.168.1.1
+    role: worker
+  harrydevbox-worker02:
+    node-group: Standard_D3_v2
+    private-ip: 192.168.1.2
+    role: worker
+mountpoints:
+  rootshare:
+    accountname: harrydevboxstorage
+    filesharename: files
+    mountpoints: ''
+    type: azurefileshare
+network:
+  domain: eastus.cloudapp.azure.com
+platform-scripts: ubuntu
+smbUserPassword: null
+smbUsername: null
+sqlserver-database: harrydevboxsqldb
+sqlserver-hostname: tcp:harrydevboxsqlserver.database.windows.net
+sqlserver-password: 552a7723eb514e678e5aac4394815c3b12!AB
+sqlserver-username: harrydevboxsqladmin
+useclusterfile: true
+workFolderAccessPoint: file://harrydevboxstorage.file.core.windows.net/files/work/

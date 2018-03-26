@@ -22,6 +22,7 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aztools"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/kubemark"
@@ -41,6 +42,7 @@ var AvailableCloudProviders = []string{
 	gce.ProviderNameGCE,
 	gce.ProviderNameGKE,
 	kubemark.ProviderName,
+	aztools.ProviderName,
 }
 
 // DefaultCloudProvider is GCE.
@@ -87,6 +89,8 @@ func (b CloudProviderBuilder) Build(discoveryOpts cloudprovider.NodeGroupDiscove
 		return b.buildAzure(discoveryOpts, resourceLimiter)
 	case kubemark.ProviderName:
 		return b.buildKubemark(discoveryOpts, resourceLimiter)
+	case aztools.ProviderName:
+		return b.buildAzTools(discoveryOpts, resourceLimiter)
 	case "":
 		// Ideally this would be an error, but several unit tests of the
 		// StaticAutoscaler depend on this behaviour.
@@ -96,6 +100,14 @@ func (b CloudProviderBuilder) Build(discoveryOpts cloudprovider.NodeGroupDiscove
 
 	glog.Fatalf("Unknown cloud provider: %s", b.cloudProviderFlag)
 	return nil // This will never happen because the Fatalf will os.Exit
+}
+
+func (b CloudProviderBuilder) buildAzTools(do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+	provider, err := aztools.BuildAzToolsCloudProvider(b.clusterName, do, rl)
+	if err != nil {
+		glog.Fatalf("Failed to create aztools cloud provider: %v", err)
+	}
+	return provider
 }
 
 func (b CloudProviderBuilder) buildGCE(do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, mode gce.GcpCloudProviderMode) cloudprovider.CloudProvider {
