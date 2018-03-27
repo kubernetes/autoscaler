@@ -38,13 +38,13 @@ if [ $# -gt 2 ]; then
   exit 1
 fi
 
-YAMLS="api/vpa-crd.yaml deploy/vpa-rbac.yaml deploy/updater-deployment.yaml deploy/recommender-deployment.yaml deploy/admission-controller-deployment.yaml"
+COMPONENTS="vpa-crd vpa-rbac updater-deployment recommender-deployment admission-controller-deployment"
 
 if [ $# -gt 1 ]; then
-  YAMLS="deploy/$2-deployment.yaml"
+  COMPONENTS="$2-deployment"
 fi
 
-for i in $YAMLS; do
-  ${SCRIPT_ROOT}/hack/vpa-process-yaml.sh ${SCRIPT_ROOT}/$i | kubectl $1 -f - || true
+for i in $COMPONENTS; do
+  ${SCRIPT_ROOT}/hack/vpa-process-yaml.sh ${SCRIPT_ROOT}/deploy/$i.yaml | kubectl $1 -f - || true
 done
 
