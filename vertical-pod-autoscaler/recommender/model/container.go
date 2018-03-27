@@ -92,7 +92,14 @@ func (container *ContainerState) addCPUSample(sample *ContainerUsageSample) bool
 	if !sample.isValid(ResourceCPU) || !sample.MeasureStart.After(container.LastCPUSampleStart) {
 		return false // Discard invalid, duplicate or out-of-order samples.
 	}
-	container.CPUUsage.AddSample(CoresFromCPUAmount(sample.Usage), 1.0, sample.MeasureStart)
+	cpuUsageCores := CoresFromCPUAmount(sample.Usage)
+	cpuRequestCores := CoresFromCPUAmount(container.Request[ResourceCPU])
+	// Samples are added with the weight equal to the current request. This means that
+	// whenever the request is increased, the history accumulated so far effectively decays,
+	// which helps react quickly to CPU starvation.
+	minSampleWeight := 0.1
+	container.CPUUsage.AddSample(
+		cpuUsageCores, math.Max(cpuRequestCores, minSampleWeight), sample.MeasureStart)
 	container.LastCPUSampleStart = sample.MeasureStart
 	if container.FirstCPUSampleStart.IsZero() {
 		container.FirstCPUSampleStart = sample.MeasureStart
