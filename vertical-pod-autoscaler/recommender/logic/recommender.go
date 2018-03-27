@@ -92,11 +92,11 @@ func CreatePodResourceRecommender() PodResourceRecommender {
 	lowerBoundEstimator := NewPercentileEstimator(lowerBoundCPUPercentile, lowerBoundMemoryPeaksPercentile)
 	upperBoundEstimator := NewPercentileEstimator(upperBoundCPUPercentile, upperBoundMemoryPeaksPercentile)
 
-	// Use 10% safety margin on top of the recommended resources.
-	safetyMarginFraction := 0.1
-	// Minimum safety margin is 0.2 core and 300MB memory.
+	// Use 15% safety margin on top of the recommended resources.
+	safetyMarginFraction := 0.15
+	// Minimum safety margin is 0.3 core and 300MB memory.
 	minSafetyMargin := model.Resources{
-		model.ResourceCPU:    model.CPUAmountFromCores(0.2),
+		model.ResourceCPU:    model.CPUAmountFromCores(0.3),
 		model.ResourceMemory: model.MemoryAmountFromBytes(300 * 1024 * 1024),
 	}
 	targetEstimator = WithSafetyMargin(safetyMarginFraction, minSafetyMargin, targetEstimator)
