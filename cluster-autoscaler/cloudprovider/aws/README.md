@@ -74,8 +74,8 @@ kubectl apply -f examples/cluster-autoscaler-run-on-master.yaml
 To run a cluster-autoscaler which auto-discovers ASGs with nodes use the `--node-group-auto-discovery` flag and tag the ASGs with _key_ `k8s.io/cluster-autoscaler/enabled` with value `yes` and _key_ `kubernetes.io/cluster/<YOUR CLUSTER NAME>`with value `true`.
 Note that:
 
-* `kubernetes.io/cluster/<YOUR CLUSTER NAME>` is required when `k8s.io/cluster-autoscaler/enabled` is used across many clusters to prevent ASGs from different clusters recognized as the node groups
-* There are no `--nodes` flags passed to cluster-autoscaler because the node groups are automatically discovered by tags
+* `kubernetes.io/cluster/<YOUR CLUSTER NAME>` is required when `k8s.io/cluster-autoscaler/enabled` is used across many clusters to prevent ASGs from different clusters recognized as the node groups.
+* There are no `--nodes` flags passed to cluster-autoscaler because the node groups are automatically discovered by tags.
 
 ```
 kubectl apply -f examples/cluster-autoscaler-autodiscover.yaml
@@ -136,6 +136,6 @@ If you'd like to scale node groups from 0, a `DescribeLaunchConfigurations` perm
 ## Common Notes and Gotchas:
 - The `/etc/ssl/certs/ca-certificates.crt` should exist by default on your ec2 instance.
 - Cluster autoscaler is not zone aware (for now), so if you wish to span multiple availability zones in your autoscaling groups beware that cluster autoscaler will not evenly distribute them. For more information, see https://github.com/kubernetes/contrib/pull/1552#r75532949.
-- By default, cluster autoscaler will not terminate nodes running pods in the kube-system namespace. You can override this default behaviour by passing in the `--skip-nodes-with-system-pods=false` flag.
+- By default, cluster autoscaler will not terminate nodes running pods in the kube-system namespace. You can override this default behavior by passing in the `--skip-nodes-with-system-pods=false` flag.
 - By default, cluster autoscaler will wait 10 minutes between scale down operations, you can adjust this using the `--scale-down-delay-after-add`, `--scale-down-delay-after-delete`, and `--scale-down-delay-after-failure` flag. E.g. `--scale-down-delay-after-add=5m` to decrease the scale down delay to 5 minutes after a node has been added.
 - If you're running multiple ASGs, the `--expander` flag supports three options: `random`, `most-pods` and `least-waste`. `random` will expand a random ASG on scale up. `most-pods` will scale up the ASG that will scheduable the most amount of pods. `least-waste` will expand the ASG that will waste the least amount of CPU/MEM resources. In the event of a tie, cluster autoscaler will fall back to `random`.
