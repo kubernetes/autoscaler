@@ -180,7 +180,7 @@ func TestNodeGroupForNode(t *testing.T) {
 	assert.Equal(t, group.MaxSize(), 5)
 	service.AssertNumberOfCalls(t, "DescribeAutoScalingGroupsPages", 1)
 
-	// test node in cluster that is not in a group managed by cluster autoscaler
+	// test node in cluster that is not in a group managed by cluster autoscaler.
 	nodeNotInGroup := &apiv1.Node{
 		Spec: apiv1.NodeSpec{
 			ProviderID: "aws:///us-east-1a/test-instance-id-not-in-group",

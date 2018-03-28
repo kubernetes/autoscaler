@@ -176,7 +176,7 @@ func TestFetchAutoAsgs(t *testing.T) {
 	groupname, tags := "coolasg", []string{"tag", "anothertag"}
 
 	s := &AutoScalingMock{}
-	// Lookup groups associated with tags
+	// Lookup groups associated with tags.
 	s.On("DescribeTagsPages",
 		&autoscaling.DescribeTagsInput{
 			Filters: []*autoscaling.Filter{
@@ -217,7 +217,7 @@ func TestFetchAutoAsgs(t *testing.T) {
 		NodeGroupAutoDiscoverySpecs: []string{fmt.Sprintf("asg:tag=%s", strings.Join(tags, ","))},
 	}
 
-	// fetchAutoASGs is called at manager creation time, via forceRefresh
+	// fetchAutoASGs is called at manager creation time, via forceRefresh.
 	m, err := createAWSManagerInternal(nil, do, &autoScalingWrapper{s})
 	assert.NoError(t, err)
 
@@ -225,7 +225,7 @@ func TestFetchAutoAsgs(t *testing.T) {
 	assert.Equal(t, 1, len(asgs))
 	validateAsg(t, asgs[0].config, groupname, min, max)
 
-	// Simulate the previously discovered ASG disappearing
+	// Simulate the previously discovered ASG disappearing.
 	s.On("DescribeTagsPages",
 		&autoscaling.DescribeTagsInput{
 			Filters: []*autoscaling.Filter{

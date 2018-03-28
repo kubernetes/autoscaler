@@ -109,7 +109,7 @@ func (m *asgCache) get() []*asgInformation {
 	return m.registeredAsgs
 }
 
-// FindForInstance returns AsgConfig of the given Instance
+// FindForInstance returns AsgConfig of the given Instance.
 func (m *asgCache) FindForInstance(instance *AwsRef) (*Asg, error) {
 	// TODO(negz): Prevent this calling describe ASGs too often.
 	m.mutex.Lock()
@@ -166,7 +166,7 @@ func (m *asgCache) regenerate() error {
 	return nil
 }
 
-// Cleanup closes the channel to signal the go routine to stop that is handling the cache
+// Cleanup closes the channel to signal the go routine to stop that is handling the cache.
 func (m *asgCache) Cleanup() {
 	close(m.interrupt)
 }

@@ -24,7 +24,7 @@ import (
 	"github.com/golang/glog"
 )
 
-// autoScaling is the interface represents a specific aspect of the auto-scaling service provided by AWS SDK for use in CA
+// autoScaling is the interface represents a specific aspect of the auto-scaling service provided by AWS SDK for use in CA.
 type autoScaling interface {
 	DescribeAutoScalingGroups(input *autoscaling.DescribeAutoScalingGroupsInput) (*autoscaling.DescribeAutoScalingGroupsOutput, error)
 	DescribeAutoScalingGroupsPages(input *autoscaling.DescribeAutoScalingGroupsInput, fn func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool) error
@@ -34,7 +34,7 @@ type autoScaling interface {
 	TerminateInstanceInAutoScalingGroup(input *autoscaling.TerminateInstanceInAutoScalingGroupInput) (*autoscaling.TerminateInstanceInAutoScalingGroupOutput, error)
 }
 
-// autoScalingWrapper provides several utility methods over the auto-scaling service provided by AWS SDK
+// autoScalingWrapper provides several utility methods over the auto-scaling service provided by AWS SDK.
 type autoScalingWrapper struct {
 	autoScaling
 }
