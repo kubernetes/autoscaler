@@ -1,7 +1,7 @@
 all: build
 
-TAG?=0.0.1
-REGISTRY?=gcr.io/kubernetes-develop
+TAG?=v0.0.1
+REGISTRY?=k8s.gcr.io
 FLAGS=
 ENVVAR=
 GOOS?=linux
@@ -21,8 +21,8 @@ ifndef REGISTRY
 	ERR = $(error REGISTRY is undefined)
 	$(ERR)
 endif
-	docker build --pull -t ${REGISTRY}/admission-controller:${TAG} .
-	gcloud docker -- push ${REGISTRY}/admission-controller:${TAG}
+	docker build --pull -t ${REGISTRY}/vpa-admission-controller:${TAG} .
+	gcloud docker -- push ${REGISTRY}/vpa-admission-controller:${TAG}
 
 release: build docker
 
