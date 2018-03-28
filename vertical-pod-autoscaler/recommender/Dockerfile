@@ -13,6 +13,7 @@
 # limitations under the License.
 
 FROM gcr.io/google_containers/ubuntu-slim:0.1
+MAINTAINER Krzysztof Grygiel "kgrygiel@google.com"
 MAINTAINER Karol Kraskiewicz "karol.kraskiewicz@gmail.com"
 
 ADD recommender recommender
