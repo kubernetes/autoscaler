@@ -211,7 +211,7 @@ func (feeder *clusterStateFeeder) LoadPods() {
 	for _, pod := range pods {
 		feeder.clusterState.AddOrUpdatePod(pod.ID, pod.PodLabels, pod.Phase)
 		for _, container := range pod.Containers {
-			feeder.clusterState.AddOrUpdateContainer(container.ID)
+			feeder.clusterState.AddOrUpdateContainer(container.ID, container.Request)
 		}
 	}
 }

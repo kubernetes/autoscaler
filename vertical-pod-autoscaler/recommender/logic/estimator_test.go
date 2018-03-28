@@ -26,7 +26,11 @@ import (
 )
 
 var (
-	anyTime = time.Unix(0, 0)
+	anyTime     = time.Unix(0, 0)
+	testRequest = model.Resources{
+		model.ResourceCPU:    model.CPUAmountFromCores(3.14),
+		model.ResourceMemory: model.MemoryAmountFromBytes(3.14e9),
+	}
 )
 
 // Verifies that the PercentileEstimator returns requested percentiles of CPU
@@ -68,7 +72,7 @@ func TestConfidenceMultiplier(t *testing.T) {
 	})
 	testedEstimator := &confidenceMultiplier{0.1, 2.0, baseEstimator}
 
-	container := model.NewContainerState()
+	container := model.NewContainerState(testRequest)
 	// Add 9 CPU samples at the frequency of 1/(2 mins).
 	timestamp := anyTime
 	for i := 1; i <= 9; i++ {

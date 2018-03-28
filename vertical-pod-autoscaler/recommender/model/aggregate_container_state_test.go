@@ -31,6 +31,10 @@ var (
 	testPodID1       = PodID{"namespace-1", "pod-1"}
 	testPodID2       = PodID{"namespace-1", "pod-2"}
 	testContainerID1 = ContainerID{testPodID1, "container-1"}
+	testRequest      = Resources{
+		ResourceCPU:    CPUAmountFromCores(3.14),
+		ResourceMemory: MemoryAmountFromBytes(3.14e9),
+	}
 )
 
 func addTestSample(cluster *ClusterState, container ContainerID, cpu float64, memory float64) error {
@@ -77,7 +81,7 @@ func TestBuildAggregateResourcesMap(t *testing.T) {
 		{testPodID2, "app-C"},
 	}
 	for _, c := range containers {
-		assert.NoError(t, cluster.AddOrUpdateContainer(c))
+		assert.NoError(t, cluster.AddOrUpdateContainer(c, testRequest))
 	}
 
 	// Add usage samples to all containers.
@@ -178,7 +182,7 @@ func TestAggregateContainerStateLoadFromCheckpoint(t *testing.T) {
 
 func TestMergeContainerStateForCheckpointDropsRecentMemoryPeak(t *testing.T) {
 	anyTime := time.Unix(0, 0)
-	container := NewContainerState()
+	container := NewContainerState(testRequest)
 	timestamp := anyTime
 	container.AddSample(&ContainerUsageSample{
 		timestamp, MemoryAmountFromBytes(1024 * 1024 * 1024), ResourceMemory})
@@ -191,7 +195,7 @@ func TestMergeContainerStateForCheckpointDropsRecentMemoryPeak(t *testing.T) {
 
 func TestMergeContainerStateForCheckpoint(t *testing.T) {
 	anyTime := time.Unix(0, 0)
-	container := NewContainerState()
+	container := NewContainerState(testRequest)
 	timestamp := anyTime
 	container.AddSample(&ContainerUsageSample{
 		timestamp, MemoryAmountFromBytes(1024 * 1024 * 1024), ResourceMemory})
