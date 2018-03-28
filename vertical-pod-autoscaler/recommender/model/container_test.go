@@ -25,7 +25,11 @@ import (
 )
 
 var (
-	TimeLayout = "2006-01-02 15:04:05"
+	TimeLayout  = "2006-01-02 15:04:05"
+	TestRequest = Resources{
+		ResourceCPU:    CPUAmountFromCores(2.3),
+		ResourceMemory: MemoryAmountFromBytes(5e8),
+	}
 )
 
 const (
@@ -48,6 +52,7 @@ func TestAggregateContainerUsageSamples(t *testing.T) {
 	memoryUsagePeaks := util.NewFloatSlidingWindow(
 		int(MemoryAggregationWindowLength / MemoryAggregationInterval))
 	c := &ContainerState{
+		Request:               TestRequest,
 		CPUUsage:              mockCPUHistogram,
 		LastCPUSampleStart:    time.Unix(0, 0),
 		MemoryUsagePeaks:      memoryUsagePeaks,
@@ -55,10 +60,11 @@ func TestAggregateContainerUsageSamples(t *testing.T) {
 		lastMemorySampleStart: time.Unix(0, 0)}
 
 	// Verify that CPU measures are added to the CPU histogram.
+	// The weight should be equal to the current request.
 	timeStep := MemoryAggregationInterval / 2
-	mockCPUHistogram.On("AddSample", 3.14, 1.0, testTimestamp)
-	mockCPUHistogram.On("AddSample", 6.28, 1.0, testTimestamp.Add(timeStep))
-	mockCPUHistogram.On("AddSample", 1.57, 1.0, testTimestamp.Add(2*timeStep))
+	mockCPUHistogram.On("AddSample", 3.14, 2.3, testTimestamp)
+	mockCPUHistogram.On("AddSample", 6.28, 2.3, testTimestamp.Add(timeStep))
+	mockCPUHistogram.On("AddSample", 1.57, 2.3, testTimestamp.Add(2*timeStep))
 
 	// Add three usage samples.
 	assert.True(t, c.AddSample(newUsageSample(
@@ -95,6 +101,7 @@ func TestRecordOOMIncreasedByBumpUp(t *testing.T) {
 	memoryUsagePeaks := util.NewFloatSlidingWindow(
 		int(MemoryAggregationWindowLength / MemoryAggregationInterval))
 	c := &ContainerState{
+		Request:               TestRequest,
 		CPUUsage:              mockCPUHistogram,
 		LastCPUSampleStart:    time.Unix(0, 0),
 		MemoryUsagePeaks:      memoryUsagePeaks,
@@ -113,6 +120,7 @@ func TestRecordOOMIncreasedByMin(t *testing.T) {
 	memoryUsagePeaks := util.NewFloatSlidingWindow(
 		int(MemoryAggregationWindowLength / MemoryAggregationInterval))
 	c := &ContainerState{
+		Request:               TestRequest,
 		CPUUsage:              mockCPUHistogram,
 		LastCPUSampleStart:    time.Unix(0, 0),
 		MemoryUsagePeaks:      memoryUsagePeaks,
@@ -131,6 +139,7 @@ func TestRecordOOMMaxedWithKnownSample(t *testing.T) {
 	memoryUsagePeaks := util.NewFloatSlidingWindow(
 		int(MemoryAggregationWindowLength / MemoryAggregationInterval))
 	c := &ContainerState{
+		Request:               TestRequest,
 		CPUUsage:              mockCPUHistogram,
 		LastCPUSampleStart:    time.Unix(0, 0),
 		MemoryUsagePeaks:      memoryUsagePeaks,
@@ -150,6 +159,7 @@ func TestRecordOOMDiscardsOldSample(t *testing.T) {
 	memoryUsagePeaks := util.NewFloatSlidingWindow(
 		int(MemoryAggregationWindowLength / MemoryAggregationInterval))
 	c := &ContainerState{
+		Request:               TestRequest,
 		CPUUsage:              mockCPUHistogram,
 		LastCPUSampleStart:    time.Unix(0, 0),
 		MemoryUsagePeaks:      memoryUsagePeaks,
@@ -169,6 +179,7 @@ func TestRecordOOMInNewWindow(t *testing.T) {
 	memoryUsagePeaks := util.NewFloatSlidingWindow(
 		int(MemoryAggregationWindowLength / MemoryAggregationInterval))
 	c := &ContainerState{
+		Request:               TestRequest,
 		CPUUsage:              mockCPUHistogram,
 		LastCPUSampleStart:    time.Unix(0, 0),
 		MemoryUsagePeaks:      memoryUsagePeaks,
