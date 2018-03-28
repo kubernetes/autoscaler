@@ -31,19 +31,22 @@ if [ $# -eq 0 ]; then
   exit 1
 fi
 
-REGISTRY_TO_APPLY=${REGISTRY-gcr.io/kubernetes-develop}
-TAG_TO_APPLY=${TAG-0.0.1}
+DEFAULT_REGISTRY="k8s.gcr.io"
+DEFAULT_TAG="v0.0.1"
 
-if [ "x$REGISTRY" != "xgcr.io/kubernetes-develop" ]; then
-  (>&2 echo "WARNING! Using image repository from REGISTRY env variable (${REGISTRY_TO_APPLY}) instead of gcr.io/kubernetes-develop.")
+REGISTRY_TO_APPLY=${REGISTRY-$DEFAULT_REGISTRY}
+TAG_TO_APPLY=${TAG-$DEFAULT_TAG}
+
+if [ "${REGISTRY_TO_APPLY}" != "${DEFAULT_REGISTRY}" ]; then
+  (>&2 echo "WARNING! Using image repository from REGISTRY env variable (${REGISTRY_TO_APPLY}) instead of ${DEFAULT_REGISTRY}.")
 fi
 
-if [ "x$TAG" != "x0.0.1" ]; then
-  (>&2 echo "WARNING! Using tag from TAG env variable (${TAG_TO_APPLY}) instead of the default (0.0.1).")
+if [ "${TAG_TO_APPLY}" != "${DEFAULT_TAG}" ]; then
+  (>&2 echo "WARNING! Using tag from TAG env variable (${TAG_TO_APPLY}) instead of the default (${DEFAULT_TAG}).")
 fi
 
 for i in $*; do
-  sed -e "s,gcr.io/kubernetes-develop/\([a-z-]*\):.*,${REGISTRY_TO_APPLY}/\1:${TAG_TO_APPLY}," $i
+  sed -e "s,${DEFAULT_REGISTRY}/\([a-z-]*\):.*,${REGISTRY_TO_APPLY}/\1:${TAG_TO_APPLY}," $i
   echo ""
   echo "---"
 done
