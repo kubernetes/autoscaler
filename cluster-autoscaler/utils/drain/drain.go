@@ -76,7 +76,7 @@ func GetPodsForDeletionOnNodeDrain(
 
 		daemonsetPod := false
 		replicated := false
-		safeToEvict := hasSaveToEvictAnnotation(pod)
+		safeToEvict := hasSafeToEvictAnnotation(pod)
 
 		controllerRef := ControllerRef(pod)
 		refKind := ""
@@ -243,6 +243,6 @@ func checkKubeSystemPDBs(pod *apiv1.Pod, pdbs []*policyv1.PodDisruptionBudget) (
 }
 
 // This checks if pod has PodSafeToEvictKey annotation
-func hasSaveToEvictAnnotation(pod *apiv1.Pod) bool {
+func hasSafeToEvictAnnotation(pod *apiv1.Pod) bool {
 	return pod.GetAnnotations()[PodSafeToEvictKey] == "true"
 }
