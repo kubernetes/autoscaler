@@ -29,7 +29,7 @@ import (
 )
 
 const (
-	// ProviderName is the cloud provider name for AWS
+	// ProviderName is the cloud provider name for AWS.
 	ProviderName = "aws"
 )
 
@@ -48,7 +48,7 @@ func BuildAwsCloudProvider(awsManager *AwsManager, resourceLimiter *cloudprovide
 	return aws, nil
 }
 
-// Cleanup stops the go routine that is handling the current view of the ASGs in the form of a cache
+// Cleanup stops the go routine that is handling the current view of the ASGs in the form of a cache.
 func (aws *awsCloudProvider) Cleanup() error {
 	aws.awsManager.Cleanup()
 	return nil
@@ -184,7 +184,7 @@ func (asg *Asg) Delete() error {
 	return cloudprovider.ErrNotImplemented
 }
 
-// IncreaseSize increases Asg size
+// IncreaseSize increases Asg size.
 func (asg *Asg) IncreaseSize(delta int) error {
 	if delta <= 0 {
 		return fmt.Errorf("size increase must be positive")

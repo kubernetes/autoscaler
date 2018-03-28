@@ -68,7 +68,7 @@ type asgTemplate struct {
 	Tags         []*autoscaling.TagDescription
 }
 
-// createAwsManagerInternal allows for a customer autoScalingWrapper to be passed in by tests
+// createAwsManagerInternal allows for a customer autoScalingWrapper to be passed in by tests.
 func createAWSManagerInternal(
 	configReader io.Reader,
 	discoveryOpts cloudprovider.NodeGroupDiscoveryOptions,
@@ -256,7 +256,7 @@ func (m *AwsManager) UnregisterAsg(asg *Asg) bool {
 	return m.asgCache.Unregister(asg)
 }
 
-// GetAsgForInstance returns AsgConfig of the given Instance
+// GetAsgForInstance returns AsgConfig of the given Instance.
 func (m *AwsManager) GetAsgForInstance(instance *AwsRef) (*Asg, error) {
 	return m.asgCache.FindForInstance(instance)
 }

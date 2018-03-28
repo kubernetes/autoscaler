@@ -25,7 +25,7 @@ type instanceType struct {
 	GPU          int64
 }
 
-// InstanceTypes is a map of ec2 resources
+// InstanceTypes is a map of ec2 resources.
 var InstanceTypes = map[string]*instanceType{
 	"c1.medium": {
 		InstanceType: "c1.medium",
