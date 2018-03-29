@@ -1,25 +1,25 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: recommender
+  name: vpa-recommender
   namespace: kube-system
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: recommender
+  name: vpa-recommender
   namespace: kube-system
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        app: recommender
+        app: vpa-recommender
     spec:
-      serviceAccountName: recommender
+      serviceAccountName: vpa-recommender
       containers:
       - name: recommender
-        image: gcr.io/kubernetes-develop/recommender:0.0.1
+        image: k8s.gcr.io/vpa-recommender:v0.0.1
         imagePullPolicy: Always
         resources:
           limits:

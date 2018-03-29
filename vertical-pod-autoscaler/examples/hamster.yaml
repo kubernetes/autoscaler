@@ -7,9 +7,6 @@ spec:
   selector:
     matchLabels:
       app: hamster
-  resourcePolicy:
-    containerPolicies:
-      - name: hamster
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
