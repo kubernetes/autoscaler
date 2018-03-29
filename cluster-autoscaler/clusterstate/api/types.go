@@ -33,7 +33,7 @@ const (
 	// of a node group with regard to scale down activities.
 	ClusterAutoscalerScaleDown ClusterAutoscalerConditionType = "ScaleDown"
 	// ClusterAutoscalerScaleUp is a condition that explains what is the current status
-	// of a node group with regard to scale down activities.
+	// of a node group with regard to scale up activities.
 	ClusterAutoscalerScaleUp ClusterAutoscalerConditionType = "ScaleUp"
 )
 
