@@ -360,7 +360,7 @@ func (scaleSet *ScaleSet) Nodes() ([]string, error) {
 		return nil, err
 	}
 
-	result := make([]string, len(vms))
+	result := make([]string, 0, len(vms))
 	for i := range vms {
 		if len(*vms[i].ID) == 0 {
 			continue
