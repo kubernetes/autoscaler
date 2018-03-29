@@ -38,7 +38,7 @@ const (
 	fullVpaSuite                 = "full-vpa"
 	actuationSuite               = "actuation"
 	pollInterval                 = 10 * time.Second
-	pollTimeout                  = 10 * time.Minute
+	pollTimeout                  = 15 * time.Minute
 )
 
 func e2eDescribe(scenario, name string, body func()) bool {
