@@ -77,21 +77,29 @@ var _ = fullVpaE2eDescribe("Pods under VPA", func() {
 	})
 
 	ginkgo.It("stabilize at minimum CPU if doing nothing", func() {
-		waitForResourceRequestAboveThresholdInPods(f, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU, parseQuantityOrDie(minimalCPU))
+		err := waitForResourceRequestAboveThresholdInPods(
+			f, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU, parseQuantityOrDie(minimalCPU))
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
 
 	ginkgo.It("have cpu requests growing with usage", func() {
 		rc.ConsumeCPU(600 * replicas)
-		waitForResourceRequestAboveThresholdInPods(f, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU, parseQuantityOrDie("500m"))
+		err := waitForResourceRequestAboveThresholdInPods(
+			f, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU, parseQuantityOrDie("500m"))
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
 
 	ginkgo.It("have memory requests growing with OOMs", func() {
 		// Wait for any recommendation
-		waitForRecommendationPresent(vpaClientSet, vpaCRD)
+		err := waitForRecommendationPresent(vpaClientSet, vpaCRD)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		// Restart pods to have limits populated
-		deletePods(f, metav1.ListOptions{LabelSelector: "name=hamster"})
+		err = deletePods(f, metav1.ListOptions{LabelSelector: "name=hamster"})
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		rc.ConsumeMem(1024 * replicas)
-		waitForResourceRequestAboveThresholdInPods(f, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceMemory, parseQuantityOrDie("600Mi"))
+		err = waitForResourceRequestAboveThresholdInPods(
+			f, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceMemory, parseQuantityOrDie("600Mi"))
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
 })
 
@@ -139,8 +147,9 @@ func deletePods(f *framework.Framework, listOptions metav1.ListOptions) error {
 func waitForResourceRequestAboveThresholdInPods(f *framework.Framework, listOptions metav1.ListOptions, resourceName apiv1.ResourceName, threshold resource.Quantity) error {
 	err := waitForPodsMatch(f, listOptions,
 		func(pod apiv1.Pod) bool {
-			cpuRequest, found := pod.Spec.Containers[0].Resources.Requests[resourceName]
-			return found && cpuRequest.MilliValue() > threshold.MilliValue()
+			resourceRequest, found := pod.Spec.Containers[0].Resources.Requests[resourceName]
+			framweork.Logf("Comparing %v request %v against minimum threshold of %v", resourceName, resourceRequest, threshold)
+			return found && resourceRequest.MilliValue() > threshold.MilliValue()
 		})
 
 	if err != nil {
