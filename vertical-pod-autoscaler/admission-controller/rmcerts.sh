@@ -1,4 +1,6 @@
-# Copyright 2017 The Kubernetes Authors. All rights reserved
+#!/bin/bash
+
+# Copyright 2018 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,10 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/google_containers/ubuntu-slim:0.1
-MAINTAINER Krzysztof Grygiel "kgrygiel@google.com"
-MAINTAINER Karol Kraskiewicz "karol.kraskiewicz@gmail.com"
+# Generates the a CA cert, a server key, and a server cert signed by the CA.
+# reference:
+# https://github.com/kubernetes/kubernetes/blob/master/plugin/pkg/admission/webhook/gencerts.sh
+set -e
 
-ADD recommender recommender
-
-CMD ./recommender --v=4 --stderrthreshold=info --prometheus-address=http://prometheus.monitoring.svc
+echo "Deleting VPA Admission Controller certs."
+kubectl delete secret --namespace=kube-system vpa-tls-certs
