@@ -148,7 +148,7 @@ func waitForResourceRequestAboveThresholdInPods(f *framework.Framework, listOpti
 	err := waitForPodsMatch(f, listOptions,
 		func(pod apiv1.Pod) bool {
 			resourceRequest, found := pod.Spec.Containers[0].Resources.Requests[resourceName]
-			framweork.Logf("Comparing %v request %v against minimum threshold of %v", resourceName, resourceRequest, threshold)
+			framework.Logf("Comparing %v request %v against minimum threshold of %v", resourceName, resourceRequest, threshold)
 			return found && resourceRequest.MilliValue() > threshold.MilliValue()
 		})
 
