@@ -48,7 +48,7 @@ case ${SUITE} in
     ${SCRIPT_ROOT}/hack/deploy-for-e2e.sh ${SUITE}
 
     export KUBECONFIG=$HOME/.kube/config
-    go test ${SCRIPT_ROOT}/e2e/*go -v -test.timeout=20m  --args --ginkgo.v=true --ginkgo.focus="\[VPA\] \[${SUITE}\]" --report-dir=/workspace/_artifacts --disable-log-dump
+    go test ${SCRIPT_ROOT}/e2e/*go -v -test.timeout=60m  --args --ginkgo.v=true --ginkgo.focus="\[VPA\] \[${SUITE}\]" --report-dir=/workspace/_artifacts --disable-log-dump
     ;;
   *)
     print_help
