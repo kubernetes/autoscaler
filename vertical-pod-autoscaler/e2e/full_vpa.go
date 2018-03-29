@@ -37,14 +37,20 @@ const (
 )
 
 var _ = fullVpaE2eDescribe("Pods under VPA", func() {
-	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
-
 	var (
 		rc           *ResourceConsumer
 		vpaClientSet *vpa_clientset.Clientset
 		vpaCRD       *vpa_types.VerticalPodAutoscaler
 	)
 	replicas := 3
+
+	ginkgo.AfterEach(func() {
+		rc.CleanUp()
+	})
+
+	// This schedules AfterEach block that needs to run after the AfterEach above and
+	// BeforeEach that needs to run before the BeforeEach below - thus the order of these matters.
+	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
 
 	ginkgo.BeforeEach(func() {
 		ns := f.Namespace.Name
