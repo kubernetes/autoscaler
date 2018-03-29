@@ -38,6 +38,7 @@ if [ $# -gt 2 ]; then
   exit 1
 fi
 
+ACTION=$1
 COMPONENTS="vpa-crd vpa-rbac updater-deployment recommender-deployment admission-controller-deployment"
 
 if [ $# -gt 1 ]; then
@@ -45,6 +46,13 @@ if [ $# -gt 1 ]; then
 fi
 
 for i in $COMPONENTS; do
-  ${SCRIPT_ROOT}/hack/vpa-process-yaml.sh ${SCRIPT_ROOT}/deploy/$i.yaml | kubectl $1 -f - || true
+  if [ $i == admission-controller-deployment ] ; then
+    if [ ${ACTION} == create ] ; then
+      (bash ${SCRIPT_ROOT}/admission-controller/gencerts.sh || true)
+    elif [ ${ACTION} == delete ] ; then
+      (bash ${SCRIPT_ROOT}/admission-controller/rmcerts.sh || true)
+    fi
+  fi
+  ${SCRIPT_ROOT}/hack/vpa-process-yaml.sh ${SCRIPT_ROOT}/deploy/$i.yaml | kubectl ${ACTION} -f - || true
 done
 
