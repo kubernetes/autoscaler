@@ -22,6 +22,7 @@ import (
 
 	"github.com/golang/glog"
 	kube_flag "k8s.io/apiserver/pkg/util/flag"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/input/history"
 	"k8s.io/client-go/rest"
 	kube_restclient "k8s.io/client-go/rest"
@@ -35,7 +36,7 @@ var (
 
 func main() {
 	kube_flag.InitFlags()
-	glog.Infof("Running VPA Recommender")
+	glog.V(1).Infof("Vertical Pod Autoscaler %s Recommender", common.VerticalPodAutoscalerVersion)
 
 	config := createKubeConfig()
 
