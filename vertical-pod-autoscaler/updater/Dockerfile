@@ -13,8 +13,7 @@
 # limitations under the License.
 
 
-FROM k8s.gcr.io/ubuntu-slim:0.1
-MAINTAINER Gabriela Filipek "gfilipek@google.com"
+FROM gcr.io/google-containers/debian-base-amd64:0.3
 MAINTAINER Marcin Wielgus "mwielgus@google.com"
 
 ADD updater updater
