@@ -20,6 +20,7 @@ import (
 	"flag"
 	"github.com/golang/glog"
 	kube_flag "k8s.io/apiserver/pkg/util/flag"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	kube_client "k8s.io/client-go/kubernetes"
 	kube_restclient "k8s.io/client-go/rest"
@@ -38,8 +39,8 @@ var (
 )
 
 func main() {
-	glog.Infof("Running VPA Updater")
 	kube_flag.InitFlags()
+	glog.V(1).Infof("Vertical Pod Autoscaler %s Updater", common.VerticalPodAutoscalerVersion)
 
 	// TODO monitoring
 

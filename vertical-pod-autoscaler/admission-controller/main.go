@@ -21,7 +21,9 @@ import (
 	"net/http"
 
 	"github.com/golang/glog"
+	kube_flag "k8s.io/apiserver/pkg/util/flag"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/admission-controller/logic"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/poc.autoscaling.k8s.io/v1alpha1"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
@@ -42,7 +44,8 @@ func newReadyVPALister(stopChannel <-chan struct{}) vpa_lister.VerticalPodAutosc
 }
 
 func main() {
-	flag.Parse()
+	kube_flag.InitFlags()
+	glog.V(1).Infof("Vertical Pod Autoscaler %s Admission Controller", common.VerticalPodAutoscalerVersion)
 	certs := initCerts(*certsDir)
 	stopChannel := make(chan struct{})
 	vpaLister := newReadyVPALister(stopChannel)
