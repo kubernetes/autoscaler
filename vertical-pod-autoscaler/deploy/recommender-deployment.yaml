@@ -19,14 +19,14 @@ spec:
       serviceAccountName: vpa-recommender
       containers:
       - name: recommender
-        image: k8s.gcr.io/vpa-recommender:v0.0.1
+        image: gcr.io/google_containers/vpa-recommender:v0.1.0
         imagePullPolicy: Always
         resources:
           limits:
-            cpu: 500m
-            memory: 2000Mi
+            cpu: 200m
+            memory: 1000Mi
           requests:
-            cpu: 250m
+            cpu: 100m
             memory: 500Mi
         ports:
         - containerPort: 8080
