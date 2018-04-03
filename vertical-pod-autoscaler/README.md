@@ -30,16 +30,6 @@ It contains:
 
 * Status through which the recommended cpu/memory requests are provided.
 
-VPA can operate in 3 modes:
-
-* Update off - the recommendations are calculated for the pods/containers selected with 
-label selector, however the users have to set them manually. 
-
-* Update on init - the recommendations are calculated and applied to pods when they are 
-created. The pods are not automatically updated once created.
-
-* Automatic update - the recommendations are calculated and applied automatically. 
-
 More on the architecture can be found [HERE](https://github.com/kubernetes/community/blob/master/contributors/design-proposals/autoscaling/vertical-pod-autoscaler.md).
 
 ### Installation
@@ -167,38 +157,6 @@ kubectl get customresourcedefinition|grep verticalpodautoscalers
 * VPA recommendation might exceed available resources (e.g. Node size, available
   size, available quota) and cause Pods to go pending.
 * Multiple VPA resources matching the same Pod have undefined behavior.
-
-# For developers
-
-### Architecture
-
-The system consists of three separate binaries:
-[recommender](./recommender/), [updater](./updater/) and
-[admission controller](./admission-controller/).
-
-### How to plug in a modified recommender
-
-First, make any changes you like in recommender code.
-Then, build it with
-```
-make --directory recommender build docker
-```
-Remember the command puts your build docker image into your GCR registry
-and tags it using env variables: `$REGISTRY`, e.g. `gcr.io/my-project` and
-`$TAG`, e.g. `my-latest-release`.
-To deploy that version, follow [installation](#installation).
-If you already had VPA installed, you can run:
-```
-./hack/vpa-down.sh recommender
-./hack/vpa-up.sh recommender
-```
-to only recreate the recommender deployment and keep the rest of VPA system as
-it was.
-
-### How to modify other components
-
-Updater and admission controller can be modified, built and deployed similarly
-to [recommender](#how-to-plug-in-a-modified-recommender).
 
 # Related links
 
