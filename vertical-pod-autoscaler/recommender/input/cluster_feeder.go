@@ -186,7 +186,9 @@ func (feeder *clusterStateFeeder) GarbageCollectCheckpoints() {
 			_, exists := feeder.clusterState.Vpas[vpaID]
 			if !exists {
 				err = feeder.vpaCheckpointClient.VerticalPodAutoscalerCheckpoints(namespace).Delete(checkpoint.Name, &metav1.DeleteOptions{})
-				if err != nil {
+				if err == nil {
+					glog.V(3).Infof("Orphaned VPA checkpoint cleanup - deleting %v/%v.", namespace, checkpoint.Name)
+				} else {
 					glog.Errorf("Cannot delete VPA checkpoint %v/%v. Reason: %+v", namespace, checkpoint.Name, err)
 				}
 			}
