@@ -377,7 +377,7 @@ spec:
       priorityClassName: overprovisioning
       containers:
       - name: reserve-resources
-        image: gcr.io/google_containers/pause
+        image: k8s.gcr.io/pause
         resources:
           requests:
             cpu: "200m"
@@ -400,7 +400,7 @@ spec:
         app: overprovisioning-autoscaler
     spec:
       containers:
-        - image: gcr.io/google_containers/cluster-proportional-autoscaler-amd64:1.1.2
+        - image: k8s.gcr.io/cluster-proportional-autoscaler-amd64:1.1.2
           name: autoscaler
           command:
             - /cluster-proportional-autoscaler
