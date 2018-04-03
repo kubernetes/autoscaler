@@ -1,6 +1,6 @@
 # Vertical Pod Autoscaler
 
-# Intro
+### Intro
 
 Vertical Pod Autoscaler (VPA) frees the users from necessity of setting
 up-to-date resource requests for their containers in pods.
@@ -8,7 +8,39 @@ When configured, it will set the requests automatically based on usage and
 thus allow proper scheduling onto nodes so that appropriate resource amount is
 available for each pod.
 
-# For users
+### Architecture
+
+The project consists of 3 components:
+
+* Recommender - it monitors the current and past resource consumption and, based on it,
+provides recommended values containers' cpu and memory requests.
+
+* Updater - it checks which of the managed Pods have correct resources set and, if not,
+kills them so that they can be recreated by their controllers with the updated requests.
+
+* Admission Plugin - it sets the correct resource requests on new pods (either just created
+or recreated by their controller due to Updater's activity).
+
+Autoscaling is configured with a
+[Custom Resource Definition object](https://kubernetes.io/docs/concepts/api-extension/custom-resources/) 
+called [VerticalPodAutoscaler](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1/types.go).
+It contains:
+
+* Specification with label selector that points to pods that should be autoscaled.
+
+* Status through which the recommended cpu/memory requests are provided.
+
+VPA can operate in 3 modes:
+
+* Update off - the recommendations are calculated for the pods/containers selected with 
+label selector, however the users have to set them manually. 
+
+* Update on init - the recommendations are calculated and applied to pods when they are 
+created. The pods are not automatically updated once created.
+
+* Automatic update - the recommendations are calculated and applied automatically. 
+
+More on the architecture can be found [HERE](https://github.com/kubernetes/community/blob/master/contributors/design-proposals/autoscaling/vertical-pod-autoscaler.md).
 
 ### Installation
 
