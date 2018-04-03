@@ -42,6 +42,8 @@ type recommender struct {
 	clusterStateFeeder      input.ClusterStateFeeder
 	checkpointWriter        output.CheckpointWriter
 	metricsFetchingInterval time.Duration
+	checkpointsGCInterval   time.Duration
+	lastCheckpointGC        time.Time
 	vpaClient               vpa_api.VerticalPodAutoscalersGetter
 	podResourceRecommender  logic.PodResourceRecommender
 	useCheckpoints          bool
@@ -87,6 +89,10 @@ func (r *recommender) runOnce() {
 	glog.V(3).Infof("ClusterState is tracking %v PodStates and %v VPAs", len(r.clusterState.Pods), len(r.clusterState.Vpas))
 	if r.useCheckpoints {
 		r.checkpointWriter.StoreCheckpoints()
+		if time.Now().Sub(r.lastCheckpointGC) < r.checkpointsGCInterval {
+			r.lastCheckpointGC = time.Now()
+			r.clusterStateFeeder.GarbageCollectCheckpoints()
+		}
 	}
 }
 
@@ -109,13 +115,15 @@ func (r *recommender) Run() {
 // NewRecommender creates a new recommender instance,
 // which can be run in order to provide continuous resource recommendations for containers.
 // It requires cluster configuration object and duration between recommender intervals.
-func NewRecommender(config *rest.Config, metricsFetcherInterval time.Duration, historyProvider history.HistoryProvider, useCheckpoints bool) Recommender {
+func NewRecommender(config *rest.Config, metricsFetcherInterval, checkpointsGCInterval time.Duration, historyProvider history.HistoryProvider, useCheckpoints bool) Recommender {
 	clusterState := model.NewClusterState()
 	recommender := &recommender{
 		clusterState:            clusterState,
 		clusterStateFeeder:      input.NewClusterStateFeeder(config, historyProvider, clusterState),
 		checkpointWriter:        output.NewCheckpointWriter(clusterState, vpa_clientset.NewForConfigOrDie(config).PocV1alpha1()),
 		metricsFetchingInterval: metricsFetcherInterval,
+		checkpointsGCInterval:   checkpointsGCInterval,
+		lastCheckpointGC:        time.Now(),
 		vpaClient:               vpa_clientset.NewForConfigOrDie(config).PocV1alpha1(),
 		podResourceRecommender:  logic.CreatePodResourceRecommender(),
 		useCheckpoints:          useCheckpoints,
