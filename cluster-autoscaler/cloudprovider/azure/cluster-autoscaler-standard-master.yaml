@@ -186,7 +186,7 @@ spec:
             secretKeyRef:
               key: Deployment
               name: cluster-autoscaler-azure
-        image: gcr.io/google_containers/cluster-autoscaler:{{ ca_version }}
+        image: k8s.gcr.io/cluster-autoscaler:{{ ca_version }}
         imagePullPolicy: Always
         name: cluster-autoscaler
         resources:
