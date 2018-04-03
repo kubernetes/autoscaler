@@ -13,7 +13,7 @@ spec:
       serviceAccountName: vpa-admission-controller
       containers:
       - name: admission-controller
-        image: gcr.io/google_containers/vpa-admission-controller:v0.1.0
+        image: k8s.gcr.io/vpa-admission-controller:v0.1.0
         imagePullPolicy: Always
         volumeMounts:
           - name: tls-certs
