@@ -115,6 +115,36 @@ func getVpaObserver(vpaClientSet *vpa_clientset.Clientset) *observer {
 	return &vpaObserver
 }
 
+var _ = recommenderE2eDescribe("Checkpoints", func() {
+	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
+
+	ginkgo.It("with missing VPA objects are garbage collected", func() {
+		ns := f.Namespace.Name
+		config, err := framework.LoadConfig()
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+		checkpoint := vpa_types.VerticalPodAutoscalerCheckpoint{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test",
+				Namespace: ns,
+			},
+			Spec: vpa_types.VerticalPodAutoscalerCheckpointSpec{
+				VPAObjectName: "some-vpa",
+			},
+		}
+
+		vpaClientSet := vpa_clientset.NewForConfigOrDie(config)
+		_, err = vpaClientSet.PocV1alpha1().VerticalPodAutoscalerCheckpoints(ns).Create(&checkpoint)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+		time.Sleep(15 * time.Minute)
+
+		list, err := vpaClientSet.PocV1alpha1().VerticalPodAutoscalerCheckpoints(ns).List(metav1.ListOptions{})
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		gomega.Expect(list.Items).To(gomega.BeEmpty())
+	})
+})
+
 var _ = recommenderE2eDescribe("VPA CRD object", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
 
