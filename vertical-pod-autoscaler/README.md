@@ -1,6 +1,6 @@
 # Vertical Pod Autoscaler
 
-### Intro
+# Intro
 
 Vertical Pod Autoscaler (VPA) frees the users from necessity of setting
 up-to-date resource requests for their containers in pods.
@@ -8,33 +8,19 @@ When configured, it will set the requests automatically based on usage and
 thus allow proper scheduling onto nodes so that appropriate resource amount is
 available for each pod.
 
-### Architecture
-
-The project consists of 3 components:
-
-* Recommender - it monitors the current and past resource consumption and, based on it,
-provides recommended values containers' cpu and memory requests.
-
-* Updater - it checks which of the managed Pods have correct resources set and, if not,
-kills them so that they can be recreated by their controllers with the updated requests.
-
-* Admission Plugin - it sets the correct resource requests on new pods (either just created
-or recreated by their controller due to Updater's activity).
-
 Autoscaling is configured with a
 [Custom Resource Definition object](https://kubernetes.io/docs/concepts/api-extension/custom-resources/) 
 called [VerticalPodAutoscaler](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1/types.go).
-It contains:
+It allows to specify which pods should be under vertically autoscaled as well as if/how the 
+resource recommendations are applied.
 
-* Specification with label selector that points to pods that should be autoscaled.
+To enable vertical pod autoscaling on your cluster please follow the installation
+procedure described below.
 
-* Status through which the recommended cpu/memory requests are provided.
 
-More on the architecture can be found [HERE](https://github.com/kubernetes/community/blob/master/contributors/design-proposals/autoscaling/vertical-pod-autoscaler.md).
+# Installation
 
-### Installation
-
-**Prerequisites**
+### Prerequisites
 
 * It is strongly recommended to use Kubernetes 1.9 or greater.
   Your cluster must support MutatingAdmissionWebhooks, which are enabled by default
@@ -52,13 +38,16 @@ More on the architecture can be found [HERE](https://github.com/kubernetes/commu
   Clusterrolebinding "myname-cluster-admin-binding" created
   ```
 
-**Install command**
+### Install command
 
-To install VPA, run:
+To install VPA, please download the source code of VPA (for example with `git clone https://github.com/kubernetes/autoscaler.git`) 
+and run:
 
 ```
 ./hack/vpa-up.sh
 ```
+Inside `vertical-pod-autoscaler` directory.
+
 
 Note: the script currently reads environment variables: `$REGISTRY` and `$TAG`.
 Make sure you leave them unset unless you want to use a non-default version of VPA.
@@ -141,7 +130,22 @@ kubectl --namespace=kube-system logs [pod name]| grep -e '^E[0-9]\{4\}'
 kubectl get customresourcedefinition|grep verticalpodautoscalers
 ```
 
-### Known limitations of the alpha version
+### Components of VPA
+
+The project consists of 3 components:
+
+* Recommender - it monitors the current and past resource consumption and, based on it,
+provides recommended values containers' cpu and memory requests.
+
+* Updater - it checks which of the managed Pods have correct resources set and, if not,
+kills them so that they can be recreated by their controllers with the updated requests.
+
+* Admission Plugin - it sets the correct resource requests on new pods (either just created
+or recreated by their controller due to Updater's activity).
+
+More on the architecture can be found [HERE](https://github.com/kubernetes/community/blob/master/contributors/design-proposals/autoscaling/vertical-pod-autoscaler.md).
+
+# Known limitations of the alpha version
 
 * Whenever VPA updates the pod resources the pod is recreated, which causes all
   running containers to be restarted.
