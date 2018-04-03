@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-FROM gcr.io/google-containers/debian-base-amd64:0.3
+FROM k8s.gcr.io/debian-base-amd64:0.3
 MAINTAINER Marcin Wielgus "mwielgus@google.com"
 
 ADD updater updater
