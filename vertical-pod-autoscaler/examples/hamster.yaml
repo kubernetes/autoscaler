@@ -22,7 +22,7 @@ spec:
     spec:            
       containers:
       - name: hamster
-        image: gcr.io/google_containers/ubuntu-slim:0.1
+        image: k8s.gcr.io/ubuntu-slim:0.1
         resources:
           requests:
             cpu: 500m

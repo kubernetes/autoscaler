@@ -31,7 +31,7 @@ if [ $# -eq 0 ]; then
   exit 1
 fi
 
-DEFAULT_REGISTRY="gcr.io/google_containers"
+DEFAULT_REGISTRY="k8s.gcr.io"
 DEFAULT_TAG="v0.1.0"
 
 REGISTRY_TO_APPLY=${REGISTRY-$DEFAULT_REGISTRY}
