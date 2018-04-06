@@ -52,7 +52,7 @@ func (writer *checkpointWriter) StoreCheckpoints() {
 		for container, aggregatedContainerState := range aggregateContainerStateMap {
 			containerCheckpoint, err := aggregatedContainerState.SaveToCheckpoint()
 			if err != nil {
-				glog.Errorf("Cannot serialize checkpotint for vpa %v container %v. Reason: %+v", vpa.ID.VpaName, container, err)
+				glog.Errorf("Cannot serialize checkpoint for vpa %v container %v. Reason: %+v", vpa.ID.VpaName, container, err)
 				continue
 			}
 			checkpointName := fmt.Sprintf("%s-%s", vpa.ID.VpaName, container)
