@@ -110,7 +110,7 @@ func getVpaObserver(vpaClientSet *vpa_clientset.Clientset) *observer {
 	if !cache.WaitForCacheSync(make(chan struct{}), controller.HasSynced) {
 		glog.Fatalf("Failed to sync VPA cache during initialization")
 	} else {
-		glog.Info("Initial VPA synced sucessfully")
+		glog.Info("Initial VPA synced successfully")
 	}
 	return &vpaObserver
 }

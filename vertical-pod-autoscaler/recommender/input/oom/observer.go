@@ -24,7 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
-// OomInfo contains data of the OOM event occurence
+// OomInfo contains data of the OOM event occurrence
 type OomInfo struct {
 	Timestamp                 time.Time
 	MemoryRequest             resource.Quantity

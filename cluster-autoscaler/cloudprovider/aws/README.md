@@ -26,7 +26,7 @@ A minimum IAM policy would look like:
 }
 ```
 
-If you'd like to auto-discover node groups by specifing the `--node-group-auto-discover` flag, a `DescribeTags` permission is also required:
+If you'd like to auto-discover node groups by specifying the `--node-group-auto-discover` flag, a `DescribeTags` permission is also required:
 
 ```json
 {
