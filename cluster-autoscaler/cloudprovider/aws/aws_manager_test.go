@@ -18,7 +18,6 @@ package aws
 
 import (
 	"fmt"
-	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/mock"
@@ -171,6 +170,7 @@ func TestFetchExplicitAsgs(t *testing.T) {
 	validateAsg(t, asgs[0].config, groupname, min, max)
 }
 
+/* Disabled due to flakiness. See https://github.com/kubernetes/autoscaler/issues/608
 func TestFetchAutoAsgs(t *testing.T) {
 	min, max := 1, 10
 	groupname, tags := "coolasg", []string{"tag", "anothertag"}
@@ -244,3 +244,4 @@ func TestFetchAutoAsgs(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Empty(t, m.asgCache.get())
 }
+*/
