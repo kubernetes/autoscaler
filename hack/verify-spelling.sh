@@ -1,6 +1,5 @@
-#!/bin/bash
-
-# Copyright 2014 The Kubernetes Authors.
+#!/usr/bin/env bash
+# Copyright 2018 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,16 +17,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-KUBE_ROOT=$(dirname "${BASH_SOURCE}")/..
-GO_VERSION=($(go version))
+# Install tools we need
+go install ../../github.com/client9/misspell/cmd/misspell
 
-# golint only works for golang 1.5+
-if [[ -z $(echo "${GO_VERSION[2]}" | grep -E 'go1.1|go1.2|go1.3|go1.4') ]]; then
-  go get -u github.com/golang/lint/golint
-fi
-
-go get -u github.com/tools/godep
-
-go get -u github.com/client9/misspell/cmd/misspell
-
-# ex: ts=2 sw=2 et filetype=sh
+# Spell checking
+git ls-files | grep -v -e vendor | xargs misspell -error -o stderr
