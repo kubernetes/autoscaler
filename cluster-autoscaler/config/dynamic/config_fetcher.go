@@ -67,7 +67,7 @@ func (c *configFetcherImpl) FetchConfigIfUpdated() (*Config, error) {
 	if err != nil {
 		c.recorder.Eventf(cm, apiv1.EventTypeNormal, "FailedToBeLoaded",
 			"cluster-autoscaler tried to load this configmap but failed: %v", err)
-		return nil, fmt.Errorf("failed to load dyamic config: %v", err)
+		return nil, fmt.Errorf("failed to load dynamic config: %v", err)
 	}
 
 	if c.lastConfig.VersionMismatchesAgainst(*configFromServer) {
