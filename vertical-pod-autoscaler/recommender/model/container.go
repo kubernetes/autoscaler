@@ -138,7 +138,7 @@ func (container *ContainerState) addMemorySample(sample *ContainerUsageSample) b
 	return true
 }
 
-// RecordOOM adds info regarding OOM event in the model as an artifical memory sample.
+// RecordOOM adds info regarding OOM event in the model as an artificial memory sample.
 func (container *ContainerState) RecordOOM(timestamp time.Time, requestedMemory ResourceAmount) error {
 	resourceAmount := float64(requestedMemory)
 	// Discard old OOM
