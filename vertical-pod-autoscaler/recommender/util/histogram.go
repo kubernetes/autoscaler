@@ -64,7 +64,7 @@ type Histogram interface {
 
 	// SaveToChekpoint returns a representation of the histogram as a
 	// HistogramCheckpoint. During conversion buckets with small weights
-	// can be ommited.
+	// can be omitted.
 	SaveToChekpoint() (*vpa_types.HistogramCheckpoint, error)
 
 	// LoadFromCheckpoint loads data from the checkpoint into the histogram

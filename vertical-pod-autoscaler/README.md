@@ -9,9 +9,9 @@ thus allow proper scheduling onto nodes so that appropriate resource amount is
 available for each pod.
 
 Autoscaling is configured with a
-[Custom Resource Definition object](https://kubernetes.io/docs/concepts/api-extension/custom-resources/) 
+[Custom Resource Definition object](https://kubernetes.io/docs/concepts/api-extension/custom-resources/)
 called [VerticalPodAutoscaler](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1/types.go).
-It allows to specify which pods should be under vertically autoscaled as well as if/how the 
+It allows to specify which pods should be under vertically autoscaled as well as if/how the
 resource recommendations are applied.
 
 To enable vertical pod autoscaling on your cluster please follow the installation
@@ -29,7 +29,7 @@ procedure described below.
 * `kubectl` should be connected to the cluster you want to install VPA in.
 * If you are using a GKE Kubernetes cluster, you will need to grant your current Google
   identity `cluster-admin` role. Otherwise you won't be authorized to grant extra
-  priviliges to the VPA system components.
+  privileges to the VPA system components.
   ```console
   $ gcloud info | grep Account    # get current google identity
   Account: [myname@example.org]
@@ -40,7 +40,7 @@ procedure described below.
 
 ### Install command
 
-To install VPA, please download the source code of VPA (for example with `git clone https://github.com/kubernetes/autoscaler.git`) 
+To install VPA, please download the source code of VPA (for example with `git clone https://github.com/kubernetes/autoscaler.git`)
 and run:
 
 ```
