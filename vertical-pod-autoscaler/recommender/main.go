@@ -30,6 +30,7 @@ import (
 
 var (
 	metricsFetcherInterval = flag.Duration("recommender-interval", 1*time.Minute, `How often metrics should be fetched`)
+	checkpointsGCInterval  = flag.Duration("checkpoints-gc-interval", 10*time.Minute, `How often orphaned checkpoints should be garbage collected`)
 	prometheusAddress      = flag.String("prometheus-address", "", `Where to reach for Prometheus metrics`)
 	storage                = flag.String("storage", "", `Specifies storage mode. Supported values: prometheus, checkpoint (default)`)
 )
@@ -40,7 +41,7 @@ func main() {
 
 	config := createKubeConfig()
 
-	recommender := NewRecommender(config, *metricsFetcherInterval, history.NewPrometheusHistoryProvider(*prometheusAddress), *storage != "prometheus")
+	recommender := NewRecommender(config, *metricsFetcherInterval, *checkpointsGCInterval, history.NewPrometheusHistoryProvider(*prometheusAddress), *storage != "prometheus")
 	recommender.Run()
 }
 
