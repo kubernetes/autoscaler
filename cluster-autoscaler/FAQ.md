@@ -427,7 +427,7 @@ Scale-up creates a watch on the API server looking for all pods. It checks for a
 pods every 10 seconds (configurable by `--scan-interval` flag). A pod is unschedulable when the Kubernetes scheduler is unable
 to find a node that can accommodate the pod. For example, a pod can request more CPU that is
 available on any of the cluster nodes. Unschedulable pods are recognized by their PodCondition.
-Whenever a kubernetes scheduler fails to find a place to run a pod, it sets "schedulable"
+Whenever a Kubernetes scheduler fails to find a place to run a pod, it sets "schedulable"
 PodCondition to false and reason to "unschedulable".  If there are any items in the unschedulable
 pods list, Cluster Autoscaler tries to find a new place to run them.
 
