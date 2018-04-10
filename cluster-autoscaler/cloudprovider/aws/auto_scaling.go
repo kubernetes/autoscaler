@@ -92,17 +92,23 @@ func (m *autoScalingWrapper) getAutoscalingGroupsByNames(names []string) ([]*aut
 	return asgs, nil
 }
 
-func (m *autoScalingWrapper) getAutoscalingGroupsByTags(keys []string) ([]*autoscaling.Group, error) {
+func (m *autoScalingWrapper) getAutoscalingGroupsByTags(kvs map[string]string) ([]*autoscaling.Group, error) {
 	// DescribeTags does an OR query when multiple filters on different tags are
 	// specified. In other words, DescribeTags returns [asg1, asg1] for keys
 	// [t1, t2] when there's only one asg tagged both t1 and t2.
 	filters := []*autoscaling.Filter{}
-	for _, key := range keys {
+	for key, value := range kvs {
 		filter := &autoscaling.Filter{
 			Name:   aws.String("key"),
 			Values: []*string{aws.String(key)},
 		}
 		filters = append(filters, filter)
+		if value != "" {
+			filters = append(filters, &autoscaling.Filter{
+				Name:   aws.String("value"),
+				Values: []*string{aws.String(value)},
+			})
+		}
 	}
 
 	tags := []*autoscaling.TagDescription{}
@@ -128,7 +134,7 @@ func (m *autoScalingWrapper) getAutoscalingGroupsByTags(keys []string) ([]*autos
 	for _, t := range tags {
 		asgName := aws.StringValue(t.ResourceId)
 		occurrences := asgNameOccurrences[asgName] + 1
-		if occurrences >= len(keys) {
+		if occurrences >= len(kvs) {
 			asgNames = append(asgNames, asgName)
 		}
 		asgNameOccurrences[asgName] = occurrences
