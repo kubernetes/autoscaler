@@ -18,9 +18,11 @@ package core
 
 import (
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
+	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/pods"
 	kube_client "k8s.io/client-go/kubernetes"
 	kube_record "k8s.io/client-go/tools/record"
 )
@@ -34,23 +36,25 @@ type AutoscalerBuilder interface {
 // AutoscalerBuilderImpl builds new autoscalers from its state including initial `AutoscalingOptions` given at startup and
 // `dynamic.Config` read on demand from the configmap
 type AutoscalerBuilderImpl struct {
-	autoscalingOptions AutoscalingOptions
+	autoscalingOptions context.AutoscalingOptions
 	dynamicConfig      *dynamic.Config
 	kubeClient         kube_client.Interface
 	kubeEventRecorder  kube_record.EventRecorder
 	predicateChecker   *simulator.PredicateChecker
 	listerRegistry     kube_util.ListerRegistry
+	podListProcessor   pods.PodListProcessor
 }
 
 // NewAutoscalerBuilder builds an AutoscalerBuilder from required parameters
-func NewAutoscalerBuilder(autoscalingOptions AutoscalingOptions, predicateChecker *simulator.PredicateChecker,
-	kubeClient kube_client.Interface, kubeEventRecorder kube_record.EventRecorder, listerRegistry kube_util.ListerRegistry) *AutoscalerBuilderImpl {
+func NewAutoscalerBuilder(autoscalingOptions context.AutoscalingOptions, predicateChecker *simulator.PredicateChecker,
+	kubeClient kube_client.Interface, kubeEventRecorder kube_record.EventRecorder, listerRegistry kube_util.ListerRegistry, podListProcessor pods.PodListProcessor) *AutoscalerBuilderImpl {
 	return &AutoscalerBuilderImpl{
 		autoscalingOptions: autoscalingOptions,
 		kubeClient:         kubeClient,
 		kubeEventRecorder:  kubeEventRecorder,
 		predicateChecker:   predicateChecker,
 		listerRegistry:     listerRegistry,
+		podListProcessor:   podListProcessor,
 	}
 }
 
@@ -68,5 +72,5 @@ func (b *AutoscalerBuilderImpl) Build() (Autoscaler, errors.AutoscalerError) {
 		c := *(b.dynamicConfig)
 		options.NodeGroups = c.NodeGroupSpecStrings()
 	}
-	return NewStaticAutoscaler(options, b.predicateChecker, b.kubeClient, b.kubeEventRecorder, b.listerRegistry)
+	return NewStaticAutoscaler(options, b.predicateChecker, b.kubeClient, b.kubeEventRecorder, b.listerRegistry, b.podListProcessor)
 }

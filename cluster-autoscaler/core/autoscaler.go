@@ -21,17 +21,24 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
+	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/pods"
 	kube_client "k8s.io/client-go/kubernetes"
 	kube_record "k8s.io/client-go/tools/record"
 )
 
 // AutoscalerOptions is the whole set of options for configuring an autoscaler
 type AutoscalerOptions struct {
-	AutoscalingOptions
+	context.AutoscalingOptions
 	dynamic.ConfigFetcherOptions
+	KubeClient        kube_client.Interface
+	KubeEventRecorder kube_record.EventRecorder
+	PredicateChecker  *simulator.PredicateChecker
+	ListerRegistry    kube_util.ListerRegistry
+	PodListProcessor  pods.PodListProcessor
 }
 
 // Autoscaler is the main component of CA which scales up/down node groups according to its configuration
@@ -47,13 +54,22 @@ type Autoscaler interface {
 	ExitCleanUp()
 }
 
-// NewAutoscaler creates an autoscaler of an appropriate type according to the parameters
-func NewAutoscaler(opts AutoscalerOptions, predicateChecker *simulator.PredicateChecker, kubeClient kube_client.Interface,
-	kubeEventRecorder kube_record.EventRecorder, listerRegistry kube_util.ListerRegistry) (Autoscaler, errors.AutoscalerError) {
+func initializeDefaultOptions(opts *AutoscalerOptions) error {
+	if opts.PodListProcessor == nil {
+		opts.PodListProcessor = pods.NewDefaultPodListProcessor()
+	}
+	return nil
+}
 
-	autoscalerBuilder := NewAutoscalerBuilder(opts.AutoscalingOptions, predicateChecker, kubeClient, kubeEventRecorder, listerRegistry)
+// NewAutoscaler creates an autoscaler of an appropriate type according to the parameters
+func NewAutoscaler(opts AutoscalerOptions) (Autoscaler, errors.AutoscalerError) {
+	err := initializeDefaultOptions(&opts)
+	if err != nil {
+		return nil, errors.ToAutoscalerError(errors.InternalError, err)
+	}
+	autoscalerBuilder := NewAutoscalerBuilder(opts.AutoscalingOptions, opts.PredicateChecker, opts.KubeClient, opts.KubeEventRecorder, opts.ListerRegistry, opts.PodListProcessor)
 	if opts.ConfigMapName != "" {
-		configFetcher := dynamic.NewConfigFetcher(opts.ConfigFetcherOptions, kubeClient, kubeEventRecorder)
+		configFetcher := dynamic.NewConfigFetcher(opts.ConfigFetcherOptions, opts.KubeClient, opts.KubeEventRecorder)
 		return NewDynamicAutoscaler(autoscalerBuilder, configFetcher)
 	}
 	return autoscalerBuilder.Build()
