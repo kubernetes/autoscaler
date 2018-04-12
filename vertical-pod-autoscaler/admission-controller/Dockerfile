@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM k8s.gcr.io-containers/debian-base-amd64:0.3
+FROM k8s.gcr.io/debian-base-amd64:0.3
 MAINTAINER Tomasz Kulczynski "tkulczynski@google.com"
 
 ADD admission-controller admission-controller
