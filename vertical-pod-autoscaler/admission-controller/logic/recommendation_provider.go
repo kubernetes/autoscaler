@@ -27,8 +27,16 @@ import (
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/poc.autoscaling.k8s.io/v1alpha1"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/common"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
+)
+
+const (
+	// MemoryLimitBumpUpRatio specifies how much memory will be available above memory request.
+	// Limit is set to trigger OOMs.
+	MemoryLimitBumpUpRatio float64 = 1.2
+	// MemoryLimitMinBumpUp specifies minimal amount of memory above memory request.
+	// Limit is set to trigger OOMs.
+	MemoryLimitMinBumpUp float64 = 100 * 1024 * 1024 // 100MB
 )
 
 // ContainerResources holds request and limit resources for container
@@ -54,14 +62,14 @@ func NewRecommendationProvider(vpaLister vpa_lister.VerticalPodAutoscalerLister)
 	return &recommendationProvider{vpaLister: vpaLister}
 }
 
+// getMemoryLimit returns a limit that is proportionally (with min step) higher than the request. Limit is set to trigger OOMs.
 func getMemoryLimit(resources v1.ResourceList) *resource.Quantity {
 	memory, found := resources[v1.ResourceMemory]
 	if !found {
 		return nil
 	}
 	limit := float64(memory.Value())
-	limit = math.Max(limit+common.OOMMinBumpUp,
-		limit*common.OOMBumpUpRatio)
+	limit = math.Max(limit+MemoryLimitMinBumpUp, limit*MemoryLimitBumpUpRatio)
 	return resource.NewQuantity(int64(limit), memory.Format)
 }
 
