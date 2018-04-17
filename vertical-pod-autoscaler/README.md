@@ -3,7 +3,7 @@
 # Intro
 
 Vertical Pod Autoscaler (VPA) frees the users from necessity of setting
-up-to-date resource requests for their containers in pods.
+up-to-date resource requests for the containers in their pods.
 When configured, it will set the requests automatically based on usage and
 thus allow proper scheduling onto nodes so that appropriate resource amount is
 available for each pod.
@@ -25,7 +25,7 @@ procedure described below.
 * It is strongly recommended to use Kubernetes 1.9 or greater.
   Your cluster must support MutatingAdmissionWebhooks, which are enabled by default
   since 1.9 ([#58255](https://github.com/kubernetes/kubernetes/pull/58255)).
-  Read more about [VPA Admission Webhook](./admission-controller/README.md#running)).
+  Read more about [VPA Admission Webhook](./admission-controller/README.md#running).
 * `kubectl` should be connected to the cluster you want to install VPA in.
 * If you are using a GKE Kubernetes cluster, you will need to grant your current Google
   identity `cluster-admin` role. Otherwise you won't be authorized to grant extra
@@ -41,13 +41,11 @@ procedure described below.
 ### Install command
 
 To install VPA, please download the source code of VPA (for example with `git clone https://github.com/kubernetes/autoscaler.git`)
-and run:
+and run the following command inside the `vertical-pod-autoscaler` directory:
 
 ```
 ./hack/vpa-up.sh
 ```
-Inside `vertical-pod-autoscaler` directory.
-
 
 Note: the script currently reads environment variables: `$REGISTRY` and `$TAG`.
 Make sure you leave them unset unless you want to use a non-default version of VPA.
@@ -149,7 +147,7 @@ More on the architecture can be found [HERE](https://github.com/kubernetes/commu
 
 * Whenever VPA updates the pod resources the pod is recreated, which causes all
   running containers to be restarted.
-* VPA in `auto` mode can only be used on pods that run under a controller
+* VPA in `auto` mode should only be used on pods that run under a controller
   (such as Deployment), which is responsible for restarting deleted pods.
   **Using VPA in `auto` mode with a pod not running under any controller will
   cause the pod to be deleted and not recreated**.
