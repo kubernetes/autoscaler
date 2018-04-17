@@ -54,7 +54,8 @@ Make sure you leave them unset unless you want to use a non-default version of V
 
 The script issues multiple `kubectl` commands to the
 cluster that insert the configuration and start all needed pods (see
-[architecture](#architecture)) in the `kube-system` namespace. It also generates
+[architecture](http://github.com/kubernetes/community/blob/master/contributors/design-proposals/autoscaling/vertical-pod-autoscaler.md#architecture-overview)) 
+in the `kube-system` namespace. It also generates
 and uploads a secret (a CA cert) used by VPA Admission Controller when communicating
 with the API server.
 
@@ -91,7 +92,11 @@ deployment.
 VPA will observe the behavior of the pods and after about 5 minutes they should get
 updated with the CPU request slightly above 1 core
 (note that VPA does not modify the template in the deployment, but the actual requests
-of the pods are updated).
+of the pods are updated). To see VPA config and current recommended resource requests run:
+```
+kubectl describe vpa
+```
+
 
 ### Example VPA configuration
 
