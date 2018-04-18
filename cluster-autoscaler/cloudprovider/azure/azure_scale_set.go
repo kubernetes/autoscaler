@@ -18,12 +18,10 @@ package azure
 
 import (
 	"fmt"
-	"net/http"
 	"sync"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/arm/compute"
-	"github.com/Azure/go-autorest/autorest"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2017-12-01/compute"
 	"github.com/golang/glog"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -100,13 +98,16 @@ func (scaleSet *ScaleSet) getCurSize() (int64, error) {
 		return scaleSet.curSize, nil
 	}
 
+	ctx, cancel := getContextWithCancel()
+	defer cancel()
+
 	glog.V(5).Infof("Get scale set size for %q", scaleSet.Name)
 	resourceGroup := scaleSet.manager.config.ResourceGroup
-	set, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.Get(resourceGroup, scaleSet.Name)
+	set, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.Get(ctx, resourceGroup, scaleSet.Name)
 	if err != nil {
 		return -1, err
 	}
-	glog.V(5).Infof("Returning scale set (%q) capacity: %d\n", scaleSet.Name, *set.Sku.Capacity)
+	glog.V(5).Infof("Getting scale set (%q) capacity: %d\n", scaleSet.Name, *set.Sku.Capacity)
 
 	scaleSet.curSize = *set.Sku.Capacity
 	scaleSet.lastRefresh = time.Now()
@@ -123,17 +124,20 @@ func (scaleSet *ScaleSet) SetScaleSetSize(size int64) error {
 	scaleSet.mutex.Lock()
 	defer scaleSet.mutex.Unlock()
 
+	ctx, cancel := getContextWithCancel()
+	defer cancel()
+
 	resourceGroup := scaleSet.manager.config.ResourceGroup
-	op, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.Get(resourceGroup, scaleSet.Name)
+	op, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.Get(ctx, resourceGroup, scaleSet.Name)
 	if err != nil {
 		return err
 	}
 
 	op.Sku.Capacity = &size
 	op.VirtualMachineScaleSetProperties.ProvisioningState = nil
-	cancel := make(chan struct{})
-	_, errChan := scaleSet.manager.azClient.virtualMachineScaleSetsClient.CreateOrUpdate(resourceGroup, scaleSet.Name, op, cancel)
-	err = <-errChan
+	updateCtx, updateCancel := getContextWithCancel()
+	defer updateCancel()
+	_, err = scaleSet.manager.azClient.virtualMachineScaleSetsClient.CreateOrUpdate(updateCtx, resourceGroup, scaleSet.Name, op)
 	if err != nil {
 		glog.Errorf("virtualMachineScaleSetsClient.CreateOrUpdate for scale set %q failed: %v", scaleSet.Name, err)
 		return err
@@ -175,38 +179,37 @@ func (scaleSet *ScaleSet) IncreaseSize(delta int) error {
 // TODO(feiskyer): use list results directly after the issue fixed in Azure VMSS API.
 func (scaleSet *ScaleSet) GetScaleSetVms() ([]compute.VirtualMachineScaleSetVM, error) {
 	instanceIDs := make([]string, 0)
+	ctx, cancel := getContextWithCancel()
+	defer cancel()
+
 	resourceGroup := scaleSet.manager.config.ResourceGroup
-	result, err := scaleSet.manager.azClient.virtualMachineScaleSetVMsClient.List(resourceGroup, scaleSet.Name, "", "", "")
+	result, err := scaleSet.manager.azClient.virtualMachineScaleSetVMsClient.List(ctx, resourceGroup, scaleSet.Name, "", "", "")
 	if err != nil {
-		glog.V(4).Infof("VirtualMachineScaleSetVMsClient.List failed for %s: %v", scaleSet.Name, err)
+		glog.Errorf("VirtualMachineScaleSetVMsClient.List failed for %s: %v", scaleSet.Name, err)
 		return nil, err
 	}
 
-	moreResults := (result.Value != nil && len(*result.Value) > 0)
-	for moreResults {
-		for _, vm := range *result.Value {
-			instanceIDs = append(instanceIDs, *vm.InstanceID)
-		}
-		moreResults = false
-
-		result, err = scaleSet.manager.azClient.virtualMachineScaleSetVMsClient.ListNextResults(result)
-		if err != nil {
-			return nil, err
-		}
-		moreResults = (result.Value != nil && len(*result.Value) > 0)
+	for _, vm := range result {
+		instanceIDs = append(instanceIDs, *vm.InstanceID)
 	}
 
 	allVMs := make([]compute.VirtualMachineScaleSetVM, 0)
 	for _, instanceID := range instanceIDs {
-		vm, err := scaleSet.manager.azClient.virtualMachineScaleSetVMsClient.Get(resourceGroup, scaleSet.Name, instanceID)
+		getCtx, getCancel := getContextWithCancel()
+		defer getCancel()
+
+		vm, err := scaleSet.manager.azClient.virtualMachineScaleSetVMsClient.Get(getCtx, resourceGroup, scaleSet.Name, instanceID)
 		if err != nil {
-			if v, ok := err.(autorest.DetailedError); ok && v.StatusCode == http.StatusNotFound {
+			exists, realErr := checkResourceExistsFromError(err)
+			if realErr != nil {
+				glog.Errorf("Failed to get VirtualMachineScaleSetVM by (%s,%s), error: %v", scaleSet.Name, instanceID, err)
+				return nil, realErr
+			}
+
+			if !exists {
 				glog.Warningf("Couldn't find VirtualMachineScaleSetVM by (%s,%s), assuming it has been removed", scaleSet.Name, instanceID)
 				continue
 			}
-
-			glog.Errorf("Failed to get VirtualMachineScaleSetVM by (%s,%s), error: %v", scaleSet.Name, instanceID, err)
-			return nil, err
 		}
 
 		allVMs = append(allVMs, vm)
@@ -300,10 +303,11 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef) error {
 	requiredIds := &compute.VirtualMachineScaleSetVMInstanceRequiredIDs{
 		InstanceIds: &instanceIDs,
 	}
-	cancel := make(chan struct{})
+	ctx, cancel := getContextWithCancel()
+	defer cancel()
 	resourceGroup := scaleSet.manager.config.ResourceGroup
-	_, errChan := scaleSet.manager.azClient.virtualMachineScaleSetsClient.DeleteInstances(resourceGroup, commonAsg.Id(), *requiredIds, cancel)
-	return <-errChan
+	_, err = scaleSet.manager.azClient.virtualMachineScaleSetsClient.DeleteInstances(ctx, resourceGroup, commonAsg.Id(), *requiredIds)
+	return err
 }
 
 // DeleteNodes deletes the nodes from the group.
