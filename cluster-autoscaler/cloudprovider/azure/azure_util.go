@@ -17,21 +17,24 @@ limitations under the License.
 package azure
 
 import (
+	"context"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"net/url"
 	"regexp"
 	"sort"
 	"strconv"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/arm/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2017-12-01/compute"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/golang/glog"
 	"golang.org/x/crypto/pkcs12"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/client-go/pkg/version"
 )
@@ -442,4 +445,25 @@ func readDeploymentParameters(paramFilePath string) (map[string]interface{}, err
 	}
 
 	return nil, fmt.Errorf("failed to get deployment parameters from file %s", paramFilePath)
+}
+
+func getContextWithCancel() (context.Context, context.CancelFunc) {
+	return context.WithCancel(context.Background())
+}
+
+// checkExistsFromError inspects an error and returns a true if err is nil,
+// false if error is an autorest.Error with StatusCode=404 and will return the
+// error back if error is another status code or another type of error.
+func checkResourceExistsFromError(err error) (bool, error) {
+	if err == nil {
+		return true, nil
+	}
+	v, ok := err.(autorest.DetailedError)
+	if !ok {
+		return false, err
+	}
+	if v.StatusCode == http.StatusNotFound {
+		return false, nil
+	}
+	return false, v
 }
