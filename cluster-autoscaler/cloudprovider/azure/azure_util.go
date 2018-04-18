@@ -390,6 +390,10 @@ func validateConfig(cfg *Config) error {
 		return fmt.Errorf("subscription ID not set")
 	}
 
+	if cfg.UseManagedIdentityExtension {
+		return nil
+	}
+
 	if cfg.TenantID == "" {
 		return fmt.Errorf("tenant ID not set")
 	}
