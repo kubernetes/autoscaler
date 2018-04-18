@@ -4,10 +4,12 @@ The cluster autoscaler on Azure scales worker nodes within any specified autosca
 
 ## Kubernetes Version
 
+Kubernetes v1.10.X and Cluster autoscaler v1.2+  are required to run on Azure.
+
 Cluster autoscaler support two VM types with Azure cloud provider:
 
-- vmss: For kubernetes cluster running on VMSS instances. Azure cloud provider's `vmType` parameter must be configured as 'vmss'. It requires Kubernetes with Azure VMSS support ([kubernetes#43287](https://github.com/kubernetes/kubernetes/issues/43287)), which is planed in Kubernetes v1.10.
-- standard: For kubernetes cluster running on VMAS instances. Azure cloud provider's `vmType` parameter must be configured as 'standard'. It only supports Kubernetes cluster deployed via [acs-engine](https://github.com/Azure/acs-engine). And [useInstanceMetadata](https://github.com/Azure/acs-engine/blob/master/docs/clusterdefinition.md#kubernetesconfig) should be set to `false` for all nodes.
+- **vmss**: For kubernetes cluster running on VMSS instances. Azure cloud provider's `vmType` parameter must be configured as 'vmss'. It requires Kubernetes with Azure VMSS support ([kubernetes#43287](https://github.com/kubernetes/kubernetes/issues/43287)).
+- **standard**: For kubernetes cluster running on VMAS instances. Azure cloud provider's `vmType` parameter must be configured as 'standard' or left as empty string. It only supports Kubernetes cluster deployed via [acs-engine](https://github.com/Azure/acs-engine).
 
 ## Permissions
 
@@ -63,6 +65,12 @@ To run a CA pod in master node - CA deployment should tolerate the master `taint
 kubectl create -f cluster-autoscaler-vmss-master.yaml
 ```
 
+To run a CA pod with Azure managed service identity (MSI), use [cluster-autoscaler-vmss-msi.yaml](cluster-autoscaler-vmss-msi.yaml) instead:
+
+```sh
+kubectl create -f cluster-autoscaler-vmss-msi.yaml
+```
+
 ### Standard deployment
 
 Pre-requirements:
@@ -106,4 +114,10 @@ Then deploy cluster-autoscaler by running
 
 ```sh
 kubectl create -f cluster-autoscaler-standard-master.yaml
+```
+
+To run a CA pod with Azure managed service identity (MSI), use [cluster-autoscaler-standard-msi.yaml](cluster-autoscaler-standard-msi.yaml) instead:
+
+```sh
+kubectl create -f cluster-autoscaler-standard-msi.yaml
 ```
