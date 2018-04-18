@@ -172,7 +172,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	}
 	skipped := len(nodesToCheck) - len(filteredNodesToCheck)
 	if skipped > 0 {
-		glog.V(1).Infof("Scale-down calculation: ignoring %v nodes, that were unremovable in the last %v", skipped, UnremovableNodeRecheckTimeout)
+		glog.V(1).Infof("Scale-down calculation: ignoring %v nodes unremovable in the last %v", skipped, UnremovableNodeRecheckTimeout)
 	}
 
 	// Phase1 - look at the nodes utilization. Calculate the utilization
@@ -291,7 +291,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		for _, node := range unremovable {
 			sd.unremovableNodes[node.Name] = unremovableTimeout
 		}
-		glog.V(1).Infof("%v nodes found unremovable in simulation, will re-check them at %v", len(unremovable), unremovableTimeout)
+		glog.V(1).Infof("%v nodes found to be unremovable in simulation, will re-check them at %v", len(unremovable), unremovableTimeout)
 	}
 
 	// Update state and metrics
