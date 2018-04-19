@@ -17,9 +17,16 @@ limitations under the License.
 package logic
 
 import (
+	"flag"
 	"time"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/model"
+)
+
+var (
+	safetyMarginFraction         = flag.Float64("safety-margin-fraction", 0.15, `Fraction of usage added as the safety margin to the recommended request`)
+	minCPUSafetyMarginMillicores = flag.Float64("safety-margin-min-cpu-millicores", 200, `Minimum CPU margin added to the recommended request`)
+	minMemorySafetyMarginMb      = flag.Float64("safety-margin-min-memory-mb", 300, `Minimum memory margin added to the recommended request`)
 )
 
 // PodResourceRecommender computes resource recommendation for a Vpa object.
@@ -92,16 +99,13 @@ func CreatePodResourceRecommender() PodResourceRecommender {
 	lowerBoundEstimator := NewPercentileEstimator(lowerBoundCPUPercentile, lowerBoundMemoryPeaksPercentile)
 	upperBoundEstimator := NewPercentileEstimator(upperBoundCPUPercentile, upperBoundMemoryPeaksPercentile)
 
-	// Use 15% safety margin on top of the recommended resources.
-	safetyMarginFraction := 0.15
-	// Minimum safety margin is 0.3 core and 300MB memory.
 	minSafetyMargin := model.Resources{
-		model.ResourceCPU:    model.CPUAmountFromCores(0.3),
-		model.ResourceMemory: model.MemoryAmountFromBytes(300 * 1024 * 1024),
+		model.ResourceCPU:    model.CPUAmountFromCores(*minCPUSafetyMarginMillicores * 0.001),
+		model.ResourceMemory: model.MemoryAmountFromBytes(*minMemorySafetyMarginMb * 1024 * 1024),
 	}
-	targetEstimator = WithSafetyMargin(safetyMarginFraction, minSafetyMargin, targetEstimator)
-	lowerBoundEstimator = WithSafetyMargin(safetyMarginFraction, minSafetyMargin, lowerBoundEstimator)
-	upperBoundEstimator = WithSafetyMargin(safetyMarginFraction, minSafetyMargin, upperBoundEstimator)
+	targetEstimator = WithSafetyMargin(*safetyMarginFraction, minSafetyMargin, targetEstimator)
+	lowerBoundEstimator = WithSafetyMargin(*safetyMarginFraction, minSafetyMargin, lowerBoundEstimator)
+	upperBoundEstimator = WithSafetyMargin(*safetyMarginFraction, minSafetyMargin, upperBoundEstimator)
 
 	// Apply confidence multiplier to the upper bound estimator. This means
 	// that the updater will be less eager to evict pods with short history

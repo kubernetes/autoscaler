@@ -86,17 +86,19 @@ kubectl create -f examples/hamster.yaml
 ```
 
 The above command creates a deployment with 2 pods, each running a single container
-that uses one full CPU core. The request is initially set to 0.5 CPU on each
-container. It also creates a VPA config with selector that matches the pods in the
-deployment.
+that requests 100 millicores and tries to utilize slightly above 500 millicores.
+The command also creates a VPA config with selector that matches the pods in the deployment.
 VPA will observe the behavior of the pods and after about 5 minutes they should get
-updated with the CPU request slightly above 1 core
+updated with a higher CPU request
 (note that VPA does not modify the template in the deployment, but the actual requests
 of the pods are updated). To see VPA config and current recommended resource requests run:
 ```
 kubectl describe vpa
 ```
 
+
+*Note: if your cluster has little free capacity these pods may be unable to schedule.
+You may need to add more nodes or adjust examples/hamster.yaml to use less CPU.*
 
 ### Example VPA configuration
 
@@ -154,6 +156,9 @@ More on the architecture can be found [HERE](https://github.com/kubernetes/commu
 
 * Whenever VPA updates the pod resources the pod is recreated, which causes all
   running containers to be restarted.
+* Vertical Pod Autoscaler is **incompatible with the Horizontal Pod Autoscaler**
+  at this moment. You should either use one or the other, depending on which one is
+  more suitable to a specific workload.
 * VPA in `auto` mode can only be used on pods that run under a controller
   (such as Deployment), which is responsible for restarting deleted pods.
   **Using VPA in `auto` mode with a pod not running under any controller will
@@ -164,7 +169,8 @@ More on the architecture can be found [HERE](https://github.com/kubernetes/commu
 * VPA reacts to some out-of-memory events, but not in all situations.
 * VPA performance has not been tested in large clusters.
 * VPA recommendation might exceed available resources (e.g. Node size, available
-  size, available quota) and cause Pods to go pending.
+  size, available quota) and cause **Pods to go pending**. This can be addressed by
+  using VPA together with [Cluster Autoscaler](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#basics).
 * Multiple VPA resources matching the same Pod have undefined behavior.
 
 # Related links
