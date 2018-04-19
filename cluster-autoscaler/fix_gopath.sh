@@ -24,7 +24,9 @@ for item in $with_vendor; do
 done
 
 echo Overriding GKE API
+mkdir -p $GOPATH/src/google.golang.org/api/container/v1alpha1
 cp $GOPATH/src/k8s.io/autoscaler/cluster-autoscaler/_override/google.golang.org/api/container/v1alpha1/*  $GOPATH/src/google.golang.org/api/container/v1alpha1
+mkdir -p $GOPATH/src/google.golang.org/api/container/v1beta1
 cp $GOPATH/src/k8s.io/autoscaler/cluster-autoscaler/_override/google.golang.org/api/container/v1beta1/*  $GOPATH/src/google.golang.org/api/container/v1beta1
 cd $GOPATH/src/google.golang.org/api/
 git commit -a -m "Api override for NAP"
