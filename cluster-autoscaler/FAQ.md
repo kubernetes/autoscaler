@@ -830,7 +830,7 @@ the following hack makes the things easier to handle:
    against the latest release tag of the corresponding `k8s.io/kubernetes` branch.
 4. Do `godep restore` in `k8s.io/kubernetes`.
 5. Remove Godeps and vendor from `k8s.io/autoscaler/cluster-autoscaler`.
-6. Invoke `fix-gopath.sh`. This will update `k8s.io/api`, `k8s.io/apimachinery` etc with the content of
+6. Invoke `fix_gopath.sh`. This will update `k8s.io/api`, `k8s.io/apimachinery` etc with the content of
    `k8s.io/kubernetes/staging` and remove all vendor directories from your gopath.
 7. Add some other dependencies if needed, and make sure that the code in `k8s.io/autoscaler/cluster-autoscaler` refers to them somehow (may be a blank import).
 8. Check if everything compiles with `go test ./...` in `k8s.io/autoscaler/cluster-autoscaler`.
