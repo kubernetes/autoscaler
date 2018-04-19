@@ -17,14 +17,15 @@ limitations under the License.
 package azure
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"sync"
 
-	"github.com/Azure/azure-sdk-for-go/arm/compute"
 	"github.com/Azure/azure-sdk-for-go/arm/disk"
 	"github.com/Azure/azure-sdk-for-go/arm/resources/resources"
 	"github.com/Azure/azure-sdk-for-go/arm/storage"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2017-12-01/compute"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/stretchr/testify/mock"
 )
@@ -41,8 +42,7 @@ type VirtualMachineScaleSetsClientMock struct {
 }
 
 // Get gets the VirtualMachineScaleSet by vmScaleSetName.
-func (client *VirtualMachineScaleSetsClientMock) Get(resourceGroupName string,
-	vmScaleSetName string) (result compute.VirtualMachineScaleSet, err error) {
+func (client *VirtualMachineScaleSetsClientMock) Get(ctx context.Context, resourceGroupName string, vmScaleSetName string) (result compute.VirtualMachineScaleSet, err error) {
 	capacity := int64(2)
 	properties := compute.VirtualMachineScaleSetProperties{}
 	return compute.VirtualMachineScaleSet{
@@ -55,66 +55,36 @@ func (client *VirtualMachineScaleSetsClientMock) Get(resourceGroupName string,
 }
 
 // CreateOrUpdate creates or updates the VirtualMachineScaleSet.
-func (client *VirtualMachineScaleSetsClientMock) CreateOrUpdate(resourceGroupName string, VMScaleSetName string, parameters compute.VirtualMachineScaleSet, cancel <-chan struct{}) (<-chan compute.VirtualMachineScaleSet, <-chan error) {
+func (client *VirtualMachineScaleSetsClientMock) CreateOrUpdate(ctx context.Context, resourceGroupName string, VMScaleSetName string, parameters compute.VirtualMachineScaleSet) (resp *http.Response, err error) {
 	client.mutex.Lock()
 	defer client.mutex.Unlock()
-
-	resultChan := make(chan compute.VirtualMachineScaleSet, 1)
-	errChan := make(chan error, 1)
-	var result compute.VirtualMachineScaleSet
-	var err error
-	defer func() {
-		resultChan <- result
-		errChan <- err
-		close(resultChan)
-		close(errChan)
-	}()
 
 	if _, ok := client.FakeStore[resourceGroupName]; !ok {
 		client.FakeStore[resourceGroupName] = make(map[string]compute.VirtualMachineScaleSet)
 	}
 	client.FakeStore[resourceGroupName][VMScaleSetName] = parameters
-	result = client.FakeStore[resourceGroupName][VMScaleSetName]
-	result.Response.Response = &http.Response{
-		StatusCode: http.StatusOK,
-	}
-	err = nil
-	return resultChan, errChan
+
+	return nil, nil
 }
 
 // DeleteInstances deletes a set of instances for specified VirtualMachineScaleSet.
-func (client *VirtualMachineScaleSetsClientMock) DeleteInstances(resourceGroupName string, vmScaleSetName string,
-	vmInstanceIDs compute.VirtualMachineScaleSetVMInstanceRequiredIDs, cancel <-chan struct{}) (<-chan compute.OperationStatusResponse, <-chan error) {
-	args := client.Called(resourceGroupName, vmScaleSetName, vmInstanceIDs, cancel)
-	errChan := make(chan error)
-	go func() {
-		errChan <- args.Error(1)
-	}()
-	return nil, errChan
+func (client *VirtualMachineScaleSetsClientMock) DeleteInstances(ctx context.Context, resourceGroupName string, vmScaleSetName string, vmInstanceIDs compute.VirtualMachineScaleSetVMInstanceRequiredIDs) (resp *http.Response, err error) {
+	args := client.Called(resourceGroupName, vmScaleSetName, vmInstanceIDs)
+	return nil, args.Error(1)
 }
 
 // List gets a list of VirtualMachineScaleSets.
-func (client *VirtualMachineScaleSetsClientMock) List(resourceGroupName string) (result compute.VirtualMachineScaleSetListResult, err error) {
+func (client *VirtualMachineScaleSetsClientMock) List(ctx context.Context, resourceGroupName string) (result []compute.VirtualMachineScaleSet, err error) {
 	client.mutex.Lock()
 	defer client.mutex.Unlock()
 
-	value := []compute.VirtualMachineScaleSet{}
+	result = []compute.VirtualMachineScaleSet{}
 	if _, ok := client.FakeStore[resourceGroupName]; ok {
 		for _, v := range client.FakeStore[resourceGroupName] {
-			value = append(value, v)
+			result = append(result, v)
 		}
 	}
 
-	result.Response.Response = &http.Response{
-		StatusCode: http.StatusOK,
-	}
-	result.NextLink = nil
-	result.Value = &value
-	return result, nil
-}
-
-// ListNextResults gets more results of VirtualMachineScaleSets.
-func (client *VirtualMachineScaleSetsClientMock) ListNextResults(lastResults compute.VirtualMachineScaleSetListResult) (result compute.VirtualMachineScaleSetListResult, err error) {
 	return result, nil
 }
 
@@ -124,7 +94,7 @@ type VirtualMachineScaleSetVMsClientMock struct {
 }
 
 // Get gets a VirtualMachineScaleSetVM by VMScaleSetName and instanceID.
-func (m *VirtualMachineScaleSetVMsClientMock) Get(resourceGroupName string, VMScaleSetName string, instanceID string) (result compute.VirtualMachineScaleSetVM, err error) {
+func (m *VirtualMachineScaleSetVMsClientMock) Get(ctx context.Context, resourceGroupName string, VMScaleSetName string, instanceID string) (result compute.VirtualMachineScaleSetVM, err error) {
 	ID := fakeVirtualMachineScaleSetVMID
 	vmID := "123E4567-E89B-12D3-A456-426655440000"
 	properties := compute.VirtualMachineScaleSetVMProperties{
@@ -138,28 +108,20 @@ func (m *VirtualMachineScaleSetVMsClientMock) Get(resourceGroupName string, VMSc
 }
 
 // List gets a list of VirtualMachineScaleSetVMs.
-func (m *VirtualMachineScaleSetVMsClientMock) List(resourceGroupName string, virtualMachineScaleSetName string, filter string, selectParameter string, expand string) (result compute.VirtualMachineScaleSetVMListResult, err error) {
-	value := make([]compute.VirtualMachineScaleSetVM, 1)
+func (m *VirtualMachineScaleSetVMsClientMock) List(ctx context.Context, resourceGroupName string, virtualMachineScaleSetName string, filter string, selectParameter string, expand string) (result []compute.VirtualMachineScaleSetVM, err error) {
 	ID := fakeVirtualMachineScaleSetVMID
 	instanceID := "0"
 	vmID := "123E4567-E89B-12D3-A456-426655440000"
 	properties := compute.VirtualMachineScaleSetVMProperties{
 		VMID: &vmID,
 	}
-	value[0] = compute.VirtualMachineScaleSetVM{
+	result = append(result, compute.VirtualMachineScaleSetVM{
 		ID:                                 &ID,
 		InstanceID:                         &instanceID,
 		VirtualMachineScaleSetVMProperties: &properties,
-	}
+	})
 
-	return compute.VirtualMachineScaleSetVMListResult{
-		Value: &value,
-	}, nil
-}
-
-// ListNextResults gets more results from previous VirtualMachineScaleSetVMListResult.
-func (m *VirtualMachineScaleSetVMsClientMock) ListNextResults(lastResults compute.VirtualMachineScaleSetVMListResult) (result compute.VirtualMachineScaleSetVMListResult, err error) {
-	return compute.VirtualMachineScaleSetVMListResult{Value: nil}, nil
+	return result, nil
 }
 
 // VirtualMachinesClientMock mocks for VirtualMachinesClient.
@@ -170,34 +132,8 @@ type VirtualMachinesClientMock struct {
 	FakeStore map[string]map[string]compute.VirtualMachine
 }
 
-// CreateOrUpdate creates or updates the VirtualMachine.
-func (m *VirtualMachinesClientMock) CreateOrUpdate(resourceGroupName string, VMName string, parameters compute.VirtualMachine, cancel <-chan struct{}) (<-chan compute.VirtualMachine, <-chan error) {
-	m.mutex.Lock()
-	defer m.mutex.Unlock()
-	resultChan := make(chan compute.VirtualMachine, 1)
-	errChan := make(chan error, 1)
-	var result compute.VirtualMachine
-	var err error
-	defer func() {
-		resultChan <- result
-		errChan <- err
-		close(resultChan)
-		close(errChan)
-	}()
-	if _, ok := m.FakeStore[resourceGroupName]; !ok {
-		m.FakeStore[resourceGroupName] = make(map[string]compute.VirtualMachine)
-	}
-	m.FakeStore[resourceGroupName][VMName] = parameters
-	result = m.FakeStore[resourceGroupName][VMName]
-	result.Response.Response = &http.Response{
-		StatusCode: http.StatusOK,
-	}
-	err = nil
-	return resultChan, errChan
-}
-
 // Get gets the VirtualMachine by VMName.
-func (m *VirtualMachinesClientMock) Get(resourceGroupName string, VMName string, expand compute.InstanceViewTypes) (result compute.VirtualMachine, err error) {
+func (m *VirtualMachinesClientMock) Get(ctx context.Context, resourceGroupName string, VMName string, expand compute.InstanceViewTypes) (result compute.VirtualMachine, err error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 	if _, ok := m.FakeStore[resourceGroupName]; ok {
@@ -212,40 +148,23 @@ func (m *VirtualMachinesClientMock) Get(resourceGroupName string, VMName string,
 }
 
 // List gets a lit of VirtualMachine inside the resource group.
-func (m *VirtualMachinesClientMock) List(resourceGroupName string) (result compute.VirtualMachineListResult, err error) {
+func (m *VirtualMachinesClientMock) List(ctx context.Context, resourceGroupName string) (result []compute.VirtualMachine, err error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	var value []compute.VirtualMachine
 	if _, ok := m.FakeStore[resourceGroupName]; ok {
 		for _, v := range m.FakeStore[resourceGroupName] {
-			value = append(value, v)
+			result = append(result, v)
 		}
 	}
-	result.Response.Response = &http.Response{
-		StatusCode: http.StatusOK,
-	}
-	result.NextLink = nil
-	result.Value = &value
 
 	return result, nil
 }
 
-// ListNextResults gets more results from previous VirtualMachineListResult.
-func (m *VirtualMachinesClientMock) ListNextResults(lastResults compute.VirtualMachineListResult) (result compute.VirtualMachineListResult, err error) {
-	m.mutex.Lock()
-	defer m.mutex.Unlock()
-	return compute.VirtualMachineListResult{}, nil
-}
-
 // Delete deletes the VirtualMachine by VMName.
-func (m *VirtualMachinesClientMock) Delete(resourceGroupName string, VMName string, cancel <-chan struct{}) (<-chan compute.OperationStatusResponse, <-chan error) {
-	args := m.Called(resourceGroupName, VMName, cancel)
-	errChan := make(chan error)
-	go func() {
-		errChan <- args.Error(1)
-	}()
-	return nil, errChan
+func (m *VirtualMachinesClientMock) Delete(ctx context.Context, resourceGroupName string, VMName string) (resp *http.Response, err error) {
+	args := m.Called(resourceGroupName, VMName)
+	return nil, args.Error(1)
 }
 
 // InterfacesClientMock mocks for InterfacesClient.

@@ -338,46 +338,34 @@ func (m *AzureManager) getFilteredAutoscalingGroups(filter []cloudprovider.Label
 
 // listScaleSets gets a list of scale sets and instanceIDs.
 func (m *AzureManager) listScaleSets(filter []cloudprovider.LabelAutoDiscoveryConfig) (asgs []cloudprovider.NodeGroup, err error) {
-	result, err := m.azClient.virtualMachineScaleSetsClient.List(m.config.ResourceGroup)
+	ctx, cancel := getContextWithCancel()
+	defer cancel()
+
+	result, err := m.azClient.virtualMachineScaleSetsClient.List(ctx, m.config.ResourceGroup)
 	if err != nil {
 		glog.Errorf("VirtualMachineScaleSetsClient.List for %v failed: %v", m.config.ResourceGroup, err)
 		return nil, err
 	}
 
-	moreResults := (result.Value != nil && len(*result.Value) > 0)
-	for moreResults {
-		for _, scaleSet := range *result.Value {
-			if len(filter) > 0 {
-				if scaleSet.Tags == nil || len(*scaleSet.Tags) == 0 {
-					continue
-				}
-
-				if !matchDiscoveryConfig(*scaleSet.Tags, filter) {
-					continue
-				}
+	for _, scaleSet := range result {
+		if len(filter) > 0 {
+			if scaleSet.Tags == nil || len(*scaleSet.Tags) == 0 {
+				continue
 			}
 
-			spec := &dynamic.NodeGroupSpec{
-				Name:               *scaleSet.Name,
-				MinSize:            1,
-				MaxSize:            -1,
-				SupportScaleToZero: scaleToZeroSupported,
+			if !matchDiscoveryConfig(*scaleSet.Tags, filter) {
+				continue
 			}
-			asg, _ := NewScaleSet(spec, m)
-			asgs = append(asgs, asg)
-		}
-		moreResults = false
-
-		if result.NextLink != nil {
-			result, err = m.azClient.virtualMachineScaleSetsClient.ListNextResults(result)
-			if err != nil {
-				glog.Errorf("VirtualMachineScaleSetsClient.ListNextResults for %v failed: %v", m.config.ResourceGroup, err)
-				return nil, err
-			}
-
-			moreResults = (result.Value != nil && len(*result.Value) > 0)
 		}
 
+		spec := &dynamic.NodeGroupSpec{
+			Name:               *scaleSet.Name,
+			MinSize:            1,
+			MaxSize:            -1,
+			SupportScaleToZero: scaleToZeroSupported,
+		}
+		asg, _ := NewScaleSet(spec, m)
+		asgs = append(asgs, asg)
 	}
 
 	return asgs, nil
