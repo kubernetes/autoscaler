@@ -26,7 +26,6 @@ import (
 
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/golang/glog"
-
 	"gopkg.in/gcfg.v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
@@ -35,6 +34,8 @@ import (
 const (
 	vmTypeVMSS     = "vmss"
 	vmTypeStandard = "standard"
+	vmTypeACS      = "acs"
+	vmTypeAKS      = "aks"
 
 	scaleToZeroSupported = false
 	refreshInterval      = 1 * time.Minute
@@ -72,6 +73,11 @@ type Config struct {
 	// Configs only for standard vmType (agent pools).
 	Deployment           string                 `json:"deployment" yaml:"deployment"`
 	DeploymentParameters map[string]interface{} `json:"deploymentParameters" yaml:"deploymentParameters"`
+
+	//Configs only for ACS/AKS
+	ClusterName string `json:"clusterName" yaml:"clusterName"`
+	//Config only for AKS
+	NodeResourceGroup string `json:"nodeResourceGroup" yaml:"nodeResourceGroup"`
 }
 
 // TrimSpace removes all leading and trailing white spaces.
@@ -86,6 +92,8 @@ func (c *Config) TrimSpace() {
 	c.AADClientCertPath = strings.TrimSpace(c.AADClientCertPath)
 	c.AADClientCertPassword = strings.TrimSpace(c.AADClientCertPassword)
 	c.Deployment = strings.TrimSpace(c.Deployment)
+	c.ClusterName = strings.TrimSpace(c.ClusterName)
+	c.NodeResourceGroup = strings.TrimSpace(c.NodeResourceGroup)
 }
 
 // CreateAzureManager creates Azure Manager object to work with Azure.
@@ -109,6 +117,8 @@ func CreateAzureManager(configReader io.Reader, discoveryOpts cloudprovider.Node
 		cfg.AADClientCertPath = os.Getenv("ARM_CLIENT_CERT_PATH")
 		cfg.AADClientCertPassword = os.Getenv("ARM_CLIENT_CERT_PASSWORD")
 		cfg.Deployment = os.Getenv("ARM_DEPLOYMENT")
+		cfg.ClusterName = os.Getenv("AZURE_CLUSTER_NAME")
+		cfg.NodeResourceGroup = os.Getenv("AZURE_NODE_RESOURCE_GROUP")
 
 		useManagedIdentityExtensionFromEnv := os.Getenv("ARM_USE_MANAGED_IDENTITY_EXTENSION")
 		if len(useManagedIdentityExtensionFromEnv) > 0 {
@@ -219,6 +229,10 @@ func (m *AzureManager) buildAsgFromSpec(spec string) (cloudprovider.NodeGroup, e
 		return NewAgentPool(s, m)
 	case vmTypeVMSS:
 		return NewScaleSet(s, m)
+	case vmTypeACS:
+		fallthrough
+	case vmTypeAKS:
+		return NewContainerServiceAgentPool(s, m)
 	default:
 		return nil, fmt.Errorf("vmtype %s not supported", m.config.VMType)
 	}
@@ -326,6 +340,9 @@ func (m *AzureManager) getFilteredAutoscalingGroups(filter []cloudprovider.Label
 		asgs, err = m.listScaleSets(filter)
 	case vmTypeStandard:
 		asgs, err = m.listAgentPools(filter)
+	case vmTypeACS:
+	case vmTypeAKS:
+		return nil, nil
 	default:
 		err = fmt.Errorf("vmType %q not supported", m.config.VMType)
 	}
