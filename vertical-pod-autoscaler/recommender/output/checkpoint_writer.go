@@ -28,9 +28,10 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/model"
 )
 
-// CheckpointWriter is implements how histogram checkpoints are stored.
+// CheckpointWriter persistently stores aggregated historical usage of containers
+// controlled by VPA objects. This state can be restored to initialize the model after restart.
 type CheckpointWriter interface {
-	StoreCheckpoints()
+	StoreCheckpoints(now time.Time)
 }
 
 type checkpointWriter struct {
@@ -46,9 +47,9 @@ func NewCheckpointWriter(cluster *model.ClusterState, vpaCheckpointClient vpa_ap
 	}
 }
 
-func (writer *checkpointWriter) StoreCheckpoints() {
+func (writer *checkpointWriter) StoreCheckpoints(now time.Time) {
 	for _, vpa := range writer.cluster.Vpas {
-		aggregateContainerStateMap := model.BuildAggregateContainerStateMap(vpa, model.MergeForRecommendation, time.Now())
+		aggregateContainerStateMap := buildAggregateContainerStateMap(vpa, now)
 		for container, aggregatedContainerState := range aggregateContainerStateMap {
 			containerCheckpoint, err := aggregatedContainerState.SaveToCheckpoint()
 			if err != nil {
@@ -74,4 +75,30 @@ func (writer *checkpointWriter) StoreCheckpoints() {
 			}
 		}
 	}
+}
+
+// Build the AggregateContainerState for the purpose of the checkpoint. This is an aggregation of state of all
+// containers that belong to pods matched by the VPA.
+// Note however that we exclude the most recent memory peak for each container (see below).
+func buildAggregateContainerStateMap(vpa *model.Vpa, now time.Time) map[string]*model.AggregateContainerState {
+	aggregateContainerStateMap := model.BuildAggregateContainerStateMap(vpa)
+	// Note: the memory peak from the current (ongoing) aggregation interval is not included in the
+	// checkpoint to avoid having multiple peaks in the same interval after the state is restored from
+	// the checkpoint. Therefore we are extracting the current peak from all containers.
+	for _, pod := range vpa.Pods {
+		for containerName, container := range pod.Containers {
+			if aggregateContainerState, exists := aggregateContainerStateMap[containerName]; exists {
+				subtractCurrentContainerMemoryPeak(aggregateContainerState, container, now)
+			}
+		}
+	}
+	return aggregateContainerStateMap
+}
+
+func subtractCurrentContainerMemoryPeak(a *model.AggregateContainerState, container *model.ContainerState, now time.Time) {
+	lastMemoryPeak := container.MemoryUsagePeaks.Head()
+	if lastMemoryPeak != nil && container.WindowEnd.After(now) {
+		a.AggregateMemoryPeaks.SubtractSample(float64(*lastMemoryPeak), 1.0, container.WindowEnd)
+	}
+
 }

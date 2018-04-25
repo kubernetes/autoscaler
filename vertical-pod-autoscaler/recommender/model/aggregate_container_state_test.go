@@ -58,7 +58,7 @@ func addTestSample(cluster *ClusterState, container ContainerID, cpu float64, me
 
 func buildAggregateContainerStateMap(pods map[PodID]*PodState) map[string]*AggregateContainerState {
 	vpa := Vpa{Pods: pods}
-	return BuildAggregateContainerStateMap(&vpa, MergeForRecommendation, time.Unix(0, 0))
+	return BuildAggregateContainerStateMap(&vpa)
 }
 
 // Creates two pods, each having two containers:
@@ -178,28 +178,4 @@ func TestAggregateContainerStateLoadFromCheckpoint(t *testing.T) {
 	assert.Equal(t, 20, cs.TotalSamplesCount)
 	assert.False(t, cs.AggregateCPUUsage.IsEmpty())
 	assert.False(t, cs.AggregateMemoryPeaks.IsEmpty())
-}
-
-func TestMergeContainerStateForCheckpointDropsRecentMemoryPeak(t *testing.T) {
-	anyTime := time.Unix(0, 0)
-	container := NewContainerState(testRequest)
-	timestamp := anyTime
-	container.AddSample(&ContainerUsageSample{
-		timestamp, MemoryAmountFromBytes(1024 * 1024 * 1024), ResourceMemory})
-
-	s := NewAggregateContainerState()
-	s.MergeContainerState(container, MergeForCheckpoint, anyTime)
-
-	assert.True(t, s.AggregateMemoryPeaks.IsEmpty())
-}
-
-func TestMergeContainerStateForCheckpoint(t *testing.T) {
-	anyTime := time.Unix(0, 0)
-	container := NewContainerState(testRequest)
-	timestamp := anyTime
-	container.AddSample(&ContainerUsageSample{
-		timestamp, MemoryAmountFromBytes(1024 * 1024 * 1024), ResourceMemory})
-	s := NewAggregateContainerState()
-	s.MergeContainerState(container, MergeForCheckpoint, anyTime.Add(time.Hour*24+1))
-	assert.False(t, s.AggregateMemoryPeaks.IsEmpty())
 }
