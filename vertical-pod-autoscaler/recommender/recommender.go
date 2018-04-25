@@ -88,7 +88,7 @@ func (r *recommender) runOnce() {
 	r.updateVPAs()
 	glog.V(3).Infof("ClusterState is tracking %v PodStates and %v VPAs", len(r.clusterState.Pods), len(r.clusterState.Vpas))
 	if r.useCheckpoints {
-		r.checkpointWriter.StoreCheckpoints()
+		r.checkpointWriter.StoreCheckpoints(time.Now())
 		if time.Now().Sub(r.lastCheckpointGC) < r.checkpointsGCInterval {
 			r.lastCheckpointGC = time.Now()
 			r.clusterStateFeeder.GarbageCollectCheckpoints()

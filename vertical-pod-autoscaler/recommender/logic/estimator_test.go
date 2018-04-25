@@ -81,7 +81,7 @@ func TestConfidenceMultiplier(t *testing.T) {
 		timestamp = timestamp.Add(time.Minute * 2)
 	}
 	s := model.NewAggregateContainerState()
-	s.MergeContainerState(container, model.MergeForRecommendation, time.Unix(0, 0))
+	s.MergeContainerState(container)
 
 	// Expected confidence = 9/(60*24) = 0.00625.
 	assert.Equal(t, 0.00625, getConfidence(s))

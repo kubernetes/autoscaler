@@ -18,7 +18,6 @@ package logic
 
 import (
 	"flag"
-	"time"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/model"
 )
@@ -66,7 +65,7 @@ func NewPodResourceRecommender(
 
 // Returns recommended resources for a given Vpa object.
 func (r *podResourceRecommender) GetRecommendedPodResources(vpa *model.Vpa) RecommendedPodResources {
-	aggregateContainerStateMap := model.BuildAggregateContainerStateMap(vpa, model.MergeForRecommendation, time.Unix(0, 0))
+	aggregateContainerStateMap := model.BuildAggregateContainerStateMap(vpa)
 	var recommendation = make(RecommendedPodResources)
 	for containerName, aggregatedContainerState := range aggregateContainerStateMap {
 		if aggregatedContainerState.TotalSamplesCount > 0 {
