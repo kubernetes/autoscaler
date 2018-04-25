@@ -25,18 +25,9 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/util"
 )
 
-// ContainerMergePolicy contorls how MergeContainerState cobines samples.
-type ContainerMergePolicy bool
-
 const (
 	// SupportedCheckpointVersion is the tag of the supported version of serialized checkpoints.
 	SupportedCheckpointVersion = "v1"
-
-	// MergeForRecommendation means that all samples are combined during MergeContainerState call.
-	MergeForRecommendation ContainerMergePolicy = true
-	// MergeForCheckpoint controls that  MergeContainerState call will omit last peak memory
-	// sample if it would result in positive feedback loop during crash loop.
-	MergeForCheckpoint ContainerMergePolicy = false
 )
 
 // AggregateContainerState holds input signals aggregated from a set of containers.
@@ -50,15 +41,12 @@ type AggregateContainerState struct {
 }
 
 // MergeContainerState merges the state of an individual container into AggregateContainerState.
-func (a *AggregateContainerState) MergeContainerState(container *ContainerState,
-	mergePolicy ContainerMergePolicy, now time.Time) {
+func (a *AggregateContainerState) MergeContainerState(container *ContainerState) {
 	a.AggregateCPUUsage.Merge(container.CPUUsage)
 	memoryPeaks := container.MemoryUsagePeaks.Contents()
 	peakTime := container.WindowEnd
 	for i := len(memoryPeaks) - 1; i >= 0; i-- {
-		if mergePolicy == MergeForRecommendation || peakTime.Before(now) {
-			a.AggregateMemoryPeaks.AddSample(float64(memoryPeaks[i]), 1.0, peakTime)
-		}
+		a.AggregateMemoryPeaks.AddSample(float64(memoryPeaks[i]), 1.0, peakTime)
 		peakTime = peakTime.Add(-MemoryAggregationInterval)
 	}
 	// Note: we look at CPU samples to calculate the total lifespan and sample count.
@@ -133,7 +121,7 @@ func (a *AggregateContainerState) DeepCopy() *AggregateContainerState {
 
 // BuildAggregateContainerStateMap takes a set of pods and groups their containers by name.
 // If checkpoint data is available it is incorporated into AggregateContainerState
-func BuildAggregateContainerStateMap(vpa *Vpa, mergePolicy ContainerMergePolicy, now time.Time) map[string]*AggregateContainerState {
+func BuildAggregateContainerStateMap(vpa *Vpa) map[string]*AggregateContainerState {
 	aggregateContainerStateMap := make(map[string]*AggregateContainerState)
 	for k, v := range vpa.ContainerCheckpoints {
 		aggregateContainerStateMap[k] = v.DeepCopy()
@@ -145,7 +133,7 @@ func BuildAggregateContainerStateMap(vpa *Vpa, mergePolicy ContainerMergePolicy,
 				aggregateContainerState = NewAggregateContainerState()
 				aggregateContainerStateMap[containerName] = aggregateContainerState
 			}
-			aggregateContainerState.MergeContainerState(container, mergePolicy, now)
+			aggregateContainerState.MergeContainerState(container)
 		}
 	}
 	return aggregateContainerStateMap
