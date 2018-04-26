@@ -31,12 +31,6 @@ type podInfo struct {
 	pod   *apiv1.Pod
 }
 
-type byScoreDesc []*podInfo
-
-func (a byScoreDesc) Len() int           { return len(a) }
-func (a byScoreDesc) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a byScoreDesc) Less(i, j int) bool { return a[i].score > a[j].score }
-
 // BinpackingNodeEstimator estimates the number of needed nodes to handle the given amount of pods.
 type BinpackingNodeEstimator struct {
 	predicateChecker *simulator.PredicateChecker
@@ -60,7 +54,7 @@ func (estimator *BinpackingNodeEstimator) Estimate(pods []*apiv1.Pod, nodeTempla
 	comingNodes []*schedulercache.NodeInfo) int {
 
 	podInfos := calculatePodScore(pods, nodeTemplate)
-	sort.Sort(byScoreDesc(podInfos))
+	sort.Slice(podInfos, func(i, j int) bool { return podInfos[i].score > podInfos[j].score })
 
 	// nodeWithPod function returns NodeInfo, which is a copy of nodeInfo argument with an additional pod scheduled on it.
 	nodeWithPod := func(nodeInfo *schedulercache.NodeInfo, pod *apiv1.Pod) *schedulercache.NodeInfo {
