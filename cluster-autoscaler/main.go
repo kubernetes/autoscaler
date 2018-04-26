@@ -33,6 +33,7 @@ import (
 	cloudBuilder "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
+	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
@@ -134,7 +135,7 @@ var (
 	regional                     = flag.Bool("regional", false, "Cluster is regional.")
 )
 
-func createAutoscalerOptions() core.AutoscalerOptions {
+func createAutoscalingOptions() context.AutoscalingOptions {
 	minCoresTotal, maxCoresTotal, err := parseMinMaxFlag(*coresTotal)
 	if err != nil {
 		glog.Fatalf("Failed to parse flags: %v", err)
@@ -147,7 +148,7 @@ func createAutoscalerOptions() core.AutoscalerOptions {
 	minMemoryTotal = minMemoryTotal * 1024
 	maxMemoryTotal = maxMemoryTotal * 1024
 
-	autoscalingOpts := core.AutoscalingOptions{
+	return context.AutoscalingOptions{
 		CloudConfig:                      *cloudConfig,
 		CloudProviderName:                *cloudProviderFlag,
 		NodeGroupAutoDiscovery:           nodeGroupAutoDiscoveryFlag,
@@ -183,15 +184,12 @@ func createAutoscalerOptions() core.AutoscalerOptions {
 		ExpendablePodsPriorityCutoff:     *expendablePodsPriorityCutoff,
 		Regional:                         *regional,
 	}
+}
 
-	configFetcherOpts := dynamic.ConfigFetcherOptions{
+func createConfigFetcherOptions() dynamic.ConfigFetcherOptions {
+	return dynamic.ConfigFetcherOptions{
 		ConfigMapName: *configMapName,
 		Namespace:     *namespace,
-	}
-
-	return core.AutoscalerOptions{
-		AutoscalingOptions:   autoscalingOpts,
-		ConfigFetcherOptions: configFetcherOpts,
 	}
 }
 
@@ -241,8 +239,8 @@ func run(healthCheck *metrics.HealthCheck) {
 	metrics.RegisterAll()
 	kubeClient := createKubeClient()
 	kubeEventRecorder := kube_util.CreateEventRecorder(kubeClient)
-	opts := createAutoscalerOptions()
-	metrics.UpdateNapEnabled(opts.NodeAutoprovisioningEnabled)
+	autoscalingOptions := createAutoscalingOptions()
+	metrics.UpdateNapEnabled(autoscalingOptions.NodeAutoprovisioningEnabled)
 	predicateCheckerStopChannel := make(chan struct{})
 	predicateChecker, err := simulator.NewPredicateChecker(kubeClient, predicateCheckerStopChannel)
 	if err != nil {
@@ -250,7 +248,16 @@ func run(healthCheck *metrics.HealthCheck) {
 	}
 	listerRegistryStopChannel := make(chan struct{})
 	listerRegistry := kube_util.NewListerRegistryWithDefaultListers(kubeClient, listerRegistryStopChannel)
-	autoscaler, err := core.NewAutoscaler(opts, predicateChecker, kubeClient, kubeEventRecorder, listerRegistry)
+
+	opts := core.AutoscalerOptions{
+		AutoscalingOptions:   autoscalingOptions,
+		ConfigFetcherOptions: createConfigFetcherOptions(),
+		PredicateChecker:     predicateChecker,
+		KubeClient:           kubeClient,
+		KubeEventRecorder:    kubeEventRecorder,
+		ListerRegistry:       listerRegistry,
+	}
+	autoscaler, err := core.NewAutoscaler(opts)
 	if err != nil {
 		glog.Fatalf("Failed to create autoscaler: %v", err)
 	}
