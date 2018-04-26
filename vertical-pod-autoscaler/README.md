@@ -67,10 +67,10 @@ We recommend to insert a *VPA* per each *Deployment* you want to control
 automatically and use the same label selector as the *Deployment* uses.
 There are three modes in which *VPAs* operate:
 
-* `"Auto"`: VPA assigns resource requests on Pod creation as well as updates
-  them on running Pods (only if they differ significantly from the new
+* `"Auto"`: VPA assigns resource requests on pod creation as well as updates
+  them on running pods (only if they differ significantly from the new
   recommendation and only within Eviction API limits). This is the default setting.
-* `"Initial"`: VPA only assigns resource requests on Pod creation and never changes them
+* `"Initial"`: VPA only assigns resource requests on pod creation and never changes them
   later.
 * `"Off"`: VPA does not automatically change resource requirements of the pods.
   The recommendations are calculated and can be inspected in the VPA object.
@@ -142,7 +142,7 @@ The project consists of 3 components:
 * Recommender - it monitors the current and past resource consumption and, based on it,
 provides recommended values containers' cpu and memory requests.
 
-* Updater - it checks which of the managed Pods have correct resources set and, if not,
+* Updater - it checks which of the managed pods have correct resources set and, if not,
 kills them so that they can be recreated by their controllers with the updated requests.
 
 * Admission Plugin - it sets the correct resource requests on new pods (either just created
@@ -167,9 +167,9 @@ More on the architecture can be found [HERE](https://github.com/kubernetes/commu
 * VPA reacts to some out-of-memory events, but not in all situations.
 * VPA performance has not been tested in large clusters.
 * VPA recommendation might exceed available resources (e.g. Node size, available
-  size, available quota) and cause **Pods to go pending**. This can be addressed by
+  size, available quota) and cause **pods to go pending**. This can be addressed by
   using VPA together with [Cluster Autoscaler](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#basics).
-* Multiple VPA resources matching the same Pod have undefined behavior.
+* Multiple VPA resources matching the same pod have undefined behavior.
 
 # Related links
 
