@@ -28,6 +28,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
@@ -101,7 +102,7 @@ func (n *NodeDeleteStatus) SetDeleteInProgress(status bool) {
 
 // ScaleDown is responsible for maintaining the state needed to perform unneeded node removals.
 type ScaleDown struct {
-	context            *AutoscalingContext
+	context            *context.AutoscalingContext
 	unneededNodes      map[string]time.Time
 	unneededNodesList  []*apiv1.Node
 	unremovableNodes   map[string]time.Time
@@ -112,7 +113,7 @@ type ScaleDown struct {
 }
 
 // NewScaleDown builds new ScaleDown object.
-func NewScaleDown(context *AutoscalingContext) *ScaleDown {
+func NewScaleDown(context *context.AutoscalingContext) *ScaleDown {
 	return &ScaleDown{
 		context:            context,
 		unneededNodes:      make(map[string]time.Time),
@@ -648,7 +649,7 @@ func (sd *ScaleDown) waitForEmptyNodesDeleted(emptyNodes []*apiv1.Node, confirma
 	return finalError
 }
 
-func deleteNode(context *AutoscalingContext, node *apiv1.Node, pods []*apiv1.Pod) errors.AutoscalerError {
+func deleteNode(context *context.AutoscalingContext, node *apiv1.Node, pods []*apiv1.Pod) errors.AutoscalerError {
 	deleteSuccessful := false
 	drainSuccessful := false
 
