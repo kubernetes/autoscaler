@@ -22,6 +22,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/model"
 )
 
@@ -29,12 +31,23 @@ import (
 var (
 	testPodID1       = model.PodID{"namespace-1", "pod-1"}
 	testContainerID1 = model.ContainerID{testPodID1, "container-1"}
+	testVpaID1       = model.VpaID{"namespace-1", "vpa-1"}
 	testLabels       = map[string]string{"label-1": "value-1"}
+	testSelectorStr  = "label-1 = value-1"
 	testRequest      = model.Resources{
 		model.ResourceCPU:    model.CPUAmountFromCores(3.14),
 		model.ResourceMemory: model.MemoryAmountFromBytes(3.14e9),
 	}
 )
+
+func addVpa(cluster *model.ClusterState, vpaID model.VpaID, selector string) *model.Vpa {
+	var apiObject vpa_types.VerticalPodAutoscaler
+	apiObject.Namespace = vpaID.Namespace
+	apiObject.Name = vpaID.VpaName
+	apiObject.Spec.Selector, _ = metav1.ParseToLabelSelector(selector)
+	cluster.AddOrUpdateVpa(&apiObject)
+	return cluster.Vpas[vpaID]
+}
 
 func TestMergeContainerStateForCheckpointDropsRecentMemoryPeak(t *testing.T) {
 	cluster := model.NewClusterState()
@@ -44,18 +57,18 @@ func TestMergeContainerStateForCheckpointDropsRecentMemoryPeak(t *testing.T) {
 
 	timeNow := time.Unix(1, 0)
 	container.AddSample(&model.ContainerUsageSample{
-		timeNow, model.MemoryAmountFromBytes(1024 * 1024 * 1024), model.ResourceMemory})
-	vpa := &model.Vpa{Pods: cluster.Pods}
+		timeNow, model.MemoryAmountFromBytes(1024 * 1024 * 1024), testRequest[model.ResourceMemory], model.ResourceMemory})
+	vpa := addVpa(cluster, testVpaID1, testSelectorStr)
 
 	// Verify that the current peak is excluded from the aggregation.
-	aggregateContainerStateMap := buildAggregateContainerStateMap(vpa, timeNow)
+	aggregateContainerStateMap := buildAggregateContainerStateMap(vpa, cluster, timeNow)
 	if assert.Contains(t, aggregateContainerStateMap, "container-1") {
 		assert.True(t, aggregateContainerStateMap["container-1"].AggregateMemoryPeaks.IsEmpty(),
 			"Current peak was not excluded from the aggregation.")
 	}
 	// Verify that an old peak is not excluded from the aggregation.
 	timeNow = timeNow.Add(model.MemoryAggregationInterval)
-	aggregateContainerStateMap = buildAggregateContainerStateMap(vpa, timeNow)
+	aggregateContainerStateMap = buildAggregateContainerStateMap(vpa, cluster, timeNow)
 	if assert.Contains(t, aggregateContainerStateMap, "container-1") {
 		assert.False(t, aggregateContainerStateMap["container-1"].AggregateMemoryPeaks.IsEmpty(),
 			"Old peak should not be excluded from the aggregation.")
