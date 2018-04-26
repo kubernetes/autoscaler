@@ -33,6 +33,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	scheduler_util "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
@@ -123,8 +124,8 @@ func TestFindUnneededNodes(t *testing.T) {
 	provider.AddNode("ng1", n8)
 	provider.AddNode("ng1", n9)
 
-	context := AutoscalingContext{
-		AutoscalingOptions: AutoscalingOptions{
+	context := context.AutoscalingContext{
+		AutoscalingOptions: context.AutoscalingOptions{
 			ScaleDownUtilizationThreshold: 0.35,
 			ExpendablePodsPriorityCutoff:  10,
 		},
@@ -242,8 +243,8 @@ func TestPodsWithPrioritiesFindUnneededNodes(t *testing.T) {
 	provider.AddNode("ng1", n3)
 	provider.AddNode("ng1", n4)
 
-	context := AutoscalingContext{
-		AutoscalingOptions: AutoscalingOptions{
+	context := context.AutoscalingContext{
+		AutoscalingOptions: context.AutoscalingOptions{
 			ScaleDownUtilizationThreshold: 0.35,
 			ExpendablePodsPriorityCutoff:  10,
 		},
@@ -298,8 +299,8 @@ func TestFindUnneededMaxCandidates(t *testing.T) {
 
 	numCandidates := 30
 
-	context := AutoscalingContext{
-		AutoscalingOptions: AutoscalingOptions{
+	context := context.AutoscalingContext{
+		AutoscalingOptions: context.AutoscalingOptions{
 			ScaleDownUtilizationThreshold:    0.35,
 			ScaleDownNonEmptyCandidatesCount: numCandidates,
 			ScaleDownCandidatesPoolRatio:     1,
@@ -371,8 +372,8 @@ func TestFindUnneededEmptyNodes(t *testing.T) {
 
 	numCandidates := 30
 
-	context := AutoscalingContext{
-		AutoscalingOptions: AutoscalingOptions{
+	context := context.AutoscalingContext{
+		AutoscalingOptions: context.AutoscalingOptions{
 			ScaleDownUtilizationThreshold:    0.35,
 			ScaleDownNonEmptyCandidatesCount: numCandidates,
 			ScaleDownCandidatesPoolRatio:     1.0,
@@ -422,8 +423,8 @@ func TestFindUnneededNodePool(t *testing.T) {
 
 	numCandidates := 30
 
-	context := AutoscalingContext{
-		AutoscalingOptions: AutoscalingOptions{
+	context := context.AutoscalingContext{
+		AutoscalingOptions: context.AutoscalingOptions{
 			ScaleDownUtilizationThreshold:    0.35,
 			ScaleDownNonEmptyCandidatesCount: numCandidates,
 			ScaleDownCandidatesPoolRatio:     0.1,
@@ -569,8 +570,8 @@ func TestDeleteNode(t *testing.T) {
 			fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false)
 
 			// build context
-			context := &AutoscalingContext{
-				AutoscalingOptions:   AutoscalingOptions{},
+			context := &context.AutoscalingContext{
+				AutoscalingOptions:   context.AutoscalingOptions{},
 				ClientSet:            fakeClient,
 				Recorder:             fakeRecorder,
 				LogRecorder:          fakeLogRecorder,
@@ -755,8 +756,8 @@ func TestScaleDown(t *testing.T) {
 
 	fakeRecorder := kube_util.CreateEventRecorder(fakeClient)
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false)
-	context := &AutoscalingContext{
-		AutoscalingOptions: AutoscalingOptions{
+	context := &context.AutoscalingContext{
+		AutoscalingOptions: context.AutoscalingOptions{
 			ScaleDownUtilizationThreshold: 0.5,
 			ScaleDownUnneededTime:         time.Minute,
 			MaxGracefulTerminationSec:     60,
@@ -811,7 +812,7 @@ func assertSubset(t *testing.T, a []string, b []string) {
 	}
 }
 
-var defaultScaleDownOptions = AutoscalingOptions{
+var defaultScaleDownOptions = context.AutoscalingOptions{
 	ScaleDownUtilizationThreshold: 0.5,
 	ScaleDownUnneededTime:         time.Minute,
 	MaxGracefulTerminationSec:     60,
@@ -947,7 +948,7 @@ func simpleScaleDownEmpty(t *testing.T, config *scaleTestConfig) {
 
 	fakeRecorder := kube_util.CreateEventRecorder(fakeClient)
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false)
-	context := &AutoscalingContext{
+	context := &context.AutoscalingContext{
 		AutoscalingOptions:   config.options,
 		PredicateChecker:     simulator.NewTestPredicateChecker(),
 		CloudProvider:        provider,
@@ -1024,8 +1025,8 @@ func TestNoScaleDownUnready(t *testing.T) {
 
 	fakeRecorder := kube_util.CreateEventRecorder(fakeClient)
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false)
-	context := &AutoscalingContext{
-		AutoscalingOptions: AutoscalingOptions{
+	context := &context.AutoscalingContext{
+		AutoscalingOptions: context.AutoscalingOptions{
 			ScaleDownUtilizationThreshold: 0.5,
 			ScaleDownUnneededTime:         time.Minute,
 			ScaleDownUnreadyTime:          time.Hour,
@@ -1132,8 +1133,8 @@ func TestScaleDownNoMove(t *testing.T) {
 
 	fakeRecorder := kube_util.CreateEventRecorder(fakeClient)
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false)
-	context := &AutoscalingContext{
-		AutoscalingOptions: AutoscalingOptions{
+	context := &context.AutoscalingContext{
+		AutoscalingOptions: context.AutoscalingOptions{
 			ScaleDownUtilizationThreshold: 0.5,
 			ScaleDownUnneededTime:         time.Minute,
 			ScaleDownUnreadyTime:          time.Hour,

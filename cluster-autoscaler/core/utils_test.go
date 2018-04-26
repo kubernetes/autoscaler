@@ -24,6 +24,7 @@ import (
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
+	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 	scheduler_util "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
@@ -330,8 +331,8 @@ func TestRemoveOldUnregisteredNodes(t *testing.T) {
 	err := clusterState.UpdateNodes([]*apiv1.Node{ng1_1}, now.Add(-time.Hour))
 	assert.NoError(t, err)
 
-	context := &AutoscalingContext{
-		AutoscalingOptions: AutoscalingOptions{
+	context := &context.AutoscalingContext{
+		AutoscalingOptions: context.AutoscalingOptions{
 			MaxNodeProvisionTime: 45 * time.Minute,
 		},
 		CloudProvider:        provider,
@@ -428,8 +429,8 @@ func TestRemoveFixNodeTargetSize(t *testing.T) {
 	err := clusterState.UpdateNodes([]*apiv1.Node{ng1_1}, now.Add(-time.Hour))
 	assert.NoError(t, err)
 
-	context := &AutoscalingContext{
-		AutoscalingOptions: AutoscalingOptions{
+	context := &context.AutoscalingContext{
+		AutoscalingOptions: context.AutoscalingOptions{
 			MaxNodeProvisionTime: 45 * time.Minute,
 		},
 		CloudProvider:        provider,
@@ -461,7 +462,7 @@ func TestGetPotentiallyUnneededNodes(t *testing.T) {
 	provider.AddNode("ng1", ng1_2)
 	provider.AddNode("ng2", ng2_1)
 
-	context := &AutoscalingContext{
+	context := &context.AutoscalingContext{
 		CloudProvider: provider,
 	}
 
