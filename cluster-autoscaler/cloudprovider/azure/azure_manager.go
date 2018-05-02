@@ -36,8 +36,9 @@ const (
 	vmTypeVMSS     = "vmss"
 	vmTypeStandard = "standard"
 
-	scaleToZeroSupported = false
-	refreshInterval      = 1 * time.Minute
+	scaleToZeroSupportedStandard = false
+	scaleToZeroSupportedVMSS     = true
+	refreshInterval              = 1 * time.Minute
 
 	// The path of deployment parameters for standard vm.
 	deploymentParametersPath = "/var/lib/azure/azuredeploy.parameters.json"
@@ -209,6 +210,10 @@ func (m *AzureManager) fetchExplicitAsgs(specs []string) error {
 }
 
 func (m *AzureManager) buildAsgFromSpec(spec string) (cloudprovider.NodeGroup, error) {
+	scaleToZeroSupported := scaleToZeroSupportedStandard
+	if strings.EqualFold(m.config.VMType, vmTypeVMSS) {
+		scaleToZeroSupported = scaleToZeroSupportedVMSS
+	}
 	s, err := dynamic.SpecFromString(spec, scaleToZeroSupported)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse node group spec: %v", err)
@@ -362,7 +367,7 @@ func (m *AzureManager) listScaleSets(filter []cloudprovider.LabelAutoDiscoveryCo
 			Name:               *scaleSet.Name,
 			MinSize:            1,
 			MaxSize:            -1,
-			SupportScaleToZero: scaleToZeroSupported,
+			SupportScaleToZero: scaleToZeroSupportedVMSS,
 		}
 		asg, _ := NewScaleSet(spec, m)
 		asgs = append(asgs, asg)
@@ -390,7 +395,7 @@ func (m *AzureManager) listAgentPools(filter []cloudprovider.LabelAutoDiscoveryC
 			Name:               poolName,
 			MinSize:            1,
 			MaxSize:            -1,
-			SupportScaleToZero: scaleToZeroSupported,
+			SupportScaleToZero: scaleToZeroSupportedStandard,
 		}
 		asg, _ := NewAgentPool(spec, m)
 		asgs = append(asgs, asg)
