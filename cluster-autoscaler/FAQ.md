@@ -821,7 +821,7 @@ CA depends on `k8s.io/kubernetes` internals as well as the k8s.io libs like
 `k8s.io/apimachinery`. However `k8s.io/kubernetes` has its own/newer version of these libraries
 (in a `staging` directory) which may not always be compatible with what has been published to apimachinery repo.
 This leads to various conflicts that are hard to resolve in a "proper" way. So until a better solution
-is proposed (or we stop migrating stuff between `k8s.io/kubernets` and other projects on a daily basis),
+is proposed (or we stop migrating stuff between `k8s.io/kubernetes` and other projects on a daily basis),
 the following hack makes the things easier to handle:
 
 1. Create a new `$GOPATH` directory.
