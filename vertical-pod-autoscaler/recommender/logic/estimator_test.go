@@ -72,16 +72,14 @@ func TestConfidenceMultiplier(t *testing.T) {
 	})
 	testedEstimator := &confidenceMultiplier{0.1, 2.0, baseEstimator}
 
-	container := model.NewContainerState(testRequest)
+	s := model.NewAggregateContainerState()
 	// Add 9 CPU samples at the frequency of 1/(2 mins).
 	timestamp := anyTime
 	for i := 1; i <= 9; i++ {
-		container.AddSample(&model.ContainerUsageSample{
-			timestamp, model.CPUAmountFromCores(1.0), model.ResourceCPU})
+		s.AddSample(&model.ContainerUsageSample{
+			timestamp, model.CPUAmountFromCores(1.0), testRequest[model.ResourceCPU], model.ResourceCPU})
 		timestamp = timestamp.Add(time.Minute * 2)
 	}
-	s := model.NewAggregateContainerState()
-	s.MergeContainerState(container)
 
 	// Expected confidence = 9/(60*24) = 0.00625.
 	assert.Equal(t, 0.00625, getConfidence(s))
