@@ -826,7 +826,7 @@ the following hack makes the things easier to handle:
 
 1. Create a new `$GOPATH` directory.
 2. Get `k8s.io/kubernetes` and `k8s.io/autoscaler` source code (via `git clone` or `go get`).
-3. Make sure that you use the correct branch/tag in `k8s.io/kubernetes`. For example, regular dev updates should be done against `k8s.io/kubernetes` HEAD, while updates in CA release branches should be done
+3. Make sure that you use the correct branch/tag in `k8s.io/kubernetes`(Note: please refer cluster-autoscaler/kubernetes.sync for the right commit). For example, regular dev updates should be done against `k8s.io/kubernetes` HEAD, while updates in CA release branches should be done
    against the latest release tag of the corresponding `k8s.io/kubernetes` branch.
 4. Do `godep restore` in `k8s.io/kubernetes`.
 5. Remove Godeps and vendor from `k8s.io/autoscaler/cluster-autoscaler`.
