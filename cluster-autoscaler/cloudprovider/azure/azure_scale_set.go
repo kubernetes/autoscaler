@@ -18,6 +18,7 @@ package azure
 
 import (
 	"fmt"
+	"math/rand"
 	"sync"
 	"time"
 
@@ -25,8 +26,12 @@ import (
 	"github.com/golang/glog"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 	"k8s.io/kubernetes/pkg/scheduler/schedulercache"
 )
 
@@ -90,6 +95,19 @@ func (scaleSet *ScaleSet) MaxSize() int {
 	return scaleSet.maxSize
 }
 
+func (scaleSet *ScaleSet) getVMSSInfo() (compute.VirtualMachineScaleSet, error) {
+	ctx, cancel := getContextWithCancel()
+	defer cancel()
+
+	resourceGroup := scaleSet.manager.config.ResourceGroup
+	setInfo, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.Get(ctx, resourceGroup, scaleSet.Name)
+	if err != nil {
+		return compute.VirtualMachineScaleSet{}, err
+	}
+
+	return setInfo, nil
+}
+
 func (scaleSet *ScaleSet) getCurSize() (int64, error) {
 	scaleSet.mutex.Lock()
 	defer scaleSet.mutex.Unlock()
@@ -98,12 +116,8 @@ func (scaleSet *ScaleSet) getCurSize() (int64, error) {
 		return scaleSet.curSize, nil
 	}
 
-	ctx, cancel := getContextWithCancel()
-	defer cancel()
-
 	glog.V(5).Infof("Get scale set size for %q", scaleSet.Name)
-	resourceGroup := scaleSet.manager.config.ResourceGroup
-	set, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.Get(ctx, resourceGroup, scaleSet.Name)
+	set, err := scaleSet.getVMSSInfo()
 	if err != nil {
 		return -1, err
 	}
@@ -124,11 +138,8 @@ func (scaleSet *ScaleSet) SetScaleSetSize(size int64) error {
 	scaleSet.mutex.Lock()
 	defer scaleSet.mutex.Unlock()
 
-	ctx, cancel := getContextWithCancel()
-	defer cancel()
-
 	resourceGroup := scaleSet.manager.config.ResourceGroup
-	op, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.Get(ctx, resourceGroup, scaleSet.Name)
+	op, err := scaleSet.getVMSSInfo()
 	if err != nil {
 		return err
 	}
@@ -352,9 +363,81 @@ func (scaleSet *ScaleSet) Debug() string {
 	return fmt.Sprintf("%s (%d:%d)", scaleSet.Id(), scaleSet.MinSize(), scaleSet.MaxSize())
 }
 
+func buildInstanceOS(template compute.VirtualMachineScaleSet) string {
+	instanceOS := cloudprovider.DefaultOS
+	if template.VirtualMachineProfile != nil && template.VirtualMachineProfile.OsProfile != nil && template.VirtualMachineProfile.OsProfile.WindowsConfiguration != nil {
+		instanceOS = "windows"
+	}
+
+	return instanceOS
+}
+
+func buildGenericLabels(template compute.VirtualMachineScaleSet, nodeName string) map[string]string {
+	result := make(map[string]string)
+
+	result[kubeletapis.LabelArch] = cloudprovider.DefaultArch
+	result[kubeletapis.LabelOS] = buildInstanceOS(template)
+	result[kubeletapis.LabelInstanceType] = *template.Sku.Name
+	result[kubeletapis.LabelZoneRegion] = *template.Location
+	result[kubeletapis.LabelZoneFailureDomain] = "0"
+	result[kubeletapis.LabelHostname] = nodeName
+	return result
+}
+
+func (scaleSet *ScaleSet) buildNodeFromTemplate(template compute.VirtualMachineScaleSet) (*apiv1.Node, error) {
+	node := apiv1.Node{}
+	nodeName := fmt.Sprintf("%s-asg-%d", scaleSet.Name, rand.Int63())
+
+	node.ObjectMeta = metav1.ObjectMeta{
+		Name:     nodeName,
+		SelfLink: fmt.Sprintf("/api/v1/nodes/%s", nodeName),
+		Labels:   map[string]string{},
+	}
+
+	node.Status = apiv1.NodeStatus{
+		Capacity: apiv1.ResourceList{},
+	}
+
+	vmssType := InstanceTypes[*template.Sku.Name]
+	if vmssType == nil {
+		return nil, fmt.Errorf("instance type %q not supported", *template.Sku.Name)
+	}
+	node.Status.Capacity[apiv1.ResourcePods] = *resource.NewQuantity(110, resource.DecimalSI)
+	node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewQuantity(vmssType.VCPU, resource.DecimalSI)
+	node.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(vmssType.GPU, resource.DecimalSI)
+	node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(vmssType.MemoryMb*1024*1024, resource.DecimalSI)
+
+	// TODO: set real allocatable.
+	node.Status.Allocatable = node.Status.Capacity
+
+	// NodeLabels
+	if template.Tags != nil {
+		for k, v := range *template.Tags {
+			node.Labels[k] = *v
+		}
+	}
+
+	// GenericLabels
+	node.Labels = cloudprovider.JoinStringMaps(node.Labels, buildGenericLabels(template, nodeName))
+	node.Status.Conditions = cloudprovider.BuildReadyConditions()
+	return &node, nil
+}
+
 // TemplateNodeInfo returns a node template for this scale set.
 func (scaleSet *ScaleSet) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
-	return nil, cloudprovider.ErrNotImplemented
+	template, err := scaleSet.getVMSSInfo()
+	if err != nil {
+		return nil, err
+	}
+
+	node, err := scaleSet.buildNodeFromTemplate(template)
+	if err != nil {
+		return nil, err
+	}
+
+	nodeInfo := schedulercache.NewNodeInfo(cloudprovider.BuildKubeProxy(scaleSet.Name))
+	nodeInfo.SetNode(node)
+	return nodeInfo, nil
 }
 
 // Nodes returns a list of all nodes that belong to this node group.
