@@ -57,6 +57,11 @@
 			"Rev": "f111fc2fa3861c5fdced76cae4c9c71821969577"
 		},
 		{
+			"ImportPath": "github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2017-09-30/containerservice",
+			"Comment": "v12.4.0-beta",
+			"Rev": "f111fc2fa3861c5fdced76cae4c9c71821969577"
+		},
+		{
 			"ImportPath": "github.com/Azure/azure-sdk-for-go/storage",
 			"Comment": "v12.4.0-beta",
 			"Rev": "f111fc2fa3861c5fdced76cae4c9c71821969577"
