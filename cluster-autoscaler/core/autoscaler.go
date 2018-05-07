@@ -46,8 +46,6 @@ type AutoscalerOptions struct {
 type Autoscaler interface {
 	// RunOnce represents an iteration in the control-loop of CA
 	RunOnce(currentTime time.Time) errors.AutoscalerError
-	// CleanUp represents a clean-up required before the first invocation of RunOnce
-	CleanUp()
 	// CloudProvider returns the cloud provider associated to this autoscaler
 	CloudProvider() cloudprovider.CloudProvider
 	// ExitCleanUp is a clean-up performed just before process termination.

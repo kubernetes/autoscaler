@@ -47,11 +47,6 @@ func NewDynamicAutoscaler(autoscalerBuilder AutoscalerBuilder, configFetcher dyn
 	}, nil
 }
 
-// CleanUp does the work required before all the iterations of a dynamic autoscaler run
-func (a *DynamicAutoscaler) CleanUp() {
-	a.autoscaler.CleanUp()
-}
-
 // CloudProvider returns the cloud provider associated to this autoscaler
 func (a *DynamicAutoscaler) CloudProvider() cloudprovider.CloudProvider {
 	return a.autoscaler.CloudProvider()

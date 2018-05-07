@@ -200,7 +200,8 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 		lastScaleUpTime:       time.Now(),
 		lastScaleDownFailTime: time.Now(),
 		scaleDown:             sd,
-		podListProcessor:      pods.NewDefaultPodListProcessor()}
+		podListProcessor:      pods.NewDefaultPodListProcessor(),
+		initialized:           true}
 
 	// MaxNodesTotal reached.
 	readyNodeListerMock.On("List").Return([]*apiv1.Node{n1}, nil).Once()
@@ -379,7 +380,8 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 		lastScaleUpTime:       time.Now(),
 		lastScaleDownFailTime: time.Now(),
 		scaleDown:             sd,
-		podListProcessor:      pods.NewDefaultPodListProcessor()}
+		podListProcessor:      pods.NewDefaultPodListProcessor(),
+		initialized:           true}
 
 	// Scale up.
 	readyNodeListerMock.On("List").Return([]*apiv1.Node{n1}, nil).Once()
@@ -519,7 +521,7 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 		podListProcessor:      pods.NewDefaultPodListProcessor()}
 
 	// Scale up.
-	readyNodeListerMock.On("List").Return([]*apiv1.Node{n1}, nil).Once()
+	readyNodeListerMock.On("List").Return([]*apiv1.Node{n1}, nil).Times(2) // due to initialized=false
 	allNodeListerMock.On("List").Return([]*apiv1.Node{n1}, nil).Once()
 	scheduledPodMock.On("List").Return([]*apiv1.Pod{p1}, nil).Once()
 	unschedulablePodMock.On("List").Return([]*apiv1.Pod{p2}, nil).Once()
@@ -656,7 +658,7 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 		podListProcessor:      pods.NewDefaultPodListProcessor()}
 
 	// Scale up
-	readyNodeListerMock.On("List").Return([]*apiv1.Node{n1, n2, n3}, nil).Once()
+	readyNodeListerMock.On("List").Return([]*apiv1.Node{n1, n2, n3}, nil).Times(2) // due to initialized=false
 	allNodeListerMock.On("List").Return([]*apiv1.Node{n1, n2, n3}, nil).Once()
 	scheduledPodMock.On("List").Return([]*apiv1.Pod{p1, p2, p3}, nil).Once()
 	unschedulablePodMock.On("List").Return([]*apiv1.Pod{p4, p5, p6}, nil).Once()
