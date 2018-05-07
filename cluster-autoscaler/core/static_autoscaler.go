@@ -59,6 +59,7 @@ type StaticAutoscaler struct {
 	lastScaleDownFailTime   time.Time
 	scaleDown               *ScaleDown
 	podListProcessor        pods.PodListProcessor
+	initialized             bool
 }
 
 // NewStaticAutoscaler creates an instance of Autoscaler filled with provided parameters
@@ -91,12 +92,18 @@ func NewStaticAutoscaler(opts context.AutoscalingOptions, predicateChecker *simu
 	}, nil
 }
 
-// CleanUp cleans up ToBeDeleted taints added by the previously run and then failed CA
-func (a *StaticAutoscaler) CleanUp() {
+// cleanUpIfRequired removes ToBeDeleted taints added by a previous run of CA
+// the taints are removed only once per runtime
+func (a *StaticAutoscaler) cleanUpIfRequired() {
+	if a.initialized {
+		return
+	}
+
 	// CA can die at any time. Removing taints that might have been left from the previous run.
 	if readyNodes, err := a.ReadyNodeLister().List(); err != nil {
 		cleanToBeDeleted(readyNodes, a.AutoscalingContext.ClientSet, a.Recorder)
 	}
+	a.initialized = true
 }
 
 // CloudProvider returns the cloud provider associated to this autoscaler
@@ -106,6 +113,8 @@ func (a *StaticAutoscaler) CloudProvider() cloudprovider.CloudProvider {
 
 // RunOnce iterates over node groups and scales them up/down if necessary
 func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError {
+	a.cleanUpIfRequired()
+
 	readyNodeLister := a.ReadyNodeLister()
 	allNodeLister := a.AllNodeLister()
 	unschedulablePodLister := a.UnschedulablePodLister()

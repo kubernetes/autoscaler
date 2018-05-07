@@ -261,7 +261,6 @@ func run(healthCheck *metrics.HealthCheck) {
 	if err != nil {
 		glog.Fatalf("Failed to create autoscaler: %v", err)
 	}
-	autoscaler.CleanUp()
 	registerSignalHandlers(autoscaler)
 	healthCheck.StartMonitoring()
 
