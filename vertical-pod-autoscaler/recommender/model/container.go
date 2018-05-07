@@ -24,7 +24,7 @@ import (
 const (
 	// OOMBumpUpRatio specifies how much memory will be added after observing OOM.
 	OOMBumpUpRatio float64 = 1.2
-	// OOMMinBumpUp specifies minimal increase of memeory after observing OOM.
+	// OOMMinBumpUp specifies minimal increase of memory after observing OOM.
 	OOMMinBumpUp float64 = 100 * 1024 * 1024 // 100MB
 )
 
