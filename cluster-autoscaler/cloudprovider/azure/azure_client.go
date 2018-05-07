@@ -28,6 +28,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/arm/resources/resources"
 	"github.com/Azure/azure-sdk-for-go/arm/storage"
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2017-12-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2017-09-30/containerservice"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/go-autorest/autorest/azure"
@@ -277,6 +278,8 @@ type azClient struct {
 	interfacesClient                InterfacesClient
 	disksClient                     DisksClient
 	storageAccountsClient           AccountsClient
+	containerServicesClient         containerservice.ContainerServicesClient
+	managedContainerServicesClient  containerservice.ManagedClustersClient
 }
 
 // newServicePrincipalTokenFromCredentials creates a new ServicePrincipalToken using values of the
@@ -368,6 +371,20 @@ func newAzClient(cfg *Config, env *azure.Environment) (*azClient, error) {
 	disksClient.PollingDelay = 5 * time.Second
 	glog.V(5).Infof("Created disks client with authorizer: %v", disksClient)
 
+	containerServicesClient := containerservice.NewContainerServicesClient(cfg.SubscriptionID)
+	containerServicesClient.BaseURI = env.ResourceManagerEndpoint
+	containerServicesClient.Authorizer = autorest.NewBearerAuthorizer(spt)
+	containerServicesClient.PollingDelay = 5 * time.Second
+	containerServicesClient.Sender = autorest.CreateSender()
+	glog.V(5).Infof("Created Container services client with authorizer: %v", containerServicesClient)
+
+	managedContainerServicesClient := containerservice.NewManagedClustersClient(cfg.SubscriptionID)
+	managedContainerServicesClient.BaseURI = env.ResourceManagerEndpoint
+	managedContainerServicesClient.Authorizer = autorest.NewBearerAuthorizer(spt)
+	managedContainerServicesClient.PollingDelay = 5 * time.Second
+	managedContainerServicesClient.Sender = autorest.CreateSender()
+	glog.V(5).Infof("Created Managed Container services client with authorizer: %v", managedContainerServicesClient)
+
 	return &azClient{
 		disksClient:                     disksClient,
 		interfacesClient:                interfacesClient,
@@ -376,5 +393,7 @@ func newAzClient(cfg *Config, env *azure.Environment) (*azClient, error) {
 		deploymentsClient:               deploymentsClient,
 		virtualMachinesClient:           virtualMachinesClient,
 		storageAccountsClient:           storageAccountsClient,
+		containerServicesClient:         containerServicesClient,
+		managedContainerServicesClient:  managedContainerServicesClient,
 	}, nil
 }
