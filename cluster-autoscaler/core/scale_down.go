@@ -53,13 +53,16 @@ const (
 	// ScaleDownError - scale down finished with error.
 	ScaleDownError ScaleDownResult = iota
 	// ScaleDownNoUnneeded - no unneeded nodes and no errors.
-	ScaleDownNoUnneeded ScaleDownResult = iota
+	ScaleDownNoUnneeded
 	// ScaleDownNoNodeDeleted - unneeded nodes present but not available for deletion.
-	ScaleDownNoNodeDeleted ScaleDownResult = iota
+	ScaleDownNoNodeDeleted
 	// ScaleDownNodeDeleted - a node was deleted.
-	ScaleDownNodeDeleted ScaleDownResult = iota
+	ScaleDownNodeDeleted
 	// ScaleDownNodeDeleteStarted - a node deletion process was started.
-	ScaleDownNodeDeleteStarted ScaleDownResult = iota
+	ScaleDownNodeDeleteStarted
+)
+
+const (
 	// ScaleDownDisabledKey is the name of annotation marking node as not eligible for scale down.
 	ScaleDownDisabledKey = "cluster-autoscaler.kubernetes.io/scale-down-disabled"
 )
