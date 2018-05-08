@@ -128,7 +128,7 @@ func NewScaleDown(context *context.AutoscalingContext) *ScaleDown {
 
 // CleanUp cleans up the internal ScaleDown state.
 func (sd *ScaleDown) CleanUp(timestamp time.Time) {
-	sd.usageTracker.CleanUp(time.Now().Add(-(sd.context.ScaleDownUnneededTime)))
+	sd.usageTracker.CleanUp(timestamp.Add(-sd.context.ScaleDownUnneededTime))
 }
 
 // GetCandidatesForScaleDown gets candidates for scale down.
