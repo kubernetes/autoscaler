@@ -253,7 +253,7 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes []*apiv1.Node, no
 				}
 			}
 			if !foundPlace {
-				glogx.V(4).Over(loggingQuota).Infof("% other nodes evaluated for %s/%s", -loggingQuota.Left(), pod.Namespace, pod.Name)
+				glogx.V(4).Over(loggingQuota).Infof("%v other nodes evaluated for %s/%s", -loggingQuota.Left(), pod.Namespace, pod.Name)
 				return fmt.Errorf("failed to find place for %s", podKey(pod))
 			}
 		}
