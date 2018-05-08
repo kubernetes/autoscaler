@@ -19,7 +19,6 @@ package core
 import (
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
@@ -46,8 +45,6 @@ type AutoscalerOptions struct {
 type Autoscaler interface {
 	// RunOnce represents an iteration in the control-loop of CA
 	RunOnce(currentTime time.Time) errors.AutoscalerError
-	// CloudProvider returns the cloud provider associated to this autoscaler
-	CloudProvider() cloudprovider.CloudProvider
 	// ExitCleanUp is a clean-up performed just before process termination.
 	ExitCleanUp()
 }
