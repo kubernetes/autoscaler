@@ -21,7 +21,6 @@ import (
 	"time"
 
 	"github.com/golang/glog"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
@@ -45,11 +44,6 @@ func NewDynamicAutoscaler(autoscalerBuilder AutoscalerBuilder, configFetcher dyn
 		autoscalerBuilder: autoscalerBuilder,
 		configFetcher:     configFetcher,
 	}, nil
-}
-
-// CloudProvider returns the cloud provider associated to this autoscaler
-func (a *DynamicAutoscaler) CloudProvider() cloudprovider.CloudProvider {
-	return a.autoscaler.CloudProvider()
 }
 
 // ExitCleanUp cleans-up after autoscaler, so no mess remains after process termination.
