@@ -19,7 +19,6 @@ package core
 import (
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
@@ -104,11 +103,6 @@ func (a *StaticAutoscaler) cleanUpIfRequired() {
 		cleanToBeDeleted(readyNodes, a.AutoscalingContext.ClientSet, a.Recorder)
 	}
 	a.initialized = true
-}
-
-// CloudProvider returns the cloud provider associated to this autoscaler
-func (a *StaticAutoscaler) CloudProvider() cloudprovider.CloudProvider {
-	return a.AutoscalingContext.CloudProvider
 }
 
 // RunOnce iterates over node groups and scales them up/down if necessary
