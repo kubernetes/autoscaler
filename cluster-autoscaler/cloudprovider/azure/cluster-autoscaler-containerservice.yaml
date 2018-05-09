@@ -110,8 +110,8 @@ data:
   SubscriptionID: <base64-encode-subscription-id>
   TenantID: <base64-encoded-tenant-id>
   VMType: QUtTCg==
-  ClusterName: `<base64-encoded-clustername>`
-  NodeResourceGroup: `<base64-encoded-node-resource-group>`
+  ClusterName: <base64-encoded-clustername>
+  NodeResourceGroup: <base64-encoded-node-resource-group>
 kind: Secret
 metadata:
   name: cluster-autoscaler-azure
@@ -185,13 +185,13 @@ spec:
               key: VMType
               name: cluster-autoscaler-azure
         - name: AZURE_CLUSTER_NAME
-           valueFrom:
-             secretKeyRef:
-               key: ClusterName
-               name: cluster-autoscaler-azure
+          valueFrom:
+            secretKeyRef:
+              key: ClusterName
+              name: cluster-autoscaler-azure
         - name: AZURE_NODE_RESOURCE_GROUP
-           valueFrom:
-             secretKeyRef:
-               key: NodeResourceGroup
-               name: cluster-autoscaler-azure
+          valueFrom:
+            secretKeyRef:
+              key: NodeResourceGroup
+              name: cluster-autoscaler-azure
       restartPolicy: Always
