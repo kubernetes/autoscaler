@@ -67,9 +67,8 @@ func TestScaleUpOK(t *testing.T) {
 		extraPods: []podConfig{
 			{"p-new", 500, 0, ""},
 		},
-		expectedScaleUp:      "ng2-1",
-		expectedScaleUpGroup: "ng2",
-		options:              defaultOptions,
+		expectedScaleUp: groupSizeChange{groupName: "ng2", sizeChange: 1},
+		options:         defaultOptions,
 	}
 
 	simpleScaleUpTest(t, config)
@@ -91,9 +90,8 @@ func TestScaleUpMaxCoresLimitHit(t *testing.T) {
 			{"p-new-1", 2000, 0, ""},
 			{"p-new-2", 2000, 0, ""},
 		},
-		expectedScaleUp:      "ng1-1",
-		expectedScaleUpGroup: "ng1",
-		options:              options,
+		expectedScaleUp: groupSizeChange{groupName: "ng1", sizeChange: 1},
+		options:         options,
 	}
 
 	simpleScaleUpTest(t, config)
@@ -118,9 +116,8 @@ func TestScaleUpMaxMemoryLimitHit(t *testing.T) {
 			{"p-new-2", 2000, 100 * MB, ""},
 			{"p-new-3", 2000, 100 * MB, ""},
 		},
-		expectedScaleUp:      "ng1-2",
-		expectedScaleUpGroup: "ng1",
-		options:              options,
+		expectedScaleUp: groupSizeChange{groupName: "ng1", sizeChange: 2},
+		options:         options,
 	}
 
 	simpleScaleUpTest(t, config)
@@ -143,8 +140,7 @@ func TestScaleUpCapToMaxTotalNodesLimit(t *testing.T) {
 			{"p-new-2", 4000, 100 * MB, ""},
 			{"p-new-3", 4000, 100 * MB, ""},
 		},
-		expectedScaleUp:      "ng2-1",
-		expectedScaleUpGroup: "ng2",
+		expectedScaleUp: groupSizeChange{groupName: "ng2", sizeChange: 1},
 		options:              options,
 	}
 
@@ -152,7 +148,7 @@ func TestScaleUpCapToMaxTotalNodesLimit(t *testing.T) {
 }
 
 func simpleScaleUpTest(t *testing.T, config *scaleTestConfig) {
-	expandedGroups := make(chan string, 10)
+	expandedGroups := make(chan groupSizeChange, 10)
 	fakeClient := &fake.Clientset{}
 
 	groups := make(map[string][]*apiv1.Node)
@@ -183,7 +179,7 @@ func simpleScaleUpTest(t *testing.T, config *scaleTestConfig) {
 	})
 
 	provider := testprovider.NewTestCloudProvider(func(nodeGroup string, increase int) error {
-		expandedGroups <- fmt.Sprintf("%s-%d", nodeGroup, increase)
+		expandedGroups <- groupSizeChange{groupName: nodeGroup, sizeChange: increase}
 		return nil
 	}, nil)
 
@@ -228,13 +224,15 @@ func simpleScaleUpTest(t *testing.T, config *scaleTestConfig) {
 	assert.NoError(t, err)
 	assert.True(t, result)
 
-	assert.Equal(t, config.expectedScaleUp, getStringFromChan(expandedGroups))
+	expandedGroup := getGroupSizeChangeFromChan(expandedGroups)
+	assert.NotNil(t, expandedGroup, "Expected scale up event")
+	assert.Equal(t, config.expectedScaleUp, *expandedGroup)
 
 	nodeEventSeen := false
 	for eventsLeft := true; eventsLeft; {
 		select {
 		case event := <-fakeRecorder.Events:
-			if strings.Contains(event, "TriggeredScaleUp") && strings.Contains(event, config.expectedScaleUpGroup) {
+			if strings.Contains(event, "TriggeredScaleUp") && strings.Contains(event, config.expectedScaleUp.groupName) {
 				nodeEventSeen = true
 			}
 			assert.NotRegexp(t, regexp.MustCompile("NotTriggerScaleUp"), event)
@@ -243,6 +241,15 @@ func simpleScaleUpTest(t *testing.T, config *scaleTestConfig) {
 		}
 	}
 	assert.True(t, nodeEventSeen)
+}
+
+func getGroupSizeChangeFromChan(c chan groupSizeChange) *groupSizeChange {
+	select {
+	case val := <-c:
+		return &val
+	case <-time.After(10 * time.Second):
+		return nil
+	}
 }
 
 func TestScaleUpNodeComingNoScale(t *testing.T) {

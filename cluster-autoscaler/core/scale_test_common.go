@@ -35,12 +35,16 @@ type podConfig struct {
 	node   string
 }
 
+type groupSizeChange struct {
+	groupName  string
+	sizeChange int
+}
+
 type scaleTestConfig struct {
-	nodes                []nodeConfig
-	pods                 []podConfig
-	extraPods            []podConfig
-	expectedScaleUp      string
-	expectedScaleUpGroup string
-	expectedScaleDowns   []string
-	options              context.AutoscalingOptions
+	nodes              []nodeConfig
+	pods               []podConfig
+	extraPods          []podConfig
+	expectedScaleUp    groupSizeChange
+	expectedScaleDowns []string
+	options            context.AutoscalingOptions
 }
