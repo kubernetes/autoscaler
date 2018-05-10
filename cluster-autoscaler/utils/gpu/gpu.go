@@ -49,16 +49,10 @@ func FilterOutNodesWithUnreadyGpus(allNodes, readyNodes []*apiv1.Node) ([]*apiv1
 		// on node object. Assume the node is still not fully started (installing
 		// GPU drivers).
 		if hasGpuLabel && (!hasGpuAllocatable || gpuAllocatable.IsZero()) {
-			newNode, err := getUnreadyNodeCopy(node)
-			if err != nil {
-				glog.Errorf("Failed to override status of node %v with unready GPU: %v",
-					node.Name, err)
-			} else {
-				glog.V(3).Infof("Overriding status of node %v, which seems to have unready GPU",
-					node.Name)
-				nodesWithUnreadyGpu[newNode.Name] = newNode
-				isUnready = true
-			}
+			glog.V(3).Infof("Overriding status of node %v, which seems to have unready GPU",
+				node.Name)
+			nodesWithUnreadyGpu[node.Name] = getUnreadyNodeCopy(node)
+			isUnready = true
 		}
 		if !isUnready {
 			newReadyNodes = append(newReadyNodes, node)
@@ -75,7 +69,7 @@ func FilterOutNodesWithUnreadyGpus(allNodes, readyNodes []*apiv1.Node) ([]*apiv1
 	return newAllNodes, newReadyNodes
 }
 
-func getUnreadyNodeCopy(node *apiv1.Node) (*apiv1.Node, error) {
+func getUnreadyNodeCopy(node *apiv1.Node) *apiv1.Node {
 	newNode := node.DeepCopy()
 	newReadyCondition := apiv1.NodeCondition{
 		Type:               apiv1.NodeReady,
@@ -89,7 +83,7 @@ func getUnreadyNodeCopy(node *apiv1.Node) (*apiv1.Node, error) {
 		}
 	}
 	newNode.Status.Conditions = newNodeConditions
-	return newNode, nil
+	return newNode
 }
 
 // NodeHasGpu returns true if a given node has GPU hardware.
