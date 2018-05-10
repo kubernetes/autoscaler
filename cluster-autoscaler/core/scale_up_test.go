@@ -46,31 +46,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type nodeConfig struct {
-	name   string
-	cpu    int64
-	memory int64
-	ready  bool
-	group  string
-}
-
-type podConfig struct {
-	name   string
-	cpu    int64
-	memory int64
-	node   string
-}
-
-type scaleTestConfig struct {
-	nodes                []nodeConfig
-	pods                 []podConfig
-	extraPods            []podConfig
-	expectedScaleUp      string
-	expectedScaleUpGroup string
-	expectedScaleDowns   []string
-	options              context.AutoscalingOptions
-}
-
 var defaultOptions = context.AutoscalingOptions{
 	EstimatorName:  estimator.BinpackingEstimatorName,
 	MaxCoresTotal:  config.DefaultMaxClusterCores,
