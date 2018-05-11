@@ -39,8 +39,8 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 		machineType       string
 		accelerators      []*gce.AcceleratorConfig
 		mig               *Mig
-		capacityCpu       string
-		capacityMemory    string
+		capacityCpu       int64
+		capacityMemory    int64
 		allocatableCpu    string
 		allocatableMemory string
 		gpuCount          int64
@@ -62,38 +62,39 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 			Name:    "some-name",
 			Project: "some-proj",
 			Zone:    "us-central1-b"}},
-		capacityCpu:       "8000m",
-		capacityMemory:    fmt.Sprintf("%v", 2*1024*1024),
+		capacityCpu:       8,
+		capacityMemory:    2 * 1024 * 1024,
 		allocatableCpu:    "7000m",
 		allocatableMemory: fmt.Sprintf("%v", 1024*1024),
 		gpuCount:          11,
 		expectedErr:       false,
-	}, {
-		kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
-			"NODE_LABELS: a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true\n" +
-			"DNS_SERVER_IP: '10.0.0.10'\n" +
-			"NODE_TAINTS: 'dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c'\n",
-		name:        "nodeName",
-		machineType: "custom-8-2",
-		mig: &Mig{GceRef: GceRef{
-			Name:    "some-name",
-			Project: "some-proj",
-			Zone:    "us-central1-b"}},
-		capacityCpu:       "8000m",
-		capacityMemory:    fmt.Sprintf("%v", 2*1024*1024),
-		allocatableCpu:    "8000m",
-		allocatableMemory: fmt.Sprintf("%v", 2*1024*1024),
-		expectedErr:       false,
-	}, {
-		kubeEnv:     "This kube-env is totally messed up",
-		name:        "nodeName",
-		machineType: "custom-8-2",
-		mig: &Mig{GceRef: GceRef{
-			Name:    "some-name",
-			Project: "some-proj",
-			Zone:    "us-central1-b"}},
-		expectedErr: true,
 	},
+		{
+			kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
+				"NODE_LABELS: a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true\n" +
+				"DNS_SERVER_IP: '10.0.0.10'\n" +
+				"NODE_TAINTS: 'dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c'\n",
+			name:        "nodeName",
+			machineType: "custom-8-2",
+			mig: &Mig{GceRef: GceRef{
+				Name:    "some-name",
+				Project: "some-proj",
+				Zone:    "us-central1-b"}},
+			capacityCpu:       8,
+			capacityMemory:    2 * 1024 * 1024,
+			allocatableCpu:    "8000m",
+			allocatableMemory: fmt.Sprintf("%v", 2*1024*1024),
+			expectedErr:       false,
+		}, {
+			kubeEnv:     "This kube-env is totally messed up",
+			name:        "nodeName",
+			machineType: "custom-8-2",
+			mig: &Mig{GceRef: GceRef{
+				Name:    "some-name",
+				Project: "some-proj",
+				Zone:    "us-central1-b"}},
+			expectedErr: true,
+		},
 	}
 	for _, tc := range testCases {
 		tb := &templateBuilder{}
@@ -107,13 +108,13 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 				MachineType: tc.machineType,
 			},
 		}
-		node, err := tb.buildNodeFromTemplate(tc.mig, template)
+		node, err := tb.buildNodeFromTemplate(tc.mig, template, tc.capacityCpu, tc.capacityMemory)
 		if tc.expectedErr {
 			assert.Error(t, err)
 		} else {
 			assert.NoError(t, err)
 			podsQuantity, _ := resource.ParseQuantity("110")
-			capacity, err := makeResourceList(tc.capacityCpu, tc.capacityMemory, tc.gpuCount)
+			capacity, err := makeResourceList(fmt.Sprintf("%dm", tc.capacityCpu*1000), fmt.Sprintf("%v", tc.capacityMemory), tc.gpuCount)
 			capacity[apiv1.ResourcePods] = podsQuantity
 			assert.NoError(t, err)
 			allocatable, err := makeResourceList(tc.allocatableCpu, tc.allocatableMemory, tc.gpuCount)
@@ -637,15 +638,4 @@ func makeResourceList(cpu string, memory string, gpu int64) (apiv1.ResourceList,
 
 func assertEqualResourceLists(t *testing.T, name string, expected, actual apiv1.ResourceList) {
 	assert.True(t, quota.V1Equals(expected, actual), "%q unequal:\nExpected:%v\nActual:%v", name, expected, actual)
-}
-
-func TestParseCustomMachineType(t *testing.T) {
-	cpu, mem, err := parseCustomMachineType("custom-2-2816")
-	assert.NoError(t, err)
-	assert.Equal(t, int64(2), cpu)
-	assert.Equal(t, int64(2816*1024*1024), mem)
-	cpu, mem, err = parseCustomMachineType("other-a2-2816")
-	assert.Error(t, err)
-	cpu, mem, err = parseCustomMachineType("other-2-2816")
-	assert.Error(t, err)
 }

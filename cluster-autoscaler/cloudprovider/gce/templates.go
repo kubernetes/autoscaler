@@ -19,8 +19,6 @@ package gce
 import (
 	"fmt"
 	"math/rand"
-	"net/url"
-	"path"
 	"regexp"
 	"strings"
 
@@ -44,36 +42,7 @@ const (
 
 // builds templates for gce cloud provider
 type templateBuilder struct {
-	service   *gce.Service
 	projectId string
-}
-
-func (t *templateBuilder) getMigTemplate(mig *Mig) (*gce.InstanceTemplate, error) {
-	igm, err := t.service.InstanceGroupManagers.Get(mig.Project, mig.Zone, mig.Name).Do()
-	if err != nil {
-		return nil, err
-	}
-	templateUrl, err := url.Parse(igm.InstanceTemplate)
-	if err != nil {
-		return nil, err
-	}
-	_, templateName := path.Split(templateUrl.EscapedPath())
-	instanceTemplate, err := t.service.InstanceTemplates.Get(mig.Project, templateName).Do()
-	if err != nil {
-		return nil, err
-	}
-	return instanceTemplate, nil
-}
-
-func (t *templateBuilder) getCpuAndMemoryForMachineType(machineType string, zone string) (cpu int64, mem int64, err error) {
-	if strings.HasPrefix(machineType, "custom-") {
-		return parseCustomMachineType(machineType)
-	}
-	machine, geterr := t.service.MachineTypes.Get(t.projectId, zone, machineType).Do()
-	if geterr != nil {
-		return 0, 0, geterr
-	}
-	return machine.GuestCpus, machine.MemoryMb * 1024 * 1024, nil
 }
 
 func (t *templateBuilder) getAcceleratorCount(accelerators []*gce.AcceleratorConfig) int64 {
@@ -86,15 +55,10 @@ func (t *templateBuilder) getAcceleratorCount(accelerators []*gce.AcceleratorCon
 	return count
 }
 
-func (t *templateBuilder) buildCapacity(machineType string, accelerators []*gce.AcceleratorConfig, zone string) (apiv1.ResourceList, error) {
+func (t *templateBuilder) buildCapacity(machineType string, accelerators []*gce.AcceleratorConfig, zone string, cpu int64, mem int64) (apiv1.ResourceList, error) {
 	capacity := apiv1.ResourceList{}
 	// TODO: get a real value.
 	capacity[apiv1.ResourcePods] = *resource.NewQuantity(110, resource.DecimalSI)
-
-	cpu, mem, err := t.getCpuAndMemoryForMachineType(machineType, zone)
-	if err != nil {
-		return apiv1.ResourceList{}, err
-	}
 	capacity[apiv1.ResourceCPU] = *resource.NewQuantity(cpu, resource.DecimalSI)
 	capacity[apiv1.ResourceMemory] = *resource.NewQuantity(mem, resource.DecimalSI)
 
@@ -148,7 +112,7 @@ func (t *templateBuilder) getAllocatable(capacity, reserved apiv1.ResourceList) 
 	return allocatable
 }
 
-func (t *templateBuilder) buildNodeFromTemplate(mig *Mig, template *gce.InstanceTemplate) (*apiv1.Node, error) {
+func (t *templateBuilder) buildNodeFromTemplate(mig *Mig, template *gce.InstanceTemplate, cpu int64, mem int64) (*apiv1.Node, error) {
 
 	if template.Properties == nil {
 		return nil, fmt.Errorf("instance template %s has no properties", template.Name)
@@ -163,7 +127,7 @@ func (t *templateBuilder) buildNodeFromTemplate(mig *Mig, template *gce.Instance
 		Labels:   map[string]string{},
 	}
 
-	capacity, err := t.buildCapacity(template.Properties.MachineType, template.Properties.GuestAccelerators, mig.GceRef.Zone)
+	capacity, err := t.buildCapacity(template.Properties.MachineType, template.Properties.GuestAccelerators, mig.GceRef.Zone, cpu, mem)
 	if err != nil {
 		return nil, err
 	}
@@ -217,8 +181,7 @@ func (t *templateBuilder) buildNodeFromTemplate(mig *Mig, template *gce.Instance
 	return &node, nil
 }
 
-func (t *templateBuilder) buildNodeFromAutoprovisioningSpec(mig *Mig) (*apiv1.Node, error) {
-
+func (t *templateBuilder) buildNodeFromAutoprovisioningSpec(mig *Mig, cpu int64, mem int64) (*apiv1.Node, error) {
 	if mig.spec == nil {
 		return nil, fmt.Errorf("no spec in mig %s", mig.Name)
 	}
@@ -232,7 +195,7 @@ func (t *templateBuilder) buildNodeFromAutoprovisioningSpec(mig *Mig) (*apiv1.No
 		Labels:   map[string]string{},
 	}
 
-	capacity, err := t.buildCapacity(mig.spec.machineType, nil, mig.GceRef.Zone)
+	capacity, err := t.buildCapacity(mig.spec.machineType, nil, mig.GceRef.Zone, cpu, mem)
 	if err != nil {
 		return nil, err
 	}
@@ -296,21 +259,6 @@ func buildGenericLabels(ref GceRef, machineType string, nodeName string) (map[st
 	result[kubeletapis.LabelZoneFailureDomain] = ref.Zone
 	result[kubeletapis.LabelHostname] = nodeName
 	return result, nil
-}
-
-func parseCustomMachineType(machineType string) (cpu, mem int64, err error) {
-	// example custom-2-2816
-	var count int
-	count, err = fmt.Sscanf(machineType, "custom-%d-%d", &cpu, &mem)
-	if err != nil {
-		return
-	}
-	if count != 2 {
-		return 0, 0, fmt.Errorf("failed to parse all params in %s", machineType)
-	}
-	// Mb to bytes
-	mem = mem * 1024 * 1024
-	return
 }
 
 func parseKubeReserved(kubeReserved string) (apiv1.ResourceList, error) {
