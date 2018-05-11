@@ -41,10 +41,12 @@ type groupSizeChange struct {
 }
 
 type scaleTestConfig struct {
-	nodes              []nodeConfig
-	pods               []podConfig
-	extraPods          []podConfig
-	expectedScaleUp    groupSizeChange
-	expectedScaleDowns []string
-	options            context.AutoscalingOptions
+	nodes                  []nodeConfig
+	pods                   []podConfig
+	extraPods              []podConfig
+	expectedScaleUpOptions []groupSizeChange // we expect that all those options should be included in expansion options passed to expander strategy
+	scaleUpOptionToChoose  groupSizeChange   // this will be selected by assertingStrategy.BestOption
+	expectedFinalScaleUp   groupSizeChange   // we expect this to be delivered via scale-up event
+	expectedScaleDowns     []string
+	options                context.AutoscalingOptions
 }

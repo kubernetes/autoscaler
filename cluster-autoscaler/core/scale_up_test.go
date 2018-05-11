@@ -44,6 +44,7 @@ import (
 	"k8s.io/kubernetes/pkg/scheduler/schedulercache"
 
 	"github.com/stretchr/testify/assert"
+	"k8s.io/autoscaler/cluster-autoscaler/expander"
 )
 
 var defaultOptions = context.AutoscalingOptions{
@@ -67,8 +68,9 @@ func TestScaleUpOK(t *testing.T) {
 		extraPods: []podConfig{
 			{"p-new", 500, 0, ""},
 		},
-		expectedScaleUp: groupSizeChange{groupName: "ng2", sizeChange: 1},
-		options:         defaultOptions,
+		scaleUpOptionToChoose: groupSizeChange{groupName: "ng2", sizeChange: 1},
+		expectedFinalScaleUp:  groupSizeChange{groupName: "ng2", sizeChange: 1},
+		options:               defaultOptions,
 	}
 
 	simpleScaleUpTest(t, config)
@@ -90,8 +92,9 @@ func TestScaleUpMaxCoresLimitHit(t *testing.T) {
 			{"p-new-1", 2000, 0, ""},
 			{"p-new-2", 2000, 0, ""},
 		},
-		expectedScaleUp: groupSizeChange{groupName: "ng1", sizeChange: 1},
-		options:         options,
+		scaleUpOptionToChoose: groupSizeChange{groupName: "ng1", sizeChange: 2},
+		expectedFinalScaleUp:  groupSizeChange{groupName: "ng1", sizeChange: 1},
+		options:               options,
 	}
 
 	simpleScaleUpTest(t, config)
@@ -116,8 +119,9 @@ func TestScaleUpMaxMemoryLimitHit(t *testing.T) {
 			{"p-new-2", 2000, 100 * MB, ""},
 			{"p-new-3", 2000, 100 * MB, ""},
 		},
-		expectedScaleUp: groupSizeChange{groupName: "ng1", sizeChange: 2},
-		options:         options,
+		scaleUpOptionToChoose: groupSizeChange{groupName: "ng1", sizeChange: 3},
+		expectedFinalScaleUp:  groupSizeChange{groupName: "ng1", sizeChange: 2},
+		options:               options,
 	}
 
 	simpleScaleUpTest(t, config)
@@ -140,11 +144,63 @@ func TestScaleUpCapToMaxTotalNodesLimit(t *testing.T) {
 			{"p-new-2", 4000, 100 * MB, ""},
 			{"p-new-3", 4000, 100 * MB, ""},
 		},
-		expectedScaleUp: groupSizeChange{groupName: "ng2", sizeChange: 1},
-		options:              options,
+		scaleUpOptionToChoose: groupSizeChange{groupName: "ng2", sizeChange: 3},
+		expectedFinalScaleUp:  groupSizeChange{groupName: "ng2", sizeChange: 1},
+		options:               options,
 	}
 
 	simpleScaleUpTest(t, config)
+}
+
+type assertingStrategy struct {
+	initialNodeConfigs     []nodeConfig
+	expectedScaleUpOptions []groupSizeChange
+	scaleUpOptionToChoose  groupSizeChange
+	t                      *testing.T
+}
+
+func (s assertingStrategy) BestOption(options []expander.Option, nodeInfo map[string]*schedulercache.NodeInfo) *expander.Option {
+	if len(s.expectedScaleUpOptions) > 0 {
+		// empty s.expectedScaleUpOptions means we do not want to do assertion on contents of actual scaleUp options
+
+		// precondition check that option to choose is part of expected options
+		assert.Contains(s.t, s.expectedScaleUpOptions, s.scaleUpOptionToChoose, "scaleUpOptionToChoose must be present in expectedScaleUpOptions")
+
+		actualScaleUpOptions := expanderOptionsToGroupSizeChanges(options)
+		assert.Subset(s.t, actualScaleUpOptions, s.expectedScaleUpOptions,
+			"actual %s and expected %s scaleUp options differ",
+			actualScaleUpOptions,
+			s.expectedScaleUpOptions)
+		assert.Equal(s.t, len(actualScaleUpOptions), len(s.expectedScaleUpOptions),
+			"actual %s and expected %s scaleUp options differ",
+			actualScaleUpOptions,
+			s.expectedScaleUpOptions)
+	}
+
+	for _, option := range options {
+		scaleUpOption := expanderOptionToGroupSizeChange(option)
+		if scaleUpOption == s.scaleUpOptionToChoose {
+			return &option
+		}
+	}
+	assert.Fail(s.t, "did not find scaleUpOptionToChoose %s", s.scaleUpOptionToChoose)
+	return nil
+}
+
+func expanderOptionsToGroupSizeChanges(options []expander.Option) []groupSizeChange {
+	groupSizeChanges := make([]groupSizeChange, 0, len(options))
+	for _, option := range options {
+		groupSizeChange := expanderOptionToGroupSizeChange(option)
+		groupSizeChanges = append(groupSizeChanges, groupSizeChange)
+	}
+	return groupSizeChanges
+}
+
+func expanderOptionToGroupSizeChange(option expander.Option) groupSizeChange {
+	groupName := option.NodeGroup.Id()
+	groupSizeIncrement := option.NodeCount
+	scaleUpOption := groupSizeChange{groupName, groupSizeIncrement}
+	return scaleUpOption
 }
 
 func simpleScaleUpTest(t *testing.T, config *scaleTestConfig) {
@@ -204,12 +260,16 @@ func simpleScaleUpTest(t *testing.T, config *scaleTestConfig) {
 	clusterState.UpdateNodes(nodes, time.Now())
 
 	context := &context.AutoscalingContext{
-		AutoscalingOptions:   config.options,
-		PredicateChecker:     simulator.NewTestPredicateChecker(),
-		CloudProvider:        provider,
-		ClientSet:            fakeClient,
-		Recorder:             fakeRecorder,
-		ExpanderStrategy:     random.NewStrategy(),
+		AutoscalingOptions: config.options,
+		PredicateChecker:   simulator.NewTestPredicateChecker(),
+		CloudProvider:      provider,
+		ClientSet:          fakeClient,
+		Recorder:           fakeRecorder,
+		ExpanderStrategy: assertingStrategy{
+			initialNodeConfigs:     config.nodes,
+			expectedScaleUpOptions: config.expectedScaleUpOptions,
+			scaleUpOptionToChoose:  config.scaleUpOptionToChoose,
+			t: t},
 		ClusterStateRegistry: clusterState,
 		LogRecorder:          fakeLogRecorder,
 	}
@@ -226,13 +286,13 @@ func simpleScaleUpTest(t *testing.T, config *scaleTestConfig) {
 
 	expandedGroup := getGroupSizeChangeFromChan(expandedGroups)
 	assert.NotNil(t, expandedGroup, "Expected scale up event")
-	assert.Equal(t, config.expectedScaleUp, *expandedGroup)
+	assert.Equal(t, config.expectedFinalScaleUp, *expandedGroup)
 
 	nodeEventSeen := false
 	for eventsLeft := true; eventsLeft; {
 		select {
 		case event := <-fakeRecorder.Events:
-			if strings.Contains(event, "TriggeredScaleUp") && strings.Contains(event, config.expectedScaleUp.groupName) {
+			if strings.Contains(event, "TriggeredScaleUp") && strings.Contains(event, config.expectedFinalScaleUp.groupName) {
 				nodeEventSeen = true
 			}
 			assert.NotRegexp(t, regexp.MustCompile("NotTriggerScaleUp"), event)
