@@ -21,6 +21,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"net/url"
 	"os"
 	"path"
 	"reflect"
@@ -81,6 +82,7 @@ const (
 	gkeOperationWaitTimeout    = 120 * time.Second
 	operationPollInterval      = 100 * time.Millisecond
 	refreshInterval            = 1 * time.Minute
+	machinesRefreshInterval    = 1 * time.Hour
 	nodeAutoprovisioningPrefix = "nap"
 	napMaxNodes                = 1000
 	napMinNodes                = 0
@@ -99,6 +101,11 @@ var (
 type migInformation struct {
 	config   *Mig
 	basename string
+}
+
+type machineTypeKey struct {
+	zone        string
+	machineType string
 }
 
 // GceManager handles gce communication and data caching.
@@ -131,6 +138,8 @@ type GceManager interface {
 	getMode() GcpCloudProviderMode
 	getTemplates() *templateBuilder
 	findMigsNamed(name *regexp.Regexp) ([]string, error)
+	getMigTemplate(mig *Mig) (*gce.InstanceTemplate, error)
+	getCpuAndMemoryForMachineType(machineType string, zone string) (cpu int64, mem int64, err error)
 }
 
 // gceManagerImpl handles gce communication and data caching.
@@ -157,6 +166,9 @@ type gceManagerImpl struct {
 	migAutoDiscoverySpecs []cloudprovider.MIGAutoDiscoveryConfig
 	resourceLimiter       *cloudprovider.ResourceLimiter
 	lastRefresh           time.Time
+
+	machinesCache            map[machineTypeKey]*gce.MachineType
+	machinesCacheLastRefresh time.Time
 }
 
 // CreateGceManager constructs gceManager object.
@@ -224,10 +236,10 @@ func CreateGceManager(configReader io.Reader, mode GcpCloudProviderMode, cluster
 		mode:        mode,
 		templates: &templateBuilder{
 			projectId: projectId,
-			service:   gceService,
 		},
 		interrupt:            make(chan struct{}),
 		explicitlyConfigured: make(map[GceRef]bool),
+		machinesCache:        make(map[machineTypeKey]*gce.MachineType),
 	}
 
 	switch mode {
@@ -531,11 +543,16 @@ func (m *gceManagerImpl) RegisterMig(mig *Mig) bool {
 		config: mig,
 	})
 
-	template, err := m.templates.getMigTemplate(mig)
+	template, err := m.getMigTemplate(mig)
 	if err != nil {
 		glog.Errorf("Failed to build template for %s", mig.Name)
 	} else {
-		_, err = m.templates.buildNodeFromTemplate(mig, template)
+		cpu, mem, err := m.getCpuAndMemoryForMachineType(template.Properties.MachineType, mig.GceRef.Zone)
+		if err != nil {
+			glog.Errorf("Failed to get cpu and memory for machine type: %v.", err)
+			return false
+		}
+		_, err = m.templates.buildNodeFromTemplate(mig, template, cpu, mem)
 		if err != nil {
 			glog.Errorf("Failed to build template for %s", mig.Name)
 		}
@@ -667,6 +684,51 @@ func (m *gceManagerImpl) createNodePool(mig *Mig) error {
 		}
 	}
 	return fmt.Errorf("node pool %s not found", mig.nodePoolName)
+}
+
+func (m *gceManagerImpl) fetchMachinesCache() error {
+	if m.machinesCacheLastRefresh.Add(machinesRefreshInterval).After(time.Now()) {
+		return nil
+	}
+	var locations []string
+	if m.mode == ModeGKENAP {
+		cluster, err := m.gkeAlphaService.Projects.Locations.Clusters.Get(fmt.Sprintf("projects/%s/locations/%s/clusters/%s", m.projectId, m.location, m.clusterName)).Do()
+		if err != nil {
+			return err
+		}
+		locations = cluster.Locations
+	} else {
+		if m.regional {
+			cluster, err := m.gkeBetaService.Projects.Locations.Clusters.Get(fmt.Sprintf("projects/%s/locations/%s/clusters/%s", m.projectId, m.location, m.clusterName)).Do()
+			if err != nil {
+				return err
+			}
+			locations = cluster.Locations
+		} else {
+			cluster, err := m.gkeService.Projects.Zones.Clusters.Get(m.projectId, m.location, m.clusterName).Do()
+			if err != nil {
+				return err
+			}
+			locations = cluster.Locations
+		}
+	}
+	machinesCache := make(map[machineTypeKey]*gce.MachineType)
+	for _, location := range locations {
+		machineTypes, err := m.gceService.MachineTypes.List(m.projectId, location).Do()
+		if err != nil {
+			return err
+		}
+		for _, machineType := range machineTypes.Items {
+			machinesCache[machineTypeKey{location, machineType.Name}] = machineType
+		}
+
+	}
+	m.cacheMutex.Lock()
+	defer m.cacheMutex.Unlock()
+	m.machinesCache = machinesCache
+	m.machinesCacheLastRefresh = time.Now()
+	glog.V(2).Infof("Refreshed machine types, next refresh after %v", m.machinesCacheLastRefresh.Add(machinesRefreshInterval))
+	return nil
 }
 
 // End of v1alpha1/v1beta1 mess
@@ -871,8 +933,13 @@ func (m *gceManagerImpl) Refresh() error {
 }
 
 func (m *gceManagerImpl) forceRefresh() error {
+
 	switch m.mode {
 	case ModeGCE:
+		if err := m.clearMachinesCache(); err != nil {
+			glog.Errorf("Failed to clear machine types cache: %v", err)
+			return err
+		}
 		if err := m.fetchAutoMigs(); err != nil {
 			glog.Errorf("Failed to fetch MIGs: %v", err)
 			return err
@@ -884,6 +951,10 @@ func (m *gceManagerImpl) forceRefresh() error {
 		}
 		fallthrough
 	case ModeGKE:
+		if err := m.fetchMachinesCache(); err != nil {
+			glog.Errorf("Failed to fetch machine types: %v", err)
+			return err
+		}
 		if err := m.fetchAllNodePools(); err != nil {
 			glog.Errorf("Failed to fetch node pools: %v", err)
 			return err
@@ -1048,6 +1119,18 @@ func (m *gceManagerImpl) GetResourceLimiter() (*cloudprovider.ResourceLimiter, e
 	return m.resourceLimiter, nil
 }
 
+func (m *gceManagerImpl) clearMachinesCache() error {
+	if m.machinesCacheLastRefresh.Add(machinesRefreshInterval).After(time.Now()) {
+		return nil
+	}
+	m.cacheMutex.Lock()
+	defer m.cacheMutex.Unlock()
+	m.machinesCache = make(map[machineTypeKey]*gce.MachineType)
+	m.machinesCacheLastRefresh = time.Now()
+	glog.V(2).Infof("Cleared machine types cache, next clear after %v", m.machinesCacheLastRefresh.Add(machinesRefreshInterval))
+	return nil
+}
+
 // Code borrowed from gce cloud provider. Reuse the original as soon as it becomes public.
 func getProjectAndLocation(regional bool) (string, string, error) {
 	result, err := metadata.Get("instance/zone")
@@ -1124,4 +1207,63 @@ func (m *gceManagerImpl) findMigsInZone(zone string, name *regexp.Regexp) ([]str
 		return nil, fmt.Errorf("cannot list managed instance groups: %v", err)
 	}
 	return links, nil
+}
+
+func (m *gceManagerImpl) getMigTemplate(mig *Mig) (*gce.InstanceTemplate, error) {
+	igm, err := m.gceService.InstanceGroupManagers.Get(mig.Project, mig.Zone, mig.Name).Do()
+	if err != nil {
+		return nil, err
+	}
+	templateUrl, err := url.Parse(igm.InstanceTemplate)
+	if err != nil {
+		return nil, err
+	}
+	_, templateName := path.Split(templateUrl.EscapedPath())
+	instanceTemplate, err := m.gceService.InstanceTemplates.Get(mig.Project, templateName).Do()
+	if err != nil {
+		return nil, err
+	}
+	return instanceTemplate, nil
+}
+
+func (m *gceManagerImpl) getMachineFromCache(machineType string, zone string) *gce.MachineType {
+	m.cacheMutex.Lock()
+	defer m.cacheMutex.Unlock()
+	return m.machinesCache[machineTypeKey{zone, machineType}]
+}
+
+func (m *gceManagerImpl) addMachineToCache(machineType string, zone string, machine *gce.MachineType) {
+	m.cacheMutex.Lock()
+	defer m.cacheMutex.Unlock()
+	m.machinesCache[machineTypeKey{zone, machineType}] = machine
+}
+
+func (m *gceManagerImpl) getCpuAndMemoryForMachineType(machineType string, zone string) (cpu int64, mem int64, err error) {
+	if strings.HasPrefix(machineType, "custom-") {
+		return parseCustomMachineType(machineType)
+	}
+	machine := m.getMachineFromCache(machineType, zone)
+	if machine == nil {
+		machine, err = m.gceService.MachineTypes.Get(m.projectId, zone, machineType).Do()
+		if err != nil {
+			return 0, 0, err
+		}
+		m.addMachineToCache(machineType, zone, machine)
+	}
+	return machine.GuestCpus, machine.MemoryMb * 1024 * 1024, nil
+}
+
+func parseCustomMachineType(machineType string) (cpu, mem int64, err error) {
+	// example custom-2-2816
+	var count int
+	count, err = fmt.Sscanf(machineType, "custom-%d-%d", &cpu, &mem)
+	if err != nil {
+		return
+	}
+	if count != 2 {
+		return 0, 0, fmt.Errorf("failed to parse all params in %s", machineType)
+	}
+	// Mb to bytes
+	mem = mem * 1024 * 1024
+	return
 }
