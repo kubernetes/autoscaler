@@ -635,6 +635,49 @@ func TestDrainNode(t *testing.T) {
 	assert.Equal(t, p2.Name, deleted[1])
 }
 
+func TestDrainNodeWithRescheduled(t *testing.T) {
+	deletedPods := make(chan string, 10)
+	fakeClient := &fake.Clientset{}
+
+	p1 := BuildTestPod("p1", 100, 0)
+	p2 := BuildTestPod("p2", 300, 0)
+	p2Rescheduled := BuildTestPod("p2", 300, 0)
+	p2Rescheduled.Spec.NodeName = "n2"
+	n1 := BuildTestNode("n1", 1000, 1000)
+	SetNodeReadyState(n1, true, time.Time{})
+
+	fakeClient.Fake.AddReactor("get", "pods", func(action core.Action) (bool, runtime.Object, error) {
+		getAction := action.(core.GetAction)
+		if getAction == nil {
+			return false, nil, nil
+		}
+		if getAction.GetName() == "p2" {
+			return true, p2Rescheduled, nil
+		}
+		return true, nil, errors.NewNotFound(apiv1.Resource("pod"), "whatever")
+	})
+	fakeClient.Fake.AddReactor("create", "pods", func(action core.Action) (bool, runtime.Object, error) {
+		createAction := action.(core.CreateAction)
+		if createAction == nil {
+			return false, nil, nil
+		}
+		eviction := createAction.GetObject().(*policyv1.Eviction)
+		if eviction == nil {
+			return false, nil, nil
+		}
+		deletedPods <- eviction.Name
+		return true, nil, nil
+	})
+	err := drainNode(n1, []*apiv1.Pod{p1, p2}, fakeClient, kube_util.CreateEventRecorder(fakeClient), 20, 5*time.Second, 0*time.Second)
+	assert.NoError(t, err)
+	deleted := make([]string, 0)
+	deleted = append(deleted, getStringFromChan(deletedPods))
+	deleted = append(deleted, getStringFromChan(deletedPods))
+	sort.Strings(deleted)
+	assert.Equal(t, p1.Name, deleted[0])
+	assert.Equal(t, p2.Name, deleted[1])
+}
+
 func TestDrainNodeWithRetries(t *testing.T) {
 	deletedPods := make(chan string, 10)
 	// Simulate pdb of size 1 by making the 'eviction' goroutine:
