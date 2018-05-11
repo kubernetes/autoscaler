@@ -100,6 +100,8 @@ func (a *StaticAutoscaler) cleanUpIfRequired() {
 
 	// CA can die at any time. Removing taints that might have been left from the previous run.
 	if readyNodes, err := a.ReadyNodeLister().List(); err != nil {
+		glog.Errorf("Failed to list ready nodes, not cleaning up taints: %v", err)
+	} else {
 		cleanToBeDeleted(readyNodes, a.AutoscalingContext.ClientSet, a.Recorder)
 	}
 	a.initialized = true
