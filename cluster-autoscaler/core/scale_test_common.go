@@ -24,6 +24,7 @@ type nodeConfig struct {
 	name   string
 	cpu    int64
 	memory int64
+	gpu    int64
 	ready  bool
 	group  string
 }
@@ -32,6 +33,7 @@ type podConfig struct {
 	name   string
 	cpu    int64
 	memory int64
+	gpu    int64
 	node   string
 }
 

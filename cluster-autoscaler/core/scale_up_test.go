@@ -58,15 +58,15 @@ var defaultOptions = context.AutoscalingOptions{
 func TestScaleUpOK(t *testing.T) {
 	config := &scaleTestConfig{
 		nodes: []nodeConfig{
-			{"n1", 100, 100, true, "ng1"},
-			{"n2", 1000, 1000, true, "ng2"},
+			{"n1", 100, 100, 0, true, "ng1"},
+			{"n2", 1000, 1000, 0, true, "ng2"},
 		},
 		pods: []podConfig{
-			{"p1", 80, 0, "n1"},
-			{"p2", 800, 0, "n2"},
+			{"p1", 80, 0, 0, "n1"},
+			{"p2", 800, 0, 0, "n2"},
 		},
 		extraPods: []podConfig{
-			{"p-new", 500, 0, ""},
+			{"p-new", 500, 0, 0, ""},
 		},
 		scaleUpOptionToChoose: groupSizeChange{groupName: "ng2", sizeChange: 1},
 		expectedFinalScaleUp:  groupSizeChange{groupName: "ng2", sizeChange: 1},
@@ -81,16 +81,16 @@ func TestScaleUpMaxCoresLimitHit(t *testing.T) {
 	options.MaxCoresTotal = 9
 	config := &scaleTestConfig{
 		nodes: []nodeConfig{
-			{"n1", 2000, 100, true, "ng1"},
-			{"n2", 4000, 1000, true, "ng2"},
+			{"n1", 2000, 100, 0, true, "ng1"},
+			{"n2", 4000, 1000, 0, true, "ng2"},
 		},
 		pods: []podConfig{
-			{"p1", 1000, 0, "n1"},
-			{"p2", 3000, 0, "n2"},
+			{"p1", 1000, 0, 0, "n1"},
+			{"p2", 3000, 0, 0, "n2"},
 		},
 		extraPods: []podConfig{
-			{"p-new-1", 2000, 0, ""},
-			{"p-new-2", 2000, 0, ""},
+			{"p-new-1", 2000, 0, 0, ""},
+			{"p-new-2", 2000, 0, 0, ""},
 		},
 		scaleUpOptionToChoose: groupSizeChange{groupName: "ng1", sizeChange: 2},
 		expectedFinalScaleUp:  groupSizeChange{groupName: "ng1", sizeChange: 1},
@@ -107,17 +107,17 @@ func TestScaleUpMaxMemoryLimitHit(t *testing.T) {
 	options.MaxMemoryTotal = 1300 // set in mb
 	config := &scaleTestConfig{
 		nodes: []nodeConfig{
-			{"n1", 2000, 100 * MB, true, "ng1"},
-			{"n2", 4000, 1000 * MB, true, "ng2"},
+			{"n1", 2000, 100 * MB, 0, true, "ng1"},
+			{"n2", 4000, 1000 * MB, 0, true, "ng2"},
 		},
 		pods: []podConfig{
-			{"p1", 1000, 0, "n1"},
-			{"p2", 3000, 0, "n2"},
+			{"p1", 1000, 0, 0, "n1"},
+			{"p2", 3000, 0, 0, "n2"},
 		},
 		extraPods: []podConfig{
-			{"p-new-1", 2000, 100 * MB, ""},
-			{"p-new-2", 2000, 100 * MB, ""},
-			{"p-new-3", 2000, 100 * MB, ""},
+			{"p-new-1", 2000, 100 * MB, 0, ""},
+			{"p-new-2", 2000, 100 * MB, 0, ""},
+			{"p-new-3", 2000, 100 * MB, 0, ""},
 		},
 		scaleUpOptionToChoose: groupSizeChange{groupName: "ng1", sizeChange: 3},
 		expectedFinalScaleUp:  groupSizeChange{groupName: "ng1", sizeChange: 2},
@@ -132,17 +132,17 @@ func TestScaleUpCapToMaxTotalNodesLimit(t *testing.T) {
 	options.MaxNodesTotal = 3
 	config := &scaleTestConfig{
 		nodes: []nodeConfig{
-			{"n1", 2000, 100 * MB, true, "ng1"},
-			{"n2", 4000, 1000 * MB, true, "ng2"},
+			{"n1", 2000, 100 * MB, 0, true, "ng1"},
+			{"n2", 4000, 1000 * MB, 0, true, "ng2"},
 		},
 		pods: []podConfig{
-			{"p1", 1000, 0, "n1"},
-			{"p2", 3000, 0, "n2"},
+			{"p1", 1000, 0, 0, "n1"},
+			{"p2", 3000, 0, 0, "n2"},
 		},
 		extraPods: []podConfig{
-			{"p-new-1", 4000, 100 * MB, ""},
-			{"p-new-2", 4000, 100 * MB, ""},
-			{"p-new-3", 4000, 100 * MB, ""},
+			{"p-new-1", 4000, 100 * MB, 0, ""},
+			{"p-new-2", 4000, 100 * MB, 0, ""},
+			{"p-new-3", 4000, 100 * MB, 0, ""},
 		},
 		scaleUpOptionToChoose: groupSizeChange{groupName: "ng2", sizeChange: 3},
 		expectedFinalScaleUp:  groupSizeChange{groupName: "ng2", sizeChange: 1},
@@ -211,6 +211,9 @@ func simpleScaleUpTest(t *testing.T, config *scaleTestConfig) {
 	nodes := make([]*apiv1.Node, len(config.nodes))
 	for i, n := range config.nodes {
 		node := BuildTestNode(n.name, n.cpu, n.memory)
+		if n.gpu > 0 {
+			AddGpusToNode(node, n.gpu)
+		}
 		SetNodeReadyState(node, n.ready, time.Now())
 		nodes[i] = node
 		groups[n.group] = append(groups[n.group], node)
@@ -218,9 +221,8 @@ func simpleScaleUpTest(t *testing.T, config *scaleTestConfig) {
 
 	pods := make(map[string][]apiv1.Pod)
 	for _, p := range config.pods {
-		pod := *BuildTestPod(p.name, p.cpu, p.memory)
-		pod.Spec.NodeName = p.node
-		pods[p.node] = append(pods[p.node], pod)
+		pod := buildTestPod(p)
+		pods[p.node] = append(pods[p.node], *pod)
 	}
 
 	fakeClient.Fake.AddReactor("list", "pods", func(action core.Action) (bool, runtime.Object, error) {
@@ -276,7 +278,7 @@ func simpleScaleUpTest(t *testing.T, config *scaleTestConfig) {
 
 	extraPods := make([]*apiv1.Pod, len(config.extraPods))
 	for i, p := range config.extraPods {
-		pod := BuildTestPod(p.name, p.cpu, p.memory)
+		pod := buildTestPod(p)
 		extraPods[i] = pod
 	}
 
@@ -310,6 +312,17 @@ func getGroupSizeChangeFromChan(c chan groupSizeChange) *groupSizeChange {
 	case <-time.After(10 * time.Second):
 		return nil
 	}
+}
+
+func buildTestPod(p podConfig) *apiv1.Pod {
+	pod := BuildTestPod(p.name, p.cpu, p.memory)
+	if p.gpu > 0 {
+		RequestGpuForPod(pod, p.gpu)
+	}
+	if p.node != "" {
+		pod.Spec.NodeName = p.node
+	}
+	return pod
 }
 
 func TestScaleUpNodeComingNoScale(t *testing.T) {

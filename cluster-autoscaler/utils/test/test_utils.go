@@ -64,6 +64,26 @@ func BuildTestPod(name string, cpu int64, mem int64) *apiv1.Pod {
 	return pod
 }
 
+const (
+	// cannot use constants from gpu module due to cyclic package import
+	resourceNvidiaGPU = "nvidia.com/gpu"
+	gpuLabel          = "cloud.google.com/gke-accelerator"
+	defaultGPUType    = "nvidia-tesla-k80"
+)
+
+// RequestGpuForPod modifies pod's resource requests by adding a number of GPUs to them.
+func RequestGpuForPod(pod *apiv1.Pod, gpusCount int64) {
+	if pod.Spec.Containers[0].Resources.Limits == nil {
+		pod.Spec.Containers[0].Resources.Limits = apiv1.ResourceList{}
+	}
+	pod.Spec.Containers[0].Resources.Limits[resourceNvidiaGPU] = *resource.NewQuantity(gpusCount, resource.DecimalSI)
+
+	if pod.Spec.Containers[0].Resources.Requests == nil {
+		pod.Spec.Containers[0].Resources.Requests = apiv1.ResourceList{}
+	}
+	pod.Spec.Containers[0].Resources.Requests[resourceNvidiaGPU] = *resource.NewQuantity(gpusCount, resource.DecimalSI)
+}
+
 // BuildTestNode creates a node with specified capacity.
 func BuildTestNode(name string, millicpu int64, mem int64) *apiv1.Node {
 	node := &apiv1.Node{
@@ -95,6 +115,20 @@ func BuildTestNode(name string, millicpu int64, mem int64) *apiv1.Node {
 	}
 
 	return node
+}
+
+// AddGpusToNode adds GPU capacity to given node. Default accelerator type is used.
+func AddGpusToNode(node *apiv1.Node, gpusCount int64) {
+	node.Spec.Taints = append(
+		node.Spec.Taints,
+		apiv1.Taint{
+			Key:    resourceNvidiaGPU,
+			Value:  "present",
+			Effect: "NoSchedule",
+		})
+	node.Status.Capacity[resourceNvidiaGPU] = *resource.NewQuantity(gpusCount, resource.DecimalSI)
+	node.Status.Allocatable[resourceNvidiaGPU] = *resource.NewQuantity(gpusCount, resource.DecimalSI)
+	node.Labels[gpuLabel] = defaultGPUType
 }
 
 // SetNodeReadyState sets node ready state.
