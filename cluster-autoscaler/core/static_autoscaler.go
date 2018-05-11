@@ -85,6 +85,8 @@ func NewStaticAutoscaler(opts AutoscalingOptions, predicateChecker *simulator.Pr
 func (a *StaticAutoscaler) CleanUp() {
 	// CA can die at any time. Removing taints that might have been left from the previous run.
 	if readyNodes, err := a.ReadyNodeLister().List(); err != nil {
+		glog.Errorf("Failed to list ready nodes, not cleaning up taints: %v", err)
+	} else {
 		cleanToBeDeleted(readyNodes, a.AutoscalingContext.ClientSet, a.Recorder)
 	}
 }
