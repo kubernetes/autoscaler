@@ -63,9 +63,5 @@ func NewAutoscaler(opts AutoscalerOptions) (Autoscaler, errors.AutoscalerError) 
 		return nil, errors.ToAutoscalerError(errors.InternalError, err)
 	}
 	autoscalerBuilder := NewAutoscalerBuilder(opts.AutoscalingOptions, opts.PredicateChecker, opts.KubeClient, opts.KubeEventRecorder, opts.ListerRegistry, opts.PodListProcessor)
-	if opts.ConfigMapName != "" {
-		configFetcher := dynamic.NewConfigFetcher(opts.ConfigFetcherOptions, opts.KubeClient, opts.KubeEventRecorder)
-		return NewDynamicAutoscaler(autoscalerBuilder, configFetcher)
-	}
 	return autoscalerBuilder.Build()
 }
