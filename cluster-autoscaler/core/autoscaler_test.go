@@ -21,8 +21,6 @@ import (
 	"testing"
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
-
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -63,9 +61,6 @@ func TestNewAutoscalerStatic(t *testing.T) {
 	predicateChecker := simulator.NewTestPredicateChecker()
 	listerRegistry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil)
 	opts := AutoscalerOptions{
-		ConfigFetcherOptions: dynamic.ConfigFetcherOptions{
-			ConfigMapName: "",
-		},
 		PredicateChecker:  predicateChecker,
 		KubeClient:        fakeClient,
 		KubeEventRecorder: kubeEventRecorder,

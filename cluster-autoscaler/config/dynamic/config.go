@@ -17,11 +17,7 @@ limitations under the License.
 package dynamic
 
 import (
-	"encoding/json"
 	"fmt"
-
-	"github.com/golang/glog"
-	"k8s.io/api/core/v1"
 )
 
 // Config which represents not static but dynamic configuration of cluster-autoscaler which would be updated periodically at runtime
@@ -43,38 +39,6 @@ func NewDefaultConfig() Config {
 		},
 		resourceVersion: "",
 	}
-}
-
-// ConfigFromConfigMap returns the configuration read from a configmap
-func ConfigFromConfigMap(configmap *v1.ConfigMap) (*Config, error) {
-	settingsInJson := configmap.Data["settings"]
-
-	if settingsInJson == "" {
-		return nil, fmt.Errorf(`invalid format of configmap: missing the key named "nodeGroups" in config = %v`, settingsInJson)
-	}
-
-	settings := Settings{}
-	if err := json.Unmarshal([]byte(settingsInJson), &settings); err != nil {
-		return nil, fmt.Errorf(`failed to parse configmap data: %v`, err)
-	}
-
-	config := &Config{
-		Settings:        settings,
-		resourceVersion: configmap.ResourceVersion,
-	}
-
-	glog.V(5).Infof("json=%v settings=%v config=%v", settingsInJson, settings, config)
-
-	if err := config.validate(); err != nil {
-		return nil, fmt.Errorf("invalid config : %v", err)
-	}
-
-	return config, nil
-}
-
-// VersionMismatchesAgainst returns true if versions between two configs don't match i.e. the config should be updated.
-func (c Config) VersionMismatchesAgainst(other Config) bool {
-	return c.resourceVersion != other.resourceVersion
 }
 
 // NodeGroupSpecStrings returns node group specs represented in the form of `<minSize>:<maxSize>:<name>` to be passed to cloudprovider.
