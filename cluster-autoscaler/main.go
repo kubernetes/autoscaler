@@ -32,7 +32,6 @@ import (
 	kube_flag "k8s.io/apiserver/pkg/util/flag"
 	cloudBuilder "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
@@ -75,8 +74,7 @@ var (
 	kubernetes             = flag.String("kubernetes", "", "Kubernetes master location. Leave blank for default")
 	kubeConfigFile         = flag.String("kubeconfig", "", "Path to kubeconfig file with authorization and master location information.")
 	cloudConfig            = flag.String("cloud-config", "", "The path to the cloud provider configuration file.  Empty string for no configuration file.")
-	configMapName          = flag.String("configmap", "", "The name of the ConfigMap containing settings used for dynamic reconfiguration. Empty string for no ConfigMap.")
-	namespace              = flag.String("namespace", "kube-system", "Namespace in which cluster-autoscaler run. If a --configmap flag is also provided, ensure that the configmap exists in this namespace before CA runs.")
+	namespace              = flag.String("namespace", "kube-system", "Namespace in which cluster-autoscaler run.")
 	scaleDownEnabled       = flag.Bool("scale-down-enabled", true, "Should CA scale down the cluster")
 	scaleDownDelayAfterAdd = flag.Duration("scale-down-delay-after-add", 10*time.Minute,
 		"How long after scale up that scale down evaluation resumes")
@@ -186,13 +184,6 @@ func createAutoscalingOptions() context.AutoscalingOptions {
 	}
 }
 
-func createConfigFetcherOptions() dynamic.ConfigFetcherOptions {
-	return dynamic.ConfigFetcherOptions{
-		ConfigMapName: *configMapName,
-		Namespace:     *namespace,
-	}
-}
-
 func createKubeClient() kube_client.Interface {
 	if *kubeConfigFile != "" {
 		glog.V(1).Infof("Using kubeconfig file: %s", *kubeConfigFile)
@@ -250,12 +241,11 @@ func run(healthCheck *metrics.HealthCheck) {
 	listerRegistry := kube_util.NewListerRegistryWithDefaultListers(kubeClient, listerRegistryStopChannel)
 
 	opts := core.AutoscalerOptions{
-		AutoscalingOptions:   autoscalingOptions,
-		ConfigFetcherOptions: createConfigFetcherOptions(),
-		PredicateChecker:     predicateChecker,
-		KubeClient:           kubeClient,
-		KubeEventRecorder:    kubeEventRecorder,
-		ListerRegistry:       listerRegistry,
+		AutoscalingOptions: autoscalingOptions,
+		PredicateChecker:   predicateChecker,
+		KubeClient:         kubeClient,
+		KubeEventRecorder:  kubeEventRecorder,
+		ListerRegistry:     listerRegistry,
 	}
 	autoscaler, err := core.NewAutoscaler(opts)
 	if err != nil {

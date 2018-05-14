@@ -19,7 +19,6 @@ package core
 import (
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
@@ -32,7 +31,6 @@ import (
 // AutoscalerOptions is the whole set of options for configuring an autoscaler
 type AutoscalerOptions struct {
 	context.AutoscalingOptions
-	dynamic.ConfigFetcherOptions
 	KubeClient        kube_client.Interface
 	KubeEventRecorder kube_record.EventRecorder
 	PredicateChecker  *simulator.PredicateChecker
@@ -63,9 +61,5 @@ func NewAutoscaler(opts AutoscalerOptions) (Autoscaler, errors.AutoscalerError) 
 		return nil, errors.ToAutoscalerError(errors.InternalError, err)
 	}
 	autoscalerBuilder := NewAutoscalerBuilder(opts.AutoscalingOptions, opts.PredicateChecker, opts.KubeClient, opts.KubeEventRecorder, opts.ListerRegistry, opts.PodListProcessor)
-	if opts.ConfigMapName != "" {
-		configFetcher := dynamic.NewConfigFetcher(opts.ConfigFetcherOptions, opts.KubeClient, opts.KubeEventRecorder)
-		return NewDynamicAutoscaler(autoscalerBuilder, configFetcher)
-	}
 	return autoscalerBuilder.Build()
 }
