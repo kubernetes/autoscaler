@@ -152,6 +152,93 @@ func TestScaleUpCapToMaxTotalNodesLimit(t *testing.T) {
 	simpleScaleUpTest(t, config)
 }
 
+func TestWillConsiderGpuAndStandardPoolForPodWhichDoesNotRequireGpu(t *testing.T) {
+	options := defaultOptions
+	options.MaxNodesTotal = 100
+	config := &scaleTestConfig{
+		nodes: []nodeConfig{
+			{"gpu-node-1", 2000, 1000 * MB, 1, true, "gpu-pool"},
+			{"std-node-1", 2000, 1000 * MB, 0, true, "std-pool"},
+		},
+		pods: []podConfig{
+			{"gpu-pod-1", 2000, 1000 * MB, 1, "gpu-node-1"},
+			{"std-pod-1", 2000, 1000 * MB, 0, "std-node-1"},
+		},
+		extraPods: []podConfig{
+			{"extra-std-pod", 2000, 1000 * MB, 0, ""},
+		},
+		expectedScaleUpOptions: []groupSizeChange{
+			{groupName: "std-pool", sizeChange: 1},
+			{groupName: "gpu-pool", sizeChange: 1},
+		},
+		scaleUpOptionToChoose: groupSizeChange{groupName: "std-pool", sizeChange: 1},
+		expectedFinalScaleUp:  groupSizeChange{groupName: "std-pool", sizeChange: 1},
+		options:               options,
+	}
+
+	simpleScaleUpTest(t, config)
+}
+
+func TestWillConsiderOnlyGpuPoolForPodWhichDoesRequiresGpu(t *testing.T) {
+	options := defaultOptions
+	options.MaxNodesTotal = 100
+	config := &scaleTestConfig{
+		nodes: []nodeConfig{
+			{"gpu-node-1", 2000, 1000 * MB, 1, true, "gpu-pool"},
+			{"std-node-1", 2000, 1000 * MB, 0, true, "std-pool"},
+		},
+		pods: []podConfig{
+			{"gpu-pod-1", 2000, 1000 * MB, 1, "gpu-node-1"},
+			{"std-pod-1", 2000, 1000 * MB, 0, "std-node-1"},
+		},
+		extraPods: []podConfig{
+			{"extra-gpu-pod", 2000, 1000 * MB, 1, ""},
+		},
+		expectedScaleUpOptions: []groupSizeChange{
+			{groupName: "gpu-pool", sizeChange: 1},
+		},
+		scaleUpOptionToChoose: groupSizeChange{groupName: "gpu-pool", sizeChange: 1},
+		expectedFinalScaleUp:  groupSizeChange{groupName: "gpu-pool", sizeChange: 1},
+		options:               options,
+	}
+
+	simpleScaleUpTest(t, config)
+}
+
+func TestWillConsiderAllPoolsWhichFitTwoPodsRequiringGpus(t *testing.T) {
+	options := defaultOptions
+	options.MaxNodesTotal = 100
+	config := &scaleTestConfig{
+		nodes: []nodeConfig{
+			{"gpu-1-node-1", 2000, 1000 * MB, 1, true, "gpu-1-pool"},
+			{"gpu-2-node-1", 2000, 1000 * MB, 2, true, "gpu-2-pool"},
+			{"gpu-4-node-1", 2000, 1000 * MB, 4, true, "gpu-4-pool"},
+			{"std-node-1", 2000, 1000 * MB, 0, true, "std-pool"},
+		},
+		pods: []podConfig{
+			{"gpu-pod-1", 2000, 1000 * MB, 1, "gpu-1-node-1"},
+			{"gpu-pod-2", 2000, 1000 * MB, 2, "gpu-2-node-1"},
+			{"gpu-pod-3", 2000, 1000 * MB, 4, "gpu-4-node-1"},
+			{"std-pod-1", 2000, 1000 * MB, 0, "std-node-1"},
+		},
+		extraPods: []podConfig{
+			{"extra-gpu-pod-1", 1, 1 * MB, 1, ""}, // CPU and mem negligible
+			{"extra-gpu-pod-2", 1, 1 * MB, 1, ""}, // CPU and mem negligible
+			{"extra-gpu-pod-3", 1, 1 * MB, 1, ""}, // CPU and mem negligible
+		},
+		expectedScaleUpOptions: []groupSizeChange{
+			{groupName: "gpu-1-pool", sizeChange: 3},
+			{groupName: "gpu-2-pool", sizeChange: 2},
+			{groupName: "gpu-4-pool", sizeChange: 1},
+		},
+		scaleUpOptionToChoose: groupSizeChange{groupName: "gpu-1-pool", sizeChange: 3},
+		expectedFinalScaleUp:  groupSizeChange{groupName: "gpu-1-pool", sizeChange: 3},
+		options:               options,
+	}
+
+	simpleScaleUpTest(t, config)
+}
+
 type assertingStrategy struct {
 	initialNodeConfigs     []nodeConfig
 	expectedScaleUpOptions []groupSizeChange
