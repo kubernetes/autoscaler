@@ -269,7 +269,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	//
 	// With the check enabled the last point won't happen because CA will ignore a pod
 	// which is supposed to schedule on an existing node.
-	schedulablePodsPresent := false
+	scaleDownForbidden := false
 
 	unschedulablePodsWithoutTPUs := tpu.ClearTPURequests(allUnschedulablePods)
 
@@ -285,13 +285,10 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 
 	if len(unschedulablePodsToHelp) != len(unschedulablePods) {
 		glog.V(2).Info("Schedulable pods present")
-		schedulablePodsPresent = true
+		scaleDownForbidden = true
 	} else {
 		glog.V(4).Info("No schedulable pods")
 	}
-
-	// If all pending pods are new we may want to skip a real scale down (just like if the pods were handled).
-	allPendingPodsToHelpAreNew := false
 
 	if len(unschedulablePodsToHelp) == 0 {
 		glog.V(1).Info("No unschedulable pods")
@@ -301,7 +298,8 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		// The assumption here is that these pods have been created very recently and probably there
 		// is more pods to come. In theory we could check the newest pod time but then if pod were created
 		// slowly but at the pace of 1 every 2 seconds then no scale up would be triggered for long time.
-		allPendingPodsToHelpAreNew = true
+		// We also want to skip a real scale down (just like if the pods were handled).
+		scaleDownForbidden = true
 		glog.V(1).Info("Unschedulable pods are very new, waiting one iteration for more")
 	} else {
 		daemonsets, err := a.ListerRegistry.DaemonSetLister().List()
@@ -356,17 +354,16 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		}
 
 		// In dry run only utilization is updated
-		calculateUnneededOnly := a.lastScaleUpTime.Add(a.ScaleDownDelayAfterAdd).After(currentTime) ||
+		calculateUnneededOnly := scaleDownForbidden ||
+			a.lastScaleUpTime.Add(a.ScaleDownDelayAfterAdd).After(currentTime) ||
 			a.lastScaleDownFailTime.Add(a.ScaleDownDelayAfterFailure).After(currentTime) ||
 			a.lastScaleDownDeleteTime.Add(a.ScaleDownDelayAfterDelete).After(currentTime) ||
-			schedulablePodsPresent ||
-			scaleDown.nodeDeleteStatus.IsDeleteInProgress() ||
-			allPendingPodsToHelpAreNew
+			scaleDown.nodeDeleteStatus.IsDeleteInProgress()
 
 		glog.V(4).Infof("Scale down status: unneededOnly=%v lastScaleUpTime=%s "+
-			"lastScaleDownDeleteTime=%v lastScaleDownFailTime=%s schedulablePodsPresent=%v isDeleteInProgress=%v",
+			"lastScaleDownDeleteTime=%v lastScaleDownFailTime=%s scaleDownForbidden=%v isDeleteInProgress=%v",
 			calculateUnneededOnly, a.lastScaleUpTime, a.lastScaleDownDeleteTime, a.lastScaleDownFailTime,
-			schedulablePodsPresent, scaleDown.nodeDeleteStatus.IsDeleteInProgress())
+			scaleDownForbidden, scaleDown.nodeDeleteStatus.IsDeleteInProgress())
 
 		if !calculateUnneededOnly {
 			glog.V(4).Infof("Starting scale down")
