@@ -69,4 +69,3 @@ func TestNewAutoscalerStatic(t *testing.T) {
 	a, _ := NewAutoscaler(opts)
 	assert.IsType(t, &StaticAutoscaler{}, a)
 }
-

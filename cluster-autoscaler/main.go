@@ -241,11 +241,11 @@ func run(healthCheck *metrics.HealthCheck) {
 	listerRegistry := kube_util.NewListerRegistryWithDefaultListers(kubeClient, listerRegistryStopChannel)
 
 	opts := core.AutoscalerOptions{
-		AutoscalingOptions:   autoscalingOptions,
-		PredicateChecker:     predicateChecker,
-		KubeClient:           kubeClient,
-		KubeEventRecorder:    kubeEventRecorder,
-		ListerRegistry:       listerRegistry,
+		AutoscalingOptions: autoscalingOptions,
+		PredicateChecker:   predicateChecker,
+		KubeClient:         kubeClient,
+		KubeEventRecorder:  kubeEventRecorder,
+		ListerRegistry:     listerRegistry,
 	}
 	autoscaler, err := core.NewAutoscaler(opts)
 	if err != nil {
