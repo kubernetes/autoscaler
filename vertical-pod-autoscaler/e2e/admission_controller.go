@@ -188,34 +188,6 @@ var _ = admissionControllerE2eDescribe("Admission-controller", func() {
 		}
 	})
 
-	ginkgo.It("leaves user's request when target recommendation is zero", func() {
-		d := newHamsterDeploymentWithResources(f, parseQuantityOrDie("100m") /*cpu*/, parseQuantityOrDie("100Mi") /*memory*/)
-
-		ginkgo.By("Setting up a VPA CRD")
-		vpaCRD := newVPA(f, "hamster-vpa", &metav1.LabelSelector{
-			MatchLabels: d.Spec.Template.Labels,
-		})
-		vpaCRD.Status.Recommendation.ContainerRecommendations = []vpa_types.RecommendedContainerResources{
-			{
-				Name: "hamster",
-				Target: apiv1.ResourceList{
-					apiv1.ResourceCPU:    parseQuantityOrDie("0"),
-					apiv1.ResourceMemory: parseQuantityOrDie("0"),
-				},
-			},
-		}
-		installVPA(f, vpaCRD)
-
-		ginkgo.By("Setting up a hamster deployment")
-		podList := startDeploymentPods(f, d)
-
-		// VPA has no recommendation, so user's request is passed through
-		for _, pod := range podList.Items {
-			gomega.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(parseQuantityOrDie("100m")))
-			gomega.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(parseQuantityOrDie("100Mi")))
-		}
-	})
-
 	ginkgo.It("passes empty request when no recommendation and no user-specified request", func() {
 		d := newHamsterDeployment(f)
 
