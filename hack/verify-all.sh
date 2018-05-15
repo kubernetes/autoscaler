@@ -20,6 +20,7 @@ set -o pipefail
 
 KUBE_ROOT=$(dirname "${BASH_SOURCE}")/..
 source "${KUBE_ROOT}/hack/kube-env.sh"
+${KUBE_ROOT}/hack/check-go-version.sh
 
 SILENT=true
 
