@@ -418,9 +418,9 @@ func (agentPool *ContainerServiceAgentPool) DecreaseTargetSize(delta int) error 
 		return err
 	}
 	targetSize := int(currentSize) + delta
-	if targetSize > len(nodes) {
-		return fmt.Errorf("Attempt to increase the size to:%d by reducing: %d. Current node list count: %d",
-			targetSize, delta, len(nodes))
+	if targetSize < len(nodes) {
+		return fmt.Errorf("attempt to delete existing nodes targetSize:%d delta:%d existingNodes: %d",
+			currentSize, delta, len(nodes))
 	}
 	return agentPool.SetSize(targetSize)
 }
