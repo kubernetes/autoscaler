@@ -32,38 +32,47 @@ import (
 	"github.com/golang/glog"
 )
 
+// ExecutionResult describes the status of a call to a LoopStateHandler phase method,
+// whether the processing can continue further (next phase can be called) or not.
+type ExecutionResult int
+
+const (
+	// CanContinue means that the processing can continue further
+	CanContinue ExecutionResult = iota
+	// ShouldStop means that the processing should be stopped and error (or nil) returned
+	ShouldStop
+)
+
 // LoopStateHandler hides complexity of Autoscaler.RunOnce implementation,
 // splitting it into a number of phases.
-// Each phase method returns bool value to show whether processing can continue further.
+// Each phase method returns ExecutionResult to show if processing can continue further
+// and a result (error or nil) to return from Autoscaler.RunOnce if the processing should stop.
+// NOTE: Do not use `err != nil` idiom to decide if the processing can continue.
 // LoopStateHandler instance is a very short-lived one, persisting state of a single RunOnce call.
 type LoopStateHandler interface {
 	// RefreshState obtains new Node-level data from the cloud provider
 	// and updates internal ClusterStateRegistry, until metrics.UpdateState.
-	// Returns true iff the processing can continue further.
-	RefreshState() bool
+	// See LoopStateHandler doc for description of return values.
+	RefreshState() (ExecutionResult, errors.AutoscalerError)
 	// CheckPreconditions verifies Node-level preconditions for continuing
 	// to processing Pod-level data.
-	// Returns true iff the processing can continue further.
-	CheckPreconditions() bool
+	// See LoopStateHandler doc for description of return values.
+	CheckPreconditions() (ExecutionResult, errors.AutoscalerError)
 	// PreparePodData obtains Pod-level data for further processing.
-	// Returns true iff the processing can continue further.
-	PreparePodData() bool
+	// See LoopStateHandler doc for description of return values.
+	PreparePodData() (ExecutionResult, errors.AutoscalerError)
 	// ScaleUp executes scale-up, if it's required.
-	// Returns true iff the processing can continue further.
-	ScaleUp() bool
+	// See LoopStateHandler doc for description of return values.
+	ScaleUp() (ExecutionResult, errors.AutoscalerError)
 	// ScaleDown executes scale-down logic, both dry-run & actual scale-down, if it's required.
-	// Returns true iff the processing can continue further.
-	ScaleDown() bool
-
-	// ReturnError returns the result (error or nil) to return from Autoscaler.RunOnce.
-	ReturnError() errors.AutoscalerError
+	// See LoopStateHandler doc for description of return values.
+	ScaleDown() (ExecutionResult, errors.AutoscalerError)
 }
 
 // loopState is the default implementation of LoopStateHandler
 type loopState struct {
 	currentTime        time.Time
 	startTime          time.Time
-	retError           errors.AutoscalerError
 	scaleDownForbidden bool
 
 	autoscaler *StaticAutoscaler
@@ -87,21 +96,29 @@ func NewLoopStateHandler(autoscaler *StaticAutoscaler, currentTime time.Time) *l
 }
 
 // See LoopStateHandler interface
-func (ls *loopState) RefreshState() bool {
-	return ls.refreshCloudProvider() &&
-		ls.obtainNodeLists() &&
-		ls.updateClusterStateRegistry()
+func (ls *loopState) RefreshState() (ExecutionResult, errors.AutoscalerError) {
+	if result, err := ls.refreshCloudProvider(); result != CanContinue {
+		return result, err
+	}
+	if result, err := ls.obtainNodeLists(); result != CanContinue {
+		return result, err
+	}
+	return ls.updateClusterStateRegistry()
 }
 
 // See LoopStateHandler interface
-func (ls *loopState) CheckPreconditions() bool {
-	return ls.cleanUnregisteredNodes() &&
-		ls.checkClusterHealth() &&
-		ls.fixNodeGroupSizes()
+func (ls *loopState) CheckPreconditions() (ExecutionResult, errors.AutoscalerError) {
+	if result, err := ls.cleanUnregisteredNodes(); result != CanContinue {
+		return result, err
+	}
+	if result, err := ls.checkClusterHealth(); result != CanContinue {
+		return result, err
+	}
+	return ls.fixNodeGroupSizes()
 }
 
 // See LoopStateHandler interface
-func (ls *loopState) PreparePodData() bool {
+func (ls *loopState) PreparePodData() (ExecutionResult, errors.AutoscalerError) {
 	allUnschedulablePods, err := ls.autoscaler.UnschedulablePodLister().List()
 	if err != nil {
 		glog.Errorf("Failed to list unscheduled pods: %v", err)
@@ -162,11 +179,11 @@ func (ls *loopState) PreparePodData() bool {
 		glog.V(4).Info("No schedulable pods")
 	}
 
-	return true
+	return ls.onSuccess()
 }
 
 // See LoopStateHandler interface
-func (ls *loopState) ScaleUp() bool {
+func (ls *loopState) ScaleUp() (ExecutionResult, errors.AutoscalerError) {
 	if len(ls.unschedulablePodsToHelp) == 0 {
 		glog.V(1).Info("No unschedulable pods")
 	} else if ls.autoscaler.MaxNodesTotal > 0 && len(ls.readyNodes) >= ls.autoscaler.MaxNodesTotal {
@@ -198,17 +215,17 @@ func (ls *loopState) ScaleUp() bool {
 		} else if scaledUp {
 			ls.autoscaler.lastScaleUpTime = ls.currentTime
 			// No scale down in this iteration.
-			return false
+			return ls.onEarlyExit()
 		}
 	}
 
-	return true
+	return ls.onSuccess()
 }
 
 // See LoopStateHandler interface
-func (ls *loopState) ScaleDown() bool {
+func (ls *loopState) ScaleDown() (ExecutionResult, errors.AutoscalerError) {
 	if !ls.autoscaler.ScaleDownEnabled {
-		return true
+		return ls.onSuccess()
 	}
 
 	pdbs, err := ls.autoscaler.PodDisruptionBudgetLister().List()
@@ -254,7 +271,7 @@ func (ls *loopState) ScaleDown() bool {
 		ls.scaleDownForbidden, ls.autoscaler.scaleDown.nodeDeleteStatus.IsDeleteInProgress())
 
 	if calculateUnneededOnly {
-		return true
+		return ls.onSuccess()
 	}
 
 	glog.V(4).Infof("Starting scale down")
@@ -283,27 +300,22 @@ func (ls *loopState) ScaleDown() bool {
 		ls.autoscaler.lastScaleDownDeleteTime = ls.currentTime
 	}
 
-	return true
-}
-
-// See LoopStateHandler interface
-func (ls *loopState) ReturnError() errors.AutoscalerError {
-	return ls.retError
+	return ls.onSuccess()
 }
 
 // single-use helper methods start here, extracted to limit complexity of any single method
-// all these methods return true if it's safe to continue, false if the RunOnce loop should be onTypedErrored
+// all these methods return the values used by phase methods of LoopStateHandler interface
 
-func (ls *loopState) refreshCloudProvider() bool {
+func (ls *loopState) refreshCloudProvider() (ExecutionResult, errors.AutoscalerError) {
 	err := ls.context.CloudProvider.Refresh()
 	if err != nil {
 		glog.Errorf("Failed to refresh cloud provider config: %v", err)
 		return ls.onError(errors.CloudProviderError, err)
 	}
-	return true
+	return ls.onSuccess()
 }
 
-func (ls *loopState) obtainNodeLists() bool {
+func (ls *loopState) obtainNodeLists() (ExecutionResult, errors.AutoscalerError) {
 	var err error
 
 	ls.allNodes, err = ls.autoscaler.AllNodeLister().List()
@@ -333,10 +345,10 @@ func (ls *loopState) obtainNodeLists() bool {
 		emit := ls.currentTime.After(ls.autoscaler.startTime.Add(nodesNotReadyAfterStartTimeout))
 		return ls.onEmptyCluster("ready nodes", emit)
 	}
-	return true
+	return ls.onSuccess()
 }
 
-func (ls *loopState) updateClusterStateRegistry() bool {
+func (ls *loopState) updateClusterStateRegistry() (ExecutionResult, errors.AutoscalerError) {
 	err := ls.autoscaler.ClusterStateRegistry.UpdateNodes(ls.allNodes, ls.currentTime)
 	if err != nil {
 		glog.Errorf("Failed to update node registry: %v", err)
@@ -348,10 +360,10 @@ func (ls *loopState) updateClusterStateRegistry() bool {
 	metrics.UpdateDurationFromStart(metrics.UpdateState, ls.startTime)
 	metrics.UpdateLastTime(metrics.Autoscaling, time.Now())
 
-	return true
+	return ls.onSuccess()
 }
 
-func (ls *loopState) cleanUnregisteredNodes() bool {
+func (ls *loopState) cleanUnregisteredNodes() (ExecutionResult, errors.AutoscalerError) {
 	// Check if there are any nodes that failed to register in Kubernetes master.
 	unregisteredNodes := ls.autoscaler.ClusterStateRegistry.GetUnregisteredNodes()
 	if len(unregisteredNodes) > 0 {
@@ -369,23 +381,23 @@ func (ls *loopState) cleanUnregisteredNodes() bool {
 		// Some nodes were removed. Let's skip this iteration, the next one should be better.
 		if removedAny {
 			glog.V(0).Infof("Some unregistered nodes were removed, skipping iteration")
-			return false
+			return ls.onEarlyExit()
 		}
 	}
-	return true
+	return ls.onSuccess()
 }
 
-func (ls *loopState) checkClusterHealth() bool {
+func (ls *loopState) checkClusterHealth() (ExecutionResult, errors.AutoscalerError) {
 	if !ls.autoscaler.ClusterStateRegistry.IsClusterHealthy() {
 		glog.Warning("Cluster is not ready for autoscaling")
 		ls.autoscaler.scaleDown.CleanUpUnneededNodes()
 		ls.context.LogRecorder.Eventf(apiv1.EventTypeWarning, "ClusterUnhealthy", "Cluster is unhealthy")
-		return false
+		return ls.onEarlyExit()
 	}
-	return true
+	return ls.onSuccess()
 }
 
-func (ls *loopState) fixNodeGroupSizes() bool {
+func (ls *loopState) fixNodeGroupSizes() (ExecutionResult, errors.AutoscalerError) {
 	// Check if there has been a constant difference between the number of nodes in k8s and
 	// the number of nodes on the cloud provider side.
 	// TODO: andrewskim - add protection for ready AWS nodes.
@@ -396,24 +408,31 @@ func (ls *loopState) fixNodeGroupSizes() bool {
 	}
 	if fixedSomething {
 		glog.V(0).Infof("Some node group target size was fixed, skipping the iteration")
-		return false
+		return ls.onEarlyExit()
 	}
 
-	return true
+	return ls.onSuccess()
 }
 
 // general helper methods start here
 
-func (ls *loopState) onTypedError(err errors.AutoscalerError) bool {
-	ls.retError = err
-	return false
+func (ls *loopState) onTypedError(err errors.AutoscalerError) (ExecutionResult, errors.AutoscalerError) {
+	return ShouldStop, err
 }
 
-func (ls *loopState) onError(errType errors.AutoscalerErrorType, err error) bool {
+func (ls *loopState) onError(errType errors.AutoscalerErrorType, err error) (ExecutionResult, errors.AutoscalerError) {
 	return ls.onTypedError(errors.ToAutoscalerError(errType, err))
 }
 
-func (ls *loopState) onEmptyCluster(kind string, emitEvent bool) bool {
+func (ls *loopState) onEarlyExit() (ExecutionResult, errors.AutoscalerError) {
+	return ShouldStop, nil
+}
+
+func (ls *loopState) onSuccess() (ExecutionResult, errors.AutoscalerError) {
+	return CanContinue, nil
+}
+
+func (ls *loopState) onEmptyCluster(kind string, emitEvent bool) (ExecutionResult, errors.AutoscalerError) {
 	ls.autoscaler.scaleDown.CleanUpUnneededNodes()
 	UpdateEmptyClusterStateMetrics()
 
@@ -425,6 +444,5 @@ func (ls *loopState) onEmptyCluster(kind string, emitEvent bool) bool {
 		ls.context.LogRecorder.Eventf(apiv1.EventTypeWarning, "ClusterUnhealthy", status)
 	}
 	glog.Warningf("No %v in the cluster", kind)
-	// not setting ls.retError on purpose
-	return false
+	return ls.onEarlyExit()
 }

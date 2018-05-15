@@ -112,8 +112,8 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	handler := NewLoopStateHandler(a, currentTime)
 	glog.V(4).Info("Starting main loop")
 
-	if !handler.RefreshState() {
-		return handler.ReturnError()
+	if result, err := handler.RefreshState(); result != CanContinue {
+		return err
 	}
 
 	// Update status information when the loop is done (regardless of reason)
@@ -125,13 +125,17 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		}
 	}()
 
-	// lazy evaluation to abort as soon as required
-	_ = handler.CheckPreconditions() &&
-		handler.PreparePodData() &&
-		handler.ScaleUp() &&
-		handler.ScaleDown()
-
-	return handler.ReturnError()
+	if result, err := handler.CheckPreconditions(); result != CanContinue {
+		return err
+	}
+	if result, err := handler.PreparePodData(); result != CanContinue {
+		return err
+	}
+	if result, err := handler.ScaleUp(); result != CanContinue {
+		return err
+	}
+	_, err := handler.ScaleDown()
+	return err
 }
 
 // ExitCleanUp removes status configmap.
