@@ -21,7 +21,7 @@ set -o pipefail
 KUBE_ROOT=$(dirname "${BASH_SOURCE}")/..
 ${KUBE_ROOT}/hack/check-go-version.sh
 
-go get -u github.com/golang/lint/golint
+go get -u golang.org/x/lint/golint
 
 go get -u github.com/tools/godep
 
