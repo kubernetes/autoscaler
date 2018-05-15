@@ -43,17 +43,19 @@ type Updater interface {
 }
 
 type updater struct {
-	vpaLister       vpa_lister.VerticalPodAutoscalerLister
-	podLister       v1lister.PodLister
-	evictionFactory eviction.PodsEvictionRestrictionFactory
+	vpaLister               vpa_lister.VerticalPodAutoscalerLister
+	podLister               v1lister.PodLister
+	evictionFactory         eviction.PodsEvictionRestrictionFactory
+	recommendationProcessor vpa_api_util.RecommendationProcessor
 }
 
 // NewUpdater creates Updater with given configuration
-func NewUpdater(kubeClient kube_client.Interface, vpaClient *vpa_clientset.Clientset, minReplicasForEvicition int, evictionToleranceFraction float64) Updater {
+func NewUpdater(kubeClient kube_client.Interface, vpaClient *vpa_clientset.Clientset, minReplicasForEvicition int, evictionToleranceFraction float64, recommendationProcessor vpa_api_util.RecommendationProcessor) Updater {
 	return &updater{
-		vpaLister:       vpa_api_util.NewAllVpasLister(vpaClient, make(chan struct{})),
-		podLister:       newPodLister(kubeClient),
-		evictionFactory: eviction.NewPodsEvictionRestrictionFactory(kubeClient, minReplicasForEvicition, evictionToleranceFraction),
+		vpaLister:               vpa_api_util.NewAllVpasLister(vpaClient, make(chan struct{})),
+		podLister:               newPodLister(kubeClient),
+		evictionFactory:         eviction.NewPodsEvictionRestrictionFactory(kubeClient, minReplicasForEvicition, evictionToleranceFraction),
+		recommendationProcessor: recommendationProcessor,
 	}
 }
 
@@ -113,7 +115,7 @@ func (u *updater) RunOnce() {
 
 // getPodsForUpdate returns list of pods that should be updated ordered by update priority
 func (u *updater) getPodsForUpdate(pods []*apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler) []*apiv1.Pod {
-	priorityCalculator := priority.NewUpdatePriorityCalculator(&vpa.Spec.ResourcePolicy, nil)
+	priorityCalculator := priority.NewUpdatePriorityCalculator(&vpa.Spec.ResourcePolicy, nil, u.recommendationProcessor)
 	recommendation := vpa.Status.Recommendation
 
 	for _, pod := range pods {
