@@ -50,14 +50,14 @@ const (
 // NOTE: Do not use `err != nil` idiom to decide if the processing can continue.
 // LoopStateHandler instance is a very short-lived one, persisting state of a single RunOnce call.
 type LoopStateHandler interface {
-	// RefreshState obtains new Node-level data from the cloud provider
+	// RefreshState obtains new Node-level data from the cloud provider and Kubernetes API server
 	// and updates internal ClusterStateRegistry, until metrics.UpdateState.
 	// See LoopStateHandler doc for description of return values.
 	RefreshState() (ExecutionResult, errors.AutoscalerError)
-	// CheckPreconditions verifies Node-level preconditions for continuing
-	// to processing Pod-level data.
+	// FixClusterState verifies Node-level state of the cluster and applies fixes if required.
+	// If it allows further processing all the Node-level preconditions should be met.
 	// See LoopStateHandler doc for description of return values.
-	CheckPreconditions() (ExecutionResult, errors.AutoscalerError)
+	FixClusterState() (ExecutionResult, errors.AutoscalerError)
 	// PreparePodData obtains Pod-level data for further processing.
 	// See LoopStateHandler doc for description of return values.
 	PreparePodData() (ExecutionResult, errors.AutoscalerError)
@@ -186,37 +186,42 @@ func (ls *loopState) PreparePodData() (ExecutionResult, errors.AutoscalerError) 
 func (ls *loopState) ScaleUp() (ExecutionResult, errors.AutoscalerError) {
 	if len(ls.unschedulablePodsToHelp) == 0 {
 		glog.V(1).Info("No unschedulable pods")
-	} else if ls.autoscaler.MaxNodesTotal > 0 && len(ls.readyNodes) >= ls.autoscaler.MaxNodesTotal {
+		return ls.onSuccess()
+	}
+	if ls.autoscaler.MaxNodesTotal > 0 && len(ls.readyNodes) >= ls.autoscaler.MaxNodesTotal {
 		glog.V(1).Info("Max total nodes in cluster reached")
-	} else if allPodsAreNew(ls.unschedulablePodsToHelp, ls.currentTime) {
+		return ls.onSuccess()
+	}
+	if allPodsAreNew(ls.unschedulablePodsToHelp, ls.currentTime) {
 		// The assumption here is that these pods have been created very recently and probably there
 		// is more pods to come. In theory we could check the newest pod time but then if pod were created
 		// slowly but at the pace of 1 every 2 seconds then no scale up would be triggered for long time.
 		// We also want to skip a real scale down (just like if the pods were handled).
 		ls.scaleDownForbidden = true
 		glog.V(1).Info("Unschedulable pods are very new, waiting one iteration for more")
-	} else {
-		daemonsets, err := ls.autoscaler.ListerRegistry.DaemonSetLister().List()
-		if err != nil {
-			glog.Errorf("Failed to get daemonset list")
-			return ls.onError(errors.ApiCallError, err)
-		}
+		return ls.onSuccess()
+	}
 
-		scaleUpStart := time.Now()
-		metrics.UpdateLastTime(metrics.ScaleUp, scaleUpStart)
+	daemonsets, err := ls.autoscaler.ListerRegistry.DaemonSetLister().List()
+	if err != nil {
+		glog.Errorf("Failed to get daemonset list")
+		return ls.onError(errors.ApiCallError, err)
+	}
 
-		scaledUp, typedErr := ScaleUp(ls.context, ls.unschedulablePodsToHelp, ls.readyNodes, daemonsets)
+	scaleUpStart := time.Now()
+	metrics.UpdateLastTime(metrics.ScaleUp, scaleUpStart)
 
-		metrics.UpdateDurationFromStart(metrics.ScaleUp, scaleUpStart)
+	scaledUp, typedErr := ScaleUp(ls.context, ls.unschedulablePodsToHelp, ls.readyNodes, daemonsets)
 
-		if typedErr != nil {
-			glog.Errorf("Failed to scale up: %v", typedErr)
-			ls.onTypedError(typedErr)
-		} else if scaledUp {
-			ls.autoscaler.lastScaleUpTime = ls.currentTime
-			// No scale down in this iteration.
-			return ls.onEarlyExit()
-		}
+	metrics.UpdateDurationFromStart(metrics.ScaleUp, scaleUpStart)
+
+	if typedErr != nil {
+		glog.Errorf("Failed to scale up: %v", typedErr)
+		ls.onTypedError(typedErr)
+	} else if scaledUp {
+		ls.autoscaler.lastScaleUpTime = ls.currentTime
+		// No scale down in this iteration.
+		return ls.onEarlyExit()
 	}
 
 	return ls.onSuccess()
@@ -254,7 +259,7 @@ func (ls *loopState) ScaleDown() (ExecutionResult, errors.AutoscalerError) {
 
 	if glog.V(4) {
 		for key, val := range ls.autoscaler.scaleDown.unneededNodes {
-			glog.V(4).Infof("%s is unneeded since %s duration %s", key, val.String(), ls.currentTime.Sub(val).String())
+			glog.Infof("%s is unneeded since %s duration %s", key, val.String(), ls.currentTime.Sub(val).String())
 		}
 	}
 
