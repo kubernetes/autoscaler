@@ -41,6 +41,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	kube_client "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	kube_leaderelection "k8s.io/client-go/tools/leaderelection"
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
@@ -184,7 +185,7 @@ func createAutoscalingOptions() context.AutoscalingOptions {
 	}
 }
 
-func createKubeClient() kube_client.Interface {
+func getKubeConfig() *rest.Config {
 	if *kubeConfigFile != "" {
 		glog.V(1).Infof("Using kubeconfig file: %s", *kubeConfigFile)
 		// use the current context in kubeconfig
@@ -192,11 +193,7 @@ func createKubeClient() kube_client.Interface {
 		if err != nil {
 			glog.Fatalf("Failed to build config: %v", err)
 		}
-		clientset, err := kube_client.NewForConfig(config)
-		if err != nil {
-			glog.Fatalf("Create clientset error: %v", err)
-		}
-		return clientset
+		return config
 	}
 	url, err := url.Parse(*kubernetes)
 	if err != nil {
@@ -208,6 +205,10 @@ func createKubeClient() kube_client.Interface {
 		glog.Fatalf("Failed to build Kubernetes client configuration: %v", err)
 	}
 
+	return kubeConfig
+}
+
+func createKubeClient(kubeConfig *rest.Config) kube_client.Interface {
 	return kube_client.NewForConfigOrDie(kubeConfig)
 }
 
@@ -228,7 +229,8 @@ func registerSignalHandlers(autoscaler core.Autoscaler) {
 
 func run(healthCheck *metrics.HealthCheck) {
 	metrics.RegisterAll()
-	kubeClient := createKubeClient()
+	kubeConfig := getKubeConfig()
+	kubeClient := createKubeClient(kubeConfig)
 	kubeEventRecorder := kube_util.CreateEventRecorder(kubeClient)
 	autoscalingOptions := createAutoscalingOptions()
 	metrics.UpdateNapEnabled(autoscalingOptions.NodeAutoprovisioningEnabled)
@@ -318,7 +320,7 @@ func main() {
 			glog.Fatalf("Unable to get hostname: %v", err)
 		}
 
-		kubeClient := createKubeClient()
+		kubeClient := createKubeClient(getKubeConfig())
 
 		// Validate that the client is ok.
 		_, err = kubeClient.CoreV1().Nodes().List(metav1.ListOptions{})
