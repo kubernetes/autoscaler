@@ -34,7 +34,7 @@ const (
 )
 
 func TestSortPriority(t *testing.T) {
-	calculator := NewUpdatePriorityCalculator(nil, nil)
+	calculator := NewUpdatePriorityCalculator(nil, nil, &test.FakeRecommendationProcessor{})
 
 	pod1 := test.BuildTestPod("POD1", containerName, "2", "", nil, nil)
 	pod2 := test.BuildTestPod("POD2", containerName, "4", "", nil, nil)
@@ -54,7 +54,7 @@ func TestSortPriority(t *testing.T) {
 }
 
 func TestSortPriorityMultiResource(t *testing.T) {
-	calculator := NewUpdatePriorityCalculator(nil, nil)
+	calculator := NewUpdatePriorityCalculator(nil, nil, &test.FakeRecommendationProcessor{})
 
 	pod1 := test.BuildTestPod("POD1", containerName, "4", "60M", nil, nil)
 	pod2 := test.BuildTestPod("POD2", containerName, "3", "90M", nil, nil)
@@ -97,7 +97,7 @@ func TestSortPriorityMultiContainers(t *testing.T) {
 	recommendation.ContainerRecommendations = append(recommendation.ContainerRecommendations, container2rec)
 
 	timestampNow := pod1.Status.StartTime.Time.Add(time.Hour * 24)
-	calculator := NewUpdatePriorityCalculator(nil, nil)
+	calculator := NewUpdatePriorityCalculator(nil, nil, &test.FakeRecommendationProcessor{})
 	calculator.AddPod(pod1, recommendation, timestampNow)
 	calculator.AddPod(pod2, recommendation, timestampNow)
 
@@ -113,7 +113,7 @@ func TestSortPriorityMultiContainers(t *testing.T) {
 }
 
 func TestSortPriorityResourcesDecrease(t *testing.T) {
-	calculator := NewUpdatePriorityCalculator(nil, nil)
+	calculator := NewUpdatePriorityCalculator(nil, nil, &test.FakeRecommendationProcessor{})
 
 	pod1 := test.BuildTestPod("POD1", containerName, "4", "", nil, nil)
 	pod2 := test.BuildTestPod("POD2", containerName, "7", "", nil, nil)
@@ -135,7 +135,7 @@ func TestSortPriorityResourcesDecrease(t *testing.T) {
 }
 
 func TestUpdateNotRequired(t *testing.T) {
-	calculator := NewUpdatePriorityCalculator(nil, nil)
+	calculator := NewUpdatePriorityCalculator(nil, nil, &test.FakeRecommendationProcessor{})
 
 	pod1 := test.BuildTestPod("POD1", containerName, "4", "", nil, nil)
 
@@ -149,7 +149,7 @@ func TestUpdateNotRequired(t *testing.T) {
 }
 
 func TestUpdateRequiredOnMilliQuantities(t *testing.T) {
-	calculator := NewUpdatePriorityCalculator(nil, nil)
+	calculator := NewUpdatePriorityCalculator(nil, nil, &test.FakeRecommendationProcessor{})
 
 	pod1 := test.BuildTestPod("POD1", containerName, "10m", "", nil, nil)
 
@@ -162,14 +162,18 @@ func TestUpdateRequiredOnMilliQuantities(t *testing.T) {
 	assert.Exactly(t, []*apiv1.Pod{pod1}, result, "Pod should be updated")
 }
 
-func TestUsePolicy(t *testing.T) {
+func TestUseProcessor(t *testing.T) {
+
+	processedRecommendation := test.Recommendation().WithContainer(containerName).WithTarget("4", "10M").Get()
+	recommendationProcessor := &test.RecommendationProcessorMock{}
+	recommendationProcessor.On("Apply").Return(processedRecommendation, nil)
+
 	calculator := NewUpdatePriorityCalculator(
-		test.BuildTestPolicy(containerName, "1", "4", "10M", "100M"), nil)
+		nil, nil, recommendationProcessor)
 
 	pod1 := test.BuildTestPod("POD1", containerName, "4", "10M", nil, nil)
 
 	recommendation := test.Recommendation().WithContainer(containerName).WithTarget("5", "5M").Get()
-
 	timestampNow := pod1.Status.StartTime.Time.Add(time.Hour * 24)
 	calculator.AddPod(pod1, recommendation, timestampNow)
 
@@ -183,7 +187,7 @@ func TestUsePolicy(t *testing.T) {
 // 2. diverging from the target by more than MinChangePriority.
 func TestUpdateLonglivedPods(t *testing.T) {
 	calculator := NewUpdatePriorityCalculator(
-		nil, &UpdateConfig{MinChangePriority: 0.5})
+		nil, &UpdateConfig{MinChangePriority: 0.5}, &test.FakeRecommendationProcessor{})
 
 	pods := []*apiv1.Pod{
 		test.BuildTestPod("POD1", containerName, "4", "", nil, nil),
@@ -211,7 +215,7 @@ func TestUpdateLonglivedPods(t *testing.T) {
 // range for at least one container.
 func TestUpdateShortlivedPods(t *testing.T) {
 	calculator := NewUpdatePriorityCalculator(
-		nil, &UpdateConfig{MinChangePriority: 0.5})
+		nil, &UpdateConfig{MinChangePriority: 0.5}, &test.FakeRecommendationProcessor{})
 
 	pods := []*apiv1.Pod{
 		test.BuildTestPod("POD1", containerName, "4", "", nil, nil),
@@ -235,7 +239,7 @@ func TestUpdateShortlivedPods(t *testing.T) {
 }
 
 func TestNoPods(t *testing.T) {
-	calculator := NewUpdatePriorityCalculator(nil, nil)
+	calculator := NewUpdatePriorityCalculator(nil, nil, &test.FakeRecommendationProcessor{})
 	result := calculator.GetSortedPods()
 	assert.Exactly(t, []*apiv1.Pod{}, result)
 }

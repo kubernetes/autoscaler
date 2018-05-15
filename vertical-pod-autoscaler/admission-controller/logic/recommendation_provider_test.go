@@ -24,6 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
 func TestUpdateResourceRequests(t *testing.T) {
@@ -128,7 +129,8 @@ func TestUpdateResourceRequests(t *testing.T) {
 		vpaLister.On("VerticalPodAutoscalers", "default").Return(vpaNamespaceLister)
 
 		recommendationProvider := &recommendationProvider{
-			vpaLister: vpaLister,
+			vpaLister:               vpaLister,
+			recommendationProcessor: api.NewCappingRecommendationProcessor(),
 		}
 
 		resources, err := recommendationProvider.GetContainersResourcesForPod(tc.pod)
