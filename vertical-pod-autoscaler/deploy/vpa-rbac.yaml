@@ -20,6 +20,7 @@ rules:
   - ""
   resources:
   - pods
+  - nodes
   verbs:
   - get
   - list
@@ -147,6 +148,7 @@ rules:
   resources:
   - pods
   - configmaps
+  - nodes
   verbs:
   - get
   - list
