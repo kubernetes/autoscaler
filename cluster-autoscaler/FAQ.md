@@ -310,7 +310,7 @@ kubectl annotate node <nodename> cluster-autoscaler.kubernetes.io/scale-down-dis
 Below solution works since version 1.1 (to be shipped with Kubernetes 1.9).
 
 Overprovisioning can be configured using deployment running pause pods with very low assigned
-priority (see [Priority Preemption](https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/)) 
+priority (see [Priority Preemption](https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/))
 which keeps resources that can be used by other pods. If there is not enough resources then pause
 pods are premmpted and new pods take their place. Next pause pods become unschedulable and force CA
  to scale up the cluster.
@@ -331,9 +331,9 @@ export KUBE_RUNTIME_CONFIG=scheduling.k8s.io/v1alpha1=true
 export ENABLE_POD_PRIORITY=true
 ```
 
-2. Define priority class for overprovisioning pods. Priority -1 will be reserved for 
-overprovisioning pods as it is the lowest priority that triggers scaling clusters. Other pods need 
-to use priority 0 or higher in order to be able to preempt overprovisioning pods. You can use 
+2. Define priority class for overprovisioning pods. Priority -1 will be reserved for
+overprovisioning pods as it is the lowest priority that triggers scaling clusters. Other pods need
+to use priority 0 or higher in order to be able to preempt overprovisioning pods. You can use
 following definitions:
 
 ```yaml
@@ -355,7 +355,7 @@ specific roles. More details [here](https://github.com/kubernetes-incubator/clus
 
 5. Create deployments that will reserve resources. "overprovisioning" deployment will reserve
 resources and "overprovisioning-autoscaler" deployment will change the size of reserved resources.
-You can use following definitions (you need to change service account for "overprovisioning-autoscaler" 
+You can use following definitions (you need to change service account for "overprovisioning-autoscaler"
 deployment to the one created in the previous step):
 
 ```yaml
@@ -830,9 +830,9 @@ the following hack makes the things easier to handle:
    against the latest release tag of the corresponding `k8s.io/kubernetes` branch.
 4. Do `godep restore` in `k8s.io/kubernetes`.
 5. Remove Godeps and vendor from `k8s.io/autoscaler/cluster-autoscaler`.
-6. Invoke `fix_gopath.sh`. This will update `k8s.io/api`, `k8s.io/apimachinery` etc with the content of
+6. Add some other dependencies to `_override` if needed, and update `fix_gopath.sh` to use them. Make sure that the code in `k8s.io/autoscaler/cluster-autoscaler` refers to them somehow (may be a blank import).
+7. Invoke `fix_gopath.sh`. This will update `k8s.io/api`, `k8s.io/apimachinery` etc with the content of
    `k8s.io/kubernetes/staging` and remove all vendor directories from your gopath.
-7. Add some other dependencies if needed, and make sure that the code in `k8s.io/autoscaler/cluster-autoscaler` refers to them somehow (may be a blank import).
 8. Check if everything compiles with `go test ./...` in `k8s.io/autoscaler/cluster-autoscaler`.
 9. `godep save ./...` in `k8s.io/autoscaler/cluster-autoscaler`,
 10. Send a PR with 2 commits - one that covers `Godep` and `vendor/`, and the other one with all
