@@ -126,6 +126,8 @@ To run a CA pod with Azure managed service identity (MSI), use [cluster-autoscal
 kubectl create -f cluster-autoscaler-standard-msi.yaml
 ```
 
+**WARNING**: Cluster autoscaler depends on user provided deployment parameters to provision new nodes. It should be redeployed with new parameters after upgrading Kubernetes cluster (e.g. upgraded by `acs-engine upgrade` command), or else new nodes will be provisioned with old version.
+
 ### AKS or ACS deployment
 
 Pre-requirements:
@@ -166,23 +168,28 @@ Fill the values of cluster-autoscaler-azure secret in [cluster-autoscaler-contai
 > Note that all data above should be encoded with base64.
 > Note: Please use lower case for the ResourceGroup and NodeResourceGroup
 
-And fill the node groups in container command by `--nodes`, with the range of nodes (minimum to be set as 3 which is the default cluster size) and 
-node pool name obained from Pre-requirements steps above, e.g.
+And fill the node groups in container command by `--nodes`, with the range of nodes (minimum to be set as 3 which is the default cluster size) and node pool name obtained from pre-requirements steps above, e.g.
 
 ```yaml
         - --nodes=3:10:nodepool1
 ```
+
 The vmType param determines the kind of service we are interacting with.
+
 For AKS fill the following base64 encoded value:
+
 ```sh
 $ echo AKS | base64
 QUtTCg==
 ```
+
 and for ACS fill the following base64 encoded value:
+
 ```sh
 $echo ACS | base64
 QUNTCg==
 ```
+
 Then deploy cluster-autoscaler by running
 
 ```sh
