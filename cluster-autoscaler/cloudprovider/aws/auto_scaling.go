@@ -26,7 +26,6 @@ import (
 
 // autoScaling is the interface represents a specific aspect of the auto-scaling service provided by AWS SDK for use in CA
 type autoScaling interface {
-	DescribeAutoScalingGroups(input *autoscaling.DescribeAutoScalingGroupsInput) (*autoscaling.DescribeAutoScalingGroupsOutput, error)
 	DescribeAutoScalingGroupsPages(input *autoscaling.DescribeAutoScalingGroupsInput, fn func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool) error
 	DescribeLaunchConfigurations(*autoscaling.DescribeLaunchConfigurationsInput) (*autoscaling.DescribeLaunchConfigurationsOutput, error)
 	DescribeTagsPages(input *autoscaling.DescribeTagsInput, fn func(*autoscaling.DescribeTagsOutput, bool) bool) error
@@ -56,22 +55,6 @@ func (m autoScalingWrapper) getInstanceTypeByLCName(name string) (string, error)
 	return *launchConfigurations.LaunchConfigurations[0].InstanceType, nil
 }
 
-func (m autoScalingWrapper) getAutoscalingGroupByName(name string) (*autoscaling.Group, error) {
-	params := &autoscaling.DescribeAutoScalingGroupsInput{
-		AutoScalingGroupNames: []*string{aws.String(name)},
-		MaxRecords:            aws.Int64(1),
-	}
-	groups, err := m.DescribeAutoScalingGroups(params)
-	if err != nil {
-		glog.V(4).Infof("Failed ASG info request for %s: %v", name, err)
-		return nil, err
-	}
-	if len(groups.AutoScalingGroups) < 1 {
-		return nil, fmt.Errorf("Unable to get first autoscaling.Group for %s", name)
-	}
-	return groups.AutoScalingGroups[0], nil
-}
-
 func (m *autoScalingWrapper) getAutoscalingGroupsByNames(names []string) ([]*autoscaling.Group, error) {
 	if len(names) == 0 {
 		return nil, nil
@@ -92,7 +75,7 @@ func (m *autoScalingWrapper) getAutoscalingGroupsByNames(names []string) ([]*aut
 	return asgs, nil
 }
 
-func (m *autoScalingWrapper) getAutoscalingGroupsByTags(kvs map[string]string) ([]*autoscaling.Group, error) {
+func (m *autoScalingWrapper) getAutoscalingGroupNamesByTags(kvs map[string]string) ([]string, error) {
 	// DescribeTags does an OR query when multiple filters on different tags are
 	// specified. In other words, DescribeTags returns [asg1, asg1] for keys
 	// [t1, t2] when there's only one asg tagged both t1 and t2.
@@ -140,5 +123,5 @@ func (m *autoScalingWrapper) getAutoscalingGroupsByTags(kvs map[string]string) (
 		asgNameOccurrences[asgName] = occurrences
 	}
 
-	return m.getAutoscalingGroupsByNames(asgNames)
+	return asgNames, nil
 }
