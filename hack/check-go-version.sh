@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2014 The Kubernetes Authors.
+# Copyright 2018 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,17 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -o errexit
-set -o nounset
-set -o pipefail
+set -euo pipefail
 
-KUBE_ROOT=$(dirname "${BASH_SOURCE}")/..
-${KUBE_ROOT}/hack/check-go-version.sh
+GO_VERSION=($(go version))
 
-go get -u golang.org/x/lint/golint
+if ! echo "${GO_VERSION[2]}" | grep -Eq 'go1.9|1.10'; then
+  echo "Unsupported go version ${GO_VERSION}"
+  return 1
+fi
 
-go get -u github.com/tools/godep
-
-go get -u github.com/client9/misspell/cmd/misspell
-
-# ex: ts=2 sw=2 et filetype=sh
