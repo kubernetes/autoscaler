@@ -29,4 +29,12 @@ cp $GOPATH/src/k8s.io/autoscaler/cluster-autoscaler/_override/google.golang.org/
 mkdir -p $GOPATH/src/google.golang.org/api/container/v1beta1
 cp $GOPATH/src/k8s.io/autoscaler/cluster-autoscaler/_override/google.golang.org/api/container/v1beta1/*  $GOPATH/src/google.golang.org/api/container/v1beta1
 cd $GOPATH/src/google.golang.org/api/
+git add .
 git commit -a -m "Api override for NAP"
+
+echo Overriding AKS API
+mkdir -p $GOPATH/src/github.com/Azure/azure-sdk-for-go/services/mgmt/2017-09-30/containerservice
+cp $GOPATH/src/k8s.io/autoscaler/cluster-autoscaler/_override/github.com/Azure/azure-sdk-for-go/services/mgmt/2017-09-30/containerservice/* $GOPATH/src/github.com/Azure/azure-sdk-for-go/services/mgmt/2017-09-30/containerservice/
+cd $GOPATH/src/github.com/Azure/azure-sdk-for-go/services/mgmt/2017-09-30/containerservice
+git add .
+git commit -a -m "Api override for AKS"
