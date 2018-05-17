@@ -42,9 +42,9 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 	provider_gce "k8s.io/kubernetes/pkg/cloudprovider/providers/gce"
 )
 
@@ -1026,10 +1026,10 @@ func (m *gceManagerImpl) fetchResourceLimiter() error {
 
 		// GKE API provides memory in GB, but ResourceLimiter expects them in bytes
 		if _, found := minLimits[cloudprovider.ResourceNameMemory]; found {
-			minLimits[cloudprovider.ResourceNameMemory] = minLimits[cloudprovider.ResourceNameMemory] * config.Gigabyte
+			minLimits[cloudprovider.ResourceNameMemory] = minLimits[cloudprovider.ResourceNameMemory] * units.Gigabyte
 		}
 		if _, found := maxLimits[cloudprovider.ResourceNameMemory]; found {
-			maxLimits[cloudprovider.ResourceNameMemory] = maxLimits[cloudprovider.ResourceNameMemory] * config.Gigabyte
+			maxLimits[cloudprovider.ResourceNameMemory] = maxLimits[cloudprovider.ResourceNameMemory] * units.Gigabyte
 		}
 
 		resourceLimiter := cloudprovider.NewResourceLimiter(minLimits, maxLimits)

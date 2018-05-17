@@ -1,5 +1,5 @@
 /*
-Copyright 2017 The Kubernetes Authors.
+Copyright 2018 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,11 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package config
+package units
 
 const (
-	// DefaultMaxClusterCores is the default maximum number of cores in the cluster.
-	DefaultMaxClusterCores = 5000 * 64
-	// DefaultMaxClusterMemory is the default maximum number of gigabytes of memory in cluster.
-	DefaultMaxClusterMemory = 5000 * 64 * 20
+	// Gigabyte is 2^30 bytes.
+	Gigabyte = 1024 * 1024 * 1024
 )
