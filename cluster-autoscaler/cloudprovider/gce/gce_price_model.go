@@ -22,6 +22,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 )
 
@@ -36,7 +37,6 @@ const (
 	preemptibleDiscount     = 0.00698 / 0.033174
 	gpuPricePerHour         = 0.700
 
-	gigabyte         = 1024.0 * 1024.0 * 1024.0
 	preemptibleLabel = "cloud.google.com/gke-preemptible"
 )
 
@@ -147,7 +147,7 @@ func getBasePrice(resources apiv1.ResourceList, startTime time.Time, endTime tim
 	cpu := resources[apiv1.ResourceCPU]
 	mem := resources[apiv1.ResourceMemory]
 	price += float64(cpu.MilliValue()) / 1000.0 * cpuPricePerHour * hours
-	price += float64(mem.Value()) / gigabyte * memoryPricePerHourPerGb * hours
+	price += float64(mem.Value()) / float64(units.Gigabyte) * memoryPricePerHourPerGb * hours
 	return price
 }
 
