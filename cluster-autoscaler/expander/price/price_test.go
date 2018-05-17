@@ -73,7 +73,7 @@ func TestPriceExpander(t *testing.T) {
 	provider.AddNode("ng2", n2)
 	ng1, _ := provider.NodeGroupForNode(n1)
 	ng2, _ := provider.NodeGroupForNode(n2)
-	ng3, _ := provider.NewNodeGroup("MT1", nil, nil, nil)
+	ng3, _ := provider.NewNodeGroup("MT1", nil, nil, nil, nil)
 
 	ni1 := schedulercache.NewNodeInfo()
 	ni1.SetNode(n1)
