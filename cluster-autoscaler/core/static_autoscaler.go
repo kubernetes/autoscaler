@@ -162,6 +162,8 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	}
 	UpdateClusterStateMetrics(a.ClusterStateRegistry)
 
+	metrics.UpdateDurationFromStart(metrics.UpdateState, runStart)
+
 	// Update status information when the loop is done (regardless of reason)
 	defer func() {
 		if autoscalingContext.WriteStatusConfigMap {
@@ -199,9 +201,6 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		return nil
 	}
 
-	metrics.UpdateDurationFromStart(metrics.UpdateState, runStart)
-	metrics.UpdateLastTime(metrics.Autoscaling, time.Now())
-
 	// Check if there has been a constant difference between the number of nodes in k8s and
 	// the number of nodes on the cloud provider side.
 	// TODO: andrewskim - add protection for ready AWS nodes.
@@ -214,6 +213,8 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		glog.V(0).Infof("Some node group target size was fixed, skipping the iteration")
 		return nil
 	}
+
+	metrics.UpdateLastTime(metrics.Autoscaling, time.Now())
 
 	allUnschedulablePods, err := unschedulablePodLister.List()
 	if err != nil {
