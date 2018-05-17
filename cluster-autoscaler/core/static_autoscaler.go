@@ -180,6 +180,9 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	}
 	UpdateClusterStateMetrics(a.ClusterStateRegistry)
 
+	metrics.UpdateDurationFromStart(metrics.UpdateState, runStart)
+	metrics.UpdateLastTime(metrics.Autoscaling, time.Now())
+
 	// Update status information when the loop is done (regardless of reason)
 	defer func() {
 		if autoscalingContext.WriteStatusConfigMap {
@@ -216,9 +219,6 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		autoscalingContext.LogRecorder.Eventf(apiv1.EventTypeWarning, "ClusterUnhealthy", "Cluster is unhealthy")
 		return nil
 	}
-
-	metrics.UpdateDurationFromStart(metrics.UpdateState, runStart)
-	metrics.UpdateLastTime(metrics.Autoscaling, time.Now())
 
 	// Check if there has been a constant difference between the number of nodes in k8s and
 	// the number of nodes on the cloud provider side.
