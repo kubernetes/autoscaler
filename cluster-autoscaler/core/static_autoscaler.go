@@ -347,9 +347,9 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 
 		metrics.UpdateDurationFromStart(metrics.FindUnneeded, unneededStart)
 
-		for key, val := range scaleDown.unneededNodes {
-			if glog.V(4) {
-				glog.V(4).Infof("%s is unneeded since %s duration %s", key, val.String(), currentTime.Sub(val).String())
+		if glog.V(4) {
+			for key, val := range scaleDown.unneededNodes {
+				glog.Infof("%s is unneeded since %s duration %s", key, val.String(), currentTime.Sub(val).String())
 			}
 		}
 
