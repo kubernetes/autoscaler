@@ -351,7 +351,7 @@ func TestMig(t *testing.T) {
 	gceManagerMock.On("getLocation").Return("us-central1-b").Once()
 	gceManagerMock.On("getTemplates").Return(templateBuilder).Once()
 	server.On("handle", "/project1/zones/us-central1-b/machineTypes/n1-standard-1").Return(getMachineTypeResponse).Once()
-	nodeGroup, err := gce.NewNodeGroup("n1-standard-1", nil, nil, nil)
+	nodeGroup, err := gce.NewNodeGroup("n1-standard-1", nil, nil, nil, nil)
 	assert.NoError(t, err)
 	assert.NotNil(t, nodeGroup)
 	mig1 := reflect.ValueOf(nodeGroup).Interface().(*Mig)
