@@ -21,7 +21,6 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
-	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/factory"
@@ -41,10 +40,9 @@ type AutoscalingContext struct {
 	CloudProvider cloudprovider.CloudProvider
 	// ClientSet interface.
 	ClientSet kube_client.Interface
-	// ClusterState for maintaining the state of cluster nodes.
-	ClusterStateRegistry *clusterstate.ClusterStateRegistry
 	// Recorder for recording events.
 	Recorder kube_record.EventRecorder
+	// TODO(kgolab) - move away too as it's not config
 	// PredicateChecker to check if a pod can fit into a node.
 	PredicateChecker *simulator.PredicateChecker
 	// ExpanderStrategy is the strategy used to choose which node group to expand when scaling up
@@ -154,22 +152,14 @@ func NewAutoscalingContext(options AutoscalingOptions, predicateChecker *simulat
 		return nil, err
 	}
 
-	clusterStateConfig := clusterstate.ClusterStateRegistryConfig{
-		MaxTotalUnreadyPercentage: options.MaxTotalUnreadyPercentage,
-		OkTotalUnreadyCount:       options.OkTotalUnreadyCount,
-		MaxNodeProvisionTime:      options.MaxNodeProvisionTime,
-	}
-	clusterStateRegistry := clusterstate.NewClusterStateRegistry(cloudProvider, clusterStateConfig, logEventRecorder)
-
 	autoscalingContext := AutoscalingContext{
-		AutoscalingOptions:   options,
-		CloudProvider:        cloudProvider,
-		ClusterStateRegistry: clusterStateRegistry,
-		ClientSet:            kubeClient,
-		Recorder:             kubeEventRecorder,
-		PredicateChecker:     predicateChecker,
-		ExpanderStrategy:     expanderStrategy,
-		LogRecorder:          logEventRecorder,
+		AutoscalingOptions: options,
+		CloudProvider:      cloudProvider,
+		ClientSet:          kubeClient,
+		Recorder:           kubeEventRecorder,
+		PredicateChecker:   predicateChecker,
+		ExpanderStrategy:   expanderStrategy,
+		LogRecorder:        logEventRecorder,
 	}
 
 	return &autoscalingContext, nil

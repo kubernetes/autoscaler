@@ -43,7 +43,7 @@ import (
 // ScaleUp tries to scale the cluster up. Return true if it found a way to increase the size,
 // false if it didn't and error if an error occurred. Assumes that all nodes in the cluster are
 // ready and in sync with instance groups.
-func ScaleUp(context *context.AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes []*apiv1.Node,
+func ScaleUp(context *context.AutoscalingContext, clusterStateRegistry *clusterstate.ClusterStateRegistry, unschedulablePods []*apiv1.Pod, nodes []*apiv1.Node,
 	daemonSets []*extensionsv1.DaemonSet) (bool, errors.AutoscalerError) {
 	// From now on we only care about unschedulable pods that were marked after the newest
 	// node became available for the scheduler.
@@ -78,7 +78,7 @@ func ScaleUp(context *context.AutoscalingContext, unschedulablePods []*apiv1.Pod
 	coresTotal, memoryTotal := calculateClusterCoresMemoryTotal(nodeGroups, nodeInfos)
 
 	upcomingNodes := make([]*schedulercache.NodeInfo, 0)
-	for nodeGroup, numberOfNodes := range context.ClusterStateRegistry.GetUpcomingNodes() {
+	for nodeGroup, numberOfNodes := range clusterStateRegistry.GetUpcomingNodes() {
 		nodeTemplate, found := nodeInfos[nodeGroup]
 		if !found {
 			return false, errors.NewAutoscalerError(
@@ -102,7 +102,7 @@ func ScaleUp(context *context.AutoscalingContext, unschedulablePods []*apiv1.Pod
 
 	for _, nodeGroup := range nodeGroups {
 		// Autoprovisioned node groups without nodes are created later so skip check for them.
-		if nodeGroup.Exist() && !context.ClusterStateRegistry.IsNodeGroupSafeToScaleUp(nodeGroup.Id(), now) {
+		if nodeGroup.Exist() && !clusterStateRegistry.IsNodeGroupSafeToScaleUp(nodeGroup.Id(), now) {
 			glog.Warningf("Node group %s is not ready for scaleup", nodeGroup.Id())
 			continue
 		}
@@ -265,7 +265,7 @@ func ScaleUp(context *context.AutoscalingContext, unschedulablePods []*apiv1.Pod
 			}
 			similarNodeGroups = filterNodeGroupsByPods(similarNodeGroups, bestOption.Pods, podsPassingPredicates)
 			for _, ng := range similarNodeGroups {
-				if context.ClusterStateRegistry.IsNodeGroupSafeToScaleUp(ng.Id(), now) {
+				if clusterStateRegistry.IsNodeGroupSafeToScaleUp(ng.Id(), now) {
 					targetNodeGroups = append(targetNodeGroups, ng)
 				} else {
 					// This should never happen, as we will filter out the node group earlier on
@@ -292,7 +292,7 @@ func ScaleUp(context *context.AutoscalingContext, unschedulablePods []*apiv1.Pod
 		}
 		glog.V(1).Infof("Final scale-up plan: %v", scaleUpInfos)
 		for _, info := range scaleUpInfos {
-			typedErr := executeScaleUp(context, info)
+			typedErr := executeScaleUp(context, clusterStateRegistry, info)
 			if typedErr != nil {
 				return false, typedErr
 			}
@@ -303,7 +303,7 @@ func ScaleUp(context *context.AutoscalingContext, unschedulablePods []*apiv1.Pod
 				"pod triggered scale-up: %v", scaleUpInfos)
 		}
 
-		context.ClusterStateRegistry.Recalculate()
+		clusterStateRegistry.Recalculate()
 		return true, nil
 	}
 	for pod, unschedulable := range podsRemainUnschedulable {
@@ -341,16 +341,16 @@ groupsloop:
 	return result
 }
 
-func executeScaleUp(context *context.AutoscalingContext, info nodegroupset.ScaleUpInfo) errors.AutoscalerError {
+func executeScaleUp(context *context.AutoscalingContext, clusterStateRegistry *clusterstate.ClusterStateRegistry, info nodegroupset.ScaleUpInfo) errors.AutoscalerError {
 	glog.V(0).Infof("Scale-up: setting group %s size to %d", info.Group.Id(), info.NewSize)
 	increase := info.NewSize - info.CurrentSize
 	if err := info.Group.IncreaseSize(increase); err != nil {
 		context.LogRecorder.Eventf(apiv1.EventTypeWarning, "FailedToScaleUpGroup", "Scale-up failed for group %s: %v", info.Group.Id(), err)
-		context.ClusterStateRegistry.RegisterFailedScaleUp(info.Group.Id(), metrics.APIError)
+		clusterStateRegistry.RegisterFailedScaleUp(info.Group.Id(), metrics.APIError)
 		return errors.NewAutoscalerError(errors.CloudProviderError,
 			"failed to increase node group size: %v", err)
 	}
-	context.ClusterStateRegistry.RegisterScaleUp(
+	clusterStateRegistry.RegisterScaleUp(
 		&clusterstate.ScaleUpRequest{
 			NodeGroupName:   info.Group.Id(),
 			Increase:        increase,
