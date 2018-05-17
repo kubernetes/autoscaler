@@ -512,9 +512,11 @@ CA, from version 1.0, gives pods at most 10 minutes graceful termination time. I
 
 ### How does CA deal with unready nodes?
 
-From 0.5 CA (K8S 1.6) continues to work even if some (up to 33% or not greater than 3,
-configurable by `--max-total-unready-percentage` and `--ok-total-unready-count` flags)
-percentage of nodes is unavailable. Once there are more unready nodes in the cluster,
+From 0.5 CA (K8S 1.6) continues to work even if some nodes are unavailable.
+The default number of tolerated unready nodes in CA 1.2.1 or earlier is 33% of total nodes in the cluster or up to 3 nodes, whichever is higher.
+For CA 1.2.2 and later, it's 45% or 3 nodes.
+This is configurable by `--max-total-unready-percentage` and `--ok-total-unready-count` flags.
+Once there are more unready nodes in the cluster,
 CA stops all operations until the situation improves. If there are fewer unready nodes,
 but they are concentrated in a particular node group,
 then this node group may be excluded from future scale-ups.
