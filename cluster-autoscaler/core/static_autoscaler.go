@@ -382,14 +382,12 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 			result, typedErr := scaleDown.TryToScaleDown(allNodes, allScheduled, pdbs, currentTime)
 			metrics.UpdateDurationFromStart(metrics.ScaleDown, scaleDownStart)
 
-			// TODO: revisit result handling
 			if typedErr != nil {
 				glog.Errorf("Failed to scale down: %v", err)
+				a.lastScaleDownFailTime = currentTime
 				return typedErr
 			}
-			if result == ScaleDownError {
-				a.lastScaleDownFailTime = currentTime
-			} else if result == ScaleDownNodeDeleted {
+			if result == ScaleDownNodeDeleted {
 				a.lastScaleDownDeleteTime = currentTime
 			}
 		}
