@@ -134,15 +134,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		return errors.ToAutoscalerError(errors.ApiCallError, err)
 	}
 	if len(allNodes) == 0 {
-		glog.Warningf("No nodes in the cluster")
-		scaleDown.CleanUpUnneededNodes()
-		UpdateEmptyClusterStateMetrics()
-		if autoscalingContext.WriteStatusConfigMap {
-			status := "Cluster has no nodes."
-			utils.WriteStatusConfigMap(autoscalingContext.ClientSet, autoscalingContext.ConfigNamespace, status, a.AutoscalingContext.LogRecorder)
-		}
-		autoscalingContext.LogRecorder.Eventf(apiv1.EventTypeWarning, "ClusterUnhealthy", "Cluster has no nodes")
-		return nil
+		return a.onEmptyCluster("Cluster has no nodes.", true)
 	}
 
 	readyNodes, err := readyNodeLister.List()
@@ -157,19 +149,9 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	// TODO: Remove this call when we handle dynamically provisioned resources.
 	allNodes, readyNodes = gpu.FilterOutNodesWithUnreadyGpus(allNodes, readyNodes)
 	if len(readyNodes) == 0 {
-		glog.Warningf("No ready nodes in the cluster")
-		scaleDown.CleanUpUnneededNodes()
-		UpdateEmptyClusterStateMetrics()
-		if autoscalingContext.WriteStatusConfigMap {
-			status := "Cluster has no ready nodes."
-			utils.WriteStatusConfigMap(autoscalingContext.ClientSet, autoscalingContext.ConfigNamespace, status, a.AutoscalingContext.LogRecorder)
-		}
 		// Cluster Autoscaler may start running before nodes are ready.
 		// Timeout ensures no ClusterUnhealthy events are published immediately in this case.
-		if currentTime.After(a.startTime.Add(nodesNotReadyAfterStartTimeout)) {
-			autoscalingContext.LogRecorder.Eventf(apiv1.EventTypeWarning, "ClusterUnhealthy", "Cluster has no ready nodes")
-		}
-		return nil
+		return a.onEmptyCluster("Cluster has no ready nodes.", currentTime.After(a.startTime.Add(nodesNotReadyAfterStartTimeout)))
 	}
 
 	err = a.ClusterStateRegistry.UpdateNodes(allNodes, currentTime)
@@ -403,6 +385,19 @@ func (a *StaticAutoscaler) ExitCleanUp() {
 		return
 	}
 	utils.DeleteStatusConfigMap(a.AutoscalingContext.ClientSet, a.AutoscalingContext.ConfigNamespace)
+}
+
+func (a *StaticAutoscaler) onEmptyCluster(status string, emitEvent bool) errors.AutoscalerError {
+	glog.Warningf(status)
+	a.scaleDown.CleanUpUnneededNodes()
+	UpdateEmptyClusterStateMetrics()
+	if a.AutoscalingContext.WriteStatusConfigMap {
+		utils.WriteStatusConfigMap(a.AutoscalingContext.ClientSet, a.AutoscalingContext.ConfigNamespace, status, a.AutoscalingContext.LogRecorder)
+	}
+	if emitEvent {
+		a.AutoscalingContext.LogRecorder.Eventf(apiv1.EventTypeWarning, "ClusterUnhealthy", status)
+	}
+	return nil
 }
 
 func allPodsAreNew(pods []*apiv1.Pod, currentTime time.Time) bool {
