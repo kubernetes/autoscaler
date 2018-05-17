@@ -181,7 +181,6 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	UpdateClusterStateMetrics(a.ClusterStateRegistry)
 
 	metrics.UpdateDurationFromStart(metrics.UpdateState, runStart)
-	metrics.UpdateLastTime(metrics.Autoscaling, time.Now())
 
 	// Update status information when the loop is done (regardless of reason)
 	defer func() {
@@ -232,6 +231,8 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		glog.V(0).Infof("Some node group target size was fixed, skipping the iteration")
 		return nil
 	}
+
+	metrics.UpdateLastTime(metrics.Autoscaling, time.Now())
 
 	allUnschedulablePods, err := unschedulablePodLister.List()
 	if err != nil {
