@@ -42,7 +42,6 @@ func FilterOutNodesWithUnreadyGpus(allNodes, readyNodes []*apiv1.Node) ([]*apiv1
 	newReadyNodes := make([]*apiv1.Node, 0)
 	nodesWithUnreadyGpu := make(map[string]*apiv1.Node)
 	for _, node := range readyNodes {
-		isUnready := false
 		_, hasGpuLabel := node.Labels[GPULabel]
 		gpuAllocatable, hasGpuAllocatable := node.Status.Allocatable[ResourceNvidiaGPU]
 		// We expect node to have GPU based on label, but it doesn't show up
@@ -52,9 +51,7 @@ func FilterOutNodesWithUnreadyGpus(allNodes, readyNodes []*apiv1.Node) ([]*apiv1
 			glog.V(3).Infof("Overriding status of node %v, which seems to have unready GPU",
 				node.Name)
 			nodesWithUnreadyGpu[node.Name] = getUnreadyNodeCopy(node)
-			isUnready = true
-		}
-		if !isUnready {
+		} else {
 			newReadyNodes = append(newReadyNodes, node)
 		}
 	}
