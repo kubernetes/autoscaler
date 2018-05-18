@@ -380,12 +380,14 @@ func (a *StaticAutoscaler) obtainNodeLists() ([]*apiv1.Node, []*apiv1.Node, erro
 // actOnEmptyCluster returns true if the cluster was empty and thus acted upon
 func (a *StaticAutoscaler) actOnEmptyCluster(allNodes, readyNodes []*apiv1.Node, currentTime time.Time) bool {
 	if len(allNodes) == 0 {
-		return a.onEmptyCluster("Cluster has no nodes.", true)
+		a.onEmptyCluster("Cluster has no nodes.", true)
+		return true
 	}
 	if len(readyNodes) == 0 {
 		// Cluster Autoscaler may start running before nodes are ready.
 		// Timeout ensures no ClusterUnhealthy events are published immediately in this case.
-		return a.onEmptyCluster("Cluster has no ready nodes.", currentTime.After(a.startTime.Add(nodesNotReadyAfterStartTimeout)))
+		a.onEmptyCluster("Cluster has no ready nodes.", currentTime.After(a.startTime.Add(nodesNotReadyAfterStartTimeout)))
+		return true
 	}
 	// the cluster is not empty
 	return false
@@ -409,7 +411,7 @@ func (a *StaticAutoscaler) updateClusterState(allNodes []*apiv1.Node, currentTim
 	return nil
 }
 
-func (a *StaticAutoscaler) onEmptyCluster(status string, emitEvent bool) bool {
+func (a *StaticAutoscaler) onEmptyCluster(status string, emitEvent bool) {
 	glog.Warningf(status)
 	a.scaleDown.CleanUpUnneededNodes()
 	UpdateEmptyClusterStateMetrics()
@@ -419,7 +421,6 @@ func (a *StaticAutoscaler) onEmptyCluster(status string, emitEvent bool) bool {
 	if emitEvent {
 		a.AutoscalingContext.LogRecorder.Eventf(apiv1.EventTypeWarning, "ClusterUnhealthy", status)
 	}
-	return true
 }
 
 func allPodsAreNew(pods []*apiv1.Pod, currentTime time.Time) bool {
