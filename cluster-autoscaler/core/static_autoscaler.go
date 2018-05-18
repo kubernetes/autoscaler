@@ -130,13 +130,8 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	if typedErr != nil {
 		return typedErr
 	}
-	if len(allNodes) == 0 {
-		return a.onEmptyCluster("Cluster has no nodes.", true)
-	}
-	if len(readyNodes) == 0 {
-		// Cluster Autoscaler may start running before nodes are ready.
-		// Timeout ensures no ClusterUnhealthy events are published immediately in this case.
-		return a.onEmptyCluster("Cluster has no ready nodes.", currentTime.After(a.startTime.Add(nodesNotReadyAfterStartTimeout)))
+	if a.actOnEmptyCluster(allNodes, readyNodes, currentTime) {
+		return nil
 	}
 
 	err = a.ClusterStateRegistry.UpdateNodes(allNodes, currentTime)
@@ -392,7 +387,21 @@ func (a *StaticAutoscaler) obtainNodeLists() ([]*apiv1.Node, []*apiv1.Node, erro
 	return allNodes, readyNodes, nil
 }
 
-func (a *StaticAutoscaler) onEmptyCluster(status string, emitEvent bool) errors.AutoscalerError {
+// actOnEmptyCluster returns true if the cluster was empty and thus acted upon
+func (a *StaticAutoscaler) actOnEmptyCluster(allNodes, readyNodes []*apiv1.Node, currentTime time.Time) bool {
+	if len(allNodes) == 0 {
+		return a.onEmptyCluster("Cluster has no nodes.", true)
+	}
+	if len(readyNodes) == 0 {
+		// Cluster Autoscaler may start running before nodes are ready.
+		// Timeout ensures no ClusterUnhealthy events are published immediately in this case.
+		return a.onEmptyCluster("Cluster has no ready nodes.", currentTime.After(a.startTime.Add(nodesNotReadyAfterStartTimeout)))
+	}
+	// the cluster is not empty
+	return false
+}
+
+func (a *StaticAutoscaler) onEmptyCluster(status string, emitEvent bool) bool {
 	glog.Warningf(status)
 	a.scaleDown.CleanUpUnneededNodes()
 	UpdateEmptyClusterStateMetrics()
@@ -402,7 +411,7 @@ func (a *StaticAutoscaler) onEmptyCluster(status string, emitEvent bool) errors.
 	if emitEvent {
 		a.AutoscalingContext.LogRecorder.Eventf(apiv1.EventTypeWarning, "ClusterUnhealthy", status)
 	}
-	return nil
+	return true
 }
 
 func allPodsAreNew(pods []*apiv1.Pod, currentTime time.Time) bool {
