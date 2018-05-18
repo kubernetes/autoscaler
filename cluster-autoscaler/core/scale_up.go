@@ -412,8 +412,9 @@ func addAllMachineTypesForConfig(context *context.AutoscalingContext, systemLabe
 	}
 
 	bestLabels := labels.BestLabelSet(unschedulablePods)
+	taints := make([]apiv1.Taint, 0)
 	for _, machineType := range machines {
-		nodeGroup, err := context.CloudProvider.NewNodeGroup(machineType, bestLabels, systemLabels, extraResources)
+		nodeGroup, err := context.CloudProvider.NewNodeGroup(machineType, bestLabels, systemLabels, taints, extraResources)
 		if err != nil {
 			// We don't check if a given node group setup is allowed.
 			// It's fine if it isn't, just don't consider it an option.

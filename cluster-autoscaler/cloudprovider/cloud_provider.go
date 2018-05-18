@@ -53,7 +53,8 @@ type CloudProvider interface {
 	// NewNodeGroup builds a theoretical node group based on the node definition provided. The node group is not automatically
 	// created on the cloud provider side. The node group is not returned by NodeGroups() until it is created.
 	// Implementation optional.
-	NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string, extraResources map[string]resource.Quantity) (NodeGroup, error)
+	NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string,
+		taints []apiv1.Taint, extraResources map[string]resource.Quantity) (NodeGroup, error)
 
 	// GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
 	GetResourceLimiter() (*ResourceLimiter, error)
