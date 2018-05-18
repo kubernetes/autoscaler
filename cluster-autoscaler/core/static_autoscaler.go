@@ -116,16 +116,10 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	pdbLister := a.PodDisruptionBudgetLister()
 	scaleDown := a.scaleDown
 	autoscalingContext := a.AutoscalingContext
-	runStart := time.Now()
 
 	glog.V(4).Info("Starting main loop")
 
-	err := autoscalingContext.CloudProvider.Refresh()
-	if err != nil {
-		glog.Errorf("Failed to refresh cloud provider config: %v", err)
-		return errors.ToAutoscalerError(errors.CloudProviderError, err)
-	}
-
+	stateUpdateStart := time.Now()
 	allNodes, readyNodes, typedErr := a.obtainNodeLists()
 	if typedErr != nil {
 		return typedErr
@@ -134,15 +128,11 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		return nil
 	}
 
-	err = a.ClusterStateRegistry.UpdateNodes(allNodes, currentTime)
-	if err != nil {
-		glog.Errorf("Failed to update node registry: %v", err)
-		scaleDown.CleanUpUnneededNodes()
-		return errors.ToAutoscalerError(errors.CloudProviderError, err)
+	typedErr = a.updateClusterState(allNodes, currentTime)
+	if typedErr != nil {
+		return typedErr
 	}
-	UpdateClusterStateMetrics(a.ClusterStateRegistry)
-
-	metrics.UpdateDurationFromStart(metrics.UpdateState, runStart)
+	metrics.UpdateDurationFromStart(metrics.UpdateState, stateUpdateStart)
 
 	// Update status information when the loop is done (regardless of reason)
 	defer func() {
@@ -399,6 +389,24 @@ func (a *StaticAutoscaler) actOnEmptyCluster(allNodes, readyNodes []*apiv1.Node,
 	}
 	// the cluster is not empty
 	return false
+}
+
+func (a *StaticAutoscaler) updateClusterState(allNodes []*apiv1.Node, currentTime time.Time) errors.AutoscalerError {
+	err := a.AutoscalingContext.CloudProvider.Refresh()
+	if err != nil {
+		glog.Errorf("Failed to refresh cloud provider config: %v", err)
+		return errors.ToAutoscalerError(errors.CloudProviderError, err)
+	}
+
+	err = a.ClusterStateRegistry.UpdateNodes(allNodes, currentTime)
+	if err != nil {
+		glog.Errorf("Failed to update node registry: %v", err)
+		a.scaleDown.CleanUpUnneededNodes()
+		return errors.ToAutoscalerError(errors.CloudProviderError, err)
+	}
+	UpdateClusterStateMetrics(a.ClusterStateRegistry)
+
+	return nil
 }
 
 func (a *StaticAutoscaler) onEmptyCluster(status string, emitEvent bool) bool {
