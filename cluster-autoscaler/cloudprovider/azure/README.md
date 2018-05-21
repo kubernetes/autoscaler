@@ -10,8 +10,8 @@ Cluster autoscaler supports four VM types with Azure cloud provider:
 
 - **vmss**: For kubernetes cluster running on VMSS instances. Azure cloud provider's `vmType` parameter must be configured as 'vmss'. It requires Kubernetes with Azure VMSS support ([kubernetes#43287](https://github.com/kubernetes/kubernetes/issues/43287)).
 - **standard**: For kubernetes cluster running on VMAS instances. Azure cloud provider's `vmType` parameter must be configured as 'standard' or left as empty string. It only supports Kubernetes cluster deployed via [acs-engine](https://github.com/Azure/acs-engine).
-- **aks**": Managed Container Service([AKS](https://docs.microsoft.com/en-us/azure/aks/))
-- **acs**": Container service([ACS](https://docs.microsoft.com/en-us/azure/container-service/kubernetes/))
+- **aks**: Managed Container Service([AKS](https://docs.microsoft.com/en-us/azure/aks/))
+- **acs**: Container service([ACS](https://docs.microsoft.com/en-us/azure/container-service/kubernetes/))
 
 Only **vmss** vmType supports scaling to zero nodes.
 
@@ -157,16 +157,15 @@ Fill the values of cluster-autoscaler-azure secret in [cluster-autoscaler-contai
 
 - ClientID: `<base64-encoded-client-id>`
 - ClientSecret: `<base64-encoded-client-secret>`
-- ResourceGroup: `<base64-encoded-resource-group>`
+- ResourceGroup: `<base64-encoded-resource-group>` (Note: Please use lower case)
 - SubscriptionID: `<base64-encode-subscription-id>`
 - TenantID: `<base64-encoded-tenant-id>`
 - Deployment: `<base64-encoded-azure-initial-deploy-name>`
 - ClusterName: `<base64-encoded-clustername>`
-- NodeResourceGroup: `<base64-encoded-node-resource-group>`
-
+- NodeResourceGroup: `<base64-encoded-node-resource-group>` (Note: AKS only parameter. Please use the value of kubernetes.azure.com/cluster label verbatim (case sensitive))
 
 > Note that all data above should be encoded with base64.
-> Note: Please use lower case for the ResourceGroup and NodeResourceGroup
+
 
 And fill the node groups in container command by `--nodes`, with the range of nodes (minimum to be set as 3 which is the default cluster size) and node pool name obtained from pre-requirements steps above, e.g.
 
