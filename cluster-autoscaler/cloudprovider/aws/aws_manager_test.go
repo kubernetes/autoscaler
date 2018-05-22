@@ -20,11 +20,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/stretchr/testify/mock"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
@@ -96,34 +95,6 @@ func makeTaintSet(taints []apiv1.Taint) map[apiv1.Taint]bool {
 	}
 	return set
 }
-func TestBuildAsg(t *testing.T) {
-	do := cloudprovider.NodeGroupDiscoveryOptions{}
-	m, err := createAWSManagerInternal(nil, do, &testService)
-	assert.NoError(t, err)
-
-	asg, err := m.buildAsgFromSpec("1:5:test-asg")
-	assert.NoError(t, err)
-	assert.Equal(t, asg.MinSize(), 1)
-	assert.Equal(t, asg.MaxSize(), 5)
-	assert.Equal(t, asg.Id(), "test-asg")
-	assert.Equal(t, asg.Name, "test-asg")
-	assert.Equal(t, asg.Debug(), "test-asg (1:5)")
-
-	_, err = m.buildAsgFromSpec("a")
-	assert.Error(t, err)
-	_, err = m.buildAsgFromSpec("a:b:c")
-	assert.Error(t, err)
-	_, err = m.buildAsgFromSpec("1:")
-	assert.Error(t, err)
-	_, err = m.buildAsgFromSpec("1:2:")
-	assert.Error(t, err)
-}
-
-func validateAsg(t *testing.T, asg *Asg, name string, minSize int, maxSize int) {
-	assert.Equal(t, name, asg.Name)
-	assert.Equal(t, minSize, asg.minSize)
-	assert.Equal(t, maxSize, asg.maxSize)
-}
 
 func TestFetchExplicitAsgs(t *testing.T) {
 	min, max, groupname := 1, 10, "coolasg"
@@ -157,17 +128,17 @@ func TestFetchExplicitAsgs(t *testing.T) {
 		// The intention is to test that the asgs.Register method will update
 		// the node group instead of registering it twice.
 		NodeGroupSpecs: []string{
-			fmt.Sprintf("%d:%d:%s", min, max-1, groupname),
 			fmt.Sprintf("%d:%d:%s", min, max, groupname),
+			fmt.Sprintf("%d:%d:%s", min, max-1, groupname),
 		},
 	}
 	// fetchExplicitASGs is called at manager creation time.
 	m, err := createAWSManagerInternal(nil, do, &autoScalingWrapper{s})
 	assert.NoError(t, err)
 
-	asgs := m.asgCache.get()
+	asgs := m.asgCache.Get()
 	assert.Equal(t, 1, len(asgs))
-	validateAsg(t, asgs[0].config, groupname, min, max)
+	validateAsg(t, asgs[0], groupname, min, max)
 }
 
 /* Disabled due to flakiness. See https://github.com/kubernetes/autoscaler/issues/608
