@@ -111,58 +111,28 @@ func (a *StaticAutoscaler) cleanUpIfRequired() {
 func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError {
 	a.cleanUpIfRequired()
 
-	readyNodeLister := a.ReadyNodeLister()
-	allNodeLister := a.AllNodeLister()
 	unschedulablePodLister := a.UnschedulablePodLister()
 	scheduledPodLister := a.ScheduledPodLister()
 	pdbLister := a.PodDisruptionBudgetLister()
 	scaleDown := a.scaleDown
 	autoscalingContext := a.AutoscalingContext
-	runStart := time.Now()
 
 	glog.V(4).Info("Starting main loop")
 
-	err := autoscalingContext.CloudProvider.Refresh()
-	if err != nil {
-		glog.Errorf("Failed to refresh cloud provider config: %v", err)
-		return errors.ToAutoscalerError(errors.CloudProviderError, err)
+	stateUpdateStart := time.Now()
+	allNodes, readyNodes, typedErr := a.obtainNodeLists()
+	if typedErr != nil {
+		return typedErr
+	}
+	if a.actOnEmptyCluster(allNodes, readyNodes, currentTime) {
+		return nil
 	}
 
-	allNodes, err := allNodeLister.List()
-	if err != nil {
-		glog.Errorf("Failed to list all nodes: %v", err)
-		return errors.ToAutoscalerError(errors.ApiCallError, err)
+	typedErr = a.updateClusterState(allNodes, currentTime)
+	if typedErr != nil {
+		return typedErr
 	}
-	if len(allNodes) == 0 {
-		return a.onEmptyCluster("Cluster has no nodes.", true)
-	}
-
-	readyNodes, err := readyNodeLister.List()
-	if err != nil {
-		glog.Errorf("Failed to list ready nodes: %v", err)
-		return errors.ToAutoscalerError(errors.ApiCallError, err)
-	}
-	// Handle GPU case - allocatable GPU may be equal to 0 up to 15 minutes after
-	// node registers as ready. See https://github.com/kubernetes/kubernetes/issues/54959
-	// Treat those nodes as unready until GPU actually becomes available and let
-	// our normal handling for booting up nodes deal with this.
-	// TODO: Remove this call when we handle dynamically provisioned resources.
-	allNodes, readyNodes = gpu.FilterOutNodesWithUnreadyGpus(allNodes, readyNodes)
-	if len(readyNodes) == 0 {
-		// Cluster Autoscaler may start running before nodes are ready.
-		// Timeout ensures no ClusterUnhealthy events are published immediately in this case.
-		return a.onEmptyCluster("Cluster has no ready nodes.", currentTime.After(a.startTime.Add(nodesNotReadyAfterStartTimeout)))
-	}
-
-	err = a.ClusterStateRegistry.UpdateNodes(allNodes, currentTime)
-	if err != nil {
-		glog.Errorf("Failed to update node registry: %v", err)
-		scaleDown.CleanUpUnneededNodes()
-		return errors.ToAutoscalerError(errors.CloudProviderError, err)
-	}
-	UpdateClusterStateMetrics(a.ClusterStateRegistry)
-
-	metrics.UpdateDurationFromStart(metrics.UpdateState, runStart)
+	metrics.UpdateDurationFromStart(metrics.UpdateState, stateUpdateStart)
 
 	// Update status information when the loop is done (regardless of reason)
 	defer func() {
@@ -386,7 +356,62 @@ func (a *StaticAutoscaler) ExitCleanUp() {
 	utils.DeleteStatusConfigMap(a.AutoscalingContext.ClientSet, a.AutoscalingContext.ConfigNamespace)
 }
 
-func (a *StaticAutoscaler) onEmptyCluster(status string, emitEvent bool) errors.AutoscalerError {
+func (a *StaticAutoscaler) obtainNodeLists() ([]*apiv1.Node, []*apiv1.Node, errors.AutoscalerError) {
+	allNodes, err := a.AllNodeLister().List()
+	if err != nil {
+		glog.Errorf("Failed to list all nodes: %v", err)
+		return nil, nil, errors.ToAutoscalerError(errors.ApiCallError, err)
+	}
+	readyNodes, err := a.ReadyNodeLister().List()
+	if err != nil {
+		glog.Errorf("Failed to list ready nodes: %v", err)
+		return nil, nil, errors.ToAutoscalerError(errors.ApiCallError, err)
+	}
+
+	// Handle GPU case - allocatable GPU may be equal to 0 up to 15 minutes after
+	// node registers as ready. See https://github.com/kubernetes/kubernetes/issues/54959
+	// Treat those nodes as unready until GPU actually becomes available and let
+	// our normal handling for booting up nodes deal with this.
+	// TODO: Remove this call when we handle dynamically provisioned resources.
+	allNodes, readyNodes = gpu.FilterOutNodesWithUnreadyGpus(allNodes, readyNodes)
+	return allNodes, readyNodes, nil
+}
+
+// actOnEmptyCluster returns true if the cluster was empty and thus acted upon
+func (a *StaticAutoscaler) actOnEmptyCluster(allNodes, readyNodes []*apiv1.Node, currentTime time.Time) bool {
+	if len(allNodes) == 0 {
+		a.onEmptyCluster("Cluster has no nodes.", true)
+		return true
+	}
+	if len(readyNodes) == 0 {
+		// Cluster Autoscaler may start running before nodes are ready.
+		// Timeout ensures no ClusterUnhealthy events are published immediately in this case.
+		a.onEmptyCluster("Cluster has no ready nodes.", currentTime.After(a.startTime.Add(nodesNotReadyAfterStartTimeout)))
+		return true
+	}
+	// the cluster is not empty
+	return false
+}
+
+func (a *StaticAutoscaler) updateClusterState(allNodes []*apiv1.Node, currentTime time.Time) errors.AutoscalerError {
+	err := a.AutoscalingContext.CloudProvider.Refresh()
+	if err != nil {
+		glog.Errorf("Failed to refresh cloud provider config: %v", err)
+		return errors.ToAutoscalerError(errors.CloudProviderError, err)
+	}
+
+	err = a.ClusterStateRegistry.UpdateNodes(allNodes, currentTime)
+	if err != nil {
+		glog.Errorf("Failed to update node registry: %v", err)
+		a.scaleDown.CleanUpUnneededNodes()
+		return errors.ToAutoscalerError(errors.CloudProviderError, err)
+	}
+	UpdateClusterStateMetrics(a.ClusterStateRegistry)
+
+	return nil
+}
+
+func (a *StaticAutoscaler) onEmptyCluster(status string, emitEvent bool) {
 	glog.Warningf(status)
 	a.scaleDown.CleanUpUnneededNodes()
 	UpdateEmptyClusterStateMetrics()
@@ -396,7 +421,6 @@ func (a *StaticAutoscaler) onEmptyCluster(status string, emitEvent bool) errors.
 	if emitEvent {
 		a.AutoscalingContext.LogRecorder.Eventf(apiv1.EventTypeWarning, "ClusterUnhealthy", status)
 	}
-	return nil
 }
 
 func allPodsAreNew(pods []*apiv1.Pod, currentTime time.Time) bool {
