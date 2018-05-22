@@ -26,6 +26,7 @@ import (
 
 // VerticalPodAutoscalerBuilder helps building test instances of VerticalPodAutoscaler.
 type VerticalPodAutoscalerBuilder interface {
+	WithName(vpaName string) VerticalPodAutoscalerBuilder
 	WithContainer(containerName string) VerticalPodAutoscalerBuilder
 	WithNamespace(namespace string) VerticalPodAutoscalerBuilder
 	WithSelector(labelSelector string) VerticalPodAutoscalerBuilder
@@ -48,6 +49,7 @@ func VerticalPodAutoscaler() VerticalPodAutoscalerBuilder {
 }
 
 type verticalPodAutoscalerBuilder struct {
+	vpaName           string
 	containerName     string
 	namespace         string
 	labelSelector     *metav1.LabelSelector
@@ -56,6 +58,12 @@ type verticalPodAutoscalerBuilder struct {
 	minAllowed        apiv1.ResourceList
 	maxAllowed        apiv1.ResourceList
 	recommendation    RecommendationBuilder
+}
+
+func (b *verticalPodAutoscalerBuilder) WithName(vpaName string) VerticalPodAutoscalerBuilder {
+	c := *b
+	c.vpaName = vpaName
+	return &c
 }
 
 func (b *verticalPodAutoscalerBuilder) WithContainer(containerName string) VerticalPodAutoscalerBuilder {
@@ -134,6 +142,7 @@ func (b *verticalPodAutoscalerBuilder) Get() *vpa_types.VerticalPodAutoscaler {
 
 	return &vpa_types.VerticalPodAutoscaler{
 		ObjectMeta: metav1.ObjectMeta{
+			Name:              b.vpaName,
 			Namespace:         b.namespace,
 			CreationTimestamp: metav1.NewTime(b.creationTimestamp),
 		},
