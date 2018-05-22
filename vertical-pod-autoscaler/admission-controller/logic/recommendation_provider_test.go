@@ -37,8 +37,10 @@ func TestUpdateResourceRequests(t *testing.T) {
 		memLimit       string
 	}
 	containerName := "container1"
+	vpaName := "vpa1"
 	labels := map[string]string{"app": "testingApp"}
 	vpaBuilder := test.VerticalPodAutoscaler().
+		WithName(vpaName).
 		WithContainer(containerName).
 		WithTarget("2", "200Mi").
 		WithMinAllowed("1", "100Mi").
@@ -133,9 +135,10 @@ func TestUpdateResourceRequests(t *testing.T) {
 			recommendationProcessor: api.NewCappingRecommendationProcessor(),
 		}
 
-		resources, err := recommendationProvider.GetContainersResourcesForPod(tc.pod)
+		resources, name, err := recommendationProvider.GetContainersResourcesForPod(tc.pod)
 
 		if tc.expectedAction {
+			assert.Equal(t, vpaName, name)
 			assert.Nil(t, err)
 			assert.Equal(t, len(resources), 1)
 			expectedCPU, err := resource.ParseQuantity(tc.expectedCPU)

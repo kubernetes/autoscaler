@@ -22,6 +22,8 @@ import (
 	"io/ioutil"
 	"net/http"
 
+	"strings"
+
 	"github.com/golang/glog"
 	"k8s.io/api/admission/v1beta1"
 	"k8s.io/api/core/v1"
@@ -55,17 +57,20 @@ func (s *AdmissionServer) getPatchesForPodResourceRequest(raw []byte, namespace 
 		pod.Namespace = namespace
 	}
 	glog.V(4).Infof("Admitting pod %v", pod.ObjectMeta)
-	containersResources, err := s.recommendationProvider.GetContainersResourcesForPod(&pod)
+	containersResources, vpaName, err := s.recommendationProvider.GetContainersResourcesForPod(&pod)
 	if err != nil {
 		return nil, err
 	}
 	patches := []patchRecord{}
+	updatesAnnotation := []string{}
 	for i, containerResources := range containersResources {
+		annotations := []string{}
 		for resource, request := range containerResources.Requests {
 			patches = append(patches, patchRecord{
 				Op:    "add",
 				Path:  fmt.Sprintf("/spec/containers/%d/resources/requests/%s", i, resource),
 				Value: request.String()})
+			annotations = append(annotations, fmt.Sprintf("%s request", resource))
 		}
 		if _, limitSet := pod.Spec.Containers[i].Resources.Limits[v1.ResourceMemory]; !limitSet {
 			limit, found := containerResources.Limits[v1.ResourceMemory]
@@ -80,8 +85,18 @@ func (s *AdmissionServer) getPatchesForPodResourceRequest(raw []byte, namespace 
 					Op:    "add",
 					Path:  fmt.Sprintf("/spec/containers/%d/resources/limits/%s", i, v1.ResourceMemory),
 					Value: limit.String()})
+				annotations = append(annotations, "memory limit")
 			}
 		}
+
+		updatesAnnotation = append(updatesAnnotation, fmt.Sprintf("container %d: ", i)+strings.Join(annotations, ", "))
+	}
+	if len(updatesAnnotation) > 0 {
+		patches = append(patches, patchRecord{
+			Op:   "add",
+			Path: "/metadata/annotations",
+			Value: map[string]string{
+				"vpaUpdates": fmt.Sprintf("Pod resources updated by %s: ", vpaName) + strings.Join(updatesAnnotation, "; ")}})
 	}
 	return patches, nil
 }

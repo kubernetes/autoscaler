@@ -50,7 +50,7 @@ func newContainerResources() ContainerResources {
 
 // RecommendationProvider gets current recommendation and limits for the given pod.
 type RecommendationProvider interface {
-	GetContainersResourcesForPod(pod *v1.Pod) ([]ContainerResources, error)
+	GetContainersResourcesForPod(pod *v1.Pod) ([]ContainerResources, string, error)
 }
 
 type recommendationProvider struct {
@@ -117,19 +117,20 @@ func (p *recommendationProvider) getMatchingVPA(pod *v1.Pod) *vpa_types.Vertical
 	return vpa_api_util.GetControllingVPAForPod(pod, onConfigs)
 }
 
-// GetContainersResourcesForPod returns recommended request and limits for a given pod. The returned slice corresponds 1-1 to containers in the Pod.
-func (p *recommendationProvider) GetContainersResourcesForPod(pod *v1.Pod) ([]ContainerResources, error) {
+// GetContainersResourcesForPod returns recommended request and limits for a given pod and name of controlling VPA.
+// The returned slice corresponds 1-1 to containers in the Pod.
+func (p *recommendationProvider) GetContainersResourcesForPod(pod *v1.Pod) ([]ContainerResources, string, error) {
 	glog.V(2).Infof("updating requirements for pod %s.", pod.Name)
 	vpaConfig := p.getMatchingVPA(pod)
 	if vpaConfig == nil {
 		glog.V(2).Infof("no matching VPA found for pod %s", pod.Name)
-		return nil, nil
+		return nil, "", nil
 	}
 	recommendedPodResources, err := p.recommendationProcessor.Apply(&vpaConfig.Status.Recommendation, &vpaConfig.Spec.ResourcePolicy, pod)
 	if err != nil {
 		glog.V(2).Infof("cannot process recommendation for pod %s", pod.Name)
-		return nil, err
+		return nil, "", err
 	}
 	containerResources := getContainersResources(pod, *recommendedPodResources, vpaConfig.Spec.ResourcePolicy)
-	return containerResources, nil
+	return containerResources, vpaConfig.Name, nil
 }
