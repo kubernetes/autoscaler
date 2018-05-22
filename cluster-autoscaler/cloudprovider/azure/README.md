@@ -160,7 +160,6 @@ Fill the values of cluster-autoscaler-azure secret in [cluster-autoscaler-contai
 - ResourceGroup: `<base64-encoded-resource-group>` (Note: Please use lower case)
 - SubscriptionID: `<base64-encode-subscription-id>`
 - TenantID: `<base64-encoded-tenant-id>`
-- Deployment: `<base64-encoded-azure-initial-deploy-name>`
 - ClusterName: `<base64-encoded-clustername>`
 - NodeResourceGroup: `<base64-encoded-node-resource-group>` (Note: AKS only parameter. Please use the value of kubernetes.azure.com/cluster label verbatim (case sensitive))
 
