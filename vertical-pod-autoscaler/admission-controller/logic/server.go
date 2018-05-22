@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package logic
 
 import (
 	"encoding/json"
@@ -26,12 +26,17 @@ import (
 	"k8s.io/api/admission/v1beta1"
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/admission-controller/logic"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 )
 
-type admissionServer struct {
-	recommendationProvider logic.RecommendationProvider
+// AdmissionServer is an admission webhook server that modifies pod resources request based on VPA recommendation
+type AdmissionServer struct {
+	recommendationProvider RecommendationProvider
+}
+
+// NewAdmissionServer constructs new AdmissionServer
+func NewAdmissionServer(recommendationProvider RecommendationProvider) *AdmissionServer {
+	return &AdmissionServer{recommendationProvider}
 }
 
 type patchRecord struct {
@@ -40,7 +45,7 @@ type patchRecord struct {
 	Value interface{} `json:"value"`
 }
 
-func (s *admissionServer) getPatchesForPodResourceRequest(raw []byte, namespace string) ([]patchRecord, error) {
+func (s *AdmissionServer) getPatchesForPodResourceRequest(raw []byte, namespace string) ([]patchRecord, error) {
 	pod := v1.Pod{}
 	if err := json.Unmarshal(raw, &pod); err != nil {
 		return nil, err
@@ -100,7 +105,7 @@ func getPatchesForVPADefaults(raw []byte) ([]patchRecord, error) {
 }
 
 // only allow pods to pull images from specific registry.
-func (s *admissionServer) admit(data []byte) *v1beta1.AdmissionResponse {
+func (s *AdmissionServer) admit(data []byte) *v1beta1.AdmissionResponse {
 	ar := v1beta1.AdmissionReview{}
 	if err := json.Unmarshal(data, &ar); err != nil {
 		glog.Error(err)
@@ -142,7 +147,8 @@ func (s *admissionServer) admit(data []byte) *v1beta1.AdmissionResponse {
 	return &response
 }
 
-func (s *admissionServer) serve(w http.ResponseWriter, r *http.Request) {
+// Serve is a handler function of AdmissionServer
+func (s *AdmissionServer) Serve(w http.ResponseWriter, r *http.Request) {
 	var body []byte
 	if r.Body != nil {
 		if data, err := ioutil.ReadAll(r.Body); err == nil {
