@@ -11,7 +11,7 @@ Cluster Autoscaler scales up to a certain number of nodes if it stays responsive
 
 ## Expected performance
 
-Cluster Autoscaler needs to be responsive from the user perspective. This means that the changes in cluster state have to be picked up by Cluster Autoscaler as soon as possible, so that it's reaction time is short. To be able to do that, every iteration (cluster state analysis to see if cluster size needs to be changed and according adjustment of the cluster size) needs to finish relatively quickly. Thus, we set the upper bound for iteration duration to 30 seconds.
+Cluster Autoscaler needs to be responsive from the user perspective. This means that the changes in cluster state have to be picked up by Cluster Autoscaler as soon as possible, so that its reaction time is short. To be able to do that, every iteration (cluster state analysis to see if cluster size needs to be changed and according adjustment of the cluster size) needs to finish relatively quickly. Thus, we set the upper bound for iteration duration to 30 seconds.
 
 ## Test setup
 
