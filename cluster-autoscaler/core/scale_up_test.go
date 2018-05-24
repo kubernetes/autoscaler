@@ -359,8 +359,7 @@ func simpleScaleUpTest(t *testing.T, config *scaleTestConfig) {
 			expectedScaleUpOptions: config.expectedScaleUpOptions,
 			scaleUpOptionToChoose:  config.scaleUpOptionToChoose,
 			t: t},
-		ClusterStateRegistry: clusterState,
-		LogRecorder:          fakeLogRecorder,
+		LogRecorder: fakeLogRecorder,
 	}
 
 	extraPods := make([]*apiv1.Pod, len(config.extraPods))
@@ -369,7 +368,7 @@ func simpleScaleUpTest(t *testing.T, config *scaleTestConfig) {
 		extraPods[i] = pod
 	}
 
-	result, err := ScaleUp(context, extraPods, nodes, []*extensionsv1.DaemonSet{})
+	result, err := ScaleUp(context, clusterState, extraPods, nodes, []*extensionsv1.DaemonSet{})
 	assert.NoError(t, err)
 	assert.True(t, result)
 
@@ -462,17 +461,16 @@ func TestScaleUpNodeComingNoScale(t *testing.T) {
 			MaxCoresTotal:  config.DefaultMaxClusterCores,
 			MaxMemoryTotal: config.DefaultMaxClusterMemory,
 		},
-		PredicateChecker:     simulator.NewTestPredicateChecker(),
-		CloudProvider:        provider,
-		ClientSet:            fakeClient,
-		Recorder:             fakeRecorder,
-		ExpanderStrategy:     random.NewStrategy(),
-		ClusterStateRegistry: clusterState,
-		LogRecorder:          fakeLogRecorder,
+		PredicateChecker: simulator.NewTestPredicateChecker(),
+		CloudProvider:    provider,
+		ClientSet:        fakeClient,
+		Recorder:         fakeRecorder,
+		ExpanderStrategy: random.NewStrategy(),
+		LogRecorder:      fakeLogRecorder,
 	}
 	p3 := BuildTestPod("p-new", 550, 0)
 
-	result, err := ScaleUp(context, []*apiv1.Pod{p3}, []*apiv1.Node{n1, n2}, []*extensionsv1.DaemonSet{})
+	result, err := ScaleUp(context, clusterState, []*apiv1.Pod{p3}, []*apiv1.Node{n1, n2}, []*extensionsv1.DaemonSet{})
 	assert.NoError(t, err)
 	// A node is already coming - no need for scale up.
 	assert.False(t, result)
@@ -524,18 +522,17 @@ func TestScaleUpNodeComingHasScale(t *testing.T) {
 	clusterState.UpdateNodes([]*apiv1.Node{n1, n2}, time.Now())
 
 	context := &context.AutoscalingContext{
-		AutoscalingOptions:   defaultOptions,
-		PredicateChecker:     simulator.NewTestPredicateChecker(),
-		CloudProvider:        provider,
-		ClientSet:            fakeClient,
-		Recorder:             fakeRecorder,
-		ExpanderStrategy:     random.NewStrategy(),
-		ClusterStateRegistry: clusterState,
-		LogRecorder:          fakeLogRecorder,
+		AutoscalingOptions: defaultOptions,
+		PredicateChecker:   simulator.NewTestPredicateChecker(),
+		CloudProvider:      provider,
+		ClientSet:          fakeClient,
+		Recorder:           fakeRecorder,
+		ExpanderStrategy:   random.NewStrategy(),
+		LogRecorder:        fakeLogRecorder,
 	}
 	p3 := BuildTestPod("p-new", 550, 0)
 
-	result, err := ScaleUp(context, []*apiv1.Pod{p3, p3}, []*apiv1.Node{n1, n2}, []*extensionsv1.DaemonSet{})
+	result, err := ScaleUp(context, clusterState, []*apiv1.Pod{p3, p3}, []*apiv1.Node{n1, n2}, []*extensionsv1.DaemonSet{})
 	assert.NoError(t, err)
 	// Two nodes needed but one node is already coming, so it should increase by one.
 	assert.True(t, result)
@@ -585,17 +582,16 @@ func TestScaleUpUnhealthy(t *testing.T) {
 			MaxCoresTotal:  config.DefaultMaxClusterCores,
 			MaxMemoryTotal: config.DefaultMaxClusterMemory,
 		},
-		PredicateChecker:     simulator.NewTestPredicateChecker(),
-		CloudProvider:        provider,
-		ClientSet:            fakeClient,
-		Recorder:             fakeRecorder,
-		ExpanderStrategy:     random.NewStrategy(),
-		ClusterStateRegistry: clusterState,
-		LogRecorder:          fakeLogRecorder,
+		PredicateChecker: simulator.NewTestPredicateChecker(),
+		CloudProvider:    provider,
+		ClientSet:        fakeClient,
+		Recorder:         fakeRecorder,
+		ExpanderStrategy: random.NewStrategy(),
+		LogRecorder:      fakeLogRecorder,
 	}
 	p3 := BuildTestPod("p-new", 550, 0)
 
-	result, err := ScaleUp(context, []*apiv1.Pod{p3}, []*apiv1.Node{n1, n2}, []*extensionsv1.DaemonSet{})
+	result, err := ScaleUp(context, clusterState, []*apiv1.Pod{p3}, []*apiv1.Node{n1, n2}, []*extensionsv1.DaemonSet{})
 	assert.NoError(t, err)
 	// Node group is unhealthy.
 	assert.False(t, result)
@@ -636,17 +632,16 @@ func TestScaleUpNoHelp(t *testing.T) {
 			MaxCoresTotal:  config.DefaultMaxClusterCores,
 			MaxMemoryTotal: config.DefaultMaxClusterMemory,
 		},
-		PredicateChecker:     simulator.NewTestPredicateChecker(),
-		CloudProvider:        provider,
-		ClientSet:            fakeClient,
-		Recorder:             fakeRecorder,
-		ExpanderStrategy:     random.NewStrategy(),
-		ClusterStateRegistry: clusterState,
-		LogRecorder:          fakeLogRecorder,
+		PredicateChecker: simulator.NewTestPredicateChecker(),
+		CloudProvider:    provider,
+		ClientSet:        fakeClient,
+		Recorder:         fakeRecorder,
+		ExpanderStrategy: random.NewStrategy(),
+		LogRecorder:      fakeLogRecorder,
 	}
 	p3 := BuildTestPod("p-new", 500, 0)
 
-	result, err := ScaleUp(context, []*apiv1.Pod{p3}, []*apiv1.Node{n1}, []*extensionsv1.DaemonSet{})
+	result, err := ScaleUp(context, clusterState, []*apiv1.Pod{p3}, []*apiv1.Node{n1}, []*extensionsv1.DaemonSet{})
 	assert.NoError(t, err)
 	assert.False(t, result)
 	var event string
@@ -717,13 +712,12 @@ func TestScaleUpBalanceGroups(t *testing.T) {
 			MaxCoresTotal:            config.DefaultMaxClusterCores,
 			MaxMemoryTotal:           config.DefaultMaxClusterMemory,
 		},
-		PredicateChecker:     simulator.NewTestPredicateChecker(),
-		CloudProvider:        provider,
-		ClientSet:            fakeClient,
-		Recorder:             fakeRecorder,
-		ExpanderStrategy:     random.NewStrategy(),
-		ClusterStateRegistry: clusterState,
-		LogRecorder:          fakeLogRecorder,
+		PredicateChecker: simulator.NewTestPredicateChecker(),
+		CloudProvider:    provider,
+		ClientSet:        fakeClient,
+		Recorder:         fakeRecorder,
+		ExpanderStrategy: random.NewStrategy(),
+		LogRecorder:      fakeLogRecorder,
 	}
 
 	pods := make([]*apiv1.Pod, 0)
@@ -731,7 +725,7 @@ func TestScaleUpBalanceGroups(t *testing.T) {
 		pods = append(pods, BuildTestPod(fmt.Sprintf("test-pod-%v", i), 80, 0))
 	}
 
-	result, typedErr := ScaleUp(context, pods, nodes, []*extensionsv1.DaemonSet{})
+	result, typedErr := ScaleUp(context, clusterState, pods, nodes, []*extensionsv1.DaemonSet{})
 	assert.NoError(t, typedErr)
 	assert.True(t, result)
 	groupMap := make(map[string]cloudprovider.NodeGroup, 3)
@@ -781,16 +775,15 @@ func TestScaleUpAutoprovisionedNodeGroup(t *testing.T) {
 			NodeAutoprovisioningEnabled:      true,
 			MaxAutoprovisionedNodeGroupCount: 10,
 		},
-		PredicateChecker:     simulator.NewTestPredicateChecker(),
-		CloudProvider:        provider,
-		ClientSet:            fakeClient,
-		Recorder:             fakeRecorder,
-		ExpanderStrategy:     random.NewStrategy(),
-		ClusterStateRegistry: clusterState,
-		LogRecorder:          fakeLogRecorder,
+		PredicateChecker: simulator.NewTestPredicateChecker(),
+		CloudProvider:    provider,
+		ClientSet:        fakeClient,
+		Recorder:         fakeRecorder,
+		ExpanderStrategy: random.NewStrategy(),
+		LogRecorder:      fakeLogRecorder,
 	}
 
-	result, err := ScaleUp(context, []*apiv1.Pod{p1}, []*apiv1.Node{}, []*extensionsv1.DaemonSet{})
+	result, err := ScaleUp(context, clusterState, []*apiv1.Pod{p1}, []*apiv1.Node{}, []*extensionsv1.DaemonSet{})
 	assert.NoError(t, err)
 	assert.True(t, result)
 	assert.Equal(t, "autoprovisioned-T1", getStringFromChan(createdGroups))
