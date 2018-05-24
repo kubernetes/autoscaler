@@ -105,27 +105,29 @@ func (n *NodeDeleteStatus) SetDeleteInProgress(status bool) {
 
 // ScaleDown is responsible for maintaining the state needed to perform unneeded node removals.
 type ScaleDown struct {
-	context            *context.AutoscalingContext
-	unneededNodes      map[string]time.Time
-	unneededNodesList  []*apiv1.Node
-	unremovableNodes   map[string]time.Time
-	podLocationHints   map[string]string
-	nodeUtilizationMap map[string]float64
-	usageTracker       *simulator.UsageTracker
-	nodeDeleteStatus   *NodeDeleteStatus
+	context              *context.AutoscalingContext
+	clusterStateRegistry *clusterstate.ClusterStateRegistry
+	unneededNodes        map[string]time.Time
+	unneededNodesList    []*apiv1.Node
+	unremovableNodes     map[string]time.Time
+	podLocationHints     map[string]string
+	nodeUtilizationMap   map[string]float64
+	usageTracker         *simulator.UsageTracker
+	nodeDeleteStatus     *NodeDeleteStatus
 }
 
 // NewScaleDown builds new ScaleDown object.
-func NewScaleDown(context *context.AutoscalingContext) *ScaleDown {
+func NewScaleDown(context *context.AutoscalingContext, clusterStateRegistry *clusterstate.ClusterStateRegistry) *ScaleDown {
 	return &ScaleDown{
-		context:            context,
-		unneededNodes:      make(map[string]time.Time),
-		unremovableNodes:   make(map[string]time.Time),
-		podLocationHints:   make(map[string]string),
-		nodeUtilizationMap: make(map[string]float64),
-		usageTracker:       simulator.NewUsageTracker(),
-		unneededNodesList:  make([]*apiv1.Node, 0),
-		nodeDeleteStatus:   &NodeDeleteStatus{},
+		context:              context,
+		clusterStateRegistry: clusterStateRegistry,
+		unneededNodes:        make(map[string]time.Time),
+		unremovableNodes:     make(map[string]time.Time),
+		podLocationHints:     make(map[string]string),
+		nodeUtilizationMap:   make(map[string]float64),
+		usageTracker:         simulator.NewUsageTracker(),
+		unneededNodesList:    make([]*apiv1.Node, 0),
+		nodeDeleteStatus:     &NodeDeleteStatus{},
 	}
 }
 
@@ -303,7 +305,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	sd.unneededNodes = result
 	sd.podLocationHints = newHints
 	sd.nodeUtilizationMap = utilizationMap
-	sd.context.ClusterStateRegistry.UpdateScaleDownCandidates(sd.unneededNodesList, timestamp)
+	sd.clusterStateRegistry.UpdateScaleDownCandidates(sd.unneededNodesList, timestamp)
 	metrics.UpdateUnneededNodesCount(len(sd.unneededNodesList))
 	return nil
 }
@@ -339,7 +341,7 @@ func (sd *ScaleDown) markSimulationError(simulatorErr errors.AutoscalerError,
 	sd.unneededNodesList = make([]*apiv1.Node, 0)
 	sd.unneededNodes = make(map[string]time.Time)
 	sd.nodeUtilizationMap = make(map[string]float64)
-	sd.context.ClusterStateRegistry.UpdateScaleDownCandidates(sd.unneededNodesList, timestamp)
+	sd.clusterStateRegistry.UpdateScaleDownCandidates(sd.unneededNodesList, timestamp)
 	return simulatorErr.AddPrefix("error while simulating node drains: ")
 }
 
@@ -505,7 +507,7 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 	go func() {
 		// Finishing the delete process once this goroutine is over.
 		defer sd.nodeDeleteStatus.SetDeleteInProgress(false)
-		err := deleteNode(sd.context, toRemove.Node, toRemove.PodsToReschedule)
+		err := sd.deleteNode(toRemove.Node, toRemove.PodsToReschedule)
 		if err != nil {
 			glog.Errorf("Failed to delete %s: %v", toRemove.Node.Name, err)
 			return
@@ -616,7 +618,7 @@ func (sd *ScaleDown) scheduleDeleteEmptyNodes(emptyNodes []*apiv1.Node, client k
 			}()
 
 			deleteErr = deleteNodeFromCloudProvider(nodeToDelete, sd.context.CloudProvider,
-				sd.context.Recorder, sd.context.ClusterStateRegistry)
+				sd.context.Recorder, sd.clusterStateRegistry)
 			if deleteErr == nil {
 				if readinessMap[nodeToDelete.Name] {
 					metrics.RegisterScaleDown(1, metrics.Empty)
@@ -652,37 +654,37 @@ func (sd *ScaleDown) waitForEmptyNodesDeleted(emptyNodes []*apiv1.Node, confirma
 	return finalError
 }
 
-func deleteNode(context *context.AutoscalingContext, node *apiv1.Node, pods []*apiv1.Pod) errors.AutoscalerError {
+func (sd *ScaleDown) deleteNode(node *apiv1.Node, pods []*apiv1.Pod) errors.AutoscalerError {
 	deleteSuccessful := false
 	drainSuccessful := false
 
-	if err := deletetaint.MarkToBeDeleted(node, context.ClientSet); err != nil {
-		context.Recorder.Eventf(node, apiv1.EventTypeWarning, "ScaleDownFailed", "failed to mark the node as toBeDeleted/unschedulable: %v", err)
+	if err := deletetaint.MarkToBeDeleted(node, sd.context.ClientSet); err != nil {
+		sd.context.Recorder.Eventf(node, apiv1.EventTypeWarning, "ScaleDownFailed", "failed to mark the node as toBeDeleted/unschedulable: %v", err)
 		return errors.ToAutoscalerError(errors.ApiCallError, err)
 	}
 
 	// If we fail to evict all the pods from the node we want to remove delete taint
 	defer func() {
 		if !deleteSuccessful {
-			deletetaint.CleanToBeDeleted(node, context.ClientSet)
+			deletetaint.CleanToBeDeleted(node, sd.context.ClientSet)
 			if !drainSuccessful {
-				context.Recorder.Eventf(node, apiv1.EventTypeWarning, "ScaleDownFailed", "failed to drain the node, aborting ScaleDown")
+				sd.context.Recorder.Eventf(node, apiv1.EventTypeWarning, "ScaleDownFailed", "failed to drain the node, aborting ScaleDown")
 			} else {
-				context.Recorder.Eventf(node, apiv1.EventTypeWarning, "ScaleDownFailed", "failed to delete the node")
+				sd.context.Recorder.Eventf(node, apiv1.EventTypeWarning, "ScaleDownFailed", "failed to delete the node")
 			}
 		}
 	}()
 
-	context.Recorder.Eventf(node, apiv1.EventTypeNormal, "ScaleDown", "marked the node as toBeDeleted/unschedulable")
+	sd.context.Recorder.Eventf(node, apiv1.EventTypeNormal, "ScaleDown", "marked the node as toBeDeleted/unschedulable")
 
 	// attempt drain
-	if err := drainNode(node, pods, context.ClientSet, context.Recorder, context.MaxGracefulTerminationSec, MaxPodEvictionTime, EvictionRetryTime); err != nil {
+	if err := drainNode(node, pods, sd.context.ClientSet, sd.context.Recorder, sd.context.MaxGracefulTerminationSec, MaxPodEvictionTime, EvictionRetryTime); err != nil {
 		return err
 	}
 	drainSuccessful = true
 
 	// attempt delete from cloud provider
-	err := deleteNodeFromCloudProvider(node, context.CloudProvider, context.Recorder, context.ClusterStateRegistry)
+	err := deleteNodeFromCloudProvider(node, sd.context.CloudProvider, sd.context.Recorder, sd.clusterStateRegistry)
 	if err != nil {
 		return err
 	}

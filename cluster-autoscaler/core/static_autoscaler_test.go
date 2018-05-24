@@ -181,22 +181,22 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 			ScaleDownUnreadyTime:          time.Minute,
 			ScaleDownUnneededTime:         time.Minute,
 		},
-		PredicateChecker:     simulator.NewTestPredicateChecker(),
-		CloudProvider:        provider,
-		ClientSet:            fakeClient,
-		Recorder:             fakeRecorder,
-		ExpanderStrategy:     random.NewStrategy(),
-		ClusterStateRegistry: clusterState,
-		LogRecorder:          fakeLogRecorder,
+		PredicateChecker: simulator.NewTestPredicateChecker(),
+		CloudProvider:    provider,
+		ClientSet:        fakeClient,
+		Recorder:         fakeRecorder,
+		ExpanderStrategy: random.NewStrategy(),
+		LogRecorder:      fakeLogRecorder,
 	}
 
 	listerRegistry := kube_util.NewListerRegistry(allNodeListerMock, readyNodeListerMock, scheduledPodMock,
 		unschedulablePodMock, podDisruptionBudgetListerMock, daemonSetListerMock)
 
-	sd := NewScaleDown(context)
+	sd := NewScaleDown(context, clusterState)
 
 	autoscaler := &StaticAutoscaler{AutoscalingContext: context,
 		ListerRegistry:        listerRegistry,
+		clusterStateRegistry:  clusterState,
 		lastScaleUpTime:       time.Now(),
 		lastScaleDownFailTime: time.Now(),
 		scaleDown:             sd,
@@ -361,22 +361,22 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 			NodeAutoprovisioningEnabled:      true,
 			MaxAutoprovisionedNodeGroupCount: 10, // Pods with null priority are always non expendable. Test if it works.
 		},
-		PredicateChecker:     simulator.NewTestPredicateChecker(),
-		CloudProvider:        provider,
-		ClientSet:            fakeClient,
-		Recorder:             fakeRecorder,
-		ExpanderStrategy:     random.NewStrategy(),
-		ClusterStateRegistry: clusterState,
-		LogRecorder:          fakeLogRecorder,
+		PredicateChecker: simulator.NewTestPredicateChecker(),
+		CloudProvider:    provider,
+		ClientSet:        fakeClient,
+		Recorder:         fakeRecorder,
+		ExpanderStrategy: random.NewStrategy(),
+		LogRecorder:      fakeLogRecorder,
 	}
 
 	listerRegistry := kube_util.NewListerRegistry(allNodeListerMock, readyNodeListerMock, scheduledPodMock,
 		unschedulablePodMock, podDisruptionBudgetListerMock, daemonSetListerMock)
 
-	sd := NewScaleDown(context)
+	sd := NewScaleDown(context, clusterState)
 
 	autoscaler := &StaticAutoscaler{AutoscalingContext: context,
 		ListerRegistry:        listerRegistry,
+		clusterStateRegistry:  clusterState,
 		lastScaleUpTime:       time.Now(),
 		lastScaleDownFailTime: time.Now(),
 		scaleDown:             sd,
@@ -499,22 +499,22 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 			ScaleDownUnneededTime:         time.Minute,
 			MaxNodeProvisionTime:          10 * time.Second,
 		},
-		PredicateChecker:     simulator.NewTestPredicateChecker(),
-		CloudProvider:        provider,
-		ClientSet:            fakeClient,
-		Recorder:             fakeRecorder,
-		ExpanderStrategy:     random.NewStrategy(),
-		ClusterStateRegistry: clusterState,
-		LogRecorder:          fakeLogRecorder,
+		PredicateChecker: simulator.NewTestPredicateChecker(),
+		CloudProvider:    provider,
+		ClientSet:        fakeClient,
+		Recorder:         fakeRecorder,
+		ExpanderStrategy: random.NewStrategy(),
+		LogRecorder:      fakeLogRecorder,
 	}
 
 	listerRegistry := kube_util.NewListerRegistry(allNodeListerMock, readyNodeListerMock, scheduledPodMock,
 		unschedulablePodMock, podDisruptionBudgetListerMock, daemonSetListerMock)
 
-	sd := NewScaleDown(context)
+	sd := NewScaleDown(context, clusterState)
 
 	autoscaler := &StaticAutoscaler{AutoscalingContext: context,
 		ListerRegistry:        listerRegistry,
+		clusterStateRegistry:  clusterState,
 		lastScaleUpTime:       time.Now(),
 		lastScaleDownFailTime: time.Now(),
 		scaleDown:             sd,
@@ -636,22 +636,22 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 			ScaleDownUnneededTime:         time.Minute,
 			ExpendablePodsPriorityCutoff:  10,
 		},
-		PredicateChecker:     simulator.NewTestPredicateChecker(),
-		CloudProvider:        provider,
-		ClientSet:            fakeClient,
-		Recorder:             fakeRecorder,
-		ExpanderStrategy:     random.NewStrategy(),
-		ClusterStateRegistry: clusterState,
-		LogRecorder:          fakeLogRecorder,
+		PredicateChecker: simulator.NewTestPredicateChecker(),
+		CloudProvider:    provider,
+		ClientSet:        fakeClient,
+		Recorder:         fakeRecorder,
+		ExpanderStrategy: random.NewStrategy(),
+		LogRecorder:      fakeLogRecorder,
 	}
 
 	listerRegistry := kube_util.NewListerRegistry(allNodeListerMock, readyNodeListerMock, scheduledPodMock,
 		unschedulablePodMock, podDisruptionBudgetListerMock, daemonSetListerMock)
 
-	sd := NewScaleDown(context)
+	sd := NewScaleDown(context, clusterState)
 
 	autoscaler := &StaticAutoscaler{AutoscalingContext: context,
 		ListerRegistry:        listerRegistry,
+		clusterStateRegistry:  clusterState,
 		lastScaleUpTime:       time.Now(),
 		lastScaleDownFailTime: time.Now(),
 		scaleDown:             sd,

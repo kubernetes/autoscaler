@@ -19,6 +19,7 @@ package core
 import (
 	"time"
 
+	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
@@ -52,6 +53,8 @@ type StaticAutoscaler struct {
 	// AutoscalingContext consists of validated settings and options for this autoscaler
 	*context.AutoscalingContext
 	kube_util.ListerRegistry
+	// ClusterState for maintaining the state of cluster nodes.
+	clusterStateRegistry    *clusterstate.ClusterStateRegistry
 	startTime               time.Time
 	lastScaleUpTime         time.Time
 	lastScaleDownDeleteTime time.Time
@@ -77,7 +80,14 @@ func NewStaticAutoscaler(opts context.AutoscalingOptions, predicateChecker *simu
 		return nil, errctx
 	}
 
-	scaleDown := NewScaleDown(autoscalingContext)
+	clusterStateConfig := clusterstate.ClusterStateRegistryConfig{
+		MaxTotalUnreadyPercentage: opts.MaxTotalUnreadyPercentage,
+		OkTotalUnreadyCount:       opts.OkTotalUnreadyCount,
+		MaxNodeProvisionTime:      opts.MaxNodeProvisionTime,
+	}
+	clusterStateRegistry := clusterstate.NewClusterStateRegistry(autoscalingContext.CloudProvider, clusterStateConfig, autoscalingContext.LogRecorder)
+
+	scaleDown := NewScaleDown(autoscalingContext, clusterStateRegistry)
 
 	return &StaticAutoscaler{
 		AutoscalingContext:      autoscalingContext,
@@ -88,6 +98,7 @@ func NewStaticAutoscaler(opts context.AutoscalingOptions, predicateChecker *simu
 		lastScaleDownFailTime:   time.Now(),
 		scaleDown:               scaleDown,
 		podListProcessor:        podListProcessor,
+		clusterStateRegistry:    clusterStateRegistry,
 	}, nil
 }
 
@@ -137,14 +148,14 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	// Update status information when the loop is done (regardless of reason)
 	defer func() {
 		if autoscalingContext.WriteStatusConfigMap {
-			status := a.ClusterStateRegistry.GetStatus(currentTime)
+			status := a.clusterStateRegistry.GetStatus(currentTime)
 			utils.WriteStatusConfigMap(autoscalingContext.ClientSet, autoscalingContext.ConfigNamespace,
 				status.GetReadableString(), a.AutoscalingContext.LogRecorder)
 		}
 	}()
 	// Check if there are any nodes that failed to register in Kubernetes
 	// master.
-	unregisteredNodes := a.ClusterStateRegistry.GetUnregisteredNodes()
+	unregisteredNodes := a.clusterStateRegistry.GetUnregisteredNodes()
 	if len(unregisteredNodes) > 0 {
 		glog.V(1).Infof("%d unregistered nodes present", len(unregisteredNodes))
 		removedAny, err := removeOldUnregisteredNodes(unregisteredNodes, autoscalingContext, currentTime, autoscalingContext.LogRecorder)
@@ -164,7 +175,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 			return nil
 		}
 	}
-	if !a.ClusterStateRegistry.IsClusterHealthy() {
+	if !a.clusterStateRegistry.IsClusterHealthy() {
 		glog.Warning("Cluster is not ready for autoscaling")
 		scaleDown.CleanUpUnneededNodes()
 		autoscalingContext.LogRecorder.Eventf(apiv1.EventTypeWarning, "ClusterUnhealthy", "Cluster is unhealthy")
@@ -174,7 +185,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	// Check if there has been a constant difference between the number of nodes in k8s and
 	// the number of nodes on the cloud provider side.
 	// TODO: andrewskim - add protection for ready AWS nodes.
-	fixedSomething, err := fixNodeGroupSize(autoscalingContext, currentTime)
+	fixedSomething, err := fixNodeGroupSize(autoscalingContext, a.clusterStateRegistry, currentTime)
 	if err != nil {
 		glog.Errorf("Failed to fix node group sizes: %v", err)
 		return errors.ToAutoscalerError(errors.CloudProviderError, err)
@@ -264,7 +275,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		scaleUpStart := time.Now()
 		metrics.UpdateLastTime(metrics.ScaleUp, scaleUpStart)
 
-		scaledUp, typedErr := ScaleUp(autoscalingContext, unschedulablePodsToHelp, readyNodes, daemonsets)
+		scaledUp, typedErr := ScaleUp(autoscalingContext, a.clusterStateRegistry, unschedulablePodsToHelp, readyNodes, daemonsets)
 
 		metrics.UpdateDurationFromStart(metrics.ScaleUp, scaleUpStart)
 
@@ -400,13 +411,13 @@ func (a *StaticAutoscaler) updateClusterState(allNodes []*apiv1.Node, currentTim
 		return errors.ToAutoscalerError(errors.CloudProviderError, err)
 	}
 
-	err = a.ClusterStateRegistry.UpdateNodes(allNodes, currentTime)
+	err = a.clusterStateRegistry.UpdateNodes(allNodes, currentTime)
 	if err != nil {
 		glog.Errorf("Failed to update node registry: %v", err)
 		a.scaleDown.CleanUpUnneededNodes()
 		return errors.ToAutoscalerError(errors.CloudProviderError, err)
 	}
-	UpdateClusterStateMetrics(a.ClusterStateRegistry)
+	UpdateClusterStateMetrics(a.clusterStateRegistry)
 
 	return nil
 }
