@@ -21,6 +21,7 @@ import (
 	"net/http"
 	"regexp"
 	"testing"
+	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 
@@ -338,22 +339,6 @@ const instanceTemplate = `
  "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/global/instanceTemplates/gke-cluster-1-default-pool-f7607aac"
 }`
 
-const machineType = `{
-  "kind": "compute#machineType",
-  "id": "3001",
-  "creationTimestamp": "2015-01-16T09:25:43.314-08:00",
-  "name": "n1-standard-1",
-  "description": "1 vCPU, 3.75 GB RAM",
-  "guestCpus": 1,
-  "memoryMb": 3840,
-  "maximumPersistentDisks": 32,
-  "maximumPersistentDisksSizeGb": "65536",
-  "zone": "%s",
-  "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/zones/%s/machineTypes/n1-standard-1",
-  "isSharedCpu": false
-}
-`
-
 const managedInstancesResponse1 = `{
   "managedInstances": [
     {
@@ -461,7 +446,7 @@ const getClusterResponse = `{
     }
   ],
   "locations": [
-    "us-central1-c"
+    "us-central1-b"
   ],
   "labelFingerprint": "fasdfds",
   "legacyAbac": {},
@@ -506,10 +491,6 @@ func getInstanceGroupManagerNamed(name, zone string) string {
 	return fmt.Sprintf(instanceGroupManager, name, zone, name, zone, name, zone, name)
 }
 
-func getMachineType(zone string) string {
-	return fmt.Sprintf(machineType, zone, zone)
-}
-
 func getManagedInstancesResponse1(zone string) string {
 	return getManagedInstancesResponse1Named(defaultPoolMig, zone)
 }
@@ -541,11 +522,14 @@ func newTestGceManager(t *testing.T, testServerURL string, mode GcpCloudProvider
 		regional:    regional,
 		templates: &templateBuilder{
 			projectId: projectId,
-			service:   gceService,
 		},
 		explicitlyConfigured: make(map[GceRef]bool),
+		machinesCache: map[machineTypeKey]*gce.MachineType{
+			{"us-central1-b", "n1-standard-1"}: {GuestCpus: 1, MemoryMb: 1},
+			{"us-central1-c", "n1-standard-1"}: {GuestCpus: 1, MemoryMb: 1},
+			{"us-central1-f", "n1-standard-1"}: {GuestCpus: 1, MemoryMb: 1},
+		},
 	}
-
 	if regional {
 		manager.location = region
 	} else {
@@ -591,7 +575,6 @@ func TestFetchAllNodePools(t *testing.T) {
 	server.On("handle", "/v1/projects/project1/zones/us-central1-b/clusters/cluster1/nodePools").Return(allNodePools1).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool").Return(getInstanceGroupManager(zoneB)).Once()
 	server.On("handle", "/project1/global/instanceTemplates/gke-cluster-1-default-pool").Return(instanceTemplate).Once()
-	server.On("handle", "/project1/zones/us-central1-b/machineTypes/n1-standard-1").Return(getMachineType(zoneB)).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool").Return(getInstanceGroupManager(zoneB)).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool/listManagedInstances").Return(getManagedInstancesResponse1(zoneB)).Once()
 
@@ -612,8 +595,6 @@ func TestFetchAllNodePools(t *testing.T) {
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-nodeautoprovisioning-323233232").Return(getInstanceGroupManager(zoneB)).Once()
 	server.On("handle", "/project1/global/instanceTemplates/gke-cluster-1-default-pool").Return(instanceTemplate).Once()
 	server.On("handle", "/project1/global/instanceTemplates/gke-cluster-1-default-pool").Return(instanceTemplate).Once()
-	server.On("handle", "/project1/zones/us-central1-b/machineTypes/n1-standard-1").Return(getMachineType(zoneB)).Once()
-	server.On("handle", "/project1/zones/us-central1-b/machineTypes/n1-standard-1").Return(getMachineType(zoneB)).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool").Return(instanceGroupManager).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool/listManagedInstances").Return(getManagedInstancesResponse1(zoneB)).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-nodeautoprovisioning-323233232").Return(getInstanceGroupManager(zoneB)).Once()
@@ -651,9 +632,6 @@ func TestFetchAllNodePoolsRegional(t *testing.T) {
 	server.On("handle", "/project1/zones/us-central1-c/instanceGroupManagers/gke-cluster-1-default-pool").Return(getInstanceGroupManager(zoneC)).Once()
 	server.On("handle", "/project1/zones/us-central1-f/instanceGroupManagers/gke-cluster-1-default-pool").Return(getInstanceGroupManager(zoneF)).Once()
 	server.On("handle", "/project1/global/instanceTemplates/gke-cluster-1-default-pool").Return(instanceTemplate).Times(3)
-	server.On("handle", "/project1/zones/us-central1-b/machineTypes/n1-standard-1").Return(getMachineType(zoneB)).Once()
-	server.On("handle", "/project1/zones/us-central1-c/machineTypes/n1-standard-1").Return(getMachineType(zoneC)).Once()
-	server.On("handle", "/project1/zones/us-central1-f/machineTypes/n1-standard-1").Return(getMachineType(zoneF)).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool").Return(getInstanceGroupManager(zoneB)).Once()
 	server.On("handle", "/project1/zones/us-central1-c/instanceGroupManagers/gke-cluster-1-default-pool").Return(getInstanceGroupManager(zoneC)).Once()
 	server.On("handle", "/project1/zones/us-central1-f/instanceGroupManagers/gke-cluster-1-default-pool").Return(getInstanceGroupManager(zoneF)).Once()
@@ -703,8 +681,6 @@ func TestDeleteNodePool(t *testing.T) {
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-nodeautoprovisioning-323233232").Return(getInstanceGroupManager(zoneB)).Once()
 	server.On("handle", "/project1/global/instanceTemplates/gke-cluster-1-default-pool").Return(instanceTemplate).Once()
 	server.On("handle", "/project1/global/instanceTemplates/gke-cluster-1-default-pool").Return(instanceTemplate).Once()
-	server.On("handle", "/project1/zones/us-central1-b/machineTypes/n1-standard-1").Return(getMachineType(zoneB)).Once()
-	server.On("handle", "/project1/zones/us-central1-b/machineTypes/n1-standard-1").Return(getMachineType(zoneB)).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool").Return(instanceGroupManager).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool/listManagedInstances").Return(getManagedInstancesResponse1(zoneB)).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-nodeautoprovisioning-323233232").Return(getInstanceGroupManager(zoneB)).Once()
@@ -762,8 +738,6 @@ func TestCreateNodePool(t *testing.T) {
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-nodeautoprovisioning-323233232").Return(getInstanceGroupManager(zoneB)).Once()
 	server.On("handle", "/project1/global/instanceTemplates/gke-cluster-1-default-pool").Return(instanceTemplate).Once()
 	server.On("handle", "/project1/global/instanceTemplates/gke-cluster-1-default-pool").Return(instanceTemplate).Once()
-	server.On("handle", "/project1/zones/us-central1-b/machineTypes/n1-standard-1").Return(getMachineType(zoneB)).Once()
-	server.On("handle", "/project1/zones/us-central1-b/machineTypes/n1-standard-1").Return(getMachineType(zoneB)).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool").Return(getInstanceGroupManager(zoneB)).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool/listManagedInstances").Return(getManagedInstancesResponse1(zoneB)).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-nodeautoprovisioning-323233232").Return(getInstanceGroupManager(zoneB)).Once()
@@ -1189,8 +1163,6 @@ func TestFetchAutoMigsZonal(t *testing.T) {
 
 	server.On("handle", "/project1/global/instanceTemplates/"+gceMigA).Return(instanceTemplate).Once()
 	server.On("handle", "/project1/global/instanceTemplates/"+gceMigB).Return(instanceTemplate).Once()
-	server.On("handle", "/project1/zones/"+zoneB+"/machineTypes/n1-standard-1").Return(getMachineType(zoneB)).Once()
-	server.On("handle", "/project1/zones/"+zoneB+"/machineTypes/n1-standard-1").Return(getMachineType(zoneB)).Once()
 	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA).Return(getInstanceGroupManagerNamed(gceMigA, zoneB)).Once()
 	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA+"/listManagedInstances").Return(getManagedInstancesResponse1Named(gceMigA, zoneB)).Once()
 	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigB).Return(getInstanceGroupManagerNamed(gceMigB, zoneB)).Once()
@@ -1219,7 +1191,6 @@ func TestFetchAutoMigsUnregistersMissingMigs(t *testing.T) {
 	// Register explicit instance group
 	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA).Return(getInstanceGroupManagerNamed(gceMigA, zoneB)).Once()
 	server.On("handle", "/project1/global/instanceTemplates/"+gceMigA).Return(instanceTemplate).Once()
-	server.On("handle", "/project1/zones/"+zoneB+"/machineTypes/n1-standard-1").Return(getMachineType(zoneB)).Once()
 
 	// Regenerate cache for explicit instance group
 	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA).Return(getInstanceGroupManagerNamed(gceMigA, zoneB)).Twice()
@@ -1228,7 +1199,6 @@ func TestFetchAutoMigsUnregistersMissingMigs(t *testing.T) {
 	// Register 'previously autodetected' instance group
 	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigB).Return(getInstanceGroupManagerNamed(gceMigB, zoneB)).Once()
 	server.On("handle", "/project1/global/instanceTemplates/"+gceMigB).Return(instanceTemplate).Once()
-	server.On("handle", "/project1/zones/"+zoneB+"/machineTypes/n1-standard-1").Return(getMachineType(zoneB)).Once()
 
 	regional := false
 	g := newTestGceManager(t, server.URL, ModeGCE, regional)
@@ -1268,7 +1238,6 @@ func TestFetchAutoMigsRegional(t *testing.T) {
 
 	server.On("handle", "/project1/global/instanceTemplates/"+gceMigA).Return(instanceTemplate).Once()
 	server.On("handle", "/project1/global/instanceTemplates/"+gceMigB).Return(instanceTemplate).Once()
-	server.On("handle", "/project1/zones/"+zoneB+"/machineTypes/n1-standard-1").Return(getMachineType(zoneB)).Twice()
 	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA).Return(getInstanceGroupManagerNamed(gceMigA, zoneB)).Once()
 	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA+"/listManagedInstances").Return(getManagedInstancesResponse1Named(gceMigA, zoneB)).Once()
 	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigB).Return(getInstanceGroupManagerNamed(gceMigB, zoneB)).Once()
@@ -1300,7 +1269,6 @@ func TestFetchExplicitMigs(t *testing.T) {
 
 	server.On("handle", "/project1/global/instanceTemplates/"+gceMigA).Return(instanceTemplate).Once()
 	server.On("handle", "/project1/global/instanceTemplates/"+gceMigB).Return(instanceTemplate).Once()
-	server.On("handle", "/project1/zones/"+zoneB+"/machineTypes/n1-standard-1").Return(getMachineType(zoneB)).Twice()
 
 	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA).Return(getInstanceGroupManagerNamed(gceMigA, zoneB)).Once()
 	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA+"/listManagedInstances").Return(getManagedInstancesResponse1Named(gceMigA, zoneB)).Once()
@@ -1324,4 +1292,171 @@ func TestFetchExplicitMigs(t *testing.T) {
 	validateMig(t, migs[0].config, zoneB, gceMigA, minA, maxA)
 	validateMig(t, migs[1].config, zoneB, gceMigB, minB, maxB)
 	mock.AssertExpectationsForObjects(t, server)
+}
+
+const listMachineTypesResponse = `{
+ "kind": "compute#machineTypeList",
+ "id": "projects/project1/zones/us-central1-c/machineTypes",
+ "items": [
+  {
+   "kind": "compute#machineType",
+   "id": "1000",
+   "creationTimestamp": "1969-12-31T16:00:00.000-08:00",
+   "name": "f1-micro",
+   "description": "1 vCPU (shared physical core) and 0.6 GB RAM",
+   "guestCpus": 1,
+   "memoryMb": 614,
+   "imageSpaceGb": 0,
+   "maximumPersistentDisks": 16,
+   "maximumPersistentDisksSizeGb": "3072",
+   "zone": "us-central1-c",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-c/machineTypes/f1-micro",
+   "isSharedCpu": true
+  },
+  {
+   "kind": "compute#machineType",
+   "id": "2000",
+   "creationTimestamp": "1969-12-31T16:00:00.000-08:00",
+   "name": "g1-small",
+   "description": "1 vCPU (shared physical core) and 1.7 GB RAM",
+   "guestCpus": 1,
+   "memoryMb": 1740,
+   "imageSpaceGb": 0,
+   "maximumPersistentDisks": 16,
+   "maximumPersistentDisksSizeGb": "3072",
+   "zone": "us-central1-c",
+   "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-c/machineTypes/g1-small",
+   "isSharedCpu": true
+  }
+ ],
+ "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-c/machineTypes"
+}`
+
+func TestfetchMachinesCache(t *testing.T) {
+	server := NewHttpServerMock()
+	defer server.Close()
+
+	g := newTestGceManager(t, server.URL, ModeGKENAP, false)
+	server.On("handle", "/v1alpha1/projects/project1/zones/us-central1-b/clusters/cluster1").Return(getClusterResponse).Once()
+	server.On("handle", "/project1/zones/us-central1-b/machineTypes").Return(listMachineTypesResponse).Once()
+
+	err := g.fetchMachinesCache()
+	assert.NoError(t, err)
+	assert.Equal(t, 2, len(g.machinesCache))
+	assert.NotNil(t, g.machinesCache[machineTypeKey{zoneB, "f1-micro"}])
+	assert.NotNil(t, g.machinesCache[machineTypeKey{zoneB, "g1-small"}])
+	mock.AssertExpectationsForObjects(t, server)
+
+	// Skipped refresh.
+	err = g.fetchMachinesCache()
+	assert.NoError(t, err)
+	mock.AssertExpectationsForObjects(t, server)
+
+	// Skipped refresh.
+	server.On("handle", "/v1alpha1/projects/project1/zones/us-central1-b/clusters/cluster1").Return(getClusterResponse).Once()
+	server.On("handle", "/project1/zones/us-central1-b/machineTypes").Return(listMachineTypesResponse).Once()
+	g.machinesCacheLastRefresh = time.Now().Add(-2 * time.Hour)
+	err = g.fetchMachinesCache()
+	assert.NoError(t, err)
+	mock.AssertExpectationsForObjects(t, server)
+}
+
+func TestGetMigTemplate(t *testing.T) {
+	server := NewHttpServerMock()
+	defer server.Close()
+
+	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/default-pool").Return(getInstanceGroupManagerResponse).Once()
+	server.On("handle", "/project1/global/instanceTemplates/gke-cluster-1-default-pool").Return(instanceTemplate).Once()
+
+	regional := false
+	g := newTestGceManager(t, server.URL, ModeGCE, regional)
+
+	mig := &Mig{
+		GceRef: GceRef{
+			Project: projectId,
+			Zone:    zoneB,
+			Name:    "default-pool",
+		},
+		gceManager:      g,
+		minSize:         0,
+		maxSize:         1000,
+		autoprovisioned: true,
+		exist:           true,
+		nodePoolName:    "default-pool",
+		spec:            nil,
+	}
+
+	template, err := g.getMigTemplate(mig)
+	assert.NoError(t, err)
+	assert.Equal(t, "gke-cluster-1-default-pool", template.Name)
+	mock.AssertExpectationsForObjects(t, server)
+}
+
+const getMachineTypeResponse = `{
+  "kind": "compute#machineType",
+  "id": "3001",
+  "creationTimestamp": "2015-01-16T09:25:43.314-08:00",
+  "name": "n1-standard-2",
+  "description": "2 vCPU, 3.75 GB RAM",
+  "guestCpus": 2,
+  "memoryMb": 3840,
+  "maximumPersistentDisks": 32,
+  "maximumPersistentDisksSizeGb": "65536",
+  "zone": "us-central1-a",
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/krzysztof-jastrzebski-dev/zones/us-central1-a/machineTypes/n1-standard-1",
+  "isSharedCpu": false
+}`
+
+func TestGetCpuAndMemoryForMachineType(t *testing.T) {
+	server := NewHttpServerMock()
+	defer server.Close()
+	regional := false
+	g := newTestGceManager(t, server.URL, ModeGCE, regional)
+
+	// Custom machine type.
+	cpu, mem, err := g.getCpuAndMemoryForMachineType("custom-8-2", zoneB)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(8), cpu)
+	assert.Equal(t, int64(2*1024*1024), mem)
+	mock.AssertExpectationsForObjects(t, server)
+
+	// Standard machine type found in cache.
+	cpu, mem, err = g.getCpuAndMemoryForMachineType("n1-standard-1", zoneB)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(1), cpu)
+	assert.Equal(t, int64(1*1024*1024), mem)
+	mock.AssertExpectationsForObjects(t, server)
+
+	// Standard machine type not found in cache.
+	server.On("handle", "/project1/zones/"+zoneB+"/machineTypes/n1-standard-2").Return(getMachineTypeResponse).Once()
+	cpu, mem, err = g.getCpuAndMemoryForMachineType("n1-standard-2", zoneB)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(2), cpu)
+	assert.Equal(t, int64(3840*1024*1024), mem)
+	mock.AssertExpectationsForObjects(t, server)
+
+	// Standard machine type cached.
+	cpu, mem, err = g.getCpuAndMemoryForMachineType("n1-standard-2", zoneB)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(2), cpu)
+	assert.Equal(t, int64(3840*1024*1024), mem)
+	mock.AssertExpectationsForObjects(t, server)
+
+	// Standard machine type not found in the zone.
+	server.On("handle", "/project1/zones/us-central1-g/machineTypes/n1-standard-1").Return("").Once()
+	_, _, err = g.getCpuAndMemoryForMachineType("n1-standard-1", "us-central1-g")
+	assert.Error(t, err)
+	mock.AssertExpectationsForObjects(t, server)
+
+}
+
+func TestParseCustomMachineType(t *testing.T) {
+	cpu, mem, err := parseCustomMachineType("custom-2-2816")
+	assert.NoError(t, err)
+	assert.Equal(t, int64(2), cpu)
+	assert.Equal(t, int64(2816*1024*1024), mem)
+	cpu, mem, err = parseCustomMachineType("other-a2-2816")
+	assert.Error(t, err)
+	cpu, mem, err = parseCustomMachineType("other-2-2816")
+	assert.Error(t, err)
 }
