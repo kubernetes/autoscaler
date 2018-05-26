@@ -1257,6 +1257,7 @@ func TestCleanToBeDeleted(t *testing.T) {
 
 func TestCleanUpNodeAutoprovisionedGroups(t *testing.T) {
 	n1 := BuildTestNode("n1", 1000, 1000)
+	n2 := BuildTestNode("n2", 1000, 1000)
 
 	provider := testprovider.NewTestAutoprovisioningCloudProvider(
 		nil, nil,
@@ -1267,11 +1268,13 @@ func TestCleanUpNodeAutoprovisionedGroups(t *testing.T) {
 			return fmt.Errorf("Node group %s shouldn't be deleted", id)
 		},
 		nil, nil)
+	assert.NotNil(t, provider)
 	provider.AddNodeGroup("ng1", 1, 10, 1)
 	provider.AddAutoprovisionedNodeGroup("ng2", 0, 10, 0, "mt1")
 	provider.AddAutoprovisionedNodeGroup("ng3", 0, 10, 1, "mt1")
+	provider.AddAutoprovisionedNodeGroup("ng4", 0, 10, 0, "mt1")
 	provider.AddNode("ng3", n1)
-	assert.NotNil(t, provider)
+	provider.AddNode("ng4", n2)
 
 	fakeClient := &fake.Clientset{}
 	fakeRecorder := kube_util.CreateEventRecorder(fakeClient)
