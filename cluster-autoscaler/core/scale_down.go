@@ -839,22 +839,30 @@ func cleanUpNodeAutoprovisionedGroups(cloudProvider cloudprovider.CloudProvider,
 		if !nodeGroup.Autoprovisioned() {
 			continue
 		}
-		size, err := nodeGroup.TargetSize()
+		targetSize, err := nodeGroup.TargetSize()
 		if err != nil {
 			return err
 		}
-		if size == 0 {
-			ngId := nodeGroup.Id()
-			if err := nodeGroup.Delete(); err != nil {
-				logRecorder.Eventf(apiv1.EventTypeWarning, "FailedToDeleteNodeGroup",
-					"NodeAutoprovisioning: attempt to delete node group %v failed: %v", ngId, err)
-				// TODO(maciekpytel): add some metric here after figuring out failure scenarios
-				return err
-			}
-			logRecorder.Eventf(apiv1.EventTypeNormal, "DeletedNodeGroup",
-				"NodeAutoprovisioning: removed node group %v", ngId)
-			metrics.RegisterNodeGroupDeletion()
+		if targetSize > 0 {
+			continue
 		}
+		nodes, err := nodeGroup.Nodes()
+		if err != nil {
+			return err
+		}
+		if len(nodes) > 0 {
+			continue
+		}
+		ngId := nodeGroup.Id()
+		if err := nodeGroup.Delete(); err != nil {
+			logRecorder.Eventf(apiv1.EventTypeWarning, "FailedToDeleteNodeGroup",
+				"NodeAutoprovisioning: attempt to delete node group %v failed: %v", ngId, err)
+			// TODO(maciekpytel): add some metric here after figuring out failure scenarios
+			return err
+		}
+		logRecorder.Eventf(apiv1.EventTypeNormal, "DeletedNodeGroup",
+			"NodeAutoprovisioning: removed node group %v", ngId)
+		metrics.RegisterNodeGroupDeletion()
 	}
 	return nil
 }
