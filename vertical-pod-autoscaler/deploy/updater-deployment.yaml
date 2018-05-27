@@ -1,32 +1,32 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: updater
+  name: vpa-updater
   namespace: kube-system
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: updater
+  name: vpa-updater
   namespace: kube-system
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        app: updater
+        app: vpa-updater
     spec:
-      serviceAccountName: updater
+      serviceAccountName: vpa-updater
       containers:
       - name: updater
-        image: gcr.io/kubernetes-develop/updater:0.0.1
+        image: k8s.gcr.io/vpa-updater:v0.1.0
         imagePullPolicy: Always
         resources:
           limits:
-            cpu: 500m
-            memory: 2000Mi
+            cpu: 200m
+            memory: 1000Mi
           requests:
-            cpu: 250m
+            cpu: 50m
             memory: 500Mi
         ports:
         - containerPort: 8080

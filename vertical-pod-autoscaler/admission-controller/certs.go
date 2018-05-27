@@ -39,7 +39,7 @@ func readFile(filePath string) []byte {
 		glog.Error(err)
 		return nil
 	}
-	glog.Infof("Successfuly read %d bytes from %v", count, filePath)
+	glog.Infof("Successfully read %d bytes from %v", count, filePath)
 	return res
 }
 

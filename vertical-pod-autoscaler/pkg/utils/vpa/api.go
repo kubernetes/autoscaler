@@ -92,12 +92,6 @@ func UpdateVpaStatus(vpaClient vpa_api.VerticalPodAutoscalerInterface, vpa *mode
 	return patchVpa(vpaClient, (*vpa).ID.VpaName, patches)
 }
 
-type nullResourceEventHandler struct{}
-
-func (*nullResourceEventHandler) OnAdd(obj interface{})               {}
-func (*nullResourceEventHandler) OnUpdate(oldObj, newObj interface{}) {}
-func (*nullResourceEventHandler) OnDelete(obj interface{})            {}
-
 // NewAllVpasLister returns VerticalPodAutoscalerLister configured to fetch all VPA objects.
 // The method blocks until vpaLister is initially populated.
 func NewAllVpasLister(vpaClient *vpa_clientset.Clientset, stopChannel <-chan struct{}) vpa_lister.VerticalPodAutoscalerLister {
@@ -105,14 +99,14 @@ func NewAllVpasLister(vpaClient *vpa_clientset.Clientset, stopChannel <-chan str
 	indexer, controller := cache.NewIndexerInformer(vpaListWatch,
 		&vpa_types.VerticalPodAutoscaler{},
 		1*time.Hour,
-		&nullResourceEventHandler{},
+		&cache.ResourceEventHandlerFuncs{},
 		cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
 	vpaLister := vpa_lister.NewVerticalPodAutoscalerLister(indexer)
 	go controller.Run(stopChannel)
 	if !cache.WaitForCacheSync(make(chan struct{}), controller.HasSynced) {
 		glog.Fatalf("Failed to sync VPA cache during initialization")
 	} else {
-		glog.Info("Initial VPA synced sucessfully")
+		glog.Info("Initial VPA synced successfully")
 	}
 	return vpaLister
 }

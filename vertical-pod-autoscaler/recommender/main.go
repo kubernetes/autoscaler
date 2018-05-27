@@ -22,6 +22,7 @@ import (
 
 	"github.com/golang/glog"
 	kube_flag "k8s.io/apiserver/pkg/util/flag"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/input/history"
 	"k8s.io/client-go/rest"
 	kube_restclient "k8s.io/client-go/rest"
@@ -29,17 +30,18 @@ import (
 
 var (
 	metricsFetcherInterval = flag.Duration("recommender-interval", 1*time.Minute, `How often metrics should be fetched`)
+	checkpointsGCInterval  = flag.Duration("checkpoints-gc-interval", 10*time.Minute, `How often orphaned checkpoints should be garbage collected`)
 	prometheusAddress      = flag.String("prometheus-address", "", `Where to reach for Prometheus metrics`)
 	storage                = flag.String("storage", "", `Specifies storage mode. Supported values: prometheus, checkpoint (default)`)
 )
 
 func main() {
 	kube_flag.InitFlags()
-	glog.Infof("Running VPA Recommender")
+	glog.V(1).Infof("Vertical Pod Autoscaler %s Recommender", common.VerticalPodAutoscalerVersion)
 
 	config := createKubeConfig()
 
-	recommender := NewRecommender(config, *metricsFetcherInterval, history.NewPrometheusHistoryProvider(*prometheusAddress), *storage != "prometheus")
+	recommender := NewRecommender(config, *metricsFetcherInterval, *checkpointsGCInterval, history.NewPrometheusHistoryProvider(*prometheusAddress), *storage != "prometheus")
 	recommender.Run()
 }
 

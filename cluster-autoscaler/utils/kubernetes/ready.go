@@ -68,7 +68,7 @@ func GetReadinessState(node *apiv1.Node) (isNodeReady bool, lastTransitionTime t
 		}
 	}
 	if !readyFound {
-		return false, time.Time{}, fmt.Errorf("feadiness information not found")
+		return false, time.Time{}, fmt.Errorf("readiness information not found")
 	}
 	return canNodeBeReady, lastTransitionTime, nil
 }

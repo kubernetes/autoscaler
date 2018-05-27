@@ -28,9 +28,10 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/model"
 )
 
-// CheckpointWriter is implements how histogram checkpoints are stored.
+// CheckpointWriter persistently stores aggregated historical usage of containers
+// controlled by VPA objects. This state can be restored to initialize the model after restart.
 type CheckpointWriter interface {
-	StoreCheckpoints()
+	StoreCheckpoints(now time.Time)
 }
 
 type checkpointWriter struct {
@@ -46,13 +47,13 @@ func NewCheckpointWriter(cluster *model.ClusterState, vpaCheckpointClient vpa_ap
 	}
 }
 
-func (writer *checkpointWriter) StoreCheckpoints() {
+func (writer *checkpointWriter) StoreCheckpoints(now time.Time) {
 	for _, vpa := range writer.cluster.Vpas {
-		aggregateContainerStateMap := model.BuildAggregateContainerStateMap(vpa, model.MergeForRecommendation, time.Now())
+		aggregateContainerStateMap := buildAggregateContainerStateMap(vpa, writer.cluster, now)
 		for container, aggregatedContainerState := range aggregateContainerStateMap {
 			containerCheckpoint, err := aggregatedContainerState.SaveToCheckpoint()
 			if err != nil {
-				glog.Errorf("Cannot serialize checkpotint for vpa %v container %v. Reason: %+v", vpa.ID.VpaName, container, err)
+				glog.Errorf("Cannot serialize checkpoint for vpa %v container %v. Reason: %+v", vpa.ID.VpaName, container, err)
 				continue
 			}
 			checkpointName := fmt.Sprintf("%s-%s", vpa.ID.VpaName, container)
@@ -73,5 +74,33 @@ func (writer *checkpointWriter) StoreCheckpoints() {
 					vpa.ID.Namespace, vpaCheckpoint.Spec.VPAObjectName, vpaCheckpoint.Spec.ContainerName)
 			}
 		}
+	}
+}
+
+// Build the AggregateContainerState for the purpose of the checkpoint. This is an aggregation of state of all
+// containers that belong to pods matched by the VPA.
+// Note however that we exclude the most recent memory peak for each container (see below).
+func buildAggregateContainerStateMap(vpa *model.Vpa, cluster *model.ClusterState, now time.Time) map[string]*model.AggregateContainerState {
+	aggregateContainerStateMap := vpa.AggregateStateByContainerName()
+	// Note: the memory peak from the current (ongoing) aggregation interval is not included in the
+	// checkpoint to avoid having multiple peaks in the same interval after the state is restored from
+	// the checkpoint. Therefore we are extracting the current peak from all containers.
+	// TODO: Avoid the nested loop over all containers for each VPA.
+	for _, pod := range cluster.Pods {
+		for containerName, container := range pod.Containers {
+			aggregateKey := cluster.MakeAggregateStateKey(pod, containerName)
+			if vpa.UsesAggregation(aggregateKey) {
+				if aggregateContainerState, exists := aggregateContainerStateMap[containerName]; exists {
+					subtractCurrentContainerMemoryPeak(aggregateContainerState, container, now)
+				}
+			}
+		}
+	}
+	return aggregateContainerStateMap
+}
+
+func subtractCurrentContainerMemoryPeak(a *model.AggregateContainerState, container *model.ContainerState, now time.Time) {
+	if now.Before(container.WindowEnd) {
+		a.AggregateMemoryPeaks.SubtractSample(model.BytesFromMemoryAmount(container.MemoryPeak), 1.0, container.WindowEnd)
 	}
 }

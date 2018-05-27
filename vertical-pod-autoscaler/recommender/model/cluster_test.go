@@ -28,27 +28,31 @@ import (
 )
 
 var (
-	testTimestamp, _ = time.Parse(TimeLayout, "2017-04-18 17:35:05")
-	testPodID        = PodID{"namespace-1", "pod-1"}
-	testContainerID  = ContainerID{testPodID, "container-1"}
-	testVpaID        = VpaID{"namespace-1", "vpa-1"}
-	testLabels       = map[string]string{"label-1": "value-1"}
-	emptyLabels      = map[string]string{}
-	testSelectorStr  = "label-1 = value-1"
+	testPodID       = PodID{"namespace-1", "pod-1"}
+	testContainerID = ContainerID{testPodID, "container-1"}
+	testVpaID       = VpaID{"namespace-1", "vpa-1"}
+	testLabels      = map[string]string{"label-1": "value-1"}
+	emptyLabels     = map[string]string{}
+	testSelectorStr = "label-1 = value-1"
 )
 
 func makeTestUsageSample() *ContainerUsageSampleWithKey {
-	return &ContainerUsageSampleWithKey{ContainerUsageSample{testTimestamp, 1.0, ResourceCPU}, testContainerID}
+	return &ContainerUsageSampleWithKey{ContainerUsageSample{
+		MeasureStart: testTimestamp,
+		Usage:        1.0,
+		Request:      testRequest[ResourceCPU],
+		Resource:     ResourceCPU},
+		testContainerID}
 }
 
 func TestClusterAddSample(t *testing.T) {
 	// Create a pod with a single container.
 	cluster := NewClusterState()
 	cluster.AddOrUpdatePod(testPodID, testLabels, apiv1.PodRunning)
-	assert.NoError(t, cluster.AddOrUpdateContainer(testContainerID))
+	assert.NoError(t, cluster.AddOrUpdateContainer(testContainerID, testRequest))
 
 	// Add a usage sample to the container.
-	cluster.AddSample(makeTestUsageSample())
+	assert.NoError(t, cluster.AddSample(makeTestUsageSample()))
 
 	// Verify that the sample was aggregated into the container stats.
 	containerStats := cluster.Pods[testPodID].Containers["container-1"]
@@ -59,14 +63,14 @@ func TestClusterRecordOOM(t *testing.T) {
 	// Create a pod with a single container.
 	cluster := NewClusterState()
 	cluster.AddOrUpdatePod(testPodID, testLabels, apiv1.PodRunning)
-	assert.NoError(t, cluster.AddOrUpdateContainer(testContainerID))
+	assert.NoError(t, cluster.AddOrUpdateContainer(testContainerID, testRequest))
 
 	// RecordOOM
 	assert.NoError(t, cluster.RecordOOM(testContainerID, time.Unix(0, 0), ResourceAmount(10)))
 
-	// Verify that OOM was aggregated into the container stats.
-	containerStats := cluster.Pods[testPodID].Containers["container-1"]
-	assert.NotEmpty(t, containerStats.MemoryUsagePeaks.Contents)
+	// Verify that OOM was aggregated into the aggregated stats.
+	aggregation := cluster.findOrCreateAggregateContainerState(testContainerID)
+	assert.NotEmpty(t, aggregation.AggregateMemoryPeaks)
 }
 
 // Verifies that AddSample and AddOrUpdateContainer methods return a proper
@@ -79,7 +83,7 @@ func TestMissingKeys(t *testing.T) {
 	err = cluster.RecordOOM(testContainerID, time.Unix(0, 0), ResourceAmount(10))
 	assert.EqualError(t, err, "KeyError: {namespace-1 pod-1}")
 
-	err = cluster.AddOrUpdateContainer(testContainerID)
+	err = cluster.AddOrUpdateContainer(testContainerID, testRequest)
 	assert.EqualError(t, err, "KeyError: {namespace-1 pod-1}")
 }
 
@@ -104,45 +108,32 @@ func addTestPod(cluster *ClusterState) *PodState {
 	return cluster.Pods[testPodID]
 }
 
-// Creates a VPA followed by a matching pod. Verifies that the links between the
-// VPA and the pod are set correctly.
+func addTestContainer(cluster *ClusterState) *ContainerState {
+	cluster.AddOrUpdateContainer(testContainerID, testRequest)
+	return cluster.GetContainer(testContainerID)
+}
+
+// Creates a VPA followed by a matching pod. Verifies that the links between
+// VPA, the container and the aggregation are set correctly.
 func TestAddVpaThenAddPod(t *testing.T) {
 	cluster := NewClusterState()
 	vpa := addTestVpa(cluster)
-	pod := addTestPod(cluster)
-	assert.Equal(t, pod, vpa.Pods[testPodID])
-	assert.Equal(t, map[VpaID]*Vpa{testVpaID: vpa}, pod.MatchingVpas)
+	addTestPod(cluster)
+	container := addTestContainer(cluster)
+	aggregateStateKey := cluster.aggregateStateKeyForContainerID(testContainerID)
+	assert.True(t, container.aggregator == vpa.aggregateContainerStates[aggregateStateKey])
 }
 
-// Creates a pod followed by a matching VPA. Verifies that the links between the
-// VPA and the pod are set correctly.
+// Creates a pod followed by a matching VPA. Verifies that the links between
+// VPA, the container and the aggregation are set correctly.
 func TestAddPodThenAddVpa(t *testing.T) {
 	cluster := NewClusterState()
-	pod := addTestPod(cluster)
+	addTestPod(cluster)
+	container := addTestContainer(cluster)
 	vpa := addTestVpa(cluster)
-	assert.Equal(t, pod, vpa.Pods[testPodID])
-	assert.Equal(t, map[VpaID]*Vpa{testVpaID: vpa}, pod.MatchingVpas)
-}
-
-// Creates a VPA and a matching pod. Verifies that after deleting the VPA the
-// pod does not link to any Vpa.
-func TestDeleteVpa(t *testing.T) {
-	cluster := NewClusterState()
-	vpa := addTestVpa(cluster)
-	pod := addTestPod(cluster)
-	cluster.DeleteVpa(vpa.ID)
-	assert.Empty(t, pod.MatchingVpas)
-	assert.NotContains(t, cluster.Vpas, vpa.ID)
-}
-
-// Creates a VPA and a matching pod. Verifies that after deleting the pod the
-// VPA does not control any pods.
-func TestDeletePod(t *testing.T) {
-	cluster := NewClusterState()
-	vpa := addTestVpa(cluster)
-	pod := addTestPod(cluster)
-	assert.NoError(t, cluster.DeletePod(pod.ID))
-	assert.Empty(t, vpa.Pods)
+	aggregateStateKey := cluster.aggregateStateKeyForContainerID(testContainerID)
+	assert.Contains(t, vpa.aggregateContainerStates, aggregateStateKey)
+	assert.True(t, container.aggregator == vpa.aggregateContainerStates[aggregateStateKey])
 }
 
 // Creates a VPA and a matching pod, then change the pod labels such that it is
@@ -151,11 +142,12 @@ func TestDeletePod(t *testing.T) {
 func TestChangePodLabels(t *testing.T) {
 	cluster := NewClusterState()
 	vpa := addTestVpa(cluster)
-	pod := addTestPod(cluster)
+	addTestPod(cluster)
+	container := addTestContainer(cluster)
+	aggregateStateKey := cluster.aggregateStateKeyForContainerID(testContainerID)
 	// Update Pod labels to no longer match the VPA.
 	cluster.AddOrUpdatePod(testPodID, emptyLabels, apiv1.PodRunning)
-	assert.Empty(t, vpa.Pods)
-	assert.Empty(t, pod.MatchingVpas)
+	assert.False(t, container.aggregator == vpa.aggregateContainerStates[aggregateStateKey])
 }
 
 // Creates a VPA and a matching pod, then change the VPA pod selector 3 times:
@@ -165,47 +157,66 @@ func TestChangePodLabels(t *testing.T) {
 func TestUpdatePodSelector(t *testing.T) {
 	cluster := NewClusterState()
 	vpa := addTestVpa(cluster)
-	pod := addTestPod(cluster)
+	addTestPod(cluster)
+	addTestContainer(cluster)
 
 	// Update the VPA selector such that it still matches the Pod.
 	vpa = addVpa(cluster, testVpaID, "label-1 in (value-1,value-2)")
-	assert.Equal(t, pod, vpa.Pods[testPodID])
-	assert.Equal(t, map[VpaID]*Vpa{testVpaID: vpa}, pod.MatchingVpas)
+	assert.Contains(t, vpa.aggregateContainerStates, cluster.aggregateStateKeyForContainerID(testContainerID))
 
 	// Update the VPA selector to no longer match the Pod.
 	vpa = addVpa(cluster, testVpaID, "label-1 = value-2")
-	assert.Empty(t, vpa.Pods)
-	assert.Empty(t, pod.MatchingVpas)
+	assert.NotContains(t, vpa.aggregateContainerStates, cluster.aggregateStateKeyForContainerID(testContainerID))
 
 	// Update the VPA selector to match the Pod again.
 	vpa = addVpa(cluster, testVpaID, "label-1 = value-1")
-	assert.Equal(t, pod, vpa.Pods[testPodID])
-	assert.Equal(t, map[VpaID]*Vpa{testVpaID: vpa}, pod.MatchingVpas)
+	assert.Contains(t, vpa.aggregateContainerStates, cluster.aggregateStateKeyForContainerID(testContainerID))
 }
 
-// Creates a VPA and a matching pod, then add another VPA matching the same pod.
-// Verifies that the pod knows about both of them.
-// Next deletes one of them and verfies that the pod is controlled by the
-// remaning VPA. Finally deletes the other VPA and verifies that the pod is no
-// longer controlled by any VPA.
-func TestTwoVpasForPod(t *testing.T) {
+// Verify that two copies of the same AggregateStateKey are equal.
+func TestEqualAggregateStateKey(t *testing.T) {
 	cluster := NewClusterState()
-	addVpa(cluster, VpaID{"namespace-1", "vpa-1"}, "label-1 = value-1")
 	pod := addTestPod(cluster)
-	addVpa(cluster, VpaID{"namespace-1", "vpa-2"}, "label-1 in (value-1,value-2)")
-	assert.Equal(t, map[VpaID]*Vpa{
-		{"namespace-1", "vpa-1"}: cluster.Vpas[VpaID{"namespace-1", "vpa-1"}],
-		{"namespace-1", "vpa-2"}: cluster.Vpas[VpaID{"namespace-1", "vpa-2"}]},
-		pod.MatchingVpas)
-	// Delete the first VPA from the Pod. Expect that it will still
-	// have the other one.
-	assert.NoError(t, cluster.DeleteVpa(VpaID{"namespace-1", "vpa-1"}))
-	assert.Equal(t, map[VpaID]*Vpa{
-		{"namespace-1", "vpa-2"}: cluster.Vpas[VpaID{"namespace-1", "vpa-2"}]},
-		pod.MatchingVpas)
-	// Delete the other VPA. The Pod is no longer vertically-scaled by anyone.
-	assert.NoError(t, cluster.DeleteVpa(VpaID{"namespace-1", "vpa-2"}))
-	assert.Empty(t, pod.MatchingVpas)
+	key1 := cluster.MakeAggregateStateKey(pod, "container-1")
+	key2 := cluster.MakeAggregateStateKey(pod, "container-1")
+	assert.True(t, key1 == key2)
+}
+
+// Verify that two containers with the same name, living in two pods with the same namespace and labels
+// (although different pod names) are aggregated together.
+func TestTwoPodsWithSameLabels(t *testing.T) {
+	podID1 := PodID{"namespace-1", "pod-1"}
+	podID2 := PodID{"namespace-1", "pod-2"}
+	containerID1 := ContainerID{podID1, "foo-container"}
+	containerID2 := ContainerID{podID2, "foo-container"}
+
+	cluster := NewClusterState()
+	cluster.AddOrUpdatePod(podID1, testLabels, apiv1.PodRunning)
+	cluster.AddOrUpdatePod(podID2, testLabels, apiv1.PodRunning)
+	cluster.AddOrUpdateContainer(containerID1, testRequest)
+	cluster.AddOrUpdateContainer(containerID2, testRequest)
+
+	// Expect only one aggregation to be created.
+	assert.Equal(t, 1, len(cluster.aggregateStateMap))
+}
+
+// Verify that two identical containers in different namespaces are not aggregated together.
+func TestTwoPodsWithDifferentNamespaces(t *testing.T) {
+	podID1 := PodID{"namespace-1", "foo-pod"}
+	podID2 := PodID{"namespace-2", "foo-pod"}
+	containerID1 := ContainerID{podID1, "foo-container"}
+	containerID2 := ContainerID{podID2, "foo-container"}
+
+	cluster := NewClusterState()
+	cluster.AddOrUpdatePod(podID1, testLabels, apiv1.PodRunning)
+	cluster.AddOrUpdatePod(podID2, testLabels, apiv1.PodRunning)
+	cluster.AddOrUpdateContainer(containerID1, testRequest)
+	cluster.AddOrUpdateContainer(containerID2, testRequest)
+
+	// Expect two separate aggregations to be created.
+	assert.Equal(t, 2, len(cluster.aggregateStateMap))
+	// Expect only one entry to be present in the labels set map.
+	assert.Equal(t, 1, len(cluster.labelSetMap))
 }
 
 // Verifies that a VPA with an empty selector (matching all pods) matches a pod
@@ -213,15 +224,19 @@ func TestTwoVpasForPod(t *testing.T) {
 func TestEmptySelector(t *testing.T) {
 	cluster := NewClusterState()
 	// Create a VPA with an empty selector (matching all pods).
-	addVpa(cluster, testVpaID, "")
-	// Create a pod with labels.
+	vpa := addVpa(cluster, testVpaID, "")
+	// Create a pod with labels. Add a container.
 	cluster.AddOrUpdatePod(testPodID, testLabels, apiv1.PodRunning)
-	// Create a pod without labels.
+	containerID1 := ContainerID{testPodID, "foo"}
+	assert.NoError(t, cluster.AddOrUpdateContainer(containerID1, testRequest))
+
+	// Create a pod without labels. Add a container.
 	anotherPodID := PodID{"namespace-1", "pod-2"}
 	cluster.AddOrUpdatePod(anotherPodID, emptyLabels, apiv1.PodRunning)
+	containerID2 := ContainerID{anotherPodID, "foo"}
+	assert.NoError(t, cluster.AddOrUpdateContainer(containerID2, testRequest))
+
 	// Both pods should be matched by the VPA.
-	assert.Equal(t, map[VpaID]*Vpa{testVpaID: cluster.Vpas[testVpaID]},
-		cluster.Pods[testPodID].MatchingVpas)
-	assert.Equal(t, map[VpaID]*Vpa{testVpaID: cluster.Vpas[testVpaID]},
-		cluster.Pods[anotherPodID].MatchingVpas)
+	assert.Contains(t, vpa.aggregateContainerStates, cluster.aggregateStateKeyForContainerID(containerID1))
+	assert.Contains(t, vpa.aggregateContainerStates, cluster.aggregateStateKeyForContainerID(containerID2))
 }

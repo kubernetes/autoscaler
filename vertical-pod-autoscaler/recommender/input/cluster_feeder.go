@@ -34,6 +34,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/input/spec"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/model"
 	kube_client "k8s.io/client-go/kubernetes"
+	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	v1lister "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
@@ -57,6 +58,9 @@ type ClusterStateFeeder interface {
 
 	// LoadRealTimeMetrics updates clusterState with current usage metrics of containers.
 	LoadRealTimeMetrics()
+
+	// GarbageCollectCheckpoints removes historical checkpoints that don't have a matching VPA.
+	GarbageCollectCheckpoints()
 }
 
 // NewClusterStateFeeder creates new ClusterStateFeeder with internal data providers, based on kube client config and a historyProvider.
@@ -64,6 +68,7 @@ func NewClusterStateFeeder(config *rest.Config, historyProvider history.HistoryP
 	kubeClient := kube_client.NewForConfigOrDie(config)
 	podLister, observer := newPodClients(kubeClient)
 	return &clusterStateFeeder{
+		coreClient:          kubeClient.CoreV1(),
 		specClient:          spec.NewSpecClient(podLister),
 		metricsClient:       newMetricsClient(config),
 		oomObserver:         observer,
@@ -99,6 +104,7 @@ func newPodClients(kubeClient kube_client.Interface) (v1lister.PodLister, *oom.O
 }
 
 type clusterStateFeeder struct {
+	coreClient          corev1.CoreV1Interface
 	specClient          spec.SpecClient
 	metricsClient       metrics.MetricsClient
 	oomObserver         *oom.Observer
@@ -159,6 +165,37 @@ func (feeder *clusterStateFeeder) InitFromCheckpoints() {
 	}
 }
 
+func (feeder *clusterStateFeeder) GarbageCollectCheckpoints() {
+	glog.V(3).Info("Starting garbage collection of checkpoints")
+	feeder.LoadVPAs()
+
+	namspaceList, err := feeder.coreClient.Namespaces().List(metav1.ListOptions{})
+	if err != nil {
+		glog.Errorf("Cannot list namespaces. Reason: %+v", err)
+		return
+	}
+
+	for _, namespaceItem := range namspaceList.Items {
+		namespace := namespaceItem.Name
+		checkpointList, err := feeder.vpaCheckpointClient.VerticalPodAutoscalerCheckpoints(namespace).List(metav1.ListOptions{})
+		if err != nil {
+			glog.Errorf("Cannot list VPA checkpoints from namespace %v. Reason: %+v", namespace, err)
+		}
+		for _, checkpoint := range checkpointList.Items {
+			vpaID := model.VpaID{Namespace: checkpoint.Namespace, VpaName: checkpoint.Spec.VPAObjectName}
+			_, exists := feeder.clusterState.Vpas[vpaID]
+			if !exists {
+				err = feeder.vpaCheckpointClient.VerticalPodAutoscalerCheckpoints(namespace).Delete(checkpoint.Name, &metav1.DeleteOptions{})
+				if err == nil {
+					glog.V(3).Infof("Orphaned VPA checkpoint cleanup - deleting %v/%v.", namespace, checkpoint.Name)
+				} else {
+					glog.Errorf("Cannot delete VPA checkpoint %v/%v. Reason: %+v", namespace, checkpoint.Name, err)
+				}
+			}
+		}
+	}
+}
+
 // Fetch VPA objects and load them into the cluster state.
 func (feeder *clusterStateFeeder) LoadVPAs() {
 	// List VPA API objects.
@@ -211,7 +248,7 @@ func (feeder *clusterStateFeeder) LoadPods() {
 	for _, pod := range pods {
 		feeder.clusterState.AddOrUpdatePod(pod.ID, pod.PodLabels, pod.Phase)
 		for _, container := range pod.Containers {
-			feeder.clusterState.AddOrUpdateContainer(container.ID)
+			feeder.clusterState.AddOrUpdateContainer(container.ID, container.Request)
 		}
 	}
 }

@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	"fmt"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -70,53 +71,72 @@ type Vpa struct {
 	Conditions vpaConditionsMap
 	// Most recently computed recommendation. Can be nil.
 	Recommendation *vpa_types.RecommendedPodResources
-	// Pods controlled by this VPA object.
-	Pods map[PodID]*PodState
+	// All container aggregations that contribute to this VPA.
+	// TODO: Garbage collect old AggregateContainerStates.
+	aggregateContainerStates aggregateContainerStatesMap
 	// Value of the Status.LastUpdateTime fetched from the VPA API object.
 	LastUpdateTime time.Time
 	// Initial checkpoints of AggregateContainerStates for containers.
-	ContainerCheckpoints map[string]*AggregateContainerState
+	// The key is container name.
+	containerCheckpoints ContainerNameToAggregateStateMap
 }
 
 // NewVpa returns a new Vpa with a given ID and pod selector. Doesn't set the
-// links to the matched pods.
+// links to the matched aggregations.
 func NewVpa(id VpaID, selector labels.Selector) *Vpa {
 	vpa := &Vpa{
-		ID:                   id,
-		PodSelector:          selector,
-		Pods:                 make(map[PodID]*PodState), // Empty pods map.
-		ContainerCheckpoints: make(map[string]*AggregateContainerState),
+		ID:                       id,
+		PodSelector:              selector,
+		aggregateContainerStates: make(aggregateContainerStatesMap),
+		containerCheckpoints:     make(ContainerNameToAggregateStateMap),
 	}
 	return vpa
 }
 
-// MatchesPod returns true iff a given pod is matched by the Vpa pod selector.
-func (vpa *Vpa) MatchesPod(pod *PodState) bool {
-	if vpa.ID.Namespace != pod.ID.Namespace {
-		return false
+// UseAggregationIfMatching checks if the given aggregation matches (contributes to) this VPA
+// and adds it to the set of VPA's aggregations if that is the case.
+func (vpa *Vpa) UseAggregationIfMatching(aggregationKey AggregateStateKey, aggregation *AggregateContainerState) {
+	if !vpa.UsesAggregation(aggregationKey) && vpa.matchesAggregation(aggregationKey) {
+		vpa.aggregateContainerStates[aggregationKey] = aggregation
 	}
-	return vpa.PodSelector != nil && pod.Labels != nil && vpa.PodSelector.Matches(pod.Labels)
 }
 
-// UpdatePodLink marks the Pod as controlled or not-controlled by the VPA
-// depending on whether the pod labels match the Vpa pod selector.
-// If multiple VPAs match the same Pod, only one of them will effectively
-// control the Pod.
-func (vpa *Vpa) UpdatePodLink(pod *PodState) bool {
-	_, previouslyMatched := pod.MatchingVpas[vpa.ID]
-	currentlyMatching := vpa.MatchesPod(pod)
+// UsesAggregation returns true iff an aggregation with the given key contributes to the VPA.
+func (vpa *Vpa) UsesAggregation(aggregationKey AggregateStateKey) bool {
+	_, exists := vpa.aggregateContainerStates[aggregationKey]
+	return exists
+}
 
-	if previouslyMatched == currentlyMatching {
+// LoadCheckpoint loads checkpointed VPA state from a checkpoint for one container name.
+func (vpa *Vpa) LoadCheckpoint(checkpoint *vpa_types.VerticalPodAutoscalerCheckpoint) error {
+	cs := NewAggregateContainerState()
+	err := cs.LoadFromCheckpoint(&checkpoint.Status)
+	if err != nil {
+		return fmt.Errorf("Cannot load checkpoint for VPA %+v. Reason: %v", vpa.ID, err)
+	}
+	vpa.containerCheckpoints[checkpoint.Spec.ContainerName] = cs
+	return nil
+}
+
+// MergeCheckpointedState adds checkpointed VPA aggregations to the given aggregateStateMap.
+func (vpa *Vpa) MergeCheckpointedState(aggregateContainerStateMap ContainerNameToAggregateStateMap) {
+	for containerName, aggregation := range vpa.containerCheckpoints {
+		aggregateContainerStateMap[containerName].MergeContainerState(aggregation)
+	}
+}
+
+// AggregateStateByContainerName returns a map from container name to the aggregated state
+// of all containers with that name, belonging to pods matched by the VPA.
+func (vpa *Vpa) AggregateStateByContainerName() ContainerNameToAggregateStateMap {
+	containerNameToAggregateStateMap := AggregateStateByContainerName(vpa.aggregateContainerStates)
+	vpa.MergeCheckpointedState(containerNameToAggregateStateMap)
+	return containerNameToAggregateStateMap
+}
+
+// matchesAggregation returns true iff the VPA matches the given aggregation key.
+func (vpa *Vpa) matchesAggregation(aggregationKey AggregateStateKey) bool {
+	if vpa.ID.Namespace != aggregationKey.Namespace() {
 		return false
 	}
-	if currentlyMatching {
-		// Create links between VPA and pod.
-		vpa.Pods[pod.ID] = pod
-		pod.MatchingVpas[vpa.ID] = vpa
-	} else {
-		// Delete the links between VPA and pod.
-		delete(vpa.Pods, pod.ID)
-		delete(pod.MatchingVpas, vpa.ID)
-	}
-	return true
+	return vpa.PodSelector != nil && vpa.PodSelector.Matches(aggregationKey.Labels())
 }

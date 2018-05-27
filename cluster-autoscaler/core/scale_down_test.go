@@ -33,6 +33,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	scheduler_util "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
@@ -123,18 +124,18 @@ func TestFindUnneededNodes(t *testing.T) {
 	provider.AddNode("ng1", n8)
 	provider.AddNode("ng1", n9)
 
-	context := AutoscalingContext{
-		AutoscalingOptions: AutoscalingOptions{
+	context := context.AutoscalingContext{
+		AutoscalingOptions: context.AutoscalingOptions{
 			ScaleDownUtilizationThreshold: 0.35,
 			ExpendablePodsPriorityCutoff:  10,
 		},
-		ClusterStateRegistry: clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder),
-		PredicateChecker:     simulator.NewTestPredicateChecker(),
-		LogRecorder:          fakeLogRecorder,
-		CloudProvider:        provider,
+		PredicateChecker: simulator.NewTestPredicateChecker(),
+		LogRecorder:      fakeLogRecorder,
+		CloudProvider:    provider,
 	}
 
-	sd := NewScaleDown(&context)
+	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder)
+	sd := NewScaleDown(&context, clusterStateRegistry)
 	sd.UpdateUnneededNodes([]*apiv1.Node{n1, n2, n3, n4, n5, n7, n8, n9}, []*apiv1.Node{n1, n2, n3, n4, n5, n6, n7, n8, n9},
 		[]*apiv1.Pod{p1, p2, p3, p4, p5, p6}, time.Now(), nil)
 
@@ -242,18 +243,18 @@ func TestPodsWithPrioritiesFindUnneededNodes(t *testing.T) {
 	provider.AddNode("ng1", n3)
 	provider.AddNode("ng1", n4)
 
-	context := AutoscalingContext{
-		AutoscalingOptions: AutoscalingOptions{
+	context := context.AutoscalingContext{
+		AutoscalingOptions: context.AutoscalingOptions{
 			ScaleDownUtilizationThreshold: 0.35,
 			ExpendablePodsPriorityCutoff:  10,
 		},
-		ClusterStateRegistry: clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder),
-		PredicateChecker:     simulator.NewTestPredicateChecker(),
-		LogRecorder:          fakeLogRecorder,
-		CloudProvider:        provider,
+		PredicateChecker: simulator.NewTestPredicateChecker(),
+		LogRecorder:      fakeLogRecorder,
+		CloudProvider:    provider,
 	}
 
-	sd := NewScaleDown(&context)
+	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder)
+	sd := NewScaleDown(&context, clusterStateRegistry)
 
 	sd.UpdateUnneededNodes([]*apiv1.Node{n1, n2, n3, n4}, []*apiv1.Node{n1, n2, n3, n4},
 		[]*apiv1.Pod{p1, p2, p3, p4, p5, p6, p7}, time.Now(), nil)
@@ -298,19 +299,19 @@ func TestFindUnneededMaxCandidates(t *testing.T) {
 
 	numCandidates := 30
 
-	context := AutoscalingContext{
-		AutoscalingOptions: AutoscalingOptions{
+	context := context.AutoscalingContext{
+		AutoscalingOptions: context.AutoscalingOptions{
 			ScaleDownUtilizationThreshold:    0.35,
 			ScaleDownNonEmptyCandidatesCount: numCandidates,
 			ScaleDownCandidatesPoolRatio:     1,
 			ScaleDownCandidatesPoolMinCount:  1000,
 		},
-		ClusterStateRegistry: clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder),
-		PredicateChecker:     simulator.NewTestPredicateChecker(),
-		LogRecorder:          fakeLogRecorder,
-		CloudProvider:        provider,
+		PredicateChecker: simulator.NewTestPredicateChecker(),
+		LogRecorder:      fakeLogRecorder,
+		CloudProvider:    provider,
 	}
-	sd := NewScaleDown(&context)
+	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder)
+	sd := NewScaleDown(&context, clusterStateRegistry)
 
 	sd.UpdateUnneededNodes(nodes, nodes, pods, time.Now(), nil)
 	assert.Equal(t, numCandidates, len(sd.unneededNodes))
@@ -371,19 +372,19 @@ func TestFindUnneededEmptyNodes(t *testing.T) {
 
 	numCandidates := 30
 
-	context := AutoscalingContext{
-		AutoscalingOptions: AutoscalingOptions{
+	context := context.AutoscalingContext{
+		AutoscalingOptions: context.AutoscalingOptions{
 			ScaleDownUtilizationThreshold:    0.35,
 			ScaleDownNonEmptyCandidatesCount: numCandidates,
 			ScaleDownCandidatesPoolRatio:     1.0,
 			ScaleDownCandidatesPoolMinCount:  1000,
 		},
-		ClusterStateRegistry: clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder),
-		PredicateChecker:     simulator.NewTestPredicateChecker(),
-		LogRecorder:          fakeLogRecorder,
-		CloudProvider:        provider,
+		PredicateChecker: simulator.NewTestPredicateChecker(),
+		LogRecorder:      fakeLogRecorder,
+		CloudProvider:    provider,
 	}
-	sd := NewScaleDown(&context)
+	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder)
+	sd := NewScaleDown(&context, clusterStateRegistry)
 
 	sd.UpdateUnneededNodes(nodes, nodes, pods, time.Now(), nil)
 	for _, node := range sd.unneededNodesList {
@@ -422,19 +423,19 @@ func TestFindUnneededNodePool(t *testing.T) {
 
 	numCandidates := 30
 
-	context := AutoscalingContext{
-		AutoscalingOptions: AutoscalingOptions{
+	context := context.AutoscalingContext{
+		AutoscalingOptions: context.AutoscalingOptions{
 			ScaleDownUtilizationThreshold:    0.35,
 			ScaleDownNonEmptyCandidatesCount: numCandidates,
 			ScaleDownCandidatesPoolRatio:     0.1,
 			ScaleDownCandidatesPoolMinCount:  10,
 		},
-		ClusterStateRegistry: clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder),
-		PredicateChecker:     simulator.NewTestPredicateChecker(),
-		LogRecorder:          fakeLogRecorder,
-		CloudProvider:        provider,
+		PredicateChecker: simulator.NewTestPredicateChecker(),
+		LogRecorder:      fakeLogRecorder,
+		CloudProvider:    provider,
 	}
-	sd := NewScaleDown(&context)
+	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder)
+	sd := NewScaleDown(&context, clusterStateRegistry)
 
 	sd.UpdateUnneededNodes(nodes, nodes, pods, time.Now(), nil)
 	assert.NotEmpty(t, sd.unneededNodes)
@@ -569,17 +570,19 @@ func TestDeleteNode(t *testing.T) {
 			fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false)
 
 			// build context
-			context := &AutoscalingContext{
-				AutoscalingOptions:   AutoscalingOptions{},
-				ClientSet:            fakeClient,
-				Recorder:             fakeRecorder,
-				LogRecorder:          fakeLogRecorder,
-				CloudProvider:        provider,
-				ClusterStateRegistry: clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder),
+			context := &context.AutoscalingContext{
+				AutoscalingOptions: context.AutoscalingOptions{},
+				ClientSet:          fakeClient,
+				Recorder:           fakeRecorder,
+				LogRecorder:        fakeLogRecorder,
+				CloudProvider:      provider,
 			}
 
+			clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder)
+			sd := NewScaleDown(context, clusterStateRegistry)
+
 			// attempt delete
-			err := deleteNode(context, n1, pods)
+			err := sd.deleteNode(n1, pods)
 
 			// verify
 			if scenario.expectedDeletion {
@@ -611,6 +614,49 @@ func TestDrainNode(t *testing.T) {
 	SetNodeReadyState(n1, true, time.Time{})
 
 	fakeClient.Fake.AddReactor("get", "pods", func(action core.Action) (bool, runtime.Object, error) {
+		return true, nil, errors.NewNotFound(apiv1.Resource("pod"), "whatever")
+	})
+	fakeClient.Fake.AddReactor("create", "pods", func(action core.Action) (bool, runtime.Object, error) {
+		createAction := action.(core.CreateAction)
+		if createAction == nil {
+			return false, nil, nil
+		}
+		eviction := createAction.GetObject().(*policyv1.Eviction)
+		if eviction == nil {
+			return false, nil, nil
+		}
+		deletedPods <- eviction.Name
+		return true, nil, nil
+	})
+	err := drainNode(n1, []*apiv1.Pod{p1, p2}, fakeClient, kube_util.CreateEventRecorder(fakeClient), 20, 5*time.Second, 0*time.Second)
+	assert.NoError(t, err)
+	deleted := make([]string, 0)
+	deleted = append(deleted, getStringFromChan(deletedPods))
+	deleted = append(deleted, getStringFromChan(deletedPods))
+	sort.Strings(deleted)
+	assert.Equal(t, p1.Name, deleted[0])
+	assert.Equal(t, p2.Name, deleted[1])
+}
+
+func TestDrainNodeWithRescheduled(t *testing.T) {
+	deletedPods := make(chan string, 10)
+	fakeClient := &fake.Clientset{}
+
+	p1 := BuildTestPod("p1", 100, 0)
+	p2 := BuildTestPod("p2", 300, 0)
+	p2Rescheduled := BuildTestPod("p2", 300, 0)
+	p2Rescheduled.Spec.NodeName = "n2"
+	n1 := BuildTestNode("n1", 1000, 1000)
+	SetNodeReadyState(n1, true, time.Time{})
+
+	fakeClient.Fake.AddReactor("get", "pods", func(action core.Action) (bool, runtime.Object, error) {
+		getAction := action.(core.GetAction)
+		if getAction == nil {
+			return false, nil, nil
+		}
+		if getAction.GetName() == "p2" {
+			return true, p2Rescheduled, nil
+		}
 		return true, nil, errors.NewNotFound(apiv1.Resource("pod"), "whatever")
 	})
 	fakeClient.Fake.AddReactor("create", "pods", func(action core.Action) (bool, runtime.Object, error) {
@@ -755,21 +801,21 @@ func TestScaleDown(t *testing.T) {
 
 	fakeRecorder := kube_util.CreateEventRecorder(fakeClient)
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false)
-	context := &AutoscalingContext{
-		AutoscalingOptions: AutoscalingOptions{
+	context := &context.AutoscalingContext{
+		AutoscalingOptions: context.AutoscalingOptions{
 			ScaleDownUtilizationThreshold: 0.5,
 			ScaleDownUnneededTime:         time.Minute,
 			MaxGracefulTerminationSec:     60,
 			ExpendablePodsPriorityCutoff:  10,
 		},
-		PredicateChecker:     simulator.NewTestPredicateChecker(),
-		CloudProvider:        provider,
-		ClientSet:            fakeClient,
-		Recorder:             fakeRecorder,
-		ClusterStateRegistry: clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder),
-		LogRecorder:          fakeLogRecorder,
+		PredicateChecker: simulator.NewTestPredicateChecker(),
+		CloudProvider:    provider,
+		ClientSet:        fakeClient,
+		Recorder:         fakeRecorder,
+		LogRecorder:      fakeLogRecorder,
 	}
-	scaleDown := NewScaleDown(context)
+	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder)
+	scaleDown := NewScaleDown(context, clusterStateRegistry)
 	scaleDown.UpdateUnneededNodes([]*apiv1.Node{n1, n2},
 		[]*apiv1.Node{n1, n2}, []*apiv1.Pod{p1, p2, p3}, time.Now().Add(-5*time.Minute), nil)
 	result, err := scaleDown.TryToScaleDown([]*apiv1.Node{n1, n2}, []*apiv1.Pod{p1, p2, p3}, nil, time.Now())
@@ -811,7 +857,7 @@ func assertSubset(t *testing.T, a []string, b []string) {
 	}
 }
 
-var defaultScaleDownOptions = AutoscalingOptions{
+var defaultScaleDownOptions = context.AutoscalingOptions{
 	ScaleDownUtilizationThreshold: 0.5,
 	ScaleDownUnneededTime:         time.Minute,
 	MaxGracefulTerminationSec:     60,
@@ -825,10 +871,10 @@ var defaultScaleDownOptions = AutoscalingOptions{
 func TestScaleDownEmptyMultipleNodeGroups(t *testing.T) {
 	config := &scaleTestConfig{
 		nodes: []nodeConfig{
-			{"n1_1", 1000, 1000, true, "ng1"},
-			{"n1_2", 1000, 1000, true, "ng1"},
-			{"n2_1", 1000, 1000, true, "ng2"},
-			{"n2_2", 1000, 1000, true, "ng2"},
+			{"n1_1", 1000, 1000, 0, true, "ng1"},
+			{"n1_2", 1000, 1000, 0, true, "ng1"},
+			{"n2_1", 1000, 1000, 0, true, "ng2"},
+			{"n2_2", 1000, 1000, 0, true, "ng2"},
 		},
 		options:            defaultScaleDownOptions,
 		expectedScaleDowns: []string{"n1_1", "n2_1"},
@@ -839,8 +885,8 @@ func TestScaleDownEmptyMultipleNodeGroups(t *testing.T) {
 func TestScaleDownEmptySingleNodeGroup(t *testing.T) {
 	config := &scaleTestConfig{
 		nodes: []nodeConfig{
-			{"n1", 1000, 1000, true, "ng1"},
-			{"n2", 1000, 1000, true, "ng1"},
+			{"n1", 1000, 1000, 0, true, "ng1"},
+			{"n2", 1000, 1000, 0, true, "ng1"},
 		},
 		options:            defaultScaleDownOptions,
 		expectedScaleDowns: []string{"n1"},
@@ -853,8 +899,8 @@ func TestScaleDownEmptyMinCoresLimitHit(t *testing.T) {
 	options.MinCoresTotal = 2
 	config := &scaleTestConfig{
 		nodes: []nodeConfig{
-			{"n1", 2000, 1000, true, "ng1"},
-			{"n2", 1000, 1000, true, "ng1"},
+			{"n1", 2000, 1000, 0, true, "ng1"},
+			{"n2", 1000, 1000, 0, true, "ng1"},
 		},
 		options:            options,
 		expectedScaleDowns: []string{"n2"},
@@ -867,10 +913,10 @@ func TestScaleDownEmptyMinMemoryLimitHit(t *testing.T) {
 	options.MinMemoryTotal = 4000
 	config := &scaleTestConfig{
 		nodes: []nodeConfig{
-			{"n1", 2000, 1000 * MB, true, "ng1"},
-			{"n2", 1000, 1000 * MB, true, "ng1"},
-			{"n3", 1000, 1000 * MB, true, "ng1"},
-			{"n4", 1000, 3000 * MB, true, "ng1"},
+			{"n1", 2000, 1000 * MB, 0, true, "ng1"},
+			{"n2", 1000, 1000 * MB, 0, true, "ng1"},
+			{"n3", 1000, 1000 * MB, 0, true, "ng1"},
+			{"n4", 1000, 3000 * MB, 0, true, "ng1"},
 		},
 		options:            options,
 		expectedScaleDowns: []string{"n1", "n2"},
@@ -882,7 +928,7 @@ func TestScaleDownEmptyMinGroupSizeLimitHit(t *testing.T) {
 	options := defaultScaleDownOptions
 	config := &scaleTestConfig{
 		nodes: []nodeConfig{
-			{"n1", 2000, 1000, true, "ng1"},
+			{"n1", 2000, 1000, 0, true, "ng1"},
 		},
 		options:            options,
 		expectedScaleDowns: []string{},
@@ -947,16 +993,16 @@ func simpleScaleDownEmpty(t *testing.T, config *scaleTestConfig) {
 
 	fakeRecorder := kube_util.CreateEventRecorder(fakeClient)
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false)
-	context := &AutoscalingContext{
-		AutoscalingOptions:   config.options,
-		PredicateChecker:     simulator.NewTestPredicateChecker(),
-		CloudProvider:        provider,
-		ClientSet:            fakeClient,
-		Recorder:             fakeRecorder,
-		ClusterStateRegistry: clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder),
-		LogRecorder:          fakeLogRecorder,
+	context := &context.AutoscalingContext{
+		AutoscalingOptions: config.options,
+		PredicateChecker:   simulator.NewTestPredicateChecker(),
+		CloudProvider:      provider,
+		ClientSet:          fakeClient,
+		Recorder:           fakeRecorder,
+		LogRecorder:        fakeLogRecorder,
 	}
-	scaleDown := NewScaleDown(context)
+	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder)
+	scaleDown := NewScaleDown(context, clusterStateRegistry)
 	scaleDown.UpdateUnneededNodes(nodes,
 		nodes, []*apiv1.Pod{}, time.Now().Add(-5*time.Minute), nil)
 	result, err := scaleDown.TryToScaleDown(nodes, []*apiv1.Pod{}, nil, time.Now())
@@ -1024,23 +1070,23 @@ func TestNoScaleDownUnready(t *testing.T) {
 
 	fakeRecorder := kube_util.CreateEventRecorder(fakeClient)
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false)
-	context := &AutoscalingContext{
-		AutoscalingOptions: AutoscalingOptions{
+	context := &context.AutoscalingContext{
+		AutoscalingOptions: context.AutoscalingOptions{
 			ScaleDownUtilizationThreshold: 0.5,
 			ScaleDownUnneededTime:         time.Minute,
 			ScaleDownUnreadyTime:          time.Hour,
 			MaxGracefulTerminationSec:     60,
 		},
-		PredicateChecker:     simulator.NewTestPredicateChecker(),
-		CloudProvider:        provider,
-		ClientSet:            fakeClient,
-		Recorder:             fakeRecorder,
-		ClusterStateRegistry: clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder),
-		LogRecorder:          fakeLogRecorder,
+		PredicateChecker: simulator.NewTestPredicateChecker(),
+		CloudProvider:    provider,
+		ClientSet:        fakeClient,
+		Recorder:         fakeRecorder,
+		LogRecorder:      fakeLogRecorder,
 	}
 
 	// N1 is unready so it requires a bigger unneeded time.
-	scaleDown := NewScaleDown(context)
+	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder)
+	scaleDown := NewScaleDown(context, clusterStateRegistry)
 	scaleDown.UpdateUnneededNodes([]*apiv1.Node{n1, n2},
 		[]*apiv1.Node{n1, n2}, []*apiv1.Pod{p2}, time.Now().Add(-5*time.Minute), nil)
 	result, err := scaleDown.TryToScaleDown([]*apiv1.Node{n1, n2}, []*apiv1.Pod{p2}, nil, time.Now())
@@ -1062,7 +1108,7 @@ func TestNoScaleDownUnready(t *testing.T) {
 
 	// N1 has been unready for 2 hours, ok to delete.
 	context.CloudProvider = provider
-	scaleDown = NewScaleDown(context)
+	scaleDown = NewScaleDown(context, clusterStateRegistry)
 	scaleDown.UpdateUnneededNodes([]*apiv1.Node{n1, n2}, []*apiv1.Node{n1, n2},
 		[]*apiv1.Pod{p2}, time.Now().Add(-2*time.Hour), nil)
 	result, err = scaleDown.TryToScaleDown([]*apiv1.Node{n1, n2}, []*apiv1.Pod{p2}, nil, time.Now())
@@ -1132,21 +1178,21 @@ func TestScaleDownNoMove(t *testing.T) {
 
 	fakeRecorder := kube_util.CreateEventRecorder(fakeClient)
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false)
-	context := &AutoscalingContext{
-		AutoscalingOptions: AutoscalingOptions{
+	context := &context.AutoscalingContext{
+		AutoscalingOptions: context.AutoscalingOptions{
 			ScaleDownUtilizationThreshold: 0.5,
 			ScaleDownUnneededTime:         time.Minute,
 			ScaleDownUnreadyTime:          time.Hour,
 			MaxGracefulTerminationSec:     60,
 		},
-		PredicateChecker:     simulator.NewTestPredicateChecker(),
-		CloudProvider:        provider,
-		ClientSet:            fakeClient,
-		Recorder:             fakeRecorder,
-		ClusterStateRegistry: clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder),
-		LogRecorder:          fakeLogRecorder,
+		PredicateChecker: simulator.NewTestPredicateChecker(),
+		CloudProvider:    provider,
+		ClientSet:        fakeClient,
+		Recorder:         fakeRecorder,
+		LogRecorder:      fakeLogRecorder,
 	}
-	scaleDown := NewScaleDown(context)
+	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder)
+	scaleDown := NewScaleDown(context, clusterStateRegistry)
 	scaleDown.UpdateUnneededNodes([]*apiv1.Node{n1, n2}, []*apiv1.Node{n1, n2},
 		[]*apiv1.Pod{p1, p2}, time.Now().Add(5*time.Minute), nil)
 	result, err := scaleDown.TryToScaleDown([]*apiv1.Node{n1, n2}, []*apiv1.Pod{p1, p2}, nil, time.Now())
@@ -1235,13 +1281,13 @@ func TestCleanUpNodeAutoprovisionedGroups(t *testing.T) {
 
 func TestCalculateCoresAndMemoryTotal(t *testing.T) {
 	nodeConfigs := []nodeConfig{
-		{"n1", 2000, 7500 * MB, true, "ng1"},
-		{"n2", 2000, 7500 * MB, true, "ng1"},
-		{"n3", 2000, 7500 * MB, true, "ng1"},
-		{"n4", 12000, 8000 * MB, true, "ng1"},
-		{"n5", 16000, 7500 * MB, true, "ng1"},
-		{"n6", 8000, 6000 * MB, true, "ng1"},
-		{"n7", 6000, 16000 * MB, true, "ng1"},
+		{"n1", 2000, 7500 * MB, 0, true, "ng1"},
+		{"n2", 2000, 7500 * MB, 0, true, "ng1"},
+		{"n3", 2000, 7500 * MB, 0, true, "ng1"},
+		{"n4", 12000, 8000 * MB, 0, true, "ng1"},
+		{"n5", 16000, 7500 * MB, 0, true, "ng1"},
+		{"n6", 8000, 6000 * MB, 0, true, "ng1"},
+		{"n7", 6000, 16000 * MB, 0, true, "ng1"},
 	}
 	nodes := make([]*apiv1.Node, len(nodeConfigs))
 	for i, n := range nodeConfigs {
@@ -1266,13 +1312,13 @@ func TestCalculateCoresAndMemoryTotal(t *testing.T) {
 
 func TestFilterOutMasters(t *testing.T) {
 	nodeConfigs := []nodeConfig{
-		{"n1", 2000, 4000, false, "ng1"},
-		{"n2", 2000, 4000, true, "ng2"},
-		{"n3", 2000, 8000, true, ""}, // real master
-		{"n4", 1000, 2000, true, "ng3"},
-		{"n5", 1000, 2000, true, "ng3"},
-		{"n6", 2000, 8000, true, ""}, // same machine type, no node group, no api server
-		{"n7", 2000, 8000, true, ""}, // real master
+		{"n1", 2000, 4000, 0, false, "ng1"},
+		{"n2", 2000, 4000, 0, true, "ng2"},
+		{"n3", 2000, 8000, 0, true, ""}, // real master
+		{"n4", 1000, 2000, 0, true, "ng3"},
+		{"n5", 1000, 2000, 0, true, "ng3"},
+		{"n6", 2000, 8000, 0, true, ""}, // same machine type, no node group, no api server
+		{"n7", 2000, 8000, 0, true, ""}, // real master
 	}
 	nodes := make([]*apiv1.Node, len(nodeConfigs))
 	for i, n := range nodeConfigs {

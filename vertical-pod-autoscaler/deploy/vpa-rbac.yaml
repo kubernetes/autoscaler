@@ -20,6 +20,7 @@ rules:
   - ""
   resources:
   - pods
+  - nodes
   verbs:
   - get
   - list
@@ -49,6 +50,7 @@ rules:
   - watch
   - create
   - patch
+  - delete
 - apiGroups:
   - ""
   resources:
@@ -85,7 +87,7 @@ roleRef:
   name: system:metrics-reader
 subjects:
 - kind: ServiceAccount
-  name: recommender
+  name: vpa-recommender
   namespace: kube-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -98,10 +100,10 @@ roleRef:
   name: system:vpa-actor
 subjects:
 - kind: ServiceAccount
-  name: recommender
+  name: vpa-recommender
   namespace: kube-system
 - kind: ServiceAccount
-  name: updater
+  name: vpa-updater
   namespace: kube-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -114,7 +116,7 @@ roleRef:
   name: system:vpa-checkpoint-actor
 subjects:
 - kind: ServiceAccount
-  name: recommender
+  name: vpa-recommender
   namespace: kube-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -127,13 +129,13 @@ roleRef:
   name: system:evictioner
 subjects:
 - kind: ServiceAccount
-  name: updater
+  name: vpa-updater
   namespace: kube-system
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: admission-controller
+  name: vpa-admission-controller
   namespace: kube-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -146,6 +148,7 @@ rules:
   resources:
   - pods
   - configmaps
+  - nodes
   verbs:
   - get
   - list
@@ -178,5 +181,5 @@ roleRef:
   name: system:admission-controller
 subjects:
 - kind: ServiceAccount
-  name: admission-controller
+  name: vpa-admission-controller
   namespace: kube-system

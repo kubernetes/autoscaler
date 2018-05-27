@@ -18,6 +18,7 @@ package model
 
 import (
 	"fmt"
+	"math"
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -25,50 +26,58 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/util"
 )
 
-// ContainerMergePolicy contorls how MergeContainerState cobines samples.
-type ContainerMergePolicy bool
+// ContainerNameToAggregateStateMap maps a container name to AggregateContainerState
+// that aggregates state of containers with that name.
+type ContainerNameToAggregateStateMap map[string]*AggregateContainerState
 
 const (
 	// SupportedCheckpointVersion is the tag of the supported version of serialized checkpoints.
+	// Version id should be incremented on every non incompatible change, i.e. if the new
+	// version of the recommender binary can't initialize from the old checkpoint format or the the
+	// previous version of the recommender binary can't initialize from the new checkpoint format.
 	SupportedCheckpointVersion = "v1"
-
-	// MergeForRecommendation means that all samples are combined during MergeContainerState call.
-	MergeForRecommendation ContainerMergePolicy = true
-	// MergeForCheckpoint controls that  MergeContainerState call will omit last peak memory
-	// sample if it would result in positive feedback loop during crash loop.
-	MergeForCheckpoint ContainerMergePolicy = false
 )
+
+// ContainerStateAggregator is an interface for objects that consume and
+// aggregate container usage samples.
+type ContainerStateAggregator interface {
+	// AddSample aggregates a single usage sample.
+	AddSample(sample *ContainerUsageSample)
+	// SubtractSample removes a single usage sample. The subtracted sample
+	// should be equal to some sample that was aggregated with AddSample()
+	// in the past.
+	SubtractSample(sample *ContainerUsageSample)
+}
 
 // AggregateContainerState holds input signals aggregated from a set of containers.
 // It can be used as an input to compute the recommendation.
+// The CPU and memory distributions use decaying histograms by default
+// (see NewAggregateContainerState()).
+// Implements ContainerStateAggregator interface.
 type AggregateContainerState struct {
-	AggregateCPUUsage    util.Histogram
+	// AggregateCPUUsage is a distribution of all CPU samples.
+	AggregateCPUUsage util.Histogram
+	// AggregateMemoryPeaks is a distribution of memory peaks from all containers:
+	// each container should add one peak per memory aggregation interval (e.g. once every 24h).
 	AggregateMemoryPeaks util.Histogram
-	FirstSampleStart     time.Time
-	LastSampleStart      time.Time
-	TotalSamplesCount    int
+	// Note: first/last sample timestamps as well as the sample count are based only on CPU samples.
+	FirstSampleStart  time.Time
+	LastSampleStart   time.Time
+	TotalSamplesCount int
 }
 
-// MergeContainerState merges the state of an individual container into AggregateContainerState.
-func (a *AggregateContainerState) MergeContainerState(container *ContainerState,
-	mergePolicy ContainerMergePolicy, now time.Time) {
-	a.AggregateCPUUsage.Merge(container.CPUUsage)
-	memoryPeaks := container.MemoryUsagePeaks.Contents()
-	peakTime := container.WindowEnd
-	for i := len(memoryPeaks) - 1; i >= 0; i-- {
-		if mergePolicy == MergeForRecommendation || peakTime.Before(now) {
-			a.AggregateMemoryPeaks.AddSample(float64(memoryPeaks[i]), 1.0, peakTime)
-		}
-		peakTime = peakTime.Add(-MemoryAggregationInterval)
+// MergeContainerState merges two AggregateContainerStates.
+func (a *AggregateContainerState) MergeContainerState(other *AggregateContainerState) {
+	a.AggregateCPUUsage.Merge(other.AggregateCPUUsage)
+	a.AggregateMemoryPeaks.Merge(other.AggregateMemoryPeaks)
+
+	if !other.FirstSampleStart.IsZero() && other.FirstSampleStart.Before(a.FirstSampleStart) {
+		a.FirstSampleStart = other.FirstSampleStart
 	}
-	// Note: we look at CPU samples to calculate the total lifespan and sample count.
-	if a.FirstSampleStart.IsZero() || (!container.FirstCPUSampleStart.IsZero() && container.FirstCPUSampleStart.Before(a.FirstSampleStart)) {
-		a.FirstSampleStart = container.FirstCPUSampleStart
+	if other.LastSampleStart.After(a.LastSampleStart) {
+		a.LastSampleStart = other.LastSampleStart
 	}
-	if container.LastCPUSampleStart.After(a.LastSampleStart) {
-		a.LastSampleStart = container.LastCPUSampleStart
-	}
-	a.TotalSamplesCount += container.CPUSamplesCount
+	a.TotalSamplesCount += other.TotalSamplesCount
 }
 
 // NewAggregateContainerState returns a new, empty AggregateContainerState.
@@ -77,6 +86,50 @@ func NewAggregateContainerState() *AggregateContainerState {
 		AggregateCPUUsage:    util.NewDecayingHistogram(CPUHistogramOptions, CPUHistogramDecayHalfLife),
 		AggregateMemoryPeaks: util.NewDecayingHistogram(MemoryHistogramOptions, MemoryHistogramDecayHalfLife),
 	}
+}
+
+// AddSample aggregates a single usage sample.
+func (a *AggregateContainerState) AddSample(sample *ContainerUsageSample) {
+	switch sample.Resource {
+	case ResourceCPU:
+		a.addCPUSample(sample)
+	case ResourceMemory:
+		a.AggregateMemoryPeaks.AddSample(BytesFromMemoryAmount(sample.Usage), 1.0, sample.MeasureStart)
+	default:
+		panic(fmt.Sprintf("AddSample doesn't support resource '%s'", sample.Resource))
+	}
+}
+
+// SubtractSample removes a single usage sample from an aggregation.
+// The subtracted sample should be equal to some sample that was aggregated with
+// AddSample() in the past.
+// Only memory samples can be subtracted at the moment. Support for CPU could be
+// added if necessary.
+func (a *AggregateContainerState) SubtractSample(sample *ContainerUsageSample) {
+	switch sample.Resource {
+	case ResourceMemory:
+		a.AggregateMemoryPeaks.SubtractSample(BytesFromMemoryAmount(sample.Usage), 1.0, sample.MeasureStart)
+	default:
+		panic(fmt.Sprintf("SubtractSample doesn't support resource '%s'", sample.Resource))
+	}
+}
+
+func (a *AggregateContainerState) addCPUSample(sample *ContainerUsageSample) {
+	cpuUsageCores := CoresFromCPUAmount(sample.Usage)
+	cpuRequestCores := CoresFromCPUAmount(sample.Request)
+	// Samples are added with the weight equal to the current request. This means that
+	// whenever the request is increased, the history accumulated so far effectively decays,
+	// which helps react quickly to CPU starvation.
+	minSampleWeight := 0.1
+	a.AggregateCPUUsage.AddSample(
+		cpuUsageCores, math.Max(cpuRequestCores, minSampleWeight), sample.MeasureStart)
+	if sample.MeasureStart.After(a.LastSampleStart) {
+		a.LastSampleStart = sample.MeasureStart
+	}
+	if a.FirstSampleStart.IsZero() || sample.MeasureStart.Before(a.FirstSampleStart) {
+		a.FirstSampleStart = sample.MeasureStart
+	}
+	a.TotalSamplesCount++
 }
 
 // SaveToCheckpoint serializes AggregateContainerState as VerticalPodAutoscalerCheckpointStatus.
@@ -104,7 +157,7 @@ func (a *AggregateContainerState) SaveToCheckpoint() (*vpa_types.VerticalPodAuto
 // into the AggregateContainerState.
 func (a *AggregateContainerState) LoadFromCheckpoint(checkpoint *vpa_types.VerticalPodAutoscalerCheckpointStatus) error {
 	if checkpoint.Version != SupportedCheckpointVersion {
-		return fmt.Errorf("Unssuported checkpoint version %s", checkpoint.Version)
+		return fmt.Errorf("Unsuported checkpoint version %s", checkpoint.Version)
 	}
 	a.TotalSamplesCount = checkpoint.TotalSamplesCount
 	a.FirstSampleStart = checkpoint.FirstSampleStart.Time
@@ -120,33 +173,19 @@ func (a *AggregateContainerState) LoadFromCheckpoint(checkpoint *vpa_types.Verti
 	return nil
 }
 
-// DeepCopy returns a copy of the AggregateContainerState
-func (a *AggregateContainerState) DeepCopy() *AggregateContainerState {
-	copy := NewAggregateContainerState()
-	copy.TotalSamplesCount = a.TotalSamplesCount
-	copy.FirstSampleStart = a.FirstSampleStart
-	copy.LastSampleStart = a.FirstSampleStart
-	copy.AggregateCPUUsage.Merge(a.AggregateCPUUsage)
-	copy.AggregateMemoryPeaks.Merge(a.AggregateMemoryPeaks)
-	return copy
-}
-
-// BuildAggregateContainerStateMap takes a set of pods and groups their containers by name.
-// If checkpoint data is available it is incorporated into AggregateContainerState
-func BuildAggregateContainerStateMap(vpa *Vpa, mergePolicy ContainerMergePolicy, now time.Time) map[string]*AggregateContainerState {
-	aggregateContainerStateMap := make(map[string]*AggregateContainerState)
-	for k, v := range vpa.ContainerCheckpoints {
-		aggregateContainerStateMap[k] = v.DeepCopy()
-	}
-	for _, pod := range vpa.Pods {
-		for containerName, container := range pod.Containers {
-			aggregateContainerState, isInitialized := aggregateContainerStateMap[containerName]
-			if !isInitialized {
-				aggregateContainerState = NewAggregateContainerState()
-				aggregateContainerStateMap[containerName] = aggregateContainerState
-			}
-			aggregateContainerState.MergeContainerState(container, mergePolicy, now)
+// AggregateStateByContainerName takes a set of AggregateContainerStates and merge them
+// grouping by the container name. The result is a map from the container name to the aggregation
+// from all input containers with the given name.
+func AggregateStateByContainerName(aggregateContainerStateMap aggregateContainerStatesMap) ContainerNameToAggregateStateMap {
+	containerNameToAggregateStateMap := make(ContainerNameToAggregateStateMap)
+	for aggregationKey, aggregation := range aggregateContainerStateMap {
+		containerName := aggregationKey.ContainerName()
+		aggregateContainerState, isInitialized := containerNameToAggregateStateMap[containerName]
+		if !isInitialized {
+			aggregateContainerState = NewAggregateContainerState()
+			containerNameToAggregateStateMap[containerName] = aggregateContainerState
 		}
+		aggregateContainerState.MergeContainerState(aggregation)
 	}
-	return aggregateContainerStateMap
+	return containerNameToAggregateStateMap
 }

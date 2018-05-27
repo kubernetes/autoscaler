@@ -27,8 +27,16 @@ import (
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/poc.autoscaling.k8s.io/v1alpha1"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/common"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
+)
+
+const (
+	// MemoryLimitBumpUpRatio specifies how much memory will be available above memory request.
+	// Limit is set to trigger OOMs.
+	MemoryLimitBumpUpRatio float64 = 1.2
+	// MemoryLimitMinBumpUp specifies minimal amount of memory above memory request.
+	// Limit is set to trigger OOMs.
+	MemoryLimitMinBumpUp float64 = 100 * 1024 * 1024 // 100MB
 )
 
 // ContainerResources holds request and limit resources for container
@@ -42,26 +50,28 @@ func newContainerResources() ContainerResources {
 
 // RecommendationProvider gets current recommendation and limits for the given pod.
 type RecommendationProvider interface {
-	GetContainersResourcesForPod(pod *v1.Pod) ([]ContainerResources, error)
+	GetContainersResourcesForPod(pod *v1.Pod) ([]ContainerResources, string, error)
 }
 
 type recommendationProvider struct {
-	vpaLister vpa_lister.VerticalPodAutoscalerLister
+	vpaLister               vpa_lister.VerticalPodAutoscalerLister
+	recommendationProcessor vpa_api_util.RecommendationProcessor
 }
 
 // NewRecommendationProvider constructs the recommendation provider that list VPAs and can be used to determine recommendations for pods.
-func NewRecommendationProvider(vpaLister vpa_lister.VerticalPodAutoscalerLister) *recommendationProvider {
-	return &recommendationProvider{vpaLister: vpaLister}
+func NewRecommendationProvider(vpaLister vpa_lister.VerticalPodAutoscalerLister, recommendationProcessor vpa_api_util.RecommendationProcessor) *recommendationProvider {
+	return &recommendationProvider{vpaLister: vpaLister,
+		recommendationProcessor: recommendationProcessor}
 }
 
+// getMemoryLimit returns a limit that is proportionally (with min step) higher than the request. Limit is set to trigger OOMs.
 func getMemoryLimit(resources v1.ResourceList) *resource.Quantity {
 	memory, found := resources[v1.ResourceMemory]
 	if !found {
 		return nil
 	}
 	limit := float64(memory.Value())
-	limit = math.Max(limit+common.OOMMinBumpUp,
-		limit*common.OOMBumpUpRatio)
+	limit = math.Max(limit+MemoryLimitMinBumpUp, limit*MemoryLimitBumpUpRatio)
 	return resource.NewQuantity(int64(limit), memory.Format)
 }
 
@@ -78,9 +88,9 @@ func getContainersResources(pod *v1.Pod, podRecommendation vpa_types.Recommended
 			}
 		}
 
-		recommendation, err := vpa_api_util.GetCappedRecommendationForContainer(container, &podRecommendation, &policy)
-		if err != nil {
-			glog.V(2).Infof("%v", err)
+		recommendation := vpa_api_util.GetRecommendationForContainer(container.Name, &podRecommendation)
+		if recommendation == nil {
+			glog.V(2).Infof("no matching recommendation found for container %s", container.Name)
 			setLimit(pod.Spec.Containers[i].Resources.Requests)
 			continue
 		}
@@ -107,14 +117,20 @@ func (p *recommendationProvider) getMatchingVPA(pod *v1.Pod) *vpa_types.Vertical
 	return vpa_api_util.GetControllingVPAForPod(pod, onConfigs)
 }
 
-// GetContainersResourcesForPod returns recommended request and limits for a given pod. The returned slice corresponds 1-1 to containers in the Pod.
-func (p *recommendationProvider) GetContainersResourcesForPod(pod *v1.Pod) ([]ContainerResources, error) {
+// GetContainersResourcesForPod returns recommended request and limits for a given pod and name of controlling VPA.
+// The returned slice corresponds 1-1 to containers in the Pod.
+func (p *recommendationProvider) GetContainersResourcesForPod(pod *v1.Pod) ([]ContainerResources, string, error) {
 	glog.V(2).Infof("updating requirements for pod %s.", pod.Name)
 	vpaConfig := p.getMatchingVPA(pod)
 	if vpaConfig == nil {
 		glog.V(2).Infof("no matching VPA found for pod %s", pod.Name)
-		return nil, nil
+		return nil, "", nil
 	}
-	containerResources := getContainersResources(pod, vpaConfig.Status.Recommendation, vpaConfig.Spec.ResourcePolicy)
-	return containerResources, nil
+	recommendedPodResources, err := p.recommendationProcessor.Apply(&vpaConfig.Status.Recommendation, &vpaConfig.Spec.ResourcePolicy, pod)
+	if err != nil {
+		glog.V(2).Infof("cannot process recommendation for pod %s", pod.Name)
+		return nil, "", err
+	}
+	containerResources := getContainersResources(pod, *recommendedPodResources, vpaConfig.Spec.ResourcePolicy)
+	return containerResources, vpaConfig.Name, nil
 }

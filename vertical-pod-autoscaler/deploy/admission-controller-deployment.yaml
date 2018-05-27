@@ -1,19 +1,19 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: admission-controller
+  name: vpa-admission-controller
   namespace: kube-system
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        app: admission-controller
+        app: vpa-admission-controller
     spec:
-      serviceAccountName: admission-controller
+      serviceAccountName: vpa-admission-controller
       containers:
       - name: admission-controller
-        image: gcr.io/kubernetes-develop/admission-controller:0.0.1
+        image: k8s.gcr.io/vpa-admission-controller:v0.1.0
         imagePullPolicy: Always
         volumeMounts:
           - name: tls-certs
@@ -21,11 +21,11 @@ spec:
             readOnly: true
         resources:
           limits:
-            cpu: 500m
-            memory: 2000Mi
-          requests:
-            cpu: 250m
+            cpu: 200m
             memory: 500Mi
+          requests:
+            cpu: 50m
+            memory: 200Mi
         ports:
         - containerPort: 8000
       volumes:
@@ -43,4 +43,4 @@ spec:
     - port: 443
       targetPort: 8000
   selector:
-    app: admission-controller
+    app: vpa-admission-controller

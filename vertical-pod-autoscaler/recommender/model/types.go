@@ -106,6 +106,14 @@ func RoundResourceAmount(amount, unit ResourceAmount) ResourceAmount {
 	return ResourceAmount(int64(amount) - int64(amount)%int64(unit))
 }
 
+// ResourceAmountMax returns the larger of two resource amounts.
+func ResourceAmountMax(amount1, amount2 ResourceAmount) ResourceAmount {
+	if amount1 > amount2 {
+		return amount1
+	}
+	return amount2
+}
+
 func resourceAmountFromFloat(amount float64) ResourceAmount {
 	if amount < 0 {
 		return ResourceAmount(0)

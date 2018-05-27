@@ -18,11 +18,14 @@ package model
 
 import (
 	"fmt"
-	"math"
 	"time"
+)
 
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/common"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/util"
+const (
+	// OOMBumpUpRatio specifies how much memory will be added after observing OOM.
+	OOMBumpUpRatio float64 = 1.2
+	// OOMMinBumpUp specifies minimal increase of memory after observing OOM.
+	OOMMinBumpUp float64 = 100 * 1024 * 1024 // 100MB
 )
 
 // ContainerUsageSample is a measure of resource usage of a container over some
@@ -32,51 +35,41 @@ type ContainerUsageSample struct {
 	MeasureStart time.Time
 	// Average CPU usage in cores or memory usage in bytes.
 	Usage ResourceAmount
+	// CPU or memory request at the time of measurment.
+	Request ResourceAmount
 	// Which resource is this sample for.
 	Resource ResourceName
 }
 
 // ContainerState stores information about a single container instance.
+// Each ContainerState has a pointer to the aggregation that is used for
+// aggregating its usage samples.
 // It holds the recent history of CPU and memory utilization.
-// * CPU is stored in form of a distribution (histogram).
-//   Currently we're using fixed weight samples in the CPU histogram (i.e. old
-//   and fresh samples are equally important). Old samples are never deleted.
-//   TODO: Add exponential decaying of weights over time to address this.
-// * Memory is stored for the period of length MemoryAggregationWindowLength in
-//   the form of usage peaks, one value per MemoryAggregationInterval.
-//   For example if window legth is one week and aggregation interval is one day
-//   it will store 7 peaks, one per day, for the last week.
 //   Note: samples are added to intervals based on their start timestamps.
 type ContainerState struct {
-	// Distribution of CPU usage. The measurement unit is 1 CPU core.
-	CPUUsage util.Histogram
+	// Current request.
+	Request Resources
 	// Start of the latest CPU usage sample that was aggregated.
 	LastCPUSampleStart time.Time
-	// Start of the first CPU usage sample that was aggregated.
-	FirstCPUSampleStart time.Time
-	// Number of CPU samples that were aggregated.
-	CPUSamplesCount int
-
-	// Memory peaks stored in the intervals belonging to the aggregation window
-	// (one value per interval). The measurement unit is a byte.
-	MemoryUsagePeaks util.FloatSlidingWindow
-	// End time of the most recent interval covered by the aggregation window.
+	// Max memory usage observed in the current aggregation interval.
+	MemoryPeak ResourceAmount
+	// End time of the current memory aggregation interval (not inclusive).
 	WindowEnd time.Time
 	// Start of the latest memory usage sample that was aggregated.
 	lastMemorySampleStart time.Time
+	// Aggregation to add usage samples to.
+	aggregator ContainerStateAggregator
 }
 
-// NewContainerState returns a new, empty ContainerState.
-func NewContainerState() *ContainerState {
+// NewContainerState returns a new ContainerState.
+func NewContainerState(request Resources, aggregator ContainerStateAggregator) *ContainerState {
 	return &ContainerState{
-		CPUUsage:            util.NewDecayingHistogram(CPUHistogramOptions, CPUHistogramDecayHalfLife),
-		LastCPUSampleStart:  time.Time{},
-		FirstCPUSampleStart: time.Time{},
-		CPUSamplesCount:     0,
-		MemoryUsagePeaks: util.NewFloatSlidingWindow(
-			int(MemoryAggregationWindowLength / MemoryAggregationInterval)),
+		Request:               request,
+		LastCPUSampleStart:    time.Time{},
 		WindowEnd:             time.Time{},
-		lastMemorySampleStart: time.Time{}}
+		lastMemorySampleStart: time.Time{},
+		aggregator:            aggregator,
+	}
 }
 
 func (sample *ContainerUsageSample) isValid(expectedResource ResourceName) bool {
@@ -85,16 +78,11 @@ func (sample *ContainerUsageSample) isValid(expectedResource ResourceName) bool 
 
 func (container *ContainerState) addCPUSample(sample *ContainerUsageSample) bool {
 	// Order should not matter for the histogram, other than deduplication.
-	// TODO: Timestamp should be used to properly weigh the samples.
 	if !sample.isValid(ResourceCPU) || !sample.MeasureStart.After(container.LastCPUSampleStart) {
 		return false // Discard invalid, duplicate or out-of-order samples.
 	}
-	container.CPUUsage.AddSample(CoresFromCPUAmount(sample.Usage), 1.0, sample.MeasureStart)
+	container.aggregator.AddSample(sample)
 	container.LastCPUSampleStart = sample.MeasureStart
-	if container.FirstCPUSampleStart.IsZero() {
-		container.FirstCPUSampleStart = sample.MeasureStart
-	}
-	container.CPUSamplesCount++
 	return true
 }
 
@@ -103,50 +91,61 @@ func (container *ContainerState) addMemorySample(sample *ContainerUsageSample) b
 	if !sample.isValid(ResourceMemory) || ts.Before(container.lastMemorySampleStart) {
 		return false // Discard invalid or outdated samples.
 	}
-	if !ts.Before(container.WindowEnd.Add(MemoryAggregationWindowLength)) {
-		// The gap between this sample and the previous interval is so
-		// large that the whole sliding window gets reset.
-		// This also happens on the first memory usage sample.
-		container.MemoryUsagePeaks.Clear()
-		container.WindowEnd = ts.Add(MemoryAggregationInterval)
-	} else {
-		for !ts.Before(container.WindowEnd) {
-			// Shift the memory aggregation window to the next interval.
-			container.MemoryUsagePeaks.Push(0.0)
-			container.WindowEnd =
-				container.WindowEnd.Add(MemoryAggregationInterval)
-		}
-	}
-	// Update the memory peak for the current interval.
-	if container.MemoryUsagePeaks.Head() == nil {
-		// Window is empty.
-		container.MemoryUsagePeaks.Push(0.0)
-	}
-	*container.MemoryUsagePeaks.Head() = math.Max(
-		*container.MemoryUsagePeaks.Head(), BytesFromMemoryAmount(sample.Usage))
 	container.lastMemorySampleStart = ts
+	if container.WindowEnd.IsZero() { // This is the first sample.
+		container.WindowEnd = ts
+	}
+
+	// Each container aggregates one peak per aggregation interval. If the timestamp of the
+	// current sample is earlier than the end of the current interval (WindowEnd) and is larger
+	// than the current peak, the peak is updated in the aggregation by subtracting the old value
+	// and adding the new value.
+	addNewPeak := false
+	if ts.Before(container.WindowEnd) {
+		if container.MemoryPeak != 0 && sample.Usage > container.MemoryPeak {
+			// Remove the old peak.
+			oldPeak := ContainerUsageSample{
+				MeasureStart: container.WindowEnd,
+				Usage:        container.MemoryPeak,
+				Request:      sample.Request,
+				Resource:     ResourceMemory,
+			}
+			container.aggregator.SubtractSample(&oldPeak)
+			addNewPeak = true
+		}
+	} else {
+		// Shift the memory aggregation window to the next interval.
+		shift := truncate(ts.Sub(container.WindowEnd), MemoryAggregationInterval) + MemoryAggregationInterval
+		container.WindowEnd = container.WindowEnd.Add(shift)
+		addNewPeak = true
+	}
+	if addNewPeak {
+		newPeak := ContainerUsageSample{
+			MeasureStart: container.WindowEnd,
+			Usage:        sample.Usage,
+			Request:      sample.Request,
+			Resource:     ResourceMemory,
+		}
+		container.aggregator.AddSample(&newPeak)
+		container.MemoryPeak = sample.Usage
+	}
 	return true
 }
 
-// RecordOOM adds info regarding OOM event in the model as an artifical memory sample.
+// RecordOOM adds info regarding OOM event in the model as an artificial memory sample.
 func (container *ContainerState) RecordOOM(timestamp time.Time, requestedMemory ResourceAmount) error {
-	resourceAmount := float64(requestedMemory)
 	// Discard old OOM
 	if timestamp.Before(container.WindowEnd.Add(-1 * MemoryAggregationInterval)) {
 		return fmt.Errorf("OOM event will be discarded - it is too old (%v)", timestamp)
 	}
-	// If we have recent memory sample max it with request.
-	if timestamp.Before(container.WindowEnd.Add(MemoryAggregationInterval)) &&
-		container.MemoryUsagePeaks.Head() != nil {
-		resourceAmount = math.Max(resourceAmount, *container.MemoryUsagePeaks.Head())
-	}
-
-	resourceAmount = math.Max(resourceAmount+common.OOMMinBumpUp,
-		resourceAmount*common.OOMBumpUpRatio)
+	// Get max of the request and the recent memory peak.
+	memoryUsed := ResourceAmountMax(requestedMemory, container.MemoryPeak)
+	memoryNeeded := ResourceAmountMax(memoryUsed+MemoryAmountFromBytes(OOMMinBumpUp),
+		ScaleResource(memoryUsed, OOMBumpUpRatio))
 
 	oomMemorySample := ContainerUsageSample{
 		MeasureStart: timestamp,
-		Usage:        ResourceAmount(resourceAmount),
+		Usage:        memoryNeeded,
 		Resource:     ResourceMemory,
 	}
 	if !container.addMemorySample(&oomMemorySample) {
@@ -171,4 +170,15 @@ func (container *ContainerState) AddSample(sample *ContainerUsageSample) bool {
 	default:
 		return false
 	}
+}
+
+// Truncate returns the result of rounding d toward zero to a multiple of m.
+// If m <= 0, Truncate returns d unchanged.
+// This helper function is introduced to support older implementations of the
+// time package that don't provide Duration.Truncate function.
+func truncate(d, m time.Duration) time.Duration {
+	if m <= 0 {
+		return d
+	}
+	return d - d%m
 }
