@@ -25,6 +25,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
+	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
@@ -42,7 +43,7 @@ import (
 // ScaleUp tries to scale the cluster up. Return true if it found a way to increase the size,
 // false if it didn't and error if an error occurred. Assumes that all nodes in the cluster are
 // ready and in sync with instance groups.
-func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes []*apiv1.Node,
+func ScaleUp(context *context.AutoscalingContext, clusterStateRegistry *clusterstate.ClusterStateRegistry, unschedulablePods []*apiv1.Pod, nodes []*apiv1.Node,
 	daemonSets []*extensionsv1.DaemonSet) (bool, errors.AutoscalerError) {
 	// From now on we only care about unschedulable pods that were marked after the newest
 	// node became available for the scheduler.
@@ -77,7 +78,7 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 	coresTotal, memoryTotal := calculateClusterCoresMemoryTotal(nodeGroups, nodeInfos)
 
 	upcomingNodes := make([]*schedulercache.NodeInfo, 0)
-	for nodeGroup, numberOfNodes := range context.ClusterStateRegistry.GetUpcomingNodes() {
+	for nodeGroup, numberOfNodes := range clusterStateRegistry.GetUpcomingNodes() {
 		nodeTemplate, found := nodeInfos[nodeGroup]
 		if !found {
 			return false, errors.NewAutoscalerError(
@@ -101,7 +102,7 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 
 	for _, nodeGroup := range nodeGroups {
 		// Autoprovisioned node groups without nodes are created later so skip check for them.
-		if nodeGroup.Exist() && !context.ClusterStateRegistry.IsNodeGroupSafeToScaleUp(nodeGroup.Id(), now) {
+		if nodeGroup.Exist() && !clusterStateRegistry.IsNodeGroupSafeToScaleUp(nodeGroup.Id(), now) {
 			glog.Warningf("Node group %s is not ready for scaleup", nodeGroup.Id())
 			continue
 		}
@@ -264,7 +265,7 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 			}
 			similarNodeGroups = filterNodeGroupsByPods(similarNodeGroups, bestOption.Pods, podsPassingPredicates)
 			for _, ng := range similarNodeGroups {
-				if context.ClusterStateRegistry.IsNodeGroupSafeToScaleUp(ng.Id(), now) {
+				if clusterStateRegistry.IsNodeGroupSafeToScaleUp(ng.Id(), now) {
 					targetNodeGroups = append(targetNodeGroups, ng)
 				} else {
 					// This should never happen, as we will filter out the node group earlier on
@@ -291,7 +292,7 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 		}
 		glog.V(1).Infof("Final scale-up plan: %v", scaleUpInfos)
 		for _, info := range scaleUpInfos {
-			typedErr := executeScaleUp(context, info)
+			typedErr := executeScaleUp(context, clusterStateRegistry, info)
 			if typedErr != nil {
 				return false, typedErr
 			}
@@ -302,7 +303,7 @@ func ScaleUp(context *AutoscalingContext, unschedulablePods []*apiv1.Pod, nodes 
 				"pod triggered scale-up: %v", scaleUpInfos)
 		}
 
-		context.ClusterStateRegistry.Recalculate()
+		clusterStateRegistry.Recalculate()
 		return true, nil
 	}
 	for pod, unschedulable := range podsRemainUnschedulable {
@@ -340,16 +341,16 @@ groupsloop:
 	return result
 }
 
-func executeScaleUp(context *AutoscalingContext, info nodegroupset.ScaleUpInfo) errors.AutoscalerError {
+func executeScaleUp(context *context.AutoscalingContext, clusterStateRegistry *clusterstate.ClusterStateRegistry, info nodegroupset.ScaleUpInfo) errors.AutoscalerError {
 	glog.V(0).Infof("Scale-up: setting group %s size to %d", info.Group.Id(), info.NewSize)
 	increase := info.NewSize - info.CurrentSize
 	if err := info.Group.IncreaseSize(increase); err != nil {
 		context.LogRecorder.Eventf(apiv1.EventTypeWarning, "FailedToScaleUpGroup", "Scale-up failed for group %s: %v", info.Group.Id(), err)
-		context.ClusterStateRegistry.RegisterFailedScaleUp(info.Group.Id(), metrics.APIError)
+		clusterStateRegistry.RegisterFailedScaleUp(info.Group.Id(), metrics.APIError)
 		return errors.NewAutoscalerError(errors.CloudProviderError,
 			"failed to increase node group size: %v", err)
 	}
-	context.ClusterStateRegistry.RegisterScaleUp(
+	clusterStateRegistry.RegisterScaleUp(
 		&clusterstate.ScaleUpRequest{
 			NodeGroupName:   info.Group.Id(),
 			Increase:        increase,
@@ -362,7 +363,7 @@ func executeScaleUp(context *AutoscalingContext, info nodegroupset.ScaleUpInfo) 
 	return nil
 }
 
-func addAutoprovisionedCandidates(context *AutoscalingContext, nodeGroups []cloudprovider.NodeGroup,
+func addAutoprovisionedCandidates(context *context.AutoscalingContext, nodeGroups []cloudprovider.NodeGroup,
 	nodeInfos map[string]*schedulercache.NodeInfo, unschedulablePods []*apiv1.Pod) ([]cloudprovider.NodeGroup,
 	map[string]*schedulercache.NodeInfo) {
 
@@ -400,7 +401,7 @@ func addAutoprovisionedCandidates(context *AutoscalingContext, nodeGroups []clou
 	return nodeGroups, nodeInfos
 }
 
-func addAllMachineTypesForConfig(context *AutoscalingContext, systemLabels map[string]string, extraResources map[string]resource.Quantity,
+func addAllMachineTypesForConfig(context *context.AutoscalingContext, systemLabels map[string]string, extraResources map[string]resource.Quantity,
 	nodeInfos map[string]*schedulercache.NodeInfo, unschedulablePods []*apiv1.Pod) []cloudprovider.NodeGroup {
 
 	nodeGroups := make([]cloudprovider.NodeGroup, 0)
@@ -411,8 +412,9 @@ func addAllMachineTypesForConfig(context *AutoscalingContext, systemLabels map[s
 	}
 
 	bestLabels := labels.BestLabelSet(unschedulablePods)
+	taints := make([]apiv1.Taint, 0)
 	for _, machineType := range machines {
-		nodeGroup, err := context.CloudProvider.NewNodeGroup(machineType, bestLabels, systemLabels, extraResources)
+		nodeGroup, err := context.CloudProvider.NewNodeGroup(machineType, bestLabels, systemLabels, taints, extraResources)
 		if err != nil {
 			// We don't check if a given node group setup is allowed.
 			// It's fine if it isn't, just don't consider it an option.

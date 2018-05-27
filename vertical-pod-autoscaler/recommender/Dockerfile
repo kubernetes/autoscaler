@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM gcr.io/google_containers/ubuntu-slim:0.1
-MAINTAINER Karol Kraskiewicz "karol.kraskiewicz@gmail.com"
+FROM k8s.gcr.io/debian-base-amd64:0.3
+MAINTAINER Krzysztof Grygiel "kgrygiel@google.com"
 
 ADD recommender recommender
 

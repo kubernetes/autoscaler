@@ -34,7 +34,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	provider_aws "k8s.io/kubernetes/pkg/cloudprovider/providers/aws"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
@@ -44,21 +43,14 @@ const (
 	operationWaitTimeout    = 5 * time.Second
 	operationPollInterval   = 100 * time.Millisecond
 	maxRecordsReturnedByAPI = 100
-	refreshInterval         = 1 * time.Minute
+	refreshInterval         = 10 * time.Second
 )
-
-type asgInformation struct {
-	config   *Asg
-	basename string
-}
 
 // AwsManager is handles aws communication and data caching.
 type AwsManager struct {
-	service               autoScalingWrapper
-	asgCache              *asgCache
-	lastRefresh           time.Time
-	asgAutoDiscoverySpecs []cloudprovider.ASGAutoDiscoveryConfig
-	explicitlyConfigured  map[AwsRef]bool
+	service     autoScalingWrapper
+	asgCache    *asgCache
+	lastRefresh time.Time
 }
 
 type asgTemplate struct {
@@ -88,25 +80,19 @@ func createAWSManagerInternal(
 		}
 	}
 
-	cache, err := newASGCache(*service)
-	if err != nil {
-		return nil, err
-	}
-
 	specs, err := discoveryOpts.ParseASGAutoDiscoverySpecs()
 	if err != nil {
 		return nil, err
 	}
 
-	manager := &AwsManager{
-		service:               *service,
-		asgCache:              cache,
-		asgAutoDiscoverySpecs: specs,
-		explicitlyConfigured:  make(map[AwsRef]bool),
+	cache, err := newASGCache(*service, discoveryOpts.NodeGroupSpecs, specs)
+	if err != nil {
+		return nil, err
 	}
 
-	if err := manager.fetchExplicitAsgs(discoveryOpts.NodeGroupSpecs); err != nil {
-		return nil, err
+	manager := &AwsManager{
+		service:  *service,
+		asgCache: cache,
 	}
 
 	if err := manager.forceRefresh(); err != nil {
@@ -121,108 +107,6 @@ func CreateAwsManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGr
 	return createAWSManagerInternal(configReader, discoveryOpts, nil)
 }
 
-// Fetch explicitly configured ASGs. These ASGs should never be unregistered
-// during refreshes, even if they no longer exist in AWS.
-func (m *AwsManager) fetchExplicitAsgs(specs []string) error {
-	changed := false
-	for _, spec := range specs {
-		asg, err := m.buildAsgFromSpec(spec)
-		if err != nil {
-			return fmt.Errorf("failed to parse node group spec: %v", err)
-		}
-		if m.RegisterAsg(asg) {
-			changed = true
-		}
-		m.explicitlyConfigured[asg.AwsRef] = true
-	}
-
-	if changed {
-		if err := m.regenerateCache(); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (m *AwsManager) buildAsgFromSpec(spec string) (*Asg, error) {
-	s, err := dynamic.SpecFromString(spec, scaleToZeroSupported)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse node group spec: %v", err)
-	}
-	asg := &Asg{
-		awsManager: m,
-		AwsRef:     AwsRef{Name: s.Name},
-		minSize:    s.MinSize,
-		maxSize:    s.MaxSize,
-	}
-	return asg, nil
-}
-
-// Fetch automatically discovered ASGs. These ASGs should be unregistered if
-// they no longer exist in AWS.
-func (m *AwsManager) fetchAutoAsgs() error {
-	exists := make(map[AwsRef]bool)
-	changed := false
-	for _, spec := range m.asgAutoDiscoverySpecs {
-		groups, err := m.getAutoscalingGroupsByTags(spec.TagKeys)
-		if err != nil {
-			return fmt.Errorf("cannot autodiscover ASGs: %s", err)
-		}
-		for _, g := range groups {
-			asg, err := m.buildAsgFromAWS(g)
-			if err != nil {
-				return err
-			}
-			exists[asg.AwsRef] = true
-			if m.explicitlyConfigured[asg.AwsRef] {
-				// This ASG was explicitly configured, but would also be
-				// autodiscovered. We want the explicitly configured min and max
-				// nodes to take precedence.
-				glog.V(3).Infof("Ignoring explicitly configured ASG %s for autodiscovery.", asg.AwsRef.Name)
-				continue
-			}
-			if m.RegisterAsg(asg) {
-				glog.V(3).Infof("Autodiscovered ASG %s using tags %v", asg.AwsRef.Name, spec.TagKeys)
-				changed = true
-			}
-		}
-	}
-
-	for _, asg := range m.getAsgs() {
-		if !exists[asg.config.AwsRef] && !m.explicitlyConfigured[asg.config.AwsRef] {
-			m.UnregisterAsg(asg.config)
-			changed = true
-		}
-	}
-
-	if changed {
-		if err := m.regenerateCache(); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (m *AwsManager) buildAsgFromAWS(g *autoscaling.Group) (*Asg, error) {
-	spec := dynamic.NodeGroupSpec{
-		Name:               aws.StringValue(g.AutoScalingGroupName),
-		MinSize:            int(aws.Int64Value(g.MinSize)),
-		MaxSize:            int(aws.Int64Value(g.MaxSize)),
-		SupportScaleToZero: scaleToZeroSupported,
-	}
-	if verr := spec.Validate(); verr != nil {
-		return nil, fmt.Errorf("failed to create node group spec: %v", verr)
-	}
-	asg := &Asg{
-		awsManager: m,
-		AwsRef:     AwsRef{Name: spec.Name},
-		minSize:    spec.MinSize,
-		maxSize:    spec.MaxSize,
-	}
-	return asg, nil
-}
-
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
 // In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
 func (m *AwsManager) Refresh() error {
@@ -233,8 +117,8 @@ func (m *AwsManager) Refresh() error {
 }
 
 func (m *AwsManager) forceRefresh() error {
-	if err := m.fetchAutoAsgs(); err != nil {
-		glog.Errorf("Failed to fetch ASGs: %v", err)
+	if err := m.asgCache.regenerate(); err != nil {
+		glog.Errorf("Failed to regenerate ASG cache: %v", err)
 		return err
 	}
 	m.lastRefresh = time.Now()
@@ -242,29 +126,9 @@ func (m *AwsManager) forceRefresh() error {
 	return nil
 }
 
-func (m *AwsManager) getAsgs() []*asgInformation {
-	return m.asgCache.get()
-}
-
-// RegisterAsg registers an ASG.
-func (m *AwsManager) RegisterAsg(asg *Asg) bool {
-	return m.asgCache.Register(asg)
-}
-
-// UnregisterAsg unregisters an ASG.
-func (m *AwsManager) UnregisterAsg(asg *Asg) bool {
-	return m.asgCache.Unregister(asg)
-}
-
 // GetAsgForInstance returns AsgConfig of the given Instance
-func (m *AwsManager) GetAsgForInstance(instance *AwsRef) (*Asg, error) {
+func (m *AwsManager) GetAsgForInstance(instance AwsInstanceRef) *asg {
 	return m.asgCache.FindForInstance(instance)
-}
-
-func (m *AwsManager) regenerateCache() error {
-	m.asgCache.mutex.Lock()
-	defer m.asgCache.mutex.Unlock()
-	return m.asgCache.regenerate()
 }
 
 // Cleanup the ASG cache.
@@ -272,37 +136,18 @@ func (m *AwsManager) Cleanup() {
 	m.asgCache.Cleanup()
 }
 
-func (m *AwsManager) getAutoscalingGroupsByTags(keys []string) ([]*autoscaling.Group, error) {
-	return m.service.getAutoscalingGroupsByTags(keys)
-}
-
-// GetAsgSize gets ASG size.
-func (m *AwsManager) GetAsgSize(asgConfig *Asg) (int64, error) {
-	params := &autoscaling.DescribeAutoScalingGroupsInput{
-		AutoScalingGroupNames: []*string{aws.String(asgConfig.Name)},
-		MaxRecords:            aws.Int64(1),
-	}
-	groups, err := m.service.DescribeAutoScalingGroups(params)
-
-	if err != nil {
-		return -1, err
-	}
-
-	if len(groups.AutoScalingGroups) < 1 {
-		return -1, fmt.Errorf("Unable to get first autoscaling.Group for %s", asgConfig.Name)
-	}
-	asg := *groups.AutoScalingGroups[0]
-	return *asg.DesiredCapacity, nil
+func (m *AwsManager) getAsgs() []*asg {
+	return m.asgCache.Get()
 }
 
 // SetAsgSize sets ASG size.
-func (m *AwsManager) SetAsgSize(asg *Asg, size int64) error {
+func (m *AwsManager) SetAsgSize(asg *asg, size int) error {
 	params := &autoscaling.SetDesiredCapacityInput{
 		AutoScalingGroupName: aws.String(asg.Name),
-		DesiredCapacity:      aws.Int64(size),
+		DesiredCapacity:      aws.Int64(int64(size)),
 		HonorCooldown:        aws.Bool(false),
 	}
-	glog.V(0).Infof("Setting asg %s size to %d", asg.Id(), size)
+	glog.V(0).Infof("Setting asg %s size to %d", asg.Name, size)
 	_, err := m.service.SetDesiredCapacity(params)
 	if err != nil {
 		return err
@@ -311,21 +156,25 @@ func (m *AwsManager) SetAsgSize(asg *Asg, size int64) error {
 }
 
 // DeleteInstances deletes the given instances. All instances must be controlled by the same ASG.
-func (m *AwsManager) DeleteInstances(instances []*AwsRef) error {
+func (m *AwsManager) DeleteInstances(instances []*AwsInstanceRef) error {
 	if len(instances) == 0 {
 		return nil
 	}
-	commonAsg, err := m.asgCache.FindForInstance(instances[0])
-	if err != nil {
-		return err
+	commonAsg := m.asgCache.FindForInstance(*instances[0])
+	if commonAsg == nil {
+		return fmt.Errorf("can't delete instance %s, which is not part of an ASG", instances[0].Name)
 	}
+
 	for _, instance := range instances {
-		asg, err := m.asgCache.FindForInstance(instance)
-		if err != nil {
-			return err
-		}
+		asg := m.asgCache.FindForInstance(*instance)
+
 		if asg != commonAsg {
-			return fmt.Errorf("Connot delete instances which don't belong to the same ASG.")
+			instanceIds := make([]string, len(instances))
+			for i, instance := range instances {
+				instanceIds[i] = instance.Name
+			}
+
+			return fmt.Errorf("can't delete instances %s as they belong to at least two different ASGs (%s and %s)", strings.Join(instanceIds, ","), commonAsg.Name, asg.Name)
 		}
 	}
 
@@ -345,35 +194,21 @@ func (m *AwsManager) DeleteInstances(instances []*AwsRef) error {
 }
 
 // GetAsgNodes returns Asg nodes.
-func (m *AwsManager) GetAsgNodes(asg *Asg) ([]string, error) {
-	result := make([]string, 0)
-	group, err := m.service.getAutoscalingGroupByName(asg.Name)
-	if err != nil {
-		return []string{}, err
-	}
-	for _, instance := range group.Instances {
-		result = append(result,
-			fmt.Sprintf("aws:///%s/%s", *instance.AvailabilityZone, *instance.InstanceId))
-	}
-	return result, nil
+func (m *AwsManager) GetAsgNodes(ref AwsRef) ([]AwsInstanceRef, error) {
+	return m.asgCache.InstancesByAsg(ref)
 }
 
-func (m *AwsManager) getAsgTemplate(name string) (*asgTemplate, error) {
-	asg, err := m.service.getAutoscalingGroupByName(name)
-	if err != nil {
-		return nil, err
-	}
-
-	instanceTypeName, err := m.service.getInstanceTypeByLCName(*asg.LaunchConfigurationName)
+func (m *AwsManager) getAsgTemplate(asg *asg) (*asgTemplate, error) {
+	instanceTypeName, err := m.service.getInstanceTypeByLCName(asg.LaunchConfigurationName)
 	if err != nil {
 		return nil, err
 	}
 
 	if len(asg.AvailabilityZones) < 1 {
-		return nil, fmt.Errorf("Unable to get first AvailabilityZone for %s", name)
+		return nil, fmt.Errorf("Unable to get first AvailabilityZone for %s", asg.Name)
 	}
 
-	az := *asg.AvailabilityZones[0]
+	az := asg.AvailabilityZones[0]
 	region := az[0 : len(az)-1]
 
 	if len(asg.AvailabilityZones) > 1 {
@@ -388,7 +223,7 @@ func (m *AwsManager) getAsgTemplate(name string) (*asgTemplate, error) {
 	}, nil
 }
 
-func (m *AwsManager) buildNodeFromTemplate(asg *Asg, template *asgTemplate) (*apiv1.Node, error) {
+func (m *AwsManager) buildNodeFromTemplate(asg *asg, template *asgTemplate) (*apiv1.Node, error) {
 	node := apiv1.Node{}
 	nodeName := fmt.Sprintf("%s-asg-%d", asg.Name, rand.Int63())
 

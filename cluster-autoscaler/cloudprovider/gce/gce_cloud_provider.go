@@ -123,10 +123,9 @@ func (gce *GceCloudProvider) GetAvailableMachineTypes() ([]string, error) {
 // NewNodeGroup builds a theoretical node group based on the node definition provided. The node group is not automatically
 // created on the cloud provider side. The node group is not returned by NodeGroups() until it is created.
 func (gce *GceCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string,
-	extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
+	taints []apiv1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
 	nodePoolName := fmt.Sprintf("%s-%s-%d", nodeAutoprovisioningPrefix, machineType, time.Now().Unix())
 	zone := gce.gceManager.getLocation()
-	taints := make([]apiv1.Taint, 0)
 
 	if gpuRequest, found := extraResources[gpu.ResourceNvidiaGPU]; found {
 		gpuType, found := systemLabels[gpu.GPULabel]
@@ -172,7 +171,11 @@ func (gce *GceCloudProvider) NewNodeGroup(machineType string, labels map[string]
 		},
 		gceManager: gce.gceManager,
 	}
-	_, err := gce.gceManager.getTemplates().buildNodeFromAutoprovisioningSpec(mig)
+	cpu, mem, err := gce.gceManager.getCpuAndMemoryForMachineType(mig.spec.machineType, mig.GceRef.Zone)
+	if err != nil {
+		return nil, err
+	}
+	_, err = gce.gceManager.getTemplates().buildNodeFromAutoprovisioningSpec(mig, cpu, mem)
 	if err != nil {
 		return nil, err
 	}
@@ -392,17 +395,25 @@ func (mig *Mig) Autoprovisioned() bool {
 func (mig *Mig) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
 	var node *apiv1.Node
 	if mig.Exist() {
-		template, err := mig.gceManager.getTemplates().getMigTemplate(mig)
+		template, err := mig.gceManager.getMigTemplate(mig)
 		if err != nil {
 			return nil, err
 		}
-		node, err = mig.gceManager.getTemplates().buildNodeFromTemplate(mig, template)
+		cpu, mem, err := mig.gceManager.getCpuAndMemoryForMachineType(template.Properties.MachineType, mig.GceRef.Zone)
+		if err != nil {
+			return nil, err
+		}
+		node, err = mig.gceManager.getTemplates().buildNodeFromTemplate(mig, template, cpu, mem)
 		if err != nil {
 			return nil, err
 		}
 	} else if mig.Autoprovisioned() {
 		var err error
-		node, err = mig.gceManager.getTemplates().buildNodeFromAutoprovisioningSpec(mig)
+		cpu, mem, err := mig.gceManager.getCpuAndMemoryForMachineType(mig.spec.machineType, mig.GceRef.Zone)
+		if err != nil {
+			return nil, err
+		}
+		node, err = mig.gceManager.getTemplates().buildNodeFromAutoprovisioningSpec(mig, cpu, mem)
 		if err != nil {
 			return nil, err
 		}

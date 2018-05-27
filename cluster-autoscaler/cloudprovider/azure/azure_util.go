@@ -17,21 +17,26 @@ limitations under the License.
 package azure
 
 import (
+	"context"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"net/url"
 	"regexp"
 	"sort"
 	"strconv"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/arm/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2017-12-01/compute"
+	azStorage "github.com/Azure/azure-sdk-for-go/storage"
 	"github.com/Azure/go-autorest/autorest"
+	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/golang/glog"
 	"golang.org/x/crypto/pkcs12"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/client-go/pkg/version"
 )
@@ -75,6 +80,130 @@ var (
 	vmnameLinuxRegexp   = regexp.MustCompile(k8sLinuxVMNamingFormat)
 	vmnameWindowsRegexp = regexp.MustCompile(k8sWindowsVMNamingFormat)
 )
+
+//AzUtil consists of utility functions which utilizes clients to different services.
+//Since they span across various clients they cannot be fitted into individual client structs
+//so adding them here.
+type AzUtil struct {
+	manager *AzureManager
+}
+
+// DeleteBlob deletes the blob using the storage storage client.
+func (util *AzUtil) DeleteBlob(accountName, vhdContainer, vhdBlob string) error {
+	storageKeysResult, err := util.manager.azClient.storageAccountsClient.ListKeys(util.manager.config.ResourceGroup, accountName)
+	if err != nil {
+		return err
+	}
+
+	keys := *storageKeysResult.Keys
+	client, err := azStorage.NewBasicClientOnSovereignCloud(accountName, to.String(keys[0].Value), util.manager.env)
+	if err != nil {
+		return err
+	}
+
+	bs := client.GetBlobService()
+	containerRef := bs.GetContainerReference(vhdContainer)
+	blobRef := containerRef.GetBlobReference(vhdBlob)
+
+	return blobRef.Delete(&azStorage.DeleteBlobOptions{})
+}
+
+// DeleteVirtualMachine deletes a VM and any associated OS disk
+func (util *AzUtil) DeleteVirtualMachine(rg string, name string) error {
+	ctx, cancel := getContextWithCancel()
+	defer cancel()
+
+	vm, err := util.manager.azClient.virtualMachinesClient.Get(ctx, rg, name, "")
+	if err != nil {
+		if exists, _ := checkResourceExistsFromError(err); !exists {
+			glog.V(2).Infof("VirtualMachine %s/%s has already been removed", rg, name)
+			return nil
+		}
+
+		glog.Errorf("failed to get VM: %s/%s: %s", rg, name, err.Error())
+		return err
+	}
+
+	vhd := vm.VirtualMachineProperties.StorageProfile.OsDisk.Vhd
+	managedDisk := vm.VirtualMachineProperties.StorageProfile.OsDisk.ManagedDisk
+	if vhd == nil && managedDisk == nil {
+		glog.Errorf("failed to get a valid os disk URI for VM: %s/%s", rg, name)
+		return fmt.Errorf("os disk does not have a VHD URI")
+	}
+
+	osDiskName := vm.VirtualMachineProperties.StorageProfile.OsDisk.Name
+	var nicName string
+	nicID := (*vm.VirtualMachineProperties.NetworkProfile.NetworkInterfaces)[0].ID
+	if nicID == nil {
+		glog.Warningf("NIC ID is not set for VM (%s/%s)", rg, name)
+	} else {
+		nicName, err = resourceName(*nicID)
+		if err != nil {
+			return err
+		}
+		glog.Infof("found nic name for VM (%s/%s): %s", rg, name, nicName)
+	}
+
+	glog.Infof("deleting VM: %s/%s", rg, name)
+	deleteCtx, deleteCancel := getContextWithCancel()
+	defer deleteCancel()
+
+	glog.Infof("waiting for VirtualMachine deletion: %s/%s", rg, name)
+	_, err = util.manager.azClient.virtualMachinesClient.Delete(deleteCtx, rg, name)
+	_, realErr := checkResourceExistsFromError(err)
+	if realErr != nil {
+		return realErr
+	}
+	glog.V(2).Infof("VirtualMachine %s/%s removed", rg, name)
+
+	if len(nicName) > 0 {
+		glog.Infof("deleting nic: %s/%s", rg, nicName)
+		_, nicErrChan := util.manager.azClient.interfacesClient.Delete(rg, nicName, nil)
+		glog.Infof("waiting for nic deletion: %s/%s", rg, nicName)
+		if nicErr := <-nicErrChan; nicErr != nil {
+			_, realErr := checkResourceExistsFromError(nicErr)
+			if realErr != nil {
+				return realErr
+			}
+			glog.V(2).Infof("interface %s/%s removed", rg, nicName)
+		}
+	}
+
+	if vhd != nil {
+		accountName, vhdContainer, vhdBlob, err := splitBlobURI(*vhd.URI)
+		if err != nil {
+			return err
+		}
+
+		glog.Infof("found os disk storage reference: %s %s %s", accountName, vhdContainer, vhdBlob)
+
+		glog.Infof("deleting blob: %s/%s", vhdContainer, vhdBlob)
+		if err = util.DeleteBlob(accountName, vhdContainer, vhdBlob); err != nil {
+			_, realErr := checkResourceExistsFromError(err)
+			if realErr != nil {
+				return realErr
+			}
+			glog.V(2).Infof("Blob %s/%s removed", rg, vhdBlob)
+		}
+	} else if managedDisk != nil {
+		if osDiskName == nil {
+			glog.Warningf("osDisk is not set for VM %s/%s", rg, name)
+		} else {
+			glog.Infof("deleting managed disk: %s/%s", rg, *osDiskName)
+			_, diskErrChan := util.manager.azClient.disksClient.Delete(rg, *osDiskName, nil)
+
+			if err := <-diskErrChan; err != nil {
+				_, realErr := checkResourceExistsFromError(err)
+				if realErr != nil {
+					return realErr
+				}
+				glog.V(2).Infof("disk %s/%s removed", rg, *osDiskName)
+			}
+		}
+	}
+
+	return nil
+}
 
 // decodePkcs12 decodes a PKCS#12 client certificate by extracting the public certificate and
 // the private RSA key
@@ -387,6 +516,10 @@ func validateConfig(cfg *Config) error {
 		return fmt.Errorf("subscription ID not set")
 	}
 
+	if cfg.UseManagedIdentityExtension {
+		return nil
+	}
+
 	if cfg.TenantID == "" {
 		return fmt.Errorf("tenant ID not set")
 	}
@@ -402,6 +535,13 @@ func validateConfig(cfg *Config) error {
 
 		if len(cfg.DeploymentParameters) == 0 {
 			return fmt.Errorf("deploymentParameters not set")
+		}
+	}
+
+	if cfg.VMType == vmTypeACS || cfg.VMType == vmTypeAKS {
+		// Cluster name is a mandatory param to proceed.
+		if cfg.ClusterName == "" {
+			return fmt.Errorf("Cluster name not set for type %+v", cfg.VMType)
 		}
 	}
 
@@ -438,4 +578,25 @@ func readDeploymentParameters(paramFilePath string) (map[string]interface{}, err
 	}
 
 	return nil, fmt.Errorf("failed to get deployment parameters from file %s", paramFilePath)
+}
+
+func getContextWithCancel() (context.Context, context.CancelFunc) {
+	return context.WithCancel(context.Background())
+}
+
+// checkExistsFromError inspects an error and returns a true if err is nil,
+// false if error is an autorest.Error with StatusCode=404 and will return the
+// error back if error is another status code or another type of error.
+func checkResourceExistsFromError(err error) (bool, error) {
+	if err == nil {
+		return true, nil
+	}
+	v, ok := err.(autorest.DetailedError)
+	if !ok {
+		return false, err
+	}
+	if v.StatusCode == http.StatusNotFound {
+		return false, nil
+	}
+	return false, v
 }

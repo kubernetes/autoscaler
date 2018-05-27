@@ -38,7 +38,7 @@ const (
 	fullVpaSuite                 = "full-vpa"
 	actuationSuite               = "actuation"
 	pollInterval                 = 10 * time.Second
-	pollTimeout                  = 10 * time.Minute
+	pollTimeout                  = 15 * time.Minute
 )
 
 func e2eDescribe(scenario, name string, body func()) bool {
@@ -66,7 +66,7 @@ func actuationSuiteE2eDescribe(name string, body func()) bool {
 }
 
 func newHamsterDeployment(f *framework.Framework) *extensions.Deployment {
-	d := framework.NewDeployment("hamster-deployment", 3, map[string]string{"app": "hamster"}, "hamster", "gcr.io/google_containers/ubuntu-slim:0.1", extensions.RollingUpdateDeploymentStrategyType)
+	d := framework.NewDeployment("hamster-deployment", 3, map[string]string{"app": "hamster"}, "hamster", "k8s.gcr.io/ubuntu-slim:0.1", extensions.RollingUpdateDeploymentStrategyType)
 	d.ObjectMeta.Namespace = f.Namespace.Name
 	d.Spec.Template.Spec.Containers[0].Command = []string{"/bin/sh"}
 	d.Spec.Template.Spec.Containers[0].Args = []string{"-c", "/usr/bin/yes >/dev/null"}

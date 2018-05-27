@@ -23,6 +23,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	labels "k8s.io/apimachinery/pkg/labels"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/util"
 )
@@ -31,43 +32,50 @@ var (
 	testPodID1       = PodID{"namespace-1", "pod-1"}
 	testPodID2       = PodID{"namespace-1", "pod-2"}
 	testContainerID1 = ContainerID{testPodID1, "container-1"}
+	testRequest      = Resources{
+		ResourceCPU:    CPUAmountFromCores(3.14),
+		ResourceMemory: MemoryAmountFromBytes(3.14e9),
+	}
 )
 
-func addTestSample(cluster *ClusterState, container ContainerID, cpu float64, memory float64) error {
-	var (
-		TimeLayout       = "2006-01-02 15:04:05"
-		testTimestamp, _ = time.Parse(TimeLayout, "2017-04-18 17:35:05")
-	)
-	var sample ContainerUsageSampleWithKey
-	sample.Container = container
-	sample.MeasureStart = testTimestamp
-	sample.Usage = CPUAmountFromCores(cpu)
-	sample.Resource = ResourceCPU
-	err := cluster.AddSample(&sample)
-	if err != nil {
-		return err
+func addTestCPUSample(cluster *ClusterState, container ContainerID, cpuCores float64) error {
+	sample := ContainerUsageSampleWithKey{
+		Container: container,
+		ContainerUsageSample: ContainerUsageSample{
+			MeasureStart: testTimestamp,
+			Usage:        CPUAmountFromCores(cpuCores),
+			Request:      testRequest[ResourceCPU],
+			Resource:     ResourceCPU,
+		},
 	}
-	sample.Usage = MemoryAmountFromBytes(memory)
-	sample.Resource = ResourceMemory
 	return cluster.AddSample(&sample)
 }
 
-func buildAggregateContainerStateMap(pods map[PodID]*PodState) map[string]*AggregateContainerState {
-	vpa := Vpa{Pods: pods}
-	return BuildAggregateContainerStateMap(&vpa, MergeForRecommendation, time.Unix(0, 0))
+func addTestMemorySample(cluster *ClusterState, container ContainerID, memoryBytes float64) error {
+	sample := ContainerUsageSampleWithKey{
+		Container: container,
+		ContainerUsageSample: ContainerUsageSample{
+			MeasureStart: testTimestamp,
+			Usage:        MemoryAmountFromBytes(memoryBytes),
+			Request:      testRequest[ResourceMemory],
+			Resource:     ResourceMemory,
+		},
+	}
+	return cluster.AddSample(&sample)
 }
 
 // Creates two pods, each having two containers:
 //   testPodID1: { 'app-A', 'app-B' }
 //   testPodID2: { 'app-A', 'app-C' }
 // Adds a few usage samples to the containers.
-// Verifies that buildAggregateContainerStateMap() properly aggregates
+// Verifies that AggregateStateByContainerName() properly aggregates
 // container CPU and memory peak histograms, grouping the two containers
 // with the same name ('app-A') together.
-func TestBuildAggregateResourcesMap(t *testing.T) {
+func TestAggregateStateByContainerName(t *testing.T) {
 	cluster := NewClusterState()
 	cluster.AddOrUpdatePod(testPodID1, testLabels, apiv1.PodRunning)
-	cluster.AddOrUpdatePod(testPodID2, testLabels, apiv1.PodRunning)
+	otherLabels := labels.Set{"label-2": "value-2"}
+	cluster.AddOrUpdatePod(testPodID2, otherLabels, apiv1.PodRunning)
 
 	// Create 4 containers: 2 with the same name and 2 with different names.
 	containers := []ContainerID{
@@ -77,24 +85,35 @@ func TestBuildAggregateResourcesMap(t *testing.T) {
 		{testPodID2, "app-C"},
 	}
 	for _, c := range containers {
-		assert.NoError(t, cluster.AddOrUpdateContainer(c))
+		assert.NoError(t, cluster.AddOrUpdateContainer(c, testRequest))
 	}
 
-	// Add usage samples to all containers.
-	assert.NoError(t, addTestSample(cluster, containers[0], 1.0, 2e9))  // app-A
-	assert.NoError(t, addTestSample(cluster, containers[1], 5.0, 10e9)) // app-B
-	assert.NoError(t, addTestSample(cluster, containers[2], 3.0, 4e9))  // app-A
-	assert.NoError(t, addTestSample(cluster, containers[3], 5.0, 10e9)) // app-C
+	// Add CPU usage samples to all containers.
+	assert.NoError(t, addTestCPUSample(cluster, containers[0], 1.0)) // app-A
+	assert.NoError(t, addTestCPUSample(cluster, containers[1], 5.0)) // app-B
+	assert.NoError(t, addTestCPUSample(cluster, containers[2], 3.0)) // app-A
+	assert.NoError(t, addTestCPUSample(cluster, containers[3], 5.0)) // app-C
+	// Add Memory usage samples to all containers.
+	assert.NoError(t, addTestMemorySample(cluster, containers[0], 2e9))  // app-A
+	assert.NoError(t, addTestMemorySample(cluster, containers[1], 10e9)) // app-B
+	assert.NoError(t, addTestMemorySample(cluster, containers[2], 4e9))  // app-A
+	assert.NoError(t, addTestMemorySample(cluster, containers[3], 10e9)) // app-C
 
 	// Build the AggregateContainerStateMap.
-	aggregateResources := buildAggregateContainerStateMap(cluster.Pods)
+	aggregateResources := AggregateStateByContainerName(cluster.aggregateStateMap)
 	assert.Contains(t, aggregateResources, "app-A")
 	assert.Contains(t, aggregateResources, "app-B")
 	assert.Contains(t, aggregateResources, "app-C")
 
+	// Expect samples from all containers to be grouped by the container name.
+	assert.Equal(t, 2, aggregateResources["app-A"].TotalSamplesCount)
+	assert.Equal(t, 1, aggregateResources["app-B"].TotalSamplesCount)
+	assert.Equal(t, 1, aggregateResources["app-C"].TotalSamplesCount)
+
 	// Compute the expected histograms for the "app-A" containers.
-	expectedCPUHistogram := cluster.GetContainer(containers[0]).CPUUsage
-	expectedCPUHistogram.Merge(cluster.GetContainer(containers[2]).CPUUsage)
+	expectedCPUHistogram := util.NewDecayingHistogram(CPUHistogramOptions, CPUHistogramDecayHalfLife)
+	expectedCPUHistogram.Merge(cluster.findOrCreateAggregateContainerState(containers[0]).AggregateCPUUsage)
+	expectedCPUHistogram.Merge(cluster.findOrCreateAggregateContainerState(containers[2]).AggregateCPUUsage)
 	actualCPUHistogram := aggregateResources["app-A"].AggregateCPUUsage
 
 	expectedMemoryHistogram := util.NewDecayingHistogram(MemoryHistogramOptions, MemoryHistogramDecayHalfLife)
@@ -174,28 +193,4 @@ func TestAggregateContainerStateLoadFromCheckpoint(t *testing.T) {
 	assert.Equal(t, 20, cs.TotalSamplesCount)
 	assert.False(t, cs.AggregateCPUUsage.IsEmpty())
 	assert.False(t, cs.AggregateMemoryPeaks.IsEmpty())
-}
-
-func TestMergeContainerStateForCheckpointDropsRecentMemoryPeak(t *testing.T) {
-	anyTime := time.Unix(0, 0)
-	container := NewContainerState()
-	timestamp := anyTime
-	container.AddSample(&ContainerUsageSample{
-		timestamp, MemoryAmountFromBytes(1024 * 1024 * 1024), ResourceMemory})
-
-	s := NewAggregateContainerState()
-	s.MergeContainerState(container, MergeForCheckpoint, anyTime)
-
-	assert.True(t, s.AggregateMemoryPeaks.IsEmpty())
-}
-
-func TestMergeContainerStateForCheckpoint(t *testing.T) {
-	anyTime := time.Unix(0, 0)
-	container := NewContainerState()
-	timestamp := anyTime
-	container.AddSample(&ContainerUsageSample{
-		timestamp, MemoryAmountFromBytes(1024 * 1024 * 1024), ResourceMemory})
-	s := NewAggregateContainerState()
-	s.MergeContainerState(container, MergeForCheckpoint, anyTime.Add(time.Hour*24+1))
-	assert.False(t, s.AggregateMemoryPeaks.IsEmpty())
 }

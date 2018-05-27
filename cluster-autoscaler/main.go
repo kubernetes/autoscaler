@@ -32,7 +32,7 @@ import (
 	kube_flag "k8s.io/apiserver/pkg/util/flag"
 	cloudBuilder "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
+	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
@@ -41,6 +41,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	kube_client "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	kube_leaderelection "k8s.io/client-go/tools/leaderelection"
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
@@ -74,8 +75,7 @@ var (
 	kubernetes             = flag.String("kubernetes", "", "Kubernetes master location. Leave blank for default")
 	kubeConfigFile         = flag.String("kubeconfig", "", "Path to kubeconfig file with authorization and master location information.")
 	cloudConfig            = flag.String("cloud-config", "", "The path to the cloud provider configuration file.  Empty string for no configuration file.")
-	configMapName          = flag.String("configmap", "", "The name of the ConfigMap containing settings used for dynamic reconfiguration. Empty string for no ConfigMap.")
-	namespace              = flag.String("namespace", "kube-system", "Namespace in which cluster-autoscaler run. If a --configmap flag is also provided, ensure that the configmap exists in this namespace before CA runs.")
+	namespace              = flag.String("namespace", "kube-system", "Namespace in which cluster-autoscaler run.")
 	scaleDownEnabled       = flag.Bool("scale-down-enabled", true, "Should CA scale down the cluster")
 	scaleDownDelayAfterAdd = flag.Duration("scale-down-delay-after-add", 10*time.Minute,
 		"How long after scale up that scale down evaluation resumes")
@@ -113,7 +113,7 @@ var (
 		"Cloud provider type. Available values: ["+strings.Join(cloudBuilder.AvailableCloudProviders, ",")+"]")
 	maxEmptyBulkDeleteFlag     = flag.Int("max-empty-bulk-delete", 10, "Maximum number of empty nodes that can be deleted at the same time.")
 	maxGracefulTerminationFlag = flag.Int("max-graceful-termination-sec", 10*60, "Maximum number of seconds CA waits for pod termination when trying to scale down a node.")
-	maxTotalUnreadyPercentage  = flag.Float64("max-total-unready-percentage", 33, "Maximum percentage of unready nodes after which CA halts operations")
+	maxTotalUnreadyPercentage  = flag.Float64("max-total-unready-percentage", 45, "Maximum percentage of unready nodes in the cluster.  After this is exceeded, CA halts operations")
 	okTotalUnreadyCount        = flag.Int("ok-total-unready-count", 3, "Number of allowed unready nodes, irrespective of max-total-unready-percentage")
 	maxNodeProvisionTime       = flag.Duration("max-node-provision-time", 15*time.Minute, "Maximum time CA waits for node to be provisioned")
 
@@ -134,7 +134,7 @@ var (
 	regional                     = flag.Bool("regional", false, "Cluster is regional.")
 )
 
-func createAutoscalerOptions() core.AutoscalerOptions {
+func createAutoscalingOptions() context.AutoscalingOptions {
 	minCoresTotal, maxCoresTotal, err := parseMinMaxFlag(*coresTotal)
 	if err != nil {
 		glog.Fatalf("Failed to parse flags: %v", err)
@@ -147,7 +147,7 @@ func createAutoscalerOptions() core.AutoscalerOptions {
 	minMemoryTotal = minMemoryTotal * 1024
 	maxMemoryTotal = maxMemoryTotal * 1024
 
-	autoscalingOpts := core.AutoscalingOptions{
+	return context.AutoscalingOptions{
 		CloudConfig:                      *cloudConfig,
 		CloudProviderName:                *cloudProviderFlag,
 		NodeGroupAutoDiscovery:           nodeGroupAutoDiscoveryFlag,
@@ -183,19 +183,9 @@ func createAutoscalerOptions() core.AutoscalerOptions {
 		ExpendablePodsPriorityCutoff:     *expendablePodsPriorityCutoff,
 		Regional:                         *regional,
 	}
-
-	configFetcherOpts := dynamic.ConfigFetcherOptions{
-		ConfigMapName: *configMapName,
-		Namespace:     *namespace,
-	}
-
-	return core.AutoscalerOptions{
-		AutoscalingOptions:   autoscalingOpts,
-		ConfigFetcherOptions: configFetcherOpts,
-	}
 }
 
-func createKubeClient() kube_client.Interface {
+func getKubeConfig() *rest.Config {
 	if *kubeConfigFile != "" {
 		glog.V(1).Infof("Using kubeconfig file: %s", *kubeConfigFile)
 		// use the current context in kubeconfig
@@ -203,11 +193,7 @@ func createKubeClient() kube_client.Interface {
 		if err != nil {
 			glog.Fatalf("Failed to build config: %v", err)
 		}
-		clientset, err := kube_client.NewForConfig(config)
-		if err != nil {
-			glog.Fatalf("Create clientset error: %v", err)
-		}
-		return clientset
+		return config
 	}
 	url, err := url.Parse(*kubernetes)
 	if err != nil {
@@ -219,6 +205,10 @@ func createKubeClient() kube_client.Interface {
 		glog.Fatalf("Failed to build Kubernetes client configuration: %v", err)
 	}
 
+	return kubeConfig
+}
+
+func createKubeClient(kubeConfig *rest.Config) kube_client.Interface {
 	return kube_client.NewForConfigOrDie(kubeConfig)
 }
 
@@ -239,10 +229,11 @@ func registerSignalHandlers(autoscaler core.Autoscaler) {
 
 func run(healthCheck *metrics.HealthCheck) {
 	metrics.RegisterAll()
-	kubeClient := createKubeClient()
+	kubeConfig := getKubeConfig()
+	kubeClient := createKubeClient(kubeConfig)
 	kubeEventRecorder := kube_util.CreateEventRecorder(kubeClient)
-	opts := createAutoscalerOptions()
-	metrics.UpdateNapEnabled(opts.NodeAutoprovisioningEnabled)
+	autoscalingOptions := createAutoscalingOptions()
+	metrics.UpdateNapEnabled(autoscalingOptions.NodeAutoprovisioningEnabled)
 	predicateCheckerStopChannel := make(chan struct{})
 	predicateChecker, err := simulator.NewPredicateChecker(kubeClient, predicateCheckerStopChannel)
 	if err != nil {
@@ -250,11 +241,18 @@ func run(healthCheck *metrics.HealthCheck) {
 	}
 	listerRegistryStopChannel := make(chan struct{})
 	listerRegistry := kube_util.NewListerRegistryWithDefaultListers(kubeClient, listerRegistryStopChannel)
-	autoscaler, err := core.NewAutoscaler(opts, predicateChecker, kubeClient, kubeEventRecorder, listerRegistry)
+
+	opts := core.AutoscalerOptions{
+		AutoscalingOptions: autoscalingOptions,
+		PredicateChecker:   predicateChecker,
+		KubeClient:         kubeClient,
+		KubeEventRecorder:  kubeEventRecorder,
+		ListerRegistry:     listerRegistry,
+	}
+	autoscaler, err := core.NewAutoscaler(opts)
 	if err != nil {
 		glog.Fatalf("Failed to create autoscaler: %v", err)
 	}
-	autoscaler.CleanUp()
 	registerSignalHandlers(autoscaler)
 	healthCheck.StartMonitoring()
 
@@ -322,7 +320,7 @@ func main() {
 			glog.Fatalf("Unable to get hostname: %v", err)
 		}
 
-		kubeClient := createKubeClient()
+		kubeClient := createKubeClient(getKubeConfig())
 
 		// Validate that the client is ok.
 		_, err = kubeClient.CoreV1().Nodes().List(metav1.ListOptions{})

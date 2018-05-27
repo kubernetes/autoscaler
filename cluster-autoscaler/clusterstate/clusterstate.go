@@ -80,9 +80,10 @@ type ScaleDownRequest struct {
 
 // ClusterStateRegistryConfig contains configuration information for ClusterStateRegistry.
 type ClusterStateRegistryConfig struct {
-	// Maximum percentage of unready nodes in total in, if the number is higher than OkTotalUnreadyCount
+	// Maximum percentage of unready nodes in total, if the number of unready nodes is higher than OkTotalUnreadyCount.
 	MaxTotalUnreadyPercentage float64
-	// Number of nodes that can be unready in total. If the number is higher than that then MaxTotalUnreadyPercentage applies.
+	// Minimum number of nodes that must be unready for MaxTotalUnreadyPercentage to apply.
+	// This is to ensure that in very small clusters (e.g. 2 nodes) a single node's failure doesn't disable autoscaling.
 	OkTotalUnreadyCount int
 	//  Maximum time CA waits for node to be provisioned
 	MaxNodeProvisionTime time.Duration

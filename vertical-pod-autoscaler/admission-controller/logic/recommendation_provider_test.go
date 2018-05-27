@@ -24,6 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
 func TestUpdateResourceRequests(t *testing.T) {
@@ -36,8 +37,10 @@ func TestUpdateResourceRequests(t *testing.T) {
 		memLimit       string
 	}
 	containerName := "container1"
+	vpaName := "vpa1"
 	labels := map[string]string{"app": "testingApp"}
 	vpaBuilder := test.VerticalPodAutoscaler().
+		WithName(vpaName).
 		WithContainer(containerName).
 		WithTarget("2", "200Mi").
 		WithMinAllowed("1", "100Mi").
@@ -128,12 +131,14 @@ func TestUpdateResourceRequests(t *testing.T) {
 		vpaLister.On("VerticalPodAutoscalers", "default").Return(vpaNamespaceLister)
 
 		recommendationProvider := &recommendationProvider{
-			vpaLister: vpaLister,
+			vpaLister:               vpaLister,
+			recommendationProcessor: api.NewCappingRecommendationProcessor(),
 		}
 
-		resources, err := recommendationProvider.GetContainersResourcesForPod(tc.pod)
+		resources, name, err := recommendationProvider.GetContainersResourcesForPod(tc.pod)
 
 		if tc.expectedAction {
+			assert.Equal(t, vpaName, name)
 			assert.Nil(t, err)
 			assert.Equal(t, len(resources), 1)
 			expectedCPU, err := resource.ParseQuantity(tc.expectedCPU)

@@ -29,7 +29,7 @@ import (
 	"github.com/golang/glog"
 	"golang.org/x/net/context"
 
-	runtimeapi "k8s.io/kubernetes/pkg/kubelet/apis/cri/v1alpha1/runtime"
+	runtimeapi "k8s.io/kubernetes/pkg/kubelet/apis/cri/runtime/v1alpha2"
 	"k8s.io/kubernetes/pkg/kubelet/dockershim/libdocker"
 )
 
@@ -140,7 +140,10 @@ func (ds *dockerService) CreateContainer(_ context.Context, r *runtimeapi.Create
 	}
 
 	hc := createConfig.HostConfig
-	ds.updateCreateConfig(&createConfig, config, sandboxConfig, podSandboxID, securityOptSeparator, apiVersion)
+	err = ds.updateCreateConfig(&createConfig, config, sandboxConfig, podSandboxID, securityOptSeparator, apiVersion)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update container create config: %v", err)
+	}
 	// Set devices for container.
 	devices := make([]dockercontainer.DeviceMapping, len(config.Devices))
 	for i, device := range config.Devices {

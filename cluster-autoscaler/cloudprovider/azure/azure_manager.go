@@ -26,7 +26,6 @@ import (
 
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/golang/glog"
-
 	"gopkg.in/gcfg.v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
@@ -35,9 +34,12 @@ import (
 const (
 	vmTypeVMSS     = "vmss"
 	vmTypeStandard = "standard"
+	vmTypeACS      = "acs"
+	vmTypeAKS      = "aks"
 
-	scaleToZeroSupported = false
-	refreshInterval      = 1 * time.Minute
+	scaleToZeroSupportedStandard = false
+	scaleToZeroSupportedVMSS     = true
+	refreshInterval              = 1 * time.Minute
 
 	// The path of deployment parameters for standard vm.
 	deploymentParametersPath = "/var/lib/azure/azuredeploy.parameters.json"
@@ -72,6 +74,11 @@ type Config struct {
 	// Configs only for standard vmType (agent pools).
 	Deployment           string                 `json:"deployment" yaml:"deployment"`
 	DeploymentParameters map[string]interface{} `json:"deploymentParameters" yaml:"deploymentParameters"`
+
+	//Configs only for ACS/AKS
+	ClusterName string `json:"clusterName" yaml:"clusterName"`
+	//Config only for AKS
+	NodeResourceGroup string `json:"nodeResourceGroup" yaml:"nodeResourceGroup"`
 }
 
 // TrimSpace removes all leading and trailing white spaces.
@@ -86,6 +93,8 @@ func (c *Config) TrimSpace() {
 	c.AADClientCertPath = strings.TrimSpace(c.AADClientCertPath)
 	c.AADClientCertPassword = strings.TrimSpace(c.AADClientCertPassword)
 	c.Deployment = strings.TrimSpace(c.Deployment)
+	c.ClusterName = strings.TrimSpace(c.ClusterName)
+	c.NodeResourceGroup = strings.TrimSpace(c.NodeResourceGroup)
 }
 
 // CreateAzureManager creates Azure Manager object to work with Azure.
@@ -109,6 +118,8 @@ func CreateAzureManager(configReader io.Reader, discoveryOpts cloudprovider.Node
 		cfg.AADClientCertPath = os.Getenv("ARM_CLIENT_CERT_PATH")
 		cfg.AADClientCertPassword = os.Getenv("ARM_CLIENT_CERT_PASSWORD")
 		cfg.Deployment = os.Getenv("ARM_DEPLOYMENT")
+		cfg.ClusterName = os.Getenv("AZURE_CLUSTER_NAME")
+		cfg.NodeResourceGroup = os.Getenv("AZURE_NODE_RESOURCE_GROUP")
 
 		useManagedIdentityExtensionFromEnv := os.Getenv("ARM_USE_MANAGED_IDENTITY_EXTENSION")
 		if len(useManagedIdentityExtensionFromEnv) > 0 {
@@ -209,6 +220,10 @@ func (m *AzureManager) fetchExplicitAsgs(specs []string) error {
 }
 
 func (m *AzureManager) buildAsgFromSpec(spec string) (cloudprovider.NodeGroup, error) {
+	scaleToZeroSupported := scaleToZeroSupportedStandard
+	if strings.EqualFold(m.config.VMType, vmTypeVMSS) {
+		scaleToZeroSupported = scaleToZeroSupportedVMSS
+	}
 	s, err := dynamic.SpecFromString(spec, scaleToZeroSupported)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse node group spec: %v", err)
@@ -219,6 +234,10 @@ func (m *AzureManager) buildAsgFromSpec(spec string) (cloudprovider.NodeGroup, e
 		return NewAgentPool(s, m)
 	case vmTypeVMSS:
 		return NewScaleSet(s, m)
+	case vmTypeACS:
+		fallthrough
+	case vmTypeAKS:
+		return NewContainerServiceAgentPool(s, m)
 	default:
 		return nil, fmt.Errorf("vmtype %s not supported", m.config.VMType)
 	}
@@ -326,6 +345,9 @@ func (m *AzureManager) getFilteredAutoscalingGroups(filter []cloudprovider.Label
 		asgs, err = m.listScaleSets(filter)
 	case vmTypeStandard:
 		asgs, err = m.listAgentPools(filter)
+	case vmTypeACS:
+	case vmTypeAKS:
+		return nil, nil
 	default:
 		err = fmt.Errorf("vmType %q not supported", m.config.VMType)
 	}
@@ -338,46 +360,34 @@ func (m *AzureManager) getFilteredAutoscalingGroups(filter []cloudprovider.Label
 
 // listScaleSets gets a list of scale sets and instanceIDs.
 func (m *AzureManager) listScaleSets(filter []cloudprovider.LabelAutoDiscoveryConfig) (asgs []cloudprovider.NodeGroup, err error) {
-	result, err := m.azClient.virtualMachineScaleSetsClient.List(m.config.ResourceGroup)
+	ctx, cancel := getContextWithCancel()
+	defer cancel()
+
+	result, err := m.azClient.virtualMachineScaleSetsClient.List(ctx, m.config.ResourceGroup)
 	if err != nil {
 		glog.Errorf("VirtualMachineScaleSetsClient.List for %v failed: %v", m.config.ResourceGroup, err)
 		return nil, err
 	}
 
-	moreResults := (result.Value != nil && len(*result.Value) > 0)
-	for moreResults {
-		for _, scaleSet := range *result.Value {
-			if len(filter) > 0 {
-				if scaleSet.Tags == nil || len(*scaleSet.Tags) == 0 {
-					continue
-				}
-
-				if !matchDiscoveryConfig(*scaleSet.Tags, filter) {
-					continue
-				}
+	for _, scaleSet := range result {
+		if len(filter) > 0 {
+			if scaleSet.Tags == nil || len(*scaleSet.Tags) == 0 {
+				continue
 			}
 
-			spec := &dynamic.NodeGroupSpec{
-				Name:               *scaleSet.Name,
-				MinSize:            1,
-				MaxSize:            -1,
-				SupportScaleToZero: scaleToZeroSupported,
+			if !matchDiscoveryConfig(*scaleSet.Tags, filter) {
+				continue
 			}
-			asg, _ := NewScaleSet(spec, m)
-			asgs = append(asgs, asg)
-		}
-		moreResults = false
-
-		if result.NextLink != nil {
-			result, err = m.azClient.virtualMachineScaleSetsClient.ListNextResults(result)
-			if err != nil {
-				glog.Errorf("VirtualMachineScaleSetsClient.ListNextResults for %v failed: %v", m.config.ResourceGroup, err)
-				return nil, err
-			}
-
-			moreResults = (result.Value != nil && len(*result.Value) > 0)
 		}
 
+		spec := &dynamic.NodeGroupSpec{
+			Name:               *scaleSet.Name,
+			MinSize:            1,
+			MaxSize:            -1,
+			SupportScaleToZero: scaleToZeroSupportedVMSS,
+		}
+		asg, _ := NewScaleSet(spec, m)
+		asgs = append(asgs, asg)
 	}
 
 	return asgs, nil
@@ -402,7 +412,7 @@ func (m *AzureManager) listAgentPools(filter []cloudprovider.LabelAutoDiscoveryC
 			Name:               poolName,
 			MinSize:            1,
 			MaxSize:            -1,
-			SupportScaleToZero: scaleToZeroSupported,
+			SupportScaleToZero: scaleToZeroSupportedStandard,
 		}
 		asg, _ := NewAgentPool(spec, m)
 		asgs = append(asgs, asg)

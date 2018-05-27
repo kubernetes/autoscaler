@@ -44,7 +44,7 @@ If we consistently pick the option with the lowest real to theoretical cost we s
  
 # Adding “preferred” node type to the formula
  
-C/T is a simple formula that doesn’t include other aspects as, for example, the preference to have bigger machines in a bigger cluster or have more consistent set of nodes. The advantage of big nodes is that they usually offer smaller resource fragmentation and are more likely to have enough resources to accept new pods. For example 2 x N1-standard-2 packed to 75% will only accept pods requesting less than 0.5 cpu, while 1 x N1-standard-2 can take 2 pods requesting 0.5 cpu OR 1 pod requesting
+C/T is a simple formula that doesn’t include other aspects as, for example, the preference to have bigger machines in a bigger cluster or have more consistent set of nodes. The advantage of big nodes is that they usually offer smaller resource fragmentation and are more likely to have enough resources to accept new pods. For example 2 x n1-standard-2 packed to 75% will only accept pods requesting less than 0.5 cpu, while 1 x n1-standard-2 can take 2 pods requesting 0.5 cpu OR 1 pod requesting
 1 cpu. Having more consistent set of machines makes cluster management easier.  
  
 To include this preference in the formula we introduce a per-node metric called NodeUnFitness. 
@@ -56,7 +56,7 @@ One of the possible (simple) NodeUnFitness implementations can be defined as a r
 NodeUnFitness = max(preferred_cpu/node_cpu, node_cpu/preferred_cpu)
 ``` 
 
-Max is used to ensure that NodeUnfitness is equal to 1 for a perfect node and greater than that for not-so-perfect nodes. For example, if N1-standard-8 is the preferred node then the unfitness of N1-standard-2 is 4.
+Max is used to ensure that NodeUnfitness is equal to 1 for a perfect node and greater than that for not-so-perfect nodes. For example, if n1-standard-8 is the preferred node then the unfitness of n1-standard-2 is 4.
 
 
 This number can be, in theory, combined with the existing number using a linear combination:
@@ -68,7 +68,7 @@ W1 * C/T + W2 * NodeUnFitness
 While this linear combination sounds cool it is a bit problematic.
 For small or single pods C/T strongly prefers smaller machines that may not be the best for the overall cluster well-being. For example C/T for a 100m pod with n1-standard-8 is ~80. 
 C/T for n2-standard-2 is 20. Assuming that n1-standard-8 would be a node of choice if 100 node clusters W2*NodeUnFitness would have to be 60 (assuming, for simplicity, W1 = 1).
-N1-standard-2 is only 4 times smaller than n1-standard-8 so W2 = 15.  But then everything collapses with even smaller pod. For a 50milli cpu pod W2 would have to be 30. So it’s bad. C/T is not good for the linear combination. 
+n1-standard-2 is only 4 times smaller than n1-standard-8 so W2 = 15.  But then everything collapses with even smaller pod. For a 50milli cpu pod W2 would have to be 30. So it’s bad. C/T is not good for the linear combination. 
  
 So we need something better. 
  
@@ -81,21 +81,21 @@ C/T can be stabilized by adding some value X to C and T. Lets call it a big clus
 So the formula is like (C+X)/(T+X). 
  
 Lets see what happens if X is the cost of running a 0.5 cpu pod and we have 1 pending pod of size 0.1 cpu. The preferred node
-is N1-standard-8.
+is n1-standard-8.
  
 | Machine type | Calculation | Rank |
 |--------------|-------|------| 
-| N1-standard-2      |            (0.095 + 0.016) / (0.003 + 0.016) | 5.84  |
-| N1-standard-8      |          (0.380 + 0.016) / (0.003 + 0.016)   | 20.84  |
-| N1-standard-2+GPU  |       (0.795 + 0.016) / (0.003 + 0.016)      | 42  |
+| n1-standard-2      |            (0.095 + 0.016) / (0.003 + 0.016) | 5.84  |
+| n1-standard-8      |          (0.380 + 0.016) / (0.003 + 0.016)   | 20.84  |
+| n1-standard-2+GPU  |       (0.795 + 0.016) / (0.003 + 0.016)      | 42  |
  
 And what if 1.5 cpu.
  
 | Machine type | Calculation | Rank |
 |--------------|-------|------| 
-| N1-standard-2     |          (0.095 + 0.016) / (0.003*15 + 0.016)| 1.81 |
-| N1-standard-8     |         (0.380 + 0.016) / (0.003*15 + 0.016) |  6.49 |
-| N1-standard-2+GPU |        (0.795 + 0.016) / (0.003*15 + 0.016)  | 13.0  |
+| n1-standard-2     |          (0.095 + 0.016) / (0.003*15 + 0.016)| 1.81 |
+| n1-standard-8     |         (0.380 + 0.016) / (0.003*15 + 0.016) |  6.49 |
+| n1-standard-2+GPU |        (0.795 + 0.016) / (0.003*15 + 0.016)  | 13.0  |
  
 Slightly better, but still hard to combine linearly with NodeUnfitness being equal 1 or 4.
  
@@ -107,19 +107,19 @@ NodeUnfitness*(C + X)/(T+X)
 
 | Machine type | Calculation | Rank |
 |--------------|-------|------| 
-| N1-standard-2  |           4 * (0.095 + 0.016) / (0.003 + 0.016) | 23.36 |
-| N1-standard-8  |         1 * (0.380 + 0.016) / (0.003 + 0.016) | 20.84 |
-| N1-standard-2+GPU |  4 * (0.795 + 0.016) / (0.003 + 0.016) | 168.0 |
+| n1-standard-2  |           4 * (0.095 + 0.016) / (0.003 + 0.016) | 23.36 |
+| n1-standard-8  |         1 * (0.380 + 0.016) / (0.003 + 0.016) | 20.84 |
+| n1-standard-2+GPU |  4 * (0.795 + 0.016) / (0.003 + 0.016) | 168.0 |
  
 1.5 cpu request:
 
 | Machine type | Calculation | Rank |
 |--------------|-------|------| 
-| N1-standard-2 |           4 * (0.095 + 0.016) / (0.003*15 + 0.016) | 7.24 |
-| N1-standard-8 |          1 * (0.380 + 0.016) / (0.003*15 + 0.016) |  6.49 |
-| N1-standard-2+GPU |   4 * (0.795 + 0.016) / (0.003*15 + 0.016) | 52 |
+| n1-standard-2 |           4 * (0.095 + 0.016) / (0.003*15 + 0.016) | 7.24 |
+| n1-standard-8 |          1 * (0.380 + 0.016) / (0.003*15 + 0.016) |  6.49 |
+| n1-standard-2+GPU |   4 * (0.795 + 0.016) / (0.003*15 + 0.016) | 52 |
  
-Looks better. So we are able to promote having bigger nodes if needed. However, what if we were to create 50 N1-standard-8 nodes to accommodate 50 x 1.5 cpu pods with strict PodAntiAffinity? Well, in that case we should probably go for n1-standard-2 nodes, however the above formula doesn’t promote that, because it considers the node unfit. So when requesting a larger number of nodes (in a single scale-up) we should probably suppress NodeUnfitness a bit. The suppress function should reduce the effect of NodeUnfitness when there is a good reason to do it. One of the good reasons is that the other option is significantly cheaper. In general the more nodes we are requesting the bigger the price difference can be. And if we are requesting just a single node
+Looks better. So we are able to promote having bigger nodes if needed. However, what if we were to create 50 n1-standard-8 nodes to accommodate 50 x 1.5 cpu pods with strict PodAntiAffinity? Well, in that case we should probably go for n1-standard-2 nodes, however the above formula doesn’t promote that, because it considers the node unfit. So when requesting a larger number of nodes (in a single scale-up) we should probably suppress NodeUnfitness a bit. The suppress function should reduce the effect of NodeUnfitness when there is a good reason to do it. One of the good reasons is that the other option is significantly cheaper. In general the more nodes we are requesting the bigger the price difference can be. And if we are requesting just a single node
 then this node should be well fitted to the cluster (than to the pod) so that other pods can also use it and the cluster administrator has less types of nodes to focus on. 
  
 We are looking for a function suppress(NodeUnfitness, NodeCount) that:
@@ -173,9 +173,9 @@ nodeUnFitness = max(preferred_cpu/node_cpu, node_cpu/preferred_cpu)
 
 For now we will have a simple, hard-coded values like:
 
-* cluster size 1 - 2 -> N1-standard-1
-* cluster size 3 - 6 -> N1-standard-2
-* cluster size 7 - 20 -> N1-standard-4
-* cluster size 20 - 80 -> N1-standard-8
-* cluster size 80 - 300 -> N1-standard-16
-* cluster size 300+ -> N1-standard-32
+* cluster size 1 - 2 -> n1-standard-1
+* cluster size 3 - 6 -> n1-standard-2
+* cluster size 7 - 20 -> n1-standard-4
+* cluster size 20 - 80 -> n1-standard-8
+* cluster size 80 - 300 -> n1-standard-16
+* cluster size 300+ -> n1-standard-32

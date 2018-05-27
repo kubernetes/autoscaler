@@ -26,7 +26,11 @@ import (
 )
 
 var (
-	anyTime = time.Unix(0, 0)
+	anyTime     = time.Unix(0, 0)
+	testRequest = model.Resources{
+		model.ResourceCPU:    model.CPUAmountFromCores(3.14),
+		model.ResourceMemory: model.MemoryAmountFromBytes(3.14e9),
+	}
 )
 
 // Verifies that the PercentileEstimator returns requested percentiles of CPU
@@ -68,16 +72,14 @@ func TestConfidenceMultiplier(t *testing.T) {
 	})
 	testedEstimator := &confidenceMultiplier{0.1, 2.0, baseEstimator}
 
-	container := model.NewContainerState()
+	s := model.NewAggregateContainerState()
 	// Add 9 CPU samples at the frequency of 1/(2 mins).
 	timestamp := anyTime
 	for i := 1; i <= 9; i++ {
-		container.AddSample(&model.ContainerUsageSample{
-			timestamp, model.CPUAmountFromCores(1.0), model.ResourceCPU})
+		s.AddSample(&model.ContainerUsageSample{
+			timestamp, model.CPUAmountFromCores(1.0), testRequest[model.ResourceCPU], model.ResourceCPU})
 		timestamp = timestamp.Add(time.Minute * 2)
 	}
-	s := model.NewAggregateContainerState()
-	s.MergeContainerState(container, model.MergeForRecommendation, time.Unix(0, 0))
 
 	// Expected confidence = 9/(60*24) = 0.00625.
 	assert.Equal(t, 0.00625, getConfidence(s))

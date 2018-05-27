@@ -20,7 +20,10 @@ import (
 	"flag"
 	"github.com/golang/glog"
 	kube_flag "k8s.io/apiserver/pkg/util/flag"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
+	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
+	updater "k8s.io/autoscaler/vertical-pod-autoscaler/updater/logic"
 	kube_client "k8s.io/client-go/kubernetes"
 	kube_restclient "k8s.io/client-go/rest"
 	"time"
@@ -38,13 +41,13 @@ var (
 )
 
 func main() {
-	glog.Infof("Running VPA Updater")
 	kube_flag.InitFlags()
+	glog.V(1).Infof("Vertical Pod Autoscaler %s Updater", common.VerticalPodAutoscalerVersion)
 
 	// TODO monitoring
 
 	kubeClient, vpaClient := createKubeClients()
-	updater := NewUpdater(kubeClient, vpaClient, *minReplicas, *evictionToleranceFraction)
+	updater := updater.NewUpdater(kubeClient, vpaClient, *minReplicas, *evictionToleranceFraction, vpa_api_util.NewCappingRecommendationProcessor())
 	for {
 		select {
 		case <-time.After(*updaterInterval):

@@ -41,9 +41,10 @@ const (
 // i.e. pod with 10M current memory and recommendation 20M will have higher update priority
 // than pod with 100M current memory and 150M recommendation (100% increase vs 50% increase)
 type UpdatePriorityCalculator struct {
-	resourcesPolicy *vpa_types.PodResourcePolicy
-	pods            []podPriority
-	config          *UpdateConfig
+	resourcesPolicy         *vpa_types.PodResourcePolicy
+	pods                    []podPriority
+	config                  *UpdateConfig
+	recommendationProcessor vpa_api_util.RecommendationProcessor
 }
 
 // UpdateConfig holds configuration for UpdatePriorityCalculator
@@ -56,16 +57,22 @@ type UpdateConfig struct {
 // NewUpdatePriorityCalculator creates new UpdatePriorityCalculator for the given resources policy and configuration.
 // If the given policy is nil, there will be no policy restriction on update.
 // If the given config is nil, default values are used.
-func NewUpdatePriorityCalculator(policy *vpa_types.PodResourcePolicy, config *UpdateConfig) UpdatePriorityCalculator {
+func NewUpdatePriorityCalculator(policy *vpa_types.PodResourcePolicy, config *UpdateConfig, processor vpa_api_util.RecommendationProcessor) UpdatePriorityCalculator {
 	if config == nil {
 		config = &UpdateConfig{MinChangePriority: defaultUpdateThreshold}
 	}
-	return UpdatePriorityCalculator{resourcesPolicy: policy, config: config}
+	return UpdatePriorityCalculator{resourcesPolicy: policy, config: config, recommendationProcessor: processor}
 }
 
 // AddPod adds pod to the UpdatePriorityCalculator.
 func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, recommendation *vpa_types.RecommendedPodResources, now time.Time) {
-	updatePriority := calc.getUpdatePriority(pod, recommendation)
+	processedRecommendation, err := calc.recommendationProcessor.Apply(recommendation, calc.resourcesPolicy, pod)
+	if err != nil {
+		glog.V(2).Infof("cannot process recommendation for pod %s: %v", pod.Name, err)
+		return
+	}
+
+	updatePriority := calc.getUpdatePriority(pod, processedRecommendation)
 
 	// The update is allowed in either of the following two cases:
 	// 1. the request is outside the recommended range for some container.
@@ -110,11 +117,7 @@ func (calc *UpdatePriorityCalculator) getUpdatePriority(pod *apiv1.Pod, recommen
 	totalRecommendedPerResource := make(map[apiv1.ResourceName]int64)
 
 	for _, podContainer := range pod.Spec.Containers {
-		recommendedRequest, err := vpa_api_util.GetCappedRecommendationForContainer(podContainer, recommendation, calc.resourcesPolicy)
-		if err != nil {
-			glog.V(2).Infof("no recommendation for container %v in pod %v", podContainer.Name, pod.Name)
-			continue
-		}
+		recommendedRequest := vpa_api_util.GetRecommendationForContainer(podContainer.Name, recommendation)
 		for resourceName, recommended := range recommendedRequest.Target {
 			totalRecommendedPerResource[resourceName] += recommended.MilliValue()
 			minRecommneded, hasMin := recommendedRequest.MinRecommended[resourceName]
