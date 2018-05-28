@@ -174,6 +174,36 @@ func FilterOutExpendablePods(pods []*apiv1.Pod, expendablePodsPriorityCutoff int
 	return result
 }
 
+// FilterSchedulablePodsForNode filters pods that can be scheduled on the given node.
+func FilterSchedulablePodsForNode(context *context.AutoscalingContext, pods []*apiv1.Pod, nodeGroupId string, nodeInfo *schedulercache.NodeInfo) []*apiv1.Pod {
+	schedulablePods := []*apiv1.Pod{}
+	loggingQuota := glogx.PodsLoggingQuota()
+	podSchedulable := make(podSchedulableMap)
+	for _, pod := range pods {
+		schedulable, found := podSchedulable.get(pod)
+		if found {
+			if schedulable {
+				schedulablePods = append(schedulablePods, pod)
+			} else {
+				glogx.V(2).UpTo(loggingQuota).Infof("Pod %s can't be scheduled on %s. Used cached predicate check results", pod.Name, nodeGroupId)
+			}
+		} else {
+			err := context.PredicateChecker.CheckPredicates(pod, nil, nodeInfo, simulator.ReturnVerboseError)
+			if err == nil {
+				schedulable = true
+				podSchedulable.set(pod, true)
+				schedulablePods = append(schedulablePods, pod)
+			} else {
+				glog.V(2).Infof("Pod %s can't be scheduled on %s, predicate failed: %v", pod.Name, nodeGroupId, err)
+				schedulable = false
+				podSchedulable.set(pod, false)
+			}
+		}
+	}
+	glogx.V(2).Over(loggingQuota).Infof("%v other pods can't be scheduled on %s.", -loggingQuota.Left(), nodeGroupId)
+	return schedulablePods
+}
+
 // GetNodeInfosForGroups finds NodeInfos for all node groups used to manage the given nodes. It also returns a node group to sample node mapping.
 // TODO(mwielgus): This returns map keyed by url, while most code (including scheduler) uses node.Name for a key.
 //
