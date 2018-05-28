@@ -26,7 +26,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/expander/factory"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	kube_client "k8s.io/client-go/kubernetes"
 	kube_record "k8s.io/client-go/tools/record"
@@ -52,6 +51,16 @@ type AutoscalingContext struct {
 	LogRecorder *utils.LogEventRecorder
 }
 
+// GpuLimits define lower and upper bound on GPU instances of given type in cluster
+type GpuLimits struct {
+	// Type of the GPU (e.g. nvidia-tesla-k80)
+	GpuType string
+	// Lower bound on number of GPUs of given type in cluster
+	Min int64
+	// Upper bound on number of GPUs of given type in cluster
+	Max int64
+}
+
 // AutoscalingOptions contain various options to customize how autoscaling works
 type AutoscalingOptions struct {
 	// MaxEmptyBulkDelete is a number of empty nodes that can be removed at the same time.
@@ -74,8 +83,8 @@ type AutoscalingOptions struct {
 	MaxMemoryTotal int64
 	// MinMemoryTotal sets the maximum memory (in megabytes) in the whole cluster
 	MinMemoryTotal int64
-	// GpuTotal is a list of strings with configuration of min/max limits for differend GPUs.
-	GpuTotal []string
+	// GpuTotal is a list of strings with configuration of min/max limits for different GPUs.
+	GpuTotal []GpuLimits
 	// NodeGroupAutoDiscovery represents one or more definition(s) of node group auto-discovery
 	NodeGroupAutoDiscovery []string
 	// EstimatorName is the estimator used to estimate the number of needed nodes in scale up.
@@ -142,14 +151,19 @@ func NewAutoscalingContext(options AutoscalingOptions, predicateChecker *simulat
 	kubeClient kube_client.Interface, kubeEventRecorder kube_record.EventRecorder,
 	logEventRecorder *utils.LogEventRecorder, listerRegistry kube_util.ListerRegistry) (*AutoscalingContext, errors.AutoscalerError) {
 
-	minResources, maxResources, gpuErr := gpu.ParseGpuLimits(options.GpuTotal)
-	if gpuErr != nil {
-		return nil, errors.ToAutoscalerError(errors.InternalError, gpuErr)
-	}
+	// build min/max maps for resources limits
+	minResources := make(map[string]int64)
+	maxResources := make(map[string]int64)
+
 	minResources[cloudprovider.ResourceNameCores] = options.MinCoresTotal
 	minResources[cloudprovider.ResourceNameMemory] = options.MinMemoryTotal
 	maxResources[cloudprovider.ResourceNameCores] = options.MaxCoresTotal
 	maxResources[cloudprovider.ResourceNameMemory] = options.MaxMemoryTotal
+
+	for _, gpuLimits := range options.GpuTotal {
+		minResources[gpuLimits.GpuType] = gpuLimits.Min
+		maxResources[gpuLimits.GpuType] = gpuLimits.Max
+	}
 
 	cloudProviderBuilder := builder.NewCloudProviderBuilder(options.CloudProviderName, options.CloudConfig, options.ClusterName, options.NodeAutoprovisioningEnabled, options.Regional)
 	cloudProvider := cloudProviderBuilder.Build(cloudprovider.NodeGroupDiscoveryOptions{
