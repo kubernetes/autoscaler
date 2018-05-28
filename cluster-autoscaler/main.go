@@ -66,10 +66,13 @@ func (flag *MultiStringFlag) Set(value string) error {
 	return nil
 }
 
-var (
-	nodeGroupsFlag             MultiStringFlag
-	nodeGroupAutoDiscoveryFlag MultiStringFlag
+func multiStringFlag(name string, usage string) *MultiStringFlag {
+	value := new(MultiStringFlag)
+	flag.Var(value, name, usage)
+	return value
+}
 
+var (
 	clusterName            = flag.String("cluster-name", "", "Autoscaled cluster name, if available")
 	address                = flag.String("address", ":8085", "The address to expose prometheus metrics.")
 	kubernetes             = flag.String("kubernetes", "", "Kubernetes master location. Leave blank for default")
@@ -116,6 +119,16 @@ var (
 	maxTotalUnreadyPercentage  = flag.Float64("max-total-unready-percentage", 45, "Maximum percentage of unready nodes in the cluster.  After this is exceeded, CA halts operations")
 	okTotalUnreadyCount        = flag.Int("ok-total-unready-count", 3, "Number of allowed unready nodes, irrespective of max-total-unready-percentage")
 	maxNodeProvisionTime       = flag.Duration("max-node-provision-time", 15*time.Minute, "Maximum time CA waits for node to be provisioned")
+	nodeGroupsFlag             = multiStringFlag(
+		"nodes",
+		"sets min,max size and other configuration data for a node group in a format accepted by cloud provider. Can be used multiple times. Format: <min>:<max>:<other...>")
+	nodeGroupAutoDiscoveryFlag = multiStringFlag(
+		"node-group-auto-discovery",
+		"One or more definition(s) of node group auto-discovery. "+
+			"A definition is expressed `<name of discoverer>:[<key>[=<value>]]`. "+
+			"The `aws` and `gce` cloud providers are currently supported. AWS matches by ASG tags, e.g. `asg:tag=tagKey,anotherTagKey`. "+
+			"GCE matches by IG name prefix, and requires you to specify min and max nodes per IG, e.g. `mig:namePrefix=pfx,min=0,max=10` "+
+			"Can be used multiple times.")
 
 	estimatorFlag = flag.String("estimator", estimator.BinpackingEstimatorName,
 		"Type of resource estimator to be used in scale up. Available values: ["+strings.Join(estimator.AvailableEstimators, ",")+"]")
@@ -150,7 +163,7 @@ func createAutoscalingOptions() context.AutoscalingOptions {
 	return context.AutoscalingOptions{
 		CloudConfig:                      *cloudConfig,
 		CloudProviderName:                *cloudProviderFlag,
-		NodeGroupAutoDiscovery:           nodeGroupAutoDiscoveryFlag,
+		NodeGroupAutoDiscovery:           *nodeGroupAutoDiscoveryFlag,
 		MaxTotalUnreadyPercentage:        *maxTotalUnreadyPercentage,
 		OkTotalUnreadyCount:              *okTotalUnreadyCount,
 		EstimatorName:                    *estimatorFlag,
@@ -163,7 +176,7 @@ func createAutoscalingOptions() context.AutoscalingOptions {
 		MinCoresTotal:                    minCoresTotal,
 		MaxMemoryTotal:                   maxMemoryTotal,
 		MinMemoryTotal:                   minMemoryTotal,
-		NodeGroups:                       nodeGroupsFlag,
+		NodeGroups:                       *nodeGroupsFlag,
 		ScaleDownDelayAfterAdd:           *scaleDownDelayAfterAdd,
 		ScaleDownDelayAfterDelete:        *scaleDownDelayAfterDelete,
 		ScaleDownDelayAfterFailure:       *scaleDownDelayAfterFailure,
@@ -282,13 +295,7 @@ func main() {
 	leaderElection.LeaderElect = true
 
 	bindFlags(&leaderElection, pflag.CommandLine)
-	flag.Var(&nodeGroupsFlag, "nodes", "sets min,max size and other configuration data for a node group in a format accepted by cloud provider."+
-		"Can be used multiple times. Format: <min>:<max>:<other...>")
-	flag.Var(&nodeGroupAutoDiscoveryFlag, "node-group-auto-discovery", "One or more definition(s) of node group auto-discovery. "+
-		"A definition is expressed `<name of discoverer>:[<key>[=<value>]]`. "+
-		"The `aws` and `gce` cloud providers are currently supported. AWS matches by ASG tags, e.g. `asg:tag=tagKey,anotherTagKey`. "+
-		"GCE matches by IG name prefix, and requires you to specify min and max nodes per IG, e.g. `mig:namePrefix=pfx,min=0,max=10` "+
-		"Can be used multiple times.")
+
 	kube_flag.InitFlags()
 
 	healthCheck := metrics.NewHealthCheck(*maxInactivityTimeFlag, *maxFailingTimeFlag)
