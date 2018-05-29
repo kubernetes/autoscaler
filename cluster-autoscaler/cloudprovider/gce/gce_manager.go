@@ -621,6 +621,9 @@ func (m *gceManagerImpl) createNodePool(mig *Mig) error {
 
 	taints := []*gke_alpha.NodeTaint{}
 	for _, taint := range mig.spec.taints {
+		if taint.Key == gpu.ResourceNvidiaGPU {
+			continue
+		}
 		effect, found := taintEffectsMap[taint.Effect]
 		if !found {
 			effect = "EFFECT_UNSPECIFIED"

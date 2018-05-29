@@ -146,8 +146,8 @@ func (gce *GceCloudProvider) NewNodeGroup(machineType string, labels map[string]
 
 		taint := apiv1.Taint{
 			Effect: apiv1.TaintEffectNoSchedule,
-			Key:    "gke-accelerator",
-			Value:  gpuType,
+			Key:    gpu.ResourceNvidiaGPU,
+			Value:  "present",
 		}
 		taints = append(taints, taint)
 	}
