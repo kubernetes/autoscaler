@@ -22,17 +22,15 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	extensionsv1 "k8s.io/api/extensions/v1beta1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/glogx"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/labels"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/nodegroupset"
 	"k8s.io/kubernetes/pkg/scheduler/schedulercache"
 
@@ -42,8 +40,8 @@ import (
 // ScaleUp tries to scale the cluster up. Return true if it found a way to increase the size,
 // false if it didn't and error if an error occurred. Assumes that all nodes in the cluster are
 // ready and in sync with instance groups.
-func ScaleUp(context *context.AutoscalingContext, clusterStateRegistry *clusterstate.ClusterStateRegistry, unschedulablePods []*apiv1.Pod, nodes []*apiv1.Node,
-	daemonSets []*extensionsv1.DaemonSet) (bool, errors.AutoscalerError) {
+func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.AutoscalingProcessors, clusterStateRegistry *clusterstate.ClusterStateRegistry, unschedulablePods []*apiv1.Pod,
+	nodes []*apiv1.Node, daemonSets []*extensionsv1.DaemonSet) (bool, errors.AutoscalerError) {
 	// From now on we only care about unschedulable pods that were marked after the newest
 	// node became available for the scheduler.
 	if len(unschedulablePods) == 0 {
@@ -97,8 +95,12 @@ func ScaleUp(context *context.AutoscalingContext, clusterStateRegistry *clusters
 	podsPassingPredicates := make(map[string][]*apiv1.Pod)
 	expansionOptions := make([]expander.Option, 0)
 
-	if context.AutoscalingOptions.NodeAutoprovisioningEnabled {
-		nodeGroups, nodeInfos = addAutoprovisionedCandidates(context, nodeGroups, nodeInfos, unschedulablePods)
+	if processors != nil && processors.NodeGroupListProcessor != nil {
+		var errProc error
+		nodeGroups, nodeInfos, errProc = processors.NodeGroupListProcessor.Process(context, nodeGroups, nodeInfos, unschedulablePods)
+		if errProc != nil {
+			return false, errors.ToAutoscalerError(errors.InternalError, errProc)
+		}
 	}
 
 	for _, nodeGroup := range nodeGroups {
@@ -354,77 +356,6 @@ func executeScaleUp(context *context.AutoscalingContext, clusterStateRegistry *c
 	context.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaledUpGroup",
 		"Scale-up: group %s size set to %d", info.Group.Id(), info.NewSize)
 	return nil
-}
-
-func addAutoprovisionedCandidates(context *context.AutoscalingContext, nodeGroups []cloudprovider.NodeGroup,
-	nodeInfos map[string]*schedulercache.NodeInfo, unschedulablePods []*apiv1.Pod) ([]cloudprovider.NodeGroup,
-	map[string]*schedulercache.NodeInfo) {
-
-	autoprovisionedNodeGroupCount := 0
-	for _, group := range nodeGroups {
-		if group.Autoprovisioned() {
-			autoprovisionedNodeGroupCount++
-		}
-	}
-	if autoprovisionedNodeGroupCount >= context.MaxAutoprovisionedNodeGroupCount {
-		glog.V(4).Infof("Max autoprovisioned node group count reached")
-		return nodeGroups, nodeInfos
-	}
-
-	newGroupsCount := 0
-
-	newNodeGroups := addAllMachineTypesForConfig(context, map[string]string{}, map[string]resource.Quantity{},
-		nodeInfos, unschedulablePods)
-	newGroupsCount += len(newNodeGroups)
-	nodeGroups = append(nodeGroups, newNodeGroups...)
-
-	gpuRequests := gpu.GetGpuRequests(unschedulablePods)
-	for _, gpuRequestInfo := range gpuRequests {
-		glog.V(4).Info("Adding node groups using GPU to NAP simulations")
-		extraResources := map[string]resource.Quantity{
-			gpu.ResourceNvidiaGPU: gpuRequestInfo.MaxRequest,
-		}
-		newNodeGroups := addAllMachineTypesForConfig(context, gpuRequestInfo.SystemLabels, extraResources,
-			nodeInfos, gpuRequestInfo.Pods)
-		newGroupsCount += len(newNodeGroups)
-		nodeGroups = append(nodeGroups, newNodeGroups...)
-	}
-	glog.V(4).Infof("Considering %v potential node groups in NAP simulations", newGroupsCount)
-
-	return nodeGroups, nodeInfos
-}
-
-func addAllMachineTypesForConfig(context *context.AutoscalingContext, systemLabels map[string]string, extraResources map[string]resource.Quantity,
-	nodeInfos map[string]*schedulercache.NodeInfo, unschedulablePods []*apiv1.Pod) []cloudprovider.NodeGroup {
-
-	nodeGroups := make([]cloudprovider.NodeGroup, 0)
-	machines, err := context.CloudProvider.GetAvailableMachineTypes()
-	if err != nil {
-		glog.Warningf("Failed to get machine types: %v", err)
-		return nodeGroups
-	}
-
-	bestLabels := labels.BestLabelSet(unschedulablePods)
-	taints := make([]apiv1.Taint, 0)
-	for _, machineType := range machines {
-		nodeGroup, err := context.CloudProvider.NewNodeGroup(machineType, bestLabels, systemLabels, taints, extraResources)
-		if err != nil {
-			// We don't check if a given node group setup is allowed.
-			// It's fine if it isn't, just don't consider it an option.
-			if err != cloudprovider.ErrIllegalConfiguration {
-				glog.Warningf("Unable to build temporary node group for %s: %v", machineType, err)
-			}
-			continue
-		}
-		nodeInfo, err := nodeGroup.TemplateNodeInfo()
-		if err != nil {
-			glog.Warningf("Unable to build template for node group for %s: %v", nodeGroup.Id(), err)
-			continue
-		}
-		nodeInfos[nodeGroup.Id()] = nodeInfo
-		nodeGroups = append(nodeGroups, nodeGroup)
-	}
-	return nodeGroups
 }
 
 func calculateClusterCoresMemoryTotal(nodeGroups []cloudprovider.NodeGroup, nodeInfos map[string]*schedulercache.NodeInfo) (int64, int64) {
