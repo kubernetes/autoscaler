@@ -29,7 +29,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/glogx"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
@@ -56,8 +55,11 @@ func ScaleUp(context *context.AutoscalingContext, clusterStateRegistry *clusters
 
 	loggingQuota := glogx.PodsLoggingQuota()
 
+	podsRemainUnschedulable := make(map[*apiv1.Pod]bool)
+
 	for _, pod := range unschedulablePods {
 		glogx.V(1).UpTo(loggingQuota).Infof("Pod %s/%s is unschedulable", pod.Namespace, pod.Name)
+		podsRemainUnschedulable[pod] = true
 	}
 	glogx.V(1).Over(loggingQuota).Infof("%v other pods are also unschedulable", -loggingQuota.Left())
 	nodeInfos, err := GetNodeInfosForGroups(nodes, context.CloudProvider, context.ClientSet,
@@ -93,7 +95,6 @@ func ScaleUp(context *context.AutoscalingContext, clusterStateRegistry *clusters
 	glog.V(4).Infof("Upcoming %d nodes", len(upcomingNodes))
 
 	podsPassingPredicates := make(map[string][]*apiv1.Pod)
-	podsRemainUnschedulable := make(map[*apiv1.Pod]bool)
 	expansionOptions := make([]expander.Option, 0)
 
 	if context.AutoscalingOptions.NodeAutoprovisioningEnabled {
@@ -144,17 +145,9 @@ func ScaleUp(context *context.AutoscalingContext, clusterStateRegistry *clusters
 			Pods:      make([]*apiv1.Pod, 0),
 		}
 
-		for _, pod := range unschedulablePods {
-			err = context.PredicateChecker.CheckPredicates(pod, nil, nodeInfo, simulator.ReturnVerboseError)
-			if err == nil {
-				option.Pods = append(option.Pods, pod)
-				podsRemainUnschedulable[pod] = false
-			} else {
-				glog.V(2).Infof("Scale-up predicate failed: %v", err)
-				if _, exists := podsRemainUnschedulable[pod]; !exists {
-					podsRemainUnschedulable[pod] = true
-				}
-			}
+		option.Pods = FilterSchedulablePodsForNode(context, unschedulablePods, nodeGroup.Id(), nodeInfo)
+		for _, pod := range option.Pods {
+			podsRemainUnschedulable[pod] = false
 		}
 		passingPods := make([]*apiv1.Pod, len(option.Pods))
 		copy(passingPods, option.Pods)
