@@ -197,6 +197,48 @@ func TestDrain(t *testing.T) {
 		},
 	}
 
+	terminalPod := &apiv1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "bar",
+			Namespace: "default",
+		},
+		Spec: apiv1.PodSpec{
+			NodeName:      "node",
+			RestartPolicy: apiv1.RestartPolicyOnFailure,
+		},
+		Status: apiv1.PodStatus{
+			Phase: apiv1.PodSucceeded,
+		},
+	}
+
+	failedPod := &apiv1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "bar",
+			Namespace: "default",
+		},
+		Spec: apiv1.PodSpec{
+			NodeName:      "node",
+			RestartPolicy: apiv1.RestartPolicyNever,
+		},
+		Status: apiv1.PodStatus{
+			Phase: apiv1.PodFailed,
+		},
+	}
+
+	evictedPod := &apiv1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "bar",
+			Namespace: "default",
+		},
+		Spec: apiv1.PodSpec{
+			NodeName:      "node",
+			RestartPolicy: apiv1.RestartPolicyAlways,
+		},
+		Status: apiv1.PodStatus{
+			Phase: apiv1.PodFailed,
+		},
+	}
+
 	safePod := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "bar",
@@ -354,6 +396,27 @@ func TestDrain(t *testing.T) {
 			pdbs:        []*policyv1.PodDisruptionBudget{},
 			expectFatal: true,
 			expectPods:  []*apiv1.Pod{},
+		},
+		{
+			description: "failed pod",
+			pods:        []*apiv1.Pod{failedPod},
+			pdbs:        []*policyv1.PodDisruptionBudget{},
+			expectFatal: false,
+			expectPods:  []*apiv1.Pod{failedPod},
+		},
+		{
+			description: "evicted pod",
+			pods:        []*apiv1.Pod{evictedPod},
+			pdbs:        []*policyv1.PodDisruptionBudget{},
+			expectFatal: false,
+			expectPods:  []*apiv1.Pod{evictedPod},
+		},
+		{
+			description: "pod in terminal state",
+			pods:        []*apiv1.Pod{terminalPod},
+			pdbs:        []*policyv1.PodDisruptionBudget{},
+			expectFatal: false,
+			expectPods:  []*apiv1.Pod{terminalPod},
 		},
 		{
 			description: "pod with PodSafeToEvict annotation",
