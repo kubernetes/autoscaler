@@ -27,9 +27,10 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/random"
+	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/pods"
 	scheduler_util "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
@@ -200,7 +201,7 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 		lastScaleUpTime:       time.Now(),
 		lastScaleDownFailTime: time.Now(),
 		scaleDown:             sd,
-		podListProcessor:      pods.NewDefaultPodListProcessor(),
+		processors:            ca_processors.TestProcessors(),
 		initialized:           true}
 
 	// MaxNodesTotal reached.
@@ -348,6 +349,8 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, fakeLogRecorder)
 	clusterState.UpdateNodes([]*apiv1.Node{n1}, time.Now())
 
+	processors := ca_processors.TestProcessors()
+	processors.NodeGroupListProcessor = nodegroups.NewAutoprovisioningNodeGroupListProcessor()
 	context := &context.AutoscalingContext{
 		AutoscalingOptions: context.AutoscalingOptions{
 			EstimatorName:                    estimator.BinpackingEstimatorName,
@@ -380,7 +383,7 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 		lastScaleUpTime:       time.Now(),
 		lastScaleDownFailTime: time.Now(),
 		scaleDown:             sd,
-		podListProcessor:      pods.NewDefaultPodListProcessor(),
+		processors:            processors,
 		initialized:           true}
 
 	// Scale up.
@@ -518,7 +521,7 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 		lastScaleUpTime:       time.Now(),
 		lastScaleDownFailTime: time.Now(),
 		scaleDown:             sd,
-		podListProcessor:      pods.NewDefaultPodListProcessor()}
+		processors:            ca_processors.TestProcessors()}
 
 	// Scale up.
 	readyNodeListerMock.On("List").Return([]*apiv1.Node{n1}, nil).Times(2) // due to initialized=false
@@ -655,7 +658,7 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 		lastScaleUpTime:       time.Now(),
 		lastScaleDownFailTime: time.Now(),
 		scaleDown:             sd,
-		podListProcessor:      pods.NewDefaultPodListProcessor()}
+		processors:            ca_processors.TestProcessors()}
 
 	// Scale up
 	readyNodeListerMock.On("List").Return([]*apiv1.Node{n1, n2, n3}, nil).Times(2) // due to initialized=false
