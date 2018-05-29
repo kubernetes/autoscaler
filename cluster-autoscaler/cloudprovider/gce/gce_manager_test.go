@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
@@ -33,6 +34,7 @@ import (
 	gke "google.golang.org/api/container/v1"
 	gke_alpha "google.golang.org/api/container/v1alpha1"
 	gke_beta "google.golang.org/api/container/v1beta1"
+	apiv1 "k8s.io/api/core/v1"
 )
 
 const (
@@ -755,7 +757,19 @@ func TestCreateNodePool(t *testing.T) {
 		autoprovisioned: true,
 		exist:           true,
 		nodePoolName:    "nodeautoprovisioning-323233232",
-		spec:            &autoprovisioningSpec{machineType: "n1-standard-1"},
+		spec: &autoprovisioningSpec{
+			machineType: "n1-standard-1",
+			taints: []apiv1.Taint{
+				{
+					Key:   gpu.ResourceNvidiaGPU,
+					Value: "present",
+				},
+				{
+					Key:   "taint1",
+					Value: "value",
+				},
+			},
+		},
 	}
 
 	err := g.createNodePool(mig)

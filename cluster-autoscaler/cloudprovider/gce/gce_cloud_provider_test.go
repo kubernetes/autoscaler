@@ -24,7 +24,9 @@ import (
 	"strings"
 	"testing"
 
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -465,6 +467,50 @@ func TestMig(t *testing.T) {
 	mock.AssertExpectationsForObjects(t, gceManagerMock)
 }
 
+func TestNewNodeGroupForGpu(t *testing.T) {
+	server := NewHttpServerMock()
+	defer server.Close()
+	gceManagerMock := &gceManagerMock{}
+	client := &http.Client{}
+	gceService, err := gcev1.New(client)
+	assert.NoError(t, err)
+	gceService.BasePath = server.URL
+	templateBuilder := &templateBuilder{"project1"}
+	gce := &GceCloudProvider{
+		gceManager: gceManagerMock,
+	}
+
+	// Test NewNodeGroup.
+	gceManagerMock.On("getProjectId").Return("project1").Once()
+	gceManagerMock.On("getLocation").Return("us-west1-b").Once()
+	gceManagerMock.On("getTemplates").Return(templateBuilder).Once()
+	gceManagerMock.On("getCpuAndMemoryForMachineType", "n1-standard-1", "us-west1-b").
+		Return(int64(1), int64(3840*1024*1024), nil).Once()
+
+	systemLabels := map[string]string{
+		gpu.GPULabel: gpu.DefaultGPUType,
+	}
+	extraResources := map[string]resource.Quantity{
+		gpu.ResourceNvidiaGPU: resource.MustParse("1"),
+	}
+	nodeGroup, err := gce.NewNodeGroup("n1-standard-1", make(map[string]string), systemLabels, nil, extraResources)
+	assert.NoError(t, err)
+	assert.NotNil(t, nodeGroup)
+	mig1 := reflect.ValueOf(nodeGroup).Interface().(*Mig)
+	assert.True(t, strings.HasPrefix(mig1.Id(), "https://content.googleapis.com/compute/v1/projects/project1/zones/us-west1-b/instanceGroups/"+nodeAutoprovisioningPrefix+"-n1-standard-1-gpu"))
+	assert.Equal(t, true, mig1.Autoprovisioned())
+	assert.Equal(t, 0, mig1.MinSize())
+	assert.Equal(t, 1000, mig1.MaxSize())
+	expectedTaints := []apiv1.Taint{
+		{
+			Key:    gpu.ResourceNvidiaGPU,
+			Value:  "present",
+			Effect: apiv1.TaintEffectNoSchedule,
+		},
+	}
+	assert.Equal(t, expectedTaints, mig1.spec.taints)
+	mock.AssertExpectationsForObjects(t, gceManagerMock)
+}
 func TestGceRefFromProviderId(t *testing.T) {
 	ref, err := GceRefFromProviderId("gce://project1/us-central1-b/name1")
 	assert.NoError(t, err)
