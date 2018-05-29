@@ -23,11 +23,11 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/pods"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/tpu"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -60,14 +60,14 @@ type StaticAutoscaler struct {
 	lastScaleDownDeleteTime time.Time
 	lastScaleDownFailTime   time.Time
 	scaleDown               *ScaleDown
-	podListProcessor        pods.PodListProcessor
+	processors              *ca_processors.AutoscalingProcessors
 	initialized             bool
 }
 
 // NewStaticAutoscaler creates an instance of Autoscaler filled with provided parameters
 func NewStaticAutoscaler(opts context.AutoscalingOptions, predicateChecker *simulator.PredicateChecker,
 	kubeClient kube_client.Interface, kubeEventRecorder kube_record.EventRecorder, listerRegistry kube_util.ListerRegistry,
-	podListProcessor pods.PodListProcessor) (*StaticAutoscaler, errors.AutoscalerError) {
+	processors *ca_processors.AutoscalingProcessors) (*StaticAutoscaler, errors.AutoscalerError) {
 	logRecorder, err := utils.NewStatusMapRecorder(kubeClient, opts.ConfigNamespace, kubeEventRecorder, opts.WriteStatusConfigMap)
 	if err != nil {
 		glog.Error("Failed to initialize status configmap, unable to write status events")
@@ -97,7 +97,7 @@ func NewStaticAutoscaler(opts context.AutoscalingOptions, predicateChecker *simu
 		lastScaleDownDeleteTime: time.Now(),
 		lastScaleDownFailTime:   time.Now(),
 		scaleDown:               scaleDown,
-		podListProcessor:        podListProcessor,
+		processors:              processors,
 		clusterStateRegistry:    clusterStateRegistry,
 	}, nil
 }
@@ -210,7 +210,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		return errors.ToAutoscalerError(errors.ApiCallError, err)
 	}
 
-	allUnschedulablePods, allScheduled, err = a.podListProcessor.Process(a.AutoscalingContext, allUnschedulablePods, allScheduled, allNodes)
+	allUnschedulablePods, allScheduled, err = a.processors.PodListProcessor.Process(a.AutoscalingContext, allUnschedulablePods, allScheduled, allNodes)
 	if err != nil {
 		glog.Errorf("Failed to process pod list: %v", err)
 		return errors.ToAutoscalerError(errors.InternalError, err)
@@ -275,7 +275,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		scaleUpStart := time.Now()
 		metrics.UpdateLastTime(metrics.ScaleUp, scaleUpStart)
 
-		scaledUp, typedErr := ScaleUp(autoscalingContext, a.clusterStateRegistry, unschedulablePodsToHelp, readyNodes, daemonsets)
+		scaledUp, typedErr := ScaleUp(autoscalingContext, a.processors, a.clusterStateRegistry, unschedulablePodsToHelp, readyNodes, daemonsets)
 
 		metrics.UpdateDurationFromStart(metrics.ScaleUp, scaleUpStart)
 
