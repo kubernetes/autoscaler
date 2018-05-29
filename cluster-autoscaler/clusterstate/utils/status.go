@@ -36,6 +36,8 @@ const (
 	StatusConfigMapName = "cluster-autoscaler-status"
 	// ConfigMapLastUpdatedKey is the name of annotation informing about status ConfigMap last update.
 	ConfigMapLastUpdatedKey = "cluster-autoscaler.kubernetes.io/last-updated"
+	// ConfigMapLastUpdateFormat it the timestamp format used for last update annotation in status ConfigMap
+	ConfigMapLastUpdateFormat = "2006-01-02 15:04:05.999999999 -0700 MST"
 )
 
 // LogEventRecorder records events on some top-level object, to give user (without access to logs) a view of most important CA actions.
@@ -82,8 +84,8 @@ func NewStatusMapRecorder(kubeClient kube_client.Interface, namespace string, re
 // ConfigMap if it doesn't exist. If logRecorder is passed and configmap update is successful
 // logRecorder's internal reference will be updated.
 func WriteStatusConfigMap(kubeClient kube_client.Interface, namespace string, msg string, logRecorder *LogEventRecorder) (*apiv1.ConfigMap, error) {
-	statusUpdateTime := time.Now()
-	statusMsg := fmt.Sprintf("Cluster-autoscaler status at %v:\n%v", statusUpdateTime, msg)
+	statusUpdateTime := time.Now().Format(ConfigMapLastUpdateFormat)
+	statusMsg := fmt.Sprintf("Cluster-autoscaler status at %s:\n%v", statusUpdateTime, msg)
 	var configMap *apiv1.ConfigMap
 	var getStatusError, writeStatusError error
 	var errMsg string
@@ -94,7 +96,7 @@ func WriteStatusConfigMap(kubeClient kube_client.Interface, namespace string, ms
 		if configMap.ObjectMeta.Annotations == nil {
 			configMap.ObjectMeta.Annotations = make(map[string]string)
 		}
-		configMap.ObjectMeta.Annotations[ConfigMapLastUpdatedKey] = fmt.Sprintf("%v", statusUpdateTime)
+		configMap.ObjectMeta.Annotations[ConfigMapLastUpdatedKey] = statusUpdateTime
 		configMap, writeStatusError = maps.Update(configMap)
 	} else if kube_errors.IsNotFound(getStatusError) {
 		configMap = &apiv1.ConfigMap{
@@ -102,7 +104,7 @@ func WriteStatusConfigMap(kubeClient kube_client.Interface, namespace string, ms
 				Namespace: namespace,
 				Name:      StatusConfigMapName,
 				Annotations: map[string]string{
-					ConfigMapLastUpdatedKey: fmt.Sprintf("%v", statusUpdateTime),
+					ConfigMapLastUpdatedKey: statusUpdateTime,
 				},
 			},
 			Data: map[string]string{
