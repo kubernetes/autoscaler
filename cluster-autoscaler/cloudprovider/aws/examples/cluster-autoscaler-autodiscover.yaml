@@ -121,7 +121,7 @@ spec:
     spec:
       serviceAccountName: cluster-autoscaler
       containers:
-        - image: k8s.gcr.io/cluster-autoscaler:v1.1.0
+        - image: k8s.gcr.io/cluster-autoscaler:v1.2.2
           name: cluster-autoscaler
           resources:
             limits:
@@ -137,7 +137,7 @@ spec:
             - --cloud-provider=aws
             - --skip-nodes-with-local-storage=false
             - --expander=least-waste
-            - --node-group-auto-discovery=asg:tag=k8s.io/cluster-autoscaler/enabled,kubernetes.io/cluster/<YOUR CLUSTER NAME>
+            - --node-group-auto-discovery=asg:tag=k8s.io/cluster-autoscaler/enabled,k8s.io/cluster-autoscaler/<YOUR CLUSTER NAME>
           env:
             - name: AWS_REGION
               value: us-east-1
