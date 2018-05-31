@@ -27,6 +27,7 @@ procedure described below.
   since 1.9 ([#58255](https://github.com/kubernetes/kubernetes/pull/58255)).
   Read more about [VPA Admission Webhook](./admission-controller/README.md#running).
 * `kubectl` should be connected to the cluster you want to install VPA in.
+* The metrics server must be deployed in your cluster. Read more about [Metrics Server](https://github.com/kubernetes-incubator/metrics-server).
 * If you are using a GKE Kubernetes cluster, you will need to grant your current Google
   identity `cluster-admin` role. Otherwise you won't be authorized to grant extra
   privileges to the VPA system components.
@@ -52,7 +53,7 @@ Make sure you leave them unset unless you want to use a non-default version of V
 
 The script issues multiple `kubectl` commands to the
 cluster that insert the configuration and start all needed pods (see
-[architecture](http://github.com/kubernetes/community/blob/master/contributors/design-proposals/autoscaling/vertical-pod-autoscaler.md#architecture-overview)) 
+[architecture](http://github.com/kubernetes/community/blob/master/contributors/design-proposals/autoscaling/vertical-pod-autoscaler.md#architecture-overview))
 in the `kube-system` namespace. It also generates
 and uploads a secret (a CA cert) used by VPA Admission Controller when communicating
 with the API server.
