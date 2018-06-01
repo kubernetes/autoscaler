@@ -23,6 +23,7 @@ import (
 	"github.com/golang/glog"
 	kube_flag "k8s.io/apiserver/pkg/util/flag"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/initialization"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/input/history"
 	"k8s.io/client-go/rest"
 	kube_restclient "k8s.io/client-go/rest"
@@ -41,7 +42,7 @@ func main() {
 
 	config := createKubeConfig()
 
-	recommender := NewRecommender(config, *metricsFetcherInterval, *checkpointsGCInterval, history.NewPrometheusHistoryProvider(*prometheusAddress), *storage != "prometheus")
+	recommender := initialization.NewRecommender(config, *metricsFetcherInterval, *checkpointsGCInterval, history.NewPrometheusHistoryProvider(*prometheusAddress), *storage != "prometheus")
 	recommender.Run()
 }
 
