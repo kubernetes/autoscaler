@@ -80,6 +80,9 @@ func (aws *awsCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 
 // NodeGroupForNode returns the node group for the given node.
 func (aws *awsCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+	if len(node.Spec.ProviderID) == 0 {
+		return nil, nil
+	}
 	ref, err := AwsRefFromProviderId(node.Spec.ProviderID)
 	if err != nil {
 		return nil, err
