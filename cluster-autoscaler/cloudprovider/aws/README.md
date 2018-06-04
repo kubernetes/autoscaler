@@ -71,10 +71,12 @@ kubectl apply -f examples/cluster-autoscaler-run-on-master.yaml
 
 ### Auto-Discovery Setup
 
-To run a cluster-autoscaler which auto-discovers ASGs with nodes use the `--node-group-auto-discovery` flag and tag the ASGs with _key_ `k8s.io/cluster-autoscaler/enabled` with value `yes` and _key_ `kubernetes.io/cluster/<YOUR CLUSTER NAME>`with value `true`.
+To run a cluster-autoscaler which auto-discovers ASGs with nodes use the `--node-group-auto-discovery` flag. For example, `--node-group-auto-discovery=asg:tag=k8s.io/cluster-autoscaler/enabled,k8s.io/cluster-autoscaler/<YOUR CLUSTER NAME>` will find the ASGs where those tag keys
+_exist_. It does not matter what value the tags have.
+
 Note that:
 
-* `kubernetes.io/cluster/<YOUR CLUSTER NAME>` is required when `k8s.io/cluster-autoscaler/enabled` is used across many clusters to prevent ASGs from different clusters recognized as the node groups
+* It is recommended to use a second tag like `k8s.io/cluster-autoscaler/<YOUR CLUSTER NAME>` when `k8s.io/cluster-autoscaler/enabled` is used across many clusters to prevent ASGs from different clusters recognized as the node groups
 * There are no `--nodes` flags passed to cluster-autoscaler because the node groups are automatically discovered by tags
 
 ```
