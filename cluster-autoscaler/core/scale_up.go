@@ -130,6 +130,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 		nodeCPU, nodeMemory, err := getNodeInfoCoresAndMemory(nodeInfo)
 		if err != nil {
 			glog.Errorf("Failed to get node resources: %v", err)
+			continue
 		}
 		if nodeCPU > (resourceLimiter.GetMax(cloudprovider.ResourceNameCores) - coresTotal) {
 			// skip this node group

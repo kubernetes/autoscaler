@@ -434,7 +434,8 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 
 			nodeCPU, nodeMemory, err := getNodeCoresAndMemory(node)
 			if err != nil {
-				glog.Warningf("Error getting node resources: %v", err)
+				glog.Errorf("Error getting node resources: %v", err)
+				continue
 			}
 			if nodeCPU > coresLeft {
 				glog.V(4).Infof("Skipping %s - not enough cores limit left", node.Name)
