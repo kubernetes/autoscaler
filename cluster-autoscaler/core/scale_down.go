@@ -107,11 +107,22 @@ type resourceName string
 type scaleDownResourcesLimits map[resourceName]int64
 type scaleDownResourcesDelta map[resourceName]int64
 
-func computeScaleDownResourcesLeftLimits(nodes []*apiv1.Node, resourceLimiter *cloudprovider.ResourceLimiter, timestamp time.Time) (scaleDownResourcesLimits, errors.AutoscalerError) {
+func computeScaleDownResourcesLeftLimits(nodes []*apiv1.Node, cp cloudprovider.CloudProvider, timestamp time.Time) (scaleDownResourcesLimits, errors.AutoscalerError) {
+	resourceLimiter, err := cp.GetResourceLimiter()
+	if err != nil {
+		return scaleDownResourcesLimits{}, errors.ToAutoscalerError(
+			errors.CloudProviderError,
+			err)
+	}
+
 	totals := make(map[resourceName]int64)
 	totals[cloudprovider.ResourceNameCores], totals[cloudprovider.ResourceNameMemory] = calculateCoresAndMemoryTotal(nodes, timestamp)
-	resultScaleDownLimits := make(scaleDownResourcesLimits)
 
+	for gpuName, gpuCount := range calculateGpusTotal(nodes, cp, timestamp) {
+		totals[resourceName(gpuName)] = gpuCount
+	}
+
+	resultScaleDownLimits := make(scaleDownResourcesLimits)
 	for _, resource := range resourceLimiter.GetResources() {
 		total := totals[resourceName(resource)]
 		min := resourceLimiter.GetMin(resource)
@@ -135,15 +146,21 @@ func copyScaleDownResourcesLimits(source scaleDownResourcesLimits) scaleDownReso
 	}
 	return copy
 }
-func computeScaleDownResourcesDelta(node *apiv1.Node) (scaleDownResourcesDelta, errors.AutoscalerError) {
+func computeScaleDownResourcesDelta(node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) (scaleDownResourcesDelta, errors.AutoscalerError) {
 	nodeCPU, nodeMemory, err := getNodeCoresAndMemory(node)
 	if err != nil {
 		return scaleDownResourcesDelta{}, errors.ToAutoscalerError(errors.ApiCallError, err)
 	}
 
+	gpuType, gpuCount, err := gpu.GetNodeTargetGpus(node, nodeGroup)
+	if err != nil {
+		return scaleDownResourcesDelta{}, errors.ToAutoscalerError(errors.ApiCallError, err).AddPrefix("Failed to get node %v gpu: %v", node.Name)
+	}
+
 	return scaleDownResourcesDelta{
 		cloudprovider.ResourceNameCores:  nodeCPU,
 		cloudprovider.ResourceNameMemory: nodeMemory,
+		resourceName(gpuType):            gpuCount,
 	}, nil
 }
 
@@ -445,18 +462,10 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 	candidates := make([]*apiv1.Node, 0)
 	readinessMap := make(map[string]bool)
 
-	resourceLimiter, errCP := sd.context.CloudProvider.GetResourceLimiter()
-	if errCP != nil {
-		return ScaleDownError, errors.ToAutoscalerError(
-			errors.CloudProviderError,
-			errCP)
-	}
-
-	scaleDownResourcesLeft, err := computeScaleDownResourcesLeftLimits(nodesWithoutMaster, resourceLimiter, currentTime)
+	scaleDownResourcesLeft, err := computeScaleDownResourcesLeftLimits(nodesWithoutMaster, sd.context.CloudProvider, currentTime)
 	if err != nil {
 		return ScaleDownError, err.AddPrefix("failed to obtain nodes resources: ")
 	}
-	gpusTotal := calculateGpusTotal(nodesWithoutMaster, sd.context.CloudProvider, currentTime)
 
 	nodeGroupSize := getNodeGroupSizeMap(sd.context.CloudProvider)
 	for _, node := range nodesWithoutMaster {
@@ -504,7 +513,7 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 				continue
 			}
 
-			scaleDownResourcesDelta, err := computeScaleDownResourcesDelta(node)
+			scaleDownResourcesDelta, err := computeScaleDownResourcesDelta(node, nodeGroup)
 			if err != nil {
 				glog.Errorf("Error getting node resources: %v", err)
 				continue
@@ -513,16 +522,6 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 			exceededResource := scaleDownResourcesLeft.checkDeltaWithinLimits(scaleDownResourcesDelta)
 			if exceededResource != nil {
 				glog.V(4).Infof("Skipping %s - not enough %s limit left", node.Name, exceededResource)
-			}
-
-			gpuType, gpuCount, errGpu := gpu.GetNodeTargetGpus(node, nodeGroup)
-			if errGpu != nil {
-				glog.Errorf("Failed to get node %v gpu: %v", node.Name, errGpu)
-				continue
-			}
-			if gpuCount > 0 && gpuCount > gpusTotal[gpuType]-resourceLimiter.GetMin(gpuType) {
-				glog.V(4).Infof("Skipping %s - not enough gpu %v limit left", node.Name, gpuType)
-				continue
 			}
 
 			candidates = append(candidates, node)
@@ -651,7 +650,7 @@ func getEmptyNodes(candidates []*apiv1.Node, pods []*apiv1.Pod, maxEmptyBulkDele
 			availabilityMap[nodeGroup.Id()] = available
 		}
 		if available > 0 {
-			resourcesDelta, err := computeScaleDownResourcesDelta(node)
+			resourcesDelta, err := computeScaleDownResourcesDelta(node, nodeGroup)
 			if err != nil {
 				glog.Errorf("Error: %v", err)
 				continue

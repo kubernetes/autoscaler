@@ -146,11 +146,9 @@ type AutoscalingOptions struct {
 	Regional bool
 }
 
-// NewAutoscalingContext returns an autoscaling context from all the necessary parameters passed via arguments
-func NewAutoscalingContext(options AutoscalingOptions, predicateChecker *simulator.PredicateChecker,
-	kubeClient kube_client.Interface, kubeEventRecorder kube_record.EventRecorder,
-	logEventRecorder *utils.LogEventRecorder, listerRegistry kube_util.ListerRegistry) (*AutoscalingContext, errors.AutoscalerError) {
-
+// NewResourceLimiterFromAutoscalingOptions creates new instance of cloudprovider.ResourceLimiter
+// reading limits from AutoscalingOptions struct.
+func NewResourceLimiterFromAutoscalingOptions(options AutoscalingOptions) *cloudprovider.ResourceLimiter {
 	// build min/max maps for resources limits
 	minResources := make(map[string]int64)
 	maxResources := make(map[string]int64)
@@ -164,12 +162,19 @@ func NewAutoscalingContext(options AutoscalingOptions, predicateChecker *simulat
 		minResources[gpuLimits.GpuType] = gpuLimits.Min
 		maxResources[gpuLimits.GpuType] = gpuLimits.Max
 	}
+	return cloudprovider.NewResourceLimiter(minResources, maxResources)
+}
+
+// NewAutoscalingContext returns an autoscaling context from all the necessary parameters passed via arguments
+func NewAutoscalingContext(options AutoscalingOptions, predicateChecker *simulator.PredicateChecker,
+	kubeClient kube_client.Interface, kubeEventRecorder kube_record.EventRecorder,
+	logEventRecorder *utils.LogEventRecorder, listerRegistry kube_util.ListerRegistry) (*AutoscalingContext, errors.AutoscalerError) {
 
 	cloudProviderBuilder := builder.NewCloudProviderBuilder(options.CloudProviderName, options.CloudConfig, options.ClusterName, options.NodeAutoprovisioningEnabled, options.Regional)
 	cloudProvider := cloudProviderBuilder.Build(cloudprovider.NodeGroupDiscoveryOptions{
 		NodeGroupSpecs:              options.NodeGroups,
 		NodeGroupAutoDiscoverySpecs: options.NodeGroupAutoDiscovery},
-		cloudprovider.NewResourceLimiter(minResources, maxResources))
+		NewResourceLimiterFromAutoscalingOptions(options))
 	expanderStrategy, err := factory.ExpanderStrategyFromString(options.ExpanderName,
 		cloudProvider, listerRegistry.AllNodeLister())
 	if err != nil {

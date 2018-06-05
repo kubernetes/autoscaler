@@ -156,6 +156,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 		gpuType, gpuCount, errGpu := gpu.GetNodeTargetGpus(nodeInfo.Node(), nodeGroup)
 		if errGpu != nil {
 			glog.Errorf("Failed to get node gpu: %v", errGpu)
+			continue
 		}
 		if gpuCount > (resourceLimiter.GetMax(gpuType) - gpusTotal[gpuType]) {
 			// skip this node group
