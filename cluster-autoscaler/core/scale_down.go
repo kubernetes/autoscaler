@@ -27,7 +27,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
@@ -44,6 +43,7 @@ import (
 	kube_record "k8s.io/client-go/tools/record"
 
 	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 // ScaleDownResult represents the state of scale down.
@@ -101,6 +101,111 @@ func (n *NodeDeleteStatus) SetDeleteInProgress(status bool) {
 	n.Lock()
 	defer n.Unlock()
 	n.deleteInProgress = status
+}
+
+type scaleDownResourcesLimits map[string]int64
+type scaleDownResourcesDelta map[string]int64
+
+// used as a value in scaleDownResourcesLimits if actual limit could not be obtained due to errors talking to cloud provider
+const limitUnknown = math.MinInt64
+
+func computeScaleDownResourcesLeftLimits(nodes []*apiv1.Node, resourceLimiter *cloudprovider.ResourceLimiter, timestamp time.Time) scaleDownResourcesLimits {
+	totals := make(map[string]int64)
+	totals[cloudprovider.ResourceNameCores], totals[cloudprovider.ResourceNameMemory] = calculateCoresAndMemoryTotal(nodes, timestamp)
+	resultScaleDownLimits := make(scaleDownResourcesLimits)
+
+	for _, resource := range resourceLimiter.GetResources() {
+		total := totals[resource]
+		min := resourceLimiter.GetMin(resource)
+
+		// we put only actual limits into final map. No entry means no limit.
+		if min > 0 {
+			if total > min {
+				resultScaleDownLimits[resource] = total - min
+			} else {
+				resultScaleDownLimits[resource] = 0
+			}
+		}
+	}
+	return resultScaleDownLimits
+}
+
+func calculateCoresAndMemoryTotal(nodes []*apiv1.Node, timestamp time.Time) (int64, int64) {
+	var coresTotal, memoryTotal int64
+	for _, node := range nodes {
+		deleteTime, _ := deletetaint.GetToBeDeletedTime(node)
+		if deleteTime != nil && (timestamp.Sub(*deleteTime) < MaxCloudProviderNodeDeletionTime || timestamp.Sub(*deleteTime) < MaxKubernetesEmptyNodeDeletionTime) {
+			// Nodes being deleted do not count towards total cluster resources
+			continue
+		}
+		cores, memory := getNodeCoresAndMemory(node)
+
+		coresTotal += cores
+		memoryTotal += memory
+	}
+
+	return coresTotal, memoryTotal
+}
+
+func noLimitsOnResources() scaleDownResourcesLimits {
+	return nil
+}
+
+func copyScaleDownResourcesLimits(source scaleDownResourcesLimits) scaleDownResourcesLimits {
+	copy := scaleDownResourcesLimits{}
+	for k, v := range source {
+		copy[k] = v
+	}
+	return copy
+}
+
+func computeScaleDownResourcesDelta(node *apiv1.Node) (scaleDownResourcesDelta, errors.AutoscalerError) {
+	nodeCPU, nodeMemory := getNodeCoresAndMemory(node)
+
+	return scaleDownResourcesDelta{
+		cloudprovider.ResourceNameCores:  nodeCPU,
+		cloudprovider.ResourceNameMemory: nodeMemory,
+	}, nil
+}
+
+type limitCheckResult struct {
+	exceeded          bool
+	exceededResources []string
+}
+
+func notExceeded() limitCheckResult {
+	return limitCheckResult{false, []string{}}
+}
+
+func (limits *scaleDownResourcesLimits) checkDeltaWithinLimits(delta scaleDownResourcesDelta) limitCheckResult {
+	exceededResources := sets.NewString()
+	for resource, resourceDelta := range delta {
+		resourceLeft, found := (*limits)[resource]
+		if found {
+			if (resourceDelta > 0) && (resourceLeft == limitUnknown || resourceDelta > resourceLeft) {
+				exceededResources.Insert(resource)
+			}
+		}
+	}
+	if len(exceededResources) > 0 {
+		return limitCheckResult{true, exceededResources.List()}
+	}
+
+	return notExceeded()
+}
+
+func (limits *scaleDownResourcesLimits) tryDecrementLimitsByDelta(delta scaleDownResourcesDelta) limitCheckResult {
+	result := limits.checkDeltaWithinLimits(delta)
+	if result.exceeded {
+		return result
+	}
+	for resource, resourceDelta := range delta {
+		resourceLeft, found := (*limits)[resource]
+		if found {
+			(*limits)[resource] = resourceLeft - resourceDelta
+		}
+	}
+	return notExceeded()
 }
 
 // ScaleDown is responsible for maintaining the state needed to perform unneeded node removals.
@@ -222,8 +327,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 
 	emptyNodes := make(map[string]bool)
 
-	emptyNodesList := getEmptyNodes(currentlyUnneededNodes, pods, len(currentlyUnneededNodes),
-		config.DefaultMaxClusterCores, config.DefaultMaxClusterMemory, sd.context.CloudProvider)
+	emptyNodesList := getEmptyNodesNoResourceLimits(currentlyUnneededNodes, pods, len(currentlyUnneededNodes), sd.context.CloudProvider)
 	for _, node := range emptyNodesList {
 		emptyNodes[node.Name] = true
 	}
@@ -382,9 +486,8 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 			errors.CloudProviderError,
 			errCP)
 	}
-	coresTotal, memoryTotal := calculateCoresAndMemoryTotal(nodesWithoutMaster, currentTime)
-	coresLeft := coresTotal - resourceLimiter.GetMin(cloudprovider.ResourceNameCores)
-	memoryLeft := memoryTotal - resourceLimiter.GetMin(cloudprovider.ResourceNameMemory)
+
+	scaleDownResourcesLeft := computeScaleDownResourcesLeftLimits(nodesWithoutMaster, resourceLimiter, currentTime)
 
 	nodeGroupSize := getNodeGroupSizeMap(sd.context.CloudProvider)
 	for _, node := range nodesWithoutMaster {
@@ -432,14 +535,15 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 				continue
 			}
 
-			nodeCPU, nodeMemory := getNodeCoresAndMemory(node)
-			if nodeCPU > coresLeft {
-				glog.V(4).Infof("Skipping %s - not enough cores limit left", node.Name)
+			scaleDownResourcesDelta, err := computeScaleDownResourcesDelta(node)
+			if err != nil {
+				glog.Errorf("Error getting node resources: %v", err)
 				continue
 			}
-			if nodeMemory > memoryLeft {
-				glog.V(4).Infof("Skipping %s - not enough memory limit left", node.Name)
-				continue
+
+			checkResult := scaleDownResourcesLeft.checkDeltaWithinLimits(scaleDownResourcesDelta)
+			if checkResult.exceeded {
+				glog.V(4).Infof("Skipping %s - minimal limit exceeded for %v", node.Name, checkResult.exceededResources)
 			}
 
 			candidates = append(candidates, node)
@@ -453,7 +557,7 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 	// Trying to delete empty nodes in bulk. If there are no empty nodes then CA will
 	// try to delete not-so-empty nodes, possibly killing some pods and allowing them
 	// to recreate on other nodes.
-	emptyNodes := getEmptyNodes(candidates, pods, sd.context.MaxEmptyBulkDelete, coresLeft, memoryLeft, sd.context.CloudProvider)
+	emptyNodes := getEmptyNodes(candidates, pods, sd.context.MaxEmptyBulkDelete, scaleDownResourcesLeft, sd.context.CloudProvider)
 	if len(emptyNodes) > 0 {
 		nodeDeletionStart := time.Now()
 		confirmation := make(chan errors.AutoscalerError, len(emptyNodes))
@@ -529,18 +633,20 @@ func updateScaleDownMetrics(scaleDownStart time.Time, findNodesToRemoveDuration 
 	metrics.UpdateDuration(metrics.ScaleDownMiscOperations, miscDuration)
 }
 
+func getEmptyNodesNoResourceLimits(candidates []*apiv1.Node, pods []*apiv1.Pod, maxEmptyBulkDelete int,
+	cloudProvider cloudprovider.CloudProvider) []*apiv1.Node {
+	return getEmptyNodes(candidates, pods, maxEmptyBulkDelete, noLimitsOnResources(), cloudProvider)
+}
+
 // This functions finds empty nodes among passed candidates and returns a list of empty nodes
 // that can be deleted at the same time.
 func getEmptyNodes(candidates []*apiv1.Node, pods []*apiv1.Pod, maxEmptyBulkDelete int,
-	coresLimit, memoryLimit int64, cloudProvider cloudprovider.CloudProvider) []*apiv1.Node {
+	resourcesLimits scaleDownResourcesLimits, cloudProvider cloudprovider.CloudProvider) []*apiv1.Node {
 
 	emptyNodes := simulator.FindEmptyNodesToRemove(candidates, pods)
 	availabilityMap := make(map[string]int)
 	result := make([]*apiv1.Node, 0)
-
-	coresLeft := coresLimit
-	memoryLeft := memoryLimit
-
+	resourcesLimitsCopy := copyScaleDownResourcesLimits(resourcesLimits) // we do not want to modify input parameter
 	for _, node := range emptyNodes {
 		nodeGroup, err := cloudProvider.NodeGroupForNode(node)
 		if err != nil {
@@ -566,15 +672,15 @@ func getEmptyNodes(candidates []*apiv1.Node, pods []*apiv1.Pod, maxEmptyBulkDele
 			availabilityMap[nodeGroup.Id()] = available
 		}
 		if available > 0 {
-			cores, memory := getNodeCoresAndMemory(node)
-			if cores > coresLeft {
+			resourcesDelta, err := computeScaleDownResourcesDelta(node)
+			if err != nil {
+				glog.Errorf("Error: %v", err)
 				continue
 			}
-			if memory > memoryLeft {
+			checkResult := resourcesLimitsCopy.tryDecrementLimitsByDelta(resourcesDelta)
+			if checkResult.exceeded {
 				continue
 			}
-			coresLeft = coresLeft - cores
-			memoryLeft = memoryLeft - memory
 			available -= 1
 			availabilityMap[nodeGroup.Id()] = available
 			result = append(result, node)
@@ -858,23 +964,6 @@ func cleanUpNodeAutoprovisionedGroups(cloudProvider cloudprovider.CloudProvider,
 		metrics.RegisterNodeGroupDeletion()
 	}
 	return nil
-}
-
-func calculateCoresAndMemoryTotal(nodes []*apiv1.Node, timestamp time.Time) (int64, int64) {
-	var coresTotal, memoryTotal int64
-	for _, node := range nodes {
-		deleteTime, _ := deletetaint.GetToBeDeletedTime(node)
-		if deleteTime != nil && (timestamp.Sub(*deleteTime) < MaxCloudProviderNodeDeletionTime || timestamp.Sub(*deleteTime) < MaxKubernetesEmptyNodeDeletionTime) {
-			// Nodes being deleted do not count towards total cluster resources
-			continue
-		}
-		cores, memory := getNodeCoresAndMemory(node)
-
-		coresTotal = coresTotal + cores
-		memoryTotal = memoryTotal + memory
-	}
-
-	return coresTotal, memoryTotal
 }
 
 const (
