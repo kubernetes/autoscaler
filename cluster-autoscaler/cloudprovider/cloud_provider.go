@@ -173,7 +173,9 @@ func NewResourceLimiter(minLimits map[string]int64, maxLimits map[string]int64) 
 	minLimitsCopy := make(map[string]int64)
 	maxLimitsCopy := make(map[string]int64)
 	for key, value := range minLimits {
-		minLimitsCopy[key] = value
+		if value > 0 {
+			minLimitsCopy[key] = value
+		}
 	}
 	for key, value := range maxLimits {
 		maxLimitsCopy[key] = value
