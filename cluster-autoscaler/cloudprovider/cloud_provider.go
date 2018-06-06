@@ -219,11 +219,11 @@ func (r *ResourceLimiter) GetResources() []string {
 
 func (r *ResourceLimiter) String() string {
 	var buffer bytes.Buffer
-	for name, maxLimit := range r.maxLimits {
+	for _, name := range r.GetResources() {
 		if buffer.Len() > 0 {
 			buffer.WriteString(", ")
 		}
-		buffer.WriteString(fmt.Sprintf("{%s : %d - %d}", name, r.minLimits[name], maxLimit))
+		buffer.WriteString(fmt.Sprintf("{%s : %d - %d}", name, r.GetMin(name), r.GetMax(name)))
 	}
 	return buffer.String()
 }
