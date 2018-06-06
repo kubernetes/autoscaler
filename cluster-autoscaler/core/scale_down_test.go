@@ -1356,3 +1356,57 @@ func TestFilterOutMasters(t *testing.T) {
 	}
 	assertEqualSet(t, []string{"n1", "n2", "n4", "n5", "n6"}, withoutMastersNames)
 }
+
+func TestCheckDeltaWithinLimits(t *testing.T) {
+	type testcase struct {
+		limits            scaleDownResourcesLimits
+		delta             scaleDownResourcesDelta
+		exceededResources []string
+	}
+	tests := []testcase{
+		{
+			limits:            scaleDownResourcesLimits{"a": 10},
+			delta:             scaleDownResourcesDelta{"a": 10},
+			exceededResources: []string{},
+		},
+		{
+			limits:            scaleDownResourcesLimits{"a": 10},
+			delta:             scaleDownResourcesDelta{"a": 10},
+			exceededResources: []string{},
+		},
+		{
+			limits:            scaleDownResourcesLimits{"a": 10},
+			delta:             scaleDownResourcesDelta{"a": 11},
+			exceededResources: []string{"a"},
+		},
+		{
+			limits:            scaleDownResourcesLimits{"a": 10},
+			delta:             scaleDownResourcesDelta{"b": 10},
+			exceededResources: []string{},
+		},
+		{
+			limits:            scaleDownResourcesLimits{"a": limitUnknown},
+			delta:             scaleDownResourcesDelta{"a": 0},
+			exceededResources: []string{},
+		},
+		{
+			limits:            scaleDownResourcesLimits{"a": limitUnknown},
+			delta:             scaleDownResourcesDelta{"a": 1},
+			exceededResources: []string{"a"},
+		},
+		{
+			limits:            scaleDownResourcesLimits{"a": 10, "b": 20, "c": 30},
+			delta:             scaleDownResourcesDelta{"a": 11, "b": 20, "c": 31},
+			exceededResources: []string{"a", "c"},
+		},
+	}
+
+	for _, test := range tests {
+		checkResult := test.limits.checkDeltaWithinLimits(test.delta)
+		if len(test.exceededResources) == 0 {
+			assert.Equal(t, notExceeded(), checkResult)
+		} else {
+			assert.Equal(t, limitCheckResult{true, test.exceededResources}, checkResult)
+		}
+	}
+}
