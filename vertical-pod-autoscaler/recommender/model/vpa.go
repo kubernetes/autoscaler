@@ -17,7 +17,6 @@ limitations under the License.
 package model
 
 import (
-	"fmt"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -78,17 +77,17 @@ type Vpa struct {
 	LastUpdateTime time.Time
 	// Initial checkpoints of AggregateContainerStates for containers.
 	// The key is container name.
-	containerCheckpoints ContainerNameToAggregateStateMap
+	ContainersInitialAggregateState ContainerNameToAggregateStateMap
 }
 
 // NewVpa returns a new Vpa with a given ID and pod selector. Doesn't set the
 // links to the matched aggregations.
 func NewVpa(id VpaID, selector labels.Selector) *Vpa {
 	vpa := &Vpa{
-		ID:                       id,
-		PodSelector:              selector,
-		aggregateContainerStates: make(aggregateContainerStatesMap),
-		containerCheckpoints:     make(ContainerNameToAggregateStateMap),
+		ID:                              id,
+		PodSelector:                     selector,
+		aggregateContainerStates:        make(aggregateContainerStatesMap),
+		ContainersInitialAggregateState: make(ContainerNameToAggregateStateMap),
 	}
 	return vpa
 }
@@ -107,20 +106,9 @@ func (vpa *Vpa) UsesAggregation(aggregationKey AggregateStateKey) bool {
 	return exists
 }
 
-// LoadCheckpoint loads checkpointed VPA state from a checkpoint for one container name.
-func (vpa *Vpa) LoadCheckpoint(checkpoint *vpa_types.VerticalPodAutoscalerCheckpoint) error {
-	cs := NewAggregateContainerState()
-	err := cs.LoadFromCheckpoint(&checkpoint.Status)
-	if err != nil {
-		return fmt.Errorf("Cannot load checkpoint for VPA %+v. Reason: %v", vpa.ID, err)
-	}
-	vpa.containerCheckpoints[checkpoint.Spec.ContainerName] = cs
-	return nil
-}
-
 // MergeCheckpointedState adds checkpointed VPA aggregations to the given aggregateStateMap.
 func (vpa *Vpa) MergeCheckpointedState(aggregateContainerStateMap ContainerNameToAggregateStateMap) {
-	for containerName, aggregation := range vpa.containerCheckpoints {
+	for containerName, aggregation := range vpa.ContainersInitialAggregateState {
 		aggregateContainerStateMap[containerName].MergeContainerState(aggregation)
 	}
 }
