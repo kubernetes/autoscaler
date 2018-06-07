@@ -45,7 +45,7 @@ import (
 type ClusterStateFeeder interface {
 
 	// InitFromHistoryProvider loads historical pod spec into clusterState.
-	InitFromHistoryProvider()
+	InitFromHistoryProvider(historyProvider history.HistoryProvider)
 
 	// InitFromCheckpoints loads historical checkpoints into clusterState.
 	InitFromCheckpoints()
@@ -64,7 +64,7 @@ type ClusterStateFeeder interface {
 }
 
 // NewClusterStateFeeder creates new ClusterStateFeeder with internal data providers, based on kube client config and a historyProvider.
-func NewClusterStateFeeder(config *rest.Config, historyProvider history.HistoryProvider, clusterState *model.ClusterState) ClusterStateFeeder {
+func NewClusterStateFeeder(config *rest.Config, clusterState *model.ClusterState) ClusterStateFeeder {
 	kubeClient := kube_client.NewForConfigOrDie(config)
 	podLister, observer := newPodClients(kubeClient)
 	return &clusterStateFeeder{
@@ -75,7 +75,6 @@ func NewClusterStateFeeder(config *rest.Config, historyProvider history.HistoryP
 		vpaClient:           vpa_clientset.NewForConfigOrDie(config).PocV1alpha1(),
 		vpaCheckpointClient: vpa_clientset.NewForConfigOrDie(config).PocV1alpha1(),
 		vpaLister:           vpa_api_util.NewAllVpasLister(vpa_clientset.NewForConfigOrDie(config), make(chan struct{})),
-		historyProvider:     historyProvider,
 		clusterState:        clusterState,
 	}
 }
@@ -111,13 +110,12 @@ type clusterStateFeeder struct {
 	vpaClient           vpa_api.VerticalPodAutoscalersGetter
 	vpaCheckpointClient vpa_api.VerticalPodAutoscalerCheckpointsGetter
 	vpaLister           vpa_lister.VerticalPodAutoscalerLister
-	historyProvider     history.HistoryProvider
 	clusterState        *model.ClusterState
 }
 
-func (feeder *clusterStateFeeder) InitFromHistoryProvider() {
+func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider history.HistoryProvider) {
 	glog.V(3).Info("Initializing VPA from history provider")
-	clusterHistory, err := feeder.historyProvider.GetClusterHistory()
+	clusterHistory, err := historyProvider.GetClusterHistory()
 	if err != nil {
 		glog.Errorf("Cannot get cluster history: %v", err)
 	}

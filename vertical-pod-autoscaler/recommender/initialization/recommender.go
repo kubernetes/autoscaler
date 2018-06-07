@@ -25,7 +25,6 @@ import (
 	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/poc.autoscaling.k8s.io/v1alpha1"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/input"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/input/history"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/logic"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/model"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/output"
@@ -34,19 +33,25 @@ import (
 
 // Recommender recommend resources for certain containers, based on utilization periodically got from metrics api.
 type Recommender interface {
-	Run()
+	// RunOnce performs one iteration of recommender duties followed by update of recommendations in VPA objects.
+	RunOnce()
+	// GetClusterStateFeeder returns ClusterStateFeeder used by Recommender
+	GetClusterStateFeeder() input.ClusterStateFeeder
 }
 
 type recommender struct {
-	clusterState            *model.ClusterState
-	clusterStateFeeder      input.ClusterStateFeeder
-	checkpointWriter        output.CheckpointWriter
-	metricsFetchingInterval time.Duration
-	checkpointsGCInterval   time.Duration
-	lastCheckpointGC        time.Time
-	vpaClient               vpa_api.VerticalPodAutoscalersGetter
-	podResourceRecommender  logic.PodResourceRecommender
-	useCheckpoints          bool
+	clusterState           *model.ClusterState
+	clusterStateFeeder     input.ClusterStateFeeder
+	checkpointWriter       output.CheckpointWriter
+	checkpointsGCInterval  time.Duration
+	lastCheckpointGC       time.Time
+	vpaClient              vpa_api.VerticalPodAutoscalersGetter
+	podResourceRecommender logic.PodResourceRecommender
+	useCheckpoints         bool
+}
+
+func (r *recommender) GetClusterStateFeeder() input.ClusterStateFeeder {
+	return r.clusterStateFeeder
 }
 
 // Updates VPA CRD objects' statuses.
@@ -78,9 +83,7 @@ func (r *recommender) updateVPAs() {
 
 }
 
-// Currently it just prints out current utilization to the console.
-// It will be soon replaced by something more useful.
-func (r *recommender) runOnce() {
+func (r *recommender) RunOnce() {
 	glog.V(3).Infof("Recommender Run")
 	r.clusterStateFeeder.LoadVPAs()
 	r.clusterStateFeeder.LoadPods()
@@ -96,37 +99,20 @@ func (r *recommender) runOnce() {
 	}
 }
 
-func (r *recommender) Run() {
-	if r.useCheckpoints {
-		r.clusterStateFeeder.InitFromCheckpoints()
-	} else {
-		r.clusterStateFeeder.InitFromHistoryProvider()
-	}
-	for {
-		select {
-		case <-time.After(r.metricsFetchingInterval):
-			{
-				r.runOnce()
-			}
-		}
-	}
-}
-
 // NewRecommender creates a new recommender instance,
 // which can be run in order to provide continuous resource recommendations for containers.
 // It requires cluster configuration object and duration between recommender intervals.
-func NewRecommender(config *rest.Config, metricsFetcherInterval, checkpointsGCInterval time.Duration, historyProvider history.HistoryProvider, useCheckpoints bool) Recommender {
+func NewRecommender(config *rest.Config, checkpointsGCInterval time.Duration, useCheckpoints bool) Recommender {
 	clusterState := model.NewClusterState()
 	recommender := &recommender{
-		clusterState:            clusterState,
-		clusterStateFeeder:      input.NewClusterStateFeeder(config, historyProvider, clusterState),
-		checkpointWriter:        output.NewCheckpointWriter(clusterState, vpa_clientset.NewForConfigOrDie(config).PocV1alpha1()),
-		metricsFetchingInterval: metricsFetcherInterval,
-		checkpointsGCInterval:   checkpointsGCInterval,
-		lastCheckpointGC:        time.Now(),
-		vpaClient:               vpa_clientset.NewForConfigOrDie(config).PocV1alpha1(),
-		podResourceRecommender:  logic.CreatePodResourceRecommender(),
-		useCheckpoints:          useCheckpoints,
+		clusterState:           clusterState,
+		clusterStateFeeder:     input.NewClusterStateFeeder(config, clusterState),
+		checkpointWriter:       output.NewCheckpointWriter(clusterState, vpa_clientset.NewForConfigOrDie(config).PocV1alpha1()),
+		checkpointsGCInterval:  checkpointsGCInterval,
+		lastCheckpointGC:       time.Now(),
+		vpaClient:              vpa_clientset.NewForConfigOrDie(config).PocV1alpha1(),
+		podResourceRecommender: logic.CreatePodResourceRecommender(),
+		useCheckpoints:         useCheckpoints,
 	}
 	glog.V(3).Infof("New Recommender created %+v", recommender)
 	return recommender
