@@ -35,6 +35,19 @@ Usage of pod_nanny:
 The following yaml is an example deployment where the nanny watches and resizes itself.
 
 ```yaml
+# Config map for resource configuration.
+# Specify 'cpu', 'extra-cpu', 'memory' and 'extra-memory'
+# to overwrite resource requirements.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nanny-config
+  namespace: default
+data:
+  NannyConfiguration: |-
+    apiVersion: nannyconfig/v1alpha1
+    kind: NannyConfiguration
+---
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
@@ -76,14 +89,22 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
+          volumeMounts:
+          - name: nanny-config-volume
+            mountPath: /etc/config
           command:
             - /pod_nanny
+            - --config-dir=/etc/config
             - --cpu=300m
             - --extra-cpu=20m
             - --memory=200Mi
             - --extra-memory=10Mi
             - --threshold=5
             - --deployment=nanny-v1
+      volumes:
+      - name: nanny-config-volume
+        configMap:
+          name: nanny-config
 ```
 
 ## Addon resizer configuration
