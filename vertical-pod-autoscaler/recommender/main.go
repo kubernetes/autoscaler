@@ -42,8 +42,23 @@ func main() {
 
 	config := createKubeConfig()
 
-	recommender := initialization.NewRecommender(config, *metricsFetcherInterval, *checkpointsGCInterval, history.NewPrometheusHistoryProvider(*prometheusAddress), *storage != "prometheus")
-	recommender.Run()
+	useCheckpoints := *storage != "prometheus"
+	recommender := initialization.NewRecommender(config, *checkpointsGCInterval, useCheckpoints)
+	if useCheckpoints {
+		recommender.GetClusterStateFeeder().InitFromCheckpoints()
+	} else {
+		recommender.GetClusterStateFeeder().InitFromHistoryProvider(history.NewPrometheusHistoryProvider(*prometheusAddress))
+	}
+
+	for {
+		select {
+		case <-time.After(*metricsFetcherInterval):
+			{
+				recommender.RunOnce()
+			}
+		}
+	}
+
 }
 
 func createKubeConfig() *rest.Config {
