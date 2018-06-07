@@ -66,10 +66,13 @@ func (flag *MultiStringFlag) Set(value string) error {
 	return nil
 }
 
-var (
-	nodeGroupsFlag             MultiStringFlag
-	nodeGroupAutoDiscoveryFlag MultiStringFlag
+func multiStringFlag(name string, usage string) *MultiStringFlag {
+	value := new(MultiStringFlag)
+	flag.Var(value, name, usage)
+	return value
+}
 
+var (
 	clusterName            = flag.String("cluster-name", "", "Autoscaled cluster name, if available")
 	address                = flag.String("address", ":8085", "The address to expose prometheus metrics.")
 	kubernetes             = flag.String("kubernetes", "", "Kubernetes master location. Leave blank for default")
@@ -109,6 +112,7 @@ var (
 	maxNodesTotal     = flag.Int("max-nodes-total", 0, "Maximum number of nodes in all node groups. Cluster autoscaler will not grow the cluster beyond this number.")
 	coresTotal        = flag.String("cores-total", minMaxFlagString(0, config.DefaultMaxClusterCores), "Minimum and maximum number of cores in cluster, in the format <min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers.")
 	memoryTotal       = flag.String("memory-total", minMaxFlagString(0, config.DefaultMaxClusterMemory), "Minimum and maximum number of gigabytes of memory in cluster, in the format <min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers.")
+	gpuTotal          = multiStringFlag("gpu-total", "Minimum and maximum number of different GPUs in cluster, in the format <gpu_type>:<min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers. Can be passed multiple times. CURRENTLY THIS FLAG ONLY WORKS ON GKE.")
 	cloudProviderFlag = flag.String("cloud-provider", cloudBuilder.DefaultCloudProvider,
 		"Cloud provider type. Available values: ["+strings.Join(cloudBuilder.AvailableCloudProviders, ",")+"]")
 	maxEmptyBulkDeleteFlag     = flag.Int("max-empty-bulk-delete", 10, "Maximum number of empty nodes that can be deleted at the same time.")
@@ -116,6 +120,16 @@ var (
 	maxTotalUnreadyPercentage  = flag.Float64("max-total-unready-percentage", 45, "Maximum percentage of unready nodes in the cluster.  After this is exceeded, CA halts operations")
 	okTotalUnreadyCount        = flag.Int("ok-total-unready-count", 3, "Number of allowed unready nodes, irrespective of max-total-unready-percentage")
 	maxNodeProvisionTime       = flag.Duration("max-node-provision-time", 15*time.Minute, "Maximum time CA waits for node to be provisioned")
+	nodeGroupsFlag             = multiStringFlag(
+		"nodes",
+		"sets min,max size and other configuration data for a node group in a format accepted by cloud provider. Can be used multiple times. Format: <min>:<max>:<other...>")
+	nodeGroupAutoDiscoveryFlag = multiStringFlag(
+		"node-group-auto-discovery",
+		"One or more definition(s) of node group auto-discovery. "+
+			"A definition is expressed `<name of discoverer>:[<key>[=<value>]]`. "+
+			"The `aws` and `gce` cloud providers are currently supported. AWS matches by ASG tags, e.g. `asg:tag=tagKey,anotherTagKey`. "+
+			"GCE matches by IG name prefix, and requires you to specify min and max nodes per IG, e.g. `mig:namePrefix=pfx,min=0,max=10` "+
+			"Can be used multiple times.")
 
 	estimatorFlag = flag.String("estimator", estimator.BinpackingEstimatorName,
 		"Type of resource estimator to be used in scale up. Available values: ["+strings.Join(estimator.AvailableEstimators, ",")+"]")
@@ -147,10 +161,15 @@ func createAutoscalingOptions() context.AutoscalingOptions {
 	minMemoryTotal = minMemoryTotal * 1024
 	maxMemoryTotal = maxMemoryTotal * 1024
 
+	parsedGpuTotal, err := parseMultipleGpuLimits(*gpuTotal)
+	if err != nil {
+		glog.Fatalf("Failed to parse flags: %v", err)
+	}
+
 	return context.AutoscalingOptions{
 		CloudConfig:                      *cloudConfig,
 		CloudProviderName:                *cloudProviderFlag,
-		NodeGroupAutoDiscovery:           nodeGroupAutoDiscoveryFlag,
+		NodeGroupAutoDiscovery:           *nodeGroupAutoDiscoveryFlag,
 		MaxTotalUnreadyPercentage:        *maxTotalUnreadyPercentage,
 		OkTotalUnreadyCount:              *okTotalUnreadyCount,
 		EstimatorName:                    *estimatorFlag,
@@ -163,7 +182,8 @@ func createAutoscalingOptions() context.AutoscalingOptions {
 		MinCoresTotal:                    minCoresTotal,
 		MaxMemoryTotal:                   maxMemoryTotal,
 		MinMemoryTotal:                   minMemoryTotal,
-		NodeGroups:                       nodeGroupsFlag,
+		GpuTotal:                         parsedGpuTotal,
+		NodeGroups:                       *nodeGroupsFlag,
 		ScaleDownDelayAfterAdd:           *scaleDownDelayAfterAdd,
 		ScaleDownDelayAfterDelete:        *scaleDownDelayAfterDelete,
 		ScaleDownDelayAfterFailure:       *scaleDownDelayAfterFailure,
@@ -282,13 +302,7 @@ func main() {
 	leaderElection.LeaderElect = true
 
 	bindFlags(&leaderElection, pflag.CommandLine)
-	flag.Var(&nodeGroupsFlag, "nodes", "sets min,max size and other configuration data for a node group in a format accepted by cloud provider."+
-		"Can be used multiple times. Format: <min>:<max>:<other...>")
-	flag.Var(&nodeGroupAutoDiscoveryFlag, "node-group-auto-discovery", "One or more definition(s) of node group auto-discovery. "+
-		"A definition is expressed `<name of discoverer>:[<key>[=<value>]]`. "+
-		"The `aws` and `gce` cloud providers are currently supported. AWS matches by ASG tags, e.g. `asg:tag=tagKey,anotherTagKey`. "+
-		"GCE matches by IG name prefix, and requires you to specify min and max nodes per IG, e.g. `mig:namePrefix=pfx,min=0,max=10` "+
-		"Can be used multiple times.")
+
 	kube_flag.InitFlags()
 
 	healthCheck := metrics.NewHealthCheck(*maxInactivityTimeFlag, *maxFailingTimeFlag)
@@ -436,4 +450,38 @@ func validateMinMaxFlag(min, max int64) error {
 
 func minMaxFlagString(min, max int64) string {
 	return fmt.Sprintf("%v:%v", min, max)
+}
+
+func parseMultipleGpuLimits(flags MultiStringFlag) ([]context.GpuLimits, error) {
+	parsedFlags := make([]context.GpuLimits, 0, len(flags))
+	for _, flag := range flags {
+		parsedFlag, err := parseSingleGpuLimit(flag)
+		if err != nil {
+			return nil, err
+		}
+		parsedFlags = append(parsedFlags, parsedFlag)
+	}
+	return parsedFlags, nil
+}
+
+func parseSingleGpuLimit(config string) (context.GpuLimits, error) {
+	parts := strings.Split(config, ":")
+	if len(parts) != 3 {
+		return context.GpuLimits{}, fmt.Errorf("Incorrect gpu limit specification: %v", config)
+	}
+	gpuType := parts[0]
+	minVal, err := strconv.ParseInt(parts[1], 10, 64)
+	if err != nil {
+		return context.GpuLimits{}, fmt.Errorf("Incorrect gpu limit - min is not integer: %v", config)
+	}
+	maxVal, err := strconv.ParseInt(parts[2], 10, 64)
+	if err != nil {
+		return context.GpuLimits{}, fmt.Errorf("Incorrect gpu limit - max is not integer: %v", config)
+	}
+	parsedGpuLimits := context.GpuLimits{
+		GpuType: gpuType,
+		Min:     minVal,
+		Max:     maxVal,
+	}
+	return parsedGpuLimits, nil
 }
