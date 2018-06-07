@@ -17,6 +17,7 @@ limitations under the License.
 package input
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/golang/glog"
@@ -24,6 +25,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/poc.autoscaling.k8s.io/v1alpha1"
 	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/poc.autoscaling.k8s.io/v1alpha1"
@@ -137,6 +139,22 @@ func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider histor
 	}
 }
 
+func (feeder *clusterStateFeeder) setVpaCheckpoint(checkpoint *vpa_types.VerticalPodAutoscalerCheckpoint) error {
+	vpaID := model.VpaID{Namespace: checkpoint.Namespace, VpaName: checkpoint.Spec.VPAObjectName}
+	vpa, exists := feeder.clusterState.Vpas[vpaID]
+	if !exists {
+		return fmt.Errorf("Cannot load checkpoint to missing VPA object %+v", vpaID)
+	}
+
+	cs := model.NewAggregateContainerState()
+	err := cs.LoadFromCheckpoint(&checkpoint.Status)
+	if err != nil {
+		return fmt.Errorf("Cannot load checkpoint for VPA %+v. Reason: %v", vpa.ID, err)
+	}
+	vpa.ContainersInitialAggregateState[checkpoint.Spec.ContainerName] = cs
+	return nil
+}
+
 func (feeder *clusterStateFeeder) InitFromCheckpoints() {
 	glog.V(3).Info("Initializing VPA from checkpoints")
 	feeder.LoadVPAs()
@@ -154,11 +172,13 @@ func (feeder *clusterStateFeeder) InitFromCheckpoints() {
 			glog.Errorf("Cannot list VPA checkpoints from namespace %v. Reason: %+v", namespace, err)
 		}
 		for _, checkpoint := range checkpointList.Items {
-			err = feeder.clusterState.SetVpaCheckpoint(&checkpoint)
+
+			glog.V(3).Infof("Loading VPA %s/%s checkpoint for %s", checkpoint.ObjectMeta.Namespace, checkpoint.Spec.VPAObjectName, checkpoint.Spec.ContainerName)
+			err = feeder.setVpaCheckpoint(&checkpoint)
 			if err != nil {
 				glog.Errorf("Error while loading checkpoint. Reason: %+v", err)
 			}
-			glog.V(3).Infof("Loaded VPA %s/%s checkpoint for %s", checkpoint.ObjectMeta.Namespace, checkpoint.Spec.VPAObjectName, checkpoint.Spec.ContainerName)
+
 		}
 	}
 }
