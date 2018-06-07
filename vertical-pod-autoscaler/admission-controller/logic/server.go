@@ -64,23 +64,47 @@ func (s *AdmissionServer) getPatchesForPodResourceRequest(raw []byte, namespace 
 	patches := []patchRecord{}
 	updatesAnnotation := []string{}
 	for i, containerResources := range containersResources {
+
+		// Add resources empty object if missing
+		if pod.Spec.Containers[i].Resources.Limits == nil &&
+			pod.Spec.Containers[i].Resources.Requests == nil {
+			patches = append(patches, patchRecord{
+				Op:    "add",
+				Path:  fmt.Sprintf("/spec/containers/%d/resources", i),
+				Value: v1.ResourceRequirements{},
+			})
+		}
+
+		// Add request empty map if missing
+		if pod.Spec.Containers[i].Resources.Requests == nil {
+			patches = append(patches, patchRecord{
+				Op:    "add",
+				Path:  fmt.Sprintf("/spec/containers/%d/resources/requests", i),
+				Value: v1.ResourceList{}})
+		}
+
 		annotations := []string{}
 		for resource, request := range containerResources.Requests {
+			// Set request
 			patches = append(patches, patchRecord{
 				Op:    "add",
 				Path:  fmt.Sprintf("/spec/containers/%d/resources/requests/%s", i, resource),
 				Value: request.String()})
 			annotations = append(annotations, fmt.Sprintf("%s request", resource))
 		}
+
+		// Set memory limit only when user didn't specify one and we have recommendation for memory
 		if _, limitSet := pod.Spec.Containers[i].Resources.Limits[v1.ResourceMemory]; !limitSet {
 			limit, found := containerResources.Limits[v1.ResourceMemory]
 			if found {
+				// Add limits empty map if missing
 				if pod.Spec.Containers[i].Resources.Limits == nil {
 					patches = append(patches, patchRecord{
 						Op:    "add",
 						Path:  fmt.Sprintf("/spec/containers/%d/resources/limits", i),
 						Value: v1.ResourceList{}})
 				}
+				// Set limit
 				patches = append(patches, patchRecord{
 					Op:    "add",
 					Path:  fmt.Sprintf("/spec/containers/%d/resources/limits/%s", i, v1.ResourceMemory),
