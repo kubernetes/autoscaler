@@ -35,6 +35,8 @@ import (
 type Recommender interface {
 	// RunOnce performs one iteration of recommender duties followed by update of recommendations in VPA objects.
 	RunOnce()
+	// GetClusterState returns ClusterState used by Recommender
+	GetClusterState() *model.ClusterState
 	// GetClusterStateFeeder returns ClusterStateFeeder used by Recommender
 	GetClusterStateFeeder() input.ClusterStateFeeder
 }
@@ -48,6 +50,10 @@ type recommender struct {
 	vpaClient              vpa_api.VerticalPodAutoscalersGetter
 	podResourceRecommender logic.PodResourceRecommender
 	useCheckpoints         bool
+}
+
+func (r *recommender) GetClusterState() *model.ClusterState {
+	return r.clusterState
 }
 
 func (r *recommender) GetClusterStateFeeder() input.ClusterStateFeeder {
