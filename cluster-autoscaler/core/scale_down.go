@@ -432,10 +432,7 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 				continue
 			}
 
-			nodeCPU, nodeMemory, err := getNodeCoresAndMemory(node)
-			if err != nil {
-				glog.Warningf("Error getting node resources: %v", err)
-			}
+			nodeCPU, nodeMemory := getNodeCoresAndMemory(node)
 			if nodeCPU > coresLeft {
 				glog.V(4).Infof("Skipping %s - not enough cores limit left", node.Name)
 				continue
@@ -569,11 +566,7 @@ func getEmptyNodes(candidates []*apiv1.Node, pods []*apiv1.Pod, maxEmptyBulkDele
 			availabilityMap[nodeGroup.Id()] = available
 		}
 		if available > 0 {
-			cores, memory, err := getNodeCoresAndMemory(node)
-			if err != nil {
-				glog.Errorf("Error: %v", err)
-				continue
-			}
+			cores, memory := getNodeCoresAndMemory(node)
 			if cores > coresLeft {
 				continue
 			}
@@ -875,11 +868,8 @@ func calculateCoresAndMemoryTotal(nodes []*apiv1.Node, timestamp time.Time) (int
 			// Nodes being deleted do not count towards total cluster resources
 			continue
 		}
-		cores, memory, err := getNodeCoresAndMemory(node)
-		if err != nil {
-			glog.Errorf("Error getting node resources: %v", err)
-			continue
-		}
+		cores, memory := getNodeCoresAndMemory(node)
+
 		coresTotal = coresTotal + cores
 		memoryTotal = memoryTotal + memory
 	}
