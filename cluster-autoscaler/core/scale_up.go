@@ -128,10 +128,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 			continue
 		}
 
-		nodeCPU, nodeMemory, err := getNodeInfoCoresAndMemory(nodeInfo)
-		if err != nil {
-			glog.Errorf("Failed to get node resources: %v", err)
-		}
+		nodeCPU, nodeMemory := getNodeInfoCoresAndMemory(nodeInfo)
 		if nodeCPU > (resourceLimiter.GetMax(cloudprovider.ResourceNameCores) - coresTotal) {
 			// skip this node group
 			glog.V(4).Infof("Skipping node group %s - not enough cores limit left", nodeGroup.Id())
@@ -386,11 +383,7 @@ func calculateClusterCoresMemoryTotal(nodeGroups []cloudprovider.NodeGroup, node
 			continue
 		}
 		if currentSize > 0 {
-			nodeCPU, nodeMemory, err := getNodeInfoCoresAndMemory(nodeInfo)
-			if err != nil {
-				glog.Errorf("Failed to get node resources: %v", err)
-				continue
-			}
+			nodeCPU, nodeMemory := getNodeInfoCoresAndMemory(nodeInfo)
 			coresTotal = coresTotal + int64(currentSize)*nodeCPU
 			memoryTotal = memoryTotal + int64(currentSize)*nodeMemory
 		}
@@ -400,13 +393,7 @@ func calculateClusterCoresMemoryTotal(nodeGroups []cloudprovider.NodeGroup, node
 }
 
 func applyMaxClusterCoresMemoryLimits(newNodes int, coresTotal, memoryTotal, maxCoresTotal, maxMemoryTotal int64, nodeInfo *schedulercache.NodeInfo) (int, errors.AutoscalerError) {
-	newNodeCPU, newNodeMemory, err := getNodeInfoCoresAndMemory(nodeInfo)
-	if err != nil {
-		// This is not very elegant, but it allows us to proceed even if we're
-		// unable to compute cpu/memory limits (not breaking current functionality)
-		glog.Errorf("Failed to get node resources: %v", err)
-		return newNodes, nil
-	}
+	newNodeCPU, newNodeMemory := getNodeInfoCoresAndMemory(nodeInfo)
 	if coresTotal+newNodeCPU*int64(newNodes) > maxCoresTotal {
 		glog.V(1).Infof("Capping size to max cluster cores (%d)", maxCoresTotal)
 		newNodes = int((maxCoresTotal - coresTotal) / newNodeCPU)
@@ -432,6 +419,6 @@ func applyMaxClusterCoresMemoryLimits(newNodes int, coresTotal, memoryTotal, max
 	return newNodes, nil
 }
 
-func getNodeInfoCoresAndMemory(nodeInfo *schedulercache.NodeInfo) (int64, int64, error) {
+func getNodeInfoCoresAndMemory(nodeInfo *schedulercache.NodeInfo) (int64, int64) {
 	return getNodeCoresAndMemory(nodeInfo.Node())
 }
