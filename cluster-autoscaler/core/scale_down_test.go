@@ -38,6 +38,7 @@ import (
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	scheduler_util "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 	"k8s.io/client-go/kubernetes/fake"
 	core "k8s.io/client-go/testing"
 
@@ -865,7 +866,7 @@ var defaultScaleDownOptions = context.AutoscalingOptions{
 	MinCoresTotal:                 0,
 	MinMemoryTotal:                0,
 	MaxCoresTotal:                 config.DefaultMaxClusterCores,
-	MaxMemoryTotal:                config.DefaultMaxClusterMemory,
+	MaxMemoryTotal:                config.DefaultMaxClusterMemory * units.Gigabyte,
 }
 
 func TestScaleDownEmptyMultipleNodeGroups(t *testing.T) {
@@ -910,7 +911,7 @@ func TestScaleDownEmptyMinCoresLimitHit(t *testing.T) {
 
 func TestScaleDownEmptyMinMemoryLimitHit(t *testing.T) {
 	options := defaultScaleDownOptions
-	options.MinMemoryTotal = 4000
+	options.MinMemoryTotal = 4000 * MB
 	config := &scaleTestConfig{
 		nodes: []nodeConfig{
 			{"n1", 2000, 1000 * MB, 0, true, "ng1"},
@@ -1310,7 +1311,7 @@ func TestCalculateCoresAndMemoryTotal(t *testing.T) {
 	coresTotal, memoryTotal := calculateCoresAndMemoryTotal(nodes, time.Now())
 
 	assert.Equal(t, int64(42), coresTotal)
-	assert.Equal(t, int64(44000), memoryTotal)
+	assert.Equal(t, int64(44000*MB), memoryTotal)
 }
 
 func TestFilterOutMasters(t *testing.T) {
