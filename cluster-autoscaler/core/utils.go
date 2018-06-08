@@ -487,30 +487,24 @@ func ConfigurePredicateCheckerForLoop(unschedulablePods []*apiv1.Pod, schedulabl
 	}
 }
 
-func getNodeCoresAndMemory(node *apiv1.Node) (int64, int64, error) {
-	cores, err := getNodeResource(node, apiv1.ResourceCPU)
-	if err != nil {
-		return 0, 0, err
-	}
-
-	memory, err := getNodeResource(node, apiv1.ResourceMemory)
-	if err != nil {
-		return 0, 0, err
-	}
-
-	if cores <= 0 || memory <= 0 {
-		return 0, 0, fmt.Errorf("Invalid node CPU/memory values - cpu %v, memory %v", cores, memory)
-	}
-
-	return cores, memory, nil
+func getNodeCoresAndMemory(node *apiv1.Node) (int64, int64) {
+	cores := getNodeResource(node, apiv1.ResourceCPU)
+	memory := getNodeResource(node, apiv1.ResourceMemory)
+	return cores, memory
 }
 
-func getNodeResource(node *apiv1.Node, resource apiv1.ResourceName) (int64, error) {
+func getNodeResource(node *apiv1.Node, resource apiv1.ResourceName) int64 {
 	nodeCapacity, found := node.Status.Capacity[resource]
 	if !found {
-		return 0, fmt.Errorf("Failed to get %v for node %v", resource, node.Name)
+		return 0
 	}
-	return nodeCapacity.Value(), nil
+
+	nodeCapacityValue := nodeCapacity.Value()
+	if nodeCapacityValue < 0 {
+		nodeCapacityValue = 0
+	}
+
+	return nodeCapacityValue
 }
 
 func getNodeGroupSizeMap(cloudProvider cloudprovider.CloudProvider) map[string]int {
