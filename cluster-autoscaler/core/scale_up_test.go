@@ -36,6 +36,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 
 	apiv1 "k8s.io/api/core/v1"
 	extensionsv1 "k8s.io/api/extensions/v1beta1"
@@ -52,7 +53,7 @@ import (
 var defaultOptions = context.AutoscalingOptions{
 	EstimatorName:  estimator.BinpackingEstimatorName,
 	MaxCoresTotal:  config.DefaultMaxClusterCores,
-	MaxMemoryTotal: config.DefaultMaxClusterMemory,
+	MaxMemoryTotal: config.DefaultMaxClusterMemory * units.Gigabyte,
 	MinCoresTotal:  0,
 	MinMemoryTotal: 0,
 }
@@ -106,7 +107,7 @@ const MB = 1024 * 1024
 
 func TestScaleUpMaxMemoryLimitHit(t *testing.T) {
 	options := defaultOptions
-	options.MaxMemoryTotal = 1300 // set in mb
+	options.MaxMemoryTotal = 1300 * MB
 	config := &scaleTestConfig{
 		nodes: []nodeConfig{
 			{"n1", 2000, 100 * MB, 0, true, "ng1"},

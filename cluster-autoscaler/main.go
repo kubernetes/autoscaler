@@ -40,6 +40,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -143,9 +144,9 @@ func createAutoscalingOptions() context.AutoscalingOptions {
 	if err != nil {
 		glog.Fatalf("Failed to parse flags: %v", err)
 	}
-	// Convert memory limits to megabytes.
-	minMemoryTotal = minMemoryTotal * 1024
-	maxMemoryTotal = maxMemoryTotal * 1024
+	// Convert memory limits to bytes.
+	minMemoryTotal = minMemoryTotal * units.Gigabyte
+	maxMemoryTotal = maxMemoryTotal * units.Gigabyte
 
 	return context.AutoscalingOptions{
 		CloudConfig:                      *cloudConfig,
