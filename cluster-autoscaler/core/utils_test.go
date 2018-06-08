@@ -573,38 +573,51 @@ func TestConfigurePredicateCheckerForLoop(t *testing.T) {
 func TestGetNodeResource(t *testing.T) {
 	node := BuildTestNode("n1", 1000, 2*MB)
 
-	cores, err := getNodeResource(node, apiv1.ResourceCPU)
-	assert.NoError(t, err)
+	cores := getNodeResource(node, apiv1.ResourceCPU)
 	assert.Equal(t, int64(1), cores)
 
-	memory, err := getNodeResource(node, apiv1.ResourceMemory)
-	assert.NoError(t, err)
+	memory := getNodeResource(node, apiv1.ResourceMemory)
 	assert.Equal(t, int64(2*MB), memory)
 
-	_, err = getNodeResource(node, "custom resource")
-	assert.Error(t, err)
+	unknownResourceValue := getNodeResource(node, "unknown resource")
+	assert.Equal(t, int64(0), unknownResourceValue)
 
-	node.Status.Capacity = apiv1.ResourceList{}
+	// if we have no resources in capacity we expect getNodeResource to return 0
+	nodeWithMissingCapacity := BuildTestNode("n1", 1000, 2*MB)
+	nodeWithMissingCapacity.Status.Capacity = apiv1.ResourceList{}
 
-	_, err = getNodeResource(node, apiv1.ResourceCPU)
-	assert.Error(t, err)
+	cores = getNodeResource(nodeWithMissingCapacity, apiv1.ResourceCPU)
+	assert.Equal(t, int64(0), cores)
 
-	_, err = getNodeResource(node, apiv1.ResourceMemory)
-	assert.Error(t, err)
+	memory = getNodeResource(nodeWithMissingCapacity, apiv1.ResourceMemory)
+	assert.Equal(t, int64(0), memory)
+
+	// if we have negative values in resources we expect getNodeResource to return 0
+	nodeWithNegativeCapacity := BuildTestNode("n1", -1000, -2*MB)
+	nodeWithNegativeCapacity.Status.Capacity = apiv1.ResourceList{}
+
+	cores = getNodeResource(nodeWithNegativeCapacity, apiv1.ResourceCPU)
+	assert.Equal(t, int64(0), cores)
+
+	memory = getNodeResource(nodeWithNegativeCapacity, apiv1.ResourceMemory)
+	assert.Equal(t, int64(0), memory)
+
 }
 
 func TestGetNodeCoresAndMemory(t *testing.T) {
 	node := BuildTestNode("n1", 2000, 2048*MB)
 
-	cores, memory, err := getNodeCoresAndMemory(node)
-	assert.NoError(t, err)
+	cores, memory := getNodeCoresAndMemory(node)
 	assert.Equal(t, int64(2), cores)
 	assert.Equal(t, int64(2048*MB), memory)
 
-	node.Status.Capacity = apiv1.ResourceList{}
+	// if we have no cpu/memory defined in capacity we expect getNodeCoresAndMemory to return 0s
+	nodeWithMissingCapacity := BuildTestNode("n1", 1000, 2*MB)
+	nodeWithMissingCapacity.Status.Capacity = apiv1.ResourceList{}
 
-	_, _, err = getNodeCoresAndMemory(node)
-	assert.Error(t, err)
+	cores, memory = getNodeCoresAndMemory(nodeWithMissingCapacity)
+	assert.Equal(t, int64(0), cores)
+	assert.Equal(t, int64(0), memory)
 }
 
 func TestGetOldestPod(t *testing.T) {
