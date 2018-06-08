@@ -69,9 +69,9 @@ type AutoscalingOptions struct {
 	MaxCoresTotal int64
 	// MinCoresTotal sets the minimum number of cores in the whole cluster
 	MinCoresTotal int64
-	// MaxMemoryTotal sets the maximum memory (in megabytes) in the whole cluster
+	// MaxMemoryTotal sets the maximum memory (in bytes) in the whole cluster
 	MaxMemoryTotal int64
-	// MinMemoryTotal sets the maximum memory (in megabytes) in the whole cluster
+	// MinMemoryTotal sets the maximum memory (in bytes) in the whole cluster
 	MinMemoryTotal int64
 	// NodeGroupAutoDiscovery represents one or more definition(s) of node group auto-discovery
 	NodeGroupAutoDiscovery []string
