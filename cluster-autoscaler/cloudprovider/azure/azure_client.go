@@ -23,12 +23,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/arm/disk"
-	"github.com/Azure/azure-sdk-for-go/arm/network"
-	"github.com/Azure/azure-sdk-for-go/arm/resources/resources"
-	"github.com/Azure/azure-sdk-for-go/arm/storage"
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2017-12-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2017-09-30/containerservice"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2017-09-01/network"
+	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources"
+	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2017-10-01/storage"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/go-autorest/autorest/azure"
@@ -58,24 +57,24 @@ type VirtualMachinesClient interface {
 
 // InterfacesClient defines needed functions for azure network.InterfacesClient.
 type InterfacesClient interface {
-	Delete(resourceGroupName string, networkInterfaceName string, cancel <-chan struct{}) (<-chan autorest.Response, <-chan error)
+	Delete(ctx context.Context, resourceGroupName string, networkInterfaceName string) (resp *http.Response, err error)
 }
 
 // DeploymentsClient defines needed functions for azure network.DeploymentsClient.
 type DeploymentsClient interface {
-	Get(resourceGroupName string, deploymentName string) (result resources.DeploymentExtended, err error)
-	ExportTemplate(resourceGroupName string, deploymentName string) (result resources.DeploymentExportResult, err error)
-	CreateOrUpdate(resourceGroupName string, deploymentName string, parameters resources.Deployment, cancel <-chan struct{}) (<-chan resources.DeploymentExtended, <-chan error)
+	Get(ctx context.Context, resourceGroupName string, deploymentName string) (result resources.DeploymentExtended, err error)
+	ExportTemplate(ctx context.Context, resourceGroupName string, deploymentName string) (result resources.DeploymentExportResult, err error)
+	CreateOrUpdate(ctx context.Context, resourceGroupName string, deploymentName string, parameters resources.Deployment) (resp *http.Response, err error)
 }
 
 // DisksClient defines needed functions for azure disk.DisksClient.
 type DisksClient interface {
-	Delete(resourceGroupName string, diskName string, cancel <-chan struct{}) (<-chan disk.OperationStatusResponse, <-chan error)
+	Delete(ctx context.Context, resourceGroupName string, diskName string) (resp *http.Response, err error)
 }
 
 // AccountsClient defines needed functions for azure storage.AccountsClient.
 type AccountsClient interface {
-	ListKeys(resourceGroupName string, accountName string) (result storage.AccountListKeysResult, err error)
+	ListKeys(ctx context.Context, resourceGroupName string, accountName string) (result storage.AccountListKeysResult, err error)
 }
 
 // azVirtualMachineScaleSetsClient implements VirtualMachineScaleSetsClient.
@@ -270,6 +269,142 @@ func (az *azVirtualMachinesClient) List(ctx context.Context, resourceGroupName s
 	return result, nil
 }
 
+type azInterfacesClient struct {
+	client network.InterfacesClient
+}
+
+func newAzInterfacesClient(subscriptionID, endpoint string, servicePrincipalToken *adal.ServicePrincipalToken) *azInterfacesClient {
+	interfacesClient := network.NewInterfacesClient(subscriptionID)
+	interfacesClient.BaseURI = endpoint
+	interfacesClient.Authorizer = autorest.NewBearerAuthorizer(servicePrincipalToken)
+	interfacesClient.PollingDelay = 5 * time.Second
+	configureUserAgent(&interfacesClient.Client)
+
+	return &azInterfacesClient{
+		client: interfacesClient,
+	}
+}
+
+func (az *azInterfacesClient) Delete(ctx context.Context, resourceGroupName string, networkInterfaceName string) (resp *http.Response, err error) {
+	glog.V(10).Infof("azInterfacesClient.Delete(%q,%q): start", resourceGroupName, networkInterfaceName)
+	defer func() {
+		glog.V(10).Infof("azInterfacesClient.Delete(%q,%q): end", resourceGroupName, networkInterfaceName)
+	}()
+
+	future, err := az.client.Delete(ctx, resourceGroupName, networkInterfaceName)
+	if err != nil {
+		return future.Response(), err
+	}
+
+	err = future.WaitForCompletion(ctx, az.client.Client)
+	return future.Response(), err
+}
+
+type azDeploymentsClient struct {
+	client resources.DeploymentsClient
+}
+
+func newAzDeploymentsClient(subscriptionID, endpoint string, servicePrincipalToken *adal.ServicePrincipalToken) *azDeploymentsClient {
+	deploymentsClient := resources.NewDeploymentsClient(subscriptionID)
+	deploymentsClient.BaseURI = endpoint
+	deploymentsClient.Authorizer = autorest.NewBearerAuthorizer(servicePrincipalToken)
+	deploymentsClient.PollingDelay = 5 * time.Second
+	configureUserAgent(&deploymentsClient.Client)
+
+	return &azDeploymentsClient{
+		client: deploymentsClient,
+	}
+}
+
+func (az *azDeploymentsClient) Get(ctx context.Context, resourceGroupName string, deploymentName string) (result resources.DeploymentExtended, err error) {
+	glog.V(10).Infof("azDeploymentsClient.Get(%q,%q): start", resourceGroupName, deploymentName)
+	defer func() {
+		glog.V(10).Infof("azDeploymentsClient.Get(%q,%q): end", resourceGroupName, deploymentName)
+	}()
+
+	return az.client.Get(ctx, resourceGroupName, deploymentName)
+}
+
+func (az *azDeploymentsClient) ExportTemplate(ctx context.Context, resourceGroupName string, deploymentName string) (result resources.DeploymentExportResult, err error) {
+	glog.V(10).Infof("azDeploymentsClient.ExportTemplate(%q,%q): start", resourceGroupName, deploymentName)
+	defer func() {
+		glog.V(10).Infof("azDeploymentsClient.ExportTemplate(%q,%q): end", resourceGroupName, deploymentName)
+	}()
+
+	return az.client.ExportTemplate(ctx, resourceGroupName, deploymentName)
+}
+
+func (az *azDeploymentsClient) CreateOrUpdate(ctx context.Context, resourceGroupName string, deploymentName string, parameters resources.Deployment) (resp *http.Response, err error) {
+	glog.V(10).Infof("azDeploymentsClient.CreateOrUpdate(%q,%q): start", resourceGroupName, deploymentName)
+	defer func() {
+		glog.V(10).Infof("azDeploymentsClient.CreateOrUpdate(%q,%q): end", resourceGroupName, deploymentName)
+	}()
+
+	future, err := az.client.CreateOrUpdate(ctx, resourceGroupName, deploymentName, parameters)
+	if err != nil {
+		return future.Response(), err
+	}
+
+	err = future.WaitForCompletion(ctx, az.client.Client)
+	return future.Response(), err
+}
+
+type azDisksClient struct {
+	client compute.DisksClient
+}
+
+func newAzDisksClient(subscriptionID, endpoint string, servicePrincipalToken *adal.ServicePrincipalToken) *azDisksClient {
+	disksClient := compute.NewDisksClient(subscriptionID)
+	disksClient.BaseURI = endpoint
+	disksClient.Authorizer = autorest.NewBearerAuthorizer(servicePrincipalToken)
+	disksClient.PollingDelay = 5 * time.Second
+	configureUserAgent(&disksClient.Client)
+
+	return &azDisksClient{
+		client: disksClient,
+	}
+}
+
+func (az *azDisksClient) Delete(ctx context.Context, resourceGroupName string, diskName string) (resp *http.Response, err error) {
+	glog.V(10).Infof("azDisksClient.Delete(%q,%q): start", resourceGroupName, diskName)
+	defer func() {
+		glog.V(10).Infof("azDisksClient.Delete(%q,%q): end", resourceGroupName, diskName)
+	}()
+
+	future, err := az.client.Delete(ctx, resourceGroupName, diskName)
+	if err != nil {
+		return future.Response(), err
+	}
+
+	err = future.WaitForCompletion(ctx, az.client.Client)
+	return future.Response(), err
+}
+
+type azAccountsClient struct {
+	client storage.AccountsClient
+}
+
+func newAzAccountsClient(subscriptionID, endpoint string, servicePrincipalToken *adal.ServicePrincipalToken) *azAccountsClient {
+	accountsClient := storage.NewAccountsClient(subscriptionID)
+	accountsClient.BaseURI = endpoint
+	accountsClient.Authorizer = autorest.NewBearerAuthorizer(servicePrincipalToken)
+	accountsClient.PollingDelay = 5 * time.Second
+	configureUserAgent(&accountsClient.Client)
+
+	return &azAccountsClient{
+		client: accountsClient,
+	}
+}
+
+func (az *azAccountsClient) ListKeys(ctx context.Context, resourceGroupName string, accountName string) (result storage.AccountListKeysResult, err error) {
+	glog.V(10).Infof("azAccountsClient.ListKeys(%q,%q): start", resourceGroupName, accountName)
+	defer func() {
+		glog.V(10).Infof("azAccountsClient.ListKeys(%q,%q): end", resourceGroupName, accountName)
+	}()
+
+	return az.client.ListKeys(ctx, resourceGroupName, accountName)
+}
+
 type azClient struct {
 	virtualMachineScaleSetsClient   VirtualMachineScaleSetsClient
 	virtualMachineScaleSetVMsClient VirtualMachineScaleSetVMsClient
@@ -346,29 +481,16 @@ func newAzClient(cfg *Config, env *azure.Environment) (*azClient, error) {
 	virtualMachinesClient := newAzVirtualMachinesClient(cfg.SubscriptionID, env.ResourceManagerEndpoint, spt)
 	glog.V(5).Infof("Created vm client with authorizer: %v", virtualMachinesClient)
 
-	deploymentsClient := resources.NewDeploymentsClient(cfg.SubscriptionID)
-	deploymentsClient.BaseURI = env.ResourceManagerEndpoint
-	deploymentsClient.Authorizer = autorest.NewBearerAuthorizer(spt)
-	deploymentsClient.PollingDelay = 5 * time.Second
-	configureUserAgent(&deploymentsClient.Client)
+	deploymentsClient := newAzDeploymentsClient(cfg.SubscriptionID, env.ResourceManagerEndpoint, spt)
 	glog.V(5).Infof("Created deployments client with authorizer: %v", deploymentsClient)
 
-	interfacesClient := network.NewInterfacesClient(cfg.SubscriptionID)
-	interfacesClient.BaseURI = env.ResourceManagerEndpoint
-	interfacesClient.Authorizer = autorest.NewBearerAuthorizer(spt)
-	interfacesClient.PollingDelay = 5 * time.Second
+	interfacesClient := newAzInterfacesClient(cfg.SubscriptionID, env.ResourceManagerEndpoint, spt)
 	glog.V(5).Infof("Created interfaces client with authorizer: %v", interfacesClient)
 
-	storageAccountsClient := storage.NewAccountsClient(cfg.SubscriptionID)
-	storageAccountsClient.BaseURI = env.ResourceManagerEndpoint
-	storageAccountsClient.Authorizer = autorest.NewBearerAuthorizer(spt)
-	storageAccountsClient.PollingDelay = 5 * time.Second
+	storageAccountsClient := newAzAccountsClient(cfg.SubscriptionID, env.ResourceManagerEndpoint, spt)
 	glog.V(5).Infof("Created storage accounts client with authorizer: %v", storageAccountsClient)
 
-	disksClient := disk.NewDisksClient(cfg.SubscriptionID)
-	disksClient.BaseURI = env.ResourceManagerEndpoint
-	disksClient.Authorizer = autorest.NewBearerAuthorizer(spt)
-	disksClient.PollingDelay = 5 * time.Second
+	disksClient := newAzDisksClient(cfg.SubscriptionID, env.ResourceManagerEndpoint, spt)
 	glog.V(5).Infof("Created disks client with authorizer: %v", disksClient)
 
 	containerServicesClient := containerservice.NewContainerServicesClient(cfg.SubscriptionID)
