@@ -124,6 +124,7 @@ type RCConfig struct {
 	CpuLimit          int64 // millicores
 	MemRequest        int64 // bytes
 	MemLimit          int64 // bytes
+	GpuLimit          int64 // count
 	ReadinessProbe    *v1.Probe
 	DNSPolicy         *v1.DNSPolicy
 	PriorityClassName string
@@ -131,8 +132,9 @@ type RCConfig struct {
 	// Env vars, set the same for every pod.
 	Env map[string]string
 
-	// Extra labels added to every pod.
-	Labels map[string]string
+	// Extra labels and annotations added to every pod.
+	Labels      map[string]string
+	Annotations map[string]string
 
 	// Node selector for pods in the RC.
 	NodeSelector map[string]string
@@ -292,7 +294,8 @@ func (config *DeploymentConfig) create() error {
 			},
 			Template: v1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels: map[string]string{"name": config.Name},
+					Labels:      map[string]string{"name": config.Name},
+					Annotations: config.Annotations,
 				},
 				Spec: v1.PodSpec{
 					Containers: []v1.Container{
@@ -362,7 +365,8 @@ func (config *ReplicaSetConfig) create() error {
 			},
 			Template: v1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels: map[string]string{"name": config.Name},
+					Labels:      map[string]string{"name": config.Name},
+					Annotations: config.Annotations,
 				},
 				Spec: v1.PodSpec{
 					Containers: []v1.Container{
@@ -428,7 +432,8 @@ func (config *JobConfig) create() error {
 			Completions: func(i int) *int32 { x := int32(i); return &x }(config.Replicas),
 			Template: v1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels: map[string]string{"name": config.Name},
+					Labels:      map[string]string{"name": config.Name},
+					Annotations: config.Annotations,
 				},
 				Spec: v1.PodSpec{
 					Containers: []v1.Container{
@@ -542,7 +547,8 @@ func (config *RCConfig) create() error {
 			},
 			Template: &v1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels: map[string]string{"name": config.Name},
+					Labels:      map[string]string{"name": config.Name},
+					Annotations: config.Annotations,
 				},
 				Spec: v1.PodSpec{
 					Affinity: config.Affinity,
@@ -610,7 +616,7 @@ func (config *RCConfig) applyTo(template *v1.PodTemplateSpec) {
 			c.Ports = append(c.Ports, v1.ContainerPort{Name: k, ContainerPort: int32(v), HostPort: int32(v)})
 		}
 	}
-	if config.CpuLimit > 0 || config.MemLimit > 0 {
+	if config.CpuLimit > 0 || config.MemLimit > 0 || config.GpuLimit > 0 {
 		template.Spec.Containers[0].Resources.Limits = v1.ResourceList{}
 	}
 	if config.CpuLimit > 0 {
@@ -627,6 +633,9 @@ func (config *RCConfig) applyTo(template *v1.PodTemplateSpec) {
 	}
 	if config.MemRequest > 0 {
 		template.Spec.Containers[0].Resources.Requests[v1.ResourceMemory] = *resource.NewQuantity(config.MemRequest, resource.DecimalSI)
+	}
+	if config.GpuLimit > 0 {
+		template.Spec.Containers[0].Resources.Limits["nvidia.com/gpu"] = *resource.NewQuantity(config.GpuLimit, resource.DecimalSI)
 	}
 	if len(config.Volumes) > 0 {
 		template.Spec.Volumes = config.Volumes
@@ -646,6 +655,7 @@ type RCStartupStatus struct {
 	RunningButNotReady    int
 	Waiting               int
 	Pending               int
+	Scheduled             int
 	Unknown               int
 	Inactive              int
 	FailedContainers      int
@@ -699,6 +709,10 @@ func ComputeRCStartupStatus(pods []*v1.Pod, expected int) RCStartupStatus {
 		} else if p.Status.Phase == v1.PodUnknown {
 			startupStatus.Unknown++
 		}
+		// Record count of scheduled pods (useful for computing scheduler throughput).
+		if p.Spec.NodeName != "" {
+			startupStatus.Scheduled++
+		}
 	}
 	return startupStatus
 }
@@ -714,8 +728,11 @@ func (config *RCConfig) start() error {
 
 	label := labels.SelectorFromSet(labels.Set(map[string]string{"name": config.Name}))
 
-	PodStore := NewPodStore(config.Client, config.Namespace, label, fields.Everything())
-	defer PodStore.Stop()
+	ps, err := NewPodStore(config.Client, config.Namespace, label, fields.Everything())
+	if err != nil {
+		return err
+	}
+	defer ps.Stop()
 
 	interval := config.PollInterval
 	if interval <= 0 {
@@ -731,7 +748,7 @@ func (config *RCConfig) start() error {
 	for oldRunning != config.Replicas {
 		time.Sleep(interval)
 
-		pods := PodStore.List()
+		pods := ps.List()
 		startupStatus := ComputeRCStartupStatus(pods, config.Replicas)
 
 		pods = startupStatus.Created
@@ -835,10 +852,14 @@ func WaitForPodsWithLabelRunning(c clientset.Interface, ns string, label labels.
 // one matching pod exists. If 'replicas' is < 0, wait for all matching pods running.
 func WaitForEnoughPodsWithLabelRunning(c clientset.Interface, ns string, label labels.Selector, replicas int) error {
 	running := false
-	PodStore := NewPodStore(c, ns, label, fields.Everything())
-	defer PodStore.Stop()
+	ps, err := NewPodStore(c, ns, label, fields.Everything())
+	if err != nil {
+		return err
+	}
+	defer ps.Stop()
+
 	for start := time.Now(); time.Since(start) < 10*time.Minute; time.Sleep(5 * time.Second) {
-		pods := PodStore.List()
+		pods := ps.List()
 		if len(pods) == 0 {
 			continue
 		}
@@ -1272,11 +1293,14 @@ func (config *DaemonConfig) Run() error {
 		timeout = 5 * time.Minute
 	}
 
-	podStore := NewPodStore(config.Client, config.Namespace, labels.SelectorFromSet(nameLabel), fields.Everything())
-	defer podStore.Stop()
+	ps, err := NewPodStore(config.Client, config.Namespace, labels.SelectorFromSet(nameLabel), fields.Everything())
+	if err != nil {
+		return err
+	}
+	defer ps.Stop()
 
 	err = wait.Poll(time.Second, timeout, func() (bool, error) {
-		pods := podStore.List()
+		pods := ps.List()
 
 		nodeHasDaemon := sets.NewString()
 		for _, pod := range pods {

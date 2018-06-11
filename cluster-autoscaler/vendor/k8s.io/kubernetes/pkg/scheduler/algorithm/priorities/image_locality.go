@@ -18,10 +18,12 @@ package priorities
 
 import (
 	"fmt"
+	"strings"
 
 	"k8s.io/api/core/v1"
 	schedulerapi "k8s.io/kubernetes/pkg/scheduler/api"
-	"k8s.io/kubernetes/pkg/scheduler/schedulercache"
+	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
+	"k8s.io/kubernetes/pkg/util/parsers"
 )
 
 // This is a reasonable size range of all container images. 90%ile of images on dockerhub drops into this range.
@@ -42,7 +44,7 @@ func ImageLocalityPriorityMap(pod *v1.Pod, meta interface{}, nodeInfo *scheduler
 		return schedulerapi.HostPriority{}, fmt.Errorf("node not found")
 	}
 
-	sumSize := totalImageSize(node, pod.Spec.Containers)
+	sumSize := totalImageSize(nodeInfo, pod.Spec.Containers)
 
 	return schedulerapi.HostPriority{
 		Host:  node.Name,
@@ -69,20 +71,27 @@ func calculateScoreFromSize(sumSize int64) int {
 }
 
 // totalImageSize returns the total image size of all the containers that are already on the node.
-func totalImageSize(node *v1.Node, containers []v1.Container) int64 {
-	imageSizes := make(map[string]int64)
-	for _, image := range node.Status.Images {
-		for _, name := range image.Names {
-			imageSizes[name] = image.SizeBytes
-		}
-	}
-
+func totalImageSize(nodeInfo *schedulercache.NodeInfo, containers []v1.Container) int64 {
 	var total int64
+
+	imageSizes := nodeInfo.ImageSizes()
 	for _, container := range containers {
-		if size, ok := imageSizes[container.Image]; ok {
+		if size, ok := imageSizes[normalizedImageName(container.Image)]; ok {
 			total += size
 		}
 	}
 
 	return total
+}
+
+// normalizedImageName returns the CRI compliant name for a given image.
+// TODO: cover the corner cases of missed matches, e.g,
+// 1. Using Docker as runtime and docker.io/library/test:tag in pod spec, but only test:tag will present in node status
+// 2. Using the implicit registry, i.e., test:tag or library/test:tag in pod spec but only docker.io/library/test:tag
+// in node status; note that if users consistently use one registry format, this should not happen.
+func normalizedImageName(name string) string {
+	if strings.LastIndex(name, ":") <= strings.LastIndex(name, "/") {
+		name = name + ":" + parsers.DefaultImageTag
+	}
+	return name
 }
