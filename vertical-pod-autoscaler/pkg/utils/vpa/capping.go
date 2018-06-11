@@ -126,23 +126,6 @@ func GetRecommendationForContainer(containerName string, recommendation *vpa_typ
 	return nil
 }
 
-// GetContainerResourcePolicy returns the ContainerResourcePolicy for a given policy
-// and container name. It returns nil if there is no policy specified for the container.
-func GetContainerResourcePolicy(containerName string, policy *vpa_types.PodResourcePolicy) *vpa_types.ContainerResourcePolicy {
-	var defaultPolicy *vpa_types.ContainerResourcePolicy
-	if policy != nil {
-		for i, containerPolicy := range policy.ContainerPolicies {
-			if containerPolicy.Name == containerName {
-				return &policy.ContainerPolicies[i]
-			}
-			if containerPolicy.Name == vpa_types.DefaultContainerResourcePolicy {
-				defaultPolicy = &policy.ContainerPolicies[i]
-			}
-		}
-	}
-	return defaultPolicy
-}
-
 func getContainer(containerName string, pod *apiv1.Pod) *apiv1.Container {
 	for i, container := range pod.Spec.Containers {
 		if container.Name == containerName {
