@@ -28,7 +28,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
-	"k8s.io/kubernetes/pkg/scheduler/schedulercache"
+	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 )
 
 //ContainerServiceAgentPool implements NodeGroup interface for agent pool deployed in ACS/AKS
@@ -367,8 +367,8 @@ func (agentPool *ContainerServiceAgentPool) DeleteNodes(nodes []*apiv1.Node) err
 }
 
 //IsContainerServiceNode checks if the tag from the vm matches the agentPool name
-func (agentPool *ContainerServiceAgentPool) IsContainerServiceNode(tags *map[string]*string) bool {
-	poolName := (*tags)["poolName"]
+func (agentPool *ContainerServiceAgentPool) IsContainerServiceNode(tags map[string]*string) bool {
+	poolName := tags["poolName"]
 	if poolName != nil {
 		glog.V(5).Infof("Matching agentPool name: %s with tag name: %s", agentPool.azureRef.Name, *poolName)
 		if *poolName == agentPool.azureRef.Name {

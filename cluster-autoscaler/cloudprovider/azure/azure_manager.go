@@ -371,11 +371,11 @@ func (m *AzureManager) listScaleSets(filter []cloudprovider.LabelAutoDiscoveryCo
 
 	for _, scaleSet := range result {
 		if len(filter) > 0 {
-			if scaleSet.Tags == nil || len(*scaleSet.Tags) == 0 {
+			if scaleSet.Tags == nil || len(scaleSet.Tags) == 0 {
 				continue
 			}
 
-			if !matchDiscoveryConfig(*scaleSet.Tags, filter) {
+			if !matchDiscoveryConfig(scaleSet.Tags, filter) {
 				continue
 			}
 		}
@@ -396,13 +396,16 @@ func (m *AzureManager) listScaleSets(filter []cloudprovider.LabelAutoDiscoveryCo
 // listAgentPools gets a list of agent pools and instanceIDs.
 // Note: filter won't take effect for agent pools.
 func (m *AzureManager) listAgentPools(filter []cloudprovider.LabelAutoDiscoveryConfig) (asgs []cloudprovider.NodeGroup, err error) {
-	deploy, err := m.azClient.deploymentsClient.Get(m.config.ResourceGroup, m.config.Deployment)
+	ctx, cancel := getContextWithCancel()
+	defer cancel()
+	deploy, err := m.azClient.deploymentsClient.Get(ctx, m.config.ResourceGroup, m.config.Deployment)
 	if err != nil {
 		glog.Errorf("deploymentsClient.Get(%s, %s) failed: %v", m.config.ResourceGroup, m.config.Deployment, err)
 		return nil, err
 	}
 
-	for k := range *deploy.Properties.Parameters {
+	parameters := deploy.Properties.Parameters.(map[string]interface{})
+	for k := range parameters {
 		if k == "masterVMSize" || !strings.HasSuffix(k, "VMSize") {
 			continue
 		}
