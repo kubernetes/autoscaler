@@ -547,6 +547,7 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 			checkResult := scaleDownResourcesLeft.checkDeltaWithinLimits(scaleDownResourcesDelta)
 			if checkResult.exceeded {
 				glog.V(4).Infof("Skipping %s - minimal limit exceeded for %v", node.Name, checkResult.exceededResources)
+				continue
 			}
 
 			candidates = append(candidates, node)
