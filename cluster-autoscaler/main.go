@@ -113,6 +113,7 @@ var (
 	maxNodesTotal     = flag.Int("max-nodes-total", 0, "Maximum number of nodes in all node groups. Cluster autoscaler will not grow the cluster beyond this number.")
 	coresTotal        = flag.String("cores-total", minMaxFlagString(0, config.DefaultMaxClusterCores), "Minimum and maximum number of cores in cluster, in the format <min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers.")
 	memoryTotal       = flag.String("memory-total", minMaxFlagString(0, config.DefaultMaxClusterMemory), "Minimum and maximum number of gigabytes of memory in cluster, in the format <min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers.")
+	gpuTotal          = multiStringFlag("gpu-total", "Minimum and maximum number of different GPUs in cluster, in the format <gpu_type>:<min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers. Can be passed multiple times. CURRENTLY THIS FLAG ONLY WORKS ON GKE.")
 	cloudProviderFlag = flag.String("cloud-provider", cloudBuilder.DefaultCloudProvider,
 		"Cloud provider type. Available values: ["+strings.Join(cloudBuilder.AvailableCloudProviders, ",")+"]")
 	maxEmptyBulkDeleteFlag     = flag.Int("max-empty-bulk-delete", 10, "Maximum number of empty nodes that can be deleted at the same time.")
@@ -161,6 +162,11 @@ func createAutoscalingOptions() context.AutoscalingOptions {
 	minMemoryTotal = minMemoryTotal * units.Gigabyte
 	maxMemoryTotal = maxMemoryTotal * units.Gigabyte
 
+	parsedGpuTotal, err := parseMultipleGpuLimits(*gpuTotal)
+	if err != nil {
+		glog.Fatalf("Failed to parse flags: %v", err)
+	}
+
 	return context.AutoscalingOptions{
 		CloudConfig:                      *cloudConfig,
 		CloudProviderName:                *cloudProviderFlag,
@@ -177,6 +183,7 @@ func createAutoscalingOptions() context.AutoscalingOptions {
 		MinCoresTotal:                    minCoresTotal,
 		MaxMemoryTotal:                   maxMemoryTotal,
 		MinMemoryTotal:                   minMemoryTotal,
+		GpuTotal:                         parsedGpuTotal,
 		NodeGroups:                       *nodeGroupsFlag,
 		ScaleDownDelayAfterAdd:           *scaleDownDelayAfterAdd,
 		ScaleDownDelayAfterDelete:        *scaleDownDelayAfterDelete,
@@ -444,4 +451,47 @@ func validateMinMaxFlag(min, max int64) error {
 
 func minMaxFlagString(min, max int64) string {
 	return fmt.Sprintf("%v:%v", min, max)
+}
+
+func parseMultipleGpuLimits(flags MultiStringFlag) ([]context.GpuLimits, error) {
+	parsedFlags := make([]context.GpuLimits, 0, len(flags))
+	for _, flag := range flags {
+		parsedFlag, err := parseSingleGpuLimit(flag)
+		if err != nil {
+			return nil, err
+		}
+		parsedFlags = append(parsedFlags, parsedFlag)
+	}
+	return parsedFlags, nil
+}
+
+func parseSingleGpuLimit(config string) (context.GpuLimits, error) {
+	parts := strings.Split(config, ":")
+	if len(parts) != 3 {
+		return context.GpuLimits{}, fmt.Errorf("Incorrect gpu limit specification: %v", config)
+	}
+	gpuType := parts[0]
+	minVal, err := strconv.ParseInt(parts[1], 10, 64)
+	if err != nil {
+		return context.GpuLimits{}, fmt.Errorf("Incorrect gpu limit - min is not integer: %v", config)
+	}
+	maxVal, err := strconv.ParseInt(parts[2], 10, 64)
+	if err != nil {
+		return context.GpuLimits{}, fmt.Errorf("Incorrect gpu limit - max is not integer: %v", config)
+	}
+	if minVal < 0 {
+		return context.GpuLimits{}, fmt.Errorf("Incorrect gpu limit - min is less than 0; %v", config)
+	}
+	if maxVal < 0 {
+		return context.GpuLimits{}, fmt.Errorf("Incorrect gpu limit - max is less than 0; %v", config)
+	}
+	if minVal > maxVal {
+		return context.GpuLimits{}, fmt.Errorf("Incorrect gpu limit - min is greater than max; %v", config)
+	}
+	parsedGpuLimits := context.GpuLimits{
+		GpuType: gpuType,
+		Min:     minVal,
+		Max:     maxVal,
+	}
+	return parsedGpuLimits, nil
 }

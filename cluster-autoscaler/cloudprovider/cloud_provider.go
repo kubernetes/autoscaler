@@ -163,6 +163,13 @@ const (
 	ResourceNameMemory = "memory"
 )
 
+// IsGpuResource checks if given resource name point denotes a gpu type
+func IsGpuResource(resourceName string) bool {
+	// hack: we assume anything which is not cpu/memory to be a gpu.
+	// we are not getting anything more that a map string->limits from the user
+	return resourceName != ResourceNameCores && resourceName != ResourceNameMemory
+}
+
 // ResourceLimiter contains limits (max, min) for resources (cores, memory etc.).
 type ResourceLimiter struct {
 	minLimits map[string]int64
