@@ -32,7 +32,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
-	"k8s.io/kubernetes/pkg/scheduler/schedulercache"
+	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 )
 
 // ScaleSet implements NodeGroup interface.
@@ -412,8 +412,13 @@ func (scaleSet *ScaleSet) buildNodeFromTemplate(template compute.VirtualMachineS
 
 	// NodeLabels
 	if template.Tags != nil {
-		for k, v := range *template.Tags {
-			node.Labels[k] = *v
+		for k, v := range template.Tags {
+			if v != nil {
+				node.Labels[k] = *v
+			} else {
+				node.Labels[k] = ""
+			}
+
 		}
 	}
 

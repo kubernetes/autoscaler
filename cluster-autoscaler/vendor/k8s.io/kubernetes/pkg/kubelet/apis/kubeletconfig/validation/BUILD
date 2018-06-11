@@ -8,13 +8,52 @@ load(
 
 go_library(
     name = "go_default_library",
-    srcs = ["validation.go"],
+    srcs = [
+        "validation.go",
+    ] + select({
+        "@io_bazel_rules_go//go/platform:android": [
+            "validation_others.go",
+        ],
+        "@io_bazel_rules_go//go/platform:darwin": [
+            "validation_others.go",
+        ],
+        "@io_bazel_rules_go//go/platform:dragonfly": [
+            "validation_others.go",
+        ],
+        "@io_bazel_rules_go//go/platform:freebsd": [
+            "validation_others.go",
+        ],
+        "@io_bazel_rules_go//go/platform:linux": [
+            "validation_others.go",
+        ],
+        "@io_bazel_rules_go//go/platform:nacl": [
+            "validation_others.go",
+        ],
+        "@io_bazel_rules_go//go/platform:netbsd": [
+            "validation_others.go",
+        ],
+        "@io_bazel_rules_go//go/platform:openbsd": [
+            "validation_others.go",
+        ],
+        "@io_bazel_rules_go//go/platform:plan9": [
+            "validation_others.go",
+        ],
+        "@io_bazel_rules_go//go/platform:solaris": [
+            "validation_others.go",
+        ],
+        "@io_bazel_rules_go//go/platform:windows": [
+            "validation_windows.go",
+        ],
+        "//conditions:default": [],
+    }),
     importpath = "k8s.io/kubernetes/pkg/kubelet/apis/kubeletconfig/validation",
     deps = [
+        "//pkg/features:go_default_library",
         "//pkg/kubelet/apis/kubeletconfig:go_default_library",
         "//pkg/kubelet/types:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/errors:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/validation:go_default_library",
+        "//vendor/k8s.io/apiserver/pkg/util/feature:go_default_library",
     ],
 )
 

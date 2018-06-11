@@ -11,7 +11,6 @@ go_library(
     srcs = [
         "admission_failure_handler_stub.go",
         "doc.go",
-        "fake_handler_runner.go",
         "handlers.go",
         "interfaces.go",
         "predicate.go",
@@ -24,7 +23,7 @@ go_library(
         "//pkg/kubelet/util/format:go_default_library",
         "//pkg/scheduler/algorithm:go_default_library",
         "//pkg/scheduler/algorithm/predicates:go_default_library",
-        "//pkg/scheduler/schedulercache:go_default_library",
+        "//pkg/scheduler/cache:go_default_library",
         "//pkg/security/apparmor:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
@@ -43,7 +42,7 @@ go_test(
     deps = [
         "//pkg/kubelet/container:go_default_library",
         "//pkg/kubelet/util/format:go_default_library",
-        "//pkg/scheduler/schedulercache:go_default_library",
+        "//pkg/scheduler/cache:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/resource:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/intstr:go_default_library",

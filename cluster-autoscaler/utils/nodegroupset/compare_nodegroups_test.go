@@ -21,9 +21,10 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
-	"k8s.io/kubernetes/pkg/scheduler/schedulercache"
+	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -66,8 +67,8 @@ func TestNodesSimilarVariousRequirements(t *testing.T) {
 
 	// One with GPU, one without
 	n5 := BuildTestNode("node5", 1000, 2000)
-	n5.Status.Capacity[apiv1.ResourceNvidiaGPU] = *resource.NewQuantity(1, resource.DecimalSI)
-	n5.Status.Allocatable[apiv1.ResourceNvidiaGPU] = n5.Status.Capacity[apiv1.ResourceNvidiaGPU]
+	n5.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(1, resource.DecimalSI)
+	n5.Status.Allocatable[gpu.ResourceNvidiaGPU] = n5.Status.Capacity[gpu.ResourceNvidiaGPU]
 	checkNodesSimilar(t, n1, n5, false)
 }
 

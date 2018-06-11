@@ -20,6 +20,7 @@ import (
 	"context"
 
 	computealpha "google.golang.org/api/compute/v0.alpha"
+	computebeta "google.golang.org/api/compute/v0.beta"
 	compute "google.golang.org/api/compute/v1"
 
 	"k8s.io/kubernetes/pkg/cloudprovider/providers/gce/cloud/filter"
@@ -38,6 +39,13 @@ func newBackendServiceMetricContextWithVersion(request, region, version string) 
 func (gce *GCECloud) GetGlobalBackendService(name string) (*compute.BackendService, error) {
 	mc := newBackendServiceMetricContext("get", "")
 	v, err := gce.c.BackendServices().Get(context.Background(), meta.GlobalKey(name))
+	return v, mc.Observe(err)
+}
+
+// GetBetaGlobalBackendService retrieves beta backend by name.
+func (gce *GCECloud) GetBetaGlobalBackendService(name string) (*computebeta.BackendService, error) {
+	mc := newBackendServiceMetricContextWithVersion("get", "", computeBetaVersion)
+	v, err := gce.c.BetaBackendServices().Get(context.Background(), meta.GlobalKey(name))
 	return v, mc.Observe(err)
 }
 
@@ -138,4 +146,18 @@ func (gce *GCECloud) GetRegionalBackendServiceHealth(name, region string, instan
 	ref := &compute.ResourceGroupReference{Group: instanceGroupLink}
 	v, err := gce.c.RegionBackendServices().GetHealth(context.Background(), meta.RegionalKey(name, region), ref)
 	return v, mc.Observe(err)
+}
+
+// SetSecurityPolicyForBetaGlobalBackendService sets the given
+// SecurityPolicyReference for the BackendService identified by the given name.
+func (gce *GCECloud) SetSecurityPolicyForBetaGlobalBackendService(backendServiceName string, securityPolicyReference *computebeta.SecurityPolicyReference) error {
+	mc := newBackendServiceMetricContextWithVersion("set_security_policy", "", computeBetaVersion)
+	return mc.Observe(gce.c.BetaBackendServices().SetSecurityPolicy(context.Background(), meta.GlobalKey(backendServiceName), securityPolicyReference))
+}
+
+// SetSecurityPolicyForAlphaGlobalBackendService sets the given
+// SecurityPolicyReference for the BackendService identified by the given name.
+func (gce *GCECloud) SetSecurityPolicyForAlphaGlobalBackendService(backendServiceName string, securityPolicyReference *computealpha.SecurityPolicyReference) error {
+	mc := newBackendServiceMetricContextWithVersion("set_security_policy", "", computeAlphaVersion)
+	return mc.Observe(gce.c.AlphaBackendServices().SetSecurityPolicy(context.Background(), meta.GlobalKey(backendServiceName), securityPolicyReference))
 }

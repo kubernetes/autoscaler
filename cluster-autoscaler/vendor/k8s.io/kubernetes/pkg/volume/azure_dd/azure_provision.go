@@ -23,6 +23,8 @@ import (
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	utilfeature "k8s.io/apiserver/pkg/util/feature"
+	"k8s.io/kubernetes/pkg/features"
 	"k8s.io/kubernetes/pkg/volume"
 	"k8s.io/kubernetes/pkg/volume/util"
 )
@@ -46,7 +48,7 @@ func (d *azureDiskDeleter) GetPath() string {
 }
 
 func (d *azureDiskDeleter) Delete() error {
-	volumeSource, err := getVolumeSource(d.spec)
+	volumeSource, _, err := getVolumeSource(d.spec)
 	if err != nil {
 		return err
 	}
@@ -65,7 +67,7 @@ func (d *azureDiskDeleter) Delete() error {
 	return diskController.DeleteBlobDisk(volumeSource.DataDiskURI)
 }
 
-func (p *azureDiskProvisioner) Provision() (*v1.PersistentVolume, error) {
+func (p *azureDiskProvisioner) Provision(selectedNode *v1.Node, allowedTopologies []v1.TopologySelectorTerm) (*v1.PersistentVolume, error) {
 	if !util.AccessModesContainedInAll(p.plugin.GetAccessModes(), p.options.PVC.Spec.AccessModes) {
 		return nil, fmt.Errorf("invalid AccessModes %v: only AccessModes %v are supported", p.options.PVC.Spec.AccessModes, p.plugin.GetAccessModes())
 	}
@@ -121,7 +123,6 @@ func (p *azureDiskProvisioner) Provision() (*v1.PersistentVolume, error) {
 	}
 
 	// normalize values
-	fsType = normalizeFsType(fsType)
 	skuName, err := normalizeStorageAccountType(storageAccountType)
 	if err != nil {
 		return nil, err
@@ -188,5 +189,10 @@ func (p *azureDiskProvisioner) Provision() (*v1.PersistentVolume, error) {
 			MountOptions: p.options.MountOptions,
 		},
 	}
+
+	if utilfeature.DefaultFeatureGate.Enabled(features.BlockVolume) {
+		pv.Spec.VolumeMode = p.options.PVC.Spec.VolumeMode
+	}
+
 	return pv, nil
 }

@@ -39,7 +39,7 @@ import (
 	policyv1 "k8s.io/api/policy/v1beta1"
 	"k8s.io/client-go/kubernetes/fake"
 	kube_record "k8s.io/client-go/tools/record"
-	"k8s.io/kubernetes/pkg/scheduler/schedulercache"
+	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 
 	"github.com/golang/glog"
 	"github.com/stretchr/testify/assert"

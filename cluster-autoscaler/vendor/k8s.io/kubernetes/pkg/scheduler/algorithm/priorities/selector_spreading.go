@@ -23,7 +23,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/kubernetes/pkg/scheduler/algorithm"
 	schedulerapi "k8s.io/kubernetes/pkg/scheduler/api"
-	"k8s.io/kubernetes/pkg/scheduler/schedulercache"
+	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 	utilnode "k8s.io/kubernetes/pkg/util/node"
 
 	"github.com/golang/glog"
@@ -211,7 +211,9 @@ func filteredPod(namespace string, selector labels.Selector, nodeInfo *scheduler
 		return []*v1.Pod{}
 	}
 	for _, pod := range nodeInfo.Pods() {
-		if namespace == pod.Namespace && selector.Matches(labels.Set(pod.Labels)) {
+		// Ignore pods being deleted for spreading purposes
+		// Similar to how it is done for SelectorSpreadPriority
+		if namespace == pod.Namespace && pod.DeletionTimestamp == nil && selector.Matches(labels.Set(pod.Labels)) {
 			pods = append(pods, pod)
 		}
 	}
