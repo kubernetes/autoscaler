@@ -133,8 +133,7 @@ func computeScaleDownResourcesLeftLimits(nodes []*apiv1.Node, resourceLimiter *c
 func calculateCoresAndMemoryTotal(nodes []*apiv1.Node, timestamp time.Time) (int64, int64) {
 	var coresTotal, memoryTotal int64
 	for _, node := range nodes {
-		deleteTime, _ := deletetaint.GetToBeDeletedTime(node)
-		if deleteTime != nil && (timestamp.Sub(*deleteTime) < MaxCloudProviderNodeDeletionTime || timestamp.Sub(*deleteTime) < MaxKubernetesEmptyNodeDeletionTime) {
+		if isNodeBeingDeleted(node, timestamp) {
 			// Nodes being deleted do not count towards total cluster resources
 			continue
 		}
@@ -145,6 +144,11 @@ func calculateCoresAndMemoryTotal(nodes []*apiv1.Node, timestamp time.Time) (int
 	}
 
 	return coresTotal, memoryTotal
+}
+
+func isNodeBeingDeleted(node *apiv1.Node, timestamp time.Time) bool {
+	deleteTime, _ := deletetaint.GetToBeDeletedTime(node)
+	return deleteTime != nil && (timestamp.Sub(*deleteTime) < MaxCloudProviderNodeDeletionTime || timestamp.Sub(*deleteTime) < MaxKubernetesEmptyNodeDeletionTime)
 }
 
 func noLimitsOnResources() scaleDownResourcesLimits {
@@ -293,8 +297,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		// Skip nodes marked to be deleted, if they were marked recently.
 		// Old-time marked nodes are again eligible for deletion - something went wrong with them
 		// and they have not been deleted.
-		deleteTime, _ := deletetaint.GetToBeDeletedTime(node)
-		if deleteTime != nil && (timestamp.Sub(*deleteTime) < MaxCloudProviderNodeDeletionTime || timestamp.Sub(*deleteTime) < MaxKubernetesEmptyNodeDeletionTime) {
+		if isNodeBeingDeleted(node, timestamp) {
 			glog.V(1).Infof("Skipping %s from delete considerations - the node is currently being deleted", node.Name)
 			continue
 		}
