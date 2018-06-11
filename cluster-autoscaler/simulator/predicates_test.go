@@ -22,7 +22,7 @@ import (
 	"time"
 
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
-	"k8s.io/kubernetes/pkg/scheduler/schedulercache"
+	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 
 	"github.com/stretchr/testify/assert"
 )

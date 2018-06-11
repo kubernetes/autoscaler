@@ -27,8 +27,8 @@ import (
 	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/kubernetes/pkg/scheduler/algorithm"
 	"k8s.io/kubernetes/pkg/scheduler/algorithm/predicates"
+	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 	"k8s.io/kubernetes/pkg/scheduler/factory"
-	"k8s.io/kubernetes/pkg/scheduler/schedulercache"
 
 	// We need to import provider to initialize default scheduler.
 	_ "k8s.io/kubernetes/pkg/scheduler/algorithmprovider"
