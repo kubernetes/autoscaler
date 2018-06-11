@@ -90,6 +90,7 @@ func NewPredicateChecker(kubeClient kube_client.Interface, stop <-chan struct{})
 		informerFactory.Storage().V1().StorageClasses(),
 		apiv1.DefaultHardPodAffinitySymmetricWeight,
 		false,
+		false,
 	)
 
 	informerFactory.Start(stop)
