@@ -90,7 +90,10 @@ type AzUtil struct {
 
 // DeleteBlob deletes the blob using the storage storage client.
 func (util *AzUtil) DeleteBlob(accountName, vhdContainer, vhdBlob string) error {
-	storageKeysResult, err := util.manager.azClient.storageAccountsClient.ListKeys(util.manager.config.ResourceGroup, accountName)
+	ctx, cancel := getContextWithCancel()
+	defer cancel()
+
+	storageKeysResult, err := util.manager.azClient.storageAccountsClient.ListKeys(ctx, util.manager.config.ResourceGroup, accountName)
 	if err != nil {
 		return err
 	}
@@ -158,15 +161,15 @@ func (util *AzUtil) DeleteVirtualMachine(rg string, name string) error {
 
 	if len(nicName) > 0 {
 		glog.Infof("deleting nic: %s/%s", rg, nicName)
-		_, nicErrChan := util.manager.azClient.interfacesClient.Delete(rg, nicName, nil)
+		interfaceCtx, interfaceCancel := getContextWithCancel()
+		defer interfaceCancel()
 		glog.Infof("waiting for nic deletion: %s/%s", rg, nicName)
-		if nicErr := <-nicErrChan; nicErr != nil {
-			_, realErr := checkResourceExistsFromError(nicErr)
-			if realErr != nil {
-				return realErr
-			}
-			glog.V(2).Infof("interface %s/%s removed", rg, nicName)
+		_, nicErr := util.manager.azClient.interfacesClient.Delete(interfaceCtx, rg, nicName)
+		_, realErr := checkResourceExistsFromError(nicErr)
+		if realErr != nil {
+			return realErr
 		}
+		glog.V(2).Infof("interface %s/%s removed", rg, nicName)
 	}
 
 	if vhd != nil {
@@ -190,15 +193,14 @@ func (util *AzUtil) DeleteVirtualMachine(rg string, name string) error {
 			glog.Warningf("osDisk is not set for VM %s/%s", rg, name)
 		} else {
 			glog.Infof("deleting managed disk: %s/%s", rg, *osDiskName)
-			_, diskErrChan := util.manager.azClient.disksClient.Delete(rg, *osDiskName, nil)
-
-			if err := <-diskErrChan; err != nil {
-				_, realErr := checkResourceExistsFromError(err)
-				if realErr != nil {
-					return realErr
-				}
-				glog.V(2).Infof("disk %s/%s removed", rg, *osDiskName)
+			disksCtx, disksCancel := getContextWithCancel()
+			defer disksCancel()
+			_, diskErr := util.manager.azClient.disksClient.Delete(disksCtx, rg, *osDiskName)
+			_, realErr := checkResourceExistsFromError(diskErr)
+			if realErr != nil {
+				return realErr
 			}
+			glog.V(2).Infof("disk %s/%s removed", rg, *osDiskName)
 		}
 	}
 

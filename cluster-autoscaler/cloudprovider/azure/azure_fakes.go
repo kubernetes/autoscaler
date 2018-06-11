@@ -22,10 +22,9 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/Azure/azure-sdk-for-go/arm/disk"
-	"github.com/Azure/azure-sdk-for-go/arm/resources/resources"
-	"github.com/Azure/azure-sdk-for-go/arm/storage"
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2017-12-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources"
+	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2017-10-01/storage"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/stretchr/testify/mock"
 )
@@ -173,13 +172,9 @@ type InterfacesClientMock struct {
 }
 
 // Delete deletes the interface by networkInterfaceName.
-func (m *InterfacesClientMock) Delete(resourceGroupName string, networkInterfaceName string, cancel <-chan struct{}) (<-chan autorest.Response, <-chan error) {
-	args := m.Called(resourceGroupName, networkInterfaceName, cancel)
-	errChan := make(chan error)
-	go func() {
-		errChan <- args.Error(1)
-	}()
-	return nil, errChan
+func (m *InterfacesClientMock) Delete(ctx context.Context, resourceGroupName string, networkInterfaceName string) (resp *http.Response, err error) {
+	args := m.Called(resourceGroupName, networkInterfaceName)
+	return nil, args.Error(1)
 }
 
 // DisksClientMock mocks for DisksClient.
@@ -188,13 +183,9 @@ type DisksClientMock struct {
 }
 
 // Delete deletes the disk by diskName.
-func (m *DisksClientMock) Delete(resourceGroupName string, diskName string, cancel <-chan struct{}) (<-chan disk.OperationStatusResponse, <-chan error) {
-	args := m.Called(resourceGroupName, diskName, cancel)
-	errChan := make(chan error)
-	go func() {
-		errChan <- args.Error(1)
-	}()
-	return nil, errChan
+func (m *DisksClientMock) Delete(ctx context.Context, resourceGroupName string, diskName string) (resp *http.Response, err error) {
+	args := m.Called(resourceGroupName, diskName)
+	return nil, args.Error(1)
 }
 
 // AccountsClientMock mocks for AccountsClient.
@@ -203,7 +194,7 @@ type AccountsClientMock struct {
 }
 
 // ListKeys get a list of keys by accountName.
-func (m *AccountsClientMock) ListKeys(resourceGroupName string, accountName string) (result storage.AccountListKeysResult, err error) {
+func (m *AccountsClientMock) ListKeys(ctx context.Context, resourceGroupName string, accountName string) (result storage.AccountListKeysResult, err error) {
 	args := m.Called(resourceGroupName, accountName)
 	return storage.AccountListKeysResult{}, args.Error(1)
 }
@@ -217,7 +208,7 @@ type DeploymentsClientMock struct {
 }
 
 // Get gets the DeploymentExtended by deploymentName.
-func (m *DeploymentsClientMock) Get(resourceGroupName string, deploymentName string) (result resources.DeploymentExtended, err error) {
+func (m *DeploymentsClientMock) Get(ctx context.Context, resourceGroupName string, deploymentName string) (result resources.DeploymentExtended, err error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -230,7 +221,7 @@ func (m *DeploymentsClientMock) Get(resourceGroupName string, deploymentName str
 }
 
 // ExportTemplate exports the deployment's template.
-func (m *DeploymentsClientMock) ExportTemplate(resourceGroupName string, deploymentName string) (result resources.DeploymentExportResult, err error) {
+func (m *DeploymentsClientMock) ExportTemplate(ctx context.Context, resourceGroupName string, deploymentName string) (result resources.DeploymentExportResult, err error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -245,14 +236,9 @@ func (m *DeploymentsClientMock) ExportTemplate(resourceGroupName string, deploym
 }
 
 // CreateOrUpdate creates or updates the Deployment.
-func (m *DeploymentsClientMock) CreateOrUpdate(resourceGroupName string, deploymentName string, parameters resources.Deployment, cancel <-chan struct{}) (<-chan resources.DeploymentExtended, <-chan error) {
+func (m *DeploymentsClientMock) CreateOrUpdate(ctx context.Context, resourceGroupName string, deploymentName string, parameters resources.Deployment) (resp *http.Response, err error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
-
-	errChan := make(chan error)
-	go func() {
-		errChan <- nil
-	}()
 
 	deploy, ok := m.FakeStore[deploymentName]
 	if !ok {
@@ -264,5 +250,5 @@ func (m *DeploymentsClientMock) CreateOrUpdate(resourceGroupName string, deploym
 
 	deploy.Properties.Parameters = parameters.Properties.Parameters
 	deploy.Properties.Template = parameters.Properties.Template
-	return nil, errChan
+	return nil, nil
 }
