@@ -24,6 +24,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 )
@@ -173,7 +174,9 @@ func NewResourceLimiter(minLimits map[string]int64, maxLimits map[string]int64) 
 	minLimitsCopy := make(map[string]int64)
 	maxLimitsCopy := make(map[string]int64)
 	for key, value := range minLimits {
-		minLimitsCopy[key] = value
+		if value > 0 {
+			minLimitsCopy[key] = value
+		}
 	}
 	for key, value := range maxLimits {
 		maxLimitsCopy[key] = value
@@ -199,13 +202,20 @@ func (r *ResourceLimiter) GetMax(resourceName string) int64 {
 	return math.MaxInt64
 }
 
+// GetResources returns list of all resource names for which min or max limits are defined
+func (r *ResourceLimiter) GetResources() []string {
+	minResources := sets.StringKeySet(r.minLimits)
+	maxResources := sets.StringKeySet(r.maxLimits)
+	return minResources.Union(maxResources).List()
+}
+
 func (r *ResourceLimiter) String() string {
 	var buffer bytes.Buffer
-	for name, maxLimit := range r.maxLimits {
+	for _, name := range r.GetResources() {
 		if buffer.Len() > 0 {
 			buffer.WriteString(", ")
 		}
-		buffer.WriteString(fmt.Sprintf("{%s : %d - %d}", name, r.minLimits[name], maxLimit))
+		buffer.WriteString(fmt.Sprintf("{%s : %d - %d}", name, r.GetMin(name), r.GetMax(name)))
 	}
 	return buffer.String()
 }
