@@ -24,7 +24,7 @@ import (
 	"k8s.io/kubernetes/pkg/kubelet/config"
 	kubecontainer "k8s.io/kubernetes/pkg/kubelet/container"
 	"k8s.io/kubernetes/pkg/kubelet/lifecycle"
-	"k8s.io/kubernetes/pkg/scheduler/schedulercache"
+	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 )
 
 // Manager manages all the Device Plugins running on a node.
@@ -106,3 +106,6 @@ const (
 // cache during this grace period to cover the time gap for the capacity change to
 // take effect.
 const endpointStopGracePeriod = time.Duration(5) * time.Minute
+
+// kubeletDeviceManagerCheckpoint is the file name of device plugin checkpoint
+const kubeletDeviceManagerCheckpoint = "kubelet_internal_checkpoint"

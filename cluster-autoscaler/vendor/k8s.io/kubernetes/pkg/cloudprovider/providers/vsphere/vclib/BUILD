@@ -26,18 +26,17 @@ go_library(
     deps = [
         "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/github.com/prometheus/client_golang/prometheus:go_default_library",
-        "//vendor/github.com/vmware/govmomi:go_default_library",
         "//vendor/github.com/vmware/govmomi/find:go_default_library",
         "//vendor/github.com/vmware/govmomi/object:go_default_library",
         "//vendor/github.com/vmware/govmomi/pbm:go_default_library",
         "//vendor/github.com/vmware/govmomi/pbm/types:go_default_library",
         "//vendor/github.com/vmware/govmomi/property:go_default_library",
         "//vendor/github.com/vmware/govmomi/session:go_default_library",
+        "//vendor/github.com/vmware/govmomi/sts:go_default_library",
         "//vendor/github.com/vmware/govmomi/vim25:go_default_library",
         "//vendor/github.com/vmware/govmomi/vim25/mo:go_default_library",
         "//vendor/github.com/vmware/govmomi/vim25/soap:go_default_library",
         "//vendor/github.com/vmware/govmomi/vim25/types:go_default_library",
-        "//vendor/golang.org/x/net/context:go_default_library",
     ],
 )
 
@@ -63,6 +62,7 @@ go_test(
         "datacenter_test.go",
         "datastore_test.go",
         "folder_test.go",
+        "utils_test.go",
         "virtualmachine_test.go",
     ],
     embed = [":go_default_library"],

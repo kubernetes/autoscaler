@@ -17,6 +17,7 @@ limitations under the License.
 package kubeletconfig
 
 import (
+	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -81,6 +82,17 @@ type KubeletConfiguration struct {
 	// TLSMinVersion is the minimum TLS version supported.
 	// Values are from tls package constants (https://golang.org/pkg/crypto/tls/#pkg-constants).
 	TLSMinVersion string
+	// rotateCertificates enables client certificate rotation. The Kubelet will request a
+	// new certificate from the certificates.k8s.io API. This requires an approver to approve the
+	// certificate signing requests. The RotateKubeletClientCertificate feature
+	// must be enabled.
+	RotateCertificates bool
+	// serverTLSBootstrap enables server certificate bootstrap. Instead of self
+	// signing a serving certificate, the Kubelet will request a certificate from
+	// the certificates.k8s.io API. This requires an approver to approve the
+	// certificate signing requests. The RotateKubeletServerCertificate feature
+	// must be enabled.
+	ServerTLSBootstrap bool
 	// authentication specifies how requests to the Kubelet's server are authenticated
 	Authentication KubeletAuthentication
 	// authorization specifies how requests to the Kubelet's server are authorized
@@ -160,6 +172,9 @@ type KubeletConfiguration struct {
 	// CPU Manager reconciliation period.
 	// Requires the CPUManager feature gate to be enabled.
 	CPUManagerReconcilePeriod metav1.Duration
+	// Map of QoS resource reservation percentages (memory only for now).
+	// Requires the QOSReserved feature gate to be enabled.
+	QOSReserved map[string]string
 	// runtimeRequestTimeout is the timeout for all runtime requests except long running
 	// requests - pull, logs, exec and attach.
 	RuntimeRequestTimeout metav1.Duration
@@ -245,7 +260,7 @@ type KubeletConfiguration struct {
 	// Maximum number of container log files that can be present for a container.
 	ContainerLogMaxFiles int32
 
-	/* following flags are meant for Node Allocatable */
+	/* the following fields are meant for Node Allocatable */
 
 	// A set of ResourceName=ResourceQuantity (e.g. cpu=200m,memory=150G) pairs
 	// that describe resources reserved for non-kubernetes components.
@@ -323,4 +338,16 @@ type KubeletAnonymousAuthentication struct {
 	// Requests that are not rejected by another authentication method are treated as anonymous requests.
 	// Anonymous requests have a username of system:anonymous, and a group name of system:unauthenticated.
 	Enabled bool
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// SerializedNodeConfigSource allows us to serialize NodeConfigSource
+// This type is used internally by the Kubelet for tracking checkpointed dynamic configs.
+// It exists in the kubeletconfig API group because it is classified as a versioned input to the Kubelet.
+type SerializedNodeConfigSource struct {
+	metav1.TypeMeta
+	// Source is the source that we are serializing
+	// +optional
+	Source v1.NodeConfigSource
 }

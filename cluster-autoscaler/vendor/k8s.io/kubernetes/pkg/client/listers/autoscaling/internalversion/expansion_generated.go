@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Kubernetes Authors.
+Copyright The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -25,3 +25,11 @@ type HorizontalPodAutoscalerListerExpansion interface{}
 // HorizontalPodAutoscalerNamespaceListerExpansion allows custom methods to be added to
 // HorizontalPodAutoscalerNamespaceLister.
 type HorizontalPodAutoscalerNamespaceListerExpansion interface{}
+
+// VerticalPodAutoscalerListerExpansion allows custom methods to be added to
+// VerticalPodAutoscalerLister.
+type VerticalPodAutoscalerListerExpansion interface{}
+
+// VerticalPodAutoscalerNamespaceListerExpansion allows custom methods to be added to
+// VerticalPodAutoscalerNamespaceLister.
+type VerticalPodAutoscalerNamespaceListerExpansion interface{}

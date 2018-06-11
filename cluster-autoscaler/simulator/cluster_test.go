@@ -25,7 +25,7 @@ import (
 	policyv1 "k8s.io/api/policy/v1beta1"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/kubernetes/pkg/kubelet/types"
-	"k8s.io/kubernetes/pkg/scheduler/schedulercache"
+	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 
 	"github.com/stretchr/testify/assert"
 )

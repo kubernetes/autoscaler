@@ -18,7 +18,7 @@ package priorities
 
 import (
 	schedulerapi "k8s.io/kubernetes/pkg/scheduler/api"
-	"k8s.io/kubernetes/pkg/scheduler/schedulercache"
+	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 )
 
 var (
@@ -31,7 +31,7 @@ var (
 	MostRequestedPriorityMap = mostResourcePriority.PriorityMap
 )
 
-func mostResourceScorer(requested, allocable *schedulercache.Resource) int64 {
+func mostResourceScorer(requested, allocable *schedulercache.Resource, includeVolumes bool, requestedVolumes int, allocatableVolumes int) int64 {
 	return (mostRequestedScore(requested.MilliCPU, allocable.MilliCPU) +
 		mostRequestedScore(requested.Memory, allocable.Memory)) / 2
 }

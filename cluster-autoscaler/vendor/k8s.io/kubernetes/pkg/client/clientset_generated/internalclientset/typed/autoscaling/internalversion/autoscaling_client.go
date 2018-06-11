@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Kubernetes Authors.
+Copyright The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import (
 type AutoscalingInterface interface {
 	RESTClient() rest.Interface
 	HorizontalPodAutoscalersGetter
+	VerticalPodAutoscalersGetter
 }
 
 // AutoscalingClient is used to interact with features provided by the autoscaling group.
@@ -35,6 +36,10 @@ type AutoscalingClient struct {
 
 func (c *AutoscalingClient) HorizontalPodAutoscalers(namespace string) HorizontalPodAutoscalerInterface {
 	return newHorizontalPodAutoscalers(c, namespace)
+}
+
+func (c *AutoscalingClient) VerticalPodAutoscalers(namespace string) VerticalPodAutoscalerInterface {
+	return newVerticalPodAutoscalers(c, namespace)
 }
 
 // NewForConfig creates a new AutoscalingClient for the given config.
@@ -66,17 +71,12 @@ func New(c rest.Interface) *AutoscalingClient {
 }
 
 func setConfigDefaults(config *rest.Config) error {
-	g, err := scheme.Registry.Group("autoscaling")
-	if err != nil {
-		return err
-	}
-
 	config.APIPath = "/apis"
 	if config.UserAgent == "" {
 		config.UserAgent = rest.DefaultKubernetesUserAgent()
 	}
-	if config.GroupVersion == nil || config.GroupVersion.Group != g.GroupVersion.Group {
-		gv := g.GroupVersion
+	if config.GroupVersion == nil || config.GroupVersion.Group != scheme.Scheme.PrioritizedVersionsForGroup("autoscaling")[0].Group {
+		gv := scheme.Scheme.PrioritizedVersionsForGroup("autoscaling")[0]
 		config.GroupVersion = &gv
 	}
 	config.NegotiatedSerializer = scheme.Codecs
