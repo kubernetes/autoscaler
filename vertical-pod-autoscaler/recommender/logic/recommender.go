@@ -19,6 +19,8 @@ package logic
 import (
 	"flag"
 
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
+	api_utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/model"
 )
 
@@ -68,7 +70,9 @@ func (r *podResourceRecommender) GetRecommendedPodResources(vpa *model.Vpa) Reco
 	containerNameToAggregateStateMap := vpa.AggregateStateByContainerName()
 	var recommendation = make(RecommendedPodResources)
 	for containerName, aggregatedContainerState := range containerNameToAggregateStateMap {
-		if aggregatedContainerState.TotalSamplesCount > 0 {
+		containerResourcePolicy := api_utils.GetContainerResourcePolicy(containerName, vpa.ResourcePolicy)
+		autoscalingDisabled := containerResourcePolicy != nil && containerResourcePolicy.Mode == vpa_types.ContainerScalingModeOff
+		if !autoscalingDisabled && aggregatedContainerState.TotalSamplesCount > 0 {
 			recommendation[containerName] = r.getRecommendedContainerResources(aggregatedContainerState)
 		}
 	}
