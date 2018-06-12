@@ -246,6 +246,20 @@ func TestNodeGroupForNode(t *testing.T) {
 	service.AssertNumberOfCalls(t, "DescribeAutoScalingGroupsPages", 1)
 }
 
+func TestNodeGroupForNodeWithNoProviderId(t *testing.T) {
+	node := &apiv1.Node{
+		Spec: apiv1.NodeSpec{
+			ProviderID: "",
+		},
+	}
+	service := &AutoScalingMock{}
+	provider := testProvider(t, newTestAwsManagerWithAsgs(t, service, []string{"1:5:test-asg"}))
+	group, err := provider.NodeGroupForNode(node)
+
+	assert.NoError(t, err)
+	assert.Equal(t, group, nil)
+}
+
 func TestAwsRefFromProviderId(t *testing.T) {
 	_, err := AwsRefFromProviderId("aws123")
 	assert.Error(t, err)
