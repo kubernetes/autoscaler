@@ -22,7 +22,7 @@ ifndef REGISTRY
 	$(ERR)
 endif
 	docker build --pull -t ${REGISTRY}/vpa-updater:${TAG} .
-	gcloud docker -- push ${REGISTRY}/vpa-updater:${TAG}
+	docker push ${REGISTRY}/vpa-updater:${TAG}
 
 release: build docker
 
