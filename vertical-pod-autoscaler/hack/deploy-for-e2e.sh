@@ -64,9 +64,9 @@ export TAG=latest
 
 for i in ${COMPONENTS}; do
   if [ $i == admission-controller ] ; then
-    (cd ${SCRIPT_ROOT}/${i} && bash ./gencerts.sh || true)
+    (cd ${SCRIPT_ROOT}/pkg/${i} && bash ./gencerts.sh || true)
   fi
-  make --directory ${SCRIPT_ROOT}/${i} release
+  make --directory ${SCRIPT_ROOT}/pkg/${i} release
 done
 
 kubectl create -f ${SCRIPT_ROOT}/deploy/vpa-crd.yaml
