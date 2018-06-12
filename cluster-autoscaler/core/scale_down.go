@@ -108,10 +108,10 @@ type scaleDownResourcesLimits map[string]int64
 type scaleDownResourcesDelta map[string]int64
 
 // used as a value in scaleDownResourcesLimits if actual limit could not be obtained due to errors talking to cloud provider
-const limitUnknown = math.MinInt64
+const scaleDownLimitUnknown = math.MinInt64
 
 func computeScaleDownResourcesLeftLimits(nodes []*apiv1.Node, resourceLimiter *cloudprovider.ResourceLimiter, cp cloudprovider.CloudProvider, timestamp time.Time) scaleDownResourcesLimits {
-	totalCores, totalMem := calculateCoresAndMemoryTotal(nodes, timestamp)
+	totalCores, totalMem := calculateScaleDownCoresMemoryTotal(nodes, timestamp)
 
 	var totalGpus map[string]int64
 	var totalGpusErr error
@@ -132,7 +132,7 @@ func computeScaleDownResourcesLeftLimits(nodes []*apiv1.Node, resourceLimiter *c
 				resultScaleDownLimits[resource] = computeLeft(totalMem, min)
 			case cloudprovider.IsGpuResource(resource):
 				if totalGpusErr != nil {
-					resultScaleDownLimits[resource] = limitUnknown
+					resultScaleDownLimits[resource] = scaleDownLimitUnknown
 				} else {
 					resultScaleDownLimits[resource] = computeLeft(totalGpus[resource], min)
 				}
@@ -161,7 +161,7 @@ func computeLeft(total int64, min int64) int64 {
 
 }
 
-func calculateCoresAndMemoryTotal(nodes []*apiv1.Node, timestamp time.Time) (int64, int64) {
+func calculateScaleDownCoresMemoryTotal(nodes []*apiv1.Node, timestamp time.Time) (int64, int64) {
 	var coresTotal, memoryTotal int64
 	for _, node := range nodes {
 		if isNodeBeingDeleted(node, timestamp) {
@@ -236,7 +236,7 @@ func isNodeBeingDeleted(node *apiv1.Node, timestamp time.Time) bool {
 	return deleteTime != nil && (timestamp.Sub(*deleteTime) < MaxCloudProviderNodeDeletionTime || timestamp.Sub(*deleteTime) < MaxKubernetesEmptyNodeDeletionTime)
 }
 
-func noLimitsOnResources() scaleDownResourcesLimits {
+func noScaleDownLimitsOnResources() scaleDownResourcesLimits {
 	return nil
 }
 
@@ -265,34 +265,34 @@ func computeScaleDownResourcesDelta(node *apiv1.Node, nodeGroup cloudprovider.No
 	return resultScaleDownDelta, nil
 }
 
-type limitCheckResult struct {
+type scaleDownLimitsCheckResult struct {
 	exceeded          bool
 	exceededResources []string
 }
 
-func notExceeded() limitCheckResult {
-	return limitCheckResult{false, []string{}}
+func scaleDownLimitsNotExceeded() scaleDownLimitsCheckResult {
+	return scaleDownLimitsCheckResult{false, []string{}}
 }
 
-func (limits *scaleDownResourcesLimits) checkDeltaWithinLimits(delta scaleDownResourcesDelta) limitCheckResult {
+func (limits *scaleDownResourcesLimits) checkScaleDownDeltaWithinLimits(delta scaleDownResourcesDelta) scaleDownLimitsCheckResult {
 	exceededResources := sets.NewString()
 	for resource, resourceDelta := range delta {
 		resourceLeft, found := (*limits)[resource]
 		if found {
-			if (resourceDelta > 0) && (resourceLeft == limitUnknown || resourceDelta > resourceLeft) {
+			if (resourceDelta > 0) && (resourceLeft == scaleDownLimitUnknown || resourceDelta > resourceLeft) {
 				exceededResources.Insert(resource)
 			}
 		}
 	}
 	if len(exceededResources) > 0 {
-		return limitCheckResult{true, exceededResources.List()}
+		return scaleDownLimitsCheckResult{true, exceededResources.List()}
 	}
 
-	return notExceeded()
+	return scaleDownLimitsNotExceeded()
 }
 
-func (limits *scaleDownResourcesLimits) tryDecrementLimitsByDelta(delta scaleDownResourcesDelta) limitCheckResult {
-	result := limits.checkDeltaWithinLimits(delta)
+func (limits *scaleDownResourcesLimits) tryDecrementLimitsByDelta(delta scaleDownResourcesDelta) scaleDownLimitsCheckResult {
+	result := limits.checkScaleDownDeltaWithinLimits(delta)
 	if result.exceeded {
 		return result
 	}
@@ -302,7 +302,7 @@ func (limits *scaleDownResourcesLimits) tryDecrementLimitsByDelta(delta scaleDow
 			(*limits)[resource] = resourceLeft - resourceDelta
 		}
 	}
-	return notExceeded()
+	return scaleDownLimitsNotExceeded()
 }
 
 // ScaleDown is responsible for maintaining the state needed to perform unneeded node removals.
@@ -638,7 +638,7 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 				continue
 			}
 
-			checkResult := scaleDownResourcesLeft.checkDeltaWithinLimits(scaleDownResourcesDelta)
+			checkResult := scaleDownResourcesLeft.checkScaleDownDeltaWithinLimits(scaleDownResourcesDelta)
 			if checkResult.exceeded {
 				glog.V(4).Infof("Skipping %s - minimal limit exceeded for %v", node.Name, checkResult.exceededResources)
 				continue
@@ -733,7 +733,7 @@ func updateScaleDownMetrics(scaleDownStart time.Time, findNodesToRemoveDuration 
 
 func getEmptyNodesNoResourceLimits(candidates []*apiv1.Node, pods []*apiv1.Pod, maxEmptyBulkDelete int,
 	cloudProvider cloudprovider.CloudProvider) []*apiv1.Node {
-	return getEmptyNodes(candidates, pods, maxEmptyBulkDelete, noLimitsOnResources(), cloudProvider)
+	return getEmptyNodes(candidates, pods, maxEmptyBulkDelete, noScaleDownLimitsOnResources(), cloudProvider)
 }
 
 // This functions finds empty nodes among passed candidates and returns a list of empty nodes
