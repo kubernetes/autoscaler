@@ -397,30 +397,20 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 					"max node total count already reached")
 			}
 		}
-		if context.AutoscalingOptions.NodeAutoprovisioningEnabled {
-			if !bestOption.NodeGroup.Exist() {
-				// Node group id may change when we create node group and we need to update
-				// our data structures
-				oldId := bestOption.NodeGroup.Id()
-				err := bestOption.NodeGroup.Create()
-				if err != nil {
-					context.LogRecorder.Eventf(apiv1.EventTypeWarning, "FailedToCreateNodeGroup",
-						"NodeAutoprovisioning: attempt to create node group %v failed: %v", oldId, err)
-					// TODO(maciekpytel): add some metric here after figuring out failure scenarios
-					return nil, errors.ToAutoscalerError(errors.CloudProviderError, err)
-				}
-				newId := bestOption.NodeGroup.Id()
-				if newId != oldId {
-					glog.V(2).Infof("Created node group %s based on template node group %s, will use new node group in scale-up", newId, oldId)
-					podsPassingPredicates[newId] = podsPassingPredicates[oldId]
-					delete(podsPassingPredicates, oldId)
-					nodeInfos[newId] = nodeInfos[oldId]
-					delete(nodeInfos, oldId)
-				}
-				context.LogRecorder.Eventf(apiv1.EventTypeNormal, "CreatedNodeGroup",
-					"NodeAutoprovisioning: created new node group %v", newId)
-				metrics.RegisterNodeGroupCreation()
 
+		if !bestOption.NodeGroup.Exist() {
+			oldId := bestOption.NodeGroup.Id()
+			bestOption.NodeGroup, err = processors.NodeGroupManager.CreateNodeGroup(context, bestOption.NodeGroup)
+			if err != nil {
+				return nil, err
+			}
+			// Node group id may change when we create node group and we need to update
+			// our data structures.
+			if oldId != bestOption.NodeGroup.Id() {
+				podsPassingPredicates[bestOption.NodeGroup.Id()] = podsPassingPredicates[oldId]
+				delete(podsPassingPredicates, oldId)
+				nodeInfos[bestOption.NodeGroup.Id()] = nodeInfos[oldId]
+				delete(nodeInfos, oldId)
 			}
 		}
 
