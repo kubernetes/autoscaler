@@ -887,6 +887,118 @@ func TestScaleUpAutoprovisionedNodeGroup(t *testing.T) {
 	assert.Equal(t, "autoprovisioned-T1-1", getStringFromChan(expandedGroups))
 }
 
+func TestScaleUpAutoprovisionFavorExistingNodes(t *testing.T) {
+	expandedGroups := make(chan string, 10)
+
+	p1 := BuildTestPod("p1", 5000, 0)
+
+	fakeClient := &fake.Clientset{}
+
+	existingNode := BuildTestNode("n1", 4000, 1000000)
+	SetNodeReadyState(existingNode, true, time.Time{})
+	existingNodeInfo := schedulercache.NewNodeInfo()
+	existingNodeInfo.SetNode(existingNode)
+	nodes := []*apiv1.Node{existingNode}
+
+	templateNode := BuildTestNode("t1", 8000, 1000000)
+	SetNodeReadyState(templateNode, true, time.Time{})
+	templateNodeInfo := schedulercache.NewNodeInfo()
+	templateNodeInfo.SetNode(templateNode)
+
+	provider := testprovider.NewTestAutoprovisioningCloudProvider(
+		func(nodeGroup string, increase int) error {
+			expandedGroups <- fmt.Sprintf("%s-%d", nodeGroup, increase)
+			return nil
+		}, nil, nil, nil, []string{"T1"}, map[string]*schedulercache.NodeInfo{"T1": templateNodeInfo})
+	provider.AddNodeGroup("T1", 0, 10, 1)
+	provider.AddNode("T1", existingNode)
+
+	fakeRecorder := kube_util.CreateEventRecorder(fakeClient)
+	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false)
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder)
+	clusterState.UpdateNodes(nodes, time.Now())
+
+	context := &context.AutoscalingContext{
+		AutoscalingOptions: context.AutoscalingOptions{
+			EstimatorName:               estimator.BinpackingEstimatorName,
+			MaxCoresTotal:               5000 * 64,
+			MaxMemoryTotal:              5000 * 64 * 20,
+			NodeAutoprovisioningEnabled: true,
+		},
+		PredicateChecker: simulator.NewTestPredicateChecker(),
+		CloudProvider:    provider,
+		ClientSet:        fakeClient,
+		Recorder:         fakeRecorder,
+		ExpanderStrategy: random.NewStrategy(),
+		LogRecorder:      fakeLogRecorder,
+	}
+
+	processors := ca_processors.TestProcessors()
+	processors.NodeGroupListProcessor = nodegroups.NewAutoprovisioningNodeGroupListProcessor()
+	processors.NodeGroupManager = nodegroups.NewDefaultNodeGroupManager()
+
+	status, err := ScaleUp(context, processors, clusterState, []*apiv1.Pod{p1}, []*apiv1.Node{existingNode}, []*extensionsv1.DaemonSet{})
+	assert.NoError(t, err)
+	assert.False(t, status.ScaledUp)
+}
+
+func TestScaleUpAutoprovisionTemplateFromCloudProvider(t *testing.T) {
+	expandedGroups := make(chan string, 10)
+
+	p1 := BuildTestPod("p1", 5000, 0)
+
+	fakeClient := &fake.Clientset{}
+
+	existingNode := BuildTestNode("n1", 4000, 1000000)
+	SetNodeReadyState(existingNode, true, time.Time{})
+	existingNodeInfo := schedulercache.NewNodeInfo()
+	existingNodeInfo.SetNode(existingNode)
+	nodes := []*apiv1.Node{existingNode}
+
+	templateNode := BuildTestNode("t1", 8000, 1000000)
+	SetNodeReadyState(templateNode, true, time.Time{})
+	templateNodeInfo := schedulercache.NewNodeInfo()
+	templateNodeInfo.SetNode(templateNode)
+
+	provider := testprovider.NewTestAutoprovisioningCloudProvider(
+		func(nodeGroup string, increase int) error {
+			expandedGroups <- fmt.Sprintf("%s-%d", nodeGroup, increase)
+			return nil
+		}, nil, nil, nil, []string{"T1"}, map[string]*schedulercache.NodeInfo{"T1": templateNodeInfo})
+	provider.AddNodeGroup("T1", 0, 10, 1)
+	provider.AddNode("T1", existingNode)
+
+	fakeRecorder := kube_util.CreateEventRecorder(fakeClient)
+	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false)
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder)
+	clusterState.UpdateNodes(nodes, time.Now())
+
+	context := &context.AutoscalingContext{
+		AutoscalingOptions: context.AutoscalingOptions{
+			EstimatorName:                    estimator.BinpackingEstimatorName,
+			MaxCoresTotal:                    5000 * 64,
+			MaxMemoryTotal:                   5000 * 64 * 20,
+			NodeAutoprovisioningEnabled:      true,
+			ScaleUpTemplateFromCloudProvider: true,
+		},
+		PredicateChecker: simulator.NewTestPredicateChecker(),
+		CloudProvider:    provider,
+		ClientSet:        fakeClient,
+		Recorder:         fakeRecorder,
+		ExpanderStrategy: random.NewStrategy(),
+		LogRecorder:      fakeLogRecorder,
+	}
+
+	processors := ca_processors.TestProcessors()
+	processors.NodeGroupListProcessor = nodegroups.NewAutoprovisioningNodeGroupListProcessor()
+	processors.NodeGroupManager = nodegroups.NewDefaultNodeGroupManager()
+
+	status, err := ScaleUp(context, processors, clusterState, []*apiv1.Pod{p1}, []*apiv1.Node{existingNode}, []*extensionsv1.DaemonSet{})
+	assert.NoError(t, err)
+	assert.True(t, status.ScaledUp)
+	assert.Equal(t, "T1-1", getStringFromChan(expandedGroups))
+}
+
 func TestCheckScaleUpDeltaWithinLimits(t *testing.T) {
 	type testcase struct {
 		limits            scaleUpResourcesLimits

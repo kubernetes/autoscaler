@@ -146,6 +146,9 @@ type AutoscalingOptions struct {
 	ExpendablePodsPriorityCutoff int
 	// Regional tells whether the cluster is regional.
 	Regional bool
+	// ScaleUpTemplateFromCloudProvider tells if template node should be built from the up-to-date provider configuration (e.g. ASG launch configuration)
+	// instead of a random existing node.
+	ScaleUpTemplateFromCloudProvider bool
 }
 
 // NewResourceLimiterFromAutoscalingOptions creates new instance of cloudprovider.ResourceLimiter
