@@ -32,7 +32,7 @@ func NewCappingRecommendationProcessor() RecommendationProcessor {
 
 type cappingRecommendationProcessor struct{}
 
-// Apply retrurns returns a recommendation for the given pod, adjusted to obey policy and limits.
+// Apply returns a recommendation for the given pod, adjusted to obey policy and limits.
 func (c *cappingRecommendationProcessor) Apply(
 	podRecommendation *vpa_types.RecommendedPodResources, policy *vpa_types.PodResourcePolicy, pod *apiv1.Pod) (*vpa_types.RecommendedPodResources, error) {
 
@@ -61,7 +61,7 @@ func getCappedRecommendationForContainer(
 		return nil, fmt.Errorf("no recommendation available for container name %v", container.Name)
 	}
 	// containerPolicy can be nil (user does not have to configure it).
-	containerPolicy := getContainerPolicy(container.Name, policy)
+	containerPolicy := GetContainerResourcePolicy(container.Name, policy)
 
 	cappedRecommendations := containerRecommendation.DeepCopy()
 	cappedRecommendationsList := []apiv1.ResourceList{
@@ -109,7 +109,7 @@ func applyVPAPolicy(recommendation apiv1.ResourceList, policy *vpa_types.Contain
 // ApplyVPAContainerPolicy enforces min/max policy on resources
 func ApplyVPAContainerPolicy(resources apiv1.ResourceList, container apiv1.Container, policy *vpa_types.PodResourcePolicy) {
 	// containerPolicy can be nil (user does not have to configure it).
-	containerPolicy := getContainerPolicy(container.Name, policy)
+	containerPolicy := GetContainerResourcePolicy(container.Name, policy)
 	applyVPAPolicy(resources, containerPolicy)
 }
 
@@ -120,17 +120,6 @@ func GetRecommendationForContainer(containerName string, recommendation *vpa_typ
 			if containerRec.Name == containerName {
 				recommendationCopy := recommendation.ContainerRecommendations[i]
 				return &recommendationCopy
-			}
-		}
-	}
-	return nil
-}
-
-func getContainerPolicy(containerName string, policy *vpa_types.PodResourcePolicy) *vpa_types.ContainerResourcePolicy {
-	if policy != nil {
-		for i, container := range policy.ContainerPolicies {
-			if containerName == container.Name {
-				return &policy.ContainerPolicies[i]
 			}
 		}
 	}
