@@ -214,7 +214,7 @@ func (m *AwsManager) getAsgTemplate(asg *asg) (*asgTemplate, error) {
 		return nil, fmt.Errorf("Unable to get first AvailabilityZone for %s", asg.Name)
 	}
 
-	az := asg.AvailabilityZones[0]
+	az := asg.AvailabilityZones[rand.Intn(len(asg.AvailabilityZones))]
 	region := az[0 : len(az)-1]
 
 	if len(asg.AvailabilityZones) > 1 {
