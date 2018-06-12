@@ -84,6 +84,7 @@ const (
 	operationPollInterval      = 100 * time.Millisecond
 	refreshInterval            = 1 * time.Minute
 	machinesRefreshInterval    = 1 * time.Hour
+	httpTimeout                = 30 * time.Second
 	nodeAutoprovisioningPrefix = "nap"
 	napMaxNodes                = 1000
 	napMinNodes                = 0
@@ -222,6 +223,7 @@ func CreateGceManager(configReader io.Reader, mode GcpCloudProviderMode, cluster
 
 	// Create Google Compute Engine service.
 	client := oauth2.NewClient(oauth2.NoContext, tokenSource)
+	client.Timeout = httpTimeout
 	gceService, err := gce.New(client)
 	if err != nil {
 		return nil, err
