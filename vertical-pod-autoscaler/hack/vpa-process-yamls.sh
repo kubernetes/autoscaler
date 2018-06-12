@@ -48,9 +48,9 @@ fi
 for i in $COMPONENTS; do
   if [ $i == admission-controller-deployment ] ; then
     if [ ${ACTION} == create ] ; then
-      (bash ${SCRIPT_ROOT}/admission-controller/gencerts.sh || true)
+      (bash ${SCRIPT_ROOT}/pkg/admission-controller/gencerts.sh || true)
     elif [ ${ACTION} == delete ] ; then
-      (bash ${SCRIPT_ROOT}/admission-controller/rmcerts.sh || true)
+      (bash ${SCRIPT_ROOT}/pkg/admission-controller/rmcerts.sh || true)
     fi
   fi
   ${SCRIPT_ROOT}/hack/vpa-process-yaml.sh ${SCRIPT_ROOT}/deploy/$i.yaml | kubectl ${ACTION} -f - || true
