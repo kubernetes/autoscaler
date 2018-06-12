@@ -18,10 +18,13 @@ package core
 
 import (
 	"bytes"
+	"fmt"
+	"math"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
 	extensionsv1 "k8s.io/api/extensions/v1beta1"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
@@ -37,6 +40,119 @@ import (
 
 	"github.com/golang/glog"
 )
+
+type scaleUpResourcesLimits map[string]int64
+type scaleUpResourcesDelta map[string]int64
+
+// used as a value in scaleUpResourcesLimits if actual limit could not be obtained due to errors talking to cloud provider
+const scaleUpLimitUnknown = math.MaxInt64
+
+func computeScaleUpResourcesLeftLimits(nodeGroups []cloudprovider.NodeGroup, nodeInfos map[string]*schedulercache.NodeInfo, resourceLimiter *cloudprovider.ResourceLimiter) (scaleUpResourcesLimits, errors.AutoscalerError) {
+	totalCores, totalMem, errCoresMem := calculateScaleUpCoresMemoryTotal(nodeGroups, nodeInfos)
+
+	resultScaleUpLimits := make(scaleUpResourcesLimits)
+	for _, resource := range resourceLimiter.GetResources() {
+		max := resourceLimiter.GetMax(resource)
+
+		// we put only actual limits into final map. No entry means no limit.
+		if max > 0 {
+			if (resource == cloudprovider.ResourceNameCores || resource == cloudprovider.ResourceNameMemory) && errCoresMem != nil {
+				// core resource info missing - no reason to proceed with scale up
+				return scaleUpResourcesLimits{}, errCoresMem
+			}
+			switch {
+			case resource == cloudprovider.ResourceNameCores:
+				if errCoresMem != nil {
+					resultScaleUpLimits[resource] = scaleUpLimitUnknown
+				} else {
+					resultScaleUpLimits[resource] = computeBelowMax(totalCores, max)
+				}
+
+			case resource == cloudprovider.ResourceNameMemory:
+				if errCoresMem != nil {
+					resultScaleUpLimits[resource] = scaleUpLimitUnknown
+				} else {
+					resultScaleUpLimits[resource] = computeBelowMax(totalMem, max)
+				}
+
+			default:
+				glog.Errorf("Scale up limits defined for unsupported resource '%s'", resource)
+			}
+		}
+	}
+
+	return resultScaleUpLimits, nil
+}
+
+func calculateScaleUpCoresMemoryTotal(nodeGroups []cloudprovider.NodeGroup, nodeInfos map[string]*schedulercache.NodeInfo) (int64, int64, errors.AutoscalerError) {
+	var coresTotal int64
+	var memoryTotal int64
+
+	for _, nodeGroup := range nodeGroups {
+		currentSize, err := nodeGroup.TargetSize()
+		if err != nil {
+			return 0, 0, errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("Failed to get node group size of %v:", nodeGroup.Id())
+		}
+		nodeInfo, found := nodeInfos[nodeGroup.Id()]
+		if !found {
+			return 0, 0, errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("No node info for: %s", nodeGroup.Id())
+		}
+		if currentSize > 0 {
+			nodeCPU, nodeMemory := getNodeInfoCoresAndMemory(nodeInfo)
+			coresTotal = coresTotal + int64(currentSize)*nodeCPU
+			memoryTotal = memoryTotal + int64(currentSize)*nodeMemory
+		}
+	}
+
+	return coresTotal, memoryTotal, nil
+}
+
+func computeBelowMax(total int64, max int64) int64 {
+	if total < max {
+		return max - total
+	}
+	return 0
+}
+
+func computeScaleUpResourcesDelta(nodeInfo *schedulercache.NodeInfo) (scaleUpResourcesDelta, errors.AutoscalerError) {
+	resultScaleUpDelta := make(scaleUpResourcesDelta)
+
+	nodeCPU, nodeMemory := getNodeInfoCoresAndMemory(nodeInfo)
+	resultScaleUpDelta[cloudprovider.ResourceNameCores] = nodeCPU
+	resultScaleUpDelta[cloudprovider.ResourceNameMemory] = nodeMemory
+
+	return resultScaleUpDelta, nil
+}
+
+type scaleUpLimitsCheckResult struct {
+	exceeded          bool
+	exceededResources []string
+}
+
+func scaleUpLimitsNotExceeded() scaleUpLimitsCheckResult {
+	return scaleUpLimitsCheckResult{false, []string{}}
+}
+
+func (limits *scaleUpResourcesLimits) checkScaleUpDeltaWithinLimits(delta scaleUpResourcesDelta) scaleUpLimitsCheckResult {
+	exceededResources := sets.NewString()
+	for resource, resourceDelta := range delta {
+		resourceLeft, found := (*limits)[resource]
+		if found {
+			if (resourceDelta > 0) && (resourceLeft == scaleUpLimitUnknown || resourceDelta > resourceLeft) {
+				exceededResources.Insert(resource)
+			}
+		}
+	}
+	if len(exceededResources) > 0 {
+		return scaleUpLimitsCheckResult{true, exceededResources.List()}
+	}
+
+	return scaleUpLimitsNotExceeded()
+}
+
+func getNodeInfoCoresAndMemory(nodeInfo *schedulercache.NodeInfo) (int64, int64) {
+	return getNodeCoresAndMemory(nodeInfo.Node())
+}
 
 // ScaleUp tries to scale the cluster up. Return true if it found a way to increase the size,
 // false if it didn't and error if an error occurred. Assumes that all nodes in the cluster are
@@ -75,8 +191,11 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 			errors.CloudProviderError,
 			errCP)
 	}
-	// calculate current cores & gigabytes of memory
-	coresTotal, memoryTotal := calculateClusterCoresMemoryTotal(nodeGroups, nodeInfos)
+
+	scaleUpResourcesLeft, errLimits := computeScaleUpResourcesLeftLimits(nodeGroups, nodeInfos, resourceLimiter)
+	if errLimits != nil {
+		return nil, errLimits.AddPrefix("Could not compute total resources: ")
+	}
 
 	upcomingNodes := make([]*schedulercache.NodeInfo, 0)
 	for nodeGroup, numberOfNodes := range clusterStateRegistry.GetUpcomingNodes() {
@@ -128,15 +247,14 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 			continue
 		}
 
-		nodeCPU, nodeMemory := getNodeInfoCoresAndMemory(nodeInfo)
-		if nodeCPU > (resourceLimiter.GetMax(cloudprovider.ResourceNameCores) - coresTotal) {
-			// skip this node group
-			glog.V(4).Infof("Skipping node group %s - not enough cores limit left", nodeGroup.Id())
+		scaleUpResourcesDelta, err := computeScaleUpResourcesDelta(nodeInfo)
+		if err != nil {
+			glog.Errorf("Skipping node group %s; error getting node group resources: %v", nodeGroup.Id(), err)
 			continue
 		}
-		if nodeMemory > (resourceLimiter.GetMax(cloudprovider.ResourceNameMemory) - memoryTotal) {
-			// skip this node group
-			glog.V(4).Infof("Skipping node group %s - not enough memory limit left", nodeGroup.Id())
+		checkResult := scaleUpResourcesLeft.checkScaleUpDeltaWithinLimits(scaleUpResourcesDelta)
+		if checkResult.exceeded {
+			glog.V(4).Infof("Skipping node group %s; maximal limit exceeded for %v", nodeGroup.Id(), checkResult.exceededResources)
 			continue
 		}
 
@@ -239,7 +357,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 		}
 
 		// apply upper limits for CPU and memory
-		newNodes, err = applyMaxClusterCoresMemoryLimits(newNodes, coresTotal, memoryTotal, resourceLimiter.GetMax(cloudprovider.ResourceNameCores), resourceLimiter.GetMax(cloudprovider.ResourceNameMemory), nodeInfo)
+		newNodes, err = applyMaxClusterCoresMemoryLimits(newNodes, scaleUpResourcesLeft, nodeInfo)
 		if err != nil {
 			return nil, err
 		}
@@ -368,57 +486,36 @@ func executeScaleUp(context *context.AutoscalingContext, clusterStateRegistry *c
 	return nil
 }
 
-func calculateClusterCoresMemoryTotal(nodeGroups []cloudprovider.NodeGroup, nodeInfos map[string]*schedulercache.NodeInfo) (int64, int64) {
-	var coresTotal int64
-	var memoryTotal int64
-	for _, nodeGroup := range nodeGroups {
-		currentSize, err := nodeGroup.TargetSize()
-		if err != nil {
-			glog.Errorf("Failed to get node group size of %v: %v", nodeGroup.Id(), err)
-			continue
-		}
-		nodeInfo, found := nodeInfos[nodeGroup.Id()]
-		if !found {
-			glog.Errorf("No node info for: %s", nodeGroup.Id())
-			continue
-		}
-		if currentSize > 0 {
-			nodeCPU, nodeMemory := getNodeInfoCoresAndMemory(nodeInfo)
-			coresTotal = coresTotal + int64(currentSize)*nodeCPU
-			memoryTotal = memoryTotal + int64(currentSize)*nodeMemory
-		}
+func applyMaxClusterCoresMemoryLimits(newNodes int, scaleUpResourcesLeft scaleUpResourcesLimits, nodeInfo *schedulercache.NodeInfo) (int, errors.AutoscalerError) {
+	delta, err := computeScaleUpResourcesDelta(nodeInfo)
+	if err != nil {
+		return 0, err
 	}
 
-	return coresTotal, memoryTotal
-}
-
-func applyMaxClusterCoresMemoryLimits(newNodes int, coresTotal, memoryTotal, maxCoresTotal, maxMemoryTotal int64, nodeInfo *schedulercache.NodeInfo) (int, errors.AutoscalerError) {
-	newNodeCPU, newNodeMemory := getNodeInfoCoresAndMemory(nodeInfo)
-	if coresTotal+newNodeCPU*int64(newNodes) > maxCoresTotal {
-		glog.V(1).Infof("Capping size to max cluster cores (%d)", maxCoresTotal)
-		newNodes = int((maxCoresTotal - coresTotal) / newNodeCPU)
-		if newNodes < 1 {
-			// This should never happen, as we already check that
-			// at least one node will fit when considering nodegroup
-			return 0, errors.NewAutoscalerError(
-				errors.TransientError,
-				"max cores already reached")
+	for resource, resourceDelta := range delta {
+		limit, limitFound := scaleUpResourcesLeft[resource]
+		if !limitFound {
+			continue
 		}
-	}
-	if memoryTotal+newNodeMemory*int64(newNodes) > maxMemoryTotal {
-		glog.V(1).Infof("Capping size to max cluster memory allowed (%d)", maxMemoryTotal)
-		newNodes = int((maxMemoryTotal - memoryTotal) / newNodeMemory)
-		if newNodes < 1 {
-			// This should never happen, as we already check that
-			// at least one node will fit when considering nodegroup
+		if limit == scaleUpLimitUnknown {
+			// should never happen - checked before
 			return 0, errors.NewAutoscalerError(
-				errors.TransientError,
-				"max memory already reached")
+				errors.InternalError,
+				fmt.Sprintf("limit unknown for resource %s", resource))
+		}
+		if int64(newNodes)*resourceDelta <= limit {
+			// no capping required
+			continue
+		}
+
+		newNodes = int(limit / resourceDelta)
+		glog.V(1).Infof("Capping scale-up size due to limit for resource %s", resource)
+		if newNodes < 1 {
+			// should never happen - checked before
+			return 0, errors.NewAutoscalerError(
+				errors.InternalError,
+				fmt.Sprintf("cannot create any node; max limit for resource %s reached", resource))
 		}
 	}
 	return newNodes, nil
-}
-
-func getNodeInfoCoresAndMemory(nodeInfo *schedulercache.NodeInfo) (int64, int64) {
-	return getNodeCoresAndMemory(nodeInfo.Node())
 }

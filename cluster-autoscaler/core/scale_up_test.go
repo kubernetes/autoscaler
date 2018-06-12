@@ -809,3 +809,52 @@ func TestScaleUpAutoprovisionedNodeGroup(t *testing.T) {
 	assert.Equal(t, "autoprovisioned-T1", getStringFromChan(createdGroups))
 	assert.Equal(t, "autoprovisioned-T1-1", getStringFromChan(expandedGroups))
 }
+
+func TestCheckScaleUpDeltaWithinLimits(t *testing.T) {
+	type testcase struct {
+		limits            scaleUpResourcesLimits
+		delta             scaleUpResourcesDelta
+		exceededResources []string
+	}
+	tests := []testcase{
+		{
+			limits:            scaleUpResourcesLimits{"a": 10},
+			delta:             scaleUpResourcesDelta{"a": 10},
+			exceededResources: []string{},
+		},
+		{
+			limits:            scaleUpResourcesLimits{"a": 10},
+			delta:             scaleUpResourcesDelta{"a": 11},
+			exceededResources: []string{"a"},
+		},
+		{
+			limits:            scaleUpResourcesLimits{"a": 10},
+			delta:             scaleUpResourcesDelta{"b": 10},
+			exceededResources: []string{},
+		},
+		{
+			limits:            scaleUpResourcesLimits{"a": scaleUpLimitUnknown},
+			delta:             scaleUpResourcesDelta{"a": 0},
+			exceededResources: []string{},
+		},
+		{
+			limits:            scaleUpResourcesLimits{"a": scaleUpLimitUnknown},
+			delta:             scaleUpResourcesDelta{"a": 1},
+			exceededResources: []string{"a"},
+		},
+		{
+			limits:            scaleUpResourcesLimits{"a": 10, "b": 20, "c": 30},
+			delta:             scaleUpResourcesDelta{"a": 11, "b": 20, "c": 31},
+			exceededResources: []string{"a", "c"},
+		},
+	}
+
+	for _, test := range tests {
+		checkResult := test.limits.checkScaleUpDeltaWithinLimits(test.delta)
+		if len(test.exceededResources) == 0 {
+			assert.Equal(t, scaleUpLimitsNotExceeded(), checkResult)
+		} else {
+			assert.Equal(t, scaleUpLimitsCheckResult{true, test.exceededResources}, checkResult)
+		}
+	}
+}
