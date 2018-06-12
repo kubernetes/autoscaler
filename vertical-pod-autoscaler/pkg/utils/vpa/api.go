@@ -153,6 +153,23 @@ func GetControllingVPAForPod(pod *apiv1.Pod, vpas []*vpa_types.VerticalPodAutosc
 	return controlling
 }
 
+// GetContainerResourcePolicy returns the ContainerResourcePolicy for a given policy
+// and container name. It returns nil if there is no policy specified for the container.
+func GetContainerResourcePolicy(containerName string, policy *vpa_types.PodResourcePolicy) *vpa_types.ContainerResourcePolicy {
+	var defaultPolicy *vpa_types.ContainerResourcePolicy
+	if policy != nil {
+		for i, containerPolicy := range policy.ContainerPolicies {
+			if containerPolicy.Name == containerName {
+				return &policy.ContainerPolicies[i]
+			}
+			if containerPolicy.Name == vpa_types.DefaultContainerResourcePolicy {
+				defaultPolicy = &policy.ContainerPolicies[i]
+			}
+		}
+	}
+	return defaultPolicy
+}
+
 // CreateOrUpdateVpaCheckpoint updates the status field of the VPA Checkpoint API object.
 // If object doesn't exits it is created.
 func CreateOrUpdateVpaCheckpoint(vpaCheckpointClient vpa_api.VerticalPodAutoscalerCheckpointInterface,

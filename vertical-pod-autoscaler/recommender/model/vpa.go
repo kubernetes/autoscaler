@@ -73,6 +73,8 @@ type Vpa struct {
 	// All container aggregations that contribute to this VPA.
 	// TODO: Garbage collect old AggregateContainerStates.
 	aggregateContainerStates aggregateContainerStatesMap
+	// Pod Resource Policy provided in the VPA API object. Can be nil.
+	ResourcePolicy *vpa_types.PodResourcePolicy
 	// Value of the Status.LastUpdateTime fetched from the VPA API object.
 	LastUpdateTime time.Time
 	// Initial checkpoints of AggregateContainerStates for containers.
