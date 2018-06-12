@@ -22,8 +22,8 @@ import (
 
 	"github.com/golang/glog"
 	kube_flag "k8s.io/apiserver/pkg/util/flag"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/logic"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/logic"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/poc.autoscaling.k8s.io/v1alpha1"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
