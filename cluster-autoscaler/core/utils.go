@@ -298,6 +298,23 @@ func GetNodeInfosForGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.Clou
 	return result, nil
 }
 
+// FilterOutNodesFromNotAutoscaledGroups return subset of input nodes for which cloud provider does not
+// return autoscaled node group.
+func FilterOutNodesFromNotAutoscaledGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.CloudProvider) ([]*apiv1.Node, errors.AutoscalerError) {
+	result := make([]*apiv1.Node, 0)
+
+	for _, node := range nodes {
+		nodeGroup, err := cloudProvider.NodeGroupForNode(node)
+		if err != nil {
+			return []*apiv1.Node{}, errors.ToAutoscalerError(errors.CloudProviderError, err)
+		}
+		if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
+			result = append(result, node)
+		}
+	}
+	return result, nil
+}
+
 func sanitizeNodeInfo(nodeInfo *schedulercache.NodeInfo, nodeGroupName string) (*schedulercache.NodeInfo, errors.AutoscalerError) {
 	// Sanitize node name.
 	sanitizedNode, err := sanitizeTemplateNode(nodeInfo.Node(), nodeGroupName)
