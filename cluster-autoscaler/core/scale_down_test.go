@@ -1401,11 +1401,6 @@ func TestCheckScaleDownDeltaWithinLimits(t *testing.T) {
 		},
 		{
 			limits:            scaleDownResourcesLimits{"a": 10},
-			delta:             scaleDownResourcesDelta{"a": 10},
-			exceededResources: []string{},
-		},
-		{
-			limits:            scaleDownResourcesLimits{"a": 10},
 			delta:             scaleDownResourcesDelta{"a": 11},
 			exceededResources: []string{"a"},
 		},
