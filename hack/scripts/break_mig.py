@@ -61,7 +61,7 @@ def get_instances(master, ng):
         for p in parts[1:]:
           if re.match('([0-9]{1,3}\.){3}[0-9]{1,3}', p):
               ips.append(p)
-        # XXX: A VM has showed up, but it doens't have internal and external ip
+        # XXX: A VM has showed up, but it doesn't have internal and external ip
         # yet, let's just pretend we haven't seen it yet
         if len(ips) < 2:
               continue
