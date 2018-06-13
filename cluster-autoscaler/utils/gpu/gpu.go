@@ -161,7 +161,7 @@ func GetGpuRequests(pods []*apiv1.Pod) map[string]GpuRequestInfo {
 
 // GetNodeTargetGpus returns the number of gpus on a given node. This includes gpus which are not yet
 // ready to use and visible in kubernetes.
-func GetNodeTargetGpus(node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) (gpuType string, gpuCount int64, err error) {
+func GetNodeTargetGpus(node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) (gpuType string, gpuCount int64, error errors.AutoscalerError) {
 	gpuLabel, found := node.Labels[GPULabel]
 	if !found {
 		return "", 0, nil
