@@ -26,7 +26,7 @@ if [ -z "$REGISTRY" ]; then
 	exit 1
 fi
 
-# TODO(filipg): Detect MIG link automaticaly.
+# TODO(filipg): Detect MIG link automatically
 if [ -z "$MIG_LINK" ]; then
 	echo "Required variable MIG_LINK unset"
 	exit 1
