@@ -1338,7 +1338,7 @@ func TestCalculateCoresAndMemoryTotal(t *testing.T) {
 		},
 	}
 
-	coresTotal, memoryTotal := calculateCoresAndMemoryTotal(nodes, time.Now())
+	coresTotal, memoryTotal := calculateScaleDownCoresMemoryTotal(nodes, time.Now())
 
 	assert.Equal(t, int64(42), coresTotal)
 	assert.Equal(t, int64(44000*MB), memoryTotal)
@@ -1387,18 +1387,13 @@ func TestFilterOutMasters(t *testing.T) {
 	assertEqualSet(t, []string{"n1", "n2", "n4", "n5", "n6"}, withoutMastersNames)
 }
 
-func TestCheckDeltaWithinLimits(t *testing.T) {
+func TestCheckScaleDownDeltaWithinLimits(t *testing.T) {
 	type testcase struct {
 		limits            scaleDownResourcesLimits
 		delta             scaleDownResourcesDelta
 		exceededResources []string
 	}
 	tests := []testcase{
-		{
-			limits:            scaleDownResourcesLimits{"a": 10},
-			delta:             scaleDownResourcesDelta{"a": 10},
-			exceededResources: []string{},
-		},
 		{
 			limits:            scaleDownResourcesLimits{"a": 10},
 			delta:             scaleDownResourcesDelta{"a": 10},
@@ -1415,12 +1410,12 @@ func TestCheckDeltaWithinLimits(t *testing.T) {
 			exceededResources: []string{},
 		},
 		{
-			limits:            scaleDownResourcesLimits{"a": limitUnknown},
+			limits:            scaleDownResourcesLimits{"a": scaleDownLimitUnknown},
 			delta:             scaleDownResourcesDelta{"a": 0},
 			exceededResources: []string{},
 		},
 		{
-			limits:            scaleDownResourcesLimits{"a": limitUnknown},
+			limits:            scaleDownResourcesLimits{"a": scaleDownLimitUnknown},
 			delta:             scaleDownResourcesDelta{"a": 1},
 			exceededResources: []string{"a"},
 		},
@@ -1432,11 +1427,11 @@ func TestCheckDeltaWithinLimits(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		checkResult := test.limits.checkDeltaWithinLimits(test.delta)
+		checkResult := test.limits.checkScaleDownDeltaWithinLimits(test.delta)
 		if len(test.exceededResources) == 0 {
-			assert.Equal(t, notExceeded(), checkResult)
+			assert.Equal(t, scaleDownLimitsNotExceeded(), checkResult)
 		} else {
-			assert.Equal(t, limitCheckResult{true, test.exceededResources}, checkResult)
+			assert.Equal(t, scaleDownLimitsCheckResult{true, test.exceededResources}, checkResult)
 		}
 	}
 }
