@@ -204,6 +204,31 @@ func TestScaleUpCapToMaxTotalNodesLimit(t *testing.T) {
 	simpleScaleUpTest(t, config)
 }
 
+func TestScaleUpCapToMaxTotalNodesLimitWithNotAutoscaledGroup(t *testing.T) {
+	options := defaultOptions
+	options.MaxNodesTotal = 3
+	config := &scaleTestConfig{
+		nodes: []nodeConfig{
+			{"n1", 2000, 100 * MB, 0, true, ""},
+			{"n2", 4000, 1000 * MB, 0, true, "ng2"},
+		},
+		pods: []podConfig{
+			{"p1", 1000, 0, 0, "n1"},
+			{"p2", 3000, 0, 0, "n2"},
+		},
+		extraPods: []podConfig{
+			{"p-new-1", 4000, 100 * MB, 0, ""},
+			{"p-new-2", 4000, 100 * MB, 0, ""},
+			{"p-new-3", 4000, 100 * MB, 0, ""},
+		},
+		scaleUpOptionToChoose: groupSizeChange{groupName: "ng2", sizeChange: 3},
+		expectedFinalScaleUp:  groupSizeChange{groupName: "ng2", sizeChange: 1},
+		options:               options,
+	}
+
+	simpleScaleUpTest(t, config)
+}
+
 func TestWillConsiderGpuAndStandardPoolForPodWhichDoesNotRequireGpu(t *testing.T) {
 	options := defaultOptions
 	options.MaxNodesTotal = 100
