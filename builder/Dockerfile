@@ -18,8 +18,15 @@ LABEL maintainer="Marcin Wielgus <mwielgus@google.com>"
 ENV GOPATH /gopath/
 ENV PATH $GOPATH/bin:$PATH
 
+ADD COOP-IPV3-INTRA.crt /etc/ssl/certs
+ADD COOP-SUBINTRA-R2.crt /etc/ssl/certs
+ADD COOP-FW-SSLINSPECT.crt /etc/ssl/certs
+ADD COOP-ROOT-INTRA.crt /etc/ssl/certs
+RUN update-ca-certificates 
+
 RUN apt-get update && apt-get --yes install libseccomp-dev
 RUN go version
-RUN go get github.com/tools/godep
+RUN git config --global http.sslVerify false
+RUN go get -insecure github.com/tools/godep
 RUN godep version
 CMD ["/bin/bash"]

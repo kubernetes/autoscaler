@@ -32,6 +32,7 @@ import (
 	kubemarkcontroller "k8s.io/kubernetes/pkg/kubemark"
 
 	"github.com/golang/glog"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/rancher"
 )
 
 // AvailableCloudProviders supported by the cloud provider builder.
@@ -41,6 +42,7 @@ var AvailableCloudProviders = []string{
 	gce.ProviderNameGCE,
 	gce.ProviderNameGKE,
 	kubemark.ProviderName,
+	rancher.ProviderName,
 }
 
 // DefaultCloudProvider is GCE.
@@ -87,6 +89,8 @@ func (b CloudProviderBuilder) Build(discoveryOpts cloudprovider.NodeGroupDiscove
 		return b.buildAzure(discoveryOpts, resourceLimiter)
 	case kubemark.ProviderName:
 		return b.buildKubemark(discoveryOpts, resourceLimiter)
+	case rancher.ProviderName:
+		return b.buildRancher(discoveryOpts, resourceLimiter)
 	case "":
 		// Ideally this would be an error, but several unit tests of the
 		// StaticAutoscaler depend on this behaviour.
@@ -176,7 +180,7 @@ func (b CloudProviderBuilder) buildKubemark(do cloudprovider.NodeGroupDiscoveryO
 
 	kubemarkConfig, err := clientcmd.BuildConfigFromFlags("", "/kubeconfig/cluster_autoscaler.kubeconfig")
 	if err != nil {
-		glog.Fatalf("Failed to get kubeclient config for kubemark cluster: %v", err)
+		glog.Fatalf("Failed to get kubeclient config for rancher cluster: %v", err)
 	}
 
 	stop := make(chan struct{})
@@ -204,6 +208,25 @@ func (b CloudProviderBuilder) buildKubemark(do cloudprovider.NodeGroupDiscoveryO
 	provider, err := kubemark.BuildKubemarkCloudProvider(kubemarkController, do.NodeGroupSpecs, rl)
 	if err != nil {
 		glog.Fatalf("Failed to create Kubemark cloud provider: %v", err)
+	}
+	return provider
+}
+
+func (b CloudProviderBuilder) buildRancher(do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+	var config io.ReadCloser
+	if b.cloudConfig != "" {
+		var err error
+		config, err = os.Open(b.cloudConfig)
+		if err != nil {
+			glog.Fatalf("Couldn't open cloud provider configuration %s: %#v", b.cloudConfig, err)
+		}
+		defer config.Close()
+	}
+
+	manager, err := rancher.BuildRancherManager(config, do)
+	provider, err := rancher.BuildRancherCloudProvider(manager,rl)
+	if err != nil {
+		glog.Fatalf("Failed to create Rancher cloud provider: %v", err)
 	}
 	return provider
 }
