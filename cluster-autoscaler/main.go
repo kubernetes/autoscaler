@@ -77,13 +77,13 @@ var (
 	configMapName          = flag.String("configmap", "", "The name of the ConfigMap containing settings used for dynamic reconfiguration. Empty string for no ConfigMap.")
 	namespace              = flag.String("namespace", "kube-system", "Namespace in which cluster-autoscaler run. If a --configmap flag is also provided, ensure that the configmap exists in this namespace before CA runs.")
 	scaleDownEnabled       = flag.Bool("scale-down-enabled", true, "Should CA scale down the cluster")
-	scaleDownDelayAfterAdd = flag.Duration("scale-down-delay-after-add", 10*time.Minute,
+	scaleDownDelayAfterAdd = flag.Duration("scale-down-delay-after-add", 1*time.Minute, //TODO: change back to 10
 		"How long after scale up that scale down evaluation resumes")
 	scaleDownDelayAfterDelete = flag.Duration("scale-down-delay-after-delete", *scanInterval,
 		"How long after node deletion that scale down evaluation resumes, defaults to scanInterval")
-	scaleDownDelayAfterFailure = flag.Duration("scale-down-delay-after-failure", 3*time.Minute,
+	scaleDownDelayAfterFailure = flag.Duration("scale-down-delay-after-failure", 1*time.Minute, //TODO: change back to 3
 		"How long after scale down failure that scale down evaluation resumes")
-	scaleDownUnneededTime = flag.Duration("scale-down-unneeded-time", 10*time.Minute,
+	scaleDownUnneededTime = flag.Duration("scale-down-unneeded-time", 1*time.Minute, //TODO: change back to 10
 		"How long a node should be unneeded before it is eligible for scale down")
 	scaleDownUnreadyTime = flag.Duration("scale-down-unready-time", 20*time.Minute,
 		"How long an unready node should be unneeded before it is eligible for scale down")

@@ -43,13 +43,13 @@ docker-builder:
 	docker build -t autoscaling-builder ../builder
 
 build-in-docker: clean docker-builder
-	docker run -v `pwd`:/gopath/src/k8s.io/autoscaler/cluster-autoscaler/ autoscaling-builder:latest bash -c 'cd /gopath/src/k8s.io/autoscaler/cluster-autoscaler && make build-binary'
+	docker run -v  c:/Users/n50ja/go/src/k8s.io/autoscaler/cluster-autoscaler/:/gopath/src/k8s.io/autoscaler/cluster-autoscaler/ autoscaling-builder:latest bash -c 'cd /gopath/src/k8s.io/autoscaler/cluster-autoscaler && make build-binary'
 
 release: build-in-docker execute-release
 	echo "Full in-docker release ${TAG} completed"
 
 test-in-docker: clean docker-builder
-	docker run -v `pwd`:/gopath/src/k8s.io/autoscaler/cluster-autoscaler/ autoscaling-builder:latest bash -c 'cd /gopath/src/k8s.io/autoscaler/cluster-autoscaler && godep go test ./... '
+	docker run -v  c:/Users/n50ja/go/src/k8s.io/autoscaler/cluster-autoscaler/:/gopath/src/k8s.io/autoscaler/cluster-autoscaler/ autoscaling-builder:latest bash -c 'cd /gopath/src/k8s.io/autoscaler/cluster-autoscaler && godep go test ./... '
 
 .PHONY: all deps build test-unit clean format execute-release dev-release docker-builder build-in-docker release generate
 
