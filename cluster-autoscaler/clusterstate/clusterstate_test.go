@@ -669,6 +669,5 @@ func TestScaleUpBackoff(t *testing.T) {
 	assert.True(t, clusterstate.IsClusterHealthy())
 	assert.True(t, clusterstate.IsNodeGroupHealthy("ng1"))
 	assert.True(t, clusterstate.IsNodeGroupSafeToScaleUp("ng1", now))
-	_, found := clusterstate.nodeGroupBackoffInfo["ng1"]
-	assert.False(t, found)
+	assert.False(t, clusterstate.nodeGroupBackoffInfo.IsBackedOff("ng1", now))
 }

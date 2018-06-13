@@ -26,6 +26,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/api"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 
@@ -110,12 +111,6 @@ type UnregisteredNode struct {
 	UnregisteredSince time.Time
 }
 
-type scaleUpBackoff struct {
-	duration          time.Duration
-	backoffUntil      time.Time
-	lastFailedScaleUp time.Time
-}
-
 // ClusterStateRegistry is a structure to keep track the current state of the cluster.
 type ClusterStateRegistry struct {
 	sync.Mutex
@@ -130,7 +125,7 @@ type ClusterStateRegistry struct {
 	incorrectNodeGroupSizes map[string]IncorrectNodeGroupSize
 	unregisteredNodes       map[string]UnregisteredNode
 	candidatesForScaleDown  map[string][]string
-	nodeGroupBackoffInfo    map[string]scaleUpBackoff
+	nodeGroupBackoffInfo    *backoff.Backoff
 	lastStatus              *api.ClusterAutoscalerStatus
 	lastScaleDownUpdateTime time.Time
 	logRecorder             *utils.LogEventRecorder
@@ -153,7 +148,7 @@ func NewClusterStateRegistry(cloudProvider cloudprovider.CloudProvider, config C
 		incorrectNodeGroupSizes: make(map[string]IncorrectNodeGroupSize),
 		unregisteredNodes:       make(map[string]UnregisteredNode),
 		candidatesForScaleDown:  make(map[string][]string),
-		nodeGroupBackoffInfo:    make(map[string]scaleUpBackoff),
+		nodeGroupBackoffInfo:    backoff.NewBackoff(InitialNodeGroupBackoffDuration, MaxNodeGroupBackoffDuration, NodeGroupBackoffResetTimeout),
 		lastStatus:              emptyStatus,
 		logRecorder:             logRecorder,
 	}
@@ -176,11 +171,7 @@ func (csr *ClusterStateRegistry) RegisterScaleDown(request *ScaleDownRequest) {
 // To be executed under a lock.
 func (csr *ClusterStateRegistry) updateScaleRequests(currentTime time.Time) {
 	// clean up stale backoff info
-	for ngId, backoffInfo := range csr.nodeGroupBackoffInfo {
-		if backoffInfo.lastFailedScaleUp.Add(NodeGroupBackoffResetTimeout).Before(currentTime) {
-			delete(csr.nodeGroupBackoffInfo, ngId)
-		}
-	}
+	csr.nodeGroupBackoffInfo.RemoveStaleBackoffData(currentTime)
 
 	timedOutSur := make([]*ScaleUpRequest, 0)
 	newSur := make([]*ScaleUpRequest, 0)
@@ -188,7 +179,7 @@ func (csr *ClusterStateRegistry) updateScaleRequests(currentTime time.Time) {
 		if !csr.areThereUpcomingNodesInNodeGroup(sur.NodeGroupName) {
 			// scale-out finished successfully
 			// remove it and reset node group backoff
-			delete(csr.nodeGroupBackoffInfo, sur.NodeGroupName)
+			csr.nodeGroupBackoffInfo.RemoveBackoff(sur.NodeGroupName)
 			glog.V(4).Infof("Scale up in group %v finished successfully in %v",
 				sur.NodeGroupName, currentTime.Sub(sur.Time))
 			continue
@@ -228,24 +219,7 @@ func (csr *ClusterStateRegistry) updateScaleRequests(currentTime time.Time) {
 
 // To be executed under a lock.
 func (csr *ClusterStateRegistry) backoffNodeGroup(nodeGroupName string, currentTime time.Time) {
-	duration := InitialNodeGroupBackoffDuration
-	if backoffInfo, found := csr.nodeGroupBackoffInfo[nodeGroupName]; found {
-		// Multiple concurrent scale-ups failing shouldn't cause backoff
-		// duration to increase, so we only increase it if we're not in
-		// backoff right now.
-		if backoffInfo.backoffUntil.Before(currentTime) {
-			duration = 2 * backoffInfo.duration
-			if duration > MaxNodeGroupBackoffDuration {
-				duration = MaxNodeGroupBackoffDuration
-			}
-		}
-	}
-	backoffUntil := currentTime.Add(duration)
-	csr.nodeGroupBackoffInfo[nodeGroupName] = scaleUpBackoff{
-		duration:          duration,
-		backoffUntil:      backoffUntil,
-		lastFailedScaleUp: currentTime,
-	}
+	backoffUntil := csr.nodeGroupBackoffInfo.Backoff(nodeGroupName, currentTime)
 	glog.Warningf("Disabling scale-up for node group %v until %v", nodeGroupName, backoffUntil)
 }
 
@@ -386,8 +360,7 @@ func (csr *ClusterStateRegistry) IsNodeGroupSafeToScaleUp(nodeGroupName string, 
 	if !csr.IsNodeGroupHealthy(nodeGroupName) {
 		return false
 	}
-	backoffInfo, found := csr.nodeGroupBackoffInfo[nodeGroupName]
-	return !found || backoffInfo.backoffUntil.Before(now)
+	return !csr.nodeGroupBackoffInfo.IsBackedOff(nodeGroupName, now)
 }
 
 func (csr *ClusterStateRegistry) areThereUpcomingNodesInNodeGroup(nodeGroupName string) bool {
