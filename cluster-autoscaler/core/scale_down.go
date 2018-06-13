@@ -115,8 +115,8 @@ func computeScaleDownResourcesLeftLimits(nodes []*apiv1.Node, resourceLimiter *c
 
 	var totalGpus map[string]int64
 	var totalGpusErr error
-	if containsGpuResources(resourceLimiter.GetResources()) {
-		totalGpus, totalGpusErr = calculateGpusTotal(nodes, cp, timestamp)
+	if cloudprovider.ContainsGpuResources(resourceLimiter.GetResources()) {
+		totalGpus, totalGpusErr = calculateScaleDownGpusTotal(nodes, cp, timestamp)
 	}
 
 	resultScaleDownLimits := make(scaleDownResourcesLimits)
@@ -127,14 +127,14 @@ func computeScaleDownResourcesLeftLimits(nodes []*apiv1.Node, resourceLimiter *c
 		if min > 0 {
 			switch {
 			case resource == cloudprovider.ResourceNameCores:
-				resultScaleDownLimits[resource] = computeLeft(totalCores, min)
+				resultScaleDownLimits[resource] = computeAboveMin(totalCores, min)
 			case resource == cloudprovider.ResourceNameMemory:
-				resultScaleDownLimits[resource] = computeLeft(totalMem, min)
+				resultScaleDownLimits[resource] = computeAboveMin(totalMem, min)
 			case cloudprovider.IsGpuResource(resource):
 				if totalGpusErr != nil {
 					resultScaleDownLimits[resource] = scaleDownLimitUnknown
 				} else {
-					resultScaleDownLimits[resource] = computeLeft(totalGpus[resource], min)
+					resultScaleDownLimits[resource] = computeAboveMin(totalGpus[resource], min)
 				}
 			default:
 				glog.Errorf("Scale down limits defined for unsupported resource '%s'", resource)
@@ -144,16 +144,7 @@ func computeScaleDownResourcesLeftLimits(nodes []*apiv1.Node, resourceLimiter *c
 	return resultScaleDownLimits
 }
 
-func containsGpuResources(resources []string) bool {
-	for _, resource := range resources {
-		if cloudprovider.IsGpuResource(resource) {
-			return true
-		}
-	}
-	return false
-}
-
-func computeLeft(total int64, min int64) int64 {
+func computeAboveMin(total int64, min int64) int64 {
 	if total > min {
 		return total - min
 	}
@@ -177,7 +168,7 @@ func calculateScaleDownCoresMemoryTotal(nodes []*apiv1.Node, timestamp time.Time
 	return coresTotal, memoryTotal
 }
 
-func calculateGpusTotal(nodes []*apiv1.Node, cp cloudprovider.CloudProvider, timestamp time.Time) (map[string]int64, error) {
+func calculateScaleDownGpusTotal(nodes []*apiv1.Node, cp cloudprovider.CloudProvider, timestamp time.Time) (map[string]int64, error) {
 	type gpuInfo struct {
 		name  string
 		count int64
@@ -255,7 +246,7 @@ func computeScaleDownResourcesDelta(node *apiv1.Node, nodeGroup cloudprovider.No
 	resultScaleDownDelta[cloudprovider.ResourceNameCores] = nodeCPU
 	resultScaleDownDelta[cloudprovider.ResourceNameMemory] = nodeMemory
 
-	if containsGpuResources(resourcesWithLimits) {
+	if cloudprovider.ContainsGpuResources(resourcesWithLimits) {
 		gpuType, gpuCount, err := gpu.GetNodeTargetGpus(node, nodeGroup)
 		if err != nil {
 			return scaleDownResourcesDelta{}, errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("Failed to get node %v gpu: %v", node.Name)
