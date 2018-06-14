@@ -878,6 +878,7 @@ func TestScaleUpAutoprovisionedNodeGroup(t *testing.T) {
 
 	processors := ca_processors.TestProcessors()
 	processors.NodeGroupListProcessor = nodegroups.NewAutoprovisioningNodeGroupListProcessor()
+	processors.NodeGroupManager = nodegroups.NewDefaultNodeGroupManager()
 
 	status, err := ScaleUp(context, processors, clusterState, []*apiv1.Pod{p1}, []*apiv1.Node{}, []*extensionsv1.DaemonSet{})
 	assert.NoError(t, err)

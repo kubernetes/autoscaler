@@ -31,6 +31,8 @@ type AutoscalingProcessors struct {
 	NodeGroupListProcessor nodegroups.NodeGroupListProcessor
 	// ScaleUpStatusProcessor is used to process the state of the cluster after a scale-up.
 	ScaleUpStatusProcessor status.ScaleUpStatusProcessor
+	// NodeGroupManager is responsible for creating/deleting node groups.
+	NodeGroupManager nodegroups.NodeGroupManager
 }
 
 // DefaultProcessors returns default set of processors.
@@ -38,7 +40,9 @@ func DefaultProcessors() *AutoscalingProcessors {
 	return &AutoscalingProcessors{
 		PodListProcessor:       pods.NewDefaultPodListProcessor(),
 		NodeGroupListProcessor: nodegroups.NewDefaultNodeGroupListProcessor(),
-		ScaleUpStatusProcessor: status.NewDefaultScaleUpStatusProcessor()}
+		ScaleUpStatusProcessor: status.NewDefaultScaleUpStatusProcessor(),
+		NodeGroupManager:       nodegroups.NewDefaultNodeGroupManager(),
+	}
 }
 
 // TestProcessors returns a set of simple processors for use in tests.
@@ -47,5 +51,7 @@ func TestProcessors() *AutoscalingProcessors {
 		PodListProcessor:       &pods.NoOpPodListProcessor{},
 		NodeGroupListProcessor: &nodegroups.NoOpNodeGroupListProcessor{},
 		// TODO(bskiba): change scale up test so that this can be a NoOpProcessor
-		ScaleUpStatusProcessor: &status.EventingScaleUpStatusProcessor{}}
+		ScaleUpStatusProcessor: &status.EventingScaleUpStatusProcessor{},
+		NodeGroupManager:       nodegroups.NewDefaultNodeGroupManager(),
+	}
 }
