@@ -18,12 +18,24 @@ limitations under the License.
 package v1alpha1
 
 import (
-	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// VerticalPodAutoscalerList is a list of VerticalPodAutoscaler objects.
+type VerticalPodAutoscalerList struct {
+	metav1.TypeMeta `json:",inline"`
+	// metadata is the standard list metadata.
+	// +optional
+	metav1.ListMeta `json:"metadata" protobuf:"bytes,1,opt,name=metadata"`
+
+	// items is the list of vertical pod autoscaler objects.
+	Items []VerticalPodAutoscaler `json:"items" protobuf:"bytes,2,rep,name=items"`
+}
+
 // +genclient
-// +genclient:noStatus
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // VerticalPodAutoscaler is the configuration for a vertical pod
@@ -37,81 +49,39 @@ type VerticalPodAutoscaler struct {
 
 	// Specification of the behavior of the autoscaler.
 	// More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#spec-and-status.
-	// +optional
-	Spec VerticalPodAutoscalerSpec `json:"spec,omitempty" protobuf:"bytes,2,opt,name=spec"`
+	Spec VerticalPodAutoscalerSpec `json:"spec" protobuf:"bytes,2,name=spec"`
 
 	// Current information about the autoscaler.
 	// +optional
 	Status VerticalPodAutoscalerStatus `json:"status,omitempty" protobuf:"bytes,3,opt,name=status"`
 }
 
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
-// VerticalPodAutoscalerList is a list of VerticalPodAutoscaler objects.
-type VerticalPodAutoscalerList struct {
-	metav1.TypeMeta `json:",inline"`
-	metav1.ListMeta `json:"metadata"`
-	Items           []VerticalPodAutoscaler `json:"items"`
-}
-
 // VerticalPodAutoscalerSpec is the specification of the behavior of the autoscaler.
 type VerticalPodAutoscalerSpec struct {
 	// A label query that determines the set of pods controlled by the Autoscaler.
 	// More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors
-	Selector *metav1.LabelSelector `json:"selector,omitempty" protobuf:"bytes,1,opt,name=selector"`
+	Selector *metav1.LabelSelector `json:"selector" protobuf:"bytes,1,name=selector"`
 
 	// Describes the rules on how changes are applied to the pods.
+	// If not specified, all fields in the `PodUpdatePolicy` are set to their
+	// default values.
 	// +optional
-	UpdatePolicy PodUpdatePolicy `json:"updatePolicy,omitempty" protobuf:"bytes,2,opt,name=updatePolicy"`
+	UpdatePolicy *PodUpdatePolicy `json:"updatePolicy,omitempty" protobuf:"bytes,2,opt,name=updatePolicy"`
 
 	// Controls how the autoscaler computes recommended resources.
+	// The resource policy may be used to set constraints on the recommendations
+	// for individual containers. If not specified, the autoscaler computes recommended
+	// resources for all containers in the pod, without additional constraints.
 	// +optional
-	ResourcePolicy PodResourcePolicy `json:"resourcePolicy,omitempty" protobuf:"bytes,3,opt,name=resourcePolicy"`
+	ResourcePolicy *PodResourcePolicy `json:"resourcePolicy,omitempty" protobuf:"bytes,3,opt,name=resourcePolicy"`
 }
 
-// VerticalPodAutoscalerStatus describes the runtime state of the autoscaler.
-type VerticalPodAutoscalerStatus struct {
-	// The time when the status was last refreshed.
-	LastUpdateTime metav1.Time `json:"lastUpdateTime,omitempty" protobuf:"bytes,1,opt,name=lastUpdateTime"`
-	// The most recently computed amount of resources recommended by the
-	// autoscaler for the controlled pods.
+// PodUpdatePolicy describes the rules on how changes are applied to the pods.
+type PodUpdatePolicy struct {
+	// Controls when autoscaler applies changes to the pod resources.
+	// The default is 'Auto'.
 	// +optional
-	Recommendation RecommendedPodResources `json:"recommendation,omitempty" protobuf:"bytes,2,opt,name=recommendation"`
-
-	// Conditions is the set of conditions required for this autoscaler to scale its target,
-	// and indicates whether or not those conditions are met.
-	Conditions []VerticalPodAutoscalerCondition `json:"conditions" protobuf:"bytes,3,rep,name=conditions"`
-}
-
-// VerticalPodAutoscalerConditionType are the valid conditions of
-// a VerticalPodAutoscaler.
-type VerticalPodAutoscalerConditionType string
-
-var (
-	// Configured indicates whether the VPA recommender was able to load a valid VPA spec.
-	Configured VerticalPodAutoscalerConditionType = "Configured"
-	// RecommendationProvided indicates whether the VPA recommender was able to calculate a recommendation.
-	RecommendationProvided VerticalPodAutoscalerConditionType = "RecommendationProvided"
-)
-
-// VerticalPodAutoscalerCondition describes the state of
-// a VerticalPodAutoscaler at a certain point.
-type VerticalPodAutoscalerCondition struct {
-	// type describes the current condition
-	Type VerticalPodAutoscalerConditionType `json:"type" protobuf:"bytes,1,name=type"`
-	// status is the status of the condition (True, False, Unknown)
-	Status apiv1.ConditionStatus `json:"status" protobuf:"bytes,2,name=status"`
-	// lastTransitionTime is the last time the condition transitioned from
-	// one status to another
-	// +optional
-	LastTransitionTime metav1.Time `json:"lastTransitionTime,omitempty" protobuf:"bytes,3,opt,name=lastTransitionTime"`
-	// reason is the reason for the condition's last transition.
-	// +optional
-	Reason string `json:"reason,omitempty" protobuf:"bytes,4,opt,name=reason"`
-	// message is a human-readable explanation containing details about
-	// the transition
-	// +optional
-	Message string `json:"message,omitempty" protobuf:"bytes,5,opt,name=message"`
+	UpdateMode *UpdateMode `json:"updateMode,omitempty" protobuf:"bytes,1,opt,name=updateMode"`
 }
 
 // UpdateMode controls when autoscaler applies changes to the pod resoures.
@@ -125,24 +95,28 @@ const (
 	// UpdateModeInitial means that autoscaler only assigns resources on pod
 	// creation and does not change them during the lifetime of the pod.
 	UpdateModeInitial UpdateMode = "Initial"
+	// UpdateModeRecreate means that autoscaler assigns resources on pod
+	// creation and additionally can update them during the lifetime of the
+	// pod by deleting and recreating the pod.
+	UpdateModeRecreate UpdateMode = "Recreate"
 	// UpdateModeAuto means that autoscaler assigns resources on pod creation
 	// and additionally can update them during the lifetime of the pod,
-	// including evicting / rescheduling the pod.
+	// using any available update method. Currently this is equivalent to
+	// Recreate, which is the only available update method.
 	UpdateModeAuto UpdateMode = "Auto"
 )
 
-// PodUpdatePolicy describes the rules on how changes are applied to the pods.
-type PodUpdatePolicy struct {
-	// Controls when autoscaler applies changes to the pod resoures.
+// PodResourcePolicy controls how autoscaler computes the recommended resources
+// for containers belonging to the pod. There can be at most one entry for every
+// named container and optionally a single wildcard entry with `containerName` = '*',
+// which handles all containers that don't have individual policies.
+type PodResourcePolicy struct {
+	// Per-container resource policies.
 	// +optional
-	UpdateMode UpdateMode `json:"updateMode,omitempty" protobuf:"bytes,1,opt,name=updateMode"`
+	// +patchMergeKey=containerName
+	// +patchStrategy=merge
+	ContainerPolicies []ContainerResourcePolicy `json:"containerPolicies,omitempty" patchStrategy:"merge" patchMergeKey:"containerName" protobuf:"bytes,1,rep,name=containerPolicies"`
 }
-
-const (
-	// DefaultContainerResourcePolicy can be passed as
-	// ContainerResourcePolicy.Name to specify the default policy.
-	DefaultContainerResourcePolicy = "*"
-)
 
 // ContainerResourcePolicy controls how autoscaler computes the recommended
 // resources for a specific container.
@@ -150,62 +124,109 @@ type ContainerResourcePolicy struct {
 	// Name of the container or DefaultContainerResourcePolicy, in which
 	// case the policy is used by the containers that don't have their own
 	// policy specified.
-	Name string `json:"name,omitempty" protobuf:"bytes,1,opt,name=name"`
-	// Whether autoscaler is enabled for the container. Defaults to "On".
+	ContainerName string `json:"containerName,omitempty" protobuf:"bytes,1,opt,name=containerName"`
+	// Whether autoscaler is enabled for the container. The default is "Auto".
 	// +optional
-	Mode ContainerScalingMode `json:"mode,omitempty" protobuf:"bytes,2,opt,name=mode"`
+	Mode *ContainerScalingMode `json:"mode,omitempty" protobuf:"bytes,2,opt,name=mode"`
 	// Specifies the minimal amount of resources that will be recommended
-	// for the container.
+	// for the container. The default is no minimum.
 	// +optional
-	MinAllowed apiv1.ResourceList `json:"minAllowed,omitempty" protobuf:"bytes,3,rep,name=minAllowed,casttype=ResourceList,castkey=ResourceName"`
+	MinAllowed v1.ResourceList `json:"minAllowed,omitempty" protobuf:"bytes,3,rep,name=minAllowed,casttype=ResourceList,castkey=ResourceName"`
 	// Specifies the maximum amount of resources that will be recommended
-	// for the container.
+	// for the container. The default is no maximum.
 	// +optional
-	MaxAllowed apiv1.ResourceList `json:"maxAllowed,omitempty" protobuf:"bytes,4,rep,name=maxAllowed,casttype=ResourceList,castkey=ResourceName"`
+	MaxAllowed v1.ResourceList `json:"maxAllowed,omitempty" protobuf:"bytes,4,rep,name=maxAllowed,casttype=ResourceList,castkey=ResourceName"`
 }
 
-// PodResourcePolicy controls how autoscaler computes the recommended resources
-// for containers belonging to the pod.
-type PodResourcePolicy struct {
-	// Per-container resource policies.
-	ContainerPolicies []ContainerResourcePolicy `json:"containerPolicies" protobuf:"bytes,1,rep,name=containerPolicies"`
-}
+const (
+	// DefaultContainerResourcePolicy can be passed as
+	// ContainerResourcePolicy.ContainerName to specify the default policy.
+	DefaultContainerResourcePolicy = "*"
+)
 
 // ContainerScalingMode controls whether autoscaler is enabled for a specific
 // container.
 type ContainerScalingMode string
 
 const (
-	// ContainerScalingModeOn means autoscaling is enabled for a container.
-	ContainerScalingModeOn ContainerScalingMode = "On"
+	// ContainerScalingModeAuto means autoscaling is enabled for a container.
+	ContainerScalingModeAuto ContainerScalingMode = "Auto"
 	// ContainerScalingModeOff means autoscaling is disabled for a container.
 	ContainerScalingModeOff ContainerScalingMode = "Off"
 )
 
+// VerticalPodAutoscalerStatus describes the runtime state of the autoscaler.
+type VerticalPodAutoscalerStatus struct {
+	// The most recently computed amount of resources recommended by the
+	// autoscaler for the controlled pods.
+	// +optional
+	Recommendation *RecommendedPodResources `json:"recommendation,omitempty" protobuf:"bytes,1,opt,name=recommendation"`
+
+	// Conditions is the set of conditions required for this autoscaler to scale its target,
+	// and indicates whether or not those conditions are met.
+	// +optional
+	// +patchMergeKey=type
+	// +patchStrategy=merge
+	Conditions []VerticalPodAutoscalerCondition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type" protobuf:"bytes,2,rep,name=conditions"`
+}
+
 // RecommendedPodResources is the recommendation of resources computed by
-// autoscaler.
+// autoscaler. It contains a recommendation for each container in the pod
+// (except for those with `ContainerScalingMode` set to 'Off').
 type RecommendedPodResources struct {
 	// Resources recommended by the autoscaler for each container.
-	ContainerRecommendations []RecommendedContainerResources `json:"containerRecommendations" protobuf:"bytes,1,rep,name=containerRecommendations"`
+	// +optional
+	ContainerRecommendations []RecommendedContainerResources `json:"containerRecommendations,omitempty" protobuf:"bytes,1,rep,name=containerRecommendations"`
 }
 
 // RecommendedContainerResources is the recommendation of resources computed by
 // autoscaler for a specific container. Respects the container resource policy
-// if present in the spec.
+// if present in the spec. In particular the recommendation is not produced for
+// containers with `ContainerScalingMode` set to 'Off'.
 type RecommendedContainerResources struct {
 	// Name of the container.
-	Name string `json:"name,omitempty" protobuf:"bytes,1,opt,name=name"`
+	ContainerName string `json:"containerName,omitempty" protobuf:"bytes,1,opt,name=containerName"`
 	// Recommended amount of resources.
-	Target apiv1.ResourceList `json:"target,omitempty" protobuf:"bytes,2,rep,name=target,casttype=ResourceList,castkey=ResourceName"`
+	Target v1.ResourceList `json:"target" protobuf:"bytes,2,rep,name=target,casttype=ResourceList,castkey=ResourceName"`
 	// Minimum recommended amount of resources.
-	// Running the application with less resources is likely to have
-	// significant impact on performance/availability.
+	// This amount is not guaranteed to be sufficient for the application to operate in a stable way, however
+	// running with less resources is likely to have significant impact on performance/availability.
 	// +optional
-	MinRecommended apiv1.ResourceList `json:"minRecommended,omitempty" protobuf:"bytes,3,rep,name=minRecommended,casttype=ResourceList,castkey=ResourceName"`
+	LowerBound v1.ResourceList `json:"lowerBound,omitempty" protobuf:"bytes,3,rep,name=lowerBound,casttype=ResourceList,castkey=ResourceName"`
 	// Maximum recommended amount of resources.
-	// Any resources allocated beyond this value are likely wasted.
+	// Any resources allocated beyond this value are likely wasted. This value may be larger than the maximum
+	// amount of application is actually capable of consuming.
 	// +optional
-	MaxRecommended apiv1.ResourceList `json:"maxRecommended,omitempty" protobuf:"bytes,3,rep,name=maxRecommended,casttype=ResourceList,castkey=ResourceName"`
+	UpperBound v1.ResourceList `json:"upperBound,omitempty" protobuf:"bytes,4,rep,name=upperBound,casttype=ResourceList,castkey=ResourceName"`
+}
+
+// VerticalPodAutoscalerConditionType are the valid conditions of
+// a VerticalPodAutoscaler.
+type VerticalPodAutoscalerConditionType string
+
+var (
+	// RecommendationProvided indicates whether the VPA recommender was able to calculate a recommendation.
+	RecommendationProvided VerticalPodAutoscalerConditionType = "RecommendationProvided"
+)
+
+// VerticalPodAutoscalerCondition describes the state of
+// a VerticalPodAutoscaler at a certain point.
+type VerticalPodAutoscalerCondition struct {
+	// type describes the current condition
+	Type VerticalPodAutoscalerConditionType `json:"type" protobuf:"bytes,1,name=type"`
+	// status is the status of the condition (True, False, Unknown)
+	Status v1.ConditionStatus `json:"status" protobuf:"bytes,2,name=status"`
+	// lastTransitionTime is the last time the condition transitioned from
+	// one status to another
+	// +optional
+	LastTransitionTime metav1.Time `json:"lastTransitionTime,omitempty" protobuf:"bytes,3,opt,name=lastTransitionTime"`
+	// reason is the reason for the condition's last transition.
+	// +optional
+	Reason string `json:"reason,omitempty" protobuf:"bytes,4,opt,name=reason"`
+	// message is a human-readable explanation containing details about
+	// the transition
+	// +optional
+	Message string `json:"message,omitempty" protobuf:"bytes,5,opt,name=message"`
 }
 
 // +genclient
