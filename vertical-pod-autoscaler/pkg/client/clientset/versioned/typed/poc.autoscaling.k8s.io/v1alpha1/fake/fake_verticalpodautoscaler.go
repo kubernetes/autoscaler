@@ -98,6 +98,18 @@ func (c *FakeVerticalPodAutoscalers) Update(verticalPodAutoscaler *v1alpha1.Vert
 	return obj.(*v1alpha1.VerticalPodAutoscaler), err
 }
 
+// UpdateStatus was generated because the type contains a Status member.
+// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
+func (c *FakeVerticalPodAutoscalers) UpdateStatus(verticalPodAutoscaler *v1alpha1.VerticalPodAutoscaler) (*v1alpha1.VerticalPodAutoscaler, error) {
+	obj, err := c.Fake.
+		Invokes(testing.NewUpdateSubresourceAction(verticalpodautoscalersResource, "status", c.ns, verticalPodAutoscaler), &v1alpha1.VerticalPodAutoscaler{})
+
+	if obj == nil {
+		return nil, err
+	}
+	return obj.(*v1alpha1.VerticalPodAutoscaler), err
+}
+
 // Delete takes name of the verticalPodAutoscaler and deletes it. Returns an error if one occurs.
 func (c *FakeVerticalPodAutoscalers) Delete(name string, options *v1.DeleteOptions) error {
 	_, err := c.Fake.

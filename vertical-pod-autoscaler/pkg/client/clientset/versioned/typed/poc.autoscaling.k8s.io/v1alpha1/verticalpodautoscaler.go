@@ -35,6 +35,7 @@ type VerticalPodAutoscalersGetter interface {
 type VerticalPodAutoscalerInterface interface {
 	Create(*v1alpha1.VerticalPodAutoscaler) (*v1alpha1.VerticalPodAutoscaler, error)
 	Update(*v1alpha1.VerticalPodAutoscaler) (*v1alpha1.VerticalPodAutoscaler, error)
+	UpdateStatus(*v1alpha1.VerticalPodAutoscaler) (*v1alpha1.VerticalPodAutoscaler, error)
 	Delete(name string, options *v1.DeleteOptions) error
 	DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error
 	Get(name string, options v1.GetOptions) (*v1alpha1.VerticalPodAutoscaler, error)
@@ -112,6 +113,22 @@ func (c *verticalPodAutoscalers) Update(verticalPodAutoscaler *v1alpha1.Vertical
 		Namespace(c.ns).
 		Resource("verticalpodautoscalers").
 		Name(verticalPodAutoscaler.Name).
+		Body(verticalPodAutoscaler).
+		Do().
+		Into(result)
+	return
+}
+
+// UpdateStatus was generated because the type contains a Status member.
+// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
+
+func (c *verticalPodAutoscalers) UpdateStatus(verticalPodAutoscaler *v1alpha1.VerticalPodAutoscaler) (result *v1alpha1.VerticalPodAutoscaler, err error) {
+	result = &v1alpha1.VerticalPodAutoscaler{}
+	err = c.client.Put().
+		Namespace(c.ns).
+		Resource("verticalpodautoscalers").
+		Name(verticalPodAutoscaler.Name).
+		SubResource("status").
 		Body(verticalPodAutoscaler).
 		Do().
 		Into(result)
