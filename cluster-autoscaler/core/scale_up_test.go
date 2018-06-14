@@ -103,6 +103,30 @@ func TestScaleUpMaxCoresLimitHit(t *testing.T) {
 	simpleScaleUpTest(t, config)
 }
 
+func TestScaleUpMaxCoresLimitHitWithNotAutoscaledGroup(t *testing.T) {
+	options := defaultOptions
+	options.MaxCoresTotal = 9
+	config := &scaleTestConfig{
+		nodes: []nodeConfig{
+			{"n1", 2000, 100, 0, true, "ng1"},
+			{"n2", 4000, 1000, 0, true, ""},
+		},
+		pods: []podConfig{
+			{"p1", 1000, 0, 0, "n1"},
+			{"p2", 3000, 0, 0, "n2"},
+		},
+		extraPods: []podConfig{
+			{"p-new-1", 2000, 0, 0, ""},
+			{"p-new-2", 2000, 0, 0, ""},
+		},
+		scaleUpOptionToChoose: groupSizeChange{groupName: "ng1", sizeChange: 2},
+		expectedFinalScaleUp:  groupSizeChange{groupName: "ng1", sizeChange: 1},
+		options:               options,
+	}
+
+	simpleScaleUpTest(t, config)
+}
+
 const MB = 1024 * 1024
 
 func TestScaleUpMaxMemoryLimitHit(t *testing.T) {
@@ -112,6 +136,31 @@ func TestScaleUpMaxMemoryLimitHit(t *testing.T) {
 		nodes: []nodeConfig{
 			{"n1", 2000, 100 * MB, 0, true, "ng1"},
 			{"n2", 4000, 1000 * MB, 0, true, "ng2"},
+		},
+		pods: []podConfig{
+			{"p1", 1000, 0, 0, "n1"},
+			{"p2", 3000, 0, 0, "n2"},
+		},
+		extraPods: []podConfig{
+			{"p-new-1", 2000, 100 * MB, 0, ""},
+			{"p-new-2", 2000, 100 * MB, 0, ""},
+			{"p-new-3", 2000, 100 * MB, 0, ""},
+		},
+		scaleUpOptionToChoose: groupSizeChange{groupName: "ng1", sizeChange: 3},
+		expectedFinalScaleUp:  groupSizeChange{groupName: "ng1", sizeChange: 2},
+		options:               options,
+	}
+
+	simpleScaleUpTest(t, config)
+}
+
+func TestScaleUpMaxMemoryLimitHitWithNotAutoscaledGroup(t *testing.T) {
+	options := defaultOptions
+	options.MaxMemoryTotal = 1300 * MB
+	config := &scaleTestConfig{
+		nodes: []nodeConfig{
+			{"n1", 2000, 100 * MB, 0, true, "ng1"},
+			{"n2", 4000, 1000 * MB, 0, true, ""},
 		},
 		pods: []podConfig{
 			{"p1", 1000, 0, 0, "n1"},
@@ -306,7 +355,9 @@ func simpleScaleUpTest(t *testing.T, config *scaleTestConfig) {
 		}
 		SetNodeReadyState(node, n.ready, time.Now())
 		nodes[i] = node
-		groups[n.group] = append(groups[n.group], node)
+		if n.group != "" {
+			groups[n.group] = append(groups[n.group], node)
+		}
 	}
 
 	pods := make(map[string][]apiv1.Pod)
