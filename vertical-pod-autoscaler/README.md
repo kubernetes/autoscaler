@@ -151,6 +151,24 @@ or recreated by their controller due to Updater's activity).
 
 More on the architecture can be found [HERE](https://github.com/kubernetes/community/blob/master/contributors/design-proposals/autoscaling/vertical-pod-autoscaler.md).
 
+### Tear down
+
+Note that if you stop running VPA in your cluster, the resource requests
+for the pods already modified by VPA will not change, but any new pods
+will get resources as defined in your controllers (i.e. deployment or
+replicaset) and not according to previous recommendations made by VPA.
+
+To stop using Vertical Pod Autoscaling in your cluster:
+```
+* If runnning on GKE, clean up role bindings created in [Prerequisites](#prerequisites):
+```
+kubectl delete clusterrolebinding myname-cluster-admin-binding
+```
+* Tear down VPA components:
+```
+./hack/vpa-down.sh
+```
+
 # Known limitations of the alpha version
 
 * Whenever VPA updates the pod resources the pod is recreated, which causes all
