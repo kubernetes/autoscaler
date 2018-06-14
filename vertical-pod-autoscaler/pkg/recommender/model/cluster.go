@@ -198,12 +198,11 @@ func (cluster *ClusterState) AddOrUpdateVpa(apiObject *vpa_types.VerticalPodAuto
 	}
 	var currentRecommendation *vpa_types.RecommendedPodResources
 	if conditionsMap[vpa_types.RecommendationProvided].Status == apiv1.ConditionTrue {
-		currentRecommendation = &apiObject.Status.Recommendation
+		currentRecommendation = apiObject.Status.Recommendation
 	}
 	selector, err := metav1.LabelSelectorAsSelector(apiObject.Spec.Selector)
 	if err != nil {
-		errMsg := fmt.Sprintf("couldn't convert selector into a corresponding internal selector object: %v", err)
-		conditionsMap.Set(vpa_types.Configured, false, "InvalidSelector", errMsg)
+		return err
 	}
 
 	vpa, vpaExists := cluster.Vpas[vpaID]
@@ -224,8 +223,7 @@ func (cluster *ClusterState) AddOrUpdateVpa(apiObject *vpa_types.VerticalPodAuto
 	}
 	vpa.Conditions = conditionsMap
 	vpa.Recommendation = currentRecommendation
-	vpa.ResourcePolicy = &apiObject.Spec.ResourcePolicy
-	vpa.LastUpdateTime = apiObject.Status.LastUpdateTime.Time
+	vpa.ResourcePolicy = apiObject.Spec.ResourcePolicy
 	return nil
 }
 

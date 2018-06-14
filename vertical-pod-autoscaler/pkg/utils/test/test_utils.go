@@ -105,7 +105,7 @@ func BuildTestPolicy(containerName, minCPU, maxCPU, minMemory, maxMemory string)
 	minMemVal, _ := resource.ParseQuantity(minMemory)
 	maxMemVal, _ := resource.ParseQuantity(maxMemory)
 	return &vpa_types.PodResourcePolicy{ContainerPolicies: []vpa_types.ContainerResourcePolicy{{
-		Name: containerName,
+		ContainerName: containerName,
 		MinAllowed: apiv1.ResourceList{
 			apiv1.ResourceMemory: minMemVal,
 			apiv1.ResourceCPU:    minCPUVal,

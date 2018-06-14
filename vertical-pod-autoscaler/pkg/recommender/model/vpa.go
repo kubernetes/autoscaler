@@ -17,8 +17,6 @@ limitations under the License.
 package model
 
 import (
-	"time"
-
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -75,8 +73,6 @@ type Vpa struct {
 	aggregateContainerStates aggregateContainerStatesMap
 	// Pod Resource Policy provided in the VPA API object. Can be nil.
 	ResourcePolicy *vpa_types.PodResourcePolicy
-	// Value of the Status.LastUpdateTime fetched from the VPA API object.
-	LastUpdateTime time.Time
 	// Initial checkpoints of AggregateContainerStates for containers.
 	// The key is container name.
 	ContainersInitialAggregateState ContainerNameToAggregateStateMap

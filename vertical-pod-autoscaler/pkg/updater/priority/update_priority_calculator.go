@@ -120,15 +120,15 @@ func (calc *UpdatePriorityCalculator) getUpdatePriority(pod *apiv1.Pod, recommen
 		recommendedRequest := vpa_api_util.GetRecommendationForContainer(podContainer.Name, recommendation)
 		for resourceName, recommended := range recommendedRequest.Target {
 			totalRecommendedPerResource[resourceName] += recommended.MilliValue()
-			minRecommneded, hasMin := recommendedRequest.MinRecommended[resourceName]
-			maxRecommneded, hasMax := recommendedRequest.MaxRecommended[resourceName]
+			lowerBound, hasLowerBound := recommendedRequest.LowerBound[resourceName]
+			upperBound, hasUpperBound := recommendedRequest.UpperBound[resourceName]
 			if request, hasRequest := podContainer.Resources.Requests[resourceName]; hasRequest {
 				totalRequestPerResource[resourceName] += request.MilliValue()
 				if recommended.MilliValue() > request.MilliValue() {
 					scaleUp = true
 				}
-				if (hasMin && request.MilliValue() < minRecommneded.MilliValue()) ||
-					(hasMax && request.MilliValue() > maxRecommneded.MilliValue()) {
+				if (hasLowerBound && request.MilliValue() < lowerBound.MilliValue()) ||
+					(hasUpperBound && request.MilliValue() > upperBound.MilliValue()) {
 					outsideRecommendedRange = true
 				}
 			} else {
