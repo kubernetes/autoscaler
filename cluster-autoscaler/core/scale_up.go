@@ -47,8 +47,12 @@ type scaleUpResourcesDelta map[string]int64
 // used as a value in scaleUpResourcesLimits if actual limit could not be obtained due to errors talking to cloud provider
 const scaleUpLimitUnknown = math.MaxInt64
 
-func computeScaleUpResourcesLeftLimits(nodeGroups []cloudprovider.NodeGroup, nodeInfos map[string]*schedulercache.NodeInfo, resourceLimiter *cloudprovider.ResourceLimiter) (scaleUpResourcesLimits, errors.AutoscalerError) {
-	totalCores, totalMem, errCoresMem := calculateScaleUpCoresMemoryTotal(nodeGroups, nodeInfos)
+func computeScaleUpResourcesLeftLimits(
+	nodeGroups []cloudprovider.NodeGroup,
+	nodeInfos map[string]*schedulercache.NodeInfo,
+	nodesFromNotAutoscaledGroups []*apiv1.Node,
+	resourceLimiter *cloudprovider.ResourceLimiter) (scaleUpResourcesLimits, errors.AutoscalerError) {
+	totalCores, totalMem, errCoresMem := calculateScaleUpCoresMemoryTotal(nodeGroups, nodeInfos, nodesFromNotAutoscaledGroups)
 
 	resultScaleUpLimits := make(scaleUpResourcesLimits)
 	for _, resource := range resourceLimiter.GetResources() {
@@ -84,7 +88,10 @@ func computeScaleUpResourcesLeftLimits(nodeGroups []cloudprovider.NodeGroup, nod
 	return resultScaleUpLimits, nil
 }
 
-func calculateScaleUpCoresMemoryTotal(nodeGroups []cloudprovider.NodeGroup, nodeInfos map[string]*schedulercache.NodeInfo) (int64, int64, errors.AutoscalerError) {
+func calculateScaleUpCoresMemoryTotal(
+	nodeGroups []cloudprovider.NodeGroup,
+	nodeInfos map[string]*schedulercache.NodeInfo,
+	nodesFromNotAutoscaledGroups []*apiv1.Node) (int64, int64, errors.AutoscalerError) {
 	var coresTotal int64
 	var memoryTotal int64
 
@@ -102,6 +109,12 @@ func calculateScaleUpCoresMemoryTotal(nodeGroups []cloudprovider.NodeGroup, node
 			coresTotal = coresTotal + int64(currentSize)*nodeCPU
 			memoryTotal = memoryTotal + int64(currentSize)*nodeMemory
 		}
+	}
+
+	for _, node := range nodesFromNotAutoscaledGroups {
+		cores, memory := getNodeCoresAndMemory(node)
+		coresTotal += cores
+		memoryTotal += memory
 	}
 
 	return coresTotal, memoryTotal, nil
@@ -183,6 +196,11 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 		return nil, err.AddPrefix("failed to build node infos for node groups: ")
 	}
 
+	nodesFromNotAutoscaledGroups, err := FilterOutNodesFromNotAutoscaledGroups(nodes, context.CloudProvider)
+	if err != nil {
+		return nil, err.AddPrefix("failed to filter out nodes which are from not autoscaled groups: ")
+	}
+
 	nodeGroups := context.CloudProvider.NodeGroups()
 
 	resourceLimiter, errCP := context.CloudProvider.GetResourceLimiter()
@@ -192,7 +210,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 			errCP)
 	}
 
-	scaleUpResourcesLeft, errLimits := computeScaleUpResourcesLeftLimits(nodeGroups, nodeInfos, resourceLimiter)
+	scaleUpResourcesLeft, errLimits := computeScaleUpResourcesLeftLimits(nodeGroups, nodeInfos, nodesFromNotAutoscaledGroups, resourceLimiter)
 	if errLimits != nil {
 		return nil, errLimits.AddPrefix("Could not compute total resources: ")
 	}
