@@ -62,6 +62,10 @@ esac
 export REGISTRY=gcr.io/`gcloud config get-value core/project`
 export TAG=latest
 
+echo "Configuring registry authentication"
+mkdir -p "${HOME}/.docker"
+gcloud auth configure-docker -q
+
 for i in ${COMPONENTS}; do
   if [ $i == admission-controller ] ; then
     (cd ${SCRIPT_ROOT}/pkg/${i} && bash ./gencerts.sh || true)
