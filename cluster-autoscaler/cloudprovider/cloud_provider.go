@@ -170,6 +170,16 @@ func IsGpuResource(resourceName string) bool {
 	return resourceName != ResourceNameCores && resourceName != ResourceNameMemory
 }
 
+// ContainsGpuResources returns true iff given list contains any resource name denoting a gpu type
+func ContainsGpuResources(resources []string) bool {
+	for _, resource := range resources {
+		if IsGpuResource(resource) {
+			return true
+		}
+	}
+	return false
+}
+
 // ResourceLimiter contains limits (max, min) for resources (cores, memory etc.).
 type ResourceLimiter struct {
 	minLimits map[string]int64
