@@ -44,9 +44,9 @@ type RecommendedContainerResources struct {
 	// Recommended optimal amount of resources.
 	Target model.Resources
 	// Recommended minimum amount of resources.
-	MinRecommended model.Resources
+	LowerBound model.Resources
 	// Recommended maximum amount of resources.
-	MaxRecommended model.Resources
+	UpperBound model.Resources
 }
 
 type podResourceRecommender struct {
@@ -71,7 +71,8 @@ func (r *podResourceRecommender) GetRecommendedPodResources(vpa *model.Vpa) Reco
 	var recommendation = make(RecommendedPodResources)
 	for containerName, aggregatedContainerState := range containerNameToAggregateStateMap {
 		containerResourcePolicy := api_utils.GetContainerResourcePolicy(containerName, vpa.ResourcePolicy)
-		autoscalingDisabled := containerResourcePolicy != nil && containerResourcePolicy.Mode == vpa_types.ContainerScalingModeOff
+		autoscalingDisabled := containerResourcePolicy != nil && containerResourcePolicy.Mode != nil &&
+			*containerResourcePolicy.Mode == vpa_types.ContainerScalingModeOff
 		if !autoscalingDisabled && aggregatedContainerState.TotalSamplesCount > 0 {
 			recommendation[containerName] = r.getRecommendedContainerResources(aggregatedContainerState)
 		}

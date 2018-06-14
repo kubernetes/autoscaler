@@ -39,7 +39,7 @@ var _ = admissionControllerE2eDescribe("Admission-controller", func() {
 		})
 		vpaCRD.Status.Recommendation.ContainerRecommendations = []vpa_types.RecommendedContainerResources{
 			{
-				Name: "hamster",
+				ContainerName: "hamster",
 				Target: apiv1.ResourceList{
 					apiv1.ResourceCPU:    parseQuantityOrDie("250m"),
 					apiv1.ResourceMemory: parseQuantityOrDie("200Mi"),
@@ -72,7 +72,7 @@ var _ = admissionControllerE2eDescribe("Admission-controller", func() {
 		})
 		vpaCRD.Status.Recommendation.ContainerRecommendations = []vpa_types.RecommendedContainerResources{
 			{
-				Name: "hamster",
+				ContainerName: "hamster",
 				Target: apiv1.ResourceList{
 					apiv1.ResourceCPU:    parseQuantityOrDie("250m"),
 					apiv1.ResourceMemory: parseQuantityOrDie("200Mi"),
@@ -102,7 +102,7 @@ var _ = admissionControllerE2eDescribe("Admission-controller", func() {
 		})
 		vpaCRD.Status.Recommendation.ContainerRecommendations = []vpa_types.RecommendedContainerResources{
 			{
-				Name: "hamster",
+				ContainerName: "hamster",
 				Target: apiv1.ResourceList{
 					apiv1.ResourceCPU:    parseQuantityOrDie("250m"),
 					apiv1.ResourceMemory: parseQuantityOrDie("200Mi"),
@@ -110,7 +110,7 @@ var _ = admissionControllerE2eDescribe("Admission-controller", func() {
 			},
 		}
 		vpaCRD.Spec.ResourcePolicy.ContainerPolicies = []vpa_types.ContainerResourcePolicy{{
-			Name: "hamster",
+			ContainerName: "hamster",
 			MaxAllowed: apiv1.ResourceList{
 				apiv1.ResourceCPU:    parseQuantityOrDie("233m"),
 				apiv1.ResourceMemory: parseQuantityOrDie("150Mi"),
@@ -140,7 +140,7 @@ var _ = admissionControllerE2eDescribe("Admission-controller", func() {
 		})
 		vpaCRD.Status.Recommendation.ContainerRecommendations = []vpa_types.RecommendedContainerResources{
 			{
-				Name: "hamster",
+				ContainerName: "hamster",
 				Target: apiv1.ResourceList{
 					apiv1.ResourceCPU:    parseQuantityOrDie("50m"),
 					apiv1.ResourceMemory: parseQuantityOrDie("60Mi"),
@@ -148,7 +148,7 @@ var _ = admissionControllerE2eDescribe("Admission-controller", func() {
 			},
 		}
 		vpaCRD.Spec.ResourcePolicy.ContainerPolicies = []vpa_types.ContainerResourcePolicy{{
-			Name: "hamster",
+			ContainerName: "hamster",
 			MinAllowed: apiv1.ResourceList{
 				apiv1.ResourceCPU:    parseQuantityOrDie("90m"),
 				apiv1.ResourceMemory: parseQuantityOrDie("80Mi"),

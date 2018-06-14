@@ -76,7 +76,7 @@ func getMemoryLimit(resources v1.ResourceList) *resource.Quantity {
 }
 
 // getContainersResources returns the recommended resources and limits for each container in the given pod in the same order they are specified in the pod.Spec.
-func getContainersResources(pod *v1.Pod, podRecommendation vpa_types.RecommendedPodResources, policy vpa_types.PodResourcePolicy) []ContainerResources {
+func getContainersResources(pod *v1.Pod, podRecommendation vpa_types.RecommendedPodResources, policy *vpa_types.PodResourcePolicy) []ContainerResources {
 	resources := make([]ContainerResources, len(pod.Spec.Containers))
 	for i, container := range pod.Spec.Containers {
 		resources[i] = newContainerResources()
@@ -84,7 +84,7 @@ func getContainersResources(pod *v1.Pod, podRecommendation vpa_types.Recommended
 			memoryLimit := getMemoryLimit(r)
 			if memoryLimit != nil {
 				resources[i].Limits[v1.ResourceMemory] = *memoryLimit
-				vpa_api_util.ApplyVPAContainerPolicy(resources[i].Limits, container, &policy)
+				vpa_api_util.ApplyVPAContainerPolicy(resources[i].Limits, container, policy)
 			}
 		}
 
@@ -108,7 +108,7 @@ func (p *recommendationProvider) getMatchingVPA(pod *v1.Pod) *vpa_types.Vertical
 	}
 	onConfigs := make([]*vpa_types.VerticalPodAutoscaler, 0)
 	for _, vpaConfig := range configs {
-		if vpaConfig.Spec.UpdatePolicy.UpdateMode == vpa_types.UpdateModeOff {
+		if vpa_api_util.GetUpdateMode(vpaConfig) == vpa_types.UpdateModeOff {
 			continue
 		}
 		onConfigs = append(onConfigs, vpaConfig)
@@ -126,7 +126,7 @@ func (p *recommendationProvider) GetContainersResourcesForPod(pod *v1.Pod) ([]Co
 		glog.V(2).Infof("no matching VPA found for pod %s", pod.Name)
 		return nil, "", nil
 	}
-	recommendedPodResources, err := p.recommendationProcessor.Apply(&vpaConfig.Status.Recommendation, &vpaConfig.Spec.ResourcePolicy, pod)
+	recommendedPodResources, err := p.recommendationProcessor.Apply(vpaConfig.Status.Recommendation, vpaConfig.Spec.ResourcePolicy, pod)
 	if err != nil {
 		glog.V(2).Infof("cannot process recommendation for pod %s", pod.Name)
 		return nil, "", err

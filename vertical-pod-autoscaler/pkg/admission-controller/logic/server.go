@@ -132,13 +132,13 @@ func getPatchesForVPADefaults(raw []byte) ([]patchRecord, error) {
 	}
 	glog.V(4).Infof("Processing vpa: %v", vpa)
 	patches := []patchRecord{}
-	if vpa.Spec.UpdatePolicy.UpdateMode == "" {
-		// Sets the whole updatePolicy. Note that if it contained mutiple fields
-		// this needed to be changed to respect their original values.
+	if vpa.Spec.UpdatePolicy == nil {
+		// Sets the default updatePolicy.
+		defaultUpdateMode := vpa_types.UpdateModeAuto
 		patches = append(patches, patchRecord{
 			Op:    "add",
 			Path:  "/spec/updatePolicy",
-			Value: vpa_types.PodUpdatePolicy{UpdateMode: vpa_types.UpdateModeAuto}})
+			Value: vpa_types.PodUpdatePolicy{UpdateMode: &defaultUpdateMode}})
 	}
 	return patches, nil
 }

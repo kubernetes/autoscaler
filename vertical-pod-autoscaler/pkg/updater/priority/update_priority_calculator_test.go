@@ -92,8 +92,8 @@ func TestSortPriorityMultiContainers(t *testing.T) {
 	cpuRec, _ := resource.ParseQuantity("4")
 	memRec, _ := resource.ParseQuantity("20M")
 	container2rec := vpa_types.RecommendedContainerResources{
-		Name:   containerName2,
-		Target: map[apiv1.ResourceName]resource.Quantity{apiv1.ResourceCPU: cpuRec, apiv1.ResourceMemory: memRec}}
+		ContainerName: containerName2,
+		Target:        map[apiv1.ResourceName]resource.Quantity{apiv1.ResourceCPU: cpuRec, apiv1.ResourceMemory: memRec}}
 	recommendation.ContainerRecommendations = append(recommendation.ContainerRecommendations, container2rec)
 
 	timestampNow := pod1.Status.StartTime.Time.Add(time.Hour * 24)
@@ -198,8 +198,8 @@ func TestUpdateLonglivedPods(t *testing.T) {
 	// Both pods are within the recommended range.
 	recommendation := test.Recommendation().WithContainer(containerName).
 		WithTarget("5", "").
-		WithMinRecommended("1", "").
-		WithMaxRecommended("6", "").Get()
+		WithLowerBound("1", "").
+		WithUpperBound("6", "").Get()
 
 	// Pretend that the test pods started 13 hours ago.
 	timestampNow := pods[0].Status.StartTime.Time.Add(time.Hour * 13)
@@ -226,8 +226,8 @@ func TestUpdateShortlivedPods(t *testing.T) {
 	// Both pods are within the recommended range.
 	recommendation := test.Recommendation().WithContainer(containerName).
 		WithTarget("5", "").
-		WithMinRecommended("1", "").
-		WithMaxRecommended("6", "").Get()
+		WithLowerBound("1", "").
+		WithUpperBound("6", "").Get()
 
 	// Pretend that the test pods started 11 hours ago.
 	timestampNow := pods[0].Status.StartTime.Time.Add(time.Hour * 11)

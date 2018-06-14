@@ -63,7 +63,7 @@ func TestUpdateResourceRequests(t *testing.T) {
 	vpaWithHighMemory := vpaBuilder.WithTarget("2", "1000Mi").WithMaxAllowed("3", "3Gi").Get()
 
 	vpaWithEmptyRecommendation := vpaBuilder.Get()
-	vpaWithEmptyRecommendation.Status.Recommendation = vpa_types.RecommendedPodResources{}
+	vpaWithEmptyRecommendation.Status.Recommendation = &vpa_types.RecommendedPodResources{}
 
 	testCases := []testCase{{
 		pod:            uninitialized,
