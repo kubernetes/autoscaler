@@ -72,10 +72,10 @@ var _ = updaterE2eDescribe("Updater", func() {
 
 		vpaCRD.Status.Recommendation.ContainerRecommendations = []vpa_types.RecommendedContainerResources{
 			{
-				Name:           "hamster",
-				Target:         resourceList,
-				MinRecommended: resourceList,
-				MaxRecommended: resourceList,
+				ContainerName: "hamster",
+				Target:        resourceList,
+				LowerBound:    resourceList,
+				UpperBound:    resourceList,
 			},
 		}
 

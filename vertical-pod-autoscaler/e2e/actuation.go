@@ -67,10 +67,10 @@ var _ = actuationSuiteE2eDescribe("Actuation", func() {
 
 		vpaCRD.Status.Recommendation.ContainerRecommendations = []vpa_types.RecommendedContainerResources{
 			{
-				Name:           "hamster",
-				Target:         resourceList,
-				MinRecommended: resourceList,
-				MaxRecommended: resourceList,
+				ContainerName: "hamster",
+				Target:        resourceList,
+				LowerBound:    resourceList,
+				UpperBound:    resourceList,
 			},
 		}
 

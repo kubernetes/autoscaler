@@ -38,9 +38,9 @@ func (c *cappingRecommendationProcessor) Apply(
 
 	updatedRecommendations := []vpa_types.RecommendedContainerResources{}
 	for _, containerRecommendation := range podRecommendation.ContainerRecommendations {
-		container := getContainer(containerRecommendation.Name, pod)
+		container := getContainer(containerRecommendation.ContainerName, pod)
 		if container == nil {
-			glog.V(2).Infof("no matching Container found for recommendation %s", containerRecommendation.Name)
+			glog.V(2).Infof("no matching Container found for recommendation %s", containerRecommendation.ContainerName)
 			continue
 		}
 		updatedContainerResources, err := getCappedRecommendationForContainer(*container, &containerRecommendation, policy)
@@ -66,8 +66,8 @@ func getCappedRecommendationForContainer(
 	cappedRecommendations := containerRecommendation.DeepCopy()
 	cappedRecommendationsList := []apiv1.ResourceList{
 		cappedRecommendations.Target,
-		cappedRecommendations.MinRecommended,
-		cappedRecommendations.MaxRecommended,
+		cappedRecommendations.LowerBound,
+		cappedRecommendations.UpperBound,
 	}
 
 	for _, cappedRecommendation := range cappedRecommendationsList {
@@ -117,7 +117,7 @@ func ApplyVPAContainerPolicy(resources apiv1.ResourceList, container apiv1.Conta
 func GetRecommendationForContainer(containerName string, recommendation *vpa_types.RecommendedPodResources) *vpa_types.RecommendedContainerResources {
 	if recommendation != nil {
 		for i, containerRec := range recommendation.ContainerRecommendations {
-			if containerRec.Name == containerName {
+			if containerRec.ContainerName == containerName {
 				recommendationCopy := recommendation.ContainerRecommendations[i]
 				return &recommendationCopy
 			}

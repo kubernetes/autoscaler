@@ -25,8 +25,8 @@ import (
 type RecommendationBuilder interface {
 	WithContainer(containerName string) RecommendationBuilder
 	WithTarget(cpu, memory string) RecommendationBuilder
-	WithMinRecommended(cpu, memory string) RecommendationBuilder
-	WithMaxRecommended(cpu, memory string) RecommendationBuilder
+	WithLowerBound(cpu, memory string) RecommendationBuilder
+	WithUpperBound(cpu, memory string) RecommendationBuilder
 	Get() *vpa_types.RecommendedPodResources
 }
 
@@ -36,10 +36,10 @@ func Recommendation() RecommendationBuilder {
 }
 
 type recommendationBuilder struct {
-	containerName  string
-	target         apiv1.ResourceList
-	minRecommended apiv1.ResourceList
-	maxRecommended apiv1.ResourceList
+	containerName string
+	target        apiv1.ResourceList
+	lowerBound    apiv1.ResourceList
+	upperBound    apiv1.ResourceList
 }
 
 func (b *recommendationBuilder) WithContainer(containerName string) RecommendationBuilder {
@@ -54,15 +54,15 @@ func (b *recommendationBuilder) WithTarget(cpu, memory string) RecommendationBui
 	return &c
 }
 
-func (b *recommendationBuilder) WithMinRecommended(cpu, memory string) RecommendationBuilder {
+func (b *recommendationBuilder) WithLowerBound(cpu, memory string) RecommendationBuilder {
 	c := *b
-	c.minRecommended = Resources(cpu, memory)
+	c.lowerBound = Resources(cpu, memory)
 	return &c
 }
 
-func (b *recommendationBuilder) WithMaxRecommended(cpu, memory string) RecommendationBuilder {
+func (b *recommendationBuilder) WithUpperBound(cpu, memory string) RecommendationBuilder {
 	c := *b
-	c.maxRecommended = Resources(cpu, memory)
+	c.upperBound = Resources(cpu, memory)
 	return &c
 }
 
@@ -73,10 +73,10 @@ func (b *recommendationBuilder) Get() *vpa_types.RecommendedPodResources {
 	return &vpa_types.RecommendedPodResources{
 		ContainerRecommendations: []vpa_types.RecommendedContainerResources{
 			{
-				Name:           b.containerName,
-				Target:         b.target,
-				MinRecommended: b.minRecommended,
-				MaxRecommended: b.maxRecommended,
+				ContainerName: b.containerName,
+				Target:        b.target,
+				LowerBound:    b.lowerBound,
+				UpperBound:    b.upperBound,
 			},
 		}}
 }
