@@ -69,8 +69,9 @@ func (u *updater) RunOnce() {
 	vpas := make([]*vpa_types.VerticalPodAutoscaler, 0)
 
 	for _, vpa := range vpaList {
-		if vpa.Spec.UpdatePolicy.UpdateMode != vpa_types.UpdateModeAuto {
-			glog.V(3).Infof("skipping VPA object %v because its mode is not \"Auto\"", vpa.Name)
+		if vpa_api_util.GetUpdateMode(vpa) != vpa_types.UpdateModeRecreate &&
+			vpa_api_util.GetUpdateMode(vpa) != vpa_types.UpdateModeAuto {
+			glog.V(3).Infof("skipping VPA object %v because its mode is not \"Recreate\" or \"Auto\"", vpa.Name)
 			continue
 		}
 		vpas = append(vpas, vpa)
@@ -115,11 +116,11 @@ func (u *updater) RunOnce() {
 
 // getPodsForUpdate returns list of pods that should be updated ordered by update priority
 func (u *updater) getPodsForUpdate(pods []*apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler) []*apiv1.Pod {
-	priorityCalculator := priority.NewUpdatePriorityCalculator(&vpa.Spec.ResourcePolicy, nil, u.recommendationProcessor)
+	priorityCalculator := priority.NewUpdatePriorityCalculator(vpa.Spec.ResourcePolicy, nil, u.recommendationProcessor)
 	recommendation := vpa.Status.Recommendation
 
 	for _, pod := range pods {
-		priorityCalculator.AddPod(pod, &recommendation, time.Now())
+		priorityCalculator.AddPod(pod, recommendation, time.Now())
 	}
 
 	return priorityCalculator.GetSortedPods()

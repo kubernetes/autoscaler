@@ -86,13 +86,13 @@ func TestGetControllingVPAForPod(t *testing.T) {
 
 func TestGetContainerResourcePolicy(t *testing.T) {
 	containerPolicy1 := vpa_types.ContainerResourcePolicy{
-		Name: "container1",
+		ContainerName: "container1",
 		MinAllowed: apiv1.ResourceList{
 			apiv1.ResourceCPU: *resource.NewScaledQuantity(10, 1),
 		},
 	}
 	containerPolicy2 := vpa_types.ContainerResourcePolicy{
-		Name: "container2",
+		ContainerName: "container2",
 		MaxAllowed: apiv1.ResourceList{
 			apiv1.ResourceMemory: *resource.NewScaledQuantity(100, 1),
 		},
@@ -108,7 +108,7 @@ func TestGetContainerResourcePolicy(t *testing.T) {
 
 	// Add the wildcard ("*") policy.
 	defaultPolicy := vpa_types.ContainerResourcePolicy{
-		Name: "*",
+		ContainerName: "*",
 		MinAllowed: apiv1.ResourceList{
 			apiv1.ResourceCPU: *resource.NewScaledQuantity(20, 1),
 		},

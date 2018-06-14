@@ -66,7 +66,8 @@ func TestRunOnce(t *testing.T) {
 		WithMinAllowed("1", "100M").
 		WithMaxAllowed("3", "1G").
 		WithSelector(selector).Get()
-	vpaObj.Spec.UpdatePolicy.UpdateMode = vpa_types.UpdateModeAuto
+	updateMode := vpa_types.UpdateModeAuto
+	vpaObj.Spec.UpdatePolicy = &vpa_types.PodUpdatePolicy{UpdateMode: &updateMode}
 	vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpaObj}, nil).Once()
 
 	updater := &updater{
@@ -108,7 +109,8 @@ func TestVPAOff(t *testing.T) {
 		WithMaxAllowed("3", "1G").
 		WithSelector(selector).Get()
 	vpaObj.Namespace = "default"
-	vpaObj.Spec.UpdatePolicy.UpdateMode = vpa_types.UpdateModeInitial
+	updateMode := vpa_types.UpdateModeInitial
+	vpaObj.Spec.UpdatePolicy = &vpa_types.PodUpdatePolicy{UpdateMode: &updateMode}
 	vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpaObj}, nil).Once()
 
 	updater := &updater{

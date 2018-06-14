@@ -64,15 +64,14 @@ func (r *recommender) GetClusterStateFeeder() input.ClusterStateFeeder {
 func (r *recommender) updateVPAs() {
 	for key, vpa := range r.clusterState.Vpas {
 		glog.V(3).Infof("VPA to update #%v: %+v", key, vpa)
-		vpa.Conditions.Set(vpa_types.Configured, true, "", "")
 		resources := r.podResourceRecommender.GetRecommendedPodResources(vpa)
 		containerResources := make([]vpa_types.RecommendedContainerResources, 0, len(resources))
-		for containerID, res := range resources {
+		for containerName, res := range resources {
 			containerResources = append(containerResources, vpa_types.RecommendedContainerResources{
-				Name:           containerID,
-				Target:         model.ResourcesAsResourceList(res.Target),
-				MinRecommended: model.ResourcesAsResourceList(res.MinRecommended),
-				MaxRecommended: model.ResourcesAsResourceList(res.MaxRecommended),
+				ContainerName: containerName,
+				Target:        model.ResourcesAsResourceList(res.Target),
+				LowerBound:    model.ResourcesAsResourceList(res.LowerBound),
+				UpperBound:    model.ResourcesAsResourceList(res.UpperBound),
 			})
 
 		}
