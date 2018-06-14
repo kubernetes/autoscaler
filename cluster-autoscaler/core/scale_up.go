@@ -35,6 +35,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/glogx"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/nodegroupset"
 	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 
@@ -53,6 +54,12 @@ func computeScaleUpResourcesLeftLimits(
 	nodesFromNotAutoscaledGroups []*apiv1.Node,
 	resourceLimiter *cloudprovider.ResourceLimiter) (scaleUpResourcesLimits, errors.AutoscalerError) {
 	totalCores, totalMem, errCoresMem := calculateScaleUpCoresMemoryTotal(nodeGroups, nodeInfos, nodesFromNotAutoscaledGroups)
+
+	var totalGpus map[string]int64
+	var totalGpusErr error
+	if cloudprovider.ContainsGpuResources(resourceLimiter.GetResources()) {
+		totalGpus, totalGpusErr = calculateScaleUpGpusTotal(nodeGroups, nodeInfos, nodesFromNotAutoscaledGroups)
+	}
 
 	resultScaleUpLimits := make(scaleUpResourcesLimits)
 	for _, resource := range resourceLimiter.GetResources() {
@@ -77,6 +84,13 @@ func computeScaleUpResourcesLeftLimits(
 					resultScaleUpLimits[resource] = scaleUpLimitUnknown
 				} else {
 					resultScaleUpLimits[resource] = computeBelowMax(totalMem, max)
+				}
+
+			case cloudprovider.IsGpuResource(resource):
+				if totalGpusErr != nil {
+					resultScaleUpLimits[resource] = scaleUpLimitUnknown
+				} else {
+					resultScaleUpLimits[resource] = computeBelowMax(totalGpus[resource], max)
 				}
 
 			default:
@@ -120,6 +134,44 @@ func calculateScaleUpCoresMemoryTotal(
 	return coresTotal, memoryTotal, nil
 }
 
+func calculateScaleUpGpusTotal(
+	nodeGroups []cloudprovider.NodeGroup,
+	nodeInfos map[string]*schedulercache.NodeInfo,
+	nodesFromNotAutoscaledGroups []*apiv1.Node) (map[string]int64, errors.AutoscalerError) {
+
+	result := make(map[string]int64)
+	for _, nodeGroup := range nodeGroups {
+		currentSize, err := nodeGroup.TargetSize()
+		if err != nil {
+			return nil, errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("Failed to get node group size of %v:", nodeGroup.Id())
+		}
+		nodeInfo, found := nodeInfos[nodeGroup.Id()]
+		if !found {
+			return nil, errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("No node info for: %s", nodeGroup.Id())
+		}
+		if currentSize > 0 {
+			gpuType, gpuCount, err := gpu.GetNodeTargetGpus(nodeInfo.Node(), nodeGroup)
+			if err != nil {
+				return nil, errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("Failed to get target gpu for node group %v:", nodeGroup.Id())
+			}
+			if gpuType == "" {
+				continue
+			}
+			result[gpuType] += gpuCount * int64(currentSize)
+		}
+	}
+
+	for _, node := range nodesFromNotAutoscaledGroups {
+		gpuType, gpuCount, err := gpu.GetNodeTargetGpus(node, nil)
+		if err != nil {
+			return nil, errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("Failed to get target gpu for node gpus count for node %v:", node.Name)
+		}
+		result[gpuType] += gpuCount
+	}
+
+	return result, nil
+}
+
 func computeBelowMax(total int64, max int64) int64 {
 	if total < max {
 		return max - total
@@ -127,12 +179,20 @@ func computeBelowMax(total int64, max int64) int64 {
 	return 0
 }
 
-func computeScaleUpResourcesDelta(nodeInfo *schedulercache.NodeInfo) (scaleUpResourcesDelta, errors.AutoscalerError) {
+func computeScaleUpResourcesDelta(nodeInfo *schedulercache.NodeInfo, nodeGroup cloudprovider.NodeGroup, resourceLimiter *cloudprovider.ResourceLimiter) (scaleUpResourcesDelta, errors.AutoscalerError) {
 	resultScaleUpDelta := make(scaleUpResourcesDelta)
 
 	nodeCPU, nodeMemory := getNodeInfoCoresAndMemory(nodeInfo)
 	resultScaleUpDelta[cloudprovider.ResourceNameCores] = nodeCPU
 	resultScaleUpDelta[cloudprovider.ResourceNameMemory] = nodeMemory
+
+	if cloudprovider.ContainsGpuResources(resourceLimiter.GetResources()) {
+		gpuType, gpuCount, err := gpu.GetNodeTargetGpus(nodeInfo.Node(), nodeGroup)
+		if err != nil {
+			return scaleUpResourcesDelta{}, errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("Failed to get target gpu for node group %v:", nodeGroup.Id())
+		}
+		resultScaleUpDelta[gpuType] = gpuCount
+	}
 
 	return resultScaleUpDelta, nil
 }
@@ -265,7 +325,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 			continue
 		}
 
-		scaleUpResourcesDelta, err := computeScaleUpResourcesDelta(nodeInfo)
+		scaleUpResourcesDelta, err := computeScaleUpResourcesDelta(nodeInfo, nodeGroup, resourceLimiter)
 		if err != nil {
 			glog.Errorf("Skipping node group %s; error getting node group resources: %v", nodeGroup.Id(), err)
 			continue
@@ -375,7 +435,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 		}
 
 		// apply upper limits for CPU and memory
-		newNodes, err = applyMaxClusterCoresMemoryLimits(newNodes, scaleUpResourcesLeft, nodeInfo)
+		newNodes, err = applyScaleUpResourcesLimits(newNodes, scaleUpResourcesLeft, nodeInfo, bestOption.NodeGroup, resourceLimiter)
 		if err != nil {
 			return nil, err
 		}
@@ -504,8 +564,14 @@ func executeScaleUp(context *context.AutoscalingContext, clusterStateRegistry *c
 	return nil
 }
 
-func applyMaxClusterCoresMemoryLimits(newNodes int, scaleUpResourcesLeft scaleUpResourcesLimits, nodeInfo *schedulercache.NodeInfo) (int, errors.AutoscalerError) {
-	delta, err := computeScaleUpResourcesDelta(nodeInfo)
+func applyScaleUpResourcesLimits(
+	newNodes int,
+	scaleUpResourcesLeft scaleUpResourcesLimits,
+	nodeInfo *schedulercache.NodeInfo,
+	nodeGroup cloudprovider.NodeGroup,
+	resourceLimiter *cloudprovider.ResourceLimiter) (int, errors.AutoscalerError) {
+
+	delta, err := computeScaleUpResourcesDelta(nodeInfo, nodeGroup, resourceLimiter)
 	if err != nil {
 		return 0, err
 	}
