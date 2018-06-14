@@ -412,9 +412,8 @@ func (ds *dockerService) PodSandboxStatus(ctx context.Context, req *runtimeapi.P
 
 	var IP string
 	// TODO: Remove this when sandbox is available on windows
-	// Currently windows supports both sandbox and non-sandbox cases.
 	// This is a workaround for windows, where sandbox is not in use, and pod IP is determined through containers belonging to the Pod.
-	if IP = ds.determinePodIPBySandboxID(podSandboxID, r); IP == "" {
+	if IP = ds.determinePodIPBySandboxID(podSandboxID); IP == "" {
 		IP = ds.getIP(podSandboxID, r)
 	}
 
@@ -539,21 +538,6 @@ func (ds *dockerService) ListPodSandbox(_ context.Context, r *runtimeapi.ListPod
 	return &runtimeapi.ListPodSandboxResponse{Items: result}, nil
 }
 
-// applySandboxLinuxOptions applies LinuxPodSandboxConfig to dockercontainer.HostConfig and dockercontainer.ContainerCreateConfig.
-func (ds *dockerService) applySandboxLinuxOptions(hc *dockercontainer.HostConfig, lc *runtimeapi.LinuxPodSandboxConfig, createConfig *dockertypes.ContainerCreateConfig, image string, separator rune) error {
-	if lc == nil {
-		return nil
-	}
-	// Apply security context.
-	if err := applySandboxSecurityContext(lc, createConfig.Config, hc, ds.network, separator); err != nil {
-		return err
-	}
-
-	// Set sysctls.
-	hc.Sysctls = lc.Sysctls
-	return nil
-}
-
 func (ds *dockerService) applySandboxResources(hc *dockercontainer.HostConfig, lc *runtimeapi.LinuxPodSandboxConfig) error {
 	hc.Resources = dockercontainer.Resources{
 		MemorySwap: DefaultMemorySwap(),
@@ -594,8 +578,8 @@ func (ds *dockerService) makeSandboxDockerConfig(c *runtimeapi.PodSandboxConfig,
 		HostConfig: hc,
 	}
 
-	// Apply linux-specific options.
-	if err := ds.applySandboxLinuxOptions(hc, c.GetLinux(), createConfig, image, securityOptSeparator); err != nil {
+	// Apply platform-specific options.
+	if err := ds.applySandboxPlatformOptions(hc, c, createConfig, image, securityOptSeparator); err != nil {
 		return nil, err
 	}
 
