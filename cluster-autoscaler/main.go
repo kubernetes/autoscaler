@@ -145,8 +145,9 @@ var (
 	nodeAutoprovisioningEnabled      = flag.Bool("node-autoprovisioning-enabled", false, "Should CA autoprovision node groups when needed")
 	maxAutoprovisionedNodeGroupCount = flag.Int("max-autoprovisioned-node-group-count", 15, "The maximum number of autoprovisioned groups in the cluster.")
 
-	expendablePodsPriorityCutoff = flag.Int("expendable-pods-priority-cutoff", 0, "Pods with priority below cutoff will be expendable. They can be killed without any consideration during scale down and they don't cause scale up. Pods with null priority (PodPriority disabled) are non expendable.")
-	regional                     = flag.Bool("regional", false, "Cluster is regional.")
+	unremovableNodeRecheckTimeout = flag.Duration("unremovable-node-recheck-timeout", 5*time.Minute, "The timeout before we check again a node that couldn't be removed before")
+	expendablePodsPriorityCutoff  = flag.Int("expendable-pods-priority-cutoff", 0, "Pods with priority below cutoff will be expendable. They can be killed without any consideration during scale down and they don't cause scale up. Pods with null priority (PodPriority disabled) are non expendable.")
+	regional                      = flag.Bool("regional", false, "Cluster is regional.")
 )
 
 func createAutoscalingOptions() context.AutoscalingOptions {
@@ -201,6 +202,7 @@ func createAutoscalingOptions() context.AutoscalingOptions {
 		ClusterName:                      *clusterName,
 		NodeAutoprovisioningEnabled:      *nodeAutoprovisioningEnabled,
 		MaxAutoprovisionedNodeGroupCount: *maxAutoprovisionedNodeGroupCount,
+		UnremovableNodeRecheckTimeout:    *unremovableNodeRecheckTimeout,
 		ExpendablePodsPriorityCutoff:     *expendablePodsPriorityCutoff,
 		Regional:                         *regional,
 	}
