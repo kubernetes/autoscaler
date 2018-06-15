@@ -68,19 +68,22 @@ func FilterOutNodesWithUnreadyGpus(allNodes, readyNodes []*apiv1.Node) ([]*apiv1
 	return newAllNodes, newReadyNodes
 }
 
-// GetGpuType returns name of the GPU used on the node or empty string if there's no GPU
+// GetGpuTypeForMetrics returns name of the GPU used on the node or empty string if there's no GPU
 // if the GPU type is unknown, "generic" is returned
 // NOTE: current implementation is GKE/GCE-specific
-func GetGpuType(node *apiv1.Node) string {
+func GetGpuTypeForMetrics(node *apiv1.Node) string {
+	// we use the GKE label if there is one
+	gpuType, found := node.Labels[GPULabel]
+	if found {
+		return gpuType
+	}
+
+	// no label, fallback to generic solution
 	capacity, found := node.Status.Capacity[ResourceNvidiaGPU]
 	if !found || capacity.IsZero() {
 		return ""
 	}
-	gpuType, found := node.Labels[GPULabel]
-	if !found {
-		return "generic"
-	}
-	return gpuType
+	return "generic"
 }
 
 func getUnreadyNodeCopy(node *apiv1.Node) *apiv1.Node {
