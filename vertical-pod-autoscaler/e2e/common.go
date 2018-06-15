@@ -83,6 +83,7 @@ func newHamsterDeploymentWithResources(f *framework.Framework, cpuQuantity, memo
 }
 
 func newVPA(f *framework.Framework, name string, selector *metav1.LabelSelector) *vpa_types.VerticalPodAutoscaler {
+	updateMode := vpa_types.UpdateModeAuto
 	vpa := vpa_types.VerticalPodAutoscaler{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
@@ -90,10 +91,10 @@ func newVPA(f *framework.Framework, name string, selector *metav1.LabelSelector)
 		},
 		Spec: vpa_types.VerticalPodAutoscalerSpec{
 			Selector: selector,
-			UpdatePolicy: vpa_types.PodUpdatePolicy{
-				UpdateMode: vpa_types.UpdateModeAuto,
+			UpdatePolicy: &vpa_types.PodUpdatePolicy{
+				UpdateMode: &updateMode,
 			},
-			ResourcePolicy: vpa_types.PodResourcePolicy{
+			ResourcePolicy: &vpa_types.PodResourcePolicy{
 				ContainerPolicies: []vpa_types.ContainerResourcePolicy{},
 			},
 		},

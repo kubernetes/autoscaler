@@ -28,7 +28,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
@@ -47,6 +46,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 )
 
 func TestFindUnneededNodes(t *testing.T) {
@@ -925,6 +925,35 @@ func TestScaleDownEmptyMinMemoryLimitHit(t *testing.T) {
 	simpleScaleDownEmpty(t, config)
 }
 
+func TestScaleDownEmptyMinGpuLimitHit(t *testing.T) {
+	options := defaultScaleDownOptions
+	options.GpuTotal = []context.GpuLimits{
+		{
+			GpuType: gpu.DefaultGPUType,
+			Min:     4,
+			Max:     50,
+		},
+		{
+			GpuType: "nvidia-tesla-p100", // this one should not trigger
+			Min:     5,
+			Max:     50,
+		},
+	}
+	config := &scaleTestConfig{
+		nodes: []nodeConfig{
+			{"n1", 1000, 1000 * MB, 1, true, "ng1"},
+			{"n2", 1000, 1000 * MB, 1, true, "ng1"},
+			{"n3", 1000, 1000 * MB, 1, true, "ng1"},
+			{"n4", 1000, 1000 * MB, 1, true, "ng1"},
+			{"n5", 1000, 1000 * MB, 1, true, "ng1"},
+			{"n6", 1000, 1000 * MB, 1, true, "ng1"},
+		},
+		options:            options,
+		expectedScaleDowns: []string{"n1", "n2"},
+	}
+	simpleScaleDownEmpty(t, config)
+}
+
 func TestScaleDownEmptyMinGroupSizeLimitHit(t *testing.T) {
 	options := defaultScaleDownOptions
 	config := &scaleTestConfig{
@@ -946,6 +975,9 @@ func simpleScaleDownEmpty(t *testing.T, config *scaleTestConfig) {
 	groups := make(map[string][]*apiv1.Node)
 	for i, n := range config.nodes {
 		node := BuildTestNode(n.name, n.cpu, n.memory)
+		if n.gpu > 0 {
+			AddGpusToNode(node, n.gpu)
+		}
 		SetNodeReadyState(node, n.ready, time.Time{})
 		nodesMap[n.name] = node
 		nodes[i] = node
@@ -985,9 +1017,7 @@ func simpleScaleDownEmpty(t *testing.T, config *scaleTestConfig) {
 		}
 	}
 
-	resourceLimiter := cloudprovider.NewResourceLimiter(
-		map[string]int64{cloudprovider.ResourceNameCores: config.options.MinCoresTotal, cloudprovider.ResourceNameMemory: config.options.MinMemoryTotal},
-		map[string]int64{cloudprovider.ResourceNameCores: config.options.MaxCoresTotal, cloudprovider.ResourceNameMemory: config.options.MaxMemoryTotal})
+	resourceLimiter := context.NewResourceLimiterFromAutoscalingOptions(config.options)
 	provider.SetResourceLimiter(resourceLimiter)
 
 	assert.NotNil(t, provider)
@@ -1308,7 +1338,7 @@ func TestCalculateCoresAndMemoryTotal(t *testing.T) {
 		},
 	}
 
-	coresTotal, memoryTotal := calculateCoresAndMemoryTotal(nodes, time.Now())
+	coresTotal, memoryTotal := calculateScaleDownCoresMemoryTotal(nodes, time.Now())
 
 	assert.Equal(t, int64(42), coresTotal)
 	assert.Equal(t, int64(44000*MB), memoryTotal)
@@ -1357,18 +1387,13 @@ func TestFilterOutMasters(t *testing.T) {
 	assertEqualSet(t, []string{"n1", "n2", "n4", "n5", "n6"}, withoutMastersNames)
 }
 
-func TestCheckDeltaWithinLimits(t *testing.T) {
+func TestCheckScaleDownDeltaWithinLimits(t *testing.T) {
 	type testcase struct {
 		limits            scaleDownResourcesLimits
 		delta             scaleDownResourcesDelta
 		exceededResources []string
 	}
 	tests := []testcase{
-		{
-			limits:            scaleDownResourcesLimits{"a": 10},
-			delta:             scaleDownResourcesDelta{"a": 10},
-			exceededResources: []string{},
-		},
 		{
 			limits:            scaleDownResourcesLimits{"a": 10},
 			delta:             scaleDownResourcesDelta{"a": 10},
@@ -1385,12 +1410,12 @@ func TestCheckDeltaWithinLimits(t *testing.T) {
 			exceededResources: []string{},
 		},
 		{
-			limits:            scaleDownResourcesLimits{"a": limitUnknown},
+			limits:            scaleDownResourcesLimits{"a": scaleDownLimitUnknown},
 			delta:             scaleDownResourcesDelta{"a": 0},
 			exceededResources: []string{},
 		},
 		{
-			limits:            scaleDownResourcesLimits{"a": limitUnknown},
+			limits:            scaleDownResourcesLimits{"a": scaleDownLimitUnknown},
 			delta:             scaleDownResourcesDelta{"a": 1},
 			exceededResources: []string{"a"},
 		},
@@ -1402,11 +1427,11 @@ func TestCheckDeltaWithinLimits(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		checkResult := test.limits.checkDeltaWithinLimits(test.delta)
+		checkResult := test.limits.checkScaleDownDeltaWithinLimits(test.delta)
 		if len(test.exceededResources) == 0 {
-			assert.Equal(t, notExceeded(), checkResult)
+			assert.Equal(t, scaleDownLimitsNotExceeded(), checkResult)
 		} else {
-			assert.Equal(t, limitCheckResult{true, test.exceededResources}, checkResult)
+			assert.Equal(t, scaleDownLimitsCheckResult{true, test.exceededResources}, checkResult)
 		}
 	}
 }

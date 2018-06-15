@@ -25,7 +25,8 @@ import (
 // RecommendationProcessor post-processes recommendation adjusting it to limits and environment context
 type RecommendationProcessor interface {
 	// Apply processes and updates recommendation for given pod, based on container limits,
-	// VPA policy and possibly other internal RecommendationProcessor context
+	// VPA policy and possibly other internal RecommendationProcessor context.
+	// Must return a non-nil pointer to RecommendedPodResources or error.
 	Apply(podRecommendation *vpa_types.RecommendedPodResources, policy *vpa_types.PodResourcePolicy,
 		pod *v1.Pod) (*vpa_types.RecommendedPodResources, error)
 }

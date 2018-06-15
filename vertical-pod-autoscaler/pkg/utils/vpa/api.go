@@ -32,7 +32,7 @@ import (
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/poc.autoscaling.k8s.io/v1alpha1"
 	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/poc.autoscaling.k8s.io/v1alpha1"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/recommender/model"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	"k8s.io/client-go/tools/cache"
 )
 
@@ -56,39 +56,17 @@ func patchVpa(vpaClient vpa_api.VerticalPodAutoscalerInterface, vpaName string, 
 // It prevents race conditions by verifying that the lastUpdateTime of the
 // API object and its model representation are equal.
 func UpdateVpaStatus(vpaClient vpa_api.VerticalPodAutoscalerInterface, vpa *model.Vpa) (result *vpa_types.VerticalPodAutoscaler, err error) {
-	newUpdateTime := time.Now()
-	if !newUpdateTime.After(vpa.LastUpdateTime) {
-		return nil, fmt.Errorf(
-			"Local time (%v) is behind lastUpdateTime (%v)",
-			newUpdateTime, vpa.LastUpdateTime)
-	}
 	status := vpa_types.VerticalPodAutoscalerStatus{
-		LastUpdateTime: metav1.NewTime(newUpdateTime),
-		Conditions:     vpa.Conditions.AsList(),
+		Conditions: vpa.Conditions.AsList(),
 	}
 	if vpa.Recommendation != nil {
-		status.Recommendation = *vpa.Recommendation
+		status.Recommendation = vpa.Recommendation
 	}
-
-	patches := make([]patchRecord, 0)
-
-	// Verify that Status was not updated in the meantime to avoid a race condition.
-	// If LastUpdateTime is not set patch is executed unconditionally (it is a low
-	// risk race condition).
-	if !vpa.LastUpdateTime.IsZero() {
-		patches = append(patches, patchRecord{
-			Op:    "test",
-			Path:  "/status/lastUpdateTime",
-			Value: metav1.NewTime(vpa.LastUpdateTime),
-		})
-	}
-
-	patches = append(patches, patchRecord{
+	patches := []patchRecord{{
 		Op:    "add",
 		Path:  "/status",
 		Value: status,
-	})
-
+	}}
 	return patchVpa(vpaClient, (*vpa).ID.VpaName, patches)
 }
 
@@ -151,6 +129,32 @@ func GetControllingVPAForPod(pod *apiv1.Pod, vpas []*vpa_types.VerticalPodAutosc
 		}
 	}
 	return controlling
+}
+
+// GetUpdateMode returns the updatePolicy.updateMode for a given VPA.
+// If the mode is not specified it returns the default (UpdateModeAuto).
+func GetUpdateMode(vpa *vpa_types.VerticalPodAutoscaler) vpa_types.UpdateMode {
+	if vpa.Spec.UpdatePolicy == nil || vpa.Spec.UpdatePolicy.UpdateMode == nil || *vpa.Spec.UpdatePolicy.UpdateMode == "" {
+		return vpa_types.UpdateModeAuto
+	}
+	return *vpa.Spec.UpdatePolicy.UpdateMode
+}
+
+// GetContainerResourcePolicy returns the ContainerResourcePolicy for a given policy
+// and container name. It returns nil if there is no policy specified for the container.
+func GetContainerResourcePolicy(containerName string, policy *vpa_types.PodResourcePolicy) *vpa_types.ContainerResourcePolicy {
+	var defaultPolicy *vpa_types.ContainerResourcePolicy
+	if policy != nil {
+		for i, containerPolicy := range policy.ContainerPolicies {
+			if containerPolicy.ContainerName == containerName {
+				return &policy.ContainerPolicies[i]
+			}
+			if containerPolicy.ContainerName == vpa_types.DefaultContainerResourcePolicy {
+				defaultPolicy = &policy.ContainerPolicies[i]
+			}
+		}
+	}
+	return defaultPolicy
 }
 
 // CreateOrUpdateVpaCheckpoint updates the status field of the VPA Checkpoint API object.

@@ -103,6 +103,30 @@ func TestScaleUpMaxCoresLimitHit(t *testing.T) {
 	simpleScaleUpTest(t, config)
 }
 
+func TestScaleUpMaxCoresLimitHitWithNotAutoscaledGroup(t *testing.T) {
+	options := defaultOptions
+	options.MaxCoresTotal = 9
+	config := &scaleTestConfig{
+		nodes: []nodeConfig{
+			{"n1", 2000, 100, 0, true, "ng1"},
+			{"n2", 4000, 1000, 0, true, ""},
+		},
+		pods: []podConfig{
+			{"p1", 1000, 0, 0, "n1"},
+			{"p2", 3000, 0, 0, "n2"},
+		},
+		extraPods: []podConfig{
+			{"p-new-1", 2000, 0, 0, ""},
+			{"p-new-2", 2000, 0, 0, ""},
+		},
+		scaleUpOptionToChoose: groupSizeChange{groupName: "ng1", sizeChange: 2},
+		expectedFinalScaleUp:  groupSizeChange{groupName: "ng1", sizeChange: 1},
+		options:               options,
+	}
+
+	simpleScaleUpTest(t, config)
+}
+
 const MB = 1024 * 1024
 
 func TestScaleUpMaxMemoryLimitHit(t *testing.T) {
@@ -130,12 +154,62 @@ func TestScaleUpMaxMemoryLimitHit(t *testing.T) {
 	simpleScaleUpTest(t, config)
 }
 
+func TestScaleUpMaxMemoryLimitHitWithNotAutoscaledGroup(t *testing.T) {
+	options := defaultOptions
+	options.MaxMemoryTotal = 1300 * MB
+	config := &scaleTestConfig{
+		nodes: []nodeConfig{
+			{"n1", 2000, 100 * MB, 0, true, "ng1"},
+			{"n2", 4000, 1000 * MB, 0, true, ""},
+		},
+		pods: []podConfig{
+			{"p1", 1000, 0, 0, "n1"},
+			{"p2", 3000, 0, 0, "n2"},
+		},
+		extraPods: []podConfig{
+			{"p-new-1", 2000, 100 * MB, 0, ""},
+			{"p-new-2", 2000, 100 * MB, 0, ""},
+			{"p-new-3", 2000, 100 * MB, 0, ""},
+		},
+		scaleUpOptionToChoose: groupSizeChange{groupName: "ng1", sizeChange: 3},
+		expectedFinalScaleUp:  groupSizeChange{groupName: "ng1", sizeChange: 2},
+		options:               options,
+	}
+
+	simpleScaleUpTest(t, config)
+}
+
 func TestScaleUpCapToMaxTotalNodesLimit(t *testing.T) {
 	options := defaultOptions
 	options.MaxNodesTotal = 3
 	config := &scaleTestConfig{
 		nodes: []nodeConfig{
 			{"n1", 2000, 100 * MB, 0, true, "ng1"},
+			{"n2", 4000, 1000 * MB, 0, true, "ng2"},
+		},
+		pods: []podConfig{
+			{"p1", 1000, 0, 0, "n1"},
+			{"p2", 3000, 0, 0, "n2"},
+		},
+		extraPods: []podConfig{
+			{"p-new-1", 4000, 100 * MB, 0, ""},
+			{"p-new-2", 4000, 100 * MB, 0, ""},
+			{"p-new-3", 4000, 100 * MB, 0, ""},
+		},
+		scaleUpOptionToChoose: groupSizeChange{groupName: "ng2", sizeChange: 3},
+		expectedFinalScaleUp:  groupSizeChange{groupName: "ng2", sizeChange: 1},
+		options:               options,
+	}
+
+	simpleScaleUpTest(t, config)
+}
+
+func TestScaleUpCapToMaxTotalNodesLimitWithNotAutoscaledGroup(t *testing.T) {
+	options := defaultOptions
+	options.MaxNodesTotal = 3
+	config := &scaleTestConfig{
+		nodes: []nodeConfig{
+			{"n1", 2000, 100 * MB, 0, true, ""},
 			{"n2", 4000, 1000 * MB, 0, true, "ng2"},
 		},
 		pods: []podConfig{
@@ -306,7 +380,9 @@ func simpleScaleUpTest(t *testing.T, config *scaleTestConfig) {
 		}
 		SetNodeReadyState(node, n.ready, time.Now())
 		nodes[i] = node
-		groups[n.group] = append(groups[n.group], node)
+		if n.group != "" {
+			groups[n.group] = append(groups[n.group], node)
+		}
 	}
 
 	pods := make(map[string][]apiv1.Pod)
@@ -802,10 +878,60 @@ func TestScaleUpAutoprovisionedNodeGroup(t *testing.T) {
 
 	processors := ca_processors.TestProcessors()
 	processors.NodeGroupListProcessor = nodegroups.NewAutoprovisioningNodeGroupListProcessor()
+	processors.NodeGroupManager = nodegroups.NewDefaultNodeGroupManager()
 
 	status, err := ScaleUp(context, processors, clusterState, []*apiv1.Pod{p1}, []*apiv1.Node{}, []*extensionsv1.DaemonSet{})
 	assert.NoError(t, err)
 	assert.True(t, status.ScaledUp)
 	assert.Equal(t, "autoprovisioned-T1", getStringFromChan(createdGroups))
 	assert.Equal(t, "autoprovisioned-T1-1", getStringFromChan(expandedGroups))
+}
+
+func TestCheckScaleUpDeltaWithinLimits(t *testing.T) {
+	type testcase struct {
+		limits            scaleUpResourcesLimits
+		delta             scaleUpResourcesDelta
+		exceededResources []string
+	}
+	tests := []testcase{
+		{
+			limits:            scaleUpResourcesLimits{"a": 10},
+			delta:             scaleUpResourcesDelta{"a": 10},
+			exceededResources: []string{},
+		},
+		{
+			limits:            scaleUpResourcesLimits{"a": 10},
+			delta:             scaleUpResourcesDelta{"a": 11},
+			exceededResources: []string{"a"},
+		},
+		{
+			limits:            scaleUpResourcesLimits{"a": 10},
+			delta:             scaleUpResourcesDelta{"b": 10},
+			exceededResources: []string{},
+		},
+		{
+			limits:            scaleUpResourcesLimits{"a": scaleUpLimitUnknown},
+			delta:             scaleUpResourcesDelta{"a": 0},
+			exceededResources: []string{},
+		},
+		{
+			limits:            scaleUpResourcesLimits{"a": scaleUpLimitUnknown},
+			delta:             scaleUpResourcesDelta{"a": 1},
+			exceededResources: []string{"a"},
+		},
+		{
+			limits:            scaleUpResourcesLimits{"a": 10, "b": 20, "c": 30},
+			delta:             scaleUpResourcesDelta{"a": 11, "b": 20, "c": 31},
+			exceededResources: []string{"a", "c"},
+		},
+	}
+
+	for _, test := range tests {
+		checkResult := test.limits.checkScaleUpDeltaWithinLimits(test.delta)
+		if len(test.exceededResources) == 0 {
+			assert.Equal(t, scaleUpLimitsNotExceeded(), checkResult)
+		} else {
+			assert.Equal(t, scaleUpLimitsCheckResult{true, test.exceededResources}, checkResult)
+		}
+	}
 }

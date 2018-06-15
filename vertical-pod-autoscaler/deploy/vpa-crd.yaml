@@ -29,6 +29,7 @@ spec:
                   enum:
                     - "Off"
                     - "Initial"
+                    - "Recreate"
                     - "Auto"
             resourcePolicy:
               properties:
@@ -37,14 +38,14 @@ spec:
                   items:
                     type: object
                     required:
-                      - name
+                      - containerName
                     properties:
-                      name:
+                      containerName:
                         type: string
                       mode:
                         type: string
                         enum:
-                          - "On"
+                          - "Auto"
                           - "Off"
                       minAllowed:
                         type: object
