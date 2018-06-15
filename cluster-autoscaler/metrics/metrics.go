@@ -160,8 +160,8 @@ var (
 		prometheus.CounterOpts{
 			Namespace: caNamespace,
 			Name:      "scaled_up_gpu_nodes_total",
-			Help:      "Number of GPU nodes added by CA, by gpuType.",
-		}, []string{"gpuType"},
+			Help:      "Number of GPU nodes added by CA, by GPU name.",
+		}, []string{"gpu_name"},
 	)
 
 	failedScaleUpCount = prometheus.NewCounterVec(
@@ -184,8 +184,8 @@ var (
 		prometheus.CounterOpts{
 			Namespace: caNamespace,
 			Name:      "scaled_down_gpu_nodes_total",
-			Help:      "Number of GPU nodes removed by CA, by reason and gpuType.",
-		}, []string{"reason", "gpuType"},
+			Help:      "Number of GPU nodes removed by CA, by reason and GPU name.",
+		}, []string{"reason", "gpu_name"},
 	)
 
 	evictionsCount = prometheus.NewCounter(
