@@ -80,8 +80,6 @@ const (
 	// PodEvictionHeadroom is the extra time we wait to catch situations when the pod is ignoring SIGTERM and
 	// is killed with SIGKILL after MaxGracefulTerminationTime
 	PodEvictionHeadroom = 30 * time.Second
-	// UnremovableNodeRecheckTimeout is the timeout before we check again a node that couldn't be removed before
-	UnremovableNodeRecheckTimeout = 5 * time.Minute
 )
 
 // NodeDeleteStatus tells whether a node is being deleted right now.
@@ -371,7 +369,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	}
 	skipped := len(nodesToCheck) - len(filteredNodesToCheck)
 	if skipped > 0 {
-		glog.V(1).Infof("Scale-down calculation: ignoring %v nodes unremovable in the last %v", skipped, UnremovableNodeRecheckTimeout)
+		glog.V(1).Infof("Scale-down calculation: ignoring %v nodes unremovable in the last %v", skipped, sd.context.AutoscalingOptions.UnremovableNodeRecheckTimeout)
 	}
 
 	// Phase1 - look at the nodes utilization. Calculate the utilization
@@ -484,7 +482,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 
 	// Add nodes to unremovable map
 	if len(unremovable) > 0 {
-		unremovableTimeout := timestamp.Add(UnremovableNodeRecheckTimeout)
+		unremovableTimeout := timestamp.Add(sd.context.AutoscalingOptions.UnremovableNodeRecheckTimeout)
 		for _, node := range unremovable {
 			sd.unremovableNodes[node.Name] = unremovableTimeout
 		}
