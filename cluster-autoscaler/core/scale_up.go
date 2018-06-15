@@ -40,7 +40,6 @@ import (
 	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 
 	"github.com/golang/glog"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 )
 
 type scaleUpResourcesLimits map[string]int64
