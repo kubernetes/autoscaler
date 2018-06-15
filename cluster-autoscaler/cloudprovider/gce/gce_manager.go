@@ -38,7 +38,6 @@ import (
 	"golang.org/x/oauth2/google"
 	gce "google.golang.org/api/compute/v1"
 	gke "google.golang.org/api/container/v1"
-	gke_alpha "google.golang.org/api/container/v1alpha1"
 	gke_beta "google.golang.org/api/container/v1beta1"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -149,10 +148,9 @@ type gceManagerImpl struct {
 	migs     []*migInformation
 	migCache map[GceRef]*Mig
 
-	gceService      *gce.Service
-	gkeService      *gke.Service
-	gkeAlphaService *gke_alpha.Service
-	gkeBetaService  *gke_beta.Service
+	gceService     *gce.Service
+	gkeService     *gke.Service
+	gkeBetaService *gke_beta.Service
 
 	cacheMutex sync.Mutex
 	migsMutex  sync.Mutex
@@ -274,14 +272,14 @@ func CreateGceManager(configReader io.Reader, mode GcpCloudProviderMode, cluster
 			manager.gkeBetaService = gkeBetaService
 		}
 	case ModeGKENAP:
-		gkeAlphaService, err := gke_alpha.New(client)
+		gkeBetaService, err := gke_beta.New(client)
 		if err != nil {
 			return nil, err
 		}
 		if *gkeAPIEndpoint != "" {
-			gkeAlphaService.BasePath = *gkeAPIEndpoint
+			gkeBetaService.BasePath = *gkeAPIEndpoint
 		}
-		manager.gkeAlphaService = gkeAlphaService
+		manager.gkeBetaService = gkeBetaService
 		glog.V(1).Info("Using GKE-NAP mode")
 	}
 
@@ -464,7 +462,7 @@ func (m *gceManagerImpl) fetchAllNodePoolsGkeRegionalImpl() error {
 func (m *gceManagerImpl) fetchAllNodePoolsGkeNapImpl() error {
 	m.assertGKENAP()
 
-	nodePoolsResponse, err := m.gkeAlphaService.Projects.Zones.Clusters.NodePools.List(m.projectId, m.location, m.clusterName).Do()
+	nodePoolsResponse, err := m.gkeBetaService.Projects.Zones.Clusters.NodePools.List(m.projectId, m.location, m.clusterName).Do()
 	if err != nil {
 		return err
 	}
@@ -589,7 +587,7 @@ func (m *gceManagerImpl) deleteNodePool(toBeRemoved *Mig) error {
 		return fmt.Errorf("only autoprovisioned node pools can be deleted")
 	}
 	// TODO: handle multi-zonal node pools.
-	deleteOp, err := m.gkeAlphaService.Projects.Zones.Clusters.NodePools.Delete(m.projectId, m.location, m.clusterName,
+	deleteOp, err := m.gkeBetaService.Projects.Zones.Clusters.NodePools.Delete(m.projectId, m.location, m.clusterName,
 		toBeRemoved.nodePoolName).Do()
 	if err != nil {
 		return err
@@ -607,14 +605,14 @@ func (m *gceManagerImpl) createNodePool(mig *Mig) error {
 	// TODO: handle preemptible
 	// TODO: handle SSDs
 
-	accelerators := []*gke_alpha.AcceleratorConfig{}
+	accelerators := []*gke_beta.AcceleratorConfig{}
 
 	if gpuRequest, found := mig.spec.extraResources[gpu.ResourceNvidiaGPU]; found {
 		gpuType, found := mig.spec.labels[gpu.GPULabel]
 		if !found {
 			return fmt.Errorf("failed to create node pool %v with gpu request of unspecified type", mig.nodePoolName)
 		}
-		gpuConfig := &gke_alpha.AcceleratorConfig{
+		gpuConfig := &gke_beta.AcceleratorConfig{
 			AcceleratorType:  gpuType,
 			AcceleratorCount: gpuRequest.Value(),
 		}
@@ -622,7 +620,7 @@ func (m *gceManagerImpl) createNodePool(mig *Mig) error {
 
 	}
 
-	taints := []*gke_alpha.NodeTaint{}
+	taints := []*gke_beta.NodeTaint{}
 	for _, taint := range mig.spec.taints {
 		if taint.Key == gpu.ResourceNvidiaGPU {
 			continue
@@ -631,7 +629,7 @@ func (m *gceManagerImpl) createNodePool(mig *Mig) error {
 		if !found {
 			effect = "EFFECT_UNSPECIFIED"
 		}
-		taint := &gke_alpha.NodeTaint{
+		taint := &gke_beta.NodeTaint{
 			Effect: effect,
 			Key:    taint.Key,
 			Value:  taint.Value,
@@ -646,7 +644,7 @@ func (m *gceManagerImpl) createNodePool(mig *Mig) error {
 		}
 	}
 
-	config := gke_alpha.NodeConfig{
+	config := gke_beta.NodeConfig{
 		MachineType:  mig.spec.machineType,
 		OauthScopes:  defaultOAuthScopes,
 		Labels:       labels,
@@ -654,15 +652,15 @@ func (m *gceManagerImpl) createNodePool(mig *Mig) error {
 		Taints:       taints,
 	}
 
-	autoscaling := gke_alpha.NodePoolAutoscaling{
+	autoscaling := gke_beta.NodePoolAutoscaling{
 		Enabled:         true,
 		MinNodeCount:    napMinNodes,
 		MaxNodeCount:    napMaxNodes,
 		Autoprovisioned: true,
 	}
 
-	createRequest := gke_alpha.CreateNodePoolRequest{
-		NodePool: &gke_alpha.NodePool{
+	createRequest := gke_beta.CreateNodePoolRequest{
+		NodePool: &gke_beta.NodePool{
 			Name:             mig.nodePoolName,
 			InitialNodeCount: 0,
 			Config:           &config,
@@ -670,7 +668,7 @@ func (m *gceManagerImpl) createNodePool(mig *Mig) error {
 		},
 	}
 
-	createOp, err := m.gkeAlphaService.Projects.Zones.Clusters.NodePools.Create(m.projectId, m.location, m.clusterName,
+	createOp, err := m.gkeBetaService.Projects.Zones.Clusters.NodePools.Create(m.projectId, m.location, m.clusterName,
 		&createRequest).Do()
 	if err != nil {
 		return err
@@ -698,7 +696,7 @@ func (m *gceManagerImpl) fetchMachinesCache() error {
 	}
 	var locations []string
 	if m.mode == ModeGKENAP {
-		cluster, err := m.gkeAlphaService.Projects.Locations.Clusters.Get(fmt.Sprintf("projects/%s/locations/%s/clusters/%s", m.projectId, m.location, m.clusterName)).Do()
+		cluster, err := m.gkeBetaService.Projects.Locations.Clusters.Get(fmt.Sprintf("projects/%s/locations/%s/clusters/%s", m.projectId, m.location, m.clusterName)).Do()
 		if err != nil {
 			return err
 		}
@@ -775,10 +773,10 @@ func (m *gceManagerImpl) waitForOp(operation *gce.Operation, project string, zon
 }
 
 //  GKE
-func (m *gceManagerImpl) waitForGkeOp(operation *gke_alpha.Operation) error {
+func (m *gceManagerImpl) waitForGkeOp(operation *gke_beta.Operation) error {
 	for start := time.Now(); time.Since(start) < gkeOperationWaitTimeout; time.Sleep(operationPollInterval) {
 		glog.V(4).Infof("Waiting for operation %s %s %s", m.projectId, m.location, operation.Name)
-		if op, err := m.gkeAlphaService.Projects.Zones.Operations.Get(m.projectId, m.location, operation.Name).Do(); err == nil {
+		if op, err := m.gkeBetaService.Projects.Zones.Operations.Get(m.projectId, m.location, operation.Name).Do(); err == nil {
 			glog.V(4).Infof("Operation %s %s %s status: %s", m.projectId, m.location, operation.Name, op.Status)
 			if op.Status == "DONE" {
 				return nil
@@ -1082,7 +1080,7 @@ func (m *gceManagerImpl) buildMigFromAutoCfg(link string, cfg cloudprovider.MIGA
 
 func (m *gceManagerImpl) fetchResourceLimiter() error {
 	if m.mode == ModeGKENAP {
-		cluster, err := m.gkeAlphaService.Projects.Zones.Clusters.Get(m.projectId, m.location, m.clusterName).Do()
+		cluster, err := m.gkeBetaService.Projects.Zones.Clusters.Get(m.projectId, m.location, m.clusterName).Do()
 		if err != nil {
 			return err
 		}
@@ -1093,11 +1091,11 @@ func (m *gceManagerImpl) fetchResourceLimiter() error {
 		minLimits := make(map[string]int64)
 		maxLimits := make(map[string]int64)
 		for _, limit := range cluster.Autoscaling.ResourceLimits {
-			if _, found := supportedResources[limit.Name]; !found {
-				glog.Warning("Unsupported limit defined %s: %d - %d", limit.Name, limit.Minimum, limit.Maximum)
+			if _, found := supportedResources[limit.ResourceType]; !found {
+				glog.Warning("Unsupported limit defined %s: %d - %d", limit.ResourceType, limit.Minimum, limit.Maximum)
 			}
-			minLimits[limit.Name] = limit.Minimum
-			maxLimits[limit.Name] = limit.Maximum
+			minLimits[limit.ResourceType] = limit.Minimum
+			maxLimits[limit.ResourceType] = limit.Maximum
 		}
 
 		// GKE API provides memory in GB, but ResourceLimiter expects them in bytes
