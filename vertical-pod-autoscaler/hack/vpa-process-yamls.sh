@@ -51,6 +51,7 @@ for i in $COMPONENTS; do
       (bash ${SCRIPT_ROOT}/pkg/admission-controller/gencerts.sh || true)
     elif [ ${ACTION} == delete ] ; then
       (bash ${SCRIPT_ROOT}/pkg/admission-controller/rmcerts.sh || true)
+      (bash ${SCRIPT_ROOT}/pkg/admission-controller/delete-webhook.sh || true)
     fi
   fi
   ${SCRIPT_ROOT}/hack/vpa-process-yaml.sh ${SCRIPT_ROOT}/deploy/$i.yaml | kubectl ${ACTION} -f - || true
