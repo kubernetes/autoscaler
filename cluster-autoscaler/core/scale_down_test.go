@@ -129,6 +129,7 @@ func TestFindUnneededNodes(t *testing.T) {
 		AutoscalingOptions: context.AutoscalingOptions{
 			ScaleDownUtilizationThreshold: 0.35,
 			ExpendablePodsPriorityCutoff:  10,
+			UnremovableNodeRecheckTimeout: 5 * time.Minute,
 		},
 		PredicateChecker: simulator.NewTestPredicateChecker(),
 		LogRecorder:      fakeLogRecorder,
@@ -172,7 +173,7 @@ func TestFindUnneededNodes(t *testing.T) {
 	assert.Equal(t, 1, len(sd.unremovableNodes))
 
 	// But it should be checked after timeout
-	sd.UpdateUnneededNodes([]*apiv1.Node{n1}, []*apiv1.Node{n1}, []*apiv1.Pod{}, time.Now().Add(UnremovableNodeRecheckTimeout+time.Second), nil)
+	sd.UpdateUnneededNodes([]*apiv1.Node{n1}, []*apiv1.Node{n1}, []*apiv1.Pod{}, time.Now().Add(context.AutoscalingOptions.UnremovableNodeRecheckTimeout+time.Second), nil)
 	assert.Equal(t, 1, len(sd.unneededNodes))
 	// Verify that nodes that are no longer unremovable are removed.
 	assert.Equal(t, 0, len(sd.unremovableNodes))
