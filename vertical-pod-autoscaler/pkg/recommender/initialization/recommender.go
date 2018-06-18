@@ -44,7 +44,7 @@ type Recommender interface {
 type recommender struct {
 	clusterState           *model.ClusterState
 	clusterStateFeeder     input.ClusterStateFeeder
-	checkpointWriter       output.CheckpointWriter
+	checkpointWriter       checkpoint.CheckpointWriter
 	checkpointsGCInterval  time.Duration
 	lastCheckpointGC       time.Time
 	vpaClient              vpa_api.VerticalPodAutoscalersGetter
@@ -112,7 +112,7 @@ func NewRecommender(config *rest.Config, checkpointsGCInterval time.Duration, us
 	recommender := &recommender{
 		clusterState:           clusterState,
 		clusterStateFeeder:     input.NewClusterStateFeeder(config, clusterState),
-		checkpointWriter:       output.NewCheckpointWriter(clusterState, vpa_clientset.NewForConfigOrDie(config).PocV1alpha1()),
+		checkpointWriter:       checkpoint.NewCheckpointWriter(clusterState, vpa_clientset.NewForConfigOrDie(config).PocV1alpha1()),
 		checkpointsGCInterval:  checkpointsGCInterval,
 		lastCheckpointGC:       time.Now(),
 		vpaClient:              vpa_clientset.NewForConfigOrDie(config).PocV1alpha1(),
