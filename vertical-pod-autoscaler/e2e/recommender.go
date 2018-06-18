@@ -77,7 +77,7 @@ func (*observer) OnDelete(obj interface{}) {}
 
 func (o *observer) OnUpdate(oldObj, newObj interface{}) {
 	get := func(vpa *vpa_types.VerticalPodAutoscaler) (result resourceRecommendation, found bool) {
-		if len(vpa.Status.Recommendation.ContainerRecommendations) == 0 {
+		if vpa.Status.Recommendation == nil || len(vpa.Status.Recommendation.ContainerRecommendations) == 0 {
 			found = false
 			result = resourceRecommendation{}
 		} else {
@@ -253,7 +253,7 @@ func waitForRecommendationPresent(c *vpa_clientset.Clientset, vpa *vpa_types.Ver
 			return false, err
 		}
 
-		if len(polledVpa.Status.Recommendation.ContainerRecommendations) != 0 {
+		if polledVpa.Status.Recommendation == nil || len(polledVpa.Status.Recommendation.ContainerRecommendations) != 0 {
 			return true, nil
 		}
 

@@ -70,13 +70,13 @@ var _ = updaterE2eDescribe("Updater", func() {
 
 		resourceList := apiv1.ResourceList{apiv1.ResourceCPU: newCPUQuantity}
 
-		vpaCRD.Status.Recommendation.ContainerRecommendations = []vpa_types.RecommendedContainerResources{
-			{
+		vpaCRD.Status.Recommendation = &vpa_types.RecommendedPodResources{
+			ContainerRecommendations: []vpa_types.RecommendedContainerResources{{
 				ContainerName: "hamster",
 				Target:        resourceList,
 				LowerBound:    resourceList,
 				UpperBound:    resourceList,
-			},
+			}},
 		}
 
 		vpaClientSet := vpa_clientset.NewForConfigOrDie(config)

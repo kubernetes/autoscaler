@@ -65,13 +65,13 @@ var _ = actuationSuiteE2eDescribe("Actuation", func() {
 			apiv1.ResourceCPU: parseQuantityOrDie("9999"), // Request 9999 CPUs to make POD pending
 		}
 
-		vpaCRD.Status.Recommendation.ContainerRecommendations = []vpa_types.RecommendedContainerResources{
-			{
+		vpaCRD.Status.Recommendation = &vpa_types.RecommendedPodResources{
+			ContainerRecommendations: []vpa_types.RecommendedContainerResources{{
 				ContainerName: "hamster",
 				Target:        resourceList,
 				LowerBound:    resourceList,
 				UpperBound:    resourceList,
-			},
+			}},
 		}
 
 		vpaClientSet := vpa_clientset.NewForConfigOrDie(config)
