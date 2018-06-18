@@ -29,6 +29,7 @@ import (
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/poc.autoscaling.k8s.io/v1alpha1"
 	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/poc.autoscaling.k8s.io/v1alpha1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/checkpoint"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/history"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/metrics"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/oom"
@@ -171,12 +172,17 @@ func (feeder *clusterStateFeeder) InitFromCheckpoints() {
 		if err != nil {
 			glog.Errorf("Cannot list VPA checkpoints from namespace %v. Reason: %+v", namespace, err)
 		}
-		for _, checkpoint := range checkpointList.Items {
-
-			glog.V(3).Infof("Loading VPA %s/%s checkpoint for %s", checkpoint.ObjectMeta.Namespace, checkpoint.Spec.VPAObjectName, checkpoint.Spec.ContainerName)
-			err = feeder.setVpaCheckpoint(&checkpoint)
-			if err != nil {
-				glog.Errorf("Error while loading checkpoint. Reason: %+v", err)
+		for _, checkpointObj := range checkpointList.Items {
+			if checkpointObj.Status.Version == checkpoint.CheckpointVersion {
+				glog.V(3).Infof("Loading VPA %s/%s checkpoint for %s", checkpointObj.ObjectMeta.Namespace, checkpointObj.Spec.VPAObjectName, checkpointObj.Spec.ContainerName)
+				err = feeder.setVpaCheckpoint(&checkpointObj)
+				if err != nil {
+					glog.Errorf("Error while loading checkpoint. Reason: %+v", err)
+				}
+			} else {
+				glog.V(3).Infof("Skipping VPA %s/%s checkpoint for %s (checkpoint version '%s' incompatible with the current version '%s')",
+					checkpointObj.ObjectMeta.Namespace, checkpointObj.Spec.VPAObjectName, checkpointObj.Spec.ContainerName,
+					checkpointObj.Status.Version, checkpoint.CheckpointVersion)
 			}
 
 		}
