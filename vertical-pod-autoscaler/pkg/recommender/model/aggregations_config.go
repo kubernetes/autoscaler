@@ -39,12 +39,9 @@ var (
 	// MemoryHistogramOptions are options to be used by histograms that
 	// store memory measures expressed in bytes.
 	MemoryHistogramOptions = memoryHistogramOptions()
-	// HistogramBucketSizeRatio is the relative size of the histogram buckets
-	// (the ratio between the upper and the lower bound of the bucket).
-	HistogramBucketSizeRatio = 0.05
-	// HistogramRelativeError is the maximum relative error introduced by
-	// the histogram (except for the boundary buckets).
-	HistogramRelativeError = HistogramBucketSizeRatio / 2.
+	// HistogramBucketSizeGrowth defines the growth rate of the histogram buckets.
+	// Each bucket is wider than the previous one by this fraction.
+	HistogramBucketSizeGrowth = 0.05 // Make each bucket 5% larger than the previous one.
 	// MemoryHistogramDecayHalfLife is the amount of time it takes a historical
 	// memory usage sample to lose half of its weight. In other words, a fresh
 	// usage sample is twice as 'important' as one with age equal to the half
@@ -58,7 +55,7 @@ var (
 func cpuHistogramOptions() util.HistogramOptions {
 	// CPU histograms use exponential bucketing scheme with the smallest bucket
 	// size of 0.1 core, max of 1000.0 cores and the relative error of HistogramRelativeError.
-	options, err := util.NewExponentialHistogramOptions(1000.0, 0.1, 1.+HistogramBucketSizeRatio, 0.1)
+	options, err := util.NewExponentialHistogramOptions(1000.0, 0.1, 1.+HistogramBucketSizeGrowth, 0.1)
 	if err != nil {
 		panic("Invalid CPU histogram options") // Should not happen.
 	}
@@ -68,7 +65,7 @@ func cpuHistogramOptions() util.HistogramOptions {
 func memoryHistogramOptions() util.HistogramOptions {
 	// Memory histograms use exponential bucketing scheme with the smallest
 	// bucket size of 10MB, max of 1TB and the relative error of HistogramRelativeError.
-	options, err := util.NewExponentialHistogramOptions(1e12, 1e7, 1.+HistogramBucketSizeRatio, 0.1)
+	options, err := util.NewExponentialHistogramOptions(1e12, 1e7, 1.+HistogramBucketSizeGrowth, 0.1)
 	if err != nil {
 		panic("Invalid memory histogram options") // Should not happen.
 	}

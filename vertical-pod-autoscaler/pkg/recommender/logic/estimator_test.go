@@ -56,9 +56,9 @@ func TestPercentileEstimator(t *testing.T) {
 			AggregateCPUUsage:    cpuHistogram,
 			AggregateMemoryPeaks: memoryPeaksHistogram,
 		})
-
-	assert.InEpsilon(t, 1000, int(resourceEstimation[model.ResourceCPU]), model.HistogramRelativeError)
-	assert.InEpsilon(t, 2e9, int(resourceEstimation[model.ResourceMemory]), model.HistogramRelativeError)
+	maxRelativeError := 0.03 // Allow 3% relative error to account for histogram rounding.
+	assert.InEpsilon(t, 1.0, model.CoresFromCPUAmount(resourceEstimation[model.ResourceCPU]), maxRelativeError)
+	assert.InEpsilon(t, 2e9, model.BytesFromMemoryAmount(resourceEstimation[model.ResourceMemory]), maxRelativeError)
 }
 
 // Verifies that the confidenceMultiplier calculates the internal
