@@ -37,14 +37,14 @@ var _ = admissionControllerE2eDescribe("Admission-controller", func() {
 		vpaCRD := newVPA(f, "hamster-vpa", &metav1.LabelSelector{
 			MatchLabels: d.Spec.Template.Labels,
 		})
-		vpaCRD.Status.Recommendation.ContainerRecommendations = []vpa_types.RecommendedContainerResources{
-			{
+		vpaCRD.Status.Recommendation = &vpa_types.RecommendedPodResources{
+			ContainerRecommendations: []vpa_types.RecommendedContainerResources{{
 				ContainerName: "hamster",
 				Target: apiv1.ResourceList{
 					apiv1.ResourceCPU:    parseQuantityOrDie("250m"),
 					apiv1.ResourceMemory: parseQuantityOrDie("200Mi"),
 				},
-			},
+			}},
 		}
 		installVPA(f, vpaCRD)
 
@@ -70,14 +70,14 @@ var _ = admissionControllerE2eDescribe("Admission-controller", func() {
 		vpaCRD := newVPA(f, "hamster-vpa", &metav1.LabelSelector{
 			MatchLabels: d.Spec.Template.Labels,
 		})
-		vpaCRD.Status.Recommendation.ContainerRecommendations = []vpa_types.RecommendedContainerResources{
-			{
+		vpaCRD.Status.Recommendation = &vpa_types.RecommendedPodResources{
+			ContainerRecommendations: []vpa_types.RecommendedContainerResources{{
 				ContainerName: "hamster",
 				Target: apiv1.ResourceList{
 					apiv1.ResourceCPU:    parseQuantityOrDie("250m"),
 					apiv1.ResourceMemory: parseQuantityOrDie("200Mi"),
 				},
-			},
+			}},
 		}
 		installVPA(f, vpaCRD)
 
@@ -100,22 +100,23 @@ var _ = admissionControllerE2eDescribe("Admission-controller", func() {
 		vpaCRD := newVPA(f, "hamster-vpa", &metav1.LabelSelector{
 			MatchLabels: d.Spec.Template.Labels,
 		})
-		vpaCRD.Status.Recommendation.ContainerRecommendations = []vpa_types.RecommendedContainerResources{
-			{
+		vpaCRD.Status.Recommendation = &vpa_types.RecommendedPodResources{
+			ContainerRecommendations: []vpa_types.RecommendedContainerResources{{
 				ContainerName: "hamster",
 				Target: apiv1.ResourceList{
 					apiv1.ResourceCPU:    parseQuantityOrDie("250m"),
 					apiv1.ResourceMemory: parseQuantityOrDie("200Mi"),
 				},
-			},
+			}},
 		}
-		vpaCRD.Spec.ResourcePolicy.ContainerPolicies = []vpa_types.ContainerResourcePolicy{{
-			ContainerName: "hamster",
-			MaxAllowed: apiv1.ResourceList{
-				apiv1.ResourceCPU:    parseQuantityOrDie("233m"),
-				apiv1.ResourceMemory: parseQuantityOrDie("150Mi"),
-			},
-		},
+		vpaCRD.Spec.ResourcePolicy = &vpa_types.PodResourcePolicy{
+			ContainerPolicies: []vpa_types.ContainerResourcePolicy{{
+				ContainerName: "hamster",
+				MaxAllowed: apiv1.ResourceList{
+					apiv1.ResourceCPU:    parseQuantityOrDie("233m"),
+					apiv1.ResourceMemory: parseQuantityOrDie("150Mi"),
+				},
+			}},
 		}
 		installVPA(f, vpaCRD)
 
@@ -138,22 +139,23 @@ var _ = admissionControllerE2eDescribe("Admission-controller", func() {
 		vpaCRD := newVPA(f, "hamster-vpa", &metav1.LabelSelector{
 			MatchLabels: d.Spec.Template.Labels,
 		})
-		vpaCRD.Status.Recommendation.ContainerRecommendations = []vpa_types.RecommendedContainerResources{
-			{
+		vpaCRD.Status.Recommendation = &vpa_types.RecommendedPodResources{
+			ContainerRecommendations: []vpa_types.RecommendedContainerResources{{
 				ContainerName: "hamster",
 				Target: apiv1.ResourceList{
 					apiv1.ResourceCPU:    parseQuantityOrDie("50m"),
 					apiv1.ResourceMemory: parseQuantityOrDie("60Mi"),
 				},
-			},
+			}},
 		}
-		vpaCRD.Spec.ResourcePolicy.ContainerPolicies = []vpa_types.ContainerResourcePolicy{{
-			ContainerName: "hamster",
-			MinAllowed: apiv1.ResourceList{
-				apiv1.ResourceCPU:    parseQuantityOrDie("90m"),
-				apiv1.ResourceMemory: parseQuantityOrDie("80Mi"),
-			},
-		},
+		vpaCRD.Spec.ResourcePolicy = &vpa_types.PodResourcePolicy{
+			ContainerPolicies: []vpa_types.ContainerResourcePolicy{{
+				ContainerName: "hamster",
+				MinAllowed: apiv1.ResourceList{
+					apiv1.ResourceCPU:    parseQuantityOrDie("90m"),
+					apiv1.ResourceMemory: parseQuantityOrDie("80Mi"),
+				},
+			}},
 		}
 		installVPA(f, vpaCRD)
 
