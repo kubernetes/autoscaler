@@ -91,7 +91,7 @@ type ContainerUsageSampleWithKey struct {
 	Container ContainerID
 }
 
-// AddOrUpdatePod udpates the state of the pod with a given PodID, if it is
+// AddOrUpdatePod updates the state of the pod with a given PodID, if it is
 // present in the cluster object. Otherwise a new pod is created and added to
 // the Cluster object.
 // If the labels of the pod have changed, it updates the links between the containers
