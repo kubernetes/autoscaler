@@ -28,6 +28,10 @@ import (
 	api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
+// CheckpointVersion should be incremented every time the format or semantics of the checkpoint
+// is changed in a way that is not compatible with the previous version.
+const CheckpointVersion string = "1"
+
 // CheckpointWriter persistently stores aggregated historical usage of containers
 // controlled by VPA objects. This state can be restored to initialize the model after restart.
 type CheckpointWriter interface {
@@ -56,6 +60,7 @@ func (writer *checkpointWriter) StoreCheckpoints(now time.Time) {
 				glog.Errorf("Cannot serialize checkpoint for vpa %v container %v. Reason: %+v", vpa.ID.VpaName, container, err)
 				continue
 			}
+			containerCheckpoint.Version = CheckpointVersion
 			checkpointName := fmt.Sprintf("%s-%s", vpa.ID.VpaName, container)
 			vpaCheckpoint := vpa_types.VerticalPodAutoscalerCheckpoint{
 				ObjectMeta: metav1.ObjectMeta{Name: checkpointName},
