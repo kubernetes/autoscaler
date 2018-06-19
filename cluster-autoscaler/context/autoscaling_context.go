@@ -139,6 +139,8 @@ type AutoscalingOptions struct {
 	NodeAutoprovisioningEnabled bool
 	// MaxAutoprovisionedNodeGroupCount is the maximum number of autoprovisioned groups in the cluster.
 	MaxAutoprovisionedNodeGroupCount int
+	// UnremovableNodeRecheckTimeout is the timeout before we check again a node that couldn't be removed before
+	UnremovableNodeRecheckTimeout time.Duration
 	// Pods with priority below cutoff are expendable. They can be killed without any consideration during scale down and they don't cause scale-up.
 	// Pods with null priority (PodPriority disabled) are non-expendable.
 	ExpendablePodsPriorityCutoff int
