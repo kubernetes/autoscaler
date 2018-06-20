@@ -179,7 +179,6 @@ will get resources as defined in your controllers (i.e. deployment or
 replicaset) and not according to previous recommendations made by VPA.
 
 To stop using Vertical Pod Autoscaling in your cluster:
-```
 * If runnning on GKE, clean up role bindings created in [Prerequisites](#prerequisites):
 ```
 kubectl delete clusterrolebinding myname-cluster-admin-binding
