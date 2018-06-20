@@ -20,6 +20,13 @@ procedure described below.
 
 # Installation
 
+### Notice on the backwards compatibility
+
+During alpha the VPA CRD object may evolve in a way that is not compatible between releases.
+If you install a new release of VPA it is safest to delete the existing VPA CRD objects.
+Note that this will happen automatically if you just use the `vpa-down.sh` script to tear down
+the old installation of VPA.
+
 ### Prerequisites
 
 * It is strongly recommended to use Kubernetes 1.9 or greater.
@@ -37,6 +44,11 @@ procedure described below.
 
   $ kubectl create clusterrolebinding myname-cluster-admin-binding --clusterrole=cluster-admin --user=myname@example.org
   Clusterrolebinding "myname-cluster-admin-binding" created
+  ```
+* If you already have another version of VPA installed in your cluster, you have to tear down
+  the existing installation first with:
+  ```
+  ./hack/vpa-down.sh
   ```
 
 ### Install command
@@ -69,8 +81,16 @@ automatically and use the same label selector as the *Deployment* uses.
 There are three modes in which *VPAs* operate:
 
 * `"Auto"`: VPA assigns resource requests on pod creation as well as updates
-  them on running pods (only if they differ significantly from the new
-  recommendation and only within Eviction API limits). This is the default setting.
+  them on existing pods using the preferred update mechanism. Currently this is
+  equivalent to `"Recreate"` (see below). Once restart free ("in-place") update
+  of pod requests is available, it may be used as the preferred update mechanism by
+  the `"Auto"` mode.
+* `"Recreate"`: VPA assigns resource requests on pod creation as well as updates
+  them on existing pods by evicting them when the requested resources differ significantly
+  from the new recommendation (respecting the Pod Distruption Budget, if defined).
+  This mode should be used rarely, only if you need to ensure that the pods are restarted
+  whenever the resource request changes. Otherwise prefer the `"Auto"` mode which may take
+  advantage of restart free updates once they are available.
 * `"Initial"`: VPA only assigns resource requests on pod creation and never changes them
   later.
 * `"Off"`: VPA does not automatically change resource requirements of the pods.
