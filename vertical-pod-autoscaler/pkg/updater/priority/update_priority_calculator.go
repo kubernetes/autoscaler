@@ -33,6 +33,9 @@ const (
 	// Pods that live for at least that long can be evicted even if their
 	// request is within the [MinRecommended...MaxRecommended] range.
 	podLifetimeUpdateThreshold = time.Hour * 12
+	// Pod that has only one container which OOMed in less than
+	// podQuickOOMThreshold since start can be evicted
+	podQuickOOMThreshold = time.Minute * 10
 )
 
 // UpdatePriorityCalculator is responsible for prioritizing updates on pods.
@@ -74,10 +77,22 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, recommendation *vpa
 
 	updatePriority := calc.getUpdatePriority(pod, processedRecommendation)
 
-	// The update is allowed in either of the following two cases:
-	// 1. the request is outside the recommended range for some container.
-	// 2. the pod lives for at least 24h and the resource diff is >= MinChangePriority.
-	if !updatePriority.outsideRecommendedRange {
+	quickOOM := false
+	if len(pod.Status.ContainerStatuses) == 1 {
+		terminationState := pod.Status.ContainerStatuses[0].LastTerminationState
+		if terminationState.Terminated != nil &&
+			terminationState.Terminated.Reason == "OOMKilled" &&
+			terminationState.Terminated.FinishedAt.Time.Sub(terminationState.Terminated.StartedAt.Time) < podQuickOOMThreshold {
+			quickOOM = true
+			glog.V(2).Infof("quick OOM detected in pod %v", pod.Name)
+		}
+	}
+
+	// The update is allowed in following cases:
+	// - the request is outside the recommended range for some container.
+	// - the pod lives for at least 24h and the resource diff is >= MinChangePriority.
+	// - there is only one container in a pod and it OOMed in less than podQuickOOMThreshold
+	if !updatePriority.outsideRecommendedRange && !quickOOM {
 		if pod.Status.StartTime == nil {
 			// TODO: Set proper condition on the VPA.
 			glog.V(2).Infof("not updating pod %v, missing field pod.Status.StartTime", pod.Name)
