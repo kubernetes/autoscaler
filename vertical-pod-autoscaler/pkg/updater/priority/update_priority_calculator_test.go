@@ -25,6 +25,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -236,6 +237,103 @@ func TestUpdateShortlivedPods(t *testing.T) {
 	}
 	result := calculator.GetSortedPods()
 	assert.Exactly(t, []*apiv1.Pod{pods[2]}, result, "Only POD3 should be updated")
+}
+
+func TestUpdatePodWithQuickOOM(t *testing.T) {
+	calculator := NewUpdatePriorityCalculator(
+		nil, &UpdateConfig{MinChangePriority: 0.5}, &test.FakeRecommendationProcessor{})
+
+	pod := test.BuildTestPod("POD1", containerName, "4", "", nil, nil)
+
+	// Pretend that the test pod started 11 hours ago.
+	timestampNow := pod.Status.StartTime.Time.Add(time.Hour * 11)
+
+	pod.Status.ContainerStatuses = []apiv1.ContainerStatus{
+		{
+			LastTerminationState: apiv1.ContainerState{
+				Terminated: &apiv1.ContainerStateTerminated{
+					Reason:     "OOMKilled",
+					FinishedAt: metav1.NewTime(timestampNow.Add(-1 * 3 * time.Minute)),
+					StartedAt:  metav1.NewTime(timestampNow.Add(-1 * 5 * time.Minute)),
+				},
+			},
+		},
+	}
+
+	// Pod is within the recommended range.
+	recommendation := test.Recommendation().WithContainer(containerName).
+		WithTarget("5", "").
+		WithLowerBound("1", "").
+		WithUpperBound("6", "").Get()
+
+	calculator.AddPod(pod, recommendation, timestampNow)
+	result := calculator.GetSortedPods()
+	assert.Exactly(t, []*apiv1.Pod{pod}, result, "Pod should be updated")
+}
+
+func TestDontUpdatePodWithOOMAfterLongRun(t *testing.T) {
+	calculator := NewUpdatePriorityCalculator(
+		nil, &UpdateConfig{MinChangePriority: 0.5}, &test.FakeRecommendationProcessor{})
+
+	pod := test.BuildTestPod("POD1", containerName, "4", "", nil, nil)
+
+	// Pretend that the test pod started 11 hours ago.
+	timestampNow := pod.Status.StartTime.Time.Add(time.Hour * 11)
+
+	pod.Status.ContainerStatuses = []apiv1.ContainerStatus{
+		{
+			LastTerminationState: apiv1.ContainerState{
+				Terminated: &apiv1.ContainerStateTerminated{
+					Reason:     "OOMKilled",
+					FinishedAt: metav1.NewTime(timestampNow.Add(-1 * 3 * time.Minute)),
+					StartedAt:  metav1.NewTime(timestampNow.Add(-1 * 60 * time.Minute)),
+				},
+			},
+		},
+	}
+
+	// Pod is within the recommended range.
+	recommendation := test.Recommendation().WithContainer(containerName).
+		WithTarget("5", "").
+		WithLowerBound("1", "").
+		WithUpperBound("6", "").Get()
+
+	calculator.AddPod(pod, recommendation, timestampNow)
+	result := calculator.GetSortedPods()
+	assert.Exactly(t, []*apiv1.Pod{}, result, "Pod shouldn't be updated")
+}
+
+func TestDontUpdatePodWithOOMOnlyOnOneContainer(t *testing.T) {
+	calculator := NewUpdatePriorityCalculator(
+		nil, &UpdateConfig{MinChangePriority: 0.5}, &test.FakeRecommendationProcessor{})
+
+	pod := test.BuildTestPod("POD1", containerName, "4", "", nil, nil)
+
+	// Pretend that the test pod started 11 hours ago.
+	timestampNow := pod.Status.StartTime.Time.Add(time.Hour * 11)
+
+	pod.Status.ContainerStatuses = []apiv1.ContainerStatus{
+		{
+			LastTerminationState: apiv1.ContainerState{
+				Terminated: &apiv1.ContainerStateTerminated{
+					Reason:     "OOMKilled",
+					FinishedAt: metav1.NewTime(timestampNow.Add(-1 * 3 * time.Minute)),
+					StartedAt:  metav1.NewTime(timestampNow.Add(-1 * 5 * time.Minute)),
+				},
+			},
+		},
+		{},
+	}
+
+	// Pod is within the recommended range.
+	recommendation := test.Recommendation().WithContainer(containerName).
+		WithTarget("5", "").
+		WithLowerBound("1", "").
+		WithUpperBound("6", "").Get()
+
+	calculator.AddPod(pod, recommendation, timestampNow)
+	result := calculator.GetSortedPods()
+	assert.Exactly(t, []*apiv1.Pod{}, result, "Pod shouldn't be updated")
 }
 
 func TestNoPods(t *testing.T) {
