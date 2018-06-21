@@ -44,21 +44,21 @@ func TestLinearHistogramOptions(t *testing.T) {
 
 // Test all methods of ExponentialHistogramOptions using a sample bucketing scheme.
 func TestExponentialHistogramOptions(t *testing.T) {
-	o, err := NewExponentialHistogramOptions(100.0, 10.0, 2.0, epsilon)
+	o, err := NewExponentialHistogramOptions(500.0, 40.0, 1.5, epsilon)
 	assert.Nil(t, err)
 	assert.Equal(t, epsilon, o.Epsilon())
 	assert.Equal(t, 6, o.NumBuckets())
 
 	assert.Equal(t, 0.0, o.GetBucketStart(0))
-	assert.Equal(t, 10.0, o.GetBucketStart(1))
-	assert.Equal(t, 20.0, o.GetBucketStart(2))
-	assert.Equal(t, 40.0, o.GetBucketStart(3))
-	assert.Equal(t, 80.0, o.GetBucketStart(4))
-	assert.Equal(t, 160.0, o.GetBucketStart(5))
+	assert.Equal(t, 40.0, o.GetBucketStart(1))
+	assert.Equal(t, 100.0, o.GetBucketStart(2))
+	assert.Equal(t, 190.0, o.GetBucketStart(3))
+	assert.Equal(t, 325.0, o.GetBucketStart(4))
+	assert.Equal(t, 527.5, o.GetBucketStart(5))
 
 	assert.Equal(t, 0, o.FindBucket(-1.0))
-	assert.Equal(t, 0, o.FindBucket(9.99))
-	assert.Equal(t, 1, o.FindBucket(10.0))
-	assert.Equal(t, 2, o.FindBucket(20.0))
-	assert.Equal(t, 5, o.FindBucket(200.0))
+	assert.Equal(t, 0, o.FindBucket(39.99))
+	assert.Equal(t, 1, o.FindBucket(40.0))
+	assert.Equal(t, 2, o.FindBucket(100.0))
+	assert.Equal(t, 5, o.FindBucket(900.0))
 }
