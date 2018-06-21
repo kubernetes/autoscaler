@@ -49,7 +49,7 @@ func main() {
 	certs := initCerts(*certsDir)
 	stopChannel := make(chan struct{})
 	vpaLister := newReadyVPALister(stopChannel)
-	as := logic.NewAdmissionServer(logic.NewRecommendationProvider(vpaLister, vpa_api_util.NewCappingRecommendationProcessor()))
+	as := logic.NewAdmissionServer(logic.NewRecommendationProvider(vpaLister, vpa_api_util.NewCappingRecommendationProcessor()), logic.NewDefaultPodPreProcessor())
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		as.Serve(w, r)
 	})
