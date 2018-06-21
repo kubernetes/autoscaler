@@ -112,12 +112,16 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, recommendation *vpa
 }
 
 // GetSortedPods returns a list of pods ordered by update priority (highest update priority first)
-func (calc *UpdatePriorityCalculator) GetSortedPods() []*apiv1.Pod {
+func (calc *UpdatePriorityCalculator) GetSortedPods(admission PodEvicionAdmission) []*apiv1.Pod {
 	sort.Sort(byPriority(calc.pods))
 
-	result := make([]*apiv1.Pod, len(calc.pods))
-	for i, podPrio := range calc.pods {
-		result[i] = podPrio.pod
+	result := []*apiv1.Pod{}
+	for _, podPrio := range calc.pods {
+		if admission == nil || admission.Admit(podPrio.pod, podPrio.recommendation) {
+			result = append(result, podPrio.pod)
+		} else {
+			glog.V(2).Infof("pod removed from update queue by PodEvicionAdmission: %v", podPrio.pod.Name)
+		}
 	}
 
 	return result
@@ -166,6 +170,7 @@ func (calc *UpdatePriorityCalculator) getUpdatePriority(pod *apiv1.Pod, recommen
 		outsideRecommendedRange: outsideRecommendedRange,
 		scaleUp:                 scaleUp,
 		resourceDiff:            resourceDiff,
+		recommendation:          recommendation,
 	}
 }
 
@@ -177,6 +182,8 @@ type podPriority struct {
 	scaleUp bool
 	// Relative difference between the total requested and total recommended resources.
 	resourceDiff float64
+	// Recommendation for pod
+	recommendation *vpa_types.RecommendedPodResources
 }
 
 type byPriority []podPriority
