@@ -34,11 +34,12 @@ import (
 // AdmissionServer is an admission webhook server that modifies pod resources request based on VPA recommendation
 type AdmissionServer struct {
 	recommendationProvider RecommendationProvider
+	podPreProcessor        PodPreProcessor
 }
 
 // NewAdmissionServer constructs new AdmissionServer
-func NewAdmissionServer(recommendationProvider RecommendationProvider) *AdmissionServer {
-	return &AdmissionServer{recommendationProvider}
+func NewAdmissionServer(recommendationProvider RecommendationProvider, podPreProcessor PodPreProcessor) *AdmissionServer {
+	return &AdmissionServer{recommendationProvider, podPreProcessor}
 }
 
 type patchRecord struct {
@@ -58,6 +59,10 @@ func (s *AdmissionServer) getPatchesForPodResourceRequest(raw []byte, namespace 
 	}
 	glog.V(4).Infof("Admitting pod %v", pod.ObjectMeta)
 	containersResources, vpaName, err := s.recommendationProvider.GetContainersResourcesForPod(&pod)
+	if err != nil {
+		return nil, err
+	}
+	pod, err = s.podPreProcessor.Process(pod)
 	if err != nil {
 		return nil, err
 	}
