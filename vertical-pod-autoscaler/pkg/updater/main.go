@@ -47,7 +47,7 @@ func main() {
 	// TODO monitoring
 
 	kubeClient, vpaClient := createKubeClients()
-	updater := updater.NewUpdater(kubeClient, vpaClient, *minReplicas, *evictionToleranceFraction, vpa_api_util.NewCappingRecommendationProcessor())
+	updater := updater.NewUpdater(kubeClient, vpaClient, *minReplicas, *evictionToleranceFraction, vpa_api_util.NewCappingRecommendationProcessor(), nil)
 	for {
 		select {
 		case <-time.After(*updaterInterval):
