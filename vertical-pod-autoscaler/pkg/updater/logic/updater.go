@@ -47,20 +47,26 @@ type updater struct {
 	podLister               v1lister.PodLister
 	evictionFactory         eviction.PodsEvictionRestrictionFactory
 	recommendationProcessor vpa_api_util.RecommendationProcessor
+	evictionAdmission       priority.PodEvicionAdmission
 }
 
 // NewUpdater creates Updater with given configuration
-func NewUpdater(kubeClient kube_client.Interface, vpaClient *vpa_clientset.Clientset, minReplicasForEvicition int, evictionToleranceFraction float64, recommendationProcessor vpa_api_util.RecommendationProcessor) Updater {
+func NewUpdater(kubeClient kube_client.Interface, vpaClient *vpa_clientset.Clientset, minReplicasForEvicition int, evictionToleranceFraction float64, recommendationProcessor vpa_api_util.RecommendationProcessor, evictionAdmission priority.PodEvicionAdmission) Updater {
 	return &updater{
 		vpaLister:               vpa_api_util.NewAllVpasLister(vpaClient, make(chan struct{})),
 		podLister:               newPodLister(kubeClient),
 		evictionFactory:         eviction.NewPodsEvictionRestrictionFactory(kubeClient, minReplicasForEvicition, evictionToleranceFraction),
 		recommendationProcessor: recommendationProcessor,
+		evictionAdmission:       evictionAdmission,
 	}
 }
 
 // RunOnce represents single iteration in the main-loop of Updater
 func (u *updater) RunOnce() {
+	if u.evictionAdmission != nil {
+		u.evictionAdmission.LoopInit()
+	}
+
 	vpaList, err := u.vpaLister.List(labels.Everything())
 	if err != nil {
 		glog.Fatalf("failed get VPA list: %v", err)
@@ -123,7 +129,7 @@ func (u *updater) getPodsForUpdate(pods []*apiv1.Pod, vpa *vpa_types.VerticalPod
 		priorityCalculator.AddPod(pod, recommendation, time.Now())
 	}
 
-	return priorityCalculator.GetSortedPods()
+	return priorityCalculator.GetSortedPods(u.evictionAdmission)
 }
 
 func filterNonEvictablePods(pods []*apiv1.Pod, evictionRestriciton eviction.PodsEvictionRestriction) []*apiv1.Pod {
