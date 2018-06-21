@@ -73,6 +73,14 @@ func TestExtractTaintsFromAsg(t *testing.T) {
 			Key:   aws.String("bar"),
 			Value: aws.String("baz"),
 		},
+		{
+			Key:   aws.String("k8s.io/cluster-autoscaler/node-template/taint/dedicated"),
+			Value: aws.String(""),
+		},
+		{
+			Key:   aws.String("k8s.io/cluster-autoscaler/node-template/taint/dedicated"),
+			Value: aws.String("some_value"),
+		},
 	}
 
 	expectedTaints := []apiv1.Taint{
