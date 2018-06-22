@@ -96,8 +96,16 @@ var (
 		"https://www.googleapis.com/auth/devstorage.read_only",
 		"https://www.googleapis.com/auth/service.management.readonly",
 		"https://www.googleapis.com/auth/servicecontrol"}
-	supportedResources = map[string]bool{cloudprovider.ResourceNameCores: true, cloudprovider.ResourceNameMemory: true}
+	supportedResources = map[string]bool{}
 )
+
+func init() {
+	supportedResources[cloudprovider.ResourceNameCores] = true
+	supportedResources[cloudprovider.ResourceNameMemory] = true
+	for _, gpuType := range supportedGpuTypes {
+		supportedResources[gpuType] = true
+	}
+}
 
 type migInformation struct {
 	config   *Mig
