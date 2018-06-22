@@ -10,6 +10,7 @@ that they can be deleted and their pods will be easily placed on some other, exi
 # FAQ/Documentation
 
 Is available [HERE](./FAQ.md).
+A full list of configurable parameters is available [HERE](./PARAMS.md).
 
 # Releases
 
