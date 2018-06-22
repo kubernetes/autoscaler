@@ -1092,7 +1092,7 @@ func (m *gceManagerImpl) fetchResourceLimiter() error {
 		maxLimits := make(map[string]int64)
 		for _, limit := range cluster.Autoscaling.ResourceLimits {
 			if _, found := supportedResources[limit.ResourceType]; !found {
-				glog.Warning("Unsupported limit defined %s: %d - %d", limit.ResourceType, limit.Minimum, limit.Maximum)
+				glog.Warningf("Unsupported limit defined %s: %d - %d", limit.ResourceType, limit.Minimum, limit.Maximum)
 			}
 			minLimits[limit.ResourceType] = limit.Minimum
 			maxLimits[limit.ResourceType] = limit.Maximum
