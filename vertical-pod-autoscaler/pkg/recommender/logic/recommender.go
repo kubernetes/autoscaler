@@ -25,9 +25,9 @@ import (
 )
 
 var (
-	safetyMarginFraction         = flag.Float64("safety-margin-fraction", 0.15, `Fraction of usage added as the safety margin to the recommended request`)
-	minCPUSafetyMarginMillicores = flag.Float64("safety-margin-min-cpu-millicores", 200, `Minimum CPU margin added to the recommended request`)
-	minMemorySafetyMarginMb      = flag.Float64("safety-margin-min-memory-mb", 300, `Minimum memory margin added to the recommended request`)
+	safetyMarginFraction = flag.Float64("recommendation-margin-fraction", 0.15, `Fraction of usage added as the safety margin to the recommended request`)
+	podMinCPUMillicores  = flag.Float64("pod-recommendation-min-cpu-millicores", 200, `Minimum CPU recommendation for a pod`)
+	podMinMemoryMb       = flag.Float64("pod-recommendation-min-memory-mb", 300, `Minimum memory recommendation for a pod`)
 )
 
 // PodResourceRecommender computes resource recommendation for a Vpa object.
@@ -55,33 +55,48 @@ type podResourceRecommender struct {
 	upperBoundEstimator ResourceEstimator
 }
 
-// NewPodResourceRecommender returns a new PodResourceRecommender which is an
-// aggregation of three ResourceEstimators, one for each of the target, min
-// and max recommended resources.
-func NewPodResourceRecommender(
-	targetEstimator ResourceEstimator,
-	lowerBoundEstimator ResourceEstimator,
-	upperBoundEstimator ResourceEstimator) PodResourceRecommender {
-	return &podResourceRecommender{targetEstimator, lowerBoundEstimator, upperBoundEstimator}
-}
-
 // Returns recommended resources for a given Vpa object.
 func (r *podResourceRecommender) GetRecommendedPodResources(vpa *model.Vpa) RecommendedPodResources {
 	containerNameToAggregateStateMap := vpa.AggregateStateByContainerName()
-	var recommendation = make(RecommendedPodResources)
+	filteredContainerNameToAggregateStateMap := make(model.ContainerNameToAggregateStateMap)
+
 	for containerName, aggregatedContainerState := range containerNameToAggregateStateMap {
 		containerResourcePolicy := api_utils.GetContainerResourcePolicy(containerName, vpa.ResourcePolicy)
 		autoscalingDisabled := containerResourcePolicy != nil && containerResourcePolicy.Mode != nil &&
 			*containerResourcePolicy.Mode == vpa_types.ContainerScalingModeOff
 		if !autoscalingDisabled && aggregatedContainerState.TotalSamplesCount > 0 {
-			recommendation[containerName] = r.getRecommendedContainerResources(aggregatedContainerState)
+			filteredContainerNameToAggregateStateMap[containerName] = aggregatedContainerState
 		}
+	}
+	return r.getRecommendedContainerResources(filteredContainerNameToAggregateStateMap)
+}
+
+func (r *podResourceRecommender) getRecommendedContainerResources(containerNameToAggregateStateMap model.ContainerNameToAggregateStateMap) RecommendedPodResources {
+	var recommendation = make(RecommendedPodResources)
+	if len(containerNameToAggregateStateMap) == 0 {
+		return recommendation
+	}
+
+	fraction := 1.0 / float64(len(containerNameToAggregateStateMap))
+	minResources := model.Resources{
+		model.ResourceCPU:    model.ScaleResource(model.CPUAmountFromCores(*podMinCPUMillicores*0.001), fraction),
+		model.ResourceMemory: model.ScaleResource(model.MemoryAmountFromBytes(*podMinMemoryMb*1024*1024), fraction),
+	}
+
+	recommender := &podResourceRecommender{
+		WithMinResources(minResources, r.targetEstimator),
+		WithMinResources(minResources, r.lowerBoundEstimator),
+		WithMinResources(minResources, r.upperBoundEstimator),
+	}
+
+	for containerName, aggregatedContainerState := range containerNameToAggregateStateMap {
+		recommendation[containerName] = recommender.estimateContainerResources(aggregatedContainerState)
 	}
 	return recommendation
 }
 
 // Takes AggregateContainerState and returns a container recommendation.
-func (r *podResourceRecommender) getRecommendedContainerResources(s *model.AggregateContainerState) RecommendedContainerResources {
+func (r *podResourceRecommender) estimateContainerResources(s *model.AggregateContainerState) RecommendedContainerResources {
 	return RecommendedContainerResources{
 		r.targetEstimator.GetResourceEstimation(s),
 		r.lowerBoundEstimator.GetResourceEstimation(s),
@@ -103,13 +118,9 @@ func CreatePodResourceRecommender() PodResourceRecommender {
 	lowerBoundEstimator := NewPercentileEstimator(lowerBoundCPUPercentile, lowerBoundMemoryPeaksPercentile)
 	upperBoundEstimator := NewPercentileEstimator(upperBoundCPUPercentile, upperBoundMemoryPeaksPercentile)
 
-	minSafetyMargin := model.Resources{
-		model.ResourceCPU:    model.CPUAmountFromCores(*minCPUSafetyMarginMillicores * 0.001),
-		model.ResourceMemory: model.MemoryAmountFromBytes(*minMemorySafetyMarginMb * 1024 * 1024),
-	}
-	targetEstimator = WithSafetyMargin(*safetyMarginFraction, minSafetyMargin, targetEstimator)
-	lowerBoundEstimator = WithSafetyMargin(*safetyMarginFraction, minSafetyMargin, lowerBoundEstimator)
-	upperBoundEstimator = WithSafetyMargin(*safetyMarginFraction, minSafetyMargin, upperBoundEstimator)
+	targetEstimator = WithMargin(*safetyMarginFraction, targetEstimator)
+	lowerBoundEstimator = WithMargin(*safetyMarginFraction, lowerBoundEstimator)
+	upperBoundEstimator = WithMargin(*safetyMarginFraction, upperBoundEstimator)
 
 	// Apply confidence multiplier to the upper bound estimator. This means
 	// that the updater will be less eager to evict pods with short history
@@ -138,8 +149,8 @@ func CreatePodResourceRecommender() PodResourceRecommender {
 	// 60m history  : *0.95
 	lowerBoundEstimator = WithConfidenceMultiplier(0.001, -2.0, lowerBoundEstimator)
 
-	return NewPodResourceRecommender(
+	return &podResourceRecommender{
 		targetEstimator,
 		lowerBoundEstimator,
-		upperBoundEstimator)
+		upperBoundEstimator}
 }
