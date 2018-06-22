@@ -368,3 +368,13 @@ func TestAdmission(t *testing.T) {
 	result := calculator.GetSortedPods(&pod1Admission{})
 	assert.Exactly(t, []*apiv1.Pod{pod1}, result, "Wrong priority order")
 }
+
+// Verify getUpdatePriorty does not encounter a NPE when there is no
+// recommendation for a container.
+func TestNoRecommendationForContainer(t *testing.T) {
+	calculator := NewUpdatePriorityCalculator(nil, nil, &test.FakeRecommendationProcessor{})
+	pod := test.BuildTestPod("POD1", containerName, "5", "10", nil, nil)
+
+	result := calculator.getUpdatePriority(pod, nil)
+	assert.NotNil(t, result)
+}
