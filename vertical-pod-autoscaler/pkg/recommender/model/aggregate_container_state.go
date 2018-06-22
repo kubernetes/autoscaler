@@ -14,6 +14,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// VPA collects CPU and memory usage measurements from all containers running in
+// the cluster and aggregates them in memory in structures called
+// AggregateContainerState.
+// During aggregation the usage samples are grouped together by the key called
+// AggregateStateKey and stored in structures such as histograms of CPU and
+// memory usage, that are parts of the AggregateContainerState.
+//
+// The AggregateStateKey consists of the container name, the namespace and the
+// set of labels on the pod the container belongs to. In other words, whenever
+// two samples come from containers with the same name, in the same namespace
+// and with the same pod labels, they end up in the same histogram.
+//
+// Recall that VPA produces one recommendation for all containers with a given
+// name and namespace, having pod labels that match a given selector. Therefore
+// for each VPA object and container name the recommender has to take all
+// matching AggregateContainerStates and further aggregate them together, in
+// order to obtain the final aggregation that is the input to the recommender
+// function.
+
 package model
 
 import (
