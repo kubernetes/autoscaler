@@ -45,10 +45,14 @@ type percentileEstimator struct {
 	memoryPercentile float64
 }
 
-type safetyMargin struct {
+type marginEstimator struct {
 	marginFraction float64
-	minMargin      model.Resources
 	baseEstimator  ResourceEstimator
+}
+
+type minResourcesEstimator struct {
+	minResources  model.Resources
+	baseEstimator ResourceEstimator
 }
 
 type confidenceMultiplier struct {
@@ -67,11 +71,16 @@ func NewPercentileEstimator(cpuPercentile float64, memoryPercentile float64) Res
 	return &percentileEstimator{cpuPercentile, memoryPercentile}
 }
 
-// WithSafetyMargin returns a given ResourceEstimator with safetyMargin applied.
-// The returned resources are equal to the original resources plus:
-//     max(originalResource * marginFraction, minMargin).
-func WithSafetyMargin(marginFraction float64, minMargin model.Resources, baseEstimator ResourceEstimator) ResourceEstimator {
-	return &safetyMargin{marginFraction, minMargin, baseEstimator}
+// WithMargin returns a given ResourceEstimator with margin applied.
+// The returned resources are equal to the original resources plus (originalResource * marginFraction)
+func WithMargin(marginFraction float64, baseEstimator ResourceEstimator) ResourceEstimator {
+	return &marginEstimator{marginFraction, baseEstimator}
+}
+
+// WithMinResources returns a given ResourceEstimator with minResources applied.
+// The returned resources are equal to the max(original resources, minResources)
+func WithMinResources(minResources model.Resources, baseEstimator ResourceEstimator) ResourceEstimator {
+	return &minResourcesEstimator{minResources, baseEstimator}
 }
 
 // WithConfidenceMultiplier returns a given ResourceEstimator with confidenceMultiplier applied.
@@ -126,18 +135,24 @@ func (e *confidenceMultiplier) GetResourceEstimation(s *model.AggregateContainer
 	return scaledResources
 }
 
-// Returns resources computed by the underlying estimator with the additional
-// "safety margin" applied. Each resource is transformed as follows:
-//     resource = originalResource + max(originalResource * marginFraction, minMargin).
-func (e *safetyMargin) GetResourceEstimation(s *model.AggregateContainerState) model.Resources {
+func (e *marginEstimator) GetResourceEstimation(s *model.AggregateContainerState) model.Resources {
 	originalResources := e.baseEstimator.GetResourceEstimation(s)
 	newResources := make(model.Resources)
 	for resource, resourceAmount := range originalResources {
 		margin := model.ScaleResource(resourceAmount, e.marginFraction)
-		if margin < e.minMargin[resource] {
-			margin = e.minMargin[resource]
-		}
 		newResources[resource] = originalResources[resource] + margin
+	}
+	return newResources
+}
+
+func (e *minResourcesEstimator) GetResourceEstimation(s *model.AggregateContainerState) model.Resources {
+	originalResources := e.baseEstimator.GetResourceEstimation(s)
+	newResources := make(model.Resources)
+	for resource, resourceAmount := range originalResources {
+		if resourceAmount < e.minResources[resource] {
+			resourceAmount = e.minResources[resource]
+		}
+		newResources[resource] = resourceAmount
 	}
 	return newResources
 }
