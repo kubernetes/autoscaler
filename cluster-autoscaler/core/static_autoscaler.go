@@ -338,12 +338,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 
 			// We want to delete unneeded Node Groups only if there was no recent scale up,
 			// and there is no current delete in progress and there was no recent errors.
-			if a.AutoscalingContext.NodeAutoprovisioningEnabled {
-				err := cleanUpNodeAutoprovisionedGroups(a.AutoscalingContext.CloudProvider, a.AutoscalingContext.LogRecorder)
-				if err != nil {
-					glog.Warningf("Failed to clean up unneeded node groups: %v", err)
-				}
-			}
+			a.processors.NodeGroupManager.RemoveUnneededNodeGroups(autoscalingContext)
 
 			scaleDownStart := time.Now()
 			metrics.UpdateLastTime(metrics.ScaleDown, scaleDownStart)

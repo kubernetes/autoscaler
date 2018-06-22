@@ -57,3 +57,41 @@ func (p *AutoprovisioningNodeGroupManager) CreateNodeGroup(context *context.Auto
 	metrics.RegisterNodeGroupCreation()
 	return nodeGroup, nil
 }
+
+// RemoveUnneededNodeGroups removes node groups that are not needed anymore.
+func (p *AutoprovisioningNodeGroupManager) RemoveUnneededNodeGroups(context *context.AutoscalingContext) error {
+	if !context.AutoscalingOptions.NodeAutoprovisioningEnabled {
+		return nil
+	}
+	nodeGroups := context.CloudProvider.NodeGroups()
+	for _, nodeGroup := range nodeGroups {
+		if !nodeGroup.Autoprovisioned() {
+			continue
+		}
+		targetSize, err := nodeGroup.TargetSize()
+		if err != nil {
+			return err
+		}
+		if targetSize > 0 {
+			continue
+		}
+		nodes, err := nodeGroup.Nodes()
+		if err != nil {
+			return err
+		}
+		if len(nodes) > 0 {
+			continue
+		}
+		ngId := nodeGroup.Id()
+		if err := nodeGroup.Delete(); err != nil {
+			context.LogRecorder.Eventf(apiv1.EventTypeWarning, "FailedToDeleteNodeGroup",
+				"NodeAutoprovisioning: attempt to delete node group %v failed: %v", ngId, err)
+			// TODO(maciekpytel): add some metric here after figuring out failure scenarios
+			return err
+		}
+		context.LogRecorder.Eventf(apiv1.EventTypeNormal, "DeletedNodeGroup",
+			"NodeAutoprovisioning: removed node group %v", ngId)
+		metrics.RegisterNodeGroupDeletion()
+	}
+	return nil
+}
