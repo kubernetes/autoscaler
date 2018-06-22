@@ -36,6 +36,14 @@ type cappingRecommendationProcessor struct{}
 func (c *cappingRecommendationProcessor) Apply(
 	podRecommendation *vpa_types.RecommendedPodResources, policy *vpa_types.PodResourcePolicy, pod *apiv1.Pod) (*vpa_types.RecommendedPodResources, error) {
 
+	if podRecommendation == nil && policy == nil {
+		// If there is no recommendation and no policies have been defined then no recommendation can be computed.
+		return nil, nil
+	}
+	if podRecommendation == nil {
+		// Policies have been specified. Create an empty recommendation so that the policies can be applied correctly.
+		podRecommendation = new(vpa_types.RecommendedPodResources)
+	}
 	updatedRecommendations := []vpa_types.RecommendedContainerResources{}
 	for _, containerRecommendation := range podRecommendation.ContainerRecommendations {
 		container := getContainer(containerRecommendation.ContainerName, pod)
