@@ -297,16 +297,18 @@ func extractTaintsFromAsg(tags []*autoscaling.TagDescription) []apiv1.Taint {
 		k := *tag.Key
 		v := *tag.Value
 		// The tag value must be in the format <tag>:NoSchedule
-		r, _ := regexp.Compile("(.*):NoSchedule")
+		r, _ := regexp.Compile("(.*):(?:NoSchedule|NoExecute|PreferNoSchedule)")
 		if r.MatchString(v) {
 			splits := strings.Split(k, "k8s.io/cluster-autoscaler/node-template/taint/")
 			if len(splits) > 1 {
 				values := strings.SplitN(v, ":", 2)
-				taints = append(taints, apiv1.Taint{
-					Key:    splits[1],
-					Value:  values[0],
-					Effect: apiv1.TaintEffect(values[1]),
-				})
+				if len(values) > 1 {
+					taints = append(taints, apiv1.Taint{
+						Key:    splits[1],
+						Value:  values[0],
+						Effect: apiv1.TaintEffect(values[1]),
+					})
+				}
 			}
 		}
 	}

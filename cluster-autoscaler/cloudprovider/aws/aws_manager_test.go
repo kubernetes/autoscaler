@@ -70,15 +70,23 @@ func TestExtractTaintsFromAsg(t *testing.T) {
 			Value: aws.String("foo:NoSchedule"),
 		},
 		{
+			Key:   aws.String("k8s.io/cluster-autoscaler/node-template/taint/group"),
+			Value: aws.String("bar:NoExecute"),
+		},
+		{
+			Key:   aws.String("k8s.io/cluster-autoscaler/node-template/taint/app"),
+			Value: aws.String("fizz:PreferNoSchedule"),
+		},
+		{
 			Key:   aws.String("bar"),
 			Value: aws.String("baz"),
 		},
 		{
-			Key:   aws.String("k8s.io/cluster-autoscaler/node-template/taint/dedicated"),
+			Key:   aws.String("k8s.io/cluster-autoscaler/node-template/taint/blank"),
 			Value: aws.String(""),
 		},
 		{
-			Key:   aws.String("k8s.io/cluster-autoscaler/node-template/taint/dedicated"),
+			Key:   aws.String("k8s.io/cluster-autoscaler/node-template/taint/nosplit"),
 			Value: aws.String("some_value"),
 		},
 	}
@@ -89,10 +97,20 @@ func TestExtractTaintsFromAsg(t *testing.T) {
 			Value:  "foo",
 			Effect: apiv1.TaintEffectNoSchedule,
 		},
+		{
+			Key:    "group",
+			Value:  "bar",
+			Effect: apiv1.TaintEffectNoExecute,
+		},
+		{
+			Key:    "app",
+			Value:  "fizz",
+			Effect: apiv1.TaintEffectPreferNoSchedule,
+		},
 	}
 
 	taints := extractTaintsFromAsg(tags)
-	assert.Equal(t, 1, len(taints))
+	assert.Equal(t, 3, len(taints))
 	assert.Equal(t, makeTaintSet(expectedTaints), makeTaintSet(taints))
 }
 
