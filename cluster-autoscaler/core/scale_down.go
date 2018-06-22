@@ -26,7 +26,6 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
-	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
@@ -1019,40 +1018,6 @@ func deleteNodeFromCloudProvider(node *apiv1.Node, cloudProvider cloudprovider.C
 
 func hasNoScaleDownAnnotation(node *apiv1.Node) bool {
 	return node.Annotations[ScaleDownDisabledKey] == "true"
-}
-
-func cleanUpNodeAutoprovisionedGroups(cloudProvider cloudprovider.CloudProvider, logRecorder *utils.LogEventRecorder) error {
-	nodeGroups := cloudProvider.NodeGroups()
-	for _, nodeGroup := range nodeGroups {
-		if !nodeGroup.Autoprovisioned() {
-			continue
-		}
-		targetSize, err := nodeGroup.TargetSize()
-		if err != nil {
-			return err
-		}
-		if targetSize > 0 {
-			continue
-		}
-		nodes, err := nodeGroup.Nodes()
-		if err != nil {
-			return err
-		}
-		if len(nodes) > 0 {
-			continue
-		}
-		ngId := nodeGroup.Id()
-		if err := nodeGroup.Delete(); err != nil {
-			logRecorder.Eventf(apiv1.EventTypeWarning, "FailedToDeleteNodeGroup",
-				"NodeAutoprovisioning: attempt to delete node group %v failed: %v", ngId, err)
-			// TODO(maciekpytel): add some metric here after figuring out failure scenarios
-			return err
-		}
-		logRecorder.Eventf(apiv1.EventTypeNormal, "DeletedNodeGroup",
-			"NodeAutoprovisioning: removed node group %v", ngId)
-		metrics.RegisterNodeGroupDeletion()
-	}
-	return nil
 }
 
 const (
