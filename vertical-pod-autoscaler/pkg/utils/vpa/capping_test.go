@@ -127,3 +127,50 @@ func TestRecommendationCappedToMinMaxPolicy(t *testing.T) {
 		apiv1.ResourceMemory: *resource.NewScaledQuantity(4300, 1),
 	}, res.ContainerRecommendations[0].LowerBound)
 }
+
+var podRecommendation *vpa_types.RecommendedPodResources = &vpa_types.RecommendedPodResources{
+	ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+		{
+			ContainerName: "ctr-name",
+			Target: apiv1.ResourceList{
+				apiv1.ResourceCPU:    *resource.NewScaledQuantity(5, 1),
+				apiv1.ResourceMemory: *resource.NewScaledQuantity(10, 1)},
+			LowerBound: apiv1.ResourceList{
+				apiv1.ResourceCPU:    *resource.NewScaledQuantity(50, 1),
+				apiv1.ResourceMemory: *resource.NewScaledQuantity(100, 1)},
+			UpperBound: apiv1.ResourceList{
+				apiv1.ResourceCPU:    *resource.NewScaledQuantity(150, 1),
+				apiv1.ResourceMemory: *resource.NewScaledQuantity(200, 1)},
+		},
+	},
+}
+var applyTestCases = []struct {
+	PodRecommendation         *vpa_types.RecommendedPodResources
+	Policy                    *vpa_types.PodResourcePolicy
+	ExpectedPodRecommendation *vpa_types.RecommendedPodResources
+	ExpectedError             error
+}{
+	{
+		PodRecommendation: nil,
+		Policy:            nil,
+		ExpectedPodRecommendation: nil,
+		ExpectedError:             nil,
+	},
+	{
+		PodRecommendation: podRecommendation,
+		Policy:            nil,
+		ExpectedPodRecommendation: podRecommendation,
+		ExpectedError:             nil,
+	},
+}
+
+func TestApply(t *testing.T) {
+	pod := test.BuildTestPod("pod1", "ctr-name", "", "", nil, nil)
+
+	for _, testCase := range applyTestCases {
+		res, err := NewCappingRecommendationProcessor().Apply(
+			testCase.PodRecommendation, testCase.Policy, pod)
+		assert.Equal(t, testCase.ExpectedPodRecommendation, res)
+		assert.Equal(t, testCase.ExpectedError, err)
+	}
+}
