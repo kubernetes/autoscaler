@@ -108,29 +108,45 @@ func TestConfidenceMultiplierNoHistory(t *testing.T) {
 		testedEstimator2.GetResourceEstimation(s)[model.ResourceCPU])
 }
 
-// Verifies that the confidenceMultiplier calculates the internal
-// confidence based on the amount of historical samples and scales the resources
-// returned by the base estimator according to the formula, using the calculated
-// confidence.
-func TestSafetyMargin(t *testing.T) {
-	// Use 10% safety margin on top of the recommended resources.
-	safetyMarginFraction := 0.1
-	// Minimum safety margin is 0.2 core and 400MB memory.
-	minSafetyMargin := model.Resources{
-		model.ResourceCPU:    model.CPUAmountFromCores(0.2),
-		model.ResourceMemory: model.MemoryAmountFromBytes(4e8),
-	}
+// Verifies that the MarginEstimator adds margin to the originally
+// estimated resources.
+func TestMarginEstimator(t *testing.T) {
+	// Use 10% margin on top of the recommended resources.
+	marginFraction := 0.1
 	baseEstimator := NewConstEstimator(model.Resources{
 		model.ResourceCPU:    model.CPUAmountFromCores(3.14),
 		model.ResourceMemory: model.MemoryAmountFromBytes(3.14e9),
 	})
-	testedEstimator := &safetyMargin{
-		marginFraction: safetyMarginFraction,
-		minMargin:      minSafetyMargin,
+	testedEstimator := &marginEstimator{
+		marginFraction: marginFraction,
 		baseEstimator:  baseEstimator,
 	}
 	s := model.NewAggregateContainerState()
 	resourceEstimation := testedEstimator.GetResourceEstimation(s)
 	assert.Equal(t, 3.14*1.1, model.CoresFromCPUAmount(resourceEstimation[model.ResourceCPU]))
-	assert.Equal(t, 3.14e9+4e8, model.BytesFromMemoryAmount(resourceEstimation[model.ResourceMemory]))
+	assert.Equal(t, 3.14e9*1.1, model.BytesFromMemoryAmount(resourceEstimation[model.ResourceMemory]))
+}
+
+// Verifies that the MinResourcesEstimator returns at least MinResources.
+func TestMinResourcesEstimator(t *testing.T) {
+
+	minResources := model.Resources{
+		model.ResourceCPU:    model.CPUAmountFromCores(0.2),
+		model.ResourceMemory: model.MemoryAmountFromBytes(4e8),
+	}
+	baseEstimator := NewConstEstimator(model.Resources{
+		model.ResourceCPU:    model.CPUAmountFromCores(3.14),
+		model.ResourceMemory: model.MemoryAmountFromBytes(2e7),
+	})
+
+	testedEstimator := &minResourcesEstimator{
+		minResources:  minResources,
+		baseEstimator: baseEstimator,
+	}
+	s := model.NewAggregateContainerState()
+	resourceEstimation := testedEstimator.GetResourceEstimation(s)
+	// Original CPU is above min resources
+	assert.Equal(t, 3.14, model.CoresFromCPUAmount(resourceEstimation[model.ResourceCPU]))
+	// Original Memory is below min resources
+	assert.Equal(t, 4e8, model.BytesFromMemoryAmount(resourceEstimation[model.ResourceMemory]))
 }
