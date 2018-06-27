@@ -17,6 +17,7 @@ limitations under the License.
 package logic
 
 import (
+	"flag"
 	"math"
 
 	"github.com/golang/glog"
@@ -37,6 +38,10 @@ const (
 	// MemoryLimitMinBumpUp specifies minimal amount of memory above memory request.
 	// Limit is set to trigger OOMs.
 	MemoryLimitMinBumpUp float64 = 100 * 1024 * 1024 // 100MB
+)
+
+var (
+	setMemoryLimit = flag.Bool("set-memory-limit", false, `Iff true admission controller will set memory limit as max( memory_request * 1.2, memory_request + 100MB).`)
 )
 
 // ContainerResources holds request and limit resources for container
@@ -66,6 +71,9 @@ func NewRecommendationProvider(vpaLister vpa_lister.VerticalPodAutoscalerLister,
 
 // getMemoryLimit returns a limit that is proportionally (with min step) higher than the request. Limit is set to trigger OOMs.
 func getMemoryLimit(resources v1.ResourceList) *resource.Quantity {
+	if !*setMemoryLimit {
+		return nil
+	}
 	memory, found := resources[v1.ResourceMemory]
 	if !found {
 		return nil
