@@ -31,6 +31,7 @@ func TestUpdateResourceRequests(t *testing.T) {
 	type testCase struct {
 		pod            *apiv1.Pod
 		vpas           []*vpa_types.VerticalPodAutoscaler
+		setMemoryLimit bool
 		expectedAction bool
 		expectedMem    string
 		expectedCPU    string
@@ -68,13 +69,23 @@ func TestUpdateResourceRequests(t *testing.T) {
 	testCases := []testCase{{
 		pod:            uninitialized,
 		vpas:           []*vpa_types.VerticalPodAutoscaler{vpa},
+		setMemoryLimit: true,
 		expectedAction: true,
 		expectedMem:    "200Mi",
 		expectedCPU:    "2",
 		memLimit:       "300Mi", // Limit is expected to be +100Mi
 	}, {
 		pod:            uninitialized,
+		vpas:           []*vpa_types.VerticalPodAutoscaler{vpa},
+		setMemoryLimit: false,
+		expectedAction: true,
+		expectedMem:    "200Mi",
+		expectedCPU:    "2",
+		memLimit:       "",
+	}, {
+		pod:            uninitialized,
 		vpas:           []*vpa_types.VerticalPodAutoscaler{targetBelowMinVPA},
+		setMemoryLimit: true,
 		expectedAction: true,
 		expectedMem:    "300Mi", // MinMemory is expected to be used
 		expectedCPU:    "4",     // MinCpu is expected to be used
@@ -82,6 +93,7 @@ func TestUpdateResourceRequests(t *testing.T) {
 	}, {
 		pod:            uninitialized,
 		vpas:           []*vpa_types.VerticalPodAutoscaler{targetAboveMaxVPA},
+		setMemoryLimit: true,
 		expectedAction: true,
 		expectedMem:    "1Gi", // MaxMemory is expected to be used
 		expectedCPU:    "5",   // MaxCpu is expected to be used
@@ -89,6 +101,7 @@ func TestUpdateResourceRequests(t *testing.T) {
 	}, {
 		pod:            initialized,
 		vpas:           []*vpa_types.VerticalPodAutoscaler{vpa},
+		setMemoryLimit: true,
 		expectedAction: true,
 		expectedMem:    "200Mi",
 		expectedCPU:    "2",
@@ -96,6 +109,7 @@ func TestUpdateResourceRequests(t *testing.T) {
 	}, {
 		pod:            initialized,
 		vpas:           []*vpa_types.VerticalPodAutoscaler{vpaWithHighMemory},
+		setMemoryLimit: true,
 		expectedAction: true,
 		expectedMem:    "1000Mi",
 		expectedCPU:    "2",
@@ -103,14 +117,17 @@ func TestUpdateResourceRequests(t *testing.T) {
 	}, {
 		pod:            uninitialized,
 		vpas:           []*vpa_types.VerticalPodAutoscaler{mismatchedVPA},
+		setMemoryLimit: true,
 		expectedAction: false,
 	}, {
 		pod:            uninitialized,
 		vpas:           []*vpa_types.VerticalPodAutoscaler{offVPA},
+		setMemoryLimit: true,
 		expectedAction: false,
 	}, {
 		pod:            uninitialized,
 		vpas:           []*vpa_types.VerticalPodAutoscaler{offVPA, vpa},
+		setMemoryLimit: true,
 		expectedAction: true,
 		expectedMem:    "200Mi",
 		expectedCPU:    "2",
@@ -118,6 +135,7 @@ func TestUpdateResourceRequests(t *testing.T) {
 	}, {
 		pod:            initialized,
 		vpas:           []*vpa_types.VerticalPodAutoscaler{vpaWithEmptyRecommendation},
+		setMemoryLimit: true,
 		expectedAction: true,
 		expectedMem:    "0",
 		expectedCPU:    "0",
@@ -135,6 +153,7 @@ func TestUpdateResourceRequests(t *testing.T) {
 			recommendationProcessor: api.NewCappingRecommendationProcessor(),
 		}
 
+		*setMemoryLimit = tc.setMemoryLimit
 		resources, name, err := recommendationProvider.GetContainersResourcesForPod(tc.pod)
 
 		if tc.expectedAction {
@@ -149,10 +168,15 @@ func TestUpdateResourceRequests(t *testing.T) {
 			assert.NoError(t, err)
 			memoryRequest := resources[0].Requests[apiv1.ResourceMemory]
 			assert.Equal(t, expectedMemory.Value(), memoryRequest.Value(), "memory request doesn't match")
-			expectedMemoryLimit, err := resource.ParseQuantity(tc.memLimit)
-			assert.NoError(t, err)
-			memoryLimit := resources[0].Limits[apiv1.ResourceMemory]
-			assert.Equal(t, expectedMemoryLimit.Value(), memoryLimit.Value(), "memory limit doesn't match")
+
+			if tc.memLimit == "" {
+				assert.NotContains(t, resources[0].Limits, apiv1.ResourceMemory)
+			} else {
+				expectedMemoryLimit, err := resource.ParseQuantity(tc.memLimit)
+				assert.NoError(t, err)
+				memoryLimit := resources[0].Limits[apiv1.ResourceMemory]
+				assert.Equal(t, expectedMemoryLimit.Value(), memoryLimit.Value(), "memory limit doesn't match")
+			}
 		} else {
 			assert.Equal(t, len(resources), 0)
 		}
