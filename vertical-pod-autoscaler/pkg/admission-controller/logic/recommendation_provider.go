@@ -134,10 +134,14 @@ func (p *recommendationProvider) GetContainersResourcesForPod(pod *v1.Pod) ([]Co
 		glog.V(2).Infof("no matching VPA found for pod %s", pod.Name)
 		return nil, "", nil
 	}
-	recommendedPodResources, err := p.recommendationProcessor.Apply(vpaConfig.Status.Recommendation, vpaConfig.Spec.ResourcePolicy, pod)
-	if err != nil {
-		glog.V(2).Infof("cannot process recommendation for pod %s", pod.Name)
-		return nil, "", err
+	recommendedPodResources := &vpa_types.RecommendedPodResources{}
+	if vpaConfig.Status.Recommendation != nil {
+		var err error
+		recommendedPodResources, err = p.recommendationProcessor.Apply(vpaConfig.Status.Recommendation, vpaConfig.Spec.ResourcePolicy, pod)
+		if err != nil {
+			glog.V(2).Infof("cannot process recommendation for pod %s", pod.Name)
+			return nil, "", err
+		}
 	}
 	containerResources := getContainersResources(pod, *recommendedPodResources, vpaConfig.Spec.ResourcePolicy)
 	return containerResources, vpaConfig.Name, nil
