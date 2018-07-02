@@ -368,6 +368,11 @@ func (agentPool *ContainerServiceAgentPool) DeleteNodes(nodes []*apiv1.Node) err
 
 //IsContainerServiceNode checks if the tag from the vm matches the agentPool name
 func (agentPool *ContainerServiceAgentPool) IsContainerServiceNode(tags *map[string]*string) bool {
+	// Virtual machines not managed by AKS may have no tags.
+	if tags == nil {
+		return false
+	}
+
 	poolName := (*tags)["poolName"]
 	if poolName != nil {
 		glog.V(5).Infof("Matching agentPool name: %s with tag name: %s", agentPool.azureRef.Name, *poolName)
