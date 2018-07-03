@@ -239,3 +239,23 @@ func TestEstimateResources(t *testing.T) {
 		verifyResources(t, "requests", got.Requests, want.Limits)
 	}
 }
+
+func TestComputeResourceOverheadValueString(t *testing.T) {
+	testCases := []struct {
+		numNodes         uint64
+		resource         Resource
+		expectedOverhead string
+	}{
+		{1, Resource{ExtraPerNode: resource.MustParse("1"), Name: "cpu"}, "1.000000"},
+		{1, Resource{ExtraPerNode: resource.MustParse("1m"), Name: "cpu"}, "1.000000m"},
+		{1, Resource{ExtraPerNode: resource.MustParse("0.5m"), Name: "cpu"}, "500.000000u"},
+		{3, Resource{ExtraPerNode: resource.MustParse("0.5m"), Name: "cpu"}, "1500.000000u"},
+	}
+
+	for _, tc := range testCases {
+		got := computeResourceOverheadValueString(tc.numNodes, tc.resource)
+		if got != tc.expectedOverhead {
+			t.Errorf("Overhead is incorrect, got: '%s', want: '%s'", got, tc.expectedOverhead)
+		}
+	}
+}
