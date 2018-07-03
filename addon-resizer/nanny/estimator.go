@@ -58,19 +58,31 @@ type Estimator struct {
 	RecommendationOffset int64
 }
 
-func decWithPercentageOffset(value uint64, offset int64, rounder func(float64) float64) uint64 {
-	return uint64(int64(value) + int64(rounder(float64(offset)*float64(value)/100)))
+// Returns the node count that is offset/100 away from nodeCount rounded to the
+// nearest integer using the rounder function.
+func getOffsetNodeCount(nodeCount uint64, offset int64, rounder func(float64) float64) uint64 {
+	return uint64(int64(nodeCount) + int64(rounder(float64(nodeCount)*float64(offset)/100)))
 }
 
+// Returns a ResourceListPair representing the intervals describing the set
+// of valid values for each of the given resources. The lower bound of each
+// interval is computed using the node count equal to numNodes +
+// floor(numNodes * -offset/100). The uppoer bound of each interval is computed
+// using the node count equal to numNodes + ceil(numNodes * offset/100). Note
+// the ordering of the elements of the lower and upper fields is significant.
+// Element N of each field represents the lower and upper bounds, respectively,
+// of the interval for the resource with index N in res.
 func nodesAndOffsetToRange(numNodes uint64, offset int64, res []Resource) ResourceListPair {
-	numNodesMin := decWithPercentageOffset(numNodes, -offset, math.Floor)
-	numNodesMax := decWithPercentageOffset(numNodes, offset, math.Ceil)
+	numNodesMin := getOffsetNodeCount(numNodes, -offset, math.Floor)
+	numNodesMax := getOffsetNodeCount(numNodes, offset, math.Ceil)
 	return ResourceListPair{
 		lower: calculateResources(numNodesMin, res),
 		upper: calculateResources(numNodesMax, res),
 	}
 }
 
+// Computes the acceptable and recommended resource ranges relative to the base
+// resource values for a cluster with the specified number of nodes.
 func (e Estimator) scaleWithNodes(numNodes uint64) *EstimatorResult {
 	return &EstimatorResult{
 		RecommendedRange: nodesAndOffsetToRange(numNodes, e.RecommendationOffset, e.Resources),
@@ -78,6 +90,8 @@ func (e Estimator) scaleWithNodes(numNodes uint64) *EstimatorResult {
 	}
 }
 
+// Returns a ResourceList containing the resource value for each type of
+// resource given the specified number of nodes and base resource value.
 func calculateResources(numNodes uint64, resources []Resource) api.ResourceList {
 	resourceList := make(api.ResourceList)
 	for _, r := range resources {
