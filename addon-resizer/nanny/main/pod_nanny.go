@@ -86,6 +86,9 @@ func main() {
 	if err != nil {
 		glog.Fatal(err)
 	}
+	// Use protobufs to improve performance.
+	config.ContentType = "application/vnd.kubernetes.protobuf"
+
 	k8s := nanny.NewKubernetesClient(*podNamespace, *deployment, *podName, *containerName, clientset)
 
 	nannyConfigurationFromFlags := &nannyconfigalpha.NannyConfiguration{
