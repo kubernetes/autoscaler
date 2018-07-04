@@ -83,6 +83,12 @@ var (
 			8: 96,
 		},
 	}
+
+	supportedGpuTypes = []string{
+		"nvidia-tesla-k80",
+		"nvidia-tesla-p100",
+		"nvidia-tesla-v100",
+	}
 )
 
 func validateGpuConfig(gpuType string, gpuCount int64, zone, machineType string) error {
