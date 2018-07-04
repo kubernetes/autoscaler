@@ -85,6 +85,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	// Use protobufs to improve performance.
+	config.ContentType = "application/vnd.kubernetes.protobuf"
 
 	clientset, err := client.NewForConfig(config)
 	if err != nil {
