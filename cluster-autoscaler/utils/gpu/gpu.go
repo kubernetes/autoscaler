@@ -43,6 +43,8 @@ const (
 	MetricsUnknownGPU = "not-listed"
 	// MetricsErrorGPU - for when there was an error obtaining GPU type
 	MetricsErrorGPU = "error"
+	// MetricsInternalErrorGPU - for when there was a CA-internal error obtaining GPU type
+	MetricsInternalErrorGPU = "own-error"
 	// MetricsNoGPU - for when there is no GPU at all
 	MetricsNoGPU = ""
 )
@@ -105,7 +107,8 @@ func GetGpuTypeForMetrics(node *apiv1.Node, nodeGroup cloudprovider.NodeGroup, t
 	// GKE-specific label present but no capacity (yet?) - check the node template
 	if labelFound {
 		if nodeGroup == nil && template == nil {
-			return MetricsErrorGPU
+			// this should not happen
+			return MetricsInternalErrorGPU
 		}
 
 		if template == nil {
