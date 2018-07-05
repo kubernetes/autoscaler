@@ -705,9 +705,9 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 		}
 		nodeGroup := candidateNodeGroups[toRemove.Node.Name]
 		if readinessMap[toRemove.Node.Name] {
-			metrics.RegisterScaleDown(1, gpu.GetGpuTypeForMetrics(toRemove.Node, nodeGroup, nil), metrics.Underutilized)
+			metrics.RegisterScaleDown(1, gpu.GetGpuTypeForMetrics(toRemove.Node, nodeGroup), metrics.Underutilized)
 		} else {
-			metrics.RegisterScaleDown(1, gpu.GetGpuTypeForMetrics(toRemove.Node, nodeGroup, nil), metrics.Unready)
+			metrics.RegisterScaleDown(1, gpu.GetGpuTypeForMetrics(toRemove.Node, nodeGroup), metrics.Unready)
 		}
 	}()
 
@@ -815,9 +815,9 @@ func (sd *ScaleDown) scheduleDeleteEmptyNodes(emptyNodes []*apiv1.Node, client k
 			if deleteErr == nil {
 				nodeGroup := candidateNodeGroups[nodeToDelete.Name]
 				if readinessMap[nodeToDelete.Name] {
-					metrics.RegisterScaleDown(1, gpu.GetGpuTypeForMetrics(nodeToDelete, nodeGroup, nil), metrics.Empty)
+					metrics.RegisterScaleDown(1, gpu.GetGpuTypeForMetrics(nodeToDelete, nodeGroup), metrics.Empty)
 				} else {
-					metrics.RegisterScaleDown(1, gpu.GetGpuTypeForMetrics(nodeToDelete, nodeGroup, nil), metrics.Unready)
+					metrics.RegisterScaleDown(1, gpu.GetGpuTypeForMetrics(nodeToDelete, nodeGroup), metrics.Unready)
 				}
 			}
 			confirmation <- deleteErr
