@@ -24,8 +24,10 @@
 
 OUT_DIR = build
 PACKAGE = k8s.io/autoscaler/addon-resizer
-PREFIX = gcr.io/google_containers
-TAG = 1.8.1
+REGISTRY = staging-k8s.gcr.io
+IMGNAME = addon-resizer
+IMAGE = $(REGISTRY)/$(IMGNAME)
+TAG = 1.8.2
 
 # Rules for building the real image for deployment to gcr.io
 
@@ -44,9 +46,9 @@ clean:
 	rm -rf build
 
 build: go
-	docker build --pull -t ${PREFIX}/addon-resizer:$(TAG) .
+	docker build --pull -t ${IMAGE}:$(TAG) .
 
 docker: build
 
 push: docker
-	gcloud docker -- push ${PREFIX}/addon-resizer:$(TAG)
+	gcloud docker -- push ${IMAGE}:$(TAG)
