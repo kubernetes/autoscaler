@@ -19,6 +19,7 @@ package nanny
 import (
 	"fmt"
 
+	log "github.com/golang/glog"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
@@ -58,20 +59,36 @@ func (e ExponentialEstimator) scaleWithNodes(numNodes uint64) *corev1.ResourceRe
 	return calculateResources(n, e.Resources)
 }
 
+// Generates and returns a resource value string describing the overhead when
+// running on a cluster with the given number of nodes. The per node overhead
+// is taken from the Resource instance.
+//
+// Note this function takes into account resource units allowing it to compute
+// resource overhead values even with fractional values. For example, it can
+// handle incremental values of 0.5m for cpu resources.
+func computeResourceOverheadValueString(numNodes uint64, resource Resource) string {
+	perNodeOverhead := resource.ExtraPerNode.String()
+	var perNodeValue float64
+	var perNodeUnit string
+	_, err := fmt.Sscanf(perNodeOverhead, "%f%s", &perNodeValue, &perNodeUnit)
+	if err != nil && err.Error() != "EOF" {
+		log.Warningf(
+			"Failed to parse the per node overhead string '%s'; error=%s",
+			perNodeOverhead, err)
+		// Default to not specifying any unit to maintain existing
+		// behaviour.
+		perNodeUnit = ""
+	}
+	return fmt.Sprintf("%f%s", perNodeValue*float64(numNodes), perNodeUnit)
+}
+
 func calculateResources(numNodes uint64, resources []Resource) *corev1.ResourceRequirements {
 	limits := make(corev1.ResourceList)
 	requests := make(corev1.ResourceList)
 	for _, r := range resources {
-		// Since we want to enable passing values smaller than e.g. 1 millicore per node,
-		// we need to have some more hacky solution here than operating on MilliValues.
-		perNodeString := r.ExtraPerNode.String()
-		var perNode float64
-		read, _ := fmt.Sscanf(perNodeString, "%f", &perNode)
-		overhead := resource.MustParse(fmt.Sprintf("%f%s", perNode*float64(numNodes), perNodeString[read:]))
-
+		overhead := computeResourceOverheadValueString(numNodes, r)
 		newRes := r.Base
-		newRes.Add(overhead)
-
+		newRes.Add(resource.MustParse(overhead))
 		limits[r.Name] = newRes
 		requests[r.Name] = newRes
 	}
