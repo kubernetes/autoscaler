@@ -55,8 +55,9 @@ var (
 	podName       = flag.String("pod", os.Getenv("MY_POD_NAME"), "The name of the pod to watch. This defaults to the nanny's own pod.")
 	containerName = flag.String("container", "pod-nanny", "The name of the container to watch. This defaults to the nanny itself.")
 	// Flags to control runtime behavior.
-	pollPeriod = time.Millisecond * time.Duration(*flag.Int("poll-period", 10000, "The time, in milliseconds, to poll the dependent container."))
-	estimator  = flag.String("estimator", "linear", "The estimator to use. Currently supported: linear, exponential")
+	pollPeriod     = time.Millisecond * time.Duration(*flag.Int("poll-period", 10000, "The time, in milliseconds, to poll the dependent container."))
+	estimator      = flag.String("estimator", "linear", "The estimator to use. Currently supported: linear, exponential")
+	minClusterSize = flag.Uint64("minClusterSize", 16, "The smallest number of nodes resources will be scaled to. Must be > 1. This flag is used only when an exponential estimator is used.")
 )
 
 func main() {
@@ -70,7 +71,11 @@ func main() {
 	}
 
 	if *threshold < 0 || *threshold > 100 {
-		glog.Fatalf("Threshold must be between 0 and 100 inclusively, was %d.", threshold)
+		glog.Fatalf("Threshold must be between 0 and 100 inclusive. It is %d.", *threshold)
+	}
+
+	if *minClusterSize < 2 {
+		glog.Fatalf("minClusterSize must be greater than 1. It is set to %d.", *minClusterSize)
 	}
 
 	glog.Infof("Watching namespace: %s, pod: %s, container: %s.", *podNamespace, *podName, *containerName)
@@ -139,8 +144,9 @@ func main() {
 		}
 	} else if *estimator == "exponential" {
 		est = nanny.ExponentialEstimator{
-			Resources:   resources,
-			ScaleFactor: 1.5,
+			Resources:      resources,
+			ScaleFactor:    1.5,
+			MinClusterSize: *minClusterSize,
 		}
 	} else {
 		glog.Fatalf("Estimator %s not supported", *estimator)
