@@ -74,6 +74,8 @@ This metrics describe internal state and actions taken by Cluster Autoscaler.
 | errors_total | Counter | `type`=&lt;error-type&gt; | The number of CA loops failed due to an error. |
 | scaled_up_nodes_total | Counter | | Number of nodes added by CA. |
 | scaled_down_nodes_total | Counter | `reason`=&lt;scale-down-reason&gt; | Number of nodes removed by CA. |
+| scaled_up_gpu_nodes_total | Counter | `gpu_name`=&lt;gpu-name&gt; | Number of GPU-enabled nodes added by CA. |
+| scaled_down_gpu_nodes_total | Counter | `reason`=&lt;scale-down-reason&gt;, `gpu_name`=&lt;gpu-name&gt; | Number of GPU-enabled nodes removed by CA. |
 | failed_scale_ups_total | Counter | `reason`=&lt;failure-reason&gt; | Number of times scale-up operation has failed. |
 | evicted_pods_total | Counter | | Number of pods evicted by CA. |
 | unneeded_nodes_count | Gauge | | Number of nodes currently considered unneeded by CA. |
@@ -106,6 +108,12 @@ This metrics describe internal state and actions taken by Cluster Autoscaler.
   at all in that case).
 * `scaled_down_nodes_total` counts the number of nodes removed by CA. Possible
 scale down reasons are `empty`, `underutilized`, `unready`.
+* `scaled_up_gpu_nodes_total` counts the number of GPU-enabled nodes
+  successfully added by CA, similar to `scaled_up_nodes_total`. Additionally
+  `gpu_name` specifies name of the GPU (e.g. nvidia-tesla-k80).
+* `scaled_down_gpu_nodes_total` counts the number of nodes removed by CA. Scale
+  down reasons are identical to `scaled_down_nodes_total`, `gpu_name` to
+  `scaled_up_gpu_nodes_total`.
 
 ### Node Autoprovisioning operations
 

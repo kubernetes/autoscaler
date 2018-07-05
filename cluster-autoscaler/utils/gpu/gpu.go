@@ -20,9 +20,10 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 
 	"github.com/golang/glog"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 )
 
 const (
@@ -33,6 +34,29 @@ const (
 	// DefaultGPUType is the type of GPU used in NAP if the user
 	// don't specify what type of GPU his pod wants.
 	DefaultGPUType = "nvidia-tesla-k80"
+)
+
+const (
+	// MetricsGenericGPU - for when there is no information about GPU type
+	MetricsGenericGPU = "generic"
+	// MetricsUnknownGPU - for when GPU type is unknown
+	MetricsUnknownGPU = "not-listed"
+	// MetricsErrorGPU - for when there was an error obtaining GPU type
+	MetricsErrorGPU = "error"
+	// MetricsInternalErrorGPU - for when there was a CA-internal error obtaining GPU type
+	MetricsInternalErrorGPU = "own-error"
+	// MetricsNoGPU - for when there is no GPU at all
+	MetricsNoGPU = ""
+)
+
+var (
+	// knownGpuTypes lists all known GPU types, to be used in metrics; map for convenient access
+	// TODO(kgolab) obtain this from Cloud Provider
+	knownGpuTypes = map[string]struct{}{
+		"nvidia-tesla-k80":  {},
+		"nvidia-tesla-p100": {},
+		"nvidia-tesla-v100": {},
+	}
 )
 
 // FilterOutNodesWithUnreadyGpus removes nodes that should have GPU, but don't have it in allocatable
@@ -71,19 +95,52 @@ func FilterOutNodesWithUnreadyGpus(allNodes, readyNodes []*apiv1.Node) ([]*apiv1
 // GetGpuTypeForMetrics returns name of the GPU used on the node or empty string if there's no GPU
 // if the GPU type is unknown, "generic" is returned
 // NOTE: current implementation is GKE/GCE-specific
-func GetGpuTypeForMetrics(node *apiv1.Node) string {
+func GetGpuTypeForMetrics(node *apiv1.Node, nodeGroup cloudprovider.NodeGroup, template *schedulercache.NodeInfo) string {
 	// we use the GKE label if there is one
-	gpuType, found := node.Labels[GPULabel]
-	if found {
-		return gpuType
+	gpuType, labelFound := node.Labels[GPULabel]
+	capacity, capacityFound := node.Status.Capacity[ResourceNvidiaGPU]
+
+	// GKE-specific label & capacity are present - consistent state
+	if labelFound && capacityFound {
+		return validateGpuType(gpuType)
+	}
+	// GKE-specific label present but no capacity (yet?) - check the node template
+	if labelFound {
+		if nodeGroup == nil && template == nil {
+			// this should not happen
+			return MetricsInternalErrorGPU
+		}
+
+		if template == nil {
+			var err error
+			template, err = nodeGroup.TemplateNodeInfo()
+			if err != nil {
+				glog.Warningf("Failed to build template for getting GPU metrics for node %v: %v", node.Name, err)
+				return MetricsErrorGPU
+			}
+		}
+
+		if _, found := template.Node().Status.Capacity[ResourceNvidiaGPU]; found {
+			return gpuType
+		}
+
+		// if template does not define gpus we assume node will not have any even if it has gpu label
+		glog.Warningf("Template does not define GPUs even though node from its node group does; node=%v", node.Name)
+		return MetricsNoGPU
 	}
 
 	// no label, fallback to generic solution
-	capacity, found := node.Status.Capacity[ResourceNvidiaGPU]
-	if !found || capacity.IsZero() {
-		return ""
+	if !capacityFound || capacity.IsZero() {
+		return MetricsNoGPU
 	}
-	return "generic"
+	return MetricsGenericGPU
+}
+
+func validateGpuType(gpu string) string {
+	if _, found := knownGpuTypes[gpu]; found {
+		return gpu
+	}
+	return MetricsUnknownGPU
 }
 
 func getUnreadyNodeCopy(node *apiv1.Node) *apiv1.Node {
