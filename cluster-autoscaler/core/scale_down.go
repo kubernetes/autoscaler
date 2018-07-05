@@ -702,9 +702,9 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 			return
 		}
 		if readinessMap[toRemove.Node.Name] {
-			metrics.RegisterScaleDown(1, metrics.Underutilized)
+			metrics.RegisterScaleDown(1, gpu.GetGpuTypeForMetrics(toRemove.Node), metrics.Underutilized)
 		} else {
-			metrics.RegisterScaleDown(1, metrics.Unready)
+			metrics.RegisterScaleDown(1, gpu.GetGpuTypeForMetrics(toRemove.Node), metrics.Unready)
 		}
 	}()
 
@@ -810,9 +810,9 @@ func (sd *ScaleDown) scheduleDeleteEmptyNodes(emptyNodes []*apiv1.Node, client k
 				sd.context.Recorder, sd.clusterStateRegistry)
 			if deleteErr == nil {
 				if readinessMap[nodeToDelete.Name] {
-					metrics.RegisterScaleDown(1, metrics.Empty)
+					metrics.RegisterScaleDown(1, gpu.GetGpuTypeForMetrics(nodeToDelete), metrics.Empty)
 				} else {
-					metrics.RegisterScaleDown(1, metrics.Unready)
+					metrics.RegisterScaleDown(1, gpu.GetGpuTypeForMetrics(nodeToDelete), metrics.Unready)
 				}
 			}
 			confirmation <- deleteErr
