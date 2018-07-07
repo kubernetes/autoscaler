@@ -29,6 +29,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
 	"gopkg.in/gcfg.v1"
 	apiv1 "k8s.io/api/core/v1"
@@ -50,6 +51,7 @@ const (
 // AwsManager is handles aws communication and data caching.
 type AwsManager struct {
 	service     autoScalingWrapper
+	ec2         ec2Wrapper
 	asgCache    *asgCache
 	lastRefresh time.Time
 }
@@ -93,6 +95,7 @@ func createAWSManagerInternal(
 
 	manager := &AwsManager{
 		service:  *service,
+		ec2:      ec2Wrapper{ec2.New(session.New())},
 		asgCache: cache,
 	}
 
@@ -200,11 +203,6 @@ func (m *AwsManager) GetAsgNodes(ref AwsRef) ([]AwsInstanceRef, error) {
 }
 
 func (m *AwsManager) getAsgTemplate(asg *asg) (*asgTemplate, error) {
-	instanceTypeName, err := m.service.getInstanceTypeByLCName(asg.LaunchConfigurationName)
-	if err != nil {
-		return nil, err
-	}
-
 	if len(asg.AvailabilityZones) < 1 {
 		return nil, fmt.Errorf("Unable to get first AvailabilityZone for %s", asg.Name)
 	}
@@ -216,12 +214,27 @@ func (m *AwsManager) getAsgTemplate(asg *asg) (*asgTemplate, error) {
 		glog.Warningf("Found multiple availability zones, using %s\n", az)
 	}
 
+	instanceTypeName, err := m.buildInstanceType(asg)
+	if err != nil {
+		return nil, err
+	}
+
 	return &asgTemplate{
 		InstanceType: InstanceTypes[instanceTypeName],
 		Region:       region,
 		Zone:         az,
 		Tags:         asg.Tags,
 	}, nil
+}
+
+func (m *AwsManager) buildInstanceType(asg *asg) (string, error) {
+	if asg.LaunchConfigurationName != "" {
+		return m.service.getInstanceTypeByLCName(asg.LaunchConfigurationName)
+	} else if asg.LaunchTemplateName != "" && asg.LaunchTemplateVersion != "" {
+		return m.ec2.getInstanceTypeByLT(asg.LaunchTemplateName, asg.LaunchTemplateVersion)
+	}
+
+	return "", fmt.Errorf("Unable to get instance type from launch config or launch template")
 }
 
 func (m *AwsManager) buildNodeFromTemplate(asg *asg, template *asgTemplate) (*apiv1.Node, error) {
