@@ -52,6 +52,8 @@ type asg struct {
 	curSize int
 
 	AvailabilityZones       []string
+	LaunchTemplateName      string
+	LaunchTemplateVersion   string
 	LaunchConfigurationName string
 	Tags                    []*autoscaling.TagDescription
 }
@@ -112,6 +114,8 @@ func (m *asgCache) register(asg *asg) *asg {
 			// from zero
 			existing.AvailabilityZones = asg.AvailabilityZones
 			existing.LaunchConfigurationName = asg.LaunchConfigurationName
+			existing.LaunchTemplateName = asg.LaunchTemplateName
+			existing.LaunchTemplateVersion = asg.LaunchTemplateVersion
 			existing.Tags = asg.Tags
 
 			return existing
@@ -358,9 +362,13 @@ func (m *asgCache) buildAsgFromAWS(g *autoscaling.Group) (*asg, error) {
 		MaxSize:            int(aws.Int64Value(g.MaxSize)),
 		SupportScaleToZero: scaleToZeroSupported,
 	}
+
 	if verr := spec.Validate(); verr != nil {
 		return nil, fmt.Errorf("failed to create node group spec: %v", verr)
 	}
+
+	launchTemplateName, launchTemplateVersion := m.buildLaunchTemplateParams(g)
+
 	asg := &asg{
 		AwsRef:  AwsRef{Name: spec.Name},
 		minSize: spec.MinSize,
@@ -369,9 +377,20 @@ func (m *asgCache) buildAsgFromAWS(g *autoscaling.Group) (*asg, error) {
 		curSize:                 int(aws.Int64Value(g.DesiredCapacity)),
 		AvailabilityZones:       aws.StringValueSlice(g.AvailabilityZones),
 		LaunchConfigurationName: aws.StringValue(g.LaunchConfigurationName),
+		LaunchTemplateName:      launchTemplateName,
+		LaunchTemplateVersion:   launchTemplateVersion,
 		Tags: g.Tags,
 	}
+
 	return asg, nil
+}
+
+func (m *asgCache) buildLaunchTemplateParams(g *autoscaling.Group) (string, string) {
+	if g.LaunchTemplate != nil {
+		return aws.StringValue(g.LaunchTemplate.LaunchTemplateName), aws.StringValue(g.LaunchTemplate.Version)
+	}
+
+	return "", ""
 }
 
 func (m *asgCache) buildInstanceRefFromAWS(instance *autoscaling.Instance) AwsInstanceRef {
