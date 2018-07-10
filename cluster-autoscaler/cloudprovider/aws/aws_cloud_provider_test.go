@@ -21,6 +21,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	apiv1 "k8s.io/api/core/v1"
@@ -56,6 +57,15 @@ func (a *AutoScalingMock) TerminateInstanceInAutoScalingGroup(input *autoscaling
 	return args.Get(0).(*autoscaling.TerminateInstanceInAutoScalingGroupOutput), nil
 }
 
+type EC2Mock struct {
+	mock.Mock
+}
+
+func (e *EC2Mock) DescribeLaunchTemplateVersions(i *ec2.DescribeLaunchTemplateVersionsInput) (*ec2.DescribeLaunchTemplateVersionsOutput, error) {
+	args := e.Called(i)
+	return args.Get(0).(*ec2.DescribeLaunchTemplateVersionsOutput), nil
+}
+
 var testService = autoScalingWrapper{&AutoScalingMock{}}
 
 var testAwsManager = &AwsManager{
@@ -66,13 +76,13 @@ var testAwsManager = &AwsManager{
 		interrupt:      make(chan struct{}),
 		service:        testService,
 	},
-	service: testService,
+	autoScalingService: testService,
 }
 
 func newTestAwsManagerWithService(service autoScaling, autoDiscoverySpecs []cloudprovider.ASGAutoDiscoveryConfig) *AwsManager {
 	wrapper := autoScalingWrapper{service}
 	return &AwsManager{
-		service: wrapper,
+		autoScalingService: wrapper,
 		asgCache: &asgCache{
 			registeredAsgs:        make([]*asg, 0),
 			asgToInstances:        make(map[AwsRef][]AwsInstanceRef),
