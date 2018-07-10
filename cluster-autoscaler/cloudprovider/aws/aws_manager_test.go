@@ -22,6 +22,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	apiv1 "k8s.io/api/core/v1"
@@ -159,12 +160,43 @@ func TestFetchExplicitAsgs(t *testing.T) {
 		},
 	}
 	// fetchExplicitASGs is called at manager creation time.
-	m, err := createAWSManagerInternal(nil, do, &autoScalingWrapper{s})
+	m, err := createAWSManagerInternal(nil, do, &autoScalingWrapper{s}, nil)
 	assert.NoError(t, err)
 
 	asgs := m.asgCache.Get()
 	assert.Equal(t, 1, len(asgs))
 	validateAsg(t, asgs[0], groupname, min, max)
+}
+
+func TestBuildInstanceType(t *testing.T) {
+	ltName, ltVersion, instanceType := "launcher", "1", "t2.large"
+
+	s := &EC2Mock{}
+	s.On("DescribeLaunchTemplateVersions", &ec2.DescribeLaunchTemplateVersionsInput{
+		LaunchTemplateName: aws.String(ltName),
+		Versions:           []*string{aws.String(ltVersion)},
+	}).Return(&ec2.DescribeLaunchTemplateVersionsOutput{
+		LaunchTemplateVersions: []*ec2.LaunchTemplateVersion{
+			{
+				LaunchTemplateData: &ec2.ResponseLaunchTemplateData{
+					InstanceType: aws.String(instanceType),
+				},
+			},
+		},
+	})
+
+	m, err := createAWSManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, nil, &ec2Wrapper{s})
+	assert.NoError(t, err)
+
+	asg := asg{
+		LaunchTemplateName:    ltName,
+		LaunchTemplateVersion: ltVersion,
+	}
+
+	builtInstanceType, err := m.buildInstanceType(&asg)
+
+	assert.NoError(t, err)
+	assert.Equal(t, instanceType, builtInstanceType)
 }
 
 /* Disabled due to flakiness. See https://github.com/kubernetes/autoscaler/issues/608
