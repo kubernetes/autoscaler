@@ -312,8 +312,8 @@ Below solution works since version 1.1 (to be shipped with Kubernetes 1.9).
 Overprovisioning can be configured using deployment running pause pods with very low assigned
 priority (see [Priority Preemption](https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/))
 which keeps resources that can be used by other pods. If there is not enough resources then pause
-pods are premmpted and new pods take their place. Next pause pods become unschedulable and force CA
- to scale up the cluster.
+pods are preempted and new pods take their place. Next pause pods become unschedulable and force CA
+to scale up the cluster.
 
 The size of overprovisioned resources can be controlled by changing the size of pause pods and the
 number of replicas. This way you can configure static size of overprovisioning resources (i.e. 2
