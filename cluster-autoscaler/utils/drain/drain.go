@@ -195,6 +195,9 @@ func GetPodsForDeletionOnNodeDrain(
 			if HasLocalStorage(pod) && skipNodesWithLocalStorage {
 				return []*apiv1.Pod{}, fmt.Errorf("pod with local storage present: %s", pod.Name)
 			}
+			if hasNotSafeToEvictAnnotation(pod) {
+				return []*apiv1.Pod{}, fmt.Errorf("pod annotated as not safe to evict present: %s", pod.Name)
+			}
 		}
 		pods = append(pods, pod)
 	}
@@ -245,4 +248,9 @@ func checkKubeSystemPDBs(pod *apiv1.Pod, pdbs []*policyv1.PodDisruptionBudget) (
 // This checks if pod has PodSafeToEvictKey annotation
 func hasSaveToEvictAnnotation(pod *apiv1.Pod) bool {
 	return pod.GetAnnotations()[PodSafeToEvictKey] == "true"
+}
+
+// This checks if pod has PodSafeToEvictKey annotation set to false
+func hasNotSafeToEvictAnnotation(pod *apiv1.Pod) bool {
+	return pod.GetAnnotations()[PodSafeToEvictKey] == "false"
 }
