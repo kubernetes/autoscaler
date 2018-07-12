@@ -192,6 +192,10 @@ func (a *AggregateContainerState) LoadFromCheckpoint(checkpoint *vpa_types.Verti
 	return nil
 }
 
+func (a *AggregateContainerState) isExpired(now time.Time) bool {
+	return now.Sub(a.LastSampleStart) >= MemoryAggregationWindowLength
+}
+
 // AggregateStateByContainerName takes a set of AggregateContainerStates and merge them
 // grouping by the container name. The result is a map from the container name to the aggregation
 // from all input containers with the given name.

@@ -194,3 +194,10 @@ func TestAggregateContainerStateLoadFromCheckpoint(t *testing.T) {
 	assert.False(t, cs.AggregateCPUUsage.IsEmpty())
 	assert.False(t, cs.AggregateMemoryPeaks.IsEmpty())
 }
+
+func TestAggregateContainerStateIsExpired(t *testing.T) {
+	cs := NewAggregateContainerState()
+	cs.LastSampleStart = testTimestamp
+	assert.False(t, cs.isExpired(testTimestamp.Add(7*24*time.Hour)))
+	assert.True(t, cs.isExpired(testTimestamp.Add(8*24*time.Hour)))
+}

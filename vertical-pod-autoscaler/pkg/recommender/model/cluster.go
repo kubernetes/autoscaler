@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/golang/glog"
+
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
@@ -287,6 +289,24 @@ func (cluster *ClusterState) findOrCreateAggregateContainerState(containerID Con
 		}
 	}
 	return aggregateContainerState
+}
+
+// GrabageCollectAggregateCollectionStates removes obsolete AggregateCollectionStates from the ClusterState.
+func (cluster *ClusterState) GrabageCollectAggregateCollectionStates(now time.Time) {
+	glog.V(1).Info("Garbage collection of AggregateCollectionStates triggered")
+	keysToDelete := make([]AggregateStateKey, 0)
+	for key, aggregateContainerState := range cluster.aggregateStateMap {
+		if aggregateContainerState.isExpired(now) {
+			keysToDelete = append(keysToDelete, key)
+			glog.V(1).Info("Removing AggregateCollectionStates for %+v", key)
+		}
+	}
+	for _, key := range keysToDelete {
+		delete(cluster.aggregateStateMap, key)
+		for _, vpa := range cluster.Vpas {
+			vpa.DeleteAggregation(key)
+		}
+	}
 }
 
 // Implementation of the AggregateStateKey interface. It can be used as a map key.
