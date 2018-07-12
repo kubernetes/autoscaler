@@ -31,6 +31,11 @@ import (
 	"k8s.io/client-go/rest"
 )
 
+const (
+	// AggregateContainerStateGCInterval defines how often expired AggregateContainerStates are garbage collected.
+	AggregateContainerStateGCInterval = 1 * time.Hour
+)
+
 // Recommender recommend resources for certain containers, based on utilization periodically got from metrics api.
 type Recommender interface {
 	// RunOnce performs one iteration of recommender duties followed by update of recommendations in VPA objects.
@@ -42,14 +47,15 @@ type Recommender interface {
 }
 
 type recommender struct {
-	clusterState           *model.ClusterState
-	clusterStateFeeder     input.ClusterStateFeeder
-	checkpointWriter       checkpoint.CheckpointWriter
-	checkpointsGCInterval  time.Duration
-	lastCheckpointGC       time.Time
-	vpaClient              vpa_api.VerticalPodAutoscalersGetter
-	podResourceRecommender logic.PodResourceRecommender
-	useCheckpoints         bool
+	clusterState                  *model.ClusterState
+	clusterStateFeeder            input.ClusterStateFeeder
+	checkpointWriter              checkpoint.CheckpointWriter
+	checkpointsGCInterval         time.Duration
+	lastCheckpointGC              time.Time
+	vpaClient                     vpa_api.VerticalPodAutoscalersGetter
+	podResourceRecommender        logic.PodResourceRecommender
+	useCheckpoints                bool
+	lastAggregateContainerStateGC time.Time
 }
 
 func (r *recommender) GetClusterState() *model.ClusterState {
@@ -95,12 +101,18 @@ func (r *recommender) RunOnce() {
 	r.clusterStateFeeder.LoadRealTimeMetrics()
 	r.updateVPAs()
 	glog.V(3).Infof("ClusterState is tracking %v PodStates and %v VPAs", len(r.clusterState.Pods), len(r.clusterState.Vpas))
+
+	now := time.Now()
+
 	if r.useCheckpoints {
-		r.checkpointWriter.StoreCheckpoints(time.Now())
+		r.checkpointWriter.StoreCheckpoints(now)
 		if time.Now().Sub(r.lastCheckpointGC) < r.checkpointsGCInterval {
-			r.lastCheckpointGC = time.Now()
+			r.lastCheckpointGC = now
 			r.clusterStateFeeder.GarbageCollectCheckpoints()
 		}
+	}
+	if time.Now().Sub(r.lastAggregateContainerStateGC) < AggregateContainerStateGCInterval {
+		r.clusterState.GrabageCollectAggregateCollectionStates(now)
 	}
 }
 
@@ -110,14 +122,15 @@ func (r *recommender) RunOnce() {
 func NewRecommender(config *rest.Config, checkpointsGCInterval time.Duration, useCheckpoints bool) Recommender {
 	clusterState := model.NewClusterState()
 	recommender := &recommender{
-		clusterState:           clusterState,
-		clusterStateFeeder:     input.NewClusterStateFeeder(config, clusterState),
-		checkpointWriter:       checkpoint.NewCheckpointWriter(clusterState, vpa_clientset.NewForConfigOrDie(config).PocV1alpha1()),
-		checkpointsGCInterval:  checkpointsGCInterval,
-		lastCheckpointGC:       time.Now(),
-		vpaClient:              vpa_clientset.NewForConfigOrDie(config).PocV1alpha1(),
-		podResourceRecommender: logic.CreatePodResourceRecommender(),
-		useCheckpoints:         useCheckpoints,
+		clusterState:                  clusterState,
+		clusterStateFeeder:            input.NewClusterStateFeeder(config, clusterState),
+		checkpointWriter:              checkpoint.NewCheckpointWriter(clusterState, vpa_clientset.NewForConfigOrDie(config).PocV1alpha1()),
+		checkpointsGCInterval:         checkpointsGCInterval,
+		lastCheckpointGC:              time.Now(),
+		vpaClient:                     vpa_clientset.NewForConfigOrDie(config).PocV1alpha1(),
+		podResourceRecommender:        logic.CreatePodResourceRecommender(),
+		useCheckpoints:                useCheckpoints,
+		lastAggregateContainerStateGC: time.Now(),
 	}
 	glog.V(3).Infof("New Recommender created %+v", recommender)
 	return recommender
