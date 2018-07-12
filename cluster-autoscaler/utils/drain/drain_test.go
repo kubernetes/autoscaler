@@ -210,6 +210,31 @@ func TestDrain(t *testing.T) {
 		},
 	}
 
+	unsafeRcPod := &apiv1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:            "bar",
+			Namespace:       "default",
+			OwnerReferences: GenerateOwnerReferences(rc.Name, "ReplicationController", "extensions/v1beta1", ""),
+			Annotations: map[string]string{
+				PodSafeToEvictKey: "false",
+			},
+		},
+		Spec: apiv1.PodSpec{
+			NodeName: "node",
+		},
+	}
+
+	unsafeJobPod := &apiv1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:            "bar",
+			Namespace:       "default",
+			OwnerReferences: GenerateOwnerReferences(job.Name, "Job", "extensions/v1beta1", ""),
+			Annotations: map[string]string{
+				PodSafeToEvictKey: "false",
+			},
+		},
+	}
+
 	kubeSystemSafePod := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "bar",
@@ -375,6 +400,22 @@ func TestDrain(t *testing.T) {
 			pdbs:        []*policyv1.PodDisruptionBudget{},
 			expectFatal: false,
 			expectPods:  []*apiv1.Pod{emptydirSafePod},
+		},
+		{
+			description: "RC-managed pod with PodSafeToEvict=false annotation",
+			pods:        []*apiv1.Pod{unsafeRcPod},
+			rcs:         []apiv1.ReplicationController{rc},
+			pdbs:        []*policyv1.PodDisruptionBudget{},
+			expectFatal: true,
+			expectPods:  []*apiv1.Pod{},
+		},
+		{
+			description: "Job-managed pod with PodSafeToEvict=false annotation",
+			pods:        []*apiv1.Pod{unsafeJobPod},
+			pdbs:        []*policyv1.PodDisruptionBudget{},
+			rcs:         []apiv1.ReplicationController{rc},
+			expectFatal: true,
+			expectPods:  []*apiv1.Pod{},
 		},
 		{
 			description: "empty PDB with RC-managed pod",
