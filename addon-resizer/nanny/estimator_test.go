@@ -23,6 +23,12 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
+const (
+	DefaultScaleFactor    = 1.5
+	DefaultMinClusterSize = 16
+	SmallMinClusterSize   = 5
+)
+
 var (
 	fullEstimator = LinearEstimator{
 		Resources: []Resource{
@@ -116,7 +122,8 @@ var (
 				Name:         "storage",
 			},
 		},
-		ScaleFactor: 1.5,
+		ScaleFactor:    DefaultScaleFactor,
+		MinClusterSize: DefaultMinClusterSize,
 	}
 	exponentialLessThanMilliEstimator = ExponentialEstimator{
 		Resources: []Resource{
@@ -126,7 +133,29 @@ var (
 				Name:         "cpu",
 			},
 		},
-		ScaleFactor: 1.5,
+		ScaleFactor:    DefaultScaleFactor,
+		MinClusterSize: DefaultMinClusterSize,
+	}
+	exponentialSmallClusterEstimator = ExponentialEstimator{
+		Resources: []Resource{
+			{
+				Base:         resource.MustParse("10m"),
+				ExtraPerNode: resource.MustParse("0.5m"),
+				Name:         "cpu",
+			},
+			{
+				Base:         resource.MustParse("50Mi"),
+				ExtraPerNode: resource.MustParse("4.5Mi"),
+				Name:         "memory",
+			},
+			{
+				Base:         resource.MustParse("500Mi"),
+				ExtraPerNode: resource.MustParse("100Mi"),
+				Name:         "storage",
+			},
+		},
+		ScaleFactor:    DefaultScaleFactor,
+		MinClusterSize: SmallMinClusterSize,
 	}
 
 	baseResources = corev1.ResourceList{
@@ -182,6 +211,12 @@ var (
 		"memory":  resource.MustParse("54Mi"),
 		"storage": resource.MustParse("54Gi"),
 	}
+
+	smallClusterFiveNodeResources = corev1.ResourceList{
+		"cpu":     resource.MustParse("12.5m"),
+		"memory":  resource.MustParse("72.5Mi"),
+		"storage": resource.MustParse("1000Mi"),
+	}
 )
 
 func verifyResources(t *testing.T, kind string, got, want corev1.ResourceList) {
@@ -194,7 +229,7 @@ func verifyResources(t *testing.T, kind string, got, want corev1.ResourceList) {
 			t.Errorf("missing resource %s in %s", res, kind)
 		}
 		if val.Cmp(actVal) != 0 {
-			t.Errorf("not equal resource %s in %s, got: %+v, want: %+v", res, kind, actVal, val)
+			t.Errorf("not equal resource %s in %s, got: %s, want: %s", res, kind, actVal.String(), val.String())
 		}
 	}
 }
@@ -227,6 +262,7 @@ func TestEstimateResources(t *testing.T) {
 		{exponentialEstimator, 20, twentyFourNodeResources, twentyFourNodeResources},
 		{exponentialEstimator, 24, twentyFourNodeResources, twentyFourNodeResources},
 		{exponentialLessThanMilliEstimator, 3, threeNodeLessThanMilliExpResources, threeNodeLessThanMilliExpResources},
+		{exponentialSmallClusterEstimator, 1, smallClusterFiveNodeResources, smallClusterFiveNodeResources},
 	}
 
 	for _, tc := range testCases {

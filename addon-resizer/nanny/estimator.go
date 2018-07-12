@@ -43,19 +43,28 @@ func (e LinearEstimator) scaleWithNodes(numNodes uint64) *corev1.ResourceRequire
 	return calculateResources(numNodes, e.Resources)
 }
 
-// ExponentialEstimator estimates the amount of resources in the way that
-// prevents from frequent updates but may end up with larger resource usage
-// than actually needed (though no more than ScaleFactor).
+// ExponentialEstimator estimates resource requirements in a way that prevents
+// frequent updates but may end up with larger estimates than actually needed.
 type ExponentialEstimator struct {
-	Resources   []Resource
+	// The collection of resources to provide estimates for.
+	Resources []Resource
+	// The minimum cluster size for which the estimator will provide
+	// resource estimates. Must be greater than 1.
+	MinClusterSize uint64
+	// The multiplier used to compute the next cluster size to provide
+	// estimates for. For example, suppose the cluster has 9 nodes,
+	// MinClusterSize is 5, and ScaleFactor is 1.5. Then the estimator will
+	// provide estimates for FLOOR(5 * 1.5 * 1.5) = 11 nodes since that is
+	// the smallest cluster size larger than 9 nodes.
 	ScaleFactor float64
 }
 
 func (e ExponentialEstimator) scaleWithNodes(numNodes uint64) *corev1.ResourceRequirements {
-	n := uint64(16)
+	n := e.MinClusterSize
 	for n < numNodes {
 		n = uint64(float64(n)*e.ScaleFactor + eps)
 	}
+
 	return calculateResources(n, e.Resources)
 }
 
