@@ -1628,6 +1628,7 @@ type Address struct {
 	// Possible values:
 	//   "IN_USE"
 	//   "RESERVED"
+	//   "RESERVING"
 	Status string `json:"status,omitempty"`
 
 	// Subnetwork: The URL of the subnetwork in which to reserve the
@@ -7900,6 +7901,16 @@ type ForwardingRule struct {
 	//   "TCP"
 	//   "UDP"
 	IPProtocol string `json:"IPProtocol,omitempty"`
+
+	// AllPorts: This field is used along with the backend_service field for
+	// internal load balancing or with the target field for internal
+	// TargetInstance. This field cannot be used with port or portRange
+	// fields.
+	//
+	// When the load balancing scheme is INTERNAL and protocol is TCP/UDP,
+	// specify this field to allow packets addressed to any ports will be
+	// forwarded to the backends configured with this forwarding rule.
+	AllPorts bool `json:"allPorts,omitempty"`
 
 	// BackendService: This field is not used for external load
 	// balancing.
@@ -18227,7 +18238,7 @@ func (s *MachineTypesScopedListWarningData) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// ManagedInstance: Next available tag: 12
+// ManagedInstance: A Managed Instance resource.
 type ManagedInstance struct {
 	// CurrentAction: [Output Only] The current action that the managed
 	// instance group has scheduled for the instance. Possible values:
@@ -20502,6 +20513,13 @@ type NodeGroupNode struct {
 
 	// NodeType: The type of this node.
 	NodeType string `json:"nodeType,omitempty"`
+
+	// Possible values:
+	//   "CREATING"
+	//   "DELETING"
+	//   "INVALID"
+	//   "READY"
+	Status string `json:"status,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "Index") to
 	// unconditionally include in API requests. By default, fields with
@@ -23139,6 +23157,7 @@ type Quota struct {
 	//   "IN_USE_MAINTENANCE_WINDOWS"
 	//   "LOCAL_SSD_TOTAL_GB"
 	//   "NETWORKS"
+	//   "NETWORK_ENDPOINT_GROUPS"
 	//   "NVIDIA_K80_GPUS"
 	//   "NVIDIA_P100_GPUS"
 	//   "NVIDIA_P100_VWS_GPUS"
@@ -26907,6 +26926,16 @@ type RouterNat struct {
 	// shrink based on the number of VMs configured to use NAT.
 	AutoAllocatedNatIps []string `json:"autoAllocatedNatIps,omitempty"`
 
+	// IcmpIdleTimeoutSec: Timeout (in seconds) for ICMP connections.
+	// Defaults to 30s if not set.
+	IcmpIdleTimeoutSec int64 `json:"icmpIdleTimeoutSec,omitempty"`
+
+	// MinPortsPerVm: Minimum number of ports allocated to a VM from this
+	// NAT config. If not set, a default number of ports is allocated to a
+	// VM. This gets rounded up to the nearest power of 2. Eg. if the value
+	// of this field is 50, at least 64 ports will be allocated to a VM.
+	MinPortsPerVm int64 `json:"minPortsPerVm,omitempty"`
+
 	// Name: Unique name of this Nat service. The name must be 1-63
 	// characters long and comply with RFC1035.
 	Name string `json:"name,omitempty"`
@@ -26940,6 +26969,18 @@ type RouterNat struct {
 	// translated by NAT Gateway. It is used only when LIST_OF_SUBNETWORKS
 	// is selected for the SubnetworkIpRangeToNatOption above.
 	Subnetworks []*RouterNatSubnetworkToNat `json:"subnetworks,omitempty"`
+
+	// TcpEstablishedIdleTimeoutSec: Timeout (in seconds) for TCP
+	// established connections. Defaults to 1200s if not set.
+	TcpEstablishedIdleTimeoutSec int64 `json:"tcpEstablishedIdleTimeoutSec,omitempty"`
+
+	// TcpTransitoryIdleTimeoutSec: Timeout (in seconds) for TCP transitory
+	// connections. Defaults to 30s if not set.
+	TcpTransitoryIdleTimeoutSec int64 `json:"tcpTransitoryIdleTimeoutSec,omitempty"`
+
+	// UdpIdleTimeoutSec: Timeout (in seconds) for UDP connections. Defaults
+	// to 30s if not set.
+	UdpIdleTimeoutSec int64 `json:"udpIdleTimeoutSec,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "AutoAllocatedNatIps")
 	// to unconditionally include in API requests. By default, fields with
@@ -34326,6 +34367,241 @@ func (s *UsageExportLocation) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// VmEndpointNatMappings: Contain information of Nat mapping for a VM
+// endpoint (i.e., NIC).
+type VmEndpointNatMappings struct {
+	// InstanceName: Name of the VM instance which the endpoint belongs to
+	InstanceName string `json:"instanceName,omitempty"`
+
+	InterfaceNatMappings []*VmEndpointNatMappingsInterfaceNatMappings `json:"interfaceNatMappings,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "InstanceName") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "InstanceName") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *VmEndpointNatMappings) MarshalJSON() ([]byte, error) {
+	type NoMethod VmEndpointNatMappings
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// VmEndpointNatMappingsInterfaceNatMappings: Contain information of Nat
+// mapping for an interface of this endpoint.
+type VmEndpointNatMappingsInterfaceNatMappings struct {
+	// NatIpPortRanges: A list of all IP:port-range mappings assigned to
+	// this interface. These ranges are inclusive, that is, both the first
+	// and the last ports can be used for NAT. Example:
+	// ["2.2.2.2:12345-12355", "1.1.1.1:2234-2234"].
+	NatIpPortRanges []string `json:"natIpPortRanges,omitempty"`
+
+	// NumTotalNatPorts: Total number of ports across all NAT IPs allocated
+	// to this interface. It equals to the aggregated port number in the
+	// field nat_ip_port_ranges.
+	NumTotalNatPorts int64 `json:"numTotalNatPorts,omitempty"`
+
+	// SourceAliasIpRange: Alias IP range for this interface endpoint. It
+	// will be a private (RFC 1918) IP range. Examples: "10.33.4.55/32", or
+	// "192.168.5.0/24".
+	SourceAliasIpRange string `json:"sourceAliasIpRange,omitempty"`
+
+	// SourceVirtualIp: Primary IP of the VM for this NIC.
+	SourceVirtualIp string `json:"sourceVirtualIp,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "NatIpPortRanges") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "NatIpPortRanges") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *VmEndpointNatMappingsInterfaceNatMappings) MarshalJSON() ([]byte, error) {
+	type NoMethod VmEndpointNatMappingsInterfaceNatMappings
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// VmEndpointNatMappingsList: Contains a list of VmEndpointNatMappings.
+type VmEndpointNatMappingsList struct {
+	// Id: [Output Only] The unique identifier for the resource. This
+	// identifier is defined by the server.
+	Id string `json:"id,omitempty"`
+
+	// Kind: [Output Only] Type of resource. Always
+	// compute#vmEndpointNatMappingsList for lists of Nat mappings of VM
+	// endpoints.
+	Kind string `json:"kind,omitempty"`
+
+	// NextPageToken: [Output Only] This token allows you to get the next
+	// page of results for list requests. If the number of results is larger
+	// than maxResults, use the nextPageToken as a value for the query
+	// parameter pageToken in the next list request. Subsequent list
+	// requests will have their own nextPageToken to continue paging through
+	// the results.
+	NextPageToken string `json:"nextPageToken,omitempty"`
+
+	// Result: [Output Only] A list of Nat mapping information of VM
+	// endpoints.
+	Result []*VmEndpointNatMappings `json:"result,omitempty"`
+
+	// SelfLink: [Output Only] Server-defined URL for this resource.
+	SelfLink string `json:"selfLink,omitempty"`
+
+	// Warning: [Output Only] Informational warning message.
+	Warning *VmEndpointNatMappingsListWarning `json:"warning,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Id") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Id") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *VmEndpointNatMappingsList) MarshalJSON() ([]byte, error) {
+	type NoMethod VmEndpointNatMappingsList
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// VmEndpointNatMappingsListWarning: [Output Only] Informational warning
+// message.
+type VmEndpointNatMappingsListWarning struct {
+	// Code: [Output Only] A warning code, if applicable. For example,
+	// Compute Engine returns NO_RESULTS_ON_PAGE if there are no results in
+	// the response.
+	//
+	// Possible values:
+	//   "CLEANUP_FAILED"
+	//   "DEPRECATED_RESOURCE_USED"
+	//   "DEPRECATED_TYPE_USED"
+	//   "DISK_SIZE_LARGER_THAN_IMAGE_SIZE"
+	//   "EXPERIMENTAL_TYPE_USED"
+	//   "EXTERNAL_API_WARNING"
+	//   "FIELD_VALUE_OVERRIDEN"
+	//   "INJECTED_KERNELS_DEPRECATED"
+	//   "MISSING_TYPE_DEPENDENCY"
+	//   "NEXT_HOP_ADDRESS_NOT_ASSIGNED"
+	//   "NEXT_HOP_CANNOT_IP_FORWARD"
+	//   "NEXT_HOP_INSTANCE_NOT_FOUND"
+	//   "NEXT_HOP_INSTANCE_NOT_ON_NETWORK"
+	//   "NEXT_HOP_NOT_RUNNING"
+	//   "NOT_CRITICAL_ERROR"
+	//   "NO_RESULTS_ON_PAGE"
+	//   "REQUIRED_TOS_AGREEMENT"
+	//   "RESOURCE_IN_USE_BY_OTHER_RESOURCE_WARNING"
+	//   "RESOURCE_NOT_DELETED"
+	//   "SCHEMA_VALIDATION_IGNORED"
+	//   "SINGLE_INSTANCE_PROPERTY_TEMPLATE"
+	//   "UNDECLARED_PROPERTIES"
+	//   "UNREACHABLE"
+	Code string `json:"code,omitempty"`
+
+	// Data: [Output Only] Metadata about this warning in key: value format.
+	// For example:
+	// "data": [ { "key": "scope", "value": "zones/us-east1-d" }
+	Data []*VmEndpointNatMappingsListWarningData `json:"data,omitempty"`
+
+	// Message: [Output Only] A human-readable description of the warning
+	// code.
+	Message string `json:"message,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Code") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Code") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *VmEndpointNatMappingsListWarning) MarshalJSON() ([]byte, error) {
+	type NoMethod VmEndpointNatMappingsListWarning
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type VmEndpointNatMappingsListWarningData struct {
+	// Key: [Output Only] A key that provides more detail on the warning
+	// being returned. For example, for warnings where there are no results
+	// in a list request for a particular zone, this key might be scope and
+	// the key value might be the zone name. Other examples might be a key
+	// indicating a deprecated resource and a suggested replacement, or a
+	// warning about invalid network settings (for example, if an instance
+	// attempts to perform IP forwarding but is not enabled for IP
+	// forwarding).
+	Key string `json:"key,omitempty"`
+
+	// Value: [Output Only] A warning data value corresponding to the key.
+	Value string `json:"value,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Key") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Key") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *VmEndpointNatMappingsListWarningData) MarshalJSON() ([]byte, error) {
+	type NoMethod VmEndpointNatMappingsListWarningData
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // VpnGateway: Represents a VPN gateway resource.
 type VpnGateway struct {
 	// CreationTimestamp: [Output Only] Creation timestamp in RFC3339 text
@@ -34372,24 +34648,6 @@ type VpnGateway struct {
 	// Network: URL of the network to which this VPN gateway is attached.
 	// Provided by the client when the VPN gateway is created.
 	Network string `json:"network,omitempty"`
-
-	// Redundancy: The redundancy mode configured for this VPN gateway.
-	// Possible values are ACTIVE_ACTIVE and NONE. If set to ACTIVE_ACTIVE,
-	// two VPN interfaces are created thereby providing higher availability.
-	// If set to NONE, only one interface is created with a lower
-	// availability SLA.
-	//
-	// If this field is specified, either 2 or 1 external IP addresses
-	// (depending on the value of specified redundancy) are automatically
-	// allocated for use with this VPN gateway, and incoming traffic on the
-	// external addresses to ports ESP, UDP:500 and UDP:4500 are
-	// automatically forwarded to this gateway.
-	//
-	// Possible values:
-	//   "ACTIVE_ACTIVE"
-	//   "NONE"
-	//   "REDUNDANCY_UNSPECIFIED"
-	Redundancy string `json:"redundancy,omitempty"`
 
 	// Region: [Output Only] URL of the region where the VPN gateway
 	// resides.
@@ -35015,17 +35273,12 @@ type VpnTunnel struct {
 
 	// VpnGateway: URL of the VPN gateway with which this VPN tunnel is
 	// associated. Provided by the client when the VPN tunnel is created.
-	// This must be used (instead of target_vpn_gateway) if a VPN gateway
-	// resource is created with redundancy.
-	//
-	// VPN gateway resource provides a way to create a highly available VPN
-	// setup.
+	// This must be used (instead of target_vpn_gateway) if a High
+	// Availability VPN gateway resource is created.
 	VpnGateway string `json:"vpnGateway,omitempty"`
 
 	// VpnGatewayInterface: The interface ID of the VPN gateway with which
-	// this VPN tunnel is associated. If the VPN gateway has redundancy
-	// other than NONE, this field is required to identify which interface
-	// of the VPN gateway to use.
+	// this VPN tunnel is associated.
 	VpnGatewayInterface int64 `json:"vpnGatewayInterface,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the
@@ -108277,6 +108530,276 @@ func (c *RoutersGetCall) Do(opts ...googleapi.CallOption) (*Router, error) {
 	//   ]
 	// }
 
+}
+
+// method id "compute.routers.getNatMappingInfo":
+
+type RoutersGetNatMappingInfoCall struct {
+	s            *Service
+	project      string
+	region       string
+	router       string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// GetNatMappingInfo: Retrieves runtime Nat mapping information of VM
+// endpoints.
+func (r *RoutersService) GetNatMappingInfo(project string, region string, router string) *RoutersGetNatMappingInfoCall {
+	c := &RoutersGetNatMappingInfoCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.project = project
+	c.region = region
+	c.router = router
+	return c
+}
+
+// Filter sets the optional parameter "filter": A filter expression that
+// filters resources listed in the response. The expression must specify
+// the field name, a comparison operator, and the value that you want to
+// use for filtering. The value must be a string, a number, or a
+// boolean. The comparison operator must be either =, !=, >, or <.
+//
+// For example, if you are filtering Compute Engine instances, you can
+// exclude instances named example-instance by specifying name !=
+// example-instance.
+//
+// You can also filter nested fields. For example, you could specify
+// scheduling.automaticRestart = false to include instances only if they
+// are not scheduled for automatic restarts. You can use filtering on
+// nested fields to filter based on resource labels.
+//
+// To filter on multiple expressions, provide each separate expression
+// within parentheses. For example, (scheduling.automaticRestart = true)
+// (cpuPlatform = "Intel Skylake"). By default, each expression is an
+// AND expression. However, you can include AND and OR expressions
+// explicitly. For example, (cpuPlatform = "Intel Skylake") OR
+// (cpuPlatform = "Intel Broadwell") AND (scheduling.automaticRestart =
+// true).
+func (c *RoutersGetNatMappingInfoCall) Filter(filter string) *RoutersGetNatMappingInfoCall {
+	c.urlParams_.Set("filter", filter)
+	return c
+}
+
+// MaxResults sets the optional parameter "maxResults": The maximum
+// number of results per page that should be returned. If the number of
+// available results is larger than maxResults, Compute Engine returns a
+// nextPageToken that can be used to get the next page of results in
+// subsequent list requests. Acceptable values are 0 to 500, inclusive.
+// (Default: 500)
+func (c *RoutersGetNatMappingInfoCall) MaxResults(maxResults int64) *RoutersGetNatMappingInfoCall {
+	c.urlParams_.Set("maxResults", fmt.Sprint(maxResults))
+	return c
+}
+
+// OrderBy sets the optional parameter "orderBy": Sorts list results by
+// a certain order. By default, results are returned in alphanumerical
+// order based on the resource name.
+//
+// You can also sort results in descending order based on the creation
+// timestamp using orderBy="creationTimestamp desc". This sorts results
+// based on the creationTimestamp field in reverse chronological order
+// (newest result first). Use this to sort resources like operations so
+// that the newest operation is returned first.
+//
+// Currently, only sorting by name or creationTimestamp desc is
+// supported.
+func (c *RoutersGetNatMappingInfoCall) OrderBy(orderBy string) *RoutersGetNatMappingInfoCall {
+	c.urlParams_.Set("orderBy", orderBy)
+	return c
+}
+
+// PageToken sets the optional parameter "pageToken": Specifies a page
+// token to use. Set pageToken to the nextPageToken returned by a
+// previous list request to get the next page of results.
+func (c *RoutersGetNatMappingInfoCall) PageToken(pageToken string) *RoutersGetNatMappingInfoCall {
+	c.urlParams_.Set("pageToken", pageToken)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *RoutersGetNatMappingInfoCall) Fields(s ...googleapi.Field) *RoutersGetNatMappingInfoCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *RoutersGetNatMappingInfoCall) IfNoneMatch(entityTag string) *RoutersGetNatMappingInfoCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *RoutersGetNatMappingInfoCall) Context(ctx context.Context) *RoutersGetNatMappingInfoCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *RoutersGetNatMappingInfoCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *RoutersGetNatMappingInfoCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/routers/{router}/getNatMappingInfo")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("GET", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"project": c.project,
+		"region":  c.region,
+		"router":  c.router,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "compute.routers.getNatMappingInfo" call.
+// Exactly one of *VmEndpointNatMappingsList or error will be non-nil.
+// Any non-2xx status code is an error. Response headers are in either
+// *VmEndpointNatMappingsList.ServerResponse.Header or (if a response
+// was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *RoutersGetNatMappingInfoCall) Do(opts ...googleapi.CallOption) (*VmEndpointNatMappingsList, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &VmEndpointNatMappingsList{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Retrieves runtime Nat mapping information of VM endpoints.",
+	//   "httpMethod": "GET",
+	//   "id": "compute.routers.getNatMappingInfo",
+	//   "parameterOrder": [
+	//     "project",
+	//     "region",
+	//     "router"
+	//   ],
+	//   "parameters": {
+	//     "filter": {
+	//       "description": "A filter expression that filters resources listed in the response. The expression must specify the field name, a comparison operator, and the value that you want to use for filtering. The value must be a string, a number, or a boolean. The comparison operator must be either =, !=, \u003e, or \u003c.\n\nFor example, if you are filtering Compute Engine instances, you can exclude instances named example-instance by specifying name != example-instance.\n\nYou can also filter nested fields. For example, you could specify scheduling.automaticRestart = false to include instances only if they are not scheduled for automatic restarts. You can use filtering on nested fields to filter based on resource labels.\n\nTo filter on multiple expressions, provide each separate expression within parentheses. For example, (scheduling.automaticRestart = true) (cpuPlatform = \"Intel Skylake\"). By default, each expression is an AND expression. However, you can include AND and OR expressions explicitly. For example, (cpuPlatform = \"Intel Skylake\") OR (cpuPlatform = \"Intel Broadwell\") AND (scheduling.automaticRestart = true).",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "maxResults": {
+	//       "default": "500",
+	//       "description": "The maximum number of results per page that should be returned. If the number of available results is larger than maxResults, Compute Engine returns a nextPageToken that can be used to get the next page of results in subsequent list requests. Acceptable values are 0 to 500, inclusive. (Default: 500)",
+	//       "format": "uint32",
+	//       "location": "query",
+	//       "minimum": "0",
+	//       "type": "integer"
+	//     },
+	//     "orderBy": {
+	//       "description": "Sorts list results by a certain order. By default, results are returned in alphanumerical order based on the resource name.\n\nYou can also sort results in descending order based on the creation timestamp using orderBy=\"creationTimestamp desc\". This sorts results based on the creationTimestamp field in reverse chronological order (newest result first). Use this to sort resources like operations so that the newest operation is returned first.\n\nCurrently, only sorting by name or creationTimestamp desc is supported.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "pageToken": {
+	//       "description": "Specifies a page token to use. Set pageToken to the nextPageToken returned by a previous list request to get the next page of results.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "project": {
+	//       "description": "Project ID for this request.",
+	//       "location": "path",
+	//       "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "region": {
+	//       "description": "Name of the region for this request.",
+	//       "location": "path",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "router": {
+	//       "description": "Name of the Router resource to query for Nat Mapping information of VM endpoints.",
+	//       "location": "path",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "{project}/regions/{region}/routers/{router}/getNatMappingInfo",
+	//   "response": {
+	//     "$ref": "VmEndpointNatMappingsList"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform",
+	//     "https://www.googleapis.com/auth/compute",
+	//     "https://www.googleapis.com/auth/compute.readonly"
+	//   ]
+	// }
+
+}
+
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *RoutersGetNatMappingInfoCall) Pages(ctx context.Context, f func(*VmEndpointNatMappingsList) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
 }
 
 // method id "compute.routers.getRouterStatus":

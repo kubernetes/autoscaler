@@ -29,6 +29,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
 	"gopkg.in/gcfg.v1"
 	apiv1 "k8s.io/api/core/v1"
@@ -49,9 +50,10 @@ const (
 
 // AwsManager is handles aws communication and data caching.
 type AwsManager struct {
-	service     autoScalingWrapper
-	asgCache    *asgCache
-	lastRefresh time.Time
+	autoScalingService autoScalingWrapper
+	ec2Service         ec2Wrapper
+	asgCache           *asgCache
+	lastRefresh        time.Time
 }
 
 type asgTemplate struct {
@@ -65,7 +67,8 @@ type asgTemplate struct {
 func createAWSManagerInternal(
 	configReader io.Reader,
 	discoveryOpts cloudprovider.NodeGroupDiscoveryOptions,
-	service *autoScalingWrapper,
+	autoScalingService *autoScalingWrapper,
+	ec2Service *ec2Wrapper,
 ) (*AwsManager, error) {
 	if configReader != nil {
 		var cfg provider_aws.CloudConfig
@@ -75,9 +78,15 @@ func createAWSManagerInternal(
 		}
 	}
 
-	if service == nil {
-		service = &autoScalingWrapper{
-			autoscaling.New(session.New()),
+	if autoScalingService == nil || ec2Service == nil {
+		sess := session.New()
+
+		if autoScalingService == nil {
+			autoScalingService = &autoScalingWrapper{autoscaling.New(sess)}
+		}
+
+		if ec2Service == nil {
+			ec2Service = &ec2Wrapper{ec2.New(sess)}
 		}
 	}
 
@@ -86,14 +95,15 @@ func createAWSManagerInternal(
 		return nil, err
 	}
 
-	cache, err := newASGCache(*service, discoveryOpts.NodeGroupSpecs, specs)
+	cache, err := newASGCache(*autoScalingService, discoveryOpts.NodeGroupSpecs, specs)
 	if err != nil {
 		return nil, err
 	}
 
 	manager := &AwsManager{
-		service:  *service,
-		asgCache: cache,
+		autoScalingService: *autoScalingService,
+		ec2Service:         *ec2Service,
+		asgCache:           cache,
 	}
 
 	if err := manager.forceRefresh(); err != nil {
@@ -105,7 +115,7 @@ func createAWSManagerInternal(
 
 // CreateAwsManager constructs awsManager object.
 func CreateAwsManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGroupDiscoveryOptions) (*AwsManager, error) {
-	return createAWSManagerInternal(configReader, discoveryOpts, nil)
+	return createAWSManagerInternal(configReader, discoveryOpts, nil, nil)
 }
 
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
@@ -149,7 +159,7 @@ func (m *AwsManager) SetAsgSize(asg *asg, size int) error {
 		HonorCooldown:        aws.Bool(false),
 	}
 	glog.V(0).Infof("Setting asg %s size to %d", asg.Name, size)
-	_, err := m.service.SetDesiredCapacity(params)
+	_, err := m.autoScalingService.SetDesiredCapacity(params)
 	if err != nil {
 		return err
 	}
@@ -184,7 +194,7 @@ func (m *AwsManager) DeleteInstances(instances []*AwsInstanceRef) error {
 			InstanceId:                     aws.String(instance.Name),
 			ShouldDecrementDesiredCapacity: aws.Bool(true),
 		}
-		resp, err := m.service.TerminateInstanceInAutoScalingGroup(params)
+		resp, err := m.autoScalingService.TerminateInstanceInAutoScalingGroup(params)
 		if err != nil {
 			return err
 		}
@@ -200,11 +210,6 @@ func (m *AwsManager) GetAsgNodes(ref AwsRef) ([]AwsInstanceRef, error) {
 }
 
 func (m *AwsManager) getAsgTemplate(asg *asg) (*asgTemplate, error) {
-	instanceTypeName, err := m.service.getInstanceTypeByLCName(asg.LaunchConfigurationName)
-	if err != nil {
-		return nil, err
-	}
-
 	if len(asg.AvailabilityZones) < 1 {
 		return nil, fmt.Errorf("Unable to get first AvailabilityZone for %s", asg.Name)
 	}
@@ -216,12 +221,27 @@ func (m *AwsManager) getAsgTemplate(asg *asg) (*asgTemplate, error) {
 		glog.Warningf("Found multiple availability zones, using %s\n", az)
 	}
 
+	instanceTypeName, err := m.buildInstanceType(asg)
+	if err != nil {
+		return nil, err
+	}
+
 	return &asgTemplate{
 		InstanceType: InstanceTypes[instanceTypeName],
 		Region:       region,
 		Zone:         az,
 		Tags:         asg.Tags,
 	}, nil
+}
+
+func (m *AwsManager) buildInstanceType(asg *asg) (string, error) {
+	if asg.LaunchConfigurationName != "" {
+		return m.autoScalingService.getInstanceTypeByLCName(asg.LaunchConfigurationName)
+	} else if asg.LaunchTemplateName != "" && asg.LaunchTemplateVersion != "" {
+		return m.ec2Service.getInstanceTypeByLT(asg.LaunchTemplateName, asg.LaunchTemplateVersion)
+	}
+
+	return "", fmt.Errorf("Unable to get instance type from launch config or launch template")
 }
 
 func (m *AwsManager) buildNodeFromTemplate(asg *asg, template *asgTemplate) (*apiv1.Node, error) {

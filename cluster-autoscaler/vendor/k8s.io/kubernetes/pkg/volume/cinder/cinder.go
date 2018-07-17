@@ -27,8 +27,10 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	utilfeature "k8s.io/apiserver/pkg/util/feature"
 	"k8s.io/kubernetes/pkg/cloudprovider"
 	"k8s.io/kubernetes/pkg/cloudprovider/providers/openstack"
+	"k8s.io/kubernetes/pkg/features"
 	"k8s.io/kubernetes/pkg/util/keymutex"
 	"k8s.io/kubernetes/pkg/util/mount"
 	kstrings "k8s.io/kubernetes/pkg/util/strings"
@@ -51,7 +53,7 @@ type BlockStorageProvider interface {
 	AttachDisk(instanceID, volumeID string) (string, error)
 	DetachDisk(instanceID, volumeID string) error
 	DeleteVolume(volumeID string) error
-	CreateVolume(name string, size int, vtype, availability string, tags *map[string]string) (string, string, bool, error)
+	CreateVolume(name string, size int, vtype, availability string, tags *map[string]string) (string, string, string, bool, error)
 	GetDevicePath(volumeID string) string
 	InstanceID() (string, error)
 	GetAttachmentDiskPath(instanceID, volumeID string) (string, error)
@@ -437,7 +439,7 @@ func (c *cinderVolumeUnmounter) TearDownAt(dir string) error {
 	// Find Cinder volumeID to lock the right volume
 	// TODO: refactor VolumePlugin.NewUnmounter to get full volume.Spec just like
 	// NewMounter. We could then find volumeID there without probing MountRefs.
-	refs, err := mount.GetMountRefs(c.mounter, dir)
+	refs, err := c.mounter.GetMountRefs(dir)
 	if err != nil {
 		glog.V(4).Infof("GetMountRefs failed: %v", err)
 		return err
@@ -454,7 +456,7 @@ func (c *cinderVolumeUnmounter) TearDownAt(dir string) error {
 	defer c.plugin.volumeLocks.UnlockKey(c.pdName)
 
 	// Reload list of references, there might be SetUpAt finished in the meantime
-	refs, err = mount.GetMountRefs(c.mounter, dir)
+	refs, err = c.mounter.GetMountRefs(dir)
 	if err != nil {
 		glog.V(4).Infof("GetMountRefs failed: %v", err)
 		return err
@@ -505,13 +507,18 @@ func (c *cinderVolumeProvisioner) Provision(selectedNode *v1.Node, allowedTopolo
 		return nil, fmt.Errorf("invalid AccessModes %v: only AccessModes %v are supported", c.options.PVC.Spec.AccessModes, c.plugin.GetAccessModes())
 	}
 
-	if util.CheckPersistentVolumeClaimModeBlock(c.options.PVC) {
-		return nil, fmt.Errorf("%s does not support block volume provisioning", c.plugin.GetPluginName())
-	}
-
 	volumeID, sizeGB, labels, fstype, err := c.manager.CreateVolume(c)
 	if err != nil {
 		return nil, err
+	}
+
+	var volumeMode *v1.PersistentVolumeMode
+	if utilfeature.DefaultFeatureGate.Enabled(features.BlockVolume) {
+		volumeMode = c.options.PVC.Spec.VolumeMode
+		if volumeMode != nil && *volumeMode == v1.PersistentVolumeBlock {
+			// Block volumes should not have any FSType
+			fstype = ""
+		}
 	}
 
 	pv := &v1.PersistentVolume{
@@ -528,6 +535,7 @@ func (c *cinderVolumeProvisioner) Provision(selectedNode *v1.Node, allowedTopolo
 			Capacity: v1.ResourceList{
 				v1.ResourceName(v1.ResourceStorage): resource.MustParse(fmt.Sprintf("%dGi", sizeGB)),
 			},
+			VolumeMode: volumeMode,
 			PersistentVolumeSource: v1.PersistentVolumeSource{
 				Cinder: &v1.CinderPersistentVolumeSource{
 					VolumeID: volumeID,

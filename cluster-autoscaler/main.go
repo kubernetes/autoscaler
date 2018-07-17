@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	ctx "context"
 	"flag"
 	"fmt"
 	"net/http"
@@ -359,13 +360,13 @@ func main() {
 			glog.Fatalf("Unable to create leader election lock: %v", err)
 		}
 
-		kube_leaderelection.RunOrDie(kube_leaderelection.LeaderElectionConfig{
+		kube_leaderelection.RunOrDie(ctx.TODO(), kube_leaderelection.LeaderElectionConfig{
 			Lock:          lock,
 			LeaseDuration: leaderElection.LeaseDuration.Duration,
 			RenewDeadline: leaderElection.RenewDeadline.Duration,
 			RetryPeriod:   leaderElection.RetryPeriod.Duration,
 			Callbacks: kube_leaderelection.LeaderCallbacks{
-				OnStartedLeading: func(_ <-chan struct{}) {
+				OnStartedLeading: func(_ ctx.Context) {
 					// Since we are committing a suicide after losing
 					// mastership, we can safely ignore the argument.
 					run(healthCheck)
