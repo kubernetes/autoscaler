@@ -24,6 +24,7 @@ go_library(
     ],
     importpath = "k8s.io/kubernetes/pkg/cloudprovider/providers/vsphere/vclib",
     deps = [
+        "//pkg/version:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/github.com/prometheus/client_golang/prometheus:go_default_library",
         "//vendor/github.com/vmware/govmomi/find:go_default_library",
@@ -52,6 +53,7 @@ filegroup(
     srcs = [
         ":package-srcs",
         "//pkg/cloudprovider/providers/vsphere/vclib/diskmanagers:all-srcs",
+        "//pkg/cloudprovider/providers/vsphere/vclib/fixtures:all-srcs",
     ],
     tags = ["automanaged"],
 )
@@ -59,6 +61,7 @@ filegroup(
 go_test(
     name = "go_default_test",
     srcs = [
+        "connection_test.go",
         "datacenter_test.go",
         "datastore_test.go",
         "folder_test.go",
@@ -67,6 +70,7 @@ go_test(
     ],
     embed = [":go_default_library"],
     deps = [
+        "//pkg/cloudprovider/providers/vsphere/vclib/fixtures:go_default_library",
         "//vendor/github.com/vmware/govmomi:go_default_library",
         "//vendor/github.com/vmware/govmomi/object:go_default_library",
         "//vendor/github.com/vmware/govmomi/simulator:go_default_library",
