@@ -41,5 +41,4 @@ limitations under the License.
 //
 // As a bonus, a few common types useful from all api objects and versions
 // are provided in types.go.
-
 package runtime
