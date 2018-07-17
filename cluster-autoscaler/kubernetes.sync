@@ -1,24 +1,26 @@
-commit eac9c4ff5711158eaca899a58d1293e39cbd040e (origin/master, origin/HEAD)
-Merge: c855accaec 86e152dc3f
+commit e09be82ad04107f81032b82a1e2452759001819f
+Merge: 77205b90a0 f77060aa8d
 Author: Kubernetes Submit Queue <k8s-merge-robot@users.noreply.github.com>
-Date:   Thu Jun 14 05:09:04 2018 -0700
+Date:   Tue Jul 17 02:13:07 2018 -0700
 
-    Merge pull request #65070 from davidz627/fix/externalProvisionerClusterRole
+    Merge pull request #66254 from sigma/patch-1
     
-    Automatic merge from submit-queue. If you want to cherry-pick this change to another branch, please follow the instructions <a href="https://github.com/kubernetes/community/blob/master/contributors/devel/cherry-picks.md">here</a>.
+    Automatic merge from submit-queue (batch tested with PRs 66172, 66254). If you want to cherry-pick this change to another branch, please follow the instructions <a href="https://github.com/kubernetes/community/blob/master/contributors/devel/cherry-picks.md">here</a>.
     
-    Added PV GET api rule to external-provisioner
+    client-go: update documentation for remotecommand.StreamOptions
     
-    Adds the PV GET API rule to the system:external-provisioner cluster role. It is required because the provisioner does a GET here:
-    https://github.com/kubernetes-incubator/external-storage/blob/master/lib/controller/controller.go#L1121
+    **What this PR does / why we need it**:
     
-    Fixes #65058
+    The ability to explicitly define the supported protocols was removed in commit 12c7874c0d88e9099ab2a29915d26751f0d23c2a
+    Adjust documentation accordingly.
     
-    /sig storage
-    /kind bug
-    /priority critical-urgent
-    /cc @msau42 @sbezverk
+    **Which issue(s) this PR fixes** *(optional, in `fixes #<issue number>(, fixes #<issue_number>, ...)` format, will close the issue(s) when PR gets merged)*:
     
+    **Special notes for your reviewer**:
+    
+    **Release note**:
     ```release-note
     NONE
     ```
+
+
