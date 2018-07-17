@@ -97,6 +97,7 @@ func New(client *http.Client) (*Service, error) {
 	s.LicenseCodes = NewLicenseCodesService(s)
 	s.Licenses = NewLicensesService(s)
 	s.MachineTypes = NewMachineTypesService(s)
+	s.NetworkEndpointGroups = NewNetworkEndpointGroupsService(s)
 	s.Networks = NewNetworksService(s)
 	s.NodeGroups = NewNodeGroupsService(s)
 	s.NodeTemplates = NewNodeTemplatesService(s)
@@ -188,6 +189,8 @@ type Service struct {
 	Licenses *LicensesService
 
 	MachineTypes *MachineTypesService
+
+	NetworkEndpointGroups *NetworkEndpointGroupsService
 
 	Networks *NetworksService
 
@@ -492,6 +495,15 @@ func NewMachineTypesService(s *Service) *MachineTypesService {
 }
 
 type MachineTypesService struct {
+	s *Service
+}
+
+func NewNetworkEndpointGroupsService(s *Service) *NetworkEndpointGroupsService {
+	rs := &NetworkEndpointGroupsService{s: s}
+	return rs
+}
+
+type NetworkEndpointGroupsService struct {
 	s *Service
 }
 
@@ -1475,6 +1487,10 @@ type Address struct {
 	// last character, which cannot be a dash.
 	Name string `json:"name,omitempty"`
 
+	// Network: The URL of the network in which to reserve the address. This
+	// field can only be used with INTERNAL type with VPC_PEERING purpose.
+	Network string `json:"network,omitempty"`
+
 	// NetworkTier: This signifies the networking tier used for configuring
 	// this Address and can only take the following values: PREMIUM ,
 	// STANDARD.
@@ -1485,6 +1501,19 @@ type Address struct {
 	//   "PREMIUM"
 	//   "STANDARD"
 	NetworkTier string `json:"networkTier,omitempty"`
+
+	// PrefixLength: The prefix length if the resource reprensents an IP
+	// range.
+	PrefixLength int64 `json:"prefixLength,omitempty"`
+
+	// Purpose: The purpose of resource, only used with INTERNAL type.
+	//
+	// Possible values:
+	//   "DNS_RESOLVER"
+	//   "GCE_ENDPOINT"
+	//   "UNSPECIFIED_PURPOSE"
+	//   "VPC_PEERING"
+	Purpose string `json:"purpose,omitempty"`
 
 	// Region: [Output Only] URL of the region where the regional address
 	// resides. This field is not applicable to global addresses. You must
@@ -1504,6 +1533,7 @@ type Address struct {
 	// Possible values:
 	//   "IN_USE"
 	//   "RESERVED"
+	//   "RESERVING"
 	Status string `json:"status,omitempty"`
 
 	// Subnetwork: The URL of the subnetwork in which to reserve the
@@ -3346,6 +3376,15 @@ type Backend struct {
 	// This cannot be used for internal load balancing.
 	MaxConnections int64 `json:"maxConnections,omitempty"`
 
+	// MaxConnectionsPerEndpoint: The max number of simultaneous connections
+	// that a single backend network endpoint can handle. This is used to
+	// calculate the capacity of the group. Can be used in either CONNECTION
+	// or UTILIZATION balancing modes. For CONNECTION mode, either
+	// maxConnections or maxConnectionsPerEndpoint must be set.
+	//
+	// This cannot be used for internal load balancing.
+	MaxConnectionsPerEndpoint int64 `json:"maxConnectionsPerEndpoint,omitempty"`
+
 	// MaxConnectionsPerInstance: The max number of simultaneous connections
 	// that a single backend instance can handle. This is used to calculate
 	// the capacity of the group. Can be used in either CONNECTION or
@@ -3362,6 +3401,14 @@ type Backend struct {
 	//
 	// This cannot be used for internal load balancing.
 	MaxRate int64 `json:"maxRate,omitempty"`
+
+	// MaxRatePerEndpoint: The max requests per second (RPS) that a single
+	// backend network endpoint can handle. This is used to calculate the
+	// capacity of the group. Can be used in either balancing mode. For RATE
+	// mode, either maxRate or maxRatePerEndpoint must be set.
+	//
+	// This cannot be used for internal load balancing.
+	MaxRatePerEndpoint float64 `json:"maxRatePerEndpoint,omitempty"`
 
 	// MaxRatePerInstance: The max requests per second (RPS) that a single
 	// backend instance can handle. This is used to calculate the capacity
@@ -3405,6 +3452,7 @@ func (s *Backend) UnmarshalJSON(data []byte) error {
 	type NoMethod Backend
 	var s1 struct {
 		CapacityScaler     gensupport.JSONFloat64 `json:"capacityScaler"`
+		MaxRatePerEndpoint gensupport.JSONFloat64 `json:"maxRatePerEndpoint"`
 		MaxRatePerInstance gensupport.JSONFloat64 `json:"maxRatePerInstance"`
 		MaxUtilization     gensupport.JSONFloat64 `json:"maxUtilization"`
 		*NoMethod
@@ -3414,6 +3462,7 @@ func (s *Backend) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	s.CapacityScaler = float64(s1.CapacityScaler)
+	s.MaxRatePerEndpoint = float64(s1.MaxRatePerEndpoint)
 	s.MaxRatePerInstance = float64(s1.MaxRatePerInstance)
 	s.MaxUtilization = float64(s1.MaxUtilization)
 	return nil
@@ -4284,6 +4333,33 @@ type BackendServiceListWarningData struct {
 
 func (s *BackendServiceListWarningData) MarshalJSON() ([]byte, error) {
 	type NoMethod BackendServiceListWarningData
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type BackendServiceReference struct {
+	BackendService string `json:"backendService,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "BackendService") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "BackendService") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *BackendServiceReference) MarshalJSON() ([]byte, error) {
+	type NoMethod BackendServiceReference
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
@@ -7813,6 +7889,33 @@ func (s *ForwardingRuleListWarningData) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+type ForwardingRuleReference struct {
+	ForwardingRule string `json:"forwardingRule,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ForwardingRule") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ForwardingRule") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ForwardingRuleReference) MarshalJSON() ([]byte, error) {
+	type NoMethod ForwardingRuleReference
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 type ForwardingRulesScopedList struct {
 	// ForwardingRules: A list of forwarding rules contained in this scope.
 	ForwardingRules []*ForwardingRule `json:"forwardingRules,omitempty"`
@@ -8041,6 +8144,33 @@ type HTTP2HealthCheck struct {
 	// both port and port_name are defined, port takes precedence.
 	PortName string `json:"portName,omitempty"`
 
+	// PortSpecification: Specifies how port is selected for health
+	// checking, can be one of following values:
+	// USE_FIXED_PORT: The port number in
+	// port
+	// is used for health checking.
+	// USE_NAMED_PORT: The
+	// portName
+	// is used for health checking.
+	// USE_SERVING_PORT: For NetworkEndpointGroup, the port specified for
+	// each network endpoint is used for health checking. For other
+	// backends, the port or named port specified in the Backend Service is
+	// used for health checking.
+	//
+	//
+	// If not specified, HTTP2 health check follows behavior specified
+	// in
+	// port
+	// and
+	// portName
+	// fields.
+	//
+	// Possible values:
+	//   "USE_FIXED_PORT"
+	//   "USE_NAMED_PORT"
+	//   "USE_SERVING_PORT"
+	PortSpecification string `json:"portSpecification,omitempty"`
+
 	// ProxyHeader: Specifies the type of proxy header to append before
 	// sending data to the backend, either NONE or PROXY_V1. The default is
 	// NONE.
@@ -8096,6 +8226,33 @@ type HTTPHealthCheck struct {
 	// both port and port_name are defined, port takes precedence.
 	PortName string `json:"portName,omitempty"`
 
+	// PortSpecification: Specifies how port is selected for health
+	// checking, can be one of following values:
+	// USE_FIXED_PORT: The port number in
+	// port
+	// is used for health checking.
+	// USE_NAMED_PORT: The
+	// portName
+	// is used for health checking.
+	// USE_SERVING_PORT: For NetworkEndpointGroup, the port specified for
+	// each network endpoint is used for health checking. For other
+	// backends, the port or named port specified in the Backend Service is
+	// used for health checking.
+	//
+	//
+	// If not specified, HTTP health check follows behavior specified
+	// in
+	// port
+	// and
+	// portName
+	// fields.
+	//
+	// Possible values:
+	//   "USE_FIXED_PORT"
+	//   "USE_NAMED_PORT"
+	//   "USE_SERVING_PORT"
+	PortSpecification string `json:"portSpecification,omitempty"`
+
 	// ProxyHeader: Specifies the type of proxy header to append before
 	// sending data to the backend, either NONE or PROXY_V1. The default is
 	// NONE.
@@ -8150,6 +8307,33 @@ type HTTPSHealthCheck struct {
 	// PortName: Port name as defined in InstanceGroup#NamedPort#name. If
 	// both port and port_name are defined, port takes precedence.
 	PortName string `json:"portName,omitempty"`
+
+	// PortSpecification: Specifies how port is selected for health
+	// checking, can be one of following values:
+	// USE_FIXED_PORT: The port number in
+	// port
+	// is used for health checking.
+	// USE_NAMED_PORT: The
+	// portName
+	// is used for health checking.
+	// USE_SERVING_PORT: For NetworkEndpointGroup, the port specified for
+	// each network endpoint is used for health checking. For other
+	// backends, the port or named port specified in the Backend Service is
+	// used for health checking.
+	//
+	//
+	// If not specified, HTTPS health check follows behavior specified
+	// in
+	// port
+	// and
+	// portName
+	// fields.
+	//
+	// Possible values:
+	//   "USE_FIXED_PORT"
+	//   "USE_NAMED_PORT"
+	//   "USE_SERVING_PORT"
+	PortSpecification string `json:"portSpecification,omitempty"`
 
 	// ProxyHeader: Specifies the type of proxy header to append before
 	// sending data to the backend, either NONE or PROXY_V1. The default is
@@ -8518,6 +8702,53 @@ type HealthStatus struct {
 
 func (s *HealthStatus) MarshalJSON() ([]byte, error) {
 	type NoMethod HealthStatus
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type HealthStatusForNetworkEndpoint struct {
+	// BackendService: URL of the backend service associated with the health
+	// state of the network endpoint.
+	BackendService *BackendServiceReference `json:"backendService,omitempty"`
+
+	// ForwardingRule: URL of the forwarding rule associated with the health
+	// state of the network endpoint.
+	ForwardingRule *ForwardingRuleReference `json:"forwardingRule,omitempty"`
+
+	// HealthCheck: URL of the health check associated with the health state
+	// of the network endpoint.
+	HealthCheck *HealthCheckReference `json:"healthCheck,omitempty"`
+
+	// HealthState: Health state of the network endpoint determined based on
+	// the health checks configured.
+	//
+	// Possible values:
+	//   "DRAINING"
+	//   "HEALTHY"
+	//   "UNHEALTHY"
+	//   "UNKNOWN"
+	HealthState string `json:"healthState,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "BackendService") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "BackendService") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *HealthStatusForNetworkEndpoint) MarshalJSON() ([]byte, error) {
+	type NoMethod HealthStatusForNetworkEndpoint
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
@@ -15333,7 +15564,7 @@ func (s *MachineTypesScopedListWarningData) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// ManagedInstance: Next available tag: 12
+// ManagedInstance: A Managed Instance resource.
 type ManagedInstance struct {
 	// CurrentAction: [Output Only] The current action that the managed
 	// instance group has scheduled for the instance. Possible values:
@@ -15747,6 +15978,889 @@ type Network struct {
 
 func (s *Network) MarshalJSON() ([]byte, error) {
 	type NoMethod Network
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// NetworkEndpoint: The network endpoint.
+type NetworkEndpoint struct {
+	// Instance: The name for a specific VM instance that the IP address
+	// belongs to. This is required for network endpoints of type GCE_VM_IP
+	// and GCE_VM_IP_PORT. The instance must be in the same zone of network
+	// endpoint group.
+	//
+	// The name must be 1-63 characters long, and comply with RFC1035.
+	Instance string `json:"instance,omitempty"`
+
+	// IpAddress: Optional IPv4 address of network endpoint. The IP address
+	// must belong to a VM in GCE (either the primary IP or as part of an
+	// aliased IP range). If the IP address is not specified, then the
+	// primary IP address for the VM instance in the network that the
+	// network endpoint group belongs to will be used.
+	IpAddress string `json:"ipAddress,omitempty"`
+
+	// Port: Optional port number of network endpoint. If not specified and
+	// the NetworkEndpointGroup.network_endpoint_type is GCE_IP_PORT, the
+	// defaultPort for the network endpoint group will be used.
+	Port int64 `json:"port,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Instance") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Instance") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *NetworkEndpoint) MarshalJSON() ([]byte, error) {
+	type NoMethod NetworkEndpoint
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// NetworkEndpointGroup: Represents a collection of network endpoints.
+type NetworkEndpointGroup struct {
+	// CreationTimestamp: [Output Only] Creation timestamp in RFC3339 text
+	// format.
+	CreationTimestamp string `json:"creationTimestamp,omitempty"`
+
+	// Description: An optional description of this resource. Provide this
+	// property when you create the resource.
+	Description string `json:"description,omitempty"`
+
+	// Id: [Output Only] The unique identifier for the resource. This
+	// identifier is defined by the server.
+	Id uint64 `json:"id,omitempty,string"`
+
+	// Kind: [Output Only] Type of the resource. Always
+	// compute#networkEndpointGroup for network endpoint group.
+	Kind string `json:"kind,omitempty"`
+
+	// LoadBalancer: This field is only valid when the network endpoint
+	// group type is LOAD_BALANCING.
+	LoadBalancer *NetworkEndpointGroupLbNetworkEndpointGroup `json:"loadBalancer,omitempty"`
+
+	// Name: Name of the resource; provided by the client when the resource
+	// is created. The name must be 1-63 characters long, and comply with
+	// RFC1035. Specifically, the name must be 1-63 characters long and
+	// match the regular expression `[a-z]([-a-z0-9]*[a-z0-9])?` which means
+	// the first character must be a lowercase letter, and all following
+	// characters must be a dash, lowercase letter, or digit, except the
+	// last character, which cannot be a dash.
+	Name string `json:"name,omitempty"`
+
+	// NetworkEndpointType: Type of network endpoints in this network
+	// endpoint group. Only supported values for LOAD_BALANCING are
+	// GCE_VM_IP or GCE_VM_IP_PORT.
+	//
+	// Possible values:
+	//   "GCE_VM_IP_PORT"
+	NetworkEndpointType string `json:"networkEndpointType,omitempty"`
+
+	// SelfLink: [Output Only] Server-defined URL for the resource.
+	SelfLink string `json:"selfLink,omitempty"`
+
+	// Size: [Output only] Number of network endpoints in the network
+	// endpoint group.
+	Size int64 `json:"size,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "CreationTimestamp")
+	// to unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "CreationTimestamp") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *NetworkEndpointGroup) MarshalJSON() ([]byte, error) {
+	type NoMethod NetworkEndpointGroup
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type NetworkEndpointGroupAggregatedList struct {
+	// Id: [Output Only] Unique identifier for the resource; defined by the
+	// server.
+	Id string `json:"id,omitempty"`
+
+	// Items: A list of NetworkEndpointGroupsScopedList resources.
+	Items map[string]NetworkEndpointGroupsScopedList `json:"items,omitempty"`
+
+	// Kind: [Output Only] The resource type, which is always
+	// compute#networkEndpointGroupAggregatedList for aggregated lists of
+	// network endpoint groups.
+	Kind string `json:"kind,omitempty"`
+
+	// NextPageToken: [Output Only] This token allows you to get the next
+	// page of results for list requests. If the number of results is larger
+	// than maxResults, use the nextPageToken as a value for the query
+	// parameter pageToken in the next list request. Subsequent list
+	// requests will have their own nextPageToken to continue paging through
+	// the results.
+	NextPageToken string `json:"nextPageToken,omitempty"`
+
+	// SelfLink: [Output Only] Server-defined URL for this resource.
+	SelfLink string `json:"selfLink,omitempty"`
+
+	// Warning: [Output Only] Informational warning message.
+	Warning *NetworkEndpointGroupAggregatedListWarning `json:"warning,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Id") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Id") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *NetworkEndpointGroupAggregatedList) MarshalJSON() ([]byte, error) {
+	type NoMethod NetworkEndpointGroupAggregatedList
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// NetworkEndpointGroupAggregatedListWarning: [Output Only]
+// Informational warning message.
+type NetworkEndpointGroupAggregatedListWarning struct {
+	// Code: [Output Only] A warning code, if applicable. For example,
+	// Compute Engine returns NO_RESULTS_ON_PAGE if there are no results in
+	// the response.
+	//
+	// Possible values:
+	//   "CLEANUP_FAILED"
+	//   "DEPRECATED_RESOURCE_USED"
+	//   "DEPRECATED_TYPE_USED"
+	//   "DISK_SIZE_LARGER_THAN_IMAGE_SIZE"
+	//   "EXPERIMENTAL_TYPE_USED"
+	//   "EXTERNAL_API_WARNING"
+	//   "FIELD_VALUE_OVERRIDEN"
+	//   "INJECTED_KERNELS_DEPRECATED"
+	//   "MISSING_TYPE_DEPENDENCY"
+	//   "NEXT_HOP_ADDRESS_NOT_ASSIGNED"
+	//   "NEXT_HOP_CANNOT_IP_FORWARD"
+	//   "NEXT_HOP_INSTANCE_NOT_FOUND"
+	//   "NEXT_HOP_INSTANCE_NOT_ON_NETWORK"
+	//   "NEXT_HOP_NOT_RUNNING"
+	//   "NOT_CRITICAL_ERROR"
+	//   "NO_RESULTS_ON_PAGE"
+	//   "REQUIRED_TOS_AGREEMENT"
+	//   "RESOURCE_IN_USE_BY_OTHER_RESOURCE_WARNING"
+	//   "RESOURCE_NOT_DELETED"
+	//   "SCHEMA_VALIDATION_IGNORED"
+	//   "SINGLE_INSTANCE_PROPERTY_TEMPLATE"
+	//   "UNDECLARED_PROPERTIES"
+	//   "UNREACHABLE"
+	Code string `json:"code,omitempty"`
+
+	// Data: [Output Only] Metadata about this warning in key: value format.
+	// For example:
+	// "data": [ { "key": "scope", "value": "zones/us-east1-d" }
+	Data []*NetworkEndpointGroupAggregatedListWarningData `json:"data,omitempty"`
+
+	// Message: [Output Only] A human-readable description of the warning
+	// code.
+	Message string `json:"message,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Code") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Code") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *NetworkEndpointGroupAggregatedListWarning) MarshalJSON() ([]byte, error) {
+	type NoMethod NetworkEndpointGroupAggregatedListWarning
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type NetworkEndpointGroupAggregatedListWarningData struct {
+	// Key: [Output Only] A key that provides more detail on the warning
+	// being returned. For example, for warnings where there are no results
+	// in a list request for a particular zone, this key might be scope and
+	// the key value might be the zone name. Other examples might be a key
+	// indicating a deprecated resource and a suggested replacement, or a
+	// warning about invalid network settings (for example, if an instance
+	// attempts to perform IP forwarding but is not enabled for IP
+	// forwarding).
+	Key string `json:"key,omitempty"`
+
+	// Value: [Output Only] A warning data value corresponding to the key.
+	Value string `json:"value,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Key") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Key") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *NetworkEndpointGroupAggregatedListWarningData) MarshalJSON() ([]byte, error) {
+	type NoMethod NetworkEndpointGroupAggregatedListWarningData
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// NetworkEndpointGroupLbNetworkEndpointGroup: Load balancing specific
+// fields for network endpoint group of type LOAD_BALANCING.
+type NetworkEndpointGroupLbNetworkEndpointGroup struct {
+	// DefaultPort: The default port used if the port number is not
+	// specified in the network endpoint. If the network endpoint type is
+	// GCE_VM_IP, this field must not be specified.
+	DefaultPort int64 `json:"defaultPort,omitempty"`
+
+	// Network: The URL of the network to which all network endpoints in the
+	// NEG belong. Uses "default" project network if unspecified.
+	Network string `json:"network,omitempty"`
+
+	// Subnetwork: Optional URL of the subnetwork to which all network
+	// endpoints in the NEG belong.
+	Subnetwork string `json:"subnetwork,omitempty"`
+
+	// Zone: [Output Only] The URL of the zone where the network endpoint
+	// group is located.
+	Zone string `json:"zone,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "DefaultPort") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "DefaultPort") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *NetworkEndpointGroupLbNetworkEndpointGroup) MarshalJSON() ([]byte, error) {
+	type NoMethod NetworkEndpointGroupLbNetworkEndpointGroup
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type NetworkEndpointGroupList struct {
+	// Id: [Output Only] Unique identifier for the resource; defined by the
+	// server.
+	Id string `json:"id,omitempty"`
+
+	// Items: A list of NetworkEndpointGroup resources.
+	Items []*NetworkEndpointGroup `json:"items,omitempty"`
+
+	// Kind: [Output Only] The resource type, which is always
+	// compute#networkEndpointGroupList for network endpoint group lists.
+	Kind string `json:"kind,omitempty"`
+
+	// NextPageToken: [Output Only] This token allows you to get the next
+	// page of results for list requests. If the number of results is larger
+	// than maxResults, use the nextPageToken as a value for the query
+	// parameter pageToken in the next list request. Subsequent list
+	// requests will have their own nextPageToken to continue paging through
+	// the results.
+	NextPageToken string `json:"nextPageToken,omitempty"`
+
+	// SelfLink: [Output Only] Server-defined URL for this resource.
+	SelfLink string `json:"selfLink,omitempty"`
+
+	// Warning: [Output Only] Informational warning message.
+	Warning *NetworkEndpointGroupListWarning `json:"warning,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Id") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Id") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *NetworkEndpointGroupList) MarshalJSON() ([]byte, error) {
+	type NoMethod NetworkEndpointGroupList
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// NetworkEndpointGroupListWarning: [Output Only] Informational warning
+// message.
+type NetworkEndpointGroupListWarning struct {
+	// Code: [Output Only] A warning code, if applicable. For example,
+	// Compute Engine returns NO_RESULTS_ON_PAGE if there are no results in
+	// the response.
+	//
+	// Possible values:
+	//   "CLEANUP_FAILED"
+	//   "DEPRECATED_RESOURCE_USED"
+	//   "DEPRECATED_TYPE_USED"
+	//   "DISK_SIZE_LARGER_THAN_IMAGE_SIZE"
+	//   "EXPERIMENTAL_TYPE_USED"
+	//   "EXTERNAL_API_WARNING"
+	//   "FIELD_VALUE_OVERRIDEN"
+	//   "INJECTED_KERNELS_DEPRECATED"
+	//   "MISSING_TYPE_DEPENDENCY"
+	//   "NEXT_HOP_ADDRESS_NOT_ASSIGNED"
+	//   "NEXT_HOP_CANNOT_IP_FORWARD"
+	//   "NEXT_HOP_INSTANCE_NOT_FOUND"
+	//   "NEXT_HOP_INSTANCE_NOT_ON_NETWORK"
+	//   "NEXT_HOP_NOT_RUNNING"
+	//   "NOT_CRITICAL_ERROR"
+	//   "NO_RESULTS_ON_PAGE"
+	//   "REQUIRED_TOS_AGREEMENT"
+	//   "RESOURCE_IN_USE_BY_OTHER_RESOURCE_WARNING"
+	//   "RESOURCE_NOT_DELETED"
+	//   "SCHEMA_VALIDATION_IGNORED"
+	//   "SINGLE_INSTANCE_PROPERTY_TEMPLATE"
+	//   "UNDECLARED_PROPERTIES"
+	//   "UNREACHABLE"
+	Code string `json:"code,omitempty"`
+
+	// Data: [Output Only] Metadata about this warning in key: value format.
+	// For example:
+	// "data": [ { "key": "scope", "value": "zones/us-east1-d" }
+	Data []*NetworkEndpointGroupListWarningData `json:"data,omitempty"`
+
+	// Message: [Output Only] A human-readable description of the warning
+	// code.
+	Message string `json:"message,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Code") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Code") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *NetworkEndpointGroupListWarning) MarshalJSON() ([]byte, error) {
+	type NoMethod NetworkEndpointGroupListWarning
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type NetworkEndpointGroupListWarningData struct {
+	// Key: [Output Only] A key that provides more detail on the warning
+	// being returned. For example, for warnings where there are no results
+	// in a list request for a particular zone, this key might be scope and
+	// the key value might be the zone name. Other examples might be a key
+	// indicating a deprecated resource and a suggested replacement, or a
+	// warning about invalid network settings (for example, if an instance
+	// attempts to perform IP forwarding but is not enabled for IP
+	// forwarding).
+	Key string `json:"key,omitempty"`
+
+	// Value: [Output Only] A warning data value corresponding to the key.
+	Value string `json:"value,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Key") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Key") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *NetworkEndpointGroupListWarningData) MarshalJSON() ([]byte, error) {
+	type NoMethod NetworkEndpointGroupListWarningData
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type NetworkEndpointGroupsAttachEndpointsRequest struct {
+	// NetworkEndpoints: The list of network endpoints to be attached.
+	NetworkEndpoints []*NetworkEndpoint `json:"networkEndpoints,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "NetworkEndpoints") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "NetworkEndpoints") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *NetworkEndpointGroupsAttachEndpointsRequest) MarshalJSON() ([]byte, error) {
+	type NoMethod NetworkEndpointGroupsAttachEndpointsRequest
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type NetworkEndpointGroupsDetachEndpointsRequest struct {
+	// NetworkEndpoints: The list of network endpoints to be detached.
+	NetworkEndpoints []*NetworkEndpoint `json:"networkEndpoints,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "NetworkEndpoints") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "NetworkEndpoints") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *NetworkEndpointGroupsDetachEndpointsRequest) MarshalJSON() ([]byte, error) {
+	type NoMethod NetworkEndpointGroupsDetachEndpointsRequest
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type NetworkEndpointGroupsListEndpointsRequest struct {
+	// HealthStatus: Optional query parameter for showing the health status
+	// of each network endpoint. Valid options are SKIP or SHOW. If you
+	// don't specifiy this parameter, the health status of network endpoints
+	// will not be provided.
+	//
+	// Possible values:
+	//   "SHOW"
+	//   "SKIP"
+	HealthStatus string `json:"healthStatus,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "HealthStatus") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "HealthStatus") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *NetworkEndpointGroupsListEndpointsRequest) MarshalJSON() ([]byte, error) {
+	type NoMethod NetworkEndpointGroupsListEndpointsRequest
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type NetworkEndpointGroupsListNetworkEndpoints struct {
+	// Id: [Output Only] Unique identifier for the resource; defined by the
+	// server.
+	Id string `json:"id,omitempty"`
+
+	// Items: A list of NetworkEndpointWithHealthStatus resources.
+	Items []*NetworkEndpointWithHealthStatus `json:"items,omitempty"`
+
+	// Kind: [Output Only] The resource type, which is always
+	// compute#networkEndpointGroupsListNetworkEndpoints for the list of
+	// network endpoints in the specified network endpoint group.
+	Kind string `json:"kind,omitempty"`
+
+	// NextPageToken: [Output Only] This token allows you to get the next
+	// page of results for list requests. If the number of results is larger
+	// than maxResults, use the nextPageToken as a value for the query
+	// parameter pageToken in the next list request. Subsequent list
+	// requests will have their own nextPageToken to continue paging through
+	// the results.
+	NextPageToken string `json:"nextPageToken,omitempty"`
+
+	// Warning: [Output Only] Informational warning message.
+	Warning *NetworkEndpointGroupsListNetworkEndpointsWarning `json:"warning,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Id") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Id") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *NetworkEndpointGroupsListNetworkEndpoints) MarshalJSON() ([]byte, error) {
+	type NoMethod NetworkEndpointGroupsListNetworkEndpoints
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// NetworkEndpointGroupsListNetworkEndpointsWarning: [Output Only]
+// Informational warning message.
+type NetworkEndpointGroupsListNetworkEndpointsWarning struct {
+	// Code: [Output Only] A warning code, if applicable. For example,
+	// Compute Engine returns NO_RESULTS_ON_PAGE if there are no results in
+	// the response.
+	//
+	// Possible values:
+	//   "CLEANUP_FAILED"
+	//   "DEPRECATED_RESOURCE_USED"
+	//   "DEPRECATED_TYPE_USED"
+	//   "DISK_SIZE_LARGER_THAN_IMAGE_SIZE"
+	//   "EXPERIMENTAL_TYPE_USED"
+	//   "EXTERNAL_API_WARNING"
+	//   "FIELD_VALUE_OVERRIDEN"
+	//   "INJECTED_KERNELS_DEPRECATED"
+	//   "MISSING_TYPE_DEPENDENCY"
+	//   "NEXT_HOP_ADDRESS_NOT_ASSIGNED"
+	//   "NEXT_HOP_CANNOT_IP_FORWARD"
+	//   "NEXT_HOP_INSTANCE_NOT_FOUND"
+	//   "NEXT_HOP_INSTANCE_NOT_ON_NETWORK"
+	//   "NEXT_HOP_NOT_RUNNING"
+	//   "NOT_CRITICAL_ERROR"
+	//   "NO_RESULTS_ON_PAGE"
+	//   "REQUIRED_TOS_AGREEMENT"
+	//   "RESOURCE_IN_USE_BY_OTHER_RESOURCE_WARNING"
+	//   "RESOURCE_NOT_DELETED"
+	//   "SCHEMA_VALIDATION_IGNORED"
+	//   "SINGLE_INSTANCE_PROPERTY_TEMPLATE"
+	//   "UNDECLARED_PROPERTIES"
+	//   "UNREACHABLE"
+	Code string `json:"code,omitempty"`
+
+	// Data: [Output Only] Metadata about this warning in key: value format.
+	// For example:
+	// "data": [ { "key": "scope", "value": "zones/us-east1-d" }
+	Data []*NetworkEndpointGroupsListNetworkEndpointsWarningData `json:"data,omitempty"`
+
+	// Message: [Output Only] A human-readable description of the warning
+	// code.
+	Message string `json:"message,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Code") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Code") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *NetworkEndpointGroupsListNetworkEndpointsWarning) MarshalJSON() ([]byte, error) {
+	type NoMethod NetworkEndpointGroupsListNetworkEndpointsWarning
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type NetworkEndpointGroupsListNetworkEndpointsWarningData struct {
+	// Key: [Output Only] A key that provides more detail on the warning
+	// being returned. For example, for warnings where there are no results
+	// in a list request for a particular zone, this key might be scope and
+	// the key value might be the zone name. Other examples might be a key
+	// indicating a deprecated resource and a suggested replacement, or a
+	// warning about invalid network settings (for example, if an instance
+	// attempts to perform IP forwarding but is not enabled for IP
+	// forwarding).
+	Key string `json:"key,omitempty"`
+
+	// Value: [Output Only] A warning data value corresponding to the key.
+	Value string `json:"value,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Key") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Key") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *NetworkEndpointGroupsListNetworkEndpointsWarningData) MarshalJSON() ([]byte, error) {
+	type NoMethod NetworkEndpointGroupsListNetworkEndpointsWarningData
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type NetworkEndpointGroupsScopedList struct {
+	// NetworkEndpointGroups: [Output Only] The list of network endpoint
+	// groups that are contained in this scope.
+	NetworkEndpointGroups []*NetworkEndpointGroup `json:"networkEndpointGroups,omitempty"`
+
+	// Warning: [Output Only] An informational warning that replaces the
+	// list of network endpoint groups when the list is empty.
+	Warning *NetworkEndpointGroupsScopedListWarning `json:"warning,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g.
+	// "NetworkEndpointGroups") to unconditionally include in API requests.
+	// By default, fields with empty values are omitted from API requests.
+	// However, any non-pointer, non-interface field appearing in
+	// ForceSendFields will be sent to the server regardless of whether the
+	// field is empty or not. This may be used to include empty fields in
+	// Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "NetworkEndpointGroups") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *NetworkEndpointGroupsScopedList) MarshalJSON() ([]byte, error) {
+	type NoMethod NetworkEndpointGroupsScopedList
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// NetworkEndpointGroupsScopedListWarning: [Output Only] An
+// informational warning that replaces the list of network endpoint
+// groups when the list is empty.
+type NetworkEndpointGroupsScopedListWarning struct {
+	// Code: [Output Only] A warning code, if applicable. For example,
+	// Compute Engine returns NO_RESULTS_ON_PAGE if there are no results in
+	// the response.
+	//
+	// Possible values:
+	//   "CLEANUP_FAILED"
+	//   "DEPRECATED_RESOURCE_USED"
+	//   "DEPRECATED_TYPE_USED"
+	//   "DISK_SIZE_LARGER_THAN_IMAGE_SIZE"
+	//   "EXPERIMENTAL_TYPE_USED"
+	//   "EXTERNAL_API_WARNING"
+	//   "FIELD_VALUE_OVERRIDEN"
+	//   "INJECTED_KERNELS_DEPRECATED"
+	//   "MISSING_TYPE_DEPENDENCY"
+	//   "NEXT_HOP_ADDRESS_NOT_ASSIGNED"
+	//   "NEXT_HOP_CANNOT_IP_FORWARD"
+	//   "NEXT_HOP_INSTANCE_NOT_FOUND"
+	//   "NEXT_HOP_INSTANCE_NOT_ON_NETWORK"
+	//   "NEXT_HOP_NOT_RUNNING"
+	//   "NOT_CRITICAL_ERROR"
+	//   "NO_RESULTS_ON_PAGE"
+	//   "REQUIRED_TOS_AGREEMENT"
+	//   "RESOURCE_IN_USE_BY_OTHER_RESOURCE_WARNING"
+	//   "RESOURCE_NOT_DELETED"
+	//   "SCHEMA_VALIDATION_IGNORED"
+	//   "SINGLE_INSTANCE_PROPERTY_TEMPLATE"
+	//   "UNDECLARED_PROPERTIES"
+	//   "UNREACHABLE"
+	Code string `json:"code,omitempty"`
+
+	// Data: [Output Only] Metadata about this warning in key: value format.
+	// For example:
+	// "data": [ { "key": "scope", "value": "zones/us-east1-d" }
+	Data []*NetworkEndpointGroupsScopedListWarningData `json:"data,omitempty"`
+
+	// Message: [Output Only] A human-readable description of the warning
+	// code.
+	Message string `json:"message,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Code") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Code") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *NetworkEndpointGroupsScopedListWarning) MarshalJSON() ([]byte, error) {
+	type NoMethod NetworkEndpointGroupsScopedListWarning
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type NetworkEndpointGroupsScopedListWarningData struct {
+	// Key: [Output Only] A key that provides more detail on the warning
+	// being returned. For example, for warnings where there are no results
+	// in a list request for a particular zone, this key might be scope and
+	// the key value might be the zone name. Other examples might be a key
+	// indicating a deprecated resource and a suggested replacement, or a
+	// warning about invalid network settings (for example, if an instance
+	// attempts to perform IP forwarding but is not enabled for IP
+	// forwarding).
+	Key string `json:"key,omitempty"`
+
+	// Value: [Output Only] A warning data value corresponding to the key.
+	Value string `json:"value,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Key") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Key") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *NetworkEndpointGroupsScopedListWarningData) MarshalJSON() ([]byte, error) {
+	type NoMethod NetworkEndpointGroupsScopedListWarningData
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type NetworkEndpointWithHealthStatus struct {
+	// Healths: [Output only] The health status of network endpoint;
+	Healths []*HealthStatusForNetworkEndpoint `json:"healths,omitempty"`
+
+	// NetworkEndpoint: [Output only] The network endpoint;
+	NetworkEndpoint *NetworkEndpoint `json:"networkEndpoint,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Healths") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Healths") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *NetworkEndpointWithHealthStatus) MarshalJSON() ([]byte, error) {
+	type NoMethod NetworkEndpointWithHealthStatus
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
@@ -16554,6 +17668,13 @@ type NodeGroupNode struct {
 
 	// NodeType: The type of this node.
 	NodeType string `json:"nodeType,omitempty"`
+
+	// Possible values:
+	//   "CREATING"
+	//   "DELETING"
+	//   "INVALID"
+	//   "READY"
+	Status string `json:"status,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "Instances") to
 	// unconditionally include in API requests. By default, fields with
@@ -18807,6 +19928,35 @@ func (s *Policy) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+type PreconfiguredWafSet struct {
+	// ExpressionSets: List of entities that are currently supported for WAF
+	// rules.
+	ExpressionSets []*WafExpressionSet `json:"expressionSets,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ExpressionSets") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ExpressionSets") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *PreconfiguredWafSet) MarshalJSON() ([]byte, error) {
+	type NoMethod PreconfiguredWafSet
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // Project: A Project resource. For an overview of projects, see  Cloud
 // Platform Resource Hierarchy. (== resource_for v1.projects ==) (==
 // resource_for beta.projects ==)
@@ -19089,6 +20239,7 @@ type Quota struct {
 	//   "IN_USE_ADDRESSES"
 	//   "LOCAL_SSD_TOTAL_GB"
 	//   "NETWORKS"
+	//   "NETWORK_ENDPOINT_GROUPS"
 	//   "NVIDIA_K80_GPUS"
 	//   "NVIDIA_P100_GPUS"
 	//   "NVIDIA_V100_GPUS"
@@ -22032,6 +23183,33 @@ type SSLHealthCheck struct {
 	// both port and port_name are defined, port takes precedence.
 	PortName string `json:"portName,omitempty"`
 
+	// PortSpecification: Specifies how port is selected for health
+	// checking, can be one of following values:
+	// USE_FIXED_PORT: The port number in
+	// port
+	// is used for health checking.
+	// USE_NAMED_PORT: The
+	// portName
+	// is used for health checking.
+	// USE_SERVING_PORT: For NetworkEndpointGroup, the port specified for
+	// each network endpoint is used for health checking. For other
+	// backends, the port or named port specified in the Backend Service is
+	// used for health checking.
+	//
+	//
+	// If not specified, SSL health check follows behavior specified
+	// in
+	// port
+	// and
+	// portName
+	// fields.
+	//
+	// Possible values:
+	//   "USE_FIXED_PORT"
+	//   "USE_NAMED_PORT"
+	//   "USE_SERVING_PORT"
+	PortSpecification string `json:"portSpecification,omitempty"`
+
 	// ProxyHeader: Specifies the type of proxy header to append before
 	// sending data to the backend, either NONE or PROXY_V1. The default is
 	// NONE.
@@ -22166,6 +23344,64 @@ type SchedulingNodeAffinity struct {
 
 func (s *SchedulingNodeAffinity) MarshalJSON() ([]byte, error) {
 	type NoMethod SchedulingNodeAffinity
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type SecurityPoliciesListPreconfiguredExpressionSetsResponse struct {
+	PreconfiguredExpressionSets *SecurityPoliciesWafConfig `json:"preconfiguredExpressionSets,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g.
+	// "PreconfiguredExpressionSets") to unconditionally include in API
+	// requests. By default, fields with empty values are omitted from API
+	// requests. However, any non-pointer, non-interface field appearing in
+	// ForceSendFields will be sent to the server regardless of whether the
+	// field is empty or not. This may be used to include empty fields in
+	// Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g.
+	// "PreconfiguredExpressionSets") to include in API requests with the
+	// JSON null value. By default, fields with empty values are omitted
+	// from API requests. However, any field with an empty value appearing
+	// in NullFields will be sent to the server as null. It is an error if a
+	// field in this list has a non-empty value. This may be used to include
+	// null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *SecurityPoliciesListPreconfiguredExpressionSetsResponse) MarshalJSON() ([]byte, error) {
+	type NoMethod SecurityPoliciesListPreconfiguredExpressionSetsResponse
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type SecurityPoliciesWafConfig struct {
+	WafRules *PreconfiguredWafSet `json:"wafRules,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "WafRules") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "WafRules") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *SecurityPoliciesWafConfig) MarshalJSON() ([]byte, error) {
+	type NoMethod SecurityPoliciesWafConfig
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
@@ -28843,6 +30079,76 @@ type VpnTunnelsScopedListWarningData struct {
 
 func (s *VpnTunnelsScopedListWarningData) MarshalJSON() ([]byte, error) {
 	type NoMethod VpnTunnelsScopedListWarningData
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type WafExpressionSet struct {
+	// Aliases: A list of alternate IDs. The format should be: - E.g.
+	// XSS-stable Generic suffix like "stable" is particularly useful if a
+	// policy likes to avail newer set of expressions without having to
+	// change the policy. A given alias name can't be used for more than one
+	// entity set.
+	Aliases []string `json:"aliases,omitempty"`
+
+	// Expressions: List of available expressions.
+	Expressions []*WafExpressionSetExpression `json:"expressions,omitempty"`
+
+	// Id: Google specified expression set ID. The format should be: - E.g.
+	// XSS-20170329
+	Id string `json:"id,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Aliases") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Aliases") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *WafExpressionSet) MarshalJSON() ([]byte, error) {
+	type NoMethod WafExpressionSet
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type WafExpressionSetExpression struct {
+	// Id: Expression ID should uniquely identify the origin of the
+	// expression. E.g. owasp-crs-v020901-id973337 identifies Owasp core
+	// rule set version 2.9.1 rule id 973337. The ID could be used to
+	// determine the individual attack definition that has been detected. It
+	// could also be used to exclude it from the policy in case of false
+	// positive.
+	Id string `json:"id,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Id") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Id") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *WafExpressionSetExpression) MarshalJSON() ([]byte, error) {
+	type NoMethod WafExpressionSetExpression
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
@@ -66234,6 +67540,1801 @@ func (c *MachineTypesListCall) Pages(ctx context.Context, f func(*MachineTypeLis
 	}
 }
 
+// method id "compute.networkEndpointGroups.aggregatedList":
+
+type NetworkEndpointGroupsAggregatedListCall struct {
+	s            *Service
+	project      string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// AggregatedList: Retrieves the list of network endpoint groups and
+// sorts them by zone.
+func (r *NetworkEndpointGroupsService) AggregatedList(project string) *NetworkEndpointGroupsAggregatedListCall {
+	c := &NetworkEndpointGroupsAggregatedListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.project = project
+	return c
+}
+
+// Filter sets the optional parameter "filter": A filter expression that
+// filters resources listed in the response. The expression must specify
+// the field name, a comparison operator, and the value that you want to
+// use for filtering. The value must be a string, a number, or a
+// boolean. The comparison operator must be either =, !=, >, or <.
+//
+// For example, if you are filtering Compute Engine instances, you can
+// exclude instances named example-instance by specifying name !=
+// example-instance.
+//
+// You can also filter nested fields. For example, you could specify
+// scheduling.automaticRestart = false to include instances only if they
+// are not scheduled for automatic restarts. You can use filtering on
+// nested fields to filter based on resource labels.
+//
+// To filter on multiple expressions, provide each separate expression
+// within parentheses. For example, (scheduling.automaticRestart = true)
+// (cpuPlatform = "Intel Skylake"). By default, each expression is an
+// AND expression. However, you can include AND and OR expressions
+// explicitly. For example, (cpuPlatform = "Intel Skylake") OR
+// (cpuPlatform = "Intel Broadwell") AND (scheduling.automaticRestart =
+// true).
+func (c *NetworkEndpointGroupsAggregatedListCall) Filter(filter string) *NetworkEndpointGroupsAggregatedListCall {
+	c.urlParams_.Set("filter", filter)
+	return c
+}
+
+// MaxResults sets the optional parameter "maxResults": The maximum
+// number of results per page that should be returned. If the number of
+// available results is larger than maxResults, Compute Engine returns a
+// nextPageToken that can be used to get the next page of results in
+// subsequent list requests. Acceptable values are 0 to 500, inclusive.
+// (Default: 500)
+func (c *NetworkEndpointGroupsAggregatedListCall) MaxResults(maxResults int64) *NetworkEndpointGroupsAggregatedListCall {
+	c.urlParams_.Set("maxResults", fmt.Sprint(maxResults))
+	return c
+}
+
+// OrderBy sets the optional parameter "orderBy": Sorts list results by
+// a certain order. By default, results are returned in alphanumerical
+// order based on the resource name.
+//
+// You can also sort results in descending order based on the creation
+// timestamp using orderBy="creationTimestamp desc". This sorts results
+// based on the creationTimestamp field in reverse chronological order
+// (newest result first). Use this to sort resources like operations so
+// that the newest operation is returned first.
+//
+// Currently, only sorting by name or creationTimestamp desc is
+// supported.
+func (c *NetworkEndpointGroupsAggregatedListCall) OrderBy(orderBy string) *NetworkEndpointGroupsAggregatedListCall {
+	c.urlParams_.Set("orderBy", orderBy)
+	return c
+}
+
+// PageToken sets the optional parameter "pageToken": Specifies a page
+// token to use. Set pageToken to the nextPageToken returned by a
+// previous list request to get the next page of results.
+func (c *NetworkEndpointGroupsAggregatedListCall) PageToken(pageToken string) *NetworkEndpointGroupsAggregatedListCall {
+	c.urlParams_.Set("pageToken", pageToken)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *NetworkEndpointGroupsAggregatedListCall) Fields(s ...googleapi.Field) *NetworkEndpointGroupsAggregatedListCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *NetworkEndpointGroupsAggregatedListCall) IfNoneMatch(entityTag string) *NetworkEndpointGroupsAggregatedListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *NetworkEndpointGroupsAggregatedListCall) Context(ctx context.Context) *NetworkEndpointGroupsAggregatedListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *NetworkEndpointGroupsAggregatedListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *NetworkEndpointGroupsAggregatedListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/aggregated/networkEndpointGroups")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("GET", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"project": c.project,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "compute.networkEndpointGroups.aggregatedList" call.
+// Exactly one of *NetworkEndpointGroupAggregatedList or error will be
+// non-nil. Any non-2xx status code is an error. Response headers are in
+// either *NetworkEndpointGroupAggregatedList.ServerResponse.Header or
+// (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was
+// returned.
+func (c *NetworkEndpointGroupsAggregatedListCall) Do(opts ...googleapi.CallOption) (*NetworkEndpointGroupAggregatedList, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &NetworkEndpointGroupAggregatedList{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Retrieves the list of network endpoint groups and sorts them by zone.",
+	//   "httpMethod": "GET",
+	//   "id": "compute.networkEndpointGroups.aggregatedList",
+	//   "parameterOrder": [
+	//     "project"
+	//   ],
+	//   "parameters": {
+	//     "filter": {
+	//       "description": "A filter expression that filters resources listed in the response. The expression must specify the field name, a comparison operator, and the value that you want to use for filtering. The value must be a string, a number, or a boolean. The comparison operator must be either =, !=, \u003e, or \u003c.\n\nFor example, if you are filtering Compute Engine instances, you can exclude instances named example-instance by specifying name != example-instance.\n\nYou can also filter nested fields. For example, you could specify scheduling.automaticRestart = false to include instances only if they are not scheduled for automatic restarts. You can use filtering on nested fields to filter based on resource labels.\n\nTo filter on multiple expressions, provide each separate expression within parentheses. For example, (scheduling.automaticRestart = true) (cpuPlatform = \"Intel Skylake\"). By default, each expression is an AND expression. However, you can include AND and OR expressions explicitly. For example, (cpuPlatform = \"Intel Skylake\") OR (cpuPlatform = \"Intel Broadwell\") AND (scheduling.automaticRestart = true).",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "maxResults": {
+	//       "default": "500",
+	//       "description": "The maximum number of results per page that should be returned. If the number of available results is larger than maxResults, Compute Engine returns a nextPageToken that can be used to get the next page of results in subsequent list requests. Acceptable values are 0 to 500, inclusive. (Default: 500)",
+	//       "format": "uint32",
+	//       "location": "query",
+	//       "minimum": "0",
+	//       "type": "integer"
+	//     },
+	//     "orderBy": {
+	//       "description": "Sorts list results by a certain order. By default, results are returned in alphanumerical order based on the resource name.\n\nYou can also sort results in descending order based on the creation timestamp using orderBy=\"creationTimestamp desc\". This sorts results based on the creationTimestamp field in reverse chronological order (newest result first). Use this to sort resources like operations so that the newest operation is returned first.\n\nCurrently, only sorting by name or creationTimestamp desc is supported.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "pageToken": {
+	//       "description": "Specifies a page token to use. Set pageToken to the nextPageToken returned by a previous list request to get the next page of results.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "project": {
+	//       "description": "Project ID for this request.",
+	//       "location": "path",
+	//       "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "{project}/aggregated/networkEndpointGroups",
+	//   "response": {
+	//     "$ref": "NetworkEndpointGroupAggregatedList"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform",
+	//     "https://www.googleapis.com/auth/compute",
+	//     "https://www.googleapis.com/auth/compute.readonly"
+	//   ]
+	// }
+
+}
+
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *NetworkEndpointGroupsAggregatedListCall) Pages(ctx context.Context, f func(*NetworkEndpointGroupAggregatedList) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
+}
+
+// method id "compute.networkEndpointGroups.attachNetworkEndpoints":
+
+type NetworkEndpointGroupsAttachNetworkEndpointsCall struct {
+	s                                           *Service
+	project                                     string
+	zone                                        string
+	networkEndpointGroup                        string
+	networkendpointgroupsattachendpointsrequest *NetworkEndpointGroupsAttachEndpointsRequest
+	urlParams_                                  gensupport.URLParams
+	ctx_                                        context.Context
+	header_                                     http.Header
+}
+
+// AttachNetworkEndpoints: Attach a list of network endpoints to the
+// specified network endpoint group.
+func (r *NetworkEndpointGroupsService) AttachNetworkEndpoints(project string, zone string, networkEndpointGroup string, networkendpointgroupsattachendpointsrequest *NetworkEndpointGroupsAttachEndpointsRequest) *NetworkEndpointGroupsAttachNetworkEndpointsCall {
+	c := &NetworkEndpointGroupsAttachNetworkEndpointsCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.project = project
+	c.zone = zone
+	c.networkEndpointGroup = networkEndpointGroup
+	c.networkendpointgroupsattachendpointsrequest = networkendpointgroupsattachendpointsrequest
+	return c
+}
+
+// RequestId sets the optional parameter "requestId": An optional
+// request ID to identify requests. Specify a unique request ID so that
+// if you must retry your request, the server will know to ignore the
+// request if it has already been completed.
+//
+// For example, consider a situation where you make an initial request
+// and the request times out. If you make the request again with the
+// same request ID, the server can check if original operation with the
+// same request ID was received, and if so, will ignore the second
+// request. This prevents clients from accidentally creating duplicate
+// commitments.
+//
+// The request ID must be a valid UUID with the exception that zero UUID
+// is not supported (00000000-0000-0000-0000-000000000000).
+func (c *NetworkEndpointGroupsAttachNetworkEndpointsCall) RequestId(requestId string) *NetworkEndpointGroupsAttachNetworkEndpointsCall {
+	c.urlParams_.Set("requestId", requestId)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *NetworkEndpointGroupsAttachNetworkEndpointsCall) Fields(s ...googleapi.Field) *NetworkEndpointGroupsAttachNetworkEndpointsCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *NetworkEndpointGroupsAttachNetworkEndpointsCall) Context(ctx context.Context) *NetworkEndpointGroupsAttachNetworkEndpointsCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *NetworkEndpointGroupsAttachNetworkEndpointsCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *NetworkEndpointGroupsAttachNetworkEndpointsCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.networkendpointgroupsattachendpointsrequest)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/networkEndpointGroups/{networkEndpointGroup}/attachNetworkEndpoints")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("POST", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"project":              c.project,
+		"zone":                 c.zone,
+		"networkEndpointGroup": c.networkEndpointGroup,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "compute.networkEndpointGroups.attachNetworkEndpoints" call.
+// Exactly one of *Operation or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *NetworkEndpointGroupsAttachNetworkEndpointsCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &Operation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Attach a list of network endpoints to the specified network endpoint group.",
+	//   "httpMethod": "POST",
+	//   "id": "compute.networkEndpointGroups.attachNetworkEndpoints",
+	//   "parameterOrder": [
+	//     "project",
+	//     "zone",
+	//     "networkEndpointGroup"
+	//   ],
+	//   "parameters": {
+	//     "networkEndpointGroup": {
+	//       "description": "The name of the network endpoint group where you are attaching network endpoints to. It should comply with RFC1035.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "project": {
+	//       "description": "Project ID for this request.",
+	//       "location": "path",
+	//       "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "requestId": {
+	//       "description": "An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed.\n\nFor example, consider a situation where you make an initial request and the request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments.\n\nThe request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "zone": {
+	//       "description": "The name of the zone where the network endpoint group is located. It should comply with RFC1035.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "{project}/zones/{zone}/networkEndpointGroups/{networkEndpointGroup}/attachNetworkEndpoints",
+	//   "request": {
+	//     "$ref": "NetworkEndpointGroupsAttachEndpointsRequest"
+	//   },
+	//   "response": {
+	//     "$ref": "Operation"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform",
+	//     "https://www.googleapis.com/auth/compute"
+	//   ]
+	// }
+
+}
+
+// method id "compute.networkEndpointGroups.delete":
+
+type NetworkEndpointGroupsDeleteCall struct {
+	s                    *Service
+	project              string
+	zone                 string
+	networkEndpointGroup string
+	urlParams_           gensupport.URLParams
+	ctx_                 context.Context
+	header_              http.Header
+}
+
+// Delete: Deletes the specified network endpoint group. The network
+// endpoints in the NEG and the VM instances they belong to are not
+// terminated when the NEG is deleted. Note that the NEG cannot be
+// deleted if there are backend services referencing it.
+func (r *NetworkEndpointGroupsService) Delete(project string, zone string, networkEndpointGroup string) *NetworkEndpointGroupsDeleteCall {
+	c := &NetworkEndpointGroupsDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.project = project
+	c.zone = zone
+	c.networkEndpointGroup = networkEndpointGroup
+	return c
+}
+
+// RequestId sets the optional parameter "requestId": An optional
+// request ID to identify requests. Specify a unique request ID so that
+// if you must retry your request, the server will know to ignore the
+// request if it has already been completed.
+//
+// For example, consider a situation where you make an initial request
+// and the request times out. If you make the request again with the
+// same request ID, the server can check if original operation with the
+// same request ID was received, and if so, will ignore the second
+// request. This prevents clients from accidentally creating duplicate
+// commitments.
+//
+// The request ID must be a valid UUID with the exception that zero UUID
+// is not supported (00000000-0000-0000-0000-000000000000).
+func (c *NetworkEndpointGroupsDeleteCall) RequestId(requestId string) *NetworkEndpointGroupsDeleteCall {
+	c.urlParams_.Set("requestId", requestId)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *NetworkEndpointGroupsDeleteCall) Fields(s ...googleapi.Field) *NetworkEndpointGroupsDeleteCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *NetworkEndpointGroupsDeleteCall) Context(ctx context.Context) *NetworkEndpointGroupsDeleteCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *NetworkEndpointGroupsDeleteCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *NetworkEndpointGroupsDeleteCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/networkEndpointGroups/{networkEndpointGroup}")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("DELETE", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"project":              c.project,
+		"zone":                 c.zone,
+		"networkEndpointGroup": c.networkEndpointGroup,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "compute.networkEndpointGroups.delete" call.
+// Exactly one of *Operation or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *NetworkEndpointGroupsDeleteCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &Operation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Deletes the specified network endpoint group. The network endpoints in the NEG and the VM instances they belong to are not terminated when the NEG is deleted. Note that the NEG cannot be deleted if there are backend services referencing it.",
+	//   "httpMethod": "DELETE",
+	//   "id": "compute.networkEndpointGroups.delete",
+	//   "parameterOrder": [
+	//     "project",
+	//     "zone",
+	//     "networkEndpointGroup"
+	//   ],
+	//   "parameters": {
+	//     "networkEndpointGroup": {
+	//       "description": "The name of the network endpoint group to delete. It should comply with RFC1035.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "project": {
+	//       "description": "Project ID for this request.",
+	//       "location": "path",
+	//       "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "requestId": {
+	//       "description": "An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed.\n\nFor example, consider a situation where you make an initial request and the request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments.\n\nThe request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "zone": {
+	//       "description": "The name of the zone where the network endpoint group is located. It should comply with RFC1035.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "{project}/zones/{zone}/networkEndpointGroups/{networkEndpointGroup}",
+	//   "response": {
+	//     "$ref": "Operation"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform",
+	//     "https://www.googleapis.com/auth/compute"
+	//   ]
+	// }
+
+}
+
+// method id "compute.networkEndpointGroups.detachNetworkEndpoints":
+
+type NetworkEndpointGroupsDetachNetworkEndpointsCall struct {
+	s                                           *Service
+	project                                     string
+	zone                                        string
+	networkEndpointGroup                        string
+	networkendpointgroupsdetachendpointsrequest *NetworkEndpointGroupsDetachEndpointsRequest
+	urlParams_                                  gensupport.URLParams
+	ctx_                                        context.Context
+	header_                                     http.Header
+}
+
+// DetachNetworkEndpoints: Detach a list of network endpoints from the
+// specified network endpoint group.
+func (r *NetworkEndpointGroupsService) DetachNetworkEndpoints(project string, zone string, networkEndpointGroup string, networkendpointgroupsdetachendpointsrequest *NetworkEndpointGroupsDetachEndpointsRequest) *NetworkEndpointGroupsDetachNetworkEndpointsCall {
+	c := &NetworkEndpointGroupsDetachNetworkEndpointsCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.project = project
+	c.zone = zone
+	c.networkEndpointGroup = networkEndpointGroup
+	c.networkendpointgroupsdetachendpointsrequest = networkendpointgroupsdetachendpointsrequest
+	return c
+}
+
+// RequestId sets the optional parameter "requestId": An optional
+// request ID to identify requests. Specify a unique request ID so that
+// if you must retry your request, the server will know to ignore the
+// request if it has already been completed.
+//
+// For example, consider a situation where you make an initial request
+// and the request times out. If you make the request again with the
+// same request ID, the server can check if original operation with the
+// same request ID was received, and if so, will ignore the second
+// request. This prevents clients from accidentally creating duplicate
+// commitments.
+//
+// The request ID must be a valid UUID with the exception that zero UUID
+// is not supported (00000000-0000-0000-0000-000000000000).
+func (c *NetworkEndpointGroupsDetachNetworkEndpointsCall) RequestId(requestId string) *NetworkEndpointGroupsDetachNetworkEndpointsCall {
+	c.urlParams_.Set("requestId", requestId)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *NetworkEndpointGroupsDetachNetworkEndpointsCall) Fields(s ...googleapi.Field) *NetworkEndpointGroupsDetachNetworkEndpointsCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *NetworkEndpointGroupsDetachNetworkEndpointsCall) Context(ctx context.Context) *NetworkEndpointGroupsDetachNetworkEndpointsCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *NetworkEndpointGroupsDetachNetworkEndpointsCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *NetworkEndpointGroupsDetachNetworkEndpointsCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.networkendpointgroupsdetachendpointsrequest)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/networkEndpointGroups/{networkEndpointGroup}/detachNetworkEndpoints")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("POST", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"project":              c.project,
+		"zone":                 c.zone,
+		"networkEndpointGroup": c.networkEndpointGroup,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "compute.networkEndpointGroups.detachNetworkEndpoints" call.
+// Exactly one of *Operation or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *NetworkEndpointGroupsDetachNetworkEndpointsCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &Operation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Detach a list of network endpoints from the specified network endpoint group.",
+	//   "httpMethod": "POST",
+	//   "id": "compute.networkEndpointGroups.detachNetworkEndpoints",
+	//   "parameterOrder": [
+	//     "project",
+	//     "zone",
+	//     "networkEndpointGroup"
+	//   ],
+	//   "parameters": {
+	//     "networkEndpointGroup": {
+	//       "description": "The name of the network endpoint group where you are removing network endpoints. It should comply with RFC1035.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "project": {
+	//       "description": "Project ID for this request.",
+	//       "location": "path",
+	//       "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "requestId": {
+	//       "description": "An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed.\n\nFor example, consider a situation where you make an initial request and the request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments.\n\nThe request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "zone": {
+	//       "description": "The name of the zone where the network endpoint group is located. It should comply with RFC1035.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "{project}/zones/{zone}/networkEndpointGroups/{networkEndpointGroup}/detachNetworkEndpoints",
+	//   "request": {
+	//     "$ref": "NetworkEndpointGroupsDetachEndpointsRequest"
+	//   },
+	//   "response": {
+	//     "$ref": "Operation"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform",
+	//     "https://www.googleapis.com/auth/compute"
+	//   ]
+	// }
+
+}
+
+// method id "compute.networkEndpointGroups.get":
+
+type NetworkEndpointGroupsGetCall struct {
+	s                    *Service
+	project              string
+	zone                 string
+	networkEndpointGroup string
+	urlParams_           gensupport.URLParams
+	ifNoneMatch_         string
+	ctx_                 context.Context
+	header_              http.Header
+}
+
+// Get: Returns the specified network endpoint group. Gets a list of
+// available network endpoint groups by making a list() request.
+func (r *NetworkEndpointGroupsService) Get(project string, zone string, networkEndpointGroup string) *NetworkEndpointGroupsGetCall {
+	c := &NetworkEndpointGroupsGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.project = project
+	c.zone = zone
+	c.networkEndpointGroup = networkEndpointGroup
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *NetworkEndpointGroupsGetCall) Fields(s ...googleapi.Field) *NetworkEndpointGroupsGetCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *NetworkEndpointGroupsGetCall) IfNoneMatch(entityTag string) *NetworkEndpointGroupsGetCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *NetworkEndpointGroupsGetCall) Context(ctx context.Context) *NetworkEndpointGroupsGetCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *NetworkEndpointGroupsGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *NetworkEndpointGroupsGetCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/networkEndpointGroups/{networkEndpointGroup}")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("GET", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"project":              c.project,
+		"zone":                 c.zone,
+		"networkEndpointGroup": c.networkEndpointGroup,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "compute.networkEndpointGroups.get" call.
+// Exactly one of *NetworkEndpointGroup or error will be non-nil. Any
+// non-2xx status code is an error. Response headers are in either
+// *NetworkEndpointGroup.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *NetworkEndpointGroupsGetCall) Do(opts ...googleapi.CallOption) (*NetworkEndpointGroup, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &NetworkEndpointGroup{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Returns the specified network endpoint group. Gets a list of available network endpoint groups by making a list() request.",
+	//   "httpMethod": "GET",
+	//   "id": "compute.networkEndpointGroups.get",
+	//   "parameterOrder": [
+	//     "project",
+	//     "zone",
+	//     "networkEndpointGroup"
+	//   ],
+	//   "parameters": {
+	//     "networkEndpointGroup": {
+	//       "description": "The name of the network endpoint group. It should comply with RFC1035.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "project": {
+	//       "description": "Project ID for this request.",
+	//       "location": "path",
+	//       "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "zone": {
+	//       "description": "The name of the zone where the network endpoint group is located. It should comply with RFC1035.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "{project}/zones/{zone}/networkEndpointGroups/{networkEndpointGroup}",
+	//   "response": {
+	//     "$ref": "NetworkEndpointGroup"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform",
+	//     "https://www.googleapis.com/auth/compute",
+	//     "https://www.googleapis.com/auth/compute.readonly"
+	//   ]
+	// }
+
+}
+
+// method id "compute.networkEndpointGroups.insert":
+
+type NetworkEndpointGroupsInsertCall struct {
+	s                    *Service
+	project              string
+	zone                 string
+	networkendpointgroup *NetworkEndpointGroup
+	urlParams_           gensupport.URLParams
+	ctx_                 context.Context
+	header_              http.Header
+}
+
+// Insert: Creates a network endpoint group in the specified project
+// using the parameters that are included in the request.
+func (r *NetworkEndpointGroupsService) Insert(project string, zone string, networkendpointgroup *NetworkEndpointGroup) *NetworkEndpointGroupsInsertCall {
+	c := &NetworkEndpointGroupsInsertCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.project = project
+	c.zone = zone
+	c.networkendpointgroup = networkendpointgroup
+	return c
+}
+
+// RequestId sets the optional parameter "requestId": An optional
+// request ID to identify requests. Specify a unique request ID so that
+// if you must retry your request, the server will know to ignore the
+// request if it has already been completed.
+//
+// For example, consider a situation where you make an initial request
+// and the request times out. If you make the request again with the
+// same request ID, the server can check if original operation with the
+// same request ID was received, and if so, will ignore the second
+// request. This prevents clients from accidentally creating duplicate
+// commitments.
+//
+// The request ID must be a valid UUID with the exception that zero UUID
+// is not supported (00000000-0000-0000-0000-000000000000).
+func (c *NetworkEndpointGroupsInsertCall) RequestId(requestId string) *NetworkEndpointGroupsInsertCall {
+	c.urlParams_.Set("requestId", requestId)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *NetworkEndpointGroupsInsertCall) Fields(s ...googleapi.Field) *NetworkEndpointGroupsInsertCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *NetworkEndpointGroupsInsertCall) Context(ctx context.Context) *NetworkEndpointGroupsInsertCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *NetworkEndpointGroupsInsertCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *NetworkEndpointGroupsInsertCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.networkendpointgroup)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/networkEndpointGroups")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("POST", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"project": c.project,
+		"zone":    c.zone,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "compute.networkEndpointGroups.insert" call.
+// Exactly one of *Operation or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *NetworkEndpointGroupsInsertCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &Operation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Creates a network endpoint group in the specified project using the parameters that are included in the request.",
+	//   "httpMethod": "POST",
+	//   "id": "compute.networkEndpointGroups.insert",
+	//   "parameterOrder": [
+	//     "project",
+	//     "zone"
+	//   ],
+	//   "parameters": {
+	//     "project": {
+	//       "description": "Project ID for this request.",
+	//       "location": "path",
+	//       "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "requestId": {
+	//       "description": "An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed.\n\nFor example, consider a situation where you make an initial request and the request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments.\n\nThe request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "zone": {
+	//       "description": "The name of the zone where you want to create the network endpoint group. It should comply with RFC1035.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "{project}/zones/{zone}/networkEndpointGroups",
+	//   "request": {
+	//     "$ref": "NetworkEndpointGroup"
+	//   },
+	//   "response": {
+	//     "$ref": "Operation"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform",
+	//     "https://www.googleapis.com/auth/compute"
+	//   ]
+	// }
+
+}
+
+// method id "compute.networkEndpointGroups.list":
+
+type NetworkEndpointGroupsListCall struct {
+	s            *Service
+	project      string
+	zone         string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// List: Retrieves the list of network endpoint groups that are located
+// in the specified project and zone.
+func (r *NetworkEndpointGroupsService) List(project string, zone string) *NetworkEndpointGroupsListCall {
+	c := &NetworkEndpointGroupsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.project = project
+	c.zone = zone
+	return c
+}
+
+// Filter sets the optional parameter "filter": A filter expression that
+// filters resources listed in the response. The expression must specify
+// the field name, a comparison operator, and the value that you want to
+// use for filtering. The value must be a string, a number, or a
+// boolean. The comparison operator must be either =, !=, >, or <.
+//
+// For example, if you are filtering Compute Engine instances, you can
+// exclude instances named example-instance by specifying name !=
+// example-instance.
+//
+// You can also filter nested fields. For example, you could specify
+// scheduling.automaticRestart = false to include instances only if they
+// are not scheduled for automatic restarts. You can use filtering on
+// nested fields to filter based on resource labels.
+//
+// To filter on multiple expressions, provide each separate expression
+// within parentheses. For example, (scheduling.automaticRestart = true)
+// (cpuPlatform = "Intel Skylake"). By default, each expression is an
+// AND expression. However, you can include AND and OR expressions
+// explicitly. For example, (cpuPlatform = "Intel Skylake") OR
+// (cpuPlatform = "Intel Broadwell") AND (scheduling.automaticRestart =
+// true).
+func (c *NetworkEndpointGroupsListCall) Filter(filter string) *NetworkEndpointGroupsListCall {
+	c.urlParams_.Set("filter", filter)
+	return c
+}
+
+// MaxResults sets the optional parameter "maxResults": The maximum
+// number of results per page that should be returned. If the number of
+// available results is larger than maxResults, Compute Engine returns a
+// nextPageToken that can be used to get the next page of results in
+// subsequent list requests. Acceptable values are 0 to 500, inclusive.
+// (Default: 500)
+func (c *NetworkEndpointGroupsListCall) MaxResults(maxResults int64) *NetworkEndpointGroupsListCall {
+	c.urlParams_.Set("maxResults", fmt.Sprint(maxResults))
+	return c
+}
+
+// OrderBy sets the optional parameter "orderBy": Sorts list results by
+// a certain order. By default, results are returned in alphanumerical
+// order based on the resource name.
+//
+// You can also sort results in descending order based on the creation
+// timestamp using orderBy="creationTimestamp desc". This sorts results
+// based on the creationTimestamp field in reverse chronological order
+// (newest result first). Use this to sort resources like operations so
+// that the newest operation is returned first.
+//
+// Currently, only sorting by name or creationTimestamp desc is
+// supported.
+func (c *NetworkEndpointGroupsListCall) OrderBy(orderBy string) *NetworkEndpointGroupsListCall {
+	c.urlParams_.Set("orderBy", orderBy)
+	return c
+}
+
+// PageToken sets the optional parameter "pageToken": Specifies a page
+// token to use. Set pageToken to the nextPageToken returned by a
+// previous list request to get the next page of results.
+func (c *NetworkEndpointGroupsListCall) PageToken(pageToken string) *NetworkEndpointGroupsListCall {
+	c.urlParams_.Set("pageToken", pageToken)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *NetworkEndpointGroupsListCall) Fields(s ...googleapi.Field) *NetworkEndpointGroupsListCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *NetworkEndpointGroupsListCall) IfNoneMatch(entityTag string) *NetworkEndpointGroupsListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *NetworkEndpointGroupsListCall) Context(ctx context.Context) *NetworkEndpointGroupsListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *NetworkEndpointGroupsListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *NetworkEndpointGroupsListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/networkEndpointGroups")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("GET", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"project": c.project,
+		"zone":    c.zone,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "compute.networkEndpointGroups.list" call.
+// Exactly one of *NetworkEndpointGroupList or error will be non-nil.
+// Any non-2xx status code is an error. Response headers are in either
+// *NetworkEndpointGroupList.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *NetworkEndpointGroupsListCall) Do(opts ...googleapi.CallOption) (*NetworkEndpointGroupList, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &NetworkEndpointGroupList{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Retrieves the list of network endpoint groups that are located in the specified project and zone.",
+	//   "httpMethod": "GET",
+	//   "id": "compute.networkEndpointGroups.list",
+	//   "parameterOrder": [
+	//     "project",
+	//     "zone"
+	//   ],
+	//   "parameters": {
+	//     "filter": {
+	//       "description": "A filter expression that filters resources listed in the response. The expression must specify the field name, a comparison operator, and the value that you want to use for filtering. The value must be a string, a number, or a boolean. The comparison operator must be either =, !=, \u003e, or \u003c.\n\nFor example, if you are filtering Compute Engine instances, you can exclude instances named example-instance by specifying name != example-instance.\n\nYou can also filter nested fields. For example, you could specify scheduling.automaticRestart = false to include instances only if they are not scheduled for automatic restarts. You can use filtering on nested fields to filter based on resource labels.\n\nTo filter on multiple expressions, provide each separate expression within parentheses. For example, (scheduling.automaticRestart = true) (cpuPlatform = \"Intel Skylake\"). By default, each expression is an AND expression. However, you can include AND and OR expressions explicitly. For example, (cpuPlatform = \"Intel Skylake\") OR (cpuPlatform = \"Intel Broadwell\") AND (scheduling.automaticRestart = true).",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "maxResults": {
+	//       "default": "500",
+	//       "description": "The maximum number of results per page that should be returned. If the number of available results is larger than maxResults, Compute Engine returns a nextPageToken that can be used to get the next page of results in subsequent list requests. Acceptable values are 0 to 500, inclusive. (Default: 500)",
+	//       "format": "uint32",
+	//       "location": "query",
+	//       "minimum": "0",
+	//       "type": "integer"
+	//     },
+	//     "orderBy": {
+	//       "description": "Sorts list results by a certain order. By default, results are returned in alphanumerical order based on the resource name.\n\nYou can also sort results in descending order based on the creation timestamp using orderBy=\"creationTimestamp desc\". This sorts results based on the creationTimestamp field in reverse chronological order (newest result first). Use this to sort resources like operations so that the newest operation is returned first.\n\nCurrently, only sorting by name or creationTimestamp desc is supported.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "pageToken": {
+	//       "description": "Specifies a page token to use. Set pageToken to the nextPageToken returned by a previous list request to get the next page of results.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "project": {
+	//       "description": "Project ID for this request.",
+	//       "location": "path",
+	//       "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "zone": {
+	//       "description": "The name of the zone where the network endpoint group is located. It should comply with RFC1035.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "{project}/zones/{zone}/networkEndpointGroups",
+	//   "response": {
+	//     "$ref": "NetworkEndpointGroupList"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform",
+	//     "https://www.googleapis.com/auth/compute",
+	//     "https://www.googleapis.com/auth/compute.readonly"
+	//   ]
+	// }
+
+}
+
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *NetworkEndpointGroupsListCall) Pages(ctx context.Context, f func(*NetworkEndpointGroupList) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
+}
+
+// method id "compute.networkEndpointGroups.listNetworkEndpoints":
+
+type NetworkEndpointGroupsListNetworkEndpointsCall struct {
+	s                                         *Service
+	project                                   string
+	zone                                      string
+	networkEndpointGroup                      string
+	networkendpointgroupslistendpointsrequest *NetworkEndpointGroupsListEndpointsRequest
+	urlParams_                                gensupport.URLParams
+	ctx_                                      context.Context
+	header_                                   http.Header
+}
+
+// ListNetworkEndpoints: Lists the network endpoints in the specified
+// network endpoint group.
+func (r *NetworkEndpointGroupsService) ListNetworkEndpoints(project string, zone string, networkEndpointGroup string, networkendpointgroupslistendpointsrequest *NetworkEndpointGroupsListEndpointsRequest) *NetworkEndpointGroupsListNetworkEndpointsCall {
+	c := &NetworkEndpointGroupsListNetworkEndpointsCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.project = project
+	c.zone = zone
+	c.networkEndpointGroup = networkEndpointGroup
+	c.networkendpointgroupslistendpointsrequest = networkendpointgroupslistendpointsrequest
+	return c
+}
+
+// Filter sets the optional parameter "filter": A filter expression that
+// filters resources listed in the response. The expression must specify
+// the field name, a comparison operator, and the value that you want to
+// use for filtering. The value must be a string, a number, or a
+// boolean. The comparison operator must be either =, !=, >, or <.
+//
+// For example, if you are filtering Compute Engine instances, you can
+// exclude instances named example-instance by specifying name !=
+// example-instance.
+//
+// You can also filter nested fields. For example, you could specify
+// scheduling.automaticRestart = false to include instances only if they
+// are not scheduled for automatic restarts. You can use filtering on
+// nested fields to filter based on resource labels.
+//
+// To filter on multiple expressions, provide each separate expression
+// within parentheses. For example, (scheduling.automaticRestart = true)
+// (cpuPlatform = "Intel Skylake"). By default, each expression is an
+// AND expression. However, you can include AND and OR expressions
+// explicitly. For example, (cpuPlatform = "Intel Skylake") OR
+// (cpuPlatform = "Intel Broadwell") AND (scheduling.automaticRestart =
+// true).
+func (c *NetworkEndpointGroupsListNetworkEndpointsCall) Filter(filter string) *NetworkEndpointGroupsListNetworkEndpointsCall {
+	c.urlParams_.Set("filter", filter)
+	return c
+}
+
+// MaxResults sets the optional parameter "maxResults": The maximum
+// number of results per page that should be returned. If the number of
+// available results is larger than maxResults, Compute Engine returns a
+// nextPageToken that can be used to get the next page of results in
+// subsequent list requests. Acceptable values are 0 to 500, inclusive.
+// (Default: 500)
+func (c *NetworkEndpointGroupsListNetworkEndpointsCall) MaxResults(maxResults int64) *NetworkEndpointGroupsListNetworkEndpointsCall {
+	c.urlParams_.Set("maxResults", fmt.Sprint(maxResults))
+	return c
+}
+
+// OrderBy sets the optional parameter "orderBy": Sorts list results by
+// a certain order. By default, results are returned in alphanumerical
+// order based on the resource name.
+//
+// You can also sort results in descending order based on the creation
+// timestamp using orderBy="creationTimestamp desc". This sorts results
+// based on the creationTimestamp field in reverse chronological order
+// (newest result first). Use this to sort resources like operations so
+// that the newest operation is returned first.
+//
+// Currently, only sorting by name or creationTimestamp desc is
+// supported.
+func (c *NetworkEndpointGroupsListNetworkEndpointsCall) OrderBy(orderBy string) *NetworkEndpointGroupsListNetworkEndpointsCall {
+	c.urlParams_.Set("orderBy", orderBy)
+	return c
+}
+
+// PageToken sets the optional parameter "pageToken": Specifies a page
+// token to use. Set pageToken to the nextPageToken returned by a
+// previous list request to get the next page of results.
+func (c *NetworkEndpointGroupsListNetworkEndpointsCall) PageToken(pageToken string) *NetworkEndpointGroupsListNetworkEndpointsCall {
+	c.urlParams_.Set("pageToken", pageToken)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *NetworkEndpointGroupsListNetworkEndpointsCall) Fields(s ...googleapi.Field) *NetworkEndpointGroupsListNetworkEndpointsCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *NetworkEndpointGroupsListNetworkEndpointsCall) Context(ctx context.Context) *NetworkEndpointGroupsListNetworkEndpointsCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *NetworkEndpointGroupsListNetworkEndpointsCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *NetworkEndpointGroupsListNetworkEndpointsCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.networkendpointgroupslistendpointsrequest)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/networkEndpointGroups/{networkEndpointGroup}/listNetworkEndpoints")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("POST", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"project":              c.project,
+		"zone":                 c.zone,
+		"networkEndpointGroup": c.networkEndpointGroup,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "compute.networkEndpointGroups.listNetworkEndpoints" call.
+// Exactly one of *NetworkEndpointGroupsListNetworkEndpoints or error
+// will be non-nil. Any non-2xx status code is an error. Response
+// headers are in either
+// *NetworkEndpointGroupsListNetworkEndpoints.ServerResponse.Header or
+// (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was
+// returned.
+func (c *NetworkEndpointGroupsListNetworkEndpointsCall) Do(opts ...googleapi.CallOption) (*NetworkEndpointGroupsListNetworkEndpoints, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &NetworkEndpointGroupsListNetworkEndpoints{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Lists the network endpoints in the specified network endpoint group.",
+	//   "httpMethod": "POST",
+	//   "id": "compute.networkEndpointGroups.listNetworkEndpoints",
+	//   "parameterOrder": [
+	//     "project",
+	//     "zone",
+	//     "networkEndpointGroup"
+	//   ],
+	//   "parameters": {
+	//     "filter": {
+	//       "description": "A filter expression that filters resources listed in the response. The expression must specify the field name, a comparison operator, and the value that you want to use for filtering. The value must be a string, a number, or a boolean. The comparison operator must be either =, !=, \u003e, or \u003c.\n\nFor example, if you are filtering Compute Engine instances, you can exclude instances named example-instance by specifying name != example-instance.\n\nYou can also filter nested fields. For example, you could specify scheduling.automaticRestart = false to include instances only if they are not scheduled for automatic restarts. You can use filtering on nested fields to filter based on resource labels.\n\nTo filter on multiple expressions, provide each separate expression within parentheses. For example, (scheduling.automaticRestart = true) (cpuPlatform = \"Intel Skylake\"). By default, each expression is an AND expression. However, you can include AND and OR expressions explicitly. For example, (cpuPlatform = \"Intel Skylake\") OR (cpuPlatform = \"Intel Broadwell\") AND (scheduling.automaticRestart = true).",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "maxResults": {
+	//       "default": "500",
+	//       "description": "The maximum number of results per page that should be returned. If the number of available results is larger than maxResults, Compute Engine returns a nextPageToken that can be used to get the next page of results in subsequent list requests. Acceptable values are 0 to 500, inclusive. (Default: 500)",
+	//       "format": "uint32",
+	//       "location": "query",
+	//       "minimum": "0",
+	//       "type": "integer"
+	//     },
+	//     "networkEndpointGroup": {
+	//       "description": "The name of the network endpoint group from which you want to generate a list of included network endpoints. It should comply with RFC1035.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "orderBy": {
+	//       "description": "Sorts list results by a certain order. By default, results are returned in alphanumerical order based on the resource name.\n\nYou can also sort results in descending order based on the creation timestamp using orderBy=\"creationTimestamp desc\". This sorts results based on the creationTimestamp field in reverse chronological order (newest result first). Use this to sort resources like operations so that the newest operation is returned first.\n\nCurrently, only sorting by name or creationTimestamp desc is supported.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "pageToken": {
+	//       "description": "Specifies a page token to use. Set pageToken to the nextPageToken returned by a previous list request to get the next page of results.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "project": {
+	//       "description": "Project ID for this request.",
+	//       "location": "path",
+	//       "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "zone": {
+	//       "description": "The name of the zone where the network endpoint group is located. It should comply with RFC1035.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "{project}/zones/{zone}/networkEndpointGroups/{networkEndpointGroup}/listNetworkEndpoints",
+	//   "request": {
+	//     "$ref": "NetworkEndpointGroupsListEndpointsRequest"
+	//   },
+	//   "response": {
+	//     "$ref": "NetworkEndpointGroupsListNetworkEndpoints"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform",
+	//     "https://www.googleapis.com/auth/compute",
+	//     "https://www.googleapis.com/auth/compute.readonly"
+	//   ]
+	// }
+
+}
+
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *NetworkEndpointGroupsListNetworkEndpointsCall) Pages(ctx context.Context, f func(*NetworkEndpointGroupsListNetworkEndpoints) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
+}
+
+// method id "compute.networkEndpointGroups.testIamPermissions":
+
+type NetworkEndpointGroupsTestIamPermissionsCall struct {
+	s                      *Service
+	project                string
+	zone                   string
+	resource               string
+	testpermissionsrequest *TestPermissionsRequest
+	urlParams_             gensupport.URLParams
+	ctx_                   context.Context
+	header_                http.Header
+}
+
+// TestIamPermissions: Returns permissions that a caller has on the
+// specified resource.
+func (r *NetworkEndpointGroupsService) TestIamPermissions(project string, zone string, resource string, testpermissionsrequest *TestPermissionsRequest) *NetworkEndpointGroupsTestIamPermissionsCall {
+	c := &NetworkEndpointGroupsTestIamPermissionsCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.project = project
+	c.zone = zone
+	c.resource = resource
+	c.testpermissionsrequest = testpermissionsrequest
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *NetworkEndpointGroupsTestIamPermissionsCall) Fields(s ...googleapi.Field) *NetworkEndpointGroupsTestIamPermissionsCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *NetworkEndpointGroupsTestIamPermissionsCall) Context(ctx context.Context) *NetworkEndpointGroupsTestIamPermissionsCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *NetworkEndpointGroupsTestIamPermissionsCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *NetworkEndpointGroupsTestIamPermissionsCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.testpermissionsrequest)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/networkEndpointGroups/{resource}/testIamPermissions")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("POST", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"project":  c.project,
+		"zone":     c.zone,
+		"resource": c.resource,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "compute.networkEndpointGroups.testIamPermissions" call.
+// Exactly one of *TestPermissionsResponse or error will be non-nil. Any
+// non-2xx status code is an error. Response headers are in either
+// *TestPermissionsResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *NetworkEndpointGroupsTestIamPermissionsCall) Do(opts ...googleapi.CallOption) (*TestPermissionsResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &TestPermissionsResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Returns permissions that a caller has on the specified resource.",
+	//   "httpMethod": "POST",
+	//   "id": "compute.networkEndpointGroups.testIamPermissions",
+	//   "parameterOrder": [
+	//     "project",
+	//     "zone",
+	//     "resource"
+	//   ],
+	//   "parameters": {
+	//     "project": {
+	//       "description": "Project ID for this request.",
+	//       "location": "path",
+	//       "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "resource": {
+	//       "description": "Name of the resource for this request.",
+	//       "location": "path",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "zone": {
+	//       "description": "The name of the zone for this request.",
+	//       "location": "path",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "{project}/zones/{zone}/networkEndpointGroups/{resource}/testIamPermissions",
+	//   "request": {
+	//     "$ref": "TestPermissionsRequest"
+	//   },
+	//   "response": {
+	//     "$ref": "TestPermissionsResponse"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform",
+	//     "https://www.googleapis.com/auth/compute",
+	//     "https://www.googleapis.com/auth/compute.readonly"
+	//   ]
+	// }
+
+}
+
 // method id "compute.networks.addPeering":
 
 type NetworksAddPeeringCall struct {
@@ -88128,6 +91229,235 @@ func (c *SecurityPoliciesListCall) Pages(ctx context.Context, f func(*SecurityPo
 		}
 		c.PageToken(x.NextPageToken)
 	}
+}
+
+// method id "compute.securityPolicies.listPreconfiguredExpressionSets":
+
+type SecurityPoliciesListPreconfiguredExpressionSetsCall struct {
+	s            *Service
+	project      string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// ListPreconfiguredExpressionSets: Gets the current list of
+// preconfigured Web Application Firewall (WAF) expressions.
+func (r *SecurityPoliciesService) ListPreconfiguredExpressionSets(project string) *SecurityPoliciesListPreconfiguredExpressionSetsCall {
+	c := &SecurityPoliciesListPreconfiguredExpressionSetsCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.project = project
+	return c
+}
+
+// Filter sets the optional parameter "filter": A filter expression that
+// filters resources listed in the response. The expression must specify
+// the field name, a comparison operator, and the value that you want to
+// use for filtering. The value must be a string, a number, or a
+// boolean. The comparison operator must be either =, !=, >, or <.
+//
+// For example, if you are filtering Compute Engine instances, you can
+// exclude instances named example-instance by specifying name !=
+// example-instance.
+//
+// You can also filter nested fields. For example, you could specify
+// scheduling.automaticRestart = false to include instances only if they
+// are not scheduled for automatic restarts. You can use filtering on
+// nested fields to filter based on resource labels.
+//
+// To filter on multiple expressions, provide each separate expression
+// within parentheses. For example, (scheduling.automaticRestart = true)
+// (cpuPlatform = "Intel Skylake"). By default, each expression is an
+// AND expression. However, you can include AND and OR expressions
+// explicitly. For example, (cpuPlatform = "Intel Skylake") OR
+// (cpuPlatform = "Intel Broadwell") AND (scheduling.automaticRestart =
+// true).
+func (c *SecurityPoliciesListPreconfiguredExpressionSetsCall) Filter(filter string) *SecurityPoliciesListPreconfiguredExpressionSetsCall {
+	c.urlParams_.Set("filter", filter)
+	return c
+}
+
+// MaxResults sets the optional parameter "maxResults": The maximum
+// number of results per page that should be returned. If the number of
+// available results is larger than maxResults, Compute Engine returns a
+// nextPageToken that can be used to get the next page of results in
+// subsequent list requests. Acceptable values are 0 to 500, inclusive.
+// (Default: 500)
+func (c *SecurityPoliciesListPreconfiguredExpressionSetsCall) MaxResults(maxResults int64) *SecurityPoliciesListPreconfiguredExpressionSetsCall {
+	c.urlParams_.Set("maxResults", fmt.Sprint(maxResults))
+	return c
+}
+
+// OrderBy sets the optional parameter "orderBy": Sorts list results by
+// a certain order. By default, results are returned in alphanumerical
+// order based on the resource name.
+//
+// You can also sort results in descending order based on the creation
+// timestamp using orderBy="creationTimestamp desc". This sorts results
+// based on the creationTimestamp field in reverse chronological order
+// (newest result first). Use this to sort resources like operations so
+// that the newest operation is returned first.
+//
+// Currently, only sorting by name or creationTimestamp desc is
+// supported.
+func (c *SecurityPoliciesListPreconfiguredExpressionSetsCall) OrderBy(orderBy string) *SecurityPoliciesListPreconfiguredExpressionSetsCall {
+	c.urlParams_.Set("orderBy", orderBy)
+	return c
+}
+
+// PageToken sets the optional parameter "pageToken": Specifies a page
+// token to use. Set pageToken to the nextPageToken returned by a
+// previous list request to get the next page of results.
+func (c *SecurityPoliciesListPreconfiguredExpressionSetsCall) PageToken(pageToken string) *SecurityPoliciesListPreconfiguredExpressionSetsCall {
+	c.urlParams_.Set("pageToken", pageToken)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *SecurityPoliciesListPreconfiguredExpressionSetsCall) Fields(s ...googleapi.Field) *SecurityPoliciesListPreconfiguredExpressionSetsCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *SecurityPoliciesListPreconfiguredExpressionSetsCall) IfNoneMatch(entityTag string) *SecurityPoliciesListPreconfiguredExpressionSetsCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *SecurityPoliciesListPreconfiguredExpressionSetsCall) Context(ctx context.Context) *SecurityPoliciesListPreconfiguredExpressionSetsCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *SecurityPoliciesListPreconfiguredExpressionSetsCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *SecurityPoliciesListPreconfiguredExpressionSetsCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/securityPolicies/listPreconfiguredExpressionSets")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("GET", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"project": c.project,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "compute.securityPolicies.listPreconfiguredExpressionSets" call.
+// Exactly one of
+// *SecurityPoliciesListPreconfiguredExpressionSetsResponse or error
+// will be non-nil. Any non-2xx status code is an error. Response
+// headers are in either
+// *SecurityPoliciesListPreconfiguredExpressionSetsResponse.ServerRespons
+// e.Header or (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was
+// returned.
+func (c *SecurityPoliciesListPreconfiguredExpressionSetsCall) Do(opts ...googleapi.CallOption) (*SecurityPoliciesListPreconfiguredExpressionSetsResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &SecurityPoliciesListPreconfiguredExpressionSetsResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Gets the current list of preconfigured Web Application Firewall (WAF) expressions.",
+	//   "httpMethod": "GET",
+	//   "id": "compute.securityPolicies.listPreconfiguredExpressionSets",
+	//   "parameterOrder": [
+	//     "project"
+	//   ],
+	//   "parameters": {
+	//     "filter": {
+	//       "description": "A filter expression that filters resources listed in the response. The expression must specify the field name, a comparison operator, and the value that you want to use for filtering. The value must be a string, a number, or a boolean. The comparison operator must be either =, !=, \u003e, or \u003c.\n\nFor example, if you are filtering Compute Engine instances, you can exclude instances named example-instance by specifying name != example-instance.\n\nYou can also filter nested fields. For example, you could specify scheduling.automaticRestart = false to include instances only if they are not scheduled for automatic restarts. You can use filtering on nested fields to filter based on resource labels.\n\nTo filter on multiple expressions, provide each separate expression within parentheses. For example, (scheduling.automaticRestart = true) (cpuPlatform = \"Intel Skylake\"). By default, each expression is an AND expression. However, you can include AND and OR expressions explicitly. For example, (cpuPlatform = \"Intel Skylake\") OR (cpuPlatform = \"Intel Broadwell\") AND (scheduling.automaticRestart = true).",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "maxResults": {
+	//       "default": "500",
+	//       "description": "The maximum number of results per page that should be returned. If the number of available results is larger than maxResults, Compute Engine returns a nextPageToken that can be used to get the next page of results in subsequent list requests. Acceptable values are 0 to 500, inclusive. (Default: 500)",
+	//       "format": "uint32",
+	//       "location": "query",
+	//       "minimum": "0",
+	//       "type": "integer"
+	//     },
+	//     "orderBy": {
+	//       "description": "Sorts list results by a certain order. By default, results are returned in alphanumerical order based on the resource name.\n\nYou can also sort results in descending order based on the creation timestamp using orderBy=\"creationTimestamp desc\". This sorts results based on the creationTimestamp field in reverse chronological order (newest result first). Use this to sort resources like operations so that the newest operation is returned first.\n\nCurrently, only sorting by name or creationTimestamp desc is supported.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "pageToken": {
+	//       "description": "Specifies a page token to use. Set pageToken to the nextPageToken returned by a previous list request to get the next page of results.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "project": {
+	//       "description": "Project ID for this request.",
+	//       "location": "path",
+	//       "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "{project}/global/securityPolicies/listPreconfiguredExpressionSets",
+	//   "response": {
+	//     "$ref": "SecurityPoliciesListPreconfiguredExpressionSetsResponse"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform",
+	//     "https://www.googleapis.com/auth/compute"
+	//   ]
+	// }
+
 }
 
 // method id "compute.securityPolicies.patch":

@@ -44,6 +44,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/duration"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/dynamic"
@@ -275,19 +276,22 @@ func printUnstructuredContent(w PrefixWriter, level int, content map[string]inte
 func smartLabelFor(field string) string {
 	commonAcronyms := []string{"API", "URL", "UID", "OSB", "GUID"}
 
-	splitted := camelcase.Split(field)
-	for i := 0; i < len(splitted); i++ {
-		part := splitted[i]
+	parts := camelcase.Split(field)
+	result := make([]string, 0, len(parts))
+	for _, part := range parts {
+		if part == "_" {
+			continue
+		}
 
 		if slice.ContainsString(commonAcronyms, strings.ToUpper(part), nil) {
 			part = strings.ToUpper(part)
 		} else {
 			part = strings.Title(part)
 		}
-		splitted[i] = part
+		result = append(result, part)
 	}
 
-	return strings.Join(splitted, " ")
+	return strings.Join(result, " ")
 }
 
 // DefaultObjectDescriber can describe the default Kubernetes objects.
@@ -639,7 +643,7 @@ func describePod(pod *api.Pod, events *api.EventList) (string, error) {
 		printLabelsMultiline(w, "Labels", pod.Labels)
 		printAnnotationsMultiline(w, "Annotations", pod.Annotations)
 		if pod.DeletionTimestamp != nil {
-			w.Write(LEVEL_0, "Status:\tTerminating (lasts %s)\n", translateTimestamp(*pod.DeletionTimestamp))
+			w.Write(LEVEL_0, "Status:\tTerminating (lasts %s)\n", translateTimestampUntil(*pod.DeletionTimestamp))
 			w.Write(LEVEL_0, "Termination Grace Period:\t%ds\n", *pod.DeletionGracePeriodSeconds)
 		} else {
 			w.Write(LEVEL_0, "Status:\t%s\n", string(pod.Status.Phase))
@@ -1198,7 +1202,7 @@ func describePersistentVolume(pv *api.PersistentVolume, events *api.EventList) (
 		w.Write(LEVEL_0, "Finalizers:\t%v\n", pv.ObjectMeta.Finalizers)
 		w.Write(LEVEL_0, "StorageClass:\t%s\n", helper.GetPersistentVolumeClass(pv))
 		if pv.ObjectMeta.DeletionTimestamp != nil {
-			w.Write(LEVEL_0, "Status:\tTerminating (lasts %s)\n", translateTimestamp(*pv.ObjectMeta.DeletionTimestamp))
+			w.Write(LEVEL_0, "Status:\tTerminating (lasts %s)\n", translateTimestampUntil(*pv.ObjectMeta.DeletionTimestamp))
 		} else {
 			w.Write(LEVEL_0, "Status:\t%v\n", pv.Status.Phase)
 		}
@@ -1287,19 +1291,59 @@ func (d *PersistentVolumeClaimDescriber) Describe(namespace, name string, descri
 		return "", err
 	}
 
+	pc := d.Core().Pods(namespace)
+
+	mountPods, err := getMountPods(pc, pvc.Name)
+	if err != nil {
+		return "", err
+	}
+
 	events, _ := d.Core().Events(namespace).Search(legacyscheme.Scheme, pvc)
 
-	return describePersistentVolumeClaim(pvc, events)
+	return describePersistentVolumeClaim(pvc, events, mountPods)
 }
 
-func describePersistentVolumeClaim(pvc *api.PersistentVolumeClaim, events *api.EventList) (string, error) {
+func getMountPods(c coreclient.PodInterface, pvcName string) ([]api.Pod, error) {
+	nsPods, err := c.List(metav1.ListOptions{})
+	if err != nil {
+		return []api.Pod{}, err
+	}
+
+	var pods []api.Pod
+
+	for _, pod := range nsPods.Items {
+		pvcs := getPvcs(pod.Spec.Volumes)
+
+		for _, pvc := range pvcs {
+			if pvc.PersistentVolumeClaim.ClaimName == pvcName {
+				pods = append(pods, pod)
+			}
+		}
+	}
+
+	return pods, nil
+}
+
+func getPvcs(volumes []api.Volume) []api.Volume {
+	var pvcs []api.Volume
+
+	for _, volume := range volumes {
+		if volume.VolumeSource.PersistentVolumeClaim != nil {
+			pvcs = append(pvcs, volume)
+		}
+	}
+
+	return pvcs
+}
+
+func describePersistentVolumeClaim(pvc *api.PersistentVolumeClaim, events *api.EventList, mountPods []api.Pod) (string, error) {
 	return tabbedString(func(out io.Writer) error {
 		w := NewPrefixWriter(out)
 		w.Write(LEVEL_0, "Name:\t%s\n", pvc.Name)
 		w.Write(LEVEL_0, "Namespace:\t%s\n", pvc.Namespace)
 		w.Write(LEVEL_0, "StorageClass:\t%s\n", helper.GetPersistentVolumeClaimClass(pvc))
 		if pvc.ObjectMeta.DeletionTimestamp != nil {
-			w.Write(LEVEL_0, "Status:\tTerminating (lasts %s)\n", translateTimestamp(*pvc.ObjectMeta.DeletionTimestamp))
+			w.Write(LEVEL_0, "Status:\tTerminating (lasts %s)\n", translateTimestampUntil(*pvc.ObjectMeta.DeletionTimestamp))
 		} else {
 			w.Write(LEVEL_0, "Status:\t%v\n", pvc.Status.Phase)
 		}
@@ -1337,6 +1381,8 @@ func describePersistentVolumeClaim(pvc *api.PersistentVolumeClaim, events *api.E
 		if events != nil {
 			DescribeEvents(events, w)
 		}
+
+		printPodsMultiline(w, "Mounted By", mountPods)
 
 		return nil
 	})
@@ -1598,7 +1644,12 @@ type EnvVarResolverFunc func(e api.EnvVar) string
 // EnvValueFrom is exported for use by describers in other packages
 func EnvValueRetriever(pod *api.Pod) EnvVarResolverFunc {
 	return func(e api.EnvVar) string {
-		internalFieldPath, _, err := legacyscheme.Scheme.ConvertFieldLabel(e.ValueFrom.FieldRef.APIVersion, "Pod", e.ValueFrom.FieldRef.FieldPath, "")
+		gv, err := schema.ParseGroupVersion(e.ValueFrom.FieldRef.APIVersion)
+		if err != nil {
+			return ""
+		}
+		gvk := gv.WithKind("Pod")
+		internalFieldPath, _, err := legacyscheme.Scheme.ConvertFieldLabel(gvk, e.ValueFrom.FieldRef.FieldPath, "")
 		if err != nil {
 			return "" // pod validation should catch this on create
 		}
@@ -1851,6 +1902,12 @@ func describeJob(job *batch.Job, events *api.EventList) (string, error) {
 		}
 		if job.Status.StartTime != nil {
 			w.Write(LEVEL_0, "Start Time:\t%s\n", job.Status.StartTime.Time.Format(time.RFC1123Z))
+		}
+		if job.Status.CompletionTime != nil {
+			w.Write(LEVEL_0, "Completed At:\t%s\n", job.Status.CompletionTime.Time.Format(time.RFC1123Z))
+		}
+		if job.Status.StartTime != nil && job.Status.CompletionTime != nil {
+			w.Write(LEVEL_0, "Duration:\t%s\n", duration.HumanDuration(job.Status.CompletionTime.Sub(job.Status.StartTime.Time)))
 		}
 		if job.Spec.ActiveDeadlineSeconds != nil {
 			w.Write(LEVEL_0, "Active Deadline Seconds:\t%ds\n", *job.Spec.ActiveDeadlineSeconds)
@@ -3073,9 +3130,9 @@ func DescribeEvents(el *api.EventList, w PrefixWriter) {
 	for _, e := range el.Items {
 		var interval string
 		if e.Count > 1 {
-			interval = fmt.Sprintf("%s (x%d over %s)", translateTimestamp(e.LastTimestamp), e.Count, translateTimestamp(e.FirstTimestamp))
+			interval = fmt.Sprintf("%s (x%d over %s)", translateTimestampSince(e.LastTimestamp), e.Count, translateTimestampSince(e.FirstTimestamp))
 		} else {
-			interval = translateTimestamp(e.FirstTimestamp)
+			interval = translateTimestampSince(e.FirstTimestamp)
 		}
 		w.Write(LEVEL_1, "%v\t%v\t%s\t%v\t%v\n",
 			e.Type,
@@ -3530,6 +3587,12 @@ func describePodSecurityPolicy(psp *policy.PodSecurityPolicy) (string, error) {
 		if len(psp.Spec.AllowedFlexVolumes) > 0 {
 			w.Write(LEVEL_1, "Allowed FlexVolume Types:\t%s\n", flexVolumesToString(psp.Spec.AllowedFlexVolumes))
 		}
+		if len(psp.Spec.AllowedUnsafeSysctls) > 0 {
+			w.Write(LEVEL_1, "Allowed Unsafe Sysctls:\t%s\n", sysctlsToString(psp.Spec.AllowedUnsafeSysctls))
+		}
+		if len(psp.Spec.ForbiddenSysctls) > 0 {
+			w.Write(LEVEL_1, "Forbidden Sysctls:\t%s\n", sysctlsToString(psp.Spec.ForbiddenSysctls))
+		}
 		w.Write(LEVEL_1, "Allow Host Network:\t%t\n", psp.Spec.HostNetwork)
 		w.Write(LEVEL_1, "Allow Host Ports:\t%s\n", hostPortRangeToString(psp.Spec.HostPorts))
 		w.Write(LEVEL_1, "Allow Host PID:\t%t\n", psp.Spec.HostPID)
@@ -3587,6 +3650,10 @@ func flexVolumesToString(flexVolumes []policy.AllowedFlexVolume) string {
 		volumes = append(volumes, "driver="+flexVolume.Driver)
 	}
 	return stringOrDefaultValue(strings.Join(volumes, ","), "<all>")
+}
+
+func sysctlsToString(sysctls []string) string {
+	return stringOrNone(strings.Join(sysctls, ","))
 }
 
 func hostPortRangeToString(ranges []policy.HostPortRange) string {
@@ -3844,6 +3911,37 @@ func printTaintsMultilineWithIndent(w PrefixWriter, initialIndent, title, innerI
 			w.Write(LEVEL_0, "%s", innerIndent)
 		}
 		w.Write(LEVEL_0, "%s\n", taint.ToString())
+	}
+}
+
+// printPodsMultiline prints multiple pods with a proper alignment.
+func printPodsMultiline(w PrefixWriter, title string, pods []api.Pod) {
+	printPodsMultilineWithIndent(w, "", title, "\t", pods)
+}
+
+// printPodsMultilineWithIndent prints multiple pods with a user-defined alignment.
+func printPodsMultilineWithIndent(w PrefixWriter, initialIndent, title, innerIndent string, pods []api.Pod) {
+	w.Write(LEVEL_0, "%s%s:%s", initialIndent, title, innerIndent)
+
+	if pods == nil || len(pods) == 0 {
+		w.WriteLine("<none>")
+		return
+	}
+
+	// to print pods in the sorted order
+	sort.Slice(pods, func(i, j int) bool {
+		cmpKey := func(pod api.Pod) string {
+			return pod.Name
+		}
+		return cmpKey(pods[i]) < cmpKey(pods[j])
+	})
+
+	for i, pod := range pods {
+		if i != 0 {
+			w.Write(LEVEL_0, "%s", initialIndent)
+			w.Write(LEVEL_0, "%s", innerIndent)
+		}
+		w.Write(LEVEL_0, "%s\n", pod.Name)
 	}
 }
 
