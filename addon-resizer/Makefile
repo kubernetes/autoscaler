@@ -20,14 +20,14 @@
 # 4. Test etc.
 # 5. Issue PR.
 # 6. When PR is approved make the gcr.io version of the image: make build push
-# 7. Revert the references to kubernetes/addon-resizer:$(TAG) to gcr.io/google_containers/addon-resizer:$(TAG) 
+# 7. Revert the references to kubernetes/addon-resizer:$(TAG) to gcr.io/google_containers/addon-resizer:$(TAG)
 
 OUT_DIR = build
 PACKAGE = k8s.io/autoscaler/addon-resizer
 REGISTRY = staging-k8s.gcr.io
 IMGNAME = addon-resizer
 IMAGE = $(REGISTRY)/$(IMGNAME)
-TAG = 1.8.2
+TAG = 1.8.3
 
 # Rules for building the real image for deployment to gcr.io
 
