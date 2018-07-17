@@ -23,7 +23,6 @@ import (
 	"net"
 	goruntime "runtime"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/golang/glog"
@@ -429,6 +428,7 @@ func (kl *Kubelet) tryUpdateNodeStatus(tryNumber int) error {
 	if err != nil {
 		return err
 	}
+	kl.setLastObservedNodeAddresses(updatedNode.Status.Addresses)
 	// If update finishes successfully, mark the volumeInUse as reportedInUse to indicate
 	// those volumes are already updated in the node's status
 	kl.volumeManager.MarkVolumesAsReportedInUse(updatedNode.Status.VolumesInUse)
@@ -464,47 +464,11 @@ func (kl *Kubelet) setNodeAddress(node *v1.Node) error {
 		return nil
 	}
 	if kl.cloud != nil {
-		instances, ok := kl.cloud.Instances()
-		if !ok {
-			return fmt.Errorf("failed to get instances from cloud provider")
-		}
-		// TODO(roberthbailey): Can we do this without having credentials to talk
-		// to the cloud provider?
-		// TODO(justinsb): We can if CurrentNodeName() was actually CurrentNode() and returned an interface
-		// TODO: If IP addresses couldn't be fetched from the cloud provider, should kubelet fallback on the other methods for getting the IP below?
-		var nodeAddresses []v1.NodeAddress
-		var err error
-
-		// Make sure the instances.NodeAddresses returns even if the cloud provider API hangs for a long time
-		func() {
-			kl.cloudproviderRequestMux.Lock()
-			if len(kl.cloudproviderRequestParallelism) > 0 {
-				kl.cloudproviderRequestMux.Unlock()
-				return
-			}
-			kl.cloudproviderRequestParallelism <- 0
-			kl.cloudproviderRequestMux.Unlock()
-
-			go func() {
-				nodeAddresses, err = instances.NodeAddresses(context.TODO(), kl.nodeName)
-
-				kl.cloudproviderRequestMux.Lock()
-				<-kl.cloudproviderRequestParallelism
-				kl.cloudproviderRequestMux.Unlock()
-
-				kl.cloudproviderRequestSync <- 0
-			}()
-		}()
-
-		select {
-		case <-kl.cloudproviderRequestSync:
-		case <-time.After(kl.cloudproviderRequestTimeout):
-			err = fmt.Errorf("Timeout after %v", kl.cloudproviderRequestTimeout)
-		}
-
+		nodeAddresses, err := kl.cloudResourceSyncManager.NodeAddresses()
 		if err != nil {
-			return fmt.Errorf("failed to get node address from cloud provider: %v", err)
+			return err
 		}
+
 		if kl.nodeIP != nil {
 			enforcedNodeAddresses := []v1.NodeAddress{}
 
@@ -530,20 +494,10 @@ func (kl *Kubelet) setNodeAddress(node *v1.Node) error {
 			return fmt.Errorf("failed to get node address from cloud provider that matches ip: %v", kl.nodeIP)
 		}
 
-		// Only add a NodeHostName address if the cloudprovider did not specify one
-		// (we assume the cloudprovider knows best)
-		var addressNodeHostName *v1.NodeAddress
-		for i := range nodeAddresses {
-			if nodeAddresses[i].Type == v1.NodeHostName {
-				addressNodeHostName = &nodeAddresses[i]
-				break
-			}
-		}
-		if addressNodeHostName == nil {
-			hostnameAddress := v1.NodeAddress{Type: v1.NodeHostName, Address: kl.GetHostname()}
-			nodeAddresses = append(nodeAddresses, hostnameAddress)
-		} else {
-			glog.V(2).Infof("Using Node Hostname from cloudprovider: %q", addressNodeHostName.Address)
+		// Only add a NodeHostName address if the cloudprovider did not specify any addresses.
+		// (we assume the cloudprovider is authoritative if it specifies any addresses)
+		if len(nodeAddresses) == 0 {
+			nodeAddresses = []v1.NodeAddress{{Type: v1.NodeHostName, Address: kl.GetHostname()}}
 		}
 		node.Status.Addresses = nodeAddresses
 	} else {
@@ -1073,24 +1027,17 @@ func (kl *Kubelet) setNodeOODCondition(node *v1.Node) {
 	}
 }
 
-// Maintains Node.Spec.Unschedulable value from previous run of tryUpdateNodeStatus()
-// TODO: why is this a package var?
-var (
-	oldNodeUnschedulable     bool
-	oldNodeUnschedulableLock sync.Mutex
-)
-
 // record if node schedulable change.
 func (kl *Kubelet) recordNodeSchedulableEvent(node *v1.Node) {
-	oldNodeUnschedulableLock.Lock()
-	defer oldNodeUnschedulableLock.Unlock()
-	if oldNodeUnschedulable != node.Spec.Unschedulable {
+	kl.lastNodeUnschedulableLock.Lock()
+	defer kl.lastNodeUnschedulableLock.Unlock()
+	if kl.lastNodeUnschedulable != node.Spec.Unschedulable {
 		if node.Spec.Unschedulable {
 			kl.recordNodeStatusEvent(v1.EventTypeNormal, events.NodeNotSchedulable)
 		} else {
 			kl.recordNodeStatusEvent(v1.EventTypeNormal, events.NodeSchedulable)
 		}
-		oldNodeUnschedulable = node.Spec.Unschedulable
+		kl.lastNodeUnschedulable = node.Spec.Unschedulable
 	}
 }
 
@@ -1114,6 +1061,17 @@ func (kl *Kubelet) setNodeStatus(node *v1.Node) {
 			glog.Warningf("Failed to set some node status fields: %s", err)
 		}
 	}
+}
+
+func (kl *Kubelet) setLastObservedNodeAddresses(addresses []v1.NodeAddress) {
+	kl.lastObservedNodeAddressesMux.Lock()
+	defer kl.lastObservedNodeAddressesMux.Unlock()
+	kl.lastObservedNodeAddresses = addresses
+}
+func (kl *Kubelet) getLastObservedNodeAddresses() []v1.NodeAddress {
+	kl.lastObservedNodeAddressesMux.Lock()
+	defer kl.lastObservedNodeAddressesMux.Unlock()
+	return kl.lastObservedNodeAddresses
 }
 
 // defaultNodeStatusFuncs is a factory that generates the default set of
