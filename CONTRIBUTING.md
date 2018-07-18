@@ -30,14 +30,14 @@ in your PRs.
 
 Autoscaler collaborators may add "LGTM" (Looks Good To Me) or an equivalent comment to indicate 
 that a PR is acceptable. Any change requires at least one LGTM. No pull requests can be merged 
-until at least one Ingress collaborator signs off with an LGTM.
+until at least one Autoscaler collaborator signs off with an LGTM.
 
 ### Support Channels
 
 Whether you are a user or contributor, official support channels include:
 
  * GitHub issues: https://github.com/kubernetes/autoscaler/issues
- * Slack: kubernetes-users room in the [Kubernetes Slack](https://kubernetes.slack.com/?redir=%2Fmessages%2Fsig-autoscaling)
+ * Slack: Sig-autoscaling room in the [Kubernetes Slack](https://kubernetes.slack.com/?redir=%2Fmessages%2Fsig-autoscaling)
  * Email: kubernetes-users [mailing list](https://groups.google.com/forum/#!forum/kubernetes-sig-autoscaling)
 
 For further information, please refer to [Kubernetes Contributor Guide](https://github.com/kubernetes/community/blob/master/contributors/guide/README.md)
