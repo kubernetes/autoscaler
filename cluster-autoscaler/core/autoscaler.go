@@ -60,6 +60,5 @@ func NewAutoscaler(opts AutoscalerOptions) (Autoscaler, errors.AutoscalerError) 
 	if err != nil {
 		return nil, errors.ToAutoscalerError(errors.InternalError, err)
 	}
-	autoscalerBuilder := NewAutoscalerBuilder(opts.AutoscalingOptions, opts.PredicateChecker, opts.KubeClient, opts.KubeEventRecorder, opts.ListerRegistry, opts.Processors)
-	return autoscalerBuilder.Build()
+	return NewStaticAutoscaler(opts.AutoscalingOptions, opts.PredicateChecker, opts.KubeClient, opts.KubeEventRecorder, opts.ListerRegistry, opts.Processors)
 }
