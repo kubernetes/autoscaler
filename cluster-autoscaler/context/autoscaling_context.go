@@ -74,10 +74,12 @@ func NewAutoscalingContext(options static.AutoscalingOptions, predicateChecker *
 	kubeClient kube_client.Interface, kubeEventRecorder kube_record.EventRecorder,
 	logEventRecorder *utils.LogEventRecorder, listerRegistry kube_util.ListerRegistry) (*AutoscalingContext, errors.AutoscalerError) {
 
-	cloudProviderBuilder := builder.NewCloudProviderBuilder(options.CloudProviderName, options.CloudConfig, options.ClusterName, options.NodeAutoprovisioningEnabled, options.Regional)
-	cloudProvider := cloudProviderBuilder.Build(cloudprovider.NodeGroupDiscoveryOptions{
-		NodeGroupSpecs:              options.NodeGroups,
-		NodeGroupAutoDiscoverySpecs: options.NodeGroupAutoDiscovery},
+	cloudProvider := builder.NewCloudProvider(
+		options,
+		cloudprovider.NodeGroupDiscoveryOptions{
+			NodeGroupSpecs:              options.NodeGroups,
+			NodeGroupAutoDiscoverySpecs: options.NodeGroupAutoDiscovery,
+		},
 		NewResourceLimiterFromAutoscalingOptions(options))
 	expanderStrategy, err := factory.ExpanderStrategyFromString(options.ExpanderName,
 		cloudProvider, listerRegistry.AllNodeLister())
