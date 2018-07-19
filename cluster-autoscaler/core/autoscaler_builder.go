@@ -17,7 +17,6 @@ limitations under the License.
 package core
 
 import (
-	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
@@ -29,15 +28,12 @@ import (
 
 // AutoscalerBuilder builds an instance of Autoscaler which is the core of CA
 type AutoscalerBuilder interface {
-	SetDynamicConfig(config dynamic.Config) AutoscalerBuilder
 	Build() (Autoscaler, errors.AutoscalerError)
 }
 
-// AutoscalerBuilderImpl builds new autoscalers from its state including initial `AutoscalingOptions` given at startup and
-// `dynamic.Config` read on demand from the configmap
+// AutoscalerBuilderImpl builds new autoscalers from its state including initial `AutoscalingOptions` given at startup.
 type AutoscalerBuilderImpl struct {
 	autoscalingOptions context.AutoscalingOptions
-	dynamicConfig      *dynamic.Config
 	kubeClient         kube_client.Interface
 	kubeEventRecorder  kube_record.EventRecorder
 	predicateChecker   *simulator.PredicateChecker
@@ -58,19 +54,8 @@ func NewAutoscalerBuilder(autoscalingOptions context.AutoscalingOptions, predica
 	}
 }
 
-// SetDynamicConfig sets an instance of dynamic.Config read from a configmap so that
-// the new autoscaler built afterwards reflect the latest configuration contained in the configmap
-func (b *AutoscalerBuilderImpl) SetDynamicConfig(config dynamic.Config) AutoscalerBuilder {
-	b.dynamicConfig = &config
-	return b
-}
-
 // Build an autoscaler according to the builder's state
 func (b *AutoscalerBuilderImpl) Build() (Autoscaler, errors.AutoscalerError) {
 	options := b.autoscalingOptions
-	if b.dynamicConfig != nil {
-		c := *(b.dynamicConfig)
-		options.NodeGroups = c.NodeGroupSpecStrings()
-	}
 	return NewStaticAutoscaler(options, b.predicateChecker, b.kubeClient, b.kubeEventRecorder, b.listerRegistry, b.processors)
 }
