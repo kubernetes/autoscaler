@@ -54,7 +54,6 @@ const (
 type StaticAutoscaler struct {
 	// AutoscalingContext consists of validated settings and options for this autoscaler
 	*context.AutoscalingContext
-	kube_util.ListerRegistry
 	// ClusterState for maintaining the state of cluster nodes.
 	clusterStateRegistry    *clusterstate.ClusterStateRegistry
 	startTime               time.Time
@@ -93,7 +92,6 @@ func NewStaticAutoscaler(opts config.AutoscalingOptions, predicateChecker *simul
 
 	return &StaticAutoscaler{
 		AutoscalingContext:      autoscalingContext,
-		ListerRegistry:          listerRegistry,
 		startTime:               time.Now(),
 		lastScaleUpTime:         time.Now(),
 		lastScaleDownDeleteTime: time.Now(),
