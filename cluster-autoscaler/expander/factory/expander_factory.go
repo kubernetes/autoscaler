@@ -17,20 +17,21 @@ limitations under the License.
 package factory
 
 import (
+	"fmt"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/mostpods"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/price"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/random"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/waste"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 )
 
 // ExpanderStrategyFromString creates an expander.Strategy according to its name
 func ExpanderStrategyFromString(expanderFlag string, cloudProvider cloudprovider.CloudProvider,
-	nodeLister kube_util.NodeLister) (expander.Strategy, errors.AutoscalerError) {
+	nodeLister kube_util.NodeLister) (expander.Strategy, error) {
 	switch expanderFlag {
 	case expander.RandomExpanderName:
 		return random.NewStrategy(), nil
@@ -47,5 +48,5 @@ func ExpanderStrategyFromString(expanderFlag string, cloudProvider cloudprovider
 			price.NewSimplePreferredNodeProvider(nodeLister),
 			price.SimpleNodeUnfitness), nil
 	}
-	return nil, errors.NewAutoscalerError(errors.InternalError, "Expander %s not supported", expanderFlag)
+	return nil, fmt.Errorf("Expander %s not supported", expanderFlag)
 }
