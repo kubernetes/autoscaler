@@ -28,7 +28,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
-	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
@@ -405,18 +404,8 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 		}
 
 		if len(option.Pods) > 0 {
-			if context.EstimatorName == estimator.BinpackingEstimatorName {
-				binpackingEstimator := estimator.NewBinpackingNodeEstimator(context.PredicateChecker)
-				option.NodeCount = binpackingEstimator.Estimate(option.Pods, nodeInfo, upcomingNodes)
-			} else if context.EstimatorName == estimator.BasicEstimatorName {
-				basicEstimator := estimator.NewBasicNodeEstimator()
-				for _, pod := range option.Pods {
-					basicEstimator.Add(pod)
-				}
-				option.NodeCount, option.Debug = basicEstimator.Estimate(nodeInfo.Node(), upcomingNodes)
-			} else {
-				glog.Fatalf("Unrecognized estimator: %s", context.EstimatorName)
-			}
+			estimator := context.EstimatorBuilder(context.PredicateChecker)
+			option.NodeCount = estimator.Estimate(option.Pods, nodeInfo, upcomingNodes)
 			if option.NodeCount > 0 {
 				expansionOptions = append(expansionOptions, option)
 			} else {
