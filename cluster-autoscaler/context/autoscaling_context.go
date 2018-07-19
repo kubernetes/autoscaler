@@ -18,7 +18,6 @@ package context
 
 import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
@@ -72,15 +71,8 @@ func NewResourceLimiterFromAutoscalingOptions(options config.AutoscalingOptions)
 // NewAutoscalingContext returns an autoscaling context from all the necessary parameters passed via arguments
 func NewAutoscalingContext(options config.AutoscalingOptions, predicateChecker *simulator.PredicateChecker,
 	kubeClient kube_client.Interface, kubeEventRecorder kube_record.EventRecorder,
-	logEventRecorder *utils.LogEventRecorder, listerRegistry kube_util.ListerRegistry) (*AutoscalingContext, errors.AutoscalerError) {
-
-	cloudProvider := builder.NewCloudProvider(
-		options,
-		cloudprovider.NodeGroupDiscoveryOptions{
-			NodeGroupSpecs:              options.NodeGroups,
-			NodeGroupAutoDiscoverySpecs: options.NodeGroupAutoDiscovery,
-		},
-		NewResourceLimiterFromAutoscalingOptions(options))
+	logEventRecorder *utils.LogEventRecorder, listerRegistry kube_util.ListerRegistry,
+	cloudProvider cloudprovider.CloudProvider) (*AutoscalingContext, errors.AutoscalerError) {
 	expanderStrategy, err := factory.ExpanderStrategyFromString(options.ExpanderName,
 		cloudProvider, listerRegistry.AllNodeLister())
 	if err != nil {

@@ -19,6 +19,7 @@ package core
 import (
 	"time"
 
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
@@ -55,10 +56,10 @@ func initializeDefaultOptions(opts *AutoscalerOptions) error {
 }
 
 // NewAutoscaler creates an autoscaler of an appropriate type according to the parameters
-func NewAutoscaler(opts AutoscalerOptions) (Autoscaler, errors.AutoscalerError) {
+func NewAutoscaler(opts AutoscalerOptions, cloudProvider cloudprovider.CloudProvider) (Autoscaler, errors.AutoscalerError) {
 	err := initializeDefaultOptions(&opts)
 	if err != nil {
 		return nil, errors.ToAutoscalerError(errors.InternalError, err)
 	}
-	return NewStaticAutoscaler(opts.AutoscalingOptions, opts.PredicateChecker, opts.KubeClient, opts.KubeEventRecorder, opts.ListerRegistry, opts.Processors)
+	return NewStaticAutoscaler(opts.AutoscalingOptions, opts.PredicateChecker, opts.KubeClient, opts.KubeEventRecorder, opts.ListerRegistry, opts.Processors, cloudProvider)
 }
