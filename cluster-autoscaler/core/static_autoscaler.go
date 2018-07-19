@@ -24,17 +24,15 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
-	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/tpu"
 
 	apiv1 "k8s.io/api/core/v1"
-	kube_client "k8s.io/client-go/kubernetes"
-	kube_record "k8s.io/client-go/tools/record"
 
 	"github.com/golang/glog"
 )
@@ -67,20 +65,8 @@ type StaticAutoscaler struct {
 
 // NewStaticAutoscaler creates an instance of Autoscaler filled with provided parameters
 func NewStaticAutoscaler(opts config.AutoscalingOptions, predicateChecker *simulator.PredicateChecker,
-	kubeClient kube_client.Interface, kubeEventRecorder kube_record.EventRecorder, listerRegistry kube_util.ListerRegistry,
-	processors *ca_processors.AutoscalingProcessors, cloudProvider cloudprovider.CloudProvider) (*StaticAutoscaler, errors.AutoscalerError) {
-	logRecorder, err := utils.NewStatusMapRecorder(kubeClient, opts.ConfigNamespace, kubeEventRecorder, opts.WriteStatusConfigMap)
-	if err != nil {
-		glog.Error("Failed to initialize status configmap, unable to write status events")
-		// Get a dummy, so we can at least safely call the methods
-		// TODO(maciekpytel): recover from this after successful status configmap update?
-		logRecorder, _ = utils.NewStatusMapRecorder(kubeClient, opts.ConfigNamespace, kubeEventRecorder, false)
-	}
-	autoscalingContext, errctx := context.NewAutoscalingContext(opts, predicateChecker, kubeClient, kubeEventRecorder, logRecorder, listerRegistry, cloudProvider)
-	if errctx != nil {
-		return nil, errctx
-	}
-
+	autoscalingKubeClients *context.AutoscalingKubeClients, processors *ca_processors.AutoscalingProcessors, cloudProvider cloudprovider.CloudProvider, expanderStrategy expander.Strategy) *StaticAutoscaler {
+	autoscalingContext := context.NewAutoscalingContext(opts, predicateChecker, autoscalingKubeClients, cloudProvider, expanderStrategy)
 	clusterStateConfig := clusterstate.ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: opts.MaxTotalUnreadyPercentage,
 		OkTotalUnreadyCount:       opts.OkTotalUnreadyCount,
@@ -99,7 +85,7 @@ func NewStaticAutoscaler(opts config.AutoscalingOptions, predicateChecker *simul
 		scaleDown:               scaleDown,
 		processors:              processors,
 		clusterStateRegistry:    clusterStateRegistry,
-	}, nil
+	}
 }
 
 // cleanUpIfRequired removes ToBeDeleted taints added by a previous run of CA
