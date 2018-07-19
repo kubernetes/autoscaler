@@ -26,6 +26,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/kubemark"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/client-go/informers"
 	kubeclient "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -48,8 +49,15 @@ var AvailableCloudProviders = []string{
 const DefaultCloudProvider = gce.ProviderNameGCE
 
 // NewCloudProvider builds a cloud provider from provided parameters.
-func NewCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+func NewCloudProvider(opts config.AutoscalingOptions) cloudprovider.CloudProvider {
 	glog.V(1).Infof("Building %s cloud provider.", opts.CloudProviderName)
+
+	do := cloudprovider.NodeGroupDiscoveryOptions{
+		NodeGroupSpecs:              opts.NodeGroups,
+		NodeGroupAutoDiscoverySpecs: opts.NodeGroupAutoDiscovery,
+	}
+	rl := context.NewResourceLimiterFromAutoscalingOptions(opts)
+
 	switch opts.CloudProviderName {
 	case gce.ProviderNameGCE:
 		return buildGCE(opts, do, rl, gce.ModeGCE)
