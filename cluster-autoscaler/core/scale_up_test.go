@@ -28,6 +28,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/config/static"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/random"
@@ -50,7 +51,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 )
 
-var defaultOptions = context.AutoscalingOptions{
+var defaultOptions = static.AutoscalingOptions{
 	EstimatorName:  estimator.BinpackingEstimatorName,
 	MaxCoresTotal:  config.DefaultMaxClusterCores,
 	MaxMemoryTotal: config.DefaultMaxClusterMemory * units.Gigabyte,
@@ -538,7 +539,7 @@ func TestScaleUpNodeComingNoScale(t *testing.T) {
 	clusterState.UpdateNodes([]*apiv1.Node{n1, n2}, time.Now())
 
 	context := &context.AutoscalingContext{
-		AutoscalingOptions: context.AutoscalingOptions{
+		AutoscalingOptions: static.AutoscalingOptions{
 			EstimatorName:  estimator.BinpackingEstimatorName,
 			MaxCoresTotal:  config.DefaultMaxClusterCores,
 			MaxMemoryTotal: config.DefaultMaxClusterMemory,
@@ -663,7 +664,7 @@ func TestScaleUpUnhealthy(t *testing.T) {
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder)
 	clusterState.UpdateNodes([]*apiv1.Node{n1, n2}, time.Now())
 	context := &context.AutoscalingContext{
-		AutoscalingOptions: context.AutoscalingOptions{
+		AutoscalingOptions: static.AutoscalingOptions{
 			EstimatorName:  estimator.BinpackingEstimatorName,
 			MaxCoresTotal:  config.DefaultMaxClusterCores,
 			MaxMemoryTotal: config.DefaultMaxClusterMemory,
@@ -715,7 +716,7 @@ func TestScaleUpNoHelp(t *testing.T) {
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder)
 	clusterState.UpdateNodes([]*apiv1.Node{n1}, time.Now())
 	context := &context.AutoscalingContext{
-		AutoscalingOptions: context.AutoscalingOptions{
+		AutoscalingOptions: static.AutoscalingOptions{
 			EstimatorName:  estimator.BinpackingEstimatorName,
 			MaxCoresTotal:  config.DefaultMaxClusterCores,
 			MaxMemoryTotal: config.DefaultMaxClusterMemory,
@@ -797,7 +798,7 @@ func TestScaleUpBalanceGroups(t *testing.T) {
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder)
 	clusterState.UpdateNodes(nodes, time.Now())
 	context := &context.AutoscalingContext{
-		AutoscalingOptions: context.AutoscalingOptions{
+		AutoscalingOptions: static.AutoscalingOptions{
 			EstimatorName:            estimator.BinpackingEstimatorName,
 			BalanceSimilarNodeGroups: true,
 			MaxCoresTotal:            config.DefaultMaxClusterCores,
@@ -861,7 +862,7 @@ func TestScaleUpAutoprovisionedNodeGroup(t *testing.T) {
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder)
 
 	context := &context.AutoscalingContext{
-		AutoscalingOptions: context.AutoscalingOptions{
+		AutoscalingOptions: static.AutoscalingOptions{
 			EstimatorName:                    estimator.BinpackingEstimatorName,
 			MaxCoresTotal:                    5000 * 64,
 			MaxMemoryTotal:                   5000 * 64 * 20,

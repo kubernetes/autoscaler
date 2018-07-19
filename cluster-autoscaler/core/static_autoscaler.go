@@ -21,6 +21,7 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
+	"k8s.io/autoscaler/cluster-autoscaler/config/static"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
@@ -65,7 +66,7 @@ type StaticAutoscaler struct {
 }
 
 // NewStaticAutoscaler creates an instance of Autoscaler filled with provided parameters
-func NewStaticAutoscaler(opts context.AutoscalingOptions, predicateChecker *simulator.PredicateChecker,
+func NewStaticAutoscaler(opts static.AutoscalingOptions, predicateChecker *simulator.PredicateChecker,
 	kubeClient kube_client.Interface, kubeEventRecorder kube_record.EventRecorder, listerRegistry kube_util.ListerRegistry,
 	processors *ca_processors.AutoscalingProcessors) (*StaticAutoscaler, errors.AutoscalerError) {
 	logRecorder, err := utils.NewStatusMapRecorder(kubeClient, opts.ConfigNamespace, kubeEventRecorder, opts.WriteStatusConfigMap)

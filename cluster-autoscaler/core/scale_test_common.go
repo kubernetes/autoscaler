@@ -16,9 +16,7 @@ limitations under the License.
 
 package core
 
-import (
-	"k8s.io/autoscaler/cluster-autoscaler/context"
-)
+import "k8s.io/autoscaler/cluster-autoscaler/config/static"
 
 type nodeConfig struct {
 	name   string
@@ -50,5 +48,5 @@ type scaleTestConfig struct {
 	scaleUpOptionToChoose  groupSizeChange   // this will be selected by assertingStrategy.BestOption
 	expectedFinalScaleUp   groupSizeChange   // we expect this to be delivered via scale-up event
 	expectedScaleDowns     []string
-	options                context.AutoscalingOptions
+	options                static.AutoscalingOptions
 }
