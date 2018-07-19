@@ -48,6 +48,8 @@ type AutoscalingContext struct {
 // AutoscalingKubeClients contains all Kubernetes API clients,
 // including listers and event recorders.
 type AutoscalingKubeClients struct {
+	// Listers.
+	kube_util.ListerRegistry
 	// ClientSet interface.
 	ClientSet kube_client.Interface
 	// Recorder for recording events.
@@ -90,9 +92,10 @@ func NewAutoscalingContext(options config.AutoscalingOptions, predicateChecker *
 		AutoscalingOptions: options,
 		CloudProvider:      cloudProvider,
 		AutoscalingKubeClients: AutoscalingKubeClients{
-			ClientSet:   kubeClient,
-			Recorder:    kubeEventRecorder,
-			LogRecorder: logEventRecorder,
+			ListerRegistry: listerRegistry,
+			ClientSet:      kubeClient,
+			Recorder:       kubeEventRecorder,
+			LogRecorder:    logEventRecorder,
 		},
 		PredicateChecker: predicateChecker,
 		ExpanderStrategy: expanderStrategy,
