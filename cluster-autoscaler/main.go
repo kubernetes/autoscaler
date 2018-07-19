@@ -31,8 +31,10 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kube_flag "k8s.io/apiserver/pkg/util/flag"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	cloudBuilder "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
@@ -272,7 +274,16 @@ func run(healthCheck *metrics.HealthCheck) {
 		KubeEventRecorder:  kubeEventRecorder,
 		ListerRegistry:     listerRegistry,
 	}
-	autoscaler, err := core.NewAutoscaler(opts)
+
+	cloudProvider := cloudBuilder.NewCloudProvider(
+		autoscalingOptions,
+		cloudprovider.NodeGroupDiscoveryOptions{
+			NodeGroupSpecs:              autoscalingOptions.NodeGroups,
+			NodeGroupAutoDiscoverySpecs: autoscalingOptions.NodeGroupAutoDiscovery,
+		},
+		context.NewResourceLimiterFromAutoscalingOptions(autoscalingOptions))
+
+	autoscaler, err := core.NewAutoscaler(opts, cloudProvider)
 	if err != nil {
 		glog.Fatalf("Failed to create autoscaler: %v", err)
 	}
