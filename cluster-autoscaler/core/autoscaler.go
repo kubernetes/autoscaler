@@ -23,6 +23,7 @@ import (
 	cloudBuilder "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/factory"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
@@ -39,6 +40,7 @@ type AutoscalerOptions struct {
 	CloudProvider          cloudprovider.CloudProvider
 	PredicateChecker       *simulator.PredicateChecker
 	ExpanderStrategy       expander.Strategy
+	EstimatorBuilder       estimator.EstimatorBuilder
 	Processors             *ca_processors.AutoscalingProcessors
 }
 
@@ -57,7 +59,7 @@ func NewAutoscaler(opts AutoscalerOptions) (Autoscaler, errors.AutoscalerError) 
 	if err != nil {
 		return nil, errors.ToAutoscalerError(errors.InternalError, err)
 	}
-	return NewStaticAutoscaler(opts.AutoscalingOptions, opts.PredicateChecker, opts.AutoscalingKubeClients, opts.Processors, opts.CloudProvider, opts.ExpanderStrategy), nil
+	return NewStaticAutoscaler(opts.AutoscalingOptions, opts.PredicateChecker, opts.AutoscalingKubeClients, opts.Processors, opts.CloudProvider, opts.ExpanderStrategy, opts.EstimatorBuilder), nil
 }
 
 // Initialize default options if not provided.
@@ -86,6 +88,13 @@ func initializeDefaultOptions(opts *AutoscalerOptions) error {
 			return err
 		}
 		opts.ExpanderStrategy = expanderStrategy
+	}
+	if opts.EstimatorBuilder == nil {
+		estimatorBuilder, err := estimator.NewEstimatorBuilder(opts.EstimatorName)
+		if err != nil {
+			return err
+		}
+		opts.EstimatorBuilder = estimatorBuilder
 	}
 
 	return nil
