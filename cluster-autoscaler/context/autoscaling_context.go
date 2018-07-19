@@ -34,17 +34,24 @@ import (
 type AutoscalingContext struct {
 	// Options to customize how autoscaling works
 	config.AutoscalingOptions
+	// Kubernetes API clients.
+	AutoscalingKubeClients
 	// CloudProvider used in CA.
 	CloudProvider cloudprovider.CloudProvider
-	// ClientSet interface.
-	ClientSet kube_client.Interface
-	// Recorder for recording events.
-	Recorder kube_record.EventRecorder
 	// TODO(kgolab) - move away too as it's not config
 	// PredicateChecker to check if a pod can fit into a node.
 	PredicateChecker *simulator.PredicateChecker
 	// ExpanderStrategy is the strategy used to choose which node group to expand when scaling up
 	ExpanderStrategy expander.Strategy
+}
+
+// AutoscalingKubeClients contains all Kubernetes API clients,
+// including listers and event recorders.
+type AutoscalingKubeClients struct {
+	// ClientSet interface.
+	ClientSet kube_client.Interface
+	// Recorder for recording events.
+	Recorder kube_record.EventRecorder
 	// LogRecorder can be used to collect log messages to expose via Events on some central object.
 	LogRecorder *utils.LogEventRecorder
 }
@@ -82,11 +89,13 @@ func NewAutoscalingContext(options config.AutoscalingOptions, predicateChecker *
 	autoscalingContext := AutoscalingContext{
 		AutoscalingOptions: options,
 		CloudProvider:      cloudProvider,
-		ClientSet:          kubeClient,
-		Recorder:           kubeEventRecorder,
-		PredicateChecker:   predicateChecker,
-		ExpanderStrategy:   expanderStrategy,
-		LogRecorder:        logEventRecorder,
+		AutoscalingKubeClients: AutoscalingKubeClients{
+			ClientSet:   kubeClient,
+			Recorder:    kubeEventRecorder,
+			LogRecorder: logEventRecorder,
+		},
+		PredicateChecker: predicateChecker,
+		ExpanderStrategy: expanderStrategy,
 	}
 
 	return &autoscalingContext, nil

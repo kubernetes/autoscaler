@@ -60,7 +60,9 @@ func TestAutoprovisioningNodeGroupManager(t *testing.T) {
 				NodeAutoprovisioningEnabled: true,
 			},
 			CloudProvider: provider,
-			LogRecorder:   fakeLogRecorder,
+			AutoscalingKubeClients: context.AutoscalingKubeClients{
+				LogRecorder: fakeLogRecorder,
+			},
 		}
 
 		nodeGroup, err := provider.NewNodeGroup("T1", nil, nil, nil, nil)
@@ -111,7 +113,9 @@ func TestRemoveUnneededNodeGroups(t *testing.T) {
 			NodeAutoprovisioningEnabled: true,
 		},
 		CloudProvider: provider,
-		LogRecorder:   fakeLogRecorder,
+		AutoscalingKubeClients: context.AutoscalingKubeClients{
+			LogRecorder: fakeLogRecorder,
+		},
 	}
 
 	assert.NoError(t, manager.RemoveUnneededNodeGroups(context))
