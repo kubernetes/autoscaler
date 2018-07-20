@@ -1577,6 +1577,70 @@
 			"Rev": "4c012f6dcd9546820e378d0bdda4d8fc772cdfea"
 		},
 		{
+			"ImportPath": "github.com/spotinst/spotinst-sdk-go/service/elastigroup",
+			"Rev": "f7b9f76e34770695aa9fb07ef93eeefa6003e0d0"
+		},
+		{
+			"ImportPath": "github.com/spotinst/spotinst-sdk-go/service/elastigroup/providers/aws",
+			"Rev": "f7b9f76e34770695aa9fb07ef93eeefa6003e0d0"
+		},
+		{
+			"ImportPath": "github.com/spotinst/spotinst-sdk-go/service/elastigroup/providers/azure",
+			"Rev": "f7b9f76e34770695aa9fb07ef93eeefa6003e0d0"
+		},
+		{
+			"ImportPath": "github.com/spotinst/spotinst-sdk-go/service/elastigroup/providers/gce",
+			"Rev": "f7b9f76e34770695aa9fb07ef93eeefa6003e0d0"
+		},
+		{
+			"ImportPath": "github.com/spotinst/spotinst-sdk-go/service/healthcheck",
+			"Rev": "f7b9f76e34770695aa9fb07ef93eeefa6003e0d0"
+		},
+		{
+			"ImportPath": "github.com/spotinst/spotinst-sdk-go/service/mrscaler",
+			"Rev": "f7b9f76e34770695aa9fb07ef93eeefa6003e0d0"
+		},
+		{
+			"ImportPath": "github.com/spotinst/spotinst-sdk-go/service/multai",
+			"Rev": "f7b9f76e34770695aa9fb07ef93eeefa6003e0d0"
+		},
+		{
+			"ImportPath": "github.com/spotinst/spotinst-sdk-go/service/subscription",
+			"Rev": "f7b9f76e34770695aa9fb07ef93eeefa6003e0d0"
+		},
+		{
+			"ImportPath": "github.com/spotinst/spotinst-sdk-go/spotinst",
+			"Rev": "f7b9f76e34770695aa9fb07ef93eeefa6003e0d0"
+		},
+		{
+			"ImportPath": "github.com/spotinst/spotinst-sdk-go/spotinst/client",
+			"Rev": "f7b9f76e34770695aa9fb07ef93eeefa6003e0d0"
+		},
+		{
+			"ImportPath": "github.com/spotinst/spotinst-sdk-go/spotinst/credentials",
+			"Rev": "f7b9f76e34770695aa9fb07ef93eeefa6003e0d0"
+		},
+		{
+			"ImportPath": "github.com/spotinst/spotinst-sdk-go/spotinst/log",
+			"Rev": "f7b9f76e34770695aa9fb07ef93eeefa6003e0d0"
+		},
+		{
+			"ImportPath": "github.com/spotinst/spotinst-sdk-go/spotinst/session",
+			"Rev": "f7b9f76e34770695aa9fb07ef93eeefa6003e0d0"
+		},
+		{
+			"ImportPath": "github.com/spotinst/spotinst-sdk-go/spotinst/util/jsonutil",
+			"Rev": "f7b9f76e34770695aa9fb07ef93eeefa6003e0d0"
+		},
+		{
+			"ImportPath": "github.com/spotinst/spotinst-sdk-go/spotinst/util/stringutil",
+			"Rev": "f7b9f76e34770695aa9fb07ef93eeefa6003e0d0"
+		},
+		{
+			"ImportPath": "github.com/spotinst/spotinst-sdk-go/spotinst/util/uritemplates",
+			"Rev": "f7b9f76e34770695aa9fb07ef93eeefa6003e0d0"
+		},
+		{
 			"ImportPath": "github.com/storageos/go-api",
 			"Comment": "0.3.4",
 			"Rev": "3a4032328d99c1b43fbda3d85bd3c80fa06e1707"

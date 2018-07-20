@@ -25,6 +25,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/kubemark"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/spotinst"
 	"k8s.io/client-go/informers"
 	kubeclient "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -41,6 +42,7 @@ var AvailableCloudProviders = []string{
 	gce.ProviderNameGCE,
 	gce.ProviderNameGKE,
 	kubemark.ProviderName,
+	spotinst.ProviderName,
 }
 
 // DefaultCloudProvider is GCE.
@@ -87,6 +89,8 @@ func (b CloudProviderBuilder) Build(discoveryOpts cloudprovider.NodeGroupDiscove
 		return b.buildAzure(discoveryOpts, resourceLimiter)
 	case kubemark.ProviderName:
 		return b.buildKubemark(discoveryOpts, resourceLimiter)
+	case spotinst.ProviderName:
+		return b.buildSpotinst(discoveryOpts, resourceLimiter)
 	case "":
 		// Ideally this would be an error, but several unit tests of the
 		// StaticAutoscaler depend on this behaviour.
@@ -205,5 +209,29 @@ func (b CloudProviderBuilder) buildKubemark(do cloudprovider.NodeGroupDiscoveryO
 	if err != nil {
 		glog.Fatalf("Failed to create Kubemark cloud provider: %v", err)
 	}
+	return provider
+}
+
+func (b CloudProviderBuilder) buildSpotinst(do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+	var config io.ReadCloser
+	if b.cloudConfig != "" {
+		var err error
+		config, err = os.Open(b.cloudConfig)
+		if err != nil {
+			glog.Fatalf("Couldn't open cloud provider configuration %s: %#v", b.cloudConfig, err)
+		}
+		defer config.Close()
+	}
+
+	manager, err := spotinst.NewCloudManager(config, do)
+	if err != nil {
+		glog.Fatalf("Failed to create Spotinst manager: %v", err)
+	}
+
+	provider, err := spotinst.NewCloudProvider(manager, rl)
+	if err != nil {
+		glog.Fatalf("Failed to create Spotinst cloud provider: %v", err)
+	}
+
 	return provider
 }
