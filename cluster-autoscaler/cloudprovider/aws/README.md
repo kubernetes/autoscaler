@@ -138,7 +138,7 @@ If you'd like to scale node groups from 0, an `autoscaling:DescribeLaunchConfigu
 ```
 
 ## Common Notes and Gotchas:
-- The `/etc/ssl/certs/ca-certificates.crt` should exist by default on your ec2 instance.
+- The `/etc/ssl/certs/ca-certificates.crt` should exist by default on your ec2 instance. If you use Amazon Linux 2, use `/etc/ssl/certs/ca-bundle.crt` instead.
 - Cluster autoscaler is not zone aware (for now), so if you wish to span multiple availability zones in your autoscaling groups beware that cluster autoscaler will not evenly distribute them. For more information, see https://github.com/kubernetes/contrib/pull/1552#discussion_r75532949.
 - By default, cluster autoscaler will not terminate nodes running pods in the kube-system namespace. You can override this default behaviour by passing in the `--skip-nodes-with-system-pods=false` flag.
 - By default, cluster autoscaler will wait 10 minutes between scale down operations, you can adjust this using the `--scale-down-delay-after-add`, `--scale-down-delay-after-delete`, and `--scale-down-delay-after-failure` flag. E.g. `--scale-down-delay-after-add=5m` to decrease the scale down delay to 5 minutes after a node has been added.
