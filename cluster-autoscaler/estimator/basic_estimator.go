@@ -21,14 +21,20 @@ import (
 	"fmt"
 	"math"
 
+	"github.com/golang/glog"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 )
 
+const basicEstimatorDeprecationMessage = "WARNING: basic estimator is deprecated. It will be removed in Cluster Autoscaler 1.5."
+
 // BasicNodeEstimator estimates the number of needed nodes to handle the given amount of pods.
 // It will never overestimate the number of nodes but is quite likely to provide a number that
 // is too small.
+//
+// Deprecated.
+// TODO(aleksandra-malinowska): remove this in 1.5.
 type BasicNodeEstimator struct {
 	cpuSum      resource.Quantity
 	memorySum   resource.Quantity
@@ -38,6 +44,7 @@ type BasicNodeEstimator struct {
 
 // NewBasicNodeEstimator builds BasicNodeEstimator.
 func NewBasicNodeEstimator() *BasicNodeEstimator {
+	glog.Warning(basicEstimatorDeprecationMessage)
 	return &BasicNodeEstimator{
 		portSum:     make(map[int32]int),
 		FittingPods: make(map[*apiv1.Pod]struct{}),
