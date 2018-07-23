@@ -71,7 +71,7 @@ func ToAutoscalerError(defaultType AutoscalerErrorType, err error) AutoscalerErr
 	if e, ok := err.(AutoscalerError); ok {
 		return e
 	}
-	return NewAutoscalerError(defaultType, err.Error())
+	return NewAutoscalerError(defaultType, "%v", err)
 }
 
 // Error implements golang error interface
