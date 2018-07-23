@@ -75,7 +75,7 @@ func TestClusterGCAggregateContainerStateDeletesOld(t *testing.T) {
 	assert.NotEmpty(t, vpa.aggregateContainerStates)
 
 	// AggegateContainerState are valid for 8 days since last sample
-	cluster.GrabageCollectAggregateCollectionStates(usageSample.MeasureStart.Add(9 * 24 * time.Hour))
+	cluster.GarbageCollectAggregateCollectionStates(usageSample.MeasureStart.Add(9 * 24 * time.Hour))
 
 	// AggegateContainerState should be deleted from both cluster and vpa
 	assert.Empty(t, cluster.aggregateStateMap)
@@ -98,7 +98,7 @@ func TestClusterGCAggregateContainerStateLeavesValid(t *testing.T) {
 	assert.NotEmpty(t, vpa.aggregateContainerStates)
 
 	// AggegateContainerState are valid for 8 days since last sample
-	cluster.GrabageCollectAggregateCollectionStates(usageSample.MeasureStart.Add(7 * 24 * time.Hour))
+	cluster.GarbageCollectAggregateCollectionStates(usageSample.MeasureStart.Add(7 * 24 * time.Hour))
 
 	assert.NotEmpty(t, cluster.aggregateStateMap)
 	assert.NotEmpty(t, vpa.aggregateContainerStates)

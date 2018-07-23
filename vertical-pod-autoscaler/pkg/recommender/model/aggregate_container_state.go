@@ -193,7 +193,7 @@ func (a *AggregateContainerState) LoadFromCheckpoint(checkpoint *vpa_types.Verti
 }
 
 func (a *AggregateContainerState) isExpired(now time.Time) bool {
-	return now.Sub(a.LastSampleStart) >= MemoryAggregationWindowLength
+	return !a.LastSampleStart.IsZero() && now.Sub(a.LastSampleStart) >= MemoryAggregationWindowLength
 }
 
 // AggregateStateByContainerName takes a set of AggregateContainerStates and merge them
