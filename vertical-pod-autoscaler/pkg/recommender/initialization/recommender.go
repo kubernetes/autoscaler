@@ -109,12 +109,12 @@ func (r *recommender) RunOnce() {
 
 	if r.useCheckpoints {
 		r.checkpointWriter.StoreCheckpoints(now)
-		if time.Now().Sub(r.lastCheckpointGC) < r.checkpointsGCInterval {
+		if time.Now().Sub(r.lastCheckpointGC) > r.checkpointsGCInterval {
 			r.lastCheckpointGC = now
 			r.clusterStateFeeder.GarbageCollectCheckpoints()
 		}
 	}
-	if time.Now().Sub(r.lastAggregateContainerStateGC) < AggregateContainerStateGCInterval {
+	if time.Now().Sub(r.lastAggregateContainerStateGC) > AggregateContainerStateGCInterval {
 		r.clusterState.GrabageCollectAggregateCollectionStates(now)
 	}
 }
