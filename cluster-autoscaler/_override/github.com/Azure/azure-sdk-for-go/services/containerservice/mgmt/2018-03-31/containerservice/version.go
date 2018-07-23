@@ -19,10 +19,10 @@ package containerservice
 
 // UserAgent returns the UserAgent string to use when sending http.Requests.
 func UserAgent() string {
-	return "Azure-SDK-For-Go/v12.4.0-beta services"
+	return "Azure-SDK-For-Go/v14.6.0 containerservice/2018-03-31"
 }
 
 // Version returns the semantic version (see http://semver.org) of the client.
 func Version() string {
-	return "v12.4.0-beta"
+	return "v14.6.0"
 }
