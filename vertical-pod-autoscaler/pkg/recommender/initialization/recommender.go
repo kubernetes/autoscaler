@@ -115,7 +115,7 @@ func (r *recommender) RunOnce() {
 		}
 	}
 	if time.Now().Sub(r.lastAggregateContainerStateGC) > AggregateContainerStateGCInterval {
-		r.clusterState.GrabageCollectAggregateCollectionStates(now)
+		r.clusterState.GarbageCollectAggregateCollectionStates(now)
 	}
 }
 

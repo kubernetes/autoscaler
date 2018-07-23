@@ -291,8 +291,8 @@ func (cluster *ClusterState) findOrCreateAggregateContainerState(containerID Con
 	return aggregateContainerState
 }
 
-// GrabageCollectAggregateCollectionStates removes obsolete AggregateCollectionStates from the ClusterState.
-func (cluster *ClusterState) GrabageCollectAggregateCollectionStates(now time.Time) {
+// GarbageCollectAggregateCollectionStates removes obsolete AggregateCollectionStates from the ClusterState.
+func (cluster *ClusterState) GarbageCollectAggregateCollectionStates(now time.Time) {
 	glog.V(1).Info("Garbage collection of AggregateCollectionStates triggered")
 	keysToDelete := make([]AggregateStateKey, 0)
 	for key, aggregateContainerState := range cluster.aggregateStateMap {
