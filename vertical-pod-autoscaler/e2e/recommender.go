@@ -253,7 +253,7 @@ func waitForRecommendationPresent(c *vpa_clientset.Clientset, vpa *vpa_types.Ver
 			return false, err
 		}
 
-		if polledVpa.Status.Recommendation == nil || len(polledVpa.Status.Recommendation.ContainerRecommendations) != 0 {
+		if polledVpa.Status.Recommendation != nil && len(polledVpa.Status.Recommendation.ContainerRecommendations) != 0 {
 			return true, nil
 		}
 
