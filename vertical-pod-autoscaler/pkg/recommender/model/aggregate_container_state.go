@@ -212,3 +212,29 @@ func AggregateStateByContainerName(aggregateContainerStateMap aggregateContainer
 	}
 	return containerNameToAggregateStateMap
 }
+
+// ContainerStateAggregatorProxy is a wrapper for ContainerStateAggregator
+// that creates CnontainerStateAgregator for container if it is no longer
+// present in the cluster state.
+type ContainerStateAggregatorProxy struct {
+	containerID ContainerID
+	cluster     *ClusterState
+}
+
+// NewContainerStateAggregatorProxy creates a ContainerStateAggregatorProxy
+// pointing to the cluster state.
+func NewContainerStateAggregatorProxy(cluster *ClusterState, containerID ContainerID) ContainerStateAggregator {
+	return &ContainerStateAggregatorProxy{containerID, cluster}
+}
+
+// AddSample adds a container sample to the aggregator.
+func (p *ContainerStateAggregatorProxy) AddSample(sample *ContainerUsageSample) {
+	aggregator := p.cluster.findOrCreateAggregateContainerState(p.containerID)
+	aggregator.AddSample(sample)
+}
+
+// SubtractSample subtracts a container sample from the aggregator.
+func (p *ContainerStateAggregatorProxy) SubtractSample(sample *ContainerUsageSample) {
+	aggregator := p.cluster.findOrCreateAggregateContainerState(p.containerID)
+	aggregator.SubtractSample(sample)
+}
