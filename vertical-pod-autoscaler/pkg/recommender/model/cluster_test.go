@@ -104,6 +104,46 @@ func TestClusterGCAggregateContainerStateLeavesValid(t *testing.T) {
 	assert.NotEmpty(t, vpa.aggregateContainerStates)
 }
 
+func TestAddSampleAfterAggregateContainerStateGCed(t *testing.T) {
+	// Create a pod with a single container.
+	cluster := NewClusterState()
+	vpa := addTestVpa(cluster)
+	pod := addTestPod(cluster)
+	addTestContainer(cluster)
+
+	assert.NoError(t, cluster.AddOrUpdateContainer(testContainerID, testRequest))
+	usageSample := makeTestUsageSample()
+
+	// Add a usage sample to the container.
+	assert.NoError(t, cluster.AddSample(usageSample))
+
+	assert.NotEmpty(t, cluster.aggregateStateMap)
+	assert.NotEmpty(t, vpa.aggregateContainerStates)
+
+	aggregateStateKey := cluster.aggregateStateKeyForContainerID(testContainerID)
+	assert.Contains(t, vpa.aggregateContainerStates, aggregateStateKey)
+
+	// AggegateContainerState are invalid after 8 days since last sample
+	gcTimestamp := usageSample.MeasureStart.Add(10 * 24 * time.Hour)
+	cluster.GarbageCollectAggregateCollectionStates(gcTimestamp)
+
+	assert.Empty(t, cluster.aggregateStateMap)
+	assert.Empty(t, vpa.aggregateContainerStates)
+	assert.Contains(t, pod.Containers, testContainerID.ContainerName)
+
+	newUsageSample := &ContainerUsageSampleWithKey{ContainerUsageSample{
+		MeasureStart: gcTimestamp.Add(1 * time.Hour),
+		Usage:        usageSample.Usage,
+		Request:      usageSample.Request,
+		Resource:     usageSample.Resource},
+		testContainerID}
+	// Add usage sample to the container again.
+	assert.NoError(t, cluster.AddSample(newUsageSample))
+
+	assert.Contains(t, vpa.aggregateContainerStates, aggregateStateKey)
+
+}
+
 func TestClusterRecordOOM(t *testing.T) {
 	// Create a pod with a single container.
 	cluster := NewClusterState()
@@ -163,10 +203,11 @@ func addTestContainer(cluster *ClusterState) *ContainerState {
 func TestAddVpaThenAddPod(t *testing.T) {
 	cluster := NewClusterState()
 	vpa := addTestVpa(cluster)
+	assert.Empty(t, vpa.aggregateContainerStates)
 	addTestPod(cluster)
-	container := addTestContainer(cluster)
+	addTestContainer(cluster)
 	aggregateStateKey := cluster.aggregateStateKeyForContainerID(testContainerID)
-	assert.True(t, container.aggregator == vpa.aggregateContainerStates[aggregateStateKey])
+	assert.Contains(t, vpa.aggregateContainerStates, aggregateStateKey)
 }
 
 // Creates a pod followed by a matching VPA. Verifies that the links between
@@ -174,11 +215,10 @@ func TestAddVpaThenAddPod(t *testing.T) {
 func TestAddPodThenAddVpa(t *testing.T) {
 	cluster := NewClusterState()
 	addTestPod(cluster)
-	container := addTestContainer(cluster)
+	addTestContainer(cluster)
 	vpa := addTestVpa(cluster)
 	aggregateStateKey := cluster.aggregateStateKeyForContainerID(testContainerID)
 	assert.Contains(t, vpa.aggregateContainerStates, aggregateStateKey)
-	assert.True(t, container.aggregator == vpa.aggregateContainerStates[aggregateStateKey])
 }
 
 // Creates a VPA and a matching pod, then change the pod labels such that it is
@@ -188,11 +228,13 @@ func TestChangePodLabels(t *testing.T) {
 	cluster := NewClusterState()
 	vpa := addTestVpa(cluster)
 	addTestPod(cluster)
-	container := addTestContainer(cluster)
+	addTestContainer(cluster)
 	aggregateStateKey := cluster.aggregateStateKeyForContainerID(testContainerID)
+	assert.Contains(t, vpa.aggregateContainerStates, aggregateStateKey)
 	// Update Pod labels to no longer match the VPA.
 	cluster.AddOrUpdatePod(testPodID, emptyLabels, apiv1.PodRunning)
-	assert.False(t, container.aggregator == vpa.aggregateContainerStates[aggregateStateKey])
+	aggregateStateKey = cluster.aggregateStateKeyForContainerID(testContainerID)
+	assert.NotContains(t, vpa.aggregateContainerStates, aggregateStateKey)
 }
 
 // Creates a VPA and a matching pod, then change the VPA pod selector 3 times:
