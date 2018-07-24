@@ -278,14 +278,12 @@ func (feeder *clusterStateFeeder) LoadPods() {
 		glog.V(3).Infof("SimplePodSpec #%v: %+v", n, spec)
 		pods[spec.ID] = spec
 	}
-	/* TODO: Once we start collecting aggregated history of pods usage in
-	a separate object, we can be deleting terminated pods from the model.
 	for key := range feeder.clusterState.Pods {
 		if _, exists := pods[key]; !exists {
 			glog.V(3).Infof("Deleting Pod %v", key)
 			feeder.clusterState.DeletePod(key)
 		}
-	}*/
+	}
 	for _, pod := range pods {
 		feeder.clusterState.AddOrUpdatePod(pod.ID, pod.PodLabels, pod.Phase)
 		for _, container := range pod.Containers {
