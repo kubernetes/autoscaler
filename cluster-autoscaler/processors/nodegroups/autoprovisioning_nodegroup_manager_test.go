@@ -24,7 +24,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
-	"k8s.io/autoscaler/cluster-autoscaler/config/static"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
@@ -56,7 +56,7 @@ func TestAutoprovisioningNodeGroupManager(t *testing.T) {
 		provider := testprovider.NewTestAutoprovisioningCloudProvider(nil, nil,
 			func(string) error { return tc.createNodeGroupErr }, nil, nil, nil)
 		context := &context.AutoscalingContext{
-			AutoscalingOptions: static.AutoscalingOptions{
+			AutoscalingOptions: config.AutoscalingOptions{
 				NodeAutoprovisioningEnabled: true,
 			},
 			CloudProvider: provider,
@@ -107,7 +107,7 @@ func TestRemoveUnneededNodeGroups(t *testing.T) {
 	fakeRecorder := kube_util.CreateEventRecorder(fakeClient)
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false)
 	context := &context.AutoscalingContext{
-		AutoscalingOptions: static.AutoscalingOptions{
+		AutoscalingOptions: config.AutoscalingOptions{
 			NodeAutoprovisioningEnabled: true,
 		},
 		CloudProvider: provider,
