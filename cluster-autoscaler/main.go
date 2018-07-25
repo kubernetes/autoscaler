@@ -33,7 +33,6 @@ import (
 	kube_flag "k8s.io/apiserver/pkg/util/flag"
 	cloudBuilder "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/core"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
@@ -151,7 +150,7 @@ var (
 	regional                      = flag.Bool("regional", false, "Cluster is regional.")
 )
 
-func createAutoscalingOptions() context.AutoscalingOptions {
+func createAutoscalingOptions() config.AutoscalingOptions {
 	minCoresTotal, maxCoresTotal, err := parseMinMaxFlag(*coresTotal)
 	if err != nil {
 		glog.Fatalf("Failed to parse flags: %v", err)
@@ -169,7 +168,7 @@ func createAutoscalingOptions() context.AutoscalingOptions {
 		glog.Fatalf("Failed to parse flags: %v", err)
 	}
 
-	return context.AutoscalingOptions{
+	return config.AutoscalingOptions{
 		CloudConfig:                      *cloudConfig,
 		CloudProviderName:                *cloudProviderFlag,
 		NodeGroupAutoDiscovery:           *nodeGroupAutoDiscoveryFlag,
@@ -456,8 +455,8 @@ func minMaxFlagString(min, max int64) string {
 	return fmt.Sprintf("%v:%v", min, max)
 }
 
-func parseMultipleGpuLimits(flags MultiStringFlag) ([]context.GpuLimits, error) {
-	parsedFlags := make([]context.GpuLimits, 0, len(flags))
+func parseMultipleGpuLimits(flags MultiStringFlag) ([]config.GpuLimits, error) {
+	parsedFlags := make([]config.GpuLimits, 0, len(flags))
 	for _, flag := range flags {
 		parsedFlag, err := parseSingleGpuLimit(flag)
 		if err != nil {
@@ -468,30 +467,30 @@ func parseMultipleGpuLimits(flags MultiStringFlag) ([]context.GpuLimits, error) 
 	return parsedFlags, nil
 }
 
-func parseSingleGpuLimit(config string) (context.GpuLimits, error) {
-	parts := strings.Split(config, ":")
+func parseSingleGpuLimit(limits string) (config.GpuLimits, error) {
+	parts := strings.Split(limits, ":")
 	if len(parts) != 3 {
-		return context.GpuLimits{}, fmt.Errorf("Incorrect gpu limit specification: %v", config)
+		return config.GpuLimits{}, fmt.Errorf("Incorrect gpu limit specification: %v", limits)
 	}
 	gpuType := parts[0]
 	minVal, err := strconv.ParseInt(parts[1], 10, 64)
 	if err != nil {
-		return context.GpuLimits{}, fmt.Errorf("Incorrect gpu limit - min is not integer: %v", config)
+		return config.GpuLimits{}, fmt.Errorf("Incorrect gpu limit - min is not integer: %v", limits)
 	}
 	maxVal, err := strconv.ParseInt(parts[2], 10, 64)
 	if err != nil {
-		return context.GpuLimits{}, fmt.Errorf("Incorrect gpu limit - max is not integer: %v", config)
+		return config.GpuLimits{}, fmt.Errorf("Incorrect gpu limit - max is not integer: %v", limits)
 	}
 	if minVal < 0 {
-		return context.GpuLimits{}, fmt.Errorf("Incorrect gpu limit - min is less than 0; %v", config)
+		return config.GpuLimits{}, fmt.Errorf("Incorrect gpu limit - min is less than 0; %v", limits)
 	}
 	if maxVal < 0 {
-		return context.GpuLimits{}, fmt.Errorf("Incorrect gpu limit - max is less than 0; %v", config)
+		return config.GpuLimits{}, fmt.Errorf("Incorrect gpu limit - max is less than 0; %v", limits)
 	}
 	if minVal > maxVal {
-		return context.GpuLimits{}, fmt.Errorf("Incorrect gpu limit - min is greater than max; %v", config)
+		return config.GpuLimits{}, fmt.Errorf("Incorrect gpu limit - min is greater than max; %v", limits)
 	}
-	parsedGpuLimits := context.GpuLimits{
+	parsedGpuLimits := config.GpuLimits{
 		GpuType: gpuType,
 		Min:     minVal,
 		Max:     maxVal,
