@@ -24,6 +24,7 @@ import (
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/random"
@@ -172,7 +173,7 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 	clusterState.UpdateNodes([]*apiv1.Node{n1, n2}, time.Now())
 
 	context := &context.AutoscalingContext{
-		AutoscalingOptions: context.AutoscalingOptions{
+		AutoscalingOptions: config.AutoscalingOptions{
 			EstimatorName:                 estimator.BinpackingEstimatorName,
 			ScaleDownEnabled:              true,
 			ScaleDownUtilizationThreshold: 0.5,
@@ -352,7 +353,7 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 	processors := ca_processors.TestProcessors()
 	processors.NodeGroupListProcessor = nodegroups.NewAutoprovisioningNodeGroupListProcessor()
 	context := &context.AutoscalingContext{
-		AutoscalingOptions: context.AutoscalingOptions{
+		AutoscalingOptions: config.AutoscalingOptions{
 			EstimatorName:                    estimator.BinpackingEstimatorName,
 			ScaleDownEnabled:                 true,
 			ScaleDownUtilizationThreshold:    0.5,
@@ -491,7 +492,7 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 	clusterState.UpdateNodes([]*apiv1.Node{n1}, later)
 
 	context := &context.AutoscalingContext{
-		AutoscalingOptions: context.AutoscalingOptions{
+		AutoscalingOptions: config.AutoscalingOptions{
 			EstimatorName:                 estimator.BinpackingEstimatorName,
 			ScaleDownEnabled:              true,
 			ScaleDownUtilizationThreshold: 0.5,
@@ -628,7 +629,7 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 	clusterState.UpdateNodes([]*apiv1.Node{n1, n2}, time.Now())
 
 	context := &context.AutoscalingContext{
-		AutoscalingOptions: context.AutoscalingOptions{
+		AutoscalingOptions: config.AutoscalingOptions{
 			EstimatorName:                 estimator.BinpackingEstimatorName,
 			ScaleDownEnabled:              true,
 			ScaleDownUtilizationThreshold: 0.5,

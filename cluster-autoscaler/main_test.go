@@ -17,16 +17,18 @@ limitations under the License.
 package main
 
 import (
-	"github.com/stretchr/testify/assert"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"testing"
+
+	"k8s.io/autoscaler/cluster-autoscaler/config"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestParseSingleGpuLimit(t *testing.T) {
 	type testcase struct {
 		input                string
 		expectError          bool
-		expectedLimits       context.GpuLimits
+		expectedLimits       config.GpuLimits
 		expectedErrorMessage string
 	}
 
@@ -34,7 +36,7 @@ func TestParseSingleGpuLimit(t *testing.T) {
 		{
 			input:       "gpu:1:10",
 			expectError: false,
-			expectedLimits: context.GpuLimits{
+			expectedLimits: config.GpuLimits{
 				GpuType: "gpu",
 				Min:     1,
 				Max:     10,

@@ -20,6 +20,7 @@ import (
 	"testing"
 
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -35,7 +36,7 @@ func TestNewAutoscalingContext(t *testing.T) {
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false)
 
 	autoscalingContext, err := NewAutoscalingContext(
-		AutoscalingOptions{
+		config.AutoscalingOptions{
 			ExpanderName:   expander.RandomExpanderName,
 			MaxCoresTotal:  10,
 			MinCoresTotal:  1,

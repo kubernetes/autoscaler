@@ -21,6 +21,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
@@ -46,7 +47,7 @@ func TestAutoprovisioningNGLProcessor(t *testing.T) {
 	provider.AddNodeGroup("ng1", 1, 5, 3)
 
 	context := &context.AutoscalingContext{
-		AutoscalingOptions: context.AutoscalingOptions{
+		AutoscalingOptions: config.AutoscalingOptions{
 			MaxAutoprovisionedNodeGroupCount: 1,
 			NodeAutoprovisioningEnabled:      true,
 		},
@@ -84,7 +85,7 @@ func TestAutoprovisioningNGLProcessorTooMany(t *testing.T) {
 	provider.AddAutoprovisionedNodeGroup("autoprovisioned-X1", 0, 1000, 0, "X1")
 
 	context := &context.AutoscalingContext{
-		AutoscalingOptions: context.AutoscalingOptions{
+		AutoscalingOptions: config.AutoscalingOptions{
 			MaxAutoprovisionedNodeGroupCount: 1,
 			NodeAutoprovisioningEnabled:      true,
 		},
