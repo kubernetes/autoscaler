@@ -1262,7 +1262,7 @@ func (m *gceManagerImpl) getCpuAndMemoryForMachineType(machineType string, zone 
 		}
 		m.addMachineToCache(machineType, zone, machine)
 	}
-	return machine.GuestCpus, machine.MemoryMb * 1024 * 1024, nil
+	return machine.GuestCpus, machine.MemoryMb * bytesPerMB, nil
 }
 
 func parseCustomMachineType(machineType string) (cpu, mem int64, err error) {
@@ -1276,6 +1276,6 @@ func parseCustomMachineType(machineType string) (cpu, mem int64, err error) {
 		return 0, 0, fmt.Errorf("failed to parse all params in %s", machineType)
 	}
 	// Mb to bytes
-	mem = mem * 1024 * 1024
+	mem = mem * bytesPerMB
 	return
 }

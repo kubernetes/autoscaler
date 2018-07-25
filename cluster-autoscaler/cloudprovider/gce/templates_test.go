@@ -275,16 +275,18 @@ func TestBuildAllocatableFromCapacity(t *testing.T) {
 		gpuCount          int64
 	}
 	testCases := []testCase{{
-		capacityCpu:       "16000m",
-		capacityMemory:    fmt.Sprintf("%v", 1*1024*1024*1024),
-		allocatableCpu:    "15890m",
-		allocatableMemory: fmt.Sprintf("%v", 0.75*1024*1024*1024),
+		capacityCpu:    "16000m",
+		capacityMemory: fmt.Sprintf("%v", 1*mbPerGB*bytesPerMB),
+		allocatableCpu: "15890m",
+		// Below threshold for reserving memory
+		allocatableMemory: fmt.Sprintf("%v", 1*mbPerGB*bytesPerMB),
 		gpuCount:          1,
 	}, {
-		capacityCpu:       "500m",
-		capacityMemory:    fmt.Sprintf("%v", 200*1000*1024*1024),
-		allocatableCpu:    "470m",
-		allocatableMemory: fmt.Sprintf("%v", (200*1000-10760)*1024*1024),
+		capacityCpu:    "500m",
+		capacityMemory: fmt.Sprintf("%v", 1.1*mbPerGB*bytesPerMB),
+		allocatableCpu: "470m",
+		// Final 1024*1024 because we're duplicating upstream bug using MB as MiB
+		allocatableMemory: fmt.Sprintf("%v", 1.1*mbPerGB*bytesPerMB-0.25*1.1*mbPerGB*1024*1024),
 	}}
 	for _, tc := range testCases {
 		tb := templateBuilder{}
