@@ -20,7 +20,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
-	"k8s.io/autoscaler/cluster-autoscaler/config/static"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/factory"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
@@ -34,7 +34,7 @@ import (
 // scale up/scale down functions.
 type AutoscalingContext struct {
 	// Options to customize how autoscaling works
-	static.AutoscalingOptions
+	config.AutoscalingOptions
 	// CloudProvider used in CA.
 	CloudProvider cloudprovider.CloudProvider
 	// ClientSet interface.
@@ -52,7 +52,7 @@ type AutoscalingContext struct {
 
 // NewResourceLimiterFromAutoscalingOptions creates new instance of cloudprovider.ResourceLimiter
 // reading limits from AutoscalingOptions struct.
-func NewResourceLimiterFromAutoscalingOptions(options static.AutoscalingOptions) *cloudprovider.ResourceLimiter {
+func NewResourceLimiterFromAutoscalingOptions(options config.AutoscalingOptions) *cloudprovider.ResourceLimiter {
 	// build min/max maps for resources limits
 	minResources := make(map[string]int64)
 	maxResources := make(map[string]int64)
@@ -70,7 +70,7 @@ func NewResourceLimiterFromAutoscalingOptions(options static.AutoscalingOptions)
 }
 
 // NewAutoscalingContext returns an autoscaling context from all the necessary parameters passed via arguments
-func NewAutoscalingContext(options static.AutoscalingOptions, predicateChecker *simulator.PredicateChecker,
+func NewAutoscalingContext(options config.AutoscalingOptions, predicateChecker *simulator.PredicateChecker,
 	kubeClient kube_client.Interface, kubeEventRecorder kube_record.EventRecorder,
 	logEventRecorder *utils.LogEventRecorder, listerRegistry kube_util.ListerRegistry) (*AutoscalingContext, errors.AutoscalerError) {
 

@@ -24,7 +24,7 @@ import (
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
-	"k8s.io/autoscaler/cluster-autoscaler/config/static"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
@@ -379,7 +379,7 @@ func TestRemoveOldUnregisteredNodes(t *testing.T) {
 	assert.NoError(t, err)
 
 	context := &context.AutoscalingContext{
-		AutoscalingOptions: static.AutoscalingOptions{
+		AutoscalingOptions: config.AutoscalingOptions{
 			MaxNodeProvisionTime: 45 * time.Minute,
 		},
 		CloudProvider: provider,
@@ -476,7 +476,7 @@ func TestRemoveFixNodeTargetSize(t *testing.T) {
 	assert.NoError(t, err)
 
 	context := &context.AutoscalingContext{
-		AutoscalingOptions: static.AutoscalingOptions{
+		AutoscalingOptions: config.AutoscalingOptions{
 			MaxNodeProvisionTime: 45 * time.Minute,
 		},
 		CloudProvider: provider,

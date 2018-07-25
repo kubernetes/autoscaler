@@ -25,7 +25,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/kubemark"
-	"k8s.io/autoscaler/cluster-autoscaler/config/static"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/client-go/informers"
 	kubeclient "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -48,7 +48,7 @@ var AvailableCloudProviders = []string{
 const DefaultCloudProvider = gce.ProviderNameGCE
 
 // NewCloudProvider builds a cloud provider from provided parameters.
-func NewCloudProvider(opts static.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+func NewCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	glog.V(1).Infof("Building %s cloud provider.", opts.CloudProviderName)
 	switch opts.CloudProviderName {
 	case gce.ProviderNameGCE:
@@ -78,7 +78,7 @@ func NewCloudProvider(opts static.AutoscalingOptions, do cloudprovider.NodeGroup
 	return nil // This will never happen because the Fatalf will os.Exit
 }
 
-func buildGCE(opts static.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, mode gce.GcpCloudProviderMode) cloudprovider.CloudProvider {
+func buildGCE(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, mode gce.GcpCloudProviderMode) cloudprovider.CloudProvider {
 	var config io.ReadCloser
 	if opts.CloudConfig != "" {
 		var err error
@@ -101,7 +101,7 @@ func buildGCE(opts static.AutoscalingOptions, do cloudprovider.NodeGroupDiscover
 	return provider
 }
 
-func buildAWS(opts static.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+func buildAWS(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	var config io.ReadCloser
 	if opts.CloudConfig != "" {
 		var err error
@@ -124,7 +124,7 @@ func buildAWS(opts static.AutoscalingOptions, do cloudprovider.NodeGroupDiscover
 	return provider
 }
 
-func buildAzure(opts static.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+func buildAzure(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	var config io.ReadCloser
 	if opts.CloudConfig != "" {
 		glog.Info("Creating Azure Manager using cloud-config file: %v", opts.CloudConfig)
@@ -148,7 +148,7 @@ func buildAzure(opts static.AutoscalingOptions, do cloudprovider.NodeGroupDiscov
 	return provider
 }
 
-func buildKubemark(opts static.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+func buildKubemark(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	externalConfig, err := rest.InClusterConfig()
 	if err != nil {
 		glog.Fatalf("Failed to get kubeclient config for external cluster: %v", err)

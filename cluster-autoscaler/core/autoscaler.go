@@ -19,7 +19,7 @@ package core
 import (
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/config/static"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
@@ -30,7 +30,7 @@ import (
 
 // AutoscalerOptions is the whole set of options for configuring an autoscaler
 type AutoscalerOptions struct {
-	static.AutoscalingOptions
+	config.AutoscalingOptions
 	KubeClient        kube_client.Interface
 	KubeEventRecorder kube_record.EventRecorder
 	PredicateChecker  *simulator.PredicateChecker
