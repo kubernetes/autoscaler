@@ -37,6 +37,7 @@ import (
 
 const (
 	mbPerGB           = 1000
+	bytesPerMB        = 1000 * 1000
 	millicoresPerCore = 1000
 )
 
@@ -92,10 +93,11 @@ func (t *templateBuilder) buildAllocatableFromKubeEnv(capacity apiv1.ResourceLis
 // buildAllocatableFromCapacity builds node allocatable based only on node capacity.
 // Calculates reserved as a ratio of capacity. See calculateReserved for more details
 func (t *templateBuilder) buildAllocatableFromCapacity(capacity apiv1.ResourceList) apiv1.ResourceList {
-	memoryReserved := memoryReservedMB(capacity.Memory().Value() / (1024 * 1024))
+	memoryReserved := memoryReservedMB(capacity.Memory().Value() / bytesPerMB)
 	cpuReserved := cpuReservedMillicores(capacity.Cpu().MilliValue())
 	reserved := apiv1.ResourceList{}
 	reserved[apiv1.ResourceCPU] = *resource.NewMilliQuantity(cpuReserved, resource.DecimalSI)
+	// Duplicating an upstream bug treating MB as MiB (we need to predict the end result accurately).
 	reserved[apiv1.ResourceMemory] = *resource.NewQuantity(memoryReserved*1024*1024, resource.BinarySI)
 	return t.getAllocatable(capacity, reserved)
 }
