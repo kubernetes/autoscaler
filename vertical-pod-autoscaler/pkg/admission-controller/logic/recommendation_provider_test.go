@@ -49,10 +49,10 @@ func TestUpdateResourceRequests(t *testing.T) {
 		WithSelector("app = testingApp")
 	vpa := vpaBuilder.Get()
 
-	uninitialized := test.BuildTestPod("test_uninitialized", containerName, "", "", nil, nil)
+	uninitialized := test.Pod().WithName("test_uninitialized").AddContainer(test.BuildTestContainer(containerName, "", "")).Get()
 	uninitialized.ObjectMeta.Labels = labels
 
-	initialized := test.BuildTestPod("test_initialized", containerName, "1", "100Mi", nil, nil)
+	initialized := test.Pod().WithName("test_initialized").AddContainer(test.BuildTestContainer(containerName, "1", "100Mi")).Get()
 	initialized.ObjectMeta.Labels = labels
 
 	mismatchedVPA := vpaBuilder.WithSelector("app = differentApp").Get()

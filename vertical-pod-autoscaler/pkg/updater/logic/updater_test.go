@@ -48,7 +48,8 @@ func TestRunOnce(t *testing.T) {
 	eviction := &test.PodsEvictionRestrictionMock{}
 
 	for i := range pods {
-		pods[i] = test.BuildTestPod("test_"+strconv.Itoa(i), containerName, "1", "100M", &rc.ObjectMeta, &rc.TypeMeta)
+		pods[i] = test.Pod().WithName("test_"+strconv.Itoa(i)).AddContainer(test.BuildTestContainer(containerName, "1", "100M")).WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get()
+
 		pods[i].Labels = labels
 		eviction.On("CanEvict", pods[i]).Return(true)
 		eviction.On("Evict", pods[i]).Return(nil)
@@ -90,7 +91,7 @@ func TestVPAOff(t *testing.T) {
 	eviction := &test.PodsEvictionRestrictionMock{}
 
 	for i := range pods {
-		pods[i] = test.BuildTestPod("test_"+strconv.Itoa(i), containerName, "1", "100M", nil, nil)
+		pods[i] = test.Pod().WithName("test_" + strconv.Itoa(i)).AddContainer(test.BuildTestContainer(containerName, "1", "100M")).Get()
 		pods[i].Labels = labels
 		eviction.On("CanEvict", pods[i]).Return(true)
 		eviction.On("Evict", pods[i]).Return(nil)
