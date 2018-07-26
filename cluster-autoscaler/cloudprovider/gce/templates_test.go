@@ -63,9 +63,9 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 			Project: "some-proj",
 			Zone:    "us-central1-b"}},
 		capacityCpu:       8,
-		capacityMemory:    2 * 1024 * 1024,
+		capacityMemory:    200 * 1024 * 1024,
 		allocatableCpu:    "7000m",
-		allocatableMemory: fmt.Sprintf("%v", 1024*1024),
+		allocatableMemory: fmt.Sprintf("%v", 99*1024*1024),
 		gpuCount:          11,
 		expectedErr:       false,
 	},
@@ -206,7 +206,7 @@ func TestBuildAllocatableFromKubeEnv(t *testing.T) {
 		capacityCpu:    "4000m",
 		capacityMemory: "700000Mi",
 		expectedCpu:    "3000m",
-		expectedMemory: "400000Mi",
+		expectedMemory: "399900Mi", // capacityMemory-kube_reserved-kubeletEvictionHardMemory
 		gpuCount:       10,
 		expectedErr:    false,
 	}, {
@@ -229,7 +229,11 @@ func TestBuildAllocatableFromKubeEnv(t *testing.T) {
 			assert.NoError(t, err)
 			expectedResources, err := makeResourceList(tc.expectedCpu, tc.expectedMemory, tc.gpuCount)
 			assert.NoError(t, err)
-			assert.Equal(t, expectedResources, allocatable)
+			for res, expectedQty := range expectedResources {
+				qty, found := allocatable[res]
+				assert.True(t, found)
+				assert.Equal(t, qty.Value(), expectedQty.Value())
+			}
 		}
 	}
 }
@@ -275,16 +279,18 @@ func TestBuildAllocatableFromCapacity(t *testing.T) {
 		gpuCount          int64
 	}
 	testCases := []testCase{{
-		capacityCpu:       "16000m",
-		capacityMemory:    fmt.Sprintf("%v", 1*1024*1024*1024),
-		allocatableCpu:    "15890m",
-		allocatableMemory: fmt.Sprintf("%v", 0.75*1024*1024*1024),
+		capacityCpu:    "16000m",
+		capacityMemory: fmt.Sprintf("%v", 1*mbPerGB*bytesPerMB),
+		allocatableCpu: "15890m",
+		// Below threshold for reserving memory
+		allocatableMemory: fmt.Sprintf("%v", 1*mbPerGB*bytesPerMB-kubeletEvictionHardMemory),
 		gpuCount:          1,
 	}, {
-		capacityCpu:       "500m",
-		capacityMemory:    fmt.Sprintf("%v", 200*1000*1024*1024),
-		allocatableCpu:    "470m",
-		allocatableMemory: fmt.Sprintf("%v", (200*1000-10760)*1024*1024),
+		capacityCpu:    "500m",
+		capacityMemory: fmt.Sprintf("%v", 1.1*mbPerGB*bytesPerMB),
+		allocatableCpu: "470m",
+		// Final 1024*1024 because we're duplicating upstream bug using MB as MiB
+		allocatableMemory: fmt.Sprintf("%v", 1.1*mbPerGB*bytesPerMB-0.25*1.1*mbPerGB*1024*1024-kubeletEvictionHardMemory),
 	}}
 	for _, tc := range testCases {
 		tb := templateBuilder{}
