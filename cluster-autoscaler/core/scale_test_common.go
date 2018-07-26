@@ -16,7 +16,17 @@ limitations under the License.
 
 package core
 
-import "k8s.io/autoscaler/cluster-autoscaler/config"
+import (
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/expander/random"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+
+	kube_client "k8s.io/client-go/kubernetes"
+	kube_record "k8s.io/client-go/tools/record"
+)
 
 type nodeConfig struct {
 	name   string
@@ -49,4 +59,22 @@ type scaleTestConfig struct {
 	expectedFinalScaleUp   groupSizeChange   // we expect this to be delivered via scale-up event
 	expectedScaleDowns     []string
 	options                config.AutoscalingOptions
+}
+
+// NewScaleTestAutoscalingContext creates a new test autoscaling context for scaling tests.
+func NewScaleTestAutoscalingContext(options config.AutoscalingOptions, fakeClient kube_client.Interface, provider cloudprovider.CloudProvider) context.AutoscalingContext {
+	fakeRecorder := kube_record.NewFakeRecorder(5)
+	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false)
+	return context.AutoscalingContext{
+		AutoscalingOptions: options,
+		AutoscalingKubeClients: context.AutoscalingKubeClients{
+			ClientSet:   fakeClient,
+			Recorder:    fakeRecorder,
+			LogRecorder: fakeLogRecorder,
+		},
+		CloudProvider:    provider,
+		PredicateChecker: simulator.NewTestPredicateChecker(),
+		ExpanderStrategy: random.NewStrategy(),
+	}
+
 }
