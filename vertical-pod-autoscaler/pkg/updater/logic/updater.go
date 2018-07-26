@@ -93,10 +93,10 @@ func (u *updater) RunOnce() {
 		glog.Errorf("failed to get pods list: %v", err)
 		return
 	}
-	livePods := filterDeletedPods(podsList)
+	allLivePods := filterDeletedPods(podsList)
 
 	controlledPods := make(map[*vpa_types.VerticalPodAutoscaler][]*apiv1.Pod)
-	for _, pod := range livePods {
+	for _, pod := range allLivePods {
 		controllingVPA := vpa_api_util.GetControllingVPAForPod(pod, vpas)
 		if controllingVPA != nil {
 			controlledPods[controllingVPA] = append(controlledPods[controllingVPA], pod)
@@ -105,7 +105,7 @@ func (u *updater) RunOnce() {
 
 	for vpa, livePods := range controlledPods {
 		evictionLimiter := u.evictionFactory.NewPodsEvictionRestriction(livePods)
-		podsForUpdate := u.getPodsForUpdate(filterNonEvictablePods(livePods, evictionLimiter), vpa)
+		podsForUpdate := u.getPodsUpdateOrder(filterNonEvictablePods(livePods, evictionLimiter), vpa)
 
 		for _, pod := range podsForUpdate {
 			if !evictionLimiter.CanEvict(pod) {
@@ -120,8 +120,8 @@ func (u *updater) RunOnce() {
 	}
 }
 
-// getPodsForUpdate returns list of pods that should be updated ordered by update priority
-func (u *updater) getPodsForUpdate(pods []*apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler) []*apiv1.Pod {
+// getPodsUpdateOrder returns list of pods that should be updated ordered by update priority
+func (u *updater) getPodsUpdateOrder(pods []*apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler) []*apiv1.Pod {
 	priorityCalculator := priority.NewUpdatePriorityCalculator(vpa.Spec.ResourcePolicy, nil, u.recommendationProcessor)
 	recommendation := vpa.Status.Recommendation
 
