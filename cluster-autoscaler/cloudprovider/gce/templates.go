@@ -37,7 +37,13 @@ import (
 
 const (
 	mbPerGB           = 1000
+	bytesPerMB        = 1000 * 1000
 	millicoresPerCore = 1000
+	// Kubelet "evictionHard: {memory.available}" is subtracted from
+	// capacity when calculating allocatable (on top of kube-reserved).
+	// We don't have a good place to get it from, but it has been hard-coded
+	// to 100Mi since at least k8s 1.4.
+	kubeletEvictionHardMemory = 100 * 1024 * 1024
 )
 
 // builds templates for gce cloud provider
@@ -86,17 +92,23 @@ func (t *templateBuilder) buildAllocatableFromKubeEnv(capacity apiv1.ResourceLis
 	if err != nil {
 		return nil, err
 	}
+	if quantity, found := reserved[apiv1.ResourceMemory]; found {
+		reserved[apiv1.ResourceMemory] = *resource.NewQuantity(quantity.Value()+kubeletEvictionHardMemory, resource.BinarySI)
+	}
 	return t.getAllocatable(capacity, reserved), nil
 }
 
 // buildAllocatableFromCapacity builds node allocatable based only on node capacity.
 // Calculates reserved as a ratio of capacity. See calculateReserved for more details
 func (t *templateBuilder) buildAllocatableFromCapacity(capacity apiv1.ResourceList) apiv1.ResourceList {
-	memoryReserved := memoryReservedMB(capacity.Memory().Value() / (1024 * 1024))
+	memoryReserved := memoryReservedMB(capacity.Memory().Value() / bytesPerMB)
 	cpuReserved := cpuReservedMillicores(capacity.Cpu().MilliValue())
 	reserved := apiv1.ResourceList{}
 	reserved[apiv1.ResourceCPU] = *resource.NewMilliQuantity(cpuReserved, resource.DecimalSI)
-	reserved[apiv1.ResourceMemory] = *resource.NewQuantity(memoryReserved*1024*1024, resource.BinarySI)
+	// Duplicating an upstream bug treating MB as MiB (we need to predict the end result accurately).
+	memoryReserved = memoryReserved * 1024 * 1024
+	memoryReserved += kubeletEvictionHardMemory
+	reserved[apiv1.ResourceMemory] = *resource.NewQuantity(memoryReserved, resource.BinarySI)
 	return t.getAllocatable(capacity, reserved)
 }
 
