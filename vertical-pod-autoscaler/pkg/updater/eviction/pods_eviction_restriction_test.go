@@ -54,7 +54,7 @@ func TestEvictReplicatedByController(t *testing.T) {
 
 	pods := make([]*apiv1.Pod, livePods)
 	for i := range pods {
-		pods[i] = test.BuildTestPod("test"+string(i), "", "", "", &rc.ObjectMeta, &rc.TypeMeta)
+		pods[i] = test.Pod().WithName("test"+string(i)).WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get()
 	}
 
 	eviction := NewPodsEvictionRestrictionFactory(fakeClient(&rc, nil, nil, nil, pods), 2, 0.5).NewPodsEvictionRestriction(pods)
@@ -93,7 +93,7 @@ func TestEvictReplicatedByReplicaSet(t *testing.T) {
 
 	pods := make([]*apiv1.Pod, livePods)
 	for i := range pods {
-		pods[i] = test.BuildTestPod("test"+string(i), "", "", "", &rs.ObjectMeta, &rs.TypeMeta)
+		pods[i] = test.Pod().WithName("test"+string(i)).WithCreator(&rs.ObjectMeta, &rs.TypeMeta).Get()
 	}
 
 	eviction := NewPodsEvictionRestrictionFactory(fakeClient(nil, &rs, nil, nil, pods), 2, 0.5).NewPodsEvictionRestriction(pods)
@@ -132,7 +132,7 @@ func TestEvictReplicatedByStatefulSet(t *testing.T) {
 
 	pods := make([]*apiv1.Pod, livePods)
 	for i := range pods {
-		pods[i] = test.BuildTestPod("test"+string(i), "", "", "", &ss.ObjectMeta, &ss.TypeMeta)
+		pods[i] = test.Pod().WithName("test"+string(i)).WithCreator(&ss.ObjectMeta, &ss.TypeMeta).Get()
 	}
 
 	eviction := NewPodsEvictionRestrictionFactory(fakeClient(nil, nil, &ss, nil, pods), 2, 0.5).NewPodsEvictionRestriction(pods)
@@ -167,7 +167,7 @@ func TestEvictReplicatedByJob(t *testing.T) {
 
 	pods := make([]*apiv1.Pod, livePods)
 	for i := range pods {
-		pods[i] = test.BuildTestPod("test"+string(i), "", "", "", &job.ObjectMeta, &job.TypeMeta)
+		pods[i] = test.Pod().WithName("test"+string(i)).WithCreator(&job.ObjectMeta, &job.TypeMeta).Get()
 	}
 
 	eviction := NewPodsEvictionRestrictionFactory(fakeClient(nil, nil, nil, &job, pods), 2, 0.5).NewPodsEvictionRestriction(pods)
@@ -206,7 +206,7 @@ func TestEvictTooFewReplicas(t *testing.T) {
 
 	pods := make([]*apiv1.Pod, livePods)
 	for i := range pods {
-		pods[i] = test.BuildTestPod("test"+string(i), "", "", "", &rc.ObjectMeta, &rc.TypeMeta)
+		pods[i] = test.Pod().WithName("test"+string(i)).WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get()
 	}
 
 	eviction := NewPodsEvictionRestrictionFactory(fakeClient(&rc, nil, nil, nil, pods), 10, 0.5).NewPodsEvictionRestriction(pods)
@@ -242,10 +242,10 @@ func TestEvictionTolerance(t *testing.T) {
 
 	pods := make([]*apiv1.Pod, livePods)
 	for i := range pods {
-		pods[i] = test.BuildTestPod("test"+string(i), "", "", "", &rc.ObjectMeta, &rc.TypeMeta)
+		pods[i] = test.Pod().WithName("test"+string(i)).WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get()
 	}
 
-	eviction := NewPodsEvictionRestrictionFactory(fakeClient(&rc, nil, nil, nil, pods), 2, tolerance).NewPodsEvictionRestriction(pods)
+	eviction := NewPodsEvictionRestrictionFactory(fakeClient(&rc, nil, nil, nil, pods), 2 /*minReplicas*/, tolerance).NewPodsEvictionRestriction(pods)
 
 	for _, pod := range pods {
 		assert.True(t, eviction.CanEvict(pod))
@@ -282,7 +282,7 @@ func TestEvictAtLeastOne(t *testing.T) {
 
 	pods := make([]*apiv1.Pod, livePods)
 	for i := range pods {
-		pods[i] = test.BuildTestPod("test"+string(i), "", "", "", &rc.ObjectMeta, &rc.TypeMeta)
+		pods[i] = test.Pod().WithName("test"+string(i)).WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get()
 	}
 
 	eviction := NewPodsEvictionRestrictionFactory(fakeClient(&rc, nil, nil, nil, pods), 2, tolerance).NewPodsEvictionRestriction(pods)
