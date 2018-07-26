@@ -45,7 +45,9 @@ func TestNewAutoscalingContext(t *testing.T) {
 		},
 		simulator.NewTestPredicateChecker(),
 		fakeClient, fakeRecorder,
-		fakeLogRecorder, kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil))
+		fakeLogRecorder, kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil),
+		nil, // fake CloudProvider
+	)
 	assert.NoError(t, err)
 	assert.NotNil(t, autoscalingContext)
 }

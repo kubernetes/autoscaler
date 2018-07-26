@@ -272,7 +272,10 @@ func run(healthCheck *metrics.HealthCheck) {
 		KubeEventRecorder:  kubeEventRecorder,
 		ListerRegistry:     listerRegistry,
 	}
-	autoscaler, err := core.NewAutoscaler(opts)
+
+	cloudProvider := cloudBuilder.NewCloudProvider(autoscalingOptions)
+
+	autoscaler, err := core.NewAutoscaler(opts, cloudProvider)
 	if err != nil {
 		glog.Fatalf("Failed to create autoscaler: %v", err)
 	}
