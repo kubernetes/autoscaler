@@ -38,9 +38,17 @@ type PodsEvictionRestriction interface {
 }
 
 type podsEvictionRestrictionImpl struct {
-	client         kube_client.Interface
-	podsCreators   map[string]podReplicaCreator
-	evictionBudget map[podReplicaCreator]int
+	client                       kube_client.Interface
+	podToReplicaCreatorMap       map[string]podReplicaCreator
+	creatorToSingleGroupStatsMap map[podReplicaCreator]singleGroupStats
+}
+
+type singleGroupStats struct {
+	configured        int
+	pending           int
+	running           int
+	evictionTolerance int
+	evicted           int
 }
 
 // PodsEvictionRestrictionFactory creates PodsEvictionRestriction
@@ -63,9 +71,24 @@ type podReplicaCreator struct {
 
 // CanEvict checks if pod can be safely evicted
 func (e *podsEvictionRestrictionImpl) CanEvict(pod *apiv1.Pod) bool {
-	cr, present := e.podsCreators[getPodID(pod)]
+	cr, present := e.podToReplicaCreatorMap[getPodID(pod)]
 	if present {
-		return e.evictionBudget[cr] > 0
+		singleGroupStats, present := e.creatorToSingleGroupStatsMap[cr]
+		if pod.Status.Phase == apiv1.PodPending {
+			return true
+		}
+		if present {
+			shouldBeAlive := singleGroupStats.configured - singleGroupStats.evictionTolerance
+			if singleGroupStats.running-singleGroupStats.evicted > shouldBeAlive {
+				return true
+			}
+			// If all pods are running and eviction tollerance is small evict 1 pod.
+			if singleGroupStats.running == singleGroupStats.configured &&
+				singleGroupStats.evictionTolerance == 0 &&
+				singleGroupStats.evicted == 0 {
+				return true
+			}
+		}
 	}
 	return false
 }
@@ -73,11 +96,12 @@ func (e *podsEvictionRestrictionImpl) CanEvict(pod *apiv1.Pod) bool {
 // Evict sends eviction instruction to api client. Retrurns error if pod cannot be evicted or if client returned error
 // Does not check if pod was actually evicted after eviction grace period.
 func (e *podsEvictionRestrictionImpl) Evict(podToEvict *apiv1.Pod) error {
-	cr, present := e.podsCreators[getPodID(podToEvict)]
+	cr, present := e.podToReplicaCreatorMap[getPodID(podToEvict)]
 	if !present {
 		return fmt.Errorf("pod not suitable for eviction %v : not in replicated pods map", podToEvict.Name)
 	}
-	if e.evictionBudget[cr] < 1 {
+
+	if !e.CanEvict(podToEvict) {
 		return fmt.Errorf("cannot evict pod %v : eviction budget exceeded", podToEvict.Name)
 	}
 
@@ -92,8 +116,18 @@ func (e *podsEvictionRestrictionImpl) Evict(podToEvict *apiv1.Pod) error {
 		glog.Errorf("failed to evict pod %s, error: %v", podToEvict.Name, err)
 		return err
 	}
-	e.evictionBudget[cr] = e.evictionBudget[cr] - 1
+
+	if podToEvict.Status.Phase != apiv1.PodPending {
+		singleGroupStats, present := e.creatorToSingleGroupStatsMap[cr]
+		if !present {
+			return fmt.Errorf("Internal error - cannot find stats for replication group %v", cr)
+		}
+		singleGroupStats.evicted = singleGroupStats.evicted + 1
+		e.creatorToSingleGroupStatsMap[cr] = singleGroupStats
+	}
+
 	return nil
+
 }
 
 // NewPodsEvictionRestrictionFactory creates PodsEvictionRestrictionFactory
@@ -116,14 +150,15 @@ func (f *podsEvictionRestrictionFactoryImpl) NewPodsEvictionRestriction(pods []*
 			continue
 		}
 		if creator == nil {
-			glog.V(2).Infof("pod %s not replicated", pod.Name)
+			glog.Warningf("pod %s not replicated", pod.Name)
 			continue
 		}
 		livePods[*creator] = append(livePods[*creator], pod)
 	}
 
-	podsCreators := make(map[string]podReplicaCreator)
-	creatorsEvictionBudget := make(map[podReplicaCreator]int)
+	podToReplicaCreatorMap := make(map[string]podReplicaCreator)
+	creatorToSingleGroupStatsMap := make(map[podReplicaCreator]singleGroupStats)
+
 	for creator, replicas := range livePods {
 		actual := len(replicas)
 		if actual < f.minReplicas {
@@ -146,23 +181,19 @@ func (f *podsEvictionRestrictionFactoryImpl) NewPodsEvictionRestriction(pods []*
 			}
 		}
 
-		evictionTolerance := int(float64(configured) * f.evictionToleranceFraction)
-		currentlyEvicted := configured - actual
-		evictionBudget := evictionTolerance - currentlyEvicted
-
-		if evictionBudget > 0 {
-			creatorsEvictionBudget[creator] = evictionBudget
-		} else {
-			creatorsEvictionBudget[creator] = 1
-			glog.V(2).Infof("configured eviction tolerance for pods from %v %v/%v too low. Setting eviction budget to 1",
-				creator.Kind, creator.Namespace, creator.Name)
-		}
-
+		singleGroup := singleGroupStats{}
+		singleGroup.configured = configured
+		singleGroup.evictionTolerance = int(float64(configured) * f.evictionToleranceFraction)
 		for _, pod := range replicas {
-			podsCreators[getPodID(pod)] = creator
+			podToReplicaCreatorMap[getPodID(pod)] = creator
+			if pod.Status.Phase == apiv1.PodPending {
+				singleGroup.pending = singleGroup.pending + 1
+			}
 		}
+		singleGroup.running = len(replicas) - singleGroup.pending
+		creatorToSingleGroupStatsMap[creator] = singleGroup
 	}
-	return &podsEvictionRestrictionImpl{client: f.client, podsCreators: podsCreators, evictionBudget: creatorsEvictionBudget}
+	return &podsEvictionRestrictionImpl{client: f.client, podToReplicaCreatorMap: podToReplicaCreatorMap, creatorToSingleGroupStatsMap: creatorToSingleGroupStatsMap}
 }
 
 func getPodReplicaCreator(pod *apiv1.Pod) (*podReplicaCreator, error) {
