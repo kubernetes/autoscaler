@@ -28,6 +28,7 @@ type PodBuilder interface {
 	WithName(name string) PodBuilder
 	AddContainer(container apiv1.Container) PodBuilder
 	WithCreator(creatorObjectMeta *metav1.ObjectMeta, creatorTypeMeta *metav1.TypeMeta) PodBuilder
+	WithPhase(phase apiv1.PodPhase) PodBuilder
 	Get() *apiv1.Pod
 }
 
@@ -49,6 +50,7 @@ type podBuilderImpl struct {
 	containers        []apiv1.Container
 	creatorObjectMeta *metav1.ObjectMeta
 	creatorTypeMeta   *metav1.TypeMeta
+	phase             apiv1.PodPhase
 }
 
 func (pb *podBuilderImpl) WithName(name string) PodBuilder {
@@ -67,6 +69,12 @@ func (pb *podBuilderImpl) WithCreator(creatorObjectMeta *metav1.ObjectMeta, crea
 	r := *pb
 	r.creatorObjectMeta = creatorObjectMeta
 	r.creatorTypeMeta = creatorTypeMeta
+	return &r
+}
+
+func (pb *podBuilderImpl) WithPhase(phase apiv1.PodPhase) PodBuilder {
+	r := *pb
+	r.phase = phase
 	return &r
 }
 
@@ -97,6 +105,9 @@ func (pb *podBuilderImpl) Get() *apiv1.Pod {
 				Controller: &isController,
 			},
 		}
+	}
+	if pb.phase != "" {
+		pod.Status.Phase = pb.phase
 	}
 
 	return pod

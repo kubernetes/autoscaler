@@ -34,9 +34,13 @@ import (
 	"k8s.io/kubernetes/pkg/api/testapi"
 )
 
+type podWithExpectations struct {
+	pod             *apiv1.Pod
+	canEvict        bool
+	evictionSuccess bool
+}
+
 func TestEvictReplicatedByController(t *testing.T) {
-	replicas := int32(5)
-	livePods := 5
 
 	rc := apiv1.ReplicationController{
 		ObjectMeta: metav1.ObjectMeta{
@@ -47,30 +51,204 @@ func TestEvictReplicatedByController(t *testing.T) {
 		TypeMeta: metav1.TypeMeta{
 			Kind: "ReplicationController",
 		},
-		Spec: apiv1.ReplicationControllerSpec{
-			Replicas: &replicas,
+	}
+
+	index := 0
+	generatePod := func() test.PodBuilder {
+		index++
+		return test.Pod().WithName(fmt.Sprintf("test-%v", index)).WithCreator(&rc.ObjectMeta, &rc.TypeMeta)
+	}
+
+	testCases := []struct {
+		replicas           int32
+		evictionTollerance float64
+		pods               []podWithExpectations
+	}{
+		{
+			replicas:           3,
+			evictionTollerance: 0.5,
+			pods: []podWithExpectations{
+				{
+					// Only first pod will be evicted.
+					pod:             generatePod().Get(),
+					canEvict:        true,
+					evictionSuccess: true,
+				},
+				{
+					pod:             generatePod().Get(),
+					canEvict:        true,
+					evictionSuccess: false,
+				},
+				{
+					pod:             generatePod().Get(),
+					canEvict:        true,
+					evictionSuccess: false,
+				},
+			},
+		},
+		{
+			// Half of the population can be evicted.
+			replicas:           4,
+			evictionTollerance: 0.5,
+			pods: []podWithExpectations{
+				{
+
+					pod:             generatePod().Get(),
+					canEvict:        true,
+					evictionSuccess: true,
+				},
+				{
+					pod:             generatePod().Get(),
+					canEvict:        true,
+					evictionSuccess: true,
+				},
+				{
+					pod:             generatePod().Get(),
+					canEvict:        true,
+					evictionSuccess: false,
+				},
+				{
+					pod:             generatePod().Get(),
+					canEvict:        true,
+					evictionSuccess: false,
+				},
+			},
+		},
+		{
+			// Half of the population can be evicted. One pod is missing already.
+			replicas:           4,
+			evictionTollerance: 0.5,
+			pods: []podWithExpectations{
+				{
+					// Half of the population can be evicted.
+					pod:             generatePod().Get(),
+					canEvict:        true,
+					evictionSuccess: true,
+				},
+				{
+					pod:             generatePod().Get(),
+					canEvict:        true,
+					evictionSuccess: false,
+				},
+				{
+					pod:             generatePod().Get(),
+					canEvict:        true,
+					evictionSuccess: false,
+				},
+			},
+		},
+		{
+			replicas:           3,
+			evictionTollerance: 0.1,
+			pods: []podWithExpectations{
+				{
+					// For small eviction tollerance at least one pod is evicted.
+					pod:             generatePod().Get(),
+					canEvict:        true,
+					evictionSuccess: true,
+				},
+				{
+					pod:             generatePod().Get(),
+					canEvict:        true,
+					evictionSuccess: false,
+				},
+				{
+					pod:             generatePod().Get(),
+					canEvict:        true,
+					evictionSuccess: false,
+				},
+			},
+		},
+		{
+			replicas:           3,
+			evictionTollerance: 0.1,
+			pods: []podWithExpectations{
+				{
+					// only 2 pods in replica of 3 and tollerance is 0. None of pods can be evicted
+					pod:             generatePod().Get(),
+					canEvict:        false,
+					evictionSuccess: false,
+				},
+				{
+					pod:             generatePod().Get(),
+					canEvict:        false,
+					evictionSuccess: false,
+				},
+			},
+		},
+		{
+			replicas:           3,
+			evictionTollerance: 0.5,
+			pods: []podWithExpectations{
+				{
+					pod:             generatePod().Get(),
+					canEvict:        false,
+					evictionSuccess: false,
+				},
+				{
+					// Only pending pod can be evicted without violation of tollerance
+					pod:             generatePod().WithPhase(apiv1.PodPending).Get(),
+					canEvict:        true,
+					evictionSuccess: true,
+				},
+				{
+					pod:             generatePod().Get(),
+					canEvict:        false,
+					evictionSuccess: false,
+				},
+			},
+		},
+		{
+			// Pedning pods are always evictable
+			replicas:           4,
+			evictionTollerance: 0.5,
+			pods: []podWithExpectations{
+				{
+					pod:             generatePod().Get(),
+					canEvict:        false,
+					evictionSuccess: false,
+				},
+				{
+					pod:             generatePod().WithPhase(apiv1.PodPending).Get(),
+					canEvict:        true,
+					evictionSuccess: true,
+				},
+				{
+					pod:             generatePod().WithPhase(apiv1.PodPending).Get(),
+					canEvict:        true,
+					evictionSuccess: true,
+				},
+				{
+					pod:             generatePod().WithPhase(apiv1.PodPending).Get(),
+					canEvict:        true,
+					evictionSuccess: true,
+				},
+			},
 		},
 	}
 
-	pods := make([]*apiv1.Pod, livePods)
-	for i := range pods {
-		pods[i] = test.Pod().WithName("test"+string(i)).WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get()
+	for tcIndex, testCase := range testCases {
+		rc.Spec = apiv1.ReplicationControllerSpec{
+			Replicas: &testCase.replicas,
+		}
+		pods := make([]*apiv1.Pod, 0, len(testCase.pods))
+		for _, p := range testCase.pods {
+			pods = append(pods, p.pod)
+		}
+		eviction := NewPodsEvictionRestrictionFactory(fakeClient(&rc, nil, nil, nil, pods), 2, testCase.evictionTollerance).NewPodsEvictionRestriction(pods)
+		for i, p := range testCase.pods {
+			assert.Equalf(t, p.canEvict, eviction.CanEvict(p.pod), "TC %v - unexpected CanEvict result for pod-%v %#v", tcIndex, i, p.pod)
+		}
+		for i, p := range testCase.pods {
+			err := eviction.Evict(p.pod)
+			if p.evictionSuccess {
+				assert.NoErrorf(t, err, "TC %v - unexpected Evict result for pod-%v %#v", tcIndex, i, p.pod)
+			} else {
+				assert.Errorf(t, err, "TC %v - unexpected Evict result for pod-%v %#v", tcIndex, i, p.pod)
+			}
+		}
 	}
 
-	eviction := NewPodsEvictionRestrictionFactory(fakeClient(&rc, nil, nil, nil, pods), 2, 0.5).NewPodsEvictionRestriction(pods)
-
-	for _, pod := range pods {
-		assert.True(t, eviction.CanEvict(pod))
-	}
-
-	for _, pod := range pods[:2] {
-		err := eviction.Evict(pod)
-		assert.Nil(t, err, "Should evict with no error")
-	}
-	for _, pod := range pods[2:] {
-		err := eviction.Evict(pod)
-		assert.Error(t, err, "Error expected")
-	}
 }
 
 func TestEvictReplicatedByReplicaSet(t *testing.T) {
