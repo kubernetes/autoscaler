@@ -144,8 +144,8 @@ func (cluster *ClusterState) AddOrUpdateContainer(containerID ContainerID, reque
 		return NewKeyError(containerID.PodID)
 	}
 	if container, containerExists := pod.Containers[containerID.ContainerName]; !containerExists {
-		aggregateContainerState := cluster.findOrCreateAggregateContainerState(containerID)
-		pod.Containers[containerID.ContainerName] = NewContainerState(request, aggregateContainerState)
+		cluster.findOrCreateAggregateContainerState(containerID)
+		pod.Containers[containerID.ContainerName] = NewContainerState(request, NewContainerStateAggregatorProxy(cluster, containerID))
 	} else {
 		// Container aleady exists. Possibly update the request.
 		container.Request = request
