@@ -139,9 +139,6 @@ Pre-requirements:
 - Get credentials from above `permissions` step.
 - Get the cluster name using the following:
 
-  for AKS:
-  ```sh
-  az aks list
   ```
   for ACS:
   ```sh
