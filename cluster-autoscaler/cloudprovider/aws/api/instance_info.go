@@ -239,7 +239,7 @@ func (s *instanceInfoService) fetch(availabilityZone string, etag string) (*resp
 	}
 
 	if res.StatusCode != 200 {
-		return nil, fmt.Errorf("got unexpected http status code %s with body [%s]", res.StatusCode, string(body))
+		return nil, fmt.Errorf("got unexpected http status code %d with body [%s]", res.StatusCode, string(body))
 	}
 
 	var data = new(response)

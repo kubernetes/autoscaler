@@ -28,83 +28,88 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var pricingBody []byte
 
-func init() {
+func loadMockData(t *testing.T) []byte {
+	var pricingBody []byte
 	f, err := os.Open("pricing_eu-west-1.json")
 	if err != nil {
-		panic(err)
+		t.Fatalf("Failed to open mock file: %v", err)
 	}
 	pricingBody, err = ioutil.ReadAll(f)
 	if err != nil {
-		panic(err)
+		t.Fatalf("Failed to load mock file: %v", err)
 	}
+
+	return pricingBody
 }
 
 func TestInstanceInfoService_DescribeInstanceInfo(t *testing.T) {
-	usEastOneURL, err := url.Parse(fmt.Sprintf(awsPricingAPIURLTemplate, "us-east-1"))
-	assert.NoError(t, err)
-
-	usWestOneURL, err := url.Parse(fmt.Sprintf(awsPricingAPIURLTemplate, "us-west-1"))
-	assert.NoError(t, err)
-
-	mc := &mockClient{m: make(map[string]mockResponse)}
-	mc.m[usEastOneURL.Path] = mockResponse{pricingBody, 200}
-	mc.m[usWestOneURL.Path] = mockResponse{[]byte("some non-json stuff"), 200}
-
-	type testCase struct {
+	tcs := []struct {
+		name string
 		instanceType        string
 		region              string
 		expectError         bool
 		expectOnDemandPrice float64
 		expectCPU           int64
+	}{
+		{
+			name: "good case: common case",
+			instanceType:"m4.xlarge",
+			region:"us-east-1",
+			expectError:false,
+			expectOnDemandPrice:0.2,
+			expectCPU:4,
+		},
+		{
+			name: "error case: unknown availability region",
+			instanceType:"m4.xlarge",
+			region:"eu-east-2",
+			expectError:true,
+			expectOnDemandPrice:0,
+			expectCPU:0,
+		},
+		{
+			name: "error case: unknown instance",
+			instanceType:"unknown-instance",
+			region:"us-east-1",
+			expectError:true,
+			expectOnDemandPrice:0,
+			expectCPU:0,
+		},
+		{
+			name: "error case: invalid server response",
+			instanceType:"m4.xlarge",
+			region: "us-west-1",
+			expectError:true,
+			expectOnDemandPrice:0,
+			expectCPU:0,
+		},
 	}
-	type cases []testCase
 
-	tcs := cases{
-		{ // good case: common case
-			"m4.xlarge",
-			"us-east-1",
-			false,
-			0.2,
-			4,
-		},
-		{ // error case: unknown availability region
-			"m4.xlarge",
-			"eu-east-2",
-			true,
-			0,
-			0,
-		},
-		{ // error case: unknown instance
-			"unknown-instance",
-			"us-east-1",
-			true,
-			0,
-			0,
-		},
-		{ // error case: invalid server response
-			"m4.xlarge",
-			"us-west-1",
-			true,
-			0,
-			0,
-		},
-	}
 
-	service := NewEC2InstanceInfoService(mc)
+	for _, tc := range tcs {
+		t.Run(tc.name, func(t *testing.T) {
+			usEastOneURL, err := url.Parse(fmt.Sprintf(awsPricingAPIURLTemplate, "us-east-1"))
+			assert.NoError(t, err)
 
-	for n, tc := range tcs {
-		info, err := service.DescribeInstanceInfo(tc.instanceType, tc.region)
-		if tc.expectError {
-			assert.Error(t, err, fmt.Sprintf("case %d", n))
-		} else {
-			assert.NoError(t, err, fmt.Sprintf("case %d", n))
-			assert.Equal(t, tc.instanceType, info.InstanceType)
-			assert.Equal(t, tc.expectCPU, info.VCPU)
-			assert.Equal(t, tc.expectOnDemandPrice, info.OnDemandPrice)
-		}
+			usWestOneURL, err := url.Parse(fmt.Sprintf(awsPricingAPIURLTemplate, "us-west-1"))
+			assert.NoError(t, err)
 
+			mc := &mockClient{m: make(map[string]mockResponse)}
+			mc.m[usEastOneURL.Path] = mockResponse{loadMockData(t), 200}
+			mc.m[usWestOneURL.Path] = mockResponse{[]byte("some non-json stuff"), 200}
+
+			service := NewEC2InstanceInfoService(mc)
+			info, err := service.DescribeInstanceInfo(tc.instanceType, tc.region)
+			if tc.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tc.instanceType, info.InstanceType)
+				assert.Equal(t, tc.expectCPU, info.VCPU)
+				assert.Equal(t, tc.expectOnDemandPrice, info.OnDemandPrice)
+			}
+		})
 	}
 }
 
