@@ -229,7 +229,7 @@ func (m *AwsManager) getAsgTemplate(asg *asg) (*asgTemplate, error) {
 	}
 
 	return &asgTemplate{
-		InstanceType: staticLinkedInstanceType,
+		InstanceType: InstanceTypes[instanceTypeName],
 		Region:       region,
 		Zone:         az,
 		Tags:         asg.Tags,

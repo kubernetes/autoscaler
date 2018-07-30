@@ -39,16 +39,14 @@ const (
 // awsCloudProvider implements CloudProvider interface.
 type awsCloudProvider struct {
 	awsManager      *AwsManager
-	priceModel      cloudprovider.PricingModel
 	resourceLimiter *cloudprovider.ResourceLimiter
 }
 
 // BuildAwsCloudProvider builds CloudProvider implementation for AWS.
-func BuildAwsCloudProvider(awsManager *AwsManager, resourceLimiter *cloudprovider.ResourceLimiter, descriptor price.ShapeDescriptor) (cloudprovider.CloudProvider, error) {
+func BuildAwsCloudProvider(awsManager *AwsManager, resourceLimiter *cloudprovider.ResourceLimiter) (cloudprovider.CloudProvider, error) {
 	aws := &awsCloudProvider{
 		awsManager:      awsManager,
 		resourceLimiter: resourceLimiter,
-		priceModel:      NewPriceModel(nil, descriptor), // TODO
 	}
 	return aws, nil
 }
@@ -152,6 +150,10 @@ func AwsRefFromProviderId(id string) (*AwsInstanceRef, error) {
 		ProviderID: id,
 		Name:       splitted[1],
 	}, nil
+}
+
+func (ref AwsInstanceRef) String() string {
+	return fmt.Sprintf("%s/%s", ref.Name, ref.ProviderID)
 }
 
 // AwsNodeGroup implements NodeGroup interface.

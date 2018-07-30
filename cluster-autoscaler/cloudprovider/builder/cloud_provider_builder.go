@@ -110,6 +110,7 @@ func buildGCE(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscover
 }
 
 func buildAWS(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+	// TODO: `config` collides with imported package name <mrcrgl>
 	var config io.ReadCloser
 	if opts.CloudConfig != "" {
 		var err error
