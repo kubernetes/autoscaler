@@ -28,7 +28,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-
 func loadMockData(t *testing.T) []byte {
 	var pricingBody []byte
 	f, err := os.Open("pricing_eu-west-1.json")
@@ -45,7 +44,7 @@ func loadMockData(t *testing.T) []byte {
 
 func TestInstanceInfoService_DescribeInstanceInfo(t *testing.T) {
 	tcs := []struct {
-		name string
+		name                string
 		instanceType        string
 		region              string
 		expectError         bool
@@ -53,39 +52,38 @@ func TestInstanceInfoService_DescribeInstanceInfo(t *testing.T) {
 		expectCPU           int64
 	}{
 		{
-			name: "good case: common case",
-			instanceType:"m4.xlarge",
-			region:"us-east-1",
-			expectError:false,
-			expectOnDemandPrice:0.2,
-			expectCPU:4,
+			name:                "good case: common case",
+			instanceType:        "m4.xlarge",
+			region:              "us-east-1",
+			expectError:         false,
+			expectOnDemandPrice: 0.2,
+			expectCPU:           4,
 		},
 		{
-			name: "error case: unknown availability region",
-			instanceType:"m4.xlarge",
-			region:"eu-east-2",
-			expectError:true,
-			expectOnDemandPrice:0,
-			expectCPU:0,
+			name:                "error case: unknown availability region",
+			instanceType:        "m4.xlarge",
+			region:              "eu-east-2",
+			expectError:         true,
+			expectOnDemandPrice: 0,
+			expectCPU:           0,
 		},
 		{
-			name: "error case: unknown instance",
-			instanceType:"unknown-instance",
-			region:"us-east-1",
-			expectError:true,
-			expectOnDemandPrice:0,
-			expectCPU:0,
+			name:                "error case: unknown instance",
+			instanceType:        "unknown-instance",
+			region:              "us-east-1",
+			expectError:         true,
+			expectOnDemandPrice: 0,
+			expectCPU:           0,
 		},
 		{
-			name: "error case: invalid server response",
-			instanceType:"m4.xlarge",
-			region: "us-west-1",
-			expectError:true,
-			expectOnDemandPrice:0,
-			expectCPU:0,
+			name:                "error case: invalid server response",
+			instanceType:        "m4.xlarge",
+			region:              "us-west-1",
+			expectError:         true,
+			expectOnDemandPrice: 0,
+			expectCPU:           0,
 		},
 	}
-
 
 	for _, tc := range tcs {
 		t.Run(tc.name, func(t *testing.T) {

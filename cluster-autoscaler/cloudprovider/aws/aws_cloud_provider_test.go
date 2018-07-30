@@ -85,7 +85,7 @@ func (pd *testPriceDescriptor) Price(asgName string) (price float64, err error) 
 	return
 }
 
-func newTestAwsManagerWithService(service autoScaling) *AwsManager {
+func newTestAwsManagerWithService(service autoScaling, autoDiscoverySpecs []cloudprovider.ASGAutoDiscoveryConfig) *AwsManager {
 	wrapper := autoScalingWrapper{service}
 	return &AwsManager{
 		autoScalingService: wrapper,
@@ -206,7 +206,7 @@ func TestAutoDiscoveredNodeGroups(t *testing.T) {
 	provider.Refresh()
 
 	nodeGroups := provider.NodeGroups()
-	assert.Equal(t, len(nodeGroups), 1)
+	assert.Len(t, nodeGroups, 1)
 	assert.Equal(t, nodeGroups[0].Id(), "auto-asg")
 	assert.Equal(t, nodeGroups[0].MinSize(), 1)
 	assert.Equal(t, nodeGroups[0].MaxSize(), 5)
