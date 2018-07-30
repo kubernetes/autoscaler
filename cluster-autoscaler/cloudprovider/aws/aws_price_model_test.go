@@ -36,7 +36,7 @@ func TestPriceModel_NodePrice(t *testing.T) {
 
 	pm := &priceModel{
 		asgs: &fakeInstanceFinder{
-			c: map[string]*Asg{
+			c: map[string]*asg{
 				"node-a": {
 					AwsRef: AwsRef{
 						Name: "k8s-AutoscalingGroupWorker-AAAAAA",
@@ -232,15 +232,15 @@ func buildNode(providerID string) *apiv1.Node {
 var _ instanceByASGFinder = &fakeInstanceFinder{}
 
 type fakeInstanceFinder struct {
-	c map[string]*Asg
+	c map[string]*asg
 }
 
-func (i *fakeInstanceFinder) GetAsgForInstance(instance *AwsRef) (*Asg, error) {
+func (i *fakeInstanceFinder) GetAsgForInstance(instance AwsInstanceRef) *asg {
 	if asg, found := i.c[instance.Name]; found {
-		return asg, nil
+		return asg
 	}
 
-	return nil, nil
+	return nil
 }
 
 type podContainers struct {
@@ -267,7 +267,7 @@ func convertContainers(prs ...podContainers) []apiv1.Container {
 			containers[n].Resources.Requests[apiv1.ResourceCPU] = resource.MustParse(pr.cpu)
 		}
 		if len(pr.gpu) != 0 {
-			containers[n].Resources.Requests[apiv1.ResourceNvidiaGPU] = resource.MustParse(pr.gpu)
+			containers[n].Resources.Requests[resourceNvidiaGPU] = resource.MustParse(pr.gpu)
 		}
 		if len(pr.memory) != 0 {
 			containers[n].Resources.Requests[apiv1.ResourceMemory] = resource.MustParse(pr.memory)
