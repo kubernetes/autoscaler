@@ -27,26 +27,41 @@ var (
 	// TODO(maciekpytel): get this from API
 	gpuZones = map[string]map[string]bool{
 		"nvidia-tesla-k80": {
+			"us-west1-b":     true,
+			"us-central1-c":  true,
+			"us-east1-c":     true,
+			"us-east1-d":     true,
 			"europe-west1-b": true,
 			"europe-west1-d": true,
 			"asia-east1-a":   true,
 			"asia-east1-b":   true,
-			"us-east1-c":     true,
-			"us-east1-d":     true,
-			"us-west1-b":     true,
 		},
 		"nvidia-tesla-p100": {
+			"us-west1-b":     true,
+			"us-central1-c":  true,
+			"us-central1-f":  true,
+			"us-east1-b":     true,
+			"us-east1-c":     true,
 			"europe-west1-b": true,
 			"europe-west1-d": true,
 			"asia-east1-a":   true,
-			"us-east1-c":     true,
+			"asia-east1-c":   true,
+			"europe-west4-a": true,
+		},
+		"nvidia-tesla-v100": {
+			"us-west1-a":     true,
 			"us-west1-b":     true,
+			"us-central1-a":  true,
+			"us-central1-f":  true,
+			"europe-west4-a": true,
+			"asia-east1-c":   true,
 		},
 	}
 
 	maxGpuCount = map[string]int64{
 		"nvidia-tesla-k80":  8,
 		"nvidia-tesla-p100": 4,
+		"nvidia-tesla-v100": 8,
 	}
 
 	maxCpuCount = map[string]map[int64]int{
@@ -59,8 +74,20 @@ var (
 		"nvidia-tesla-p100": {
 			1: 16,
 			2: 32,
-			4: 64,
+			4: 64, // TODO(kgolab) support 96 for selected zones
 		},
+		"nvidia-tesla-v100": {
+			1: 12,
+			2: 24,
+			4: 48,
+			8: 96,
+		},
+	}
+
+	supportedGpuTypes = []string{
+		"nvidia-tesla-k80",
+		"nvidia-tesla-p100",
+		"nvidia-tesla-v100",
 	}
 )
 

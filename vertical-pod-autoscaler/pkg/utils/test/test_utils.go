@@ -23,7 +23,6 @@ import (
 	"github.com/stretchr/testify/mock"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/poc.autoscaling.k8s.io/v1alpha1"
@@ -34,48 +33,6 @@ var (
 	timeLayout       = "2006-01-02 15:04:05"
 	testTimestamp, _ = time.Parse(timeLayout, "2017-04-18 17:35:05")
 )
-
-// BuildTestPod creates a pod with specified resources.
-func BuildTestPod(name, containerName, cpu, mem string, creatorObjectMeta *metav1.ObjectMeta, creatorTypeMeta *metav1.TypeMeta) *apiv1.Pod {
-	startTime := metav1.Time{testTimestamp}
-	pod := &apiv1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: "default",
-			Name:      name,
-			SelfLink:  fmt.Sprintf("/api/v1/namespaces/default/pods/%s", name),
-		},
-		Spec: apiv1.PodSpec{
-			Containers: []apiv1.Container{BuildTestContainer(containerName, cpu, mem)},
-		},
-		Status: apiv1.PodStatus{
-			StartTime: &startTime,
-		},
-	}
-
-	if creatorObjectMeta != nil && creatorTypeMeta != nil {
-		isController := true
-		pod.ObjectMeta.OwnerReferences = []metav1.OwnerReference{
-			{
-				UID:        creatorObjectMeta.UID,
-				Name:       creatorObjectMeta.Name,
-				APIVersion: creatorObjectMeta.ResourceVersion,
-				Kind:       creatorTypeMeta.Kind,
-				Controller: &isController,
-			},
-		}
-	}
-
-	if len(cpu) > 0 {
-		cpuVal, _ := resource.ParseQuantity(cpu)
-		pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceCPU] = cpuVal
-	}
-	if len(mem) > 0 {
-		memVal, _ := resource.ParseQuantity(mem)
-		pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceMemory] = memVal
-	}
-
-	return pod
-}
 
 // BuildTestContainer creates container with specified resources
 func BuildTestContainer(containerName, cpu, mem string) apiv1.Container {
@@ -105,7 +62,7 @@ func BuildTestPolicy(containerName, minCPU, maxCPU, minMemory, maxMemory string)
 	minMemVal, _ := resource.ParseQuantity(minMemory)
 	maxMemVal, _ := resource.ParseQuantity(maxMemory)
 	return &vpa_types.PodResourcePolicy{ContainerPolicies: []vpa_types.ContainerResourcePolicy{{
-		Name: containerName,
+		ContainerName: containerName,
 		MinAllowed: apiv1.ResourceList{
 			apiv1.ResourceMemory: minMemVal,
 			apiv1.ResourceCPU:    minCPUVal,

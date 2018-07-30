@@ -19,6 +19,8 @@ package gpu
 import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 
 	"github.com/golang/glog"
 )
@@ -31,6 +33,31 @@ const (
 	// DefaultGPUType is the type of GPU used in NAP if the user
 	// don't specify what type of GPU his pod wants.
 	DefaultGPUType = "nvidia-tesla-k80"
+)
+
+const (
+	// MetricsGenericGPU - for when there is no information about GPU type
+	MetricsGenericGPU = "generic"
+	// MetricsMissingGPU - for when there's a label, but GPU didn't appear
+	MetricsMissingGPU = "missing-gpu"
+	// MetricsUnexpectedLabelGPU - for when there's a label, but no GPU at all
+	MetricsUnexpectedLabelGPU = "unexpected-label"
+	// MetricsUnknownGPU - for when GPU type is unknown
+	MetricsUnknownGPU = "not-listed"
+	// MetricsErrorGPU - for when there was an error obtaining GPU type
+	MetricsErrorGPU = "error"
+	// MetricsNoGPU - for when there is no GPU and no label all
+	MetricsNoGPU = ""
+)
+
+var (
+	// knownGpuTypes lists all known GPU types, to be used in metrics; map for convenient access
+	// TODO(kgolab) obtain this from Cloud Provider
+	knownGpuTypes = map[string]struct{}{
+		"nvidia-tesla-k80":  {},
+		"nvidia-tesla-p100": {},
+		"nvidia-tesla-v100": {},
+	}
 )
 
 // FilterOutNodesWithUnreadyGpus removes nodes that should have GPU, but don't have it in allocatable
@@ -64,6 +91,56 @@ func FilterOutNodesWithUnreadyGpus(allNodes, readyNodes []*apiv1.Node) ([]*apiv1
 		}
 	}
 	return newAllNodes, newReadyNodes
+}
+
+// GetGpuTypeForMetrics returns name of the GPU used on the node or empty string if there's no GPU
+// if the GPU type is unknown, "generic" is returned
+// NOTE: current implementation is GKE/GCE-specific
+func GetGpuTypeForMetrics(node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) string {
+	// we use the GKE label if there is one
+	gpuType, labelFound := node.Labels[GPULabel]
+	capacity, capacityFound := node.Status.Capacity[ResourceNvidiaGPU]
+
+	if !labelFound {
+		// no label, fallback to generic solution
+		if capacityFound && !capacity.IsZero() {
+			return MetricsGenericGPU
+		}
+
+		// no signs of GPU
+		return MetricsNoGPU
+	}
+
+	// GKE-specific label & capacity are present - consistent state
+	if capacityFound {
+		return validateGpuType(gpuType)
+	}
+
+	// GKE-specific label present but no capacity (yet?) - check the node template
+	if nodeGroup != nil {
+		template, err := nodeGroup.TemplateNodeInfo()
+		if err != nil {
+			glog.Warningf("Failed to build template for getting GPU metrics for node %v: %v", node.Name, err)
+			return MetricsErrorGPU
+		}
+
+		if _, found := template.Node().Status.Capacity[ResourceNvidiaGPU]; found {
+			return MetricsMissingGPU
+		}
+
+		// if template does not define GPUs we assume node will not have any even if it has gpu label
+		glog.Warningf("Template does not define GPUs even though node from its node group does; node=%v", node.Name)
+		return MetricsUnexpectedLabelGPU
+	}
+
+	return MetricsUnexpectedLabelGPU
+}
+
+func validateGpuType(gpu string) string {
+	if _, found := knownGpuTypes[gpu]; found {
+		return gpu
+	}
+	return MetricsUnknownGPU
 }
 
 func getUnreadyNodeCopy(node *apiv1.Node) *apiv1.Node {
@@ -155,4 +232,48 @@ func GetGpuRequests(pods []*apiv1.Pod) map[string]GpuRequestInfo {
 		result[gpuType] = requestInfo
 	}
 	return result
+}
+
+// GetNodeTargetGpus returns the number of gpus on a given node. This includes gpus which are not yet
+// ready to use and visible in kubernetes.
+func GetNodeTargetGpus(node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) (gpuType string, gpuCount int64, error errors.AutoscalerError) {
+	gpuLabel, found := node.Labels[GPULabel]
+	if !found {
+		return "", 0, nil
+	}
+
+	gpuAllocatable, found := node.Status.Allocatable[ResourceNvidiaGPU]
+	if found && gpuAllocatable.Value() > 0 {
+		return gpuLabel, gpuAllocatable.Value(), nil
+	}
+
+	// A node is supposed to have GPUs (based on label), but they're not available yet
+	// (driver haven't installed yet?).
+	// Unfortunately we can't deduce how many GPUs it will actually have from labels (just
+	// that it will have some).
+	// Ready for some evil hacks? Well, you won't be disappointed - let's pretend we haven't
+	// seen the node and just use the template we use for scale from 0. It'll be our little
+	// secret.
+
+	if nodeGroup == nil {
+		// We expect this code path to be triggered by situation when we are looking at a node which is expected to have gpus (has gpu label)
+		// But those are not yet visible in node's resource (e.g. gpu drivers are still being installed).
+		// In case of node coming from autoscaled node group we would look and node group template here.
+		// But for nodes coming from non-autoscaled groups we have no such possibility.
+		// Let's hope it is a transient error. As long as it exists we will not scale nodes groups with gpus.
+		return "", 0, errors.NewAutoscalerError(errors.InternalError, "node without with gpu label, without capacity not belonging to autoscaled node group")
+	}
+
+	template, err := nodeGroup.TemplateNodeInfo()
+	if err != nil {
+		glog.Errorf("Failed to build template for getting GPU estimation for node %v: %v", node.Name, err)
+		return "", 0, errors.ToAutoscalerError(errors.CloudProviderError, err)
+	}
+	if gpuCapacity, found := template.Node().Status.Capacity[ResourceNvidiaGPU]; found {
+		return gpuLabel, gpuCapacity.Value(), nil
+	}
+
+	// if template does not define gpus we assume node will not have any even if ith has gpu label
+	glog.Warningf("Template does not define gpus even though node from its node group does; node=%v", node.Name)
+	return "", 0, nil
 }

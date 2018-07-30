@@ -73,7 +73,7 @@ func main() {
 	checkPercentageFlagBounds("recommendation-offset", *recommendationOffset)
 	checkPercentageFlagBounds("acceptance-offset", *acceptanceOffset)
 
-	pollPeriod := time.Millisecond * time.Duration(*pollPeriodMillis)
+	pollPeriod := time.Duration(int64(*pollPeriodMillis) * int64(time.Millisecond))
 	log.Infof("Poll period: %+v", pollPeriod)
 	log.Infof("Watching namespace: %s, pod: %s, container: %s.", *podNamespace, *podName, *containerName)
 	log.Infof("cpu: %s, extra_cpu: %s, memory: %s, extra_memory: %s, storage: %s, extra_storage: %s", *baseCPU, *cpuPerNode, *baseMemory, *memoryPerNode, *baseStorage, *storagePerNode)
@@ -85,6 +85,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	// Use protobufs to improve performance.
+	config.ContentType = "application/vnd.kubernetes.protobuf"
 
 	clientset, err := client.NewForConfig(config)
 	if err != nil {

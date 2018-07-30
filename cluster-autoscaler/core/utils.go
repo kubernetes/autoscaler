@@ -18,7 +18,6 @@ package core
 
 import (
 	"fmt"
-	"math"
 	"math/rand"
 	"reflect"
 	"time"
@@ -43,7 +42,7 @@ import (
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	kube_client "k8s.io/client-go/kubernetes"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
-	"k8s.io/kubernetes/pkg/scheduler/schedulercache"
+	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 
 	"github.com/golang/glog"
 )
@@ -174,6 +173,36 @@ func FilterOutExpendablePods(pods []*apiv1.Pod, expendablePodsPriorityCutoff int
 	return result
 }
 
+// FilterSchedulablePodsForNode filters pods that can be scheduled on the given node.
+func FilterSchedulablePodsForNode(context *context.AutoscalingContext, pods []*apiv1.Pod, nodeGroupId string, nodeInfo *schedulercache.NodeInfo) []*apiv1.Pod {
+	schedulablePods := []*apiv1.Pod{}
+	loggingQuota := glogx.PodsLoggingQuota()
+	podSchedulable := make(podSchedulableMap)
+	for _, pod := range pods {
+		schedulable, found := podSchedulable.get(pod)
+		if found {
+			if schedulable {
+				schedulablePods = append(schedulablePods, pod)
+			} else {
+				glogx.V(2).UpTo(loggingQuota).Infof("Pod %s can't be scheduled on %s. Used cached predicate check results", pod.Name, nodeGroupId)
+			}
+		} else {
+			err := context.PredicateChecker.CheckPredicates(pod, nil, nodeInfo, simulator.ReturnVerboseError)
+			if err == nil {
+				schedulable = true
+				podSchedulable.set(pod, true)
+				schedulablePods = append(schedulablePods, pod)
+			} else {
+				glog.V(2).Infof("Pod %s can't be scheduled on %s, predicate failed: %v", pod.Name, nodeGroupId, err)
+				schedulable = false
+				podSchedulable.set(pod, false)
+			}
+		}
+	}
+	glogx.V(2).Over(loggingQuota).Infof("%v other pods can't be scheduled on %s.", -loggingQuota.Left(), nodeGroupId)
+	return schedulablePods
+}
+
 // GetNodeInfosForGroups finds NodeInfos for all node groups used to manage the given nodes. It also returns a node group to sample node mapping.
 // TODO(mwielgus): This returns map keyed by url, while most code (including scheduler) uses node.Name for a key.
 //
@@ -266,6 +295,23 @@ func GetNodeInfosForGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.Clou
 		}
 	}
 
+	return result, nil
+}
+
+// FilterOutNodesFromNotAutoscaledGroups return subset of input nodes for which cloud provider does not
+// return autoscaled node group.
+func FilterOutNodesFromNotAutoscaledGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.CloudProvider) ([]*apiv1.Node, errors.AutoscalerError) {
+	result := make([]*apiv1.Node, 0)
+
+	for _, node := range nodes {
+		nodeGroup, err := cloudProvider.NodeGroupForNode(node)
+		if err != nil {
+			return []*apiv1.Node{}, errors.ToAutoscalerError(errors.CloudProviderError, err)
+		}
+		if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
+			result = append(result, node)
+		}
+	}
 	return result, nil
 }
 
@@ -458,37 +504,24 @@ func ConfigurePredicateCheckerForLoop(unschedulablePods []*apiv1.Pod, schedulabl
 	}
 }
 
-// Getting node cores/memory
-const (
-	// Megabyte is 2^20 bytes.
-	Megabyte float64 = 1024 * 1024
-)
-
-func getNodeCoresAndMemory(node *apiv1.Node) (int64, int64, error) {
-	cores, err := getNodeResource(node, apiv1.ResourceCPU)
-	if err != nil {
-		return 0, 0, err
-	}
-
-	memory, err := getNodeResource(node, apiv1.ResourceMemory)
-	if err != nil {
-		return 0, 0, err
-	}
-
-	if cores <= 0 || memory <= 0 {
-		return 0, 0, fmt.Errorf("Invalid node CPU/memory values - cpu %v, memory %v", cores, memory)
-	}
-
-	memoryMb := math.Ceil(float64(memory) / Megabyte)
-	return cores, int64(memoryMb), nil
+func getNodeCoresAndMemory(node *apiv1.Node) (int64, int64) {
+	cores := getNodeResource(node, apiv1.ResourceCPU)
+	memory := getNodeResource(node, apiv1.ResourceMemory)
+	return cores, memory
 }
 
-func getNodeResource(node *apiv1.Node, resource apiv1.ResourceName) (int64, error) {
+func getNodeResource(node *apiv1.Node, resource apiv1.ResourceName) int64 {
 	nodeCapacity, found := node.Status.Capacity[resource]
 	if !found {
-		return 0, fmt.Errorf("Failed to get %v for node %v", resource, node.Name)
+		return 0
 	}
-	return nodeCapacity.Value(), nil
+
+	nodeCapacityValue := nodeCapacity.Value()
+	if nodeCapacityValue < 0 {
+		nodeCapacityValue = 0
+	}
+
+	return nodeCapacityValue
 }
 
 func getNodeGroupSizeMap(cloudProvider cloudprovider.CloudProvider) map[string]int {

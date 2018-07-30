@@ -22,6 +22,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
@@ -38,7 +39,7 @@ func TestPodMatchesVPA(t *testing.T) {
 	}
 	selector := "app = testingApp"
 
-	pod := test.BuildTestPod("test-pod", containerName, "1", "100M", nil, nil)
+	pod := test.Pod().WithName("test-pod").AddContainer(test.BuildTestContainer(containerName, "1", "100M")).Get()
 	pod.Labels = map[string]string{"app": "testingApp"}
 
 	vpaBuilder := test.VerticalPodAutoscaler().
@@ -66,7 +67,7 @@ func TestPodMatchesVPA(t *testing.T) {
 func TestGetControllingVPAForPod(t *testing.T) {
 	selector := "app = testingApp"
 
-	pod := test.BuildTestPod("test-pod", containerName, "1", "100M", nil, nil)
+	pod := test.Pod().WithName("test-pod").AddContainer(test.BuildTestContainer(containerName, "1", "100M")).Get()
 	pod.Labels = map[string]string{"app": "testingApp"}
 
 	vpaBuilder := test.VerticalPodAutoscaler().
@@ -81,4 +82,43 @@ func TestGetControllingVPAForPod(t *testing.T) {
 
 	chosen := GetControllingVPAForPod(pod, []*vpa_types.VerticalPodAutoscaler{vpaB, vpaA, nonMatchingVPA})
 	assert.Equal(t, vpaA, chosen)
+}
+
+func TestGetContainerResourcePolicy(t *testing.T) {
+	containerPolicy1 := vpa_types.ContainerResourcePolicy{
+		ContainerName: "container1",
+		MinAllowed: apiv1.ResourceList{
+			apiv1.ResourceCPU: *resource.NewScaledQuantity(10, 1),
+		},
+	}
+	containerPolicy2 := vpa_types.ContainerResourcePolicy{
+		ContainerName: "container2",
+		MaxAllowed: apiv1.ResourceList{
+			apiv1.ResourceMemory: *resource.NewScaledQuantity(100, 1),
+		},
+	}
+	policy := vpa_types.PodResourcePolicy{
+		ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+			containerPolicy1, containerPolicy2,
+		},
+	}
+	assert.Equal(t, &containerPolicy1, GetContainerResourcePolicy("container1", &policy))
+	assert.Equal(t, &containerPolicy2, GetContainerResourcePolicy("container2", &policy))
+	assert.Nil(t, GetContainerResourcePolicy("container3", &policy))
+
+	// Add the wildcard ("*") policy.
+	defaultPolicy := vpa_types.ContainerResourcePolicy{
+		ContainerName: "*",
+		MinAllowed: apiv1.ResourceList{
+			apiv1.ResourceCPU: *resource.NewScaledQuantity(20, 1),
+		},
+	}
+	policy = vpa_types.PodResourcePolicy{
+		ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+			containerPolicy1, defaultPolicy, containerPolicy2,
+		},
+	}
+	assert.Equal(t, &containerPolicy1, GetContainerResourcePolicy("container1", &policy))
+	assert.Equal(t, &containerPolicy2, GetContainerResourcePolicy("container2", &policy))
+	assert.Equal(t, &defaultPolicy, GetContainerResourcePolicy("container3", &policy))
 }

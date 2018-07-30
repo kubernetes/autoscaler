@@ -20,6 +20,13 @@ procedure described below.
 
 # Installation
 
+### Notice on the backwards compatibility
+
+During alpha the VPA CRD object may evolve in a way that is not compatible between releases.
+If you install a new release of VPA it is safest to delete the existing VPA CRD objects.
+Note that this will happen automatically if you just use the `vpa-down.sh` script to tear down
+the old installation of VPA.
+
 ### Prerequisites
 
 * It is strongly recommended to use Kubernetes 1.9 or greater.
@@ -27,6 +34,7 @@ procedure described below.
   since 1.9 ([#58255](https://github.com/kubernetes/kubernetes/pull/58255)).
   Read more about [VPA Admission Webhook](./admission-controller/README.md#running).
 * `kubectl` should be connected to the cluster you want to install VPA in.
+* The metrics server must be deployed in your cluster. Read more about [Metrics Server](https://github.com/kubernetes-incubator/metrics-server).
 * If you are using a GKE Kubernetes cluster, you will need to grant your current Google
   identity `cluster-admin` role. Otherwise you won't be authorized to grant extra
   privileges to the VPA system components.
@@ -36,6 +44,11 @@ procedure described below.
 
   $ kubectl create clusterrolebinding myname-cluster-admin-binding --clusterrole=cluster-admin --user=myname@example.org
   Clusterrolebinding "myname-cluster-admin-binding" created
+  ```
+* If you already have another version of VPA installed in your cluster, you have to tear down
+  the existing installation first with:
+  ```
+  ./hack/vpa-down.sh
   ```
 
 ### Install command
@@ -52,7 +65,7 @@ Make sure you leave them unset unless you want to use a non-default version of V
 
 The script issues multiple `kubectl` commands to the
 cluster that insert the configuration and start all needed pods (see
-[architecture](http://github.com/kubernetes/community/blob/master/contributors/design-proposals/autoscaling/vertical-pod-autoscaler.md#architecture-overview)) 
+[architecture](http://github.com/kubernetes/community/blob/master/contributors/design-proposals/autoscaling/vertical-pod-autoscaler.md#architecture-overview))
 in the `kube-system` namespace. It also generates
 and uploads a secret (a CA cert) used by VPA Admission Controller when communicating
 with the API server.
@@ -68,8 +81,16 @@ automatically and use the same label selector as the *Deployment* uses.
 There are three modes in which *VPAs* operate:
 
 * `"Auto"`: VPA assigns resource requests on pod creation as well as updates
-  them on running pods (only if they differ significantly from the new
-  recommendation and only within Eviction API limits). This is the default setting.
+  them on existing pods using the preferred update mechanism. Currently this is
+  equivalent to `"Recreate"` (see below). Once restart free ("in-place") update
+  of pod requests is available, it may be used as the preferred update mechanism by
+  the `"Auto"` mode.
+* `"Recreate"`: VPA assigns resource requests on pod creation as well as updates
+  them on existing pods by evicting them when the requested resources differ significantly
+  from the new recommendation (respecting the Pod Distruption Budget, if defined).
+  This mode should be used rarely, only if you need to ensure that the pods are restarted
+  whenever the resource request changes. Otherwise prefer the `"Auto"` mode which may take
+  advantage of restart free updates once they are available.
 * `"Initial"`: VPA only assigns resource requests on pod creation and never changes them
   later.
 * `"Off"`: VPA does not automatically change resource requirements of the pods.
@@ -149,6 +170,23 @@ kills them so that they can be recreated by their controllers with the updated r
 or recreated by their controller due to Updater's activity).
 
 More on the architecture can be found [HERE](https://github.com/kubernetes/community/blob/master/contributors/design-proposals/autoscaling/vertical-pod-autoscaler.md).
+
+### Tear down
+
+Note that if you stop running VPA in your cluster, the resource requests
+for the pods already modified by VPA will not change, but any new pods
+will get resources as defined in your controllers (i.e. deployment or
+replicaset) and not according to previous recommendations made by VPA.
+
+To stop using Vertical Pod Autoscaling in your cluster:
+* If runnning on GKE, clean up role bindings created in [Prerequisites](#prerequisites):
+```
+kubectl delete clusterrolebinding myname-cluster-admin-binding
+```
+* Tear down VPA components:
+```
+./hack/vpa-down.sh
+```
 
 # Known limitations of the alpha version
 

@@ -36,14 +36,14 @@ import (
 )
 
 type resourceRecommendation struct {
-	target, min, max int64
+	target, lower, upper int64
 }
 
 func (r *resourceRecommendation) sub(other *resourceRecommendation) resourceRecommendation {
 	return resourceRecommendation{
 		target: r.target - other.target,
-		min:    r.min - other.min,
-		max:    r.max - other.max,
+		lower:  r.lower - other.lower,
+		upper:  r.upper - other.upper,
 	}
 
 }
@@ -58,8 +58,8 @@ func getResourceRecommendation(containerRecommendation *vpa_types.RecommendedCon
 	}
 	return resourceRecommendation{
 		target: getOrZero(containerRecommendation.Target),
-		min:    getOrZero(containerRecommendation.MinRecommended),
-		max:    getOrZero(containerRecommendation.MaxRecommended),
+		lower:  getOrZero(containerRecommendation.LowerBound),
+		upper:  getOrZero(containerRecommendation.UpperBound),
 	}
 }
 
@@ -77,7 +77,7 @@ func (*observer) OnDelete(obj interface{}) {}
 
 func (o *observer) OnUpdate(oldObj, newObj interface{}) {
 	get := func(vpa *vpa_types.VerticalPodAutoscaler) (result resourceRecommendation, found bool) {
-		if len(vpa.Status.Recommendation.ContainerRecommendations) == 0 {
+		if vpa.Status.Recommendation == nil || len(vpa.Status.Recommendation.ContainerRecommendations) == 0 {
 			found = false
 			result = resourceRecommendation{}
 		} else {
@@ -189,7 +189,7 @@ var _ = recommenderE2eDescribe("VPA CRD object", func() {
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
 
-	ginkgo.It("doesn't drop min/max after recommender's restart", func() {
+	ginkgo.It("doesn't drop lower/upper after recommender's restart", func() {
 
 		o := getVpaObserver(vpaClientSet)
 
@@ -219,8 +219,8 @@ var _ = recommenderE2eDescribe("VPA CRD object", func() {
 				changeDetected = true
 				gomega.Expect(recommendationDiff.oldMissing).To(gomega.Equal(false))
 				gomega.Expect(recommendationDiff.newMissing).To(gomega.Equal(false))
-				gomega.Expect(recommendationDiff.diff.min).Should(gomega.BeNumerically(">=", 0))
-				gomega.Expect(recommendationDiff.diff.max).Should(gomega.BeNumerically("<=", 0))
+				gomega.Expect(recommendationDiff.diff.lower).Should(gomega.BeNumerically(">=", 0))
+				gomega.Expect(recommendationDiff.diff.upper).Should(gomega.BeNumerically("<=", 0))
 			default:
 				break finish
 			}
@@ -253,7 +253,7 @@ func waitForRecommendationPresent(c *vpa_clientset.Clientset, vpa *vpa_types.Ver
 			return false, err
 		}
 
-		if len(polledVpa.Status.Recommendation.ContainerRecommendations) != 0 {
+		if polledVpa.Status.Recommendation != nil && len(polledVpa.Status.Recommendation.ContainerRecommendations) != 0 {
 			return true, nil
 		}
 

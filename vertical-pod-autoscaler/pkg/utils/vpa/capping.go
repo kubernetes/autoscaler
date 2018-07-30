@@ -32,15 +32,23 @@ func NewCappingRecommendationProcessor() RecommendationProcessor {
 
 type cappingRecommendationProcessor struct{}
 
-// Apply retrurns returns a recommendation for the given pod, adjusted to obey policy and limits.
+// Apply returns a recommendation for the given pod, adjusted to obey policy and limits.
 func (c *cappingRecommendationProcessor) Apply(
 	podRecommendation *vpa_types.RecommendedPodResources, policy *vpa_types.PodResourcePolicy, pod *apiv1.Pod) (*vpa_types.RecommendedPodResources, error) {
 
+	if podRecommendation == nil && policy == nil {
+		// If there is no recommendation and no policies have been defined then no recommendation can be computed.
+		return nil, nil
+	}
+	if podRecommendation == nil {
+		// Policies have been specified. Create an empty recommendation so that the policies can be applied correctly.
+		podRecommendation = new(vpa_types.RecommendedPodResources)
+	}
 	updatedRecommendations := []vpa_types.RecommendedContainerResources{}
 	for _, containerRecommendation := range podRecommendation.ContainerRecommendations {
-		container := getContainer(containerRecommendation.Name, pod)
+		container := getContainer(containerRecommendation.ContainerName, pod)
 		if container == nil {
-			glog.V(2).Infof("no matching Container found for recommendation %s", containerRecommendation.Name)
+			glog.V(2).Infof("no matching Container found for recommendation %s", containerRecommendation.ContainerName)
 			continue
 		}
 		updatedContainerResources, err := getCappedRecommendationForContainer(*container, &containerRecommendation, policy)
@@ -61,13 +69,13 @@ func getCappedRecommendationForContainer(
 		return nil, fmt.Errorf("no recommendation available for container name %v", container.Name)
 	}
 	// containerPolicy can be nil (user does not have to configure it).
-	containerPolicy := getContainerPolicy(container.Name, policy)
+	containerPolicy := GetContainerResourcePolicy(container.Name, policy)
 
 	cappedRecommendations := containerRecommendation.DeepCopy()
 	cappedRecommendationsList := []apiv1.ResourceList{
 		cappedRecommendations.Target,
-		cappedRecommendations.MinRecommended,
-		cappedRecommendations.MaxRecommended,
+		cappedRecommendations.LowerBound,
+		cappedRecommendations.UpperBound,
 	}
 
 	for _, cappedRecommendation := range cappedRecommendationsList {
@@ -109,7 +117,7 @@ func applyVPAPolicy(recommendation apiv1.ResourceList, policy *vpa_types.Contain
 // ApplyVPAContainerPolicy enforces min/max policy on resources
 func ApplyVPAContainerPolicy(resources apiv1.ResourceList, container apiv1.Container, policy *vpa_types.PodResourcePolicy) {
 	// containerPolicy can be nil (user does not have to configure it).
-	containerPolicy := getContainerPolicy(container.Name, policy)
+	containerPolicy := GetContainerResourcePolicy(container.Name, policy)
 	applyVPAPolicy(resources, containerPolicy)
 }
 
@@ -117,20 +125,9 @@ func ApplyVPAContainerPolicy(resources apiv1.ResourceList, container apiv1.Conta
 func GetRecommendationForContainer(containerName string, recommendation *vpa_types.RecommendedPodResources) *vpa_types.RecommendedContainerResources {
 	if recommendation != nil {
 		for i, containerRec := range recommendation.ContainerRecommendations {
-			if containerRec.Name == containerName {
+			if containerRec.ContainerName == containerName {
 				recommendationCopy := recommendation.ContainerRecommendations[i]
 				return &recommendationCopy
-			}
-		}
-	}
-	return nil
-}
-
-func getContainerPolicy(containerName string, policy *vpa_types.PodResourcePolicy) *vpa_types.ContainerResourcePolicy {
-	if policy != nil {
-		for i, container := range policy.ContainerPolicies {
-			if containerName == container.Name {
-				return &policy.ContainerPolicies[i]
 			}
 		}
 	}

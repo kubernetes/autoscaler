@@ -26,7 +26,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
-	"k8s.io/kubernetes/pkg/scheduler/schedulercache"
+	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 )
 
 // The 'GCE' cloud provider actually implements both the GCE and GKE providers.
@@ -146,8 +146,8 @@ func (gce *GceCloudProvider) NewNodeGroup(machineType string, labels map[string]
 
 		taint := apiv1.Taint{
 			Effect: apiv1.TaintEffectNoSchedule,
-			Key:    "gke-accelerator",
-			Value:  gpuType,
+			Key:    gpu.ResourceNvidiaGPU,
+			Value:  "present",
 		}
 		taints = append(taints, taint)
 	}

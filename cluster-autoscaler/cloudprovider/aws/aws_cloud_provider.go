@@ -21,13 +21,14 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/golang/glog"
 	"github.com/aws/aws-sdk-go/aws/session"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/price"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	"k8s.io/kubernetes/pkg/scheduler/schedulercache"
+	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 )
 
 const (
@@ -79,6 +80,10 @@ func (aws *awsCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 
 // NodeGroupForNode returns the node group for the given node.
 func (aws *awsCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+	if len(node.Spec.ProviderID) == 0 {
+		glog.Warningf("Node %v has no providerId", node.Name)
+		return nil, nil
+	}
 	ref, err := AwsRefFromProviderId(node.Spec.ProviderID)
 	if err != nil {
 		return nil, err

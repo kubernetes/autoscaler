@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Kubernetes Authors.
+Copyright The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -69,6 +69,11 @@ message Event {
   // Source IPs, from where the request originated and intermediate proxies.
   // +optional
   repeated string sourceIPs = 10;
+
+  // UserAgent records the user agent string reported by the client.
+  // Note that the UserAgent is provided by the client, and must not be trusted.
+  // +optional
+  optional string userAgent = 18;
 
   // Object reference this request is targeted at.
   // Does not apply for List-type requests, or non-resource requests.

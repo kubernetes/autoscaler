@@ -19,23 +19,24 @@ package core
 import (
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
+	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/pods"
 	kube_client "k8s.io/client-go/kubernetes"
 	kube_record "k8s.io/client-go/tools/record"
 )
 
 // AutoscalerOptions is the whole set of options for configuring an autoscaler
 type AutoscalerOptions struct {
-	context.AutoscalingOptions
+	config.AutoscalingOptions
 	KubeClient        kube_client.Interface
 	KubeEventRecorder kube_record.EventRecorder
 	PredicateChecker  *simulator.PredicateChecker
 	ListerRegistry    kube_util.ListerRegistry
-	PodListProcessor  pods.PodListProcessor
+	Processors        *ca_processors.AutoscalingProcessors
 }
 
 // Autoscaler is the main component of CA which scales up/down node groups according to its configuration
@@ -48,18 +49,17 @@ type Autoscaler interface {
 }
 
 func initializeDefaultOptions(opts *AutoscalerOptions) error {
-	if opts.PodListProcessor == nil {
-		opts.PodListProcessor = pods.NewDefaultPodListProcessor()
+	if opts.Processors == nil {
+		opts.Processors = ca_processors.DefaultProcessors()
 	}
 	return nil
 }
 
 // NewAutoscaler creates an autoscaler of an appropriate type according to the parameters
-func NewAutoscaler(opts AutoscalerOptions) (Autoscaler, errors.AutoscalerError) {
+func NewAutoscaler(opts AutoscalerOptions, cloudProvider cloudprovider.CloudProvider) (Autoscaler, errors.AutoscalerError) {
 	err := initializeDefaultOptions(&opts)
 	if err != nil {
 		return nil, errors.ToAutoscalerError(errors.InternalError, err)
 	}
-	autoscalerBuilder := NewAutoscalerBuilder(opts.AutoscalingOptions, opts.PredicateChecker, opts.KubeClient, opts.KubeEventRecorder, opts.ListerRegistry, opts.PodListProcessor)
-	return autoscalerBuilder.Build()
+	return NewStaticAutoscaler(opts.AutoscalingOptions, opts.PredicateChecker, opts.KubeClient, opts.KubeEventRecorder, opts.ListerRegistry, opts.Processors, cloudProvider)
 }

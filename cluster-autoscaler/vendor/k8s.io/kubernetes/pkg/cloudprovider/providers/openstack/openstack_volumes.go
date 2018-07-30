@@ -310,7 +310,8 @@ func (os *OpenStack) OperationPending(diskName string) (bool, string, error) {
 	}
 	volumeStatus := volume.Status
 	if volumeStatus == volumeErrorStatus {
-		return false, volumeStatus, nil
+		err = fmt.Errorf("status of volume %s is %s", diskName, volumeStatus)
+		return false, volumeStatus, err
 	}
 	if volumeStatus == volumeAvailableStatus || volumeStatus == volumeInUseStatus || volumeStatus == volumeDeletedStatus {
 		return false, volume.Status, nil
@@ -442,10 +443,10 @@ func (os *OpenStack) getVolume(volumeID string) (Volume, error) {
 }
 
 // CreateVolume creates a volume of given size (in GiB)
-func (os *OpenStack) CreateVolume(name string, size int, vtype, availability string, tags *map[string]string) (string, string, bool, error) {
+func (os *OpenStack) CreateVolume(name string, size int, vtype, availability string, tags *map[string]string) (string, string, string, bool, error) {
 	volumes, err := os.volumeService("")
 	if err != nil {
-		return "", "", os.bsOpts.IgnoreVolumeAZ, fmt.Errorf("unable to initialize cinder client for region: %s, err: %v", os.region, err)
+		return "", "", "", os.bsOpts.IgnoreVolumeAZ, fmt.Errorf("unable to initialize cinder client for region: %s, err: %v", os.region, err)
 	}
 
 	opts := volumeCreateOpts{
@@ -461,11 +462,11 @@ func (os *OpenStack) CreateVolume(name string, size int, vtype, availability str
 	volumeID, volumeAZ, err := volumes.createVolume(opts)
 
 	if err != nil {
-		return "", "", os.bsOpts.IgnoreVolumeAZ, fmt.Errorf("failed to create a %d GB volume: %v", size, err)
+		return "", "", "", os.bsOpts.IgnoreVolumeAZ, fmt.Errorf("failed to create a %d GB volume: %v", size, err)
 	}
 
-	glog.Infof("Created volume %v in Availability Zone: %v Ignore volume AZ: %v", volumeID, volumeAZ, os.bsOpts.IgnoreVolumeAZ)
-	return volumeID, volumeAZ, os.bsOpts.IgnoreVolumeAZ, nil
+	glog.Infof("Created volume %v in Availability Zone: %v Region: %v Ignore volume AZ: %v", volumeID, volumeAZ, os.region, os.bsOpts.IgnoreVolumeAZ)
+	return volumeID, volumeAZ, os.region, os.bsOpts.IgnoreVolumeAZ, nil
 }
 
 // GetDevicePathBySerialID returns the path of an attached block storage volume, specified by its id.
@@ -622,7 +623,7 @@ func (os *OpenStack) DiskIsAttachedByName(nodeName types.NodeName, volumeID stri
 	if err != nil {
 		return false, "", err
 	}
-	srv, err := getServerByName(cClient, nodeName, false)
+	srv, err := getServerByName(cClient, nodeName)
 	if err != nil {
 		if err == ErrNotFound {
 			// instance not found anymore in cloudprovider, assume that cinder is detached
@@ -659,7 +660,7 @@ func (os *OpenStack) DisksAreAttachedByName(nodeName types.NodeName, volumeIDs [
 	if err != nil {
 		return attached, err
 	}
-	srv, err := getServerByName(cClient, nodeName, false)
+	srv, err := getServerByName(cClient, nodeName)
 	if err != nil {
 		if err == ErrNotFound {
 			// instance not found anymore, mark all volumes as detached

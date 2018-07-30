@@ -22,6 +22,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	apiv1 "k8s.io/api/core/v1"
@@ -70,8 +71,24 @@ func TestExtractTaintsFromAsg(t *testing.T) {
 			Value: aws.String("foo:NoSchedule"),
 		},
 		{
+			Key:   aws.String("k8s.io/cluster-autoscaler/node-template/taint/group"),
+			Value: aws.String("bar:NoExecute"),
+		},
+		{
+			Key:   aws.String("k8s.io/cluster-autoscaler/node-template/taint/app"),
+			Value: aws.String("fizz:PreferNoSchedule"),
+		},
+		{
 			Key:   aws.String("bar"),
 			Value: aws.String("baz"),
+		},
+		{
+			Key:   aws.String("k8s.io/cluster-autoscaler/node-template/taint/blank"),
+			Value: aws.String(""),
+		},
+		{
+			Key:   aws.String("k8s.io/cluster-autoscaler/node-template/taint/nosplit"),
+			Value: aws.String("some_value"),
 		},
 	}
 
@@ -81,10 +98,20 @@ func TestExtractTaintsFromAsg(t *testing.T) {
 			Value:  "foo",
 			Effect: apiv1.TaintEffectNoSchedule,
 		},
+		{
+			Key:    "group",
+			Value:  "bar",
+			Effect: apiv1.TaintEffectNoExecute,
+		},
+		{
+			Key:    "app",
+			Value:  "fizz",
+			Effect: apiv1.TaintEffectPreferNoSchedule,
+		},
 	}
 
 	taints := extractTaintsFromAsg(tags)
-	assert.Equal(t, 1, len(taints))
+	assert.Equal(t, 3, len(taints))
 	assert.Equal(t, makeTaintSet(expectedTaints), makeTaintSet(taints))
 }
 
@@ -133,12 +160,43 @@ func TestFetchExplicitAsgs(t *testing.T) {
 		},
 	}
 	// fetchExplicitASGs is called at manager creation time.
-	m, err := createAWSManagerInternal(nil, do, &autoScalingWrapper{s})
+	m, err := createAWSManagerInternal(nil, do, &autoScalingWrapper{s}, nil)
 	assert.NoError(t, err)
 
 	asgs := m.asgCache.Get()
 	assert.Equal(t, 1, len(asgs))
 	validateAsg(t, asgs[0], groupname, min, max)
+}
+
+func TestBuildInstanceType(t *testing.T) {
+	ltName, ltVersion, instanceType := "launcher", "1", "t2.large"
+
+	s := &EC2Mock{}
+	s.On("DescribeLaunchTemplateVersions", &ec2.DescribeLaunchTemplateVersionsInput{
+		LaunchTemplateName: aws.String(ltName),
+		Versions:           []*string{aws.String(ltVersion)},
+	}).Return(&ec2.DescribeLaunchTemplateVersionsOutput{
+		LaunchTemplateVersions: []*ec2.LaunchTemplateVersion{
+			{
+				LaunchTemplateData: &ec2.ResponseLaunchTemplateData{
+					InstanceType: aws.String(instanceType),
+				},
+			},
+		},
+	})
+
+	m, err := createAWSManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, nil, &ec2Wrapper{s})
+	assert.NoError(t, err)
+
+	asg := asg{
+		LaunchTemplateName:    ltName,
+		LaunchTemplateVersion: ltVersion,
+	}
+
+	builtInstanceType, err := m.buildInstanceType(&asg)
+
+	assert.NoError(t, err)
+	assert.Equal(t, instanceType, builtInstanceType)
 }
 
 /* Disabled due to flakiness. See https://github.com/kubernetes/autoscaler/issues/608

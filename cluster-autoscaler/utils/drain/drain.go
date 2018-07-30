@@ -77,6 +77,7 @@ func GetPodsForDeletionOnNodeDrain(
 		daemonsetPod := false
 		replicated := false
 		safeToEvict := hasSafeToEvictAnnotation(pod)
+		terminal := isPodTerminal(pod)
 
 		controllerRef := ControllerRef(pod)
 		refKind := ""
@@ -179,7 +180,8 @@ func GetPodsForDeletionOnNodeDrain(
 		if daemonsetPod {
 			continue
 		}
-		if !deleteAll && !safeToEvict {
+
+		if !deleteAll && !safeToEvict && !terminal {
 			if !replicated {
 				return []*apiv1.Pod{}, fmt.Errorf("%s/%s is not replicated", pod.Namespace, pod.Name)
 			}
@@ -194,6 +196,9 @@ func GetPodsForDeletionOnNodeDrain(
 			}
 			if HasLocalStorage(pod) && skipNodesWithLocalStorage {
 				return []*apiv1.Pod{}, fmt.Errorf("pod with local storage present: %s", pod.Name)
+			}
+			if hasNotSafeToEvictAnnotation(pod) {
+				return []*apiv1.Pod{}, fmt.Errorf("pod annotated as not safe to evict present: %s", pod.Name)
 			}
 		}
 		pods = append(pods, pod)
@@ -210,6 +215,20 @@ func ControllerRef(pod *apiv1.Pod) *metav1.OwnerReference {
 func IsMirrorPod(pod *apiv1.Pod) bool {
 	_, found := pod.ObjectMeta.Annotations[types.ConfigMirrorAnnotationKey]
 	return found
+}
+
+// isPodTerminal checks whether the pod is in a terminal state.
+func isPodTerminal(pod *apiv1.Pod) bool {
+	// pod will never be restarted
+	if pod.Spec.RestartPolicy == apiv1.RestartPolicyNever && (pod.Status.Phase == apiv1.PodSucceeded || pod.Status.Phase == apiv1.PodFailed) {
+		return true
+	}
+	// pod has run to completion and succeeded
+	if pod.Spec.RestartPolicy == apiv1.RestartPolicyOnFailure && pod.Status.Phase == apiv1.PodSucceeded {
+		return true
+	}
+	// kubelet has rejected this pod, due to eviction or some other constraint
+	return pod.Status.Phase == apiv1.PodFailed
 }
 
 // HasLocalStorage returns true if pod has any local storage.
@@ -245,4 +264,9 @@ func checkKubeSystemPDBs(pod *apiv1.Pod, pdbs []*policyv1.PodDisruptionBudget) (
 // This checks if pod has PodSafeToEvictKey annotation
 func hasSafeToEvictAnnotation(pod *apiv1.Pod) bool {
 	return pod.GetAnnotations()[PodSafeToEvictKey] == "true"
+}
+
+// This checks if pod has PodSafeToEvictKey annotation set to false
+func hasNotSafeToEvictAnnotation(pod *apiv1.Pod) bool {
+	return pod.GetAnnotations()[PodSafeToEvictKey] == "false"
 }

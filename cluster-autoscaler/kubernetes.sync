@@ -1,5 +1,26 @@
-commit c83dd0424f9866bfd364e31a431bade187970ce2 (origin/release-1.10)
-Author: caleb miles <calebmiles@google.com>
-Date:   Mon Mar 19 20:35:57 2018 -0400
+commit e09be82ad04107f81032b82a1e2452759001819f
+Merge: 77205b90a0 f77060aa8d
+Author: Kubernetes Submit Queue <k8s-merge-robot@users.noreply.github.com>
+Date:   Tue Jul 17 02:13:07 2018 -0700
 
-    Add/Update CHANGELOG-1.10.md for v1.10.0-rc.1.
+    Merge pull request #66254 from sigma/patch-1
+    
+    Automatic merge from submit-queue (batch tested with PRs 66172, 66254). If you want to cherry-pick this change to another branch, please follow the instructions <a href="https://github.com/kubernetes/community/blob/master/contributors/devel/cherry-picks.md">here</a>.
+    
+    client-go: update documentation for remotecommand.StreamOptions
+    
+    **What this PR does / why we need it**:
+    
+    The ability to explicitly define the supported protocols was removed in commit 12c7874c0d88e9099ab2a29915d26751f0d23c2a
+    Adjust documentation accordingly.
+    
+    **Which issue(s) this PR fixes** *(optional, in `fixes #<issue number>(, fixes #<issue_number>, ...)` format, will close the issue(s) when PR gets merged)*:
+    
+    **Special notes for your reviewer**:
+    
+    **Release note**:
+    ```release-note
+    NONE
+    ```
+
+

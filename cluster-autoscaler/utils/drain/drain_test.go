@@ -197,6 +197,48 @@ func TestDrain(t *testing.T) {
 		},
 	}
 
+	terminalPod := &apiv1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "bar",
+			Namespace: "default",
+		},
+		Spec: apiv1.PodSpec{
+			NodeName:      "node",
+			RestartPolicy: apiv1.RestartPolicyOnFailure,
+		},
+		Status: apiv1.PodStatus{
+			Phase: apiv1.PodSucceeded,
+		},
+	}
+
+	failedPod := &apiv1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "bar",
+			Namespace: "default",
+		},
+		Spec: apiv1.PodSpec{
+			NodeName:      "node",
+			RestartPolicy: apiv1.RestartPolicyNever,
+		},
+		Status: apiv1.PodStatus{
+			Phase: apiv1.PodFailed,
+		},
+	}
+
+	evictedPod := &apiv1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "bar",
+			Namespace: "default",
+		},
+		Spec: apiv1.PodSpec{
+			NodeName:      "node",
+			RestartPolicy: apiv1.RestartPolicyAlways,
+		},
+		Status: apiv1.PodStatus{
+			Phase: apiv1.PodFailed,
+		},
+	}
+
 	safePod := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "bar",
@@ -207,6 +249,31 @@ func TestDrain(t *testing.T) {
 		},
 		Spec: apiv1.PodSpec{
 			NodeName: "node",
+		},
+	}
+
+	unsafeRcPod := &apiv1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:            "bar",
+			Namespace:       "default",
+			OwnerReferences: GenerateOwnerReferences(rc.Name, "ReplicationController", "extensions/v1beta1", ""),
+			Annotations: map[string]string{
+				PodSafeToEvictKey: "false",
+			},
+		},
+		Spec: apiv1.PodSpec{
+			NodeName: "node",
+		},
+	}
+
+	unsafeJobPod := &apiv1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:            "bar",
+			Namespace:       "default",
+			OwnerReferences: GenerateOwnerReferences(job.Name, "Job", "extensions/v1beta1", ""),
+			Annotations: map[string]string{
+				PodSafeToEvictKey: "false",
+			},
 		},
 	}
 
@@ -356,6 +423,27 @@ func TestDrain(t *testing.T) {
 			expectPods:  []*apiv1.Pod{},
 		},
 		{
+			description: "failed pod",
+			pods:        []*apiv1.Pod{failedPod},
+			pdbs:        []*policyv1.PodDisruptionBudget{},
+			expectFatal: false,
+			expectPods:  []*apiv1.Pod{failedPod},
+		},
+		{
+			description: "evicted pod",
+			pods:        []*apiv1.Pod{evictedPod},
+			pdbs:        []*policyv1.PodDisruptionBudget{},
+			expectFatal: false,
+			expectPods:  []*apiv1.Pod{evictedPod},
+		},
+		{
+			description: "pod in terminal state",
+			pods:        []*apiv1.Pod{terminalPod},
+			pdbs:        []*policyv1.PodDisruptionBudget{},
+			expectFatal: false,
+			expectPods:  []*apiv1.Pod{terminalPod},
+		},
+		{
 			description: "pod with PodSafeToEvict annotation",
 			pods:        []*apiv1.Pod{safePod},
 			pdbs:        []*policyv1.PodDisruptionBudget{},
@@ -375,6 +463,22 @@ func TestDrain(t *testing.T) {
 			pdbs:        []*policyv1.PodDisruptionBudget{},
 			expectFatal: false,
 			expectPods:  []*apiv1.Pod{emptydirSafePod},
+		},
+		{
+			description: "RC-managed pod with PodSafeToEvict=false annotation",
+			pods:        []*apiv1.Pod{unsafeRcPod},
+			rcs:         []apiv1.ReplicationController{rc},
+			pdbs:        []*policyv1.PodDisruptionBudget{},
+			expectFatal: true,
+			expectPods:  []*apiv1.Pod{},
+		},
+		{
+			description: "Job-managed pod with PodSafeToEvict=false annotation",
+			pods:        []*apiv1.Pod{unsafeJobPod},
+			pdbs:        []*policyv1.PodDisruptionBudget{},
+			rcs:         []apiv1.ReplicationController{rc},
+			expectFatal: true,
+			expectPods:  []*apiv1.Pod{},
 		},
 		{
 			description: "empty PDB with RC-managed pod",

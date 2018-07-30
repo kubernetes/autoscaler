@@ -24,7 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	"k8s.io/kubernetes/pkg/scheduler/schedulercache"
+	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 )
 
 // OnScaleUpFunc is a function called on node group increase in TestCloudProvider.
@@ -147,6 +147,8 @@ func (tcp *TestCloudProvider) NewNodeGroup(machineType string, labels map[string
 		exist:           false,
 		autoprovisioned: true,
 		machineType:     machineType,
+		labels:          labels,
+		taints:          taints,
 	}, nil
 }
 
@@ -222,6 +224,8 @@ type TestNodeGroup struct {
 	exist           bool
 	autoprovisioned bool
 	machineType     string
+	labels          map[string]string
+	taints          []apiv1.Taint
 }
 
 // MaxSize returns maximum size of the node group.
@@ -372,4 +376,14 @@ func (tng *TestNodeGroup) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
 		return nil, fmt.Errorf("No template declared for %s", tng.id)
 	}
 	return template, nil
+}
+
+// Labels returns labels passed to the test node group when it was created.
+func (tng *TestNodeGroup) Labels() map[string]string {
+	return tng.labels
+}
+
+// Taints returns taintspassed to the test node group when it was created.
+func (tng *TestNodeGroup) Taints() []apiv1.Taint {
+	return tng.taints
 }
