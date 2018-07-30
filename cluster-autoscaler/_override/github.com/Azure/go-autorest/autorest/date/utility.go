@@ -1,4 +1,4 @@
-package autorest
+package date
 
 // Copyright 2017 Microsoft Corporation
 //
@@ -14,7 +14,12 @@ package autorest
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-// Version returns the semantic version (see http://semver.org).
-func Version() string {
-	return "v10.12.0"
+import (
+	"strings"
+	"time"
+)
+
+// ParseTime to parse Time string to specified format.
+func ParseTime(format string, t string) (d time.Time, err error) {
+	return time.Parse(format, strings.ToUpper(t))
 }
