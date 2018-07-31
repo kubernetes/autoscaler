@@ -23,8 +23,8 @@ import (
 	"github.com/golang/glog"
 	kube_flag "k8s.io/apiserver/pkg/util/flag"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/initialization"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/history"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/routines"
 	"k8s.io/client-go/rest"
 	kube_restclient "k8s.io/client-go/rest"
 )
@@ -43,7 +43,7 @@ func main() {
 	config := createKubeConfig()
 
 	useCheckpoints := *storage != "prometheus"
-	recommender := initialization.NewRecommender(config, *checkpointsGCInterval, useCheckpoints)
+	recommender := routines.NewRecommender(config, *checkpointsGCInterval, useCheckpoints)
 	if useCheckpoints {
 		recommender.GetClusterStateFeeder().InitFromCheckpoints()
 	} else {
