@@ -121,17 +121,17 @@ func (s *AdmissionServer) getPatchesForPodResourceRequest(raw []byte, namespace 
 		updatesAnnotation = append(updatesAnnotation, fmt.Sprintf("container %d: ", i)+strings.Join(annotations, ", "))
 	}
 	if len(updatesAnnotation) > 0 {
+		var vpaAnnotationValue string = fmt.Sprintf("Pod resources updated by %s: ", vpaName) + strings.Join(updatesAnnotation, "; ")
 		if pod.Annotations == nil {
 			patches = append(patches, patchRecord{
-				Op:   "add",
-				Path: "/metadata/annotations",
-				Value: map[string]string{
-					"vpaUpdates": fmt.Sprintf("Pod resources updated by %s: ", vpaName) + strings.Join(updatesAnnotation, "; ")}})
+				Op:    "add",
+				Path:  "/metadata/annotations",
+				Value: map[string]string{"vpaUpdates": vpaAnnotationValue}})
 		} else {
 			patches = append(patches, patchRecord{
 				Op:    "add",
 				Path:  "/metadata/annotations/vpaUpdates",
-				Value: fmt.Sprintf("Pod resources updated by %s: ", vpaName) + strings.Join(updatesAnnotation, "; ")})
+				Value: vpaAnnotationValue})
 		}
 	}
 	return patches, nil
