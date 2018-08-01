@@ -98,26 +98,6 @@ func (s *AdmissionServer) getPatchesForPodResourceRequest(raw []byte, namespace 
 			annotations = append(annotations, fmt.Sprintf("%s request", resource))
 		}
 
-		// Set memory limit only when user didn't specify one and we have recommendation for memory
-		if _, limitSet := pod.Spec.Containers[i].Resources.Limits[v1.ResourceMemory]; !limitSet {
-			limit, found := containerResources.Limits[v1.ResourceMemory]
-			if found {
-				// Add limits empty map if missing
-				if pod.Spec.Containers[i].Resources.Limits == nil {
-					patches = append(patches, patchRecord{
-						Op:    "add",
-						Path:  fmt.Sprintf("/spec/containers/%d/resources/limits", i),
-						Value: v1.ResourceList{}})
-				}
-				// Set limit
-				patches = append(patches, patchRecord{
-					Op:    "add",
-					Path:  fmt.Sprintf("/spec/containers/%d/resources/limits/%s", i, v1.ResourceMemory),
-					Value: limit.String()})
-				annotations = append(annotations, "memory limit")
-			}
-		}
-
 		updatesAnnotation = append(updatesAnnotation, fmt.Sprintf("container %d: ", i)+strings.Join(annotations, ", "))
 	}
 	if len(updatesAnnotation) > 0 {

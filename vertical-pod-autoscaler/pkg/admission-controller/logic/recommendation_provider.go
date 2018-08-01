@@ -17,13 +17,9 @@ limitations under the License.
 package logic
 
 import (
-	"flag"
-	"math"
-
 	"github.com/golang/glog"
 
 	"k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/labels"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
@@ -31,26 +27,13 @@ import (
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
-const (
-	// MemoryLimitBumpUpRatio specifies how much memory will be available above memory request.
-	// Limit is set to trigger OOMs.
-	MemoryLimitBumpUpRatio float64 = 1.2
-	// MemoryLimitMinBumpUp specifies minimal amount of memory above memory request.
-	// Limit is set to trigger OOMs.
-	MemoryLimitMinBumpUp float64 = 100 * 1024 * 1024 // 100MB
-)
-
-var (
-	setMemoryLimit = flag.Bool("set-memory-limit", false, `Iff true admission controller will set memory limit as max( memory_request * 1.2, memory_request + 100MB).`)
-)
-
 // ContainerResources holds request and limit resources for container
 type ContainerResources struct {
-	Requests, Limits v1.ResourceList
+	Requests v1.ResourceList
 }
 
 func newContainerResources() ContainerResources {
-	return ContainerResources{Requests: v1.ResourceList{}, Limits: v1.ResourceList{}}
+	return ContainerResources{Requests: v1.ResourceList{}}
 }
 
 // RecommendationProvider gets current recommendation and limits for the given pod.
@@ -69,41 +52,18 @@ func NewRecommendationProvider(vpaLister vpa_lister.VerticalPodAutoscalerLister,
 		recommendationProcessor: recommendationProcessor}
 }
 
-// getMemoryLimit returns a limit that is proportionally (with min step) higher than the request. Limit is set to trigger OOMs.
-func getMemoryLimit(resources v1.ResourceList) *resource.Quantity {
-	if !*setMemoryLimit {
-		return nil
-	}
-	memory, found := resources[v1.ResourceMemory]
-	if !found {
-		return nil
-	}
-	limit := float64(memory.Value())
-	limit = math.Max(limit+MemoryLimitMinBumpUp, limit*MemoryLimitBumpUpRatio)
-	return resource.NewQuantity(int64(limit), memory.Format)
-}
-
 // getContainersResources returns the recommended resources and limits for each container in the given pod in the same order they are specified in the pod.Spec.
 func getContainersResources(pod *v1.Pod, podRecommendation vpa_types.RecommendedPodResources, policy *vpa_types.PodResourcePolicy) []ContainerResources {
 	resources := make([]ContainerResources, len(pod.Spec.Containers))
 	for i, container := range pod.Spec.Containers {
 		resources[i] = newContainerResources()
-		setLimit := func(r v1.ResourceList) {
-			memoryLimit := getMemoryLimit(r)
-			if memoryLimit != nil {
-				resources[i].Limits[v1.ResourceMemory] = *memoryLimit
-				vpa_api_util.ApplyVPAContainerPolicy(resources[i].Limits, container, policy)
-			}
-		}
 
 		recommendation := vpa_api_util.GetRecommendationForContainer(container.Name, &podRecommendation)
 		if recommendation == nil {
 			glog.V(2).Infof("no matching recommendation found for container %s", container.Name)
-			setLimit(pod.Spec.Containers[i].Resources.Requests)
 			continue
 		}
 		resources[i].Requests = recommendation.Target
-		setLimit(resources[i].Requests)
 	}
 	return resources
 }
