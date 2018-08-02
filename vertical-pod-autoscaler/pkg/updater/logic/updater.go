@@ -122,7 +122,7 @@ func (u *updater) RunOnce() {
 
 // getPodsUpdateOrder returns list of pods that should be updated ordered by update priority
 func (u *updater) getPodsUpdateOrder(pods []*apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler) []*apiv1.Pod {
-	priorityCalculator := priority.NewUpdatePriorityCalculator(vpa.Spec.ResourcePolicy, nil, u.recommendationProcessor)
+	priorityCalculator := priority.NewUpdatePriorityCalculator(vpa.Spec.ResourcePolicy, vpa.Status.Conditions, nil, u.recommendationProcessor)
 	recommendation := vpa.Status.Recommendation
 
 	for _, pod := range pods {
