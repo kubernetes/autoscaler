@@ -49,6 +49,7 @@ var (
 // than pod with 100M current memory and 150M recommendation (100% increase vs 50% increase)
 type UpdatePriorityCalculator struct {
 	resourcesPolicy         *vpa_types.PodResourcePolicy
+	conditions              []vpa_types.VerticalPodAutoscalerCondition
 	pods                    []podPriority
 	config                  *UpdateConfig
 	recommendationProcessor vpa_api_util.RecommendationProcessor
@@ -64,16 +65,19 @@ type UpdateConfig struct {
 // NewUpdatePriorityCalculator creates new UpdatePriorityCalculator for the given resources policy and configuration.
 // If the given policy is nil, there will be no policy restriction on update.
 // If the given config is nil, default values are used.
-func NewUpdatePriorityCalculator(policy *vpa_types.PodResourcePolicy, config *UpdateConfig, processor vpa_api_util.RecommendationProcessor) UpdatePriorityCalculator {
+func NewUpdatePriorityCalculator(policy *vpa_types.PodResourcePolicy,
+	conditions []vpa_types.VerticalPodAutoscalerCondition,
+	config *UpdateConfig,
+	processor vpa_api_util.RecommendationProcessor) UpdatePriorityCalculator {
 	if config == nil {
 		config = &UpdateConfig{MinChangePriority: defaultUpdateThreshold}
 	}
-	return UpdatePriorityCalculator{resourcesPolicy: policy, config: config, recommendationProcessor: processor}
+	return UpdatePriorityCalculator{resourcesPolicy: policy, conditions: conditions, config: config, recommendationProcessor: processor}
 }
 
 // AddPod adds pod to the UpdatePriorityCalculator.
 func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, recommendation *vpa_types.RecommendedPodResources, now time.Time) {
-	processedRecommendation, err := calc.recommendationProcessor.Apply(recommendation, calc.resourcesPolicy, pod)
+	processedRecommendation, _, err := calc.recommendationProcessor.Apply(recommendation, calc.resourcesPolicy, calc.conditions, pod)
 	if err != nil {
 		glog.V(2).Infof("cannot process recommendation for pod %s: %v", pod.Name, err)
 		return

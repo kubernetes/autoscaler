@@ -58,7 +58,7 @@ func (s *AdmissionServer) getPatchesForPodResourceRequest(raw []byte, namespace 
 		pod.Namespace = namespace
 	}
 	glog.V(4).Infof("Admitting pod %v", pod.ObjectMeta)
-	containersResources, vpaName, err := s.recommendationProvider.GetContainersResourcesForPod(&pod)
+	containersResources, annotationsPerContainer, vpaName, err := s.recommendationProvider.GetContainersResourcesForPod(&pod)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +88,10 @@ func (s *AdmissionServer) getPatchesForPodResourceRequest(raw []byte, namespace 
 				Value: v1.ResourceList{}})
 		}
 
-		annotations := []string{}
+		annotations, found := annotationsPerContainer[pod.Spec.Containers[i].Name]
+		if !found {
+			annotations = make([]string, 0)
+		}
 		for resource, request := range containerResources.Requests {
 			// Set request
 			patches = append(patches, patchRecord{
@@ -101,7 +104,7 @@ func (s *AdmissionServer) getPatchesForPodResourceRequest(raw []byte, namespace 
 		updatesAnnotation = append(updatesAnnotation, fmt.Sprintf("container %d: ", i)+strings.Join(annotations, ", "))
 	}
 	if len(updatesAnnotation) > 0 {
-		var vpaAnnotationValue string = fmt.Sprintf("Pod resources updated by %s: ", vpaName) + strings.Join(updatesAnnotation, "; ")
+		vpaAnnotationValue := fmt.Sprintf("Pod resources updated by %s: ", vpaName) + strings.Join(updatesAnnotation, "; ")
 		if pod.Annotations == nil {
 			patches = append(patches, patchRecord{
 				Op:    "add",
