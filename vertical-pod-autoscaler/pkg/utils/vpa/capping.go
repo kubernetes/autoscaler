@@ -114,13 +114,6 @@ func applyVPAPolicy(recommendation apiv1.ResourceList, policy *vpa_types.Contain
 	}
 }
 
-// ApplyVPAContainerPolicy enforces min/max policy on resources
-func ApplyVPAContainerPolicy(resources apiv1.ResourceList, container apiv1.Container, policy *vpa_types.PodResourcePolicy) {
-	// containerPolicy can be nil (user does not have to configure it).
-	containerPolicy := GetContainerResourcePolicy(container.Name, policy)
-	applyVPAPolicy(resources, containerPolicy)
-}
-
 // GetRecommendationForContainer returns recommendation for given container name
 func GetRecommendationForContainer(containerName string, recommendation *vpa_types.RecommendedPodResources) *vpa_types.RecommendedContainerResources {
 	if recommendation != nil {
