@@ -37,7 +37,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
@@ -250,38 +249,37 @@ func registerSignalHandlers(autoscaler core.Autoscaler) {
 	}()
 }
 
-func run(healthCheck *metrics.HealthCheck) {
-	metrics.RegisterAll()
-	kubeConfig := getKubeConfig()
-	kubeClient := createKubeClient(kubeConfig)
-	kubeEventRecorder := kube_util.CreateEventRecorder(kubeClient)
+func buildAutoscaler() (core.Autoscaler, error) {
+	// Create basic config from flags.
 	autoscalingOptions := createAutoscalingOptions()
-	metrics.UpdateNapEnabled(autoscalingOptions.NodeAutoprovisioningEnabled)
-	predicateCheckerStopChannel := make(chan struct{})
-	predicateChecker, err := simulator.NewPredicateChecker(kubeClient, predicateCheckerStopChannel)
-	if err != nil {
-		glog.Fatalf("Failed to create predicate checker: %v", err)
-	}
-	listerRegistryStopChannel := make(chan struct{})
-	listerRegistry := kube_util.NewListerRegistryWithDefaultListers(kubeClient, listerRegistryStopChannel)
-
+	kubeClient := createKubeClient(getKubeConfig())
 	opts := core.AutoscalerOptions{
 		AutoscalingOptions: autoscalingOptions,
-		PredicateChecker:   predicateChecker,
 		KubeClient:         kubeClient,
-		KubeEventRecorder:  kubeEventRecorder,
-		ListerRegistry:     listerRegistry,
 	}
 
-	cloudProvider := cloudBuilder.NewCloudProvider(autoscalingOptions)
+	// This metric should be published only once.
+	metrics.UpdateNapEnabled(autoscalingOptions.NodeAutoprovisioningEnabled)
 
-	autoscaler, err := core.NewAutoscaler(opts, cloudProvider)
+	// Create autoscaler.
+	return core.NewAutoscaler(opts)
+}
+
+func run(healthCheck *metrics.HealthCheck) {
+	metrics.RegisterAll()
+
+	autoscaler, err := buildAutoscaler()
 	if err != nil {
 		glog.Fatalf("Failed to create autoscaler: %v", err)
 	}
+
+	// Register signal handlers for graceful shutdown.
 	registerSignalHandlers(autoscaler)
+
+	// Start updating health check endpoint.
 	healthCheck.StartMonitoring()
 
+	// Autoscale ad infinitum.
 	for {
 		select {
 		case <-time.After(*scanInterval):
@@ -308,9 +306,7 @@ func main() {
 	leaderElection.LeaderElect = true
 
 	bindFlags(&leaderElection, pflag.CommandLine)
-
 	kube_flag.InitFlags()
-
 	healthCheck := metrics.NewHealthCheck(*maxInactivityTimeFlag, *maxFailingTimeFlag)
 
 	glog.V(1).Infof("Cluster Autoscaler %s", ClusterAutoscalerVersion)
