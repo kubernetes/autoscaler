@@ -111,3 +111,7 @@ func addAllMachineTypesForConfig(context *context.AutoscalingContext, systemLabe
 	}
 	return nodeGroups
 }
+
+// CleanUp cleans up the processor's internal structures.
+func (p *AutoprovisioningNodeGroupListProcessor) CleanUp() {
+}
