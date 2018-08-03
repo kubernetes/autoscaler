@@ -26,6 +26,7 @@ import (
 type NodeGroupManager interface {
 	CreateNodeGroup(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (cloudprovider.NodeGroup, errors.AutoscalerError)
 	RemoveUnneededNodeGroups(context *context.AutoscalingContext) error
+	CleanUp()
 }
 
 // NewDefaultNodeGroupManager creates an instance of NodeGroupManager.

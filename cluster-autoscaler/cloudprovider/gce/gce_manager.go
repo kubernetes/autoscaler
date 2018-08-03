@@ -144,6 +144,7 @@ type GceManager interface {
 	deleteNodePool(toBeRemoved *Mig) error
 	getLocation() string
 	getProjectId() string
+	getClusterName() string
 	getMode() GcpCloudProviderMode
 	getTemplates() *templateBuilder
 	findMigsNamed(name *regexp.Regexp) ([]string, error)
@@ -929,6 +930,9 @@ func (m *gceManagerImpl) getLocation() string {
 }
 func (m *gceManagerImpl) getProjectId() string {
 	return m.projectId
+}
+func (m *gceManagerImpl) getClusterName() string {
+	return m.clusterName
 }
 func (m *gceManagerImpl) getMode() GcpCloudProviderMode {
 	return m.mode

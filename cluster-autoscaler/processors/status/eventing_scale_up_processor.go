@@ -40,3 +40,7 @@ func (p *EventingScaleUpStatusProcessor) Process(context *context.AutoscalingCon
 		}
 	}
 }
+
+// CleanUp cleans up the processor's internal structures.
+func (p *EventingScaleUpStatusProcessor) CleanUp() {
+}

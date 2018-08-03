@@ -110,6 +110,11 @@ func (m *gceManagerMock) getProjectId() string {
 	return args.String(0)
 }
 
+func (m *gceManagerMock) getClusterName() string {
+	args := m.Called()
+	return args.String(0)
+}
+
 func (m *gceManagerMock) getMode() GcpCloudProviderMode {
 	args := m.Called()
 	return args.Get(0).(GcpCloudProviderMode)
@@ -515,6 +520,21 @@ func TestGceRefFromProviderId(t *testing.T) {
 	ref, err := GceRefFromProviderId("gce://project1/us-central1-b/name1")
 	assert.NoError(t, err)
 	assert.Equal(t, GceRef{"project1", "us-central1-b", "name1"}, *ref)
+}
+
+func TestGetClusterInfo(t *testing.T) {
+	gceManagerMock := &gceManagerMock{}
+	gce := &GceCloudProvider{
+		gceManager: gceManagerMock,
+	}
+	gceManagerMock.On("getProjectId").Return("project1").Once()
+	gceManagerMock.On("getLocation").Return("location1").Once()
+	gceManagerMock.On("getClusterName").Return("cluster1").Once()
+
+	project, location, cluster := gce.GetClusterInfo()
+	assert.Equal(t, "project1", project)
+	assert.Equal(t, "location1", location)
+	assert.Equal(t, "cluster1", cluster)
 }
 
 func createString(s string) *string {

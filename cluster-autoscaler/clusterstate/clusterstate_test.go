@@ -671,3 +671,54 @@ func TestScaleUpBackoff(t *testing.T) {
 	assert.True(t, clusterstate.IsNodeGroupSafeToScaleUp("ng1", now))
 	assert.False(t, clusterstate.nodeGroupBackoffInfo.IsBackedOff("ng1", now))
 }
+
+func TestGetClusterSize(t *testing.T) {
+	now := time.Now()
+
+	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
+	SetNodeReadyState(ng1_1, true, now.Add(-time.Minute))
+	ng2_1 := BuildTestNode("ng2-1", 1000, 1000)
+	SetNodeReadyState(ng2_1, true, now.Add(-time.Minute))
+
+	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider.AddNodeGroup("ng1", 1, 10, 5)
+	provider.AddNodeGroup("ng2", 1, 10, 1)
+
+	provider.AddNode("ng1", ng1_1)
+	provider.AddNode("ng2", ng2_1)
+
+	fakeClient := &fake.Clientset{}
+	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false)
+	clusterstate := NewClusterStateRegistry(provider, ClusterStateRegistryConfig{
+		MaxTotalUnreadyPercentage: 10,
+		OkTotalUnreadyCount:       1,
+	}, fakeLogRecorder)
+
+	// There are 2 actual nodes in 2 node groups with target sizes of 5 and 1.
+	clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng2_1}, now)
+	currentSize, targetSize := clusterstate.GetClusterSize()
+	assert.Equal(t, 2, currentSize)
+	assert.Equal(t, 6, targetSize)
+
+	// Current size should increase after a new node is added.
+	clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng1_1, ng2_1}, now.Add(time.Minute))
+	currentSize, targetSize = clusterstate.GetClusterSize()
+	assert.Equal(t, 3, currentSize)
+	assert.Equal(t, 6, targetSize)
+
+	// Target size should increase after a new node group is added.
+	provider.AddNodeGroup("ng3", 1, 10, 1)
+	clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng1_1, ng2_1}, now.Add(2*time.Minute))
+	currentSize, targetSize = clusterstate.GetClusterSize()
+	assert.Equal(t, 3, currentSize)
+	assert.Equal(t, 7, targetSize)
+
+	// Target size should change after a node group changes its target size.
+	for _, ng := range provider.NodeGroups() {
+		ng.(*testprovider.TestNodeGroup).SetTargetSize(10)
+	}
+	clusterstate.UpdateNodes([]*apiv1.Node{ng1_1, ng1_1, ng2_1}, now.Add(3*time.Minute))
+	currentSize, targetSize = clusterstate.GetClusterSize()
+	assert.Equal(t, 3, currentSize)
+	assert.Equal(t, 30, targetSize)
+}
