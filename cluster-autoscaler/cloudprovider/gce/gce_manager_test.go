@@ -509,13 +509,10 @@ func getManagedInstancesResponse2Named(name, zone string) string {
 }
 
 func newTestGceManager(t *testing.T, testServerURL string, mode GcpCloudProviderMode, regional bool) *gceManagerImpl {
-	client := &http.Client{}
-	gceService, err := gce.New(client)
-	assert.NoError(t, err)
-	gceService.BasePath = testServerURL
+	gceService := newTestAutoscalingGceClient(t, projectId, testServerURL)
 	manager := &gceManagerImpl{
 		migs:        make([]*migInformation, 0),
-		gceService:  gceService,
+		GceService:  gceService,
 		migCache:    make(map[GceRef]*Mig),
 		projectId:   projectId,
 		clusterName: clusterName,
@@ -537,6 +534,7 @@ func newTestGceManager(t *testing.T, testServerURL string, mode GcpCloudProvider
 		manager.location = zoneB
 	}
 
+	client := &http.Client{}
 	if mode == ModeGKE {
 		gkeService, err := gke.New(client)
 		assert.NoError(t, err)
@@ -800,20 +798,6 @@ const operationDoneResponse = `{
   "startTime": "2017-09-18T09:54:26.148507311Z",
   "endTime": "2017-09-18T09:54:35.124878859Z"
 }`
-
-func TestWaitForOp(t *testing.T) {
-	server := NewHttpServerMock()
-	defer server.Close()
-	g := newTestGceManager(t, server.URL, ModeGKE, false)
-	server.On("handle", "/project1/zones/us-central1-b/operations/operation-1505728466148-d16f5197").Return(operationRunningResponse).Times(3)
-	server.On("handle", "/project1/zones/us-central1-b/operations/operation-1505728466148-d16f5197").Return(operationDoneResponse).Once()
-
-	operation := &gce.Operation{Name: "operation-1505728466148-d16f5197"}
-
-	err := g.waitForOp(operation, projectId, zoneB)
-	assert.NoError(t, err)
-	mock.AssertExpectationsForObjects(t, server)
-}
 
 func TestWaitForGkeOp(t *testing.T) {
 	server := NewHttpServerMock()
