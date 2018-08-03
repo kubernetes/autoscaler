@@ -131,14 +131,20 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	}
 	metrics.UpdateDurationFromStart(metrics.UpdateState, stateUpdateStart)
 
-	// Update status information when the loop is done (regardless of reason)
 	defer func() {
+		// Update status information when the loop is done (regardless of reason)
 		if autoscalingContext.WriteStatusConfigMap {
 			status := a.clusterStateRegistry.GetStatus(currentTime)
 			utils.WriteStatusConfigMap(autoscalingContext.ClientSet, autoscalingContext.ConfigNamespace,
 				status.GetReadableString(), a.AutoscalingContext.LogRecorder)
 		}
+
+		err := a.processors.AutoscalingStatusProcessor.Process(a.AutoscalingContext, a.clusterStateRegistry, currentTime)
+		if err != nil {
+			glog.Errorf("AutoscalingStatusProcessor error: %v.", err)
+		}
 	}()
+
 	// Check if there are any nodes that failed to register in Kubernetes
 	// master.
 	unregisteredNodes := a.clusterStateRegistry.GetUnregisteredNodes()
@@ -344,8 +350,10 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	return nil
 }
 
-// ExitCleanUp removes status configmap.
+// ExitCleanUp performs all necessary clean-ups when the autoscaler's exiting.
 func (a *StaticAutoscaler) ExitCleanUp() {
+	a.processors.CleanUp()
+
 	if !a.AutoscalingContext.WriteStatusConfigMap {
 		return
 	}

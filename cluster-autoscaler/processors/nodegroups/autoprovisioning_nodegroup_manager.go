@@ -95,3 +95,7 @@ func (p *AutoprovisioningNodeGroupManager) RemoveUnneededNodeGroups(context *con
 	}
 	return nil
 }
+
+// CleanUp cleans up the processor's internal structures.
+func (p *AutoprovisioningNodeGroupManager) CleanUp() {
+}
