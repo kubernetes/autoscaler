@@ -350,7 +350,7 @@ func (mig *Mig) DeleteNodes(nodes []*apiv1.Node) error {
 
 // Id returns mig url.
 func (mig *Mig) Id() string {
-	return GenerateMigUrl(mig.Project, mig.Zone, mig.Name)
+	return GenerateMigUrl(mig.GceRef)
 }
 
 // Debug returns a debug string for the Mig.
