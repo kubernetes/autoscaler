@@ -86,6 +86,6 @@ func (m *autoscalingGkeClientV1) DeleteNodePool(toBeRemoved string) error {
 	return cloudprovider.ErrNotImplemented
 }
 
-func (m *autoscalingGkeClientV1) CreateNodePool(mig *Mig) error {
+func (m *autoscalingGkeClientV1) CreateNodePool(mig Mig) error {
 	return cloudprovider.ErrNotImplemented
 }

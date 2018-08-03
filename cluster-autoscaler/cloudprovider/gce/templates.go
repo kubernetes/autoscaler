@@ -124,7 +124,7 @@ func (t *templateBuilder) getAllocatable(capacity, reserved apiv1.ResourceList) 
 	return allocatable
 }
 
-func (t *templateBuilder) buildNodeFromTemplate(mig *Mig, template *gce.InstanceTemplate, cpu int64, mem int64) (*apiv1.Node, error) {
+func (t *templateBuilder) buildNodeFromTemplate(mig Mig, template *gce.InstanceTemplate, cpu int64, mem int64) (*apiv1.Node, error) {
 
 	if template.Properties == nil {
 		return nil, fmt.Errorf("instance template %s has no properties", template.Name)
@@ -139,7 +139,7 @@ func (t *templateBuilder) buildNodeFromTemplate(mig *Mig, template *gce.Instance
 		Labels:   map[string]string{},
 	}
 
-	capacity, err := t.buildCapacity(template.Properties.MachineType, template.Properties.GuestAccelerators, mig.GceRef.Zone, cpu, mem)
+	capacity, err := t.buildCapacity(template.Properties.MachineType, template.Properties.GuestAccelerators, mig.GceRef().Zone, cpu, mem)
 	if err != nil {
 		return nil, err
 	}
@@ -176,13 +176,13 @@ func (t *templateBuilder) buildNodeFromTemplate(mig *Mig, template *gce.Instance
 		}
 	}
 	if nodeAllocatable == nil {
-		glog.Warningf("could not extract kube-reserved from kubeEnv for mig %q, setting allocatable to capacity.", mig.Name)
+		glog.Warningf("could not extract kube-reserved from kubeEnv for mig %q, setting allocatable to capacity.", mig.GceRef().Name)
 		node.Status.Allocatable = node.Status.Capacity
 	} else {
 		node.Status.Allocatable = nodeAllocatable
 	}
 	// GenericLabels
-	labels, err := buildGenericLabels(mig.GceRef, template.Properties.MachineType, nodeName)
+	labels, err := buildGenericLabels(mig.GceRef(), template.Properties.MachineType, nodeName)
 	if err != nil {
 		return nil, err
 	}
@@ -193,13 +193,13 @@ func (t *templateBuilder) buildNodeFromTemplate(mig *Mig, template *gce.Instance
 	return &node, nil
 }
 
-func (t *templateBuilder) buildNodeFromAutoprovisioningSpec(mig *Mig, cpu int64, mem int64) (*apiv1.Node, error) {
-	if mig.spec == nil {
-		return nil, fmt.Errorf("no spec in mig %s", mig.Name)
+func (t *templateBuilder) buildNodeFromAutoprovisioningSpec(mig Mig, cpu int64, mem int64) (*apiv1.Node, error) {
+	if mig.Spec() == nil {
+		return nil, fmt.Errorf("no spec in mig %s", mig.GceRef().Name)
 	}
 
 	node := apiv1.Node{}
-	nodeName := fmt.Sprintf("%s-autoprovisioned-template-%d", mig.Name, rand.Int63())
+	nodeName := fmt.Sprintf("%s-autoprovisioned-template-%d", mig.GceRef().Name, rand.Int63())
 
 	node.ObjectMeta = metav1.ObjectMeta{
 		Name:     nodeName,
@@ -207,12 +207,12 @@ func (t *templateBuilder) buildNodeFromAutoprovisioningSpec(mig *Mig, cpu int64,
 		Labels:   map[string]string{},
 	}
 
-	capacity, err := t.buildCapacity(mig.spec.machineType, nil, mig.GceRef.Zone, cpu, mem)
+	capacity, err := t.buildCapacity(mig.Spec().machineType, nil, mig.GceRef().Zone, cpu, mem)
 	if err != nil {
 		return nil, err
 	}
 
-	if gpuRequest, found := mig.spec.extraResources[gpu.ResourceNvidiaGPU]; found {
+	if gpuRequest, found := mig.Spec().extraResources[gpu.ResourceNvidiaGPU]; found {
 		capacity[gpu.ResourceNvidiaGPU] = gpuRequest.DeepCopy()
 	}
 
@@ -227,29 +227,27 @@ func (t *templateBuilder) buildNodeFromAutoprovisioningSpec(mig *Mig, cpu int64,
 	}
 	node.Labels = labels
 
-	node.Spec.Taints = mig.spec.taints
+	node.Spec.Taints = mig.Spec().taints
 
 	// Ready status
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()
 	return &node, nil
 }
 
-func buildLabelsForAutoprovisionedMig(mig *Mig, nodeName string) (map[string]string, error) {
+func buildLabelsForAutoprovisionedMig(mig Mig, nodeName string) (map[string]string, error) {
 	// GenericLabels
-	labels, err := buildGenericLabels(mig.GceRef, mig.spec.machineType, nodeName)
+	labels, err := buildGenericLabels(mig.GceRef(), mig.Spec().machineType, nodeName)
 	if err != nil {
 		return nil, err
 	}
-	if mig.spec.labels != nil {
-		for k, v := range mig.spec.labels {
-			if existingValue, found := labels[k]; found {
-				if v != existingValue {
-					return map[string]string{}, fmt.Errorf("conflict in labels requested: %s=%s  present: %s=%s",
-						k, v, k, existingValue)
-				}
-			} else {
-				labels[k] = v
+	for k, v := range mig.Spec().labels {
+		if existingValue, found := labels[k]; found {
+			if v != existingValue {
+				return map[string]string{}, fmt.Errorf("conflict in labels requested: %s=%s  present: %s=%s",
+					k, v, k, existingValue)
 			}
+		} else {
+			labels[k] = v
 		}
 	}
 	return labels, nil

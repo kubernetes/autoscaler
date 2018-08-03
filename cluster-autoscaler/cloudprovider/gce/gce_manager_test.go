@@ -489,7 +489,7 @@ func newTestGceManager(t *testing.T, testServerURL string, mode GcpCloudProvider
 	manager := &gceManagerImpl{
 		migs:        make([]*migInformation, 0),
 		GceService:  gceService,
-		migCache:    make(map[GceRef]*Mig),
+		migCache:    make(map[GceRef]Mig),
 		projectId:   projectId,
 		clusterName: clusterName,
 		mode:        mode,
@@ -526,12 +526,12 @@ func newTestGceManager(t *testing.T, testServerURL string, mode GcpCloudProvider
 	return manager
 }
 
-func validateMig(t *testing.T, mig *Mig, zone string, name string, minSize int, maxSize int) {
-	assert.Equal(t, name, mig.Name)
-	assert.Equal(t, zone, mig.Zone)
-	assert.Equal(t, projectId, mig.Project)
-	assert.Equal(t, minSize, mig.minSize)
-	assert.Equal(t, maxSize, mig.maxSize)
+func validateMig(t *testing.T, mig Mig, zone string, name string, minSize int, maxSize int) {
+	assert.Equal(t, name, mig.GceRef().Name)
+	assert.Equal(t, zone, mig.GceRef().Zone)
+	assert.Equal(t, projectId, mig.GceRef().Project)
+	assert.Equal(t, minSize, mig.MinSize())
+	assert.Equal(t, maxSize, mig.MaxSize())
 }
 
 func TestRefreshNodePools(t *testing.T) {
@@ -653,8 +653,8 @@ func TestDeleteNodePool(t *testing.T) {
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-nodeautoprovisioning-323233232").Return(getInstanceGroupManager(zoneB)).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-nodeautoprovisioning-323233232/listManagedInstances").Return(getManagedInstancesResponse2(zoneB)).Once()
 
-	mig := &Mig{
-		GceRef: GceRef{
+	mig := &gceMig{
+		gceRef: GceRef{
 			Project: projectId,
 			Zone:    zoneB,
 			Name:    "nodeautoprovisioning-323233232",
@@ -711,8 +711,8 @@ func TestCreateNodePool(t *testing.T) {
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-nodeautoprovisioning-323233232").Return(getInstanceGroupManager(zoneB)).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-nodeautoprovisioning-323233232/listManagedInstances").Return(getManagedInstancesResponse2(zoneB)).Once()
 
-	mig := &Mig{
-		GceRef: GceRef{
+	mig := &gceMig{
+		gceRef: GceRef{
 			Project: projectId,
 			Zone:    zoneB,
 			Name:    "nodeautoprovisioning-323233232",
@@ -723,7 +723,7 @@ func TestCreateNodePool(t *testing.T) {
 		autoprovisioned: true,
 		exist:           true,
 		nodePoolName:    "nodeautoprovisioning-323233232",
-		spec: &autoprovisioningSpec{
+		spec: &MigSpec{
 			machineType: "n1-standard-1",
 			taints: []apiv1.Taint{
 				{
@@ -783,8 +783,8 @@ const deleteInstancesOperationResponse = `
 }`
 
 func setupTestNodePool(manager *gceManagerImpl) {
-	mig := &Mig{
-		GceRef: GceRef{
+	mig := &gceMig{
+		gceRef: GceRef{
 			Name:    defaultPoolMig,
 			Zone:    zoneB,
 			Project: projectId,
@@ -800,8 +800,8 @@ func setupTestNodePool(manager *gceManagerImpl) {
 }
 
 func setupTestAutoprovisionedPool(manager *gceManagerImpl) {
-	mig := &Mig{
-		GceRef: GceRef{
+	mig := &gceMig{
+		gceRef: GceRef{
 			Name:    autoprovisionedPoolMig,
 			Zone:    zoneB,
 			Project: projectId,
@@ -876,8 +876,8 @@ func TestGetMigSize(t *testing.T) {
 
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/nodeautoprovisioning-323233232").Return(instanceGroupManager).Once()
 
-	mig := &Mig{
-		GceRef: GceRef{
+	mig := &gceMig{
+		gceRef: GceRef{
 			Project: projectId,
 			Zone:    zoneB,
 			Name:    "nodeautoprovisioning-323233232",
@@ -938,8 +938,8 @@ func TestSetMigSize(t *testing.T) {
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/nodeautoprovisioning-323233232/resize").Return(setMigSizeResponse).Once()
 	server.On("handle", "/project1/zones/us-central1-b/operations/operation-1505739408819-5597646964339-eb839c88-28805931").Return(setMigSizeOperationResponse).Once()
 
-	mig := &Mig{
-		GceRef: GceRef{
+	mig := &gceMig{
+		gceRef: GceRef{
 			Project: projectId,
 			Zone:    zoneB,
 			Name:    "nodeautoprovisioning-323233232",
@@ -975,7 +975,7 @@ func TestGetMigForInstance(t *testing.T) {
 	mig, err := g.GetMigForInstance(gceRef)
 	assert.NoError(t, err)
 	assert.NotNil(t, mig)
-	assert.Equal(t, "gke-cluster-1-default-pool", mig.Name)
+	assert.Equal(t, "gke-cluster-1-default-pool", mig.GceRef().Name)
 	mock.AssertExpectationsForObjects(t, server)
 }
 
@@ -986,8 +986,8 @@ func TestGetMigNodes(t *testing.T) {
 
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/nodeautoprovisioning-323233232/listManagedInstances").Return(getManagedInstancesResponse1(zoneB)).Once()
 
-	mig := &Mig{
-		GceRef: GceRef{
+	mig := &gceMig{
+		gceRef: GceRef{
 			Project: projectId,
 			Zone:    zoneB,
 			Name:    "nodeautoprovisioning-323233232",
@@ -1141,9 +1141,9 @@ func TestFetchAutoMigsUnregistersMissingMigs(t *testing.T) {
 
 	// This MIG was previously autodetected but is now gone.
 	// It should be unregistered.
-	unregister := &Mig{
+	unregister := &gceMig{
 		gceManager: g,
-		GceRef:     GceRef{Project: projectId, Zone: zoneB, Name: gceMigB},
+		gceRef:     GceRef{Project: projectId, Zone: zoneB, Name: gceMigB},
 		minSize:    1,
 		maxSize:    10,
 		exist:      true,
@@ -1302,8 +1302,8 @@ func TestGetMigTemplateNode(t *testing.T) {
 	regional := false
 	g := newTestGceManager(t, server.URL, ModeGCE, regional)
 
-	mig := &Mig{
-		GceRef: GceRef{
+	mig := &gceMig{
+		gceRef: GceRef{
 			Project: projectId,
 			Zone:    zoneB,
 			Name:    "default-pool",
