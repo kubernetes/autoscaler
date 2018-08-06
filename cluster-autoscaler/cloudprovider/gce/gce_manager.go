@@ -540,20 +540,13 @@ func (m *gceManagerImpl) RegisterMig(mig *Mig) bool {
 		config: mig,
 	})
 
-	template, err := m.GceService.FetchMigTemplate(mig.GceRef)
-	if err != nil {
-		glog.Errorf("Failed to fetch template for %s", mig.Name)
-	} else {
-		cpu, mem, err := m.getCpuAndMemoryForMachineType(template.Properties.MachineType, mig.GceRef.Zone)
-		if err != nil {
-			glog.Errorf("Failed to get cpu and memory for machine type: %v.", err)
-			return false
-		}
-		_, err = m.templates.buildNodeFromTemplate(mig, template, cpu, mem)
-		if err != nil {
-			glog.Errorf("Failed to build template for %s", mig.Name)
-		}
+	// Try to build a node from template to validate that this group
+	// can be scaled up from 0 nodes.
+	// We may never need to do it, so just log error if it fails.
+	if _, err := m.getMigTemplateNode(mig); err != nil {
+		glog.Errorf("Can't build node from template for %s/%s/%s, won't be able to scale from 0: %v", mig.GceRef.Project, mig.GceRef.Zone, mig.GceRef.Name, err)
 	}
+
 	return true
 }
 
