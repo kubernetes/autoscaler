@@ -43,7 +43,7 @@ type AutoscalingGceClient interface {
 	FetchMigBasename(GceRef) (string, error)
 	FetchMigInstances(GceRef) ([]GceRef, error)
 	FetchMigTemplate(GceRef) (*gce.InstanceTemplate, error)
-	FetchMigs(zone string, filter *regexp.Regexp) ([]string, error)
+	FetchMigsWithName(zone string, filter *regexp.Regexp) ([]string, error)
 	FetchZones(region string) ([]string, error)
 
 	// modifying resources
@@ -177,14 +177,14 @@ func (client *autoscalingGceClientV1) FetchMigTemplate(migRef GceRef) (*gce.Inst
 	return client.gceService.InstanceTemplates.Get(migRef.Project, templateName).Do()
 }
 
-func (client *autoscalingGceClientV1) FetchMigs(zone string, name *regexp.Regexp) ([]string, error) {
+func (client *autoscalingGceClientV1) FetchMigsWithName(zone string, name *regexp.Regexp) ([]string, error) {
 	filter := fmt.Sprintf("name eq %s", name)
 	links := make([]string, 0)
 	req := client.gceService.InstanceGroups.List(client.projectId, zone).Filter(filter)
 	if err := req.Pages(context.TODO(), func(page *gce.InstanceGroupList) error {
 		for _, ig := range page.Items {
 			links = append(links, ig.SelfLink)
-			glog.V(3).Infof("autodiscovered managed instance group %s using regexp %s", ig.Name, name)
+			glog.V(3).Infof("found managed instance group %s matching regexp %s", ig.Name, name)
 		}
 		return nil
 	}); err != nil {
