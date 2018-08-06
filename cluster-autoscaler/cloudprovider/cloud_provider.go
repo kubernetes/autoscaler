@@ -132,7 +132,7 @@ type NodeGroup interface {
 	Exist() bool
 
 	// Create creates the node group on the cloud provider side. Implementation optional.
-	Create() error
+	Create() (NodeGroup, error)
 
 	// Delete deletes the node group on the cloud provider side.
 	// This will be executed only for autoprovisioned node groups, once their size drops to 0.
