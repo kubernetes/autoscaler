@@ -23,6 +23,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metrics_updater "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/updater"
 	kube_client "k8s.io/client-go/kubernetes"
 )
 
@@ -31,7 +32,7 @@ import (
 // evictionToleranceFraction is configured.
 type PodsEvictionRestriction interface {
 	// Evict sends eviction instruction to the api client.
-	// Retrurns error if pod cannot be evicted or if client returned error.
+	// Returns error if pod cannot be evicted or if client returned error.
 	Evict(pod *apiv1.Pod) error
 	// CanEvict checks if pod can be safely evicted
 	CanEvict(pod *apiv1.Pod) bool
@@ -116,6 +117,7 @@ func (e *podsEvictionRestrictionImpl) Evict(podToEvict *apiv1.Pod) error {
 		glog.Errorf("failed to evict pod %s, error: %v", podToEvict.Name, err)
 		return err
 	}
+	metrics_updater.AddEvictedPod()
 
 	if podToEvict.Status.Phase != apiv1.PodPending {
 		singleGroupStats, present := e.creatorToSingleGroupStatsMap[cr]
@@ -127,7 +129,6 @@ func (e *podsEvictionRestrictionImpl) Evict(podToEvict *apiv1.Pod) error {
 	}
 
 	return nil
-
 }
 
 // NewPodsEvictionRestrictionFactory creates PodsEvictionRestrictionFactory
