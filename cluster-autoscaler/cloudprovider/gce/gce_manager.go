@@ -140,9 +140,8 @@ type GceManager interface {
 	getLocation() string
 	getProjectId() string
 	getMode() GcpCloudProviderMode
-	getTemplates() *templateBuilder
 	findMigsNamed(name *regexp.Regexp) ([]string, error)
-	getMigTemplate(mig *Mig) (*gce.InstanceTemplate, error)
+	getMigTemplateNode(mig *Mig) (*apiv1.Node, error)
 	getCpuAndMemoryForMachineType(machineType string, zone string) (cpu int64, mem int64, err error)
 }
 
@@ -547,9 +546,9 @@ func (m *gceManagerImpl) RegisterMig(mig *Mig) bool {
 		config: mig,
 	})
 
-	template, err := m.getMigTemplate(mig)
+	template, err := m.GceService.FetchMigTemplate(mig.GceRef)
 	if err != nil {
-		glog.Errorf("Failed to build template for %s", mig.Name)
+		glog.Errorf("Failed to fetch template for %s", mig.Name)
 	} else {
 		cpu, mem, err := m.getCpuAndMemoryForMachineType(template.Properties.MachineType, mig.GceRef.Zone)
 		if err != nil {
@@ -889,9 +888,6 @@ func (m *gceManagerImpl) getProjectId() string {
 func (m *gceManagerImpl) getMode() GcpCloudProviderMode {
 	return m.mode
 }
-func (m *gceManagerImpl) getTemplates() *templateBuilder {
-	return m.templates
-}
 
 func (m *gceManagerImpl) Refresh() error {
 	if m.lastRefresh.Add(refreshInterval).After(time.Now()) {
@@ -901,7 +897,6 @@ func (m *gceManagerImpl) Refresh() error {
 }
 
 func (m *gceManagerImpl) forceRefresh() error {
-
 	switch m.mode {
 	case ModeGCE:
 		if err := m.clearMachinesCache(); err != nil {
@@ -1157,12 +1152,25 @@ func (m *gceManagerImpl) findMigsInRegion(region string, name *regexp.Regexp) ([
 	return links, nil
 }
 
-func (m *gceManagerImpl) getMigTemplate(mig *Mig) (*gce.InstanceTemplate, error) {
-	template, err := m.GceService.FetchMigTemplate(mig.GceRef)
-	if err != nil {
-		return nil, err
+func (m *gceManagerImpl) getMigTemplateNode(mig *Mig) (*apiv1.Node, error) {
+	if mig.Exist() {
+		template, err := m.GceService.FetchMigTemplate(mig.GceRef)
+		if err != nil {
+			return nil, err
+		}
+		cpu, mem, err := m.getCpuAndMemoryForMachineType(template.Properties.MachineType, mig.GceRef.Zone)
+		if err != nil {
+			return nil, err
+		}
+		return m.templates.buildNodeFromTemplate(mig, template, cpu, mem)
+	} else if mig.Autoprovisioned() {
+		cpu, mem, err := m.getCpuAndMemoryForMachineType(mig.spec.machineType, mig.GceRef.Zone)
+		if err != nil {
+			return nil, err
+		}
+		return m.templates.buildNodeFromAutoprovisioningSpec(mig, cpu, mem)
 	}
-	return template, nil
+	return nil, fmt.Errorf("unable to get node info for %s/%s/%s", mig.Project, mig.Zone, mig.Name)
 }
 
 func (m *gceManagerImpl) getMachineFromCache(machineType string, zone string) *gce.MachineType {

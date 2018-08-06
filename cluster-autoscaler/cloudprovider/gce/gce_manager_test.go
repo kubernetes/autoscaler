@@ -1358,7 +1358,7 @@ func TestfetchMachinesCache(t *testing.T) {
 	mock.AssertExpectationsForObjects(t, server)
 }
 
-func TestGetMigTemplate(t *testing.T) {
+func TestGetMigTemplateNode(t *testing.T) {
 	server := NewHttpServerMock()
 	defer server.Close()
 
@@ -1383,9 +1383,9 @@ func TestGetMigTemplate(t *testing.T) {
 		spec:            nil,
 	}
 
-	template, err := g.getMigTemplate(mig)
+	node, err := g.getMigTemplateNode(mig)
 	assert.NoError(t, err)
-	assert.Equal(t, "gke-cluster-1-default-pool", template.Name)
+	assert.NotNil(t, node)
 	mock.AssertExpectationsForObjects(t, server)
 }
 
