@@ -1122,7 +1122,7 @@ func (m *gceManagerImpl) findMigsNamed(name *regexp.Regexp) ([]string, error) {
 	if m.regional {
 		return m.findMigsInRegion(m.location, name)
 	}
-	return m.GceService.FetchMigs(m.location, name)
+	return m.GceService.FetchMigsWithName(m.location, name)
 }
 
 func (m *gceManagerImpl) getZones(region string) ([]string, error) {
@@ -1140,7 +1140,7 @@ func (m *gceManagerImpl) findMigsInRegion(region string, name *regexp.Regexp) ([
 		return nil, err
 	}
 	for _, z := range zones {
-		zl, err := m.GceService.FetchMigs(z, name)
+		zl, err := m.GceService.FetchMigsWithName(z, name)
 		if err != nil {
 			return nil, err
 		}
