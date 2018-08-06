@@ -17,13 +17,10 @@ limitations under the License.
 package gce
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"io"
-	"net/url"
 	"os"
-	"path"
 	"reflect"
 	"regexp"
 	"strings"
@@ -78,9 +75,7 @@ const (
 )
 
 const (
-	operationWaitTimeout       = 5 * time.Second
 	gkeOperationWaitTimeout    = 120 * time.Second
-	operationPollInterval      = 100 * time.Millisecond
 	refreshInterval            = 1 * time.Minute
 	machinesRefreshInterval    = 1 * time.Hour
 	httpTimeout                = 30 * time.Second
@@ -145,9 +140,8 @@ type GceManager interface {
 	getLocation() string
 	getProjectId() string
 	getMode() GcpCloudProviderMode
-	getTemplates() *templateBuilder
 	findMigsNamed(name *regexp.Regexp) ([]string, error)
-	getMigTemplate(mig *Mig) (*gce.InstanceTemplate, error)
+	getMigTemplateNode(mig *Mig) (*apiv1.Node, error)
 	getCpuAndMemoryForMachineType(machineType string, zone string) (cpu int64, mem int64, err error)
 }
 
@@ -156,9 +150,9 @@ type gceManagerImpl struct {
 	migs     []*migInformation
 	migCache map[GceRef]*Mig
 
-	gceService     *gce.Service
 	gkeService     *gke.Service
 	gkeBetaService *gke_beta.Service
+	GceService     AutoscalingGceClient
 
 	cacheMutex sync.Mutex
 	migsMutex  sync.Mutex
@@ -230,13 +224,13 @@ func CreateGceManager(configReader io.Reader, mode GcpCloudProviderMode, cluster
 	// Create Google Compute Engine service.
 	client := oauth2.NewClient(oauth2.NoContext, tokenSource)
 	client.Timeout = httpTimeout
-	gceService, err := gce.New(client)
+	gceService, err := NewAutoscalingGceClientV1(client, projectId)
 	if err != nil {
 		return nil, err
 	}
 	manager := &gceManagerImpl{
 		migs:        make([]*migInformation, 0),
-		gceService:  gceService,
+		GceService:  gceService,
 		migCache:    make(map[GceRef]*Mig),
 		location:    location,
 		regional:    regional,
@@ -361,10 +355,8 @@ func (m *gceManagerImpl) fetchAllNodePoolsGkeImpl() error {
 		if !autoscaled {
 			continue
 		}
-		// format is
-		// "https://www.googleapis.com/compute/v1/projects/mwielgus-proj/zones/europe-west1-b/instanceGroupManagers/gke-cluster-1-default-pool-ba78a787-grp"
 		for _, igurl := range nodePool.InstanceGroupUrls {
-			project, zone, name, err := parseGceUrl(igurl, "instanceGroupManagers")
+			project, zone, name, err := ParseIgmUrl(igurl)
 			if err != nil {
 				return err
 			}
@@ -422,10 +414,8 @@ func (m *gceManagerImpl) fetchAllNodePoolsGkeRegionalImpl() error {
 		if !autoscaled {
 			continue
 		}
-		// format is
-		// "https://www.googleapis.com/compute/v1/projects/mwielgus-proj/zones/europe-west1-b/instanceGroupManagers/gke-cluster-1-default-pool-ba78a787-grp"
 		for _, igurl := range nodePool.InstanceGroupUrls {
-			project, zone, name, err := parseGceUrl(igurl, "instanceGroupManagers")
+			project, zone, name, err := ParseIgmUrl(igurl)
 			if err != nil {
 				return err
 			}
@@ -487,10 +477,8 @@ func (m *gceManagerImpl) fetchAllNodePoolsGkeNapImpl() error {
 			}
 			continue
 		}
-		// format is
-		// "https://www.googleapis.com/compute/v1/projects/mwielgus-proj/zones/europe-west1-b/instanceGroupManagers/gke-cluster-1-default-pool-ba78a787-grp"
 		for _, igurl := range nodePool.InstanceGroupUrls {
-			project, zone, name, err := parseGceUrl(igurl, "instanceGroupManagers")
+			project, zone, name, err := ParseIgmUrl(igurl)
 			if err != nil {
 				return err
 			}
@@ -552,20 +540,13 @@ func (m *gceManagerImpl) RegisterMig(mig *Mig) bool {
 		config: mig,
 	})
 
-	template, err := m.getMigTemplate(mig)
-	if err != nil {
-		glog.Errorf("Failed to build template for %s", mig.Name)
-	} else {
-		cpu, mem, err := m.getCpuAndMemoryForMachineType(template.Properties.MachineType, mig.GceRef.Zone)
-		if err != nil {
-			glog.Errorf("Failed to get cpu and memory for machine type: %v.", err)
-			return false
-		}
-		_, err = m.templates.buildNodeFromTemplate(mig, template, cpu, mem)
-		if err != nil {
-			glog.Errorf("Failed to build template for %s", mig.Name)
-		}
+	// Try to build a node from template to validate that this group
+	// can be scaled up from 0 nodes.
+	// We may never need to do it, so just log error if it fails.
+	if _, err := m.getMigTemplateNode(mig); err != nil {
+		glog.Errorf("Can't build node from template for %s/%s/%s, won't be able to scale from 0: %v", mig.GceRef.Project, mig.GceRef.Zone, mig.GceRef.Name, err)
 	}
+
 	return true
 }
 
@@ -726,11 +707,11 @@ func (m *gceManagerImpl) fetchMachinesCache() error {
 	}
 	machinesCache := make(map[machineTypeKey]*gce.MachineType)
 	for _, location := range locations {
-		machineTypes, err := m.gceService.MachineTypes.List(m.projectId, location).Do()
+		machineTypes, err := m.GceService.FetchMachineTypes(location)
 		if err != nil {
 			return err
 		}
-		for _, machineType := range machineTypes.Items {
+		for _, machineType := range machineTypes {
 			machinesCache[machineTypeKey{location, machineType.Name}] = machineType
 		}
 
@@ -747,42 +728,22 @@ func (m *gceManagerImpl) fetchMachinesCache() error {
 
 // GetMigSize gets MIG size.
 func (m *gceManagerImpl) GetMigSize(mig *Mig) (int64, error) {
-	igm, err := m.gceService.InstanceGroupManagers.Get(mig.Project, mig.Zone, mig.Name).Do()
+	targetSize, err := m.GceService.FetchMigTargetSize(mig.GceRef)
 	if err != nil {
 		return -1, err
 	}
-	return igm.TargetSize, nil
+	return targetSize, nil
 }
 
 // SetMigSize sets MIG size.
 func (m *gceManagerImpl) SetMigSize(mig *Mig, size int64) error {
 	glog.V(0).Infof("Setting mig size %s to %d", mig.Id(), size)
-	op, err := m.gceService.InstanceGroupManagers.Resize(mig.Project, mig.Zone, mig.Name, size).Do()
-	if err != nil {
-		return err
-	}
-	return m.waitForOp(op, mig.Project, mig.Zone)
-}
-
-// GCE
-func (m *gceManagerImpl) waitForOp(operation *gce.Operation, project string, zone string) error {
-	for start := time.Now(); time.Since(start) < operationWaitTimeout; time.Sleep(operationPollInterval) {
-		glog.V(4).Infof("Waiting for operation %s %s %s", project, zone, operation.Name)
-		if op, err := m.gceService.ZoneOperations.Get(project, zone, operation.Name).Do(); err == nil {
-			glog.V(4).Infof("Operation %s %s %s status: %s", project, zone, operation.Name, op.Status)
-			if op.Status == "DONE" {
-				return nil
-			}
-		} else {
-			glog.Warningf("Error while getting operation %s on %s: %v", operation.Name, operation.TargetLink, err)
-		}
-	}
-	return fmt.Errorf("Timeout while waiting for operation %s on %s to complete.", operation.Name, operation.TargetLink)
+	return m.GceService.ResizeMig(mig.GceRef, size)
 }
 
 //  GKE
 func (m *gceManagerImpl) waitForGkeOp(operation *gke_beta.Operation) error {
-	for start := time.Now(); time.Since(start) < gkeOperationWaitTimeout; time.Sleep(operationPollInterval) {
+	for start := time.Now(); time.Since(start) < gkeOperationWaitTimeout; time.Sleep(defaultOperationPollInterval) {
 		glog.V(4).Infof("Waiting for operation %s %s %s", m.projectId, m.location, operation.Name)
 		if op, err := m.gkeBetaService.Projects.Zones.Operations.Get(m.projectId, m.location, operation.Name).Do(); err == nil {
 			glog.V(4).Infof("Operation %s %s %s status: %s", m.projectId, m.location, operation.Name, op.Status)
@@ -815,18 +776,7 @@ func (m *gceManagerImpl) DeleteInstances(instances []*GceRef) error {
 		}
 	}
 
-	req := gce.InstanceGroupManagersDeleteInstancesRequest{
-		Instances: []string{},
-	}
-	for _, instance := range instances {
-		req.Instances = append(req.Instances, GenerateInstanceUrl(instance.Project, instance.Zone, instance.Name))
-	}
-
-	op, err := m.gceService.InstanceGroupManagers.DeleteInstances(commonMig.Project, commonMig.Zone, commonMig.Name, &req).Do()
-	if err != nil {
-		return err
-	}
-	return m.waitForOp(op, commonMig.Project, commonMig.Zone)
+	return m.GceService.DeleteInstances(commonMig.GceRef, instances)
 }
 
 func (m *gceManagerImpl) getMigs() []*migInformation {
@@ -883,23 +833,19 @@ func (m *gceManagerImpl) regenerateCache() error {
 		mig := migInfo.config
 		glog.V(4).Infof("Regenerating MIG information for %s %s %s", mig.Project, mig.Zone, mig.Name)
 
-		instanceGroupManager, err := m.gceService.InstanceGroupManagers.Get(mig.Project, mig.Zone, mig.Name).Do()
+		basename, err := m.GceService.FetchMigBasename(mig.GceRef)
 		if err != nil {
 			return err
 		}
-		m.updateMigBasename(migInfo.config.GceRef, instanceGroupManager.BaseInstanceName)
+		m.updateMigBasename(mig.GceRef, basename)
 
-		instances, err := m.gceService.InstanceGroupManagers.ListManagedInstances(mig.Project, mig.Zone, mig.Name).Do()
+		instances, err := m.GceService.FetchMigInstances(mig.GceRef)
 		if err != nil {
 			glog.V(4).Infof("Failed MIG info request for %s %s %s: %v", mig.Project, mig.Zone, mig.Name, err)
 			return err
 		}
-		for _, instance := range instances.ManagedInstances {
-			project, zone, name, err := ParseInstanceUrl(instance.Instance)
-			if err != nil {
-				return err
-			}
-			newMigCache[GceRef{Project: project, Zone: zone, Name: name}] = mig
+		for _, ref := range instances {
+			newMigCache[ref] = mig
 		}
 	}
 
@@ -909,17 +855,13 @@ func (m *gceManagerImpl) regenerateCache() error {
 
 // GetMigNodes returns mig nodes.
 func (m *gceManagerImpl) GetMigNodes(mig *Mig) ([]string, error) {
-	instances, err := m.gceService.InstanceGroupManagers.ListManagedInstances(mig.Project, mig.Zone, mig.Name).Do()
+	instances, err := m.GceService.FetchMigInstances(mig.GceRef)
 	if err != nil {
 		return []string{}, err
 	}
 	result := make([]string, 0)
-	for _, instance := range instances.ManagedInstances {
-		project, zone, name, err := ParseInstanceUrl(instance.Instance)
-		if err != nil {
-			return []string{}, err
-		}
-		result = append(result, fmt.Sprintf("gce://%s/%s/%s", project, zone, name))
+	for _, ref := range instances {
+		result = append(result, fmt.Sprintf("gce://%s/%s/%s", ref.Project, ref.Zone, ref.Name))
 	}
 	return result, nil
 }
@@ -933,9 +875,6 @@ func (m *gceManagerImpl) getProjectId() string {
 func (m *gceManagerImpl) getMode() GcpCloudProviderMode {
 	return m.mode
 }
-func (m *gceManagerImpl) getTemplates() *templateBuilder {
-	return m.templates
-}
 
 func (m *gceManagerImpl) Refresh() error {
 	if m.lastRefresh.Add(refreshInterval).After(time.Now()) {
@@ -945,7 +884,6 @@ func (m *gceManagerImpl) Refresh() error {
 }
 
 func (m *gceManagerImpl) forceRefresh() error {
-
 	switch m.mode {
 	case ModeGCE:
 		if err := m.clearMachinesCache(); err != nil {
@@ -1171,17 +1109,13 @@ func (m *gceManagerImpl) findMigsNamed(name *regexp.Regexp) ([]string, error) {
 	if m.regional {
 		return m.findMigsInRegion(m.location, name)
 	}
-	return m.findMigsInZone(m.location, name)
+	return m.GceService.FetchMigsWithName(m.location, name)
 }
 
 func (m *gceManagerImpl) getZones(region string) ([]string, error) {
-	r, err := m.gceService.Regions.Get(m.getProjectId(), region).Do()
+	zones, err := m.GceService.FetchZones(region)
 	if err != nil {
 		return nil, fmt.Errorf("cannot get zones for GCE region %s: %v", region, err)
-	}
-	zones := make([]string, len(r.Zones))
-	for i, link := range r.Zones {
-		zones[i] = path.Base(link)
 	}
 	return zones, nil
 }
@@ -1193,7 +1127,7 @@ func (m *gceManagerImpl) findMigsInRegion(region string, name *regexp.Regexp) ([
 		return nil, err
 	}
 	for _, z := range zones {
-		zl, err := m.findMigsInZone(z, name)
+		zl, err := m.GceService.FetchMigsWithName(z, name)
 		if err != nil {
 			return nil, err
 		}
@@ -1205,37 +1139,25 @@ func (m *gceManagerImpl) findMigsInRegion(region string, name *regexp.Regexp) ([
 	return links, nil
 }
 
-func (m *gceManagerImpl) findMigsInZone(zone string, name *regexp.Regexp) ([]string, error) {
-	filter := fmt.Sprintf("name eq %s", name)
-	links := make([]string, 0)
-	req := m.gceService.InstanceGroups.List(m.getProjectId(), zone).Filter(filter)
-	if err := req.Pages(context.TODO(), func(page *gce.InstanceGroupList) error {
-		for _, ig := range page.Items {
-			links = append(links, ig.SelfLink)
-			glog.V(3).Infof("autodiscovered managed instance group %s using regexp %s", ig.Name, name)
+func (m *gceManagerImpl) getMigTemplateNode(mig *Mig) (*apiv1.Node, error) {
+	if mig.Exist() {
+		template, err := m.GceService.FetchMigTemplate(mig.GceRef)
+		if err != nil {
+			return nil, err
 		}
-		return nil
-	}); err != nil {
-		return nil, fmt.Errorf("cannot list managed instance groups: %v", err)
+		cpu, mem, err := m.getCpuAndMemoryForMachineType(template.Properties.MachineType, mig.GceRef.Zone)
+		if err != nil {
+			return nil, err
+		}
+		return m.templates.buildNodeFromTemplate(mig, template, cpu, mem)
+	} else if mig.Autoprovisioned() {
+		cpu, mem, err := m.getCpuAndMemoryForMachineType(mig.spec.machineType, mig.GceRef.Zone)
+		if err != nil {
+			return nil, err
+		}
+		return m.templates.buildNodeFromAutoprovisioningSpec(mig, cpu, mem)
 	}
-	return links, nil
-}
-
-func (m *gceManagerImpl) getMigTemplate(mig *Mig) (*gce.InstanceTemplate, error) {
-	igm, err := m.gceService.InstanceGroupManagers.Get(mig.Project, mig.Zone, mig.Name).Do()
-	if err != nil {
-		return nil, err
-	}
-	templateUrl, err := url.Parse(igm.InstanceTemplate)
-	if err != nil {
-		return nil, err
-	}
-	_, templateName := path.Split(templateUrl.EscapedPath())
-	instanceTemplate, err := m.gceService.InstanceTemplates.Get(mig.Project, templateName).Do()
-	if err != nil {
-		return nil, err
-	}
-	return instanceTemplate, nil
+	return nil, fmt.Errorf("unable to get node info for %s/%s/%s", mig.Project, mig.Zone, mig.Name)
 }
 
 func (m *gceManagerImpl) getMachineFromCache(machineType string, zone string) *gce.MachineType {
@@ -1256,7 +1178,7 @@ func (m *gceManagerImpl) getCpuAndMemoryForMachineType(machineType string, zone 
 	}
 	machine := m.getMachineFromCache(machineType, zone)
 	if machine == nil {
-		machine, err = m.gceService.MachineTypes.Get(m.projectId, zone, machineType).Do()
+		machine, err = m.GceService.FetchMachineType(zone, machineType)
 		if err != nil {
 			return 0, 0, err
 		}
