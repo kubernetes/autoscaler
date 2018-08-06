@@ -29,6 +29,7 @@ import (
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
+	metrics_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/admission"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
@@ -142,32 +143,34 @@ func getPatchesForVPADefaults(raw []byte) ([]patchRecord, error) {
 	return patches, nil
 }
 
-// only allow pods to pull images from specific registry.
-func (s *AdmissionServer) admit(data []byte) *v1beta1.AdmissionResponse {
+func (s *AdmissionServer) admit(data []byte) (*v1beta1.AdmissionResponse, metrics_admission.AdmissionStatus, metrics_admission.AdmissionResource) {
 	ar := v1beta1.AdmissionReview{}
 	if err := json.Unmarshal(data, &ar); err != nil {
 		glog.Error(err)
-		return nil
+		return nil, metrics_admission.Error, metrics_admission.Unknown
 	}
 	// The externalAdmissionHookConfiguration registered via selfRegistration
-	// asks the kube-apiserver only sends admission request regarding pods.
+	// asks the kube-apiserver only to send admission requests regarding pods & VPA objects.
 	podResource := metav1.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"}
 	vpaResource := metav1.GroupVersionResource{Group: "poc.autoscaling.k8s.io", Version: "v1alpha1", Resource: "verticalpodautoscalers"}
 	var patches []patchRecord
 	var err error
+	resource := metrics_admission.Unknown
 
 	switch ar.Request.Resource {
 	case podResource:
 		patches, err = s.getPatchesForPodResourceRequest(ar.Request.Object.Raw, ar.Request.Namespace)
+		resource = metrics_admission.Pod
 	case vpaResource:
 		patches, err = getPatchesForVPADefaults(ar.Request.Object.Raw)
+		resource = metrics_admission.Vpa
 	default:
 		patches, err = nil, fmt.Errorf("expected the resource to be %v or %v", podResource, vpaResource)
 	}
 
 	if err != nil {
 		glog.Error(err)
-		return nil
+		return nil, metrics_admission.Error, resource
 	}
 	response := v1beta1.AdmissionResponse{}
 	response.Allowed = true
@@ -175,18 +178,31 @@ func (s *AdmissionServer) admit(data []byte) *v1beta1.AdmissionResponse {
 		patch, err := json.Marshal(patches)
 		if err != nil {
 			glog.Errorf("Cannot marshal the patch %v: %v", patches, err)
-			return nil
+			return nil, metrics_admission.Error, resource
 		}
 		patchType := v1beta1.PatchTypeJSONPatch
 		response.PatchType = &patchType
 		response.Patch = patch
 		glog.V(4).Infof("Sending patches: %v", patches)
 	}
-	return &response
+
+	var status metrics_admission.AdmissionStatus
+	if len(patches) > 0 {
+		status = metrics_admission.Applied
+	} else {
+		status = metrics_admission.Skipped
+	}
+	if resource == metrics_admission.Pod {
+		metrics_admission.OnAdmittedPod(status == metrics_admission.Applied)
+	}
+
+	return &response, status, resource
 }
 
 // Serve is a handler function of AdmissionServer
 func (s *AdmissionServer) Serve(w http.ResponseWriter, r *http.Request) {
+	timer := metrics_admission.NewAdmissionLatency()
+
 	var body []byte
 	if r.Body != nil {
 		if data, err := ioutil.ReadAll(r.Body); err == nil {
@@ -198,10 +214,11 @@ func (s *AdmissionServer) Serve(w http.ResponseWriter, r *http.Request) {
 	contentType := r.Header.Get("Content-Type")
 	if contentType != "application/json" {
 		glog.Errorf("contentType=%s, expect application/json", contentType)
+		timer.Observe(metrics_admission.Error, metrics_admission.Unknown)
 		return
 	}
 
-	reviewResponse := s.admit(body)
+	reviewResponse, status, resource := s.admit(body)
 	ar := v1beta1.AdmissionReview{
 		Response: reviewResponse,
 	}
@@ -209,8 +226,15 @@ func (s *AdmissionServer) Serve(w http.ResponseWriter, r *http.Request) {
 	resp, err := json.Marshal(ar)
 	if err != nil {
 		glog.Error(err)
+		timer.Observe(metrics_admission.Error, resource)
+		return
 	}
+
 	if _, err := w.Write(resp); err != nil {
 		glog.Error(err)
+		timer.Observe(metrics_admission.Error, resource)
+		return
 	}
+
+	timer.Observe(status, resource)
 }
