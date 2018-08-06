@@ -115,11 +115,6 @@ func (m *gceManagerMock) getMode() GcpCloudProviderMode {
 	return args.Get(0).(GcpCloudProviderMode)
 }
 
-func (m *gceManagerMock) getTemplates() *templateBuilder {
-	args := m.Called()
-	return args.Get(0).(*templateBuilder)
-}
-
 func (m *gceManagerMock) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
 	args := m.Called()
 	return args.Get(0).(*cloudprovider.ResourceLimiter), args.Error(1)
@@ -130,9 +125,9 @@ func (m *gceManagerMock) findMigsNamed(name *regexp.Regexp) ([]string, error) {
 	return args.Get(0).([]string), args.Error(1)
 }
 
-func (m *gceManagerMock) getMigTemplate(mig *Mig) (*gcev1.InstanceTemplate, error) {
+func (m *gceManagerMock) getMigTemplateNode(mig *Mig) (*apiv1.Node, error) {
 	args := m.Called(mig)
-	return args.Get(0).(*gcev1.InstanceTemplate), args.Error(1)
+	return args.Get(0).(*apiv1.Node), args.Error(1)
 }
 
 func (m *gceManagerMock) getCpuAndMemoryForMachineType(machineType string, zone string) (cpu int64, mem int64, err error) {
@@ -293,7 +288,6 @@ func TestMig(t *testing.T) {
 	gceService, err := gcev1.New(client)
 	assert.NoError(t, err)
 	gceService.BasePath = server.URL
-	templateBuilder := &templateBuilder{"project1"}
 	gce := &GceCloudProvider{
 		gceManager: gceManagerMock,
 	}
@@ -301,9 +295,7 @@ func TestMig(t *testing.T) {
 	// Test NewNodeGroup.
 	gceManagerMock.On("getProjectId").Return("project1").Once()
 	gceManagerMock.On("getLocation").Return("us-central1-b").Once()
-	gceManagerMock.On("getTemplates").Return(templateBuilder).Once()
-	gceManagerMock.On("getCpuAndMemoryForMachineType", "n1-standard-1", "us-central1-b").
-		Return(int64(1), int64(3840*1024*1024), nil).Once()
+	gceManagerMock.On("getMigTemplateNode", mock.AnythingOfType("*gce.Mig")).Return(&apiv1.Node{}, nil).Once()
 	nodeGroup, err := gce.NewNodeGroup("n1-standard-1", nil, nil, nil, nil)
 	assert.NoError(t, err)
 	assert.NotNil(t, nodeGroup)
@@ -445,22 +437,8 @@ func TestMig(t *testing.T) {
 	mock.AssertExpectationsForObjects(t, gceManagerMock)
 
 	// Test TemplateNodeInfo.
-	gceManagerMock.On("getTemplates").Return(templateBuilder).Times(1)
-	gceManagerMock.On("getMigTemplate", mock.AnythingOfType("*gce.Mig")).Return(gceInstanceTemplate, nil).Once()
-	gceManagerMock.On("getCpuAndMemoryForMachineType", "n1-standard-1", "us-central1-b").
-		Return(int64(1), int64(3840*1024*1024), nil).Once()
+	gceManagerMock.On("getMigTemplateNode", mock.AnythingOfType("*gce.Mig")).Return(&apiv1.Node{}, nil).Once()
 	templateNodeInfo, err := mig2.TemplateNodeInfo()
-	assert.NoError(t, err)
-	assert.NotNil(t, templateNodeInfo)
-	assert.NotNil(t, templateNodeInfo.Node())
-	mock.AssertExpectationsForObjects(t, gceManagerMock)
-
-	// Test TemplateNodeInfo for non-existing autoprovisioned Mig.
-	gceManagerMock.On("getTemplates").Return(templateBuilder).Once()
-	gceManagerMock.On("getCpuAndMemoryForMachineType", "n1-standard-1", "us-central1-b").
-		Return(int64(1), int64(3840*1024*1024), nil).Once()
-	mig1.exist = false
-	templateNodeInfo, err = mig1.TemplateNodeInfo()
 	assert.NoError(t, err)
 	assert.NotNil(t, templateNodeInfo)
 	assert.NotNil(t, templateNodeInfo.Node())
@@ -475,7 +453,6 @@ func TestNewNodeGroupForGpu(t *testing.T) {
 	gceService, err := gcev1.New(client)
 	assert.NoError(t, err)
 	gceService.BasePath = server.URL
-	templateBuilder := &templateBuilder{"project1"}
 	gce := &GceCloudProvider{
 		gceManager: gceManagerMock,
 	}
@@ -483,9 +460,7 @@ func TestNewNodeGroupForGpu(t *testing.T) {
 	// Test NewNodeGroup.
 	gceManagerMock.On("getProjectId").Return("project1").Once()
 	gceManagerMock.On("getLocation").Return("us-west1-b").Once()
-	gceManagerMock.On("getTemplates").Return(templateBuilder).Once()
-	gceManagerMock.On("getCpuAndMemoryForMachineType", "n1-standard-1", "us-west1-b").
-		Return(int64(1), int64(3840*1024*1024), nil).Once()
+	gceManagerMock.On("getMigTemplateNode", mock.AnythingOfType("*gce.Mig")).Return(&apiv1.Node{}, nil).Once()
 
 	systemLabels := map[string]string{
 		gpu.GPULabel: gpu.DefaultGPUType,

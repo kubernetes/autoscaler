@@ -125,6 +125,9 @@ func (gce *GceCloudProvider) GetAvailableMachineTypes() ([]string, error) {
 func (gce *GceCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string,
 	taints []apiv1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
 	nodePoolName := fmt.Sprintf("%s-%s-%d", nodeAutoprovisioningPrefix, machineType, time.Now().Unix())
+	// TODO(aleksandra-malinowska): GceManager's location will be a region
+	// for regional clusters. We should support regional clusters by looking at
+	// node locations instead.
 	zone := gce.gceManager.getLocation()
 
 	if gpuRequest, found := extraResources[gpu.ResourceNvidiaGPU]; found {
@@ -171,14 +174,15 @@ func (gce *GceCloudProvider) NewNodeGroup(machineType string, labels map[string]
 		},
 		gceManager: gce.gceManager,
 	}
-	cpu, mem, err := gce.gceManager.getCpuAndMemoryForMachineType(mig.spec.machineType, mig.GceRef.Zone)
+
+	// Try to build a node from autoprovisioning spec. We don't need one right now,
+	// but if it fails later, we'd end up with a node group we can't scale anyway,
+	// so there's no point creating it.
+	_, err := gce.gceManager.getMigTemplateNode(mig)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to build node from spec: %v", err)
 	}
-	_, err = gce.gceManager.getTemplates().buildNodeFromAutoprovisioningSpec(mig, cpu, mem)
-	if err != nil {
-		return nil, err
-	}
+
 	return mig, nil
 }
 
@@ -350,7 +354,7 @@ func (mig *Mig) DeleteNodes(nodes []*apiv1.Node) error {
 
 // Id returns mig url.
 func (mig *Mig) Id() string {
-	return GenerateMigUrl(mig.Project, mig.Zone, mig.Name)
+	return GenerateMigUrl(mig.GceRef)
 }
 
 // Debug returns a debug string for the Mig.
@@ -393,32 +397,9 @@ func (mig *Mig) Autoprovisioned() bool {
 
 // TemplateNodeInfo returns a node template for this node group.
 func (mig *Mig) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
-	var node *apiv1.Node
-	if mig.Exist() {
-		template, err := mig.gceManager.getMigTemplate(mig)
-		if err != nil {
-			return nil, err
-		}
-		cpu, mem, err := mig.gceManager.getCpuAndMemoryForMachineType(template.Properties.MachineType, mig.GceRef.Zone)
-		if err != nil {
-			return nil, err
-		}
-		node, err = mig.gceManager.getTemplates().buildNodeFromTemplate(mig, template, cpu, mem)
-		if err != nil {
-			return nil, err
-		}
-	} else if mig.Autoprovisioned() {
-		var err error
-		cpu, mem, err := mig.gceManager.getCpuAndMemoryForMachineType(mig.spec.machineType, mig.GceRef.Zone)
-		if err != nil {
-			return nil, err
-		}
-		node, err = mig.gceManager.getTemplates().buildNodeFromAutoprovisioningSpec(mig, cpu, mem)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		return nil, fmt.Errorf("unable to get node info for %s/%s/%s", mig.Project, mig.Zone, mig.Name)
+	node, err := mig.gceManager.getMigTemplateNode(mig)
+	if err != nil {
+		return nil, err
 	}
 	nodeInfo := schedulercache.NewNodeInfo(cloudprovider.BuildKubeProxy(mig.Id()))
 	nodeInfo.SetNode(node)
