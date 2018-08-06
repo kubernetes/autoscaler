@@ -355,10 +355,8 @@ func (m *gceManagerImpl) fetchAllNodePoolsGkeImpl() error {
 		if !autoscaled {
 			continue
 		}
-		// format is
-		// "https://www.googleapis.com/compute/v1/projects/mwielgus-proj/zones/europe-west1-b/instanceGroupManagers/gke-cluster-1-default-pool-ba78a787-grp"
 		for _, igurl := range nodePool.InstanceGroupUrls {
-			project, zone, name, err := parseGceUrl(igurl, "instanceGroupManagers")
+			project, zone, name, err := ParseIgmUrl(igurl)
 			if err != nil {
 				return err
 			}
@@ -416,10 +414,8 @@ func (m *gceManagerImpl) fetchAllNodePoolsGkeRegionalImpl() error {
 		if !autoscaled {
 			continue
 		}
-		// format is
-		// "https://www.googleapis.com/compute/v1/projects/mwielgus-proj/zones/europe-west1-b/instanceGroupManagers/gke-cluster-1-default-pool-ba78a787-grp"
 		for _, igurl := range nodePool.InstanceGroupUrls {
-			project, zone, name, err := parseGceUrl(igurl, "instanceGroupManagers")
+			project, zone, name, err := ParseIgmUrl(igurl)
 			if err != nil {
 				return err
 			}
@@ -481,10 +477,8 @@ func (m *gceManagerImpl) fetchAllNodePoolsGkeNapImpl() error {
 			}
 			continue
 		}
-		// format is
-		// "https://www.googleapis.com/compute/v1/projects/mwielgus-proj/zones/europe-west1-b/instanceGroupManagers/gke-cluster-1-default-pool-ba78a787-grp"
 		for _, igurl := range nodePool.InstanceGroupUrls {
-			project, zone, name, err := parseGceUrl(igurl, "instanceGroupManagers")
+			project, zone, name, err := ParseIgmUrl(igurl)
 			if err != nil {
 				return err
 			}
