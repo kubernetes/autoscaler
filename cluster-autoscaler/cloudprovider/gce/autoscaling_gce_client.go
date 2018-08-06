@@ -30,8 +30,8 @@ import (
 )
 
 const (
-	operationWaitTimeout  = 5 * time.Second
-	operationPollInterval = 100 * time.Millisecond
+	defaultOperationWaitTimeout  = 5 * time.Second
+	defaultOperationPollInterval = 100 * time.Millisecond
 )
 
 // AutoscalingGceClient is used for communicating with GCE API.
@@ -55,6 +55,10 @@ type autoscalingGceClientV1 struct {
 	gceService *gce.Service
 
 	projectId string
+
+	// These can be overridden, e.g. for testing.
+	operationWaitTimeout  time.Duration
+	operationPollInterval time.Duration
 }
 
 // NewAutoscalingGceClientV1 creates a new client for communicating with GCE v1 API.
@@ -65,8 +69,10 @@ func NewAutoscalingGceClientV1(client *http.Client, projectId string) (*autoscal
 	}
 
 	return &autoscalingGceClientV1{
-		projectId:  projectId,
-		gceService: gceService,
+		projectId:             projectId,
+		gceService:            gceService,
+		operationWaitTimeout:  defaultOperationWaitTimeout,
+		operationPollInterval: defaultOperationPollInterval,
 	}, nil
 }
 
@@ -107,7 +113,7 @@ func (client *autoscalingGceClientV1) ResizeMig(migRef GceRef, size int64) error
 }
 
 func (client *autoscalingGceClientV1) waitForOp(operation *gce.Operation, project, zone string) error {
-	for start := time.Now(); time.Since(start) < operationWaitTimeout; time.Sleep(operationPollInterval) {
+	for start := time.Now(); time.Since(start) < client.operationWaitTimeout; time.Sleep(client.operationPollInterval) {
 		glog.V(4).Infof("Waiting for operation %s %s %s", project, zone, operation.Name)
 		if op, err := client.gceService.ZoneOperations.Get(project, zone, operation.Name).Do(); err == nil {
 			glog.V(4).Infof("Operation %s %s %s status: %s", project, zone, operation.Name, op.Status)

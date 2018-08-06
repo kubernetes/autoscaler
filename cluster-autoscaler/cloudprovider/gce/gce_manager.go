@@ -750,7 +750,7 @@ func (m *gceManagerImpl) SetMigSize(mig *Mig, size int64) error {
 
 //  GKE
 func (m *gceManagerImpl) waitForGkeOp(operation *gke_beta.Operation) error {
-	for start := time.Now(); time.Since(start) < gkeOperationWaitTimeout; time.Sleep(operationPollInterval) {
+	for start := time.Now(); time.Since(start) < gkeOperationWaitTimeout; time.Sleep(defaultOperationPollInterval) {
 		glog.V(4).Infof("Waiting for operation %s %s %s", m.projectId, m.location, operation.Name)
 		if op, err := m.gkeBetaService.Projects.Zones.Operations.Get(m.projectId, m.location, operation.Name).Do(); err == nil {
 			glog.V(4).Infof("Operation %s %s %s status: %s", m.projectId, m.location, operation.Name, op.Status)

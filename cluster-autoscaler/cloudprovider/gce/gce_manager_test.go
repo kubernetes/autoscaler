@@ -510,6 +510,11 @@ func getManagedInstancesResponse2Named(name, zone string) string {
 
 func newTestGceManager(t *testing.T, testServerURL string, mode GcpCloudProviderMode, regional bool) *gceManagerImpl {
 	gceService := newTestAutoscalingGceClient(t, projectId, testServerURL)
+
+	// Override wait for op timeouts.
+	gceService.operationWaitTimeout = 50 * time.Millisecond
+	gceService.operationPollInterval = 1 * time.Millisecond
+
 	manager := &gceManagerImpl{
 		migs:        make([]*migInformation, 0),
 		GceService:  gceService,
