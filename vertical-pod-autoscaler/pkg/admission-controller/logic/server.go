@@ -29,6 +29,7 @@ import (
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
+	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
 // AdmissionServer is an admission webhook server that modifies pod resources request based on VPA recommendation
@@ -65,6 +66,9 @@ func (s *AdmissionServer) getPatchesForPodResourceRequest(raw []byte, namespace 
 	pod, err = s.podPreProcessor.Process(pod)
 	if err != nil {
 		return nil, err
+	}
+	if annotationsPerContainer == nil {
+		annotationsPerContainer = vpa_api_util.ContainerToAnnotationsMap{}
 	}
 	patches := []patchRecord{}
 	updatesAnnotation := []string{}
