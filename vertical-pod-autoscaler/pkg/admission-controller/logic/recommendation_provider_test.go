@@ -25,6 +25,7 @@ import (
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
+	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
 func TestUpdateResourceRequests(t *testing.T) {
@@ -34,6 +35,7 @@ func TestUpdateResourceRequests(t *testing.T) {
 		expectedAction bool
 		expectedMem    string
 		expectedCPU    string
+		annotations    vpa_api_util.ContainerToAnnotationsMap
 	}
 	containerName := "container1"
 	vpaName := "vpa1"
@@ -84,12 +86,18 @@ func TestUpdateResourceRequests(t *testing.T) {
 		expectedAction: true,
 		expectedMem:    "300Mi", // MinMemory is expected to be used
 		expectedCPU:    "4",     // MinCpu is expected to be used
+		annotations: vpa_api_util.ContainerToAnnotationsMap{
+			containerName: []string{"cpu capped to minAllowed", "memory capped to minAllowed"},
+		},
 	}, {
 		pod:            uninitialized,
 		vpas:           []*vpa_types.VerticalPodAutoscaler{targetAboveMaxVPA},
 		expectedAction: true,
 		expectedMem:    "1Gi", // MaxMemory is expected to be used
 		expectedCPU:    "5",   // MaxCpu is expected to be used
+		annotations: vpa_api_util.ContainerToAnnotationsMap{
+			containerName: []string{"cpu capped to maxAllowed", "memory capped to maxAllowed"},
+		},
 	}, {
 		pod:            initialized,
 		vpas:           []*vpa_types.VerticalPodAutoscaler{vpa},
@@ -141,7 +149,7 @@ func TestUpdateResourceRequests(t *testing.T) {
 			recommendationProcessor: api.NewCappingRecommendationProcessor(),
 		}
 
-		resources, name, err := recommendationProvider.GetContainersResourcesForPod(tc.pod)
+		resources, annotations, name, err := recommendationProvider.GetContainersResourcesForPod(tc.pod)
 
 		if tc.expectedAction {
 			assert.Equal(t, vpaName, name)
@@ -155,6 +163,15 @@ func TestUpdateResourceRequests(t *testing.T) {
 			assert.NoError(t, err)
 			memoryRequest := resources[0].Requests[apiv1.ResourceMemory]
 			assert.Equal(t, expectedMemory.Value(), memoryRequest.Value(), "memory request doesn't match")
+			assert.Len(t, annotations, len(tc.annotations))
+			if len(tc.annotations) > 0 {
+				for annotationKey, annotationValues := range tc.annotations {
+					assert.Len(t, annotations[annotationKey], len(annotationValues))
+					for _, annotation := range annotationValues {
+						assert.Contains(t, annotations[annotationKey], annotation)
+					}
+				}
+			}
 		} else {
 			assert.Equal(t, len(resources), 0)
 		}
