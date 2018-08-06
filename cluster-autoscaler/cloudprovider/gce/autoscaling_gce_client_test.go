@@ -19,6 +19,7 @@ package gce
 import (
 	"net/http"
 	"testing"
+	"time"
 
 	test_util "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
@@ -41,6 +42,10 @@ func TestWaitForOp(t *testing.T) {
 	server := test_util.NewHttpServerMock()
 	defer server.Close()
 	g := newTestAutoscalingGceClient(t, "project1", server.URL)
+
+	g.operationPollInterval = 1 * time.Millisecond
+	g.operationWaitTimeout = 50 * time.Millisecond
+
 	server.On("handle", "/project1/zones/us-central1-b/operations/operation-1505728466148-d16f5197").Return(operationRunningResponse).Times(3)
 	server.On("handle", "/project1/zones/us-central1-b/operations/operation-1505728466148-d16f5197").Return(operationDoneResponse).Once()
 
@@ -49,4 +54,24 @@ func TestWaitForOp(t *testing.T) {
 	err := g.waitForOp(operation, projectId, zoneB)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, server)
+}
+
+func TestWaitForOpTimeout(t *testing.T) {
+	server := test_util.NewHttpServerMock()
+	defer server.Close()
+	g := newTestAutoscalingGceClient(t, "project1", server.URL)
+
+	// The values here are higher than in other tests since we're aiming for timeout.
+	// Lower values make this fragile and flakey.
+	g.operationPollInterval = 10 * time.Millisecond
+	g.operationWaitTimeout = 49 * time.Millisecond
+
+	// Sometimes, only 3 calls are made, but it doesn't really matter,
+	// so let's not assert expectations for this mock, just check for timeout error.
+	server.On("handle", "/project1/zones/us-central1-b/operations/operation-1505728466148-d16f5197").Return(operationRunningResponse).Times(4)
+
+	operation := &gce_api.Operation{Name: "operation-1505728466148-d16f5197"}
+
+	err := g.waitForOp(operation, projectId, zoneB)
+	assert.Error(t, err)
 }
