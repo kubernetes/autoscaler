@@ -35,7 +35,7 @@ const (
 )
 
 func TestSortPriority(t *testing.T) {
-	calculator := NewUpdatePriorityCalculator(nil, nil, &test.FakeRecommendationProcessor{})
+	calculator := NewUpdatePriorityCalculator(nil, nil, nil, &test.FakeRecommendationProcessor{})
 
 	pod1 := test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "2", "")).Get()
 	pod2 := test.Pod().WithName("POD2").AddContainer(test.BuildTestContainer(containerName, "4", "")).Get()
@@ -55,7 +55,7 @@ func TestSortPriority(t *testing.T) {
 }
 
 func TestSortPriorityMultiResource(t *testing.T) {
-	calculator := NewUpdatePriorityCalculator(nil, nil, &test.FakeRecommendationProcessor{})
+	calculator := NewUpdatePriorityCalculator(nil, nil, nil, &test.FakeRecommendationProcessor{})
 
 	pod1 := test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "4", "60M")).Get()
 	pod2 := test.Pod().WithName("POD2").AddContainer(test.BuildTestContainer(containerName, "3", "90M")).Get()
@@ -98,7 +98,7 @@ func TestSortPriorityMultiContainers(t *testing.T) {
 	recommendation.ContainerRecommendations = append(recommendation.ContainerRecommendations, container2rec)
 
 	timestampNow := pod1.Status.StartTime.Time.Add(time.Hour * 24)
-	calculator := NewUpdatePriorityCalculator(nil, nil, &test.FakeRecommendationProcessor{})
+	calculator := NewUpdatePriorityCalculator(nil, nil, nil, &test.FakeRecommendationProcessor{})
 	calculator.AddPod(pod1, recommendation, timestampNow)
 	calculator.AddPod(pod2, recommendation, timestampNow)
 
@@ -114,7 +114,7 @@ func TestSortPriorityMultiContainers(t *testing.T) {
 }
 
 func TestSortPriorityResourcesDecrease(t *testing.T) {
-	calculator := NewUpdatePriorityCalculator(nil, nil, &test.FakeRecommendationProcessor{})
+	calculator := NewUpdatePriorityCalculator(nil, nil, nil, &test.FakeRecommendationProcessor{})
 
 	pod1 := test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "4", "")).Get()
 	pod2 := test.Pod().WithName("POD2").AddContainer(test.BuildTestContainer(containerName, "7", "")).Get()
@@ -136,7 +136,7 @@ func TestSortPriorityResourcesDecrease(t *testing.T) {
 }
 
 func TestUpdateNotRequired(t *testing.T) {
-	calculator := NewUpdatePriorityCalculator(nil, nil, &test.FakeRecommendationProcessor{})
+	calculator := NewUpdatePriorityCalculator(nil, nil, nil, &test.FakeRecommendationProcessor{})
 
 	pod1 := test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "4", "")).Get()
 
@@ -150,7 +150,7 @@ func TestUpdateNotRequired(t *testing.T) {
 }
 
 func TestUpdateRequiredOnMilliQuantities(t *testing.T) {
-	calculator := NewUpdatePriorityCalculator(nil, nil, &test.FakeRecommendationProcessor{})
+	calculator := NewUpdatePriorityCalculator(nil, nil, nil, &test.FakeRecommendationProcessor{})
 
 	pod1 := test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "10m", "")).Get()
 
@@ -170,7 +170,7 @@ func TestUseProcessor(t *testing.T) {
 	recommendationProcessor.On("Apply").Return(processedRecommendation, nil)
 
 	calculator := NewUpdatePriorityCalculator(
-		nil, nil, recommendationProcessor)
+		nil, nil, nil, recommendationProcessor)
 
 	pod1 := test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "4", "10M")).Get()
 
@@ -188,7 +188,7 @@ func TestUseProcessor(t *testing.T) {
 // 2. diverging from the target by more than MinChangePriority.
 func TestUpdateLonglivedPods(t *testing.T) {
 	calculator := NewUpdatePriorityCalculator(
-		nil, &UpdateConfig{MinChangePriority: 0.5}, &test.FakeRecommendationProcessor{})
+		nil, nil, &UpdateConfig{MinChangePriority: 0.5}, &test.FakeRecommendationProcessor{})
 
 	pods := []*apiv1.Pod{
 		test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "4", "")).Get(),
@@ -216,7 +216,7 @@ func TestUpdateLonglivedPods(t *testing.T) {
 // range for at least one container.
 func TestUpdateShortlivedPods(t *testing.T) {
 	calculator := NewUpdatePriorityCalculator(
-		nil, &UpdateConfig{MinChangePriority: 0.5}, &test.FakeRecommendationProcessor{})
+		nil, nil, &UpdateConfig{MinChangePriority: 0.5}, &test.FakeRecommendationProcessor{})
 
 	pods := []*apiv1.Pod{
 		test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "4", "")).Get(),
@@ -241,7 +241,7 @@ func TestUpdateShortlivedPods(t *testing.T) {
 
 func TestUpdatePodWithQuickOOM(t *testing.T) {
 	calculator := NewUpdatePriorityCalculator(
-		nil, &UpdateConfig{MinChangePriority: 0.5}, &test.FakeRecommendationProcessor{})
+		nil, nil, &UpdateConfig{MinChangePriority: 0.5}, &test.FakeRecommendationProcessor{})
 
 	pod := test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "4", "")).Get()
 
@@ -273,7 +273,7 @@ func TestUpdatePodWithQuickOOM(t *testing.T) {
 
 func TestDontUpdatePodWithOOMAfterLongRun(t *testing.T) {
 	calculator := NewUpdatePriorityCalculator(
-		nil, &UpdateConfig{MinChangePriority: 0.5}, &test.FakeRecommendationProcessor{})
+		nil, nil, &UpdateConfig{MinChangePriority: 0.5}, &test.FakeRecommendationProcessor{})
 
 	pod := test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "4", "")).Get()
 
@@ -305,7 +305,7 @@ func TestDontUpdatePodWithOOMAfterLongRun(t *testing.T) {
 
 func TestDontUpdatePodWithOOMOnlyOnOneContainer(t *testing.T) {
 	calculator := NewUpdatePriorityCalculator(
-		nil, &UpdateConfig{MinChangePriority: 0.5}, &test.FakeRecommendationProcessor{})
+		nil, nil, &UpdateConfig{MinChangePriority: 0.5}, &test.FakeRecommendationProcessor{})
 
 	pod := test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "4", "")).Get()
 
@@ -337,7 +337,7 @@ func TestDontUpdatePodWithOOMOnlyOnOneContainer(t *testing.T) {
 }
 
 func TestNoPods(t *testing.T) {
-	calculator := NewUpdatePriorityCalculator(nil, nil, &test.FakeRecommendationProcessor{})
+	calculator := NewUpdatePriorityCalculator(nil, nil, nil, &test.FakeRecommendationProcessor{})
 	result := calculator.GetSortedPods(NewDefaultPodEvicionAdmission())
 	assert.Exactly(t, []*apiv1.Pod{}, result)
 }
@@ -350,7 +350,7 @@ func (p *pod1Admission) Admit(pod *apiv1.Pod, recommendation *vpa_types.Recommen
 }
 
 func TestAdmission(t *testing.T) {
-	calculator := NewUpdatePriorityCalculator(nil, nil, &test.FakeRecommendationProcessor{})
+	calculator := NewUpdatePriorityCalculator(nil, nil, nil, &test.FakeRecommendationProcessor{})
 
 	pod1 := test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "2", "")).Get()
 	pod2 := test.Pod().WithName("POD2").AddContainer(test.BuildTestContainer(containerName, "4", "")).Get()
@@ -372,7 +372,7 @@ func TestAdmission(t *testing.T) {
 // Verify getUpdatePriorty does not encounter a NPE when there is no
 // recommendation for a container.
 func TestNoRecommendationForContainer(t *testing.T) {
-	calculator := NewUpdatePriorityCalculator(nil, nil, &test.FakeRecommendationProcessor{})
+	calculator := NewUpdatePriorityCalculator(nil, nil, nil, &test.FakeRecommendationProcessor{})
 	pod := test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "5", "10")).Get()
 
 	result := calculator.getUpdatePriority(pod, nil)

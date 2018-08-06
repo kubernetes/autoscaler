@@ -203,21 +203,29 @@ type RecommendationProcessorMock struct {
 }
 
 // Apply is a mock implementation of RecommendationProcessor.Apply
-func (m *RecommendationProcessorMock) Apply(podRecommendation *vpa_types.RecommendedPodResources, policy *vpa_types.PodResourcePolicy,
-	pod *apiv1.Pod) (*vpa_types.RecommendedPodResources, error) {
+func (m *RecommendationProcessorMock) Apply(podRecommendation *vpa_types.RecommendedPodResources,
+	policy *vpa_types.PodResourcePolicy,
+	conditions []vpa_types.VerticalPodAutoscalerCondition,
+	pod *apiv1.Pod) (*vpa_types.RecommendedPodResources, map[string][]string, error) {
 	args := m.Called()
 	var returnArg *vpa_types.RecommendedPodResources
 	if args.Get(0) != nil {
 		returnArg = args.Get(0).(*vpa_types.RecommendedPodResources)
 	}
-	return returnArg, args.Error(1)
+	var annotations map[string][]string
+	if args.Get(1) != nil {
+		annotations = args.Get(1).(map[string][]string)
+	}
+	return returnArg, annotations, args.Error(1)
 }
 
 // FakeRecommendationProcessor is a dummy implementation of RecommendationProcessor
 type FakeRecommendationProcessor struct{}
 
 // Apply is a dummy implementation of RecommendationProcessor.Apply which returns provided podRecommendation
-func (f *FakeRecommendationProcessor) Apply(podRecommendation *vpa_types.RecommendedPodResources, policy *vpa_types.PodResourcePolicy,
-	pod *apiv1.Pod) (*vpa_types.RecommendedPodResources, error) {
-	return podRecommendation, nil
+func (f *FakeRecommendationProcessor) Apply(podRecommendation *vpa_types.RecommendedPodResources,
+	policy *vpa_types.PodResourcePolicy,
+	conditions []vpa_types.VerticalPodAutoscalerCondition,
+	pod *apiv1.Pod) (*vpa_types.RecommendedPodResources, map[string][]string, error) {
+	return podRecommendation, nil, nil
 }

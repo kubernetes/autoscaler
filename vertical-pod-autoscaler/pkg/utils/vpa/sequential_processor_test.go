@@ -29,23 +29,29 @@ type fakeProcessor struct {
 	message string
 }
 
-func (p *fakeProcessor) Apply(podRecommendation *vpa_types.RecommendedPodResources, policy *vpa_types.PodResourcePolicy, pod *v1.Pod) (*vpa_types.RecommendedPodResources, error) {
+func (p *fakeProcessor) Apply(podRecommendation *vpa_types.RecommendedPodResources,
+	policy *vpa_types.PodResourcePolicy,
+	conditions []vpa_types.VerticalPodAutoscalerCondition,
+	pod *v1.Pod) (*vpa_types.RecommendedPodResources, ContainerToAnnotationsMap, error) {
 	result := podRecommendation.DeepCopy()
 	result.ContainerRecommendations[0].ContainerName += p.message
-	return result, nil
+	containerToAnnotationsMap := ContainerToAnnotationsMap{"trace": []string{p.message}}
+	return result, containerToAnnotationsMap, nil
 }
 
 func TestSequentialProcessor(t *testing.T) {
 	name1 := "processor1"
 	name2 := "processor2"
 	tested := NewSequentialProcessor([]RecommendationProcessor{&fakeProcessor{name1}, &fakeProcessor{name2}})
-
 	rec1 := &vpa_types.RecommendedPodResources{
 		ContainerRecommendations: []vpa_types.RecommendedContainerResources{
 			{
 				ContainerName: "",
 			},
 		}}
-	result, _ := tested.Apply(rec1, nil, nil)
+	result, annotations, _ := tested.Apply(rec1, nil, nil, nil)
 	assert.Equal(t, name1+name2, result.ContainerRecommendations[0].ContainerName)
+	assert.Contains(t, annotations, "trace")
+	assert.Contains(t, annotations["trace"], name1)
+	assert.Contains(t, annotations["trace"], name2)
 }
