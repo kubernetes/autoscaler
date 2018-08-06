@@ -738,8 +738,9 @@ func TestCreateNodePool(t *testing.T) {
 		},
 	}
 
-	err := g.createNodePool(mig)
+	newMig, err := g.createNodePool(mig)
 	assert.NoError(t, err)
+	assert.True(t, newMig.Exist())
 	migs := g.getMigs()
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(migs))

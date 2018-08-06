@@ -379,11 +379,11 @@ func (mig *Mig) Exist() bool {
 }
 
 // Create creates the node group on the cloud provider side.
-func (mig *Mig) Create() error {
+func (mig *Mig) Create() (cloudprovider.NodeGroup, error) {
 	if !mig.exist && mig.autoprovisioned {
 		return mig.gceManager.createNodePool(mig)
 	}
-	return fmt.Errorf("Cannot create non-autoprovisioned node group")
+	return nil, fmt.Errorf("Cannot create non-autoprovisioned node group")
 }
 
 // Delete deletes the node group on the cloud provider side.

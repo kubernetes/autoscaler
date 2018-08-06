@@ -90,9 +90,9 @@ func (m *gceManagerMock) getMigs() []*migInformation {
 	return args.Get(0).([]*migInformation)
 }
 
-func (m *gceManagerMock) createNodePool(mig *Mig) error {
+func (m *gceManagerMock) createNodePool(mig *Mig) (*Mig, error) {
 	args := m.Called(mig)
-	return args.Error(0)
+	return mig, args.Error(0)
 }
 
 func (m *gceManagerMock) deleteNodePool(toBeRemoved *Mig) error {
@@ -430,7 +430,7 @@ func TestMig(t *testing.T) {
 	// Test Create.
 	mig1.exist = false
 	gceManagerMock.On("createNodePool", mock.AnythingOfType("*gce.Mig")).Return(nil).Once()
-	err = mig1.Create()
+	_, err = mig1.Create()
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, gceManagerMock)
 

@@ -179,8 +179,8 @@ func (ng *AwsNodeGroup) Exist() bool {
 }
 
 // Create creates the node group on the cloud provider side.
-func (ng *AwsNodeGroup) Create() error {
-	return cloudprovider.ErrAlreadyExist
+func (ng *AwsNodeGroup) Create() (cloudprovider.NodeGroup, error) {
+	return nil, cloudprovider.ErrAlreadyExist
 }
 
 // Autoprovisioned returns true if the node group is autoprovisioned.
