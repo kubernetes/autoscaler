@@ -491,7 +491,7 @@ type Cluster struct {
 	// ClusterIpv4Cidr: The IP address range of the container pods in this
 	// cluster,
 	// in
-	// [CIDR](http://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing)
+	// [CIDR](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing)
 	//
 	// notation (e.g. `10.96.0.0/14`). Leave blank to have
 	// one automatically chosen or specify a `/14` block in `10.0.0.0/8`.
@@ -729,7 +729,7 @@ type Cluster struct {
 	// Kubernetes services in
 	// this cluster,
 	// in
-	// [CIDR](http://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing)
+	// [CIDR](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing)
 	//
 	// notation (e.g. `1.2.3.4/29`). Service addresses are
 	// typically put in the last `/16` from the container CIDR.
@@ -1293,7 +1293,7 @@ type IPAllocationPolicy struct {
 	//
 	// Set to
 	// a
-	// [CIDR](http://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing)
+	// [CIDR](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing)
 	//
 	// notation (e.g. `10.96.0.0/14`) from the RFC-1918 private networks
 	// (e.g.
@@ -1335,7 +1335,7 @@ type IPAllocationPolicy struct {
 	//
 	// Set to
 	// a
-	// [CIDR](http://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing)
+	// [CIDR](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing)
 	//
 	// notation (e.g. `10.96.0.0/14`) from the RFC-1918 private networks
 	// (e.g.
@@ -1362,7 +1362,7 @@ type IPAllocationPolicy struct {
 	//
 	// Set to
 	// a
-	// [CIDR](http://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing)
+	// [CIDR](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing)
 	//
 	// notation (e.g. `10.96.0.0/14`) from the RFC-1918 private networks
 	// (e.g.
