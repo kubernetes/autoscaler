@@ -1,6 +1,6 @@
 ## Changelog
 
-### [1.7.0](https://github.com/magiconair/properties/tags/v1.7.0) - 20 Mar 2016
+### [1.7.0](https://github.com/magiconair/properties/releases/tag/v1.7.0) - 20 Mar 2016
 
  * [Issue #10](https://github.com/magiconair/properties/issues/10): Add [LoadURL,LoadURLs,MustLoadURL,MustLoadURLs](http://godoc.org/github.com/magiconair/properties#Properties.LoadURL) method to load properties from a URL.
  * [Issue #11](https://github.com/magiconair/properties/issues/11): Add [LoadString,MustLoadString](http://godoc.org/github.com/magiconair/properties#Properties.LoadString) method to load properties from an UTF8 string.
