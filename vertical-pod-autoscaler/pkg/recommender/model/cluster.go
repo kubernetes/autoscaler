@@ -217,7 +217,7 @@ func (cluster *ClusterState) AddOrUpdateVpa(apiObject *vpa_types.VerticalPodAuto
 		vpaExists = false
 	}
 	if !vpaExists {
-		vpa = NewVpa(vpaID, selector)
+		vpa = NewVpa(vpaID, selector, apiObject.CreationTimestamp.Time)
 		cluster.Vpas[vpaID] = vpa
 		for aggregationKey, aggregation := range cluster.aggregateStateMap {
 			vpa.UseAggregationIfMatching(aggregationKey, aggregation)
@@ -226,6 +226,9 @@ func (cluster *ClusterState) AddOrUpdateVpa(apiObject *vpa_types.VerticalPodAuto
 	vpa.Conditions = conditionsMap
 	vpa.Recommendation = currentRecommendation
 	vpa.ResourcePolicy = apiObject.Spec.ResourcePolicy
+	if apiObject.Spec.UpdatePolicy != nil {
+		vpa.UpdateMode = apiObject.Spec.UpdatePolicy.UpdateMode
+	}
 	return nil
 }
 
