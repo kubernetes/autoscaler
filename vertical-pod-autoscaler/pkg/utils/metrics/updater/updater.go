@@ -34,11 +34,20 @@ var (
 			Help:      "Number of Pods evicted by Updater to apply a new recommendation.",
 		},
 	)
+
+	functionLatency = metrics.CreateExecutionTimeMetric(metricsNamespace,
+		"Time spent in various parts of VPA Updater main loop.")
 )
 
 // Register initializes all metrics for VPA Updater
 func Register() {
 	prometheus.MustRegister(evictedCount)
+	prometheus.MustRegister(functionLatency)
+}
+
+// NewExecutionTimer provides a timer for Updater's RunOnce execution
+func NewExecutionTimer() *metrics.ExecutionTimer {
+	return metrics.NewExecutionTimer(functionLatency)
 }
 
 // AddEvictedPod increases the counter of pods evicted by VPA

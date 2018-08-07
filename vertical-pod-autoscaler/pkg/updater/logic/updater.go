@@ -28,6 +28,7 @@ import (
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/poc.autoscaling.k8s.io/v1alpha1"
+	metrics_updater "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/updater"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 	kube_client "k8s.io/client-go/kubernetes"
 	v1lister "k8s.io/client-go/listers/core/v1"
@@ -63,14 +64,17 @@ func NewUpdater(kubeClient kube_client.Interface, vpaClient *vpa_clientset.Clien
 
 // RunOnce represents single iteration in the main-loop of Updater
 func (u *updater) RunOnce() {
+	timer := metrics_updater.NewExecutionTimer()
 	if u.evictionAdmission != nil {
 		u.evictionAdmission.LoopInit()
 	}
+	timer.ObserveStep("LoopInit")
 
 	vpaList, err := u.vpaLister.List(labels.Everything())
 	if err != nil {
 		glog.Fatalf("failed get VPA list: %v", err)
 	}
+	timer.ObserveStep("ListVPAs")
 
 	vpas := make([]*vpa_types.VerticalPodAutoscaler, 0)
 
@@ -85,14 +89,17 @@ func (u *updater) RunOnce() {
 
 	if len(vpas) == 0 {
 		glog.Warningf("no VPA objects to process")
+		timer.ObserveTotal()
 		return
 	}
 
 	podsList, err := u.podLister.List(labels.Everything())
 	if err != nil {
 		glog.Errorf("failed to get pods list: %v", err)
+		timer.ObserveTotal()
 		return
 	}
+	timer.ObserveStep("ListPods")
 	allLivePods := filterDeletedPods(podsList)
 
 	controlledPods := make(map[*vpa_types.VerticalPodAutoscaler][]*apiv1.Pod)
@@ -102,6 +109,7 @@ func (u *updater) RunOnce() {
 			controlledPods[controllingVPA] = append(controlledPods[controllingVPA], pod)
 		}
 	}
+	timer.ObserveStep("FilterPods")
 
 	for vpa, livePods := range controlledPods {
 		evictionLimiter := u.evictionFactory.NewPodsEvictionRestriction(livePods)
@@ -118,6 +126,8 @@ func (u *updater) RunOnce() {
 			}
 		}
 	}
+	timer.ObserveStep("EvictPods")
+	timer.ObserveTotal()
 }
 
 // getPodsUpdateOrder returns list of pods that should be updated ordered by update priority
