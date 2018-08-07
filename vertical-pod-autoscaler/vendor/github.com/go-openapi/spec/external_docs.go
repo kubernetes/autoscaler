@@ -17,7 +17,7 @@ package spec
 // ExternalDocumentation allows referencing an external resource for
 // extended documentation.
 //
-// For more information: http://goo.gl/8us55a#externalDocumentationObject
+// For more information: https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#externalDocumentationObject
 type ExternalDocumentation struct {
 	Description string `json:"description,omitempty"`
 	URL         string `json:"url,omitempty"`
