@@ -52,6 +52,9 @@ var (
 			Buckets:   []float64{10.0, 20.0, 30.0, 40.00, 50.0, 60.0, 90.0, 120.0, 150.0, 180.0, 240.0, 300.0, 600.0, 900.0, 1800.0},
 		},
 	)
+
+	functionLatency = metrics.CreateExecutionTimeMetric(metricsNamespace,
+		"Time spent in various parts of VPA Recommender main loop.")
 )
 
 type objectCounterKey struct {
@@ -68,6 +71,12 @@ type ObjectCounter struct {
 func Register() {
 	prometheus.MustRegister(vpaObjectCount)
 	prometheus.MustRegister(recommendationLatency)
+	prometheus.MustRegister(functionLatency)
+}
+
+// NewExecutionTimer provides a timer for Recommender's RunOnce execution
+func NewExecutionTimer() *metrics.ExecutionTimer {
+	return metrics.NewExecutionTimer(functionLatency)
 }
 
 // ObserveRecommendationLatency observes the time it took for the first recommendation to appear

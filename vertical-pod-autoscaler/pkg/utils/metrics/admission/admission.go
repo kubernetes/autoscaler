@@ -30,7 +30,7 @@ const (
 )
 
 // AdmissionLatency measures latency / execution time of Admission Control execution
-// usual usage pattern is: timer := AdmissionLatency(...) ; compute ; timer.Observe()
+// usual usage pattern is: timer := NewAdmissionLatency() ; compute ; timer.Observe()
 type AdmissionLatency struct {
 	histo *prometheus.HistogramVec
 	start time.Time
