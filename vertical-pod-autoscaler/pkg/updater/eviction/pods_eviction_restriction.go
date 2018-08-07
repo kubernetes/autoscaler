@@ -94,7 +94,7 @@ func (e *podsEvictionRestrictionImpl) CanEvict(pod *apiv1.Pod) bool {
 	return false
 }
 
-// Evict sends eviction instruction to api client. Retrurns error if pod cannot be evicted or if client returned error
+// Evict sends eviction instruction to api client. Returns error if pod cannot be evicted or if client returned error
 // Does not check if pod was actually evicted after eviction grace period.
 func (e *podsEvictionRestrictionImpl) Evict(podToEvict *apiv1.Pod) error {
 	cr, present := e.podToReplicaCreatorMap[getPodID(podToEvict)]
