@@ -604,10 +604,7 @@ func (m *gceManagerImpl) Refresh() error {
 func (m *gceManagerImpl) forceRefresh() error {
 	switch m.mode {
 	case ModeGCE:
-		if err := m.clearMachinesCache(); err != nil {
-			glog.Errorf("Failed to clear machine types cache: %v", err)
-			return err
-		}
+		m.clearMachinesCache()
 		if err := m.fetchAutoMigs(); err != nil {
 			glog.Errorf("Failed to fetch MIGs: %v", err)
 			return err
@@ -775,16 +772,17 @@ func (m *gceManagerImpl) GetResourceLimiter() (*cloudprovider.ResourceLimiter, e
 	return m.resourceLimiter, nil
 }
 
-func (m *gceManagerImpl) clearMachinesCache() error {
+func (m *gceManagerImpl) clearMachinesCache() {
 	if m.machinesCacheLastRefresh.Add(machinesRefreshInterval).After(time.Now()) {
-		return nil
+		return
 	}
+
 	m.cacheMutex.Lock()
 	defer m.cacheMutex.Unlock()
+
 	m.machinesCache = make(map[machineTypeKey]*gce.MachineType)
 	m.machinesCacheLastRefresh = time.Now()
 	glog.V(2).Infof("Cleared machine types cache, next clear after %v", m.machinesCacheLastRefresh.Add(machinesRefreshInterval))
-	return nil
 }
 
 // Code borrowed from gce cloud provider. Reuse the original as soon as it becomes public.
