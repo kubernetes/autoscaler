@@ -27,6 +27,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/logic"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
+	metrics_recommender "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/recommender"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 	"k8s.io/client-go/rest"
 )
@@ -68,6 +69,7 @@ func (r *recommender) GetClusterStateFeeder() input.ClusterStateFeeder {
 
 // Updates VPA CRD objects' statuses.
 func (r *recommender) updateVPAs() {
+	cnt := metrics_recommender.NewObjectCounter()
 	for key, vpa := range r.clusterState.Vpas {
 		glog.V(3).Infof("VPA to update #%v: %+v", key, vpa)
 		resources := r.podResourceRecommender.GetRecommendedPodResources(vpa)
@@ -81,11 +83,16 @@ func (r *recommender) updateVPAs() {
 			})
 
 		}
+		had := vpa.HasRecommendation()
 		vpa.Recommendation = &vpa_types.RecommendedPodResources{containerResources}
 		// Set RecommendationProvided if recommendation not empty.
 		if len(vpa.Recommendation.ContainerRecommendations) > 0 {
 			vpa.Conditions.Set(vpa_types.RecommendationProvided, true, "", "")
+			if !had {
+				metrics_recommender.ObserveRecommendationLatency(vpa.Created)
+			}
 		}
+		cnt.Add(vpa)
 
 		_, err := vpa_api_util.UpdateVpaStatus(
 			r.vpaClient.VerticalPodAutoscalers(vpa.ID.Namespace), vpa)
@@ -95,6 +102,7 @@ func (r *recommender) updateVPAs() {
 		}
 	}
 
+	cnt.Observe()
 }
 
 func (r *recommender) RunOnce() {
