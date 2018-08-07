@@ -204,6 +204,11 @@ func (gce *GceCloudProvider) Refresh() error {
 	return gce.gceManager.Refresh()
 }
 
+// GetClusterInfo returns the project id, location and cluster name.
+func (gce *GceCloudProvider) GetClusterInfo() (projectId, location, clusterName string) {
+	return gce.gceManager.getProjectId(), gce.gceManager.getLocation(), gce.gceManager.getClusterName()
+}
+
 // GceRef contains s reference to some entity in GCE/GKE world.
 type GceRef struct {
 	Project string

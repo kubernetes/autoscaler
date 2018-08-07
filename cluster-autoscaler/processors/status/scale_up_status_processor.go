@@ -36,6 +36,7 @@ type ScaleUpStatus struct {
 // ScaleUpStatusProcessor processes the status of the cluster after a scale-up.
 type ScaleUpStatusProcessor interface {
 	Process(context *context.AutoscalingContext, status *ScaleUpStatus)
+	CleanUp()
 }
 
 // NewDefaultScaleUpStatusProcessor creates a default instance of ScaleUpStatusProcessor.
@@ -48,4 +49,8 @@ type NoOpScaleUpStatusProcessor struct{}
 
 // Process processes the status of the cluster after a scale-up.
 func (p *NoOpScaleUpStatusProcessor) Process(context *context.AutoscalingContext, status *ScaleUpStatus) {
+}
+
+// CleanUp cleans up the processor's internal structures.
+func (p *NoOpScaleUpStatusProcessor) CleanUp() {
 }
