@@ -106,25 +106,34 @@ func (r *recommender) updateVPAs() {
 }
 
 func (r *recommender) RunOnce() {
+	timer := metrics_recommender.NewExecutionTimer()
 	glog.V(3).Infof("Recommender Run")
 	r.clusterStateFeeder.LoadVPAs()
+	timer.ObserveStep("LoadVPAs")
 	r.clusterStateFeeder.LoadPods()
+	timer.ObserveStep("LoadPods")
 	r.clusterStateFeeder.LoadRealTimeMetrics()
+	timer.ObserveStep("LoadMetrics")
 	r.updateVPAs()
+	timer.ObserveStep("UpdateVPAs")
 	glog.V(3).Infof("ClusterState is tracking %v PodStates and %v VPAs", len(r.clusterState.Pods), len(r.clusterState.Vpas))
 
 	now := time.Now()
 
 	if r.useCheckpoints {
 		r.checkpointWriter.StoreCheckpoints(now)
+		timer.ObserveStep("StoreCheckpoints")
 		if time.Now().Sub(r.lastCheckpointGC) > r.checkpointsGCInterval {
 			r.lastCheckpointGC = now
 			r.clusterStateFeeder.GarbageCollectCheckpoints()
+			timer.ObserveStep("CheckpointsGC")
 		}
 	}
 	if time.Now().Sub(r.lastAggregateContainerStateGC) > AggregateContainerStateGCInterval {
 		r.clusterState.GarbageCollectAggregateCollectionStates(now)
+		timer.ObserveStep("AggregateStatesGC")
 	}
+	timer.ObserveTotal()
 }
 
 // NewRecommender creates a new recommender instance,
