@@ -117,7 +117,7 @@ type GceManager interface {
 	// Cleanup cleans up open resources before the cloud provider is destroyed, i.e. go routines etc.
 	Cleanup() error
 	getMigs() []*migInformation
-	createNodePool(mig *Mig) error
+	createNodePool(mig *Mig) (*Mig, error)
 	deleteNodePool(toBeRemoved *Mig) error
 	getLocation() string
 	getProjectId() string
@@ -408,24 +408,23 @@ func (m *gceManagerImpl) deleteNodePool(toBeRemoved *Mig) error {
 	return m.refreshNodePools()
 }
 
-func (m *gceManagerImpl) createNodePool(mig *Mig) error {
+func (m *gceManagerImpl) createNodePool(mig *Mig) (*Mig, error) {
 	m.assertGKENAP()
 
 	err := m.GkeService.CreateNodePool(mig)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	err = m.refreshNodePools()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	for _, existingMig := range m.getMigs() {
 		if existingMig.config.nodePoolName == mig.nodePoolName {
-			*mig = *existingMig.config
-			return nil
+			return existingMig.config, nil
 		}
 	}
-	return fmt.Errorf("node pool %s not found", mig.nodePoolName)
+	return nil, fmt.Errorf("node pool %s not found", mig.nodePoolName)
 }
 
 func (m *gceManagerImpl) fetchMachinesCache() error {
