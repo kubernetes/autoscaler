@@ -169,11 +169,10 @@ func (tcp *TestCloudProvider) AddNodeGroup(id string, min int, max int, size int
 }
 
 // AddAutoprovisionedNodeGroup adds node group to test cloud provider.
-func (tcp *TestCloudProvider) AddAutoprovisionedNodeGroup(id string, min int, max int, size int, machineType string) {
+func (tcp *TestCloudProvider) AddAutoprovisionedNodeGroup(id string, min int, max int, size int, machineType string) *TestNodeGroup {
 	tcp.Lock()
 	defer tcp.Unlock()
-
-	tcp.groups[id] = &TestNodeGroup{
+	nodeGroup := &TestNodeGroup{
 		cloudProvider:   tcp,
 		id:              id,
 		minSize:         min,
@@ -183,6 +182,8 @@ func (tcp *TestCloudProvider) AddAutoprovisionedNodeGroup(id string, min int, ma
 		autoprovisioned: true,
 		machineType:     machineType,
 	}
+	tcp.groups[id] = nodeGroup
+	return nodeGroup
 }
 
 // AddNode adds the given node to the group.
@@ -282,12 +283,12 @@ func (tng *TestNodeGroup) Exist() bool {
 }
 
 // Create creates the node group on the cloud provider side.
-func (tng *TestNodeGroup) Create() error {
+func (tng *TestNodeGroup) Create() (cloudprovider.NodeGroup, error) {
 	if tng.Exist() {
-		return fmt.Errorf("Group already exist")
+		return nil, fmt.Errorf("Group already exist")
 	}
-	tng.cloudProvider.AddAutoprovisionedNodeGroup(tng.id, tng.minSize, tng.maxSize, 0, tng.machineType)
-	return tng.cloudProvider.onNodeGroupCreate(tng.id)
+	newNodeGroup := tng.cloudProvider.AddAutoprovisionedNodeGroup(tng.id, tng.minSize, tng.maxSize, 0, tng.machineType)
+	return newNodeGroup, tng.cloudProvider.onNodeGroupCreate(tng.id)
 }
 
 // Delete deletes the node group on the cloud provider side.

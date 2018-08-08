@@ -96,8 +96,8 @@ func (as *AgentPool) Exist() bool {
 }
 
 // Create creates the node group on the cloud provider side.
-func (as *AgentPool) Create() error {
-	return cloudprovider.ErrAlreadyExist
+func (as *AgentPool) Create() (cloudprovider.NodeGroup, error) {
+	return nil, cloudprovider.ErrAlreadyExist
 }
 
 // Delete deletes the node group on the cloud provider side.
