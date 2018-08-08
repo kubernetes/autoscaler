@@ -461,8 +461,8 @@ func (agentPool *ContainerServiceAgentPool) Exist() bool {
 
 //Create is returns already exists since we don't support the
 //agent pool creation.
-func (agentPool *ContainerServiceAgentPool) Create() error {
-	return cloudprovider.ErrAlreadyExist
+func (agentPool *ContainerServiceAgentPool) Create() (cloudprovider.NodeGroup, error) {
+	return nil, cloudprovider.ErrAlreadyExist
 }
 
 //Delete is not implemented since we don't support agent pool

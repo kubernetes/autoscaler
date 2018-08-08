@@ -250,8 +250,8 @@ func (nodeGroup *NodeGroup) Exist() bool {
 }
 
 // Create creates the node group on the cloud provider side.
-func (nodeGroup *NodeGroup) Create() error {
-	return cloudprovider.ErrNotImplemented
+func (nodeGroup *NodeGroup) Create() (cloudprovider.NodeGroup, error) {
+	return nil, cloudprovider.ErrNotImplemented
 }
 
 // Delete deletes the node group on the cloud provider side.
