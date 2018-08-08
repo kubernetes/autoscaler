@@ -19,9 +19,7 @@ package logic
 import (
 	"flag"
 
-	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
-	api_utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
 var (
@@ -32,7 +30,7 @@ var (
 
 // PodResourceRecommender computes resource recommendation for a Vpa object.
 type PodResourceRecommender interface {
-	GetRecommendedPodResources(vpa *model.Vpa) RecommendedPodResources
+	GetRecommendedPodResources(containerNameToAggregateStateMap model.ContainerNameToAggregateStateMap) RecommendedPodResources
 }
 
 // RecommendedPodResources is a Map from container name to recommended resources.
@@ -55,23 +53,7 @@ type podResourceRecommender struct {
 	upperBoundEstimator ResourceEstimator
 }
 
-// Returns recommended resources for a given Vpa object.
-func (r *podResourceRecommender) GetRecommendedPodResources(vpa *model.Vpa) RecommendedPodResources {
-	containerNameToAggregateStateMap := vpa.AggregateStateByContainerName()
-	filteredContainerNameToAggregateStateMap := make(model.ContainerNameToAggregateStateMap)
-
-	for containerName, aggregatedContainerState := range containerNameToAggregateStateMap {
-		containerResourcePolicy := api_utils.GetContainerResourcePolicy(containerName, vpa.ResourcePolicy)
-		autoscalingDisabled := containerResourcePolicy != nil && containerResourcePolicy.Mode != nil &&
-			*containerResourcePolicy.Mode == vpa_types.ContainerScalingModeOff
-		if !autoscalingDisabled && aggregatedContainerState.TotalSamplesCount > 0 {
-			filteredContainerNameToAggregateStateMap[containerName] = aggregatedContainerState
-		}
-	}
-	return r.getRecommendedContainerResources(filteredContainerNameToAggregateStateMap)
-}
-
-func (r *podResourceRecommender) getRecommendedContainerResources(containerNameToAggregateStateMap model.ContainerNameToAggregateStateMap) RecommendedPodResources {
+func (r *podResourceRecommender) GetRecommendedPodResources(containerNameToAggregateStateMap model.ContainerNameToAggregateStateMap) RecommendedPodResources {
 	var recommendation = make(RecommendedPodResources)
 	if len(containerNameToAggregateStateMap) == 0 {
 		return recommendation
