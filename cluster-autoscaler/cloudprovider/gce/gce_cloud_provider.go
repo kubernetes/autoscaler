@@ -95,7 +95,7 @@ func (gce *GceCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 	migs := gce.gceManager.getMigs()
 	result := make([]cloudprovider.NodeGroup, 0, len(migs))
 	for _, mig := range migs {
-		result = append(result, mig.config)
+		result = append(result, mig.Config)
 	}
 	return result
 }
@@ -235,7 +235,7 @@ func GceRefFromProviderId(id string) (*GceRef, error) {
 	}, nil
 }
 
-// Information about what machines in a MIG look like.
+// MigSpec contains information about what machines in a MIG look like.
 type MigSpec struct {
 	machineType    string
 	labels         map[string]string

@@ -40,16 +40,6 @@ type gceManagerMock struct {
 	mock.Mock
 }
 
-func (m *gceManagerMock) RegisterMig(mig Mig) bool {
-	args := m.Called(mig)
-	return args.Bool(0)
-}
-
-func (m *gceManagerMock) UnregisterMig(toBeRemoved Mig) bool {
-	args := m.Called(toBeRemoved)
-	return args.Bool(0)
-}
-
 func (m *gceManagerMock) GetMigSize(mig Mig) (int64, error) {
 	args := m.Called(mig)
 	return args.Get(0).(int64), args.Error(1)
@@ -85,9 +75,9 @@ func (m *gceManagerMock) Cleanup() error {
 	return args.Error(0)
 }
 
-func (m *gceManagerMock) getMigs() []*migInformation {
+func (m *gceManagerMock) getMigs() []*MigInformation {
 	args := m.Called()
-	return args.Get(0).([]*migInformation)
+	return args.Get(0).([]*MigInformation)
 }
 
 func (m *gceManagerMock) createNodePool(mig Mig) (Mig, error) {
@@ -157,10 +147,10 @@ func TestNodeGroups(t *testing.T) {
 	gce := &GceCloudProvider{
 		gceManager: gceManagerMock,
 	}
-	mig := &migInformation{config: &gceMig{gceRef: GceRef{Name: "ng1"}}}
-	gceManagerMock.On("getMigs").Return([]*migInformation{mig}).Once()
+	mig := &MigInformation{Config: &gceMig{gceRef: GceRef{Name: "ng1"}}}
+	gceManagerMock.On("getMigs").Return([]*MigInformation{mig}).Once()
 	result := gce.NodeGroups()
-	assert.Equal(t, []cloudprovider.NodeGroup{mig.config}, result)
+	assert.Equal(t, []cloudprovider.NodeGroup{mig.Config}, result)
 	mock.AssertExpectationsForObjects(t, gceManagerMock)
 }
 
