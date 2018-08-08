@@ -20,10 +20,8 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"reflect"
 	"regexp"
 	"strings"
-	"sync"
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -84,22 +82,8 @@ func init() {
 	}
 }
 
-type migInformation struct {
-	config   Mig
-	basename string
-}
-
-type machineTypeKey struct {
-	zone        string
-	machineType string
-}
-
 // GceManager handles gce communication and data caching.
 type GceManager interface {
-	// RegisterMig registers mig in GceManager. Returns true if the node group didn't exist before.
-	RegisterMig(mig Mig) bool
-	// UnregisterMig unregisters mig in GceManager. Returns true if the node group has been removed.
-	UnregisterMig(toBeRemoved Mig) bool
 	// GetMigSize gets MIG size.
 	GetMigSize(mig Mig) (int64, error)
 	// SetMigSize sets MIG size.
@@ -116,7 +100,7 @@ type GceManager interface {
 	GetResourceLimiter() (*cloudprovider.ResourceLimiter, error)
 	// Cleanup cleans up open resources before the cloud provider is destroyed, i.e. go routines etc.
 	Cleanup() error
-	getMigs() []*migInformation
+	getMigs() []*MigInformation
 	createNodePool(mig Mig) (Mig, error)
 	deleteNodePool(toBeRemoved Mig) error
 	getLocation() string
@@ -130,14 +114,11 @@ type GceManager interface {
 
 // gceManagerImpl handles gce communication and data caching.
 type gceManagerImpl struct {
-	migs     []*migInformation
-	migCache map[GceRef]Mig
+	cache       GceCache
+	lastRefresh time.Time
 
 	GkeService AutoscalingGkeClient
 	GceService AutoscalingGceClient
-
-	cacheMutex sync.Mutex
-	migsMutex  sync.Mutex
 
 	location              string
 	projectId             string
@@ -148,11 +129,6 @@ type gceManagerImpl struct {
 	regional              bool
 	explicitlyConfigured  map[GceRef]bool
 	migAutoDiscoverySpecs []cloudprovider.MIGAutoDiscoveryConfig
-	resourceLimiter       *cloudprovider.ResourceLimiter
-	lastRefresh           time.Time
-
-	machinesCache            map[machineTypeKey]*gce.MachineType
-	machinesCacheLastRefresh time.Time
 }
 
 // CreateGceManager constructs gceManager object.
@@ -211,9 +187,8 @@ func CreateGceManager(configReader io.Reader, mode GcpCloudProviderMode, cluster
 		return nil, err
 	}
 	manager := &gceManagerImpl{
-		migs:        make([]*migInformation, 0),
+		cache:       NewGceCache(gceService),
 		GceService:  gceService,
-		migCache:    make(map[GceRef]Mig),
 		location:    location,
 		regional:    regional,
 		projectId:   projectId,
@@ -224,7 +199,6 @@ func CreateGceManager(configReader io.Reader, mode GcpCloudProviderMode, cluster
 		},
 		interrupt:            make(chan struct{}),
 		explicitlyConfigured: make(map[GceRef]bool),
-		machinesCache:        make(map[machineTypeKey]*gce.MachineType),
 	}
 
 	switch mode {
@@ -256,9 +230,7 @@ func CreateGceManager(configReader io.Reader, mode GcpCloudProviderMode, cluster
 	}
 
 	go wait.Until(func() {
-		manager.cacheMutex.Lock()
-		defer manager.cacheMutex.Unlock()
-		if err := manager.regenerateCache(); err != nil {
+		if err := manager.cache.RegenerateCacheWithLock(); err != nil {
 			glog.Errorf("Error while regenerating Mig cache: %v", err)
 		}
 	}, time.Hour, manager.interrupt)
@@ -327,71 +299,30 @@ func (m *gceManagerImpl) refreshNodePools() error {
 			}
 		}
 	}
-	for _, mig := range m.getMigs() {
-		if _, found := existingMigs[mig.config.GceRef()]; !found {
-			m.UnregisterMig(mig.config)
+	for _, mig := range m.cache.GetMigs() {
+		if _, found := existingMigs[mig.Config.GceRef()]; !found {
+			m.cache.UnregisterMig(mig.Config)
 			changed = true
 		}
 	}
 	if changed {
-		m.cacheMutex.Lock()
-		defer m.cacheMutex.Unlock()
-
-		if err := m.regenerateCache(); err != nil {
-			return err
-		}
+		return m.cache.RegenerateCacheWithLock()
 	}
 	return nil
 }
 
 // RegisterMig registers mig in GceManager. Returns true if the node group didn't exist before or its config has changed.
 func (m *gceManagerImpl) RegisterMig(mig Mig) bool {
-	m.migsMutex.Lock()
-	defer m.migsMutex.Unlock()
-
-	for i := range m.migs {
-		if oldMig := m.migs[i].config; oldMig.GceRef() == mig.GceRef() {
-			if !reflect.DeepEqual(oldMig, mig) {
-				m.migs[i].config = mig
-				glog.V(4).Infof("Updated Mig %s", mig.GceRef().String())
-				return true
-			}
-			return false
+	changed := m.cache.RegisterMig(mig)
+	if changed {
+		// Try to build a node from template to validate that this group
+		// can be scaled up from 0 nodes.
+		// We may never need to do it, so just log error if it fails.
+		if _, err := m.getMigTemplateNode(mig); err != nil {
+			glog.Errorf("Can't build node from template for %s, won't be able to scale from 0: %v", mig.GceRef().String(), err)
 		}
 	}
-
-	glog.V(1).Infof("Registering %s", mig.GceRef().String())
-	m.migs = append(m.migs, &migInformation{
-		config: mig,
-	})
-
-	// Try to build a node from template to validate that this group
-	// can be scaled up from 0 nodes.
-	// We may never need to do it, so just log error if it fails.
-	if _, err := m.getMigTemplateNode(mig); err != nil {
-		glog.Errorf("Can't build node from template for %s, won't be able to scale from 0: %v", mig.GceRef().String(), err)
-	}
-
-	return true
-}
-
-// UnregisterMig unregisters mig in GceManager. Returns true if the node group has been removed.
-func (m *gceManagerImpl) UnregisterMig(toBeRemoved Mig) bool {
-	m.migsMutex.Lock()
-	defer m.migsMutex.Unlock()
-
-	newMigs := make([]*migInformation, 0, len(m.migs))
-	found := false
-	for _, mig := range m.migs {
-		if mig.config.GceRef() == toBeRemoved.GceRef() {
-			glog.V(1).Infof("Unregistered Mig %s", toBeRemoved.GceRef().String())
-			found = true
-		} else {
-			newMigs = append(newMigs, mig)
-		}
-	}
-	m.migs = newMigs
-	return found
+	return changed
 }
 
 func (m *gceManagerImpl) deleteNodePool(toBeRemoved Mig) error {
@@ -419,16 +350,16 @@ func (m *gceManagerImpl) createNodePool(mig Mig) (Mig, error) {
 		return nil, err
 	}
 	// TODO(aleksandra-malinowska): support multi-zonal node pools.
-	for _, existingMig := range m.getMigs() {
-		if existingMig.config.NodePoolName() == mig.NodePoolName() {
-			return existingMig.config, nil
+	for _, existingMig := range m.cache.GetMigs() {
+		if existingMig.Config.NodePoolName() == mig.NodePoolName() {
+			return existingMig.Config, nil
 		}
 	}
 	return nil, fmt.Errorf("node pool %s not found", mig.NodePoolName())
 }
 
 func (m *gceManagerImpl) fetchMachinesCache() error {
-	if m.machinesCacheLastRefresh.Add(machinesRefreshInterval).After(time.Now()) {
+	if m.cache.MachinesCacheFresh() {
 		return nil
 	}
 	var locations []string
@@ -436,26 +367,21 @@ func (m *gceManagerImpl) fetchMachinesCache() error {
 	if err != nil {
 		return err
 	}
-	machinesCache := make(map[machineTypeKey]*gce.MachineType)
+	machinesCache := make(map[MachineTypeKey]*gce.MachineType)
 	for _, location := range locations {
 		machineTypes, err := m.GceService.FetchMachineTypes(location)
 		if err != nil {
 			return err
 		}
 		for _, machineType := range machineTypes {
-			machinesCache[machineTypeKey{location, machineType.Name}] = machineType
+			machinesCache[MachineTypeKey{location, machineType.Name}] = machineType
 		}
 
 	}
-	m.cacheMutex.Lock()
-	defer m.cacheMutex.Unlock()
-	m.machinesCache = machinesCache
-	m.machinesCacheLastRefresh = time.Now()
-	glog.V(2).Infof("Refreshed machine types, next refresh after %v", m.machinesCacheLastRefresh.Add(machinesRefreshInterval))
+	nextRefresh := m.cache.SetMachinesCache(machinesCache)
+	glog.V(2).Infof("Refreshed machine types, next refresh after %v", nextRefresh)
 	return nil
 }
-
-// End of v1alpha1/v1beta1 mess
 
 // GetMigSize gets MIG size.
 func (m *gceManagerImpl) GetMigSize(mig Mig) (int64, error) {
@@ -494,78 +420,13 @@ func (m *gceManagerImpl) DeleteInstances(instances []*GceRef) error {
 	return m.GceService.DeleteInstances(commonMig.GceRef(), instances)
 }
 
-func (m *gceManagerImpl) getMigs() []*migInformation {
-	m.migsMutex.Lock()
-	defer m.migsMutex.Unlock()
-	migs := make([]*migInformation, 0, len(m.migs))
-	for _, mig := range m.migs {
-		migs = append(migs, &migInformation{
-			basename: mig.basename,
-			config:   mig.config,
-		})
-	}
-	return migs
-}
-func (m *gceManagerImpl) updateMigBasename(ref GceRef, basename string) {
-	m.migsMutex.Lock()
-	defer m.migsMutex.Unlock()
-	for _, mig := range m.migs {
-		if mig.config.GceRef() == ref {
-			mig.basename = basename
-		}
-	}
+func (m *gceManagerImpl) getMigs() []*MigInformation {
+	return m.cache.GetMigs()
 }
 
 // GetMigForInstance returns MigConfig of the given Instance
 func (m *gceManagerImpl) GetMigForInstance(instance *GceRef) (Mig, error) {
-	m.cacheMutex.Lock()
-	defer m.cacheMutex.Unlock()
-	if mig, found := m.migCache[*instance]; found {
-		return mig, nil
-	}
-
-	for _, mig := range m.getMigs() {
-		if mig.config.GceRef().Project == instance.Project &&
-			mig.config.GceRef().Zone == instance.Zone &&
-			strings.HasPrefix(instance.Name, mig.basename) {
-			if err := m.regenerateCache(); err != nil {
-				return nil, fmt.Errorf("Error while looking for MIG for instance %+v, error: %v", *instance, err)
-			}
-			if mig, found := m.migCache[*instance]; found {
-				return mig, nil
-			}
-			return nil, fmt.Errorf("Instance %+v does not belong to any configured MIG", *instance)
-		}
-	}
-	// Instance doesn't belong to any configured mig.
-	return nil, nil
-}
-
-func (m *gceManagerImpl) regenerateCache() error {
-	newMigCache := make(map[GceRef]Mig)
-
-	for _, migInfo := range m.getMigs() {
-		mig := migInfo.config
-		glog.V(4).Infof("Regenerating MIG information for %s", mig.GceRef().String())
-
-		basename, err := m.GceService.FetchMigBasename(mig.GceRef())
-		if err != nil {
-			return err
-		}
-		m.updateMigBasename(mig.GceRef(), basename)
-
-		instances, err := m.GceService.FetchMigInstances(mig.GceRef())
-		if err != nil {
-			glog.V(4).Infof("Failed MIG info request for %s: %v", mig.GceRef().String(), err)
-			return err
-		}
-		for _, ref := range instances {
-			newMigCache[ref] = mig
-		}
-	}
-
-	m.migCache = newMigCache
-	return nil
+	return m.cache.GetMigForInstance(instance)
 }
 
 // GetMigNodes returns mig nodes.
@@ -648,12 +509,7 @@ func (m *gceManagerImpl) fetchExplicitMigs(specs []string) error {
 	}
 
 	if changed {
-		m.cacheMutex.Lock()
-		defer m.cacheMutex.Unlock()
-
-		if err := m.regenerateCache(); err != nil {
-			return err
-		}
+		return m.cache.RegenerateCacheWithLock()
 	}
 	return nil
 }
@@ -731,19 +587,14 @@ func (m *gceManagerImpl) fetchAutoMigs() error {
 	}
 
 	for _, mig := range m.getMigs() {
-		if !exists[mig.config.GceRef()] && !m.explicitlyConfigured[mig.config.GceRef()] {
-			m.UnregisterMig(mig.config)
+		if !exists[mig.Config.GceRef()] && !m.explicitlyConfigured[mig.Config.GceRef()] {
+			m.cache.UnregisterMig(mig.Config)
 			changed = true
 		}
 	}
 
 	if changed {
-		m.cacheMutex.Lock()
-		defer m.cacheMutex.Unlock()
-
-		if err := m.regenerateCache(); err != nil {
-			return err
-		}
+		return m.cache.RegenerateCacheWithLock()
 	}
 
 	return nil
@@ -757,32 +608,24 @@ func (m *gceManagerImpl) fetchResourceLimiter() error {
 		}
 
 		glog.V(2).Infof("Refreshed resource limits: %s", resourceLimiter.String())
-
-		m.cacheMutex.Lock()
-		defer m.cacheMutex.Unlock()
-		m.resourceLimiter = resourceLimiter
+		m.cache.SetResourceLimiter(resourceLimiter)
 	}
 	return nil
 }
 
 // GetResourceLimiter returns resource limiter.
 func (m *gceManagerImpl) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
-	m.cacheMutex.Lock()
-	defer m.cacheMutex.Unlock()
-	return m.resourceLimiter, nil
+	return m.cache.GetResourceLimiter()
 }
 
 func (m *gceManagerImpl) clearMachinesCache() {
-	if m.machinesCacheLastRefresh.Add(machinesRefreshInterval).After(time.Now()) {
+	if m.cache.MachinesCacheFresh() {
 		return
 	}
 
-	m.cacheMutex.Lock()
-	defer m.cacheMutex.Unlock()
-
-	m.machinesCache = make(map[machineTypeKey]*gce.MachineType)
-	m.machinesCacheLastRefresh = time.Now()
-	glog.V(2).Infof("Cleared machine types cache, next clear after %v", m.machinesCacheLastRefresh.Add(machinesRefreshInterval))
+	machinesCache := make(map[MachineTypeKey]*gce.MachineType)
+	nextRefresh := m.cache.SetMachinesCache(machinesCache)
+	glog.V(2).Infof("Cleared machine types cache, next clear after %v", nextRefresh)
 }
 
 // Code borrowed from gce cloud provider. Reuse the original as soon as it becomes public.
@@ -864,29 +707,17 @@ func (m *gceManagerImpl) getMigTemplateNode(mig Mig) (*apiv1.Node, error) {
 	return nil, fmt.Errorf("unable to get node info for %s", mig.GceRef().String())
 }
 
-func (m *gceManagerImpl) getMachineFromCache(machineType string, zone string) *gce.MachineType {
-	m.cacheMutex.Lock()
-	defer m.cacheMutex.Unlock()
-	return m.machinesCache[machineTypeKey{zone, machineType}]
-}
-
-func (m *gceManagerImpl) addMachineToCache(machineType string, zone string, machine *gce.MachineType) {
-	m.cacheMutex.Lock()
-	defer m.cacheMutex.Unlock()
-	m.machinesCache[machineTypeKey{zone, machineType}] = machine
-}
-
 func (m *gceManagerImpl) getCpuAndMemoryForMachineType(machineType string, zone string) (cpu int64, mem int64, err error) {
 	if strings.HasPrefix(machineType, "custom-") {
 		return parseCustomMachineType(machineType)
 	}
-	machine := m.getMachineFromCache(machineType, zone)
+	machine := m.cache.GetMachineFromCache(machineType, zone)
 	if machine == nil {
 		machine, err = m.GceService.FetchMachineType(zone, machineType)
 		if err != nil {
 			return 0, 0, err
 		}
-		m.addMachineToCache(machineType, zone, machine)
+		m.cache.AddMachineToCache(machineType, zone, machine)
 	}
 	return machine.GuestCpus, machine.MemoryMb * bytesPerMB, nil
 }

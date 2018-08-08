@@ -356,11 +356,13 @@ func TestExtractAutoscalerVarFromKubeEnv(t *testing.T) {
 }
 
 func TestExtractLabelsFromKubeEnv(t *testing.T) {
+	poolLabel := "cloud.google.com/gke-nodepool"
+	preemptibleLabel := "cloud.google.com/gke-preemptible"
 	expectedLabels := map[string]string{
-		"a":                                "b",
-		"c":                                "d",
-		"cloud.google.com/gke-nodepool":    "pool-3",
-		"cloud.google.com/gke-preemptible": "true",
+		"a":              "b",
+		"c":              "d",
+		poolLabel:        "pool-3",
+		preemptibleLabel: "true",
 	}
 	cases := []struct {
 		desc   string
