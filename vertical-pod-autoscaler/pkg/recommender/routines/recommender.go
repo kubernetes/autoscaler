@@ -72,7 +72,7 @@ func (r *recommender) updateVPAs() {
 	cnt := metrics_recommender.NewObjectCounter()
 	for key, vpa := range r.clusterState.Vpas {
 		glog.V(3).Infof("VPA to update #%v: %+v", key, vpa)
-		resources := r.podResourceRecommender.GetRecommendedPodResources(vpa)
+		resources := r.podResourceRecommender.GetRecommendedPodResources(GetContainerNameToAggregateStateMap(vpa))
 		containerResources := make([]vpa_types.RecommendedContainerResources, 0, len(resources))
 		for containerName, res := range resources {
 			containerResources = append(containerResources, vpa_types.RecommendedContainerResources{
