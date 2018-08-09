@@ -41,7 +41,7 @@ var (
 			Namespace: metricsNamespace,
 			Name:      "vpa_objects_count",
 			Help:      "Number of VPA objects present in the cluster.",
-		}, []string{"updateMode", "hasRecommendation"},
+		}, []string{"update_mode", "has_recommendation"},
 	)
 
 	recommendationLatency = prometheus.NewHistogram(
