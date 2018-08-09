@@ -45,6 +45,12 @@ type Recommender interface {
 	GetClusterState() *model.ClusterState
 	// GetClusterStateFeeder returns ClusterStateFeeder used by Recommender
 	GetClusterStateFeeder() input.ClusterStateFeeder
+	// UpdateVPAs computes recommendations and sends VPAs status updates to API Server
+	UpdateVPAs()
+	// MaintainCheckpoints stores current checkpoints in API Server and garbage collect old ones
+	MaintainCheckpoints()
+	// GarbageCollect removes old AggregateCollectionStates
+	GarbageCollect()
 }
 
 type recommender struct {
@@ -68,8 +74,10 @@ func (r *recommender) GetClusterStateFeeder() input.ClusterStateFeeder {
 }
 
 // Updates VPA CRD objects' statuses.
-func (r *recommender) updateVPAs() {
+func (r *recommender) UpdateVPAs() {
 	cnt := metrics_recommender.NewObjectCounter()
+	defer cnt.Observe()
+
 	for key, vpa := range r.clusterState.Vpas {
 		glog.V(3).Infof("VPA to update #%v: %+v", key, vpa)
 		resources := r.podResourceRecommender.GetRecommendedPodResources(GetContainerNameToAggregateStateMap(vpa))
@@ -101,12 +109,30 @@ func (r *recommender) updateVPAs() {
 				"Cannot update VPA %v object. Reason: %+v", vpa.ID.VpaName, err)
 		}
 	}
+}
 
-	cnt.Observe()
+func (r *recommender) MaintainCheckpoints() {
+	now := time.Now()
+	if r.useCheckpoints {
+		r.checkpointWriter.StoreCheckpoints(now)
+		if time.Now().Sub(r.lastCheckpointGC) > r.checkpointsGCInterval {
+			r.lastCheckpointGC = now
+			r.clusterStateFeeder.GarbageCollectCheckpoints()
+		}
+	}
+
+}
+
+func (r *recommender) GarbageCollect() {
+	if time.Now().Sub(r.lastAggregateContainerStateGC) > AggregateContainerStateGCInterval {
+		r.clusterState.GarbageCollectAggregateCollectionStates(time.Now())
+	}
 }
 
 func (r *recommender) RunOnce() {
 	timer := metrics_recommender.NewExecutionTimer()
+	defer timer.ObserveTotal()
+
 	glog.V(3).Infof("Recommender Run")
 	r.clusterStateFeeder.LoadVPAs()
 	timer.ObserveStep("LoadVPAs")
@@ -114,26 +140,16 @@ func (r *recommender) RunOnce() {
 	timer.ObserveStep("LoadPods")
 	r.clusterStateFeeder.LoadRealTimeMetrics()
 	timer.ObserveStep("LoadMetrics")
-	r.updateVPAs()
-	timer.ObserveStep("UpdateVPAs")
 	glog.V(3).Infof("ClusterState is tracking %v PodStates and %v VPAs", len(r.clusterState.Pods), len(r.clusterState.Vpas))
 
-	now := time.Now()
+	r.UpdateVPAs()
+	timer.ObserveStep("UpdateVPAs")
 
-	if r.useCheckpoints {
-		r.checkpointWriter.StoreCheckpoints(now)
-		timer.ObserveStep("StoreCheckpoints")
-		if time.Now().Sub(r.lastCheckpointGC) > r.checkpointsGCInterval {
-			r.lastCheckpointGC = now
-			r.clusterStateFeeder.GarbageCollectCheckpoints()
-			timer.ObserveStep("CheckpointsGC")
-		}
-	}
-	if time.Now().Sub(r.lastAggregateContainerStateGC) > AggregateContainerStateGCInterval {
-		r.clusterState.GarbageCollectAggregateCollectionStates(now)
-		timer.ObserveStep("AggregateStatesGC")
-	}
-	timer.ObserveTotal()
+	r.MaintainCheckpoints()
+	timer.ObserveStep("MaintainCheckpoints")
+
+	r.GarbageCollect()
+	timer.ObserveStep("GarbageCollect")
 }
 
 // NewRecommender creates a new recommender instance,
