@@ -48,11 +48,11 @@ type updater struct {
 	podLister               v1lister.PodLister
 	evictionFactory         eviction.PodsEvictionRestrictionFactory
 	recommendationProcessor vpa_api_util.RecommendationProcessor
-	evictionAdmission       priority.PodEvicionAdmission
+	evictionAdmission       priority.PodEvictionAdmission
 }
 
 // NewUpdater creates Updater with given configuration
-func NewUpdater(kubeClient kube_client.Interface, vpaClient *vpa_clientset.Clientset, minReplicasForEvicition int, evictionToleranceFraction float64, recommendationProcessor vpa_api_util.RecommendationProcessor, evictionAdmission priority.PodEvicionAdmission) Updater {
+func NewUpdater(kubeClient kube_client.Interface, vpaClient *vpa_clientset.Clientset, minReplicasForEvicition int, evictionToleranceFraction float64, recommendationProcessor vpa_api_util.RecommendationProcessor, evictionAdmission priority.PodEvictionAdmission) Updater {
 	return &updater{
 		vpaLister:               vpa_api_util.NewAllVpasLister(vpaClient, make(chan struct{})),
 		podLister:               newPodLister(kubeClient),

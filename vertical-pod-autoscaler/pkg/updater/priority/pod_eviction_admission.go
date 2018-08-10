@@ -21,22 +21,47 @@ import (
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 )
 
-// PodEvicionAdmission controls evictions of pods.
-type PodEvicionAdmission interface {
-	// LoopInit initializes PodEvicionAdmission for next Updater loop
+// PodEvictionAdmission controls evictions of pods.
+type PodEvictionAdmission interface {
+	// LoopInit initializes PodEvictionAdmission for next Updater loop
 	LoopInit()
-	// Admit returns true if PodEvicionAdmission decides that pod can be evicted with given recommendation.
+	// Admit returns true if PodEvictionAdmission decides that pod can be evicted with given recommendation.
 	Admit(pod *apiv1.Pod, recommendation *vpa_types.RecommendedPodResources) bool
 }
 
-type noopPodEvicionAdmission struct{}
+// NewDefaultPodEvictionAdmission constructs new PodEvictionAdmission that admits all pods.
+func NewDefaultPodEvictionAdmission() PodEvictionAdmission {
+	return &noopPodEvictionAdmission{}
+}
 
-func (n *noopPodEvicionAdmission) LoopInit() {}
-func (n *noopPodEvicionAdmission) Admit(pod *apiv1.Pod, recommendation *vpa_types.RecommendedPodResources) bool {
+// NewSequentialPodEvictionAdmission constructs PodEvictionAdmission that will chain provided PodEvictionAdmission objects
+func NewSequentialPodEvictionAdmission(admissions []PodEvictionAdmission) PodEvictionAdmission {
+	return &sequentialPodEvictionAdmission{admissions: admissions}
+}
+
+type sequentialPodEvictionAdmission struct {
+	admissions []PodEvictionAdmission
+}
+
+func (a *sequentialPodEvictionAdmission) LoopInit() {
+	for _, admission := range a.admissions {
+		admission.LoopInit()
+	}
+}
+
+func (a *sequentialPodEvictionAdmission) Admit(pod *apiv1.Pod, recommendation *vpa_types.RecommendedPodResources) bool {
+	for _, admission := range a.admissions {
+		admit := admission.Admit(pod, recommendation)
+		if !admit {
+			return false
+		}
+	}
 	return true
 }
 
-// NewDefaultPodEvicionAdmission constructs new PodEvicionAdmission that admits all pods.
-func NewDefaultPodEvicionAdmission() PodEvicionAdmission {
-	return &noopPodEvicionAdmission{}
+type noopPodEvictionAdmission struct{}
+
+func (n *noopPodEvictionAdmission) LoopInit() {}
+func (n *noopPodEvictionAdmission) Admit(pod *apiv1.Pod, recommendation *vpa_types.RecommendedPodResources) bool {
+	return true
 }
