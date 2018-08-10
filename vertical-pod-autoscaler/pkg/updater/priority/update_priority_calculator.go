@@ -120,7 +120,7 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, recommendation *vpa
 }
 
 // GetSortedPods returns a list of pods ordered by update priority (highest update priority first)
-func (calc *UpdatePriorityCalculator) GetSortedPods(admission PodEvicionAdmission) []*apiv1.Pod {
+func (calc *UpdatePriorityCalculator) GetSortedPods(admission PodEvictionAdmission) []*apiv1.Pod {
 	sort.Sort(byPriority(calc.pods))
 
 	result := []*apiv1.Pod{}
@@ -128,7 +128,7 @@ func (calc *UpdatePriorityCalculator) GetSortedPods(admission PodEvicionAdmissio
 		if admission == nil || admission.Admit(podPrio.pod, podPrio.recommendation) {
 			result = append(result, podPrio.pod)
 		} else {
-			glog.V(2).Infof("pod removed from update queue by PodEvicionAdmission: %v", podPrio.pod.Name)
+			glog.V(2).Infof("pod removed from update queue by PodEvictionAdmission: %v", podPrio.pod.Name)
 		}
 	}
 
