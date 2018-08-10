@@ -21,33 +21,12 @@ import (
 	"reflect"
 	"strings"
 	"sync"
-	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 
 	"github.com/golang/glog"
 	gce "google.golang.org/api/compute/v1"
 )
-
-// GceCache is used for caching cluster resources state.
-type GceCache struct {
-	// Cache content.
-	migs            []*MigInformation
-	migCache        map[GceRef]Mig
-	resourceLimiter *cloudprovider.ResourceLimiter
-	machinesCache   map[MachineTypeKey]*gce.MachineType
-	// Freshness timestamps.
-	machinesCacheLastRefresh time.Time
-	// Locks. Rules of locking:
-	// - migsMutex protects only migs.
-	// - cacheMutex protects migCache, resourceLimiter and machinesCache.
-	// - methods that take cacheMutex may call methods that take migsMutex.
-	// - methods that take migsMutex may not call methods that take cacheMutex.
-	cacheMutex sync.Mutex
-	migsMutex  sync.Mutex
-	// Service used to refresh cache.
-	GceService AutoscalingGceClient
-}
 
 // MigInformation is a wrapper for Mig.
 type MigInformation struct {
@@ -61,13 +40,49 @@ type MachineTypeKey struct {
 	MachineType string
 }
 
+// GceCache is used for caching cluster resources state.
+//
+// It is needed to:
+// - keep track of autoscaled MIGs in the cluster,
+// - keep track of instances and which MIG they belong to,
+// - limit repetitive GCE API calls.
+//
+// Cached resources:
+// 1) MIG configuration,
+// 2) instance->MIG mapping,
+// 3) resource limits (self-imposed quotas),
+// 4) machine types.
+//
+// How it works:
+// - migs (1), resource limits (3) and machine types (4) are only stored in this cache,
+// not updated by it.
+// - instancesCache (2) is based on registered migs (1). For each mig, its instances
+// are fetched from GCE API using gceService.
+// - instancesCache (2) is NOT updated automatically when migs field (1) is updated. Calling
+// RegenerateInstancesCache is required to sync it with registered migs.
+type GceCache struct {
+	// Cache content.
+	migs            []*MigInformation
+	instancesCache  map[GceRef]Mig
+	resourceLimiter *cloudprovider.ResourceLimiter
+	machinesCache   map[MachineTypeKey]*gce.MachineType
+	// Locks. Rules of locking:
+	// - migsMutex protects only migs.
+	// - cacheMutex protects instancesCache, resourceLimiter and machinesCache.
+	// - if both locks are needed, cacheMutex must be obtained before migsMutex.
+	cacheMutex sync.Mutex
+	migsMutex  sync.Mutex
+	// Service used to refresh cache.
+	GceService AutoscalingGceClient
+}
+
 // NewGceCache creates empty GceCache.
 func NewGceCache(gceService AutoscalingGceClient) GceCache {
 	return GceCache{
-		migs:          []*MigInformation{},
-		migCache:      map[GceRef]Mig{},
-		machinesCache: map[MachineTypeKey]*gce.MachineType{},
-		GceService:    gceService,
+		migs:           []*MigInformation{},
+		instancesCache: map[GceRef]Mig{},
+		machinesCache:  map[MachineTypeKey]*gce.MachineType{},
+		GceService:     gceService,
 	}
 }
 
@@ -90,6 +105,7 @@ func (gc *GceCache) RegisterMig(mig Mig) bool {
 	}
 
 	glog.V(1).Infof("Registering %s", mig.GceRef().String())
+	// TODO(aleksandra-malinowska): fetch and set MIG basename here.
 	gc.migs = append(gc.migs, &MigInformation{
 		Config: mig,
 	})
@@ -143,7 +159,7 @@ func (gc *GceCache) updateMigBasename(ref GceRef, basename string) {
 
 // Methods locking on cacheMutex.
 
-// GetMigForInstance returns MigConfig of the given Instance from cache.
+// GetMigForInstance returns Mig to which the given instance belongs.
 // Attempts to regenerate cache if there is a Mig with matching prefix in migs list.
 // TODO(aleksandra-malinowska): reconsider failing when there's a Mig with
 // matching prefix, but instance doesn't belong to it.
@@ -151,7 +167,7 @@ func (gc *GceCache) GetMigForInstance(instance *GceRef) (Mig, error) {
 	gc.cacheMutex.Lock()
 	defer gc.cacheMutex.Unlock()
 
-	if mig, found := gc.migCache[*instance]; found {
+	if mig, found := gc.instancesCache[*instance]; found {
 		return mig, nil
 	}
 
@@ -162,7 +178,7 @@ func (gc *GceCache) GetMigForInstance(instance *GceRef) (Mig, error) {
 			if err := gc.regenerateCache(); err != nil {
 				return nil, fmt.Errorf("Error while looking for MIG for instance %+v, error: %v", *instance, err)
 			}
-			if mig, found := gc.migCache[*instance]; found {
+			if mig, found := gc.instancesCache[*instance]; found {
 				return mig, nil
 			}
 			return nil, fmt.Errorf("Instance %+v does not belong to any configured MIG", *instance)
@@ -172,8 +188,8 @@ func (gc *GceCache) GetMigForInstance(instance *GceRef) (Mig, error) {
 	return nil, nil
 }
 
-// RegenerateCacheWithLock triggers cache regeneration under lock.
-func (gc *GceCache) RegenerateCacheWithLock() error {
+// RegenerateInstancesCache triggers instances cache regeneration under lock.
+func (gc *GceCache) RegenerateInstancesCache() error {
 	gc.cacheMutex.Lock()
 	defer gc.cacheMutex.Unlock()
 
@@ -182,7 +198,7 @@ func (gc *GceCache) RegenerateCacheWithLock() error {
 
 // internal method - should only be called after locking on cacheMutex.
 func (gc *GceCache) regenerateCache() error {
-	newMigCache := make(map[GceRef]Mig)
+	newInstancesCache := make(map[GceRef]Mig)
 
 	for _, migInfo := range gc.GetMigs() {
 		mig := migInfo.Config
@@ -200,11 +216,11 @@ func (gc *GceCache) regenerateCache() error {
 			return err
 		}
 		for _, ref := range instances {
-			newMigCache[ref] = mig
+			newInstancesCache[ref] = mig
 		}
 	}
 
-	gc.migCache = newMigCache
+	gc.instancesCache = newInstancesCache
 	return nil
 }
 
@@ -240,19 +256,10 @@ func (gc *GceCache) AddMachineToCache(machineType string, zone string, machine *
 	gc.machinesCache[MachineTypeKey{zone, machineType}] = machine
 }
 
-// SetMachinesCache sets the machines cache under lock and returns next recommended refresh time.
-func (gc *GceCache) SetMachinesCache(machinesCache map[MachineTypeKey]*gce.MachineType) time.Time {
+// SetMachinesCache sets the machines cache under lock.
+func (gc *GceCache) SetMachinesCache(machinesCache map[MachineTypeKey]*gce.MachineType) {
 	gc.cacheMutex.Lock()
 	defer gc.cacheMutex.Unlock()
 
 	gc.machinesCache = machinesCache
-	gc.machinesCacheLastRefresh = time.Now()
-	return gc.machinesCacheLastRefresh.Add(machinesRefreshInterval)
-}
-
-// Methods that need no lock.
-
-// MachinesCacheFresh return true if the last update to machines cache was within refesh interval.
-func (gc *GceCache) MachinesCacheFresh() bool {
-	return gc.machinesCacheLastRefresh.Add(machinesRefreshInterval).After(time.Now())
 }

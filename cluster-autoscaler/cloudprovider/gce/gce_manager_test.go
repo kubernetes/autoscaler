@@ -488,9 +488,9 @@ func newTestGceManager(t *testing.T, testServerURL string, mode GcpCloudProvider
 
 	manager := &gceManagerImpl{
 		cache: GceCache{
-			migs:       make([]*MigInformation, 0),
-			GceService: gceService,
-			migCache:   make(map[GceRef]Mig),
+			migs:           make([]*MigInformation, 0),
+			GceService:     gceService,
+			instancesCache: make(map[GceRef]Mig),
 			machinesCache: map[MachineTypeKey]*gce.MachineType{
 				{"us-central1-b", "n1-standard-1"}: {GuestCpus: 1, MemoryMb: 1},
 				{"us-central1-c", "n1-standard-1"}: {GuestCpus: 1, MemoryMb: 1},
@@ -1289,7 +1289,7 @@ func TestfetchMachinesCache(t *testing.T) {
 	// Skipped refresh.
 	server.On("handle", "/v1alpha1/projects/project1/locations/us-central1-b/clusters/cluster1").Return(getClusterResponse).Once()
 	server.On("handle", "/project1/zones/us-central1-b/machineTypes").Return(listMachineTypesResponse).Once()
-	g.cache.machinesCacheLastRefresh = time.Now().Add(-2 * time.Hour)
+	g.machinesCacheLastRefresh = time.Now().Add(-2 * time.Hour)
 	err = g.fetchMachinesCache()
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, server)
