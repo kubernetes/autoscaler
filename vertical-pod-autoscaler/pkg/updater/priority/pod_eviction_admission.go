@@ -29,14 +29,39 @@ type PodEvictionAdmission interface {
 	Admit(pod *apiv1.Pod, recommendation *vpa_types.RecommendedPodResources) bool
 }
 
+// NewDefaultPodEvictionAdmission constructs new PodEvictionAdmission that admits all pods.
+func NewDefaultPodEvictionAdmission() PodEvictionAdmission {
+	return &noopPodEvictionAdmission{}
+}
+
+// NewSequentialPodEvictionAdmission constructs PodEvictionAdmission that will chain provided PodEvictionAdmission objects
+func NewSequentialPodEvictionAdmission(admissions []PodEvictionAdmission) PodEvictionAdmission {
+	return &sequentialPodEvictionAdmission{admissions: admissions}
+}
+
+type sequentialPodEvictionAdmission struct {
+	admissions []PodEvictionAdmission
+}
+
+func (a *sequentialPodEvictionAdmission) LoopInit() {
+	for _, admission := range a.admissions {
+		admission.LoopInit()
+	}
+}
+
+func (a *sequentialPodEvictionAdmission) Admit(pod *apiv1.Pod, recommendation *vpa_types.RecommendedPodResources) bool {
+	for _, admission := range a.admissions {
+		admit := admission.Admit(pod, recommendation)
+		if !admit {
+			return false
+		}
+	}
+	return true
+}
+
 type noopPodEvictionAdmission struct{}
 
 func (n *noopPodEvictionAdmission) LoopInit() {}
 func (n *noopPodEvictionAdmission) Admit(pod *apiv1.Pod, recommendation *vpa_types.RecommendedPodResources) bool {
 	return true
-}
-
-// NewDefaultPodEvictionAdmission constructs new PodEvictionAdmission that admits all pods.
-func NewDefaultPodEvictionAdmission() PodEvictionAdmission {
-	return &noopPodEvictionAdmission{}
 }
