@@ -114,8 +114,9 @@ type GceManager interface {
 
 // gceManagerImpl handles gce communication and data caching.
 type gceManagerImpl struct {
-	cache       GceCache
-	lastRefresh time.Time
+	cache                    GceCache
+	lastRefresh              time.Time
+	machinesCacheLastRefresh time.Time
 
 	GkeService AutoscalingGkeClient
 	GceService AutoscalingGceClient
@@ -230,7 +231,7 @@ func CreateGceManager(configReader io.Reader, mode GcpCloudProviderMode, cluster
 	}
 
 	go wait.Until(func() {
-		if err := manager.cache.RegenerateCacheWithLock(); err != nil {
+		if err := manager.cache.RegenerateInstancesCache(); err != nil {
 			glog.Errorf("Error while regenerating Mig cache: %v", err)
 		}
 	}, time.Hour, manager.interrupt)
@@ -306,7 +307,7 @@ func (m *gceManagerImpl) refreshNodePools() error {
 		}
 	}
 	if changed {
-		return m.cache.RegenerateCacheWithLock()
+		return m.cache.RegenerateInstancesCache()
 	}
 	return nil
 }
@@ -359,7 +360,7 @@ func (m *gceManagerImpl) createNodePool(mig Mig) (Mig, error) {
 }
 
 func (m *gceManagerImpl) fetchMachinesCache() error {
-	if m.cache.MachinesCacheFresh() {
+	if m.machinesCacheLastRefresh.Add(machinesRefreshInterval).After(time.Now()) {
 		return nil
 	}
 	var locations []string
@@ -378,7 +379,9 @@ func (m *gceManagerImpl) fetchMachinesCache() error {
 		}
 
 	}
-	nextRefresh := m.cache.SetMachinesCache(machinesCache)
+	m.cache.SetMachinesCache(machinesCache)
+	nextRefresh := time.Now()
+	m.machinesCacheLastRefresh = nextRefresh
 	glog.V(2).Infof("Refreshed machine types, next refresh after %v", nextRefresh)
 	return nil
 }
@@ -509,7 +512,7 @@ func (m *gceManagerImpl) fetchExplicitMigs(specs []string) error {
 	}
 
 	if changed {
-		return m.cache.RegenerateCacheWithLock()
+		return m.cache.RegenerateInstancesCache()
 	}
 	return nil
 }
@@ -594,7 +597,7 @@ func (m *gceManagerImpl) fetchAutoMigs() error {
 	}
 
 	if changed {
-		return m.cache.RegenerateCacheWithLock()
+		return m.cache.RegenerateInstancesCache()
 	}
 
 	return nil
@@ -619,12 +622,14 @@ func (m *gceManagerImpl) GetResourceLimiter() (*cloudprovider.ResourceLimiter, e
 }
 
 func (m *gceManagerImpl) clearMachinesCache() {
-	if m.cache.MachinesCacheFresh() {
+	if m.machinesCacheLastRefresh.Add(machinesRefreshInterval).After(time.Now()) {
 		return
 	}
 
 	machinesCache := make(map[MachineTypeKey]*gce.MachineType)
-	nextRefresh := m.cache.SetMachinesCache(machinesCache)
+	m.cache.SetMachinesCache(machinesCache)
+	nextRefresh := time.Now()
+	m.machinesCacheLastRefresh = nextRefresh
 	glog.V(2).Infof("Cleared machine types cache, next clear after %v", nextRefresh)
 }
 
@@ -702,7 +707,7 @@ func (m *gceManagerImpl) getMigTemplateNode(mig Mig) (*apiv1.Node, error) {
 		if err != nil {
 			return nil, err
 		}
-		return m.templates.buildNodeFromAutoprovisioningSpec(mig, cpu, mem)
+		return m.templates.buildNodeFromMigSpec(mig, cpu, mem)
 	}
 	return nil, fmt.Errorf("unable to get node info for %s", mig.GceRef().String())
 }

@@ -193,7 +193,7 @@ func (t *templateBuilder) buildNodeFromTemplate(mig Mig, template *gce.InstanceT
 	return &node, nil
 }
 
-func (t *templateBuilder) buildNodeFromAutoprovisioningSpec(mig Mig, cpu int64, mem int64) (*apiv1.Node, error) {
+func (t *templateBuilder) buildNodeFromMigSpec(mig Mig, cpu int64, mem int64) (*apiv1.Node, error) {
 	if mig.Spec() == nil {
 		return nil, fmt.Errorf("no spec in mig %s", mig.GceRef().Name)
 	}
