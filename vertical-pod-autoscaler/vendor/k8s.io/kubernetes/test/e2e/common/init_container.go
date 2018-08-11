@@ -29,21 +29,28 @@ import (
 	podutil "k8s.io/kubernetes/pkg/api/v1/pod"
 	"k8s.io/kubernetes/pkg/client/conditions"
 	"k8s.io/kubernetes/test/e2e/framework"
+	imageutils "k8s.io/kubernetes/test/utils/image"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
-var _ = framework.KubeDescribe("InitContainer", func() {
+var _ = framework.KubeDescribe("InitContainer [NodeConformance]", func() {
 	f := framework.NewDefaultFramework("init-container")
 	var podClient *framework.PodClient
 	BeforeEach(func() {
 		podClient = f.PodClient()
 	})
 
-	It("should invoke init containers on a RestartNever pod", func() {
-		framework.SkipIfContainerRuntimeIs("rkt") // #25988
-
+	/*
+		Release: v1.12
+		Testname: init-container-starts-app-restartnever-pod
+		Description: Ensure that all InitContainers are started
+		and all containers in pod are voluntarily terminated with exit status 0,
+		and the system is not going to restart any of these containers
+		when Pod has restart policy as RestartNever.
+	*/
+	framework.ConformanceIt("should invoke init containers on a RestartNever pod", func() {
 		By("creating the pod")
 		name := "pod-init-" + string(uuid.NewUUID())
 		value := strconv.Itoa(time.Now().Nanosecond())
@@ -100,9 +107,15 @@ var _ = framework.KubeDescribe("InitContainer", func() {
 		}
 	})
 
-	It("should invoke init containers on a RestartAlways pod", func() {
-		framework.SkipIfContainerRuntimeIs("rkt") // #25988
-
+	/*
+		Release: v1.12
+		Testname: init-container-starts-app-restartalways-pod
+		Description: Ensure that all InitContainers are started
+		and all containers in pod started
+		and at least one container is still running or is in the process of being restarted
+		when Pod has restart policy as RestartAlways.
+	*/
+	framework.ConformanceIt("should invoke init containers on a RestartAlways pod", func() {
 		By("creating the pod")
 		name := "pod-init-" + string(uuid.NewUUID())
 		value := strconv.Itoa(time.Now().Nanosecond())
@@ -130,11 +143,11 @@ var _ = framework.KubeDescribe("InitContainer", func() {
 				Containers: []v1.Container{
 					{
 						Name:  "run1",
-						Image: framework.GetPauseImageName(f.ClientSet),
+						Image: imageutils.GetPauseImageName(),
 						Resources: v1.ResourceRequirements{
 							Limits: v1.ResourceList{
 								v1.ResourceCPU:    *resource.NewMilliQuantity(100, resource.DecimalSI),
-								v1.ResourceMemory: *resource.NewQuantity(30*1024*1024, resource.DecimalSI),
+								v1.ResourceMemory: *resource.NewQuantity(50*1024*1024, resource.DecimalSI),
 							},
 						},
 					},
@@ -163,9 +176,15 @@ var _ = framework.KubeDescribe("InitContainer", func() {
 		}
 	})
 
-	It("should not start app containers if init containers fail on a RestartAlways pod", func() {
-		framework.SkipIfContainerRuntimeIs("rkt") // #25988
-
+	/*
+		Release: v1.12
+		Testname: init-container-fails-stops-app-restartalways-pod
+		Description: Ensure that app container is not started
+		when all InitContainers failed to start
+		and Pod has restarted for few occurrences
+		and pod has restart policy as RestartAlways.
+	*/
+	framework.ConformanceIt("should not start app containers if init containers fail on a RestartAlways pod", func() {
 		By("creating the pod")
 		name := "pod-init-" + string(uuid.NewUUID())
 		value := strconv.Itoa(time.Now().Nanosecond())
@@ -194,11 +213,11 @@ var _ = framework.KubeDescribe("InitContainer", func() {
 				Containers: []v1.Container{
 					{
 						Name:  "run1",
-						Image: framework.GetPauseImageName(f.ClientSet),
+						Image: imageutils.GetPauseImageName(),
 						Resources: v1.ResourceRequirements{
 							Limits: v1.ResourceList{
 								v1.ResourceCPU:    *resource.NewMilliQuantity(100, resource.DecimalSI),
-								v1.ResourceMemory: *resource.NewQuantity(30*1024*1024, resource.DecimalSI),
+								v1.ResourceMemory: *resource.NewQuantity(50*1024*1024, resource.DecimalSI),
 							},
 						},
 					},
@@ -273,9 +292,13 @@ var _ = framework.KubeDescribe("InitContainer", func() {
 		Expect(len(endPod.Status.InitContainerStatuses)).To(Equal(2))
 	})
 
-	It("should not start app containers and fail the pod if init containers fail on a RestartNever pod", func() {
-		framework.SkipIfContainerRuntimeIs("rkt") // #25988
-
+	/*
+		Release: v1.12
+		Testname: init-container-fails-stops-app-restartnever-pod
+		Description: Ensure that app container is not started
+		when atleast one InitContainer fails to start and Pod has restart policy as RestartNever.
+	*/
+	framework.ConformanceIt("should not start app containers and fail the pod if init containers fail on a RestartNever pod", func() {
 		By("creating the pod")
 		name := "pod-init-" + string(uuid.NewUUID())
 		value := strconv.Itoa(time.Now().Nanosecond())
@@ -309,7 +332,7 @@ var _ = framework.KubeDescribe("InitContainer", func() {
 						Resources: v1.ResourceRequirements{
 							Limits: v1.ResourceList{
 								v1.ResourceCPU:    *resource.NewMilliQuantity(100, resource.DecimalSI),
-								v1.ResourceMemory: *resource.NewQuantity(30*1024*1024, resource.DecimalSI),
+								v1.ResourceMemory: *resource.NewQuantity(50*1024*1024, resource.DecimalSI),
 							},
 						},
 					},

@@ -31,11 +31,11 @@ var _ = Describe("[sig-api-machinery] Secrets", func() {
 	f := framework.NewDefaultFramework("secrets")
 
 	/*
-		    Testname: secret-env-vars
-		    Description: Ensure that secret can be consumed via environment
-			variables.
+		Release : v1.9
+		Testname: Secrets, pod environment field
+		Description: Create a secret. Create a Pod with Container that declares a environment variable which references the secret created to extract a key value from the secret. Pod MUST have the environment variable that contains proper value for the key to the secret.
 	*/
-	framework.ConformanceIt("should be consumable from pods in env vars ", func() {
+	framework.ConformanceIt("should be consumable from pods in env vars [NodeConformance]", func() {
 		name := "secret-test-" + string(uuid.NewUUID())
 		secret := secretForTest(f.Namespace.Name, name)
 
@@ -80,11 +80,11 @@ var _ = Describe("[sig-api-machinery] Secrets", func() {
 	})
 
 	/*
-		    Testname: secret-configmaps-source
-		    Description: Ensure that secret can be consumed via source of a set
-			of ConfigMaps.
+		Release : v1.9
+		Testname: Secrets, pod environment from source
+		Description: Create a secret. Create a Pod with Container that declares a environment variable using ‘EnvFrom’ which references the secret created to extract a key value from the secret. Pod MUST have the environment variable that contains proper value for the key to the secret.
 	*/
-	framework.ConformanceIt("should be consumable via the environment ", func() {
+	framework.ConformanceIt("should be consumable via the environment [NodeConformance]", func() {
 		name := "secret-test-" + string(uuid.NewUUID())
 		secret := newEnvFromSecret(f.Namespace.Name, name)
 		By(fmt.Sprintf("creating secret %v/%v", f.Namespace.Name, secret.Name))
