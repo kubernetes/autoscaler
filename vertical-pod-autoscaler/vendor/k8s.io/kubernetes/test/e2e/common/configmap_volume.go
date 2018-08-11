@@ -27,86 +27,87 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/uuid"
 	"k8s.io/kubernetes/test/e2e/framework"
+	imageutils "k8s.io/kubernetes/test/utils/image"
 )
 
 var _ = Describe("[sig-storage] ConfigMap", func() {
 	f := framework.NewDefaultFramework("configmap")
 
 	/*
-		    Testname: configmap-nomap-simple
-		    Description: Make sure config map without mappings works by mounting it
-			to a volume with a custom path (mapping) on the pod with no other settings.
+		Release : v1.9
+		Testname: ConfigMap Volume, without mapping
+		Description: Create a ConfigMap, create a Pod that mounts a volume and populates the volume with data stored in the ConfigMap. The ConfigMap that is created MUST be accessible to read from the newly created Pod using the volume mount. The data content of the file MUST be readable and verified and file modes MUST default to 0x644.
 	*/
-	framework.ConformanceIt("should be consumable from pods in volume ", func() {
+	framework.ConformanceIt("should be consumable from pods in volume [NodeConformance]", func() {
 		doConfigMapE2EWithoutMappings(f, 0, 0, nil)
 	})
 
 	/*
-		    Testname: configmap-nomap-default-mode
-		    Description: Make sure config map without mappings works by mounting it
-			to a volume with a custom path (mapping) on the pod with defaultMode set
+		Release : v1.9
+		Testname: ConfigMap Volume, without mapping, volume mode set
+		Description: Create a ConfigMap, create a Pod that mounts a volume and populates the volume with data stored in the ConfigMap. File mode is changed to a custom value of '0x400'. The ConfigMap that is created MUST be accessible to read from the newly created Pod using the volume mount. The data content of the file MUST be readable and verified and file modes MUST be set to the custom value of ‘0x400’
 	*/
-	framework.ConformanceIt("should be consumable from pods in volume with defaultMode set ", func() {
+	framework.ConformanceIt("should be consumable from pods in volume with defaultMode set [NodeConformance]", func() {
 		defaultMode := int32(0400)
 		doConfigMapE2EWithoutMappings(f, 0, 0, &defaultMode)
 	})
 
-	It("should be consumable from pods in volume as non-root with defaultMode and fsGroup set [Feature:FSGroup]", func() {
+	It("should be consumable from pods in volume as non-root with defaultMode and fsGroup set [NodeFeature:FSGroup]", func() {
 		defaultMode := int32(0440) /* setting fsGroup sets mode to at least 440 */
 		doConfigMapE2EWithoutMappings(f, 1000, 1001, &defaultMode)
 	})
 
 	/*
-		    Testname: configmap-nomap-user
-		    Description: Make sure config map without mappings works by mounting it
-			to a volume with a custom path (mapping) on the pod as non-root.
+		Release : v1.9
+		Testname: ConfigMap Volume, without mapping, non-root user
+		Description: Create a ConfigMap, create a Pod that mounts a volume and populates the volume with data stored in the ConfigMap. Pod is run as a non-root user with uid=1000. The ConfigMap that is created MUST be accessible to read from the newly created Pod using the volume mount. The file on the volume MUST have file mode set to default value of 0x644.
 	*/
-	framework.ConformanceIt("should be consumable from pods in volume as non-root ", func() {
+	framework.ConformanceIt("should be consumable from pods in volume as non-root [NodeConformance]", func() {
 		doConfigMapE2EWithoutMappings(f, 1000, 0, nil)
 	})
 
-	It("should be consumable from pods in volume as non-root with FSGroup [Feature:FSGroup]", func() {
+	It("should be consumable from pods in volume as non-root with FSGroup [NodeFeature:FSGroup]", func() {
 		doConfigMapE2EWithoutMappings(f, 1000, 1001, nil)
 	})
 
 	/*
-		    Testname: configmap-simple-mapped
-		    Description: Make sure config map works by mounting it to a volume with
-			a custom path (mapping) on the pod with no other settings and make sure
-			the pod actually consumes it.
+		Release : v1.9
+		Testname: ConfigMap Volume, with mapping
+		Description: Create a ConfigMap, create a Pod that mounts a volume and populates the volume with data stored in the ConfigMap. Files are mapped to a path in the volume. The ConfigMap that is created MUST be accessible to read from the newly created Pod using the volume mount. The data content of the file MUST be readable and verified and file modes MUST default to 0x644.
 	*/
-	framework.ConformanceIt("should be consumable from pods in volume with mappings ", func() {
+	framework.ConformanceIt("should be consumable from pods in volume with mappings [NodeConformance]", func() {
 		doConfigMapE2EWithMappings(f, 0, 0, nil)
 	})
 
 	/*
-		    Testname: configmap-with-item-mode-mapped
-		    Description: Make sure config map works with an item mode (e.g. 0400)
-			for the config map item.
+		Release : v1.9
+		Testname: ConfigMap Volume, with mapping, volume mode set
+		Description: Create a ConfigMap, create a Pod that mounts a volume and populates the volume with data stored in the ConfigMap. Files are mapped to a path in the volume. File mode is changed to a custom value of '0x400'. The ConfigMap that is created MUST be accessible to read from the newly created Pod using the volume mount. The data content of the file MUST be readable and verified and file modes MUST be set to the custom value of ‘0x400’
 	*/
-	framework.ConformanceIt("should be consumable from pods in volume with mappings and Item mode set", func() {
+	framework.ConformanceIt("should be consumable from pods in volume with mappings and Item mode set [NodeConformance]", func() {
 		mode := int32(0400)
 		doConfigMapE2EWithMappings(f, 0, 0, &mode)
 	})
 
 	/*
-	   Testname: configmap-simple-user-mapped
-	   Description: Make sure config map works when it is mounted as non-root.
+		Release : v1.9
+		Testname: ConfigMap Volume, with mapping, non-root user
+		Description: Create a ConfigMap, create a Pod that mounts a volume and populates the volume with data stored in the ConfigMap. Files are mapped to a path in the volume. Pod is run as a non-root user with uid=1000. The ConfigMap that is created MUST be accessible to read from the newly created Pod using the volume mount. The file on the volume MUST have file mode set to default value of 0x644.
 	*/
-	framework.ConformanceIt("should be consumable from pods in volume with mappings as non-root ", func() {
+	framework.ConformanceIt("should be consumable from pods in volume with mappings as non-root [NodeConformance]", func() {
 		doConfigMapE2EWithMappings(f, 1000, 0, nil)
 	})
 
-	It("should be consumable from pods in volume with mappings as non-root with FSGroup [Feature:FSGroup]", func() {
+	It("should be consumable from pods in volume with mappings as non-root with FSGroup [NodeFeature:FSGroup]", func() {
 		doConfigMapE2EWithMappings(f, 1000, 1001, nil)
 	})
 
 	/*
-		    Testname: configmap-update-test
-		    Description: Make sure update operation is working on config map and
-			the result is observed on volumes mounted in containers.
+		Release : v1.9
+		Testname: ConfigMap Volume, update
+		Description: The ConfigMap that is created MUST be accessible to read from the newly created Pod using the volume mount that is mapped to custom path in the Pod. When the ConfigMap is updated the change to the config map MUST be verified by reading the content from the mounted file in the Pod.
 	*/
-	framework.ConformanceIt("updates should be reflected in volume ", func() {
+	framework.ConformanceIt("updates should be reflected in volume [NodeConformance]", func() {
 		podLogTimeout := framework.GetPodSecretUpdateTimeout(f.ClientSet)
 		containerTimeoutArg := fmt.Sprintf("--retry_time=%v", int(podLogTimeout.Seconds()))
 
@@ -184,7 +185,7 @@ var _ = Describe("[sig-storage] ConfigMap", func() {
 		Eventually(pollLogs, podLogTimeout, framework.Poll).Should(ContainSubstring("value-2"))
 	})
 
-	It("binary data should be reflected in volume ", func() {
+	It("binary data should be reflected in volume [NodeConformance]", func() {
 		podLogTimeout := framework.GetPodSecretUpdateTimeout(f.ClientSet)
 		containerTimeoutArg := fmt.Sprintf("--retry_time=%v", int(podLogTimeout.Seconds()))
 
@@ -245,7 +246,7 @@ var _ = Describe("[sig-storage] ConfigMap", func() {
 					},
 					{
 						Name:    containerName2,
-						Image:   "busybox",
+						Image:   imageutils.GetE2EImage(imageutils.BusyBox),
 						Command: []string{"hexdump", "-C", "/etc/configmap-volume/dump.bin"},
 						VolumeMounts: []v1.VolumeMount{
 							{
@@ -276,11 +277,11 @@ var _ = Describe("[sig-storage] ConfigMap", func() {
 	})
 
 	/*
-		    Testname: configmap-CUD-test
-		    Description: Make sure Create, Update, Delete operations are all working
-			on config map and the result is observed on volumes mounted in containers.
+		Release : v1.9
+		Testname: ConfigMap Volume, create, update and delete
+		Description: The ConfigMap that is created MUST be accessible to read from the newly created Pod using the volume mount that is mapped to custom path in the Pod. When the config map is updated the change to the config map MUST be verified by reading the content from the mounted file in the Pod. Also when the item(file) is deleted from the map that MUST result in a error reading that item(file).
 	*/
-	framework.ConformanceIt("optional updates should be reflected in volume ", func() {
+	framework.ConformanceIt("optional updates should be reflected in volume [NodeConformance]", func() {
 		podLogTimeout := framework.GetPodSecretUpdateTimeout(f.ClientSet)
 		containerTimeoutArg := fmt.Sprintf("--retry_time=%v", int(podLogTimeout.Seconds()))
 		trueVal := true
@@ -459,11 +460,11 @@ var _ = Describe("[sig-storage] ConfigMap", func() {
 	})
 
 	/*
-		    Testname: configmap-multiple-volumes
-		    Description: Make sure config map works when it mounted as two different
-			volumes on the same node.
+		Release : v1.9
+		Testname: ConfigMap Volume, multiple volume maps
+		Description: The ConfigMap that is created MUST be accessible to read from the newly created Pod using the volume mount that is mapped to multiple paths in the Pod. The content MUST be accessible from all the mapped volume mounts.
 	*/
-	framework.ConformanceIt("should be consumable in multiple volumes in the same pod ", func() {
+	framework.ConformanceIt("should be consumable in multiple volumes in the same pod [NodeConformance]", func() {
 		var (
 			name             = "configmap-test-volume-" + string(uuid.NewUUID())
 			volumeName       = "configmap-volume"
