@@ -168,10 +168,10 @@ func (gce *GceCloudProvider) NewNodeGroup(machineType string, labels map[string]
 		minSize:         minAutoprovisionedSize,
 		maxSize:         maxAutoprovisionedSize,
 		spec: &MigSpec{
-			machineType:    machineType,
-			labels:         labels,
-			taints:         taints,
-			extraResources: extraResources,
+			MachineType:    machineType,
+			Labels:         labels,
+			Taints:         taints,
+			ExtraResources: extraResources,
 		},
 	}
 
@@ -237,10 +237,10 @@ func GceRefFromProviderId(id string) (*GceRef, error) {
 
 // MigSpec contains information about what machines in a MIG look like.
 type MigSpec struct {
-	machineType    string
-	labels         map[string]string
-	taints         []apiv1.Taint
-	extraResources map[string]resource.Quantity
+	MachineType    string
+	Labels         map[string]string
+	Taints         []apiv1.Taint
+	ExtraResources map[string]resource.Quantity
 }
 
 // Mig implements NodeGroup interface.

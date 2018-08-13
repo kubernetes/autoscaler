@@ -51,7 +51,7 @@ const operationDoneResponse = `{
 }`
 
 func newTestAutoscalingGkeClientV1beta1(t *testing.T, project, location, clusterName, url string) *autoscalingGkeClientV1beta1 {
-	*gkeAPIEndpoint = url
+	*GkeAPIEndpoint = url
 	client := &http.Client{}
 	gkeClient, err := NewAutoscalingGkeClientV1beta1(client, project, location, clusterName)
 	if !assert.NoError(t, err) {

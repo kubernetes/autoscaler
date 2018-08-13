@@ -67,8 +67,8 @@ func NewAutoscalingGkeClientV1beta1(client *http.Client, projectId, location, cl
 	if err != nil {
 		return nil, err
 	}
-	if *gkeAPIEndpoint != "" {
-		gkeBetaService.BasePath = *gkeAPIEndpoint
+	if *GkeAPIEndpoint != "" {
+		gkeBetaService.BasePath = *GkeAPIEndpoint
 	}
 	autoscalingGkeClient.gkeBetaService = gkeBetaService
 
@@ -147,8 +147,8 @@ func (m *autoscalingGkeClientV1beta1) CreateNodePool(mig Mig) error {
 	spec := mig.Spec()
 
 	accelerators := []*gke_api_beta.AcceleratorConfig{}
-	if gpuRequest, found := spec.extraResources[gpu.ResourceNvidiaGPU]; found {
-		gpuType, found := spec.labels[gpu.GPULabel]
+	if gpuRequest, found := spec.ExtraResources[gpu.ResourceNvidiaGPU]; found {
+		gpuType, found := spec.Labels[gpu.GPULabel]
 		if !found {
 			return fmt.Errorf("failed to create node pool %v with gpu request of unspecified type", mig.NodePoolName())
 		}
@@ -161,7 +161,7 @@ func (m *autoscalingGkeClientV1beta1) CreateNodePool(mig Mig) error {
 	}
 
 	taints := []*gke_api_beta.NodeTaint{}
-	for _, taint := range spec.taints {
+	for _, taint := range spec.Taints {
 		if taint.Key == gpu.ResourceNvidiaGPU {
 			continue
 		}
@@ -177,14 +177,14 @@ func (m *autoscalingGkeClientV1beta1) CreateNodePool(mig Mig) error {
 		taints = append(taints, taint)
 	}
 	labels := make(map[string]string)
-	for k, v := range spec.labels {
+	for k, v := range spec.Labels {
 		if k != gpu.GPULabel {
 			labels[k] = v
 		}
 	}
 
 	config := gke_api_beta.NodeConfig{
-		MachineType:  spec.machineType,
+		MachineType:  spec.MachineType,
 		OauthScopes:  defaultOAuthScopes,
 		Labels:       labels,
 		Accelerators: accelerators,

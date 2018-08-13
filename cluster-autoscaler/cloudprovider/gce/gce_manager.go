@@ -125,7 +125,7 @@ type gceManagerImpl struct {
 	projectId             string
 	clusterName           string
 	mode                  GcpCloudProviderMode
-	templates             *templateBuilder
+	templates             *GceTemplateBuilder
 	interrupt             chan struct{}
 	regional              bool
 	explicitlyConfigured  map[GceRef]bool
@@ -188,16 +188,14 @@ func CreateGceManager(configReader io.Reader, mode GcpCloudProviderMode, cluster
 		return nil, err
 	}
 	manager := &gceManagerImpl{
-		cache:       NewGceCache(gceService),
-		GceService:  gceService,
-		location:    location,
-		regional:    regional,
-		projectId:   projectId,
-		clusterName: clusterName,
-		mode:        mode,
-		templates: &templateBuilder{
-			projectId: projectId,
-		},
+		cache:                NewGceCache(gceService),
+		GceService:           gceService,
+		location:             location,
+		regional:             regional,
+		projectId:            projectId,
+		clusterName:          clusterName,
+		mode:                 mode,
+		templates:            &GceTemplateBuilder{},
 		interrupt:            make(chan struct{}),
 		explicitlyConfigured: make(map[GceRef]bool),
 	}
@@ -701,13 +699,13 @@ func (m *gceManagerImpl) getMigTemplateNode(mig Mig) (*apiv1.Node, error) {
 		if err != nil {
 			return nil, err
 		}
-		return m.templates.buildNodeFromTemplate(mig, template, cpu, mem)
+		return m.templates.BuildNodeFromTemplate(mig, template, cpu, mem)
 	} else if mig.Autoprovisioned() {
-		cpu, mem, err := m.getCpuAndMemoryForMachineType(mig.Spec().machineType, mig.GceRef().Zone)
+		cpu, mem, err := m.getCpuAndMemoryForMachineType(mig.Spec().MachineType, mig.GceRef().Zone)
 		if err != nil {
 			return nil, err
 		}
-		return m.templates.buildNodeFromMigSpec(mig, cpu, mem)
+		return m.templates.BuildNodeFromMigSpec(mig, cpu, mem)
 	}
 	return nil, fmt.Errorf("unable to get node info for %s", mig.GceRef().String())
 }
