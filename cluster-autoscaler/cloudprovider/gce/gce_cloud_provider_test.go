@@ -40,22 +40,12 @@ type gceManagerMock struct {
 	mock.Mock
 }
 
-func (m *gceManagerMock) RegisterMig(mig *Mig) bool {
-	args := m.Called(mig)
-	return args.Bool(0)
-}
-
-func (m *gceManagerMock) UnregisterMig(toBeRemoved *Mig) bool {
-	args := m.Called(toBeRemoved)
-	return args.Bool(0)
-}
-
-func (m *gceManagerMock) GetMigSize(mig *Mig) (int64, error) {
+func (m *gceManagerMock) GetMigSize(mig Mig) (int64, error) {
 	args := m.Called(mig)
 	return args.Get(0).(int64), args.Error(1)
 }
 
-func (m *gceManagerMock) SetMigSize(mig *Mig, size int64) error {
+func (m *gceManagerMock) SetMigSize(mig Mig, size int64) error {
 	args := m.Called(mig, size)
 	return args.Error(0)
 }
@@ -65,12 +55,12 @@ func (m *gceManagerMock) DeleteInstances(instances []*GceRef) error {
 	return args.Error(0)
 }
 
-func (m *gceManagerMock) GetMigForInstance(instance *GceRef) (*Mig, error) {
+func (m *gceManagerMock) GetMigForInstance(instance *GceRef) (Mig, error) {
 	args := m.Called(instance)
-	return args.Get(0).(*Mig), args.Error(1)
+	return args.Get(0).(*gceMig), args.Error(1)
 }
 
-func (m *gceManagerMock) GetMigNodes(mig *Mig) ([]string, error) {
+func (m *gceManagerMock) GetMigNodes(mig Mig) ([]string, error) {
 	args := m.Called(mig)
 	return args.Get(0).([]string), args.Error(1)
 }
@@ -85,17 +75,17 @@ func (m *gceManagerMock) Cleanup() error {
 	return args.Error(0)
 }
 
-func (m *gceManagerMock) getMigs() []*migInformation {
+func (m *gceManagerMock) getMigs() []*MigInformation {
 	args := m.Called()
-	return args.Get(0).([]*migInformation)
+	return args.Get(0).([]*MigInformation)
 }
 
-func (m *gceManagerMock) createNodePool(mig *Mig) (*Mig, error) {
+func (m *gceManagerMock) createNodePool(mig Mig) (Mig, error) {
 	args := m.Called(mig)
 	return mig, args.Error(0)
 }
 
-func (m *gceManagerMock) deleteNodePool(toBeRemoved *Mig) error {
+func (m *gceManagerMock) deleteNodePool(toBeRemoved Mig) error {
 	args := m.Called(toBeRemoved)
 	return args.Error(0)
 }
@@ -130,7 +120,7 @@ func (m *gceManagerMock) findMigsNamed(name *regexp.Regexp) ([]string, error) {
 	return args.Get(0).([]string), args.Error(1)
 }
 
-func (m *gceManagerMock) getMigTemplateNode(mig *Mig) (*apiv1.Node, error) {
+func (m *gceManagerMock) getMigTemplateNode(mig Mig) (*apiv1.Node, error) {
 	args := m.Called(mig)
 	return args.Get(0).(*apiv1.Node), args.Error(1)
 }
@@ -157,10 +147,10 @@ func TestNodeGroups(t *testing.T) {
 	gce := &GceCloudProvider{
 		gceManager: gceManagerMock,
 	}
-	mig := &migInformation{config: &Mig{GceRef: GceRef{Name: "ng1"}}}
-	gceManagerMock.On("getMigs").Return([]*migInformation{mig}).Once()
+	mig := &MigInformation{Config: &gceMig{gceRef: GceRef{Name: "ng1"}}}
+	gceManagerMock.On("getMigs").Return([]*MigInformation{mig}).Once()
 	result := gce.NodeGroups()
-	assert.Equal(t, []cloudprovider.NodeGroup{mig.config}, result)
+	assert.Equal(t, []cloudprovider.NodeGroup{mig.Config}, result)
 	mock.AssertExpectationsForObjects(t, gceManagerMock)
 }
 
@@ -171,12 +161,12 @@ func TestNodeGroupForNode(t *testing.T) {
 	}
 	n := BuildTestNode("n1", 1000, 1000)
 	n.Spec.ProviderID = "gce://project1/us-central1-b/n1"
-	mig := Mig{GceRef: GceRef{Name: "ng1"}}
+	mig := gceMig{gceRef: GceRef{Name: "ng1"}}
 	gceManagerMock.On("GetMigForInstance", mock.AnythingOfType("*gce.GceRef")).Return(&mig, nil).Once()
 
 	nodeGroup, err := gce.NodeGroupForNode(n)
 	assert.NoError(t, err)
-	assert.Equal(t, mig, *reflect.ValueOf(nodeGroup).Interface().(*Mig))
+	assert.Equal(t, mig, *reflect.ValueOf(nodeGroup).Interface().(*gceMig))
 	mock.AssertExpectationsForObjects(t, gceManagerMock)
 }
 
@@ -300,11 +290,12 @@ func TestMig(t *testing.T) {
 	// Test NewNodeGroup.
 	gceManagerMock.On("getProjectId").Return("project1").Once()
 	gceManagerMock.On("getLocation").Return("us-central1-b").Once()
-	gceManagerMock.On("getMigTemplateNode", mock.AnythingOfType("*gce.Mig")).Return(&apiv1.Node{}, nil).Once()
+	gceManagerMock.On("getMigTemplateNode", mock.AnythingOfType("*gce.gceMig")).Return(&apiv1.Node{}, nil).Once()
 	nodeGroup, err := gce.NewNodeGroup("n1-standard-1", nil, nil, nil, nil)
 	assert.NoError(t, err)
 	assert.NotNil(t, nodeGroup)
-	mig1 := reflect.ValueOf(nodeGroup).Interface().(*Mig)
+	mig1 := reflect.ValueOf(nodeGroup).Interface().(*gceMig)
+	assert.Equal(t, true, mig1.Autoprovisioned())
 	mig1.exist = true
 	assert.True(t, strings.HasPrefix(mig1.Id(), "https://content.googleapis.com/compute/v1/projects/project1/zones/us-central1-b/instanceGroups/"+nodeAutoprovisioningPrefix+"-n1-standard-1"))
 	assert.Equal(t, true, mig1.Autoprovisioned())
@@ -313,15 +304,15 @@ func TestMig(t *testing.T) {
 	mock.AssertExpectationsForObjects(t, gceManagerMock)
 
 	// Test TargetSize.
-	gceManagerMock.On("GetMigSize", mock.AnythingOfType("*gce.Mig")).Return(int64(2), nil).Once()
+	gceManagerMock.On("GetMigSize", mock.AnythingOfType("*gce.gceMig")).Return(int64(2), nil).Once()
 	targetSize, err := mig1.TargetSize()
 	assert.NoError(t, err)
 	assert.Equal(t, 2, targetSize)
 	mock.AssertExpectationsForObjects(t, gceManagerMock)
 
 	// Test IncreaseSize.
-	gceManagerMock.On("GetMigSize", mock.AnythingOfType("*gce.Mig")).Return(int64(2), nil).Once()
-	gceManagerMock.On("SetMigSize", mock.AnythingOfType("*gce.Mig"), int64(3)).Return(nil).Once()
+	gceManagerMock.On("GetMigSize", mock.AnythingOfType("*gce.gceMig")).Return(int64(2), nil).Once()
+	gceManagerMock.On("SetMigSize", mock.AnythingOfType("*gce.gceMig"), int64(3)).Return(nil).Once()
 	err = mig1.IncreaseSize(1)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, gceManagerMock)
@@ -332,18 +323,18 @@ func TestMig(t *testing.T) {
 	assert.Equal(t, "size increase must be positive", err.Error())
 
 	// Test IncreaseSize - fail on too big delta.
-	gceManagerMock.On("GetMigSize", mock.AnythingOfType("*gce.Mig")).Return(int64(2), nil).Once()
+	gceManagerMock.On("GetMigSize", mock.AnythingOfType("*gce.gceMig")).Return(int64(2), nil).Once()
 	err = mig1.IncreaseSize(1000)
 	assert.Error(t, err)
 	assert.Equal(t, "size increase too large - desired:1002 max:1000", err.Error())
 	mock.AssertExpectationsForObjects(t, gceManagerMock)
 
 	// Test DecreaseTargetSize.
-	gceManagerMock.On("GetMigSize", mock.AnythingOfType("*gce.Mig")).Return(int64(3), nil).Once()
-	gceManagerMock.On("GetMigNodes", mock.AnythingOfType("*gce.Mig")).Return(
+	gceManagerMock.On("GetMigSize", mock.AnythingOfType("*gce.gceMig")).Return(int64(3), nil).Once()
+	gceManagerMock.On("GetMigNodes", mock.AnythingOfType("*gce.gceMig")).Return(
 		[]string{"gce://project1/us-central1-b/gke-cluster-1-default-pool-f7607aac-9j4g",
 			"gce://project1/us-central1-b/gke-cluster-1-default-pool-f7607aac-dck1"}, nil).Once()
-	gceManagerMock.On("SetMigSize", mock.AnythingOfType("*gce.Mig"), int64(2)).Return(nil).Once()
+	gceManagerMock.On("SetMigSize", mock.AnythingOfType("*gce.gceMig"), int64(2)).Return(nil).Once()
 	err = mig1.DecreaseTargetSize(-1)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, gceManagerMock)
@@ -354,8 +345,8 @@ func TestMig(t *testing.T) {
 	assert.Equal(t, "size decrease must be negative", err.Error())
 
 	// Test DecreaseTargetSize - fail on deleting existing nodes.
-	gceManagerMock.On("GetMigSize", mock.AnythingOfType("*gce.Mig")).Return(int64(3), nil).Once()
-	gceManagerMock.On("GetMigNodes", mock.AnythingOfType("*gce.Mig")).Return(
+	gceManagerMock.On("GetMigSize", mock.AnythingOfType("*gce.gceMig")).Return(int64(3), nil).Once()
+	gceManagerMock.On("GetMigNodes", mock.AnythingOfType("*gce.gceMig")).Return(
 		[]string{"gce://project1/us-central1-b/gke-cluster-1-default-pool-f7607aac-9j4g",
 			"gce://project1/us-central1-b/gke-cluster-1-default-pool-f7607aac-dck1"}, nil).Once()
 
@@ -375,8 +366,8 @@ func TestMig(t *testing.T) {
 	mock.AssertExpectationsForObjects(t, gceManagerMock)
 
 	// Test Belongs - false.
-	mig2 := &Mig{
-		GceRef: GceRef{
+	mig2 := &gceMig{
+		gceRef: GceRef{
 			Project: "project1",
 			Zone:    "us-central1-b",
 			Name:    "default-pool",
@@ -402,7 +393,7 @@ func TestMig(t *testing.T) {
 	n2 := BuildTestNode("gke-cluster-1-default-pool-f7607aac-dck1", 1000, 1000)
 	n2.Spec.ProviderID = "gce://project1/us-central1-b/gke-cluster-1-default-pool-f7607aac-dck1"
 	n2ref := &GceRef{"project1", "us-central1-b", "gke-cluster-1-default-pool-f7607aac-dck1"}
-	gceManagerMock.On("GetMigSize", mock.AnythingOfType("*gce.Mig")).Return(int64(2), nil).Once()
+	gceManagerMock.On("GetMigSize", mock.AnythingOfType("*gce.gceMig")).Return(int64(2), nil).Once()
 	gceManagerMock.On("GetMigForInstance", n1ref).Return(mig1, nil).Once()
 	gceManagerMock.On("GetMigForInstance", n2ref).Return(mig1, nil).Once()
 	gceManagerMock.On("DeleteInstances", []*GceRef{n1ref, n2ref}).Return(nil).Once()
@@ -411,14 +402,14 @@ func TestMig(t *testing.T) {
 	mock.AssertExpectationsForObjects(t, gceManagerMock)
 
 	// Test DeleteNodes - fail on reaching min size.
-	gceManagerMock.On("GetMigSize", mock.AnythingOfType("*gce.Mig")).Return(int64(0), nil).Once()
+	gceManagerMock.On("GetMigSize", mock.AnythingOfType("*gce.gceMig")).Return(int64(0), nil).Once()
 	err = mig1.DeleteNodes([]*apiv1.Node{n1, n2})
 	assert.Error(t, err)
 	assert.Equal(t, "min size reached, nodes will not be deleted", err.Error())
 	mock.AssertExpectationsForObjects(t, gceManagerMock)
 
 	// Test Nodes.
-	gceManagerMock.On("GetMigNodes", mock.AnythingOfType("*gce.Mig")).Return(
+	gceManagerMock.On("GetMigNodes", mock.AnythingOfType("*gce.gceMig")).Return(
 		[]string{"gce://project1/us-central1-b/gke-cluster-1-default-pool-f7607aac-9j4g",
 			"gce://project1/us-central1-b/gke-cluster-1-default-pool-f7607aac-dck1"}, nil).Once()
 	nodes, err := mig1.Nodes()
@@ -429,20 +420,19 @@ func TestMig(t *testing.T) {
 
 	// Test Create.
 	mig1.exist = false
-	gceManagerMock.On("createNodePool", mock.AnythingOfType("*gce.Mig")).Return(nil).Once()
+	gceManagerMock.On("createNodePool", mock.AnythingOfType("*gce.gceMig")).Return(nil, nil).Once()
 	_, err = mig1.Create()
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, gceManagerMock)
 
-	// Test Delete.
+	gceManagerMock.On("deleteNodePool", mock.AnythingOfType("*gce.gceMig")).Return(nil).Once()
 	mig1.exist = true
-	gceManagerMock.On("deleteNodePool", mock.AnythingOfType("*gce.Mig")).Return(nil).Once()
 	err = mig1.Delete()
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, gceManagerMock)
 
 	// Test TemplateNodeInfo.
-	gceManagerMock.On("getMigTemplateNode", mock.AnythingOfType("*gce.Mig")).Return(&apiv1.Node{}, nil).Once()
+	gceManagerMock.On("getMigTemplateNode", mock.AnythingOfType("*gce.gceMig")).Return(&apiv1.Node{}, nil).Once()
 	templateNodeInfo, err := mig2.TemplateNodeInfo()
 	assert.NoError(t, err)
 	assert.NotNil(t, templateNodeInfo)
@@ -465,7 +455,7 @@ func TestNewNodeGroupForGpu(t *testing.T) {
 	// Test NewNodeGroup.
 	gceManagerMock.On("getProjectId").Return("project1").Once()
 	gceManagerMock.On("getLocation").Return("us-west1-b").Once()
-	gceManagerMock.On("getMigTemplateNode", mock.AnythingOfType("*gce.Mig")).Return(&apiv1.Node{}, nil).Once()
+	gceManagerMock.On("getMigTemplateNode", mock.AnythingOfType("*gce.gceMig")).Return(&apiv1.Node{}, nil).Once()
 
 	systemLabels := map[string]string{
 		gpu.GPULabel: gpu.DefaultGPUType,
@@ -476,7 +466,7 @@ func TestNewNodeGroupForGpu(t *testing.T) {
 	nodeGroup, err := gce.NewNodeGroup("n1-standard-1", make(map[string]string), systemLabels, nil, extraResources)
 	assert.NoError(t, err)
 	assert.NotNil(t, nodeGroup)
-	mig1 := reflect.ValueOf(nodeGroup).Interface().(*Mig)
+	mig1 := reflect.ValueOf(nodeGroup).Interface().(*gceMig)
 	assert.True(t, strings.HasPrefix(mig1.Id(), "https://content.googleapis.com/compute/v1/projects/project1/zones/us-west1-b/instanceGroups/"+nodeAutoprovisioningPrefix+"-n1-standard-1-gpu"))
 	assert.Equal(t, true, mig1.Autoprovisioned())
 	assert.Equal(t, 0, mig1.MinSize())

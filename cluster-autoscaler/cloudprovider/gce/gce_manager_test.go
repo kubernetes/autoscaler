@@ -487,9 +487,17 @@ func newTestGceManager(t *testing.T, testServerURL string, mode GcpCloudProvider
 	gceService.operationPollInterval = 1 * time.Millisecond
 
 	manager := &gceManagerImpl{
-		migs:        make([]*migInformation, 0),
+		cache: GceCache{
+			migs:           make([]*MigInformation, 0),
+			GceService:     gceService,
+			instancesCache: make(map[GceRef]Mig),
+			machinesCache: map[MachineTypeKey]*gce.MachineType{
+				{"us-central1-b", "n1-standard-1"}: {GuestCpus: 1, MemoryMb: 1},
+				{"us-central1-c", "n1-standard-1"}: {GuestCpus: 1, MemoryMb: 1},
+				{"us-central1-f", "n1-standard-1"}: {GuestCpus: 1, MemoryMb: 1},
+			},
+		},
 		GceService:  gceService,
-		migCache:    make(map[GceRef]*Mig),
 		projectId:   projectId,
 		clusterName: clusterName,
 		mode:        mode,
@@ -498,11 +506,6 @@ func newTestGceManager(t *testing.T, testServerURL string, mode GcpCloudProvider
 			projectId: projectId,
 		},
 		explicitlyConfigured: make(map[GceRef]bool),
-		machinesCache: map[machineTypeKey]*gce.MachineType{
-			{"us-central1-b", "n1-standard-1"}: {GuestCpus: 1, MemoryMb: 1},
-			{"us-central1-c", "n1-standard-1"}: {GuestCpus: 1, MemoryMb: 1},
-			{"us-central1-f", "n1-standard-1"}: {GuestCpus: 1, MemoryMb: 1},
-		},
 	}
 	if regional {
 		manager.location = region
@@ -526,12 +529,12 @@ func newTestGceManager(t *testing.T, testServerURL string, mode GcpCloudProvider
 	return manager
 }
 
-func validateMig(t *testing.T, mig *Mig, zone string, name string, minSize int, maxSize int) {
-	assert.Equal(t, name, mig.Name)
-	assert.Equal(t, zone, mig.Zone)
-	assert.Equal(t, projectId, mig.Project)
-	assert.Equal(t, minSize, mig.minSize)
-	assert.Equal(t, maxSize, mig.maxSize)
+func validateMig(t *testing.T, mig Mig, zone string, name string, minSize int, maxSize int) {
+	assert.Equal(t, name, mig.GceRef().Name)
+	assert.Equal(t, zone, mig.GceRef().Zone)
+	assert.Equal(t, projectId, mig.GceRef().Project)
+	assert.Equal(t, minSize, mig.MinSize())
+	assert.Equal(t, maxSize, mig.MaxSize())
 }
 
 func TestRefreshNodePools(t *testing.T) {
@@ -549,13 +552,13 @@ func TestRefreshNodePools(t *testing.T) {
 	assert.NoError(t, err)
 	migs := g.getMigs()
 	assert.Equal(t, 1, len(migs))
-	validateMig(t, migs[0].config, zoneB, "gke-cluster-1-default-pool", 1, 11)
+	validateMig(t, migs[0].Config, zoneB, "gke-cluster-1-default-pool", 1, 11)
 	mock.AssertExpectationsForObjects(t, server)
 
 	// Fetch three node pools, skip one.
 
 	// Clean up previous mig list, as it impacts what we do
-	g.migs = make([]*migInformation, 0)
+	g.cache.migs = make([]*MigInformation, 0)
 
 	server.On("handle", "/v1/projects/project1/locations/us-central1-b/clusters/cluster1/nodePools").Return(allNodePools2).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool").Return(getInstanceGroupManager(zoneB)).Once()
@@ -571,8 +574,8 @@ func TestRefreshNodePools(t *testing.T) {
 	assert.NoError(t, err)
 	migs = g.getMigs()
 	assert.Equal(t, 2, len(migs))
-	validateMig(t, migs[0].config, zoneB, "gke-cluster-1-default-pool", 1, 11)
-	validateMig(t, migs[1].config, zoneB, "gke-cluster-1-nodeautoprovisioning-323233232", 0, 1000)
+	validateMig(t, migs[0].Config, zoneB, "gke-cluster-1-default-pool", 1, 11)
+	validateMig(t, migs[1].Config, zoneB, "gke-cluster-1-nodeautoprovisioning-323233232", 0, 1000)
 	mock.AssertExpectationsForObjects(t, server)
 
 	// Fetch one node pool, remove node pool registered in previous step.
@@ -585,7 +588,7 @@ func TestRefreshNodePools(t *testing.T) {
 	assert.NoError(t, err)
 	migs = g.getMigs()
 	assert.Equal(t, 1, len(migs))
-	validateMig(t, migs[0].config, zoneB, "gke-cluster-1-default-pool", 1, 11)
+	validateMig(t, migs[0].Config, zoneB, "gke-cluster-1-default-pool", 1, 11)
 	mock.AssertExpectationsForObjects(t, server)
 }
 
@@ -610,9 +613,9 @@ func TestFetchAllNodePoolsRegional(t *testing.T) {
 	assert.NoError(t, err)
 	migs := g.getMigs()
 	assert.Equal(t, 3, len(migs))
-	validateMig(t, migs[0].config, zoneB, "gke-cluster-1-default-pool", 1, 11)
-	validateMig(t, migs[1].config, zoneC, "gke-cluster-1-default-pool", 1, 11)
-	validateMig(t, migs[2].config, zoneF, "gke-cluster-1-default-pool", 1, 11)
+	validateMig(t, migs[0].Config, zoneB, "gke-cluster-1-default-pool", 1, 11)
+	validateMig(t, migs[1].Config, zoneC, "gke-cluster-1-default-pool", 1, 11)
+	validateMig(t, migs[2].Config, zoneF, "gke-cluster-1-default-pool", 1, 11)
 	mock.AssertExpectationsForObjects(t, server)
 }
 
@@ -653,8 +656,8 @@ func TestDeleteNodePool(t *testing.T) {
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-nodeautoprovisioning-323233232").Return(getInstanceGroupManager(zoneB)).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-nodeautoprovisioning-323233232/listManagedInstances").Return(getManagedInstancesResponse2(zoneB)).Once()
 
-	mig := &Mig{
-		GceRef: GceRef{
+	mig := &gceMig{
+		gceRef: GceRef{
 			Project: projectId,
 			Zone:    zoneB,
 			Name:    "nodeautoprovisioning-323233232",
@@ -711,8 +714,8 @@ func TestCreateNodePool(t *testing.T) {
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-nodeautoprovisioning-323233232").Return(getInstanceGroupManager(zoneB)).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-nodeautoprovisioning-323233232/listManagedInstances").Return(getManagedInstancesResponse2(zoneB)).Once()
 
-	mig := &Mig{
-		GceRef: GceRef{
+	mig := &gceMig{
+		gceRef: GceRef{
 			Project: projectId,
 			Zone:    zoneB,
 			Name:    "nodeautoprovisioning-323233232",
@@ -723,7 +726,7 @@ func TestCreateNodePool(t *testing.T) {
 		autoprovisioned: true,
 		exist:           true,
 		nodePoolName:    "nodeautoprovisioning-323233232",
-		spec: &autoprovisioningSpec{
+		spec: &MigSpec{
 			machineType: "n1-standard-1",
 			taints: []apiv1.Taint{
 				{
@@ -783,8 +786,8 @@ const deleteInstancesOperationResponse = `
 }`
 
 func setupTestNodePool(manager *gceManagerImpl) {
-	mig := &Mig{
-		GceRef: GceRef{
+	mig := &gceMig{
+		gceRef: GceRef{
 			Name:    defaultPoolMig,
 			Zone:    zoneB,
 			Project: projectId,
@@ -796,12 +799,12 @@ func setupTestNodePool(manager *gceManagerImpl) {
 		minSize:         1,
 		maxSize:         11,
 	}
-	manager.migs = append(manager.migs, &migInformation{config: mig})
+	manager.cache.migs = append(manager.cache.migs, &MigInformation{Config: mig})
 }
 
 func setupTestAutoprovisionedPool(manager *gceManagerImpl) {
-	mig := &Mig{
-		GceRef: GceRef{
+	mig := &gceMig{
+		gceRef: GceRef{
 			Name:    autoprovisionedPoolMig,
 			Zone:    zoneB,
 			Project: projectId,
@@ -813,7 +816,7 @@ func setupTestAutoprovisionedPool(manager *gceManagerImpl) {
 		minSize:         minAutoprovisionedSize,
 		maxSize:         maxAutoprovisionedSize,
 	}
-	manager.migs = append(manager.migs, &migInformation{config: mig})
+	manager.cache.migs = append(manager.cache.migs, &MigInformation{Config: mig})
 }
 
 func TestDeleteInstances(t *testing.T) {
@@ -876,8 +879,8 @@ func TestGetMigSize(t *testing.T) {
 
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/nodeautoprovisioning-323233232").Return(instanceGroupManager).Once()
 
-	mig := &Mig{
-		GceRef: GceRef{
+	mig := &gceMig{
+		gceRef: GceRef{
 			Project: projectId,
 			Zone:    zoneB,
 			Name:    "nodeautoprovisioning-323233232",
@@ -938,8 +941,8 @@ func TestSetMigSize(t *testing.T) {
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/nodeautoprovisioning-323233232/resize").Return(setMigSizeResponse).Once()
 	server.On("handle", "/project1/zones/us-central1-b/operations/operation-1505739408819-5597646964339-eb839c88-28805931").Return(setMigSizeOperationResponse).Once()
 
-	mig := &Mig{
-		GceRef: GceRef{
+	mig := &gceMig{
+		gceRef: GceRef{
 			Project: projectId,
 			Zone:    zoneB,
 			Name:    "nodeautoprovisioning-323233232",
@@ -975,7 +978,7 @@ func TestGetMigForInstance(t *testing.T) {
 	mig, err := g.GetMigForInstance(gceRef)
 	assert.NoError(t, err)
 	assert.NotNil(t, mig)
-	assert.Equal(t, "gke-cluster-1-default-pool", mig.Name)
+	assert.Equal(t, "gke-cluster-1-default-pool", mig.GceRef().Name)
 	mock.AssertExpectationsForObjects(t, server)
 }
 
@@ -986,8 +989,8 @@ func TestGetMigNodes(t *testing.T) {
 
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/nodeautoprovisioning-323233232/listManagedInstances").Return(getManagedInstancesResponse1(zoneB)).Once()
 
-	mig := &Mig{
-		GceRef: GceRef{
+	mig := &gceMig{
+		gceRef: GceRef{
 			Project: projectId,
 			Zone:    zoneB,
 			Name:    "nodeautoprovisioning-323233232",
@@ -1111,8 +1114,8 @@ func TestFetchAutoMigsZonal(t *testing.T) {
 
 	migs := g.getMigs()
 	assert.Equal(t, 2, len(migs))
-	validateMig(t, migs[0].config, zoneB, gceMigA, min, max)
-	validateMig(t, migs[1].config, zoneB, gceMigB, min, max)
+	validateMig(t, migs[0].Config, zoneB, gceMigA, min, max)
+	validateMig(t, migs[1].Config, zoneB, gceMigB, min, max)
 	mock.AssertExpectationsForObjects(t, server)
 }
 func TestFetchAutoMigsUnregistersMissingMigs(t *testing.T) {
@@ -1141,9 +1144,9 @@ func TestFetchAutoMigsUnregistersMissingMigs(t *testing.T) {
 
 	// This MIG was previously autodetected but is now gone.
 	// It should be unregistered.
-	unregister := &Mig{
+	unregister := &gceMig{
 		gceManager: g,
-		GceRef:     GceRef{Project: projectId, Zone: zoneB, Name: gceMigB},
+		gceRef:     GceRef{Project: projectId, Zone: zoneB, Name: gceMigB},
 		minSize:    1,
 		maxSize:    10,
 		exist:      true,
@@ -1154,7 +1157,7 @@ func TestFetchAutoMigsUnregistersMissingMigs(t *testing.T) {
 
 	migs := g.getMigs()
 	assert.Equal(t, 1, len(migs))
-	validateMig(t, migs[0].config, zoneB, gceMigA, minA, maxA)
+	validateMig(t, migs[0].Config, zoneB, gceMigA, minA, maxA)
 	mock.AssertExpectationsForObjects(t, server)
 }
 
@@ -1186,8 +1189,8 @@ func TestFetchAutoMigsRegional(t *testing.T) {
 
 	migs := g.getMigs()
 	assert.Equal(t, 2, len(migs))
-	validateMig(t, migs[0].config, zoneB, gceMigA, min, max)
-	validateMig(t, migs[1].config, zoneB, gceMigB, min, max)
+	validateMig(t, migs[0].Config, zoneB, gceMigA, min, max)
+	validateMig(t, migs[1].Config, zoneB, gceMigB, min, max)
 	mock.AssertExpectationsForObjects(t, server)
 }
 
@@ -1220,8 +1223,8 @@ func TestFetchExplicitMigs(t *testing.T) {
 
 	migs := g.getMigs()
 	assert.Equal(t, 2, len(migs))
-	validateMig(t, migs[0].config, zoneB, gceMigA, minA, maxA)
-	validateMig(t, migs[1].config, zoneB, gceMigB, minB, maxB)
+	validateMig(t, migs[0].Config, zoneB, gceMigA, minA, maxA)
+	validateMig(t, migs[1].Config, zoneB, gceMigB, minB, maxB)
 	mock.AssertExpectationsForObjects(t, server)
 }
 
@@ -1273,9 +1276,9 @@ func TestfetchMachinesCache(t *testing.T) {
 
 	err := g.fetchMachinesCache()
 	assert.NoError(t, err)
-	assert.Equal(t, 2, len(g.machinesCache))
-	assert.NotNil(t, g.machinesCache[machineTypeKey{zoneB, "f1-micro"}])
-	assert.NotNil(t, g.machinesCache[machineTypeKey{zoneB, "g1-small"}])
+	assert.Equal(t, 2, len(g.cache.machinesCache))
+	assert.NotNil(t, g.cache.machinesCache[MachineTypeKey{zoneB, "f1-micro"}])
+	assert.NotNil(t, g.cache.machinesCache[MachineTypeKey{zoneB, "g1-small"}])
 	mock.AssertExpectationsForObjects(t, server)
 
 	// Skipped refresh.
@@ -1302,8 +1305,8 @@ func TestGetMigTemplateNode(t *testing.T) {
 	regional := false
 	g := newTestGceManager(t, server.URL, ModeGCE, regional)
 
-	mig := &Mig{
-		GceRef: GceRef{
+	mig := &gceMig{
+		gceRef: GceRef{
 			Project: projectId,
 			Zone:    zoneB,
 			Name:    "default-pool",

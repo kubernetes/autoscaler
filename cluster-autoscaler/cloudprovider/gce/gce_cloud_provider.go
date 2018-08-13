@@ -95,7 +95,7 @@ func (gce *GceCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 	migs := gce.gceManager.getMigs()
 	result := make([]cloudprovider.NodeGroup, 0, len(migs))
 	for _, mig := range migs {
-		result = append(result, mig.config)
+		result = append(result, mig.Config)
 	}
 	return result
 }
@@ -155,31 +155,30 @@ func (gce *GceCloudProvider) NewNodeGroup(machineType string, labels map[string]
 		taints = append(taints, taint)
 	}
 
-	mig := &Mig{
-		autoprovisioned: true,
-		exist:           false,
-		nodePoolName:    nodePoolName,
-		GceRef: GceRef{
+	mig := &gceMig{
+		gceRef: GceRef{
 			Project: gce.gceManager.getProjectId(),
 			Zone:    zone,
 			Name:    nodePoolName + "-temporary-mig",
 		},
-		minSize: minAutoprovisionedSize,
-		maxSize: maxAutoprovisionedSize,
-		spec: &autoprovisioningSpec{
+		gceManager:      gce.gceManager,
+		autoprovisioned: true,
+		exist:           false,
+		nodePoolName:    nodePoolName,
+		minSize:         minAutoprovisionedSize,
+		maxSize:         maxAutoprovisionedSize,
+		spec: &MigSpec{
 			machineType:    machineType,
 			labels:         labels,
 			taints:         taints,
 			extraResources: extraResources,
 		},
-		gceManager: gce.gceManager,
 	}
 
 	// Try to build a node from autoprovisioning spec. We don't need one right now,
 	// but if it fails later, we'd end up with a node group we can't scale anyway,
 	// so there's no point creating it.
-	_, err := gce.gceManager.getMigTemplateNode(mig)
-	if err != nil {
+	if _, err := gce.gceManager.getMigTemplateNode(mig); err != nil {
 		return nil, fmt.Errorf("Failed to build node from spec: %v", err)
 	}
 
@@ -216,6 +215,10 @@ type GceRef struct {
 	Name    string
 }
 
+func (ref GceRef) String() string {
+	return fmt.Sprintf("%s/%s/%s", ref.Project, ref.Zone, ref.Name)
+}
+
 // GceRefFromProviderId creates InstanceConfig object
 // from provider id which must be in format:
 // gce://<project-id>/<zone>/<name>
@@ -232,8 +235,8 @@ func GceRefFromProviderId(id string) (*GceRef, error) {
 	}, nil
 }
 
-// Information about what machines in an autoprovisioned MIG would look like.
-type autoprovisioningSpec struct {
+// MigSpec contains information about what machines in a MIG look like.
+type MigSpec struct {
 	machineType    string
 	labels         map[string]string
 	taints         []apiv1.Taint
@@ -241,8 +244,16 @@ type autoprovisioningSpec struct {
 }
 
 // Mig implements NodeGroup interface.
-type Mig struct {
-	GceRef
+type Mig interface {
+	cloudprovider.NodeGroup
+
+	GceRef() GceRef
+	NodePoolName() string
+	Spec() *MigSpec
+}
+
+type gceMig struct {
+	gceRef GceRef
 
 	gceManager      GceManager
 	minSize         int
@@ -250,22 +261,37 @@ type Mig struct {
 	autoprovisioned bool
 	exist           bool
 	nodePoolName    string
-	spec            *autoprovisioningSpec
+	spec            *MigSpec
+}
+
+// GceRef returns Mig's GceRef
+func (mig *gceMig) GceRef() GceRef {
+	return mig.gceRef
+}
+
+// NodePoolName returns the name of the GKE node pool this Mig belongs to.
+func (mig *gceMig) NodePoolName() string {
+	return mig.nodePoolName
+}
+
+// Spec returns specification of the Mig.
+func (mig *gceMig) Spec() *MigSpec {
+	return mig.spec
 }
 
 // MaxSize returns maximum size of the node group.
-func (mig *Mig) MaxSize() int {
+func (mig *gceMig) MaxSize() int {
 	return mig.maxSize
 }
 
 // MinSize returns minimum size of the node group.
-func (mig *Mig) MinSize() int {
+func (mig *gceMig) MinSize() int {
 	return mig.minSize
 }
 
 // TargetSize returns the current TARGET size of the node group. It is possible that the
 // number is different from the number of nodes registered in Kubernetes.
-func (mig *Mig) TargetSize() (int, error) {
+func (mig *gceMig) TargetSize() (int, error) {
 	if !mig.exist {
 		return 0, nil
 	}
@@ -274,7 +300,7 @@ func (mig *Mig) TargetSize() (int, error) {
 }
 
 // IncreaseSize increases Mig size
-func (mig *Mig) IncreaseSize(delta int) error {
+func (mig *gceMig) IncreaseSize(delta int) error {
 	if delta <= 0 {
 		return fmt.Errorf("size increase must be positive")
 	}
@@ -291,7 +317,7 @@ func (mig *Mig) IncreaseSize(delta int) error {
 // DecreaseTargetSize decreases the target size of the node group. This function
 // doesn't permit to delete any existing node and can be used only to reduce the
 // request for new nodes that have not been yet fulfilled. Delta should be negative.
-func (mig *Mig) DecreaseTargetSize(delta int) error {
+func (mig *gceMig) DecreaseTargetSize(delta int) error {
 	if delta >= 0 {
 		return fmt.Errorf("size decrease must be negative")
 	}
@@ -311,7 +337,7 @@ func (mig *Mig) DecreaseTargetSize(delta int) error {
 }
 
 // Belongs returns true if the given node belongs to the NodeGroup.
-func (mig *Mig) Belongs(node *apiv1.Node) (bool, error) {
+func (mig *gceMig) Belongs(node *apiv1.Node) (bool, error) {
 	ref, err := GceRefFromProviderId(node.Spec.ProviderID)
 	if err != nil {
 		return false, err
@@ -330,7 +356,7 @@ func (mig *Mig) Belongs(node *apiv1.Node) (bool, error) {
 }
 
 // DeleteNodes deletes the nodes from the group.
-func (mig *Mig) DeleteNodes(nodes []*apiv1.Node) error {
+func (mig *gceMig) DeleteNodes(nodes []*apiv1.Node) error {
 	size, err := mig.gceManager.GetMigSize(mig)
 	if err != nil {
 		return err
@@ -358,28 +384,28 @@ func (mig *Mig) DeleteNodes(nodes []*apiv1.Node) error {
 }
 
 // Id returns mig url.
-func (mig *Mig) Id() string {
-	return GenerateMigUrl(mig.GceRef)
+func (mig *gceMig) Id() string {
+	return GenerateMigUrl(mig.gceRef)
 }
 
 // Debug returns a debug string for the Mig.
-func (mig *Mig) Debug() string {
+func (mig *gceMig) Debug() string {
 	return fmt.Sprintf("%s (%d:%d)", mig.Id(), mig.MinSize(), mig.MaxSize())
 }
 
 // Nodes returns a list of all nodes that belong to this node group.
-func (mig *Mig) Nodes() ([]string, error) {
+func (mig *gceMig) Nodes() ([]string, error) {
 	return mig.gceManager.GetMigNodes(mig)
 }
 
 // Exist checks if the node group really exists on the cloud provider side. Allows to tell the
 // theoretical node group from the real one.
-func (mig *Mig) Exist() bool {
+func (mig *gceMig) Exist() bool {
 	return mig.exist
 }
 
 // Create creates the node group on the cloud provider side.
-func (mig *Mig) Create() (cloudprovider.NodeGroup, error) {
+func (mig *gceMig) Create() (cloudprovider.NodeGroup, error) {
 	if !mig.exist && mig.autoprovisioned {
 		return mig.gceManager.createNodePool(mig)
 	}
@@ -388,7 +414,7 @@ func (mig *Mig) Create() (cloudprovider.NodeGroup, error) {
 
 // Delete deletes the node group on the cloud provider side.
 // This will be executed only for autoprovisioned node groups, once their size drops to 0.
-func (mig *Mig) Delete() error {
+func (mig *gceMig) Delete() error {
 	if mig.exist && mig.autoprovisioned {
 		return mig.gceManager.deleteNodePool(mig)
 	}
@@ -396,12 +422,12 @@ func (mig *Mig) Delete() error {
 }
 
 // Autoprovisioned returns true if the node group is autoprovisioned.
-func (mig *Mig) Autoprovisioned() bool {
+func (mig *gceMig) Autoprovisioned() bool {
 	return mig.autoprovisioned
 }
 
 // TemplateNodeInfo returns a node template for this node group.
-func (mig *Mig) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
+func (mig *gceMig) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
 	node, err := mig.gceManager.getMigTemplateNode(mig)
 	if err != nil {
 		return nil, err
