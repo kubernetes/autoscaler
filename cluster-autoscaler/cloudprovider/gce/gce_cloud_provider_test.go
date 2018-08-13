@@ -21,12 +21,9 @@ import (
 	"net/http"
 	"reflect"
 	"regexp"
-	"strings"
 	"testing"
 
-	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -78,36 +75,6 @@ func (m *gceManagerMock) Cleanup() error {
 func (m *gceManagerMock) getMigs() []*MigInformation {
 	args := m.Called()
 	return args.Get(0).([]*MigInformation)
-}
-
-func (m *gceManagerMock) createNodePool(mig Mig) (Mig, error) {
-	args := m.Called(mig)
-	return mig, args.Error(0)
-}
-
-func (m *gceManagerMock) deleteNodePool(toBeRemoved Mig) error {
-	args := m.Called(toBeRemoved)
-	return args.Error(0)
-}
-
-func (m *gceManagerMock) getLocation() string {
-	args := m.Called()
-	return args.String(0)
-}
-
-func (m *gceManagerMock) getProjectId() string {
-	args := m.Called()
-	return args.String(0)
-}
-
-func (m *gceManagerMock) getClusterName() string {
-	args := m.Called()
-	return args.String(0)
-}
-
-func (m *gceManagerMock) getMode() GcpCloudProviderMode {
-	args := m.Called()
-	return args.Get(0).(GcpCloudProviderMode)
 }
 
 func (m *gceManagerMock) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
@@ -283,25 +250,12 @@ func TestMig(t *testing.T) {
 	gceService, err := gcev1.New(client)
 	assert.NoError(t, err)
 	gceService.BasePath = server.URL
-	gce := &GceCloudProvider{
-		gceManager: gceManagerMock,
-	}
 
-	// Test NewNodeGroup.
-	gceManagerMock.On("getProjectId").Return("project1").Once()
-	gceManagerMock.On("getLocation").Return("us-central1-b").Once()
-	gceManagerMock.On("getMigTemplateNode", mock.AnythingOfType("*gce.gceMig")).Return(&apiv1.Node{}, nil).Once()
-	nodeGroup, err := gce.NewNodeGroup("n1-standard-1", nil, nil, nil, nil)
-	assert.NoError(t, err)
-	assert.NotNil(t, nodeGroup)
-	mig1 := reflect.ValueOf(nodeGroup).Interface().(*gceMig)
-	assert.Equal(t, true, mig1.Autoprovisioned())
-	mig1.exist = true
-	assert.True(t, strings.HasPrefix(mig1.Id(), "https://content.googleapis.com/compute/v1/projects/project1/zones/us-central1-b/instanceGroups/"+nodeAutoprovisioningPrefix+"-n1-standard-1"))
-	assert.Equal(t, true, mig1.Autoprovisioned())
-	assert.Equal(t, 0, mig1.MinSize())
-	assert.Equal(t, 1000, mig1.MaxSize())
-	mock.AssertExpectationsForObjects(t, gceManagerMock)
+	mig1 := &gceMig{
+		gceManager: gceManagerMock,
+		minSize:    0,
+		maxSize:    1000,
+	}
 
 	// Test TargetSize.
 	gceManagerMock.On("GetMigSize", mock.AnythingOfType("*gce.gceMig")).Return(int64(2), nil).Once()
@@ -372,13 +326,10 @@ func TestMig(t *testing.T) {
 			Zone:    "us-central1-b",
 			Name:    "default-pool",
 		},
-		gceManager:      gceManagerMock,
-		minSize:         0,
-		maxSize:         1000,
-		autoprovisioned: true,
-		exist:           true,
-		nodePoolName:    "default-pool",
-		spec:            nil}
+		gceManager: gceManagerMock,
+		minSize:    0,
+		maxSize:    1000,
+	}
 	gceManagerMock.On("GetMigForInstance", mock.AnythingOfType("*gce.GceRef")).Return(mig2, nil).Once()
 
 	belongs, err = mig1.Belongs(node)
@@ -418,19 +369,6 @@ func TestMig(t *testing.T) {
 	assert.Equal(t, "gce://project1/us-central1-b/gke-cluster-1-default-pool-f7607aac-dck1", nodes[1])
 	mock.AssertExpectationsForObjects(t, gceManagerMock)
 
-	// Test Create.
-	mig1.exist = false
-	gceManagerMock.On("createNodePool", mock.AnythingOfType("*gce.gceMig")).Return(nil, nil).Once()
-	_, err = mig1.Create()
-	assert.NoError(t, err)
-	mock.AssertExpectationsForObjects(t, gceManagerMock)
-
-	gceManagerMock.On("deleteNodePool", mock.AnythingOfType("*gce.gceMig")).Return(nil).Once()
-	mig1.exist = true
-	err = mig1.Delete()
-	assert.NoError(t, err)
-	mock.AssertExpectationsForObjects(t, gceManagerMock)
-
 	// Test TemplateNodeInfo.
 	gceManagerMock.On("getMigTemplateNode", mock.AnythingOfType("*gce.gceMig")).Return(&apiv1.Node{}, nil).Once()
 	templateNodeInfo, err := mig2.TemplateNodeInfo()
@@ -440,66 +378,10 @@ func TestMig(t *testing.T) {
 	mock.AssertExpectationsForObjects(t, gceManagerMock)
 }
 
-func TestNewNodeGroupForGpu(t *testing.T) {
-	server := NewHttpServerMock()
-	defer server.Close()
-	gceManagerMock := &gceManagerMock{}
-	client := &http.Client{}
-	gceService, err := gcev1.New(client)
-	assert.NoError(t, err)
-	gceService.BasePath = server.URL
-	gce := &GceCloudProvider{
-		gceManager: gceManagerMock,
-	}
-
-	// Test NewNodeGroup.
-	gceManagerMock.On("getProjectId").Return("project1").Once()
-	gceManagerMock.On("getLocation").Return("us-west1-b").Once()
-	gceManagerMock.On("getMigTemplateNode", mock.AnythingOfType("*gce.gceMig")).Return(&apiv1.Node{}, nil).Once()
-
-	systemLabels := map[string]string{
-		gpu.GPULabel: gpu.DefaultGPUType,
-	}
-	extraResources := map[string]resource.Quantity{
-		gpu.ResourceNvidiaGPU: resource.MustParse("1"),
-	}
-	nodeGroup, err := gce.NewNodeGroup("n1-standard-1", make(map[string]string), systemLabels, nil, extraResources)
-	assert.NoError(t, err)
-	assert.NotNil(t, nodeGroup)
-	mig1 := reflect.ValueOf(nodeGroup).Interface().(*gceMig)
-	assert.True(t, strings.HasPrefix(mig1.Id(), "https://content.googleapis.com/compute/v1/projects/project1/zones/us-west1-b/instanceGroups/"+nodeAutoprovisioningPrefix+"-n1-standard-1-gpu"))
-	assert.Equal(t, true, mig1.Autoprovisioned())
-	assert.Equal(t, 0, mig1.MinSize())
-	assert.Equal(t, 1000, mig1.MaxSize())
-	expectedTaints := []apiv1.Taint{
-		{
-			Key:    gpu.ResourceNvidiaGPU,
-			Value:  "present",
-			Effect: apiv1.TaintEffectNoSchedule,
-		},
-	}
-	assert.Equal(t, expectedTaints, mig1.spec.Taints)
-	mock.AssertExpectationsForObjects(t, gceManagerMock)
-}
 func TestGceRefFromProviderId(t *testing.T) {
 	ref, err := GceRefFromProviderId("gce://project1/us-central1-b/name1")
 	assert.NoError(t, err)
 	assert.Equal(t, GceRef{"project1", "us-central1-b", "name1"}, *ref)
-}
-
-func TestGetClusterInfo(t *testing.T) {
-	gceManagerMock := &gceManagerMock{}
-	gce := &GceCloudProvider{
-		gceManager: gceManagerMock,
-	}
-	gceManagerMock.On("getProjectId").Return("project1").Once()
-	gceManagerMock.On("getLocation").Return("location1").Once()
-	gceManagerMock.On("getClusterName").Return("cluster1").Once()
-
-	project, location, cluster := gce.GetClusterInfo()
-	assert.Equal(t, "project1", project)
-	assert.Equal(t, "location1", location)
-	assert.Equal(t, "cluster1", cluster)
 }
 
 func createString(s string) *string {
