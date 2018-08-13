@@ -64,7 +64,7 @@ type Clusters interface {
 
 // TODO(#6812): Use a shorter name that's less likely to be longer than cloud
 // providers' name length limits.
-func GetLoadBalancerName(service *v1.Service) string {
+func DefaultLoadBalancerName(service *v1.Service) string {
 	//GCE requires that the name of a load balancer starts with a lower case letter.
 	ret := "a" + string(service.UID)
 	ret = strings.Replace(ret, "-", "", -1)
@@ -96,6 +96,9 @@ type LoadBalancer interface {
 	// Implementations must treat the *v1.Service parameter as read-only and not modify it.
 	// Parameter 'clusterName' is the name of the cluster as presented to kube-controller-manager
 	GetLoadBalancer(ctx context.Context, clusterName string, service *v1.Service) (status *v1.LoadBalancerStatus, exists bool, err error)
+	// GetLoadBalancerName returns the name of the load balancer. Implementations must treat the
+	// *v1.Service parameter as read-only and not modify it.
+	GetLoadBalancerName(ctx context.Context, clusterName string, service *v1.Service) string
 	// EnsureLoadBalancer creates a new load balancer 'name', or updates the existing one. Returns the status of the balancer
 	// Implementations must treat the *v1.Service and *v1.Node
 	// parameters as read-only and not modify them.
@@ -130,10 +133,8 @@ type Instances interface {
 	// from the node whose nodeaddresses are being queried. i.e. local metadata
 	// services cannot be used in this method to obtain nodeaddresses
 	NodeAddressesByProviderID(ctx context.Context, providerID string) ([]v1.NodeAddress, error)
-	// ExternalID returns the cloud provider ID of the node with the specified NodeName.
-	// Note that if the instance does not exist or is no longer running, we must return ("", cloudprovider.InstanceNotFound)
-	ExternalID(ctx context.Context, nodeName types.NodeName) (string, error)
 	// InstanceID returns the cloud provider ID of the node with the specified NodeName.
+	// Note that if the instance does not exist or is no longer running, we must return ("", cloudprovider.InstanceNotFound)
 	InstanceID(ctx context.Context, nodeName types.NodeName) (string, error)
 	// InstanceType returns the type of the specified instance.
 	InstanceType(ctx context.Context, name types.NodeName) (string, error)
@@ -148,6 +149,8 @@ type Instances interface {
 	// InstanceExistsByProviderID returns true if the instance for the given provider id still is running.
 	// If false is returned with no error, the instance will be immediately deleted by the cloud controller manager.
 	InstanceExistsByProviderID(ctx context.Context, providerID string) (bool, error)
+	// InstanceShutdownByProviderID returns true if the instance is shutdown in cloudprovider
+	InstanceShutdownByProviderID(ctx context.Context, providerID string) (bool, error)
 }
 
 // Route is a representation of an advanced routing rule.
@@ -198,13 +201,13 @@ type Zones interface {
 	// can no longer be called from the kubelets.
 	GetZone(ctx context.Context) (Zone, error)
 
-	// GetZoneByProviderID returns the Zone containing the current zone and locality region of the node specified by providerId
-	// This method is particularly used in the context of external cloud providers where node initialization must be down
+	// GetZoneByProviderID returns the Zone containing the current zone and locality region of the node specified by providerID
+	// This method is particularly used in the context of external cloud providers where node initialization must be done
 	// outside the kubelets.
 	GetZoneByProviderID(ctx context.Context, providerID string) (Zone, error)
 
 	// GetZoneByNodeName returns the Zone containing the current zone and locality region of the node specified by node name
-	// This method is particularly used in the context of external cloud providers where node initialization must be down
+	// This method is particularly used in the context of external cloud providers where node initialization must be done
 	// outside the kubelets.
 	GetZoneByNodeName(ctx context.Context, nodeName types.NodeName) (Zone, error)
 }

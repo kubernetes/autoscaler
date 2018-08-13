@@ -36,6 +36,7 @@ package unix
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/un.h>
+#include <sys/utsname.h>
 #include <sys/wait.h>
 #include <net/bpf.h>
 #include <net/if.h>
@@ -203,6 +204,8 @@ const ( // Directory mode bits
 	S_IRUSR  = C.S_IRUSR
 	S_IWUSR  = C.S_IWUSR
 	S_IXUSR  = C.S_IXUSR
+	S_IRWXG  = C.S_IRWXG
+	S_IRWXO  = C.S_IRWXO
 )
 
 type Stat_t C.struct_stat8
@@ -214,6 +217,12 @@ type Flock_t C.struct_flock
 type Dirent C.struct_dirent
 
 type Fsid C.struct_fsid
+
+// File system limits
+
+const (
+	PathMax = C.PATH_MAX
+)
 
 // Advice to Fadvise
 
@@ -389,3 +398,7 @@ const (
 // Capabilities
 
 type CapRights C.struct_cap_rights
+
+// Uname
+
+type Utsname C.struct_utsname
