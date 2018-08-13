@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/golang/glog"
+	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/poc.autoscaling.k8s.io/v1alpha1"
@@ -47,8 +48,22 @@ func NewCheckpointWriter(cluster *model.ClusterState, vpaCheckpointClient vpa_ap
 	}
 }
 
+func isFetchingHistory(vpa *model.Vpa) bool {
+	condition, found := vpa.Conditions[vpa_types.FetchingHistory]
+	if !found {
+		return false
+	}
+	return condition.Status == v1.ConditionTrue
+}
+
 func (writer *checkpointWriter) StoreCheckpoints(now time.Time) {
 	for _, vpa := range writer.cluster.Vpas {
+
+		if isFetchingHistory(vpa) {
+			glog.V(3).Infof("VPA %s/%s is loading history, skipping checkpoints", vpa.ID.Namespace, vpa.ID.VpaName)
+			continue
+		}
+
 		aggregateContainerStateMap := buildAggregateContainerStateMap(vpa, writer.cluster, now)
 		for container, aggregatedContainerState := range aggregateContainerStateMap {
 			containerCheckpoint, err := aggregatedContainerState.SaveToCheckpoint()

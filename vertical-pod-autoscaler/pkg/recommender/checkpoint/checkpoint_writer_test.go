@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"k8s.io/api/core/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
@@ -72,5 +73,46 @@ func TestMergeContainerStateForCheckpointDropsRecentMemoryPeak(t *testing.T) {
 	if assert.Contains(t, aggregateContainerStateMap, "container-1") {
 		assert.False(t, aggregateContainerStateMap["container-1"].AggregateMemoryPeaks.IsEmpty(),
 			"Old peak should not be excluded from the aggregation.")
+	}
+}
+
+func TestIsFetchingHistory(t *testing.T) {
+
+	testCases := []struct {
+		vpa               model.Vpa
+		isFetchingHistory bool
+	}{
+		{
+			vpa:               model.Vpa{},
+			isFetchingHistory: false,
+		},
+		{
+			vpa: model.Vpa{
+				PodSelector: nil,
+				Conditions: map[vpa_types.VerticalPodAutoscalerConditionType]vpa_types.VerticalPodAutoscalerCondition{
+					vpa_types.FetchingHistory: {
+						Type:   vpa_types.FetchingHistory,
+						Status: v1.ConditionFalse,
+					},
+				},
+			},
+			isFetchingHistory: false,
+		},
+		{
+			vpa: model.Vpa{
+				PodSelector: nil,
+				Conditions: map[vpa_types.VerticalPodAutoscalerConditionType]vpa_types.VerticalPodAutoscalerCondition{
+					vpa_types.FetchingHistory: {
+						Type:   vpa_types.FetchingHistory,
+						Status: v1.ConditionTrue,
+					},
+				},
+			},
+			isFetchingHistory: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		assert.Equalf(t, tc.isFetchingHistory, isFetchingHistory(&tc.vpa), "%+v should have %v as isFetchingHistoryResult", tc.vpa, tc.isFetchingHistory)
 	}
 }
