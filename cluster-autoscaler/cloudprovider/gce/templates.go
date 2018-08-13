@@ -193,67 +193,6 @@ func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, template *gce.Instan
 	return &node, nil
 }
 
-// BuildNodeFromMigSpec builds node based on MIG's spec.
-func (t *GceTemplateBuilder) BuildNodeFromMigSpec(mig Mig, cpu int64, mem int64) (*apiv1.Node, error) {
-	if mig.Spec() == nil {
-		return nil, fmt.Errorf("no spec in mig %s", mig.GceRef().Name)
-	}
-
-	node := apiv1.Node{}
-	nodeName := fmt.Sprintf("%s-autoprovisioned-template-%d", mig.GceRef().Name, rand.Int63())
-
-	node.ObjectMeta = metav1.ObjectMeta{
-		Name:     nodeName,
-		SelfLink: fmt.Sprintf("/api/v1/nodes/%s", nodeName),
-		Labels:   map[string]string{},
-	}
-
-	capacity, err := t.BuildCapacity(mig.Spec().MachineType, nil, mig.GceRef().Zone, cpu, mem)
-	if err != nil {
-		return nil, err
-	}
-
-	if gpuRequest, found := mig.Spec().ExtraResources[gpu.ResourceNvidiaGPU]; found {
-		capacity[gpu.ResourceNvidiaGPU] = gpuRequest.DeepCopy()
-	}
-
-	node.Status = apiv1.NodeStatus{
-		Capacity:    capacity,
-		Allocatable: t.BuildAllocatableFromCapacity(capacity),
-	}
-
-	labels, err := buildLabelsForAutoprovisionedMig(mig, nodeName)
-	if err != nil {
-		return nil, err
-	}
-	node.Labels = labels
-
-	node.Spec.Taints = mig.Spec().Taints
-
-	// Ready status
-	node.Status.Conditions = cloudprovider.BuildReadyConditions()
-	return &node, nil
-}
-
-func buildLabelsForAutoprovisionedMig(mig Mig, nodeName string) (map[string]string, error) {
-	// GenericLabels
-	labels, err := BuildGenericLabels(mig.GceRef(), mig.Spec().MachineType, nodeName)
-	if err != nil {
-		return nil, err
-	}
-	for k, v := range mig.Spec().Labels {
-		if existingValue, found := labels[k]; found {
-			if v != existingValue {
-				return map[string]string{}, fmt.Errorf("conflict in labels requested: %s=%s  present: %s=%s",
-					k, v, k, existingValue)
-			}
-		} else {
-			labels[k] = v
-		}
-	}
-	return labels, nil
-}
-
 // BuildGenericLabels builds basic labels that should be present on every GCE node,
 // including hostname, zone etc.
 func BuildGenericLabels(ref GceRef, machineType string, nodeName string) (map[string]string, error) {

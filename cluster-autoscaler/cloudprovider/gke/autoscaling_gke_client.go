@@ -17,18 +17,16 @@ limitations under the License.
 package gke
 
 import (
+	"flag"
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce"
 )
 
-/*
 // This flag is outside main as it's only useful for test/development.
 var (
-	GkeAPIEndpoint = flag.String("gke-api-endpoint", "", "GKE API endpoint address. This flag is used by developers only. Users shouldn't change this flag.")
+	gkeAPIEndpoint = flag.String("gke-api-endpoint", "", "GKE API endpoint address. This flag is used by developers only. Users shouldn't change this flag.")
 )
-*/
 
 const (
 	defaultOperationWaitTimeout  = 5 * time.Second
@@ -51,7 +49,7 @@ type AutoscalingGkeClient interface {
 
 	// modifying cluster state
 	DeleteNodePool(string) error
-	CreateNodePool(gce.Mig) error
+	CreateNodePool(*gkeMig) error
 }
 
 // NodePool contains node pool's fields we want to use.
