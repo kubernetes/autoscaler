@@ -46,10 +46,10 @@ const (
 	kubeletEvictionHardMemory = 100 * 1024 * 1024
 )
 
-// builds templates for gce cloud provider
+// GceTemplateBuilder builds templates for GCE nodes.
 type GceTemplateBuilder struct{}
 
-func (t *GceTemplateBuilder) GetAcceleratorCount(accelerators []*gce.AcceleratorConfig) int64 {
+func (t *GceTemplateBuilder) getAcceleratorCount(accelerators []*gce.AcceleratorConfig) int64 {
 	count := int64(0)
 	for _, accelerator := range accelerators {
 		if strings.HasPrefix(accelerator.AcceleratorType, "nvidia-") {
@@ -59,6 +59,7 @@ func (t *GceTemplateBuilder) GetAcceleratorCount(accelerators []*gce.Accelerator
 	return count
 }
 
+// BuildCapacity builds a list of resource capacities for a node.
 func (t *GceTemplateBuilder) BuildCapacity(machineType string, accelerators []*gce.AcceleratorConfig, zone string, cpu int64, mem int64) (apiv1.ResourceList, error) {
 	capacity := apiv1.ResourceList{}
 	// TODO: get a real value.
@@ -67,13 +68,13 @@ func (t *GceTemplateBuilder) BuildCapacity(machineType string, accelerators []*g
 	capacity[apiv1.ResourceMemory] = *resource.NewQuantity(mem, resource.DecimalSI)
 
 	if accelerators != nil && len(accelerators) > 0 {
-		capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(t.GetAcceleratorCount(accelerators), resource.DecimalSI)
+		capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(t.getAcceleratorCount(accelerators), resource.DecimalSI)
 	}
 
 	return capacity, nil
 }
 
-// buildAllocatableFromKubeEnv builds node allocatable based on capacity of the node and
+// BuildAllocatableFromKubeEnv builds node allocatable based on capacity of the node and
 // value of kubeEnv.
 // KubeEnv is a multi-line string containing entries in the form of
 // <RESOURCE_NAME>:<string>. One of the resources it contains is a list of
@@ -93,10 +94,10 @@ func (t *GceTemplateBuilder) BuildAllocatableFromKubeEnv(capacity apiv1.Resource
 	if quantity, found := reserved[apiv1.ResourceMemory]; found {
 		reserved[apiv1.ResourceMemory] = *resource.NewQuantity(quantity.Value()+kubeletEvictionHardMemory, resource.BinarySI)
 	}
-	return t.GetAllocatable(capacity, reserved), nil
+	return t.getAllocatable(capacity, reserved), nil
 }
 
-// buildAllocatableFromCapacity builds node allocatable based only on node capacity.
+// BuildAllocatableFromCapacity builds node allocatable based only on node capacity.
 // Calculates reserved as a ratio of capacity. See calculateReserved for more details
 func (t *GceTemplateBuilder) BuildAllocatableFromCapacity(capacity apiv1.ResourceList) apiv1.ResourceList {
 	memoryReserved := memoryReservedMB(capacity.Memory().Value() / bytesPerMB)
@@ -107,10 +108,10 @@ func (t *GceTemplateBuilder) BuildAllocatableFromCapacity(capacity apiv1.Resourc
 	memoryReserved = memoryReserved * 1024 * 1024
 	memoryReserved += kubeletEvictionHardMemory
 	reserved[apiv1.ResourceMemory] = *resource.NewQuantity(memoryReserved, resource.BinarySI)
-	return t.GetAllocatable(capacity, reserved)
+	return t.getAllocatable(capacity, reserved)
 }
 
-func (t *GceTemplateBuilder) GetAllocatable(capacity, reserved apiv1.ResourceList) apiv1.ResourceList {
+func (t *GceTemplateBuilder) getAllocatable(capacity, reserved apiv1.ResourceList) apiv1.ResourceList {
 	allocatable := apiv1.ResourceList{}
 	for key, value := range capacity {
 		quantity := *value.Copy()
@@ -122,6 +123,7 @@ func (t *GceTemplateBuilder) GetAllocatable(capacity, reserved apiv1.ResourceLis
 	return allocatable
 }
 
+// BuildNodeFromTemplate builds node from provided GCE template.
 func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, template *gce.InstanceTemplate, cpu int64, mem int64) (*apiv1.Node, error) {
 
 	if template.Properties == nil {
@@ -180,7 +182,7 @@ func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, template *gce.Instan
 		node.Status.Allocatable = nodeAllocatable
 	}
 	// GenericLabels
-	labels, err := buildGenericLabels(mig.GceRef(), template.Properties.MachineType, nodeName)
+	labels, err := BuildGenericLabels(mig.GceRef(), template.Properties.MachineType, nodeName)
 	if err != nil {
 		return nil, err
 	}
@@ -191,6 +193,7 @@ func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, template *gce.Instan
 	return &node, nil
 }
 
+// BuildNodeFromMigSpec builds node based on MIG's spec.
 func (t *GceTemplateBuilder) BuildNodeFromMigSpec(mig Mig, cpu int64, mem int64) (*apiv1.Node, error) {
 	if mig.Spec() == nil {
 		return nil, fmt.Errorf("no spec in mig %s", mig.GceRef().Name)
@@ -234,7 +237,7 @@ func (t *GceTemplateBuilder) BuildNodeFromMigSpec(mig Mig, cpu int64, mem int64)
 
 func buildLabelsForAutoprovisionedMig(mig Mig, nodeName string) (map[string]string, error) {
 	// GenericLabels
-	labels, err := buildGenericLabels(mig.GceRef(), mig.Spec().MachineType, nodeName)
+	labels, err := BuildGenericLabels(mig.GceRef(), mig.Spec().MachineType, nodeName)
 	if err != nil {
 		return nil, err
 	}
@@ -251,7 +254,9 @@ func buildLabelsForAutoprovisionedMig(mig Mig, nodeName string) (map[string]stri
 	return labels, nil
 }
 
-func buildGenericLabels(ref GceRef, machineType string, nodeName string) (map[string]string, error) {
+// BuildGenericLabels builds basic labels that should be present on every GCE node,
+// including hostname, zone etc.
+func BuildGenericLabels(ref GceRef, machineType string, nodeName string) (map[string]string, error) {
 	result := make(map[string]string)
 
 	// TODO: extract it somehow
