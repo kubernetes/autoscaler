@@ -136,7 +136,7 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 }
 
 func TestBuildGenericLabels(t *testing.T) {
-	labels, err := buildGenericLabels(GceRef{
+	labels, err := BuildGenericLabels(GceRef{
 		Name:    "kubernetes-minion-group",
 		Project: "mwielgus-proj",
 		Zone:    "us-central1-b"},
@@ -150,7 +150,7 @@ func TestBuildGenericLabels(t *testing.T) {
 	assert.Equal(t, cloudprovider.DefaultOS, labels[kubeletapis.LabelOS])
 }
 
-func TestBuildLabelsForAutoscaledMigOK(t *testing.T) {
+func TestBuildLabelsForAutoprovisionedMigOK(t *testing.T) {
 	labels, err := buildLabelsForAutoprovisionedMig(
 		&gceMig{
 			gceRef: GceRef{
@@ -179,7 +179,7 @@ func TestBuildLabelsForAutoscaledMigOK(t *testing.T) {
 	assert.Equal(t, cloudprovider.DefaultOS, labels[kubeletapis.LabelOS])
 }
 
-func TestBuildLabelsForAutoscaledMigConflict(t *testing.T) {
+func TestBuildLabelsForAutoprovisionedMigConflict(t *testing.T) {
 	_, err := buildLabelsForAutoprovisionedMig(
 		&gceMig{
 			gceRef: GceRef{
@@ -279,7 +279,7 @@ func TestGetAcceleratorCount(t *testing.T) {
 
 	for _, tc := range testCases {
 		tb := GceTemplateBuilder{}
-		assert.Equal(t, tc.count, tb.GetAcceleratorCount(tc.accelerators))
+		assert.Equal(t, tc.count, tb.getAcceleratorCount(tc.accelerators))
 	}
 }
 
