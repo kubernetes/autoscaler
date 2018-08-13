@@ -497,14 +497,12 @@ func newTestGceManager(t *testing.T, testServerURL string, mode GcpCloudProvider
 				{"us-central1-f", "n1-standard-1"}: {GuestCpus: 1, MemoryMb: 1},
 			},
 		},
-		GceService:  gceService,
-		projectId:   projectId,
-		clusterName: clusterName,
-		mode:        mode,
-		regional:    regional,
-		templates: &templateBuilder{
-			projectId: projectId,
-		},
+		GceService:           gceService,
+		projectId:            projectId,
+		clusterName:          clusterName,
+		mode:                 mode,
+		regional:             regional,
+		templates:            &GceTemplateBuilder{},
 		explicitlyConfigured: make(map[GceRef]bool),
 	}
 	if regional {
@@ -514,7 +512,7 @@ func newTestGceManager(t *testing.T, testServerURL string, mode GcpCloudProvider
 	}
 
 	client := &http.Client{}
-	gkeAPIEndpoint = &testServerURL
+	GkeAPIEndpoint = &testServerURL
 	var err error
 	if mode == ModeGKE {
 		manager.GkeService, err = NewAutoscalingGkeClientV1(client, projectId, manager.location, clusterName)
@@ -727,8 +725,8 @@ func TestCreateNodePool(t *testing.T) {
 		exist:           true,
 		nodePoolName:    "nodeautoprovisioning-323233232",
 		spec: &MigSpec{
-			machineType: "n1-standard-1",
-			taints: []apiv1.Taint{
+			MachineType: "n1-standard-1",
+			Taints: []apiv1.Taint{
 				{
 					Key:   gpu.ResourceNvidiaGPU,
 					Value: "present",

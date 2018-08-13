@@ -106,7 +106,7 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 		},
 	}
 	for _, tc := range testCases {
-		tb := &templateBuilder{}
+		tb := &GceTemplateBuilder{}
 		template := &gce.InstanceTemplate{
 			Name: tc.name,
 			Properties: &gce.InstanceProperties{
@@ -117,7 +117,7 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 				MachineType: tc.machineType,
 			},
 		}
-		node, err := tb.buildNodeFromTemplate(tc.mig, template, tc.capacityCpu, tc.capacityMemory)
+		node, err := tb.BuildNodeFromTemplate(tc.mig, template, tc.capacityCpu, tc.capacityMemory)
 		if tc.expectedErr {
 			assert.Error(t, err)
 		} else {
@@ -160,8 +160,8 @@ func TestBuildLabelsForAutoscaledMigOK(t *testing.T) {
 			},
 			autoprovisioned: true,
 			spec: &MigSpec{
-				machineType: "n1-standard-8",
-				labels: map[string]string{
+				MachineType: "n1-standard-8",
+				Labels: map[string]string{
 					"A": "B",
 				},
 			},
@@ -189,8 +189,8 @@ func TestBuildLabelsForAutoscaledMigConflict(t *testing.T) {
 			},
 			autoprovisioned: true,
 			spec: &MigSpec{
-				machineType: "n1-standard-8",
-				labels: map[string]string{
+				MachineType: "n1-standard-8",
+				Labels: map[string]string{
 					kubeletapis.LabelOS: "windows",
 				},
 			},
@@ -234,8 +234,8 @@ func TestBuildAllocatableFromKubeEnv(t *testing.T) {
 	for _, tc := range testCases {
 		capacity, err := makeResourceList(tc.capacityCpu, tc.capacityMemory, tc.gpuCount)
 		assert.NoError(t, err)
-		tb := templateBuilder{}
-		allocatable, err := tb.buildAllocatableFromKubeEnv(capacity, tc.kubeEnv)
+		tb := GceTemplateBuilder{}
+		allocatable, err := tb.BuildAllocatableFromKubeEnv(capacity, tc.kubeEnv)
 		if tc.expectedErr {
 			assert.Error(t, err)
 		} else {
@@ -278,8 +278,8 @@ func TestGetAcceleratorCount(t *testing.T) {
 	}}
 
 	for _, tc := range testCases {
-		tb := templateBuilder{}
-		assert.Equal(t, tc.count, tb.getAcceleratorCount(tc.accelerators))
+		tb := GceTemplateBuilder{}
+		assert.Equal(t, tc.count, tb.GetAcceleratorCount(tc.accelerators))
 	}
 }
 
@@ -306,12 +306,12 @@ func TestBuildAllocatableFromCapacity(t *testing.T) {
 		allocatableMemory: fmt.Sprintf("%v", 1.1*mbPerGB*bytesPerMB-0.25*1.1*mbPerGB*1024*1024-kubeletEvictionHardMemory),
 	}}
 	for _, tc := range testCases {
-		tb := templateBuilder{}
+		tb := GceTemplateBuilder{}
 		capacity, err := makeResourceList(tc.capacityCpu, tc.capacityMemory, tc.gpuCount)
 		assert.NoError(t, err)
 		expectedAllocatable, err := makeResourceList(tc.allocatableCpu, tc.allocatableMemory, tc.gpuCount)
 		assert.NoError(t, err)
-		allocatable := tb.buildAllocatableFromCapacity(capacity)
+		allocatable := tb.BuildAllocatableFromCapacity(capacity)
 		assertEqualResourceLists(t, "Allocatable", expectedAllocatable, allocatable)
 	}
 }
