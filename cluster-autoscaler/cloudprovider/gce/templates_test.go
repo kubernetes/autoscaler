@@ -150,56 +150,6 @@ func TestBuildGenericLabels(t *testing.T) {
 	assert.Equal(t, cloudprovider.DefaultOS, labels[kubeletapis.LabelOS])
 }
 
-func TestBuildLabelsForAutoprovisionedMigOK(t *testing.T) {
-	labels, err := buildLabelsForAutoprovisionedMig(
-		&gceMig{
-			gceRef: GceRef{
-				Name:    "kubernetes-minion-autoprovisioned-group",
-				Project: "mwielgus-proj",
-				Zone:    "us-central1-b",
-			},
-			autoprovisioned: true,
-			spec: &MigSpec{
-				MachineType: "n1-standard-8",
-				Labels: map[string]string{
-					"A": "B",
-				},
-			},
-		},
-		"sillyname",
-	)
-
-	assert.Nil(t, err)
-	assert.Equal(t, "B", labels["A"])
-	assert.Equal(t, "us-central1", labels[kubeletapis.LabelZoneRegion])
-	assert.Equal(t, "us-central1-b", labels[kubeletapis.LabelZoneFailureDomain])
-	assert.Equal(t, "sillyname", labels[kubeletapis.LabelHostname])
-	assert.Equal(t, "n1-standard-8", labels[kubeletapis.LabelInstanceType])
-	assert.Equal(t, cloudprovider.DefaultArch, labels[kubeletapis.LabelArch])
-	assert.Equal(t, cloudprovider.DefaultOS, labels[kubeletapis.LabelOS])
-}
-
-func TestBuildLabelsForAutoprovisionedMigConflict(t *testing.T) {
-	_, err := buildLabelsForAutoprovisionedMig(
-		&gceMig{
-			gceRef: GceRef{
-				Name:    "kubernetes-minion-autoprovisioned-group",
-				Project: "mwielgus-proj",
-				Zone:    "us-central1-b",
-			},
-			autoprovisioned: true,
-			spec: &MigSpec{
-				MachineType: "n1-standard-8",
-				Labels: map[string]string{
-					kubeletapis.LabelOS: "windows",
-				},
-			},
-		},
-		"sillyname",
-	)
-	assert.Error(t, err)
-}
-
 func TestBuildAllocatableFromKubeEnv(t *testing.T) {
 	type testCase struct {
 		kubeEnv        string

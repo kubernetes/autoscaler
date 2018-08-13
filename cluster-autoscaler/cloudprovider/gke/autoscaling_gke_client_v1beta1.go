@@ -22,7 +22,6 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 
@@ -68,8 +67,8 @@ func NewAutoscalingGkeClientV1beta1(client *http.Client, projectId, location, cl
 	if err != nil {
 		return nil, err
 	}
-	if *gce.GkeAPIEndpoint != "" {
-		gkeBetaService.BasePath = *gce.GkeAPIEndpoint
+	if *gkeAPIEndpoint != "" {
+		gkeBetaService.BasePath = *gkeAPIEndpoint
 	}
 	autoscalingGkeClient.gkeBetaService = gkeBetaService
 
@@ -141,7 +140,7 @@ func (m *autoscalingGkeClientV1beta1) DeleteNodePool(toBeRemoved string) error {
 	return m.waitForGkeOp(deleteOp)
 }
 
-func (m *autoscalingGkeClientV1beta1) CreateNodePool(mig gce.Mig) error {
+func (m *autoscalingGkeClientV1beta1) CreateNodePool(mig *gkeMig) error {
 	// TODO: handle preemptible VMs
 	// TODO: handle SSDs
 

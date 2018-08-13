@@ -46,7 +46,7 @@ type GkeTemplateBuilder struct {
 }
 
 // BuildNodeFromMigSpec builds node based on MIG's spec.
-func (t *GkeTemplateBuilder) BuildNodeFromMigSpec(mig gce.Mig, cpu int64, mem int64) (*apiv1.Node, error) {
+func (t *GkeTemplateBuilder) BuildNodeFromMigSpec(mig *gkeMig, cpu int64, mem int64) (*apiv1.Node, error) {
 	if mig.Spec() == nil {
 		return nil, fmt.Errorf("no spec in mig %s", mig.GceRef().Name)
 	}
@@ -87,7 +87,7 @@ func (t *GkeTemplateBuilder) BuildNodeFromMigSpec(mig gce.Mig, cpu int64, mem in
 	return &node, nil
 }
 
-func buildLabelsForAutoprovisionedMig(mig gce.Mig, nodeName string) (map[string]string, error) {
+func buildLabelsForAutoprovisionedMig(mig *gkeMig, nodeName string) (map[string]string, error) {
 	// GenericLabels
 	labels, err := gce.BuildGenericLabels(mig.GceRef(), mig.Spec().MachineType, nodeName)
 	if err != nil {

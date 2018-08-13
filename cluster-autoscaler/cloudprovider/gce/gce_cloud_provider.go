@@ -19,50 +19,18 @@ package gce
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 )
 
-// The 'GCE' cloud provider actually implements both the GCE and GKE providers.
 const (
+	// ProviderNameGCE is the name of GCE cloud provider.
 	ProviderNameGCE = "gce"
-	ProviderNameGKE = "gke"
 )
-
-const (
-	maxAutoprovisionedSize = 1000
-	minAutoprovisionedSize = 0
-)
-
-// Big machines are temporarily commented out.
-// TODO(mwielgus): get this list programmatically
-var autoprovisionedMachineTypes = []string{
-	"n1-standard-1",
-	"n1-standard-2",
-	"n1-standard-4",
-	"n1-standard-8",
-	"n1-standard-16",
-	//"n1-standard-32",
-	//"n1-standard-64",
-	"n1-highcpu-2",
-	"n1-highcpu-4",
-	"n1-highcpu-8",
-	"n1-highcpu-16",
-	//"n1-highcpu-32",
-	// "n1-highcpu-64",
-	"n1-highmem-2",
-	"n1-highmem-4",
-	"n1-highmem-8",
-	"n1-highmem-16",
-	//"n1-highmem-32",
-	//"n1-highmem-64",
-}
 
 // GceCloudProvider implements CloudProvider interface.
 type GceCloudProvider struct {
@@ -84,9 +52,6 @@ func (gce *GceCloudProvider) Cleanup() error {
 
 // Name returns name of the cloud provider.
 func (gce *GceCloudProvider) Name() string {
-	// Technically we're both ProviderNameGCE and ProviderNameGKE...
-	// Perhaps we should return a different name depending on
-	// gce.gceManager.getMode()?
 	return ProviderNameGCE
 }
 
@@ -117,72 +82,14 @@ func (gce *GceCloudProvider) Pricing() (cloudprovider.PricingModel, errors.Autos
 
 // GetAvailableMachineTypes get all machine types that can be requested from the cloud provider.
 func (gce *GceCloudProvider) GetAvailableMachineTypes() ([]string, error) {
-	return autoprovisionedMachineTypes, nil
+	return []string{}, nil
 }
 
 // NewNodeGroup builds a theoretical node group based on the node definition provided. The node group is not automatically
 // created on the cloud provider side. The node group is not returned by NodeGroups() until it is created.
 func (gce *GceCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string,
 	taints []apiv1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
-	nodePoolName := fmt.Sprintf("%s-%s-%d", nodeAutoprovisioningPrefix, machineType, time.Now().Unix())
-	// TODO(aleksandra-malinowska): GceManager's location will be a region
-	// for regional clusters. We should support regional clusters by looking at
-	// node locations instead.
-	zone := gce.gceManager.getLocation()
-
-	if gpuRequest, found := extraResources[gpu.ResourceNvidiaGPU]; found {
-		gpuType, found := systemLabels[gpu.GPULabel]
-		if !found {
-			return nil, cloudprovider.ErrIllegalConfiguration
-		}
-		gpuCount, err := getNormalizedGpuCount(gpuRequest.Value())
-		if err != nil {
-			return nil, err
-		}
-		extraResources[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(gpuCount, resource.DecimalSI)
-		err = validateGpuConfig(gpuType, gpuCount, zone, machineType)
-		if err != nil {
-			return nil, err
-		}
-		nodePoolName = fmt.Sprintf("%s-%s-gpu-%d", nodeAutoprovisioningPrefix, machineType, time.Now().Unix())
-		labels[gpu.GPULabel] = gpuType
-
-		taint := apiv1.Taint{
-			Effect: apiv1.TaintEffectNoSchedule,
-			Key:    gpu.ResourceNvidiaGPU,
-			Value:  "present",
-		}
-		taints = append(taints, taint)
-	}
-
-	mig := &gceMig{
-		gceRef: GceRef{
-			Project: gce.gceManager.getProjectId(),
-			Zone:    zone,
-			Name:    nodePoolName + "-temporary-mig",
-		},
-		gceManager:      gce.gceManager,
-		autoprovisioned: true,
-		exist:           false,
-		nodePoolName:    nodePoolName,
-		minSize:         minAutoprovisionedSize,
-		maxSize:         maxAutoprovisionedSize,
-		spec: &MigSpec{
-			MachineType:    machineType,
-			Labels:         labels,
-			Taints:         taints,
-			ExtraResources: extraResources,
-		},
-	}
-
-	// Try to build a node from autoprovisioning spec. We don't need one right now,
-	// but if it fails later, we'd end up with a node group we can't scale anyway,
-	// so there's no point creating it.
-	if _, err := gce.gceManager.getMigTemplateNode(mig); err != nil {
-		return nil, fmt.Errorf("Failed to build node from spec: %v", err)
-	}
-
-	return mig, nil
+	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
@@ -203,12 +110,7 @@ func (gce *GceCloudProvider) Refresh() error {
 	return gce.gceManager.Refresh()
 }
 
-// GetClusterInfo returns the project id, location and cluster name.
-func (gce *GceCloudProvider) GetClusterInfo() (projectId, location, clusterName string) {
-	return gce.gceManager.getProjectId(), gce.gceManager.getLocation(), gce.gceManager.getClusterName()
-}
-
-// GceRef contains s reference to some entity in GCE/GKE world.
+// GceRef contains s reference to some entity in GCE world.
 type GceRef struct {
 	Project string
 	Zone    string
@@ -235,48 +137,24 @@ func GceRefFromProviderId(id string) (*GceRef, error) {
 	}, nil
 }
 
-// MigSpec contains information about what machines in a MIG look like.
-type MigSpec struct {
-	MachineType    string
-	Labels         map[string]string
-	Taints         []apiv1.Taint
-	ExtraResources map[string]resource.Quantity
-}
-
 // Mig implements NodeGroup interface.
 type Mig interface {
 	cloudprovider.NodeGroup
 
 	GceRef() GceRef
-	NodePoolName() string
-	Spec() *MigSpec
 }
 
 type gceMig struct {
 	gceRef GceRef
 
-	gceManager      GceManager
-	minSize         int
-	maxSize         int
-	autoprovisioned bool
-	exist           bool
-	nodePoolName    string
-	spec            *MigSpec
+	gceManager GceManager
+	minSize    int
+	maxSize    int
 }
 
 // GceRef returns Mig's GceRef
 func (mig *gceMig) GceRef() GceRef {
 	return mig.gceRef
-}
-
-// NodePoolName returns the name of the GKE node pool this Mig belongs to.
-func (mig *gceMig) NodePoolName() string {
-	return mig.nodePoolName
-}
-
-// Spec returns specification of the Mig.
-func (mig *gceMig) Spec() *MigSpec {
-	return mig.spec
 }
 
 // MaxSize returns maximum size of the node group.
@@ -292,9 +170,6 @@ func (mig *gceMig) MinSize() int {
 // TargetSize returns the current TARGET size of the node group. It is possible that the
 // number is different from the number of nodes registered in Kubernetes.
 func (mig *gceMig) TargetSize() (int, error) {
-	if !mig.exist {
-		return 0, nil
-	}
 	size, err := mig.gceManager.GetMigSize(mig)
 	return int(size), err
 }
@@ -398,32 +273,24 @@ func (mig *gceMig) Nodes() ([]string, error) {
 	return mig.gceManager.GetMigNodes(mig)
 }
 
-// Exist checks if the node group really exists on the cloud provider side. Allows to tell the
-// theoretical node group from the real one.
+// Exist checks if the node group really exists on the cloud provider side.
 func (mig *gceMig) Exist() bool {
-	return mig.exist
+	return true
 }
 
 // Create creates the node group on the cloud provider side.
 func (mig *gceMig) Create() (cloudprovider.NodeGroup, error) {
-	if !mig.exist && mig.autoprovisioned {
-		return mig.gceManager.createNodePool(mig)
-	}
-	return nil, fmt.Errorf("Cannot create non-autoprovisioned node group")
+	return nil, cloudprovider.ErrNotImplemented
 }
 
 // Delete deletes the node group on the cloud provider side.
-// This will be executed only for autoprovisioned node groups, once their size drops to 0.
 func (mig *gceMig) Delete() error {
-	if mig.exist && mig.autoprovisioned {
-		return mig.gceManager.deleteNodePool(mig)
-	}
-	return fmt.Errorf("Cannot delete non-autoprovisioned node group")
+	return cloudprovider.ErrNotImplemented
 }
 
 // Autoprovisioned returns true if the node group is autoprovisioned.
 func (mig *gceMig) Autoprovisioned() bool {
-	return mig.autoprovisioned
+	return false
 }
 
 // TemplateNodeInfo returns a node template for this node group.

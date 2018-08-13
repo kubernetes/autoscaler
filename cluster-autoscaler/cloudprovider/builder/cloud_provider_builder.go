@@ -61,7 +61,7 @@ func NewCloudProvider(opts config.AutoscalingOptions) cloudprovider.CloudProvide
 
 	switch opts.CloudProviderName {
 	case gce.ProviderNameGCE:
-		return buildGCE(opts, do, rl, gce.ModeGCE)
+		return buildGCE(opts, do, rl)
 	case gke.ProviderNameGKE:
 		if do.DiscoverySpecified() {
 			glog.Fatalf("GKE gets nodegroup specification via API, command line specs are not allowed")
@@ -87,7 +87,7 @@ func NewCloudProvider(opts config.AutoscalingOptions) cloudprovider.CloudProvide
 	return nil // This will never happen because the Fatalf will os.Exit
 }
 
-func buildGCE(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, mode gce.GcpCloudProviderMode) cloudprovider.CloudProvider {
+func buildGCE(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	var config io.ReadCloser
 	if opts.CloudConfig != "" {
 		var err error
@@ -98,7 +98,7 @@ func buildGCE(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscover
 		defer config.Close()
 	}
 
-	manager, err := gce.CreateGceManager(config, mode, opts.ClusterName, do, opts.Regional)
+	manager, err := gce.CreateGceManager(config, do, opts.Regional)
 	if err != nil {
 		glog.Fatalf("Failed to create GCE Manager: %v", err)
 	}

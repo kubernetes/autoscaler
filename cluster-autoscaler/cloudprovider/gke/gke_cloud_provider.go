@@ -18,7 +18,6 @@ package gke
 
 import (
 	"fmt"
-	"strings"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -30,9 +29,8 @@ import (
 	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 )
 
-// The 'GCE' cloud provider actually implements both the GCE and GKE providers.
 const (
-	ProviderNameGCE = "gce"
+	// ProviderNameGKE is the name of GKE cloud provider.
 	ProviderNameGKE = "gke"
 )
 
@@ -72,7 +70,7 @@ type GkeCloudProvider struct {
 	resourceLimiterFromFlags *cloudprovider.ResourceLimiter
 }
 
-// BuildGkeCloudProvider builds CloudProvider implementation for GCE.
+// BuildGkeCloudProvider builds CloudProvider implementation for GKE.
 func BuildGkeCloudProvider(gkeManager GkeManager, resourceLimiter *cloudprovider.ResourceLimiter) (*GkeCloudProvider, error) {
 	return &GkeCloudProvider{gkeManager: gkeManager, resourceLimiterFromFlags: resourceLimiter}, nil
 }
@@ -85,10 +83,7 @@ func (gke *GkeCloudProvider) Cleanup() error {
 
 // Name returns name of the cloud provider.
 func (gke *GkeCloudProvider) Name() string {
-	// Technically we're both ProviderNameGCE and ProviderNameGKE...
-	// Perhaps we should return a different name depending on
-	// gke.gkeManager.getMode()?
-	return ProviderNameGCE
+	return ProviderNameGKE
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
@@ -103,7 +98,7 @@ func (gke *GkeCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 
 // NodeGroupForNode returns the node group for the given node.
 func (gke *GkeCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
-	ref, err := GceRefFromProviderId(node.Spec.ProviderID)
+	ref, err := gce.GceRefFromProviderId(node.Spec.ProviderID)
 	if err != nil {
 		return nil, err
 	}
@@ -168,7 +163,7 @@ func (gke *GkeCloudProvider) NewNodeGroup(machineType string, labels map[string]
 		nodePoolName:    nodePoolName,
 		minSize:         minAutoprovisionedSize,
 		maxSize:         maxAutoprovisionedSize,
-		spec: &gce.MigSpec{
+		spec: &MigSpec{
 			MachineType:    machineType,
 			Labels:         labels,
 			Taints:         taints,
@@ -209,31 +204,13 @@ func (gke *GkeCloudProvider) GetClusterInfo() (projectId, location, clusterName 
 	return gke.gkeManager.getProjectId(), gke.gkeManager.getLocation(), gke.gkeManager.getClusterName()
 }
 
-// GceRefFromProviderId creates InstanceConfig object
-// from provider id which must be in format:
-// gce://<project-id>/<zone>/<name>
-// TODO(piosz): add better check whether the id is correct
-func GceRefFromProviderId(id string) (*gce.GceRef, error) {
-	splitted := strings.Split(id[6:], "/")
-	if len(splitted) != 3 {
-		return nil, fmt.Errorf("Wrong id: expected format gce://<project-id>/<zone>/<name>, got %v", id)
-	}
-	return &gce.GceRef{
-		Project: splitted[0],
-		Zone:    splitted[1],
-		Name:    splitted[2],
-	}, nil
-}
-
-/*
 // MigSpec contains information about what machines in a MIG look like.
 type MigSpec struct {
-	machineType    string
-	labels         map[string]string
-	taints         []apiv1.Taint
-	extraResources map[string]resource.Quantity
+	MachineType    string
+	Labels         map[string]string
+	Taints         []apiv1.Taint
+	ExtraResources map[string]resource.Quantity
 }
-*/
 
 type gkeMig struct {
 	gceRef gce.GceRef
@@ -244,7 +221,7 @@ type gkeMig struct {
 	autoprovisioned bool
 	exist           bool
 	nodePoolName    string
-	spec            *gce.MigSpec
+	spec            *MigSpec
 }
 
 // GceRef returns Mig's GceRef
@@ -258,7 +235,7 @@ func (mig *gkeMig) NodePoolName() string {
 }
 
 // Spec returns specification of the Mig.
-func (mig *gkeMig) Spec() *gce.MigSpec {
+func (mig *gkeMig) Spec() *MigSpec {
 	return mig.spec
 }
 
@@ -321,7 +298,7 @@ func (mig *gkeMig) DecreaseTargetSize(delta int) error {
 
 // Belongs returns true if the given node belongs to the NodeGroup.
 func (mig *gkeMig) Belongs(node *apiv1.Node) (bool, error) {
-	ref, err := GceRefFromProviderId(node.Spec.ProviderID)
+	ref, err := gce.GceRefFromProviderId(node.Spec.ProviderID)
 	if err != nil {
 		return false, err
 	}
@@ -357,7 +334,7 @@ func (mig *gkeMig) DeleteNodes(nodes []*apiv1.Node) error {
 		if !belongs {
 			return fmt.Errorf("%s belong to a different mig than %s", node.Name, mig.Id())
 		}
-		gceref, err := GceRefFromProviderId(node.Spec.ProviderID)
+		gceref, err := gce.GceRefFromProviderId(node.Spec.ProviderID)
 		if err != nil {
 			return err
 		}

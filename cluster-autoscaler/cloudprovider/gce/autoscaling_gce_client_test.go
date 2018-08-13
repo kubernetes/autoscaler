@@ -38,6 +38,28 @@ func newTestAutoscalingGceClient(t *testing.T, projectId, url string) *autoscali
 	return gceClient
 }
 
+const operationRunningResponse = `{
+  "name": "operation-1505728466148-d16f5197",
+  "zone": "us-central1-a",
+  "operationType": "CREATE_NODE_POOL",
+  "status": "RUNNING",
+  "selfLink": "https://container.googleapis.com/v1/projects/601024681890/locations/us-central1-a/operations/operation-1505728466148-d16f5197",
+  "targetLink": "https://container.googleapis.com/v1/projects/601024681890/locations/us-central1-a/clusters/cluster-1/nodePools/nodeautoprovisioning-323233232",
+  "startTime": "2017-09-18T09:54:26.148507311Z",
+  "endTime": "2017-09-18T09:54:35.124878859Z"
+}`
+
+const operationDoneResponse = `{
+  "name": "operation-1505728466148-d16f5197",
+  "zone": "us-central1-a",
+  "operationType": "CREATE_NODE_POOL",
+  "status": "DONE",
+  "selfLink": "https://container.googleapis.com/v1/projects/601024681890/locations/us-central1-a/operations/operation-1505728466148-d16f5197",
+  "targetLink": "https://container.googleapis.com/v1/projects/601024681890/locations/us-central1-a/clusters/cluster-1/nodePools/nodeautoprovisioning-323233232",
+  "startTime": "2017-09-18T09:54:26.148507311Z",
+  "endTime": "2017-09-18T09:54:35.124878859Z"
+}`
+
 func TestWaitForOp(t *testing.T) {
 	server := test_util.NewHttpServerMock()
 	defer server.Close()
