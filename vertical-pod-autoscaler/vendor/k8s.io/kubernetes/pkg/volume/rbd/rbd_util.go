@@ -318,7 +318,11 @@ func (util *RBDUtil) rbdUnlock(b rbdMounter) error {
 	}
 
 	// Construct lock id using host name and a magic prefix.
-	lock_id := kubeLockMagic + node.GetHostname("")
+	hostName, err := node.GetHostname("")
+	if err != nil {
+		return err
+	}
+	lock_id := kubeLockMagic + hostName
 
 	mon := util.kernelRBDMonitorsOpt(b.Mon)
 
@@ -346,6 +350,8 @@ func (util *RBDUtil) rbdUnlock(b rbdMounter) error {
 		cmd, err = b.exec.Run("rbd", args...)
 		if err == nil {
 			glog.V(4).Infof("rbd: successfully remove lock (locker_id: %s) on image: %s/%s with id %s mon %s", lock_id, b.Pool, b.Image, b.Id, mon)
+		} else {
+			glog.Warningf("rbd: failed to remove lock (lock_id: %s) on image: %s/%s with id %s mon %s: %v", lock_id, b.Pool, b.Image, b.Id, mon, err)
 		}
 	}
 
@@ -388,12 +394,26 @@ func (util *RBDUtil) AttachDisk(b rbdMounter) (string, error) {
 			Factor:   rbdImageWatcherFactor,
 			Steps:    rbdImageWatcherSteps,
 		}
+		needValidUsed := true
+		// If accessModes contain ReadOnlyMany, we don't need check rbd status of being used.
+		if b.accessModes != nil {
+			for _, v := range b.accessModes {
+				if v != v1.ReadWriteOnce {
+					needValidUsed = false
+					break
+				}
+			}
+		} else {
+			// ReadOnly rbd volume should not check rbd status of being used to
+			// support mounted as read-only by multiple consumers simultaneously.
+			needValidUsed = !b.rbd.ReadOnly
+		}
 		err := wait.ExponentialBackoff(backoff, func() (bool, error) {
 			used, rbdOutput, err := util.rbdStatus(&b)
 			if err != nil {
 				return false, fmt.Errorf("fail to check rbd image status with: (%v), rbd output: (%s)", err, rbdOutput)
 			}
-			return !used, nil
+			return !needValidUsed || !used, nil
 		})
 		// Return error if rbd image has not become available for the specified timeout.
 		if err == wait.ErrWaitTimeout {
@@ -563,7 +583,10 @@ func (util *RBDUtil) CreateImage(p *rbdVolumeProvisioner) (r *v1.RBDPersistentVo
 	capacity := p.options.PVC.Spec.Resources.Requests[v1.ResourceName(v1.ResourceStorage)]
 	volSizeBytes := capacity.Value()
 	// Convert to MB that rbd defaults on.
-	sz := int(volutil.RoundUpSize(volSizeBytes, 1024*1024))
+	sz, err := volutil.RoundUpSizeInt(volSizeBytes, 1024*1024)
+	if err != nil {
+		return nil, 0, err
+	}
 	volSz := fmt.Sprintf("%d", sz)
 	mon := util.kernelRBDMonitorsOpt(p.Mon)
 	if p.rbdMounter.imageFormat == rbdImageFormat2 {

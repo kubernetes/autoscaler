@@ -17,6 +17,7 @@ limitations under the License.
 package options
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/spf13/pflag"
@@ -29,7 +30,10 @@ import (
 )
 
 // DelegatingAuthorizationOptions provides an easy way for composing API servers to delegate their authorization to
-// the root kube API server
+// the root kube API server.
+// WARNING: never assume that every authenticated incoming request already does authorization.
+//          The aggregator in the kube API server does this today, but this behaviour is not
+//          guaranteed in the future.
 type DelegatingAuthorizationOptions struct {
 	// RemoteKubeConfigFile is the file to use to connect to a "normal" kube API server which hosts the
 	// SubjectAccessReview.authorization.k8s.io endpoint for checking tokens.
@@ -122,7 +126,7 @@ func (s *DelegatingAuthorizationOptions) newSubjectAccessReview() (authorization
 		clientConfig, err = rest.InClusterConfig()
 	}
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get delegated authorization kubeconfig: %v", err)
 	}
 
 	// set high qps/burst limits since this will effectively limit API server responsiveness
