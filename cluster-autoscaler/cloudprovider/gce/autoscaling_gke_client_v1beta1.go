@@ -140,15 +140,17 @@ func (m *autoscalingGkeClientV1beta1) DeleteNodePool(toBeRemoved string) error {
 	return m.waitForGkeOp(deleteOp)
 }
 
-func (m *autoscalingGkeClientV1beta1) CreateNodePool(mig *Mig) error {
+func (m *autoscalingGkeClientV1beta1) CreateNodePool(mig Mig) error {
 	// TODO: handle preemptible VMs
 	// TODO: handle SSDs
 
+	spec := mig.Spec()
+
 	accelerators := []*gke_api_beta.AcceleratorConfig{}
-	if gpuRequest, found := mig.spec.extraResources[gpu.ResourceNvidiaGPU]; found {
-		gpuType, found := mig.spec.labels[gpu.GPULabel]
+	if gpuRequest, found := spec.extraResources[gpu.ResourceNvidiaGPU]; found {
+		gpuType, found := spec.labels[gpu.GPULabel]
 		if !found {
-			return fmt.Errorf("failed to create node pool %v with gpu request of unspecified type", mig.nodePoolName)
+			return fmt.Errorf("failed to create node pool %v with gpu request of unspecified type", mig.NodePoolName())
 		}
 		gpuConfig := &gke_api_beta.AcceleratorConfig{
 			AcceleratorType:  gpuType,
@@ -159,7 +161,7 @@ func (m *autoscalingGkeClientV1beta1) CreateNodePool(mig *Mig) error {
 	}
 
 	taints := []*gke_api_beta.NodeTaint{}
-	for _, taint := range mig.spec.taints {
+	for _, taint := range spec.taints {
 		if taint.Key == gpu.ResourceNvidiaGPU {
 			continue
 		}
@@ -175,14 +177,14 @@ func (m *autoscalingGkeClientV1beta1) CreateNodePool(mig *Mig) error {
 		taints = append(taints, taint)
 	}
 	labels := make(map[string]string)
-	for k, v := range mig.spec.labels {
+	for k, v := range spec.labels {
 		if k != gpu.GPULabel {
 			labels[k] = v
 		}
 	}
 
 	config := gke_api_beta.NodeConfig{
-		MachineType:  mig.spec.machineType,
+		MachineType:  spec.machineType,
 		OauthScopes:  defaultOAuthScopes,
 		Labels:       labels,
 		Accelerators: accelerators,
@@ -198,7 +200,7 @@ func (m *autoscalingGkeClientV1beta1) CreateNodePool(mig *Mig) error {
 
 	createRequest := gke_api_beta.CreateNodePoolRequest{
 		NodePool: &gke_api_beta.NodePool{
-			Name:             mig.nodePoolName,
+			Name:             mig.NodePoolName(),
 			InitialNodeCount: 0,
 			Config:           &config,
 			Autoscaling:      &autoscaling,

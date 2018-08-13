@@ -38,7 +38,7 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 		name              string
 		machineType       string
 		accelerators      []*gce.AcceleratorConfig
-		mig               *Mig
+		mig               Mig
 		capacityCpu       int64
 		capacityMemory    int64
 		allocatableCpu    string
@@ -58,10 +58,13 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 			{AcceleratorType: "nvidia-tesla-k80", AcceleratorCount: 3},
 			{AcceleratorType: "nvidia-tesla-p100", AcceleratorCount: 8},
 		},
-		mig: &Mig{GceRef: GceRef{
-			Name:    "some-name",
-			Project: "some-proj",
-			Zone:    "us-central1-b"}},
+		mig: &gceMig{
+			gceRef: GceRef{
+				Name:    "some-name",
+				Project: "some-proj",
+				Zone:    "us-central1-b",
+			},
+		},
 		capacityCpu:       8,
 		capacityMemory:    200 * 1024 * 1024,
 		allocatableCpu:    "7000m",
@@ -76,10 +79,13 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 				"NODE_TAINTS: 'dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c'\n",
 			name:        "nodeName",
 			machineType: "custom-8-2",
-			mig: &Mig{GceRef: GceRef{
-				Name:    "some-name",
-				Project: "some-proj",
-				Zone:    "us-central1-b"}},
+			mig: &gceMig{
+				gceRef: GceRef{
+					Name:    "some-name",
+					Project: "some-proj",
+					Zone:    "us-central1-b",
+				},
+			},
 			capacityCpu:       8,
 			capacityMemory:    2 * 1024 * 1024,
 			allocatableCpu:    "8000m",
@@ -89,10 +95,13 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 			kubeEnv:     "This kube-env is totally messed up",
 			name:        "nodeName",
 			machineType: "custom-8-2",
-			mig: &Mig{GceRef: GceRef{
-				Name:    "some-name",
-				Project: "some-proj",
-				Zone:    "us-central1-b"}},
+			mig: &gceMig{
+				gceRef: GceRef{
+					Name:    "some-name",
+					Project: "some-proj",
+					Zone:    "us-central1-b",
+				},
+			},
 			expectedErr: true,
 		},
 	}
@@ -143,18 +152,20 @@ func TestBuildGenericLabels(t *testing.T) {
 
 func TestBuildLabelsForAutoscaledMigOK(t *testing.T) {
 	labels, err := buildLabelsForAutoprovisionedMig(
-		&Mig{
+		&gceMig{
+			gceRef: GceRef{
+				Name:    "kubernetes-minion-autoprovisioned-group",
+				Project: "mwielgus-proj",
+				Zone:    "us-central1-b",
+			},
 			autoprovisioned: true,
-			spec: &autoprovisioningSpec{
+			spec: &MigSpec{
 				machineType: "n1-standard-8",
 				labels: map[string]string{
 					"A": "B",
 				},
 			},
-			GceRef: GceRef{
-				Name:    "kubernetes-minion-autoprovisioned-group",
-				Project: "mwielgus-proj",
-				Zone:    "us-central1-b"}},
+		},
 		"sillyname",
 	)
 
@@ -170,18 +181,20 @@ func TestBuildLabelsForAutoscaledMigOK(t *testing.T) {
 
 func TestBuildLabelsForAutoscaledMigConflict(t *testing.T) {
 	_, err := buildLabelsForAutoprovisionedMig(
-		&Mig{
+		&gceMig{
+			gceRef: GceRef{
+				Name:    "kubernetes-minion-autoprovisioned-group",
+				Project: "mwielgus-proj",
+				Zone:    "us-central1-b",
+			},
 			autoprovisioned: true,
-			spec: &autoprovisioningSpec{
+			spec: &MigSpec{
 				machineType: "n1-standard-8",
 				labels: map[string]string{
 					kubeletapis.LabelOS: "windows",
 				},
 			},
-			GceRef: GceRef{
-				Name:    "kubernetes-minion-autoprovisioned-group",
-				Project: "mwielgus-proj",
-				Zone:    "us-central1-b"}},
+		},
 		"sillyname",
 	)
 	assert.Error(t, err)
@@ -343,11 +356,13 @@ func TestExtractAutoscalerVarFromKubeEnv(t *testing.T) {
 }
 
 func TestExtractLabelsFromKubeEnv(t *testing.T) {
+	poolLabel := "cloud.google.com/gke-nodepool"
+	preemptibleLabel := "cloud.google.com/gke-preemptible"
 	expectedLabels := map[string]string{
-		"a": "b",
-		"c": "d",
-		"cloud.google.com/gke-nodepool":    "pool-3",
-		"cloud.google.com/gke-preemptible": "true",
+		"a":              "b",
+		"c":              "d",
+		poolLabel:        "pool-3",
+		preemptibleLabel: "true",
 	}
 	cases := []struct {
 		desc   string
