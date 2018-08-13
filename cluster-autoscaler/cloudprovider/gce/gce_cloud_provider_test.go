@@ -478,7 +478,7 @@ func TestNewNodeGroupForGpu(t *testing.T) {
 			Effect: apiv1.TaintEffectNoSchedule,
 		},
 	}
-	assert.Equal(t, expectedTaints, mig1.spec.taints)
+	assert.Equal(t, expectedTaints, mig1.spec.Taints)
 	mock.AssertExpectationsForObjects(t, gceManagerMock)
 }
 func TestGceRefFromProviderId(t *testing.T) {

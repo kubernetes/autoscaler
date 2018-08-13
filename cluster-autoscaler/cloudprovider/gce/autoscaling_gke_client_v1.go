@@ -45,8 +45,8 @@ func NewAutoscalingGkeClientV1(client *http.Client, projectId, location, cluster
 	if err != nil {
 		return nil, err
 	}
-	if *gkeAPIEndpoint != "" {
-		gkeService.BasePath = *gkeAPIEndpoint
+	if *GkeAPIEndpoint != "" {
+		gkeService.BasePath = *GkeAPIEndpoint
 	}
 	autoscalingGkeClient.gkeService = gkeService
 
