@@ -51,34 +51,36 @@ var (
 		"https://www.googleapis.com/auth/compute",
 		"https://www.googleapis.com/auth/devstorage.read_only",
 		"https://www.googleapis.com/auth/service.management.readonly",
-		"https://www.googleapis.com/auth/servicecontrol"}
+		"https://www.googleapis.com/auth/servicecontrol",
+	}
 )
 
-// GceManager handles gce communication and data caching.
+// GceManager handles GCE communication and data caching.
 type GceManager interface {
+	// Refresh triggers refresh of cached resources.
+	Refresh() error
+	// Cleanup cleans up open resources before the cloud provider is destroyed, i.e. go routines etc.
+	Cleanup() error
+
+	// GetMigs returns list of registered MIGs.
+	GetMigs() []*MigInformation
+	// GetMigNodes returns mig nodes.
+	GetMigNodes(mig Mig) ([]string, error)
+	// GetMigForInstance returns MIG to which the given instance belongs.
+	GetMigForInstance(instance *GceRef) (Mig, error)
+	// GetMigTemplateNode returns a template node for MIG.
+	GetMigTemplateNode(mig Mig) (*apiv1.Node, error)
+	// GetResourceLimiter returns resource limiter.
+	GetResourceLimiter() (*cloudprovider.ResourceLimiter, error)
 	// GetMigSize gets MIG size.
 	GetMigSize(mig Mig) (int64, error)
+
 	// SetMigSize sets MIG size.
 	SetMigSize(mig Mig, size int64) error
 	// DeleteInstances deletes the given instances. All instances must be controlled by the same MIG.
 	DeleteInstances(instances []*GceRef) error
-	// GetMigForInstance returns MigConfig of the given Instance
-	GetMigForInstance(instance *GceRef) (Mig, error)
-	// GetMigNodes returns mig nodes.
-	GetMigNodes(mig Mig) ([]string, error)
-	// Refresh updates config by calling GCE API.
-	Refresh() error
-	// GetResourceLimiter returns resource limiter.
-	GetResourceLimiter() (*cloudprovider.ResourceLimiter, error)
-	// Cleanup cleans up open resources before the cloud provider is destroyed, i.e. go routines etc.
-	Cleanup() error
-	getMigs() []*MigInformation
-	findMigsNamed(name *regexp.Regexp) ([]string, error)
-	getMigTemplateNode(mig Mig) (*apiv1.Node, error)
-	getCpuAndMemoryForMachineType(machineType string, zone string) (cpu int64, mem int64, err error)
 }
 
-// gceManagerImpl handles gce communication and data caching.
 type gceManagerImpl struct {
 	cache                    GceCache
 	lastRefresh              time.Time
@@ -95,7 +97,7 @@ type gceManagerImpl struct {
 	migAutoDiscoverySpecs []cloudprovider.MIGAutoDiscoveryConfig
 }
 
-// CreateGceManager constructs gceManager object.
+// CreateGceManager constructs GceManager object.
 func CreateGceManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGroupDiscoveryOptions, regional bool) (GceManager, error) {
 	// Create Google Compute Engine token.
 	var err error
@@ -181,20 +183,20 @@ func CreateGceManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGr
 	return manager, nil
 }
 
-// Cleanup closes the channel to signal the go routine to stop that is handling the cache
+// Cleanup closes the channel to stop the goroutine refreshing cache.
 func (m *gceManagerImpl) Cleanup() error {
 	close(m.interrupt)
 	return nil
 }
 
-// RegisterMig registers mig in GceManager. Returns true if the node group didn't exist before or its config has changed.
-func (m *gceManagerImpl) RegisterMig(mig Mig) bool {
+// registerMig registers mig in GceManager. Returns true if the node group didn't exist before or its config has changed.
+func (m *gceManagerImpl) registerMig(mig Mig) bool {
 	changed := m.cache.RegisterMig(mig)
 	if changed {
 		// Try to build a node from template to validate that this group
 		// can be scaled up from 0 nodes.
 		// We may never need to do it, so just log error if it fails.
-		if _, err := m.getMigTemplateNode(mig); err != nil {
+		if _, err := m.GetMigTemplateNode(mig); err != nil {
 			glog.Errorf("Can't build node from template for %s, won't be able to scale from 0: %v", mig.GceRef().String(), err)
 		}
 	}
@@ -238,11 +240,12 @@ func (m *gceManagerImpl) DeleteInstances(instances []*GceRef) error {
 	return m.GceService.DeleteInstances(commonMig.GceRef(), instances)
 }
 
-func (m *gceManagerImpl) getMigs() []*MigInformation {
+// GetMigs returns list of registered MIGs.
+func (m *gceManagerImpl) GetMigs() []*MigInformation {
 	return m.cache.GetMigs()
 }
 
-// GetMigForInstance returns MigConfig of the given Instance
+// GetMigForInstance returns MIG to which the given instance belongs.
 func (m *gceManagerImpl) GetMigForInstance(instance *GceRef) (Mig, error) {
 	return m.cache.GetMigForInstance(instance)
 }
@@ -260,6 +263,7 @@ func (m *gceManagerImpl) GetMigNodes(mig Mig) ([]string, error) {
 	return result, nil
 }
 
+// Refresh triggers refresh of cached resources.
 func (m *gceManagerImpl) Refresh() error {
 	if m.lastRefresh.Add(refreshInterval).After(time.Now()) {
 		return nil
@@ -287,7 +291,7 @@ func (m *gceManagerImpl) fetchExplicitMigs(specs []string) error {
 		if err != nil {
 			return err
 		}
-		if m.RegisterMig(mig) {
+		if m.registerMig(mig) {
 			changed = true
 		}
 		m.explicitlyConfigured[mig.GceRef()] = true
@@ -361,14 +365,14 @@ func (m *gceManagerImpl) fetchAutoMigs() error {
 				glog.V(3).Infof("Ignoring explicitly configured MIG %s in autodiscovery.", mig.GceRef().String())
 				continue
 			}
-			if m.RegisterMig(mig) {
+			if m.registerMig(mig) {
 				glog.V(3).Infof("Autodiscovered MIG %s using regexp %s", mig.GceRef().String(), cfg.Re.String())
 				changed = true
 			}
 		}
 	}
 
-	for _, mig := range m.getMigs() {
+	for _, mig := range m.GetMigs() {
 		if !exists[mig.Config.GceRef()] && !m.explicitlyConfigured[mig.Config.GceRef()] {
 			m.cache.UnregisterMig(mig.Config)
 			changed = true
@@ -382,6 +386,7 @@ func (m *gceManagerImpl) fetchAutoMigs() error {
 	return nil
 }
 
+// GetResourceLimiter returns resource limiter from cache.
 func (m *gceManagerImpl) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
 	return m.cache.GetResourceLimiter()
 }
@@ -456,7 +461,8 @@ func (m *gceManagerImpl) findMigsInRegion(region string, name *regexp.Regexp) ([
 	return links, nil
 }
 
-func (m *gceManagerImpl) getMigTemplateNode(mig Mig) (*apiv1.Node, error) {
+// GetMigTemplateNode constructs a node from GCE instance template of the given MIG.
+func (m *gceManagerImpl) GetMigTemplateNode(mig Mig) (*apiv1.Node, error) {
 	template, err := m.GceService.FetchMigTemplate(mig.GceRef())
 	if err != nil {
 		return nil, err
