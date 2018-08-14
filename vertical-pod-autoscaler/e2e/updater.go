@@ -20,8 +20,8 @@ import (
 	"fmt"
 	"reflect"
 
+	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
-	extensions "k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -47,7 +47,7 @@ var _ = updaterE2eDescribe("Updater", func() {
 		memoryQuantity := parseQuantityOrDie("100Mi")
 
 		d := newHamsterDeploymentWithResources(f, cpuQuantity, memoryQuantity)
-		d, err := c.ExtensionsV1beta1().Deployments(ns).Create(d)
+		d, err := c.AppsV1().Deployments(ns).Create(d)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		err = framework.WaitForDeploymentComplete(c, d)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
@@ -100,7 +100,7 @@ func makePodSet(pods *apiv1.PodList) map[string]bool {
 	return result
 }
 
-func waitForPodSetChangedInDeployment(c clientset.Interface, deployment *extensions.Deployment, podList *apiv1.PodList) error {
+func waitForPodSetChangedInDeployment(c clientset.Interface, deployment *appsv1.Deployment, podList *apiv1.PodList) error {
 	initialPodSet := makePodSet(podList)
 
 	err := wait.PollImmediate(pollInterval, pollTimeout, func() (bool, error) {
