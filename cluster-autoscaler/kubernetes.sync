@@ -1,18 +1,17 @@
-commit 9b9536a51bcc628064da6468ba21668896f48bf4 (origin/release-1.10)
-Merge: 1602726267 f1a24f4b2c
+commit bfc3acc24368e048a9ef5421064ac5aaa9fa5e52 (origin/release-1.10)
+Merge: 31726bc4e7 27c6d4e4e8
 Author: Kubernetes Submit Queue <k8s-merge-robot@users.noreply.github.com>
-Date:   Mon Apr 9 18:56:06 2018 -0700
+Date:   Fri Aug 3 11:23:11 2018 -0700
 
-    Merge pull request #62228 from dims/automated-cherry-pick-of-#61890-upstream-release-1.10
+    Merge pull request #66934 from rramkumar1/automated-cherry-pick-of-#64159-upstream-release-1.10
     
     Automatic merge from submit-queue.
     
-    Automated cherry pick of #61890: Specify DHCP domain for hostname
+    Automated cherry pick of #64159: Stub out BackendService check in Ingress upgrade test.
     
-    Cherry pick of #61890 on release-1.10.
+    Cherry pick of #64159 on release-1.10.
     
-    #61890: Specify DHCP domain for hostname
+    #64159: Stub out BackendService check in Ingress upgrade test.
     
-    ```release-note
-    Fixing bug in openstack cloud provider when picking up hostname from metadata service or config drive. If the hostname has a custom domain, we should remove the domain before we use the hostname as the node name in kubernetes.
-    ```
+    Fixes #66544
+

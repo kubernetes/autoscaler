@@ -121,7 +121,6 @@ type RouterOpts struct {
 type MetadataOpts struct {
 	SearchOrder    string     `gcfg:"search-order"`
 	RequestTimeout MyDuration `gcfg:"request-timeout"`
-	DHCPDomain     string     `gcfg:"dhcp-domain"`
 }
 
 // OpenStack is an implementation of cloud provider Interface for OpenStack.
@@ -234,7 +233,6 @@ func configFromEnv() (cfg Config, ok bool) {
 			cfg.Global.TrustID != "")
 
 	cfg.Metadata.SearchOrder = fmt.Sprintf("%s,%s", configDriveID, metadataID)
-	cfg.Metadata.DHCPDomain = "novalocal"
 	cfg.BlockStorage.BSVersion = "auto"
 
 	return
@@ -252,7 +250,6 @@ func readConfig(config io.Reader) (Config, error) {
 	cfg.BlockStorage.TrustDevicePath = false
 	cfg.BlockStorage.IgnoreVolumeAZ = false
 	cfg.Metadata.SearchOrder = fmt.Sprintf("%s,%s", configDriveID, metadataID)
-	cfg.Metadata.DHCPDomain = "novalocal"
 
 	err := gcfg.ReadInto(&cfg, config)
 	return cfg, err
@@ -608,8 +605,17 @@ func (os *OpenStack) LoadBalancer() (cloudprovider.LoadBalancer, bool) {
 }
 
 func isNotFound(err error) bool {
-	e, ok := err.(*gophercloud.ErrUnexpectedResponseCode)
-	return ok && e.Actual == http.StatusNotFound
+	if _, ok := err.(gophercloud.ErrDefault404); ok {
+		return true
+	}
+
+	if errCode, ok := err.(gophercloud.ErrUnexpectedResponseCode); ok {
+		if errCode.Actual == http.StatusNotFound {
+			return true
+		}
+	}
+
+	return false
 }
 
 // Zones indicates that we support zones

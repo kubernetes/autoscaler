@@ -34,8 +34,6 @@ import (
 	"k8s.io/kubernetes/pkg/volume/util"
 )
 
-const defaultFSType = "ext4"
-
 //TODO (vladimirvivien) move this in a central loc later
 var (
 	volDataKey = struct {
@@ -54,8 +52,8 @@ var (
 )
 
 type csiMountMgr struct {
-	k8s          kubernetes.Interface
 	csiClient    csiClient
+	k8s          kubernetes.Interface
 	plugin       *csiPlugin
 	driverName   string
 	volumeID     string
@@ -120,6 +118,7 @@ func (c *csiMountMgr) SetUpAt(dir string, fsGroup *int64) error {
 
 	ctx, cancel := grpctx.WithTimeout(grpctx.Background(), csiTimeout)
 	defer cancel()
+
 	// Check for STAGE_UNSTAGE_VOLUME set and populate deviceMountPath if so
 	deviceMountPath := ""
 	stageUnstageSet, err := hasStageUnstageCapability(ctx, csi)
@@ -153,30 +152,21 @@ func (c *csiMountMgr) SetUpAt(dir string, fsGroup *int64) error {
 
 	attribs := csiSource.VolumeAttributes
 
+	nodePublishSecrets := map[string]string{}
+	if csiSource.NodePublishSecretRef != nil {
+		nodePublishSecrets, err = getCredentialsFromSecret(c.k8s, csiSource.NodePublishSecretRef)
+		if err != nil {
+			return fmt.Errorf("fetching NodePublishSecretRef %s/%s failed: %v",
+				csiSource.NodePublishSecretRef.Namespace, csiSource.NodePublishSecretRef.Name, err)
+		}
+	}
+
 	// create target_dir before call to NodePublish
 	if err := os.MkdirAll(dir, 0750); err != nil {
 		glog.Error(log("mouter.SetUpAt failed to create dir %#v:  %v", dir, err))
 		return err
 	}
 	glog.V(4).Info(log("created target path successfully [%s]", dir))
-
-	// persist volume info data for teardown
-	volData := map[string]string{
-		volDataKey.specVolID:    c.spec.Name(),
-		volDataKey.volHandle:    csiSource.VolumeHandle,
-		volDataKey.driverName:   csiSource.Driver,
-		volDataKey.nodeName:     nodeName,
-		volDataKey.attachmentID: attachID,
-	}
-
-	if err := saveVolumeData(c.plugin, c.podUID, c.spec.Name(), volData); err != nil {
-		glog.Error(log("mounter.SetUpAt failed to save volume info data: %v", err))
-		if err := removeMountDir(c.plugin, dir); err != nil {
-			glog.Error(log("mounter.SetUpAt failed to remove mount dir after a saveVolumeData() error [%s]: %v", dir, err))
-			return err
-		}
-		return err
-	}
 
 	//TODO (vladimirvivien) implement better AccessModes mapping between k8s and CSI
 	accessMode := api.ReadWriteOnce
@@ -185,13 +175,6 @@ func (c *csiMountMgr) SetUpAt(dir string, fsGroup *int64) error {
 	}
 
 	fsType := csiSource.FSType
-	if len(fsType) == 0 {
-		fsType = defaultFSType
-	}
-	nodePublishSecrets := map[string]string{}
-	if csiSource.NodePublishSecretRef != nil {
-		nodePublishSecrets = getCredentialsFromSecret(c.k8s, csiSource.NodePublishSecretRef)
-	}
 	err = csi.NodePublishVolume(
 		ctx,
 		c.volumeID,
@@ -214,15 +197,51 @@ func (c *csiMountMgr) SetUpAt(dir string, fsGroup *int64) error {
 		return err
 	}
 
+	// apply volume ownership
+	if !c.readOnly && fsGroup != nil {
+		err := volume.SetVolumeOwnership(c, fsGroup)
+		if err != nil {
+			// attempt to rollback mount.
+			glog.Error(log("mounter.SetupAt failed to set fsgroup volume ownership for [%s]: %v", c.volumeID, err))
+			glog.V(4).Info(log("mounter.SetupAt attempting to unpublish volume %s due to previous error", c.volumeID))
+			if unpubErr := csi.NodeUnpublishVolume(ctx, c.volumeID, dir); unpubErr != nil {
+				glog.Error(log(
+					"mounter.SetupAt failed to unpublish volume [%s]: %v (caused by previous NodePublish error: %v)",
+					c.volumeID, unpubErr, err,
+				))
+				return fmt.Errorf("%v (caused by %v)", unpubErr, err)
+			}
+
+			if unmountErr := removeMountDir(c.plugin, dir); unmountErr != nil {
+				glog.Error(log(
+					"mounter.SetupAt failed to clean mount dir [%s]: %v (caused by previous NodePublish error: %v)",
+					dir, unmountErr, err,
+				))
+				return fmt.Errorf("%v (caused by %v)", unmountErr, err)
+			}
+
+			return err
+		}
+		glog.V(4).Info(log("mounter.SetupAt sets fsGroup to [%d] for %s", *fsGroup, c.volumeID))
+	}
+
 	glog.V(4).Infof(log("mounter.SetUp successfully requested NodePublish [%s]", dir))
 	return nil
 }
 
 func (c *csiMountMgr) GetAttributes() volume.Attributes {
+	mounter := c.plugin.host.GetMounter(c.plugin.GetPluginName())
+	path := c.GetPath()
+	supportSelinux, err := mounter.GetSELinuxSupport(path)
+	if err != nil {
+		glog.V(2).Info(log("error checking for SELinux support: %s", err))
+		// Best guess
+		supportSelinux = false
+	}
 	return volume.Attributes{
 		ReadOnly:        c.readOnly,
 		Managed:         !c.readOnly,
-		SupportsSELinux: false,
+		SupportsSELinux: supportSelinux,
 	}
 }
 
@@ -249,33 +268,11 @@ func (c *csiMountMgr) TearDownAt(dir string) error {
 		return nil
 	}
 
-	if err != nil {
-		glog.Error(log("mounter.TearDownAt failed to get CSI persistent source: %v", err))
-		return err
-	}
-
-	// load volume info from file
-	dataDir := path.Dir(dir) // dropoff /mount at end
-	data, err := loadVolumeData(dataDir, volDataFileName)
-	if err != nil {
-		glog.Error(log("unmounter.Teardown failed to load volume data file using dir [%s]: %v", dir, err))
-		return err
-	}
-
-	volID := data[volDataKey.volHandle]
-	driverName := data[volDataKey.driverName]
-
-	if c.csiClient == nil {
-		addr := fmt.Sprintf(csiAddrTemplate, driverName)
-		client := newCsiDriverClient("unix", addr)
-		glog.V(4).Infof(log("unmounter csiClient setup [volume=%v,driver=%v]", volID, driverName))
-		c.csiClient = client
-	}
+	volID := c.volumeID
+	csi := c.csiClient
 
 	ctx, cancel := grpctx.WithTimeout(grpctx.Background(), csiTimeout)
 	defer cancel()
-
-	csi := c.csiClient
 
 	if err := csi.NodeUnpublishVolume(ctx, volID, dir); err != nil {
 		glog.Errorf(log("mounter.TearDownAt failed: %v", err))
@@ -292,12 +289,10 @@ func (c *csiMountMgr) TearDownAt(dir string) error {
 	return nil
 }
 
-// saveVolumeData persists parameter data as json file using the location
-// generated by /var/lib/kubelet/pods/<podID>/volumes/kubernetes.io~csi/<specVolId>/volume_data.json
-func saveVolumeData(p *csiPlugin, podUID types.UID, specVolID string, data map[string]string) error {
-	dir := getTargetPath(podUID, specVolID, p.host)
-	dataFilePath := path.Join(dir, volDataFileName)
-
+// saveVolumeData persists parameter data as json file at the provided location
+func saveVolumeData(dir string, fileName string, data map[string]string) error {
+	dataFilePath := path.Join(dir, fileName)
+	glog.V(4).Info(log("saving volume data file [%s]", dataFilePath))
 	file, err := os.Create(dataFilePath)
 	if err != nil {
 		glog.Error(log("failed to save volume data file %s: %v", dataFilePath, err))
@@ -312,10 +307,7 @@ func saveVolumeData(p *csiPlugin, podUID types.UID, specVolID string, data map[s
 	return nil
 }
 
-// loadVolumeData uses the directory returned by mounter.GetPath with value
-// /var/lib/kubelet/pods/<podID>/volumes/kubernetes.io~csi/<specVolumeId>/mount.
-// The function extracts specVolumeID and uses it to load the json data file from dir
-// /var/lib/kubelet/pods/<podID>/volumes/kubernetes.io~csi/<specVolId>/volume_data.json
+// loadVolumeData loads volume info from specified json file/location
 func loadVolumeData(dir string, fileName string) (map[string]string, error) {
 	// remove /mount at the end
 	dataFileName := path.Join(dir, fileName)
