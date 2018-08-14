@@ -21,7 +21,6 @@ import (
 	"net/http"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce"
 
 	gke_api "google.golang.org/api/container/v1"
 )
@@ -46,8 +45,8 @@ func NewAutoscalingGkeClientV1(client *http.Client, projectId, location, cluster
 	if err != nil {
 		return nil, err
 	}
-	if *gce.GkeAPIEndpoint != "" {
-		gkeService.BasePath = *gce.GkeAPIEndpoint
+	if *gkeAPIEndpoint != "" {
+		gkeService.BasePath = *gkeAPIEndpoint
 	}
 	autoscalingGkeClient.gkeService = gkeService
 
@@ -87,6 +86,6 @@ func (m *autoscalingGkeClientV1) DeleteNodePool(toBeRemoved string) error {
 	return cloudprovider.ErrNotImplemented
 }
 
-func (m *autoscalingGkeClientV1) CreateNodePool(mig gce.Mig) error {
+func (m *autoscalingGkeClientV1) CreateNodePool(mig *gkeMig) error {
 	return cloudprovider.ErrNotImplemented
 }

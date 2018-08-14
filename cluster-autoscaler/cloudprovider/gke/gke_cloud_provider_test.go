@@ -81,12 +81,12 @@ func (m *gkeManagerMock) getMigs() []*gce.MigInformation {
 	return args.Get(0).([]*gce.MigInformation)
 }
 
-func (m *gkeManagerMock) createNodePool(mig gce.Mig) (gce.Mig, error) {
+func (m *gkeManagerMock) createNodePool(mig *gkeMig) (gce.Mig, error) {
 	args := m.Called(mig)
 	return mig, args.Error(0)
 }
 
-func (m *gkeManagerMock) deleteNodePool(toBeRemoved gce.Mig) error {
+func (m *gkeManagerMock) deleteNodePool(toBeRemoved *gkeMig) error {
 	args := m.Called(toBeRemoved)
 	return args.Error(0)
 }
@@ -121,7 +121,7 @@ func (m *gkeManagerMock) findMigsNamed(name *regexp.Regexp) ([]string, error) {
 	return args.Get(0).([]string), args.Error(1)
 }
 
-func (m *gkeManagerMock) getMigTemplateNode(mig gce.Mig) (*apiv1.Node, error) {
+func (m *gkeManagerMock) getMigTemplateNode(mig *gkeMig) (*apiv1.Node, error) {
 	args := m.Called(mig)
 	return args.Get(0).(*apiv1.Node), args.Error(1)
 }
