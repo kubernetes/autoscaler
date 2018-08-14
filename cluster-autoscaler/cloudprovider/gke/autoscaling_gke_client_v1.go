@@ -14,13 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package gce
+package gke
 
 import (
 	"fmt"
 	"net/http"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce"
 
 	gke_api "google.golang.org/api/container/v1"
 )
@@ -45,8 +46,8 @@ func NewAutoscalingGkeClientV1(client *http.Client, projectId, location, cluster
 	if err != nil {
 		return nil, err
 	}
-	if *GkeAPIEndpoint != "" {
-		gkeService.BasePath = *GkeAPIEndpoint
+	if *gce.GkeAPIEndpoint != "" {
+		gkeService.BasePath = *gce.GkeAPIEndpoint
 	}
 	autoscalingGkeClient.gkeService = gkeService
 
@@ -86,6 +87,6 @@ func (m *autoscalingGkeClientV1) DeleteNodePool(toBeRemoved string) error {
 	return cloudprovider.ErrNotImplemented
 }
 
-func (m *autoscalingGkeClientV1) CreateNodePool(mig Mig) error {
+func (m *autoscalingGkeClientV1) CreateNodePool(mig gce.Mig) error {
 	return cloudprovider.ErrNotImplemented
 }

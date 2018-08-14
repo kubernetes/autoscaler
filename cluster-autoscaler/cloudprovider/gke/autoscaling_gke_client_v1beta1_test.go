@@ -14,13 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package gce
+package gke
 
 import (
 	"net/http"
 	"testing"
 	"time"
 
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce"
 	test_util "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
 	"github.com/stretchr/testify/assert"
@@ -51,7 +52,7 @@ const operationDoneResponse = `{
 }`
 
 func newTestAutoscalingGkeClientV1beta1(t *testing.T, project, location, clusterName, url string) *autoscalingGkeClientV1beta1 {
-	*GkeAPIEndpoint = url
+	*gce.GkeAPIEndpoint = url
 	client := &http.Client{}
 	gkeClient, err := NewAutoscalingGkeClientV1beta1(client, project, location, clusterName)
 	if !assert.NoError(t, err) {

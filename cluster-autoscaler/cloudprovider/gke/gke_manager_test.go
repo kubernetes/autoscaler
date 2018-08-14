@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package gce
+package gke
 
 import (
 	"fmt"
@@ -24,13 +24,14 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	gce "google.golang.org/api/compute/v1"
+	gce_api "google.golang.org/api/compute/v1"
 	apiv1 "k8s.io/api/core/v1"
 )
 
@@ -46,8 +47,8 @@ const (
 	autoprovisionedPool    = "nodeautoprovisioning-323233232"
 	clusterName            = "cluster1"
 
-	gceMigA = "gce-mig-a"
-	gceMigB = "gce-mig-b"
+	gkeMigA = "gce-mig-a"
+	gkeMigB = "gce-mig-b"
 )
 
 const allNodePools1 = `{
@@ -479,40 +480,46 @@ func getManagedInstancesResponse2Named(name, zone string) string {
 	return fmt.Sprintf(managedInstancesResponse2, zone, name)
 }
 
-func newTestGceManager(t *testing.T, testServerURL string, mode GcpCloudProviderMode, regional bool) *gceManagerImpl {
-	gceService := newTestAutoscalingGceClient(t, projectId, testServerURL)
+func newTestAutoscalingGceClient(t *testing.T, projectId, url string, waitTimeout, pollInterval time.Duration) gce.AutoscalingGceClient {
+	client := &http.Client{}
+	gceClient, err := gce.NewCustomAutoscalingGceClientV1(client, projectId, url, waitTimeout, pollInterval)
+	if !assert.NoError(t, err) {
+		t.Fatalf("fatal error: %v", err)
+	}
+	return gceClient
+}
 
+func newTestGkeManager(t *testing.T, testServerURL string, mode GcpCloudProviderMode, regional bool) *gkeManagerImpl {
 	// Override wait for op timeouts.
-	gceService.operationWaitTimeout = 50 * time.Millisecond
-	gceService.operationPollInterval = 1 * time.Millisecond
+	waitTimeout := 50 * time.Millisecond
+	pollInterval := 1 * time.Millisecond
 
-	manager := &gceManagerImpl{
-		cache: GceCache{
-			migs:           make([]*MigInformation, 0),
-			GceService:     gceService,
-			instancesCache: make(map[GceRef]Mig),
-			machinesCache: map[MachineTypeKey]*gce.MachineType{
-				{"us-central1-b", "n1-standard-1"}: {GuestCpus: 1, MemoryMb: 1},
-				{"us-central1-c", "n1-standard-1"}: {GuestCpus: 1, MemoryMb: 1},
-				{"us-central1-f", "n1-standard-1"}: {GuestCpus: 1, MemoryMb: 1},
-			},
-		},
+	gceService := newTestAutoscalingGceClient(t, projectId, testServerURL, waitTimeout, pollInterval)
+
+	manager := &gkeManagerImpl{
+		cache:                gce.NewGceCache(gceService),
 		GceService:           gceService,
 		projectId:            projectId,
 		clusterName:          clusterName,
 		mode:                 mode,
 		regional:             regional,
-		templates:            &GceTemplateBuilder{},
-		explicitlyConfigured: make(map[GceRef]bool),
+		templates:            &GkeTemplateBuilder{},
+		explicitlyConfigured: make(map[gce.GceRef]bool),
 	}
 	if regional {
 		manager.location = region
 	} else {
 		manager.location = zoneB
 	}
+	machinesCache := map[gce.MachineTypeKey]*gce_api.MachineType{
+		{"us-central1-b", "n1-standard-1"}: {GuestCpus: 1, MemoryMb: 1},
+		{"us-central1-c", "n1-standard-1"}: {GuestCpus: 1, MemoryMb: 1},
+		{"us-central1-f", "n1-standard-1"}: {GuestCpus: 1, MemoryMb: 1},
+	}
+	manager.cache.SetMachinesCache(machinesCache)
 
 	client := &http.Client{}
-	GkeAPIEndpoint = &testServerURL
+	gce.GkeAPIEndpoint = &testServerURL
 	var err error
 	if mode == ModeGKE {
 		manager.GkeService, err = NewAutoscalingGkeClientV1(client, projectId, manager.location, clusterName)
@@ -527,7 +534,7 @@ func newTestGceManager(t *testing.T, testServerURL string, mode GcpCloudProvider
 	return manager
 }
 
-func validateMig(t *testing.T, mig Mig, zone string, name string, minSize int, maxSize int) {
+func validateMig(t *testing.T, mig gce.Mig, zone string, name string, minSize int, maxSize int) {
 	assert.Equal(t, name, mig.GceRef().Name)
 	assert.Equal(t, zone, mig.GceRef().Zone)
 	assert.Equal(t, projectId, mig.GceRef().Project)
@@ -537,7 +544,7 @@ func validateMig(t *testing.T, mig Mig, zone string, name string, minSize int, m
 
 func TestRefreshNodePools(t *testing.T) {
 	server := NewHttpServerMock()
-	g := newTestGceManager(t, server.URL, ModeGKE, false)
+	g := newTestGkeManager(t, server.URL, ModeGKE, false)
 
 	// Fetch one node pool.
 	server.On("handle", "/v1/projects/project1/locations/us-central1-b/clusters/cluster1/nodePools").Return(allNodePools1).Once()
@@ -555,13 +562,8 @@ func TestRefreshNodePools(t *testing.T) {
 
 	// Fetch three node pools, skip one.
 
-	// Clean up previous mig list, as it impacts what we do
-	g.cache.migs = make([]*MigInformation, 0)
-
 	server.On("handle", "/v1/projects/project1/locations/us-central1-b/clusters/cluster1/nodePools").Return(allNodePools2).Once()
-	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool").Return(getInstanceGroupManager(zoneB)).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-nodeautoprovisioning-323233232").Return(getInstanceGroupManager(zoneB)).Once()
-	server.On("handle", "/project1/global/instanceTemplates/gke-cluster-1-default-pool").Return(instanceTemplate).Once()
 	server.On("handle", "/project1/global/instanceTemplates/gke-cluster-1-default-pool").Return(instanceTemplate).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool").Return(instanceGroupManager).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool/listManagedInstances").Return(getManagedInstancesResponse1(zoneB)).Once()
@@ -592,7 +594,7 @@ func TestRefreshNodePools(t *testing.T) {
 
 func TestFetchAllNodePoolsRegional(t *testing.T) {
 	server := NewHttpServerMock()
-	g := newTestGceManager(t, server.URL, ModeGKE, true)
+	g := newTestGkeManager(t, server.URL, ModeGKE, true)
 
 	// Fetch one node pool.
 	server.On("handle", "/v1/projects/project1/locations/us-central1/clusters/cluster1/nodePools").Return(allNodePoolsRegional).Once()
@@ -640,7 +642,7 @@ const deleteNodePoolOperationResponse = `{
 func TestDeleteNodePool(t *testing.T) {
 	server := NewHttpServerMock()
 	defer server.Close()
-	g := newTestGceManager(t, server.URL, ModeGKENAP, false)
+	g := newTestGkeManager(t, server.URL, ModeGKENAP, false)
 
 	server.On("handle", "/v1beta1/projects/project1/locations/us-central1-b/clusters/cluster1/nodePools/nodeautoprovisioning-323233232").Return(deleteNodePoolResponse).Once()
 	server.On("handle", "/v1beta1/projects/project1/locations/us-central1-b/operations/operation-1505732351373-819ed94e").Return(deleteNodePoolOperationResponse).Once()
@@ -654,13 +656,13 @@ func TestDeleteNodePool(t *testing.T) {
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-nodeautoprovisioning-323233232").Return(getInstanceGroupManager(zoneB)).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-nodeautoprovisioning-323233232/listManagedInstances").Return(getManagedInstancesResponse2(zoneB)).Once()
 
-	mig := &gceMig{
-		gceRef: GceRef{
+	mig := &gkeMig{
+		gceRef: gce.GceRef{
 			Project: projectId,
 			Zone:    zoneB,
 			Name:    "nodeautoprovisioning-323233232",
 		},
-		gceManager:      g,
+		gkeManager:      g,
 		minSize:         0,
 		maxSize:         1000,
 		autoprovisioned: true,
@@ -697,7 +699,7 @@ const createNodePoolOperationResponse = `{
 func TestCreateNodePool(t *testing.T) {
 	server := NewHttpServerMock()
 	defer server.Close()
-	g := newTestGceManager(t, server.URL, ModeGKENAP, false)
+	g := newTestGkeManager(t, server.URL, ModeGKENAP, false)
 
 	server.On("handle", "/v1beta1/projects/project1/locations/us-central1-b/operations/operation-1505728466148-d16f5197").Return(createNodePoolOperationResponse).Once()
 	server.On("handle", "/v1beta1/projects/project1/locations/us-central1-b/clusters/cluster1/nodePools").Return(createNodePoolResponse).Once()
@@ -712,19 +714,19 @@ func TestCreateNodePool(t *testing.T) {
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-nodeautoprovisioning-323233232").Return(getInstanceGroupManager(zoneB)).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-nodeautoprovisioning-323233232/listManagedInstances").Return(getManagedInstancesResponse2(zoneB)).Once()
 
-	mig := &gceMig{
-		gceRef: GceRef{
+	mig := &gkeMig{
+		gceRef: gce.GceRef{
 			Project: projectId,
 			Zone:    zoneB,
 			Name:    "nodeautoprovisioning-323233232",
 		},
-		gceManager:      g,
+		gkeManager:      g,
 		minSize:         0,
 		maxSize:         1000,
 		autoprovisioned: true,
 		exist:           true,
 		nodePoolName:    "nodeautoprovisioning-323233232",
-		spec: &MigSpec{
+		spec: &gce.MigSpec{
 			MachineType: "n1-standard-1",
 			Taints: []apiv1.Taint{
 				{
@@ -783,44 +785,44 @@ const deleteInstancesOperationResponse = `
   "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-a/operations/operation-1505802641136-55984ff86d980-a99e8c2b-0c8aaaaa"
 }`
 
-func setupTestNodePool(manager *gceManagerImpl) {
-	mig := &gceMig{
-		gceRef: GceRef{
+func setupTestNodePool(manager *gkeManagerImpl) {
+	mig := &gkeMig{
+		gceRef: gce.GceRef{
 			Name:    defaultPoolMig,
 			Zone:    zoneB,
 			Project: projectId,
 		},
-		gceManager:      manager,
+		gkeManager:      manager,
 		exist:           true,
 		autoprovisioned: false,
 		nodePoolName:    defaultPool,
 		minSize:         1,
 		maxSize:         11,
 	}
-	manager.cache.migs = append(manager.cache.migs, &MigInformation{Config: mig})
+	manager.cache.RegisterMig(mig)
 }
 
-func setupTestAutoprovisionedPool(manager *gceManagerImpl) {
-	mig := &gceMig{
-		gceRef: GceRef{
+func setupTestAutoprovisionedPool(manager *gkeManagerImpl) {
+	mig := &gkeMig{
+		gceRef: gce.GceRef{
 			Name:    autoprovisionedPoolMig,
 			Zone:    zoneB,
 			Project: projectId,
 		},
-		gceManager:      manager,
+		gkeManager:      manager,
 		exist:           true,
 		autoprovisioned: true,
 		nodePoolName:    autoprovisionedPool,
 		minSize:         minAutoprovisionedSize,
 		maxSize:         maxAutoprovisionedSize,
 	}
-	manager.cache.migs = append(manager.cache.migs, &MigInformation{Config: mig})
+	manager.cache.RegisterMig(mig)
 }
 
 func TestDeleteInstances(t *testing.T) {
 	server := NewHttpServerMock()
 	defer server.Close()
-	g := newTestGceManager(t, server.URL, ModeGKE, false)
+	g := newTestGkeManager(t, server.URL, ModeGKE, false)
 
 	setupTestNodePool(g)
 	setupTestAutoprovisionedPool(g)
@@ -833,7 +835,7 @@ func TestDeleteInstances(t *testing.T) {
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool/deleteInstances").Return(deleteInstancesResponse).Once()
 	server.On("handle", "/project1/zones/us-central1-b/operations/operation-1505802641136-55984ff86d980-a99e8c2b-0c8aaaaa").Return(deleteInstancesOperationResponse).Once()
 
-	instances := []*GceRef{
+	instances := []*gce.GceRef{
 		{
 			Project: projectId,
 			Zone:    zoneB,
@@ -851,7 +853,7 @@ func TestDeleteInstances(t *testing.T) {
 	mock.AssertExpectationsForObjects(t, server)
 
 	// Fail on deleting instances from different MIGs.
-	instances = []*GceRef{
+	instances = []*gce.GceRef{
 		{
 			Project: projectId,
 			Zone:    zoneB,
@@ -873,17 +875,17 @@ func TestDeleteInstances(t *testing.T) {
 func TestGetMigSize(t *testing.T) {
 	server := NewHttpServerMock()
 	defer server.Close()
-	g := newTestGceManager(t, server.URL, ModeGKE, false)
+	g := newTestGkeManager(t, server.URL, ModeGKE, false)
 
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/nodeautoprovisioning-323233232").Return(instanceGroupManager).Once()
 
-	mig := &gceMig{
-		gceRef: GceRef{
+	mig := &gkeMig{
+		gceRef: gce.GceRef{
 			Project: projectId,
 			Zone:    zoneB,
 			Name:    "nodeautoprovisioning-323233232",
 		},
-		gceManager:      g,
+		gkeManager:      g,
 		minSize:         0,
 		maxSize:         1000,
 		autoprovisioned: true,
@@ -934,18 +936,18 @@ const setMigSizeOperationResponse = `{
 func TestSetMigSize(t *testing.T) {
 	server := NewHttpServerMock()
 	defer server.Close()
-	g := newTestGceManager(t, server.URL, ModeGKE, false)
+	g := newTestGkeManager(t, server.URL, ModeGKE, false)
 
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/nodeautoprovisioning-323233232/resize").Return(setMigSizeResponse).Once()
 	server.On("handle", "/project1/zones/us-central1-b/operations/operation-1505739408819-5597646964339-eb839c88-28805931").Return(setMigSizeOperationResponse).Once()
 
-	mig := &gceMig{
-		gceRef: GceRef{
+	mig := &gkeMig{
+		gceRef: gce.GceRef{
 			Project: projectId,
 			Zone:    zoneB,
 			Name:    "nodeautoprovisioning-323233232",
 		},
-		gceManager:      g,
+		gkeManager:      g,
 		minSize:         0,
 		maxSize:         1000,
 		autoprovisioned: true,
@@ -961,13 +963,13 @@ func TestSetMigSize(t *testing.T) {
 func TestGetMigForInstance(t *testing.T) {
 	server := NewHttpServerMock()
 	defer server.Close()
-	g := newTestGceManager(t, server.URL, ModeGKE, false)
+	g := newTestGkeManager(t, server.URL, ModeGKE, false)
 
 	setupTestNodePool(g)
 
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool").Return(getInstanceGroupManager(zoneB)).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool/listManagedInstances").Return(getManagedInstancesResponse1(zoneB)).Once()
-	gceRef := &GceRef{
+	gceRef := &gce.GceRef{
 		Project: projectId,
 		Zone:    zoneB,
 		Name:    "gke-cluster-1-default-pool-f7607aac-f1hm",
@@ -983,17 +985,17 @@ func TestGetMigForInstance(t *testing.T) {
 func TestGetMigNodes(t *testing.T) {
 	server := NewHttpServerMock()
 	defer server.Close()
-	g := newTestGceManager(t, server.URL, ModeGKE, false)
+	g := newTestGkeManager(t, server.URL, ModeGKE, false)
 
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/nodeautoprovisioning-323233232/listManagedInstances").Return(getManagedInstancesResponse1(zoneB)).Once()
 
-	mig := &gceMig{
-		gceRef: GceRef{
+	mig := &gkeMig{
+		gceRef: gce.GceRef{
 			Project: projectId,
 			Zone:    zoneB,
 			Name:    "nodeautoprovisioning-323233232",
 		},
-		gceManager:      g,
+		gkeManager:      g,
 		minSize:         0,
 		maxSize:         1000,
 		autoprovisioned: true,
@@ -1016,7 +1018,7 @@ func TestFetchResourceLimiter(t *testing.T) {
 	server := NewHttpServerMock()
 	defer server.Close()
 
-	g := newTestGceManager(t, server.URL, ModeGKENAP, false)
+	g := newTestGkeManager(t, server.URL, ModeGKENAP, false)
 	server.On("handle", "/v1beta1/projects/project1/locations/us-central1-b/clusters/cluster1").Return(getClusterResponse).Once()
 
 	err := g.fetchResourceLimiter()
@@ -1054,8 +1056,8 @@ const instanceGroupList = `{
 func listInstanceGroups(zone string) string {
 	return fmt.Sprintf(instanceGroupList,
 		zone,
-		getInstanceGroupNamed(gceMigA, zone),
-		getInstanceGroupNamed(gceMigB, zone),
+		getInstanceGroupNamed(gkeMigA, zone),
+		getInstanceGroupNamed(gkeMigB, zone),
 		zone,
 	)
 }
@@ -1090,18 +1092,18 @@ func TestFetchAutoMigsZonal(t *testing.T) {
 	defer server.Close()
 
 	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroups").Return(listInstanceGroups(zoneB)).Once()
-	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA).Return(getInstanceGroupManagerNamed(gceMigA, zoneB)).Once()
-	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigB).Return(getInstanceGroupManagerNamed(gceMigB, zoneB)).Once()
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gkeMigA).Return(getInstanceGroupManagerNamed(gkeMigA, zoneB)).Once()
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gkeMigB).Return(getInstanceGroupManagerNamed(gkeMigB, zoneB)).Once()
 
-	server.On("handle", "/project1/global/instanceTemplates/"+gceMigA).Return(instanceTemplate).Once()
-	server.On("handle", "/project1/global/instanceTemplates/"+gceMigB).Return(instanceTemplate).Once()
-	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA).Return(getInstanceGroupManagerNamed(gceMigA, zoneB)).Once()
-	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA+"/listManagedInstances").Return(getManagedInstancesResponse1Named(gceMigA, zoneB)).Once()
-	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigB).Return(getInstanceGroupManagerNamed(gceMigB, zoneB)).Once()
-	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigB+"/listManagedInstances").Return(getManagedInstancesResponse2Named(gceMigB, zoneB)).Once()
+	server.On("handle", "/project1/global/instanceTemplates/"+gkeMigA).Return(instanceTemplate).Once()
+	server.On("handle", "/project1/global/instanceTemplates/"+gkeMigB).Return(instanceTemplate).Once()
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gkeMigA).Return(getInstanceGroupManagerNamed(gkeMigA, zoneB)).Once()
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gkeMigA+"/listManagedInstances").Return(getManagedInstancesResponse1Named(gkeMigA, zoneB)).Once()
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gkeMigB).Return(getInstanceGroupManagerNamed(gkeMigB, zoneB)).Once()
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gkeMigB+"/listManagedInstances").Return(getManagedInstancesResponse2Named(gkeMigB, zoneB)).Once()
 
 	regional := false
-	g := newTestGceManager(t, server.URL, ModeGCE, regional)
+	g := newTestGkeManager(t, server.URL, ModeGCE, regional)
 
 	min, max := 0, 100
 	g.migAutoDiscoverySpecs = []cloudprovider.MIGAutoDiscoveryConfig{
@@ -1112,8 +1114,8 @@ func TestFetchAutoMigsZonal(t *testing.T) {
 
 	migs := g.getMigs()
 	assert.Equal(t, 2, len(migs))
-	validateMig(t, migs[0].Config, zoneB, gceMigA, min, max)
-	validateMig(t, migs[1].Config, zoneB, gceMigB, min, max)
+	validateMig(t, migs[0].Config, zoneB, gkeMigA, min, max)
+	validateMig(t, migs[1].Config, zoneB, gkeMigB, min, max)
 	mock.AssertExpectationsForObjects(t, server)
 }
 func TestFetchAutoMigsUnregistersMissingMigs(t *testing.T) {
@@ -1121,30 +1123,30 @@ func TestFetchAutoMigsUnregistersMissingMigs(t *testing.T) {
 	defer server.Close()
 
 	// Register explicit instance group
-	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA).Return(getInstanceGroupManagerNamed(gceMigA, zoneB)).Once()
-	server.On("handle", "/project1/global/instanceTemplates/"+gceMigA).Return(instanceTemplate).Once()
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gkeMigA).Return(getInstanceGroupManagerNamed(gkeMigA, zoneB)).Once()
+	server.On("handle", "/project1/global/instanceTemplates/"+gkeMigA).Return(instanceTemplate).Once()
 
 	// Regenerate cache for explicit instance group
-	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA).Return(getInstanceGroupManagerNamed(gceMigA, zoneB)).Twice()
-	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA+"/listManagedInstances").Return(getManagedInstancesResponse1Named(gceMigA, zoneB)).Twice()
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gkeMigA).Return(getInstanceGroupManagerNamed(gkeMigA, zoneB)).Twice()
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gkeMigA+"/listManagedInstances").Return(getManagedInstancesResponse1Named(gkeMigA, zoneB)).Twice()
 
 	// Register 'previously autodetected' instance group
-	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigB).Return(getInstanceGroupManagerNamed(gceMigB, zoneB)).Once()
-	server.On("handle", "/project1/global/instanceTemplates/"+gceMigB).Return(instanceTemplate).Once()
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gkeMigB).Return(getInstanceGroupManagerNamed(gkeMigB, zoneB)).Once()
+	server.On("handle", "/project1/global/instanceTemplates/"+gkeMigB).Return(instanceTemplate).Once()
 
 	regional := false
-	g := newTestGceManager(t, server.URL, ModeGCE, regional)
+	g := newTestGkeManager(t, server.URL, ModeGCE, regional)
 
 	// This MIG should never be unregistered because it is explicitly configured.
 	minA, maxA := 0, 100
-	specs := []string{fmt.Sprintf("%d:%d:https://content.googleapis.com/compute/v1/projects/project1/zones/%s/instanceGroups/%s", minA, maxA, zoneB, gceMigA)}
+	specs := []string{fmt.Sprintf("%d:%d:https://content.googleapis.com/compute/v1/projects/project1/zones/%s/instanceGroups/%s", minA, maxA, zoneB, gkeMigA)}
 	assert.NoError(t, g.fetchExplicitMigs(specs))
 
 	// This MIG was previously autodetected but is now gone.
 	// It should be unregistered.
-	unregister := &gceMig{
-		gceManager: g,
-		gceRef:     GceRef{Project: projectId, Zone: zoneB, Name: gceMigB},
+	unregister := &gkeMig{
+		gkeManager: g,
+		gceRef:     gce.GceRef{Project: projectId, Zone: zoneB, Name: gkeMigB},
 		minSize:    1,
 		maxSize:    10,
 		exist:      true,
@@ -1155,7 +1157,7 @@ func TestFetchAutoMigsUnregistersMissingMigs(t *testing.T) {
 
 	migs := g.getMigs()
 	assert.Equal(t, 1, len(migs))
-	validateMig(t, migs[0].Config, zoneB, gceMigA, minA, maxA)
+	validateMig(t, migs[0].Config, zoneB, gkeMigA, minA, maxA)
 	mock.AssertExpectationsForObjects(t, server)
 }
 
@@ -1165,18 +1167,18 @@ func TestFetchAutoMigsRegional(t *testing.T) {
 
 	server.On("handle", "/project1/regions/us-central1").Return(getRegion).Once()
 	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroups").Return(listInstanceGroups(zoneB)).Once()
-	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA).Return(getInstanceGroupManagerNamed(gceMigA, zoneB)).Once()
-	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigB).Return(getInstanceGroupManagerNamed(gceMigB, zoneB)).Once()
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gkeMigA).Return(getInstanceGroupManagerNamed(gkeMigA, zoneB)).Once()
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gkeMigB).Return(getInstanceGroupManagerNamed(gkeMigB, zoneB)).Once()
 
-	server.On("handle", "/project1/global/instanceTemplates/"+gceMigA).Return(instanceTemplate).Once()
-	server.On("handle", "/project1/global/instanceTemplates/"+gceMigB).Return(instanceTemplate).Once()
-	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA).Return(getInstanceGroupManagerNamed(gceMigA, zoneB)).Once()
-	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA+"/listManagedInstances").Return(getManagedInstancesResponse1Named(gceMigA, zoneB)).Once()
-	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigB).Return(getInstanceGroupManagerNamed(gceMigB, zoneB)).Once()
-	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigB+"/listManagedInstances").Return(getManagedInstancesResponse2Named(gceMigB, zoneB)).Once()
+	server.On("handle", "/project1/global/instanceTemplates/"+gkeMigA).Return(instanceTemplate).Once()
+	server.On("handle", "/project1/global/instanceTemplates/"+gkeMigB).Return(instanceTemplate).Once()
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gkeMigA).Return(getInstanceGroupManagerNamed(gkeMigA, zoneB)).Once()
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gkeMigA+"/listManagedInstances").Return(getManagedInstancesResponse1Named(gkeMigA, zoneB)).Once()
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gkeMigB).Return(getInstanceGroupManagerNamed(gkeMigB, zoneB)).Once()
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gkeMigB+"/listManagedInstances").Return(getManagedInstancesResponse2Named(gkeMigB, zoneB)).Once()
 
 	regional := true
-	g := newTestGceManager(t, server.URL, ModeGCE, regional)
+	g := newTestGkeManager(t, server.URL, ModeGCE, regional)
 
 	min, max := 0, 100
 	g.migAutoDiscoverySpecs = []cloudprovider.MIGAutoDiscoveryConfig{
@@ -1187,8 +1189,8 @@ func TestFetchAutoMigsRegional(t *testing.T) {
 
 	migs := g.getMigs()
 	assert.Equal(t, 2, len(migs))
-	validateMig(t, migs[0].Config, zoneB, gceMigA, min, max)
-	validateMig(t, migs[1].Config, zoneB, gceMigB, min, max)
+	validateMig(t, migs[0].Config, zoneB, gkeMigA, min, max)
+	validateMig(t, migs[1].Config, zoneB, gkeMigB, min, max)
 	mock.AssertExpectationsForObjects(t, server)
 }
 
@@ -1196,33 +1198,33 @@ func TestFetchExplicitMigs(t *testing.T) {
 	server := NewHttpServerMock()
 	defer server.Close()
 
-	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA).Return(getInstanceGroupManagerNamed(gceMigA, zoneB)).Once()
-	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigB).Return(getInstanceGroupManagerNamed(gceMigB, zoneB)).Once()
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gkeMigA).Return(getInstanceGroupManagerNamed(gkeMigA, zoneB)).Once()
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gkeMigB).Return(getInstanceGroupManagerNamed(gkeMigB, zoneB)).Once()
 
-	server.On("handle", "/project1/global/instanceTemplates/"+gceMigA).Return(instanceTemplate).Once()
-	server.On("handle", "/project1/global/instanceTemplates/"+gceMigB).Return(instanceTemplate).Once()
+	server.On("handle", "/project1/global/instanceTemplates/"+gkeMigA).Return(instanceTemplate).Once()
+	server.On("handle", "/project1/global/instanceTemplates/"+gkeMigB).Return(instanceTemplate).Once()
 
-	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA).Return(getInstanceGroupManagerNamed(gceMigA, zoneB)).Once()
-	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA+"/listManagedInstances").Return(getManagedInstancesResponse1Named(gceMigA, zoneB)).Once()
-	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigB).Return(getInstanceGroupManagerNamed(gceMigB, zoneB)).Once()
-	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigB+"/listManagedInstances").Return(getManagedInstancesResponse2Named(gceMigB, zoneB)).Once()
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gkeMigA).Return(getInstanceGroupManagerNamed(gkeMigA, zoneB)).Once()
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gkeMigA+"/listManagedInstances").Return(getManagedInstancesResponse1Named(gkeMigA, zoneB)).Once()
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gkeMigB).Return(getInstanceGroupManagerNamed(gkeMigB, zoneB)).Once()
+	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gkeMigB+"/listManagedInstances").Return(getManagedInstancesResponse2Named(gkeMigB, zoneB)).Once()
 
 	regional := false
-	g := newTestGceManager(t, server.URL, ModeGCE, regional)
+	g := newTestGkeManager(t, server.URL, ModeGCE, regional)
 
 	minA, maxA := 0, 100
 	minB, maxB := 1, 10
 	specs := []string{
-		fmt.Sprintf("%d:%d:https://content.googleapis.com/compute/v1/projects/project1/zones/%s/instanceGroups/%s", minA, maxA, zoneB, gceMigA),
-		fmt.Sprintf("%d:%d:https://content.googleapis.com/compute/v1/projects/project1/zones/%s/instanceGroups/%s", minB, maxB, zoneB, gceMigB),
+		fmt.Sprintf("%d:%d:https://content.googleapis.com/compute/v1/projects/project1/zones/%s/instanceGroups/%s", minA, maxA, zoneB, gkeMigA),
+		fmt.Sprintf("%d:%d:https://content.googleapis.com/compute/v1/projects/project1/zones/%s/instanceGroups/%s", minB, maxB, zoneB, gkeMigB),
 	}
 
 	assert.NoError(t, g.fetchExplicitMigs(specs))
 
 	migs := g.getMigs()
 	assert.Equal(t, 2, len(migs))
-	validateMig(t, migs[0].Config, zoneB, gceMigA, minA, maxA)
-	validateMig(t, migs[1].Config, zoneB, gceMigB, minB, maxB)
+	validateMig(t, migs[0].Config, zoneB, gkeMigA, minA, maxA)
+	validateMig(t, migs[1].Config, zoneB, gkeMigB, minB, maxB)
 	mock.AssertExpectationsForObjects(t, server)
 }
 
@@ -1268,15 +1270,14 @@ func TestfetchMachinesCache(t *testing.T) {
 	server := NewHttpServerMock()
 	defer server.Close()
 
-	g := newTestGceManager(t, server.URL, ModeGKENAP, false)
+	g := newTestGkeManager(t, server.URL, ModeGKENAP, false)
 	server.On("handle", "/v1alpha1/projects/project1/locations/us-central1-b/clusters/cluster1").Return(getClusterResponse).Once()
 	server.On("handle", "/project1/zones/us-central1-b/machineTypes").Return(listMachineTypesResponse).Once()
 
 	err := g.fetchMachinesCache()
 	assert.NoError(t, err)
-	assert.Equal(t, 2, len(g.cache.machinesCache))
-	assert.NotNil(t, g.cache.machinesCache[MachineTypeKey{zoneB, "f1-micro"}])
-	assert.NotNil(t, g.cache.machinesCache[MachineTypeKey{zoneB, "g1-small"}])
+	assert.NotNil(t, g.cache.GetMachineFromCache("f1-micro", zoneB))
+	assert.NotNil(t, g.cache.GetMachineFromCache("g1-small", zoneB))
 	mock.AssertExpectationsForObjects(t, server)
 
 	// Skipped refresh.
@@ -1301,15 +1302,15 @@ func TestGetMigTemplateNode(t *testing.T) {
 	server.On("handle", "/project1/global/instanceTemplates/gke-cluster-1-default-pool").Return(instanceTemplate).Once()
 
 	regional := false
-	g := newTestGceManager(t, server.URL, ModeGCE, regional)
+	g := newTestGkeManager(t, server.URL, ModeGCE, regional)
 
-	mig := &gceMig{
-		gceRef: GceRef{
+	mig := &gkeMig{
+		gceRef: gce.GceRef{
 			Project: projectId,
 			Zone:    zoneB,
 			Name:    "default-pool",
 		},
-		gceManager:      g,
+		gkeManager:      g,
 		minSize:         0,
 		maxSize:         1000,
 		autoprovisioned: true,
@@ -1343,7 +1344,7 @@ func TestGetCpuAndMemoryForMachineType(t *testing.T) {
 	server := NewHttpServerMock()
 	defer server.Close()
 	regional := false
-	g := newTestGceManager(t, server.URL, ModeGCE, regional)
+	g := newTestGkeManager(t, server.URL, ModeGCE, regional)
 
 	// Custom machine type.
 	cpu, mem, err := g.getCpuAndMemoryForMachineType("custom-8-2", zoneB)
