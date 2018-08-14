@@ -145,7 +145,7 @@ func TestBuildLabelsForAutoprovisionedMigOK(t *testing.T) {
 				Zone:    "us-central1-b",
 			},
 			autoprovisioned: true,
-			spec: &gce.MigSpec{
+			spec: &MigSpec{
 				MachineType: "n1-standard-8",
 				Labels: map[string]string{
 					"A": "B",
@@ -174,7 +174,7 @@ func TestBuildLabelsForAutoprovisionedMigConflict(t *testing.T) {
 				Zone:    "us-central1-b",
 			},
 			autoprovisioned: true,
-			spec: &gce.MigSpec{
+			spec: &MigSpec{
 				MachineType: "n1-standard-8",
 				Labels: map[string]string{
 					kubeletapis.LabelOS: "windows",

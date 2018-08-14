@@ -21,7 +21,6 @@ import (
 	"testing"
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce"
 	test_util "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
 	"github.com/stretchr/testify/assert"
@@ -52,7 +51,7 @@ const operationDoneResponse = `{
 }`
 
 func newTestAutoscalingGkeClientV1beta1(t *testing.T, project, location, clusterName, url string) *autoscalingGkeClientV1beta1 {
-	*gce.GkeAPIEndpoint = url
+	*gkeAPIEndpoint = url
 	client := &http.Client{}
 	gkeClient, err := NewAutoscalingGkeClientV1beta1(client, project, location, clusterName)
 	if !assert.NoError(t, err) {
