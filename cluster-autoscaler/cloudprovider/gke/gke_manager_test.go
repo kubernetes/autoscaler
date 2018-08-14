@@ -552,7 +552,7 @@ func TestRefreshNodePools(t *testing.T) {
 
 	err := g.refreshNodePools()
 	assert.NoError(t, err)
-	migs := g.getMigs()
+	migs := g.GetMigs()
 	assert.Equal(t, 1, len(migs))
 	validateMig(t, migs[0].Config, zoneB, "gke-cluster-1-default-pool", 1, 11)
 	mock.AssertExpectationsForObjects(t, server)
@@ -569,7 +569,7 @@ func TestRefreshNodePools(t *testing.T) {
 
 	err = g.refreshNodePools()
 	assert.NoError(t, err)
-	migs = g.getMigs()
+	migs = g.GetMigs()
 	assert.Equal(t, 2, len(migs))
 	validateMig(t, migs[0].Config, zoneB, "gke-cluster-1-default-pool", 1, 11)
 	validateMig(t, migs[1].Config, zoneB, "gke-cluster-1-nodeautoprovisioning-323233232", 0, 1000)
@@ -583,7 +583,7 @@ func TestRefreshNodePools(t *testing.T) {
 
 	err = g.refreshNodePools()
 	assert.NoError(t, err)
-	migs = g.getMigs()
+	migs = g.GetMigs()
 	assert.Equal(t, 1, len(migs))
 	validateMig(t, migs[0].Config, zoneB, "gke-cluster-1-default-pool", 1, 11)
 	mock.AssertExpectationsForObjects(t, server)
@@ -608,7 +608,7 @@ func TestFetchAllNodePoolsRegional(t *testing.T) {
 
 	err := g.refreshNodePools()
 	assert.NoError(t, err)
-	migs := g.getMigs()
+	migs := g.GetMigs()
 	assert.Equal(t, 3, len(migs))
 	validateMig(t, migs[0].Config, zoneB, "gke-cluster-1-default-pool", 1, 11)
 	validateMig(t, migs[1].Config, zoneC, "gke-cluster-1-default-pool", 1, 11)
@@ -667,7 +667,7 @@ func TestDeleteNodePool(t *testing.T) {
 		nodePoolName:    "nodeautoprovisioning-323233232",
 		spec:            nil}
 
-	err := g.deleteNodePool(mig)
+	err := g.DeleteNodePool(mig)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, server)
 }
@@ -738,10 +738,10 @@ func TestCreateNodePool(t *testing.T) {
 		},
 	}
 
-	newMig, err := g.createNodePool(mig)
+	newMig, err := g.CreateNodePool(mig)
 	assert.NoError(t, err)
 	assert.True(t, newMig.Exist())
-	migs := g.getMigs()
+	migs := g.GetMigs()
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(migs))
 	mock.AssertExpectationsForObjects(t, server)
@@ -1118,7 +1118,7 @@ func TestGetMigTemplateNode(t *testing.T) {
 		spec:            nil,
 	}
 
-	node, err := g.getMigTemplateNode(mig)
+	node, err := g.GetMigTemplateNode(mig)
 	assert.NoError(t, err)
 	assert.NotNil(t, node)
 	mock.AssertExpectationsForObjects(t, server)
