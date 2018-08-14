@@ -57,7 +57,7 @@ func (gce *GceCloudProvider) Name() string {
 
 // NodeGroups returns all node groups configured for this cloud provider.
 func (gce *GceCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
-	migs := gce.gceManager.getMigs()
+	migs := gce.gceManager.GetMigs()
 	result := make([]cloudprovider.NodeGroup, 0, len(migs))
 	for _, mig := range migs {
 		result = append(result, mig.Config)
@@ -295,7 +295,7 @@ func (mig *gceMig) Autoprovisioned() bool {
 
 // TemplateNodeInfo returns a node template for this node group.
 func (mig *gceMig) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
-	node, err := mig.gceManager.getMigTemplateNode(mig)
+	node, err := mig.gceManager.GetMigTemplateNode(mig)
 	if err != nil {
 		return nil, err
 	}
