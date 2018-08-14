@@ -17,8 +17,8 @@ limitations under the License.
 package autoscaling
 
 import (
+	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
-	extensions "k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 	"k8s.io/kubernetes/test/e2e/framework"
@@ -210,9 +210,9 @@ var _ = admissionControllerE2eDescribe("Admission-controller", func() {
 
 })
 
-func startDeploymentPods(f *framework.Framework, deployment *extensions.Deployment) *apiv1.PodList {
+func startDeploymentPods(f *framework.Framework, deployment *appsv1.Deployment) *apiv1.PodList {
 	c, ns := f.ClientSet, f.Namespace.Name
-	deployment, err := c.ExtensionsV1beta1().Deployments(ns).Create(deployment)
+	deployment, err := c.AppsV1().Deployments(ns).Create(deployment)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	err = framework.WaitForDeploymentComplete(c, deployment)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
