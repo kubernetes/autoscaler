@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package gce
+package gke
 
 import (
 	"fmt"
@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -35,7 +36,7 @@ import (
 	"github.com/golang/glog"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
-	gce "google.golang.org/api/compute/v1"
+	gce_api "google.golang.org/api/compute/v1"
 	gcfg "gopkg.in/gcfg.v1"
 )
 
@@ -82,63 +83,63 @@ func init() {
 	}
 }
 
-// GceManager handles gce communication and data caching.
-type GceManager interface {
+// GkeManager handles gce communication and data caching.
+type GkeManager interface {
 	// GetMigSize gets MIG size.
-	GetMigSize(mig Mig) (int64, error)
+	GetMigSize(mig gce.Mig) (int64, error)
 	// SetMigSize sets MIG size.
-	SetMigSize(mig Mig, size int64) error
+	SetMigSize(mig gce.Mig, size int64) error
 	// DeleteInstances deletes the given instances. All instances must be controlled by the same MIG.
-	DeleteInstances(instances []*GceRef) error
+	DeleteInstances(instances []*gce.GceRef) error
 	// GetMigForInstance returns MigConfig of the given Instance
-	GetMigForInstance(instance *GceRef) (Mig, error)
+	GetMigForInstance(instance *gce.GceRef) (gce.Mig, error)
 	// GetMigNodes returns mig nodes.
-	GetMigNodes(mig Mig) ([]string, error)
+	GetMigNodes(mig gce.Mig) ([]string, error)
 	// Refresh updates config by calling GKE API (in GKE mode only).
 	Refresh() error
 	// GetResourceLimiter returns resource limiter.
 	GetResourceLimiter() (*cloudprovider.ResourceLimiter, error)
 	// Cleanup cleans up open resources before the cloud provider is destroyed, i.e. go routines etc.
 	Cleanup() error
-	getMigs() []*MigInformation
-	createNodePool(mig Mig) (Mig, error)
-	deleteNodePool(toBeRemoved Mig) error
+	getMigs() []*gce.MigInformation
+	createNodePool(mig gce.Mig) (gce.Mig, error)
+	deleteNodePool(toBeRemoved gce.Mig) error
 	getLocation() string
 	getProjectId() string
 	getClusterName() string
 	getMode() GcpCloudProviderMode
 	findMigsNamed(name *regexp.Regexp) ([]string, error)
-	getMigTemplateNode(mig Mig) (*apiv1.Node, error)
+	getMigTemplateNode(mig gce.Mig) (*apiv1.Node, error)
 	getCpuAndMemoryForMachineType(machineType string, zone string) (cpu int64, mem int64, err error)
 }
 
-// gceManagerImpl handles gce communication and data caching.
-type gceManagerImpl struct {
-	cache                    GceCache
-	lastRefresh              time.Time
-	machinesCacheLastRefresh time.Time
+// gkeManagerImpl handles gce communication and data caching.
+type gkeManagerImpl struct {
+	cache       gce.GceCache
+	lastRefresh time.Time
 
 	GkeService AutoscalingGkeClient
-	GceService AutoscalingGceClient
+	GceService gce.AutoscalingGceClient
 
-	location              string
-	projectId             string
-	clusterName           string
-	mode                  GcpCloudProviderMode
-	templates             *GceTemplateBuilder
-	interrupt             chan struct{}
-	regional              bool
-	explicitlyConfigured  map[GceRef]bool
-	migAutoDiscoverySpecs []cloudprovider.MIGAutoDiscoveryConfig
+	location                 string
+	projectId                string
+	clusterName              string
+	mode                     GcpCloudProviderMode
+	templates                *GkeTemplateBuilder
+	interrupt                chan struct{}
+	regional                 bool
+	explicitlyConfigured     map[gce.GceRef]bool
+	migAutoDiscoverySpecs    []cloudprovider.MIGAutoDiscoveryConfig
+	machinesCacheLastRefresh time.Time
 }
 
-// CreateGceManager constructs gceManager object.
-func CreateGceManager(configReader io.Reader, mode GcpCloudProviderMode, clusterName string, discoveryOpts cloudprovider.NodeGroupDiscoveryOptions, regional bool) (GceManager, error) {
+// CreateGkeManager constructs gkeManager object.
+func CreateGkeManager(configReader io.Reader, mode GcpCloudProviderMode, clusterName string, discoveryOpts cloudprovider.NodeGroupDiscoveryOptions, regional bool) (GkeManager, error) {
 	// Create Google Compute Engine token.
 	var err error
 	tokenSource := google.ComputeTokenSource("")
 	if len(os.Getenv("GOOGLE_APPLICATION_CREDENTIALS")) > 0 {
-		tokenSource, err = google.DefaultTokenSource(oauth2.NoContext, gce.ComputeScope)
+		tokenSource, err = google.DefaultTokenSource(oauth2.NoContext, gce_api.ComputeScope)
 		if err != nil {
 			return nil, err
 		}
@@ -183,21 +184,21 @@ func CreateGceManager(configReader io.Reader, mode GcpCloudProviderMode, cluster
 	// Create Google Compute Engine service.
 	client := oauth2.NewClient(oauth2.NoContext, tokenSource)
 	client.Timeout = httpTimeout
-	gceService, err := NewAutoscalingGceClientV1(client, projectId)
+	gceService, err := gce.NewAutoscalingGceClientV1(client, projectId)
 	if err != nil {
 		return nil, err
 	}
-	manager := &gceManagerImpl{
-		cache:                NewGceCache(gceService),
+	manager := &gkeManagerImpl{
+		cache:                gce.NewGceCache(gceService),
 		GceService:           gceService,
 		location:             location,
 		regional:             regional,
 		projectId:            projectId,
 		clusterName:          clusterName,
 		mode:                 mode,
-		templates:            &GceTemplateBuilder{},
+		templates:            &GkeTemplateBuilder{},
 		interrupt:            make(chan struct{}),
-		explicitlyConfigured: make(map[GceRef]bool),
+		explicitlyConfigured: make(map[gce.GceRef]bool),
 	}
 
 	switch mode {
@@ -238,30 +239,30 @@ func CreateGceManager(configReader io.Reader, mode GcpCloudProviderMode, cluster
 }
 
 // Cleanup closes the channel to signal the go routine to stop that is handling the cache
-func (m *gceManagerImpl) Cleanup() error {
+func (m *gkeManagerImpl) Cleanup() error {
 	close(m.interrupt)
 	return nil
 }
 
-func (m *gceManagerImpl) assertGCE() {
+func (m *gkeManagerImpl) assertGCE() {
 	if m.mode != ModeGCE {
 		glog.Fatalf("This should run only in GCE mode")
 	}
 }
 
-func (m *gceManagerImpl) assertGKE() {
+func (m *gkeManagerImpl) assertGKE() {
 	if m.mode != ModeGKE && m.mode != ModeGKENAP {
 		glog.Fatalf("This should run only in GKE mode")
 	}
 }
 
-func (m *gceManagerImpl) assertGKENAP() {
+func (m *gkeManagerImpl) assertGKENAP() {
 	if m.mode != ModeGKENAP {
 		glog.Fatalf("This should run only in GKE mode with autoprovisioning enabled")
 	}
 }
 
-func (m *gceManagerImpl) refreshNodePools() error {
+func (m *gkeManagerImpl) refreshNodePools() error {
 	m.assertGKE()
 
 	nodePools, err := m.GkeService.FetchNodePools()
@@ -269,22 +270,22 @@ func (m *gceManagerImpl) refreshNodePools() error {
 		return err
 	}
 
-	existingMigs := map[GceRef]struct{}{}
+	existingMigs := map[gce.GceRef]struct{}{}
 	changed := false
 
 	for _, nodePool := range nodePools {
 		for _, igurl := range nodePool.InstanceGroupUrls {
-			project, zone, name, err := ParseIgmUrl(igurl)
+			project, zone, name, err := gce.ParseIgmUrl(igurl)
 			if err != nil {
 				return err
 			}
-			mig := &gceMig{
-				gceRef: GceRef{
+			mig := &gkeMig{
+				gceRef: gce.GceRef{
 					Name:    name,
 					Zone:    zone,
 					Project: project,
 				},
-				gceManager:      m,
+				gkeManager:      m,
 				exist:           true,
 				autoprovisioned: nodePool.Autoprovisioned,
 				nodePoolName:    nodePool.Name,
@@ -311,7 +312,7 @@ func (m *gceManagerImpl) refreshNodePools() error {
 }
 
 // RegisterMig registers mig in GceManager. Returns true if the node group didn't exist before or its config has changed.
-func (m *gceManagerImpl) RegisterMig(mig Mig) bool {
+func (m *gkeManagerImpl) RegisterMig(mig gce.Mig) bool {
 	changed := m.cache.RegisterMig(mig)
 	if changed {
 		// Try to build a node from template to validate that this group
@@ -324,7 +325,7 @@ func (m *gceManagerImpl) RegisterMig(mig Mig) bool {
 	return changed
 }
 
-func (m *gceManagerImpl) deleteNodePool(toBeRemoved Mig) error {
+func (m *gkeManagerImpl) deleteNodePool(toBeRemoved gce.Mig) error {
 	m.assertGKENAP()
 	if !toBeRemoved.Autoprovisioned() {
 		return fmt.Errorf("only autoprovisioned node pools can be deleted")
@@ -337,7 +338,7 @@ func (m *gceManagerImpl) deleteNodePool(toBeRemoved Mig) error {
 	return m.refreshNodePools()
 }
 
-func (m *gceManagerImpl) createNodePool(mig Mig) (Mig, error) {
+func (m *gkeManagerImpl) createNodePool(mig gce.Mig) (gce.Mig, error) {
 	m.assertGKENAP()
 
 	err := m.GkeService.CreateNodePool(mig)
@@ -357,7 +358,7 @@ func (m *gceManagerImpl) createNodePool(mig Mig) (Mig, error) {
 	return nil, fmt.Errorf("node pool %s not found", mig.NodePoolName())
 }
 
-func (m *gceManagerImpl) fetchMachinesCache() error {
+func (m *gkeManagerImpl) fetchMachinesCache() error {
 	if m.machinesCacheLastRefresh.Add(machinesRefreshInterval).After(time.Now()) {
 		return nil
 	}
@@ -366,14 +367,14 @@ func (m *gceManagerImpl) fetchMachinesCache() error {
 	if err != nil {
 		return err
 	}
-	machinesCache := make(map[MachineTypeKey]*gce.MachineType)
+	machinesCache := make(map[gce.MachineTypeKey]*gce_api.MachineType)
 	for _, location := range locations {
 		machineTypes, err := m.GceService.FetchMachineTypes(location)
 		if err != nil {
 			return err
 		}
 		for _, machineType := range machineTypes {
-			machinesCache[MachineTypeKey{location, machineType.Name}] = machineType
+			machinesCache[gce.MachineTypeKey{location, machineType.Name}] = machineType
 		}
 
 	}
@@ -385,7 +386,7 @@ func (m *gceManagerImpl) fetchMachinesCache() error {
 }
 
 // GetMigSize gets MIG size.
-func (m *gceManagerImpl) GetMigSize(mig Mig) (int64, error) {
+func (m *gkeManagerImpl) GetMigSize(mig gce.Mig) (int64, error) {
 	targetSize, err := m.GceService.FetchMigTargetSize(mig.GceRef())
 	if err != nil {
 		return -1, err
@@ -394,13 +395,13 @@ func (m *gceManagerImpl) GetMigSize(mig Mig) (int64, error) {
 }
 
 // SetMigSize sets MIG size.
-func (m *gceManagerImpl) SetMigSize(mig Mig, size int64) error {
+func (m *gkeManagerImpl) SetMigSize(mig gce.Mig, size int64) error {
 	glog.V(0).Infof("Setting mig size %s to %d", mig.Id(), size)
 	return m.GceService.ResizeMig(mig.GceRef(), size)
 }
 
 // DeleteInstances deletes the given instances. All instances must be controlled by the same MIG.
-func (m *gceManagerImpl) DeleteInstances(instances []*GceRef) error {
+func (m *gkeManagerImpl) DeleteInstances(instances []*gce.GceRef) error {
 	if len(instances) == 0 {
 		return nil
 	}
@@ -421,17 +422,17 @@ func (m *gceManagerImpl) DeleteInstances(instances []*GceRef) error {
 	return m.GceService.DeleteInstances(commonMig.GceRef(), instances)
 }
 
-func (m *gceManagerImpl) getMigs() []*MigInformation {
+func (m *gkeManagerImpl) getMigs() []*gce.MigInformation {
 	return m.cache.GetMigs()
 }
 
 // GetMigForInstance returns MigConfig of the given Instance
-func (m *gceManagerImpl) GetMigForInstance(instance *GceRef) (Mig, error) {
+func (m *gkeManagerImpl) GetMigForInstance(instance *gce.GceRef) (gce.Mig, error) {
 	return m.cache.GetMigForInstance(instance)
 }
 
 // GetMigNodes returns mig nodes.
-func (m *gceManagerImpl) GetMigNodes(mig Mig) ([]string, error) {
+func (m *gkeManagerImpl) GetMigNodes(mig gce.Mig) ([]string, error) {
 	instances, err := m.GceService.FetchMigInstances(mig.GceRef())
 	if err != nil {
 		return []string{}, err
@@ -443,27 +444,27 @@ func (m *gceManagerImpl) GetMigNodes(mig Mig) ([]string, error) {
 	return result, nil
 }
 
-func (m *gceManagerImpl) getLocation() string {
+func (m *gkeManagerImpl) getLocation() string {
 	return m.location
 }
-func (m *gceManagerImpl) getProjectId() string {
+func (m *gkeManagerImpl) getProjectId() string {
 	return m.projectId
 }
-func (m *gceManagerImpl) getClusterName() string {
+func (m *gkeManagerImpl) getClusterName() string {
 	return m.clusterName
 }
-func (m *gceManagerImpl) getMode() GcpCloudProviderMode {
+func (m *gkeManagerImpl) getMode() GcpCloudProviderMode {
 	return m.mode
 }
 
-func (m *gceManagerImpl) Refresh() error {
+func (m *gkeManagerImpl) Refresh() error {
 	if m.lastRefresh.Add(refreshInterval).After(time.Now()) {
 		return nil
 	}
 	return m.forceRefresh()
 }
 
-func (m *gceManagerImpl) forceRefresh() error {
+func (m *gkeManagerImpl) forceRefresh() error {
 	switch m.mode {
 	case ModeGCE:
 		m.clearMachinesCache()
@@ -494,7 +495,7 @@ func (m *gceManagerImpl) forceRefresh() error {
 
 // Fetch explicitly configured MIGs. These MIGs should never be unregistered
 // during refreshes, even if they no longer exist in GCE.
-func (m *gceManagerImpl) fetchExplicitMigs(specs []string) error {
+func (m *gkeManagerImpl) fetchExplicitMigs(specs []string) error {
 	m.assertGCE()
 
 	changed := false
@@ -515,7 +516,7 @@ func (m *gceManagerImpl) fetchExplicitMigs(specs []string) error {
 	return nil
 }
 
-func (m *gceManagerImpl) buildMigFromFlag(flag string) (Mig, error) {
+func (m *gkeManagerImpl) buildMigFromFlag(flag string) (gce.Mig, error) {
 	s, err := dynamic.SpecFromString(flag, scaleToZeroSupported)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse node group spec: %v", err)
@@ -523,7 +524,7 @@ func (m *gceManagerImpl) buildMigFromFlag(flag string) (Mig, error) {
 	return m.buildMigFromSpec(s)
 }
 
-func (m *gceManagerImpl) buildMigFromAutoCfg(link string, cfg cloudprovider.MIGAutoDiscoveryConfig) (Mig, error) {
+func (m *gkeManagerImpl) buildMigFromAutoCfg(link string, cfg cloudprovider.MIGAutoDiscoveryConfig) (gce.Mig, error) {
 	s := &dynamic.NodeGroupSpec{
 		Name:               link,
 		MinSize:            cfg.MinSize,
@@ -533,21 +534,21 @@ func (m *gceManagerImpl) buildMigFromAutoCfg(link string, cfg cloudprovider.MIGA
 	return m.buildMigFromSpec(s)
 }
 
-func (m *gceManagerImpl) buildMigFromSpec(s *dynamic.NodeGroupSpec) (Mig, error) {
+func (m *gkeManagerImpl) buildMigFromSpec(s *dynamic.NodeGroupSpec) (gce.Mig, error) {
 	if err := s.Validate(); err != nil {
 		return nil, fmt.Errorf("invalid node group spec: %v", err)
 	}
-	project, zone, name, err := ParseMigUrl(s.Name)
+	project, zone, name, err := gce.ParseMigUrl(s.Name)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse mig url: %s got error: %v", s.Name, err)
 	}
-	mig := &gceMig{
-		gceRef: GceRef{
+	mig := &gkeMig{
+		gceRef: gce.GceRef{
 			Project: project,
 			Name:    name,
 			Zone:    zone,
 		},
-		gceManager: m,
+		gkeManager: m,
 		minSize:    s.MinSize,
 		maxSize:    s.MaxSize,
 		exist:      true,
@@ -557,10 +558,10 @@ func (m *gceManagerImpl) buildMigFromSpec(s *dynamic.NodeGroupSpec) (Mig, error)
 
 // Fetch automatically discovered MIGs. These MIGs should be unregistered if
 // they no longer exist in GCE.
-func (m *gceManagerImpl) fetchAutoMigs() error {
+func (m *gkeManagerImpl) fetchAutoMigs() error {
 	m.assertGCE()
 
-	exists := make(map[GceRef]bool)
+	exists := make(map[gce.GceRef]bool)
 	changed := false
 	for _, cfg := range m.migAutoDiscoverySpecs {
 		links, err := m.findMigsNamed(cfg.Re)
@@ -601,7 +602,7 @@ func (m *gceManagerImpl) fetchAutoMigs() error {
 	return nil
 }
 
-func (m *gceManagerImpl) fetchResourceLimiter() error {
+func (m *gkeManagerImpl) fetchResourceLimiter() error {
 	if m.mode == ModeGKENAP {
 		resourceLimiter, err := m.GkeService.FetchResourceLimits()
 		if err != nil {
@@ -615,16 +616,16 @@ func (m *gceManagerImpl) fetchResourceLimiter() error {
 }
 
 // GetResourceLimiter returns resource limiter.
-func (m *gceManagerImpl) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (m *gkeManagerImpl) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
 	return m.cache.GetResourceLimiter()
 }
 
-func (m *gceManagerImpl) clearMachinesCache() {
+func (m *gkeManagerImpl) clearMachinesCache() {
 	if m.machinesCacheLastRefresh.Add(machinesRefreshInterval).After(time.Now()) {
 		return
 	}
 
-	machinesCache := make(map[MachineTypeKey]*gce.MachineType)
+	machinesCache := make(map[gce.MachineTypeKey]*gce_api.MachineType)
 	m.cache.SetMachinesCache(machinesCache)
 	nextRefresh := time.Now()
 	m.machinesCacheLastRefresh = nextRefresh
@@ -655,14 +656,14 @@ func getProjectAndLocation(regional bool) (string, string, error) {
 	return projectID, location, nil
 }
 
-func (m *gceManagerImpl) findMigsNamed(name *regexp.Regexp) ([]string, error) {
+func (m *gkeManagerImpl) findMigsNamed(name *regexp.Regexp) ([]string, error) {
 	if m.regional {
 		return m.findMigsInRegion(m.location, name)
 	}
 	return m.GceService.FetchMigsWithName(m.location, name)
 }
 
-func (m *gceManagerImpl) getZones(region string) ([]string, error) {
+func (m *gkeManagerImpl) getZones(region string) ([]string, error) {
 	zones, err := m.GceService.FetchZones(region)
 	if err != nil {
 		return nil, fmt.Errorf("cannot get zones for GCE region %s: %v", region, err)
@@ -670,7 +671,7 @@ func (m *gceManagerImpl) getZones(region string) ([]string, error) {
 	return zones, nil
 }
 
-func (m *gceManagerImpl) findMigsInRegion(region string, name *regexp.Regexp) ([]string, error) {
+func (m *gkeManagerImpl) findMigsInRegion(region string, name *regexp.Regexp) ([]string, error) {
 	links := make([]string, 0)
 	zones, err := m.getZones(region)
 	if err != nil {
@@ -689,7 +690,7 @@ func (m *gceManagerImpl) findMigsInRegion(region string, name *regexp.Regexp) ([
 	return links, nil
 }
 
-func (m *gceManagerImpl) getMigTemplateNode(mig Mig) (*apiv1.Node, error) {
+func (m *gkeManagerImpl) getMigTemplateNode(mig gce.Mig) (*apiv1.Node, error) {
 	if mig.Exist() {
 		template, err := m.GceService.FetchMigTemplate(mig.GceRef())
 		if err != nil {
@@ -710,7 +711,7 @@ func (m *gceManagerImpl) getMigTemplateNode(mig Mig) (*apiv1.Node, error) {
 	return nil, fmt.Errorf("unable to get node info for %s", mig.GceRef().String())
 }
 
-func (m *gceManagerImpl) getCpuAndMemoryForMachineType(machineType string, zone string) (cpu int64, mem int64, err error) {
+func (m *gkeManagerImpl) getCpuAndMemoryForMachineType(machineType string, zone string) (cpu int64, mem int64, err error) {
 	if strings.HasPrefix(machineType, "custom-") {
 		return parseCustomMachineType(machineType)
 	}

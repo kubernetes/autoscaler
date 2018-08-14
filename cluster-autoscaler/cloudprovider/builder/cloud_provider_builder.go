@@ -24,6 +24,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gke"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/kubemark"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
@@ -41,7 +42,7 @@ var AvailableCloudProviders = []string{
 	aws.ProviderName,
 	azure.ProviderName,
 	gce.ProviderNameGCE,
-	gce.ProviderNameGKE,
+	gke.ProviderNameGKE,
 	kubemark.ProviderName,
 }
 
@@ -61,14 +62,14 @@ func NewCloudProvider(opts config.AutoscalingOptions) cloudprovider.CloudProvide
 	switch opts.CloudProviderName {
 	case gce.ProviderNameGCE:
 		return buildGCE(opts, do, rl, gce.ModeGCE)
-	case gce.ProviderNameGKE:
+	case gke.ProviderNameGKE:
 		if do.DiscoverySpecified() {
 			glog.Fatalf("GKE gets nodegroup specification via API, command line specs are not allowed")
 		}
 		if opts.NodeAutoprovisioningEnabled {
-			return buildGCE(opts, do, rl, gce.ModeGKENAP)
+			return buildGKE(opts, do, rl, gke.ModeGKENAP)
 		}
-		return buildGCE(opts, do, rl, gce.ModeGKE)
+		return buildGKE(opts, do, rl, gke.ModeGKE)
 	case aws.ProviderName:
 		return buildAWS(opts, do, rl)
 	case azure.ProviderName:
@@ -105,6 +106,29 @@ func buildGCE(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscover
 	provider, err := gce.BuildGceCloudProvider(manager, rl)
 	if err != nil {
 		glog.Fatalf("Failed to create GCE cloud provider: %v", err)
+	}
+	return provider
+}
+
+func buildGKE(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, mode gke.GcpCloudProviderMode) cloudprovider.CloudProvider {
+	var config io.ReadCloser
+	if opts.CloudConfig != "" {
+		var err error
+		config, err = os.Open(opts.CloudConfig)
+		if err != nil {
+			glog.Fatalf("Couldn't open cloud provider configuration %s: %#v", opts.CloudConfig, err)
+		}
+		defer config.Close()
+	}
+
+	manager, err := gke.CreateGkeManager(config, mode, opts.ClusterName, do, opts.Regional)
+	if err != nil {
+		glog.Fatalf("Failed to create GKE Manager: %v", err)
+	}
+
+	provider, err := gke.BuildGkeCloudProvider(manager, rl)
+	if err != nil {
+		glog.Fatalf("Failed to create GKE cloud provider: %v", err)
 	}
 	return provider
 }

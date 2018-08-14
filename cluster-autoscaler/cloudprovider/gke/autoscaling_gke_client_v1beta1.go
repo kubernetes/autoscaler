@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package gce
+package gke
 
 import (
 	"fmt"
@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 
@@ -67,8 +68,8 @@ func NewAutoscalingGkeClientV1beta1(client *http.Client, projectId, location, cl
 	if err != nil {
 		return nil, err
 	}
-	if *GkeAPIEndpoint != "" {
-		gkeBetaService.BasePath = *GkeAPIEndpoint
+	if *gce.GkeAPIEndpoint != "" {
+		gkeBetaService.BasePath = *gce.GkeAPIEndpoint
 	}
 	autoscalingGkeClient.gkeBetaService = gkeBetaService
 
@@ -140,7 +141,7 @@ func (m *autoscalingGkeClientV1beta1) DeleteNodePool(toBeRemoved string) error {
 	return m.waitForGkeOp(deleteOp)
 }
 
-func (m *autoscalingGkeClientV1beta1) CreateNodePool(mig Mig) error {
+func (m *autoscalingGkeClientV1beta1) CreateNodePool(mig gce.Mig) error {
 	// TODO: handle preemptible VMs
 	// TODO: handle SSDs
 
