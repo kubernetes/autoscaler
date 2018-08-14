@@ -21,7 +21,7 @@ set -o pipefail
 SCRIPT_ROOT=$(dirname ${BASH_SOURCE})/..
 
 function print_help {
-  echo "ERROR! Usage: run-e2e.sh <suite>"
+  echo "ERROR! Usage: run-e2e-tests.sh <suite>"
   echo "<suite> should be one of:"
   echo " - recommender"
   echo " - updater"
@@ -29,6 +29,7 @@ function print_help {
   echo " - actuation"
   echo " - full-vpa"
 }
+
 
 if [ $# -eq 0 ]; then
   print_help
@@ -44,13 +45,11 @@ SUITE=$1
 
 case ${SUITE} in
   recommender|updater|admission-controller|actuation|full-vpa)
-    ${SCRIPT_ROOT}/hack/vpa-down.sh
-    ${SCRIPT_ROOT}/hack/deploy-for-e2e.sh ${SUITE}
-    ${SCRIPT_ROOT}/hack/run-e2e-tests.sh ${SUITE}
+    export KUBECONFIG=$HOME/.kube/config
+    go test ${SCRIPT_ROOT}/e2e/*go -v -test.timeout=60m  --args --ginkgo.v=true --ginkgo.focus="\[VPA\] \[${SUITE}\]" --report-dir=/workspace/_artifacts --disable-log-dump
     ;;
   *)
     print_help
     exit 1
     ;;
 esac
-
