@@ -88,7 +88,7 @@ func (gke *GkeCloudProvider) Name() string {
 
 // NodeGroups returns all node groups configured for this cloud provider.
 func (gke *GkeCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
-	migs := gke.gkeManager.getMigs()
+	migs := gke.gkeManager.GetMigs()
 	result := make([]cloudprovider.NodeGroup, 0, len(migs))
 	for _, mig := range migs {
 		result = append(result, mig.Config)
@@ -124,7 +124,7 @@ func (gke *GkeCloudProvider) NewNodeGroup(machineType string, labels map[string]
 	// TODO(aleksandra-malinowska): GkeManager's location will be a region
 	// for regional clusters. We should support regional clusters by looking at
 	// node locations instead.
-	zone := gke.gkeManager.getLocation()
+	zone := gke.gkeManager.GetLocation()
 
 	if gpuRequest, found := extraResources[gpu.ResourceNvidiaGPU]; found {
 		gpuType, found := systemLabels[gpu.GPULabel]
@@ -153,7 +153,7 @@ func (gke *GkeCloudProvider) NewNodeGroup(machineType string, labels map[string]
 
 	mig := &gkeMig{
 		gceRef: gce.GceRef{
-			Project: gke.gkeManager.getProjectId(),
+			Project: gke.gkeManager.GetProjectId(),
 			Zone:    zone,
 			Name:    nodePoolName + "-temporary-mig",
 		},
@@ -174,7 +174,7 @@ func (gke *GkeCloudProvider) NewNodeGroup(machineType string, labels map[string]
 	// Try to build a node from autoprovisioning spec. We don't need one right now,
 	// but if it fails later, we'd end up with a node group we can't scale anyway,
 	// so there's no point creating it.
-	if _, err := gke.gkeManager.getMigTemplateNode(mig); err != nil {
+	if _, err := gke.gkeManager.GetMigTemplateNode(mig); err != nil {
 		return nil, fmt.Errorf("Failed to build node from spec: %v", err)
 	}
 
@@ -201,7 +201,7 @@ func (gke *GkeCloudProvider) Refresh() error {
 
 // GetClusterInfo returns the project id, location and cluster name.
 func (gke *GkeCloudProvider) GetClusterInfo() (projectId, location, clusterName string) {
-	return gke.gkeManager.getProjectId(), gke.gkeManager.getLocation(), gke.gkeManager.getClusterName()
+	return gke.gkeManager.GetProjectId(), gke.gkeManager.GetLocation(), gke.gkeManager.GetClusterName()
 }
 
 // MigSpec contains information about what machines in a MIG look like.
@@ -367,7 +367,7 @@ func (mig *gkeMig) Exist() bool {
 // Create creates the node group on the cloud provider side.
 func (mig *gkeMig) Create() (cloudprovider.NodeGroup, error) {
 	if !mig.exist && mig.autoprovisioned {
-		return mig.gkeManager.createNodePool(mig)
+		return mig.gkeManager.CreateNodePool(mig)
 	}
 	return nil, fmt.Errorf("Cannot create non-autoprovisioned node group")
 }
@@ -376,7 +376,7 @@ func (mig *gkeMig) Create() (cloudprovider.NodeGroup, error) {
 // This will be executed only for autoprovisioned node groups, once their size drops to 0.
 func (mig *gkeMig) Delete() error {
 	if mig.exist && mig.autoprovisioned {
-		return mig.gkeManager.deleteNodePool(mig)
+		return mig.gkeManager.DeleteNodePool(mig)
 	}
 	return fmt.Errorf("Cannot delete non-autoprovisioned node group")
 }
@@ -388,7 +388,7 @@ func (mig *gkeMig) Autoprovisioned() bool {
 
 // TemplateNodeInfo returns a node template for this node group.
 func (mig *gkeMig) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
-	node, err := mig.gkeManager.getMigTemplateNode(mig)
+	node, err := mig.gkeManager.GetMigTemplateNode(mig)
 	if err != nil {
 		return nil, err
 	}
