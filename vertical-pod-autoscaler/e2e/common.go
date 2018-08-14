@@ -22,8 +22,8 @@ import (
 
 	"github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
+	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/api/core/v1"
-	extensions "k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
@@ -65,15 +65,15 @@ func actuationSuiteE2eDescribe(name string, body func()) bool {
 	return e2eDescribe(actuationSuite, name, body)
 }
 
-func newHamsterDeployment(f *framework.Framework) *extensions.Deployment {
-	d := framework.NewDeployment("hamster-deployment", 3, map[string]string{"app": "hamster"}, "hamster", "k8s.gcr.io/ubuntu-slim:0.1", extensions.RollingUpdateDeploymentStrategyType)
+func newHamsterDeployment(f *framework.Framework) *appsv1.Deployment {
+	d := framework.NewDeployment("hamster-deployment", 3, map[string]string{"app": "hamster"}, "hamster", "k8s.gcr.io/ubuntu-slim:0.1", appsv1.RollingUpdateDeploymentStrategyType)
 	d.ObjectMeta.Namespace = f.Namespace.Name
 	d.Spec.Template.Spec.Containers[0].Command = []string{"/bin/sh"}
 	d.Spec.Template.Spec.Containers[0].Args = []string{"-c", "/usr/bin/yes >/dev/null"}
 	return d
 }
 
-func newHamsterDeploymentWithResources(f *framework.Framework, cpuQuantity, memoryQuantity resource.Quantity) *extensions.Deployment {
+func newHamsterDeploymentWithResources(f *framework.Framework, cpuQuantity, memoryQuantity resource.Quantity) *appsv1.Deployment {
 	d := newHamsterDeployment(f)
 	d.Spec.Template.Spec.Containers[0].Resources.Requests = v1.ResourceList{
 		v1.ResourceCPU:    cpuQuantity,
