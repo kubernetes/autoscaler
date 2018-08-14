@@ -76,32 +76,32 @@ func (m *gkeManagerMock) Cleanup() error {
 	return args.Error(0)
 }
 
-func (m *gkeManagerMock) getMigs() []*gce.MigInformation {
+func (m *gkeManagerMock) GetMigs() []*gce.MigInformation {
 	args := m.Called()
 	return args.Get(0).([]*gce.MigInformation)
 }
 
-func (m *gkeManagerMock) createNodePool(mig *gkeMig) (gce.Mig, error) {
+func (m *gkeManagerMock) CreateNodePool(mig *gkeMig) (*gkeMig, error) {
 	args := m.Called(mig)
 	return mig, args.Error(0)
 }
 
-func (m *gkeManagerMock) deleteNodePool(toBeRemoved *gkeMig) error {
+func (m *gkeManagerMock) DeleteNodePool(toBeRemoved *gkeMig) error {
 	args := m.Called(toBeRemoved)
 	return args.Error(0)
 }
 
-func (m *gkeManagerMock) getLocation() string {
+func (m *gkeManagerMock) GetLocation() string {
 	args := m.Called()
 	return args.String(0)
 }
 
-func (m *gkeManagerMock) getProjectId() string {
+func (m *gkeManagerMock) GetProjectId() string {
 	args := m.Called()
 	return args.String(0)
 }
 
-func (m *gkeManagerMock) getClusterName() string {
+func (m *gkeManagerMock) GetClusterName() string {
 	args := m.Called()
 	return args.String(0)
 }
@@ -121,7 +121,7 @@ func (m *gkeManagerMock) findMigsNamed(name *regexp.Regexp) ([]string, error) {
 	return args.Get(0).([]string), args.Error(1)
 }
 
-func (m *gkeManagerMock) getMigTemplateNode(mig *gkeMig) (*apiv1.Node, error) {
+func (m *gkeManagerMock) GetMigTemplateNode(mig *gkeMig) (*apiv1.Node, error) {
 	args := m.Called(mig)
 	return args.Get(0).(*apiv1.Node), args.Error(1)
 }
@@ -149,7 +149,7 @@ func TestNodeGroups(t *testing.T) {
 		gkeManager: gkeManagerMock,
 	}
 	mig := &gce.MigInformation{Config: &gkeMig{gceRef: gce.GceRef{Name: "ng1"}}}
-	gkeManagerMock.On("getMigs").Return([]*gce.MigInformation{mig}).Once()
+	gkeManagerMock.On("GetMigs").Return([]*gce.MigInformation{mig}).Once()
 	result := gke.NodeGroups()
 	assert.Equal(t, []cloudprovider.NodeGroup{mig.Config}, result)
 	mock.AssertExpectationsForObjects(t, gkeManagerMock)
@@ -289,9 +289,9 @@ func TestMig(t *testing.T) {
 	}
 
 	// Test NewNodeGroup.
-	gkeManagerMock.On("getProjectId").Return("project1").Once()
-	gkeManagerMock.On("getLocation").Return("us-central1-b").Once()
-	gkeManagerMock.On("getMigTemplateNode", mock.AnythingOfType("*gke.gkeMig")).Return(&apiv1.Node{}, nil).Once()
+	gkeManagerMock.On("GetProjectId").Return("project1").Once()
+	gkeManagerMock.On("GetLocation").Return("us-central1-b").Once()
+	gkeManagerMock.On("GetMigTemplateNode", mock.AnythingOfType("*gke.gkeMig")).Return(&apiv1.Node{}, nil).Once()
 	nodeGroup, err := gke.NewNodeGroup("n1-standard-1", nil, nil, nil, nil)
 	assert.NoError(t, err)
 	assert.NotNil(t, nodeGroup)
@@ -421,19 +421,19 @@ func TestMig(t *testing.T) {
 
 	// Test Create.
 	mig1.exist = false
-	gkeManagerMock.On("createNodePool", mock.AnythingOfType("*gke.gkeMig")).Return(nil, nil).Once()
+	gkeManagerMock.On("CreateNodePool", mock.AnythingOfType("*gke.gkeMig")).Return(nil, nil).Once()
 	_, err = mig1.Create()
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, gkeManagerMock)
 
-	gkeManagerMock.On("deleteNodePool", mock.AnythingOfType("*gke.gkeMig")).Return(nil).Once()
+	gkeManagerMock.On("DeleteNodePool", mock.AnythingOfType("*gke.gkeMig")).Return(nil).Once()
 	mig1.exist = true
 	err = mig1.Delete()
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, gkeManagerMock)
 
 	// Test TemplateNodeInfo.
-	gkeManagerMock.On("getMigTemplateNode", mock.AnythingOfType("*gke.gkeMig")).Return(&apiv1.Node{}, nil).Once()
+	gkeManagerMock.On("GetMigTemplateNode", mock.AnythingOfType("*gke.gkeMig")).Return(&apiv1.Node{}, nil).Once()
 	templateNodeInfo, err := mig2.TemplateNodeInfo()
 	assert.NoError(t, err)
 	assert.NotNil(t, templateNodeInfo)
@@ -454,9 +454,9 @@ func TestNewNodeGroupForGpu(t *testing.T) {
 	}
 
 	// Test NewNodeGroup.
-	gkeManagerMock.On("getProjectId").Return("project1").Once()
-	gkeManagerMock.On("getLocation").Return("us-west1-b").Once()
-	gkeManagerMock.On("getMigTemplateNode", mock.AnythingOfType("*gke.gkeMig")).Return(&apiv1.Node{}, nil).Once()
+	gkeManagerMock.On("GetProjectId").Return("project1").Once()
+	gkeManagerMock.On("GetLocation").Return("us-west1-b").Once()
+	gkeManagerMock.On("GetMigTemplateNode", mock.AnythingOfType("*gke.gkeMig")).Return(&apiv1.Node{}, nil).Once()
 
 	systemLabels := map[string]string{
 		gpu.GPULabel: gpu.DefaultGPUType,
@@ -493,9 +493,9 @@ func TestGetClusterInfo(t *testing.T) {
 	gke := &GkeCloudProvider{
 		gkeManager: gkeManagerMock,
 	}
-	gkeManagerMock.On("getProjectId").Return("project1").Once()
-	gkeManagerMock.On("getLocation").Return("location1").Once()
-	gkeManagerMock.On("getClusterName").Return("cluster1").Once()
+	gkeManagerMock.On("GetProjectId").Return("project1").Once()
+	gkeManagerMock.On("GetLocation").Return("location1").Once()
+	gkeManagerMock.On("GetClusterName").Return("cluster1").Once()
 
 	project, location, cluster := gke.GetClusterInfo()
 	assert.Equal(t, "project1", project)

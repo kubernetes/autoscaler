@@ -845,7 +845,7 @@ func TestFetchAutoMigsZonal(t *testing.T) {
 
 	assert.NoError(t, g.fetchAutoMigs())
 
-	migs := g.getMigs()
+	migs := g.GetMigs()
 	assert.Equal(t, 2, len(migs))
 	validateMig(t, migs[0].Config, zoneB, gceMigA, min, max)
 	validateMig(t, migs[1].Config, zoneB, gceMigB, min, max)
@@ -883,11 +883,11 @@ func TestFetchAutoMigsUnregistersMissingMigs(t *testing.T) {
 		minSize:    1,
 		maxSize:    10,
 	}
-	assert.True(t, g.RegisterMig(unregister))
+	assert.True(t, g.registerMig(unregister))
 
 	assert.NoError(t, g.fetchAutoMigs())
 
-	migs := g.getMigs()
+	migs := g.GetMigs()
 	assert.Equal(t, 1, len(migs))
 	validateMig(t, migs[0].Config, zoneB, gceMigA, minA, maxA)
 	mock.AssertExpectationsForObjects(t, server)
@@ -919,7 +919,7 @@ func TestFetchAutoMigsRegional(t *testing.T) {
 
 	assert.NoError(t, g.fetchAutoMigs())
 
-	migs := g.getMigs()
+	migs := g.GetMigs()
 	assert.Equal(t, 2, len(migs))
 	validateMig(t, migs[0].Config, zoneB, gceMigA, min, max)
 	validateMig(t, migs[1].Config, zoneB, gceMigB, min, max)
@@ -953,7 +953,7 @@ func TestFetchExplicitMigs(t *testing.T) {
 
 	assert.NoError(t, g.fetchExplicitMigs(specs))
 
-	migs := g.getMigs()
+	migs := g.GetMigs()
 	assert.Equal(t, 2, len(migs))
 	validateMig(t, migs[0].Config, zoneB, gceMigA, minA, maxA)
 	validateMig(t, migs[1].Config, zoneB, gceMigB, minB, maxB)
@@ -1019,7 +1019,7 @@ func TestGetMigTemplateNode(t *testing.T) {
 		maxSize:    1000,
 	}
 
-	node, err := g.getMigTemplateNode(mig)
+	node, err := g.GetMigTemplateNode(mig)
 	assert.NoError(t, err)
 	assert.NotNil(t, node)
 	mock.AssertExpectationsForObjects(t, server)
