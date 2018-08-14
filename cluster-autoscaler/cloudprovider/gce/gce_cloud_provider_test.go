@@ -72,7 +72,7 @@ func (m *gceManagerMock) Cleanup() error {
 	return args.Error(0)
 }
 
-func (m *gceManagerMock) getMigs() []*MigInformation {
+func (m *gceManagerMock) GetMigs() []*MigInformation {
 	args := m.Called()
 	return args.Get(0).([]*MigInformation)
 }
@@ -87,7 +87,7 @@ func (m *gceManagerMock) findMigsNamed(name *regexp.Regexp) ([]string, error) {
 	return args.Get(0).([]string), args.Error(1)
 }
 
-func (m *gceManagerMock) getMigTemplateNode(mig Mig) (*apiv1.Node, error) {
+func (m *gceManagerMock) GetMigTemplateNode(mig Mig) (*apiv1.Node, error) {
 	args := m.Called(mig)
 	return args.Get(0).(*apiv1.Node), args.Error(1)
 }
@@ -115,7 +115,7 @@ func TestNodeGroups(t *testing.T) {
 		gceManager: gceManagerMock,
 	}
 	mig := &MigInformation{Config: &gceMig{gceRef: GceRef{Name: "ng1"}}}
-	gceManagerMock.On("getMigs").Return([]*MigInformation{mig}).Once()
+	gceManagerMock.On("GetMigs").Return([]*MigInformation{mig}).Once()
 	result := gce.NodeGroups()
 	assert.Equal(t, []cloudprovider.NodeGroup{mig.Config}, result)
 	mock.AssertExpectationsForObjects(t, gceManagerMock)
@@ -370,7 +370,7 @@ func TestMig(t *testing.T) {
 	mock.AssertExpectationsForObjects(t, gceManagerMock)
 
 	// Test TemplateNodeInfo.
-	gceManagerMock.On("getMigTemplateNode", mock.AnythingOfType("*gce.gceMig")).Return(&apiv1.Node{}, nil).Once()
+	gceManagerMock.On("GetMigTemplateNode", mock.AnythingOfType("*gce.gceMig")).Return(&apiv1.Node{}, nil).Once()
 	templateNodeInfo, err := mig2.TemplateNodeInfo()
 	assert.NoError(t, err)
 	assert.NotNil(t, templateNodeInfo)

@@ -99,15 +99,13 @@ type GkeManager interface {
 	GetResourceLimiter() (*cloudprovider.ResourceLimiter, error)
 	// Cleanup cleans up open resources before the cloud provider is destroyed, i.e. go routines etc.
 	Cleanup() error
-	getMigs() []*gce.MigInformation
-	createNodePool(mig *gkeMig) (gce.Mig, error)
-	deleteNodePool(toBeRemoved *gkeMig) error
-	getLocation() string
-	getProjectId() string
-	getClusterName() string
-	getMode() GcpCloudProviderMode
-	getMigTemplateNode(mig *gkeMig) (*apiv1.Node, error)
-	getCpuAndMemoryForMachineType(machineType string, zone string) (cpu int64, mem int64, err error)
+	GetMigs() []*gce.MigInformation
+	CreateNodePool(mig *gkeMig) (*gkeMig, error)
+	DeleteNodePool(toBeRemoved *gkeMig) error
+	GetLocation() string
+	GetProjectId() string
+	GetClusterName() string
+	GetMigTemplateNode(mig *gkeMig) (*apiv1.Node, error)
 }
 
 // gkeManagerImpl handles gce communication and data caching.
@@ -298,14 +296,14 @@ func (m *gkeManagerImpl) registerMig(mig *gkeMig) bool {
 		// Try to build a node from template to validate that this group
 		// can be scaled up from 0 nodes.
 		// We may never need to do it, so just log error if it fails.
-		if _, err := m.getMigTemplateNode(mig); err != nil {
+		if _, err := m.GetMigTemplateNode(mig); err != nil {
 			glog.Errorf("Can't build node from template for %s, won't be able to scale from 0: %v", mig.GceRef().String(), err)
 		}
 	}
 	return changed
 }
 
-func (m *gkeManagerImpl) deleteNodePool(toBeRemoved *gkeMig) error {
+func (m *gkeManagerImpl) DeleteNodePool(toBeRemoved *gkeMig) error {
 	m.assertGKENAP()
 	if !toBeRemoved.Autoprovisioned() {
 		return fmt.Errorf("only autoprovisioned node pools can be deleted")
@@ -318,7 +316,7 @@ func (m *gkeManagerImpl) deleteNodePool(toBeRemoved *gkeMig) error {
 	return m.refreshNodePools()
 }
 
-func (m *gkeManagerImpl) createNodePool(mig *gkeMig) (gce.Mig, error) {
+func (m *gkeManagerImpl) CreateNodePool(mig *gkeMig) (*gkeMig, error) {
 	m.assertGKENAP()
 
 	err := m.GkeService.CreateNodePool(mig)
@@ -411,7 +409,7 @@ func (m *gkeManagerImpl) DeleteInstances(instances []*gce.GceRef) error {
 	return m.GceService.DeleteInstances(commonMig.GceRef(), instances)
 }
 
-func (m *gkeManagerImpl) getMigs() []*gce.MigInformation {
+func (m *gkeManagerImpl) GetMigs() []*gce.MigInformation {
 	return m.cache.GetMigs()
 }
 
@@ -433,17 +431,16 @@ func (m *gkeManagerImpl) GetMigNodes(mig gce.Mig) ([]string, error) {
 	return result, nil
 }
 
-func (m *gkeManagerImpl) getLocation() string {
+func (m *gkeManagerImpl) GetLocation() string {
 	return m.location
 }
-func (m *gkeManagerImpl) getProjectId() string {
+
+func (m *gkeManagerImpl) GetProjectId() string {
 	return m.projectId
 }
-func (m *gkeManagerImpl) getClusterName() string {
+
+func (m *gkeManagerImpl) GetClusterName() string {
 	return m.clusterName
-}
-func (m *gkeManagerImpl) getMode() GcpCloudProviderMode {
-	return m.mode
 }
 
 func (m *gkeManagerImpl) Refresh() error {
@@ -560,7 +557,7 @@ func getProjectAndLocation(regional bool) (string, string, error) {
 	return projectID, location, nil
 }
 
-func (m *gkeManagerImpl) getMigTemplateNode(mig *gkeMig) (*apiv1.Node, error) {
+func (m *gkeManagerImpl) GetMigTemplateNode(mig *gkeMig) (*apiv1.Node, error) {
 	if mig.Exist() {
 		template, err := m.GceService.FetchMigTemplate(mig.GceRef())
 		if err != nil {
