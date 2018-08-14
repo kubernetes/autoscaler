@@ -20,8 +20,8 @@ import (
 	"fmt"
 	"time"
 
+	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
-	extensions "k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
@@ -46,7 +46,7 @@ var _ = actuationSuiteE2eDescribe("Actuation", func() {
 		memoryQuantity := parseQuantityOrDie("100Mi")
 
 		d := newHamsterDeploymentWithResources(f, cpuQuantity, memoryQuantity)
-		d, err := c.ExtensionsV1beta1().Deployments(ns).Create(d)
+		d, err := c.AppsV1().Deployments(ns).Create(d)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		err = framework.WaitForDeploymentComplete(c, d)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
@@ -88,7 +88,7 @@ var _ = actuationSuiteE2eDescribe("Actuation", func() {
 })
 
 // assertPodsPendingForDuration checks that at most pendingPodsNum pods are pending for pendingDuration
-func assertPodsPendingForDuration(c clientset.Interface, deployment *extensions.Deployment, pendingPodsNum int, pendingDuration time.Duration) error {
+func assertPodsPendingForDuration(c clientset.Interface, deployment *appsv1.Deployment, pendingPodsNum int, pendingDuration time.Duration) error {
 
 	pendingPods := make(map[string]time.Time)
 
