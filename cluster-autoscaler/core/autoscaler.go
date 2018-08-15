@@ -52,10 +52,10 @@ type Autoscaler interface {
 }
 
 // NewAutoscaler creates an autoscaler of an appropriate type according to the parameters
-func NewAutoscaler(opts AutoscalerOptions) (Autoscaler, errors.AutoscalerError) {
+func NewAutoscaler(opts AutoscalerOptions) (Autoscaler, error) {
 	err := initializeDefaultOptions(&opts)
 	if err != nil {
-		return nil, errors.ToAutoscalerError(errors.InternalError, err)
+		return nil, err
 	}
 	return NewStaticAutoscaler(opts.AutoscalingOptions, opts.PredicateChecker, opts.AutoscalingKubeClients, opts.Processors, opts.CloudProvider, opts.ExpanderStrategy), nil
 }
