@@ -81,7 +81,7 @@ func (p *recommendationProvider) getMatchingVPA(pod *v1.Pod) *vpa_types.Vertical
 		}
 		onConfigs = append(onConfigs, vpaConfig)
 	}
-	glog.Infof("Let's choose from %d configs", len(onConfigs))
+	glog.V(2).Infof("Let's choose from %d configs for pod %s/%s", len(onConfigs), pod.Namespace, pod.Name)
 	return vpa_api_util.GetControllingVPAForPod(pod, onConfigs)
 }
 
