@@ -87,6 +87,9 @@ func NewCloudManager(config io.Reader, discoveryOpts cloudprovider.NodeGroupDisc
 	}
 
 	go wait.Until(func() {
+		manager.cacheMu.Lock()
+		defer manager.cacheMu.Unlock()
+
 		if err := manager.forceRefresh(); err != nil {
 			glog.Errorf("Error while refreshing cache: %v", err)
 		}
@@ -290,6 +293,9 @@ func (mgr *CloudManager) Cleanup() error {
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
 // In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
 func (mgr *CloudManager) Refresh() error {
+	mgr.cacheMu.Lock()
+	defer mgr.cacheMu.Unlock()
+
 	if mgr.refreshedAt.Add(mgr.refreshInterval).After(time.Now()) {
 		return nil
 	}
@@ -304,9 +310,6 @@ func (mgr *CloudManager) forceRefresh() error {
 }
 
 func (mgr *CloudManager) regenerateCache() {
-	mgr.cacheMu.Lock()
-	defer mgr.cacheMu.Unlock()
-
 	mgr.cache = make(map[string]*Group)
 	for _, group := range mgr.groups {
 		glog.V(4).Infof("Regenerating resource group information for %s", group.groupID)
