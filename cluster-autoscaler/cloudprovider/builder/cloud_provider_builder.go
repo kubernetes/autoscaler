@@ -67,9 +67,9 @@ func NewCloudProvider(opts config.AutoscalingOptions) cloudprovider.CloudProvide
 			glog.Fatalf("GKE gets nodegroup specification via API, command line specs are not allowed")
 		}
 		if opts.NodeAutoprovisioningEnabled {
-			return buildGKE(opts, do, rl, gke.ModeGKENAP)
+			return buildGKE(opts, rl, gke.ModeGKENAP)
 		}
-		return buildGKE(opts, do, rl, gke.ModeGKE)
+		return buildGKE(opts, rl, gke.ModeGKE)
 	case aws.ProviderName:
 		return buildAWS(opts, do, rl)
 	case azure.ProviderName:
@@ -110,7 +110,7 @@ func buildGCE(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscover
 	return provider
 }
 
-func buildGKE(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, mode gke.GcpCloudProviderMode) cloudprovider.CloudProvider {
+func buildGKE(opts config.AutoscalingOptions, rl *cloudprovider.ResourceLimiter, mode gke.GcpCloudProviderMode) cloudprovider.CloudProvider {
 	var config io.ReadCloser
 	if opts.CloudConfig != "" {
 		var err error
@@ -121,7 +121,7 @@ func buildGKE(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscover
 		defer config.Close()
 	}
 
-	manager, err := gke.CreateGkeManager(config, mode, opts.ClusterName, do, opts.Regional)
+	manager, err := gke.CreateGkeManager(config, mode, opts.ClusterName, opts.Regional)
 	if err != nil {
 		glog.Fatalf("Failed to create GKE Manager: %v", err)
 	}
