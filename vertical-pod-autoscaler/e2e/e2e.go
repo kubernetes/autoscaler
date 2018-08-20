@@ -35,6 +35,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtimeutils "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apiserver/pkg/util/logs"
+
+	// needed to authorize to GKE cluster
+	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	"k8s.io/kubernetes/pkg/version"
 	commontest "k8s.io/kubernetes/test/e2e/common"
 	"k8s.io/kubernetes/test/e2e/framework"
