@@ -127,7 +127,7 @@ type gkeManagerImpl struct {
 }
 
 // CreateGkeManager constructs gkeManager object.
-func CreateGkeManager(configReader io.Reader, mode GcpCloudProviderMode, clusterName string, discoveryOpts cloudprovider.NodeGroupDiscoveryOptions, regional bool) (GkeManager, error) {
+func CreateGkeManager(configReader io.Reader, mode GcpCloudProviderMode, clusterName string, regional bool) (GkeManager, error) {
 	// Create Google Compute Engine token.
 	var err error
 	tokenSource := google.ComputeTokenSource("")
