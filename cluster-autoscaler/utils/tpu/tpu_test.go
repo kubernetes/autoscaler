@@ -26,6 +26,11 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 )
 
+var (
+	ResourceTPUV2            = ResourceTPUPrefix + "v2"
+	ResourceTPUPreemptibleV2 = ResourceTPUPrefix + "preemptible-v2"
+)
+
 type requests map[apiv1.ResourceName]int64
 type containerSpecs []requests
 
@@ -53,16 +58,18 @@ func TestClearTPURequests(t *testing.T) {
 	cpuPod := testPod("cpuPod", requests{apiv1.ResourceCPU: 10})
 	memoryPod := testPod("memoryPod", requests{apiv1.ResourceMemory: 100})
 	cpuMemoryPod := testPod("cpuMemoryPod", requests{apiv1.ResourceCPU: 10, apiv1.ResourceMemory: 30}, requests{apiv1.ResourceMemory: 20})
-	tpuPod := testPod("tpuPod", requests{ResourceTPU: 1})
+	tpuPod := testPod("tpuPod", requests{apiv1.ResourceName(ResourceTPUV2): 1})
 	sanitizedTPUPod := testPod("tpuPod", requests{})
-	tpuMemoryPod := testPod("tpuMemoryPod", requests{ResourceTPU: 1, apiv1.ResourceMemory: 30}, requests{ResourceTPU: 2, apiv1.ResourceMemory: 13})
+	preemptibleTPUPod := testPod("preemptibleTPUPod", requests{apiv1.ResourceName(ResourceTPUPreemptibleV2): 1})
+	sanitizedPreemptibleTPUPod := testPod("preemptibleTPUPod", requests{})
+	tpuMemoryPod := testPod("tpuMemoryPod", requests{apiv1.ResourceName(ResourceTPUV2): 1, apiv1.ResourceMemory: 30}, requests{apiv1.ResourceName(ResourceTPUV2): 2, apiv1.ResourceMemory: 13})
 	sanitizedTPUMemoryPod := testPod("tpuMemoryPod", requests{apiv1.ResourceMemory: 30}, requests{apiv1.ResourceMemory: 13})
 
 	podsWithoutTPUs := []*apiv1.Pod{cpuPod, memoryPod, cpuMemoryPod}
-	mixedPods := []*apiv1.Pod{cpuPod, tpuPod, memoryPod}
-	sanitizedMixedPods := []*apiv1.Pod{cpuPod, sanitizedTPUPod, memoryPod}
-	podsWithTPUs := []*apiv1.Pod{tpuPod, tpuMemoryPod}
-	sanitizedPodsWithTPUs := []*apiv1.Pod{sanitizedTPUPod, sanitizedTPUMemoryPod}
+	mixedPods := []*apiv1.Pod{cpuPod, tpuPod, preemptibleTPUPod, memoryPod}
+	sanitizedMixedPods := []*apiv1.Pod{cpuPod, sanitizedTPUPod, sanitizedPreemptibleTPUPod, memoryPod}
+	podsWithTPUs := []*apiv1.Pod{tpuPod, preemptibleTPUPod, tpuMemoryPod}
+	sanitizedPodsWithTPUs := []*apiv1.Pod{sanitizedTPUPod, sanitizedPreemptibleTPUPod, sanitizedTPUMemoryPod}
 
 	testCases := []struct {
 		desc     string
