@@ -668,7 +668,7 @@
                       ],
                       "parameters": {
                         "parent": {
-                          "description": "The parent (project, location, cluster id) where the node pool will be\ncreated. Specified in the format\n'projects/*/locations/*/clusters/*'.",
+                          "description": "The parent (project, location, cluster id) where the node pool will be\ncreated. Specified in the format\n'projects/*/locations/*/clusters/*/nodePools/*'.",
                           "location": "path",
                           "pattern": "^projects/[^/]+/locations/[^/]+/clusters/[^/]+$",
                           "required": true,
@@ -2361,7 +2361,7 @@
       }
     }
   },
-  "revision": "20180616",
+  "revision": "20180607",
   "rootUrl": "https://container.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -2756,7 +2756,7 @@
           "description": "The node pool to create."
         },
         "parent": {
-          "description": "The parent (project, location, cluster id) where the node pool will be\ncreated. Specified in the format\n'projects/*/locations/*/clusters/*'.",
+          "description": "The parent (project, location, cluster id) where the node pool will be\ncreated. Specified in the format\n'projects/*/locations/*/clusters/*/nodePools/*'.",
           "type": "string"
         },
         "projectId": {

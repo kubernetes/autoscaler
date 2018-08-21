@@ -948,8 +948,9 @@ type CreateNodePoolRequest struct {
 
 	// Parent: The parent (project, location, cluster id) where the node
 	// pool will be
-	// created. Specified in the format
-	// 'projects/*/locations/*/clusters/*'.
+	// created. Specified in the
+	// format
+	// 'projects/*/locations/*/clusters/*/nodePools/*'.
 	Parent string `json:"parent,omitempty"`
 
 	// ProjectId: Deprecated. The Google Developers Console [project ID or
@@ -5940,7 +5941,7 @@ func (c *ProjectsLocationsClustersNodePoolsCreateCall) Do(opts ...googleapi.Call
 	//   ],
 	//   "parameters": {
 	//     "parent": {
-	//       "description": "The parent (project, location, cluster id) where the node pool will be\ncreated. Specified in the format\n'projects/*/locations/*/clusters/*'.",
+	//       "description": "The parent (project, location, cluster id) where the node pool will be\ncreated. Specified in the format\n'projects/*/locations/*/clusters/*/nodePools/*'.",
 	//       "location": "path",
 	//       "pattern": "^projects/[^/]+/locations/[^/]+/clusters/[^/]+$",
 	//       "required": true,
