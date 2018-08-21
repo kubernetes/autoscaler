@@ -17,18 +17,22 @@ limitations under the License.
 package tpu
 
 import (
+	"strings"
+
 	apiv1 "k8s.io/api/core/v1"
 )
 
 const (
-	// ResourceTPU is the name of the TPU resource.
-	ResourceTPU = "cloud-tpus.google.com/v2"
+	// ResourceTPUPrefix is the prefix of the TPU resource names.
+	ResourceTPUPrefix = "cloud-tpus.google.com/"
 )
 
 func hasTPURequest(pod *apiv1.Pod) bool {
 	for _, container := range pod.Spec.Containers {
-		if _, found := container.Resources.Requests[ResourceTPU]; found {
-			return true
+		for name := range container.Resources.Requests {
+			if strings.HasPrefix(string(name), ResourceTPUPrefix) {
+				return true
+			}
 		}
 	}
 
@@ -38,7 +42,11 @@ func hasTPURequest(pod *apiv1.Pod) bool {
 func clearTPURequest(pod *apiv1.Pod) *apiv1.Pod {
 	sanitized := pod.DeepCopy()
 	for _, container := range sanitized.Spec.Containers {
-		delete(container.Resources.Requests, ResourceTPU)
+		for name := range container.Resources.Requests {
+			if strings.HasPrefix(string(name), ResourceTPUPrefix) {
+				delete(container.Resources.Requests, name)
+			}
+		}
 	}
 
 	return sanitized
