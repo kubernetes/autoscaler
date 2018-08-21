@@ -29,8 +29,8 @@ var (
 )
 
 const (
-	defaultOperationWaitTimeout  = 5 * time.Second
-	defaultOperationPollInterval = 100 * time.Millisecond
+	defaultOperationWaitTimeout  = 120 * time.Second
+	defaultOperationPollInterval = 1 * time.Second
 )
 
 const (
