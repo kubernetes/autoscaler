@@ -107,6 +107,7 @@ func (m *autoscalingGkeClientV1beta1) FetchResourceLimits() (*cloudprovider.Reso
 		return nil, err
 	}
 	if cluster.Autoscaling == nil {
+		glog.Warningf("FetchResourceLimits called without autoscaling limits set")
 		return nil, nil
 	}
 
