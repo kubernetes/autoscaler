@@ -1,4 +1,4 @@
-all: vet test testrace
+all: test testrace
 
 deps:
 	go get -d -v google.golang.org/grpc/...
@@ -8,9 +8,6 @@ updatedeps:
 
 testdeps:
 	go get -d -v -t google.golang.org/grpc/...
-
-testgaedeps:
-	goapp get -d -v -t -tags 'appengine appenginevm' google.golang.org/grpc/...
 
 updatetestdeps:
 	go get -d -v -t -u -f google.golang.org/grpc/...
@@ -25,17 +22,11 @@ proto:
 	fi
 	go generate google.golang.org/grpc/...
 
-vet:
-	./vet.sh
-
 test: testdeps
-	go test -cpu 1,4 -timeout 5m google.golang.org/grpc/...
+	go test -cpu 1,4 google.golang.org/grpc/...
 
 testrace: testdeps
-	go test -race -cpu 1,4 -timeout 7m google.golang.org/grpc/...
-
-testappengine: testgaedeps
-	goapp test -cpu 1,4 -timeout 5m google.golang.org/grpc/...
+	go test -race -cpu 1,4 google.golang.org/grpc/...
 
 clean:
 	go clean -i google.golang.org/grpc/...
@@ -45,11 +36,10 @@ clean:
 	deps \
 	updatedeps \
 	testdeps \
-	testgaedeps \
 	updatetestdeps \
 	build \
 	proto \
-	vet \
 	test \
 	testrace \
-	clean
+	clean \
+	coverage

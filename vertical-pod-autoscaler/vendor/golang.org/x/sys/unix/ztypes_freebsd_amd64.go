@@ -71,8 +71,6 @@ const (
 	S_IRUSR  = 0x100
 	S_IWUSR  = 0x80
 	S_IXUSR  = 0x40
-	S_IRWXG  = 0x38
-	S_IRWXO  = 0x7
 )
 
 type Stat_t struct {
@@ -141,10 +139,6 @@ type Dirent struct {
 type Fsid struct {
 	Val [2]int32
 }
-
-const (
-	PathMax = 0x400
-)
 
 const (
 	FADV_NORMAL     = 0x0
@@ -547,12 +541,4 @@ const (
 
 type CapRights struct {
 	Rights [2]uint64
-}
-
-type Utsname struct {
-	Sysname  [256]byte
-	Nodename [256]byte
-	Release  [256]byte
-	Version  [256]byte
-	Machine  [256]byte
 }
