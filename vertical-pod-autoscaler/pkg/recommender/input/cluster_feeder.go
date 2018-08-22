@@ -71,7 +71,7 @@ func NewClusterStateFeeder(config *rest.Config, clusterState *model.ClusterState
 	kubeClient := kube_client.NewForConfigOrDie(config)
 	oomObserver := oom.NewObserver()
 	podLister := newPodClients(kubeClient, &oomObserver)
-	watchEvictionEvents(kubeClient, &oomObserver)
+	watchEvictionEventsWithRetries(kubeClient, &oomObserver)
 	return &clusterStateFeeder{
 		coreClient:          kubeClient.CoreV1(),
 		specClient:          spec.NewSpecClient(podLister),
@@ -88,27 +88,38 @@ func newMetricsClient(config *rest.Config) metrics.MetricsClient {
 	return metrics.NewMetricsClient(metricsGetter)
 }
 
-func watchEvictionEvents(kubeClient kube_client.Interface, observer *oom.Observer) {
-	options := metav1.ListOptions{
-		FieldSelector: "reason=Evicted",
-	}
-	watchInterface, err := kubeClient.CoreV1().Events("").Watch(options)
-	if err != nil {
-		glog.Errorf("Cannot initialize watching events. Reason %v", err)
-		return
-	}
+func watchEvictionEventsWithRetries(kubeClient kube_client.Interface, observer *oom.Observer) {
 	go func() {
+		options := metav1.ListOptions{
+			FieldSelector: "reason=Evicted",
+		}
+
 		for {
-			result := <-watchInterface.ResultChan()
-			if result.Type == watch.Added {
-				result, ok := result.Object.(*apiv1.Event)
-				if !ok {
-					continue
-				}
-				observer.OnEvent(result)
+			watchInterface, err := kubeClient.CoreV1().Events("").Watch(options)
+			if err != nil {
+				glog.Errorf("Cannot initialize watching events. Reason %v", err)
+				continue
 			}
+			watchEvictionEvents(watchInterface.ResultChan(), observer)
 		}
 	}()
+}
+
+func watchEvictionEvents(evictedEventChan <-chan watch.Event, observer *oom.Observer) {
+	for {
+		evictedEvent, ok := <-evictedEventChan
+		if !ok {
+			glog.V(3).Infof("Eviction event chan closed")
+			return
+		}
+		if evictedEvent.Type == watch.Added {
+			evictedEvent, ok := evictedEvent.Object.(*apiv1.Event)
+			if !ok {
+				continue
+			}
+			observer.OnEvent(evictedEvent)
+		}
+	}
 }
 
 // Creates clients watching pods: PodLister (listing only not terminated pods).
