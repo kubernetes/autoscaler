@@ -509,9 +509,13 @@ func (m *gkeManagerImpl) fetchResourceLimiter() error {
 		if err != nil {
 			return err
 		}
-
-		glog.V(2).Infof("Refreshed resource limits: %s", resourceLimiter.String())
-		m.cache.SetResourceLimiter(resourceLimiter)
+		if resourceLimiter != nil {
+			glog.V(2).Infof("Refreshed resource limits: %s", resourceLimiter.String())
+			m.cache.SetResourceLimiter(resourceLimiter)
+		} else {
+			oldLimits, _ := m.cache.GetResourceLimiter()
+			glog.Errorf("Resource limits should always be defined in NAP mode, but they appear to be empty. Using possibly outdated limits: %v", oldLimits.String())
+		}
 	}
 	return nil
 }
