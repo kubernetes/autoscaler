@@ -23,8 +23,9 @@ import (
 
 // PodEvictionAdmission controls evictions of pods.
 type PodEvictionAdmission interface {
-	// LoopInit initializes PodEvictionAdmission for next Updater loop
-	LoopInit()
+	// LoopInit initializes PodEvictionAdmission for next Updater loop with the live pods and
+	// pods currently controlled by VPA in this cluster.
+	LoopInit(allLivePods []*apiv1.Pod, vpaControlledPods map[*vpa_types.VerticalPodAutoscaler][]*apiv1.Pod)
 	// Admit returns true if PodEvictionAdmission decides that pod can be evicted with given recommendation.
 	Admit(pod *apiv1.Pod, recommendation *vpa_types.RecommendedPodResources) bool
 }
@@ -43,9 +44,9 @@ type sequentialPodEvictionAdmission struct {
 	admissions []PodEvictionAdmission
 }
 
-func (a *sequentialPodEvictionAdmission) LoopInit() {
+func (a *sequentialPodEvictionAdmission) LoopInit(allLivePods []*apiv1.Pod, vpaControlledPods map[*vpa_types.VerticalPodAutoscaler][]*apiv1.Pod) {
 	for _, admission := range a.admissions {
-		admission.LoopInit()
+		admission.LoopInit(allLivePods, vpaControlledPods)
 	}
 }
 
@@ -61,7 +62,8 @@ func (a *sequentialPodEvictionAdmission) Admit(pod *apiv1.Pod, recommendation *v
 
 type noopPodEvictionAdmission struct{}
 
-func (n *noopPodEvictionAdmission) LoopInit() {}
+func (n *noopPodEvictionAdmission) LoopInit(allLivePods []*apiv1.Pod, vpaControlledPods map[*vpa_types.VerticalPodAutoscaler][]*apiv1.Pod) {
+}
 func (n *noopPodEvictionAdmission) Admit(pod *apiv1.Pod, recommendation *vpa_types.RecommendedPodResources) bool {
 	return true
 }

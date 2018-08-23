@@ -65,10 +65,6 @@ func NewUpdater(kubeClient kube_client.Interface, vpaClient *vpa_clientset.Clien
 // RunOnce represents single iteration in the main-loop of Updater
 func (u *updater) RunOnce() {
 	timer := metrics_updater.NewExecutionTimer()
-	if u.evictionAdmission != nil {
-		u.evictionAdmission.LoopInit()
-	}
-	timer.ObserveStep("LoopInit")
 
 	vpaList, err := u.vpaLister.List(labels.Everything())
 	if err != nil {
@@ -110,6 +106,11 @@ func (u *updater) RunOnce() {
 		}
 	}
 	timer.ObserveStep("FilterPods")
+
+	if u.evictionAdmission != nil {
+		u.evictionAdmission.LoopInit(allLivePods, controlledPods)
+	}
+	timer.ObserveStep("AdmissionInit")
 
 	for vpa, livePods := range controlledPods {
 		evictionLimiter := u.evictionFactory.NewPodsEvictionRestriction(livePods)
