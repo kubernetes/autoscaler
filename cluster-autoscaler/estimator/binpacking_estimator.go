@@ -71,7 +71,7 @@ func (estimator *BinpackingNodeEstimator) Estimate(pods []*apiv1.Pod, nodeTempla
 	for _, podInfo := range podInfos {
 		found := false
 		for i, nodeInfo := range newNodes {
-			if err := estimator.predicateChecker.CheckPredicates(podInfo.pod, nil, nodeInfo, simulator.ReturnSimpleError); err == nil {
+			if err := estimator.predicateChecker.CheckPredicates(podInfo.pod, nil, nodeInfo); err == nil {
 				found = true
 				newNodes[i] = nodeWithPod(nodeInfo, podInfo.pod)
 				break
