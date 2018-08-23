@@ -224,6 +224,15 @@ func (pe *PredicateError) VerboseError() string {
 	return pe.message
 }
 
+// NewPredicateError creates a new predicate error from error and reasons.
+func NewPredicateError(name string, err error, reasons []string) *PredicateError {
+	return &PredicateError{
+		predicateName: name,
+		err:           err,
+		reasons:       reasons,
+	}
+}
+
 // Reasons returns original failure reasons from failed predicate as a slice of strings.
 func (pe *PredicateError) Reasons() []string {
 	if pe.reasons != nil {

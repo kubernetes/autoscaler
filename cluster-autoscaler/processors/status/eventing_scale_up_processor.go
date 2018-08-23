@@ -17,6 +17,8 @@ limitations under the License.
 package status
 
 import (
+	"fmt"
+
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 )
@@ -29,9 +31,9 @@ type EventingScaleUpStatusProcessor struct{}
 // Process processes the state of the cluster after a scale-up by emitting
 // relevant events for pods depending on their post scale-up status.
 func (p *EventingScaleUpStatusProcessor) Process(context *context.AutoscalingContext, status *ScaleUpStatus) {
-	for _, pod := range status.PodsRemainUnschedulable {
+	for pod, reason := range status.PodsRemainUnschedulable {
 		context.Recorder.Event(pod, apiv1.EventTypeNormal, "NotTriggerScaleUp",
-			"pod didn't trigger scale-up (it wouldn't fit if a new node is added)")
+			fmt.Sprintf("pod didn't trigger scale-up (it wouldn't fit if a new node is added): %s", reason))
 	}
 	if len(status.ScaleUpInfos) > 0 {
 		for _, pod := range status.PodsTriggeredScaleUp {

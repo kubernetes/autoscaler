@@ -75,49 +75,51 @@ func TestPodSchedulableMap(t *testing.T) {
 	// Basic sanity checks
 	_, found := pMap.get(podInRc1_1)
 	assert.False(t, found)
-	pMap.set(podInRc1_1, true)
-	sched, found := pMap.get(podInRc1_1)
+	pMap.set(podInRc1_1, nil)
+	err, found := pMap.get(podInRc1_1)
 	assert.True(t, found)
-	assert.True(t, sched)
+	assert.Nil(t, err)
+
+	cpuErr := &simulator.PredicateError{}
 
 	// Pod in different RC
 	_, found = pMap.get(podInRc2)
 	assert.False(t, found)
-	pMap.set(podInRc2, false)
-	sched, found = pMap.get(podInRc2)
+	pMap.set(podInRc2, cpuErr)
+	err, found = pMap.get(podInRc2)
 	assert.True(t, found)
-	assert.False(t, sched)
+	assert.Equal(t, cpuErr, err)
 
 	// Another replica in rc1
 	podInRc1_2 := BuildTestPod("podInRc1_1", 500, 1000)
 	podInRc1_2.OwnerReferences = GenerateOwnerReferences(rc1.Name, "ReplicationController", "extensions/v1beta1", rc1.UID)
-	sched, found = pMap.get(podInRc1_2)
+	err, found = pMap.get(podInRc1_2)
 	assert.True(t, found)
-	assert.True(t, sched)
+	assert.Nil(t, err)
 
 	// A pod in rc1, but with different requests
 	differentPodInRc1 := BuildTestPod("differentPodInRc1", 1000, 1000)
 	differentPodInRc1.OwnerReferences = GenerateOwnerReferences(rc1.Name, "ReplicationController", "extensions/v1beta1", rc1.UID)
 	_, found = pMap.get(differentPodInRc1)
 	assert.False(t, found)
-	pMap.set(differentPodInRc1, false)
-	sched, found = pMap.get(differentPodInRc1)
+	pMap.set(differentPodInRc1, cpuErr)
+	err, found = pMap.get(differentPodInRc1)
 	assert.True(t, found)
-	assert.False(t, sched)
+	assert.Equal(t, cpuErr, err)
 
 	// A non-replicated pod
 	nonReplicatedPod := BuildTestPod("nonReplicatedPod", 1000, 1000)
 	_, found = pMap.get(nonReplicatedPod)
 	assert.False(t, found)
-	pMap.set(nonReplicatedPod, false)
+	pMap.set(nonReplicatedPod, err)
 	_, found = pMap.get(nonReplicatedPod)
 	assert.False(t, found)
 
 	// Verify information about first pod has not been overwritten by adding
 	// other pods
-	sched, found = pMap.get(podInRc1_1)
+	err, found = pMap.get(podInRc1_1)
 	assert.True(t, found)
-	assert.True(t, sched)
+	assert.Nil(t, err)
 }
 
 func TestFilterOutSchedulable(t *testing.T) {
@@ -278,11 +280,21 @@ func TestFilterSchedulablePodsForNode(t *testing.T) {
 		PredicateChecker: simulator.NewTestPredicateChecker(),
 	}
 
-	res := FilterSchedulablePodsForNode(context, unschedulablePods, "T1-abc", tni)
-	assert.Equal(t, 3, len(res))
-	assert.Equal(t, p1, res[0])
-	assert.Equal(t, p3_1, res[1])
-	assert.Equal(t, p3_2, res[2])
+	res := CheckPodsSchedulableOnNode(context, unschedulablePods, "T1-abc", tni)
+	wantedSchedulable := []*apiv1.Pod{p1, p3_1, p3_2}
+	wantedUnschedulable := []*apiv1.Pod{p2_1, p2_2}
+
+	assert.Equal(t, 5, len(res))
+	for _, pod := range wantedSchedulable {
+		err, found := res[pod]
+		assert.True(t, found)
+		assert.Nil(t, err)
+	}
+	for _, pod := range wantedUnschedulable {
+		err, found := res[pod]
+		assert.True(t, found)
+		assert.NotNil(t, err)
+	}
 }
 
 func TestGetNodeInfosForGroups(t *testing.T) {
