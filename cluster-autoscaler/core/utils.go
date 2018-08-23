@@ -187,13 +187,13 @@ func FilterSchedulablePodsForNode(context *context.AutoscalingContext, pods []*a
 				glogx.V(2).UpTo(loggingQuota).Infof("Pod %s can't be scheduled on %s. Used cached predicate check results", pod.Name, nodeGroupId)
 			}
 		} else {
-			err := context.PredicateChecker.CheckPredicates(pod, nil, nodeInfo, simulator.ReturnVerboseError)
+			err := context.PredicateChecker.CheckPredicates(pod, nil, nodeInfo)
 			if err == nil {
 				schedulable = true
 				podSchedulable.set(pod, true)
 				schedulablePods = append(schedulablePods, pod)
 			} else {
-				glog.V(2).Infof("Pod %s can't be scheduled on %s, predicate failed: %v", pod.Name, nodeGroupId, err)
+				glog.V(2).Infof("Pod %s can't be scheduled on %s, predicate failed: %v", pod.Name, nodeGroupId, err.VerboseError())
 				schedulable = false
 				podSchedulable.set(pod, false)
 			}
