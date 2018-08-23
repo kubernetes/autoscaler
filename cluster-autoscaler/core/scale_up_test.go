@@ -586,9 +586,10 @@ func TestScaleUpNodeComingHasScale(t *testing.T) {
 	clusterState.UpdateNodes([]*apiv1.Node{n1, n2}, time.Now())
 
 	p3 := BuildTestPod("p-new", 550, 0)
+	p4 := BuildTestPod("p-new", 550, 0)
 
 	processors := ca_processors.TestProcessors()
-	status, err := ScaleUp(&context, processors, clusterState, []*apiv1.Pod{p3, p3}, []*apiv1.Node{n1, n2}, []*extensionsv1.DaemonSet{})
+	status, err := ScaleUp(&context, processors, clusterState, []*apiv1.Pod{p3, p4}, []*apiv1.Node{n1, n2}, []*extensionsv1.DaemonSet{})
 
 	assert.NoError(t, err)
 	// Two nodes needed but one node is already coming, so it should increase by one.
