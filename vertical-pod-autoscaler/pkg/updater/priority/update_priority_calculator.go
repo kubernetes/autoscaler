@@ -157,8 +157,8 @@ func (calc *UpdatePriorityCalculator) getUpdatePriority(pod *apiv1.Pod, recommen
 				if recommended.MilliValue() > request.MilliValue() {
 					scaleUp = true
 				}
-				if (hasLowerBound && request.MilliValue() < lowerBound.MilliValue()) ||
-					(hasUpperBound && request.MilliValue() > upperBound.MilliValue()) {
+				if (hasLowerBound && request.Cmp(lowerBound) < 0) ||
+					(hasUpperBound && request.Cmp(upperBound) > 0) {
 					outsideRecommendedRange = true
 				}
 			} else {
