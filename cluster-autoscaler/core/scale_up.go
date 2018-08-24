@@ -20,7 +20,6 @@ import (
 	"bytes"
 	"fmt"
 	"math"
-	"strings"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -34,7 +33,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/glogx"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
@@ -229,6 +227,19 @@ func getNodeInfoCoresAndMemory(nodeInfo *schedulercache.NodeInfo) (int64, int64)
 	return getNodeCoresAndMemory(nodeInfo.Node())
 }
 
+type skippedReasons struct {
+	message []string
+}
+
+func (sr *skippedReasons) Reasons() []string {
+	return sr.message
+}
+
+var (
+	notReadyReason        = &skippedReasons{[]string{"not ready for scale-up"}}
+	maxLimitReachedReason = &skippedReasons{[]string{"max limit reached"}}
+)
+
 // ScaleUp tries to scale the cluster up. Return true if it found a way to increase the size,
 // false if it didn't and error if an error occurred. Assumes that all nodes in the cluster are
 // ready and in sync with instance groups.
@@ -245,11 +256,11 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 
 	loggingQuota := glogx.PodsLoggingQuota()
 
-	podsRemainUnschedulable := make(map[*apiv1.Pod][]*simulator.PredicateError)
+	podsRemainUnschedulable := make(map[*apiv1.Pod]map[string]status.Reasons)
 
 	for _, pod := range unschedulablePods {
 		glogx.V(1).UpTo(loggingQuota).Infof("Pod %s/%s is unschedulable", pod.Namespace, pod.Name)
-		podsRemainUnschedulable[pod] = []*simulator.PredicateError{}
+		podsRemainUnschedulable[pod] = make(map[string]status.Reasons)
 	}
 	glogx.V(1).Over(loggingQuota).Infof("%v other pods are also unschedulable", -loggingQuota.Left())
 	nodeInfos, err := GetNodeInfosForGroups(nodes, context.CloudProvider, context.ClientSet,
@@ -303,46 +314,46 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 		}
 	}
 
-	skippedNodeGroups := 0
+	skippedNodeGroups := map[string]status.Reasons{}
 	for _, nodeGroup := range nodeGroups {
-		// All node groups are potentially skippable until proven otherwise.
-		skippedNodeGroups++
-
 		// Autoprovisioned node groups without nodes are created later so skip check for them.
 		if nodeGroup.Exist() && !clusterStateRegistry.IsNodeGroupSafeToScaleUp(nodeGroup.Id(), now) {
 			glog.Warningf("Node group %s is not ready for scaleup", nodeGroup.Id())
+			skippedNodeGroups[nodeGroup.Id()] = notReadyReason
 			continue
 		}
 
 		currentTargetSize, err := nodeGroup.TargetSize()
 		if err != nil {
 			glog.Errorf("Failed to get node group size: %v", err)
+			skippedNodeGroups[nodeGroup.Id()] = notReadyReason
 			continue
 		}
 		if currentTargetSize >= nodeGroup.MaxSize() {
 			glog.V(4).Infof("Skipping node group %s - max size reached", nodeGroup.Id())
+			skippedNodeGroups[nodeGroup.Id()] = maxLimitReachedReason
 			continue
 		}
 
 		nodeInfo, found := nodeInfos[nodeGroup.Id()]
 		if !found {
 			glog.Errorf("No node info for: %s", nodeGroup.Id())
+			skippedNodeGroups[nodeGroup.Id()] = notReadyReason
 			continue
 		}
 
 		scaleUpResourcesDelta, err := computeScaleUpResourcesDelta(nodeInfo, nodeGroup, resourceLimiter)
 		if err != nil {
 			glog.Errorf("Skipping node group %s; error getting node group resources: %v", nodeGroup.Id(), err)
+			skippedNodeGroups[nodeGroup.Id()] = notReadyReason
 			continue
 		}
 		checkResult := scaleUpResourcesLeft.checkScaleUpDeltaWithinLimits(scaleUpResourcesDelta)
 		if checkResult.exceeded {
 			glog.V(4).Infof("Skipping node group %s; maximal limit exceeded for %v", nodeGroup.Id(), checkResult.exceededResources)
+			skippedNodeGroups[nodeGroup.Id()] = maxLimitReachedReason
 			continue
 		}
-
-		// Beyond this point, scaling the node group is considered an option.
-		skippedNodeGroups--
 
 		option := expander.Option{
 			NodeGroup: nodeGroup,
@@ -356,9 +367,8 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 				// TODO(aleksandra-malinowska): figure out how to communicate
 				// reasons NAP can't create a node-pool, if it's enabled.
 				if nodeGroup.Exist() {
-					errs, found := podsRemainUnschedulable[pod]
-					if found {
-						podsRemainUnschedulable[pod] = append(errs, err)
+					if _, found := podsRemainUnschedulable[pod]; found {
+						podsRemainUnschedulable[pod][nodeGroup.Id()] = err
 					}
 				}
 			} else {
@@ -507,30 +517,20 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 	return &status.ScaleUpStatus{ScaledUp: false, PodsRemainUnschedulable: getRemainingPods(podsRemainUnschedulable, skippedNodeGroups)}, nil
 }
 
-func getRemainingPods(schedulingErrors map[*apiv1.Pod][]*simulator.PredicateError, skipped int) map[*apiv1.Pod]string {
-	remaining := map[*apiv1.Pod]string{}
+func getRemainingPods(schedulingErrors map[*apiv1.Pod]map[string]status.Reasons, skipped map[string]status.Reasons) []status.NoScaleUpInfo {
+	remaining := []status.NoScaleUpInfo{}
 	for pod, errs := range schedulingErrors {
-		messages := []string{}
-		aggregated := map[string]int{}
-		for _, err := range errs {
-			// Aggregate by reason, since predicate name isn't as helpful.
-			// If two different predicates fail with the same reason, so be it.
-			for _, reason := range err.Reasons() {
-				aggregated[reason]++
-			}
+		noScaleUpInfo := status.NoScaleUpInfo{
+			Pod:                pod,
+			RejectedNodeGroups: errs,
+			SkippedNodeGroups:  skipped,
 		}
-		for msg, count := range aggregated {
-			messages = append(messages, fmt.Sprintf("%d %s", count, msg))
-		}
-		if skipped > 0 {
-			messages = append(messages, fmt.Sprintf("%d can't increase node group size", skipped))
-		}
-		remaining[pod] = strings.Join(messages, ", ")
+		remaining = append(remaining, noScaleUpInfo)
 	}
 	return remaining
 }
 
-func getPodsAwaitingEvaluation(allPods []*apiv1.Pod, unschedulable map[*apiv1.Pod][]*simulator.PredicateError, bestOption []*apiv1.Pod) []*apiv1.Pod {
+func getPodsAwaitingEvaluation(allPods []*apiv1.Pod, unschedulable map[*apiv1.Pod]map[string]status.Reasons, bestOption []*apiv1.Pod) []*apiv1.Pod {
 	awaitsEvaluation := make(map[*apiv1.Pod]bool, len(allPods))
 	for _, pod := range allPods {
 		if _, found := unschedulable[pod]; !found {
