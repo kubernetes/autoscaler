@@ -47,6 +47,9 @@ rules:
 - apiGroups: ["storage.k8s.io"]
   resources: ["storageclasses"]
   verbs: ["get", "list", "watch"]
+- apiGroups: ["batch"]
+  resources: ["jobs", "cronjobs"]
+  verbs: ["watch","list","get"]
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
