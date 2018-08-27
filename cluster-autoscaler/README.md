@@ -2,10 +2,10 @@
 
 # Introduction
 
-Cluster Autoscaler is a tool that automatically adjusts the size of the Kubernetes cluster when:
-* there are pods that failed to run in the cluster due to insufficient resources.
-* some nodes in the cluster are so underutilized, for an extended period of time,
-that they can be deleted and their pods will be easily placed on some other, existing nodes.
+Cluster Autoscaler is a tool that automatically adjusts the size of the Kubernetes cluster when one of the following conditions is true:
+* there are pods that failed to run in the cluster due to insufficient
+  resources,
+* there are nodes in the cluster that have been underutilized for an extended period of time and their pods can be placed on other existing nodes.
 
 # FAQ/Documentation
 
@@ -13,12 +13,11 @@ Is available [HERE](./FAQ.md).
 
 # Releases
 
-We strongly recommend using Cluster Autoscaler with version for which it was meant. We don't
-do ANY cross version testing so if you put the newest Cluster Autoscaler on an old cluster
-there is a big chance that it won't work as expected.
+We recommend using Cluster Autoscaler with the Kubernetes master version for which it was meant. The below combinations have been tested on GCP. We don't do cross version testing or compatibility testing in other environments. Some user reports indicate successful use of a newer version of Cluster Autoscaler with older clusters, however, there is always a chance that it won't work as expected.
 
 | Kubernetes Version  | CA Version   |
 |--------|--------|
+| 1.11.X | 1.3.X  |
 | 1.10.X | 1.2.X  |
 | 1.9.X  | 1.1.X  |
 | 1.8.X  | 1.0.X  |
@@ -27,9 +26,12 @@ there is a big chance that it won't work as expected.
 | 1.5.X  | 0.4.X  |
 | 1.4.X  | 0.3.X  |
 
-<sup>*</sup>Cluster Autoscaler 0.5.X is the official version shipped with k8s 1.6. We've done some basic tests using k8s 1.6 / CA 0.6 and we're not aware of any problems with this setup. However, CA internally simulates k8s scheduler and using different versions of scheduler code can lead to subtle issues.
+<sup>*</sup>Cluster Autoscaler 0.5.X is the official version shipped with k8s 1.6. We've done some basic tests using k8s 1.6 / CA 0.6 and we're not aware of any problems with this setup. However, Cluster Autoscaler internally simulates Kubernetes' scheduler and using different versions of scheduler code can lead to subtle issues.
 
 # Notable changes
+
+For CA 1.1.2 and later, please check [release
+notes.](https://github.com/kubernetes/autoscaler/releases)
 
 CA version 1.1.1:
 * Fixes around metrics in the multi-master configuration.
@@ -111,14 +113,15 @@ CA Version 0.3:
 
 # Deployment
 
-Cluster Autoscaler runs on the Kubernetes master node (at least in the default setup on GCE and GKE).
-It is possible to run customized Cluster Autoscaler inside of the cluster but then extra care needs
-to be taken to ensure that Cluster Autoscaler is up and running. User can put it into kube-system
-namespace (Cluster Autoscaler doesn't scale down node with non-manifest based kube-system pods running
-on them) and mark with `scheduler.alpha.kubernetes.io/critical-pod` annotation (so that the rescheduler,
+Cluster Autoscaler is designed to run on Kubernetes master node. This is the
+default deployment strategy on GCP.
+It is possible to run a customized deployment of Cluster Autoscaler on worker nodes, but extra care needs
+to be taken to ensure that Cluster Autoscaler remains up and running. Users can put it into kube-system
+namespace (Cluster Autoscaler doesn't scale down node with non-mirrored kube-system pods running
+on them) and add `scheduler.alpha.kubernetes.io/critical-pod` annotation (so that the rescheduler,
 if enabled, will kill other pods to make space for it to run).
 
-Right now it is possible to run Cluster Autoscaler on:
+Supported cloud providers:
 * GCE https://kubernetes.io/docs/concepts/cluster-administration/cluster-management/
 * GKE https://cloud.google.com/container-engine/docs/cluster-autoscaler
 * AWS https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md
