@@ -59,7 +59,7 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 			{AcceleratorType: "nvidia-tesla-k80", AcceleratorCount: 3},
 			{AcceleratorType: "nvidia-tesla-p100", AcceleratorCount: 8},
 		},
-		mig: &gkeMig{
+		mig: &GkeMig{
 			gceRef: gce.GceRef{
 				Name:    "some-name",
 				Project: "some-proj",
@@ -80,7 +80,7 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 				"NODE_TAINTS: 'dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c'\n",
 			name:        "nodeName",
 			machineType: "custom-8-2",
-			mig: &gkeMig{
+			mig: &GkeMig{
 				gceRef: gce.GceRef{
 					Name:    "some-name",
 					Project: "some-proj",
@@ -96,7 +96,7 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 			kubeEnv:     "This kube-env is totally messed up",
 			name:        "nodeName",
 			machineType: "custom-8-2",
-			mig: &gkeMig{
+			mig: &GkeMig{
 				gceRef: gce.GceRef{
 					Name:    "some-name",
 					Project: "some-proj",
@@ -138,7 +138,7 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 
 func TestBuildLabelsForAutoprovisionedMigOK(t *testing.T) {
 	labels, err := buildLabelsForAutoprovisionedMig(
-		&gkeMig{
+		&GkeMig{
 			gceRef: gce.GceRef{
 				Name:    "kubernetes-minion-autoprovisioned-group",
 				Project: "mwielgus-proj",
@@ -167,7 +167,7 @@ func TestBuildLabelsForAutoprovisionedMigOK(t *testing.T) {
 
 func TestBuildLabelsForAutoprovisionedMigConflict(t *testing.T) {
 	_, err := buildLabelsForAutoprovisionedMig(
-		&gkeMig{
+		&GkeMig{
 			gceRef: gce.GceRef{
 				Name:    "kubernetes-minion-autoprovisioned-group",
 				Project: "mwielgus-proj",

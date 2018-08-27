@@ -100,12 +100,12 @@ type GkeManager interface {
 	// Cleanup cleans up open resources before the cloud provider is destroyed, i.e. go routines etc.
 	Cleanup() error
 	GetMigs() []*gce.MigInformation
-	CreateNodePool(mig *gkeMig) (*gkeMig, error)
-	DeleteNodePool(toBeRemoved *gkeMig) error
+	CreateNodePool(mig *GkeMig) (*GkeMig, error)
+	DeleteNodePool(toBeRemoved *GkeMig) error
 	GetLocation() string
 	GetProjectId() string
 	GetClusterName() string
-	GetMigTemplateNode(mig *gkeMig) (*apiv1.Node, error)
+	GetMigTemplateNode(mig *GkeMig) (*apiv1.Node, error)
 }
 
 // gkeManagerImpl handles gce communication and data caching.
@@ -257,7 +257,7 @@ func (m *gkeManagerImpl) refreshNodePools() error {
 			if err != nil {
 				return err
 			}
-			mig := &gkeMig{
+			mig := &GkeMig{
 				gceRef: gce.GceRef{
 					Name:    name,
 					Zone:    zone,
@@ -290,7 +290,7 @@ func (m *gkeManagerImpl) refreshNodePools() error {
 }
 
 // RegisterMig registers mig in GceManager. Returns true if the node group didn't exist before or its config has changed.
-func (m *gkeManagerImpl) registerMig(mig *gkeMig) bool {
+func (m *gkeManagerImpl) registerMig(mig *GkeMig) bool {
 	changed := m.cache.RegisterMig(mig)
 	if changed {
 		// Try to build a node from template to validate that this group
@@ -303,7 +303,7 @@ func (m *gkeManagerImpl) registerMig(mig *gkeMig) bool {
 	return changed
 }
 
-func (m *gkeManagerImpl) DeleteNodePool(toBeRemoved *gkeMig) error {
+func (m *gkeManagerImpl) DeleteNodePool(toBeRemoved *GkeMig) error {
 	m.assertGKENAP()
 	if !toBeRemoved.Autoprovisioned() {
 		return fmt.Errorf("only autoprovisioned node pools can be deleted")
@@ -316,7 +316,7 @@ func (m *gkeManagerImpl) DeleteNodePool(toBeRemoved *gkeMig) error {
 	return m.refreshNodePools()
 }
 
-func (m *gkeManagerImpl) CreateNodePool(mig *gkeMig) (*gkeMig, error) {
+func (m *gkeManagerImpl) CreateNodePool(mig *GkeMig) (*GkeMig, error) {
 	m.assertGKENAP()
 
 	err := m.GkeService.CreateNodePool(mig)
@@ -329,12 +329,12 @@ func (m *gkeManagerImpl) CreateNodePool(mig *gkeMig) (*gkeMig, error) {
 	}
 	// TODO(aleksandra-malinowska): support multi-zonal node pools.
 	for _, existingMig := range m.cache.GetMigs() {
-		gkeMig, ok := existingMig.Config.(*gkeMig)
+		gkeMig, ok := existingMig.Config.(*GkeMig)
 		if !ok {
 			// This is "should never happen" branch.
 			// Report error as InternalError since it would signify a
 			// serious bug in autoscaler code.
-			errMsg := fmt.Sprintf("Mig %s is not gkeMig: got %v, want gkeMig", existingMig.Config.GceRef().String(), reflect.TypeOf(existingMig.Config))
+			errMsg := fmt.Sprintf("Mig %s is not GkeMig: got %v, want GkeMig", existingMig.Config.GceRef().String(), reflect.TypeOf(existingMig.Config))
 			glog.Error(errMsg)
 			return nil, errors.NewAutoscalerError(errors.InternalError, errMsg)
 		}
@@ -489,7 +489,7 @@ func (m *gkeManagerImpl) buildMigFromSpec(s *dynamic.NodeGroupSpec) (gce.Mig, er
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse mig url: %s got error: %v", s.Name, err)
 	}
-	mig := &gkeMig{
+	mig := &GkeMig{
 		gceRef: gce.GceRef{
 			Project: project,
 			Name:    name,
@@ -561,7 +561,7 @@ func getProjectAndLocation(regional bool) (string, string, error) {
 	return projectID, location, nil
 }
 
-func (m *gkeManagerImpl) GetMigTemplateNode(mig *gkeMig) (*apiv1.Node, error) {
+func (m *gkeManagerImpl) GetMigTemplateNode(mig *GkeMig) (*apiv1.Node, error) {
 	if mig.Exist() {
 		template, err := m.GceService.FetchMigTemplate(mig.GceRef())
 		if err != nil {

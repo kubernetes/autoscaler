@@ -49,7 +49,7 @@ type AutoscalingGkeClient interface {
 
 	// modifying cluster state
 	DeleteNodePool(string) error
-	CreateNodePool(*gkeMig) error
+	CreateNodePool(*GkeMig) error
 }
 
 // NodePool contains node pool's fields we want to use.
