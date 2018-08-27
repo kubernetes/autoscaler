@@ -141,7 +141,7 @@ func (m *autoscalingGkeClientV1beta1) DeleteNodePool(toBeRemoved string) error {
 	return m.waitForGkeOp(deleteOp)
 }
 
-func (m *autoscalingGkeClientV1beta1) CreateNodePool(mig *gkeMig) error {
+func (m *autoscalingGkeClientV1beta1) CreateNodePool(mig *GkeMig) error {
 	// TODO: handle preemptible VMs
 	// TODO: handle SSDs
 
