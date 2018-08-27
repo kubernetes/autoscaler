@@ -91,19 +91,7 @@ matching anti-affinity, etc)
 
 ### Which version on Cluster Autoscaler should I use in my cluster?
 
-We strongly recommend using Cluster Autoscaler with version for which it was meant. Usually, we don't
-do ANY cross version testing so if you put the newest Cluster Autoscaler on an old cluster
-there is a big chance that it won't work as expected.
-
-| Kubernetes Version  | CA Version   |
-|--------|--------|
-| 1.8.X  | 1.0.X  |
-| 1.7.X  | 0.6.X  |
-| 1.6.X  | 0.5.X, 0.6.X<sup>*</sup>  |
-| 1.5.X  | 0.4.X  |
-| 1.4.X  | 0.3.X  |
-
-<sup>*</sup>Cluster Autoscaler 0.5.X is the official version shipped with k8s 1.6. We've done some basic tests using k8s 1.6 / CA 0.6 and we're not aware of any problems with this setup. However, CA internally simulates k8s scheduler and using different versions of scheduler code can lead to subtle issues.
+See [Cluster Autoscaler Releases](https://github.com/kubernetes/autoscaler/tree/master/cluster-autoscaler#releases)
 
 ### Is Cluster Autoscaler an Alpha, Beta or GA product?
 
