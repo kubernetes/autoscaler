@@ -653,7 +653,7 @@ func TestDeleteNodePool(t *testing.T) {
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-nodeautoprovisioning-323233232").Return(getInstanceGroupManager(zoneB)).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-nodeautoprovisioning-323233232/listManagedInstances").Return(getManagedInstancesResponse2(zoneB)).Once()
 
-	mig := &gkeMig{
+	mig := &GkeMig{
 		gceRef: gce.GceRef{
 			Project: projectId,
 			Zone:    zoneB,
@@ -711,7 +711,7 @@ func TestCreateNodePool(t *testing.T) {
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-nodeautoprovisioning-323233232").Return(getInstanceGroupManager(zoneB)).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-nodeautoprovisioning-323233232/listManagedInstances").Return(getManagedInstancesResponse2(zoneB)).Once()
 
-	mig := &gkeMig{
+	mig := &GkeMig{
 		gceRef: gce.GceRef{
 			Project: projectId,
 			Zone:    zoneB,
@@ -783,7 +783,7 @@ const deleteInstancesOperationResponse = `
 }`
 
 func setupTestNodePool(manager *gkeManagerImpl) {
-	mig := &gkeMig{
+	mig := &GkeMig{
 		gceRef: gce.GceRef{
 			Name:    defaultPoolMig,
 			Zone:    zoneB,
@@ -800,7 +800,7 @@ func setupTestNodePool(manager *gkeManagerImpl) {
 }
 
 func setupTestAutoprovisionedPool(manager *gkeManagerImpl) {
-	mig := &gkeMig{
+	mig := &GkeMig{
 		gceRef: gce.GceRef{
 			Name:    autoprovisionedPoolMig,
 			Zone:    zoneB,
@@ -876,7 +876,7 @@ func TestGetMigSize(t *testing.T) {
 
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/nodeautoprovisioning-323233232").Return(instanceGroupManager).Once()
 
-	mig := &gkeMig{
+	mig := &GkeMig{
 		gceRef: gce.GceRef{
 			Project: projectId,
 			Zone:    zoneB,
@@ -938,7 +938,7 @@ func TestSetMigSize(t *testing.T) {
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/nodeautoprovisioning-323233232/resize").Return(setMigSizeResponse).Once()
 	server.On("handle", "/project1/zones/us-central1-b/operations/operation-1505739408819-5597646964339-eb839c88-28805931").Return(setMigSizeOperationResponse).Once()
 
-	mig := &gkeMig{
+	mig := &GkeMig{
 		gceRef: gce.GceRef{
 			Project: projectId,
 			Zone:    zoneB,
@@ -986,7 +986,7 @@ func TestGetMigNodes(t *testing.T) {
 
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/nodeautoprovisioning-323233232/listManagedInstances").Return(getManagedInstancesResponse1(zoneB)).Once()
 
-	mig := &gkeMig{
+	mig := &GkeMig{
 		gceRef: gce.GceRef{
 			Project: projectId,
 			Zone:    zoneB,
@@ -1103,7 +1103,7 @@ func TestGetMigTemplateNode(t *testing.T) {
 	regional := false
 	g := newTestGkeManager(t, server.URL, ModeGKE, regional)
 
-	mig := &gkeMig{
+	mig := &GkeMig{
 		gceRef: gce.GceRef{
 			Project: projectId,
 			Zone:    zoneB,

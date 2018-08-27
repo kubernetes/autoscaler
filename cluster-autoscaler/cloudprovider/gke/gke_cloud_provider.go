@@ -151,7 +151,7 @@ func (gke *GkeCloudProvider) NewNodeGroup(machineType string, labels map[string]
 		taints = append(taints, taint)
 	}
 
-	mig := &gkeMig{
+	mig := &GkeMig{
 		gceRef: gce.GceRef{
 			Project: gke.gkeManager.GetProjectId(),
 			Zone:    zone,
@@ -212,7 +212,8 @@ type MigSpec struct {
 	ExtraResources map[string]resource.Quantity
 }
 
-type gkeMig struct {
+// GkeMig represents the GKE Managed Instance Group implementation of a NodeGroup.
+type GkeMig struct {
 	gceRef gce.GceRef
 
 	gkeManager      GkeManager
@@ -225,33 +226,33 @@ type gkeMig struct {
 }
 
 // GceRef returns Mig's GceRef
-func (mig *gkeMig) GceRef() gce.GceRef {
+func (mig *GkeMig) GceRef() gce.GceRef {
 	return mig.gceRef
 }
 
 // NodePoolName returns the name of the GKE node pool this Mig belongs to.
-func (mig *gkeMig) NodePoolName() string {
+func (mig *GkeMig) NodePoolName() string {
 	return mig.nodePoolName
 }
 
 // Spec returns specification of the Mig.
-func (mig *gkeMig) Spec() *MigSpec {
+func (mig *GkeMig) Spec() *MigSpec {
 	return mig.spec
 }
 
 // MaxSize returns maximum size of the node group.
-func (mig *gkeMig) MaxSize() int {
+func (mig *GkeMig) MaxSize() int {
 	return mig.maxSize
 }
 
 // MinSize returns minimum size of the node group.
-func (mig *gkeMig) MinSize() int {
+func (mig *GkeMig) MinSize() int {
 	return mig.minSize
 }
 
 // TargetSize returns the current TARGET size of the node group. It is possible that the
 // number is different from the number of nodes registered in Kubernetes.
-func (mig *gkeMig) TargetSize() (int, error) {
+func (mig *GkeMig) TargetSize() (int, error) {
 	if !mig.exist {
 		return 0, nil
 	}
@@ -260,7 +261,7 @@ func (mig *gkeMig) TargetSize() (int, error) {
 }
 
 // IncreaseSize increases Mig size
-func (mig *gkeMig) IncreaseSize(delta int) error {
+func (mig *GkeMig) IncreaseSize(delta int) error {
 	if delta <= 0 {
 		return fmt.Errorf("size increase must be positive")
 	}
@@ -277,7 +278,7 @@ func (mig *gkeMig) IncreaseSize(delta int) error {
 // DecreaseTargetSize decreases the target size of the node group. This function
 // doesn't permit to delete any existing node and can be used only to reduce the
 // request for new nodes that have not been yet fulfilled. Delta should be negative.
-func (mig *gkeMig) DecreaseTargetSize(delta int) error {
+func (mig *GkeMig) DecreaseTargetSize(delta int) error {
 	if delta >= 0 {
 		return fmt.Errorf("size decrease must be negative")
 	}
@@ -297,7 +298,7 @@ func (mig *gkeMig) DecreaseTargetSize(delta int) error {
 }
 
 // Belongs returns true if the given node belongs to the NodeGroup.
-func (mig *gkeMig) Belongs(node *apiv1.Node) (bool, error) {
+func (mig *GkeMig) Belongs(node *apiv1.Node) (bool, error) {
 	ref, err := gce.GceRefFromProviderId(node.Spec.ProviderID)
 	if err != nil {
 		return false, err
@@ -316,7 +317,7 @@ func (mig *gkeMig) Belongs(node *apiv1.Node) (bool, error) {
 }
 
 // DeleteNodes deletes the nodes from the group.
-func (mig *gkeMig) DeleteNodes(nodes []*apiv1.Node) error {
+func (mig *GkeMig) DeleteNodes(nodes []*apiv1.Node) error {
 	size, err := mig.gkeManager.GetMigSize(mig)
 	if err != nil {
 		return err
@@ -344,28 +345,28 @@ func (mig *gkeMig) DeleteNodes(nodes []*apiv1.Node) error {
 }
 
 // Id returns mig url.
-func (mig *gkeMig) Id() string {
+func (mig *GkeMig) Id() string {
 	return gce.GenerateMigUrl(mig.gceRef)
 }
 
 // Debug returns a debug string for the Mig.
-func (mig *gkeMig) Debug() string {
+func (mig *GkeMig) Debug() string {
 	return fmt.Sprintf("%s (%d:%d)", mig.Id(), mig.MinSize(), mig.MaxSize())
 }
 
 // Nodes returns a list of all nodes that belong to this node group.
-func (mig *gkeMig) Nodes() ([]string, error) {
+func (mig *GkeMig) Nodes() ([]string, error) {
 	return mig.gkeManager.GetMigNodes(mig)
 }
 
 // Exist checks if the node group really exists on the cloud provider side. Allows to tell the
 // theoretical node group from the real one.
-func (mig *gkeMig) Exist() bool {
+func (mig *GkeMig) Exist() bool {
 	return mig.exist
 }
 
 // Create creates the node group on the cloud provider side.
-func (mig *gkeMig) Create() (cloudprovider.NodeGroup, error) {
+func (mig *GkeMig) Create() (cloudprovider.NodeGroup, error) {
 	if !mig.exist && mig.autoprovisioned {
 		return mig.gkeManager.CreateNodePool(mig)
 	}
@@ -374,7 +375,7 @@ func (mig *gkeMig) Create() (cloudprovider.NodeGroup, error) {
 
 // Delete deletes the node group on the cloud provider side.
 // This will be executed only for autoprovisioned node groups, once their size drops to 0.
-func (mig *gkeMig) Delete() error {
+func (mig *GkeMig) Delete() error {
 	if mig.exist && mig.autoprovisioned {
 		return mig.gkeManager.DeleteNodePool(mig)
 	}
@@ -382,12 +383,12 @@ func (mig *gkeMig) Delete() error {
 }
 
 // Autoprovisioned returns true if the node group is autoprovisioned.
-func (mig *gkeMig) Autoprovisioned() bool {
+func (mig *GkeMig) Autoprovisioned() bool {
 	return mig.autoprovisioned
 }
 
 // TemplateNodeInfo returns a node template for this node group.
-func (mig *gkeMig) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
+func (mig *GkeMig) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
 	node, err := mig.gkeManager.GetMigTemplateNode(mig)
 	if err != nil {
 		return nil, err
