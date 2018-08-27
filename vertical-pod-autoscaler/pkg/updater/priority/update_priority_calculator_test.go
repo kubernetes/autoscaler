@@ -344,7 +344,7 @@ func TestNoPods(t *testing.T) {
 
 type pod1Admission struct{}
 
-func (p *pod1Admission) LoopInit() {}
+func (p *pod1Admission) LoopInit([]*apiv1.Pod, map[*vpa_types.VerticalPodAutoscaler][]*apiv1.Pod) {}
 func (p *pod1Admission) Admit(pod *apiv1.Pod, recommendation *vpa_types.RecommendedPodResources) bool {
 	return pod.Name == "POD1"
 }
