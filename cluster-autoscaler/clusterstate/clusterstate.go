@@ -895,7 +895,7 @@ func getNotRegisteredNodes(allNodes []*apiv1.Node, cloudProvider cloudprovider.C
 }
 
 // GetClusterSize calculates and returns cluster's current size and target size. The current size is the
-// actual number of nodes registered in Kubernetes, the target size is the number of nodes the CA wants.
+// actual number of nodes provisioned in Kubernetes, the target size is the number of nodes the CA wants.
 func (csr *ClusterStateRegistry) GetClusterSize() (currentSize, targetSize int) {
 	csr.Lock()
 	defer csr.Unlock()
@@ -903,6 +903,6 @@ func (csr *ClusterStateRegistry) GetClusterSize() (currentSize, targetSize int) 
 	for _, accRange := range csr.acceptableRanges {
 		targetSize += accRange.CurrentTarget
 	}
-	currentSize = csr.totalReadiness.Registered
+	currentSize = csr.totalReadiness.Registered - csr.totalReadiness.NotStarted - csr.totalReadiness.LongNotStarted
 	return currentSize, targetSize
 }
