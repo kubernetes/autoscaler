@@ -236,8 +236,9 @@ func (sr *skippedReasons) Reasons() []string {
 }
 
 var (
-	notReadyReason        = &skippedReasons{[]string{"not ready for scale-up"}}
+	backoffReason         = &skippedReasons{[]string{"in backoff after failed scale-up"}}
 	maxLimitReachedReason = &skippedReasons{[]string{"max limit reached"}}
+	notReadyReason        = &skippedReasons{[]string{"not ready for scale-up"}}
 )
 
 // ScaleUp tries to scale the cluster up. Return true if it found a way to increase the size,
@@ -318,8 +319,14 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 	for _, nodeGroup := range nodeGroups {
 		// Autoprovisioned node groups without nodes are created later so skip check for them.
 		if nodeGroup.Exist() && !clusterStateRegistry.IsNodeGroupSafeToScaleUp(nodeGroup.Id(), now) {
-			glog.Warningf("Node group %s is not ready for scaleup", nodeGroup.Id())
-			skippedNodeGroups[nodeGroup.Id()] = notReadyReason
+			// Hack that depends on internals of IsNodeGroupSafeToScaleUp.
+			if !clusterStateRegistry.IsNodeGroupHealthy(nodeGroup.Id()) {
+				glog.Warningf("Node group %s is not ready for scaleup - unhealthy", nodeGroup.Id())
+				skippedNodeGroups[nodeGroup.Id()] = notReadyReason
+			} else {
+				glog.Warningf("Node group %s is not ready for scaleup - backoff", nodeGroup.Id())
+				skippedNodeGroups[nodeGroup.Id()] = backoffReason
+			}
 			continue
 		}
 
