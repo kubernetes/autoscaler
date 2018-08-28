@@ -29,8 +29,20 @@ type ScaleUpStatus struct {
 	ScaledUp                bool
 	ScaleUpInfos            []nodegroupset.ScaleUpInfo
 	PodsTriggeredScaleUp    []*apiv1.Pod
-	PodsRemainUnschedulable map[*apiv1.Pod]string
+	PodsRemainUnschedulable []NoScaleUpInfo
 	PodsAwaitEvaluation     []*apiv1.Pod
+}
+
+// NoScaleUpInfo contains information about a pod that didn't trigger scale-up.
+type NoScaleUpInfo struct {
+	Pod                *apiv1.Pod
+	RejectedNodeGroups map[string]Reasons
+	SkippedNodeGroups  map[string]Reasons
+}
+
+// Reasons interface provides a list of reasons for why something happened or didn't happen.
+type Reasons interface {
+	Reasons() []string
 }
 
 // ScaleUpStatusProcessor processes the status of the cluster after a scale-up.
