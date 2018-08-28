@@ -32,7 +32,7 @@ func GetDaemonSetPodsForNode(nodeInfo *schedulercache.NodeInfo, daemonsets []*ex
 	result := make([]*apiv1.Pod, 0)
 	for _, ds := range daemonsets {
 		pod := newPod(ds, nodeInfo.Node().Name)
-		if err := predicateChecker.CheckPredicates(pod, nil, nodeInfo, simulator.ReturnSimpleError); err == nil {
+		if err := predicateChecker.CheckPredicates(pod, nil, nodeInfo); err == nil {
 			result = append(result, pod)
 		}
 	}
