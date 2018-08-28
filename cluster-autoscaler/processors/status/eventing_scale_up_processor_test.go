@@ -134,7 +134,7 @@ func TestReasonsMessage(t *testing.T) {
 		"2 max limit reached",
 		"1 not ready",
 	}
-	result := reasonsMessage(NoScaleUpInfo{nil, rejected, skipped})
+	result := ReasonsMessage(NoScaleUpInfo{nil, rejected, skipped})
 
 	for _, part := range expected {
 		assert.Contains(t, result, part)
