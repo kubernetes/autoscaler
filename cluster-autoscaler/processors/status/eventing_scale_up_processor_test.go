@@ -44,17 +44,23 @@ func TestEventingScaleUpStatusProcessor(t *testing.T) {
 		{
 			caseName: "No scale up",
 			state: &ScaleUpStatus{
-				ScaleUpInfos:            []nodegroupset.ScaleUpInfo{},
-				PodsRemainUnschedulable: []*apiv1.Pod{p1, p2},
+				ScaleUpInfos: []nodegroupset.ScaleUpInfo{},
+				PodsRemainUnschedulable: map[*apiv1.Pod]string{
+					p1: "not schedulable",
+					p2: "also not schedulable",
+				},
 			},
 			expectedNoTriggered: 2,
 		},
 		{
 			caseName: "Scale up",
 			state: &ScaleUpStatus{
-				ScaleUpInfos:            []nodegroupset.ScaleUpInfo{{}},
-				PodsTriggeredScaleUp:    []*apiv1.Pod{p3},
-				PodsRemainUnschedulable: []*apiv1.Pod{p1, p2},
+				ScaleUpInfos:         []nodegroupset.ScaleUpInfo{{}},
+				PodsTriggeredScaleUp: []*apiv1.Pod{p3},
+				PodsRemainUnschedulable: map[*apiv1.Pod]string{
+					p1: "not schedulable",
+					p2: "also not schedulable",
+				},
 			},
 			expectedTriggered:   1,
 			expectedNoTriggered: 2,
