@@ -29,11 +29,27 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+type testReason struct {
+	message string
+}
+
+func (tr *testReason) Reasons() []string {
+	return []string{tr.message}
+}
+
 func TestEventingScaleUpStatusProcessor(t *testing.T) {
 	p := &EventingScaleUpStatusProcessor{}
 	p1 := BuildTestPod("p1", 0, 0)
 	p2 := BuildTestPod("p2", 0, 0)
 	p3 := BuildTestPod("p3", 0, 0)
+
+	notSchedulableReason := &testReason{"not schedulable"}
+	alsoNotSchedulableReason := &testReason{"also not schedulable"}
+	reasons := map[string]Reasons{
+		"group 1": notSchedulableReason,
+		"group 2": notSchedulableReason,
+		"group 3": alsoNotSchedulableReason,
+	}
 
 	testCases := []struct {
 		caseName            string
@@ -45,9 +61,9 @@ func TestEventingScaleUpStatusProcessor(t *testing.T) {
 			caseName: "No scale up",
 			state: &ScaleUpStatus{
 				ScaleUpInfos: []nodegroupset.ScaleUpInfo{},
-				PodsRemainUnschedulable: map[*apiv1.Pod]string{
-					p1: "not schedulable",
-					p2: "also not schedulable",
+				PodsRemainUnschedulable: []NoScaleUpInfo{
+					{p1, reasons, reasons},
+					{p2, reasons, reasons},
 				},
 			},
 			expectedNoTriggered: 2,
@@ -57,9 +73,9 @@ func TestEventingScaleUpStatusProcessor(t *testing.T) {
 			state: &ScaleUpStatus{
 				ScaleUpInfos:         []nodegroupset.ScaleUpInfo{{}},
 				PodsTriggeredScaleUp: []*apiv1.Pod{p3},
-				PodsRemainUnschedulable: map[*apiv1.Pod]string{
-					p1: "not schedulable",
-					p2: "also not schedulable",
+				PodsRemainUnschedulable: []NoScaleUpInfo{
+					{p1, reasons, reasons},
+					{p2, reasons, reasons},
 				},
 			},
 			expectedTriggered:   1,
@@ -93,5 +109,34 @@ func TestEventingScaleUpStatusProcessor(t *testing.T) {
 		}
 		assert.Equal(t, tc.expectedTriggered, triggered, "Test case '%v' failed.", tc.caseName)
 		assert.Equal(t, tc.expectedNoTriggered, noTriggered, "Test case '%v' failed.", tc.caseName)
+	}
+}
+
+func TestReasonsMessage(t *testing.T) {
+	notSchedulableReason := &testReason{"not schedulable"}
+	alsoNotSchedulableReason := &testReason{"also not schedulable"}
+	maxLimitReached := &testReason{"max limit reached"}
+	notReady := &testReason{"not ready"}
+	rejected := map[string]Reasons{
+		"group 1": notSchedulableReason,
+		"group 2": notSchedulableReason,
+		"group 3": alsoNotSchedulableReason,
+	}
+	skipped := map[string]Reasons{
+		"group 4": maxLimitReached,
+		"group 5": notReady,
+		"group 6": maxLimitReached,
+	}
+
+	expected := []string{
+		"2 not schedulable",
+		"1 also not schedulable",
+		"2 max limit reached",
+		"1 not ready",
+	}
+	result := ReasonsMessage(NoScaleUpInfo{nil, rejected, skipped})
+
+	for _, part := range expected {
+		assert.Contains(t, result, part)
 	}
 }
