@@ -34,7 +34,7 @@ type EventingScaleUpStatusProcessor struct{}
 func (p *EventingScaleUpStatusProcessor) Process(context *context.AutoscalingContext, status *ScaleUpStatus) {
 	for _, noScaleUpInfo := range status.PodsRemainUnschedulable {
 		context.Recorder.Event(noScaleUpInfo.Pod, apiv1.EventTypeNormal, "NotTriggerScaleUp",
-			fmt.Sprintf("pod didn't trigger scale-up (it wouldn't fit if a new node is added): %s", reasonsMessage(noScaleUpInfo)))
+			fmt.Sprintf("pod didn't trigger scale-up (it wouldn't fit if a new node is added): %s", ReasonsMessage(noScaleUpInfo)))
 	}
 	if len(status.ScaleUpInfos) > 0 {
 		for _, pod := range status.PodsTriggeredScaleUp {
@@ -48,7 +48,8 @@ func (p *EventingScaleUpStatusProcessor) Process(context *context.AutoscalingCon
 func (p *EventingScaleUpStatusProcessor) CleanUp() {
 }
 
-func reasonsMessage(noScaleUpInfo NoScaleUpInfo) string {
+// ReasonsMessage aggregates reasons from NoScaleUpInfos.
+func ReasonsMessage(noScaleUpInfo NoScaleUpInfo) string {
 	messages := []string{}
 	aggregated := map[string]int{}
 	for _, reasons := range noScaleUpInfo.RejectedNodeGroups {
