@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"fmt"
 	"math"
+	"strings"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -33,6 +34,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
+	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/glogx"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
@@ -243,11 +245,11 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 
 	loggingQuota := glogx.PodsLoggingQuota()
 
-	podsRemainUnschedulable := make(map[*apiv1.Pod]bool)
+	podsRemainUnschedulable := make(map[*apiv1.Pod][]*simulator.PredicateError)
 
 	for _, pod := range unschedulablePods {
 		glogx.V(1).UpTo(loggingQuota).Infof("Pod %s/%s is unschedulable", pod.Namespace, pod.Name)
-		podsRemainUnschedulable[pod] = true
+		podsRemainUnschedulable[pod] = []*simulator.PredicateError{}
 	}
 	glogx.V(1).Over(loggingQuota).Infof("%v other pods are also unschedulable", -loggingQuota.Left())
 	nodeInfos, err := GetNodeInfosForGroups(nodes, context.CloudProvider, context.ClientSet,
@@ -301,7 +303,11 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 		}
 	}
 
+	skippedNodeGroups := 0
 	for _, nodeGroup := range nodeGroups {
+		// All node groups are potentially skippable until proven otherwise.
+		skippedNodeGroups++
+
 		// Autoprovisioned node groups without nodes are created later so skip check for them.
 		if nodeGroup.Exist() && !clusterStateRegistry.IsNodeGroupSafeToScaleUp(nodeGroup.Id(), now) {
 			glog.Warningf("Node group %s is not ready for scaleup", nodeGroup.Id())
@@ -314,7 +320,6 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 			continue
 		}
 		if currentTargetSize >= nodeGroup.MaxSize() {
-			// skip this node group.
 			glog.V(4).Infof("Skipping node group %s - max size reached", nodeGroup.Id())
 			continue
 		}
@@ -336,14 +341,32 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 			continue
 		}
 
+		// Beyond this point, scaling the node group is considered an option.
+		skippedNodeGroups--
+
 		option := expander.Option{
 			NodeGroup: nodeGroup,
 			Pods:      make([]*apiv1.Pod, 0),
 		}
 
-		option.Pods = FilterSchedulablePodsForNode(context, unschedulablePods, nodeGroup.Id(), nodeInfo)
+		schedulableOnNode := CheckPodsSchedulableOnNode(context, unschedulablePods, nodeGroup.Id(), nodeInfo)
+		for pod, err := range schedulableOnNode {
+			if err != nil {
+				// Aggregate errors across existing node groups.
+				// TODO(aleksandra-malinowska): figure out how to communicate
+				// reasons NAP can't create a node-pool, if it's enabled.
+				if nodeGroup.Exist() {
+					errs, found := podsRemainUnschedulable[pod]
+					if found {
+						podsRemainUnschedulable[pod] = append(errs, err)
+					}
+				}
+			} else {
+				option.Pods = append(option.Pods, pod)
+			}
+		}
 		for _, pod := range option.Pods {
-			podsRemainUnschedulable[pod] = false
+			delete(podsRemainUnschedulable, pod)
 		}
 		passingPods := make([]*apiv1.Pod, len(option.Pods))
 		copy(passingPods, option.Pods)
@@ -374,7 +397,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 
 	if len(expansionOptions) == 0 {
 		glog.V(1).Info("No expansion options")
-		return &status.ScaleUpStatus{ScaledUp: false, PodsRemainUnschedulable: getRemainingPods(podsRemainUnschedulable)}, nil
+		return &status.ScaleUpStatus{ScaledUp: false, PodsRemainUnschedulable: getRemainingPods(podsRemainUnschedulable, skippedNodeGroups)}, nil
 	}
 
 	// Pick some expansion option.
@@ -475,36 +498,54 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 		return &status.ScaleUpStatus{
 				ScaledUp:                true,
 				ScaleUpInfos:            scaleUpInfos,
-				PodsRemainUnschedulable: getRemainingPods(podsRemainUnschedulable),
+				PodsRemainUnschedulable: getRemainingPods(podsRemainUnschedulable, skippedNodeGroups),
 				PodsTriggeredScaleUp:    bestOption.Pods,
 				PodsAwaitEvaluation:     getPodsAwaitingEvaluation(unschedulablePods, podsRemainUnschedulable, bestOption.Pods)},
 			nil
 	}
 
-	return &status.ScaleUpStatus{ScaledUp: false, PodsRemainUnschedulable: getRemainingPods(podsRemainUnschedulable)}, nil
+	return &status.ScaleUpStatus{ScaledUp: false, PodsRemainUnschedulable: getRemainingPods(podsRemainUnschedulable, skippedNodeGroups)}, nil
 }
 
-func getRemainingPods(podSet map[*apiv1.Pod]bool) []*apiv1.Pod {
-	result := make([]*apiv1.Pod, 0)
-	for pod, val := range podSet {
-		if val {
-			result = append(result, pod)
+func getRemainingPods(schedulingErrors map[*apiv1.Pod][]*simulator.PredicateError, skipped int) map[*apiv1.Pod]string {
+	remaining := map[*apiv1.Pod]string{}
+	for pod, errs := range schedulingErrors {
+		messages := []string{}
+		aggregated := map[string]int{}
+		for _, err := range errs {
+			// Aggregate by reason, since predicate name isn't as helpful.
+			// If two different predicates fail with the same reason, so be it.
+			for _, reason := range err.Reasons() {
+				aggregated[reason]++
+			}
 		}
+		for msg, count := range aggregated {
+			messages = append(messages, fmt.Sprintf("%d %s", count, msg))
+		}
+		if skipped > 0 {
+			messages = append(messages, fmt.Sprintf("%d can't increase node group size", skipped))
+		}
+		remaining[pod] = strings.Join(messages, ", ")
 	}
-	return result
+	return remaining
 }
 
-func getPodsAwaitingEvaluation(allPods []*apiv1.Pod, unschedulable map[*apiv1.Pod]bool, bestOption []*apiv1.Pod) []*apiv1.Pod {
-	result := make(map[*apiv1.Pod]bool, len(allPods))
+func getPodsAwaitingEvaluation(allPods []*apiv1.Pod, unschedulable map[*apiv1.Pod][]*simulator.PredicateError, bestOption []*apiv1.Pod) []*apiv1.Pod {
+	awaitsEvaluation := make(map[*apiv1.Pod]bool, len(allPods))
 	for _, pod := range allPods {
-		if !unschedulable[pod] {
-			result[pod] = true
+		if _, found := unschedulable[pod]; !found {
+			awaitsEvaluation[pod] = true
 		}
 	}
 	for _, pod := range bestOption {
-		result[pod] = false
+		delete(awaitsEvaluation, pod)
 	}
-	return getRemainingPods(result)
+
+	result := make([]*apiv1.Pod, 0)
+	for pod := range awaitsEvaluation {
+		result = append(result, pod)
+	}
+	return result
 }
 
 func filterNodeGroupsByPods(groups []cloudprovider.NodeGroup, podsRequiredToFit []*apiv1.Pod,

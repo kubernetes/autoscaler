@@ -67,9 +67,9 @@ const (
 // UID as a key in initial lookup and only run full comparison on a set of
 // podSchedulableInfos created for pods owned by this controller.
 type podSchedulableInfo struct {
-	spec        apiv1.PodSpec
-	labels      map[string]string
-	schedulable bool
+	spec            apiv1.PodSpec
+	labels          map[string]string
+	schedulingError *simulator.PredicateError
 }
 
 type podSchedulableMap map[string][]podSchedulableInfo
@@ -78,32 +78,32 @@ func (psi *podSchedulableInfo) match(pod *apiv1.Pod) bool {
 	return reflect.DeepEqual(pod.Labels, psi.labels) && apiequality.Semantic.DeepEqual(pod.Spec, psi.spec)
 }
 
-func (podMap podSchedulableMap) get(pod *apiv1.Pod) (bool, bool) {
+func (podMap podSchedulableMap) get(pod *apiv1.Pod) (*simulator.PredicateError, bool) {
 	ref := drain.ControllerRef(pod)
 	if ref == nil {
-		return false, false
+		return nil, false
 	}
 	uid := string(ref.UID)
 	if infos, found := podMap[uid]; found {
 		for _, info := range infos {
 			if info.match(pod) {
-				return info.schedulable, true
+				return info.schedulingError, true
 			}
 		}
 	}
-	return false, false
+	return nil, false
 }
 
-func (podMap podSchedulableMap) set(pod *apiv1.Pod, schedulable bool) {
+func (podMap podSchedulableMap) set(pod *apiv1.Pod, err *simulator.PredicateError) {
 	ref := drain.ControllerRef(pod)
 	if ref == nil {
 		return
 	}
 	uid := string(ref.UID)
 	podMap[uid] = append(podMap[uid], podSchedulableInfo{
-		spec:        pod.Spec,
-		labels:      pod.Labels,
-		schedulable: schedulable,
+		spec:            pod.Spec,
+		labels:          pod.Labels,
+		schedulingError: err,
 	})
 }
 
@@ -112,34 +112,39 @@ func (podMap podSchedulableMap) set(pod *apiv1.Pod, schedulable bool) {
 // It takes into account pods that are bound to node and will be scheduled after lower priority pod preemption.
 func FilterOutSchedulable(unschedulableCandidates []*apiv1.Pod, nodes []*apiv1.Node, allScheduled []*apiv1.Pod, podsWaitingForLowerPriorityPreemption []*apiv1.Pod,
 	predicateChecker *simulator.PredicateChecker, expendablePodsPriorityCutoff int) []*apiv1.Pod {
-
 	unschedulablePods := []*apiv1.Pod{}
 	nonExpendableScheduled := FilterOutExpendablePods(allScheduled, expendablePodsPriorityCutoff)
 	nodeNameToNodeInfo := scheduler_util.CreateNodeNameToInfoMap(append(nonExpendableScheduled, podsWaitingForLowerPriorityPreemption...), nodes)
 	podSchedulable := make(podSchedulableMap)
-
 	loggingQuota := glogx.PodsLoggingQuota()
 
 	for _, pod := range unschedulableCandidates {
-		if schedulable, found := podSchedulable.get(pod); found {
-			if !schedulable {
+		cachedError, found := podSchedulable.get(pod)
+		// Try to get result from cache.
+		if found {
+			if cachedError != nil {
 				unschedulablePods = append(unschedulablePods, pod)
 			} else {
 				glogx.V(4).UpTo(loggingQuota).Infof("Pod %s marked as unschedulable can be scheduled (based on simulation run for other pod owned by the same controller). Ignoring in scale up.", pod.Name)
 			}
 			continue
 		}
-		if nodeName, err := predicateChecker.FitsAny(pod, nodeNameToNodeInfo); err == nil {
-			glogx.V(4).UpTo(loggingQuota).Infof("Pod %s marked as unschedulable can be scheduled on %s. Ignoring in scale up.", pod.Name, nodeName)
-			podSchedulable.set(pod, true)
-		} else {
+
+		// Not found in cache, have to run the predicates.
+		nodeName, err := predicateChecker.FitsAny(pod, nodeNameToNodeInfo)
+		// err returned from FitsAny isn't a PredicateError.
+		// Hello, ugly hack. I wish you weren't here.
+		var predicateError *simulator.PredicateError
+		if err != nil {
+			predicateError = simulator.NewPredicateError("FitsAny", err, nil)
 			unschedulablePods = append(unschedulablePods, pod)
-			podSchedulable.set(pod, false)
+		} else {
+			glogx.V(4).UpTo(loggingQuota).Infof("Pod %s marked as unschedulable can be scheduled on %s. Ignoring in scale up.", pod.Name, nodeName)
 		}
+		podSchedulable.set(pod, predicateError)
 	}
 
 	glogx.V(4).Over(loggingQuota).Infof("%v other pods marked as unschedulable can be scheduled.", -loggingQuota.Left())
-
 	return unschedulablePods
 }
 
@@ -173,34 +178,40 @@ func FilterOutExpendablePods(pods []*apiv1.Pod, expendablePodsPriorityCutoff int
 	return result
 }
 
-// FilterSchedulablePodsForNode filters pods that can be scheduled on the given node.
-func FilterSchedulablePodsForNode(context *context.AutoscalingContext, pods []*apiv1.Pod, nodeGroupId string, nodeInfo *schedulercache.NodeInfo) []*apiv1.Pod {
-	schedulablePods := []*apiv1.Pod{}
+// CheckPodsSchedulableOnNode checks if pods can be scheduled on the given node.
+func CheckPodsSchedulableOnNode(context *context.AutoscalingContext, pods []*apiv1.Pod, nodeGroupId string, nodeInfo *schedulercache.NodeInfo) map[*apiv1.Pod]*simulator.PredicateError {
+	schedulingErrors := map[*apiv1.Pod]*simulator.PredicateError{}
 	loggingQuota := glogx.PodsLoggingQuota()
 	podSchedulable := make(podSchedulableMap)
+
 	for _, pod := range pods {
-		schedulable, found := podSchedulable.get(pod)
+		// Check if pod isn't repeated before overwriting result for it.
+		if _, repeated := schedulingErrors[pod]; repeated {
+			// This shouldn't really happen.
+			glog.Warningf("Pod %v appears multiple time on pods list, will only count it once in scale-up simulation", pod)
+		}
+		// Try to get result from cache.
+		err, found := podSchedulable.get(pod)
 		if found {
-			if schedulable {
-				schedulablePods = append(schedulablePods, pod)
-			} else {
+			schedulingErrors[pod] = err
+			if err != nil {
 				glogx.V(2).UpTo(loggingQuota).Infof("Pod %s can't be scheduled on %s. Used cached predicate check results", pod.Name, nodeGroupId)
 			}
-		} else {
-			err := context.PredicateChecker.CheckPredicates(pod, nil, nodeInfo, simulator.ReturnVerboseError)
-			if err == nil {
-				schedulable = true
-				podSchedulable.set(pod, true)
-				schedulablePods = append(schedulablePods, pod)
-			} else {
-				glog.V(2).Infof("Pod %s can't be scheduled on %s, predicate failed: %v", pod.Name, nodeGroupId, err)
-				schedulable = false
-				podSchedulable.set(pod, false)
+		}
+		// Not found in cache, have to run the predicates.
+		if !found {
+			err = context.PredicateChecker.CheckPredicates(pod, nil, nodeInfo)
+			podSchedulable.set(pod, err)
+			schedulingErrors[pod] = err
+			if err != nil {
+				// Always log for the first pod in a controller.
+				glog.V(2).Infof("Pod %s can't be scheduled on %s, predicate failed: %v", pod.Name, nodeGroupId, err.VerboseError())
 			}
 		}
 	}
+
 	glogx.V(2).Over(loggingQuota).Infof("%v other pods can't be scheduled on %s.", -loggingQuota.Left(), nodeGroupId)
-	return schedulablePods
+	return schedulingErrors
 }
 
 // GetNodeInfosForGroups finds NodeInfos for all node groups used to manage the given nodes. It also returns a node group to sample node mapping.

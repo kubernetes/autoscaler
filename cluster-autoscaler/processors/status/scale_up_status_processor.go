@@ -29,7 +29,7 @@ type ScaleUpStatus struct {
 	ScaledUp                bool
 	ScaleUpInfos            []nodegroupset.ScaleUpInfo
 	PodsTriggeredScaleUp    []*apiv1.Pod
-	PodsRemainUnschedulable []*apiv1.Pod
+	PodsRemainUnschedulable map[*apiv1.Pod]string
 	PodsAwaitEvaluation     []*apiv1.Pod
 }
 
