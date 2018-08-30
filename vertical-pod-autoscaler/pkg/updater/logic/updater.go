@@ -85,6 +85,9 @@ func (u *updater) RunOnce() {
 
 	if len(vpas) == 0 {
 		glog.Warningf("no VPA objects to process")
+		if u.evictionAdmission != nil {
+			u.evictionAdmission.CleanUp()
+		}
 		timer.ObserveTotal()
 		return
 	}
