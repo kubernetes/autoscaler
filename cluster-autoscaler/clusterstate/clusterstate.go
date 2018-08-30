@@ -468,9 +468,9 @@ func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 		current.Registered++
 		if deletetaint.HasToBeDeletedTaint(node) {
 			current.Deleted++
-		} else if isNodeNotStarted(node) && node.CreationTimestamp.Time.Add(MaxNodeStartupTime).Before(currentTime) {
+		} else if stillStarting := isNodeStillStarting(node); stillStarting && node.CreationTimestamp.Time.Add(MaxNodeStartupTime).Before(currentTime) {
 			current.LongNotStarted++
-		} else if isNodeNotStarted(node) {
+		} else if stillStarting {
 			current.NotStarted++
 		} else if ready {
 			current.Ready++
@@ -770,10 +770,10 @@ func buildScaleDownStatusClusterwide(candidates map[string][]string, lastProbed 
 	return condition
 }
 
-func isNodeNotStarted(node *apiv1.Node) bool {
+func isNodeStillStarting(node *apiv1.Node) bool {
 	for _, condition := range node.Status.Conditions {
 		if condition.Type == apiv1.NodeReady &&
-			condition.Status == apiv1.ConditionFalse &&
+			condition.Status != apiv1.ConditionTrue &&
 			condition.LastTransitionTime.Time.Sub(node.CreationTimestamp.Time) < MaxStatusSettingDelayAfterCreation {
 			return true
 		}

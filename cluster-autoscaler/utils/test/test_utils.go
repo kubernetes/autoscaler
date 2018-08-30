@@ -131,28 +131,29 @@ func AddGpusToNode(node *apiv1.Node, gpusCount int64) {
 	node.Labels[gpuLabel] = defaultGPUType
 }
 
-// SetNodeReadyState sets node ready state.
+// SetNodeReadyState sets node ready state to either ConditionTrue or ConditionFalse.
 func SetNodeReadyState(node *apiv1.Node, ready bool, lastTransition time.Time) {
+	if ready {
+		SetNodeCondition(node, apiv1.NodeReady, apiv1.ConditionTrue, lastTransition)
+	} else {
+		SetNodeCondition(node, apiv1.NodeReady, apiv1.ConditionFalse, lastTransition)
+	}
+}
+
+// SetNodeCondition sets node condition.
+func SetNodeCondition(node *apiv1.Node, conditionType apiv1.NodeConditionType, status apiv1.ConditionStatus, lastTransition time.Time) {
 	for i := range node.Status.Conditions {
-		if node.Status.Conditions[i].Type == apiv1.NodeReady {
+		if node.Status.Conditions[i].Type == conditionType {
 			node.Status.Conditions[i].LastTransitionTime = metav1.Time{Time: lastTransition}
-			if ready {
-				node.Status.Conditions[i].Status = apiv1.ConditionTrue
-			} else {
-				node.Status.Conditions[i].Status = apiv1.ConditionFalse
-			}
+			node.Status.Conditions[i].Status = status
 			return
 		}
 	}
+	// Condition doesn't exist yet.
 	condition := apiv1.NodeCondition{
-		Type:               apiv1.NodeReady,
-		Status:             apiv1.ConditionTrue,
+		Type:               conditionType,
+		Status:             status,
 		LastTransitionTime: metav1.Time{Time: lastTransition},
-	}
-	if ready {
-		condition.Status = apiv1.ConditionTrue
-	} else {
-		condition.Status = apiv1.ConditionFalse
 	}
 	node.Status.Conditions = append(node.Status.Conditions, condition)
 }
