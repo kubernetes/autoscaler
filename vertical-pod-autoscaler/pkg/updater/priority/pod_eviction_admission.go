@@ -28,6 +28,9 @@ type PodEvictionAdmission interface {
 	LoopInit(allLivePods []*apiv1.Pod, vpaControlledPods map[*vpa_types.VerticalPodAutoscaler][]*apiv1.Pod)
 	// Admit returns true if PodEvictionAdmission decides that pod can be evicted with given recommendation.
 	Admit(pod *apiv1.Pod, recommendation *vpa_types.RecommendedPodResources) bool
+	// CleanUp cleans up any state that PodEvictionAdmission may keep. Called
+	// when no VPA objects are present in the cluster.
+	CleanUp()
 }
 
 // NewDefaultPodEvictionAdmission constructs new PodEvictionAdmission that admits all pods.
@@ -60,10 +63,18 @@ func (a *sequentialPodEvictionAdmission) Admit(pod *apiv1.Pod, recommendation *v
 	return true
 }
 
+func (a *sequentialPodEvictionAdmission) CleanUp() {
+	for _, admission := range a.admissions {
+		admission.CleanUp()
+	}
+}
+
 type noopPodEvictionAdmission struct{}
 
 func (n *noopPodEvictionAdmission) LoopInit(allLivePods []*apiv1.Pod, vpaControlledPods map[*vpa_types.VerticalPodAutoscaler][]*apiv1.Pod) {
 }
 func (n *noopPodEvictionAdmission) Admit(pod *apiv1.Pod, recommendation *vpa_types.RecommendedPodResources) bool {
 	return true
+}
+func (n *noopPodEvictionAdmission) CleanUp() {
 }

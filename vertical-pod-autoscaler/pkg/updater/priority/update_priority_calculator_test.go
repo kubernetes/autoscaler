@@ -348,6 +348,7 @@ func (p *pod1Admission) LoopInit([]*apiv1.Pod, map[*vpa_types.VerticalPodAutosca
 func (p *pod1Admission) Admit(pod *apiv1.Pod, recommendation *vpa_types.RecommendedPodResources) bool {
 	return pod.Name == "POD1"
 }
+func (p *pod1Admission) CleanUp() {}
 
 func TestAdmission(t *testing.T) {
 	calculator := NewUpdatePriorityCalculator(nil, nil, nil, &test.FakeRecommendationProcessor{})
