@@ -37,13 +37,15 @@ var (
 	prometheusAddress      = flag.String("prometheus-address", "", `Where to reach for Prometheus metrics`)
 	storage                = flag.String("storage", "", `Specifies storage mode. Supported values: prometheus, checkpoint (default)`)
 	address                = flag.String("address", ":8942", "The address to expose Prometheus metrics.")
+	kubeApiQps             = flag.Float64("kube-api-qps", 5.0, `QPS limit when making requests to Kubernetes apiserver`)
+	kubeApiBurst           = flag.Float64("kube-api-burst", 10.0, `QPS burst limit when making requests to Kubernetes apiserver`)
 )
 
 func main() {
 	kube_flag.InitFlags()
 	glog.V(1).Infof("Vertical Pod Autoscaler %s Recommender", common.VerticalPodAutoscalerVersion)
 
-	config := createKubeConfig()
+	config := createKubeConfig(float32(*kubeApiQps), int(*kubeApiBurst))
 
 	metrics.Initialize(*address)
 	metrics_recommender.Register()
@@ -67,10 +69,12 @@ func main() {
 
 }
 
-func createKubeConfig() *rest.Config {
+func createKubeConfig(kubeApiQps float32, kubeApiBurst int) *rest.Config {
 	config, err := kube_restclient.InClusterConfig()
 	if err != nil {
 		glog.Fatalf("Failed to create config: %v", err)
 	}
+	config.QPS = kubeApiQps
+	config.Burst = kubeApiBurst
 	return config
 }
