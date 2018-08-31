@@ -126,7 +126,7 @@ func (unschedulablePodLister *UnschedulablePodLister) List() ([]*apiv1.Pod, erro
 	}
 	for _, pod := range allPods {
 		_, condition := podv1.GetPodCondition(&pod.Status, apiv1.PodScheduled)
-		if condition != nil && condition.Status == apiv1.ConditionFalse && condition.Reason == "Unschedulable" {
+		if condition != nil && condition.Status == apiv1.ConditionFalse && condition.Reason == apiv1.PodReasonUnschedulable {
 			unschedulablePods = append(unschedulablePods, pod)
 		}
 	}
