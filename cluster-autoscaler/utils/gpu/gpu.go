@@ -18,7 +18,6 @@ package gpu
 
 import (
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 
@@ -180,58 +179,6 @@ func PodRequestsGpu(pod *apiv1.Pod) bool {
 		}
 	}
 	return false
-}
-
-// GpuRequestInfo contains an information about a set of pods requesting a GPU.
-type GpuRequestInfo struct {
-	// MaxRequest is maximum GPU request among pods
-	MaxRequest resource.Quantity
-	// Pods is a list of pods requesting GPU
-	Pods []*apiv1.Pod
-	// SystemLabels is a set of system labels corresponding to selected GPU
-	// that needs to be passed to cloudprovider
-	SystemLabels map[string]string
-}
-
-// GetGpuRequests returns a GpuRequestInfo for each type of GPU requested by
-// any pod in pods argument. If the pod requests GPU, but doesn't specify what
-// type of GPU it wants (via NodeSelector) it assumes it's DefaultGPUType.
-func GetGpuRequests(pods []*apiv1.Pod) map[string]GpuRequestInfo {
-	result := make(map[string]GpuRequestInfo)
-	for _, pod := range pods {
-		var podGpu resource.Quantity
-		for _, container := range pod.Spec.Containers {
-			if container.Resources.Requests != nil {
-				containerGpu := container.Resources.Requests[ResourceNvidiaGPU]
-				podGpu.Add(containerGpu)
-			}
-		}
-		if podGpu.Value() == 0 {
-			continue
-		}
-
-		gpuType := DefaultGPUType
-		if gpuTypeFromSelector, found := pod.Spec.NodeSelector[GPULabel]; found {
-			gpuType = gpuTypeFromSelector
-		}
-
-		requestInfo, found := result[gpuType]
-		if !found {
-			requestInfo = GpuRequestInfo{
-				MaxRequest: podGpu,
-				Pods:       make([]*apiv1.Pod, 0),
-				SystemLabels: map[string]string{
-					GPULabel: gpuType,
-				},
-			}
-		}
-		if podGpu.Cmp(requestInfo.MaxRequest) > 0 {
-			requestInfo.MaxRequest = podGpu
-		}
-		requestInfo.Pods = append(requestInfo.Pods, pod)
-		result[gpuType] = requestInfo
-	}
-	return result
 }
 
 // GetNodeTargetGpus returns the number of gpus on a given node. This includes gpus which are not yet
