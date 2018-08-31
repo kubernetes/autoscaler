@@ -78,8 +78,15 @@ func (r *recommender) UpdateVPAs() {
 	cnt := metrics_recommender.NewObjectCounter()
 	defer cnt.Observe()
 
-	for key, vpa := range r.clusterState.Vpas {
-		glog.V(3).Infof("VPA to update #%v: %+v", key, vpa)
+	for _, observedVpa := range r.clusterState.ObservedVpas {
+		key := model.VpaID{
+			Namespace: observedVpa.Namespace,
+			VpaName:   observedVpa.Name}
+
+		vpa, found := r.clusterState.Vpas[key]
+		if !found {
+			continue
+		}
 		resources := r.podResourceRecommender.GetRecommendedPodResources(GetContainerNameToAggregateStateMap(vpa))
 		containerResources := make([]vpa_types.RecommendedContainerResources, 0, len(resources))
 		for containerName, res := range resources {
@@ -102,8 +109,8 @@ func (r *recommender) UpdateVPAs() {
 		}
 		cnt.Add(vpa)
 
-		_, err := vpa_api_util.UpdateVpaStatus(
-			r.vpaClient.VerticalPodAutoscalers(vpa.ID.Namespace), vpa)
+		_, err := vpa_api_util.UpdateVpaStatusIfNeeded(
+			r.vpaClient.VerticalPodAutoscalers(vpa.ID.Namespace), vpa, &observedVpa.Status)
 		if err != nil {
 			glog.Errorf(
 				"Cannot update VPA %v object. Reason: %+v", vpa.ID.VpaName, err)
