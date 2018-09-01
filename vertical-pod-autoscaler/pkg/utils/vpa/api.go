@@ -176,7 +176,7 @@ func CreateOrUpdateVpaCheckpoint(vpaCheckpointClient vpa_api.VerticalPodAutoscal
 		_, err = vpaCheckpointClient.Create(vpaCheckpoint)
 	}
 	if err != nil {
-		return fmt.Errorf("Cannot save checkpotint for vpa %v container %v. Reason: %+v", vpaCheckpoint.ObjectMeta.Name, vpaCheckpoint.Spec.ContainerName, err)
+		return fmt.Errorf("Cannot save checkpoint for vpa %v container %v. Reason: %+v", vpaCheckpoint.ObjectMeta.Name, vpaCheckpoint.Spec.ContainerName, err)
 	}
 	return nil
 }
