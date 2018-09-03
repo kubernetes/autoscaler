@@ -204,6 +204,11 @@ func (gke *GkeCloudProvider) GetClusterInfo() (projectId, location, clusterName 
 	return gke.gkeManager.GetProjectId(), gke.gkeManager.GetLocation(), gke.gkeManager.GetClusterName()
 }
 
+// GetNodeLocations returns the list of zones in which the cluster has nodes.
+func (gke *GkeCloudProvider) GetNodeLocations() []string {
+	return gke.gkeManager.GetNodeLocations()
+}
+
 // MigSpec contains information about what machines in a MIG look like.
 type MigSpec struct {
 	MachineType    string
