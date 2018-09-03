@@ -64,24 +64,21 @@ func NewPredicateChecker(kubeClient kube_client.Interface, stop <-chan struct{})
 	}
 	informerFactory := informers.NewSharedInformerFactory(kubeClient, 0)
 
-	schedulerConfigFactory := factory.NewConfigFactory(
-		"cluster-autoscaler",
-		kubeClient,
-		informerFactory.Core().V1().Nodes(),
-		informerFactory.Core().V1().Pods(),
-		informerFactory.Core().V1().PersistentVolumes(),
-		informerFactory.Core().V1().PersistentVolumeClaims(),
-		informerFactory.Core().V1().ReplicationControllers(),
-		informerFactory.Extensions().V1beta1().ReplicaSets(),
-		informerFactory.Apps().V1beta1().StatefulSets(),
-		informerFactory.Core().V1().Services(),
-		informerFactory.Policy().V1beta1().PodDisruptionBudgets(),
-		informerFactory.Storage().V1().StorageClasses(),
-		apiv1.DefaultHardPodAffinitySymmetricWeight,
-		false,
-		false,
-	)
-
+	schedulerConfigFactory := factory.NewConfigFactory(&factory.ConfigFactoryArgs{
+		SchedulerName:                  "cluster-autoscaler",
+		Client:                         kubeClient,
+		NodeInformer:                   informerFactory.Core().V1().Nodes(),
+		PodInformer:                    informerFactory.Core().V1().Pods(),
+		PvInformer:                     informerFactory.Core().V1().PersistentVolumes(),
+		PvcInformer:                    informerFactory.Core().V1().PersistentVolumeClaims(),
+		ReplicationControllerInformer:  informerFactory.Core().V1().ReplicationControllers(),
+		ReplicaSetInformer:             informerFactory.Apps().V1().ReplicaSets(),
+		StatefulSetInformer:            informerFactory.Apps().V1().StatefulSets(),
+		ServiceInformer:                informerFactory.Core().V1().Services(),
+		PdbInformer:                    informerFactory.Policy().V1beta1().PodDisruptionBudgets(),
+		StorageClassInformer:           informerFactory.Storage().V1().StorageClasses(),
+		HardPodAffinitySymmetricWeight: apiv1.DefaultHardPodAffinitySymmetricWeight,
+	})
 	informerFactory.Start(stop)
 
 	metadataProducer, err := schedulerConfigFactory.GetPredicateMetadataProducer()
