@@ -30,6 +30,7 @@ import (
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	apiserverconfig "k8s.io/apiserver/pkg/apis/config"
 	kube_flag "k8s.io/apiserver/pkg/util/flag"
 	cloudBuilder "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
@@ -43,9 +44,9 @@ import (
 	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-	kube_leaderelection "k8s.io/client-go/tools/leaderelection"
+	"k8s.io/client-go/tools/leaderelection"
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
-	"k8s.io/kubernetes/pkg/apis/componentconfig"
+	"k8s.io/kubernetes/pkg/client/leaderelectionconfig"
 
 	"github.com/golang/glog"
 	"github.com/prometheus/client_golang/prometheus"
@@ -305,7 +306,7 @@ func main() {
 	leaderElection := defaultLeaderElectionConfiguration()
 	leaderElection.LeaderElect = true
 
-	bindFlags(&leaderElection, pflag.CommandLine)
+	leaderelectionconfig.BindFlags(&leaderElection, pflag.CommandLine)
 	kube_flag.InitFlags()
 	healthCheck := metrics.NewHealthCheck(*maxInactivityTimeFlag, *maxFailingTimeFlag)
 
@@ -358,12 +359,12 @@ func main() {
 			glog.Fatalf("Unable to create leader election lock: %v", err)
 		}
 
-		kube_leaderelection.RunOrDie(ctx.TODO(), kube_leaderelection.LeaderElectionConfig{
+		leaderelection.RunOrDie(ctx.TODO(), leaderelection.LeaderElectionConfig{
 			Lock:          lock,
 			LeaseDuration: leaderElection.LeaseDuration.Duration,
 			RenewDeadline: leaderElection.RenewDeadline.Duration,
 			RetryPeriod:   leaderElection.RetryPeriod.Duration,
-			Callbacks: kube_leaderelection.LeaderCallbacks{
+			Callbacks: leaderelection.LeaderCallbacks{
 				OnStartedLeading: func(_ ctx.Context) {
 					// Since we are committing a suicide after losing
 					// mastership, we can safely ignore the argument.
@@ -377,37 +378,14 @@ func main() {
 	}
 }
 
-func defaultLeaderElectionConfiguration() componentconfig.LeaderElectionConfiguration {
-	return componentconfig.LeaderElectionConfiguration{
+func defaultLeaderElectionConfiguration() apiserverconfig.LeaderElectionConfiguration {
+	return apiserverconfig.LeaderElectionConfiguration{
 		LeaderElect:   false,
 		LeaseDuration: metav1.Duration{Duration: defaultLeaseDuration},
 		RenewDeadline: metav1.Duration{Duration: defaultRenewDeadline},
 		RetryPeriod:   metav1.Duration{Duration: defaultRetryPeriod},
 		ResourceLock:  resourcelock.EndpointsResourceLock,
 	}
-}
-
-func bindFlags(l *componentconfig.LeaderElectionConfiguration, fs *pflag.FlagSet) {
-	fs.BoolVar(&l.LeaderElect, "leader-elect", l.LeaderElect, ""+
-		"Start a leader election client and gain leadership before "+
-		"executing the main loop. Enable this when running replicated "+
-		"components for high availability.")
-	fs.DurationVar(&l.LeaseDuration.Duration, "leader-elect-lease-duration", l.LeaseDuration.Duration, ""+
-		"The duration that non-leader candidates will wait after observing a leadership "+
-		"renewal until attempting to acquire leadership of a led but unrenewed leader "+
-		"slot. This is effectively the maximum duration that a leader can be stopped "+
-		"before it is replaced by another candidate. This is only applicable if leader "+
-		"election is enabled.")
-	fs.DurationVar(&l.RenewDeadline.Duration, "leader-elect-renew-deadline", l.RenewDeadline.Duration, ""+
-		"The interval between attempts by the acting master to renew a leadership slot "+
-		"before it stops leading. This must be less than or equal to the lease duration. "+
-		"This is only applicable if leader election is enabled.")
-	fs.DurationVar(&l.RetryPeriod.Duration, "leader-elect-retry-period", l.RetryPeriod.Duration, ""+
-		"The duration the clients should wait between attempting acquisition and renewal "+
-		"of a leadership. This is only applicable if leader election is enabled.")
-	fs.StringVar(&l.ResourceLock, "leader-elect-resource-lock", l.ResourceLock, ""+
-		"The type of resource object that is used for locking during"+
-		"leader election. Supported options are `endpoints` (default) and `configmap`.")
 }
 
 const (
