@@ -131,8 +131,10 @@ func (r *recommender) MaintainCheckpoints() {
 }
 
 func (r *recommender) GarbageCollect() {
-	if time.Now().Sub(r.lastAggregateContainerStateGC) > AggregateContainerStateGCInterval {
-		r.clusterState.GarbageCollectAggregateCollectionStates(time.Now())
+	gcTime := time.Now()
+	if gcTime.Sub(r.lastAggregateContainerStateGC) > AggregateContainerStateGCInterval {
+		r.clusterState.GarbageCollectAggregateCollectionStates(gcTime)
+		r.lastAggregateContainerStateGC = gcTime
 	}
 }
 
