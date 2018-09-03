@@ -22,6 +22,7 @@ import (
 	"os"
 	"reflect"
 	"strings"
+	"sync"
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -106,11 +107,36 @@ type GkeManager interface {
 	GetProjectId() string
 	GetClusterName() string
 	GetMigTemplateNode(mig *GkeMig) (*apiv1.Node, error)
+	GetNodeLocations() []string
+}
+
+// gkeConfigurationCache is used for storing cached cluster configuration.
+type gkeConfigurationCache struct {
+	sync.Mutex
+	nodeLocations []string
+}
+
+func (cache *gkeConfigurationCache) setNodeLocations(locations []string) {
+	cache.Lock()
+	defer cache.Unlock()
+
+	cache.nodeLocations = make([]string, len(locations))
+	copy(cache.nodeLocations, locations)
+}
+
+func (cache *gkeConfigurationCache) getNodeLocations() []string {
+	cache.Lock()
+	defer cache.Unlock()
+
+	locations := make([]string, len(cache.nodeLocations))
+	copy(locations, cache.nodeLocations)
+	return locations
 }
 
 // gkeManagerImpl handles gce communication and data caching.
 type gkeManagerImpl struct {
 	cache                    gce.GceCache
+	gkeConfigurationCache    gkeConfigurationCache
 	lastRefresh              time.Time
 	machinesCacheLastRefresh time.Time
 
@@ -289,6 +315,20 @@ func (m *gkeManagerImpl) refreshNodePools() error {
 	return nil
 }
 
+func (m *gkeManagerImpl) refreshLocations() error {
+	locations, err := m.GkeService.FetchLocations()
+	if err != nil {
+		return err
+	}
+	m.gkeConfigurationCache.setNodeLocations(locations)
+	return nil
+}
+
+// GetNodeLocation returns a list of zones in which cluster has nodes.
+func (m *gkeManagerImpl) GetNodeLocations() []string {
+	return m.gkeConfigurationCache.getNodeLocations()
+}
+
 // RegisterMig registers mig in GceManager. Returns true if the node group didn't exist before or its config has changed.
 func (m *gkeManagerImpl) registerMig(mig *GkeMig) bool {
 	changed := m.cache.RegisterMig(mig)
@@ -349,6 +389,7 @@ func (m *gkeManagerImpl) fetchMachinesCache() error {
 	if m.machinesCacheLastRefresh.Add(machinesRefreshInterval).After(time.Now()) {
 		return nil
 	}
+	// Machine types cache is rarely updated. Always fetch locations to ensure we aren't missing recently added zone(s).
 	var locations []string
 	locations, err := m.GkeService.FetchLocations()
 	if err != nil {
@@ -455,6 +496,10 @@ func (m *gkeManagerImpl) forceRefresh() error {
 	case ModeGKENAP:
 		if err := m.fetchResourceLimiter(); err != nil {
 			glog.Errorf("Failed to fetch resource limits: %v", err)
+			return err
+		}
+		if err := m.refreshLocations(); err != nil {
+			glog.Errorf("Failed to fetch cluster node locations: %v", err)
 			return err
 		}
 		fallthrough
