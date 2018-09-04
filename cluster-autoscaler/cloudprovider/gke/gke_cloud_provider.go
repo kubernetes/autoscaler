@@ -26,6 +26,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 )
 
@@ -121,10 +122,10 @@ func (gke *GkeCloudProvider) GetAvailableMachineTypes() ([]string, error) {
 func (gke *GkeCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string,
 	taints []apiv1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
 	nodePoolName := fmt.Sprintf("%s-%s-%d", nodeAutoprovisioningPrefix, machineType, time.Now().Unix())
-	// TODO(aleksandra-malinowska): GkeManager's location will be a region
-	// for regional clusters. We should support regional clusters by looking at
-	// node locations instead.
-	zone := gke.gkeManager.GetLocation()
+	zone, found := systemLabels[kubeletapis.LabelZoneFailureDomain]
+	if !found {
+		return nil, cloudprovider.ErrIllegalConfiguration
+	}
 
 	if gpuRequest, found := extraResources[gpu.ResourceNvidiaGPU]; found {
 		gpuType, found := systemLabels[gpu.GPULabel]
@@ -202,6 +203,11 @@ func (gke *GkeCloudProvider) Refresh() error {
 // GetClusterInfo returns the project id, location and cluster name.
 func (gke *GkeCloudProvider) GetClusterInfo() (projectId, location, clusterName string) {
 	return gke.gkeManager.GetProjectId(), gke.gkeManager.GetLocation(), gke.gkeManager.GetClusterName()
+}
+
+// GetNodeLocations returns the list of zones in which the cluster has nodes.
+func (gke *GkeCloudProvider) GetNodeLocations() []string {
+	return gke.gkeManager.GetNodeLocations()
 }
 
 // MigSpec contains information about what machines in a MIG look like.

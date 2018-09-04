@@ -29,6 +29,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 
 	apiv1 "k8s.io/api/core/v1"
 
@@ -129,6 +130,11 @@ func (m *gkeManagerMock) GetMigTemplateNode(mig *GkeMig) (*apiv1.Node, error) {
 func (m *gkeManagerMock) getCpuAndMemoryForMachineType(machineType string, zone string) (cpu int64, mem int64, err error) {
 	args := m.Called(machineType, zone)
 	return args.Get(0).(int64), args.Get(1).(int64), args.Error(2)
+}
+
+func (m *gkeManagerMock) GetNodeLocations() []string {
+	args := m.Called()
+	return args.Get(0).([]string)
 }
 
 func TestBuildGkeCloudProvider(t *testing.T) {
@@ -290,9 +296,9 @@ func TestMig(t *testing.T) {
 
 	// Test NewNodeGroup.
 	gkeManagerMock.On("GetProjectId").Return("project1").Once()
-	gkeManagerMock.On("GetLocation").Return("us-central1-b").Once()
 	gkeManagerMock.On("GetMigTemplateNode", mock.AnythingOfType("*gke.GkeMig")).Return(&apiv1.Node{}, nil).Once()
-	nodeGroup, err := gke.NewNodeGroup("n1-standard-1", nil, nil, nil, nil)
+	systemLabels := map[string]string{kubeletapis.LabelZoneFailureDomain: "us-central1-b"}
+	nodeGroup, err := gke.NewNodeGroup("n1-standard-1", nil, systemLabels, nil, nil)
 	assert.NoError(t, err)
 	assert.NotNil(t, nodeGroup)
 	mig1 := reflect.ValueOf(nodeGroup).Interface().(*GkeMig)
@@ -455,11 +461,11 @@ func TestNewNodeGroupForGpu(t *testing.T) {
 
 	// Test NewNodeGroup.
 	gkeManagerMock.On("GetProjectId").Return("project1").Once()
-	gkeManagerMock.On("GetLocation").Return("us-west1-b").Once()
 	gkeManagerMock.On("GetMigTemplateNode", mock.AnythingOfType("*gke.GkeMig")).Return(&apiv1.Node{}, nil).Once()
 
 	systemLabels := map[string]string{
-		gpu.GPULabel: gpu.DefaultGPUType,
+		gpu.GPULabel:                       gpu.DefaultGPUType,
+		kubeletapis.LabelZoneFailureDomain: "us-west1-b",
 	}
 	extraResources := map[string]resource.Quantity{
 		gpu.ResourceNvidiaGPU: resource.MustParse("1"),
