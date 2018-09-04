@@ -35,7 +35,6 @@ const (
 
 const (
 	clusterPathPrefix   = "projects/%s/locations/%s/clusters/%s"
-	nodePoolsPathPrefix = "projects/%s/locations/%s/clusters/%s/nodePools/"
 	nodePoolPathPrefix  = "projects/%s/locations/%s/clusters/%s/nodePools/%%s"
 	operationPathPrefix = "projects/%s/locations/%s/operations/%%s"
 )
@@ -43,13 +42,18 @@ const (
 // AutoscalingGkeClient is used for communicating with GKE API.
 type AutoscalingGkeClient interface {
 	// reading cluster state
-	FetchLocations() ([]string, error)
-	FetchNodePools() ([]NodePool, error)
-	FetchResourceLimits() (*cloudprovider.ResourceLimiter, error)
+	GetCluster() (Cluster, error)
 
 	// modifying cluster state
 	DeleteNodePool(string) error
 	CreateNodePool(*GkeMig) error
+}
+
+// Cluster contains cluster's fields we want to use.
+type Cluster struct {
+	Locations       []string
+	NodePools       []NodePool
+	ResourceLimiter *cloudprovider.ResourceLimiter
 }
 
 // NodePool contains node pool's fields we want to use.
