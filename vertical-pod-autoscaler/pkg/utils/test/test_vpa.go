@@ -19,8 +19,8 @@ package test
 import (
 	"time"
 
-	apiv1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	core "k8s.io/api/core/v1"
+	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 )
 
@@ -37,6 +37,8 @@ type VerticalPodAutoscalerBuilder interface {
 	WithTarget(cpu, memory string) VerticalPodAutoscalerBuilder
 	WithLowerBound(cpu, memory string) VerticalPodAutoscalerBuilder
 	WithUpperBound(cpu, memory string) VerticalPodAutoscalerBuilder
+	AppendCondition(conditionType vpa_types.VerticalPodAutoscalerConditionType,
+		status core.ConditionStatus, reason, message string, lastTransitionTime time.Time) VerticalPodAutoscalerBuilder
 	Get() *vpa_types.VerticalPodAutoscaler
 }
 
@@ -45,6 +47,7 @@ func VerticalPodAutoscaler() VerticalPodAutoscalerBuilder {
 	return &verticalPodAutoscalerBuilder{
 		recommendation: Recommendation(),
 		namespace:      "default",
+		conditions:     []vpa_types.VerticalPodAutoscalerCondition{},
 	}
 }
 
@@ -52,12 +55,13 @@ type verticalPodAutoscalerBuilder struct {
 	vpaName           string
 	containerName     string
 	namespace         string
-	labelSelector     *metav1.LabelSelector
+	labelSelector     *meta.LabelSelector
 	updatePolicy      *vpa_types.PodUpdatePolicy
 	creationTimestamp time.Time
-	minAllowed        apiv1.ResourceList
-	maxAllowed        apiv1.ResourceList
+	minAllowed        core.ResourceList
+	maxAllowed        core.ResourceList
 	recommendation    RecommendationBuilder
+	conditions        []vpa_types.VerticalPodAutoscalerCondition
 }
 
 func (b *verticalPodAutoscalerBuilder) WithName(vpaName string) VerticalPodAutoscalerBuilder {
@@ -80,7 +84,7 @@ func (b *verticalPodAutoscalerBuilder) WithNamespace(namespace string) VerticalP
 
 func (b *verticalPodAutoscalerBuilder) WithSelector(labelSelector string) VerticalPodAutoscalerBuilder {
 	c := *b
-	if labelSelector, err := metav1.ParseToLabelSelector(labelSelector); err != nil {
+	if labelSelector, err := meta.ParseToLabelSelector(labelSelector); err != nil {
 		panic(err)
 	} else {
 		c.labelSelector = labelSelector
@@ -133,6 +137,18 @@ func (b *verticalPodAutoscalerBuilder) WithUpperBound(cpu, memory string) Vertic
 	return &c
 }
 
+func (b *verticalPodAutoscalerBuilder) AppendCondition(conditionType vpa_types.VerticalPodAutoscalerConditionType,
+	status core.ConditionStatus, reason, message string, lastTransitionTime time.Time) VerticalPodAutoscalerBuilder {
+	c := *b
+	c.conditions = append(c.conditions, vpa_types.VerticalPodAutoscalerCondition{
+		Type:               conditionType,
+		Status:             status,
+		Reason:             reason,
+		Message:            message,
+		LastTransitionTime: meta.NewTime(lastTransitionTime)})
+	return &c
+}
+
 func (b *verticalPodAutoscalerBuilder) Get() *vpa_types.VerticalPodAutoscaler {
 	if b.containerName == "" {
 		panic("Must call WithContainer() before Get()")
@@ -144,10 +160,10 @@ func (b *verticalPodAutoscalerBuilder) Get() *vpa_types.VerticalPodAutoscaler {
 	}}}
 
 	return &vpa_types.VerticalPodAutoscaler{
-		ObjectMeta: metav1.ObjectMeta{
+		ObjectMeta: meta.ObjectMeta{
 			Name:              b.vpaName,
 			Namespace:         b.namespace,
-			CreationTimestamp: metav1.NewTime(b.creationTimestamp),
+			CreationTimestamp: meta.NewTime(b.creationTimestamp),
 		},
 		Spec: vpa_types.VerticalPodAutoscalerSpec{
 			Selector:       b.labelSelector,
@@ -156,6 +172,7 @@ func (b *verticalPodAutoscalerBuilder) Get() *vpa_types.VerticalPodAutoscaler {
 		},
 		Status: vpa_types.VerticalPodAutoscalerStatus{
 			Recommendation: b.recommendation.WithContainer(b.containerName).Get(),
+			Conditions:     b.conditions,
 		},
 	}
 }
