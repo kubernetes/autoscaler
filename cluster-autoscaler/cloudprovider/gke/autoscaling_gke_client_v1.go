@@ -29,7 +29,6 @@ type autoscalingGkeClientV1 struct {
 	gkeService *gke_api.Service
 
 	clusterPath   string
-	nodePoolsPath string
 	operationPath string
 }
 
@@ -37,7 +36,6 @@ type autoscalingGkeClientV1 struct {
 func NewAutoscalingGkeClientV1(client *http.Client, projectId, location, clusterName string) (*autoscalingGkeClientV1, error) {
 	autoscalingGkeClient := &autoscalingGkeClientV1{
 		clusterPath:   fmt.Sprintf(clusterPathPrefix, projectId, location, clusterName),
-		nodePoolsPath: fmt.Sprintf(nodePoolsPathPrefix, projectId, location, clusterName),
 		operationPath: fmt.Sprintf(operationPathPrefix, projectId, location),
 	}
 
@@ -53,13 +51,13 @@ func NewAutoscalingGkeClientV1(client *http.Client, projectId, location, cluster
 	return autoscalingGkeClient, nil
 }
 
-func (m *autoscalingGkeClientV1) FetchNodePools() ([]NodePool, error) {
-	nodePoolsResponse, err := m.gkeService.Projects.Locations.Clusters.NodePools.List(m.clusterPath).Do()
+func (m *autoscalingGkeClientV1) GetCluster() (Cluster, error) {
+	clusterResponse, err := m.gkeService.Projects.Locations.Clusters.Get(m.clusterPath).Do()
 	if err != nil {
-		return nil, err
+		return Cluster{}, err
 	}
 	nodePools := []NodePool{}
-	for _, pool := range nodePoolsResponse.NodePools {
+	for _, pool := range clusterResponse.NodePools {
 		if pool.Autoscaling != nil && pool.Autoscaling.Enabled {
 			nodePools = append(nodePools, NodePool{
 				Name:              pool.Name,
@@ -70,16 +68,10 @@ func (m *autoscalingGkeClientV1) FetchNodePools() ([]NodePool, error) {
 			})
 		}
 	}
-	return nodePools, nil
-}
-
-func (m *autoscalingGkeClientV1) FetchLocations() ([]string, error) {
-	cluster, err := m.gkeService.Projects.Locations.Clusters.Get(m.clusterPath).Do()
-	return cluster.Locations, err
-}
-
-func (m *autoscalingGkeClientV1) FetchResourceLimits() (*cloudprovider.ResourceLimiter, error) {
-	return nil, cloudprovider.ErrNotImplemented
+	return Cluster{
+		Locations: clusterResponse.Locations,
+		NodePools: nodePools,
+	}, nil
 }
 
 func (m *autoscalingGkeClientV1) DeleteNodePool(toBeRemoved string) error {
