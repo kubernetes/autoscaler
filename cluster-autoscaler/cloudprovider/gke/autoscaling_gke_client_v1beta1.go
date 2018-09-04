@@ -44,7 +44,6 @@ type autoscalingGkeClientV1beta1 struct {
 	gkeBetaService *gke_api_beta.Service
 
 	clusterPath   string
-	nodePoolsPath string
 	nodePoolPath  string
 	operationPath string
 
@@ -56,7 +55,6 @@ type autoscalingGkeClientV1beta1 struct {
 func NewAutoscalingGkeClientV1beta1(client *http.Client, projectId, location, clusterName string) (*autoscalingGkeClientV1beta1, error) {
 	autoscalingGkeClient := &autoscalingGkeClientV1beta1{
 		clusterPath:           fmt.Sprintf(clusterPathPrefix, projectId, location, clusterName),
-		nodePoolsPath:         fmt.Sprintf(nodePoolsPathPrefix, projectId, location, clusterName),
 		nodePoolPath:          fmt.Sprintf(nodePoolPathPrefix, projectId, location, clusterName),
 		operationPath:         fmt.Sprintf(operationPathPrefix, projectId, location),
 		operationWaitTimeout:  defaultOperationWaitTimeout,
@@ -75,13 +73,13 @@ func NewAutoscalingGkeClientV1beta1(client *http.Client, projectId, location, cl
 	return autoscalingGkeClient, nil
 }
 
-func (m *autoscalingGkeClientV1beta1) FetchNodePools() ([]NodePool, error) {
-	nodePoolsResponse, err := m.gkeBetaService.Projects.Locations.Clusters.NodePools.List(m.clusterPath).Do()
+func (m *autoscalingGkeClientV1beta1) GetCluster() (Cluster, error) {
+	clusterResponse, err := m.gkeBetaService.Projects.Locations.Clusters.Get(m.clusterPath).Do()
 	if err != nil {
-		return nil, err
+		return Cluster{}, err
 	}
 	nodePools := []NodePool{}
-	for _, pool := range nodePoolsResponse.NodePools {
+	for _, pool := range clusterResponse.NodePools {
 		if pool.Autoscaling != nil && pool.Autoscaling.Enabled {
 			nodePools = append(nodePools, NodePool{
 				Name:              pool.Name,
@@ -93,22 +91,17 @@ func (m *autoscalingGkeClientV1beta1) FetchNodePools() ([]NodePool, error) {
 			})
 		}
 	}
-	return nodePools, nil
+	return Cluster{
+		Locations:       clusterResponse.Locations,
+		NodePools:       nodePools,
+		ResourceLimiter: buildResourceLimiter(clusterResponse),
+	}, nil
 }
 
-func (m *autoscalingGkeClientV1beta1) FetchLocations() ([]string, error) {
-	cluster, err := m.gkeBetaService.Projects.Locations.Clusters.Get(m.clusterPath).Do()
-	return cluster.Locations, err
-}
-
-func (m *autoscalingGkeClientV1beta1) FetchResourceLimits() (*cloudprovider.ResourceLimiter, error) {
-	cluster, err := m.gkeBetaService.Projects.Locations.Clusters.Get(m.clusterPath).Do()
-	if err != nil {
-		return nil, err
-	}
+func buildResourceLimiter(cluster *gke_api_beta.Cluster) *cloudprovider.ResourceLimiter {
 	if cluster.Autoscaling == nil {
-		glog.Warningf("FetchResourceLimits called without autoscaling limits set")
-		return nil, nil
+		glog.Warningf("buildResourceLimiter called without autoscaling limits set")
+		return nil
 	}
 
 	minLimits := make(map[string]int64)
@@ -129,7 +122,7 @@ func (m *autoscalingGkeClientV1beta1) FetchResourceLimits() (*cloudprovider.Reso
 		maxLimits[cloudprovider.ResourceNameMemory] = maxLimits[cloudprovider.ResourceNameMemory] * units.Gigabyte
 	}
 
-	return cloudprovider.NewResourceLimiter(minLimits, maxLimits), nil
+	return cloudprovider.NewResourceLimiter(minLimits, maxLimits)
 }
 
 func (m *autoscalingGkeClientV1beta1) DeleteNodePool(toBeRemoved string) error {

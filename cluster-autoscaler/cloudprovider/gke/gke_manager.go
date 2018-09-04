@@ -254,26 +254,13 @@ func (m *gkeManagerImpl) Cleanup() error {
 	return nil
 }
 
-func (m *gkeManagerImpl) assertGKE() {
-	if m.mode != ModeGKE && m.mode != ModeGKENAP {
-		glog.Fatalf("This should run only in GKE mode")
-	}
-}
-
 func (m *gkeManagerImpl) assertGKENAP() {
 	if m.mode != ModeGKENAP {
 		glog.Fatalf("This should run only in GKE mode with autoprovisioning enabled")
 	}
 }
 
-func (m *gkeManagerImpl) refreshNodePools() error {
-	m.assertGKE()
-
-	nodePools, err := m.GkeService.FetchNodePools()
-	if err != nil {
-		return err
-	}
-
+func (m *gkeManagerImpl) refreshNodePools(nodePools []NodePool) error {
 	existingMigs := map[gce.GceRef]struct{}{}
 	changed := false
 
@@ -315,15 +302,6 @@ func (m *gkeManagerImpl) refreshNodePools() error {
 	return nil
 }
 
-func (m *gkeManagerImpl) refreshLocations() error {
-	locations, err := m.GkeService.FetchLocations()
-	if err != nil {
-		return err
-	}
-	m.gkeConfigurationCache.setNodeLocations(locations)
-	return nil
-}
-
 // GetNodeLocation returns a list of zones in which cluster has nodes.
 func (m *gkeManagerImpl) GetNodeLocations() []string {
 	return m.gkeConfigurationCache.getNodeLocations()
@@ -345,6 +323,7 @@ func (m *gkeManagerImpl) registerMig(mig *GkeMig) bool {
 
 func (m *gkeManagerImpl) DeleteNodePool(toBeRemoved *GkeMig) error {
 	m.assertGKENAP()
+
 	if !toBeRemoved.Autoprovisioned() {
 		return fmt.Errorf("only autoprovisioned node pools can be deleted")
 	}
@@ -353,7 +332,7 @@ func (m *gkeManagerImpl) DeleteNodePool(toBeRemoved *GkeMig) error {
 	if err != nil {
 		return err
 	}
-	return m.refreshNodePools()
+	return m.refreshClusterResources()
 }
 
 func (m *gkeManagerImpl) CreateNodePool(mig *GkeMig) (*GkeMig, error) {
@@ -363,7 +342,7 @@ func (m *gkeManagerImpl) CreateNodePool(mig *GkeMig) (*GkeMig, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = m.refreshNodePools()
+	err = m.refreshClusterResources()
 	if err != nil {
 		return nil, err
 	}
@@ -385,16 +364,12 @@ func (m *gkeManagerImpl) CreateNodePool(mig *GkeMig) (*GkeMig, error) {
 	return nil, fmt.Errorf("node pool %s not found", mig.NodePoolName())
 }
 
-func (m *gkeManagerImpl) fetchMachinesCache() error {
+func (m *gkeManagerImpl) refreshMachinesCache() error {
 	if m.machinesCacheLastRefresh.Add(machinesRefreshInterval).After(time.Now()) {
 		return nil
 	}
-	// Machine types cache is rarely updated. Always fetch locations to ensure we aren't missing recently added zone(s).
-	var locations []string
-	locations, err := m.GkeService.FetchLocations()
-	if err != nil {
-		return err
-	}
+	// Machine types cache is only updated directly after refreshing cluster resources, so value from cache should be good enough.
+	locations := m.gkeConfigurationCache.getNodeLocations()
 	machinesCache := make(map[gce.MachineTypeKey]*gce_api.MachineType)
 	for _, location := range locations {
 		machineTypes, err := m.GceService.FetchMachineTypes(location)
@@ -492,29 +467,27 @@ func (m *gkeManagerImpl) Refresh() error {
 }
 
 func (m *gkeManagerImpl) forceRefresh() error {
-	switch m.mode {
-	case ModeGKENAP:
-		if err := m.fetchResourceLimiter(); err != nil {
-			glog.Errorf("Failed to fetch resource limits: %v", err)
-			return err
-		}
-		if err := m.refreshLocations(); err != nil {
-			glog.Errorf("Failed to fetch cluster node locations: %v", err)
-			return err
-		}
-		fallthrough
-	case ModeGKE:
-		if err := m.fetchMachinesCache(); err != nil {
-			glog.Errorf("Failed to fetch machine types: %v", err)
-			return err
-		}
-		if err := m.refreshNodePools(); err != nil {
-			glog.Errorf("Failed to fetch node pools: %v", err)
-			return err
-		}
+	if err := m.refreshClusterResources(); err != nil {
+		glog.Errorf("Failed to refresh GKE cluster resources: %v", err)
+		return err
+	}
+	if err := m.refreshMachinesCache(); err != nil {
+		glog.Errorf("Failed to fetch machine types: %v", err)
+		return err
 	}
 	m.lastRefresh = time.Now()
 	glog.V(2).Infof("Refreshed GCE resources, next refresh after %v", m.lastRefresh.Add(refreshInterval))
+	return nil
+}
+
+func (m *gkeManagerImpl) refreshClusterResources() error {
+	cluster, err := m.GkeService.GetCluster()
+	if err != nil {
+		return err
+	}
+	m.refreshNodePools(cluster.NodePools)
+	m.refreshResourceLimiter(cluster.ResourceLimiter)
+	m.gkeConfigurationCache.setNodeLocations(cluster.Locations)
 	return nil
 }
 
@@ -548,12 +521,8 @@ func (m *gkeManagerImpl) buildMigFromSpec(s *dynamic.NodeGroupSpec) (gce.Mig, er
 	return mig, nil
 }
 
-func (m *gkeManagerImpl) fetchResourceLimiter() error {
+func (m *gkeManagerImpl) refreshResourceLimiter(resourceLimiter *cloudprovider.ResourceLimiter) {
 	if m.mode == ModeGKENAP {
-		resourceLimiter, err := m.GkeService.FetchResourceLimits()
-		if err != nil {
-			return err
-		}
 		if resourceLimiter != nil {
 			glog.V(2).Infof("Refreshed resource limits: %s", resourceLimiter.String())
 			m.cache.SetResourceLimiter(resourceLimiter)
@@ -562,7 +531,6 @@ func (m *gkeManagerImpl) fetchResourceLimiter() error {
 			glog.Errorf("Resource limits should always be defined in NAP mode, but they appear to be empty. Using possibly outdated limits: %v", oldLimits.String())
 		}
 	}
-	return nil
 }
 
 // GetResourceLimiter returns resource limiter.
