@@ -226,6 +226,18 @@ func (r *ResourceLimiter) GetResources() []string {
 	return minResources.Union(maxResources).List()
 }
 
+// HasMinLimitSet returns true iff minimal limit is set for given resource.
+func (r *ResourceLimiter) HasMinLimitSet(resourceName string) bool {
+	_, found := r.minLimits[resourceName]
+	return found
+}
+
+// HasMaxLimitSet returns true iff maximal limit is set for given resource.
+func (r *ResourceLimiter) HasMaxLimitSet(resourceName string) bool {
+	_, found := r.maxLimits[resourceName]
+	return found
+}
+
 func (r *ResourceLimiter) String() string {
 	var buffer bytes.Buffer
 	for _, name := range r.GetResources() {
