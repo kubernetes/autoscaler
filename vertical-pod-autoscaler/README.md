@@ -191,13 +191,12 @@ kubectl delete clusterrolebinding myname-cluster-admin-binding
 # Known limitations of the alpha version
 
 * Whenever VPA updates the pod resources the pod is recreated, which causes all
-  running containers to be restarted.
-* Vertical Pod Autoscaler is **not fully compatible with the Horizontal Pod Autoscaler**
-  at this moment. You should either use one or the other, depending on which one is
-  more suitable to a specific workload.
-* VPA in `auto` mode can only be used on pods that run under a controller
+  running containers to be restarted. The pod may be recreated on a different node.
+* Vertical Pod Autoscaler **should not be used with the [Horizontal Pod Autoscaler](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/) (HPA) on CPU or memory** at this moment. 
+  However, you can use VPA with [HPA on custom and external metrics](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#support-for-custom-metrics).
+* VPA in `Auto` mode can only be used on pods that run under a controller
   (such as Deployment), which is responsible for restarting deleted pods.
-  **Using VPA in `auto` mode with a pod not running under any controller will
+  **Using VPA in `Auto` mode with a pod not running under any controller will
   cause the pod to be deleted and not recreated**.
 * The VPA admission controller is an admission webhook. If you add other admission webhooks
   to you cluster, it is important to analyze how they interact and whether they may conflict
