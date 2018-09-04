@@ -38,6 +38,8 @@ type ClusterState struct {
 	Pods map[PodID]*PodState
 	// VPA objects in the cluster.
 	Vpas map[VpaID]*Vpa
+	// Observed VPAs. Used to check if there are updates needed.
+	ObservedVpas []*vpa_types.VerticalPodAutoscaler
 
 	// All container aggregations where the usage samples are stored.
 	aggregateStateMap aggregateContainerStatesMap

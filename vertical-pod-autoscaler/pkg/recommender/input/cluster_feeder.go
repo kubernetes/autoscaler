@@ -53,7 +53,7 @@ type ClusterStateFeeder interface {
 	// InitFromCheckpoints loads historical checkpoints into clusterState.
 	InitFromCheckpoints()
 
-	// LoadVPAs updtes clusterState with current state of VPAs.
+	// LoadVPAs updates clusterState with current state of VPAs.
 	LoadVPAs()
 
 	// LoadPods updates slusterState with current specification of Pods and their Containers.
@@ -254,13 +254,12 @@ func (feeder *clusterStateFeeder) LoadVPAs() {
 	vpaCRDs, err := feeder.vpaLister.List(labels.Everything())
 	if err != nil {
 		glog.Errorf("Cannot list VPAs. Reason: %+v", err)
-	} else {
-		glog.V(3).Infof("Fetched %d VPAs.", len(vpaCRDs))
+		return
 	}
+	glog.V(3).Infof("Fetched %d VPAs.", len(vpaCRDs))
 	// Add or update existing VPAs in the model.
 	vpaKeys := make(map[model.VpaID]bool)
-	for n, vpaCRD := range vpaCRDs {
-		glog.V(3).Infof("VPA CRD #%v: %+v", n, vpaCRD)
+	for _, vpaCRD := range vpaCRDs {
 		vpaID := model.VpaID{
 			Namespace: vpaCRD.Namespace,
 			VpaName:   vpaCRD.Name}
@@ -276,6 +275,7 @@ func (feeder *clusterStateFeeder) LoadVPAs() {
 			feeder.clusterState.DeleteVpa(vpaID)
 		}
 	}
+	feeder.clusterState.ObservedVpas = vpaCRDs
 }
 
 // Load pod into the cluster state.
@@ -285,8 +285,7 @@ func (feeder *clusterStateFeeder) LoadPods() {
 		glog.Errorf("Cannot get SimplePodSpecs. Reason: %+v", err)
 	}
 	pods := make(map[model.PodID]*spec.BasicPodSpec)
-	for n, spec := range podSpecs {
-		glog.V(3).Infof("SimplePodSpec #%v: %+v", n, spec)
+	for _, spec := range podSpecs {
 		pods[spec.ID] = spec
 	}
 	for key := range feeder.clusterState.Pods {
