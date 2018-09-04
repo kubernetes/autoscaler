@@ -29,7 +29,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 	kube_record "k8s.io/client-go/tools/record"
@@ -816,8 +815,8 @@ func TestScaleUpAutoprovisionedNodeGroup(t *testing.T) {
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder)
 
 	processors := ca_processors.TestProcessors()
-	processors.NodeGroupListProcessor = nodegroups.NewAutoprovisioningNodeGroupListProcessor()
-	processors.NodeGroupManager = nodegroups.NewDefaultNodeGroupManager()
+	processors.NodeGroupListProcessor = &mockAutoprovisioningNodeGroupListProcessor{t}
+	processors.NodeGroupManager = &mockAutoprovisioningNodeGroupManager{t}
 
 	status, err := ScaleUp(&context, processors, clusterState, []*apiv1.Pod{p1}, []*apiv1.Node{}, []*extensionsv1.DaemonSet{})
 	assert.NoError(t, err)
