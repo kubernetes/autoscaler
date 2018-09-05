@@ -17,15 +17,25 @@ limitations under the License.
 package core
 
 import (
+	"testing"
+
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/random"
+	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/labels"
 
+	"github.com/stretchr/testify/assert"
+
+	apiv1 "k8s.io/api/core/v1"
 	kube_client "k8s.io/client-go/kubernetes"
 	kube_record "k8s.io/client-go/tools/record"
+	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 )
 
 type nodeConfig struct {
@@ -76,5 +86,68 @@ func NewScaleTestAutoscalingContext(options config.AutoscalingOptions, fakeClien
 		PredicateChecker: simulator.NewTestPredicateChecker(),
 		ExpanderStrategy: random.NewStrategy(),
 	}
+}
 
+type mockAutoprovisioningNodeGroupManager struct {
+	t *testing.T
+}
+
+func (p *mockAutoprovisioningNodeGroupManager) CreateNodeGroup(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (cloudprovider.NodeGroup, errors.AutoscalerError) {
+	newNodeGroup, err := nodeGroup.Create()
+	assert.NoError(p.t, err)
+	metrics.RegisterNodeGroupCreation()
+	return newNodeGroup, nil
+}
+
+func (p *mockAutoprovisioningNodeGroupManager) RemoveUnneededNodeGroups(context *context.AutoscalingContext) error {
+	if !context.AutoscalingOptions.NodeAutoprovisioningEnabled {
+		return nil
+	}
+	nodeGroups := context.CloudProvider.NodeGroups()
+	for _, nodeGroup := range nodeGroups {
+		if !nodeGroup.Autoprovisioned() {
+			continue
+		}
+		targetSize, err := nodeGroup.TargetSize()
+		assert.NoError(p.t, err)
+		if targetSize > 0 {
+			continue
+		}
+		nodes, err := nodeGroup.Nodes()
+		assert.NoError(p.t, err)
+		if len(nodes) > 0 {
+			continue
+		}
+		err = nodeGroup.Delete()
+		assert.NoError(p.t, err)
+	}
+	return nil
+}
+
+func (p *mockAutoprovisioningNodeGroupManager) CleanUp() {
+}
+
+type mockAutoprovisioningNodeGroupListProcessor struct {
+	t *testing.T
+}
+
+func (p *mockAutoprovisioningNodeGroupListProcessor) Process(context *context.AutoscalingContext, nodeGroups []cloudprovider.NodeGroup, nodeInfos map[string]*schedulercache.NodeInfo,
+	unschedulablePods []*apiv1.Pod) ([]cloudprovider.NodeGroup, map[string]*schedulercache.NodeInfo, error) {
+
+	machines, err := context.CloudProvider.GetAvailableMachineTypes()
+	assert.NoError(p.t, err)
+
+	bestLabels := labels.BestLabelSet(unschedulablePods)
+	for _, machineType := range machines {
+		nodeGroup, err := context.CloudProvider.NewNodeGroup(machineType, bestLabels, map[string]string{}, []apiv1.Taint{}, map[string]resource.Quantity{})
+		assert.NoError(p.t, err)
+		nodeInfo, err := nodeGroup.TemplateNodeInfo()
+		assert.NoError(p.t, err)
+		nodeInfos[nodeGroup.Id()] = nodeInfo
+		nodeGroups = append(nodeGroups, nodeGroup)
+	}
+	return nodeGroups, nodeInfos, nil
+}
+
+func (p *mockAutoprovisioningNodeGroupListProcessor) CleanUp() {
 }

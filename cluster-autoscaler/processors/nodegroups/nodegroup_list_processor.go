@@ -37,8 +37,7 @@ type NoOpNodeGroupListProcessor struct {
 
 // NewDefaultNodeGroupListProcessor creates an instance of NodeGroupListProcessor.
 func NewDefaultNodeGroupListProcessor() NodeGroupListProcessor {
-	// TODO(maciekpytel): Use a better default
-	return NewAutoprovisioningNodeGroupListProcessor()
+	return &NoOpNodeGroupListProcessor{}
 }
 
 // Process processes lists of unschedulable and sheduled pods before scaling of the cluster.
