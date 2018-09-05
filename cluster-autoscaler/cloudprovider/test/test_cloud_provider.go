@@ -152,37 +152,38 @@ func (tcp *TestCloudProvider) NewNodeGroup(machineType string, labels map[string
 	}, nil
 }
 
-// AddNodeGroup adds node group to test cloud provider.
-func (tcp *TestCloudProvider) AddNodeGroup(id string, min int, max int, size int) {
+// InsertNodeGroup adds already created node group to test cloud provider.
+func (tcp *TestCloudProvider) InsertNodeGroup(nodeGroup cloudprovider.NodeGroup) {
 	tcp.Lock()
 	defer tcp.Unlock()
 
-	tcp.groups[id] = &TestNodeGroup{
+	tcp.groups[nodeGroup.Id()] = nodeGroup
+}
+
+// BuildNodeGroup returns a test node group.
+func (tcp *TestCloudProvider) BuildNodeGroup(id string, min, max, size int, autoprovisioned bool, machineType string) *TestNodeGroup {
+	return &TestNodeGroup{
 		cloudProvider:   tcp,
 		id:              id,
 		minSize:         min,
 		maxSize:         max,
 		targetSize:      size,
 		exist:           true,
-		autoprovisioned: false,
+		autoprovisioned: autoprovisioned,
+		machineType:     machineType,
 	}
+}
+
+// AddNodeGroup adds node group to test cloud provider.
+func (tcp *TestCloudProvider) AddNodeGroup(id string, min int, max int, size int) {
+	nodeGroup := tcp.BuildNodeGroup(id, min, max, size, false, "")
+	tcp.InsertNodeGroup(nodeGroup)
 }
 
 // AddAutoprovisionedNodeGroup adds node group to test cloud provider.
 func (tcp *TestCloudProvider) AddAutoprovisionedNodeGroup(id string, min int, max int, size int, machineType string) *TestNodeGroup {
-	tcp.Lock()
-	defer tcp.Unlock()
-	nodeGroup := &TestNodeGroup{
-		cloudProvider:   tcp,
-		id:              id,
-		minSize:         min,
-		maxSize:         max,
-		targetSize:      size,
-		exist:           true,
-		autoprovisioned: true,
-		machineType:     machineType,
-	}
-	tcp.groups[id] = nodeGroup
+	nodeGroup := tcp.BuildNodeGroup(id, min, max, size, true, machineType)
+	tcp.InsertNodeGroup(nodeGroup)
 	return nodeGroup
 }
 
@@ -190,6 +191,7 @@ func (tcp *TestCloudProvider) AddAutoprovisionedNodeGroup(id string, min int, ma
 func (tcp *TestCloudProvider) AddNode(nodeGroupId string, node *apiv1.Node) {
 	tcp.Lock()
 	defer tcp.Unlock()
+
 	tcp.nodes[node.Name] = nodeGroupId
 }
 
