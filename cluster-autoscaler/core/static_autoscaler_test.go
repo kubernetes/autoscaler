@@ -26,7 +26,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	scheduler_util "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
@@ -286,6 +285,8 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 	onScaleDownMock := &onScaleDownMock{}
 	onNodeGroupCreateMock := &onNodeGroupCreateMock{}
 	onNodeGroupDeleteMock := &onNodeGroupDeleteMock{}
+	nodeGroupManager := &mockAutoprovisioningNodeGroupManager{t}
+	nodeGroupListProcessor := &mockAutoprovisioningNodeGroupListProcessor{t}
 
 	n1 := BuildTestNode("n1", 100, 1000)
 	SetNodeReadyState(n1, true, time.Now())
@@ -328,7 +329,8 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 	assert.NotNil(t, provider)
 
 	processors := ca_processors.TestProcessors()
-	processors.NodeGroupListProcessor = nodegroups.NewAutoprovisioningNodeGroupListProcessor()
+	processors.NodeGroupManager = nodeGroupManager
+	processors.NodeGroupListProcessor = nodeGroupListProcessor
 
 	// Create context with mocked lister registry.
 	options := config.AutoscalingOptions{

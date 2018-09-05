@@ -29,7 +29,26 @@ type NodeGroupManager interface {
 	CleanUp()
 }
 
+// NoOpNodeGroupManager is a no-op implementation of NodeGroupManager.
+// It does not remove any node groups and its CreateNodeGroup method always returns an error.
+// To be used together with NoOpNodeGroupListProcessor.
+type NoOpNodeGroupManager struct {
+}
+
+// CreateNodeGroup always returns internal error. It must not be called on NoOpNodeGroupManager.
+func (*NoOpNodeGroupManager) CreateNodeGroup(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (cloudprovider.NodeGroup, errors.AutoscalerError) {
+	return nil, errors.NewAutoscalerError(errors.InternalError, "not implemented")
+}
+
+// RemoveUnneededNodeGroups does nothing in NoOpNodeGroupManager
+func (*NoOpNodeGroupManager) RemoveUnneededNodeGroups(context *context.AutoscalingContext) error {
+	return nil
+}
+
+// CleanUp does nothing in NoOpNodeGroupManager
+func (*NoOpNodeGroupManager) CleanUp() {}
+
 // NewDefaultNodeGroupManager creates an instance of NodeGroupManager.
 func NewDefaultNodeGroupManager() NodeGroupManager {
-	return NewAutoprovisioningNodeGroupManager()
+	return &NoOpNodeGroupManager{}
 }
