@@ -413,14 +413,10 @@ const (
 
 // VolumeOptions specifies capacity and tags for a volume.
 type VolumeOptions struct {
-	CapacityGB        int
-	Tags              map[string]string
-	PVCName           string
-	VolumeType        string
-	ZonePresent       bool
-	ZonesPresent      bool
-	AvailabilityZone  string
-	AvailabilityZones string
+	CapacityGB       int
+	Tags             map[string]string
+	VolumeType       string
+	AvailabilityZone string
 	// IOPSPerGB x CapacityGB will give total IOPS of the volume to create.
 	// Calculated total IOPS will be capped at MaxTotalIOPS.
 	IOPSPerGB int
@@ -650,7 +646,11 @@ func (p *awsSDKProvider) Compute(regionName string) (EC2, error) {
 	}
 	awsConfig = awsConfig.WithCredentialsChainVerboseErrors(true)
 
-	service := ec2.New(session.New(awsConfig))
+	sess, err := session.NewSession(awsConfig)
+	if err != nil {
+		return nil, fmt.Errorf("unable to initialize AWS session: %v", err)
+	}
+	service := ec2.New(sess)
 
 	p.addHandlers(regionName, &service.Handlers)
 
@@ -667,8 +667,11 @@ func (p *awsSDKProvider) LoadBalancing(regionName string) (ELB, error) {
 	}
 	awsConfig = awsConfig.WithCredentialsChainVerboseErrors(true)
 
-	elbClient := elb.New(session.New(awsConfig))
-
+	sess, err := session.NewSession(awsConfig)
+	if err != nil {
+		return nil, fmt.Errorf("unable to initialize AWS session: %v", err)
+	}
+	elbClient := elb.New(sess)
 	p.addHandlers(regionName, &elbClient.Handlers)
 
 	return elbClient, nil
@@ -681,7 +684,11 @@ func (p *awsSDKProvider) LoadBalancingV2(regionName string) (ELBV2, error) {
 	}
 	awsConfig = awsConfig.WithCredentialsChainVerboseErrors(true)
 
-	elbClient := elbv2.New(session.New(awsConfig))
+	sess, err := session.NewSession(awsConfig)
+	if err != nil {
+		return nil, fmt.Errorf("unable to initialize AWS session: %v", err)
+	}
+	elbClient := elbv2.New(sess)
 
 	p.addHandlers(regionName, &elbClient.Handlers)
 
@@ -695,7 +702,11 @@ func (p *awsSDKProvider) Autoscaling(regionName string) (ASG, error) {
 	}
 	awsConfig = awsConfig.WithCredentialsChainVerboseErrors(true)
 
-	client := autoscaling.New(session.New(awsConfig))
+	sess, err := session.NewSession(awsConfig)
+	if err != nil {
+		return nil, fmt.Errorf("unable to initialize AWS session: %v", err)
+	}
+	client := autoscaling.New(sess)
 
 	p.addHandlers(regionName, &client.Handlers)
 
@@ -703,7 +714,11 @@ func (p *awsSDKProvider) Autoscaling(regionName string) (ASG, error) {
 }
 
 func (p *awsSDKProvider) Metadata() (EC2Metadata, error) {
-	client := ec2metadata.New(session.New(&aws.Config{}))
+	sess, err := session.NewSession(&aws.Config{})
+	if err != nil {
+		return nil, fmt.Errorf("unable to initialize AWS session: %v", err)
+	}
+	client := ec2metadata.New(sess)
 	p.addAPILoggingHandlers(&client.Handlers)
 	return client, nil
 }
@@ -715,20 +730,15 @@ func (p *awsSDKProvider) KeyManagement(regionName string) (KMS, error) {
 	}
 	awsConfig = awsConfig.WithCredentialsChainVerboseErrors(true)
 
-	kmsClient := kms.New(session.New(awsConfig))
+	sess, err := session.NewSession(awsConfig)
+	if err != nil {
+		return nil, fmt.Errorf("unable to initialize AWS session: %v", err)
+	}
+	kmsClient := kms.New(sess)
 
 	p.addHandlers(regionName, &kmsClient.Handlers)
 
 	return kmsClient, nil
-}
-
-// stringPointerArray creates a slice of string pointers from a slice of strings
-// Deprecated: consider using aws.StringSlice - but note the slightly different behaviour with a nil input
-func stringPointerArray(orig []string) []*string {
-	if orig == nil {
-		return nil
-	}
-	return aws.StringSlice(orig)
 }
 
 func newEc2Filter(name string, values ...string) *ec2.Filter {
@@ -1235,6 +1245,7 @@ func (c *Cloud) NodeAddresses(ctx context.Context, name types.NodeName) ([]v1.No
 			glog.V(4).Info("Could not determine private DNS from AWS metadata.")
 		} else {
 			addresses = append(addresses, v1.NodeAddress{Type: v1.NodeInternalDNS, Address: internalDNS})
+			addresses = append(addresses, v1.NodeAddress{Type: v1.NodeHostName, Address: internalDNS})
 		}
 
 		externalDNS, err := c.metadata.GetMetadata("public-hostname")
@@ -1297,6 +1308,7 @@ func extractNodeAddresses(instance *ec2.Instance) ([]v1.NodeAddress, error) {
 	privateDNSName := aws.StringValue(instance.PrivateDnsName)
 	if privateDNSName != "" {
 		addresses = append(addresses, v1.NodeAddress{Type: v1.NodeInternalDNS, Address: privateDNSName})
+		addresses = append(addresses, v1.NodeAddress{Type: v1.NodeHostName, Address: privateDNSName})
 	}
 
 	publicDNSName := aws.StringValue(instance.PublicDnsName)
@@ -1324,7 +1336,7 @@ func (c *Cloud) NodeAddressesByProviderID(ctx context.Context, providerID string
 	return extractNodeAddresses(instance)
 }
 
-// InstanceExistsByProviderID returns true if the instance with the given provider id still exists and is running.
+// InstanceExistsByProviderID returns true if the instance with the given provider id still exists.
 // If false is returned with no error, the instance will be immediately deleted by the cloud controller manager.
 func (c *Cloud) InstanceExistsByProviderID(ctx context.Context, providerID string) (bool, error) {
 	instanceID, err := kubernetesInstanceID(providerID).mapToAWSInstanceID()
@@ -1348,8 +1360,8 @@ func (c *Cloud) InstanceExistsByProviderID(ctx context.Context, providerID strin
 	}
 
 	state := instances[0].State.Name
-	if *state != "running" {
-		glog.Warningf("the instance %s is not running", instanceID)
+	if *state == ec2.InstanceStateNameTerminated {
+		glog.Warningf("the instance %s is terminated", instanceID)
 		return false, nil
 	}
 
@@ -1358,7 +1370,36 @@ func (c *Cloud) InstanceExistsByProviderID(ctx context.Context, providerID strin
 
 // InstanceShutdownByProviderID returns true if the instance is in safe state to detach volumes
 func (c *Cloud) InstanceShutdownByProviderID(ctx context.Context, providerID string) (bool, error) {
-	return false, cloudprovider.NotImplemented
+	instanceID, err := kubernetesInstanceID(providerID).mapToAWSInstanceID()
+	if err != nil {
+		return false, err
+	}
+
+	request := &ec2.DescribeInstancesInput{
+		InstanceIds: []*string{instanceID.awsString()},
+	}
+
+	instances, err := c.ec2.DescribeInstances(request)
+	if err != nil {
+		return false, err
+	}
+	if len(instances) == 0 {
+		glog.Warningf("the instance %s does not exist anymore", providerID)
+		return true, nil
+	}
+	if len(instances) > 1 {
+		return false, fmt.Errorf("multiple instances found for instance: %s", instanceID)
+	}
+
+	instance := instances[0]
+	if instance.State != nil {
+		state := aws.StringValue(instance.State.Name)
+		// valid state for detaching volumes
+		if state == ec2.InstanceStateNameStopped || state == ec2.InstanceStateNameTerminated {
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
 // InstanceID returns the cloud provider ID of the node with the specified nodeName.
@@ -1408,9 +1449,9 @@ func (c *Cloud) InstanceType(ctx context.Context, nodeName types.NodeName) (stri
 	return aws.StringValue(inst.InstanceType), nil
 }
 
-// getCandidateZonesForDynamicVolume retrieves  a list of all the zones in which nodes are running
+// GetCandidateZonesForDynamicVolume retrieves  a list of all the zones in which nodes are running
 // It currently involves querying all instances
-func (c *Cloud) getCandidateZonesForDynamicVolume() (sets.String, error) {
+func (c *Cloud) GetCandidateZonesForDynamicVolume() (sets.String, error) {
 	// We don't currently cache this; it is currently used only in volume
 	// creation which is expected to be a comparatively rare occurrence.
 
@@ -1773,7 +1814,9 @@ func (d *awsDisk) modifyVolume(requestGiB int64) (int64, error) {
 			return false, err
 		}
 
-		if aws.StringValue(volumeModification.ModificationState) == ec2.VolumeModificationStateCompleted {
+		// According to https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/monitoring_mods.html
+		// Size changes usually take a few seconds to complete and take effect after a volume is in the Optimizing state.
+		if aws.StringValue(volumeModification.ModificationState) == ec2.VolumeModificationStateOptimizing {
 			return true, nil
 		}
 		return false, nil
@@ -2134,29 +2177,6 @@ func (c *Cloud) DetachDisk(diskName KubernetesVolumeID, nodeName types.NodeName)
 
 // CreateDisk implements Volumes.CreateDisk
 func (c *Cloud) CreateDisk(volumeOptions *VolumeOptions) (KubernetesVolumeID, error) {
-	var createAZ string
-	if !volumeOptions.ZonePresent && !volumeOptions.ZonesPresent {
-		// querry for candidate zones only if zone parameters absent
-		allZones, err := c.getCandidateZonesForDynamicVolume()
-		if err != nil {
-			return "", fmt.Errorf("error querying for all zones: %v", err)
-		}
-		createAZ = volumeutil.ChooseZoneForVolume(allZones, volumeOptions.PVCName)
-	}
-	if !volumeOptions.ZonePresent && volumeOptions.ZonesPresent {
-		if adminSetOfZones, err := volumeutil.ZonesToSet(volumeOptions.AvailabilityZones); err != nil {
-			return "", err
-		} else {
-			createAZ = volumeutil.ChooseZoneForVolume(adminSetOfZones, volumeOptions.PVCName)
-		}
-	}
-	if volumeOptions.ZonePresent && !volumeOptions.ZonesPresent {
-		if err := volumeutil.ValidateZone(volumeOptions.AvailabilityZone); err != nil {
-			return "", err
-		}
-		createAZ = volumeOptions.AvailabilityZone
-	}
-
 	var createType string
 	var iops int64
 	switch volumeOptions.VolumeType {
@@ -2188,7 +2208,7 @@ func (c *Cloud) CreateDisk(volumeOptions *VolumeOptions) (KubernetesVolumeID, er
 
 	// TODO: Should we tag this with the cluster id (so it gets deleted when the cluster does?)
 	request := &ec2.CreateVolumeInput{}
-	request.AvailabilityZone = aws.String(createAZ)
+	request.AvailabilityZone = aws.String(volumeOptions.AvailabilityZone)
 	request.Size = aws.Int64(int64(volumeOptions.CapacityGB))
 	request.VolumeType = aws.String(createType)
 	request.Encrypted = aws.Bool(volumeOptions.Encrypted)
@@ -2487,9 +2507,8 @@ func (c *Cloud) ResizeDisk(
 		descErr := fmt.Errorf("AWS.ResizeDisk Error describing volume %s with %v", diskName, err)
 		return oldSize, descErr
 	}
-	requestBytes := newSize.Value()
 	// AWS resizes in chunks of GiB (not GB)
-	requestGiB := volumeutil.RoundUpSize(requestBytes, 1024*1024*1024)
+	requestGiB := volumeutil.RoundUpToGiB(newSize)
 	newSizeQuant := resource.MustParse(fmt.Sprintf("%dGi", requestGiB))
 
 	// If disk already if of greater or equal size than requested we return
@@ -3338,7 +3357,7 @@ func (c *Cloud) EnsureLoadBalancer(ctx context.Context, clusterName string, apiS
 			return nil, fmt.Errorf("could not find any suitable subnets for creating the ELB")
 		}
 
-		loadBalancerName := cloudprovider.GetLoadBalancerName(apiService)
+		loadBalancerName := c.GetLoadBalancerName(ctx, clusterName, apiService)
 		serviceName := types.NamespacedName{Namespace: apiService.Namespace, Name: apiService.Name}
 
 		instanceIDs := []string{}
@@ -3500,7 +3519,7 @@ func (c *Cloud) EnsureLoadBalancer(ctx context.Context, clusterName string, apiS
 		return nil, fmt.Errorf("could not find any suitable subnets for creating the ELB")
 	}
 
-	loadBalancerName := cloudprovider.GetLoadBalancerName(apiService)
+	loadBalancerName := c.GetLoadBalancerName(ctx, clusterName, apiService)
 	serviceName := types.NamespacedName{Namespace: apiService.Namespace, Name: apiService.Name}
 	securityGroupIDs, err := c.buildELBSecurityGroupList(serviceName, loadBalancerName, annotations)
 	if err != nil {
@@ -3536,7 +3555,7 @@ func (c *Cloud) EnsureLoadBalancer(ctx context.Context, clusterName string, apiS
 				IpProtocol: aws.String("icmp"),
 				FromPort:   aws.Int64(3),
 				ToPort:     aws.Int64(4),
-				IpRanges:   []*ec2.IpRange{{CidrIp: aws.String("0.0.0.0/0")}},
+				IpRanges:   ec2SourceRanges,
 			}
 
 			permissions.Insert(permission)
@@ -3623,7 +3642,7 @@ func (c *Cloud) EnsureLoadBalancer(ctx context.Context, clusterName string, apiS
 
 // GetLoadBalancer is an implementation of LoadBalancer.GetLoadBalancer
 func (c *Cloud) GetLoadBalancer(ctx context.Context, clusterName string, service *v1.Service) (*v1.LoadBalancerStatus, bool, error) {
-	loadBalancerName := cloudprovider.GetLoadBalancerName(service)
+	loadBalancerName := c.GetLoadBalancerName(ctx, clusterName, service)
 
 	if isNLB(service.Annotations) {
 		lb, err := c.describeLoadBalancerv2(loadBalancerName)
@@ -3647,6 +3666,12 @@ func (c *Cloud) GetLoadBalancer(ctx context.Context, clusterName string, service
 
 	status := toStatus(lb)
 	return status, true, nil
+}
+
+// GetLoadBalancerName is an implementation of LoadBalancer.GetLoadBalancerName
+func (c *Cloud) GetLoadBalancerName(ctx context.Context, clusterName string, service *v1.Service) string {
+	// TODO: replace DefaultLoadBalancerName to generate more meaningful loadbalancer names.
+	return cloudprovider.DefaultLoadBalancerName(service)
 }
 
 func toStatus(lb *elb.LoadBalancerDescription) *v1.LoadBalancerStatus {
@@ -3887,7 +3912,7 @@ func (c *Cloud) updateInstanceSecurityGroupsForLoadBalancer(lb *elb.LoadBalancer
 
 // EnsureLoadBalancerDeleted implements LoadBalancer.EnsureLoadBalancerDeleted.
 func (c *Cloud) EnsureLoadBalancerDeleted(ctx context.Context, clusterName string, service *v1.Service) error {
-	loadBalancerName := cloudprovider.GetLoadBalancerName(service)
+	loadBalancerName := c.GetLoadBalancerName(ctx, clusterName, service)
 
 	if isNLB(service.Annotations) {
 		lb, err := c.describeLoadBalancerv2(loadBalancerName)
@@ -4135,7 +4160,7 @@ func (c *Cloud) UpdateLoadBalancer(ctx context.Context, clusterName string, serv
 		return err
 	}
 
-	loadBalancerName := cloudprovider.GetLoadBalancerName(service)
+	loadBalancerName := c.GetLoadBalancerName(ctx, clusterName, service)
 	if isNLB(service.Annotations) {
 		lb, err := c.describeLoadBalancerv2(loadBalancerName)
 		if err != nil {
@@ -4295,13 +4320,22 @@ func mapInstanceToNodeName(i *ec2.Instance) types.NodeName {
 	return types.NodeName(aws.StringValue(i.PrivateDnsName))
 }
 
+var aliveFilter = []string{
+	ec2.InstanceStateNamePending,
+	ec2.InstanceStateNameRunning,
+	ec2.InstanceStateNameShuttingDown,
+	ec2.InstanceStateNameStopping,
+	ec2.InstanceStateNameStopped,
+}
+
 // Returns the instance with the specified node name
 // Returns nil if it does not exist
 func (c *Cloud) findInstanceByNodeName(nodeName types.NodeName) (*ec2.Instance, error) {
 	privateDNSName := mapNodeNameToPrivateDNSName(nodeName)
 	filters := []*ec2.Filter{
 		newEc2Filter("private-dns-name", privateDNSName),
-		newEc2Filter("instance-state-name", "running"),
+		// exclude instances in "terminated" state
+		newEc2Filter("instance-state-name", aliveFilter...),
 	}
 
 	instances, err := c.describeInstances(filters)

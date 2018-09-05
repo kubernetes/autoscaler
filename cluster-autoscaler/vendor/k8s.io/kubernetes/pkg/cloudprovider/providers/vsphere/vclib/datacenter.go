@@ -82,6 +82,21 @@ func (dc *Datacenter) GetVMByUUID(ctx context.Context, vmUUID string) (*VirtualM
 	return &virtualMachine, nil
 }
 
+// GetHostByVMUUID gets the host object from the given vmUUID
+func (dc *Datacenter) GetHostByVMUUID(ctx context.Context, vmUUID string) (*types.ManagedObjectReference, error) {
+	virtualMachine, err := dc.GetVMByUUID(ctx, vmUUID)
+	var vmMo mo.VirtualMachine
+	pc := property.DefaultCollector(virtualMachine.Client())
+	err = pc.RetrieveOne(ctx, virtualMachine.Reference(), []string{"summary.runtime.host"}, &vmMo)
+	if err != nil {
+		glog.Errorf("Failed to retrive VM runtime host, err: %v", err)
+		return nil, err
+	}
+	host := vmMo.Summary.Runtime.Host
+	glog.Infof("%s host is %s", virtualMachine.Reference(), host)
+	return host, nil
+}
+
 // GetVMByPath gets the VM object from the given vmPath
 // vmPath should be the full path to VM and not just the name
 func (dc *Datacenter) GetVMByPath(ctx context.Context, vmPath string) (*VirtualMachine, error) {
@@ -155,20 +170,16 @@ func (dc *Datacenter) GetDatastoreByName(ctx context.Context, name string) (*Dat
 }
 
 // GetResourcePool gets the resource pool for the given path
-func (dc *Datacenter) GetResourcePool(ctx context.Context, computePath string) (*object.ResourcePool, error) {
+func (dc *Datacenter) GetResourcePool(ctx context.Context, resourcePoolPath string) (*object.ResourcePool, error) {
 	finder := getFinder(dc)
-	var computeResource *object.ComputeResource
+	var resourcePool *object.ResourcePool
 	var err error
-	if computePath == "" {
-		computeResource, err = finder.DefaultComputeResource(ctx)
-	} else {
-		computeResource, err = finder.ComputeResource(ctx, computePath)
-	}
+	resourcePool, err = finder.ResourcePoolOrDefault(ctx, resourcePoolPath)
 	if err != nil {
-		glog.Errorf("Failed to get the ResourcePool for computePath '%s'. err: %+v", computePath, err)
+		glog.Errorf("Failed to get the ResourcePool for path '%s'. err: %+v", resourcePoolPath, err)
 		return nil, err
 	}
-	return computeResource.ResourcePool(ctx)
+	return resourcePool, nil
 }
 
 // GetFolderByPath gets the Folder Object from the given folder path

@@ -318,7 +318,11 @@ func (util *RBDUtil) rbdUnlock(b rbdMounter) error {
 	}
 
 	// Construct lock id using host name and a magic prefix.
-	lock_id := kubeLockMagic + node.GetHostname("")
+	hostName, err := node.GetHostname("")
+	if err != nil {
+		return err
+	}
+	lock_id := kubeLockMagic + hostName
 
 	mon := util.kernelRBDMonitorsOpt(b.Mon)
 
@@ -579,7 +583,10 @@ func (util *RBDUtil) CreateImage(p *rbdVolumeProvisioner) (r *v1.RBDPersistentVo
 	capacity := p.options.PVC.Spec.Resources.Requests[v1.ResourceName(v1.ResourceStorage)]
 	volSizeBytes := capacity.Value()
 	// Convert to MB that rbd defaults on.
-	sz := int(volutil.RoundUpSize(volSizeBytes, 1024*1024))
+	sz, err := volutil.RoundUpSizeInt(volSizeBytes, 1024*1024)
+	if err != nil {
+		return nil, 0, err
+	}
 	volSz := fmt.Sprintf("%d", sz)
 	mon := util.kernelRBDMonitorsOpt(p.Mon)
 	if p.rbdMounter.imageFormat == rbdImageFormat2 {

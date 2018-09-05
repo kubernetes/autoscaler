@@ -52,13 +52,14 @@ type schedulerCache struct {
 	period time.Duration
 
 	// This mutex guards all fields within this cache struct.
-	mu sync.Mutex
+	mu sync.RWMutex
 	// a set of assumed pod keys.
 	// The key could further be used to get an entry in podStates.
 	assumedPods map[string]bool
 	// a map from pod key to podState.
 	podStates map[string]*podState
 	nodes     map[string]*NodeInfo
+	nodeTree  *NodeTree
 	pdbs      map[string]*policy.PodDisruptionBudget
 	// A map from image name to its imageState.
 	imageStates map[string]*imageState
@@ -102,6 +103,7 @@ func newSchedulerCache(ttl, period time.Duration, stop <-chan struct{}) *schedul
 		stop:   stop,
 
 		nodes:       make(map[string]*NodeInfo),
+		nodeTree:    newNodeTree(nil),
 		assumedPods: make(map[string]bool),
 		podStates:   make(map[string]*podState),
 		pdbs:        make(map[string]*policy.PodDisruptionBudget),
@@ -112,8 +114,8 @@ func newSchedulerCache(ttl, period time.Duration, stop <-chan struct{}) *schedul
 // Snapshot takes a snapshot of the current schedulerCache. The method has performance impact,
 // and should be only used in non-critical path.
 func (cache *schedulerCache) Snapshot() *Snapshot {
-	cache.mu.Lock()
-	defer cache.mu.Unlock()
+	cache.mu.RLock()
+	defer cache.mu.RUnlock()
 
 	nodes := make(map[string]*NodeInfo)
 	for k, v := range cache.nodes {
@@ -164,8 +166,8 @@ func (cache *schedulerCache) List(selector labels.Selector) ([]*v1.Pod, error) {
 }
 
 func (cache *schedulerCache) FilteredList(podFilter PodFilter, selector labels.Selector) ([]*v1.Pod, error) {
-	cache.mu.Lock()
-	defer cache.mu.Unlock()
+	cache.mu.RLock()
+	defer cache.mu.RUnlock()
 	// podFilter is expected to return true for most or all of the pods. We
 	// can avoid expensive array growth without wasting too much memory by
 	// pre-allocating capacity.
@@ -216,8 +218,8 @@ func (cache *schedulerCache) finishBinding(pod *v1.Pod, now time.Time) error {
 		return err
 	}
 
-	cache.mu.Lock()
-	defer cache.mu.Unlock()
+	cache.mu.RLock()
+	defer cache.mu.RUnlock()
 
 	glog.V(5).Infof("Finished binding for pod %v. Can be expired.", key)
 	currState, ok := cache.podStates[key]
@@ -387,8 +389,8 @@ func (cache *schedulerCache) IsAssumedPod(pod *v1.Pod) (bool, error) {
 		return false, err
 	}
 
-	cache.mu.Lock()
-	defer cache.mu.Unlock()
+	cache.mu.RLock()
+	defer cache.mu.RUnlock()
 
 	b, found := cache.assumedPods[key]
 	if !found {
@@ -403,8 +405,8 @@ func (cache *schedulerCache) GetPod(pod *v1.Pod) (*v1.Pod, error) {
 		return nil, err
 	}
 
-	cache.mu.Lock()
-	defer cache.mu.Unlock()
+	cache.mu.RLock()
+	defer cache.mu.RUnlock()
 
 	podState, ok := cache.podStates[key]
 	if !ok {
@@ -426,6 +428,7 @@ func (cache *schedulerCache) AddNode(node *v1.Node) error {
 		cache.removeNodeImageStates(n.node)
 	}
 
+	cache.nodeTree.AddNode(node)
 	cache.addNodeImageStates(node, n)
 	return n.SetNode(node)
 }
@@ -442,6 +445,7 @@ func (cache *schedulerCache) UpdateNode(oldNode, newNode *v1.Node) error {
 		cache.removeNodeImageStates(n.node)
 	}
 
+	cache.nodeTree.UpdateNode(oldNode, newNode)
 	cache.addNodeImageStates(newNode, n)
 	return n.SetNode(newNode)
 }
@@ -462,6 +466,7 @@ func (cache *schedulerCache) RemoveNode(node *v1.Node) error {
 		delete(cache.nodes, node.Name)
 	}
 
+	cache.nodeTree.RemoveNode(node)
 	cache.removeNodeImageStates(node)
 	return nil
 }
@@ -539,8 +544,8 @@ func (cache *schedulerCache) RemovePDB(pdb *policy.PodDisruptionBudget) error {
 }
 
 func (cache *schedulerCache) ListPDBs(selector labels.Selector) ([]*policy.PodDisruptionBudget, error) {
-	cache.mu.Lock()
-	defer cache.mu.Unlock()
+	cache.mu.RLock()
+	defer cache.mu.RUnlock()
 	var pdbs []*policy.PodDisruptionBudget
 	for _, pdb := range cache.pdbs {
 		if selector.Matches(labels.Set(pdb.Labels)) {
@@ -551,8 +556,8 @@ func (cache *schedulerCache) ListPDBs(selector labels.Selector) ([]*policy.PodDi
 }
 
 func (cache *schedulerCache) IsUpToDate(n *NodeInfo) bool {
-	cache.mu.Lock()
-	defer cache.mu.Unlock()
+	cache.mu.RLock()
+	defer cache.mu.RUnlock()
 	node, ok := cache.nodes[n.Node().Name]
 	return ok && n.generation == node.generation
 }
@@ -597,4 +602,8 @@ func (cache *schedulerCache) expirePod(key string, ps *podState) error {
 	delete(cache.assumedPods, key)
 	delete(cache.podStates, key)
 	return nil
+}
+
+func (cache *schedulerCache) NodeTree() *NodeTree {
+	return cache.nodeTree
 }
