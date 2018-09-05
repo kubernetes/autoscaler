@@ -34,7 +34,6 @@ const (
 	// Name of node annotation that contains JSON map of driver names to node
 	// names
 	annotationKey = "csi.volume.kubernetes.io/nodeid"
-	csiPluginName = "kubernetes.io/csi"
 )
 
 // labelManagementStruct is struct of channels used for communication between the driver registration
@@ -46,7 +45,7 @@ type labelManagerStruct struct {
 
 // Interface implements an interface for managing labels of a node
 type Interface interface {
-	AddLabels(driverName string) error
+	AddLabels(driverName string, driverNodeId string) error
 }
 
 // NewLabelManager initializes labelManagerStruct and returns available interfaces
@@ -59,8 +58,8 @@ func NewLabelManager(nodeName types.NodeName, kubeClient kubernetes.Interface) I
 
 // nodeLabelManager waits for labeling requests initiated by the driver's registration
 // process.
-func (lm labelManagerStruct) AddLabels(driverName string) error {
-	err := verifyAndAddNodeId(string(lm.nodeName), lm.k8s.CoreV1().Nodes(), driverName, string(lm.nodeName))
+func (lm labelManagerStruct) AddLabels(driverName string, driverNodeId string) error {
+	err := verifyAndAddNodeId(string(lm.nodeName), lm.k8s.CoreV1().Nodes(), driverName, driverNodeId)
 	if err != nil {
 		return fmt.Errorf("failed to update node %s's annotation with error: %+v", lm.nodeName, err)
 	}
@@ -125,7 +124,7 @@ func verifyAndAddNodeId(
 		if val, ok := existingDriverMap[csiDriverName]; ok {
 			if val == csiDriverNodeId {
 				// Value already exists in node annotation, nothing more to do
-				glog.V(1).Infof(
+				glog.V(2).Infof(
 					"The key value {%q: %q} alredy eixst in node %q annotation, no need to update: %v",
 					csiDriverName,
 					csiDriverNodeId,
@@ -153,7 +152,7 @@ func verifyAndAddNodeId(
 			string(jsonObj))
 		_, updateErr := k8sNodesClient.Update(result)
 		if updateErr == nil {
-			fmt.Printf(
+			glog.V(2).Infof(
 				"Updated node %q successfully for CSI driver %q and CSI node name %q",
 				k8sNodeName,
 				csiDriverName,
@@ -194,7 +193,7 @@ func verifyAndDeleteNodeId(
 		existingDriverMap := map[string]string{}
 		if previousAnnotationValue == "" {
 			// Value already exists in node annotation, nothing more to do
-			glog.V(1).Infof(
+			glog.V(2).Infof(
 				"The key %q does not exist in node %q annotation, no need to cleanup.",
 				csiDriverName,
 				annotationKey)
@@ -212,7 +211,7 @@ func verifyAndDeleteNodeId(
 
 		if _, ok := existingDriverMap[csiDriverName]; !ok {
 			// Value already exists in node annotation, nothing more to do
-			glog.V(1).Infof(
+			glog.V(2).Infof(
 				"The key %q does not eixst in node %q annotation, no need to cleanup: %v",
 				csiDriverName,
 				annotationKey,

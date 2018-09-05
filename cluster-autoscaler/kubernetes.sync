@@ -1,26 +1,18 @@
-commit e09be82ad04107f81032b82a1e2452759001819f
-Merge: 77205b90a0 f77060aa8d
+commit 2c933695fa61d57d1c6fa5defb89caed7d49f773 (origin/master, origin/HEAD)
+Merge: 79b3d3e7dc 04e793e65a
 Author: Kubernetes Submit Queue <k8s-merge-robot@users.noreply.github.com>
-Date:   Tue Jul 17 02:13:07 2018 -0700
+Date:   Wed Sep 5 03:09:37 2018 -0700
 
-    Merge pull request #66254 from sigma/patch-1
+    Merge pull request #68273 from sttts/sttts-non-fatal-in-cluster-config
     
-    Automatic merge from submit-queue (batch tested with PRs 66172, 66254). If you want to cherry-pick this change to another branch, please follow the instructions <a href="https://github.com/kubernetes/community/blob/master/contributors/devel/cherry-picks.md">here</a>.
+    Automatic merge from submit-queue (batch tested with PRs 68265, 68273). If you want to cherry-pick this change to another branch, please follow the instructions here: https://github.com/kubernetes/community/blob/master/contributors/devel/cherry-picks.md.
     
-    client-go: update documentation for remotecommand.StreamOptions
+    apiserver: make InClusterConfig errs for delegated authn/z non-fatal
     
-    **What this PR does / why we need it**:
+    Fixes https://github.com/kubernetes/kubernetes/issues/68246:
     
-    The ability to explicitly define the supported protocols was removed in commit 12c7874c0d88e9099ab2a29915d26751f0d23c2a
-    Adjust documentation accordingly.
+    Background:
     
-    **Which issue(s) this PR fixes** *(optional, in `fixes #<issue number>(, fixes #<issue_number>, ...)` format, will close the issue(s) when PR gets merged)*:
+    In gci e2e tests the kube-controller-manager is started as static pod. When it first starts, there is no kubernetes service and the KUBERNETES_SERVICE_HOST and KUBERNETES_SERVICE_PORT env vars are not set inside the container.
     
-    **Special notes for your reviewer**:
-    
-    **Release note**:
-    ```release-note
-    NONE
-    ```
-
-
+    When the kube-controller-manager is restarted, the KUBERNETES_SERVICE_HOST and KUBERNETES_SERVICE_PORT env vars are set, but the static pod has no service account, i.e. /var/run/secrets/kubernetes.io/serviceaccount/token does not exist. We made the later fatal in rest.InCluster
