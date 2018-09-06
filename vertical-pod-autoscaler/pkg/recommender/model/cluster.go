@@ -303,7 +303,7 @@ func (cluster *ClusterState) GarbageCollectAggregateCollectionStates(now time.Ti
 	for key, aggregateContainerState := range cluster.aggregateStateMap {
 		if aggregateContainerState.isExpired(now) {
 			keysToDelete = append(keysToDelete, key)
-			glog.V(1).Info("Removing AggregateCollectionStates for %+v", key)
+			glog.V(1).Infof("Removing AggregateCollectionStates for %+v", key)
 		}
 	}
 	for _, key := range keysToDelete {
