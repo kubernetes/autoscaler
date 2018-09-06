@@ -14,6 +14,8 @@ go_library(
         "kubelet.go",
         "kubelet_getters.go",
         "kubelet_network.go",
+        "kubelet_network_linux.go",
+        "kubelet_network_others.go",
         "kubelet_node_status.go",
         "kubelet_pods.go",
         "kubelet_resources.go",
@@ -75,6 +77,7 @@ go_library(
         "//pkg/kubelet/prober:go_default_library",
         "//pkg/kubelet/prober/results:go_default_library",
         "//pkg/kubelet/remote:go_default_library",
+        "//pkg/kubelet/runtimeclass:go_default_library",
         "//pkg/kubelet/secret:go_default_library",
         "//pkg/kubelet/server:go_default_library",
         "//pkg/kubelet/server/portforward:go_default_library",
@@ -127,6 +130,7 @@ go_library(
         "//staging/src/k8s.io/apimachinery/pkg/util/validation:go_default_library",
         "//staging/src/k8s.io/apimachinery/pkg/util/wait:go_default_library",
         "//staging/src/k8s.io/apiserver/pkg/util/feature:go_default_library",
+        "//staging/src/k8s.io/client-go/dynamic:go_default_library",
         "//staging/src/k8s.io/client-go/kubernetes:go_default_library",
         "//staging/src/k8s.io/client-go/kubernetes/typed/core/v1:go_default_library",
         "//staging/src/k8s.io/client-go/listers/core/v1:go_default_library",
@@ -153,6 +157,7 @@ go_test(
         "kubelet_getters_test.go",
         "kubelet_network_test.go",
         "kubelet_node_status_test.go",
+        "kubelet_pods_linux_test.go",
         "kubelet_pods_test.go",
         "kubelet_pods_windows_test.go",
         "kubelet_resources_test.go",
@@ -170,7 +175,6 @@ go_test(
         "//pkg/capabilities:go_default_library",
         "//pkg/features:go_default_library",
         "//pkg/kubelet/apis:go_default_library",
-        "//pkg/kubelet/apis/cri/runtime/v1alpha2:go_default_library",
         "//pkg/kubelet/cadvisor/testing:go_default_library",
         "//pkg/kubelet/cm:go_default_library",
         "//pkg/kubelet/config:go_default_library",
@@ -240,7 +244,12 @@ go_test(
         "//vendor/github.com/google/cadvisor/info/v2:go_default_library",
         "//vendor/github.com/stretchr/testify/assert:go_default_library",
         "//vendor/github.com/stretchr/testify/require:go_default_library",
-    ],
+    ] + select({
+        "@io_bazel_rules_go//go/platform:linux": [
+            "//pkg/kubelet/apis/cri/runtime/v1alpha2:go_default_library",
+        ],
+        "//conditions:default": [],
+    }),
 )
 
 filegroup(
@@ -287,6 +296,7 @@ filegroup(
         "//pkg/kubelet/prober:all-srcs",
         "//pkg/kubelet/qos:all-srcs",
         "//pkg/kubelet/remote:all-srcs",
+        "//pkg/kubelet/runtimeclass:all-srcs",
         "//pkg/kubelet/secret:all-srcs",
         "//pkg/kubelet/server:all-srcs",
         "//pkg/kubelet/stats:all-srcs",
