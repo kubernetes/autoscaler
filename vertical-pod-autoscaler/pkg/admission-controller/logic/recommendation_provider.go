@@ -71,7 +71,7 @@ func getContainersResources(pod *v1.Pod, podRecommendation vpa_types.Recommended
 func (p *recommendationProvider) getMatchingVPA(pod *v1.Pod) *vpa_types.VerticalPodAutoscaler {
 	configs, err := p.vpaLister.VerticalPodAutoscalers(pod.Namespace).List(labels.Everything())
 	if err != nil {
-		glog.Error("failed to get vpa configs: %v", err)
+		glog.Errorf("failed to get vpa configs: %v", err)
 		return nil
 	}
 	onConfigs := make([]*vpa_types.VerticalPodAutoscaler, 0)
