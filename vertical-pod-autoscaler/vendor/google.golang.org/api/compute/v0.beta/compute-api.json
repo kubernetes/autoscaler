@@ -29,7 +29,7 @@
   "description": "Creates and runs virtual machines on Google Cloud Platform.",
   "discoveryVersion": "v1",
   "documentationLink": "https://developers.google.com/compute/docs/reference/latest/",
-  "etag": "\"Zkyw9ACJZUvcYmlFaKGChzhmtnE/XxPbeTDXrLPRv1hWo1J5w2hfNX8\"",
+  "etag": "\"J3WqvAcMk4eQjJXvfSI4Yr8VouA/Xa2MJM4_QayM_5ewnuXBVfoRUCY\"",
   "icons": {
     "x16": "https://www.google.com/images/icons/product/compute_engine-16.png",
     "x32": "https://www.google.com/images/icons/product/compute_engine-32.png"
@@ -952,7 +952,7 @@
     "backendBuckets": {
       "methods": {
         "addSignedUrlKey": {
-          "description": "Adds the given Signed URL Key to the backend bucket.",
+          "description": "Adds a key for validating requests with signed URLs for this backend bucket.",
           "httpMethod": "POST",
           "id": "compute.backendBuckets.addSignedUrlKey",
           "parameterOrder": [
@@ -1030,7 +1030,7 @@
           ]
         },
         "deleteSignedUrlKey": {
-          "description": "Deletes the given Signed URL Key from the backend bucket.",
+          "description": "Deletes a key for validating requests with signed URLs for this backend bucket.",
           "httpMethod": "POST",
           "id": "compute.backendBuckets.deleteSignedUrlKey",
           "parameterOrder": [
@@ -1276,7 +1276,7 @@
     "backendServices": {
       "methods": {
         "addSignedUrlKey": {
-          "description": "Adds the given Signed URL Key to the specified backend service.",
+          "description": "Adds a key for validating requests with signed URLs for this backend service.",
           "httpMethod": "POST",
           "id": "compute.backendServices.addSignedUrlKey",
           "parameterOrder": [
@@ -1403,7 +1403,7 @@
           ]
         },
         "deleteSignedUrlKey": {
-          "description": "Deletes the given Signed URL Key from the specified backend service.",
+          "description": "Deletes a key for validating requests with signed URLs for this backend service.",
           "httpMethod": "POST",
           "id": "compute.backendServices.deleteSignedUrlKey",
           "parameterOrder": [
@@ -1913,6 +1913,55 @@
     },
     "disks": {
       "methods": {
+        "addResourcePolicies": {
+          "description": "Adds existing resource policies to a disk. You can only add one policy which will be applied to this disk for scheduling snapshot creation.",
+          "httpMethod": "POST",
+          "id": "compute.disks.addResourcePolicies",
+          "parameterOrder": [
+            "project",
+            "zone",
+            "disk"
+          ],
+          "parameters": {
+            "disk": {
+              "description": "The disk name for this request.",
+              "location": "path",
+              "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+              "required": true,
+              "type": "string"
+            },
+            "project": {
+              "description": "Project ID for this request.",
+              "location": "path",
+              "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+              "required": true,
+              "type": "string"
+            },
+            "requestId": {
+              "description": "An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed.\n\nFor example, consider a situation where you make an initial request and the request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments.\n\nThe request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
+              "location": "query",
+              "type": "string"
+            },
+            "zone": {
+              "description": "The name of the zone for this request.",
+              "location": "path",
+              "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "{project}/zones/{zone}/disks/{disk}/addResourcePolicies",
+          "request": {
+            "$ref": "DisksAddResourcePoliciesRequest"
+          },
+          "response": {
+            "$ref": "Operation"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/compute"
+          ]
+        },
         "aggregatedList": {
           "description": "Retrieves an aggregated list of persistent disks.",
           "httpMethod": "GET",
@@ -2102,6 +2151,48 @@
             "https://www.googleapis.com/auth/compute.readonly"
           ]
         },
+        "getIamPolicy": {
+          "description": "Gets the access control policy for a resource. May be empty if no such policy or resource exists.",
+          "httpMethod": "GET",
+          "id": "compute.disks.getIamPolicy",
+          "parameterOrder": [
+            "project",
+            "zone",
+            "resource"
+          ],
+          "parameters": {
+            "project": {
+              "description": "Project ID for this request.",
+              "location": "path",
+              "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+              "required": true,
+              "type": "string"
+            },
+            "resource": {
+              "description": "Name of the resource for this request.",
+              "location": "path",
+              "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+              "required": true,
+              "type": "string"
+            },
+            "zone": {
+              "description": "The name of the zone for this request.",
+              "location": "path",
+              "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "{project}/zones/{zone}/disks/{resource}/getIamPolicy",
+          "response": {
+            "$ref": "Policy"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/compute",
+            "https://www.googleapis.com/auth/compute.readonly"
+          ]
+        },
         "insert": {
           "description": "Creates a persistent disk in the specified project using the data in the request. You can create a disk with a sourceImage, a sourceSnapshot, or create an empty 500 GB data disk by omitting all properties. You can also create a disk that is larger than the default size by specifying the sizeGb property.",
           "httpMethod": "POST",
@@ -2205,6 +2296,55 @@
             "https://www.googleapis.com/auth/compute.readonly"
           ]
         },
+        "removeResourcePolicies": {
+          "description": "Removes resource policies from a disk.",
+          "httpMethod": "POST",
+          "id": "compute.disks.removeResourcePolicies",
+          "parameterOrder": [
+            "project",
+            "zone",
+            "disk"
+          ],
+          "parameters": {
+            "disk": {
+              "description": "The disk name for this request.",
+              "location": "path",
+              "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+              "required": true,
+              "type": "string"
+            },
+            "project": {
+              "description": "Project ID for this request.",
+              "location": "path",
+              "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+              "required": true,
+              "type": "string"
+            },
+            "requestId": {
+              "description": "An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed.\n\nFor example, consider a situation where you make an initial request and the request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments.\n\nThe request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
+              "location": "query",
+              "type": "string"
+            },
+            "zone": {
+              "description": "The name of the zone for this request.",
+              "location": "path",
+              "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "{project}/zones/{zone}/disks/{disk}/removeResourcePolicies",
+          "request": {
+            "$ref": "DisksRemoveResourcePoliciesRequest"
+          },
+          "response": {
+            "$ref": "Operation"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/compute"
+          ]
+        },
         "resize": {
           "description": "Resizes the specified persistent disk. You can only increase the size of the disk.",
           "httpMethod": "POST",
@@ -2248,6 +2388,50 @@
           },
           "response": {
             "$ref": "Operation"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/compute"
+          ]
+        },
+        "setIamPolicy": {
+          "description": "Sets the access control policy on the specified resource. Replaces any existing policy.",
+          "httpMethod": "POST",
+          "id": "compute.disks.setIamPolicy",
+          "parameterOrder": [
+            "project",
+            "zone",
+            "resource"
+          ],
+          "parameters": {
+            "project": {
+              "description": "Project ID for this request.",
+              "location": "path",
+              "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+              "required": true,
+              "type": "string"
+            },
+            "resource": {
+              "description": "Name of the resource for this request.",
+              "location": "path",
+              "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+              "required": true,
+              "type": "string"
+            },
+            "zone": {
+              "description": "The name of the zone for this request.",
+              "location": "path",
+              "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "{project}/zones/{zone}/disks/{resource}/setIamPolicy",
+          "request": {
+            "$ref": "ZoneSetPolicyRequest"
+          },
+          "response": {
+            "$ref": "Policy"
           },
           "scopes": [
             "https://www.googleapis.com/auth/cloud-platform",
@@ -4658,6 +4842,40 @@
             "https://www.googleapis.com/auth/compute.readonly"
           ]
         },
+        "getIamPolicy": {
+          "description": "Gets the access control policy for a resource. May be empty if no such policy or resource exists.",
+          "httpMethod": "GET",
+          "id": "compute.images.getIamPolicy",
+          "parameterOrder": [
+            "project",
+            "resource"
+          ],
+          "parameters": {
+            "project": {
+              "description": "Project ID for this request.",
+              "location": "path",
+              "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+              "required": true,
+              "type": "string"
+            },
+            "resource": {
+              "description": "Name of the resource for this request.",
+              "location": "path",
+              "pattern": "[a-z0-9](?:[-a-z0-9_]{0,61}[a-z0-9])?",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "{project}/global/images/{resource}/getIamPolicy",
+          "response": {
+            "$ref": "Policy"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/compute",
+            "https://www.googleapis.com/auth/compute.readonly"
+          ]
+        },
         "insert": {
           "description": "Creates an image in the specified project using the data included in the request.",
           "httpMethod": "POST",
@@ -4746,6 +4964,42 @@
             "https://www.googleapis.com/auth/cloud-platform",
             "https://www.googleapis.com/auth/compute",
             "https://www.googleapis.com/auth/compute.readonly"
+          ]
+        },
+        "setIamPolicy": {
+          "description": "Sets the access control policy on the specified resource. Replaces any existing policy.",
+          "httpMethod": "POST",
+          "id": "compute.images.setIamPolicy",
+          "parameterOrder": [
+            "project",
+            "resource"
+          ],
+          "parameters": {
+            "project": {
+              "description": "Project ID for this request.",
+              "location": "path",
+              "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+              "required": true,
+              "type": "string"
+            },
+            "resource": {
+              "description": "Name of the resource for this request.",
+              "location": "path",
+              "pattern": "[a-z0-9](?:[-a-z0-9_]{0,61}[a-z0-9])?",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "{project}/global/images/{resource}/setIamPolicy",
+          "request": {
+            "$ref": "GlobalSetPolicyRequest"
+          },
+          "response": {
+            "$ref": "Policy"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/compute"
           ]
         },
         "setLabels": {
@@ -5159,6 +5413,7 @@
           ],
           "parameters": {
             "filter": {
+              "description": "A filter expression that filters resources listed in the response. The expression must specify the field name, a comparison operator, and the value that you want to use for filtering. The value must be a string, a number, or a boolean. The comparison operator must be either =, !=, \u003e, or \u003c.\n\nFor example, if you are filtering Compute Engine instances, you can exclude instances named example-instance by specifying name != example-instance.\n\nYou can also filter nested fields. For example, you could specify scheduling.automaticRestart = false to include instances only if they are not scheduled for automatic restarts. You can use filtering on nested fields to filter based on resource labels.\n\nTo filter on multiple expressions, provide each separate expression within parentheses. For example, (scheduling.automaticRestart = true) (cpuPlatform = \"Intel Skylake\"). By default, each expression is an AND expression. However, you can include AND and OR expressions explicitly. For example, (cpuPlatform = \"Intel Skylake\") OR (cpuPlatform = \"Intel Broadwell\") AND (scheduling.automaticRestart = true).",
               "location": "query",
               "type": "string"
             },
@@ -5170,16 +5425,19 @@
             },
             "maxResults": {
               "default": "500",
+              "description": "The maximum number of results per page that should be returned. If the number of available results is larger than maxResults, Compute Engine returns a nextPageToken that can be used to get the next page of results in subsequent list requests. Acceptable values are 0 to 500, inclusive. (Default: 500)",
               "format": "uint32",
               "location": "query",
               "minimum": "0",
               "type": "integer"
             },
             "order_by": {
+              "description": "Sorts list results by a certain order. By default, results are returned in alphanumerical order based on the resource name.\n\nYou can also sort results in descending order based on the creation timestamp using orderBy=\"creationTimestamp desc\". This sorts results based on the creationTimestamp field in reverse chronological order (newest result first). Use this to sort resources like operations so that the newest operation is returned first.\n\nCurrently, only sorting by name or creationTimestamp desc is supported.",
               "location": "query",
               "type": "string"
             },
             "pageToken": {
+              "description": "Specifies a page token to use. Set pageToken to the nextPageToken returned by a previous list request to get the next page of results.",
               "location": "query",
               "type": "string"
             },
@@ -6194,6 +6452,40 @@
             "https://www.googleapis.com/auth/compute.readonly"
           ]
         },
+        "getIamPolicy": {
+          "description": "Gets the access control policy for a resource. May be empty if no such policy or resource exists.",
+          "httpMethod": "GET",
+          "id": "compute.instanceTemplates.getIamPolicy",
+          "parameterOrder": [
+            "project",
+            "resource"
+          ],
+          "parameters": {
+            "project": {
+              "description": "Project ID for this request.",
+              "location": "path",
+              "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+              "required": true,
+              "type": "string"
+            },
+            "resource": {
+              "description": "Name of the resource for this request.",
+              "location": "path",
+              "pattern": "[a-z0-9](?:[-a-z0-9_]{0,61}[a-z0-9])?",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "{project}/global/instanceTemplates/{resource}/getIamPolicy",
+          "response": {
+            "$ref": "Policy"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/compute",
+            "https://www.googleapis.com/auth/compute.readonly"
+          ]
+        },
         "insert": {
           "description": "Creates an instance template in the specified project using the data that is included in the request. If you are creating a new template to update an existing instance group, your new instance template must use the same network or, if applicable, the same subnetwork as the original template.",
           "httpMethod": "POST",
@@ -6274,6 +6566,42 @@
             "https://www.googleapis.com/auth/cloud-platform",
             "https://www.googleapis.com/auth/compute",
             "https://www.googleapis.com/auth/compute.readonly"
+          ]
+        },
+        "setIamPolicy": {
+          "description": "Sets the access control policy on the specified resource. Replaces any existing policy.",
+          "httpMethod": "POST",
+          "id": "compute.instanceTemplates.setIamPolicy",
+          "parameterOrder": [
+            "project",
+            "resource"
+          ],
+          "parameters": {
+            "project": {
+              "description": "Project ID for this request.",
+              "location": "path",
+              "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+              "required": true,
+              "type": "string"
+            },
+            "resource": {
+              "description": "Name of the resource for this request.",
+              "location": "path",
+              "pattern": "[a-z0-9](?:[-a-z0-9_]{0,61}[a-z0-9])?",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "{project}/global/instanceTemplates/{resource}/setIamPolicy",
+          "request": {
+            "$ref": "GlobalSetPolicyRequest"
+          },
+          "response": {
+            "$ref": "Policy"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/compute"
           ]
         },
         "testIamPermissions": {
@@ -6374,7 +6702,7 @@
           ]
         },
         "aggregatedList": {
-          "description": "Retrieves aggregated list of instances.",
+          "description": "Retrieves aggregated list of all of the instances in your project across all regions and zones.",
           "httpMethod": "GET",
           "id": "compute.instances.aggregatedList",
           "parameterOrder": [
@@ -6677,8 +7005,50 @@
             "https://www.googleapis.com/auth/compute.readonly"
           ]
         },
+        "getIamPolicy": {
+          "description": "Gets the access control policy for a resource. May be empty if no such policy or resource exists.",
+          "httpMethod": "GET",
+          "id": "compute.instances.getIamPolicy",
+          "parameterOrder": [
+            "project",
+            "zone",
+            "resource"
+          ],
+          "parameters": {
+            "project": {
+              "description": "Project ID for this request.",
+              "location": "path",
+              "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+              "required": true,
+              "type": "string"
+            },
+            "resource": {
+              "description": "Name of the resource for this request.",
+              "location": "path",
+              "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+              "required": true,
+              "type": "string"
+            },
+            "zone": {
+              "description": "The name of the zone for this request.",
+              "location": "path",
+              "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "{project}/zones/{zone}/instances/{resource}/getIamPolicy",
+          "response": {
+            "$ref": "Policy"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/compute",
+            "https://www.googleapis.com/auth/compute.readonly"
+          ]
+        },
         "getSerialPortOutput": {
-          "description": "Returns the specified instance's serial port output.",
+          "description": "Returns the last 1 MB of serial port output from the specified instance.",
           "httpMethod": "GET",
           "id": "compute.instances.getSerialPortOutput",
           "parameterOrder": [
@@ -7061,6 +7431,50 @@
             "https://www.googleapis.com/auth/compute"
           ]
         },
+        "setIamPolicy": {
+          "description": "Sets the access control policy on the specified resource. Replaces any existing policy.",
+          "httpMethod": "POST",
+          "id": "compute.instances.setIamPolicy",
+          "parameterOrder": [
+            "project",
+            "zone",
+            "resource"
+          ],
+          "parameters": {
+            "project": {
+              "description": "Project ID for this request.",
+              "location": "path",
+              "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+              "required": true,
+              "type": "string"
+            },
+            "resource": {
+              "description": "Name of the resource for this request.",
+              "location": "path",
+              "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+              "required": true,
+              "type": "string"
+            },
+            "zone": {
+              "description": "The name of the zone for this request.",
+              "location": "path",
+              "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "{project}/zones/{zone}/instances/{resource}/setIamPolicy",
+          "request": {
+            "$ref": "ZoneSetPolicyRequest"
+          },
+          "response": {
+            "$ref": "Policy"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/compute"
+          ]
+        },
         "setLabels": {
           "description": "Sets labels on an instance. To learn more about labels, read the Labeling Resources documentation.",
           "httpMethod": "POST",
@@ -7405,7 +7819,7 @@
           ]
         },
         "setShieldedVmIntegrityPolicy": {
-          "description": "Sets the Shielded VM integrity policy for an instance. This method supports PATCH semantics and uses the JSON merge patch format and processing rules.",
+          "description": "Sets the Shielded VM integrity policy for a VM instance. You can only use this method on a running VM instance. This method supports PATCH semantics and uses the JSON merge patch format and processing rules.",
           "httpMethod": "PATCH",
           "id": "compute.instances.setShieldedVmIntegrityPolicy",
           "parameterOrder": [
@@ -7842,7 +8256,7 @@
           ]
         },
         "updateShieldedVmConfig": {
-          "description": "Updates the Shielded VM config for an instance. This method supports PATCH semantics and uses the JSON merge patch format and processing rules.",
+          "description": "Updates the Shielded VM config for a VM instance. You can only use this method on a stopped VM instance. This method supports PATCH semantics and uses the JSON merge patch format and processing rules.",
           "httpMethod": "PATCH",
           "id": "compute.instances.updateShieldedVmConfig",
           "parameterOrder": [
@@ -9830,7 +10244,7 @@
           ]
         },
         "aggregatedList": {
-          "description": "Retrieves an aggregated list of node groups.",
+          "description": "Retrieves an aggregated list of node groups. Note: use nodeGroups.listNodes for more details about each group.",
           "httpMethod": "GET",
           "id": "compute.nodeGroups.aggregatedList",
           "parameterOrder": [
@@ -9974,7 +10388,7 @@
           ]
         },
         "get": {
-          "description": "Returns the specified NodeGroup. Get a list of available NodeGroups by making a list() request.",
+          "description": "Returns the specified NodeGroup. Get a list of available NodeGroups by making a list() request. Note: the \"nodes\" field should not be used. Use nodeGroups.listNodes instead.",
           "httpMethod": "GET",
           "id": "compute.nodeGroups.get",
           "parameterOrder": [
@@ -10107,7 +10521,7 @@
           ]
         },
         "list": {
-          "description": "Retrieves a list of node groups available to the specified project.",
+          "description": "Retrieves a list of node groups available to the specified project. Note: use nodeGroups.listNodes for more details about each group.",
           "httpMethod": "GET",
           "id": "compute.nodeGroups.list",
           "parameterOrder": [
@@ -10156,6 +10570,71 @@
           "path": "{project}/zones/{zone}/nodeGroups",
           "response": {
             "$ref": "NodeGroupList"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/compute",
+            "https://www.googleapis.com/auth/compute.readonly"
+          ]
+        },
+        "listNodes": {
+          "description": "Lists nodes in the node group.",
+          "httpMethod": "POST",
+          "id": "compute.nodeGroups.listNodes",
+          "parameterOrder": [
+            "project",
+            "zone",
+            "nodeGroup"
+          ],
+          "parameters": {
+            "filter": {
+              "description": "A filter expression that filters resources listed in the response. The expression must specify the field name, a comparison operator, and the value that you want to use for filtering. The value must be a string, a number, or a boolean. The comparison operator must be either =, !=, \u003e, or \u003c.\n\nFor example, if you are filtering Compute Engine instances, you can exclude instances named example-instance by specifying name != example-instance.\n\nYou can also filter nested fields. For example, you could specify scheduling.automaticRestart = false to include instances only if they are not scheduled for automatic restarts. You can use filtering on nested fields to filter based on resource labels.\n\nTo filter on multiple expressions, provide each separate expression within parentheses. For example, (scheduling.automaticRestart = true) (cpuPlatform = \"Intel Skylake\"). By default, each expression is an AND expression. However, you can include AND and OR expressions explicitly. For example, (cpuPlatform = \"Intel Skylake\") OR (cpuPlatform = \"Intel Broadwell\") AND (scheduling.automaticRestart = true).",
+              "location": "query",
+              "type": "string"
+            },
+            "maxResults": {
+              "default": "500",
+              "description": "The maximum number of results per page that should be returned. If the number of available results is larger than maxResults, Compute Engine returns a nextPageToken that can be used to get the next page of results in subsequent list requests. Acceptable values are 0 to 500, inclusive. (Default: 500)",
+              "format": "uint32",
+              "location": "query",
+              "minimum": "0",
+              "type": "integer"
+            },
+            "nodeGroup": {
+              "description": "Name of the NodeGroup resource whose nodes you want to list.",
+              "location": "path",
+              "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+              "required": true,
+              "type": "string"
+            },
+            "orderBy": {
+              "description": "Sorts list results by a certain order. By default, results are returned in alphanumerical order based on the resource name.\n\nYou can also sort results in descending order based on the creation timestamp using orderBy=\"creationTimestamp desc\". This sorts results based on the creationTimestamp field in reverse chronological order (newest result first). Use this to sort resources like operations so that the newest operation is returned first.\n\nCurrently, only sorting by name or creationTimestamp desc is supported.",
+              "location": "query",
+              "type": "string"
+            },
+            "pageToken": {
+              "description": "Specifies a page token to use. Set pageToken to the nextPageToken returned by a previous list request to get the next page of results.",
+              "location": "query",
+              "type": "string"
+            },
+            "project": {
+              "description": "Project ID for this request.",
+              "location": "path",
+              "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+              "required": true,
+              "type": "string"
+            },
+            "zone": {
+              "description": "The name of the zone for this request.",
+              "location": "path",
+              "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "{project}/zones/{zone}/nodeGroups/{nodeGroup}/listNodes",
+          "response": {
+            "$ref": "NodeGroupsListNodes"
           },
           "scopes": [
             "https://www.googleapis.com/auth/cloud-platform",
@@ -11013,21 +11492,25 @@
           ],
           "parameters": {
             "filter": {
+              "description": "A filter expression that filters resources listed in the response. The expression must specify the field name, a comparison operator, and the value that you want to use for filtering. The value must be a string, a number, or a boolean. The comparison operator must be either =, !=, \u003e, or \u003c.\n\nFor example, if you are filtering Compute Engine instances, you can exclude instances named example-instance by specifying name != example-instance.\n\nYou can also filter nested fields. For example, you could specify scheduling.automaticRestart = false to include instances only if they are not scheduled for automatic restarts. You can use filtering on nested fields to filter based on resource labels.\n\nTo filter on multiple expressions, provide each separate expression within parentheses. For example, (scheduling.automaticRestart = true) (cpuPlatform = \"Intel Skylake\"). By default, each expression is an AND expression. However, you can include AND and OR expressions explicitly. For example, (cpuPlatform = \"Intel Skylake\") OR (cpuPlatform = \"Intel Broadwell\") AND (scheduling.automaticRestart = true).",
               "location": "query",
               "type": "string"
             },
             "maxResults": {
               "default": "500",
+              "description": "The maximum number of results per page that should be returned. If the number of available results is larger than maxResults, Compute Engine returns a nextPageToken that can be used to get the next page of results in subsequent list requests. Acceptable values are 0 to 500, inclusive. (Default: 500)",
               "format": "uint32",
               "location": "query",
               "minimum": "0",
               "type": "integer"
             },
             "order_by": {
+              "description": "Sorts list results by a certain order. By default, results are returned in alphanumerical order based on the resource name.\n\nYou can also sort results in descending order based on the creation timestamp using orderBy=\"creationTimestamp desc\". This sorts results based on the creationTimestamp field in reverse chronological order (newest result first). Use this to sort resources like operations so that the newest operation is returned first.\n\nCurrently, only sorting by name or creationTimestamp desc is supported.",
               "location": "query",
               "type": "string"
             },
             "pageToken": {
+              "description": "Specifies a page token to use. Set pageToken to the nextPageToken returned by a previous list request to get the next page of results.",
               "location": "query",
               "type": "string"
             },
@@ -11057,21 +11540,25 @@
           ],
           "parameters": {
             "filter": {
+              "description": "A filter expression that filters resources listed in the response. The expression must specify the field name, a comparison operator, and the value that you want to use for filtering. The value must be a string, a number, or a boolean. The comparison operator must be either =, !=, \u003e, or \u003c.\n\nFor example, if you are filtering Compute Engine instances, you can exclude instances named example-instance by specifying name != example-instance.\n\nYou can also filter nested fields. For example, you could specify scheduling.automaticRestart = false to include instances only if they are not scheduled for automatic restarts. You can use filtering on nested fields to filter based on resource labels.\n\nTo filter on multiple expressions, provide each separate expression within parentheses. For example, (scheduling.automaticRestart = true) (cpuPlatform = \"Intel Skylake\"). By default, each expression is an AND expression. However, you can include AND and OR expressions explicitly. For example, (cpuPlatform = \"Intel Skylake\") OR (cpuPlatform = \"Intel Broadwell\") AND (scheduling.automaticRestart = true).",
               "location": "query",
               "type": "string"
             },
             "maxResults": {
               "default": "500",
+              "description": "The maximum number of results per page that should be returned. If the number of available results is larger than maxResults, Compute Engine returns a nextPageToken that can be used to get the next page of results in subsequent list requests. Acceptable values are 0 to 500, inclusive. (Default: 500)",
               "format": "uint32",
               "location": "query",
               "minimum": "0",
               "type": "integer"
             },
             "order_by": {
+              "description": "Sorts list results by a certain order. By default, results are returned in alphanumerical order based on the resource name.\n\nYou can also sort results in descending order based on the creation timestamp using orderBy=\"creationTimestamp desc\". This sorts results based on the creationTimestamp field in reverse chronological order (newest result first). Use this to sort resources like operations so that the newest operation is returned first.\n\nCurrently, only sorting by name or creationTimestamp desc is supported.",
               "location": "query",
               "type": "string"
             },
             "pageToken": {
+              "description": "Specifies a page token to use. Set pageToken to the nextPageToken returned by a previous list request to get the next page of results.",
               "location": "query",
               "type": "string"
             },
@@ -12269,6 +12756,55 @@
     },
     "regionDisks": {
       "methods": {
+        "addResourcePolicies": {
+          "description": "Adds existing resource policies to a regional disk. You can only add one policy which will be applied to this disk for scheduling snapshot creation.",
+          "httpMethod": "POST",
+          "id": "compute.regionDisks.addResourcePolicies",
+          "parameterOrder": [
+            "project",
+            "region",
+            "disk"
+          ],
+          "parameters": {
+            "disk": {
+              "description": "The disk name for this request.",
+              "location": "path",
+              "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+              "required": true,
+              "type": "string"
+            },
+            "project": {
+              "description": "Project ID for this request.",
+              "location": "path",
+              "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+              "required": true,
+              "type": "string"
+            },
+            "region": {
+              "description": "The name of the region for this request.",
+              "location": "path",
+              "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+              "required": true,
+              "type": "string"
+            },
+            "requestId": {
+              "description": "An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed.\n\nFor example, consider a situation where you make an initial request and the request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments.\n\nThe request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
+              "location": "query",
+              "type": "string"
+            }
+          },
+          "path": "{project}/regions/{region}/disks/{disk}/addResourcePolicies",
+          "request": {
+            "$ref": "RegionDisksAddResourcePoliciesRequest"
+          },
+          "response": {
+            "$ref": "Operation"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/compute"
+          ]
+        },
         "createSnapshot": {
           "description": "Creates a snapshot of this regional disk.",
           "httpMethod": "POST",
@@ -12506,6 +13042,55 @@
             "https://www.googleapis.com/auth/cloud-platform",
             "https://www.googleapis.com/auth/compute",
             "https://www.googleapis.com/auth/compute.readonly"
+          ]
+        },
+        "removeResourcePolicies": {
+          "description": "Removes resource policies from a regional disk.",
+          "httpMethod": "POST",
+          "id": "compute.regionDisks.removeResourcePolicies",
+          "parameterOrder": [
+            "project",
+            "region",
+            "disk"
+          ],
+          "parameters": {
+            "disk": {
+              "description": "The disk name for this request.",
+              "location": "path",
+              "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+              "required": true,
+              "type": "string"
+            },
+            "project": {
+              "description": "Project ID for this request.",
+              "location": "path",
+              "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+              "required": true,
+              "type": "string"
+            },
+            "region": {
+              "description": "The name of the region for this request.",
+              "location": "path",
+              "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+              "required": true,
+              "type": "string"
+            },
+            "requestId": {
+              "description": "An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed.\n\nFor example, consider a situation where you make an initial request and the request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments.\n\nThe request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
+              "location": "query",
+              "type": "string"
+            }
+          },
+          "path": "{project}/regions/{region}/disks/{disk}/removeResourcePolicies",
+          "request": {
+            "$ref": "RegionDisksRemoveResourcePoliciesRequest"
+          },
+          "response": {
+            "$ref": "Operation"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/compute"
           ]
         },
         "resize": {
@@ -12940,6 +13525,7 @@
           ],
           "parameters": {
             "filter": {
+              "description": "A filter expression that filters resources listed in the response. The expression must specify the field name, a comparison operator, and the value that you want to use for filtering. The value must be a string, a number, or a boolean. The comparison operator must be either =, !=, \u003e, or \u003c.\n\nFor example, if you are filtering Compute Engine instances, you can exclude instances named example-instance by specifying name != example-instance.\n\nYou can also filter nested fields. For example, you could specify scheduling.automaticRestart = false to include instances only if they are not scheduled for automatic restarts. You can use filtering on nested fields to filter based on resource labels.\n\nTo filter on multiple expressions, provide each separate expression within parentheses. For example, (scheduling.automaticRestart = true) (cpuPlatform = \"Intel Skylake\"). By default, each expression is an AND expression. However, you can include AND and OR expressions explicitly. For example, (cpuPlatform = \"Intel Skylake\") OR (cpuPlatform = \"Intel Broadwell\") AND (scheduling.automaticRestart = true).",
               "location": "query",
               "type": "string"
             },
@@ -12951,16 +13537,19 @@
             },
             "maxResults": {
               "default": "500",
+              "description": "The maximum number of results per page that should be returned. If the number of available results is larger than maxResults, Compute Engine returns a nextPageToken that can be used to get the next page of results in subsequent list requests. Acceptable values are 0 to 500, inclusive. (Default: 500)",
               "format": "uint32",
               "location": "query",
               "minimum": "0",
               "type": "integer"
             },
             "order_by": {
+              "description": "Sorts list results by a certain order. By default, results are returned in alphanumerical order based on the resource name.\n\nYou can also sort results in descending order based on the creation timestamp using orderBy=\"creationTimestamp desc\". This sorts results based on the creationTimestamp field in reverse chronological order (newest result first). Use this to sort resources like operations so that the newest operation is returned first.\n\nCurrently, only sorting by name or creationTimestamp desc is supported.",
               "location": "query",
               "type": "string"
             },
             "pageToken": {
+              "description": "Specifies a page token to use. Set pageToken to the nextPageToken returned by a previous list request to get the next page of results.",
               "location": "query",
               "type": "string"
             },
@@ -13847,6 +14436,290 @@
           "path": "{project}/regions",
           "response": {
             "$ref": "RegionList"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/compute",
+            "https://www.googleapis.com/auth/compute.readonly"
+          ]
+        }
+      }
+    },
+    "resourcePolicies": {
+      "methods": {
+        "aggregatedList": {
+          "description": "Retrieves an aggregated list of resource policies.",
+          "httpMethod": "GET",
+          "id": "compute.resourcePolicies.aggregatedList",
+          "parameterOrder": [
+            "project"
+          ],
+          "parameters": {
+            "filter": {
+              "description": "A filter expression that filters resources listed in the response. The expression must specify the field name, a comparison operator, and the value that you want to use for filtering. The value must be a string, a number, or a boolean. The comparison operator must be either =, !=, \u003e, or \u003c.\n\nFor example, if you are filtering Compute Engine instances, you can exclude instances named example-instance by specifying name != example-instance.\n\nYou can also filter nested fields. For example, you could specify scheduling.automaticRestart = false to include instances only if they are not scheduled for automatic restarts. You can use filtering on nested fields to filter based on resource labels.\n\nTo filter on multiple expressions, provide each separate expression within parentheses. For example, (scheduling.automaticRestart = true) (cpuPlatform = \"Intel Skylake\"). By default, each expression is an AND expression. However, you can include AND and OR expressions explicitly. For example, (cpuPlatform = \"Intel Skylake\") OR (cpuPlatform = \"Intel Broadwell\") AND (scheduling.automaticRestart = true).",
+              "location": "query",
+              "type": "string"
+            },
+            "maxResults": {
+              "default": "500",
+              "description": "The maximum number of results per page that should be returned. If the number of available results is larger than maxResults, Compute Engine returns a nextPageToken that can be used to get the next page of results in subsequent list requests. Acceptable values are 0 to 500, inclusive. (Default: 500)",
+              "format": "uint32",
+              "location": "query",
+              "minimum": "0",
+              "type": "integer"
+            },
+            "orderBy": {
+              "description": "Sorts list results by a certain order. By default, results are returned in alphanumerical order based on the resource name.\n\nYou can also sort results in descending order based on the creation timestamp using orderBy=\"creationTimestamp desc\". This sorts results based on the creationTimestamp field in reverse chronological order (newest result first). Use this to sort resources like operations so that the newest operation is returned first.\n\nCurrently, only sorting by name or creationTimestamp desc is supported.",
+              "location": "query",
+              "type": "string"
+            },
+            "pageToken": {
+              "description": "Specifies a page token to use. Set pageToken to the nextPageToken returned by a previous list request to get the next page of results.",
+              "location": "query",
+              "type": "string"
+            },
+            "project": {
+              "description": "Project ID for this request.",
+              "location": "path",
+              "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "{project}/aggregated/resourcePolicies",
+          "response": {
+            "$ref": "ResourcePolicyAggregatedList"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/compute",
+            "https://www.googleapis.com/auth/compute.readonly"
+          ]
+        },
+        "delete": {
+          "description": "Deletes the specified resource policy.",
+          "httpMethod": "DELETE",
+          "id": "compute.resourcePolicies.delete",
+          "parameterOrder": [
+            "project",
+            "region",
+            "resourcePolicy"
+          ],
+          "parameters": {
+            "project": {
+              "description": "Project ID for this request.",
+              "location": "path",
+              "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+              "required": true,
+              "type": "string"
+            },
+            "region": {
+              "description": "Name of the region for this request.",
+              "location": "path",
+              "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+              "required": true,
+              "type": "string"
+            },
+            "requestId": {
+              "description": "An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed.\n\nFor example, consider a situation where you make an initial request and the request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments.\n\nThe request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
+              "location": "query",
+              "type": "string"
+            },
+            "resourcePolicy": {
+              "description": "Name of the resource policy to delete.",
+              "location": "path",
+              "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "{project}/regions/{region}/resourcePolicies/{resourcePolicy}",
+          "response": {
+            "$ref": "Operation"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/compute"
+          ]
+        },
+        "get": {
+          "description": "Retrieves all information of the specified resource policy.",
+          "httpMethod": "GET",
+          "id": "compute.resourcePolicies.get",
+          "parameterOrder": [
+            "project",
+            "region",
+            "resourcePolicy"
+          ],
+          "parameters": {
+            "project": {
+              "description": "Project ID for this request.",
+              "location": "path",
+              "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+              "required": true,
+              "type": "string"
+            },
+            "region": {
+              "description": "Name of the region for this request.",
+              "location": "path",
+              "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+              "required": true,
+              "type": "string"
+            },
+            "resourcePolicy": {
+              "description": "Name of the resource policy to retrieve.",
+              "location": "path",
+              "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "{project}/regions/{region}/resourcePolicies/{resourcePolicy}",
+          "response": {
+            "$ref": "ResourcePolicy"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/compute",
+            "https://www.googleapis.com/auth/compute.readonly"
+          ]
+        },
+        "insert": {
+          "description": "Creates a new resource policy.",
+          "httpMethod": "POST",
+          "id": "compute.resourcePolicies.insert",
+          "parameterOrder": [
+            "project",
+            "region"
+          ],
+          "parameters": {
+            "project": {
+              "description": "Project ID for this request.",
+              "location": "path",
+              "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+              "required": true,
+              "type": "string"
+            },
+            "region": {
+              "description": "Name of the region for this request.",
+              "location": "path",
+              "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+              "required": true,
+              "type": "string"
+            },
+            "requestId": {
+              "description": "An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed.\n\nFor example, consider a situation where you make an initial request and the request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments.\n\nThe request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
+              "location": "query",
+              "type": "string"
+            }
+          },
+          "path": "{project}/regions/{region}/resourcePolicies",
+          "request": {
+            "$ref": "ResourcePolicy"
+          },
+          "response": {
+            "$ref": "Operation"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/compute"
+          ]
+        },
+        "list": {
+          "description": "A list all the resource policies that have been configured for the specified project in specified region.",
+          "httpMethod": "GET",
+          "id": "compute.resourcePolicies.list",
+          "parameterOrder": [
+            "project",
+            "region"
+          ],
+          "parameters": {
+            "filter": {
+              "description": "A filter expression that filters resources listed in the response. The expression must specify the field name, a comparison operator, and the value that you want to use for filtering. The value must be a string, a number, or a boolean. The comparison operator must be either =, !=, \u003e, or \u003c.\n\nFor example, if you are filtering Compute Engine instances, you can exclude instances named example-instance by specifying name != example-instance.\n\nYou can also filter nested fields. For example, you could specify scheduling.automaticRestart = false to include instances only if they are not scheduled for automatic restarts. You can use filtering on nested fields to filter based on resource labels.\n\nTo filter on multiple expressions, provide each separate expression within parentheses. For example, (scheduling.automaticRestart = true) (cpuPlatform = \"Intel Skylake\"). By default, each expression is an AND expression. However, you can include AND and OR expressions explicitly. For example, (cpuPlatform = \"Intel Skylake\") OR (cpuPlatform = \"Intel Broadwell\") AND (scheduling.automaticRestart = true).",
+              "location": "query",
+              "type": "string"
+            },
+            "maxResults": {
+              "default": "500",
+              "description": "The maximum number of results per page that should be returned. If the number of available results is larger than maxResults, Compute Engine returns a nextPageToken that can be used to get the next page of results in subsequent list requests. Acceptable values are 0 to 500, inclusive. (Default: 500)",
+              "format": "uint32",
+              "location": "query",
+              "minimum": "0",
+              "type": "integer"
+            },
+            "orderBy": {
+              "description": "Sorts list results by a certain order. By default, results are returned in alphanumerical order based on the resource name.\n\nYou can also sort results in descending order based on the creation timestamp using orderBy=\"creationTimestamp desc\". This sorts results based on the creationTimestamp field in reverse chronological order (newest result first). Use this to sort resources like operations so that the newest operation is returned first.\n\nCurrently, only sorting by name or creationTimestamp desc is supported.",
+              "location": "query",
+              "type": "string"
+            },
+            "pageToken": {
+              "description": "Specifies a page token to use. Set pageToken to the nextPageToken returned by a previous list request to get the next page of results.",
+              "location": "query",
+              "type": "string"
+            },
+            "project": {
+              "description": "Project ID for this request.",
+              "location": "path",
+              "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+              "required": true,
+              "type": "string"
+            },
+            "region": {
+              "description": "Name of the region for this request.",
+              "location": "path",
+              "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "{project}/regions/{region}/resourcePolicies",
+          "response": {
+            "$ref": "ResourcePolicyList"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/compute",
+            "https://www.googleapis.com/auth/compute.readonly"
+          ]
+        },
+        "testIamPermissions": {
+          "description": "Returns permissions that a caller has on the specified resource.",
+          "httpMethod": "POST",
+          "id": "compute.resourcePolicies.testIamPermissions",
+          "parameterOrder": [
+            "project",
+            "region",
+            "resource"
+          ],
+          "parameters": {
+            "project": {
+              "description": "Project ID for this request.",
+              "location": "path",
+              "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+              "required": true,
+              "type": "string"
+            },
+            "region": {
+              "description": "The name of the region for this request.",
+              "location": "path",
+              "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+              "required": true,
+              "type": "string"
+            },
+            "resource": {
+              "description": "Name of the resource for this request.",
+              "location": "path",
+              "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "{project}/regions/{region}/resourcePolicies/{resource}/testIamPermissions",
+          "request": {
+            "$ref": "TestPermissionsRequest"
+          },
+          "response": {
+            "$ref": "TestPermissionsResponse"
           },
           "scopes": [
             "https://www.googleapis.com/auth/cloud-platform",
@@ -14922,6 +15795,42 @@
             "https://www.googleapis.com/auth/compute"
           ]
         },
+        "setLabels": {
+          "description": "Sets the labels on a security policy. To learn more about labels, read the Labeling Resources documentation.",
+          "httpMethod": "POST",
+          "id": "compute.securityPolicies.setLabels",
+          "parameterOrder": [
+            "project",
+            "resource"
+          ],
+          "parameters": {
+            "project": {
+              "description": "Project ID for this request.",
+              "location": "path",
+              "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+              "required": true,
+              "type": "string"
+            },
+            "resource": {
+              "description": "Name of the resource for this request.",
+              "location": "path",
+              "pattern": "[a-z](?:[-a-z0-9_]{0,61}[a-z0-9])?",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "{project}/global/securityPolicies/{resource}/setLabels",
+          "request": {
+            "$ref": "GlobalSetLabelsRequest"
+          },
+          "response": {
+            "$ref": "Operation"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/compute"
+          ]
+        },
         "testIamPermissions": {
           "description": "Returns permissions that a caller has on the specified resource.",
           "httpMethod": "POST",
@@ -15035,6 +15944,40 @@
             "https://www.googleapis.com/auth/compute.readonly"
           ]
         },
+        "getIamPolicy": {
+          "description": "Gets the access control policy for a resource. May be empty if no such policy or resource exists.",
+          "httpMethod": "GET",
+          "id": "compute.snapshots.getIamPolicy",
+          "parameterOrder": [
+            "project",
+            "resource"
+          ],
+          "parameters": {
+            "project": {
+              "description": "Project ID for this request.",
+              "location": "path",
+              "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+              "required": true,
+              "type": "string"
+            },
+            "resource": {
+              "description": "Name of the resource for this request.",
+              "location": "path",
+              "pattern": "[a-z0-9](?:[-a-z0-9_]{0,61}[a-z0-9])?",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "{project}/global/snapshots/{resource}/getIamPolicy",
+          "response": {
+            "$ref": "Policy"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/compute",
+            "https://www.googleapis.com/auth/compute.readonly"
+          ]
+        },
         "list": {
           "description": "Retrieves the list of Snapshot resources contained within the specified project.",
           "httpMethod": "GET",
@@ -15082,6 +16025,42 @@
             "https://www.googleapis.com/auth/cloud-platform",
             "https://www.googleapis.com/auth/compute",
             "https://www.googleapis.com/auth/compute.readonly"
+          ]
+        },
+        "setIamPolicy": {
+          "description": "Sets the access control policy on the specified resource. Replaces any existing policy.",
+          "httpMethod": "POST",
+          "id": "compute.snapshots.setIamPolicy",
+          "parameterOrder": [
+            "project",
+            "resource"
+          ],
+          "parameters": {
+            "project": {
+              "description": "Project ID for this request.",
+              "location": "path",
+              "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+              "required": true,
+              "type": "string"
+            },
+            "resource": {
+              "description": "Name of the resource for this request.",
+              "location": "path",
+              "pattern": "[a-z0-9](?:[-a-z0-9_]{0,61}[a-z0-9])?",
+              "required": true,
+              "type": "string"
+            }
+          },
+          "path": "{project}/global/snapshots/{resource}/setIamPolicy",
+          "request": {
+            "$ref": "GlobalSetPolicyRequest"
+          },
+          "response": {
+            "$ref": "Policy"
+          },
+          "scopes": [
+            "https://www.googleapis.com/auth/cloud-platform",
+            "https://www.googleapis.com/auth/compute"
           ]
         },
         "setLabels": {
@@ -19506,6 +20485,7 @@
       }
     }
   },
+  "revision": "20180817",
   "rootUrl": "https://www.googleapis.com/",
   "schemas": {
     "AcceleratorConfig": {
@@ -20517,25 +21497,17 @@
       "description": "[Input Only] Specifies the parameters for a new disk that will be created alongside the new instance. Use initialization parameters to create boot disks or local SSDs attached to the new instance.\n\nThis property is mutually exclusive with the source property; you can only define one or the other, but not both.",
       "id": "AttachedDiskInitializeParams",
       "properties": {
+        "description": {
+          "description": "An optional description. Provide this property when creating the disk.",
+          "type": "string"
+        },
         "diskName": {
-          "description": "Specifies the disk name. If not specified, the default is to use the name of the instance.",
+          "description": "Specifies the disk name. If not specified, the default is to use the name of the instance. If the disk with the instance name exists already in the given zone/region, a new name will be automatically generated.",
           "type": "string"
         },
         "diskSizeGb": {
           "description": "Specifies the size of the disk in base-2 GB.",
           "format": "int64",
-          "type": "string"
-        },
-        "diskStorageType": {
-          "description": "[Deprecated] Storage type of the disk.",
-          "enum": [
-            "HDD",
-            "SSD"
-          ],
-          "enumDescriptions": [
-            "",
-            ""
-          ],
           "type": "string"
         },
         "diskType": {
@@ -20550,7 +21522,7 @@
           "type": "object"
         },
         "sourceImage": {
-          "description": "The source image to create this disk. When creating a new instance, one of initializeParams.sourceImage or disks.source is required except for local SSD.\n\nTo create a disk with one of the public operating system images, specify the image by its family name. For example, specify family/debian-8 to use the latest Debian 8 image:\nprojects/debian-cloud/global/images/family/debian-8\n\n\nAlternatively, use a specific version of a public operating system image:\nprojects/debian-cloud/global/images/debian-8-jessie-vYYYYMMDD\n\n\nTo create a disk with a custom image that you created, specify the image name in the following format:\nglobal/images/my-custom-image\n\n\nYou can also specify a custom image by its image family, which returns the latest version of the image in that family. Replace the image name with family/family-name:\nglobal/images/family/my-image-family\n\n\nIf the source image is deleted later, this field will not be set.",
+          "description": "The source image to create this disk. When creating a new instance, one of initializeParams.sourceImage or disks.source is required except for local SSD.\n\nTo create a disk with one of the public operating system images, specify the image by its family name. For example, specify family/debian-9 to use the latest Debian 9 image:\nprojects/debian-cloud/global/images/family/debian-9\n\n\nAlternatively, use a specific version of a public operating system image:\nprojects/debian-cloud/global/images/debian-9-stretch-vYYYYMMDD\n\n\nTo create a disk with a custom image that you created, specify the image name in the following format:\nglobal/images/my-custom-image\n\n\nYou can also specify a custom image by its image family, which returns the latest version of the image in that family. Replace the image name with family/family-name:\nglobal/images/family/my-image-family\n\n\nIf the source image is deleted later, this field will not be set.",
           "type": "string"
         },
         "sourceImageEncryptionKey": {
@@ -21263,7 +22235,7 @@
         },
         "cdnPolicy": {
           "$ref": "BackendBucketCdnPolicy",
-          "description": "Cloud CDN Coniguration for this BackendBucket."
+          "description": "Cloud CDN configuration for this BackendBucket."
         },
         "creationTimestamp": {
           "description": "[Output Only] Creation timestamp in RFC3339 text format.",
@@ -21304,12 +22276,12 @@
       "id": "BackendBucketCdnPolicy",
       "properties": {
         "signedUrlCacheMaxAgeSec": {
-          "description": "Number of seconds up to which the response to a signed URL request will be cached in the CDN. After this time period, the Signed URL will be revalidated before being served. Defaults to 1hr (3600s). If this field is set, Cloud CDN will internally act as though all responses from this bucket had a ?Cache-Control: public, max-age=[TTL]? header, regardless of any existing Cache-Control header. The actual headers served in responses will not be altered.",
+          "description": "Maximum number of seconds the response to a signed URL request will be considered fresh. After this time period, the response will be revalidated before being served. Defaults to 1hr (3600s). When serving responses to signed URL requests, Cloud CDN will internally behave as though all responses from this backend had a ?Cache-Control: public, max-age=[TTL]? header, regardless of any existing Cache-Control header. The actual headers served in responses will not be altered.",
           "format": "int64",
           "type": "string"
         },
         "signedUrlKeyNames": {
-          "description": "[Output Only] Names of the keys currently configured for Cloud CDN Signed URL on this backend bucket.",
+          "description": "[Output Only] Names of the keys for signing request URLs.",
           "items": {
             "type": "string"
           },
@@ -21473,7 +22445,7 @@
           "type": "boolean"
         },
         "fingerprint": {
-          "description": "Fingerprint of this resource. A hash of the contents stored in this object. This field is used in optimistic locking. This field will be ignored when inserting a BackendService. An up-to-date fingerprint must be provided in order to update the BackendService.",
+          "description": "Fingerprint of this resource. A hash of the contents stored in this object. This field is used in optimistic locking. This field will be ignored when inserting a BackendService. An up-to-date fingerprint must be provided in order to update the BackendService.\n\nTo see the latest fingerprint, make a get() request to retrieve a BackendService.",
           "format": "byte",
           "type": "string"
         },
@@ -21705,12 +22677,12 @@
           "description": "The CacheKeyPolicy for this CdnPolicy."
         },
         "signedUrlCacheMaxAgeSec": {
-          "description": "Number of seconds up to which the response to a signed URL request will be cached in the CDN. After this time period, the Signed URL will be revalidated before being served. Defaults to 1hr (3600s). If this field is set, Cloud CDN will internally act as though all responses from this backend had a ?Cache-Control: public, max-age=[TTL]? header, regardless of any existing Cache-Control header. The actual headers served in responses will not be altered.",
+          "description": "Maximum number of seconds the response to a signed URL request will be considered fresh. After this time period, the response will be revalidated before being served. Defaults to 1hr (3600s). When serving responses to signed URL requests, Cloud CDN will internally behave as though all responses from this backend had a ?Cache-Control: public, max-age=[TTL]? header, regardless of any existing Cache-Control header. The actual headers served in responses will not be altered.",
           "format": "int64",
           "type": "string"
         },
         "signedUrlKeyNames": {
-          "description": "[Output Only] Names of the keys currently configured for Cloud CDN Signed URL on this backend service.",
+          "description": "[Output Only] Names of the keys for signing request URLs.",
           "items": {
             "type": "string"
           },
@@ -21977,7 +22949,7 @@
       "properties": {
         "condition": {
           "$ref": "Expr",
-          "description": "The condition that is associated with this binding. NOTE: an unsatisfied condition will not allow user access via current binding. Different bindings, including their conditions, are examined independently. This field is only visible as GOOGLE_INTERNAL or CONDITION_TRUSTED_TESTER."
+          "description": "Unimplemented. The condition that is associated with this binding. NOTE: an unsatisfied condition will not allow user access via current binding. Different bindings, including their conditions, are examined independently."
         },
         "members": {
           "description": "Specifies the identities requesting access for a Cloud Platform resource. `members` can have the following values:\n\n* `allUsers`: A special identifier that represents anyone who is on the internet; with or without a Google account.\n\n* `allAuthenticatedUsers`: A special identifier that represents anyone who is authenticated with a Google account or a service account.\n\n* `user:{emailid}`: An email address that represents a specific Google account. For example, `alice@gmail.com` .\n\n\n\n* `serviceAccount:{emailid}`: An email address that represents a service account. For example, `my-other-app@appspot.gserviceaccount.com`.\n\n* `group:{emailid}`: An email address that represents a Google group. For example, `admins@example.com`.\n\n\n\n* `domain:{domain}`: A Google Apps domain name that represents all the users of that domain. For example, `google.com` or `example.com`.",
@@ -22674,7 +23646,7 @@
           "type": "array"
         },
         "licenses": {
-          "description": "Any applicable publicly visible licenses.",
+          "description": "A list of publicly visible licenses. Reserved for Google's use.",
           "items": {
             "type": "string"
           },
@@ -22705,6 +23677,13 @@
           },
           "type": "array"
         },
+        "resourcePolicies": {
+          "description": "Resource policies applied to this disk for automatic snapshot creations.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
         "selfLink": {
           "description": "[Output Only] Server-defined fully-qualified URL for this resource.",
           "type": "string"
@@ -22715,7 +23694,7 @@
           "type": "string"
         },
         "sourceImage": {
-          "description": "The source image used to create this disk. If the source image is deleted, this field will not be set.\n\nTo create a disk with one of the public operating system images, specify the image by its family name. For example, specify family/debian-8 to use the latest Debian 8 image:\nprojects/debian-cloud/global/images/family/debian-8\n\n\nAlternatively, use a specific version of a public operating system image:\nprojects/debian-cloud/global/images/debian-8-jessie-vYYYYMMDD\n\n\nTo create a disk with a custom image that you created, specify the image name in the following format:\nglobal/images/my-custom-image\n\n\nYou can also specify a custom image by its image family, which returns the latest version of the image in that family. Replace the image name with family/family-name:\nglobal/images/family/my-image-family",
+          "description": "The source image used to create this disk. If the source image is deleted, this field will not be set.\n\nTo create a disk with one of the public operating system images, specify the image by its family name. For example, specify family/debian-9 to use the latest Debian 9 image:\nprojects/debian-cloud/global/images/family/debian-9\n\n\nAlternatively, use a specific version of a public operating system image:\nprojects/debian-cloud/global/images/debian-9-stretch-vYYYYMMDD\n\n\nTo create a disk with a custom image that you created, specify the image name in the following format:\nglobal/images/my-custom-image\n\n\nYou can also specify a custom image by its image family, which returns the latest version of the image in that family. Replace the image name with family/family-name:\nglobal/images/family/my-image-family",
           "type": "string"
         },
         "sourceImageEncryptionKey": {
@@ -23436,6 +24415,32 @@
       },
       "type": "object"
     },
+    "DisksAddResourcePoliciesRequest": {
+      "id": "DisksAddResourcePoliciesRequest",
+      "properties": {
+        "resourcePolicies": {
+          "description": "Resource policies to be added to this disk.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "DisksRemoveResourcePoliciesRequest": {
+      "id": "DisksRemoveResourcePoliciesRequest",
+      "properties": {
+        "resourcePolicies": {
+          "description": "Resource policies to be removed from this disk.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
     "DisksResizeRequest": {
       "id": "DisksResizeRequest",
       "properties": {
@@ -23545,6 +24550,7 @@
       "id": "DistributionPolicy",
       "properties": {
         "zones": {
+          "description": "Zones where the regional managed instance group will create and manage instances.",
           "items": {
             "$ref": "DistributionPolicyZoneConfiguration"
           },
@@ -23563,7 +24569,7 @@
               "compute.regionInstanceGroupManagers.update"
             ]
           },
-          "description": "URL of the zone where managed instance group is spawning instances (for regional resources). Zone has to belong to the region where managed instance group is located.",
+          "description": "The URL of the zone. The zone must exist in the region where the managed instance group is located.",
           "type": "string"
         }
       },
@@ -23882,11 +24888,11 @@
       "id": "ForwardingRule",
       "properties": {
         "IPAddress": {
-          "description": "The IP address that this forwarding rule is serving on behalf of.\n\nAddresses are restricted based on the forwarding rule's load balancing scheme (EXTERNAL or INTERNAL) and scope (global or regional).\n\nWhen the load balancing scheme is EXTERNAL, for global forwarding rules, the address must be a global IP, and for regional forwarding rules, the address must live in the same region as the forwarding rule. If this field is empty, an ephemeral IPv4 address from the same scope (global or regional) will be assigned. A regional forwarding rule supports IPv4 only. A global forwarding rule supports either IPv4 or IPv6.\n\nWhen the load balancing scheme is INTERNAL, this can only be an RFC 1918 IP address belonging to the network/subnet configured for the forwarding rule. By default, if this field is empty, an ephemeral internal IP address will be automatically allocated from the IP range of the subnet or network configured for this forwarding rule.\n\nAn address can be specified either by a literal IP address or a URL reference to an existing Address resource. The following examples are all valid:  \n- 100.1.2.3 \n- https://www.googleapis.com/compute/v1/projects/project/regions/region/addresses/address \n- projects/project/regions/region/addresses/address \n- regions/region/addresses/address \n- global/addresses/address \n- address",
+          "description": "The IP address that this forwarding rule is serving on behalf of.\n\nAddresses are restricted based on the forwarding rule's load balancing scheme (EXTERNAL or INTERNAL) and scope (global or regional).\n\nWhen the load balancing scheme is EXTERNAL, for global forwarding rules, the address must be a global IP, and for regional forwarding rules, the address must live in the same region as the forwarding rule. If this field is empty, an ephemeral IPv4 address from the same scope (global or regional) will be assigned. A regional forwarding rule supports IPv4 only. A global forwarding rule supports either IPv4 or IPv6.\n\nWhen the load balancing scheme is INTERNAL_SELF_MANAGED, this must be a URL reference to an existing Address resource ( internal regional static IP address).\n\nWhen the load balancing scheme is INTERNAL, this can only be an RFC 1918 IP address belonging to the network/subnet configured for the forwarding rule. By default, if this field is empty, an ephemeral internal IP address will be automatically allocated from the IP range of the subnet or network configured for this forwarding rule.\n\nAn address can be specified either by a literal IP address or a URL reference to an existing Address resource. The following examples are all valid:  \n- 100.1.2.3 \n- https://www.googleapis.com/compute/v1/projects/project/regions/region/addresses/address \n- projects/project/regions/region/addresses/address \n- regions/region/addresses/address \n- global/addresses/address \n- address",
           "type": "string"
         },
         "IPProtocol": {
-          "description": "The IP protocol to which this rule applies. Valid options are TCP, UDP, ESP, AH, SCTP or ICMP.\n\nWhen the load balancing scheme is INTERNAL, only TCP and UDP are valid.",
+          "description": "The IP protocol to which this rule applies. Valid options are TCP, UDP, ESP, AH, SCTP or ICMP.\n\nWhen the load balancing scheme is INTERNAL, only TCP and UDP are valid. When the load balancing scheme is INTERNAL_SELF_MANAGED, only TCPis valid.",
           "enum": [
             "AH",
             "ESP",
@@ -23906,7 +24912,7 @@
           "type": "string"
         },
         "backendService": {
-          "description": "This field is not used for external load balancing.\n\nFor internal load balancing, this field identifies the BackendService resource to receive the matched traffic.",
+          "description": "This field is only used for INTERNAL load balancing.\n\nFor internal load balancing, this field identifies the BackendService resource to receive the matched traffic.",
           "type": "string"
         },
         "creationTimestamp": {
@@ -23923,7 +24929,7 @@
           "type": "string"
         },
         "ipVersion": {
-          "description": "The IP Version that will be used by this forwarding rule. Valid options are IPV4 or IPV6. This can only be specified for a global forwarding rule.",
+          "description": "The IP Version that will be used by this forwarding rule. Valid options are IPV4 or IPV6. This can only be specified for an external global forwarding rule.",
           "enum": [
             "IPV4",
             "IPV6",
@@ -23954,7 +24960,7 @@
           "type": "object"
         },
         "loadBalancingScheme": {
-          "description": "This signifies what the ForwardingRule will be used for and can only take the following values: INTERNAL, EXTERNAL The value of INTERNAL means that this will be used for Internal Network Load Balancing (TCP, UDP). The value of EXTERNAL means that this will be used for External Load Balancing (HTTP(S) LB, External TCP/UDP LB, SSL Proxy)",
+          "description": "This signifies what the ForwardingRule will be used for and can only take the following values: INTERNAL, INTERNAL_SELF_MANAGED, EXTERNAL. The value of INTERNAL means that this will be used for Internal Network Load Balancing (TCP, UDP). The value of INTERNAL_SELF_MANAGED means that this will be used for Internal Global HTTP(S) LB. The value of EXTERNAL means that this will be used for External Load Balancing (HTTP(S) LB, External TCP/UDP LB, SSL Proxy)",
           "enum": [
             "EXTERNAL",
             "INTERNAL",
@@ -23973,7 +24979,7 @@
           "type": "string"
         },
         "network": {
-          "description": "This field is not used for external load balancing.\n\nFor internal load balancing, this field identifies the network that the load balanced IP should belong to for this Forwarding Rule. If this field is not specified, the default network will be used.",
+          "description": "This field is not used for external load balancing.\n\nFor INTERNAL and INTERNAL_SELF_MANAGED load balancing, this field identifies the network that the load balanced IP should belong to for this Forwarding Rule. If this field is not specified, the default network will be used.",
           "type": "string"
         },
         "networkTier": {
@@ -24017,11 +25023,11 @@
           "type": "string"
         },
         "subnetwork": {
-          "description": "This field is not used for external load balancing.\n\nFor internal load balancing, this field identifies the subnetwork that the load balanced IP should belong to for this Forwarding Rule.\n\nIf the network specified is in auto subnet mode, this field is optional. However, if the network is in custom subnet mode, a subnetwork must be specified.",
+          "description": "This field is only used for INTERNAL load balancing.\n\nFor internal load balancing, this field identifies the subnetwork that the load balanced IP should belong to for this Forwarding Rule.\n\nIf the network specified is in auto subnet mode, this field is optional. However, if the network is in custom subnet mode, a subnetwork must be specified.",
           "type": "string"
         },
         "target": {
-          "description": "The URL of the target resource to receive the matched traffic. For regional forwarding rules, this target must live in the same region as the forwarding rule. For global forwarding rules, this target must be a global load balancing resource. The forwarded traffic must be of a type appropriate to the target object.",
+          "description": "The URL of the target resource to receive the matched traffic. For regional forwarding rules, this target must live in the same region as the forwarding rule. For global forwarding rules, this target must be a global load balancing resource. The forwarded traffic must be of a type appropriate to the target object. For INTERNAL_SELF_MANAGED\" load balancing, only HTTP and HTTPS targets are valid.",
           "type": "string"
         }
       },
@@ -24368,6 +25374,28 @@
           },
           "description": "A list of labels to apply for this resource. Each label key \u0026 value must comply with RFC1035. Specifically, the name must be 1-63 characters long and match the regular expression `[a-z]([-a-z0-9]*[a-z0-9])?` which means the first character must be a lowercase letter, and all following characters must be a dash, lowercase letter, or digit, except the last character, which cannot be a dash. For example, \"webserver-frontend\": \"images\". A label value can also be empty (e.g. \"my-label\": \"\").",
           "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "GlobalSetPolicyRequest": {
+      "id": "GlobalSetPolicyRequest",
+      "properties": {
+        "bindings": {
+          "description": "Flatten Policy to create a backwacd compatible wire-format. Deprecated. Use 'policy' to specify bindings.",
+          "items": {
+            "$ref": "Binding"
+          },
+          "type": "array"
+        },
+        "etag": {
+          "description": "Flatten Policy to create a backward compatible wire-format. Deprecated. Use 'policy' to specify the etag.",
+          "format": "byte",
+          "type": "string"
+        },
+        "policy": {
+          "$ref": "Policy",
+          "description": "REQUIRED: The complete policy to be applied to the 'resource'. The size of the policy is limited to a few 10s of KB. An empty policy is in general a valid policy but certain services (like Projects) might reject them."
         }
       },
       "type": "object"
@@ -25350,7 +26378,7 @@
           "description": "The customer-supplied encryption key of the source disk. Required if the source disk is protected by a customer-supplied encryption key."
         },
         "sourceDiskId": {
-          "description": "The ID value of the disk used to create this image. This value may be used to determine whether the image was taken from the current or a previous instance of a given disk name.",
+          "description": "[Output Only] The ID value of the disk used to create this image. This value may be used to determine whether the image was taken from the current or a previous instance of a given disk name.",
           "type": "string"
         },
         "sourceImage": {
@@ -25666,7 +26694,7 @@
         },
         "tags": {
           "$ref": "Tags",
-          "description": "A list of tags to apply to this instance. Tags are used to identify valid sources or targets for network firewalls and are specified by the client during instance creation. The tags can be later modified by the setTags method. Each tag within the list must comply with RFC1035."
+          "description": "Tags to apply to this instance. Tags are used to identify valid sources or targets for network firewalls and are specified by the client during instance creation. The tags can be later modified by the setTags method. Each tag within the list must comply with RFC1035. Multiple tags can be specified via the 'tags.items' field."
         },
         "zone": {
           "description": "[Output Only] URL of the zone where the instance resides. You must specify this field as part of the HTTP request URL. It is not settable as a field in the request body.",
@@ -26118,7 +27146,7 @@
         },
         "distributionPolicy": {
           "$ref": "DistributionPolicy",
-          "description": "Policy valid only for regional managed instance groups."
+          "description": "Policy specifying intended distribution of instances in regional managed instance group."
         },
         "failoverAction": {
           "description": "The action to perform in case of zone failure. Only one value is supported, NO_FAILOVER. The default is NO_FAILOVER.",
@@ -26133,7 +27161,7 @@
           "type": "string"
         },
         "fingerprint": {
-          "description": "Fingerprint of this resource. This field may be used in optimistic locking. It will be ignored when inserting an InstanceGroupManager. An up-to-date fingerprint must be provided in order to update the InstanceGroupManager.",
+          "description": "Fingerprint of this resource. This field may be used in optimistic locking. It will be ignored when inserting an InstanceGroupManager. An up-to-date fingerprint must be provided in order to update the InstanceGroupManager.\n\nTo see the latest fingerprint, make a get() request to retrieve an InstanceGroupManager.",
           "format": "byte",
           "type": "string"
         },
@@ -26389,6 +27417,7 @@
       "type": "object"
     },
     "InstanceGroupManagerAutoHealingPolicy": {
+      "description": "",
       "id": "InstanceGroupManagerAutoHealingPolicy",
       "properties": {
         "healthCheck": {
@@ -26558,7 +27587,7 @@
           "type": "integer"
         },
         "minimalAction": {
-          "description": "Minimal action to be taken on an instance. You can specify either RESTART to restart existing instances or REPLACE to delete and create new instances from the target template. If you specify a code\u003eRESTART, the Updater will attempt to perform that action only. However, if the Updater determines that the minimal action you specify is not enough to perform the update, it might perform a more disruptive action.",
+          "description": "Minimal action to be taken on an instance. You can specify either RESTART to restart existing instances or REPLACE to delete and create new instances from the target template. If you specify a RESTART, the Updater will attempt to perform that action only. However, if the Updater determines that the minimal action you specify is not enough to perform the update, it might perform a more disruptive action.",
           "enum": [
             "REPLACE",
             "RESTART"
@@ -28616,7 +29645,7 @@
           "type": "string"
         },
         "availabilityZone": {
-          "description": "[Output Only] Availability zone for this location. Within a metropolitan area (metro), maintenance will not be simultaneously scheduled in more than one availability zone. Example: \"zone1\" or \"zone2\".",
+          "description": "[Output Only] Availability zone for this InterconnectLocation. Within a metropolitan area (metro), maintenance will not be simultaneously scheduled in more than one availability zone. Example: \"zone1\" or \"zone2\".",
           "type": "string"
         },
         "city": {
@@ -29765,7 +30794,7 @@
       "id": "Metadata",
       "properties": {
         "fingerprint": {
-          "description": "Specifies a fingerprint for this request, which is essentially a hash of the metadata's contents and used for optimistic locking. The fingerprint is initially generated by Compute Engine and changes after every request to modify or update metadata. You must always provide an up-to-date fingerprint hash in order to update or change metadata.",
+          "description": "Specifies a fingerprint for this request, which is essentially a hash of the metadata's contents and used for optimistic locking. The fingerprint is initially generated by Compute Engine and changes after every request to modify or update metadata. You must always provide an up-to-date fingerprint hash in order to update or change metadata.\n\nTo see the latest fingerprint, make a get() request to retrieve the resource.",
           "format": "byte",
           "type": "string"
         },
@@ -29899,7 +30928,7 @@
       "id": "NetworkEndpoint",
       "properties": {
         "instance": {
-          "description": "The name for a specific VM instance that the IP address belongs to. This is required for network endpoints of type GCE_VM_IP and GCE_VM_IP_PORT. The instance must be in the same zone of network endpoint group.\n\nThe name must be 1-63 characters long, and comply with RFC1035.",
+          "description": "The name for a specific VM instance that the IP address belongs to. This is required for network endpoints of type GCE_VM_IP_PORT. The instance must be in the same zone of network endpoint group.\n\nThe name must be 1-63 characters long, and comply with RFC1035.",
           "type": "string"
         },
         "ipAddress": {
@@ -29938,14 +30967,14 @@
         },
         "loadBalancer": {
           "$ref": "NetworkEndpointGroupLbNetworkEndpointGroup",
-          "description": "This field is only valid when the network endpoint group type is LOAD_BALANCING."
+          "description": "This field is only valid when the network endpoint group is used for load balancing."
         },
         "name": {
           "description": "Name of the resource; provided by the client when the resource is created. The name must be 1-63 characters long, and comply with RFC1035. Specifically, the name must be 1-63 characters long and match the regular expression `[a-z]([-a-z0-9]*[a-z0-9])?` which means the first character must be a lowercase letter, and all following characters must be a dash, lowercase letter, or digit, except the last character, which cannot be a dash.",
           "type": "string"
         },
         "networkEndpointType": {
-          "description": "Type of network endpoints in this network endpoint group. Only supported values for LOAD_BALANCING are GCE_VM_IP or GCE_VM_IP_PORT.",
+          "description": "Type of network endpoints in this network endpoint group. Currently the only supported value is GCE_VM_IP_PORT.",
           "enum": [
             "GCE_VM_IP_PORT"
           ],
@@ -30079,11 +31108,11 @@
       "type": "object"
     },
     "NetworkEndpointGroupLbNetworkEndpointGroup": {
-      "description": "Load balancing specific fields for network endpoint group of type LOAD_BALANCING.",
+      "description": "Load balancing specific fields for network endpoint group.",
       "id": "NetworkEndpointGroupLbNetworkEndpointGroup",
       "properties": {
         "defaultPort": {
-          "description": "The default port used if the port number is not specified in the network endpoint. If the network endpoint type is GCE_VM_IP, this field must not be specified.",
+          "description": "The default port used if the port number is not specified in the network endpoint.",
           "format": "int32",
           "type": "integer"
         },
@@ -30752,7 +31781,7 @@
           "type": "string"
         },
         "nodes": {
-          "description": "[Output Only] A list of nodes in this node group.",
+          "description": "[Deprecated] Use nodeGroups.listNodes instead. [Output Only] A list of nodes in this node group.",
           "items": {
             "$ref": "NodeGroupNode"
           },
@@ -30761,6 +31790,11 @@
         "selfLink": {
           "description": "[Output Only] Server-defined URL for the resource.",
           "type": "string"
+        },
+        "size": {
+          "description": "[Output Only] The total number of nodes in the node group.",
+          "format": "int32",
+          "type": "integer"
         },
         "status": {
           "enum": [
@@ -31063,6 +32097,117 @@
             "type": "string"
           },
           "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "NodeGroupsListNodes": {
+      "id": "NodeGroupsListNodes",
+      "properties": {
+        "id": {
+          "description": "[Output Only] Unique identifier for the resource; defined by the server.",
+          "type": "string"
+        },
+        "items": {
+          "description": "A list of Node resources.",
+          "items": {
+            "$ref": "NodeGroupNode"
+          },
+          "type": "array"
+        },
+        "kind": {
+          "default": "compute#nodeGroupsListNodes",
+          "description": "[Output Only] The resource type, which is always compute.nodeGroupsListNodes for the list of nodes in the specified node group.",
+          "type": "string"
+        },
+        "nextPageToken": {
+          "description": "[Output Only] This token allows you to get the next page of results for list requests. If the number of results is larger than maxResults, use the nextPageToken as a value for the query parameter pageToken in the next list request. Subsequent list requests will have their own nextPageToken to continue paging through the results.",
+          "type": "string"
+        },
+        "selfLink": {
+          "description": "[Output Only] Server-defined URL for this resource.",
+          "type": "string"
+        },
+        "warning": {
+          "description": "[Output Only] Informational warning message.",
+          "properties": {
+            "code": {
+              "description": "[Output Only] A warning code, if applicable. For example, Compute Engine returns NO_RESULTS_ON_PAGE if there are no results in the response.",
+              "enum": [
+                "CLEANUP_FAILED",
+                "DEPRECATED_RESOURCE_USED",
+                "DEPRECATED_TYPE_USED",
+                "DISK_SIZE_LARGER_THAN_IMAGE_SIZE",
+                "EXPERIMENTAL_TYPE_USED",
+                "EXTERNAL_API_WARNING",
+                "FIELD_VALUE_OVERRIDEN",
+                "INJECTED_KERNELS_DEPRECATED",
+                "MISSING_TYPE_DEPENDENCY",
+                "NEXT_HOP_ADDRESS_NOT_ASSIGNED",
+                "NEXT_HOP_CANNOT_IP_FORWARD",
+                "NEXT_HOP_INSTANCE_NOT_FOUND",
+                "NEXT_HOP_INSTANCE_NOT_ON_NETWORK",
+                "NEXT_HOP_NOT_RUNNING",
+                "NOT_CRITICAL_ERROR",
+                "NO_RESULTS_ON_PAGE",
+                "REQUIRED_TOS_AGREEMENT",
+                "RESOURCE_IN_USE_BY_OTHER_RESOURCE_WARNING",
+                "RESOURCE_NOT_DELETED",
+                "SCHEMA_VALIDATION_IGNORED",
+                "SINGLE_INSTANCE_PROPERTY_TEMPLATE",
+                "UNDECLARED_PROPERTIES",
+                "UNREACHABLE"
+              ],
+              "enumDescriptions": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "type": "string"
+            },
+            "data": {
+              "description": "[Output Only] Metadata about this warning in key: value format. For example:\n\"data\": [ { \"key\": \"scope\", \"value\": \"zones/us-east1-d\" }",
+              "items": {
+                "properties": {
+                  "key": {
+                    "description": "[Output Only] A key that provides more detail on the warning being returned. For example, for warnings where there are no results in a list request for a particular zone, this key might be scope and the key value might be the zone name. Other examples might be a key indicating a deprecated resource and a suggested replacement, or a warning about invalid network settings (for example, if an instance attempts to perform IP forwarding but is not enabled for IP forwarding).",
+                    "type": "string"
+                  },
+                  "value": {
+                    "description": "[Output Only] A warning data value corresponding to the key.",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "message": {
+              "description": "[Output Only] A human-readable description of the warning code.",
+              "type": "string"
+            }
+          },
+          "type": "object"
         }
       },
       "type": "object"
@@ -32763,6 +33908,7 @@
             "DISKS_TOTAL_GB",
             "FIREWALLS",
             "FORWARDING_RULES",
+            "GPUS_ALL_REGIONS",
             "HEALTH_CHECKS",
             "IMAGES",
             "INSTANCES",
@@ -32774,19 +33920,27 @@
             "INTERCONNECT_ATTACHMENTS_TOTAL_MBPS",
             "INTERNAL_ADDRESSES",
             "IN_USE_ADDRESSES",
+            "IN_USE_BACKUP_SCHEDULES",
             "LOCAL_SSD_TOTAL_GB",
             "NETWORKS",
             "NETWORK_ENDPOINT_GROUPS",
             "NVIDIA_K80_GPUS",
             "NVIDIA_P100_GPUS",
+            "NVIDIA_P100_VWS_GPUS",
+            "NVIDIA_P4_GPUS",
+            "NVIDIA_P4_VWS_GPUS",
             "NVIDIA_V100_GPUS",
             "PREEMPTIBLE_CPUS",
             "PREEMPTIBLE_LOCAL_SSD_GB",
             "PREEMPTIBLE_NVIDIA_K80_GPUS",
             "PREEMPTIBLE_NVIDIA_P100_GPUS",
+            "PREEMPTIBLE_NVIDIA_P100_VWS_GPUS",
+            "PREEMPTIBLE_NVIDIA_P4_GPUS",
+            "PREEMPTIBLE_NVIDIA_P4_VWS_GPUS",
             "PREEMPTIBLE_NVIDIA_V100_GPUS",
             "REGIONAL_AUTOSCALERS",
             "REGIONAL_INSTANCE_GROUP_MANAGERS",
+            "RESOURCE_POLICIES",
             "ROUTERS",
             "ROUTES",
             "SECURITY_POLICIES",
@@ -32807,6 +33961,15 @@
             "VPN_TUNNELS"
           ],
           "enumDescriptions": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
             "",
             "",
             "",
@@ -33175,6 +34338,32 @@
             }
           },
           "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "RegionDisksAddResourcePoliciesRequest": {
+      "id": "RegionDisksAddResourcePoliciesRequest",
+      "properties": {
+        "resourcePolicies": {
+          "description": "Resource policies to be added to this disk.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "RegionDisksRemoveResourcePoliciesRequest": {
+      "id": "RegionDisksRemoveResourcePoliciesRequest",
+      "properties": {
+        "resourcePolicies": {
+          "description": "Resource policies to be removed from this disk.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
         }
       },
       "type": "object"
@@ -33845,6 +35034,538 @@
       "properties": {
         "group": {
           "description": "A URI referencing one of the instance groups listed in the backend service.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "ResourcePoliciesScopedList": {
+      "id": "ResourcePoliciesScopedList",
+      "properties": {
+        "resourcePolicies": {
+          "description": "A list of resourcePolicies contained in this scope.",
+          "items": {
+            "$ref": "ResourcePolicy"
+          },
+          "type": "array"
+        },
+        "warning": {
+          "description": "Informational warning which replaces the list of resourcePolicies when the list is empty.",
+          "properties": {
+            "code": {
+              "description": "[Output Only] A warning code, if applicable. For example, Compute Engine returns NO_RESULTS_ON_PAGE if there are no results in the response.",
+              "enum": [
+                "CLEANUP_FAILED",
+                "DEPRECATED_RESOURCE_USED",
+                "DEPRECATED_TYPE_USED",
+                "DISK_SIZE_LARGER_THAN_IMAGE_SIZE",
+                "EXPERIMENTAL_TYPE_USED",
+                "EXTERNAL_API_WARNING",
+                "FIELD_VALUE_OVERRIDEN",
+                "INJECTED_KERNELS_DEPRECATED",
+                "MISSING_TYPE_DEPENDENCY",
+                "NEXT_HOP_ADDRESS_NOT_ASSIGNED",
+                "NEXT_HOP_CANNOT_IP_FORWARD",
+                "NEXT_HOP_INSTANCE_NOT_FOUND",
+                "NEXT_HOP_INSTANCE_NOT_ON_NETWORK",
+                "NEXT_HOP_NOT_RUNNING",
+                "NOT_CRITICAL_ERROR",
+                "NO_RESULTS_ON_PAGE",
+                "REQUIRED_TOS_AGREEMENT",
+                "RESOURCE_IN_USE_BY_OTHER_RESOURCE_WARNING",
+                "RESOURCE_NOT_DELETED",
+                "SCHEMA_VALIDATION_IGNORED",
+                "SINGLE_INSTANCE_PROPERTY_TEMPLATE",
+                "UNDECLARED_PROPERTIES",
+                "UNREACHABLE"
+              ],
+              "enumDescriptions": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "type": "string"
+            },
+            "data": {
+              "description": "[Output Only] Metadata about this warning in key: value format. For example:\n\"data\": [ { \"key\": \"scope\", \"value\": \"zones/us-east1-d\" }",
+              "items": {
+                "properties": {
+                  "key": {
+                    "description": "[Output Only] A key that provides more detail on the warning being returned. For example, for warnings where there are no results in a list request for a particular zone, this key might be scope and the key value might be the zone name. Other examples might be a key indicating a deprecated resource and a suggested replacement, or a warning about invalid network settings (for example, if an instance attempts to perform IP forwarding but is not enabled for IP forwarding).",
+                    "type": "string"
+                  },
+                  "value": {
+                    "description": "[Output Only] A warning data value corresponding to the key.",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "message": {
+              "description": "[Output Only] A human-readable description of the warning code.",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "ResourcePolicy": {
+      "id": "ResourcePolicy",
+      "properties": {
+        "backupSchedulePolicy": {
+          "$ref": "ResourcePolicyBackupSchedulePolicy",
+          "description": "Resource policy for persistent disks for creating snapshots."
+        },
+        "creationTimestamp": {
+          "description": "[Output Only] Creation timestamp in RFC3339 text format.",
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "id": {
+          "description": "[Output Only] The unique identifier for the resource. This identifier is defined by the server.",
+          "format": "uint64",
+          "type": "string"
+        },
+        "kind": {
+          "default": "compute#resourcePolicy",
+          "description": "[Output Only] Type of the resource. Always compute#resource_policies for resource policies.",
+          "type": "string"
+        },
+        "name": {
+          "annotations": {
+            "required": [
+              "compute.instances.insert"
+            ]
+          },
+          "description": "The name of the resource, provided by the client when initially creating the resource. The resource name must be 1-63 characters long, and comply with RFC1035. Specifically, the name must be 1-63 characters long and match the regular expression `[a-z]([-a-z0-9]*[a-z0-9])?` which means the first character must be a lowercase letter, and all following characters must be a dash, lowercase letter, or digit, except the last character, which cannot be a dash.",
+          "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+          "type": "string"
+        },
+        "region": {
+          "type": "string"
+        },
+        "selfLink": {
+          "description": "[Output Only] Server-defined fully-qualified URL for this resource.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "ResourcePolicyAggregatedList": {
+      "description": "Contains a list of resourcePolicies.",
+      "id": "ResourcePolicyAggregatedList",
+      "properties": {
+        "etag": {
+          "type": "string"
+        },
+        "id": {
+          "description": "[Output Only] Unique identifier for the resource; defined by the server.",
+          "type": "string"
+        },
+        "items": {
+          "additionalProperties": {
+            "$ref": "ResourcePoliciesScopedList",
+            "description": "Name of the scope containing this set of resourcePolicies."
+          },
+          "description": "A list of ResourcePolicy resources.",
+          "type": "object"
+        },
+        "kind": {
+          "default": "compute#resourcePolicyAggregatedList",
+          "description": "Type of resource.",
+          "type": "string"
+        },
+        "nextPageToken": {
+          "description": "[Output Only] This token allows you to get the next page of results for list requests. If the number of results is larger than maxResults, use the nextPageToken as a value for the query parameter pageToken in the next list request. Subsequent list requests will have their own nextPageToken to continue paging through the results.",
+          "type": "string"
+        },
+        "selfLink": {
+          "description": "[Output Only] Server-defined URL for this resource.",
+          "type": "string"
+        },
+        "warning": {
+          "description": "[Output Only] Informational warning message.",
+          "properties": {
+            "code": {
+              "description": "[Output Only] A warning code, if applicable. For example, Compute Engine returns NO_RESULTS_ON_PAGE if there are no results in the response.",
+              "enum": [
+                "CLEANUP_FAILED",
+                "DEPRECATED_RESOURCE_USED",
+                "DEPRECATED_TYPE_USED",
+                "DISK_SIZE_LARGER_THAN_IMAGE_SIZE",
+                "EXPERIMENTAL_TYPE_USED",
+                "EXTERNAL_API_WARNING",
+                "FIELD_VALUE_OVERRIDEN",
+                "INJECTED_KERNELS_DEPRECATED",
+                "MISSING_TYPE_DEPENDENCY",
+                "NEXT_HOP_ADDRESS_NOT_ASSIGNED",
+                "NEXT_HOP_CANNOT_IP_FORWARD",
+                "NEXT_HOP_INSTANCE_NOT_FOUND",
+                "NEXT_HOP_INSTANCE_NOT_ON_NETWORK",
+                "NEXT_HOP_NOT_RUNNING",
+                "NOT_CRITICAL_ERROR",
+                "NO_RESULTS_ON_PAGE",
+                "REQUIRED_TOS_AGREEMENT",
+                "RESOURCE_IN_USE_BY_OTHER_RESOURCE_WARNING",
+                "RESOURCE_NOT_DELETED",
+                "SCHEMA_VALIDATION_IGNORED",
+                "SINGLE_INSTANCE_PROPERTY_TEMPLATE",
+                "UNDECLARED_PROPERTIES",
+                "UNREACHABLE"
+              ],
+              "enumDescriptions": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "type": "string"
+            },
+            "data": {
+              "description": "[Output Only] Metadata about this warning in key: value format. For example:\n\"data\": [ { \"key\": \"scope\", \"value\": \"zones/us-east1-d\" }",
+              "items": {
+                "properties": {
+                  "key": {
+                    "description": "[Output Only] A key that provides more detail on the warning being returned. For example, for warnings where there are no results in a list request for a particular zone, this key might be scope and the key value might be the zone name. Other examples might be a key indicating a deprecated resource and a suggested replacement, or a warning about invalid network settings (for example, if an instance attempts to perform IP forwarding but is not enabled for IP forwarding).",
+                    "type": "string"
+                  },
+                  "value": {
+                    "description": "[Output Only] A warning data value corresponding to the key.",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "message": {
+              "description": "[Output Only] A human-readable description of the warning code.",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "ResourcePolicyBackupSchedulePolicy": {
+      "description": "A backup schedule policy specifies when and how frequently snapshots are to be created for the target disk. Also specifies how many and how long these automatically created snapshot should be retained.",
+      "id": "ResourcePolicyBackupSchedulePolicy",
+      "properties": {
+        "retentionPolicy": {
+          "$ref": "ResourcePolicyBackupSchedulePolicyRetentionPolicy",
+          "description": "Retention policy applied to snapshots created by this resource policy."
+        },
+        "schedule": {
+          "$ref": "ResourcePolicyBackupSchedulePolicySchedule",
+          "description": "A Vm Maintenance Policy specifies what kind of infrastructure maintenance we are allowed to perform on this VM and when. Schedule that is applied to disks covered by this policy."
+        },
+        "snapshotProperties": {
+          "$ref": "ResourcePolicyBackupSchedulePolicySnapshotProperties",
+          "description": "Properties with which snapshots are created such as lables, encryption keys."
+        }
+      },
+      "type": "object"
+    },
+    "ResourcePolicyBackupSchedulePolicyRetentionPolicy": {
+      "description": "Policy for retention of automatically created snapshots.",
+      "id": "ResourcePolicyBackupSchedulePolicyRetentionPolicy",
+      "properties": {
+        "maxRetentionDays": {
+          "description": "Maximum age of the snapshot that is allowed to be kept.",
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "ResourcePolicyBackupSchedulePolicySchedule": {
+      "description": "A schedule for disks where the schedueled operations are performed.",
+      "id": "ResourcePolicyBackupSchedulePolicySchedule",
+      "properties": {
+        "dailySchedule": {
+          "$ref": "ResourcePolicyDailyCycle"
+        },
+        "hourlySchedule": {
+          "$ref": "ResourcePolicyHourlyCycle"
+        },
+        "weeklySchedule": {
+          "$ref": "ResourcePolicyWeeklyCycle"
+        }
+      },
+      "type": "object"
+    },
+    "ResourcePolicyBackupSchedulePolicySnapshotProperties": {
+      "description": "Specified snapshot properties for automatic snapshots created by this policy.",
+      "id": "ResourcePolicyBackupSchedulePolicySnapshotProperties",
+      "properties": {
+        "guestFlush": {
+          "description": "Indication to perform a ?guest aware? snapshot.",
+          "type": "boolean"
+        },
+        "labels": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Labels to apply to automatic snapshots. These can be later modified by the setLabels method. Label values may be empty.",
+          "type": "object"
+        },
+        "storageLocations": {
+          "description": "GCS bucket storage location of the auto snapshot (regional or multi-regional).",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "ResourcePolicyDailyCycle": {
+      "description": "Time window specified for daily operations.",
+      "id": "ResourcePolicyDailyCycle",
+      "properties": {
+        "daysInCycle": {
+          "description": "Allows to define schedule that runs every nth day of the month.",
+          "format": "int32",
+          "type": "integer"
+        },
+        "duration": {
+          "description": "[Output only] Duration of the time window, automatically chosen to be smallest possible in the given scenario.",
+          "type": "string"
+        },
+        "startTime": {
+          "description": "Time within the window to start the operations. It must be in format \"HH:MM?, where HH : [00-23] and MM : [00-59] GMT.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "ResourcePolicyHourlyCycle": {
+      "description": "Time window specified for hourly operations.",
+      "id": "ResourcePolicyHourlyCycle",
+      "properties": {
+        "duration": {
+          "description": "[Output only] Duration of the time window, automatically chosen to be smallest possible in the given scenario.",
+          "type": "string"
+        },
+        "hoursInCycle": {
+          "description": "Allows to define schedule that runs every nth hour.",
+          "format": "int32",
+          "type": "integer"
+        },
+        "startTime": {
+          "description": "Time within the window to start the operations. It must be in format \"HH:MM?, where HH : [00-23] and MM : [00-59] GMT.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "ResourcePolicyList": {
+      "id": "ResourcePolicyList",
+      "properties": {
+        "etag": {
+          "type": "string"
+        },
+        "id": {
+          "description": "[Output Only] The unique identifier for the resource. This identifier is defined by the server.",
+          "type": "string"
+        },
+        "items": {
+          "description": "[Output Only] A list of ResourcePolicy resources.",
+          "items": {
+            "$ref": "ResourcePolicy"
+          },
+          "type": "array"
+        },
+        "kind": {
+          "default": "compute#resourcePolicyList",
+          "description": "[Output Only] Type of resource.Always compute#resourcePoliciesList for listsof resourcePolicies",
+          "type": "string"
+        },
+        "nextPageToken": {
+          "description": "[Output Only] This token allows you to get the next page of results for list requests. If the number of results is larger than maxResults, use the nextPageToken as a value for the query parameter pageToken in the next list request. Subsequent list requests will have their own nextPageToken to continue paging through the results.",
+          "type": "string"
+        },
+        "selfLink": {
+          "description": "[Output Only] Server-defined URL for this resource.",
+          "type": "string"
+        },
+        "warning": {
+          "description": "[Output Only] Informational warning message.",
+          "properties": {
+            "code": {
+              "description": "[Output Only] A warning code, if applicable. For example, Compute Engine returns NO_RESULTS_ON_PAGE if there are no results in the response.",
+              "enum": [
+                "CLEANUP_FAILED",
+                "DEPRECATED_RESOURCE_USED",
+                "DEPRECATED_TYPE_USED",
+                "DISK_SIZE_LARGER_THAN_IMAGE_SIZE",
+                "EXPERIMENTAL_TYPE_USED",
+                "EXTERNAL_API_WARNING",
+                "FIELD_VALUE_OVERRIDEN",
+                "INJECTED_KERNELS_DEPRECATED",
+                "MISSING_TYPE_DEPENDENCY",
+                "NEXT_HOP_ADDRESS_NOT_ASSIGNED",
+                "NEXT_HOP_CANNOT_IP_FORWARD",
+                "NEXT_HOP_INSTANCE_NOT_FOUND",
+                "NEXT_HOP_INSTANCE_NOT_ON_NETWORK",
+                "NEXT_HOP_NOT_RUNNING",
+                "NOT_CRITICAL_ERROR",
+                "NO_RESULTS_ON_PAGE",
+                "REQUIRED_TOS_AGREEMENT",
+                "RESOURCE_IN_USE_BY_OTHER_RESOURCE_WARNING",
+                "RESOURCE_NOT_DELETED",
+                "SCHEMA_VALIDATION_IGNORED",
+                "SINGLE_INSTANCE_PROPERTY_TEMPLATE",
+                "UNDECLARED_PROPERTIES",
+                "UNREACHABLE"
+              ],
+              "enumDescriptions": [
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                ""
+              ],
+              "type": "string"
+            },
+            "data": {
+              "description": "[Output Only] Metadata about this warning in key: value format. For example:\n\"data\": [ { \"key\": \"scope\", \"value\": \"zones/us-east1-d\" }",
+              "items": {
+                "properties": {
+                  "key": {
+                    "description": "[Output Only] A key that provides more detail on the warning being returned. For example, for warnings where there are no results in a list request for a particular zone, this key might be scope and the key value might be the zone name. Other examples might be a key indicating a deprecated resource and a suggested replacement, or a warning about invalid network settings (for example, if an instance attempts to perform IP forwarding but is not enabled for IP forwarding).",
+                    "type": "string"
+                  },
+                  "value": {
+                    "description": "[Output Only] A warning data value corresponding to the key.",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "message": {
+              "description": "[Output Only] A human-readable description of the warning code.",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "ResourcePolicyWeeklyCycle": {
+      "description": "Time window specified for weekly operations.",
+      "id": "ResourcePolicyWeeklyCycle",
+      "properties": {
+        "dayOfWeeks": {
+          "description": "Up to 7 intervals/windows, one for each day of the week.",
+          "items": {
+            "$ref": "ResourcePolicyWeeklyCycleDayOfWeek"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "ResourcePolicyWeeklyCycleDayOfWeek": {
+      "id": "ResourcePolicyWeeklyCycleDayOfWeek",
+      "properties": {
+        "day": {
+          "description": "Allows to define schedule that runs specified day of the week.",
+          "enum": [
+            "FRIDAY",
+            "INVALID",
+            "MONDAY",
+            "SATURDAY",
+            "SUNDAY",
+            "THURSDAY",
+            "TUESDAY",
+            "WEDNESDAY"
+          ],
+          "enumDescriptions": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "type": "string"
+        },
+        "duration": {
+          "description": "[Output only] Duration of the time window, automatically chosen to be smallest possible in the given scenario.",
+          "type": "string"
+        },
+        "startTime": {
+          "description": "Time within the window to start the operations. It must be in format \"HH:MM?, where HH : [00-23] and MM : [00-59] GMT.",
           "type": "string"
         }
       },
@@ -35022,7 +36743,7 @@
       "type": "object"
     },
     "SecurityPolicy": {
-      "description": "A security policy is comprised of one or more rules. It can also be associated with one or more 'targets'. Next available tag: 11",
+      "description": "A security policy is comprised of one or more rules. It can also be associated with one or more 'targets'. (== resource_for v1.securityPolicies ==) (== resource_for beta.securityPolicies ==)",
       "id": "SecurityPolicy",
       "properties": {
         "creationTimestamp": {
@@ -35047,6 +36768,18 @@
           "default": "compute#securityPolicy",
           "description": "[Output only] Type of the resource. Always compute#securityPolicyfor security policies",
           "type": "string"
+        },
+        "labelFingerprint": {
+          "description": "A fingerprint for the labels being applied to this security policy, which is essentially a hash of the labels set used for optimistic locking. The fingerprint is initially generated by Compute Engine and changes after every request to modify or update labels. You must always provide an up-to-date fingerprint hash in order to update or change labels.\n\nTo see the latest fingerprint, make get() request to the security policy.",
+          "format": "byte",
+          "type": "string"
+        },
+        "labels": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Labels to apply to this security policy resource. These can be later modified by the setLabels method. Each label key/value must comply with RFC1035. Label values may be empty.",
+          "type": "object"
         },
         "name": {
           "description": "Name of the resource. Provided by the client when the resource is created. The name must be 1-63 characters long, and comply with RFC1035. Specifically, the name must be 1-63 characters long and match the regular expression `[a-z]([-a-z0-9]*[a-z0-9])?` which means the first character must be a lowercase letter, and all following characters must be a dash, lowercase letter, or digit, except the last character, which cannot be a dash.",
@@ -35238,11 +36971,9 @@
         "versionedExpr": {
           "description": "Preconfigured versioned expression. If this field is specified, config must also be specified. Available preconfigured expressions along with their requirements are: SRC_IPS_V1 - must specify the corresponding src_ip_range field in config.",
           "enum": [
-            "SRC_IPS_V1",
-            "VERSIONED_EXPR_UNSPECIFIED"
+            "SRC_IPS_V1"
           ],
           "enumDescriptions": [
-            "",
             ""
           ],
           "type": "string"
@@ -35316,26 +37047,26 @@
       "id": "ShieldedVmConfig",
       "properties": {
         "enableIntegrityMonitoring": {
-          "description": "Defines whether the instance should have integrity monitoring enabled.",
+          "description": "Defines whether the instance has integrity monitoring enabled.",
           "type": "boolean"
         },
         "enableSecureBoot": {
-          "description": "Defines whether the instance should have secure boot enabled.",
+          "description": "Defines whether the instance has Secure Boot enabled.",
           "type": "boolean"
         },
         "enableVtpm": {
-          "description": "Defines whether the instance should have the TPM enabled.",
+          "description": "Defines whether the instance has the vTPM enabled.",
           "type": "boolean"
         }
       },
       "type": "object"
     },
     "ShieldedVmIntegrityPolicy": {
-      "description": "The policy describes how boot integrity measurements are evaluated.",
+      "description": "The policy describes the baseline against which VM instance boot integrity is measured.",
       "id": "ShieldedVmIntegrityPolicy",
       "properties": {
         "updateAutoLearnPolicy": {
-          "description": "Triggers an auto relearn event: the integrity monitoring module copies existing guest measurements to the baseline.",
+          "description": "Updates the integrity policy baseline using the measurements from the VM instance's most recent boot.",
           "type": "boolean"
         }
       },
@@ -35361,6 +37092,10 @@
       "description": "A persistent disk snapshot resource. (== resource_for beta.snapshots ==) (== resource_for v1.snapshots ==)",
       "id": "Snapshot",
       "properties": {
+        "autoCreated": {
+          "description": "[Output Only] Set to true if snapshots are autoamtically by applying resource policy on the target disk.",
+          "type": "boolean"
+        },
         "creationTimestamp": {
           "description": "[Output Only] Creation timestamp in RFC3339 text format.",
           "type": "string"
@@ -35470,6 +37205,13 @@
             ""
           ],
           "type": "string"
+        },
+        "storageLocations": {
+          "description": "GCS bucket storage location of the snapshot (regional or multi-regional).",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
         }
       },
       "type": "object"
@@ -35616,6 +37358,10 @@
           "description": "An optional description of this resource. Provide this property when you create the resource.",
           "type": "string"
         },
+        "expireTime": {
+          "description": "[Output Only] Expire time of the certificate. RFC3339",
+          "type": "string"
+        },
         "id": {
           "description": "[Output Only] The unique identifier for the resource. This identifier is defined by the server.",
           "format": "uint64",
@@ -35625,6 +37371,10 @@
           "default": "compute#sslCertificate",
           "description": "[Output Only] Type of the resource. Always compute#sslCertificate for SSL certificates.",
           "type": "string"
+        },
+        "managed": {
+          "$ref": "SslCertificateManagedSslCertificate",
+          "description": "Configuration and status of a managed SSL certificate."
         },
         "name": {
           "description": "Name of the resource. Provided by the client when the resource is created. The name must be 1-63 characters long, and comply with RFC1035. Specifically, the name must be 1-63 characters long and match the regular expression `[a-z]([-a-z0-9]*[a-z0-9])?` which means the first character must be a lowercase letter, and all following characters must be a dash, lowercase letter, or digit, except the last character, which cannot be a dash.",
@@ -35637,6 +37387,31 @@
         },
         "selfLink": {
           "description": "[Output only] Server-defined URL for the resource.",
+          "type": "string"
+        },
+        "selfManaged": {
+          "$ref": "SslCertificateSelfManagedSslCertificate",
+          "description": "Configuration and status of a self-managed SSL certificate."
+        },
+        "subjectAlternativeNames": {
+          "description": "[Output Only] Domains associated with the certificate via Subject Alternative Name.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "type": {
+          "description": "(Optional) Specifies the type of SSL certificate, either \"SELF_MANAGED\" or \"MANAGED\". If not specified, the certificate is self-managed and the fields certificate and private_key are used.",
+          "enum": [
+            "MANAGED",
+            "SELF_MANAGED",
+            "TYPE_UNSPECIFIED"
+          ],
+          "enumDescriptions": [
+            "",
+            "",
+            ""
+          ],
           "type": "string"
         }
       },
@@ -35750,6 +37525,80 @@
             }
           },
           "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "SslCertificateManagedSslCertificate": {
+      "description": "Configuration and status of a managed SSL certificate.",
+      "id": "SslCertificateManagedSslCertificate",
+      "properties": {
+        "domainStatus": {
+          "additionalProperties": {
+            "enum": [
+              "ACTIVE",
+              "DOMAIN_STATUS_UNSPECIFIED",
+              "FAILED_CAA_CHECKING",
+              "FAILED_CAA_FORBIDDEN",
+              "FAILED_NOT_VISIBLE",
+              "FAILED_RATE_LIMITED",
+              "PROVISIONING"
+            ],
+            "enumDescriptions": [
+              "",
+              "",
+              "",
+              "",
+              "",
+              "",
+              ""
+            ],
+            "type": "string"
+          },
+          "description": "[Output only] Detailed statuses of the domains specified for managed certificate resource.",
+          "type": "object"
+        },
+        "domains": {
+          "description": "The domains for which a managed SSL certificate will be generated. Currently only single-domain certs are supported.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "status": {
+          "description": "[Output only] Status of the managed certificate resource.",
+          "enum": [
+            "ACTIVE",
+            "MANAGED_CERTIFICATE_STATUS_UNSPECIFIED",
+            "PROVISIONING",
+            "PROVISIONING_FAILED",
+            "PROVISIONING_FAILED_PERMANENTLY",
+            "RENEWAL_FAILED"
+          ],
+          "enumDescriptions": [
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""
+          ],
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "SslCertificateSelfManagedSslCertificate": {
+      "description": "Configuration and status of a self-managed SSL certificate.",
+      "id": "SslCertificateSelfManagedSslCertificate",
+      "properties": {
+        "certificate": {
+          "description": "A local certificate file. The certificate must be in PEM format. The certificate chain must be no greater than 5 certs long. The chain must include at least one intermediate cert.",
+          "type": "string"
+        },
+        "privateKey": {
+          "description": "A write-only private key in PEM format. Only insert requests will include this field.",
+          "type": "string"
         }
       },
       "type": "object"
@@ -35904,7 +37753,7 @@
           "type": "array"
         },
         "fingerprint": {
-          "description": "Fingerprint of this resource. A hash of the contents stored in this object. This field is used in optimistic locking. This field will be ignored when inserting a SslPolicy. An up-to-date fingerprint must be provided in order to update the SslPolicy.",
+          "description": "Fingerprint of this resource. A hash of the contents stored in this object. This field is used in optimistic locking. This field will be ignored when inserting a SslPolicy. An up-to-date fingerprint must be provided in order to update the SslPolicy.\n\nTo see the latest fingerprint, make a get() request to retrieve an SslPolicy.",
           "format": "byte",
           "type": "string"
         },
@@ -36075,7 +37924,7 @@
           "type": "boolean"
         },
         "fingerprint": {
-          "description": "Fingerprint of this resource. A hash of the contents stored in this object. This field is used in optimistic locking. This field will be ignored when inserting a Subnetwork. An up-to-date fingerprint must be provided in order to update the Subnetwork.",
+          "description": "Fingerprint of this resource. A hash of the contents stored in this object. This field is used in optimistic locking. This field will be ignored when inserting a Subnetwork. An up-to-date fingerprint must be provided in order to update the Subnetwork.\n\nTo see the latest fingerprint, make a get() request to retrieve a Subnetwork.",
           "format": "byte",
           "type": "string"
         },
@@ -36490,6 +38339,20 @@
         },
         "portName": {
           "description": "Port name as defined in InstanceGroup#NamedPort#name. If both port and port_name are defined, port takes precedence.",
+          "type": "string"
+        },
+        "portSpecification": {
+          "description": "Specifies how port is selected for health checking, can be one of following values:\nUSE_FIXED_PORT: The port number in\nport\nis used for health checking.\nUSE_NAMED_PORT: The\nportName\nis used for health checking.\nUSE_SERVING_PORT: For NetworkEndpointGroup, the port specified for each network endpoint is used for health checking. For other backends, the port or named port specified in the Backend Service is used for health checking.\n\n\nIf not specified, TCP health check follows behavior specified in\nport\nand\nportName\nfields.",
+          "enum": [
+            "USE_FIXED_PORT",
+            "USE_NAMED_PORT",
+            "USE_SERVING_PORT"
+          ],
+          "enumDescriptions": [
+            "",
+            "",
+            ""
+          ],
           "type": "string"
         },
         "proxyHeader": {
@@ -38171,7 +40034,7 @@
           "type": "string"
         },
         "labelFingerprint": {
-          "description": "A fingerprint for the labels being applied to this TargetVpnGateway, which is essentially a hash of the labels set used for optimistic locking. The fingerprint is initially generated by Compute Engine and changes after every request to modify or update labels. You must always provide an up-to-date fingerprint hash in order to update or change labels.\n\nTo see the latest fingerprint, make a get() request to retrieve an TargetVpnGateway.",
+          "description": "A fingerprint for the labels being applied to this TargetVpnGateway, which is essentially a hash of the labels set used for optimistic locking. The fingerprint is initially generated by Compute Engine and changes after every request to modify or update labels. You must always provide an up-to-date fingerprint hash in order to update or change labels.\n\nTo see the latest fingerprint, make a get() request to retrieve a TargetVpnGateway.",
           "format": "byte",
           "type": "string"
         },
@@ -38637,7 +40500,7 @@
           "type": "string"
         },
         "fingerprint": {
-          "description": "Fingerprint of this resource. A hash of the contents stored in this object. This field is used in optimistic locking. This field will be ignored when inserting a UrlMap. An up-to-date fingerprint must be provided in order to update the UrlMap.",
+          "description": "Fingerprint of this resource. A hash of the contents stored in this object. This field is used in optimistic locking. This field will be ignored when inserting a UrlMap. An up-to-date fingerprint must be provided in order to update the UrlMap.\n\nTo see the latest fingerprint, make a get() request to retrieve a UrlMap.",
           "format": "byte",
           "type": "string"
         },
