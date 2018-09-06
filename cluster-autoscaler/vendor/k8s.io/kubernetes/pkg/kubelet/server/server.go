@@ -17,6 +17,7 @@ limitations under the License.
 package server
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"io"
@@ -48,7 +49,9 @@ import (
 	"k8s.io/apiserver/pkg/authorization/authorizer"
 	"k8s.io/apiserver/pkg/server/healthz"
 	"k8s.io/apiserver/pkg/server/httplog"
+	"k8s.io/apiserver/pkg/server/routes"
 	"k8s.io/apiserver/pkg/util/flushwriter"
+	"k8s.io/apiserver/pkg/util/logs"
 	"k8s.io/kubernetes/pkg/api/legacyscheme"
 	api "k8s.io/kubernetes/pkg/apis/core"
 	"k8s.io/kubernetes/pkg/apis/core/v1/validation"
@@ -172,7 +175,7 @@ type HostInterface interface {
 	GetCachedMachineInfo() (*cadvisorapi.MachineInfo, error)
 	GetRunningPods() ([]*v1.Pod, error)
 	RunInContainer(name string, uid types.UID, container string, cmd []string) ([]byte, error)
-	GetKubeletContainerLogs(podFullName, containerName string, logOptions *v1.PodLogOptions, stdout, stderr io.Writer) error
+	GetKubeletContainerLogs(ctx context.Context, podFullName, containerName string, logOptions *v1.PodLogOptions, stdout, stderr io.Writer) error
 	ServeLogs(w http.ResponseWriter, req *http.Request)
 	ResyncInterval() time.Duration
 	GetHostname() string
@@ -409,6 +412,10 @@ func (s *Server) InstallDebuggingHandlers(criHandler http.Handler) {
 	})).Doc("pprof endpoint")
 	s.restfulCont.Add(ws)
 
+	// Setup flags handlers.
+	// so far, only logging related endpoints are considered valid to add for these debug flags.
+	s.restfulCont.Handle("/debug/flags/v", routes.StringFlagPutHandler(logs.GlogSetter))
+
 	// The /runningpods endpoint is used for testing only.
 	ws = new(restful.WebService)
 	ws.
@@ -457,6 +464,7 @@ func (s *Server) getContainerLogs(request *restful.Request, response *restful.Re
 	podNamespace := request.PathParameter("podNamespace")
 	podID := request.PathParameter("podID")
 	containerName := request.PathParameter("containerName")
+	ctx := request.Request.Context()
 
 	if len(podID) == 0 {
 		// TODO: Why return JSON when the rest return plaintext errors?
@@ -528,7 +536,7 @@ func (s *Server) getContainerLogs(request *restful.Request, response *restful.Re
 	}
 	fw := flushwriter.Wrap(response.ResponseWriter)
 	response.Header().Set("Transfer-Encoding", "chunked")
-	if err := s.host.GetKubeletContainerLogs(kubecontainer.GetPodFullName(pod), containerName, logOptions, fw, fw); err != nil {
+	if err := s.host.GetKubeletContainerLogs(ctx, kubecontainer.GetPodFullName(pod), containerName, logOptions, fw, fw); err != nil {
 		response.WriteError(http.StatusBadRequest, err)
 		return
 	}

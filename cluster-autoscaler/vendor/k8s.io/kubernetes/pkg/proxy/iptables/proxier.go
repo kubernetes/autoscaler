@@ -38,7 +38,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/tools/record"
-	api "k8s.io/kubernetes/pkg/apis/core"
 	"k8s.io/kubernetes/pkg/proxy"
 	"k8s.io/kubernetes/pkg/proxy/healthcheck"
 	"k8s.io/kubernetes/pkg/proxy/metrics"
@@ -149,7 +148,7 @@ type serviceInfo struct {
 }
 
 // returns a new proxy.ServicePort which abstracts a serviceInfo
-func newServiceInfo(port *api.ServicePort, service *api.Service, baseInfo *proxy.BaseServiceInfo) proxy.ServicePort {
+func newServiceInfo(port *v1.ServicePort, service *v1.Service, baseInfo *proxy.BaseServiceInfo) proxy.ServicePort {
 	info := &serviceInfo{BaseServiceInfo: baseInfo}
 
 	// Store the following for performance reasons.
@@ -243,11 +242,12 @@ type Proxier struct {
 
 	// The following buffers are used to reuse memory and avoid allocations
 	// that are significantly impacting performance.
-	iptablesData *bytes.Buffer
-	filterChains *bytes.Buffer
-	filterRules  *bytes.Buffer
-	natChains    *bytes.Buffer
-	natRules     *bytes.Buffer
+	iptablesData             *bytes.Buffer
+	existingFilterChainsData *bytes.Buffer
+	filterChains             *bytes.Buffer
+	filterRules              *bytes.Buffer
+	natChains                *bytes.Buffer
+	natRules                 *bytes.Buffer
 
 	// endpointChainsNumber is the total amount of endpointChains across all
 	// services that we will generate (it is computed at the beginning of
@@ -341,6 +341,7 @@ func NewProxier(ipt utiliptables.Interface,
 		healthzServer:            healthzServer,
 		precomputedProbabilities: make([]string, 0, 1001),
 		iptablesData:             bytes.NewBuffer(nil),
+		existingFilterChainsData: bytes.NewBuffer(nil),
 		filterChains:             bytes.NewBuffer(nil),
 		filterRules:              bytes.NewBuffer(nil),
 		natChains:                bytes.NewBuffer(nil),
@@ -507,17 +508,17 @@ func (proxier *Proxier) isInitialized() bool {
 	return atomic.LoadInt32(&proxier.initialized) > 0
 }
 
-func (proxier *Proxier) OnServiceAdd(service *api.Service) {
+func (proxier *Proxier) OnServiceAdd(service *v1.Service) {
 	proxier.OnServiceUpdate(nil, service)
 }
 
-func (proxier *Proxier) OnServiceUpdate(oldService, service *api.Service) {
+func (proxier *Proxier) OnServiceUpdate(oldService, service *v1.Service) {
 	if proxier.serviceChanges.Update(oldService, service) && proxier.isInitialized() {
 		proxier.syncRunner.Run()
 	}
 }
 
-func (proxier *Proxier) OnServiceDelete(service *api.Service) {
+func (proxier *Proxier) OnServiceDelete(service *v1.Service) {
 	proxier.OnServiceUpdate(service, nil)
 
 }
@@ -532,17 +533,17 @@ func (proxier *Proxier) OnServiceSynced() {
 	proxier.syncProxyRules()
 }
 
-func (proxier *Proxier) OnEndpointsAdd(endpoints *api.Endpoints) {
+func (proxier *Proxier) OnEndpointsAdd(endpoints *v1.Endpoints) {
 	proxier.OnEndpointsUpdate(nil, endpoints)
 }
 
-func (proxier *Proxier) OnEndpointsUpdate(oldEndpoints, endpoints *api.Endpoints) {
+func (proxier *Proxier) OnEndpointsUpdate(oldEndpoints, endpoints *v1.Endpoints) {
 	if proxier.endpointsChanges.Update(oldEndpoints, endpoints) && proxier.isInitialized() {
 		proxier.syncRunner.Run()
 	}
 }
 
-func (proxier *Proxier) OnEndpointsDelete(endpoints *api.Endpoints) {
+func (proxier *Proxier) OnEndpointsDelete(endpoints *v1.Endpoints) {
 	proxier.OnEndpointsUpdate(endpoints, nil)
 }
 
@@ -602,7 +603,7 @@ func servicePortEndpointChainName(servicePortName string, protocol string, endpo
 // TODO: move it to util
 func (proxier *Proxier) deleteEndpointConnections(connectionMap []proxy.ServiceEndpoint) {
 	for _, epSvcPair := range connectionMap {
-		if svcInfo, ok := proxier.serviceMap[epSvcPair.ServicePortName]; ok && svcInfo.GetProtocol() == api.ProtocolUDP {
+		if svcInfo, ok := proxier.serviceMap[epSvcPair.ServicePortName]; ok && svcInfo.GetProtocol() == v1.ProtocolUDP {
 			endpointIP := utilproxy.IPPart(epSvcPair.Endpoint)
 			err := conntrack.ClearEntriesForNAT(proxier.exec, svcInfo.ClusterIPString(), endpointIP, v1.ProtocolUDP)
 			if err != nil {
@@ -652,7 +653,7 @@ func (proxier *Proxier) syncProxyRules() {
 	staleServices := serviceUpdateResult.UDPStaleClusterIP
 	// merge stale services gathered from updateEndpointsMap
 	for _, svcPortName := range endpointUpdateResult.StaleServiceNames {
-		if svcInfo, ok := proxier.serviceMap[svcPortName]; ok && svcInfo != nil && svcInfo.GetProtocol() == api.ProtocolUDP {
+		if svcInfo, ok := proxier.serviceMap[svcPortName]; ok && svcInfo != nil && svcInfo.GetProtocol() == v1.ProtocolUDP {
 			glog.V(2).Infof("Stale udp service %v -> %s", svcPortName, svcInfo.ClusterIPString())
 			staleServices.Insert(svcInfo.ClusterIPString())
 		}
@@ -683,14 +684,12 @@ func (proxier *Proxier) syncProxyRules() {
 	// Get iptables-save output so we can check for existing chains and rules.
 	// This will be a map of chain name to chain with rules as stored in iptables-save/iptables-restore
 	existingFilterChains := make(map[utiliptables.Chain][]byte)
-	// TODO: Filter table is small so we're not reusing this buffer over rounds.
-	// However, to optimize it further, we should do that.
-	existingFilterChainsData := bytes.NewBuffer(nil)
-	err := proxier.iptables.SaveInto(utiliptables.TableFilter, existingFilterChainsData)
+	proxier.existingFilterChainsData.Reset()
+	err := proxier.iptables.SaveInto(utiliptables.TableFilter, proxier.existingFilterChainsData)
 	if err != nil { // if we failed to get any rules
 		glog.Errorf("Failed to execute iptables-save, syncing all rules: %v", err)
 	} else { // otherwise parse the output
-		existingFilterChains = utiliptables.GetChainLines(utiliptables.TableFilter, existingFilterChainsData.Bytes())
+		existingFilterChains = utiliptables.GetChainLines(utiliptables.TableFilter, proxier.existingFilterChainsData.Bytes())
 	}
 
 	// IMPORTANT: existingNATChains may share memory with proxier.iptablesData.
@@ -848,7 +847,7 @@ func (proxier *Proxier) syncProxyRules() {
 			// (because the socket might open but it would never work).
 			if local, err := utilproxy.IsLocalIP(externalIP); err != nil {
 				glog.Errorf("can't determine if IP is local, assuming not: %v", err)
-			} else if local {
+			} else if local && (svcInfo.GetProtocol() != v1.ProtocolSCTP) {
 				lp := utilproxy.LocalPort{
 					Description: "externalIP for " + svcNameString,
 					IP:          externalIP,
@@ -869,7 +868,7 @@ func (proxier *Proxier) syncProxyRules() {
 								Name:      proxier.hostname,
 								UID:       types.UID(proxier.hostname),
 								Namespace: "",
-							}, api.EventTypeWarning, err.Error(), msg)
+							}, v1.EventTypeWarning, err.Error(), msg)
 						glog.Error(msg)
 						continue
 					}
@@ -1017,7 +1016,7 @@ func (proxier *Proxier) syncProxyRules() {
 				if proxier.portsMap[lp] != nil {
 					glog.V(4).Infof("Port %s was open before and is still needed", lp.String())
 					replacementPortsMap[lp] = proxier.portsMap[lp]
-				} else {
+				} else if svcInfo.GetProtocol() != v1.ProtocolSCTP {
 					socket, err := proxier.portMapper.OpenLocalPort(&lp)
 					if err != nil {
 						glog.Errorf("can't open %s, skipping this nodePort: %v", lp.String(), err)
@@ -1103,7 +1102,7 @@ func (proxier *Proxier) syncProxyRules() {
 		}
 
 		// First write session affinity rules, if applicable.
-		if svcInfo.SessionAffinityType == api.ServiceAffinityClientIP {
+		if svcInfo.SessionAffinityType == v1.ServiceAffinityClientIP {
 			for _, endpointChain := range endpointChains {
 				args = append(args[:0],
 					"-A", string(svcChain),
@@ -1148,7 +1147,7 @@ func (proxier *Proxier) syncProxyRules() {
 				"-s", utilproxy.ToCIDR(net.ParseIP(epIP)),
 				"-j", string(KubeMarkMasqChain))...)
 			// Update client-affinity lists.
-			if svcInfo.SessionAffinityType == api.ServiceAffinityClientIP {
+			if svcInfo.SessionAffinityType == v1.ServiceAffinityClientIP {
 				args = append(args, "-m", "recent", "--name", string(endpointChain), "--set")
 			}
 			// DNAT to final destination.
@@ -1199,7 +1198,7 @@ func (proxier *Proxier) syncProxyRules() {
 			writeLine(proxier.natRules, args...)
 		} else {
 			// First write session affinity rules only over local endpoints, if applicable.
-			if svcInfo.SessionAffinityType == api.ServiceAffinityClientIP {
+			if svcInfo.SessionAffinityType == v1.ServiceAffinityClientIP {
 				for _, endpointChain := range localEndpointChains {
 					writeLine(proxier.natRules,
 						"-A", string(svcXlbChain),
@@ -1358,7 +1357,7 @@ func (proxier *Proxier) syncProxyRules() {
 		glog.Errorf("Error syncing healtcheck services: %v", err)
 	}
 	if err := proxier.healthChecker.SyncEndpoints(endpointUpdateResult.HCEndpointsLocalIPSize); err != nil {
-		glog.Errorf("Error syncing healthcheck endoints: %v", err)
+		glog.Errorf("Error syncing healthcheck endpoints: %v", err)
 	}
 
 	// Finish housekeeping.

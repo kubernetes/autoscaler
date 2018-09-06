@@ -27,7 +27,7 @@ IPVS runs on a host and acts as a load balancer in front of a cluster of real se
 and UDP-based services to the real servers, and make services of real servers appear as virtual services on a single IP address.
 
 ## IPVS vs. IPTABLES
-IPVS mode was introduced in Kubernetes v1.8 and goes beta in v1.9. IPTABLES mode was added in v1.1 and become the default operating mode since v1.2. Both IPVS and IPTABLES are based on `netfilter`.
+IPVS mode was introduced in Kubernetes v1.8, goes beta in v1.9 and GA in v1.11. IPTABLES mode was added in v1.1 and become the default operating mode since v1.2. Both IPVS and IPTABLES are based on `netfilter`.
 Differences between IPVS mode and IPTABLES mode are as follows:
 
 1. IPVS provides better scalability and performance for large clusters.
@@ -334,19 +334,19 @@ export KUBE_PROXY_MODE=ipvs
 
 ### Cluster Created by Kubeadm
 
-Kube-proxy will run in iptables mode by default in a cluster deployed by [kubeadm](https://kubernetes.io/docs/setup/independent/create-cluster-kubeadm/).
-
-If you are using kubeadm with a [configuration file](https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-init/#config-file), you can specify the ipvs mode adding `SupportIPVSProxyMode: true` below the `kubeProxy` field.
+If you are using kubeadm with a [configuration file](https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-init/#config-file), you have to add `mode: ipvs` and also add `SupportIPVSProxyMode: true` below the `kubeProxy` field as part of the kubeadm configuration.
 
 ```json
-kind: MasterConfiguration
-apiVersion: kubeadm.k8s.io/v1alpha1
 ...
 kubeProxy:
   config:
+    featureGates:
+      SupportIPVSProxyMode: true
     mode: ipvs
 ...
 ```
+Note that in Kubernetes 1.11 and later, `SupportIPVSProxyMode` is set to `true` by default.
+
 before running
 
 `kube init --config <path_to_configuration_file>`
