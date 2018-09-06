@@ -1,4 +1,4 @@
-// +build !gce,!aws,!azure,!kubemark,!alicloud
+// +build !gce,!aws,!azure,!kubemark,!alicloud,!openstack
 
 /*
 Copyright 2018 The Kubernetes Authors.
@@ -26,6 +26,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/baiducloud"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gke"
+    "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/openstack"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 )
 
@@ -37,6 +38,7 @@ var AvailableCloudProviders = []string{
 	gke.ProviderNameGKE,
 	alicloud.ProviderName,
 	baiducloud.ProviderName,
+    openstack.ProviderName,
 }
 
 // DefaultCloudProvider is GCE.
@@ -56,6 +58,8 @@ func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGro
 		return alicloud.BuildAlicloud(opts, do, rl)
 	case baiducloud.ProviderName:
 		return baiducloud.BuildBaiducloud(opts, do, rl)
+    case openstack.ProviderName:
+        return openstack.buildOpenStack(opts, do, rl)
 	}
 	return nil
 }

@@ -187,3 +187,109 @@ func TestParseASGAutoDiscoverySpecs(t *testing.T) {
 		})
 	}
 }
+
+func TestParseOSAutoDiscoverySpecs(t *testing.T) {
+	cases := []struct {
+		name    string
+		specs   []string
+		want    []OSASGAutoDiscoveryConfig
+		wantErr bool
+	}{
+		{
+			name: "GoodSpecs",
+			specs: []string{
+				"osasg:namePrefix=pfx,min=0,max=10",
+				"osasg:namePrefix=anotherpfx,min=1,max=2",
+				"osasg:namePrefix=yetanotherpfx,min=3,max=11,tag=tag anothertag",
+			},
+			want: []OSASGAutoDiscoveryConfig{
+                {Re: regexp.MustCompile("^pfx.+"), MinSize: 0, MaxSize: 10},
+				{Re: regexp.MustCompile("^anotherpfx.+"), MinSize: 1, MaxSize: 2},
+				{Re: regexp.MustCompile("^yetanotherpfx.+"), MinSize: 3, MaxSize: 11, Tags: []string{"tag", "anothertag"}},
+			},
+		},
+		{
+			name:    "MissingASGType",
+			specs:   []string{"namePrefix=pfx,min=0,max=10"},
+			wantErr: true,
+		},
+		{
+			name:    "WrongType",
+			specs:   []string{"asg:namePrefix=pfx,min=0,max=10"},
+			wantErr: true,
+		},
+		{
+			name:    "UnknownKey",
+			specs:   []string{"osasg:namePrefix=pfx,min=0,max=10,unknown=hi"},
+			wantErr: true,
+		},
+		{
+			name:    "NonIntegerMin",
+			specs:   []string{"osasg:namePrefix=pfx,min=a,max=10"},
+			wantErr: true,
+		},
+		{
+			name:    "NonIntegerMax",
+			specs:   []string{"osasg:namePrefix=pfx,min=1,max=donkey"},
+			wantErr: true,
+		},
+		{
+			name:    "PrefixDoesNotCompileToRegexp",
+			specs:   []string{"osasg:namePrefix=a),min=1,max=10"},
+			wantErr: true,
+		},
+		{
+			name:    "KeyMissingValue",
+			specs:   []string{"osasg:namePrefix=prefix,min=,max=10"},
+			wantErr: true,
+		},
+		{
+			name:    "ValueMissingKey",
+			specs:   []string{"osasg:namePrefix=prefix,=0,max=10"},
+			wantErr: true,
+		},
+		{
+			name:    "KeyMissingSeparator",
+			specs:   []string{"osasg:namePrefix=prefix,min,max=10"},
+			wantErr: true,
+		},
+		{
+			name:    "TooManySeparators",
+			specs:   []string{"osasg:namePrefix=prefix,min=0,max=10=20"},
+			wantErr: true,
+		},
+		{
+			name:    "PrefixIsEmpty",
+			specs:   []string{"osasg:namePrefix=,min=0,max=10"},
+			wantErr: true,
+		},
+		{
+			name:    "PrefixIsMissing",
+			specs:   []string{"osasg:min=0,max=10"},
+			wantErr: true,
+		},
+		{
+			name:    "MaxBelowMin",
+			specs:   []string{"osasg:namePrefix=prefix,min=10,max=1"},
+			wantErr: true,
+		},
+		{
+			name:    "MaxIsZero",
+			specs:   []string{"osasg:namePrefix=prefix,min=0,max=0"},
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			do := NodeGroupDiscoveryOptions{NodeGroupAutoDiscoverySpecs: tc.specs}
+			got, err := do.ParseOSASGAutoDiscoverySpecs()
+			if tc.wantErr {
+				assert.Error(t, err)
+				return
+			}
+			assert.NoError(t, err)
+			assert.True(t, assert.ObjectsAreEqualValues(tc.want, got), "\ngot: %#v\nwant: %#v", got, tc.want)
+		})
+	}
+}

@@ -27,6 +27,7 @@ import (
 const (
 	autoDiscovererTypeMIG   = "mig"
 	autoDiscovererTypeASG   = "asg"
+	autoDiscovererTypeOSASG   = "osasg"
 	autoDiscovererTypeLabel = "label"
 
 	migAutoDiscovererKeyPrefix   = "namePrefix"
@@ -40,6 +41,13 @@ var validMIGAutoDiscovererKeys = strings.Join([]string{
 	migAutoDiscovererKeyPrefix,
 	migAutoDiscovererKeyMinNodes,
 	migAutoDiscovererKeyMaxNodes,
+}, ", ")
+
+var validOSASGAutoDiscovererKeys = strings.Join([]string{
+	migAutoDiscovererKeyPrefix,
+	migAutoDiscovererKeyMinNodes,
+	migAutoDiscovererKeyMaxNodes,
+    asgAutoDiscovererKeyTag,
 }, ", ")
 
 // NodeGroupDiscoveryOptions contains various options to configure how a cloud provider discovers node groups
@@ -87,6 +95,20 @@ func (o NodeGroupDiscoveryOptions) ParseASGAutoDiscoverySpecs() ([]ASGAutoDiscov
 	var err error
 	for i, spec := range o.NodeGroupAutoDiscoverySpecs {
 		cfgs[i], err = parseASGAutoDiscoverySpec(spec)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return cfgs, nil
+}
+
+// ParseOSASGAutoDiscoverySpecs returns any provided NodeGroupAutoDiscoverySpecs
+// parsed into configuration appropriate for OpenStack ASG autodiscovery.
+func (o NodeGroupDiscoveryOptions) ParseOSASGAutoDiscoverySpecs() ([]OSASGAutoDiscoveryConfig, error) {
+	cfgs := make([]OSASGAutoDiscoveryConfig, len(o.NodeGroupAutoDiscoverySpecs))
+	var err error
+	for i, spec := range o.NodeGroupAutoDiscoverySpecs {
+		cfgs[i], err = parseOSASGAutoDiscoverySpec(spec)
 		if err != nil {
 			return nil, err
 		}
@@ -172,6 +194,75 @@ type ASGAutoDiscoveryConfig struct {
 	// Tags to match on.
 	// Any ASG with all of the provided tag keys will be autoscaled.
 	Tags map[string]string
+}
+
+// An ASGAutoDiscoveryConfig specifies how to autodiscover OpenStack ASGs.
+type OSASGAutoDiscoveryConfig struct {
+	// Tags to match on.
+	// Any ASG with all of the provided tag keys will be autoscaled.
+	Tags []string
+	// Re is a regexp passed using filter to the list API.
+	Re *regexp.Regexp
+	// MinSize specifies the minimum size for all ASGs that match Re.
+	MinSize int
+	// MaxSize specifies the maximum size for all ASGs that match Re.
+	MaxSize int
+}
+
+func parseOSASGAutoDiscoverySpec(spec string) (OSASGAutoDiscoveryConfig, error) {
+	cfg := OSASGAutoDiscoveryConfig{}
+
+	tokens := strings.Split(spec, ":")
+	if len(tokens) != 2 {
+		return cfg, fmt.Errorf("Invalid node group auto discovery spec specified via --node-group-auto-discovery: %s", spec)
+	}
+	discoverer := tokens[0]
+	if discoverer != autoDiscovererTypeOSASG {
+		return cfg, fmt.Errorf("Unsupported discoverer specified: %s", discoverer)
+	}
+
+	for _, arg := range strings.Split(tokens[1], ",") {
+		kv := strings.Split(arg, "=")
+		if len(kv) != 2 {
+			return cfg, fmt.Errorf("invalid key=value pair %s", kv)
+		}
+		k, v := kv[0], kv[1]
+
+		var err error
+		switch k {
+		case migAutoDiscovererKeyPrefix:
+			if cfg.Re, err = regexp.Compile(fmt.Sprintf("^%s.+", v)); err != nil {
+				return cfg, fmt.Errorf("invalid instance group name prefix \"%s\" - \"^%s.+\" must be a valid RE2 regexp", v, v)
+			}
+		case migAutoDiscovererKeyMinNodes:
+			if cfg.MinSize, err = strconv.Atoi(v); err != nil {
+				return cfg, fmt.Errorf("invalid minimum nodes: %s", v)
+			}
+		case migAutoDiscovererKeyMaxNodes:
+			if cfg.MaxSize, err = strconv.Atoi(v); err != nil {
+				return cfg, fmt.Errorf("invalid maximum nodes: %s", v)
+			}
+		case asgAutoDiscovererKeyTag:
+
+            p := strings.Split(v, " ")
+            if len(p) == 0 {
+                return cfg, fmt.Errorf("Invalid OpenStack ASG tag for auto discovery specified: ASG tag must not be empty")
+            }
+            cfg.Tags = p
+		default:
+			return cfg, fmt.Errorf("unsupported key \"%s\" is specified for discoverer \"%s\". Supported keys are \"%s\"", k, discoverer, validOSASGAutoDiscovererKeys)
+		}
+	}
+	if cfg.Re == nil || cfg.Re.String() == "^.+" {
+		return cfg, errors.New("empty instance group name prefix supplied")
+	}
+	if cfg.MinSize > cfg.MaxSize {
+		return cfg, fmt.Errorf("minimum size %d is greater than maximum size %d", cfg.MinSize, cfg.MaxSize)
+	}
+	if cfg.MaxSize < 1 {
+		return cfg, fmt.Errorf("maximum size %d must be at least 1", cfg.MaxSize)
+	}
+	return cfg, nil
 }
 
 func parseASGAutoDiscoverySpec(spec string) (ASGAutoDiscoveryConfig, error) {
