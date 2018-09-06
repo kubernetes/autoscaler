@@ -26,6 +26,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gke"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/kubemark"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/openstack"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/client-go/informers"
@@ -44,6 +45,7 @@ var AvailableCloudProviders = []string{
 	gce.ProviderNameGCE,
 	gke.ProviderNameGKE,
 	kubemark.ProviderName,
+	openstack.ProviderName,
 }
 
 // DefaultCloudProvider is GCE.
@@ -76,6 +78,8 @@ func NewCloudProvider(opts config.AutoscalingOptions) cloudprovider.CloudProvide
 		return buildAzure(opts, do, rl)
 	case kubemark.ProviderName:
 		return buildKubemark(opts, do, rl)
+	case openstack.ProviderName:
+		return buildOpenStack(opts, do, rl)
 	case "":
 		// Ideally this would be an error, but several unit tests of the
 		// StaticAutoscaler depend on this behaviour.
@@ -216,6 +220,29 @@ func buildKubemark(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDis
 	provider, err := kubemark.BuildKubemarkCloudProvider(kubemarkController, do.NodeGroupSpecs, rl)
 	if err != nil {
 		glog.Fatalf("Failed to create Kubemark cloud provider: %v", err)
+	}
+	return provider
+}
+
+func buildOpenStack(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+	var config io.ReadCloser
+	if opts.CloudConfig != "" {
+		var err error
+		config, err = os.Open(opts.CloudConfig)
+		if err != nil {
+			glog.Fatalf("Couldn't open cloud provider configuration %s: %#v", opts.CloudConfig, err)
+		}
+		defer config.Close()
+	}
+
+	manager, err := openstack.CreateOpenStackManager(config, do)
+	if err != nil {
+		glog.Fatalf("Failed to create OpenStack Manager: %v", err)
+	}
+
+	provider, err := openstack.BuildOpenStackCloudProvider(manager, rl)
+	if err != nil {
+		glog.Fatalf("Failed to create OpenStack cloud provider: %v", err)
 	}
 	return provider
 }
