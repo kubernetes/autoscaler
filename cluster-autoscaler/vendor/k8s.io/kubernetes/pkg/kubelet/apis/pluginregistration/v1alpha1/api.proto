@@ -22,12 +22,12 @@ message PluginInfo {
 	// should follow the extended resource name convention.
 	// For CSI, this is the CSI driver registrar name.
 	string name = 2;
-        // Optional endpoint location. If found set by Kubelet component,
-        // Kubelet component will use this endpoint for specific requests.
-        // This allows the plugin to register using one endpoint and possibly use
-        // a different socket for control operations. CSI uses this model to delegate
-        // its registration external from the plugin.
-        string endpoint = 3;
+	// Optional endpoint location. If found set by Kubelet component,
+	// Kubelet component will use this endpoint for specific requests.
+	// This allows the plugin to register using one endpoint and possibly use
+	// a different socket for control operations. CSI uses this model to delegate
+	// its registration external from the plugin.
+	string endpoint = 3;
 	// Plugin service API versions the plugin supports.
 	// For DevicePlugin, this maps to the deviceplugin API versions the
 	// plugin supports at the given socket.

@@ -1,18 +1,26 @@
-commit 2c933695fa61d57d1c6fa5defb89caed7d49f773 (origin/master, origin/HEAD)
-Merge: 79b3d3e7dc 04e793e65a
+commit 8e329f1c3cbb1354c27b6135990c5544f14d2a17
+Merge: 4bc9e94fee 07ebe323fa
 Author: Kubernetes Submit Queue <k8s-merge-robot@users.noreply.github.com>
-Date:   Wed Sep 5 03:09:37 2018 -0700
+Date:   Thu Sep 6 00:02:02 2018 -0700
 
-    Merge pull request #68273 from sttts/sttts-non-fatal-in-cluster-config
+    Merge pull request #68312 from msau42/fix-e2e
     
-    Automatic merge from submit-queue (batch tested with PRs 68265, 68273). If you want to cherry-pick this change to another branch, please follow the instructions here: https://github.com/kubernetes/community/blob/master/contributors/devel/cherry-picks.md.
+    Automatic merge from submit-queue. If you want to cherry-pick this change to another branch, please follow the instructions here: https://github.com/kubernetes/community/blob/master/contributors/devel/cherry-picks.md.
     
-    apiserver: make InClusterConfig errs for delegated authn/z non-fatal
+    Fix gce localssd pv tests
     
-    Fixes https://github.com/kubernetes/kubernetes/issues/68246:
+    **What this PR does / why we need it**:
+    When running local PV tests against GCE local SSD, it directly uses the disk so doesn't need to create a tmp dir like the other test formats.  Fsgroup tests do not create test-file so don't error on cleanup if the file doesn't exist.
     
-    Background:
     
-    In gci e2e tests the kube-controller-manager is started as static pod. When it first starts, there is no kubernetes service and the KUBERNETES_SERVICE_HOST and KUBERNETES_SERVICE_PORT env vars are not set inside the container.
+    **Which issue(s) this PR fixes** *(optional, in `fixes #<issue number>(, fixes #<issue_number>, ...)` format, will close the issue(s) when PR gets merged)*:
+    Fixes #68308
     
-    When the kube-controller-manager is restarted, the KUBERNETES_SERVICE_HOST and KUBERNETES_SERVICE_PORT env vars are set, but the static pod has no service account, i.e. /var/run/secrets/kubernetes.io/serviceaccount/token does not exist. We made the later fatal in rest.InCluster
+    **Special notes for your reviewer**:
+    
+    **Release note**:
+    
+    ```release-note
+    NONE
+    ```
+
