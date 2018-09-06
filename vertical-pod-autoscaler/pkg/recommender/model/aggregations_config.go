@@ -54,8 +54,10 @@ var (
 
 func cpuHistogramOptions() util.HistogramOptions {
 	// CPU histograms use exponential bucketing scheme with the smallest bucket
-	// size of 0.1 core, max of 1000.0 cores and the relative error of HistogramRelativeError.
-	options, err := util.NewExponentialHistogramOptions(1000.0, 0.1, 1.+HistogramBucketSizeGrowth, 0.1)
+	// size of 0.01 core, max of 1000.0 cores and the relative error of HistogramRelativeError.
+	//
+	// When parametes below are changed SupportedCheckpointVersion has to be bumped.
+	options, err := util.NewExponentialHistogramOptions(1000.0, 0.01, 1.+HistogramBucketSizeGrowth, 0.1)
 	if err != nil {
 		panic("Invalid CPU histogram options") // Should not happen.
 	}
@@ -65,6 +67,8 @@ func cpuHistogramOptions() util.HistogramOptions {
 func memoryHistogramOptions() util.HistogramOptions {
 	// Memory histograms use exponential bucketing scheme with the smallest
 	// bucket size of 10MB, max of 1TB and the relative error of HistogramRelativeError.
+	//
+	// When parametes below are changed SupportedCheckpointVersion has to be bumped.
 	options, err := util.NewExponentialHistogramOptions(1e12, 1e7, 1.+HistogramBucketSizeGrowth, 0.1)
 	if err != nil {
 		panic("Invalid memory histogram options") // Should not happen.
