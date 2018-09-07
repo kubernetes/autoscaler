@@ -57,6 +57,14 @@ type NodeToBeRemoved struct {
 	PodsToReschedule []*apiv1.Pod
 }
 
+// UtilizationInfo contains utilization information for a node.
+type UtilizationInfo struct {
+	CpuUtil float64
+	MemUtil float64
+	// Max(CpuUtil, MemUtil).
+	Utilization float64
+}
+
 // FindNodesToRemove finds nodes that can be removed. Returns also an information about good
 // rescheduling location for each of the pods.
 func FindNodesToRemove(candidates []*apiv1.Node, allNodes []*apiv1.Node, pods []*apiv1.Pod,
@@ -141,17 +149,18 @@ func FindEmptyNodesToRemove(candidates []*apiv1.Node, pods []*apiv1.Pod) []*apiv
 }
 
 // CalculateUtilization calculates utilization of a node, defined as maximum of (cpu, memory) utilization.
-// Per resource utilization is the sum of requests for it divided by allocatable.
-func CalculateUtilization(node *apiv1.Node, nodeInfo *schedulercache.NodeInfo) (float64, error) {
+// Per resource utilization is the sum of requests for it divided by allocatable. It also returns the individual
+// cpu and memory utilization.
+func CalculateUtilization(node *apiv1.Node, nodeInfo *schedulercache.NodeInfo) (utilInfo UtilizationInfo, err error) {
 	cpu, err := calculateUtilizationOfResource(node, nodeInfo, apiv1.ResourceCPU)
 	if err != nil {
-		return 0, err
+		return UtilizationInfo{}, err
 	}
 	mem, err := calculateUtilizationOfResource(node, nodeInfo, apiv1.ResourceMemory)
 	if err != nil {
-		return 0, err
+		return UtilizationInfo{}, err
 	}
-	return math.Max(cpu, mem), nil
+	return UtilizationInfo{CpuUtil: cpu, MemUtil: mem, Utilization: math.Max(cpu, mem)}, nil
 }
 
 func calculateUtilizationOfResource(node *apiv1.Node, nodeInfo *schedulercache.NodeInfo, resourceName apiv1.ResourceName) (float64, error) {

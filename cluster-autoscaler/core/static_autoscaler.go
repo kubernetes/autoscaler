@@ -35,6 +35,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 
 	"github.com/golang/glog"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 )
 
 const (
@@ -334,16 +335,20 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 
 			scaleDownStart := time.Now()
 			metrics.UpdateLastTime(metrics.ScaleDown, scaleDownStart)
-			result, typedErr := scaleDown.TryToScaleDown(allNodes, allScheduled, pdbs, currentTime)
+			scaleDownStatus, typedErr := scaleDown.TryToScaleDown(allNodes, allScheduled, pdbs, currentTime)
 			metrics.UpdateDurationFromStart(metrics.ScaleDown, scaleDownStart)
 
+			if scaleDownStatus.Result == status.ScaleDownNodeDeleted {
+				a.lastScaleDownDeleteTime = currentTime
+				a.clusterStateRegistry.Recalculate()
+			}
+			if a.processors != nil && a.processors.ScaleDownStatusProcessor != nil {
+				a.processors.ScaleDownStatusProcessor.Process(autoscalingContext, scaleDownStatus)
+			}
 			if typedErr != nil {
 				glog.Errorf("Failed to scale down: %v", err)
 				a.lastScaleDownFailTime = currentTime
 				return typedErr
-			}
-			if result == ScaleDownNodeDeleted {
-				a.lastScaleDownDeleteTime = currentTime
 			}
 		}
 	}
