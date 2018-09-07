@@ -54,7 +54,7 @@ const (
 	// Version id should be incremented on every non incompatible change, i.e. if the new
 	// version of the recommender binary can't initialize from the old checkpoint format or the the
 	// previous version of the recommender binary can't initialize from the new checkpoint format.
-	SupportedCheckpointVersion = "v1"
+	SupportedCheckpointVersion = "v2"
 )
 
 // ContainerStateAggregator is an interface for objects that consume and
