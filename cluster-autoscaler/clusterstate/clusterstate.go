@@ -363,12 +363,13 @@ func (csr *ClusterStateRegistry) IsNodeGroupSafeToScaleUp(nodeGroupName string, 
 	return !csr.nodeGroupBackoffInfo.IsBackedOff(nodeGroupName, now)
 }
 
-func (csr *ClusterStateRegistry) areThereUpcomingNodesInNodeGroup(nodeGroupName string) bool {
+func (csr *ClusterStateRegistry) getProvisionedAndTargetSizesForNodeGroup(nodeGroupName string) (provisioned, target int, ok bool) {
 	acceptable, found := csr.acceptableRanges[nodeGroupName]
 	if !found {
 		glog.Warningf("Failed to find acceptable ranges for %v", nodeGroupName)
-		return false
+		return 0, 0, false
 	}
+	target = acceptable.CurrentTarget
 
 	readiness, found := csr.perNodeGroupReadiness[nodeGroupName]
 	if !found {
@@ -376,11 +377,28 @@ func (csr *ClusterStateRegistry) areThereUpcomingNodesInNodeGroup(nodeGroupName 
 		if acceptable.MinNodes != 0 {
 			glog.Warningf("Failed to find readiness information for %v", nodeGroupName)
 		}
-		return acceptable.CurrentTarget > 0
+		return 0, target, true
 	}
+	provisioned = readiness.Registered - readiness.NotStarted - readiness.LongNotStarted
 
-	provisioned := readiness.Registered - readiness.NotStarted - readiness.LongNotStarted
-	return acceptable.CurrentTarget > provisioned
+	return provisioned, target, true
+}
+
+func (csr *ClusterStateRegistry) areThereUpcomingNodesInNodeGroup(nodeGroupName string) bool {
+	provisioned, target, ok := csr.getProvisionedAndTargetSizesForNodeGroup(nodeGroupName)
+	if !ok {
+		return false
+	}
+	return target > provisioned
+}
+
+// IsNodeGroupAtTargetSize returns true if the number of nodes provisioned in the group is equal to the target number of nodes.
+func (csr *ClusterStateRegistry) IsNodeGroupAtTargetSize(nodeGroupName string) bool {
+	provisioned, target, ok := csr.getProvisionedAndTargetSizesForNodeGroup(nodeGroupName)
+	if !ok {
+		return false
+	}
+	return target == provisioned
 }
 
 // IsNodeGroupScalingUp returns true if the node group is currently scaling up.
