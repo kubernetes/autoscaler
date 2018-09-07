@@ -31,8 +31,12 @@ import (
 	metrics_updater "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/updater"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 	kube_client "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes/fake"
+	"k8s.io/client-go/kubernetes/scheme"
+	clientv1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	v1lister "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/tools/cache"
+	"k8s.io/client-go/tools/record"
 
 	"github.com/golang/glog"
 )
@@ -46,6 +50,7 @@ type Updater interface {
 type updater struct {
 	vpaLister               vpa_lister.VerticalPodAutoscalerLister
 	podLister               v1lister.PodLister
+	eventRecorder           record.EventRecorder
 	evictionFactory         eviction.PodsEvictionRestrictionFactory
 	recommendationProcessor vpa_api_util.RecommendationProcessor
 	evictionAdmission       priority.PodEvictionAdmission
@@ -56,6 +61,7 @@ func NewUpdater(kubeClient kube_client.Interface, vpaClient *vpa_clientset.Clien
 	return &updater{
 		vpaLister:               vpa_api_util.NewAllVpasLister(vpaClient, make(chan struct{})),
 		podLister:               newPodLister(kubeClient),
+		eventRecorder:           newEventRecorder(kubeClient),
 		evictionFactory:         eviction.NewPodsEvictionRestrictionFactory(kubeClient, minReplicasForEvicition, evictionToleranceFraction),
 		recommendationProcessor: recommendationProcessor,
 		evictionAdmission:       evictionAdmission,
@@ -124,7 +130,7 @@ func (u *updater) RunOnce() {
 				continue
 			}
 			glog.V(2).Infof("evicting pod %v", pod.Name)
-			evictErr := evictionLimiter.Evict(pod)
+			evictErr := evictionLimiter.Evict(pod, u.eventRecorder)
 			if evictErr != nil {
 				glog.Warningf("evicting pod %v failed: %v", pod.Name, evictErr)
 			}
@@ -177,4 +183,13 @@ func newPodLister(kubeClient kube_client.Interface) v1lister.PodLister {
 	go podReflector.Run(stopCh)
 
 	return podLister
+}
+
+func newEventRecorder(kubeClient kube_client.Interface) record.EventRecorder {
+	eventBroadcaster := record.NewBroadcaster()
+	eventBroadcaster.StartLogging(glog.V(4).Infof)
+	if _, isFake := kubeClient.(*fake.Clientset); !isFake {
+		eventBroadcaster.StartRecordingToSink(&clientv1.EventSinkImpl{Interface: clientv1.New(kubeClient.CoreV1().RESTClient()).Events("")})
+	}
+	return eventBroadcaster.NewRecorder(scheme.Scheme, apiv1.EventSource{Component: "vpa-updater"})
 }

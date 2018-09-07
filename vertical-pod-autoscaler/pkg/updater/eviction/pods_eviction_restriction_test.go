@@ -199,7 +199,7 @@ func TestEvictReplicatedByController(t *testing.T) {
 			},
 		},
 		{
-			// Pedning pods are always evictable
+			// Pending pods are always evictable
 			replicas:           4,
 			evictionTollerance: 0.5,
 			pods: []podWithExpectations{
@@ -240,7 +240,7 @@ func TestEvictReplicatedByController(t *testing.T) {
 			assert.Equalf(t, p.canEvict, eviction.CanEvict(p.pod), "TC %v - unexpected CanEvict result for pod-%v %#v", tcIndex, i, p.pod)
 		}
 		for i, p := range testCase.pods {
-			err := eviction.Evict(p.pod)
+			err := eviction.Evict(p.pod, test.FakeEventRecorder())
 			if p.evictionSuccess {
 				assert.NoErrorf(t, err, "TC %v - unexpected Evict result for pod-%v %#v", tcIndex, i, p.pod)
 			} else {
@@ -281,11 +281,11 @@ func TestEvictReplicatedByReplicaSet(t *testing.T) {
 	}
 
 	for _, pod := range pods[:2] {
-		err := eviction.Evict(pod)
+		err := eviction.Evict(pod, test.FakeEventRecorder())
 		assert.Nil(t, err, "Should evict with no error")
 	}
 	for _, pod := range pods[2:] {
-		err := eviction.Evict(pod)
+		err := eviction.Evict(pod, test.FakeEventRecorder())
 		assert.Error(t, err, "Error expected")
 	}
 }
@@ -320,11 +320,11 @@ func TestEvictReplicatedByStatefulSet(t *testing.T) {
 	}
 
 	for _, pod := range pods[:2] {
-		err := eviction.Evict(pod)
+		err := eviction.Evict(pod, test.FakeEventRecorder())
 		assert.Nil(t, err, "Should evict with no error")
 	}
 	for _, pod := range pods[2:] {
-		err := eviction.Evict(pod)
+		err := eviction.Evict(pod, test.FakeEventRecorder())
 		assert.Error(t, err, "Error expected")
 	}
 }
@@ -355,11 +355,11 @@ func TestEvictReplicatedByJob(t *testing.T) {
 	}
 
 	for _, pod := range pods[:2] {
-		err := eviction.Evict(pod)
+		err := eviction.Evict(pod, test.FakeEventRecorder())
 		assert.Nil(t, err, "Should evict with no error")
 	}
 	for _, pod := range pods[2:] {
-		err := eviction.Evict(pod)
+		err := eviction.Evict(pod, test.FakeEventRecorder())
 		assert.Error(t, err, "Error expected")
 	}
 }
@@ -394,7 +394,7 @@ func TestEvictTooFewReplicas(t *testing.T) {
 	}
 
 	for _, pod := range pods {
-		err := eviction.Evict(pod)
+		err := eviction.Evict(pod, test.FakeEventRecorder())
 		assert.Error(t, err, "Error expected")
 	}
 }
@@ -430,11 +430,11 @@ func TestEvictionTolerance(t *testing.T) {
 	}
 
 	for _, pod := range pods[:4] {
-		err := eviction.Evict(pod)
+		err := eviction.Evict(pod, test.FakeEventRecorder())
 		assert.Nil(t, err, "Should evict with no error")
 	}
 	for _, pod := range pods[4:] {
-		err := eviction.Evict(pod)
+		err := eviction.Evict(pod, test.FakeEventRecorder())
 		assert.Error(t, err, "Error expected")
 	}
 }
@@ -470,11 +470,11 @@ func TestEvictAtLeastOne(t *testing.T) {
 	}
 
 	for _, pod := range pods[:1] {
-		err := eviction.Evict(pod)
+		err := eviction.Evict(pod, test.FakeEventRecorder())
 		assert.Nil(t, err, "Should evict with no error")
 	}
 	for _, pod := range pods[1:] {
-		err := eviction.Evict(pod)
+		err := eviction.Evict(pod, test.FakeEventRecorder())
 		assert.Error(t, err, "Error expected")
 	}
 }

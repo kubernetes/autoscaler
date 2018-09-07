@@ -52,7 +52,7 @@ func TestRunOnce(t *testing.T) {
 
 		pods[i].Labels = labels
 		eviction.On("CanEvict", pods[i]).Return(true)
-		eviction.On("Evict", pods[i]).Return(nil)
+		eviction.On("Evict", pods[i], nil).Return(nil)
 	}
 
 	factory := &fakeEvictFactory{eviction}
@@ -94,7 +94,7 @@ func TestVPAOff(t *testing.T) {
 		pods[i] = test.Pod().WithName("test_" + strconv.Itoa(i)).AddContainer(test.BuildTestContainer(containerName, "1", "100M")).Get()
 		pods[i].Labels = labels
 		eviction.On("CanEvict", pods[i]).Return(true)
-		eviction.On("Evict", pods[i]).Return(nil)
+		eviction.On("Evict", pods[i], nil).Return(nil)
 	}
 
 	factory := &fakeEvictFactory{eviction}
