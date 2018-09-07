@@ -162,15 +162,13 @@ func (h *histogram) Percentile(percentile float64) float64 {
 			break
 		}
 	}
-	bucketStart := h.options.GetBucketStart(bucket)
 	if bucket < h.options.NumBuckets()-1 {
-		// Return the middle point between the bucket boundaries.
-		bucketEnd := h.options.GetBucketStart(bucket + 1)
-		return (bucketStart + bucketEnd) / 2.0
+		// Return the end of the bucket.
+		return h.options.GetBucketStart(bucket + 1)
 	}
 	// Return the start of the last bucket (note that the last bucket
 	// doesn't have an upper bound).
-	return bucketStart
+	return h.options.GetBucketStart(bucket)
 }
 
 func (h *histogram) IsEmpty() bool {
