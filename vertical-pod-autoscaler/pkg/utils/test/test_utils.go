@@ -23,10 +23,13 @@ import (
 	"github.com/stretchr/testify/mock"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/poc.autoscaling.k8s.io/v1alpha1"
 	v1 "k8s.io/client-go/listers/core/v1"
+	"k8s.io/client-go/tools/record"
 )
 
 var (
@@ -125,8 +128,8 @@ type PodsEvictionRestrictionMock struct {
 }
 
 // Evict is a mock implementation of PodsEvictionRestriction.Evict
-func (m *PodsEvictionRestrictionMock) Evict(pod *apiv1.Pod) error {
-	args := m.Called(pod)
+func (m *PodsEvictionRestrictionMock) Evict(pod *apiv1.Pod, eventRecorder record.EventRecorder) error {
+	args := m.Called(pod, eventRecorder)
 	return args.Error(0)
 }
 
@@ -228,4 +231,27 @@ func (f *FakeRecommendationProcessor) Apply(podRecommendation *vpa_types.Recomme
 	conditions []vpa_types.VerticalPodAutoscalerCondition,
 	pod *apiv1.Pod) (*vpa_types.RecommendedPodResources, map[string][]string, error) {
 	return podRecommendation, nil, nil
+}
+
+// fakeEventRecorder is a dummy implementation of record.EventRecorder.
+type fakeEventRecorder struct{}
+
+// Event is a dummy implementation of record.EventRecorder interface.
+func (f *fakeEventRecorder) Event(object runtime.Object, eventtype, reason, message string) {}
+
+// Eventf is a dummy implementation of record.EventRecorder interface.
+func (f *fakeEventRecorder) Eventf(object runtime.Object, eventtype, reason, messageFmt string, args ...interface{}) {
+}
+
+// PastEventf is a dummy implementation of record.EventRecorder interface.
+func (f *fakeEventRecorder) PastEventf(object runtime.Object, timestamp metav1.Time, eventtype, reason, messageFmt string, args ...interface{}) {
+}
+
+// AnnotatedEventf is a dummy implementation of record.EventRecorder interface.
+func (f *fakeEventRecorder) AnnotatedEventf(object runtime.Object, annotations map[string]string, eventtype, reason, messageFmt string, args ...interface{}) {
+}
+
+// FakeEventRecorder returns a dummy implementation of record.EventRecorder.
+func FakeEventRecorder() record.EventRecorder {
+	return &fakeEventRecorder{}
 }
