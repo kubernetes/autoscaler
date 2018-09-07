@@ -404,13 +404,15 @@ func removeOldUnregisteredNodes(unregisteredNodes []clusterstate.UnregisteredNod
 				glog.Warningf("Failed to remove node %s: node group min size reached, skipping unregistered node removal", unregisteredNode.Node.Name)
 				continue
 			}
-			logRecorder.Eventf(apiv1.EventTypeNormal, "DeleteUnregistered",
-				"Removing unregistered node %v", unregisteredNode.Node.Name)
 			err = nodeGroup.DeleteNodes([]*apiv1.Node{unregisteredNode.Node})
 			if err != nil {
 				glog.Warningf("Failed to remove node %s: %v", unregisteredNode.Node.Name, err)
 				return removedAny, err
+				logRecorder.Eventf(apiv1.EventTypeNormal, "DeleteUnregisteredFailed",
+					"Failed to remove node %s: %v", unregisteredNode.Node.Name, err)
 			}
+			logRecorder.Eventf(apiv1.EventTypeNormal, "DeleteUnregistered",
+				"Removed unregistered node %v", unregisteredNode.Node.Name)
 			removedAny = true
 		}
 	}
