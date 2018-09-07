@@ -38,9 +38,9 @@ func TestUtilization(t *testing.T) {
 	node := BuildTestNode("node1", 2000, 2000000)
 	SetNodeReadyState(node, true, time.Time{})
 
-	utilization, err := CalculateUtilization(node, nodeInfo)
+	utilInfo, err := CalculateUtilization(node, nodeInfo)
 	assert.NoError(t, err)
-	assert.InEpsilon(t, 2.0/10, utilization, 0.01)
+	assert.InEpsilon(t, 2.0/10, utilInfo.Utilization, 0.01)
 
 	node2 := BuildTestNode("node1", 2000, -1)
 

@@ -43,6 +43,7 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/stretchr/testify/assert"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 )
@@ -764,10 +765,10 @@ func TestScaleDown(t *testing.T) {
 	scaleDown := NewScaleDown(&context, clusterStateRegistry)
 	scaleDown.UpdateUnneededNodes([]*apiv1.Node{n1, n2},
 		[]*apiv1.Node{n1, n2}, []*apiv1.Pod{p1, p2, p3}, time.Now().Add(-5*time.Minute), nil)
-	result, err := scaleDown.TryToScaleDown([]*apiv1.Node{n1, n2}, []*apiv1.Pod{p1, p2, p3}, nil, time.Now())
+	scaleDownStatus, err := scaleDown.TryToScaleDown([]*apiv1.Node{n1, n2}, []*apiv1.Pod{p1, p2, p3}, nil, time.Now())
 	waitForDeleteToFinish(t, scaleDown)
 	assert.NoError(t, err)
-	assert.Equal(t, ScaleDownNodeDeleteStarted, result)
+	assert.Equal(t, status.ScaleDownNodeDeleteStarted, scaleDownStatus.Result)
 	assert.Equal(t, n1.Name, getStringFromChan(deletedNodes))
 	assert.Equal(t, n1.Name, getStringFromChan(updatedNodes))
 }
@@ -973,20 +974,20 @@ func simpleScaleDownEmpty(t *testing.T, config *scaleTestConfig) {
 	scaleDown := NewScaleDown(&context, clusterStateRegistry)
 	scaleDown.UpdateUnneededNodes(nodes,
 		nodes, []*apiv1.Pod{}, time.Now().Add(-5*time.Minute), nil)
-	result, err := scaleDown.TryToScaleDown(nodes, []*apiv1.Pod{}, nil, time.Now())
+	scaleDownStatus, err := scaleDown.TryToScaleDown(nodes, []*apiv1.Pod{}, nil, time.Now())
 	waitForDeleteToFinish(t, scaleDown)
 	// This helps to verify that TryToScaleDown doesn't attempt to remove anything
 	// after delete in progress status is gone.
 	close(deletedNodes)
 
 	assert.NoError(t, err)
-	var expectedScaleDownResult ScaleDownResult
+	var expectedScaleDownResult status.ScaleDownResult
 	if len(config.expectedScaleDowns) > 0 {
-		expectedScaleDownResult = ScaleDownNodeDeleted
+		expectedScaleDownResult = status.ScaleDownNodeDeleted
 	} else {
-		expectedScaleDownResult = ScaleDownNoUnneeded
+		expectedScaleDownResult = status.ScaleDownNoUnneeded
 	}
-	assert.Equal(t, expectedScaleDownResult, result)
+	assert.Equal(t, expectedScaleDownResult, scaleDownStatus.Result)
 
 	// Check the channel (and make sure there isn't more than there should be).
 	// Report only up to 10 extra nodes found.
@@ -1049,11 +1050,11 @@ func TestNoScaleDownUnready(t *testing.T) {
 	scaleDown := NewScaleDown(&context, clusterStateRegistry)
 	scaleDown.UpdateUnneededNodes([]*apiv1.Node{n1, n2},
 		[]*apiv1.Node{n1, n2}, []*apiv1.Pod{p2}, time.Now().Add(-5*time.Minute), nil)
-	result, err := scaleDown.TryToScaleDown([]*apiv1.Node{n1, n2}, []*apiv1.Pod{p2}, nil, time.Now())
+	scaleDownStatus, err := scaleDown.TryToScaleDown([]*apiv1.Node{n1, n2}, []*apiv1.Pod{p2}, nil, time.Now())
 	waitForDeleteToFinish(t, scaleDown)
 
 	assert.NoError(t, err)
-	assert.Equal(t, ScaleDownNoUnneeded, result)
+	assert.Equal(t, status.ScaleDownNoUnneeded, scaleDownStatus.Result)
 
 	deletedNodes := make(chan string, 10)
 
@@ -1071,11 +1072,11 @@ func TestNoScaleDownUnready(t *testing.T) {
 	scaleDown = NewScaleDown(&context, clusterStateRegistry)
 	scaleDown.UpdateUnneededNodes([]*apiv1.Node{n1, n2}, []*apiv1.Node{n1, n2},
 		[]*apiv1.Pod{p2}, time.Now().Add(-2*time.Hour), nil)
-	result, err = scaleDown.TryToScaleDown([]*apiv1.Node{n1, n2}, []*apiv1.Pod{p2}, nil, time.Now())
+	scaleDownStatus, err = scaleDown.TryToScaleDown([]*apiv1.Node{n1, n2}, []*apiv1.Pod{p2}, nil, time.Now())
 	waitForDeleteToFinish(t, scaleDown)
 
 	assert.NoError(t, err)
-	assert.Equal(t, ScaleDownNodeDeleteStarted, result)
+	assert.Equal(t, status.ScaleDownNodeDeleteStarted, scaleDownStatus.Result)
 	assert.Equal(t, n1.Name, getStringFromChan(deletedNodes))
 }
 
@@ -1148,11 +1149,11 @@ func TestScaleDownNoMove(t *testing.T) {
 	scaleDown := NewScaleDown(&context, clusterStateRegistry)
 	scaleDown.UpdateUnneededNodes([]*apiv1.Node{n1, n2}, []*apiv1.Node{n1, n2},
 		[]*apiv1.Pod{p1, p2}, time.Now().Add(5*time.Minute), nil)
-	result, err := scaleDown.TryToScaleDown([]*apiv1.Node{n1, n2}, []*apiv1.Pod{p1, p2}, nil, time.Now())
+	scaleDownStatus, err := scaleDown.TryToScaleDown([]*apiv1.Node{n1, n2}, []*apiv1.Pod{p1, p2}, nil, time.Now())
 	waitForDeleteToFinish(t, scaleDown)
 
 	assert.NoError(t, err)
-	assert.Equal(t, ScaleDownNoUnneeded, result)
+	assert.Equal(t, status.ScaleDownNoUnneeded, scaleDownStatus.Result)
 }
 
 func getStringFromChan(c chan string) string {
