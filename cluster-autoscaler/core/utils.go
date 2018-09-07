@@ -407,9 +407,9 @@ func removeOldUnregisteredNodes(unregisteredNodes []clusterstate.UnregisteredNod
 			err = nodeGroup.DeleteNodes([]*apiv1.Node{unregisteredNode.Node})
 			if err != nil {
 				glog.Warningf("Failed to remove node %s: %v", unregisteredNode.Node.Name, err)
-				return removedAny, err
-				logRecorder.Eventf(apiv1.EventTypeNormal, "DeleteUnregisteredFailed",
+				logRecorder.Eventf(apiv1.EventTypeWarning, "DeleteUnregisteredFailed",
 					"Failed to remove node %s: %v", unregisteredNode.Node.Name, err)
+				return removedAny, err
 			}
 			logRecorder.Eventf(apiv1.EventTypeNormal, "DeleteUnregistered",
 				"Removed unregistered node %v", unregisteredNode.Node.Name)
