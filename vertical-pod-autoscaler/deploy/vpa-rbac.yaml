@@ -21,11 +21,19 @@ rules:
   resources:
   - pods
   - nodes
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
   - events
   verbs:
   - get
   - list
   - watch
+  - create
 - apiGroups:
   - "poc.autoscaling.k8s.io"
   resources:

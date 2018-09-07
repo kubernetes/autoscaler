@@ -25,6 +25,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	metrics_updater "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/updater"
 	kube_client "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/record"
 )
 
 // PodsEvictionRestriction controls pods evictions. It ensures that we will not evict too
@@ -33,7 +34,7 @@ import (
 type PodsEvictionRestriction interface {
 	// Evict sends eviction instruction to the api client.
 	// Returns error if pod cannot be evicted or if client returned error.
-	Evict(pod *apiv1.Pod) error
+	Evict(pod *apiv1.Pod, eventRecorder record.EventRecorder) error
 	// CanEvict checks if pod can be safely evicted
 	CanEvict(pod *apiv1.Pod) bool
 }
@@ -96,7 +97,7 @@ func (e *podsEvictionRestrictionImpl) CanEvict(pod *apiv1.Pod) bool {
 
 // Evict sends eviction instruction to api client. Returns error if pod cannot be evicted or if client returned error
 // Does not check if pod was actually evicted after eviction grace period.
-func (e *podsEvictionRestrictionImpl) Evict(podToEvict *apiv1.Pod) error {
+func (e *podsEvictionRestrictionImpl) Evict(podToEvict *apiv1.Pod, eventRecorder record.EventRecorder) error {
 	cr, present := e.podToReplicaCreatorMap[getPodID(podToEvict)]
 	if !present {
 		return fmt.Errorf("pod not suitable for eviction %v : not in replicated pods map", podToEvict.Name)
@@ -117,6 +118,8 @@ func (e *podsEvictionRestrictionImpl) Evict(podToEvict *apiv1.Pod) error {
 		glog.Errorf("failed to evict pod %s, error: %v", podToEvict.Name, err)
 		return err
 	}
+	eventRecorder.Event(podToEvict, apiv1.EventTypeNormal, "EvictedByVPA",
+		"Pod was evicted by VPA Updater to apply resource recommendation.")
 	metrics_updater.AddEvictedPod()
 
 	if podToEvict.Status.Phase != apiv1.PodPending {
