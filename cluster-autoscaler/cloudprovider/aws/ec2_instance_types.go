@@ -867,6 +867,48 @@ var InstanceTypes = map[string]*instanceType{
 		MemoryMb:     16384,
 		GPU:          0,
 	},
+	"t3.2xlarge": {
+		InstanceType: "t3.2xlarge",
+		VCPU:         8,
+		MemoryMb:     32768,
+		GPU:          0,
+	},
+	"t3.large": {
+		InstanceType: "t3.large",
+		VCPU:         2,
+		MemoryMb:     8192,
+		GPU:          0,
+	},
+	"t3.medium": {
+		InstanceType: "t3.medium",
+		VCPU:         2,
+		MemoryMb:     4096,
+		GPU:          0,
+	},
+	"t3.micro": {
+		InstanceType: "t3.micro",
+		VCPU:         2,
+		MemoryMb:     1024,
+		GPU:          0,
+	},
+	"t3.nano": {
+		InstanceType: "t3.nano",
+		VCPU:         2,
+		MemoryMb:     512,
+		GPU:          0,
+	},
+	"t3.small": {
+		InstanceType: "t3.small",
+		VCPU:         2,
+		MemoryMb:     2048,
+		GPU:          0,
+	},
+	"t3.xlarge": {
+		InstanceType: "t3.xlarge",
+		VCPU:         4,
+		MemoryMb:     16384,
+		GPU:          0,
+	},
 	"x1": {
 		InstanceType: "x1",
 		VCPU:         128,
