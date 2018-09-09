@@ -309,7 +309,7 @@ to scale up the cluster.
 
 The size of overprovisioned resources can be controlled by changing the size of pause pods and the
 number of replicas. This way you can configure static size of overprovisioning resources (i.e. 2
-additional cores). If we want to configure dynamic size (i.e. 20% of recources in the cluster)
+additional cores). If we want to configure dynamic size (i.e. 20% of resources in the cluster)
 then we need to use [Horizontal Cluster Proportional Autoscaler](https://github.com/kubernetes-incubator/cluster-proportional-autoscaler)
 which will change number of pause pods depending on the size of the cluster. It will increase the
 number of replicas when cluster grows and decrease the number of replicas if cluster shrinks.
