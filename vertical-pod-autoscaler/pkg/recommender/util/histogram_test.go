@@ -51,17 +51,17 @@ func TestPercentiles(t *testing.T) {
 	for i := 1; i <= 4; i++ {
 		h.AddSample(float64(i), float64(i), anyTime)
 	}
-	assert.InEpsilon(t, 1.5, h.Percentile(0.0), valueEpsilon)
-	assert.InEpsilon(t, 1.5, h.Percentile(0.1), valueEpsilon)
-	assert.InEpsilon(t, 2.5, h.Percentile(0.2), valueEpsilon)
-	assert.InEpsilon(t, 2.5, h.Percentile(0.3), valueEpsilon)
-	assert.InEpsilon(t, 3.5, h.Percentile(0.4), valueEpsilon)
-	assert.InEpsilon(t, 3.5, h.Percentile(0.5), valueEpsilon)
-	assert.InEpsilon(t, 3.5, h.Percentile(0.6), valueEpsilon)
-	assert.InEpsilon(t, 4.5, h.Percentile(0.7), valueEpsilon)
-	assert.InEpsilon(t, 4.5, h.Percentile(0.8), valueEpsilon)
-	assert.InEpsilon(t, 4.5, h.Percentile(0.9), valueEpsilon)
-	assert.InEpsilon(t, 4.5, h.Percentile(1.0), valueEpsilon)
+	assert.InEpsilon(t, 2, h.Percentile(0.0), valueEpsilon)
+	assert.InEpsilon(t, 2, h.Percentile(0.1), valueEpsilon)
+	assert.InEpsilon(t, 3, h.Percentile(0.2), valueEpsilon)
+	assert.InEpsilon(t, 3, h.Percentile(0.3), valueEpsilon)
+	assert.InEpsilon(t, 4, h.Percentile(0.4), valueEpsilon)
+	assert.InEpsilon(t, 4, h.Percentile(0.5), valueEpsilon)
+	assert.InEpsilon(t, 4, h.Percentile(0.6), valueEpsilon)
+	assert.InEpsilon(t, 5, h.Percentile(0.7), valueEpsilon)
+	assert.InEpsilon(t, 5, h.Percentile(0.8), valueEpsilon)
+	assert.InEpsilon(t, 5, h.Percentile(0.9), valueEpsilon)
+	assert.InEpsilon(t, 5, h.Percentile(1.0), valueEpsilon)
 }
 
 // Verifies that querying percentile < 0.0 returns the minimum value in the
@@ -75,13 +75,13 @@ func TestPercentileOutOfBounds(t *testing.T) {
 	h.AddSample(0.1, 0.1, anyTime)
 	h.AddSample(0.2, 0.2, anyTime)
 
-	assert.InEpsilon(t, 0.15, h.Percentile(-0.1), valueEpsilon)
-	assert.InEpsilon(t, 0.25, h.Percentile(1.1), valueEpsilon)
+	assert.InEpsilon(t, 0.2, h.Percentile(-0.1), valueEpsilon)
+	assert.InEpsilon(t, 0.3, h.Percentile(1.1), valueEpsilon)
 
 	// Fill the boundary buckets.
 	h.AddSample(0.0, 0.1, anyTime)
 	h.AddSample(1.0, 0.2, anyTime)
-	assert.InEpsilon(t, 0.05, h.Percentile(-0.1), valueEpsilon)
+	assert.InEpsilon(t, 0.1, h.Percentile(-0.1), valueEpsilon)
 	assert.InEpsilon(t, 1.0, h.Percentile(1.1), valueEpsilon)
 }
 
