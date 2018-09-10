@@ -47,8 +47,8 @@ func TestSimpleDecay(t *testing.T) {
 	// Add another sample 20 half life periods later. Its relative weight is
 	// expected to be 2^20 * 0.001 > 1000 times larger than the first sample.
 	h.AddSample(1, 1, startTime.Add(time.Hour*20))
-	assert.InEpsilon(t, 1.5, h.Percentile(0.999), valueEpsilon)
-	assert.InEpsilon(t, 2.5, h.Percentile(1.0), valueEpsilon)
+	assert.InEpsilon(t, 2, h.Percentile(0.999), valueEpsilon)
+	assert.InEpsilon(t, 3, h.Percentile(1.0), valueEpsilon)
 }
 
 // Verify that the decaying histogram behaves correctly after the decaying
@@ -60,7 +60,7 @@ func TestLongtermDecay(t *testing.T) {
 	// Add another sample later, such that the relative decay factor of the
 	// two samples will exceed 2^maxDecayExponent.
 	h.AddSample(1, 1, startTime.Add(time.Hour*101))
-	assert.InEpsilon(t, 1.5, h.Percentile(1.0), valueEpsilon)
+	assert.InEpsilon(t, 2, h.Percentile(1.0), valueEpsilon)
 }
 
 // Verify specific values of percentiles on an example decaying histogram with
@@ -79,14 +79,14 @@ func TestDecayingHistogramPercentiles(t *testing.T) {
 	// bucket = [2..3], weight = 2 * 2^(-2), percentiles ~  3% ... 10%
 	// bucket = [3..4], weight = 3 * 2^(-1), percentiles ~ 11% ... 34%
 	// bucket = [4..5], weight = 4 * 2^(-0), percentiles ~ 35% ... 100%
-	assert.InEpsilon(t, 1.5, h.Percentile(0.00), valueEpsilon)
-	assert.InEpsilon(t, 1.5, h.Percentile(0.02), valueEpsilon)
-	assert.InEpsilon(t, 2.5, h.Percentile(0.03), valueEpsilon)
-	assert.InEpsilon(t, 2.5, h.Percentile(0.10), valueEpsilon)
-	assert.InEpsilon(t, 3.5, h.Percentile(0.11), valueEpsilon)
-	assert.InEpsilon(t, 3.5, h.Percentile(0.34), valueEpsilon)
-	assert.InEpsilon(t, 4.5, h.Percentile(0.35), valueEpsilon)
-	assert.InEpsilon(t, 4.5, h.Percentile(1.00), valueEpsilon)
+	assert.InEpsilon(t, 2, h.Percentile(0.00), valueEpsilon)
+	assert.InEpsilon(t, 2, h.Percentile(0.02), valueEpsilon)
+	assert.InEpsilon(t, 3, h.Percentile(0.03), valueEpsilon)
+	assert.InEpsilon(t, 3, h.Percentile(0.10), valueEpsilon)
+	assert.InEpsilon(t, 4, h.Percentile(0.11), valueEpsilon)
+	assert.InEpsilon(t, 4, h.Percentile(0.34), valueEpsilon)
+	assert.InEpsilon(t, 5, h.Percentile(0.35), valueEpsilon)
+	assert.InEpsilon(t, 5, h.Percentile(1.00), valueEpsilon)
 }
 
 // Verifies that the decaying histogram behaves the same way as a regular
@@ -96,17 +96,17 @@ func TestNoDecay(t *testing.T) {
 	for i := 1; i <= 4; i++ {
 		h.AddSample(float64(i), float64(i), startTime)
 	}
-	assert.InEpsilon(t, 1.5, h.Percentile(0.0), valueEpsilon)
-	assert.InEpsilon(t, 2.5, h.Percentile(0.2), valueEpsilon)
-	assert.InEpsilon(t, 1.5, h.Percentile(0.1), valueEpsilon)
-	assert.InEpsilon(t, 2.5, h.Percentile(0.3), valueEpsilon)
-	assert.InEpsilon(t, 3.5, h.Percentile(0.4), valueEpsilon)
-	assert.InEpsilon(t, 3.5, h.Percentile(0.5), valueEpsilon)
-	assert.InEpsilon(t, 3.5, h.Percentile(0.6), valueEpsilon)
-	assert.InEpsilon(t, 4.5, h.Percentile(0.7), valueEpsilon)
-	assert.InEpsilon(t, 4.5, h.Percentile(0.8), valueEpsilon)
-	assert.InEpsilon(t, 4.5, h.Percentile(0.9), valueEpsilon)
-	assert.InEpsilon(t, 4.5, h.Percentile(1.0), valueEpsilon)
+	assert.InEpsilon(t, 2, h.Percentile(0.0), valueEpsilon)
+	assert.InEpsilon(t, 3, h.Percentile(0.2), valueEpsilon)
+	assert.InEpsilon(t, 2, h.Percentile(0.1), valueEpsilon)
+	assert.InEpsilon(t, 3, h.Percentile(0.3), valueEpsilon)
+	assert.InEpsilon(t, 4, h.Percentile(0.4), valueEpsilon)
+	assert.InEpsilon(t, 4, h.Percentile(0.5), valueEpsilon)
+	assert.InEpsilon(t, 4, h.Percentile(0.6), valueEpsilon)
+	assert.InEpsilon(t, 5, h.Percentile(0.7), valueEpsilon)
+	assert.InEpsilon(t, 5, h.Percentile(0.8), valueEpsilon)
+	assert.InEpsilon(t, 5, h.Percentile(0.9), valueEpsilon)
+	assert.InEpsilon(t, 5, h.Percentile(1.0), valueEpsilon)
 }
 
 // Verifies that Merge() works as expected on two sample decaying histograms.
