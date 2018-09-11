@@ -168,7 +168,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		}
 	}
 	if !a.clusterStateRegistry.IsClusterHealthy() {
-		glog.Warning("Cluster is not ready for autoscaling")
+		glog.Warningln("Cluster is not ready for autoscaling")
 		scaleDown.CleanUpUnneededNodes()
 		autoscalingContext.LogRecorder.Eventf(apiv1.EventTypeWarning, "ClusterUnhealthy", "Cluster is unhealthy")
 		return nil
