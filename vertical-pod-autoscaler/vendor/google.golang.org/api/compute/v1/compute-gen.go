@@ -28115,6 +28115,7 @@ func (c *AcceleratorTypesAggregatedListCall) doRequest(alt string) (*http.Respon
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/aggregated/acceleratorTypes")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -28303,6 +28304,7 @@ func (c *AcceleratorTypesGetCall) doRequest(alt string) (*http.Response, error) 
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/acceleratorTypes/{acceleratorType}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -28527,6 +28529,7 @@ func (c *AcceleratorTypesListCall) doRequest(alt string) (*http.Response, error)
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/acceleratorTypes")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -28784,6 +28787,7 @@ func (c *AddressesAggregatedListCall) doRequest(alt string) (*http.Response, err
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/aggregated/addresses")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -28978,6 +28982,7 @@ func (c *AddressesDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/addresses/{address}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -29145,6 +29150,7 @@ func (c *AddressesGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/addresses/{address}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -29319,6 +29325,7 @@ func (c *AddressesInsertCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/addresses")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -29542,6 +29549,7 @@ func (c *AddressesListCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/addresses")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -29798,6 +29806,7 @@ func (c *AutoscalersAggregatedListCall) doRequest(alt string) (*http.Response, e
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/aggregated/autoscalers")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -29991,6 +30000,7 @@ func (c *AutoscalersDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/autoscalers/{autoscaler}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -30158,6 +30168,7 @@ func (c *AutoscalersGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/autoscalers/{autoscaler}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -30331,6 +30342,7 @@ func (c *AutoscalersInsertCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/autoscalers")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -30553,6 +30565,7 @@ func (c *AutoscalersListCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/autoscalers")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -30769,6 +30782,7 @@ func (c *AutoscalersPatchCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/autoscalers")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("PATCH", urls, body)
@@ -30953,6 +30967,7 @@ func (c *AutoscalersUpdateCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/autoscalers")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("PUT", urls, body)
@@ -31130,6 +31145,7 @@ func (c *BackendBucketsAddSignedUrlKeyCall) doRequest(alt string) (*http.Respons
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/backendBuckets/{backendBucket}/addSignedUrlKey")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -31292,6 +31308,7 @@ func (c *BackendBucketsDeleteCall) doRequest(alt string) (*http.Response, error)
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/backendBuckets/{backendBucket}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -31454,6 +31471,7 @@ func (c *BackendBucketsDeleteSignedUrlKeyCall) doRequest(alt string) (*http.Resp
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/backendBuckets/{backendBucket}/deleteSignedUrlKey")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -31616,6 +31634,7 @@ func (c *BackendBucketsGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/backendBuckets/{backendBucket}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -31778,6 +31797,7 @@ func (c *BackendBucketsInsertCall) doRequest(alt string) (*http.Response, error)
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/backendBuckets")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -31989,6 +32009,7 @@ func (c *BackendBucketsListCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/backendBuckets")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -32189,6 +32210,7 @@ func (c *BackendBucketsPatchCall) doRequest(alt string) (*http.Response, error) 
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/backendBuckets/{backendBucket}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("PATCH", urls, body)
@@ -32360,6 +32382,7 @@ func (c *BackendBucketsUpdateCall) doRequest(alt string) (*http.Response, error)
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/backendBuckets/{backendBucket}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("PUT", urls, body)
@@ -32531,6 +32554,7 @@ func (c *BackendServicesAddSignedUrlKeyCall) doRequest(alt string) (*http.Respon
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/backendServices/{backendService}/addSignedUrlKey")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -32750,6 +32774,7 @@ func (c *BackendServicesAggregatedListCall) doRequest(alt string) (*http.Respons
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/aggregated/backendServices")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -32942,6 +32967,7 @@ func (c *BackendServicesDeleteCall) doRequest(alt string) (*http.Response, error
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/backendServices/{backendService}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -33104,6 +33130,7 @@ func (c *BackendServicesDeleteSignedUrlKeyCall) doRequest(alt string) (*http.Res
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/backendServices/{backendService}/deleteSignedUrlKey")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -33267,6 +33294,7 @@ func (c *BackendServicesGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/backendServices/{backendService}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -33413,6 +33441,7 @@ func (c *BackendServicesGetHealthCall) doRequest(alt string) (*http.Response, er
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/backendServices/{backendService}/getHealth")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -33580,6 +33609,7 @@ func (c *BackendServicesInsertCall) doRequest(alt string) (*http.Response, error
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/backendServices")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -33792,6 +33822,7 @@ func (c *BackendServicesListCall) doRequest(alt string) (*http.Response, error) 
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/backendServices")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -33996,6 +34027,7 @@ func (c *BackendServicesPatchCall) doRequest(alt string) (*http.Response, error)
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/backendServices/{backendService}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("PATCH", urls, body)
@@ -34167,6 +34199,7 @@ func (c *BackendServicesSetSecurityPolicyCall) doRequest(alt string) (*http.Resp
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/backendServices/{backendService}/setSecurityPolicy")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -34340,6 +34373,7 @@ func (c *BackendServicesUpdateCall) doRequest(alt string) (*http.Response, error
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/backendServices/{backendService}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("PUT", urls, body)
@@ -34560,6 +34594,7 @@ func (c *DiskTypesAggregatedListCall) doRequest(alt string) (*http.Response, err
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/aggregated/diskTypes")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -34750,6 +34785,7 @@ func (c *DiskTypesGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/diskTypes/{diskType}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -34975,6 +35011,7 @@ func (c *DiskTypesListCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/diskTypes")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -35232,6 +35269,7 @@ func (c *DisksAggregatedListCall) doRequest(alt string) (*http.Response, error) 
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/aggregated/disks")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -35439,6 +35477,7 @@ func (c *DisksCreateSnapshotCall) doRequest(alt string) (*http.Response, error) 
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/disks/{disk}/createSnapshot")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -35621,6 +35660,7 @@ func (c *DisksDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/disks/{disk}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -35788,6 +35828,7 @@ func (c *DisksGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/disks/{disk}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -35972,6 +36013,7 @@ func (c *DisksInsertCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/disks")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -36200,6 +36242,7 @@ func (c *DisksListCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/disks")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -36410,6 +36453,7 @@ func (c *DisksResizeCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/disks/{disk}/resize")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -36592,6 +36636,7 @@ func (c *DisksSetLabelsCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/disks/{resource}/setLabels")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -36765,6 +36810,7 @@ func (c *FirewallsDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/firewalls/{firewall}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -36921,6 +36967,7 @@ func (c *FirewallsGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/firewalls/{firewall}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -37084,6 +37131,7 @@ func (c *FirewallsInsertCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/firewalls")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -37296,6 +37344,7 @@ func (c *FirewallsListCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/firewalls")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -37497,6 +37546,7 @@ func (c *FirewallsPatchCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/firewalls/{firewall}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("PATCH", urls, body)
@@ -37671,6 +37721,7 @@ func (c *FirewallsUpdateCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/firewalls/{firewall}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("PUT", urls, body)
@@ -37891,6 +37942,7 @@ func (c *ForwardingRulesAggregatedListCall) doRequest(alt string) (*http.Respons
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/aggregated/forwardingRules")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -38085,6 +38137,7 @@ func (c *ForwardingRulesDeleteCall) doRequest(alt string) (*http.Response, error
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/forwardingRules/{forwardingRule}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -38252,6 +38305,7 @@ func (c *ForwardingRulesGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/forwardingRules/{forwardingRule}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -38426,6 +38480,7 @@ func (c *ForwardingRulesInsertCall) doRequest(alt string) (*http.Response, error
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/forwardingRules")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -38649,6 +38704,7 @@ func (c *ForwardingRulesListCall) doRequest(alt string) (*http.Response, error) 
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/forwardingRules")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -38860,6 +38916,7 @@ func (c *ForwardingRulesSetTargetCall) doRequest(alt string) (*http.Response, er
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/forwardingRules/{forwardingRule}/setTarget")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -39033,6 +39090,7 @@ func (c *GlobalAddressesDeleteCall) doRequest(alt string) (*http.Response, error
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/addresses/{address}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -39190,6 +39248,7 @@ func (c *GlobalAddressesGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/addresses/{address}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -39353,6 +39412,7 @@ func (c *GlobalAddressesInsertCall) doRequest(alt string) (*http.Response, error
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/addresses")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -39564,6 +39624,7 @@ func (c *GlobalAddressesListCall) doRequest(alt string) (*http.Response, error) 
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/addresses")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -39756,6 +39817,7 @@ func (c *GlobalForwardingRulesDeleteCall) doRequest(alt string) (*http.Response,
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/forwardingRules/{forwardingRule}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -39913,6 +39975,7 @@ func (c *GlobalForwardingRulesGetCall) doRequest(alt string) (*http.Response, er
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/forwardingRules/{forwardingRule}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -40076,6 +40139,7 @@ func (c *GlobalForwardingRulesInsertCall) doRequest(alt string) (*http.Response,
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/forwardingRules")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -40288,6 +40352,7 @@ func (c *GlobalForwardingRulesListCall) doRequest(alt string) (*http.Response, e
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/forwardingRules")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -40488,6 +40553,7 @@ func (c *GlobalForwardingRulesSetTargetCall) doRequest(alt string) (*http.Respon
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/forwardingRules/{forwardingRule}/setTarget")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -40708,6 +40774,7 @@ func (c *GlobalOperationsAggregatedListCall) doRequest(alt string) (*http.Respon
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/aggregated/operations")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -40881,6 +40948,7 @@ func (c *GlobalOperationsDeleteCall) doRequest(alt string) (*http.Response, erro
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/operations/{operation}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -41005,6 +41073,7 @@ func (c *GlobalOperationsGetCall) doRequest(alt string) (*http.Response, error) 
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/operations/{operation}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -41219,6 +41288,7 @@ func (c *GlobalOperationsListCall) doRequest(alt string) (*http.Response, error)
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/operations")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -41410,6 +41480,7 @@ func (c *HealthChecksDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/healthChecks/{healthCheck}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -41566,6 +41637,7 @@ func (c *HealthChecksGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/healthChecks/{healthCheck}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -41728,6 +41800,7 @@ func (c *HealthChecksInsertCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/healthChecks")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -41939,6 +42012,7 @@ func (c *HealthChecksListCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/healthChecks")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -42139,6 +42213,7 @@ func (c *HealthChecksPatchCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/healthChecks/{healthCheck}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("PATCH", urls, body)
@@ -42310,6 +42385,7 @@ func (c *HealthChecksUpdateCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/healthChecks/{healthCheck}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("PUT", urls, body)
@@ -42474,6 +42550,7 @@ func (c *HttpHealthChecksDeleteCall) doRequest(alt string) (*http.Response, erro
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/httpHealthChecks/{httpHealthCheck}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -42631,6 +42708,7 @@ func (c *HttpHealthChecksGetCall) doRequest(alt string) (*http.Response, error) 
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/httpHealthChecks/{httpHealthCheck}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -42794,6 +42872,7 @@ func (c *HttpHealthChecksInsertCall) doRequest(alt string) (*http.Response, erro
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/httpHealthChecks")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -43006,6 +43085,7 @@ func (c *HttpHealthChecksListCall) doRequest(alt string) (*http.Response, error)
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/httpHealthChecks")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -43207,6 +43287,7 @@ func (c *HttpHealthChecksPatchCall) doRequest(alt string) (*http.Response, error
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/httpHealthChecks/{httpHealthCheck}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("PATCH", urls, body)
@@ -43379,6 +43460,7 @@ func (c *HttpHealthChecksUpdateCall) doRequest(alt string) (*http.Response, erro
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/httpHealthChecks/{httpHealthCheck}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("PUT", urls, body)
@@ -43542,6 +43624,7 @@ func (c *HttpsHealthChecksDeleteCall) doRequest(alt string) (*http.Response, err
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/httpsHealthChecks/{httpsHealthCheck}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -43698,6 +43781,7 @@ func (c *HttpsHealthChecksGetCall) doRequest(alt string) (*http.Response, error)
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/httpsHealthChecks/{httpsHealthCheck}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -43860,6 +43944,7 @@ func (c *HttpsHealthChecksInsertCall) doRequest(alt string) (*http.Response, err
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/httpsHealthChecks")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -44071,6 +44156,7 @@ func (c *HttpsHealthChecksListCall) doRequest(alt string) (*http.Response, error
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/httpsHealthChecks")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -44271,6 +44357,7 @@ func (c *HttpsHealthChecksPatchCall) doRequest(alt string) (*http.Response, erro
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/httpsHealthChecks/{httpsHealthCheck}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("PATCH", urls, body)
@@ -44442,6 +44529,7 @@ func (c *HttpsHealthChecksUpdateCall) doRequest(alt string) (*http.Response, err
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/httpsHealthChecks/{httpsHealthCheck}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("PUT", urls, body)
@@ -44606,6 +44694,7 @@ func (c *ImagesDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/images/{image}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -44777,6 +44866,7 @@ func (c *ImagesDeprecateCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/images/{image}/deprecate")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -44937,6 +45027,7 @@ func (c *ImagesGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/images/{image}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -45089,6 +45180,7 @@ func (c *ImagesGetFromFamilyCall) doRequest(alt string) (*http.Response, error) 
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/images/family/{family}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -45259,6 +45351,7 @@ func (c *ImagesInsertCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/images")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -45484,6 +45577,7 @@ func (c *ImagesListCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/images")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -45664,6 +45758,7 @@ func (c *ImagesSetLabelsCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/images/{resource}/setLabels")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -45847,6 +45942,7 @@ func (c *InstanceGroupManagersAbandonInstancesCall) doRequest(alt string) (*http
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instanceGroupManagers/{instanceGroupManager}/abandonInstances")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -46074,6 +46170,7 @@ func (c *InstanceGroupManagersAggregatedListCall) doRequest(alt string) (*http.R
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/aggregated/instanceGroupManagers")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -46271,6 +46368,7 @@ func (c *InstanceGroupManagersDeleteCall) doRequest(alt string) (*http.Response,
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instanceGroupManagers/{instanceGroupManager}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -46462,6 +46560,7 @@ func (c *InstanceGroupManagersDeleteInstancesCall) doRequest(alt string) (*http.
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instanceGroupManagers/{instanceGroupManager}/deleteInstances")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -46631,6 +46730,7 @@ func (c *InstanceGroupManagersGetCall) doRequest(alt string) (*http.Response, er
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instanceGroupManagers/{instanceGroupManager}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -46810,6 +46910,7 @@ func (c *InstanceGroupManagersInsertCall) doRequest(alt string) (*http.Response,
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instanceGroupManagers")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -47031,6 +47132,7 @@ func (c *InstanceGroupManagersListCall) doRequest(alt string) (*http.Response, e
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instanceGroupManagers")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -47281,6 +47383,7 @@ func (c *InstanceGroupManagersListManagedInstancesCall) doRequest(alt string) (*
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instanceGroupManagers/{instanceGroupManager}/listManagedInstances")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -47492,6 +47595,7 @@ func (c *InstanceGroupManagersRecreateInstancesCall) doRequest(alt string) (*htt
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instanceGroupManagers/{instanceGroupManager}/recreateInstances")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -47675,6 +47779,7 @@ func (c *InstanceGroupManagersResizeCall) doRequest(alt string) (*http.Response,
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instanceGroupManagers/{instanceGroupManager}/resize")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -47861,6 +47966,7 @@ func (c *InstanceGroupManagersSetInstanceTemplateCall) doRequest(alt string) (*h
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instanceGroupManagers/{instanceGroupManager}/setInstanceTemplate")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -48046,6 +48152,7 @@ func (c *InstanceGroupManagersSetTargetPoolsCall) doRequest(alt string) (*http.R
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instanceGroupManagers/{instanceGroupManager}/setTargetPools")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -48227,6 +48334,7 @@ func (c *InstanceGroupsAddInstancesCall) doRequest(alt string) (*http.Response, 
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instanceGroups/{instanceGroup}/addInstances")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -48454,6 +48562,7 @@ func (c *InstanceGroupsAggregatedListCall) doRequest(alt string) (*http.Response
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/aggregated/instanceGroups")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -48650,6 +48759,7 @@ func (c *InstanceGroupsDeleteCall) doRequest(alt string) (*http.Response, error)
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instanceGroups/{instanceGroup}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -48815,6 +48925,7 @@ func (c *InstanceGroupsGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instanceGroups/{instanceGroup}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -48986,6 +49097,7 @@ func (c *InstanceGroupsInsertCall) doRequest(alt string) (*http.Response, error)
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instanceGroups")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -49207,6 +49319,7 @@ func (c *InstanceGroupsListCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instanceGroups")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -49459,6 +49572,7 @@ func (c *InstanceGroupsListInstancesCall) doRequest(alt string) (*http.Response,
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instanceGroups/{instanceGroup}/listInstances")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -49683,6 +49797,7 @@ func (c *InstanceGroupsRemoveInstancesCall) doRequest(alt string) (*http.Respons
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instanceGroups/{instanceGroup}/removeInstances")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -49862,6 +49977,7 @@ func (c *InstanceGroupsSetNamedPortsCall) doRequest(alt string) (*http.Response,
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instanceGroups/{instanceGroup}/setNamedPorts")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -50035,6 +50151,7 @@ func (c *InstanceTemplatesDeleteCall) doRequest(alt string) (*http.Response, err
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/instanceTemplates/{instanceTemplate}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -50192,6 +50309,7 @@ func (c *InstanceTemplatesGetCall) doRequest(alt string) (*http.Response, error)
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/instanceTemplates/{instanceTemplate}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -50358,6 +50476,7 @@ func (c *InstanceTemplatesInsertCall) doRequest(alt string) (*http.Response, err
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/instanceTemplates")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -50570,6 +50689,7 @@ func (c *InstanceTemplatesListCall) doRequest(alt string) (*http.Response, error
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/instanceTemplates")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -50773,6 +50893,7 @@ func (c *InstancesAddAccessConfigCall) doRequest(alt string) (*http.Response, er
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instances/{instance}/addAccessConfig")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -51010,6 +51131,7 @@ func (c *InstancesAggregatedListCall) doRequest(alt string) (*http.Response, err
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/aggregated/instances")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -51222,6 +51344,7 @@ func (c *InstancesAttachDiskCall) doRequest(alt string) (*http.Response, error) 
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instances/{instance}/attachDisk")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -51403,6 +51526,7 @@ func (c *InstancesDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instances/{instance}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -51578,6 +51702,7 @@ func (c *InstancesDeleteAccessConfigCall) doRequest(alt string) (*http.Response,
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instances/{instance}/deleteAccessConfig")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -51765,6 +51890,7 @@ func (c *InstancesDetachDiskCall) doRequest(alt string) (*http.Response, error) 
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instances/{instance}/detachDisk")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -51940,6 +52066,7 @@ func (c *InstancesGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instances/{instance}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -52122,6 +52249,7 @@ func (c *InstancesGetSerialPortOutputCall) doRequest(alt string) (*http.Response
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instances/{instance}/serialPort")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -52327,6 +52455,7 @@ func (c *InstancesInsertCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instances")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -52555,6 +52684,7 @@ func (c *InstancesListCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instances")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -52816,6 +52946,7 @@ func (c *InstancesListReferrersCall) doRequest(alt string) (*http.Response, erro
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instances/{instance}/referrers")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -53029,6 +53160,7 @@ func (c *InstancesResetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instances/{instance}/reset")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -53207,6 +53339,7 @@ func (c *InstancesSetDeletionProtectionCall) doRequest(alt string) (*http.Respon
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instances/{resource}/setDeletionProtection")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -53388,6 +53521,7 @@ func (c *InstancesSetDiskAutoDeleteCall) doRequest(alt string) (*http.Response, 
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instances/{instance}/setDiskAutoDelete")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -53582,6 +53716,7 @@ func (c *InstancesSetLabelsCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instances/{instance}/setLabels")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -53764,6 +53899,7 @@ func (c *InstancesSetMachineResourcesCall) doRequest(alt string) (*http.Response
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instances/{instance}/setMachineResources")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -53946,6 +54082,7 @@ func (c *InstancesSetMachineTypeCall) doRequest(alt string) (*http.Response, err
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instances/{instance}/setMachineType")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -54129,6 +54266,7 @@ func (c *InstancesSetMetadataCall) doRequest(alt string) (*http.Response, error)
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instances/{instance}/setMetadata")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -54313,6 +54451,7 @@ func (c *InstancesSetMinCpuPlatformCall) doRequest(alt string) (*http.Response, 
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instances/{instance}/setMinCpuPlatform")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -54495,6 +54634,7 @@ func (c *InstancesSetSchedulingCall) doRequest(alt string) (*http.Response, erro
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instances/{instance}/setScheduling")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -54678,6 +54818,7 @@ func (c *InstancesSetServiceAccountCall) doRequest(alt string) (*http.Response, 
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instances/{instance}/setServiceAccount")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -54861,6 +55002,7 @@ func (c *InstancesSetTagsCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instances/{instance}/setTags")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -55017,6 +55159,7 @@ func (c *InstancesSimulateMaintenanceEventCall) doRequest(alt string) (*http.Res
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instances/{instance}/simulateMaintenanceEvent")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -55185,6 +55328,7 @@ func (c *InstancesStartCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instances/{instance}/start")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -55365,6 +55509,7 @@ func (c *InstancesStartWithEncryptionKeyCall) doRequest(alt string) (*http.Respo
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instances/{instance}/startWithEncryptionKey")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -55545,6 +55690,7 @@ func (c *InstancesStopCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instances/{instance}/stop")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -55727,6 +55873,7 @@ func (c *InstancesUpdateAccessConfigCall) doRequest(alt string) (*http.Response,
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instances/{instance}/updateAccessConfig")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -55917,6 +56064,7 @@ func (c *InstancesUpdateNetworkInterfaceCall) doRequest(alt string) (*http.Respo
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instances/{instance}/updateNetworkInterface")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("PATCH", urls, body)
@@ -56153,6 +56301,7 @@ func (c *InterconnectAttachmentsAggregatedListCall) doRequest(alt string) (*http
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/aggregated/interconnectAttachments")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -56347,6 +56496,7 @@ func (c *InterconnectAttachmentsDeleteCall) doRequest(alt string) (*http.Respons
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/interconnectAttachments/{interconnectAttachment}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -56513,6 +56663,7 @@ func (c *InterconnectAttachmentsGetCall) doRequest(alt string) (*http.Response, 
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/interconnectAttachments/{interconnectAttachment}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -56686,6 +56837,7 @@ func (c *InterconnectAttachmentsInsertCall) doRequest(alt string) (*http.Respons
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/interconnectAttachments")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -56908,6 +57060,7 @@ func (c *InterconnectAttachmentsListCall) doRequest(alt string) (*http.Response,
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/interconnectAttachments")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -57119,6 +57272,7 @@ func (c *InterconnectAttachmentsPatchCall) doRequest(alt string) (*http.Response
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/interconnectAttachments/{interconnectAttachment}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("PATCH", urls, body)
@@ -57288,6 +57442,7 @@ func (c *InterconnectLocationsGetCall) doRequest(alt string) (*http.Response, er
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/interconnectLocations/{interconnectLocation}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -57501,6 +57656,7 @@ func (c *InterconnectLocationsListCall) doRequest(alt string) (*http.Response, e
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/interconnectLocations")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -57692,6 +57848,7 @@ func (c *InterconnectsDeleteCall) doRequest(alt string) (*http.Response, error) 
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/interconnects/{interconnect}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -57848,6 +58005,7 @@ func (c *InterconnectsGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/interconnects/{interconnect}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -58010,6 +58168,7 @@ func (c *InterconnectsInsertCall) doRequest(alt string) (*http.Response, error) 
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/interconnects")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -58221,6 +58380,7 @@ func (c *InterconnectsListCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/interconnects")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -58421,6 +58581,7 @@ func (c *InterconnectsPatchCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/interconnects/{interconnect}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("PATCH", urls, body)
@@ -58580,6 +58741,7 @@ func (c *LicenseCodesGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/licenseCodes/{licenseCode}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -58725,6 +58887,7 @@ func (c *LicenseCodesTestIamPermissionsCall) doRequest(alt string) (*http.Respon
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/licenseCodes/{resource}/testIamPermissions")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -58884,6 +59047,7 @@ func (c *LicensesDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/licenses/{license}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -59040,6 +59204,7 @@ func (c *LicensesGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/licenses/{license}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -59201,6 +59366,7 @@ func (c *LicensesInsertCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/licenses")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -59419,6 +59585,7 @@ func (c *LicensesListCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/licenses")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -59599,6 +59766,7 @@ func (c *LicensesTestIamPermissionsCall) doRequest(alt string) (*http.Response, 
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/licenses/{resource}/testIamPermissions")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -59815,6 +59983,7 @@ func (c *MachineTypesAggregatedListCall) doRequest(alt string) (*http.Response, 
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/aggregated/machineTypes")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -60005,6 +60174,7 @@ func (c *MachineTypesGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/machineTypes/{machineType}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -60230,6 +60400,7 @@ func (c *MachineTypesListCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/machineTypes")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -60437,6 +60608,7 @@ func (c *NetworksAddPeeringCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/networks/{network}/addPeering")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -60601,6 +60773,7 @@ func (c *NetworksDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/networks/{network}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -60758,6 +60931,7 @@ func (c *NetworksGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/networks/{network}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -60921,6 +61095,7 @@ func (c *NetworksInsertCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/networks")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -61133,6 +61308,7 @@ func (c *NetworksListCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/networks")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -61333,6 +61509,7 @@ func (c *NetworksPatchCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/networks/{network}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("PATCH", urls, body)
@@ -61503,6 +61680,7 @@ func (c *NetworksRemovePeeringCall) doRequest(alt string) (*http.Response, error
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/networks/{network}/removePeering")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -61667,6 +61845,7 @@ func (c *NetworksSwitchToCustomModeCall) doRequest(alt string) (*http.Response, 
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/networks/{network}/switchToCustomMode")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -61836,6 +62015,7 @@ func (c *NodeGroupsAddNodesCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/nodeGroups/{nodeGroup}/addNodes")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -62065,6 +62245,7 @@ func (c *NodeGroupsAggregatedListCall) doRequest(alt string) (*http.Response, er
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/aggregated/nodeGroups")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -62258,6 +62439,7 @@ func (c *NodeGroupsDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/nodeGroups/{nodeGroup}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -62436,6 +62618,7 @@ func (c *NodeGroupsDeleteNodesCall) doRequest(alt string) (*http.Response, error
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/nodeGroups/{nodeGroup}/deleteNodes")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -62607,6 +62790,7 @@ func (c *NodeGroupsGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/nodeGroups/{nodeGroup}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -62781,6 +62965,7 @@ func (c *NodeGroupsInsertCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/nodeGroups")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -63012,6 +63197,7 @@ func (c *NodeGroupsListCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/nodeGroups")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -63258,6 +63444,7 @@ func (c *NodeGroupsListNodesCall) doRequest(alt string) (*http.Response, error) 
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/nodeGroups/{nodeGroup}/listNodes")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -63476,6 +63663,7 @@ func (c *NodeGroupsSetNodeTemplateCall) doRequest(alt string) (*http.Response, e
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/nodeGroups/{nodeGroup}/setNodeTemplate")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -63704,6 +63892,7 @@ func (c *NodeTemplatesAggregatedListCall) doRequest(alt string) (*http.Response,
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/aggregated/nodeTemplates")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -63897,6 +64086,7 @@ func (c *NodeTemplatesDeleteCall) doRequest(alt string) (*http.Response, error) 
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/nodeTemplates/{nodeTemplate}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -64064,6 +64254,7 @@ func (c *NodeTemplatesGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/nodeTemplates/{nodeTemplate}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -64237,6 +64428,7 @@ func (c *NodeTemplatesInsertCall) doRequest(alt string) (*http.Response, error) 
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/nodeTemplates")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -64459,6 +64651,7 @@ func (c *NodeTemplatesListCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/nodeTemplates")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -64715,6 +64908,7 @@ func (c *NodeTypesAggregatedListCall) doRequest(alt string) (*http.Response, err
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/aggregated/nodeTypes")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -64904,6 +65098,7 @@ func (c *NodeTypesGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/nodeTypes/{nodeType}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -65128,6 +65323,7 @@ func (c *NodeTypesListCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/nodeTypes")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -65326,6 +65522,7 @@ func (c *ProjectsDisableXpnHostCall) doRequest(alt string) (*http.Response, erro
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/disableXpnHost")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -65483,6 +65680,7 @@ func (c *ProjectsDisableXpnResourceCall) doRequest(alt string) (*http.Response, 
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/disableXpnResource")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -65635,6 +65833,7 @@ func (c *ProjectsEnableXpnHostCall) doRequest(alt string) (*http.Response, error
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/enableXpnHost")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -65793,6 +65992,7 @@ func (c *ProjectsEnableXpnResourceCall) doRequest(alt string) (*http.Response, e
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/enableXpnResource")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -65941,6 +66141,7 @@ func (c *ProjectsGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -66082,6 +66283,7 @@ func (c *ProjectsGetXpnHostCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/getXpnHost")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -66285,6 +66487,7 @@ func (c *ProjectsGetXpnResourcesCall) doRequest(alt string) (*http.Response, err
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/getXpnResources")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -66525,6 +66728,7 @@ func (c *ProjectsListXpnHostsCall) doRequest(alt string) (*http.Response, error)
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/listXpnHosts")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -66723,6 +66927,7 @@ func (c *ProjectsMoveDiskCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/moveDisk")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -66883,6 +67088,7 @@ func (c *ProjectsMoveInstanceCall) doRequest(alt string) (*http.Response, error)
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/moveInstance")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -67044,6 +67250,7 @@ func (c *ProjectsSetCommonInstanceMetadataCall) doRequest(alt string) (*http.Res
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/setCommonInstanceMetadata")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -67206,6 +67413,7 @@ func (c *ProjectsSetDefaultNetworkTierCall) doRequest(alt string) (*http.Respons
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/setDefaultNetworkTier")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -67369,6 +67577,7 @@ func (c *ProjectsSetUsageExportBucketCall) doRequest(alt string) (*http.Response
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/setUsageExportBucket")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -67528,6 +67737,7 @@ func (c *RegionAutoscalersDeleteCall) doRequest(alt string) (*http.Response, err
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/autoscalers/{autoscaler}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -67694,6 +67904,7 @@ func (c *RegionAutoscalersGetCall) doRequest(alt string) (*http.Response, error)
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/autoscalers/{autoscaler}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -67867,6 +68078,7 @@ func (c *RegionAutoscalersInsertCall) doRequest(alt string) (*http.Response, err
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/autoscalers")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -68089,6 +68301,7 @@ func (c *RegionAutoscalersListCall) doRequest(alt string) (*http.Response, error
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/autoscalers")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -68305,6 +68518,7 @@ func (c *RegionAutoscalersPatchCall) doRequest(alt string) (*http.Response, erro
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/autoscalers")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("PATCH", urls, body)
@@ -68489,6 +68703,7 @@ func (c *RegionAutoscalersUpdateCall) doRequest(alt string) (*http.Response, err
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/autoscalers")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("PUT", urls, body)
@@ -68660,6 +68875,7 @@ func (c *RegionBackendServicesDeleteCall) doRequest(alt string) (*http.Response,
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/backendServices/{backendService}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -68826,6 +69042,7 @@ func (c *RegionBackendServicesGetCall) doRequest(alt string) (*http.Response, er
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/backendServices/{backendService}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -68982,6 +69199,7 @@ func (c *RegionBackendServicesGetHealthCall) doRequest(alt string) (*http.Respon
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/backendServices/{backendService}/getHealth")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -69160,6 +69378,7 @@ func (c *RegionBackendServicesInsertCall) doRequest(alt string) (*http.Response,
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/backendServices")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -69382,6 +69601,7 @@ func (c *RegionBackendServicesListCall) doRequest(alt string) (*http.Response, e
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/backendServices")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -69596,6 +69816,7 @@ func (c *RegionBackendServicesPatchCall) doRequest(alt string) (*http.Response, 
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/backendServices/{backendService}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("PATCH", urls, body)
@@ -69780,6 +70001,7 @@ func (c *RegionBackendServicesUpdateCall) doRequest(alt string) (*http.Response,
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/backendServices/{backendService}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("PUT", urls, body)
@@ -70008,6 +70230,7 @@ func (c *RegionCommitmentsAggregatedListCall) doRequest(alt string) (*http.Respo
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/aggregated/commitments")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -70197,6 +70420,7 @@ func (c *RegionCommitmentsGetCall) doRequest(alt string) (*http.Response, error)
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/commitments/{commitment}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -70370,6 +70594,7 @@ func (c *RegionCommitmentsInsertCall) doRequest(alt string) (*http.Response, err
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/commitments")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -70592,6 +70817,7 @@ func (c *RegionCommitmentsListCall) doRequest(alt string) (*http.Response, error
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/commitments")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -70790,6 +71016,7 @@ func (c *RegionDiskTypesGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/diskTypes/{diskType}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -71014,6 +71241,7 @@ func (c *RegionDiskTypesListCall) doRequest(alt string) (*http.Response, error) 
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/diskTypes")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -71223,6 +71451,7 @@ func (c *RegionDisksCreateSnapshotCall) doRequest(alt string) (*http.Response, e
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/disks/{disk}/createSnapshot")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -71400,6 +71629,7 @@ func (c *RegionDisksDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/disks/{disk}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -71565,6 +71795,7 @@ func (c *RegionDisksGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/disks/{disk}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -71745,6 +71976,7 @@ func (c *RegionDisksInsertCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/disks")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -71972,6 +72204,7 @@ func (c *RegionDisksListCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/disks")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -72181,6 +72414,7 @@ func (c *RegionDisksResizeCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/disks/{disk}/resize")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -72362,6 +72596,7 @@ func (c *RegionDisksSetLabelsCall) doRequest(alt string) (*http.Response, error)
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/disks/{resource}/setLabels")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -72525,6 +72760,7 @@ func (c *RegionDisksTestIamPermissionsCall) doRequest(alt string) (*http.Respons
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/disks/{resource}/testIamPermissions")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -72718,6 +72954,7 @@ func (c *RegionInstanceGroupManagersAbandonInstancesCall) doRequest(alt string) 
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/instanceGroupManagers/{instanceGroupManager}/abandonInstances")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -72891,6 +73128,7 @@ func (c *RegionInstanceGroupManagersDeleteCall) doRequest(alt string) (*http.Res
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/instanceGroupManagers/{instanceGroupManager}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -73082,6 +73320,7 @@ func (c *RegionInstanceGroupManagersDeleteInstancesCall) doRequest(alt string) (
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/instanceGroupManagers/{instanceGroupManager}/deleteInstances")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -73250,6 +73489,7 @@ func (c *RegionInstanceGroupManagersGetCall) doRequest(alt string) (*http.Respon
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/instanceGroupManagers/{instanceGroupManager}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -73428,6 +73668,7 @@ func (c *RegionInstanceGroupManagersInsertCall) doRequest(alt string) (*http.Res
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/instanceGroupManagers")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -73649,6 +73890,7 @@ func (c *RegionInstanceGroupManagersListCall) doRequest(alt string) (*http.Respo
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/instanceGroupManagers")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -73897,6 +74139,7 @@ func (c *RegionInstanceGroupManagersListManagedInstancesCall) doRequest(alt stri
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/instanceGroupManagers/{instanceGroupManager}/listManagedInstances")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -74108,6 +74351,7 @@ func (c *RegionInstanceGroupManagersRecreateInstancesCall) doRequest(alt string)
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/instanceGroupManagers/{instanceGroupManager}/recreateInstances")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -74292,6 +74536,7 @@ func (c *RegionInstanceGroupManagersResizeCall) doRequest(alt string) (*http.Res
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/instanceGroupManagers/{instanceGroupManager}/resize")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -74479,6 +74724,7 @@ func (c *RegionInstanceGroupManagersSetInstanceTemplateCall) doRequest(alt strin
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/instanceGroupManagers/{instanceGroupManager}/setInstanceTemplate")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -74660,6 +74906,7 @@ func (c *RegionInstanceGroupManagersSetTargetPoolsCall) doRequest(alt string) (*
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/instanceGroupManagers/{instanceGroupManager}/setTargetPools")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -74827,6 +75074,7 @@ func (c *RegionInstanceGroupsGetCall) doRequest(alt string) (*http.Response, err
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/instanceGroups/{instanceGroup}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -75049,6 +75297,7 @@ func (c *RegionInstanceGroupsListCall) doRequest(alt string) (*http.Response, er
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/instanceGroups")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -75304,6 +75553,7 @@ func (c *RegionInstanceGroupsListInstancesCall) doRequest(alt string) (*http.Res
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/instanceGroups/{instanceGroup}/listInstances")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -75525,6 +75775,7 @@ func (c *RegionInstanceGroupsSetNamedPortsCall) doRequest(alt string) (*http.Res
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/instanceGroups/{instanceGroup}/setNamedPorts")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -75679,6 +75930,7 @@ func (c *RegionOperationsDeleteCall) doRequest(alt string) (*http.Response, erro
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/operations/{operation}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -75813,6 +76065,7 @@ func (c *RegionOperationsGetCall) doRequest(alt string) (*http.Response, error) 
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/operations/{operation}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -76038,6 +76291,7 @@ func (c *RegionOperationsListCall) doRequest(alt string) (*http.Response, error)
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/operations")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -76235,6 +76489,7 @@ func (c *RegionsGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -76449,6 +76704,7 @@ func (c *RegionsListCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -76696,6 +76952,7 @@ func (c *RoutersAggregatedListCall) doRequest(alt string) (*http.Response, error
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/aggregated/routers")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -76889,6 +77146,7 @@ func (c *RoutersDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/routers/{router}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -77056,6 +77314,7 @@ func (c *RoutersGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/routers/{router}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -77219,6 +77478,7 @@ func (c *RoutersGetRouterStatusCall) doRequest(alt string) (*http.Response, erro
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/routers/{router}/getRouterStatus")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -77392,6 +77652,7 @@ func (c *RoutersInsertCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/routers")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -77614,6 +77875,7 @@ func (c *RoutersListCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/routers")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -77825,6 +78087,7 @@ func (c *RoutersPatchCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/routers/{router}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("PATCH", urls, body)
@@ -77989,6 +78252,7 @@ func (c *RoutersPreviewCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/routers/{router}/preview")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -78167,6 +78431,7 @@ func (c *RoutersUpdateCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/routers/{router}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("PUT", urls, body)
@@ -78340,6 +78605,7 @@ func (c *RoutesDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/routes/{route}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -78497,6 +78763,7 @@ func (c *RoutesGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/routes/{route}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -78660,6 +78927,7 @@ func (c *RoutesInsertCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/routes")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -78872,6 +79140,7 @@ func (c *RoutesListCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/routes")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -79051,6 +79320,7 @@ func (c *SecurityPoliciesAddRuleCall) doRequest(alt string) (*http.Response, err
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/securityPolicies/{securityPolicy}/addRule")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -79209,6 +79479,7 @@ func (c *SecurityPoliciesDeleteCall) doRequest(alt string) (*http.Response, erro
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/securityPolicies/{securityPolicy}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -79365,6 +79636,7 @@ func (c *SecurityPoliciesGetCall) doRequest(alt string) (*http.Response, error) 
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/securityPolicies/{securityPolicy}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -79523,6 +79795,7 @@ func (c *SecurityPoliciesGetRuleCall) doRequest(alt string) (*http.Response, err
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/securityPolicies/{securityPolicy}/getRule")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -79691,6 +79964,7 @@ func (c *SecurityPoliciesInsertCall) doRequest(alt string) (*http.Response, erro
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/securityPolicies")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -79902,6 +80176,7 @@ func (c *SecurityPoliciesListCall) doRequest(alt string) (*http.Response, error)
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/securityPolicies")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -80101,6 +80376,7 @@ func (c *SecurityPoliciesPatchCall) doRequest(alt string) (*http.Response, error
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/securityPolicies/{securityPolicy}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("PATCH", urls, body)
@@ -80259,6 +80535,7 @@ func (c *SecurityPoliciesPatchRuleCall) doRequest(alt string) (*http.Response, e
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/securityPolicies/{securityPolicy}/patchRule")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -80411,6 +80688,7 @@ func (c *SecurityPoliciesRemoveRuleCall) doRequest(alt string) (*http.Response, 
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/securityPolicies/{securityPolicy}/removeRule")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -80579,6 +80857,7 @@ func (c *SnapshotsDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/snapshots/{snapshot}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -80736,6 +81015,7 @@ func (c *SnapshotsGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/snapshots/{snapshot}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -80950,6 +81230,7 @@ func (c *SnapshotsListCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/snapshots")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -81130,6 +81411,7 @@ func (c *SnapshotsSetLabelsCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/snapshots/{resource}/setLabels")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -81288,6 +81570,7 @@ func (c *SslCertificatesDeleteCall) doRequest(alt string) (*http.Response, error
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/sslCertificates/{sslCertificate}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -81444,6 +81727,7 @@ func (c *SslCertificatesGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/sslCertificates/{sslCertificate}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -81606,6 +81890,7 @@ func (c *SslCertificatesInsertCall) doRequest(alt string) (*http.Response, error
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/sslCertificates")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -81817,6 +82102,7 @@ func (c *SslCertificatesListCall) doRequest(alt string) (*http.Response, error) 
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/sslCertificates")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -82010,6 +82296,7 @@ func (c *SslPoliciesDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/sslPolicies/{sslPolicy}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -82165,6 +82452,7 @@ func (c *SslPoliciesGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/sslPolicies/{sslPolicy}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -82326,6 +82614,7 @@ func (c *SslPoliciesInsertCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/sslPolicies")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -82537,6 +82826,7 @@ func (c *SslPoliciesListCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/sslPolicies")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -82785,6 +83075,7 @@ func (c *SslPoliciesListAvailableFeaturesCall) doRequest(alt string) (*http.Resp
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/sslPolicies/listAvailableFeatures")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -82965,6 +83256,7 @@ func (c *SslPoliciesPatchCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/sslPolicies/{sslPolicy}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("PATCH", urls, body)
@@ -83183,6 +83475,7 @@ func (c *SubnetworksAggregatedListCall) doRequest(alt string) (*http.Response, e
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/aggregated/subnetworks")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -83376,6 +83669,7 @@ func (c *SubnetworksDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/subnetworks/{subnetwork}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -83555,6 +83849,7 @@ func (c *SubnetworksExpandIpCidrRangeCall) doRequest(alt string) (*http.Response
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/subnetworks/{subnetwork}/expandIpCidrRange")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -83725,6 +84020,7 @@ func (c *SubnetworksGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/subnetworks/{subnetwork}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -83898,6 +84194,7 @@ func (c *SubnetworksInsertCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/subnetworks")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -84120,6 +84417,7 @@ func (c *SubnetworksListCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/subnetworks")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -84376,6 +84674,7 @@ func (c *SubnetworksListUsableCall) doRequest(alt string) (*http.Response, error
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/aggregated/subnetworks/listUsable")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -84581,6 +84880,7 @@ func (c *SubnetworksPatchCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/subnetworks/{subnetwork}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("PATCH", urls, body)
@@ -84764,6 +85064,7 @@ func (c *SubnetworksSetPrivateIpGoogleAccessCall) doRequest(alt string) (*http.R
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/subnetworks/{subnetwork}/setPrivateIpGoogleAccess")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -84937,6 +85238,7 @@ func (c *TargetHttpProxiesDeleteCall) doRequest(alt string) (*http.Response, err
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/targetHttpProxies/{targetHttpProxy}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -85094,6 +85396,7 @@ func (c *TargetHttpProxiesGetCall) doRequest(alt string) (*http.Response, error)
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/targetHttpProxies/{targetHttpProxy}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -85257,6 +85560,7 @@ func (c *TargetHttpProxiesInsertCall) doRequest(alt string) (*http.Response, err
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/targetHttpProxies")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -85469,6 +85773,7 @@ func (c *TargetHttpProxiesListCall) doRequest(alt string) (*http.Response, error
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/targetHttpProxies")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -85668,6 +85973,7 @@ func (c *TargetHttpProxiesSetUrlMapCall) doRequest(alt string) (*http.Response, 
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/targetHttpProxies/{targetHttpProxy}/setUrlMap")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -85831,6 +86137,7 @@ func (c *TargetHttpsProxiesDeleteCall) doRequest(alt string) (*http.Response, er
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/targetHttpsProxies/{targetHttpsProxy}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -85987,6 +86294,7 @@ func (c *TargetHttpsProxiesGetCall) doRequest(alt string) (*http.Response, error
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/targetHttpsProxies/{targetHttpsProxy}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -86149,6 +86457,7 @@ func (c *TargetHttpsProxiesInsertCall) doRequest(alt string) (*http.Response, er
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/targetHttpsProxies")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -86360,6 +86669,7 @@ func (c *TargetHttpsProxiesListCall) doRequest(alt string) (*http.Response, erro
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/targetHttpsProxies")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -86558,6 +86868,7 @@ func (c *TargetHttpsProxiesSetQuicOverrideCall) doRequest(alt string) (*http.Res
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/targetHttpsProxies/{targetHttpsProxy}/setQuicOverride")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -86727,6 +87038,7 @@ func (c *TargetHttpsProxiesSetSslCertificatesCall) doRequest(alt string) (*http.
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/targetHttpsProxies/{targetHttpsProxy}/setSslCertificates")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -86901,6 +87213,7 @@ func (c *TargetHttpsProxiesSetSslPolicyCall) doRequest(alt string) (*http.Respon
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/targetHttpsProxies/{targetHttpsProxy}/setSslPolicy")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -87070,6 +87383,7 @@ func (c *TargetHttpsProxiesSetUrlMapCall) doRequest(alt string) (*http.Response,
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/targetHttpsProxies/{targetHttpsProxy}/setUrlMap")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -87290,6 +87604,7 @@ func (c *TargetInstancesAggregatedListCall) doRequest(alt string) (*http.Respons
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/aggregated/targetInstances")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -87484,6 +87799,7 @@ func (c *TargetInstancesDeleteCall) doRequest(alt string) (*http.Response, error
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/targetInstances/{targetInstance}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -87652,6 +87968,7 @@ func (c *TargetInstancesGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/targetInstances/{targetInstance}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -87826,6 +88143,7 @@ func (c *TargetInstancesInsertCall) doRequest(alt string) (*http.Response, error
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/targetInstances")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -88049,6 +88367,7 @@ func (c *TargetInstancesListCall) doRequest(alt string) (*http.Response, error) 
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/targetInstances")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -88259,6 +88578,7 @@ func (c *TargetPoolsAddHealthCheckCall) doRequest(alt string) (*http.Response, e
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/targetPools/{targetPool}/addHealthCheck")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -88441,6 +88761,7 @@ func (c *TargetPoolsAddInstanceCall) doRequest(alt string) (*http.Response, erro
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/targetPools/{targetPool}/addInstance")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -88670,6 +88991,7 @@ func (c *TargetPoolsAggregatedListCall) doRequest(alt string) (*http.Response, e
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/aggregated/targetPools")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -88864,6 +89186,7 @@ func (c *TargetPoolsDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/targetPools/{targetPool}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -89032,6 +89355,7 @@ func (c *TargetPoolsGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/targetPools/{targetPool}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -89189,6 +89513,7 @@ func (c *TargetPoolsGetHealthCall) doRequest(alt string) (*http.Response, error)
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/targetPools/{targetPool}/getHealth")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -89366,6 +89691,7 @@ func (c *TargetPoolsInsertCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/targetPools")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -89589,6 +89915,7 @@ func (c *TargetPoolsListCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/targetPools")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -89799,6 +90126,7 @@ func (c *TargetPoolsRemoveHealthCheckCall) doRequest(alt string) (*http.Response
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/targetPools/{targetPool}/removeHealthCheck")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -89981,6 +90309,7 @@ func (c *TargetPoolsRemoveInstanceCall) doRequest(alt string) (*http.Response, e
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/targetPools/{targetPool}/removeInstance")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -90170,6 +90499,7 @@ func (c *TargetPoolsSetBackupCall) doRequest(alt string) (*http.Response, error)
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/targetPools/{targetPool}/setBackup")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -90348,6 +90678,7 @@ func (c *TargetSslProxiesDeleteCall) doRequest(alt string) (*http.Response, erro
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/targetSslProxies/{targetSslProxy}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -90504,6 +90835,7 @@ func (c *TargetSslProxiesGetCall) doRequest(alt string) (*http.Response, error) 
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/targetSslProxies/{targetSslProxy}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -90666,6 +90998,7 @@ func (c *TargetSslProxiesInsertCall) doRequest(alt string) (*http.Response, erro
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/targetSslProxies")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -90877,6 +91210,7 @@ func (c *TargetSslProxiesListCall) doRequest(alt string) (*http.Response, error)
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/targetSslProxies")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -91075,6 +91409,7 @@ func (c *TargetSslProxiesSetBackendServiceCall) doRequest(alt string) (*http.Res
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/targetSslProxies/{targetSslProxy}/setBackendService")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -91245,6 +91580,7 @@ func (c *TargetSslProxiesSetProxyHeaderCall) doRequest(alt string) (*http.Respon
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/targetSslProxies/{targetSslProxy}/setProxyHeader")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -91415,6 +91751,7 @@ func (c *TargetSslProxiesSetSslCertificatesCall) doRequest(alt string) (*http.Re
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/targetSslProxies/{targetSslProxy}/setSslCertificates")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -91588,6 +91925,7 @@ func (c *TargetSslProxiesSetSslPolicyCall) doRequest(alt string) (*http.Response
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/targetSslProxies/{targetSslProxy}/setSslPolicy")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -91750,6 +92088,7 @@ func (c *TargetTcpProxiesDeleteCall) doRequest(alt string) (*http.Response, erro
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/targetTcpProxies/{targetTcpProxy}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -91906,6 +92245,7 @@ func (c *TargetTcpProxiesGetCall) doRequest(alt string) (*http.Response, error) 
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/targetTcpProxies/{targetTcpProxy}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -92068,6 +92408,7 @@ func (c *TargetTcpProxiesInsertCall) doRequest(alt string) (*http.Response, erro
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/targetTcpProxies")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -92279,6 +92620,7 @@ func (c *TargetTcpProxiesListCall) doRequest(alt string) (*http.Response, error)
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/targetTcpProxies")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -92477,6 +92819,7 @@ func (c *TargetTcpProxiesSetBackendServiceCall) doRequest(alt string) (*http.Res
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/targetTcpProxies/{targetTcpProxy}/setBackendService")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -92647,6 +92990,7 @@ func (c *TargetTcpProxiesSetProxyHeaderCall) doRequest(alt string) (*http.Respon
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/targetTcpProxies/{targetTcpProxy}/setProxyHeader")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -92866,6 +93210,7 @@ func (c *TargetVpnGatewaysAggregatedListCall) doRequest(alt string) (*http.Respo
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/aggregated/targetVpnGateways")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -93059,6 +93404,7 @@ func (c *TargetVpnGatewaysDeleteCall) doRequest(alt string) (*http.Response, err
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/targetVpnGateways/{targetVpnGateway}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -93226,6 +93572,7 @@ func (c *TargetVpnGatewaysGetCall) doRequest(alt string) (*http.Response, error)
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/targetVpnGateways/{targetVpnGateway}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -93399,6 +93746,7 @@ func (c *TargetVpnGatewaysInsertCall) doRequest(alt string) (*http.Response, err
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/targetVpnGateways")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -93621,6 +93969,7 @@ func (c *TargetVpnGatewaysListCall) doRequest(alt string) (*http.Response, error
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/targetVpnGateways")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -93822,6 +94171,7 @@ func (c *UrlMapsDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/urlMaps/{urlMap}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -93979,6 +94329,7 @@ func (c *UrlMapsGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/urlMaps/{urlMap}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -94142,6 +94493,7 @@ func (c *UrlMapsInsertCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/urlMaps")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -94304,6 +94656,7 @@ func (c *UrlMapsInvalidateCacheCall) doRequest(alt string) (*http.Response, erro
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/urlMaps/{urlMap}/invalidateCache")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -94525,6 +94878,7 @@ func (c *UrlMapsListCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/urlMaps")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -94726,6 +95080,7 @@ func (c *UrlMapsPatchCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/urlMaps/{urlMap}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("PATCH", urls, body)
@@ -94898,6 +95253,7 @@ func (c *UrlMapsUpdateCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/urlMaps/{urlMap}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("PUT", urls, body)
@@ -95052,6 +95408,7 @@ func (c *UrlMapsValidateCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/global/urlMaps/{urlMap}/validate")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -95266,6 +95623,7 @@ func (c *VpnTunnelsAggregatedListCall) doRequest(alt string) (*http.Response, er
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/aggregated/vpnTunnels")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -95459,6 +95817,7 @@ func (c *VpnTunnelsDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/vpnTunnels/{vpnTunnel}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -95626,6 +95985,7 @@ func (c *VpnTunnelsGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/vpnTunnels/{vpnTunnel}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -95799,6 +96159,7 @@ func (c *VpnTunnelsInsertCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/vpnTunnels")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
@@ -96021,6 +96382,7 @@ func (c *VpnTunnelsListCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/regions/{region}/vpnTunnels")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -96205,6 +96567,7 @@ func (c *ZoneOperationsDeleteCall) doRequest(alt string) (*http.Response, error)
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/operations/{operation}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("DELETE", urls, body)
@@ -96339,6 +96702,7 @@ func (c *ZoneOperationsGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/operations/{operation}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -96564,6 +96928,7 @@ func (c *ZoneOperationsListCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/operations")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -96761,6 +97126,7 @@ func (c *ZonesGetCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
@@ -96975,6 +97341,7 @@ func (c *ZonesListCall) doRequest(alt string) (*http.Response, error) {
 	}
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
 	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones")
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
