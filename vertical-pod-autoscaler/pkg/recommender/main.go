@@ -28,7 +28,6 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics"
 	metrics_recommender "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/recommender"
 	"k8s.io/client-go/rest"
-	kube_restclient "k8s.io/client-go/rest"
 )
 
 var (
@@ -70,7 +69,7 @@ func main() {
 }
 
 func createKubeConfig(kubeApiQps float32, kubeApiBurst int) *rest.Config {
-	config, err := kube_restclient.InClusterConfig()
+	config, err := rest.InClusterConfig()
 	if err != nil {
 		glog.Fatalf("Failed to create config: %v", err)
 	}
