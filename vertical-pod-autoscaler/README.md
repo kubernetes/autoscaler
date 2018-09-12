@@ -87,7 +87,7 @@ There are three modes in which *VPAs* operate:
   the `"Auto"` mode.
 * `"Recreate"`: VPA assigns resource requests on pod creation as well as updates
   them on existing pods by evicting them when the requested resources differ significantly
-  from the new recommendation (respecting the Pod Distruption Budget, if defined).
+  from the new recommendation (respecting the Pod Disruption Budget, if defined).
   This mode should be used rarely, only if you need to ensure that the pods are restarted
   whenever the resource request changes. Otherwise prefer the `"Auto"` mode which may take
   advantage of restart free updates once they are available.
@@ -179,7 +179,7 @@ will get resources as defined in your controllers (i.e. deployment or
 replicaset) and not according to previous recommendations made by VPA.
 
 To stop using Vertical Pod Autoscaling in your cluster:
-* If runnning on GKE, clean up role bindings created in [Prerequisites](#prerequisites):
+* If running on GKE, clean up role bindings created in [Prerequisites](#prerequisites):
 ```
 kubectl delete clusterrolebinding myname-cluster-admin-binding
 ```
