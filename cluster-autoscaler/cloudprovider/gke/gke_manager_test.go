@@ -526,7 +526,7 @@ func newTestGkeManager(t *testing.T, testServerURL string, mode GcpCloudProvider
 	manager.cache.SetMachinesCache(machinesCache)
 
 	client := &http.Client{}
-	gkeAPIEndpoint = &testServerURL
+	GkeAPIEndpoint = &testServerURL
 	var err error
 	if mode == ModeGKE {
 		manager.GkeService, err = NewAutoscalingGkeClientV1(client, projectId, manager.location, clusterName)
