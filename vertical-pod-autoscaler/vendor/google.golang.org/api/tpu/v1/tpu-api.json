@@ -658,7 +658,7 @@
       }
     }
   },
-  "revision": "20180807",
+  "revision": "20180902",
   "rootUrl": "https://tpu.googleapis.com/",
   "schemas": {
     "AcceleratorType": {
@@ -913,7 +913,8 @@
             "STOPPED",
             "STOPPING",
             "STARTING",
-            "PREEMPTED"
+            "PREEMPTED",
+            "TERMINATED"
           ],
           "enumDescriptions": [
             "TPU node state is not known/set.",
@@ -926,7 +927,8 @@
             "7 - Reserved. Was SUSPENDED.\nTPU node is stopped.",
             "TPU node is currently stopping.",
             "TPU node is currently starting.",
-            "TPU node has been preempted. Only applies to Preemptible TPU Nodes."
+            "TPU node has been preempted. Only applies to Preemptible TPU Nodes.",
+            "TPU node has been terminated due to maintenance or has reached the end of\nits life cycle (for preemptible nodes)."
           ],
           "type": "string"
         },
