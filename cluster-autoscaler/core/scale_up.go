@@ -304,7 +304,6 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 	}
 	glog.V(4).Infof("Upcoming %d nodes", len(upcomingNodes))
 
-	podsPassingPredicates := make(map[string][]*apiv1.Pod)
 	expansionOptions := make([]expander.Option, 0)
 
 	if processors != nil && processors.NodeGroupListProcessor != nil {
@@ -314,6 +313,10 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 			return nil, errors.ToAutoscalerError(errors.InternalError, errProc)
 		}
 	}
+
+	podsPredicatePassingCheckFunctions := getPodsPredicatePassingCheckFunctions(context, unschedulablePods, nodeInfos)
+	getPodsPassingPredicates := podsPredicatePassingCheckFunctions.getPodsPassingPredicates
+	getPodsNotPassingPredicates := podsPredicatePassingCheckFunctions.getPodsNotPassingPredicates
 
 	skippedNodeGroups := map[string]status.Reasons{}
 	for _, nodeGroup := range nodeGroups {
@@ -367,27 +370,36 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 			Pods:      make([]*apiv1.Pod, 0),
 		}
 
-		schedulableOnNode := CheckPodsSchedulableOnNode(context, unschedulablePods, nodeGroup.Id(), nodeInfo)
-		for pod, err := range schedulableOnNode {
-			if err != nil {
+		// add list of pods which pass predicates to option
+		podsPassing, err := getPodsPassingPredicates(nodeGroup.Id())
+		if err != nil {
+			glog.V(4).Infof("Skipping node group %s; cannot compute pods passing predicates", nodeGroup.Id())
+			continue
+		} else {
+			option.Pods = make([]*apiv1.Pod, len(podsPassing))
+			copy(option.Pods, podsPassing)
+		}
+
+		// mark that there is a scheduling option for pods which can be scheduled to node from currently analyzed node group
+		for _, pod := range podsPassing {
+			delete(podsRemainUnschedulable, pod)
+		}
+
+		// update information why we cannot schedule pods for which we did not find a working extension option so far
+		podsNotPassing, err := getPodsNotPassingPredicates(nodeGroup.Id())
+		if err != nil {
+			glog.V(4).Infof("Skipping node group %s; cannot compute pods not passing predicates", nodeGroup.Id())
+			continue
+		}
+		for pod, err := range podsNotPassing {
+			_, found := podsRemainUnschedulable[pod]
+			if found && nodeGroup.Exist() {
 				// Aggregate errors across existing node groups.
 				// TODO(aleksandra-malinowska): figure out how to communicate
 				// reasons NAP can't create a node-pool, if it's enabled.
-				if nodeGroup.Exist() {
-					if _, found := podsRemainUnschedulable[pod]; found {
-						podsRemainUnschedulable[pod][nodeGroup.Id()] = err
-					}
-				}
-			} else {
-				option.Pods = append(option.Pods, pod)
+				podsRemainUnschedulable[pod][nodeGroup.Id()] = err
 			}
 		}
-		for _, pod := range option.Pods {
-			delete(podsRemainUnschedulable, pod)
-		}
-		passingPods := make([]*apiv1.Pod, len(option.Pods))
-		copy(passingPods, option.Pods)
-		podsPassingPredicates[nodeGroup.Id()] = passingPods
 
 		if len(option.Pods) > 0 {
 			if context.EstimatorName == estimator.BinpackingEstimatorName {
@@ -444,11 +456,10 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 			if err != nil {
 				return nil, err
 			}
+
 			// Node group id may change when we create node group and we need to update
 			// our data structures.
 			if oldId != bestOption.NodeGroup.Id() {
-				podsPassingPredicates[bestOption.NodeGroup.Id()] = podsPassingPredicates[oldId]
-				delete(podsPassingPredicates, oldId)
 				nodeInfos[bestOption.NodeGroup.Id()] = nodeInfos[oldId]
 				delete(nodeInfos, oldId)
 			}
@@ -476,7 +487,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 			if typedErr != nil {
 				return nil, typedErr.AddPrefix("Failed to find matching node groups: ")
 			}
-			similarNodeGroups = filterNodeGroupsByPods(similarNodeGroups, bestOption.Pods, podsPassingPredicates)
+			similarNodeGroups = filterNodeGroupsByPods(similarNodeGroups, bestOption.Pods, getPodsPassingPredicates)
 			for _, ng := range similarNodeGroups {
 				if clusterStateRegistry.IsNodeGroupSafeToScaleUp(ng.Id(), now) {
 					targetNodeGroups = append(targetNodeGroups, ng)
@@ -524,6 +535,80 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 	return &status.ScaleUpStatus{ScaledUp: false, PodsRemainUnschedulable: getRemainingPods(podsRemainUnschedulable, skippedNodeGroups)}, nil
 }
 
+type podsPredicatePassingCheckFunctions struct {
+	getPodsPassingPredicates    func(nodeGroupId string) ([]*apiv1.Pod, error)
+	getPodsNotPassingPredicates func(nodeGroupId string) (map[*apiv1.Pod]status.Reasons, error)
+}
+
+func getPodsPredicatePassingCheckFunctions(
+	context *context.AutoscalingContext,
+	unschedulablePods []*apiv1.Pod,
+	nodeInfos map[string]*schedulercache.NodeInfo) podsPredicatePassingCheckFunctions {
+
+	podsPassingPredicatesCache := make(map[string][]*apiv1.Pod)
+	podsNotPassingPredicatesCache := make(map[string]map[*apiv1.Pod]status.Reasons)
+	errorsCache := make(map[string]error)
+
+	computeCaches := func(nodeGroupId string) {
+		nodeInfo, found := nodeInfos[nodeGroupId]
+		if !found {
+			errorsCache[nodeGroupId] = errors.NewAutoscalerError(errors.InternalError, "NodeInfo not found for node group %v", nodeGroupId)
+		}
+
+		podsPassing := make([]*apiv1.Pod, 0)
+		podsNotPassing := make(map[*apiv1.Pod]status.Reasons)
+		schedulableOnNode := CheckPodsSchedulableOnNode(context, unschedulablePods, nodeGroupId, nodeInfo)
+		for pod, err := range schedulableOnNode {
+			if err == nil {
+				podsPassing = append(podsPassing, pod)
+			} else {
+				podsNotPassing[pod] = err
+			}
+		}
+		podsPassingPredicatesCache[nodeGroupId] = podsPassing
+		podsNotPassingPredicatesCache[nodeGroupId] = podsNotPassing
+	}
+
+	return podsPredicatePassingCheckFunctions{
+
+		getPodsPassingPredicates: func(nodeGroupId string) ([]*apiv1.Pod, error) {
+			_, passingFound := podsPassingPredicatesCache[nodeGroupId]
+			_, errorFound := errorsCache[nodeGroupId]
+
+			if !passingFound && !errorFound {
+				computeCaches(nodeGroupId)
+			}
+			pods, found := podsPassingPredicatesCache[nodeGroupId]
+			if found {
+				return pods, nil
+			}
+			err, found := errorsCache[nodeGroupId]
+			if found {
+				return []*apiv1.Pod{}, err
+			}
+			return []*apiv1.Pod{}, errors.NewAutoscalerError(errors.InternalError, "Pods passing predicate entry not found in cache for node group %s", nodeGroupId)
+		},
+
+		getPodsNotPassingPredicates: func(nodeGroupId string) (map[*apiv1.Pod]status.Reasons, error) {
+			_, notPassingFound := podsNotPassingPredicatesCache[nodeGroupId]
+			_, errorFound := errorsCache[nodeGroupId]
+
+			if !notPassingFound && !errorFound {
+				computeCaches(nodeGroupId)
+			}
+			pods, found := podsNotPassingPredicatesCache[nodeGroupId]
+			if found {
+				return pods, nil
+			}
+			err, found := errorsCache[nodeGroupId]
+			if found {
+				return map[*apiv1.Pod]status.Reasons{}, err
+			}
+			return map[*apiv1.Pod]status.Reasons{}, errors.NewAutoscalerError(errors.InternalError, "Pods not passing predicate entry not found in cache for node group %s", nodeGroupId)
+		},
+	}
+}
+
 func getRemainingPods(schedulingErrors map[*apiv1.Pod]map[string]status.Reasons, skipped map[string]status.Reasons) []status.NoScaleUpInfo {
 	remaining := []status.NoScaleUpInfo{}
 	for pod, errs := range schedulingErrors {
@@ -555,14 +640,18 @@ func getPodsAwaitingEvaluation(allPods []*apiv1.Pod, unschedulable map[*apiv1.Po
 	return result
 }
 
-func filterNodeGroupsByPods(groups []cloudprovider.NodeGroup, podsRequiredToFit []*apiv1.Pod,
-	fittingPodsPerNodeGroup map[string][]*apiv1.Pod) []cloudprovider.NodeGroup {
+func filterNodeGroupsByPods(
+	groups []cloudprovider.NodeGroup,
+	podsRequiredToFit []*apiv1.Pod,
+	fittingPodsPerNodeGroup func(groupId string) ([]*apiv1.Pod, error)) []cloudprovider.NodeGroup {
+
 	result := make([]cloudprovider.NodeGroup, 0)
+
 groupsloop:
 	for _, group := range groups {
-		fittingPods, found := fittingPodsPerNodeGroup[group.Id()]
-		if !found {
-			glog.V(1).Infof("No info about pods passing predicates found for group %v, skipping it from scale-up consideration", group.Id())
+		fittingPods, err := fittingPodsPerNodeGroup(group.Id())
+		if err != nil {
+			glog.V(1).Infof("No info about pods passing predicates found for group %v, skipping it from scale-up consideration; err=%v", group.Id(), err)
 			continue
 		}
 		podSet := make(map[*apiv1.Pod]bool, len(fittingPods))
@@ -570,7 +659,7 @@ groupsloop:
 			podSet[pod] = true
 		}
 		for _, pod := range podsRequiredToFit {
-			if _, found = podSet[pod]; !found {
+			if _, found := podSet[pod]; !found {
 				glog.V(1).Infof("Group %v, can't fit pod %v/%v, removing from scale-up consideration", group.Id(), pod.Namespace, pod.Name)
 				continue groupsloop
 			}
