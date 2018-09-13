@@ -266,25 +266,16 @@ func GetNodeInfosForGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.Clou
 
 		// No good template, trying to generate one. This is called only if there are no
 		// working nodes in the node groups. By default CA tries to use a real-world example.
-		baseNodeInfo, err := nodeGroup.TemplateNodeInfo()
+		nodeInfo, err := GetNodeInfoFromTemplate(nodeGroup, daemonsets, predicateChecker)
 		if err != nil {
 			if err == cloudprovider.ErrNotImplemented {
 				continue
 			} else {
 				glog.Errorf("Unable to build proper template node for %s: %v", id, err)
-				return map[string]*schedulercache.NodeInfo{}, errors.ToAutoscalerError(
-					errors.CloudProviderError, err)
+				return map[string]*schedulercache.NodeInfo{}, errors.ToAutoscalerError(errors.CloudProviderError, err)
 			}
 		}
-		pods := daemonset.GetDaemonSetPodsForNode(baseNodeInfo, daemonsets, predicateChecker)
-		pods = append(pods, baseNodeInfo.Pods()...)
-		fullNodeInfo := schedulercache.NewNodeInfo(pods...)
-		fullNodeInfo.SetNode(baseNodeInfo.Node())
-		sanitizedNodeInfo, typedErr := sanitizeNodeInfo(fullNodeInfo, id)
-		if typedErr != nil {
-			return map[string]*schedulercache.NodeInfo{}, typedErr
-		}
-		result[id] = sanitizedNodeInfo
+		result[id] = nodeInfo
 	}
 
 	// Last resort - unready/unschedulable nodes.
@@ -307,6 +298,25 @@ func GetNodeInfosForGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.Clou
 	}
 
 	return result, nil
+}
+
+// GetNodeInfoFromTemplate returns NodeInfo object built base on TemplateNodeInfo returned by NodeGroup.TemplateNodeInfo().
+func GetNodeInfoFromTemplate(nodeGroup cloudprovider.NodeGroup, daemonsets []*extensionsv1.DaemonSet, predicateChecker *simulator.PredicateChecker) (*schedulercache.NodeInfo, errors.AutoscalerError) {
+	id := nodeGroup.Id()
+	baseNodeInfo, err := nodeGroup.TemplateNodeInfo()
+	if err != nil {
+		return nil, errors.ToAutoscalerError(errors.CloudProviderError, err)
+	}
+
+	pods := daemonset.GetDaemonSetPodsForNode(baseNodeInfo, daemonsets, predicateChecker)
+	pods = append(pods, baseNodeInfo.Pods()...)
+	fullNodeInfo := schedulercache.NewNodeInfo(pods...)
+	fullNodeInfo.SetNode(baseNodeInfo.Node())
+	sanitizedNodeInfo, typedErr := sanitizeNodeInfo(fullNodeInfo, id)
+	if typedErr != nil {
+		return nil, typedErr
+	}
+	return sanitizedNodeInfo, nil
 }
 
 // FilterOutNodesFromNotAutoscaledGroups return subset of input nodes for which cloud provider does not

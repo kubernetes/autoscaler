@@ -455,7 +455,8 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 
 		if !bestOption.NodeGroup.Exist() {
 			oldId := bestOption.NodeGroup.Id()
-			bestOption.NodeGroup, err = processors.NodeGroupManager.CreateNodeGroup(context, bestOption.NodeGroup)
+			createNodeGroupResult, err := processors.NodeGroupManager.CreateNodeGroup(context, bestOption.NodeGroup)
+			bestOption.NodeGroup = createNodeGroupResult.MainCreatedNodeGroup
 			if err != nil {
 				return nil, err
 			}
@@ -465,6 +466,16 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 			if oldId != bestOption.NodeGroup.Id() {
 				nodeInfos[bestOption.NodeGroup.Id()] = nodeInfos[oldId]
 				delete(nodeInfos, oldId)
+			}
+
+			for _, nodeGroup := range createNodeGroupResult.ExtraCreatedNodeGroups {
+				nodeInfo, err := GetNodeInfoFromTemplate(nodeGroup, daemonSets, context.PredicateChecker)
+
+				if err != nil {
+					glog.Warning("Cannot build node info for newly created extra node group %v; balancing similar node groups will not work; err=%v", nodeGroup.Id(), err)
+					continue
+				}
+				nodeInfos[nodeGroup.Id()] = nodeInfo
 			}
 		}
 
