@@ -43,23 +43,8 @@ import (
 
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
-)
-
-// ScaleDownResult represents the state of scale down.
-type ScaleDownResult int
-
-const (
-	// ScaleDownError - scale down finished with error.
-	ScaleDownError ScaleDownResult = iota
-	// ScaleDownNoUnneeded - no unneeded nodes and no errors.
-	ScaleDownNoUnneeded
-	// ScaleDownNoNodeDeleted - unneeded nodes present but not available for deletion.
-	ScaleDownNoNodeDeleted
-	// ScaleDownNodeDeleted - a node was deleted.
-	ScaleDownNodeDeleted
-	// ScaleDownNodeDeleteStarted - a node deletion process was started.
-	ScaleDownNodeDeleteStarted
 )
 
 const (
@@ -85,6 +70,10 @@ const (
 type NodeDeleteStatus struct {
 	sync.Mutex
 	deleteInProgress bool
+	// A map of node delete results by node name. It contains nil if the delete was successful and an error otherwise.
+	// It's being constantly drained into ScaleDownStatus objects in order to notify the ScaleDownStatusProcessor that
+	// the node drain has ended or that an error occurred during the deletion process.
+	nodeDeleteResults map[string]error
 }
 
 // IsDeleteInProgress returns true if a node is being deleted.
@@ -99,6 +88,22 @@ func (n *NodeDeleteStatus) SetDeleteInProgress(status bool) {
 	n.Lock()
 	defer n.Unlock()
 	n.deleteInProgress = status
+}
+
+// AddNodeDeleteResult adds a node delete result to the result map.
+func (n *NodeDeleteStatus) AddNodeDeleteResult(nodeName string, result error) {
+	n.Lock()
+	defer n.Unlock()
+	n.nodeDeleteResults[nodeName] = result
+}
+
+// DrainNodeDeleteResults returns the whole result map and replaces it with a new empty one.
+func (n *NodeDeleteStatus) DrainNodeDeleteResults() map[string]error {
+	n.Lock()
+	defer n.Unlock()
+	results := n.nodeDeleteResults
+	n.nodeDeleteResults = make(map[string]error)
+	return results
 }
 
 type scaleDownResourcesLimits map[string]int64
@@ -301,7 +306,7 @@ type ScaleDown struct {
 	unneededNodesList    []*apiv1.Node
 	unremovableNodes     map[string]time.Time
 	podLocationHints     map[string]string
-	nodeUtilizationMap   map[string]float64
+	nodeUtilizationMap   map[string]simulator.UtilizationInfo
 	usageTracker         *simulator.UsageTracker
 	nodeDeleteStatus     *NodeDeleteStatus
 }
@@ -314,10 +319,10 @@ func NewScaleDown(context *context.AutoscalingContext, clusterStateRegistry *clu
 		unneededNodes:        make(map[string]time.Time),
 		unremovableNodes:     make(map[string]time.Time),
 		podLocationHints:     make(map[string]string),
-		nodeUtilizationMap:   make(map[string]float64),
+		nodeUtilizationMap:   make(map[string]simulator.UtilizationInfo),
 		usageTracker:         simulator.NewUsageTracker(),
 		unneededNodesList:    make([]*apiv1.Node, 0),
-		nodeDeleteStatus:     &NodeDeleteStatus{},
+		nodeDeleteStatus:     &NodeDeleteStatus{nodeDeleteResults: make(map[string]error)},
 	}
 }
 
@@ -352,7 +357,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	// Only scheduled non expendable pods and pods waiting for lower priority pods preemption can prevent node delete.
 	nonExpendablePods := FilterOutExpendablePods(pods, sd.context.ExpendablePodsPriorityCutoff)
 	nodeNameToNodeInfo := scheduler_util.CreateNodeNameToInfoMap(nonExpendablePods, nodes)
-	utilizationMap := make(map[string]float64)
+	utilizationMap := make(map[string]simulator.UtilizationInfo)
 
 	sd.updateUnremovableNodes(nodes)
 	// Filter out nodes that were recently checked
@@ -394,16 +399,16 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 			glog.Errorf("Node info for %s not found", node.Name)
 			continue
 		}
-		utilization, err := simulator.CalculateUtilization(node, nodeInfo)
+		utilInfo, err := simulator.CalculateUtilization(node, nodeInfo)
 
 		if err != nil {
 			glog.Warningf("Failed to calculate utilization for %s: %v", node.Name, err)
 		}
-		glog.V(4).Infof("Node %s - utilization %f", node.Name, utilization)
-		utilizationMap[node.Name] = utilization
+		glog.V(4).Infof("Node %s - utilization %f", node.Name, utilInfo.Utilization)
+		utilizationMap[node.Name] = utilInfo
 
-		if utilization >= sd.context.ScaleDownUtilizationThreshold {
-			glog.V(4).Infof("Node %s is not suitable for removal - utilization too big (%f)", node.Name, utilization)
+		if utilInfo.Utilization >= sd.context.ScaleDownUtilizationThreshold {
+			glog.V(4).Infof("Node %s is not suitable for removal - utilization too big (%f)", node.Name, utilInfo.Utilization)
 			continue
 		}
 		currentlyUnneededNodes = append(currentlyUnneededNodes, node)
@@ -528,7 +533,7 @@ func (sd *ScaleDown) markSimulationError(simulatorErr errors.AutoscalerError,
 	glog.Errorf("Error while simulating node drains: %v", simulatorErr)
 	sd.unneededNodesList = make([]*apiv1.Node, 0)
 	sd.unneededNodes = make(map[string]time.Time)
-	sd.nodeUtilizationMap = make(map[string]float64)
+	sd.nodeUtilizationMap = make(map[string]simulator.UtilizationInfo)
 	sd.clusterStateRegistry.UpdateScaleDownCandidates(sd.unneededNodesList, timestamp)
 	return simulatorErr.AddPrefix("error while simulating node drains: ")
 }
@@ -554,9 +559,23 @@ func (sd *ScaleDown) chooseCandidates(nodes []*apiv1.Node) ([]*apiv1.Node, []*ap
 	return currentCandidates, currentNonCandidates
 }
 
-// TryToScaleDown tries to scale down the cluster. It returns ScaleDownResult indicating if any node was
+func (sd *ScaleDown) mapNodesToStatusScaleDownNodes(nodes []*apiv1.Node, nodeGroups map[string]cloudprovider.NodeGroup, evictedPodLists map[string][]*apiv1.Pod) []*status.ScaleDownNode {
+	var result []*status.ScaleDownNode
+	for _, node := range nodes {
+		result = append(result, &status.ScaleDownNode{
+			Node:        node,
+			NodeGroup:   nodeGroups[node.Name],
+			UtilInfo:    sd.nodeUtilizationMap[node.Name],
+			EvictedPods: evictedPodLists[node.Name],
+		})
+	}
+	return result
+}
+
+// TryToScaleDown tries to scale down the cluster. It returns a result inside a ScaleDownStatus indicating if any node was
 // removed and error if such occurred.
-func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, pdbs []*policyv1.PodDisruptionBudget, currentTime time.Time) (ScaleDownResult, errors.AutoscalerError) {
+func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, pdbs []*policyv1.PodDisruptionBudget, currentTime time.Time) (*status.ScaleDownStatus, errors.AutoscalerError) {
+	scaleDownStatus := &status.ScaleDownStatus{NodeDeleteResults: sd.nodeDeleteStatus.DrainNodeDeleteResults()}
 	nodeDeletionDuration := time.Duration(0)
 	findNodesToRemoveDuration := time.Duration(0)
 	defer updateScaleDownMetrics(time.Now(), &findNodesToRemoveDuration, &nodeDeletionDuration)
@@ -567,9 +586,8 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 
 	resourceLimiter, errCP := sd.context.CloudProvider.GetResourceLimiter()
 	if errCP != nil {
-		return ScaleDownError, errors.ToAutoscalerError(
-			errors.CloudProviderError,
-			errCP)
+		scaleDownStatus.Result = status.ScaleDownError
+		return scaleDownStatus, errors.ToAutoscalerError(errors.CloudProviderError, errCP)
 	}
 
 	scaleDownResourcesLeft := computeScaleDownResourcesLeftLimits(nodesWithoutMaster, resourceLimiter, sd.context.CloudProvider, currentTime)
@@ -639,7 +657,8 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 	}
 	if len(candidates) == 0 {
 		glog.V(1).Infof("No candidates for scale down")
-		return ScaleDownNoUnneeded, nil
+		scaleDownStatus.Result = status.ScaleDownNoUnneeded
+		return scaleDownStatus, nil
 	}
 
 	// Trying to delete empty nodes in bulk. If there are no empty nodes then CA will
@@ -653,9 +672,12 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 		err := sd.waitForEmptyNodesDeleted(emptyNodes, confirmation)
 		nodeDeletionDuration = time.Now().Sub(nodeDeletionStart)
 		if err == nil {
-			return ScaleDownNodeDeleted, nil
+			scaleDownStatus.ScaledDownNodes = sd.mapNodesToStatusScaleDownNodes(emptyNodes, candidateNodeGroups, make(map[string][]*apiv1.Pod))
+			scaleDownStatus.Result = status.ScaleDownNodeDeleted
+			return scaleDownStatus, nil
 		}
-		return ScaleDownError, err.AddPrefix("failed to delete at least one empty node: ")
+		scaleDownStatus.Result = status.ScaleDownError
+		return scaleDownStatus, err.AddPrefix("failed to delete at least one empty node: ")
 	}
 
 	findNodesToRemoveStart := time.Now()
@@ -668,11 +690,13 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 	findNodesToRemoveDuration = time.Now().Sub(findNodesToRemoveStart)
 
 	if err != nil {
-		return ScaleDownError, err.AddPrefix("Find node to remove failed: ")
+		scaleDownStatus.Result = status.ScaleDownError
+		return scaleDownStatus, err.AddPrefix("Find node to remove failed: ")
 	}
 	if len(nodesToRemove) == 0 {
 		glog.V(1).Infof("No node to remove")
-		return ScaleDownNoNodeDeleted, nil
+		scaleDownStatus.Result = status.ScaleDownNoNodeDeleted
+		return scaleDownStatus, nil
 	}
 	toRemove := nodesToRemove[0]
 	utilization := sd.nodeUtilizationMap[toRemove.Node.Name]
@@ -695,8 +719,10 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 
 	go func() {
 		// Finishing the delete process once this goroutine is over.
+		var err error
+		defer func() { sd.nodeDeleteStatus.AddNodeDeleteResult(toRemove.Node.Name, err) }()
 		defer sd.nodeDeleteStatus.SetDeleteInProgress(false)
-		err := sd.deleteNode(toRemove.Node, toRemove.PodsToReschedule)
+		err = sd.deleteNode(toRemove.Node, toRemove.PodsToReschedule)
 		if err != nil {
 			glog.Errorf("Failed to delete %s: %v", toRemove.Node.Name, err)
 			return
@@ -709,7 +735,9 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 		}
 	}()
 
-	return ScaleDownNodeDeleteStarted, nil
+	scaleDownStatus.ScaledDownNodes = sd.mapNodesToStatusScaleDownNodes([]*apiv1.Node{toRemove.Node}, candidateNodeGroups, map[string][]*apiv1.Pod{toRemove.Node.Name: toRemove.PodsToReschedule})
+	scaleDownStatus.Result = status.ScaleDownNodeDeleteStarted
+	return scaleDownStatus, nil
 }
 
 // updateScaleDownMetrics registers duration of different parts of scale down.
