@@ -116,5 +116,5 @@ type AutoscalingOptions struct {
 	// Regional tells whether the cluster is regional.
 	Regional bool
 	// Pods newer than this will not be considered as unschedulable for scale-up.
-	NewPodScaleUpBuffer time.Duration
+	NewPodScaleUpDelay time.Duration
 }
