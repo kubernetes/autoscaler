@@ -651,6 +651,48 @@ var InstanceTypes = map[string]*instanceType{
 		MemoryMb:     31232,
 		GPU:          0,
 	},
+	"r5": {
+		InstanceType: "r5",
+		VCPU:         96,
+		MemoryMb:     0,
+		GPU:          0,
+	},
+	"r5.12xlarge": {
+		InstanceType: "r5.12xlarge",
+		VCPU:         48,
+		MemoryMb:     393216,
+		GPU:          0,
+	},
+	"r5.2xlarge": {
+		InstanceType: "r5.2xlarge",
+		VCPU:         8,
+		MemoryMb:     62464,
+		GPU:          0,
+	},
+	"r5.24xlarge": {
+		InstanceType: "r5.24xlarge",
+		VCPU:         96,
+		MemoryMb:     804864,
+		GPU:          0,
+	},
+	"r5.4xlarge": {
+		InstanceType: "r5.4xlarge",
+		VCPU:         16,
+		MemoryMb:     124928,
+		GPU:          0,
+	},
+	"r5.large": {
+		InstanceType: "r5.large",
+		VCPU:         2,
+		MemoryMb:     15616,
+		GPU:          0,
+	},
+	"r5.xlarge": {
+		InstanceType: "r5.xlarge",
+		VCPU:         4,
+		MemoryMb:     31232,
+		GPU:          0,
+	},
 	"t1.micro": {
 		InstanceType: "t1.micro",
 		VCPU:         1,
