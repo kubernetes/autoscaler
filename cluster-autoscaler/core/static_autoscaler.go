@@ -247,6 +247,9 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		glog.V(4).Info("No schedulable pods")
 	}
 
+	// finally, filter out pods that are too "young" to safely be considered for a scale-up (delay is configurable)
+	unschedulablePodsToHelp = a.filterOutYoungPods(unschedulablePodsToHelp, currentTime)
+
 	if len(unschedulablePodsToHelp) == 0 {
 		glog.V(1).Info("No unschedulable pods")
 	} else if a.MaxNodesTotal > 0 && len(readyNodes) >= a.MaxNodesTotal {
@@ -353,6 +356,22 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		}
 	}
 	return nil
+}
+
+// don't consider pods newer than newPodScaleUpDelay seconds old as unschedulable
+func (a *StaticAutoscaler) filterOutYoungPods(allUnschedulablePods []*apiv1.Pod, currentTime time.Time) []*apiv1.Pod {
+	var oldUnschedulablePods []*apiv1.Pod
+	newPodScaleUpDelay := a.AutoscalingOptions.NewPodScaleUpDelay
+	for _, pod := range allUnschedulablePods {
+		podAge := currentTime.Sub(pod.CreationTimestamp.Time)
+		if podAge > newPodScaleUpDelay {
+			oldUnschedulablePods = append(oldUnschedulablePods, pod)
+		} else {
+			glog.V(3).Infof("Pod %s is %.3f seconds old, too new to consider unschedulable", pod.Name, podAge.Seconds())
+
+		}
+	}
+	return oldUnschedulablePods
 }
 
 // ExitCleanUp performs all necessary clean-ups when the autoscaler's exiting.

@@ -115,4 +115,6 @@ type AutoscalingOptions struct {
 	ExpendablePodsPriorityCutoff int
 	// Regional tells whether the cluster is regional.
 	Regional bool
+	// Pods newer than this will not be considered as unschedulable for scale-up.
+	NewPodScaleUpDelay time.Duration
 }
