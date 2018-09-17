@@ -242,7 +242,7 @@ func normalizeForK8sVMASScalingUp(templateMap map[string]interface{}) error {
 	for index, resource := range resources {
 		resourceMap, ok := resource.(map[string]interface{})
 		if !ok {
-			glog.Warningf("Template improperly formatted for resource")
+			glog.Warning("Template improperly formatted for resource")
 			continue
 		}
 
@@ -317,7 +317,7 @@ func normalizeMasterResourcesForScaling(templateMap map[string]interface{}) erro
 	for index, resource := range resources {
 		resourceMap, ok := resource.(map[string]interface{})
 		if !ok {
-			glog.Warningf("Template improperly formatted")
+			glog.Warning("Template improperly formatted")
 			continue
 		}
 
@@ -325,7 +325,7 @@ func normalizeMasterResourcesForScaling(templateMap map[string]interface{}) erro
 		if !ok || resourceType != vmResourceType {
 			resourceName, ok := resourceMap[nameFieldName].(string)
 			if !ok {
-				glog.Warningf("Template improperly formatted")
+				glog.Warning("Template improperly formatted")
 				continue
 			}
 			if strings.Contains(resourceName, "variables('masterVMNamePrefix')") && resourceType == vmExtensionType {
@@ -336,7 +336,7 @@ func normalizeMasterResourcesForScaling(templateMap map[string]interface{}) erro
 
 		resourceName, ok := resourceMap[nameFieldName].(string)
 		if !ok {
-			glog.Warningf("Template improperly formatted")
+			glog.Warning("Template improperly formatted")
 			continue
 		}
 
@@ -347,13 +347,13 @@ func normalizeMasterResourcesForScaling(templateMap map[string]interface{}) erro
 
 		resourceProperties, ok := resourceMap[propertiesFieldName].(map[string]interface{})
 		if !ok {
-			glog.Warningf("Template improperly formatted")
+			glog.Warning("Template improperly formatted")
 			continue
 		}
 
 		hardwareProfile, ok := resourceProperties[hardwareProfileFieldName].(map[string]interface{})
 		if !ok {
-			glog.Warningf("Template improperly formatted")
+			glog.Warning("Template improperly formatted")
 			continue
 		}
 
@@ -373,7 +373,7 @@ func normalizeMasterResourcesForScaling(templateMap map[string]interface{}) erro
 func removeCustomData(resourceProperties map[string]interface{}) bool {
 	osProfile, ok := resourceProperties[osProfileFieldName].(map[string]interface{})
 	if !ok {
-		glog.Warningf("Template improperly formatted")
+		glog.Warning("Template improperly formatted")
 		return ok
 	}
 
