@@ -374,10 +374,19 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 		podsPassing, err := getPodsPassingPredicates(nodeGroup.Id())
 		if err != nil {
 			glog.V(4).Infof("Skipping node group %s; cannot compute pods passing predicates", nodeGroup.Id())
+			skippedNodeGroups[nodeGroup.Id()] = notReadyReason
 			continue
 		} else {
 			option.Pods = make([]*apiv1.Pod, len(podsPassing))
 			copy(option.Pods, podsPassing)
+		}
+
+		// update information why we cannot schedule pods for which we did not find a working extension option so far
+		podsNotPassing, err := getPodsNotPassingPredicates(nodeGroup.Id())
+		if err != nil {
+			glog.V(4).Infof("Skipping node group %s; cannot compute pods not passing predicates", nodeGroup.Id())
+			skippedNodeGroups[nodeGroup.Id()] = notReadyReason
+			continue
 		}
 
 		// mark that there is a scheduling option for pods which can be scheduled to node from currently analyzed node group
@@ -385,12 +394,6 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 			delete(podsRemainUnschedulable, pod)
 		}
 
-		// update information why we cannot schedule pods for which we did not find a working extension option so far
-		podsNotPassing, err := getPodsNotPassingPredicates(nodeGroup.Id())
-		if err != nil {
-			glog.V(4).Infof("Skipping node group %s; cannot compute pods not passing predicates", nodeGroup.Id())
-			continue
-		}
 		for pod, err := range podsNotPassing {
 			_, found := podsRemainUnschedulable[pod]
 			if found && nodeGroup.Exist() {
@@ -553,6 +556,7 @@ func getPodsPredicatePassingCheckFunctions(
 		nodeInfo, found := nodeInfos[nodeGroupId]
 		if !found {
 			errorsCache[nodeGroupId] = errors.NewAutoscalerError(errors.InternalError, "NodeInfo not found for node group %v", nodeGroupId)
+			return
 		}
 
 		podsPassing := make([]*apiv1.Pod, 0)
@@ -578,13 +582,13 @@ func getPodsPredicatePassingCheckFunctions(
 			if !passingFound && !errorFound {
 				computeCaches(nodeGroupId)
 			}
-			pods, found := podsPassingPredicatesCache[nodeGroupId]
-			if found {
-				return pods, nil
-			}
 			err, found := errorsCache[nodeGroupId]
 			if found {
 				return []*apiv1.Pod{}, err
+			}
+			pods, found := podsPassingPredicatesCache[nodeGroupId]
+			if found {
+				return pods, nil
 			}
 			return []*apiv1.Pod{}, errors.NewAutoscalerError(errors.InternalError, "Pods passing predicate entry not found in cache for node group %s", nodeGroupId)
 		},
@@ -596,13 +600,13 @@ func getPodsPredicatePassingCheckFunctions(
 			if !notPassingFound && !errorFound {
 				computeCaches(nodeGroupId)
 			}
-			pods, found := podsNotPassingPredicatesCache[nodeGroupId]
-			if found {
-				return pods, nil
-			}
 			err, found := errorsCache[nodeGroupId]
 			if found {
 				return map[*apiv1.Pod]status.Reasons{}, err
+			}
+			pods, found := podsNotPassingPredicatesCache[nodeGroupId]
+			if found {
+				return pods, nil
 			}
 			return map[*apiv1.Pod]status.Reasons{}, errors.NewAutoscalerError(errors.InternalError, "Pods not passing predicate entry not found in cache for node group %s", nodeGroupId)
 		},
