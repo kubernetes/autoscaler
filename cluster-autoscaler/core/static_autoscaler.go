@@ -356,10 +356,10 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 // don't consider pods newer than newPodScaleUpDelay seconds old as unschedulable
 func (a *StaticAutoscaler) filterOutYoungPods(allUnschedulablePods []*apiv1.Pod, currentTime time.Time) []*apiv1.Pod {
 	var oldUnschedulablePods []*apiv1.Pod
-	newPodScaleUpBuffer := a.AutoscalingOptions.NewPodScaleUpDelay
+	newPodScaleUpDelay := a.AutoscalingOptions.NewPodScaleUpDelay
 	for _, pod := range allUnschedulablePods {
 		podAge := currentTime.Sub(pod.CreationTimestamp.Time)
-		if podAge > newPodScaleUpBuffer {
+		if podAge > newPodScaleUpDelay {
 			oldUnschedulablePods = append(oldUnschedulablePods, pod)
 		} else {
 			glog.V(3).Infof("Pod %s is %.3f seconds old, too new to consider unschedulable", pod.Name, podAge.Seconds())
