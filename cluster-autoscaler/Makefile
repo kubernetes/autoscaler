@@ -64,7 +64,18 @@ release: build-in-docker execute-release
 	@echo "Full in-docker release ${TAG}${FOR_PROVIDER} completed"
 
 container: build-in-docker make-image
-	@echo "Created in-docker image ${TAG}${FOR_PROVIDER}"
+	@echo "Created in-docker image ${REGISTRY}/cluster-autoscaler:${TAG}${FOR_PROVIDER}"
+
+make-local-image:
+ifdef BASEIMAGE
+	docker build --pull --build-arg BASEIMAGE=${BASEIMAGE} \
+	    -t cluster-autoscaler:${TAG} .
+else
+	docker build --pull -t cluster-autoscaler:${TAG} .
+endif
+
+local-container: build-binary make-local-image
+	@echo "Created in-docker image cluster-autoscaler:${TAG}${FOR_PROVIDER}"
 
 test-in-docker: clean docker-builder
 	docker run -v `pwd`:/gopath/src/k8s.io/autoscaler/cluster-autoscaler/ autoscaling-builder:latest bash -c 'cd /gopath/src/k8s.io/autoscaler/cluster-autoscaler && godep go test ./... ${TAGS_FLAG}'

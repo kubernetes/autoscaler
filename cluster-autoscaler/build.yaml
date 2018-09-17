@@ -1,0 +1,47 @@
+substitutions:
+  _IMAGE_NAME_REGEX: "cluster-autoscaler"  # "my-image"
+  _PUSH_REGISTRY: gcr.io/$PROJECT_ID
+
+steps:
+- name: k8s.gcr.io/addon-builder
+  id: build
+  env:
+  - BUILD_ID=$BUILD_ID
+  - PROJECT_ID=$PROJECT_ID
+  entrypoint: bash
+  args:
+  - -c
+  - |
+    set -ex
+    # By default, we start in workspace/, with GOPATH=worspace/go.
+    # Godeps doesn't work unless we're in GOPATH. Let's move there.
+    mkdir -p /tmp/autoscaler
+    cp -R * /tmp/autoscaler/
+    mkdir -p /workspace/go/src/k8s.io/autoscaler/cluster-autoscaler/
+    cp -R /tmp/autoscaler/* /workspace/go/src/k8s.io/autoscaler/cluster-autoscaler/
+    cd /workspace/go/src/k8s.io/autoscaler/cluster-autoscaler
+    # Build image without gcr.io prefix.
+    make local-container
+
+- name: k8s.gcr.io/addon-builder
+  id: inject-git-source-archive
+  entrypoint: bash
+  args:
+  - -c
+  - |
+    # From addon-builder/builder-tools/inject_source
+    inject_source . . "${_IMAGE_NAME_REGEX}"
+
+- name: k8s.gcr.io/addon-builder
+  id: push
+  env:
+  - BUILD_ID=$BUILD_ID
+  - PROJECT_ID=$PROJECT_ID
+  entrypoint: bash
+  args:
+  - -c
+  - |
+    set -ex
+    export PUSH_REGISTRY=$(echo ${_PUSH_REGISTRY})
+    echo "Pushing to $${PUSH_REGISTRY}"
+    label_push "${_IMAGE_NAME_REGEX}"
