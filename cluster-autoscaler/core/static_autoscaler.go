@@ -358,11 +358,10 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	return nil
 }
 
-// don't consider pods newer than newPodScaleUpBuffer seconds old as unschedulable
+// don't consider pods newer than newPodScaleUpDelay seconds old as unschedulable
 func (a *StaticAutoscaler) filterOutYoungPods(allUnschedulablePods []*apiv1.Pod, currentTime time.Time) []*apiv1.Pod {
-	// only consider unschedulable pods older than X
 	var oldUnschedulablePods []*apiv1.Pod
-	newPodScaleUpBuffer := a.AutoscalingOptions.NewPodScaleUpBuffer
+	newPodScaleUpBuffer := a.AutoscalingOptions.NewPodScaleUpDelay
 	for _, pod := range allUnschedulablePods {
 		podAge := currentTime.Sub(pod.CreationTimestamp.Time)
 		if podAge > newPodScaleUpBuffer {
