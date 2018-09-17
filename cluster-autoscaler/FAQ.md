@@ -515,7 +515,13 @@ then this node group may be excluded from future scale-ups.
 
 ### How fast is Cluster Autoscaler?
 
-By default, scale-up is considered up to 10 seconds after pod is marked as unschedulable, and scale-down 10 minutes after a node becomes unneeded. There are multiple flags which can be used to configure them. Assuming default settings, [SLOs described here apply](#what-are-the-service-level-objectives-for-cluster-autoscaler).
+By default, scale-up is considered up to 10 seconds after pod is marked as unschedulable, and scale-down 10 minutes after a node becomes unneeded.
+There are multiple flags which can be used to configure these thresholds. For example, in some environments, you may wish to give the k8s scheduler
+a bit more time to schedule a pod than the CA's scan-interval. One way to do this is by setting `--new-pod-scale-up-delay`, which causes the CA to
+ignore unschedulable pods until they are a certain "age", regardless of the scan-interval. If k8s has not scheduled them by the end of that delay,
+then they may be considered by the CA for a possible scale-up.
+
+Assuming default settings, [SLOs described here apply](#what-are-the-service-level-objectives-for-cluster-autoscaler).
 
 ### How fast is HPA when combined with CA?
 
