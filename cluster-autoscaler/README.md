@@ -15,8 +15,11 @@ Is available [HERE](./FAQ.md).
 
 We recommend using Cluster Autoscaler with the Kubernetes master version for which it was meant. The below combinations have been tested on GCP. We don't do cross version testing or compatibility testing in other environments. Some user reports indicate successful use of a newer version of Cluster Autoscaler with older clusters, however, there is always a chance that it won't work as expected.
 
+Starting from Kubernetes 1.12, versioning scheme was changed to match Kubernetes minor releases exactly.
+
 | Kubernetes Version  | CA Version   |
 |--------|--------|
+| 1.12.X | 1.12.X  |
 | 1.11.X | 1.3.X  |
 | 1.10.X | 1.2.X  |
 | 1.9.X  | 1.1.X  |
