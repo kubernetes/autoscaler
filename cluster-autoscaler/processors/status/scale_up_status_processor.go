@@ -26,7 +26,7 @@ import (
 // on if scale-up happened, description of scale-up operation performed and
 // status of pods that took part in the scale-up evaluation.
 type ScaleUpStatus struct {
-	ScaledUp                bool
+	Result                  ScaleUpResult
 	ScaleUpInfos            []nodegroupset.ScaleUpInfo
 	PodsTriggeredScaleUp    []*apiv1.Pod
 	PodsRemainUnschedulable []NoScaleUpInfo
@@ -38,6 +38,30 @@ type NoScaleUpInfo struct {
 	Pod                *apiv1.Pod
 	RejectedNodeGroups map[string]Reasons
 	SkippedNodeGroups  map[string]Reasons
+}
+
+// ScaleUpResult represents the result of a scale up.
+type ScaleUpResult int
+
+const (
+	// ScaleUpSuccessful - a scale-up successfully occurred.
+	ScaleUpSuccessful ScaleUpResult = iota
+	// ScaleUpError - an unexpected error occurred during the scale-up attempt.
+	ScaleUpError
+	// ScaleUpNoOptionsAvailable - there were no node groups that could be considered for the scale-up.
+	ScaleUpNoOptionsAvailable
+	// ScaleUpNotNeeded - there was no need for a scale-up e.g. because there were no unschedulable pods.
+	ScaleUpNotNeeded
+	// ScaleUpNotTried - the scale up wasn't even attempted, e.g. an autoscaling iteration was skipped, or
+	// an error occurred before the scale up logic.
+	ScaleUpNotTried
+	// ScaleUpInCooldown - the scale up wasn't even attempted, because it's in a cooldown state (it's suspended for a scheduled period of time).
+	ScaleUpInCooldown
+)
+
+// WasSuccessful returns true if the scale-up was successful.
+func (s *ScaleUpStatus) WasSuccessful() bool {
+	return s.Result == ScaleUpSuccessful
 }
 
 // Reasons interface provides a list of reasons for why something happened or didn't happen.
