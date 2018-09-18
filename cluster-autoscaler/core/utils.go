@@ -136,7 +136,7 @@ func FilterOutSchedulable(unschedulableCandidates []*apiv1.Pod, nodes []*apiv1.N
 		// Hello, ugly hack. I wish you weren't here.
 		var predicateError *simulator.PredicateError
 		if err != nil {
-			predicateError = simulator.NewPredicateError("FitsAny", err, nil)
+			predicateError = simulator.NewPredicateError("FitsAny", err, nil, nil)
 			unschedulablePods = append(unschedulablePods, pod)
 		} else {
 			glogx.V(4).UpTo(loggingQuota).Infof("Pod %s marked as unschedulable can be scheduled on %s. Ignoring in scale up.", pod.Name, nodeName)
