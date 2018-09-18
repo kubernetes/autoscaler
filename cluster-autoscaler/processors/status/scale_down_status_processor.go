@@ -52,6 +52,13 @@ const (
 	ScaleDownNodeDeleted
 	// ScaleDownNodeDeleteStarted - a node deletion process was started.
 	ScaleDownNodeDeleteStarted
+	// ScaleDownNotTried - the scale down wasn't even attempted, e.g. an autoscaling iteration was skipped, or
+	// an error occurred before the scale up logic.
+	ScaleDownNotTried
+	// ScaleDownInCooldown - the scale down wasn't even attempted, because it's in a cooldown state (it's suspended for a scheduled period of time).
+	ScaleDownInCooldown
+	// ScaleDownInProgress - the scale down wasn't attempted, because a previous scale-down was still in progress.
+	ScaleDownInProgress
 )
 
 // ScaleDownStatusProcessor processes the status of the cluster after a scale-down.
