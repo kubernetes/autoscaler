@@ -48,7 +48,8 @@ func main() {
 	kube_flag.InitFlags()
 	glog.V(1).Infof("Vertical Pod Autoscaler %s Updater", common.VerticalPodAutoscalerVersion)
 
-	metrics.Initialize(*address)
+	healthCheck := metrics.NewHealthCheck(*updaterInterval*5, true)
+	metrics.Initialize(*address, healthCheck)
 	metrics_updater.Register()
 
 	kubeClient, vpaClient := createKubeClients()
@@ -58,6 +59,7 @@ func main() {
 		case <-time.After(*updaterInterval):
 			{
 				updater.RunOnce()
+				healthCheck.UpdateLastActivity()
 			}
 		}
 	}
