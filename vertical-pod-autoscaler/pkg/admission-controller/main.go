@@ -19,6 +19,7 @@ package main
 import (
 	"flag"
 	"net/http"
+	"time"
 
 	"github.com/golang/glog"
 	kube_flag "k8s.io/apiserver/pkg/util/flag"
@@ -50,7 +51,8 @@ func main() {
 	kube_flag.InitFlags()
 	glog.V(1).Infof("Vertical Pod Autoscaler %s Admission Controller", common.VerticalPodAutoscalerVersion)
 
-	metrics.Initialize(*address)
+	healthCheck := metrics.NewHealthCheck(time.Minute, false)
+	metrics.Initialize(*address, healthCheck)
 	metrics_admission.Register()
 
 	certs := initCerts(*certsDir)
@@ -59,6 +61,7 @@ func main() {
 	as := logic.NewAdmissionServer(logic.NewRecommendationProvider(vpaLister, vpa_api_util.NewCappingRecommendationProcessor()), logic.NewDefaultPodPreProcessor())
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		as.Serve(w, r)
+		healthCheck.UpdateLastActivity()
 	})
 	clientset := getClient()
 	server := &http.Server{

@@ -46,7 +46,8 @@ func main() {
 
 	config := createKubeConfig(float32(*kubeApiQps), int(*kubeApiBurst))
 
-	metrics.Initialize(*address)
+	healthCheck := metrics.NewHealthCheck(*metricsFetcherInterval*5, true)
+	metrics.Initialize(*address, healthCheck)
 	metrics_recommender.Register()
 
 	useCheckpoints := *storage != "prometheus"
@@ -62,6 +63,7 @@ func main() {
 		case <-time.After(*metricsFetcherInterval):
 			{
 				recommender.RunOnce()
+				healthCheck.UpdateLastActivity()
 			}
 		}
 	}
