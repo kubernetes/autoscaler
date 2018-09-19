@@ -159,7 +159,7 @@ func buildAWS(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscover
 func buildAzure(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	var config io.ReadCloser
 	if opts.CloudConfig != "" {
-		glog.Info("Creating Azure Manager using cloud-config file: %v", opts.CloudConfig)
+		glog.Infof("Creating Azure Manager using cloud-config file: %v", opts.CloudConfig)
 		var err error
 		config, err := os.Open(opts.CloudConfig)
 		if err != nil {
