@@ -41,10 +41,13 @@ const (
 	TopMetricsNamespace = "vpa_"
 )
 
-// Initialize sets up Prometheus to expose metrics on the given address
-func Initialize(address string) {
+// Initialize sets up Prometheus to expose metrics & (optionally) health-check on the given address
+func Initialize(address string, healthCheck *HealthCheck) {
 	go func() {
 		http.Handle("/metrics", promhttp.Handler())
+		if healthCheck != nil {
+			http.Handle("/health-check", healthCheck)
+		}
 		err := http.ListenAndServe(address, nil)
 		glog.Fatalf("Failed to start metrics: %v", err)
 	}()
