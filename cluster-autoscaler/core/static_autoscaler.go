@@ -132,12 +132,26 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	}
 	metrics.UpdateDurationFromStart(metrics.UpdateState, stateUpdateStart)
 
+	scaleUpStatus := &status.ScaleUpStatus{Result: status.ScaleUpNotTried}
+	scaleUpStatusProcessorAlreadyCalled := false
+	scaleDownStatus := &status.ScaleDownStatus{Result: status.ScaleDownNotTried}
+	scaleDownStatusProcessorAlreadyCalled := false
+
 	defer func() {
 		// Update status information when the loop is done (regardless of reason)
 		if autoscalingContext.WriteStatusConfigMap {
 			status := a.clusterStateRegistry.GetStatus(currentTime)
 			utils.WriteStatusConfigMap(autoscalingContext.ClientSet, autoscalingContext.ConfigNamespace,
 				status.GetReadableString(), a.AutoscalingContext.LogRecorder)
+		}
+
+		// This deferred processor execution allows the processors to handle a situation when a scale-(up|down)
+		// wasn't even attempted because e.g. the iteration exited earlier.
+		if !scaleUpStatusProcessorAlreadyCalled && a.processors != nil && a.processors.ScaleUpStatusProcessor != nil {
+			a.processors.ScaleUpStatusProcessor.Process(a.AutoscalingContext, scaleUpStatus)
+		}
+		if !scaleDownStatusProcessorAlreadyCalled && a.processors != nil && a.processors.ScaleDownStatusProcessor != nil {
+			a.processors.ScaleDownStatusProcessor.Process(a.AutoscalingContext, scaleDownStatus)
 		}
 
 		err := a.processors.AutoscalingStatusProcessor.Process(a.AutoscalingContext, a.clusterStateRegistry, currentTime)
@@ -251,8 +265,10 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	unschedulablePodsToHelp = a.filterOutYoungPods(unschedulablePodsToHelp, currentTime)
 
 	if len(unschedulablePodsToHelp) == 0 {
+		scaleUpStatus.Result = status.ScaleUpNotNeeded
 		glog.V(1).Info("No unschedulable pods")
 	} else if a.MaxNodesTotal > 0 && len(readyNodes) >= a.MaxNodesTotal {
+		scaleUpStatus.Result = status.ScaleUpNoOptionsAvailable
 		glog.V(1).Info("Max total nodes in cluster reached")
 	} else if allPodsAreNew(unschedulablePodsToHelp, currentTime) {
 		// The assumption here is that these pods have been created very recently and probably there
@@ -260,31 +276,36 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		// slowly but at the pace of 1 every 2 seconds then no scale up would be triggered for long time.
 		// We also want to skip a real scale down (just like if the pods were handled).
 		scaleDownForbidden = true
+		scaleUpStatus.Result = status.ScaleUpInCooldown
 		glog.V(1).Info("Unschedulable pods are very new, waiting one iteration for more")
 	} else {
 		daemonsets, err := a.ListerRegistry.DaemonSetLister().List()
 		if err != nil {
 			glog.Errorf("Failed to get daemonset list")
+			scaleUpStatus.Result = status.ScaleUpError
 			return errors.ToAutoscalerError(errors.ApiCallError, err)
 		}
 
 		scaleUpStart := time.Now()
 		metrics.UpdateLastTime(metrics.ScaleUp, scaleUpStart)
 
-		scaleUpStatus, typedErr := ScaleUp(autoscalingContext, a.processors, a.clusterStateRegistry, unschedulablePodsToHelp, readyNodes, daemonsets)
+		scaleUpStatus, typedErr = ScaleUp(autoscalingContext, a.processors, a.clusterStateRegistry, unschedulablePodsToHelp, readyNodes, daemonsets)
 
 		metrics.UpdateDurationFromStart(metrics.ScaleUp, scaleUpStart)
+
+		if a.processors != nil && a.processors.ScaleUpStatusProcessor != nil {
+			a.processors.ScaleUpStatusProcessor.Process(autoscalingContext, scaleUpStatus)
+			scaleUpStatusProcessorAlreadyCalled = true
+		}
 
 		if typedErr != nil {
 			glog.Errorf("Failed to scale up: %v", typedErr)
 			return typedErr
 		}
-		if a.processors != nil && a.processors.ScaleUpStatusProcessor != nil {
-			a.processors.ScaleUpStatusProcessor.Process(autoscalingContext, scaleUpStatus)
-		}
-		if scaleUpStatus.ScaledUp {
+		if scaleUpStatus.Result == status.ScaleUpSuccessful {
 			a.lastScaleUpTime = currentTime
 			// No scale down in this iteration.
+			scaleDownStatus.Result = status.ScaleDownInCooldown
 			return nil
 		}
 	}
@@ -292,6 +313,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	if a.ScaleDownEnabled {
 		pdbs, err := pdbLister.List()
 		if err != nil {
+			scaleDownStatus.Result = status.ScaleDownError
 			glog.Errorf("Failed to list pod disruption budgets: %v", err)
 			return errors.ToAutoscalerError(errors.ApiCallError, err)
 		}
@@ -305,6 +327,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 
 		typedErr := scaleDown.UpdateUnneededNodes(allNodes, potentiallyUnneeded, append(allScheduled, unschedulableWaitingForLowerPriorityPreemption...), currentTime, pdbs)
 		if typedErr != nil {
+			scaleDownStatus.Result = status.ScaleDownError
 			glog.Errorf("Failed to scale down: %v", typedErr)
 			return typedErr
 		}
@@ -317,19 +340,23 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 			}
 		}
 
-		// In dry run only utilization is updated
-		calculateUnneededOnly := scaleDownForbidden ||
+		scaleDownInCooldown := scaleDownForbidden ||
 			a.lastScaleUpTime.Add(a.ScaleDownDelayAfterAdd).After(currentTime) ||
 			a.lastScaleDownFailTime.Add(a.ScaleDownDelayAfterFailure).After(currentTime) ||
-			a.lastScaleDownDeleteTime.Add(a.ScaleDownDelayAfterDelete).After(currentTime) ||
-			scaleDown.nodeDeleteStatus.IsDeleteInProgress()
+			a.lastScaleDownDeleteTime.Add(a.ScaleDownDelayAfterDelete).After(currentTime)
+		// In dry run only utilization is updated
+		calculateUnneededOnly := scaleDownInCooldown || scaleDown.nodeDeleteStatus.IsDeleteInProgress()
 
 		glog.V(4).Infof("Scale down status: unneededOnly=%v lastScaleUpTime=%s "+
 			"lastScaleDownDeleteTime=%v lastScaleDownFailTime=%s scaleDownForbidden=%v isDeleteInProgress=%v",
 			calculateUnneededOnly, a.lastScaleUpTime, a.lastScaleDownDeleteTime, a.lastScaleDownFailTime,
 			scaleDownForbidden, scaleDown.nodeDeleteStatus.IsDeleteInProgress())
 
-		if !calculateUnneededOnly {
+		if scaleDownInCooldown {
+			scaleDownStatus.Result = status.ScaleDownInCooldown
+		} else if scaleDown.nodeDeleteStatus.IsDeleteInProgress() {
+			scaleDownStatus.Result = status.ScaleDownInProgress
+		} else {
 			glog.V(4).Infof("Starting scale down")
 
 			// We want to delete unneeded Node Groups only if there was no recent scale up,
@@ -345,9 +372,12 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 				a.lastScaleDownDeleteTime = currentTime
 				a.clusterStateRegistry.Recalculate()
 			}
+
 			if a.processors != nil && a.processors.ScaleDownStatusProcessor != nil {
 				a.processors.ScaleDownStatusProcessor.Process(autoscalingContext, scaleDownStatus)
+				scaleDownStatusProcessorAlreadyCalled = true
 			}
+
 			if typedErr != nil {
 				glog.Errorf("Failed to scale down: %v", err)
 				a.lastScaleDownFailTime = currentTime
