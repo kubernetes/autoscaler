@@ -59,19 +59,31 @@ func (m *autoScalingWrapper) getAutoscalingGroupsByNames(names []string) ([]*aut
 	if len(names) == 0 {
 		return nil, nil
 	}
-	input := &autoscaling.DescribeAutoScalingGroupsInput{
-		AutoScalingGroupNames: aws.StringSlice(names),
-		MaxRecords:            aws.Int64(maxRecordsReturnedByAPI),
-	}
+
 	asgs := make([]*autoscaling.Group, 0)
-	if err := m.DescribeAutoScalingGroupsPages(input, func(output *autoscaling.DescribeAutoScalingGroupsOutput, _ bool) bool {
-		asgs = append(asgs, output.AutoScalingGroups...)
-		// We return true while we want to be called with the next page of
-		// results, if any.
-		return true
-	}); err != nil {
-		return nil, err
+
+	// AWS only accepts up to 50 ASG names as input, describe them in batches
+	for i := 0; i < len(names); i += maxAsgNamesPerDescribe {
+		end := i + maxAsgNamesPerDescribe
+
+		if end > len(names) {
+			end = len(names)
+		}
+
+		input := &autoscaling.DescribeAutoScalingGroupsInput{
+			AutoScalingGroupNames: aws.StringSlice(names[i:end]),
+			MaxRecords:            aws.Int64(maxRecordsReturnedByAPI),
+		}
+		if err := m.DescribeAutoScalingGroupsPages(input, func(output *autoscaling.DescribeAutoScalingGroupsOutput, _ bool) bool {
+			asgs = append(asgs, output.AutoScalingGroups...)
+			// We return true while we want to be called with the next page of
+			// results, if any.
+			return true
+		}); err != nil {
+			return nil, err
+		}
 	}
+
 	return asgs, nil
 }
 
