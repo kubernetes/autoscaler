@@ -222,11 +222,12 @@ func (pe *PredicateError) VerboseError() string {
 }
 
 // NewPredicateError creates a new predicate error from error and reasons.
-func NewPredicateError(name string, err error, reasons []string) *PredicateError {
+func NewPredicateError(name string, err error, reasons []string, originalReasons []algorithm.PredicateFailureReason) *PredicateError {
 	return &PredicateError{
-		predicateName: name,
-		err:           err,
-		reasons:       reasons,
+		predicateName:  name,
+		err:            err,
+		reasons:        reasons,
+		failureReasons: originalReasons,
 	}
 }
 
@@ -240,6 +241,11 @@ func (pe *PredicateError) Reasons() []string {
 		pe.reasons[i] = reason.GetReason()
 	}
 	return pe.reasons
+}
+
+// OriginalReasons returns original failure reasons from failed predicate as a slice of PredicateFailureReason.
+func (pe *PredicateError) OriginalReasons() []algorithm.PredicateFailureReason {
+	return pe.failureReasons
 }
 
 // PredicateName returns the name of failed predicate.
