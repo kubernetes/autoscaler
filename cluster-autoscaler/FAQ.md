@@ -41,6 +41,7 @@ this document:
   * [How fast is HPA when combined with CA?](#how-fast-is-hpa-when-combined-with-ca)
   * [Where can I find the designs of the upcoming features?](#where-can-i-find-the-designs-of-the-upcoming-features)
   * [What are Expanders?](#what-are-expanders)
+  * [What are the parameters to CA?](#what-are-the-parameters-to-ca)
 * [Troubleshooting](#troubleshooting)
   * [I have a couple of nodes with low utilization, but they are not scaled down. Why?](#i-have-a-couple-of-nodes-with-low-utilization-but-they-are-not-scaled-down-why)
   * [How to set PDBs to enable CA to move kube-system pods?](#how-to-set-pdbs-to-enable-ca-to-move-kube-system-pods)
@@ -590,6 +591,49 @@ would match the cluster size. This expander is described in more details
 [HERE](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/proposals/pricing.md). Currently it works only for GCE and GKE (patches welcome.)
 
 ************
+
+### What are the parameters to CA?
+
+The following startup parameters are supported for cluster autoscaler:
+
+| Parameter | Description | Default | 
+| --- | --- | --- |
+| `cluster-name` | Autoscaled cluster name, if available | "" 
+| `address` | The address to expose prometheus metrics | :8085 
+| `kubernetes` | Kubernetes master location. Leave blank for default | "" 
+| `kubeconfig` | Path to kubeconfig file with authorization and master location information | ""
+| `cloud-config` | The path to the cloud provider configuration file.  Empty string for no configuration file | ""
+| `namespace` | Namespace in which cluster-autoscaler run | "kube-system" 
+| `scale-down-enabled` | Should CA scale down the cluster | true
+| `scale-down-delay-after-add` | How long after scale up that scale down evaluation resumes | 10*time.Minute
+| `scale-down-delay-after-delete` | How long after node deletion that scale down evaluation resumes, defaults to scanInterval | *scanInterval
+| `scale-down-delay-after-failure` | How long after scale down failure that scale down evaluation resumes | 3*time.Minute
+| `scale-down-unneeded-time` | How long a node should be unneeded before it is eligible for scale down | 10*time.Minute
+| `scale-down-unready-time` | How long an unready node should be unneeded before it is eligible for scale down | 20*time.Minute
+| `scale-down-utilization-threshold` | Node utilization level, defined as sum of requested resources divided by capacity, below which a node can be considered for scale down | 0.5
+| `scale-down-non-empty-candidates-count` | Maximum number of non empty nodes considered in one iteration as candidates for scale down with drain<br>Lower value means better CA responsiveness but possible slower scale down latency<br>Higher value can affect CA performance with big clusters (hundreds of nodes)<br>Set to non posistive value to turn this heuristic off - CA will not limit the number of nodes it considers." | 30
+| `scale-down-candidates-pool-ratio` | A ratio of nodes that are considered as additional non empty candidates for<br>scale down when some candidates from previous iteration are no longer valid<br>Lower value means better CA responsiveness but possible slower scale down latency<br>Higher value can affect CA performance with big clusters (hundreds of nodes)<br>Set to 1.0 to turn this heuristics off - CA will take all nodes as additional candidates.  | 0.1
+| `scale-down-candidates-pool-min-count` | Minimum number of nodes that are considered as additional non empty candidates<br>for scale down when some candidates from previous iteration are no longer valid.<br>When calculating the pool size for additional candidates we take<br>`max(#nodes * scale-down-candidates-pool-ratio, scale-down-candidates-pool-min-count)` | 50
+| `scan-interval` | How often cluster is reevaluated for scale up or down | 10*time.Second
+| `max-nodes-total` | Maximum number of nodes in all node groups. Cluster autoscaler will not grow the cluster beyond this number. | 0
+| `cores-total` | Minimum and maximum number of cores in cluster, in the format <min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers. | minMaxFlagString(0, config.DefaultMaxClusterCores)
+| `memory-total` | Minimum and maximum number of gigabytes of memory in cluster, in the format <min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers. | minMaxFlagString(0, config.DefaultMaxClusterMemory)
+| `cloud-provider` | Cloud provider type. | cloudBuilder.DefaultCloudProvider,
+| `max-empty-bulk-delete` | Maximum number of empty nodes that can be deleted at the same time.  | 10
+| `max-graceful-termination-sec` | Maximum number of seconds CA waits for pod termination when trying to scale down a node.  | 10*60
+| `max-total-unready-percentage` | Maximum percentage of unready nodes in the cluster.  After this is exceeded, CA halts operations | 45
+| `ok-total-unready-count` | Number of allowed unready nodes, irrespective of max-total-unready-percentage  | 3
+| `max-node-provision-time` | Maximum time CA waits for node to be provisioned | 15*time.Minute
+| `estimator` | Type of resource estimator to be used in scale up | estimator.BinpackingEstimatorName
+| `expander` | Type of node group expander to be used in scale up.  | expander.RandomExpanderName
+| `write-status-configmap` | Should CA write status information to a configmap  | true
+| `max-inactivity` | Maximum time from last recorded autoscaler activity before automatic restart | 10*time.Minute
+| `max-failing-time` | Maximum time from last recorded successful autoscaler run before automatic restart | 15*time.Minute
+| `balance-similar-node-groups` | Detect similar node groups and balance the number of nodes between them | false
+| `node-autoprovisioning-enabled` | Should CA autoprovision node groups when needed | false
+| `max-autoprovisioned-node-group-count` | The maximum number of autoprovisioned groups in the cluster | 15
+| `expendable-pods-priority-cutoff` | Pods with priority below cutoff will be expendable. They can be killed without any consideration during scale down and they don't cause scale up. Pods with null priority (PodPriority disabled) are non expendable | 0
+| `regional` | Cluster is regional | false
 
 # Troubleshooting:
 
