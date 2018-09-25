@@ -116,7 +116,7 @@ func calculateScaleUpCoresMemoryTotal(
 		}
 		nodeInfo, found := nodeInfos[nodeGroup.Id()]
 		if !found {
-			return 0, 0, errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("No node info for: %s", nodeGroup.Id())
+			return 0, 0, errors.NewAutoscalerError(errors.CloudProviderError, "No node info for: %s", nodeGroup.Id())
 		}
 		if currentSize > 0 {
 			nodeCPU, nodeMemory := getNodeInfoCoresAndMemory(nodeInfo)
@@ -147,7 +147,7 @@ func calculateScaleUpGpusTotal(
 		}
 		nodeInfo, found := nodeInfos[nodeGroup.Id()]
 		if !found {
-			return nil, errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("No node info for: %s", nodeGroup.Id())
+			return nil, errors.NewAutoscalerError(errors.CloudProviderError, "No node info for: %s", nodeGroup.Id())
 		}
 		if currentSize > 0 {
 			gpuType, gpuCount, err := gpu.GetNodeTargetGpus(nodeInfo.Node(), nodeGroup)
