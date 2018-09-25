@@ -64,7 +64,7 @@ func NewCloudProvider(opts config.AutoscalingOptions) cloudprovider.CloudProvide
 		return buildGCE(opts, do, rl)
 	case gke.ProviderNameGKE:
 		if do.DiscoverySpecified() {
-			glog.Fatalf("GKE gets nodegroup specification via API, command line specs are not allowed")
+			glog.Fatal("GKE gets nodegroup specification via API, command line specs are not allowed")
 		}
 		if opts.NodeAutoprovisioningEnabled {
 			return buildGKE(opts, rl, gke.ModeGKENAP)
