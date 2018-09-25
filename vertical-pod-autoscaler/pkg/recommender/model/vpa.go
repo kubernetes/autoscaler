@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	"sort"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -56,6 +57,12 @@ func (conditionsMap *vpaConditionsMap) AsList() []vpa_types.VerticalPodAutoscale
 	for _, condition := range *conditionsMap {
 		conditions = append(conditions, condition)
 	}
+
+	// Sort conditions by type to avoid elements floating on the list
+	sort.Slice(conditions, func(i, j int) bool {
+		return conditions[i].Type < conditions[j].Type
+	})
+
 	return conditions
 }
 
