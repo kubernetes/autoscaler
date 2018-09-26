@@ -134,7 +134,7 @@ spec:
     spec:
       serviceAccountName: admin
       containers:
-        - image: registry.cn-hangzhou.aliyuncs.com/acs/autoscaler:v1.3.1.2
+        - image: registry.cn-hangzhou.aliyuncs.com/acs/autoscaler:v1.3.1
           name: cluster-autoscaler
           resources:
             limits:
