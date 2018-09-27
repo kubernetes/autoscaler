@@ -128,11 +128,11 @@ type ContainerResourcePolicy struct {
 	// Whether autoscaler is enabled for the container. The default is "Auto".
 	// +optional
 	Mode *ContainerScalingMode `json:"mode,omitempty" protobuf:"bytes,2,opt,name=mode"`
-	// Specifies the minimal amount of resources that will be recommended
+	// Specifies the minimal amount of resources that will be assigned
 	// for the container. The default is no minimum.
 	// +optional
 	MinAllowed v1.ResourceList `json:"minAllowed,omitempty" protobuf:"bytes,3,rep,name=minAllowed,casttype=ResourceList,castkey=ResourceName"`
-	// Specifies the maximum amount of resources that will be recommended
+	// Specifies the maximum amount of resources that will be assigned
 	// for the container. The default is no maximum.
 	// +optional
 	MaxAllowed v1.ResourceList `json:"maxAllowed,omitempty" protobuf:"bytes,4,rep,name=maxAllowed,casttype=ResourceList,castkey=ResourceName"`
