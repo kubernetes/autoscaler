@@ -41,6 +41,7 @@ this document:
   * [How fast is HPA when combined with CA?](#how-fast-is-hpa-when-combined-with-ca)
   * [Where can I find the designs of the upcoming features?](#where-can-i-find-the-designs-of-the-upcoming-features)
   * [What are Expanders?](#what-are-expanders)
+  * [What are the parameters to CA?](#what-are-the-parameters-to-ca)
 * [Troubleshooting](#troubleshooting)
   * [I have a couple of nodes with low utilization, but they are not scaled down. Why?](#i-have-a-couple-of-nodes-with-low-utilization-but-they-are-not-scaled-down-why)
   * [How to set PDBs to enable CA to move kube-system pods?](#how-to-set-pdbs-to-enable-ca-to-move-kube-system-pods)
@@ -590,6 +591,56 @@ would match the cluster size. This expander is described in more details
 [HERE](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/proposals/pricing.md). Currently it works only for GCE and GKE (patches welcome.)
 
 ************
+
+### What are the parameters to CA?
+
+The following startup parameters are supported for cluster autoscaler:
+
+| Parameter | Description | Default | 
+| --- | --- | --- |
+| `cluster-name` | Autoscaled cluster name, if available | "" 
+| `address` | The address to expose prometheus metrics | :8085 
+| `kubernetes` | Kubernetes master location. Leave blank for default | "" 
+| `kubeconfig` | Path to kubeconfig file with authorization and master location information | ""
+| `cloud-config` | The path to the cloud provider configuration file.  Empty string for no configuration file | ""
+| `namespace` | Namespace in which cluster-autoscaler run | "kube-system" 
+| `scale-down-enabled` | Should CA scale down the cluster | true
+| `scale-down-delay-after-add` | How long after scale up that scale down evaluation resumes | 10 minutes
+| `scale-down-delay-after-delete` | How long after node deletion that scale down evaluation resumes, defaults to scan-interval | scan-interval
+| `scale-down-delay-after-failure` | How long after scale down failure that scale down evaluation resumes | 3 minutes
+| `scale-down-unneeded-time` | How long a node should be unneeded before it is eligible for scale down | 10 minutes
+| `scale-down-unready-time` | How long an unready node should be unneeded before it is eligible for scale down | 20 minutes
+| `scale-down-utilization-threshold` | Node utilization level, defined as sum of requested resources divided by capacity, below which a node can be considered for scale down | 0.5
+| `scale-down-non-empty-candidates-count` | Maximum number of non empty nodes considered in one iteration as candidates for scale down with drain<br>Lower value means better CA responsiveness but possible slower scale down latency<br>Higher value can affect CA performance with big clusters (hundreds of nodes)<br>Set to non posistive value to turn this heuristic off - CA will not limit the number of nodes it considers." | 30
+| `scale-down-candidates-pool-ratio` | A ratio of nodes that are considered as additional non empty candidates for<br>scale down when some candidates from previous iteration are no longer valid<br>Lower value means better CA responsiveness but possible slower scale down latency<br>Higher value can affect CA performance with big clusters (hundreds of nodes)<br>Set to 1.0 to turn this heuristics off - CA will take all nodes as additional candidates.  | 0.1
+| `scale-down-candidates-pool-min-count` | Minimum number of nodes that are considered as additional non empty candidates<br>for scale down when some candidates from previous iteration are no longer valid.<br>When calculating the pool size for additional candidates we take<br>`max(#nodes * scale-down-candidates-pool-ratio, scale-down-candidates-pool-min-count)` | 50
+| `scan-interval` | How often cluster is reevaluated for scale up or down | 10 seconds
+| `max-nodes-total` | Maximum number of nodes in all node groups. Cluster autoscaler will not grow the cluster beyond this number. | 0
+| `cores-total` | Minimum and maximum number of cores in cluster, in the format <min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers. | 320000
+| `memory-total` | Minimum and maximum number of gigabytes of memory in cluster, in the format <min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers. | 6400000
+| `cloud-provider` | Cloud provider type. | gce
+| `max-empty-bulk-delete` | Maximum number of empty nodes that can be deleted at the same time.  | 10
+| `max-graceful-termination-sec` | Maximum number of seconds CA waits for pod termination when trying to scale down a node.  | 600
+| `max-total-unready-percentage` | Maximum percentage of unready nodes in the cluster.  After this is exceeded, CA halts operations | 45
+| `ok-total-unready-count` | Number of allowed unready nodes, irrespective of max-total-unready-percentage  | 3
+| `max-node-provision-time` | Maximum time CA waits for node to be provisioned | 15 minutes
+| `nodes` | sets min,max size and other configuration data for a node group in a format accepted by cloud provider. Can be used multiple times. Format: <min>:<max>:<other...> | ""
+| `node-group-auto-discovery` | One or more definition(s) of node group auto-discovery.<br>A definition is expressed `<name of discoverer>:[<key>[=<value>]]`<br>The `aws` and `gce` cloud providers are currently supported. AWS matches by ASG tags, e.g. `asg:tag=tagKey,anotherTagKey`<br>GCE matches by IG name prefix, and requires you to specify min and max nodes per IG, e.g. `mig:namePrefix=pfx,min=0,max=10`<br>Can be used multiple times | ""
+| `estimator` | Type of resource estimator to be used in scale up | binpacking
+| `expander` | Type of node group expander to be used in scale up.  | random
+| `write-status-configmap` | Should CA write status information to a configmap  | true
+| `max-inactivity` | Maximum time from last recorded autoscaler activity before automatic restart | 10 minutes
+| `max-failing-time` | Maximum time from last recorded successful autoscaler run before automatic restart | 15 minutes
+| `balance-similar-node-groups` | Detect similar node groups and balance the number of nodes between them | false
+| `node-autoprovisioning-enabled` | Should CA autoprovision node groups when needed | false
+| `max-autoprovisioned-node-group-count` | The maximum number of autoprovisioned groups in the cluster | 15
+| `expendable-pods-priority-cutoff` | Pods with priority below cutoff will be expendable. They can be killed without any consideration during scale down and they don't cause scale up. Pods with null priority (PodPriority disabled) are non expendable | 0
+| `regional` | Cluster is regional | false
+| `leader-elect` | Start a leader election client and gain leadership before executing the main loop.<br>Enable this when running replicated components for high availability | true
+| `leader-elect-lease-duration` | The duration that non-leader candidates will wait after observing a leadership<br>renewal until attempting to acquire leadership of a led but unrenewed leader slot.<br>This is effectively the maximum duration that a leader can be stopped before it is replaced by another candidate.<br>This is only applicable if leader election is enabled | 15 seconds
+| `leader-elect-renew-deadline` | The interval between attempts by the acting master to renew a leadership slot before it stops leading.<br>This must be less than or equal to the lease duration.<br>This is only applicable if leader election is enabled | 10 seconds
+| `leader-elect-retry-period` | The duration the clients should wait between attempting acquisition and renewal of a leadership.<br>This is only applicable if leader election is enabled | 2 seconds
+| `leader-elect-resource-lock` | The type of resource object that is used for locking during leader election.<br>Supported options are `endpoints` (default) and `configmaps` | "endpoints"
 
 # Troubleshooting:
 
