@@ -147,7 +147,7 @@ func (b CloudProviderBuilder) buildAWS(do cloudprovider.NodeGroupDiscoveryOption
 func (b CloudProviderBuilder) buildAzure(do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	var config io.ReadCloser
 	if b.cloudConfig != "" {
-		glog.Info("Creating Azure Manager using cloud-config file: %v", b.cloudConfig)
+		glog.Infof("Creating Azure Manager using cloud-config file: %v", b.cloudConfig)
 		var err error
 		config, err := os.Open(b.cloudConfig)
 		if err != nil {
