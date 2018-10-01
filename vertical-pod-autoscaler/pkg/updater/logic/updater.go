@@ -17,6 +17,7 @@ limitations under the License.
 package logic
 
 import (
+	"fmt"
 	"time"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/eviction"
@@ -57,15 +58,19 @@ type updater struct {
 }
 
 // NewUpdater creates Updater with given configuration
-func NewUpdater(kubeClient kube_client.Interface, vpaClient *vpa_clientset.Clientset, minReplicasForEvicition int, evictionToleranceFraction float64, recommendationProcessor vpa_api_util.RecommendationProcessor, evictionAdmission priority.PodEvictionAdmission) Updater {
+func NewUpdater(kubeClient kube_client.Interface, vpaClient *vpa_clientset.Clientset, minReplicasForEvicition int, evictionToleranceFraction float64, recommendationProcessor vpa_api_util.RecommendationProcessor, evictionAdmission priority.PodEvictionAdmission) (Updater, error) {
+	factory, err := eviction.NewPodsEvictionRestrictionFactory(kubeClient, minReplicasForEvicition, evictionToleranceFraction)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create eviction restriction factory: %v", err)
+	}
 	return &updater{
 		vpaLister:               vpa_api_util.NewAllVpasLister(vpaClient, make(chan struct{})),
 		podLister:               newPodLister(kubeClient),
 		eventRecorder:           newEventRecorder(kubeClient),
-		evictionFactory:         eviction.NewPodsEvictionRestrictionFactory(kubeClient, minReplicasForEvicition, evictionToleranceFraction),
+		evictionFactory:         factory,
 		recommendationProcessor: recommendationProcessor,
 		evictionAdmission:       evictionAdmission,
-	}
+	}, nil
 }
 
 // RunOnce represents single iteration in the main-loop of Updater

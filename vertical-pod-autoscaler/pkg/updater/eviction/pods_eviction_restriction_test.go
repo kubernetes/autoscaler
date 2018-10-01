@@ -19,18 +19,18 @@ package eviction
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
-	appsv1beta1 "k8s.io/api/apps/v1beta1"
+	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	apiv1 "k8s.io/api/core/v1"
-	extensions "k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
-	kube_client "k8s.io/client-go/kubernetes"
+	appsinformer "k8s.io/client-go/informers/apps/v1"
+	coreinformer "k8s.io/client-go/informers/core/v1"
 	"k8s.io/client-go/kubernetes/fake"
-	core "k8s.io/client-go/testing"
+	"k8s.io/client-go/tools/cache"
 	"k8s.io/kubernetes/pkg/api/testapi"
 )
 
@@ -235,7 +235,8 @@ func TestEvictReplicatedByController(t *testing.T) {
 		for _, p := range testCase.pods {
 			pods = append(pods, p.pod)
 		}
-		eviction := NewPodsEvictionRestrictionFactory(fakeClient(&rc, nil, nil, nil, pods), 2, testCase.evictionTollerance).NewPodsEvictionRestriction(pods)
+		factory, _ := getEvictionRestrictionFactory(&rc, nil, nil, 2, testCase.evictionTollerance)
+		eviction := factory.NewPodsEvictionRestriction(pods)
 		for i, p := range testCase.pods {
 			assert.Equalf(t, p.canEvict, eviction.CanEvict(p.pod), "TC %v - unexpected CanEvict result for pod-%v %#v", tcIndex, i, p.pod)
 		}
@@ -255,7 +256,7 @@ func TestEvictReplicatedByReplicaSet(t *testing.T) {
 	replicas := int32(5)
 	livePods := 5
 
-	rs := extensions.ReplicaSet{
+	rs := appsv1.ReplicaSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "rs",
 			Namespace: "default",
@@ -264,17 +265,18 @@ func TestEvictReplicatedByReplicaSet(t *testing.T) {
 		TypeMeta: metav1.TypeMeta{
 			Kind: "ReplicaSet",
 		},
-		Spec: extensions.ReplicaSetSpec{
+		Spec: appsv1.ReplicaSetSpec{
 			Replicas: &replicas,
 		},
 	}
 
 	pods := make([]*apiv1.Pod, livePods)
 	for i := range pods {
-		pods[i] = test.Pod().WithName("test"+string(i)).WithCreator(&rs.ObjectMeta, &rs.TypeMeta).Get()
+		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&rs.ObjectMeta, &rs.TypeMeta).Get()
 	}
 
-	eviction := NewPodsEvictionRestrictionFactory(fakeClient(nil, &rs, nil, nil, pods), 2, 0.5).NewPodsEvictionRestriction(pods)
+	factory, _ := getEvictionRestrictionFactory(nil, &rs, nil, 2, 0.5)
+	eviction := factory.NewPodsEvictionRestriction(pods)
 
 	for _, pod := range pods {
 		assert.True(t, eviction.CanEvict(pod))
@@ -294,26 +296,27 @@ func TestEvictReplicatedByStatefulSet(t *testing.T) {
 	replicas := int32(5)
 	livePods := 5
 
-	ss := appsv1beta1.StatefulSet{
+	ss := appsv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "ss",
 			Namespace: "default",
-			SelfLink:  "/apiv1s/extensions/v1beta1/namespaces/default/statefulsets/ss",
+			SelfLink:  "/apiv1s/apps/v1/namespaces/default/statefulsets/ss",
 		},
 		TypeMeta: metav1.TypeMeta{
 			Kind: "StatefulSet",
 		},
-		Spec: appsv1beta1.StatefulSetSpec{
+		Spec: appsv1.StatefulSetSpec{
 			Replicas: &replicas,
 		},
 	}
 
 	pods := make([]*apiv1.Pod, livePods)
 	for i := range pods {
-		pods[i] = test.Pod().WithName("test"+string(i)).WithCreator(&ss.ObjectMeta, &ss.TypeMeta).Get()
+		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&ss.ObjectMeta, &ss.TypeMeta).Get()
 	}
 
-	eviction := NewPodsEvictionRestrictionFactory(fakeClient(nil, nil, &ss, nil, pods), 2, 0.5).NewPodsEvictionRestriction(pods)
+	factory, _ := getEvictionRestrictionFactory(nil, nil, &ss, 2, 0.5)
+	eviction := factory.NewPodsEvictionRestriction(pods)
 
 	for _, pod := range pods {
 		assert.True(t, eviction.CanEvict(pod))
@@ -334,7 +337,7 @@ func TestEvictReplicatedByJob(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "job",
 			Namespace: "default",
-			SelfLink:  "/apiv1s/extensions/v1beta1/namespaces/default/jobs/job",
+			SelfLink:  "/apiv1s/apps/v1/namespaces/default/jobs/job",
 		},
 		TypeMeta: metav1.TypeMeta{
 			Kind: "Job",
@@ -345,10 +348,11 @@ func TestEvictReplicatedByJob(t *testing.T) {
 
 	pods := make([]*apiv1.Pod, livePods)
 	for i := range pods {
-		pods[i] = test.Pod().WithName("test"+string(i)).WithCreator(&job.ObjectMeta, &job.TypeMeta).Get()
+		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&job.ObjectMeta, &job.TypeMeta).Get()
 	}
 
-	eviction := NewPodsEvictionRestrictionFactory(fakeClient(nil, nil, nil, &job, pods), 2, 0.5).NewPodsEvictionRestriction(pods)
+	factory, _ := getEvictionRestrictionFactory(nil, nil, nil, 2, 0.5)
+	eviction := factory.NewPodsEvictionRestriction(pods)
 
 	for _, pod := range pods {
 		assert.True(t, eviction.CanEvict(pod))
@@ -384,10 +388,11 @@ func TestEvictTooFewReplicas(t *testing.T) {
 
 	pods := make([]*apiv1.Pod, livePods)
 	for i := range pods {
-		pods[i] = test.Pod().WithName("test"+string(i)).WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get()
+		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get()
 	}
 
-	eviction := NewPodsEvictionRestrictionFactory(fakeClient(&rc, nil, nil, nil, pods), 10, 0.5).NewPodsEvictionRestriction(pods)
+	factory, _ := getEvictionRestrictionFactory(&rc, nil, nil, 10, 0.5)
+	eviction := factory.NewPodsEvictionRestriction(pods)
 
 	for _, pod := range pods {
 		assert.False(t, eviction.CanEvict(pod))
@@ -420,10 +425,11 @@ func TestEvictionTolerance(t *testing.T) {
 
 	pods := make([]*apiv1.Pod, livePods)
 	for i := range pods {
-		pods[i] = test.Pod().WithName("test"+string(i)).WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get()
+		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get()
 	}
 
-	eviction := NewPodsEvictionRestrictionFactory(fakeClient(&rc, nil, nil, nil, pods), 2 /*minReplicas*/, tolerance).NewPodsEvictionRestriction(pods)
+	factory, _ := getEvictionRestrictionFactory(&rc, nil, nil, 2 /*minReplicas*/, tolerance)
+	eviction := factory.NewPodsEvictionRestriction(pods)
 
 	for _, pod := range pods {
 		assert.True(t, eviction.CanEvict(pod))
@@ -460,10 +466,11 @@ func TestEvictAtLeastOne(t *testing.T) {
 
 	pods := make([]*apiv1.Pod, livePods)
 	for i := range pods {
-		pods[i] = test.Pod().WithName("test"+string(i)).WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get()
+		pods[i] = test.Pod().WithName(getTestPodName(i)).WithCreator(&rc.ObjectMeta, &rc.TypeMeta).Get()
 	}
 
-	eviction := NewPodsEvictionRestrictionFactory(fakeClient(&rc, nil, nil, nil, pods), 2, tolerance).NewPodsEvictionRestriction(pods)
+	factory, _ := getEvictionRestrictionFactory(&rc, nil, nil, 2, tolerance)
+	eviction := factory.NewPodsEvictionRestriction(pods)
 
 	for _, pod := range pods {
 		assert.True(t, eviction.CanEvict(pod))
@@ -479,28 +486,44 @@ func TestEvictAtLeastOne(t *testing.T) {
 	}
 }
 
-func fakeClient(rc *apiv1.ReplicationController, rs *extensions.ReplicaSet, ss *appsv1beta1.StatefulSet, job *batchv1.Job, pods []*apiv1.Pod) kube_client.Interface {
-	fakeClient := &fake.Clientset{}
-	register := func(resource string, obj runtime.Object, meta metav1.ObjectMeta) {
-		fakeClient.Fake.AddReactor("get", resource, func(action core.Action) (bool, runtime.Object, error) {
-			getAction := action.(core.GetAction)
-			if getAction.GetName() == meta.GetName() && getAction.GetNamespace() == meta.GetNamespace() {
-				return true, obj, nil
-			}
-			return false, nil, fmt.Errorf("Not found")
-		})
-	}
+func getEvictionRestrictionFactory(rc *apiv1.ReplicationController, rs *appsv1.ReplicaSet,
+	ss *appsv1.StatefulSet, minReplicas int,
+	evictionToleranceFraction float64) (PodsEvictionRestrictionFactory, error) {
+	kubeClient := &fake.Clientset{}
+	rcInformer := coreinformer.NewReplicationControllerInformer(kubeClient, apiv1.NamespaceAll,
+		0*time.Second, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
+	rsInformer := appsinformer.NewReplicaSetInformer(kubeClient, apiv1.NamespaceAll,
+		0*time.Second, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
+	ssInformer := appsinformer.NewStatefulSetInformer(kubeClient, apiv1.NamespaceAll,
+		0*time.Second, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
 	if rc != nil {
-		register("replicationcontrollers", rc, rc.ObjectMeta)
+		err := rcInformer.GetIndexer().Add(rc)
+		if err != nil {
+			return nil, fmt.Errorf("Error adding object to cache: %v", err)
+		}
 	}
 	if rs != nil {
-		register("replicasets", rs, rs.ObjectMeta)
+		err := rsInformer.GetIndexer().Add(rs)
+		if err != nil {
+			return nil, fmt.Errorf("Error adding object to cache: %v", err)
+		}
 	}
 	if ss != nil {
-		register("statefulsets", ss, ss.ObjectMeta)
+		err := ssInformer.GetIndexer().Add(ss)
+		if err != nil {
+			return nil, fmt.Errorf("Error adding object to cache: %v", err)
+		}
 	}
-	if job != nil {
-		register("jobs", job, job.ObjectMeta)
-	}
-	return fakeClient
+	return &podsEvictionRestrictionFactoryImpl{
+		client:                    kubeClient,
+		rsInformer:                rsInformer,
+		rcInformer:                rcInformer,
+		ssInformer:                ssInformer,
+		minReplicas:               minReplicas,
+		evictionToleranceFraction: evictionToleranceFraction,
+	}, nil
+}
+
+func getTestPodName(index int) string {
+	return fmt.Sprintf("test-%v", index)
 }
