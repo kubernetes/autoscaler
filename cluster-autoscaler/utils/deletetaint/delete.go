@@ -22,6 +22,7 @@ import (
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kube_client "k8s.io/client-go/kubernetes"
 
@@ -31,27 +32,38 @@ import (
 const (
 	// ToBeDeletedTaint is a taint used to make the node unschedulable.
 	ToBeDeletedTaint = "ToBeDeletedByClusterAutoscaler"
+
+	maxRetryDeadline      = 5 * time.Second
+	conflictRetryInterval = 750 * time.Millisecond
 )
 
 // MarkToBeDeleted sets a taint that makes the node unschedulable.
 func MarkToBeDeleted(node *apiv1.Node, client kube_client.Interface) error {
-	// Get the newest version of the node.
-	freshNode, err := client.CoreV1().Nodes().Get(node.Name, metav1.GetOptions{})
-	if err != nil || freshNode == nil {
-		return fmt.Errorf("failed to get node %v: %v", node.Name, err)
-	}
+	retryDeadline := time.Now().Add(maxRetryDeadline)
+	for {
+		// Get the newest version of the node.
+		freshNode, err := client.CoreV1().Nodes().Get(node.Name, metav1.GetOptions{})
+		if err != nil || freshNode == nil {
+			return fmt.Errorf("failed to get node %v: %v", node.Name, err)
+		}
 
-	added, err := addToBeDeletedTaint(freshNode)
-	if added == false {
-		return err
+		added, err := addToBeDeletedTaint(freshNode)
+		if added == false {
+			return err
+		}
+		_, err = client.CoreV1().Nodes().Update(freshNode)
+		if err != nil && errors.IsConflict(err) && time.Now().Before(retryDeadline) {
+			time.Sleep(conflictRetryInterval)
+			continue
+		}
+
+		if err != nil {
+			glog.Warningf("Error while adding taints on node %v: %v", node.Name, err)
+			return err
+		}
+		glog.V(1).Infof("Successfully added toBeDeletedTaint on node %v", node.Name)
+		return nil
 	}
-	_, err = client.CoreV1().Nodes().Update(freshNode)
-	if err != nil {
-		glog.Warningf("Error while adding taints on node %v: %v", node.Name, err)
-		return err
-	}
-	glog.V(1).Infof("Successfully added toBeDeletedTaint on node %v", node.Name)
-	return nil
 }
 
 func addToBeDeletedTaint(node *apiv1.Node) (bool, error) {
@@ -96,28 +108,37 @@ func GetToBeDeletedTime(node *apiv1.Node) (*time.Time, error) {
 
 // CleanToBeDeleted cleans ToBeDeleted taint.
 func CleanToBeDeleted(node *apiv1.Node, client kube_client.Interface) (bool, error) {
-	freshNode, err := client.CoreV1().Nodes().Get(node.Name, metav1.GetOptions{})
-	if err != nil || freshNode == nil {
-		return false, fmt.Errorf("failed to get node %v: %v", node.Name, err)
-	}
-	newTaints := make([]apiv1.Taint, 0)
-	for _, taint := range freshNode.Spec.Taints {
-		if taint.Key == ToBeDeletedTaint {
-			glog.V(1).Infof("Releasing taint %+v on node %v", taint, node.Name)
-		} else {
-			newTaints = append(newTaints, taint)
+	retryDeadline := time.Now().Add(maxRetryDeadline)
+	for {
+		freshNode, err := client.CoreV1().Nodes().Get(node.Name, metav1.GetOptions{})
+		if err != nil || freshNode == nil {
+			return false, fmt.Errorf("failed to get node %v: %v", node.Name, err)
 		}
-	}
+		newTaints := make([]apiv1.Taint, 0)
+		for _, taint := range freshNode.Spec.Taints {
+			if taint.Key == ToBeDeletedTaint {
+				glog.V(1).Infof("Releasing taint %+v on node %v", taint, node.Name)
+			} else {
+				newTaints = append(newTaints, taint)
+			}
+		}
 
-	if len(newTaints) != len(freshNode.Spec.Taints) {
-		freshNode.Spec.Taints = newTaints
-		_, err := client.CoreV1().Nodes().Update(freshNode)
-		if err != nil {
-			glog.Warningf("Error while releasing taints on node %v: %v", node.Name, err)
-			return false, err
+		if len(newTaints) != len(freshNode.Spec.Taints) {
+			freshNode.Spec.Taints = newTaints
+			_, err := client.CoreV1().Nodes().Update(freshNode)
+
+			if err != nil && errors.IsConflict(err) && time.Now().Before(retryDeadline) {
+				time.Sleep(conflictRetryInterval)
+				continue
+			}
+
+			if err != nil {
+				glog.Warningf("Error while releasing taints on node %v: %v", node.Name, err)
+				return false, err
+			}
+			glog.V(1).Infof("Successfully released toBeDeletedTaint on node %v", node.Name)
+			return true, nil
 		}
-		glog.V(1).Infof("Successfully released toBeDeletedTaint on node %v", node.Name)
-		return true, nil
+		return false, nil
 	}
-	return false, nil
 }
