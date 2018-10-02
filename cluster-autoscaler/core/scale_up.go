@@ -456,10 +456,10 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 		if !bestOption.NodeGroup.Exist() {
 			oldId := bestOption.NodeGroup.Id()
 			createNodeGroupResult, err := processors.NodeGroupManager.CreateNodeGroup(context, bestOption.NodeGroup)
-			bestOption.NodeGroup = createNodeGroupResult.MainCreatedNodeGroup
 			if err != nil {
 				return &status.ScaleUpStatus{Result: status.ScaleUpError}, err
 			}
+			bestOption.NodeGroup = createNodeGroupResult.MainCreatedNodeGroup
 
 			// If possible replace candidate node-info with node info based on crated node group. The latter
 			// one should be more in line with nodes which will be created by node group.
@@ -485,6 +485,11 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 				}
 				nodeInfos[nodeGroup.Id()] = nodeInfo
 			}
+
+			// Update ClusterStateRegistry so similar nodegroups rebalancing works.
+			// TODO(lukaszos) when pursuing scalability update this call with one which takes list of changed node groups so we do not
+			//                do extra API calls. (the call at the bottom of ScaleUp() could be also changed then)
+			clusterStateRegistry.Recalculate()
 		}
 
 		nodeInfo, found := nodeInfos[bestOption.NodeGroup.Id()]
