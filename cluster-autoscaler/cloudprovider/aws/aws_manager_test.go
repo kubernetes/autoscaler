@@ -18,6 +18,9 @@ package aws
 
 import (
 	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -29,6 +32,32 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 )
+
+// TestGetRegion ensures correct source supplies AWS Region.
+func TestGetRegion(t *testing.T) {
+	key := "AWS_REGION"
+	originalRegion, originalPresent := os.LookupEnv(key)
+	defer func(region string, present bool) {
+		os.Unsetenv(key)
+		if present {
+			os.Setenv(key, region)
+		}
+	}(originalRegion, originalPresent)
+	// Ensure environment variable retains precedence.
+	expected1 := "the-shire-1"
+	os.Setenv(key, expected1)
+	assert.Equal(t, expected1, getRegion())
+	// Ensure without environment variable, EC2 Metadata used... and it merely
+	// chops the last character off the Availability Zone.
+	expected2 := "mordor-2"
+	expected2a := expected2 + "a"
+	os.Unsetenv(key)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(expected2a))
+	}))
+	cfg := aws.NewConfig().WithEndpoint(server.URL)
+	assert.Equal(t, expected2, getRegion(cfg))
+}
 
 func TestBuildGenericLabels(t *testing.T) {
 	labels := buildGenericLabels(&asgTemplate{
