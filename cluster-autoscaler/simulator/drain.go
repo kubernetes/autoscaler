@@ -94,7 +94,7 @@ func checkPdbs(pods []*apiv1.Pod, pdbs []*policyv1.PodDisruptionBudget) error {
 		for _, pod := range pods {
 			if pod.Namespace == pdb.Namespace && selector.Matches(labels.Set(pod.Labels)) {
 				if pdb.Status.PodDisruptionsAllowed < 1 {
-					return fmt.Errorf("no enough pod disruption budget to move %s/%s", pod.Namespace, pod.Name)
+					return fmt.Errorf("not enough pod disruption budget to move %s/%s", pod.Namespace, pod.Name)
 				}
 			}
 		}
