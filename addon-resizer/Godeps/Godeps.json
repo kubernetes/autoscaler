@@ -1,5 +1,5 @@
 {
-	"ImportPath": "k8s.io/contrib/addon-resizer",
+	"ImportPath": "k8s.io/autoscaler/addon-resizer",
 	"GoVersion": "go1.6",
 	"GodepVersion": "v74",
 	"Packages": [
