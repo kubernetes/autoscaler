@@ -450,7 +450,7 @@ recommend to set those flags to the same value.
 ### How does scale-down work?
 
 Every 10 seconds (configurable by `--scan-interval` flag), if no scale-up is
-needed, Cluster Autoscaler checks which nodes are unneeded. A node is considered for removal when:
+needed, Cluster Autoscaler checks which nodes are unneeded. A node is considered for removal when **all** below conditions hold:
 
 * The sum of cpu and memory requests of all pods running on this node is smaller
   than 50% of the node's allocatable. (Before 1.1.0, node capacity was used
