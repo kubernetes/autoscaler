@@ -17,6 +17,7 @@ limitations under the License.
 package checkpoint
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -115,4 +116,39 @@ func TestIsFetchingHistory(t *testing.T) {
 	for _, tc := range testCases {
 		assert.Equalf(t, tc.isFetchingHistory, isFetchingHistory(&tc.vpa), "%+v should have %v as isFetchingHistoryResult", tc.vpa, tc.isFetchingHistory)
 	}
+}
+
+func TestGetVpasToCheckpointSorts(t *testing.T) {
+
+	time1 := time.Unix(10000, 0)
+	time2 := time.Unix(20000, 0)
+
+	genVpaID := func(index int) model.VpaID {
+		return model.VpaID{
+			VpaName: fmt.Sprintf("vpa-%d", index),
+		}
+	}
+	vpa0 := &model.Vpa{
+		ID: genVpaID(0),
+	}
+	vpa1 := &model.Vpa{
+		ID:                genVpaID(1),
+		CheckpointWritten: time1,
+	}
+	vpa2 := &model.Vpa{
+		ID:                genVpaID(2),
+		CheckpointWritten: time2,
+	}
+	vpas := make(map[model.VpaID]*model.Vpa)
+	addVpa := func(vpa *model.Vpa) {
+		vpas[vpa.ID] = vpa
+	}
+	addVpa(vpa2)
+	addVpa(vpa0)
+	addVpa(vpa1)
+	result := getVpasToCheckpoint(vpas)
+	assert.Equal(t, genVpaID(0), result[0].ID)
+	assert.Equal(t, genVpaID(1), result[1].ID)
+	assert.Equal(t, genVpaID(2), result[2].ID)
+
 }
