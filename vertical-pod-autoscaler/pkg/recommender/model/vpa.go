@@ -89,6 +89,8 @@ type Vpa struct {
 	UpdateMode *vpa_types.UpdateMode
 	// Created denotes timestamp of the original VPA object creation
 	Created time.Time
+	// CheckpointWritten indicates when last checkpoint for the VPA object was stored.
+	CheckpointWritten time.Time
 }
 
 // NewVpa returns a new Vpa with a given ID and pod selector. Doesn't set the

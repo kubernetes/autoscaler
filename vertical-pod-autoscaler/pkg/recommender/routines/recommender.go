@@ -17,6 +17,8 @@ limitations under the License.
 package routines
 
 import (
+	"context"
+	"flag"
 	"time"
 
 	"github.com/golang/glog"
@@ -37,6 +39,11 @@ const (
 	AggregateContainerStateGCInterval = 1 * time.Hour
 )
 
+var (
+	checkpointsWriteTimeout = flag.Duration("checkpoints-timeout", time.Minute, `Timeout for writing checkpoints since the start of the recommender's main loop`)
+	minCheckpointsPerRun    = flag.Int("min-checkpoints", 10, "Minimum number of checkpoints to write per recommender's main loop")
+)
+
 // Recommender recommend resources for certain containers, based on utilization periodically got from metrics api.
 type Recommender interface {
 	// RunOnce performs one iteration of recommender duties followed by update of recommendations in VPA objects.
@@ -48,7 +55,9 @@ type Recommender interface {
 	// UpdateVPAs computes recommendations and sends VPAs status updates to API Server
 	UpdateVPAs()
 	// MaintainCheckpoints stores current checkpoints in API Server and garbage collect old ones
-	MaintainCheckpoints()
+	// MaintainCheckpoints writes at least minCheckpoints if there are more checkponits to write.
+	// Checkpoints are written until ctx permits or all checkpoints are written.
+	MaintainCheckpoints(ctx context.Context, minCheckpoints int)
 	// GarbageCollect removes old AggregateCollectionStates
 	GarbageCollect()
 }
@@ -118,10 +127,10 @@ func (r *recommender) UpdateVPAs() {
 	}
 }
 
-func (r *recommender) MaintainCheckpoints() {
+func (r *recommender) MaintainCheckpoints(ctx context.Context, minCheckpointsPerRun int) {
 	now := time.Now()
 	if r.useCheckpoints {
-		r.checkpointWriter.StoreCheckpoints(now)
+		r.checkpointWriter.StoreCheckpoints(ctx, now, minCheckpointsPerRun)
 		if time.Now().Sub(r.lastCheckpointGC) > r.checkpointsGCInterval {
 			r.lastCheckpointGC = now
 			r.clusterStateFeeder.GarbageCollectCheckpoints()
@@ -142,6 +151,10 @@ func (r *recommender) RunOnce() {
 	timer := metrics_recommender.NewExecutionTimer()
 	defer timer.ObserveTotal()
 
+	ctx := context.Background()
+	ctx, cancelFunc := context.WithDeadline(ctx, time.Now().Add(*checkpointsWriteTimeout))
+	defer cancelFunc()
+
 	glog.V(3).Infof("Recommender Run")
 	r.clusterStateFeeder.LoadVPAs()
 	timer.ObserveStep("LoadVPAs")
@@ -154,7 +167,7 @@ func (r *recommender) RunOnce() {
 	r.UpdateVPAs()
 	timer.ObserveStep("UpdateVPAs")
 
-	r.MaintainCheckpoints()
+	r.MaintainCheckpoints(ctx, *minCheckpointsPerRun)
 	timer.ObserveStep("MaintainCheckpoints")
 
 	r.GarbageCollect()
