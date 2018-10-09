@@ -84,7 +84,7 @@ func NewHistogram(options HistogramOptions) Histogram {
 
 // Simple bucket-based implementation of the Histogram interface. Each bucket
 // holds the total weight of samples that belong to it.
-// Percentile() returns the middle of the correspodning bucket.
+// Percentile() returns the upper bound of the corresponding bucket.
 // Resolution (bucket boundaries) of the histogram depends on the options.
 // There's no interpolation within buckets (i.e. one sample falls to exactly one
 // bucket).
@@ -110,10 +110,10 @@ func (h *histogram) AddSample(value float64, weight float64, time time.Time) {
 	bucket := h.options.FindBucket(value)
 	h.bucketWeight[bucket] += weight
 	h.totalWeight += weight
-	if bucket < h.minBucket {
+	if bucket < h.minBucket && h.bucketWeight[bucket] >= h.options.Epsilon() {
 		h.minBucket = bucket
 	}
-	if bucket > h.maxBucket {
+	if bucket > h.maxBucket && h.bucketWeight[bucket] >= h.options.Epsilon() {
 		h.maxBucket = bucket
 	}
 }
