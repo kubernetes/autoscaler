@@ -100,6 +100,21 @@ func TestEmptyHistogram(t *testing.T) {
 	assert.True(t, h.IsEmpty())
 }
 
+// Verifies that IsEmpty() returns false if we add epsilon-weight sample to a non-empty histogram.
+func TestNonEmptyOnEpsilonAddition(t *testing.T) {
+	options, err := NewLinearHistogramOptions(1.0, 0.1, weightEpsilon)
+	assert.Nil(t, err)
+	h := NewHistogram(options)
+	assert.True(t, h.IsEmpty())
+
+	h.AddSample(9.9, weightEpsilon*3, anyTime)
+	assert.False(t, h.IsEmpty())
+	h.AddSample(0.1, weightEpsilon*0.3, anyTime)
+	assert.False(t, h.IsEmpty()) // weight*3 sample should make the histogram non-empty
+	h.AddSample(999.9, weightEpsilon*0.3, anyTime)
+	assert.False(t, h.IsEmpty())
+}
+
 // Verifies that Merge() works as expected on two sample histograms.
 func TestHistogramMerge(t *testing.T) {
 	h1 := NewHistogram(testHistogramOptions)

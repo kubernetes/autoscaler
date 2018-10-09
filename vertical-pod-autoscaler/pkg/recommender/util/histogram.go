@@ -110,10 +110,10 @@ func (h *histogram) AddSample(value float64, weight float64, time time.Time) {
 	bucket := h.options.FindBucket(value)
 	h.bucketWeight[bucket] += weight
 	h.totalWeight += weight
-	if bucket < h.minBucket {
+	if bucket < h.minBucket && h.bucketWeight[bucket] >= h.options.Epsilon() {
 		h.minBucket = bucket
 	}
-	if bucket > h.maxBucket {
+	if bucket > h.maxBucket && h.bucketWeight[bucket] >= h.options.Epsilon() {
 		h.maxBucket = bucket
 	}
 }
