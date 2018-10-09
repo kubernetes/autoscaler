@@ -71,7 +71,6 @@ func TestPercentileOutOfBounds(t *testing.T) {
 	options, err := NewLinearHistogramOptions(1.0, 0.1, weightEpsilon)
 	assert.Nil(t, err)
 	h := NewHistogram(options)
-	assert.Nil(t, err)
 	h.AddSample(0.1, 0.1, anyTime)
 	h.AddSample(0.2, 0.2, anyTime)
 
@@ -90,7 +89,6 @@ func TestEmptyHistogram(t *testing.T) {
 	options, err := NewLinearHistogramOptions(1.0, 0.1, weightEpsilon)
 	assert.Nil(t, err)
 	h := NewHistogram(options)
-	assert.Nil(t, err)
 	assert.True(t, h.IsEmpty())
 	h.AddSample(0.1, weightEpsilon*2.5, anyTime) // Sample weight = epsilon * 2.5.
 	assert.False(t, h.IsEmpty())
