@@ -84,7 +84,7 @@ func NewHistogram(options HistogramOptions) Histogram {
 
 // Simple bucket-based implementation of the Histogram interface. Each bucket
 // holds the total weight of samples that belong to it.
-// Percentile() returns the middle of the correspodning bucket.
+// Percentile() returns the upper bound of the corresponding bucket.
 // Resolution (bucket boundaries) of the histogram depends on the options.
 // There's no interpolation within buckets (i.e. one sample falls to exactly one
 // bucket).
