@@ -120,4 +120,13 @@ func TestNodesSimilarVariousLabels(t *testing.T) {
 	n1.ObjectMeta.Labels[kubeletapis.LabelZoneFailureDomain] = "mars-olympus-mons1-b"
 	n2.ObjectMeta.Labels[kubeletapis.LabelZoneFailureDomain] = "us-houston1-a"
 	checkNodesSimilar(t, n1, n2, true)
+
+	// Different beta.kubernetes.io/fluentd-ds-ready should not matter
+	n1.ObjectMeta.Labels["beta.kubernetes.io/fluentd-ds-ready"] = "true"
+	n2.ObjectMeta.Labels["beta.kubernetes.io/fluentd-ds-ready"] = "false"
+	checkNodesSimilar(t, n1, n2, true)
+
+	n1.ObjectMeta.Labels["beta.kubernetes.io/fluentd-ds-ready"] = "true"
+	delete(n2.ObjectMeta.Labels, "beta.kubernetes.io/fluentd-ds-ready")
+	checkNodesSimilar(t, n1, n2, true)
 }
