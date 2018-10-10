@@ -54,7 +54,7 @@ const (
 	// Version id should be incremented on every non incompatible change, i.e. if the new
 	// version of the recommender binary can't initialize from the old checkpoint format or the
 	// previous version of the recommender binary can't initialize from the new checkpoint format.
-	SupportedCheckpointVersion = "v2"
+	SupportedCheckpointVersion = "v3"
 )
 
 // ContainerStateAggregator is an interface for objects that consume and
@@ -139,7 +139,6 @@ func (a *AggregateContainerState) addCPUSample(sample *ContainerUsageSample) {
 	// Samples are added with the weight equal to the current request. This means that
 	// whenever the request is increased, the history accumulated so far effectively decays,
 	// which helps react quickly to CPU starvation.
-	minSampleWeight := 0.1
 	a.AggregateCPUUsage.AddSample(
 		cpuUsageCores, math.Max(cpuRequestCores, minSampleWeight), sample.MeasureStart)
 	if sample.MeasureStart.After(a.LastSampleStart) {
