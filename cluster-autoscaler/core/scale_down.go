@@ -877,19 +877,19 @@ func (sd *ScaleDown) waitForEmptyNodesDeleted(emptyNodes []*apiv1.Node, confirma
 }
 
 func (sd *ScaleDown) deleteNode(node *apiv1.Node, pods []*apiv1.Pod) errors.AutoscalerError {
-	deleteSuccessful := false
-	drainSuccessful := false
 
 	if err := deletetaint.MarkToBeDeleted(node, sd.context.ClientSet); err != nil {
 		sd.context.Recorder.Eventf(node, apiv1.EventTypeWarning, "ScaleDownFailed", "failed to mark the node as toBeDeleted/unschedulable: %v", err)
 		return errors.ToAutoscalerError(errors.ApiCallError, err)
 	}
 
+	var deleteErr errors.AutoscalerError
+	var drainErr errors.AutoscalerError
 	// If we fail to evict all the pods from the node we want to remove delete taint
 	defer func() {
-		if !deleteSuccessful {
+		if deleteErr != nil {
 			deletetaint.CleanToBeDeleted(node, sd.context.ClientSet)
-			if !drainSuccessful {
+			if drainErr != nil {
 				sd.context.Recorder.Eventf(node, apiv1.EventTypeWarning, "ScaleDownFailed", "failed to drain the node, aborting ScaleDown")
 			} else {
 				sd.context.Recorder.Eventf(node, apiv1.EventTypeWarning, "ScaleDownFailed", "failed to delete the node")
@@ -900,18 +900,16 @@ func (sd *ScaleDown) deleteNode(node *apiv1.Node, pods []*apiv1.Pod) errors.Auto
 	sd.context.Recorder.Eventf(node, apiv1.EventTypeNormal, "ScaleDown", "marked the node as toBeDeleted/unschedulable")
 
 	// attempt drain
-	if err := drainNode(node, pods, sd.context.ClientSet, sd.context.Recorder, sd.context.MaxGracefulTerminationSec, MaxPodEvictionTime, EvictionRetryTime); err != nil {
-		return err
+	if drainErr = drainNode(node, pods, sd.context.ClientSet, sd.context.Recorder, sd.context.MaxGracefulTerminationSec, MaxPodEvictionTime, EvictionRetryTime); err != nil {
+		return drainErr
 	}
-	drainSuccessful = true
 
 	// attempt delete from cloud provider
-	err := deleteNodeFromCloudProvider(node, sd.context.CloudProvider, sd.context.Recorder, sd.clusterStateRegistry)
-	if err != nil {
-		return err
+	deleteErr = deleteNodeFromCloudProvider(node, sd.context.CloudProvider, sd.context.Recorder, sd.clusterStateRegistry)
+	if deleteErr != nil {
+		return deleteErr
 	}
 
-	deleteSuccessful = true // Let the deferred function know there is no need to cleanup
 	return nil
 }
 
