@@ -35,6 +35,7 @@ import (
 	kubemarkcontroller "k8s.io/kubernetes/pkg/kubemark"
 
 	"github.com/golang/glog"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud"
 )
 
 // AvailableCloudProviders supported by the cloud provider builder.
@@ -76,6 +77,8 @@ func NewCloudProvider(opts config.AutoscalingOptions) cloudprovider.CloudProvide
 		return buildAzure(opts, do, rl)
 	case kubemark.ProviderName:
 		return buildKubemark(opts, do, rl)
+	case alicloud.ProviderName:
+		return buildAlicloud(opts, do, rl)
 	case "":
 		// Ideally this would be an error, but several unit tests of the
 		// StaticAutoscaler depend on this behaviour.
@@ -218,4 +221,27 @@ func buildKubemark(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDis
 		glog.Fatalf("Failed to create Kubemark cloud provider: %v", err)
 	}
 	return provider
+}
+
+func buildAlicloud(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+	var aliManager *alicloud.AliCloudManager
+	var aliError error
+	if opts.CloudConfig != "" {
+		config, fileErr := os.Open(opts.CloudConfig)
+		if fileErr != nil {
+			glog.Fatalf("Couldn't open cloud provider configuration %s: %#v", opts.CloudConfig, fileErr)
+		}
+		defer config.Close()
+		aliManager, aliError = alicloud.CreateAliCloudManager(config)
+	} else {
+		aliManager, aliError = alicloud.CreateAliCloudManager(nil)
+	}
+	if aliError != nil {
+		glog.Fatalf("Failed to create Alicloud Manager: %v", aliError)
+	}
+	cloudProvider, err := alicloud.BuildAliCloudProvider(aliManager, do, rl)
+	if err != nil {
+		glog.Fatalf("Failed to create Alicloud cloud provider: %v", err)
+	}
+	return cloudProvider
 }
