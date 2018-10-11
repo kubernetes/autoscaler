@@ -79,6 +79,13 @@ func (writer *checkpointWriter) StoreCheckpoints(ctx context.Context, now time.T
 	vpas := getVpasToCheckpoint(writer.cluster.Vpas)
 	for _, vpa := range vpas {
 
+		// Draining ctx.Done() channgel. ctx.Err() will be checked if timeout occured, but minCheckpoints have
+		// to be written before return from this function.
+		select {
+		case <-ctx.Done():
+		default:
+		}
+
 		if ctx.Err() != nil && minCheckpoints <= 0 {
 			return ctx.Err()
 		}
