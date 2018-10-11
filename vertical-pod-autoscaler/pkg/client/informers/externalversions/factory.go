@@ -27,6 +27,7 @@ import (
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	versioned "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
+	autoscaling_k8s_io "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/informers/externalversions/autoscaling.k8s.io"
 	internalinterfaces "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/informers/externalversions/internalinterfaces"
 	poc_autoscaling_k8s_io "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/informers/externalversions/poc.autoscaling.k8s.io"
 	cache "k8s.io/client-go/tools/cache"
@@ -172,7 +173,12 @@ type SharedInformerFactory interface {
 	ForResource(resource schema.GroupVersionResource) (GenericInformer, error)
 	WaitForCacheSync(stopCh <-chan struct{}) map[reflect.Type]bool
 
+	Autoscaling() autoscaling_k8s_io.Interface
 	Poc() poc_autoscaling_k8s_io.Interface
+}
+
+func (f *sharedInformerFactory) Autoscaling() autoscaling_k8s_io.Interface {
+	return autoscaling_k8s_io.New(f, f.namespace, f.tweakListOptions)
 }
 
 func (f *sharedInformerFactory) Poc() poc_autoscaling_k8s_io.Interface {
