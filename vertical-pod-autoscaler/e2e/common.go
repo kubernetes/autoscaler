@@ -41,28 +41,34 @@ const (
 	pollTimeout                  = 15 * time.Minute
 )
 
-func e2eDescribe(scenario, name string, body func()) bool {
-	return ginkgo.Describe(fmt.Sprintf("[VPA] [%s] %s", scenario, name), body)
+// SIGDescribe adds sig-autoscaling tag to test description.
+func SIGDescribe(text string, body func()) bool {
+	return ginkgo.Describe(fmt.Sprintf("[sig-autoscaling] %v", text), body)
+}
+
+// E2eDescribe describes a VPA e2e test.
+func E2eDescribe(scenario, name string, body func()) bool {
+	return SIGDescribe(fmt.Sprintf("[VPA] [%s] %s", scenario, name), body)
 }
 
 func recommenderE2eDescribe(name string, body func()) bool {
-	return e2eDescribe(recommenderComponent, name, body)
+	return E2eDescribe(recommenderComponent, name, body)
 }
 
 func updaterE2eDescribe(name string, body func()) bool {
-	return e2eDescribe(updateComponent, name, body)
+	return E2eDescribe(updateComponent, name, body)
 }
 
 func admissionControllerE2eDescribe(name string, body func()) bool {
-	return e2eDescribe(admissionControllerComponent, name, body)
+	return E2eDescribe(admissionControllerComponent, name, body)
 }
 
 func fullVpaE2eDescribe(name string, body func()) bool {
-	return e2eDescribe(fullVpaSuite, name, body)
+	return E2eDescribe(fullVpaSuite, name, body)
 }
 
 func actuationSuiteE2eDescribe(name string, body func()) bool {
-	return e2eDescribe(actuationSuite, name, body)
+	return E2eDescribe(actuationSuite, name, body)
 }
 
 func newHamsterDeployment(f *framework.Framework) *appsv1.Deployment {
