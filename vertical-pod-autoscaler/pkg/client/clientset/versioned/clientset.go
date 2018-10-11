@@ -19,6 +19,7 @@ limitations under the License.
 package versioned
 
 import (
+	autoscalingv1beta1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1beta1"
 	pocv1alpha1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/poc.autoscaling.k8s.io/v1alpha1"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
@@ -27,6 +28,9 @@ import (
 
 type Interface interface {
 	Discovery() discovery.DiscoveryInterface
+	AutoscalingV1beta1() autoscalingv1beta1.AutoscalingV1beta1Interface
+	// Deprecated: please explicitly pick a version if possible.
+	Autoscaling() autoscalingv1beta1.AutoscalingV1beta1Interface
 	PocV1alpha1() pocv1alpha1.PocV1alpha1Interface
 	// Deprecated: please explicitly pick a version if possible.
 	Poc() pocv1alpha1.PocV1alpha1Interface
@@ -36,7 +40,19 @@ type Interface interface {
 // version included in a Clientset.
 type Clientset struct {
 	*discovery.DiscoveryClient
-	pocV1alpha1 *pocv1alpha1.PocV1alpha1Client
+	autoscalingV1beta1 *autoscalingv1beta1.AutoscalingV1beta1Client
+	pocV1alpha1        *pocv1alpha1.PocV1alpha1Client
+}
+
+// AutoscalingV1beta1 retrieves the AutoscalingV1beta1Client
+func (c *Clientset) AutoscalingV1beta1() autoscalingv1beta1.AutoscalingV1beta1Interface {
+	return c.autoscalingV1beta1
+}
+
+// Deprecated: Autoscaling retrieves the default version of AutoscalingClient.
+// Please explicitly pick a version.
+func (c *Clientset) Autoscaling() autoscalingv1beta1.AutoscalingV1beta1Interface {
+	return c.autoscalingV1beta1
 }
 
 // PocV1alpha1 retrieves the PocV1alpha1Client
@@ -66,6 +82,10 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 	}
 	var cs Clientset
 	var err error
+	cs.autoscalingV1beta1, err = autoscalingv1beta1.NewForConfig(&configShallowCopy)
+	if err != nil {
+		return nil, err
+	}
 	cs.pocV1alpha1, err = pocv1alpha1.NewForConfig(&configShallowCopy)
 	if err != nil {
 		return nil, err
@@ -82,6 +102,7 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 // panics if there is an error in the config.
 func NewForConfigOrDie(c *rest.Config) *Clientset {
 	var cs Clientset
+	cs.autoscalingV1beta1 = autoscalingv1beta1.NewForConfigOrDie(c)
 	cs.pocV1alpha1 = pocv1alpha1.NewForConfigOrDie(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClientForConfigOrDie(c)
@@ -91,6 +112,7 @@ func NewForConfigOrDie(c *rest.Config) *Clientset {
 // New creates a new Clientset for the given RESTClient.
 func New(c rest.Interface) *Clientset {
 	var cs Clientset
+	cs.autoscalingV1beta1 = autoscalingv1beta1.New(c)
 	cs.pocV1alpha1 = pocv1alpha1.New(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClient(c)
