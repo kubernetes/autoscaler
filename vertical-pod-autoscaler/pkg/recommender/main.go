@@ -58,14 +58,10 @@ func main() {
 		recommender.GetClusterStateFeeder().InitFromHistoryProvider(history.NewPrometheusHistoryProvider(*prometheusAddress))
 	}
 
-	for {
-		select {
-		case <-time.After(*metricsFetcherInterval):
-			{
-				recommender.RunOnce()
-				healthCheck.UpdateLastActivity()
-			}
-		}
+	ticker := time.Tick(*metricsFetcherInterval)
+	for range ticker {
+		recommender.RunOnce()
+		healthCheck.UpdateLastActivity()
 	}
 
 }

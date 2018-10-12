@@ -58,14 +58,10 @@ func main() {
 	if err != nil {
 		glog.Fatalf("Failed to create updater: %v")
 	}
-	for {
-		select {
-		case <-time.After(*updaterInterval):
-			{
-				updater.RunOnce()
-				healthCheck.UpdateLastActivity()
-			}
-		}
+	ticker := time.Tick(*updaterInterval)
+	for range ticker {
+		updater.RunOnce()
+		healthCheck.UpdateLastActivity()
 	}
 }
 
