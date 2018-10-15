@@ -61,7 +61,7 @@ func NewCloudProvider(opts config.AutoscalingOptions) cloudprovider.CloudProvide
 
 	switch opts.CloudProviderName {
 	case gce.ProviderNameGCE:
-		return buildGCE(opts, do, rl)
+		return gce.BuildGCE(opts, do, rl)
 	case gke.ProviderNameGKE:
 		return gke.BuildGKE(opts, do, rl)
 	case aws.ProviderName:
@@ -79,29 +79,6 @@ func NewCloudProvider(opts config.AutoscalingOptions) cloudprovider.CloudProvide
 
 	glog.Fatalf("Unknown cloud provider: %s", opts.CloudProviderName)
 	return nil // This will never happen because the Fatalf will os.Exit
-}
-
-func buildGCE(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
-	var config io.ReadCloser
-	if opts.CloudConfig != "" {
-		var err error
-		config, err = os.Open(opts.CloudConfig)
-		if err != nil {
-			glog.Fatalf("Couldn't open cloud provider configuration %s: %#v", opts.CloudConfig, err)
-		}
-		defer config.Close()
-	}
-
-	manager, err := gce.CreateGceManager(config, do, opts.Regional)
-	if err != nil {
-		glog.Fatalf("Failed to create GCE Manager: %v", err)
-	}
-
-	provider, err := gce.BuildGceCloudProvider(manager, rl)
-	if err != nil {
-		glog.Fatalf("Failed to create GCE cloud provider: %v", err)
-	}
-	return provider
 }
 
 func buildAWS(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
