@@ -55,6 +55,13 @@ func compareResourceMapsWithTolerance(resources map[apiv1.ResourceName][]resourc
 // are similar enough to likely be the same type of machine and if the set of labels
 // is the same (except for a pre-defined set of labels like hostname or zone).
 func IsNodeInfoSimilar(n1, n2 *schedulercache.NodeInfo) bool {
+	// This is GKE specific logic. If both nodes come from same GKE node pool
+	// treat them as similar
+	// TODO move this logic to cloud provider interface some how
+	if nodesFromSameGkeNodePool(n1, n2) {
+		return true
+	}
+
 	capacity := make(map[apiv1.ResourceName][]resource.Quantity)
 	allocatable := make(map[apiv1.ResourceName][]resource.Quantity)
 	free := make(map[apiv1.ResourceName][]resource.Quantity)
@@ -111,4 +118,10 @@ func IsNodeInfoSimilar(n1, n2 *schedulercache.NodeInfo) bool {
 		}
 	}
 	return true
+}
+
+func nodesFromSameGkeNodePool(n1, n2 *schedulercache.NodeInfo) bool {
+	n1GkeNodePool := n1.Node().Labels["cloud.google.com/gke-nodepool"]
+	n2GkeNodePool := n2.Node().Labels["cloud.google.com/gke-nodepool"]
+	return n1GkeNodePool != "" && n1GkeNodePool == n2GkeNodePool
 }
