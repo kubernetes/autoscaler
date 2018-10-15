@@ -18,6 +18,8 @@ package aws
 
 import (
 	"fmt"
+	"io"
+	"os"
 	"regexp"
 	"strings"
 
@@ -25,6 +27,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 )
@@ -308,4 +311,28 @@ func (ng *AwsNodeGroup) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
 	nodeInfo := schedulercache.NewNodeInfo(cloudprovider.BuildKubeProxy(ng.asg.Name))
 	nodeInfo.SetNode(node)
 	return nodeInfo, nil
+}
+
+// BuildAWS builds AWS cloud provider, manager etc.
+func BuildAWS(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+	var config io.ReadCloser
+	if opts.CloudConfig != "" {
+		var err error
+		config, err = os.Open(opts.CloudConfig)
+		if err != nil {
+			glog.Fatalf("Couldn't open cloud provider configuration %s: %#v", opts.CloudConfig, err)
+		}
+		defer config.Close()
+	}
+
+	manager, err := CreateAwsManager(config, do)
+	if err != nil {
+		glog.Fatalf("Failed to create AWS Manager: %v", err)
+	}
+
+	provider, err := BuildAwsCloudProvider(manager, rl)
+	if err != nil {
+		glog.Fatalf("Failed to create AWS cloud provider: %v", err)
+	}
+	return provider
 }

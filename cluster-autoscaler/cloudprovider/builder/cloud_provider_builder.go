@@ -65,7 +65,7 @@ func NewCloudProvider(opts config.AutoscalingOptions) cloudprovider.CloudProvide
 	case gke.ProviderNameGKE:
 		return gke.BuildGKE(opts, do, rl)
 	case aws.ProviderName:
-		return buildAWS(opts, do, rl)
+		return aws.BuildAWS(opts, do, rl)
 	case azure.ProviderName:
 		return buildAzure(opts, do, rl)
 	case kubemark.ProviderName:
@@ -79,29 +79,6 @@ func NewCloudProvider(opts config.AutoscalingOptions) cloudprovider.CloudProvide
 
 	glog.Fatalf("Unknown cloud provider: %s", opts.CloudProviderName)
 	return nil // This will never happen because the Fatalf will os.Exit
-}
-
-func buildAWS(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
-	var config io.ReadCloser
-	if opts.CloudConfig != "" {
-		var err error
-		config, err = os.Open(opts.CloudConfig)
-		if err != nil {
-			glog.Fatalf("Couldn't open cloud provider configuration %s: %#v", opts.CloudConfig, err)
-		}
-		defer config.Close()
-	}
-
-	manager, err := aws.CreateAwsManager(config, do)
-	if err != nil {
-		glog.Fatalf("Failed to create AWS Manager: %v", err)
-	}
-
-	provider, err := aws.BuildAwsCloudProvider(manager, rl)
-	if err != nil {
-		glog.Fatalf("Failed to create AWS cloud provider: %v", err)
-	}
-	return provider
 }
 
 func buildAzure(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
