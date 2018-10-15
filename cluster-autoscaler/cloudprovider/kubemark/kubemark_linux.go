@@ -27,8 +27,13 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/client-go/informers"
+	kubeclient "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/kubernetes/pkg/kubemark"
 	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 
@@ -278,4 +283,45 @@ func buildNodeGroup(value string, kubemarkController *kubemark.KubemarkControlle
 	}
 
 	return nodeGroup, nil
+}
+
+// BuildKubemark builds Kubemark cloud provider.
+func BuildKubemark(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+	externalConfig, err := rest.InClusterConfig()
+	if err != nil {
+		glog.Fatalf("Failed to get kubeclient config for external cluster: %v", err)
+	}
+
+	kubemarkConfig, err := clientcmd.BuildConfigFromFlags("", "/kubeconfig/cluster_autoscaler.kubeconfig")
+	if err != nil {
+		glog.Fatalf("Failed to get kubeclient config for kubemark cluster: %v", err)
+	}
+
+	stop := make(chan struct{})
+
+	externalClient := kubeclient.NewForConfigOrDie(externalConfig)
+	kubemarkClient := kubeclient.NewForConfigOrDie(kubemarkConfig)
+
+	externalInformerFactory := informers.NewSharedInformerFactory(externalClient, 0)
+	kubemarkInformerFactory := informers.NewSharedInformerFactory(kubemarkClient, 0)
+	kubemarkNodeInformer := kubemarkInformerFactory.Core().V1().Nodes()
+	go kubemarkNodeInformer.Informer().Run(stop)
+
+	kubemarkController, err := kubemark.NewKubemarkController(externalClient, externalInformerFactory,
+		kubemarkClient, kubemarkNodeInformer)
+	if err != nil {
+		glog.Fatalf("Failed to create Kubemark cloud provider: %v", err)
+	}
+
+	externalInformerFactory.Start(stop)
+	if !kubemarkController.WaitForCacheSync(stop) {
+		glog.Fatalf("Failed to sync caches for kubemark controller")
+	}
+	go kubemarkController.Run(stop)
+
+	provider, err := BuildKubemarkCloudProvider(kubemarkController, do.NodeGroupSpecs, rl)
+	if err != nil {
+		glog.Fatalf("Failed to create Kubemark cloud provider: %v", err)
+	}
+	return provider
 }
