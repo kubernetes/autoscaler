@@ -33,7 +33,7 @@ import (
 	"github.com/onsi/gomega"
 )
 
-var _ = actuationSuiteE2eDescribe("Actuation", func() {
+var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
 
 	ginkgo.It("stops when pods get pending", func() {
@@ -42,10 +42,10 @@ var _ = actuationSuiteE2eDescribe("Actuation", func() {
 		c := f.ClientSet
 		ns := f.Namespace.Name
 
-		cpuQuantity := parseQuantityOrDie("100m")
-		memoryQuantity := parseQuantityOrDie("100Mi")
+		cpuQuantity := ParseQuantityOrDie("100m")
+		memoryQuantity := ParseQuantityOrDie("100Mi")
 
-		d := newHamsterDeploymentWithResources(f, cpuQuantity, memoryQuantity)
+		d := NewHamsterDeploymentWithResources(f, cpuQuantity, memoryQuantity)
 		d, err := c.AppsV1().Deployments(ns).Create(d)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		err = framework.WaitForDeploymentComplete(c, d)
@@ -55,14 +55,14 @@ var _ = actuationSuiteE2eDescribe("Actuation", func() {
 		config, err := framework.LoadConfig()
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
-		vpaCRD := newVPA(f, "hamster-vpa", &metav1.LabelSelector{
+		vpaCRD := NewVPA(f, "hamster-vpa", &metav1.LabelSelector{
 			MatchLabels: map[string]string{
 				"app": "hamster",
 			},
 		})
 
 		resourceList := apiv1.ResourceList{
-			apiv1.ResourceCPU: parseQuantityOrDie("9999"), // Request 9999 CPUs to make POD pending
+			apiv1.ResourceCPU: ParseQuantityOrDie("9999"), // Request 9999 CPUs to make POD pending
 		}
 
 		vpaCRD.Status.Recommendation = &vpa_types.RecommendedPodResources{
