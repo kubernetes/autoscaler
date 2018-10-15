@@ -22,6 +22,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
+	autoscalingv1beta1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1beta1"
+	fakeautoscalingv1beta1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1beta1/fake"
 	pocv1alpha1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/poc.autoscaling.k8s.io/v1alpha1"
 	fakepocv1alpha1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/poc.autoscaling.k8s.io/v1alpha1/fake"
 	"k8s.io/client-go/discovery"
@@ -70,6 +72,16 @@ func (c *Clientset) Discovery() discovery.DiscoveryInterface {
 }
 
 var _ clientset.Interface = &Clientset{}
+
+// AutoscalingV1beta1 retrieves the AutoscalingV1beta1Client
+func (c *Clientset) AutoscalingV1beta1() autoscalingv1beta1.AutoscalingV1beta1Interface {
+	return &fakeautoscalingv1beta1.FakeAutoscalingV1beta1{Fake: &c.Fake}
+}
+
+// Autoscaling retrieves the AutoscalingV1beta1Client
+func (c *Clientset) Autoscaling() autoscalingv1beta1.AutoscalingV1beta1Interface {
+	return &fakeautoscalingv1beta1.FakeAutoscalingV1beta1{Fake: &c.Fake}
+}
 
 // PocV1alpha1 retrieves the PocV1alpha1Client
 func (c *Clientset) PocV1alpha1() pocv1alpha1.PocV1alpha1Interface {
