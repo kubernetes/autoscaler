@@ -63,13 +63,7 @@ func NewCloudProvider(opts config.AutoscalingOptions) cloudprovider.CloudProvide
 	case gce.ProviderNameGCE:
 		return buildGCE(opts, do, rl)
 	case gke.ProviderNameGKE:
-		if do.DiscoverySpecified() {
-			glog.Fatal("GKE gets nodegroup specification via API, command line specs are not allowed")
-		}
-		if opts.NodeAutoprovisioningEnabled {
-			return buildGKE(opts, rl, gke.ModeGKENAP)
-		}
-		return buildGKE(opts, rl, gke.ModeGKE)
+		return gke.BuildGKE(opts, do, rl)
 	case aws.ProviderName:
 		return buildAWS(opts, do, rl)
 	case azure.ProviderName:
@@ -106,29 +100,6 @@ func buildGCE(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscover
 	provider, err := gce.BuildGceCloudProvider(manager, rl)
 	if err != nil {
 		glog.Fatalf("Failed to create GCE cloud provider: %v", err)
-	}
-	return provider
-}
-
-func buildGKE(opts config.AutoscalingOptions, rl *cloudprovider.ResourceLimiter, mode gke.GcpCloudProviderMode) cloudprovider.CloudProvider {
-	var config io.ReadCloser
-	if opts.CloudConfig != "" {
-		var err error
-		config, err = os.Open(opts.CloudConfig)
-		if err != nil {
-			glog.Fatalf("Couldn't open cloud provider configuration %s: %#v", opts.CloudConfig, err)
-		}
-		defer config.Close()
-	}
-
-	manager, err := gke.CreateGkeManager(config, mode, opts.ClusterName, opts.Regional)
-	if err != nil {
-		glog.Fatalf("Failed to create GKE Manager: %v", err)
-	}
-
-	provider, err := gke.BuildGkeCloudProvider(manager, rl)
-	if err != nil {
-		glog.Fatalf("Failed to create GKE cloud provider: %v", err)
 	}
 	return provider
 }
