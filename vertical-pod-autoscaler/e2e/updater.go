@@ -18,15 +18,15 @@ package autoscaling
 
 import (
 	"fmt"
-	"reflect"
+	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
+	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/wait"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
-	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/kubernetes/test/e2e/framework"
 
@@ -41,56 +41,116 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 
 		ginkgo.By("Setting up a hamster deployment")
 		c := f.ClientSet
-		ns := f.Namespace.Name
-
-		cpuQuantity := ParseQuantityOrDie("100m")
-		memoryQuantity := ParseQuantityOrDie("100Mi")
-
-		d := NewHamsterDeploymentWithResources(f, cpuQuantity, memoryQuantity)
-		d, err := c.AppsV1().Deployments(ns).Create(d)
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
-		err = framework.WaitForDeploymentComplete(c, d)
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
-
-		podList, err := framework.GetPodsForDeployment(c, d)
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		d, podList := setupHamsterDeployment(f, "100m", "100Mi", nil)
 
 		ginkgo.By("Setting up a VPA CRD")
-		config, err := framework.LoadConfig()
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
-
-		vpaCRD := NewVPA(f, "hamster-vpa", &metav1.LabelSelector{
-			MatchLabels: map[string]string{
-				"app": "hamster",
-			},
-		})
-
-		newCPUQuantity, err := resource.ParseQuantity("200m")
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
-
-		resourceList := apiv1.ResourceList{apiv1.ResourceCPU: newCPUQuantity}
-
-		vpaCRD.Status.Recommendation = &vpa_types.RecommendedPodResources{
-			ContainerRecommendations: []vpa_types.RecommendedContainerResources{{
-				ContainerName: "hamster",
-				Target:        resourceList,
-				LowerBound:    resourceList,
-				UpperBound:    resourceList,
-			}},
-		}
-
-		vpaClientSet := vpa_clientset.NewForConfigOrDie(config)
-		vpaClient := vpaClientSet.PocV1alpha1()
-		_, err = vpaClient.VerticalPodAutoscalers(ns).Create(vpaCRD)
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		setupVPA(f, "200m")
 
 		ginkgo.By("Waiting for pods to be restarted")
 
-		err = waitForPodSetChangedInDeployment(c, d, podList)
+		err := waitForPodSetChangedInDeployment(c, d, podList)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 	})
+
+	ginkgo.It("observes pod disruption budget", func() {
+
+		ginkgo.By("Setting up a hamster deployment")
+		c := f.ClientSet
+		ns := f.Namespace.Name
+
+		replicas := int32(10)
+		d, podList := setupHamsterDeployment(f, "10m", "10Mi", &replicas)
+		podSet := makePodSet(podList)
+
+		ginkgo.By("Setting up prohibitive PDB for hamster deployment")
+		pdb := setupPDB(f, "hamster-pdb", 0 /* maxUnavailable */)
+
+		ginkgo.By("Setting up a VPA CRD")
+		setupVPA(f, "25m")
+
+		ginkgo.By(fmt.Sprintf("Waiting for pods to be restarted, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
+		time.Sleep(VpaEvictionTimeout)
+		restarted, err := isPodSetChanged(c, d, podSet)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		gomega.Expect(restarted).To(gomega.BeFalse())
+
+		ginkgo.By("Updating the PDB to allow for multiple pods to be evicted")
+		// We will check that 7 replicas are evicted in 3 minutes, which translates
+		// to 3 updater loops. This gives us relatively good confidence that updater
+		// evicts more than one pod in a loop if PDB allows it.
+		permissiveMaxUnavailable := 7
+		// Creating new PDB and removing old one, since PDBs are immutable at the moment
+		setupPDB(f, "hamster-pdb-2", permissiveMaxUnavailable)
+		err = c.PolicyV1beta1().PodDisruptionBudgets(ns).Delete(pdb.Name, &metav1.DeleteOptions{})
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+		ginkgo.By(fmt.Sprintf("Waiting for pods to be restarted, sleep for %s", VpaEvictionTimeout.String()))
+		time.Sleep(VpaEvictionTimeout)
+		ginkgo.By("Checking enough pods were restarted.")
+		restartedCount, err := getPodSetChanges(c, d, podSet)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		gomega.Expect(restartedCount >= permissiveMaxUnavailable).To(gomega.BeTrue())
+	})
 })
+
+func setupHamsterDeployment(f *framework.Framework, cpu, memory string, replicas *int32) (*appsv1.Deployment, *apiv1.PodList) {
+	cpuQuantity := ParseQuantityOrDie(cpu)
+	memoryQuantity := ParseQuantityOrDie(memory)
+
+	d := NewHamsterDeploymentWithResources(f, cpuQuantity, memoryQuantity)
+	if replicas != nil {
+		d.Spec.Replicas = replicas
+	}
+	d, err := f.ClientSet.AppsV1().Deployments(f.Namespace.Name).Create(d)
+	gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	err = framework.WaitForDeploymentComplete(f.ClientSet, d)
+	gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+	podList, err := framework.GetPodsForDeployment(f.ClientSet, d)
+	gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+	return d, podList
+}
+
+func setupVPA(f *framework.Framework, cpu string) {
+	vpaCRD := NewVPA(f, "hamster-vpa", &metav1.LabelSelector{
+		MatchLabels: map[string]string{
+			"app": "hamster",
+		},
+	})
+
+	cpuQuantity := ParseQuantityOrDie(cpu)
+	resourceList := apiv1.ResourceList{apiv1.ResourceCPU: cpuQuantity}
+
+	vpaCRD.Status.Recommendation = &vpa_types.RecommendedPodResources{
+		ContainerRecommendations: []vpa_types.RecommendedContainerResources{{
+			ContainerName: "hamster",
+			Target:        resourceList,
+			LowerBound:    resourceList,
+			UpperBound:    resourceList,
+		}},
+	}
+	InstallVPA(f, vpaCRD)
+}
+
+func setupPDB(f *framework.Framework, name string, maxUnavailable int) *policyv1beta1.PodDisruptionBudget {
+	maxUnavailableIntstr := intstr.FromInt(maxUnavailable)
+	pdb := &policyv1beta1.PodDisruptionBudget{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: name,
+		},
+		Spec: policyv1beta1.PodDisruptionBudgetSpec{
+			MaxUnavailable: &maxUnavailableIntstr,
+			Selector: &metav1.LabelSelector{
+				MatchLabels: map[string]string{"app": "hamster"},
+			},
+		},
+	}
+	_, err := f.ClientSet.PolicyV1beta1().PodDisruptionBudgets(f.Namespace.Name).Create(pdb)
+	gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	return pdb
+}
 
 func makePodSet(pods *apiv1.PodList) map[string]bool {
 	result := make(map[string]bool)
@@ -104,15 +164,7 @@ func waitForPodSetChangedInDeployment(c clientset.Interface, deployment *appsv1.
 	initialPodSet := makePodSet(podList)
 
 	err := wait.PollImmediate(pollInterval, pollTimeout, func() (bool, error) {
-		var err error
-		currentPodList, err := framework.GetPodsForDeployment(c, deployment)
-		if err != nil {
-			return false, err
-		}
-
-		currentPodSet := makePodSet(currentPodList)
-
-		return !reflect.DeepEqual(initialPodSet, currentPodSet), nil
+		return isPodSetChanged(c, deployment, initialPodSet)
 
 	})
 
@@ -120,4 +172,28 @@ func waitForPodSetChangedInDeployment(c clientset.Interface, deployment *appsv1.
 		return fmt.Errorf("Waiting for set of pods changed in %v: %v", deployment.Name, err)
 	}
 	return nil
+}
+
+func isPodSetChanged(c clientset.Interface, deployment *appsv1.Deployment, initialPodSet map[string]bool) (bool, error) {
+	count, err := getPodSetChanges(c, deployment, initialPodSet)
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}
+
+func getPodSetChanges(c clientset.Interface, deployment *appsv1.Deployment, initialPodSet map[string]bool) (int, error) {
+	currentPodList, err := framework.GetPodsForDeployment(c, deployment)
+	if err != nil {
+		return 0, err
+	}
+	currentPodSet := makePodSet(currentPodList)
+	diffs := 0
+	for name, inInitial := range initialPodSet {
+		inCurrent := currentPodSet[name]
+		if inInitial && !inCurrent {
+			diffs += 1
+		}
+	}
+	return diffs, nil
 }
