@@ -18,28 +18,11 @@ package builder
 
 import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gke"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/kubemark"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 
 	"github.com/golang/glog"
 )
-
-// AvailableCloudProviders supported by the cloud provider builder.
-var AvailableCloudProviders = []string{
-	aws.ProviderName,
-	azure.ProviderName,
-	gce.ProviderNameGCE,
-	gke.ProviderNameGKE,
-	kubemark.ProviderName,
-}
-
-// DefaultCloudProvider is GCE.
-const DefaultCloudProvider = gce.ProviderNameGCE
 
 // NewCloudProvider builds a cloud provider from provided parameters.
 func NewCloudProvider(opts config.AutoscalingOptions) cloudprovider.CloudProvider {
@@ -49,24 +32,19 @@ func NewCloudProvider(opts config.AutoscalingOptions) cloudprovider.CloudProvide
 		NodeGroupSpecs:              opts.NodeGroups,
 		NodeGroupAutoDiscoverySpecs: opts.NodeGroupAutoDiscovery,
 	}
+
 	rl := context.NewResourceLimiterFromAutoscalingOptions(opts)
 
-	switch opts.CloudProviderName {
-	case gce.ProviderNameGCE:
-		return gce.BuildGCE(opts, do, rl)
-	case gke.ProviderNameGKE:
-		return gke.BuildGKE(opts, do, rl)
-	case aws.ProviderName:
-		return aws.BuildAWS(opts, do, rl)
-	case azure.ProviderName:
-		return azure.BuildAzure(opts, do, rl)
-	case kubemark.ProviderName:
-		return kubemark.BuildKubemark(opts, do, rl)
-	case "":
+	if opts.CloudProviderName == "" {
 		// Ideally this would be an error, but several unit tests of the
 		// StaticAutoscaler depend on this behaviour.
 		glog.Warning("Returning a nil cloud provider")
 		return nil
+	}
+
+	provider := buildCloudProvider(opts, do, rl)
+	if provider != nil {
+		return provider
 	}
 
 	glog.Fatalf("Unknown cloud provider: %s", opts.CloudProviderName)
