@@ -17,9 +17,6 @@ limitations under the License.
 package builder
 
 import (
-	"io"
-	"os"
-
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure"
@@ -67,7 +64,7 @@ func NewCloudProvider(opts config.AutoscalingOptions) cloudprovider.CloudProvide
 	case aws.ProviderName:
 		return aws.BuildAWS(opts, do, rl)
 	case azure.ProviderName:
-		return buildAzure(opts, do, rl)
+		return azure.BuildAzure(opts, do, rl)
 	case kubemark.ProviderName:
 		return buildKubemark(opts, do, rl)
 	case "":
@@ -79,30 +76,6 @@ func NewCloudProvider(opts config.AutoscalingOptions) cloudprovider.CloudProvide
 
 	glog.Fatalf("Unknown cloud provider: %s", opts.CloudProviderName)
 	return nil // This will never happen because the Fatalf will os.Exit
-}
-
-func buildAzure(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
-	var config io.ReadCloser
-	if opts.CloudConfig != "" {
-		glog.Infof("Creating Azure Manager using cloud-config file: %v", opts.CloudConfig)
-		var err error
-		config, err := os.Open(opts.CloudConfig)
-		if err != nil {
-			glog.Fatalf("Couldn't open cloud provider configuration %s: %#v", opts.CloudConfig, err)
-		}
-		defer config.Close()
-	} else {
-		glog.Info("Creating Azure Manager with default configuration.")
-	}
-	manager, err := azure.CreateAzureManager(config, do)
-	if err != nil {
-		glog.Fatalf("Failed to create Azure Manager: %v", err)
-	}
-	provider, err := azure.BuildAzureCloudProvider(manager, rl)
-	if err != nil {
-		glog.Fatalf("Failed to create Azure cloud provider: %v", err)
-	}
-	return provider
 }
 
 func buildKubemark(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
