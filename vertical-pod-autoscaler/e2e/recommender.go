@@ -87,9 +87,9 @@ func (o *observer) OnUpdate(oldObj, newObj interface{}) {
 		return
 	}
 	oldVPA, _ := oldObj.(*vpa_types.VerticalPodAutoscaler)
-	newVPA, _ := newObj.(*vpa_types.VerticalPodAutoscaler)
+	NewVPA, _ := newObj.(*vpa_types.VerticalPodAutoscaler)
 	oldRecommendation, oldFound := get(oldVPA)
-	newRecommendation, newFound := get(newVPA)
+	newRecommendation, newFound := get(NewVPA)
 	result := recommendationChange{
 		oldMissing: !oldFound,
 		newMissing: !newFound,
@@ -115,7 +115,7 @@ func getVpaObserver(vpaClientSet *vpa_clientset.Clientset) *observer {
 	return &vpaObserver
 }
 
-var _ = recommenderE2eDescribe("Checkpoints", func() {
+var _ = RecommenderE2eDescribe("Checkpoints", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
 
 	ginkgo.It("with missing VPA objects are garbage collected", func() {
@@ -145,7 +145,7 @@ var _ = recommenderE2eDescribe("Checkpoints", func() {
 	})
 })
 
-var _ = recommenderE2eDescribe("VPA CRD object", func() {
+var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
 
 	var (
@@ -158,10 +158,10 @@ var _ = recommenderE2eDescribe("VPA CRD object", func() {
 		c := f.ClientSet
 		ns := f.Namespace.Name
 
-		cpuQuantity := parseQuantityOrDie("100m")
-		memoryQuantity := parseQuantityOrDie("100Mi")
+		cpuQuantity := ParseQuantityOrDie("100m")
+		memoryQuantity := ParseQuantityOrDie("100Mi")
 
-		d := newHamsterDeploymentWithResources(f, cpuQuantity, memoryQuantity)
+		d := NewHamsterDeploymentWithResources(f, cpuQuantity, memoryQuantity)
 		_, err := c.AppsV1().Deployments(ns).Create(d)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		err = framework.WaitForDeploymentComplete(c, d)
@@ -171,7 +171,7 @@ var _ = recommenderE2eDescribe("VPA CRD object", func() {
 		config, err := framework.LoadConfig()
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
-		vpaCRD = newVPA(f, "hamster-vpa", &metav1.LabelSelector{
+		vpaCRD = NewVPA(f, "hamster-vpa", &metav1.LabelSelector{
 			MatchLabels: map[string]string{
 				"app": "hamster",
 			},

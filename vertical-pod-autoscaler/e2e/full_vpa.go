@@ -36,7 +36,7 @@ const (
 	minimalCPU = "50m"
 )
 
-var _ = fullVpaE2eDescribe("Pods under VPA", func() {
+var _ = FullVpaE2eDescribe("Pods under VPA", func() {
 	var (
 		rc           *ResourceConsumer
 		vpaClientSet *vpa_clientset.Clientset
@@ -60,8 +60,8 @@ var _ = fullVpaE2eDescribe("Pods under VPA", func() {
 			1,  /*initCPUTotal*/
 			10, /*initMemoryTotal*/
 			1,  /*initCustomMetric*/
-			parseQuantityOrDie("100m"), /*cpuRequest*/
-			parseQuantityOrDie("10Mi"), /*memRequest*/
+			ParseQuantityOrDie("100m"), /*cpuRequest*/
+			ParseQuantityOrDie("10Mi"), /*memRequest*/
 			f.ClientSet,
 			f.InternalClientset)
 
@@ -69,7 +69,7 @@ var _ = fullVpaE2eDescribe("Pods under VPA", func() {
 		config, err := framework.LoadConfig()
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
-		vpaCRD = newVPA(f, "hamster-vpa", &metav1.LabelSelector{
+		vpaCRD = NewVPA(f, "hamster-vpa", &metav1.LabelSelector{
 			MatchLabels: map[string]string{
 				"name": "hamster",
 			},
@@ -84,14 +84,14 @@ var _ = fullVpaE2eDescribe("Pods under VPA", func() {
 
 	ginkgo.It("stabilize at minimum CPU if doing nothing", func() {
 		err := waitForResourceRequestAboveThresholdInPods(
-			f, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU, parseQuantityOrDie(minimalCPU))
+			f, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU, ParseQuantityOrDie(minimalCPU))
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
 
 	ginkgo.It("have cpu requests growing with usage", func() {
 		rc.ConsumeCPU(600 * replicas)
 		err := waitForResourceRequestAboveThresholdInPods(
-			f, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU, parseQuantityOrDie("500m"))
+			f, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU, ParseQuantityOrDie("500m"))
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
 
@@ -104,7 +104,7 @@ var _ = fullVpaE2eDescribe("Pods under VPA", func() {
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		rc.ConsumeMem(1024 * replicas)
 		err = waitForResourceRequestAboveThresholdInPods(
-			f, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceMemory, parseQuantityOrDie("600Mi"))
+			f, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceMemory, ParseQuantityOrDie("600Mi"))
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
 })
