@@ -25,7 +25,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gke"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/kubemark"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 )
 
@@ -35,7 +34,6 @@ var AvailableCloudProviders = []string{
 	azure.ProviderName,
 	gce.ProviderNameGCE,
 	gke.ProviderNameGKE,
-	kubemark.ProviderName,
 	alicloud.ProviderName,
 }
 
@@ -52,8 +50,6 @@ func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGro
 		return aws.BuildAWS(opts, do, rl)
 	case azure.ProviderName:
 		return azure.BuildAzure(opts, do, rl)
-	case kubemark.ProviderName:
-		return kubemark.BuildKubemark(opts, do, rl)
 	case alicloud.ProviderName:
 		return alicloud.BuildAlicloud(opts, do, rl)
 	}
