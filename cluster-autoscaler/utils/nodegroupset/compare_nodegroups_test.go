@@ -130,3 +130,40 @@ func TestNodesSimilarVariousLabels(t *testing.T) {
 	delete(n2.ObjectMeta.Labels, "beta.kubernetes.io/fluentd-ds-ready")
 	checkNodesSimilar(t, n1, n2, true)
 }
+
+func TestNodesSimilarIfFromSameGkeNodePool(t *testing.T) {
+	n1 := BuildTestNode("node1", 1000, 2000)
+	n1.ObjectMeta.Labels["test-label"] = "test-value"
+	n1.ObjectMeta.Labels["character"] = "winnie the pooh"
+
+	n2 := BuildTestNode("node2", 1000, 2000)
+	n2.ObjectMeta.Labels["test-label"] = "test-value"
+
+	// No node-pool labels.
+	checkNodesSimilar(t, n1, n2, false)
+
+	// Empty node-pool labels
+	n1.ObjectMeta.Labels["cloud.google.com/gke-nodepool"] = ""
+	n2.ObjectMeta.Labels["cloud.google.com/gke-nodepool"] = ""
+	checkNodesSimilar(t, n1, n2, false)
+
+	// Only one non empty
+	n1.ObjectMeta.Labels["cloud.google.com/gke-nodepool"] = ""
+	n2.ObjectMeta.Labels["cloud.google.com/gke-nodepool"] = "blah"
+	checkNodesSimilar(t, n1, n2, false)
+
+	// Only one present
+	delete(n1.ObjectMeta.Labels, "cloud.google.com/gke-nodepool")
+	n2.ObjectMeta.Labels["cloud.google.com/gke-nodepool"] = "blah"
+	checkNodesSimilar(t, n1, n2, false)
+
+	// Different vales
+	n1.ObjectMeta.Labels["cloud.google.com/gke-nodepool"] = "blah1"
+	n2.ObjectMeta.Labels["cloud.google.com/gke-nodepool"] = "blah2"
+	checkNodesSimilar(t, n1, n2, false)
+
+	// Same values
+	n1.ObjectMeta.Labels["cloud.google.com/gke-nodepool"] = "blah"
+	n2.ObjectMeta.Labels["cloud.google.com/gke-nodepool"] = "blah"
+	checkNodesSimilar(t, n1, n2, true)
+}
