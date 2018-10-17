@@ -115,6 +115,8 @@ func (r *recommender) UpdateVPAs() {
 			if !had {
 				metrics_recommender.ObserveRecommendationLatency(vpa.Created)
 			}
+		} else {
+			vpa.Conditions.Set(vpa_types.RecommendationProvided, false, vpa_types.NoPodsMatched, "No matching running pods for calculating recommendation")
 		}
 		cnt.Add(vpa)
 

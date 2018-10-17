@@ -31,7 +31,7 @@ type vpaConditionsMap map[vpa_types.VerticalPodAutoscalerConditionType]vpa_types
 
 func (conditionsMap *vpaConditionsMap) Set(
 	conditionType vpa_types.VerticalPodAutoscalerConditionType,
-	status bool, reason string, message string) *vpaConditionsMap {
+	status bool, reason vpa_types.VerticalPodAutoscalerConditionReason, message string) *vpaConditionsMap {
 	oldCondition, alreadyPresent := (*conditionsMap)[conditionType]
 	condition := vpa_types.VerticalPodAutoscalerCondition{
 		Type:    conditionType,

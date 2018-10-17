@@ -210,10 +210,17 @@ var (
 	// LowConfidence indicates whether the VPA recommender has low confidence in the recommendation for
 	// some of containers.
 	LowConfidence VerticalPodAutoscalerConditionType = "LowConfidence"
-	// NoPodsMatched indicates that label selector used with VPA object didn't match any pods.
-	NoPodsMatched VerticalPodAutoscalerConditionType = "NoPodsMatched"
 	// FetchingHistory indicates that VPA recommender is in the process of loading additional history samples.
 	FetchingHistory VerticalPodAutoscalerConditionType = "FetchingHistory"
+)
+
+// VerticalPodAutoscalerConditionReason are the valid condition reasons of
+// a VerticalPodAutoscaler
+type VerticalPodAutoscalerConditionReason string
+
+var (
+	// NoPodsMatched indicates that label selector used with VPA object didn't match any pods.
+	NoPodsMatched VerticalPodAutoscalerConditionReason = "NoPodsMatched"
 )
 
 // VerticalPodAutoscalerCondition describes the state of
@@ -229,7 +236,7 @@ type VerticalPodAutoscalerCondition struct {
 	LastTransitionTime metav1.Time `json:"lastTransitionTime,omitempty" protobuf:"bytes,3,opt,name=lastTransitionTime"`
 	// reason is the reason for the condition's last transition.
 	// +optional
-	Reason string `json:"reason,omitempty" protobuf:"bytes,4,opt,name=reason"`
+	Reason VerticalPodAutoscalerConditionReason `json:"reason,omitempty" protobuf:"bytes,4,opt,name=reason"`
 	// message is a human-readable explanation containing details about
 	// the transition
 	// +optional
