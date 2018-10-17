@@ -24,8 +24,10 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"os"
 )
 
 const (
@@ -180,4 +182,28 @@ func buildAsg(manager *AliCloudManager, minSize int, maxSize int, id string, reg
 		regionId: regionId,
 		id:       id,
 	}
+}
+
+// BuildAlicloud returns alicloud provider
+func BuildAlicloud(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+	var aliManager *AliCloudManager
+	var aliError error
+	if opts.CloudConfig != "" {
+		config, fileErr := os.Open(opts.CloudConfig)
+		if fileErr != nil {
+			glog.Fatalf("Couldn't open cloud provider configuration %s: %#v", opts.CloudConfig, fileErr)
+		}
+		defer config.Close()
+		aliManager, aliError = CreateAliCloudManager(config)
+	} else {
+		aliManager, aliError = CreateAliCloudManager(nil)
+	}
+	if aliError != nil {
+		glog.Fatalf("Failed to create Alicloud Manager: %v", aliError)
+	}
+	cloudProvider, err := BuildAliCloudProvider(aliManager, do, rl)
+	if err != nil {
+		glog.Fatalf("Failed to create Alicloud cloud provider: %v", err)
+	}
+	return cloudProvider
 }

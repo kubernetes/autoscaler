@@ -41,31 +41,44 @@ const (
 	pollTimeout                  = 15 * time.Minute
 )
 
-func e2eDescribe(scenario, name string, body func()) bool {
-	return ginkgo.Describe(fmt.Sprintf("[VPA] [%s] %s", scenario, name), body)
+// SIGDescribe adds sig-autoscaling tag to test description.
+func SIGDescribe(text string, body func()) bool {
+	return ginkgo.Describe(fmt.Sprintf("[sig-autoscaling] %v", text), body)
 }
 
-func recommenderE2eDescribe(name string, body func()) bool {
-	return e2eDescribe(recommenderComponent, name, body)
+// E2eDescribe describes a VPA e2e test.
+func E2eDescribe(scenario, name string, body func()) bool {
+	return SIGDescribe(fmt.Sprintf("[VPA] [%s] %s", scenario, name), body)
 }
 
-func updaterE2eDescribe(name string, body func()) bool {
-	return e2eDescribe(updateComponent, name, body)
+// RecommenderE2eDescribe describes a VPA recommender e2e test.
+func RecommenderE2eDescribe(name string, body func()) bool {
+	return E2eDescribe(recommenderComponent, name, body)
 }
 
-func admissionControllerE2eDescribe(name string, body func()) bool {
-	return e2eDescribe(admissionControllerComponent, name, body)
+// UpdaterE2eDescribe describes a VPA updater e2e test.
+func UpdaterE2eDescribe(name string, body func()) bool {
+	return E2eDescribe(updateComponent, name, body)
 }
 
-func fullVpaE2eDescribe(name string, body func()) bool {
-	return e2eDescribe(fullVpaSuite, name, body)
+// AdmissionControllerE2eDescribe describes a VPA admission controller e2e test.
+func AdmissionControllerE2eDescribe(name string, body func()) bool {
+	return E2eDescribe(admissionControllerComponent, name, body)
 }
 
-func actuationSuiteE2eDescribe(name string, body func()) bool {
-	return e2eDescribe(actuationSuite, name, body)
+// FullVpaE2eDescribe describes a VPA full stack e2e test.
+func FullVpaE2eDescribe(name string, body func()) bool {
+	return E2eDescribe(fullVpaSuite, name, body)
 }
 
-func newHamsterDeployment(f *framework.Framework) *appsv1.Deployment {
+// ActuationSuiteE2eDescribe describes a VPA actuation e2e test.
+func ActuationSuiteE2eDescribe(name string, body func()) bool {
+	return E2eDescribe(actuationSuite, name, body)
+}
+
+// NewHamsterDeployment creates a simple hamster deployment for e2e test
+// purposes.
+func NewHamsterDeployment(f *framework.Framework) *appsv1.Deployment {
 	d := framework.NewDeployment("hamster-deployment", 3, map[string]string{"app": "hamster"}, "hamster", "k8s.gcr.io/ubuntu-slim:0.1", appsv1.RollingUpdateDeploymentStrategyType)
 	d.ObjectMeta.Namespace = f.Namespace.Name
 	d.Spec.Template.Spec.Containers[0].Command = []string{"/bin/sh"}
@@ -73,8 +86,10 @@ func newHamsterDeployment(f *framework.Framework) *appsv1.Deployment {
 	return d
 }
 
-func newHamsterDeploymentWithResources(f *framework.Framework, cpuQuantity, memoryQuantity resource.Quantity) *appsv1.Deployment {
-	d := newHamsterDeployment(f)
+// NewHamsterDeploymentWithResources creates a simple hamster deployment with specific
+// resource requests for e2e test purposes.
+func NewHamsterDeploymentWithResources(f *framework.Framework, cpuQuantity, memoryQuantity resource.Quantity) *appsv1.Deployment {
+	d := NewHamsterDeployment(f)
 	d.Spec.Template.Spec.Containers[0].Resources.Requests = v1.ResourceList{
 		v1.ResourceCPU:    cpuQuantity,
 		v1.ResourceMemory: memoryQuantity,
@@ -82,7 +97,8 @@ func newHamsterDeploymentWithResources(f *framework.Framework, cpuQuantity, memo
 	return d
 }
 
-func newVPA(f *framework.Framework, name string, selector *metav1.LabelSelector) *vpa_types.VerticalPodAutoscaler {
+// NewVPA creates a VPA object for e2e test purposes.
+func NewVPA(f *framework.Framework, name string, selector *metav1.LabelSelector) *vpa_types.VerticalPodAutoscaler {
 	updateMode := vpa_types.UpdateModeAuto
 	vpa := vpa_types.VerticalPodAutoscaler{
 		ObjectMeta: metav1.ObjectMeta{
@@ -102,7 +118,8 @@ func newVPA(f *framework.Framework, name string, selector *metav1.LabelSelector)
 	return &vpa
 }
 
-func installVPA(f *framework.Framework, vpa *vpa_types.VerticalPodAutoscaler) {
+// InstallVPA installs a VPA object in the test cluster.
+func InstallVPA(f *framework.Framework, vpa *vpa_types.VerticalPodAutoscaler) {
 	ns := f.Namespace.Name
 	config, err := framework.LoadConfig()
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
@@ -112,7 +129,9 @@ func installVPA(f *framework.Framework, vpa *vpa_types.VerticalPodAutoscaler) {
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 }
 
-func parseQuantityOrDie(text string) resource.Quantity {
+// ParseQuantityOrDie parses quantity from string and dies with an error if
+// unparsable.
+func ParseQuantityOrDie(text string) resource.Quantity {
 	quantity, err := resource.ParseQuantity(text)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	return quantity

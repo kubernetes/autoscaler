@@ -88,7 +88,7 @@ type AzUtil struct {
 	manager *AzureManager
 }
 
-// DeleteBlob deletes the blob using the storage storage client.
+// DeleteBlob deletes the blob using the storage client.
 func (util *AzUtil) DeleteBlob(accountName, vhdContainer, vhdBlob string) error {
 	ctx, cancel := getContextWithCancel()
 	defer cancel()

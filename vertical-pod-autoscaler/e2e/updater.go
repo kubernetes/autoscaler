@@ -34,7 +34,7 @@ import (
 	"github.com/onsi/gomega"
 )
 
-var _ = updaterE2eDescribe("Updater", func() {
+var _ = UpdaterE2eDescribe("Updater", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
 
 	ginkgo.It("restarts pods", func() {
@@ -43,10 +43,10 @@ var _ = updaterE2eDescribe("Updater", func() {
 		c := f.ClientSet
 		ns := f.Namespace.Name
 
-		cpuQuantity := parseQuantityOrDie("100m")
-		memoryQuantity := parseQuantityOrDie("100Mi")
+		cpuQuantity := ParseQuantityOrDie("100m")
+		memoryQuantity := ParseQuantityOrDie("100Mi")
 
-		d := newHamsterDeploymentWithResources(f, cpuQuantity, memoryQuantity)
+		d := NewHamsterDeploymentWithResources(f, cpuQuantity, memoryQuantity)
 		d, err := c.AppsV1().Deployments(ns).Create(d)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		err = framework.WaitForDeploymentComplete(c, d)
@@ -59,7 +59,7 @@ var _ = updaterE2eDescribe("Updater", func() {
 		config, err := framework.LoadConfig()
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
-		vpaCRD := newVPA(f, "hamster-vpa", &metav1.LabelSelector{
+		vpaCRD := NewVPA(f, "hamster-vpa", &metav1.LabelSelector{
 			MatchLabels: map[string]string{
 				"app": "hamster",
 			},

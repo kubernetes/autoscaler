@@ -18,6 +18,8 @@ package main
 
 import (
 	"flag"
+	"time"
+
 	"github.com/golang/glog"
 	kube_flag "k8s.io/apiserver/pkg/util/flag"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
@@ -28,7 +30,6 @@ import (
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 	kube_client "k8s.io/client-go/kubernetes"
 	kube_restclient "k8s.io/client-go/rest"
-	"time"
 )
 
 var (
@@ -53,15 +54,14 @@ func main() {
 	metrics_updater.Register()
 
 	kubeClient, vpaClient := createKubeClients()
-	updater := updater.NewUpdater(kubeClient, vpaClient, *minReplicas, *evictionToleranceFraction, vpa_api_util.NewCappingRecommendationProcessor(), nil)
-	for {
-		select {
-		case <-time.After(*updaterInterval):
-			{
-				updater.RunOnce()
-				healthCheck.UpdateLastActivity()
-			}
-		}
+	updater, err := updater.NewUpdater(kubeClient, vpaClient, *minReplicas, *evictionToleranceFraction, vpa_api_util.NewCappingRecommendationProcessor(), nil)
+	if err != nil {
+		glog.Fatalf("Failed to create updater: %v")
+	}
+	ticker := time.Tick(*updaterInterval)
+	for range ticker {
+		updater.RunOnce()
+		healthCheck.UpdateLastActivity()
 	}
 }
 

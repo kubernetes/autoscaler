@@ -456,15 +456,23 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 		if !bestOption.NodeGroup.Exist() {
 			oldId := bestOption.NodeGroup.Id()
 			createNodeGroupResult, err := processors.NodeGroupManager.CreateNodeGroup(context, bestOption.NodeGroup)
-			bestOption.NodeGroup = createNodeGroupResult.MainCreatedNodeGroup
 			if err != nil {
 				return &status.ScaleUpStatus{Result: status.ScaleUpError}, err
 			}
+			bestOption.NodeGroup = createNodeGroupResult.MainCreatedNodeGroup
 
-			// Node group id may change when we create node group and we need to update
-			// our data structures.
-			if oldId != bestOption.NodeGroup.Id() {
+			// If possible replace candidate node-info with node info based on crated node group. The latter
+			// one should be more in line with nodes which will be created by node group.
+			mainCreatedNodeInfo, err := GetNodeInfoFromTemplate(createNodeGroupResult.MainCreatedNodeGroup, daemonSets, context.PredicateChecker)
+			if err == nil {
+				nodeInfos[createNodeGroupResult.MainCreatedNodeGroup.Id()] = mainCreatedNodeInfo
+			} else {
+				glog.Warning("Cannot build node info for newly created main node group %v; balancing similar node groups may not work; err=%v", createNodeGroupResult.MainCreatedNodeGroup.Id(), err)
+				// Use node info based on expansion candidate but upadte Id which likely changed when node group was created.
 				nodeInfos[bestOption.NodeGroup.Id()] = nodeInfos[oldId]
+			}
+
+			if oldId != createNodeGroupResult.MainCreatedNodeGroup.Id() {
 				delete(nodeInfos, oldId)
 			}
 
@@ -477,6 +485,11 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 				}
 				nodeInfos[nodeGroup.Id()] = nodeInfo
 			}
+
+			// Update ClusterStateRegistry so similar nodegroups rebalancing works.
+			// TODO(lukaszos) when pursuing scalability update this call with one which takes list of changed node groups so we do not
+			//                do extra API calls. (the call at the bottom of ScaleUp() could be also changed then)
+			clusterStateRegistry.Recalculate()
 		}
 
 		nodeInfo, found := nodeInfos[bestOption.NodeGroup.Id()]
