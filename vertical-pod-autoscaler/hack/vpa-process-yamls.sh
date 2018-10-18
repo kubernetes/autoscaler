@@ -39,7 +39,7 @@ if [ $# -gt 2 ]; then
 fi
 
 ACTION=$1
-COMPONENTS="vpa-crd vpa-rbac updater-deployment recommender-deployment admission-controller-deployment"
+COMPONENTS="vpa-crd vpa-beta-crd vpa-rbac updater-deployment recommender-deployment admission-controller-deployment"
 
 if [ $# -gt 1 ]; then
   COMPONENTS="$2-deployment"
