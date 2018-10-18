@@ -520,13 +520,13 @@ func TestScaleUpNodeComingNoScale(t *testing.T) {
 	}
 	context := NewScaleTestAutoscalingContext(options, fakeClient, provider)
 
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder)
-	clusterState.RegisterScaleUp(&clusterstate.ScaleUpRequest{
-		NodeGroupName:   "ng2",
-		Increase:        1,
-		Time:            time.Now(),
-		ExpectedAddTime: time.Now().Add(5 * time.Minute),
-	})
+	clusterState := clusterstate.NewClusterStateRegistry(
+		provider,
+		clusterstate.ClusterStateRegistryConfig{
+			MaxNodeProvisionTime: 5 * time.Minute,
+		},
+		context.LogRecorder)
+	clusterState.RegisterOrUpdateScaleUp("ng2", 1)
 	clusterState.UpdateNodes([]*apiv1.Node{n1, n2}, time.Now())
 
 	p3 := BuildTestPod("p-new", 550, 0)
@@ -575,13 +575,13 @@ func TestScaleUpNodeComingHasScale(t *testing.T) {
 
 	context := NewScaleTestAutoscalingContext(defaultOptions, fakeClient, provider)
 
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder)
-	clusterState.RegisterScaleUp(&clusterstate.ScaleUpRequest{
-		NodeGroupName:   "ng2",
-		Increase:        1,
-		Time:            time.Now(),
-		ExpectedAddTime: time.Now().Add(5 * time.Minute),
-	})
+	clusterState := clusterstate.NewClusterStateRegistry(
+		provider,
+		clusterstate.ClusterStateRegistryConfig{
+			MaxNodeProvisionTime: 5 * time.Minute,
+		},
+		context.LogRecorder)
+	clusterState.RegisterOrUpdateScaleUp("ng2", 1)
 	clusterState.UpdateNodes([]*apiv1.Node{n1, n2}, time.Now())
 
 	p3 := BuildTestPod("p-new", 550, 0)
