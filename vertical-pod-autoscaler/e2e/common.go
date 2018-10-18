@@ -39,6 +39,9 @@ const (
 	actuationSuite               = "actuation"
 	pollInterval                 = 10 * time.Second
 	pollTimeout                  = 15 * time.Minute
+	// VpaEvictionTimeout is a timeout for VPA to restart a pod if there are no
+	// mechanisms blocking it (for example PDB).
+	VpaEvictionTimeout = 3 * time.Minute
 )
 
 // SIGDescribe adds sig-autoscaling tag to test description.
