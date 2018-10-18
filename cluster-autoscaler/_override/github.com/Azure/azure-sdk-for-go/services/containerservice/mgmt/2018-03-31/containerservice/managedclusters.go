@@ -25,7 +25,7 @@ import (
 	"net/http"
 )
 
-// ManagedClustersClient is the the Container Service Client.
+// ManagedClustersClient is the Container Service Client.
 type ManagedClustersClient struct {
 	BaseClient
 }

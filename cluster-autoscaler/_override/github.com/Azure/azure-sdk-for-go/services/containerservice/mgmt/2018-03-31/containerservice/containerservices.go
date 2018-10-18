@@ -25,7 +25,7 @@ import (
 	"net/http"
 )
 
-// ContainerServicesClient is the the Container Service Client.
+// ContainerServicesClient is the Container Service Client.
 type ContainerServicesClient struct {
 	BaseClient
 }
