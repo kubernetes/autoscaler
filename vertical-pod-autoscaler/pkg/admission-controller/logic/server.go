@@ -218,7 +218,7 @@ func (s *AdmissionServer) admit(data []byte) (*v1beta1.AdmissionResponse, metric
 	// The externalAdmissionHookConfiguration registered via selfRegistration
 	// asks the kube-apiserver only to send admission requests regarding pods & VPA objects.
 	podResource := metav1.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"}
-	vpaResource := metav1.GroupVersionResource{Group: "poc.autoscaling.k8s.io", Version: "v1alpha1", Resource: "verticalpodautoscalers"}
+	vpaResource := metav1.GroupVersionResource{Group: "autoscaling.k8s.io", Version: "v1beta1", Resource: "verticalpodautoscalers"}
 	var patches []patchRecord
 	var err error
 	resource := metrics_admission.Unknown
