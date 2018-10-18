@@ -24,7 +24,7 @@ import (
 	"net/http"
 )
 
-// OperationsClient is the the Container Service Client.
+// OperationsClient is the Container Service Client.
 type OperationsClient struct {
 	BaseClient
 }
