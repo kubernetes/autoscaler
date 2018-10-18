@@ -708,13 +708,9 @@ func executeScaleUp(context *context.AutoscalingContext, clusterStateRegistry *c
 		return errors.NewAutoscalerError(errors.CloudProviderError,
 			"failed to increase node group size: %v", err)
 	}
-	clusterStateRegistry.RegisterScaleUp(
-		&clusterstate.ScaleUpRequest{
-			NodeGroupName:   info.Group.Id(),
-			Increase:        increase,
-			Time:            time.Now(),
-			ExpectedAddTime: time.Now().Add(context.MaxNodeProvisionTime),
-		})
+	clusterStateRegistry.RegisterOrUpdateScaleUp(
+		info.Group.Id(),
+		increase)
 	metrics.RegisterScaleUp(increase, gpuType)
 	context.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaledUpGroup",
 		"Scale-up: group %s size set to %d", info.Group.Id(), info.NewSize)

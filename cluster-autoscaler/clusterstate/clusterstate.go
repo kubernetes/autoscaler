@@ -154,21 +154,39 @@ func NewClusterStateRegistry(cloudProvider cloudprovider.CloudProvider, config C
 	}
 }
 
-// RegisterScaleUp registers scale up.
-func (csr *ClusterStateRegistry) RegisterScaleUp(request *ScaleUpRequest) {
+// RegisterOrUpdateScaleUp registers scaleup for give node group or changes requested node increase
+// count.
+// If increaseDelta is positive then number of new nodes requested is increased; Time and expectedAddTime
+// are reset.
+// If increaseDelete is negative the number of new nodes requested is decreased; Time and expectedAddTime are
+// left intact.
+func (csr *ClusterStateRegistry) RegisterOrUpdateScaleUp(nodeGroupName string, increaseDelta int) {
 	csr.Lock()
 	defer csr.Unlock()
 
-	oldScaleUpRequest, found := csr.scaleUpRequests[request.NodeGroupName]
+	scaleUpRequest, found := csr.scaleUpRequests[nodeGroupName]
 	if !found {
-		csr.scaleUpRequests[request.NodeGroupName] = request
-		return
+		scaleUpRequest = &ScaleUpRequest{
+			NodeGroupName:   nodeGroupName,
+			Time:            time.Now(),
+			ExpectedAddTime: time.Now().Add(csr.config.MaxNodeProvisionTime),
+		}
+		csr.scaleUpRequests[nodeGroupName] = scaleUpRequest
 	}
 
 	// update the old request
-	oldScaleUpRequest.Time = request.Time
-	oldScaleUpRequest.ExpectedAddTime = request.ExpectedAddTime
-	oldScaleUpRequest.Increase += request.Increase
+	if scaleUpRequest.Increase+increaseDelta <= 0 {
+		// increase <= 0 means that there is no scale-up intent really
+		delete(csr.scaleUpRequests, nodeGroupName)
+		return
+	}
+
+	scaleUpRequest.Increase += increaseDelta
+	if increaseDelta > 0 {
+		// if we are actually adding new nodes shift Time and ExpectedAddTime
+		scaleUpRequest.Time = time.Now()
+		scaleUpRequest.ExpectedAddTime = time.Now().Add(csr.config.MaxNodeProvisionTime)
+	}
 }
 
 // RegisterScaleDown registers node scale down.
