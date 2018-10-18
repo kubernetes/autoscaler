@@ -154,21 +154,49 @@ func NewClusterStateRegistry(cloudProvider cloudprovider.CloudProvider, config C
 	}
 }
 
-// RegisterScaleUp registers scale up.
-func (csr *ClusterStateRegistry) RegisterScaleUp(request *ScaleUpRequest) {
+// RegisterOrUpdateScaleUp registers scale-up for give node group or changes requested node increase
+// count.
+// If delta is positive then number of new nodes requested is increased; Time and expectedAddTime
+// are reset.
+// If delta is negative the number of new nodes requested is decreased; Time and expectedAddTime are
+// left intact.
+func (csr *ClusterStateRegistry) RegisterOrUpdateScaleUp(nodeGroup cloudprovider.NodeGroup, delta int, currentTime time.Time) {
 	csr.Lock()
 	defer csr.Unlock()
+	csr.registerOrUpdateScaleUpNoLock(nodeGroup, delta, currentTime)
+}
 
-	oldScaleUpRequest, found := csr.scaleUpRequests[request.NodeGroup.Id()]
+func (csr *ClusterStateRegistry) registerOrUpdateScaleUpNoLock(nodeGroup cloudprovider.NodeGroup, delta int, currentTime time.Time) {
+	scaleUpRequest, found := csr.scaleUpRequests[nodeGroup.Id()]
+	if !found && delta > 0 {
+		scaleUpRequest = &ScaleUpRequest{
+			NodeGroup:       nodeGroup,
+			Increase:        delta,
+			Time:            currentTime,
+			ExpectedAddTime: currentTime.Add(csr.config.MaxNodeProvisionTime),
+		}
+		csr.scaleUpRequests[nodeGroup.Id()] = scaleUpRequest
+		return
+	}
+
 	if !found {
-		csr.scaleUpRequests[request.NodeGroup.Id()] = request
+		// delta <=0
 		return
 	}
 
 	// update the old request
-	oldScaleUpRequest.Time = request.Time
-	oldScaleUpRequest.ExpectedAddTime = request.ExpectedAddTime
-	oldScaleUpRequest.Increase += request.Increase
+	if scaleUpRequest.Increase+delta <= 0 {
+		// increase <= 0 means that there is no scale-up intent really
+		delete(csr.scaleUpRequests, nodeGroup.Id())
+		return
+	}
+
+	scaleUpRequest.Increase += delta
+	if delta > 0 {
+		// if we are actually adding new nodes shift Time and ExpectedAddTime
+		scaleUpRequest.Time = currentTime
+		scaleUpRequest.ExpectedAddTime = currentTime.Add(csr.config.MaxNodeProvisionTime)
+	}
 }
 
 // RegisterScaleDown registers node scale down.
