@@ -362,6 +362,11 @@ func (tng *TestNodeGroup) Autoprovisioned() bool {
 	return tng.autoprovisioned
 }
 
+// NodesStatusSummary is not implemented for Test cloud provider.
+func (tng *TestNodeGroup) NodesStatusSummary() (cloudprovider.NodesStatusSummary, error) {
+	return cloudprovider.NodesStatusSummary{}, cloudprovider.ErrNotImplemented
+}
+
 // TemplateNodeInfo returns a node template for this node group.
 func (tng *TestNodeGroup) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
 	if tng.cloudProvider.machineTemplates == nil {

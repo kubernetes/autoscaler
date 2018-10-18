@@ -313,6 +313,11 @@ func (ng *AwsNodeGroup) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
 	return nodeInfo, nil
 }
 
+// NodesStatusSummary is not implemented for AWS cloud provider.
+func (ng *AwsNodeGroup) NodesStatusSummary() (cloudprovider.NodesStatusSummary, error) {
+	return cloudprovider.NodesStatusSummary{}, cloudprovider.ErrNotImplemented
+}
+
 // BuildAWS builds AWS cloud provider, manager etc.
 func BuildAWS(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	var config io.ReadCloser

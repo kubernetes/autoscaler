@@ -297,6 +297,11 @@ func (mig *gceMig) Autoprovisioned() bool {
 	return false
 }
 
+// NodesStatusSummary is not implemented for GCE cloud provider.
+func (mig *gceMig) NodesStatusSummary() (cloudprovider.NodesStatusSummary, error) {
+	return cloudprovider.NodesStatusSummary{}, cloudprovider.ErrNotImplemented
+}
+
 // TemplateNodeInfo returns a node template for this node group.
 func (mig *gceMig) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
 	node, err := mig.gceManager.GetMigTemplateNode(mig)

@@ -269,6 +269,11 @@ func (nodeGroup *NodeGroup) Autoprovisioned() bool {
 	return false
 }
 
+// NodesStatusSummary is not implemented for Kubemark cloud provider.
+func (nodeGroup *NodeGroup) NodesStatusSummary() (cloudprovider.NodesStatusSummary, error) {
+	return cloudprovider.NodesStatusSummary{}, cloudprovider.ErrNotImplemented
+}
+
 func buildNodeGroup(value string, kubemarkController *kubemark.KubemarkController) (*NodeGroup, error) {
 	spec, err := dynamic.SpecFromString(value, true)
 	if err != nil {

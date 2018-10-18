@@ -476,3 +476,8 @@ func (agentPool *ContainerServiceAgentPool) Delete() error {
 func (agentPool *ContainerServiceAgentPool) Autoprovisioned() bool {
 	return false
 }
+
+// NodesStatusSummary is not implemented for Azure cloud provider.
+func (agentPool *ContainerServiceAgentPool) NodesStatusSummary() (cloudprovider.NodesStatusSummary, error) {
+	return cloudprovider.NodesStatusSummary{}, cloudprovider.ErrNotImplemented
+}

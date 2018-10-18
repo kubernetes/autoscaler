@@ -522,3 +522,8 @@ func (as *AgentPool) deleteVirtualMachine(name string) error {
 func (as *AgentPool) getAzureRef() azureRef {
 	return as.azureRef
 }
+
+// NodesStatusSummary is not implemented for Azure cloud provider.
+func (as *AgentPool) NodesStatusSummary() (cloudprovider.NodesStatusSummary, error) {
+	return cloudprovider.NodesStatusSummary{}, cloudprovider.ErrNotImplemented
+}

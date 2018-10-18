@@ -142,6 +142,35 @@ type NodeGroup interface {
 	// Autoprovisioned returns true if the node group is autoprovisioned. An autoprovisioned group
 	// was created by CA and can be deleted when scaled to 0.
 	Autoprovisioned() bool
+
+	// NodesStatusSummary returns summarized status of nodes in the node group including upcoming ones.
+	// Implementation optional.
+	NodesStatusSummary() (NodesStatusSummary, error)
+}
+
+// NodesStatusSummary captures status of nodes within node group.
+type NodesStatusSummary struct {
+	// RunningNodesCount lists names of nodes in given node group which are up and running
+	RunningNodes []string
+
+	// NodesBeingCreatedNoError list names of nodes in given node group that are being created
+	// and do not report any error condition.
+	NodesBeingCreatedNoError []string
+
+	// NodesBeingCreatedQuotaExceededError lists names of nodes in given node group that
+	// are being created and cannot proceed because of quota-exceeded error.
+	NodesBeingCreatedQuotaExceededError []string
+
+	// NodesBeingCreatedStockoutError lists names of nodes in given node group that
+	// are being created and cannot proceed because of stockout error.
+	NodesBeingCreatedStockoutError []string
+
+	// NodesBeingCreatedOtherError lists names of nodes in given node group that
+	// are being created and cannot proceed because of stockout error.
+	NodesBeingCreatedOtherError []string
+
+	// NodesBeingDeleted lists names of nodes in given node group that are being deleted.
+	NodesBeingDeleted []string
 }
 
 // PricingModel contains information about the node price and how it changes in time.

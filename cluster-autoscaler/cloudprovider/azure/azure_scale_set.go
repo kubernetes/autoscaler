@@ -90,6 +90,11 @@ func (scaleSet *ScaleSet) Autoprovisioned() bool {
 	return false
 }
 
+// NodesStatusSummary is not implemented for Azure cloud provider.
+func (scaleSet *ScaleSet) NodesStatusSummary() (cloudprovider.NodesStatusSummary, error) {
+	return cloudprovider.NodesStatusSummary{}, cloudprovider.ErrNotImplemented
+}
+
 // MaxSize returns maximum size of the node group.
 func (scaleSet *ScaleSet) MaxSize() int {
 	return scaleSet.maxSize

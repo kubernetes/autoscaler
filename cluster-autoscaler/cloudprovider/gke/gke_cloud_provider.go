@@ -397,6 +397,11 @@ func (mig *GkeMig) Autoprovisioned() bool {
 	return mig.autoprovisioned
 }
 
+// NodesStatusSummary is not implemented for GKE cloud provider.
+func (mig *GkeMig) NodesStatusSummary() (cloudprovider.NodesStatusSummary, error) {
+	return cloudprovider.NodesStatusSummary{}, cloudprovider.ErrNotImplemented
+}
+
 // TemplateNodeInfo returns a node template for this node group.
 func (mig *GkeMig) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
 	node, err := mig.gkeManager.GetMigTemplateNode(mig)
