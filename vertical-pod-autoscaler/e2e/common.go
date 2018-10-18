@@ -26,7 +26,7 @@ import (
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	"k8s.io/kubernetes/test/e2e/framework"
 )
@@ -127,7 +127,7 @@ func InstallVPA(f *framework.Framework, vpa *vpa_types.VerticalPodAutoscaler) {
 	config, err := framework.LoadConfig()
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	vpaClientSet := vpa_clientset.NewForConfigOrDie(config)
-	vpaClient := vpaClientSet.PocV1alpha1()
+	vpaClient := vpaClientSet.AutoscalingV1beta1()
 	_, err = vpaClient.VerticalPodAutoscalers(ns).Create(vpa)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 }

@@ -24,7 +24,7 @@ import (
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
-	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
 	vpa_fake "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/fake"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
@@ -90,7 +90,7 @@ func TestUpdateVpaIfNeeded(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.caseName, func(t *testing.T) {
 			fakeClient := vpa_fake.NewSimpleClientset()
-			_, err := UpdateVpaStatusIfNeeded(fakeClient.PocV1alpha1().VerticalPodAutoscalers(tc.vpa.ID.Namespace),
+			_, err := UpdateVpaStatusIfNeeded(fakeClient.AutoscalingV1beta1().VerticalPodAutoscalers(tc.vpa.ID.Namespace),
 				tc.vpa, tc.observedStatus)
 			assert.NoError(t, err, "Unexpected error occurred.")
 			actions := fakeClient.Actions()

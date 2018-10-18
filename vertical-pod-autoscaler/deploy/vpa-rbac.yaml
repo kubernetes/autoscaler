@@ -43,6 +43,15 @@ rules:
   - list
   - watch
   - patch
+- apiGroups:
+  - "autoscaling.k8s.io"
+  resources:
+  - verticalpodautoscalers
+  verbs:
+  - get
+  - list
+  - watch
+  - patch
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -51,6 +60,17 @@ metadata:
 rules:
 - apiGroups:
   - "poc.autoscaling.k8s.io"
+  resources:
+  - verticalpodautoscalercheckpoints
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - patch
+  - delete
+- apiGroups:
+  - "autoscaling.k8s.io"
   resources:
   - verticalpodautoscalercheckpoints
   verbs:
@@ -209,6 +229,14 @@ rules:
   - list
 - apiGroups:
   - "poc.autoscaling.k8s.io"
+  resources:
+  - verticalpodautoscalers
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - "autoscaling.k8s.io"
   resources:
   - verticalpodautoscalers
   verbs:

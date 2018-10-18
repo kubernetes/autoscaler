@@ -23,7 +23,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
-	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	e2e_common "k8s.io/kubernetes/test/e2e/common"
 	"k8s.io/kubernetes/test/e2e/framework"
@@ -76,7 +76,7 @@ var _ = FullVpaE2eDescribe("Pods under VPA", func() {
 		})
 
 		vpaClientSet = vpa_clientset.NewForConfigOrDie(config)
-		vpaClient := vpaClientSet.PocV1alpha1()
+		vpaClient := vpaClientSet.AutoscalingV1beta1()
 		_, err = vpaClient.VerticalPodAutoscalers(ns).Create(vpaCRD)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 

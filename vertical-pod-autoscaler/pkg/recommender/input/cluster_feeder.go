@@ -26,10 +26,10 @@ import (
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/watch"
-	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
-	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/poc.autoscaling.k8s.io/v1alpha1"
-	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/poc.autoscaling.k8s.io/v1alpha1"
+	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1beta1"
+	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1beta1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/history"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/metrics"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/oom"
@@ -77,7 +77,7 @@ func NewClusterStateFeeder(config *rest.Config, clusterState *model.ClusterState
 		specClient:          spec.NewSpecClient(podLister),
 		metricsClient:       newMetricsClient(config),
 		oomObserver:         &oomObserver,
-		vpaCheckpointClient: vpa_clientset.NewForConfigOrDie(config).PocV1alpha1(),
+		vpaCheckpointClient: vpa_clientset.NewForConfigOrDie(config).AutoscalingV1beta1(),
 		vpaLister:           vpa_api_util.NewAllVpasLister(vpa_clientset.NewForConfigOrDie(config), make(chan struct{})),
 		clusterState:        clusterState,
 	}
