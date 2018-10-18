@@ -73,7 +73,7 @@ for i in ${COMPONENTS}; do
   make --directory ${SCRIPT_ROOT}/pkg/${i} release
 done
 
-kubectl create -f ${SCRIPT_ROOT}/deploy/vpa-crd.yaml
+kubectl create -f ${SCRIPT_ROOT}/deploy/vpa-beta-crd.yaml
 kubectl create -f ${SCRIPT_ROOT}/deploy/vpa-rbac.yaml
 
 for i in ${COMPONENTS}; do
