@@ -295,6 +295,7 @@ func (csr *ClusterStateRegistry) UpdateNodes(nodes []*apiv1.Node, currentTime ti
 	//  recalculate acceptable ranges after removing timed out requests
 	csr.updateAcceptableRanges(targetSizes)
 	csr.updateIncorrectNodeGroupSizes(currentTime)
+
 	return nil
 }
 

@@ -33,6 +33,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/tpu"
 
 	apiv1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/golang/glog"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
@@ -182,12 +183,16 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 			return nil
 		}
 	}
+
 	if !a.clusterStateRegistry.IsClusterHealthy() {
 		glog.Warning("Cluster is not ready for autoscaling")
 		scaleDown.CleanUpUnneededNodes()
 		autoscalingContext.LogRecorder.Eventf(apiv1.EventTypeWarning, "ClusterUnhealthy", "Cluster is unhealthy")
 		return nil
 	}
+
+	// See how are the scale-ups progressing and if we should react to any quota/stockout errors
+	a.handleQuoteAndStockoutErrors()
 
 	// Check if there has been a constant difference between the number of nodes in k8s and
 	// the number of nodes on the cloud provider side.
@@ -386,6 +391,85 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		}
 	}
 	return nil
+}
+
+func (a *StaticAutoscaler) handleQuoteAndStockoutErrors() {
+	if !a.clusterStateRegistry.NodeStatusSummariesUpToDate() {
+		return
+	}
+
+	nodeGroups := a.CloudProvider.NodeGroups()
+	for _, nodeGroup := range nodeGroups {
+		summary := a.clusterStateRegistry.GetNodesStatusSummary(nodeGroup.Id())
+		if summary == nil {
+			continue
+		}
+		if len(summary.NodesBeingCreatedStockoutError) > 0 {
+			glog.Infof("Failed adding %v nodes to group %v due to stockout", len(summary.NodesBeingCreatedStockoutError), nodeGroup.Id())
+			a.LogRecorder.Eventf(apiv1.EventTypeWarning, "ScaleUpStockout",
+				"Failed adding %v nodes to group %v due to stockout",
+				len(summary.NodesBeingCreatedStockoutError),
+				nodeGroup.Id())
+
+			if a.deleteErroredNodesBeingCreated(nodeGroup, summary.NodesBeingCreatedStockoutError) {
+				a.clusterStateRegistry.RegisterFailedScaleUp(nodeGroup.Id(), metrics.Stockout)
+			}
+		}
+		if len(summary.NodesBeingCreatedQuotaExceededError) > 0 {
+			glog.Infof("Failed adding %v nodes to group %v due to quota", len(summary.NodesBeingCreatedQuotaExceededError), nodeGroup.Id())
+			a.LogRecorder.Eventf(apiv1.EventTypeWarning, "ScaleUpQuotaExceeded",
+				"Failed adding %v nodes to group %v due to quota exceeded",
+				len(summary.NodesBeingCreatedQuotaExceededError),
+				nodeGroup.Id())
+
+			if a.deleteErroredNodesBeingCreated(nodeGroup, summary.NodesBeingCreatedQuotaExceededError) {
+				a.clusterStateRegistry.RegisterFailedScaleUp(nodeGroup.Id(), metrics.QuotaExceeded)
+			}
+		}
+		if len(summary.NodesBeingCreatedOtherError) > 0 {
+			glog.Infof("Failed adding %v nodes to group %v due to other error; ignoring", len(summary.NodesBeingCreatedOtherError), nodeGroup.Id())
+		}
+	}
+}
+
+func (a *StaticAutoscaler) deleteErroredNodesBeingCreated(nodeGroup cloudprovider.NodeGroup, nodeNames []string) bool {
+	nodes := make([]*apiv1.Node, 0, len(nodeNames))
+	for _, nodeName := range nodeNames {
+		if a.clusterStateRegistry.WasDeleteNodeRequested(nodeName) {
+			continue
+		}
+		// create dummy node name
+		node := &apiv1.Node{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: nodeName,
+			},
+			Spec: apiv1.NodeSpec{
+				ProviderID: nodeName,
+			},
+		}
+		nodes = append(nodes, node)
+	}
+
+	if len(nodes) == 0 {
+		return false
+	}
+
+	// Issue a delete
+	err := nodeGroup.DeleteNodes(nodes)
+	if err != nil {
+		glog.Warningf("Error while trying to delete nodes from %v: %v", nodeGroup.Id(), err)
+		return false
+	}
+
+	// Remember the fact that we deleted the nodes
+	// Question: Maybe for safety we should mark it in the loop above.
+	for _, node := range nodes {
+		a.clusterStateRegistry.RegisterDeleteNodeRequested(node.Name)
+	}
+
+	// Decrease the scale up request by the number of deleted nodes
+	a.clusterStateRegistry.RegisterOrUpdateScaleUp(nodeGroup.Id(), -len(nodes))
+	return true
 }
 
 // don't consider pods newer than newPodScaleUpDelay seconds old as unschedulable

@@ -59,6 +59,10 @@ const (
 	APIError FailedScaleUpReason = "apiCallError"
 	// Timeout was encountered when trying to scale-up
 	Timeout FailedScaleUpReason = "timeout"
+	// Stockout was encountered when trying to scale-up
+	Stockout FailedScaleUpReason = "stockout"
+	// QuotaExceeded was encoutered when trying to scale-up
+	QuotaExceeded FailedScaleUpReason = "quotaExceeded"
 
 	// autoscaledGroup is managed by CA
 	autoscaledGroup NodeGroupType = "autoscaled"
