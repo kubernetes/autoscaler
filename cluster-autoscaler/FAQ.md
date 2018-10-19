@@ -443,9 +443,7 @@ Autoscaler expects requested nodes to appear within 15 minutes
 (configured by `--max-node-provision-time` flag.) After this time, if they are
 still unregistered, it stops considering them in simulations and may attempt to scale up a
 different group if the pods are still pending. It will also attempt to remove
-any nodes left unregistered after 15 minutes (configured by
-`--unregistered-node-removal-time` flag.) For this reason, we strongly
-recommend to set those flags to the same value.
+any nodes left unregistered after this time.
 
 ### How does scale-down work?
 
