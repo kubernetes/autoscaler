@@ -35,6 +35,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 
 	"github.com/golang/glog"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 )
 
 const (
@@ -53,6 +54,9 @@ const (
 
 	// NodeGroupBackoffResetTimeout is the time after last failed scale-up when the backoff duration is reset.
 	NodeGroupBackoffResetTimeout = 3 * time.Hour
+
+	// NodeStatusSummaryUpdateInterval determines how ofter NodeStatusSummary should be updated
+	NodeStatusSummaryUpdateInterval = 1 * time.Minute
 )
 
 // ScaleUpRequest contains information about the requested node group scale up.
@@ -111,24 +115,32 @@ type UnregisteredNode struct {
 	UnregisteredSince time.Time
 }
 
+type nodesStatusSummariesInfo struct {
+	implementedInCloudProvider bool
+	lastUpdateTryTime          time.Time
+	lastUpdateTime             time.Time
+	summaries                  map[string]*cloudprovider.NodesStatusSummary
+}
+
 // ClusterStateRegistry is a structure to keep track the current state of the cluster.
 type ClusterStateRegistry struct {
 	sync.Mutex
-	config                  ClusterStateRegistryConfig
-	scaleUpRequests         map[string]*ScaleUpRequest // nodeGroupName -> ScaleUpRequest
-	scaleDownRequests       []*ScaleDownRequest
-	nodes                   []*apiv1.Node
-	cloudProvider           cloudprovider.CloudProvider
-	perNodeGroupReadiness   map[string]Readiness
-	totalReadiness          Readiness
-	acceptableRanges        map[string]AcceptableRange
-	incorrectNodeGroupSizes map[string]IncorrectNodeGroupSize
-	unregisteredNodes       map[string]UnregisteredNode
-	candidatesForScaleDown  map[string][]string
-	nodeGroupBackoffInfo    *backoff.Backoff
-	lastStatus              *api.ClusterAutoscalerStatus
-	lastScaleDownUpdateTime time.Time
-	logRecorder             *utils.LogEventRecorder
+	config                   ClusterStateRegistryConfig
+	scaleUpRequests          map[string]*ScaleUpRequest // nodeGroupName -> ScaleUpRequest
+	scaleDownRequests        []*ScaleDownRequest
+	nodes                    []*apiv1.Node
+	cloudProvider            cloudprovider.CloudProvider
+	perNodeGroupReadiness    map[string]Readiness
+	totalReadiness           Readiness
+	acceptableRanges         map[string]AcceptableRange
+	incorrectNodeGroupSizes  map[string]IncorrectNodeGroupSize
+	unregisteredNodes        map[string]UnregisteredNode
+	candidatesForScaleDown   map[string][]string
+	nodeGroupBackoffInfo     *backoff.Backoff
+	lastStatus               *api.ClusterAutoscalerStatus
+	lastScaleDownUpdateTime  time.Time
+	logRecorder              *utils.LogEventRecorder
+	nodesStatusSummariesInfo nodesStatusSummariesInfo
 }
 
 // NewClusterStateRegistry creates new ClusterStateRegistry.
@@ -151,6 +163,10 @@ func NewClusterStateRegistry(cloudProvider cloudprovider.CloudProvider, config C
 		nodeGroupBackoffInfo:    backoff.NewBackoff(InitialNodeGroupBackoffDuration, MaxNodeGroupBackoffDuration, NodeGroupBackoffResetTimeout),
 		lastStatus:              emptyStatus,
 		logRecorder:             logRecorder,
+		nodesStatusSummariesInfo: nodesStatusSummariesInfo{
+			implementedInCloudProvider: true,
+			summaries:                  make(map[string]*cloudprovider.NodesStatusSummary),
+		},
 	}
 }
 
@@ -934,4 +950,56 @@ func (csr *ClusterStateRegistry) GetClusterSize() (currentSize, targetSize int) 
 	}
 	currentSize = csr.totalReadiness.Registered - csr.totalReadiness.NotStarted - csr.totalReadiness.LongNotStarted
 	return currentSize, targetSize
+}
+
+// UpdateNodesStatusSummaries updates nodes summary for all node groups. Method ensures calls to
+// cloud provider are not made too often.
+func (csr *ClusterStateRegistry) UpdateNodesStatusSummaries() error {
+	csr.Lock()
+	defer csr.Unlock()
+
+	if !csr.nodesStatusSummariesInfo.implementedInCloudProvider {
+		return nil
+	}
+	if csr.nodesStatusSummariesInfo.lastUpdateTryTime.Add(NodeStatusSummaryUpdateInterval).After(time.Now()) {
+		return nil
+	}
+	glog.Infof("Updating node status summaries")
+	csr.nodesStatusSummariesInfo.lastUpdateTryTime = time.Now()
+	newSummaries := make(map[string]*cloudprovider.NodesStatusSummary)
+	for _, nodeGroup := range csr.cloudProvider.NodeGroups() {
+		summary, err := nodeGroup.NodesStatusSummary()
+		if err == cloudprovider.ErrNotImplemented {
+			glog.Infof("Cloud provider does not support querying for NodeStatusSummary; disabling updating", nodeGroup, err)
+			csr.nodesStatusSummariesInfo.implementedInCloudProvider = false
+			return nil
+		}
+		if err != nil {
+			return errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("Error obtaining NodesStatusSummary for node group %v", nodeGroup)
+		}
+		if len(summary.NodesBeingCreatedStockoutError) > 0 || len(summary.NodesBeingCreatedQuotaExceededError) > 0 || len(summary.NodesBeingCreatedOtherError) > 0 {
+			glog.Infof("Observing create errors for node group %v: %v", nodeGroup.Id(), summary)
+		}
+		newSummaries[nodeGroup.Id()] = &summary
+	}
+	csr.nodesStatusSummariesInfo.summaries = newSummaries
+	csr.nodesStatusSummariesInfo.lastUpdateTime = time.Now()
+	return nil
+}
+
+// NodeStatusSummariesUpToDate returns if NodeStatusSummaries are up-to-date and should be used.
+func (csr *ClusterStateRegistry) NodeStatusSummariesUpToDate() bool {
+	csr.Lock()
+	defer csr.Unlock()
+
+	return csr.nodesStatusSummariesInfo.implementedInCloudProvider &&
+		csr.nodesStatusSummariesInfo.lastUpdateTime.Add(NodeStatusSummaryUpdateInterval).After(time.Now())
+}
+
+// GetNodesStatusSummary retrieves status summary for given node group.
+func (csr *ClusterStateRegistry) GetNodesStatusSummary(nodeGroup string) *cloudprovider.NodesStatusSummary {
+	csr.Lock()
+	defer csr.Unlock()
+
+	return csr.nodesStatusSummariesInfo.summaries[nodeGroup]
 }

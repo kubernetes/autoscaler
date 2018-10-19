@@ -458,6 +458,11 @@ func (a *StaticAutoscaler) updateClusterState(allNodes []*apiv1.Node, currentTim
 		return errors.ToAutoscalerError(errors.CloudProviderError, err)
 	}
 
+	err = a.clusterStateRegistry.UpdateNodesStatusSummaries()
+	if err != nil {
+		glog.Errorf("Unable to update NodeStatusSummaries: %v", err)
+	}
+
 	err = a.clusterStateRegistry.UpdateNodes(allNodes, currentTime)
 	if err != nil {
 		glog.Errorf("Failed to update node registry: %v", err)
