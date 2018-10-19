@@ -141,6 +141,7 @@ type ClusterStateRegistry struct {
 	lastScaleDownUpdateTime  time.Time
 	logRecorder              *utils.LogEventRecorder
 	nodesStatusSummariesInfo nodesStatusSummariesInfo
+	nodeDeleteRequested      map[string]time.Time
 }
 
 // NewClusterStateRegistry creates new ClusterStateRegistry.
@@ -167,6 +168,7 @@ func NewClusterStateRegistry(cloudProvider cloudprovider.CloudProvider, config C
 			implementedInCloudProvider: true,
 			summaries:                  make(map[string]*cloudprovider.NodesStatusSummary),
 		},
+		nodeDeleteRequested: make(map[string]time.Time),
 	}
 }
 
@@ -306,6 +308,15 @@ func (csr *ClusterStateRegistry) Recalculate() {
 	csr.Lock()
 	defer csr.Unlock()
 	csr.updateAcceptableRanges(targetSizes)
+}
+
+// Cleanup cleans up internal structures to avoid memory leaks. Should be called periodically.
+func (csr *ClusterStateRegistry) Cleanup() {
+	for nodeName, requestTime := range csr.nodeDeleteRequested {
+		if requestTime.Add(MaxNodeStartupTime).Before(time.Now()) {
+			delete(csr.nodeDeleteRequested, nodeName)
+		}
+	}
 }
 
 // getTargetSizes gets target sizes of node groups.
@@ -1002,4 +1013,16 @@ func (csr *ClusterStateRegistry) GetNodesStatusSummary(nodeGroup string) *cloudp
 	defer csr.Unlock()
 
 	return csr.nodesStatusSummariesInfo.summaries[nodeGroup]
+}
+
+// RegisterDeleteNodeRequested stores information that we requested node with given
+// name to be deleted.
+func (csr *ClusterStateRegistry) RegisterDeleteNodeRequested(nodeName string) {
+	csr.nodeDeleteRequested[nodeName] = time.Now()
+}
+
+// WasDeleteNodeRequested checks if we requested node with given name to be deleted.
+func (csr *ClusterStateRegistry) WasDeleteNodeRequested(nodeName string) bool {
+	_, found := csr.nodeDeleteRequested[nodeName]
+	return found
 }

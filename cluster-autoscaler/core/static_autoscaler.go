@@ -452,6 +452,7 @@ func (a *StaticAutoscaler) actOnEmptyCluster(allNodes, readyNodes []*apiv1.Node,
 }
 
 func (a *StaticAutoscaler) updateClusterState(allNodes []*apiv1.Node, currentTime time.Time) errors.AutoscalerError {
+	a.clusterStateRegistry.Cleanup()
 	err := a.AutoscalingContext.CloudProvider.Refresh()
 	if err != nil {
 		glog.Errorf("Failed to refresh cloud provider config: %v", err)
