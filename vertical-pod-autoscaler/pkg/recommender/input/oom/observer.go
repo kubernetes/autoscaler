@@ -40,7 +40,7 @@ type Observer struct {
 // NewObserver returns new instance of the Observer.
 func NewObserver() Observer {
 	return Observer{
-		ObservedOomsChannel: make(chan OomInfo),
+		ObservedOomsChannel: make(chan OomInfo, 5000),
 	}
 }
 
@@ -89,13 +89,31 @@ func parseEvictionEvent(event *apiv1.Event) []OomInfo {
 
 // OnEvent inspects k8s eviction events and translates them to OomInfo.
 func (o *Observer) OnEvent(event *apiv1.Event) {
-	glog.V(1).Infof("OOM Obeserver processing event: %+v", event)
+	glog.V(1).Infof("OOM Observer processing event: %+v", event)
 	for _, oomInfo := range parseEvictionEvent(event) {
 		info := oomInfo
 		go func() {
 			o.ObservedOomsChannel <- info
 		}()
 	}
+}
+
+func findStatus(name string, containerStatuses []apiv1.ContainerStatus) *apiv1.ContainerStatus {
+	for _, containerStatus := range containerStatuses {
+		if containerStatus.Name == name {
+			return &containerStatus
+		}
+	}
+	return nil
+}
+
+func findSpec(name string, containers []apiv1.Container) *apiv1.Container {
+	for _, containerSpec := range containers {
+		if containerSpec.Name == name {
+			return &containerSpec
+		}
+	}
+	return nil
 }
 
 // OnAdd is Noop
@@ -106,47 +124,33 @@ func (*Observer) OnAdd(obj interface{}) {}
 func (o *Observer) OnUpdate(oldObj, newObj interface{}) {
 	oldPod, ok := oldObj.(*apiv1.Pod)
 	if oldPod == nil || !ok {
-		glog.Errorf("OOM observer received invaild oldObj: %v", oldObj)
+		glog.Errorf("OOM observer received invalid oldObj: %v", oldObj)
 	}
-
 	newPod, ok := newObj.(*apiv1.Pod)
-
 	if newPod == nil || !ok {
-		glog.Errorf("OOM observer received invaild newObj: %v", newObj)
-	}
-
-	oldContainersStatusMap := make(map[string]apiv1.ContainerStatus)
-	for _, containerStatus := range oldPod.Status.ContainerStatuses {
-		oldContainersStatusMap[containerStatus.Name] = containerStatus
-	}
-
-	oldContainersSpecMap := make(map[string]apiv1.Container)
-	for _, containerSpec := range oldPod.Spec.Containers {
-		oldContainersSpecMap[containerSpec.Name] = containerSpec
+		glog.Errorf("OOM observer received invalid newObj: %v", newObj)
 	}
 
 	for _, containerStatus := range newPod.Status.ContainerStatuses {
-		prevContainerStatus, ok := oldContainersStatusMap[containerStatus.Name]
-		if ok && containerStatus.RestartCount > prevContainerStatus.RestartCount &&
+		if containerStatus.RestartCount > 0 &&
 			containerStatus.LastTerminationState.Terminated.Reason == "OOMKilled" {
-			if spec, ok := oldContainersSpecMap[containerStatus.Name]; ok {
-				oomInfo := OomInfo{
-					Namespace: newPod.ObjectMeta.Namespace,
-					Pod:       newPod.ObjectMeta.Name,
-					Container: containerStatus.Name,
-					Memory:    spec.Resources.Requests[apiv1.ResourceMemory],
-					Timestamp: containerStatus.LastTerminationState.Terminated.FinishedAt.Time.UTC(),
-				}
-				go func() {
-					o.ObservedOomsChannel <- oomInfo
-				}()
-			} else {
-				glog.Errorf("Shouldn't happen. Missing spec for container %v", containerStatus.Name)
-			}
 
+			oldStatus := findStatus(containerStatus.Name, oldPod.Status.ContainerStatuses)
+			if oldStatus != nil && containerStatus.RestartCount > oldStatus.RestartCount {
+				oldSpec := findSpec(containerStatus.Name, oldPod.Spec.Containers)
+				if oldSpec != nil {
+					oomInfo := OomInfo{
+						Namespace: newPod.ObjectMeta.Namespace,
+						Pod:       newPod.ObjectMeta.Name,
+						Container: containerStatus.Name,
+						Memory:    oldSpec.Resources.Requests[apiv1.ResourceMemory],
+						Timestamp: containerStatus.LastTerminationState.Terminated.FinishedAt.Time.UTC(),
+					}
+					o.ObservedOomsChannel <- oomInfo
+				}
+			}
 		}
 	}
-
 }
 
 // OnDelete is Noop
