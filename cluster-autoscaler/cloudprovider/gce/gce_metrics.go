@@ -35,8 +35,8 @@ var (
 	)
 )
 
-// registerMetrics registers all GCE metrics.
-func registerMetrics() {
+// RegisterMetrics registers all GCE metrics.
+func RegisterMetrics() {
 	prometheus.MustRegister(requestCounter)
 }
 

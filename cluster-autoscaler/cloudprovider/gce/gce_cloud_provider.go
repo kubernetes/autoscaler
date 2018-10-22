@@ -330,6 +330,6 @@ func BuildGCE(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscover
 		glog.Fatalf("Failed to create GCE cloud provider: %v", err)
 	}
 	// Register GCE API usage metrics.
-	registerMetrics()
+	RegisterMetrics()
 	return provider
 }
