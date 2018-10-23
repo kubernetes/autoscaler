@@ -446,20 +446,20 @@ func (scaleSet *ScaleSet) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
 }
 
 // Nodes returns a list of all nodes that belong to this node group.
-func (scaleSet *ScaleSet) Nodes() ([]string, error) {
+func (scaleSet *ScaleSet) Nodes() ([]cloudprovider.Instance, error) {
 	vms, err := scaleSet.GetScaleSetVms()
 	if err != nil {
 		return nil, err
 	}
 
-	result := make([]string, 0, len(vms))
+	instances := make([]cloudprovider.Instance, 0, len(vms))
 	for i := range vms {
 		if len(*vms[i].ID) == 0 {
 			continue
 		}
 		name := "azure://" + *vms[i].ID
-		result = append(result, name)
+		instances = append(instances, cloudprovider.Instance{Id: name})
 	}
 
-	return result, nil
+	return instances, nil
 }
