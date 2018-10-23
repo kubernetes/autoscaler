@@ -17,7 +17,7 @@ FROM $BASEIMAGE
 LABEL maintainer="Marcin Wielgus <mwielgus@google.com>"
 
 ENV DEBIAN_FRONTEND noninteractive
-RUN clean-install ca-certificates
+RUN clean-install ca-certificates tzdata
 
 ADD cluster-autoscaler cluster-autoscaler
 ADD run.sh run.sh
