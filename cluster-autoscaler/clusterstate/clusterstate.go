@@ -887,14 +887,14 @@ func getNotRegisteredNodes(allNodes []*apiv1.Node, cloudProvider cloudprovider.C
 			return []UnregisteredNode{}, err
 		}
 		for _, node := range nodes {
-			if !registered.Has(node) {
+			if !registered.Has(node.Id) {
 				notRegistered = append(notRegistered, UnregisteredNode{
 					Node: &apiv1.Node{
 						ObjectMeta: metav1.ObjectMeta{
-							Name: node,
+							Name: node.Id,
 						},
 						Spec: apiv1.NodeSpec{
-							ProviderID: node,
+							ProviderID: node.Id,
 						},
 					},
 					UnregisteredSince: time,
