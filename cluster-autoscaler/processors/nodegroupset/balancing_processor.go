@@ -1,5 +1,5 @@
 /*
-Copyright 2017 The Kubernetes Authors.
+Copyright 2018 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,30 +17,49 @@ limitations under the License.
 package nodegroupset
 
 import (
-	"fmt"
 	"sort"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 
 	"github.com/golang/glog"
 )
 
-// ScaleUpInfo contains information about planned scale-up of a single NodeGroup
-type ScaleUpInfo struct {
-	// Group is the group to be scaled-up
-	Group cloudprovider.NodeGroup
-	// CurrentSize is the current size of the Group
-	CurrentSize int
-	// NewSize is the size the Group will be scaled-up to
-	NewSize int
-	// MaxSize is the maximum allowed size of the Group
-	MaxSize int
+// BalancingNodeGroupSetProcessor tries to keep similar node groups balanced on scale-up.
+type BalancingNodeGroupSetProcessor struct {
 }
 
-// String is used for printing ScaleUpInfo for logging, etc
-func (s ScaleUpInfo) String() string {
-	return fmt.Sprintf("{%v %v->%v (max: %v)}", s.Group.Id(), s.CurrentSize, s.NewSize, s.MaxSize)
+// FindSimilarNodeGroups returns a list of NodeGroups similar to the given one.
+// Two groups are similar if the NodeInfos for them compare equal using IsNodeInfoSimilar.
+func (b *BalancingNodeGroupSetProcessor) FindSimilarNodeGroups(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup,
+	nodeInfosForGroups map[string]*schedulercache.NodeInfo) ([]cloudprovider.NodeGroup, errors.AutoscalerError) {
+
+	result := []cloudprovider.NodeGroup{}
+	nodeGroupId := nodeGroup.Id()
+	nodeInfo, found := nodeInfosForGroups[nodeGroupId]
+	if !found {
+		return []cloudprovider.NodeGroup{}, errors.NewAutoscalerError(
+			errors.InternalError,
+			"failed to find template node for node group %s",
+			nodeGroupId)
+	}
+	for _, ng := range context.CloudProvider.NodeGroups() {
+		ngId := ng.Id()
+		if ngId == nodeGroupId {
+			continue
+		}
+		ngNodeInfo, found := nodeInfosForGroups[ngId]
+		if !found {
+			glog.Warningf("Failed to find nodeInfo for group %v", ngId)
+			continue
+		}
+		if IsNodeInfoSimilar(nodeInfo, ngNodeInfo) {
+			result = append(result, ng)
+		}
+	}
+	return result, nil
 }
 
 // BalanceScaleUpBetweenGroups distributes a given number of nodes between
@@ -52,7 +71,7 @@ func (s ScaleUpInfo) String() string {
 // MaxSize of each group will be respected. If newNodes > total free capacity
 // of all NodeGroups it will be capped to total capacity. In particular if all
 // group already have MaxSize, empty list will be returned.
-func BalanceScaleUpBetweenGroups(groups []cloudprovider.NodeGroup, newNodes int) ([]ScaleUpInfo, errors.AutoscalerError) {
+func (b *BalancingNodeGroupSetProcessor) BalanceScaleUpBetweenGroups(context *context.AutoscalingContext, groups []cloudprovider.NodeGroup, newNodes int) ([]ScaleUpInfo, errors.AutoscalerError) {
 	if len(groups) == 0 {
 		return []ScaleUpInfo{}, errors.NewAutoscalerError(
 			errors.InternalError, "Can't balance scale up between 0 groups")
@@ -152,3 +171,6 @@ func BalanceScaleUpBetweenGroups(groups []cloudprovider.NodeGroup, newNodes int)
 
 	return result, nil
 }
+
+// CleanUp performs final clean up of processor state.
+func (b *BalancingNodeGroupSetProcessor) CleanUp() {}
