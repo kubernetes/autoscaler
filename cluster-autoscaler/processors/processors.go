@@ -18,6 +18,7 @@ package processors
 
 import (
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/pods"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 )
@@ -29,6 +30,8 @@ type AutoscalingProcessors struct {
 	PodListProcessor pods.PodListProcessor
 	// NodeGroupListProcessor is used to process list of NodeGroups that can be used in scale-up.
 	NodeGroupListProcessor nodegroups.NodeGroupListProcessor
+	// NodeGroupSetProcessor is used to divide scale-up between similar NodeGroups.
+	NodeGroupSetProcessor nodegroupset.NodeGroupSetProcessor
 	// ScaleUpStatusProcessor is used to process the state of the cluster after a scale-up.
 	ScaleUpStatusProcessor status.ScaleUpStatusProcessor
 	// AutoscalingStatusProcessor is used to process the state of the cluster after each autoscaling iteration.
@@ -42,6 +45,7 @@ func DefaultProcessors() *AutoscalingProcessors {
 	return &AutoscalingProcessors{
 		PodListProcessor:           pods.NewDefaultPodListProcessor(),
 		NodeGroupListProcessor:     nodegroups.NewDefaultNodeGroupListProcessor(),
+		NodeGroupSetProcessor:      nodegroupset.NewDefaultNodeGroupSetProcessor(),
 		ScaleUpStatusProcessor:     status.NewDefaultScaleUpStatusProcessor(),
 		AutoscalingStatusProcessor: status.NewDefaultAutoscalingStatusProcessor(),
 		NodeGroupManager:           nodegroups.NewDefaultNodeGroupManager(),
@@ -53,6 +57,7 @@ func TestProcessors() *AutoscalingProcessors {
 	return &AutoscalingProcessors{
 		PodListProcessor:       &pods.NoOpPodListProcessor{},
 		NodeGroupListProcessor: &nodegroups.NoOpNodeGroupListProcessor{},
+		NodeGroupSetProcessor:  &nodegroupset.BalancingNodeGroupSetProcessor{},
 		// TODO(bskiba): change scale up test so that this can be a NoOpProcessor
 		ScaleUpStatusProcessor:     &status.EventingScaleUpStatusProcessor{},
 		AutoscalingStatusProcessor: &status.NoOpAutoscalingStatusProcessor{},
