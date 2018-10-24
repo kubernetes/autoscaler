@@ -11,7 +11,7 @@ similar node groups.
 
 ## Constraints
 We want this feature to work reasonably well with any currently
-supported CA configuration. In particular we want to support both homogenous and heterogenous clusters,
+supported CA configuration. In particular we want to support both homogenous and heterogeneous clusters,
 allowing the user to easily choose or implement strategy for defining what kind
 of node should be added (i.e. large instance vs several small instances, etc).
 
