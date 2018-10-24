@@ -66,21 +66,42 @@ type ClusterStateFeeder interface {
 	GarbageCollectCheckpoints()
 }
 
-// NewClusterStateFeeder creates new ClusterStateFeeder with internal data providers, based on kube client config and a historyProvider.
-func NewClusterStateFeeder(config *rest.Config, clusterState *model.ClusterState) ClusterStateFeeder {
-	kubeClient := kube_client.NewForConfigOrDie(config)
+// ClusterStateFeederFactory makes instances of ClusterStateFeeder.
+type ClusterStateFeederFactory struct {
+	KubeClient          kube_client.Interface
+	MetricsClient       metrics.MetricsClient
+	VpaCheckpointClient vpa_api.VerticalPodAutoscalerCheckpointsGetter
+	VpaLister           vpa_lister.VerticalPodAutoscalerLister
+	ClusterState        *model.ClusterState
+}
+
+// Make creates new ClusterStateFeeder with internal data providers, based on kube client.
+func (m ClusterStateFeederFactory) Make() *clusterStateFeeder {
+	kubeClient := m.KubeClient
 	oomObserver := oom.NewObserver()
 	podLister := newPodClients(kubeClient, &oomObserver)
 	watchEvictionEventsWithRetries(kubeClient, &oomObserver)
 	return &clusterStateFeeder{
 		coreClient:          kubeClient.CoreV1(),
 		specClient:          spec.NewSpecClient(podLister),
-		metricsClient:       newMetricsClient(config),
+		metricsClient:       m.MetricsClient,
 		oomObserver:         &oomObserver,
-		vpaCheckpointClient: vpa_clientset.NewForConfigOrDie(config).AutoscalingV1beta1(),
-		vpaLister:           vpa_api_util.NewAllVpasLister(vpa_clientset.NewForConfigOrDie(config), make(chan struct{})),
-		clusterState:        clusterState,
+		vpaCheckpointClient: m.VpaCheckpointClient,
+		vpaLister:           m.VpaLister,
+		clusterState:        m.ClusterState,
 	}
+}
+
+// NewClusterStateFeeder creates new ClusterStateFeeder with internal data providers, based on kube client config.
+// Deprecated; Use ClusterStateFeederFactory instead.
+func NewClusterStateFeeder(config *rest.Config, clusterState *model.ClusterState) ClusterStateFeeder {
+	return ClusterStateFeederFactory{
+		KubeClient:          kube_client.NewForConfigOrDie(config),
+		MetricsClient:       newMetricsClient(config),
+		VpaCheckpointClient: vpa_clientset.NewForConfigOrDie(config).AutoscalingV1beta1(),
+		VpaLister:           vpa_api_util.NewAllVpasLister(vpa_clientset.NewForConfigOrDie(config), make(chan struct{})),
+		ClusterState:        clusterState,
+	}.Make()
 }
 
 func newMetricsClient(config *rest.Config) metrics.MetricsClient {
