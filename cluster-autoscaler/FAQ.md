@@ -616,6 +616,7 @@ The following startup parameters are supported for cluster autoscaler:
 | `max-nodes-total` | Maximum number of nodes in all node groups. Cluster autoscaler will not grow the cluster beyond this number. | 0
 | `cores-total` | Minimum and maximum number of cores in cluster, in the format <min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers. | 320000
 | `memory-total` | Minimum and maximum number of gigabytes of memory in cluster, in the format <min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers. | 6400000
+| `gpu-total` | Minimum and maximum number of different GPUs in cluster, in the format <gpu_type>:<min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers. Can be passed multiple times. CURRENTLY THIS FLAG ONLY WORKS ON GKE. | ""
 | `cloud-provider` | Cloud provider type. | gce
 | `max-empty-bulk-delete` | Maximum number of empty nodes that can be deleted at the same time.  | 10
 | `max-graceful-termination-sec` | Maximum number of seconds CA waits for pod termination when trying to scale down a node.  | 600
@@ -632,6 +633,7 @@ The following startup parameters are supported for cluster autoscaler:
 | `balance-similar-node-groups` | Detect similar node groups and balance the number of nodes between them | false
 | `node-autoprovisioning-enabled` | Should CA autoprovision node groups when needed | false
 | `max-autoprovisioned-node-group-count` | The maximum number of autoprovisioned groups in the cluster | 15
+| `unremovable-node-recheck-timeout` | The timeout before we check again a node that couldn't be removed before | 5 minutes
 | `expendable-pods-priority-cutoff` | Pods with priority below cutoff will be expendable. They can be killed without any consideration during scale down and they don't cause scale up. Pods with null priority (PodPriority disabled) are non expendable | 0
 | `regional` | Cluster is regional | false
 | `leader-elect` | Start a leader election client and gain leadership before executing the main loop.<br>Enable this when running replicated components for high availability | true
