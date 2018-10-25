@@ -408,7 +408,12 @@ type CPContainerResourcePolicy struct {
 	// Requests describes the function for determining the container requests.
 	// This is used only when Mode==ContainerScalingModeFunction
 	// +optional
-	Requests []ResourceScalingRule `json:"requests,omitempty" protobuf:"bytes,5,opt,name=requests"`
+	Limits []ResourceScalingRule `json:"limits,omitempty" protobuf:"bytes,5,opt,name=limits"`
+
+	// Requests describes the function for determining the container requests.
+	// This is used only when Mode==ContainerScalingModeFunction
+	// +optional
+	Requests []ResourceScalingRule `json:"requests,omitempty" protobuf:"bytes,6,opt,name=requests"`
 }
 
 type ResourceScalingRule struct {
@@ -432,7 +437,7 @@ type ResourceScalingFunction struct {
 	Slope resource.Quantity `json:"slope,omitempty"`
 
 	// Per divides Input before multiplying by Slope, allowing us to specify slopes of < 1m per input unit
-	Per int32 `json:"int,omitempty"`
+	Per int32 `json:"per,omitempty"`
 
 	/*	// Segments defines a set of segments of the resource line.
 		// In each segment we define the interval with which we change values.

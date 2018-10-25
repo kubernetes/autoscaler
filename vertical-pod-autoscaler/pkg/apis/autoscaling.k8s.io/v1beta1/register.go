@@ -52,6 +52,8 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&VerticalPodAutoscalerList{},
 		&VerticalPodAutoscalerCheckpoint{},
 		&VerticalPodAutoscalerCheckpointList{},
+		&ClusterProportionalScaler{},
+		&ClusterProportionalScalerList{},
 	)
 	metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
 	return nil
