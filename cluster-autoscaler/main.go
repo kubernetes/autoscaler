@@ -37,6 +37,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -263,12 +265,20 @@ func run(healthCheck *metrics.HealthCheck) {
 	listerRegistryStopChannel := make(chan struct{})
 	listerRegistry := kube_util.NewListerRegistryWithDefaultListers(kubeClient, listerRegistryStopChannel)
 
+	processors := ca_processors.DefaultProcessors()
+	if autoscalingOptions.CloudProviderName == "gke" {
+		processors.NodeGroupSetProcessor = &nodegroupset.BalancingNodeGroupSetProcessor{
+			Comparator: nodegroupset.IsGkeNodeInfoSimilar}
+
+	}
+
 	opts := core.AutoscalerOptions{
 		AutoscalingOptions: autoscalingOptions,
 		PredicateChecker:   predicateChecker,
 		KubeClient:         kubeClient,
 		KubeEventRecorder:  kubeEventRecorder,
 		ListerRegistry:     listerRegistry,
+		Processors:         processors,
 	}
 	autoscaler, err := core.NewAutoscaler(opts)
 	if err != nil {
