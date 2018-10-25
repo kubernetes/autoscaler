@@ -31,7 +31,6 @@ import (
 	coreinformer "k8s.io/client-go/informers/core/v1"
 	"k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/tools/cache"
-	"k8s.io/kubernetes/pkg/api/testapi"
 )
 
 type podWithExpectations struct {
@@ -46,7 +45,6 @@ func TestEvictReplicatedByController(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "rc",
 			Namespace: "default",
-			SelfLink:  testapi.Default.SelfLink("replicationcontrollers", "rc"),
 		},
 		TypeMeta: metav1.TypeMeta{
 			Kind: "ReplicationController",
@@ -260,7 +258,6 @@ func TestEvictReplicatedByReplicaSet(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "rs",
 			Namespace: "default",
-			SelfLink:  testapi.Default.SelfLink("replicasets", "rs"),
 		},
 		TypeMeta: metav1.TypeMeta{
 			Kind: "ReplicaSet",
@@ -300,7 +297,6 @@ func TestEvictReplicatedByStatefulSet(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "ss",
 			Namespace: "default",
-			SelfLink:  "/apiv1s/apps/v1/namespaces/default/statefulsets/ss",
 		},
 		TypeMeta: metav1.TypeMeta{
 			Kind: "StatefulSet",
@@ -337,7 +333,6 @@ func TestEvictReplicatedByJob(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "job",
 			Namespace: "default",
-			SelfLink:  "/apiv1s/apps/v1/namespaces/default/jobs/job",
 		},
 		TypeMeta: metav1.TypeMeta{
 			Kind: "Job",
@@ -376,7 +371,6 @@ func TestEvictTooFewReplicas(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "rc",
 			Namespace: "default",
-			SelfLink:  testapi.Default.SelfLink("replicationcontrollers", "rc"),
 		},
 		TypeMeta: metav1.TypeMeta{
 			Kind: "ReplicationController",
@@ -413,7 +407,6 @@ func TestEvictionTolerance(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "rc",
 			Namespace: "default",
-			SelfLink:  testapi.Default.SelfLink("replicationcontrollers", "rc"),
 		},
 		TypeMeta: metav1.TypeMeta{
 			Kind: "ReplicationController",
@@ -454,7 +447,6 @@ func TestEvictAtLeastOne(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "rc",
 			Namespace: "default",
-			SelfLink:  testapi.Default.SelfLink("replicationcontrollers", "rc"),
 		},
 		TypeMeta: metav1.TypeMeta{
 			Kind: "ReplicationController",
