@@ -28,6 +28,10 @@ type FakeAutoscalingV1beta1 struct {
 	*testing.Fake
 }
 
+func (c *FakeAutoscalingV1beta1) ClusterProportionalScalers(namespace string) v1beta1.ClusterProportionalScalerInterface {
+	return &FakeClusterProportionalScalers{c, namespace}
+}
+
 func (c *FakeAutoscalingV1beta1) VerticalPodAutoscalers(namespace string) v1beta1.VerticalPodAutoscalerInterface {
 	return &FakeVerticalPodAutoscalers{c, namespace}
 }

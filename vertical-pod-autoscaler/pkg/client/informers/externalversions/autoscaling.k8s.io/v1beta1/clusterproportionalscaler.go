@@ -31,59 +31,59 @@ import (
 	cache "k8s.io/client-go/tools/cache"
 )
 
-// VerticalPodAutoscalerInformer provides access to a shared informer and lister for
-// VerticalPodAutoscalers.
-type VerticalPodAutoscalerInformer interface {
+// ClusterProportionalScalerInformer provides access to a shared informer and lister for
+// ClusterProportionalScalers.
+type ClusterProportionalScalerInformer interface {
 	Informer() cache.SharedIndexInformer
-	Lister() v1beta1.VerticalPodAutoscalerLister
+	Lister() v1beta1.ClusterProportionalScalerLister
 }
 
-type verticalPodAutoscalerInformer struct {
+type clusterProportionalScalerInformer struct {
 	factory          internalinterfaces.SharedInformerFactory
 	tweakListOptions internalinterfaces.TweakListOptionsFunc
 	namespace        string
 }
 
-// NewVerticalPodAutoscalerInformer constructs a new informer for VerticalPodAutoscaler type.
+// NewClusterProportionalScalerInformer constructs a new informer for ClusterProportionalScaler type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewVerticalPodAutoscalerInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
-	return NewFilteredVerticalPodAutoscalerInformer(client, namespace, resyncPeriod, indexers, nil)
+func NewClusterProportionalScalerInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers) cache.SharedIndexInformer {
+	return NewFilteredClusterProportionalScalerInformer(client, namespace, resyncPeriod, indexers, nil)
 }
 
-// NewFilteredVerticalPodAutoscalerInformer constructs a new informer for VerticalPodAutoscaler type.
+// NewFilteredClusterProportionalScalerInformer constructs a new informer for ClusterProportionalScaler type.
 // Always prefer using an informer factory to get a shared informer instead of getting an independent
 // one. This reduces memory footprint and number of connections to the server.
-func NewFilteredVerticalPodAutoscalerInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
+func NewFilteredClusterProportionalScalerInformer(client versioned.Interface, namespace string, resyncPeriod time.Duration, indexers cache.Indexers, tweakListOptions internalinterfaces.TweakListOptionsFunc) cache.SharedIndexInformer {
 	return cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options v1.ListOptions) (runtime.Object, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.AutoscalingV1beta1().VerticalPodAutoscalers(namespace).List(options)
+				return client.AutoscalingV1beta1().ClusterProportionalScalers(namespace).List(options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.AutoscalingV1beta1().VerticalPodAutoscalers(namespace).Watch(options)
+				return client.AutoscalingV1beta1().ClusterProportionalScalers(namespace).Watch(options)
 			},
 		},
-		&autoscalingk8siov1beta1.VerticalPodAutoscaler{},
+		&autoscalingk8siov1beta1.ClusterProportionalScaler{},
 		resyncPeriod,
 		indexers,
 	)
 }
 
-func (f *verticalPodAutoscalerInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
-	return NewFilteredVerticalPodAutoscalerInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
+func (f *clusterProportionalScalerInformer) defaultInformer(client versioned.Interface, resyncPeriod time.Duration) cache.SharedIndexInformer {
+	return NewFilteredClusterProportionalScalerInformer(client, f.namespace, resyncPeriod, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc}, f.tweakListOptions)
 }
 
-func (f *verticalPodAutoscalerInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&autoscalingk8siov1beta1.VerticalPodAutoscaler{}, f.defaultInformer)
+func (f *clusterProportionalScalerInformer) Informer() cache.SharedIndexInformer {
+	return f.factory.InformerFor(&autoscalingk8siov1beta1.ClusterProportionalScaler{}, f.defaultInformer)
 }
 
-func (f *verticalPodAutoscalerInformer) Lister() v1beta1.VerticalPodAutoscalerLister {
-	return v1beta1.NewVerticalPodAutoscalerLister(f.Informer().GetIndexer())
+func (f *clusterProportionalScalerInformer) Lister() v1beta1.ClusterProportionalScalerLister {
+	return v1beta1.NewClusterProportionalScalerLister(f.Informer().GetIndexer())
 }

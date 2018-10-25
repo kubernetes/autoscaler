@@ -27,6 +27,7 @@ import (
 
 type AutoscalingV1beta1Interface interface {
 	RESTClient() rest.Interface
+	ClusterProportionalScalersGetter
 	VerticalPodAutoscalersGetter
 	VerticalPodAutoscalerCheckpointsGetter
 }
@@ -34,6 +35,10 @@ type AutoscalingV1beta1Interface interface {
 // AutoscalingV1beta1Client is used to interact with features provided by the autoscaling.k8s.io group.
 type AutoscalingV1beta1Client struct {
 	restClient rest.Interface
+}
+
+func (c *AutoscalingV1beta1Client) ClusterProportionalScalers(namespace string) ClusterProportionalScalerInterface {
+	return newClusterProportionalScalers(c, namespace)
 }
 
 func (c *AutoscalingV1beta1Client) VerticalPodAutoscalers(namespace string) VerticalPodAutoscalerInterface {

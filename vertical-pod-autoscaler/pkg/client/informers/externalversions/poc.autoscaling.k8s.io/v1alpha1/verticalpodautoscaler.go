@@ -24,7 +24,7 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	watch "k8s.io/apimachinery/pkg/watch"
-	poc_autoscaling_k8s_io_v1alpha1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
+	pocautoscalingk8siov1alpha1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
 	versioned "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	internalinterfaces "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/informers/externalversions/internalinterfaces"
 	v1alpha1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/poc.autoscaling.k8s.io/v1alpha1"
@@ -70,7 +70,7 @@ func NewFilteredVerticalPodAutoscalerInformer(client versioned.Interface, namesp
 				return client.PocV1alpha1().VerticalPodAutoscalers(namespace).Watch(options)
 			},
 		},
-		&poc_autoscaling_k8s_io_v1alpha1.VerticalPodAutoscaler{},
+		&pocautoscalingk8siov1alpha1.VerticalPodAutoscaler{},
 		resyncPeriod,
 		indexers,
 	)
@@ -81,7 +81,7 @@ func (f *verticalPodAutoscalerInformer) defaultInformer(client versioned.Interfa
 }
 
 func (f *verticalPodAutoscalerInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&poc_autoscaling_k8s_io_v1alpha1.VerticalPodAutoscaler{}, f.defaultInformer)
+	return f.factory.InformerFor(&pocautoscalingk8siov1alpha1.VerticalPodAutoscaler{}, f.defaultInformer)
 }
 
 func (f *verticalPodAutoscalerInformer) Lister() v1alpha1.VerticalPodAutoscalerLister {

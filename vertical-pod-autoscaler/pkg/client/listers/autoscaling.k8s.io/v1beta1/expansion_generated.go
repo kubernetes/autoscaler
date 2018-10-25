@@ -18,6 +18,14 @@ limitations under the License.
 
 package v1beta1
 
+// ClusterProportionalScalerListerExpansion allows custom methods to be added to
+// ClusterProportionalScalerLister.
+type ClusterProportionalScalerListerExpansion interface{}
+
+// ClusterProportionalScalerNamespaceListerExpansion allows custom methods to be added to
+// ClusterProportionalScalerNamespaceLister.
+type ClusterProportionalScalerNamespaceListerExpansion interface{}
+
 // VerticalPodAutoscalerListerExpansion allows custom methods to be added to
 // VerticalPodAutoscalerLister.
 type VerticalPodAutoscalerListerExpansion interface{}

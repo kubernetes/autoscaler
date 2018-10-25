@@ -24,6 +24,8 @@ import (
 
 // Interface provides access to all the informers in this group version.
 type Interface interface {
+	// ClusterProportionalScalers returns a ClusterProportionalScalerInformer.
+	ClusterProportionalScalers() ClusterProportionalScalerInformer
 	// VerticalPodAutoscalers returns a VerticalPodAutoscalerInformer.
 	VerticalPodAutoscalers() VerticalPodAutoscalerInformer
 	// VerticalPodAutoscalerCheckpoints returns a VerticalPodAutoscalerCheckpointInformer.
@@ -39,6 +41,11 @@ type version struct {
 // New returns a new Interface.
 func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakListOptions internalinterfaces.TweakListOptionsFunc) Interface {
 	return &version{factory: f, namespace: namespace, tweakListOptions: tweakListOptions}
+}
+
+// ClusterProportionalScalers returns a ClusterProportionalScalerInformer.
+func (v *version) ClusterProportionalScalers() ClusterProportionalScalerInformer {
+	return &clusterProportionalScalerInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
 // VerticalPodAutoscalers returns a VerticalPodAutoscalerInformer.

@@ -54,6 +54,8 @@ func (f *genericInformer) Lister() cache.GenericLister {
 func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource) (GenericInformer, error) {
 	switch resource {
 	// Group=autoscaling.k8s.io, Version=v1beta1
+	case v1beta1.SchemeGroupVersion.WithResource("clusterproportionalscalers"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Autoscaling().V1beta1().ClusterProportionalScalers().Informer()}, nil
 	case v1beta1.SchemeGroupVersion.WithResource("verticalpodautoscalers"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Autoscaling().V1beta1().VerticalPodAutoscalers().Informer()}, nil
 	case v1beta1.SchemeGroupVersion.WithResource("verticalpodautoscalercheckpoints"):

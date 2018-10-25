@@ -18,6 +18,8 @@ limitations under the License.
 
 package v1beta1
 
+type ClusterProportionalScalerExpansion interface{}
+
 type VerticalPodAutoscalerExpansion interface{}
 
 type VerticalPodAutoscalerCheckpointExpansion interface{}
