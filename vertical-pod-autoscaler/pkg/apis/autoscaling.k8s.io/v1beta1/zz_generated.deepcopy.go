@@ -161,6 +161,13 @@ func (in *RecommendedContainerResources) DeepCopyInto(out *RecommendedContainerR
 			(*out)[key] = val.DeepCopy()
 		}
 	}
+	if in.UncappedTarget != nil {
+		in, out := &in.UncappedTarget, &out.UncappedTarget
+		*out = make(v1.ResourceList, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val.DeepCopy()
+		}
+	}
 	return
 }
 
