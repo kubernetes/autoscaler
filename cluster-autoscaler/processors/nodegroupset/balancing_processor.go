@@ -29,6 +29,7 @@ import (
 
 // BalancingNodeGroupSetProcessor tries to keep similar node groups balanced on scale-up.
 type BalancingNodeGroupSetProcessor struct {
+	Comparator NodeInfoComparator
 }
 
 // FindSimilarNodeGroups returns a list of NodeGroups similar to the given one.
@@ -55,7 +56,11 @@ func (b *BalancingNodeGroupSetProcessor) FindSimilarNodeGroups(context *context.
 			glog.Warningf("Failed to find nodeInfo for group %v", ngId)
 			continue
 		}
-		if IsNodeInfoSimilar(nodeInfo, ngNodeInfo) {
+		comparator := b.Comparator
+		if comparator == nil {
+			comparator = IsNodeInfoSimilar
+		}
+		if comparator(nodeInfo, ngNodeInfo) {
 			result = append(result, ng)
 		}
 	}
