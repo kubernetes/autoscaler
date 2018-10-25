@@ -56,7 +56,7 @@ func main() {
 	kubeClient, vpaClient := createKubeClients()
 	updater, err := updater.NewUpdater(kubeClient, vpaClient, *minReplicas, *evictionToleranceFraction, vpa_api_util.NewCappingRecommendationProcessor(), nil)
 	if err != nil {
-		glog.Fatalf("Failed to create updater: %v")
+		glog.Fatalf("Failed to create updater: %v", err)
 	}
 	ticker := time.Tick(*updaterInterval)
 	for range ticker {
