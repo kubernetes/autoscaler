@@ -1,0 +1,19 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["testserver.go"],
+    importmap = "k8s.io/autoscaler/vertical-pod-autoscaler/vendor/k8s.io/apiextensions-apiserver/pkg/cmd/server/testing",
+    importpath = "k8s.io/apiextensions-apiserver/pkg/cmd/server/testing",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/spf13/pflag:go_default_library",
+        "//vendor/k8s.io/apiextensions-apiserver/pkg/cmd/server/options:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/wait:go_default_library",
+        "//vendor/k8s.io/apiserver/pkg/registry/generic/registry:go_default_library",
+        "//vendor/k8s.io/apiserver/pkg/server:go_default_library",
+        "//vendor/k8s.io/apiserver/pkg/storage/storagebackend:go_default_library",
+        "//vendor/k8s.io/client-go/kubernetes:go_default_library",
+        "//vendor/k8s.io/client-go/rest:go_default_library",
+    ],
+)

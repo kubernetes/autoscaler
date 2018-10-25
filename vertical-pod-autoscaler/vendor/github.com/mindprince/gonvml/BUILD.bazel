@@ -1,0 +1,14 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "bindings.go",
+        "nvml.h",
+    ],
+    cgo = True,
+    clinkopts = ["-ldl"],
+    importmap = "k8s.io/autoscaler/vertical-pod-autoscaler/vendor/github.com/mindprince/gonvml",
+    importpath = "github.com/mindprince/gonvml",
+    visibility = ["//visibility:public"],
+)

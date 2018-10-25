@@ -1,0 +1,26 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["main.go"],
+    importpath = "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//common:go_default_library",
+        "//pkg/client/clientset/versioned:go_default_library",
+        "//pkg/updater/logic:go_default_library",
+        "//pkg/utils/metrics:go_default_library",
+        "//pkg/utils/metrics/updater:go_default_library",
+        "//pkg/utils/vpa:go_default_library",
+        "//vendor/github.com/golang/glog:go_default_library",
+        "//vendor/k8s.io/apiserver/pkg/util/flag:go_default_library",
+        "//vendor/k8s.io/client-go/kubernetes:go_default_library",
+        "//vendor/k8s.io/client-go/rest:go_default_library",
+    ],
+)
+
+go_binary(
+    name = "updater",
+    embed = [":go_default_library"],
+    visibility = ["//visibility:public"],
+)

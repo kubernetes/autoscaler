@@ -1,0 +1,26 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "doc.go",
+        "fake_shaper.go",
+        "interfaces.go",
+        "linux.go",
+        "unsupported.go",
+        "utils.go",
+    ],
+    importmap = "k8s.io/autoscaler/vertical-pod-autoscaler/vendor/k8s.io/kubernetes/pkg/util/bandwidth",
+    importpath = "k8s.io/kubernetes/pkg/util/bandwidth",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/k8s.io/apimachinery/pkg/api/resource:go_default_library",
+    ] + select({
+        "@io_bazel_rules_go//go/platform:linux": [
+            "//vendor/github.com/golang/glog:go_default_library",
+            "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
+            "//vendor/k8s.io/utils/exec:go_default_library",
+        ],
+        "//conditions:default": [],
+    }),
+)

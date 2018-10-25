@@ -1,0 +1,29 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "history_provider.go",
+        "prometheus_client.go",
+        "prometheus_util.go",
+        "types.go",
+    ],
+    importpath = "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/history",
+    visibility = ["//visibility:public"],
+    deps = ["//pkg/recommender/model:go_default_library"],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = [
+        "history_provider_test.go",
+        "prometheus_client_test.go",
+        "prometheus_util_test.go",
+    ],
+    embed = [":go_default_library"],
+    deps = [
+        "//pkg/recommender/model:go_default_library",
+        "//vendor/github.com/stretchr/testify/assert:go_default_library",
+        "//vendor/github.com/stretchr/testify/mock:go_default_library",
+    ],
+)

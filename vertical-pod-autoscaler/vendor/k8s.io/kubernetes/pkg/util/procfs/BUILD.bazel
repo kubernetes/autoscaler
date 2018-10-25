@@ -1,0 +1,22 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "doc.go",
+        "procfs.go",
+        "procfs_fake.go",
+        "procfs_linux.go",
+        "procfs_unsupported.go",
+    ],
+    importmap = "k8s.io/autoscaler/vertical-pod-autoscaler/vendor/k8s.io/kubernetes/pkg/util/procfs",
+    importpath = "k8s.io/kubernetes/pkg/util/procfs",
+    visibility = ["//visibility:public"],
+    deps = select({
+        "@io_bazel_rules_go//go/platform:linux": [
+            "//vendor/github.com/golang/glog:go_default_library",
+            "//vendor/k8s.io/apimachinery/pkg/util/errors:go_default_library",
+        ],
+        "//conditions:default": [],
+    }),
+)

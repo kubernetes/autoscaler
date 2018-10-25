@@ -1,0 +1,37 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "cadvisor_stats_provider.go",
+        "cri_stats_provider.go",
+        "helper.go",
+        "log_metrics_provider.go",
+        "stats_provider.go",
+        "stats_provider_linux.go",
+        "stats_provider_unsupported.go",
+    ],
+    importmap = "k8s.io/autoscaler/vertical-pod-autoscaler/vendor/k8s.io/kubernetes/pkg/kubelet/stats",
+    importpath = "k8s.io/kubernetes/pkg/kubelet/stats",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/golang/glog:go_default_library",
+        "//vendor/github.com/google/cadvisor/fs:go_default_library",
+        "//vendor/github.com/google/cadvisor/info/v1:go_default_library",
+        "//vendor/github.com/google/cadvisor/info/v2:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/types:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/kubelet/apis/cri:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/kubelet/apis/cri/runtime/v1alpha2:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/kubelet/apis/stats/v1alpha1:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/kubelet/cadvisor:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/kubelet/cm:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/kubelet/container:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/kubelet/kuberuntime:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/kubelet/leaky:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/kubelet/pod:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/kubelet/server/stats:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/kubelet/types:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/volume:go_default_library",
+    ],
+)

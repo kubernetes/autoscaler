@@ -1,0 +1,19 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "namespace.go",
+        "runtime.go",
+        "whitelist.go",
+    ],
+    importmap = "k8s.io/autoscaler/vertical-pod-autoscaler/vendor/k8s.io/kubernetes/pkg/kubelet/sysctl",
+    importpath = "k8s.io/kubernetes/pkg/kubelet/sysctl",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/k8s.io/kubernetes/pkg/apis/core/validation:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/apis/policy/validation:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/kubelet/container:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/kubelet/lifecycle:go_default_library",
+    ],
+)

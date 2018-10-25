@@ -1,0 +1,17 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["service.go"],
+    importmap = "k8s.io/autoscaler/vertical-pod-autoscaler/vendor/k8s.io/kubernetes/pkg/windows/service",
+    importpath = "k8s.io/kubernetes/pkg/windows/service",
+    visibility = ["//visibility:public"],
+    deps = select({
+        "@io_bazel_rules_go//go/platform:windows": [
+            "//vendor/github.com/golang/glog:go_default_library",
+            "//vendor/golang.org/x/sys/windows:go_default_library",
+            "//vendor/golang.org/x/sys/windows/svc:go_default_library",
+        ],
+        "//conditions:default": [],
+    }),
+)

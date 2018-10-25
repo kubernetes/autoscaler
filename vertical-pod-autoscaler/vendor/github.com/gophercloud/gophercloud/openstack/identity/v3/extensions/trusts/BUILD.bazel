@@ -1,0 +1,14 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "doc.go",
+        "requests.go",
+        "results.go",
+    ],
+    importmap = "k8s.io/autoscaler/vertical-pod-autoscaler/vendor/github.com/gophercloud/gophercloud/openstack/identity/v3/extensions/trusts",
+    importpath = "github.com/gophercloud/gophercloud/openstack/identity/v3/extensions/trusts",
+    visibility = ["//visibility:public"],
+    deps = ["//vendor/github.com/gophercloud/gophercloud/openstack/identity/v3/tokens:go_default_library"],
+)

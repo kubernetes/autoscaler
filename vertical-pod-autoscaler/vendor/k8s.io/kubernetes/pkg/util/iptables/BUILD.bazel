@@ -1,0 +1,31 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "doc.go",
+        "iptables.go",
+        "iptables_linux.go",
+        "iptables_unsupported.go",
+        "save_restore.go",
+    ],
+    importmap = "k8s.io/autoscaler/vertical-pod-autoscaler/vendor/k8s.io/kubernetes/pkg/util/iptables",
+    importpath = "k8s.io/kubernetes/pkg/util/iptables",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/godbus/dbus:go_default_library",
+        "//vendor/github.com/golang/glog:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
+        "//vendor/k8s.io/apiserver/pkg/util/trace:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/util/dbus:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/util/version:go_default_library",
+        "//vendor/k8s.io/utils/exec:go_default_library",
+    ] + select({
+        "@io_bazel_rules_go//go/platform:linux": [
+            "//vendor/golang.org/x/sys/unix:go_default_library",
+            "//vendor/k8s.io/apimachinery/pkg/util/errors:go_default_library",
+            "//vendor/k8s.io/apimachinery/pkg/util/wait:go_default_library",
+        ],
+        "//conditions:default": [],
+    }),
+)

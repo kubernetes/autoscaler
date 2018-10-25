@@ -1,0 +1,12 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "kmsgparser.go",
+        "log.go",
+    ],
+    importmap = "k8s.io/autoscaler/vertical-pod-autoscaler/vendor/github.com/euank/go-kmsg-parser/kmsgparser",
+    importpath = "github.com/euank/go-kmsg-parser/kmsgparser",
+    visibility = ["//visibility:public"],
+)

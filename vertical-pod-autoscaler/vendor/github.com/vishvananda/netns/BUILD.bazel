@@ -1,0 +1,13 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "netns.go",
+        "netns_linux.go",
+        "netns_unspecified.go",
+    ],
+    importmap = "k8s.io/autoscaler/vertical-pod-autoscaler/vendor/github.com/vishvananda/netns",
+    importpath = "github.com/vishvananda/netns",
+    visibility = ["//visibility:public"],
+)

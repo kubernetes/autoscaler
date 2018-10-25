@@ -1,0 +1,16 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["install.go"],
+    importmap = "k8s.io/autoscaler/vertical-pod-autoscaler/vendor/k8s.io/kubernetes/pkg/apis/events/install",
+    importpath = "k8s.io/kubernetes/pkg/apis/events/install",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/runtime:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/api/legacyscheme:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/apis/events:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/apis/events/v1beta1:go_default_library",
+    ],
+)

@@ -1,0 +1,20 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "doc.go",
+        "selinux.go",
+        "selinux_linux.go",
+        "selinux_unsupported.go",
+    ],
+    importmap = "k8s.io/autoscaler/vertical-pod-autoscaler/vendor/k8s.io/kubernetes/pkg/util/selinux",
+    importpath = "k8s.io/kubernetes/pkg/util/selinux",
+    visibility = ["//visibility:public"],
+    deps = select({
+        "@io_bazel_rules_go//go/platform:linux": [
+            "//vendor/github.com/opencontainers/selinux/go-selinux:go_default_library",
+        ],
+        "//conditions:default": [],
+    }),
+)

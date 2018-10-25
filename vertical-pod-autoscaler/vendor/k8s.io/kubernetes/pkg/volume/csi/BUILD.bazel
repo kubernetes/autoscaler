@@ -1,0 +1,34 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "csi_attacher.go",
+        "csi_block.go",
+        "csi_client.go",
+        "csi_mounter.go",
+        "csi_plugin.go",
+        "csi_util.go",
+    ],
+    importmap = "k8s.io/autoscaler/vertical-pod-autoscaler/vendor/k8s.io/kubernetes/pkg/volume/csi",
+    importpath = "k8s.io/kubernetes/pkg/volume/csi",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/container-storage-interface/spec/lib/go/csi/v0:go_default_library",
+        "//vendor/github.com/golang/glog:go_default_library",
+        "//vendor/k8s.io/api/core/v1:go_default_library",
+        "//vendor/k8s.io/api/storage/v1beta1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/api/errors:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/types:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/watch:go_default_library",
+        "//vendor/k8s.io/apiserver/pkg/util/feature:go_default_library",
+        "//vendor/k8s.io/client-go/kubernetes:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/features:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/util/strings:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/volume:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/volume/csi/labelmanager:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/volume/util:go_default_library",
+        "@org_golang_google_grpc//:go_default_library",
+    ],
+)

@@ -1,0 +1,14 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["checkpoint_manager.go"],
+    importmap = "k8s.io/autoscaler/vertical-pod-autoscaler/vendor/k8s.io/kubernetes/pkg/kubelet/checkpointmanager",
+    importpath = "k8s.io/kubernetes/pkg/kubelet/checkpointmanager",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/k8s.io/kubernetes/pkg/kubelet/checkpointmanager/errors:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/kubelet/util/store:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/util/filesystem:go_default_library",
+    ],
+)

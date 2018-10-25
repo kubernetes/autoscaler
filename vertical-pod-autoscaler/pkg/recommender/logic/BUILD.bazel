@@ -1,0 +1,26 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "estimator.go",
+        "recommender.go",
+    ],
+    importpath = "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/logic",
+    visibility = ["//visibility:public"],
+    deps = ["//pkg/recommender/model:go_default_library"],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = [
+        "estimator_test.go",
+        "recommender_test.go",
+    ],
+    embed = [":go_default_library"],
+    deps = [
+        "//pkg/recommender/model:go_default_library",
+        "//pkg/recommender/util:go_default_library",
+        "//vendor/github.com/stretchr/testify/assert:go_default_library",
+    ],
+)

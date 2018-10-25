@@ -1,0 +1,17 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "doc.go",
+        "rancher_registry_credentials.go",
+    ],
+    importmap = "k8s.io/autoscaler/vertical-pod-autoscaler/vendor/k8s.io/kubernetes/pkg/credentialprovider/rancher",
+    importpath = "k8s.io/kubernetes/pkg/credentialprovider/rancher",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/golang/glog:go_default_library",
+        "//vendor/github.com/rancher/go-rancher/client:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/credentialprovider:go_default_library",
+    ],
+)

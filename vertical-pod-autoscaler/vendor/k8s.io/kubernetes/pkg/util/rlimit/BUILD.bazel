@@ -1,0 +1,18 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "rlimit_linux.go",
+        "rlimit_unsupported.go",
+    ],
+    importmap = "k8s.io/autoscaler/vertical-pod-autoscaler/vendor/k8s.io/kubernetes/pkg/util/rlimit",
+    importpath = "k8s.io/kubernetes/pkg/util/rlimit",
+    visibility = ["//visibility:public"],
+    deps = select({
+        "@io_bazel_rules_go//go/platform:linux": [
+            "//vendor/golang.org/x/sys/unix:go_default_library",
+        ],
+        "//conditions:default": [],
+    }),
+)

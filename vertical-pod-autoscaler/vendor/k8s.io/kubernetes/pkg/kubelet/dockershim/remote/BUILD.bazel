@@ -1,0 +1,16 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["docker_server.go"],
+    importmap = "k8s.io/autoscaler/vertical-pod-autoscaler/vendor/k8s.io/kubernetes/pkg/kubelet/dockershim/remote",
+    importpath = "k8s.io/kubernetes/pkg/kubelet/dockershim/remote",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/golang/glog:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/kubelet/apis/cri/runtime/v1alpha2:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/kubelet/dockershim:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/kubelet/util:go_default_library",
+        "@org_golang_google_grpc//:go_default_library",
+    ],
+)

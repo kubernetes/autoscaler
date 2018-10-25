@@ -1,0 +1,21 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "fakestore.go",
+        "fsstore.go",
+        "store.go",
+    ],
+    importmap = "k8s.io/autoscaler/vertical-pod-autoscaler/vendor/k8s.io/kubernetes/pkg/kubelet/kubeletconfig/checkpoint/store",
+    importpath = "k8s.io/kubernetes/pkg/kubelet/kubeletconfig/checkpoint/store",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/k8s.io/kubernetes/pkg/kubelet/apis/kubeletconfig:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/kubelet/kubeletconfig/checkpoint:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/kubelet/kubeletconfig/configfiles:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/kubelet/kubeletconfig/util/files:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/kubelet/kubeletconfig/util/log:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/util/filesystem:go_default_library",
+    ],
+)

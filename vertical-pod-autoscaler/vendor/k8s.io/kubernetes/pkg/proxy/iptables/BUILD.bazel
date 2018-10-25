@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["proxier.go"],
+    importmap = "k8s.io/autoscaler/vertical-pod-autoscaler/vendor/k8s.io/kubernetes/pkg/proxy/iptables",
+    importpath = "k8s.io/kubernetes/pkg/proxy/iptables",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/golang/glog:go_default_library",
+        "//vendor/k8s.io/api/core/v1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/types:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/wait:go_default_library",
+        "//vendor/k8s.io/client-go/tools/record:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/apis/core:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/proxy:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/proxy/healthcheck:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/proxy/metrics:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/proxy/util:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/util/async:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/util/conntrack:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/util/iptables:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/util/net:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/util/sysctl:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/util/version:go_default_library",
+        "//vendor/k8s.io/utils/exec:go_default_library",
+    ],
+)

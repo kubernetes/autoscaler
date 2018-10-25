@@ -1,0 +1,16 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "bounded_frequency_runner.go",
+        "runner.go",
+    ],
+    importmap = "k8s.io/autoscaler/vertical-pod-autoscaler/vendor/k8s.io/kubernetes/pkg/util/async",
+    importpath = "k8s.io/kubernetes/pkg/util/async",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/golang/glog:go_default_library",
+        "//vendor/k8s.io/client-go/util/flowcontrol:go_default_library",
+    ],
+)

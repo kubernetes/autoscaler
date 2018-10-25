@@ -1,0 +1,4 @@
+load("@bazel_gazelle//:def.bzl", "gazelle")
+
+# gazelle:prefix k8s.io/autoscaler/vertical-pod-autoscaler
+gazelle(name = "gazelle")

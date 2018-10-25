@@ -1,0 +1,26 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "errors.go",
+        "request_cache.go",
+        "server.go",
+    ],
+    importmap = "k8s.io/autoscaler/vertical-pod-autoscaler/vendor/k8s.io/kubernetes/pkg/kubelet/server/streaming",
+    importpath = "k8s.io/kubernetes/pkg/kubelet/server/streaming",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/emicklei/go-restful:go_default_library",
+        "//vendor/google.golang.org/grpc/codes:go_default_library",
+        "//vendor/google.golang.org/grpc/status:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/types:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/clock:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/remotecommand:go_default_library",
+        "//vendor/k8s.io/client-go/tools/remotecommand:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/kubelet/apis/cri/runtime/v1alpha2:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/kubelet/server/portforward:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/kubelet/server/remotecommand:go_default_library",
+        "@org_golang_google_grpc//:go_default_library",
+    ],
+)

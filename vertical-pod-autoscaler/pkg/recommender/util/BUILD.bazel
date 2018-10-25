@@ -1,0 +1,33 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "decaying_histogram.go",
+        "histogram.go",
+        "histogram_mock.go",
+        "histogram_options.go",
+    ],
+    importpath = "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/util",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/apis/autoscaling.k8s.io/v1beta1:go_default_library",
+        "//vendor/github.com/stretchr/testify/mock:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = [
+        "decaying_histogram_test.go",
+        "histogram_options_test.go",
+        "histogram_test.go",
+    ],
+    embed = [":go_default_library"],
+    deps = [
+        "//pkg/apis/autoscaling.k8s.io/v1beta1:go_default_library",
+        "//vendor/github.com/stretchr/testify/assert:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
+    ],
+)

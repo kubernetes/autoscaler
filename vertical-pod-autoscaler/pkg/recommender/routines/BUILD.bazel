@@ -1,0 +1,24 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "recommender.go",
+        "vpa.go",
+    ],
+    importpath = "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/routines",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/apis/autoscaling.k8s.io/v1beta1:go_default_library",
+        "//pkg/client/clientset/versioned:go_default_library",
+        "//pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1beta1:go_default_library",
+        "//pkg/recommender/checkpoint:go_default_library",
+        "//pkg/recommender/input:go_default_library",
+        "//pkg/recommender/logic:go_default_library",
+        "//pkg/recommender/model:go_default_library",
+        "//pkg/utils/metrics/recommender:go_default_library",
+        "//pkg/utils/vpa:go_default_library",
+        "//vendor/github.com/golang/glog:go_default_library",
+        "//vendor/k8s.io/client-go/rest:go_default_library",
+    ],
+)

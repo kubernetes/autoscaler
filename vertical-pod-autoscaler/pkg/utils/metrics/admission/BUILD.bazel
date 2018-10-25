@@ -1,0 +1,12 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["admission.go"],
+    importpath = "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/admission",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/utils/metrics:go_default_library",
+        "//vendor/github.com/prometheus/client_golang/prometheus:go_default_library",
+    ],
+)

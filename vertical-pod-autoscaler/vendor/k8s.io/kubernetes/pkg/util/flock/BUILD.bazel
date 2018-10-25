@@ -1,0 +1,33 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "flock_other.go",
+        "flock_unix.go",
+    ],
+    importmap = "k8s.io/autoscaler/vertical-pod-autoscaler/vendor/k8s.io/kubernetes/pkg/util/flock",
+    importpath = "k8s.io/kubernetes/pkg/util/flock",
+    visibility = ["//visibility:public"],
+    deps = select({
+        "@io_bazel_rules_go//go/platform:darwin": [
+            "//vendor/golang.org/x/sys/unix:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:dragonfly": [
+            "//vendor/golang.org/x/sys/unix:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:freebsd": [
+            "//vendor/golang.org/x/sys/unix:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:linux": [
+            "//vendor/golang.org/x/sys/unix:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:netbsd": [
+            "//vendor/golang.org/x/sys/unix:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:openbsd": [
+            "//vendor/golang.org/x/sys/unix:go_default_library",
+        ],
+        "//conditions:default": [],
+    }),
+)
