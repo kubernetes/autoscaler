@@ -1,0 +1,8 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["print.go"],
+    importpath = "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/cluster-proportional/debug",
+    visibility = ["//visibility:public"],
+)

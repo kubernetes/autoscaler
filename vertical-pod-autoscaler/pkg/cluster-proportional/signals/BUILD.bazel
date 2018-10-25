@@ -1,0 +1,12 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "signal.go",
+        "signal_posix.go",
+        "signal_windows.go",
+    ],
+    importpath = "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/cluster-proportional/signals",
+    visibility = ["//visibility:public"],
+)

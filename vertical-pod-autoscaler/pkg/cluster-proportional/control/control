@@ -1,0 +1,16 @@
+  /usr/local/google/home/justinsb/k8s/src/k8s.io/autoscaler/vertical-pod-autoscaler/pkg/cluster-proportional/control:
+  total used in directory 96 available 101636820
+  drwxr-x--- 4 justinsb primarygroup  4096 Oct 25 17:23 .
+  drwxr-x--- 9 justinsb primarygroup  4096 Oct 25 17:23 ..
+  -rw-r----- 1 justinsb primarygroup  2141 Oct 25 17:05 BUILD.bazel
+  -rw-r----- 1 justinsb primarygroup 17740 Oct 25 17:22 controller.go
+  -rw-r----- 1 justinsb primarygroup 17804 Oct 25 17:05 controller.go~
+  -rw-r----- 1 justinsb primarygroup  1634 Oct 25 17:23 introspection.go
+  -rw-r----- 1 justinsb primarygroup  4193 Oct 25 17:05 introspection.go~
+  drwxr-x--- 2 justinsb primarygroup  4096 Oct 25 17:05 k8sclient
+  -rw-r----- 1 justinsb primarygroup  2450 Oct 25 17:22 policy.go
+  -rw-r----- 1 justinsb primarygroup  2486 Oct 25 17:05 policy.go~
+  -rw-r----- 1 justinsb primarygroup  2948 Oct 25 17:05 simulation.go~
+  -rw-r----- 1 justinsb primarygroup  2806 Oct 25 17:10 state.go
+  -rw-r----- 1 justinsb primarygroup  2834 Oct 25 17:05 state.go~
+  drwxr-x--- 2 justinsb primarygroup  4096 Oct 25 17:05 target
