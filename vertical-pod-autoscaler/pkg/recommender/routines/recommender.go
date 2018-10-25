@@ -156,10 +156,13 @@ func (r *recommender) RunOnce() {
 	defer cancelFunc()
 
 	glog.V(3).Infof("Recommender Run")
+
 	r.clusterStateFeeder.LoadVPAs()
 	timer.ObserveStep("LoadVPAs")
+
 	r.clusterStateFeeder.LoadPods()
 	timer.ObserveStep("LoadPods")
+
 	r.clusterStateFeeder.LoadRealTimeMetrics()
 	timer.ObserveStep("LoadMetrics")
 	glog.V(3).Infof("ClusterState is tracking %v PodStates and %v VPAs", len(r.clusterState.Pods), len(r.clusterState.Vpas))
@@ -174,22 +177,49 @@ func (r *recommender) RunOnce() {
 	timer.ObserveStep("GarbageCollect")
 }
 
-// NewRecommender creates a new recommender instance,
+// RecommenderFactory makes instances of Recommender.
+type RecommenderFactory struct {
+	ClusterState *model.ClusterState
+
+	ClusterStateFeeder     input.ClusterStateFeeder
+	CheckpointWriter       checkpoint.CheckpointWriter
+	PodResourceRecommender logic.PodResourceRecommender
+	VpaClient              vpa_api.VerticalPodAutoscalersGetter
+
+	CheckpointsGCInterval time.Duration
+	UseCheckpoints        bool
+}
+
+// Make creates a new recommender instance,
 // which can be run in order to provide continuous resource recommendations for containers.
-// It requires cluster configuration object and duration between recommender intervals.
-func NewRecommender(config *rest.Config, checkpointsGCInterval time.Duration, useCheckpoints bool) Recommender {
-	clusterState := model.NewClusterState()
+func (c RecommenderFactory) Make() Recommender {
 	recommender := &recommender{
-		clusterState:                  clusterState,
-		clusterStateFeeder:            input.NewClusterStateFeeder(config, clusterState),
-		checkpointWriter:              checkpoint.NewCheckpointWriter(clusterState, vpa_clientset.NewForConfigOrDie(config).AutoscalingV1beta1()),
-		checkpointsGCInterval:         checkpointsGCInterval,
-		lastCheckpointGC:              time.Now(),
-		vpaClient:                     vpa_clientset.NewForConfigOrDie(config).AutoscalingV1beta1(),
-		podResourceRecommender:        logic.CreatePodResourceRecommender(),
-		useCheckpoints:                useCheckpoints,
+		clusterState:                  c.ClusterState,
+		clusterStateFeeder:            c.ClusterStateFeeder,
+		checkpointWriter:              c.CheckpointWriter,
+		checkpointsGCInterval:         c.CheckpointsGCInterval,
+		useCheckpoints:                c.UseCheckpoints,
+		vpaClient:                     c.VpaClient,
+		podResourceRecommender:        c.PodResourceRecommender,
 		lastAggregateContainerStateGC: time.Now(),
+		lastCheckpointGC:              time.Now(),
 	}
 	glog.V(3).Infof("New Recommender created %+v", recommender)
 	return recommender
+}
+
+// NewRecommender creates a new recommender instance.
+// Dependencies are created automatically.
+// Deprecated; use RecommenderFactory instead.
+func NewRecommender(config *rest.Config, checkpointsGCInterval time.Duration, useCheckpoints bool) Recommender {
+	clusterState := model.NewClusterState()
+	return RecommenderFactory{
+		ClusterState:           clusterState,
+		ClusterStateFeeder:     input.NewClusterStateFeeder(config, clusterState),
+		CheckpointWriter:       checkpoint.NewCheckpointWriter(clusterState, vpa_clientset.NewForConfigOrDie(config).AutoscalingV1beta1()),
+		VpaClient:              vpa_clientset.NewForConfigOrDie(config).AutoscalingV1beta1(),
+		PodResourceRecommender: logic.CreatePodResourceRecommender(),
+		CheckpointsGCInterval:  checkpointsGCInterval,
+		UseCheckpoints:         useCheckpoints,
+	}.Make()
 }
