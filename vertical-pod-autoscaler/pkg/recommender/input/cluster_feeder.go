@@ -66,21 +66,44 @@ type ClusterStateFeeder interface {
 	GarbageCollectCheckpoints()
 }
 
-// NewClusterStateFeeder creates new ClusterStateFeeder with internal data providers, based on kube client config and a historyProvider.
+// ClusterStateFeederFactory makes instances of ClusterStateFeeder.
+type ClusterStateFeederFactory struct {
+	ClusterState        *model.ClusterState
+	KubeClient          kube_client.Interface
+	MetricsClient       metrics.MetricsClient
+	VpaCheckpointClient vpa_api.VerticalPodAutoscalerCheckpointsGetter
+	VpaLister           vpa_lister.VerticalPodAutoscalerLister
+	PodLister           v1lister.PodLister
+	OOMObserver         *oom.Observer
+}
+
+// Make creates new ClusterStateFeeder with internal data providers, based on kube client.
+func (m ClusterStateFeederFactory) Make() *clusterStateFeeder {
+	return &clusterStateFeeder{
+		coreClient:          m.KubeClient.CoreV1(),
+		metricsClient:       m.MetricsClient,
+		oomChan:             m.OOMObserver.ObservedOomsChannel,
+		vpaCheckpointClient: m.VpaCheckpointClient,
+		vpaLister:           m.VpaLister,
+		clusterState:        m.ClusterState,
+		specClient:          spec.NewSpecClient(m.PodLister),
+	}
+}
+
+// NewClusterStateFeeder creates new ClusterStateFeeder with internal data providers, based on kube client config.
+// Deprecated; Use ClusterStateFeederFactory instead.
 func NewClusterStateFeeder(config *rest.Config, clusterState *model.ClusterState) ClusterStateFeeder {
 	kubeClient := kube_client.NewForConfigOrDie(config)
-	oomObserver := oom.NewObserver()
-	podLister := newPodClients(kubeClient, &oomObserver)
-	watchEvictionEventsWithRetries(kubeClient, &oomObserver)
-	return &clusterStateFeeder{
-		coreClient:          kubeClient.CoreV1(),
-		specClient:          spec.NewSpecClient(podLister),
-		metricsClient:       newMetricsClient(config),
-		oomObserver:         &oomObserver,
-		vpaCheckpointClient: vpa_clientset.NewForConfigOrDie(config).AutoscalingV1beta1(),
-		vpaLister:           vpa_api_util.NewAllVpasLister(vpa_clientset.NewForConfigOrDie(config), make(chan struct{})),
-		clusterState:        clusterState,
-	}
+	podLister, oomObserver := NewPodListerAndOOMObserver(kubeClient)
+	return ClusterStateFeederFactory{
+		PodLister:           podLister,
+		OOMObserver:         oomObserver,
+		KubeClient:          kubeClient,
+		MetricsClient:       newMetricsClient(config),
+		VpaCheckpointClient: vpa_clientset.NewForConfigOrDie(config).AutoscalingV1beta1(),
+		VpaLister:           vpa_api_util.NewAllVpasLister(vpa_clientset.NewForConfigOrDie(config), make(chan struct{})),
+		ClusterState:        clusterState,
+	}.Make()
 }
 
 func newMetricsClient(config *rest.Config) metrics.MetricsClient {
@@ -139,11 +162,19 @@ func newPodClients(kubeClient kube_client.Interface, resourceEventHandler cache.
 	return podLister
 }
 
+// NewPodListerAndOOMObserver creates pair of pod lister and OOM observer.
+func NewPodListerAndOOMObserver(kubeClient kube_client.Interface) (v1lister.PodLister, *oom.Observer) {
+	oomObserver := oom.NewObserver()
+	podLister := newPodClients(kubeClient, &oomObserver)
+	watchEvictionEventsWithRetries(kubeClient, &oomObserver)
+	return podLister, &oomObserver
+}
+
 type clusterStateFeeder struct {
 	coreClient          corev1.CoreV1Interface
 	specClient          spec.SpecClient
 	metricsClient       metrics.MetricsClient
-	oomObserver         *oom.Observer
+	oomChan             <-chan oom.OomInfo
 	vpaCheckpointClient vpa_api.VerticalPodAutoscalerCheckpointsGetter
 	vpaLister           vpa_lister.VerticalPodAutoscalerLister
 	clusterState        *model.ClusterState
@@ -320,7 +351,7 @@ func (feeder *clusterStateFeeder) LoadRealTimeMetrics() {
 Loop:
 	for {
 		select {
-		case oomInfo := <-feeder.oomObserver.ObservedOomsChannel:
+		case oomInfo := <-feeder.oomChan:
 			glog.V(3).Infof("OOM detected %+v", oomInfo)
 			container := model.ContainerID{
 				PodID: model.PodID{
