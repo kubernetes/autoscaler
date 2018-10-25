@@ -325,6 +325,8 @@ type HistogramCheckpoint struct {
 ////////////////////////////////////////////////
 // CLUSTER PROPORTIONAL SCALER
 
+// TODO: We could work in terms of unstructured.Unstructured for the admission-control & updater components (though we'd have to copy the data out)
+
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // ClusterProportionalScalerList is a list of ClusterProportionalScaler objects.
@@ -376,22 +378,13 @@ type ClusterProportionalScalerSpec struct {
 	// for individual containers. If not specified, the autoscaler computes recommended
 	// resources for all containers in the pod, without additional constraints.
 	// +optional
-	ResourcePolicy *PodResourcePolicy `json:"resourcePolicy,omitempty" protobuf:"bytes,3,opt,name=resourcePolicy"`
+	ResourcePolicy *CPPodResourcePolicy `json:"resourcePolicy,omitempty" protobuf:"bytes,3,opt,name=resourcePolicy"`
 }
 
 // ClusterProportionalScalerStatus describes the runtime state of the autoscaler.
 type ClusterProportionalScalerStatus struct {
-	// The most recently computed amount of resources recommended by the
-	// autoscaler for the controlled pods.
-	// +optional
-	Recommendation *RecommendedPodResources `json:"recommendation,omitempty" protobuf:"bytes,1,opt,name=recommendation"`
-
-	// Conditions is the set of conditions required for this autoscaler to scale its target,
-	// and indicates whether or not those conditions are met.
-	// +optional
-	// +patchMergeKey=type
-	// +patchStrategy=merge
-	Conditions []VerticalPodAutoscalerCondition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type" protobuf:"bytes,2,rep,name=conditions"`
+	// TODO: Safe to embed?
+	VerticalPodAutoscalerStatus
 }
 
 // PodResourcePolicy controls how autoscaler computes the recommended resources
@@ -409,21 +402,8 @@ type CPPodResourcePolicy struct {
 // ContainerResourcePolicy controls how autoscaler computes the recommended
 // resources for a specific container.
 type CPContainerResourcePolicy struct {
-	// Name of the container or DefaultContainerResourcePolicy, in which
-	// case the policy is used by the containers that don't have their own
-	// policy specified.
-	ContainerName string `json:"containerName,omitempty" protobuf:"bytes,1,opt,name=containerName"`
-	// Whether autoscaler is enabled for the container. The default is "Auto".
-	// +optional
-	Mode *ContainerScalingMode `json:"mode,omitempty" protobuf:"bytes,2,opt,name=mode"`
-	// Specifies the minimal amount of resources that will be recommended
-	// for the container. The default is no minimum.
-	// +optional
-	MinAllowed v1.ResourceList `json:"minAllowed,omitempty" protobuf:"bytes,3,rep,name=minAllowed,casttype=ResourceList,castkey=ResourceName"`
-	// Specifies the maximum amount of resources that will be recommended
-	// for the container. The default is no maximum.
-	// +optional
-	MaxAllowed v1.ResourceList `json:"maxAllowed,omitempty" protobuf:"bytes,4,rep,name=maxAllowed,casttype=ResourceList,castkey=ResourceName"`
+	// TODO: OK to embed?  What do we do about proto numbering (just fix as needed)?
+	ContainerResourcePolicy
 
 	// Requests describes the function for determining the container requests.
 	// This is used only when Mode==ContainerScalingModeFunction
@@ -465,6 +445,7 @@ type ResourceScalingFunction struct {
 	*/
 }
 
+/*
 type DelayScaling struct {
 	// Max is the input value skew we tolerate in the output value
 	Max float64 `json:"max,omitempty"`
@@ -472,3 +453,4 @@ type DelayScaling struct {
 	// DelaySeconds is the delay before we scale down
 	DelaySeconds int32 `json:"delaySeconds,omitempty"`
 }
+*/
