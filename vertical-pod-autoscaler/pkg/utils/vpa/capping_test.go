@@ -95,12 +95,16 @@ func TestRecommendationCappedToMinMaxPolicy(t *testing.T) {
 			{
 				ContainerName: "ctr-name",
 				Target: apiv1.ResourceList{
-					apiv1.ResourceCPU:    *resource.NewScaledQuantity(10, 1),
+					apiv1.ResourceCPU:    *resource.NewScaledQuantity(30, 1),
 					apiv1.ResourceMemory: *resource.NewScaledQuantity(5000, 1),
 				},
 				LowerBound: apiv1.ResourceList{
-					apiv1.ResourceCPU:    *resource.NewScaledQuantity(50, 1),
+					apiv1.ResourceCPU:    *resource.NewScaledQuantity(20, 1),
 					apiv1.ResourceMemory: *resource.NewScaledQuantity(4300, 1),
+				},
+				UpperBound: apiv1.ResourceList{
+					apiv1.ResourceCPU:    *resource.NewScaledQuantity(50, 1),
+					apiv1.ResourceMemory: *resource.NewScaledQuantity(5500, 1),
 				},
 			},
 		},
@@ -133,9 +137,14 @@ func TestRecommendationCappedToMinMaxPolicy(t *testing.T) {
 	assert.Contains(t, annotations["ctr-name"], "memory capped to maxAllowed")
 
 	assert.Equal(t, apiv1.ResourceList{
-		apiv1.ResourceCPU:    *resource.NewScaledQuantity(45, 1),
+		apiv1.ResourceCPU:    *resource.NewScaledQuantity(40, 1),
 		apiv1.ResourceMemory: *resource.NewScaledQuantity(4300, 1),
 	}, res.ContainerRecommendations[0].LowerBound)
+
+	assert.Equal(t, apiv1.ResourceList{
+		apiv1.ResourceCPU:    *resource.NewScaledQuantity(45, 1),
+		apiv1.ResourceMemory: *resource.NewScaledQuantity(4500, 1),
+	}, res.ContainerRecommendations[0].UpperBound)
 }
 
 var podRecommendation *vpa_types.RecommendedPodResources = &vpa_types.RecommendedPodResources{
@@ -183,4 +192,67 @@ func TestApply(t *testing.T) {
 		assert.Equal(t, testCase.ExpectedPodRecommendation, res)
 		assert.Equal(t, testCase.ExpectedError, err)
 	}
+}
+
+func TestApplyVpa(t *testing.T) {
+	podRecommendation := vpa_types.RecommendedPodResources{
+		ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+			{
+				ContainerName: "ctr-name",
+				Target: apiv1.ResourceList{
+					apiv1.ResourceCPU:    *resource.NewScaledQuantity(30, 1),
+					apiv1.ResourceMemory: *resource.NewScaledQuantity(5000, 1),
+				},
+				LowerBound: apiv1.ResourceList{
+					apiv1.ResourceCPU:    *resource.NewScaledQuantity(20, 1),
+					apiv1.ResourceMemory: *resource.NewScaledQuantity(4300, 1),
+				},
+				UncappedTarget: apiv1.ResourceList{
+					apiv1.ResourceCPU:    *resource.NewScaledQuantity(30, 1),
+					apiv1.ResourceMemory: *resource.NewScaledQuantity(5000, 1),
+				},
+				UpperBound: apiv1.ResourceList{
+					apiv1.ResourceCPU:    *resource.NewScaledQuantity(50, 1),
+					apiv1.ResourceMemory: *resource.NewScaledQuantity(5500, 1),
+				},
+			},
+		},
+	}
+	policy := vpa_types.PodResourcePolicy{
+		ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+			{
+				ContainerName: "ctr-name",
+				MinAllowed: apiv1.ResourceList{
+					apiv1.ResourceCPU:    *resource.NewScaledQuantity(40, 1),
+					apiv1.ResourceMemory: *resource.NewScaledQuantity(4000, 1),
+				},
+				MaxAllowed: apiv1.ResourceList{
+					apiv1.ResourceCPU:    *resource.NewScaledQuantity(45, 1),
+					apiv1.ResourceMemory: *resource.NewScaledQuantity(4500, 1),
+				},
+			},
+		},
+	}
+
+	res, err := ApplyVPAPolicy(&podRecommendation, &policy)
+	assert.Nil(t, err)
+	assert.Equal(t, apiv1.ResourceList{
+		apiv1.ResourceCPU:    *resource.NewScaledQuantity(40, 1),
+		apiv1.ResourceMemory: *resource.NewScaledQuantity(4500, 1),
+	}, res.ContainerRecommendations[0].Target)
+
+	assert.Equal(t, apiv1.ResourceList{
+		apiv1.ResourceCPU:    *resource.NewScaledQuantity(30, 1),
+		apiv1.ResourceMemory: *resource.NewScaledQuantity(5000, 1),
+	}, res.ContainerRecommendations[0].UncappedTarget)
+
+	assert.Equal(t, apiv1.ResourceList{
+		apiv1.ResourceCPU:    *resource.NewScaledQuantity(40, 1),
+		apiv1.ResourceMemory: *resource.NewScaledQuantity(4300, 1),
+	}, res.ContainerRecommendations[0].LowerBound)
+
+	assert.Equal(t, apiv1.ResourceList{
+		apiv1.ResourceCPU:    *resource.NewScaledQuantity(45, 1),
+		apiv1.ResourceMemory: *resource.NewScaledQuantity(4500, 1),
+	}, res.ContainerRecommendations[0].UpperBound)
 }
