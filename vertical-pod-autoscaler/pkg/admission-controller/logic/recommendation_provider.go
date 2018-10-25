@@ -42,7 +42,8 @@ type RecommendationProvider interface {
 }
 
 type recommendationProvider struct {
-	vpaLister               vpa_lister.VerticalPodAutoscalerLister
+	vpaLister vpa_lister.VerticalPodAutoscalerLister
+	//cpLister                vpa_lister.ClusterProportionalScalerLister
 	recommendationProcessor vpa_api_util.RecommendationProcessor
 }
 

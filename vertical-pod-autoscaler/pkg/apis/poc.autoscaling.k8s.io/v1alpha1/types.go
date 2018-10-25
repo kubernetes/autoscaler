@@ -136,7 +136,56 @@ type ContainerResourcePolicy struct {
 	// for the container. The default is no maximum.
 	// +optional
 	MaxAllowed v1.ResourceList `json:"maxAllowed,omitempty" protobuf:"bytes,4,rep,name=maxAllowed,casttype=ResourceList,castkey=ResourceName"`
+
+	// Requests describes the function for determining the container requests.
+	// This is used only when Mode==ContainerScalingModeFunction
+	// +optional
+	//Requests []ResourceScalingRule `json:"requests,omitempty" protobuf:"bytes,5,opt,name=requests"`
 }
+
+/*
+type ResourceScalingRule struct {
+	// Resource is the name of the resource we are scaling
+	Resource v1.ResourceName `json:"resource" protobuf:"bytes,1,name=resource"`
+
+	// Function defines how the target resource usage
+	// depends on a set of input values (such as cluster core count, number of nodes etc)
+	Function ResourceScalingFunction `json:"function" protobuf:"bytes,2,name=function"`
+}
+
+type ResourceScalingFunction struct {
+	// Input is the source value to use as the input to scaling: `cores`, `memory`, `nodes`
+	Input string `json:"input,omitempty"`
+
+	// Base is the constant resource value we use regardless of input, the y-axis intercept
+	Base resource.Quantity `json:"base,omitempty"`
+
+	// Slope determines how fast the resource usage changes per unit of input.
+	// For each Input unit, we increase resources by Slope
+	Slope resource.Quantity `json:"slope,omitempty"`
+
+	// Per divides Input before multiplying by Slope, allowing us to specify slopes of < 1m per input unit
+	Per int32 `json:"int,omitempty"`
+
+	*	// Segments defines a set of segments of the resource line.
+		// In each segment we define the interval with which we change values.
+		// This is typically used so that we resize for every input unit for small cluster,
+		// but for larger clusters we only resize for changes of N units or more.
+		// Where it is not otherwise defined, we assume a first value of { at: 0, every: 1 }
+		Segments []ResourceScalingSegment `json:"segments,omitempty"`
+
+		DelayScaleDown *DelayScaling `json:"delayScaleDown,omitempty"`
+	*
+}
+
+type DelayScaling struct {
+	// Max is the input value skew we tolerate in the output value
+	Max float64 `json:"max,omitempty"`
+
+	// DelaySeconds is the delay before we scale down
+	DelaySeconds int32 `json:"delaySeconds,omitempty"`
+}
+*/
 
 const (
 	// DefaultContainerResourcePolicy can be passed as
@@ -153,6 +202,8 @@ const (
 	ContainerScalingModeAuto ContainerScalingMode = "Auto"
 	// ContainerScalingModeOff means autoscaling is disabled for a container.
 	ContainerScalingModeOff ContainerScalingMode = "Off"
+	// ContainerScalingModeFunction means autoscaling is enabled for a container, but is based on formulaic scaling policies.
+	ContainerScalingModeFunction ContainerScalingMode = "Function"
 )
 
 // VerticalPodAutoscalerStatus describes the runtime state of the autoscaler.

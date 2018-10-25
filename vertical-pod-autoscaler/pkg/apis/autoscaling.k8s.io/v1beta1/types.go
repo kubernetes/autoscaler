@@ -19,6 +19,7 @@ package v1beta1
 
 import (
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -319,4 +320,155 @@ type HistogramCheckpoint struct {
 
 	// Sum of samples to be used as denominator for weights from BucketWeights.
 	TotalWeight float64 `json:"totalWeight,omitempty" protobuf:"bytes,3,opt,name=totalWeight"`
+}
+
+////////////////////////////////////////////////
+// CLUSTER PROPORTIONAL SCALER
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// ClusterProportionalScalerList is a list of ClusterProportionalScaler objects.
+type ClusterProportionalScalerList struct {
+	metav1.TypeMeta `json:",inline"`
+	// metadata is the standard list metadata.
+	// +optional
+	metav1.ListMeta `json:"metadata" protobuf:"bytes,1,opt,name=metadata"`
+
+	// items is the list of cluster proportional scaler objects.
+	Items []ClusterProportionalScaler `json:"items" protobuf:"bytes,2,rep,name=items"`
+}
+
+// +genclient
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+// ClusterProportionalScaler is the configuration for a vertical pod
+// autoscaler, which automatically manages pod resources based on historical and
+// real time resource utilization.
+type ClusterProportionalScaler struct {
+	metav1.TypeMeta `json:",inline"`
+	// Standard object metadata. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata
+	// +optional
+	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
+
+	// Specification of the behavior of the autoscaler.
+	// More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#spec-and-status.
+	Spec ClusterProportionalScalerSpec `json:"spec" protobuf:"bytes,2,name=spec"`
+
+	// Current information about the autoscaler.
+	// +optional
+	Status ClusterProportionalScalerStatus `json:"status,omitempty" protobuf:"bytes,3,opt,name=status"`
+}
+
+// ClusterProportionalScalerSpec is the specification of the behavior of the autoscaler.
+type ClusterProportionalScalerSpec struct {
+	// A label query that determines the set of pods controlled by the Autoscaler.
+	// More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors
+	Selector *metav1.LabelSelector `json:"selector" protobuf:"bytes,1,name=selector"`
+
+	// Describes the rules on how changes are applied to the pods.
+	// If not specified, all fields in the `PodUpdatePolicy` are set to their
+	// default values.
+	// +optional
+	UpdatePolicy *PodUpdatePolicy `json:"updatePolicy,omitempty" protobuf:"bytes,2,opt,name=updatePolicy"`
+
+	// Controls how the autoscaler computes recommended resources.
+	// The resource policy may be used to set constraints on the recommendations
+	// for individual containers. If not specified, the autoscaler computes recommended
+	// resources for all containers in the pod, without additional constraints.
+	// +optional
+	ResourcePolicy *PodResourcePolicy `json:"resourcePolicy,omitempty" protobuf:"bytes,3,opt,name=resourcePolicy"`
+}
+
+// ClusterProportionalScalerStatus describes the runtime state of the autoscaler.
+type ClusterProportionalScalerStatus struct {
+	// The most recently computed amount of resources recommended by the
+	// autoscaler for the controlled pods.
+	// +optional
+	Recommendation *RecommendedPodResources `json:"recommendation,omitempty" protobuf:"bytes,1,opt,name=recommendation"`
+
+	// Conditions is the set of conditions required for this autoscaler to scale its target,
+	// and indicates whether or not those conditions are met.
+	// +optional
+	// +patchMergeKey=type
+	// +patchStrategy=merge
+	Conditions []VerticalPodAutoscalerCondition `json:"conditions,omitempty" patchStrategy:"merge" patchMergeKey:"type" protobuf:"bytes,2,rep,name=conditions"`
+}
+
+// PodResourcePolicy controls how autoscaler computes the recommended resources
+// for containers belonging to the pod. There can be at most one entry for every
+// named container and optionally a single wildcard entry with `containerName` = '*',
+// which handles all containers that don't have individual policies.
+type CPPodResourcePolicy struct {
+	// Per-container resource policies.
+	// +optional
+	// +patchMergeKey=containerName
+	// +patchStrategy=merge
+	ContainerPolicies []CPContainerResourcePolicy `json:"containerPolicies,omitempty" patchStrategy:"merge" patchMergeKey:"containerName" protobuf:"bytes,1,rep,name=containerPolicies"`
+}
+
+// ContainerResourcePolicy controls how autoscaler computes the recommended
+// resources for a specific container.
+type CPContainerResourcePolicy struct {
+	// Name of the container or DefaultContainerResourcePolicy, in which
+	// case the policy is used by the containers that don't have their own
+	// policy specified.
+	ContainerName string `json:"containerName,omitempty" protobuf:"bytes,1,opt,name=containerName"`
+	// Whether autoscaler is enabled for the container. The default is "Auto".
+	// +optional
+	Mode *ContainerScalingMode `json:"mode,omitempty" protobuf:"bytes,2,opt,name=mode"`
+	// Specifies the minimal amount of resources that will be recommended
+	// for the container. The default is no minimum.
+	// +optional
+	MinAllowed v1.ResourceList `json:"minAllowed,omitempty" protobuf:"bytes,3,rep,name=minAllowed,casttype=ResourceList,castkey=ResourceName"`
+	// Specifies the maximum amount of resources that will be recommended
+	// for the container. The default is no maximum.
+	// +optional
+	MaxAllowed v1.ResourceList `json:"maxAllowed,omitempty" protobuf:"bytes,4,rep,name=maxAllowed,casttype=ResourceList,castkey=ResourceName"`
+
+	// Requests describes the function for determining the container requests.
+	// This is used only when Mode==ContainerScalingModeFunction
+	// +optional
+	Requests []ResourceScalingRule `json:"requests,omitempty" protobuf:"bytes,5,opt,name=requests"`
+}
+
+type ResourceScalingRule struct {
+	// Resource is the name of the resource we are scaling
+	Resource v1.ResourceName `json:"resource" protobuf:"bytes,1,name=resource"`
+
+	// Function defines how the target resource usage
+	// depends on a set of input values (such as cluster core count, number of nodes etc)
+	Function ResourceScalingFunction `json:"function" protobuf:"bytes,2,name=function"`
+}
+
+type ResourceScalingFunction struct {
+	// Input is the source value to use as the input to scaling: `cores`, `memory`, `nodes`
+	Input string `json:"input,omitempty"`
+
+	// Base is the constant resource value we use regardless of input, the y-axis intercept
+	Base resource.Quantity `json:"base,omitempty"`
+
+	// Slope determines how fast the resource usage changes per unit of input.
+	// For each Input unit, we increase resources by Slope
+	Slope resource.Quantity `json:"slope,omitempty"`
+
+	// Per divides Input before multiplying by Slope, allowing us to specify slopes of < 1m per input unit
+	Per int32 `json:"int,omitempty"`
+
+	/*	// Segments defines a set of segments of the resource line.
+		// In each segment we define the interval with which we change values.
+		// This is typically used so that we resize for every input unit for small cluster,
+		// but for larger clusters we only resize for changes of N units or more.
+		// Where it is not otherwise defined, we assume a first value of { at: 0, every: 1 }
+		Segments []ResourceScalingSegment `json:"segments,omitempty"`
+
+		DelayScaleDown *DelayScaling `json:"delayScaleDown,omitempty"`
+	*/
+}
+
+type DelayScaling struct {
+	// Max is the input value skew we tolerate in the output value
+	Max float64 `json:"max,omitempty"`
+
+	// DelaySeconds is the delay before we scale down
+	DelaySeconds int32 `json:"delaySeconds,omitempty"`
 }
