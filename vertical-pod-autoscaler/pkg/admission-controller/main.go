@@ -31,7 +31,6 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics"
 	metrics_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/admission"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
-	"k8s.io/client-go/rest"
 )
 
 var (
@@ -45,13 +44,12 @@ var (
 	namespace = os.Getenv("NAMESPACE")
 )
 
-func newReadyVPALister(stopChannel <-chan struct{}) vpa_lister.VerticalPodAutoscalerLister {
-	config, err := rest.InClusterConfig()
-	if err != nil {
-		glog.Fatal(err)
-	}
-	vpaClient := vpa_clientset.NewForConfigOrDie(config)
+func newReadyVPALister(vpaClient vpa_clientset.Interface, stopChannel <-chan struct{}) vpa_lister.VerticalPodAutoscalerLister {
 	return vpa_api_util.NewAllVpasLister(vpaClient, stopChannel)
+}
+
+func newReadyCPLister(vpaClient vpa_clientset.Interface, stopChannel <-chan struct{}) vpa_lister.ClusterProportionalScalerLister {
+	return vpa_api_util.NewAllCPSLister(vpaClient, stopChannel)
 }
 
 func main() {
@@ -64,8 +62,9 @@ func main() {
 
 	certs := initCerts(*certsConfiguration)
 	stopChannel := make(chan struct{})
-	vpaLister := newReadyVPALister(stopChannel)
-	as := logic.NewAdmissionServer(logic.NewRecommendationProvider(vpaLister, vpa_api_util.NewCappingRecommendationProcessor()), logic.NewDefaultPodPreProcessor())
+	vpaLister := newReadyVPALister(vpaClient, stopChannel)
+	cpLister := newReadyCPLister(vpaClient, stopChannel)
+	as := logic.NewAdmissionServer(logic.NewRecommendationProvider(vpaLister, cpLister, vpa_api_util.NewCappingRecommendationProcessor()), logic.NewDefaultPodPreProcessor())
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		as.Serve(w, r)
 		healthCheck.UpdateLastActivity()

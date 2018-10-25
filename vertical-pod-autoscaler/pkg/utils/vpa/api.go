@@ -78,7 +78,7 @@ func UpdateVpaStatusIfNeeded(vpaClient vpa_api.VerticalPodAutoscalerInterface, v
 
 // NewAllVpasLister returns VerticalPodAutoscalerLister configured to fetch all VPA objects.
 // The method blocks until vpaLister is initially populated.
-func NewAllVpasLister(vpaClient *vpa_clientset.Clientset, stopChannel <-chan struct{}) vpa_lister.VerticalPodAutoscalerLister {
+func NewAllVpasLister(vpaClient vpa_clientset.Interface, stopChannel <-chan struct{}) vpa_lister.VerticalPodAutoscalerLister {
 	vpaListWatch := cache.NewListWatchFromClient(vpaClient.AutoscalingV1beta1().RESTClient(), "verticalpodautoscalers", core.NamespaceAll, fields.Everything())
 	indexer, controller := cache.NewIndexerInformer(vpaListWatch,
 		&vpa_types.VerticalPodAutoscaler{},
@@ -95,21 +95,41 @@ func NewAllVpasLister(vpaClient *vpa_clientset.Clientset, stopChannel <-chan str
 	return vpaLister
 }
 
+// NewAllCPsLister returns ClusterProportionalScalerLister configured to fetch all CPS objects.
+// The method blocks until the lister is initially populated.
+func NewAllCPSLister(cpsClient vpa_clientset.Interface, stopChannel <-chan struct{}) vpa_lister.ClusterProportionalScalerLister {
+	cpsListWatch := cache.NewListWatchFromClient(cpsClient.AutoscalingV1beta1().RESTClient(), "clusterproportionalscalers", core.NamespaceAll, fields.Everything())
+	indexer, controller := cache.NewIndexerInformer(cpsListWatch,
+		&vpa_types.ClusterProportionalScaler{},
+		1*time.Hour,
+		&cache.ResourceEventHandlerFuncs{},
+		cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
+	cpsLister := vpa_lister.NewClusterProportionalScalerLister(indexer)
+	go controller.Run(stopChannel)
+	if !cache.WaitForCacheSync(make(chan struct{}), controller.HasSynced) {
+		glog.Fatalf("Failed to sync VPA cache during initialization")
+	} else {
+		glog.Info("Initial VPA synced successfully")
+	}
+	return cpsLister
+}
+
 // PodMatchesVPA returns true iff the VPA's selector matches the Pod and they are in the same namespace.
-func PodMatchesVPA(pod *core.Pod, vpa *vpa_types.VerticalPodAutoscaler) bool {
-	if pod.Namespace != vpa.Namespace {
+func PodMatchesVPA(pod *core.Pod, vpa ScalerDuck) bool {
+	if pod.Namespace != vpa.GetNamespace() {
 		return false
 	}
-	selector, err := meta.LabelSelectorAsSelector(vpa.Spec.Selector)
+	selector, err := meta.LabelSelectorAsSelector(vpa.GetSelector())
 	if err != nil {
 		glog.Errorf("error processing VPA object: failed to create pod selector: %v", err)
 		return false
 	}
+
 	return selector.Matches(labels.Set(pod.GetLabels()))
 }
 
 // stronger returns true iff a is before b in the order to control a Pod (that matches both VPAs).
-func stronger(a, b *vpa_types.VerticalPodAutoscaler) bool {
+func stronger(a, b ScalerDuck) bool {
 	// Assume a is not nil and each valid object is before nil object.
 	if b == nil {
 		return true
@@ -126,8 +146,8 @@ func stronger(a, b *vpa_types.VerticalPodAutoscaler) bool {
 }
 
 // GetControllingVPAForPod chooses the earliest created VPA from the input list that matches the given Pod.
-func GetControllingVPAForPod(pod *core.Pod, vpas []*vpa_types.VerticalPodAutoscaler) *vpa_types.VerticalPodAutoscaler {
-	var controlling *vpa_types.VerticalPodAutoscaler
+func GetControllingVPAForPod(pod *core.Pod, vpas []ScalerDuck) ScalerDuck {
+	var controlling ScalerDuck
 	// Choose the strongest VPA from the ones that match this Pod.
 	for _, vpa := range vpas {
 		if PodMatchesVPA(pod, vpa) && stronger(vpa, controlling) {
@@ -146,21 +166,13 @@ func GetUpdateMode(vpa *vpa_types.VerticalPodAutoscaler) vpa_types.UpdateMode {
 	return *vpa.Spec.UpdatePolicy.UpdateMode
 }
 
-// GetContainerResourcePolicy returns the ContainerResourcePolicy for a given policy
-// and container name. It returns nil if there is no policy specified for the container.
-func GetContainerResourcePolicy(containerName string, policy *vpa_types.PodResourcePolicy) *vpa_types.ContainerResourcePolicy {
-	var defaultPolicy *vpa_types.ContainerResourcePolicy
-	if policy != nil {
-		for i, containerPolicy := range policy.ContainerPolicies {
-			if containerPolicy.ContainerName == containerName {
-				return &policy.ContainerPolicies[i]
-			}
-			if containerPolicy.ContainerName == vpa_types.DefaultContainerResourcePolicy {
-				defaultPolicy = &policy.ContainerPolicies[i]
-			}
-		}
+// GetCPSUpdateMode returns the updatePolicy.updateMode for a given CPS.
+// If the mode is not specified it returns the default (UpdateModeAuto).
+func GetCPSUpdateMode(cps *vpa_types.ClusterProportionalScaler) vpa_types.UpdateMode {
+	if cps.Spec.UpdatePolicy == nil || cps.Spec.UpdatePolicy.UpdateMode == nil || *cps.Spec.UpdatePolicy.UpdateMode == "" {
+		return vpa_types.UpdateModeAuto
 	}
-	return defaultPolicy
+	return *cps.Spec.UpdatePolicy.UpdateMode
 }
 
 // CreateOrUpdateVpaCheckpoint updates the status field of the VPA Checkpoint API object.
@@ -185,4 +197,40 @@ func CreateOrUpdateVpaCheckpoint(vpaCheckpointClient vpa_api.VerticalPodAutoscal
 		return fmt.Errorf("Cannot save checkpoint for vpa %v container %v. Reason: %+v", vpaCheckpoint.ObjectMeta.Name, vpaCheckpoint.Spec.ContainerName, err)
 	}
 	return nil
+}
+
+// GetContainerResourcePolicy returns the ContainerResourcePolicy for a given policy
+// and container name. It returns nil if there is no policy specified for the container.
+func GetContainerResourcePolicy(containerName string, policy *vpa_types.PodResourcePolicy) *vpa_types.ContainerResourcePolicy {
+	var defaultPolicy *vpa_types.ContainerResourcePolicy
+	if policy != nil {
+		containerPolicies := policy.ContainerPolicies
+		for i := range containerPolicies {
+			if containerPolicies[i].ContainerName == containerName {
+				return &containerPolicies[i]
+			}
+			if containerPolicies[i].ContainerName == vpa_types.DefaultContainerResourcePolicy {
+				defaultPolicy = &containerPolicies[i]
+			}
+		}
+	}
+	return defaultPolicy
+}
+
+// GetCPSContainerResourcePolicy returns the ContainerResourcePolicy for a given policy
+// and container name. It returns nil if there is no policy specified for the container.
+func GetCPSContainerResourcePolicy(containerName string, policy *vpa_types.CPPodResourcePolicy) *vpa_types.ContainerResourcePolicy {
+	var defaultPolicy *vpa_types.ContainerResourcePolicy
+	if policy != nil {
+		containerPolicies := policy.ContainerPolicies
+		for i := range containerPolicies {
+			if containerPolicies[i].ContainerName == containerName {
+				return &containerPolicies[i].ContainerResourcePolicy
+			}
+			if containerPolicies[i].ContainerName == vpa_types.DefaultContainerResourcePolicy {
+				defaultPolicy = &containerPolicies[i].ContainerResourcePolicy
+			}
+		}
+	}
+	return defaultPolicy
 }

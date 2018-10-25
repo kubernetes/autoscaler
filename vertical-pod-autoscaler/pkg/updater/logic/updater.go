@@ -50,6 +50,7 @@ type Updater interface {
 
 type updater struct {
 	vpaLister               vpa_lister.VerticalPodAutoscalerLister
+	cpsLister               vpa_lister.ClusterProportionalScalerLister
 	podLister               v1lister.PodLister
 	eventRecorder           record.EventRecorder
 	evictionFactory         eviction.PodsEvictionRestrictionFactory
@@ -65,6 +66,7 @@ func NewUpdater(kubeClient kube_client.Interface, vpaClient *vpa_clientset.Clien
 	}
 	return &updater{
 		vpaLister:               vpa_api_util.NewAllVpasLister(vpaClient, make(chan struct{})),
+		cpsLister:               vpa_api_util.NewAllCPSLister(vpaClient, make(chan struct{})),
 		podLister:               newPodLister(kubeClient),
 		eventRecorder:           newEventRecorder(kubeClient),
 		evictionFactory:         factory,
@@ -77,13 +79,13 @@ func NewUpdater(kubeClient kube_client.Interface, vpaClient *vpa_clientset.Clien
 func (u *updater) RunOnce() {
 	timer := metrics_updater.NewExecutionTimer()
 
+	vpas := make([]vpa_api_util.ScalerDuck, 0)
+
 	vpaList, err := u.vpaLister.List(labels.Everything())
 	if err != nil {
 		glog.Fatalf("failed get VPA list: %v", err)
 	}
 	timer.ObserveStep("ListVPAs")
-
-	vpas := make([]*vpa_types.VerticalPodAutoscaler, 0)
 
 	for _, vpa := range vpaList {
 		if vpa_api_util.GetUpdateMode(vpa) != vpa_types.UpdateModeRecreate &&
@@ -91,7 +93,22 @@ func (u *updater) RunOnce() {
 			glog.V(3).Infof("skipping VPA object %v because its mode is not \"Recreate\" or \"Auto\"", vpa.Name)
 			continue
 		}
-		vpas = append(vpas, vpa)
+		vpas = append(vpas, &vpa_api_util.VPAAdapter{vpa})
+	}
+
+	cpsList, err := u.cpsLister.List(labels.Everything())
+	if err != nil {
+		glog.Fatalf("failed get CPS list: %v", err)
+	}
+	timer.ObserveStep("ListCPSs")
+
+	for _, cps := range cpsList {
+		if vpa_api_util.GetCPSUpdateMode(cps) != vpa_types.UpdateModeRecreate &&
+			vpa_api_util.GetCPSUpdateMode(cps) != vpa_types.UpdateModeAuto {
+			glog.V(3).Infof("skipping CPS object %v because its mode is not \"Recreate\" or \"Auto\"", cps.Name)
+			continue
+		}
+		vpas = append(vpas, &vpa_api_util.CPSAdapter{cps})
 	}
 
 	if len(vpas) == 0 {
@@ -112,7 +129,7 @@ func (u *updater) RunOnce() {
 	timer.ObserveStep("ListPods")
 	allLivePods := filterDeletedPods(podsList)
 
-	controlledPods := make(map[*vpa_types.VerticalPodAutoscaler][]*apiv1.Pod)
+	controlledPods := make(map[vpa_api_util.ScalerDuck][]*apiv1.Pod)
 	for _, pod := range allLivePods {
 		controllingVPA := vpa_api_util.GetControllingVPAForPod(pod, vpas)
 		if controllingVPA != nil {
@@ -146,9 +163,9 @@ func (u *updater) RunOnce() {
 }
 
 // getPodsUpdateOrder returns list of pods that should be updated ordered by update priority
-func (u *updater) getPodsUpdateOrder(pods []*apiv1.Pod, vpa *vpa_types.VerticalPodAutoscaler) []*apiv1.Pod {
-	priorityCalculator := priority.NewUpdatePriorityCalculator(vpa.Spec.ResourcePolicy, vpa.Status.Conditions, nil, u.recommendationProcessor)
-	recommendation := vpa.Status.Recommendation
+func (u *updater) getPodsUpdateOrder(pods []*apiv1.Pod, vpa vpa_api_util.ScalerDuck) []*apiv1.Pod {
+	priorityCalculator := priority.NewUpdatePriorityCalculator(vpa, nil, u.recommendationProcessor)
+	recommendation := vpa.GetRecommendation()
 
 	for _, pod := range pods {
 		priorityCalculator.AddPod(pod, recommendation, time.Now())

@@ -42,15 +42,18 @@ type RecommendationProvider interface {
 }
 
 type recommendationProvider struct {
-	vpaLister vpa_lister.VerticalPodAutoscalerLister
-	//cpLister                vpa_lister.ClusterProportionalScalerLister
+	vpaLister               vpa_lister.VerticalPodAutoscalerLister
+	cpsLister               vpa_lister.ClusterProportionalScalerLister
 	recommendationProcessor vpa_api_util.RecommendationProcessor
 }
 
 // NewRecommendationProvider constructs the recommendation provider that list VPAs and can be used to determine recommendations for pods.
-func NewRecommendationProvider(vpaLister vpa_lister.VerticalPodAutoscalerLister, recommendationProcessor vpa_api_util.RecommendationProcessor) *recommendationProvider {
-	return &recommendationProvider{vpaLister: vpaLister,
-		recommendationProcessor: recommendationProcessor}
+func NewRecommendationProvider(vpaLister vpa_lister.VerticalPodAutoscalerLister, cpsLister vpa_lister.ClusterProportionalScalerLister, recommendationProcessor vpa_api_util.RecommendationProcessor) *recommendationProvider {
+	return &recommendationProvider{
+		vpaLister:               vpaLister,
+		cpsLister:               cpsLister,
+		recommendationProcessor: recommendationProcessor,
+	}
 }
 
 // getContainersResources returns the recommended resources for each container in the given pod in the same order they are specified in the pod.Spec.
@@ -69,19 +72,39 @@ func getContainersResources(pod *v1.Pod, podRecommendation vpa_types.Recommended
 	return resources
 }
 
-func (p *recommendationProvider) getMatchingVPA(pod *v1.Pod) *vpa_types.VerticalPodAutoscaler {
-	configs, err := p.vpaLister.VerticalPodAutoscalers(pod.Namespace).List(labels.Everything())
-	if err != nil {
-		glog.Errorf("failed to get vpa configs: %v", err)
-		return nil
-	}
-	onConfigs := make([]*vpa_types.VerticalPodAutoscaler, 0)
-	for _, vpaConfig := range configs {
-		if vpa_api_util.GetUpdateMode(vpaConfig) == vpa_types.UpdateModeOff {
-			continue
+func (p *recommendationProvider) getMatchingScaler(pod *v1.Pod) vpa_api_util.ScalerDuck {
+	onConfigs := make([]vpa_api_util.ScalerDuck, 0)
+
+	{
+		configs, err := p.vpaLister.VerticalPodAutoscalers(pod.Namespace).List(labels.Everything())
+		if err != nil {
+			glog.Errorf("failed to get vpa configs: %v", err)
+			return nil
 		}
-		onConfigs = append(onConfigs, vpaConfig)
+
+		for _, o := range configs {
+			if vpa_api_util.GetUpdateMode(o) == vpa_types.UpdateModeOff {
+				continue
+			}
+			onConfigs = append(onConfigs, &vpa_api_util.VPAAdapter{o})
+		}
 	}
+
+	{
+		configs, err := p.cpsLister.ClusterProportionalScalers(pod.Namespace).List(labels.Everything())
+		if err != nil {
+			glog.Errorf("failed to get CPS objects: %v", err)
+			return nil
+		}
+
+		for _, o := range configs {
+			if vpa_api_util.GetCPSUpdateMode(o) == vpa_types.UpdateModeOff {
+				continue
+			}
+			onConfigs = append(onConfigs, &vpa_api_util.CPSAdapter{o})
+		}
+	}
+
 	glog.V(2).Infof("Let's choose from %d configs for pod %s/%s", len(onConfigs), pod.Namespace, pod.Name)
 	return vpa_api_util.GetControllingVPAForPod(pod, onConfigs)
 }
@@ -90,23 +113,23 @@ func (p *recommendationProvider) getMatchingVPA(pod *v1.Pod) *vpa_types.Vertical
 // The returned slice corresponds 1-1 to containers in the Pod.
 func (p *recommendationProvider) GetContainersResourcesForPod(pod *v1.Pod) ([]ContainerResources, vpa_api_util.ContainerToAnnotationsMap, string, error) {
 	glog.V(2).Infof("updating requirements for pod %s.", pod.Name)
-	vpaConfig := p.getMatchingVPA(pod)
+	vpaConfig := p.getMatchingScaler(pod)
 	if vpaConfig == nil {
-		glog.V(2).Infof("no matching VPA found for pod %s", pod.Name)
+		glog.V(2).Infof("no matching VPA / CPS found for pod %s", pod.Name)
 		return nil, nil, "", nil
 	}
-
 	var annotations vpa_api_util.ContainerToAnnotationsMap
 	recommendedPodResources := &vpa_types.RecommendedPodResources{}
 
-	if vpaConfig.Status.Recommendation != nil {
+	recommendation := vpaConfig.GetRecommendation()
+	if recommendation != nil {
 		var err error
-		recommendedPodResources, annotations, err = p.recommendationProcessor.Apply(vpaConfig.Status.Recommendation, vpaConfig.Spec.ResourcePolicy, vpaConfig.Status.Conditions, pod)
+		recommendedPodResources, annotations, err = p.recommendationProcessor.Apply(recommendation, vpaConfig, pod)
 		if err != nil {
 			glog.V(2).Infof("cannot process recommendation for pod %s", pod.Name)
-			return nil, annotations, vpaConfig.Name, err
+			return nil, annotations, vpaConfig.GetName(), err
 		}
 	}
 	containerResources := getContainersResources(pod, *recommendedPodResources)
-	return containerResources, annotations, vpaConfig.Name, nil
+	return containerResources, annotations, vpaConfig.GetName(), nil
 }

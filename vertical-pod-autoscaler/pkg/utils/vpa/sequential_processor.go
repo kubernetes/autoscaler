@@ -32,8 +32,7 @@ type sequentialRecommendationProcessor struct {
 
 // Apply chains calls to underlying RecommendationProcessors in order provided on object construction
 func (p *sequentialRecommendationProcessor) Apply(podRecommendation *vpa_types.RecommendedPodResources,
-	policy *vpa_types.PodResourcePolicy,
-	conditions []vpa_types.VerticalPodAutoscalerCondition,
+	policy ScalerDuck,
 	pod *v1.Pod) (*vpa_types.RecommendedPodResources, ContainerToAnnotationsMap, error) {
 	recommendation := podRecommendation
 	accumulatedContainerToAnnotationsMap := ContainerToAnnotationsMap{}
@@ -43,7 +42,7 @@ func (p *sequentialRecommendationProcessor) Apply(podRecommendation *vpa_types.R
 			err                       error
 			containerToAnnotationsMap ContainerToAnnotationsMap
 		)
-		recommendation, containerToAnnotationsMap, err = processor.Apply(recommendation, policy, conditions, pod)
+		recommendation, containerToAnnotationsMap, err = processor.Apply(recommendation, policy, pod)
 
 		for container, newAnnotations := range containerToAnnotationsMap {
 			annotations, found := accumulatedContainerToAnnotationsMap[container]
