@@ -34,6 +34,10 @@ const (
 	MaxFreeDifferenceRatio = 0.05
 )
 
+// NodeInfoComparator is a function that tells if two nodes are from NodeGroups
+// similar enough to be considered a part of a single NodeGroupSet.
+type NodeInfoComparator func(n1, n2 *schedulercache.NodeInfo) bool
+
 func compareResourceMapsWithTolerance(resources map[apiv1.ResourceName][]resource.Quantity,
 	maxDifferenceRatio float64) bool {
 	for _, qtyList := range resources {

@@ -28,8 +28,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestFindSimilarNodeGroups(t *testing.T) {
-	processor := &BalancingNodeGroupSetProcessor{}
+func basicSimilarNodeGroupsTest(t *testing.T, processor NodeGroupSetProcessor) {
 	context := &context.AutoscalingContext{}
 
 	n1 := BuildTestNode("n1", 1000, 1000)
@@ -70,6 +69,11 @@ func TestFindSimilarNodeGroups(t *testing.T) {
 	similar, err = processor.FindSimilarNodeGroups(context, ng3, nodeInfosForGroups)
 	assert.NoError(t, err)
 	assert.Equal(t, similar, []cloudprovider.NodeGroup{})
+}
+
+func TestFindSimilarNodeGroups(t *testing.T) {
+	processor := &BalancingNodeGroupSetProcessor{}
+	basicSimilarNodeGroupsTest(t, processor)
 }
 
 func TestBalanceSingleGroup(t *testing.T) {
