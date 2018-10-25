@@ -20,16 +20,20 @@ import (
 	"testing"
 	"time"
 
-	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
-	"k8s.io/kubernetes/pkg/api/legacyscheme"
-
-	_ "k8s.io/kubernetes/pkg/apis/core/install"       //to decode yaml
-	_ "k8s.io/kubernetes/pkg/apis/extensions/install" //to decode yaml
-
 	"github.com/stretchr/testify/assert"
+	"k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/serializer"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 )
+
+var scheme = runtime.NewScheme()
+var codecs = serializer.NewCodecFactory(scheme)
+
+func init() {
+	v1.AddToScheme(scheme)
+}
 
 const pod1Yaml = `
 apiVersion: v1
@@ -71,22 +75,22 @@ status:
         reason: OOMKilled
 `
 
-func newPod(yaml string) (*apiv1.Pod, error) {
-	decode := legacyscheme.Codecs.UniversalDeserializer().Decode
+func newPod(yaml string) (*v1.Pod, error) {
+	decode := codecs.UniversalDeserializer().Decode
 	obj, _, err := decode([]byte(yaml), nil, nil)
 	if err != nil {
 		return nil, err
 	}
-	return obj.(*apiv1.Pod), nil
+	return obj.(*v1.Pod), nil
 }
 
-func newEvent(yaml string) (*apiv1.Event, error) {
-	decode := legacyscheme.Codecs.UniversalDeserializer().Decode
+func newEvent(yaml string) (*v1.Event, error) {
+	decode := codecs.UniversalDeserializer().Decode
 	obj, _, err := decode([]byte(yaml), nil, nil)
 	if err != nil {
 		return nil, err
 	}
-	return obj.(*apiv1.Event), nil
+	return obj.(*v1.Event), nil
 }
 
 func TestOOMReceived(t *testing.T) {

@@ -17,8 +17,6 @@ limitations under the License.
 package test
 
 import (
-	"fmt"
-
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -84,7 +82,6 @@ func (pb *podBuilderImpl) Get() *apiv1.Pod {
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "default",
 			Name:      pb.name,
-			SelfLink:  fmt.Sprintf("/api/v1/namespaces/default/pods/%s", pb.name),
 		},
 		Spec: apiv1.PodSpec{
 			Containers: pb.containers,

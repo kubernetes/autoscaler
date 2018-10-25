@@ -23,13 +23,18 @@ import (
 
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	v1lister "k8s.io/client-go/listers/core/v1"
-	"k8s.io/kubernetes/pkg/api/legacyscheme"
-
-	_ "k8s.io/kubernetes/pkg/apis/core/install"       //to decode yaml
-	_ "k8s.io/kubernetes/pkg/apis/extensions/install" //to decode yaml
 )
+
+var scheme = runtime.NewScheme()
+var codecs = serializer.NewCodecFactory(scheme)
+
+func init() {
+	v1.AddToScheme(scheme)
+}
 
 const pod1Yaml = `
 apiVersion: v1
@@ -156,7 +161,7 @@ func (tc *specClientTestCase) getFakePods() []*v1.Pod {
 }
 
 func newPod(yaml string) *v1.Pod {
-	decode := legacyscheme.Codecs.UniversalDeserializer().Decode
+	decode := codecs.UniversalDeserializer().Decode
 	obj, _, err := decode([]byte(yaml), nil, nil)
 	if err != nil {
 		fmt.Printf("%#v", err)
