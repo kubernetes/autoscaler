@@ -421,8 +421,8 @@ func TestMig(t *testing.T) {
 			"gce://project1/us-central1-b/gke-cluster-1-default-pool-f7607aac-dck1"}, nil).Once()
 	nodes, err := mig1.Nodes()
 	assert.NoError(t, err)
-	assert.Equal(t, "gce://project1/us-central1-b/gke-cluster-1-default-pool-f7607aac-9j4g", nodes[0])
-	assert.Equal(t, "gce://project1/us-central1-b/gke-cluster-1-default-pool-f7607aac-dck1", nodes[1])
+	assert.Equal(t, cloudprovider.Instance{Id: "gce://project1/us-central1-b/gke-cluster-1-default-pool-f7607aac-9j4g"}, nodes[0])
+	assert.Equal(t, cloudprovider.Instance{Id: "gce://project1/us-central1-b/gke-cluster-1-default-pool-f7607aac-dck1"}, nodes[1])
 	mock.AssertExpectationsForObjects(t, gkeManagerMock)
 
 	// Test Create.

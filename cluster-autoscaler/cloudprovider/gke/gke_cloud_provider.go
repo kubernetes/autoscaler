@@ -365,8 +365,16 @@ func (mig *GkeMig) Debug() string {
 }
 
 // Nodes returns a list of all nodes that belong to this node group.
-func (mig *GkeMig) Nodes() ([]string, error) {
-	return mig.gkeManager.GetMigNodes(mig)
+func (mig *GkeMig) Nodes() ([]cloudprovider.Instance, error) {
+	instanceNames, err := mig.gkeManager.GetMigNodes(mig)
+	if err != nil {
+		return nil, err
+	}
+	instances := make([]cloudprovider.Instance, 0, len(instanceNames))
+	for _, instanceName := range instanceNames {
+		instances = append(instances, cloudprovider.Instance{Id: instanceName})
+	}
+	return instances, nil
 }
 
 // Exist checks if the node group really exists on the cloud provider side. Allows to tell the

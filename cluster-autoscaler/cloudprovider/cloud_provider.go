@@ -117,7 +117,9 @@ type NodeGroup interface {
 	Debug() string
 
 	// Nodes returns a list of all nodes that belong to this node group.
-	Nodes() ([]string, error)
+	// It is required that Instance objects returned by this method have Id field set.
+	// Other fields are optional.
+	Nodes() ([]Instance, error)
 
 	// TemplateNodeInfo returns a schedulercache.NodeInfo structure of an empty
 	// (as if just started) node. This will be used in scale-up simulations to
@@ -143,6 +145,58 @@ type NodeGroup interface {
 	// was created by CA and can be deleted when scaled to 0.
 	Autoprovisioned() bool
 }
+
+// Instance represents a cloud-provider node. The node does not necessarily map to k8s node
+// i.e it does not have to be registered in k8s cluster despite being returned by NodeGroup.Nodes()
+// method. Also it is sane to have Instance object for nodes which are being created or deleted.
+type Instance struct {
+	// Id is instance id.
+	Id string
+	// Status represents status of node. (Optional)
+	Status *InstanceStatus
+}
+
+// InstanceStatus represents instance status.
+type InstanceStatus struct {
+	// State tells if instance is running, being created or being deleted
+	State InstanceState
+	// ErrorInfo is not nil if there is error condition related to instance.
+	// E.g instance cannot be created.
+	ErrorInfo *InstanceErrorInfo
+}
+
+// InstanceState tells if instance is running, being created or being deleted
+type InstanceState int
+
+const (
+	// STATE_RUNNING means instance is running
+	STATE_RUNNING InstanceState = 1
+	// STATE_BEING_CREATED means instance is being created
+	STATE_BEING_CREATED InstanceState = 2
+	// STATE_BEING_DELETED means instance is being deleted
+	STATE_BEING_DELETED InstanceState = 3
+)
+
+// InstanceErrorInfo provides information about error condition on instance
+type InstanceErrorInfo struct {
+	// ErrorClass tells what is class of error on instance
+	ErrorClass InstanceErrorClass
+	// ErrorCode is cloud-provider specific error code for error condition
+	ErrorCode string
+	// ErrorMessage is human readable description of error condition
+	ErrorMessage string
+}
+
+// InstanceErrorClass defines class of error condition
+type InstanceErrorClass int
+
+const (
+	// ERROR_OUT_OF_RESOURCES means that error is related to lack of resources (e.g. due to
+	// stockout or quota-exceeded situation)
+	ERROR_OUT_OF_RESOURCES InstanceErrorClass = 1
+	// ERROR_OTHER means some non-specific error situation occurred
+	ERROR_OTHER InstanceErrorClass = 99
+)
 
 // PricingModel contains information about the node price and how it changes in time.
 type PricingModel interface {

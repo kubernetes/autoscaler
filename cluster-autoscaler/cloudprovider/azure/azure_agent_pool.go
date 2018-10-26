@@ -380,13 +380,13 @@ func (as *AgentPool) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
 }
 
 // Nodes returns a list of all nodes that belong to this node group.
-func (as *AgentPool) Nodes() ([]string, error) {
+func (as *AgentPool) Nodes() ([]cloudprovider.Instance, error) {
 	instances, err := as.GetVirtualMachines()
 	if err != nil {
 		return nil, err
 	}
 
-	nodes := make([]string, 0, len(instances))
+	nodes := make([]cloudprovider.Instance, 0, len(instances))
 	for _, instance := range instances {
 		if len(*instance.ID) == 0 {
 			continue
@@ -394,7 +394,7 @@ func (as *AgentPool) Nodes() ([]string, error) {
 
 		// To keep consistent with providerID from kubernetes cloud provider, do not convert ID to lower case.
 		name := "azure://" + *instance.ID
-		nodes = append(nodes, name)
+		nodes = append(nodes, cloudprovider.Instance{Id: name})
 	}
 
 	return nodes, nil

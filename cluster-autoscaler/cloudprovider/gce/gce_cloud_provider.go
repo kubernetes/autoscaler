@@ -273,8 +273,17 @@ func (mig *gceMig) Debug() string {
 }
 
 // Nodes returns a list of all nodes that belong to this node group.
-func (mig *gceMig) Nodes() ([]string, error) {
-	return mig.gceManager.GetMigNodes(mig)
+func (mig *gceMig) Nodes() ([]cloudprovider.Instance, error) {
+	instanceNames, err := mig.gceManager.GetMigNodes(mig)
+	if err != nil {
+		return nil, err
+	}
+	instances := make([]cloudprovider.Instance, 0, len(instanceNames))
+	for _, instanceName := range instanceNames {
+		instances = append(instances, cloudprovider.Instance{Id: instanceName})
+	}
+	return instances, nil
+
 }
 
 // Exist checks if the node group really exists on the cloud provider side.

@@ -159,8 +159,16 @@ func (asg *Asg) Debug() string {
 }
 
 // Nodes returns a list of all nodes that belong to this node group.
-func (asg *Asg) Nodes() ([]string, error) {
-	return asg.manager.GetAsgNodes(asg)
+func (asg *Asg) Nodes() ([]cloudprovider.Instance, error) {
+	instanceNames, err := asg.manager.GetAsgNodes(asg)
+	if err != nil {
+		return nil, err
+	}
+	instances := make([]cloudprovider.Instance, 0, len(instanceNames))
+	for _, instanceName := range instanceNames {
+		instances = append(instances, cloudprovider.Instance{Id: instanceName})
+	}
+	return instances, nil
 }
 
 // TemplateNodeInfo returns a node template for this node group.

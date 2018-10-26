@@ -282,18 +282,18 @@ func (ng *AwsNodeGroup) Debug() string {
 }
 
 // Nodes returns a list of all nodes that belong to this node group.
-func (ng *AwsNodeGroup) Nodes() ([]string, error) {
+func (ng *AwsNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 	asgNodes, err := ng.awsManager.GetAsgNodes(ng.asg.AwsRef)
 	if err != nil {
 		return nil, err
 	}
 
-	nodes := make([]string, len(asgNodes))
+	instances := make([]cloudprovider.Instance, len(asgNodes))
 
 	for i, asgNode := range asgNodes {
-		nodes[i] = asgNode.ProviderID
+		instances[i] = cloudprovider.Instance{Id: asgNode.ProviderID}
 	}
-	return nodes, nil
+	return instances, nil
 }
 
 // TemplateNodeInfo returns a node template for this node group.
