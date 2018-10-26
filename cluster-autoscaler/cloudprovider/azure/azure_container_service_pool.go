@@ -445,8 +445,16 @@ func (agentPool *ContainerServiceAgentPool) Debug() string {
 }
 
 //Nodes returns the list of nodes in the agentPool.
-func (agentPool *ContainerServiceAgentPool) Nodes() ([]string, error) {
-	return agentPool.GetNodes()
+func (agentPool *ContainerServiceAgentPool) Nodes() ([]cloudprovider.Instance, error) {
+	instanceNames, err := agentPool.GetNodes()
+	if err != nil {
+		return nil, err
+	}
+	instances := make([]cloudprovider.Instance, 0, len(instanceNames))
+	for _, instanceName := range instanceNames {
+		instances = append(instances, cloudprovider.Instance{Id: instanceName})
+	}
+	return instances, nil
 }
 
 //TemplateNodeInfo is not implemented.

@@ -171,7 +171,7 @@ func (m *asgCache) regenerate() error {
 		}
 
 		for _, instance := range instances {
-			ref := azureRef{Name: instance}
+			ref := azureRef{Name: instance.Id}
 			newCache[ref] = nsg
 		}
 	}

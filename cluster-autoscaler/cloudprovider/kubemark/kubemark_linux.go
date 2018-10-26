@@ -169,16 +169,16 @@ func (nodeGroup *NodeGroup) Debug() string {
 }
 
 // Nodes returns a list of all nodes that belong to this node group.
-func (nodeGroup *NodeGroup) Nodes() ([]string, error) {
-	ids := make([]string, 0)
+func (nodeGroup *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
+	instances := make([]cloudprovider.Instance, 0)
 	nodes, err := nodeGroup.kubemarkController.GetNodeNamesForNodeGroup(nodeGroup.Name)
 	if err != nil {
-		return ids, err
+		return instances, err
 	}
 	for _, node := range nodes {
-		ids = append(ids, ":////"+node)
+		instances = append(instances, cloudprovider.Instance{Id: ":////" + node})
 	}
-	return ids, nil
+	return instances, nil
 }
 
 // DeleteNodes deletes the specified nodes from the node group.
