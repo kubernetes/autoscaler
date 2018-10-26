@@ -30,7 +30,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/logic"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	metrics_recommender "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/recommender"
-	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
+	vpa_utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 	"k8s.io/client-go/rest"
 )
 
@@ -97,18 +97,8 @@ func (r *recommender) UpdateVPAs() {
 			continue
 		}
 		resources := r.podResourceRecommender.GetRecommendedPodResources(GetContainerNameToAggregateStateMap(vpa))
-		containerResources := make([]vpa_types.RecommendedContainerResources, 0, len(resources))
-		for containerName, res := range resources {
-			containerResources = append(containerResources, vpa_types.RecommendedContainerResources{
-				ContainerName: containerName,
-				Target:        model.ResourcesAsResourceList(res.Target),
-				LowerBound:    model.ResourcesAsResourceList(res.LowerBound),
-				UpperBound:    model.ResourcesAsResourceList(res.UpperBound),
-			})
-
-		}
 		had := vpa.HasRecommendation()
-		vpa.Recommendation = &vpa_types.RecommendedPodResources{containerResources}
+		vpa.Recommendation = getCappedRecommendation(vpa.ID, resources, observedVpa.Spec.ResourcePolicy)
 		// Set RecommendationProvided if recommendation not empty.
 		if len(vpa.Recommendation.ContainerRecommendations) > 0 {
 			vpa.Conditions.Set(vpa_types.RecommendationProvided, true, "", "")
@@ -118,13 +108,38 @@ func (r *recommender) UpdateVPAs() {
 		}
 		cnt.Add(vpa)
 
-		_, err := vpa_api_util.UpdateVpaStatusIfNeeded(
+		_, err := vpa_utils.UpdateVpaStatusIfNeeded(
 			r.vpaClient.VerticalPodAutoscalers(vpa.ID.Namespace), vpa, &observedVpa.Status)
 		if err != nil {
 			glog.Errorf(
 				"Cannot update VPA %v object. Reason: %+v", vpa.ID.VpaName, err)
 		}
 	}
+}
+
+// getCappedRecommendation creates a recommendation based on recommended pod
+// resources, setting the UncappedTarget to the calculated recommended target
+// and if necessary, capping the Target, LowerBound and UpperBound according
+// to the ResourcePolicy.
+func getCappedRecommendation(vpaID model.VpaID, resources logic.RecommendedPodResources,
+	policy *vpa_types.PodResourcePolicy) *vpa_types.RecommendedPodResources {
+	containerResources := make([]vpa_types.RecommendedContainerResources, 0, len(resources))
+	for containerName, res := range resources {
+		containerResources = append(containerResources, vpa_types.RecommendedContainerResources{
+			ContainerName:  containerName,
+			Target:         model.ResourcesAsResourceList(res.Target),
+			LowerBound:     model.ResourcesAsResourceList(res.LowerBound),
+			UpperBound:     model.ResourcesAsResourceList(res.UpperBound),
+			UncappedTarget: model.ResourcesAsResourceList(res.Target),
+		})
+	}
+	recommendation := &vpa_types.RecommendedPodResources{containerResources}
+	cappedRecommendation, err := vpa_utils.ApplyVPAPolicy(recommendation, policy)
+	if err != nil {
+		glog.Errorf("Failed to apply policy for VPA %v/%v: %v", vpaID.Namespace, vpaID.VpaName, err)
+		return recommendation
+	}
+	return cappedRecommendation
 }
 
 func (r *recommender) MaintainCheckpoints(ctx context.Context, minCheckpointsPerRun int) {
