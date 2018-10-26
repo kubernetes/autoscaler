@@ -49,7 +49,7 @@ var (
 			Namespace: metricsNamespace,
 			Name:      "recommendation_latency_seconds",
 			Help:      "Time elapsed from creating a valid VPA configuration to the first recommendation.",
-			Buckets:   []float64{10.0, 20.0, 30.0, 40.00, 50.0, 60.0, 90.0, 120.0, 150.0, 180.0, 240.0, 300.0, 600.0, 900.0, 1800.0},
+			Buckets:   []float64{1.0, 2.0, 5.0, 7.5, 10.0, 20.0, 30.0, 40.00, 50.0, 60.0, 90.0, 120.0, 150.0, 180.0, 240.0, 300.0, 600.0, 900.0, 1800.0},
 		},
 	)
 
