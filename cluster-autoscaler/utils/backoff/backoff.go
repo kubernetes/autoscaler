@@ -20,64 +20,14 @@ import (
 	"time"
 )
 
-type backoffInfo struct {
-	duration            time.Duration
-	backoffUntil        time.Time
-	lastFailedExecution time.Time
-}
-
-// Backoff handles backing off executions.
-type Backoff struct {
-	maxBackoffDuration     time.Duration
-	initialBackoffDuration time.Duration
-	backoffResetTimeout    time.Duration
-	backoffInfo            map[string]backoffInfo
-}
-
-// NewBackoff creates an instance of  Backoff.
-func NewBackoff(initialBackoffDuration time.Duration, maxBackoffDuration time.Duration, backoffResetTimeout time.Duration) *Backoff {
-	return &Backoff{maxBackoffDuration, initialBackoffDuration, backoffResetTimeout, make(map[string]backoffInfo)}
-}
-
-// RemoveStaleBackoffData removes stale backoff data.
-func (b *Backoff) RemoveStaleBackoffData(currentTime time.Time) {
-	for key, backoffInfo := range b.backoffInfo {
-		if backoffInfo.lastFailedExecution.Add(b.backoffResetTimeout).Before(currentTime) {
-			delete(b.backoffInfo, key)
-		}
-	}
-}
-
-// Backoff execution for the given key. Returns time till execution is backed off.
-func (b *Backoff) Backoff(key string, currentTime time.Time) time.Time {
-	duration := b.initialBackoffDuration
-	if backoffInfo, found := b.backoffInfo[key]; found {
-		// Multiple concurrent scale-ups failing shouldn't cause backoff
-		// duration to increase, so we only increase it if we're not in
-		// backoff right now.
-		if backoffInfo.backoffUntil.Before(currentTime) {
-			duration = 2 * backoffInfo.duration
-			if duration > b.maxBackoffDuration {
-				duration = b.maxBackoffDuration
-			}
-		}
-	}
-	backoffUntil := currentTime.Add(duration)
-	b.backoffInfo[key] = backoffInfo{
-		duration:            duration,
-		backoffUntil:        backoffUntil,
-		lastFailedExecution: currentTime,
-	}
-	return backoffUntil
-}
-
-// RemoveBackoff removes backoff data for the given key.
-func (b *Backoff) RemoveBackoff(key string) {
-	delete(b.backoffInfo, key)
-}
-
-// IsBackedOff returns true if execution is backed off for the given key.
-func (b *Backoff) IsBackedOff(key string, currentTime time.Time) bool {
-	backoffInfo, found := b.backoffInfo[key]
-	return found && backoffInfo.backoffUntil.After(currentTime)
+// Backoff allows time-based backing off of node groups considered in scale up algorithm
+type Backoff interface {
+	// Backoff execution for the given key. Returns time till execution is backed off.
+	Backoff(key string, currentTime time.Time) time.Time
+	// IsBackedOff returns true if execution is backed off for the given key.
+	IsBackedOff(key string, currentTime time.Time) bool
+	// RemoveBackoff removes backoff data for the given key.
+	RemoveBackoff(key string)
+	// RemoveStaleBackoffData removes stale backoff data.
+	RemoveStaleBackoffData(currentTime time.Time)
 }
