@@ -42,7 +42,9 @@ func (f *FakeNodeGroup) DecreaseTargetSize(delta int) error { return nil }
 func (f *FakeNodeGroup) DeleteNodes([]*apiv1.Node) error    { return nil }
 func (f *FakeNodeGroup) Id() string                         { return f.id }
 func (f *FakeNodeGroup) Debug() string                      { return f.id }
-func (f *FakeNodeGroup) Nodes() ([]string, error)           { return []string{}, nil }
+func (f *FakeNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
+	return []cloudprovider.Instance{}, nil
+}
 func (f *FakeNodeGroup) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
