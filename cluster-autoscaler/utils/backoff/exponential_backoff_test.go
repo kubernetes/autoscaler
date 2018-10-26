@@ -24,7 +24,7 @@ import (
 )
 
 func TestBackoffTwoKeys(t *testing.T) {
-	backoff := NewBackoff(10*time.Minute, time.Hour, 3*time.Hour)
+	backoff := NewExponentialBackoff(10*time.Minute, time.Hour, 3*time.Hour)
 	startTime := time.Now()
 	assert.False(t, backoff.IsBackedOff("key1", startTime))
 	assert.False(t, backoff.IsBackedOff("key2", startTime))
@@ -35,7 +35,7 @@ func TestBackoffTwoKeys(t *testing.T) {
 }
 
 func TestMaxBackoff(t *testing.T) {
-	backoff := NewBackoff(1*time.Minute, 3*time.Minute, 3*time.Hour)
+	backoff := NewExponentialBackoff(1*time.Minute, 3*time.Minute, 3*time.Hour)
 	startTime := time.Now()
 	backoff.Backoff("key1", startTime)
 	assert.True(t, backoff.IsBackedOff("key1", startTime))
@@ -49,7 +49,7 @@ func TestMaxBackoff(t *testing.T) {
 }
 
 func TestRemoveBackoff(t *testing.T) {
-	backoff := NewBackoff(1*time.Minute, 3*time.Minute, 3*time.Hour)
+	backoff := NewExponentialBackoff(1*time.Minute, 3*time.Minute, 3*time.Hour)
 	startTime := time.Now()
 	backoff.Backoff("key1", startTime)
 	assert.True(t, backoff.IsBackedOff("key1", startTime))
@@ -58,14 +58,14 @@ func TestRemoveBackoff(t *testing.T) {
 }
 
 func TestResetStaleBackoffData(t *testing.T) {
-	backoff := NewBackoff(1*time.Minute, 3*time.Minute, 3*time.Hour)
+	backoff := NewExponentialBackoff(1*time.Minute, 3*time.Minute, 3*time.Hour)
 	startTime := time.Now()
 	backoff.Backoff("key1", startTime)
 	backoff.Backoff("key2", startTime.Add(time.Hour))
 	backoff.RemoveStaleBackoffData(startTime.Add(time.Hour))
-	assert.Equal(t, 2, len(backoff.backoffInfo))
+	assert.Equal(t, 2, len(backoff.(*exponentialBackoff).backoffInfo))
 	backoff.RemoveStaleBackoffData(startTime.Add(4 * time.Hour))
-	assert.Equal(t, 1, len(backoff.backoffInfo))
+	assert.Equal(t, 1, len(backoff.(*exponentialBackoff).backoffInfo))
 	backoff.RemoveStaleBackoffData(startTime.Add(5 * time.Hour))
-	assert.Equal(t, 0, len(backoff.backoffInfo))
+	assert.Equal(t, 0, len(backoff.(*exponentialBackoff).backoffInfo))
 }
