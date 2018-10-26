@@ -82,7 +82,8 @@ func CreateExecutionTimeMetric(namespace string, help string) *prometheus.Histog
 			Namespace: namespace,
 			Name:      "execution_latency_seconds",
 			Help:      help,
-			Buckets:   []float64{0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0, 60.0, 120.0, 300.0},
+			Buckets: []float64{0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0,
+				20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0, 120.0, 150.0, 240.0, 300.0},
 		}, []string{"step"},
 	)
 }
