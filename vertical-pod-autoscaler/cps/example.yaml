@@ -2,6 +2,7 @@ apiVersion: autoscaling.k8s.io/v1beta1
 kind: ClusterProportionalScaler
 metadata:
   name: dns-vps
+  namespace: kube-system
 spec:
   selector:
     matchLabels:

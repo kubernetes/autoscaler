@@ -18,6 +18,9 @@ limitations under the License.
 package v1beta1
 
 import (
+	"encoding/json"
+	"fmt"
+
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -178,6 +181,21 @@ type RecommendedPodResources struct {
 	// Resources recommended by the autoscaler for each container.
 	// +optional
 	ContainerRecommendations []RecommendedContainerResources `json:"containerRecommendations,omitempty" protobuf:"bytes,1,rep,name=containerRecommendations"`
+}
+
+func JSONPrint(o interface{}) string {
+	if o == nil {
+		return "<nil>"
+	}
+	s, err := json.Marshal(o)
+	if err != nil {
+		return fmt.Sprintf("<error printing %T: %v>", o, err)
+	}
+	return string(s)
+}
+
+func (r *RecommendedPodResources) String() string {
+	return JSONPrint(r)
 }
 
 // RecommendedContainerResources is the recommendation of resources computed by

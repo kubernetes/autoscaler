@@ -1,0 +1,54 @@
+load("@io_bazel_rules_k8s//k8s:object.bzl", "k8s_object")
+load("@io_bazel_rules_k8s//k8s:objects.bzl", "k8s_objects")
+
+k8s_object(
+    name = "cluster-proportional",
+    template = ":cluster-proportional-deployment.yaml",
+    cluster = "{STABLE_K8S_CLUSTER}",
+    images = {
+        "k8s.gcr.io/cluster-proportional-recommender:latest": "//pkg/cluster-proportional:image",
+    },
+    image_chroot = "{STABLE_DOCKER_REGISTRY}/{STABLE_DOCKER_IMAGE_PREFIX}",
+)
+
+k8s_object(
+    name = "updater-deployment",
+    template = ":updater-deployment.yaml",
+    cluster = "{STABLE_K8S_CLUSTER}",
+    images = {
+        "k8s.gcr.io/vpa-updater:0.2.0": "//pkg/updater:image",
+    },
+    image_chroot = "{STABLE_DOCKER_REGISTRY}/{STABLE_DOCKER_IMAGE_PREFIX}",
+)
+
+k8s_object(
+    name = "vpa-rbac",
+    template = ":vpa-rbac.yaml",
+    cluster = "{STABLE_K8S_CLUSTER}",
+)
+
+k8s_objects(
+    name = "updater",
+    objects = [
+        ":updater-deployment",
+        ":vpa-rbac",
+    ],
+)
+
+k8s_object(
+    name = "admission-controller-deployment",
+    template = ":admission-controller-deployment.yaml",
+    cluster = "{STABLE_K8S_CLUSTER}",
+    images = {
+        "k8s.gcr.io/vpa-admission-controller:0.2.0": "//pkg/admission-controller:image",
+    },
+    image_chroot = "{STABLE_DOCKER_REGISTRY}/{STABLE_DOCKER_IMAGE_PREFIX}",
+)
+
+k8s_objects(
+    name = "admission-controller",
+    objects = [
+        ":admission-controller-deployment",
+        ":vpa-rbac",
+    ],
+)

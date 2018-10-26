@@ -6,7 +6,7 @@ go_library(
     importpath = "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/cluster-proportional/factors/static",
     visibility = ["//visibility:public"],
     deps = [
-        "//pkg/factors:go_default_library",
+        "//pkg/cluster-proportional/factors:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/clock:go_default_library",
     ],
 )

@@ -1,0 +1,73 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cluster-proportional-recommender
+  namespace: kube-system
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: system:cluster-proportional-recommender
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  - nodes
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - "autoscaling.k8s.io"
+  resources:
+  - clusterproportionalscalers
+  verbs:
+  - get
+  - list
+  - watch
+  - patch
+  - update
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: system:cluster-proportional-recommender
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:cluster-proportional-recommender
+subjects:
+- kind: ServiceAccount
+  name: cluster-proportional-recommender
+  namespace: kube-system
+
+---
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: cluster-proportional-recommender
+  namespace: kube-system
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: cluster-proportional-recommender
+    spec:
+      serviceAccountName: cluster-proportional-recommender
+      containers:
+      - name: recommender
+        image: k8s.gcr.io/cluster-proportional-recommender:latest
+        imagePullPolicy: Always
+        resources:
+          limits:
+            memory: 100Mi
+          requests:
+            cpu: 50m
+            memory: 100Mi

@@ -1,3 +1,5 @@
+package(default_visibility = ["//visibility:public"])
+
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
 go_library(
@@ -23,4 +25,34 @@ go_binary(
     name = "updater",
     embed = [":go_default_library"],
     visibility = ["//visibility:public"],
+)
+
+load(
+    "@io_bazel_rules_docker//container:container.bzl",
+    "container_image",
+    "container_push",
+)
+
+container_image(
+    name = "image",
+    base = "@debian_base_amd64//image",
+    entrypoint = ["/updater"],
+    cmd = [
+        "/updater",
+        "--v=4",
+        "--stderrthreshold=info",
+    ],
+    files = [
+        ":updater",
+    ],
+)
+
+container_push(
+    name = "push-image",
+    format = "Docker",
+    image = ":image",
+    registry = "{STABLE_DOCKER_REGISTRY}",
+    repository = "{STABLE_DOCKER_IMAGE_PREFIX}vpa-updater",
+    stamp = True,
+    tag = "{STABLE_DOCKER_TAG}",
 )

@@ -5,6 +5,7 @@ go_library(
     srcs = [
         "doc.go",
         "fake_autoscaling.k8s.io_client.go",
+        "fake_clusterproportionalscaler.go",
         "fake_verticalpodautoscaler.go",
         "fake_verticalpodautoscalercheckpoint.go",
     ],

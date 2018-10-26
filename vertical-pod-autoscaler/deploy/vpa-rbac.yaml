@@ -47,6 +47,7 @@ rules:
   - "autoscaling.k8s.io"
   resources:
   - verticalpodautoscalers
+  - clusterproportionalscalers
   verbs:
   - get
   - list
@@ -239,6 +240,7 @@ rules:
   - "autoscaling.k8s.io"
   resources:
   - verticalpodautoscalers
+  - clusterproportionalscalers
   verbs:
   - get
   - list

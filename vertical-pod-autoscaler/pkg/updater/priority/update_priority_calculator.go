@@ -109,7 +109,7 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, recommendation *vpa
 			return
 		}
 		if updatePriority.resourceDiff < calc.config.MinChangePriority {
-			glog.V(2).Infof("not updating pod %v, resource diff too low: %v", pod.Name, updatePriority)
+			glog.V(2).Infof("not updating pod %v, resource diff too low: %s", pod.Name, updatePriority)
 			return
 		}
 	}
@@ -193,6 +193,10 @@ type podPriority struct {
 	resourceDiff float64
 	// Recommendation for pod
 	recommendation *vpa_types.RecommendedPodResources
+}
+
+func (p *podPriority) String() string {
+	return vpa_types.JSONPrint(p)
 }
 
 type byPriority []podPriority

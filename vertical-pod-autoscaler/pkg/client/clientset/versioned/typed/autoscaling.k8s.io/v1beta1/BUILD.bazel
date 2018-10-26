@@ -4,6 +4,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "autoscaling.k8s.io_client.go",
+        "clusterproportionalscaler.go",
         "doc.go",
         "generated_expansion.go",
         "verticalpodautoscaler.go",

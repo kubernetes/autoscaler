@@ -116,7 +116,11 @@ func equalRecommendations(l, r *api.RecommendedPodResources) bool {
 			return false
 		}
 
-		if !resourceListEquals(l.ContainerRecommendations[i].UncappedTarget, r.ContainerRecommendations[i].UncappedTarget) {
+		if !resourceListEquals(l.ContainerRecommendations[i].Target, r.ContainerRecommendations[i].Target) {
+			return false
+		}
+
+		if !resourceListEquals(l.ContainerRecommendations[i].UpperBound, r.ContainerRecommendations[i].UpperBound) {
 			return false
 		}
 	}

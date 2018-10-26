@@ -96,10 +96,17 @@ func (e *containerScalingRuleEvaluator) computeResources(parentPath string) (*ap
 				container.Resources.Requests[k] = *r
 		*/
 
-		if container.UncappedTarget == nil {
-			container.UncappedTarget = make(v1.ResourceList)
+		if container.Target == nil {
+			container.Target = make(v1.ResourceList)
 		}
-		container.UncappedTarget[k] = *r
+		container.Target[k] = *r
+
+		// We set LowerBound to == target, so that we always scale up right away
+		if container.LowerBound == nil {
+			container.LowerBound = make(v1.ResourceList)
+		}
+		container.LowerBound[k] = *r
+
 	}
 
 	/*
@@ -107,7 +114,7 @@ func (e *containerScalingRuleEvaluator) computeResources(parentPath string) (*ap
 			return nil, nil
 		}
 	*/
-	if len(container.UncappedTarget) == 0 {
+	if len(container.Target) == 0 && len(container.UpperBound) == 0 && len(container.LowerBound) == 0 {
 		return nil, nil
 	}
 

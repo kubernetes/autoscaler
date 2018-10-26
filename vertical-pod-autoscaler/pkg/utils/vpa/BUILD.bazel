@@ -5,6 +5,7 @@ go_library(
     srcs = [
         "api.go",
         "capping.go",
+        "quack.go",
         "recommendation_processor.go",
         "sequential_processor.go",
     ],
