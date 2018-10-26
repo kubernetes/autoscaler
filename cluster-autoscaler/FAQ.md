@@ -317,7 +317,7 @@ number of replicas when cluster grows and decrease the number of replicas if clu
 
 Configuration of dynamic overprovisioning:
 
-1. Enable priority preemption in your cluster. It can be done by exporting following env
+1. (For 1.10, and below) Enable priority preemption in your cluster. It can be done by exporting following env
 variables before executing kube-up (more details [here](https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/)):
 ```sh
 export KUBE_RUNTIME_CONFIG=scheduling.k8s.io/v1alpha1=true
@@ -327,10 +327,24 @@ export ENABLE_POD_PRIORITY=true
 2. Define priority class for overprovisioning pods. Priority -1 will be reserved for
 overprovisioning pods as it is the lowest priority that triggers scaling clusters. Other pods need
 to use priority 0 or higher in order to be able to preempt overprovisioning pods. You can use
-following definitions:
+following definitions.
+
+**For 1.10, and below:**
 
 ```yaml
 apiVersion: scheduling.k8s.io/v1alpha1
+kind: PriorityClass
+metadata:
+  name: overprovisioning
+value: -1
+globalDefault: false
+description: "Priority class used by overprovisioning."
+```
+
+**For 1.11:**
+
+```
+apiVersion: scheduling.k8s.io/v1beta
 kind: PriorityClass
 metadata:
   name: overprovisioning
