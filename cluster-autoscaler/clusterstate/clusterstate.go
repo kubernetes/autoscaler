@@ -125,7 +125,7 @@ type ClusterStateRegistry struct {
 	incorrectNodeGroupSizes map[string]IncorrectNodeGroupSize
 	unregisteredNodes       map[string]UnregisteredNode
 	candidatesForScaleDown  map[string][]string
-	nodeGroupBackoffInfo    *backoff.Backoff
+	nodeGroupBackoffInfo    backoff.Backoff
 	lastStatus              *api.ClusterAutoscalerStatus
 	lastScaleDownUpdateTime time.Time
 	logRecorder             *utils.LogEventRecorder
@@ -148,7 +148,7 @@ func NewClusterStateRegistry(cloudProvider cloudprovider.CloudProvider, config C
 		incorrectNodeGroupSizes: make(map[string]IncorrectNodeGroupSize),
 		unregisteredNodes:       make(map[string]UnregisteredNode),
 		candidatesForScaleDown:  make(map[string][]string),
-		nodeGroupBackoffInfo:    backoff.NewBackoff(InitialNodeGroupBackoffDuration, MaxNodeGroupBackoffDuration, NodeGroupBackoffResetTimeout),
+		nodeGroupBackoffInfo:    backoff.NewExponentialBackoff(InitialNodeGroupBackoffDuration, MaxNodeGroupBackoffDuration, NodeGroupBackoffResetTimeout),
 		lastStatus:              emptyStatus,
 		logRecorder:             logRecorder,
 	}
