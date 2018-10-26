@@ -19,7 +19,7 @@ package status
 import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/nodegroupset"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 )
 
 // ScaleUpStatus is the status of a scale-up attempt. This includes information
