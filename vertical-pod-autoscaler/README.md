@@ -32,7 +32,7 @@ the old installation of VPA.
 * It is strongly recommended to use Kubernetes 1.9 or greater.
   Your cluster must support MutatingAdmissionWebhooks, which are enabled by default
   since 1.9 ([#58255](https://github.com/kubernetes/kubernetes/pull/58255)).
-  Read more about [VPA Admission Webhook](./admission-controller/README.md#running).
+  Read more about [VPA Admission Webhook](./pkg/admission-controller/README.md#running).
 * `kubectl` should be connected to the cluster you want to install VPA in.
 * The metrics server must be deployed in your cluster. Read more about [Metrics Server](https://github.com/kubernetes-incubator/metrics-server).
 * If you are using a GKE Kubernetes cluster, you will need to grant your current Google
