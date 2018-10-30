@@ -522,7 +522,7 @@ func TestScaleUpNodeComingNoScale(t *testing.T) {
 
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder)
 	clusterState.RegisterScaleUp(&clusterstate.ScaleUpRequest{
-		NodeGroupName:   "ng2",
+		NodeGroup:       provider.GetNodeGroup("ng2"),
 		Increase:        1,
 		Time:            time.Now(),
 		ExpectedAddTime: time.Now().Add(5 * time.Minute),
@@ -577,7 +577,7 @@ func TestScaleUpNodeComingHasScale(t *testing.T) {
 
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder)
 	clusterState.RegisterScaleUp(&clusterstate.ScaleUpRequest{
-		NodeGroupName:   "ng2",
+		NodeGroup:       provider.GetNodeGroup("ng2"),
 		Increase:        1,
 		Time:            time.Now(),
 		ExpectedAddTime: time.Now().Add(5 * time.Minute),

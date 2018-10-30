@@ -710,7 +710,7 @@ func executeScaleUp(context *context.AutoscalingContext, clusterStateRegistry *c
 	}
 	clusterStateRegistry.RegisterScaleUp(
 		&clusterstate.ScaleUpRequest{
-			NodeGroupName:   info.Group.Id(),
+			NodeGroup:       info.Group,
 			Increase:        increase,
 			Time:            time.Now(),
 			ExpectedAddTime: time.Now().Add(context.MaxNodeProvisionTime),

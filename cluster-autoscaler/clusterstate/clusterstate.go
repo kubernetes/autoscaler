@@ -57,8 +57,8 @@ const (
 
 // ScaleUpRequest contains information about the requested node group scale up.
 type ScaleUpRequest struct {
-	// NodeGroupName is the node group to be scaled up.
-	NodeGroupName string
+	// NodeGroup is the node group to be scaled up.
+	NodeGroup cloudprovider.NodeGroup
 	// Time is the time when the request was submitted.
 	Time time.Time
 	// ExpectedAddTime is the time at which the request should be fulfilled.
@@ -71,8 +71,8 @@ type ScaleUpRequest struct {
 type ScaleDownRequest struct {
 	// NodeName is the name of the node to be deleted.
 	NodeName string
-	// NodeGroupName is the node group of the deleted node.
-	NodeGroupName string
+	// NodeGroup is the node group of the deleted node.
+	NodeGroup cloudprovider.NodeGroup
 	// Time is the time when the node deletion was requested.
 	Time time.Time
 	// ExpectedDeleteTime is the time when the node is expected to be deleted.
@@ -159,9 +159,9 @@ func (csr *ClusterStateRegistry) RegisterScaleUp(request *ScaleUpRequest) {
 	csr.Lock()
 	defer csr.Unlock()
 
-	oldScaleUpRequest, found := csr.scaleUpRequests[request.NodeGroupName]
+	oldScaleUpRequest, found := csr.scaleUpRequests[request.NodeGroup.Id()]
 	if !found {
-		csr.scaleUpRequests[request.NodeGroupName] = request
+		csr.scaleUpRequests[request.NodeGroup.Id()] = request
 		return
 	}
 
@@ -199,7 +199,7 @@ func (csr *ClusterStateRegistry) updateScaleRequests(currentTime time.Time) {
 				nodeGroupName, currentTime.Sub(scaleUpRequest.Time))
 			csr.logRecorder.Eventf(apiv1.EventTypeWarning, "ScaleUpTimedOut",
 				"Nodes added to group %s failed to register within %v",
-				scaleUpRequest.NodeGroupName, currentTime.Sub(scaleUpRequest.Time))
+				scaleUpRequest.NodeGroup.Id(), currentTime.Sub(scaleUpRequest.Time))
 			metrics.RegisterFailedScaleUp(metrics.Timeout)
 			csr.backoffNodeGroup(nodeGroupName, currentTime)
 			delete(csr.scaleUpRequests, nodeGroupName)
@@ -440,9 +440,9 @@ func (csr *ClusterStateRegistry) updateAcceptableRanges(targetSize map[string]in
 		result[nodeGroupName] = acceptableRange
 	}
 	for _, scaleDownRequest := range csr.scaleDownRequests {
-		acceptableRange := result[scaleDownRequest.NodeGroupName]
+		acceptableRange := result[scaleDownRequest.NodeGroup.Id()]
 		acceptableRange.MaxNodes += 1
-		result[scaleDownRequest.NodeGroupName] = acceptableRange
+		result[scaleDownRequest.NodeGroup.Id()] = acceptableRange
 	}
 	csr.acceptableRanges = result
 }
