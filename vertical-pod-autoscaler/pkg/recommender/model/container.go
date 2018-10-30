@@ -52,7 +52,9 @@ type ContainerState struct {
 	// Start of the latest CPU usage sample that was aggregated.
 	LastCPUSampleStart time.Time
 	// Max memory usage observed in the current aggregation interval.
-	MemoryPeak ResourceAmount
+	memoryPeak ResourceAmount
+	// Max memory usage estimated from an OOM event in the current aggregation interval.
+	oomPeak ResourceAmount
 	// End time of the current memory aggregation interval (not inclusive).
 	WindowEnd time.Time
 	// Start of the latest memory usage sample that was aggregated.
@@ -86,7 +88,12 @@ func (container *ContainerState) addCPUSample(sample *ContainerUsageSample) bool
 	return true
 }
 
-func (container *ContainerState) addMemorySample(sample *ContainerUsageSample) bool {
+// GetMaxMemoryPeak returns maximum memory usage in the sample, possibly estimated from OOM
+func (container *ContainerState) GetMaxMemoryPeak() ResourceAmount {
+	return ResourceAmountMax(container.memoryPeak, container.oomPeak)
+}
+
+func (container *ContainerState) addMemorySample(sample *ContainerUsageSample, isOOM bool) bool {
 	ts := sample.MeasureStart
 	if !sample.isValid(ResourceMemory) || ts.Before(container.lastMemorySampleStart) {
 		return false // Discard invalid or outdated samples.
@@ -102,11 +109,12 @@ func (container *ContainerState) addMemorySample(sample *ContainerUsageSample) b
 	// and adding the new value.
 	addNewPeak := false
 	if ts.Before(container.WindowEnd) {
-		if container.MemoryPeak != 0 && sample.Usage > container.MemoryPeak {
+		oldMaxMem := container.GetMaxMemoryPeak()
+		if oldMaxMem != 0 && sample.Usage > oldMaxMem {
 			// Remove the old peak.
 			oldPeak := ContainerUsageSample{
 				MeasureStart: container.WindowEnd,
-				Usage:        container.MemoryPeak,
+				Usage:        oldMaxMem,
 				Request:      sample.Request,
 				Resource:     ResourceMemory,
 			}
@@ -117,6 +125,8 @@ func (container *ContainerState) addMemorySample(sample *ContainerUsageSample) b
 		// Shift the memory aggregation window to the next interval.
 		shift := truncate(ts.Sub(container.WindowEnd), MemoryAggregationInterval) + MemoryAggregationInterval
 		container.WindowEnd = container.WindowEnd.Add(shift)
+		container.memoryPeak = 0
+		container.oomPeak = 0
 		addNewPeak = true
 	}
 	if addNewPeak {
@@ -127,7 +137,11 @@ func (container *ContainerState) addMemorySample(sample *ContainerUsageSample) b
 			Resource:     ResourceMemory,
 		}
 		container.aggregator.AddSample(&newPeak)
-		container.MemoryPeak = sample.Usage
+		if isOOM {
+			container.oomPeak = sample.Usage
+		} else {
+			container.memoryPeak = sample.Usage
+		}
 	}
 	return true
 }
@@ -138,8 +152,9 @@ func (container *ContainerState) RecordOOM(timestamp time.Time, requestedMemory 
 	if timestamp.Before(container.WindowEnd.Add(-1 * MemoryAggregationInterval)) {
 		return fmt.Errorf("OOM event will be discarded - it is too old (%v)", timestamp)
 	}
-	// Get max of the request and the recent memory peak.
-	memoryUsed := ResourceAmountMax(requestedMemory, container.MemoryPeak)
+	// Get max of the request and the recent usage-based memory peak.
+	// Omitting oomPeak here to protect against recommendation running too high on subsequent OOMs.
+	memoryUsed := ResourceAmountMax(requestedMemory, container.memoryPeak)
 	memoryNeeded := ResourceAmountMax(memoryUsed+MemoryAmountFromBytes(OOMMinBumpUp),
 		ScaleResource(memoryUsed, OOMBumpUpRatio))
 
@@ -148,7 +163,7 @@ func (container *ContainerState) RecordOOM(timestamp time.Time, requestedMemory 
 		Usage:        memoryNeeded,
 		Resource:     ResourceMemory,
 	}
-	if !container.addMemorySample(&oomMemorySample) {
+	if !container.addMemorySample(&oomMemorySample, true) {
 		return fmt.Errorf("Adding OOM sample failed")
 	}
 	return nil
@@ -166,7 +181,7 @@ func (container *ContainerState) AddSample(sample *ContainerUsageSample) bool {
 	case ResourceCPU:
 		return container.addCPUSample(sample)
 	case ResourceMemory:
-		return container.addMemorySample(sample)
+		return container.addMemorySample(sample, false)
 	default:
 		return false
 	}
