@@ -20,48 +20,60 @@ import (
 	"testing"
 	"time"
 
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
+
 	"github.com/stretchr/testify/assert"
 )
 
+func nodeGroup(id string) cloudprovider.NodeGroup {
+	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider.AddNodeGroup(id, 1, 10, 1)
+	return provider.GetNodeGroup(id)
+}
+
+var nodeGroup1 = nodeGroup("id1")
+var nodeGroup2 = nodeGroup("id2")
+
 func TestBackoffTwoKeys(t *testing.T) {
-	backoff := NewExponentialBackoff(10*time.Minute, time.Hour, 3*time.Hour)
+	backoff := NewIdBasedExponentialBackoff(10*time.Minute, time.Hour, 3*time.Hour)
 	startTime := time.Now()
-	assert.False(t, backoff.IsBackedOff("key1", startTime))
-	assert.False(t, backoff.IsBackedOff("key2", startTime))
-	backoff.Backoff("key1", startTime.Add(time.Minute))
-	assert.True(t, backoff.IsBackedOff("key1", startTime.Add(2*time.Minute)))
-	assert.False(t, backoff.IsBackedOff("key2", startTime))
-	assert.False(t, backoff.IsBackedOff("key1", startTime.Add(11*time.Minute)))
+	assert.False(t, backoff.IsBackedOff(nodeGroup1, startTime))
+	assert.False(t, backoff.IsBackedOff(nodeGroup2, startTime))
+	backoff.Backoff(nodeGroup1, startTime.Add(time.Minute))
+	assert.True(t, backoff.IsBackedOff(nodeGroup1, startTime.Add(2*time.Minute)))
+	assert.False(t, backoff.IsBackedOff(nodeGroup2, startTime))
+	assert.False(t, backoff.IsBackedOff(nodeGroup1, startTime.Add(11*time.Minute)))
 }
 
 func TestMaxBackoff(t *testing.T) {
-	backoff := NewExponentialBackoff(1*time.Minute, 3*time.Minute, 3*time.Hour)
+	backoff := NewIdBasedExponentialBackoff(1*time.Minute, 3*time.Minute, 3*time.Hour)
 	startTime := time.Now()
-	backoff.Backoff("key1", startTime)
-	assert.True(t, backoff.IsBackedOff("key1", startTime))
-	assert.False(t, backoff.IsBackedOff("key1", startTime.Add(1*time.Minute)))
-	backoff.Backoff("key1", startTime.Add(1*time.Minute))
-	assert.True(t, backoff.IsBackedOff("key1", startTime.Add(1*time.Minute)))
-	assert.False(t, backoff.IsBackedOff("key1", startTime.Add(3*time.Minute)))
-	backoff.Backoff("key1", startTime.Add(3*time.Minute))
-	assert.True(t, backoff.IsBackedOff("key1", startTime.Add(3*time.Minute)))
-	assert.False(t, backoff.IsBackedOff("key1", startTime.Add(6*time.Minute)))
+	backoff.Backoff(nodeGroup1, startTime)
+	assert.True(t, backoff.IsBackedOff(nodeGroup1, startTime))
+	assert.False(t, backoff.IsBackedOff(nodeGroup1, startTime.Add(1*time.Minute)))
+	backoff.Backoff(nodeGroup1, startTime.Add(1*time.Minute))
+	assert.True(t, backoff.IsBackedOff(nodeGroup1, startTime.Add(1*time.Minute)))
+	assert.False(t, backoff.IsBackedOff(nodeGroup1, startTime.Add(3*time.Minute)))
+	backoff.Backoff(nodeGroup1, startTime.Add(3*time.Minute))
+	assert.True(t, backoff.IsBackedOff(nodeGroup1, startTime.Add(3*time.Minute)))
+	assert.False(t, backoff.IsBackedOff(nodeGroup1, startTime.Add(6*time.Minute)))
 }
 
 func TestRemoveBackoff(t *testing.T) {
-	backoff := NewExponentialBackoff(1*time.Minute, 3*time.Minute, 3*time.Hour)
+	backoff := NewIdBasedExponentialBackoff(1*time.Minute, 3*time.Minute, 3*time.Hour)
 	startTime := time.Now()
-	backoff.Backoff("key1", startTime)
-	assert.True(t, backoff.IsBackedOff("key1", startTime))
-	backoff.RemoveBackoff("key1")
-	assert.False(t, backoff.IsBackedOff("key1", startTime))
+	backoff.Backoff(nodeGroup1, startTime)
+	assert.True(t, backoff.IsBackedOff(nodeGroup1, startTime))
+	backoff.RemoveBackoff(nodeGroup1)
+	assert.False(t, backoff.IsBackedOff(nodeGroup1, startTime))
 }
 
 func TestResetStaleBackoffData(t *testing.T) {
-	backoff := NewExponentialBackoff(1*time.Minute, 3*time.Minute, 3*time.Hour)
+	backoff := NewIdBasedExponentialBackoff(1*time.Minute, 3*time.Minute, 3*time.Hour)
 	startTime := time.Now()
-	backoff.Backoff("key1", startTime)
-	backoff.Backoff("key2", startTime.Add(time.Hour))
+	backoff.Backoff(nodeGroup1, startTime)
+	backoff.Backoff(nodeGroup2, startTime.Add(time.Hour))
 	backoff.RemoveStaleBackoffData(startTime.Add(time.Hour))
 	assert.Equal(t, 2, len(backoff.(*exponentialBackoff).backoffInfo))
 	backoff.RemoveStaleBackoffData(startTime.Add(4 * time.Hour))

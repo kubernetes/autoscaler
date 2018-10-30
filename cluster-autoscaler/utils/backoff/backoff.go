@@ -18,16 +18,18 @@ package backoff
 
 import (
 	"time"
+
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 )
 
 // Backoff allows time-based backing off of node groups considered in scale up algorithm
 type Backoff interface {
-	// Backoff execution for the given key. Returns time till execution is backed off.
-	Backoff(key string, currentTime time.Time) time.Time
-	// IsBackedOff returns true if execution is backed off for the given key.
-	IsBackedOff(key string, currentTime time.Time) bool
-	// RemoveBackoff removes backoff data for the given key.
-	RemoveBackoff(key string)
+	// Backoff execution for the given node group. Returns time till execution is backed off.
+	Backoff(nodeGroup cloudprovider.NodeGroup, currentTime time.Time) time.Time
+	// IsBackedOff returns true if execution is backed off for the given node group.
+	IsBackedOff(nodeGroup cloudprovider.NodeGroup, currentTime time.Time) bool
+	// RemoveBackoff removes backoff data for the given node group.
+	RemoveBackoff(nodeGroup cloudprovider.NodeGroup)
 	// RemoveStaleBackoffData removes stale backoff data.
 	RemoveStaleBackoffData(currentTime time.Time)
 }
