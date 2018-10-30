@@ -18,6 +18,8 @@ package backoff
 
 import (
 	"time"
+
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 )
 
 // Backoff handles backing off executions.
@@ -26,6 +28,7 @@ type exponentialBackoff struct {
 	initialBackoffDuration time.Duration
 	backoffResetTimeout    time.Duration
 	backoffInfo            map[string]exponentialBackoffInfo
+	nodeGroupKey           func(nodeGroup cloudprovider.NodeGroup) string
 }
 
 type exponentialBackoffInfo struct {
@@ -35,13 +38,35 @@ type exponentialBackoffInfo struct {
 }
 
 // NewExponentialBackoff creates an instance of exponential backoff.
-func NewExponentialBackoff(initialBackoffDuration time.Duration, maxBackoffDuration time.Duration, backoffResetTimeout time.Duration) Backoff {
-	return &exponentialBackoff{maxBackoffDuration, initialBackoffDuration, backoffResetTimeout, make(map[string]exponentialBackoffInfo)}
+func NewExponentialBackoff(
+	initialBackoffDuration time.Duration,
+	maxBackoffDuration time.Duration,
+	backoffResetTimeout time.Duration,
+	nodeGroupKey func(nodeGroup cloudprovider.NodeGroup) string) Backoff {
+	return &exponentialBackoff{
+		maxBackoffDuration:     maxBackoffDuration,
+		initialBackoffDuration: initialBackoffDuration,
+		backoffResetTimeout:    backoffResetTimeout,
+		backoffInfo:            make(map[string]exponentialBackoffInfo),
+		nodeGroupKey:           nodeGroupKey,
+	}
 }
 
-// Backoff execution for the given key. Returns time till execution is backed off.
-func (b *exponentialBackoff) Backoff(key string, currentTime time.Time) time.Time {
+// NewIdBasedExponentialBackoff creates an instance of exponential backoff with node group Id used as a key.
+func NewIdBasedExponentialBackoff(initialBackoffDuration time.Duration, maxBackoffDuration time.Duration, backoffResetTimeout time.Duration) Backoff {
+	return NewExponentialBackoff(
+		initialBackoffDuration,
+		maxBackoffDuration,
+		backoffResetTimeout,
+		func(nodeGroup cloudprovider.NodeGroup) string {
+			return nodeGroup.Id()
+		})
+}
+
+// Backoff execution for the given node group. Returns time till execution is backed off.
+func (b *exponentialBackoff) Backoff(nodeGroup cloudprovider.NodeGroup, currentTime time.Time) time.Time {
 	duration := b.initialBackoffDuration
+	key := b.nodeGroupKey(nodeGroup)
 	if backoffInfo, found := b.backoffInfo[key]; found {
 		// Multiple concurrent scale-ups failing shouldn't cause backoff
 		// duration to increase, so we only increase it if we're not in
@@ -62,15 +87,15 @@ func (b *exponentialBackoff) Backoff(key string, currentTime time.Time) time.Tim
 	return backoffUntil
 }
 
-// IsBackedOff returns true if execution is backed off for the given key.
-func (b *exponentialBackoff) IsBackedOff(key string, currentTime time.Time) bool {
-	backoffInfo, found := b.backoffInfo[key]
+// IsBackedOff returns true if execution is backed off for the given node group.
+func (b *exponentialBackoff) IsBackedOff(nodeGroup cloudprovider.NodeGroup, currentTime time.Time) bool {
+	backoffInfo, found := b.backoffInfo[b.nodeGroupKey(nodeGroup)]
 	return found && backoffInfo.backoffUntil.After(currentTime)
 }
 
-// RemoveBackoff removes backoff data for the given key.
-func (b *exponentialBackoff) RemoveBackoff(key string) {
-	delete(b.backoffInfo, key)
+// RemoveBackoff removes backoff data for the given node group.
+func (b *exponentialBackoff) RemoveBackoff(nodeGroup cloudprovider.NodeGroup) {
+	delete(b.backoffInfo, b.nodeGroupKey(nodeGroup))
 }
 
 // RemoveStaleBackoffData removes stale backoff data.
