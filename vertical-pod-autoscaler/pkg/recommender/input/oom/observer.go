@@ -91,10 +91,7 @@ func parseEvictionEvent(event *apiv1.Event) []OomInfo {
 func (o *Observer) OnEvent(event *apiv1.Event) {
 	glog.V(1).Infof("OOM Observer processing event: %+v", event)
 	for _, oomInfo := range parseEvictionEvent(event) {
-		info := oomInfo
-		go func() {
-			o.ObservedOomsChannel <- info
-		}()
+		o.ObservedOomsChannel <- oomInfo
 	}
 }
 
