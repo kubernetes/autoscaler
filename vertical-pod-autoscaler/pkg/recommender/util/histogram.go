@@ -118,17 +118,24 @@ func (h *histogram) AddSample(value float64, weight float64, time time.Time) {
 	}
 }
 
+func safeSubtract(value, sub, epsilon float64) float64 {
+	value -= sub
+	if value < epsilon {
+		return 0.0
+	}
+	return value
+}
+
 func (h *histogram) SubtractSample(value float64, weight float64, time time.Time) {
 	if weight < 0.0 {
 		panic("sample weight must be non-negative")
 	}
 	bucket := h.options.FindBucket(value)
 	epsilon := h.options.Epsilon()
-	if weight > h.bucketWeight[bucket]-epsilon {
-		weight = h.bucketWeight[bucket]
-	}
-	h.totalWeight -= weight
-	h.bucketWeight[bucket] -= weight
+
+	h.totalWeight = safeSubtract(h.totalWeight, weight, epsilon)
+	h.bucketWeight[bucket] = safeSubtract(h.bucketWeight[bucket], weight, epsilon)
+
 	h.updateMinAndMaxBucket()
 }
 
