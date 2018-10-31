@@ -61,7 +61,7 @@ do
     echo "Skipping $t"
     continue
   fi
-  if $SILENT ; then
+  if ! $SILENT ; then
     echo -e "Verifying $t"
     if bash "$t" &> /dev/null; then
       echo -e "${color_green}SUCCESS${color_norm}"
