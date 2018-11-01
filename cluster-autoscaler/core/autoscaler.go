@@ -32,12 +32,13 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_client "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 )
 
 // AutoscalerOptions is the whole set of options for configuring an autoscaler
 type AutoscalerOptions struct {
 	config.AutoscalingOptions
-	KubeClient             kube_client.Interface
+	KubeConfig             *rest.Config
 	AutoscalingKubeClients *context.AutoscalingKubeClients
 	CloudProvider          cloudprovider.CloudProvider
 	PredicateChecker       *simulator.PredicateChecker
@@ -74,22 +75,23 @@ func NewAutoscaler(opts AutoscalerOptions) (Autoscaler, errors.AutoscalerError) 
 
 // Initialize default options if not provided.
 func initializeDefaultOptions(opts *AutoscalerOptions) error {
+	kubeClient := kube_client.NewForConfigOrDie(opts.KubeConfig)
 	if opts.Processors == nil {
 		opts.Processors = ca_processors.DefaultProcessors()
 	}
 	if opts.AutoscalingKubeClients == nil {
-		opts.AutoscalingKubeClients = context.NewAutoscalingKubeClients(opts.AutoscalingOptions, opts.KubeClient)
+		opts.AutoscalingKubeClients = context.NewAutoscalingKubeClients(opts.AutoscalingOptions, kubeClient)
 	}
 	if opts.PredicateChecker == nil {
 		predicateCheckerStopChannel := make(chan struct{})
-		predicateChecker, err := simulator.NewPredicateChecker(opts.KubeClient, predicateCheckerStopChannel)
+		predicateChecker, err := simulator.NewPredicateChecker(kubeClient, predicateCheckerStopChannel)
 		if err != nil {
 			return err
 		}
 		opts.PredicateChecker = predicateChecker
 	}
 	if opts.CloudProvider == nil {
-		opts.CloudProvider = cloudBuilder.NewCloudProvider(opts.AutoscalingOptions)
+		opts.CloudProvider = cloudBuilder.NewCloudProvider(opts.AutoscalingOptions, opts.KubeConfig)
 	}
 	if opts.ExpanderStrategy == nil {
 		expanderStrategy, err := factory.ExpanderStrategyFromString(opts.ExpanderName,
