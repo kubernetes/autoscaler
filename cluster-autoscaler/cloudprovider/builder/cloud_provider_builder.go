@@ -20,12 +20,13 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/client-go/rest"
 
 	"github.com/golang/glog"
 )
 
 // NewCloudProvider builds a cloud provider from provided parameters.
-func NewCloudProvider(opts config.AutoscalingOptions) cloudprovider.CloudProvider {
+func NewCloudProvider(opts config.AutoscalingOptions, kubeConfig *rest.Config) cloudprovider.CloudProvider {
 	glog.V(1).Infof("Building %s cloud provider.", opts.CloudProviderName)
 
 	do := cloudprovider.NodeGroupDiscoveryOptions{
@@ -42,7 +43,7 @@ func NewCloudProvider(opts config.AutoscalingOptions) cloudprovider.CloudProvide
 		return nil
 	}
 
-	provider := buildCloudProvider(opts, do, rl)
+	provider := buildCloudProvider(opts, do, rl, kubeConfig)
 	if provider != nil {
 		return provider
 	}

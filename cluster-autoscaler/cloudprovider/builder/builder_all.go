@@ -26,6 +26,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gke"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/client-go/rest"
 )
 
 // AvailableCloudProviders supported by the cloud provider builder.
@@ -40,7 +41,7 @@ var AvailableCloudProviders = []string{
 // DefaultCloudProvider is GCE.
 const DefaultCloudProvider = gce.ProviderNameGCE
 
-func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter, kubeConfig *rest.Config) cloudprovider.CloudProvider {
 	switch opts.CloudProviderName {
 	case gce.ProviderNameGCE:
 		return gce.BuildGCE(opts, do, rl)
