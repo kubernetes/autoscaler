@@ -24,6 +24,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/baiducloud"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/clusterapi"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gke"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
@@ -38,6 +39,7 @@ var AvailableCloudProviders = []string{
 	gke.ProviderNameGKE,
 	alicloud.ProviderName,
 	baiducloud.ProviderName,
+	clusterapi.ProviderName,
 }
 
 // DefaultCloudProvider is GCE.
@@ -57,6 +59,8 @@ func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGro
 		return alicloud.BuildAlicloud(opts, do, rl)
 	case baiducloud.ProviderName:
 		return baiducloud.BuildBaiducloud(opts, do, rl)
+	case clusterapi.ProviderName:
+		return clusterapi.BuildClusterapi(opts, do, rl, kubeConfig)
 	}
 	return nil
 }
