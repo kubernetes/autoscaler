@@ -42,7 +42,11 @@ const (
 	// VpaEvictionTimeout is a timeout for VPA to restart a pod if there are no
 	// mechanisms blocking it (for example PDB).
 	VpaEvictionTimeout = 3 * time.Minute
+
+	defaultHamsterReplicas = int32(3)
 )
+
+var hamsterLabels = map[string]string{"app": "hamster"}
 
 // SIGDescribe adds sig-autoscaling tag to test description.
 func SIGDescribe(text string, body func()) bool {
@@ -82,7 +86,7 @@ func ActuationSuiteE2eDescribe(name string, body func()) bool {
 // NewHamsterDeployment creates a simple hamster deployment for e2e test
 // purposes.
 func NewHamsterDeployment(f *framework.Framework) *appsv1.Deployment {
-	d := framework.NewDeployment("hamster-deployment", 3, map[string]string{"app": "hamster"}, "hamster", "k8s.gcr.io/ubuntu-slim:0.1", appsv1.RollingUpdateDeploymentStrategyType)
+	d := framework.NewDeployment("hamster-deployment", defaultHamsterReplicas, hamsterLabels, "hamster", "k8s.gcr.io/ubuntu-slim:0.1", appsv1.RollingUpdateDeploymentStrategyType)
 	d.ObjectMeta.Namespace = f.Namespace.Name
 	d.Spec.Template.Spec.Containers[0].Command = []string{"/bin/sh"}
 	d.Spec.Template.Spec.Containers[0].Args = []string{"-c", "/usr/bin/yes >/dev/null"}
