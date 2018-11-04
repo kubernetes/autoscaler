@@ -112,7 +112,7 @@ func (gc *GceCache) RegisterMig(mig Mig) bool {
 	return true
 }
 
-// UnregisterMig returns true if the node group has been removed, and false if it was alredy missing from cache.
+// UnregisterMig returns true if the node group has been removed, and false if it was already missing from cache.
 func (gc *GceCache) UnregisterMig(toBeRemoved Mig) bool {
 	gc.migsMutex.Lock()
 	defer gc.migsMutex.Unlock()
