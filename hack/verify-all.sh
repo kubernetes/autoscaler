@@ -63,14 +63,14 @@ do
   fi
   if ! $SILENT ; then
     echo -e "Verifying $t"
-    if bash "$t" &> /dev/null; then
+    if bash "$t"; then
       echo -e "${color_green}SUCCESS${color_norm}"
     else
       echo -e "${color_red}FAILED${color_norm}"
       ret=1
     fi
   else
-    bash "$t" || ret=1
+    bash "$t" &> /dev/null || ret=1
   fi
 done
 
