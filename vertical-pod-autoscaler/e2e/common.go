@@ -23,9 +23,13 @@ import (
 	"github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
-	"k8s.io/api/core/v1"
+	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/fields"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/wait"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	"k8s.io/kubernetes/test/e2e/framework"
@@ -83,6 +87,21 @@ func ActuationSuiteE2eDescribe(name string, body func()) bool {
 	return E2eDescribe(actuationSuite, name, body)
 }
 
+// SetupHamsterDeployment creates and installs a simple hamster deployment
+// for e2e test purposes, then makes sure the deployment is running.
+func SetupHamsterDeployment(f *framework.Framework, cpu, memory string, replicas int32) *appsv1.Deployment {
+	cpuQuantity := ParseQuantityOrDie(cpu)
+	memoryQuantity := ParseQuantityOrDie(memory)
+
+	d := NewHamsterDeploymentWithResources(f, cpuQuantity, memoryQuantity)
+	d.Spec.Replicas = &replicas
+	d, err := f.ClientSet.AppsV1().Deployments(f.Namespace.Name).Create(d)
+	gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	err = framework.WaitForDeploymentComplete(f.ClientSet, d)
+	gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	return d
+}
+
 // NewHamsterDeployment creates a simple hamster deployment for e2e test
 // purposes.
 func NewHamsterDeployment(f *framework.Framework) *appsv1.Deployment {
@@ -97,11 +116,41 @@ func NewHamsterDeployment(f *framework.Framework) *appsv1.Deployment {
 // resource requests for e2e test purposes.
 func NewHamsterDeploymentWithResources(f *framework.Framework, cpuQuantity, memoryQuantity resource.Quantity) *appsv1.Deployment {
 	d := NewHamsterDeployment(f)
-	d.Spec.Template.Spec.Containers[0].Resources.Requests = v1.ResourceList{
-		v1.ResourceCPU:    cpuQuantity,
-		v1.ResourceMemory: memoryQuantity,
+	d.Spec.Template.Spec.Containers[0].Resources.Requests = apiv1.ResourceList{
+		apiv1.ResourceCPU:    cpuQuantity,
+		apiv1.ResourceMemory: memoryQuantity,
 	}
 	return d
+}
+
+// GetHamsterPods returns running hamster pods (matched by hamsterLabels)
+func GetHamsterPods(f *framework.Framework) (*apiv1.PodList, error) {
+	label := labels.SelectorFromSet(labels.Set(hamsterLabels))
+	selector := fields.ParseSelectorOrDie("status.phase!=" + string(apiv1.PodSucceeded) +
+		",status.phase!=" + string(apiv1.PodFailed))
+	options := metav1.ListOptions{LabelSelector: label.String(), FieldSelector: selector.String()}
+	return f.ClientSet.CoreV1().Pods(f.Namespace.Name).List(options)
+}
+
+// SetupVPA creates and installs a simple hamster VPA for e2e test purposes.
+func SetupVPA(f *framework.Framework, cpu string, mode vpa_types.UpdateMode) {
+	vpaCRD := NewVPA(f, "hamster-vpa", &metav1.LabelSelector{
+		MatchLabels: hamsterLabels,
+	})
+	vpaCRD.Spec.UpdatePolicy.UpdateMode = &mode
+
+	cpuQuantity := ParseQuantityOrDie(cpu)
+	resourceList := apiv1.ResourceList{apiv1.ResourceCPU: cpuQuantity}
+
+	vpaCRD.Status.Recommendation = &vpa_types.RecommendedPodResources{
+		ContainerRecommendations: []vpa_types.RecommendedContainerResources{{
+			ContainerName: "hamster",
+			Target:        resourceList,
+			LowerBound:    resourceList,
+			UpperBound:    resourceList,
+		}},
+	}
+	InstallVPA(f, vpaCRD)
 }
 
 // NewVPA creates a VPA object for e2e test purposes.
@@ -142,4 +191,69 @@ func ParseQuantityOrDie(text string) resource.Quantity {
 	quantity, err := resource.ParseQuantity(text)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	return quantity
+}
+
+// PodSet is a simplified representation of PodList mapping names to UIDs.
+type PodSet map[string]types.UID
+
+// MakePodSet converts PodList to podset for easier comparison of pod collections.
+func MakePodSet(pods *apiv1.PodList) PodSet {
+	result := make(PodSet)
+	if pods == nil {
+		return result
+	}
+	for _, p := range pods.Items {
+		result[p.Name] = p.UID
+	}
+	return result
+}
+
+// WaitForPodsRestarted waits until some pods from the list are restarted.
+func WaitForPodsRestarted(f *framework.Framework, podList *apiv1.PodList) error {
+	initialPodSet := MakePodSet(podList)
+
+	err := wait.PollImmediate(pollInterval, pollTimeout, func() (bool, error) {
+		currentPodList, err := GetHamsterPods(f)
+		if err != nil {
+			return false, err
+		}
+		currentPodSet := MakePodSet(currentPodList)
+		return WerePodsRestarted(currentPodSet, initialPodSet), nil
+	})
+
+	if err != nil {
+		return fmt.Errorf("Waiting for set of pods changed: %v", err)
+	}
+	return nil
+}
+
+// WerePodsRestarted returns true if some pods from initialPodSet have been
+// restarted comparing to currentPodSet.
+func WerePodsRestarted(currentPodSet PodSet, initialPodSet PodSet) bool {
+	return GetRestartedPodsCount(currentPodSet, initialPodSet) > 0
+}
+
+// GetRestartedPodsCount returns the count of pods from initialPodSet that have
+// been restarted comparing to currentPodSet.
+func GetRestartedPodsCount(currentPodSet PodSet, initialPodSet PodSet) int {
+	diffs := 0
+	for name, initialUID := range initialPodSet {
+		currentUID, inCurrent := currentPodSet[name]
+		if !inCurrent {
+			diffs += 1
+		} else if initialUID != currentUID {
+			diffs += 1
+		}
+	}
+	return diffs
+}
+
+// CheckNoPodsRestarted waits for long enough period for VPA to start evicting
+// pods and checks that no pods were restarted.
+func CheckNoPodsRestarted(f *framework.Framework, initialPodSet PodSet) {
+	time.Sleep(VpaEvictionTimeout)
+	currentPodList, err := GetHamsterPods(f)
+	gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	restarted := WerePodsRestarted(MakePodSet(currentPodList), initialPodSet)
+	gomega.Expect(restarted).To(gomega.BeFalse())
 }
