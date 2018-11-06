@@ -74,6 +74,7 @@ func NewAutoscalingGkeClientV1beta1(client *http.Client, projectId, location, cl
 }
 
 func (m *autoscalingGkeClientV1beta1) GetCluster() (Cluster, error) {
+	registerRequest("clusters", "get")
 	clusterResponse, err := m.gkeBetaService.Projects.Locations.Clusters.Get(m.clusterPath).Do()
 	if err != nil {
 		return Cluster{}, err
@@ -126,6 +127,7 @@ func buildResourceLimiter(cluster *gke_api_beta.Cluster) *cloudprovider.Resource
 }
 
 func (m *autoscalingGkeClientV1beta1) DeleteNodePool(toBeRemoved string) error {
+	registerRequest("node_pools", "delete")
 	deleteOp, err := m.gkeBetaService.Projects.Locations.Clusters.NodePools.Delete(
 		fmt.Sprintf(m.nodePoolPath, toBeRemoved)).Do()
 	if err != nil {
@@ -200,6 +202,7 @@ func (m *autoscalingGkeClientV1beta1) CreateNodePool(mig *GkeMig) error {
 			Autoscaling:      &autoscaling,
 		},
 	}
+	registerRequest("node_pools", "create")
 	createOp, err := m.gkeBetaService.Projects.Locations.Clusters.NodePools.Create(
 		m.clusterPath, &createRequest).Do()
 	if err != nil {
@@ -211,6 +214,7 @@ func (m *autoscalingGkeClientV1beta1) CreateNodePool(mig *GkeMig) error {
 func (m *autoscalingGkeClientV1beta1) waitForGkeOp(op *gke_api_beta.Operation) error {
 	for start := time.Now(); time.Since(start) < m.operationWaitTimeout; time.Sleep(m.operationPollInterval) {
 		glog.V(4).Infof("Waiting for operation %s %s", op.TargetLink, op.Name)
+		registerRequest("operations", "get")
 		if op, err := m.gkeBetaService.Projects.Locations.Operations.Get(
 			fmt.Sprintf(m.operationPath, op.Name)).Do(); err == nil {
 			glog.V(4).Infof("Operation %s %s status: %s", op.TargetLink, op.Name, op.Status)

@@ -52,6 +52,7 @@ func NewAutoscalingGkeClientV1(client *http.Client, projectId, location, cluster
 }
 
 func (m *autoscalingGkeClientV1) GetCluster() (Cluster, error) {
+	registerRequest("clusters", "get")
 	clusterResponse, err := m.gkeService.Projects.Locations.Clusters.Get(m.clusterPath).Do()
 	if err != nil {
 		return Cluster{}, err

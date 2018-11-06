@@ -95,10 +95,12 @@ func NewCustomAutoscalingGceClientV1(client *http.Client, projectId, serverUrl s
 }
 
 func (client *autoscalingGceClientV1) FetchMachineType(zone, machineType string) (*gce.MachineType, error) {
+	registerRequest("machine_types", "get")
 	return client.gceService.MachineTypes.Get(client.projectId, zone, machineType).Do()
 }
 
 func (client *autoscalingGceClientV1) FetchMachineTypes(zone string) ([]*gce.MachineType, error) {
+	registerRequest("machine_types", "list")
 	machines, err := client.gceService.MachineTypes.List(client.projectId, zone).Do()
 	if err != nil {
 		return nil, err
@@ -107,6 +109,7 @@ func (client *autoscalingGceClientV1) FetchMachineTypes(zone string) ([]*gce.Mac
 }
 
 func (client *autoscalingGceClientV1) FetchMigTargetSize(migRef GceRef) (int64, error) {
+	registerRequest("instance_group_managers", "get")
 	igm, err := client.gceService.InstanceGroupManagers.Get(migRef.Project, migRef.Zone, migRef.Name).Do()
 	if err != nil {
 		return 0, err
@@ -115,6 +118,7 @@ func (client *autoscalingGceClientV1) FetchMigTargetSize(migRef GceRef) (int64, 
 }
 
 func (client *autoscalingGceClientV1) FetchMigBasename(migRef GceRef) (string, error) {
+	registerRequest("instance_group_managers", "get")
 	igm, err := client.gceService.InstanceGroupManagers.Get(migRef.Project, migRef.Zone, migRef.Name).Do()
 	if err != nil {
 		return "", err
@@ -123,6 +127,7 @@ func (client *autoscalingGceClientV1) FetchMigBasename(migRef GceRef) (string, e
 }
 
 func (client *autoscalingGceClientV1) ResizeMig(migRef GceRef, size int64) error {
+	registerRequest("instance_group_managers", "resize")
 	op, err := client.gceService.InstanceGroupManagers.Resize(migRef.Project, migRef.Zone, migRef.Name, size).Do()
 	if err != nil {
 		return err
@@ -133,6 +138,7 @@ func (client *autoscalingGceClientV1) ResizeMig(migRef GceRef, size int64) error
 func (client *autoscalingGceClientV1) waitForOp(operation *gce.Operation, project, zone string) error {
 	for start := time.Now(); time.Since(start) < client.operationWaitTimeout; time.Sleep(client.operationPollInterval) {
 		glog.V(4).Infof("Waiting for operation %s %s %s", project, zone, operation.Name)
+		registerRequest("zone_operations", "get")
 		if op, err := client.gceService.ZoneOperations.Get(project, zone, operation.Name).Do(); err == nil {
 			glog.V(4).Infof("Operation %s %s %s status: %s", project, zone, operation.Name, op.Status)
 			if op.Status == "DONE" {
@@ -152,6 +158,7 @@ func (client *autoscalingGceClientV1) DeleteInstances(migRef GceRef, instances [
 	for _, i := range instances {
 		req.Instances = append(req.Instances, GenerateInstanceUrl(*i))
 	}
+	registerRequest("instance_group_managers", "delete_instances")
 	op, err := client.gceService.InstanceGroupManagers.DeleteInstances(migRef.Project, migRef.Zone, migRef.Name, &req).Do()
 	if err != nil {
 		return err
@@ -160,6 +167,7 @@ func (client *autoscalingGceClientV1) DeleteInstances(migRef GceRef, instances [
 }
 
 func (client *autoscalingGceClientV1) FetchMigInstances(migRef GceRef) ([]GceRef, error) {
+	registerRequest("instance_group_managers", "list_managed_instances")
 	instances, err := client.gceService.InstanceGroupManagers.ListManagedInstances(migRef.Project, migRef.Zone, migRef.Name).Do()
 	if err != nil {
 		glog.V(4).Infof("Failed MIG info request for %s %s %s: %v", migRef.Project, migRef.Zone, migRef.Name, err)
@@ -177,6 +185,7 @@ func (client *autoscalingGceClientV1) FetchMigInstances(migRef GceRef) ([]GceRef
 }
 
 func (client *autoscalingGceClientV1) FetchZones(region string) ([]string, error) {
+	registerRequest("regions", "get")
 	r, err := client.gceService.Regions.Get(client.projectId, region).Do()
 	if err != nil {
 		return nil, fmt.Errorf("cannot get zones for GCE region %s: %v", region, err)
@@ -189,6 +198,7 @@ func (client *autoscalingGceClientV1) FetchZones(region string) ([]string, error
 }
 
 func (client *autoscalingGceClientV1) FetchMigTemplate(migRef GceRef) (*gce.InstanceTemplate, error) {
+	registerRequest("instance_group_managers", "get")
 	igm, err := client.gceService.InstanceGroupManagers.Get(migRef.Project, migRef.Zone, migRef.Name).Do()
 	if err != nil {
 		return nil, err
@@ -198,12 +208,14 @@ func (client *autoscalingGceClientV1) FetchMigTemplate(migRef GceRef) (*gce.Inst
 		return nil, err
 	}
 	_, templateName := path.Split(templateUrl.EscapedPath())
+	registerRequest("instance_templates", "get")
 	return client.gceService.InstanceTemplates.Get(migRef.Project, templateName).Do()
 }
 
 func (client *autoscalingGceClientV1) FetchMigsWithName(zone string, name *regexp.Regexp) ([]string, error) {
 	filter := fmt.Sprintf("name eq %s", name)
 	links := make([]string, 0)
+	registerRequest("instance_groups", "list")
 	req := client.gceService.InstanceGroups.List(client.projectId, zone).Filter(filter)
 	if err := req.Pages(context.TODO(), func(page *gce.InstanceGroupList) error {
 		for _, ig := range page.Items {
