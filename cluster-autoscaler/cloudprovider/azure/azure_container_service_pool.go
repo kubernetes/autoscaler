@@ -297,7 +297,7 @@ func (agentPool *ContainerServiceAgentPool) TargetSize() (int, error) {
 //a delete is performed from a scale down.
 func (agentPool *ContainerServiceAgentPool) SetSize(targetSize int) error {
 	if targetSize > agentPool.MaxSize() || targetSize < agentPool.MinSize() {
-		glog.Errorf("Target size %d requested outside Max: %d, Min: %d", targetSize, agentPool.MaxSize(), agentPool.MaxSize)
+		glog.Errorf("Target size %d requested outside Max: %d, Min: %d", targetSize, agentPool.MaxSize(), agentPool.MaxSize())
 		return fmt.Errorf("Target size %d requested outside Max: %d, Min: %d", targetSize, agentPool.MaxSize(), agentPool.MinSize())
 	}
 
