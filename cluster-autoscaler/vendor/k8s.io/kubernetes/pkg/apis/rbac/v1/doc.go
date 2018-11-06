@@ -21,4 +21,5 @@ limitations under the License.
 // +k8s:deepcopy-gen=package
 
 // +groupName=rbac.authorization.k8s.io
+
 package v1

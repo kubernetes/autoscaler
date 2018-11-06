@@ -26,19 +26,19 @@ import (
 
 const (
 	// NamespaceDefault means the object is in the default namespace which is applied when not specified by clients
-	NamespaceDefault string = "default"
+	NamespaceDefault = "default"
 	// NamespaceAll is the default argument to specify on a context when you want to list or filter resources across all namespaces
-	NamespaceAll string = ""
+	NamespaceAll = ""
 	// NamespaceNone is the argument for a context when there is no namespace.
-	NamespaceNone string = ""
+	NamespaceNone = ""
 	// NamespaceSystem is the system namespace where we place system components.
-	NamespaceSystem string = "kube-system"
+	NamespaceSystem = "kube-system"
 	// NamespacePublic is the namespace where we place public info (ConfigMaps)
-	NamespacePublic string = "kube-public"
+	NamespacePublic = "kube-public"
 	// NamespaceNodeLease is the namespace where we place node lease objects (used for node heartbeats)
-	NamespaceNodeLease string = "kube-node-lease"
+	NamespaceNodeLease = "kube-node-lease"
 	// TerminationMessagePathDefault means the default path to capture the application termination message running in a container
-	TerminationMessagePathDefault string = "/dev/termination-log"
+	TerminationMessagePathDefault = "/dev/termination-log"
 )
 
 // Volume represents a named volume in a pod that may be accessed by any containers in the pod.
@@ -1552,7 +1552,7 @@ type CSIPersistentVolumeSource struct {
 	// ControllerPublishSecretRef is a reference to the secret object containing
 	// sensitive information to pass to the CSI driver to complete the CSI
 	// ControllerPublishVolume and ControllerUnpublishVolume calls.
-	// This field is optional, and  may be empty if no secret is required. If the
+	// This field is optional, and may be empty if no secret is required. If the
 	// secret object contains more than one secret, all secrets are passed.
 	// +optional
 	ControllerPublishSecretRef *SecretReference
@@ -1560,7 +1560,7 @@ type CSIPersistentVolumeSource struct {
 	// NodeStageSecretRef is a reference to the secret object containing sensitive
 	// information to pass to the CSI driver to complete the CSI NodeStageVolume
 	// and NodeStageVolume and NodeUnstageVolume calls.
-	// This field is optional, and  may be empty if no secret is required. If the
+	// This field is optional, and may be empty if no secret is required. If the
 	// secret object contains more than one secret, all secrets are passed.
 	// +optional
 	NodeStageSecretRef *SecretReference
@@ -1568,7 +1568,7 @@ type CSIPersistentVolumeSource struct {
 	// NodePublishSecretRef is a reference to the secret object containing
 	// sensitive information to pass to the CSI driver to complete the CSI
 	// NodePublishVolume and NodeUnpublishVolume calls.
-	// This field is optional, and  may be empty if no secret is required. If the
+	// This field is optional, and may be empty if no secret is required. If the
 	// secret object contains more than one secret, all secrets are passed.
 	// +optional
 	NodePublishSecretRef *SecretReference
@@ -2597,6 +2597,11 @@ type PodSpec struct {
 	// This is an alpha feature and may change in the future.
 	// +optional
 	RuntimeClassName *string
+	// EnableServiceLinks indicates whether information about services should be injected into pod's
+	// environment variables, matching the syntax of Docker links.
+	// If not specified, the default is true.
+	// +optional
+	EnableServiceLinks *bool
 }
 
 // HostAlias holds the mapping between IP and hostnames that will be injected as an entry in the
@@ -3976,8 +3981,11 @@ type LocalObjectReference struct {
 
 // TypedLocalObjectReference contains enough information to let you locate the typed referenced object inside the same namespace.
 type TypedLocalObjectReference struct {
-	// APIGroup is the group for the resource being referenced
-	APIGroup string
+	// APIGroup is the group for the resource being referenced.
+	// If APIGroup is not specified, the specified Kind must be in the core API group.
+	// For any other third-party types, APIGroup is required.
+	// +optional
+	APIGroup *string
 	// Kind is the type of resource being referenced
 	Kind string
 	// Name is the name of resource being referenced
