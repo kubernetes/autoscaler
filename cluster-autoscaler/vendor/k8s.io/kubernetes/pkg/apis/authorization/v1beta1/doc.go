@@ -20,4 +20,5 @@ limitations under the License.
 // +k8s:defaulter-gen-input=../../../../vendor/k8s.io/api/authorization/v1beta1
 
 // +groupName=authorization.k8s.io
+
 package v1beta1

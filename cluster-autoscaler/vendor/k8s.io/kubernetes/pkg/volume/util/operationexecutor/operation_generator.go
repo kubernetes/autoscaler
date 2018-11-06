@@ -34,7 +34,6 @@ import (
 	"k8s.io/kubernetes/pkg/features"
 	kevents "k8s.io/kubernetes/pkg/kubelet/events"
 	"k8s.io/kubernetes/pkg/util/mount"
-	"k8s.io/kubernetes/pkg/util/resizefs"
 	"k8s.io/kubernetes/pkg/volume"
 	"k8s.io/kubernetes/pkg/volume/util"
 	volumetypes "k8s.io/kubernetes/pkg/volume/util/types"
@@ -72,11 +71,11 @@ func NewOperationGenerator(kubeClient clientset.Interface,
 	blkUtil volumepathhandler.BlockVolumePathHandler) OperationGenerator {
 
 	return &operationGenerator{
-		kubeClient:      kubeClient,
-		volumePluginMgr: volumePluginMgr,
-		recorder:        recorder,
+		kubeClient:                       kubeClient,
+		volumePluginMgr:                  volumePluginMgr,
+		recorder:                         recorder,
 		checkNodeCapabilitiesBeforeMount: checkNodeCapabilitiesBeforeMount,
-		blkUtil: blkUtil,
+		blkUtil:                          blkUtil,
 	}
 }
 
@@ -604,10 +603,9 @@ func (og *operationGenerator) resizeFileSystem(volumeToMount VolumeToMount, devi
 		return nil, nil
 	}
 
-	mounter := og.volumePluginMgr.Host.GetMounter(pluginName)
 	// Get expander, if possible
 	expandableVolumePlugin, _ :=
-		og.volumePluginMgr.FindExpandablePluginBySpec(volumeToMount.VolumeSpec)
+		og.volumePluginMgr.FindFSResizablePluginBySpec(volumeToMount.VolumeSpec)
 
 	if expandableVolumePlugin != nil &&
 		expandableVolumePlugin.RequiresFSResize() &&
@@ -631,25 +629,12 @@ func (og *operationGenerator) resizeFileSystem(volumeToMount VolumeToMount, devi
 				og.recorder.Eventf(volumeToMount.Pod, v1.EventTypeWarning, kevents.FileSystemResizeFailed, simpleMsg)
 				return nil, nil
 			}
-
-			diskFormatter := &mount.SafeFormatAndMount{
-				Interface: mounter,
-				Exec:      og.volumePluginMgr.Host.GetExec(expandableVolumePlugin.GetPluginName()),
-			}
-
-			resizer := resizefs.NewResizeFs(diskFormatter)
-			resizeStatus, resizeErr := resizer.Resize(devicePath, deviceMountPath)
-
-			if resizeErr != nil {
+			if resizeErr := expandableVolumePlugin.ExpandFS(volumeToMount.VolumeSpec, devicePath, deviceMountPath, pvSpecCap, pvcStatusCap); resizeErr != nil {
 				return volumeToMount.GenerateError("MountVolume.resizeFileSystem failed", resizeErr)
 			}
-
-			if resizeStatus {
-				simpleMsg, detailedMsg := volumeToMount.GenerateMsg("MountVolume.resizeFileSystem succeeded", "")
-				og.recorder.Eventf(volumeToMount.Pod, v1.EventTypeNormal, kevents.FileSystemResizeSuccess, simpleMsg)
-				glog.Infof(detailedMsg)
-			}
-
+			simpleMsg, detailedMsg := volumeToMount.GenerateMsg("MountVolume.resizeFileSystem succeeded", "")
+			og.recorder.Eventf(volumeToMount.Pod, v1.EventTypeNormal, kevents.FileSystemResizeSuccess, simpleMsg)
+			glog.Infof(detailedMsg)
 			// File system resize succeeded, now update the PVC's Capacity to match the PV's
 			err = util.MarkFSResizeFinished(pvc, pv.Spec.Capacity, og.kubeClient)
 			if err != nil {
@@ -1079,22 +1064,9 @@ func (og *operationGenerator) GenerateUnmapDeviceFunc(
 			return deviceToDetach.GenerateError("UnmapDevice failed", err)
 		}
 
-		// Execute tear down device
-		unmapErr := blockVolumeUnmapper.TearDownDevice(globalMapPath, deviceToDetach.DevicePath)
-		if unmapErr != nil {
-			// On failure, return error. Caller will log and retry.
-			return deviceToDetach.GenerateError("UnmapDevice.TearDownDevice failed", unmapErr)
-		}
-
-		// Plugin finished TearDownDevice(). Now globalMapPath dir and plugin's stored data
-		// on the dir are unnecessary, clean up it.
-		removeMapPathErr := og.blkUtil.RemoveMapPath(globalMapPath)
-		if removeMapPathErr != nil {
-			// On failure, return error. Caller will log and retry.
-			return deviceToDetach.GenerateError("UnmapDevice failed", removeMapPathErr)
-		}
-
 		// The block volume is not referenced from Pods. Release file descriptor lock.
+		// This should be done before calling TearDownDevice, because some plugins that do local detach
+		// in TearDownDevice will fail in detaching device due to the refcnt on the loopback device.
 		glog.V(4).Infof("UnmapDevice: deviceToDetach.DevicePath: %v", deviceToDetach.DevicePath)
 		loopPath, err := og.blkUtil.GetLoopDevice(deviceToDetach.DevicePath)
 		if err != nil {
@@ -1111,6 +1083,21 @@ func (og *operationGenerator) GenerateUnmapDeviceFunc(
 					return deviceToDetach.GenerateError("UnmapDevice.RemoveLoopDevice failed", err)
 				}
 			}
+		}
+
+		// Execute tear down device
+		unmapErr := blockVolumeUnmapper.TearDownDevice(globalMapPath, deviceToDetach.DevicePath)
+		if unmapErr != nil {
+			// On failure, return error. Caller will log and retry.
+			return deviceToDetach.GenerateError("UnmapDevice.TearDownDevice failed", unmapErr)
+		}
+
+		// Plugin finished TearDownDevice(). Now globalMapPath dir and plugin's stored data
+		// on the dir are unnecessary, clean up it.
+		removeMapPathErr := og.blkUtil.RemoveMapPath(globalMapPath)
+		if removeMapPathErr != nil {
+			// On failure, return error. Caller will log and retry.
+			return deviceToDetach.GenerateError("UnmapDevice.RemoveMapPath failed", removeMapPathErr)
 		}
 
 		// Before logging that UnmapDevice succeeded and moving on,
@@ -1268,6 +1255,7 @@ func (og *operationGenerator) GenerateExpandVolumeFunc(
 	if err != nil {
 		return volumetypes.GeneratedOperations{}, fmt.Errorf("Error finding plugin for expanding volume: %q with error %v", pvcWithResizeRequest.QualifiedName(), err)
 	}
+
 	if volumePlugin == nil {
 		return volumetypes.GeneratedOperations{}, fmt.Errorf("Can not find plugin for expanding volume: %q", pvcWithResizeRequest.QualifiedName())
 	}
@@ -1282,9 +1270,10 @@ func (og *operationGenerator) GenerateExpandVolumeFunc(
 				pvcWithResizeRequest.CurrentSize)
 
 			if expandErr != nil {
-				detailedErr := fmt.Errorf("Error expanding volume %q of plugin %s : %v", pvcWithResizeRequest.QualifiedName(), volumePlugin.GetPluginName(), expandErr)
+				detailedErr := fmt.Errorf("error expanding volume %q of plugin %q: %v", pvcWithResizeRequest.QualifiedName(), volumePlugin.GetPluginName(), expandErr)
 				return detailedErr, detailedErr
 			}
+
 			glog.Infof("ExpandVolume succeeded for volume %s", pvcWithResizeRequest.QualifiedName())
 			newSize = updatedSize
 			// k8s doesn't have transactions, we can't guarantee that after updating PV - updating PVC will be
@@ -1369,6 +1358,7 @@ func (og *operationGenerator) GenerateExpandVolumeFSWithoutUnmountingFunc(
 
 	fsResizeFunc := func() (error, error) {
 		resizeSimpleError, resizeDetailedError := og.resizeFileSystem(volumeToMount, volumeToMount.DevicePath, deviceMountPath, volumePlugin.GetPluginName())
+
 		if resizeSimpleError != nil || resizeDetailedError != nil {
 			return resizeSimpleError, resizeDetailedError
 		}
@@ -1433,6 +1423,8 @@ func isDeviceOpened(deviceToDetach AttachedVolume, mounter mount.Interface) (boo
 		//TODO: refer to #36092
 		glog.V(3).Infof("The path isn't device path or doesn't exist. Skip checking device path: %s", deviceToDetach.DevicePath)
 		deviceOpened = false
+	} else if devicePathErr != nil {
+		return false, deviceToDetach.GenerateErrorDetailed("PathIsDevice failed", devicePathErr)
 	} else {
 		deviceOpened, deviceOpenedErr = mounter.DeviceOpened(deviceToDetach.DevicePath)
 		if deviceOpenedErr != nil {

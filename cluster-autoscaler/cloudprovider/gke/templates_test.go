@@ -28,7 +28,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
-	"k8s.io/kubernetes/pkg/quota"
+	quota "k8s.io/kubernetes/pkg/quota/v1"
 
 	"github.com/stretchr/testify/assert"
 )
