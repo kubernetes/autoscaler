@@ -18,6 +18,7 @@ package alicloud
 
 import (
 	"fmt"
+
 	"github.com/golang/glog"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -180,7 +181,7 @@ func (asg *Asg) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
 
 	node, err := asg.manager.buildNodeFromTemplate(asg, template)
 	if err != nil {
-		glog.Errorf("failed to build instanceType:%s from template in ASG:%s,because of %s", template.InstanceType, asg.Id(), err.Error())
+		glog.Errorf("failed to build instanceType:%v from template in ASG:%s,because of %s", template.InstanceType, asg.Id(), err.Error())
 		return nil, err
 	}
 
