@@ -444,5 +444,8 @@ func BuildGKE(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscover
 	if err != nil {
 		glog.Fatalf("Failed to create GKE cloud provider: %v", err)
 	}
+	// Register GKE & GCE API usage metrics.
+	registerMetrics()
+	gce.RegisterMetrics()
 	return provider
 }
