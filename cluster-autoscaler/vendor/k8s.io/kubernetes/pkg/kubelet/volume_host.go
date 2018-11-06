@@ -29,8 +29,8 @@ import (
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/record"
+	cloudprovider "k8s.io/cloud-provider"
 	csiclientset "k8s.io/csi-api/pkg/client/clientset/versioned"
-	"k8s.io/kubernetes/pkg/cloudprovider"
 	"k8s.io/kubernetes/pkg/features"
 	"k8s.io/kubernetes/pkg/kubelet/configmap"
 	"k8s.io/kubernetes/pkg/kubelet/container"
@@ -198,6 +198,10 @@ func (kvh *kubeletVolumeHost) GetConfigMapFunc() func(namespace, name string) (*
 
 func (kvh *kubeletVolumeHost) GetServiceAccountTokenFunc() func(namespace, name string, tr *authenticationv1.TokenRequest) (*authenticationv1.TokenRequest, error) {
 	return kvh.tokenManager.GetServiceAccountToken
+}
+
+func (kvh *kubeletVolumeHost) DeleteServiceAccountTokenFunc() func(podUID types.UID) {
+	return kvh.tokenManager.DeleteServiceAccountToken
 }
 
 func (kvh *kubeletVolumeHost) GetNodeLabels() (map[string]string, error) {

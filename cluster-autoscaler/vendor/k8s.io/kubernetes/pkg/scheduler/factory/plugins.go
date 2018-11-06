@@ -41,6 +41,7 @@ type PluginFactoryArgs struct {
 	ReplicaSetLister               algorithm.ReplicaSetLister
 	StatefulSetLister              algorithm.StatefulSetLister
 	NodeLister                     algorithm.NodeLister
+	PDBLister                      algorithm.PDBLister
 	NodeInfo                       predicates.NodeInfo
 	PVInfo                         predicates.PersistentVolumeInfo
 	PVCInfo                        predicates.PersistentVolumeClaimInfo
@@ -162,6 +163,17 @@ func InsertPredicateKeyToAlgorithmProviderMap(key string) {
 
 	for _, provider := range algorithmProviderMap {
 		provider.FitPredicateKeys.Insert(key)
+	}
+	return
+}
+
+// InsertPriorityKeyToAlgorithmProviderMap inserts a priority function to all algorithmProviders which are in algorithmProviderMap.
+func InsertPriorityKeyToAlgorithmProviderMap(key string) {
+	schedulerFactoryMutex.Lock()
+	defer schedulerFactoryMutex.Unlock()
+
+	for _, provider := range algorithmProviderMap {
+		provider.PriorityFunctionKeys.Insert(key)
 	}
 	return
 }

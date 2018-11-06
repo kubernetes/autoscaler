@@ -28,11 +28,14 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/informers"
+	clientset "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes/scheme"
+	v1core "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/tools/cache"
+	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/flowcontrol"
-	"k8s.io/kubernetes/pkg/cloudprovider"
+	cloudprovider "k8s.io/cloud-provider"
 	"k8s.io/kubernetes/pkg/cloudprovider/providers/azure/auth"
-	"k8s.io/kubernetes/pkg/controller"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 	"k8s.io/kubernetes/pkg/version"
 
@@ -156,7 +159,7 @@ type Cloud struct {
 	DisksClient             DisksClient
 	FileClient              FileClient
 	resourceRequestBackoff  wait.Backoff
-	metadata                *InstanceMetadata
+	metadata                *InstanceMetadataService
 	vmSet                   VMSet
 
 	// Lock for access to node caches, includes nodeZones, nodeResourceGroups, and unmanagedNodes.
@@ -182,6 +185,10 @@ type Cloud struct {
 
 	// client for vm sizes list
 	VirtualMachineSizesClient VirtualMachineSizesClient
+
+	kubeClient       clientset.Interface
+	eventBroadcaster record.EventBroadcaster
+	eventRecorder    record.EventRecorder
 
 	vmCache  *timedCache
 	lbCache  *timedCache
@@ -321,7 +328,10 @@ func NewCloud(configReader io.Reader) (cloudprovider.Interface, error) {
 			az.CloudProviderBackoffJitter)
 	}
 
-	az.metadata = NewInstanceMetadata()
+	az.metadata, err = NewInstanceMetadataService(metadataURL)
+	if err != nil {
+		return nil, err
+	}
 
 	if az.MaximumLoadBalancerRuleCount == 0 {
 		az.MaximumLoadBalancerRuleCount = maximumLoadBalancerRuleCount
@@ -383,7 +393,12 @@ func parseConfig(configReader io.Reader) (*Config, error) {
 }
 
 // Initialize passes a Kubernetes clientBuilder interface to the cloud provider
-func (az *Cloud) Initialize(clientBuilder controller.ControllerClientBuilder) {}
+func (az *Cloud) Initialize(clientBuilder cloudprovider.ControllerClientBuilder, stop <-chan struct{}) {
+	az.kubeClient = clientBuilder.ClientOrDie("azure-cloud-provider")
+	az.eventBroadcaster = record.NewBroadcaster()
+	az.eventBroadcaster.StartRecordingToSink(&v1core.EventSinkImpl{Interface: az.kubeClient.CoreV1().Events("")})
+	az.eventRecorder = az.eventBroadcaster.NewRecorder(scheme.Scheme, v1.EventSource{Component: "azure-cloud-provider"})
+}
 
 // LoadBalancer returns a balancer interface. Also returns true if the interface is supported, false otherwise.
 func (az *Cloud) LoadBalancer() (cloudprovider.LoadBalancer, bool) {
