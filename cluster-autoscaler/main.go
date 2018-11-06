@@ -323,16 +323,6 @@ func main() {
 
 	glog.V(1).Infof("Cluster Autoscaler %s", ClusterAutoscalerVersion)
 
-	correctEstimator := false
-	for _, availableEstimator := range estimator.AvailableEstimators {
-		if *estimatorFlag == availableEstimator {
-			correctEstimator = true
-		}
-	}
-	if !correctEstimator {
-		glog.Fatalf("Unrecognized estimator: %v", *estimatorFlag)
-	}
-
 	go func() {
 		http.Handle("/metrics", prometheus.Handler())
 		http.Handle("/health-check", healthCheck)
