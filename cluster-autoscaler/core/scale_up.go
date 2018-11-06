@@ -456,7 +456,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 			if err == nil {
 				nodeInfos[createNodeGroupResult.MainCreatedNodeGroup.Id()] = mainCreatedNodeInfo
 			} else {
-				glog.Warning("Cannot build node info for newly created main node group %v; balancing similar node groups may not work; err=%v", createNodeGroupResult.MainCreatedNodeGroup.Id(), err)
+				glog.Warningf("Cannot build node info for newly created main node group %v; balancing similar node groups may not work; err=%v", createNodeGroupResult.MainCreatedNodeGroup.Id(), err)
 				// Use node info based on expansion candidate but upadte Id which likely changed when node group was created.
 				nodeInfos[bestOption.NodeGroup.Id()] = nodeInfos[oldId]
 			}
@@ -469,7 +469,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 				nodeInfo, err := GetNodeInfoFromTemplate(nodeGroup, daemonSets, context.PredicateChecker)
 
 				if err != nil {
-					glog.Warning("Cannot build node info for newly created extra node group %v; balancing similar node groups will not work; err=%v", nodeGroup.Id(), err)
+					glog.Warningf("Cannot build node info for newly created extra node group %v; balancing similar node groups will not work; err=%v", nodeGroup.Id(), err)
 					continue
 				}
 				nodeInfos[nodeGroup.Id()] = nodeInfo
