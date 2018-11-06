@@ -22,10 +22,10 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
-	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/kubernetes/test/e2e/framework"
 
@@ -39,53 +39,79 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 	ginkgo.It("stops when pods get pending", func() {
 
 		ginkgo.By("Setting up a hamster deployment")
-		c := f.ClientSet
-		ns := f.Namespace.Name
-
-		cpuQuantity := ParseQuantityOrDie("100m")
-		memoryQuantity := ParseQuantityOrDie("100Mi")
-
-		d := NewHamsterDeploymentWithResources(f, cpuQuantity, memoryQuantity)
-		d, err := c.AppsV1().Deployments(ns).Create(d)
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
-		err = framework.WaitForDeploymentComplete(c, d)
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		d := SetupHamsterDeployment(f, "100m", "100Mi", defaultHamsterReplicas)
 
 		ginkgo.By("Setting up a VPA CRD with ridiculous request")
-		config, err := framework.LoadConfig()
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
-
-		vpaCRD := NewVPA(f, "hamster-vpa", &metav1.LabelSelector{
-			MatchLabels: map[string]string{
-				"app": "hamster",
-			},
-		})
-
-		resourceList := apiv1.ResourceList{
-			apiv1.ResourceCPU: ParseQuantityOrDie("9999"), // Request 9999 CPUs to make POD pending
-		}
-
-		vpaCRD.Status.Recommendation = &vpa_types.RecommendedPodResources{
-			ContainerRecommendations: []vpa_types.RecommendedContainerResources{{
-				ContainerName: "hamster",
-				Target:        resourceList,
-				LowerBound:    resourceList,
-				UpperBound:    resourceList,
-			}},
-		}
-
-		vpaClientSet := vpa_clientset.NewForConfigOrDie(config)
-		vpaClient := vpaClientSet.AutoscalingV1beta1()
-		_, err = vpaClient.VerticalPodAutoscalers(ns).Create(vpaCRD)
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		SetupVPA(f, "9999", vpa_types.UpdateModeAuto) // Request 9999 CPUs to make POD pending
 
 		ginkgo.By("Waiting for pods to be restarted and stuck pending")
-
-		err = assertPodsPendingForDuration(c, d, 1, 2*time.Minute)
+		err := assertPodsPendingForDuration(f.ClientSet, d, 1, 2*time.Minute)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 	})
+
+	ginkgo.It("never applies recommendations when update mode is Off", func() {
+		ginkgo.By("Setting up a hamster deployment")
+		d := SetupHamsterDeployment(f, "100m", "100Mi", defaultHamsterReplicas)
+		cpuRequest := getCPURequest(d.Spec.Template.Spec)
+		podList, err := GetHamsterPods(f)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		podSet := MakePodSet(podList)
+
+		ginkgo.By("Setting up a VPA CRD in mode Off")
+		SetupVPA(f, "200m", vpa_types.UpdateModeOff)
+
+		ginkgo.By(fmt.Sprintf("Waiting for pods to be restarted, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
+		CheckNoPodsRestarted(f, podSet)
+		ginkgo.By("Forcefully killing one pod")
+		killPod(f, podList)
+
+		ginkgo.By("Checking the requests were not modified")
+		updatedPodList, err := GetHamsterPods(f)
+		for _, pod := range updatedPodList.Items {
+			gomega.Expect(getCPURequest(pod.Spec)).To(gomega.Equal(cpuRequest))
+		}
+	})
+
+	ginkgo.It("applies recommendations only on restart when update mode is Initial", func() {
+		ginkgo.By("Setting up a hamster deployment")
+		SetupHamsterDeployment(f, "100m", "100Mi", defaultHamsterReplicas)
+		podList, err := GetHamsterPods(f)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		podSet := MakePodSet(podList)
+
+		ginkgo.By("Setting up a VPA CRD in mode Off")
+		SetupVPA(f, "200m", vpa_types.UpdateModeInitial)
+		updatedCPURequest := ParseQuantityOrDie("200m")
+
+		ginkgo.By(fmt.Sprintf("Waiting for pods to be restarted, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
+		CheckNoPodsRestarted(f, podSet)
+		ginkgo.By("Forcefully killing one pod")
+		killPod(f, podList)
+
+		ginkgo.By("Checking that request was modified after forceful restart")
+		updatedPodList, err := GetHamsterPods(f)
+		foundUpdated := 0
+		for _, pod := range updatedPodList.Items {
+			podRequest := getCPURequest(pod.Spec)
+			framework.Logf("podReq: %v", podRequest)
+			if podRequest.Cmp(updatedCPURequest) == 0 {
+				foundUpdated += 1
+			}
+		}
+		gomega.Expect(foundUpdated).To(gomega.Equal(1))
+	})
 })
+
+func getCPURequest(podSpec apiv1.PodSpec) resource.Quantity {
+	return podSpec.Containers[0].Resources.Requests[apiv1.ResourceCPU]
+}
+
+func killPod(f *framework.Framework, podList *apiv1.PodList) {
+	f.ClientSet.CoreV1().Pods(f.Namespace.Name).Delete(podList.Items[0].Name, &metav1.DeleteOptions{})
+	err := WaitForPodsRestarted(f, podList)
+	gomega.Expect(err).NotTo(gomega.HaveOccurred())
+}
 
 // assertPodsPendingForDuration checks that at most pendingPodsNum pods are pending for pendingDuration
 func assertPodsPendingForDuration(c clientset.Interface, deployment *appsv1.Deployment, pendingPodsNum int, pendingDuration time.Duration) error {
