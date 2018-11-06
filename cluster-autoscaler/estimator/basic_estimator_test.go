@@ -48,15 +48,11 @@ func TestEstimate(t *testing.T) {
 	memoryPerPod := int64(1000 * 1024 * 1024)
 	pod := makePod(cpuPerPod, memoryPerPod)
 
-	estimator := NewBasicNodeEstimator()
+	pods := []*apiv1.Pod{}
 	for i := 0; i < 5; i++ {
 		podCopy := *pod
-		estimator.Add(&podCopy)
+		pods = append(pods, &podCopy)
 	}
-
-	assert.Equal(t, int64(500*5), estimator.cpuSum.MilliValue())
-	assert.Equal(t, int64(5*memoryPerPod), estimator.memorySum.Value())
-	assert.Equal(t, 5, estimator.GetCount())
 
 	node := &apiv1.Node{
 		Status: apiv1.NodeStatus{
@@ -67,10 +63,20 @@ func TestEstimate(t *testing.T) {
 			},
 		},
 	}
-	estimate, report := estimator.Estimate(node, []*schedulercache.NodeInfo{})
-	assert.Contains(t, estimator.GetDebug(), "CPU")
-	assert.Contains(t, report, "CPU")
+	nodeInfo := schedulercache.NewNodeInfo()
+	nodeInfo.SetNode(node)
+
+	estimator := NewBasicNodeEstimator()
+	estimate := estimator.Estimate(pods, nodeInfo, []*schedulercache.NodeInfo{})
+
+	// Check result.
 	assert.Equal(t, 3, estimate)
+
+	// Check internal state of estimator.
+	assert.Equal(t, int64(500*5), estimator.cpuSum.MilliValue())
+	assert.Equal(t, int64(5*memoryPerPod), estimator.memorySum.Value())
+	assert.Equal(t, 5, estimator.GetCount())
+	assert.Contains(t, estimator.GetDebug(), "CPU")
 }
 
 func TestEstimateWithComing(t *testing.T) {
@@ -78,16 +84,11 @@ func TestEstimateWithComing(t *testing.T) {
 	memoryPerPod := int64(1000 * 1024 * 1024)
 
 	pod := makePod(cpuPerPod, memoryPerPod)
-	estimator := NewBasicNodeEstimator()
-
+	pods := []*apiv1.Pod{}
 	for i := 0; i < 5; i++ {
 		podCopy := *pod
-		estimator.Add(&podCopy)
+		pods = append(pods, &podCopy)
 	}
-
-	assert.Equal(t, int64(500*5), estimator.cpuSum.MilliValue())
-	assert.Equal(t, int64(5*memoryPerPod), estimator.memorySum.Value())
-	assert.Equal(t, 5, estimator.GetCount())
 
 	node := &apiv1.Node{
 		Status: apiv1.NodeStatus{
@@ -102,10 +103,18 @@ func TestEstimateWithComing(t *testing.T) {
 	nodeInfo := schedulercache.NewNodeInfo()
 	nodeInfo.SetNode(node)
 
-	estimate, report := estimator.Estimate(node, []*schedulercache.NodeInfo{nodeInfo, nodeInfo})
-	assert.Contains(t, estimator.GetDebug(), "CPU")
-	assert.Contains(t, report, "CPU")
+	estimator := NewBasicNodeEstimator()
+	estimate := estimator.Estimate(pods, nodeInfo, []*schedulercache.NodeInfo{nodeInfo, nodeInfo})
+
+	// Check result.
 	assert.Equal(t, 1, estimate)
+
+	// Check internal state of estimator.
+	assert.Contains(t, estimator.GetDebug(), "CPU")
+	assert.Equal(t, int64(500*5), estimator.cpuSum.MilliValue())
+	assert.Equal(t, int64(5*memoryPerPod), estimator.memorySum.Value())
+	assert.Equal(t, 5, estimator.GetCount())
+
 }
 
 func TestEstimateWithPorts(t *testing.T) {
@@ -119,9 +128,9 @@ func TestEstimateWithPorts(t *testing.T) {
 		},
 	}
 
-	estimator := NewBasicNodeEstimator()
+	pods := []*apiv1.Pod{}
 	for i := 0; i < 5; i++ {
-		estimator.Add(pod)
+		pods = append(pods, pod)
 	}
 	node := &apiv1.Node{
 		Status: apiv1.NodeStatus{
@@ -132,9 +141,11 @@ func TestEstimateWithPorts(t *testing.T) {
 			},
 		},
 	}
+	nodeInfo := schedulercache.NewNodeInfo()
+	nodeInfo.SetNode(node)
 
-	estimate, report := estimator.Estimate(node, []*schedulercache.NodeInfo{})
+	estimator := NewBasicNodeEstimator()
+	estimate := estimator.Estimate(pods, nodeInfo, []*schedulercache.NodeInfo{})
 	assert.Contains(t, estimator.GetDebug(), "CPU")
-	assert.Contains(t, report, "CPU")
 	assert.Equal(t, 5, estimate)
 }

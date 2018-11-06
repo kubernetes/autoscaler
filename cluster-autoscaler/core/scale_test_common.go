@@ -24,6 +24,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/random"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups"
@@ -76,6 +77,9 @@ type scaleTestConfig struct {
 func NewScaleTestAutoscalingContext(options config.AutoscalingOptions, fakeClient kube_client.Interface, provider cloudprovider.CloudProvider) context.AutoscalingContext {
 	fakeRecorder := kube_record.NewFakeRecorder(5)
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false)
+	// Ignoring error here is safe - if a test doesn't specify valid estimatorName,
+	// it either doesn't need one, or should fail when it turns out to be nil.
+	estimatorBuilder, _ := estimator.NewEstimatorBuilder(options.EstimatorName)
 	return context.AutoscalingContext{
 		AutoscalingOptions: options,
 		AutoscalingKubeClients: context.AutoscalingKubeClients{
@@ -86,6 +90,7 @@ func NewScaleTestAutoscalingContext(options config.AutoscalingOptions, fakeClien
 		CloudProvider:    provider,
 		PredicateChecker: simulator.NewTestPredicateChecker(),
 		ExpanderStrategy: random.NewStrategy(),
+		EstimatorBuilder: estimatorBuilder,
 	}
 }
 
