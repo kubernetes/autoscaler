@@ -18,6 +18,7 @@ package azure
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"strings"
 
@@ -26,6 +27,12 @@ import (
 
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/types"
+)
+
+const (
+	vmPowerStatePrefix      = "PowerState/"
+	vmPowerStateStopped     = "stopped"
+	vmPowerStateDeallocated = "deallocated"
 )
 
 // NodeAddresses returns the addresses of the specified instance.
@@ -61,12 +68,16 @@ func (az *Cloud) NodeAddresses(ctx context.Context, name types.NodeName) ([]v1.N
 	}
 
 	if az.UseInstanceMetadata {
-		computeMetadata, err := az.getComputeMetadata()
+		metadata, err := az.metadata.GetMetadata()
 		if err != nil {
 			return nil, err
 		}
 
-		isLocalInstance, err := az.isCurrentInstance(name, computeMetadata.Name)
+		if metadata.Compute == nil || metadata.Network == nil {
+			return nil, fmt.Errorf("failure of getting instance metadata")
+		}
+
+		isLocalInstance, err := az.isCurrentInstance(name, metadata.Compute.Name)
 		if err != nil {
 			return nil, err
 		}
@@ -76,21 +87,38 @@ func (az *Cloud) NodeAddresses(ctx context.Context, name types.NodeName) ([]v1.N
 			return addressGetter(name)
 		}
 
-		ipAddress := IPAddress{}
-		err = az.metadata.Object("instance/network/interface/0/ipv4/ipAddress/0", &ipAddress)
-		if err != nil {
-			return nil, err
+		if len(metadata.Network.Interface) == 0 {
+			return nil, fmt.Errorf("no interface is found for the instance")
 		}
+
+		// Use ip address got from instance metadata.
+		ipAddress := metadata.Network.Interface[0]
 		addresses := []v1.NodeAddress{
-			{Type: v1.NodeInternalIP, Address: ipAddress.PrivateIP},
 			{Type: v1.NodeHostName, Address: string(name)},
 		}
-		if len(ipAddress.PublicIP) > 0 {
-			addr := v1.NodeAddress{
-				Type:    v1.NodeExternalIP,
-				Address: ipAddress.PublicIP,
+		for _, address := range ipAddress.IPV4.IPAddress {
+			addresses = append(addresses, v1.NodeAddress{
+				Type:    v1.NodeInternalIP,
+				Address: address.PrivateIP,
+			})
+			if len(address.PublicIP) > 0 {
+				addresses = append(addresses, v1.NodeAddress{
+					Type:    v1.NodeExternalIP,
+					Address: address.PublicIP,
+				})
 			}
-			addresses = append(addresses, addr)
+		}
+		for _, address := range ipAddress.IPV6.IPAddress {
+			addresses = append(addresses, v1.NodeAddress{
+				Type:    v1.NodeInternalIP,
+				Address: address.PrivateIP,
+			})
+			if len(address.PublicIP) > 0 {
+				addresses = append(addresses, v1.NodeAddress{
+					Type:    v1.NodeExternalIP,
+					Address: address.PublicIP,
+				})
+			}
 		}
 		return addresses, nil
 	}
@@ -143,18 +171,18 @@ func (az *Cloud) InstanceExistsByProviderID(ctx context.Context, providerID stri
 
 // InstanceShutdownByProviderID returns true if the instance is in safe state to detach volumes
 func (az *Cloud) InstanceShutdownByProviderID(ctx context.Context, providerID string) (bool, error) {
-	return false, cloudprovider.NotImplemented
-}
-
-// getComputeMetadata gets compute information from instance metadata.
-func (az *Cloud) getComputeMetadata() (*ComputeMetadata, error) {
-	computeInfo := ComputeMetadata{}
-	err := az.metadata.Object(computeMetadataURI, &computeInfo)
+	nodeName, err := az.vmSet.GetNodeNameByProviderID(providerID)
 	if err != nil {
-		return nil, err
+		return false, err
 	}
 
-	return &computeInfo, nil
+	powerStatus, err := az.vmSet.GetPowerStatusByNodeName(string(nodeName))
+	if err != nil {
+		return false, err
+	}
+	glog.V(5).Infof("InstanceShutdownByProviderID gets power status %q for node %q", powerStatus, nodeName)
+
+	return strings.ToLower(powerStatus) == vmPowerStateStopped || strings.ToLower(powerStatus) == vmPowerStateDeallocated, nil
 }
 
 func (az *Cloud) isCurrentInstance(name types.NodeName, metadataVMName string) (bool, error) {
@@ -187,12 +215,16 @@ func (az *Cloud) InstanceID(ctx context.Context, name types.NodeName) (string, e
 	}
 
 	if az.UseInstanceMetadata {
-		computeMetadata, err := az.getComputeMetadata()
+		metadata, err := az.metadata.GetMetadata()
 		if err != nil {
 			return "", err
 		}
 
-		isLocalInstance, err := az.isCurrentInstance(name, computeMetadata.Name)
+		if metadata.Compute == nil {
+			return "", fmt.Errorf("failure of getting instance metadata")
+		}
+
+		isLocalInstance, err := az.isCurrentInstance(name, metadata.Compute.Name)
 		if err != nil {
 			return "", err
 		}
@@ -203,10 +235,7 @@ func (az *Cloud) InstanceID(ctx context.Context, name types.NodeName) (string, e
 		}
 
 		// Get resource group name.
-		resourceGroup, err := az.metadata.Text("instance/compute/resourceGroupName")
-		if err != nil {
-			return "", err
-		}
+		resourceGroup := metadata.Compute.ResourceGroup
 
 		// Compose instanceID based on nodeName for standard instance.
 		if az.VMType == vmTypeStandard {
@@ -214,7 +243,7 @@ func (az *Cloud) InstanceID(ctx context.Context, name types.NodeName) (string, e
 		}
 
 		// Get scale set name and instanceID from vmName for vmss.
-		ssName, instanceID, err := extractVmssVMName(computeMetadata.Name)
+		ssName, instanceID, err := extractVmssVMName(metadata.Compute.Name)
 		if err != nil {
 			if err == ErrorNotVmssInstance {
 				// Compose machineID for standard Node.
@@ -263,18 +292,22 @@ func (az *Cloud) InstanceType(ctx context.Context, name types.NodeName) (string,
 	}
 
 	if az.UseInstanceMetadata {
-		computeMetadata, err := az.getComputeMetadata()
+		metadata, err := az.metadata.GetMetadata()
 		if err != nil {
 			return "", err
 		}
 
-		isLocalInstance, err := az.isCurrentInstance(name, computeMetadata.Name)
+		if metadata.Compute == nil {
+			return "", fmt.Errorf("failure of getting instance metadata")
+		}
+
+		isLocalInstance, err := az.isCurrentInstance(name, metadata.Compute.Name)
 		if err != nil {
 			return "", err
 		}
 		if isLocalInstance {
-			if computeMetadata.VMSize != "" {
-				return computeMetadata.VMSize, nil
+			if metadata.Compute.VMSize != "" {
+				return metadata.Compute.VMSize, nil
 			}
 		}
 	}

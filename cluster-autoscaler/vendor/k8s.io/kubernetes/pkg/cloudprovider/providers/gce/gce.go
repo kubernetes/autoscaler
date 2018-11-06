@@ -80,13 +80,13 @@ const (
 	maxTargetPoolCreateInstances = 200
 
 	// HTTP Load Balancer parameters
-	// Configure 2 second period for external health checks.
-	gceHcCheckIntervalSeconds = int64(2)
+	// Configure 8 second period for external health checks.
+	gceHcCheckIntervalSeconds = int64(8)
 	gceHcTimeoutSeconds       = int64(1)
 	// Start sending requests as soon as a pod is found on the node.
 	gceHcHealthyThreshold = int64(1)
-	// Defaults to 5 * 2 = 10 seconds before the LB will steer traffic away
-	gceHcUnhealthyThreshold = int64(5)
+	// Defaults to 3 * 8 = 24 seconds before the LB will steer traffic away.
+	gceHcUnhealthyThreshold = int64(3)
 
 	gceComputeAPIEndpoint     = "https://www.googleapis.com/compute/v1/"
 	gceComputeAPIEndpointBeta = "https://www.googleapis.com/compute/beta/"
@@ -114,6 +114,7 @@ type GCECloud struct {
 	eventRecorder    record.EventRecorder
 	projectID        string
 	region           string
+	regional         bool
 	localZone        string // The zone in which we are running
 	// managedZones will be set to the 1 zone if running a single zone cluster
 	// it will be set to ALL zones in region for any multi-zone cluster
@@ -174,6 +175,7 @@ type ConfigGlobal struct {
 	SecondaryRangeName string   `gcfg:"secondary-range-name"`
 	NodeTags           []string `gcfg:"node-tags"`
 	NodeInstancePrefix string   `gcfg:"node-instance-prefix"`
+	Regional           bool     `gcfg:"regional"`
 	Multizone          bool     `gcfg:"multizone"`
 	// ApiEndpoint is the GCE compute API endpoint to use. If this is blank,
 	// then the default endpoint is used.
@@ -202,6 +204,7 @@ type CloudConfig struct {
 	ProjectID            string
 	NetworkProjectID     string
 	Region               string
+	Regional             bool
 	Zone                 string
 	ManagedZones         []string
 	NetworkName          string
@@ -332,9 +335,14 @@ func generateCloudConfig(configFile *ConfigFile) (cloudConfig *CloudConfig, err 
 		return nil, err
 	}
 
+	// Determine if its a regional cluster
+	if configFile != nil && configFile.Global.Regional {
+		cloudConfig.Regional = true
+	}
+
 	// generate managedZones
 	cloudConfig.ManagedZones = []string{cloudConfig.Zone}
-	if configFile != nil && configFile.Global.Multizone {
+	if configFile != nil && (configFile.Global.Multizone || configFile.Global.Regional) {
 		cloudConfig.ManagedZones = nil // Use all zones in region
 	}
 
@@ -512,6 +520,7 @@ func CreateGCECloud(config *CloudConfig) (*GCECloud, error) {
 		networkProjectID:         netProjID,
 		onXPN:                    onXPN,
 		region:                   config.Region,
+		regional:                 config.Regional,
 		localZone:                config.Zone,
 		managedZones:             config.ManagedZones,
 		networkURL:               networkURL,
