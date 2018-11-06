@@ -82,32 +82,42 @@ func init() {
 	}
 }
 
-// GkeManager handles gce communication and data caching.
+// GkeManager handles GCE and GKE communication and data caching.
 type GkeManager interface {
+	// Refresh triggers refresh of cached resources.
+	Refresh() error
+	// Cleanup cleans up open resources before the cloud provider is destroyed, i.e. go routines etc.
+	Cleanup() error
+
+	// GetLocation returns cluster's location.
+	GetLocation() string
+	// GetProjectId returns id of GCE project to which the cluster belongs.
+	GetProjectId() string
+	// GetClusterName returns the name of the GKE cluster.
+	GetClusterName() string
+	// GetMigs returns a list of registered MIGs.
+	GetMigs() []*gce.MigInformation
+	// GetMigNodes returns mig nodes.
+	GetMigNodes(mig gce.Mig) ([]string, error)
+	// GetMigForInstance returns MigConfig of the given Instance
+	GetMigForInstance(instance *gce.GceRef) (gce.Mig, error)
+	// GetMigTemplateNode returns a template node for MIG.
+	GetMigTemplateNode(mig *GkeMig) (*apiv1.Node, error)
 	// GetMigSize gets MIG size.
 	GetMigSize(mig gce.Mig) (int64, error)
+	// GetNodeLocations returns a list of locations with nodes.
+	GetNodeLocations() []string
+	// GetResourceLimiter returns resource limiter.
+	GetResourceLimiter() (*cloudprovider.ResourceLimiter, error)
+
 	// SetMigSize sets MIG size.
 	SetMigSize(mig gce.Mig, size int64) error
 	// DeleteInstances deletes the given instances. All instances must be controlled by the same MIG.
 	DeleteInstances(instances []*gce.GceRef) error
-	// GetMigForInstance returns MigConfig of the given Instance
-	GetMigForInstance(instance *gce.GceRef) (gce.Mig, error)
-	// GetMigNodes returns mig nodes.
-	GetMigNodes(mig gce.Mig) ([]string, error)
-	// Refresh updates config by calling GKE API (in GKE mode only).
-	Refresh() error
-	// GetResourceLimiter returns resource limiter.
-	GetResourceLimiter() (*cloudprovider.ResourceLimiter, error)
-	// Cleanup cleans up open resources before the cloud provider is destroyed, i.e. go routines etc.
-	Cleanup() error
-	GetMigs() []*gce.MigInformation
+	// CreateNodePool creates a MIG based on blueprint and returns the newly created MIG.
 	CreateNodePool(mig *GkeMig) (*GkeMig, error)
+	// DeleteNodePool deletes a MIG from cloud provider.
 	DeleteNodePool(toBeRemoved *GkeMig) error
-	GetLocation() string
-	GetProjectId() string
-	GetClusterName() string
-	GetMigTemplateNode(mig *GkeMig) (*apiv1.Node, error)
-	GetNodeLocations() []string
 }
 
 // gkeConfigurationCache is used for storing cached cluster configuration.
@@ -133,7 +143,6 @@ func (cache *gkeConfigurationCache) getNodeLocations() []string {
 	return locations
 }
 
-// gkeManagerImpl handles gce communication and data caching.
 type gkeManagerImpl struct {
 	cache                    gce.GceCache
 	gkeConfigurationCache    gkeConfigurationCache
@@ -152,7 +161,7 @@ type gkeManagerImpl struct {
 	regional    bool
 }
 
-// CreateGkeManager constructs gkeManager object.
+// CreateGkeManager constructs GkeManager object.
 func CreateGkeManager(configReader io.Reader, mode GcpCloudProviderMode, clusterName string, regional bool) (GkeManager, error) {
 	// Create Google Compute Engine token.
 	var err error
@@ -248,7 +257,7 @@ func CreateGkeManager(configReader io.Reader, mode GcpCloudProviderMode, cluster
 	return manager, nil
 }
 
-// Cleanup closes the channel to signal the go routine to stop that is handling the cache
+// Cleanup closes the channel to stop the goroutine refreshing cache.
 func (m *gkeManagerImpl) Cleanup() error {
 	close(m.interrupt)
 	return nil
@@ -307,7 +316,6 @@ func (m *gkeManagerImpl) GetNodeLocations() []string {
 	return m.gkeConfigurationCache.getNodeLocations()
 }
 
-// RegisterMig registers mig in GceManager. Returns true if the node group didn't exist before or its config has changed.
 func (m *gkeManagerImpl) registerMig(mig *GkeMig) bool {
 	changed := m.cache.RegisterMig(mig)
 	if changed {
@@ -321,13 +329,13 @@ func (m *gkeManagerImpl) registerMig(mig *GkeMig) bool {
 	return changed
 }
 
+// DeleteNodePool deletes a node pool corresponding to the given MIG.
 func (m *gkeManagerImpl) DeleteNodePool(toBeRemoved *GkeMig) error {
 	m.assertGKENAP()
 
 	if !toBeRemoved.Autoprovisioned() {
 		return fmt.Errorf("only autoprovisioned node pools can be deleted")
 	}
-	// TODO: handle multi-zonal node pools.
 	err := m.GkeService.DeleteNodePool(toBeRemoved.NodePoolName())
 	if err != nil {
 		return err
@@ -335,6 +343,7 @@ func (m *gkeManagerImpl) DeleteNodePool(toBeRemoved *GkeMig) error {
 	return m.refreshClusterResources()
 }
 
+// CreateNodePool creates a node pool based on provided spec and returns newly created MIG.
 func (m *gkeManagerImpl) CreateNodePool(mig *GkeMig) (*GkeMig, error) {
 	m.assertGKENAP()
 
@@ -346,7 +355,6 @@ func (m *gkeManagerImpl) CreateNodePool(mig *GkeMig) (*GkeMig, error) {
 	if err != nil {
 		return nil, err
 	}
-	// TODO(aleksandra-malinowska): support multi-zonal node pools.
 	for _, existingMig := range m.cache.GetMigs() {
 		gkeMig, ok := existingMig.Config.(*GkeMig)
 		if !ok {
@@ -429,12 +437,12 @@ func (m *gkeManagerImpl) GetMigs() []*gce.MigInformation {
 	return m.cache.GetMigs()
 }
 
-// GetMigForInstance returns MigConfig of the given Instance
+// GetMigForInstance returns MIG to which the given instance belongs.
 func (m *gkeManagerImpl) GetMigForInstance(instance *gce.GceRef) (gce.Mig, error) {
 	return m.cache.GetMigForInstance(instance)
 }
 
-// GetMigNodes returns mig nodes.
+// GetMigNodes returns instances that belong to a MIG.
 func (m *gkeManagerImpl) GetMigNodes(mig gce.Mig) ([]string, error) {
 	instances, err := m.GceService.FetchMigInstances(mig.GceRef())
 	if err != nil {
@@ -447,18 +455,22 @@ func (m *gkeManagerImpl) GetMigNodes(mig gce.Mig) ([]string, error) {
 	return result, nil
 }
 
+// GetLocation returns cluster's location.
 func (m *gkeManagerImpl) GetLocation() string {
 	return m.location
 }
 
+// GetProjectId returns id of GCE project to which the cluster belongs.
 func (m *gkeManagerImpl) GetProjectId() string {
 	return m.projectId
 }
 
+// GetClusterName returns the name of GKE cluster.
 func (m *gkeManagerImpl) GetClusterName() string {
 	return m.clusterName
 }
 
+// Refresh triggers refresh of cached resources.
 func (m *gkeManagerImpl) Refresh() error {
 	if m.lastRefresh.Add(refreshInterval).After(time.Now()) {
 		return nil
@@ -533,7 +545,7 @@ func (m *gkeManagerImpl) refreshResourceLimiter(resourceLimiter *cloudprovider.R
 	}
 }
 
-// GetResourceLimiter returns resource limiter.
+// GetResourceLimiter returns resource limiter from cache.
 func (m *gkeManagerImpl) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
 	return m.cache.GetResourceLimiter()
 }
@@ -574,6 +586,9 @@ func getProjectAndLocation(regional bool) (string, string, error) {
 	return projectID, location, nil
 }
 
+// GetMigTemplateNode constructs a node:
+// - from GCE instance template of the given MIG, if the MIG already exists,
+// - from MIG spec, if it doesn't exist, but may be autoprovisioned.
 func (m *gkeManagerImpl) GetMigTemplateNode(mig *GkeMig) (*apiv1.Node, error) {
 	if mig.Exist() {
 		template, err := m.GceService.FetchMigTemplate(mig.GceRef())
