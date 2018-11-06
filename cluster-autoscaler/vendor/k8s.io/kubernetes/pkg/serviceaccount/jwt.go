@@ -17,6 +17,7 @@ limitations under the License.
 package serviceaccount
 
 import (
+	"context"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rsa"
@@ -25,13 +26,12 @@ import (
 	"fmt"
 	"strings"
 
+	jose "gopkg.in/square/go-jose.v2"
+	"gopkg.in/square/go-jose.v2/jwt"
+
 	"k8s.io/api/core/v1"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apiserver/pkg/authentication/authenticator"
-	"k8s.io/apiserver/pkg/authentication/user"
-
-	jose "gopkg.in/square/go-jose.v2"
-	"gopkg.in/square/go-jose.v2/jwt"
 )
 
 // ServiceAccountTokenGetter defines functions to retrieve a named service account and secret
@@ -125,7 +125,7 @@ type jwtTokenAuthenticator struct {
 	validator Validator
 }
 
-// Validator is called by the JWT token authentictaor to apply domain specific
+// Validator is called by the JWT token authenticator to apply domain specific
 // validation to a token and extract user information.
 type Validator interface {
 	// Validate validates a token and returns user information or an error.
@@ -140,7 +140,7 @@ type Validator interface {
 	NewPrivateClaims() interface{}
 }
 
-func (j *jwtTokenAuthenticator) AuthenticateToken(tokenData string) (user.Info, bool, error) {
+func (j *jwtTokenAuthenticator) AuthenticateToken(ctx context.Context, tokenData string) (*authenticator.Response, bool, error) {
 	if !j.hasCorrectIssuer(tokenData) {
 		return nil, false, nil
 	}
@@ -177,7 +177,7 @@ func (j *jwtTokenAuthenticator) AuthenticateToken(tokenData string) (user.Info, 
 		return nil, false, err
 	}
 
-	return sa.UserInfo(), true, nil
+	return &authenticator.Response{User: sa.UserInfo()}, true, nil
 }
 
 // hasCorrectIssuer returns true if tokenData is a valid JWT in compact

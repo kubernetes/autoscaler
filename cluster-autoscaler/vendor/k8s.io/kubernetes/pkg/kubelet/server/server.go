@@ -33,6 +33,7 @@ import (
 
 	restful "github.com/emicklei/go-restful"
 	"github.com/golang/glog"
+	cadvisormetrics "github.com/google/cadvisor/container"
 	cadvisorapi "github.com/google/cadvisor/info/v1"
 	"github.com/google/cadvisor/metrics"
 	"github.com/prometheus/client_golang/prometheus"
@@ -220,7 +221,7 @@ func NewServer(
 func (s *Server) InstallAuthFilter() {
 	s.restfulCont.Filter(func(req *restful.Request, resp *restful.Response, chain *restful.FilterChain) {
 		// Authenticate
-		u, ok, err := s.auth.AuthenticateRequest(req.Request)
+		info, ok, err := s.auth.AuthenticateRequest(req.Request)
 		if err != nil {
 			glog.Errorf("Unable to authenticate the request due to an error: %v", err)
 			resp.WriteErrorString(http.StatusUnauthorized, "Unauthorized")
@@ -232,18 +233,18 @@ func (s *Server) InstallAuthFilter() {
 		}
 
 		// Get authorization attributes
-		attrs := s.auth.GetRequestAttributes(u, req.Request)
+		attrs := s.auth.GetRequestAttributes(info.User, req.Request)
 
 		// Authorize
 		decision, _, err := s.auth.Authorize(attrs)
 		if err != nil {
-			msg := fmt.Sprintf("Authorization error (user=%s, verb=%s, resource=%s, subresource=%s)", u.GetName(), attrs.GetVerb(), attrs.GetResource(), attrs.GetSubresource())
+			msg := fmt.Sprintf("Authorization error (user=%s, verb=%s, resource=%s, subresource=%s)", attrs.GetUser().GetName(), attrs.GetVerb(), attrs.GetResource(), attrs.GetSubresource())
 			glog.Errorf(msg, err)
 			resp.WriteErrorString(http.StatusInternalServerError, msg)
 			return
 		}
 		if decision != authorizer.DecisionAllow {
-			msg := fmt.Sprintf("Forbidden (user=%s, verb=%s, resource=%s, subresource=%s)", u.GetName(), attrs.GetVerb(), attrs.GetResource(), attrs.GetSubresource())
+			msg := fmt.Sprintf("Forbidden (user=%s, verb=%s, resource=%s, subresource=%s)", attrs.GetUser().GetName(), attrs.GetVerb(), attrs.GetResource(), attrs.GetSubresource())
 			glog.V(2).Info(msg)
 			resp.WriteErrorString(http.StatusForbidden, msg)
 			return
@@ -276,7 +277,18 @@ func (s *Server) InstallDefaultHandlers() {
 
 	// cAdvisor metrics are exposed under the secured handler as well
 	r := prometheus.NewRegistry()
-	r.MustRegister(metrics.NewPrometheusCollector(prometheusHostAdapter{s.host}, containerPrometheusLabelsFunc(s.host)))
+
+	includedMetrics := cadvisormetrics.MetricSet{
+		cadvisormetrics.CpuUsageMetrics:         struct{}{},
+		cadvisormetrics.MemoryUsageMetrics:      struct{}{},
+		cadvisormetrics.CpuLoadMetrics:          struct{}{},
+		cadvisormetrics.DiskIOMetrics:           struct{}{},
+		cadvisormetrics.DiskUsageMetrics:        struct{}{},
+		cadvisormetrics.NetworkUsageMetrics:     struct{}{},
+		cadvisormetrics.AcceleratorUsageMetrics: struct{}{},
+		cadvisormetrics.AppMetrics:              struct{}{},
+	}
+	r.MustRegister(metrics.NewPrometheusCollector(prometheusHostAdapter{s.host}, containerPrometheusLabelsFunc(s.host), includedMetrics))
 	s.restfulCont.Handle(cadvisorMetricsPath,
 		promhttp.HandlerFor(r, promhttp.HandlerOpts{ErrorHandling: promhttp.ContinueOnError}),
 	)

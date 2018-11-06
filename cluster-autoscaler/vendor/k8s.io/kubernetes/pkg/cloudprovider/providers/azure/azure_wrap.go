@@ -23,13 +23,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-04-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-10-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2017-09-01/network"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/golang/glog"
-
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/kubernetes/pkg/cloudprovider"
+	cloudprovider "k8s.io/cloud-provider"
 )
 
 var (
@@ -302,5 +301,5 @@ func (az *Cloud) IsNodeUnmanaged(nodeName string) (bool, error) {
 // IsNodeUnmanagedByProviderID returns true if the node is not managed by Azure cloud provider.
 // All managed node's providerIDs are in format 'azure:///subscriptions/<id>/resourceGroups/<rg>/providers/Microsoft.Compute/.*'
 func (az *Cloud) IsNodeUnmanagedByProviderID(providerID string) bool {
-	return azureNodeProviderIDRE.Match([]byte(providerID))
+	return !azureNodeProviderIDRE.Match([]byte(providerID))
 }

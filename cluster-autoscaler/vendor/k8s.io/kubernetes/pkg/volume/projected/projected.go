@@ -47,10 +47,11 @@ const (
 )
 
 type projectedPlugin struct {
-	host                   volume.VolumeHost
-	getSecret              func(namespace, name string) (*v1.Secret, error)
-	getConfigMap           func(namespace, name string) (*v1.ConfigMap, error)
-	getServiceAccountToken func(namespace, name string, tr *authenticationv1.TokenRequest) (*authenticationv1.TokenRequest, error)
+	host                      volume.VolumeHost
+	getSecret                 func(namespace, name string) (*v1.Secret, error)
+	getConfigMap              func(namespace, name string) (*v1.ConfigMap, error)
+	getServiceAccountToken    func(namespace, name string, tr *authenticationv1.TokenRequest) (*authenticationv1.TokenRequest, error)
+	deleteServiceAccountToken func(podUID types.UID)
 }
 
 var _ volume.VolumePlugin = &projectedPlugin{}
@@ -74,6 +75,7 @@ func (plugin *projectedPlugin) Init(host volume.VolumeHost) error {
 	plugin.getSecret = host.GetSecretFunc()
 	plugin.getConfigMap = host.GetConfigMapFunc()
 	plugin.getServiceAccountToken = host.GetServiceAccountTokenFunc()
+	plugin.deleteServiceAccountToken = host.DeleteServiceAccountTokenFunc()
 	return nil
 }
 
@@ -198,6 +200,8 @@ func (s *projectedVolumeMounter) SetUpAt(dir string, fsGroup *int64) error {
 		glog.Errorf("Error preparing data for projected volume %v for pod %v/%v: %s", s.volName, s.pod.Namespace, s.pod.Name, err.Error())
 		return err
 	}
+
+	setupSuccess := false
 	if err := wrapped.SetUpAt(dir, fsGroup); err != nil {
 		return err
 	}
@@ -205,6 +209,21 @@ func (s *projectedVolumeMounter) SetUpAt(dir string, fsGroup *int64) error {
 	if err := volumeutil.MakeNestedMountpoints(s.volName, dir, *s.pod); err != nil {
 		return err
 	}
+
+	defer func() {
+		// Clean up directories if setup fails
+		if !setupSuccess {
+			unmounter, unmountCreateErr := s.plugin.NewUnmounter(s.volName, s.podUID)
+			if unmountCreateErr != nil {
+				glog.Errorf("error cleaning up mount %s after failure. Create unmounter failed with %v", s.volName, unmountCreateErr)
+				return
+			}
+			tearDownErr := unmounter.TearDown()
+			if tearDownErr != nil {
+				glog.Errorf("error tearing down volume %s with : %v", s.volName, tearDownErr)
+			}
+		}
+	}()
 
 	writerContext := fmt.Sprintf("pod %v/%v volume %v", s.pod.Namespace, s.pod.Name, s.volName)
 	writer, err := volumeutil.NewAtomicWriter(dir, writerContext)
@@ -224,6 +243,7 @@ func (s *projectedVolumeMounter) SetUpAt(dir string, fsGroup *int64) error {
 		glog.Errorf("Error applying volume ownership settings for group: %v", fsGroup)
 		return err
 	}
+	setupSuccess = true
 	return nil
 }
 
@@ -350,7 +370,12 @@ func (c *projectedVolumeUnmounter) TearDownAt(dir string) error {
 	if err != nil {
 		return err
 	}
-	return wrapped.TearDownAt(dir)
+	if err = wrapped.TearDownAt(dir); err != nil {
+		return err
+	}
+
+	c.plugin.deleteServiceAccountToken(c.podUID)
+	return nil
 }
 
 func getVolumeSource(spec *volume.Spec) (*v1.ProjectedVolumeSource, bool, error) {
