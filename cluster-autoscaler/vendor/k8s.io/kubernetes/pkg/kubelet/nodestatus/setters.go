@@ -31,8 +31,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	utilnet "k8s.io/apimachinery/pkg/util/net"
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
+	cloudprovider "k8s.io/cloud-provider"
 	v1helper "k8s.io/kubernetes/pkg/apis/core/v1/helper"
-	"k8s.io/kubernetes/pkg/cloudprovider"
 	"k8s.io/kubernetes/pkg/features"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 	"k8s.io/kubernetes/pkg/kubelet/cadvisor"
@@ -700,45 +700,6 @@ func DiskPressureCondition(nowFunc func() time.Time, // typically Kubelet.clock.
 
 		if newCondition {
 			node.Status.Conditions = append(node.Status.Conditions, *condition)
-		}
-		return nil
-	}
-}
-
-// OutOfDiskCondition returns a Setter that updates the v1.NodeOutOfDisk condition on the node.
-// TODO(#65658): remove this condition
-func OutOfDiskCondition(nowFunc func() time.Time, // typically Kubelet.clock.Now
-	recordEventFunc func(eventType, event string), // typically Kubelet.recordNodeStatusEvent
-) Setter {
-	return func(node *v1.Node) error {
-		currentTime := metav1.NewTime(nowFunc())
-		var nodeOODCondition *v1.NodeCondition
-
-		// Check if NodeOutOfDisk condition already exists and if it does, just pick it up for update.
-		for i := range node.Status.Conditions {
-			if node.Status.Conditions[i].Type == v1.NodeOutOfDisk {
-				nodeOODCondition = &node.Status.Conditions[i]
-			}
-		}
-
-		newOODCondition := nodeOODCondition == nil
-		if newOODCondition {
-			nodeOODCondition = &v1.NodeCondition{}
-		}
-		if nodeOODCondition.Status != v1.ConditionFalse {
-			nodeOODCondition.Type = v1.NodeOutOfDisk
-			nodeOODCondition.Status = v1.ConditionFalse
-			nodeOODCondition.Reason = "KubeletHasSufficientDisk"
-			nodeOODCondition.Message = "kubelet has sufficient disk space available"
-			nodeOODCondition.LastTransitionTime = currentTime
-			recordEventFunc(v1.EventTypeNormal, "NodeHasSufficientDisk")
-		}
-
-		// Update the heartbeat time irrespective of all the conditions.
-		nodeOODCondition.LastHeartbeatTime = currentTime
-
-		if newOODCondition {
-			node.Status.Conditions = append(node.Status.Conditions, *nodeOODCondition)
 		}
 		return nil
 	}

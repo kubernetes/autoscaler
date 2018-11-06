@@ -31,15 +31,15 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
+	cloudprovider "k8s.io/cloud-provider"
 	k8s_api_v1 "k8s.io/kubernetes/pkg/apis/core/v1"
 	v1helper "k8s.io/kubernetes/pkg/apis/core/v1/helper"
-	"k8s.io/kubernetes/pkg/cloudprovider"
 	"k8s.io/kubernetes/pkg/features"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 	"k8s.io/kubernetes/pkg/kubelet/events"
 	"k8s.io/kubernetes/pkg/kubelet/nodestatus"
 	"k8s.io/kubernetes/pkg/kubelet/util"
-	"k8s.io/kubernetes/pkg/scheduler/algorithm"
+	schedulerapi "k8s.io/kubernetes/pkg/scheduler/api"
 	nodeutil "k8s.io/kubernetes/pkg/util/node"
 	taintutil "k8s.io/kubernetes/pkg/util/taints"
 	volutil "k8s.io/kubernetes/pkg/volume/util"
@@ -151,7 +151,7 @@ func (kl *Kubelet) updateDefaultLabels(initialNode, existingNode *v1.Node) bool 
 		kubeletapis.LabelArch,
 	}
 
-	var needsUpdate bool = false
+	needsUpdate := false
 	if existingNode.Labels == nil {
 		existingNode.Labels = make(map[string]string)
 	}
@@ -232,7 +232,7 @@ func (kl *Kubelet) initialNode() (*v1.Node, error) {
 	}
 
 	unschedulableTaint := v1.Taint{
-		Key:    algorithm.TaintNodeUnschedulable,
+		Key:    schedulerapi.TaintNodeUnschedulable,
 		Effect: v1.TaintEffectNoSchedule,
 	}
 
@@ -247,7 +247,7 @@ func (kl *Kubelet) initialNode() (*v1.Node, error) {
 
 	if kl.externalCloudProvider {
 		taint := v1.Taint{
-			Key:    algorithm.TaintExternalCloudProvider,
+			Key:    schedulerapi.TaintExternalCloudProvider,
 			Value:  "true",
 			Effect: v1.TaintEffectNoSchedule,
 		}
@@ -502,7 +502,6 @@ func (kl *Kubelet) defaultNodeStatusFuncs() []func(*v1.Node) error {
 		setters = append(setters, nodestatus.VolumeLimits(kl.volumePluginMgr.ListVolumePluginWithLimits))
 	}
 	setters = append(setters,
-		nodestatus.OutOfDiskCondition(kl.clock.Now, kl.recordNodeStatusEvent),
 		nodestatus.MemoryPressureCondition(kl.clock.Now, kl.evictionManager.IsUnderMemoryPressure, kl.recordNodeStatusEvent),
 		nodestatus.DiskPressureCondition(kl.clock.Now, kl.evictionManager.IsUnderDiskPressure, kl.recordNodeStatusEvent),
 		nodestatus.PIDPressureCondition(kl.clock.Now, kl.evictionManager.IsUnderPIDPressure, kl.recordNodeStatusEvent),

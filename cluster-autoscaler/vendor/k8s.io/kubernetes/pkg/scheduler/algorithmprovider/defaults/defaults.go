@@ -199,19 +199,24 @@ func ApplyFeatureGates() {
 
 		// Fit is determined based on whether a pod can tolerate all of the node's taints
 		factory.RegisterMandatoryFitPredicate(predicates.PodToleratesNodeTaintsPred, predicates.PodToleratesNodeTaints)
+		// Fit is determined based on whether a pod can tolerate unschedulable of node
+		factory.RegisterMandatoryFitPredicate(predicates.CheckNodeUnschedulablePred, predicates.CheckNodeUnschedulablePredicate)
 		// Insert Key "PodToleratesNodeTaints" and "CheckNodeUnschedulable" To All Algorithm Provider
 		// The key will insert to all providers which in algorithmProviderMap[]
 		// if you just want insert to specific provider, call func InsertPredicateKeyToAlgoProvider()
 		factory.InsertPredicateKeyToAlgorithmProviderMap(predicates.PodToleratesNodeTaintsPred)
+		factory.InsertPredicateKeyToAlgorithmProviderMap(predicates.CheckNodeUnschedulablePred)
 
-		glog.Warningf("TaintNodesByCondition is enabled, PodToleratesNodeTaints predicate is mandatory")
+		glog.Infof("TaintNodesByCondition is enabled, PodToleratesNodeTaints predicate is mandatory")
 	}
 
 	// Prioritizes nodes that satisfy pod's resource limits
 	if utilfeature.DefaultFeatureGate.Enabled(features.ResourceLimitsPriorityFunction) {
+		glog.Infof("Registering resourcelimits priority function")
 		factory.RegisterPriorityFunction2("ResourceLimitsPriority", priorities.ResourceLimitsPriorityMap, nil, 1)
+		// Register the priority function to specific provider too.
+		factory.InsertPriorityKeyToAlgorithmProviderMap(factory.RegisterPriorityFunction2("ResourceLimitsPriority", priorities.ResourceLimitsPriorityMap, nil, 1))
 	}
-
 }
 
 func registerAlgorithmProvider(predSet, priSet sets.String) {

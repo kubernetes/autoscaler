@@ -18,7 +18,6 @@ package downwardapi
 
 import (
 	"fmt"
-	"path"
 	"path/filepath"
 
 	"k8s.io/api/core/v1"
@@ -185,6 +184,7 @@ func (b *downwardAPIVolumeMounter) SetUpAt(dir string, fsGroup *int64) error {
 		return err
 	}
 
+	setupSuccess := false
 	if err := wrapped.SetUpAt(dir, fsGroup); err != nil {
 		glog.Errorf("Unable to setup downwardAPI volume %v for pod %v/%v: %s", b.volName, b.pod.Namespace, b.pod.Name, err.Error())
 		return err
@@ -193,6 +193,21 @@ func (b *downwardAPIVolumeMounter) SetUpAt(dir string, fsGroup *int64) error {
 	if err := volumeutil.MakeNestedMountpoints(b.volName, dir, *b.pod); err != nil {
 		return err
 	}
+
+	defer func() {
+		// Clean up directories if setup fails
+		if !setupSuccess {
+			unmounter, unmountCreateErr := b.plugin.NewUnmounter(b.volName, b.podUID)
+			if unmountCreateErr != nil {
+				glog.Errorf("error cleaning up mount %s after failure. Create unmounter failed with %v", b.volName, unmountCreateErr)
+				return
+			}
+			tearDownErr := unmounter.TearDown()
+			if tearDownErr != nil {
+				glog.Errorf("error tearing down volume %s with : %v", b.volName, tearDownErr)
+			}
+		}
+	}()
 
 	writerContext := fmt.Sprintf("pod %v/%v volume %v", b.pod.Namespace, b.pod.Name, b.volName)
 	writer, err := volumeutil.NewAtomicWriter(dir, writerContext)
@@ -213,6 +228,7 @@ func (b *downwardAPIVolumeMounter) SetUpAt(dir string, fsGroup *int64) error {
 		return err
 	}
 
+	setupSuccess = true
 	return nil
 }
 
@@ -280,10 +296,6 @@ func (c *downwardAPIVolumeUnmounter) TearDown() error {
 
 func (c *downwardAPIVolumeUnmounter) TearDownAt(dir string) error {
 	return volumeutil.UnmountViaEmptyDir(dir, c.plugin.host, c.volName, wrappedVolumeSpec(), c.podUID)
-}
-
-func (b *downwardAPIVolumeMounter) getMetaDir() string {
-	return path.Join(b.plugin.host.GetPodPluginDir(b.podUID, utilstrings.EscapeQualifiedNameForDisk(downwardAPIPluginName)), b.volName)
 }
 
 func getVolumeSource(spec *volume.Spec) (*v1.DownwardAPIVolumeSource, bool) {

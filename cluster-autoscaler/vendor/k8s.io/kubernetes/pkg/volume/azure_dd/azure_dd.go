@@ -21,8 +21,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-04-01/compute"
-	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2017-10-01/storage"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-10-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2018-07-01/storage"
 	"github.com/golang/glog"
 
 	"k8s.io/api/core/v1"
@@ -144,8 +144,7 @@ func (plugin *azureDataDiskPlugin) GetVolumeLimits() (map[string]int64, error) {
 		// hoping external CCM or admin can set it. Returning
 		// default values from here will mean, no one can
 		// override them.
-		glog.Errorf("failed to get azure cloud in GetVolumeLimits, plugin.host: %s", plugin.host.GetHostName())
-		return volumeLimits, nil
+		return nil, fmt.Errorf("failed to get azure cloud in GetVolumeLimits, plugin.host: %s", plugin.host.GetHostName())
 	}
 
 	instances, ok := az.Instances()
@@ -188,7 +187,7 @@ func getMaxDataDiskCount(instanceType string, sizeList *[]compute.VirtualMachine
 			continue
 		}
 		if strings.ToUpper(*size.Name) == vmsize {
-			glog.V(2).Infof("got a matching size in getMaxDataDiskCount, Name: %s, MaxDataDiskCount: %s", *size.Name, *size.MaxDataDiskCount)
+			glog.V(2).Infof("got a matching size in getMaxDataDiskCount, Name: %s, MaxDataDiskCount: %d", *size.Name, *size.MaxDataDiskCount)
 			return int64(*size.MaxDataDiskCount)
 		}
 	}
@@ -301,6 +300,13 @@ func (plugin *azureDataDiskPlugin) ExpandVolumeDevice(
 
 	return diskController.ResizeDisk(spec.PersistentVolume.Spec.AzureDisk.DataDiskURI, oldSize, newSize)
 }
+
+func (plugin *azureDataDiskPlugin) ExpandFS(spec *volume.Spec, devicePath, deviceMountPath string, _, _ resource.Quantity) error {
+	_, err := util.GenericResizeFS(plugin.host, plugin.GetPluginName(), devicePath, deviceMountPath)
+	return err
+}
+
+var _ volume.FSResizableVolumePlugin = &azureDataDiskPlugin{}
 
 func (plugin *azureDataDiskPlugin) ConstructVolumeSpec(volumeName, mountPath string) (*volume.Spec, error) {
 	mounter := plugin.host.GetMounter(plugin.GetPluginName())

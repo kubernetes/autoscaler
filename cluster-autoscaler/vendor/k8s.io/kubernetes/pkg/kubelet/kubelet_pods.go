@@ -128,7 +128,6 @@ func (kl *Kubelet) makeBlockVolumes(pod *v1.Pod, container *v1.Container, podVol
 
 // makeMounts determines the mount points for the given container.
 func makeMounts(pod *v1.Pod, podDir string, container *v1.Container, hostName, hostDomain, podIP string, podVolumes kubecontainer.VolumeMap, mounter mountutil.Interface, expandEnvs []kubecontainer.EnvVar) ([]kubecontainer.Mount, func(), error) {
-
 	// Kubernetes only mounts on /etc/hosts if:
 	// - container is not an infrastructure (pause) container
 	// - container is not already mounting on /etc/hosts
@@ -138,7 +137,7 @@ func makeMounts(pod *v1.Pod, podDir string, container *v1.Container, hostName, h
 	mountEtcHostsFile := len(podIP) > 0 && runtime.GOOS != "windows"
 	glog.V(3).Infof("container: %v/%v/%v podIP: %q creating hosts mount: %v", pod.Namespace, pod.Name, container.Name, podIP, mountEtcHostsFile)
 	mounts := []kubecontainer.Mount{}
-	var cleanupAction func() = nil
+	var cleanupAction func()
 	for i, mount := range container.VolumeMounts {
 		// do not mount /etc/hosts if container is already mounting on the path
 		mountEtcHostsFile = mountEtcHostsFile && (mount.MountPath != etcHostsPath)
@@ -216,13 +215,13 @@ func makeMounts(pod *v1.Pod, podDir string, container *v1.Container, hostName, h
 		}
 
 		// Docker Volume Mounts fail on Windows if it is not of the form C:/
-		containerPath := mount.MountPath
-		if runtime.GOOS == "windows" {
-			if (strings.HasPrefix(hostPath, "/") || strings.HasPrefix(hostPath, "\\")) && !strings.Contains(hostPath, ":") {
-				hostPath = "c:" + hostPath
-			}
+		if volumeutil.IsWindowsLocalPath(runtime.GOOS, hostPath) {
+			hostPath = volumeutil.MakeAbsolutePath(runtime.GOOS, hostPath)
 		}
-		if !filepath.IsAbs(containerPath) {
+
+		containerPath := mount.MountPath
+		// IsAbs returns false for UNC path/SMB shares/named pipes in Windows. So check for those specifically and skip MakeAbsolutePath
+		if !volumeutil.IsWindowsUNCPath(runtime.GOOS, containerPath) && !filepath.IsAbs(containerPath) {
 			containerPath = volumeutil.MakeAbsolutePath(runtime.GOOS, containerPath)
 		}
 
@@ -232,7 +231,7 @@ func makeMounts(pod *v1.Pod, podDir string, container *v1.Container, hostName, h
 		}
 		glog.V(5).Infof("Pod %q container %q mount %q has propagation %q", format.Pod(pod), container.Name, mount.Name, propagation)
 
-		mustMountRO := vol.Mounter.GetAttributes().ReadOnly && utilfeature.DefaultFeatureGate.Enabled(features.ReadOnlyAPIDataVolumes)
+		mustMountRO := vol.Mounter.GetAttributes().ReadOnly
 
 		mounts = append(mounts, kubecontainer.Mount{
 			Name:           mount.Name,
@@ -263,10 +262,6 @@ func translateMountPropagation(mountMode *v1.MountPropagationMode) (runtimeapi.M
 		return runtimeapi.MountPropagation_PROPAGATION_PRIVATE, nil
 	}
 
-	if !utilfeature.DefaultFeatureGate.Enabled(features.MountPropagation) {
-		// mount propagation is disabled, use private as in the old versions
-		return runtimeapi.MountPropagation_PROPAGATION_PRIVATE, nil
-	}
 	switch {
 	case mountMode == nil:
 		// PRIVATE is the default
@@ -488,7 +483,7 @@ var masterServices = sets.NewString("kubernetes")
 
 // getServiceEnvVarMap makes a map[string]string of env vars for services a
 // pod in namespace ns should see.
-func (kl *Kubelet) getServiceEnvVarMap(ns string) (map[string]string, error) {
+func (kl *Kubelet) getServiceEnvVarMap(ns string, enableServiceLinks bool) (map[string]string, error) {
 	var (
 		serviceMap = make(map[string]*v1.Service)
 		m          = make(map[string]string)
@@ -514,19 +509,16 @@ func (kl *Kubelet) getServiceEnvVarMap(ns string) (map[string]string, error) {
 		}
 		serviceName := service.Name
 
-		switch service.Namespace {
-		// for the case whether the master service namespace is the namespace the pod
-		// is in, the pod should receive all the services in the namespace.
-		//
-		// ordering of the case clauses below enforces this
-		case ns:
-			serviceMap[serviceName] = service
-		case kl.masterServiceNamespace:
-			if masterServices.Has(serviceName) {
-				if _, exists := serviceMap[serviceName]; !exists {
-					serviceMap[serviceName] = service
-				}
+		// We always want to add environment variabled for master services
+		// from the master service namespace, even if enableServiceLinks is false.
+		// We also add environment variables for other services in the same
+		// namespace, if enableServiceLinks is true.
+		if service.Namespace == kl.masterServiceNamespace && masterServices.Has(serviceName) {
+			if _, exists := serviceMap[serviceName]; !exists {
+				serviceMap[serviceName] = service
 			}
+		} else if service.Namespace == ns && enableServiceLinks {
+			serviceMap[serviceName] = service
 		}
 	}
 
@@ -553,7 +545,7 @@ func (kl *Kubelet) makeEnvironmentVariables(pod *v1.Pod, container *v1.Container
 	// To avoid this users can: (1) wait between starting a service and starting; or (2) detect
 	// missing service env var and exit and be restarted; or (3) use DNS instead of env vars
 	// and keep trying to resolve the DNS name of the service (recommended).
-	serviceEnv, err := kl.getServiceEnvVarMap(pod.Namespace)
+	serviceEnv, err := kl.getServiceEnvVarMap(pod.Namespace, *pod.Spec.EnableServiceLinks)
 	if err != nil {
 		return result, err
 	}
@@ -1326,18 +1318,17 @@ func getPhase(spec *v1.PodSpec, info []v1.ContainerStatus) v1.PodPhase {
 func (kl *Kubelet) generateAPIPodStatus(pod *v1.Pod, podStatus *kubecontainer.PodStatus) v1.PodStatus {
 	glog.V(3).Infof("Generating status for %q", format.Pod(pod))
 
+	s := kl.convertStatusToAPIStatus(pod, podStatus)
+
 	// check if an internal module has requested the pod is evicted.
 	for _, podSyncHandler := range kl.PodSyncHandlers {
 		if result := podSyncHandler.ShouldEvict(pod); result.Evict {
-			return v1.PodStatus{
-				Phase:   v1.PodFailed,
-				Reason:  result.Reason,
-				Message: result.Message,
-			}
+			s.Phase = v1.PodFailed
+			s.Reason = result.Reason
+			s.Message = result.Message
+			return *s
 		}
 	}
-
-	s := kl.convertStatusToAPIStatus(pod, podStatus)
 
 	// Assume info is ready to process
 	spec := &pod.Spec

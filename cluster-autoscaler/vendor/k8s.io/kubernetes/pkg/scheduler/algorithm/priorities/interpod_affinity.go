@@ -17,6 +17,7 @@ limitations under the License.
 package priorities
 
 import (
+	"context"
 	"sync"
 
 	"k8s.io/api/core/v1"
@@ -91,15 +92,13 @@ func (p *podAffinityPriorityMap) processTerm(term *v1.PodAffinityTerm, podDefini
 	}
 	match := priorityutil.PodMatchesTermsNamespaceAndSelector(podToCheck, namespaces, selector)
 	if match {
-		func() {
-			p.Lock()
-			defer p.Unlock()
-			for _, node := range p.nodes {
-				if priorityutil.NodesHaveSameTopologyKey(node, fixedNode, term.TopologyKey) {
-					p.counts[node.Name] += weight
-				}
+		for _, node := range p.nodes {
+			if priorityutil.NodesHaveSameTopologyKey(node, fixedNode, term.TopologyKey) {
+				p.Lock()
+				p.counts[node.Name] += weight
+				p.Unlock()
 			}
-		}()
+		}
 	}
 }
 
@@ -210,7 +209,7 @@ func (ipa *InterPodAffinity) CalculateInterPodAffinityPriority(pod *v1.Pod, node
 			}
 		}
 	}
-	workqueue.Parallelize(16, len(allNodeNames), processNode)
+	workqueue.ParallelizeUntil(context.TODO(), 16, len(allNodeNames), processNode)
 	if pm.firstError != nil {
 		return nil, pm.firstError
 	}
