@@ -256,10 +256,6 @@ func (client Client) CreateOrUpdateSender(req *http.Request) (future CreateOrUpd
 	if err != nil {
 		return
 	}
-	err = autorest.Respond(resp, azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusCreated, http.StatusAccepted))
-	if err != nil {
-		return
-	}
 	future.Future, err = azure.NewFutureFromResponse(resp)
 	return
 }
@@ -333,10 +329,6 @@ func (client Client) CreateOrUpdateByIDSender(req *http.Request) (future CreateO
 	var resp *http.Response
 	resp, err = autorest.SendWithSender(client, req,
 		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		return
-	}
-	err = autorest.Respond(resp, azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusCreated, http.StatusAccepted))
 	if err != nil {
 		return
 	}
@@ -422,10 +414,6 @@ func (client Client) DeleteSender(req *http.Request) (future DeleteFuture, err e
 	if err != nil {
 		return
 	}
-	err = autorest.Respond(resp, azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusAccepted, http.StatusNoContent))
-	if err != nil {
-		return
-	}
 	future.Future, err = azure.NewFutureFromResponse(resp)
 	return
 }
@@ -488,10 +476,6 @@ func (client Client) DeleteByIDSender(req *http.Request) (future DeleteByIDFutur
 	var resp *http.Response
 	resp, err = autorest.SendWithSender(client, req,
 		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		return
-	}
-	err = autorest.Respond(resp, azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusAccepted, http.StatusNoContent))
 	if err != nil {
 		return
 	}
@@ -936,10 +920,6 @@ func (client Client) MoveResourcesSender(req *http.Request) (future MoveResource
 	if err != nil {
 		return
 	}
-	err = autorest.Respond(resp, azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusAccepted, http.StatusNoContent))
-	if err != nil {
-		return
-	}
 	future.Future, err = azure.NewFutureFromResponse(resp)
 	return
 }
@@ -1023,10 +1003,6 @@ func (client Client) UpdateSender(req *http.Request) (future UpdateFuture, err e
 	if err != nil {
 		return
 	}
-	err = autorest.Respond(resp, azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusAccepted))
-	if err != nil {
-		return
-	}
 	future.Future, err = azure.NewFutureFromResponse(resp)
 	return
 }
@@ -1093,10 +1069,6 @@ func (client Client) UpdateByIDSender(req *http.Request) (future UpdateByIDFutur
 	var resp *http.Response
 	resp, err = autorest.SendWithSender(client, req,
 		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		return
-	}
-	err = autorest.Respond(resp, azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusAccepted))
 	if err != nil {
 		return
 	}
@@ -1177,10 +1149,6 @@ func (client Client) ValidateMoveResourcesSender(req *http.Request) (future Vali
 	var resp *http.Response
 	resp, err = autorest.SendWithSender(client, req,
 		azure.DoRetryWithRegistration(client.Client))
-	if err != nil {
-		return
-	}
-	err = autorest.Respond(resp, azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusAccepted, http.StatusNoContent, http.StatusConflict))
 	if err != nil {
 		return
 	}

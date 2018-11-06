@@ -128,12 +128,23 @@ type endpointsInfo struct {
 	refCount   uint16
 }
 
+//Uses mac prefix and IPv4 address to return a mac address
+//This ensures mac addresses are unique for proper load balancing
+//Does not support IPv6 and returns a dummy mac
+func conjureMac(macPrefix string, ip net.IP) string {
+	if ip4 := ip.To4(); ip4 != nil {
+		a, b, c, d := ip4[0], ip4[1], ip4[2], ip4[3]
+		return fmt.Sprintf("%v-%02x-%02x-%02x-%02x", macPrefix, a, b, c, d)
+	}
+	return "02-11-22-33-44-55"
+}
+
 func newEndpointInfo(ip string, port uint16, isLocal bool) *endpointsInfo {
 	info := &endpointsInfo{
 		ip:         ip,
 		port:       port,
 		isLocal:    isLocal,
-		macAddress: "00:11:22:33:44:55", // Hardcoding to some Random Mac
+		macAddress: conjureMac("02-11", net.ParseIP(ip)),
 		refCount:   0,
 		hnsID:      "",
 	}
@@ -169,10 +180,12 @@ func newServiceInfo(svcPortName proxy.ServicePortName, port *v1.ServicePort, ser
 		stickyMaxAgeSeconds = int(*service.Spec.SessionAffinityConfig.ClientIP.TimeoutSeconds)
 	}
 	info := &serviceInfo{
-		clusterIP:  net.ParseIP(service.Spec.ClusterIP),
-		port:       int(port.Port),
-		protocol:   port.Protocol,
-		nodePort:   int(port.NodePort),
+		clusterIP: net.ParseIP(service.Spec.ClusterIP),
+		port:      int(port.Port),
+		protocol:  port.Protocol,
+		nodePort:  int(port.NodePort),
+		// targetPort is zero if it is specified as a name in port.TargetPort.
+		// Its real value would be got later from endpoints.
 		targetPort: port.TargetPort.IntValue(),
 		// Deep-copy in case the service instance changes
 		loadBalancerStatus:       *service.Status.LoadBalancer.DeepCopy(),
@@ -517,15 +530,14 @@ func CleanupLeftovers() (encounteredError bool) {
 
 func (svcInfo *serviceInfo) cleanupAllPolicies(endpoints []*endpointsInfo) {
 	Log(svcInfo, "Service Cleanup", 3)
-	if svcInfo.policyApplied {
-		svcInfo.deleteAllHnsLoadBalancerPolicy()
-		// Cleanup Endpoints references
-		for _, ep := range endpoints {
-			ep.Cleanup()
-		}
-
-		svcInfo.policyApplied = false
+	// Skip the svcInfo.policyApplied check to remove all the policies
+	svcInfo.deleteAllHnsLoadBalancerPolicy()
+	// Cleanup Endpoints references
+	for _, ep := range endpoints {
+		ep.Cleanup()
 	}
+
+	svcInfo.policyApplied = false
 }
 
 func (svcInfo *serviceInfo) deleteAllHnsLoadBalancerPolicy() {
@@ -967,6 +979,14 @@ func (proxier *Proxier) syncProxyRules() {
 			var newHnsEndpoint *hcsshim.HNSEndpoint
 			hnsNetworkName := proxier.network.name
 			var err error
+
+			// targetPort is zero if it is specified as a name in port.TargetPort, so the real port should be got from endpoints.
+			// Note that hcsshim.AddLoadBalancer() doesn't support endpoints with different ports, so only port from first endpoint is used.
+			// TODO(feiskyer): add support of different endpoint ports after hcsshim.AddLoadBalancer() add that.
+			if svcInfo.targetPort == 0 {
+				svcInfo.targetPort = int(ep.port)
+			}
+
 			if len(ep.hnsID) > 0 {
 				newHnsEndpoint, err = hcsshim.GetHNSEndpointByID(ep.hnsID)
 			}
