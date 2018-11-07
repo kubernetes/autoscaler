@@ -313,6 +313,12 @@ func (mig *gceMig) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
 	return nodeInfo, nil
 }
 
+// GetNodeResources describes what resources are consumed by every node coming from node group.
+// Implementation optional
+func (mig *gceMig) GetNodeResources() (cloudprovider.NodeResources, error) {
+	return nil, cloudprovider.ErrNotImplemented
+}
+
 // BuildGCE builds GCE cloud provider, manager etc.
 func BuildGCE(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	var config io.ReadCloser

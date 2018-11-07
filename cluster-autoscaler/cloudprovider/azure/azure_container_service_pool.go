@@ -484,3 +484,9 @@ func (agentPool *ContainerServiceAgentPool) Delete() error {
 func (agentPool *ContainerServiceAgentPool) Autoprovisioned() bool {
 	return false
 }
+
+// GetNodeResources describes what resources are consumed by every node coming from node group.
+// Implementation optional
+func (agentPool *ContainerServiceAgentPool) GetNodeResources() (cloudprovider.NodeResources, error) {
+	return nil, cloudprovider.ErrNotImplemented
+}

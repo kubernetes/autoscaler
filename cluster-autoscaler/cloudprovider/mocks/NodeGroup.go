@@ -133,6 +133,29 @@ func (_m *NodeGroup) Exist() bool {
 	return r0
 }
 
+// GetNodeResources provides a mock function with given fields:
+func (_m *NodeGroup) GetNodeResources() (cloudprovider.NodeResources, error) {
+	ret := _m.Called()
+
+	var r0 cloudprovider.NodeResources
+	if rf, ok := ret.Get(0).(func() cloudprovider.NodeResources); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(cloudprovider.NodeResources)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Id provides a mock function with given fields:
 func (_m *NodeGroup) Id() string {
 	ret := _m.Called()

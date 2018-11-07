@@ -211,3 +211,9 @@ func (asg *Asg) Autoprovisioned() bool {
 func (asg *Asg) Delete() error {
 	return cloudprovider.ErrNotImplemented
 }
+
+// GetNodeResources describes what resources are consumed by every node coming from node group.
+// Implementation optional
+func (asg *Asg) GetNodeResources() (cloudprovider.NodeResources, error) {
+	return nil, cloudprovider.ErrNotImplemented
+}

@@ -416,6 +416,12 @@ func (mig *GkeMig) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
 	return nodeInfo, nil
 }
 
+// GetNodeResources describes what resources are consumed by every node coming from node group.
+// Implementation optional
+func (mig *GkeMig) GetNodeResources() (cloudprovider.NodeResources, error) {
+	return nil, cloudprovider.ErrNotImplemented
+}
+
 // BuildGKE builds a new GKE cloud provider, manager etc.
 func BuildGKE(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	if do.DiscoverySpecified() {

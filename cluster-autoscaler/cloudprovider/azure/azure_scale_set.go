@@ -491,3 +491,9 @@ func (scaleSet *ScaleSet) Nodes() ([]cloudprovider.Instance, error) {
 
 	return instances, nil
 }
+
+// GetNodeResources describes what resources are consumed by every node coming from node group.
+// Implementation optional
+func (scaleSet *ScaleSet) GetNodeResources() (cloudprovider.NodeResources, error) {
+	return nil, cloudprovider.ErrNotImplemented
+}

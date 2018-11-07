@@ -140,6 +140,10 @@ type NodeGroup interface {
 	// Autoprovisioned returns true if the node group is autoprovisioned. An autoprovisioned group
 	// was created by CA and can be deleted when scaled to 0.
 	Autoprovisioned() bool
+
+	// GetNodeResources describes what resources are consumed by every node coming from node group.
+	// Implementation optional
+	GetNodeResources() (NodeResources, error)
 }
 
 // Instance represents a cloud-provider node. The node does not necessarily map to k8s node
@@ -193,6 +197,37 @@ const (
 	// OtherErrorClass means some non-specific error situation occurred
 	OtherErrorClass InstanceErrorClass = 99
 )
+
+// NodeResourceCostClass represents cost class of resource
+type NodeResourceCostClass int
+
+const (
+	// StandardCostClass represent resources of standard cost (default handling logic)
+	StandardCostClass NodeResourceCostClass = 1
+	// ExpensiveCostClass represent expensiv resources (logic limiting overprovisioning)
+	ExpensiveCostClass NodeResourceCostClass = 2
+)
+
+// NodeResource describe a single resource type consumed by cluster node
+type NodeResource struct {
+	// Location determines location of resource.
+	// This is cloud provider specific string opaque to cluster autoscaler logic
+	// can represent compute zone/region; e.g. "us-central1-c", "us-central1"
+	// or meta-location like "global"
+	Location string
+
+	// Type names type of a resource (cpu, memory, specific GPU chip, ...)
+	Type string
+
+	// Value represents quantity of the resource
+	Value int
+
+	// CostClass represents cost class of resource.
+	CostClass NodeResourceCostClass
+}
+
+// NodeResources groups all resource descriptions for cluster node
+type NodeResources []NodeResource
 
 // PricingModel contains information about the node price and how it changes in time.
 type PricingModel interface {

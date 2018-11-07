@@ -54,6 +54,9 @@ func (f *FakeNodeGroup) Create() (cloudprovider.NodeGroup, error) {
 }
 func (f *FakeNodeGroup) Delete() error         { return cloudprovider.ErrNotImplemented }
 func (f *FakeNodeGroup) Autoprovisioned() bool { return false }
+func (f *FakeNodeGroup) GetNodeResources() (cloudprovider.NodeResources, error) {
+	return nil, cloudprovider.ErrNotImplemented
+}
 
 func makeNodeInfo(cpu int64, memory int64, pods int64) *schedulercache.NodeInfo {
 	node := &apiv1.Node{

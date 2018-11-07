@@ -390,3 +390,9 @@ func (tng *TestNodeGroup) Labels() map[string]string {
 func (tng *TestNodeGroup) Taints() []apiv1.Taint {
 	return tng.taints
 }
+
+// GetNodeResources describes what resources are consumed by every node coming from node group.
+// Implementation optional
+func (tng *TestNodeGroup) GetNodeResources() (cloudprovider.NodeResources, error) {
+	return nil, cloudprovider.ErrNotImplemented
+}

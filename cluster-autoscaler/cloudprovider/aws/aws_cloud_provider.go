@@ -313,6 +313,12 @@ func (ng *AwsNodeGroup) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
 	return nodeInfo, nil
 }
 
+// GetNodeResources describes what resources are consumed by every node coming from node group.
+// Implementation optional
+func (ng *AwsNodeGroup) GetNodeResources() (cloudprovider.NodeResources, error) {
+	return nil, cloudprovider.ErrNotImplemented
+}
+
 // BuildAWS builds AWS cloud provider, manager etc.
 func BuildAWS(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	var config io.ReadCloser

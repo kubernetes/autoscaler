@@ -30,6 +30,7 @@ type Backoff interface {
 	IsBackedOff(nodeGroup cloudprovider.NodeGroup, currentTime time.Time) bool
 	// RemoveBackoff removes backoff data for the given node group.
 	RemoveBackoff(nodeGroup cloudprovider.NodeGroup)
+
 	// RemoveStaleBackoffData removes stale backoff data.
 	RemoveStaleBackoffData(currentTime time.Time)
 }

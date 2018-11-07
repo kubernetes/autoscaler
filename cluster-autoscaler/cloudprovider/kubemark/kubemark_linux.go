@@ -269,6 +269,12 @@ func (nodeGroup *NodeGroup) Autoprovisioned() bool {
 	return false
 }
 
+// GetNodeResources describes what resources are consumed by every node coming from node group.
+// Implementation optional
+func (nodeGroup *NodeGroup) GetNodeResources() (cloudprovider.NodeResources, error) {
+	return nil, cloudprovider.ErrNotImplemented
+}
+
 func buildNodeGroup(value string, kubemarkController *kubemark.KubemarkController) (*NodeGroup, error) {
 	spec, err := dynamic.SpecFromString(value, true)
 	if err != nil {

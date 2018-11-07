@@ -522,3 +522,9 @@ func (as *AgentPool) deleteVirtualMachine(name string) error {
 func (as *AgentPool) getAzureRef() azureRef {
 	return as.azureRef
 }
+
+// GetNodeResources describes what resources are consumed by every node coming from node group.
+// Implementation optional
+func (as *AgentPool) GetNodeResources() (cloudprovider.NodeResources, error) {
+	return nil, cloudprovider.ErrNotImplemented
+}
