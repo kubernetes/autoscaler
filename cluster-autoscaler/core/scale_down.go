@@ -1043,7 +1043,7 @@ func deleteNodeFromCloudProvider(node *apiv1.Node, cloudProvider cloudprovider.C
 	}
 	recorder.Eventf(node, apiv1.EventTypeNormal, "ScaleDown", "node removed by cluster autoscaler")
 	registry.RegisterScaleDown(&clusterstate.ScaleDownRequest{
-		NodeGroupName:      nodeGroup.Id(),
+		NodeGroup:          nodeGroup,
 		NodeName:           node.Name,
 		Time:               time.Now(),
 		ExpectedDeleteTime: time.Now().Add(MaxCloudProviderNodeDeletionTime),

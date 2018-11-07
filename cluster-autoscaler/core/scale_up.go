@@ -320,7 +320,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 	skippedNodeGroups := map[string]status.Reasons{}
 	for _, nodeGroup := range nodeGroups {
 		// Autoprovisioned node groups without nodes are created later so skip check for them.
-		if nodeGroup.Exist() && !clusterStateRegistry.IsNodeGroupSafeToScaleUp(nodeGroup.Id(), now) {
+		if nodeGroup.Exist() && !clusterStateRegistry.IsNodeGroupSafeToScaleUp(nodeGroup, now) {
 			// Hack that depends on internals of IsNodeGroupSafeToScaleUp.
 			if !clusterStateRegistry.IsNodeGroupHealthy(nodeGroup.Id()) {
 				glog.Warningf("Node group %s is not ready for scaleup - unhealthy", nodeGroup.Id())
@@ -505,7 +505,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 			}
 			similarNodeGroups = filterNodeGroupsByPods(similarNodeGroups, bestOption.Pods, getPodsPassingPredicates)
 			for _, ng := range similarNodeGroups {
-				if clusterStateRegistry.IsNodeGroupSafeToScaleUp(ng.Id(), now) {
+				if clusterStateRegistry.IsNodeGroupSafeToScaleUp(ng, now) {
 					targetNodeGroups = append(targetNodeGroups, ng)
 				} else {
 					// This should never happen, as we will filter out the node group earlier on
@@ -693,13 +693,13 @@ func executeScaleUp(context *context.AutoscalingContext, clusterStateRegistry *c
 	increase := info.NewSize - info.CurrentSize
 	if err := info.Group.IncreaseSize(increase); err != nil {
 		context.LogRecorder.Eventf(apiv1.EventTypeWarning, "FailedToScaleUpGroup", "Scale-up failed for group %s: %v", info.Group.Id(), err)
-		clusterStateRegistry.RegisterFailedScaleUp(info.Group.Id(), metrics.APIError)
+		clusterStateRegistry.RegisterFailedScaleUp(info.Group, metrics.APIError)
 		return errors.NewAutoscalerError(errors.CloudProviderError,
 			"failed to increase node group size: %v", err)
 	}
 	clusterStateRegistry.RegisterScaleUp(
 		&clusterstate.ScaleUpRequest{
-			NodeGroupName:   info.Group.Id(),
+			NodeGroup:       info.Group,
 			Increase:        increase,
 			Time:            time.Now(),
 			ExpectedAddTime: time.Now().Add(context.MaxNodeProvisionTime),
