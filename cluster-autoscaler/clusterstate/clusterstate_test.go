@@ -55,7 +55,7 @@ func TestOKWithScaleUp(t *testing.T) {
 		OkTotalUnreadyCount:       1,
 	}, fakeLogRecorder)
 	clusterstate.RegisterScaleUp(&ScaleUpRequest{
-		NodeGroupName:   "ng1",
+		NodeGroup:       provider.GetNodeGroup("ng1"),
 		Increase:        4,
 		Time:            now,
 		ExpectedAddTime: now.Add(time.Minute),
@@ -107,7 +107,7 @@ func TestEmptyOK(t *testing.T) {
 
 	provider.AddNodeGroup("ng1", 0, 10, 3)
 	clusterstate.RegisterScaleUp(&ScaleUpRequest{
-		NodeGroupName:   "ng1",
+		NodeGroup:       provider.GetNodeGroup("ng1"),
 		Increase:        3,
 		Time:            now.Add(-3 * time.Second),
 		ExpectedAddTime: now.Add(1 * time.Minute),
@@ -333,7 +333,7 @@ func TestExpiredScaleUp(t *testing.T) {
 		OkTotalUnreadyCount:       1,
 	}, fakeLogRecorder)
 	clusterstate.RegisterScaleUp(&ScaleUpRequest{
-		NodeGroupName:   "ng1",
+		NodeGroup:       provider.GetNodeGroup("ng1"),
 		Increase:        4,
 		Time:            now.Add(-3 * time.Minute),
 		ExpectedAddTime: now.Add(-1 * time.Minute),
@@ -361,7 +361,7 @@ func TestRegisterScaleDown(t *testing.T) {
 	now := time.Now()
 
 	clusterstate.RegisterScaleDown(&ScaleDownRequest{
-		NodeGroupName:      "ng1",
+		NodeGroup:          provider.GetNodeGroup("ng1"),
 		NodeName:           "ng1-1",
 		ExpectedDeleteTime: now.Add(time.Minute),
 		Time:               now,
@@ -607,6 +607,7 @@ func TestScaleUpBackoff(t *testing.T) {
 
 	provider := testprovider.NewTestCloudProvider(nil, nil)
 	provider.AddNodeGroup("ng1", 1, 10, 4)
+	ng1 := provider.GetNodeGroup("ng1")
 	provider.AddNode("ng1", ng1_1)
 	provider.AddNode("ng1", ng1_2)
 	provider.AddNode("ng1", ng1_3)
@@ -621,7 +622,7 @@ func TestScaleUpBackoff(t *testing.T) {
 
 	// After failed scale-up, node group should be still healthy, but should backoff from scale-ups
 	clusterstate.RegisterScaleUp(&ScaleUpRequest{
-		NodeGroupName:   "ng1",
+		NodeGroup:       provider.GetNodeGroup("ng1"),
 		Increase:        1,
 		Time:            now.Add(-3 * time.Minute),
 		ExpectedAddTime: now.Add(-1 * time.Minute),
@@ -630,17 +631,17 @@ func TestScaleUpBackoff(t *testing.T) {
 	assert.NoError(t, err)
 	assert.True(t, clusterstate.IsClusterHealthy())
 	assert.True(t, clusterstate.IsNodeGroupHealthy("ng1"))
-	assert.False(t, clusterstate.IsNodeGroupSafeToScaleUp("ng1", now))
+	assert.False(t, clusterstate.IsNodeGroupSafeToScaleUp(ng1, now))
 
 	// Backoff should expire after timeout
 	now = now.Add(InitialNodeGroupBackoffDuration).Add(time.Second)
 	assert.True(t, clusterstate.IsClusterHealthy())
 	assert.True(t, clusterstate.IsNodeGroupHealthy("ng1"))
-	assert.True(t, clusterstate.IsNodeGroupSafeToScaleUp("ng1", now))
+	assert.True(t, clusterstate.IsNodeGroupSafeToScaleUp(ng1, now))
 
 	// Another failed scale up should cause longer backoff
 	clusterstate.RegisterScaleUp(&ScaleUpRequest{
-		NodeGroupName:   "ng1",
+		NodeGroup:       provider.GetNodeGroup("ng1"),
 		Increase:        1,
 		Time:            now.Add(-2 * time.Minute),
 		ExpectedAddTime: now.Add(-1 * time.Second),
@@ -649,14 +650,14 @@ func TestScaleUpBackoff(t *testing.T) {
 	assert.NoError(t, err)
 	assert.True(t, clusterstate.IsClusterHealthy())
 	assert.True(t, clusterstate.IsNodeGroupHealthy("ng1"))
-	assert.False(t, clusterstate.IsNodeGroupSafeToScaleUp("ng1", now))
+	assert.False(t, clusterstate.IsNodeGroupSafeToScaleUp(ng1, now))
 
 	now = now.Add(InitialNodeGroupBackoffDuration).Add(time.Second)
-	assert.False(t, clusterstate.IsNodeGroupSafeToScaleUp("ng1", now))
+	assert.False(t, clusterstate.IsNodeGroupSafeToScaleUp(ng1, now))
 
 	// The backoff should be cleared after a successful scale-up
 	clusterstate.RegisterScaleUp(&ScaleUpRequest{
-		NodeGroupName:   "ng1",
+		NodeGroup:       provider.GetNodeGroup("ng1"),
 		Increase:        1,
 		Time:            now,
 		ExpectedAddTime: now.Add(time.Second),
@@ -668,8 +669,8 @@ func TestScaleUpBackoff(t *testing.T) {
 	assert.NoError(t, err)
 	assert.True(t, clusterstate.IsClusterHealthy())
 	assert.True(t, clusterstate.IsNodeGroupHealthy("ng1"))
-	assert.True(t, clusterstate.IsNodeGroupSafeToScaleUp("ng1", now))
-	assert.False(t, clusterstate.nodeGroupBackoffInfo.IsBackedOff("ng1", now))
+	assert.True(t, clusterstate.IsNodeGroupSafeToScaleUp(ng1, now))
+	assert.False(t, clusterstate.nodeGroupBackoffInfo.IsBackedOff(ng1, now))
 }
 
 func TestGetClusterSize(t *testing.T) {
