@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"crypto/sha1"
+
 	"k8s.io/autoscaler/vertical-pod-autoscaler/updater/apimock"
 	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 	hashutil "k8s.io/kubernetes/pkg/util/hash"
@@ -63,7 +64,7 @@ func (c *cachingRecommenderImpl) Get(spec *apiv1.PodSpec) (*apimock.Recommendati
 	}
 	response, err := c.api.GetRecommendation(spec)
 	if err != nil {
-		return nil, fmt.Errorf("error fetching recommendation", err)
+		return nil, fmt.Errorf("error fetching recommendation: %v", err)
 	}
 	if response != nil && cacheKey != nil {
 		c.cache.Set(cacheKey, response)
