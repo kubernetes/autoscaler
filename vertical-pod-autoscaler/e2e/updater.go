@@ -39,24 +39,24 @@ import (
 var _ = UpdaterE2eDescribe("Updater", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
 
-	ginkgo.It("restarts pods in a Deployment", func() {
-		testRestartsPods(f, "Deployment")
+	ginkgo.It("evicts pods in a Deployment", func() {
+		testEvictsPods(f, "Deployment")
 	})
 
-	ginkgo.It("restarts pods in a Replication Controller", func() {
-		testRestartsPods(f, "ReplicationController")
+	ginkgo.It("evicts pods in a Replication Controller", func() {
+		testEvictsPods(f, "ReplicationController")
 	})
 
-	ginkgo.It("restarts pods in a Job", func() {
-		testRestartsPods(f, "Job")
+	ginkgo.It("evicts pods in a Job", func() {
+		testEvictsPods(f, "Job")
 	})
 
-	ginkgo.It("restarts pods in a ReplicaSet", func() {
-		testRestartsPods(f, "ReplicaSet")
+	ginkgo.It("evicts pods in a ReplicaSet", func() {
+		testEvictsPods(f, "ReplicaSet")
 	})
 
-	ginkgo.It("restarts pods in a StatefulSet", func() {
-		testRestartsPods(f, "StatefulSet")
+	ginkgo.It("evicts pods in a StatefulSet", func() {
+		testEvictsPods(f, "StatefulSet")
 	})
 
 	ginkgo.It("observes pod disruption budget", func() {
@@ -76,8 +76,8 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 		ginkgo.By("Setting up a VPA CRD")
 		SetupVPA(f, "25m", vpa_types.UpdateModeAuto)
 
-		ginkgo.By(fmt.Sprintf("Waiting for pods to be restarted, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
-		CheckNoPodsRestarted(f, podSet)
+		ginkgo.By(fmt.Sprintf("Waiting for pods to be evicted, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
+		CheckNoPodsEvicted(f, podSet)
 
 		ginkgo.By("Updating the PDB to allow for multiple pods to be evicted")
 		// We will check that 7 replicas are evicted in 3 minutes, which translates
@@ -89,18 +89,18 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 		err = c.PolicyV1beta1().PodDisruptionBudgets(ns).Delete(pdb.Name, &metav1.DeleteOptions{})
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
-		ginkgo.By(fmt.Sprintf("Waiting for pods to be restarted, sleep for %s", VpaEvictionTimeout.String()))
+		ginkgo.By(fmt.Sprintf("Waiting for pods to be evicted, sleep for %s", VpaEvictionTimeout.String()))
 		time.Sleep(VpaEvictionTimeout)
-		ginkgo.By("Checking enough pods were restarted.")
+		ginkgo.By("Checking enough pods were evicted.")
 		currentPodList, err := GetHamsterPods(f)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
-		restartedCount := GetRestartedPodsCount(MakePodSet(currentPodList), podSet)
+		evictedCount := GetEvictedPodsCount(MakePodSet(currentPodList), podSet)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
-		gomega.Expect(restartedCount >= permissiveMaxUnavailable).To(gomega.BeTrue())
+		gomega.Expect(evictedCount >= permissiveMaxUnavailable).To(gomega.BeTrue())
 	})
 })
 
-func testRestartsPods(f *framework.Framework, controllerKind string) {
+func testEvictsPods(f *framework.Framework, controllerKind string) {
 	ginkgo.By(fmt.Sprintf("Setting up a hamster %v", controllerKind))
 	setupHamsterController(f, controllerKind, "100m", "100Mi", defaultHamsterReplicas)
 	podList, err := GetHamsterPods(f)
@@ -109,8 +109,8 @@ func testRestartsPods(f *framework.Framework, controllerKind string) {
 	ginkgo.By("Setting up a VPA CRD")
 	SetupVPA(f, "200m", vpa_types.UpdateModeAuto)
 
-	ginkgo.By("Waiting for pods to be restarted")
-	err = WaitForPodsRestarted(f, podList)
+	ginkgo.By("Waiting for pods to be evicted")
+	err = WaitForPodsEvicted(f, podList)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 }
 
