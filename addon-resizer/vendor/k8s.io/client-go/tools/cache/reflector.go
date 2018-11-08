@@ -24,9 +24,6 @@ import (
 	"net"
 	"net/url"
 	"reflect"
-	"regexp"
-	goruntime "runtime"
-	"runtime/debug"
 	"strconv"
 	"strings"
 	"sync"
@@ -40,6 +37,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/clock"
+	"k8s.io/apimachinery/pkg/util/naming"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apimachinery/pkg/watch"
@@ -76,8 +74,6 @@ type Reflector struct {
 var (
 	// We try to spread the load on apiserver by setting timeouts for
 	// watch requests - it is random in [minWatchTimeout, 2*minWatchTimeout].
-	// However, it can be modified to avoid periodic resync to break the
-	// TCP connection.
 	minWatchTimeout = 5 * time.Minute
 )
 
@@ -96,7 +92,7 @@ func NewNamespaceKeyedIndexerAndReflector(lw ListerWatcher, expectedType interfa
 // resyncPeriod, so that you can use reflectors to periodically process everything as
 // well as incrementally processing the things that change.
 func NewReflector(lw ListerWatcher, expectedType interface{}, store Store, resyncPeriod time.Duration) *Reflector {
-	return NewNamedReflector(getDefaultReflectorName(internalPackages...), lw, expectedType, store, resyncPeriod)
+	return NewNamedReflector(naming.GetNameFromCallsite(internalPackages...), lw, expectedType, store, resyncPeriod)
 }
 
 // reflectorDisambiguator is used to disambiguate started reflectors.
@@ -108,8 +104,8 @@ func NewNamedReflector(name string, lw ListerWatcher, expectedType interface{}, 
 	reflectorSuffix := atomic.AddInt64(&reflectorDisambiguator, 1)
 	r := &Reflector{
 		name: name,
-		// we need this to be unique per process (some names are still the same)but obvious who it belongs to
-		metrics:       newReflectorMetrics(makeValidPromethusMetricName(fmt.Sprintf("reflector_"+name+"_%d", reflectorSuffix))),
+		// we need this to be unique per process (some names are still the same) but obvious who it belongs to
+		metrics:       newReflectorMetrics(makeValidPrometheusMetricLabel(fmt.Sprintf("reflector_"+name+"_%d", reflectorSuffix))),
 		listerWatcher: lw,
 		store:         store,
 		expectedType:  reflect.TypeOf(expectedType),
@@ -120,81 +116,14 @@ func NewNamedReflector(name string, lw ListerWatcher, expectedType interface{}, 
 	return r
 }
 
-func makeValidPromethusMetricName(in string) string {
+func makeValidPrometheusMetricLabel(in string) string {
 	// this isn't perfect, but it removes our common characters
-	return strings.NewReplacer("/", "_", ".", "_", "-", "_").Replace(in)
+	return strings.NewReplacer("/", "_", ".", "_", "-", "_", ":", "_").Replace(in)
 }
 
 // internalPackages are packages that ignored when creating a default reflector name. These packages are in the common
 // call chains to NewReflector, so they'd be low entropy names for reflectors
-var internalPackages = []string{"client-go/tools/cache/", "/runtime/asm_"}
-
-// getDefaultReflectorName walks back through the call stack until we find a caller from outside of the ignoredPackages
-// it returns back a shortpath/filename:line to aid in identification of this reflector when it starts logging
-func getDefaultReflectorName(ignoredPackages ...string) string {
-	name := "????"
-	const maxStack = 10
-	for i := 1; i < maxStack; i++ {
-		_, file, line, ok := goruntime.Caller(i)
-		if !ok {
-			file, line, ok = extractStackCreator()
-			if !ok {
-				break
-			}
-			i += maxStack
-		}
-		if hasPackage(file, ignoredPackages) {
-			continue
-		}
-
-		file = trimPackagePrefix(file)
-		name = fmt.Sprintf("%s:%d", file, line)
-		break
-	}
-	return name
-}
-
-// hasPackage returns true if the file is in one of the ignored packages.
-func hasPackage(file string, ignoredPackages []string) bool {
-	for _, ignoredPackage := range ignoredPackages {
-		if strings.Contains(file, ignoredPackage) {
-			return true
-		}
-	}
-	return false
-}
-
-// trimPackagePrefix reduces duplicate values off the front of a package name.
-func trimPackagePrefix(file string) string {
-	if l := strings.LastIndex(file, "k8s.io/client-go/pkg/"); l >= 0 {
-		return file[l+len("k8s.io/client-go/"):]
-	}
-	if l := strings.LastIndex(file, "/src/"); l >= 0 {
-		return file[l+5:]
-	}
-	if l := strings.LastIndex(file, "/pkg/"); l >= 0 {
-		return file[l+1:]
-	}
-	return file
-}
-
-var stackCreator = regexp.MustCompile(`(?m)^created by (.*)\n\s+(.*):(\d+) \+0x[[:xdigit:]]+$`)
-
-// extractStackCreator retrieves the goroutine file and line that launched this stack. Returns false
-// if the creator cannot be located.
-// TODO: Go does not expose this via runtime https://github.com/golang/go/issues/11440
-func extractStackCreator() (string, int, bool) {
-	stack := debug.Stack()
-	matches := stackCreator.FindStringSubmatch(string(stack))
-	if matches == nil || len(matches) != 4 {
-		return "", 0, false
-	}
-	line, err := strconv.Atoi(matches[3])
-	if err != nil {
-		return "", 0, false
-	}
-	return matches[2], line, true
-}
+var internalPackages = []string{"client-go/tools/cache/"}
 
 // Run starts a watch and handles watch events. Will restart the watch if it is closed.
 // Run will exit when stopCh is closed.
@@ -295,12 +224,19 @@ func (r *Reflector) ListAndWatch(stopCh <-chan struct{}) error {
 	}()
 
 	for {
-		timemoutseconds := int64(minWatchTimeout.Seconds() * (rand.Float64() + 1.0))
+		// give the stopCh a chance to stop the loop, even in case of continue statements further down on errors
+		select {
+		case <-stopCh:
+			return nil
+		default:
+		}
+
+		timeoutSeconds := int64(minWatchTimeout.Seconds() * (rand.Float64() + 1.0))
 		options = metav1.ListOptions{
 			ResourceVersion: resourceVersion,
 			// We want to avoid situations of hanging watchers. Stop any wachers that do not
 			// receive any events within the timeout window.
-			TimeoutSeconds: &timemoutseconds,
+			TimeoutSeconds: &timeoutSeconds,
 		}
 
 		r.metrics.numberOfWatches.Inc()

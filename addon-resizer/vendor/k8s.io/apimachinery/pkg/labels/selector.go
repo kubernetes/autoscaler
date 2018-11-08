@@ -166,7 +166,6 @@ func NewRequirement(key string, op selection.Operator, vals []string) (*Requirem
 			return nil, err
 		}
 	}
-	sort.Strings(vals)
 	return &Requirement{key: key, operator: op, strValues: vals}, nil
 }
 
@@ -299,7 +298,9 @@ func (r *Requirement) String() string {
 	if len(r.strValues) == 1 {
 		buffer.WriteString(r.strValues[0])
 	} else { // only > 1 since == 0 prohibited by NewRequirement
-		buffer.WriteString(strings.Join(r.strValues, ","))
+		// normalizes value order on output, without mutating the in-memory selector representation
+		// also avoids normalization when it is not required, and ensures we do not mutate shared data
+		buffer.WriteString(strings.Join(safeSort(r.strValues), ","))
 	}
 
 	switch r.operator {
@@ -307,6 +308,17 @@ func (r *Requirement) String() string {
 		buffer.WriteString(")")
 	}
 	return buffer.String()
+}
+
+// safeSort sort input strings without modification
+func safeSort(in []string) []string {
+	if sort.StringsAreSorted(in) {
+		return in
+	}
+	out := make([]string, len(in))
+	copy(out, in)
+	sort.Strings(out)
+	return out
 }
 
 // Add adds requirements to the selector. It copies the current selector returning a new one
@@ -550,7 +562,7 @@ func (p *Parser) lookahead(context ParserContext) (Token, string) {
 	return tok, lit
 }
 
-// consume returns current token and string. Increments the the position
+// consume returns current token and string. Increments the position
 func (p *Parser) consume(context ParserContext) (Token, string) {
 	p.position++
 	tok, lit := p.scannedItems[p.position-1].tok, p.scannedItems[p.position-1].literal
