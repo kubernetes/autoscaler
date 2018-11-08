@@ -18,15 +18,12 @@ package nanny
 
 import (
 	"fmt"
-	"time"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/apimachinery/pkg/watch"
+	metav1beta1 "k8s.io/apimachinery/pkg/apis/meta/v1beta1"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/cache"
+	scheme "k8s.io/client-go/kubernetes/scheme"
 )
 
 type kubernetesClient struct {
@@ -35,21 +32,25 @@ type kubernetesClient struct {
 	pod        string
 	container  string
 	clientset  *kubernetes.Clientset
-	nodeStore  cache.Store
-	reflector  *cache.Reflector
 }
 
 func (k *kubernetesClient) CountNodes() (uint64, error) {
-	err := wait.PollImmediate(time.Second, time.Minute, func() (bool, error) {
-		if k.reflector.LastSyncResourceVersion() == "" {
-			return false, nil
-		}
-		return true, nil
-	})
-	if err != nil {
-		return 0, err
+	// Set ResourceVersion = 0 to use cached versions.
+	options := metav1.ListOptions{
+		ResourceVersion: "0",
 	}
-	return uint64(len(k.nodeStore.List())), nil
+	result := &metav1beta1.PartialObjectMetadataList{}
+	err := k.clientset.
+		Core().
+		RESTClient().
+		Get().
+		Resource("nodes").
+		// Set as=PartialObjectMetadataList to fetch only nodes metadata.
+		SetHeader("Accept", "application/vnd.kubernetes.protobuf;as=PartialObjectMetadataList;g=meta.k8s.io;v=v1beta1").
+		VersionedParams(&options, scheme.ParameterCodec).
+		Do().
+		Into(result)
+	return uint64(len(result.Items)), err
 }
 
 func (k *kubernetesClient) ContainerResources() (*corev1.ResourceRequirements, error) {
@@ -93,18 +94,6 @@ func NewKubernetesClient(namespace, deployment, pod, container string, clientset
 		pod:        pod,
 		container:  container,
 		clientset:  clientset,
-		nodeStore:  cache.NewStore(cache.MetaNamespaceKeyFunc),
 	}
-	// Start propagating contents of the nodeStore.
-	nodeListWatch := &cache.ListWatch{
-		ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-			return clientset.Core().Nodes().List(options)
-		},
-		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			return clientset.Core().Nodes().Watch(options)
-		},
-	}
-	result.reflector = cache.NewReflector(nodeListWatch, &corev1.Node{}, result.nodeStore, 0)
-	go result.reflector.Run(wait.NeverStop)
 	return result
 }

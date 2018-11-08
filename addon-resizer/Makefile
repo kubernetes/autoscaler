@@ -27,7 +27,7 @@ PACKAGE = k8s.io/autoscaler/addon-resizer
 REGISTRY = staging-k8s.gcr.io
 IMGNAME = addon-resizer
 IMAGE = $(REGISTRY)/$(IMGNAME)
-TAG = 1.8.3
+TAG = 1.8.4
 
 # Rules for building the real image for deployment to gcr.io
 
