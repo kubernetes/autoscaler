@@ -61,8 +61,8 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 		ginkgo.By("Setting up a VPA CRD in mode Off")
 		SetupVPA(f, "200m", vpa_types.UpdateModeOff)
 
-		ginkgo.By(fmt.Sprintf("Waiting for pods to be restarted, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
-		CheckNoPodsRestarted(f, podSet)
+		ginkgo.By(fmt.Sprintf("Waiting for pods to be evicted, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
+		CheckNoPodsEvicted(f, podSet)
 		ginkgo.By("Forcefully killing one pod")
 		killPod(f, podList)
 
@@ -80,12 +80,12 @@ var _ = ActuationSuiteE2eDescribe("Actuation", func() {
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		podSet := MakePodSet(podList)
 
-		ginkgo.By("Setting up a VPA CRD in mode Off")
+		ginkgo.By("Setting up a VPA CRD in mode Initial")
 		SetupVPA(f, "200m", vpa_types.UpdateModeInitial)
 		updatedCPURequest := ParseQuantityOrDie("200m")
 
-		ginkgo.By(fmt.Sprintf("Waiting for pods to be restarted, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
-		CheckNoPodsRestarted(f, podSet)
+		ginkgo.By(fmt.Sprintf("Waiting for pods to be evicted, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
+		CheckNoPodsEvicted(f, podSet)
 		ginkgo.By("Forcefully killing one pod")
 		killPod(f, podList)
 
