@@ -218,7 +218,7 @@ func WaitForPodsRestarted(f *framework.Framework, podList *apiv1.PodList) error 
 			return false, err
 		}
 		currentPodSet := MakePodSet(currentPodList)
-		return WerePodsRestarted(currentPodSet, initialPodSet), nil
+		return WerePodsSuccessfullyRestarted(currentPodSet, initialPodSet), nil
 	})
 
 	if err != nil {
@@ -227,15 +227,43 @@ func WaitForPodsRestarted(f *framework.Framework, podList *apiv1.PodList) error 
 	return nil
 }
 
-// WerePodsRestarted returns true if some pods from initialPodSet have been
-// restarted comparing to currentPodSet.
-func WerePodsRestarted(currentPodSet PodSet, initialPodSet PodSet) bool {
-	return GetRestartedPodsCount(currentPodSet, initialPodSet) > 0
+// WaitForPodsEvicted waits until some pods from the list are evicted.
+func WaitForPodsEvicted(f *framework.Framework, podList *apiv1.PodList) error {
+	initialPodSet := MakePodSet(podList)
+
+	err := wait.PollImmediate(pollInterval, pollTimeout, func() (bool, error) {
+		currentPodList, err := GetHamsterPods(f)
+		if err != nil {
+			return false, err
+		}
+		currentPodSet := MakePodSet(currentPodList)
+		return GetEvictedPodsCount(currentPodSet, initialPodSet) > 0, nil
+	})
+
+	if err != nil {
+		return fmt.Errorf("Waiting for set of pods changed: %v", err)
+	}
+	return nil
 }
 
-// GetRestartedPodsCount returns the count of pods from initialPodSet that have
-// been restarted comparing to currentPodSet.
-func GetRestartedPodsCount(currentPodSet PodSet, initialPodSet PodSet) int {
+// WerePodsSuccessfullyRestarted returns true if some pods from initialPodSet have been
+// successfully restarted comparing to currentPodSet (pods were evicted and
+// are running).
+func WerePodsSuccessfullyRestarted(currentPodSet PodSet, initialPodSet PodSet) bool {
+	if len(currentPodSet) < len(initialPodSet) {
+		// If we have less pods running than in the beginning, there is a restart
+		// in progress - a pod was evicted but not yet recreated.
+		framework.Logf("Restart in progress")
+		return false
+	}
+	evictedCount := GetEvictedPodsCount(currentPodSet, initialPodSet)
+	framework.Logf("%v of initial pods were already evicted", evictedCount)
+	return evictedCount > 0
+}
+
+// GetEvictedPodsCount returns the count of pods from initialPodSet that have
+// been evicted comparing to currentPodSet.
+func GetEvictedPodsCount(currentPodSet PodSet, initialPodSet PodSet) int {
 	diffs := 0
 	for name, initialUID := range initialPodSet {
 		currentUID, inCurrent := currentPodSet[name]
@@ -248,12 +276,12 @@ func GetRestartedPodsCount(currentPodSet PodSet, initialPodSet PodSet) int {
 	return diffs
 }
 
-// CheckNoPodsRestarted waits for long enough period for VPA to start evicting
+// CheckNoPodsEvicted waits for long enough period for VPA to start evicting
 // pods and checks that no pods were restarted.
-func CheckNoPodsRestarted(f *framework.Framework, initialPodSet PodSet) {
+func CheckNoPodsEvicted(f *framework.Framework, initialPodSet PodSet) {
 	time.Sleep(VpaEvictionTimeout)
 	currentPodList, err := GetHamsterPods(f)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
-	restarted := WerePodsRestarted(MakePodSet(currentPodList), initialPodSet)
-	gomega.Expect(restarted).To(gomega.BeFalse())
+	restarted := GetEvictedPodsCount(MakePodSet(currentPodList), initialPodSet)
+	gomega.Expect(restarted).To(gomega.Equal(0))
 }
