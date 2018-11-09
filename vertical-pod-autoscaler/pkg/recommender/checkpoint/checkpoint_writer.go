@@ -34,7 +34,7 @@ import (
 // CheckpointWriter persistently stores aggregated historical usage of containers
 // controlled by VPA objects. This state can be restored to initialize the model after restart.
 type CheckpointWriter interface {
-	// StoreCheckpoints writes at least minCheckpoints if there are more checkponits to write.
+	// StoreCheckpoints writes at least minCheckpoints if there are more checkpoints to write.
 	// Checkpoints are written until ctx permits or all checkpoints are written.
 	StoreCheckpoints(ctx context.Context, now time.Time, minCheckpoints int) error
 }
