@@ -55,7 +55,7 @@ type Recommender interface {
 	// UpdateVPAs computes recommendations and sends VPAs status updates to API Server
 	UpdateVPAs()
 	// MaintainCheckpoints stores current checkpoints in API Server and garbage collect old ones
-	// MaintainCheckpoints writes at least minCheckpoints if there are more checkponits to write.
+	// MaintainCheckpoints writes at least minCheckpoints if there are more checkpoints to write.
 	// Checkpoints are written until ctx permits or all checkpoints are written.
 	MaintainCheckpoints(ctx context.Context, minCheckpoints int)
 	// GarbageCollect removes old AggregateCollectionStates
