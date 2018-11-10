@@ -120,7 +120,7 @@ func getCappedRecommendationForContainer(
 }
 
 // capRecommendationToContainerLimit makes sure recommendation is not above current limit for the container.
-// If this function makes adjustments approporiate annotations are returned.
+// If this function makes adjustments appropriate annotations are returned.
 func capRecommendationToContainerLimit(recommendation apiv1.ResourceList, container apiv1.Container) []string {
 	annotations := make([]string, 0)
 	// Iterate over limits set in the container. Unset means Infinite limit.
