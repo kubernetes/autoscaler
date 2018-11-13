@@ -21,6 +21,7 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	cloudBuilder "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
+	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
@@ -28,6 +29,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/expander/factory"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_client "k8s.io/client-go/kubernetes"
 )
@@ -42,6 +44,7 @@ type AutoscalerOptions struct {
 	ExpanderStrategy       expander.Strategy
 	EstimatorBuilder       estimator.EstimatorBuilder
 	Processors             *ca_processors.AutoscalingProcessors
+	Backoff                backoff.Backoff
 }
 
 // Autoscaler is the main component of CA which scales up/down node groups according to its configuration
@@ -59,7 +62,14 @@ func NewAutoscaler(opts AutoscalerOptions) (Autoscaler, errors.AutoscalerError) 
 	if err != nil {
 		return nil, errors.ToAutoscalerError(errors.InternalError, err)
 	}
-	return NewStaticAutoscaler(opts.AutoscalingOptions, opts.PredicateChecker, opts.AutoscalingKubeClients, opts.Processors, opts.CloudProvider, opts.ExpanderStrategy, opts.EstimatorBuilder), nil
+	return NewStaticAutoscaler(
+		opts.AutoscalingOptions,
+		opts.PredicateChecker,
+		opts.AutoscalingKubeClients,
+		opts.Processors, opts.CloudProvider,
+		opts.ExpanderStrategy,
+		opts.EstimatorBuilder,
+		opts.Backoff), nil
 }
 
 // Initialize default options if not provided.
@@ -95,6 +105,10 @@ func initializeDefaultOptions(opts *AutoscalerOptions) error {
 			return err
 		}
 		opts.EstimatorBuilder = estimatorBuilder
+	}
+	if opts.Backoff == nil {
+		opts.Backoff =
+			backoff.NewIdBasedExponentialBackoff(clusterstate.InitialNodeGroupBackoffDuration, clusterstate.MaxNodeGroupBackoffDuration, clusterstate.NodeGroupBackoffResetTimeout)
 	}
 
 	return nil
