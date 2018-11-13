@@ -165,7 +165,7 @@ func (m autoScalingWrapper) getScalingInstancesByGroup(asgId string) ([]ess.Scal
 	params.ScalingGroupId = asgId
 	resp, err := m.DescribeScalingInstances(params)
 	if err != nil {
-		glog.Errorf("falied to reqest scaling instances for %s,Because of %s", asgId, err.Error())
+		glog.Errorf("falied to request scaling instances for %s,Because of %s", asgId, err.Error())
 		return nil, err
 	}
 	return resp.ScalingInstances.ScalingInstance, nil
