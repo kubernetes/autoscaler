@@ -176,7 +176,7 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 		MaxNodeProvisionTime: 10 * time.Second,
 	}
 
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder)
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, newBackoff())
 	clusterState.UpdateNodes([]*apiv1.Node{n1, n2}, time.Now())
 
 	sd := NewScaleDown(&context, clusterState)
@@ -354,7 +354,7 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 		OkTotalUnreadyCount:  0,
 		MaxNodeProvisionTime: 10 * time.Second,
 	}
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder)
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, newBackoff())
 	clusterState.UpdateNodes([]*apiv1.Node{n1}, time.Now())
 
 	sd := NewScaleDown(&context, clusterState)
@@ -480,7 +480,7 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 		OkTotalUnreadyCount:  1,
 		MaxNodeProvisionTime: 10 * time.Second,
 	}
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder)
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, newBackoff())
 	// broken node detected as unregistered
 	clusterState.UpdateNodes([]*apiv1.Node{n1}, now)
 
@@ -613,7 +613,7 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 		MaxNodeProvisionTime: 10 * time.Second,
 	}
 
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder)
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, newBackoff())
 	clusterState.UpdateNodes([]*apiv1.Node{n1, n2}, time.Now())
 
 	sd := NewScaleDown(&context, clusterState)
