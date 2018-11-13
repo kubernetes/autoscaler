@@ -37,6 +37,7 @@ import (
 
 	"github.com/golang/glog"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
 )
 
 const (
@@ -66,8 +67,15 @@ type StaticAutoscaler struct {
 }
 
 // NewStaticAutoscaler creates an instance of Autoscaler filled with provided parameters
-func NewStaticAutoscaler(opts config.AutoscalingOptions, predicateChecker *simulator.PredicateChecker,
-	autoscalingKubeClients *context.AutoscalingKubeClients, processors *ca_processors.AutoscalingProcessors, cloudProvider cloudprovider.CloudProvider, expanderStrategy expander.Strategy, estimatorBuilder estimator.EstimatorBuilder) *StaticAutoscaler {
+func NewStaticAutoscaler(
+	opts config.AutoscalingOptions,
+	predicateChecker *simulator.PredicateChecker,
+	autoscalingKubeClients *context.AutoscalingKubeClients,
+	processors *ca_processors.AutoscalingProcessors,
+	cloudProvider cloudprovider.CloudProvider,
+	expanderStrategy expander.Strategy,
+	estimatorBuilder estimator.EstimatorBuilder,
+	backoff backoff.Backoff) *StaticAutoscaler {
 	autoscalingContext := context.NewAutoscalingContext(opts, predicateChecker, autoscalingKubeClients, cloudProvider, expanderStrategy, estimatorBuilder)
 
 	clusterStateConfig := clusterstate.ClusterStateRegistryConfig{
@@ -75,7 +83,7 @@ func NewStaticAutoscaler(opts config.AutoscalingOptions, predicateChecker *simul
 		OkTotalUnreadyCount:       opts.OkTotalUnreadyCount,
 		MaxNodeProvisionTime:      opts.MaxNodeProvisionTime,
 	}
-	clusterStateRegistry := clusterstate.NewClusterStateRegistry(autoscalingContext.CloudProvider, clusterStateConfig, autoscalingContext.LogRecorder)
+	clusterStateRegistry := clusterstate.NewClusterStateRegistry(autoscalingContext.CloudProvider, clusterStateConfig, autoscalingContext.LogRecorder, backoff)
 
 	scaleDown := NewScaleDown(autoscalingContext, clusterStateRegistry)
 
