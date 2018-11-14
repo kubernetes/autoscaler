@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package clusterapi
+package fake
 
 import (
 	"github.com/stretchr/testify/mock"
@@ -29,25 +29,30 @@ type MachineManagerMock struct {
 
 // AllDeployments returns all MachineDeployments of the cluster
 func (m *MachineManagerMock) AllDeployments() []*v1alpha1.MachineDeployment {
-	panic("not implemented")
+	args := m.Called()
+	return args.Get(0).([]*v1alpha1.MachineDeployment)
 }
 
 // DeploymentForNode returns the MachineDeployment that created a specific node
 func (m *MachineManagerMock) DeploymentForNode(node *v1.Node) *v1alpha1.MachineDeployment {
-	panic("not implemented")
+	args := m.Called(node)
+	return args.Get(0).(*v1alpha1.MachineDeployment)
 }
 
 // NodesForDeployment returns all nodes that were created by a specific MachineDeployment
 func (m *MachineManagerMock) NodesForDeployment(md *v1alpha1.MachineDeployment) []*v1.Node {
-	panic("not implemented")
+	args := m.Called(md)
+	return args.Get(0).([]*v1.Node)
 }
 
 // SetDeploymentSize sets a MachineDeployment's replica count
 func (m *MachineManagerMock) SetDeploymentSize(md *v1alpha1.MachineDeployment, size int) error {
-	panic("not implemented")
+	args := m.Called(md, size)
+	return args.Error(0)
 }
 
 // Refresh reloads the ClusterapiMachineManager's cached representation of the cluster state
 func (m *MachineManagerMock) Refresh() error {
-	return nil
+	args := m.Called()
+	return args.Error(0)
 }

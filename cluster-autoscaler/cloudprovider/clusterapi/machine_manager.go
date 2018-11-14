@@ -81,7 +81,7 @@ type MachineManager interface {
 
 // ClusterapiMachineManager is a facade and cache for accessing the cluster's nodes, machines, and MachineDeployments
 type ClusterapiMachineManager struct {
-	k8sClient        *kubernetes.Clientset
+	coreApiClient    kubernetes.Interface
 	clusterApiClient clusterclientset.Interface
 
 	// cache data structures.
@@ -101,7 +101,7 @@ type ClusterapiMachineManager struct {
 
 // NewMachineManager creates a new empty ClusterapiMachineManager. Call Refresh() to initialize it
 func NewMachineManager(kubeConfig *rest.Config) (*ClusterapiMachineManager, error) {
-	k8sClient, err := kubernetes.NewForConfig(kubeConfig)
+	coreApiClient, err := kubernetes.NewForConfig(kubeConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -111,12 +111,17 @@ func NewMachineManager(kubeConfig *rest.Config) (*ClusterapiMachineManager, erro
 		return nil, err
 	}
 
+	return NewMachineManagerFromApiStubs(coreApiClient, clusterApiClient), nil
+}
+
+// NewMachineManagerFromApiStubs creates a new empty ClusterapiMachineManager for the given core and cluster API stubs. Call Refresh() to initialize it
+func NewMachineManagerFromApiStubs(coreApiClient kubernetes.Interface, clusterApiClient clusterclientset.Interface) *ClusterapiMachineManager {
 	mm := &ClusterapiMachineManager{
-		k8sClient:        k8sClient,
+		coreApiClient:    coreApiClient,
 		clusterApiClient: clusterApiClient,
 	}
 
-	return mm, nil
+	return mm
 }
 
 // AllDeployments returns all MachineDeployments of the cluster
@@ -164,7 +169,7 @@ func (mm *ClusterapiMachineManager) Refresh() error {
 		var node *v1.Node
 
 		if nodeRef := machine.Status.NodeRef; nodeRef != nil {
-			node, err = mm.k8sClient.CoreV1().Nodes().Get(nodeRef.Name, apimachv1.GetOptions{})
+			node, err = mm.coreApiClient.CoreV1().Nodes().Get(nodeRef.Name, apimachv1.GetOptions{})
 			if err != nil {
 				return err
 			}
