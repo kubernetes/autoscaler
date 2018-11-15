@@ -99,7 +99,7 @@ var (
 		"Maximum number of non empty nodes considered in one iteration as candidates for scale down with drain."+
 			"Lower value means better CA responsiveness but possible slower scale down latency."+
 			"Higher value can affect CA performance with big clusters (hundreds of nodes)."+
-			"Set to non posistive value to turn this heuristic off - CA will not limit the number of nodes it considers.")
+			"Set to non positive value to turn this heuristic off - CA will not limit the number of nodes it considers.")
 	scaleDownCandidatesPoolRatio = flag.Float64("scale-down-candidates-pool-ratio", 0.1,
 		"A ratio of nodes that are considered as additional non empty candidates for"+
 			"scale down when some candidates from previous iteration are no longer valid."+
