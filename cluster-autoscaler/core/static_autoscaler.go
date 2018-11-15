@@ -17,6 +17,7 @@ limitations under the License.
 package core
 
 import (
+	"fmt"
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -192,12 +193,15 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 			return nil
 		}
 	}
+
 	if !a.clusterStateRegistry.IsClusterHealthy() {
 		klog.Warning("Cluster is not ready for autoscaling")
 		scaleDown.CleanUpUnneededNodes()
 		autoscalingContext.LogRecorder.Eventf(apiv1.EventTypeWarning, "ClusterUnhealthy", "Cluster is unhealthy")
 		return nil
 	}
+
+	a.deleteCreatedNodesWithErrors()
 
 	// Check if there has been a constant difference between the number of nodes in k8s and
 	// the number of nodes on the cloud provider side.
@@ -396,6 +400,52 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		}
 	}
 	return nil
+}
+
+func (a *StaticAutoscaler) deleteCreatedNodesWithErrors() {
+	// We always schedule deleting of incoming errornous nodes
+	// TODO[lukaszos] Consider adding logic to not retry delete every loop iteration
+	nodes := a.clusterStateRegistry.GetCreatedNodesWithOutOfResourcesErrors()
+
+	nodeGroups := a.nodeGroupsById()
+	nodesToBeDeletedByNodeGroupId := make(map[string][]*apiv1.Node)
+
+	for _, node := range nodes {
+		nodeGroup, err := a.CloudProvider.NodeGroupForNode(node)
+		if err != nil {
+			id := "<nil>"
+			if node != nil {
+				id = node.Spec.ProviderID
+			}
+			klog.Warningf("Cannot determine nodeGroup for node %v; %v", id, err)
+			continue
+		}
+		nodesToBeDeletedByNodeGroupId[nodeGroup.Id()] = append(nodesToBeDeletedByNodeGroupId[nodeGroup.Id()], node)
+	}
+
+	for nodeGroupId, nodesToBeDeleted := range nodesToBeDeletedByNodeGroupId {
+		var err error
+		klog.V(1).Infof("Deleting %v from %v node group because of create errors", len(nodesToBeDeleted), nodeGroupId)
+
+		nodeGroup := nodeGroups[nodeGroupId]
+		if nodeGroup == nil {
+			err = fmt.Errorf("Node group %s not found", nodeGroup)
+		} else {
+			err = nodeGroup.DeleteNodes(nodesToBeDeleted)
+		}
+
+		if err != nil {
+			klog.Warningf("Error while trying to delete nodes from %v: %v", nodeGroup.Id(), err)
+		}
+	}
+}
+
+func (a *StaticAutoscaler) nodeGroupsById() map[string]cloudprovider.NodeGroup {
+	nodeGroups := make(map[string]cloudprovider.NodeGroup)
+	for _, nodeGroup := range a.CloudProvider.NodeGroups() {
+		nodeGroups[nodeGroup.Id()] = nodeGroup
+	}
+	return nodeGroups
 }
 
 // don't consider pods newer than newPodScaleUpDelay seconds old as unschedulable

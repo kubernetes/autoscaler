@@ -19,6 +19,7 @@ package clusterstate
 import (
 	"fmt"
 	"reflect"
+	"strings"
 	"sync"
 	"time"
 
@@ -114,21 +115,23 @@ type UnregisteredNode struct {
 // ClusterStateRegistry is a structure to keep track the current state of the cluster.
 type ClusterStateRegistry struct {
 	sync.Mutex
-	config                  ClusterStateRegistryConfig
-	scaleUpRequests         map[string]*ScaleUpRequest // nodeGroupName -> ScaleUpRequest
-	scaleDownRequests       []*ScaleDownRequest
-	nodes                   []*apiv1.Node
-	cloudProvider           cloudprovider.CloudProvider
-	perNodeGroupReadiness   map[string]Readiness
-	totalReadiness          Readiness
-	acceptableRanges        map[string]AcceptableRange
-	incorrectNodeGroupSizes map[string]IncorrectNodeGroupSize
-	unregisteredNodes       map[string]UnregisteredNode
-	candidatesForScaleDown  map[string][]string
-	nodeGroupBackoffInfo    backoff.Backoff
-	lastStatus              *api.ClusterAutoscalerStatus
-	lastScaleDownUpdateTime time.Time
-	logRecorder             *utils.LogEventRecorder
+	config                             ClusterStateRegistryConfig
+	scaleUpRequests                    map[string]*ScaleUpRequest // nodeGroupName -> ScaleUpRequest
+	scaleDownRequests                  []*ScaleDownRequest
+	nodes                              []*apiv1.Node
+	cloudProvider                      cloudprovider.CloudProvider
+	perNodeGroupReadiness              map[string]Readiness
+	totalReadiness                     Readiness
+	acceptableRanges                   map[string]AcceptableRange
+	incorrectNodeGroupSizes            map[string]IncorrectNodeGroupSize
+	unregisteredNodes                  map[string]UnregisteredNode
+	candidatesForScaleDown             map[string][]string
+	nodeGroupBackoffInfo               backoff.Backoff
+	lastStatus                         *api.ClusterAutoscalerStatus
+	lastScaleDownUpdateTime            time.Time
+	logRecorder                        *utils.LogEventRecorder
+	cloudProviderNodeInstances         map[string][]cloudprovider.Instance
+	previousCloudProviderNodeInstances map[string][]cloudprovider.Instance
 }
 
 // NewClusterStateRegistry creates new ClusterStateRegistry.
@@ -255,7 +258,10 @@ func (csr *ClusterStateRegistry) backoffNodeGroup(nodeGroup cloudprovider.NodeGr
 func (csr *ClusterStateRegistry) RegisterFailedScaleUp(nodeGroup cloudprovider.NodeGroup, reason metrics.FailedScaleUpReason, currentTime time.Time) {
 	csr.Lock()
 	defer csr.Unlock()
+	csr.registerFailedScaleUpNoLock(nodeGroup, reason, currentTime)
+}
 
+func (csr *ClusterStateRegistry) registerFailedScaleUpNoLock(nodeGroup cloudprovider.NodeGroup, reason metrics.FailedScaleUpReason, currentTime time.Time) {
 	metrics.RegisterFailedScaleUp(reason)
 	csr.backoffNodeGroup(nodeGroup, currentTime)
 }
@@ -267,15 +273,19 @@ func (csr *ClusterStateRegistry) UpdateNodes(nodes []*apiv1.Node, currentTime ti
 	if err != nil {
 		return err
 	}
-	notRegistered, err := getNotRegisteredNodes(nodes, csr.cloudProvider, currentTime)
+
+	cloudProviderNodeInstances, err := getCloudProviderNodeInstances(csr.cloudProvider)
 	if err != nil {
 		return err
 	}
+	notRegistered := getNotRegisteredNodes(nodes, cloudProviderNodeInstances, currentTime)
 
 	csr.Lock()
 	defer csr.Unlock()
 
 	csr.nodes = nodes
+	csr.previousCloudProviderNodeInstances = csr.cloudProviderNodeInstances
+	csr.cloudProviderNodeInstances = cloudProviderNodeInstances
 
 	csr.updateUnregisteredNodes(notRegistered)
 	csr.updateReadinessStats(currentTime)
@@ -284,6 +294,7 @@ func (csr *ClusterStateRegistry) UpdateNodes(nodes []*apiv1.Node, currentTime ti
 	// updateScaleRequests relies on acceptableRanges being up to date
 	csr.updateAcceptableRanges(targetSizes)
 	csr.updateScaleRequests(currentTime)
+	csr.handleOutOfResourcesErrors(currentTime)
 	//  recalculate acceptable ranges after removing timed out requests
 	csr.updateAcceptableRanges(targetSizes)
 	csr.updateIncorrectNodeGroupSizes(currentTime)
@@ -902,35 +913,38 @@ func (csr *ClusterStateRegistry) GetUpcomingNodes() map[string]int {
 	return result
 }
 
+// getCloudProviderNodeInstances returns map keyed on node group id where value is list of node instances
+// as returned by NodeGroup.Nodes().
+func getCloudProviderNodeInstances(cloudProvider cloudprovider.CloudProvider) (map[string][]cloudprovider.Instance, error) {
+	allInstances := make(map[string][]cloudprovider.Instance)
+	for _, nodeGroup := range cloudProvider.NodeGroups() {
+		nodeGroupInstances, err := nodeGroup.Nodes()
+		if err != nil {
+			return nil, err
+		}
+		allInstances[nodeGroup.Id()] = nodeGroupInstances
+	}
+	return allInstances, nil
+}
+
 // Calculates which of the existing cloud provider nodes are not registered in Kubernetes.
-func getNotRegisteredNodes(allNodes []*apiv1.Node, cloudProvider cloudprovider.CloudProvider, time time.Time) ([]UnregisteredNode, error) {
+func getNotRegisteredNodes(allNodes []*apiv1.Node, cloudProviderNodeInstances map[string][]cloudprovider.Instance, time time.Time) []UnregisteredNode {
 	registered := sets.NewString()
 	for _, node := range allNodes {
 		registered.Insert(node.Spec.ProviderID)
 	}
 	notRegistered := make([]UnregisteredNode, 0)
-	for _, nodeGroup := range cloudProvider.NodeGroups() {
-		nodes, err := nodeGroup.Nodes()
-		if err != nil {
-			return []UnregisteredNode{}, err
-		}
-		for _, node := range nodes {
-			if !registered.Has(node.Id) {
+	for _, instances := range cloudProviderNodeInstances {
+		for _, instance := range instances {
+			if !registered.Has(instance.Id) {
 				notRegistered = append(notRegistered, UnregisteredNode{
-					Node: &apiv1.Node{
-						ObjectMeta: metav1.ObjectMeta{
-							Name: node.Id,
-						},
-						Spec: apiv1.NodeSpec{
-							ProviderID: node.Id,
-						},
-					},
+					Node:              fakeNode(instance),
 					UnregisteredSince: time,
 				})
 			}
 		}
 	}
-	return notRegistered, nil
+	return notRegistered
 }
 
 // GetClusterSize calculates and returns cluster's current size and target size. The current size is the
@@ -944,4 +958,131 @@ func (csr *ClusterStateRegistry) GetClusterSize() (currentSize, targetSize int) 
 	}
 	currentSize = csr.totalReadiness.Registered - csr.totalReadiness.NotStarted - csr.totalReadiness.LongNotStarted
 	return currentSize, targetSize
+}
+
+func (csr *ClusterStateRegistry) handleOutOfResourcesErrors(currentTime time.Time) {
+	nodeGroups := csr.cloudProvider.NodeGroups()
+
+	for _, nodeGroup := range nodeGroups {
+		csr.handleOutOfResourcesErrorsForNodeGroup(
+			nodeGroup,
+			csr.cloudProviderNodeInstances[nodeGroup.Id()],
+			csr.previousCloudProviderNodeInstances[nodeGroup.Id()],
+			currentTime)
+	}
+}
+
+func (csr *ClusterStateRegistry) handleOutOfResourcesErrorsForNodeGroup(
+	nodeGroup cloudprovider.NodeGroup,
+	currentInstances []cloudprovider.Instance,
+	previousInstances []cloudprovider.Instance,
+	currentTime time.Time) {
+
+	_, currentUniqueErrorMessagesForErrorCode, currentErrorCodeToInstance := csr.buildInstanceToOutOfResourcesErrorCodeMappings(currentInstances)
+	previousInstanceToErrorCode, _, _ := csr.buildInstanceToOutOfResourcesErrorCodeMappings(previousInstances)
+
+	// If node group is scaling up and there are new node-create requests which cannot be satisfied because of
+	// out-of-resources errors we:
+	//  - emit event
+	//  - alter the scale-up
+	//  - increase scale-up failure metric
+	//  - backoff the node group
+	for errorCode, instances := range currentErrorCodeToInstance {
+		unseenInstanceIds := make([]string, 0)
+		for _, instance := range instances {
+			if _, seen := previousInstanceToErrorCode[instance.Id]; !seen {
+				unseenInstanceIds = append(unseenInstanceIds, instance.Id)
+			}
+		}
+
+		klog.V(1).Infof("Failed adding %v nodes (%v unseen previously) to group %v due to %v", len(instances), len(unseenInstanceIds), nodeGroup.Id(), errorCode)
+		if len(unseenInstanceIds) > 0 && csr.IsNodeGroupScalingUp(nodeGroup.Id()) {
+			csr.logRecorder.Eventf(
+				apiv1.EventTypeWarning,
+				"ScaleUpFailed",
+				"Failed adding %v nodes to group %v due to %v; source errors: %v",
+				len(unseenInstanceIds),
+				nodeGroup.Id(),
+				errorCode,
+				csr.buildErrorMessageEventString(currentUniqueErrorMessagesForErrorCode[errorCode]))
+
+			// Decrease the scale up request by the number of deleted nodes
+			csr.registerOrUpdateScaleUpNoLock(nodeGroup, -len(unseenInstanceIds), currentTime)
+			csr.registerFailedScaleUpNoLock(nodeGroup, metrics.FailedScaleUpReason(errorCode), currentTime)
+		}
+	}
+}
+
+func (csr *ClusterStateRegistry) buildErrorMessageEventString(uniqErrorMessages []string) string {
+	var sb strings.Builder
+	maxErrors := 3
+	for i, errorMessage := range uniqErrorMessages {
+		if i > 0 {
+			sb.WriteString(", ")
+		}
+		sb.WriteString(errorMessage)
+
+	}
+	if len(uniqErrorMessages) > maxErrors {
+		sb.WriteString(", ...")
+	}
+	return sb.String()
+}
+
+func (csr *ClusterStateRegistry) buildInstanceToOutOfResourcesErrorCodeMappings(instances []cloudprovider.Instance) (instanceToErrorCode map[string]string, uniqueErrorMessagesForErrorCode map[string][]string, errorCodeToInstance map[string][]cloudprovider.Instance) {
+	instanceToErrorCode = make(map[string]string)
+	uniqueErrorMessagesForErrorCode = make(map[string][]string)
+	errorCodeToInstance = make(map[string][]cloudprovider.Instance)
+
+	uniqErrorMessagesForErrorCodeTmp := make(map[string]map[string]bool)
+	for _, instance := range instances {
+		if instance.Status != nil && instance.Status.State == cloudprovider.InstanceCreating && instance.Status.ErrorInfo != nil {
+			errorInfo := instance.Status.ErrorInfo
+			if errorInfo.ErrorClass == cloudprovider.OutOfResourcesErrorClass {
+
+				if _, found := uniqErrorMessagesForErrorCodeTmp[errorInfo.ErrorCode]; !found {
+					uniqErrorMessagesForErrorCodeTmp[errorInfo.ErrorCode] = make(map[string]bool)
+				}
+				instanceToErrorCode[instance.Id] = errorInfo.ErrorCode
+				uniqErrorMessagesForErrorCodeTmp[errorInfo.ErrorCode][errorInfo.ErrorMessage] = true
+				errorCodeToInstance[errorInfo.ErrorCode] = append(errorCodeToInstance[errorInfo.ErrorCode], instance)
+			}
+		}
+	}
+
+	for errorCode, uniqueErrorMessages := range uniqErrorMessagesForErrorCodeTmp {
+		for errorMessage := range uniqueErrorMessages {
+			uniqueErrorMessagesForErrorCode[errorCode] = append(uniqueErrorMessagesForErrorCode[errorCode], errorMessage)
+		}
+	}
+
+	return
+}
+
+// GetCreatedNodesWithOutOfResourcesErrors returns list of nodes being created which reported create error of "out of resources" class.
+func (csr *ClusterStateRegistry) GetCreatedNodesWithOutOfResourcesErrors() []*apiv1.Node {
+	csr.Lock()
+	defer csr.Unlock()
+
+	nodesWithCreateErrors := make([]*apiv1.Node, 0, 0)
+	for _, nodeGroupInstances := range csr.cloudProviderNodeInstances {
+		_, _, instancesByErrorCode := csr.buildInstanceToOutOfResourcesErrorCodeMappings(nodeGroupInstances)
+		for _, instances := range instancesByErrorCode {
+			for _, instance := range instances {
+				nodesWithCreateErrors = append(nodesWithCreateErrors, fakeNode(instance))
+			}
+		}
+	}
+	return nodesWithCreateErrors
+}
+
+func fakeNode(instance cloudprovider.Instance) *apiv1.Node {
+	return &apiv1.Node{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: instance.Id,
+		},
+		Spec: apiv1.NodeSpec{
+			ProviderID: instance.Id,
+		},
+	}
 }
