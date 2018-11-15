@@ -125,6 +125,11 @@ func (ref GceRef) String() string {
 	return fmt.Sprintf("%s/%s/%s", ref.Project, ref.Zone, ref.Name)
 }
 
+// ToProviderId converts GceRef to string in format used as ProviderId in Node object.
+func (ref GceRef) ToProviderId() string {
+	return fmt.Sprintf("gce://%s/%s/%s", ref.Project, ref.Zone, ref.Name)
+}
+
 // GceRefFromProviderId creates InstanceConfig object
 // from provider id which must be in format:
 // gce://<project-id>/<zone>/<name>
