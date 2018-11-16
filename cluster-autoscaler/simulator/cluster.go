@@ -23,6 +23,7 @@ import (
 	"math/rand"
 	"time"
 
+	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/glogx"
 	scheduler_util "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
@@ -151,19 +152,19 @@ func FindEmptyNodesToRemove(candidates []*apiv1.Node, pods []*apiv1.Pod) []*apiv
 // CalculateUtilization calculates utilization of a node, defined as maximum of (cpu, memory) utilization.
 // Per resource utilization is the sum of requests for it divided by allocatable. It also returns the individual
 // cpu and memory utilization.
-func CalculateUtilization(node *apiv1.Node, nodeInfo *schedulercache.NodeInfo) (utilInfo UtilizationInfo, err error) {
-	cpu, err := calculateUtilizationOfResource(node, nodeInfo, apiv1.ResourceCPU)
+func CalculateUtilization(node *apiv1.Node, nodeInfo *schedulercache.NodeInfo, skipDaemonSetPods, skipMirrorPods bool) (utilInfo UtilizationInfo, err error) {
+	cpu, err := calculateUtilizationOfResource(node, nodeInfo, apiv1.ResourceCPU, skipDaemonSetPods, skipMirrorPods)
 	if err != nil {
 		return UtilizationInfo{}, err
 	}
-	mem, err := calculateUtilizationOfResource(node, nodeInfo, apiv1.ResourceMemory)
+	mem, err := calculateUtilizationOfResource(node, nodeInfo, apiv1.ResourceMemory, skipDaemonSetPods, skipMirrorPods)
 	if err != nil {
 		return UtilizationInfo{}, err
 	}
 	return UtilizationInfo{CpuUtil: cpu, MemUtil: mem, Utilization: math.Max(cpu, mem)}, nil
 }
 
-func calculateUtilizationOfResource(node *apiv1.Node, nodeInfo *schedulercache.NodeInfo, resourceName apiv1.ResourceName) (float64, error) {
+func calculateUtilizationOfResource(node *apiv1.Node, nodeInfo *schedulercache.NodeInfo, resourceName apiv1.ResourceName, skipDaemonSetPods, skipMirrorPods bool) (float64, error) {
 	nodeAllocatable, found := node.Status.Allocatable[resourceName]
 	if !found {
 		return 0, fmt.Errorf("Failed to get %v from %s", resourceName, node.Name)
@@ -173,6 +174,14 @@ func calculateUtilizationOfResource(node *apiv1.Node, nodeInfo *schedulercache.N
 	}
 	podsRequest := resource.MustParse("0")
 	for _, pod := range nodeInfo.Pods() {
+		// factor daemonset pods out of the utilization calculations
+		if skipDaemonSetPods && isDaemonSet(pod) {
+			continue
+		}
+		// factor mirror pods out of the utilization calculations
+		if skipMirrorPods && drain.IsMirrorPod(pod) {
+			continue
+		}
 		for _, container := range pod.Spec.Containers {
 			if resourceValue, found := container.Resources.Requests[resourceName]; found {
 				podsRequest.Add(resourceValue)
@@ -282,4 +291,13 @@ func shuffleNodes(nodes []*apiv1.Node) []*apiv1.Node {
 		result[i], result[j] = result[j], result[i]
 	}
 	return result
+}
+
+func isDaemonSet(pod *apiv1.Pod) bool {
+	for _, ownerReference := range pod.ObjectMeta.OwnerReferences {
+		if ownerReference.Kind == "DaemonSet" {
+			return true
+		}
+	}
+	return false
 }
