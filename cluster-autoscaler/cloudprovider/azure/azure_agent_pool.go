@@ -206,7 +206,7 @@ func (as *AgentPool) IncreaseSize(delta int) error {
 		},
 	}
 	_, errChan := as.manager.azClient.deploymentsClient.CreateOrUpdate(as.manager.config.ResourceGroup, newDeploymentName, newDeployment, cancel)
-	glog.V(3).Infof("Waiting for deploymentsClient.CreateOrUpdate(%s, %s, %s)", as.manager.config.ResourceGroup, newDeploymentName, newDeployment)
+	glog.V(3).Infof("Waiting for deploymentsClient.CreateOrUpdate(%s, %s)", as.manager.config.ResourceGroup, newDeploymentName)
 	err = <-errChan
 	if err != nil {
 		return err
