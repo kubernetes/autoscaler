@@ -24,7 +24,7 @@ import (
 )
 
 type certsContainer struct {
-	caKey, caCert, serverKey, serverCert []byte
+	caCert, serverKey, serverCert []byte
 }
 
 func readFile(filePath string) []byte {
@@ -45,7 +45,6 @@ func readFile(filePath string) []byte {
 
 func initCerts(certsDir string) certsContainer {
 	res := certsContainer{}
-	res.caKey = readFile(path.Join(certsDir, "caKey.pem"))
 	res.caCert = readFile(path.Join(certsDir, "caCert.pem"))
 	res.serverKey = readFile(path.Join(certsDir, "serverKey.pem"))
 	res.serverCert = readFile(path.Join(certsDir, "serverCert.pem"))
