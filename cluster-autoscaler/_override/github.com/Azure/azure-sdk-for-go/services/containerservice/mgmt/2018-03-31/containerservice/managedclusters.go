@@ -76,7 +76,6 @@ func (client ManagedClustersClient) CreateOrUpdate(ctx context.Context, resource
 					{Target: "parameters.ManagedClusterProperties.AadProfile", Name: validation.Null, Rule: false,
 						Chain: []validation.Constraint{{Target: "parameters.ManagedClusterProperties.AadProfile.ClientAppID", Name: validation.Null, Rule: true, Chain: nil},
 							{Target: "parameters.ManagedClusterProperties.AadProfile.ServerAppID", Name: validation.Null, Rule: true, Chain: nil},
-							{Target: "parameters.ManagedClusterProperties.AadProfile.ServerAppSecret", Name: validation.Null, Rule: true, Chain: nil},
 						}},
 				}}}}}); err != nil {
 		return result, validation.NewError("containerservice.ManagedClustersClient", "CreateOrUpdate", err.Error())
@@ -607,5 +606,79 @@ func (client ManagedClustersClient) listByResourceGroupNextResults(lastResults M
 // ListByResourceGroupComplete enumerates all values, automatically crossing page boundaries as required.
 func (client ManagedClustersClient) ListByResourceGroupComplete(ctx context.Context, resourceGroupName string) (result ManagedClusterListResultIterator, err error) {
 	result.page, err = client.ListByResourceGroup(ctx, resourceGroupName)
+	return
+}
+
+// UpdateTags updates a managed cluster with the specified tags.
+// Parameters:
+// resourceGroupName - the name of the resource group.
+// resourceName - the name of the managed cluster resource.
+// parameters - parameters supplied to the Update Managed Cluster Tags operation.
+func (client ManagedClustersClient) UpdateTags(ctx context.Context, resourceGroupName string, resourceName string, parameters TagsObject) (result ManagedClustersUpdateTagsFuture, err error) {
+	req, err := client.UpdateTagsPreparer(ctx, resourceGroupName, resourceName, parameters)
+	if err != nil {
+		err = autorest.NewErrorWithError(err, "containerservice.ManagedClustersClient", "UpdateTags", nil, "Failure preparing request")
+		return
+	}
+
+	result, err = client.UpdateTagsSender(req)
+	if err != nil {
+		err = autorest.NewErrorWithError(err, "containerservice.ManagedClustersClient", "UpdateTags", result.Response(), "Failure sending request")
+		return
+	}
+
+	return
+}
+
+// UpdateTagsPreparer prepares the UpdateTags request.
+func (client ManagedClustersClient) UpdateTagsPreparer(ctx context.Context, resourceGroupName string, resourceName string, parameters TagsObject) (*http.Request, error) {
+	pathParameters := map[string]interface{}{
+		"resourceGroupName": autorest.Encode("path", resourceGroupName),
+		"resourceName":      autorest.Encode("path", resourceName),
+		"subscriptionId":    autorest.Encode("path", client.SubscriptionID),
+	}
+
+	const APIVersion = "2018-03-31"
+	queryParameters := map[string]interface{}{
+		"api-version": APIVersion,
+	}
+
+	preparer := autorest.CreatePreparer(
+		autorest.AsContentType("application/json; charset=utf-8"),
+		autorest.AsPatch(),
+		autorest.WithBaseURL(client.BaseURI),
+		autorest.WithPathParameters("/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ContainerService/managedClusters/{resourceName}", pathParameters),
+		autorest.WithJSON(parameters),
+		autorest.WithQueryParameters(queryParameters))
+	return preparer.Prepare((&http.Request{}).WithContext(ctx))
+}
+
+// UpdateTagsSender sends the UpdateTags request. The method will close the
+// http.Response Body if it receives an error.
+func (client ManagedClustersClient) UpdateTagsSender(req *http.Request) (future ManagedClustersUpdateTagsFuture, err error) {
+	var resp *http.Response
+	resp, err = autorest.SendWithSender(client, req,
+		azure.DoRetryWithRegistration(client.Client))
+	if err != nil {
+		return
+	}
+	err = autorest.Respond(resp, azure.WithErrorUnlessStatusCode(http.StatusOK))
+	if err != nil {
+		return
+	}
+	future.Future, err = azure.NewFutureFromResponse(resp)
+	return
+}
+
+// UpdateTagsResponder handles the response to the UpdateTags request. The method always
+// closes the http.Response Body.
+func (client ManagedClustersClient) UpdateTagsResponder(resp *http.Response) (result ManagedCluster, err error) {
+	err = autorest.Respond(
+		resp,
+		client.ByInspecting(),
+		azure.WithErrorUnlessStatusCode(http.StatusOK),
+		autorest.ByUnmarshallingJSON(&result),
+		autorest.ByClosing())
+	result.Response = autorest.Response{Response: resp}
 	return
 }
