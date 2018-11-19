@@ -1301,6 +1301,35 @@ func (future *ManagedClustersDeleteFuture) Result(client ManagedClustersClient) 
 	return
 }
 
+// ManagedClustersUpdateTagsFuture an abstraction for monitoring and retrieving the results of a long-running
+// operation.
+type ManagedClustersUpdateTagsFuture struct {
+	azure.Future
+}
+
+// Result returns the result of the asynchronous operation.
+// If the operation has not completed it will return an error.
+func (future *ManagedClustersUpdateTagsFuture) Result(client ManagedClustersClient) (mc ManagedCluster, err error) {
+	var done bool
+	done, err = future.Done(client)
+	if err != nil {
+		err = autorest.NewErrorWithError(err, "containerservice.ManagedClustersUpdateTagsFuture", "Result", future.Response(), "Polling failure")
+		return
+	}
+	if !done {
+		err = azure.NewAsyncOpIncompleteError("containerservice.ManagedClustersUpdateTagsFuture")
+		return
+	}
+	sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+	if mc.Response.Response, err = future.GetResult(sender); err == nil && mc.Response.Response.StatusCode != http.StatusNoContent {
+		mc, err = client.UpdateTagsResponder(mc.Response.Response)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "containerservice.ManagedClustersUpdateTagsFuture", "Result", mc.Response.Response, "Failure responding to request")
+		}
+	}
+	return
+}
+
 // ManagedClusterUpgradeProfile the list of available upgrades for compute pools.
 type ManagedClusterUpgradeProfile struct {
 	autorest.Response `json:"-"`
@@ -1707,6 +1736,21 @@ type SSHConfiguration struct {
 type SSHPublicKey struct {
 	// KeyData - Certificate public key used to authenticate with VMs through SSH. The certificate must be in PEM format with or without headers.
 	KeyData *string `json:"keyData,omitempty"`
+}
+
+// TagsObject tags object for patch operations.
+type TagsObject struct {
+	// Tags - Resource tags.
+	Tags map[string]*string `json:"tags"`
+}
+
+// MarshalJSON is the custom marshaler for TagsObject.
+func (toVar TagsObject) MarshalJSON() ([]byte, error) {
+	objectMap := make(map[string]interface{})
+	if toVar.Tags != nil {
+		objectMap["tags"] = toVar.Tags
+	}
+	return json.Marshal(objectMap)
 }
 
 // VMDiagnostics profile for diagnostics on the container service VMs.
