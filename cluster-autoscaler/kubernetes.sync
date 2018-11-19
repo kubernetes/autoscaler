@@ -1,26 +1,6 @@
-commit 8e329f1c3cbb1354c27b6135990c5544f14d2a17
-Merge: 4bc9e94fee 07ebe323fa
-Author: Kubernetes Submit Queue <k8s-merge-robot@users.noreply.github.com>
-Date:   Thu Sep 6 00:02:02 2018 -0700
+commit 23dc5401f4e9b985860aeae9657bba1b28c74ff8 (HEAD, tag: v1.13.0-beta.1)
+Merge: 6ee00b6b1b ec2e767e59
+Author: Doug MacEachern <dougm@vmware.com>
+Date:   Fri Nov 16 20:31:24 2018 -0800
 
-    Merge pull request #68312 from msau42/fix-e2e
-    
-    Automatic merge from submit-queue. If you want to cherry-pick this change to another branch, please follow the instructions here: https://github.com/kubernetes/community/blob/master/contributors/devel/cherry-picks.md.
-    
-    Fix gce localssd pv tests
-    
-    **What this PR does / why we need it**:
-    When running local PV tests against GCE local SSD, it directly uses the disk so doesn't need to create a tmp dir like the other test formats.  Fsgroup tests do not create test-file so don't error on cleanup if the file doesn't exist.
-    
-    
-    **Which issue(s) this PR fixes** *(optional, in `fixes #<issue number>(, fixes #<issue_number>, ...)` format, will close the issue(s) when PR gets merged)*:
-    Fixes #68308
-    
-    **Special notes for your reviewer**:
-    
-    **Release note**:
-    
-    ```release-note
-    NONE
-    ```
-
+    Merge remote-tracking branch 'origin/master' into release-1.13
