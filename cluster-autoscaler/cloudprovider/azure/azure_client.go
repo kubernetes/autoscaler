@@ -23,11 +23,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-04-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-10-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2018-03-31/containerservice"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2017-09-01/network"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources"
-	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2017-10-01/storage"
+	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2018-07-01/storage"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/go-autorest/autorest/azure"
