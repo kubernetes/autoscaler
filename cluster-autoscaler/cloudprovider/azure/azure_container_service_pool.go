@@ -122,7 +122,7 @@ func (agentPool *ContainerServiceAgentPool) getAKSNodeCount() (count int, err er
 		agentPool.resourceGroup,
 		agentPool.clusterName)
 	if err != nil {
-		glog.Error("Failed to get AKS cluster (name:%q): %v", agentPool.clusterName, err)
+		glog.Errorf("Failed to get AKS cluster (name:%q): %v", agentPool.clusterName, err)
 		return -1, err
 	}
 
@@ -147,7 +147,7 @@ func (agentPool *ContainerServiceAgentPool) getACSNodeCount() (count int, err er
 		agentPool.resourceGroup,
 		agentPool.clusterName)
 	if err != nil {
-		glog.Error("Failed to get ACS cluster (name:%q): %v", agentPool.clusterName, err)
+		glog.Errorf("Failed to get ACS cluster (name:%q): %v", agentPool.clusterName, err)
 		return -1, err
 	}
 
@@ -172,7 +172,7 @@ func (agentPool *ContainerServiceAgentPool) setAKSNodeCount(count int) error {
 		agentPool.resourceGroup,
 		agentPool.clusterName)
 	if err != nil {
-		glog.Error("Failed to get AKS cluster (name:%q): %v", agentPool.clusterName, err)
+		glog.Errorf("Failed to get AKS cluster (name:%q): %v", agentPool.clusterName, err)
 		return err
 	}
 
@@ -190,7 +190,7 @@ func (agentPool *ContainerServiceAgentPool) setAKSNodeCount(count int) error {
 	future, err := aksClient.CreateOrUpdate(updateCtx, agentPool.resourceGroup,
 		agentPool.clusterName, managedCluster)
 	if err != nil {
-		glog.Error("Failed to update AKS cluster (%q): %v", agentPool.clusterName, err)
+		glog.Errorf("Failed to update AKS cluster (%q): %v", agentPool.clusterName, err)
 		return err
 	}
 	return future.WaitForCompletion(updateCtx, aksClient.Client)
@@ -205,7 +205,7 @@ func (agentPool *ContainerServiceAgentPool) setACSNodeCount(count int) error {
 		agentPool.resourceGroup,
 		agentPool.clusterName)
 	if err != nil {
-		glog.Error("Failed to get ACS cluster (name:%q): %v", agentPool.clusterName, err)
+		glog.Errorf("Failed to get ACS cluster (name:%q): %v", agentPool.clusterName, err)
 		return err
 	}
 
@@ -223,7 +223,7 @@ func (agentPool *ContainerServiceAgentPool) setACSNodeCount(count int) error {
 	future, err := acsClient.CreateOrUpdate(updateCtx, agentPool.resourceGroup,
 		agentPool.clusterName, acsCluster)
 	if err != nil {
-		glog.Error("Failed to update ACS cluster (%q): %v", agentPool.clusterName, err)
+		glog.Errorf("Failed to update ACS cluster (%q): %v", agentPool.clusterName, err)
 		return err
 	}
 	return future.WaitForCompletion(updateCtx, acsClient.Client)
@@ -297,7 +297,7 @@ func (agentPool *ContainerServiceAgentPool) TargetSize() (int, error) {
 //a delete is performed from a scale down.
 func (agentPool *ContainerServiceAgentPool) SetSize(targetSize int) error {
 	if targetSize > agentPool.MaxSize() || targetSize < agentPool.MinSize() {
-		glog.Errorf("Target size %d requested outside Max: %d, Min: %d", targetSize, agentPool.MaxSize(), agentPool.MaxSize)
+		glog.Errorf("Target size %d requested outside Max: %d, Min: %d", targetSize, agentPool.MaxSize(), agentPool.MinSize())
 		return fmt.Errorf("Target size %d requested outside Max: %d, Min: %d", targetSize, agentPool.MaxSize(), agentPool.MinSize())
 	}
 

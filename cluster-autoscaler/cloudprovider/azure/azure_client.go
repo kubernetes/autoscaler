@@ -119,9 +119,9 @@ func (az *azVirtualMachineScaleSetsClient) Get(ctx context.Context, resourceGrou
 }
 
 func (az *azVirtualMachineScaleSetsClient) List(ctx context.Context, resourceGroupName string) (result []compute.VirtualMachineScaleSet, err error) {
-	glog.V(10).Infof("azVirtualMachineScaleSetsClient.List(%q,%q): start", resourceGroupName)
+	glog.V(10).Infof("azVirtualMachineScaleSetsClient.List(%q): start", resourceGroupName)
 	defer func() {
-		glog.V(10).Infof("azVirtualMachineScaleSetsClient.List(%q,%q): end", resourceGroupName)
+		glog.V(10).Infof("azVirtualMachineScaleSetsClient.List(%q): end", resourceGroupName)
 	}()
 
 	iterator, err := az.client.ListComplete(ctx, resourceGroupName)
@@ -142,9 +142,9 @@ func (az *azVirtualMachineScaleSetsClient) List(ctx context.Context, resourceGro
 }
 
 func (az *azVirtualMachineScaleSetsClient) DeleteInstances(ctx context.Context, resourceGroupName string, vmScaleSetName string, vmInstanceIDs compute.VirtualMachineScaleSetVMInstanceRequiredIDs) (resp *http.Response, err error) {
-	glog.V(10).Infof("azVirtualMachineScaleSetsClient.DeleteInstances(%q,%q,%q): start", resourceGroupName, vmScaleSetName, vmInstanceIDs)
+	glog.V(10).Infof("azVirtualMachineScaleSetsClient.DeleteInstances(%q,%q,%v): start", resourceGroupName, vmScaleSetName, vmInstanceIDs)
 	defer func() {
-		glog.V(10).Infof("azVirtualMachineScaleSetsClient.DeleteInstances(%q,%q,%q): end", resourceGroupName, vmScaleSetName, vmInstanceIDs)
+		glog.V(10).Infof("azVirtualMachineScaleSetsClient.DeleteInstances(%q,%q,%v): end", resourceGroupName, vmScaleSetName, vmInstanceIDs)
 	}()
 
 	future, err := az.client.DeleteInstances(ctx, resourceGroupName, vmScaleSetName, vmInstanceIDs)
