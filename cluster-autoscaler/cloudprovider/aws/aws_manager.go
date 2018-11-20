@@ -19,6 +19,7 @@ limitations under the License.
 package aws
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"math/rand"
@@ -183,14 +184,14 @@ func (m *AwsManager) GetAsgNodes(ref AwsRef) ([]AwsInstanceRef, error) {
 
 func (m *AwsManager) getAsgTemplate(asg *asg) (*asgTemplate, error) {
 	if len(asg.AvailabilityZones) < 1 {
-		return nil, fmt.Errorf("Unable to get first AvailabilityZone for %s", asg.Name)
+		return nil, fmt.Errorf("Unable to get first AvailabilityZone for ASG %q", asg.Name)
 	}
 
 	az := asg.AvailabilityZones[0]
 	region := az[0 : len(az)-1]
 
 	if len(asg.AvailabilityZones) > 1 {
-		glog.Warningf("Found multiple availability zones, using %s\n", az)
+		glog.Warningf("Found multiple availability zones for ASG %q; using %s\n", asg.Name, az)
 	}
 
 	instanceTypeName, err := m.buildInstanceType(asg)
@@ -198,12 +199,15 @@ func (m *AwsManager) getAsgTemplate(asg *asg) (*asgTemplate, error) {
 		return nil, err
 	}
 
-	return &asgTemplate{
-		InstanceType: InstanceTypes[instanceTypeName],
-		Region:       region,
-		Zone:         az,
-		Tags:         asg.Tags,
-	}, nil
+	if t, ok := InstanceTypes[instanceTypeName]; ok {
+		return &asgTemplate{
+			InstanceType: t,
+			Region:       region,
+			Zone:         az,
+			Tags:         asg.Tags,
+		}, nil
+	}
+	return nil, fmt.Errorf("ASG %q uses the unknown EC2 instance type %q", asg.Name, instanceTypeName)
 }
 
 func (m *AwsManager) buildInstanceType(asg *asg) (string, error) {
@@ -213,7 +217,7 @@ func (m *AwsManager) buildInstanceType(asg *asg) (string, error) {
 		return m.ec2Service.getInstanceTypeByLT(asg.LaunchTemplateName, asg.LaunchTemplateVersion)
 	}
 
-	return "", fmt.Errorf("Unable to get instance type from launch config or launch template")
+	return "", errors.New("Unable to get instance type from launch config or launch template")
 }
 
 func (m *AwsManager) buildNodeFromTemplate(asg *asg, template *asgTemplate) (*apiv1.Node, error) {
