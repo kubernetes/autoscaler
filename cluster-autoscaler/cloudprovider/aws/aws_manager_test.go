@@ -228,6 +228,81 @@ func TestBuildInstanceType(t *testing.T) {
 	assert.Equal(t, instanceType, builtInstanceType)
 }
 
+func TestGetASGTemplate(t *testing.T) {
+	const (
+		knownInstanceType = "t3.micro"
+		region            = "us-east-1"
+		az                = region + "a"
+		ltName            = "launcher"
+		ltVersion         = "1"
+	)
+
+	tags := []*autoscaling.TagDescription{
+		{
+			Key:   aws.String("k8s.io/cluster-autoscaler/node-template/taint/dedicated"),
+			Value: aws.String("foo:NoSchedule"),
+		},
+	}
+
+	tests := []struct {
+		description       string
+		instanceType      string
+		availabilityZones []string
+		error             bool
+	}{
+		{"insufficient availability zones",
+			knownInstanceType, []string{}, true},
+		{"single availability zone",
+			knownInstanceType, []string{az}, false},
+		{"multiple availability zones",
+			knownInstanceType, []string{az, "us-west-1b"}, false},
+		{"unknown instance type",
+			"nonexistent.xlarge", []string{az}, true},
+	}
+
+	for _, test := range tests {
+		t.Run(test.description, func(t *testing.T) {
+			s := &EC2Mock{}
+			s.On("DescribeLaunchTemplateVersions", &ec2.DescribeLaunchTemplateVersionsInput{
+				LaunchTemplateName: aws.String(ltName),
+				Versions:           []*string{aws.String(ltVersion)},
+			}).Return(&ec2.DescribeLaunchTemplateVersionsOutput{
+				LaunchTemplateVersions: []*ec2.LaunchTemplateVersion{
+					{
+						LaunchTemplateData: &ec2.ResponseLaunchTemplateData{
+							InstanceType: aws.String(test.instanceType),
+						},
+					},
+				},
+			})
+
+			m, err := createAWSManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, nil, &ec2Wrapper{s})
+			assert.NoError(t, err)
+
+			asg := &asg{
+				AwsRef:                AwsRef{Name: "sample"},
+				AvailabilityZones:     test.availabilityZones,
+				LaunchTemplateName:    ltName,
+				LaunchTemplateVersion: ltVersion,
+				Tags: tags,
+			}
+
+			template, err := m.getAsgTemplate(asg)
+			if test.error {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				if assert.NotNil(t, template) {
+					assert.Equal(t, test.instanceType, template.InstanceType.InstanceType)
+					assert.Equal(t, region, template.Region)
+					assert.Equal(t, test.availabilityZones[0], template.Zone)
+					assert.Equal(t, tags, template.Tags)
+				}
+			}
+		})
+	}
+}
+
 /* Disabled due to flakiness. See https://github.com/kubernetes/autoscaler/issues/608
 func TestFetchAutoAsgs(t *testing.T) {
 	min, max := 1, 10
