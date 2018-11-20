@@ -30,7 +30,7 @@ import (
 	"k8s.io/kubernetes/pkg/scheduler/factory"
 
 	// We need to import provider to initialize default scheduler.
-	_ "k8s.io/kubernetes/pkg/scheduler/algorithmprovider"
+	"k8s.io/kubernetes/pkg/scheduler/algorithmprovider"
 
 	"github.com/golang/glog"
 )
@@ -55,6 +55,15 @@ type PredicateChecker struct {
 
 // There are no const arrays in Go, this is meant to be used as a const.
 var priorityPredicates = []string{"PodFitsResources", "GeneralPredicates", "PodToleratesNodeTaints"}
+
+func init() {
+	// This results in filtering out some predicate functions registered by defaults.init() method.
+	// In scheduler this method is run from app.runCommand().
+	// We also need to call it in CA to have simulation behaviour consistent with scheduler.
+	// Note: the logic of method is conditional and depends on feature gates enabled. To have same
+	//       behaviour in CA and scheduler both need to be run with same set of feature gates.
+	algorithmprovider.ApplyFeatureGates()
+}
 
 // NewPredicateChecker builds PredicateChecker.
 func NewPredicateChecker(kubeClient kube_client.Interface, stop <-chan struct{}) (*PredicateChecker, error) {
