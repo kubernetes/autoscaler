@@ -210,7 +210,7 @@ func (as *AgentPool) IncreaseSize(delta int) error {
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
 	_, err = as.manager.azClient.deploymentsClient.CreateOrUpdate(ctx, as.manager.config.ResourceGroup, newDeploymentName, newDeployment)
-	glog.V(3).Infof("Waiting for deploymentsClient.CreateOrUpdate(%s, %s, %s)", as.manager.config.ResourceGroup, newDeploymentName, newDeployment)
+	glog.V(3).Infof("Waiting for deploymentsClient.CreateOrUpdate(%s, %s)", as.manager.config.ResourceGroup, newDeploymentName)
 	if err != nil {
 		return err
 	}
