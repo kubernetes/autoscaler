@@ -188,7 +188,9 @@ kubectl delete clusterrolebinding myname-cluster-admin-binding
 ./hack/vpa-down.sh
 ```
 
-# Known limitations of the alpha version
+# Known limitations
+
+## Limitations of alpha version
 
 * Whenever VPA updates the pod resources the pod is recreated, which causes all
   running containers to be restarted. The pod may be recreated on a different node.
@@ -207,6 +209,17 @@ kubectl delete clusterrolebinding myname-cluster-admin-binding
   size, available quota) and cause **pods to go pending**. This can be addressed by
   using VPA together with [Cluster Autoscaler](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#basics).
 * Multiple VPA resources matching the same pod have undefined behavior.
+
+## Limitations of the beta version
+
+The limitations from alpha version still apply except for note about `Auto`
+mode.
+
+* VPA does not evict pods which are not run under a controller. For such pods
+  `Auto` mode is currently equivalent to `Initial`.
+* VPA does not change resource limits. This implies that recommendations are
+  capped to limits during actuation.
+  **NOTE** This behaviour is likely to change so please don't rely on it.
 
 # Related links
 
