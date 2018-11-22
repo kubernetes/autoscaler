@@ -39,7 +39,10 @@ if [ $# -gt 2 ]; then
 fi
 
 ACTION=$1
-COMPONENTS="vpa-crd vpa-beta-crd vpa-rbac updater-deployment recommender-deployment admission-controller-deployment"
+COMPONENTS="vpa-beta-crd vpa-rbac updater-deployment recommender-deployment admission-controller-deployment"
+if [ ${ACTION} == delete ]; then
+  COMPONENTS+=" vpa-crd"
+fi
 
 if [ $# -gt 1 ]; then
   COMPONENTS="$2-deployment"
