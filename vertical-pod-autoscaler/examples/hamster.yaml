@@ -3,7 +3,7 @@
 # 0.5s and sleeping 0.5s).
 # It also creates a corresponding Vertical Pod Autoscaler that adjusts the requests.
 # Note that the update mode is left unset, so it defaults to "Auto" mode.
-apiVersion: "poc.autoscaling.k8s.io/v1alpha1"
+apiVersion: "autoscaling.k8s.io/v1beta1"
 kind: VerticalPodAutoscaler
 metadata:
   name: hamster-vpa
@@ -23,7 +23,7 @@ spec:
     metadata:
       labels:
         app: hamster
-    spec:            
+    spec:
       containers:
       - name: hamster
         image: k8s.gcr.io/ubuntu-slim:0.1
