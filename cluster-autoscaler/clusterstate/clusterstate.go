@@ -323,7 +323,7 @@ func (csr *ClusterStateRegistry) IsNodeGroupHealthy(nodeGroupName string) bool {
 	unjustifiedUnready := 0
 	// Too few nodes, something is missing. Below the expected node count.
 	if readiness.Ready < acceptable.MinNodes {
-		unjustifiedUnready += acceptable.MinNodes - readiness.Ready
+		unjustifiedUnready += acceptable.MinNodes - readiness.Ready - readiness.NotStarted
 	}
 	// TODO: verify against max nodes as well.
 
