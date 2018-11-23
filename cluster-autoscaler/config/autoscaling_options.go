@@ -60,6 +60,10 @@ type AutoscalingOptions struct {
 	EstimatorName string
 	// ExpanderName sets the type of node group expander to be used in scale up
 	ExpanderName string
+	// IgnoreDaemonSetsUtilization is whether CA will ignore DaemonSet pods when calculating resource utilization for scaling down
+	IgnoreDaemonSetsUtilization bool
+	// IgnoreMirrorPodsUtilization is whether CA will ignore Mirror pods when calculating resource utilization for scaling down
+	IgnoreMirrorPodsUtilization bool
 	// MaxGracefulTerminationSec is maximum number of seconds scale down waits for pods to terminate before
 	// removing the node from cloud provider.
 	MaxGracefulTerminationSec int
