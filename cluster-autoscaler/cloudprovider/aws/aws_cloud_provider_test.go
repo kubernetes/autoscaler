@@ -320,10 +320,18 @@ func TestIncreaseSize(t *testing.T) {
 
 	provider.Refresh()
 
-	err := asgs[0].IncreaseSize(1)
+	initialSize, err := asgs[0].TargetSize()
+	assert.NoError(t, err)
+	assert.Equal(t, 2, initialSize)
+
+	err = asgs[0].IncreaseSize(1)
 	assert.NoError(t, err)
 	service.AssertNumberOfCalls(t, "SetDesiredCapacity", 1)
 	service.AssertNumberOfCalls(t, "DescribeAutoScalingGroupsPages", 1)
+
+	newSize, err := asgs[0].TargetSize()
+	assert.NoError(t, err)
+	assert.Equal(t, 3, newSize)
 }
 
 func TestBelongs(t *testing.T) {
@@ -393,6 +401,54 @@ func TestDeleteNodes(t *testing.T) {
 
 	provider.Refresh()
 
+	initialSize, err := asgs[0].TargetSize()
+	assert.NoError(t, err)
+	assert.Equal(t, 2, initialSize)
+
+	node := &apiv1.Node{
+		Spec: apiv1.NodeSpec{
+			ProviderID: "aws:///us-east-1a/test-instance-id",
+		},
+	}
+	err = asgs[0].DeleteNodes([]*apiv1.Node{node})
+	assert.NoError(t, err)
+	service.AssertNumberOfCalls(t, "TerminateInstanceInAutoScalingGroup", 1)
+	service.AssertNumberOfCalls(t, "DescribeAutoScalingGroupsPages", 1)
+
+	newSize, err := asgs[0].TargetSize()
+	assert.NoError(t, err)
+	assert.Equal(t, 1, newSize)
+}
+
+func TestDeleteNodesAfterMultipleRefreshes(t *testing.T) {
+	service := &AutoScalingMock{}
+	manager := newTestAwsManagerWithAsgs(t, service, []string{"1:5:test-asg"})
+	provider := testProvider(t, manager)
+	asgs := provider.NodeGroups()
+
+	service.On("TerminateInstanceInAutoScalingGroup", &autoscaling.TerminateInstanceInAutoScalingGroupInput{
+		InstanceId:                     aws.String("test-instance-id"),
+		ShouldDecrementDesiredCapacity: aws.Bool(true),
+	}).Return(&autoscaling.TerminateInstanceInAutoScalingGroupOutput{
+		Activity: &autoscaling.Activity{Description: aws.String("Deleted instance")},
+	})
+
+	// Look up the current number of instances...
+	service.On("DescribeAutoScalingGroupsPages",
+		&autoscaling.DescribeAutoScalingGroupsInput{
+			AutoScalingGroupNames: aws.StringSlice([]string{"test-asg"}),
+			MaxRecords:            aws.Int64(maxRecordsReturnedByAPI),
+		},
+		mock.AnythingOfType("func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool"),
+	).Run(func(args mock.Arguments) {
+		fn := args.Get(1).(func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool)
+		fn(testNamedDescribeAutoScalingGroupsOutput("test-asg", 2, "test-instance-id", "second-test-instance-id"), false)
+	}).Return(nil)
+
+	provider.Refresh()
+	// Call the manager directly as otherwise the call would be a noop as its within less then 60s
+	manager.forceRefresh()
+
 	node := &apiv1.Node{
 		Spec: apiv1.NodeSpec{
 			ProviderID: "aws:///us-east-1a/test-instance-id",
@@ -400,8 +456,6 @@ func TestDeleteNodes(t *testing.T) {
 	}
 	err := asgs[0].DeleteNodes([]*apiv1.Node{node})
 	assert.NoError(t, err)
-	service.AssertNumberOfCalls(t, "TerminateInstanceInAutoScalingGroup", 1)
-	service.AssertNumberOfCalls(t, "DescribeAutoScalingGroupsPages", 1)
 }
 
 func TestGetResourceLimiter(t *testing.T) {
