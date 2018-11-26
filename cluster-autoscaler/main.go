@@ -321,6 +321,8 @@ func run(healthCheck *metrics.HealthCheck) {
 }
 
 func main() {
+	klog.InitFlags(nil)
+
 	leaderElection := defaultLeaderElectionConfiguration()
 	leaderElection.LeaderElect = true
 
