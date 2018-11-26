@@ -19,9 +19,9 @@ package estimator
 import (
 	"fmt"
 
-	"github.com/golang/glog"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	"k8s.io/klog"
 	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 )
 
@@ -57,7 +57,7 @@ func NewEstimatorBuilder(name string) (EstimatorBuilder, error) {
 	// Deprecated.
 	// TODO(aleksandra-malinowska): remove in 1.5.
 	case BasicEstimatorName:
-		glog.Warning(basicEstimatorDeprecationMessage)
+		klog.Warning(basicEstimatorDeprecationMessage)
 		return func(_ *simulator.PredicateChecker) Estimator {
 			return NewBasicNodeEstimator()
 		}, nil

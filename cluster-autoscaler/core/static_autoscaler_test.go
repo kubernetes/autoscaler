@@ -36,9 +36,9 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 
-	"github.com/golang/glog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"k8s.io/klog"
 )
 
 type nodeListerMock struct {
@@ -82,7 +82,7 @@ type onScaleUpMock struct {
 }
 
 func (m *onScaleUpMock) ScaleUp(id string, delta int) error {
-	glog.Infof("Scale up: %v %v", id, delta)
+	klog.Infof("Scale up: %v %v", id, delta)
 	args := m.Called(id, delta)
 	return args.Error(0)
 }
@@ -92,7 +92,7 @@ type onScaleDownMock struct {
 }
 
 func (m *onScaleDownMock) ScaleDown(id string, name string) error {
-	glog.Infof("Scale down: %v %v", id, name)
+	klog.Infof("Scale down: %v %v", id, name)
 	args := m.Called(id, name)
 	return args.Error(0)
 }
@@ -102,7 +102,7 @@ type onNodeGroupCreateMock struct {
 }
 
 func (m *onNodeGroupCreateMock) Create(id string) error {
-	glog.Infof("Create group: %v", id)
+	klog.Infof("Create group: %v", id)
 	args := m.Called(id)
 	return args.Error(0)
 }
@@ -112,7 +112,7 @@ type onNodeGroupDeleteMock struct {
 }
 
 func (m *onNodeGroupDeleteMock) Delete(id string) error {
-	glog.Infof("Delete group: %v", id)
+	klog.Infof("Delete group: %v", id)
 	args := m.Called(id)
 	return args.Error(0)
 }

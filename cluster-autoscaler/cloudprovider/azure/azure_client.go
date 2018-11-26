@@ -31,7 +31,7 @@ import (
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/go-autorest/autorest/azure"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 // VirtualMachineScaleSetsClient defines needed functions for azure compute.VirtualMachineScaleSetsClient.
@@ -95,9 +95,9 @@ func newAzVirtualMachineScaleSetsClient(subscriptionID, endpoint string, service
 }
 
 func (az *azVirtualMachineScaleSetsClient) CreateOrUpdate(ctx context.Context, resourceGroupName string, VMScaleSetName string, parameters compute.VirtualMachineScaleSet) (resp *http.Response, err error) {
-	glog.V(10).Infof("azVirtualMachineScaleSetsClient.CreateOrUpdate(%q,%q): start", resourceGroupName, VMScaleSetName)
+	klog.V(10).Infof("azVirtualMachineScaleSetsClient.CreateOrUpdate(%q,%q): start", resourceGroupName, VMScaleSetName)
 	defer func() {
-		glog.V(10).Infof("azVirtualMachineScaleSetsClient.CreateOrUpdate(%q,%q): end", resourceGroupName, VMScaleSetName)
+		klog.V(10).Infof("azVirtualMachineScaleSetsClient.CreateOrUpdate(%q,%q): end", resourceGroupName, VMScaleSetName)
 	}()
 
 	future, err := az.client.CreateOrUpdate(ctx, resourceGroupName, VMScaleSetName, parameters)
@@ -110,18 +110,18 @@ func (az *azVirtualMachineScaleSetsClient) CreateOrUpdate(ctx context.Context, r
 }
 
 func (az *azVirtualMachineScaleSetsClient) Get(ctx context.Context, resourceGroupName string, VMScaleSetName string) (result compute.VirtualMachineScaleSet, err error) {
-	glog.V(10).Infof("azVirtualMachineScaleSetsClient.Get(%q,%q): start", resourceGroupName, VMScaleSetName)
+	klog.V(10).Infof("azVirtualMachineScaleSetsClient.Get(%q,%q): start", resourceGroupName, VMScaleSetName)
 	defer func() {
-		glog.V(10).Infof("azVirtualMachineScaleSetsClient.Get(%q,%q): end", resourceGroupName, VMScaleSetName)
+		klog.V(10).Infof("azVirtualMachineScaleSetsClient.Get(%q,%q): end", resourceGroupName, VMScaleSetName)
 	}()
 
 	return az.client.Get(ctx, resourceGroupName, VMScaleSetName)
 }
 
 func (az *azVirtualMachineScaleSetsClient) List(ctx context.Context, resourceGroupName string) (result []compute.VirtualMachineScaleSet, err error) {
-	glog.V(10).Infof("azVirtualMachineScaleSetsClient.List(%q): start", resourceGroupName)
+	klog.V(10).Infof("azVirtualMachineScaleSetsClient.List(%q): start", resourceGroupName)
 	defer func() {
-		glog.V(10).Infof("azVirtualMachineScaleSetsClient.List(%q): end", resourceGroupName)
+		klog.V(10).Infof("azVirtualMachineScaleSetsClient.List(%q): end", resourceGroupName)
 	}()
 
 	iterator, err := az.client.ListComplete(ctx, resourceGroupName)
@@ -142,9 +142,9 @@ func (az *azVirtualMachineScaleSetsClient) List(ctx context.Context, resourceGro
 }
 
 func (az *azVirtualMachineScaleSetsClient) DeleteInstances(ctx context.Context, resourceGroupName string, vmScaleSetName string, vmInstanceIDs compute.VirtualMachineScaleSetVMInstanceRequiredIDs) (resp *http.Response, err error) {
-	glog.V(10).Infof("azVirtualMachineScaleSetsClient.DeleteInstances(%q,%q,%v): start", resourceGroupName, vmScaleSetName, vmInstanceIDs)
+	klog.V(10).Infof("azVirtualMachineScaleSetsClient.DeleteInstances(%q,%q,%v): start", resourceGroupName, vmScaleSetName, vmInstanceIDs)
 	defer func() {
-		glog.V(10).Infof("azVirtualMachineScaleSetsClient.DeleteInstances(%q,%q,%v): end", resourceGroupName, vmScaleSetName, vmInstanceIDs)
+		klog.V(10).Infof("azVirtualMachineScaleSetsClient.DeleteInstances(%q,%q,%v): end", resourceGroupName, vmScaleSetName, vmInstanceIDs)
 	}()
 
 	future, err := az.client.DeleteInstances(ctx, resourceGroupName, vmScaleSetName, vmInstanceIDs)
@@ -174,18 +174,18 @@ func newAzVirtualMachineScaleSetVMsClient(subscriptionID, endpoint string, servi
 }
 
 func (az *azVirtualMachineScaleSetVMsClient) Get(ctx context.Context, resourceGroupName string, VMScaleSetName string, instanceID string) (result compute.VirtualMachineScaleSetVM, err error) {
-	glog.V(10).Infof("azVirtualMachineScaleSetVMsClient.Get(%q,%q,%q): start", resourceGroupName, VMScaleSetName, instanceID)
+	klog.V(10).Infof("azVirtualMachineScaleSetVMsClient.Get(%q,%q,%q): start", resourceGroupName, VMScaleSetName, instanceID)
 	defer func() {
-		glog.V(10).Infof("azVirtualMachineScaleSetVMsClient.Get(%q,%q,%q): end", resourceGroupName, VMScaleSetName, instanceID)
+		klog.V(10).Infof("azVirtualMachineScaleSetVMsClient.Get(%q,%q,%q): end", resourceGroupName, VMScaleSetName, instanceID)
 	}()
 
 	return az.client.Get(ctx, resourceGroupName, VMScaleSetName, instanceID)
 }
 
 func (az *azVirtualMachineScaleSetVMsClient) List(ctx context.Context, resourceGroupName string, virtualMachineScaleSetName string, filter string, selectParameter string, expand string) (result []compute.VirtualMachineScaleSetVM, err error) {
-	glog.V(10).Infof("azVirtualMachineScaleSetVMsClient.List(%q,%q,%q): start", resourceGroupName, virtualMachineScaleSetName, filter)
+	klog.V(10).Infof("azVirtualMachineScaleSetVMsClient.List(%q,%q,%q): start", resourceGroupName, virtualMachineScaleSetName, filter)
 	defer func() {
-		glog.V(10).Infof("azVirtualMachineScaleSetVMsClient.List(%q,%q,%q): end", resourceGroupName, virtualMachineScaleSetName, filter)
+		klog.V(10).Infof("azVirtualMachineScaleSetVMsClient.List(%q,%q,%q): end", resourceGroupName, virtualMachineScaleSetName, filter)
 	}()
 
 	iterator, err := az.client.ListComplete(ctx, resourceGroupName, virtualMachineScaleSetName, filter, selectParameter, expand)
@@ -223,18 +223,18 @@ func newAzVirtualMachinesClient(subscriptionID, endpoint string, servicePrincipa
 }
 
 func (az *azVirtualMachinesClient) Get(ctx context.Context, resourceGroupName string, VMName string, expand compute.InstanceViewTypes) (result compute.VirtualMachine, err error) {
-	glog.V(10).Infof("azVirtualMachinesClient.Get(%q,%q,%q): start", resourceGroupName, VMName, expand)
+	klog.V(10).Infof("azVirtualMachinesClient.Get(%q,%q,%q): start", resourceGroupName, VMName, expand)
 	defer func() {
-		glog.V(10).Infof("azVirtualMachinesClient.Get(%q,%q,%q): end", resourceGroupName, VMName, expand)
+		klog.V(10).Infof("azVirtualMachinesClient.Get(%q,%q,%q): end", resourceGroupName, VMName, expand)
 	}()
 
 	return az.client.Get(ctx, resourceGroupName, VMName, expand)
 }
 
 func (az *azVirtualMachinesClient) Delete(ctx context.Context, resourceGroupName string, VMName string) (resp *http.Response, err error) {
-	glog.V(10).Infof("azVirtualMachinesClient.Delete(%q,%q): start", resourceGroupName, VMName)
+	klog.V(10).Infof("azVirtualMachinesClient.Delete(%q,%q): start", resourceGroupName, VMName)
 	defer func() {
-		glog.V(10).Infof("azVirtualMachinesClient.Delete(%q,%q): end", resourceGroupName, VMName)
+		klog.V(10).Infof("azVirtualMachinesClient.Delete(%q,%q): end", resourceGroupName, VMName)
 	}()
 
 	future, err := az.client.Delete(ctx, resourceGroupName, VMName)
@@ -247,9 +247,9 @@ func (az *azVirtualMachinesClient) Delete(ctx context.Context, resourceGroupName
 }
 
 func (az *azVirtualMachinesClient) List(ctx context.Context, resourceGroupName string) (result []compute.VirtualMachine, err error) {
-	glog.V(10).Infof("azVirtualMachinesClient.List(%q): start", resourceGroupName)
+	klog.V(10).Infof("azVirtualMachinesClient.List(%q): start", resourceGroupName)
 	defer func() {
-		glog.V(10).Infof("azVirtualMachinesClient.List(%q): end", resourceGroupName)
+		klog.V(10).Infof("azVirtualMachinesClient.List(%q): end", resourceGroupName)
 	}()
 
 	iterator, err := az.client.ListComplete(ctx, resourceGroupName)
@@ -286,9 +286,9 @@ func newAzInterfacesClient(subscriptionID, endpoint string, servicePrincipalToke
 }
 
 func (az *azInterfacesClient) Delete(ctx context.Context, resourceGroupName string, networkInterfaceName string) (resp *http.Response, err error) {
-	glog.V(10).Infof("azInterfacesClient.Delete(%q,%q): start", resourceGroupName, networkInterfaceName)
+	klog.V(10).Infof("azInterfacesClient.Delete(%q,%q): start", resourceGroupName, networkInterfaceName)
 	defer func() {
-		glog.V(10).Infof("azInterfacesClient.Delete(%q,%q): end", resourceGroupName, networkInterfaceName)
+		klog.V(10).Infof("azInterfacesClient.Delete(%q,%q): end", resourceGroupName, networkInterfaceName)
 	}()
 
 	future, err := az.client.Delete(ctx, resourceGroupName, networkInterfaceName)
@@ -317,27 +317,27 @@ func newAzDeploymentsClient(subscriptionID, endpoint string, servicePrincipalTok
 }
 
 func (az *azDeploymentsClient) Get(ctx context.Context, resourceGroupName string, deploymentName string) (result resources.DeploymentExtended, err error) {
-	glog.V(10).Infof("azDeploymentsClient.Get(%q,%q): start", resourceGroupName, deploymentName)
+	klog.V(10).Infof("azDeploymentsClient.Get(%q,%q): start", resourceGroupName, deploymentName)
 	defer func() {
-		glog.V(10).Infof("azDeploymentsClient.Get(%q,%q): end", resourceGroupName, deploymentName)
+		klog.V(10).Infof("azDeploymentsClient.Get(%q,%q): end", resourceGroupName, deploymentName)
 	}()
 
 	return az.client.Get(ctx, resourceGroupName, deploymentName)
 }
 
 func (az *azDeploymentsClient) ExportTemplate(ctx context.Context, resourceGroupName string, deploymentName string) (result resources.DeploymentExportResult, err error) {
-	glog.V(10).Infof("azDeploymentsClient.ExportTemplate(%q,%q): start", resourceGroupName, deploymentName)
+	klog.V(10).Infof("azDeploymentsClient.ExportTemplate(%q,%q): start", resourceGroupName, deploymentName)
 	defer func() {
-		glog.V(10).Infof("azDeploymentsClient.ExportTemplate(%q,%q): end", resourceGroupName, deploymentName)
+		klog.V(10).Infof("azDeploymentsClient.ExportTemplate(%q,%q): end", resourceGroupName, deploymentName)
 	}()
 
 	return az.client.ExportTemplate(ctx, resourceGroupName, deploymentName)
 }
 
 func (az *azDeploymentsClient) CreateOrUpdate(ctx context.Context, resourceGroupName string, deploymentName string, parameters resources.Deployment) (resp *http.Response, err error) {
-	glog.V(10).Infof("azDeploymentsClient.CreateOrUpdate(%q,%q): start", resourceGroupName, deploymentName)
+	klog.V(10).Infof("azDeploymentsClient.CreateOrUpdate(%q,%q): start", resourceGroupName, deploymentName)
 	defer func() {
-		glog.V(10).Infof("azDeploymentsClient.CreateOrUpdate(%q,%q): end", resourceGroupName, deploymentName)
+		klog.V(10).Infof("azDeploymentsClient.CreateOrUpdate(%q,%q): end", resourceGroupName, deploymentName)
 	}()
 
 	future, err := az.client.CreateOrUpdate(ctx, resourceGroupName, deploymentName, parameters)
@@ -366,9 +366,9 @@ func newAzDisksClient(subscriptionID, endpoint string, servicePrincipalToken *ad
 }
 
 func (az *azDisksClient) Delete(ctx context.Context, resourceGroupName string, diskName string) (resp *http.Response, err error) {
-	glog.V(10).Infof("azDisksClient.Delete(%q,%q): start", resourceGroupName, diskName)
+	klog.V(10).Infof("azDisksClient.Delete(%q,%q): start", resourceGroupName, diskName)
 	defer func() {
-		glog.V(10).Infof("azDisksClient.Delete(%q,%q): end", resourceGroupName, diskName)
+		klog.V(10).Infof("azDisksClient.Delete(%q,%q): end", resourceGroupName, diskName)
 	}()
 
 	future, err := az.client.Delete(ctx, resourceGroupName, diskName)
@@ -397,9 +397,9 @@ func newAzAccountsClient(subscriptionID, endpoint string, servicePrincipalToken 
 }
 
 func (az *azAccountsClient) ListKeys(ctx context.Context, resourceGroupName string, accountName string) (result storage.AccountListKeysResult, err error) {
-	glog.V(10).Infof("azAccountsClient.ListKeys(%q,%q): start", resourceGroupName, accountName)
+	klog.V(10).Infof("azAccountsClient.ListKeys(%q,%q): start", resourceGroupName, accountName)
 	defer func() {
-		glog.V(10).Infof("azAccountsClient.ListKeys(%q,%q): end", resourceGroupName, accountName)
+		klog.V(10).Infof("azAccountsClient.ListKeys(%q,%q): end", resourceGroupName, accountName)
 	}()
 
 	return az.client.ListKeys(ctx, resourceGroupName, accountName)
@@ -426,7 +426,7 @@ func newServicePrincipalTokenFromCredentials(config *Config, env *azure.Environm
 	}
 
 	if config.UseManagedIdentityExtension {
-		glog.V(2).Infoln("azure: using managed identity extension to retrieve access token")
+		klog.V(2).Infoln("azure: using managed identity extension to retrieve access token")
 		msiEndpoint, err := adal.GetMSIVMEndpoint()
 		if err != nil {
 			return nil, fmt.Errorf("Getting the managed service identity endpoint: %v", err)
@@ -437,7 +437,7 @@ func newServicePrincipalTokenFromCredentials(config *Config, env *azure.Environm
 	}
 
 	if len(config.AADClientSecret) > 0 {
-		glog.V(2).Infoln("azure: using client_id+client_secret to retrieve access token")
+		klog.V(2).Infoln("azure: using client_id+client_secret to retrieve access token")
 		return adal.NewServicePrincipalToken(
 			*oauthConfig,
 			config.AADClientID,
@@ -446,7 +446,7 @@ func newServicePrincipalTokenFromCredentials(config *Config, env *azure.Environm
 	}
 
 	if len(config.AADClientCertPath) > 0 && len(config.AADClientCertPassword) > 0 {
-		glog.V(2).Infoln("azure: using jwt client_assertion (client_cert+client_private_key) to retrieve access token")
+		klog.V(2).Infoln("azure: using jwt client_assertion (client_cert+client_private_key) to retrieve access token")
 		certData, err := ioutil.ReadFile(config.AADClientCertPath)
 		if err != nil {
 			return nil, fmt.Errorf("reading the client certificate from file %s: %v", config.AADClientCertPath, err)
@@ -473,39 +473,39 @@ func newAzClient(cfg *Config, env *azure.Environment) (*azClient, error) {
 	}
 
 	scaleSetsClient := newAzVirtualMachineScaleSetsClient(cfg.SubscriptionID, env.ResourceManagerEndpoint, spt)
-	glog.V(5).Infof("Created scale set client with authorizer: %v", scaleSetsClient)
+	klog.V(5).Infof("Created scale set client with authorizer: %v", scaleSetsClient)
 
 	scaleSetVMsClient := newAzVirtualMachineScaleSetVMsClient(cfg.SubscriptionID, env.ResourceManagerEndpoint, spt)
-	glog.V(5).Infof("Created scale set vm client with authorizer: %v", scaleSetVMsClient)
+	klog.V(5).Infof("Created scale set vm client with authorizer: %v", scaleSetVMsClient)
 
 	virtualMachinesClient := newAzVirtualMachinesClient(cfg.SubscriptionID, env.ResourceManagerEndpoint, spt)
-	glog.V(5).Infof("Created vm client with authorizer: %v", virtualMachinesClient)
+	klog.V(5).Infof("Created vm client with authorizer: %v", virtualMachinesClient)
 
 	deploymentsClient := newAzDeploymentsClient(cfg.SubscriptionID, env.ResourceManagerEndpoint, spt)
-	glog.V(5).Infof("Created deployments client with authorizer: %v", deploymentsClient)
+	klog.V(5).Infof("Created deployments client with authorizer: %v", deploymentsClient)
 
 	interfacesClient := newAzInterfacesClient(cfg.SubscriptionID, env.ResourceManagerEndpoint, spt)
-	glog.V(5).Infof("Created interfaces client with authorizer: %v", interfacesClient)
+	klog.V(5).Infof("Created interfaces client with authorizer: %v", interfacesClient)
 
 	storageAccountsClient := newAzAccountsClient(cfg.SubscriptionID, env.ResourceManagerEndpoint, spt)
-	glog.V(5).Infof("Created storage accounts client with authorizer: %v", storageAccountsClient)
+	klog.V(5).Infof("Created storage accounts client with authorizer: %v", storageAccountsClient)
 
 	disksClient := newAzDisksClient(cfg.SubscriptionID, env.ResourceManagerEndpoint, spt)
-	glog.V(5).Infof("Created disks client with authorizer: %v", disksClient)
+	klog.V(5).Infof("Created disks client with authorizer: %v", disksClient)
 
 	containerServicesClient := containerservice.NewContainerServicesClient(cfg.SubscriptionID)
 	containerServicesClient.BaseURI = env.ResourceManagerEndpoint
 	containerServicesClient.Authorizer = autorest.NewBearerAuthorizer(spt)
 	containerServicesClient.PollingDelay = 5 * time.Second
 	containerServicesClient.Sender = autorest.CreateSender()
-	glog.V(5).Infof("Created Container services client with authorizer: %v", containerServicesClient)
+	klog.V(5).Infof("Created Container services client with authorizer: %v", containerServicesClient)
 
 	managedContainerServicesClient := containerservice.NewManagedClustersClient(cfg.SubscriptionID)
 	managedContainerServicesClient.BaseURI = env.ResourceManagerEndpoint
 	managedContainerServicesClient.Authorizer = autorest.NewBearerAuthorizer(spt)
 	managedContainerServicesClient.PollingDelay = 5 * time.Second
 	managedContainerServicesClient.Sender = autorest.CreateSender()
-	glog.V(5).Infof("Created Managed Container services client with authorizer: %v", managedContainerServicesClient)
+	klog.V(5).Infof("Created Managed Container services client with authorizer: %v", managedContainerServicesClient)
 
 	return &azClient{
 		disksClient:                     disksClient,
