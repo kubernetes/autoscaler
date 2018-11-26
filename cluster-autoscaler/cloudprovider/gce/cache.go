@@ -24,8 +24,8 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 
-	"github.com/golang/glog"
 	gce "google.golang.org/api/compute/v1"
+	"k8s.io/klog"
 )
 
 // MigInformation is a wrapper for Mig.
@@ -97,14 +97,14 @@ func (gc *GceCache) RegisterMig(mig Mig) bool {
 		if oldMig := gc.migs[i].Config; oldMig.GceRef() == mig.GceRef() {
 			if !reflect.DeepEqual(oldMig, mig) {
 				gc.migs[i].Config = mig
-				glog.V(4).Infof("Updated Mig %s", mig.GceRef().String())
+				klog.V(4).Infof("Updated Mig %s", mig.GceRef().String())
 				return true
 			}
 			return false
 		}
 	}
 
-	glog.V(1).Infof("Registering %s", mig.GceRef().String())
+	klog.V(1).Infof("Registering %s", mig.GceRef().String())
 	// TODO(aleksandra-malinowska): fetch and set MIG basename here.
 	gc.migs = append(gc.migs, &MigInformation{
 		Config: mig,
@@ -121,7 +121,7 @@ func (gc *GceCache) UnregisterMig(toBeRemoved Mig) bool {
 	found := false
 	for _, mig := range gc.migs {
 		if mig.Config.GceRef() == toBeRemoved.GceRef() {
-			glog.V(1).Infof("Unregistered Mig %s", toBeRemoved.GceRef().String())
+			klog.V(1).Infof("Unregistered Mig %s", toBeRemoved.GceRef().String())
 			found = true
 		} else {
 			newMigs = append(newMigs, mig)
@@ -202,7 +202,7 @@ func (gc *GceCache) regenerateCache() error {
 
 	for _, migInfo := range gc.GetMigs() {
 		mig := migInfo.Config
-		glog.V(4).Infof("Regenerating MIG information for %s", mig.GceRef().String())
+		klog.V(4).Infof("Regenerating MIG information for %s", mig.GceRef().String())
 
 		basename, err := gc.GceService.FetchMigBasename(mig.GceRef())
 		if err != nil {
@@ -212,7 +212,7 @@ func (gc *GceCache) regenerateCache() error {
 
 		instances, err := gc.GceService.FetchMigInstances(mig.GceRef())
 		if err != nil {
-			glog.V(4).Infof("Failed MIG info request for %s: %v", mig.GceRef().String(), err)
+			klog.V(4).Infof("Failed MIG info request for %s: %v", mig.GceRef().String(), err)
 			return err
 		}
 		for _, ref := range instances {

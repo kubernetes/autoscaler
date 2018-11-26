@@ -18,9 +18,9 @@ package alicloud
 
 import (
 	"fmt"
-	"github.com/golang/glog"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/requests"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/services/ess"
+	"k8s.io/klog"
 	"time"
 )
 
@@ -79,17 +79,17 @@ func getEssClient(cfg *cloudConfig) (client *ess.Client, err error) {
 	if cfg.STSEnabled == true {
 		auth, err := cfg.getSTSToken()
 		if err != nil {
-			glog.Errorf("Failed to get sts token from metadata,Because of %s", err.Error())
+			klog.Errorf("Failed to get sts token from metadata,Because of %s", err.Error())
 			return nil, err
 		}
 		client, err = ess.NewClientWithStsToken(region, auth.AccessKeyId, auth.AccessKeySecret, auth.SecurityToken)
 		if err != nil {
-			glog.Errorf("Failed to create client with sts in metadata because of %s", err.Error())
+			klog.Errorf("Failed to create client with sts in metadata because of %s", err.Error())
 		}
 	} else {
 		client, err = ess.NewClientWithAccessKey(region, cfg.AccessKeyID, cfg.AccessKeySecret)
 		if err != nil {
-			glog.Errorf("Failed to create ess client with AccessKeyId and AccessKeySecret,Because of %s", err.Error())
+			klog.Errorf("Failed to create ess client with AccessKeyId and AccessKeySecret,Because of %s", err.Error())
 		}
 	}
 	return
@@ -108,7 +108,7 @@ func (m autoScalingWrapper) getInstanceTypeByConfiguration(configID string, asgI
 
 	resp, err := m.DescribeScalingConfigurations(params)
 	if err != nil {
-		glog.Errorf("failed to get ScalingConfiguration info request for %s,because of %s", configID, err.Error())
+		klog.Errorf("failed to get ScalingConfiguration info request for %s,because of %s", configID, err.Error())
 		return "", err
 	}
 
@@ -118,7 +118,7 @@ func (m autoScalingWrapper) getInstanceTypeByConfiguration(configID string, asgI
 		return "", fmt.Errorf("unable to get first ScalingConfiguration for %s", configID)
 	}
 	if len(configurations) > 1 {
-		glog.Warningf("more than one ScalingConfiguration found for config(%q) and ASG(%q)", configID, asgId)
+		klog.Warningf("more than one ScalingConfiguration found for config(%q) and ASG(%q)", configID, asgId)
 	}
 
 	return configurations[0].InstanceType, nil
@@ -137,7 +137,7 @@ func (m autoScalingWrapper) getScalingGroupByID(groupID string) (*ess.ScalingGro
 		return nil, fmt.Errorf("unable to get first ScalingGroup for %s", groupID)
 	}
 	if len(groups) > 1 {
-		glog.Warningf("more than one ScalingGroup for %s, use first one", groupID)
+		klog.Warningf("more than one ScalingGroup for %s, use first one", groupID)
 	}
 	return &groups[0], nil
 }
@@ -155,7 +155,7 @@ func (m autoScalingWrapper) getScalingGroupByName(groupName string) (*ess.Scalin
 		return nil, fmt.Errorf("unable to get first ScalingGroup for %q", groupName)
 	}
 	if len(groups) > 1 {
-		glog.Warningf("more than one ScalingGroup for %q, use first one", groupName)
+		klog.Warningf("more than one ScalingGroup for %q, use first one", groupName)
 	}
 	return &groups[0], nil
 }
@@ -165,7 +165,7 @@ func (m autoScalingWrapper) getScalingInstancesByGroup(asgId string) ([]ess.Scal
 	params.ScalingGroupId = asgId
 	resp, err := m.DescribeScalingInstances(params)
 	if err != nil {
-		glog.Errorf("falied to request scaling instances for %s,Because of %s", asgId, err.Error())
+		klog.Errorf("falied to request scaling instances for %s,Because of %s", asgId, err.Error())
 		return nil, err
 	}
 	return resp.ScalingInstances.ScalingInstance, nil
@@ -192,7 +192,7 @@ func (m autoScalingWrapper) setCapcityInstanceSize(groupId string, capcityInstan
 		deleteReq.RegionId = m.cfg.getRegion()
 		_, err := m.DeleteScalingRule(deleteReq)
 		if err != nil {
-			glog.Warningf("failed to clean scaling group rules,Because of %s", err.Error())
+			klog.Warningf("failed to clean scaling group rules,Because of %s", err.Error())
 		}
 	}()
 

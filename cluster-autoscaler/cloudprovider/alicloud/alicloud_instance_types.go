@@ -18,8 +18,8 @@ package alicloud
 
 import (
 	"fmt"
-	"github.com/golang/glog"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/services/ecs"
+	"k8s.io/klog"
 	"time"
 )
 
@@ -52,7 +52,7 @@ func (iw *instanceWrapper) getInstanceTypeById(typeId string) (*instanceType, er
 	}
 	err := iw.RefreshCache()
 	if err != nil {
-		glog.Errorf("failed to refresh instance type cache,because of %s", err.Error())
+		klog.Errorf("failed to refresh instance type cache,because of %s", err.Error())
 		return nil, err
 	}
 	if instanceTypeModel := iw.FindInstanceType(typeId); instanceTypeModel != nil {
@@ -125,17 +125,17 @@ func getEcsClient(cfg *cloudConfig) (client *ecs.Client, err error) {
 	if cfg.STSEnabled == true {
 		auth, err := cfg.getSTSToken()
 		if err != nil {
-			glog.Errorf("failed to get sts token from metadata,because of %s", err.Error())
+			klog.Errorf("failed to get sts token from metadata,because of %s", err.Error())
 			return nil, err
 		}
 		client, err = ecs.NewClientWithStsToken(region, auth.AccessKeyId, auth.AccessKeySecret, auth.SecurityToken)
 		if err != nil {
-			glog.Errorf("failed to create client with sts in metadata,because of %s", err.Error())
+			klog.Errorf("failed to create client with sts in metadata,because of %s", err.Error())
 		}
 	} else {
 		client, err = ecs.NewClientWithAccessKey(region, cfg.AccessKeyID, cfg.AccessKeySecret)
 		if err != nil {
-			glog.Errorf("failed to create ecs client with AccessKeyId and AccessKeySecret,because of %s", err.Error())
+			klog.Errorf("failed to create ecs client with AccessKeyId and AccessKeySecret,because of %s", err.Error())
 		}
 	}
 	return

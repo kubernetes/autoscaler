@@ -27,8 +27,8 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 
-	"github.com/golang/glog"
 	gke_api_beta "google.golang.org/api/container/v1beta1"
+	"k8s.io/klog"
 )
 
 var (
@@ -101,7 +101,7 @@ func (m *autoscalingGkeClientV1beta1) GetCluster() (Cluster, error) {
 
 func buildResourceLimiter(cluster *gke_api_beta.Cluster) *cloudprovider.ResourceLimiter {
 	if cluster.Autoscaling == nil {
-		glog.Warningf("buildResourceLimiter called without autoscaling limits set")
+		klog.Warningf("buildResourceLimiter called without autoscaling limits set")
 		return nil
 	}
 
@@ -109,7 +109,7 @@ func buildResourceLimiter(cluster *gke_api_beta.Cluster) *cloudprovider.Resource
 	maxLimits := make(map[string]int64)
 	for _, limit := range cluster.Autoscaling.ResourceLimits {
 		if _, found := supportedResources[limit.ResourceType]; !found {
-			glog.Warningf("Unsupported limit defined %s: %d - %d", limit.ResourceType, limit.Minimum, limit.Maximum)
+			klog.Warningf("Unsupported limit defined %s: %d - %d", limit.ResourceType, limit.Minimum, limit.Maximum)
 		}
 		minLimits[limit.ResourceType] = limit.Minimum
 		maxLimits[limit.ResourceType] = limit.Maximum
@@ -213,16 +213,16 @@ func (m *autoscalingGkeClientV1beta1) CreateNodePool(mig *GkeMig) error {
 
 func (m *autoscalingGkeClientV1beta1) waitForGkeOp(op *gke_api_beta.Operation) error {
 	for start := time.Now(); time.Since(start) < m.operationWaitTimeout; time.Sleep(m.operationPollInterval) {
-		glog.V(4).Infof("Waiting for operation %s %s", op.TargetLink, op.Name)
+		klog.V(4).Infof("Waiting for operation %s %s", op.TargetLink, op.Name)
 		registerRequest("operations", "get")
 		if op, err := m.gkeBetaService.Projects.Locations.Operations.Get(
 			fmt.Sprintf(m.operationPath, op.Name)).Do(); err == nil {
-			glog.V(4).Infof("Operation %s %s status: %s", op.TargetLink, op.Name, op.Status)
+			klog.V(4).Infof("Operation %s %s status: %s", op.TargetLink, op.Name, op.Status)
 			if op.Status == "DONE" {
 				return nil
 			}
 		} else {
-			glog.Warningf("Error while getting operation %s on %s: %v", op.Name, op.TargetLink, err)
+			klog.Warningf("Error while getting operation %s on %s: %v", op.Name, op.TargetLink, err)
 		}
 	}
 	return fmt.Errorf("Timeout while waiting for operation %s on %s to complete.", op.Name, op.TargetLink)

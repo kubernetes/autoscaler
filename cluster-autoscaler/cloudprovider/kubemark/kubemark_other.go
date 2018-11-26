@@ -21,12 +21,12 @@ limitations under the License.
 package kubemark
 
 import (
-	"github.com/golang/glog"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/klog"
 )
 
 const (
@@ -82,6 +82,6 @@ func (kubemark *KubemarkCloudProvider) Cleanup() error {
 
 // BuildKubemark builds Kubemark cloud provider.
 func BuildKubemark(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
-	glog.Fatal("Failed to create Kubemark cloud provider: only supported on Linux")
+	klog.Fatal("Failed to create Kubemark cloud provider: only supported on Linux")
 	return nil
 }

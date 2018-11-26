@@ -19,7 +19,6 @@ package alicloud
 import (
 	"errors"
 	"fmt"
-	"github.com/golang/glog"
 	"gopkg.in/gcfg.v1"
 	"io"
 	apiv1 "k8s.io/api/core/v1"
@@ -27,6 +26,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/services/ess"
+	"k8s.io/klog"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 	"math/rand"
 	"time"
@@ -63,7 +63,7 @@ func CreateAliCloudManager(configReader io.Reader) (*AliCloudManager, error) {
 	cfg := &cloudConfig{}
 	if configReader != nil {
 		if err := gcfg.ReadInto(cfg, configReader); err != nil {
-			glog.Errorf("couldn't read config: %v", err)
+			klog.Errorf("couldn't read config: %v", err)
 			return nil, err
 		}
 	}
@@ -73,12 +73,12 @@ func CreateAliCloudManager(configReader io.Reader) (*AliCloudManager, error) {
 
 	asw, err := newAutoScalingWrapper(cfg)
 	if err != nil {
-		glog.Errorf("failed to create NewAutoScalingWrapper because of %s", err.Error())
+		klog.Errorf("failed to create NewAutoScalingWrapper because of %s", err.Error())
 		return nil, err
 	}
 	iw, err := newInstanceWrapper(cfg)
 	if err != nil {
-		glog.Errorf("failed to create NewInstanceWrapper because of %s", err.Error())
+		klog.Errorf("failed to create NewInstanceWrapper because of %s", err.Error())
 		return nil, err
 	}
 
@@ -117,22 +117,22 @@ func (m *AliCloudManager) SetAsgSize(asg *Asg, size int64) error {
 
 // DeleteInstances deletes the given instances. All instances must be controlled by the same ASG.
 func (m *AliCloudManager) DeleteInstances(instanceIds []string) error {
-	glog.Infof("start to remove Instances from ASG %v", instanceIds)
+	klog.Infof("start to remove Instances from ASG %v", instanceIds)
 	if len(instanceIds) == 0 {
-		glog.Warningf("you don't provide any instanceIds to remove")
+		klog.Warningf("you don't provide any instanceIds to remove")
 		return nil
 	}
 	// Check whether instances are in the same group
 	// TODO: remove or provide more meaningful check method.
 	commonAsg, err := m.asgs.FindForInstance(instanceIds[0])
 	if err != nil {
-		glog.Errorf("failed to find instance:%s in ASG", instanceIds[0])
+		klog.Errorf("failed to find instance:%s in ASG", instanceIds[0])
 		return err
 	}
 	for _, instanceId := range instanceIds {
 		asg, err := m.asgs.FindForInstance(instanceId)
 		if err != nil {
-			glog.Errorf("failed to find instanceId:%s from ASG and exit", instanceId)
+			klog.Errorf("failed to find instanceId:%s from ASG and exit", instanceId)
 			return err
 		}
 		if asg != commonAsg {
@@ -150,7 +150,7 @@ func (m *AliCloudManager) DeleteInstances(instanceIds []string) error {
 			fmt.Errorf("failed to remove instance from scaling group %s,because of %s", commonAsg.id, err.Error())
 			continue
 		}
-		glog.Infof("remove instances successfully with response: %s", resp.GetHttpContentString())
+		klog.Infof("remove instances successfully with response: %s", resp.GetHttpContentString())
 		// prevent from triggering api flow control
 		time.Sleep(sdkCoolDownTimeout)
 	}
@@ -178,18 +178,18 @@ func getNodeProviderID(id, region string) string {
 func (m *AliCloudManager) getAsgTemplate(asgId string) (*sgTemplate, error) {
 	sg, err := m.aService.getScalingGroupByID(asgId)
 	if err != nil {
-		glog.Errorf("failed to get ASG by id:%s,because of %s", asgId, err.Error())
+		klog.Errorf("failed to get ASG by id:%s,because of %s", asgId, err.Error())
 		return nil, err
 	}
 
 	typeID, err := m.aService.getInstanceTypeByConfiguration(sg.ActiveScalingConfigurationId, asgId)
 	if err != nil {
-		glog.Errorf("failed to get instanceType by configuration Id:%s from ASG:%s,because of %s", sg.ActiveScalingConfigurationId, asgId, err.Error())
+		klog.Errorf("failed to get instanceType by configuration Id:%s from ASG:%s,because of %s", sg.ActiveScalingConfigurationId, asgId, err.Error())
 		return nil, err
 	}
 	instanceType, err := m.iService.getInstanceTypeById(typeID)
 	if err != nil {
-		glog.Errorf("failed to get instanceType by Id:%s,because of %s", typeID, err.Error())
+		klog.Errorf("failed to get instanceType by Id:%s,because of %s", typeID, err.Error())
 		return nil, err
 	}
 	return &sgTemplate{

@@ -26,7 +26,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kube_client "k8s.io/client-go/kubernetes"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 const (
@@ -58,10 +58,10 @@ func MarkToBeDeleted(node *apiv1.Node, client kube_client.Interface) error {
 		}
 
 		if err != nil {
-			glog.Warningf("Error while adding taints on node %v: %v", node.Name, err)
+			klog.Warningf("Error while adding taints on node %v: %v", node.Name, err)
 			return err
 		}
-		glog.V(1).Infof("Successfully added toBeDeletedTaint on node %v", node.Name)
+		klog.V(1).Infof("Successfully added toBeDeletedTaint on node %v", node.Name)
 		return nil
 	}
 }
@@ -69,7 +69,7 @@ func MarkToBeDeleted(node *apiv1.Node, client kube_client.Interface) error {
 func addToBeDeletedTaint(node *apiv1.Node) (bool, error) {
 	for _, taint := range node.Spec.Taints {
 		if taint.Key == ToBeDeletedTaint {
-			glog.V(2).Infof("ToBeDeletedTaint already present on node %v, taint: %v", node.Name, taint)
+			klog.V(2).Infof("ToBeDeletedTaint already present on node %v, taint: %v", node.Name, taint)
 			return false, nil
 		}
 	}
@@ -117,7 +117,7 @@ func CleanToBeDeleted(node *apiv1.Node, client kube_client.Interface) (bool, err
 		newTaints := make([]apiv1.Taint, 0)
 		for _, taint := range freshNode.Spec.Taints {
 			if taint.Key == ToBeDeletedTaint {
-				glog.V(1).Infof("Releasing taint %+v on node %v", taint, node.Name)
+				klog.V(1).Infof("Releasing taint %+v on node %v", taint, node.Name)
 			} else {
 				newTaints = append(newTaints, taint)
 			}
@@ -133,10 +133,10 @@ func CleanToBeDeleted(node *apiv1.Node, client kube_client.Interface) (bool, err
 			}
 
 			if err != nil {
-				glog.Warningf("Error while releasing taints on node %v: %v", node.Name, err)
+				klog.Warningf("Error while releasing taints on node %v: %v", node.Name, err)
 				return false, err
 			}
-			glog.V(1).Infof("Successfully released toBeDeletedTaint on node %v", node.Name)
+			klog.V(1).Infof("Successfully released toBeDeletedTaint on node %v", node.Name)
 			return true, nil
 		}
 		return false, nil

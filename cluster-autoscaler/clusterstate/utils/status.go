@@ -28,7 +28,7 @@ import (
 	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/record"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 const (
@@ -119,10 +119,10 @@ func WriteStatusConfigMap(kubeClient kube_client.Interface, namespace string, ms
 		errMsg = fmt.Sprintf("Failed to write status configmap: %v", writeStatusError)
 	}
 	if errMsg != "" {
-		glog.Error(errMsg)
+		klog.Error(errMsg)
 		return nil, errors.New(errMsg)
 	}
-	glog.V(8).Infof("Successfully wrote status configmap with body \"%v\"", statusMsg)
+	klog.V(8).Infof("Successfully wrote status configmap with body \"%v\"", statusMsg)
 	// Having this as a side-effect is somewhat ugly
 	// But it makes error handling easier, as we get a free retry each loop
 	if logRecorder != nil {
@@ -136,7 +136,7 @@ func DeleteStatusConfigMap(kubeClient kube_client.Interface, namespace string) e
 	maps := kubeClient.CoreV1().ConfigMaps(namespace)
 	err := maps.Delete(StatusConfigMapName, &metav1.DeleteOptions{})
 	if err != nil {
-		glog.Error("Failed to delete status configmap")
+		klog.Error("Failed to delete status configmap")
 	}
 	return err
 }

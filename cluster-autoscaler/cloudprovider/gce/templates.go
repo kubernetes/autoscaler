@@ -32,7 +32,7 @@ import (
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 
 	"github.com/ghodss/yaml"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 const (
@@ -176,7 +176,7 @@ func (t *GceTemplateBuilder) BuildNodeFromTemplate(mig Mig, template *gce.Instan
 		}
 	}
 	if nodeAllocatable == nil {
-		glog.Warningf("could not extract kube-reserved from kubeEnv for mig %q, setting allocatable to capacity.", mig.GceRef().Name)
+		klog.Warningf("could not extract kube-reserved from kubeEnv for mig %q, setting allocatable to capacity.", mig.GceRef().Name)
 		node.Status.Allocatable = node.Status.Capacity
 	} else {
 		node.Status.Allocatable = nodeAllocatable
@@ -226,7 +226,7 @@ func parseKubeReserved(kubeReserved string) (apiv1.ResourceList, error) {
 				reservedResources[apiv1.ResourceName(name)] = q
 			}
 		default:
-			glog.Warningf("ignoring resource from kube-reserved: %q", name)
+			klog.Warningf("ignoring resource from kube-reserved: %q", name)
 		}
 	}
 	return reservedResources, nil
@@ -238,7 +238,7 @@ func extractLabelsFromKubeEnv(kubeEnv string) (map[string]string, error) {
 	// fall back to the old way.
 	labels, err := extractAutoscalerVarFromKubeEnv(kubeEnv, "node_labels")
 	if err != nil {
-		glog.Errorf("node_labels not found via AUTOSCALER_ENV_VARS due to error, will try NODE_LABELS: %v", err)
+		klog.Errorf("node_labels not found via AUTOSCALER_ENV_VARS due to error, will try NODE_LABELS: %v", err)
 		labels, err = extractFromKubeEnv(kubeEnv, "NODE_LABELS")
 		if err != nil {
 			return nil, err
@@ -253,7 +253,7 @@ func extractTaintsFromKubeEnv(kubeEnv string) ([]apiv1.Taint, error) {
 	// fall back to the old way.
 	taints, err := extractAutoscalerVarFromKubeEnv(kubeEnv, "node_taints")
 	if err != nil {
-		glog.Errorf("node_taints not found via AUTOSCALER_ENV_VARS due to error, will try NODE_TAINTS: %v", err)
+		klog.Errorf("node_taints not found via AUTOSCALER_ENV_VARS due to error, will try NODE_TAINTS: %v", err)
 		taints, err = extractFromKubeEnv(kubeEnv, "NODE_TAINTS")
 		if err != nil {
 			return nil, err
@@ -272,7 +272,7 @@ func extractKubeReservedFromKubeEnv(kubeEnv string) (string, error) {
 	// fall back to the old way.
 	kubeReserved, err := extractAutoscalerVarFromKubeEnv(kubeEnv, "kube_reserved")
 	if err != nil {
-		glog.Errorf("kube_reserved not found via AUTOSCALER_ENV_VARS due to error, will try kube-reserved in KUBELET_TEST_ARGS: %v", err)
+		klog.Errorf("kube_reserved not found via AUTOSCALER_ENV_VARS due to error, will try kube-reserved in KUBELET_TEST_ARGS: %v", err)
 		kubeletArgs, err := extractFromKubeEnv(kubeEnv, "KUBELET_TEST_ARGS")
 		if err != nil {
 			return "", err
