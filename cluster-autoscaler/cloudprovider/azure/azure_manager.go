@@ -25,10 +25,10 @@ import (
 	"time"
 
 	"github.com/Azure/go-autorest/autorest/azure"
-	"github.com/golang/glog"
 	"gopkg.in/gcfg.v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
+	"k8s.io/klog"
 )
 
 const (
@@ -104,7 +104,7 @@ func CreateAzureManager(configReader io.Reader, discoveryOpts cloudprovider.Node
 
 	if configReader != nil {
 		if err := gcfg.ReadInto(&cfg, configReader); err != nil {
-			glog.Errorf("Couldn't read config: %v", err)
+			klog.Errorf("Couldn't read config: %v", err)
 			return nil, err
 		}
 	} else {
@@ -140,7 +140,7 @@ func CreateAzureManager(configReader io.Reader, discoveryOpts cloudprovider.Node
 	if cfg.VMType == vmTypeStandard && len(cfg.DeploymentParameters) == 0 {
 		parameters, err := readDeploymentParameters(deploymentParametersPath)
 		if err != nil {
-			glog.Errorf("readDeploymentParameters failed with error: %v", err)
+			klog.Errorf("readDeploymentParameters failed with error: %v", err)
 			return nil, err
 		}
 
@@ -160,7 +160,7 @@ func CreateAzureManager(configReader io.Reader, discoveryOpts cloudprovider.Node
 		return nil, err
 	}
 
-	glog.Infof("Starting azure manager with subscription ID %q", cfg.SubscriptionID)
+	klog.Infof("Starting azure manager with subscription ID %q", cfg.SubscriptionID)
 
 	azClient, err := newAzClient(&cfg, &env)
 	if err != nil {
@@ -254,11 +254,11 @@ func (m *AzureManager) Refresh() error {
 
 func (m *AzureManager) forceRefresh() error {
 	if err := m.fetchAutoAsgs(); err != nil {
-		glog.Errorf("Failed to fetch ASGs: %v", err)
+		klog.Errorf("Failed to fetch ASGs: %v", err)
 		return err
 	}
 	m.lastRefresh = time.Now()
-	glog.V(2).Infof("Refreshed ASG list, next refresh after %v", m.lastRefresh.Add(refreshInterval))
+	klog.V(2).Infof("Refreshed ASG list, next refresh after %v", m.lastRefresh.Add(refreshInterval))
 	return nil
 }
 
@@ -279,11 +279,11 @@ func (m *AzureManager) fetchAutoAsgs() error {
 			// This ASG was explicitly configured, but would also be
 			// autodiscovered. We want the explicitly configured min and max
 			// nodes to take precedence.
-			glog.V(3).Infof("Ignoring explicitly configured ASG %s for autodiscovery.", asg.Id())
+			klog.V(3).Infof("Ignoring explicitly configured ASG %s for autodiscovery.", asg.Id())
 			continue
 		}
 		if m.RegisterAsg(asg) {
-			glog.V(3).Infof("Autodiscovered ASG %s using tags %v", asg.Id(), m.asgAutoDiscoverySpecs)
+			klog.V(3).Infof("Autodiscovered ASG %s using tags %v", asg.Id(), m.asgAutoDiscoverySpecs)
 			changed = true
 		}
 	}
@@ -365,7 +365,7 @@ func (m *AzureManager) listScaleSets(filter []cloudprovider.LabelAutoDiscoveryCo
 
 	result, err := m.azClient.virtualMachineScaleSetsClient.List(ctx, m.config.ResourceGroup)
 	if err != nil {
-		glog.Errorf("VirtualMachineScaleSetsClient.List for %v failed: %v", m.config.ResourceGroup, err)
+		klog.Errorf("VirtualMachineScaleSetsClient.List for %v failed: %v", m.config.ResourceGroup, err)
 		return nil, err
 	}
 
@@ -400,7 +400,7 @@ func (m *AzureManager) listAgentPools(filter []cloudprovider.LabelAutoDiscoveryC
 	defer cancel()
 	deploy, err := m.azClient.deploymentsClient.Get(ctx, m.config.ResourceGroup, m.config.Deployment)
 	if err != nil {
-		glog.Errorf("deploymentsClient.Get(%s, %s) failed: %v", m.config.ResourceGroup, m.config.Deployment, err)
+		klog.Errorf("deploymentsClient.Get(%s, %s) failed: %v", m.config.ResourceGroup, m.config.Deployment, err)
 		return nil, err
 	}
 

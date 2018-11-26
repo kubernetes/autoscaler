@@ -22,12 +22,12 @@ import (
 	"os"
 	"strings"
 
-	"github.com/golang/glog"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/klog"
 	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 )
 
@@ -324,19 +324,19 @@ func BuildGCE(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscover
 		var err error
 		config, err = os.Open(opts.CloudConfig)
 		if err != nil {
-			glog.Fatalf("Couldn't open cloud provider configuration %s: %#v", opts.CloudConfig, err)
+			klog.Fatalf("Couldn't open cloud provider configuration %s: %#v", opts.CloudConfig, err)
 		}
 		defer config.Close()
 	}
 
 	manager, err := CreateGceManager(config, do, opts.Regional)
 	if err != nil {
-		glog.Fatalf("Failed to create GCE Manager: %v", err)
+		klog.Fatalf("Failed to create GCE Manager: %v", err)
 	}
 
 	provider, err := BuildGceCloudProvider(manager, rl)
 	if err != nil {
-		glog.Fatalf("Failed to create GCE cloud provider: %v", err)
+		klog.Fatalf("Failed to create GCE cloud provider: %v", err)
 	}
 	// Register GCE API usage metrics.
 	RegisterMetrics()

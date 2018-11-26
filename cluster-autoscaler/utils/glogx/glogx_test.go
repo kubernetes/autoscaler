@@ -19,8 +19,8 @@ package glogx
 import (
 	"testing"
 
-	"github.com/golang/glog"
 	"github.com/stretchr/testify/assert"
+	"k8s.io/klog"
 )
 
 // Left, UpTo and Over should work as expected.
@@ -58,9 +58,9 @@ func TestVFalse(t *testing.T) {
 	assert.Equal(t, 3, q.Left())
 }
 
-// Tests that V limits calls based on verbosity the same way as glog.V.
+// Tests that V limits calls based on verbosity the same way as klog.V.
 func TestV(t *testing.T) {
-	for i := glog.Level(0); i <= 10; i++ {
-		assert.Equal(t, bool(glog.V(i)), bool(V(i)))
+	for i := klog.Level(0); i <= 10; i++ {
+		assert.Equal(t, bool(klog.V(i)), bool(V(i)))
 	}
 }

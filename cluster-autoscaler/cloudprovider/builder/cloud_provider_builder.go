@@ -21,12 +21,12 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 // NewCloudProvider builds a cloud provider from provided parameters.
 func NewCloudProvider(opts config.AutoscalingOptions) cloudprovider.CloudProvider {
-	glog.V(1).Infof("Building %s cloud provider.", opts.CloudProviderName)
+	klog.V(1).Infof("Building %s cloud provider.", opts.CloudProviderName)
 
 	do := cloudprovider.NodeGroupDiscoveryOptions{
 		NodeGroupSpecs:              opts.NodeGroups,
@@ -38,7 +38,7 @@ func NewCloudProvider(opts config.AutoscalingOptions) cloudprovider.CloudProvide
 	if opts.CloudProviderName == "" {
 		// Ideally this would be an error, but several unit tests of the
 		// StaticAutoscaler depend on this behaviour.
-		glog.Warning("Returning a nil cloud provider")
+		klog.Warning("Returning a nil cloud provider")
 		return nil
 	}
 
@@ -47,6 +47,6 @@ func NewCloudProvider(opts config.AutoscalingOptions) cloudprovider.CloudProvide
 		return provider
 	}
 
-	glog.Fatalf("Unknown cloud provider: %s", opts.CloudProviderName)
+	klog.Fatalf("Unknown cloud provider: %s", opts.CloudProviderName)
 	return nil // This will never happen because the Fatalf will os.Exit
 }

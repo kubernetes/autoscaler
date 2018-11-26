@@ -17,7 +17,6 @@ limitations under the License.
 package context
 
 import (
-	"github.com/golang/glog"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
@@ -27,6 +26,7 @@ import (
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	kube_client "k8s.io/client-go/kubernetes"
 	kube_record "k8s.io/client-go/tools/record"
+	"k8s.io/klog"
 )
 
 // AutoscalingContext contains user-configurable constant and configuration-related objects passed to
@@ -99,7 +99,7 @@ func NewAutoscalingKubeClients(opts config.AutoscalingOptions, kubeClient kube_c
 	kubeEventRecorder := kube_util.CreateEventRecorder(kubeClient)
 	logRecorder, err := utils.NewStatusMapRecorder(kubeClient, opts.ConfigNamespace, kubeEventRecorder, opts.WriteStatusConfigMap)
 	if err != nil {
-		glog.Error("Failed to initialize status configmap, unable to write status events")
+		klog.Error("Failed to initialize status configmap, unable to write status events")
 		// Get a dummy, so we can at least safely call the methods
 		// TODO(maciekpytel): recover from this after successful status configmap update?
 		logRecorder, _ = utils.NewStatusMapRecorder(kubeClient, opts.ConfigNamespace, kubeEventRecorder, false)

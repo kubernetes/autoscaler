@@ -27,7 +27,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 const scaleToZeroSupported = true
@@ -99,7 +99,7 @@ func (m *asgCache) register(asg *asg) *asg {
 				return existing
 			}
 
-			glog.V(4).Infof("Updating ASG %s", asg.AwsRef.Name)
+			klog.V(4).Infof("Updating ASG %s", asg.AwsRef.Name)
 
 			// Explicit registered groups should always use the manually provided min/max
 			// values and the not the ones returned by the API
@@ -121,7 +121,7 @@ func (m *asgCache) register(asg *asg) *asg {
 			return existing
 		}
 	}
-	glog.V(1).Infof("Registering ASG %s", asg.AwsRef.Name)
+	klog.V(1).Infof("Registering ASG %s", asg.AwsRef.Name)
 	m.registeredAsgs = append(m.registeredAsgs, asg)
 	return asg
 }
@@ -132,7 +132,7 @@ func (m *asgCache) unregister(a *asg) *asg {
 	var changed *asg
 	for _, existing := range m.registeredAsgs {
 		if existing.AwsRef == a.AwsRef {
-			glog.V(1).Infof("Unregistered ASG %s", a.AwsRef.Name)
+			klog.V(1).Infof("Unregistered ASG %s", a.AwsRef.Name)
 			changed = a
 			continue
 		}
@@ -200,7 +200,7 @@ func (m *asgCache) SetAsgSize(asg *asg, size int) error {
 		DesiredCapacity:      aws.Int64(int64(size)),
 		HonorCooldown:        aws.Bool(false),
 	}
-	glog.V(0).Infof("Setting asg %s size to %d", asg.Name, size)
+	klog.V(0).Infof("Setting asg %s size to %d", asg.Name, size)
 	_, err := m.service.SetDesiredCapacity(params)
 	if err != nil {
 		return err
@@ -251,7 +251,7 @@ func (m *asgCache) DeleteInstances(instances []*AwsInstanceRef) error {
 		// Proactively decrement the size so autoscaler makes better decisions
 		commonAsg.curSize--
 
-		glog.V(4).Infof(*resp.Activity.Description)
+		klog.V(4).Infof(*resp.Activity.Description)
 	}
 
 	return nil
@@ -317,7 +317,7 @@ func (m *asgCache) regenerate() error {
 	}
 
 	// Fetch details of all ASGs
-	glog.V(4).Infof("Regenerating instance to ASG map for ASGs: %v", refreshNames)
+	klog.V(4).Infof("Regenerating instance to ASG map for ASGs: %v", refreshNames)
 	groups, err := m.service.getAutoscalingGroupsByNames(refreshNames)
 	if err != nil {
 		return err

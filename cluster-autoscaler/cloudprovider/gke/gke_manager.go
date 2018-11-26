@@ -35,11 +35,11 @@ import (
 	provider_gce "k8s.io/kubernetes/pkg/cloudprovider/providers/gce"
 
 	"cloud.google.com/go/compute/metadata"
-	"github.com/golang/glog"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	gce_api "google.golang.org/api/compute/v1"
 	gcfg "gopkg.in/gcfg.v1"
+	"k8s.io/klog"
 )
 
 // GcpCloudProviderMode allows to pass information whether the cluster is in NAP mode.
@@ -176,19 +176,19 @@ func CreateGkeManager(configReader io.Reader, mode GcpCloudProviderMode, cluster
 	if configReader != nil {
 		var cfg provider_gce.ConfigFile
 		if err := gcfg.ReadInto(&cfg, configReader); err != nil {
-			glog.Errorf("Couldn't read config: %v", err)
+			klog.Errorf("Couldn't read config: %v", err)
 			return nil, err
 		}
 		if cfg.Global.TokenURL == "" {
-			glog.Warning("Empty tokenUrl in cloud config")
+			klog.Warning("Empty tokenUrl in cloud config")
 		} else {
 			tokenSource = provider_gce.NewAltTokenSource(cfg.Global.TokenURL, cfg.Global.TokenBody)
-			glog.V(1).Infof("Using TokenSource from config %#v", tokenSource)
+			klog.V(1).Infof("Using TokenSource from config %#v", tokenSource)
 		}
 		projectId = cfg.Global.ProjectID
 		location = cfg.Global.LocalZone
 	} else {
-		glog.V(1).Infof("Using default TokenSource %#v", tokenSource)
+		klog.V(1).Infof("Using default TokenSource %#v", tokenSource)
 	}
 	if len(projectId) == 0 || len(location) == 0 {
 		// XXX: On GKE discoveredProjectId is hosted master project and
@@ -207,7 +207,7 @@ func CreateGkeManager(configReader io.Reader, mode GcpCloudProviderMode, cluster
 			location = discoveredLocation
 		}
 	}
-	glog.V(1).Infof("GCE projectId=%s location=%s", projectId, location)
+	klog.V(1).Infof("GCE projectId=%s location=%s", projectId, location)
 
 	// Create Google Compute Engine service.
 	client := oauth2.NewClient(oauth2.NoContext, tokenSource)
@@ -241,7 +241,7 @@ func CreateGkeManager(configReader io.Reader, mode GcpCloudProviderMode, cluster
 			return nil, err
 		}
 		manager.GkeService = gkeBetaService
-		glog.V(1).Info("Using GKE-NAP mode")
+		klog.V(1).Info("Using GKE-NAP mode")
 	}
 
 	if err := manager.forceRefresh(); err != nil {
@@ -250,7 +250,7 @@ func CreateGkeManager(configReader io.Reader, mode GcpCloudProviderMode, cluster
 
 	go wait.Until(func() {
 		if err := manager.cache.RegenerateInstancesCache(); err != nil {
-			glog.Errorf("Error while regenerating Mig cache: %v", err)
+			klog.Errorf("Error while regenerating Mig cache: %v", err)
 		}
 	}, time.Hour, manager.interrupt)
 
@@ -265,7 +265,7 @@ func (m *gkeManagerImpl) Cleanup() error {
 
 func (m *gkeManagerImpl) assertGKENAP() {
 	if m.mode != ModeGKENAP {
-		glog.Fatalf("This should run only in GKE mode with autoprovisioning enabled")
+		klog.Fatalf("This should run only in GKE mode with autoprovisioning enabled")
 	}
 }
 
@@ -323,7 +323,7 @@ func (m *gkeManagerImpl) registerMig(mig *GkeMig) bool {
 		// can be scaled up from 0 nodes.
 		// We may never need to do it, so just log error if it fails.
 		if _, err := m.GetMigTemplateNode(mig); err != nil {
-			glog.Errorf("Can't build node from template for %s, won't be able to scale from 0: %v", mig.GceRef().String(), err)
+			klog.Errorf("Can't build node from template for %s, won't be able to scale from 0: %v", mig.GceRef().String(), err)
 		}
 	}
 	return changed
@@ -362,7 +362,7 @@ func (m *gkeManagerImpl) CreateNodePool(mig *GkeMig) (*GkeMig, error) {
 			// Report error as InternalError since it would signify a
 			// serious bug in autoscaler code.
 			errMsg := fmt.Sprintf("Mig %s is not GkeMig: got %v, want GkeMig", existingMig.Config.GceRef().String(), reflect.TypeOf(existingMig.Config))
-			glog.Error(errMsg)
+			klog.Error(errMsg)
 			return nil, errors.NewAutoscalerError(errors.InternalError, errMsg)
 		}
 		if gkeMig.NodePoolName() == mig.NodePoolName() {
@@ -392,7 +392,7 @@ func (m *gkeManagerImpl) refreshMachinesCache() error {
 	m.cache.SetMachinesCache(machinesCache)
 	nextRefresh := time.Now()
 	m.machinesCacheLastRefresh = nextRefresh
-	glog.V(2).Infof("Refreshed machine types, next refresh after %v", nextRefresh)
+	klog.V(2).Infof("Refreshed machine types, next refresh after %v", nextRefresh)
 	return nil
 }
 
@@ -407,7 +407,7 @@ func (m *gkeManagerImpl) GetMigSize(mig gce.Mig) (int64, error) {
 
 // SetMigSize sets MIG size.
 func (m *gkeManagerImpl) SetMigSize(mig gce.Mig, size int64) error {
-	glog.V(0).Infof("Setting mig size %s to %d", mig.Id(), size)
+	klog.V(0).Infof("Setting mig size %s to %d", mig.Id(), size)
 	return m.GceService.ResizeMig(mig.GceRef(), size)
 }
 
@@ -480,15 +480,15 @@ func (m *gkeManagerImpl) Refresh() error {
 
 func (m *gkeManagerImpl) forceRefresh() error {
 	if err := m.refreshClusterResources(); err != nil {
-		glog.Errorf("Failed to refresh GKE cluster resources: %v", err)
+		klog.Errorf("Failed to refresh GKE cluster resources: %v", err)
 		return err
 	}
 	if err := m.refreshMachinesCache(); err != nil {
-		glog.Errorf("Failed to fetch machine types: %v", err)
+		klog.Errorf("Failed to fetch machine types: %v", err)
 		return err
 	}
 	m.lastRefresh = time.Now()
-	glog.V(2).Infof("Refreshed GCE resources, next refresh after %v", m.lastRefresh.Add(refreshInterval))
+	klog.V(2).Infof("Refreshed GCE resources, next refresh after %v", m.lastRefresh.Add(refreshInterval))
 	return nil
 }
 
@@ -536,11 +536,11 @@ func (m *gkeManagerImpl) buildMigFromSpec(s *dynamic.NodeGroupSpec) (gce.Mig, er
 func (m *gkeManagerImpl) refreshResourceLimiter(resourceLimiter *cloudprovider.ResourceLimiter) {
 	if m.mode == ModeGKENAP {
 		if resourceLimiter != nil {
-			glog.V(2).Infof("Refreshed resource limits: %s", resourceLimiter.String())
+			klog.V(2).Infof("Refreshed resource limits: %s", resourceLimiter.String())
 			m.cache.SetResourceLimiter(resourceLimiter)
 		} else {
 			oldLimits, _ := m.cache.GetResourceLimiter()
-			glog.Errorf("Resource limits should always be defined in NAP mode, but they appear to be empty. Using possibly outdated limits: %v", oldLimits.String())
+			klog.Errorf("Resource limits should always be defined in NAP mode, but they appear to be empty. Using possibly outdated limits: %v", oldLimits.String())
 		}
 	}
 }
@@ -559,7 +559,7 @@ func (m *gkeManagerImpl) clearMachinesCache() {
 	m.cache.SetMachinesCache(machinesCache)
 	nextRefresh := time.Now()
 	m.machinesCacheLastRefresh = nextRefresh
-	glog.V(2).Infof("Cleared machine types cache, next clear after %v", nextRefresh)
+	klog.V(2).Infof("Cleared machine types cache, next clear after %v", nextRefresh)
 }
 
 // Code borrowed from gce cloud provider. Reuse the original as soon as it becomes public.
