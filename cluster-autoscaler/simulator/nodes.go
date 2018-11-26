@@ -48,7 +48,7 @@ func GetRequiredPodsForNode(nodename string, client kube_client.Interface) ([]*a
 	podsToRemoveList, err := drain.GetPodsForDeletionOnNodeDrain(
 		allPods,
 		[]*policyv1.PodDisruptionBudget{}, // PDBs are irrelevant when considering new node.
-		true, // Force all removals.
+		true,                              // Force all removals.
 		false,
 		false,
 		false, // Setting this to true requires client to be not-null.
