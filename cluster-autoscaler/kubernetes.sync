@@ -1,6 +1,6 @@
-commit 23dc5401f4e9b985860aeae9657bba1b28c74ff8 (HEAD, tag: v1.13.0-beta.1)
-Merge: 6ee00b6b1b ec2e767e59
-Author: Doug MacEachern <dougm@vmware.com>
-Date:   Fri Nov 16 20:31:24 2018 -0800
+commit 80b400f60b7980558614cc3dca1cffa452d8dd57
+Merge: 40f8a2022c 7098f1ad38
+Author: Yang Li <idealhack@gmail.com>
+Date:   Sat Nov 24 23:54:49 2018 +0800
 
     Merge remote-tracking branch 'origin/master' into release-1.13

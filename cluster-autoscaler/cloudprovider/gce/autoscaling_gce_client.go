@@ -25,8 +25,8 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/golang/glog"
 	gce "google.golang.org/api/compute/v1"
+	"k8s.io/klog"
 )
 
 const (
@@ -137,15 +137,15 @@ func (client *autoscalingGceClientV1) ResizeMig(migRef GceRef, size int64) error
 
 func (client *autoscalingGceClientV1) waitForOp(operation *gce.Operation, project, zone string) error {
 	for start := time.Now(); time.Since(start) < client.operationWaitTimeout; time.Sleep(client.operationPollInterval) {
-		glog.V(4).Infof("Waiting for operation %s %s %s", project, zone, operation.Name)
+		klog.V(4).Infof("Waiting for operation %s %s %s", project, zone, operation.Name)
 		registerRequest("zone_operations", "get")
 		if op, err := client.gceService.ZoneOperations.Get(project, zone, operation.Name).Do(); err == nil {
-			glog.V(4).Infof("Operation %s %s %s status: %s", project, zone, operation.Name, op.Status)
+			klog.V(4).Infof("Operation %s %s %s status: %s", project, zone, operation.Name, op.Status)
 			if op.Status == "DONE" {
 				return nil
 			}
 		} else {
-			glog.Warningf("Error while getting operation %s on %s: %v", operation.Name, operation.TargetLink, err)
+			klog.Warningf("Error while getting operation %s on %s: %v", operation.Name, operation.TargetLink, err)
 		}
 	}
 	return fmt.Errorf("Timeout while waiting for operation %s on %s to complete.", operation.Name, operation.TargetLink)
@@ -170,7 +170,7 @@ func (client *autoscalingGceClientV1) FetchMigInstances(migRef GceRef) ([]GceRef
 	registerRequest("instance_group_managers", "list_managed_instances")
 	instances, err := client.gceService.InstanceGroupManagers.ListManagedInstances(migRef.Project, migRef.Zone, migRef.Name).Do()
 	if err != nil {
-		glog.V(4).Infof("Failed MIG info request for %s %s %s: %v", migRef.Project, migRef.Zone, migRef.Name, err)
+		klog.V(4).Infof("Failed MIG info request for %s %s %s: %v", migRef.Project, migRef.Zone, migRef.Name, err)
 		return nil, err
 	}
 	refs := []GceRef{}
@@ -220,7 +220,7 @@ func (client *autoscalingGceClientV1) FetchMigsWithName(zone string, name *regex
 	if err := req.Pages(context.TODO(), func(page *gce.InstanceGroupList) error {
 		for _, ig := range page.Items {
 			links = append(links, ig.SelfLink)
-			glog.V(3).Infof("found managed instance group %s matching regexp %s", ig.Name, name)
+			klog.V(3).Infof("found managed instance group %s matching regexp %s", ig.Name, name)
 		}
 		return nil
 	}); err != nil {

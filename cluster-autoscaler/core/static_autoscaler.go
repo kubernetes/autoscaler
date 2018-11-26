@@ -35,9 +35,9 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 
-	"github.com/golang/glog"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
+	"k8s.io/klog"
 )
 
 const (
@@ -108,7 +108,7 @@ func (a *StaticAutoscaler) cleanUpIfRequired() {
 
 	// CA can die at any time. Removing taints that might have been left from the previous run.
 	if readyNodes, err := a.ReadyNodeLister().List(); err != nil {
-		glog.Errorf("Failed to list ready nodes, not cleaning up taints: %v", err)
+		klog.Errorf("Failed to list ready nodes, not cleaning up taints: %v", err)
 	} else {
 		cleanToBeDeleted(readyNodes, a.AutoscalingContext.ClientSet, a.Recorder)
 	}
@@ -125,7 +125,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	scaleDown := a.scaleDown
 	autoscalingContext := a.AutoscalingContext
 
-	glog.V(4).Info("Starting main loop")
+	klog.V(4).Info("Starting main loop")
 
 	stateUpdateStart := time.Now()
 	allNodes, readyNodes, typedErr := a.obtainNodeLists()
@@ -166,7 +166,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 
 		err := a.processors.AutoscalingStatusProcessor.Process(a.AutoscalingContext, a.clusterStateRegistry, currentTime)
 		if err != nil {
-			glog.Errorf("AutoscalingStatusProcessor error: %v.", err)
+			klog.Errorf("AutoscalingStatusProcessor error: %v.", err)
 		}
 	}()
 
@@ -174,26 +174,26 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	// master.
 	unregisteredNodes := a.clusterStateRegistry.GetUnregisteredNodes()
 	if len(unregisteredNodes) > 0 {
-		glog.V(1).Infof("%d unregistered nodes present", len(unregisteredNodes))
+		klog.V(1).Infof("%d unregistered nodes present", len(unregisteredNodes))
 		removedAny, err := removeOldUnregisteredNodes(unregisteredNodes, autoscalingContext, currentTime, autoscalingContext.LogRecorder)
 		// There was a problem with removing unregistered nodes. Retry in the next loop.
 		if err != nil {
 			if removedAny {
-				glog.Warningf("Some unregistered nodes were removed, but got error: %v", err)
+				klog.Warningf("Some unregistered nodes were removed, but got error: %v", err)
 			} else {
-				glog.Errorf("Failed to remove unregistered nodes: %v", err)
+				klog.Errorf("Failed to remove unregistered nodes: %v", err)
 
 			}
 			return errors.ToAutoscalerError(errors.CloudProviderError, err)
 		}
 		// Some nodes were removed. Let's skip this iteration, the next one should be better.
 		if removedAny {
-			glog.V(0).Infof("Some unregistered nodes were removed, skipping iteration")
+			klog.V(0).Infof("Some unregistered nodes were removed, skipping iteration")
 			return nil
 		}
 	}
 	if !a.clusterStateRegistry.IsClusterHealthy() {
-		glog.Warning("Cluster is not ready for autoscaling")
+		klog.Warning("Cluster is not ready for autoscaling")
 		scaleDown.CleanUpUnneededNodes()
 		autoscalingContext.LogRecorder.Eventf(apiv1.EventTypeWarning, "ClusterUnhealthy", "Cluster is unhealthy")
 		return nil
@@ -204,11 +204,11 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	// TODO: andrewskim - add protection for ready AWS nodes.
 	fixedSomething, err := fixNodeGroupSize(autoscalingContext, a.clusterStateRegistry, currentTime)
 	if err != nil {
-		glog.Errorf("Failed to fix node group sizes: %v", err)
+		klog.Errorf("Failed to fix node group sizes: %v", err)
 		return errors.ToAutoscalerError(errors.CloudProviderError, err)
 	}
 	if fixedSomething {
-		glog.V(0).Infof("Some node group target size was fixed, skipping the iteration")
+		klog.V(0).Infof("Some node group target size was fixed, skipping the iteration")
 		return nil
 	}
 
@@ -216,20 +216,20 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 
 	allUnschedulablePods, err := unschedulablePodLister.List()
 	if err != nil {
-		glog.Errorf("Failed to list unscheduled pods: %v", err)
+		klog.Errorf("Failed to list unscheduled pods: %v", err)
 		return errors.ToAutoscalerError(errors.ApiCallError, err)
 	}
 	metrics.UpdateUnschedulablePodsCount(len(allUnschedulablePods))
 
 	allScheduled, err := scheduledPodLister.List()
 	if err != nil {
-		glog.Errorf("Failed to list scheduled pods: %v", err)
+		klog.Errorf("Failed to list scheduled pods: %v", err)
 		return errors.ToAutoscalerError(errors.ApiCallError, err)
 	}
 
 	allUnschedulablePods, allScheduled, err = a.processors.PodListProcessor.Process(a.AutoscalingContext, allUnschedulablePods, allScheduled, allNodes)
 	if err != nil {
-		glog.Errorf("Failed to process pod list: %v", err)
+		klog.Errorf("Failed to process pod list: %v", err)
 		return errors.ToAutoscalerError(errors.InternalError, err)
 	}
 
@@ -258,17 +258,17 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	// Such pods don't require scale up but should be considered during scale down.
 	unschedulablePods, unschedulableWaitingForLowerPriorityPreemption := FilterOutExpendableAndSplit(unschedulablePodsWithoutTPUs, a.ExpendablePodsPriorityCutoff)
 
-	glog.V(4).Infof("Filtering out schedulables")
+	klog.V(4).Infof("Filtering out schedulables")
 	filterOutSchedulableStart := time.Now()
 	unschedulablePodsToHelp := FilterOutSchedulable(unschedulablePods, readyNodes, allScheduled,
 		unschedulableWaitingForLowerPriorityPreemption, a.PredicateChecker, a.ExpendablePodsPriorityCutoff)
 	metrics.UpdateDurationFromStart(metrics.FilterOutSchedulable, filterOutSchedulableStart)
 
 	if len(unschedulablePodsToHelp) != len(unschedulablePods) {
-		glog.V(2).Info("Schedulable pods present")
+		klog.V(2).Info("Schedulable pods present")
 		scaleDownForbidden = true
 	} else {
-		glog.V(4).Info("No schedulable pods")
+		klog.V(4).Info("No schedulable pods")
 	}
 
 	// finally, filter out pods that are too "young" to safely be considered for a scale-up (delay is configurable)
@@ -276,10 +276,10 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 
 	if len(unschedulablePodsToHelp) == 0 {
 		scaleUpStatus.Result = status.ScaleUpNotNeeded
-		glog.V(1).Info("No unschedulable pods")
+		klog.V(1).Info("No unschedulable pods")
 	} else if a.MaxNodesTotal > 0 && len(readyNodes) >= a.MaxNodesTotal {
 		scaleUpStatus.Result = status.ScaleUpNoOptionsAvailable
-		glog.V(1).Info("Max total nodes in cluster reached")
+		klog.V(1).Info("Max total nodes in cluster reached")
 	} else if allPodsAreNew(unschedulablePodsToHelp, currentTime) {
 		// The assumption here is that these pods have been created very recently and probably there
 		// is more pods to come. In theory we could check the newest pod time but then if pod were created
@@ -287,11 +287,11 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		// We also want to skip a real scale down (just like if the pods were handled).
 		scaleDownForbidden = true
 		scaleUpStatus.Result = status.ScaleUpInCooldown
-		glog.V(1).Info("Unschedulable pods are very new, waiting one iteration for more")
+		klog.V(1).Info("Unschedulable pods are very new, waiting one iteration for more")
 	} else {
 		daemonsets, err := a.ListerRegistry.DaemonSetLister().List()
 		if err != nil {
-			glog.Errorf("Failed to get daemonset list")
+			klog.Errorf("Failed to get daemonset list")
 			scaleUpStatus.Result = status.ScaleUpError
 			return errors.ToAutoscalerError(errors.ApiCallError, err)
 		}
@@ -309,7 +309,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		}
 
 		if typedErr != nil {
-			glog.Errorf("Failed to scale up: %v", typedErr)
+			klog.Errorf("Failed to scale up: %v", typedErr)
 			return typedErr
 		}
 		if scaleUpStatus.Result == status.ScaleUpSuccessful {
@@ -324,13 +324,13 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		pdbs, err := pdbLister.List()
 		if err != nil {
 			scaleDownStatus.Result = status.ScaleDownError
-			glog.Errorf("Failed to list pod disruption budgets: %v", err)
+			klog.Errorf("Failed to list pod disruption budgets: %v", err)
 			return errors.ToAutoscalerError(errors.ApiCallError, err)
 		}
 
 		unneededStart := time.Now()
 
-		glog.V(4).Infof("Calculating unneeded nodes")
+		klog.V(4).Infof("Calculating unneeded nodes")
 
 		scaleDown.CleanUp(currentTime)
 		potentiallyUnneeded := getPotentiallyUnneededNodes(autoscalingContext, allNodes)
@@ -338,15 +338,15 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		typedErr := scaleDown.UpdateUnneededNodes(allNodes, potentiallyUnneeded, append(allScheduled, unschedulableWaitingForLowerPriorityPreemption...), currentTime, pdbs)
 		if typedErr != nil {
 			scaleDownStatus.Result = status.ScaleDownError
-			glog.Errorf("Failed to scale down: %v", typedErr)
+			klog.Errorf("Failed to scale down: %v", typedErr)
 			return typedErr
 		}
 
 		metrics.UpdateDurationFromStart(metrics.FindUnneeded, unneededStart)
 
-		if glog.V(4) {
+		if klog.V(4) {
 			for key, val := range scaleDown.unneededNodes {
-				glog.Infof("%s is unneeded since %s duration %s", key, val.String(), currentTime.Sub(val).String())
+				klog.Infof("%s is unneeded since %s duration %s", key, val.String(), currentTime.Sub(val).String())
 			}
 		}
 
@@ -357,7 +357,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		// In dry run only utilization is updated
 		calculateUnneededOnly := scaleDownInCooldown || scaleDown.nodeDeleteStatus.IsDeleteInProgress()
 
-		glog.V(4).Infof("Scale down status: unneededOnly=%v lastScaleUpTime=%s "+
+		klog.V(4).Infof("Scale down status: unneededOnly=%v lastScaleUpTime=%s "+
 			"lastScaleDownDeleteTime=%v lastScaleDownFailTime=%s scaleDownForbidden=%v isDeleteInProgress=%v",
 			calculateUnneededOnly, a.lastScaleUpTime, a.lastScaleDownDeleteTime, a.lastScaleDownFailTime,
 			scaleDownForbidden, scaleDown.nodeDeleteStatus.IsDeleteInProgress())
@@ -367,7 +367,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		} else if scaleDown.nodeDeleteStatus.IsDeleteInProgress() {
 			scaleDownStatus.Result = status.ScaleDownInProgress
 		} else {
-			glog.V(4).Infof("Starting scale down")
+			klog.V(4).Infof("Starting scale down")
 
 			// We want to delete unneeded Node Groups only if there was no recent scale up,
 			// and there is no current delete in progress and there was no recent errors.
@@ -389,7 +389,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 			}
 
 			if typedErr != nil {
-				glog.Errorf("Failed to scale down: %v", err)
+				klog.Errorf("Failed to scale down: %v", err)
 				a.lastScaleDownFailTime = currentTime
 				return typedErr
 			}
@@ -407,7 +407,7 @@ func (a *StaticAutoscaler) filterOutYoungPods(allUnschedulablePods []*apiv1.Pod,
 		if podAge > newPodScaleUpDelay {
 			oldUnschedulablePods = append(oldUnschedulablePods, pod)
 		} else {
-			glog.V(3).Infof("Pod %s is %.3f seconds old, too new to consider unschedulable", pod.Name, podAge.Seconds())
+			klog.V(3).Infof("Pod %s is %.3f seconds old, too new to consider unschedulable", pod.Name, podAge.Seconds())
 
 		}
 	}
@@ -427,12 +427,12 @@ func (a *StaticAutoscaler) ExitCleanUp() {
 func (a *StaticAutoscaler) obtainNodeLists() ([]*apiv1.Node, []*apiv1.Node, errors.AutoscalerError) {
 	allNodes, err := a.AllNodeLister().List()
 	if err != nil {
-		glog.Errorf("Failed to list all nodes: %v", err)
+		klog.Errorf("Failed to list all nodes: %v", err)
 		return nil, nil, errors.ToAutoscalerError(errors.ApiCallError, err)
 	}
 	readyNodes, err := a.ReadyNodeLister().List()
 	if err != nil {
-		glog.Errorf("Failed to list ready nodes: %v", err)
+		klog.Errorf("Failed to list ready nodes: %v", err)
 		return nil, nil, errors.ToAutoscalerError(errors.ApiCallError, err)
 	}
 
@@ -464,13 +464,13 @@ func (a *StaticAutoscaler) actOnEmptyCluster(allNodes, readyNodes []*apiv1.Node,
 func (a *StaticAutoscaler) updateClusterState(allNodes []*apiv1.Node, currentTime time.Time) errors.AutoscalerError {
 	err := a.AutoscalingContext.CloudProvider.Refresh()
 	if err != nil {
-		glog.Errorf("Failed to refresh cloud provider config: %v", err)
+		klog.Errorf("Failed to refresh cloud provider config: %v", err)
 		return errors.ToAutoscalerError(errors.CloudProviderError, err)
 	}
 
 	err = a.clusterStateRegistry.UpdateNodes(allNodes, currentTime)
 	if err != nil {
-		glog.Errorf("Failed to update node registry: %v", err)
+		klog.Errorf("Failed to update node registry: %v", err)
 		a.scaleDown.CleanUpUnneededNodes()
 		return errors.ToAutoscalerError(errors.CloudProviderError, err)
 	}
@@ -480,7 +480,7 @@ func (a *StaticAutoscaler) updateClusterState(allNodes []*apiv1.Node, currentTim
 }
 
 func (a *StaticAutoscaler) onEmptyCluster(status string, emitEvent bool) {
-	glog.Warningf(status)
+	klog.Warningf(status)
 	a.scaleDown.CleanUpUnneededNodes()
 	UpdateEmptyClusterStateMetrics()
 	if a.AutoscalingContext.WriteStatusConfigMap {

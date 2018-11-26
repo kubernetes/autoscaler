@@ -21,9 +21,9 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/golang/glog"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/klog"
 	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 )
 
@@ -44,7 +44,7 @@ type BasicNodeEstimator struct {
 
 // NewBasicNodeEstimator builds BasicNodeEstimator.
 func NewBasicNodeEstimator() *BasicNodeEstimator {
-	glog.Warning(basicEstimatorDeprecationMessage)
+	klog.Warning(basicEstimatorDeprecationMessage)
 	return &BasicNodeEstimator{
 		portSum:     make(map[int32]int),
 		FittingPods: make(map[*apiv1.Pod]struct{}),

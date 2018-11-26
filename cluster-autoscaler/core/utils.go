@@ -44,7 +44,7 @@ import (
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 const (
@@ -156,10 +156,10 @@ func FilterOutExpendableAndSplit(unschedulableCandidates []*apiv1.Pod, expendabl
 	waitingForLowerPriorityPreemption := []*apiv1.Pod{}
 	for _, pod := range unschedulableCandidates {
 		if pod.Spec.Priority != nil && int(*pod.Spec.Priority) < expendablePodsPriorityCutoff {
-			glog.V(4).Infof("Pod %s has priority below %d (%d) and will scheduled when enough resources is free. Ignoring in scale up.", pod.Name, expendablePodsPriorityCutoff, *pod.Spec.Priority)
+			klog.V(4).Infof("Pod %s has priority below %d (%d) and will scheduled when enough resources is free. Ignoring in scale up.", pod.Name, expendablePodsPriorityCutoff, *pod.Spec.Priority)
 		} else if annot, found := pod.Annotations[scheduler_util.NominatedNodeAnnotationKey]; found && len(annot) > 0 {
 			waitingForLowerPriorityPreemption = append(waitingForLowerPriorityPreemption, pod)
-			glog.V(4).Infof("Pod %s will be scheduled after low prioity pods are preempted on %s. Ignoring in scale up.", pod.Name, annot)
+			klog.V(4).Infof("Pod %s will be scheduled after low prioity pods are preempted on %s. Ignoring in scale up.", pod.Name, annot)
 		} else {
 			unschedulableNonExpendable = append(unschedulableNonExpendable, pod)
 		}
@@ -188,7 +188,7 @@ func CheckPodsSchedulableOnNode(context *context.AutoscalingContext, pods []*api
 		// Check if pod isn't repeated before overwriting result for it.
 		if _, repeated := schedulingErrors[pod]; repeated {
 			// This shouldn't really happen.
-			glog.Warningf("Pod %v appears multiple time on pods list, will only count it once in scale-up simulation", pod)
+			klog.Warningf("Pod %v appears multiple time on pods list, will only count it once in scale-up simulation", pod)
 		}
 		// Try to get result from cache.
 		err, found := podSchedulable.get(pod)
@@ -205,7 +205,7 @@ func CheckPodsSchedulableOnNode(context *context.AutoscalingContext, pods []*api
 			schedulingErrors[pod] = err
 			if err != nil {
 				// Always log for the first pod in a controller.
-				glog.V(2).Infof("Pod %s can't be scheduled on %s, predicate failed: %v", pod.Name, nodeGroupId, err.VerboseError())
+				klog.V(2).Infof("Pod %s can't be scheduled on %s, predicate failed: %v", pod.Name, nodeGroupId, err.VerboseError())
 			}
 		}
 	}
@@ -271,7 +271,7 @@ func GetNodeInfosForGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.Clou
 			if err == cloudprovider.ErrNotImplemented {
 				continue
 			} else {
-				glog.Errorf("Unable to build proper template node for %s: %v", id, err)
+				klog.Errorf("Unable to build proper template node for %s: %v", id, err)
 				return map[string]*schedulercache.NodeInfo{}, errors.ToAutoscalerError(errors.CloudProviderError, err)
 			}
 		}
@@ -292,7 +292,7 @@ func GetNodeInfosForGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.Clou
 					errors.CloudProviderError, err)
 			}
 			if added {
-				glog.Warningf("Built template for %s based on unready/unschedulable node %s", nodeGroup.Id(), node.Name)
+				klog.Warningf("Built template for %s based on unready/unschedulable node %s", nodeGroup.Id(), node.Name)
 			}
 		}
 	}
@@ -378,9 +378,9 @@ func sanitizeTemplateNode(node *apiv1.Node, nodeGroup string) (*apiv1.Node, erro
 		// template node.
 		switch taint.Key {
 		case ReschedulerTaintKey:
-			glog.V(4).Infof("Removing rescheduler taint when creating template from node %s", node.Name)
+			klog.V(4).Infof("Removing rescheduler taint when creating template from node %s", node.Name)
 		case deletetaint.ToBeDeletedTaint:
-			glog.V(4).Infof("Removing autoscaler taint when creating template from node %s", node.Name)
+			klog.V(4).Infof("Removing autoscaler taint when creating template from node %s", node.Name)
 		default:
 			newTaints = append(newTaints, taint)
 		}
@@ -395,28 +395,28 @@ func removeOldUnregisteredNodes(unregisteredNodes []clusterstate.UnregisteredNod
 	removedAny := false
 	for _, unregisteredNode := range unregisteredNodes {
 		if unregisteredNode.UnregisteredSince.Add(context.MaxNodeProvisionTime).Before(currentTime) {
-			glog.V(0).Infof("Removing unregistered node %v", unregisteredNode.Node.Name)
+			klog.V(0).Infof("Removing unregistered node %v", unregisteredNode.Node.Name)
 			nodeGroup, err := context.CloudProvider.NodeGroupForNode(unregisteredNode.Node)
 			if err != nil {
-				glog.Warningf("Failed to get node group for %s: %v", unregisteredNode.Node.Name, err)
+				klog.Warningf("Failed to get node group for %s: %v", unregisteredNode.Node.Name, err)
 				return removedAny, err
 			}
 			if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
-				glog.Warningf("No node group for node %s, skipping", unregisteredNode.Node.Name)
+				klog.Warningf("No node group for node %s, skipping", unregisteredNode.Node.Name)
 				continue
 			}
 			size, err := nodeGroup.TargetSize()
 			if err != nil {
-				glog.Warningf("Failed to get node group size, err: %v", err)
+				klog.Warningf("Failed to get node group size, err: %v", err)
 				continue
 			}
 			if nodeGroup.MinSize() >= size {
-				glog.Warningf("Failed to remove node %s: node group min size reached, skipping unregistered node removal", unregisteredNode.Node.Name)
+				klog.Warningf("Failed to remove node %s: node group min size reached, skipping unregistered node removal", unregisteredNode.Node.Name)
 				continue
 			}
 			err = nodeGroup.DeleteNodes([]*apiv1.Node{unregisteredNode.Node})
 			if err != nil {
-				glog.Warningf("Failed to remove node %s: %v", unregisteredNode.Node.Name, err)
+				klog.Warningf("Failed to remove node %s: %v", unregisteredNode.Node.Name, err)
 				logRecorder.Eventf(apiv1.EventTypeWarning, "DeleteUnregisteredFailed",
 					"Failed to remove node %s: %v", unregisteredNode.Node.Name, err)
 				return removedAny, err
@@ -442,7 +442,7 @@ func fixNodeGroupSize(context *context.AutoscalingContext, clusterStateRegistry 
 		if incorrectSize.FirstObserved.Add(context.MaxNodeProvisionTime).Before(currentTime) {
 			delta := incorrectSize.CurrentSize - incorrectSize.ExpectedSize
 			if delta < 0 {
-				glog.V(0).Infof("Decreasing size of %s, expected=%d current=%d delta=%d", nodeGroup.Id(),
+				klog.V(0).Infof("Decreasing size of %s, expected=%d current=%d delta=%d", nodeGroup.Id(),
 					incorrectSize.ExpectedSize,
 					incorrectSize.CurrentSize,
 					delta)
@@ -467,20 +467,20 @@ func getPotentiallyUnneededNodes(context *context.AutoscalingContext, nodes []*a
 	for _, node := range nodes {
 		nodeGroup, err := context.CloudProvider.NodeGroupForNode(node)
 		if err != nil {
-			glog.Warningf("Error while checking node group for %s: %v", node.Name, err)
+			klog.Warningf("Error while checking node group for %s: %v", node.Name, err)
 			continue
 		}
 		if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
-			glog.V(4).Infof("Skipping %s - no node group config", node.Name)
+			klog.V(4).Infof("Skipping %s - no node group config", node.Name)
 			continue
 		}
 		size, found := nodeGroupSize[nodeGroup.Id()]
 		if !found {
-			glog.Errorf("Error while checking node group size %s: group size not found", nodeGroup.Id())
+			klog.Errorf("Error while checking node group size %s: group size not found", nodeGroup.Id())
 			continue
 		}
 		if size <= nodeGroup.MinSize() {
-			glog.V(1).Infof("Skipping %s - node group min size reached", node.Name)
+			klog.V(1).Infof("Skipping %s - node group min size reached", node.Name)
 			continue
 		}
 		result = append(result, node)
@@ -523,7 +523,7 @@ func ConfigurePredicateCheckerForLoop(unschedulablePods []*apiv1.Pod, schedulabl
 	}
 	predicateChecker.SetAffinityPredicateEnabled(podsWithAffinityFound)
 	if !podsWithAffinityFound {
-		glog.V(1).Info("No pod using affinity / antiaffinity found in cluster, disabling affinity predicate for this loop")
+		klog.V(1).Info("No pod using affinity / antiaffinity found in cluster, disabling affinity predicate for this loop")
 	}
 }
 
@@ -552,7 +552,7 @@ func getNodeGroupSizeMap(cloudProvider cloudprovider.CloudProvider) map[string]i
 	for _, nodeGroup := range cloudProvider.NodeGroups() {
 		size, err := nodeGroup.TargetSize()
 		if err != nil {
-			glog.Errorf("Error while checking node group size %s: %v", nodeGroup.Id(), err)
+			klog.Errorf("Error while checking node group size %s: %v", nodeGroup.Id(), err)
 			continue
 		}
 		nodeGroupSize[nodeGroup.Id()] = size

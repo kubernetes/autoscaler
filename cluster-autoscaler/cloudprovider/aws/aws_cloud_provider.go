@@ -23,12 +23,12 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/golang/glog"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/klog"
 	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 )
 
@@ -80,7 +80,7 @@ func (aws *awsCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 // NodeGroupForNode returns the node group for the given node.
 func (aws *awsCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	if len(node.Spec.ProviderID) == 0 {
-		glog.Warningf("Node %v has no providerId", node.Name)
+		klog.Warningf("Node %v has no providerId", node.Name)
 		return nil, nil
 	}
 	ref, err := AwsRefFromProviderId(node.Spec.ProviderID)
@@ -320,19 +320,19 @@ func BuildAWS(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscover
 		var err error
 		config, err = os.Open(opts.CloudConfig)
 		if err != nil {
-			glog.Fatalf("Couldn't open cloud provider configuration %s: %#v", opts.CloudConfig, err)
+			klog.Fatalf("Couldn't open cloud provider configuration %s: %#v", opts.CloudConfig, err)
 		}
 		defer config.Close()
 	}
 
 	manager, err := CreateAwsManager(config, do)
 	if err != nil {
-		glog.Fatalf("Failed to create AWS Manager: %v", err)
+		klog.Fatalf("Failed to create AWS Manager: %v", err)
 	}
 
 	provider, err := BuildAwsCloudProvider(manager, rl)
 	if err != nil {
-		glog.Fatalf("Failed to create AWS cloud provider: %v", err)
+		klog.Fatalf("Failed to create AWS cloud provider: %v", err)
 	}
 	return provider
 }

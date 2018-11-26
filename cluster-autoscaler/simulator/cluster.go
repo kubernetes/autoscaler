@@ -35,7 +35,7 @@ import (
 	"k8s.io/kubernetes/pkg/scheduler/algorithm"
 	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 var (
@@ -86,7 +86,7 @@ func FindNodesToRemove(candidates []*apiv1.Node, allNodes []*apiv1.Node, pods []
 
 candidateloop:
 	for _, node := range candidates {
-		glog.V(2).Infof("%s: %s for removal", evaluationType, node.Name)
+		klog.V(2).Infof("%s: %s for removal", evaluationType, node.Name)
 
 		var podsToRemove []*apiv1.Pod
 		var err error
@@ -100,12 +100,12 @@ candidateloop:
 					podDisruptionBudgets)
 			}
 			if err != nil {
-				glog.V(2).Infof("%s: node %s cannot be removed: %v", evaluationType, node.Name, err)
+				klog.V(2).Infof("%s: node %s cannot be removed: %v", evaluationType, node.Name, err)
 				unremovable = append(unremovable, node)
 				continue candidateloop
 			}
 		} else {
-			glog.V(2).Infof("%s: nodeInfo for %s not found", evaluationType, node.Name)
+			klog.V(2).Infof("%s: nodeInfo for %s not found", evaluationType, node.Name)
 			unremovable = append(unremovable, node)
 			continue candidateloop
 		}
@@ -117,12 +117,12 @@ candidateloop:
 				Node:             node,
 				PodsToReschedule: podsToRemove,
 			})
-			glog.V(2).Infof("%s: node %s may be removed", evaluationType, node.Name)
+			klog.V(2).Infof("%s: node %s may be removed", evaluationType, node.Name)
 			if len(result) >= maxCount {
 				break candidateloop
 			}
 		} else {
-			glog.V(2).Infof("%s: node %s is not suitable for removal: %v", evaluationType, node.Name, findProblems)
+			klog.V(2).Infof("%s: node %s is not suitable for removal: %v", evaluationType, node.Name, findProblems)
 			unremovable = append(unremovable, node)
 		}
 	}
@@ -205,7 +205,7 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes []*apiv1.Node, no
 				// NodeInfo is generated based on pods. It is possible that node is removed from
 				// an api server faster than the pod that were running on them. In such a case
 				// we have to skip this nodeInfo. It should go away pretty soon.
-				glog.Warningf("No node in nodeInfo %s -> %v", nodename, nodeInfo)
+				klog.Warningf("No node in nodeInfo %s -> %v", nodename, nodeInfo)
 				return false
 			}
 			err := predicateChecker.CheckPredicates(pod, predicateMeta, nodeInfo)
@@ -213,7 +213,7 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes []*apiv1.Node, no
 				glogx.V(4).UpTo(loggingQuota).Infof("Evaluation %s for %s/%s -> %v", nodename, pod.Namespace, pod.Name, err.VerboseError())
 			} else {
 				// TODO(mwielgus): Optimize it.
-				glog.V(4).Infof("Pod %s/%s can be moved to %s", pod.Namespace, pod.Name, nodename)
+				klog.V(4).Infof("Pod %s/%s can be moved to %s", pod.Namespace, pod.Name, nodename)
 				podsOnNode := nodeInfo.Pods()
 				podsOnNode = append(podsOnNode, pod)
 				newNodeInfo := schedulercache.NewNodeInfo(podsOnNode...)
@@ -241,7 +241,7 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes []*apiv1.Node, no
 		predicateMeta := predicateChecker.GetPredicateMetadata(pod, newNodeInfos)
 		loggingQuota.Reset()
 
-		glog.V(5).Infof("Looking for place for %s/%s", pod.Namespace, pod.Name)
+		klog.V(5).Infof("Looking for place for %s/%s", pod.Namespace, pod.Name)
 
 		hintedNode, hasHint := oldHints[podKey(pod)]
 		if hasHint {

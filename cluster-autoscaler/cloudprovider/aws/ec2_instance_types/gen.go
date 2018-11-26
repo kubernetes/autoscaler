@@ -30,7 +30,7 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws/endpoints"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 type response struct {
@@ -97,7 +97,7 @@ var InstanceTypes = map[string]*instanceType{
 
 func main() {
 	flag.Parse()
-	defer glog.Flush()
+	defer klog.Flush()
 
 	instanceTypes := make(map[string]*instanceType)
 
@@ -107,10 +107,10 @@ func main() {
 	for _, p := range partitions {
 		for _, r := range p.Regions() {
 			url := "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonEC2/current/" + r.ID() + "/index.json"
-			glog.V(1).Infof("fetching %s\n", url)
+			klog.V(1).Infof("fetching %s\n", url)
 			res, err := http.Get(url)
 			if err != nil {
-				glog.Warningf("Error fetching %s skipping...\n", url)
+				klog.Warningf("Error fetching %s skipping...\n", url)
 				continue
 			}
 
@@ -118,14 +118,14 @@ func main() {
 
 			body, err := ioutil.ReadAll(res.Body)
 			if err != nil {
-				glog.Warningf("Error parsing %s skipping...\n", url)
+				klog.Warningf("Error parsing %s skipping...\n", url)
 				continue
 			}
 
 			var unmarshalled = response{}
 			err = json.Unmarshal(body, &unmarshalled)
 			if err != nil {
-				glog.Warningf("Error unmarshaling %s skipping...\n", url)
+				klog.Warningf("Error unmarshaling %s skipping...\n", url)
 				continue
 			}
 
@@ -151,7 +151,7 @@ func main() {
 
 	f, err := os.Create("ec2_instance_types.go")
 	if err != nil {
-		glog.Fatal(err)
+		klog.Fatal(err)
 	}
 
 	defer f.Close()
@@ -163,20 +163,20 @@ func main() {
 	})
 
 	if err != nil {
-		glog.Fatal(err)
+		klog.Fatal(err)
 	}
 }
 
 func parseMemory(memory string) int64 {
 	reg, err := regexp.Compile("[^0-9\\.]+")
 	if err != nil {
-		glog.Fatal(err)
+		klog.Fatal(err)
 	}
 
 	parsed := strings.TrimSpace(reg.ReplaceAllString(memory, ""))
 	mem, err := strconv.ParseFloat(parsed, 64)
 	if err != nil {
-		glog.Fatal(err)
+		klog.Fatal(err)
 	}
 
 	return int64(mem * float64(1024))
@@ -185,7 +185,7 @@ func parseMemory(memory string) int64 {
 func parseCPU(cpu string) int64 {
 	i, err := strconv.ParseInt(cpu, 10, 64)
 	if err != nil {
-		glog.Fatal(err)
+		klog.Fatal(err)
 	}
 	return i
 }
