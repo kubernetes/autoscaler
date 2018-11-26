@@ -23,8 +23,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	_ "k8s.io/kubernetes/pkg/client/metrics/prometheus" // for client-go metrics registration
 
-	"github.com/golang/glog"
 	"github.com/prometheus/client_golang/prometheus"
+	"k8s.io/klog"
 )
 
 // NodeScaleDownReason describes reason for removing node
@@ -265,7 +265,7 @@ func UpdateDuration(label FunctionLabel, duration time.Duration) {
 	// TODO(maciekpytel): remove second condition if we manage to get
 	// asynchronous node drain
 	if duration > LogLongDurationThreshold && label != ScaleDown {
-		glog.V(4).Infof("Function %s took %v to complete", label, duration)
+		klog.V(4).Infof("Function %s took %v to complete", label, duration)
 	}
 	functionDuration.WithLabelValues(string(label)).Observe(duration.Seconds())
 }

@@ -20,13 +20,13 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/golang/glog"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/klog"
 	"os"
 )
 
@@ -61,7 +61,7 @@ func buildStaticallyDiscoveringProvider(manager *AliCloudManager, specs []string
 	}
 	for _, spec := range specs {
 		if err := acp.addNodeGroup(spec); err != nil {
-			glog.Warningf("failed to add node group to alicloud provider with spec: %s", spec)
+			klog.Warningf("failed to add node group to alicloud provider with spec: %s", spec)
 			return nil, err
 		}
 	}
@@ -73,7 +73,7 @@ func buildStaticallyDiscoveringProvider(manager *AliCloudManager, specs []string
 func (ali *aliCloudProvider) addNodeGroup(spec string) error {
 	asg, err := buildAsgFromSpec(spec, ali.manager)
 	if err != nil {
-		glog.Errorf("failed to build ASG from spec,because of %s", err.Error())
+		klog.Errorf("failed to build ASG from spec,because of %s", err.Error())
 		return err
 	}
 	ali.addAsg(asg)
@@ -102,7 +102,7 @@ func (ali *aliCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 func (ali *aliCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	instanceId, err := ecsInstanceIdFromProviderId(node.Spec.ProviderID)
 	if err != nil {
-		glog.Errorf("failed to get instance Id from provider Id:%s,because of %s", node.Spec.ProviderID, err.Error())
+		klog.Errorf("failed to get instance Id from provider Id:%s,because of %s", node.Spec.ProviderID, err.Error())
 		return nil, err
 	}
 	return ali.manager.GetAsgForInstance(instanceId)
@@ -165,7 +165,7 @@ func buildAsgFromSpec(value string, manager *AliCloudManager) (*Asg, error) {
 	// check auto scaling group is exists or not
 	_, err = manager.aService.getScalingGroupByID(spec.Name)
 	if err != nil {
-		glog.Errorf("your scaling group: %s does not exist", spec.Name)
+		klog.Errorf("your scaling group: %s does not exist", spec.Name)
 		return nil, err
 	}
 
@@ -191,7 +191,7 @@ func BuildAlicloud(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDis
 	if opts.CloudConfig != "" {
 		config, fileErr := os.Open(opts.CloudConfig)
 		if fileErr != nil {
-			glog.Fatalf("Couldn't open cloud provider configuration %s: %#v", opts.CloudConfig, fileErr)
+			klog.Fatalf("Couldn't open cloud provider configuration %s: %#v", opts.CloudConfig, fileErr)
 		}
 		defer config.Close()
 		aliManager, aliError = CreateAliCloudManager(config)
@@ -199,11 +199,11 @@ func BuildAlicloud(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDis
 		aliManager, aliError = CreateAliCloudManager(nil)
 	}
 	if aliError != nil {
-		glog.Fatalf("Failed to create Alicloud Manager: %v", aliError)
+		klog.Fatalf("Failed to create Alicloud Manager: %v", aliError)
 	}
 	cloudProvider, err := BuildAliCloudProvider(aliManager, do, rl)
 	if err != nil {
-		glog.Fatalf("Failed to create Alicloud cloud provider: %v", err)
+		klog.Fatalf("Failed to create Alicloud cloud provider: %v", err)
 	}
 	return cloudProvider
 }

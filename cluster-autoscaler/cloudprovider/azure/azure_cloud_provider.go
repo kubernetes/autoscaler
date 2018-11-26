@@ -20,7 +20,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -74,7 +74,7 @@ func (azure *AzureCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 
 // NodeGroupForNode returns the node group for the given node.
 func (azure *AzureCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
-	glog.V(6).Infof("Searching for node group for the node: %s\n", node.Spec.ProviderID)
+	klog.V(6).Infof("Searching for node group for the node: %s\n", node.Spec.ProviderID)
 	ref := &azureRef{
 		Name: node.Spec.ProviderID,
 	}
@@ -124,23 +124,23 @@ func (m *azureRef) GetKey() string {
 func BuildAzure(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	var config io.ReadCloser
 	if opts.CloudConfig != "" {
-		glog.Infof("Creating Azure Manager using cloud-config file: %v", opts.CloudConfig)
+		klog.Infof("Creating Azure Manager using cloud-config file: %v", opts.CloudConfig)
 		var err error
 		config, err := os.Open(opts.CloudConfig)
 		if err != nil {
-			glog.Fatalf("Couldn't open cloud provider configuration %s: %#v", opts.CloudConfig, err)
+			klog.Fatalf("Couldn't open cloud provider configuration %s: %#v", opts.CloudConfig, err)
 		}
 		defer config.Close()
 	} else {
-		glog.Info("Creating Azure Manager with default configuration.")
+		klog.Info("Creating Azure Manager with default configuration.")
 	}
 	manager, err := CreateAzureManager(config, do)
 	if err != nil {
-		glog.Fatalf("Failed to create Azure Manager: %v", err)
+		klog.Fatalf("Failed to create Azure Manager: %v", err)
 	}
 	provider, err := BuildAzureCloudProvider(manager, rl)
 	if err != nil {
-		glog.Fatalf("Failed to create Azure cloud provider: %v", err)
+		klog.Fatalf("Failed to create Azure cloud provider: %v", err)
 	}
 	return provider
 }
