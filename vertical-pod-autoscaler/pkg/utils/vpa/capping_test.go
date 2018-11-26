@@ -170,14 +170,14 @@ var applyTestCases = []struct {
 	ExpectedError             error
 }{
 	{
-		PodRecommendation: nil,
-		Policy:            nil,
+		PodRecommendation:         nil,
+		Policy:                    nil,
 		ExpectedPodRecommendation: nil,
 		ExpectedError:             nil,
 	},
 	{
-		PodRecommendation: podRecommendation,
-		Policy:            nil,
+		PodRecommendation:         podRecommendation,
+		Policy:                    nil,
 		ExpectedPodRecommendation: podRecommendation,
 		ExpectedError:             nil,
 	},

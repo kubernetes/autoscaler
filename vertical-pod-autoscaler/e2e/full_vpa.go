@@ -57,9 +57,9 @@ var _ = FullVpaE2eDescribe("Pods under VPA", func() {
 		ginkgo.By("Setting up a hamster deployment")
 		rc = NewDynamicResourceConsumer("hamster", ns, e2e_common.KindDeployment,
 			replicas,
-			1,  /*initCPUTotal*/
-			10, /*initMemoryTotal*/
-			1,  /*initCustomMetric*/
+			1,                          /*initCPUTotal*/
+			10,                         /*initMemoryTotal*/
+			1,                          /*initCustomMetric*/
 			ParseQuantityOrDie("100m"), /*cpuRequest*/
 			ParseQuantityOrDie("10Mi"), /*memRequest*/
 			f.ClientSet,
