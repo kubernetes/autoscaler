@@ -421,7 +421,7 @@ func simpleScaleUpTest(t *testing.T, config *scaleTestConfig) {
 		initialNodeConfigs:     config.nodes,
 		expectedScaleUpOptions: config.expectedScaleUpOptions,
 		scaleUpOptionToChoose:  config.scaleUpOptionToChoose,
-		t: t,
+		t:                      t,
 	}
 	context.ExpanderStrategy = expander
 
