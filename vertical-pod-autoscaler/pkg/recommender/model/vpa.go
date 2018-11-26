@@ -101,8 +101,8 @@ func NewVpa(id VpaID, selector labels.Selector, created time.Time) *Vpa {
 		PodSelector:                     selector,
 		aggregateContainerStates:        make(aggregateContainerStatesMap),
 		ContainersInitialAggregateState: make(ContainerNameToAggregateStateMap),
-		Created:    created,
-		Conditions: make(vpaConditionsMap),
+		Created:                         created,
+		Conditions:                      make(vpaConditionsMap),
 	}
 	return vpa
 }
