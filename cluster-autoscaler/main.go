@@ -50,9 +50,9 @@ import (
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
 	"k8s.io/kubernetes/pkg/client/leaderelectionconfig"
 
-	"github.com/golang/glog"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/spf13/pflag"
+	"k8s.io/klog"
 )
 
 // MultiStringFlag is a flag for passing multiple parameters using same flag
@@ -156,11 +156,11 @@ var (
 func createAutoscalingOptions() config.AutoscalingOptions {
 	minCoresTotal, maxCoresTotal, err := parseMinMaxFlag(*coresTotal)
 	if err != nil {
-		glog.Fatalf("Failed to parse flags: %v", err)
+		klog.Fatalf("Failed to parse flags: %v", err)
 	}
 	minMemoryTotal, maxMemoryTotal, err := parseMinMaxFlag(*memoryTotal)
 	if err != nil {
-		glog.Fatalf("Failed to parse flags: %v", err)
+		klog.Fatalf("Failed to parse flags: %v", err)
 	}
 	// Convert memory limits to bytes.
 	minMemoryTotal = minMemoryTotal * units.Gigabyte
@@ -168,7 +168,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 
 	parsedGpuTotal, err := parseMultipleGpuLimits(*gpuTotal)
 	if err != nil {
-		glog.Fatalf("Failed to parse flags: %v", err)
+		klog.Fatalf("Failed to parse flags: %v", err)
 	}
 
 	return config.AutoscalingOptions{
@@ -214,22 +214,22 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 
 func getKubeConfig() *rest.Config {
 	if *kubeConfigFile != "" {
-		glog.V(1).Infof("Using kubeconfig file: %s", *kubeConfigFile)
+		klog.V(1).Infof("Using kubeconfig file: %s", *kubeConfigFile)
 		// use the current context in kubeconfig
 		config, err := clientcmd.BuildConfigFromFlags("", *kubeConfigFile)
 		if err != nil {
-			glog.Fatalf("Failed to build config: %v", err)
+			klog.Fatalf("Failed to build config: %v", err)
 		}
 		return config
 	}
 	url, err := url.Parse(*kubernetes)
 	if err != nil {
-		glog.Fatalf("Failed to parse Kubernetes url: %v", err)
+		klog.Fatalf("Failed to parse Kubernetes url: %v", err)
 	}
 
 	kubeConfig, err := config.GetKubeClientConfig(url)
 	if err != nil {
-		glog.Fatalf("Failed to build Kubernetes client configuration: %v", err)
+		klog.Fatalf("Failed to build Kubernetes client configuration: %v", err)
 	}
 
 	return kubeConfig
@@ -242,14 +242,14 @@ func createKubeClient(kubeConfig *rest.Config) kube_client.Interface {
 func registerSignalHandlers(autoscaler core.Autoscaler) {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, os.Interrupt, os.Kill, syscall.SIGTERM, syscall.SIGQUIT)
-	glog.V(1).Info("Registered cleanup signal handler")
+	klog.V(1).Info("Registered cleanup signal handler")
 
 	go func() {
 		<-sigs
-		glog.V(1).Info("Received signal, attempting cleanup")
+		klog.V(1).Info("Received signal, attempting cleanup")
 		autoscaler.ExitCleanUp()
-		glog.V(1).Info("Cleaned up, exiting...")
-		glog.Flush()
+		klog.V(1).Info("Cleaned up, exiting...")
+		klog.Flush()
 		os.Exit(0)
 	}()
 }
@@ -282,7 +282,7 @@ func run(healthCheck *metrics.HealthCheck) {
 
 	autoscaler, err := buildAutoscaler()
 	if err != nil {
-		glog.Fatalf("Failed to create autoscaler: %v", err)
+		klog.Fatalf("Failed to create autoscaler: %v", err)
 	}
 
 	// Register signal handlers for graceful shutdown.
@@ -321,13 +321,13 @@ func main() {
 	kube_flag.InitFlags()
 	healthCheck := metrics.NewHealthCheck(*maxInactivityTimeFlag, *maxFailingTimeFlag)
 
-	glog.V(1).Infof("Cluster Autoscaler %s", ClusterAutoscalerVersion)
+	klog.V(1).Infof("Cluster Autoscaler %s", ClusterAutoscalerVersion)
 
 	go func() {
 		http.Handle("/metrics", prometheus.Handler())
 		http.Handle("/health-check", healthCheck)
 		err := http.ListenAndServe(*address, nil)
-		glog.Fatalf("Failed to start metrics: %v", err)
+		klog.Fatalf("Failed to start metrics: %v", err)
 	}()
 
 	if !leaderElection.LeaderElect {
@@ -335,7 +335,7 @@ func main() {
 	} else {
 		id, err := os.Hostname()
 		if err != nil {
-			glog.Fatalf("Unable to get hostname: %v", err)
+			klog.Fatalf("Unable to get hostname: %v", err)
 		}
 
 		kubeClient := createKubeClient(getKubeConfig())
@@ -343,7 +343,7 @@ func main() {
 		// Validate that the client is ok.
 		_, err = kubeClient.CoreV1().Nodes().List(metav1.ListOptions{})
 		if err != nil {
-			glog.Fatalf("Failed to get nodes from apiserver: %v", err)
+			klog.Fatalf("Failed to get nodes from apiserver: %v", err)
 		}
 
 		lock, err := resourcelock.New(
@@ -357,7 +357,7 @@ func main() {
 			},
 		)
 		if err != nil {
-			glog.Fatalf("Unable to create leader election lock: %v", err)
+			klog.Fatalf("Unable to create leader election lock: %v", err)
 		}
 
 		leaderelection.RunOrDie(ctx.TODO(), leaderelection.LeaderElectionConfig{
@@ -372,7 +372,7 @@ func main() {
 					run(healthCheck)
 				},
 				OnStoppedLeading: func() {
-					glog.Fatalf("lost master")
+					klog.Fatalf("lost master")
 				},
 			},
 		})

@@ -17,8 +17,8 @@ limitations under the License.
 package alicloud
 
 import (
-	"github.com/golang/glog"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/metadata"
+	"k8s.io/klog"
 	"os"
 )
 
@@ -49,8 +49,8 @@ func (cc *cloudConfig) isValid() bool {
 	}
 
 	if cc.RegionId == "" || cc.AccessKeyID == "" || cc.AccessKeySecret == "" {
-		glog.V(5).Infof("Failed to get AccessKeyId:%s,AccessKeySecret:%s,RegionId:%s from cloudConfig and Env\n", cc.AccessKeyID, cc.AccessKeySecret, cc.RegionId)
-		glog.V(5).Infof("Try to use sts token in metadata instead.\n")
+		klog.V(5).Infof("Failed to get AccessKeyId:%s,AccessKeySecret:%s,RegionId:%s from cloudConfig and Env\n", cc.AccessKeyID, cc.AccessKeySecret, cc.RegionId)
+		klog.V(5).Infof("Try to use sts token in metadata instead.\n")
 		if cc.validateSTSToken() == true && cc.getRegion() != "" {
 			//if CA is working on ECS with valid role name, use sts token instead.
 			cc.STSEnabled = true
@@ -67,7 +67,7 @@ func (cc *cloudConfig) validateSTSToken() bool {
 	m := metadata.NewMetaData(nil)
 	r, err := m.RoleName()
 	if err != nil || r == "" {
-		glog.Warningf("The role name %s is not valid and error is %v", r, err)
+		klog.Warningf("The role name %s is not valid and error is %v", r, err)
 		return false
 	}
 	return true
@@ -93,7 +93,7 @@ func (cc *cloudConfig) getRegion() string {
 	m := metadata.NewMetaData(nil)
 	r, err := m.Region()
 	if err != nil {
-		glog.Errorf("Failed to get RegionId from metadata.Because of %s\n", err.Error())
+		klog.Errorf("Failed to get RegionId from metadata.Because of %s\n", err.Error())
 	}
 	return r
 }

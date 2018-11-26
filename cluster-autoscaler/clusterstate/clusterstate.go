@@ -34,7 +34,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 const (
@@ -189,13 +189,13 @@ func (csr *ClusterStateRegistry) updateScaleRequests(currentTime time.Time) {
 			// remove it and reset node group backoff
 			delete(csr.scaleUpRequests, nodeGroupName)
 			csr.nodeGroupBackoffInfo.RemoveBackoff(scaleUpRequest.NodeGroup)
-			glog.V(4).Infof("Scale up in group %v finished successfully in %v",
+			klog.V(4).Infof("Scale up in group %v finished successfully in %v",
 				nodeGroupName, currentTime.Sub(scaleUpRequest.Time))
 			continue
 		}
 
 		if scaleUpRequest.ExpectedAddTime.Before(currentTime) {
-			glog.Warningf("Scale-up timed out for node group %v after %v",
+			klog.Warningf("Scale-up timed out for node group %v after %v",
 				nodeGroupName, currentTime.Sub(scaleUpRequest.Time))
 			csr.logRecorder.Eventf(apiv1.EventTypeWarning, "ScaleUpTimedOut",
 				"Nodes added to group %s failed to register within %v",
@@ -218,7 +218,7 @@ func (csr *ClusterStateRegistry) updateScaleRequests(currentTime time.Time) {
 // To be executed under a lock.
 func (csr *ClusterStateRegistry) backoffNodeGroup(nodeGroup cloudprovider.NodeGroup, currentTime time.Time) {
 	backoffUntil := csr.nodeGroupBackoffInfo.Backoff(nodeGroup, currentTime)
-	glog.Warningf("Disabling scale-up for node group %v until %v", nodeGroup.Id(), backoffUntil)
+	klog.Warningf("Disabling scale-up for node group %v until %v", nodeGroup.Id(), backoffUntil)
 }
 
 // RegisterFailedScaleUp should be called after getting error from cloudprovider
@@ -266,7 +266,7 @@ func (csr *ClusterStateRegistry) UpdateNodes(nodes []*apiv1.Node, currentTime ti
 func (csr *ClusterStateRegistry) Recalculate() {
 	targetSizes, err := getTargetSizes(csr.cloudProvider)
 	if err != nil {
-		glog.Warningf("Failed to get target sizes, when trying to recalculate cluster state: %v", err)
+		klog.Warningf("Failed to get target sizes, when trying to recalculate cluster state: %v", err)
 	}
 
 	csr.Lock()
@@ -306,7 +306,7 @@ func (csr *ClusterStateRegistry) IsClusterHealthy() bool {
 func (csr *ClusterStateRegistry) IsNodeGroupHealthy(nodeGroupName string) bool {
 	acceptable, found := csr.acceptableRanges[nodeGroupName]
 	if !found {
-		glog.Warningf("Failed to find acceptable ranges for %v", nodeGroupName)
+		klog.Warningf("Failed to find acceptable ranges for %v", nodeGroupName)
 		return false
 	}
 
@@ -316,7 +316,7 @@ func (csr *ClusterStateRegistry) IsNodeGroupHealthy(nodeGroupName string) bool {
 		if acceptable.CurrentTarget == 0 || (acceptable.MinNodes == 0 && acceptable.CurrentTarget > 0) {
 			return true
 		}
-		glog.Warningf("Failed to find readiness information for %v", nodeGroupName)
+		klog.Warningf("Failed to find readiness information for %v", nodeGroupName)
 		return false
 	}
 
@@ -364,7 +364,7 @@ func (csr *ClusterStateRegistry) IsNodeGroupSafeToScaleUp(nodeGroup cloudprovide
 func (csr *ClusterStateRegistry) getProvisionedAndTargetSizesForNodeGroup(nodeGroupName string) (provisioned, target int, ok bool) {
 	acceptable, found := csr.acceptableRanges[nodeGroupName]
 	if !found {
-		glog.Warningf("Failed to find acceptable ranges for %v", nodeGroupName)
+		klog.Warningf("Failed to find acceptable ranges for %v", nodeGroupName)
 		return 0, 0, false
 	}
 	target = acceptable.CurrentTarget
@@ -373,7 +373,7 @@ func (csr *ClusterStateRegistry) getProvisionedAndTargetSizesForNodeGroup(nodeGr
 	if !found {
 		// No need to warn if node group has size 0 (was scaled to 0 before).
 		if acceptable.MinNodes != 0 {
-			glog.Warningf("Failed to find readiness information for %v", nodeGroupName)
+			klog.Warningf("Failed to find readiness information for %v", nodeGroupName)
 		}
 		return 0, target, true
 	}
@@ -498,10 +498,10 @@ func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 		// Node is most likely not autoscaled, however check the errors.
 		if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
 			if errNg != nil {
-				glog.Warningf("Failed to get nodegroup for %s: %v", node.Name, errNg)
+				klog.Warningf("Failed to get nodegroup for %s: %v", node.Name, errNg)
 			}
 			if errReady != nil {
-				glog.Warningf("Failed to get readiness info for %s: %v", node.Name, errReady)
+				klog.Warningf("Failed to get readiness info for %s: %v", node.Name, errReady)
 			}
 		} else {
 			perNodeGroup[nodeGroup.Id()] = update(perNodeGroup[nodeGroup.Id()], node, ready)
@@ -512,7 +512,7 @@ func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 	for _, unregistered := range csr.unregisteredNodes {
 		nodeGroup, errNg := csr.cloudProvider.NodeGroupForNode(unregistered.Node)
 		if errNg != nil {
-			glog.Warningf("Failed to get nodegroup for %s: %v", unregistered.Node.Name, errNg)
+			klog.Warningf("Failed to get nodegroup for %s: %v", unregistered.Node.Name, errNg)
 			continue
 		}
 		perNgCopy := perNodeGroup[nodeGroup.Id()]
@@ -540,14 +540,14 @@ func (csr *ClusterStateRegistry) updateIncorrectNodeGroupSizes(currentTime time.
 	for _, nodeGroup := range csr.cloudProvider.NodeGroups() {
 		acceptableRange, found := csr.acceptableRanges[nodeGroup.Id()]
 		if !found {
-			glog.Warningf("Acceptable range for node group %s not found", nodeGroup.Id())
+			klog.Warningf("Acceptable range for node group %s not found", nodeGroup.Id())
 			continue
 		}
 		readiness, found := csr.perNodeGroupReadiness[nodeGroup.Id()]
 		if !found {
 			// if MinNodes == 0 node group has been scaled to 0 and everything's fine
 			if acceptableRange.MinNodes != 0 {
-				glog.Warningf("Readiness for node group %s not found", nodeGroup.Id())
+				klog.Warningf("Readiness for node group %s not found", nodeGroup.Id())
 			}
 			continue
 		}
@@ -601,7 +601,7 @@ func (csr *ClusterStateRegistry) UpdateScaleDownCandidates(nodes []*apiv1.Node, 
 	for _, node := range nodes {
 		group, err := csr.cloudProvider.NodeGroupForNode(node)
 		if err != nil {
-			glog.Warningf("Failed to get node group for %s: %v", node.Name, err)
+			klog.Warningf("Failed to get node group for %s: %v", node.Name, err)
 			continue
 		}
 		if group == nil || reflect.ValueOf(group).IsNil() {

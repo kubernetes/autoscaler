@@ -41,11 +41,11 @@ import (
 
 	"strconv"
 
-	"github.com/golang/glog"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	"k8s.io/klog"
 )
 
 func TestFindUnneededNodes(t *testing.T) {
@@ -244,7 +244,7 @@ func TestPodsWithPrioritiesFindUnneededNodes(t *testing.T) {
 	sd.UpdateUnneededNodes([]*apiv1.Node{n1, n2, n3, n4}, []*apiv1.Node{n1, n2, n3, n4},
 		[]*apiv1.Pod{p1, p2, p3, p4, p5, p6, p7}, time.Now(), nil)
 	assert.Equal(t, 2, len(sd.unneededNodes))
-	glog.Warningf("Unneeded nodes %v", sd.unneededNodes)
+	klog.Warningf("Unneeded nodes %v", sd.unneededNodes)
 	_, found := sd.unneededNodes["n2"]
 	assert.True(t, found)
 	_, found = sd.unneededNodes["n3"]
