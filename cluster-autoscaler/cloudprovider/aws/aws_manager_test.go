@@ -284,7 +284,7 @@ func TestGetASGTemplate(t *testing.T) {
 				AvailabilityZones:     test.availabilityZones,
 				LaunchTemplateName:    ltName,
 				LaunchTemplateVersion: ltVersion,
-				Tags: tags,
+				Tags:                  tags,
 			}
 
 			template, err := m.getAsgTemplate(asg)

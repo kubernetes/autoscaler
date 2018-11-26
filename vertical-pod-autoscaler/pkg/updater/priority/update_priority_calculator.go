@@ -177,7 +177,7 @@ func (calc *UpdatePriorityCalculator) getUpdatePriority(pod *apiv1.Pod, recommen
 		resourceDiff += math.Abs(totalRequest-float64(totalRecommended)) / totalRequest
 	}
 	return podPriority{
-		pod: pod,
+		pod:                     pod,
 		outsideRecommendedRange: outsideRecommendedRange,
 		scaleUp:                 scaleUp,
 		resourceDiff:            resourceDiff,

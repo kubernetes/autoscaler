@@ -430,7 +430,7 @@ func TestSanitizeLabels(t *testing.T) {
 	oldNode := BuildTestNode("ng1-1", 1000, 1000)
 	oldNode.Labels = map[string]string{
 		kubeletapis.LabelHostname: "abc",
-		"x": "y",
+		"x":                       "y",
 	}
 	node, err := sanitizeTemplateNode(oldNode, "bzium")
 	assert.NoError(t, err)
