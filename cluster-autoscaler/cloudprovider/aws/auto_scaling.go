@@ -21,7 +21,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 // autoScaling is the interface represents a specific aspect of the auto-scaling service provided by AWS SDK for use in CA
@@ -45,7 +45,7 @@ func (m autoScalingWrapper) getInstanceTypeByLCName(name string) (string, error)
 	}
 	launchConfigurations, err := m.DescribeLaunchConfigurations(params)
 	if err != nil {
-		glog.V(4).Infof("Failed LaunchConfiguration info request for %s: %v", name, err)
+		klog.V(4).Infof("Failed LaunchConfiguration info request for %s: %v", name, err)
 		return "", err
 	}
 	if len(launchConfigurations.LaunchConfigurations) < 1 {

@@ -19,9 +19,9 @@ package alicloud
 import (
 	"fmt"
 
-	"github.com/golang/glog"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/klog"
 	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 )
 
@@ -53,13 +53,13 @@ func (asg *Asg) TargetSize() (int, error) {
 
 // IncreaseSize increases Asg size
 func (asg *Asg) IncreaseSize(delta int) error {
-	glog.Infof("increase ASG:%s with %d nodes", asg.Id(), delta)
+	klog.Infof("increase ASG:%s with %d nodes", asg.Id(), delta)
 	if delta <= 0 {
 		return fmt.Errorf("size increase must be positive")
 	}
 	size, err := asg.manager.GetAsgSize(asg)
 	if err != nil {
-		glog.Errorf("failed to get ASG size because of %s", err.Error())
+		klog.Errorf("failed to get ASG size because of %s", err.Error())
 		return err
 	}
 	if int(size)+delta > asg.MaxSize() {
@@ -74,18 +74,18 @@ func (asg *Asg) IncreaseSize(delta int) error {
 // It is assumed that cloud provider will not delete the existing nodes if the size
 // when there is an option to just decrease the target.
 func (asg *Asg) DecreaseTargetSize(delta int) error {
-	glog.V(4).Infof("Aliyun: DecreaseTargetSize() with args: %v", delta)
+	klog.V(4).Infof("Aliyun: DecreaseTargetSize() with args: %v", delta)
 	if delta >= 0 {
 		return fmt.Errorf("size decrease size must be negative")
 	}
 	size, err := asg.manager.GetAsgSize(asg)
 	if err != nil {
-		glog.Errorf("failed to get ASG size because of %s", err.Error())
+		klog.Errorf("failed to get ASG size because of %s", err.Error())
 		return err
 	}
 	nodes, err := asg.manager.GetAsgNodes(asg)
 	if err != nil {
-		glog.Errorf("failed to get ASG nodes because of %s", err.Error())
+		klog.Errorf("failed to get ASG nodes because of %s", err.Error())
 		return err
 	}
 	if int(size)+delta < len(nodes) {
@@ -118,7 +118,7 @@ func (asg *Asg) Belongs(node *apiv1.Node) (bool, error) {
 func (asg *Asg) DeleteNodes(nodes []*apiv1.Node) error {
 	size, err := asg.manager.GetAsgSize(asg)
 	if err != nil {
-		glog.Errorf("failed to get ASG size because of %s", err.Error())
+		klog.Errorf("failed to get ASG size because of %s", err.Error())
 		return err
 	}
 	if int(size) <= asg.MinSize() {
@@ -128,7 +128,7 @@ func (asg *Asg) DeleteNodes(nodes []*apiv1.Node) error {
 	for _, node := range nodes {
 		belongs, err := asg.Belongs(node)
 		if err != nil {
-			glog.Errorf("failed to check whether node:%s is belong to asg:%s", node.GetName(), asg.Id())
+			klog.Errorf("failed to check whether node:%s is belong to asg:%s", node.GetName(), asg.Id())
 			return err
 		}
 		if belongs != true {
@@ -136,7 +136,7 @@ func (asg *Asg) DeleteNodes(nodes []*apiv1.Node) error {
 		}
 		instanceId, err := ecsInstanceIdFromProviderId(node.Spec.ProviderID)
 		if err != nil {
-			glog.Errorf("failed to find instanceId from providerId,because of %s", err.Error())
+			klog.Errorf("failed to find instanceId from providerId,because of %s", err.Error())
 			return err
 		}
 		nodeIds = append(nodeIds, instanceId)
@@ -181,7 +181,7 @@ func (asg *Asg) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
 
 	node, err := asg.manager.buildNodeFromTemplate(asg, template)
 	if err != nil {
-		glog.Errorf("failed to build instanceType:%v from template in ASG:%s,because of %s", template.InstanceType, asg.Id(), err.Error())
+		klog.Errorf("failed to build instanceType:%v from template in ASG:%s,because of %s", template.InstanceType, asg.Id(), err.Error())
 		return nil, err
 	}
 

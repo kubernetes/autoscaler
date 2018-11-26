@@ -20,8 +20,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/klog"
 )
 
 type autoScalingGroups struct {
@@ -44,7 +44,7 @@ func newAutoScalingGroups(service *autoScalingWrapper) *autoScalingGroups {
 		registry.cacheMutex.Lock()
 		defer registry.cacheMutex.Unlock()
 		if err := registry.regenerateCache(); err != nil {
-			glog.Errorf("failed to do regenerating ASG cache,because of %s", err.Error())
+			klog.Errorf("failed to do regenerating ASG cache,because of %s", err.Error())
 		}
 	}, time.Hour)
 

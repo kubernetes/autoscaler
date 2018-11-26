@@ -37,7 +37,7 @@ import (
 	"k8s.io/kubernetes/pkg/kubemark"
 	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 const (
@@ -73,7 +73,7 @@ func (kubemark *KubemarkCloudProvider) addNodeGroup(spec string) error {
 	if err != nil {
 		return err
 	}
-	glog.V(2).Infof("adding node group: %s", nodeGroup.Name)
+	klog.V(2).Infof("adding node group: %s", nodeGroup.Name)
 	kubemark.nodeGroups = append(kubemark.nodeGroups, nodeGroup)
 	return nil
 }
@@ -289,12 +289,12 @@ func buildNodeGroup(value string, kubemarkController *kubemark.KubemarkControlle
 func BuildKubemark(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	externalConfig, err := rest.InClusterConfig()
 	if err != nil {
-		glog.Fatalf("Failed to get kubeclient config for external cluster: %v", err)
+		klog.Fatalf("Failed to get kubeclient config for external cluster: %v", err)
 	}
 
 	kubemarkConfig, err := clientcmd.BuildConfigFromFlags("", "/kubeconfig/cluster_autoscaler.kubeconfig")
 	if err != nil {
-		glog.Fatalf("Failed to get kubeclient config for kubemark cluster: %v", err)
+		klog.Fatalf("Failed to get kubeclient config for kubemark cluster: %v", err)
 	}
 
 	stop := make(chan struct{})
@@ -310,18 +310,18 @@ func BuildKubemark(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDis
 	kubemarkController, err := kubemark.NewKubemarkController(externalClient, externalInformerFactory,
 		kubemarkClient, kubemarkNodeInformer)
 	if err != nil {
-		glog.Fatalf("Failed to create Kubemark cloud provider: %v", err)
+		klog.Fatalf("Failed to create Kubemark cloud provider: %v", err)
 	}
 
 	externalInformerFactory.Start(stop)
 	if !kubemarkController.WaitForCacheSync(stop) {
-		glog.Fatalf("Failed to sync caches for kubemark controller")
+		klog.Fatalf("Failed to sync caches for kubemark controller")
 	}
 	go kubemarkController.Run(stop)
 
 	provider, err := BuildKubemarkCloudProvider(kubemarkController, do.NodeGroupSpecs, rl)
 	if err != nil {
-		glog.Fatalf("Failed to create Kubemark cloud provider: %v", err)
+		klog.Fatalf("Failed to create Kubemark cloud provider: %v", err)
 	}
 	return provider
 }

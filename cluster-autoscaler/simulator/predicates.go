@@ -32,7 +32,7 @@ import (
 	// We need to import provider to initialize default scheduler.
 	"k8s.io/kubernetes/pkg/scheduler/algorithmprovider"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 const (
@@ -119,7 +119,7 @@ func NewPredicateChecker(kubeClient kube_client.Interface, stop <-chan struct{})
 	}
 
 	for _, predInfo := range predicateList {
-		glog.V(1).Infof("Using predicate %s", predInfo.name)
+		klog.V(1).Infof("Using predicate %s", predInfo.name)
 	}
 
 	// TODO: Verify that run is not needed anymore.

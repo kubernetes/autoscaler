@@ -33,13 +33,13 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
 	"gopkg.in/gcfg.v1"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	"k8s.io/klog"
 	provider_aws "k8s.io/kubernetes/pkg/cloudprovider/providers/aws"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 )
@@ -89,7 +89,7 @@ func createAWSManagerInternal(
 	if configReader != nil {
 		var cfg provider_aws.CloudConfig
 		if err := gcfg.ReadInto(&cfg, configReader); err != nil {
-			glog.Errorf("Couldn't read config: %v", err)
+			klog.Errorf("Couldn't read config: %v", err)
 			return nil, err
 		}
 	}
@@ -145,11 +145,11 @@ func (m *AwsManager) Refresh() error {
 
 func (m *AwsManager) forceRefresh() error {
 	if err := m.asgCache.regenerate(); err != nil {
-		glog.Errorf("Failed to regenerate ASG cache: %v", err)
+		klog.Errorf("Failed to regenerate ASG cache: %v", err)
 		return err
 	}
 	m.lastRefresh = time.Now()
-	glog.V(2).Infof("Refreshed ASG list, next refresh after %v", m.lastRefresh.Add(refreshInterval))
+	klog.V(2).Infof("Refreshed ASG list, next refresh after %v", m.lastRefresh.Add(refreshInterval))
 	return nil
 }
 
@@ -191,7 +191,7 @@ func (m *AwsManager) getAsgTemplate(asg *asg) (*asgTemplate, error) {
 	region := az[0 : len(az)-1]
 
 	if len(asg.AvailabilityZones) > 1 {
-		glog.Warningf("Found multiple availability zones for ASG %q; using %s\n", asg.Name, az)
+		klog.Warningf("Found multiple availability zones for ASG %q; using %s\n", asg.Name, az)
 	}
 
 	instanceTypeName, err := m.buildInstanceType(asg)
