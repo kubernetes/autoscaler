@@ -1,6 +1,5 @@
-commit 23dc5401f4e9b985860aeae9657bba1b28c74ff8 (HEAD, tag: v1.13.0-beta.1)
-Merge: 6ee00b6b1b ec2e767e59
-Author: Doug MacEachern <dougm@vmware.com>
-Date:   Fri Nov 16 20:31:24 2018 -0800
+commit 416974b8346bb1c219efe871c18a9f29de4fad2d (origin/master, origin/HEAD)
+Author: Anago GCB <nobody@k8s.io>
+Date:   Mon Nov 26 14:16:47 2018 +0000
 
-    Merge remote-tracking branch 'origin/master' into release-1.13
+    Update CHANGELOG-1.12.md for v1.12.3.

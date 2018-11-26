@@ -41,10 +41,10 @@ import (
 	kube_client "k8s.io/client-go/kubernetes"
 	kube_record "k8s.io/client-go/tools/record"
 
-	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	"k8s.io/klog"
 )
 
 const (
@@ -139,7 +139,7 @@ func computeScaleDownResourcesLeftLimits(nodes []*apiv1.Node, resourceLimiter *c
 					resultScaleDownLimits[resource] = computeAboveMin(totalGpus[resource], min)
 				}
 			default:
-				glog.Errorf("Scale down limits defined for unsupported resource '%s'", resource)
+				klog.Errorf("Scale down limits defined for unsupported resource '%s'", resource)
 			}
 		}
 	}
@@ -373,7 +373,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	}
 	skipped := len(nodesToCheck) - len(filteredNodesToCheck)
 	if skipped > 0 {
-		glog.V(1).Infof("Scale-down calculation: ignoring %v nodes unremovable in the last %v", skipped, sd.context.AutoscalingOptions.UnremovableNodeRecheckTimeout)
+		klog.V(1).Infof("Scale-down calculation: ignoring %v nodes unremovable in the last %v", skipped, sd.context.AutoscalingOptions.UnremovableNodeRecheckTimeout)
 	}
 
 	// Phase1 - look at the nodes utilization. Calculate the utilization
@@ -384,31 +384,31 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		// Old-time marked nodes are again eligible for deletion - something went wrong with them
 		// and they have not been deleted.
 		if isNodeBeingDeleted(node, timestamp) {
-			glog.V(1).Infof("Skipping %s from delete considerations - the node is currently being deleted", node.Name)
+			klog.V(1).Infof("Skipping %s from delete considerations - the node is currently being deleted", node.Name)
 			continue
 		}
 
 		// Skip nodes marked with no scale down annotation
 		if hasNoScaleDownAnnotation(node) {
-			glog.V(1).Infof("Skipping %s from delete consideration - the node is marked as no scale down", node.Name)
+			klog.V(1).Infof("Skipping %s from delete consideration - the node is marked as no scale down", node.Name)
 			continue
 		}
 
 		nodeInfo, found := nodeNameToNodeInfo[node.Name]
 		if !found {
-			glog.Errorf("Node info for %s not found", node.Name)
+			klog.Errorf("Node info for %s not found", node.Name)
 			continue
 		}
 		utilInfo, err := simulator.CalculateUtilization(node, nodeInfo, sd.context.IgnoreDaemonSetsUtilization, sd.context.IgnoreMirrorPodsUtilization)
 
 		if err != nil {
-			glog.Warningf("Failed to calculate utilization for %s: %v", node.Name, err)
+			klog.Warningf("Failed to calculate utilization for %s: %v", node.Name, err)
 		}
-		glog.V(4).Infof("Node %s - utilization %f", node.Name, utilInfo.Utilization)
+		klog.V(4).Infof("Node %s - utilization %f", node.Name, utilInfo.Utilization)
 		utilizationMap[node.Name] = utilInfo
 
 		if utilInfo.Utilization >= sd.context.ScaleDownUtilizationThreshold {
-			glog.V(4).Infof("Node %s is not suitable for removal - utilization too big (%f)", node.Name, utilInfo.Utilization)
+			klog.V(4).Infof("Node %s is not suitable for removal - utilization too big (%f)", node.Name, utilInfo.Utilization)
 			continue
 		}
 		currentlyUnneededNodes = append(currentlyUnneededNodes, node)
@@ -453,7 +453,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	}
 	if additionalCandidatesCount > 0 {
 		// Look for additional nodes to remove among the rest of nodes.
-		glog.V(3).Infof("Finding additional %v candidates for scale down.", additionalCandidatesCount)
+		klog.V(3).Infof("Finding additional %v candidates for scale down.", additionalCandidatesCount)
 		additionalNodesToRemove, additionalUnremovable, additionalNewHints, simulatorErr :=
 			simulator.FindNodesToRemove(currentNonCandidates[:additionalCandidatesPoolSize], nodes, nonExpendablePods, nil,
 				sd.context.PredicateChecker, additionalCandidatesCount, true,
@@ -490,7 +490,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		for _, node := range unremovable {
 			sd.unremovableNodes[node.Name] = unremovableTimeout
 		}
-		glog.V(1).Infof("%v nodes found to be unremovable in simulation, will re-check them at %v", len(unremovable), unremovableTimeout)
+		klog.V(1).Infof("%v nodes found to be unremovable in simulation, will re-check them at %v", len(unremovable), unremovableTimeout)
 	}
 
 	// Update state and metrics
@@ -530,7 +530,7 @@ func (sd *ScaleDown) updateUnremovableNodes(nodes []*apiv1.Node) {
 // down state and returning an appropriate error.
 func (sd *ScaleDown) markSimulationError(simulatorErr errors.AutoscalerError,
 	timestamp time.Time) errors.AutoscalerError {
-	glog.Errorf("Error while simulating node drains: %v", simulatorErr)
+	klog.Errorf("Error while simulating node drains: %v", simulatorErr)
 	sd.unneededNodesList = make([]*apiv1.Node, 0)
 	sd.unneededNodes = make(map[string]time.Time)
 	sd.nodeUtilizationMap = make(map[string]simulator.UtilizationInfo)
@@ -597,11 +597,11 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 	for _, node := range nodesWithoutMaster {
 		if val, found := sd.unneededNodes[node.Name]; found {
 
-			glog.V(2).Infof("%s was unneeded for %s", node.Name, currentTime.Sub(val).String())
+			klog.V(2).Infof("%s was unneeded for %s", node.Name, currentTime.Sub(val).String())
 
 			// Check if node is marked with no scale down annotation.
 			if hasNoScaleDownAnnotation(node) {
-				glog.V(4).Infof("Skipping %s - scale down disabled annotation found", node.Name)
+				klog.V(4).Infof("Skipping %s - scale down disabled annotation found", node.Name)
 				continue
 			}
 
@@ -620,34 +620,34 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 
 			nodeGroup, err := sd.context.CloudProvider.NodeGroupForNode(node)
 			if err != nil {
-				glog.Errorf("Error while checking node group for %s: %v", node.Name, err)
+				klog.Errorf("Error while checking node group for %s: %v", node.Name, err)
 				continue
 			}
 			if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
-				glog.V(4).Infof("Skipping %s - no node group config", node.Name)
+				klog.V(4).Infof("Skipping %s - no node group config", node.Name)
 				continue
 			}
 
 			size, found := nodeGroupSize[nodeGroup.Id()]
 			if !found {
-				glog.Errorf("Error while checking node group size %s: group size not found in cache", nodeGroup.Id())
+				klog.Errorf("Error while checking node group size %s: group size not found in cache", nodeGroup.Id())
 				continue
 			}
 
 			if size <= nodeGroup.MinSize() {
-				glog.V(1).Infof("Skipping %s - node group min size reached", node.Name)
+				klog.V(1).Infof("Skipping %s - node group min size reached", node.Name)
 				continue
 			}
 
 			scaleDownResourcesDelta, err := computeScaleDownResourcesDelta(node, nodeGroup, resourcesWithLimits)
 			if err != nil {
-				glog.Errorf("Error getting node resources: %v", err)
+				klog.Errorf("Error getting node resources: %v", err)
 				continue
 			}
 
 			checkResult := scaleDownResourcesLeft.checkScaleDownDeltaWithinLimits(scaleDownResourcesDelta)
 			if checkResult.exceeded {
-				glog.V(4).Infof("Skipping %s - minimal limit exceeded for %v", node.Name, checkResult.exceededResources)
+				klog.V(4).Infof("Skipping %s - minimal limit exceeded for %v", node.Name, checkResult.exceededResources)
 				continue
 			}
 
@@ -656,7 +656,7 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 		}
 	}
 	if len(candidates) == 0 {
-		glog.V(1).Infof("No candidates for scale down")
+		klog.V(1).Infof("No candidates for scale down")
 		scaleDownStatus.Result = status.ScaleDownNoUnneeded
 		return scaleDownStatus, nil
 	}
@@ -694,7 +694,7 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 		return scaleDownStatus, err.AddPrefix("Find node to remove failed: ")
 	}
 	if len(nodesToRemove) == 0 {
-		glog.V(1).Infof("No node to remove")
+		klog.V(1).Infof("No node to remove")
 		scaleDownStatus.Result = status.ScaleDownNoNodeDeleted
 		return scaleDownStatus, nil
 	}
@@ -704,7 +704,7 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 	for _, pod := range toRemove.PodsToReschedule {
 		podNames = append(podNames, pod.Namespace+"/"+pod.Name)
 	}
-	glog.V(0).Infof("Scale-down: removing node %s, utilization: %v, pods to reschedule: %s", toRemove.Node.Name, utilization,
+	klog.V(0).Infof("Scale-down: removing node %s, utilization: %v, pods to reschedule: %s", toRemove.Node.Name, utilization,
 		strings.Join(podNames, ","))
 	sd.context.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaleDown", "Scale-down: removing node %s, utilization: %v, pods to reschedule: %s",
 		toRemove.Node.Name, utilization, strings.Join(podNames, ","))
@@ -724,7 +724,7 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 		defer sd.nodeDeleteStatus.SetDeleteInProgress(false)
 		err = sd.deleteNode(toRemove.Node, toRemove.PodsToReschedule)
 		if err != nil {
-			glog.Errorf("Failed to delete %s: %v", toRemove.Node.Name, err)
+			klog.Errorf("Failed to delete %s: %v", toRemove.Node.Name, err)
 			return
 		}
 		nodeGroup := candidateNodeGroups[toRemove.Node.Name]
@@ -769,7 +769,7 @@ func getEmptyNodes(candidates []*apiv1.Node, pods []*apiv1.Pod, maxEmptyBulkDele
 	for _, node := range emptyNodes {
 		nodeGroup, err := cloudProvider.NodeGroupForNode(node)
 		if err != nil {
-			glog.Errorf("Failed to get group for %s", node.Name)
+			klog.Errorf("Failed to get group for %s", node.Name)
 			continue
 		}
 		if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
@@ -781,7 +781,7 @@ func getEmptyNodes(candidates []*apiv1.Node, pods []*apiv1.Pod, maxEmptyBulkDele
 			// Will be cached.
 			size, err := nodeGroup.TargetSize()
 			if err != nil {
-				glog.Errorf("Failed to get size for %s: %v ", nodeGroup.Id(), err)
+				klog.Errorf("Failed to get size for %s: %v ", nodeGroup.Id(), err)
 				continue
 			}
 			available = size - nodeGroup.MinSize()
@@ -793,7 +793,7 @@ func getEmptyNodes(candidates []*apiv1.Node, pods []*apiv1.Pod, maxEmptyBulkDele
 		if available > 0 {
 			resourcesDelta, err := computeScaleDownResourcesDelta(node, nodeGroup, resourcesNames)
 			if err != nil {
-				glog.Errorf("Error: %v", err)
+				klog.Errorf("Error: %v", err)
 				continue
 			}
 			checkResult := resourcesLimitsCopy.tryDecrementLimitsByDelta(resourcesDelta)
@@ -816,7 +816,7 @@ func (sd *ScaleDown) scheduleDeleteEmptyNodes(emptyNodes []*apiv1.Node, client k
 	recorder kube_record.EventRecorder, readinessMap map[string]bool,
 	candidateNodeGroups map[string]cloudprovider.NodeGroup, confirmation chan errors.AutoscalerError) {
 	for _, node := range emptyNodes {
-		glog.V(0).Infof("Scale-down: removing empty node %s", node.Name)
+		klog.V(0).Infof("Scale-down: removing empty node %s", node.Name)
 		sd.context.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaleDownEmpty", "Scale-down: removing empty node %s", node.Name)
 		simulator.RemoveNodeFromTracker(sd.usageTracker, node.Name, sd.unneededNodes)
 		go func(nodeToDelete *apiv1.Node) {
@@ -866,7 +866,7 @@ func (sd *ScaleDown) waitForEmptyNodesDeleted(emptyNodes []*apiv1.Node, confirma
 		select {
 		case err := <-confirmation:
 			if err != nil {
-				glog.Errorf("Problem with empty node deletion: %v", err)
+				klog.Errorf("Problem with empty node deletion: %v", err)
 				finalError = err
 			}
 		case <-time.After(timeLeft):
@@ -945,7 +945,7 @@ func evictPod(podToEvict *apiv1.Pod, client kube_client.Interface, recorder kube
 			return nil
 		}
 	}
-	glog.Errorf("Failed to evict pod %s, error: %v", podToEvict.Name, lastError)
+	klog.Errorf("Failed to evict pod %s, error: %v", podToEvict.Name, lastError)
 	recorder.Eventf(podToEvict, apiv1.EventTypeWarning, "ScaleDownFailed", "failed to delete pod for ScaleDown")
 	return fmt.Errorf("Failed to evict pod %s/%s within allowed timeout (last error: %v)", podToEvict.Namespace, podToEvict.Name, lastError)
 }
@@ -991,18 +991,18 @@ func drainNode(node *apiv1.Node, pods []*apiv1.Pod, client kube_client.Interface
 		for _, pod := range pods {
 			podreturned, err := client.CoreV1().Pods(pod.Namespace).Get(pod.Name, metav1.GetOptions{})
 			if err == nil && (podreturned == nil || podreturned.Spec.NodeName == node.Name) {
-				glog.Errorf("Not deleted yet %v", podreturned)
+				klog.Errorf("Not deleted yet %v", podreturned)
 				allGone = false
 				break
 			}
 			if err != nil && !kube_errors.IsNotFound(err) {
-				glog.Errorf("Failed to check pod %s/%s: %v", pod.Namespace, pod.Name, err)
+				klog.Errorf("Failed to check pod %s/%s: %v", pod.Namespace, pod.Name, err)
 				allGone = false
 				break
 			}
 		}
 		if allGone {
-			glog.V(1).Infof("All pods removed from %s", node.Name)
+			klog.V(1).Infof("All pods removed from %s", node.Name)
 			// Let the deferred function know there is no need for cleanup
 			return nil
 		}
@@ -1016,11 +1016,11 @@ func cleanToBeDeleted(nodes []*apiv1.Node, client kube_client.Interface, recorde
 	for _, node := range nodes {
 		cleaned, err := deletetaint.CleanToBeDeleted(node, client)
 		if err != nil {
-			glog.Warningf("Error while releasing taints on node %v: %v", node.Name, err)
+			klog.Warningf("Error while releasing taints on node %v: %v", node.Name, err)
 			recorder.Eventf(node, apiv1.EventTypeWarning, "ClusterAutoscalerCleanup",
 				"failed to clean toBeDeletedTaint: %v", err)
 		} else if cleaned {
-			glog.V(1).Infof("Successfully released toBeDeletedTaint on node %v", node.Name)
+			klog.V(1).Infof("Successfully released toBeDeletedTaint on node %v", node.Name)
 			recorder.Eventf(node, apiv1.EventTypeNormal, "ClusterAutoscalerCleanup", "marking the node as schedulable")
 		}
 	}
