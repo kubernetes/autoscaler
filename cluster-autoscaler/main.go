@@ -140,6 +140,11 @@ var (
 	expanderFlag = flag.String("expander", expander.RandomExpanderName,
 		"Type of node group expander to be used in scale up. Available values: ["+strings.Join(expander.AvailableExpanders, ",")+"]")
 
+	ignoreDaemonSetsUtilization = flag.Bool("ignore-daemonsets-utilization", false,
+		"Should CA ignore DaemonSet pods when calculating resource utilization for scaling down")
+	ignoreMirrorPodsUtilization = flag.Bool("ignore-mirror-pods-utilization", false,
+		"Should CA ignore Mirror pods when calculating resource utilization for scaling down")
+
 	writeStatusConfigMapFlag         = flag.Bool("write-status-configmap", true, "Should CA write status information to a configmap")
 	maxInactivityTimeFlag            = flag.Duration("max-inactivity", 10*time.Minute, "Maximum time from last recorded autoscaler activity before automatic restart")
 	maxFailingTimeFlag               = flag.Duration("max-failing-time", 15*time.Minute, "Maximum time from last recorded successful autoscaler run before automatic restart")
@@ -179,6 +184,8 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		OkTotalUnreadyCount:              *okTotalUnreadyCount,
 		EstimatorName:                    *estimatorFlag,
 		ExpanderName:                     *expanderFlag,
+		IgnoreDaemonSetsUtilization:      *ignoreDaemonSetsUtilization,
+		IgnoreMirrorPodsUtilization:      *ignoreMirrorPodsUtilization,
 		MaxEmptyBulkDelete:               *maxEmptyBulkDeleteFlag,
 		MaxGracefulTerminationSec:        *maxGracefulTerminationFlag,
 		MaxNodeProvisionTime:             *maxNodeProvisionTime,
@@ -314,6 +321,8 @@ func run(healthCheck *metrics.HealthCheck) {
 }
 
 func main() {
+	klog.InitFlags(nil)
+
 	leaderElection := defaultLeaderElectionConfiguration()
 	leaderElection.LeaderElect = true
 

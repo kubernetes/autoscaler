@@ -399,7 +399,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 			klog.Errorf("Node info for %s not found", node.Name)
 			continue
 		}
-		utilInfo, err := simulator.CalculateUtilization(node, nodeInfo)
+		utilInfo, err := simulator.CalculateUtilization(node, nodeInfo, sd.context.IgnoreDaemonSetsUtilization, sd.context.IgnoreMirrorPodsUtilization)
 
 		if err != nil {
 			klog.Warningf("Failed to calculate utilization for %s: %v", node.Name, err)
