@@ -66,7 +66,7 @@ func TestWaitForGkeOp(t *testing.T) {
 	g := newTestAutoscalingGkeClientV1beta1(t, "project1", "us-central1-b", "cluster-1", server.URL)
 
 	g.operationPollInterval = 1 * time.Millisecond
-	g.operationWaitTimeout = 50 * time.Millisecond
+	g.operationWaitTimeout = 500 * time.Millisecond
 
 	server.On("handle", "/v1beta1/projects/project1/locations/us-central1-b/operations/operation-1505728466148-d16f5197").Return(operationRunningResponse).Once()
 	server.On("handle", "/v1beta1/projects/project1/locations/us-central1-b/operations/operation-1505728466148-d16f5197").Return(operationDoneResponse).Once()
