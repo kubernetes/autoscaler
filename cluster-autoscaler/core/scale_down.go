@@ -187,7 +187,7 @@ func calculateScaleDownGpusTotal(nodes []*apiv1.Node, cp cloudprovider.CloudProv
 		if err != nil {
 			return nil, errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("can not get node group for node %v when calculating cluster gpu usage", node.Name)
 		}
-		if reflect.ValueOf(nodeGroup).IsNil() {
+		if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
 			// We do not trust cloud providers to return properly constructed nil for interface type - hence the reflection check.
 			// See https://golang.org/doc/faq#nil_error
 			// TODO[lukaszos] consider creating cloud_provider sanitizer which will wrap cloud provider and ensure sane behaviour.
