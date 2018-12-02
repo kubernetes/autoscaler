@@ -125,7 +125,7 @@ func main() {
 			var unmarshalled = response{}
 			err = json.Unmarshal(body, &unmarshalled)
 			if err != nil {
-				klog.Warningf("Error unmarshaling %s skipping...\n", url)
+				klog.Warningf("Error unmarshalling %s skipping...\n", url)
 				continue
 			}
 
