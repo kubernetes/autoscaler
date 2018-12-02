@@ -65,7 +65,7 @@ func (t UnixTime) MarshalJSON() ([]byte, error) {
 	return buffer.Bytes(), nil
 }
 
-// UnmarshalJSON reconstitures a UnixTime saved as a JSON number of the number of seconds since
+// UnmarshalJSON reconstitutes a UnixTime saved as a JSON number of the number of seconds since
 // midnight January 1st, 1970.
 func (t *UnixTime) UnmarshalJSON(text []byte) error {
 	dec := json.NewDecoder(bytes.NewReader(text))
