@@ -211,7 +211,9 @@ func (m *AwsManager) getAsgTemplate(asg *asg) (*asgTemplate, error) {
 }
 
 func (m *AwsManager) buildInstanceType(asg *asg) (string, error) {
-	if asg.LaunchConfigurationName != "" {
+	if asg.InstanceTypeName != "" {
+		return asg.InstanceTypeName, nil
+	} else if asg.LaunchConfigurationName != "" {
 		return m.autoScalingService.getInstanceTypeByLCName(asg.LaunchConfigurationName)
 	} else if asg.LaunchTemplateName != "" && asg.LaunchTemplateVersion != "" {
 		return m.ec2Service.getInstanceTypeByLT(asg.LaunchTemplateName, asg.LaunchTemplateVersion)

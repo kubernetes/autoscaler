@@ -52,6 +52,7 @@ type asg struct {
 	curSize int
 
 	AvailabilityZones       []string
+	InstanceTypeName        string
 	LaunchTemplateName      string
 	LaunchTemplateVersion   string
 	LaunchConfigurationName string
@@ -369,6 +370,8 @@ func (m *asgCache) buildAsgFromAWS(g *autoscaling.Group) (*asg, error) {
 
 	launchTemplateName, launchTemplateVersion := m.buildLaunchTemplateParams(g)
 
+	instanceTypeName := m.getInstanceTypeName(g)
+
 	asg := &asg{
 		AwsRef:  AwsRef{Name: spec.Name},
 		minSize: spec.MinSize,
@@ -376,6 +379,7 @@ func (m *asgCache) buildAsgFromAWS(g *autoscaling.Group) (*asg, error) {
 
 		curSize:                 int(aws.Int64Value(g.DesiredCapacity)),
 		AvailabilityZones:       aws.StringValueSlice(g.AvailabilityZones),
+		InstanceTypeName:        instanceTypeName,
 		LaunchConfigurationName: aws.StringValue(g.LaunchConfigurationName),
 		LaunchTemplateName:      launchTemplateName,
 		LaunchTemplateVersion:   launchTemplateVersion,
@@ -388,9 +392,18 @@ func (m *asgCache) buildAsgFromAWS(g *autoscaling.Group) (*asg, error) {
 func (m *asgCache) buildLaunchTemplateParams(g *autoscaling.Group) (string, string) {
 	if g.LaunchTemplate != nil {
 		return aws.StringValue(g.LaunchTemplate.LaunchTemplateName), aws.StringValue(g.LaunchTemplate.Version)
+	} else if g.MixedInstancesPolicy != nil {
+		return aws.StringValue(g.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification.LaunchTemplateName), aws.StringValue(g.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification.Version)
 	}
 
 	return "", ""
+}
+
+func (m *asgCache) getInstanceTypeName(g *autoscaling.Group) string {
+	if g.MixedInstancesPolicy != nil {
+		return aws.StringValue(g.MixedInstancesPolicy.LaunchTemplate.Overrides[0].InstanceType)
+	}
+	return ""
 }
 
 func (m *asgCache) buildInstanceRefFromAWS(instance *autoscaling.Instance) AwsInstanceRef {
