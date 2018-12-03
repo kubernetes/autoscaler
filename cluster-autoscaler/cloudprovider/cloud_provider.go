@@ -169,12 +169,12 @@ type InstanceStatus struct {
 type InstanceState int
 
 const (
-	// STATE_RUNNING means instance is running
-	STATE_RUNNING InstanceState = 1
-	// STATE_BEING_CREATED means instance is being created
-	STATE_BEING_CREATED InstanceState = 2
-	// STATE_BEING_DELETED means instance is being deleted
-	STATE_BEING_DELETED InstanceState = 3
+	// InstanceRunning means instance is running
+	InstanceRunning InstanceState = 1
+	// InstanceCreating means instance is being created
+	InstanceCreating InstanceState = 2
+	// InstanceDeleting means instance is being deleted
+	InstanceDeleting InstanceState = 3
 )
 
 // InstanceErrorInfo provides information about error condition on instance
@@ -191,11 +191,11 @@ type InstanceErrorInfo struct {
 type InstanceErrorClass int
 
 const (
-	// ERROR_OUT_OF_RESOURCES means that error is related to lack of resources (e.g. due to
+	// OutOfResourcesErrorClass means that error is related to lack of resources (e.g. due to
 	// stockout or quota-exceeded situation)
-	ERROR_OUT_OF_RESOURCES InstanceErrorClass = 1
-	// ERROR_OTHER means some non-specific error situation occurred
-	ERROR_OTHER InstanceErrorClass = 99
+	OutOfResourcesErrorClass InstanceErrorClass = 1
+	// OtherErrorClass means some non-specific error situation occurred
+	OtherErrorClass InstanceErrorClass = 99
 )
 
 // PricingModel contains information about the node price and how it changes in time.
