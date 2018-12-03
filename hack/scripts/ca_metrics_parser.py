@@ -73,7 +73,7 @@ def parse_metrics_file(metrics_file):
   '''
   Return interesting metrics for all Cluster Autoscaler functions.
 
-  Merics are stored in a map keyed by function name and are expressed in 
+  Metrics are stored in a map keyed by function name and are expressed in 
   seconds. They include
   * sum of all samples
   * count of sumples
