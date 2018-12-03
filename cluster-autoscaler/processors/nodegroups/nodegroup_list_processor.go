@@ -40,7 +40,7 @@ func NewDefaultNodeGroupListProcessor() NodeGroupListProcessor {
 	return &NoOpNodeGroupListProcessor{}
 }
 
-// Process processes lists of unschedulable and sheduled pods before scaling of the cluster.
+// Process processes lists of unschedulable and scheduled pods before scaling of the cluster.
 func (p *NoOpNodeGroupListProcessor) Process(context *context.AutoscalingContext, nodeGroups []cloudprovider.NodeGroup, nodeInfos map[string]*schedulercache.NodeInfo,
 	unschedulablePods []*apiv1.Pod) ([]cloudprovider.NodeGroup, map[string]*schedulercache.NodeInfo, error) {
 	return nodeGroups, nodeInfos, nil
