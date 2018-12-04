@@ -947,7 +947,7 @@ func evictPod(podToEvict *apiv1.Pod, client kube_client.Interface, recorder kube
 	}
 	klog.Errorf("Failed to evict pod %s, error: %v", podToEvict.Name, lastError)
 	recorder.Eventf(podToEvict, apiv1.EventTypeWarning, "ScaleDownFailed", "failed to delete pod for ScaleDown")
-	return fmt.Errorf("Failed to evict pod %s/%s within allowed timeout (last error: %v)", podToEvict.Namespace, podToEvict.Name, lastError)
+	return fmt.Errorf("failed to evict pod %s/%s within allowed timeout (last error: %v)", podToEvict.Namespace, podToEvict.Name, lastError)
 }
 
 // Performs drain logic on the node. Marks the node as unschedulable and later removes all pods, giving

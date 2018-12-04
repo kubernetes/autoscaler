@@ -167,7 +167,7 @@ func CalculateUtilization(node *apiv1.Node, nodeInfo *schedulercache.NodeInfo, s
 func calculateUtilizationOfResource(node *apiv1.Node, nodeInfo *schedulercache.NodeInfo, resourceName apiv1.ResourceName, skipDaemonSetPods, skipMirrorPods bool) (float64, error) {
 	nodeAllocatable, found := node.Status.Allocatable[resourceName]
 	if !found {
-		return 0, fmt.Errorf("Failed to get %v from %s", resourceName, node.Name)
+		return 0, fmt.Errorf("failed to get %v from %s", resourceName, node.Name)
 	}
 	if nodeAllocatable.MilliValue() == 0 {
 		return 0, fmt.Errorf("%v is 0 at %s", resourceName, node.Name)

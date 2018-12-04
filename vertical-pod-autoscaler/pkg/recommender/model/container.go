@@ -164,7 +164,7 @@ func (container *ContainerState) RecordOOM(timestamp time.Time, requestedMemory 
 		Resource:     ResourceMemory,
 	}
 	if !container.addMemorySample(&oomMemorySample, true) {
-		return fmt.Errorf("Adding OOM sample failed")
+		return fmt.Errorf("adding OOM sample failed")
 	}
 	return nil
 }

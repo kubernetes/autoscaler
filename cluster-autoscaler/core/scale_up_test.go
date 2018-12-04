@@ -393,7 +393,7 @@ func simpleScaleUpTest(t *testing.T, config *scaleTestConfig) {
 				return true, &apiv1.PodList{Items: pods[node.Name]}, nil
 			}
 		}
-		return true, nil, fmt.Errorf("Failed to list: %v", list)
+		return true, nil, fmt.Errorf("failed to list: %v", list)
 	})
 
 	provider := testprovider.NewTestCloudProvider(func(nodeGroup string, increase int) error {
@@ -501,7 +501,7 @@ func TestScaleUpNodeComingNoScale(t *testing.T) {
 		if strings.Contains(fieldstring, "n2") {
 			return true, &apiv1.PodList{Items: []apiv1.Pod{*p2}}, nil
 		}
-		return true, nil, fmt.Errorf("Failed to list: %v", list)
+		return true, nil, fmt.Errorf("failed to list: %v", list)
 	})
 
 	provider := testprovider.NewTestCloudProvider(func(nodeGroup string, increase int) error {
@@ -560,7 +560,7 @@ func TestScaleUpNodeComingHasScale(t *testing.T) {
 		if strings.Contains(fieldstring, "n2") {
 			return true, &apiv1.PodList{Items: []apiv1.Pod{*p2}}, nil
 		}
-		return true, nil, fmt.Errorf("Failed to list: %v", list)
+		return true, nil, fmt.Errorf("failed to list: %v", list)
 	})
 
 	expandedGroups := make(chan string, 10)
@@ -617,7 +617,7 @@ func TestScaleUpUnhealthy(t *testing.T) {
 		if strings.Contains(fieldstring, "n2") {
 			return true, &apiv1.PodList{Items: []apiv1.Pod{*p2}}, nil
 		}
-		return true, nil, fmt.Errorf("Failed to list: %v", list)
+		return true, nil, fmt.Errorf("failed to list: %v", list)
 	})
 
 	provider := testprovider.NewTestCloudProvider(func(nodeGroup string, increase int) error {
@@ -662,7 +662,7 @@ func TestScaleUpNoHelp(t *testing.T) {
 		if strings.Contains(fieldstring, "n1") {
 			return true, &apiv1.PodList{Items: []apiv1.Pod{*p1}}, nil
 		}
-		return true, nil, fmt.Errorf("Failed to list: %v", list)
+		return true, nil, fmt.Errorf("failed to list: %v", list)
 	})
 
 	provider := testprovider.NewTestCloudProvider(func(nodeGroup string, increase int) error {

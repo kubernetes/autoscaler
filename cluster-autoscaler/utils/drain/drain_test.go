@@ -530,7 +530,7 @@ func TestDrain(t *testing.T) {
 				if getAction.GetName() == meta.GetName() && getAction.GetNamespace() == meta.GetNamespace() {
 					return true, obj, nil
 				}
-				return false, nil, fmt.Errorf("Not found")
+				return false, nil, fmt.Errorf("not found")
 			})
 		}
 		if len(test.rcs) > 0 {
