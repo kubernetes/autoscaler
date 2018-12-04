@@ -382,6 +382,7 @@ func simpleScaleUpTest(t *testing.T, config *scaleTestConfig) {
 		pod := buildTestPod(p)
 		pods = append(pods, pod)
 	}
+
 	podLister := kube_util.NewTestPodLister(pods)
 	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil)
 

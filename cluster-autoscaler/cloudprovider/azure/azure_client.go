@@ -429,7 +429,7 @@ func newServicePrincipalTokenFromCredentials(config *Config, env *azure.Environm
 		klog.V(2).Infoln("azure: using managed identity extension to retrieve access token")
 		msiEndpoint, err := adal.GetMSIVMEndpoint()
 		if err != nil {
-			return nil, fmt.Errorf("Getting the managed service identity endpoint: %v", err)
+			return nil, fmt.Errorf("getting the managed service identity endpoint: %v", err)
 		}
 		return adal.NewServicePrincipalTokenFromMSI(
 			msiEndpoint,
@@ -463,7 +463,7 @@ func newServicePrincipalTokenFromCredentials(config *Config, env *azure.Environm
 			env.ServiceManagementEndpoint)
 	}
 
-	return nil, fmt.Errorf("No credentials provided for AAD application %s", config.AADClientID)
+	return nil, fmt.Errorf("no credentials provided for AAD application %s", config.AADClientID)
 }
 
 func newAzClient(cfg *Config, env *azure.Environment) (*azClient, error) {

@@ -144,7 +144,7 @@ var validAwsRefIdRegex = regexp.MustCompile(`^aws\:\/\/\/[-0-9a-z]*\/[-0-9a-z]*$
 // must be in format: aws:///zone/name
 func AwsRefFromProviderId(id string) (*AwsInstanceRef, error) {
 	if validAwsRefIdRegex.FindStringSubmatch(id) == nil {
-		return nil, fmt.Errorf("Wrong id: expected format aws:///<zone>/<name>, got %v", id)
+		return nil, fmt.Errorf("wrong id: expected format aws:///<zone>/<name>, got %v", id)
 	}
 	splitted := strings.Split(id[7:], "/")
 	return &AwsInstanceRef{

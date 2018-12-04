@@ -62,5 +62,5 @@ func NewEstimatorBuilder(name string) (EstimatorBuilder, error) {
 			return NewBasicNodeEstimator()
 		}, nil
 	}
-	return nil, fmt.Errorf("Unknown estimator: %s", name)
+	return nil, fmt.Errorf("unknown estimator: %s", name)
 }

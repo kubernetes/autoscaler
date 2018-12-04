@@ -298,7 +298,7 @@ func (agentPool *ContainerServiceAgentPool) TargetSize() (int, error) {
 func (agentPool *ContainerServiceAgentPool) SetSize(targetSize int) error {
 	if targetSize > agentPool.MaxSize() || targetSize < agentPool.MinSize() {
 		klog.Errorf("Target size %d requested outside Max: %d, Min: %d", targetSize, agentPool.MaxSize(), agentPool.MaxSize())
-		return fmt.Errorf("Target size %d requested outside Max: %d, Min: %d", targetSize, agentPool.MaxSize(), agentPool.MinSize())
+		return fmt.Errorf("target size %d requested outside Max: %d, Min: %d", targetSize, agentPool.MaxSize(), agentPool.MinSize())
 	}
 
 	klog.V(2).Infof("Setting size for cluster (%q) with new count (%d)", agentPool.clusterName, targetSize)
@@ -314,7 +314,7 @@ func (agentPool *ContainerServiceAgentPool) SetSize(targetSize int) error {
 //parameter
 func (agentPool *ContainerServiceAgentPool) IncreaseSize(delta int) error {
 	if delta <= 0 {
-		return fmt.Errorf("Size increase must be +ve")
+		return fmt.Errorf("size increase must be +ve")
 	}
 	currentSize, err := agentPool.TargetSize()
 	if err != nil {
@@ -322,7 +322,7 @@ func (agentPool *ContainerServiceAgentPool) IncreaseSize(delta int) error {
 	}
 	targetSize := int(currentSize) + delta
 	if targetSize > agentPool.MaxSize() {
-		return fmt.Errorf("Size increase request of %d more than max size %d set", targetSize, agentPool.MaxSize())
+		return fmt.Errorf("size increase request of %d more than max size %d set", targetSize, agentPool.MaxSize())
 	}
 	return agentPool.SetSize(targetSize)
 }
@@ -413,7 +413,7 @@ func (agentPool *ContainerServiceAgentPool) GetNodes() ([]string, error) {
 func (agentPool *ContainerServiceAgentPool) DecreaseTargetSize(delta int) error {
 	if delta >= 0 {
 		klog.Errorf("Size decrease error: %d", delta)
-		return fmt.Errorf("Size decrease must be negative")
+		return fmt.Errorf("size decrease must be negative")
 	}
 	currentSize, err := agentPool.TargetSize()
 	if err != nil {

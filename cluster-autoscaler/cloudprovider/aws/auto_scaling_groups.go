@@ -188,7 +188,7 @@ func (m *asgCache) InstancesByAsg(ref AwsRef) ([]AwsInstanceRef, error) {
 		return instances, nil
 	}
 
-	return nil, fmt.Errorf("Error while looking for instances of ASG: %s", ref)
+	return nil, fmt.Errorf("error while looking for instances of ASG: %s", ref)
 }
 
 func (m *asgCache) SetAsgSize(asg *asg, size int) error {

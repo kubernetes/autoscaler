@@ -184,7 +184,7 @@ func (m *AwsManager) GetAsgNodes(ref AwsRef) ([]AwsInstanceRef, error) {
 
 func (m *AwsManager) getAsgTemplate(asg *asg) (*asgTemplate, error) {
 	if len(asg.AvailabilityZones) < 1 {
-		return nil, fmt.Errorf("Unable to get first AvailabilityZone for ASG %q", asg.Name)
+		return nil, fmt.Errorf("unable to get first AvailabilityZone for ASG %q", asg.Name)
 	}
 
 	az := asg.AvailabilityZones[0]

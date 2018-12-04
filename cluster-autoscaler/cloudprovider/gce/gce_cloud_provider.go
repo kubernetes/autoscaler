@@ -137,7 +137,7 @@ func (ref GceRef) ToProviderId() string {
 func GceRefFromProviderId(id string) (*GceRef, error) {
 	splitted := strings.Split(id[6:], "/")
 	if len(splitted) != 3 {
-		return nil, fmt.Errorf("Wrong id: expected format gce://<project-id>/<zone>/<name>, got %v", id)
+		return nil, fmt.Errorf("wrong id: expected format gce://<project-id>/<zone>/<name>, got %v", id)
 	}
 	return &GceRef{
 		Project: splitted[0],

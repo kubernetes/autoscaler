@@ -146,7 +146,7 @@ func (m *asgCache) FindForInstance(instance *azureRef, vmType string) (cloudprov
 	}
 
 	if err := m.regenerate(); err != nil {
-		return nil, fmt.Errorf("Error while looking for ASG for instance %+v, error: %v", *instance, err)
+		return nil, fmt.Errorf("error while looking for ASG for instance %+v, error: %v", *instance, err)
 	}
 	if config, found := m.instanceToAsg[*instance]; found {
 		return config, nil
