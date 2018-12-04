@@ -27,6 +27,42 @@ type instanceType struct {
 
 // InstanceTypes is a map of ec2 resources
 var InstanceTypes = map[string]*instanceType{
+	"a1": {
+		InstanceType: "a1",
+		VCPU:         16,
+		MemoryMb:     0,
+		GPU:          0,
+	},
+	"a1.2xlarge": {
+		InstanceType: "a1.2xlarge",
+		VCPU:         8,
+		MemoryMb:     16384,
+		GPU:          0,
+	},
+	"a1.4xlarge": {
+		InstanceType: "a1.4xlarge",
+		VCPU:         16,
+		MemoryMb:     32768,
+		GPU:          0,
+	},
+	"a1.large": {
+		InstanceType: "a1.large",
+		VCPU:         2,
+		MemoryMb:     4096,
+		GPU:          0,
+	},
+	"a1.medium": {
+		InstanceType: "a1.medium",
+		VCPU:         1,
+		MemoryMb:     2048,
+		GPU:          0,
+	},
+	"a1.xlarge": {
+		InstanceType: "a1.xlarge",
+		VCPU:         4,
+		MemoryMb:     8192,
+		GPU:          0,
+	},
 	"c1.medium": {
 		InstanceType: "c1.medium",
 		VCPU:         2,
