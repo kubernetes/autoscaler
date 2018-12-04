@@ -242,7 +242,7 @@ func getCurrentPodSetForDeployment(c clientset.Interface, d *appsv1.Deployment) 
 
 func createReplicaSetWithRetries(c clientset.Interface, namespace string, obj *appsv1.ReplicaSet) error {
 	if obj == nil {
-		return fmt.Errorf("Object provided to create is empty")
+		return fmt.Errorf("object provided to create is empty")
 	}
 	createFunc := func() (bool, error) {
 		_, err := c.AppsV1().ReplicaSets(namespace).Create(obj)
@@ -252,14 +252,14 @@ func createReplicaSetWithRetries(c clientset.Interface, namespace string, obj *a
 		if testutils.IsRetryableAPIError(err) {
 			return false, nil
 		}
-		return false, fmt.Errorf("Failed to create object with non-retriable error: %v", err)
+		return false, fmt.Errorf("failed to create object with non-retriable error: %v", err)
 	}
 	return testutils.RetryWithExponentialBackOff(createFunc)
 }
 
 func createStatefulSetSetWithRetries(c clientset.Interface, namespace string, obj *appsv1.StatefulSet) error {
 	if obj == nil {
-		return fmt.Errorf("Object provided to create is empty")
+		return fmt.Errorf("object provided to create is empty")
 	}
 	createFunc := func() (bool, error) {
 		_, err := c.AppsV1().StatefulSets(namespace).Create(obj)
@@ -269,7 +269,7 @@ func createStatefulSetSetWithRetries(c clientset.Interface, namespace string, ob
 		if testutils.IsRetryableAPIError(err) {
 			return false, nil
 		}
-		return false, fmt.Errorf("Failed to create object with non-retriable error: %v", err)
+		return false, fmt.Errorf("failed to create object with non-retriable error: %v", err)
 	}
 	return testutils.RetryWithExponentialBackOff(createFunc)
 }

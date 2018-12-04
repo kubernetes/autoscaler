@@ -156,7 +156,7 @@ func (client *autoscalingGceClientV1) waitForOp(operation *gce.Operation, projec
 			klog.Warningf("Error while getting operation %s on %s: %v", operation.Name, operation.TargetLink, err)
 		}
 	}
-	return fmt.Errorf("Timeout while waiting for operation %s on %s to complete.", operation.Name, operation.TargetLink)
+	return fmt.Errorf("timeout while waiting for operation %s on %s to complete.", operation.Name, operation.TargetLink)
 }
 
 func (client *autoscalingGceClientV1) DeleteInstances(migRef GceRef, instances []*GceRef) error {

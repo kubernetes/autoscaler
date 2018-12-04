@@ -222,7 +222,7 @@ func WaitForPodsRestarted(f *framework.Framework, podList *apiv1.PodList) error 
 	})
 
 	if err != nil {
-		return fmt.Errorf("Waiting for set of pods changed: %v", err)
+		return fmt.Errorf("waiting for set of pods changed: %v", err)
 	}
 	return nil
 }
@@ -241,7 +241,7 @@ func WaitForPodsEvicted(f *framework.Framework, podList *apiv1.PodList) error {
 	})
 
 	if err != nil {
-		return fmt.Errorf("Waiting for set of pods changed: %v", err)
+		return fmt.Errorf("waiting for set of pods changed: %v", err)
 	}
 	return nil
 }

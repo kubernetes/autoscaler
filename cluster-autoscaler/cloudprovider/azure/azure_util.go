@@ -249,7 +249,7 @@ func normalizeForK8sVMASScalingUp(templateMap map[string]interface{}) error {
 		resourceType, ok := resourceMap[typeFieldName].(string)
 		if ok && resourceType == nsgResourceType {
 			if nsgIndex != -1 {
-				err := fmt.Errorf("Found 2 resources with type %s in the template. There should only be 1", nsgResourceType)
+				err := fmt.Errorf("found 2 resources with type %s in the template. There should only be 1", nsgResourceType)
 				klog.Errorf(err.Error())
 				return err
 			}
@@ -257,7 +257,7 @@ func normalizeForK8sVMASScalingUp(templateMap map[string]interface{}) error {
 		}
 		if ok && resourceType == rtResourceType {
 			if rtIndex != -1 {
-				err := fmt.Errorf("Found 2 resources with type %s in the template. There should only be 1", rtResourceType)
+				err := fmt.Errorf("found 2 resources with type %s in the template. There should only be 1", rtResourceType)
 				klog.Warningf(err.Error())
 				return err
 			}
@@ -286,7 +286,7 @@ func normalizeForK8sVMASScalingUp(templateMap map[string]interface{}) error {
 
 	indexesToRemove := []int{}
 	if nsgIndex == -1 {
-		err := fmt.Errorf("Found no resources with type %s in the template. There should have been 1", nsgResourceType)
+		err := fmt.Errorf("found no resources with type %s in the template. There should have been 1", nsgResourceType)
 		klog.Errorf(err.Error())
 		return err
 	}
@@ -433,7 +433,7 @@ func k8sLinuxVMNameParts(vmName string) (poolIdentifier, nameSuffix string, agen
 	vmNum, err := strconv.Atoi(vmNameParts[k8sLinuxVMAgentIndexArrayIndex])
 
 	if err != nil {
-		return "", "", -1, fmt.Errorf("Error parsing VM Name: %v", err)
+		return "", "", -1, fmt.Errorf("error parsing VM Name: %v", err)
 	}
 
 	return vmNameParts[k8sLinuxVMAgentPoolNameIndex], vmNameParts[k8sLinuxVMAgentClusterIDIndex], vmNum, nil
@@ -452,12 +452,12 @@ func windowsVMNameParts(vmName string) (poolPrefix string, acsStr string, poolIn
 
 	poolIndex, err = strconv.Atoi(poolInfo[:3])
 	if err != nil {
-		return "", "", -1, -1, fmt.Errorf("Error parsing VM Name: %v", err)
+		return "", "", -1, -1, fmt.Errorf("error parsing VM Name: %v", err)
 	}
 
 	agentIndex, err = strconv.Atoi(poolInfo[3:])
 	if err != nil {
-		return "", "", -1, -1, fmt.Errorf("Error parsing VM Name: %v", err)
+		return "", "", -1, -1, fmt.Errorf("error parsing VM Name: %v", err)
 	}
 
 	return poolPrefix, acsStr, poolIndex, agentIndex, nil
@@ -543,7 +543,7 @@ func validateConfig(cfg *Config) error {
 	if cfg.VMType == vmTypeACS || cfg.VMType == vmTypeAKS {
 		// Cluster name is a mandatory param to proceed.
 		if cfg.ClusterName == "" {
-			return fmt.Errorf("Cluster name not set for type %+v", cfg.VMType)
+			return fmt.Errorf("cluster name not set for type %+v", cfg.VMType)
 		}
 	}
 

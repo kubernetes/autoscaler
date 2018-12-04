@@ -167,7 +167,7 @@ func assertPodsPendingForDuration(c clientset.Interface, deployment *appsv1.Depl
 	})
 
 	if err != nil {
-		return fmt.Errorf("Assertion failed for pending pods in %v: %v", deployment.Name, err)
+		return fmt.Errorf("assertion failed for pending pods in %v: %v", deployment.Name, err)
 	}
 	return nil
 }
