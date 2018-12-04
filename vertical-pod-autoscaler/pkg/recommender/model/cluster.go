@@ -168,7 +168,7 @@ func (cluster *ClusterState) AddSample(sample *ContainerUsageSampleWithKey) erro
 		return NewKeyError(sample.Container)
 	}
 	if !containerState.AddSample(&sample.ContainerUsageSample) {
-		return fmt.Errorf("Sample discarded (invalid or out of order)")
+		return fmt.Errorf("sample discarded (invalid or out of order)")
 	}
 	return nil
 }
@@ -185,7 +185,7 @@ func (cluster *ClusterState) RecordOOM(containerID ContainerID, timestamp time.T
 	}
 	err := containerState.RecordOOM(timestamp, requestedMemory)
 	if err != nil {
-		return fmt.Errorf("Error while recording OOM for %v, Reason: %v", containerID, err)
+		return fmt.Errorf("error while recording OOM for %v, Reason: %v", containerID, err)
 	}
 	return nil
 }

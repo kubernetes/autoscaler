@@ -311,7 +311,7 @@ func extractFromKubeEnv(kubeEnv, resource string) (string, error) {
 	kubeEnvMap := make(map[string]string)
 	err := yaml.Unmarshal([]byte(kubeEnv), &kubeEnvMap)
 	if err != nil {
-		return "", fmt.Errorf("Error unmarshalling kubeEnv: %v", err)
+		return "", fmt.Errorf("error unmarshalling kubeEnv: %v", err)
 	}
 	return kubeEnvMap[resource], nil
 }

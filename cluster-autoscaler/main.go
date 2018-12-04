@@ -457,25 +457,25 @@ func parseMultipleGpuLimits(flags MultiStringFlag) ([]config.GpuLimits, error) {
 func parseSingleGpuLimit(limits string) (config.GpuLimits, error) {
 	parts := strings.Split(limits, ":")
 	if len(parts) != 3 {
-		return config.GpuLimits{}, fmt.Errorf("Incorrect gpu limit specification: %v", limits)
+		return config.GpuLimits{}, fmt.Errorf("incorrect gpu limit specification: %v", limits)
 	}
 	gpuType := parts[0]
 	minVal, err := strconv.ParseInt(parts[1], 10, 64)
 	if err != nil {
-		return config.GpuLimits{}, fmt.Errorf("Incorrect gpu limit - min is not integer: %v", limits)
+		return config.GpuLimits{}, fmt.Errorf("incorrect gpu limit - min is not integer: %v", limits)
 	}
 	maxVal, err := strconv.ParseInt(parts[2], 10, 64)
 	if err != nil {
-		return config.GpuLimits{}, fmt.Errorf("Incorrect gpu limit - max is not integer: %v", limits)
+		return config.GpuLimits{}, fmt.Errorf("incorrect gpu limit - max is not integer: %v", limits)
 	}
 	if minVal < 0 {
-		return config.GpuLimits{}, fmt.Errorf("Incorrect gpu limit - min is less than 0; %v", limits)
+		return config.GpuLimits{}, fmt.Errorf("incorrect gpu limit - min is less than 0; %v", limits)
 	}
 	if maxVal < 0 {
-		return config.GpuLimits{}, fmt.Errorf("Incorrect gpu limit - max is less than 0; %v", limits)
+		return config.GpuLimits{}, fmt.Errorf("incorrect gpu limit - max is less than 0; %v", limits)
 	}
 	if minVal > maxVal {
-		return config.GpuLimits{}, fmt.Errorf("Incorrect gpu limit - min is greater than max; %v", limits)
+		return config.GpuLimits{}, fmt.Errorf("incorrect gpu limit - min is greater than max; %v", limits)
 	}
 	parsedGpuLimits := config.GpuLimits{
 		GpuType: gpuType,

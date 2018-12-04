@@ -446,7 +446,7 @@ func fixNodeGroupSize(context *context.AutoscalingContext, clusterStateRegistry 
 					incorrectSize.CurrentSize,
 					delta)
 				if err := nodeGroup.DecreaseTargetSize(delta); err != nil {
-					return fixed, fmt.Errorf("Failed to decrease %s: %v", nodeGroup.Id(), err)
+					return fixed, fmt.Errorf("failed to decrease %s: %v", nodeGroup.Id(), err)
 				}
 				fixed = true
 			}

@@ -179,11 +179,11 @@ func parseASGAutoDiscoverySpec(spec string) (ASGAutoDiscoveryConfig, error) {
 
 	tokens := strings.Split(spec, ":")
 	if len(tokens) != 2 {
-		return cfg, fmt.Errorf("Invalid node group auto discovery spec specified via --node-group-auto-discovery: %s", spec)
+		return cfg, fmt.Errorf("invalid node group auto discovery spec specified via --node-group-auto-discovery: %s", spec)
 	}
 	discoverer := tokens[0]
 	if discoverer != autoDiscovererTypeASG {
-		return cfg, fmt.Errorf("Unsupported discoverer specified: %s", discoverer)
+		return cfg, fmt.Errorf("unsupported discoverer specified: %s", discoverer)
 	}
 	param := tokens[1]
 	kv := strings.SplitN(param, "=", 2)
@@ -192,14 +192,14 @@ func parseASGAutoDiscoverySpec(spec string) (ASGAutoDiscoveryConfig, error) {
 	}
 	k, v := kv[0], kv[1]
 	if k != asgAutoDiscovererKeyTag {
-		return cfg, fmt.Errorf("Unsupported parameter key \"%s\" is specified for discoverer \"%s\". The only supported key is \"%s\"", k, discoverer, asgAutoDiscovererKeyTag)
+		return cfg, fmt.Errorf("unsupported parameter key \"%s\" is specified for discoverer \"%s\". The only supported key is \"%s\"", k, discoverer, asgAutoDiscovererKeyTag)
 	}
 	if v == "" {
 		return cfg, errors.New("tag value not supplied")
 	}
 	p := strings.Split(v, ",")
 	if len(p) == 0 {
-		return cfg, fmt.Errorf("Invalid ASG tag for auto discovery specified: ASG tag must not be empty")
+		return cfg, fmt.Errorf("invalid ASG tag for auto discovery specified: ASG tag must not be empty")
 	}
 	cfg.Tags = make(map[string]string, len(p))
 	for _, label := range p {

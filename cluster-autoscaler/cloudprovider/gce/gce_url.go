@@ -73,7 +73,7 @@ func GenerateMigUrl(ref GceRef) string {
 }
 
 func parseGceUrl(url, expectedResource string) (project string, zone string, name string, err error) {
-	errMsg := fmt.Errorf("Wrong url: expected format https://content.googleapis.com/compute/v1/projects/<project-id>/zones/<zone>/%s/<name>, got %s", expectedResource, url)
+	errMsg := fmt.Errorf("wrong url: expected format https://content.googleapis.com/compute/v1/projects/<project-id>/zones/<zone>/%s/<name>, got %s", expectedResource, url)
 	if !strings.Contains(url, gceDomainSuffix) {
 		return "", "", "", errMsg
 	}
@@ -85,7 +85,7 @@ func parseGceUrl(url, expectedResource string) (project string, zone string, nam
 		return "", "", "", errMsg
 	}
 	if splitted[3] != expectedResource {
-		return "", "", "", fmt.Errorf("Wrong resource in url: expected %s, got %s", expectedResource, splitted[3])
+		return "", "", "", fmt.Errorf("wrong resource in url: expected %s, got %s", expectedResource, splitted[3])
 	}
 	project = splitted[0]
 	zone = splitted[2]

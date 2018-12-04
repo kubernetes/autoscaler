@@ -176,12 +176,12 @@ func (gc *GceCache) GetMigForInstance(instance *GceRef) (Mig, error) {
 			mig.Config.GceRef().Zone == instance.Zone &&
 			strings.HasPrefix(instance.Name, mig.Basename) {
 			if err := gc.regenerateCache(); err != nil {
-				return nil, fmt.Errorf("Error while looking for MIG for instance %+v, error: %v", *instance, err)
+				return nil, fmt.Errorf("error while looking for MIG for instance %+v, error: %v", *instance, err)
 			}
 			if mig, found := gc.instancesCache[*instance]; found {
 				return mig, nil
 			}
-			return nil, fmt.Errorf("Instance %+v does not belong to any configured MIG", *instance)
+			return nil, fmt.Errorf("instance %+v does not belong to any configured MIG", *instance)
 		}
 	}
 	// Instance doesn't belong to any configured mig.

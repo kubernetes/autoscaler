@@ -154,7 +154,7 @@ func validateVPA(vpa *vpa_types.VerticalPodAutoscaler) error {
 			return fmt.Errorf("UpdateMode is required if UpdatePolicy is used")
 		}
 		if _, found := possibleUpdateModes[*mode]; !found {
-			return fmt.Errorf("Unexpected UpdateMode value %s", *mode)
+			return fmt.Errorf("unexpected UpdateMode value %s", *mode)
 		}
 	}
 
@@ -166,13 +166,13 @@ func validateVPA(vpa *vpa_types.VerticalPodAutoscaler) error {
 			mode := policy.Mode
 			if mode != nil {
 				if _, found := possibleScalingModes[*mode]; !found {
-					return fmt.Errorf("Unexpected Mode value %s", *mode)
+					return fmt.Errorf("unexpected Mode value %s", *mode)
 				}
 			}
 			for resource, min := range policy.MinAllowed {
 				max, found := policy.MaxAllowed[resource]
 				if found && max.Cmp(min) < 0 {
-					return fmt.Errorf("Max resource for %v is lower than min", resource)
+					return fmt.Errorf("max resource for %v is lower than min", resource)
 				}
 			}
 		}

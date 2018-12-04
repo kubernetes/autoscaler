@@ -671,7 +671,7 @@ func TestDrainNodeWithRetries(t *testing.T) {
 			case ticket <- true:
 			default:
 			}
-			return true, nil, fmt.Errorf("Too many concurrent evictions")
+			return true, nil, fmt.Errorf("too many concurrent evictions")
 		}
 	})
 	err := drainNode(n1, []*apiv1.Pod{p1, p2, p3}, fakeClient, kube_util.CreateEventRecorder(fakeClient), 20, 5*time.Second, 0*time.Second)
@@ -730,7 +730,7 @@ func TestScaleDown(t *testing.T) {
 		case n2.Name:
 			return true, n2, nil
 		}
-		return true, nil, fmt.Errorf("Wrong node: %v", getAction.GetName())
+		return true, nil, fmt.Errorf("wrong node: %v", getAction.GetName())
 	})
 	fakeClient.Fake.AddReactor("delete", "pods", func(action core.Action) (bool, runtime.Object, error) {
 		deleteAction := action.(core.DeleteAction)
@@ -945,7 +945,7 @@ func simpleScaleDownEmpty(t *testing.T, config *scaleTestConfig) {
 		if node, found := nodesMap[getAction.GetName()]; found {
 			return true, node, nil
 		}
-		return true, nil, fmt.Errorf("Wrong node: %v", getAction.GetName())
+		return true, nil, fmt.Errorf("wrong node: %v", getAction.GetName())
 
 	})
 	fakeClient.Fake.AddReactor("update", "nodes", func(action core.Action) (bool, runtime.Object, error) {
@@ -1030,7 +1030,7 @@ func TestNoScaleDownUnready(t *testing.T) {
 		case n2.Name:
 			return true, n2, nil
 		}
-		return true, nil, fmt.Errorf("Wrong node: %v", getAction.GetName())
+		return true, nil, fmt.Errorf("wrong node: %v", getAction.GetName())
 	})
 
 	provider := testprovider.NewTestCloudProvider(nil, func(nodeGroup string, node string) error {
@@ -1122,7 +1122,7 @@ func TestScaleDownNoMove(t *testing.T) {
 		case n2.Name:
 			return true, n2, nil
 		}
-		return true, nil, fmt.Errorf("Wrong node: %v", getAction.GetName())
+		return true, nil, fmt.Errorf("wrong node: %v", getAction.GetName())
 	})
 	fakeClient.Fake.AddReactor("delete", "pods", func(action core.Action) (bool, runtime.Object, error) {
 		t.FailNow()
@@ -1196,7 +1196,7 @@ func TestCleanToBeDeleted(t *testing.T) {
 		case n2.Name:
 			return true, n2, nil
 		}
-		return true, nil, fmt.Errorf("Wrong node: %v", getAction.GetName())
+		return true, nil, fmt.Errorf("wrong node: %v", getAction.GetName())
 	})
 	fakeClient.Fake.AddReactor("update", "nodes", func(action core.Action) (bool, runtime.Object, error) {
 		update := action.(core.UpdateAction)

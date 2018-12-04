@@ -43,14 +43,14 @@ func (m ec2Wrapper) getInstanceTypeByLT(name string, version string) (string, er
 	}
 
 	if len(describeData.LaunchTemplateVersions) == 0 {
-		return "", fmt.Errorf("Unable to find template versions")
+		return "", fmt.Errorf("unable to find template versions")
 	}
 
 	lt := describeData.LaunchTemplateVersions[0]
 	instanceType := lt.LaunchTemplateData.InstanceType
 
 	if instanceType == nil {
-		return "", fmt.Errorf("Unable to find instance type within launch template")
+		return "", fmt.Errorf("unable to find instance type within launch template")
 	}
 
 	return aws.StringValue(instanceType), nil
