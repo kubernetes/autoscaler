@@ -330,13 +330,27 @@ func run(healthCheck *metrics.HealthCheck) {
 }
 
 func main() {
-	klog.InitFlags(nil)
+	// register klog's flags into a local flagset for interop with
+	// 3rd party packages that use glog, which adds the same flags
+	// to the global flag.CommandLine flagset
+	klogFlags := flag.NewFlagSet("klog", flag.ExitOnError)
+	klog.InitFlags(klogFlags)
 
 	leaderElection := defaultLeaderElectionConfiguration()
 	leaderElection.LeaderElect = true
 
 	leaderelectionconfig.BindFlags(&leaderElection, pflag.CommandLine)
-	kube_flag.InitFlags()
+
+	// add klogFlags and flag.CommandLine to pflag.CommandLine and parse.
+	// Same as to kube_flag.InitFlags(), but with klogFlags added
+	pflag.CommandLine.SetNormalizeFunc(kube_flag.WordSepNormalizeFunc)
+	pflag.CommandLine.AddGoFlagSet(klogFlags)
+	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
+	pflag.Parse()
+	pflag.VisitAll(func(flag *pflag.Flag) {
+		klog.V(2).Infof("FLAG: --%s=%q", flag.Name, flag.Value)
+	})
+
 	healthCheck := metrics.NewHealthCheck(*maxInactivityTimeFlag, *maxFailingTimeFlag)
 
 	klog.V(1).Infof("Cluster Autoscaler %s", ClusterAutoscalerVersion)
