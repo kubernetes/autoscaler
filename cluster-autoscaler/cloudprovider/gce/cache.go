@@ -215,8 +215,12 @@ func (gc *GceCache) regenerateCache() error {
 			klog.V(4).Infof("Failed MIG info request for %s: %v", mig.GceRef().String(), err)
 			return err
 		}
-		for _, ref := range instances {
-			newInstancesCache[ref] = mig
+		for _, instance := range instances {
+			gceRef, err := GceRefFromProviderId(instance.Id)
+			if err != nil {
+				return err
+			}
+			newInstancesCache[*gceRef] = mig
 		}
 	}
 
