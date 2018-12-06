@@ -91,7 +91,7 @@ func buildNodeFromOpenstackMachineDeployment(md *v1alpha1.MachineDeployment) (*a
 		return nil, err
 	}
 	if "openstack" != pconfig.CloudProvider {
-		return nil, fmt.Errorf("non-openstack cloudprovider field (%s) when decoding providerConfig", pconfig.CloudProvider)
+		return nil, cloudprovider.ErrNotImplemented
 	}
 
 	var rawConfig rawConfig

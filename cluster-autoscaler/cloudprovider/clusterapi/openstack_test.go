@@ -54,7 +54,7 @@ func TestBuildNodeFromOpenstackMachineDeploymentWrongProviderConfig(t *testing.T
 	})
 
 	assert.Nil(t, node)
-	assert.EqualError(t, err, "non-openstack cloudprovider field (invalid) when decoding providerConfig")
+	assert.EqualError(t, err, "Not implemented")
 }
 
 func TestBuildNodeFromOpenstackMachineDeploymentUnknownFlavor(t *testing.T) {
