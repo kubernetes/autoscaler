@@ -19,6 +19,7 @@ package aws
 import (
 	"fmt"
 	"reflect"
+	"strings"
 	"sync"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -88,12 +89,12 @@ func (m *asgCache) parseExplicitAsgs(specs []string) error {
 	return nil
 }
 
-// Register ASG. Returns true if the ASG was registered.
-func (m *asgCache) register(asg *asg) bool {
+// Register ASG. Returns the registered ASG.
+func (m *asgCache) register(asg *asg) *asg {
 	for i := range m.registeredAsgs {
 		if existing := m.registeredAsgs[i]; existing.AwsRef == asg.AwsRef {
 			if reflect.DeepEqual(existing, asg) {
-				return false
+				return existing
 			}
 
 			glog.V(4).Infof("Updating ASG %s", asg.AwsRef.Name)
@@ -113,22 +114,22 @@ func (m *asgCache) register(asg *asg) bool {
 			existing.LaunchConfigurationName = asg.LaunchConfigurationName
 			existing.Tags = asg.Tags
 
-			return true
+			return existing
 		}
 	}
 	glog.V(1).Infof("Registering ASG %s", asg.AwsRef.Name)
 	m.registeredAsgs = append(m.registeredAsgs, asg)
-	return true
+	return asg
 }
 
-// Unregister ASG. Returns true if the ASG was unregistered.
-func (m *asgCache) unregister(a *asg) bool {
+// Unregister ASG. Returns the unregistered ASG.
+func (m *asgCache) unregister(a *asg) *asg {
 	updated := make([]*asg, 0, len(m.registeredAsgs))
-	changed := false
+	var changed *asg
 	for _, existing := range m.registeredAsgs {
 		if existing.AwsRef == a.AwsRef {
 			glog.V(1).Infof("Unregistered ASG %s", a.AwsRef.Name)
-			changed = true
+			changed = a
 			continue
 		}
 		updated = append(updated, existing)
@@ -163,6 +164,10 @@ func (m *asgCache) FindForInstance(instance AwsInstanceRef) *asg {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
+	return m.findForInstance(instance)
+}
+
+func (m *asgCache) findForInstance(instance AwsInstanceRef) *asg {
 	if asg, found := m.instanceToAsg[instance]; found {
 		return asg
 	}
@@ -180,6 +185,72 @@ func (m *asgCache) InstancesByAsg(ref AwsRef) ([]AwsInstanceRef, error) {
 	}
 
 	return nil, fmt.Errorf("Error while looking for instances of ASG: %s", ref)
+}
+
+func (m *asgCache) SetAsgSize(asg *asg, size int) error {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	params := &autoscaling.SetDesiredCapacityInput{
+		AutoScalingGroupName: aws.String(asg.Name),
+		DesiredCapacity:      aws.Int64(int64(size)),
+		HonorCooldown:        aws.Bool(false),
+	}
+	glog.V(0).Infof("Setting asg %s size to %d", asg.Name, size)
+	_, err := m.service.SetDesiredCapacity(params)
+	if err != nil {
+		return err
+	}
+
+	// Proactively set the ASG size so autoscaler makes better decisions
+	asg.curSize = size
+
+	return nil
+}
+
+// DeleteInstances deletes the given instances. All instances must be controlled by the same ASG.
+func (m *asgCache) DeleteInstances(instances []*AwsInstanceRef) error {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+
+	if len(instances) == 0 {
+		return nil
+	}
+	commonAsg := m.findForInstance(*instances[0])
+	if commonAsg == nil {
+		return fmt.Errorf("can't delete instance %s, which is not part of an ASG", instances[0].Name)
+	}
+
+	for _, instance := range instances {
+		asg := m.findForInstance(*instance)
+
+		if asg != commonAsg {
+			instanceIds := make([]string, len(instances))
+			for i, instance := range instances {
+				instanceIds[i] = instance.Name
+			}
+
+			return fmt.Errorf("can't delete instances %s as they belong to at least two different ASGs (%s and %s)", strings.Join(instanceIds, ","), commonAsg.Name, asg.Name)
+		}
+	}
+
+	for _, instance := range instances {
+		params := &autoscaling.TerminateInstanceInAutoScalingGroupInput{
+			InstanceId:                     aws.String(instance.Name),
+			ShouldDecrementDesiredCapacity: aws.Bool(true),
+		}
+		resp, err := m.service.TerminateInstanceInAutoScalingGroup(params)
+		if err != nil {
+			return err
+		}
+
+		// Proactively decrement the size so autoscaler makes better decisions
+		commonAsg.curSize--
+
+		glog.V(4).Infof(*resp.Activity.Description)
+	}
+
+	return nil
 }
 
 // Fetch automatically discovered ASGs. These ASGs should be unregistered if
@@ -257,7 +328,7 @@ func (m *asgCache) regenerate() error {
 		}
 		exists[asg.AwsRef] = true
 
-		m.register(asg)
+		asg = m.register(asg)
 
 		newAsgToInstancesCache[asg.AwsRef] = make([]AwsInstanceRef, len(group.Instances))
 

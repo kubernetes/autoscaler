@@ -26,7 +26,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/golang/glog"
@@ -143,55 +142,12 @@ func (m *AwsManager) getAsgs() []*asg {
 
 // SetAsgSize sets ASG size.
 func (m *AwsManager) SetAsgSize(asg *asg, size int) error {
-	params := &autoscaling.SetDesiredCapacityInput{
-		AutoScalingGroupName: aws.String(asg.Name),
-		DesiredCapacity:      aws.Int64(int64(size)),
-		HonorCooldown:        aws.Bool(false),
-	}
-	glog.V(0).Infof("Setting asg %s size to %d", asg.Name, size)
-	_, err := m.service.SetDesiredCapacity(params)
-	if err != nil {
-		return err
-	}
-	return nil
+	return m.asgCache.SetAsgSize(asg, size)
 }
 
 // DeleteInstances deletes the given instances. All instances must be controlled by the same ASG.
 func (m *AwsManager) DeleteInstances(instances []*AwsInstanceRef) error {
-	if len(instances) == 0 {
-		return nil
-	}
-	commonAsg := m.asgCache.FindForInstance(*instances[0])
-	if commonAsg == nil {
-		return fmt.Errorf("can't delete instance %s, which is not part of an ASG", instances[0].Name)
-	}
-
-	for _, instance := range instances {
-		asg := m.asgCache.FindForInstance(*instance)
-
-		if asg != commonAsg {
-			instanceIds := make([]string, len(instances))
-			for i, instance := range instances {
-				instanceIds[i] = instance.Name
-			}
-
-			return fmt.Errorf("can't delete instances %s as they belong to at least two different ASGs (%s and %s)", strings.Join(instanceIds, ","), commonAsg.Name, asg.Name)
-		}
-	}
-
-	for _, instance := range instances {
-		params := &autoscaling.TerminateInstanceInAutoScalingGroupInput{
-			InstanceId:                     aws.String(instance.Name),
-			ShouldDecrementDesiredCapacity: aws.Bool(true),
-		}
-		resp, err := m.service.TerminateInstanceInAutoScalingGroup(params)
-		if err != nil {
-			return err
-		}
-		glog.V(4).Infof(*resp.Activity.Description)
-	}
-
-	return nil
+	return m.asgCache.DeleteInstances(instances)
 }
 
 // GetAsgNodes returns Asg nodes.
