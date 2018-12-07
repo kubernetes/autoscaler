@@ -5,7 +5,7 @@ FLAGS=
 ENVVAR=
 GOOS?=linux
 REGISTRY?=staging-k8s.gcr.io
-BASEIMAGE?=k8s.gcr.io/debian-base-amd64:0.3.2
+BASEIMAGE?=k8s.gcr.io/debian-base-amd64:0.4.0
 ifdef BUILD_TAGS
   TAGS_FLAG=--tags ${BUILD_TAGS}
   PROVIDER=-${BUILD_TAGS}
