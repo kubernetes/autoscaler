@@ -78,6 +78,13 @@ func getRegion(cfg ...*aws.Config) string {
 }
 
 // createAwsManagerInternal allows for a customer autoScalingWrapper to be passed in by tests
+//
+// #1449 If running tests outside of AWS without AWS_REGION among environment
+// variables, avoid a 5+ second EC2 Metadata lookup timeout in getRegion by
+// setting and resetting AWS_REGION before calling createAWSManagerInternal:
+//
+//	defer resetAWSRegion(os.LookupEnv("AWS_REGION"))
+//	os.Setenv("AWS_REGION", "fanghorn")
 func createAWSManagerInternal(
 	configReader io.Reader,
 	discoveryOpts cloudprovider.NodeGroupDiscoveryOptions,
