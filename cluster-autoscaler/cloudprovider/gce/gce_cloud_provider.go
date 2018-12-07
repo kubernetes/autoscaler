@@ -125,6 +125,11 @@ func (ref GceRef) String() string {
 	return fmt.Sprintf("%s/%s/%s", ref.Project, ref.Zone, ref.Name)
 }
 
+// ToProviderId converts GceRef to string in format used as ProviderId in Node object.
+func (ref GceRef) ToProviderId() string {
+	return fmt.Sprintf("gce://%s/%s/%s", ref.Project, ref.Zone, ref.Name)
+}
+
 // GceRefFromProviderId creates InstanceConfig object
 // from provider id which must be in format:
 // gce://<project-id>/<zone>/<name>
@@ -274,16 +279,7 @@ func (mig *gceMig) Debug() string {
 
 // Nodes returns a list of all nodes that belong to this node group.
 func (mig *gceMig) Nodes() ([]cloudprovider.Instance, error) {
-	instanceNames, err := mig.gceManager.GetMigNodes(mig)
-	if err != nil {
-		return nil, err
-	}
-	instances := make([]cloudprovider.Instance, 0, len(instanceNames))
-	for _, instanceName := range instanceNames {
-		instances = append(instances, cloudprovider.Instance{Id: instanceName})
-	}
-	return instances, nil
-
+	return mig.gceManager.GetMigNodes(mig)
 }
 
 // Exist checks if the node group really exists on the cloud provider side.
