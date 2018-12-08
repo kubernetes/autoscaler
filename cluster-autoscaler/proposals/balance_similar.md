@@ -22,7 +22,7 @@ machines).
  * We want to respect size limits of each node group. In particular we shouldn't
  expect that the limits will be the same for corresponding node groups.
  * Some pods may require to run on a specific node group due to using
-   labalSelector on zone label, or antiaffinity. In such cases we must scale the
+   labelSelector on zone label, or anti-affinity. In such cases we must scale the
    correct node group.
  * Preferably we should avoid implementing this using existing
    expansion.Strategy interface, as that would likely require non-backward
