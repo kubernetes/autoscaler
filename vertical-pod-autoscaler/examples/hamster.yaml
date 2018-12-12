@@ -16,7 +16,6 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: hamster
-  namespace: default
 spec:
   replicas: 2
   template:
@@ -33,4 +32,3 @@ spec:
             memory: 50Mi
         command: ["/bin/sh"]
         args: ["-c", "while true; do timeout 0.5s yes >/dev/null; sleep 0.5s; done"]
-
