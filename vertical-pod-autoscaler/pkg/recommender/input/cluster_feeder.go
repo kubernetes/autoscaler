@@ -111,7 +111,8 @@ func newMetricsClient(config *rest.Config) metrics.MetricsClient {
 	return metrics.NewMetricsClient(metricsGetter)
 }
 
-func watchEvictionEventsWithRetries(kubeClient kube_client.Interface, observer *oom.Observer) {
+// WatchEvictionEventsWithRetries watches new Events with reason=Evicted and passes them to the observer.
+func WatchEvictionEventsWithRetries(kubeClient kube_client.Interface, observer *oom.Observer) {
 	go func() {
 		options := metav1.ListOptions{
 			FieldSelector: "reason=Evicted",
@@ -166,7 +167,7 @@ func newPodClients(kubeClient kube_client.Interface, resourceEventHandler cache.
 func NewPodListerAndOOMObserver(kubeClient kube_client.Interface) (v1lister.PodLister, *oom.Observer) {
 	oomObserver := oom.NewObserver()
 	podLister := newPodClients(kubeClient, &oomObserver)
-	watchEvictionEventsWithRetries(kubeClient, &oomObserver)
+	WatchEvictionEventsWithRetries(kubeClient, &oomObserver)
 	return podLister, &oomObserver
 }
 
