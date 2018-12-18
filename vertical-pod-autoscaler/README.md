@@ -10,7 +10,7 @@ available for each pod.
 
 Autoscaling is configured with a
 [Custom Resource Definition object](https://kubernetes.io/docs/concepts/api-extension/custom-resources/)
-called [VerticalPodAutoscaler](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1/types.go).
+called [VerticalPodAutoscaler](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1/types.go).
 It allows to specify which pods should be under vertically autoscaled as well as if/how the
 resource recommendations are applied.
 
@@ -20,12 +20,32 @@ procedure described below.
 
 # Installation
 
-### Notice on the backwards compatibility
+### Notice on switching from alpha to beta (<0.3.0 to >=0.3.0)
 
-During alpha the VPA CRD object may evolve in a way that is not compatible between releases.
-If you install a new release of VPA it is safest to delete the existing VPA CRD objects.
-Note that this will happen automatically if you just use the `vpa-down.sh` script to tear down
-the old installation of VPA.
+Between versions 0.2.x and 0.3.x there is an alpha to beta switch which includes
+a change of VPA apiVersion from `poc.autoscaling.k8s.io/v1alpha1` to `autoscaling.k8s.io/v1beta1`.
+The safest way to switch is to use `vpa-down.sh` script to tear down
+the old installation of VPA first. This will delete your old VPA objects that
+have been defined with `poc.autoscaling.k8s.io/v1alpha1` apiVersion.
+Then use `vpa-up.sh` to bring up the new version of VPA and create you VPA
+objects from the scratch, passing apiVersion `autoscaling.k8s.io/v1beta1`
+(See [example](./examples/hamster.yaml)).
+
+If you want to migrate your objects between versions, you can use the [object conversion script](./hack/convert-alpha-objects.sh).
+It will save your VPA objects into temporary yaml files with the new apiVersion.
+After running the script:
+1. disable alpha VPA via vpa-down.sh script
+1. enable beta VPA via vpa-up.sh script
+1. re-create VPA objects following the instructions from the script.
+
+**NOTE: ** The script is experimental. Please check that the yaml files it generates are correct.
+When switching between alpha and beta, VPA recommendations will NOT be kept and there
+will be a brief disruption period until the new VPA computes new recommendations.
+
+To use the script:
+```
+./hack/convert-alpha-objects.sh
+```
 
 ### Prerequisites
 
@@ -84,13 +104,15 @@ There are three modes in which *VPAs* operate:
   them on existing pods using the preferred update mechanism. Currently this is
   equivalent to `"Recreate"` (see below). Once restart free ("in-place") update
   of pod requests is available, it may be used as the preferred update mechanism by
-  the `"Auto"` mode.
+  the `"Auto"` mode. **NOTE:** This feature of VPA is experimental and may cause downtime 
+  for your applications.
 * `"Recreate"`: VPA assigns resource requests on pod creation as well as updates
   them on existing pods by evicting them when the requested resources differ significantly
   from the new recommendation (respecting the Pod Disruption Budget, if defined).
   This mode should be used rarely, only if you need to ensure that the pods are restarted
   whenever the resource request changes. Otherwise prefer the `"Auto"` mode which may take
-  advantage of restart free updates once they are available.
+  advantage of restart free updates once they are available. **NOTE:** This feature of VPA
+  is experimental and may cause dowtime for your applications.
 * `"Initial"`: VPA only assigns resource requests on pod creation and never changes them
   later.
 * `"Off"`: VPA does not automatically change resource requirements of the pods.
@@ -122,7 +144,7 @@ You may need to add more nodes or adjust examples/hamster.yaml to use less CPU.*
 ### Example VPA configuration
 
 ```
-apiVersion: poc.autoscaling.k8s.io/v1alpha1
+apiVersion: autoscaling.k8s.io/v1beta1
 kind: VerticalPodAutoscaler
 metadata:
   name: my-app-vpa
@@ -190,33 +212,24 @@ kubectl delete clusterrolebinding myname-cluster-admin-binding
 
 # Known limitations
 
-## Limitations of alpha version
+## Limitations of beta version
 
-* Whenever VPA updates the pod resources the pod is recreated, which causes all
-  running containers to be restarted. The pod may be recreated on a different node.
+* Updating running pods is an experimental feature of VPA. Whenever VPA updates
+  the pod resources the pod is recreated, which causes all running containers to
+  be restarted. The pod may be recreated on a different node.
+* VPA does not evict pods which are not run under a controller. For such pods
+  `Auto` mode is currently equivalent to `Initial`.
 * Vertical Pod Autoscaler **should not be used with the [Horizontal Pod Autoscaler](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/) (HPA) on CPU or memory** at this moment. 
   However, you can use VPA with [HPA on custom and external metrics](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#support-for-custom-metrics).
-* VPA in `Auto` mode can only be used on pods that run under a controller
-  (such as Deployment), which is responsible for restarting deleted pods.
-  **Using VPA in `Auto` mode with a pod not running under any controller will
-  cause the pod to be deleted and not recreated**.
 * The VPA admission controller is an admission webhook. If you add other admission webhooks
   to you cluster, it is important to analyze how they interact and whether they may conflict
   with each other. The order of admission controllers is defined by a flag on APIserver.
-* VPA reacts to some out-of-memory events, but not in all situations.
+* VPA reacts to most out-of-memory events, but not in all situations.
 * VPA performance has not been tested in large clusters.
 * VPA recommendation might exceed available resources (e.g. Node size, available
-  size, available quota) and cause **pods to go pending**. This can be addressed by
-  using VPA together with [Cluster Autoscaler](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#basics).
+  size, available quota) and cause **pods to go pending**. This can be partly 
+  addressed by using VPA together with [Cluster Autoscaler](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#basics).
 * Multiple VPA resources matching the same pod have undefined behavior.
-
-## Limitations of the beta version
-
-The limitations from alpha version still apply except for note about `Auto`
-mode.
-
-* VPA does not evict pods which are not run under a controller. For such pods
-  `Auto` mode is currently equivalent to `Initial`.
 * VPA does not change resource limits. This implies that recommendations are
   capped to limits during actuation.
   **NOTE** This behaviour is likely to change so please don't rely on it.
@@ -226,4 +239,4 @@ mode.
 * [Design
   proposal](https://github.com/kubernetes/community/blob/master/contributors/design-proposals/autoscaling/vertical-pod-autoscaler.md)
 * [API
-  definition](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1/types.go)
+  definition](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta/types.go)
