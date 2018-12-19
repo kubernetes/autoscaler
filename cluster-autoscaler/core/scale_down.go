@@ -800,7 +800,7 @@ func getEmptyNodes(candidates []*apiv1.Node, pods []*apiv1.Pod, maxEmptyBulkDele
 			if checkResult.exceeded {
 				continue
 			}
-			available -= 1
+			available--
 			availabilityMap[nodeGroup.Id()] = available
 			result = append(result, node)
 		}
