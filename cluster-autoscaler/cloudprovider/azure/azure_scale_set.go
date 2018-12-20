@@ -19,6 +19,7 @@ package azure
 import (
 	"fmt"
 	"math/rand"
+	"strings"
 	"sync"
 	"time"
 
@@ -394,8 +395,19 @@ func buildGenericLabels(template compute.VirtualMachineScaleSet, nodeName string
 	result[kubeletapis.LabelArch] = cloudprovider.DefaultArch
 	result[kubeletapis.LabelOS] = buildInstanceOS(template)
 	result[kubeletapis.LabelInstanceType] = *template.Sku.Name
-	result[kubeletapis.LabelZoneRegion] = *template.Location
-	result[kubeletapis.LabelZoneFailureDomain] = "0"
+	result[kubeletapis.LabelZoneRegion] = strings.ToLower(*template.Location)
+
+	if template.Zones != nil && len(*template.Zones) > 0 {
+		failureDomains := make([]string, len(*template.Zones))
+		for k, v := range *template.Zones {
+			failureDomains[k] = strings.ToLower(*template.Location) + "-" + v
+		}
+
+		result[kubeletapis.LabelZoneFailureDomain] = strings.Join(failureDomains[:], kubeletapis.LabelMultiZoneDelimiter)
+	} else {
+		result[kubeletapis.LabelZoneFailureDomain] = "0"
+	}
+
 	result[kubeletapis.LabelHostname] = nodeName
 	return result
 }
