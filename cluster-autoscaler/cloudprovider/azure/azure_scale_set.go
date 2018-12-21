@@ -24,7 +24,6 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2017-12-01/compute"
 	"github.com/golang/glog"
-
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -46,6 +45,8 @@ type ScaleSet struct {
 	mutex       sync.Mutex
 	lastRefresh time.Time
 	curSize     int64
+	// virtualMachines holds a list of vmss instances (instanceID -> resourceID).
+	virtualMachines map[string]string
 }
 
 // NewScaleSet creates a new NewScaleSet.
@@ -54,10 +55,11 @@ func NewScaleSet(spec *dynamic.NodeGroupSpec, az *AzureManager) (*ScaleSet, erro
 		azureRef: azureRef{
 			Name: spec.Name,
 		},
-		minSize: spec.MinSize,
-		maxSize: spec.MaxSize,
-		manager: az,
-		curSize: -1,
+		minSize:         spec.MinSize,
+		maxSize:         spec.MaxSize,
+		manager:         az,
+		curSize:         -1,
+		virtualMachines: make(map[string]string),
 	}
 
 	return scaleSet, nil
@@ -188,8 +190,7 @@ func (scaleSet *ScaleSet) IncreaseSize(delta int) error {
 // Note that the list results is not used directly because their resource ID format
 // is not consistent with Get results.
 // TODO(feiskyer): use list results directly after the issue fixed in Azure VMSS API.
-func (scaleSet *ScaleSet) GetScaleSetVms() ([]compute.VirtualMachineScaleSetVM, error) {
-	instanceIDs := make([]string, 0)
+func (scaleSet *ScaleSet) GetScaleSetVms() ([]string, error) {
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
 
@@ -200,15 +201,22 @@ func (scaleSet *ScaleSet) GetScaleSetVms() ([]compute.VirtualMachineScaleSetVM, 
 		return nil, err
 	}
 
+	instanceIDs := make([]string, 0)
 	for _, vm := range result {
 		instanceIDs = append(instanceIDs, *vm.InstanceID)
 	}
 
-	allVMs := make([]compute.VirtualMachineScaleSetVM, 0)
+	allVMs := make([]string, 0)
 	for _, instanceID := range instanceIDs {
+		// Get from cache first.
+		if v, ok := scaleSet.virtualMachines[instanceID]; ok {
+			allVMs = append(allVMs, v)
+			continue
+		}
+
+		// Not in cache, get from Azure API.
 		getCtx, getCancel := getContextWithCancel()
 		defer getCancel()
-
 		vm, err := scaleSet.manager.azClient.virtualMachineScaleSetVMsClient.Get(getCtx, resourceGroup, scaleSet.Name, instanceID)
 		if err != nil {
 			exists, realErr := checkResourceExistsFromError(err)
@@ -223,7 +231,14 @@ func (scaleSet *ScaleSet) GetScaleSetVms() ([]compute.VirtualMachineScaleSetVM, 
 			}
 		}
 
-		allVMs = append(allVMs, vm)
+		// The resource ID is empty string, which indicates the instance may be in deleting state.
+		if len(*vm.ID) == 0 {
+			continue
+		}
+
+		// Save into cache.
+		scaleSet.virtualMachines[instanceID] = *vm.ID
+		allVMs = append(allVMs, *vm.ID)
 	}
 
 	return allVMs, nil
@@ -447,6 +462,9 @@ func (scaleSet *ScaleSet) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
 
 // Nodes returns a list of all nodes that belong to this node group.
 func (scaleSet *ScaleSet) Nodes() ([]string, error) {
+	scaleSet.mutex.Lock()
+	defer scaleSet.mutex.Unlock()
+
 	vms, err := scaleSet.GetScaleSetVms()
 	if err != nil {
 		return nil, err
@@ -454,10 +472,7 @@ func (scaleSet *ScaleSet) Nodes() ([]string, error) {
 
 	result := make([]string, 0, len(vms))
 	for i := range vms {
-		if len(*vms[i].ID) == 0 {
-			continue
-		}
-		name := "azure://" + *vms[i].ID
+		name := "azure://" + vms[i]
 		result = append(result, name)
 	}
 
