@@ -123,7 +123,7 @@ It is possible to run a customized deployment of Cluster Autoscaler on worker no
 to be taken to ensure that Cluster Autoscaler remains up and running. Users can put it into kube-system
 namespace (Cluster Autoscaler doesn't scale down node with non-mirrored kube-system pods running
 on them) and set a `priorityClassName: system-cluster-critical` property on your pod spec
-(so that the rescheduler, if enabled, will kill other pods to make space for it to run).
+(to prevent your pod from being evicted).
 
 Supported cloud providers:
 * GCE https://kubernetes.io/docs/concepts/cluster-administration/cluster-management/
