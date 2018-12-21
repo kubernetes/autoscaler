@@ -407,7 +407,7 @@ func removeOldUnregisteredNodes(unregisteredNodes []clusterstate.UnregisteredNod
 			}
 			size, err := nodeGroup.TargetSize()
 			if err != nil {
-				klog.Warningf("Failed to get node group size, err: %v", err)
+				klog.Warningf("Failed to get node group size; unregisteredNode=%v; nodeGroup=%v; err=%v", unregisteredNode.Node.Name, nodeGroup.Id(), err)
 				continue
 			}
 			if nodeGroup.MinSize() >= size {
