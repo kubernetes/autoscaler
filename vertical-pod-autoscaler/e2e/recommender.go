@@ -23,7 +23,6 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
-	"k8s.io/apimachinery/pkg/util/wait"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	clientset "k8s.io/client-go/kubernetes"
@@ -185,7 +184,7 @@ var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 
 	ginkgo.It("serves recommendation", func() {
 		ginkgo.By("Waiting for recommendation to be filled")
-		err := waitForRecommendationPresent(vpaClientSet, vpaCRD)
+		_, err := WaitForRecommendationPresent(vpaClientSet, vpaCRD)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
 
@@ -194,7 +193,7 @@ var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 		o := getVpaObserver(vpaClientSet)
 
 		ginkgo.By("Waiting for recommendation to be filled")
-		err := waitForRecommendationPresent(vpaClientSet, vpaCRD)
+		_, err := WaitForRecommendationPresent(vpaClientSet, vpaCRD)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		ginkgo.By("Drain diffs")
 	out:
@@ -241,27 +240,6 @@ func deleteRecommender(c clientset.Interface) error {
 		if err != nil {
 			return err
 		}
-	}
-	return nil
-}
-
-func waitForRecommendationPresent(c *vpa_clientset.Clientset, vpa *vpa_types.VerticalPodAutoscaler) error {
-	err := wait.PollImmediate(pollInterval, pollTimeout, func() (bool, error) {
-		var err error
-		polledVpa, err := c.AutoscalingV1beta1().VerticalPodAutoscalers(vpa.Namespace).Get(vpa.Name, metav1.GetOptions{})
-		if err != nil {
-			return false, err
-		}
-
-		if polledVpa.Status.Recommendation != nil && len(polledVpa.Status.Recommendation.ContainerRecommendations) != 0 {
-			return true, nil
-		}
-
-		return false, nil
-	})
-
-	if err != nil {
-		return fmt.Errorf("error waiting for recommendation present in %v: %v", vpa.Name, err)
 	}
 	return nil
 }
