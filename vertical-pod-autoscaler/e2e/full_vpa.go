@@ -97,7 +97,7 @@ var _ = FullVpaE2eDescribe("Pods under VPA", func() {
 
 	ginkgo.It("have memory requests growing with OOMs", func() {
 		// Wait for any recommendation
-		err := waitForRecommendationPresent(vpaClientSet, vpaCRD)
+		_, err := WaitForRecommendationPresent(vpaClientSet, vpaCRD)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		// Restart pods to have limits populated
 		err = deletePods(f, metav1.ListOptions{LabelSelector: "name=hamster"})

@@ -285,3 +285,35 @@ func CheckNoPodsEvicted(f *framework.Framework, initialPodSet PodSet) {
 	restarted := GetEvictedPodsCount(MakePodSet(currentPodList), initialPodSet)
 	gomega.Expect(restarted).To(gomega.Equal(0))
 }
+
+// WaitForVPAMatch pools VPA object until match function returns true. Returns
+// polled vpa object. On timeout returns error.
+func WaitForVPAMatch(c *vpa_clientset.Clientset, vpa *vpa_types.VerticalPodAutoscaler, match func(vpa *vpa_types.VerticalPodAutoscaler) bool) (*vpa_types.VerticalPodAutoscaler, error) {
+	var polledVpa *vpa_types.VerticalPodAutoscaler
+	err := wait.PollImmediate(pollInterval, pollTimeout, func() (bool, error) {
+		var err error
+		polledVpa, err = c.AutoscalingV1beta1().VerticalPodAutoscalers(vpa.Namespace).Get(vpa.Name, metav1.GetOptions{})
+		if err != nil {
+			return false, err
+		}
+
+		if match(polledVpa) {
+			return true, nil
+		}
+
+		return false, nil
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("error waiting for recommendation present in %v: %v", vpa.Name, err)
+	}
+	return polledVpa, nil
+}
+
+// WaitForRecommendationPresent pools VPA object until recommendations are not empty. Returns
+// polled vpa object. On timeout returns error.
+func WaitForRecommendationPresent(c *vpa_clientset.Clientset, vpa *vpa_types.VerticalPodAutoscaler) (*vpa_types.VerticalPodAutoscaler, error) {
+	return WaitForVPAMatch(c, vpa, func(vpa *vpa_types.VerticalPodAutoscaler) bool {
+		return vpa.Status.Recommendation != nil && len(vpa.Status.Recommendation.ContainerRecommendations) != 0
+	})
+}
