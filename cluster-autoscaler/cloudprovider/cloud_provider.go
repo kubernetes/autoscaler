@@ -65,14 +65,14 @@ type CloudProvider interface {
 }
 
 // ErrNotImplemented is returned if a method is not implemented.
-var ErrNotImplemented errors.AutoscalerError = errors.NewAutoscalerError(errors.InternalError, "Not implemented")
+var ErrNotImplemented = errors.NewAutoscalerError(errors.InternalError, "Not implemented")
 
 // ErrAlreadyExist is returned if a method is not implemented.
-var ErrAlreadyExist errors.AutoscalerError = errors.NewAutoscalerError(errors.InternalError, "Already exist")
+var ErrAlreadyExist = errors.NewAutoscalerError(errors.InternalError, "Already exist")
 
 // ErrIllegalConfiguration is returned when trying to create NewNodeGroup with
 // configuration that is not supported by cloudprovider.
-var ErrIllegalConfiguration errors.AutoscalerError = errors.NewAutoscalerError(errors.InternalError, "Configuration not allowed by cloud provider")
+var ErrIllegalConfiguration = errors.NewAutoscalerError(errors.InternalError, "Configuration not allowed by cloud provider")
 
 // NodeGroup contains configuration info and functions to control a set
 // of nodes that have the same capacity and set of labels.

@@ -345,9 +345,9 @@ func (csr *ClusterStateRegistry) updateNodeGroupMetrics() {
 			continue
 		}
 		if nodeGroup.Autoprovisioned() {
-			autoprovisioned += 1
+			autoprovisioned++
 		} else {
-			autoscaled += 1
+			autoscaled++
 		}
 	}
 	metrics.UpdateNodeGroupsCount(autoscaled, autoprovisioned)
@@ -441,7 +441,7 @@ func (csr *ClusterStateRegistry) updateAcceptableRanges(targetSize map[string]in
 	}
 	for _, scaleDownRequest := range csr.scaleDownRequests {
 		acceptableRange := result[scaleDownRequest.NodeGroup.Id()]
-		acceptableRange.MaxNodes += 1
+		acceptableRange.MaxNodes++
 		result[scaleDownRequest.NodeGroup.Id()] = acceptableRange
 	}
 	csr.acceptableRanges = result
@@ -517,11 +517,11 @@ func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 		}
 		perNgCopy := perNodeGroup[nodeGroup.Id()]
 		if unregistered.UnregisteredSince.Add(csr.config.MaxNodeProvisionTime).Before(currentTime) {
-			perNgCopy.LongUnregistered += 1
-			total.LongUnregistered += 1
+			perNgCopy.LongUnregistered++
+			total.LongUnregistered++
 		} else {
-			perNgCopy.Unregistered += 1
-			total.Unregistered += 1
+			perNgCopy.Unregistered++
+			total.Unregistered++
 		}
 		perNodeGroup[nodeGroup.Id()] = perNgCopy
 	}
