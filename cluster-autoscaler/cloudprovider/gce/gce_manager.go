@@ -47,7 +47,7 @@ const (
 )
 
 var (
-	defaultOAuthScopes []string = []string{
+	defaultOAuthScopes = []string{
 		"https://www.googleapis.com/auth/compute",
 		"https://www.googleapis.com/auth/devstorage.read_only",
 		"https://www.googleapis.com/auth/service.management.readonly",
