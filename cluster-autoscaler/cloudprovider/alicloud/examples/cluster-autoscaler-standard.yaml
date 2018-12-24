@@ -129,9 +129,8 @@ spec:
     metadata:
       labels:
         app: cluster-autoscaler
-      annotations:
-        scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
+      priorityClassName: system-cluster-critical
       serviceAccountName: admin
       containers:
         - image: registry.cn-hangzhou.aliyuncs.com/acs/autoscaler:v1.3.1
