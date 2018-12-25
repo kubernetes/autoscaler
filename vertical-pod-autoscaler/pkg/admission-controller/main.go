@@ -34,8 +34,13 @@ import (
 )
 
 var (
-	certsDir = flag.String("certs-dir", "/etc/tls-certs", `Where the TLS cert files are stored.`)
-	address  = flag.String("address", ":8944", "The address to expose Prometheus metrics.")
+	certsConfiguration = &certsConfig{
+		caCertFile:     flag.String("ca-cert-file", "/etc/tls-certs/caCert.pem", "Path to CA PEM file."),
+		serverCertFile: flag.String("server-cert-file", "/etc/tls-certs/serverCert.pem", "Path to server certificate PEM file."),
+		serverKeyFile:  flag.String("server-key-file", "/etc/tls-certs/serverKey.pem", "Path to server certificate key PEM file."),
+	}
+
+	address = flag.String("address", ":8944", "The address to expose Prometheus metrics.")
 )
 
 func newReadyVPALister(stopChannel <-chan struct{}) vpa_lister.VerticalPodAutoscalerLister {
@@ -55,7 +60,7 @@ func main() {
 	metrics.Initialize(*address, healthCheck)
 	metrics_admission.Register()
 
-	certs := initCerts(*certsDir)
+	certs := initCerts(*certsConfiguration)
 	stopChannel := make(chan struct{})
 	vpaLister := newReadyVPALister(stopChannel)
 	as := logic.NewAdmissionServer(logic.NewRecommendationProvider(vpaLister, vpa_api_util.NewCappingRecommendationProcessor()), logic.NewDefaultPodPreProcessor())
