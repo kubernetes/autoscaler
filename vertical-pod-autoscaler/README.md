@@ -241,4 +241,4 @@ kubectl delete clusterrolebinding myname-cluster-admin-binding
 * [Design
   proposal](https://github.com/kubernetes/community/blob/master/contributors/design-proposals/autoscaling/vertical-pod-autoscaler.md)
 * [API
-  definition](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta/types.go)
+  definition](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1/types.go)
