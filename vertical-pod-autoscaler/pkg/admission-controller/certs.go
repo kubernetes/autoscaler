@@ -27,7 +27,7 @@ type certsContainer struct {
 }
 
 type certsConfig struct {
-	caCertFile, serverCertFile, serverKeyFile *string
+	clientCaFile, tlsCertFile, tlsPrivateKey *string
 }
 
 func readFile(filePath string) []byte {
@@ -48,8 +48,8 @@ func readFile(filePath string) []byte {
 
 func initCerts(config certsConfig) certsContainer {
 	res := certsContainer{}
-	res.caCert = readFile(*config.caCertFile)
-	res.serverCert = readFile(*config.serverCertFile)
-	res.serverKey = readFile(*config.serverKeyFile)
+	res.caCert = readFile(*config.clientCaFile)
+	res.serverCert = readFile(*config.tlsCertFile)
+	res.serverKey = readFile(*config.tlsPrivateKey)
 	return res
 }
