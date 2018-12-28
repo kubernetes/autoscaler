@@ -33,8 +33,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 	kube_record "k8s.io/client-go/tools/record"
 
+	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
-	extensionsv1 "k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/fake"
 	core "k8s.io/client-go/testing"
@@ -436,7 +436,7 @@ func simpleScaleUpTest(t *testing.T, config *scaleTestConfig) {
 
 	processors := ca_processors.TestProcessors()
 
-	scaleUpStatus, err := ScaleUp(&context, processors, clusterState, extraPods, nodes, []*extensionsv1.DaemonSet{})
+	scaleUpStatus, err := ScaleUp(&context, processors, clusterState, extraPods, nodes, []*appsv1.DaemonSet{})
 	processors.ScaleUpStatusProcessor.Process(&context, scaleUpStatus)
 	assert.NoError(t, err)
 	assert.True(t, scaleUpStatus.WasSuccessful())
@@ -533,7 +533,7 @@ func TestScaleUpNodeComingNoScale(t *testing.T) {
 
 	processors := ca_processors.TestProcessors()
 
-	scaleUpStatus, err := ScaleUp(&context, processors, clusterState, []*apiv1.Pod{p3}, []*apiv1.Node{n1, n2}, []*extensionsv1.DaemonSet{})
+	scaleUpStatus, err := ScaleUp(&context, processors, clusterState, []*apiv1.Pod{p3}, []*apiv1.Node{n1, n2}, []*appsv1.DaemonSet{})
 	assert.NoError(t, err)
 	// A node is already coming - no need for scale up.
 	assert.False(t, scaleUpStatus.WasSuccessful())
@@ -588,7 +588,7 @@ func TestScaleUpNodeComingHasScale(t *testing.T) {
 	p4 := BuildTestPod("p-new", 550, 0)
 
 	processors := ca_processors.TestProcessors()
-	scaleUpStatus, err := ScaleUp(&context, processors, clusterState, []*apiv1.Pod{p3, p4}, []*apiv1.Node{n1, n2}, []*extensionsv1.DaemonSet{})
+	scaleUpStatus, err := ScaleUp(&context, processors, clusterState, []*apiv1.Pod{p3, p4}, []*apiv1.Node{n1, n2}, []*appsv1.DaemonSet{})
 
 	assert.NoError(t, err)
 	// Two nodes needed but one node is already coming, so it should increase by one.
@@ -641,7 +641,7 @@ func TestScaleUpUnhealthy(t *testing.T) {
 	p3 := BuildTestPod("p-new", 550, 0)
 
 	processors := ca_processors.TestProcessors()
-	scaleUpStatus, err := ScaleUp(&context, processors, clusterState, []*apiv1.Pod{p3}, []*apiv1.Node{n1, n2}, []*extensionsv1.DaemonSet{})
+	scaleUpStatus, err := ScaleUp(&context, processors, clusterState, []*apiv1.Pod{p3}, []*apiv1.Node{n1, n2}, []*appsv1.DaemonSet{})
 
 	assert.NoError(t, err)
 	// Node group is unhealthy.
@@ -685,7 +685,7 @@ func TestScaleUpNoHelp(t *testing.T) {
 	p3 := BuildTestPod("p-new", 500, 0)
 
 	processors := ca_processors.TestProcessors()
-	scaleUpStatus, err := ScaleUp(&context, processors, clusterState, []*apiv1.Pod{p3}, []*apiv1.Node{n1}, []*extensionsv1.DaemonSet{})
+	scaleUpStatus, err := ScaleUp(&context, processors, clusterState, []*apiv1.Pod{p3}, []*apiv1.Node{n1}, []*appsv1.DaemonSet{})
 	processors.ScaleUpStatusProcessor.Process(&context, scaleUpStatus)
 
 	assert.NoError(t, err)
@@ -764,7 +764,7 @@ func TestScaleUpBalanceGroups(t *testing.T) {
 	}
 
 	processors := ca_processors.TestProcessors()
-	scaleUpStatus, typedErr := ScaleUp(&context, processors, clusterState, pods, nodes, []*extensionsv1.DaemonSet{})
+	scaleUpStatus, typedErr := ScaleUp(&context, processors, clusterState, pods, nodes, []*appsv1.DaemonSet{})
 
 	assert.NoError(t, typedErr)
 	assert.True(t, scaleUpStatus.WasSuccessful())
@@ -818,7 +818,7 @@ func TestScaleUpAutoprovisionedNodeGroup(t *testing.T) {
 	processors.NodeGroupListProcessor = &mockAutoprovisioningNodeGroupListProcessor{t}
 	processors.NodeGroupManager = &mockAutoprovisioningNodeGroupManager{t}
 
-	scaleUpStatus, err := ScaleUp(&context, processors, clusterState, []*apiv1.Pod{p1}, []*apiv1.Node{}, []*extensionsv1.DaemonSet{})
+	scaleUpStatus, err := ScaleUp(&context, processors, clusterState, []*apiv1.Pod{p1}, []*apiv1.Node{}, []*appsv1.DaemonSet{})
 	assert.NoError(t, err)
 	assert.True(t, scaleUpStatus.WasSuccessful())
 	assert.Equal(t, "autoprovisioned-T1", getStringFromChan(createdGroups))
