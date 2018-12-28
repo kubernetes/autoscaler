@@ -30,10 +30,12 @@ import (
 	scheduler_util "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
+	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
-	extensionsv1 "k8s.io/api/extensions/v1beta1"
 	policyv1 "k8s.io/api/policy/v1beta1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes/fake"
+	v1appslister "k8s.io/client-go/listers/apps/v1"
 	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 
 	"github.com/stretchr/testify/assert"
@@ -72,9 +74,24 @@ type daemonSetListerMock struct {
 	mock.Mock
 }
 
-func (l *daemonSetListerMock) List() ([]*extensionsv1.DaemonSet, error) {
+func (l *daemonSetListerMock) List(selector labels.Selector) ([]*appsv1.DaemonSet, error) {
+	args := l.Called(selector)
+	return args.Get(0).([]*appsv1.DaemonSet), args.Error(1)
+}
+
+func (l *daemonSetListerMock) DaemonSets(namespace string) v1appslister.DaemonSetNamespaceLister {
+	args := l.Called(namespace)
+	return args.Get(0).(v1appslister.DaemonSetNamespaceLister)
+}
+
+func (l *daemonSetListerMock) GetPodDaemonSets(pod *apiv1.Pod) ([]*appsv1.DaemonSet, error) {
 	args := l.Called()
-	return args.Get(0).([]*extensionsv1.DaemonSet), args.Error(1)
+	return args.Get(0).([]*appsv1.DaemonSet), args.Error(1)
+}
+
+func (l *daemonSetListerMock) GetHistoryDaemonSets(history *appsv1.ControllerRevision) ([]*appsv1.DaemonSet, error) {
+	args := l.Called()
+	return args.Get(0).([]*appsv1.DaemonSet), args.Error(1)
 }
 
 type onScaleUpMock struct {
@@ -209,7 +226,7 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 	allNodeListerMock.On("List").Return([]*apiv1.Node{n1}, nil).Once()
 	scheduledPodMock.On("List").Return([]*apiv1.Pod{p1}, nil).Once()
 	unschedulablePodMock.On("List").Return([]*apiv1.Pod{p2}, nil).Once()
-	daemonSetListerMock.On("List").Return([]*extensionsv1.DaemonSet{}, nil).Once()
+	daemonSetListerMock.On("List", labels.Everything()).Return([]*appsv1.DaemonSet{}, nil).Once()
 	onScaleUpMock.On("ScaleUp", "ng1", 1).Return(nil).Once()
 
 	context.MaxNodesTotal = 10
@@ -376,7 +393,7 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 	allNodeListerMock.On("List").Return([]*apiv1.Node{n1}, nil).Once()
 	scheduledPodMock.On("List").Return([]*apiv1.Pod{p1}, nil).Once()
 	unschedulablePodMock.On("List").Return([]*apiv1.Pod{p2}, nil).Once()
-	daemonSetListerMock.On("List").Return([]*extensionsv1.DaemonSet{}, nil).Once()
+	daemonSetListerMock.On("List", labels.Everything()).Return([]*appsv1.DaemonSet{}, nil).Once()
 	onNodeGroupCreateMock.On("Create", "autoprovisioned-TN2").Return(nil).Once()
 	onScaleUpMock.On("ScaleUp", "autoprovisioned-TN2", 1).Return(nil).Once()
 
@@ -506,7 +523,7 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 	allNodeListerMock.On("List").Return([]*apiv1.Node{n1}, nil).Once()
 	scheduledPodMock.On("List").Return([]*apiv1.Pod{p1}, nil).Once()
 	unschedulablePodMock.On("List").Return([]*apiv1.Pod{p2}, nil).Once()
-	daemonSetListerMock.On("List").Return([]*extensionsv1.DaemonSet{}, nil).Once()
+	daemonSetListerMock.On("List", labels.Everything()).Return([]*appsv1.DaemonSet{}, nil).Once()
 	onScaleUpMock.On("ScaleUp", "ng1", 1).Return(nil).Once()
 
 	err := autoscaler.RunOnce(later.Add(time.Hour))
@@ -636,7 +653,7 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 	allNodeListerMock.On("List").Return([]*apiv1.Node{n1, n2, n3}, nil).Once()
 	scheduledPodMock.On("List").Return([]*apiv1.Pod{p1, p2, p3}, nil).Once()
 	unschedulablePodMock.On("List").Return([]*apiv1.Pod{p4, p5, p6}, nil).Once()
-	daemonSetListerMock.On("List").Return([]*extensionsv1.DaemonSet{}, nil).Once()
+	daemonSetListerMock.On("List", labels.Everything()).Return([]*appsv1.DaemonSet{}, nil).Once()
 	onScaleUpMock.On("ScaleUp", "ng2", 1).Return(nil).Once()
 
 	err := autoscaler.RunOnce(time.Now())
