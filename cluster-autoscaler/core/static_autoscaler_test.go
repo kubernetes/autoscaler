@@ -17,10 +17,13 @@ limitations under the License.
 package core
 
 import (
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
+	mockprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/mocks"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
@@ -670,4 +673,205 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 	mock.AssertExpectationsForObjects(t, readyNodeListerMock, allNodeListerMock, scheduledPodMock, unschedulablePodMock,
 		podDisruptionBudgetListerMock, daemonSetListerMock, onScaleUpMock, onScaleDownMock)
 
+}
+
+func TestStaticAutoscalerOutOfResources(t *testing.T) {
+
+	// setup
+	provider := &mockprovider.CloudProvider{}
+
+	// Create context with mocked lister registry.
+	options := config.AutoscalingOptions{
+		EstimatorName:                 estimator.BinpackingEstimatorName,
+		ScaleDownEnabled:              true,
+		ScaleDownUtilizationThreshold: 0.5,
+		MaxNodesTotal:                 10,
+		MaxCoresTotal:                 10,
+		MaxMemoryTotal:                100000,
+		ScaleDownUnreadyTime:          time.Minute,
+		ScaleDownUnneededTime:         time.Minute,
+		ExpendablePodsPriorityCutoff:  10,
+	}
+	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, provider)
+
+	clusterStateConfig := clusterstate.ClusterStateRegistryConfig{
+		OkTotalUnreadyCount:  1,
+		MaxNodeProvisionTime: 10 * time.Second,
+	}
+
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterStateConfig, context.LogRecorder, newBackoff())
+	autoscaler := &StaticAutoscaler{
+		AutoscalingContext:    &context,
+		clusterStateRegistry:  clusterState,
+		lastScaleUpTime:       time.Now(),
+		lastScaleDownFailTime: time.Now(),
+	}
+
+	nodeGroupA := &mockprovider.NodeGroup{}
+	nodeGroupB := &mockprovider.NodeGroup{}
+
+	// Three nodes with out-of-resources errors
+	nodeGroupA.On("Exist").Return(true)
+	nodeGroupA.On("Autoprovisioned").Return(false)
+	nodeGroupA.On("TargetSize").Return(5, nil)
+	nodeGroupA.On("Id").Return("A")
+	nodeGroupA.On("DeleteNodes", mock.Anything).Return(nil)
+	nodeGroupA.On("Nodes").Return([]cloudprovider.Instance{
+		{
+			"A1",
+			&cloudprovider.InstanceStatus{
+				State: cloudprovider.InstanceRunning,
+			},
+		},
+		{
+			"A2",
+			&cloudprovider.InstanceStatus{
+				State: cloudprovider.InstanceCreating,
+			},
+		},
+		{
+			"A3",
+			&cloudprovider.InstanceStatus{
+				State: cloudprovider.InstanceCreating,
+				ErrorInfo: &cloudprovider.InstanceErrorInfo{
+					ErrorClass: cloudprovider.OutOfResourcesErrorClass,
+					ErrorCode:  "STOCKOUT",
+				},
+			},
+		},
+		{
+			"A4",
+			&cloudprovider.InstanceStatus{
+				State: cloudprovider.InstanceCreating,
+				ErrorInfo: &cloudprovider.InstanceErrorInfo{
+					ErrorClass: cloudprovider.OutOfResourcesErrorClass,
+					ErrorCode:  "STOCKOUT",
+				},
+			},
+		},
+		{
+			"A5",
+			&cloudprovider.InstanceStatus{
+				State: cloudprovider.InstanceCreating,
+				ErrorInfo: &cloudprovider.InstanceErrorInfo{
+					ErrorClass: cloudprovider.OutOfResourcesErrorClass,
+					ErrorCode:  "QUOTA",
+				},
+			},
+		},
+	}, nil).Twice()
+
+	nodeGroupB.On("Exist").Return(true)
+	nodeGroupB.On("Autoprovisioned").Return(false)
+	nodeGroupB.On("TargetSize").Return(5, nil)
+	nodeGroupB.On("Id").Return("B")
+	nodeGroupB.On("DeleteNodes", mock.Anything).Return(nil)
+	nodeGroupB.On("Nodes").Return([]cloudprovider.Instance{
+		{
+			"B1",
+			&cloudprovider.InstanceStatus{
+				State: cloudprovider.InstanceRunning,
+			},
+		},
+	}, nil)
+
+	provider.On("NodeGroups").Return([]cloudprovider.NodeGroup{nodeGroupA})
+	provider.On("NodeGroupForNode", mock.Anything).Return(
+		func(node *apiv1.Node) cloudprovider.NodeGroup {
+			if strings.HasPrefix(node.Spec.ProviderID, "A") {
+				return nodeGroupA
+			}
+			if strings.HasPrefix(node.Spec.ProviderID, "B") {
+				return nodeGroupB
+			}
+			return nil
+		}, nil)
+
+	now := time.Now()
+
+	// propagate nodes info in cluster state
+	clusterState.UpdateNodes([]*apiv1.Node{}, now)
+
+	// delete nodes with create errors
+	autoscaler.deleteCreatedNodesWithErrors()
+
+	// check delete was called on correct nodes
+	nodeGroupA.AssertCalled(t, "DeleteNodes", mock.MatchedBy(
+		func(nodes []*apiv1.Node) bool {
+			if len(nodes) != 3 {
+				return false
+			}
+			names := make(map[string]bool)
+			for _, node := range nodes {
+				names[node.Spec.ProviderID] = true
+			}
+			return names["A3"] && names["A4"] && names["A5"]
+		}))
+
+	// TODO assert that scaleup was failed (separately for QUOTA and STOCKOUT)
+
+	// propagate nodes info in cluster state again
+	// no changes in what provider returns
+	clusterState.UpdateNodes([]*apiv1.Node{}, now)
+
+	// delete nodes with create errors
+	autoscaler.deleteCreatedNodesWithErrors()
+
+	// nodes should be deleted again
+	nodeGroupA.AssertCalled(t, "DeleteNodes", mock.MatchedBy(
+		func(nodes []*apiv1.Node) bool {
+			if len(nodes) != 3 {
+				return false
+			}
+			names := make(map[string]bool)
+			for _, node := range nodes {
+				names[node.Spec.ProviderID] = true
+			}
+			return names["A3"] && names["A4"] && names["A5"]
+		}))
+
+	// TODO assert that scaleup is not failed again
+
+	// restub node group A so nodes are no longer reporting errors
+	nodeGroupA.On("Nodes").Return([]cloudprovider.Instance{
+		{
+			"A1",
+			&cloudprovider.InstanceStatus{
+				State: cloudprovider.InstanceRunning,
+			},
+		},
+		{
+			"A2",
+			&cloudprovider.InstanceStatus{
+				State: cloudprovider.InstanceCreating,
+			},
+		},
+		{
+			"A3",
+			&cloudprovider.InstanceStatus{
+				State: cloudprovider.InstanceDeleting,
+			},
+		},
+		{
+			"A4",
+			&cloudprovider.InstanceStatus{
+				State: cloudprovider.InstanceDeleting,
+			},
+		},
+		{
+			"A5",
+			&cloudprovider.InstanceStatus{
+				State: cloudprovider.InstanceDeleting,
+			},
+		},
+	}, nil)
+
+	// update cluster state
+	clusterState.UpdateNodes([]*apiv1.Node{}, now)
+
+	// delete nodes with create errors
+	autoscaler.deleteCreatedNodesWithErrors()
+
+	// we expect no more Delete Nodes
+	nodeGroupA.AssertNumberOfCalls(t, "DeleteNodes", 2)
 }
