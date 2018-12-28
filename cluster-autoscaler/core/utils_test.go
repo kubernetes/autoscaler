@@ -31,8 +31,8 @@ import (
 	scheduler_util "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
+	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
-	extensionsv1 "k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/fake"
@@ -345,7 +345,7 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 	predicateChecker := simulator.NewTestPredicateChecker()
 
 	res, err := GetNodeInfosForGroups([]*apiv1.Node{n1, n2, n3, n4}, provider1, fakeClient,
-		[]*extensionsv1.DaemonSet{}, predicateChecker)
+		[]*appsv1.DaemonSet{}, predicateChecker)
 	assert.NoError(t, err)
 	assert.Equal(t, 4, len(res))
 	_, found := res["n1"]
@@ -359,7 +359,7 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 
 	// Test for a nodegroup without nodes and TemplateNodeInfo not implemented by cloud proivder
 	res, err = GetNodeInfosForGroups([]*apiv1.Node{}, provider2, fakeClient,
-		[]*extensionsv1.DaemonSet{}, predicateChecker)
+		[]*appsv1.DaemonSet{}, predicateChecker)
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(res))
 }
