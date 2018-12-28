@@ -19,12 +19,16 @@ package kubernetes
 import (
 	"time"
 
+	appsv1 "k8s.io/api/apps/v1"
+	batchv1 "k8s.io/api/batch/v1"
 	apiv1 "k8s.io/api/core/v1"
 	extensionsv1 "k8s.io/api/extensions/v1beta1"
 	policyv1 "k8s.io/api/policy/v1beta1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	client "k8s.io/client-go/kubernetes"
+	v1appslister "k8s.io/client-go/listers/apps/v1"
+	v1batchlister "k8s.io/client-go/listers/batch/v1"
 	v1lister "k8s.io/client-go/listers/core/v1"
 	v1extensionslister "k8s.io/client-go/listers/extensions/v1beta1"
 	v1policylister "k8s.io/client-go/listers/policy/v1beta1"
@@ -40,28 +44,42 @@ type ListerRegistry interface {
 	UnschedulablePodLister() PodLister
 	PodDisruptionBudgetLister() PodDisruptionBudgetLister
 	DaemonSetLister() DaemonSetLister
+	ReplicationControllerLister() v1lister.ReplicationControllerLister
+	JobLister() v1batchlister.JobLister
+	ReplicaSetLister() v1appslister.ReplicaSetLister
+	StatefulSetLister() v1appslister.StatefulSetLister
 }
 
 type listerRegistryImpl struct {
-	allNodeLister             NodeLister
-	readyNodeLister           NodeLister
-	scheduledPodLister        PodLister
-	unschedulablePodLister    PodLister
-	podDisruptionBudgetLister PodDisruptionBudgetLister
-	daemonSetLister           DaemonSetLister
+	allNodeLister               NodeLister
+	readyNodeLister             NodeLister
+	scheduledPodLister          PodLister
+	unschedulablePodLister      PodLister
+	podDisruptionBudgetLister   PodDisruptionBudgetLister
+	daemonSetLister             DaemonSetLister
+	replicationControllerLister v1lister.ReplicationControllerLister
+	jobLister                   v1batchlister.JobLister
+	replicaSetLister            v1appslister.ReplicaSetLister
+	statefulSetLister           v1appslister.StatefulSetLister
 }
 
 // NewListerRegistry returns a registry providing various listers to list pods or nodes matching conditions
 func NewListerRegistry(allNode NodeLister, readyNode NodeLister, scheduledPod PodLister,
 	unschedulablePod PodLister, podDisruptionBudgetLister PodDisruptionBudgetLister,
-	daemonSetLister DaemonSetLister) ListerRegistry {
+	daemonSetLister DaemonSetLister, replicationControllerLister v1lister.ReplicationControllerLister,
+	jobLister v1batchlister.JobLister, replicaSetLister v1appslister.ReplicaSetLister,
+	statefulSetLister v1appslister.StatefulSetLister) ListerRegistry {
 	return listerRegistryImpl{
-		allNodeLister:             allNode,
-		readyNodeLister:           readyNode,
-		scheduledPodLister:        scheduledPod,
-		unschedulablePodLister:    unschedulablePod,
-		podDisruptionBudgetLister: podDisruptionBudgetLister,
-		daemonSetLister:           daemonSetLister,
+		allNodeLister:               allNode,
+		readyNodeLister:             readyNode,
+		scheduledPodLister:          scheduledPod,
+		unschedulablePodLister:      unschedulablePod,
+		podDisruptionBudgetLister:   podDisruptionBudgetLister,
+		daemonSetLister:             daemonSetLister,
+		replicationControllerLister: replicationControllerLister,
+		jobLister:                   jobLister,
+		replicaSetLister:            replicaSetLister,
+		statefulSetLister:           statefulSetLister,
 	}
 }
 
@@ -73,8 +91,13 @@ func NewListerRegistryWithDefaultListers(kubeClient client.Interface, stopChanne
 	allNodeLister := NewAllNodeLister(kubeClient, stopChannel)
 	podDisruptionBudgetLister := NewPodDisruptionBudgetLister(kubeClient, stopChannel)
 	daemonSetLister := NewDaemonSetLister(kubeClient, stopChannel)
+	replicationControllerLister := NewReplicationControllerLister(kubeClient, stopChannel)
+	jobLister := NewJobLister(kubeClient, stopChannel)
+	replicaSetLister := NewReplicaSetLister(kubeClient, stopChannel)
+	statefulSetLister := NewStatefulSetLister(kubeClient, stopChannel)
 	return NewListerRegistry(allNodeLister, readyNodeLister, scheduledPodLister,
-		unschedulablePodLister, podDisruptionBudgetLister, daemonSetLister)
+		unschedulablePodLister, podDisruptionBudgetLister, daemonSetLister,
+		replicationControllerLister, jobLister, replicaSetLister, statefulSetLister)
 }
 
 // AllNodeLister returns the AllNodeLister registered to this registry
@@ -105,6 +128,26 @@ func (r listerRegistryImpl) PodDisruptionBudgetLister() PodDisruptionBudgetListe
 // DaemonSetLister returns the daemonSetLister registered to this registry
 func (r listerRegistryImpl) DaemonSetLister() DaemonSetLister {
 	return r.daemonSetLister
+}
+
+// ReplicationControllerLister returns the replicationControllerLister registered to this registry
+func (r listerRegistryImpl) ReplicationControllerLister() v1lister.ReplicationControllerLister {
+	return r.replicationControllerLister
+}
+
+// JobLister returns the jobLister registered to this registry
+func (r listerRegistryImpl) JobLister() v1batchlister.JobLister {
+	return r.jobLister
+}
+
+// ReplicaSetLister returns the replicaSetLister registered to this registry
+func (r listerRegistryImpl) ReplicaSetLister() v1appslister.ReplicaSetLister {
+	return r.replicaSetLister
+}
+
+// StatefulSetLister returns the statefulSetLister registered to this registry
+func (r listerRegistryImpl) StatefulSetLister() v1appslister.StatefulSetLister {
+	return r.statefulSetLister
 }
 
 // PodLister lists pods.
@@ -295,4 +338,44 @@ func NewDaemonSetLister(kubeClient client.Interface, stopchannel <-chan struct{}
 	return &DaemonSetListerImpl{
 		daemonSetLister: lister,
 	}
+}
+
+// NewReplicationControllerLister builds a replicationcontroller lister.
+func NewReplicationControllerLister(kubeClient client.Interface, stopchannel <-chan struct{}) v1lister.ReplicationControllerLister {
+	listWatcher := cache.NewListWatchFromClient(kubeClient.CoreV1().RESTClient(), "replicationcontrollers", apiv1.NamespaceAll, fields.Everything())
+	store := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
+	lister := v1lister.NewReplicationControllerLister(store)
+	reflector := cache.NewReflector(listWatcher, &apiv1.ReplicationController{}, store, time.Hour)
+	go reflector.Run(stopchannel)
+	return lister
+}
+
+// NewJobLister builds a job lister.
+func NewJobLister(kubeClient client.Interface, stopchannel <-chan struct{}) v1batchlister.JobLister {
+	listWatcher := cache.NewListWatchFromClient(kubeClient.Batch().RESTClient(), "jobs", apiv1.NamespaceAll, fields.Everything())
+	store := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
+	lister := v1batchlister.NewJobLister(store)
+	reflector := cache.NewReflector(listWatcher, &batchv1.Job{}, store, time.Hour)
+	go reflector.Run(stopchannel)
+	return lister
+}
+
+// NewReplicaSetLister builds a replicaset lister.
+func NewReplicaSetLister(kubeClient client.Interface, stopchannel <-chan struct{}) v1appslister.ReplicaSetLister {
+	listWatcher := cache.NewListWatchFromClient(kubeClient.Apps().RESTClient(), "replicasets", apiv1.NamespaceAll, fields.Everything())
+	store := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
+	lister := v1appslister.NewReplicaSetLister(store)
+	reflector := cache.NewReflector(listWatcher, &appsv1.ReplicaSet{}, store, time.Hour)
+	go reflector.Run(stopchannel)
+	return lister
+}
+
+// NewStatefulSetLister builds a statefulset lister.
+func NewStatefulSetLister(kubeClient client.Interface, stopchannel <-chan struct{}) v1appslister.StatefulSetLister {
+	listWatcher := cache.NewListWatchFromClient(kubeClient.Apps().RESTClient(), "statefulsets", apiv1.NamespaceAll, fields.Everything())
+	store := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
+	lister := v1appslister.NewStatefulSetLister(store)
+	reflector := cache.NewReflector(listWatcher, &appsv1.StatefulSet{}, store, time.Hour)
+	go reflector.Run(stopchannel)
+	return lister
 }
