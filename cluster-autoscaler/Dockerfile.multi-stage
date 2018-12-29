@@ -1,0 +1,22 @@
+ARG BASEIMAGE=k8s.gcr.io/debian-base-amd64:0.4.0
+
+FROM golang:1.11-stretch AS builder
+
+ADD . $GOPATH/src/k8s.io/autoscaler/cluster-autoscaler
+WORKDIR $GOPATH/src/k8s.io/autoscaler/cluster-autoscaler
+
+RUN apt-get update && apt-get upgrade -y && apt-get install -y build-essential linux-headers-amd64
+RUN make build
+
+# -----------------------------------------------------
+
+FROM $BASEIMAGE
+LABEL maintainer="Marcin Wielgus <mwielgus@google.com>"
+
+ENV DEBIAN_FRONTEND noninteractive
+RUN clean-install ca-certificates tzdata
+
+COPY --from=builder /go/src/k8s.io/autoscaler/cluster-autoscaler/cluster-autoscaler cluster-autoscaler
+COPY --from=builder /go/src/k8s.io/autoscaler/cluster-autoscaler/run.sh run.sh
+
+CMD ./run.sh
