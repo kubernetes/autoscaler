@@ -357,7 +357,7 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 	_, found = res["n4"]
 	assert.True(t, found)
 
-	// Test for a nodegroup without nodes and TemplateNodeInfo not implemented by cloud proivder
+	// Test for a nodegroup without nodes and TemplateNodeInfo not implemented by cloud provider
 	res, err = GetNodeInfosForGroups([]*apiv1.Node{}, provider2, fakeClient,
 		[]*extensionsv1.DaemonSet{}, predicateChecker)
 	assert.NoError(t, err)
