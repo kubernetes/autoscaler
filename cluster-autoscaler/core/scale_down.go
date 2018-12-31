@@ -684,7 +684,7 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 	// Only scheduled non expendable pods are taken into account and have to be moved.
 	nonExpendablePods := FilterOutExpendablePods(pods, sd.context.ExpendablePodsPriorityCutoff)
 	// We look for only 1 node so new hints may be incomplete.
-	nodesToRemove, _, _, err := simulator.FindNodesToRemove(candidates, nodesWithoutMaster, nonExpendablePods, sd.context.ClientSet,
+	nodesToRemove, _, _, err := simulator.FindNodesToRemove(candidates, nodesWithoutMaster, nonExpendablePods, sd.context.ListerRegistry,
 		sd.context.PredicateChecker, 1, false,
 		sd.podLocationHints, sd.usageTracker, time.Now(), pdbs)
 	findNodesToRemoveDuration = time.Now().Sub(findNodesToRemoveStart)
