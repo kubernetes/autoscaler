@@ -119,7 +119,6 @@ func TestDrain(t *testing.T) {
 		},
 	}
 
-
 	statefulset := appsv1.StatefulSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "ss",
@@ -130,8 +129,8 @@ func TestDrain(t *testing.T) {
 
 	ssPod := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        "bar",
-			Namespace:   "default",
+			Name:            "bar",
+			Namespace:       "default",
 			OwnerReferences: GenerateOwnerReferences(statefulset.Name, "StatefulSet", "apps/v1", ""),
 		},
 	}
