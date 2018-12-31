@@ -24,7 +24,7 @@ import (
 	policyv1 "k8s.io/api/policy/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	client "k8s.io/client-go/kubernetes"
+	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/kubernetes/pkg/kubelet/types"
 )
 
@@ -48,7 +48,7 @@ func GetPodsForDeletionOnNodeDrain(
 	skipNodesWithSystemPods bool,
 	skipNodesWithLocalStorage bool,
 	checkReferences bool, // Setting this to true requires client to be not-null.
-	client client.Interface,
+	listers kube_util.ListerRegistry,
 	minReplica int32,
 	currentTime time.Time) ([]*apiv1.Pod, error) {
 
@@ -91,7 +91,7 @@ func GetPodsForDeletionOnNodeDrain(
 
 		if refKind == "ReplicationController" {
 			if checkReferences {
-				rc, err := client.CoreV1().ReplicationControllers(controllerNamespace).Get(controllerRef.Name, metav1.GetOptions{})
+				rc, err := listers.ReplicationControllerLister().ReplicationControllers(controllerNamespace).Get(controllerRef.Name)
 				// Assume a reason for an error is because the RC is either
 				// gone/missing or that the rc has too few replicas configured.
 				// TODO: replace the minReplica check with pod disruption budget.
@@ -101,7 +101,6 @@ func GetPodsForDeletionOnNodeDrain(
 							pod.Namespace, pod.Name, rc.Spec.Replicas, minReplica)
 					}
 					replicated = true
-
 				} else {
 					return []*apiv1.Pod{}, fmt.Errorf("replication controller for %s/%s is not available, err: %v", pod.Namespace, pod.Name, err)
 				}
@@ -110,7 +109,7 @@ func GetPodsForDeletionOnNodeDrain(
 			}
 		} else if refKind == "DaemonSet" {
 			if checkReferences {
-				ds, err := client.ExtensionsV1beta1().DaemonSets(controllerNamespace).Get(controllerRef.Name, metav1.GetOptions{})
+				ds, err := listers.DaemonSetLister().DaemonSets(controllerNamespace).Get(controllerRef.Name)
 
 				// Assume the only reason for an error is because the DaemonSet is
 				// gone/missing, not for any other cause.  TODO(mml): something more
@@ -129,7 +128,7 @@ func GetPodsForDeletionOnNodeDrain(
 			}
 		} else if refKind == "Job" {
 			if checkReferences {
-				job, err := client.BatchV1().Jobs(controllerNamespace).Get(controllerRef.Name, metav1.GetOptions{})
+				job, err := listers.JobLister().Jobs(controllerNamespace).Get(controllerRef.Name)
 
 				// Assume the only reason for an error is because the Job is
 				// gone/missing, not for any other cause.  TODO(mml): something more
@@ -144,7 +143,7 @@ func GetPodsForDeletionOnNodeDrain(
 			}
 		} else if refKind == "ReplicaSet" {
 			if checkReferences {
-				rs, err := client.ExtensionsV1beta1().ReplicaSets(controllerNamespace).Get(controllerRef.Name, metav1.GetOptions{})
+				rs, err := listers.ReplicaSetLister().ReplicaSets(controllerNamespace).Get(controllerRef.Name)
 
 				// Assume the only reason for an error is because the RS is
 				// gone/missing, not for any other cause.  TODO(mml): something more
@@ -163,7 +162,7 @@ func GetPodsForDeletionOnNodeDrain(
 			}
 		} else if refKind == "StatefulSet" {
 			if checkReferences {
-				ss, err := client.AppsV1beta1().StatefulSets(controllerNamespace).Get(controllerRef.Name, metav1.GetOptions{})
+				ss, err := listers.StatefulSetLister().StatefulSets(controllerNamespace).Get(controllerRef.Name)
 
 				// Assume the only reason for an error is because the StatefulSet is
 				// gone/missing, not for any other cause.  TODO(mml): something more
