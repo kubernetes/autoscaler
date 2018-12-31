@@ -39,6 +39,17 @@ else
 	docker build --pull -t ${REGISTRY}/cluster-autoscaler${PROVIDER}:${TAG} .
 endif
 
+make-image-multi-stage:
+ifdef BASEIMAGE
+	docker build --pull --build-arg BASEIMAGE=${BASEIMAGE} \
+	    -f Dockerfile.multi-stage \
+	    -t ${REGISTRY}/cluster-autoscaler${PROVIDER}:${TAG} .
+else
+	docker build --pull \
+	    -f Dockerfile.multi-stage \
+	    -t ${REGISTRY}/cluster-autoscaler${PROVIDER}:${TAG} .
+endif
+
 push-image:
 	./push_image.sh ${REGISTRY}/cluster-autoscaler${PROVIDER}:${TAG}
 
