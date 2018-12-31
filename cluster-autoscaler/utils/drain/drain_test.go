@@ -119,24 +119,23 @@ func TestDrain(t *testing.T) {
 		},
 	}
 
-	/*	Disable stateful set test for a moment due to fake client problems with handling v1beta1 SS
 
-		statefulset := appsv1beta1.StatefulSet{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "ss",
-				Namespace: "default",
-				SelfLink:  "/apiv1s/extensions/v1beta1/namespaces/default/statefulsets/ss",
-			},
-		}
+	statefulset := appsv1.StatefulSet{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "ss",
+			Namespace: "default",
+			SelfLink:  "/apiv1s/apps/v1/namespaces/default/statefulsets/ss",
+		},
+	}
 
-		ssPod := &apiv1.Pod{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:        "bar",
-				Namespace:   "default",
-				Annotations: map[string]string{apiv1.CreatedByAnnotation: RefJSON(&statefulset)},
-			},
-		}
-	*/
+	ssPod := &apiv1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        "bar",
+			Namespace:   "default",
+			OwnerReferences: GenerateOwnerReferences(statefulset.Name, "StatefulSet", "apps/v1", ""),
+		},
+	}
+
 	rs := appsv1.ReplicaSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "rs",
@@ -382,16 +381,14 @@ func TestDrain(t *testing.T) {
 			expectFatal: false,
 			expectPods:  []*apiv1.Pod{jobPod},
 		},
-		/*  Disable SS tests for a moment
 		{
 			description: "SS-managed pod",
 			pods:        []*apiv1.Pod{ssPod},
 			pdbs:        []*policyv1.PodDisruptionBudget{},
-			rcs:         []apiv1.ReplicationController{rc},
+			rcs:         []*apiv1.ReplicationController{&rc},
 			expectFatal: false,
 			expectPods:  []*apiv1.Pod{ssPod},
 		},
-		*/
 		{
 			description: "RS-managed pod",
 			pods:        []*apiv1.Pod{rsPod},
@@ -539,8 +536,10 @@ func TestDrain(t *testing.T) {
 		assert.NoError(t, err)
 		jobLister, err := kube_util.NewTestJobLister([]*batchv1.Job{&job})
 		assert.NoError(t, err)
+		ssLister, err := kube_util.NewTestStatefulSetLister([]*appsv1.StatefulSet{&statefulset})
+		assert.NoError(t, err)
 
-		registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, dsLister, rcLister, jobLister, rsLister, nil)
+		registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, dsLister, rcLister, jobLister, rsLister, ssLister)
 
 		pods, err := GetPodsForDeletionOnNodeDrain(test.pods, test.pdbs,
 			false, true, true, true, registry, 0, time.Now())
