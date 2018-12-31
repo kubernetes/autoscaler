@@ -28,6 +28,21 @@ import (
 	"k8s.io/client-go/tools/cache"
 )
 
+// TestPodLister is used in tests involving listers
+type TestPodLister struct {
+	pods []*apiv1.Pod
+}
+
+// List returns all pods in test lister.
+func (lister TestPodLister) List() ([]*apiv1.Pod, error) {
+	return lister.pods, nil
+}
+
+// NewTestPodLister returns a lister that returns provided pods
+func NewTestPodLister(pods []*apiv1.Pod) PodLister {
+	return TestPodLister{pods: pods}
+}
+
 // NewTestDaemonSetLister returns a lister that returns provided DaemonSets
 func NewTestDaemonSetLister(dss []*appsv1.DaemonSet) (v1appslister.DaemonSetLister, error) {
 	store := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
