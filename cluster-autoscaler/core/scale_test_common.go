@@ -30,6 +30,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/labels"
 
 	"github.com/stretchr/testify/assert"
@@ -76,7 +77,7 @@ type scaleTestConfig struct {
 }
 
 // NewScaleTestAutoscalingContext creates a new test autoscaling context for scaling tests.
-func NewScaleTestAutoscalingContext(options config.AutoscalingOptions, fakeClient kube_client.Interface, provider cloudprovider.CloudProvider) context.AutoscalingContext {
+func NewScaleTestAutoscalingContext(options config.AutoscalingOptions, fakeClient kube_client.Interface, listers kube_util.ListerRegistry, provider cloudprovider.CloudProvider) context.AutoscalingContext {
 	fakeRecorder := kube_record.NewFakeRecorder(5)
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false)
 	// Ignoring error here is safe - if a test doesn't specify valid estimatorName,
@@ -85,9 +86,10 @@ func NewScaleTestAutoscalingContext(options config.AutoscalingOptions, fakeClien
 	return context.AutoscalingContext{
 		AutoscalingOptions: options,
 		AutoscalingKubeClients: context.AutoscalingKubeClients{
-			ClientSet:   fakeClient,
-			Recorder:    fakeRecorder,
-			LogRecorder: fakeLogRecorder,
+			ClientSet:      fakeClient,
+			Recorder:       fakeRecorder,
+			LogRecorder:    fakeLogRecorder,
+			ListerRegistry: listers,
 		},
 		CloudProvider:    provider,
 		PredicateChecker: simulator.NewTestPredicateChecker(),
