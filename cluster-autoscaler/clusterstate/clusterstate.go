@@ -126,7 +126,7 @@ type ClusterStateRegistry struct {
 	incorrectNodeGroupSizes            map[string]IncorrectNodeGroupSize
 	unregisteredNodes                  map[string]UnregisteredNode
 	candidatesForScaleDown             map[string][]string
-	nodeGroupBackoffInfo               backoff.Backoff
+	backoff                            backoff.Backoff
 	lastStatus                         *api.ClusterAutoscalerStatus
 	lastScaleDownUpdateTime            time.Time
 	logRecorder                        *utils.LogEventRecorder
@@ -151,7 +151,7 @@ func NewClusterStateRegistry(cloudProvider cloudprovider.CloudProvider, config C
 		incorrectNodeGroupSizes: make(map[string]IncorrectNodeGroupSize),
 		unregisteredNodes:       make(map[string]UnregisteredNode),
 		candidatesForScaleDown:  make(map[string][]string),
-		nodeGroupBackoffInfo:    backoff,
+		backoff:                 backoff,
 		lastStatus:              emptyStatus,
 		logRecorder:             logRecorder,
 	}
@@ -212,14 +212,14 @@ func (csr *ClusterStateRegistry) RegisterScaleDown(request *ScaleDownRequest) {
 // To be executed under a lock.
 func (csr *ClusterStateRegistry) updateScaleRequests(currentTime time.Time) {
 	// clean up stale backoff info
-	csr.nodeGroupBackoffInfo.RemoveStaleBackoffData(currentTime)
+	csr.backoff.RemoveStaleBackoffData(currentTime)
 
 	for nodeGroupName, scaleUpRequest := range csr.scaleUpRequests {
 		if !csr.areThereUpcomingNodesInNodeGroup(nodeGroupName) {
 			// scale-out finished successfully
 			// remove it and reset node group backoff
 			delete(csr.scaleUpRequests, nodeGroupName)
-			csr.nodeGroupBackoffInfo.RemoveBackoff(scaleUpRequest.NodeGroup)
+			csr.backoff.RemoveBackoff(scaleUpRequest.NodeGroup)
 			klog.V(4).Infof("Scale up in group %v finished successfully in %v",
 				nodeGroupName, currentTime.Sub(scaleUpRequest.Time))
 			continue
@@ -248,7 +248,7 @@ func (csr *ClusterStateRegistry) updateScaleRequests(currentTime time.Time) {
 
 // To be executed under a lock.
 func (csr *ClusterStateRegistry) backoffNodeGroup(nodeGroup cloudprovider.NodeGroup, currentTime time.Time) {
-	backoffUntil := csr.nodeGroupBackoffInfo.Backoff(nodeGroup, currentTime)
+	backoffUntil := csr.backoff.Backoff(nodeGroup, currentTime)
 	klog.Warningf("Disabling scale-up for node group %v until %v", nodeGroup.Id(), backoffUntil)
 }
 
@@ -397,7 +397,7 @@ func (csr *ClusterStateRegistry) IsNodeGroupSafeToScaleUp(nodeGroup cloudprovide
 	if !csr.IsNodeGroupHealthy(nodeGroup.Id()) {
 		return false
 	}
-	return !csr.nodeGroupBackoffInfo.IsBackedOff(nodeGroup, now)
+	return !csr.backoff.IsBackedOff(nodeGroup, now)
 }
 
 func (csr *ClusterStateRegistry) getProvisionedAndTargetSizesForNodeGroup(nodeGroupName string) (provisioned, target int, ok bool) {
