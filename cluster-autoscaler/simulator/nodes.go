@@ -51,7 +51,7 @@ func GetRequiredPodsForNode(nodename string, client kube_client.Interface) ([]*a
 		true,                              // Force all removals.
 		false,
 		false,
-		false, // Setting this to true requires client to be not-null.
+		false, // Setting this to true requires listers to be not-null.
 		nil,
 		0,
 		time.Now())

@@ -125,7 +125,7 @@ func TestFindUnneededNodes(t *testing.T) {
 		ExpendablePodsPriorityCutoff:  10,
 		UnremovableNodeRecheckTimeout: 5 * time.Minute,
 	}
-	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, provider)
+	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider)
 
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
 	sd := NewScaleDown(&context, clusterStateRegistry)
@@ -236,7 +236,7 @@ func TestPodsWithPrioritiesFindUnneededNodes(t *testing.T) {
 		ScaleDownUtilizationThreshold: 0.35,
 		ExpendablePodsPriorityCutoff:  10,
 	}
-	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, provider)
+	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider)
 
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
 	sd := NewScaleDown(&context, clusterStateRegistry)
@@ -286,7 +286,7 @@ func TestFindUnneededMaxCandidates(t *testing.T) {
 		ScaleDownCandidatesPoolRatio:     1,
 		ScaleDownCandidatesPoolMinCount:  1000,
 	}
-	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, provider)
+	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider)
 
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
 	sd := NewScaleDown(&context, clusterStateRegistry)
@@ -352,7 +352,7 @@ func TestFindUnneededEmptyNodes(t *testing.T) {
 		ScaleDownCandidatesPoolRatio:     1.0,
 		ScaleDownCandidatesPoolMinCount:  1000,
 	}
-	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, provider)
+	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider)
 
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
 	sd := NewScaleDown(&context, clusterStateRegistry)
@@ -396,7 +396,7 @@ func TestFindUnneededNodePool(t *testing.T) {
 		ScaleDownCandidatesPoolRatio:     0.1,
 		ScaleDownCandidatesPoolMinCount:  10,
 	}
-	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, provider)
+	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider)
 
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
 	sd := NewScaleDown(&context, clusterStateRegistry)
@@ -530,7 +530,7 @@ func TestDeleteNode(t *testing.T) {
 			fakeClient.Fake.AddReactor("get", "pods", podNotFoundFunc)
 
 			// build context
-			context := NewScaleTestAutoscalingContext(config.AutoscalingOptions{}, fakeClient, provider)
+			context := NewScaleTestAutoscalingContext(config.AutoscalingOptions{}, fakeClient, nil, provider)
 
 			clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
 			sd := NewScaleDown(&context, clusterStateRegistry)
@@ -696,7 +696,7 @@ func TestScaleDown(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "job",
 			Namespace: "default",
-			SelfLink:  "/apivs/extensions/v1beta1/namespaces/default/jobs/job",
+			SelfLink:  "/apivs/batch/v1/namespaces/default/jobs/job",
 		},
 	}
 	n1 := BuildTestNode("n1", 1000, 1000)
@@ -704,7 +704,7 @@ func TestScaleDown(t *testing.T) {
 	n2 := BuildTestNode("n2", 1000, 1000)
 	SetNodeReadyState(n2, true, time.Time{})
 	p1 := BuildTestPod("p1", 100, 0)
-	p1.OwnerReferences = GenerateOwnerReferences(job.Name, "Job", "extensions/v1beta1", "")
+	p1.OwnerReferences = GenerateOwnerReferences(job.Name, "Job", "batch/v1", "")
 
 	p2 := BuildTestPod("p2", 800, 0)
 	var priority int32 = 1
@@ -759,7 +759,11 @@ func TestScaleDown(t *testing.T) {
 		MaxGracefulTerminationSec:     60,
 		ExpendablePodsPriorityCutoff:  10,
 	}
-	context := NewScaleTestAutoscalingContext(options, fakeClient, provider)
+	jobLister, err := kube_util.NewTestJobLister([]*batchv1.Job{&job})
+	assert.NoError(t, err)
+	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, jobLister, nil, nil)
+
+	context := NewScaleTestAutoscalingContext(options, fakeClient, registry, provider)
 
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
 	scaleDown := NewScaleDown(&context, clusterStateRegistry)
@@ -968,7 +972,7 @@ func simpleScaleDownEmpty(t *testing.T, config *scaleTestConfig) {
 
 	assert.NotNil(t, provider)
 
-	context := NewScaleTestAutoscalingContext(config.options, fakeClient, provider)
+	context := NewScaleTestAutoscalingContext(config.options, fakeClient, nil, provider)
 
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
 	scaleDown := NewScaleDown(&context, clusterStateRegistry)
@@ -1043,7 +1047,7 @@ func TestNoScaleDownUnready(t *testing.T) {
 		ScaleDownUnreadyTime:          time.Hour,
 		MaxGracefulTerminationSec:     60,
 	}
-	context := NewScaleTestAutoscalingContext(options, fakeClient, provider)
+	context := NewScaleTestAutoscalingContext(options, fakeClient, nil, provider)
 
 	// N1 is unready so it requires a bigger unneeded time.
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
@@ -1143,7 +1147,11 @@ func TestScaleDownNoMove(t *testing.T) {
 		ScaleDownUnreadyTime:          time.Hour,
 		MaxGracefulTerminationSec:     60,
 	}
-	context := NewScaleTestAutoscalingContext(options, fakeClient, provider)
+	jobLister, err := kube_util.NewTestJobLister([]*batchv1.Job{&job})
+	assert.NoError(t, err)
+	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, jobLister, nil, nil)
+
+	context := NewScaleTestAutoscalingContext(options, fakeClient, registry, provider)
 
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
 	scaleDown := NewScaleDown(&context, clusterStateRegistry)
