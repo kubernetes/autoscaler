@@ -263,7 +263,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 		podsRemainUnschedulable[pod] = make(map[string]status.Reasons)
 	}
 	glogx.V(1).Over(loggingQuota).Infof("%v other pods are also unschedulable", -loggingQuota.Left())
-	nodeInfos, err := GetNodeInfosForGroups(nodes, context.CloudProvider, context.ClientSet,
+	nodeInfos, err := GetNodeInfosForGroups(nodes, context.CloudProvider, context.ListerRegistry,
 		daemonSets, context.PredicateChecker)
 	if err != nil {
 		return &status.ScaleUpStatus{Result: status.ScaleUpError}, err.AddPrefix("failed to build node infos for node groups: ")
