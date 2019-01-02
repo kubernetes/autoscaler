@@ -28,15 +28,14 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
+	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	scheduler_util "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/fake"
-	core "k8s.io/client-go/testing"
 	kube_record "k8s.io/client-go/tools/record"
 	"k8s.io/kubernetes/pkg/api/testapi"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
@@ -337,14 +336,12 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 		nil, nil)
 	provider2.AddNodeGroup("n5", 1, 10, 1) // Nodegroup without nodes.
 
-	fakeClient := &fake.Clientset{}
-	fakeClient.Fake.AddReactor("list", "pods", func(action core.Action) (bool, runtime.Object, error) {
-		return true, &apiv1.PodList{Items: []apiv1.Pod{}}, nil
-	})
+	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
+	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil)
 
 	predicateChecker := simulator.NewTestPredicateChecker()
 
-	res, err := GetNodeInfosForGroups([]*apiv1.Node{n1, n2, n3, n4}, provider1, fakeClient,
+	res, err := GetNodeInfosForGroups([]*apiv1.Node{n1, n2, n3, n4}, provider1, registry,
 		[]*appsv1.DaemonSet{}, predicateChecker)
 	assert.NoError(t, err)
 	assert.Equal(t, 4, len(res))
@@ -357,8 +354,8 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 	_, found = res["n4"]
 	assert.True(t, found)
 
-	// Test for a nodegroup without nodes and TemplateNodeInfo not implemented by cloud provider
-	res, err = GetNodeInfosForGroups([]*apiv1.Node{}, provider2, fakeClient,
+	// Test for a nodegroup without nodes and TemplateNodeInfo not implemented by cloud proivder
+	res, err = GetNodeInfosForGroups([]*apiv1.Node{}, provider2, registry,
 		[]*appsv1.DaemonSet{}, predicateChecker)
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(res))
