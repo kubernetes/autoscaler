@@ -35,7 +35,7 @@ func TestRequiredPodsForNode(t *testing.T) {
 			Name:      "pod1",
 			SelfLink:  "pod1",
 		},
-		Spec: apiv1.PodSpec {
+		Spec: apiv1.PodSpec{
 			NodeName: nodeName,
 		},
 	}
@@ -49,7 +49,7 @@ func TestRequiredPodsForNode(t *testing.T) {
 				types.ConfigMirrorAnnotationKey: "something",
 			},
 		},
-		Spec: apiv1.PodSpec {
+		Spec: apiv1.PodSpec{
 			NodeName: nodeName,
 		},
 	}
