@@ -425,8 +425,9 @@ func simpleScaleUpTest(t *testing.T, config *scaleTestConfig) {
 	}
 	context.ExpanderStrategy = expander
 
+	nodeInfos, _ := GetNodeInfosForGroups(nodes, provider, fakeClient, []*extensionsv1.DaemonSet{}, context.PredicateChecker)
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
-	clusterState.UpdateNodes(nodes, time.Now())
+	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
 
 	extraPods := make([]*apiv1.Pod, len(config.extraPods))
 	for i, p := range config.extraPods {
@@ -436,7 +437,7 @@ func simpleScaleUpTest(t *testing.T, config *scaleTestConfig) {
 
 	processors := ca_processors.TestProcessors()
 
-	scaleUpStatus, err := ScaleUp(&context, processors, clusterState, extraPods, nodes, []*extensionsv1.DaemonSet{})
+	scaleUpStatus, err := ScaleUp(&context, processors, clusterState, extraPods, nodes, []*extensionsv1.DaemonSet{}, nodeInfos)
 	processors.ScaleUpStatusProcessor.Process(&context, scaleUpStatus)
 	assert.NoError(t, err)
 	assert.True(t, scaleUpStatus.WasSuccessful())
@@ -520,6 +521,8 @@ func TestScaleUpNodeComingNoScale(t *testing.T) {
 	}
 	context := NewScaleTestAutoscalingContext(options, fakeClient, provider)
 
+	nodes := []*apiv1.Node{n1, n2}
+	nodeInfos, _ := GetNodeInfosForGroups(nodes, provider, fakeClient, []*extensionsv1.DaemonSet{}, context.PredicateChecker)
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
 	clusterState.RegisterScaleUp(&clusterstate.ScaleUpRequest{
 		NodeGroup:       provider.GetNodeGroup("ng2"),
@@ -527,13 +530,13 @@ func TestScaleUpNodeComingNoScale(t *testing.T) {
 		Time:            time.Now(),
 		ExpectedAddTime: time.Now().Add(5 * time.Minute),
 	})
-	clusterState.UpdateNodes([]*apiv1.Node{n1, n2}, time.Now())
+	clusterState.UpdateNodes([]*apiv1.Node{n1, n2}, nodeInfos, time.Now())
 
 	p3 := BuildTestPod("p-new", 550, 0)
 
 	processors := ca_processors.TestProcessors()
 
-	scaleUpStatus, err := ScaleUp(&context, processors, clusterState, []*apiv1.Pod{p3}, []*apiv1.Node{n1, n2}, []*extensionsv1.DaemonSet{})
+	scaleUpStatus, err := ScaleUp(&context, processors, clusterState, []*apiv1.Pod{p3}, []*apiv1.Node{n1, n2}, []*extensionsv1.DaemonSet{}, nodeInfos)
 	assert.NoError(t, err)
 	// A node is already coming - no need for scale up.
 	assert.False(t, scaleUpStatus.WasSuccessful())
@@ -575,6 +578,8 @@ func TestScaleUpNodeComingHasScale(t *testing.T) {
 
 	context := NewScaleTestAutoscalingContext(defaultOptions, fakeClient, provider)
 
+	nodes := []*apiv1.Node{n1, n2}
+	nodeInfos, _ := GetNodeInfosForGroups(nodes, provider, fakeClient, []*extensionsv1.DaemonSet{}, context.PredicateChecker)
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
 	clusterState.RegisterScaleUp(&clusterstate.ScaleUpRequest{
 		NodeGroup:       provider.GetNodeGroup("ng2"),
@@ -582,13 +587,13 @@ func TestScaleUpNodeComingHasScale(t *testing.T) {
 		Time:            time.Now(),
 		ExpectedAddTime: time.Now().Add(5 * time.Minute),
 	})
-	clusterState.UpdateNodes([]*apiv1.Node{n1, n2}, time.Now())
+	clusterState.UpdateNodes([]*apiv1.Node{n1, n2}, nodeInfos, time.Now())
 
 	p3 := BuildTestPod("p-new", 550, 0)
 	p4 := BuildTestPod("p-new", 550, 0)
 
 	processors := ca_processors.TestProcessors()
-	scaleUpStatus, err := ScaleUp(&context, processors, clusterState, []*apiv1.Pod{p3, p4}, []*apiv1.Node{n1, n2}, []*extensionsv1.DaemonSet{})
+	scaleUpStatus, err := ScaleUp(&context, processors, clusterState, []*apiv1.Pod{p3, p4}, []*apiv1.Node{n1, n2}, []*extensionsv1.DaemonSet{}, nodeInfos)
 
 	assert.NoError(t, err)
 	// Two nodes needed but one node is already coming, so it should increase by one.
@@ -636,12 +641,14 @@ func TestScaleUpUnhealthy(t *testing.T) {
 	}
 	context := NewScaleTestAutoscalingContext(options, fakeClient, provider)
 
+	nodes := []*apiv1.Node{n1, n2}
+	nodeInfos, _ := GetNodeInfosForGroups(nodes, provider, fakeClient, []*extensionsv1.DaemonSet{}, context.PredicateChecker)
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
-	clusterState.UpdateNodes([]*apiv1.Node{n1, n2}, time.Now())
+	clusterState.UpdateNodes([]*apiv1.Node{n1, n2}, nodeInfos, time.Now())
 	p3 := BuildTestPod("p-new", 550, 0)
 
 	processors := ca_processors.TestProcessors()
-	scaleUpStatus, err := ScaleUp(&context, processors, clusterState, []*apiv1.Pod{p3}, []*apiv1.Node{n1, n2}, []*extensionsv1.DaemonSet{})
+	scaleUpStatus, err := ScaleUp(&context, processors, clusterState, []*apiv1.Pod{p3}, []*apiv1.Node{n1, n2}, []*extensionsv1.DaemonSet{}, nodeInfos)
 
 	assert.NoError(t, err)
 	// Node group is unhealthy.
@@ -680,12 +687,14 @@ func TestScaleUpNoHelp(t *testing.T) {
 	}
 	context := NewScaleTestAutoscalingContext(options, fakeClient, provider)
 
+	nodes := []*apiv1.Node{n1}
+	nodeInfos, _ := GetNodeInfosForGroups(nodes, provider, fakeClient, []*extensionsv1.DaemonSet{}, context.PredicateChecker)
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
-	clusterState.UpdateNodes([]*apiv1.Node{n1}, time.Now())
+	clusterState.UpdateNodes([]*apiv1.Node{n1}, nodeInfos, time.Now())
 	p3 := BuildTestPod("p-new", 500, 0)
 
 	processors := ca_processors.TestProcessors()
-	scaleUpStatus, err := ScaleUp(&context, processors, clusterState, []*apiv1.Pod{p3}, []*apiv1.Node{n1}, []*extensionsv1.DaemonSet{})
+	scaleUpStatus, err := ScaleUp(&context, processors, clusterState, []*apiv1.Pod{p3}, []*apiv1.Node{n1}, []*extensionsv1.DaemonSet{}, nodeInfos)
 	processors.ScaleUpStatusProcessor.Process(&context, scaleUpStatus)
 
 	assert.NoError(t, err)
@@ -755,8 +764,9 @@ func TestScaleUpBalanceGroups(t *testing.T) {
 	}
 	context := NewScaleTestAutoscalingContext(options, fakeClient, provider)
 
+	nodeInfos, _ := GetNodeInfosForGroups(nodes, provider, fakeClient, []*extensionsv1.DaemonSet{}, context.PredicateChecker)
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
-	clusterState.UpdateNodes(nodes, time.Now())
+	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
 
 	pods := make([]*apiv1.Pod, 0)
 	for i := 0; i < 2; i++ {
@@ -764,7 +774,7 @@ func TestScaleUpBalanceGroups(t *testing.T) {
 	}
 
 	processors := ca_processors.TestProcessors()
-	scaleUpStatus, typedErr := ScaleUp(&context, processors, clusterState, pods, nodes, []*extensionsv1.DaemonSet{})
+	scaleUpStatus, typedErr := ScaleUp(&context, processors, clusterState, pods, nodes, []*extensionsv1.DaemonSet{}, nodeInfos)
 
 	assert.NoError(t, typedErr)
 	assert.True(t, scaleUpStatus.WasSuccessful())
@@ -818,7 +828,10 @@ func TestScaleUpAutoprovisionedNodeGroup(t *testing.T) {
 	processors.NodeGroupListProcessor = &mockAutoprovisioningNodeGroupListProcessor{t}
 	processors.NodeGroupManager = &mockAutoprovisioningNodeGroupManager{t}
 
-	scaleUpStatus, err := ScaleUp(&context, processors, clusterState, []*apiv1.Pod{p1}, []*apiv1.Node{}, []*extensionsv1.DaemonSet{})
+	nodes := []*apiv1.Node{}
+	nodeInfos, _ := GetNodeInfosForGroups(nodes, provider, fakeClient, []*extensionsv1.DaemonSet{}, context.PredicateChecker)
+
+	scaleUpStatus, err := ScaleUp(&context, processors, clusterState, []*apiv1.Pod{p1}, []*apiv1.Node{}, []*extensionsv1.DaemonSet{}, nodeInfos)
 	assert.NoError(t, err)
 	assert.True(t, scaleUpStatus.WasSuccessful())
 	assert.Equal(t, "autoprovisioned-T1", getStringFromChan(createdGroups))
