@@ -423,9 +423,6 @@ func simpleScaleUpTest(t *testing.T, config *scaleTestConfig) {
 
 	fakeRecorder := kube_record.NewFakeRecorder(5)
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false)
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder)
-
-	clusterState.UpdateNodes(nodes, time.Now())
 
 	context := &context.AutoscalingContext{
 		AutoscalingOptions: config.options,
@@ -441,6 +438,11 @@ func simpleScaleUpTest(t *testing.T, config *scaleTestConfig) {
 		LogRecorder: fakeLogRecorder,
 	}
 
+	nodeInfos, _ := GetNodeInfosForGroups(nodes, provider, fakeClient, []*extensionsv1.DaemonSet{}, context.PredicateChecker)
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder)
+
+	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
+
 	extraPods := make([]*apiv1.Pod, len(config.extraPods))
 	for i, p := range config.extraPods {
 		pod := buildTestPod(p)
@@ -449,7 +451,7 @@ func simpleScaleUpTest(t *testing.T, config *scaleTestConfig) {
 
 	processors := ca_processors.TestProcessors()
 
-	status, err := ScaleUp(context, processors, clusterState, extraPods, nodes, []*extensionsv1.DaemonSet{})
+	status, err := ScaleUp(context, processors, clusterState, extraPods, nodes, []*extensionsv1.DaemonSet{}, nodeInfos)
 	processors.ScaleUpStatusProcessor.Process(context, status)
 	assert.NoError(t, err)
 	assert.True(t, status.ScaledUp)
@@ -528,14 +530,6 @@ func TestScaleUpNodeComingNoScale(t *testing.T) {
 
 	fakeRecorder := kube_util.CreateEventRecorder(fakeClient)
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false)
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder)
-	clusterState.RegisterScaleUp(&clusterstate.ScaleUpRequest{
-		NodeGroupName:   "ng2",
-		Increase:        1,
-		Time:            time.Now(),
-		ExpectedAddTime: time.Now().Add(5 * time.Minute),
-	})
-	clusterState.UpdateNodes([]*apiv1.Node{n1, n2}, time.Now())
 
 	context := &context.AutoscalingContext{
 		AutoscalingOptions: context.AutoscalingOptions{
@@ -550,11 +544,23 @@ func TestScaleUpNodeComingNoScale(t *testing.T) {
 		ExpanderStrategy: random.NewStrategy(),
 		LogRecorder:      fakeLogRecorder,
 	}
+
+	nodes := []*apiv1.Node{n1, n2}
+	nodeInfos, _ := GetNodeInfosForGroups(nodes, provider, fakeClient, []*extensionsv1.DaemonSet{}, context.PredicateChecker)
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder)
+	clusterState.RegisterScaleUp(&clusterstate.ScaleUpRequest{
+		NodeGroupName:   "ng2",
+		Increase:        1,
+		Time:            time.Now(),
+		ExpectedAddTime: time.Now().Add(5 * time.Minute),
+	})
+	clusterState.UpdateNodes([]*apiv1.Node{n1, n2}, nodeInfos, time.Now())
+
 	p3 := BuildTestPod("p-new", 550, 0)
 
 	processors := ca_processors.TestProcessors()
 
-	status, err := ScaleUp(context, processors, clusterState, []*apiv1.Pod{p3}, []*apiv1.Node{n1, n2}, []*extensionsv1.DaemonSet{})
+	status, err := ScaleUp(context, processors, clusterState, []*apiv1.Pod{p3}, []*apiv1.Node{n1, n2}, []*extensionsv1.DaemonSet{}, nodeInfos)
 	assert.NoError(t, err)
 	// A node is already coming - no need for scale up.
 	assert.False(t, status.ScaledUp)
@@ -596,14 +602,6 @@ func TestScaleUpNodeComingHasScale(t *testing.T) {
 
 	fakeRecorder := kube_util.CreateEventRecorder(fakeClient)
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false)
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder)
-	clusterState.RegisterScaleUp(&clusterstate.ScaleUpRequest{
-		NodeGroupName:   "ng2",
-		Increase:        1,
-		Time:            time.Now(),
-		ExpectedAddTime: time.Now().Add(5 * time.Minute),
-	})
-	clusterState.UpdateNodes([]*apiv1.Node{n1, n2}, time.Now())
 
 	context := &context.AutoscalingContext{
 		AutoscalingOptions: defaultOptions,
@@ -614,10 +612,22 @@ func TestScaleUpNodeComingHasScale(t *testing.T) {
 		ExpanderStrategy:   random.NewStrategy(),
 		LogRecorder:        fakeLogRecorder,
 	}
+
+	nodes := []*apiv1.Node{n1, n2}
+	nodeInfos, _ := GetNodeInfosForGroups(nodes, provider, fakeClient, []*extensionsv1.DaemonSet{}, context.PredicateChecker)
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder)
+	clusterState.RegisterScaleUp(&clusterstate.ScaleUpRequest{
+		NodeGroupName:   "ng2",
+		Increase:        1,
+		Time:            time.Now(),
+		ExpectedAddTime: time.Now().Add(5 * time.Minute),
+	})
+	clusterState.UpdateNodes([]*apiv1.Node{n1, n2}, nodeInfos, time.Now())
+
 	p3 := BuildTestPod("p-new", 550, 0)
 
 	processors := ca_processors.TestProcessors()
-	status, err := ScaleUp(context, processors, clusterState, []*apiv1.Pod{p3, p3}, []*apiv1.Node{n1, n2}, []*extensionsv1.DaemonSet{})
+	status, err := ScaleUp(context, processors, clusterState, []*apiv1.Pod{p3, p3}, []*apiv1.Node{n1, n2}, []*extensionsv1.DaemonSet{}, nodeInfos)
 
 	assert.NoError(t, err)
 	// Two nodes needed but one node is already coming, so it should increase by one.
@@ -660,8 +670,7 @@ func TestScaleUpUnhealthy(t *testing.T) {
 
 	fakeRecorder := kube_util.CreateEventRecorder(fakeClient)
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false)
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder)
-	clusterState.UpdateNodes([]*apiv1.Node{n1, n2}, time.Now())
+
 	context := &context.AutoscalingContext{
 		AutoscalingOptions: context.AutoscalingOptions{
 			EstimatorName:  estimator.BinpackingEstimatorName,
@@ -675,10 +684,16 @@ func TestScaleUpUnhealthy(t *testing.T) {
 		ExpanderStrategy: random.NewStrategy(),
 		LogRecorder:      fakeLogRecorder,
 	}
+
+	nodes := []*apiv1.Node{n1, n2}
+	nodeInfos, _ := GetNodeInfosForGroups(nodes, provider, fakeClient, []*extensionsv1.DaemonSet{}, context.PredicateChecker)
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder)
+	clusterState.UpdateNodes([]*apiv1.Node{n1, n2}, nodeInfos, time.Now())
+
 	p3 := BuildTestPod("p-new", 550, 0)
 
 	processors := ca_processors.TestProcessors()
-	status, err := ScaleUp(context, processors, clusterState, []*apiv1.Pod{p3}, []*apiv1.Node{n1, n2}, []*extensionsv1.DaemonSet{})
+	status, err := ScaleUp(context, processors, clusterState, []*apiv1.Pod{p3}, []*apiv1.Node{n1, n2}, []*extensionsv1.DaemonSet{}, nodeInfos)
 
 	assert.NoError(t, err)
 	// Node group is unhealthy.
@@ -712,8 +727,7 @@ func TestScaleUpNoHelp(t *testing.T) {
 
 	fakeRecorder := kube_record.NewFakeRecorder(5)
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false)
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder)
-	clusterState.UpdateNodes([]*apiv1.Node{n1}, time.Now())
+
 	context := &context.AutoscalingContext{
 		AutoscalingOptions: context.AutoscalingOptions{
 			EstimatorName:  estimator.BinpackingEstimatorName,
@@ -727,10 +741,16 @@ func TestScaleUpNoHelp(t *testing.T) {
 		ExpanderStrategy: random.NewStrategy(),
 		LogRecorder:      fakeLogRecorder,
 	}
+
+	nodes := []*apiv1.Node{n1}
+	nodeInfos, _ := GetNodeInfosForGroups(nodes, provider, fakeClient, []*extensionsv1.DaemonSet{}, context.PredicateChecker)
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder)
+	clusterState.UpdateNodes([]*apiv1.Node{n1}, nodeInfos, time.Now())
+
 	p3 := BuildTestPod("p-new", 500, 0)
 
 	processors := ca_processors.TestProcessors()
-	status, err := ScaleUp(context, processors, clusterState, []*apiv1.Pod{p3}, []*apiv1.Node{n1}, []*extensionsv1.DaemonSet{})
+	status, err := ScaleUp(context, processors, clusterState, []*apiv1.Pod{p3}, []*apiv1.Node{n1}, []*extensionsv1.DaemonSet{}, nodeInfos)
 	processors.ScaleUpStatusProcessor.Process(context, status)
 
 	assert.NoError(t, err)
@@ -794,8 +814,7 @@ func TestScaleUpBalanceGroups(t *testing.T) {
 
 	fakeRecorder := kube_record.NewFakeRecorder(5)
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false)
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder)
-	clusterState.UpdateNodes(nodes, time.Now())
+
 	context := &context.AutoscalingContext{
 		AutoscalingOptions: context.AutoscalingOptions{
 			EstimatorName:            estimator.BinpackingEstimatorName,
@@ -811,13 +830,17 @@ func TestScaleUpBalanceGroups(t *testing.T) {
 		LogRecorder:      fakeLogRecorder,
 	}
 
+	nodeInfos, _ := GetNodeInfosForGroups(nodes, provider, fakeClient, []*extensionsv1.DaemonSet{}, context.PredicateChecker)
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder)
+	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
+
 	pods := make([]*apiv1.Pod, 0)
 	for i := 0; i < 2; i++ {
 		pods = append(pods, BuildTestPod(fmt.Sprintf("test-pod-%v", i), 80, 0))
 	}
 
 	processors := ca_processors.TestProcessors()
-	status, typedErr := ScaleUp(context, processors, clusterState, pods, nodes, []*extensionsv1.DaemonSet{})
+	status, typedErr := ScaleUp(context, processors, clusterState, pods, nodes, []*extensionsv1.DaemonSet{}, nodeInfos)
 
 	assert.NoError(t, typedErr)
 	assert.True(t, status.ScaledUp)
@@ -880,7 +903,10 @@ func TestScaleUpAutoprovisionedNodeGroup(t *testing.T) {
 	processors.NodeGroupListProcessor = nodegroups.NewAutoprovisioningNodeGroupListProcessor()
 	processors.NodeGroupManager = nodegroups.NewDefaultNodeGroupManager()
 
-	status, err := ScaleUp(context, processors, clusterState, []*apiv1.Pod{p1}, []*apiv1.Node{}, []*extensionsv1.DaemonSet{})
+	nodes := []*apiv1.Node{}
+	nodeInfos, _ := GetNodeInfosForGroups(nodes, provider, fakeClient, []*extensionsv1.DaemonSet{}, context.PredicateChecker)
+
+	status, err := ScaleUp(context, processors, clusterState, []*apiv1.Pod{p1}, []*apiv1.Node{}, []*extensionsv1.DaemonSet{}, nodeInfos)
 	assert.NoError(t, err)
 	assert.True(t, status.ScaledUp)
 	assert.Equal(t, "autoprovisioned-T1", getStringFromChan(createdGroups))
