@@ -21,29 +21,18 @@ import (
 	"os"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gke"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/kubemark"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
-	"k8s.io/client-go/informers"
-	kubeclient "k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
-	kubemarkcontroller "k8s.io/kubernetes/pkg/kubemark"
 
 	"github.com/golang/glog"
 )
 
 // AvailableCloudProviders supported by the cloud provider builder.
 var AvailableCloudProviders = []string{
-	aws.ProviderName,
-	azure.ProviderName,
 	gce.ProviderNameGCE,
 	gke.ProviderNameGKE,
-	kubemark.ProviderName,
 }
 
 // DefaultCloudProvider is GCE.
@@ -70,12 +59,6 @@ func NewCloudProvider(opts config.AutoscalingOptions) cloudprovider.CloudProvide
 			return buildGKE(opts, rl, gke.ModeGKENAP)
 		}
 		return buildGKE(opts, rl, gke.ModeGKE)
-	case aws.ProviderName:
-		return buildAWS(opts, do, rl)
-	case azure.ProviderName:
-		return buildAzure(opts, do, rl)
-	case kubemark.ProviderName:
-		return buildKubemark(opts, do, rl)
 	case "":
 		// Ideally this would be an error, but several unit tests of the
 		// StaticAutoscaler depend on this behaviour.
@@ -133,89 +116,3 @@ func buildGKE(opts config.AutoscalingOptions, rl *cloudprovider.ResourceLimiter,
 	return provider
 }
 
-func buildAWS(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
-	var config io.ReadCloser
-	if opts.CloudConfig != "" {
-		var err error
-		config, err = os.Open(opts.CloudConfig)
-		if err != nil {
-			glog.Fatalf("Couldn't open cloud provider configuration %s: %#v", opts.CloudConfig, err)
-		}
-		defer config.Close()
-	}
-
-	manager, err := aws.CreateAwsManager(config, do)
-	if err != nil {
-		glog.Fatalf("Failed to create AWS Manager: %v", err)
-	}
-
-	provider, err := aws.BuildAwsCloudProvider(manager, rl)
-	if err != nil {
-		glog.Fatalf("Failed to create AWS cloud provider: %v", err)
-	}
-	return provider
-}
-
-func buildAzure(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
-	var config io.ReadCloser
-	if opts.CloudConfig != "" {
-		glog.Info("Creating Azure Manager using cloud-config file: %v", opts.CloudConfig)
-		var err error
-		config, err := os.Open(opts.CloudConfig)
-		if err != nil {
-			glog.Fatalf("Couldn't open cloud provider configuration %s: %#v", opts.CloudConfig, err)
-		}
-		defer config.Close()
-	} else {
-		glog.Info("Creating Azure Manager with default configuration.")
-	}
-	manager, err := azure.CreateAzureManager(config, do)
-	if err != nil {
-		glog.Fatalf("Failed to create Azure Manager: %v", err)
-	}
-	provider, err := azure.BuildAzureCloudProvider(manager, rl)
-	if err != nil {
-		glog.Fatalf("Failed to create Azure cloud provider: %v", err)
-	}
-	return provider
-}
-
-func buildKubemark(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
-	externalConfig, err := rest.InClusterConfig()
-	if err != nil {
-		glog.Fatalf("Failed to get kubeclient config for external cluster: %v", err)
-	}
-
-	kubemarkConfig, err := clientcmd.BuildConfigFromFlags("", "/kubeconfig/cluster_autoscaler.kubeconfig")
-	if err != nil {
-		glog.Fatalf("Failed to get kubeclient config for kubemark cluster: %v", err)
-	}
-
-	stop := make(chan struct{})
-
-	externalClient := kubeclient.NewForConfigOrDie(externalConfig)
-	kubemarkClient := kubeclient.NewForConfigOrDie(kubemarkConfig)
-
-	externalInformerFactory := informers.NewSharedInformerFactory(externalClient, 0)
-	kubemarkInformerFactory := informers.NewSharedInformerFactory(kubemarkClient, 0)
-	kubemarkNodeInformer := kubemarkInformerFactory.Core().V1().Nodes()
-	go kubemarkNodeInformer.Informer().Run(stop)
-
-	kubemarkController, err := kubemarkcontroller.NewKubemarkController(externalClient, externalInformerFactory,
-		kubemarkClient, kubemarkNodeInformer)
-	if err != nil {
-		glog.Fatalf("Failed to create Kubemark cloud provider: %v", err)
-	}
-
-	externalInformerFactory.Start(stop)
-	if !kubemarkController.WaitForCacheSync(stop) {
-		glog.Fatalf("Failed to sync caches for kubemark controller")
-	}
-	go kubemarkController.Run(stop)
-
-	provider, err := kubemark.BuildKubemarkCloudProvider(kubemarkController, do.NodeGroupSpecs, rl)
-	if err != nil {
-		glog.Fatalf("Failed to create Kubemark cloud provider: %v", err)
-	}
-	return provider
-}
