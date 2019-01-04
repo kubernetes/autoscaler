@@ -37,10 +37,9 @@ import (
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	scheduler_util "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 
+	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
-	extensionsv1 "k8s.io/api/extensions/v1beta1"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
-	kube_client "k8s.io/client-go/kubernetes"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 
@@ -136,7 +135,7 @@ func FilterOutSchedulable(unschedulableCandidates []*apiv1.Pod, nodes []*apiv1.N
 		// Hello, ugly hack. I wish you weren't here.
 		var predicateError *simulator.PredicateError
 		if err != nil {
-			predicateError = simulator.NewPredicateError("FitsAny", err, nil)
+			predicateError = simulator.NewPredicateError("FitsAny", err, nil, nil)
 			unschedulablePods = append(unschedulablePods, pod)
 		} else {
 			glogx.V(4).UpTo(loggingQuota).Infof("Pod %s marked as unschedulable can be scheduled on %s. Ignoring in scale up.", pod.Name, nodeName)
@@ -218,8 +217,8 @@ func CheckPodsSchedulableOnNode(context *context.AutoscalingContext, pods []*api
 // TODO(mwielgus): This returns map keyed by url, while most code (including scheduler) uses node.Name for a key.
 //
 // TODO(mwielgus): Review error policy - sometimes we may continue with partial errors.
-func GetNodeInfosForGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.CloudProvider, kubeClient kube_client.Interface,
-	daemonsets []*extensionsv1.DaemonSet, predicateChecker *simulator.PredicateChecker) (map[string]*schedulercache.NodeInfo, errors.AutoscalerError) {
+func GetNodeInfosForGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.CloudProvider, listers kube_util.ListerRegistry,
+	daemonsets []*appsv1.DaemonSet, predicateChecker *simulator.PredicateChecker) (map[string]*schedulercache.NodeInfo, errors.AutoscalerError) {
 	result := make(map[string]*schedulercache.NodeInfo)
 
 	// processNode returns information whether the nodeTemplate was generated and if there was an error.
@@ -234,7 +233,7 @@ func GetNodeInfosForGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.Clou
 		id := nodeGroup.Id()
 		if _, found := result[id]; !found {
 			// Build nodeInfo.
-			nodeInfo, err := simulator.BuildNodeInfoForNode(node, kubeClient)
+			nodeInfo, err := simulator.BuildNodeInfoForNode(node, listers)
 			if err != nil {
 				return false, err
 			}
@@ -266,25 +265,16 @@ func GetNodeInfosForGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.Clou
 
 		// No good template, trying to generate one. This is called only if there are no
 		// working nodes in the node groups. By default CA tries to use a real-world example.
-		baseNodeInfo, err := nodeGroup.TemplateNodeInfo()
+		nodeInfo, err := GetNodeInfoFromTemplate(nodeGroup, daemonsets, predicateChecker)
 		if err != nil {
 			if err == cloudprovider.ErrNotImplemented {
 				continue
 			} else {
 				glog.Errorf("Unable to build proper template node for %s: %v", id, err)
-				return map[string]*schedulercache.NodeInfo{}, errors.ToAutoscalerError(
-					errors.CloudProviderError, err)
+				return map[string]*schedulercache.NodeInfo{}, errors.ToAutoscalerError(errors.CloudProviderError, err)
 			}
 		}
-		pods := daemonset.GetDaemonSetPodsForNode(baseNodeInfo, daemonsets, predicateChecker)
-		pods = append(pods, baseNodeInfo.Pods()...)
-		fullNodeInfo := schedulercache.NewNodeInfo(pods...)
-		fullNodeInfo.SetNode(baseNodeInfo.Node())
-		sanitizedNodeInfo, typedErr := sanitizeNodeInfo(fullNodeInfo, id)
-		if typedErr != nil {
-			return map[string]*schedulercache.NodeInfo{}, typedErr
-		}
-		result[id] = sanitizedNodeInfo
+		result[id] = nodeInfo
 	}
 
 	// Last resort - unready/unschedulable nodes.
@@ -307,6 +297,25 @@ func GetNodeInfosForGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.Clou
 	}
 
 	return result, nil
+}
+
+// GetNodeInfoFromTemplate returns NodeInfo object built base on TemplateNodeInfo returned by NodeGroup.TemplateNodeInfo().
+func GetNodeInfoFromTemplate(nodeGroup cloudprovider.NodeGroup, daemonsets []*appsv1.DaemonSet, predicateChecker *simulator.PredicateChecker) (*schedulercache.NodeInfo, errors.AutoscalerError) {
+	id := nodeGroup.Id()
+	baseNodeInfo, err := nodeGroup.TemplateNodeInfo()
+	if err != nil {
+		return nil, errors.ToAutoscalerError(errors.CloudProviderError, err)
+	}
+
+	pods := daemonset.GetDaemonSetPodsForNode(baseNodeInfo, daemonsets, predicateChecker)
+	pods = append(pods, baseNodeInfo.Pods()...)
+	fullNodeInfo := schedulercache.NewNodeInfo(pods...)
+	fullNodeInfo.SetNode(baseNodeInfo.Node())
+	sanitizedNodeInfo, typedErr := sanitizeNodeInfo(fullNodeInfo, id)
+	if typedErr != nil {
+		return nil, typedErr
+	}
+	return sanitizedNodeInfo, nil
 }
 
 // FilterOutNodesFromNotAutoscaledGroups return subset of input nodes for which cloud provider does not
@@ -397,20 +406,22 @@ func removeOldUnregisteredNodes(unregisteredNodes []clusterstate.UnregisteredNod
 			}
 			size, err := nodeGroup.TargetSize()
 			if err != nil {
-				glog.Warningf("Failed to get node group size, err: %v", err)
+				glog.Warningf("Failed to get node group size; unregisteredNode=%v; nodeGroup=%v; err=%v", unregisteredNode.Node.Name, nodeGroup.Id(), err)
 				continue
 			}
 			if nodeGroup.MinSize() >= size {
 				glog.Warningf("Failed to remove node %s: node group min size reached, skipping unregistered node removal", unregisteredNode.Node.Name)
 				continue
 			}
-			logRecorder.Eventf(apiv1.EventTypeNormal, "DeleteUnregistered",
-				"Removing unregistered node %v", unregisteredNode.Node.Name)
 			err = nodeGroup.DeleteNodes([]*apiv1.Node{unregisteredNode.Node})
 			if err != nil {
 				glog.Warningf("Failed to remove node %s: %v", unregisteredNode.Node.Name, err)
+				logRecorder.Eventf(apiv1.EventTypeWarning, "DeleteUnregisteredFailed",
+					"Failed to remove node %s: %v", unregisteredNode.Node.Name, err)
 				return removedAny, err
 			}
+			logRecorder.Eventf(apiv1.EventTypeNormal, "DeleteUnregistered",
+				"Removed unregistered node %v", unregisteredNode.Node.Name)
 			removedAny = true
 		}
 	}

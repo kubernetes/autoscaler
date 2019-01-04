@@ -18,12 +18,16 @@ package gke
 
 import (
 	"fmt"
+	"io"
+	"os"
 	"time"
 
+	"github.com/golang/glog"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
@@ -361,8 +365,16 @@ func (mig *GkeMig) Debug() string {
 }
 
 // Nodes returns a list of all nodes that belong to this node group.
-func (mig *GkeMig) Nodes() ([]string, error) {
-	return mig.gkeManager.GetMigNodes(mig)
+func (mig *GkeMig) Nodes() ([]cloudprovider.Instance, error) {
+	instanceNames, err := mig.gkeManager.GetMigNodes(mig)
+	if err != nil {
+		return nil, err
+	}
+	instances := make([]cloudprovider.Instance, 0, len(instanceNames))
+	for _, instanceName := range instanceNames {
+		instances = append(instances, cloudprovider.Instance{Id: instanceName})
+	}
+	return instances, nil
 }
 
 // Exist checks if the node group really exists on the cloud provider side. Allows to tell the
@@ -402,4 +414,38 @@ func (mig *GkeMig) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
 	nodeInfo := schedulercache.NewNodeInfo(cloudprovider.BuildKubeProxy(mig.Id()))
 	nodeInfo.SetNode(node)
 	return nodeInfo, nil
+}
+
+// BuildGKE builds a new GKE cloud provider, manager etc.
+func BuildGKE(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+	if do.DiscoverySpecified() {
+		glog.Fatal("GKE gets nodegroup specification via API, command line specs are not allowed")
+	}
+	var config io.ReadCloser
+	if opts.CloudConfig != "" {
+		var err error
+		config, err = os.Open(opts.CloudConfig)
+		if err != nil {
+			glog.Fatalf("Couldn't open cloud provider configuration %s: %#v", opts.CloudConfig, err)
+		}
+		defer config.Close()
+	}
+
+	mode := ModeGKE
+	if opts.NodeAutoprovisioningEnabled {
+		mode = ModeGKENAP
+	}
+	manager, err := CreateGkeManager(config, mode, opts.ClusterName, opts.Regional)
+	if err != nil {
+		glog.Fatalf("Failed to create GKE Manager: %v", err)
+	}
+
+	provider, err := BuildGkeCloudProvider(manager, rl)
+	if err != nil {
+		glog.Fatalf("Failed to create GKE cloud provider: %v", err)
+	}
+	// Register GKE & GCE API usage metrics.
+	registerMetrics()
+	gce.RegisterMetrics()
+	return provider
 }

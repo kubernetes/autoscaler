@@ -18,11 +18,15 @@ package gce
 
 import (
 	"fmt"
+	"io"
+	"os"
 	"strings"
 
+	"github.com/golang/glog"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 )
@@ -119,6 +123,11 @@ type GceRef struct {
 
 func (ref GceRef) String() string {
 	return fmt.Sprintf("%s/%s/%s", ref.Project, ref.Zone, ref.Name)
+}
+
+// ToProviderId converts GceRef to string in format used as ProviderId in Node object.
+func (ref GceRef) ToProviderId() string {
+	return fmt.Sprintf("gce://%s/%s/%s", ref.Project, ref.Zone, ref.Name)
 }
 
 // GceRefFromProviderId creates InstanceConfig object
@@ -269,7 +278,7 @@ func (mig *gceMig) Debug() string {
 }
 
 // Nodes returns a list of all nodes that belong to this node group.
-func (mig *gceMig) Nodes() ([]string, error) {
+func (mig *gceMig) Nodes() ([]cloudprovider.Instance, error) {
 	return mig.gceManager.GetMigNodes(mig)
 }
 
@@ -302,4 +311,30 @@ func (mig *gceMig) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
 	nodeInfo := schedulercache.NewNodeInfo(cloudprovider.BuildKubeProxy(mig.Id()))
 	nodeInfo.SetNode(node)
 	return nodeInfo, nil
+}
+
+// BuildGCE builds GCE cloud provider, manager etc.
+func BuildGCE(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+	var config io.ReadCloser
+	if opts.CloudConfig != "" {
+		var err error
+		config, err = os.Open(opts.CloudConfig)
+		if err != nil {
+			glog.Fatalf("Couldn't open cloud provider configuration %s: %#v", opts.CloudConfig, err)
+		}
+		defer config.Close()
+	}
+
+	manager, err := CreateGceManager(config, do, opts.Regional)
+	if err != nil {
+		glog.Fatalf("Failed to create GCE Manager: %v", err)
+	}
+
+	provider, err := BuildGceCloudProvider(manager, rl)
+	if err != nil {
+		glog.Fatalf("Failed to create GCE cloud provider: %v", err)
+	}
+	// Register GCE API usage metrics.
+	RegisterMetrics()
+	return provider
 }

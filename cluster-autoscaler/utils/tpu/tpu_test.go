@@ -83,7 +83,7 @@ func TestClearTPURequests(t *testing.T) {
 			expected: podsWithoutTPUs,
 		},
 		{
-			desc:     "Pods with & without TPU reqest",
+			desc:     "Pods with & without TPU request",
 			pods:     mixedPods,
 			expected: sanitizedMixedPods,
 		},

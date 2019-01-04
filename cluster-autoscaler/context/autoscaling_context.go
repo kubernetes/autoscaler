@@ -21,6 +21,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -42,6 +43,8 @@ type AutoscalingContext struct {
 	PredicateChecker *simulator.PredicateChecker
 	// ExpanderStrategy is the strategy used to choose which node group to expand when scaling up
 	ExpanderStrategy expander.Strategy
+	// EstimatorBuilder is the builder function for node count estimator to be used.
+	EstimatorBuilder estimator.EstimatorBuilder
 }
 
 // AutoscalingKubeClients contains all Kubernetes API clients,
@@ -78,13 +81,14 @@ func NewResourceLimiterFromAutoscalingOptions(options config.AutoscalingOptions)
 
 // NewAutoscalingContext returns an autoscaling context from all the necessary parameters passed via arguments
 func NewAutoscalingContext(options config.AutoscalingOptions, predicateChecker *simulator.PredicateChecker,
-	autoscalingKubeClients *AutoscalingKubeClients, cloudProvider cloudprovider.CloudProvider, expanderStrategy expander.Strategy) *AutoscalingContext {
+	autoscalingKubeClients *AutoscalingKubeClients, cloudProvider cloudprovider.CloudProvider, expanderStrategy expander.Strategy, estimatorBuilder estimator.EstimatorBuilder) *AutoscalingContext {
 	return &AutoscalingContext{
 		AutoscalingOptions:     options,
 		CloudProvider:          cloudProvider,
 		AutoscalingKubeClients: *autoscalingKubeClients,
 		PredicateChecker:       predicateChecker,
 		ExpanderStrategy:       expanderStrategy,
+		EstimatorBuilder:       estimatorBuilder,
 	}
 }
 

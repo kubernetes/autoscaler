@@ -18,7 +18,7 @@ set -euo pipefail
 
 GO_VERSION=($(go version))
 
-if ! echo "${GO_VERSION[2]}" | grep -Eq 'go1.9|1.10'; then
+if ! echo "${GO_VERSION[2]}" | grep -Eq 'go1.9|1.10|1.11'; then
   echo "Unsupported go version ${GO_VERSION}"
   return 1
 fi

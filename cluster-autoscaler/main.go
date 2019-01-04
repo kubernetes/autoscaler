@@ -38,6 +38,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
@@ -97,7 +99,7 @@ var (
 		"Maximum number of non empty nodes considered in one iteration as candidates for scale down with drain."+
 			"Lower value means better CA responsiveness but possible slower scale down latency."+
 			"Higher value can affect CA performance with big clusters (hundreds of nodes)."+
-			"Set to non posistive value to turn this heuristic off - CA will not limit the number of nodes it considers.")
+			"Set to non positive value to turn this heuristic off - CA will not limit the number of nodes it considers.")
 	scaleDownCandidatesPoolRatio = flag.Float64("scale-down-candidates-pool-ratio", 0.1,
 		"A ratio of nodes that are considered as additional non empty candidates for"+
 			"scale down when some candidates from previous iteration are no longer valid."+
@@ -138,6 +140,11 @@ var (
 	expanderFlag = flag.String("expander", expander.RandomExpanderName,
 		"Type of node group expander to be used in scale up. Available values: ["+strings.Join(expander.AvailableExpanders, ",")+"]")
 
+	ignoreDaemonSetsUtilization = flag.Bool("ignore-daemonsets-utilization", false,
+		"Should CA ignore DaemonSet pods when calculating resource utilization for scaling down")
+	ignoreMirrorPodsUtilization = flag.Bool("ignore-mirror-pods-utilization", false,
+		"Should CA ignore Mirror pods when calculating resource utilization for scaling down")
+
 	writeStatusConfigMapFlag         = flag.Bool("write-status-configmap", true, "Should CA write status information to a configmap")
 	maxInactivityTimeFlag            = flag.Duration("max-inactivity", 10*time.Minute, "Maximum time from last recorded autoscaler activity before automatic restart")
 	maxFailingTimeFlag               = flag.Duration("max-failing-time", 15*time.Minute, "Maximum time from last recorded successful autoscaler run before automatic restart")
@@ -148,6 +155,7 @@ var (
 	unremovableNodeRecheckTimeout = flag.Duration("unremovable-node-recheck-timeout", 5*time.Minute, "The timeout before we check again a node that couldn't be removed before")
 	expendablePodsPriorityCutoff  = flag.Int("expendable-pods-priority-cutoff", -10, "Pods with priority below cutoff will be expendable. They can be killed without any consideration during scale down and they don't cause scale up. Pods with null priority (PodPriority disabled) are non expendable.")
 	regional                      = flag.Bool("regional", false, "Cluster is regional.")
+	newPodScaleUpDelay            = flag.Duration("new-pod-scale-up-delay", 0*time.Second, "Pods less than this old will not be considered for scale-up.")
 )
 
 func createAutoscalingOptions() config.AutoscalingOptions {
@@ -176,6 +184,8 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		OkTotalUnreadyCount:              *okTotalUnreadyCount,
 		EstimatorName:                    *estimatorFlag,
 		ExpanderName:                     *expanderFlag,
+		IgnoreDaemonSetsUtilization:      *ignoreDaemonSetsUtilization,
+		IgnoreMirrorPodsUtilization:      *ignoreMirrorPodsUtilization,
 		MaxEmptyBulkDelete:               *maxEmptyBulkDeleteFlag,
 		MaxGracefulTerminationSec:        *maxGracefulTerminationFlag,
 		MaxNodeProvisionTime:             *maxNodeProvisionTime,
@@ -205,6 +215,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		UnremovableNodeRecheckTimeout:    *unremovableNodeRecheckTimeout,
 		ExpendablePodsPriorityCutoff:     *expendablePodsPriorityCutoff,
 		Regional:                         *regional,
+		NewPodScaleUpDelay:               *newPodScaleUpDelay,
 	}
 }
 
@@ -254,9 +265,16 @@ func buildAutoscaler() (core.Autoscaler, error) {
 	// Create basic config from flags.
 	autoscalingOptions := createAutoscalingOptions()
 	kubeClient := createKubeClient(getKubeConfig())
+	processors := ca_processors.DefaultProcessors()
+	if autoscalingOptions.CloudProviderName == "gke" {
+		processors.NodeGroupSetProcessor = &nodegroupset.BalancingNodeGroupSetProcessor{
+			Comparator: nodegroupset.IsGkeNodeInfoSimilar}
+
+	}
 	opts := core.AutoscalerOptions{
 		AutoscalingOptions: autoscalingOptions,
 		KubeClient:         kubeClient,
+		Processors:         processors,
 	}
 
 	// This metric should be published only once.
@@ -311,16 +329,6 @@ func main() {
 	healthCheck := metrics.NewHealthCheck(*maxInactivityTimeFlag, *maxFailingTimeFlag)
 
 	glog.V(1).Infof("Cluster Autoscaler %s", ClusterAutoscalerVersion)
-
-	correctEstimator := false
-	for _, availableEstimator := range estimator.AvailableEstimators {
-		if *estimatorFlag == availableEstimator {
-			correctEstimator = true
-		}
-	}
-	if !correctEstimator {
-		glog.Fatalf("Unrecognized estimator: %v", *estimatorFlag)
-	}
 
 	go func() {
 		http.Handle("/metrics", prometheus.Handler())

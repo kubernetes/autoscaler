@@ -24,6 +24,10 @@ of our weekly meetings.  See [the Kubernetes Community Repo](https://github.com/
 
 ## Getting the Code
 
+Fork the repository in the cloud:
+1. Visit https://github.com/kubernetes/autoscaler
+1. Click Fork button (top right) to establish a cloud-based fork.
+
 The code must be checked out as a subdirectory of `k8s.io`, and not `github.com`.
 
 ```shell
@@ -34,5 +38,8 @@ git clone https://github.com/$YOUR_GITHUB_USERNAME/autoscaler.git
 cd autoscaler
 ```
 
+Please refer to Kubernetes [Github workflow guide] for more details.
+
 [GoDoc]: https://godoc.org/k8s.io/autoscaler
 [GoDoc Widget]: https://godoc.org/k8s.io/autoscaler?status.svg
+[Github workflow guide]: https://github.com/kubernetes/community/blob/master/contributors/guide/github-workflow.md

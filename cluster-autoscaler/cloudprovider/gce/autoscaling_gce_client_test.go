@@ -66,7 +66,7 @@ func TestWaitForOp(t *testing.T) {
 	g := newTestAutoscalingGceClient(t, "project1", server.URL)
 
 	g.operationPollInterval = 1 * time.Millisecond
-	g.operationWaitTimeout = 50 * time.Millisecond
+	g.operationWaitTimeout = 500 * time.Millisecond
 
 	server.On("handle", "/project1/zones/us-central1-b/operations/operation-1505728466148-d16f5197").Return(operationRunningResponse).Times(3)
 	server.On("handle", "/project1/zones/us-central1-b/operations/operation-1505728466148-d16f5197").Return(operationDoneResponse).Once()

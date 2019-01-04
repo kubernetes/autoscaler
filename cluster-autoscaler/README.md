@@ -15,8 +15,12 @@ Is available [HERE](./FAQ.md).
 
 We recommend using Cluster Autoscaler with the Kubernetes master version for which it was meant. The below combinations have been tested on GCP. We don't do cross version testing or compatibility testing in other environments. Some user reports indicate successful use of a newer version of Cluster Autoscaler with older clusters, however, there is always a chance that it won't work as expected.
 
+Starting from Kubernetes 1.12, versioning scheme was changed to match Kubernetes minor releases exactly.
+
 | Kubernetes Version  | CA Version   |
 |--------|--------|
+| 1.13.X | 1.13.X  |
+| 1.12.X | 1.12.X  |
 | 1.11.X | 1.3.X  |
 | 1.10.X | 1.2.X  |
 | 1.9.X  | 1.1.X  |
@@ -118,11 +122,12 @@ default deployment strategy on GCP.
 It is possible to run a customized deployment of Cluster Autoscaler on worker nodes, but extra care needs
 to be taken to ensure that Cluster Autoscaler remains up and running. Users can put it into kube-system
 namespace (Cluster Autoscaler doesn't scale down node with non-mirrored kube-system pods running
-on them) and add `scheduler.alpha.kubernetes.io/critical-pod` annotation (so that the rescheduler,
-if enabled, will kill other pods to make space for it to run).
+on them) and set a `priorityClassName: system-cluster-critical` property on your pod spec
+(to prevent your pod from being evicted).
 
 Supported cloud providers:
 * GCE https://kubernetes.io/docs/concepts/cluster-administration/cluster-management/
 * GKE https://cloud.google.com/container-engine/docs/cluster-autoscaler
 * AWS https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md
 * Azure https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/azure/README.md
+* Alibaba Cloud https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/alicloud/README.md

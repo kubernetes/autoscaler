@@ -344,17 +344,17 @@ func (tng *TestNodeGroup) Debug() string {
 }
 
 // Nodes returns a list of all nodes that belong to this node group.
-func (tng *TestNodeGroup) Nodes() ([]string, error) {
+func (tng *TestNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 	tng.Lock()
 	defer tng.Unlock()
 
-	result := make([]string, 0)
+	instances := make([]cloudprovider.Instance, 0)
 	for node, nodegroup := range tng.cloudProvider.nodes {
 		if nodegroup == tng.id {
-			result = append(result, node)
+			instances = append(instances, cloudprovider.Instance{Id: node})
 		}
 	}
-	return result, nil
+	return instances, nil
 }
 
 // Autoprovisioned returns true if the node group is autoprovisioned.

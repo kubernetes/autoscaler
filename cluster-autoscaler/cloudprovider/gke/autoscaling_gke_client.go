@@ -23,9 +23,10 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 )
 
-// This flag is outside main as it's only useful for test/development.
 var (
-	gkeAPIEndpoint = flag.String("gke-api-endpoint", "", "GKE API endpoint address. This flag is used by developers only. Users shouldn't change this flag.")
+	// GkeAPIEndpoint overrides default GKE API endpoint for testing.
+	// This flag is outside main as it's only useful for test/development.
+	GkeAPIEndpoint = flag.String("gke-api-endpoint", "", "GKE API endpoint address. This flag is used by developers only. Users shouldn't change this flag.")
 )
 
 const (

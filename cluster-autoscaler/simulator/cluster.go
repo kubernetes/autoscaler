@@ -23,15 +23,16 @@ import (
 	"math/rand"
 	"time"
 
+	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/glogx"
+	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	scheduler_util "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/tpu"
 
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1beta1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	client "k8s.io/client-go/kubernetes"
 	"k8s.io/kubernetes/pkg/scheduler/algorithm"
 	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 
@@ -57,10 +58,18 @@ type NodeToBeRemoved struct {
 	PodsToReschedule []*apiv1.Pod
 }
 
+// UtilizationInfo contains utilization information for a node.
+type UtilizationInfo struct {
+	CpuUtil float64
+	MemUtil float64
+	// Max(CpuUtil, MemUtil).
+	Utilization float64
+}
+
 // FindNodesToRemove finds nodes that can be removed. Returns also an information about good
 // rescheduling location for each of the pods.
 func FindNodesToRemove(candidates []*apiv1.Node, allNodes []*apiv1.Node, pods []*apiv1.Pod,
-	client client.Interface, predicateChecker *PredicateChecker, maxCount int,
+	listers kube_util.ListerRegistry, predicateChecker *PredicateChecker, maxCount int,
 	fastCheck bool, oldHints map[string]string, usageTracker *UsageTracker,
 	timestamp time.Time,
 	podDisruptionBudgets []*policyv1.PodDisruptionBudget,
@@ -88,7 +97,7 @@ candidateloop:
 				podsToRemove, err = FastGetPodsToMove(nodeInfo, *skipNodesWithSystemPods, *skipNodesWithLocalStorage,
 					podDisruptionBudgets)
 			} else {
-				podsToRemove, err = DetailedGetPodsForMove(nodeInfo, *skipNodesWithSystemPods, *skipNodesWithLocalStorage, client, int32(*minReplicaCount),
+				podsToRemove, err = DetailedGetPodsForMove(nodeInfo, *skipNodesWithSystemPods, *skipNodesWithLocalStorage, listers, int32(*minReplicaCount),
 					podDisruptionBudgets)
 			}
 			if err != nil {
@@ -141,20 +150,21 @@ func FindEmptyNodesToRemove(candidates []*apiv1.Node, pods []*apiv1.Pod) []*apiv
 }
 
 // CalculateUtilization calculates utilization of a node, defined as maximum of (cpu, memory) utilization.
-// Per resource utilization is the sum of requests for it divided by allocatable.
-func CalculateUtilization(node *apiv1.Node, nodeInfo *schedulercache.NodeInfo) (float64, error) {
-	cpu, err := calculateUtilizationOfResource(node, nodeInfo, apiv1.ResourceCPU)
+// Per resource utilization is the sum of requests for it divided by allocatable. It also returns the individual
+// cpu and memory utilization.
+func CalculateUtilization(node *apiv1.Node, nodeInfo *schedulercache.NodeInfo, skipDaemonSetPods, skipMirrorPods bool) (utilInfo UtilizationInfo, err error) {
+	cpu, err := calculateUtilizationOfResource(node, nodeInfo, apiv1.ResourceCPU, skipDaemonSetPods, skipMirrorPods)
 	if err != nil {
-		return 0, err
+		return UtilizationInfo{}, err
 	}
-	mem, err := calculateUtilizationOfResource(node, nodeInfo, apiv1.ResourceMemory)
+	mem, err := calculateUtilizationOfResource(node, nodeInfo, apiv1.ResourceMemory, skipDaemonSetPods, skipMirrorPods)
 	if err != nil {
-		return 0, err
+		return UtilizationInfo{}, err
 	}
-	return math.Max(cpu, mem), nil
+	return UtilizationInfo{CpuUtil: cpu, MemUtil: mem, Utilization: math.Max(cpu, mem)}, nil
 }
 
-func calculateUtilizationOfResource(node *apiv1.Node, nodeInfo *schedulercache.NodeInfo, resourceName apiv1.ResourceName) (float64, error) {
+func calculateUtilizationOfResource(node *apiv1.Node, nodeInfo *schedulercache.NodeInfo, resourceName apiv1.ResourceName, skipDaemonSetPods, skipMirrorPods bool) (float64, error) {
 	nodeAllocatable, found := node.Status.Allocatable[resourceName]
 	if !found {
 		return 0, fmt.Errorf("Failed to get %v from %s", resourceName, node.Name)
@@ -164,6 +174,14 @@ func calculateUtilizationOfResource(node *apiv1.Node, nodeInfo *schedulercache.N
 	}
 	podsRequest := resource.MustParse("0")
 	for _, pod := range nodeInfo.Pods() {
+		// factor daemonset pods out of the utilization calculations
+		if skipDaemonSetPods && isDaemonSet(pod) {
+			continue
+		}
+		// factor mirror pods out of the utilization calculations
+		if skipMirrorPods && drain.IsMirrorPod(pod) {
+			continue
+		}
 		for _, container := range pod.Spec.Containers {
 			if resourceValue, found := container.Resources.Requests[resourceName]; found {
 				podsRequest.Add(resourceValue)
@@ -273,4 +291,13 @@ func shuffleNodes(nodes []*apiv1.Node) []*apiv1.Node {
 		result[i], result[j] = result[j], result[i]
 	}
 	return result
+}
+
+func isDaemonSet(pod *apiv1.Pod) bool {
+	for _, ownerReference := range pod.ObjectMeta.OwnerReferences {
+		if ownerReference.Kind == "DaemonSet" {
+			return true
+		}
+	}
+	return false
 }

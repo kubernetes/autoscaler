@@ -34,6 +34,10 @@ const (
 	MaxFreeDifferenceRatio = 0.05
 )
 
+// NodeInfoComparator is a function that tells if two nodes are from NodeGroups
+// similar enough to be considered a part of a single NodeGroupSet.
+type NodeInfoComparator func(n1, n2 *schedulercache.NodeInfo) bool
+
 func compareResourceMapsWithTolerance(resources map[apiv1.ResourceName][]resource.Quantity,
 	maxDifferenceRatio float64) bool {
 	for _, qtyList := range resources {
@@ -89,19 +93,20 @@ func IsNodeInfoSimilar(n1, n2 *schedulercache.NodeInfo) bool {
 		return false
 	}
 
+	ignoredLabels := map[string]bool{
+		kubeletapis.LabelHostname:             true,
+		kubeletapis.LabelZoneFailureDomain:    true,
+		kubeletapis.LabelZoneRegion:           true,
+		"beta.kubernetes.io/fluentd-ds-ready": true, // this is internal label used for determining if fluentd should be installed as deamon set. Used for migration 1.8 to 1.9.
+	}
+
 	labels := make(map[string][]string)
 	for _, node := range nodes {
 		for label, value := range node.Node().ObjectMeta.Labels {
-			if label == kubeletapis.LabelHostname {
-				continue
+			ignore, _ := ignoredLabels[label]
+			if !ignore {
+				labels[label] = append(labels[label], value)
 			}
-			if label == kubeletapis.LabelZoneFailureDomain {
-				continue
-			}
-			if label == kubeletapis.LabelZoneRegion {
-				continue
-			}
-			labels[label] = append(labels[label], value)
 		}
 	}
 	for _, labelValues := range labels {
