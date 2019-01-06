@@ -37,7 +37,7 @@ func GetRequiredPodsForNode(nodename string, listers kube_util.ListerRegistry) (
 	}
 	allPods := make([]*apiv1.Pod, 0)
 	for _, p := range pods {
-		if (p.Spec.NodeName == nodename) {
+		if p.Spec.NodeName == nodename {
 			allPods = append(allPods, p)
 		}
 	}

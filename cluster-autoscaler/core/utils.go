@@ -40,7 +40,6 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
-	kube_client "k8s.io/client-go/kubernetes"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 
@@ -218,7 +217,7 @@ func CheckPodsSchedulableOnNode(context *context.AutoscalingContext, pods []*api
 // TODO(mwielgus): This returns map keyed by url, while most code (including scheduler) uses node.Name for a key.
 //
 // TODO(mwielgus): Review error policy - sometimes we may continue with partial errors.
-func GetNodeInfosForGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.CloudProvider, kubeClient kube_client.Interface,
+func GetNodeInfosForGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.CloudProvider, listers kube_util.ListerRegistry,
 	daemonsets []*appsv1.DaemonSet, predicateChecker *simulator.PredicateChecker) (map[string]*schedulercache.NodeInfo, errors.AutoscalerError) {
 	result := make(map[string]*schedulercache.NodeInfo)
 
@@ -234,7 +233,7 @@ func GetNodeInfosForGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.Clou
 		id := nodeGroup.Id()
 		if _, found := result[id]; !found {
 			// Build nodeInfo.
-			nodeInfo, err := simulator.BuildNodeInfoForNode(node, kubeClient)
+			nodeInfo, err := simulator.BuildNodeInfoForNode(node, listers)
 			if err != nil {
 				return false, err
 			}
