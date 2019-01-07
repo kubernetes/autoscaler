@@ -94,7 +94,7 @@ func TestOOMReceived(t *testing.T) {
 	observer := NewObserver()
 	go observer.OnUpdate(p1, p2)
 
-	info := <-observer.ObservedOomsChannel
+	info := <-observer.observedOomsChannel
 	assert.Equal(t, "mockNamespace", info.Namespace)
 	assert.Equal(t, "Pod1", info.Pod)
 	assert.Equal(t, "Name11", info.Container)
