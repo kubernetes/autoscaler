@@ -20,9 +20,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/golang/glog"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+
+	"github.com/golang/glog"
 )
 
 // OomInfo contains data of the OOM event occurrence
@@ -33,15 +34,25 @@ type OomInfo struct {
 }
 
 // Observer can observe pod resource update and collect OOM events.
-type Observer struct {
-	ObservedOomsChannel chan OomInfo
+type Observer interface {
+	GetObservedOomsChannel() chan OomInfo
+	OnEvent(*apiv1.Event)
 }
 
-// NewObserver returns new instance of the Observer.
-func NewObserver() Observer {
-	return Observer{
-		ObservedOomsChannel: make(chan OomInfo, 5000),
+// observer can observe pod resource update and collect OOM events.
+type observer struct {
+	observedOomsChannel chan OomInfo
+}
+
+// NewObserver returns new instance of the observer.
+func NewObserver() *observer {
+	return &observer{
+		observedOomsChannel: make(chan OomInfo, 5000),
 	}
+}
+
+func (o *observer) GetObservedOomsChannel() chan OomInfo {
+	return o.observedOomsChannel
 }
 
 func parseEvictionEvent(event *apiv1.Event) []OomInfo {
@@ -88,10 +99,10 @@ func parseEvictionEvent(event *apiv1.Event) []OomInfo {
 }
 
 // OnEvent inspects k8s eviction events and translates them to OomInfo.
-func (o *Observer) OnEvent(event *apiv1.Event) {
+func (o *observer) OnEvent(event *apiv1.Event) {
 	glog.V(1).Infof("OOM Observer processing event: %+v", event)
 	for _, oomInfo := range parseEvictionEvent(event) {
-		o.ObservedOomsChannel <- oomInfo
+		o.observedOomsChannel <- oomInfo
 	}
 }
 
@@ -114,11 +125,11 @@ func findSpec(name string, containers []apiv1.Container) *apiv1.Container {
 }
 
 // OnAdd is Noop
-func (*Observer) OnAdd(obj interface{}) {}
+func (*observer) OnAdd(obj interface{}) {}
 
 // OnUpdate inspects if the update contains oom information and
 // passess it to the ObservedOomsChannel
-func (o *Observer) OnUpdate(oldObj, newObj interface{}) {
+func (o *observer) OnUpdate(oldObj, newObj interface{}) {
 	oldPod, ok := oldObj.(*apiv1.Pod)
 	if oldPod == nil || !ok {
 		glog.Errorf("OOM observer received invalid oldObj: %v", oldObj)
@@ -143,7 +154,7 @@ func (o *Observer) OnUpdate(oldObj, newObj interface{}) {
 						Memory:    oldSpec.Resources.Requests[apiv1.ResourceMemory],
 						Timestamp: containerStatus.LastTerminationState.Terminated.FinishedAt.Time.UTC(),
 					}
-					o.ObservedOomsChannel <- oomInfo
+					o.observedOomsChannel <- oomInfo
 				}
 			}
 		}
@@ -151,4 +162,4 @@ func (o *Observer) OnUpdate(oldObj, newObj interface{}) {
 }
 
 // OnDelete is Noop
-func (*Observer) OnDelete(obj interface{}) {}
+func (*observer) OnDelete(obj interface{}) {}
