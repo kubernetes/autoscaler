@@ -17,6 +17,7 @@ limitations under the License.
 package gce
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 )
@@ -24,31 +25,31 @@ import (
 const (
 	gceUrlSchema        = "https"
 	gceDomainSuffix     = "googleapis.com/compute/v1/projects/"
-	gcePrefix           = gceUrlSchema + "://content." + gceDomainSuffix
+	gcePrefix           = gceUrlSchema + "://www." + gceDomainSuffix
 	instanceUrlTemplate = gcePrefix + "%s/zones/%s/instances/%s"
 	migUrlTemplate      = gcePrefix + "%s/zones/%s/instanceGroups/%s"
 )
 
 // ParseMigUrl expects url in format:
-// https://content.googleapis.com/compute/v1/projects/<project-id>/zones/<zone>/instanceGroups/<name>
+// https://www.googleapis.com/compute/v1/projects/<project-id>/zones/<zone>/instanceGroups/<name>
 func ParseMigUrl(url string) (project string, zone string, name string, err error) {
 	return parseGceUrl(url, "instanceGroups")
 }
 
 // ParseIgmUrl expects url in format:
-// https://content.googleapis.com/compute/v1/projects/<project-id>/zones/<zone>/instanceGroupManagers/<name>
+// https://www.googleapis.com/compute/v1/projects/<project-id>/zones/<zone>/instanceGroupManagers/<name>
 func ParseIgmUrl(url string) (project string, zone string, name string, err error) {
 	return parseGceUrl(url, "instanceGroupManagers")
 }
 
 // ParseInstanceUrl expects url in format:
-// https://content.googleapis.com/compute/v1/projects/<project-id>/zones/<zone>/instances/<name>
+// https://www.googleapis.com/compute/v1/projects/<project-id>/zones/<zone>/instances/<name>
 func ParseInstanceUrl(url string) (project string, zone string, name string, err error) {
 	return parseGceUrl(url, "instances")
 }
 
 // ParseInstanceUrlRef expects url in format:
-// https://content.googleapis.com/compute/v1/projects/<project-id>/zones/<zone>/instances/<name>
+// https://www.googleapis.com/compute/v1/projects/<project-id>/zones/<zone>/instances/<name>
 // and returns a GceRef struct for it.
 func ParseInstanceUrlRef(url string) (GceRef, error) {
 	project, zone, name, err := parseGceUrl(url, "instances")
@@ -72,8 +73,14 @@ func GenerateMigUrl(ref GceRef) string {
 	return fmt.Sprintf(migUrlTemplate, ref.Project, ref.Zone, ref.Name)
 }
 
+// parseGceUrl parses a GCE Compute API URL into the project ID, zone name and resource name.
 func parseGceUrl(url, expectedResource string) (project string, zone string, name string, err error) {
-	errMsg := fmt.Errorf("Wrong url: expected format https://content.googleapis.com/compute/v1/projects/<project-id>/zones/<zone>/%s/<name>, got %s", expectedResource, url)
+	errMsg := fmt.Errorf("Wrong URL: expected format https://www.googleapis.com/compute/v1/projects/<project-id>/zones/<zone>/%s/<name>, got %s", expectedResource, url)
+
+	if expectedResource == "" {
+		return "", "", "", errors.New("You must supply a non-empty expectedResource name (e.g. instances, instanceGroups)")
+	}
+
 	if !strings.Contains(url, gceDomainSuffix) {
 		return "", "", "", errMsg
 	}
@@ -85,7 +92,7 @@ func parseGceUrl(url, expectedResource string) (project string, zone string, nam
 		return "", "", "", errMsg
 	}
 	if splitted[3] != expectedResource {
-		return "", "", "", fmt.Errorf("Wrong resource in url: expected %s, got %s", expectedResource, splitted[3])
+		return "", "", "", fmt.Errorf("Wrong resource in URL: expected %s, got %s", expectedResource, splitted[3])
 	}
 	project = splitted[0]
 	zone = splitted[2]

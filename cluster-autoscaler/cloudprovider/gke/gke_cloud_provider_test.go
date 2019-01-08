@@ -304,7 +304,7 @@ func TestMig(t *testing.T) {
 	mig1 := reflect.ValueOf(nodeGroup).Interface().(*GkeMig)
 	assert.Equal(t, true, mig1.Autoprovisioned())
 	mig1.exist = true
-	assert.True(t, strings.HasPrefix(mig1.Id(), "https://content.googleapis.com/compute/v1/projects/project1/zones/us-central1-b/instanceGroups/"+nodeAutoprovisioningPrefix+"-n1-standard-1"))
+	assert.True(t, strings.HasPrefix(mig1.Id(), "https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-b/instanceGroups/"+nodeAutoprovisioningPrefix+"-n1-standard-1"))
 	assert.Equal(t, true, mig1.Autoprovisioned())
 	assert.Equal(t, 0, mig1.MinSize())
 	assert.Equal(t, 1000, mig1.MaxSize())
@@ -474,7 +474,7 @@ func TestNewNodeGroupForGpu(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, nodeGroup)
 	mig1 := reflect.ValueOf(nodeGroup).Interface().(*GkeMig)
-	assert.True(t, strings.HasPrefix(mig1.Id(), "https://content.googleapis.com/compute/v1/projects/project1/zones/us-west1-b/instanceGroups/"+nodeAutoprovisioningPrefix+"-n1-standard-1-gpu"))
+	assert.True(t, strings.HasPrefix(mig1.Id(), "https://www.googleapis.com/compute/v1/projects/project1/zones/us-west1-b/instanceGroups/"+nodeAutoprovisioningPrefix+"-n1-standard-1-gpu"))
 	assert.Equal(t, true, mig1.Autoprovisioned())
 	assert.Equal(t, 0, mig1.MinSize())
 	assert.Equal(t, 1000, mig1.MaxSize())
