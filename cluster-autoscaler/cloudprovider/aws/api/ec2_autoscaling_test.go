@@ -95,7 +95,7 @@ func newFakeAutoscalingService(ams ...autoscalingMock) *fakeAutoscalingService {
 func newAutoscalingMock(asName, lcName string, availabilityZones ...string) autoscalingMock {
 	return autoscalingMock{
 		asg: &autoscaling.Group{
-			AvailabilityZones:       stringToStringSliceRef(availabilityZones...),
+			AvailabilityZones:       aws.StringSlice(availabilityZones),
 			LaunchConfigurationName: aws.String(lcName),
 			AutoScalingGroupName:    aws.String(asName),
 		},

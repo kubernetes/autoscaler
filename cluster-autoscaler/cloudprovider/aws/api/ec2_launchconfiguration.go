@@ -18,6 +18,8 @@ package api
 
 import (
 	"fmt"
+	"github.com/aws/aws-sdk-go/aws"
+	"strconv"
 
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 )
@@ -62,7 +64,7 @@ func (lcs *launchConfigurationService) DescribeLaunchConfiguration(launchConfigu
 
 		for _, lc := range res.LaunchConfigurations {
 			if *lc.LaunchConfigurationName == launchConfigurationName {
-				p, err := stringRefToFloat64(lc.SpotPrice)
+				p, err := strconv.ParseFloat(aws.StringValue(lc.SpotPrice), 64)
 				if err != nil {
 					return nil, fmt.Errorf("failed to parse price: %v", err)
 				}
