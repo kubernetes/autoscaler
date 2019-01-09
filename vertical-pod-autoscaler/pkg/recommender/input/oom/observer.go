@@ -22,15 +22,16 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 
 	"github.com/golang/glog"
 )
 
 // OomInfo contains data of the OOM event occurrence
 type OomInfo struct {
-	Timestamp                 time.Time
-	Memory                    resource.Quantity
-	Namespace, Pod, Container string
+	Timestamp   time.Time
+	Memory      model.ResourceAmount
+	ContainerID model.ContainerID
 }
 
 // Observer can observe pod resource update and collect OOM events.
@@ -88,10 +89,14 @@ func parseEvictionEvent(event *apiv1.Event) []OomInfo {
 		}
 		oomInfo := OomInfo{
 			Timestamp: event.CreationTimestamp.Time.UTC(),
-			Memory:    memory,
-			Namespace: event.InvolvedObject.Namespace,
-			Pod:       event.InvolvedObject.Name,
-			Container: container,
+			Memory:    model.ResourceAmount(memory.Value()),
+			ContainerID: model.ContainerID{
+				PodID: model.PodID{
+					Namespace: event.InvolvedObject.Namespace,
+					PodName:   event.InvolvedObject.Name,
+				},
+				ContainerName: container,
+			},
 		}
 		result = append(result, oomInfo)
 	}
@@ -147,12 +152,17 @@ func (o *observer) OnUpdate(oldObj, newObj interface{}) {
 			if oldStatus != nil && containerStatus.RestartCount > oldStatus.RestartCount {
 				oldSpec := findSpec(containerStatus.Name, oldPod.Spec.Containers)
 				if oldSpec != nil {
+					memory := oldSpec.Resources.Requests[apiv1.ResourceMemory]
 					oomInfo := OomInfo{
-						Namespace: newPod.ObjectMeta.Namespace,
-						Pod:       newPod.ObjectMeta.Name,
-						Container: containerStatus.Name,
-						Memory:    oldSpec.Resources.Requests[apiv1.ResourceMemory],
 						Timestamp: containerStatus.LastTerminationState.Terminated.FinishedAt.Time.UTC(),
+						Memory:    model.ResourceAmount(memory.Value()),
+						ContainerID: model.ContainerID{
+							PodID: model.PodID{
+								Namespace: newPod.ObjectMeta.Namespace,
+								PodName:   newPod.ObjectMeta.Name,
+							},
+							ContainerName: containerStatus.Name,
+						},
 					}
 					o.observedOomsChannel <- oomInfo
 				}
