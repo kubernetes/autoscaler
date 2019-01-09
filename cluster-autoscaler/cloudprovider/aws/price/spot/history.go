@@ -67,6 +67,10 @@ func (h *History) Housekeep() {
 	c := make(api.SpotPriceItems, 0)
 
 	deadEnd := time.Now().Truncate(h.maxAge)
+	lastItem, err := h.LastItem()
+	if err != nil {
+		return
+	}
 
 	for _, item := range h.items {
 		if item.Timestamp.Before(deadEnd) {
@@ -74,6 +78,10 @@ func (h *History) Housekeep() {
 		}
 
 		c = append(c, item)
+	}
+
+	if len(c) == 0 {
+		c = append(c, lastItem)
 	}
 
 	sort.Sort(c)
