@@ -64,10 +64,15 @@ func (lcs *launchConfigurationService) DescribeLaunchConfiguration(launchConfigu
 
 		for _, lc := range res.LaunchConfigurations {
 			if *lc.LaunchConfigurationName == launchConfigurationName {
-				p, err := strconv.ParseFloat(aws.StringValue(lc.SpotPrice), 64)
-				if err != nil {
-					return nil, fmt.Errorf("failed to parse price: %v", err)
+				var p float64
+
+				if lc.SpotPrice != nil {
+					p, err = strconv.ParseFloat(aws.StringValue(lc.SpotPrice), 64)
+					if err != nil {
+						return nil, fmt.Errorf("failed to parse price: %v", err)
+					}
 				}
+
 				return &EC2LaunchConfiguration{
 					HasSpotMarkedBid: lc.SpotPrice != nil,
 					SpotPrice:        p,

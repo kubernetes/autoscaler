@@ -42,17 +42,32 @@ func TestLaunchConfigurationService_DescribeLaunchConfiguration(t *testing.T) {
 	tcs := cases{
 		{ // good case: common case
 			lcName1,
-			newLCFakeService(lcName1, "m3.xlarge", stringSlice("token-a"), nil),
+			newLCFakeService(lcName1, aws.String("m3.xlarge"), nil, stringSlice("token-a"), nil),
 			false,
 		},
 		{ // good case: common case
 			lcName2,
-			newLCFakeService(lcName2, "m3.xlarge", stringSlice("token-a"), nil),
+			newLCFakeService(lcName2, aws.String("m3.xlarge"), nil, stringSlice("token-a"), nil),
 			false,
 		},
-		{ // good case: common case
+		{ // error case: unknown launch configuration
 			lcName3,
-			newLCFakeService(lcName2, "m3.xlarge", stringSlice("token-a"), nil),
+			newLCFakeService(lcName2, aws.String("m3.xlarge"), nil, stringSlice("token-a"), nil),
+			true,
+		},
+		{ // good case: spot price converted
+			lcName3,
+			newLCFakeService(lcName3, aws.String("m3.xlarge"), aws.String("0.645"), stringSlice("token-a"), nil),
+			false,
+		},
+		{ // error case: invalid spot price
+			lcName3,
+			newLCFakeService(lcName3, aws.String("m3.xlarge"), aws.String("hhzu"), stringSlice("token-a"), nil),
+			true,
+		},
+		{ // error case: unexpected error
+			lcName3,
+			newLCFakeService(lcName3, aws.String("m3.xlarge"), aws.String("0.45"), stringSlice("token-a"), errors.New("some error")),
 			true,
 		},
 	}
@@ -71,13 +86,14 @@ func TestLaunchConfigurationService_DescribeLaunchConfiguration(t *testing.T) {
 	}
 }
 
-func newLCFakeService(name string, instanceType string, tokens []string, err error) *fakeLCService {
+func newLCFakeService(name string, instanceType , spotPrice *string, tokens []string, err error) *fakeLCService {
 	return &fakeLCService{
 		mocks: map[string]*autoscaling.LaunchConfiguration{
 			name: {
 				LaunchConfigurationName: aws.String(name),
 				LaunchConfigurationARN:  aws.String(fmt.Sprintf("arn:aws:ec2:launchconfiguration:123456789:%s", name)),
-				InstanceType:            aws.String(instanceType),
+				SpotPrice: spotPrice,
+				InstanceType:            instanceType,
 			},
 		},
 		err:    err,
@@ -93,7 +109,7 @@ type fakeLCService struct {
 
 func (lcs *fakeLCService) DescribeLaunchConfigurations(input *autoscaling.DescribeLaunchConfigurationsInput) (output *autoscaling.DescribeLaunchConfigurationsOutput, err error) {
 	if lcs.err != nil {
-		return nil, err
+		return nil, lcs.err
 	}
 
 	output = new(autoscaling.DescribeLaunchConfigurationsOutput)
