@@ -23,6 +23,7 @@ type instanceType struct {
 	VCPU         int64
 	MemoryMb     int64
 	GPU          int64
+	GPUMemory    int64
 }
 
 // InstanceTypes is a map of ec2 resources
@@ -254,6 +255,7 @@ var InstanceTypes = map[string]*instanceType{
 		VCPU:         16,
 		MemoryMb:     124928,
 		GPU:          1,
+		GPUMemory:    7982809088,
 	},
 	"g3.8xlarge": {
 		InstanceType: "g3.8xlarge",
