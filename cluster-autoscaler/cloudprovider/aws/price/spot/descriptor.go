@@ -166,7 +166,7 @@ func (d *descriptor) syncSpotPriceHistory(instanceType string, availabilityZone 
 	if found {
 		begin = history.LastSync()
 	} else {
-		begin = time.Now().Truncate(cacheWindow)
+		begin = time.Time{}
 
 		history = &History{maxAge: cacheWindow, items: make(api.SpotPriceItems, 0)}
 		d.bucket[instanceZone] = history
