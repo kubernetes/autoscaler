@@ -86,13 +86,13 @@ func TestLaunchConfigurationService_DescribeLaunchConfiguration(t *testing.T) {
 	}
 }
 
-func newLCFakeService(name string, instanceType , spotPrice *string, tokens []string, err error) *fakeLCService {
+func newLCFakeService(name string, instanceType, spotPrice *string, tokens []string, err error) *fakeLCService {
 	return &fakeLCService{
 		mocks: map[string]*autoscaling.LaunchConfiguration{
 			name: {
 				LaunchConfigurationName: aws.String(name),
 				LaunchConfigurationARN:  aws.String(fmt.Sprintf("arn:aws:ec2:launchconfiguration:123456789:%s", name)),
-				SpotPrice: spotPrice,
+				SpotPrice:               spotPrice,
 				InstanceType:            instanceType,
 			},
 		},

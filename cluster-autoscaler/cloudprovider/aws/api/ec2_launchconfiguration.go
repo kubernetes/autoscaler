@@ -18,8 +18,9 @@ package api
 
 import (
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws"
 	"strconv"
+
+	"github.com/aws/aws-sdk-go/aws"
 
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 )
@@ -63,6 +64,7 @@ func (lcs *launchConfigurationService) DescribeLaunchConfiguration(launchConfigu
 		}
 
 		for _, lc := range res.LaunchConfigurations {
+
 			if *lc.LaunchConfigurationName == launchConfigurationName {
 				var p float64
 
