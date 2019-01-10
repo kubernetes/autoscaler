@@ -31,6 +31,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics"
 	metrics_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/admission"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
+	"k8s.io/client-go/rest"
 )
 
 var (
@@ -59,6 +60,12 @@ func main() {
 	healthCheck := metrics.NewHealthCheck(time.Minute, false)
 	metrics.Initialize(*address, healthCheck)
 	metrics_admission.Register()
+
+	config, err := rest.InClusterConfig()
+	if err != nil {
+		glog.Fatal(err)
+	}
+	vpaClient := vpa_clientset.NewForConfigOrDie(config)
 
 	certs := initCerts(*certsConfiguration)
 	stopChannel := make(chan struct{})
