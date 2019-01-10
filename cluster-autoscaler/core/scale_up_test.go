@@ -23,6 +23,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+	apiv1 "k8s.io/api/core/v1"
+	extensionsv1 "k8s.io/api/extensions/v1beta1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
@@ -33,31 +37,27 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
-
-	apiv1 "k8s.io/api/core/v1"
-	extensionsv1 "k8s.io/api/extensions/v1beta1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/fake"
 	core "k8s.io/client-go/testing"
 	kube_record "k8s.io/client-go/tools/record"
 	"k8s.io/kubernetes/pkg/scheduler/schedulercache"
-
-	"github.com/stretchr/testify/assert"
 )
 
 type nodeConfig struct {
-	name   string
-	cpu    int64
-	memory int64
-	ready  bool
-	group  string
+	name      string
+	cpu       int64
+	memory    int64
+	ready     bool
+	group     string
+	gpumemory int64
 }
 
 type podConfig struct {
-	name   string
-	cpu    int64
-	memory int64
-	node   string
+	name      string
+	cpu       int64
+	memory    int64
+	node      string
+	gpumemory int64
 }
 
 type scaleTestConfig struct {
@@ -81,15 +81,15 @@ var defaultOptions = AutoscalingOptions{
 func TestScaleUpOK(t *testing.T) {
 	config := &scaleTestConfig{
 		nodes: []nodeConfig{
-			{"n1", 100, 100, true, "ng1"},
-			{"n2", 1000, 1000, true, "ng2"},
+			{"n1", 100, 100, true, "ng1", 0},
+			{"n2", 1000, 1000, true, "ng2", 0},
 		},
 		pods: []podConfig{
-			{"p1", 80, 0, "n1"},
-			{"p2", 800, 0, "n2"},
+			{"p1", 80, 0, "n1", 0},
+			{"p2", 800, 0, "n2", 0},
 		},
 		extraPods: []podConfig{
-			{"p-new", 500, 0, ""},
+			{"p-new", 500, 0, "", 0},
 		},
 		expectedScaleUp:      "ng2-1",
 		expectedScaleUpGroup: "ng2",
@@ -99,21 +99,41 @@ func TestScaleUpOK(t *testing.T) {
 	simpleScaleUpTest(t, config)
 }
 
+func TestScaleUpGPUMemory(t *testing.T) {
+	config := &scaleTestConfig{
+		nodes: []nodeConfig{
+			{"n1", 100, 100, true, "ng1", 5000000000},
+			{"n2", 1000, 1000, true, "ng2", 8000000000},
+		},
+		pods: []podConfig{
+			{"p1", 0, 0, "n1", 0},
+			{"p2", 0, 0, "n2", 6000000000},
+		},
+		extraPods: []podConfig{
+			{"p-new", 0, 0, "", 6000000000},
+		},
+		expectedScaleUp:      "ng2-1",
+		expectedScaleUpGroup: "ng2",
+		options:              defaultOptions,
+	}
+	simpleScaleUpTest(t, config)
+}
+
 func TestScaleUpMaxCoresLimitHit(t *testing.T) {
 	options := defaultOptions
 	options.MaxCoresTotal = 9
 	config := &scaleTestConfig{
 		nodes: []nodeConfig{
-			{"n1", 2000, 100, true, "ng1"},
-			{"n2", 4000, 1000, true, "ng2"},
+			{"n1", 2000, 100, true, "ng1", 0},
+			{"n2", 4000, 1000, true, "ng2", 0},
 		},
 		pods: []podConfig{
-			{"p1", 1000, 0, "n1"},
-			{"p2", 3000, 0, "n2"},
+			{"p1", 1000, 0, "n1", 0},
+			{"p2", 3000, 0, "n2", 0},
 		},
 		extraPods: []podConfig{
-			{"p-new-1", 2000, 0, ""},
-			{"p-new-2", 2000, 0, ""},
+			{"p-new-1", 2000, 0, "", 0},
+			{"p-new-2", 2000, 0, "", 0},
 		},
 		expectedScaleUp:      "ng1-1",
 		expectedScaleUpGroup: "ng1",
@@ -130,17 +150,17 @@ func TestScaleUpMaxMemoryLimitHit(t *testing.T) {
 	options.MaxMemoryTotal = 1300 // set in mb
 	config := &scaleTestConfig{
 		nodes: []nodeConfig{
-			{"n1", 2000, 100 * MB, true, "ng1"},
-			{"n2", 4000, 1000 * MB, true, "ng2"},
+			{"n1", 2000, 100 * MB, true, "ng1", 0},
+			{"n2", 4000, 1000 * MB, true, "ng2", 0},
 		},
 		pods: []podConfig{
-			{"p1", 1000, 0, "n1"},
-			{"p2", 3000, 0, "n2"},
+			{"p1", 1000, 0, "n1", 0},
+			{"p2", 3000, 0, "n2", 0},
 		},
 		extraPods: []podConfig{
-			{"p-new-1", 2000, 100 * MB, ""},
-			{"p-new-2", 2000, 100 * MB, ""},
-			{"p-new-3", 2000, 100 * MB, ""},
+			{"p-new-1", 2000, 100 * MB, "", 0},
+			{"p-new-2", 2000, 100 * MB, "", 0},
+			{"p-new-3", 2000, 100 * MB, "", 0},
 		},
 		expectedScaleUp:      "ng1-2",
 		expectedScaleUpGroup: "ng1",
@@ -155,17 +175,17 @@ func TestScaleUpCapToMaxTotalNodesLimit(t *testing.T) {
 	options.MaxNodesTotal = 3
 	config := &scaleTestConfig{
 		nodes: []nodeConfig{
-			{"n1", 2000, 100 * MB, true, "ng1"},
-			{"n2", 4000, 1000 * MB, true, "ng2"},
+			{"n1", 2000, 100 * MB, true, "ng1", 0},
+			{"n2", 4000, 1000 * MB, true, "ng2", 0},
 		},
 		pods: []podConfig{
-			{"p1", 1000, 0, "n1"},
-			{"p2", 3000, 0, "n2"},
+			{"p1", 1000, 0, "n1", 0},
+			{"p2", 3000, 0, "n2", 0},
 		},
 		extraPods: []podConfig{
-			{"p-new-1", 4000, 100 * MB, ""},
-			{"p-new-2", 4000, 100 * MB, ""},
-			{"p-new-3", 4000, 100 * MB, ""},
+			{"p-new-1", 4000, 100 * MB, "", 0},
+			{"p-new-2", 4000, 100 * MB, "", 0},
+			{"p-new-3", 4000, 100 * MB, "", 0},
 		},
 		expectedScaleUp:      "ng2-1",
 		expectedScaleUpGroup: "ng2",
@@ -182,7 +202,7 @@ func simpleScaleUpTest(t *testing.T, config *scaleTestConfig) {
 	groups := make(map[string][]*apiv1.Node)
 	nodes := make([]*apiv1.Node, len(config.nodes))
 	for i, n := range config.nodes {
-		node := BuildTestNode(n.name, n.cpu, n.memory)
+		node := BuildTestNode(n.name, n.cpu, n.memory, AddNodeGpuMemory(n.gpumemory))
 		SetNodeReadyState(node, n.ready, time.Now())
 		nodes[i] = node
 		groups[n.group] = append(groups[n.group], node)
@@ -190,7 +210,7 @@ func simpleScaleUpTest(t *testing.T, config *scaleTestConfig) {
 
 	pods := make(map[string][]apiv1.Pod)
 	for _, p := range config.pods {
-		pod := *BuildTestPod(p.name, p.cpu, p.memory)
+		pod := *BuildTestPod(p.name, p.cpu, p.memory, AddPodGpuMemory(p.gpumemory))
 		pod.Spec.NodeName = p.node
 		pods[p.node] = append(pods[p.node], pod)
 	}
@@ -244,7 +264,7 @@ func simpleScaleUpTest(t *testing.T, config *scaleTestConfig) {
 
 	extraPods := make([]*apiv1.Pod, len(config.extraPods))
 	for i, p := range config.extraPods {
-		pod := BuildTestPod(p.name, p.cpu, p.memory)
+		pod := BuildTestPod(p.name, p.cpu, p.memory, AddPodGpuMemory(p.gpumemory))
 		extraPods[i] = pod
 	}
 

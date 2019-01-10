@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"time"
 
+	"github.com/golang/glog"
 	apiv1 "k8s.io/api/core/v1"
 	extensionsv1 "k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -32,11 +33,10 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/glogx"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpumemory"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/labels"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/nodegroupset"
 	"k8s.io/kubernetes/pkg/scheduler/schedulercache"
-
-	"github.com/golang/glog"
 )
 
 // ScaleUp tries to scale the cluster up. Return true if it found a way to increase the size,
@@ -395,6 +395,20 @@ func addAutoprovisionedCandidates(context *AutoscalingContext, nodeGroups []clou
 		newGroupsCount += len(newNodeGroups)
 		nodeGroups = append(nodeGroups, newNodeGroups...)
 	}
+
+	gpuMemoryRequests := gpumemory.GetGPUMemoryRequests(unschedulablePods)
+	var zero resource.Quantity
+	if gpuMemoryRequests.TotalMemory.Cmp(zero) > 0 {
+		glog.V(4).Info("Adding node groups using GPU Memory to NAP simulations")
+		extraResources := map[string]resource.Quantity{
+			gpumemory.ResourceVisenzeGPUMemory: gpuMemoryRequests.TotalMemory,
+		}
+		// TODO: See if the node groups are correct
+		newNodeGroups := addAllMachineTypesForConfig(context, map[string]string{}, extraResources, nodeInfos, gpuMemoryRequests.Pods)
+		newGroupsCount += len(newNodeGroups)
+		nodeGroups = append(nodeGroups, newNodeGroups...)
+	}
+
 	glog.V(4).Infof("Considering %v potential node groups in NAP simulations", newGroupsCount)
 
 	return nodeGroups, nodeInfos

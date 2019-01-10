@@ -18,25 +18,32 @@ package test
 
 import (
 	"fmt"
-	"time"
-
 	"net/http"
 	"net/http/httptest"
+	"time"
 
+	"github.com/stretchr/testify/mock"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpumemory"
 	"k8s.io/client-go/kubernetes/scheme"
 	refv1 "k8s.io/client-go/tools/reference"
 	"k8s.io/kubernetes/pkg/api/testapi"
-
-	"github.com/stretchr/testify/mock"
 )
 
+type PodModifier func(*apiv1.Pod)
+
+func AddPodGpuMemory(amount int64) PodModifier {
+	return func(pod *apiv1.Pod) {
+		pod.Spec.Containers[0].Resources.Requests[gpumemory.ResourceVisenzeGPUMemory] = *resource.NewQuantity(amount, resource.DecimalSI)
+	}
+}
+
 // BuildTestPod creates a pod with specified resources.
-func BuildTestPod(name string, cpu int64, mem int64) *apiv1.Pod {
+func BuildTestPod(name string, cpu int64, mem int64, mods ...PodModifier) *apiv1.Pod {
 	pod := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "default",
@@ -61,11 +68,23 @@ func BuildTestPod(name string, cpu int64, mem int64) *apiv1.Pod {
 		pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceMemory] = *resource.NewQuantity(mem, resource.DecimalSI)
 	}
 
+	for _, mod := range mods {
+		mod(pod)
+	}
+
 	return pod
 }
 
+type NodeModifier func(*apiv1.Node)
+
+func AddNodeGpuMemory(amount int64) NodeModifier {
+	return func(node *apiv1.Node) {
+		node.Status.Capacity[gpumemory.ResourceVisenzeGPUMemory] = *resource.NewQuantity(amount, resource.DecimalSI)
+	}
+}
+
 // BuildTestNode creates a node with specified capacity.
-func BuildTestNode(name string, millicpu int64, mem int64) *apiv1.Node {
+func BuildTestNode(name string, millicpu int64, mem int64, mods ...NodeModifier) *apiv1.Node {
 	node := &apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:     name,
@@ -87,6 +106,10 @@ func BuildTestNode(name string, millicpu int64, mem int64) *apiv1.Node {
 	}
 	if mem >= 0 {
 		node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(mem, resource.DecimalSI)
+	}
+
+	for _, mod := range mods {
+		mod(node)
 	}
 
 	node.Status.Allocatable = apiv1.ResourceList{}
