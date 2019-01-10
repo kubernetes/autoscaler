@@ -355,14 +355,7 @@ Loop:
 		select {
 		case oomInfo := <-feeder.oomChan:
 			glog.V(3).Infof("OOM detected %+v", oomInfo)
-			container := model.ContainerID{
-				PodID: model.PodID{
-					Namespace: oomInfo.Namespace,
-					PodName:   oomInfo.Pod,
-				},
-				ContainerName: oomInfo.Container,
-			}
-			feeder.clusterState.RecordOOM(container, oomInfo.Timestamp, model.ResourceAmount(oomInfo.Memory.Value()))
+			feeder.clusterState.RecordOOM(oomInfo.ContainerID, oomInfo.Timestamp, oomInfo.Memory)
 		default:
 			break Loop
 		}
