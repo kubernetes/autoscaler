@@ -17,3 +17,7 @@ Multiple ASG Setup is not supported in BaiduCloud currently.
 ## Common Notes and Gotchas:
 - By default, cluster autoscaler will not terminate nodes running pods in the kube-system namespace. You can override this default behaviour by passing in the `--skip-nodes-with-system-pods=false` flag.
 - By default, cluster autoscaler will wait 10 minutes between scale down operations, you can adjust this using the `--scale-down-delay` flag. E.g. `--scale-down-delay=5m` to decrease the scale down delay to 5 minutes.
+
+## Maintainer
+* Hongbin Mao [@hello2mao](https://github.com/hello2mao)  
+* Ti Zhou [@tizhou86](https://github.com/tizhou86)
