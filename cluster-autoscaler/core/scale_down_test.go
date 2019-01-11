@@ -1182,6 +1182,18 @@ func getStringFromChanImmediately(c chan string) string {
 	}
 }
 
+func getCountOfChan(c chan string) int {
+	count := 0
+	for {
+		select {
+		case <-c:
+			count++
+		default:
+			return count
+		}
+	}
+}
+
 func TestCleanToBeDeleted(t *testing.T) {
 	n1 := BuildTestNode("n1", 1000, 10)
 	n2 := BuildTestNode("n2", 1000, 10)
@@ -1338,4 +1350,143 @@ func TestCheckScaleDownDeltaWithinLimits(t *testing.T) {
 			assert.Equal(t, scaleDownLimitsCheckResult{true, test.exceededResources}, checkResult)
 		}
 	}
+}
+
+func TestSoftTaint(t *testing.T) {
+	updatedNodes := make(chan string, 10)
+	deletedNodes := make(chan string, 10)
+	taintedNodes := make(chan string, 10)
+	fakeClient := &fake.Clientset{}
+
+	job := batchv1.Job{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "job",
+			Namespace: "default",
+			SelfLink:  "/apivs/batch/v1/namespaces/default/jobs/job",
+		},
+	}
+	n1 := BuildTestNode("n1", 2000, 2000)
+	SetNodeReadyState(n1, true, time.Time{})
+	n2 := BuildTestNode("n2", 1000, 1000)
+	SetNodeReadyState(n2, true, time.Time{})
+
+	p1 := BuildTestPod("p1", 1100, 0)
+	p1.OwnerReferences = GenerateOwnerReferences(job.Name, "Job", "batch/v1", "")
+	p2 := BuildTestPod("p2", 800, 0)
+	p3 := BuildTestPod("p3", 800, 0)
+	p1.Spec.NodeName = "n1"
+	p2.Spec.NodeName = "n1"
+	p3.Spec.NodeName = "n2"
+
+	fakeClient.Fake.AddReactor("get", "nodes", func(action core.Action) (bool, runtime.Object, error) {
+		getAction := action.(core.GetAction)
+		switch getAction.GetName() {
+		case n1.Name:
+			return true, n1, nil
+		case n2.Name:
+			return true, n2, nil
+		}
+		return true, nil, fmt.Errorf("Wrong node: %v", getAction.GetName())
+	})
+	fakeClient.Fake.AddReactor("update", "nodes", func(action core.Action) (bool, runtime.Object, error) {
+		update := action.(core.UpdateAction)
+		obj := update.GetObject().(*apiv1.Node)
+		if deletetaint.HasDeletionCandidateTaint(obj) {
+			taintedNodes <- obj.Name
+		}
+		updatedNodes <- obj.Name
+		return true, obj, nil
+	})
+
+	provider := testprovider.NewTestCloudProvider(nil, func(nodeGroup string, node string) error {
+		deletedNodes <- node
+		return nil
+	})
+	provider.AddNodeGroup("ng1", 1, 10, 2)
+	provider.AddNode("ng1", n1)
+	provider.AddNode("ng1", n2)
+	assert.NotNil(t, provider)
+
+	options := config.AutoscalingOptions{
+		ScaleDownUtilizationThreshold: 0.5,
+		ScaleDownUnneededTime:         10 * time.Minute,
+		MaxGracefulTerminationSec:     60,
+		MaxBulkSoftTaint:              1,
+	}
+	jobLister, err := kube_util.NewTestJobLister([]*batchv1.Job{&job})
+	assert.NoError(t, err)
+	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, jobLister, nil, nil)
+
+	context := NewScaleTestAutoscalingContext(options, fakeClient, registry, provider)
+
+	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
+	scaleDown := NewScaleDown(&context, clusterStateRegistry)
+
+	// Test no superfluous nodes
+	scaleDown.UpdateUnneededNodes([]*apiv1.Node{n1, n2},
+		[]*apiv1.Node{n1, n2}, []*apiv1.Pod{p1, p2, p3}, time.Now().Add(-5*time.Minute), nil)
+	errors := scaleDown.SoftTaintUnneededNodes([]*apiv1.Node{n1, n2})
+	assert.Empty(t, errors)
+	assert.Equal(t, 0, getCountOfChan(deletedNodes))
+	assert.Equal(t, 0, getCountOfChan(updatedNodes))
+	assert.Equal(t, 0, getCountOfChan(taintedNodes))
+	assert.False(t, deletetaint.HasDeletionCandidateTaint(n1))
+	assert.False(t, deletetaint.HasDeletionCandidateTaint(n2))
+
+	// Test one unneeded node
+	scaleDown.UpdateUnneededNodes([]*apiv1.Node{n1, n2},
+		[]*apiv1.Node{n1, n2}, []*apiv1.Pod{p1, p2}, time.Now().Add(-5*time.Minute), nil)
+	errors = scaleDown.SoftTaintUnneededNodes([]*apiv1.Node{n1, n2})
+	assert.Empty(t, errors)
+	assert.Equal(t, 0, getCountOfChan(deletedNodes))
+	assert.Equal(t, n2.Name, getStringFromChanImmediately(updatedNodes))
+	assert.Equal(t, n2.Name, getStringFromChanImmediately(taintedNodes))
+	assert.False(t, deletetaint.HasDeletionCandidateTaint(n1))
+	assert.True(t, deletetaint.HasDeletionCandidateTaint(n2))
+
+	// Test remove soft taint
+	scaleDown.UpdateUnneededNodes([]*apiv1.Node{n1, n2},
+		[]*apiv1.Node{n1, n2}, []*apiv1.Pod{p1, p2, p3}, time.Now().Add(-5*time.Minute), nil)
+	errors = scaleDown.SoftTaintUnneededNodes([]*apiv1.Node{n1, n2})
+	assert.Empty(t, errors)
+	assert.Equal(t, n2.Name, getStringFromChanImmediately(updatedNodes))
+	assert.Equal(t, 0, getCountOfChan(taintedNodes))
+	assert.False(t, deletetaint.HasDeletionCandidateTaint(n1))
+	assert.False(t, deletetaint.HasDeletionCandidateTaint(n2))
+
+	// Test bulk update taint limit
+	scaleDown.UpdateUnneededNodes([]*apiv1.Node{n1, n2},
+		[]*apiv1.Node{n1, n2}, []*apiv1.Pod{}, time.Now().Add(-5*time.Minute), nil)
+	errors = scaleDown.SoftTaintUnneededNodes([]*apiv1.Node{n1, n2})
+	assert.Empty(t, errors)
+	assert.Equal(t, 1, getCountOfChan(updatedNodes))
+	assert.Equal(t, 1, getCountOfChan(taintedNodes))
+	errors = scaleDown.SoftTaintUnneededNodes([]*apiv1.Node{n1, n2})
+	assert.Empty(t, errors)
+	assert.Equal(t, 1, getCountOfChan(updatedNodes))
+	assert.Equal(t, 1, getCountOfChan(taintedNodes))
+	assert.True(t, deletetaint.HasDeletionCandidateTaint(n1))
+	assert.True(t, deletetaint.HasDeletionCandidateTaint(n2))
+	errors = scaleDown.SoftTaintUnneededNodes([]*apiv1.Node{n1, n2})
+	assert.Empty(t, errors)
+	assert.Equal(t, 0, getCountOfChan(updatedNodes))
+	assert.Equal(t, 0, getCountOfChan(taintedNodes))
+
+	// Test bulk update untaint limit
+	scaleDown.UpdateUnneededNodes([]*apiv1.Node{n1, n2},
+		[]*apiv1.Node{n1, n2}, []*apiv1.Pod{p1, p2, p3}, time.Now().Add(-5*time.Minute), nil)
+	errors = scaleDown.SoftTaintUnneededNodes([]*apiv1.Node{n1, n2})
+	assert.Empty(t, errors)
+	assert.Equal(t, 1, getCountOfChan(updatedNodes))
+	assert.Equal(t, 0, getCountOfChan(taintedNodes))
+	errors = scaleDown.SoftTaintUnneededNodes([]*apiv1.Node{n1, n2})
+	assert.Empty(t, errors)
+	assert.Equal(t, 1, getCountOfChan(updatedNodes))
+	assert.Equal(t, 0, getCountOfChan(taintedNodes))
+	assert.False(t, deletetaint.HasDeletionCandidateTaint(n1))
+	assert.False(t, deletetaint.HasDeletionCandidateTaint(n2))
+	errors = scaleDown.SoftTaintUnneededNodes([]*apiv1.Node{n1, n2})
+	assert.Empty(t, errors)
+	assert.Equal(t, 0, getCountOfChan(updatedNodes))
+	assert.Equal(t, 0, getCountOfChan(taintedNodes))
 }

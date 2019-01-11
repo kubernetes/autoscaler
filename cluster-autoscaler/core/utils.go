@@ -380,6 +380,8 @@ func sanitizeTemplateNode(node *apiv1.Node, nodeGroup string) (*apiv1.Node, erro
 			klog.V(4).Infof("Removing rescheduler taint when creating template from node %s", node.Name)
 		case deletetaint.ToBeDeletedTaint:
 			klog.V(4).Infof("Removing autoscaler taint when creating template from node %s", node.Name)
+		case deletetaint.DeletionCandidateTaint:
+			klog.V(4).Infof("Removing autoscaler soft taint when creating template from node %s", node.Name)
 		default:
 			newTaints = append(newTaints, taint)
 		}

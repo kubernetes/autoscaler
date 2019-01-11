@@ -32,6 +32,8 @@ type GpuLimits struct {
 
 // AutoscalingOptions contain various options to customize how autoscaling works
 type AutoscalingOptions struct {
+	// MaxBulkSoftTaint is a number of nodes that can be tainted PreferNoSchedule at the same time.
+	MaxBulkSoftTaint int
 	// MaxEmptyBulkDelete is a number of empty nodes that can be removed at the same time.
 	MaxEmptyBulkDelete int
 	// ScaleDownUtilizationThreshold sets threshold for nodes to be considered for scale down.

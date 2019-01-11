@@ -45,7 +45,40 @@ func TestMarkNodes(t *testing.T) {
 	assert.True(t, HasToBeDeletedTaint(updatedNode))
 }
 
+func TestSoftMarkNodes(t *testing.T) {
+	node := BuildTestNode("node", 1000, 1000)
+	fakeClient := buildFakeClient(t, node)
+	err := MarkDeletionCandidate(node, fakeClient)
+	assert.NoError(t, err)
+
+	updatedNode, err := fakeClient.Core().Nodes().Get("node", metav1.GetOptions{})
+	assert.NoError(t, err)
+	assert.False(t, HasToBeDeletedTaint(updatedNode))
+}
+
 func TestCheckNodes(t *testing.T) {
+	node := BuildTestNode("node", 1000, 1000)
+	addTaintToSpec(node, ToBeDeletedTaint, apiv1.TaintEffectNoSchedule)
+	fakeClient := buildFakeClient(t, node)
+
+	updatedNode, err := fakeClient.Core().Nodes().Get("node", metav1.GetOptions{})
+	assert.NoError(t, err)
+	assert.True(t, HasToBeDeletedTaint(updatedNode))
+	assert.False(t, HasDeletionCandidateTaint(updatedNode))
+}
+
+func TestSoftCheckNodes(t *testing.T) {
+	node := BuildTestNode("node", 1000, 1000)
+	addTaintToSpec(node, DeletionCandidateTaint, apiv1.TaintEffectPreferNoSchedule)
+	fakeClient := buildFakeClient(t, node)
+
+	updatedNode, err := fakeClient.Core().Nodes().Get("node", metav1.GetOptions{})
+	assert.NoError(t, err)
+	assert.False(t, HasToBeDeletedTaint(updatedNode))
+	assert.True(t, HasDeletionCandidateTaint(updatedNode))
+}
+
+func TestQueryNodes(t *testing.T) {
 	node := BuildTestNode("node", 1000, 1000)
 	fakeClient := buildFakeClient(t, node)
 	err := MarkToBeDeleted(node, fakeClient)
@@ -60,18 +93,55 @@ func TestCheckNodes(t *testing.T) {
 	assert.True(t, time.Now().Sub(*val) < 10*time.Second)
 }
 
+func TestSoftQueryNodes(t *testing.T) {
+	node := BuildTestNode("node", 1000, 1000)
+	fakeClient := buildFakeClient(t, node)
+	err := MarkDeletionCandidate(node, fakeClient)
+	assert.NoError(t, err)
+
+	updatedNode, err := fakeClient.Core().Nodes().Get("node", metav1.GetOptions{})
+	assert.NoError(t, err)
+	assert.True(t, HasDeletionCandidateTaint(updatedNode))
+
+	val, err := GetDeletionCandidateTime(updatedNode)
+	assert.NoError(t, err)
+	assert.True(t, time.Now().Sub(*val) < 10*time.Second)
+}
+
 func TestCleanNodes(t *testing.T) {
 	node := BuildTestNode("node", 1000, 1000)
-	addToBeDeletedTaint(node)
+	addTaintToSpec(node, ToBeDeletedTaint, apiv1.TaintEffectNoSchedule)
 	fakeClient := buildFakeClient(t, node)
+
+	updatedNode, err := fakeClient.Core().Nodes().Get("node", metav1.GetOptions{})
+	assert.NoError(t, err)
+	assert.True(t, HasToBeDeletedTaint(updatedNode))
 
 	cleaned, err := CleanToBeDeleted(node, fakeClient)
 	assert.True(t, cleaned)
 	assert.NoError(t, err)
 
-	updatedNode, err := fakeClient.Core().Nodes().Get("node", metav1.GetOptions{})
+	updatedNode, err = fakeClient.Core().Nodes().Get("node", metav1.GetOptions{})
 	assert.NoError(t, err)
 	assert.False(t, HasToBeDeletedTaint(updatedNode))
+}
+
+func TestSoftCleanNodes(t *testing.T) {
+	node := BuildTestNode("node", 1000, 1000)
+	addTaintToSpec(node, DeletionCandidateTaint, apiv1.TaintEffectPreferNoSchedule)
+	fakeClient := buildFakeClient(t, node)
+
+	updatedNode, err := fakeClient.Core().Nodes().Get("node", metav1.GetOptions{})
+	assert.NoError(t, err)
+	assert.True(t, HasDeletionCandidateTaint(updatedNode))
+
+	cleaned, err := CleanDeletionCandidate(node, fakeClient)
+	assert.True(t, cleaned)
+	assert.NoError(t, err)
+
+	updatedNode, err = fakeClient.Core().Nodes().Get("node", metav1.GetOptions{})
+	assert.NoError(t, err)
+	assert.False(t, HasDeletionCandidateTaint(updatedNode))
 }
 
 func buildFakeClient(t *testing.T, node *apiv1.Node) *fake.Clientset {

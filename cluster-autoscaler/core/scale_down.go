@@ -572,6 +572,46 @@ func (sd *ScaleDown) mapNodesToStatusScaleDownNodes(nodes []*apiv1.Node, nodeGro
 	return result
 }
 
+// SoftTaintUnneededNodes manage soft taints of unneeded nodes.
+func (sd *ScaleDown) SoftTaintUnneededNodes(allNodes []*apiv1.Node) (errors []error) {
+	apiCallBudget := sd.context.AutoscalingOptions.MaxBulkSoftTaint
+	// Check if some new nodes should be tainted
+	for _, node := range allNodes {
+		if deletetaint.HasToBeDeletedTaint(node) {
+			// Do not consider nodes that are scheduled to be deleted
+			continue
+		}
+		alreadyTainted := deletetaint.HasDeletionCandidateTaint(node)
+		_, unneeded := sd.unneededNodes[node.Name]
+
+		if unneeded != alreadyTainted {
+			apiCallBudget--
+			if apiCallBudget < 0 {
+				continue
+			}
+			if unneeded {
+				// Node unneeded but not tainted
+				err := deletetaint.MarkDeletionCandidate(node, sd.context.ClientSet)
+				if err != nil {
+					errors = append(errors, err)
+					klog.Warningf("Soft taint on %s adding error %v", node.Name, err)
+				}
+			} else {
+				// Node tainted but needed
+				cleaned, err := deletetaint.CleanDeletionCandidate(node, sd.context.ClientSet)
+				if err != nil || !cleaned {
+					errors = append(errors, err)
+					klog.Warningf("Soft taint on %s removal error %v", node.Name, err)
+				}
+			}
+		}
+	}
+	if apiCallBudget < 0 {
+		klog.V(4).Infof("Skipped soft taints on %v nodes - API call limit exceeded", -apiCallBudget)
+	}
+	return
+}
+
 // TryToScaleDown tries to scale down the cluster. It returns a result inside a ScaleDownStatus indicating if any node was
 // removed and error if such occurred.
 func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, pdbs []*policyv1.PodDisruptionBudget, currentTime time.Time) (*status.ScaleDownStatus, errors.AutoscalerError) {
