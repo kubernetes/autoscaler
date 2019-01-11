@@ -18,6 +18,7 @@ package spot
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/golang/glog"
@@ -63,23 +64,36 @@ type descriptor struct {
 // It returns an error if the current price is greater than the bid price.
 func (d *descriptor) Price(instanceType string, bidPrice float64, availabilityZones ...string) (float64, error) {
 	var avgPrice float64
-	prices := make([]float64, len(availabilityZones))
+	prices := make([]float64, 0, len(availabilityZones))
+	validPriceFound := false
 
-	for i, zone := range availabilityZones {
+	for _, zone := range availabilityZones {
 		maxPrice, err := d.maxSpotPriceForDuration(instanceType, zone, lookupWindow)
 		if err != nil {
-			return avgPrice, err
+			instanceTypeUnknown := strings.Index(err.Error(), "instance info not available") > -1
+			priceHistoryEmpty := strings.Index(err.Error(), "no spot price information") > -1
+
+			if !instanceTypeUnknown && !priceHistoryEmpty {
+				return avgPrice, err
+			}
 		}
 
 		if maxPrice == 0.0 {
-			return avgPrice, fmt.Errorf("got invalid spot price of 0.0 for instance type %s in availability zone %s", instanceType, zone)
+			continue
 		}
 
 		if maxPrice > bidPrice {
 			return 0, fmt.Errorf("spot price bid of %.4f lower than current offer of %.4f at %s", bidPrice, maxPrice, zone)
 		}
 
-		prices[i] = maxPrice
+		validPriceFound = true
+		prices = append(prices, maxPrice)
+	}
+
+	if !validPriceFound {
+		// no valid price was found across all AZ for the specified instance type
+		// no valid average can be calculated
+		return avgPrice, fmt.Errorf("got invalid spot price of 0.0 for instance type %s in availability zones %s", instanceType, availabilityZones)
 	}
 
 	var sum float64
@@ -106,7 +120,7 @@ func (d *descriptor) maxSpotPriceForDuration(instanceType string, availabilityZo
 		return maxPrice, fmt.Errorf("no spot price information for instance %s in availability zone %s", instanceType, availabilityZone)
 	}
 
-	startTime := time.Now().Truncate(lookupWindow)
+	startTime := time.Now().Add(-lookupWindow)
 
 	for _, price := range history.Slice() {
 		if price.Timestamp.Before(startTime) {
@@ -120,10 +134,7 @@ func (d *descriptor) maxSpotPriceForDuration(instanceType string, availabilityZo
 
 	// The case when there are no new price information within the requested time window.
 	if maxPrice == 0.0 {
-		item, err := history.LastItem()
-		if err != nil {
-			return maxPrice, fmt.Errorf("failed to fetch last history item: %v", err)
-		}
+		item, _ := history.LastItem()
 
 		glog.Warningf(
 			"no spot price information newer than %s, using last known price of %f which is %s old",
@@ -143,6 +154,7 @@ func (d *descriptor) spotPriceHistory(instanceType, availabilityZone string) (*H
 			return nil, fmt.Errorf("spot price sync failed: %v", err)
 		}
 	}
+	glog.V(5).Infof("price history successfully synchronized for %s in AZ %s", instanceType, availabilityZone)
 
 	instanceZone := instanceTypeInZone{instanceType: instanceType, availabilityZone: availabilityZone}
 	return d.bucket[instanceZone], nil
@@ -155,7 +167,7 @@ func (d *descriptor) syncRequired(instanceType, availabilityZone string) bool {
 		return true
 	}
 
-	return history.LastSync().Before(time.Now().Truncate(cacheMaxAge))
+	return history.LastSync().Before(time.Now().Add(-cacheMaxAge))
 }
 
 func (d *descriptor) syncSpotPriceHistory(instanceType string, availabilityZone string) error {

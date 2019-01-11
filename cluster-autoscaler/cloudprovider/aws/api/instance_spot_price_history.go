@@ -17,11 +17,12 @@ limitations under the License.
 package api
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/golang/glog"
 	"sort"
 	"strconv"
 	"time"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/golang/glog"
 
 	"github.com/aws/aws-sdk-go/service/ec2"
 )
@@ -56,6 +57,7 @@ func (spd *spotPriceHistoryService) DescribeSpotPriceHistory(instanceType string
 	req.SetProductDescriptions(aws.StringSlice([]string{"Linux/UNIX"}))
 
 	if startTime.IsZero() {
+		glog.V(5).Info("initial history loading - retrieve only the last 10 prices")
 		req.SetMaxResults(10)
 	} else {
 		req.SetStartTime(startTime)
@@ -73,6 +75,11 @@ func (spd *spotPriceHistoryService) DescribeSpotPriceHistory(instanceType string
 
 		req.NextToken = res.NextToken
 		if req.NextToken == nil || len(*req.NextToken) == 0 {
+			glog.V(6).Info("breaking history loop after pagination record")
+			break
+		}
+		if startTime.IsZero() {
+			glog.V(6).Info("breaking history loop after retrieving last 10 prices")
 			break
 		}
 	}

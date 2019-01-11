@@ -23,6 +23,7 @@ import (
 
 	"errors"
 
+	"github.com/golang/glog"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/api"
 )
 
@@ -61,16 +62,18 @@ func (h *History) Len() int {
 
 // Housekeep drops items older than maxAge and sorts the history
 func (h *History) Housekeep() {
+	lastItem, err := h.LastItem()
+	if err != nil {
+		glog.Warningf("no last item found, price history is empty - exit housekeeping")
+		return
+	}
+
 	h.Lock()
 	defer h.Unlock()
 
 	c := make(api.SpotPriceItems, 0)
 
-	deadEnd := time.Now().Truncate(h.maxAge)
-	lastItem, err := h.LastItem()
-	if err != nil {
-		return
-	}
+	deadEnd := time.Now().Add(-h.maxAge)
 
 	for _, item := range h.items {
 		if item.Timestamp.Before(deadEnd) {
@@ -82,6 +85,7 @@ func (h *History) Housekeep() {
 
 	if len(c) == 0 {
 		c = append(c, lastItem)
+		glog.V(5).Infof("cleaned history was empty, last price has been inserted back - age: %v", time.Now().Sub(lastItem.Timestamp))
 	}
 
 	sort.Sort(c)
@@ -91,12 +95,14 @@ func (h *History) Housekeep() {
 
 // Add adds sorted api.SpotPriceItems and sets the last-sync to current time
 func (h *History) Add(items api.SpotPriceItems) {
+	items = append(items, h.Slice()...)
+
 	h.Lock()
 	defer h.Unlock()
 
 	sort.Sort(items)
 
-	h.items = append(h.items, items...)
+	h.items = items
 	h.lastSync = time.Now()
 }
 
