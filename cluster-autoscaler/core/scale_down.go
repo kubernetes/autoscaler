@@ -76,6 +76,9 @@ type NodeDeleteStatus struct {
 	nodeDeleteResults map[string]error
 }
 
+// Get current time. Proxy for unit tests.
+var now func() time.Time = time.Now
+
 // IsDeleteInProgress returns true if a node is being deleted.
 func (n *NodeDeleteStatus) IsDeleteInProgress() bool {
 	n.Lock()
@@ -572,6 +575,50 @@ func (sd *ScaleDown) mapNodesToStatusScaleDownNodes(nodes []*apiv1.Node, nodeGro
 	return result
 }
 
+// SoftTaintUnneededNodes manage soft taints of unneeded nodes.
+func (sd *ScaleDown) SoftTaintUnneededNodes(allNodes []*apiv1.Node) (errors []error) {
+	defer metrics.UpdateDurationFromStart(metrics.ScaleDownSoftTaintUnneeded, time.Now())
+	apiCallBudget := sd.context.AutoscalingOptions.MaxBulkSoftTaintCount
+	timeBudget := sd.context.AutoscalingOptions.MaxBulkSoftTaintTime
+	skippedNodes := 0
+	startTime := now()
+	for _, node := range allNodes {
+		if deletetaint.HasToBeDeletedTaint(node) {
+			// Do not consider nodes that are scheduled to be deleted
+			continue
+		}
+		alreadyTainted := deletetaint.HasDeletionCandidateTaint(node)
+		_, unneeded := sd.unneededNodes[node.Name]
+
+		// Check if expected taints match existing taints
+		if unneeded != alreadyTainted {
+			if apiCallBudget <= 0 || now().Sub(startTime) >= timeBudget {
+				skippedNodes++
+				continue
+			}
+			apiCallBudget--
+			if unneeded && !alreadyTainted {
+				err := deletetaint.MarkDeletionCandidate(node, sd.context.ClientSet)
+				if err != nil {
+					errors = append(errors, err)
+					klog.Warningf("Soft taint on %s adding error %v", node.Name, err)
+				}
+			}
+			if !unneeded && alreadyTainted {
+				_, err := deletetaint.CleanDeletionCandidate(node, sd.context.ClientSet)
+				if err != nil {
+					errors = append(errors, err)
+					klog.Warningf("Soft taint on %s removal error %v", node.Name, err)
+				}
+			}
+		}
+	}
+	if skippedNodes > 0 {
+		klog.V(4).Infof("Skipped adding/removing soft taints on %v nodes - API call limit exceeded", skippedNodes)
+	}
+	return
+}
+
 // TryToScaleDown tries to scale down the cluster. It returns a result inside a ScaleDownStatus indicating if any node was
 // removed and error if such occurred.
 func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, pdbs []*policyv1.PodDisruptionBudget, currentTime time.Time) (*status.ScaleDownStatus, errors.AutoscalerError) {
@@ -1009,21 +1056,6 @@ func drainNode(node *apiv1.Node, pods []*apiv1.Pod, client kube_client.Interface
 	}
 	return errors.NewAutoscalerError(
 		errors.TransientError, "Failed to drain node %s/%s: pods remaining after timeout", node.Namespace, node.Name)
-}
-
-// cleanToBeDeleted cleans ToBeDeleted taints.
-func cleanToBeDeleted(nodes []*apiv1.Node, client kube_client.Interface, recorder kube_record.EventRecorder) {
-	for _, node := range nodes {
-		cleaned, err := deletetaint.CleanToBeDeleted(node, client)
-		if err != nil {
-			klog.Warningf("Error while releasing taints on node %v: %v", node.Name, err)
-			recorder.Eventf(node, apiv1.EventTypeWarning, "ClusterAutoscalerCleanup",
-				"failed to clean toBeDeletedTaint: %v", err)
-		} else if cleaned {
-			klog.V(1).Infof("Successfully released toBeDeletedTaint on node %v", node.Name)
-			recorder.Eventf(node, apiv1.EventTypeNormal, "ClusterAutoscalerCleanup", "marking the node as schedulable")
-		}
-	}
 }
 
 // Removes the given node from cloud provider. No extra pre-deletion actions are executed on
