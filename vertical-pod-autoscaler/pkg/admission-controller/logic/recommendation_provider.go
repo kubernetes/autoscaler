@@ -72,8 +72,8 @@ func getContainersResources(pod *v1.Pod, podRecommendation vpa_types.Recommended
 	return resources
 }
 
-func (p *recommendationProvider) getMatchingScaler(pod *v1.Pod) vpa_api_util.ScalerDuck {
-	onConfigs := make([]vpa_api_util.ScalerDuck, 0)
+func (p *recommendationProvider) getMatchingScaler(pod *v1.Pod) vpa_types.ScalingPolicy {
+	onConfigs := make([]vpa_types.ScalingPolicy, 0)
 
 	{
 		configs, err := p.vpaLister.VerticalPodAutoscalers(pod.Namespace).List(labels.Everything())
@@ -86,7 +86,7 @@ func (p *recommendationProvider) getMatchingScaler(pod *v1.Pod) vpa_api_util.Sca
 			if vpa_api_util.GetUpdateMode(o) == vpa_types.UpdateModeOff {
 				continue
 			}
-			onConfigs = append(onConfigs, &vpa_api_util.VPAAdapter{o})
+			onConfigs = append(onConfigs, &vpa_types.VPAAdapter{o})
 		}
 	}
 
@@ -101,7 +101,7 @@ func (p *recommendationProvider) getMatchingScaler(pod *v1.Pod) vpa_api_util.Sca
 			if vpa_api_util.GetCPSUpdateMode(o) == vpa_types.UpdateModeOff {
 				continue
 			}
-			onConfigs = append(onConfigs, &vpa_api_util.CPSAdapter{o})
+			onConfigs = append(onConfigs, &vpa_types.CPSAdapter{o})
 		}
 	}
 

@@ -49,7 +49,7 @@ type cappingRecommendationProcessor struct{}
 // Apply returns a recommendation for the given pod, adjusted to obey policy and limits.
 func (c *cappingRecommendationProcessor) Apply(
 	podRecommendation *vpa_types.RecommendedPodResources,
-	policy ScalerDuck,
+	policy vpa_types.ScalingPolicy,
 	pod *apiv1.Pod) (*vpa_types.RecommendedPodResources, ContainerToAnnotationsMap, error) {
 
 	if podRecommendation == nil && policy == nil {
@@ -88,7 +88,7 @@ func (c *cappingRecommendationProcessor) Apply(
 func getCappedRecommendationForContainer(
 	container apiv1.Container,
 	containerRecommendation *vpa_types.RecommendedContainerResources,
-	policy ScalerDuck) (*vpa_types.RecommendedContainerResources, []string, error) {
+	policy vpa_types.ScalingPolicy) (*vpa_types.RecommendedContainerResources, []string, error) {
 	if containerRecommendation == nil {
 		return nil, nil, fmt.Errorf("no recommendation available for container name %v", container.Name)
 	}
@@ -162,7 +162,7 @@ func applyVPAPolicyForContainer(containerName string,
 	}
 	cappedRecommendations := containerRecommendation.DeepCopy()
 	// containerPolicy can be nil (user does not have to configure it).
-	containerPolicy := GetContainerResourcePolicy(containerName, policy)
+	containerPolicy := vpa_types.GetContainerResourcePolicy(containerName, policy)
 	if containerPolicy == nil {
 		return cappedRecommendations, nil
 	}

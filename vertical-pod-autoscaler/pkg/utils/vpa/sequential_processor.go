@@ -32,7 +32,7 @@ type sequentialRecommendationProcessor struct {
 
 // Apply chains calls to underlying RecommendationProcessors in order provided on object construction
 func (p *sequentialRecommendationProcessor) Apply(podRecommendation *vpa_types.RecommendedPodResources,
-	policy ScalerDuck,
+	policy vpa_types.ScalingPolicy,
 	pod *v1.Pod) (*vpa_types.RecommendedPodResources, ContainerToAnnotationsMap, error) {
 	recommendation := podRecommendation
 	accumulatedContainerToAnnotationsMap := ContainerToAnnotationsMap{}

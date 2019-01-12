@@ -1,19 +1,6 @@
 package scaling
 
-import (
-	"testing"
-
-	"time"
-
-	scalingpolicy "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/cluster-proportional/apis/scalingpolicy/v1alpha1"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/cluster-proportional/debug"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/cluster-proportional/factors/static"
-	"k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/equality"
-	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/apimachinery/pkg/util/clock"
-)
-
+/*
 func TestComputeResources(t *testing.T) {
 	grid := []struct {
 		Name     string
@@ -169,52 +156,6 @@ func TestComputeResources(t *testing.T) {
 				},
 			},
 		},
-		/*{
-			Name: "Multiple rules on same resource",
-			Inputs: map[string]float64{
-				"nodes": 2,
-				"pods":  4,
-			},
-			Policy: &scalingpolicy.ScalingPolicySpec{
-				Containers: []scalingpolicy.ContainerScalingRule{
-					{
-						Name: "container1",
-						Resources: scalingpolicy.ResourceRequirements{
-							Requests: []scalingpolicy.ResourceScalingRule{
-								{
-									Resource: v1.ResourceMemory,
-									Function: scalingpolicy.ResourceScalingFunction{
-										Input: "pods",
-										Base:  resource.MustParse("100Mi"),
-										Slope: resource.MustParse("10Mi"),
-									},
-								},
-								{
-									Resource: v1.ResourceMemory,
-									Function: scalingpolicy.ResourceScalingFunction{
-										Input: "nodes",
-										Slope: resource.MustParse("20Mi"),
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-			Expected: &v1.PodSpec{
-				Containers: []v1.Container{
-					{
-						Name: "container1",
-						Resources: v1.ResourceRequirements{
-							Requests: v1.ResourceList{
-								v1.ResourceMemory: resource.MustParse("180Mi"),
-							},
-						},
-					},
-				},
-			},
-		},
-		*/
 		{
 			Name: "Multiple resources",
 			Inputs: map[string]float64{
@@ -383,3 +324,4 @@ func TestSegments(t *testing.T) {
 		}
 	}
 }
+*/

@@ -48,7 +48,7 @@ var (
 // i.e. pod with 10M current memory and recommendation 20M will have higher update priority
 // than pod with 100M current memory and 150M recommendation (100% increase vs 50% increase)
 type UpdatePriorityCalculator struct {
-	policy                  vpa_api_util.ScalerDuck
+	policy                  vpa_types.ScalingPolicy
 	pods                    []podPriority
 	config                  *UpdateConfig
 	recommendationProcessor vpa_api_util.RecommendationProcessor
@@ -64,7 +64,7 @@ type UpdateConfig struct {
 // NewUpdatePriorityCalculator creates new UpdatePriorityCalculator for the given resources policy and configuration.
 // If the given policy is nil, there will be no policy restriction on update.
 // If the given config is nil, default values are used.
-func NewUpdatePriorityCalculator(policy vpa_api_util.ScalerDuck,
+func NewUpdatePriorityCalculator(policy vpa_types.ScalingPolicy,
 	config *UpdateConfig,
 	processor vpa_api_util.RecommendationProcessor) UpdatePriorityCalculator {
 	if config == nil {
@@ -109,7 +109,7 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, recommendation *vpa
 			return
 		}
 		if updatePriority.resourceDiff < calc.config.MinChangePriority {
-			glog.V(2).Infof("not updating pod %v, resource diff too low: %s", pod.Name, updatePriority)
+			glog.V(2).Infof("not updating pod %v, resource diff too low: %v", pod.Name, updatePriority)
 			return
 		}
 	}
@@ -175,7 +175,7 @@ func (calc *UpdatePriorityCalculator) getUpdatePriority(pod *apiv1.Pod, recommen
 		resourceDiff += math.Abs(totalRequest-float64(totalRecommended)) / totalRequest
 	}
 	return podPriority{
-		pod:                     pod,
+		pod: pod,
 		outsideRecommendedRange: outsideRecommendedRange,
 		scaleUp:                 scaleUp,
 		resourceDiff:            resourceDiff,

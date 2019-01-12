@@ -115,7 +115,7 @@ func NewAllCPSLister(cpsClient vpa_clientset.Interface, stopChannel <-chan struc
 }
 
 // PodMatchesVPA returns true iff the VPA's selector matches the Pod and they are in the same namespace.
-func PodMatchesVPA(pod *core.Pod, vpa ScalerDuck) bool {
+func PodMatchesVPA(pod *core.Pod, vpa vpa_types.ScalingPolicy) bool {
 	if pod.Namespace != vpa.GetNamespace() {
 		return false
 	}
@@ -129,7 +129,7 @@ func PodMatchesVPA(pod *core.Pod, vpa ScalerDuck) bool {
 }
 
 // stronger returns true iff a is before b in the order to control a Pod (that matches both VPAs).
-func stronger(a, b ScalerDuck) bool {
+func stronger(a, b vpa_types.ScalingPolicy) bool {
 	// Assume a is not nil and each valid object is before nil object.
 	if b == nil {
 		return true
@@ -146,8 +146,8 @@ func stronger(a, b ScalerDuck) bool {
 }
 
 // GetControllingVPAForPod chooses the earliest created VPA from the input list that matches the given Pod.
-func GetControllingVPAForPod(pod *core.Pod, vpas []ScalerDuck) ScalerDuck {
-	var controlling ScalerDuck
+func GetControllingVPAForPod(pod *core.Pod, vpas []vpa_types.ScalingPolicy) vpa_types.ScalingPolicy {
+	var controlling vpa_types.ScalingPolicy
 	// Choose the strongest VPA from the ones that match this Pod.
 	for _, vpa := range vpas {
 		if PodMatchesVPA(pod, vpa) && stronger(vpa, controlling) {
@@ -197,40 +197,4 @@ func CreateOrUpdateVpaCheckpoint(vpaCheckpointClient vpa_api.VerticalPodAutoscal
 		return fmt.Errorf("Cannot save checkpoint for vpa %v container %v. Reason: %+v", vpaCheckpoint.ObjectMeta.Name, vpaCheckpoint.Spec.ContainerName, err)
 	}
 	return nil
-}
-
-// GetContainerResourcePolicy returns the ContainerResourcePolicy for a given policy
-// and container name. It returns nil if there is no policy specified for the container.
-func GetContainerResourcePolicy(containerName string, policy *vpa_types.PodResourcePolicy) *vpa_types.ContainerResourcePolicy {
-	var defaultPolicy *vpa_types.ContainerResourcePolicy
-	if policy != nil {
-		containerPolicies := policy.ContainerPolicies
-		for i := range containerPolicies {
-			if containerPolicies[i].ContainerName == containerName {
-				return &containerPolicies[i]
-			}
-			if containerPolicies[i].ContainerName == vpa_types.DefaultContainerResourcePolicy {
-				defaultPolicy = &containerPolicies[i]
-			}
-		}
-	}
-	return defaultPolicy
-}
-
-// GetCPSContainerResourcePolicy returns the ContainerResourcePolicy for a given policy
-// and container name. It returns nil if there is no policy specified for the container.
-func GetCPSContainerResourcePolicy(containerName string, policy *vpa_types.CPPodResourcePolicy) *vpa_types.ContainerResourcePolicy {
-	var defaultPolicy *vpa_types.ContainerResourcePolicy
-	if policy != nil {
-		containerPolicies := policy.ContainerPolicies
-		for i := range containerPolicies {
-			if containerPolicies[i].ContainerName == containerName {
-				return &containerPolicies[i].ContainerResourcePolicy
-			}
-			if containerPolicies[i].ContainerName == vpa_types.DefaultContainerResourcePolicy {
-				defaultPolicy = &containerPolicies[i].ContainerResourcePolicy
-			}
-		}
-	}
-	return defaultPolicy
 }

@@ -19,14 +19,13 @@ package priority
 import (
 	apiv1 "k8s.io/api/core/v1"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
-	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
 // PodEvictionAdmission controls evictions of pods.
 type PodEvictionAdmission interface {
 	// LoopInit initializes PodEvictionAdmission for next Updater loop with the live pods and
 	// pods currently controlled by VPA in this cluster.
-	LoopInit(allLivePods []*apiv1.Pod, vpaControlledPods map[vpa_api_util.ScalerDuck][]*apiv1.Pod)
+	LoopInit(allLivePods []*apiv1.Pod, vpaControlledPods map[vpa_types.ScalingPolicy][]*apiv1.Pod)
 	// Admit returns true if PodEvictionAdmission decides that pod can be evicted with given recommendation.
 	Admit(pod *apiv1.Pod, recommendation *vpa_types.RecommendedPodResources) bool
 	// CleanUp cleans up any state that PodEvictionAdmission may keep. Called
@@ -48,7 +47,7 @@ type sequentialPodEvictionAdmission struct {
 	admissions []PodEvictionAdmission
 }
 
-func (a *sequentialPodEvictionAdmission) LoopInit(allLivePods []*apiv1.Pod, vpaControlledPods map[vpa_api_util.ScalerDuck][]*apiv1.Pod) {
+func (a *sequentialPodEvictionAdmission) LoopInit(allLivePods []*apiv1.Pod, vpaControlledPods map[vpa_types.ScalingPolicy][]*apiv1.Pod) {
 	for _, admission := range a.admissions {
 		admission.LoopInit(allLivePods, vpaControlledPods)
 	}
@@ -72,7 +71,7 @@ func (a *sequentialPodEvictionAdmission) CleanUp() {
 
 type noopPodEvictionAdmission struct{}
 
-func (n *noopPodEvictionAdmission) LoopInit(allLivePods []*apiv1.Pod, vpaControlledPods map[vpa_api_util.ScalerDuck][]*apiv1.Pod) {
+func (n *noopPodEvictionAdmission) LoopInit(allLivePods []*apiv1.Pod, vpaControlledPods map[vpa_types.ScalingPolicy][]*apiv1.Pod) {
 }
 func (n *noopPodEvictionAdmission) Admit(pod *apiv1.Pod, recommendation *vpa_types.RecommendedPodResources) bool {
 	return true

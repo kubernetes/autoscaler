@@ -79,7 +79,7 @@ func NewUpdater(kubeClient kube_client.Interface, vpaClient *vpa_clientset.Clien
 func (u *updater) RunOnce() {
 	timer := metrics_updater.NewExecutionTimer()
 
-	vpas := make([]vpa_api_util.ScalerDuck, 0)
+	vpas := make([]vpa_types.ScalingPolicy, 0)
 
 	vpaList, err := u.vpaLister.List(labels.Everything())
 	if err != nil {
@@ -93,7 +93,7 @@ func (u *updater) RunOnce() {
 			glog.V(3).Infof("skipping VPA object %v because its mode is not \"Recreate\" or \"Auto\"", vpa.Name)
 			continue
 		}
-		vpas = append(vpas, &vpa_api_util.VPAAdapter{vpa})
+		vpas = append(vpas, &vpa_types.VPAAdapter{vpa})
 	}
 
 	cpsList, err := u.cpsLister.List(labels.Everything())
@@ -108,7 +108,7 @@ func (u *updater) RunOnce() {
 			glog.V(3).Infof("skipping CPS object %v because its mode is not \"Recreate\" or \"Auto\"", cps.Name)
 			continue
 		}
-		vpas = append(vpas, &vpa_api_util.CPSAdapter{cps})
+		vpas = append(vpas, &vpa_types.CPSAdapter{cps})
 	}
 
 	if len(vpas) == 0 {
@@ -129,7 +129,7 @@ func (u *updater) RunOnce() {
 	timer.ObserveStep("ListPods")
 	allLivePods := filterDeletedPods(podsList)
 
-	controlledPods := make(map[vpa_api_util.ScalerDuck][]*apiv1.Pod)
+	controlledPods := make(map[vpa_types.ScalingPolicy][]*apiv1.Pod)
 	for _, pod := range allLivePods {
 		controllingVPA := vpa_api_util.GetControllingVPAForPod(pod, vpas)
 		if controllingVPA != nil {
@@ -163,7 +163,7 @@ func (u *updater) RunOnce() {
 }
 
 // getPodsUpdateOrder returns list of pods that should be updated ordered by update priority
-func (u *updater) getPodsUpdateOrder(pods []*apiv1.Pod, vpa vpa_api_util.ScalerDuck) []*apiv1.Pod {
+func (u *updater) getPodsUpdateOrder(pods []*apiv1.Pod, vpa vpa_types.ScalingPolicy) []*apiv1.Pod {
 	priorityCalculator := priority.NewUpdatePriorityCalculator(vpa, nil, u.recommendationProcessor)
 	recommendation := vpa.GetRecommendation()
 

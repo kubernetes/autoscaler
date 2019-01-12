@@ -41,7 +41,7 @@ func TestRecommendationNotAvailable(t *testing.T) {
 	}
 	policy := vpa_types.PodResourcePolicy{}
 
-	res, annotations, err := NewCappingRecommendationProcessor().Apply(&podRecommendation, &policy, nil, pod)
+	res, annotations, err := NewCappingRecommendationProcessor().Apply(&podRecommendation, &policy, pod)
 	assert.Nil(t, err)
 	assert.Empty(t, annotations)
 	assert.Empty(t, res.ContainerRecommendations)
@@ -72,7 +72,7 @@ func TestRecommendationCappedToLimit(t *testing.T) {
 	}
 	policy := vpa_types.PodResourcePolicy{}
 
-	res, annotations, err := NewCappingRecommendationProcessor().Apply(&podRecommendation, &policy, nil, pod)
+	res, annotations, err := NewCappingRecommendationProcessor().Apply(&podRecommendation, &policy, pod)
 	assert.Nil(t, err)
 	assert.Equal(t, apiv1.ResourceList{
 		apiv1.ResourceCPU:    *resource.NewScaledQuantity(3, 1),
@@ -125,7 +125,7 @@ func TestRecommendationCappedToMinMaxPolicy(t *testing.T) {
 		},
 	}
 
-	res, annotations, err := NewCappingRecommendationProcessor().Apply(&podRecommendation, &policy, nil, pod)
+	res, annotations, err := NewCappingRecommendationProcessor().Apply(&podRecommendation, &policy, pod)
 	assert.Nil(t, err)
 	assert.Equal(t, apiv1.ResourceList{
 		apiv1.ResourceCPU:    *resource.NewScaledQuantity(40, 1),
@@ -165,19 +165,19 @@ var podRecommendation *vpa_types.RecommendedPodResources = &vpa_types.Recommende
 }
 var applyTestCases = []struct {
 	PodRecommendation         *vpa_types.RecommendedPodResources
-	Policy                    *vpa_types.PodResourcePolicy
+	Policy                    vpa_types.ScalingPolicy
 	ExpectedPodRecommendation *vpa_types.RecommendedPodResources
 	ExpectedError             error
 }{
 	{
-		PodRecommendation:         nil,
-		Policy:                    nil,
+		PodRecommendation: nil,
+		Policy:            nil,
 		ExpectedPodRecommendation: nil,
 		ExpectedError:             nil,
 	},
 	{
-		PodRecommendation:         podRecommendation,
-		Policy:                    nil,
+		PodRecommendation: podRecommendation,
+		Policy:            nil,
 		ExpectedPodRecommendation: podRecommendation,
 		ExpectedError:             nil,
 	},
@@ -188,7 +188,7 @@ func TestApply(t *testing.T) {
 
 	for _, testCase := range applyTestCases {
 		res, _, err := NewCappingRecommendationProcessor().Apply(
-			testCase.PodRecommendation, testCase.Policy, nil, pod)
+			testCase.PodRecommendation, testCase.Policy, pod)
 		assert.Equal(t, testCase.ExpectedPodRecommendation, res)
 		assert.Equal(t, testCase.ExpectedError, err)
 	}

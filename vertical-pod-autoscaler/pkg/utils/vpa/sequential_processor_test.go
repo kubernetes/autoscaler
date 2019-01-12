@@ -30,8 +30,7 @@ type fakeProcessor struct {
 }
 
 func (p *fakeProcessor) Apply(podRecommendation *vpa_types.RecommendedPodResources,
-	policy *vpa_types.PodResourcePolicy,
-	conditions []vpa_types.VerticalPodAutoscalerCondition,
+	policy vpa_types.ScalingPolicy,
 	pod *v1.Pod) (*vpa_types.RecommendedPodResources, ContainerToAnnotationsMap, error) {
 	result := podRecommendation.DeepCopy()
 	result.ContainerRecommendations[0].ContainerName += p.message
@@ -49,7 +48,7 @@ func TestSequentialProcessor(t *testing.T) {
 				ContainerName: "",
 			},
 		}}
-	result, annotations, _ := tested.Apply(rec1, nil, nil, nil)
+	result, annotations, _ := tested.Apply(rec1, nil, nil)
 	assert.Equal(t, name1+name2, result.ContainerRecommendations[0].ContainerName)
 	assert.Contains(t, annotations, "trace")
 	assert.Contains(t, annotations["trace"], name1)
