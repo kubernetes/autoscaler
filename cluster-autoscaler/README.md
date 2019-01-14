@@ -17,14 +17,14 @@ We strongly recommend using Cluster Autoscaler with version for which it was mea
 do ANY cross version testing so if you put the newest Cluster Autoscaler on an old cluster
 there is a big chance that it won't work as expected.
 
-| Kubernetes Version  | CA Version   |
-|--------|--------|
-| 1.9.X  | 1.1.X  |
-| 1.8.X  | 1.0.X  |
-| 1.7.X  | 0.6.X  |
-| 1.6.X  | 0.5.X, 0.6.X<sup>*</sup>  |
-| 1.5.X  | 0.4.X  |
-| 1.4.X  | 0.3.X  |
+| Kubernetes Version | CA Version               |
+| ------------------ | ------------------------ |
+| 1.9.X              | 1.1.X                    |
+| 1.8.X              | 1.0.X                    |
+| 1.7.X              | 0.6.X                    |
+| 1.6.X              | 0.5.X, 0.6.X<sup>*</sup> |
+| 1.5.X              | 0.4.X                    |
+| 1.4.X              | 0.3.X                    |
 
 <sup>*</sup>Cluster Autoscaler 0.5.X is the official version shipped with k8s 1.6. We've done some basic tests using k8s 1.6 / CA 0.6 and we're not aware of any problems with this setup. However, CA internally simulates k8s scheduler and using different versions of scheduler code can lead to subtle issues.
 
@@ -32,11 +32,11 @@ there is a big chance that it won't work as expected.
 
 CA version 1.1.1:
 * Fixes around metrics in the multi-master configuration.
-* Fixes for unready nodes issues when quota is overrun. 
+* Fixes for unready nodes issues when quota is overrun.
 
 CA version 1.1.0:
 * Added [Azure support](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/azure/README.md).
-* Added support for pod priorities. More details [here](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#how-does-cluster-autoscaler-work-with-pod-priority-and-preemption). 
+* Added support for pod priorities. More details [here](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#how-does-cluster-autoscaler-work-with-pod-priority-and-preemption).
 
 CA version 1.0.3:
 * Adds support for safe-to-evict annotation on pod. Pods with this annotation
@@ -122,3 +122,15 @@ Right now it is possible to run Cluster Autoscaler on:
 * GKE https://cloud.google.com/container-engine/docs/cluster-autoscaler
 * AWS https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md
 * Azure https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/azure/README.md
+
+# Visenze specifics
+
+We have made some minor adjustments to this cluster-autoscaler.
+
+You can use the spotinst variant with our custom resource GPU memory enabled for scale up and down to zero.
+
+To scale to/from zero with GPU memory, you will need the following:
+
+* Nodes must have the label `accelerator=<anything>` to identify them as GPU nodes
+* Some undocumented behavior copied from the AWS side to spotinst cluster autoscaler:
+  * Scale to zero uses the tags `k8s.io/cluster-autoscaler/node-template/label` for node labels and `k8s.io/cluster-autoscaler/node-template/taint` for node taints

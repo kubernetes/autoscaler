@@ -40,6 +40,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpumemory"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 )
 
@@ -392,6 +393,7 @@ func (mgr *CloudManager) buildNodeFromTemplate(group *Group, template *groupTemp
 	node.Status.Capacity[apiv1.ResourcePods] = *resource.NewQuantity(110, resource.DecimalSI)
 	node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewQuantity(template.InstanceType.VCPU, resource.DecimalSI)
 	node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(template.InstanceType.MemoryMb*1024*1024, resource.DecimalSI)
+	node.Status.Capacity[gpumemory.ResourceVisenzeGPUMemory] = *resource.NewQuantity(template.InstanceType.GPUMemory, resource.DecimalSI)
 	node.Status.Allocatable = node.Status.Capacity
 
 	// NodeLabels

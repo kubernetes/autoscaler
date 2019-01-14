@@ -19,9 +19,12 @@ package core
 import (
 	"fmt"
 	"sort"
+	"strconv"
 	"testing"
 	"time"
 
+	"github.com/golang/glog"
+	"github.com/stretchr/testify/assert"
 	batchv1 "k8s.io/api/batch/v1"
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1beta1"
@@ -34,17 +37,12 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	scheduler_util "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/client-go/kubernetes/fake"
 	core "k8s.io/client-go/testing"
-
-	"strconv"
-
-	"github.com/golang/glog"
-	"github.com/stretchr/testify/assert"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 )
 
 func TestFindUnneededNodes(t *testing.T) {
@@ -868,10 +866,10 @@ var defaultScaleDownOptions = AutoscalingOptions{
 func TestScaleDownEmptyMultipleNodeGroups(t *testing.T) {
 	config := &scaleTestConfig{
 		nodes: []nodeConfig{
-			{"n1_1", 1000, 1000, true, "ng1"},
-			{"n1_2", 1000, 1000, true, "ng1"},
-			{"n2_1", 1000, 1000, true, "ng2"},
-			{"n2_2", 1000, 1000, true, "ng2"},
+			{"n1_1", 1000, 1000, true, "ng1", 0},
+			{"n1_2", 1000, 1000, true, "ng1", 0},
+			{"n2_1", 1000, 1000, true, "ng2", 0},
+			{"n2_2", 1000, 1000, true, "ng2", 0},
 		},
 		options:            defaultScaleDownOptions,
 		expectedScaleDowns: []string{"n1_1", "n2_1"},
@@ -882,8 +880,8 @@ func TestScaleDownEmptyMultipleNodeGroups(t *testing.T) {
 func TestScaleDownEmptySingleNodeGroup(t *testing.T) {
 	config := &scaleTestConfig{
 		nodes: []nodeConfig{
-			{"n1", 1000, 1000, true, "ng1"},
-			{"n2", 1000, 1000, true, "ng1"},
+			{"n1", 1000, 1000, true, "ng1", 0},
+			{"n2", 1000, 1000, true, "ng1", 0},
 		},
 		options:            defaultScaleDownOptions,
 		expectedScaleDowns: []string{"n1"},
@@ -896,8 +894,8 @@ func TestScaleDownEmptyMinCoresLimitHit(t *testing.T) {
 	options.MinCoresTotal = 2
 	config := &scaleTestConfig{
 		nodes: []nodeConfig{
-			{"n1", 2000, 1000, true, "ng1"},
-			{"n2", 1000, 1000, true, "ng1"},
+			{"n1", 2000, 1000, true, "ng1", 0},
+			{"n2", 1000, 1000, true, "ng1", 0},
 		},
 		options:            options,
 		expectedScaleDowns: []string{"n2"},
@@ -910,10 +908,10 @@ func TestScaleDownEmptyMinMemoryLimitHit(t *testing.T) {
 	options.MinMemoryTotal = 4000
 	config := &scaleTestConfig{
 		nodes: []nodeConfig{
-			{"n1", 2000, 1000 * MB, true, "ng1"},
-			{"n2", 1000, 1000 * MB, true, "ng1"},
-			{"n3", 1000, 1000 * MB, true, "ng1"},
-			{"n4", 1000, 3000 * MB, true, "ng1"},
+			{"n1", 2000, 1000 * MB, true, "ng1", 0},
+			{"n2", 1000, 1000 * MB, true, "ng1", 0},
+			{"n3", 1000, 1000 * MB, true, "ng1", 0},
+			{"n4", 1000, 3000 * MB, true, "ng1", 0},
 		},
 		options:            options,
 		expectedScaleDowns: []string{"n1", "n2"},
@@ -925,7 +923,7 @@ func TestScaleDownEmptyMinGroupSizeLimitHit(t *testing.T) {
 	options := defaultScaleDownOptions
 	config := &scaleTestConfig{
 		nodes: []nodeConfig{
-			{"n1", 2000, 1000, true, "ng1"},
+			{"n1", 2000, 1000, true, "ng1", 0},
 		},
 		options:            options,
 		expectedScaleDowns: []string{},
@@ -1278,13 +1276,13 @@ func TestCleanUpNodeAutoprovisionedGroups(t *testing.T) {
 
 func TestCalculateCoresAndMemoryTotal(t *testing.T) {
 	nodeConfigs := []nodeConfig{
-		{"n1", 2000, 7500 * MB, true, "ng1"},
-		{"n2", 2000, 7500 * MB, true, "ng1"},
-		{"n3", 2000, 7500 * MB, true, "ng1"},
-		{"n4", 12000, 8000 * MB, true, "ng1"},
-		{"n5", 16000, 7500 * MB, true, "ng1"},
-		{"n6", 8000, 6000 * MB, true, "ng1"},
-		{"n7", 6000, 16000 * MB, true, "ng1"},
+		{"n1", 2000, 7500 * MB, true, "ng1", 0},
+		{"n2", 2000, 7500 * MB, true, "ng1", 0},
+		{"n3", 2000, 7500 * MB, true, "ng1", 0},
+		{"n4", 12000, 8000 * MB, true, "ng1", 0},
+		{"n5", 16000, 7500 * MB, true, "ng1", 0},
+		{"n6", 8000, 6000 * MB, true, "ng1", 0},
+		{"n7", 6000, 16000 * MB, true, "ng1", 0},
 	}
 	nodes := make([]*apiv1.Node, len(nodeConfigs))
 	for i, n := range nodeConfigs {
@@ -1309,13 +1307,13 @@ func TestCalculateCoresAndMemoryTotal(t *testing.T) {
 
 func TestFilterOutMasters(t *testing.T) {
 	nodeConfigs := []nodeConfig{
-		{"n1", 2000, 4000, false, "ng1"},
-		{"n2", 2000, 4000, true, "ng2"},
-		{"n3", 2000, 8000, true, ""}, // real master
-		{"n4", 1000, 2000, true, "ng3"},
-		{"n5", 1000, 2000, true, "ng3"},
-		{"n6", 2000, 8000, true, ""}, // same machine type, no node group, no api server
-		{"n7", 2000, 8000, true, ""}, // real master
+		{"n1", 2000, 4000, false, "ng1", 0},
+		{"n2", 2000, 4000, true, "ng2", 0},
+		{"n3", 2000, 8000, true, "", 0}, // real master
+		{"n4", 1000, 2000, true, "ng3", 0},
+		{"n5", 1000, 2000, true, "ng3", 0},
+		{"n6", 2000, 8000, true, "", 0}, // same machine type, no node group, no api server
+		{"n7", 2000, 8000, true, "", 0}, // real master
 	}
 	nodes := make([]*apiv1.Node, len(nodeConfigs))
 	for i, n := range nodeConfigs {

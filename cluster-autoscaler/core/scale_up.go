@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"time"
 
+	"github.com/golang/glog"
 	apiv1 "k8s.io/api/core/v1"
 	extensionsv1 "k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -35,8 +36,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/labels"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/nodegroupset"
 	"k8s.io/kubernetes/pkg/scheduler/schedulercache"
-
-	"github.com/golang/glog"
 )
 
 // ScaleUp tries to scale the cluster up. Return true if it found a way to increase the size,
@@ -395,6 +394,7 @@ func addAutoprovisionedCandidates(context *AutoscalingContext, nodeGroups []clou
 		newGroupsCount += len(newNodeGroups)
 		nodeGroups = append(nodeGroups, newNodeGroups...)
 	}
+
 	glog.V(4).Infof("Considering %v potential node groups in NAP simulations", newGroupsCount)
 
 	return nodeGroups, nodeInfos
