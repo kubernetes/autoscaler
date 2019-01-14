@@ -395,21 +395,6 @@ func addAutoprovisionedCandidates(context *AutoscalingContext, nodeGroups []clou
 		nodeGroups = append(nodeGroups, newNodeGroups...)
 	}
 
-	// TODO: Seems this block isn't actually needed, once the resource is registered
-	// Only is a factor for GPUs because of the various GPU types
-	// gpuMemoryRequests := gpumemory.GetGPUMemoryRequests(unschedulablePods)
-	// var zero resource.Quantity
-	// if gpuMemoryRequests.TotalMemory.Cmp(zero) > 0 {
-	// 	glog.V(4).Info("Adding node groups using GPU Memory to NAP simulations")
-	// 	extraResources := map[string]resource.Quantity{
-	// 		gpumemory.ResourceVisenzeGPUMemory: gpuMemoryRequests.TotalMemory,
-	// 	}
-	// 	// TODO: See if the node groups are correct
-	// 	newNodeGroups := addAllMachineTypesForConfig(context, map[string]string{}, extraResources, nodeInfos, gpuMemoryRequests.Pods)
-	// 	newGroupsCount += len(newNodeGroups)
-	// 	nodeGroups = append(nodeGroups, newNodeGroups...)
-	// }
-
 	glog.V(4).Infof("Considering %v potential node groups in NAP simulations", newGroupsCount)
 
 	return nodeGroups, nodeInfos

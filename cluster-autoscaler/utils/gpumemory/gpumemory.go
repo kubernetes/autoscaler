@@ -39,27 +39,3 @@ type RequestInfo struct {
 	TotalMemory   resource.Quantity
 	Pods          []*apiv1.Pod
 }
-
-// GetGPUMemoryRequests returns information about how much memory is needed for a set of pods
-func GetGPUMemoryRequests(pods []*apiv1.Pod) *RequestInfo {
-	ri := &RequestInfo{}
-	for _, pod := range pods {
-		var podGpuMemory resource.Quantity
-		for _, container := range pod.Spec.Containers {
-			if container.Resources.Requests != nil {
-				containerGpuMemory := container.Resources.Requests[ResourceVisenzeGPUMemory]
-				podGpuMemory.Add(containerGpuMemory)
-			}
-		}
-		if podGpuMemory.Value() == 0 {
-			continue
-		}
-
-		if podGpuMemory.Cmp(ri.MaximumMemory) > 0 {
-			ri.MaximumMemory = podGpuMemory
-		}
-		ri.TotalMemory.Add(podGpuMemory)
-		ri.Pods = append(ri.Pods, pod)
-	}
-	return ri
-}
