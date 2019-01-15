@@ -156,7 +156,7 @@ Fill the values of cluster-autoscaler-azure secret in [cluster-autoscaler-contai
 
 - ClientID: `<base64-encoded-client-id>`
 - ClientSecret: `<base64-encoded-client-secret>`
-- ResourceGroup: `<base64-encoded-resource-group>` (Note: Please use lower case)
+- ResourceGroup: `<base64-encoded-resource-group>` (Note: ResourceGroup is case-sensitive)
 - SubscriptionID: `<base64-encode-subscription-id>`
 - TenantID: `<base64-encoded-tenant-id>`
 - ClusterName: `<base64-encoded-clustername>`
