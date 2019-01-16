@@ -148,6 +148,7 @@ func (o *observer) OnUpdate(oldObj, newObj interface{}) {
 
 	for _, containerStatus := range newPod.Status.ContainerStatuses {
 		if containerStatus.RestartCount > 0 &&
+			containerStatus.LastTerminationState.Terminated != nil &&
 			containerStatus.LastTerminationState.Terminated.Reason == "OOMKilled" {
 
 			oldStatus := findStatus(containerStatus.Name, oldPod.Status.ContainerStatuses)
