@@ -108,6 +108,21 @@ func TestOOMReceived(t *testing.T) {
 	assert.Equal(t, timestamp.Unix(), info.Timestamp.Unix())
 }
 
+func TestMalformedPodReceived(t *testing.T) {
+	p1, err := newPod(pod1Yaml)
+	assert.NoError(t, err)
+	p2, err := newPod(pod2Yaml)
+	assert.NoError(t, err)
+
+	// Malformed pod: restart count > 0, but last termination status is nil
+	p2.Status.ContainerStatuses[0].RestartCount = 1
+	p2.Status.ContainerStatuses[0].LastTerminationState.Terminated = nil
+
+	observer := NewObserver()
+	observer.OnUpdate(p1, p2)
+	assert.Empty(t, observer.observedOomsChannel)
+}
+
 func TestParseEvictionEvent(t *testing.T) {
 	parseTimestamp := func(str string) time.Time {
 		timestamp, err := time.Parse(time.RFC3339, "2018-02-23T13:38:48Z")
