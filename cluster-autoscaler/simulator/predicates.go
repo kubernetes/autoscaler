@@ -17,9 +17,8 @@ limitations under the License.
 package simulator
 
 import (
-	"bytes"
-	"errors"
 	"fmt"
+	"strings"
 
 	apiv1 "k8s.io/api/core/v1"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -31,24 +30,14 @@ import (
 	"k8s.io/kubernetes/pkg/scheduler/factory"
 
 	// We need to import provider to initialize default scheduler.
-	_ "k8s.io/kubernetes/pkg/scheduler/algorithmprovider"
+	"k8s.io/kubernetes/pkg/scheduler/algorithmprovider"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
-// ErrorVerbosity defines the verbosity of error messages returned by PredicateChecker
-type ErrorVerbosity bool
-
 const (
-	// ReturnVerboseError causes informative error messages to be returned.
-	ReturnVerboseError ErrorVerbosity = true
-	// ReturnSimpleError causes simple, detail-free error messages to be returned.
-	// This significantly improves performance and is useful if the error message
-	// is discarded anyway.
-	ReturnSimpleError ErrorVerbosity = false
-
 	// We want to disable affinity predicate for performance reasons if no pod
-	// requires it
+	// requires it.
 	affinityPredicateName = "MatchInterPodAffinity"
 )
 
@@ -57,15 +46,24 @@ type predicateInfo struct {
 	predicate algorithm.FitPredicate
 }
 
-// PredicateChecker checks whether all required predicates are matched for given Pod and Node
+// PredicateChecker checks whether all required predicates pass for given Pod and Node.
 type PredicateChecker struct {
 	predicates                []predicateInfo
 	predicateMetadataProducer algorithm.PredicateMetadataProducer
 	enableAffinityPredicate   bool
 }
 
-// there are no const arrays in go, this is meant to be used as a const
+// There are no const arrays in Go, this is meant to be used as a const.
 var priorityPredicates = []string{"PodFitsResources", "GeneralPredicates", "PodToleratesNodeTaints"}
+
+func init() {
+	// This results in filtering out some predicate functions registered by defaults.init() method.
+	// In scheduler this method is run from app.runCommand().
+	// We also need to call it in CA to have simulation behaviour consistent with scheduler.
+	// Note: the logic of method is conditional and depends on feature gates enabled. To have same
+	//       behaviour in CA and scheduler both need to be run with same set of feature gates.
+	algorithmprovider.ApplyFeatureGates()
+}
 
 // NewPredicateChecker builds PredicateChecker.
 func NewPredicateChecker(kubeClient kube_client.Interface, stop <-chan struct{}) (*PredicateChecker, error) {
@@ -75,24 +73,21 @@ func NewPredicateChecker(kubeClient kube_client.Interface, stop <-chan struct{})
 	}
 	informerFactory := informers.NewSharedInformerFactory(kubeClient, 0)
 
-	schedulerConfigFactory := factory.NewConfigFactory(
-		"cluster-autoscaler",
-		kubeClient,
-		informerFactory.Core().V1().Nodes(),
-		informerFactory.Core().V1().Pods(),
-		informerFactory.Core().V1().PersistentVolumes(),
-		informerFactory.Core().V1().PersistentVolumeClaims(),
-		informerFactory.Core().V1().ReplicationControllers(),
-		informerFactory.Extensions().V1beta1().ReplicaSets(),
-		informerFactory.Apps().V1beta1().StatefulSets(),
-		informerFactory.Core().V1().Services(),
-		informerFactory.Policy().V1beta1().PodDisruptionBudgets(),
-		informerFactory.Storage().V1().StorageClasses(),
-		apiv1.DefaultHardPodAffinitySymmetricWeight,
-		false,
-		false,
-	)
-
+	schedulerConfigFactory := factory.NewConfigFactory(&factory.ConfigFactoryArgs{
+		SchedulerName:                  "cluster-autoscaler",
+		Client:                         kubeClient,
+		NodeInformer:                   informerFactory.Core().V1().Nodes(),
+		PodInformer:                    informerFactory.Core().V1().Pods(),
+		PvInformer:                     informerFactory.Core().V1().PersistentVolumes(),
+		PvcInformer:                    informerFactory.Core().V1().PersistentVolumeClaims(),
+		ReplicationControllerInformer:  informerFactory.Core().V1().ReplicationControllers(),
+		ReplicaSetInformer:             informerFactory.Apps().V1().ReplicaSets(),
+		StatefulSetInformer:            informerFactory.Apps().V1().StatefulSets(),
+		ServiceInformer:                informerFactory.Core().V1().Services(),
+		PdbInformer:                    informerFactory.Policy().V1beta1().PodDisruptionBudgets(),
+		StorageClassInformer:           informerFactory.Storage().V1().StorageClasses(),
+		HardPodAffinitySymmetricWeight: apiv1.DefaultHardPodAffinitySymmetricWeight,
+	})
 	informerFactory.Start(stop)
 
 	metadataProducer, err := schedulerConfigFactory.GetPredicateMetadataProducer()
@@ -118,12 +113,13 @@ func NewPredicateChecker(kubeClient kube_client.Interface, stop <-chan struct{})
 			delete(predicateMap, predicateName)
 		}
 	}
+
 	for predicateName, predicate := range predicateMap {
 		predicateList = append(predicateList, predicateInfo{name: predicateName, predicate: predicate})
 	}
 
 	for _, predInfo := range predicateList {
-		glog.V(1).Infof("Using predicate %s", predInfo.name)
+		klog.V(1).Infof("Using predicate %s", predInfo.name)
 	}
 
 	// TODO: Verify that run is not needed anymore.
@@ -177,7 +173,7 @@ func (p *PredicateChecker) IsAffinityPredicateEnabled() bool {
 // predicateMetadata is also quite expensive, so it's not always the best option to run this method.
 // Please refer to https://github.com/kubernetes/autoscaler/issues/257 for more details.
 func (p *PredicateChecker) GetPredicateMetadata(pod *apiv1.Pod, nodeInfos map[string]*schedulercache.NodeInfo) algorithm.PredicateMetadata {
-	// skip precomputation if affinity predicate is disabled - it's not worth it performance-wise
+	// Skip precomputation if affinity predicate is disabled - it's not worth it performance-wise.
 	if !p.enableAffinityPredicate {
 		return nil
 	}
@@ -191,54 +187,102 @@ func (p *PredicateChecker) FitsAny(pod *apiv1.Pod, nodeInfos map[string]*schedul
 		if nodeInfo.Node().Spec.Unschedulable {
 			continue
 		}
-		if err := p.CheckPredicates(pod, nil, nodeInfo, ReturnSimpleError); err == nil {
+		if err := p.CheckPredicates(pod, nil, nodeInfo); err == nil {
 			return name, nil
 		}
 	}
 	return "", fmt.Errorf("cannot put pod %s on any node", pod.Name)
 }
 
-// CheckPredicates checks if the given pod can be placed on the given node.
+// PredicateError implements error, preserving the original error information from scheduler predicate.
+type PredicateError struct {
+	predicateName  string
+	failureReasons []algorithm.PredicateFailureReason
+	err            error
+
+	reasons []string
+	message string
+}
+
+// Error returns a predefined error message.
+func (pe *PredicateError) Error() string {
+	if pe.message != "" {
+		return pe.message
+	}
+	// Don't generate verbose message.
+	return "Predicates failed"
+}
+
+// VerboseError generates verbose error message if it isn't yet done.
 // We're running a ton of predicates and more often than not we only care whether
 // they pass or not and don't care for a reason. Turns out formatting nice error
-// messages gets very expensive, so we only do it if verbose is set to ReturnVerboseError.
+// messages gets very expensive, so we only do it if explicitly requested.
+func (pe *PredicateError) VerboseError() string {
+	if pe.message != "" {
+		return pe.message
+	}
+	// Generate verbose message.
+	if pe.err != nil {
+		pe.message = fmt.Sprintf("%s predicate error: %v", pe.predicateName, pe.err)
+		return pe.message
+	}
+	pe.message = fmt.Sprintf("%s predicate mismatch, reason: %s", pe.predicateName, strings.Join(pe.Reasons(), ", "))
+	return pe.message
+}
+
+// NewPredicateError creates a new predicate error from error and reasons.
+func NewPredicateError(name string, err error, reasons []string, originalReasons []algorithm.PredicateFailureReason) *PredicateError {
+	return &PredicateError{
+		predicateName:  name,
+		err:            err,
+		reasons:        reasons,
+		failureReasons: originalReasons,
+	}
+}
+
+// Reasons returns original failure reasons from failed predicate as a slice of strings.
+func (pe *PredicateError) Reasons() []string {
+	if pe.reasons != nil {
+		return pe.reasons
+	}
+	pe.reasons = make([]string, len(pe.failureReasons))
+	for i, reason := range pe.failureReasons {
+		pe.reasons[i] = reason.GetReason()
+	}
+	return pe.reasons
+}
+
+// OriginalReasons returns original failure reasons from failed predicate as a slice of PredicateFailureReason.
+func (pe *PredicateError) OriginalReasons() []algorithm.PredicateFailureReason {
+	return pe.failureReasons
+}
+
+// PredicateName returns the name of failed predicate.
+func (pe *PredicateError) PredicateName() string {
+	return pe.predicateName
+}
+
+// CheckPredicates checks if the given pod can be placed on the given node.
 // To improve performance predicateMetadata can be calculated using GetPredicateMetadata
 // method and passed to CheckPredicates, however, this may lead to incorrect results if
 // it was calculated using NodeInfo map representing different cluster state and the
 // performance gains of CheckPredicates won't always offset the cost of GetPredicateMetadata.
 // Alternatively you can pass nil as predicateMetadata.
-func (p *PredicateChecker) CheckPredicates(pod *apiv1.Pod, predicateMetadata algorithm.PredicateMetadata, nodeInfo *schedulercache.NodeInfo, verbosity ErrorVerbosity) error {
+func (p *PredicateChecker) CheckPredicates(pod *apiv1.Pod, predicateMetadata algorithm.PredicateMetadata, nodeInfo *schedulercache.NodeInfo) *PredicateError {
 	for _, predInfo := range p.predicates {
-
-		// skip affinity predicate if it has been disabled
+		// Skip affinity predicate if it has been disabled.
 		if !p.enableAffinityPredicate && predInfo.name == affinityPredicateName {
 			continue
 		}
 
-		match, failureReason, err := predInfo.predicate(pod, predicateMetadata, nodeInfo)
+		match, failureReasons, err := predInfo.predicate(pod, predicateMetadata, nodeInfo)
 
-		if verbosity == ReturnSimpleError && (err != nil || !match) {
-			return errors.New("Predicates failed")
-		}
-
-		nodename := "unknown"
-		if nodeInfo.Node() != nil {
-			nodename = nodeInfo.Node().Name
-		}
-		if err != nil {
-			return fmt.Errorf("%s predicate error, cannot put %s/%s on %s due to, error %v", predInfo.name, pod.Namespace,
-				pod.Name, nodename, err)
-		}
-		if !match {
-			var buffer bytes.Buffer
-			for i, reason := range failureReason {
-				if i > 0 {
-					buffer.WriteString(",")
-				}
-				buffer.WriteString(reason.GetReason())
+		if err != nil || !match {
+			return &PredicateError{
+				predicateName:  predInfo.name,
+				failureReasons: failureReasons,
+				err:            err,
 			}
-			return fmt.Errorf("%s predicate mismatch, cannot put %s/%s on %s, reason: %s", predInfo.name, pod.Namespace,
-				pod.Name, nodename, buffer.String())
 		}
 	}
 	return nil

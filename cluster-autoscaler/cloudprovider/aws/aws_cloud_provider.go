@@ -18,16 +18,19 @@ package aws
 
 import (
 	"fmt"
+	"io"
+	"os"
 	"regexp"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/golang/glog"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/price"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/klog"
 	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 )
 
@@ -79,7 +82,7 @@ func (aws *awsCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 // NodeGroupForNode returns the node group for the given node.
 func (aws *awsCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	if len(node.Spec.ProviderID) == 0 {
-		glog.Warningf("Node %v has no providerId", node.Name)
+		klog.Warningf("Node %v has no providerId", node.Name)
 		return nil, nil
 	}
 	ref, err := AwsRefFromProviderId(node.Spec.ProviderID)
@@ -185,8 +188,8 @@ func (ng *AwsNodeGroup) Exist() bool {
 }
 
 // Create creates the node group on the cloud provider side.
-func (ng *AwsNodeGroup) Create() error {
-	return cloudprovider.ErrAlreadyExist
+func (ng *AwsNodeGroup) Create() (cloudprovider.NodeGroup, error) {
+	return nil, cloudprovider.ErrAlreadyExist
 }
 
 // Autoprovisioned returns true if the node group is autoprovisioned.
@@ -285,18 +288,18 @@ func (ng *AwsNodeGroup) Debug() string {
 }
 
 // Nodes returns a list of all nodes that belong to this node group.
-func (ng *AwsNodeGroup) Nodes() ([]string, error) {
+func (ng *AwsNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 	asgNodes, err := ng.awsManager.GetAsgNodes(ng.asg.AwsRef)
 	if err != nil {
 		return nil, err
 	}
 
-	nodes := make([]string, len(asgNodes))
+	instances := make([]cloudprovider.Instance, len(asgNodes))
 
 	for i, asgNode := range asgNodes {
-		nodes[i] = asgNode.ProviderID
+		instances[i] = cloudprovider.Instance{Id: asgNode.ProviderID}
 	}
-	return nodes, nil
+	return instances, nil
 }
 
 // TemplateNodeInfo returns a node template for this node group.
@@ -314,4 +317,28 @@ func (ng *AwsNodeGroup) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
 	nodeInfo := schedulercache.NewNodeInfo(cloudprovider.BuildKubeProxy(ng.asg.Name))
 	nodeInfo.SetNode(node)
 	return nodeInfo, nil
+}
+
+// BuildAWS builds AWS cloud provider, manager etc.
+func BuildAWS(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+	var config io.ReadCloser
+	if opts.CloudConfig != "" {
+		var err error
+		config, err = os.Open(opts.CloudConfig)
+		if err != nil {
+			klog.Fatalf("Couldn't open cloud provider configuration %s: %#v", opts.CloudConfig, err)
+		}
+		defer config.Close()
+	}
+
+	manager, err := CreateAwsManager(config, do)
+	if err != nil {
+		klog.Fatalf("Failed to create AWS Manager: %v", err)
+	}
+
+	provider, err := BuildAwsCloudProvider(manager, rl)
+	if err != nil {
+		klog.Fatalf("Failed to create AWS cloud provider: %v", err)
+	}
+	return provider
 }

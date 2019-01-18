@@ -17,6 +17,9 @@ limitations under the License.
 package status
 
 import (
+	"fmt"
+	"strings"
+
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 )
@@ -29,9 +32,9 @@ type EventingScaleUpStatusProcessor struct{}
 // Process processes the state of the cluster after a scale-up by emitting
 // relevant events for pods depending on their post scale-up status.
 func (p *EventingScaleUpStatusProcessor) Process(context *context.AutoscalingContext, status *ScaleUpStatus) {
-	for _, pod := range status.PodsRemainUnschedulable {
-		context.Recorder.Event(pod, apiv1.EventTypeNormal, "NotTriggerScaleUp",
-			"pod didn't trigger scale-up (it wouldn't fit if a new node is added)")
+	for _, noScaleUpInfo := range status.PodsRemainUnschedulable {
+		context.Recorder.Event(noScaleUpInfo.Pod, apiv1.EventTypeNormal, "NotTriggerScaleUp",
+			fmt.Sprintf("pod didn't trigger scale-up (it wouldn't fit if a new node is added): %s", ReasonsMessage(noScaleUpInfo)))
 	}
 	if len(status.ScaleUpInfos) > 0 {
 		for _, pod := range status.PodsTriggeredScaleUp {
@@ -39,4 +42,28 @@ func (p *EventingScaleUpStatusProcessor) Process(context *context.AutoscalingCon
 				"pod triggered scale-up: %v", status.ScaleUpInfos)
 		}
 	}
+}
+
+// CleanUp cleans up the processor's internal structures.
+func (p *EventingScaleUpStatusProcessor) CleanUp() {
+}
+
+// ReasonsMessage aggregates reasons from NoScaleUpInfos.
+func ReasonsMessage(noScaleUpInfo NoScaleUpInfo) string {
+	messages := []string{}
+	aggregated := map[string]int{}
+	for _, reasons := range noScaleUpInfo.RejectedNodeGroups {
+		for _, reason := range reasons.Reasons() {
+			aggregated[reason]++
+		}
+	}
+	for _, reasons := range noScaleUpInfo.SkippedNodeGroups {
+		for _, reason := range reasons.Reasons() {
+			aggregated[reason]++
+		}
+	}
+	for msg, count := range aggregated {
+		messages = append(messages, fmt.Sprintf("%d %s", count, msg))
+	}
+	return strings.Join(messages, ", ")
 }

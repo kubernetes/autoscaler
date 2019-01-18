@@ -22,20 +22,20 @@ import (
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
+	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
 func TestUpdateResourceRequests(t *testing.T) {
 	type testCase struct {
 		pod            *apiv1.Pod
 		vpas           []*vpa_types.VerticalPodAutoscaler
-		setMemoryLimit bool
 		expectedAction bool
 		expectedMem    string
 		expectedCPU    string
-		memLimit       string
+		annotations    vpa_api_util.ContainerToAnnotationsMap
 	}
 	containerName := "container1"
 	vpaName := "vpa1"
@@ -71,85 +71,71 @@ func TestUpdateResourceRequests(t *testing.T) {
 	testCases := []testCase{{
 		pod:            uninitialized,
 		vpas:           []*vpa_types.VerticalPodAutoscaler{vpa},
-		setMemoryLimit: true,
 		expectedAction: true,
 		expectedMem:    "200Mi",
 		expectedCPU:    "2",
-		memLimit:       "300Mi", // Limit is expected to be +100Mi
 	}, {
 		pod:            uninitialized,
 		vpas:           []*vpa_types.VerticalPodAutoscaler{vpa},
-		setMemoryLimit: false,
 		expectedAction: true,
 		expectedMem:    "200Mi",
 		expectedCPU:    "2",
-		memLimit:       "",
 	}, {
 		pod:            uninitialized,
 		vpas:           []*vpa_types.VerticalPodAutoscaler{targetBelowMinVPA},
-		setMemoryLimit: true,
 		expectedAction: true,
 		expectedMem:    "300Mi", // MinMemory is expected to be used
 		expectedCPU:    "4",     // MinCpu is expected to be used
-		memLimit:       "400Mi",
+		annotations: vpa_api_util.ContainerToAnnotationsMap{
+			containerName: []string{"cpu capped to minAllowed", "memory capped to minAllowed"},
+		},
 	}, {
 		pod:            uninitialized,
 		vpas:           []*vpa_types.VerticalPodAutoscaler{targetAboveMaxVPA},
-		setMemoryLimit: true,
 		expectedAction: true,
 		expectedMem:    "1Gi", // MaxMemory is expected to be used
 		expectedCPU:    "5",   // MaxCpu is expected to be used
-		memLimit:       "1Gi", // Limit is capped to Max Memory
+		annotations: vpa_api_util.ContainerToAnnotationsMap{
+			containerName: []string{"cpu capped to maxAllowed", "memory capped to maxAllowed"},
+		},
 	}, {
 		pod:            initialized,
 		vpas:           []*vpa_types.VerticalPodAutoscaler{vpa},
-		setMemoryLimit: true,
 		expectedAction: true,
 		expectedMem:    "200Mi",
 		expectedCPU:    "2",
-		memLimit:       "300Mi",
 	}, {
 		pod:            initialized,
 		vpas:           []*vpa_types.VerticalPodAutoscaler{vpaWithHighMemory},
-		setMemoryLimit: true,
 		expectedAction: true,
 		expectedMem:    "1000Mi",
 		expectedCPU:    "2",
-		memLimit:       "1200Mi", // Limit is expected to be 20% higher
 	}, {
 		pod:            uninitialized,
 		vpas:           []*vpa_types.VerticalPodAutoscaler{mismatchedVPA},
-		setMemoryLimit: true,
 		expectedAction: false,
 	}, {
 		pod:            uninitialized,
 		vpas:           []*vpa_types.VerticalPodAutoscaler{offVPA},
-		setMemoryLimit: true,
 		expectedAction: false,
 	}, {
 		pod:            uninitialized,
 		vpas:           []*vpa_types.VerticalPodAutoscaler{offVPA, vpa},
-		setMemoryLimit: true,
 		expectedAction: true,
 		expectedMem:    "200Mi",
 		expectedCPU:    "2",
-		memLimit:       "300Mi",
 	}, {
 		pod:            initialized,
 		vpas:           []*vpa_types.VerticalPodAutoscaler{vpaWithEmptyRecommendation},
-		setMemoryLimit: true,
 		expectedAction: true,
 		expectedMem:    "0",
 		expectedCPU:    "0",
-		memLimit:       "200Mi",
 	}, {
 		pod:            initialized,
 		vpas:           []*vpa_types.VerticalPodAutoscaler{vpaWithNilRecommendation},
-		setMemoryLimit: true,
 		expectedAction: true,
 		expectedMem:    "0",
 		expectedCPU:    "0",
-		memLimit:       "200Mi",
 	}}
 	for _, tc := range testCases {
 		vpaNamespaceLister := &test.VerticalPodAutoscalerListerMock{}
@@ -163,8 +149,7 @@ func TestUpdateResourceRequests(t *testing.T) {
 			recommendationProcessor: api.NewCappingRecommendationProcessor(),
 		}
 
-		*setMemoryLimit = tc.setMemoryLimit
-		resources, name, err := recommendationProvider.GetContainersResourcesForPod(tc.pod)
+		resources, annotations, name, err := recommendationProvider.GetContainersResourcesForPod(tc.pod)
 
 		if tc.expectedAction {
 			assert.Equal(t, vpaName, name)
@@ -178,14 +163,14 @@ func TestUpdateResourceRequests(t *testing.T) {
 			assert.NoError(t, err)
 			memoryRequest := resources[0].Requests[apiv1.ResourceMemory]
 			assert.Equal(t, expectedMemory.Value(), memoryRequest.Value(), "memory request doesn't match")
-
-			if tc.memLimit == "" {
-				assert.NotContains(t, resources[0].Limits, apiv1.ResourceMemory)
-			} else {
-				expectedMemoryLimit, err := resource.ParseQuantity(tc.memLimit)
-				assert.NoError(t, err)
-				memoryLimit := resources[0].Limits[apiv1.ResourceMemory]
-				assert.Equal(t, expectedMemoryLimit.Value(), memoryLimit.Value(), "memory limit doesn't match")
+			assert.Len(t, annotations, len(tc.annotations))
+			if len(tc.annotations) > 0 {
+				for annotationKey, annotationValues := range tc.annotations {
+					assert.Len(t, annotations[annotationKey], len(annotationValues))
+					for _, annotation := range annotationValues {
+						assert.Contains(t, annotations[annotationKey], annotation)
+					}
+				}
 			}
 		} else {
 			assert.Equal(t, len(resources), 0)

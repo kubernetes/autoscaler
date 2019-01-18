@@ -21,7 +21,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
-	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
 )
 
 var (
@@ -51,17 +51,17 @@ func TestPercentiles(t *testing.T) {
 	for i := 1; i <= 4; i++ {
 		h.AddSample(float64(i), float64(i), anyTime)
 	}
-	assert.InEpsilon(t, 1.5, h.Percentile(0.0), valueEpsilon)
-	assert.InEpsilon(t, 1.5, h.Percentile(0.1), valueEpsilon)
-	assert.InEpsilon(t, 2.5, h.Percentile(0.2), valueEpsilon)
-	assert.InEpsilon(t, 2.5, h.Percentile(0.3), valueEpsilon)
-	assert.InEpsilon(t, 3.5, h.Percentile(0.4), valueEpsilon)
-	assert.InEpsilon(t, 3.5, h.Percentile(0.5), valueEpsilon)
-	assert.InEpsilon(t, 3.5, h.Percentile(0.6), valueEpsilon)
-	assert.InEpsilon(t, 4.5, h.Percentile(0.7), valueEpsilon)
-	assert.InEpsilon(t, 4.5, h.Percentile(0.8), valueEpsilon)
-	assert.InEpsilon(t, 4.5, h.Percentile(0.9), valueEpsilon)
-	assert.InEpsilon(t, 4.5, h.Percentile(1.0), valueEpsilon)
+	assert.InEpsilon(t, 2, h.Percentile(0.0), valueEpsilon)
+	assert.InEpsilon(t, 2, h.Percentile(0.1), valueEpsilon)
+	assert.InEpsilon(t, 3, h.Percentile(0.2), valueEpsilon)
+	assert.InEpsilon(t, 3, h.Percentile(0.3), valueEpsilon)
+	assert.InEpsilon(t, 4, h.Percentile(0.4), valueEpsilon)
+	assert.InEpsilon(t, 4, h.Percentile(0.5), valueEpsilon)
+	assert.InEpsilon(t, 4, h.Percentile(0.6), valueEpsilon)
+	assert.InEpsilon(t, 5, h.Percentile(0.7), valueEpsilon)
+	assert.InEpsilon(t, 5, h.Percentile(0.8), valueEpsilon)
+	assert.InEpsilon(t, 5, h.Percentile(0.9), valueEpsilon)
+	assert.InEpsilon(t, 5, h.Percentile(1.0), valueEpsilon)
 }
 
 // Verifies that querying percentile < 0.0 returns the minimum value in the
@@ -71,17 +71,16 @@ func TestPercentileOutOfBounds(t *testing.T) {
 	options, err := NewLinearHistogramOptions(1.0, 0.1, weightEpsilon)
 	assert.Nil(t, err)
 	h := NewHistogram(options)
-	assert.Nil(t, err)
 	h.AddSample(0.1, 0.1, anyTime)
 	h.AddSample(0.2, 0.2, anyTime)
 
-	assert.InEpsilon(t, 0.15, h.Percentile(-0.1), valueEpsilon)
-	assert.InEpsilon(t, 0.25, h.Percentile(1.1), valueEpsilon)
+	assert.InEpsilon(t, 0.2, h.Percentile(-0.1), valueEpsilon)
+	assert.InEpsilon(t, 0.3, h.Percentile(1.1), valueEpsilon)
 
 	// Fill the boundary buckets.
 	h.AddSample(0.0, 0.1, anyTime)
 	h.AddSample(1.0, 0.2, anyTime)
-	assert.InEpsilon(t, 0.05, h.Percentile(-0.1), valueEpsilon)
+	assert.InEpsilon(t, 0.1, h.Percentile(-0.1), valueEpsilon)
 	assert.InEpsilon(t, 1.0, h.Percentile(1.1), valueEpsilon)
 }
 
@@ -90,7 +89,6 @@ func TestEmptyHistogram(t *testing.T) {
 	options, err := NewLinearHistogramOptions(1.0, 0.1, weightEpsilon)
 	assert.Nil(t, err)
 	h := NewHistogram(options)
-	assert.Nil(t, err)
 	assert.True(t, h.IsEmpty())
 	h.AddSample(0.1, weightEpsilon*2.5, anyTime) // Sample weight = epsilon * 2.5.
 	assert.False(t, h.IsEmpty())
@@ -98,6 +96,21 @@ func TestEmptyHistogram(t *testing.T) {
 	assert.False(t, h.IsEmpty())
 	h.SubtractSample(0.1, weightEpsilon, anyTime) // Sample weight = epsilon * 0.5.
 	assert.True(t, h.IsEmpty())
+}
+
+// Verifies that IsEmpty() returns false if we add epsilon-weight sample to a non-empty histogram.
+func TestNonEmptyOnEpsilonAddition(t *testing.T) {
+	options, err := NewLinearHistogramOptions(1.0, 0.1, weightEpsilon)
+	assert.Nil(t, err)
+	h := NewHistogram(options)
+	assert.True(t, h.IsEmpty())
+
+	h.AddSample(9.9, weightEpsilon*3, anyTime)
+	assert.False(t, h.IsEmpty())
+	h.AddSample(0.1, weightEpsilon*0.3, anyTime)
+	assert.False(t, h.IsEmpty()) // weight*3 sample should make the histogram non-empty
+	h.AddSample(999.9, weightEpsilon*0.3, anyTime)
+	assert.False(t, h.IsEmpty())
 }
 
 // Verifies that Merge() works as expected on two sample histograms.

@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env bash 
 # Copyright 2018 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,8 +17,10 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+DIR=$(dirname $0) 
+
 # Install tools we need
-go install ../../github.com/client9/misspell/cmd/misspell
+go install ${DIR}/../../../github.com/client9/misspell/cmd/misspell
 
 # Spell checking
 git ls-files | grep -v -e vendor | xargs misspell -error -o stderr

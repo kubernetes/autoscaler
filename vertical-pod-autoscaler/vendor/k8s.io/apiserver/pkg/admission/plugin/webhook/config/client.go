@@ -17,6 +17,7 @@ limitations under the License.
 package config
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -50,14 +51,16 @@ type ClientManager struct {
 	cache                *lru.Cache
 }
 
-// NewClientManager creates a ClientManager.
+// NewClientManager creates a clientManager.
 func NewClientManager() (ClientManager, error) {
 	cache, err := lru.New(defaultCacheSize)
 	if err != nil {
 		return ClientManager{}, err
 	}
 	admissionScheme := runtime.NewScheme()
-	admissionv1beta1.AddToScheme(admissionScheme)
+	if err := admissionv1beta1.AddToScheme(admissionScheme); err != nil {
+		return ClientManager{}, err
+	}
 	return ClientManager{
 		cache: cache,
 		negotiatedSerializer: serializer.NegotiatedSerializerWrapper(runtime.SerializerInfo{
@@ -90,13 +93,13 @@ func (cm *ClientManager) SetServiceResolver(sr ServiceResolver) {
 func (cm *ClientManager) Validate() error {
 	var errs []error
 	if cm.negotiatedSerializer == nil {
-		errs = append(errs, fmt.Errorf("the ClientManager requires a negotiatedSerializer"))
+		errs = append(errs, fmt.Errorf("the clientManager requires a negotiatedSerializer"))
 	}
 	if cm.serviceResolver == nil {
-		errs = append(errs, fmt.Errorf("the ClientManager requires a serviceResolver"))
+		errs = append(errs, fmt.Errorf("the clientManager requires a serviceResolver"))
 	}
 	if cm.authInfoResolver == nil {
-		errs = append(errs, fmt.Errorf("the ClientManager requires an authInfoResolver"))
+		errs = append(errs, fmt.Errorf("the clientManager requires an authInfoResolver"))
 	}
 	return utilerrors.NewAggregate(errs)
 }
@@ -147,9 +150,10 @@ func (cm *ClientManager) HookClient(h *v1beta1.Webhook) (*rest.RESTClient, error
 
 		delegateDialer := cfg.Dial
 		if delegateDialer == nil {
-			delegateDialer = net.Dial
+			var d net.Dialer
+			delegateDialer = d.DialContext
 		}
-		cfg.Dial = func(network, addr string) (net.Conn, error) {
+		cfg.Dial = func(ctx context.Context, network, addr string) (net.Conn, error) {
 			if addr == host {
 				u, err := cm.serviceResolver.ResolveEndpoint(svc.Namespace, svc.Name)
 				if err != nil {
@@ -157,7 +161,7 @@ func (cm *ClientManager) HookClient(h *v1beta1.Webhook) (*rest.RESTClient, error
 				}
 				addr = u.Host
 			}
-			return delegateDialer(network, addr)
+			return delegateDialer(ctx, network, addr)
 		}
 
 		return complete(cfg)

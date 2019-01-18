@@ -21,20 +21,22 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/kubernetes/fake"
-	core "k8s.io/client-go/testing"
+	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/kubernetes/pkg/kubelet/types"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestRequiredPodsForNode(t *testing.T) {
+	nodeName := "node1"
 	pod1 := apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "default",
 			Name:      "pod1",
 			SelfLink:  "pod1",
+		},
+		Spec: apiv1.PodSpec{
+			NodeName: nodeName,
 		},
 	}
 	// Manifest pod.
@@ -47,14 +49,15 @@ func TestRequiredPodsForNode(t *testing.T) {
 				types.ConfigMirrorAnnotationKey: "something",
 			},
 		},
+		Spec: apiv1.PodSpec{
+			NodeName: nodeName,
+		},
 	}
 
-	fakeClient := &fake.Clientset{}
-	fakeClient.Fake.AddReactor("list", "pods", func(action core.Action) (bool, runtime.Object, error) {
-		return true, &apiv1.PodList{Items: []apiv1.Pod{pod1, pod2}}, nil
-	})
+	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{&pod1, &pod2})
+	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil)
 
-	pods, err := GetRequiredPodsForNode("node1", fakeClient)
+	pods, err := GetRequiredPodsForNode(nodeName, registry)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(pods))
 	assert.Equal(t, "pod2", pods[0].Name)

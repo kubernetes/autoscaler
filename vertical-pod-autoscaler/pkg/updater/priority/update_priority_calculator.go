@@ -24,7 +24,7 @@ import (
 
 	"github.com/golang/glog"
 	apiv1 "k8s.io/api/core/v1"
-	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
@@ -49,6 +49,7 @@ var (
 // than pod with 100M current memory and 150M recommendation (100% increase vs 50% increase)
 type UpdatePriorityCalculator struct {
 	resourcesPolicy         *vpa_types.PodResourcePolicy
+	conditions              []vpa_types.VerticalPodAutoscalerCondition
 	pods                    []podPriority
 	config                  *UpdateConfig
 	recommendationProcessor vpa_api_util.RecommendationProcessor
@@ -64,16 +65,19 @@ type UpdateConfig struct {
 // NewUpdatePriorityCalculator creates new UpdatePriorityCalculator for the given resources policy and configuration.
 // If the given policy is nil, there will be no policy restriction on update.
 // If the given config is nil, default values are used.
-func NewUpdatePriorityCalculator(policy *vpa_types.PodResourcePolicy, config *UpdateConfig, processor vpa_api_util.RecommendationProcessor) UpdatePriorityCalculator {
+func NewUpdatePriorityCalculator(policy *vpa_types.PodResourcePolicy,
+	conditions []vpa_types.VerticalPodAutoscalerCondition,
+	config *UpdateConfig,
+	processor vpa_api_util.RecommendationProcessor) UpdatePriorityCalculator {
 	if config == nil {
 		config = &UpdateConfig{MinChangePriority: defaultUpdateThreshold}
 	}
-	return UpdatePriorityCalculator{resourcesPolicy: policy, config: config, recommendationProcessor: processor}
+	return UpdatePriorityCalculator{resourcesPolicy: policy, conditions: conditions, config: config, recommendationProcessor: processor}
 }
 
 // AddPod adds pod to the UpdatePriorityCalculator.
 func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, recommendation *vpa_types.RecommendedPodResources, now time.Time) {
-	processedRecommendation, err := calc.recommendationProcessor.Apply(recommendation, calc.resourcesPolicy, pod)
+	processedRecommendation, _, err := calc.recommendationProcessor.Apply(recommendation, calc.resourcesPolicy, calc.conditions, pod)
 	if err != nil {
 		glog.V(2).Infof("cannot process recommendation for pod %s: %v", pod.Name, err)
 		return
@@ -116,7 +120,7 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, recommendation *vpa
 }
 
 // GetSortedPods returns a list of pods ordered by update priority (highest update priority first)
-func (calc *UpdatePriorityCalculator) GetSortedPods(admission PodEvicionAdmission) []*apiv1.Pod {
+func (calc *UpdatePriorityCalculator) GetSortedPods(admission PodEvictionAdmission) []*apiv1.Pod {
 	sort.Sort(byPriority(calc.pods))
 
 	result := []*apiv1.Pod{}
@@ -124,7 +128,7 @@ func (calc *UpdatePriorityCalculator) GetSortedPods(admission PodEvicionAdmissio
 		if admission == nil || admission.Admit(podPrio.pod, podPrio.recommendation) {
 			result = append(result, podPrio.pod)
 		} else {
-			glog.V(2).Infof("pod removed from update queue by PodEvicionAdmission: %v", podPrio.pod.Name)
+			glog.V(2).Infof("pod removed from update queue by PodEvictionAdmission: %v", podPrio.pod.Name)
 		}
 	}
 
@@ -153,8 +157,8 @@ func (calc *UpdatePriorityCalculator) getUpdatePriority(pod *apiv1.Pod, recommen
 				if recommended.MilliValue() > request.MilliValue() {
 					scaleUp = true
 				}
-				if (hasLowerBound && request.MilliValue() < lowerBound.MilliValue()) ||
-					(hasUpperBound && request.MilliValue() > upperBound.MilliValue()) {
+				if (hasLowerBound && request.Cmp(lowerBound) < 0) ||
+					(hasUpperBound && request.Cmp(upperBound) > 0) {
 					outsideRecommendedRange = true
 				}
 			} else {
@@ -173,7 +177,7 @@ func (calc *UpdatePriorityCalculator) getUpdatePriority(pod *apiv1.Pod, recommen
 		resourceDiff += math.Abs(totalRequest-float64(totalRecommended)) / totalRequest
 	}
 	return podPriority{
-		pod: pod,
+		pod:                     pod,
 		outsideRecommendedRange: outsideRecommendedRange,
 		scaleUp:                 scaleUp,
 		resourceDiff:            resourceDiff,

@@ -25,7 +25,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
-	client "k8s.io/client-go/kubernetes"
+	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 )
 
@@ -62,7 +62,7 @@ func FastGetPodsToMove(nodeInfo *schedulercache.NodeInfo, skipNodesWithSystemPod
 // Based on kubectl drain code. It checks whether RC, DS, Jobs and RS that created these pods
 // still exist.
 func DetailedGetPodsForMove(nodeInfo *schedulercache.NodeInfo, skipNodesWithSystemPods bool,
-	skipNodesWithLocalStorage bool, client client.Interface, minReplicaCount int32,
+	skipNodesWithLocalStorage bool, listers kube_util.ListerRegistry, minReplicaCount int32,
 	pdbs []*policyv1.PodDisruptionBudget) ([]*apiv1.Pod, error) {
 	pods, err := drain.GetPodsForDeletionOnNodeDrain(
 		nodeInfo.Pods(),
@@ -71,7 +71,7 @@ func DetailedGetPodsForMove(nodeInfo *schedulercache.NodeInfo, skipNodesWithSyst
 		skipNodesWithSystemPods,
 		skipNodesWithLocalStorage,
 		true,
-		client,
+		listers,
 		minReplicaCount,
 		time.Now())
 	if err != nil {
@@ -94,7 +94,7 @@ func checkPdbs(pods []*apiv1.Pod, pdbs []*policyv1.PodDisruptionBudget) error {
 		for _, pod := range pods {
 			if pod.Namespace == pdb.Namespace && selector.Matches(labels.Set(pod.Labels)) {
 				if pdb.Status.PodDisruptionsAllowed < 1 {
-					return fmt.Errorf("no enough pod disruption budget to move %s/%s", pod.Namespace, pod.Name)
+					return fmt.Errorf("not enough pod disruption budget to move %s/%s", pod.Namespace, pod.Name)
 				}
 			}
 		}

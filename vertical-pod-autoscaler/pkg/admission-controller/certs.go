@@ -18,13 +18,16 @@ package main
 
 import (
 	"os"
-	"path"
 
 	"github.com/golang/glog"
 )
 
 type certsContainer struct {
-	caKey, caCert, serverKey, serverCert []byte
+	caCert, serverKey, serverCert []byte
+}
+
+type certsConfig struct {
+	clientCaFile, tlsCertFile, tlsPrivateKey *string
 }
 
 func readFile(filePath string) []byte {
@@ -43,11 +46,10 @@ func readFile(filePath string) []byte {
 	return res
 }
 
-func initCerts(certsDir string) certsContainer {
+func initCerts(config certsConfig) certsContainer {
 	res := certsContainer{}
-	res.caKey = readFile(path.Join(certsDir, "caKey.pem"))
-	res.caCert = readFile(path.Join(certsDir, "caCert.pem"))
-	res.serverKey = readFile(path.Join(certsDir, "serverKey.pem"))
-	res.serverCert = readFile(path.Join(certsDir, "serverCert.pem"))
+	res.caCert = readFile(*config.clientCaFile)
+	res.serverCert = readFile(*config.tlsCertFile)
+	res.serverKey = readFile(*config.tlsPrivateKey)
 	return res
 }

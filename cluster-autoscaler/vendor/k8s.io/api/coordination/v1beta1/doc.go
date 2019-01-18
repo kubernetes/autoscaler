@@ -18,4 +18,5 @@ limitations under the License.
 // +k8s:openapi-gen=true
 
 // +groupName=coordination.k8s.io
+
 package v1beta1

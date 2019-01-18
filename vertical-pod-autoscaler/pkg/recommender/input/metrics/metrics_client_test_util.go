@@ -31,7 +31,7 @@ import (
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	metricsapi "k8s.io/metrics/pkg/apis/metrics/v1beta1"
-	"k8s.io/metrics/pkg/client/clientset_generated/clientset/fake"
+	"k8s.io/metrics/pkg/client/clientset/versioned/fake"
 )
 
 type metricsClientTestCase struct {

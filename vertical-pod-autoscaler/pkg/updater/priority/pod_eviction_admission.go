@@ -18,25 +18,63 @@ package priority
 
 import (
 	apiv1 "k8s.io/api/core/v1"
-	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
 )
 
-// PodEvicionAdmission controls evictions of pods.
-type PodEvicionAdmission interface {
-	// LoopInit initializes PodEvicionAdmission for next Updater loop
-	LoopInit()
-	// Admit returns true if PodEvicionAdmission decides that pod can be evicted with given recommendation.
+// PodEvictionAdmission controls evictions of pods.
+type PodEvictionAdmission interface {
+	// LoopInit initializes PodEvictionAdmission for next Updater loop with the live pods and
+	// pods currently controlled by VPA in this cluster.
+	LoopInit(allLivePods []*apiv1.Pod, vpaControlledPods map[*vpa_types.VerticalPodAutoscaler][]*apiv1.Pod)
+	// Admit returns true if PodEvictionAdmission decides that pod can be evicted with given recommendation.
 	Admit(pod *apiv1.Pod, recommendation *vpa_types.RecommendedPodResources) bool
+	// CleanUp cleans up any state that PodEvictionAdmission may keep. Called
+	// when no VPA objects are present in the cluster.
+	CleanUp()
 }
 
-type noopPodEvicionAdmission struct{}
+// NewDefaultPodEvictionAdmission constructs new PodEvictionAdmission that admits all pods.
+func NewDefaultPodEvictionAdmission() PodEvictionAdmission {
+	return &noopPodEvictionAdmission{}
+}
 
-func (n *noopPodEvicionAdmission) LoopInit() {}
-func (n *noopPodEvicionAdmission) Admit(pod *apiv1.Pod, recommendation *vpa_types.RecommendedPodResources) bool {
+// NewSequentialPodEvictionAdmission constructs PodEvictionAdmission that will chain provided PodEvictionAdmission objects
+func NewSequentialPodEvictionAdmission(admissions []PodEvictionAdmission) PodEvictionAdmission {
+	return &sequentialPodEvictionAdmission{admissions: admissions}
+}
+
+type sequentialPodEvictionAdmission struct {
+	admissions []PodEvictionAdmission
+}
+
+func (a *sequentialPodEvictionAdmission) LoopInit(allLivePods []*apiv1.Pod, vpaControlledPods map[*vpa_types.VerticalPodAutoscaler][]*apiv1.Pod) {
+	for _, admission := range a.admissions {
+		admission.LoopInit(allLivePods, vpaControlledPods)
+	}
+}
+
+func (a *sequentialPodEvictionAdmission) Admit(pod *apiv1.Pod, recommendation *vpa_types.RecommendedPodResources) bool {
+	for _, admission := range a.admissions {
+		admit := admission.Admit(pod, recommendation)
+		if !admit {
+			return false
+		}
+	}
 	return true
 }
 
-// NewDefaultPodEvicionAdmission constructs new PodEvicionAdmission that admits all pods.
-func NewDefaultPodEvicionAdmission() PodEvicionAdmission {
-	return &noopPodEvicionAdmission{}
+func (a *sequentialPodEvictionAdmission) CleanUp() {
+	for _, admission := range a.admissions {
+		admission.CleanUp()
+	}
+}
+
+type noopPodEvictionAdmission struct{}
+
+func (n *noopPodEvictionAdmission) LoopInit(allLivePods []*apiv1.Pod, vpaControlledPods map[*vpa_types.VerticalPodAutoscaler][]*apiv1.Pod) {
+}
+func (n *noopPodEvictionAdmission) Admit(pod *apiv1.Pod, recommendation *vpa_types.RecommendedPodResources) bool {
+	return true
+}
+func (n *noopPodEvictionAdmission) CleanUp() {
 }

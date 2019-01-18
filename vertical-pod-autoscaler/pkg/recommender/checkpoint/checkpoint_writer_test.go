@@ -17,13 +17,15 @@ limitations under the License.
 package checkpoint
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"k8s.io/api/core/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 )
 
@@ -73,4 +75,80 @@ func TestMergeContainerStateForCheckpointDropsRecentMemoryPeak(t *testing.T) {
 		assert.False(t, aggregateContainerStateMap["container-1"].AggregateMemoryPeaks.IsEmpty(),
 			"Old peak should not be excluded from the aggregation.")
 	}
+}
+
+func TestIsFetchingHistory(t *testing.T) {
+
+	testCases := []struct {
+		vpa               model.Vpa
+		isFetchingHistory bool
+	}{
+		{
+			vpa:               model.Vpa{},
+			isFetchingHistory: false,
+		},
+		{
+			vpa: model.Vpa{
+				PodSelector: nil,
+				Conditions: map[vpa_types.VerticalPodAutoscalerConditionType]vpa_types.VerticalPodAutoscalerCondition{
+					vpa_types.FetchingHistory: {
+						Type:   vpa_types.FetchingHistory,
+						Status: v1.ConditionFalse,
+					},
+				},
+			},
+			isFetchingHistory: false,
+		},
+		{
+			vpa: model.Vpa{
+				PodSelector: nil,
+				Conditions: map[vpa_types.VerticalPodAutoscalerConditionType]vpa_types.VerticalPodAutoscalerCondition{
+					vpa_types.FetchingHistory: {
+						Type:   vpa_types.FetchingHistory,
+						Status: v1.ConditionTrue,
+					},
+				},
+			},
+			isFetchingHistory: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		assert.Equalf(t, tc.isFetchingHistory, isFetchingHistory(&tc.vpa), "%+v should have %v as isFetchingHistoryResult", tc.vpa, tc.isFetchingHistory)
+	}
+}
+
+func TestGetVpasToCheckpointSorts(t *testing.T) {
+
+	time1 := time.Unix(10000, 0)
+	time2 := time.Unix(20000, 0)
+
+	genVpaID := func(index int) model.VpaID {
+		return model.VpaID{
+			VpaName: fmt.Sprintf("vpa-%d", index),
+		}
+	}
+	vpa0 := &model.Vpa{
+		ID: genVpaID(0),
+	}
+	vpa1 := &model.Vpa{
+		ID:                genVpaID(1),
+		CheckpointWritten: time1,
+	}
+	vpa2 := &model.Vpa{
+		ID:                genVpaID(2),
+		CheckpointWritten: time2,
+	}
+	vpas := make(map[model.VpaID]*model.Vpa)
+	addVpa := func(vpa *model.Vpa) {
+		vpas[vpa.ID] = vpa
+	}
+	addVpa(vpa2)
+	addVpa(vpa0)
+	addVpa(vpa1)
+	result := getVpasToCheckpoint(vpas)
+	assert.Equal(t, genVpaID(0), result[0].ID)
+	assert.Equal(t, genVpaID(1), result[1].ID)
+	assert.Equal(t, genVpaID(2), result[2].ID)
+
 }

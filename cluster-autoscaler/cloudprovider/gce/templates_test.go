@@ -27,7 +27,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
-	"k8s.io/kubernetes/pkg/quota"
+	quota "k8s.io/kubernetes/pkg/quota/v1"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -38,7 +38,7 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 		name              string
 		machineType       string
 		accelerators      []*gce.AcceleratorConfig
-		mig               *Mig
+		mig               Mig
 		capacityCpu       int64
 		capacityMemory    int64
 		allocatableCpu    string
@@ -58,10 +58,13 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 			{AcceleratorType: "nvidia-tesla-k80", AcceleratorCount: 3},
 			{AcceleratorType: "nvidia-tesla-p100", AcceleratorCount: 8},
 		},
-		mig: &Mig{GceRef: GceRef{
-			Name:    "some-name",
-			Project: "some-proj",
-			Zone:    "us-central1-b"}},
+		mig: &gceMig{
+			gceRef: GceRef{
+				Name:    "some-name",
+				Project: "some-proj",
+				Zone:    "us-central1-b",
+			},
+		},
 		capacityCpu:       8,
 		capacityMemory:    200 * 1024 * 1024,
 		allocatableCpu:    "7000m",
@@ -76,10 +79,13 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 				"NODE_TAINTS: 'dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c'\n",
 			name:        "nodeName",
 			machineType: "custom-8-2",
-			mig: &Mig{GceRef: GceRef{
-				Name:    "some-name",
-				Project: "some-proj",
-				Zone:    "us-central1-b"}},
+			mig: &gceMig{
+				gceRef: GceRef{
+					Name:    "some-name",
+					Project: "some-proj",
+					Zone:    "us-central1-b",
+				},
+			},
 			capacityCpu:       8,
 			capacityMemory:    2 * 1024 * 1024,
 			allocatableCpu:    "8000m",
@@ -89,15 +95,18 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 			kubeEnv:     "This kube-env is totally messed up",
 			name:        "nodeName",
 			machineType: "custom-8-2",
-			mig: &Mig{GceRef: GceRef{
-				Name:    "some-name",
-				Project: "some-proj",
-				Zone:    "us-central1-b"}},
+			mig: &gceMig{
+				gceRef: GceRef{
+					Name:    "some-name",
+					Project: "some-proj",
+					Zone:    "us-central1-b",
+				},
+			},
 			expectedErr: true,
 		},
 	}
 	for _, tc := range testCases {
-		tb := &templateBuilder{}
+		tb := &GceTemplateBuilder{}
 		template := &gce.InstanceTemplate{
 			Name: tc.name,
 			Properties: &gce.InstanceProperties{
@@ -108,7 +117,7 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 				MachineType: tc.machineType,
 			},
 		}
-		node, err := tb.buildNodeFromTemplate(tc.mig, template, tc.capacityCpu, tc.capacityMemory)
+		node, err := tb.BuildNodeFromTemplate(tc.mig, template, tc.capacityCpu, tc.capacityMemory)
 		if tc.expectedErr {
 			assert.Error(t, err)
 		} else {
@@ -127,7 +136,7 @@ func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 }
 
 func TestBuildGenericLabels(t *testing.T) {
-	labels, err := buildGenericLabels(GceRef{
+	labels, err := BuildGenericLabels(GceRef{
 		Name:    "kubernetes-minion-group",
 		Project: "mwielgus-proj",
 		Zone:    "us-central1-b"},
@@ -139,52 +148,6 @@ func TestBuildGenericLabels(t *testing.T) {
 	assert.Equal(t, "n1-standard-8", labels[kubeletapis.LabelInstanceType])
 	assert.Equal(t, cloudprovider.DefaultArch, labels[kubeletapis.LabelArch])
 	assert.Equal(t, cloudprovider.DefaultOS, labels[kubeletapis.LabelOS])
-}
-
-func TestBuildLabelsForAutoscaledMigOK(t *testing.T) {
-	labels, err := buildLabelsForAutoprovisionedMig(
-		&Mig{
-			autoprovisioned: true,
-			spec: &autoprovisioningSpec{
-				machineType: "n1-standard-8",
-				labels: map[string]string{
-					"A": "B",
-				},
-			},
-			GceRef: GceRef{
-				Name:    "kubernetes-minion-autoprovisioned-group",
-				Project: "mwielgus-proj",
-				Zone:    "us-central1-b"}},
-		"sillyname",
-	)
-
-	assert.Nil(t, err)
-	assert.Equal(t, "B", labels["A"])
-	assert.Equal(t, "us-central1", labels[kubeletapis.LabelZoneRegion])
-	assert.Equal(t, "us-central1-b", labels[kubeletapis.LabelZoneFailureDomain])
-	assert.Equal(t, "sillyname", labels[kubeletapis.LabelHostname])
-	assert.Equal(t, "n1-standard-8", labels[kubeletapis.LabelInstanceType])
-	assert.Equal(t, cloudprovider.DefaultArch, labels[kubeletapis.LabelArch])
-	assert.Equal(t, cloudprovider.DefaultOS, labels[kubeletapis.LabelOS])
-}
-
-func TestBuildLabelsForAutoscaledMigConflict(t *testing.T) {
-	_, err := buildLabelsForAutoprovisionedMig(
-		&Mig{
-			autoprovisioned: true,
-			spec: &autoprovisioningSpec{
-				machineType: "n1-standard-8",
-				labels: map[string]string{
-					kubeletapis.LabelOS: "windows",
-				},
-			},
-			GceRef: GceRef{
-				Name:    "kubernetes-minion-autoprovisioned-group",
-				Project: "mwielgus-proj",
-				Zone:    "us-central1-b"}},
-		"sillyname",
-	)
-	assert.Error(t, err)
 }
 
 func TestBuildAllocatableFromKubeEnv(t *testing.T) {
@@ -221,8 +184,8 @@ func TestBuildAllocatableFromKubeEnv(t *testing.T) {
 	for _, tc := range testCases {
 		capacity, err := makeResourceList(tc.capacityCpu, tc.capacityMemory, tc.gpuCount)
 		assert.NoError(t, err)
-		tb := templateBuilder{}
-		allocatable, err := tb.buildAllocatableFromKubeEnv(capacity, tc.kubeEnv)
+		tb := GceTemplateBuilder{}
+		allocatable, err := tb.BuildAllocatableFromKubeEnv(capacity, tc.kubeEnv)
 		if tc.expectedErr {
 			assert.Error(t, err)
 		} else {
@@ -265,7 +228,7 @@ func TestGetAcceleratorCount(t *testing.T) {
 	}}
 
 	for _, tc := range testCases {
-		tb := templateBuilder{}
+		tb := GceTemplateBuilder{}
 		assert.Equal(t, tc.count, tb.getAcceleratorCount(tc.accelerators))
 	}
 }
@@ -293,12 +256,12 @@ func TestBuildAllocatableFromCapacity(t *testing.T) {
 		allocatableMemory: fmt.Sprintf("%v", 1.1*mbPerGB*bytesPerMB-0.25*1.1*mbPerGB*1024*1024-kubeletEvictionHardMemory),
 	}}
 	for _, tc := range testCases {
-		tb := templateBuilder{}
+		tb := GceTemplateBuilder{}
 		capacity, err := makeResourceList(tc.capacityCpu, tc.capacityMemory, tc.gpuCount)
 		assert.NoError(t, err)
 		expectedAllocatable, err := makeResourceList(tc.allocatableCpu, tc.allocatableMemory, tc.gpuCount)
 		assert.NoError(t, err)
-		allocatable := tb.buildAllocatableFromCapacity(capacity)
+		allocatable := tb.BuildAllocatableFromCapacity(capacity)
 		assertEqualResourceLists(t, "Allocatable", expectedAllocatable, allocatable)
 	}
 }
@@ -343,11 +306,13 @@ func TestExtractAutoscalerVarFromKubeEnv(t *testing.T) {
 }
 
 func TestExtractLabelsFromKubeEnv(t *testing.T) {
+	poolLabel := "cloud.google.com/gke-nodepool"
+	preemptibleLabel := "cloud.google.com/gke-preemptible"
 	expectedLabels := map[string]string{
-		"a": "b",
-		"c": "d",
-		"cloud.google.com/gke-nodepool":    "pool-3",
-		"cloud.google.com/gke-preemptible": "true",
+		"a":              "b",
+		"c":              "d",
+		poolLabel:        "pool-3",
+		preemptibleLabel: "true",
 	}
 	cases := []struct {
 		desc   string

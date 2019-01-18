@@ -82,7 +82,7 @@ func configTLS(clientset *kubernetes.Clientset, serverCert, serverKey []byte) *t
 
 // register this webhook admission controller with the kube-apiserver
 // by creating MutatingWebhookConfiguration.
-func selfRegistration(clientset *kubernetes.Clientset, caCert []byte) {
+func selfRegistration(clientset *kubernetes.Clientset, caCert []byte, namespace *string) {
 	time.Sleep(10 * time.Second)
 	client := clientset.AdmissionregistrationV1beta1().MutatingWebhookConfigurations()
 	_, err := client.Get(webhookConfigName, metav1.GetOptions{})
@@ -100,7 +100,7 @@ func selfRegistration(clientset *kubernetes.Clientset, caCert []byte) {
 				Name: "vpa.k8s.io",
 				Rules: []v1beta1.RuleWithOperations{
 					{
-						Operations: []v1beta1.OperationType{v1beta1.Create, v1beta1.Update},
+						Operations: []v1beta1.OperationType{v1beta1.Create},
 						Rule: v1beta1.Rule{
 							APIGroups:   []string{""},
 							APIVersions: []string{"v1"},
@@ -110,14 +110,14 @@ func selfRegistration(clientset *kubernetes.Clientset, caCert []byte) {
 					{
 						Operations: []v1beta1.OperationType{v1beta1.Create, v1beta1.Update},
 						Rule: v1beta1.Rule{
-							APIGroups:   []string{"poc.autoscaling.k8s.io"},
-							APIVersions: []string{"v1alpha1"},
+							APIGroups:   []string{"autoscaling.k8s.io"},
+							APIVersions: []string{"v1beta1"},
 							Resources:   []string{"verticalpodautoscalers"},
 						},
 					}},
 				ClientConfig: v1beta1.WebhookClientConfig{
 					Service: &v1beta1.ServiceReference{
-						Namespace: "kube-system",
+						Namespace: *namespace,
 						Name:      "vpa-webhook",
 					},
 					CABundle: caCert,

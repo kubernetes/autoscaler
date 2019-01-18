@@ -30,6 +30,7 @@ import (
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	apiserverconfig "k8s.io/apiserver/pkg/apis/config"
 	kube_flag "k8s.io/apiserver/pkg/util/flag"
 	cloudBuilder "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
@@ -37,20 +38,21 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
-	"k8s.io/autoscaler/cluster-autoscaler/simulator"
+	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-	kube_leaderelection "k8s.io/client-go/tools/leaderelection"
+	"k8s.io/client-go/tools/leaderelection"
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
-	"k8s.io/kubernetes/pkg/apis/componentconfig"
+	"k8s.io/kubernetes/pkg/client/leaderelectionconfig"
 
-	"github.com/golang/glog"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/spf13/pflag"
+	"k8s.io/klog"
 )
 
 // MultiStringFlag is a flag for passing multiple parameters using same flag
@@ -97,7 +99,7 @@ var (
 		"Maximum number of non empty nodes considered in one iteration as candidates for scale down with drain."+
 			"Lower value means better CA responsiveness but possible slower scale down latency."+
 			"Higher value can affect CA performance with big clusters (hundreds of nodes)."+
-			"Set to non posistive value to turn this heuristic off - CA will not limit the number of nodes it considers.")
+			"Set to non positive value to turn this heuristic off - CA will not limit the number of nodes it considers.")
 	scaleDownCandidatesPoolRatio = flag.Float64("scale-down-candidates-pool-ratio", 0.1,
 		"A ratio of nodes that are considered as additional non empty candidates for"+
 			"scale down when some candidates from previous iteration are no longer valid."+
@@ -138,6 +140,11 @@ var (
 	expanderFlag = flag.String("expander", expander.RandomExpanderName,
 		"Type of node group expander to be used in scale up. Available values: ["+strings.Join(expander.AvailableExpanders, ",")+"]")
 
+	ignoreDaemonSetsUtilization = flag.Bool("ignore-daemonsets-utilization", false,
+		"Should CA ignore DaemonSet pods when calculating resource utilization for scaling down")
+	ignoreMirrorPodsUtilization = flag.Bool("ignore-mirror-pods-utilization", false,
+		"Should CA ignore Mirror pods when calculating resource utilization for scaling down")
+
 	writeStatusConfigMapFlag         = flag.Bool("write-status-configmap", true, "Should CA write status information to a configmap")
 	maxInactivityTimeFlag            = flag.Duration("max-inactivity", 10*time.Minute, "Maximum time from last recorded autoscaler activity before automatic restart")
 	maxFailingTimeFlag               = flag.Duration("max-failing-time", 15*time.Minute, "Maximum time from last recorded successful autoscaler run before automatic restart")
@@ -148,16 +155,17 @@ var (
 	unremovableNodeRecheckTimeout = flag.Duration("unremovable-node-recheck-timeout", 5*time.Minute, "The timeout before we check again a node that couldn't be removed before")
 	expendablePodsPriorityCutoff  = flag.Int("expendable-pods-priority-cutoff", -10, "Pods with priority below cutoff will be expendable. They can be killed without any consideration during scale down and they don't cause scale up. Pods with null priority (PodPriority disabled) are non expendable.")
 	regional                      = flag.Bool("regional", false, "Cluster is regional.")
+	newPodScaleUpDelay            = flag.Duration("new-pod-scale-up-delay", 0*time.Second, "Pods less than this old will not be considered for scale-up.")
 )
 
 func createAutoscalingOptions() config.AutoscalingOptions {
 	minCoresTotal, maxCoresTotal, err := parseMinMaxFlag(*coresTotal)
 	if err != nil {
-		glog.Fatalf("Failed to parse flags: %v", err)
+		klog.Fatalf("Failed to parse flags: %v", err)
 	}
 	minMemoryTotal, maxMemoryTotal, err := parseMinMaxFlag(*memoryTotal)
 	if err != nil {
-		glog.Fatalf("Failed to parse flags: %v", err)
+		klog.Fatalf("Failed to parse flags: %v", err)
 	}
 	// Convert memory limits to bytes.
 	minMemoryTotal = minMemoryTotal * units.Gigabyte
@@ -165,7 +173,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 
 	parsedGpuTotal, err := parseMultipleGpuLimits(*gpuTotal)
 	if err != nil {
-		glog.Fatalf("Failed to parse flags: %v", err)
+		klog.Fatalf("Failed to parse flags: %v", err)
 	}
 
 	return config.AutoscalingOptions{
@@ -176,6 +184,8 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		OkTotalUnreadyCount:              *okTotalUnreadyCount,
 		EstimatorName:                    *estimatorFlag,
 		ExpanderName:                     *expanderFlag,
+		IgnoreDaemonSetsUtilization:      *ignoreDaemonSetsUtilization,
+		IgnoreMirrorPodsUtilization:      *ignoreMirrorPodsUtilization,
 		MaxEmptyBulkDelete:               *maxEmptyBulkDeleteFlag,
 		MaxGracefulTerminationSec:        *maxGracefulTerminationFlag,
 		MaxNodeProvisionTime:             *maxNodeProvisionTime,
@@ -205,27 +215,28 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		UnremovableNodeRecheckTimeout:    *unremovableNodeRecheckTimeout,
 		ExpendablePodsPriorityCutoff:     *expendablePodsPriorityCutoff,
 		Regional:                         *regional,
+		NewPodScaleUpDelay:               *newPodScaleUpDelay,
 	}
 }
 
 func getKubeConfig() *rest.Config {
 	if *kubeConfigFile != "" {
-		glog.V(1).Infof("Using kubeconfig file: %s", *kubeConfigFile)
+		klog.V(1).Infof("Using kubeconfig file: %s", *kubeConfigFile)
 		// use the current context in kubeconfig
 		config, err := clientcmd.BuildConfigFromFlags("", *kubeConfigFile)
 		if err != nil {
-			glog.Fatalf("Failed to build config: %v", err)
+			klog.Fatalf("Failed to build config: %v", err)
 		}
 		return config
 	}
 	url, err := url.Parse(*kubernetes)
 	if err != nil {
-		glog.Fatalf("Failed to parse Kubernetes url: %v", err)
+		klog.Fatalf("Failed to parse Kubernetes url: %v", err)
 	}
 
 	kubeConfig, err := config.GetKubeClientConfig(url)
 	if err != nil {
-		glog.Fatalf("Failed to build Kubernetes client configuration: %v", err)
+		klog.Fatalf("Failed to build Kubernetes client configuration: %v", err)
 	}
 
 	return kubeConfig
@@ -238,50 +249,56 @@ func createKubeClient(kubeConfig *rest.Config) kube_client.Interface {
 func registerSignalHandlers(autoscaler core.Autoscaler) {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, os.Interrupt, os.Kill, syscall.SIGTERM, syscall.SIGQUIT)
-	glog.V(1).Info("Registered cleanup signal handler")
+	klog.V(1).Info("Registered cleanup signal handler")
 
 	go func() {
 		<-sigs
-		glog.V(1).Info("Received signal, attempting cleanup")
+		klog.V(1).Info("Received signal, attempting cleanup")
 		autoscaler.ExitCleanUp()
-		glog.V(1).Info("Cleaned up, exiting...")
-		glog.Flush()
+		klog.V(1).Info("Cleaned up, exiting...")
+		klog.Flush()
 		os.Exit(0)
 	}()
 }
 
-func run(healthCheck *metrics.HealthCheck) {
-	metrics.RegisterAll()
-	kubeConfig := getKubeConfig()
-	kubeClient := createKubeClient(kubeConfig)
-	kubeEventRecorder := kube_util.CreateEventRecorder(kubeClient)
+func buildAutoscaler() (core.Autoscaler, error) {
+	// Create basic config from flags.
 	autoscalingOptions := createAutoscalingOptions()
-	metrics.UpdateNapEnabled(autoscalingOptions.NodeAutoprovisioningEnabled)
-	predicateCheckerStopChannel := make(chan struct{})
-	predicateChecker, err := simulator.NewPredicateChecker(kubeClient, predicateCheckerStopChannel)
-	if err != nil {
-		glog.Fatalf("Failed to create predicate checker: %v", err)
-	}
-	listerRegistryStopChannel := make(chan struct{})
-	listerRegistry := kube_util.NewListerRegistryWithDefaultListers(kubeClient, listerRegistryStopChannel)
+	kubeClient := createKubeClient(getKubeConfig())
+	processors := ca_processors.DefaultProcessors()
+	if autoscalingOptions.CloudProviderName == "gke" {
+		processors.NodeGroupSetProcessor = &nodegroupset.BalancingNodeGroupSetProcessor{
+			Comparator: nodegroupset.IsGkeNodeInfoSimilar}
 
+	}
 	opts := core.AutoscalerOptions{
 		AutoscalingOptions: autoscalingOptions,
-		PredicateChecker:   predicateChecker,
 		KubeClient:         kubeClient,
-		KubeEventRecorder:  kubeEventRecorder,
-		ListerRegistry:     listerRegistry,
+		Processors:         processors,
 	}
 
-	cloudProvider := cloudBuilder.NewCloudProvider(autoscalingOptions)
+	// This metric should be published only once.
+	metrics.UpdateNapEnabled(autoscalingOptions.NodeAutoprovisioningEnabled)
 
-	autoscaler, err := core.NewAutoscaler(opts, cloudProvider)
+	// Create autoscaler.
+	return core.NewAutoscaler(opts)
+}
+
+func run(healthCheck *metrics.HealthCheck) {
+	metrics.RegisterAll()
+
+	autoscaler, err := buildAutoscaler()
 	if err != nil {
-		glog.Fatalf("Failed to create autoscaler: %v", err)
+		klog.Fatalf("Failed to create autoscaler: %v", err)
 	}
+
+	// Register signal handlers for graceful shutdown.
 	registerSignalHandlers(autoscaler)
+
+	// Start updating health check endpoint.
 	healthCheck.StartMonitoring()
 
+	// Autoscale ad infinitum.
 	for {
 		select {
 		case <-time.After(*scanInterval):
@@ -304,32 +321,22 @@ func run(healthCheck *metrics.HealthCheck) {
 }
 
 func main() {
+	klog.InitFlags(nil)
+
 	leaderElection := defaultLeaderElectionConfiguration()
 	leaderElection.LeaderElect = true
 
-	bindFlags(&leaderElection, pflag.CommandLine)
-
+	leaderelectionconfig.BindFlags(&leaderElection, pflag.CommandLine)
 	kube_flag.InitFlags()
-
 	healthCheck := metrics.NewHealthCheck(*maxInactivityTimeFlag, *maxFailingTimeFlag)
 
-	glog.V(1).Infof("Cluster Autoscaler %s", ClusterAutoscalerVersion)
-
-	correctEstimator := false
-	for _, availableEstimator := range estimator.AvailableEstimators {
-		if *estimatorFlag == availableEstimator {
-			correctEstimator = true
-		}
-	}
-	if !correctEstimator {
-		glog.Fatalf("Unrecognized estimator: %v", *estimatorFlag)
-	}
+	klog.V(1).Infof("Cluster Autoscaler %s", ClusterAutoscalerVersion)
 
 	go func() {
 		http.Handle("/metrics", prometheus.Handler())
 		http.Handle("/health-check", healthCheck)
 		err := http.ListenAndServe(*address, nil)
-		glog.Fatalf("Failed to start metrics: %v", err)
+		klog.Fatalf("Failed to start metrics: %v", err)
 	}()
 
 	if !leaderElection.LeaderElect {
@@ -337,7 +344,7 @@ func main() {
 	} else {
 		id, err := os.Hostname()
 		if err != nil {
-			glog.Fatalf("Unable to get hostname: %v", err)
+			klog.Fatalf("Unable to get hostname: %v", err)
 		}
 
 		kubeClient := createKubeClient(getKubeConfig())
@@ -345,7 +352,7 @@ func main() {
 		// Validate that the client is ok.
 		_, err = kubeClient.CoreV1().Nodes().List(metav1.ListOptions{})
 		if err != nil {
-			glog.Fatalf("Failed to get nodes from apiserver: %v", err)
+			klog.Fatalf("Failed to get nodes from apiserver: %v", err)
 		}
 
 		lock, err := resourcelock.New(
@@ -359,59 +366,36 @@ func main() {
 			},
 		)
 		if err != nil {
-			glog.Fatalf("Unable to create leader election lock: %v", err)
+			klog.Fatalf("Unable to create leader election lock: %v", err)
 		}
 
-		kube_leaderelection.RunOrDie(ctx.TODO(), kube_leaderelection.LeaderElectionConfig{
+		leaderelection.RunOrDie(ctx.TODO(), leaderelection.LeaderElectionConfig{
 			Lock:          lock,
 			LeaseDuration: leaderElection.LeaseDuration.Duration,
 			RenewDeadline: leaderElection.RenewDeadline.Duration,
 			RetryPeriod:   leaderElection.RetryPeriod.Duration,
-			Callbacks: kube_leaderelection.LeaderCallbacks{
+			Callbacks: leaderelection.LeaderCallbacks{
 				OnStartedLeading: func(_ ctx.Context) {
 					// Since we are committing a suicide after losing
 					// mastership, we can safely ignore the argument.
 					run(healthCheck)
 				},
 				OnStoppedLeading: func() {
-					glog.Fatalf("lost master")
+					klog.Fatalf("lost master")
 				},
 			},
 		})
 	}
 }
 
-func defaultLeaderElectionConfiguration() componentconfig.LeaderElectionConfiguration {
-	return componentconfig.LeaderElectionConfiguration{
+func defaultLeaderElectionConfiguration() apiserverconfig.LeaderElectionConfiguration {
+	return apiserverconfig.LeaderElectionConfiguration{
 		LeaderElect:   false,
 		LeaseDuration: metav1.Duration{Duration: defaultLeaseDuration},
 		RenewDeadline: metav1.Duration{Duration: defaultRenewDeadline},
 		RetryPeriod:   metav1.Duration{Duration: defaultRetryPeriod},
 		ResourceLock:  resourcelock.EndpointsResourceLock,
 	}
-}
-
-func bindFlags(l *componentconfig.LeaderElectionConfiguration, fs *pflag.FlagSet) {
-	fs.BoolVar(&l.LeaderElect, "leader-elect", l.LeaderElect, ""+
-		"Start a leader election client and gain leadership before "+
-		"executing the main loop. Enable this when running replicated "+
-		"components for high availability.")
-	fs.DurationVar(&l.LeaseDuration.Duration, "leader-elect-lease-duration", l.LeaseDuration.Duration, ""+
-		"The duration that non-leader candidates will wait after observing a leadership "+
-		"renewal until attempting to acquire leadership of a led but unrenewed leader "+
-		"slot. This is effectively the maximum duration that a leader can be stopped "+
-		"before it is replaced by another candidate. This is only applicable if leader "+
-		"election is enabled.")
-	fs.DurationVar(&l.RenewDeadline.Duration, "leader-elect-renew-deadline", l.RenewDeadline.Duration, ""+
-		"The interval between attempts by the acting master to renew a leadership slot "+
-		"before it stops leading. This must be less than or equal to the lease duration. "+
-		"This is only applicable if leader election is enabled.")
-	fs.DurationVar(&l.RetryPeriod.Duration, "leader-elect-retry-period", l.RetryPeriod.Duration, ""+
-		"The duration the clients should wait between attempting acquisition and renewal "+
-		"of a leadership. This is only applicable if leader election is enabled.")
-	fs.StringVar(&l.ResourceLock, "leader-elect-resource-lock", l.ResourceLock, ""+
-		"The type of resource object that is used for locking during"+
-		"leader election. Supported options are `endpoints` (default) and `configmap`.")
 }
 
 const (

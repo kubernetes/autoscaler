@@ -23,8 +23,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
-	"k8s.io/apimachinery/pkg/util/wait"
-	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
@@ -87,9 +86,9 @@ func (o *observer) OnUpdate(oldObj, newObj interface{}) {
 		return
 	}
 	oldVPA, _ := oldObj.(*vpa_types.VerticalPodAutoscaler)
-	newVPA, _ := newObj.(*vpa_types.VerticalPodAutoscaler)
+	NewVPA, _ := newObj.(*vpa_types.VerticalPodAutoscaler)
 	oldRecommendation, oldFound := get(oldVPA)
-	newRecommendation, newFound := get(newVPA)
+	newRecommendation, newFound := get(NewVPA)
 	result := recommendationChange{
 		oldMissing: !oldFound,
 		newMissing: !newFound,
@@ -99,7 +98,7 @@ func (o *observer) OnUpdate(oldObj, newObj interface{}) {
 }
 
 func getVpaObserver(vpaClientSet *vpa_clientset.Clientset) *observer {
-	vpaListWatch := cache.NewListWatchFromClient(vpaClientSet.PocV1alpha1().RESTClient(), "verticalpodautoscalers", apiv1.NamespaceAll, fields.Everything())
+	vpaListWatch := cache.NewListWatchFromClient(vpaClientSet.AutoscalingV1beta1().RESTClient(), "verticalpodautoscalers", apiv1.NamespaceAll, fields.Everything())
 	vpaObserver := observer{channel: make(chan recommendationChange)}
 	_, controller := cache.NewIndexerInformer(vpaListWatch,
 		&vpa_types.VerticalPodAutoscaler{},
@@ -115,7 +114,7 @@ func getVpaObserver(vpaClientSet *vpa_clientset.Clientset) *observer {
 	return &vpaObserver
 }
 
-var _ = recommenderE2eDescribe("Checkpoints", func() {
+var _ = RecommenderE2eDescribe("Checkpoints", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
 
 	ginkgo.It("with missing VPA objects are garbage collected", func() {
@@ -134,18 +133,18 @@ var _ = recommenderE2eDescribe("Checkpoints", func() {
 		}
 
 		vpaClientSet := vpa_clientset.NewForConfigOrDie(config)
-		_, err = vpaClientSet.PocV1alpha1().VerticalPodAutoscalerCheckpoints(ns).Create(&checkpoint)
+		_, err = vpaClientSet.AutoscalingV1beta1().VerticalPodAutoscalerCheckpoints(ns).Create(&checkpoint)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 		time.Sleep(15 * time.Minute)
 
-		list, err := vpaClientSet.PocV1alpha1().VerticalPodAutoscalerCheckpoints(ns).List(metav1.ListOptions{})
+		list, err := vpaClientSet.AutoscalingV1beta1().VerticalPodAutoscalerCheckpoints(ns).List(metav1.ListOptions{})
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		gomega.Expect(list.Items).To(gomega.BeEmpty())
 	})
 })
 
-var _ = recommenderE2eDescribe("VPA CRD object", func() {
+var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
 
 	var (
@@ -158,11 +157,11 @@ var _ = recommenderE2eDescribe("VPA CRD object", func() {
 		c := f.ClientSet
 		ns := f.Namespace.Name
 
-		cpuQuantity := parseQuantityOrDie("100m")
-		memoryQuantity := parseQuantityOrDie("100Mi")
+		cpuQuantity := ParseQuantityOrDie("100m")
+		memoryQuantity := ParseQuantityOrDie("100Mi")
 
-		d := newHamsterDeploymentWithResources(f, cpuQuantity, memoryQuantity)
-		_, err := c.ExtensionsV1beta1().Deployments(ns).Create(d)
+		d := NewHamsterDeploymentWithResources(f, cpuQuantity, memoryQuantity)
+		_, err := c.AppsV1().Deployments(ns).Create(d)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		err = framework.WaitForDeploymentComplete(c, d)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
@@ -171,21 +170,21 @@ var _ = recommenderE2eDescribe("VPA CRD object", func() {
 		config, err := framework.LoadConfig()
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
-		vpaCRD = newVPA(f, "hamster-vpa", &metav1.LabelSelector{
+		vpaCRD = NewVPA(f, "hamster-vpa", &metav1.LabelSelector{
 			MatchLabels: map[string]string{
 				"app": "hamster",
 			},
 		})
 
 		vpaClientSet = vpa_clientset.NewForConfigOrDie(config)
-		vpaClient := vpaClientSet.PocV1alpha1()
+		vpaClient := vpaClientSet.AutoscalingV1beta1()
 		_, err = vpaClient.VerticalPodAutoscalers(ns).Create(vpaCRD)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
 
 	ginkgo.It("serves recommendation", func() {
 		ginkgo.By("Waiting for recommendation to be filled")
-		err := waitForRecommendationPresent(vpaClientSet, vpaCRD)
+		_, err := WaitForRecommendationPresent(vpaClientSet, vpaCRD)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
 
@@ -194,7 +193,7 @@ var _ = recommenderE2eDescribe("VPA CRD object", func() {
 		o := getVpaObserver(vpaClientSet)
 
 		ginkgo.By("Waiting for recommendation to be filled")
-		err := waitForRecommendationPresent(vpaClientSet, vpaCRD)
+		_, err := WaitForRecommendationPresent(vpaClientSet, vpaCRD)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		ginkgo.By("Drain diffs")
 	out:
@@ -241,27 +240,6 @@ func deleteRecommender(c clientset.Interface) error {
 		if err != nil {
 			return err
 		}
-	}
-	return nil
-}
-
-func waitForRecommendationPresent(c *vpa_clientset.Clientset, vpa *vpa_types.VerticalPodAutoscaler) error {
-	err := wait.PollImmediate(pollInterval, pollTimeout, func() (bool, error) {
-		var err error
-		polledVpa, err := c.PocV1alpha1().VerticalPodAutoscalers(vpa.Namespace).Get(vpa.Name, metav1.GetOptions{})
-		if err != nil {
-			return false, err
-		}
-
-		if polledVpa.Status.Recommendation != nil && len(polledVpa.Status.Recommendation.ContainerRecommendations) != 0 {
-			return true, nil
-		}
-
-		return false, nil
-	})
-
-	if err != nil {
-		return fmt.Errorf("error waiting for recommendation present in %v: %v", vpa.Name, err)
 	}
 	return nil
 }

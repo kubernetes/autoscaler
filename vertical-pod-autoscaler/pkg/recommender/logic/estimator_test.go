@@ -56,7 +56,7 @@ func TestPercentileEstimator(t *testing.T) {
 			AggregateCPUUsage:    cpuHistogram,
 			AggregateMemoryPeaks: memoryPeaksHistogram,
 		})
-	maxRelativeError := 0.03 // Allow 3% relative error to account for histogram rounding.
+	maxRelativeError := 0.05 // Allow 5% relative error to account for histogram rounding.
 	assert.InEpsilon(t, 1.0, model.CoresFromCPUAmount(resourceEstimation[model.ResourceCPU]), maxRelativeError)
 	assert.InEpsilon(t, 2e9, model.BytesFromMemoryAmount(resourceEstimation[model.ResourceMemory]), maxRelativeError)
 }

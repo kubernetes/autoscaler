@@ -74,7 +74,7 @@ func TestBestLabelSet(t *testing.T) {
 
 	p4 := BuildTestPod("p3", 100, 0)
 	p4.Spec.NodeSelector = map[string]string{
-		"A": "X",
+		"A":                    "X",
 		"cloud.google.com/gke": "true",
 	}
 

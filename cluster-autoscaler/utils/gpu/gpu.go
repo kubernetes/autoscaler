@@ -18,11 +18,10 @@ package gpu
 
 import (
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 const (
@@ -75,7 +74,7 @@ func FilterOutNodesWithUnreadyGpus(allNodes, readyNodes []*apiv1.Node) ([]*apiv1
 		// on node object. Assume the node is still not fully started (installing
 		// GPU drivers).
 		if hasGpuLabel && (!hasGpuAllocatable || gpuAllocatable.IsZero()) {
-			glog.V(3).Infof("Overriding status of node %v, which seems to have unready GPU",
+			klog.V(3).Infof("Overriding status of node %v, which seems to have unready GPU",
 				node.Name)
 			nodesWithUnreadyGpu[node.Name] = getUnreadyNodeCopy(node)
 		} else {
@@ -120,7 +119,7 @@ func GetGpuTypeForMetrics(node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) s
 	if nodeGroup != nil {
 		template, err := nodeGroup.TemplateNodeInfo()
 		if err != nil {
-			glog.Warningf("Failed to build template for getting GPU metrics for node %v: %v", node.Name, err)
+			klog.Warningf("Failed to build template for getting GPU metrics for node %v: %v", node.Name, err)
 			return MetricsErrorGPU
 		}
 
@@ -129,7 +128,7 @@ func GetGpuTypeForMetrics(node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) s
 		}
 
 		// if template does not define GPUs we assume node will not have any even if it has gpu label
-		glog.Warningf("Template does not define GPUs even though node from its node group does; node=%v", node.Name)
+		klog.Warningf("Template does not define GPUs even though node from its node group does; node=%v", node.Name)
 		return MetricsUnexpectedLabelGPU
 	}
 
@@ -182,58 +181,6 @@ func PodRequestsGpu(pod *apiv1.Pod) bool {
 	return false
 }
 
-// GpuRequestInfo contains an information about a set of pods requesting a GPU.
-type GpuRequestInfo struct {
-	// MaxRequest is maximum GPU request among pods
-	MaxRequest resource.Quantity
-	// Pods is a list of pods requesting GPU
-	Pods []*apiv1.Pod
-	// SystemLabels is a set of system labels corresponding to selected GPU
-	// that needs to be passed to cloudprovider
-	SystemLabels map[string]string
-}
-
-// GetGpuRequests returns a GpuRequestInfo for each type of GPU requested by
-// any pod in pods argument. If the pod requests GPU, but doesn't specify what
-// type of GPU it wants (via NodeSelector) it assumes it's DefaultGPUType.
-func GetGpuRequests(pods []*apiv1.Pod) map[string]GpuRequestInfo {
-	result := make(map[string]GpuRequestInfo)
-	for _, pod := range pods {
-		var podGpu resource.Quantity
-		for _, container := range pod.Spec.Containers {
-			if container.Resources.Requests != nil {
-				containerGpu := container.Resources.Requests[ResourceNvidiaGPU]
-				podGpu.Add(containerGpu)
-			}
-		}
-		if podGpu.Value() == 0 {
-			continue
-		}
-
-		gpuType := DefaultGPUType
-		if gpuTypeFromSelector, found := pod.Spec.NodeSelector[GPULabel]; found {
-			gpuType = gpuTypeFromSelector
-		}
-
-		requestInfo, found := result[gpuType]
-		if !found {
-			requestInfo = GpuRequestInfo{
-				MaxRequest: podGpu,
-				Pods:       make([]*apiv1.Pod, 0),
-				SystemLabels: map[string]string{
-					GPULabel: gpuType,
-				},
-			}
-		}
-		if podGpu.Cmp(requestInfo.MaxRequest) > 0 {
-			requestInfo.MaxRequest = podGpu
-		}
-		requestInfo.Pods = append(requestInfo.Pods, pod)
-		result[gpuType] = requestInfo
-	}
-	return result
-}
-
 // GetNodeTargetGpus returns the number of gpus on a given node. This includes gpus which are not yet
 // ready to use and visible in kubernetes.
 func GetNodeTargetGpus(node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) (gpuType string, gpuCount int64, error errors.AutoscalerError) {
@@ -266,7 +213,7 @@ func GetNodeTargetGpus(node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) (gpu
 
 	template, err := nodeGroup.TemplateNodeInfo()
 	if err != nil {
-		glog.Errorf("Failed to build template for getting GPU estimation for node %v: %v", node.Name, err)
+		klog.Errorf("Failed to build template for getting GPU estimation for node %v: %v", node.Name, err)
 		return "", 0, errors.ToAutoscalerError(errors.CloudProviderError, err)
 	}
 	if gpuCapacity, found := template.Node().Status.Capacity[ResourceNvidiaGPU]; found {
@@ -274,6 +221,6 @@ func GetNodeTargetGpus(node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) (gpu
 	}
 
 	// if template does not define gpus we assume node will not have any even if ith has gpu label
-	glog.Warningf("Template does not define gpus even though node from its node group does; node=%v", node.Name)
+	klog.Warningf("Template does not define gpus even though node from its node group does; node=%v", node.Name)
 	return "", 0, nil
 }

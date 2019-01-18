@@ -18,7 +18,7 @@ package api
 
 import (
 	"k8s.io/api/core/v1"
-	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
 )
 
 // NewSequentialProcessor constructs RecommendationProcessor that will use provided RecommendationProcessor objects
@@ -31,14 +31,32 @@ type sequentialRecommendationProcessor struct {
 }
 
 // Apply chains calls to underlying RecommendationProcessors in order provided on object construction
-func (p *sequentialRecommendationProcessor) Apply(podRecommendation *vpa_types.RecommendedPodResources, policy *vpa_types.PodResourcePolicy, pod *v1.Pod) (*vpa_types.RecommendedPodResources, error) {
+func (p *sequentialRecommendationProcessor) Apply(podRecommendation *vpa_types.RecommendedPodResources,
+	policy *vpa_types.PodResourcePolicy,
+	conditions []vpa_types.VerticalPodAutoscalerCondition,
+	pod *v1.Pod) (*vpa_types.RecommendedPodResources, ContainerToAnnotationsMap, error) {
 	recommendation := podRecommendation
-	var err error
+	accumulatedContainerToAnnotationsMap := ContainerToAnnotationsMap{}
+
 	for _, processor := range p.processors {
-		recommendation, err = processor.Apply(recommendation, policy, pod)
+		var (
+			err                       error
+			containerToAnnotationsMap ContainerToAnnotationsMap
+		)
+		recommendation, containerToAnnotationsMap, err = processor.Apply(recommendation, policy, conditions, pod)
+
+		for container, newAnnotations := range containerToAnnotationsMap {
+			annotations, found := accumulatedContainerToAnnotationsMap[container]
+			if found {
+				accumulatedContainerToAnnotationsMap[container] = append(annotations, newAnnotations...)
+			} else {
+				accumulatedContainerToAnnotationsMap[container] = newAnnotations
+			}
+		}
+
 		if err != nil {
-			return nil, err
+			return nil, accumulatedContainerToAnnotationsMap, err
 		}
 	}
-	return recommendation, nil
+	return recommendation, accumulatedContainerToAnnotationsMap, nil
 }

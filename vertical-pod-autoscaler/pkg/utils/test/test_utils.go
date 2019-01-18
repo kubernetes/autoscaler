@@ -23,10 +23,13 @@ import (
 	"github.com/stretchr/testify/mock"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
-	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/poc.autoscaling.k8s.io/v1alpha1"
+	"k8s.io/apimachinery/pkg/runtime"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
+	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1beta1"
 	v1 "k8s.io/client-go/listers/core/v1"
+	"k8s.io/client-go/tools/record"
 )
 
 var (
@@ -125,8 +128,8 @@ type PodsEvictionRestrictionMock struct {
 }
 
 // Evict is a mock implementation of PodsEvictionRestriction.Evict
-func (m *PodsEvictionRestrictionMock) Evict(pod *apiv1.Pod) error {
-	args := m.Called(pod)
+func (m *PodsEvictionRestrictionMock) Evict(pod *apiv1.Pod, eventRecorder record.EventRecorder) error {
+	args := m.Called(pod, eventRecorder)
 	return args.Error(0)
 }
 
@@ -203,21 +206,52 @@ type RecommendationProcessorMock struct {
 }
 
 // Apply is a mock implementation of RecommendationProcessor.Apply
-func (m *RecommendationProcessorMock) Apply(podRecommendation *vpa_types.RecommendedPodResources, policy *vpa_types.PodResourcePolicy,
-	pod *apiv1.Pod) (*vpa_types.RecommendedPodResources, error) {
+func (m *RecommendationProcessorMock) Apply(podRecommendation *vpa_types.RecommendedPodResources,
+	policy *vpa_types.PodResourcePolicy,
+	conditions []vpa_types.VerticalPodAutoscalerCondition,
+	pod *apiv1.Pod) (*vpa_types.RecommendedPodResources, map[string][]string, error) {
 	args := m.Called()
 	var returnArg *vpa_types.RecommendedPodResources
 	if args.Get(0) != nil {
 		returnArg = args.Get(0).(*vpa_types.RecommendedPodResources)
 	}
-	return returnArg, args.Error(1)
+	var annotations map[string][]string
+	if args.Get(1) != nil {
+		annotations = args.Get(1).(map[string][]string)
+	}
+	return returnArg, annotations, args.Error(1)
 }
 
 // FakeRecommendationProcessor is a dummy implementation of RecommendationProcessor
 type FakeRecommendationProcessor struct{}
 
 // Apply is a dummy implementation of RecommendationProcessor.Apply which returns provided podRecommendation
-func (f *FakeRecommendationProcessor) Apply(podRecommendation *vpa_types.RecommendedPodResources, policy *vpa_types.PodResourcePolicy,
-	pod *apiv1.Pod) (*vpa_types.RecommendedPodResources, error) {
-	return podRecommendation, nil
+func (f *FakeRecommendationProcessor) Apply(podRecommendation *vpa_types.RecommendedPodResources,
+	policy *vpa_types.PodResourcePolicy,
+	conditions []vpa_types.VerticalPodAutoscalerCondition,
+	pod *apiv1.Pod) (*vpa_types.RecommendedPodResources, map[string][]string, error) {
+	return podRecommendation, nil, nil
+}
+
+// fakeEventRecorder is a dummy implementation of record.EventRecorder.
+type fakeEventRecorder struct{}
+
+// Event is a dummy implementation of record.EventRecorder interface.
+func (f *fakeEventRecorder) Event(object runtime.Object, eventtype, reason, message string) {}
+
+// Eventf is a dummy implementation of record.EventRecorder interface.
+func (f *fakeEventRecorder) Eventf(object runtime.Object, eventtype, reason, messageFmt string, args ...interface{}) {
+}
+
+// PastEventf is a dummy implementation of record.EventRecorder interface.
+func (f *fakeEventRecorder) PastEventf(object runtime.Object, timestamp metav1.Time, eventtype, reason, messageFmt string, args ...interface{}) {
+}
+
+// AnnotatedEventf is a dummy implementation of record.EventRecorder interface.
+func (f *fakeEventRecorder) AnnotatedEventf(object runtime.Object, annotations map[string]string, eventtype, reason, messageFmt string, args ...interface{}) {
+}
+
+// FakeEventRecorder returns a dummy implementation of record.EventRecorder.
+func FakeEventRecorder() record.EventRecorder {
+	return &fakeEventRecorder{}
 }

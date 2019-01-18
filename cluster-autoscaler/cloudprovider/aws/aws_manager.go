@@ -19,24 +19,27 @@ limitations under the License.
 package aws
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"math/rand"
+	"os"
 	"regexp"
 	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/golang/glog"
 	"gopkg.in/gcfg.v1"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	"k8s.io/klog"
 	provider_aws "k8s.io/kubernetes/pkg/cloudprovider/providers/aws"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 )
@@ -45,6 +48,7 @@ const (
 	operationWaitTimeout    = 5 * time.Second
 	operationPollInterval   = 100 * time.Millisecond
 	maxRecordsReturnedByAPI = 100
+	maxAsgNamesPerDescribe  = 50
 	refreshInterval         = 10 * time.Second
 
 	nodeTemplateASGAnnotation = "autoscaler.kubernetes.io/asg"
@@ -65,7 +69,26 @@ type asgTemplate struct {
 	Tags         []*autoscaling.TagDescription
 }
 
+// getRegion deduces the current AWS Region.
+func getRegion(cfg ...*aws.Config) string {
+	region, present := os.LookupEnv("AWS_REGION")
+	if !present {
+		svc := ec2metadata.New(session.New(), cfg...)
+		if r, err := svc.Region(); err == nil {
+			region = r
+		}
+	}
+	return region
+}
+
 // createAwsManagerInternal allows for a customer autoScalingWrapper to be passed in by tests
+//
+// #1449 If running tests outside of AWS without AWS_REGION among environment
+// variables, avoid a 5+ second EC2 Metadata lookup timeout in getRegion by
+// setting and resetting AWS_REGION before calling createAWSManagerInternal:
+//
+//	defer resetAWSRegion(os.LookupEnv("AWS_REGION"))
+//	os.Setenv("AWS_REGION", "fanghorn")
 func createAWSManagerInternal(
 	configReader io.Reader,
 	discoveryOpts cloudprovider.NodeGroupDiscoveryOptions,
@@ -75,13 +98,13 @@ func createAWSManagerInternal(
 	if configReader != nil {
 		var cfg provider_aws.CloudConfig
 		if err := gcfg.ReadInto(&cfg, configReader); err != nil {
-			glog.Errorf("Couldn't read config: %v", err)
+			klog.Errorf("Couldn't read config: %v", err)
 			return nil, err
 		}
 	}
 
 	if autoScalingService == nil || ec2Service == nil {
-		sess := session.New()
+		sess := session.New(aws.NewConfig().WithRegion(getRegion()))
 
 		if autoScalingService == nil {
 			autoScalingService = &autoScalingWrapper{autoscaling.New(sess)}
@@ -131,11 +154,11 @@ func (m *AwsManager) Refresh() error {
 
 func (m *AwsManager) forceRefresh() error {
 	if err := m.asgCache.regenerate(); err != nil {
-		glog.Errorf("Failed to regenerate ASG cache: %v", err)
+		klog.Errorf("Failed to regenerate ASG cache: %v", err)
 		return err
 	}
 	m.lastRefresh = time.Now()
-	glog.V(2).Infof("Refreshed ASG list, next refresh after %v", m.lastRefresh.Add(refreshInterval))
+	klog.V(2).Infof("Refreshed ASG list, next refresh after %v", m.lastRefresh.Add(refreshInterval))
 	return nil
 }
 
@@ -155,55 +178,12 @@ func (m *AwsManager) getAsgs() []*asg {
 
 // SetAsgSize sets ASG size.
 func (m *AwsManager) SetAsgSize(asg *asg, size int) error {
-	params := &autoscaling.SetDesiredCapacityInput{
-		AutoScalingGroupName: aws.String(asg.Name),
-		DesiredCapacity:      aws.Int64(int64(size)),
-		HonorCooldown:        aws.Bool(false),
-	}
-	glog.V(0).Infof("Setting asg %s size to %d", asg.Name, size)
-	_, err := m.autoScalingService.SetDesiredCapacity(params)
-	if err != nil {
-		return err
-	}
-	return nil
+	return m.asgCache.SetAsgSize(asg, size)
 }
 
 // DeleteInstances deletes the given instances. All instances must be controlled by the same ASG.
 func (m *AwsManager) DeleteInstances(instances []*AwsInstanceRef) error {
-	if len(instances) == 0 {
-		return nil
-	}
-	commonAsg := m.asgCache.FindForInstance(*instances[0])
-	if commonAsg == nil {
-		return fmt.Errorf("can't delete instance %s, which is not part of an ASG", instances[0].Name)
-	}
-
-	for _, instance := range instances {
-		asg := m.asgCache.FindForInstance(*instance)
-
-		if asg != commonAsg {
-			instanceIds := make([]string, len(instances))
-			for i, instance := range instances {
-				instanceIds[i] = instance.Name
-			}
-
-			return fmt.Errorf("can't delete instances %s as they belong to at least two different ASGs (%s and %s)", strings.Join(instanceIds, ","), commonAsg.Name, asg.Name)
-		}
-	}
-
-	for _, instance := range instances {
-		params := &autoscaling.TerminateInstanceInAutoScalingGroupInput{
-			InstanceId:                     aws.String(instance.Name),
-			ShouldDecrementDesiredCapacity: aws.Bool(true),
-		}
-		resp, err := m.autoScalingService.TerminateInstanceInAutoScalingGroup(params)
-		if err != nil {
-			return err
-		}
-		glog.V(4).Infof(*resp.Activity.Description)
-	}
-
-	return nil
+	return m.asgCache.DeleteInstances(instances)
 }
 
 // GetAsgNodes returns Asg nodes.
@@ -213,14 +193,14 @@ func (m *AwsManager) GetAsgNodes(ref AwsRef) ([]AwsInstanceRef, error) {
 
 func (m *AwsManager) getAsgTemplate(asg *asg) (*asgTemplate, error) {
 	if len(asg.AvailabilityZones) < 1 {
-		return nil, fmt.Errorf("Unable to get first AvailabilityZone for %s", asg.Name)
+		return nil, fmt.Errorf("Unable to get first AvailabilityZone for ASG %q", asg.Name)
 	}
 
 	az := asg.AvailabilityZones[0]
 	region := az[0 : len(az)-1]
 
 	if len(asg.AvailabilityZones) > 1 {
-		glog.Warningf("Found multiple availability zones, using %s\n", az)
+		klog.Warningf("Found multiple availability zones for ASG %q; using %s\n", asg.Name, az)
 	}
 
 	instanceTypeName, err := m.buildInstanceType(asg)
@@ -228,12 +208,15 @@ func (m *AwsManager) getAsgTemplate(asg *asg) (*asgTemplate, error) {
 		return nil, err
 	}
 
-	return &asgTemplate{
-		InstanceType: InstanceTypes[instanceTypeName],
-		Region:       region,
-		Zone:         az,
-		Tags:         asg.Tags,
-	}, nil
+	if t, ok := InstanceTypes[instanceTypeName]; ok {
+		return &asgTemplate{
+			InstanceType: t,
+			Region:       region,
+			Zone:         az,
+			Tags:         asg.Tags,
+		}, nil
+	}
+	return nil, fmt.Errorf("ASG %q uses the unknown EC2 instance type %q", asg.Name, instanceTypeName)
 }
 
 func (m *AwsManager) buildInstanceType(asg *asg) (string, error) {
@@ -243,7 +226,7 @@ func (m *AwsManager) buildInstanceType(asg *asg) (string, error) {
 		return m.ec2Service.getInstanceTypeByLT(asg.LaunchTemplateName, asg.LaunchTemplateVersion)
 	}
 
-	return "", fmt.Errorf("Unable to get instance type from launch config or launch template")
+	return "", errors.New("Unable to get instance type from launch config or launch template")
 }
 
 func (m *AwsManager) buildNodeFromTemplate(asg *asg, template *asgTemplate) (*apiv1.Node, error) {

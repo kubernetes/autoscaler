@@ -19,19 +19,30 @@ package main
 import (
 	"flag"
 	"net/http"
+	"os"
+	"time"
 
 	"github.com/golang/glog"
 	kube_flag "k8s.io/apiserver/pkg/util/flag"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/logic"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
-	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/poc.autoscaling.k8s.io/v1alpha1"
+	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1beta1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics"
+	metrics_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/admission"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 	"k8s.io/client-go/rest"
 )
 
 var (
-	certsDir = flag.String("certs-dir", "/etc/tls-certs", `Where the TLS cert files are stored.`)
+	certsConfiguration = &certsConfig{
+		clientCaFile:  flag.String("client-ca-file", "/etc/tls-certs/caCert.pem", "Path to CA PEM file."),
+		tlsCertFile:   flag.String("tls-cert-file", "/etc/tls-certs/serverCert.pem", "Path to server certificate PEM file."),
+		tlsPrivateKey: flag.String("tls-private-key", "/etc/tls-certs/serverKey.pem", "Path to server certificate key PEM file."),
+	}
+
+	address   = flag.String("address", ":8944", "The address to expose Prometheus metrics.")
+	namespace = os.Getenv("NAMESPACE")
 )
 
 func newReadyVPALister(stopChannel <-chan struct{}) vpa_lister.VerticalPodAutoscalerLister {
@@ -46,18 +57,24 @@ func newReadyVPALister(stopChannel <-chan struct{}) vpa_lister.VerticalPodAutosc
 func main() {
 	kube_flag.InitFlags()
 	glog.V(1).Infof("Vertical Pod Autoscaler %s Admission Controller", common.VerticalPodAutoscalerVersion)
-	certs := initCerts(*certsDir)
+
+	healthCheck := metrics.NewHealthCheck(time.Minute, false)
+	metrics.Initialize(*address, healthCheck)
+	metrics_admission.Register()
+
+	certs := initCerts(*certsConfiguration)
 	stopChannel := make(chan struct{})
 	vpaLister := newReadyVPALister(stopChannel)
 	as := logic.NewAdmissionServer(logic.NewRecommendationProvider(vpaLister, vpa_api_util.NewCappingRecommendationProcessor()), logic.NewDefaultPodPreProcessor())
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		as.Serve(w, r)
+		healthCheck.UpdateLastActivity()
 	})
 	clientset := getClient()
 	server := &http.Server{
 		Addr:      ":8000",
 		TLSConfig: configTLS(clientset, certs.serverCert, certs.serverKey),
 	}
-	go selfRegistration(clientset, certs.caCert)
+	go selfRegistration(clientset, certs.caCert, &namespace)
 	server.ListenAndServeTLS("", "")
 }

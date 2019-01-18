@@ -28,15 +28,14 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
+	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	scheduler_util "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
+	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
-	extensionsv1 "k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/fake"
-	core "k8s.io/client-go/testing"
 	kube_record "k8s.io/client-go/tools/record"
 	"k8s.io/kubernetes/pkg/api/testapi"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
@@ -75,49 +74,51 @@ func TestPodSchedulableMap(t *testing.T) {
 	// Basic sanity checks
 	_, found := pMap.get(podInRc1_1)
 	assert.False(t, found)
-	pMap.set(podInRc1_1, true)
-	sched, found := pMap.get(podInRc1_1)
+	pMap.set(podInRc1_1, nil)
+	err, found := pMap.get(podInRc1_1)
 	assert.True(t, found)
-	assert.True(t, sched)
+	assert.Nil(t, err)
+
+	cpuErr := &simulator.PredicateError{}
 
 	// Pod in different RC
 	_, found = pMap.get(podInRc2)
 	assert.False(t, found)
-	pMap.set(podInRc2, false)
-	sched, found = pMap.get(podInRc2)
+	pMap.set(podInRc2, cpuErr)
+	err, found = pMap.get(podInRc2)
 	assert.True(t, found)
-	assert.False(t, sched)
+	assert.Equal(t, cpuErr, err)
 
 	// Another replica in rc1
 	podInRc1_2 := BuildTestPod("podInRc1_1", 500, 1000)
 	podInRc1_2.OwnerReferences = GenerateOwnerReferences(rc1.Name, "ReplicationController", "extensions/v1beta1", rc1.UID)
-	sched, found = pMap.get(podInRc1_2)
+	err, found = pMap.get(podInRc1_2)
 	assert.True(t, found)
-	assert.True(t, sched)
+	assert.Nil(t, err)
 
 	// A pod in rc1, but with different requests
 	differentPodInRc1 := BuildTestPod("differentPodInRc1", 1000, 1000)
 	differentPodInRc1.OwnerReferences = GenerateOwnerReferences(rc1.Name, "ReplicationController", "extensions/v1beta1", rc1.UID)
 	_, found = pMap.get(differentPodInRc1)
 	assert.False(t, found)
-	pMap.set(differentPodInRc1, false)
-	sched, found = pMap.get(differentPodInRc1)
+	pMap.set(differentPodInRc1, cpuErr)
+	err, found = pMap.get(differentPodInRc1)
 	assert.True(t, found)
-	assert.False(t, sched)
+	assert.Equal(t, cpuErr, err)
 
 	// A non-replicated pod
 	nonReplicatedPod := BuildTestPod("nonReplicatedPod", 1000, 1000)
 	_, found = pMap.get(nonReplicatedPod)
 	assert.False(t, found)
-	pMap.set(nonReplicatedPod, false)
+	pMap.set(nonReplicatedPod, err)
 	_, found = pMap.get(nonReplicatedPod)
 	assert.False(t, found)
 
 	// Verify information about first pod has not been overwritten by adding
 	// other pods
-	sched, found = pMap.get(podInRc1_1)
+	err, found = pMap.get(podInRc1_1)
 	assert.True(t, found)
-	assert.True(t, sched)
+	assert.Nil(t, err)
 }
 
 func TestFilterOutSchedulable(t *testing.T) {
@@ -278,11 +279,21 @@ func TestFilterSchedulablePodsForNode(t *testing.T) {
 		PredicateChecker: simulator.NewTestPredicateChecker(),
 	}
 
-	res := FilterSchedulablePodsForNode(context, unschedulablePods, "T1-abc", tni)
-	assert.Equal(t, 3, len(res))
-	assert.Equal(t, p1, res[0])
-	assert.Equal(t, p3_1, res[1])
-	assert.Equal(t, p3_2, res[2])
+	res := CheckPodsSchedulableOnNode(context, unschedulablePods, "T1-abc", tni)
+	wantedSchedulable := []*apiv1.Pod{p1, p3_1, p3_2}
+	wantedUnschedulable := []*apiv1.Pod{p2_1, p2_2}
+
+	assert.Equal(t, 5, len(res))
+	for _, pod := range wantedSchedulable {
+		err, found := res[pod]
+		assert.True(t, found)
+		assert.Nil(t, err)
+	}
+	for _, pod := range wantedUnschedulable {
+		err, found := res[pod]
+		assert.True(t, found)
+		assert.NotNil(t, err)
+	}
 }
 
 func TestGetNodeInfosForGroups(t *testing.T) {
@@ -325,15 +336,13 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 		nil, nil)
 	provider2.AddNodeGroup("n5", 1, 10, 1) // Nodegroup without nodes.
 
-	fakeClient := &fake.Clientset{}
-	fakeClient.Fake.AddReactor("list", "pods", func(action core.Action) (bool, runtime.Object, error) {
-		return true, &apiv1.PodList{Items: []apiv1.Pod{}}, nil
-	})
+	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
+	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil)
 
 	predicateChecker := simulator.NewTestPredicateChecker()
 
-	res, err := GetNodeInfosForGroups([]*apiv1.Node{n1, n2, n3, n4}, provider1, fakeClient,
-		[]*extensionsv1.DaemonSet{}, predicateChecker)
+	res, err := GetNodeInfosForGroups([]*apiv1.Node{n1, n2, n3, n4}, provider1, registry,
+		[]*appsv1.DaemonSet{}, predicateChecker)
 	assert.NoError(t, err)
 	assert.Equal(t, 4, len(res))
 	_, found := res["n1"]
@@ -346,8 +355,8 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 	assert.True(t, found)
 
 	// Test for a nodegroup without nodes and TemplateNodeInfo not implemented by cloud proivder
-	res, err = GetNodeInfosForGroups([]*apiv1.Node{}, provider2, fakeClient,
-		[]*extensionsv1.DaemonSet{}, predicateChecker)
+	res, err = GetNodeInfosForGroups([]*apiv1.Node{}, provider2, registry,
+		[]*appsv1.DaemonSet{}, predicateChecker)
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(res))
 }
@@ -374,8 +383,8 @@ func TestRemoveOldUnregisteredNodes(t *testing.T) {
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
-	}, fakeLogRecorder)
-	err := clusterState.UpdateNodes([]*apiv1.Node{ng1_1}, now.Add(-time.Hour))
+	}, fakeLogRecorder, newBackoff())
+	err := clusterState.UpdateNodes([]*apiv1.Node{ng1_1}, nil, now.Add(-time.Hour))
 	assert.NoError(t, err)
 
 	context := &context.AutoscalingContext{
@@ -418,7 +427,7 @@ func TestSanitizeLabels(t *testing.T) {
 	oldNode := BuildTestNode("ng1-1", 1000, 1000)
 	oldNode.Labels = map[string]string{
 		kubeletapis.LabelHostname: "abc",
-		"x": "y",
+		"x":                       "y",
 	}
 	node, err := sanitizeTemplateNode(oldNode, "bzium")
 	assert.NoError(t, err)
@@ -471,8 +480,8 @@ func TestRemoveFixNodeTargetSize(t *testing.T) {
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
-	}, fakeLogRecorder)
-	err := clusterState.UpdateNodes([]*apiv1.Node{ng1_1}, now.Add(-time.Hour))
+	}, fakeLogRecorder, newBackoff())
+	err := clusterState.UpdateNodes([]*apiv1.Node{ng1_1}, nil, now.Add(-time.Hour))
 	assert.NoError(t, err)
 
 	context := &context.AutoscalingContext{

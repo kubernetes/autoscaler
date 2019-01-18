@@ -16,7 +16,7 @@ limitations under the License.
 
 package glogx
 
-import "github.com/golang/glog"
+import "k8s.io/klog"
 
 const (
 	// MaxPodsLogged is the maximum number of pods for which we will
@@ -29,7 +29,7 @@ const (
 
 // PodsLoggingQuota returns a new quota with default limit for pods at current verbosity.
 func PodsLoggingQuota() *quota {
-	if glog.V(5) {
+	if klog.V(5) {
 		return NewLoggingQuota(MaxPodsLoggedV5)
 	}
 	return NewLoggingQuota(MaxPodsLogged)

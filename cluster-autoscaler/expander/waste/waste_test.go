@@ -42,12 +42,16 @@ func (f *FakeNodeGroup) DecreaseTargetSize(delta int) error { return nil }
 func (f *FakeNodeGroup) DeleteNodes([]*apiv1.Node) error    { return nil }
 func (f *FakeNodeGroup) Id() string                         { return f.id }
 func (f *FakeNodeGroup) Debug() string                      { return f.id }
-func (f *FakeNodeGroup) Nodes() ([]string, error)           { return []string{}, nil }
+func (f *FakeNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
+	return []cloudprovider.Instance{}, nil
+}
 func (f *FakeNodeGroup) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
-func (f *FakeNodeGroup) Exist() bool           { return true }
-func (f *FakeNodeGroup) Create() error         { return cloudprovider.ErrAlreadyExist }
+func (f *FakeNodeGroup) Exist() bool { return true }
+func (f *FakeNodeGroup) Create() (cloudprovider.NodeGroup, error) {
+	return nil, cloudprovider.ErrAlreadyExist
+}
 func (f *FakeNodeGroup) Delete() error         { return cloudprovider.ErrNotImplemented }
 func (f *FakeNodeGroup) Autoprovisioned() bool { return false }
 

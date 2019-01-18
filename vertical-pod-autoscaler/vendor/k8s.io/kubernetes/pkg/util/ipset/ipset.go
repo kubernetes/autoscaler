@@ -87,7 +87,8 @@ type IPSet struct {
 	MaxElem int
 	// PortRange specifies the port range of bitmap:port type ipset.
 	PortRange string
-	// TODO: add comment message for ipset
+	// comment message for ipset
+	Comment string
 }
 
 // Validate checks if a given ipset is valid or not.
@@ -110,7 +111,7 @@ func (set *IPSet) Validate() bool {
 	}
 	// check hash size value of ipset
 	if set.HashSize <= 0 {
-
+		glog.Errorf("Invalid hashsize value %d, should be >0", set.HashSize)
 		return false
 	}
 	// check max elem value of ipset

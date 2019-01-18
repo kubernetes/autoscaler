@@ -124,6 +124,7 @@ type RCConfig struct {
 	CpuLimit          int64 // millicores
 	MemRequest        int64 // bytes
 	MemLimit          int64 // bytes
+	GpuLimit          int64 // count
 	ReadinessProbe    *v1.Probe
 	DNSPolicy         *v1.DNSPolicy
 	PriorityClassName string
@@ -131,11 +132,15 @@ type RCConfig struct {
 	// Env vars, set the same for every pod.
 	Env map[string]string
 
-	// Extra labels added to every pod.
-	Labels map[string]string
+	// Extra labels and annotations added to every pod.
+	Labels      map[string]string
+	Annotations map[string]string
 
 	// Node selector for pods in the RC.
 	NodeSelector map[string]string
+
+	// Tolerations for pods in the RC.
+	Tolerations []v1.Toleration
 
 	// Ports to declare in the container (map of name to containerPort).
 	Ports map[string]int
@@ -292,7 +297,8 @@ func (config *DeploymentConfig) create() error {
 			},
 			Template: v1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels: map[string]string{"name": config.Name},
+					Labels:      map[string]string{"name": config.Name},
+					Annotations: config.Annotations,
 				},
 				Spec: v1.PodSpec{
 					Containers: []v1.Container{
@@ -362,7 +368,8 @@ func (config *ReplicaSetConfig) create() error {
 			},
 			Template: v1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels: map[string]string{"name": config.Name},
+					Labels:      map[string]string{"name": config.Name},
+					Annotations: config.Annotations,
 				},
 				Spec: v1.PodSpec{
 					Containers: []v1.Container{
@@ -428,7 +435,8 @@ func (config *JobConfig) create() error {
 			Completions: func(i int) *int32 { x := int32(i); return &x }(config.Replicas),
 			Template: v1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels: map[string]string{"name": config.Name},
+					Labels:      map[string]string{"name": config.Name},
+					Annotations: config.Annotations,
 				},
 				Spec: v1.PodSpec{
 					Containers: []v1.Container{
@@ -542,7 +550,8 @@ func (config *RCConfig) create() error {
 			},
 			Template: &v1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels: map[string]string{"name": config.Name},
+					Labels:      map[string]string{"name": config.Name},
+					Annotations: config.Annotations,
 				},
 				Spec: v1.PodSpec{
 					Affinity: config.Affinity,
@@ -557,6 +566,7 @@ func (config *RCConfig) create() error {
 					},
 					DNSPolicy:                     *config.DNSPolicy,
 					NodeSelector:                  config.NodeSelector,
+					Tolerations:                   config.Tolerations,
 					TerminationGracePeriodSeconds: &one,
 					PriorityClassName:             config.PriorityClassName,
 				},
@@ -598,6 +608,9 @@ func (config *RCConfig) applyTo(template *v1.PodTemplateSpec) {
 			template.Spec.NodeSelector[k] = v
 		}
 	}
+	if config.Tolerations != nil {
+		template.Spec.Tolerations = append([]v1.Toleration{}, config.Tolerations...)
+	}
 	if config.Ports != nil {
 		for k, v := range config.Ports {
 			c := &template.Spec.Containers[0]
@@ -610,7 +623,7 @@ func (config *RCConfig) applyTo(template *v1.PodTemplateSpec) {
 			c.Ports = append(c.Ports, v1.ContainerPort{Name: k, ContainerPort: int32(v), HostPort: int32(v)})
 		}
 	}
-	if config.CpuLimit > 0 || config.MemLimit > 0 {
+	if config.CpuLimit > 0 || config.MemLimit > 0 || config.GpuLimit > 0 {
 		template.Spec.Containers[0].Resources.Limits = v1.ResourceList{}
 	}
 	if config.CpuLimit > 0 {
@@ -627,6 +640,9 @@ func (config *RCConfig) applyTo(template *v1.PodTemplateSpec) {
 	}
 	if config.MemRequest > 0 {
 		template.Spec.Containers[0].Resources.Requests[v1.ResourceMemory] = *resource.NewQuantity(config.MemRequest, resource.DecimalSI)
+	}
+	if config.GpuLimit > 0 {
+		template.Spec.Containers[0].Resources.Limits["nvidia.com/gpu"] = *resource.NewQuantity(config.GpuLimit, resource.DecimalSI)
 	}
 	if len(config.Volumes) > 0 {
 		template.Spec.Volumes = config.Volumes
@@ -646,6 +662,7 @@ type RCStartupStatus struct {
 	RunningButNotReady    int
 	Waiting               int
 	Pending               int
+	Scheduled             int
 	Unknown               int
 	Inactive              int
 	FailedContainers      int
@@ -698,6 +715,10 @@ func ComputeRCStartupStatus(pods []*v1.Pod, expected int) RCStartupStatus {
 			startupStatus.Inactive++
 		} else if p.Status.Phase == v1.PodUnknown {
 			startupStatus.Unknown++
+		}
+		// Record count of scheduled pods (useful for computing scheduler throughput).
+		if p.Spec.NodeName != "" {
+			startupStatus.Scheduled++
 		}
 	}
 	return startupStatus

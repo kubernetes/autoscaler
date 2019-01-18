@@ -21,7 +21,7 @@ import (
 	"strings"
 	"time"
 
-	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
 )
 
 const (
@@ -84,7 +84,7 @@ func NewHistogram(options HistogramOptions) Histogram {
 
 // Simple bucket-based implementation of the Histogram interface. Each bucket
 // holds the total weight of samples that belong to it.
-// Percentile() returns the middle of the correspodning bucket.
+// Percentile() returns the upper bound of the corresponding bucket.
 // Resolution (bucket boundaries) of the histogram depends on the options.
 // There's no interpolation within buckets (i.e. one sample falls to exactly one
 // bucket).
@@ -110,12 +110,20 @@ func (h *histogram) AddSample(value float64, weight float64, time time.Time) {
 	bucket := h.options.FindBucket(value)
 	h.bucketWeight[bucket] += weight
 	h.totalWeight += weight
-	if bucket < h.minBucket {
+	if bucket < h.minBucket && h.bucketWeight[bucket] >= h.options.Epsilon() {
 		h.minBucket = bucket
 	}
-	if bucket > h.maxBucket {
+	if bucket > h.maxBucket && h.bucketWeight[bucket] >= h.options.Epsilon() {
 		h.maxBucket = bucket
 	}
+}
+
+func safeSubtract(value, sub, epsilon float64) float64 {
+	value -= sub
+	if value < epsilon {
+		return 0.0
+	}
+	return value
 }
 
 func (h *histogram) SubtractSample(value float64, weight float64, time time.Time) {
@@ -124,11 +132,10 @@ func (h *histogram) SubtractSample(value float64, weight float64, time time.Time
 	}
 	bucket := h.options.FindBucket(value)
 	epsilon := h.options.Epsilon()
-	if weight > h.bucketWeight[bucket]-epsilon {
-		weight = h.bucketWeight[bucket]
-	}
-	h.totalWeight -= weight
-	h.bucketWeight[bucket] -= weight
+
+	h.totalWeight = safeSubtract(h.totalWeight, weight, epsilon)
+	h.bucketWeight[bucket] = safeSubtract(h.bucketWeight[bucket], weight, epsilon)
+
 	h.updateMinAndMaxBucket()
 }
 
@@ -162,15 +169,13 @@ func (h *histogram) Percentile(percentile float64) float64 {
 			break
 		}
 	}
-	bucketStart := h.options.GetBucketStart(bucket)
 	if bucket < h.options.NumBuckets()-1 {
-		// Return the middle point between the bucket boundaries.
-		bucketEnd := h.options.GetBucketStart(bucket + 1)
-		return (bucketStart + bucketEnd) / 2.0
+		// Return the end of the bucket.
+		return h.options.GetBucketStart(bucket + 1)
 	}
 	// Return the start of the last bucket (note that the last bucket
 	// doesn't have an upper bound).
-	return bucketStart
+	return h.options.GetBucketStart(bucket)
 }
 
 func (h *histogram) IsEmpty() bool {

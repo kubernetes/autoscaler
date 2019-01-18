@@ -129,6 +129,24 @@ func TestRecordOOMIncreasedByBumpUp(t *testing.T) {
 	assert.NoError(t, test.container.RecordOOM(testTimestamp, ResourceAmount(1000*mb)))
 }
 
+func TestRecordOOMDontRunAway(t *testing.T) {
+	test := newContainerTest()
+	memoryAggregationWindowEnd := testTimestamp.Add(MemoryAggregationInterval)
+
+	// Bump Up factor is 20%.
+	test.mockMemoryHistogram.On("AddSample", 1200.0*mb, 1.0, memoryAggregationWindowEnd)
+	assert.NoError(t, test.container.RecordOOM(testTimestamp, ResourceAmount(1000*mb)))
+
+	// new smaller OOMs don't influence the sample value (oomPeak)
+	assert.NoError(t, test.container.RecordOOM(testTimestamp, ResourceAmount(999*mb)))
+	assert.NoError(t, test.container.RecordOOM(testTimestamp, ResourceAmount(999*mb)))
+
+	test.mockMemoryHistogram.On("SubtractSample", 1200.0*mb, 1.0, memoryAggregationWindowEnd)
+	test.mockMemoryHistogram.On("AddSample", 2400.0*mb, 1.0, memoryAggregationWindowEnd)
+	// a larger OOM should increase the sample value
+	assert.NoError(t, test.container.RecordOOM(testTimestamp, ResourceAmount(2000*mb)))
+}
+
 func TestRecordOOMIncreasedByMin(t *testing.T) {
 	test := newContainerTest()
 	memoryAggregationWindowEnd := testTimestamp.Add(MemoryAggregationInterval)

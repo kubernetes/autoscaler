@@ -58,6 +58,10 @@ func VisitPodSecretNames(pod *api.Pod, visitor Visitor) bool {
 			if source.CephFS.SecretRef != nil && !visitor(source.CephFS.SecretRef.Name) {
 				return false
 			}
+		case source.Cinder != nil:
+			if source.Cinder.SecretRef != nil && !visitor(source.Cinder.SecretRef.Name) {
+				return false
+			}
 		case source.FlexVolume != nil:
 			if source.FlexVolume.SecretRef != nil && !visitor(source.FlexVolume.SecretRef.Name) {
 				return false
@@ -242,10 +246,6 @@ func DropDisabledAlphaFields(podSpec *api.PodSpec) {
 				podSpec.Volumes[i].EmptyDir.SizeLimit = nil
 			}
 		}
-	}
-
-	if !utilfeature.DefaultFeatureGate.Enabled(features.PodShareProcessNamespace) && podSpec.SecurityContext != nil {
-		podSpec.SecurityContext.ShareProcessNamespace = nil
 	}
 
 	for i := range podSpec.Containers {

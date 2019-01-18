@@ -17,7 +17,7 @@ limitations under the License.
 package glogx
 
 import (
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 type quota struct {
@@ -42,39 +42,39 @@ func (q *quota) Reset() {
 
 // UpTo decreases quota for logging and reports whether there was any left.
 // The returned value is a boolean of type glogx.Verbose.
-func UpTo(quota *quota) glog.Verbose {
+func UpTo(quota *quota) klog.Verbose {
 	quota.left--
 	return quota.left >= 0
 }
 
 // Over reports whether quota for logging was exceeded.
 // The returned value is a boolean of type glogx.Verbose.
-func Over(quota *quota) glog.Verbose {
+func Over(quota *quota) klog.Verbose {
 	return quota.left < 0
 }
 
 // V calls V from glog and wraps the result into glogx.Verbose.
-func V(n glog.Level) Verbose {
-	return Verbose(glog.V(n))
+func V(n klog.Level) Verbose {
+	return Verbose(klog.V(n))
 }
 
-// Verbose is a wrapper for glog.Verbose that implements UpTo and Over.
-type Verbose glog.Verbose
+// Verbose is a wrapper for klog.Verbose that implements UpTo and Over.
+type Verbose klog.Verbose
 
 // UpTo calls UpTo from this package if called on true object.
-// The returned value is a boolean of type glog.Verbose.
-func (v Verbose) UpTo(quota *quota) glog.Verbose {
+// The returned value is a boolean of type klog.Verbose.
+func (v Verbose) UpTo(quota *quota) klog.Verbose {
 	if v {
 		return UpTo(quota)
 	}
-	return glog.Verbose(false)
+	return klog.Verbose(false)
 }
 
 // Over calls Over from this package if called on true object.
-// The returned value is a boolean of type glog.Verbose.
-func (v Verbose) Over(quota *quota) glog.Verbose {
+// The returned value is a boolean of type klog.Verbose.
+func (v Verbose) Over(quota *quota) klog.Verbose {
 	if v {
 		return Over(quota)
 	}
-	return glog.Verbose(false)
+	return klog.Verbose(false)
 }

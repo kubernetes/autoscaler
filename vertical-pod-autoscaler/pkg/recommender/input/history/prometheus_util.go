@@ -31,29 +31,29 @@ import (
 // This is the top-level structure of the response.
 type responseType struct {
 	// Should be "success".
-	Status      string   `json:status`
-	Data        dataType `json:data`
-	ErrorType   string   `json:errorType`
-	ErrorString string   `json:error`
+	Status      string   `json:"status"`
+	Data        dataType `json:"data"`
+	ErrorType   string   `json:"errorType"`
+	ErrorString string   `json:"error"`
 }
 
 // Holds all the data returned.
 type dataType struct {
 	// For range vectors, this will be "matrix". Other possibilities are:
 	// "vector","scalar","string".
-	ResultType string `json:resultType`
+	ResultType string `json:"resultType"`
 	// This has different types depending on ResultType.
-	Result json.RawMessage `json:result`
+	Result json.RawMessage `json:"result"`
 }
 
 // dataType.Result has this type when ResultType="matrix".
 type matrixType struct {
 	// Labels of the timeseries.
-	Metric map[string]string `json:metric`
+	Metric map[string]string `json:"metric"`
 	// List of samples. Each sample is represented as a two-item list with
 	// floating point timestamp in seconds and a string holding the value
 	// of the metric.
-	Values [][]interface{} `json:values`
+	Values [][]interface{} `json:"values"`
 }
 
 // Decodes the list of samples from the format of matrixType.Values field.

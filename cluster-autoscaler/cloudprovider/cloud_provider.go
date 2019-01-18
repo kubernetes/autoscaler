@@ -17,14 +17,10 @@ limitations under the License.
 package cloudprovider
 
 import (
-	"bytes"
-	"fmt"
-	"math"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 )
@@ -69,14 +65,14 @@ type CloudProvider interface {
 }
 
 // ErrNotImplemented is returned if a method is not implemented.
-var ErrNotImplemented errors.AutoscalerError = errors.NewAutoscalerError(errors.InternalError, "Not implemented")
+var ErrNotImplemented = errors.NewAutoscalerError(errors.InternalError, "Not implemented")
 
 // ErrAlreadyExist is returned if a method is not implemented.
-var ErrAlreadyExist errors.AutoscalerError = errors.NewAutoscalerError(errors.InternalError, "Already exist")
+var ErrAlreadyExist = errors.NewAutoscalerError(errors.InternalError, "Already exist")
 
 // ErrIllegalConfiguration is returned when trying to create NewNodeGroup with
 // configuration that is not supported by cloudprovider.
-var ErrIllegalConfiguration errors.AutoscalerError = errors.NewAutoscalerError(errors.InternalError, "Configuration not allowed by cloud provider")
+var ErrIllegalConfiguration = errors.NewAutoscalerError(errors.InternalError, "Configuration not allowed by cloud provider")
 
 // NodeGroup contains configuration info and functions to control a set
 // of nodes that have the same capacity and set of labels.
@@ -117,7 +113,9 @@ type NodeGroup interface {
 	Debug() string
 
 	// Nodes returns a list of all nodes that belong to this node group.
-	Nodes() ([]string, error)
+	// It is required that Instance objects returned by this method have Id field set.
+	// Other fields are optional.
+	Nodes() ([]Instance, error)
 
 	// TemplateNodeInfo returns a schedulercache.NodeInfo structure of an empty
 	// (as if just started) node. This will be used in scale-up simulations to
@@ -132,7 +130,7 @@ type NodeGroup interface {
 	Exist() bool
 
 	// Create creates the node group on the cloud provider side. Implementation optional.
-	Create() error
+	Create() (NodeGroup, error)
 
 	// Delete deletes the node group on the cloud provider side.
 	// This will be executed only for autoprovisioned node groups, once their size drops to 0.
@@ -143,6 +141,58 @@ type NodeGroup interface {
 	// was created by CA and can be deleted when scaled to 0.
 	Autoprovisioned() bool
 }
+
+// Instance represents a cloud-provider node. The node does not necessarily map to k8s node
+// i.e it does not have to be registered in k8s cluster despite being returned by NodeGroup.Nodes()
+// method. Also it is sane to have Instance object for nodes which are being created or deleted.
+type Instance struct {
+	// Id is instance id.
+	Id string
+	// Status represents status of node. (Optional)
+	Status *InstanceStatus
+}
+
+// InstanceStatus represents instance status.
+type InstanceStatus struct {
+	// State tells if instance is running, being created or being deleted
+	State InstanceState
+	// ErrorInfo is not nil if there is error condition related to instance.
+	// E.g instance cannot be created.
+	ErrorInfo *InstanceErrorInfo
+}
+
+// InstanceState tells if instance is running, being created or being deleted
+type InstanceState int
+
+const (
+	// InstanceRunning means instance is running
+	InstanceRunning InstanceState = 1
+	// InstanceCreating means instance is being created
+	InstanceCreating InstanceState = 2
+	// InstanceDeleting means instance is being deleted
+	InstanceDeleting InstanceState = 3
+)
+
+// InstanceErrorInfo provides information about error condition on instance
+type InstanceErrorInfo struct {
+	// ErrorClass tells what is class of error on instance
+	ErrorClass InstanceErrorClass
+	// ErrorCode is cloud-provider specific error code for error condition
+	ErrorCode string
+	// ErrorMessage is human readable description of error condition
+	ErrorMessage string
+}
+
+// InstanceErrorClass defines class of error condition
+type InstanceErrorClass int
+
+const (
+	// OutOfResourcesErrorClass means that error is related to lack of resources (e.g. due to
+	// stockout or quota-exceeded situation)
+	OutOfResourcesErrorClass InstanceErrorClass = 1
+	// OtherErrorClass means some non-specific error situation occurred
+	OtherErrorClass InstanceErrorClass = 99
+)
 
 // PricingModel contains information about the node price and how it changes in time.
 type PricingModel interface {
@@ -178,61 +228,4 @@ func ContainsGpuResources(resources []string) bool {
 		}
 	}
 	return false
-}
-
-// ResourceLimiter contains limits (max, min) for resources (cores, memory etc.).
-type ResourceLimiter struct {
-	minLimits map[string]int64
-	maxLimits map[string]int64
-}
-
-// NewResourceLimiter creates new ResourceLimiter for map. Maps are deep copied.
-func NewResourceLimiter(minLimits map[string]int64, maxLimits map[string]int64) *ResourceLimiter {
-	minLimitsCopy := make(map[string]int64)
-	maxLimitsCopy := make(map[string]int64)
-	for key, value := range minLimits {
-		if value > 0 {
-			minLimitsCopy[key] = value
-		}
-	}
-	for key, value := range maxLimits {
-		maxLimitsCopy[key] = value
-	}
-	return &ResourceLimiter{minLimitsCopy, maxLimitsCopy}
-}
-
-// GetMin returns minimal number of resources for a given resource type.
-func (r *ResourceLimiter) GetMin(resourceName string) int64 {
-	result, found := r.minLimits[resourceName]
-	if found {
-		return result
-	}
-	return 0
-}
-
-// GetMax returns maximal number of resources for a given resource type.
-func (r *ResourceLimiter) GetMax(resourceName string) int64 {
-	result, found := r.maxLimits[resourceName]
-	if found {
-		return result
-	}
-	return math.MaxInt64
-}
-
-// GetResources returns list of all resource names for which min or max limits are defined
-func (r *ResourceLimiter) GetResources() []string {
-	minResources := sets.StringKeySet(r.minLimits)
-	maxResources := sets.StringKeySet(r.maxLimits)
-	return minResources.Union(maxResources).List()
-}
-
-func (r *ResourceLimiter) String() string {
-	var buffer bytes.Buffer
-	for _, name := range r.GetResources() {
-		if buffer.Len() > 0 {
-			buffer.WriteString(", ")
-		}
-		buffer.WriteString(fmt.Sprintf("{%s : %d - %d}", name, r.GetMin(name), r.GetMax(name)))
-	}
-	return buffer.String()
 }

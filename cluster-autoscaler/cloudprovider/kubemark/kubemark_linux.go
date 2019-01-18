@@ -27,12 +27,17 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/client-go/informers"
+	kubeclient "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/kubernetes/pkg/kubemark"
 	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 const (
@@ -68,7 +73,7 @@ func (kubemark *KubemarkCloudProvider) addNodeGroup(spec string) error {
 	if err != nil {
 		return err
 	}
-	glog.V(2).Infof("adding node group: %s", nodeGroup.Name)
+	klog.V(2).Infof("adding node group: %s", nodeGroup.Name)
 	kubemark.nodeGroups = append(kubemark.nodeGroups, nodeGroup)
 	return nil
 }
@@ -164,16 +169,16 @@ func (nodeGroup *NodeGroup) Debug() string {
 }
 
 // Nodes returns a list of all nodes that belong to this node group.
-func (nodeGroup *NodeGroup) Nodes() ([]string, error) {
-	ids := make([]string, 0)
+func (nodeGroup *NodeGroup) Nodes() ([]cloudprovider.Instance, error) {
+	instances := make([]cloudprovider.Instance, 0)
 	nodes, err := nodeGroup.kubemarkController.GetNodeNamesForNodeGroup(nodeGroup.Name)
 	if err != nil {
-		return ids, err
+		return instances, err
 	}
 	for _, node := range nodes {
-		ids = append(ids, ":////"+node)
+		instances = append(instances, cloudprovider.Instance{Id: ":////" + node})
 	}
-	return ids, nil
+	return instances, nil
 }
 
 // DeleteNodes deletes the specified nodes from the node group.
@@ -250,8 +255,8 @@ func (nodeGroup *NodeGroup) Exist() bool {
 }
 
 // Create creates the node group on the cloud provider side.
-func (nodeGroup *NodeGroup) Create() error {
-	return cloudprovider.ErrNotImplemented
+func (nodeGroup *NodeGroup) Create() (cloudprovider.NodeGroup, error) {
+	return nil, cloudprovider.ErrNotImplemented
 }
 
 // Delete deletes the node group on the cloud provider side.
@@ -278,4 +283,45 @@ func buildNodeGroup(value string, kubemarkController *kubemark.KubemarkControlle
 	}
 
 	return nodeGroup, nil
+}
+
+// BuildKubemark builds Kubemark cloud provider.
+func BuildKubemark(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+	externalConfig, err := rest.InClusterConfig()
+	if err != nil {
+		klog.Fatalf("Failed to get kubeclient config for external cluster: %v", err)
+	}
+
+	kubemarkConfig, err := clientcmd.BuildConfigFromFlags("", "/kubeconfig/cluster_autoscaler.kubeconfig")
+	if err != nil {
+		klog.Fatalf("Failed to get kubeclient config for kubemark cluster: %v", err)
+	}
+
+	stop := make(chan struct{})
+
+	externalClient := kubeclient.NewForConfigOrDie(externalConfig)
+	kubemarkClient := kubeclient.NewForConfigOrDie(kubemarkConfig)
+
+	externalInformerFactory := informers.NewSharedInformerFactory(externalClient, 0)
+	kubemarkInformerFactory := informers.NewSharedInformerFactory(kubemarkClient, 0)
+	kubemarkNodeInformer := kubemarkInformerFactory.Core().V1().Nodes()
+	go kubemarkNodeInformer.Informer().Run(stop)
+
+	kubemarkController, err := kubemark.NewKubemarkController(externalClient, externalInformerFactory,
+		kubemarkClient, kubemarkNodeInformer)
+	if err != nil {
+		klog.Fatalf("Failed to create Kubemark cloud provider: %v", err)
+	}
+
+	externalInformerFactory.Start(stop)
+	if !kubemarkController.WaitForCacheSync(stop) {
+		klog.Fatalf("Failed to sync caches for kubemark controller")
+	}
+	go kubemarkController.Run(stop)
+
+	provider, err := BuildKubemarkCloudProvider(kubemarkController, do.NodeGroupSpecs, rl)
+	if err != nil {
+		klog.Fatalf("Failed to create Kubemark cloud provider: %v", err)
+	}
+	return provider
 }

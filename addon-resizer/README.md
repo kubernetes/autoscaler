@@ -116,7 +116,7 @@ name of your addon, for example:
 ADDON_NAME=heapster
 ```
 
-Currently Addon Resizer is used to scale addons: `heapster`, `metrics-server`.
+Currently Addon Resizer is used to scale addons: `heapster`, `metrics-server`, `kube-state-metrics`.
 
 ### Overview
 

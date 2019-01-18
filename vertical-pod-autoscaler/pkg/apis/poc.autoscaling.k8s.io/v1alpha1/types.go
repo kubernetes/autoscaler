@@ -207,6 +207,13 @@ type VerticalPodAutoscalerConditionType string
 var (
 	// RecommendationProvided indicates whether the VPA recommender was able to calculate a recommendation.
 	RecommendationProvided VerticalPodAutoscalerConditionType = "RecommendationProvided"
+	// LowConfidence indicates whether the VPA recommender has low confidence in the recommendation for
+	// some of containers.
+	LowConfidence VerticalPodAutoscalerConditionType = "LowConfidence"
+	// NoPodsMatched indicates that label selector used with VPA object didn't match any pods.
+	NoPodsMatched VerticalPodAutoscalerConditionType = "NoPodsMatched"
+	// FetchingHistory indicates that VPA recommender is in the process of loading additional history samples.
+	FetchingHistory VerticalPodAutoscalerConditionType = "FetchingHistory"
 )
 
 // VerticalPodAutoscalerCondition describes the state of

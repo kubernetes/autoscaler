@@ -24,7 +24,9 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/klog"
 )
 
 const (
@@ -32,30 +34,40 @@ const (
 	ProviderName = "kubemark"
 )
 
+// KubemarkCloudProvider implements CloudProvider interface.
 type KubemarkCloudProvider struct{}
 
+// BuildKubemarkCloudProvider builds a CloudProvider for kubemark. Builds
+// node groups from passed in specs.
 func BuildKubemarkCloudProvider(kubemarkController interface{}, specs []string, resourceLimiter *cloudprovider.ResourceLimiter) (*KubemarkCloudProvider, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
+// Name returns name of the cloud provider.
 func (kubemark *KubemarkCloudProvider) Name() string { return "" }
 
+// NodeGroups returns all node groups configured for this cloud provider.
 func (kubemark *KubemarkCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 	return []cloudprovider.NodeGroup{}
 }
 
+// Pricing returns pricing model for this cloud provider or error if not available.
 func (kubemark *KubemarkCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
+// NodeGroupForNode returns the node group for the given node.
 func (kubemark *KubemarkCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
+// GetAvailableMachineTypes get all machine types that can be requested from the cloud provider.
+// Implementation optional.
 func (kubemark *KubemarkCloudProvider) GetAvailableMachineTypes() ([]string, error) {
 	return []string{}, cloudprovider.ErrNotImplemented
 }
 
+// NewNodeGroup builds a theoretical node group based on the node definition provided.
 func (kubemark *KubemarkCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string,
 	taints []apiv1.Taint,
 	extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
@@ -76,4 +88,10 @@ func (kubemark *KubemarkCloudProvider) Refresh() error {
 // Cleanup cleans up all resources before the cloud provider is removed
 func (kubemark *KubemarkCloudProvider) Cleanup() error {
 	return cloudprovider.ErrNotImplemented
+}
+
+// BuildKubemark builds Kubemark cloud provider.
+func BuildKubemark(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+	klog.Fatal("Failed to create Kubemark cloud provider: only supported on Linux")
+	return nil
 }

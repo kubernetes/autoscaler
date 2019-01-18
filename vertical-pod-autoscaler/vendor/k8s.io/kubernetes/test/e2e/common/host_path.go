@@ -23,7 +23,6 @@ import (
 
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/kubernetes/pkg/api/testapi"
 	"k8s.io/kubernetes/test/e2e/framework"
 
 	. "github.com/onsi/ginkgo"
@@ -41,12 +40,11 @@ var _ = Describe("[sig-storage] HostPath", func() {
 	})
 
 	/*
-		    Testname: volume-hostpath-mode
-		    Description: For a Pod created with a 'HostPath' Volume, ensure the
-			volume is a directory with 0777 unix file permissions and that is has
-			the sticky bit (mode flag t) set.
+	   Release : v1.9
+	   Testname: Host path, volume mode default
+	   Description: Create a Pod with host volume mounted. The volume mounted MUST be a directory with permissions mode -rwxrwxrwx and that is has the sticky bit (mode flag t) set.
 	*/
-	framework.ConformanceIt("should give a volume the correct mode", func() {
+	framework.ConformanceIt("should give a volume the correct mode [NodeConformance]", func() {
 		source := &v1.HostPathVolumeSource{
 			Path: "/tmp",
 		}
@@ -62,7 +60,7 @@ var _ = Describe("[sig-storage] HostPath", func() {
 	})
 
 	// This test requires mounting a folder into a container with write privileges.
-	It("should support r/w", func() {
+	It("should support r/w [NodeConformance]", func() {
 		filePath := path.Join(volumePath, "test-file")
 		retryDuration := 180
 		source := &v1.HostPathVolumeSource{
@@ -86,7 +84,7 @@ var _ = Describe("[sig-storage] HostPath", func() {
 		})
 	})
 
-	It("should support subPath", func() {
+	It("should support subPath [NodeConformance]", func() {
 		subPath := "sub-path"
 		fileName := "test-file"
 		retryDuration := 180
@@ -137,7 +135,9 @@ var _ = Describe("[sig-storage] HostPath", func() {
 
 		// Create the subPath directory on the host
 		existing := path.Join(source.Path, subPath)
-		result, err := framework.SSH(fmt.Sprintf("mkdir -p %s", existing), framework.GetNodeExternalIP(&nodeList.Items[0]), framework.TestContext.Provider)
+		externalIP, err := framework.GetNodeExternalIP(&nodeList.Items[0])
+		framework.ExpectNoError(err)
+		result, err := framework.SSH(fmt.Sprintf("mkdir -p %s", existing), externalIP, framework.TestContext.Provider)
 		framework.LogSSHResult(result)
 		framework.ExpectNoError(err)
 		if result.Code != 0 {
@@ -181,7 +181,9 @@ var _ = Describe("[sig-storage] HostPath", func() {
 
 		// Create the subPath file on the host
 		existing := path.Join(source.Path, subPath)
-		result, err := framework.SSH(fmt.Sprintf("echo \"mount-tester new file\" > %s", existing), framework.GetNodeExternalIP(&nodeList.Items[0]), framework.TestContext.Provider)
+		externalIP, err := framework.GetNodeExternalIP(&nodeList.Items[0])
+		framework.ExpectNoError(err)
+		result, err := framework.SSH(fmt.Sprintf("echo \"mount-tester new file\" > %s", existing), externalIP, framework.TestContext.Provider)
 		framework.LogSSHResult(result)
 		framework.ExpectNoError(err)
 		if result.Code != 0 {
@@ -228,7 +230,7 @@ func testPodWithHostVol(path string, source *v1.HostPathVolumeSource) *v1.Pod {
 	return &v1.Pod{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Pod",
-			APIVersion: testapi.Groups[v1.GroupName].GroupVersion().String(),
+			APIVersion: "v1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name: podName,

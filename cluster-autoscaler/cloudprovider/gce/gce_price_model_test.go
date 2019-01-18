@@ -29,13 +29,13 @@ import (
 )
 
 func TestGetNodePrice(t *testing.T) {
-	labels1, _ := buildGenericLabels(GceRef{
+	labels1, _ := BuildGenericLabels(GceRef{
 		Name:    "kubernetes-minion-group",
 		Project: "mwielgus-proj",
 		Zone:    "us-central1-b"},
 		"n1-standard-8", "sillyname")
 
-	labels2, _ := buildGenericLabels(GceRef{
+	labels2, _ := BuildGenericLabels(GceRef{
 		Name:    "kubernetes-minion-group",
 		Project: "mwielgus-proj",
 		Zone:    "us-central1-b"},

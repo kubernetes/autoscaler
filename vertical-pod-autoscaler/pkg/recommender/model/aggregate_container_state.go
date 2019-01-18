@@ -41,7 +41,7 @@ import (
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/util"
 )
 
@@ -52,9 +52,9 @@ type ContainerNameToAggregateStateMap map[string]*AggregateContainerState
 const (
 	// SupportedCheckpointVersion is the tag of the supported version of serialized checkpoints.
 	// Version id should be incremented on every non incompatible change, i.e. if the new
-	// version of the recommender binary can't initialize from the old checkpoint format or the the
+	// version of the recommender binary can't initialize from the old checkpoint format or the
 	// previous version of the recommender binary can't initialize from the new checkpoint format.
-	SupportedCheckpointVersion = "v1"
+	SupportedCheckpointVersion = "v3"
 )
 
 // ContainerStateAggregator is an interface for objects that consume and
@@ -139,7 +139,6 @@ func (a *AggregateContainerState) addCPUSample(sample *ContainerUsageSample) {
 	// Samples are added with the weight equal to the current request. This means that
 	// whenever the request is increased, the history accumulated so far effectively decays,
 	// which helps react quickly to CPU starvation.
-	minSampleWeight := 0.1
 	a.AggregateCPUUsage.AddSample(
 		cpuUsageCores, math.Max(cpuRequestCores, minSampleWeight), sample.MeasureStart)
 	if sample.MeasureStart.After(a.LastSampleStart) {

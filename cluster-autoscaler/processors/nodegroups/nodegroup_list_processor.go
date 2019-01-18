@@ -28,6 +28,7 @@ type NodeGroupListProcessor interface {
 	Process(context *context.AutoscalingContext, nodeGroups []cloudprovider.NodeGroup,
 		nodeInfos map[string]*schedulercache.NodeInfo,
 		unschedulablePods []*apiv1.Pod) ([]cloudprovider.NodeGroup, map[string]*schedulercache.NodeInfo, error)
+	CleanUp()
 }
 
 // NoOpNodeGroupListProcessor is returning pod lists without processing them.
@@ -36,12 +37,15 @@ type NoOpNodeGroupListProcessor struct {
 
 // NewDefaultNodeGroupListProcessor creates an instance of NodeGroupListProcessor.
 func NewDefaultNodeGroupListProcessor() NodeGroupListProcessor {
-	// TODO(maciekpytel): Use a better default
-	return NewAutoprovisioningNodeGroupListProcessor()
+	return &NoOpNodeGroupListProcessor{}
 }
 
-// Process processes lists of unschedulable and sheduled pods before scaling of the cluster.
+// Process processes lists of unschedulable and scheduled pods before scaling of the cluster.
 func (p *NoOpNodeGroupListProcessor) Process(context *context.AutoscalingContext, nodeGroups []cloudprovider.NodeGroup, nodeInfos map[string]*schedulercache.NodeInfo,
 	unschedulablePods []*apiv1.Pod) ([]cloudprovider.NodeGroup, map[string]*schedulercache.NodeInfo, error) {
 	return nodeGroups, nodeInfos, nil
+}
+
+// CleanUp cleans up the processor's internal structures.
+func (p *NoOpNodeGroupListProcessor) CleanUp() {
 }

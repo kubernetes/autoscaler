@@ -22,24 +22,24 @@ import (
 
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 
+	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
-	extensionsv1 "k8s.io/api/extensions/v1beta1"
 	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 )
 
 // GetDaemonSetPodsForNode returns daemonset nodes for the given pod.
-func GetDaemonSetPodsForNode(nodeInfo *schedulercache.NodeInfo, daemonsets []*extensionsv1.DaemonSet, predicateChecker *simulator.PredicateChecker) []*apiv1.Pod {
+func GetDaemonSetPodsForNode(nodeInfo *schedulercache.NodeInfo, daemonsets []*appsv1.DaemonSet, predicateChecker *simulator.PredicateChecker) []*apiv1.Pod {
 	result := make([]*apiv1.Pod, 0)
 	for _, ds := range daemonsets {
 		pod := newPod(ds, nodeInfo.Node().Name)
-		if err := predicateChecker.CheckPredicates(pod, nil, nodeInfo, simulator.ReturnSimpleError); err == nil {
+		if err := predicateChecker.CheckPredicates(pod, nil, nodeInfo); err == nil {
 			result = append(result, pod)
 		}
 	}
 	return result
 }
 
-func newPod(ds *extensionsv1.DaemonSet, nodeName string) *apiv1.Pod {
+func newPod(ds *appsv1.DaemonSet, nodeName string) *apiv1.Pod {
 	newPod := &apiv1.Pod{Spec: ds.Spec.Template.Spec, ObjectMeta: ds.Spec.Template.ObjectMeta}
 	newPod.Namespace = ds.Namespace
 	newPod.Name = fmt.Sprintf("%s-pod-%d", ds.Name, rand.Int63())

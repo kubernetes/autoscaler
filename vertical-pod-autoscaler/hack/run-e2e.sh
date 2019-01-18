@@ -46,9 +46,7 @@ case ${SUITE} in
   recommender|updater|admission-controller|actuation|full-vpa)
     ${SCRIPT_ROOT}/hack/vpa-down.sh
     ${SCRIPT_ROOT}/hack/deploy-for-e2e.sh ${SUITE}
-
-    export KUBECONFIG=$HOME/.kube/config
-    go test ${SCRIPT_ROOT}/e2e/*go -v -test.timeout=60m  --args --ginkgo.v=true --ginkgo.focus="\[VPA\] \[${SUITE}\]" --report-dir=/workspace/_artifacts --disable-log-dump
+    ${SCRIPT_ROOT}/hack/run-e2e-tests.sh ${SUITE}
     ;;
   *)
     print_help

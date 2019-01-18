@@ -34,9 +34,9 @@ import (
 	"k8s.io/kubernetes/pkg/proxy/iptables"
 	utiliptables "k8s.io/kubernetes/pkg/util/iptables"
 	utilnode "k8s.io/kubernetes/pkg/util/node"
-	utilpointer "k8s.io/kubernetes/pkg/util/pointer"
 	utilsysctl "k8s.io/kubernetes/pkg/util/sysctl"
 	utilexec "k8s.io/utils/exec"
+	utilpointer "k8s.io/utils/pointer"
 
 	"github.com/golang/glog"
 )
@@ -70,6 +70,8 @@ func NewHollowProxyOrDie(
 	broadcaster record.EventBroadcaster,
 	recorder record.EventRecorder,
 	useRealProxier bool,
+	proxierSyncPeriod time.Duration,
+	proxierMinSyncPeriod time.Duration,
 ) (*HollowProxy, error) {
 	// Create proxier and service/endpoint handlers.
 	var proxier proxy.ProxyProvider
@@ -83,8 +85,8 @@ func NewHollowProxyOrDie(
 			iptInterface,
 			sysctl,
 			execer,
-			30*time.Second,
-			5*time.Second,
+			proxierSyncPeriod,
+			proxierMinSyncPeriod,
 			false,
 			0,
 			"10.0.0.0/8",

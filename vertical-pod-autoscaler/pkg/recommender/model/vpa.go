@@ -17,10 +17,13 @@ limitations under the License.
 package model
 
 import (
+	"sort"
+	"time"
+
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
 )
 
 // Map from VPA condition type to condition.
@@ -54,6 +57,12 @@ func (conditionsMap *vpaConditionsMap) AsList() []vpa_types.VerticalPodAutoscale
 	for _, condition := range *conditionsMap {
 		conditions = append(conditions, condition)
 	}
+
+	// Sort conditions by type to avoid elements floating on the list
+	sort.Slice(conditions, func(i, j int) bool {
+		return conditions[i].Type < conditions[j].Type
+	})
+
 	return conditions
 }
 
@@ -76,16 +85,24 @@ type Vpa struct {
 	// Initial checkpoints of AggregateContainerStates for containers.
 	// The key is container name.
 	ContainersInitialAggregateState ContainerNameToAggregateStateMap
+	// UpdateMode describes how recommendations will be applied to pods
+	UpdateMode *vpa_types.UpdateMode
+	// Created denotes timestamp of the original VPA object creation
+	Created time.Time
+	// CheckpointWritten indicates when last checkpoint for the VPA object was stored.
+	CheckpointWritten time.Time
 }
 
 // NewVpa returns a new Vpa with a given ID and pod selector. Doesn't set the
 // links to the matched aggregations.
-func NewVpa(id VpaID, selector labels.Selector) *Vpa {
+func NewVpa(id VpaID, selector labels.Selector, created time.Time) *Vpa {
 	vpa := &Vpa{
 		ID:                              id,
 		PodSelector:                     selector,
 		aggregateContainerStates:        make(aggregateContainerStatesMap),
 		ContainersInitialAggregateState: make(ContainerNameToAggregateStateMap),
+		Created:                         created,
+		Conditions:                      make(vpaConditionsMap),
 	}
 	return vpa
 }
@@ -112,7 +129,12 @@ func (vpa *Vpa) DeleteAggregation(aggregationKey AggregateStateKey) {
 // MergeCheckpointedState adds checkpointed VPA aggregations to the given aggregateStateMap.
 func (vpa *Vpa) MergeCheckpointedState(aggregateContainerStateMap ContainerNameToAggregateStateMap) {
 	for containerName, aggregation := range vpa.ContainersInitialAggregateState {
-		aggregateContainerStateMap[containerName].MergeContainerState(aggregation)
+		aggregateContainerState, found := aggregateContainerStateMap[containerName]
+		if !found {
+			aggregateContainerState = NewAggregateContainerState()
+			aggregateContainerStateMap[containerName] = aggregateContainerState
+		}
+		aggregateContainerState.MergeContainerState(aggregation)
 	}
 }
 
@@ -122,6 +144,11 @@ func (vpa *Vpa) AggregateStateByContainerName() ContainerNameToAggregateStateMap
 	containerNameToAggregateStateMap := AggregateStateByContainerName(vpa.aggregateContainerStates)
 	vpa.MergeCheckpointedState(containerNameToAggregateStateMap)
 	return containerNameToAggregateStateMap
+}
+
+// HasRecommendation returns if the VPA object contains any recommendation
+func (vpa *Vpa) HasRecommendation() bool {
+	return (vpa.Recommendation != nil) && len(vpa.Recommendation.ContainerRecommendations) > 0
 }
 
 // matchesAggregation returns true iff the VPA matches the given aggregation key.
