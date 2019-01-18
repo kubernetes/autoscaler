@@ -250,7 +250,7 @@ func TestFetchAutoAsgs(t *testing.T) {
 	}
 
 	// fetchAutoASGs is called at manager creation time, via forceRefresh
-	m, err := createAWSManagerInternal(nil, do, &autoScalingWrapper{s})
+	m, err := createAWSManagerInternal(nil, do, &autoScalingWrapper{s}, nil)
 	assert.NoError(t, err)
 
 	asgs := m.asgCache.Get()
