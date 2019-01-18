@@ -18,6 +18,7 @@ package scheduler
 
 import (
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/klog"
 	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 )
 
@@ -25,7 +26,6 @@ import (
 // and the values are the aggregated information for that node. Pods waiting lower priority pods preemption
 // (pod.Status.NominatedNodeName is set) are also added to list of pods for a node.
 func CreateNodeNameToInfoMap(pods []*apiv1.Pod, nodes []*apiv1.Node) map[string]*schedulercache.NodeInfo {
-
 	nodeNameToNodeInfo := make(map[string]*schedulercache.NodeInfo)
 	for _, pod := range pods {
 		nodeName := pod.Spec.NodeName
@@ -57,4 +57,15 @@ func CreateNodeNameToInfoMap(pods []*apiv1.Pod, nodes []*apiv1.Node) map[string]
 	}
 
 	return nodeNameToNodeInfo
+}
+
+// NodeWithPod function returns NodeInfo, which is a copy of nodeInfo argument with an additional pod scheduled on it.
+func NodeWithPod(nodeInfo *schedulercache.NodeInfo, pod *apiv1.Pod) *schedulercache.NodeInfo {
+	podsOnNode := nodeInfo.Pods()
+	podsOnNode = append(podsOnNode, pod)
+	newNodeInfo := schedulercache.NewNodeInfo(podsOnNode...)
+	if err := newNodeInfo.SetNode(nodeInfo.Node()); err != nil {
+		klog.Errorf("error setting node for NodeInfo %s, because of %s", nodeInfo.Node().Name, err.Error())
+	}
+	return newNodeInfo
 }
