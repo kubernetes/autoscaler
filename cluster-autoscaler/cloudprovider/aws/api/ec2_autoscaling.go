@@ -18,8 +18,8 @@ package api
 
 import (
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 )
 
@@ -62,7 +62,7 @@ func (ass *autoscalingService) DescribeAutoscalingGroup(autoscalingGroupName str
 		for _, group := range res.AutoScalingGroups {
 			if *group.AutoScalingGroupName == autoscalingGroupName {
 				return &EC2AutoscalingGroup{
-					Name: *group.AutoScalingGroupName,
+					Name:                    *group.AutoScalingGroupName,
 					LaunchConfigurationName: *group.LaunchConfigurationName,
 					AvailabilityZones:       aws.StringValueSlice(group.AvailabilityZones),
 				}, nil
