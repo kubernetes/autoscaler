@@ -31,7 +31,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
-	scheduler_util "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -603,7 +602,7 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 	p5 := BuildTestPod("p5", 800, 0)
 	p5.OwnerReferences = ownerRef
 	p5.Spec.Priority = &priority100
-	p5.Annotations = map[string]string{scheduler_util.NominatedNodeAnnotationKey: "n3"}
+	p5.Status.NominatedNodeName = "n3"
 
 	p6 := BuildTestPod("p6", 1000, 0)
 	p6.OwnerReferences = ownerRef

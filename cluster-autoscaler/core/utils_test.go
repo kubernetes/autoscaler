@@ -29,7 +29,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
-	scheduler_util "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -163,7 +162,7 @@ func TestFilterOutSchedulable(t *testing.T) {
 	podWaitingForPreemption := BuildTestPod("w1", 1500, 200000)
 	var priority100 int32 = 100
 	podWaitingForPreemption.Spec.Priority = &priority100
-	podWaitingForPreemption.Annotations = map[string]string{scheduler_util.NominatedNodeAnnotationKey: "node1"}
+	podWaitingForPreemption.Status.NominatedNodeName = "node1"
 
 	node := BuildTestNode("node1", 2000, 2000000)
 	SetNodeReadyState(node, true, time.Time{})
@@ -199,10 +198,10 @@ func TestFilterOutExpendableAndSplit(t *testing.T) {
 
 	podWaitingForPreemption1 := BuildTestPod("w1", 1000, 200000)
 	podWaitingForPreemption1.Spec.Priority = &priority1
-	podWaitingForPreemption1.Annotations = map[string]string{scheduler_util.NominatedNodeAnnotationKey: "node1"}
+	podWaitingForPreemption1.Status.NominatedNodeName = "node1"
 	podWaitingForPreemption2 := BuildTestPod("w2", 1000, 200000)
 	podWaitingForPreemption2.Spec.Priority = &priority100
-	podWaitingForPreemption2.Annotations = map[string]string{scheduler_util.NominatedNodeAnnotationKey: "node1"}
+	podWaitingForPreemption2.Status.NominatedNodeName = "node1"
 
 	res1, res2 := filterOutExpendableAndSplit([]*apiv1.Pod{p1, p2, podWaitingForPreemption1, podWaitingForPreemption2}, 0)
 	assert.Equal(t, 2, len(res1))
@@ -226,12 +225,12 @@ func TestFilterOutExpendablePods(t *testing.T) {
 	podWaitingForPreemption1 := BuildTestPod("w1", 1500, 200000)
 	var priority1 int32 = -10
 	podWaitingForPreemption1.Spec.Priority = &priority1
-	podWaitingForPreemption1.Annotations = map[string]string{scheduler_util.NominatedNodeAnnotationKey: "node1"}
+	podWaitingForPreemption1.Status.NominatedNodeName = "node1"
 
 	podWaitingForPreemption2 := BuildTestPod("w1", 1500, 200000)
 	var priority2 int32 = 10
 	podWaitingForPreemption2.Spec.Priority = &priority2
-	podWaitingForPreemption2.Annotations = map[string]string{scheduler_util.NominatedNodeAnnotationKey: "node1"}
+	podWaitingForPreemption2.Status.NominatedNodeName = "node1"
 
 	res := filterOutExpendablePods([]*apiv1.Pod{p1, p2, podWaitingForPreemption1, podWaitingForPreemption2}, 0)
 	assert.Equal(t, 3, len(res))
