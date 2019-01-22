@@ -204,7 +204,7 @@ func TestFilterOutExpendableAndSplit(t *testing.T) {
 	podWaitingForPreemption2.Spec.Priority = &priority100
 	podWaitingForPreemption2.Annotations = map[string]string{scheduler_util.NominatedNodeAnnotationKey: "node1"}
 
-	res1, res2 := FilterOutExpendableAndSplit([]*apiv1.Pod{p1, p2, podWaitingForPreemption1, podWaitingForPreemption2}, 0)
+	res1, res2 := filterOutExpendableAndSplit([]*apiv1.Pod{p1, p2, podWaitingForPreemption1, podWaitingForPreemption2}, 0)
 	assert.Equal(t, 2, len(res1))
 	assert.Equal(t, p1, res1[0])
 	assert.Equal(t, p2, res1[1])
@@ -212,7 +212,7 @@ func TestFilterOutExpendableAndSplit(t *testing.T) {
 	assert.Equal(t, podWaitingForPreemption1, res2[0])
 	assert.Equal(t, podWaitingForPreemption2, res2[1])
 
-	res1, res2 = FilterOutExpendableAndSplit([]*apiv1.Pod{p1, p2, podWaitingForPreemption1, podWaitingForPreemption2}, 10)
+	res1, res2 = filterOutExpendableAndSplit([]*apiv1.Pod{p1, p2, podWaitingForPreemption1, podWaitingForPreemption2}, 10)
 	assert.Equal(t, 1, len(res1))
 	assert.Equal(t, p2, res1[0])
 	assert.Equal(t, 1, len(res2))
@@ -233,7 +233,7 @@ func TestFilterOutExpendablePods(t *testing.T) {
 	podWaitingForPreemption2.Spec.Priority = &priority2
 	podWaitingForPreemption2.Annotations = map[string]string{scheduler_util.NominatedNodeAnnotationKey: "node1"}
 
-	res := FilterOutExpendablePods([]*apiv1.Pod{p1, p2, podWaitingForPreemption1, podWaitingForPreemption2}, 0)
+	res := filterOutExpendablePods([]*apiv1.Pod{p1, p2, podWaitingForPreemption1, podWaitingForPreemption2}, 0)
 	assert.Equal(t, 3, len(res))
 	assert.Equal(t, p1, res[0])
 	assert.Equal(t, p2, res[1])
@@ -279,7 +279,7 @@ func TestFilterSchedulablePodsForNode(t *testing.T) {
 		PredicateChecker: simulator.NewTestPredicateChecker(),
 	}
 
-	res := CheckPodsSchedulableOnNode(context, unschedulablePods, "T1-abc", tni)
+	res := checkPodsSchedulableOnNode(context, unschedulablePods, "T1-abc", tni)
 	wantedSchedulable := []*apiv1.Pod{p1, p3_1, p3_2}
 	wantedUnschedulable := []*apiv1.Pod{p2_1, p2_2}
 
@@ -341,7 +341,7 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 
 	predicateChecker := simulator.NewTestPredicateChecker()
 
-	res, err := GetNodeInfosForGroups([]*apiv1.Node{n1, n2, n3, n4}, provider1, registry,
+	res, err := getNodeInfosForGroups([]*apiv1.Node{n1, n2, n3, n4}, provider1, registry,
 		[]*appsv1.DaemonSet{}, predicateChecker)
 	assert.NoError(t, err)
 	assert.Equal(t, 4, len(res))
@@ -355,7 +355,7 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 	assert.True(t, found)
 
 	// Test for a nodegroup without nodes and TemplateNodeInfo not implemented by cloud proivder
-	res, err = GetNodeInfosForGroups([]*apiv1.Node{}, provider2, registry,
+	res, err = getNodeInfosForGroups([]*apiv1.Node{}, provider2, registry,
 		[]*appsv1.DaemonSet{}, predicateChecker)
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(res))
