@@ -151,14 +151,14 @@ func FilterOutSchedulable(unschedulableCandidates []*apiv1.Pod, nodes []*apiv1.N
 //   - waiting for lower priority pods preemption
 //   - other pods.
 func filterOutExpendableAndSplit(unschedulableCandidates []*apiv1.Pod, expendablePodsPriorityCutoff int) ([]*apiv1.Pod, []*apiv1.Pod) {
-	unschedulableNonExpendable := []*apiv1.Pod{}
-	waitingForLowerPriorityPreemption := []*apiv1.Pod{}
+	var unschedulableNonExpendable []*apiv1.Pod
+	var waitingForLowerPriorityPreemption []*apiv1.Pod
 	for _, pod := range unschedulableCandidates {
 		if pod.Spec.Priority != nil && int(*pod.Spec.Priority) < expendablePodsPriorityCutoff {
 			klog.V(4).Infof("Pod %s has priority below %d (%d) and will scheduled when enough resources is free. Ignoring in scale up.", pod.Name, expendablePodsPriorityCutoff, *pod.Spec.Priority)
-		} else if annot, found := pod.Annotations[scheduler_util.NominatedNodeAnnotationKey]; found && len(annot) > 0 {
+		} else if nominatedNodeName := pod.Status.NominatedNodeName; nominatedNodeName != "" {
 			waitingForLowerPriorityPreemption = append(waitingForLowerPriorityPreemption, pod)
-			klog.V(4).Infof("Pod %s will be scheduled after low prioity pods are preempted on %s. Ignoring in scale up.", pod.Name, annot)
+			klog.V(4).Infof("Pod %s will be scheduled after low prioity pods are preempted on %s. Ignoring in scale up.", pod.Name, nominatedNodeName)
 		} else {
 			unschedulableNonExpendable = append(unschedulableNonExpendable, pod)
 		}
@@ -168,7 +168,7 @@ func filterOutExpendableAndSplit(unschedulableCandidates []*apiv1.Pod, expendabl
 
 // filterOutExpendablePods filters out expendable pods.
 func filterOutExpendablePods(pods []*apiv1.Pod, expendablePodsPriorityCutoff int) []*apiv1.Pod {
-	result := []*apiv1.Pod{}
+	var result []*apiv1.Pod
 	for _, pod := range pods {
 		if pod.Spec.Priority == nil || int(*pod.Spec.Priority) >= expendablePodsPriorityCutoff {
 			result = append(result, pod)
