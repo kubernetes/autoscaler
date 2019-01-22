@@ -205,8 +205,8 @@ Pods with priority lower than this cutoff:
 
 Nothing changes for pods with priority greater or equal to cutoff, and pods without priority.
 
-Default priority cutoff is 0. It can be changed using `--expendable-pods-priority-cutoff` flag,
-but we discourage it.
+Default priority cutoff is -10 (since version 1.12, was 0 before that).
+It can be changed using `--expendable-pods-priority-cutoff` flag, but we discourage it.
 Cluster Autoscaler also doesn't trigger scale-up if an unschedulable pod is already waiting for a lower
 priority pod preemption.
 
