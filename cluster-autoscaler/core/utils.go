@@ -111,8 +111,8 @@ func (podMap podSchedulableMap) set(pod *apiv1.Pod, err *simulator.PredicateErro
 // It takes into account pods that are bound to node and will be scheduled after lower priority pod preemption.
 func FilterOutSchedulable(unschedulableCandidates []*apiv1.Pod, nodes []*apiv1.Node, allScheduled []*apiv1.Pod, podsWaitingForLowerPriorityPreemption []*apiv1.Pod,
 	predicateChecker *simulator.PredicateChecker, expendablePodsPriorityCutoff int) []*apiv1.Pod {
-	unschedulablePods := []*apiv1.Pod{}
-	nonExpendableScheduled := FilterOutExpendablePods(allScheduled, expendablePodsPriorityCutoff)
+	var unschedulablePods []*apiv1.Pod
+	nonExpendableScheduled := filterOutExpendablePods(allScheduled, expendablePodsPriorityCutoff)
 	nodeNameToNodeInfo := scheduler_util.CreateNodeNameToInfoMap(append(nonExpendableScheduled, podsWaitingForLowerPriorityPreemption...), nodes)
 	podSchedulable := make(podSchedulableMap)
 	loggingQuota := glogx.PodsLoggingQuota()
@@ -147,10 +147,10 @@ func FilterOutSchedulable(unschedulableCandidates []*apiv1.Pod, nodes []*apiv1.N
 	return unschedulablePods
 }
 
-// FilterOutExpendableAndSplit filters out expendable pods and splits into:
+// filterOutExpendableAndSplit filters out expendable pods and splits into:
 //   - waiting for lower priority pods preemption
 //   - other pods.
-func FilterOutExpendableAndSplit(unschedulableCandidates []*apiv1.Pod, expendablePodsPriorityCutoff int) ([]*apiv1.Pod, []*apiv1.Pod) {
+func filterOutExpendableAndSplit(unschedulableCandidates []*apiv1.Pod, expendablePodsPriorityCutoff int) ([]*apiv1.Pod, []*apiv1.Pod) {
 	unschedulableNonExpendable := []*apiv1.Pod{}
 	waitingForLowerPriorityPreemption := []*apiv1.Pod{}
 	for _, pod := range unschedulableCandidates {
@@ -166,8 +166,8 @@ func FilterOutExpendableAndSplit(unschedulableCandidates []*apiv1.Pod, expendabl
 	return unschedulableNonExpendable, waitingForLowerPriorityPreemption
 }
 
-// FilterOutExpendablePods filters out expendable pods.
-func FilterOutExpendablePods(pods []*apiv1.Pod, expendablePodsPriorityCutoff int) []*apiv1.Pod {
+// filterOutExpendablePods filters out expendable pods.
+func filterOutExpendablePods(pods []*apiv1.Pod, expendablePodsPriorityCutoff int) []*apiv1.Pod {
 	result := []*apiv1.Pod{}
 	for _, pod := range pods {
 		if pod.Spec.Priority == nil || int(*pod.Spec.Priority) >= expendablePodsPriorityCutoff {
@@ -177,8 +177,8 @@ func FilterOutExpendablePods(pods []*apiv1.Pod, expendablePodsPriorityCutoff int
 	return result
 }
 
-// CheckPodsSchedulableOnNode checks if pods can be scheduled on the given node.
-func CheckPodsSchedulableOnNode(context *context.AutoscalingContext, pods []*apiv1.Pod, nodeGroupId string, nodeInfo *schedulercache.NodeInfo) map[*apiv1.Pod]*simulator.PredicateError {
+// checkPodsSchedulableOnNode checks if pods can be scheduled on the given node.
+func checkPodsSchedulableOnNode(context *context.AutoscalingContext, pods []*apiv1.Pod, nodeGroupId string, nodeInfo *schedulercache.NodeInfo) map[*apiv1.Pod]*simulator.PredicateError {
 	schedulingErrors := map[*apiv1.Pod]*simulator.PredicateError{}
 	loggingQuota := glogx.PodsLoggingQuota()
 	podSchedulable := make(podSchedulableMap)
@@ -213,11 +213,11 @@ func CheckPodsSchedulableOnNode(context *context.AutoscalingContext, pods []*api
 	return schedulingErrors
 }
 
-// GetNodeInfosForGroups finds NodeInfos for all node groups used to manage the given nodes. It also returns a node group to sample node mapping.
+// getNodeInfosForGroups finds NodeInfos for all node groups used to manage the given nodes. It also returns a node group to sample node mapping.
 // TODO(mwielgus): This returns map keyed by url, while most code (including scheduler) uses node.Name for a key.
 //
 // TODO(mwielgus): Review error policy - sometimes we may continue with partial errors.
-func GetNodeInfosForGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.CloudProvider, listers kube_util.ListerRegistry,
+func getNodeInfosForGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.CloudProvider, listers kube_util.ListerRegistry,
 	daemonsets []*appsv1.DaemonSet, predicateChecker *simulator.PredicateChecker) (map[string]*schedulercache.NodeInfo, errors.AutoscalerError) {
 	result := make(map[string]*schedulercache.NodeInfo)
 
@@ -265,7 +265,7 @@ func GetNodeInfosForGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.Clou
 
 		// No good template, trying to generate one. This is called only if there are no
 		// working nodes in the node groups. By default CA tries to use a real-world example.
-		nodeInfo, err := GetNodeInfoFromTemplate(nodeGroup, daemonsets, predicateChecker)
+		nodeInfo, err := getNodeInfoFromTemplate(nodeGroup, daemonsets, predicateChecker)
 		if err != nil {
 			if err == cloudprovider.ErrNotImplemented {
 				continue
@@ -299,8 +299,8 @@ func GetNodeInfosForGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.Clou
 	return result, nil
 }
 
-// GetNodeInfoFromTemplate returns NodeInfo object built base on TemplateNodeInfo returned by NodeGroup.TemplateNodeInfo().
-func GetNodeInfoFromTemplate(nodeGroup cloudprovider.NodeGroup, daemonsets []*appsv1.DaemonSet, predicateChecker *simulator.PredicateChecker) (*schedulercache.NodeInfo, errors.AutoscalerError) {
+// getNodeInfoFromTemplate returns NodeInfo object built base on TemplateNodeInfo returned by NodeGroup.TemplateNodeInfo().
+func getNodeInfoFromTemplate(nodeGroup cloudprovider.NodeGroup, daemonsets []*appsv1.DaemonSet, predicateChecker *simulator.PredicateChecker) (*schedulercache.NodeInfo, errors.AutoscalerError) {
 	id := nodeGroup.Id()
 	baseNodeInfo, err := nodeGroup.TemplateNodeInfo()
 	if err != nil {
@@ -318,9 +318,9 @@ func GetNodeInfoFromTemplate(nodeGroup cloudprovider.NodeGroup, daemonsets []*ap
 	return sanitizedNodeInfo, nil
 }
 
-// FilterOutNodesFromNotAutoscaledGroups return subset of input nodes for which cloud provider does not
+// filterOutNodesFromNotAutoscaledGroups return subset of input nodes for which cloud provider does not
 // return autoscaled node group.
-func FilterOutNodesFromNotAutoscaledGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.CloudProvider) ([]*apiv1.Node, errors.AutoscalerError) {
+func filterOutNodesFromNotAutoscaledGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.CloudProvider) ([]*apiv1.Node, errors.AutoscalerError) {
 	result := make([]*apiv1.Node, 0)
 
 	for _, node := range nodes {
@@ -595,9 +595,9 @@ func getOldestCreateTimeWithGpu(pods []*apiv1.Pod) (bool, time.Time) {
 	return gpuFound, oldest
 }
 
-// UpdateEmptyClusterStateMetrics updates metrics related to empty cluster's state.
+// updateEmptyClusterStateMetrics updates metrics related to empty cluster's state.
 // TODO(aleksandra-malinowska): use long unregistered value from ClusterStateRegistry.
-func UpdateEmptyClusterStateMetrics() {
+func updateEmptyClusterStateMetrics() {
 	metrics.UpdateClusterSafeToAutoscale(false)
 	metrics.UpdateNodesCount(0, 0, 0, 0, 0)
 }

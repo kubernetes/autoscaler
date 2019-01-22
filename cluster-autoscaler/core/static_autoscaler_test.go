@@ -512,7 +512,7 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 	// broken node detected as unregistered
 
 	nodes := []*apiv1.Node{n1}
-	//nodeInfos, _ := GetNodeInfosForGroups(nodes, provider, listerRegistry, []*appsv1.DaemonSet{}, context.PredicateChecker)
+	//nodeInfos, _ := getNodeInfosForGroups(nodes, provider, listerRegistry, []*appsv1.DaemonSet{}, context.PredicateChecker)
 	clusterState.UpdateNodes(nodes, nil, now)
 
 	// broken node failed to register in time
