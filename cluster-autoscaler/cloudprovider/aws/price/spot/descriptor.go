@@ -21,8 +21,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/golang/glog"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/api"
+	"k8s.io/klog"
 )
 
 const (
@@ -136,7 +136,7 @@ func (d *descriptor) maxSpotPriceForDuration(instanceType string, availabilityZo
 	if maxPrice == 0.0 {
 		item, _ := history.LastItem()
 
-		glog.Warningf(
+		klog.Warningf(
 			"no spot price information newer than %s, using last known price of %f which is %s old",
 			lookupWindow,
 			item.Price,
@@ -154,7 +154,7 @@ func (d *descriptor) spotPriceHistory(instanceType, availabilityZone string) (*H
 			return nil, fmt.Errorf("spot price sync failed: %v", err)
 		}
 	}
-	glog.V(5).Infof("price history successfully synchronized for %s in AZ %s", instanceType, availabilityZone)
+	klog.V(5).Infof("price history successfully synchronized for %s in AZ %s", instanceType, availabilityZone)
 
 	instanceZone := instanceTypeInZone{instanceType: instanceType, availabilityZone: availabilityZone}
 	return d.bucket[instanceZone], nil

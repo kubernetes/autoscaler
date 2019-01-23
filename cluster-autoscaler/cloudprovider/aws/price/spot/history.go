@@ -23,8 +23,8 @@ import (
 
 	"errors"
 
-	"github.com/golang/glog"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/api"
+	"k8s.io/klog"
 )
 
 // ErrEmptySpotPriceHistory implements the error interface
@@ -64,7 +64,7 @@ func (h *History) Len() int {
 func (h *History) Housekeep() {
 	lastItem, err := h.LastItem()
 	if err != nil {
-		glog.Warningf("no last item found, price history is empty - exit housekeeping")
+		klog.Warningf("no last item found, price history is empty - exit housekeeping")
 		return
 	}
 
@@ -85,7 +85,7 @@ func (h *History) Housekeep() {
 
 	if len(c) == 0 {
 		c = append(c, lastItem)
-		glog.V(5).Infof("cleaned history was empty, last price has been inserted back - age: %v", time.Now().Sub(lastItem.Timestamp))
+		klog.V(5).Infof("cleaned history was empty, last price has been inserted back - age: %v", time.Now().Sub(lastItem.Timestamp))
 	}
 
 	sort.Sort(c)

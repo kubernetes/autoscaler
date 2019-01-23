@@ -22,7 +22,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 
 	"github.com/aws/aws-sdk-go/service/ec2"
 )
@@ -57,7 +57,7 @@ func (spd *spotPriceHistoryService) DescribeSpotPriceHistory(instanceType string
 	req.SetProductDescriptions(aws.StringSlice([]string{"Linux/UNIX"}))
 
 	if startTime.IsZero() {
-		glog.V(5).Info("initial history loading - retrieve only the last 10 prices")
+		klog.V(5).Info("initial history loading - retrieve only the last 10 prices")
 		req.SetMaxResults(10)
 	} else {
 		req.SetStartTime(startTime)
@@ -75,11 +75,11 @@ func (spd *spotPriceHistoryService) DescribeSpotPriceHistory(instanceType string
 
 		req.NextToken = res.NextToken
 		if req.NextToken == nil || len(*req.NextToken) == 0 {
-			glog.V(6).Info("breaking history loop after pagination record")
+			klog.V(6).Info("breaking history loop after pagination record")
 			break
 		}
 		if startTime.IsZero() {
-			glog.V(6).Info("breaking history loop after retrieving last 10 prices")
+			klog.V(6).Info("breaking history loop after retrieving last 10 prices")
 			break
 		}
 	}
@@ -130,7 +130,7 @@ func convertSpotPriceItems(in ...*ec2.SpotPrice) SpotPriceItems {
 		priceValue := aws.StringValue(item.SpotPrice)
 		price, err := strconv.ParseFloat(priceValue, 64)
 		if err != nil {
-			glog.Warningf("Failed to parse aws spot price '%s' to float: %v", priceValue, err)
+			klog.Warningf("Failed to parse aws spot price '%s' to float: %v", priceValue, err)
 			continue
 		}
 

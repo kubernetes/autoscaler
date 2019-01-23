@@ -17,11 +17,10 @@ limitations under the License.
 package price
 
 import (
-	"net/http"
-
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/pricing"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/api"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/price/ondemand"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/price/spot"
@@ -47,7 +46,7 @@ func NewDescriptor(s *session.Session) *shapeDescriptor {
 		autoscaling:         api.NewEC2AutoscalingService(as),
 		launchConfiguration: api.NewEC2LaunchConfigurationService(as),
 		spot:                spot.NewDescriptor(api.NewEC2SpotPriceService(ec2.New(s))),
-		onDemand:            ondemand.NewDescriptor(api.NewEC2InstanceInfoService(http.DefaultClient)),
+		onDemand:            ondemand.NewDescriptor(api.NewEC2InstanceInfoService(pricing.New(s))),
 	}
 }
 

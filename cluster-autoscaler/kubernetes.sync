@@ -1,5 +1,7 @@
-commit 416974b8346bb1c219efe871c18a9f29de4fad2d (origin/master, origin/HEAD)
-Author: Anago GCB <nobody@k8s.io>
-Date:   Mon Nov 26 14:16:47 2018 +0000
+Merge: abc71e373f d4ff786eb0
+Author: Kubernetes Prow Robot <k8s-ci-robot@users.noreply.github.com>
+Date:   Tue Jan 8 23:56:01 2019 -0800
 
-    Update CHANGELOG-1.12.md for v1.12.3.
+    Merge pull request #72668 from ixdy/automated-cherry-pick-of-#72173-#72218-release-1.13
+
+    Automated cherry pick of #72173: make integration/verify script look for k8s under GOPATH #72218: Clean up artifacts variables in hack scripts

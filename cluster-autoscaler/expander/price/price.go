@@ -151,7 +151,8 @@ nextoption:
 			optionScore *= notExistCoeficient
 		}
 
-		debug := fmt.Sprintf("all_nodes_price=%f pods_price=%f stabilized_ratio=%f unfitness=%f suppressed=%f final_score=%f",
+		debug := fmt.Sprintf("node_price=%f all_nodes_price=%f pods_price=%f stabilized_ratio=%f unfitness=%f suppressed=%f final_score=%f",
+			nodePrice,
 			totalNodePrice,
 			totalPodPrice,
 			priceSubScore,
