@@ -17,11 +17,12 @@ limitations under the License.
 package core
 
 import (
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"reflect"
 	"strings"
 	"testing"
 	"time"
+
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 
 	mockprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/mocks"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
