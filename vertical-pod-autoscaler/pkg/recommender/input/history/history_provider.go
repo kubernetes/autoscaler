@@ -26,11 +26,13 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 )
 
-const (
-	historyLength     = "8d"
-	podLabelPrefix    = "pod_label_"
-	prometheusJobName = "kubernetes-cadvisor"
-)
+type PrometheusHistoryProviderConfig struct {
+	Address                                            string
+	HistoryLength, PodLabelPrefix, PodLabelsMetricName string
+	PodNamespaceLabel, PodNameLabel                    string
+	CtrNamespaceLabel, CtrPodNameLabel, CtrNameLabel   string
+	CadvisorMetricsJobName                             string
+}
 
 // PodHistory represents history of usage and labels for a given pod.
 type PodHistory struct {
@@ -54,30 +56,32 @@ type HistoryProvider interface {
 }
 
 type prometheusHistoryProvider struct {
-	prometheusClient  PrometheusClient
-	prometheusJobName string
+	prometheusClient PrometheusClient
+	config           PrometheusHistoryProviderConfig
 }
+
+var singletonHistoryProvider *prometheusHistoryProvider
 
 // NewPrometheusHistoryProvider contructs a history provider that gets data from Prometheus.
-func NewPrometheusHistoryProvider(prometheusAddress, prometheusJobName string) HistoryProvider {
+func NewPrometheusHistoryProvider(config PrometheusHistoryProviderConfig) HistoryProvider {
 	return &prometheusHistoryProvider{
-		prometheusClient:  NewPrometheusClient(&http.Client{}, prometheusAddress),
-		prometheusJobName: prometheusJobName,
+		prometheusClient: NewPrometheusClient(&http.Client{}, config.Address),
+		config:           config,
 	}
 }
 
-func getContainerIDFromLabels(labels map[string]string) (*model.ContainerID, error) {
-	namespace, ok := labels["namespace"]
+func (p *prometheusHistoryProvider) getContainerIDFromLabels(labels map[string]string) (*model.ContainerID, error) {
+	namespace, ok := labels[p.config.ctrNamespaceLabel]
 	if !ok {
-		return nil, fmt.Errorf("no namespace label")
+		return nil, fmt.Errorf("no %s label", p.config.ctrNamespaceLabel)
 	}
-	podName, ok := labels["pod_name"]
+	podName, ok := labels[p.config.ctrPodNameLabel]
 	if !ok {
-		return nil, fmt.Errorf("no pod_name label")
+		return nil, fmt.Errorf("no %s label", p.config.ctrPodNameLabel)
 	}
-	containerName, ok := labels["name"]
+	containerName, ok := labels[p.config.ctrNameLabel]
 	if !ok {
-		return nil, fmt.Errorf("no name label on container data")
+		return nil, fmt.Errorf("no %s label on container data", p.config.ctrNameLabel)
 	}
 	return &model.ContainerID{
 		PodID: model.PodID{
@@ -86,22 +90,22 @@ func getContainerIDFromLabels(labels map[string]string) (*model.ContainerID, err
 		ContainerName: containerName}, nil
 }
 
-func getPodIDFromLabels(labels map[string]string) (*model.PodID, error) {
-	namespace, ok := labels["kubernetes_namespace"]
+func (p *prometheusHistoryProvider) getPodIDFromLabels(labels map[string]string) (*model.PodID, error) {
+	namespace, ok := labels[p.config.podNamespaceLabel]
 	if !ok {
-		return nil, fmt.Errorf("no kubernetes_namespace label")
+		return nil, fmt.Errorf("no %s label", p.config.podNamespaceLabel)
 	}
-	podName, ok := labels["kubernetes_pod_name"]
+	podName, ok := labels[p.config.podNameLabel]
 	if !ok {
-		return nil, fmt.Errorf("no kubernetes_pod_name label")
+		return nil, fmt.Errorf("no %s label", p.config.podNameLabel)
 	}
 	return &model.PodID{Namespace: namespace, PodName: podName}, nil
 }
 
-func getPodLabelsMap(metricLabels map[string]string) map[string]string {
+func (p *prometheusHistoryProvider) getPodLabelsMap(metricLabels map[string]string) map[string]string {
 	podLabels := make(map[string]string)
 	for key, value := range metricLabels {
-		podLabelKey := strings.TrimPrefix(key, podLabelPrefix)
+		podLabelKey := strings.TrimPrefix(key, p.config.podLabelPrefix)
 		if podLabelKey != key {
 			podLabels[podLabelKey] = value
 		}
@@ -138,7 +142,7 @@ func (p *prometheusHistoryProvider) readResourceHistory(res map[model.PodID]*Pod
 		return fmt.Errorf("cannot get timeseries for %v: %v", resource, err)
 	}
 	for _, ts := range tss {
-		containerID, err := getContainerIDFromLabels(ts.Labels)
+		containerID, err := p.getContainerIDFromLabels(ts.Labels)
 		if err != nil {
 			return fmt.Errorf("cannot get container ID from labels: %v", ts.Labels)
 		}
@@ -161,7 +165,7 @@ func (p *prometheusHistoryProvider) readLastLabels(res map[model.PodID]*PodHisto
 		return fmt.Errorf("cannot get timeseries for labels: %v", err)
 	}
 	for _, ts := range tss {
-		podID, err := getPodIDFromLabels(ts.Labels)
+		podID, err := p.getPodIDFromLabels(ts.Labels)
 		if err != nil {
 			return fmt.Errorf("cannot get container ID from labels: %v", ts.Labels)
 		}
@@ -170,7 +174,7 @@ func (p *prometheusHistoryProvider) readLastLabels(res map[model.PodID]*PodHisto
 			podHistory = newEmptyHistory()
 			res[*podID] = podHistory
 		}
-		podLabels := getPodLabelsMap(ts.Labels)
+		podLabels := p.getPodLabelsMap(ts.Labels)
 		for _, sample := range ts.Samples {
 			if sample.Timestamp.After(podHistory.LastSeen) {
 				podHistory.LastSeen = sample.Timestamp
@@ -183,12 +187,14 @@ func (p *prometheusHistoryProvider) readLastLabels(res map[model.PodID]*PodHisto
 
 func (p *prometheusHistoryProvider) GetClusterHistory() (map[model.PodID]*PodHistory, error) {
 	res := make(map[model.PodID]*PodHistory)
-	podSelector := fmt.Sprintf(`job="%s", pod_name=~".+"`, p.prometheusJobName)
-	err := p.readResourceHistory(res, fmt.Sprintf("container_cpu_usage_seconds_total{%s}[%s]", podSelector, historyLength), model.ResourceCPU)
+	podSelector := fmt.Sprintf("job=\"%s\", %s=~\".+\", %s!=\"POD\", %s!=\"\"",
+		p.config.cadvisorMetricsJobName, p.config.podNameLabel,
+		p.config.ctrNameLabel, p.config.ctrNameLabel)
+	err := p.readResourceHistory(res, fmt.Sprintf("container_cpu_usage_seconds_total{%s}[%s]", podSelector, p.config.historyLength), model.ResourceCPU)
 	if err != nil {
 		return nil, fmt.Errorf("cannot get usage history: %v", err)
 	}
-	err = p.readResourceHistory(res, fmt.Sprintf("container_memory_usage_bytes{%s}[%s]", podSelector, historyLength), model.ResourceMemory)
+	err = p.readResourceHistory(res, fmt.Sprintf("container_memory_usage_bytes{%s}[%s]", podSelector, p.config.historyLength), model.ResourceMemory)
 	if err != nil {
 		return nil, fmt.Errorf("cannot get usage history: %v", err)
 	}
@@ -197,6 +203,6 @@ func (p *prometheusHistoryProvider) GetClusterHistory() (map[model.PodID]*PodHis
 			sort.Slice(samples, func(i, j int) bool { return samples[i].MeasureStart.Before(samples[j].MeasureStart) })
 		}
 	}
-	p.readLastLabels(res, fmt.Sprintf("up{job=\"kubernetes-pods\"}[%s]", historyLength))
+	p.readLastLabels(res, fmt.Sprintf("%s[%s]", p.config.podLabelsMetricName, p.config.historyLength))
 	return res, nil
 }
