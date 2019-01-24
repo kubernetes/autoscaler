@@ -64,19 +64,30 @@ func MarkDeletionCandidate(node *apiv1.Node, client kube_client.Interface) error
 
 func addTaint(node *apiv1.Node, client kube_client.Interface, taintKey string, effect apiv1.TaintEffect) error {
 	retryDeadline := time.Now().Add(maxRetryDeadline)
+	freshNode := node.DeepCopy()
+	var err error
+	refresh := false
 	for {
-		// Get the newest version of the node.
-		freshNode, err := client.CoreV1().Nodes().Get(node.Name, metav1.GetOptions{})
-		if err != nil || freshNode == nil {
-			klog.Warningf("Error while adding %v taint on node %v: %v", getKeyShortName(taintKey), node.Name, err)
-			return fmt.Errorf("failed to get node %v: %v", node.Name, err)
+		if refresh {
+			// Get the newest version of the node.
+			freshNode, err = client.CoreV1().Nodes().Get(node.Name, metav1.GetOptions{})
+			if err != nil || freshNode == nil {
+				klog.Warningf("Error while adding %v taint on node %v: %v", getKeyShortName(taintKey), node.Name, err)
+				return fmt.Errorf("failed to get node %v: %v", node.Name, err)
+			}
 		}
 
 		if !addTaintToSpec(freshNode, taintKey, effect) {
+			if !refresh {
+				// Make sure we have the latest version before skipping update.
+				refresh = true
+				continue
+			}
 			return nil
 		}
 		_, err = client.CoreV1().Nodes().Update(freshNode)
 		if err != nil && errors.IsConflict(err) && time.Now().Before(retryDeadline) {
+			refresh = true
 			time.Sleep(conflictRetryInterval)
 			continue
 		}
@@ -160,11 +171,17 @@ func CleanDeletionCandidate(node *apiv1.Node, client kube_client.Interface) (boo
 
 func cleanTaint(node *apiv1.Node, client kube_client.Interface, taintKey string) (bool, error) {
 	retryDeadline := time.Now().Add(maxRetryDeadline)
+	freshNode := node.DeepCopy()
+	var err error
+	refresh := false
 	for {
-		freshNode, err := client.CoreV1().Nodes().Get(node.Name, metav1.GetOptions{})
-		if err != nil || freshNode == nil {
-			klog.Warningf("Error while releasing %v taint on node %v: %v", getKeyShortName(taintKey), node.Name, err)
-			return false, fmt.Errorf("failed to get node %v: %v", node.Name, err)
+		if refresh {
+			// Get the newest version of the node.
+			freshNode, err = client.CoreV1().Nodes().Get(node.Name, metav1.GetOptions{})
+			if err != nil || freshNode == nil {
+				klog.Warningf("Error while adding %v taint on node %v: %v", getKeyShortName(taintKey), node.Name, err)
+				return false, fmt.Errorf("failed to get node %v: %v", node.Name, err)
+			}
 		}
 		newTaints := make([]apiv1.Taint, 0)
 		for _, taint := range freshNode.Spec.Taints {
@@ -174,24 +191,30 @@ func cleanTaint(node *apiv1.Node, client kube_client.Interface, taintKey string)
 				newTaints = append(newTaints, taint)
 			}
 		}
-
-		if len(newTaints) != len(freshNode.Spec.Taints) {
-			freshNode.Spec.Taints = newTaints
-			_, err := client.CoreV1().Nodes().Update(freshNode)
-
-			if err != nil && errors.IsConflict(err) && time.Now().Before(retryDeadline) {
-				time.Sleep(conflictRetryInterval)
+		if len(newTaints) == len(freshNode.Spec.Taints) {
+			if !refresh {
+				// Make sure we have the latest version before skipping update.
+				refresh = true
 				continue
 			}
-
-			if err != nil {
-				klog.Warningf("Error while releasing %v taint on node %v: %v", getKeyShortName(taintKey), node.Name, err)
-				return false, err
-			}
-			klog.V(1).Infof("Successfully released %v on node %v", getKeyShortName(taintKey), node.Name)
-			return true, nil
+			return false, nil
 		}
-		return false, nil
+
+		freshNode.Spec.Taints = newTaints
+		_, err = client.CoreV1().Nodes().Update(freshNode)
+
+		if err != nil && errors.IsConflict(err) && time.Now().Before(retryDeadline) {
+			refresh = true
+			time.Sleep(conflictRetryInterval)
+			continue
+		}
+
+		if err != nil {
+			klog.Warningf("Error while releasing %v taint on node %v: %v", getKeyShortName(taintKey), node.Name, err)
+			return false, err
+		}
+		klog.V(1).Infof("Successfully released %v on node %v", getKeyShortName(taintKey), node.Name)
+		return true, nil
 	}
 }
 
