@@ -34,6 +34,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/tpu"
@@ -112,7 +113,11 @@ func (a *StaticAutoscaler) cleanUpIfRequired() {
 	if readyNodes, err := a.ReadyNodeLister().List(); err != nil {
 		klog.Errorf("Failed to list ready nodes, not cleaning up taints: %v", err)
 	} else {
-		cleanToBeDeleted(readyNodes, a.AutoscalingContext.ClientSet, a.Recorder)
+		deletetaint.CleanAllToBeDeleted(readyNodes, a.AutoscalingContext.ClientSet, a.Recorder)
+		if a.AutoscalingContext.AutoscalingOptions.MaxBulkSoftTaintCount == 0 {
+			// Clean old taints if soft taints handling is disabled
+			deletetaint.CleanAllDeletionCandidates(readyNodes, a.AutoscalingContext.ClientSet, a.Recorder)
+		}
 	}
 	a.initialized = true
 }
@@ -378,6 +383,10 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 			scaleDownStatus.Result = status.ScaleDownInProgress
 		} else {
 			klog.V(4).Infof("Starting scale down")
+
+			if a.AutoscalingContext.AutoscalingOptions.MaxBulkSoftTaintCount != 0 {
+				scaleDown.SoftTaintUnneededNodes(allNodes)
+			}
 
 			// We want to delete unneeded Node Groups only if there was no recent scale up,
 			// and there is no current delete in progress and there was no recent errors.
