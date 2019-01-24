@@ -105,16 +105,20 @@ func (aws *awsCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.N
 
 // Pricing returns pricing model for this cloud provider or error if not available.
 func (aws *awsCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
-	sess, err := session.NewSession(&awssdk.Config{
-		Region: awssdk.String("us-east-1"),
-	})
+	sess, err := session.NewSession(&awssdk.Config{})
 
 	if err != nil {
 		err = goerrors.Wrap(err, "could not create AWS session")
 		return nil, errors.ToAutoscalerError(errors.InternalError, err)
 	}
 
-	return NewPriceModel(aws.awsManager, price.NewDescriptor(sess)), nil
+	priceDescriptors, err := price.NewDescriptor(sess)
+
+	if err != nil {
+		return nil, errors.ToAutoscalerError(errors.InternalError, err)
+	}
+
+	return NewPriceModel(aws.awsManager, priceDescriptors), nil
 }
 
 // GetAvailableMachineTypes get all machine types that can be requested from the cloud provider.

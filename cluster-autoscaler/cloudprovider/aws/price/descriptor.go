@@ -17,10 +17,12 @@ limitations under the License.
 package price
 
 import (
+	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/pricing"
+	goerrors "github.com/pkg/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/api"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/price/ondemand"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/price/spot"
@@ -40,14 +42,24 @@ type shapeDescriptor struct {
 }
 
 // NewDescriptor is the constructor of a shapeDescriptor
-func NewDescriptor(s *session.Session) *shapeDescriptor {
+func NewDescriptor(s *session.Session) (*shapeDescriptor, error) {
+
+	// AWS Pricing API can only be used with Region us-east-1
+	sess, err := session.NewSession(&awssdk.Config{
+		Region: awssdk.String("us-east-1"),
+	})
+
+	if err != nil {
+		return nil, goerrors.Wrap(err, "could not create AWS session for on demand descriptor")
+	}
+
 	as := autoscaling.New(s)
 	return &shapeDescriptor{
 		autoscaling:         api.NewEC2AutoscalingService(as),
 		launchConfiguration: api.NewEC2LaunchConfigurationService(as),
 		spot:                spot.NewDescriptor(api.NewEC2SpotPriceService(ec2.New(s))),
-		onDemand:            ondemand.NewDescriptor(api.NewEC2InstanceInfoService(pricing.New(s))),
-	}
+		onDemand:            ondemand.NewDescriptor(api.NewEC2InstanceInfoService(pricing.New(sess))),
+	}, nil
 }
 
 // Price calls, depending whether the asg has a spot price or not, the spot or the on-demand price descriptor
