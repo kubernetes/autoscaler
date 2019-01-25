@@ -35,9 +35,12 @@ const (
 	ToBeDeletedTaint = "ToBeDeletedByClusterAutoscaler"
 	// DeletionCandidateTaint is a taint used to mark unneeded node as preferably unschedulable.
 	DeletionCandidateTaint = "DeletionCandidateOfClusterAutoscaler"
+)
 
-	maxRetryDeadline      = 5 * time.Second
-	conflictRetryInterval = 750 * time.Millisecond
+// Mutable only in unit tests
+var (
+	maxRetryDeadline      time.Duration = 5 * time.Second
+	conflictRetryInterval time.Duration = 750 * time.Millisecond
 )
 
 // getKeyShortName converts taint key to short name for logging

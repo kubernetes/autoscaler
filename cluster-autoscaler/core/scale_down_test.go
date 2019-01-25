@@ -49,6 +49,8 @@ import (
 	"k8s.io/klog"
 )
 
+const nothingReturned = "Nothing returned"
+
 func TestFindUnneededNodes(t *testing.T) {
 	p1 := BuildTestPod("p1", 100, 0)
 	p1.Spec.NodeName = "n1"
@@ -408,7 +410,6 @@ func TestFindUnneededNodePool(t *testing.T) {
 
 func TestDeleteNode(t *testing.T) {
 	// common parameters
-	nothingReturned := "Nothing returned"
 	nodeDeleteFailedFunc :=
 		func(string, string) error {
 			return fmt.Errorf("won't remove node")
@@ -918,6 +919,7 @@ func TestScaleDownEmptyMinGroupSizeLimitHit(t *testing.T) {
 	}
 	simpleScaleDownEmpty(t, config)
 }
+
 func simpleScaleDownEmpty(t *testing.T, config *scaleTestConfig) {
 	updatedNodes := make(chan string, 10)
 	deletedNodes := make(chan string, 10)
@@ -1172,7 +1174,7 @@ func getStringFromChan(c chan string) string {
 	case val := <-c:
 		return val
 	case <-time.After(10 * time.Second):
-		return "Nothing returned"
+		return nothingReturned
 	}
 }
 
@@ -1181,7 +1183,7 @@ func getStringFromChanImmediately(c chan string) string {
 	case val := <-c:
 		return val
 	default:
-		return "Nothing returned"
+		return nothingReturned
 	}
 }
 
@@ -1320,58 +1322,22 @@ func TestCheckScaleDownDeltaWithinLimits(t *testing.T) {
 	}
 }
 
-// newFakeInMemoryNodeClient creates fake client that keeps state of cluster nodes in memory
-func newFakeInMemoryNodeClient(nodes []*apiv1.Node) *fake.Clientset {
-	fakeClient := &fake.Clientset{}
-	clusterState := struct {
-		nodes map[string]*apiv1.Node
-	}{
-		make(map[string]*apiv1.Node),
-	}
-
-	for _, node := range nodes {
-		clusterState.nodes[node.Name] = node.DeepCopy()
-	}
-
-	fakeClient.Fake.AddReactor("list", "nodes", func(action core.Action) (bool, runtime.Object, error) {
-		nodes := make([]apiv1.Node, 0, len(clusterState.nodes))
-		for _, node := range clusterState.nodes {
-			nodes = append(nodes, *node.DeepCopy())
-		}
-		return true, &apiv1.NodeList{Items: nodes}, nil
-	})
-	fakeClient.Fake.AddReactor("get", "nodes", func(action core.Action) (bool, runtime.Object, error) {
-		getAction := action.(core.GetAction)
-		node, ok := clusterState.nodes[getAction.GetName()]
-		if !ok {
-			return true, nil, fmt.Errorf("Wrong node: %v", getAction.GetName())
-		}
-		return true, node.DeepCopy(), nil
-	})
-	fakeClient.Fake.AddReactor("update", "nodes", func(action core.Action) (bool, runtime.Object, error) {
-		update := action.(core.UpdateAction)
-		node := update.GetObject().(*apiv1.Node)
-		clusterState.nodes[node.Name] = node.DeepCopy()
-		return true, node.DeepCopy(), nil
-	})
-	fakeClient.Fake.AddReactor("delete", "nodes", func(action core.Action) (bool, runtime.Object, error) {
-		deleteAction := action.(core.DeleteAction)
-		delete(clusterState.nodes, deleteAction.GetName())
-		return true, nil, nil
-	})
-
-	return fakeClient
-}
-
-// Helper functions
-func hasDeletionCandidateTaint(t *testing.T, client kube_client.Interface, name string) bool {
+func getNode(t *testing.T, client kube_client.Interface, name string) *apiv1.Node {
+	t.Helper()
 	node, err := client.CoreV1().Nodes().Get(name, metav1.GetOptions{})
 	if err != nil {
 		t.Fatalf("Failed to retrieve node %v: %v", name, err)
 	}
-	return deletetaint.HasDeletionCandidateTaint(node)
+	return node
 }
+
+func hasDeletionCandidateTaint(t *testing.T, client kube_client.Interface, name string) bool {
+	t.Helper()
+	return deletetaint.HasDeletionCandidateTaint(getNode(t, client, name))
+}
+
 func getAllNodes(t *testing.T, client kube_client.Interface) []*apiv1.Node {
+	t.Helper()
 	nodeList, err := client.CoreV1().Nodes().List(metav1.ListOptions{})
 	if err != nil {
 		t.Fatalf("Failed to retrieve list of nodes: %v", err)
@@ -1382,7 +1348,9 @@ func getAllNodes(t *testing.T, client kube_client.Interface) []*apiv1.Node {
 	}
 	return result
 }
+
 func countDeletionCandidateTaints(t *testing.T, client kube_client.Interface) (total int) {
+	t.Helper()
 	for _, node := range getAllNodes(t, client) {
 		if deletetaint.HasDeletionCandidateTaint(node) {
 			total++
@@ -1411,7 +1379,11 @@ func TestSoftTaint(t *testing.T) {
 	p700.Spec.NodeName = "n1000"
 	p1200.Spec.NodeName = "n2000"
 
-	fakeClient := newFakeInMemoryNodeClient([]*apiv1.Node{n1000, n2000})
+	fakeClient := fake.NewSimpleClientset()
+	_, err := fakeClient.CoreV1().Nodes().Create(n1000)
+	assert.NoError(t, err)
+	_, err = fakeClient.CoreV1().Nodes().Create(n2000)
+	assert.NoError(t, err)
 
 	provider := testprovider.NewTestCloudProvider(nil, func(nodeGroup string, node string) error {
 		t.Fatalf("Unexpected deletion of %s", node)
@@ -1504,11 +1476,22 @@ func TestSoftTaintTimeLimit(t *testing.T) {
 	currentTime := time.Now()
 	updateTime := time.Millisecond
 	maxSoftTaintDuration := 1 * time.Second
+
+	// Replace time tracking function
 	now = func() time.Time {
 		return currentTime
 	}
+	defer func() {
+		now = time.Now
+		return
+	}()
 
-	fakeClient := newFakeInMemoryNodeClient([]*apiv1.Node{n1, n2})
+	fakeClient := fake.NewSimpleClientset()
+	_, err := fakeClient.CoreV1().Nodes().Create(n1)
+	assert.NoError(t, err)
+	_, err = fakeClient.CoreV1().Nodes().Create(n2)
+	assert.NoError(t, err)
+
 	// Move time forward when updating
 	fakeClient.Fake.PrependReactor("update", "nodes", func(action core.Action) (bool, runtime.Object, error) {
 		currentTime = currentTime.Add(updateTime)
@@ -1555,8 +1538,9 @@ func TestSoftTaintTimeLimit(t *testing.T) {
 	assert.False(t, hasDeletionCandidateTaint(t, fakeClient, n1.Name))
 	assert.False(t, hasDeletionCandidateTaint(t, fakeClient, n2.Name))
 
-	// Test duration limit of bulk taint
 	updateTime = maxSoftTaintDuration
+
+	// Test duration limit of bulk taint
 	scaleDown.UpdateUnneededNodes([]*apiv1.Node{n1, n2},
 		[]*apiv1.Node{n1, n2}, []*apiv1.Pod{}, time.Now().Add(-5*time.Minute), nil)
 	errs = scaleDown.SoftTaintUnneededNodes(getAllNodes(t, fakeClient))
@@ -1567,7 +1551,6 @@ func TestSoftTaintTimeLimit(t *testing.T) {
 	assert.Equal(t, 2, countDeletionCandidateTaints(t, fakeClient))
 
 	// Test duration limit of bulk untaint
-	updateTime = maxSoftTaintDuration
 	scaleDown.UpdateUnneededNodes([]*apiv1.Node{n1, n2},
 		[]*apiv1.Node{n1, n2}, []*apiv1.Pod{p1, p2}, time.Now().Add(-5*time.Minute), nil)
 	errs = scaleDown.SoftTaintUnneededNodes(getAllNodes(t, fakeClient))
@@ -1576,7 +1559,4 @@ func TestSoftTaintTimeLimit(t *testing.T) {
 	errs = scaleDown.SoftTaintUnneededNodes(getAllNodes(t, fakeClient))
 	assert.Empty(t, errs)
 	assert.Equal(t, 0, countDeletionCandidateTaints(t, fakeClient))
-
-	// Clean up
-	now = time.Now
 }
