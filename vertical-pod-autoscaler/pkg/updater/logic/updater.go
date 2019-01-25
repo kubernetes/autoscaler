@@ -38,8 +38,7 @@ import (
 	v1lister "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
-
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 // Updater performs updates on pods if recommended by Vertical Pod Autoscaler
@@ -79,7 +78,7 @@ func (u *updater) RunOnce() {
 
 	vpaList, err := u.vpaLister.List(labels.Everything())
 	if err != nil {
-		glog.Fatalf("failed get VPA list: %v", err)
+		klog.Fatalf("failed get VPA list: %v", err)
 	}
 	timer.ObserveStep("ListVPAs")
 
@@ -88,14 +87,14 @@ func (u *updater) RunOnce() {
 	for _, vpa := range vpaList {
 		if vpa_api_util.GetUpdateMode(vpa) != vpa_types.UpdateModeRecreate &&
 			vpa_api_util.GetUpdateMode(vpa) != vpa_types.UpdateModeAuto {
-			glog.V(3).Infof("skipping VPA object %v because its mode is not \"Recreate\" or \"Auto\"", vpa.Name)
+			klog.V(3).Infof("skipping VPA object %v because its mode is not \"Recreate\" or \"Auto\"", vpa.Name)
 			continue
 		}
 		vpas = append(vpas, vpa)
 	}
 
 	if len(vpas) == 0 {
-		glog.Warningf("no VPA objects to process")
+		klog.Warningf("no VPA objects to process")
 		if u.evictionAdmission != nil {
 			u.evictionAdmission.CleanUp()
 		}
@@ -105,7 +104,7 @@ func (u *updater) RunOnce() {
 
 	podsList, err := u.podLister.List(labels.Everything())
 	if err != nil {
-		glog.Errorf("failed to get pods list: %v", err)
+		klog.Errorf("failed to get pods list: %v", err)
 		timer.ObserveTotal()
 		return
 	}
@@ -134,10 +133,10 @@ func (u *updater) RunOnce() {
 			if !evictionLimiter.CanEvict(pod) {
 				continue
 			}
-			glog.V(2).Infof("evicting pod %v", pod.Name)
+			klog.V(2).Infof("evicting pod %v", pod.Name)
 			evictErr := evictionLimiter.Evict(pod, u.eventRecorder)
 			if evictErr != nil {
-				glog.Warningf("evicting pod %v failed: %v", pod.Name, evictErr)
+				klog.Warningf("evicting pod %v failed: %v", pod.Name, evictErr)
 			}
 		}
 	}
@@ -192,7 +191,7 @@ func newPodLister(kubeClient kube_client.Interface) v1lister.PodLister {
 
 func newEventRecorder(kubeClient kube_client.Interface) record.EventRecorder {
 	eventBroadcaster := record.NewBroadcaster()
-	eventBroadcaster.StartLogging(glog.V(4).Infof)
+	eventBroadcaster.StartLogging(klog.V(4).Infof)
 	if _, isFake := kubeClient.(*fake.Clientset); !isFake {
 		eventBroadcaster.StartRecordingToSink(&clientv1.EventSinkImpl{Interface: clientv1.New(kubeClient.CoreV1().RESTClient()).Events("")})
 	}

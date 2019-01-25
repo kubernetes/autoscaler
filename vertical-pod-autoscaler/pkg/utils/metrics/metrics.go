@@ -21,10 +21,10 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/golang/glog"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
+	"k8s.io/klog"
 	_ "k8s.io/kubernetes/pkg/client/metrics/prometheus" // for client-go metrics registration
 )
 
@@ -49,7 +49,7 @@ func Initialize(address string, healthCheck *HealthCheck) {
 			http.Handle("/health-check", healthCheck)
 		}
 		err := http.ListenAndServe(address, nil)
-		glog.Fatalf("Failed to start metrics: %v", err)
+		klog.Fatalf("Failed to start metrics: %v", err)
 	}()
 }
 

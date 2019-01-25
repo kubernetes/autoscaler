@@ -22,7 +22,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/golang/glog"
 	core "k8s.io/api/core/v1"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -35,6 +34,7 @@ import (
 	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1beta1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	"k8s.io/client-go/tools/cache"
+	"k8s.io/klog"
 )
 
 type patchRecord struct {
@@ -46,7 +46,7 @@ type patchRecord struct {
 func patchVpa(vpaClient vpa_api.VerticalPodAutoscalerInterface, vpaName string, patches []patchRecord) (result *vpa_types.VerticalPodAutoscaler, err error) {
 	bytes, err := json.Marshal(patches)
 	if err != nil {
-		glog.Errorf("Cannot marshal VPA status patches %+v. Reason: %+v", patches, err)
+		klog.Errorf("Cannot marshal VPA status patches %+v. Reason: %+v", patches, err)
 		return
 	}
 
@@ -88,9 +88,9 @@ func NewAllVpasLister(vpaClient *vpa_clientset.Clientset, stopChannel <-chan str
 	vpaLister := vpa_lister.NewVerticalPodAutoscalerLister(indexer)
 	go controller.Run(stopChannel)
 	if !cache.WaitForCacheSync(make(chan struct{}), controller.HasSynced) {
-		glog.Fatalf("Failed to sync VPA cache during initialization")
+		klog.Fatalf("Failed to sync VPA cache during initialization")
 	} else {
-		glog.Info("Initial VPA synced successfully")
+		klog.Info("Initial VPA synced successfully")
 	}
 	return vpaLister
 }
@@ -102,7 +102,7 @@ func PodMatchesVPA(pod *core.Pod, vpa *vpa_types.VerticalPodAutoscaler) bool {
 	}
 	selector, err := meta.LabelSelectorAsSelector(vpa.Spec.Selector)
 	if err != nil {
-		glog.Errorf("error processing VPA object: failed to create pod selector: %v", err)
+		klog.Errorf("error processing VPA object: failed to create pod selector: %v", err)
 		return false
 	}
 	return selector.Matches(labels.Set(pod.GetLabels()))

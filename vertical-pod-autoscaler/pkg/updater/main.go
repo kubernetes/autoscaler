@@ -20,7 +20,6 @@ import (
 	"flag"
 	"time"
 
-	"github.com/golang/glog"
 	kube_flag "k8s.io/apiserver/pkg/util/flag"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
@@ -30,6 +29,7 @@ import (
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 	kube_client "k8s.io/client-go/kubernetes"
 	kube_restclient "k8s.io/client-go/rest"
+	"k8s.io/klog"
 )
 
 var (
@@ -47,7 +47,7 @@ var (
 
 func main() {
 	kube_flag.InitFlags()
-	glog.V(1).Infof("Vertical Pod Autoscaler %s Updater", common.VerticalPodAutoscalerVersion)
+	klog.V(1).Infof("Vertical Pod Autoscaler %s Updater", common.VerticalPodAutoscalerVersion)
 
 	healthCheck := metrics.NewHealthCheck(*updaterInterval*5, true)
 	metrics.Initialize(*address, healthCheck)
@@ -56,7 +56,7 @@ func main() {
 	kubeClient, vpaClient := createKubeClients()
 	updater, err := updater.NewUpdater(kubeClient, vpaClient, *minReplicas, *evictionToleranceFraction, vpa_api_util.NewCappingRecommendationProcessor(), nil)
 	if err != nil {
-		glog.Fatalf("Failed to create updater: %v", err)
+		klog.Fatalf("Failed to create updater: %v", err)
 	}
 	ticker := time.Tick(*updaterInterval)
 	for range ticker {
@@ -68,7 +68,7 @@ func main() {
 func createKubeClients() (kube_client.Interface, *vpa_clientset.Clientset) {
 	config, err := kube_restclient.InClusterConfig()
 	if err != nil {
-		glog.Fatalf("Failed to build Kubernetes client : fail to create config: %v", err)
+		klog.Fatalf("Failed to build Kubernetes client : fail to create config: %v", err)
 	}
 	return kube_client.NewForConfigOrDie(config), vpa_clientset.NewForConfigOrDie(config)
 }

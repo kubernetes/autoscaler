@@ -22,7 +22,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/golang/glog"
 	kube_flag "k8s.io/apiserver/pkg/util/flag"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/logic"
@@ -32,6 +31,7 @@ import (
 	metrics_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/admission"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 	"k8s.io/client-go/rest"
+	"k8s.io/klog"
 )
 
 var (
@@ -48,7 +48,7 @@ var (
 func newReadyVPALister(stopChannel <-chan struct{}) vpa_lister.VerticalPodAutoscalerLister {
 	config, err := rest.InClusterConfig()
 	if err != nil {
-		glog.Fatal(err)
+		klog.Fatal(err)
 	}
 	vpaClient := vpa_clientset.NewForConfigOrDie(config)
 	return vpa_api_util.NewAllVpasLister(vpaClient, stopChannel)
@@ -56,7 +56,7 @@ func newReadyVPALister(stopChannel <-chan struct{}) vpa_lister.VerticalPodAutosc
 
 func main() {
 	kube_flag.InitFlags()
-	glog.V(1).Infof("Vertical Pod Autoscaler %s Admission Controller", common.VerticalPodAutoscalerVersion)
+	klog.V(1).Infof("Vertical Pod Autoscaler %s Admission Controller", common.VerticalPodAutoscalerVersion)
 
 	healthCheck := metrics.NewHealthCheck(time.Minute, false)
 	metrics.Initialize(*address, healthCheck)

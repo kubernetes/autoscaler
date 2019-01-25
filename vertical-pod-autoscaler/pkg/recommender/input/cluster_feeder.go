@@ -40,9 +40,8 @@ import (
 	v1lister "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
+	"k8s.io/klog"
 	resourceclient "k8s.io/metrics/pkg/client/clientset/versioned/typed/metrics/v1beta1"
-
-	"github.com/golang/glog"
 )
 
 // ClusterStateFeeder can update state of ClusterState object.
@@ -122,7 +121,7 @@ func WatchEvictionEventsWithRetries(kubeClient kube_client.Interface, observer o
 		for {
 			watchInterface, err := kubeClient.CoreV1().Events("").Watch(options)
 			if err != nil {
-				glog.Errorf("Cannot initialize watching events. Reason %v", err)
+				klog.Errorf("Cannot initialize watching events. Reason %v", err)
 				continue
 			}
 			watchEvictionEvents(watchInterface.ResultChan(), observer)
@@ -134,7 +133,7 @@ func watchEvictionEvents(evictedEventChan <-chan watch.Event, observer oom.Obser
 	for {
 		evictedEvent, ok := <-evictedEventChan
 		if !ok {
-			glog.V(3).Infof("Eviction event chan closed")
+			klog.V(3).Infof("Eviction event chan closed")
 			return
 		}
 		if evictedEvent.Type == watch.Added {
@@ -183,19 +182,19 @@ type clusterStateFeeder struct {
 }
 
 func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider history.HistoryProvider) {
-	glog.V(3).Info("Initializing VPA from history provider")
+	klog.V(3).Info("Initializing VPA from history provider")
 	clusterHistory, err := historyProvider.GetClusterHistory()
 	if err != nil {
-		glog.Errorf("Cannot get cluster history: %v", err)
+		klog.Errorf("Cannot get cluster history: %v", err)
 	}
 	for podID, podHistory := range clusterHistory {
-		glog.V(4).Infof("Adding pod %v with labels %v", podID, podHistory.LastLabels)
+		klog.V(4).Infof("Adding pod %v with labels %v", podID, podHistory.LastLabels)
 		feeder.clusterState.AddOrUpdatePod(podID, podHistory.LastLabels, apiv1.PodUnknown)
 		for containerName, sampleList := range podHistory.Samples {
 			containerID := model.ContainerID{
 				PodID:         podID,
 				ContainerName: containerName}
-			glog.V(4).Infof("Adding %d samples for container %v", len(sampleList), containerID)
+			klog.V(4).Infof("Adding %d samples for container %v", len(sampleList), containerID)
 			for _, sample := range sampleList {
 				feeder.clusterState.AddSample(
 					&model.ContainerUsageSampleWithKey{
@@ -223,7 +222,7 @@ func (feeder *clusterStateFeeder) setVpaCheckpoint(checkpoint *vpa_types.Vertica
 }
 
 func (feeder *clusterStateFeeder) InitFromCheckpoints() {
-	glog.V(3).Info("Initializing VPA from checkpoints")
+	klog.V(3).Info("Initializing VPA from checkpoints")
 	feeder.LoadVPAs()
 
 	namespaces := make(map[string]bool)
@@ -232,18 +231,18 @@ func (feeder *clusterStateFeeder) InitFromCheckpoints() {
 	}
 
 	for namespace := range namespaces {
-		glog.V(3).Infof("Fetching checkpoints from namespace %s", namespace)
+		klog.V(3).Infof("Fetching checkpoints from namespace %s", namespace)
 		checkpointList, err := feeder.vpaCheckpointClient.VerticalPodAutoscalerCheckpoints(namespace).List(metav1.ListOptions{})
 
 		if err != nil {
-			glog.Errorf("Cannot list VPA checkpoints from namespace %v. Reason: %+v", namespace, err)
+			klog.Errorf("Cannot list VPA checkpoints from namespace %v. Reason: %+v", namespace, err)
 		}
 		for _, checkpoint := range checkpointList.Items {
 
-			glog.V(3).Infof("Loading VPA %s/%s checkpoint for %s", checkpoint.ObjectMeta.Namespace, checkpoint.Spec.VPAObjectName, checkpoint.Spec.ContainerName)
+			klog.V(3).Infof("Loading VPA %s/%s checkpoint for %s", checkpoint.ObjectMeta.Namespace, checkpoint.Spec.VPAObjectName, checkpoint.Spec.ContainerName)
 			err = feeder.setVpaCheckpoint(&checkpoint)
 			if err != nil {
-				glog.Errorf("Error while loading checkpoint. Reason: %+v", err)
+				klog.Errorf("Error while loading checkpoint. Reason: %+v", err)
 			}
 
 		}
@@ -251,12 +250,12 @@ func (feeder *clusterStateFeeder) InitFromCheckpoints() {
 }
 
 func (feeder *clusterStateFeeder) GarbageCollectCheckpoints() {
-	glog.V(3).Info("Starting garbage collection of checkpoints")
+	klog.V(3).Info("Starting garbage collection of checkpoints")
 	feeder.LoadVPAs()
 
 	namspaceList, err := feeder.coreClient.Namespaces().List(metav1.ListOptions{})
 	if err != nil {
-		glog.Errorf("Cannot list namespaces. Reason: %+v", err)
+		klog.Errorf("Cannot list namespaces. Reason: %+v", err)
 		return
 	}
 
@@ -264,7 +263,7 @@ func (feeder *clusterStateFeeder) GarbageCollectCheckpoints() {
 		namespace := namespaceItem.Name
 		checkpointList, err := feeder.vpaCheckpointClient.VerticalPodAutoscalerCheckpoints(namespace).List(metav1.ListOptions{})
 		if err != nil {
-			glog.Errorf("Cannot list VPA checkpoints from namespace %v. Reason: %+v", namespace, err)
+			klog.Errorf("Cannot list VPA checkpoints from namespace %v. Reason: %+v", namespace, err)
 		}
 		for _, checkpoint := range checkpointList.Items {
 			vpaID := model.VpaID{Namespace: checkpoint.Namespace, VpaName: checkpoint.Spec.VPAObjectName}
@@ -272,9 +271,9 @@ func (feeder *clusterStateFeeder) GarbageCollectCheckpoints() {
 			if !exists {
 				err = feeder.vpaCheckpointClient.VerticalPodAutoscalerCheckpoints(namespace).Delete(checkpoint.Name, &metav1.DeleteOptions{})
 				if err == nil {
-					glog.V(3).Infof("Orphaned VPA checkpoint cleanup - deleting %v/%v.", namespace, checkpoint.Name)
+					klog.V(3).Infof("Orphaned VPA checkpoint cleanup - deleting %v/%v.", namespace, checkpoint.Name)
 				} else {
-					glog.Errorf("Cannot delete VPA checkpoint %v/%v. Reason: %+v", namespace, checkpoint.Name, err)
+					klog.Errorf("Cannot delete VPA checkpoint %v/%v. Reason: %+v", namespace, checkpoint.Name, err)
 				}
 			}
 		}
@@ -286,10 +285,10 @@ func (feeder *clusterStateFeeder) LoadVPAs() {
 	// List VPA API objects.
 	vpaCRDs, err := feeder.vpaLister.List(labels.Everything())
 	if err != nil {
-		glog.Errorf("Cannot list VPAs. Reason: %+v", err)
+		klog.Errorf("Cannot list VPAs. Reason: %+v", err)
 		return
 	}
-	glog.V(3).Infof("Fetched %d VPAs.", len(vpaCRDs))
+	klog.V(3).Infof("Fetched %d VPAs.", len(vpaCRDs))
 	// Add or update existing VPAs in the model.
 	vpaKeys := make(map[model.VpaID]bool)
 	for _, vpaCRD := range vpaCRDs {
@@ -304,7 +303,7 @@ func (feeder *clusterStateFeeder) LoadVPAs() {
 	// Delete non-existent VPAs from the model.
 	for vpaID := range feeder.clusterState.Vpas {
 		if _, exists := vpaKeys[vpaID]; !exists {
-			glog.V(3).Infof("Deleting VPA %v", vpaID)
+			klog.V(3).Infof("Deleting VPA %v", vpaID)
 			feeder.clusterState.DeleteVpa(vpaID)
 		}
 	}
@@ -315,7 +314,7 @@ func (feeder *clusterStateFeeder) LoadVPAs() {
 func (feeder *clusterStateFeeder) LoadPods() {
 	podSpecs, err := feeder.specClient.GetPodSpecs()
 	if err != nil {
-		glog.Errorf("Cannot get SimplePodSpecs. Reason: %+v", err)
+		klog.Errorf("Cannot get SimplePodSpecs. Reason: %+v", err)
 	}
 	pods := make(map[model.PodID]*spec.BasicPodSpec)
 	for _, spec := range podSpecs {
@@ -323,7 +322,7 @@ func (feeder *clusterStateFeeder) LoadPods() {
 	}
 	for key := range feeder.clusterState.Pods {
 		if _, exists := pods[key]; !exists {
-			glog.V(3).Infof("Deleting Pod %v", key)
+			klog.V(3).Infof("Deleting Pod %v", key)
 			feeder.clusterState.DeletePod(key)
 		}
 	}
@@ -338,7 +337,7 @@ func (feeder *clusterStateFeeder) LoadPods() {
 func (feeder *clusterStateFeeder) LoadRealTimeMetrics() {
 	containersMetrics, err := feeder.metricsClient.GetContainersMetrics()
 	if err != nil {
-		glog.Errorf("Cannot get ContainerMetricsSnapshot from MetricsClient. Reason: %+v", err)
+		klog.Errorf("Cannot get ContainerMetricsSnapshot from MetricsClient. Reason: %+v", err)
 	}
 
 	sampleCount := 0
@@ -348,13 +347,13 @@ func (feeder *clusterStateFeeder) LoadRealTimeMetrics() {
 			sampleCount++
 		}
 	}
-	glog.V(3).Infof("ClusterSpec fed with #%v ContainerUsageSamples for #%v containers", sampleCount, len(containersMetrics))
+	klog.V(3).Infof("ClusterSpec fed with #%v ContainerUsageSamples for #%v containers", sampleCount, len(containersMetrics))
 
 Loop:
 	for {
 		select {
 		case oomInfo := <-feeder.oomChan:
-			glog.V(3).Infof("OOM detected %+v", oomInfo)
+			klog.V(3).Infof("OOM detected %+v", oomInfo)
 			feeder.clusterState.RecordOOM(oomInfo.ContainerID, oomInfo.Timestamp, oomInfo.Memory)
 		default:
 			break Loop

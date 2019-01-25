@@ -22,10 +22,10 @@ import (
 	"sort"
 	"time"
 
-	"github.com/golang/glog"
 	apiv1 "k8s.io/api/core/v1"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
+	"k8s.io/klog"
 )
 
 const (
@@ -79,7 +79,7 @@ func NewUpdatePriorityCalculator(policy *vpa_types.PodResourcePolicy,
 func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, recommendation *vpa_types.RecommendedPodResources, now time.Time) {
 	processedRecommendation, _, err := calc.recommendationProcessor.Apply(recommendation, calc.resourcesPolicy, calc.conditions, pod)
 	if err != nil {
-		glog.V(2).Infof("cannot process recommendation for pod %s: %v", pod.Name, err)
+		klog.V(2).Infof("cannot process recommendation for pod %s: %v", pod.Name, err)
 		return
 	}
 
@@ -92,7 +92,7 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, recommendation *vpa
 			terminationState.Terminated.Reason == "OOMKilled" &&
 			terminationState.Terminated.FinishedAt.Time.Sub(terminationState.Terminated.StartedAt.Time) < *evictAfterOOMThreshold {
 			quickOOM = true
-			glog.V(2).Infof("quick OOM detected in pod %v", pod.Name)
+			klog.V(2).Infof("quick OOM detected in pod %v", pod.Name)
 		}
 	}
 
@@ -103,19 +103,19 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, recommendation *vpa
 	if !updatePriority.outsideRecommendedRange && !quickOOM {
 		if pod.Status.StartTime == nil {
 			// TODO: Set proper condition on the VPA.
-			glog.V(2).Infof("not updating pod %v, missing field pod.Status.StartTime", pod.Name)
+			klog.V(2).Infof("not updating pod %v, missing field pod.Status.StartTime", pod.Name)
 			return
 		}
 		if now.Before(pod.Status.StartTime.Add(podLifetimeUpdateThreshold)) {
-			glog.V(2).Infof("not updating a short-lived pod %v, request within recommended range", pod.Name)
+			klog.V(2).Infof("not updating a short-lived pod %v, request within recommended range", pod.Name)
 			return
 		}
 		if updatePriority.resourceDiff < calc.config.MinChangePriority {
-			glog.V(2).Infof("not updating pod %v, resource diff too low: %v", pod.Name, updatePriority)
+			klog.V(2).Infof("not updating pod %v, resource diff too low: %v", pod.Name, updatePriority)
 			return
 		}
 	}
-	glog.V(2).Infof("pod accepted for update %v with priority %v", pod.Name, updatePriority.resourceDiff)
+	klog.V(2).Infof("pod accepted for update %v with priority %v", pod.Name, updatePriority.resourceDiff)
 	calc.pods = append(calc.pods, updatePriority)
 }
 
@@ -128,7 +128,7 @@ func (calc *UpdatePriorityCalculator) GetSortedPods(admission PodEvictionAdmissi
 		if admission == nil || admission.Admit(podPrio.pod, podPrio.recommendation) {
 			result = append(result, podPrio.pod)
 		} else {
-			glog.V(2).Infof("pod removed from update queue by PodEvictionAdmission: %v", podPrio.pod.Name)
+			klog.V(2).Infof("pod removed from update queue by PodEvictionAdmission: %v", podPrio.pod.Name)
 		}
 	}
 

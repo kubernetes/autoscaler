@@ -22,13 +22,13 @@ import (
 	"sort"
 	"time"
 
-	"github.com/golang/glog"
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
 	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1beta1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
+	"k8s.io/klog"
 )
 
 // CheckpointWriter persistently stores aggregated historical usage of containers
@@ -64,7 +64,7 @@ func getVpasToCheckpoint(clusterVpas map[model.VpaID]*model.Vpa) []*model.Vpa {
 	vpas := make([]*model.Vpa, 0, len(clusterVpas))
 	for _, vpa := range clusterVpas {
 		if isFetchingHistory(vpa) {
-			glog.V(3).Infof("VPA %s/%s is loading history, skipping checkpoints", vpa.ID.Namespace, vpa.ID.VpaName)
+			klog.V(3).Infof("VPA %s/%s is loading history, skipping checkpoints", vpa.ID.Namespace, vpa.ID.VpaName)
 			continue
 		}
 		vpas = append(vpas, vpa)
@@ -94,7 +94,7 @@ func (writer *checkpointWriter) StoreCheckpoints(ctx context.Context, now time.T
 		for container, aggregatedContainerState := range aggregateContainerStateMap {
 			containerCheckpoint, err := aggregatedContainerState.SaveToCheckpoint()
 			if err != nil {
-				glog.Errorf("Cannot serialize checkpoint for vpa %v container %v. Reason: %+v", vpa.ID.VpaName, container, err)
+				klog.Errorf("Cannot serialize checkpoint for vpa %v container %v. Reason: %+v", vpa.ID.VpaName, container, err)
 				continue
 			}
 			checkpointName := fmt.Sprintf("%s-%s", vpa.ID.VpaName, container)
@@ -108,10 +108,10 @@ func (writer *checkpointWriter) StoreCheckpoints(ctx context.Context, now time.T
 			}
 			err = api_util.CreateOrUpdateVpaCheckpoint(writer.vpaCheckpointClient.VerticalPodAutoscalerCheckpoints(vpa.ID.Namespace), &vpaCheckpoint)
 			if err != nil {
-				glog.Errorf("Cannot save VPA %s/%s checkpoint for %s. Reason: %+v",
+				klog.Errorf("Cannot save VPA %s/%s checkpoint for %s. Reason: %+v",
 					vpa.ID.Namespace, vpaCheckpoint.Spec.VPAObjectName, vpaCheckpoint.Spec.ContainerName, err)
 			} else {
-				glog.V(3).Infof("Saved VPA %s/%s checkpoint for %s",
+				klog.V(3).Infof("Saved VPA %s/%s checkpoint for %s",
 					vpa.ID.Namespace, vpaCheckpoint.Spec.VPAObjectName, vpaCheckpoint.Spec.ContainerName)
 				vpa.CheckpointWritten = now
 			}

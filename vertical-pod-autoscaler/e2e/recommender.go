@@ -27,9 +27,9 @@ import (
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
+	"k8s.io/klog"
 	"k8s.io/kubernetes/test/e2e/framework"
 
-	"github.com/golang/glog"
 	"github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
 )
@@ -107,9 +107,9 @@ func getVpaObserver(vpaClientSet *vpa_clientset.Clientset) *observer {
 		cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
 	go controller.Run(make(chan struct{}))
 	if !cache.WaitForCacheSync(make(chan struct{}), controller.HasSynced) {
-		glog.Fatalf("Failed to sync VPA cache during initialization")
+		klog.Fatalf("Failed to sync VPA cache during initialization")
 	} else {
-		glog.Info("Initial VPA synced successfully")
+		klog.Info("Initial VPA synced successfully")
 	}
 	return &vpaObserver
 }

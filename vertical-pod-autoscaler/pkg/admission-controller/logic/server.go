@@ -24,13 +24,13 @@ import (
 
 	"strings"
 
-	"github.com/golang/glog"
 	"k8s.io/api/admission/v1beta1"
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
 	metrics_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/admission"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
+	"k8s.io/klog"
 )
 
 // AdmissionServer is an admission webhook server that modifies pod resources request based on VPA recommendation
@@ -59,7 +59,7 @@ func (s *AdmissionServer) getPatchesForPodResourceRequest(raw []byte, namespace 
 		pod.Name = pod.GenerateName + "%"
 		pod.Namespace = namespace
 	}
-	glog.V(4).Infof("Admitting pod %v", pod.ObjectMeta)
+	klog.V(4).Infof("Admitting pod %v", pod.ObjectMeta)
 	containersResources, annotationsPerContainer, vpaName, err := s.recommendationProvider.GetContainersResourcesForPod(&pod)
 	if err != nil {
 		return nil, err
@@ -192,7 +192,7 @@ func getPatchesForVPADefaults(raw []byte) ([]patchRecord, error) {
 		return nil, err
 	}
 
-	glog.V(4).Infof("Processing vpa: %v", vpa)
+	klog.V(4).Infof("Processing vpa: %v", vpa)
 	patches := []patchRecord{}
 	if vpa.Spec.UpdatePolicy == nil {
 		// Sets the default updatePolicy.
@@ -212,7 +212,7 @@ func (s *AdmissionServer) admit(data []byte) (*v1beta1.AdmissionResponse, metric
 
 	ar := v1beta1.AdmissionReview{}
 	if err := json.Unmarshal(data, &ar); err != nil {
-		glog.Error(err)
+		klog.Error(err)
 		return &response, metrics_admission.Error, metrics_admission.Unknown
 	}
 	// The externalAdmissionHookConfiguration registered via selfRegistration
@@ -243,20 +243,20 @@ func (s *AdmissionServer) admit(data []byte) (*v1beta1.AdmissionResponse, metric
 	}
 
 	if err != nil {
-		glog.Error(err)
+		klog.Error(err)
 		return &response, metrics_admission.Error, resource
 	}
 
 	if len(patches) > 0 {
 		patch, err := json.Marshal(patches)
 		if err != nil {
-			glog.Errorf("Cannot marshal the patch %v: %v", patches, err)
+			klog.Errorf("Cannot marshal the patch %v: %v", patches, err)
 			return &response, metrics_admission.Error, resource
 		}
 		patchType := v1beta1.PatchTypeJSONPatch
 		response.PatchType = &patchType
 		response.Patch = patch
-		glog.V(4).Infof("Sending patches: %v", patches)
+		klog.V(4).Infof("Sending patches: %v", patches)
 	}
 
 	var status metrics_admission.AdmissionStatus
@@ -286,7 +286,7 @@ func (s *AdmissionServer) Serve(w http.ResponseWriter, r *http.Request) {
 	// verify the content type is accurate
 	contentType := r.Header.Get("Content-Type")
 	if contentType != "application/json" {
-		glog.Errorf("contentType=%s, expect application/json", contentType)
+		klog.Errorf("contentType=%s, expect application/json", contentType)
 		timer.Observe(metrics_admission.Error, metrics_admission.Unknown)
 		return
 	}
@@ -298,13 +298,13 @@ func (s *AdmissionServer) Serve(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := json.Marshal(ar)
 	if err != nil {
-		glog.Error(err)
+		klog.Error(err)
 		timer.Observe(metrics_admission.Error, resource)
 		return
 	}
 
 	if _, err := w.Write(resp); err != nil {
-		glog.Error(err)
+		klog.Error(err)
 		timer.Observe(metrics_admission.Error, resource)
 		return
 	}
