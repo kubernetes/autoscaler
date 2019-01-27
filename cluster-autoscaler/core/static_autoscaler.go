@@ -149,7 +149,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		return errors.ToAutoscalerError(errors.ApiCallError, err)
 	}
 
-	nodeInfosForGroups, autoscalerError := GetNodeInfosForGroups(readyNodes, autoscalingContext.CloudProvider, autoscalingContext.ListerRegistry,
+	nodeInfosForGroups, autoscalerError := getNodeInfosForGroups(readyNodes, autoscalingContext.CloudProvider, autoscalingContext.ListerRegistry,
 		daemonsets, autoscalingContext.PredicateChecker)
 	if err != nil {
 		return autoscalerError.AddPrefix("failed to build node infos for node groups: ")
@@ -278,12 +278,19 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 
 	// Some unschedulable pods can be waiting for lower priority pods preemption so they have nominated node to run.
 	// Such pods don't require scale up but should be considered during scale down.
-	unschedulablePods, unschedulableWaitingForLowerPriorityPreemption := FilterOutExpendableAndSplit(unschedulablePodsWithoutTPUs, a.ExpendablePodsPriorityCutoff)
+	unschedulablePods, unschedulableWaitingForLowerPriorityPreemption := filterOutExpendableAndSplit(unschedulablePodsWithoutTPUs, a.ExpendablePodsPriorityCutoff)
 
 	klog.V(4).Infof("Filtering out schedulables")
 	filterOutSchedulableStart := time.Now()
-	unschedulablePodsToHelp := FilterOutSchedulable(unschedulablePods, readyNodes, allScheduled,
-		unschedulableWaitingForLowerPriorityPreemption, a.PredicateChecker, a.ExpendablePodsPriorityCutoff)
+	var unschedulablePodsToHelp []*apiv1.Pod
+	if a.FilterOutSchedulablePodsUsesPacking {
+		unschedulablePodsToHelp = filterOutSchedulableByPacking(unschedulablePods, readyNodes, allScheduled,
+			unschedulableWaitingForLowerPriorityPreemption, a.PredicateChecker, a.ExpendablePodsPriorityCutoff)
+	} else {
+		unschedulablePodsToHelp = filterOutSchedulableSimple(unschedulablePods, readyNodes, allScheduled,
+			unschedulableWaitingForLowerPriorityPreemption, a.PredicateChecker, a.ExpendablePodsPriorityCutoff)
+	}
+
 	metrics.UpdateDurationFromStart(metrics.FilterOutSchedulable, filterOutSchedulableStart)
 
 	if len(unschedulablePodsToHelp) != len(unschedulablePods) {
@@ -547,7 +554,7 @@ func (a *StaticAutoscaler) updateClusterState(allNodes []*apiv1.Node, nodeInfosF
 func (a *StaticAutoscaler) onEmptyCluster(status string, emitEvent bool) {
 	klog.Warningf(status)
 	a.scaleDown.CleanUpUnneededNodes()
-	UpdateEmptyClusterStateMetrics()
+	updateEmptyClusterStateMetrics()
 	if a.AutoscalingContext.WriteStatusConfigMap {
 		utils.WriteStatusConfigMap(a.AutoscalingContext.ClientSet, a.AutoscalingContext.ConfigNamespace, status, a.AutoscalingContext.LogRecorder)
 	}

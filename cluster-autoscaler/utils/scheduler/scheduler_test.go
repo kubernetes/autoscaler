@@ -37,7 +37,7 @@ func TestCreateNodeNameToInfoMap(t *testing.T) {
 	var priority int32 = 100
 	podWaitingForPreemption := BuildTestPod("w1", 1500, 200000)
 	podWaitingForPreemption.Spec.Priority = &priority
-	podWaitingForPreemption.Annotations = map[string]string{NominatedNodeAnnotationKey: "node1"}
+	podWaitingForPreemption.Status.NominatedNodeName = "node1"
 
 	n1 := BuildTestNode("node1", 2000, 2000000)
 	n2 := BuildTestNode("node2", 2000, 2000000)

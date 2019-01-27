@@ -264,7 +264,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 	}
 	glogx.V(1).Over(loggingQuota).Infof("%v other pods are also unschedulable", -loggingQuota.Left())
 
-	nodesFromNotAutoscaledGroups, err := FilterOutNodesFromNotAutoscaledGroups(nodes, context.CloudProvider)
+	nodesFromNotAutoscaledGroups, err := filterOutNodesFromNotAutoscaledGroups(nodes, context.CloudProvider)
 	if err != nil {
 		return &status.ScaleUpStatus{Result: status.ScaleUpError}, err.AddPrefix("failed to filter out nodes which are from not autoscaled groups: ")
 	}
@@ -447,7 +447,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 
 			// If possible replace candidate node-info with node info based on crated node group. The latter
 			// one should be more in line with nodes which will be created by node group.
-			mainCreatedNodeInfo, err := GetNodeInfoFromTemplate(createNodeGroupResult.MainCreatedNodeGroup, daemonSets, context.PredicateChecker)
+			mainCreatedNodeInfo, err := getNodeInfoFromTemplate(createNodeGroupResult.MainCreatedNodeGroup, daemonSets, context.PredicateChecker)
 			if err == nil {
 				nodeInfos[createNodeGroupResult.MainCreatedNodeGroup.Id()] = mainCreatedNodeInfo
 			} else {
@@ -461,7 +461,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 			}
 
 			for _, nodeGroup := range createNodeGroupResult.ExtraCreatedNodeGroups {
-				nodeInfo, err := GetNodeInfoFromTemplate(nodeGroup, daemonSets, context.PredicateChecker)
+				nodeInfo, err := getNodeInfoFromTemplate(nodeGroup, daemonSets, context.PredicateChecker)
 
 				if err != nil {
 					klog.Warningf("Cannot build node info for newly created extra node group %v; balancing similar node groups will not work; err=%v", nodeGroup.Id(), err)
@@ -569,7 +569,7 @@ func getPodsPredicatePassingCheckFunctions(
 
 		podsPassing := make([]*apiv1.Pod, 0)
 		podsNotPassing := make(map[*apiv1.Pod]status.Reasons)
-		schedulableOnNode := CheckPodsSchedulableOnNode(context, unschedulablePods, nodeGroupId, nodeInfo)
+		schedulableOnNode := checkPodsSchedulableOnNode(context, unschedulablePods, nodeGroupId, nodeInfo)
 		for pod, err := range schedulableOnNode {
 			if err == nil {
 				podsPassing = append(podsPassing, pod)

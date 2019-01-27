@@ -33,7 +33,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
-	scheduler_util "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 	kube_client "k8s.io/client-go/kubernetes"
@@ -182,7 +181,7 @@ func TestPodsWithPrioritiesFindUnneededNodes(t *testing.T) {
 	p1 := BuildTestPod("p1", 600, 0)
 	p1.OwnerReferences = ownerRef
 	p1.Spec.Priority = &priority100
-	p1.Annotations = map[string]string{scheduler_util.NominatedNodeAnnotationKey: "n1"}
+	p1.Status.NominatedNodeName = "n1"
 
 	p2 := BuildTestPod("p2", 400, 0)
 	p2.OwnerReferences = ownerRef
@@ -197,7 +196,7 @@ func TestPodsWithPrioritiesFindUnneededNodes(t *testing.T) {
 	p4 := BuildTestPod("p4", 100, 0)
 	p4.OwnerReferences = ownerRef
 	p4.Spec.Priority = &priority100
-	p4.Annotations = map[string]string{scheduler_util.NominatedNodeAnnotationKey: "n2"}
+	p4.Status.NominatedNodeName = "n2"
 
 	p5 := BuildTestPod("p5", 400, 0)
 	p5.OwnerReferences = ownerRef
@@ -212,7 +211,7 @@ func TestPodsWithPrioritiesFindUnneededNodes(t *testing.T) {
 	p7 := BuildTestPod("p7", 1200, 0)
 	p7.OwnerReferences = ownerRef
 	p7.Spec.Priority = &priority100
-	p7.Annotations = map[string]string{scheduler_util.NominatedNodeAnnotationKey: "n4"}
+	p7.Status.NominatedNodeName = "n4"
 
 	// Node with pod waiting for lower priority pod preemption, highly utilized. Can't be deleted.
 	n1 := BuildTestNode("n1", 1000, 10)
