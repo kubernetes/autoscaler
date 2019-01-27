@@ -149,6 +149,7 @@ func (scaleSet *ScaleSet) SetScaleSetSize(size int64) error {
 	}
 
 	op.Sku.Capacity = &size
+	op.Identity = nil
 	op.VirtualMachineScaleSetProperties.ProvisioningState = nil
 	updateCtx, updateCancel := getContextWithCancel()
 	defer updateCancel()
