@@ -17,16 +17,9 @@ limitations under the License.
 package gke
 
 import (
-	"flag"
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-)
-
-var (
-	// GkeAPIEndpoint overrides default GKE API endpoint for testing.
-	// This flag is outside main as it's only useful for test/development.
-	GkeAPIEndpoint = flag.String("gke-api-endpoint", "", "GKE API endpoint address. This flag is used by developers only. Users shouldn't change this flag.")
 )
 
 const (
