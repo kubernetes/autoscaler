@@ -1,6 +1,14 @@
 package scaling
 
-/*
+import (
+	"testing"
+	"time"
+
+	"k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
+	scalingpolicy "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
+)
+
 func TestComputeResources(t *testing.T) {
 	grid := []struct {
 		Name     string
@@ -324,4 +332,3 @@ func TestSegments(t *testing.T) {
 		}
 	}
 }
-*/
