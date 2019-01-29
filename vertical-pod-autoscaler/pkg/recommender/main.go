@@ -34,6 +34,7 @@ var (
 	metricsFetcherInterval = flag.Duration("recommender-interval", 1*time.Minute, `How often metrics should be fetched`)
 	checkpointsGCInterval  = flag.Duration("checkpoints-gc-interval", 10*time.Minute, `How often orphaned checkpoints should be garbage collected`)
 	prometheusAddress      = flag.String("prometheus-address", "", `Where to reach for Prometheus metrics`)
+	prometheusJobName      = flag.String("prometheus-cadvisor-job-name", "kubernetes-cadvisor", `Name of the prometheus job name which scrapes the cAdvisor metrics`)
 	storage                = flag.String("storage", "", `Specifies storage mode. Supported values: prometheus, checkpoint (default)`)
 	address                = flag.String("address", ":8942", "The address to expose Prometheus metrics.")
 	kubeApiQps             = flag.Float64("kube-api-qps", 5.0, `QPS limit when making requests to Kubernetes apiserver`)
@@ -55,7 +56,7 @@ func main() {
 	if useCheckpoints {
 		recommender.GetClusterStateFeeder().InitFromCheckpoints()
 	} else {
-		recommender.GetClusterStateFeeder().InitFromHistoryProvider(history.NewPrometheusHistoryProvider(*prometheusAddress))
+		recommender.GetClusterStateFeeder().InitFromHistoryProvider(history.NewPrometheusHistoryProvider(*prometheusAddress, *prometheusJobName))
 	}
 
 	ticker := time.Tick(*metricsFetcherInterval)
