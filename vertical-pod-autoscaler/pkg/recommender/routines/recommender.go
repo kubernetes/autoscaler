@@ -98,7 +98,7 @@ func (r *recommender) UpdateVPAs() {
 		}
 		resources := r.podResourceRecommender.GetRecommendedPodResources(GetContainerNameToAggregateStateMap(vpa))
 		had := vpa.HasRecommendation()
-		vpa.Recommendation = getCappedRecommendation(vpa.ID, resources, observedVpa.Spec.ResourcePolicy)
+		vpa.Recommendation = getCappedRecommendation(vpa.ID, resources, observedVpa)
 		// Set RecommendationProvided if recommendation not empty.
 		if len(vpa.Recommendation.ContainerRecommendations) > 0 {
 			vpa.Conditions.Set(vpa_types.RecommendationProvided, true, "", "")
@@ -122,7 +122,7 @@ func (r *recommender) UpdateVPAs() {
 // and if necessary, capping the Target, LowerBound and UpperBound according
 // to the ResourcePolicy.
 func getCappedRecommendation(vpaID model.VpaID, resources logic.RecommendedPodResources,
-	policy *vpa_types.PodResourcePolicy) *vpa_types.RecommendedPodResources {
+	policy vpa_types.ScalingPolicy) *vpa_types.RecommendedPodResources {
 	containerResources := make([]vpa_types.RecommendedContainerResources, 0, len(resources))
 	for containerName, res := range resources {
 		containerResources = append(containerResources, vpa_types.RecommendedContainerResources{

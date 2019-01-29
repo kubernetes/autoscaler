@@ -39,7 +39,7 @@ func TestRecommendationNotAvailable(t *testing.T) {
 			},
 		},
 	}
-	policy := vpa_types.PodResourcePolicy{}
+	policy := vpa_types.VerticalPodAutoscaler{}
 
 	res, annotations, err := NewCappingRecommendationProcessor().Apply(&podRecommendation, &policy, pod)
 	assert.Nil(t, err)
@@ -70,7 +70,7 @@ func TestRecommendationCappedToLimit(t *testing.T) {
 			},
 		},
 	}
-	policy := vpa_types.PodResourcePolicy{}
+	policy := vpa_types.VerticalPodAutoscaler{}
 
 	res, annotations, err := NewCappingRecommendationProcessor().Apply(&podRecommendation, &policy, pod)
 	assert.Nil(t, err)
@@ -109,7 +109,7 @@ func TestRecommendationCappedToMinMaxPolicy(t *testing.T) {
 			},
 		},
 	}
-	policy := vpa_types.PodResourcePolicy{
+	podResourcePolicy := vpa_types.PodResourcePolicy{
 		ContainerPolicies: []vpa_types.ContainerResourcePolicy{
 			{
 				ContainerName: "ctr-name",
@@ -124,6 +124,9 @@ func TestRecommendationCappedToMinMaxPolicy(t *testing.T) {
 			},
 		},
 	}
+
+	policy := vpa_types.VerticalPodAutoscaler{}
+	policy.Spec.ResourcePolicy = &podResourcePolicy
 
 	res, annotations, err := NewCappingRecommendationProcessor().Apply(&podRecommendation, &policy, pod)
 	assert.Nil(t, err)
@@ -218,17 +221,21 @@ func TestApplyVpa(t *testing.T) {
 			},
 		},
 	}
-	policy := vpa_types.PodResourcePolicy{
-		ContainerPolicies: []vpa_types.ContainerResourcePolicy{
-			{
-				ContainerName: "ctr-name",
-				MinAllowed: apiv1.ResourceList{
-					apiv1.ResourceCPU:    *resource.NewScaledQuantity(40, 1),
-					apiv1.ResourceMemory: *resource.NewScaledQuantity(4000, 1),
-				},
-				MaxAllowed: apiv1.ResourceList{
-					apiv1.ResourceCPU:    *resource.NewScaledQuantity(45, 1),
-					apiv1.ResourceMemory: *resource.NewScaledQuantity(4500, 1),
+	policy := vpa_types.VerticalPodAutoscaler{
+		Spec: vpa_types.VerticalPodAutoscalerSpec{
+			ResourcePolicy: &vpa_types.PodResourcePolicy{
+				ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+					{
+						ContainerName: "ctr-name",
+						MinAllowed: apiv1.ResourceList{
+							apiv1.ResourceCPU:    *resource.NewScaledQuantity(40, 1),
+							apiv1.ResourceMemory: *resource.NewScaledQuantity(4000, 1),
+						},
+						MaxAllowed: apiv1.ResourceList{
+							apiv1.ResourceCPU:    *resource.NewScaledQuantity(45, 1),
+							apiv1.ResourceMemory: *resource.NewScaledQuantity(4500, 1),
+						},
+					},
 				},
 			},
 		},

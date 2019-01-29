@@ -93,7 +93,7 @@ func (u *updater) RunOnce() {
 			glog.V(3).Infof("skipping VPA object %v because its mode is not \"Recreate\" or \"Auto\"", vpa.Name)
 			continue
 		}
-		vpas = append(vpas, &vpa_types.VPAAdapter{vpa})
+		vpas = append(vpas, vpa)
 	}
 
 	cpsList, err := u.cpsLister.List(labels.Everything())
@@ -108,7 +108,7 @@ func (u *updater) RunOnce() {
 			glog.V(3).Infof("skipping CPS object %v because its mode is not \"Recreate\" or \"Auto\"", cps.Name)
 			continue
 		}
-		vpas = append(vpas, &vpa_types.CPSAdapter{cps})
+		vpas = append(vpas, cps)
 	}
 
 	if len(vpas) == 0 {

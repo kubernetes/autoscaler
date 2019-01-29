@@ -151,6 +151,6 @@ func TestGetControllingVPAForPod(t *testing.T) {
 	vpaB := vpaBuilder.WithCreationTimestamp(time.Unix(10, 0)).Get()
 	nonMatchingVPA := vpaBuilder.WithCreationTimestamp(time.Unix(2, 0)).WithSelector("app = other").Get()
 
-	chosen := GetControllingVPAForPod(pod, []*vpa_types.VerticalPodAutoscaler{vpaB, vpaA, nonMatchingVPA})
+	chosen := GetControllingVPAForPod(pod, []vpa_types.ScalingPolicy{vpaB, vpaA, nonMatchingVPA})
 	assert.Equal(t, vpaA, chosen)
 }

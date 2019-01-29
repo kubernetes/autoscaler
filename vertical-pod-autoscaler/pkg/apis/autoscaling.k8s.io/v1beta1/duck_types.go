@@ -43,6 +43,31 @@ type ScalingPolicy interface {
 	GetMinAllowed(name v1.ResourceName) (resource.Quantity, bool)
 }*/
 
+func (v *VerticalPodAutoscaler) GetSelector() *meta.LabelSelector {
+	return v.Spec.Selector
+}
+
+func (v *VerticalPodAutoscaler) GetRecommendation() *RecommendedPodResources {
+	return v.Status.Recommendation
+}
+
+func (v *VerticalPodAutoscaler) GetContainerResourcePolicy(containerName string) *ContainerResourcePolicy {
+	var defaultPolicy *ContainerResourcePolicy
+	if v != nil && v.Spec.ResourcePolicy != nil {
+		containerPolicies := v.Spec.ResourcePolicy.ContainerPolicies
+		for i := range containerPolicies {
+			if containerPolicies[i].ContainerName == containerName {
+				return &containerPolicies[i]
+			}
+			if containerPolicies[i].ContainerName == DefaultContainerResourcePolicy {
+				defaultPolicy = &containerPolicies[i]
+			}
+		}
+	}
+	return defaultPolicy
+}
+
+/*
 type VPAAdapter struct {
 	*VerticalPodAutoscaler
 }
@@ -62,13 +87,38 @@ func (a *VPAAdapter) GetContainerResourcePolicy(containerName string) *Container
 	}
 	return defaultPolicy
 }
-
+*/
 /*
 func (a *VPAAdapter) GetConditions() []VerticalPodAutoscalerCondition {
 	return a.VerticalPodAutoscaler.Status.Conditions
 }
 */
 
+func (v *ClusterProportionalScaler) GetSelector() *meta.LabelSelector {
+	return v.Spec.Selector
+}
+
+func (v *ClusterProportionalScaler) GetRecommendation() *RecommendedPodResources {
+	return v.Status.Recommendation
+}
+
+func (v *ClusterProportionalScaler) GetContainerResourcePolicy(containerName string) *ContainerResourcePolicy {
+	var defaultPolicy *ContainerResourcePolicy
+	if v != nil && v.Spec.ResourcePolicy != nil {
+		containerPolicies := v.Spec.ResourcePolicy.ContainerPolicies
+		for i := range containerPolicies {
+			if containerPolicies[i].ContainerName == containerName {
+				return &containerPolicies[i].ContainerResourcePolicy
+			}
+			if containerPolicies[i].ContainerName == DefaultContainerResourcePolicy {
+				defaultPolicy = &containerPolicies[i].ContainerResourcePolicy
+			}
+		}
+	}
+	return defaultPolicy
+}
+
+/*
 var _ ScalingPolicy = &VPAAdapter{}
 
 type CPSAdapter struct {
@@ -89,47 +139,23 @@ func (a *CPSAdapter) GetContainerResourcePolicy(containerName string) *Container
 	}
 	return nil
 }
-
+*/
 /*
 func (a *CPSAdapter) GetConditions() []VerticalPodAutoscalerCondition {
 	return a.ClusterProportionalScaler.Status.Conditions
 }
 */
 
+/*
 var _ ScalingPolicy = &CPSAdapter{}
+*/
 
 // GetContainerResourcePolicy returns the ContainerResourcePolicy for a given policy
 // and container name. It returns nil if there is no policy specified for the container.
-func GetContainerResourcePolicy(containerName string, policy *PodResourcePolicy) *ContainerResourcePolicy {
+func GetContainerResourcePolicy(containerName string, policy ScalingPolicy) *ContainerResourcePolicy {
 	var defaultPolicy *ContainerResourcePolicy
 	if policy != nil {
-		containerPolicies := policy.ContainerPolicies
-		for i := range containerPolicies {
-			if containerPolicies[i].ContainerName == containerName {
-				return &containerPolicies[i]
-			}
-			if containerPolicies[i].ContainerName == DefaultContainerResourcePolicy {
-				defaultPolicy = &containerPolicies[i]
-			}
-		}
-	}
-	return defaultPolicy
-}
-
-// GetCPSContainerResourcePolicy returns the ContainerResourcePolicy for a given policy
-// and container name. It returns nil if there is no policy specified for the container.
-func GetCPSContainerResourcePolicy(containerName string, policy *CPPodResourcePolicy) *ContainerResourcePolicy {
-	var defaultPolicy *ContainerResourcePolicy
-	if policy != nil {
-		containerPolicies := policy.ContainerPolicies
-		for i := range containerPolicies {
-			if containerPolicies[i].ContainerName == containerName {
-				return &containerPolicies[i].ContainerResourcePolicy
-			}
-			if containerPolicies[i].ContainerName == DefaultContainerResourcePolicy {
-				defaultPolicy = &containerPolicies[i].ContainerResourcePolicy
-			}
-		}
+		return policy.GetContainerResourcePolicy(containerName)
 	}
 	return defaultPolicy
 }

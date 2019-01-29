@@ -21,9 +21,13 @@ func TestGetContainerResourcePolicy(t *testing.T) {
 			core.ResourceMemory: *resource.NewScaledQuantity(100, 1),
 		},
 	}
-	policy := PodResourcePolicy{
-		ContainerPolicies: []ContainerResourcePolicy{
-			containerPolicy1, containerPolicy2,
+	policy := VerticalPodAutoscaler{
+		Spec: VerticalPodAutoscalerSpec{
+			ResourcePolicy: &PodResourcePolicy{
+				ContainerPolicies: []ContainerResourcePolicy{
+					containerPolicy1, containerPolicy2,
+				},
+			},
 		},
 	}
 	assert.Equal(t, &containerPolicy1, GetContainerResourcePolicy("container1", &policy))
@@ -37,9 +41,13 @@ func TestGetContainerResourcePolicy(t *testing.T) {
 			core.ResourceCPU: *resource.NewScaledQuantity(20, 1),
 		},
 	}
-	policy = PodResourcePolicy{
-		ContainerPolicies: []ContainerResourcePolicy{
-			containerPolicy1, defaultPolicy, containerPolicy2,
+	policy = VerticalPodAutoscaler{
+		Spec: VerticalPodAutoscalerSpec{
+			ResourcePolicy: &PodResourcePolicy{
+				ContainerPolicies: []ContainerResourcePolicy{
+					containerPolicy1, defaultPolicy, containerPolicy2,
+				},
+			},
 		},
 	}
 	assert.Equal(t, &containerPolicy1, GetContainerResourcePolicy("container1", &policy))

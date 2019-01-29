@@ -80,8 +80,8 @@ type Vpa struct {
 	// All container aggregations that contribute to this VPA.
 	// TODO: Garbage collect old AggregateContainerStates.
 	aggregateContainerStates aggregateContainerStatesMap
-	// Pod Resource Policy provided in the VPA API object. Can be nil.
-	ResourcePolicy *vpa_types.PodResourcePolicy
+	// Scaling policy as defined by the VPA API object. Can be nil.
+	ScalingPolicy vpa_types.ScalingPolicy
 	// Initial checkpoints of AggregateContainerStates for containers.
 	// The key is container name.
 	ContainersInitialAggregateState ContainerNameToAggregateStateMap
@@ -101,8 +101,8 @@ func NewVpa(id VpaID, selector labels.Selector, created time.Time) *Vpa {
 		PodSelector:                     selector,
 		aggregateContainerStates:        make(aggregateContainerStatesMap),
 		ContainersInitialAggregateState: make(ContainerNameToAggregateStateMap),
-		Created:                         created,
-		Conditions:                      make(vpaConditionsMap),
+		Created:    created,
+		Conditions: make(vpaConditionsMap),
 	}
 	return vpa
 }

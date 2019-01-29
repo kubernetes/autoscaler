@@ -86,7 +86,7 @@ func (p *recommendationProvider) getMatchingScaler(pod *v1.Pod) vpa_types.Scalin
 			if vpa_api_util.GetUpdateMode(o) == vpa_types.UpdateModeOff {
 				continue
 			}
-			onConfigs = append(onConfigs, &vpa_types.VPAAdapter{o})
+			onConfigs = append(onConfigs, o)
 		}
 	}
 
@@ -101,7 +101,7 @@ func (p *recommendationProvider) getMatchingScaler(pod *v1.Pod) vpa_types.Scalin
 			if vpa_api_util.GetCPSUpdateMode(o) == vpa_types.UpdateModeOff {
 				continue
 			}
-			onConfigs = append(onConfigs, &vpa_types.CPSAdapter{o})
+			onConfigs = append(onConfigs, o)
 		}
 	}
 
