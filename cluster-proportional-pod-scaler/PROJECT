@@ -1,3 +1,0 @@
-version: "1"
-domain: k8s.io
-repo: k8s.io/autoscaler/cluster-proportional-pod-scaler

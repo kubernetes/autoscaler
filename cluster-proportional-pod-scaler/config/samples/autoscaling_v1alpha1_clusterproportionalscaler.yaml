@@ -1,9 +1,0 @@
-apiVersion: autoscaling.k8s.io/v1alpha1
-kind: ClusterProportionalScaler
-metadata:
-  labels:
-    controller-tools.k8s.io: "1.0"
-  name: clusterproportionalscaler-sample
-spec:
-  # Add fields here
-  foo: bar
