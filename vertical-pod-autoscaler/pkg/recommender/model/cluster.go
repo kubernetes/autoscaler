@@ -227,7 +227,7 @@ func (cluster *ClusterState) AddOrUpdateVpa(apiObject *vpa_types.VerticalPodAuto
 	}
 	vpa.Conditions = conditionsMap
 	vpa.Recommendation = currentRecommendation
-	vpa.ResourcePolicy = apiObject.Spec.ResourcePolicy
+	vpa.ScalingPolicy = apiObject.DeepCopy()
 	if apiObject.Spec.UpdatePolicy != nil {
 		vpa.UpdateMode = apiObject.Spec.UpdatePolicy.UpdateMode
 	}

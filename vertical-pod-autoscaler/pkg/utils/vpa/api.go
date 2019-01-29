@@ -96,11 +96,11 @@ func NewAllVpasLister(vpaClient *vpa_clientset.Clientset, stopChannel <-chan str
 }
 
 // PodMatchesVPA returns true iff the VPA's selector matches the Pod and they are in the same namespace.
-func PodMatchesVPA(pod *core.Pod, vpa *vpa_types.VerticalPodAutoscaler) bool {
-	if pod.Namespace != vpa.Namespace {
+func PodMatchesVPA(pod *core.Pod, vpa vpa_types.ScalingPolicy) bool {
+	if pod.Namespace != vpa.GetNamespace() {
 		return false
 	}
-	selector, err := meta.LabelSelectorAsSelector(vpa.Spec.Selector)
+	selector, err := meta.LabelSelectorAsSelector(vpa.GetSelector())
 	if err != nil {
 		glog.Errorf("error processing VPA object: failed to create pod selector: %v", err)
 		return false
@@ -109,7 +109,7 @@ func PodMatchesVPA(pod *core.Pod, vpa *vpa_types.VerticalPodAutoscaler) bool {
 }
 
 // stronger returns true iff a is before b in the order to control a Pod (that matches both VPAs).
-func stronger(a, b *vpa_types.VerticalPodAutoscaler) bool {
+func stronger(a, b vpa_types.ScalingPolicy) bool {
 	// Assume a is not nil and each valid object is before nil object.
 	if b == nil {
 		return true
@@ -126,8 +126,8 @@ func stronger(a, b *vpa_types.VerticalPodAutoscaler) bool {
 }
 
 // GetControllingVPAForPod chooses the earliest created VPA from the input list that matches the given Pod.
-func GetControllingVPAForPod(pod *core.Pod, vpas []*vpa_types.VerticalPodAutoscaler) *vpa_types.VerticalPodAutoscaler {
-	var controlling *vpa_types.VerticalPodAutoscaler
+func GetControllingVPAForPod(pod *core.Pod, vpas []vpa_types.ScalingPolicy) vpa_types.ScalingPolicy {
+	var controlling vpa_types.ScalingPolicy
 	// Choose the strongest VPA from the ones that match this Pod.
 	for _, vpa := range vpas {
 		if PodMatchesVPA(pod, vpa) && stronger(vpa, controlling) {
@@ -144,23 +144,6 @@ func GetUpdateMode(vpa *vpa_types.VerticalPodAutoscaler) vpa_types.UpdateMode {
 		return vpa_types.UpdateModeAuto
 	}
 	return *vpa.Spec.UpdatePolicy.UpdateMode
-}
-
-// GetContainerResourcePolicy returns the ContainerResourcePolicy for a given policy
-// and container name. It returns nil if there is no policy specified for the container.
-func GetContainerResourcePolicy(containerName string, policy *vpa_types.PodResourcePolicy) *vpa_types.ContainerResourcePolicy {
-	var defaultPolicy *vpa_types.ContainerResourcePolicy
-	if policy != nil {
-		for i, containerPolicy := range policy.ContainerPolicies {
-			if containerPolicy.ContainerName == containerName {
-				return &policy.ContainerPolicies[i]
-			}
-			if containerPolicy.ContainerName == vpa_types.DefaultContainerResourcePolicy {
-				defaultPolicy = &policy.ContainerPolicies[i]
-			}
-		}
-	}
-	return defaultPolicy
 }
 
 // CreateOrUpdateVpaCheckpoint updates the status field of the VPA Checkpoint API object.
