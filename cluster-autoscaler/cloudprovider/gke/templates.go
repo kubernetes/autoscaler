@@ -20,23 +20,12 @@ import (
 	"fmt"
 	"math/rand"
 
+	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce"
-
-	apiv1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
-)
-
-const (
-	mbPerGB           = 1000
-	bytesPerMB        = 1000 * 1000
-	millicoresPerCore = 1000
-	// Kubelet "evictionHard: {memory.available}" is subtracted from
-	// capacity when calculating allocatable (on top of kube-reserved).
-	// We don't have a good place to get it from, but it has been hard-coded
-	// to 100Mi since at least k8s 1.4.
-	kubeletEvictionHardMemory = 100 * 1024 * 1024
 )
 
 // GkeTemplateBuilder builds templates for GKE cloud provider.
@@ -60,7 +49,7 @@ func (t *GkeTemplateBuilder) BuildNodeFromMigSpec(mig *GkeMig, cpu int64, mem in
 		Labels:   map[string]string{},
 	}
 
-	capacity, err := t.BuildCapacity(mig.Spec().MachineType, nil, mig.GceRef().Zone, cpu, mem)
+	capacity, err := t.BuildCapacity(cpu, mem, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -69,9 +58,11 @@ func (t *GkeTemplateBuilder) BuildNodeFromMigSpec(mig *GkeMig, cpu int64, mem in
 		capacity[gpu.ResourceNvidiaGPU] = gpuRequest.DeepCopy()
 	}
 
+	kubeReserved := t.BuildKubeReserved(cpu, mem)
+
 	node.Status = apiv1.NodeStatus{
 		Capacity:    capacity,
-		Allocatable: t.BuildAllocatableFromCapacity(capacity),
+		Allocatable: t.CalculateAllocatable(capacity, kubeReserved),
 	}
 
 	labels, err := buildLabelsForAutoprovisionedMig(mig, nodeName)
@@ -85,6 +76,17 @@ func (t *GkeTemplateBuilder) BuildNodeFromMigSpec(mig *GkeMig, cpu int64, mem in
 	// Ready status
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()
 	return &node, nil
+}
+
+// BuildKubeReserved builds kube reserved resources based on node physical resources.
+// See calculateReserved for more details
+func (t *GkeTemplateBuilder) BuildKubeReserved(cpu, physicalMemory int64) apiv1.ResourceList {
+	cpuReservedMillicores := PredictKubeReservedCpuMillicores(cpu * 1000)
+	memoryReserved := PredictKubeReservedMemory(physicalMemory)
+	reserved := apiv1.ResourceList{}
+	reserved[apiv1.ResourceCPU] = *resource.NewMilliQuantity(cpuReservedMillicores, resource.DecimalSI)
+	reserved[apiv1.ResourceMemory] = *resource.NewQuantity(memoryReserved, resource.BinarySI)
+	return reserved
 }
 
 func buildLabelsForAutoprovisionedMig(mig *GkeMig, nodeName string) (map[string]string, error) {

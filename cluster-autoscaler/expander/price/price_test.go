@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 
 	apiv1 "k8s.io/api/core/v1"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
@@ -115,7 +116,7 @@ func TestPriceExpander(t *testing.T) {
 			},
 		},
 		&testPreferredNodeProvider{
-			preferred: buildNode(2000, 1024*1024*1024),
+			preferred: buildNode(2000, units.GiB),
 		},
 		SimpleNodeUnfitness,
 	).BestOption(options, nodeInfosForGroups).Debug, "ng1")
@@ -134,7 +135,7 @@ func TestPriceExpander(t *testing.T) {
 			},
 		},
 		&testPreferredNodeProvider{
-			preferred: buildNode(4000, 1024*1024*1024),
+			preferred: buildNode(4000, units.GiB),
 		},
 		SimpleNodeUnfitness,
 	).BestOption(options, nodeInfosForGroups).Debug, "ng2")
@@ -169,7 +170,7 @@ func TestPriceExpander(t *testing.T) {
 			},
 		},
 		&testPreferredNodeProvider{
-			preferred: buildNode(4000, 1024*1024*1024),
+			preferred: buildNode(4000, units.GiB),
 		},
 		SimpleNodeUnfitness,
 	).BestOption(options1b, nodeInfosForGroups).Debug, "ng1")
@@ -188,7 +189,7 @@ func TestPriceExpander(t *testing.T) {
 			},
 		},
 		&testPreferredNodeProvider{
-			preferred: buildNode(2000, 1024*1024*1024),
+			preferred: buildNode(2000, units.GiB),
 		},
 		SimpleNodeUnfitness,
 	).BestOption(options, nodeInfosForGroups).Debug, "ng2")
@@ -224,7 +225,7 @@ func TestPriceExpander(t *testing.T) {
 			},
 		},
 		&testPreferredNodeProvider{
-			preferred: buildNode(2000, 1024*1024*1024),
+			preferred: buildNode(2000, units.GiB),
 		},
 		SimpleNodeUnfitness,
 	).BestOption(options2, nodeInfosForGroups).Debug, "ng2")
@@ -236,7 +237,7 @@ func TestPriceExpander(t *testing.T) {
 			nodePrice: map[string]float64{},
 		},
 		&testPreferredNodeProvider{
-			preferred: buildNode(2000, 1024*1024*1024),
+			preferred: buildNode(2000, units.GiB),
 		},
 		SimpleNodeUnfitness,
 	).BestOption(options2, nodeInfosForGroups))
@@ -280,7 +281,7 @@ func TestPriceExpander(t *testing.T) {
 			},
 		},
 		&testPreferredNodeProvider{
-			preferred: buildNode(2000, 1024*1024*1024),
+			preferred: buildNode(2000, units.GiB),
 		},
 		SimpleNodeUnfitness,
 	).BestOption(options3, nodeInfosForGroups).Debug, "ng2")
@@ -300,7 +301,7 @@ func TestPriceExpander(t *testing.T) {
 			},
 		},
 		&testPreferredNodeProvider{
-			preferred: buildNode(2000, 1024*1024*1024),
+			preferred: buildNode(2000, units.GiB),
 		},
 		SimpleNodeUnfitness,
 	).BestOption(options3, nodeInfosForGroups).Debug, "ng3")
