@@ -21,6 +21,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 
 	"github.com/stretchr/testify/assert"
@@ -45,7 +46,7 @@ func makePod(cpuPerPod, memoryPerPod int64) *apiv1.Pod {
 
 func TestEstimate(t *testing.T) {
 	cpuPerPod := int64(500)
-	memoryPerPod := int64(1000 * 1024 * 1024)
+	memoryPerPod := int64(1000 * units.MiB)
 	pod := makePod(cpuPerPod, memoryPerPod)
 
 	pods := []*apiv1.Pod{}
@@ -81,7 +82,7 @@ func TestEstimate(t *testing.T) {
 
 func TestEstimateWithComing(t *testing.T) {
 	cpuPerPod := int64(500)
-	memoryPerPod := int64(1000 * 1024 * 1024)
+	memoryPerPod := int64(1000 * units.MiB)
 
 	pod := makePod(cpuPerPod, memoryPerPod)
 	pods := []*apiv1.Pod{}
@@ -119,7 +120,7 @@ func TestEstimateWithComing(t *testing.T) {
 
 func TestEstimateWithPorts(t *testing.T) {
 	cpuPerPod := int64(500)
-	memoryPerPod := int64(1000 * 1024 * 1024)
+	memoryPerPod := int64(1000 * units.MiB)
 
 	pod := makePod(cpuPerPod, memoryPerPod)
 	pod.Spec.Containers[0].Ports = []apiv1.ContainerPort{
