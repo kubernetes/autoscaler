@@ -45,6 +45,8 @@ import (
 	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 )
 
+const MiB = 1024 * 1024
+
 func TestPodSchedulableMap(t *testing.T) {
 	rc1 := apiv1.ReplicationController{
 		ObjectMeta: metav1.ObjectMeta{
@@ -584,19 +586,19 @@ func TestConfigurePredicateCheckerForLoop(t *testing.T) {
 }
 
 func TestGetNodeResource(t *testing.T) {
-	node := BuildTestNode("n1", 1000, 2*MB)
+	node := BuildTestNode("n1", 1000, 2*MiB)
 
 	cores := getNodeResource(node, apiv1.ResourceCPU)
 	assert.Equal(t, int64(1), cores)
 
 	memory := getNodeResource(node, apiv1.ResourceMemory)
-	assert.Equal(t, int64(2*MB), memory)
+	assert.Equal(t, int64(2*MiB), memory)
 
 	unknownResourceValue := getNodeResource(node, "unknown resource")
 	assert.Equal(t, int64(0), unknownResourceValue)
 
 	// if we have no resources in capacity we expect getNodeResource to return 0
-	nodeWithMissingCapacity := BuildTestNode("n1", 1000, 2*MB)
+	nodeWithMissingCapacity := BuildTestNode("n1", 1000, 2*MiB)
 	nodeWithMissingCapacity.Status.Capacity = apiv1.ResourceList{}
 
 	cores = getNodeResource(nodeWithMissingCapacity, apiv1.ResourceCPU)
@@ -606,7 +608,7 @@ func TestGetNodeResource(t *testing.T) {
 	assert.Equal(t, int64(0), memory)
 
 	// if we have negative values in resources we expect getNodeResource to return 0
-	nodeWithNegativeCapacity := BuildTestNode("n1", -1000, -2*MB)
+	nodeWithNegativeCapacity := BuildTestNode("n1", -1000, -2*MiB)
 	nodeWithNegativeCapacity.Status.Capacity = apiv1.ResourceList{}
 
 	cores = getNodeResource(nodeWithNegativeCapacity, apiv1.ResourceCPU)
@@ -618,14 +620,14 @@ func TestGetNodeResource(t *testing.T) {
 }
 
 func TestGetNodeCoresAndMemory(t *testing.T) {
-	node := BuildTestNode("n1", 2000, 2048*MB)
+	node := BuildTestNode("n1", 2000, 2048*MiB)
 
 	cores, memory := getNodeCoresAndMemory(node)
 	assert.Equal(t, int64(2), cores)
-	assert.Equal(t, int64(2048*MB), memory)
+	assert.Equal(t, int64(2048*MiB), memory)
 
 	// if we have no cpu/memory defined in capacity we expect getNodeCoresAndMemory to return 0s
-	nodeWithMissingCapacity := BuildTestNode("n1", 1000, 2*MB)
+	nodeWithMissingCapacity := BuildTestNode("n1", 1000, 2*MiB)
 	nodeWithMissingCapacity.Status.Capacity = apiv1.ResourceList{}
 
 	cores, memory = getNodeCoresAndMemory(nodeWithMissingCapacity)

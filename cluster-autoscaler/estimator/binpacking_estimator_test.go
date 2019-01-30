@@ -24,6 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 
 	"github.com/stretchr/testify/assert"
@@ -33,7 +34,7 @@ func TestBinpackingEstimate(t *testing.T) {
 	estimator := NewBinpackingNodeEstimator(simulator.NewTestPredicateChecker())
 
 	cpuPerPod := int64(350)
-	memoryPerPod := int64(1000 * 1024 * 1024)
+	memoryPerPod := int64(1000 * units.MiB)
 	pod := makePod(cpuPerPod, memoryPerPod)
 
 	pods := make([]*apiv1.Pod, 0)
@@ -62,7 +63,7 @@ func TestBinpackingEstimateComingNodes(t *testing.T) {
 	estimator := NewBinpackingNodeEstimator(simulator.NewTestPredicateChecker())
 
 	cpuPerPod := int64(350)
-	memoryPerPod := int64(1000 * 1024 * 1024)
+	memoryPerPod := int64(1000 * units.MiB)
 	pod := makePod(cpuPerPod, memoryPerPod)
 
 	pods := make([]*apiv1.Pod, 0)
@@ -92,7 +93,7 @@ func TestBinpackingEstimateWithPorts(t *testing.T) {
 	estimator := NewBinpackingNodeEstimator(simulator.NewTestPredicateChecker())
 
 	cpuPerPod := int64(200)
-	memoryPerPod := int64(1000 * 1024 * 1024)
+	memoryPerPod := int64(1000 * units.MiB)
 	pod := makePod(cpuPerPod, memoryPerPod)
 	pod.Spec.Containers[0].Ports = []apiv1.ContainerPort{
 		{
