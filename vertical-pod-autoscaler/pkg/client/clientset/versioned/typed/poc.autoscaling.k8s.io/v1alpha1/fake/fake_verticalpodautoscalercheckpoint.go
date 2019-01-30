@@ -62,7 +62,7 @@ func (c *FakeVerticalPodAutoscalerCheckpoints) List(opts v1.ListOptions) (result
 	if label == nil {
 		label = labels.Everything()
 	}
-	list := &v1alpha1.VerticalPodAutoscalerCheckpointList{}
+	list := &v1alpha1.VerticalPodAutoscalerCheckpointList{ListMeta: obj.(*v1alpha1.VerticalPodAutoscalerCheckpointList).ListMeta}
 	for _, item := range obj.(*v1alpha1.VerticalPodAutoscalerCheckpointList).Items {
 		if label.Matches(labels.Set(item.Labels)) {
 			list.Items = append(list.Items, item)
