@@ -27,6 +27,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 
 	"k8s.io/klog"
@@ -47,11 +48,11 @@ type priceBased struct {
 var (
 	// defaultPreferredNode is the node that is preferred if PreferredNodeProvider fails.
 	// 4 cpu, 16gb ram.
-	defaultPreferredNode = buildNode(4*1000, 4*4*1024*1024*1024)
+	defaultPreferredNode = buildNode(4*1000, 4*4*units.GiB)
 
 	// priceStabilizationPod is the pod cost to stabilize node_cost/pod_cost ratio a bit.
 	// 0.5 cpu, 500 mb ram
-	priceStabilizationPod = buildPod("stabilize", 500, 500*1024*1024)
+	priceStabilizationPod = buildPod("stabilize", 500, 500*units.MiB)
 
 	// Penalty given to node groups that are yet to be created.
 	// TODO: make it a flag
