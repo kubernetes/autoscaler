@@ -24,7 +24,7 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	watch "k8s.io/apimachinery/pkg/watch"
-	autoscaling_k8s_io_v1beta1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
+	autoscalingk8siov1beta1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
 	versioned "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	internalinterfaces "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/informers/externalversions/internalinterfaces"
 	v1beta1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1beta1"
@@ -70,7 +70,7 @@ func NewFilteredVerticalPodAutoscalerCheckpointInformer(client versioned.Interfa
 				return client.AutoscalingV1beta1().VerticalPodAutoscalerCheckpoints(namespace).Watch(options)
 			},
 		},
-		&autoscaling_k8s_io_v1beta1.VerticalPodAutoscalerCheckpoint{},
+		&autoscalingk8siov1beta1.VerticalPodAutoscalerCheckpoint{},
 		resyncPeriod,
 		indexers,
 	)
@@ -81,7 +81,7 @@ func (f *verticalPodAutoscalerCheckpointInformer) defaultInformer(client version
 }
 
 func (f *verticalPodAutoscalerCheckpointInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&autoscaling_k8s_io_v1beta1.VerticalPodAutoscalerCheckpoint{}, f.defaultInformer)
+	return f.factory.InformerFor(&autoscalingk8siov1beta1.VerticalPodAutoscalerCheckpoint{}, f.defaultInformer)
 }
 
 func (f *verticalPodAutoscalerCheckpointInformer) Lister() v1beta1.VerticalPodAutoscalerCheckpointLister {
