@@ -53,7 +53,7 @@ import (
 var defaultOptions = context.AutoscalingOptions{
 	EstimatorName:  estimator.BinpackingEstimatorName,
 	MaxCoresTotal:  config.DefaultMaxClusterCores,
-	MaxMemoryTotal: config.DefaultMaxClusterMemory * units.Gigabyte,
+	MaxMemoryTotal: config.DefaultMaxClusterMemory * units.GiB,
 	MinCoresTotal:  0,
 	MinMemoryTotal: 0,
 }
@@ -127,24 +127,22 @@ func TestScaleUpMaxCoresLimitHitWithNotAutoscaledGroup(t *testing.T) {
 	simpleScaleUpTest(t, config)
 }
 
-const MB = 1024 * 1024
-
 func TestScaleUpMaxMemoryLimitHit(t *testing.T) {
 	options := defaultOptions
-	options.MaxMemoryTotal = 1300 * MB
+	options.MaxMemoryTotal = 1300 * MiB
 	config := &scaleTestConfig{
 		nodes: []nodeConfig{
-			{"n1", 2000, 100 * MB, 0, true, "ng1"},
-			{"n2", 4000, 1000 * MB, 0, true, "ng2"},
+			{"n1", 2000, 100 * MiB, 0, true, "ng1"},
+			{"n2", 4000, 1000 * MiB, 0, true, "ng2"},
 		},
 		pods: []podConfig{
 			{"p1", 1000, 0, 0, "n1"},
 			{"p2", 3000, 0, 0, "n2"},
 		},
 		extraPods: []podConfig{
-			{"p-new-1", 2000, 100 * MB, 0, ""},
-			{"p-new-2", 2000, 100 * MB, 0, ""},
-			{"p-new-3", 2000, 100 * MB, 0, ""},
+			{"p-new-1", 2000, 100 * MiB, 0, ""},
+			{"p-new-2", 2000, 100 * MiB, 0, ""},
+			{"p-new-3", 2000, 100 * MiB, 0, ""},
 		},
 		scaleUpOptionToChoose: groupSizeChange{groupName: "ng1", sizeChange: 3},
 		expectedFinalScaleUp:  groupSizeChange{groupName: "ng1", sizeChange: 2},
@@ -156,20 +154,20 @@ func TestScaleUpMaxMemoryLimitHit(t *testing.T) {
 
 func TestScaleUpMaxMemoryLimitHitWithNotAutoscaledGroup(t *testing.T) {
 	options := defaultOptions
-	options.MaxMemoryTotal = 1300 * MB
+	options.MaxMemoryTotal = 1300 * MiB
 	config := &scaleTestConfig{
 		nodes: []nodeConfig{
-			{"n1", 2000, 100 * MB, 0, true, "ng1"},
-			{"n2", 4000, 1000 * MB, 0, true, ""},
+			{"n1", 2000, 100 * MiB, 0, true, "ng1"},
+			{"n2", 4000, 1000 * MiB, 0, true, ""},
 		},
 		pods: []podConfig{
 			{"p1", 1000, 0, 0, "n1"},
 			{"p2", 3000, 0, 0, "n2"},
 		},
 		extraPods: []podConfig{
-			{"p-new-1", 2000, 100 * MB, 0, ""},
-			{"p-new-2", 2000, 100 * MB, 0, ""},
-			{"p-new-3", 2000, 100 * MB, 0, ""},
+			{"p-new-1", 2000, 100 * MiB, 0, ""},
+			{"p-new-2", 2000, 100 * MiB, 0, ""},
+			{"p-new-3", 2000, 100 * MiB, 0, ""},
 		},
 		scaleUpOptionToChoose: groupSizeChange{groupName: "ng1", sizeChange: 3},
 		expectedFinalScaleUp:  groupSizeChange{groupName: "ng1", sizeChange: 2},
@@ -184,17 +182,17 @@ func TestScaleUpCapToMaxTotalNodesLimit(t *testing.T) {
 	options.MaxNodesTotal = 3
 	config := &scaleTestConfig{
 		nodes: []nodeConfig{
-			{"n1", 2000, 100 * MB, 0, true, "ng1"},
-			{"n2", 4000, 1000 * MB, 0, true, "ng2"},
+			{"n1", 2000, 100 * MiB, 0, true, "ng1"},
+			{"n2", 4000, 1000 * MiB, 0, true, "ng2"},
 		},
 		pods: []podConfig{
 			{"p1", 1000, 0, 0, "n1"},
 			{"p2", 3000, 0, 0, "n2"},
 		},
 		extraPods: []podConfig{
-			{"p-new-1", 4000, 100 * MB, 0, ""},
-			{"p-new-2", 4000, 100 * MB, 0, ""},
-			{"p-new-3", 4000, 100 * MB, 0, ""},
+			{"p-new-1", 4000, 100 * MiB, 0, ""},
+			{"p-new-2", 4000, 100 * MiB, 0, ""},
+			{"p-new-3", 4000, 100 * MiB, 0, ""},
 		},
 		scaleUpOptionToChoose: groupSizeChange{groupName: "ng2", sizeChange: 3},
 		expectedFinalScaleUp:  groupSizeChange{groupName: "ng2", sizeChange: 1},
@@ -209,17 +207,17 @@ func TestScaleUpCapToMaxTotalNodesLimitWithNotAutoscaledGroup(t *testing.T) {
 	options.MaxNodesTotal = 3
 	config := &scaleTestConfig{
 		nodes: []nodeConfig{
-			{"n1", 2000, 100 * MB, 0, true, ""},
-			{"n2", 4000, 1000 * MB, 0, true, "ng2"},
+			{"n1", 2000, 100 * MiB, 0, true, ""},
+			{"n2", 4000, 1000 * MiB, 0, true, "ng2"},
 		},
 		pods: []podConfig{
 			{"p1", 1000, 0, 0, "n1"},
 			{"p2", 3000, 0, 0, "n2"},
 		},
 		extraPods: []podConfig{
-			{"p-new-1", 4000, 100 * MB, 0, ""},
-			{"p-new-2", 4000, 100 * MB, 0, ""},
-			{"p-new-3", 4000, 100 * MB, 0, ""},
+			{"p-new-1", 4000, 100 * MiB, 0, ""},
+			{"p-new-2", 4000, 100 * MiB, 0, ""},
+			{"p-new-3", 4000, 100 * MiB, 0, ""},
 		},
 		scaleUpOptionToChoose: groupSizeChange{groupName: "ng2", sizeChange: 3},
 		expectedFinalScaleUp:  groupSizeChange{groupName: "ng2", sizeChange: 1},
@@ -234,15 +232,15 @@ func TestWillConsiderGpuAndStandardPoolForPodWhichDoesNotRequireGpu(t *testing.T
 	options.MaxNodesTotal = 100
 	config := &scaleTestConfig{
 		nodes: []nodeConfig{
-			{"gpu-node-1", 2000, 1000 * MB, 1, true, "gpu-pool"},
-			{"std-node-1", 2000, 1000 * MB, 0, true, "std-pool"},
+			{"gpu-node-1", 2000, 1000 * MiB, 1, true, "gpu-pool"},
+			{"std-node-1", 2000, 1000 * MiB, 0, true, "std-pool"},
 		},
 		pods: []podConfig{
-			{"gpu-pod-1", 2000, 1000 * MB, 1, "gpu-node-1"},
-			{"std-pod-1", 2000, 1000 * MB, 0, "std-node-1"},
+			{"gpu-pod-1", 2000, 1000 * MiB, 1, "gpu-node-1"},
+			{"std-pod-1", 2000, 1000 * MiB, 0, "std-node-1"},
 		},
 		extraPods: []podConfig{
-			{"extra-std-pod", 2000, 1000 * MB, 0, ""},
+			{"extra-std-pod", 2000, 1000 * MiB, 0, ""},
 		},
 		expectedScaleUpOptions: []groupSizeChange{
 			{groupName: "std-pool", sizeChange: 1},
@@ -261,15 +259,15 @@ func TestWillConsiderOnlyGpuPoolForPodWhichDoesRequiresGpu(t *testing.T) {
 	options.MaxNodesTotal = 100
 	config := &scaleTestConfig{
 		nodes: []nodeConfig{
-			{"gpu-node-1", 2000, 1000 * MB, 1, true, "gpu-pool"},
-			{"std-node-1", 2000, 1000 * MB, 0, true, "std-pool"},
+			{"gpu-node-1", 2000, 1000 * MiB, 1, true, "gpu-pool"},
+			{"std-node-1", 2000, 1000 * MiB, 0, true, "std-pool"},
 		},
 		pods: []podConfig{
-			{"gpu-pod-1", 2000, 1000 * MB, 1, "gpu-node-1"},
-			{"std-pod-1", 2000, 1000 * MB, 0, "std-node-1"},
+			{"gpu-pod-1", 2000, 1000 * MiB, 1, "gpu-node-1"},
+			{"std-pod-1", 2000, 1000 * MiB, 0, "std-node-1"},
 		},
 		extraPods: []podConfig{
-			{"extra-gpu-pod", 2000, 1000 * MB, 1, ""},
+			{"extra-gpu-pod", 2000, 1000 * MiB, 1, ""},
 		},
 		expectedScaleUpOptions: []groupSizeChange{
 			{groupName: "gpu-pool", sizeChange: 1},
@@ -287,21 +285,21 @@ func TestWillConsiderAllPoolsWhichFitTwoPodsRequiringGpus(t *testing.T) {
 	options.MaxNodesTotal = 100
 	config := &scaleTestConfig{
 		nodes: []nodeConfig{
-			{"gpu-1-node-1", 2000, 1000 * MB, 1, true, "gpu-1-pool"},
-			{"gpu-2-node-1", 2000, 1000 * MB, 2, true, "gpu-2-pool"},
-			{"gpu-4-node-1", 2000, 1000 * MB, 4, true, "gpu-4-pool"},
-			{"std-node-1", 2000, 1000 * MB, 0, true, "std-pool"},
+			{"gpu-1-node-1", 2000, 1000 * MiB, 1, true, "gpu-1-pool"},
+			{"gpu-2-node-1", 2000, 1000 * MiB, 2, true, "gpu-2-pool"},
+			{"gpu-4-node-1", 2000, 1000 * MiB, 4, true, "gpu-4-pool"},
+			{"std-node-1", 2000, 1000 * MiB, 0, true, "std-pool"},
 		},
 		pods: []podConfig{
-			{"gpu-pod-1", 2000, 1000 * MB, 1, "gpu-1-node-1"},
-			{"gpu-pod-2", 2000, 1000 * MB, 2, "gpu-2-node-1"},
-			{"gpu-pod-3", 2000, 1000 * MB, 4, "gpu-4-node-1"},
-			{"std-pod-1", 2000, 1000 * MB, 0, "std-node-1"},
+			{"gpu-pod-1", 2000, 1000 * MiB, 1, "gpu-1-node-1"},
+			{"gpu-pod-2", 2000, 1000 * MiB, 2, "gpu-2-node-1"},
+			{"gpu-pod-3", 2000, 1000 * MiB, 4, "gpu-4-node-1"},
+			{"std-pod-1", 2000, 1000 * MiB, 0, "std-node-1"},
 		},
 		extraPods: []podConfig{
-			{"extra-gpu-pod-1", 1, 1 * MB, 1, ""}, // CPU and mem negligible
-			{"extra-gpu-pod-2", 1, 1 * MB, 1, ""}, // CPU and mem negligible
-			{"extra-gpu-pod-3", 1, 1 * MB, 1, ""}, // CPU and mem negligible
+			{"extra-gpu-pod-1", 1, 1 * MiB, 1, ""}, // CPU and mem negligible
+			{"extra-gpu-pod-2", 1, 1 * MiB, 1, ""}, // CPU and mem negligible
+			{"extra-gpu-pod-3", 1, 1 * MiB, 1, ""}, // CPU and mem negligible
 		},
 		expectedScaleUpOptions: []groupSizeChange{
 			{groupName: "gpu-1-pool", sizeChange: 3},

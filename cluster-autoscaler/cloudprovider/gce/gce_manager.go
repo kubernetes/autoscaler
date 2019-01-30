@@ -1108,10 +1108,10 @@ func (m *gceManagerImpl) fetchResourceLimiter() error {
 
 		// GKE API provides memory in GB, but ResourceLimiter expects them in bytes
 		if _, found := minLimits[cloudprovider.ResourceNameMemory]; found {
-			minLimits[cloudprovider.ResourceNameMemory] = minLimits[cloudprovider.ResourceNameMemory] * units.Gigabyte
+			minLimits[cloudprovider.ResourceNameMemory] = minLimits[cloudprovider.ResourceNameMemory] * units.GiB
 		}
 		if _, found := maxLimits[cloudprovider.ResourceNameMemory]; found {
-			maxLimits[cloudprovider.ResourceNameMemory] = maxLimits[cloudprovider.ResourceNameMemory] * units.Gigabyte
+			maxLimits[cloudprovider.ResourceNameMemory] = maxLimits[cloudprovider.ResourceNameMemory] * units.GiB
 		}
 
 		resourceLimiter := cloudprovider.NewResourceLimiter(minLimits, maxLimits)
@@ -1262,7 +1262,7 @@ func (m *gceManagerImpl) getCpuAndMemoryForMachineType(machineType string, zone 
 		}
 		m.addMachineToCache(machineType, zone, machine)
 	}
-	return machine.GuestCpus, machine.MemoryMb * bytesPerMB, nil
+	return machine.GuestCpus, machine.MemoryMb * units.MiB, nil
 }
 
 func parseCustomMachineType(machineType string) (cpu, mem int64, err error) {
@@ -1276,6 +1276,6 @@ func parseCustomMachineType(machineType string) (cpu, mem int64, err error) {
 		return 0, 0, fmt.Errorf("failed to parse all params in %s", machineType)
 	}
 	// Mb to bytes
-	mem = mem * bytesPerMB
+	mem = mem * units.MiB
 	return
 }

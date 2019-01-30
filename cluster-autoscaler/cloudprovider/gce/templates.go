@@ -22,28 +22,16 @@ import (
 	"regexp"
 	"strings"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-
 	gce "google.golang.org/api/compute/v1"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 
 	"github.com/ghodss/yaml"
 	"github.com/golang/glog"
-)
-
-const (
-	mbPerGB           = 1000
-	bytesPerMB        = 1000 * 1000
-	millicoresPerCore = 1000
-	// Kubelet "evictionHard: {memory.available}" is subtracted from
-	// capacity when calculating allocatable (on top of kube-reserved).
-	// We don't have a good place to get it from, but it has been hard-coded
-	// to 100Mi since at least k8s 1.4.
-	kubeletEvictionHardMemory = 100 * 1024 * 1024
 )
 
 // builds templates for gce cloud provider
@@ -61,12 +49,14 @@ func (t *templateBuilder) getAcceleratorCount(accelerators []*gce.AcceleratorCon
 	return count
 }
 
-func (t *templateBuilder) buildCapacity(machineType string, accelerators []*gce.AcceleratorConfig, zone string, cpu int64, mem int64) (apiv1.ResourceList, error) {
+// buildCapacity builds a list of resource capacities given list of hardware.
+func (t *templateBuilder) buildCapacity(cpu int64, mem int64, accelerators []*gce.AcceleratorConfig) (apiv1.ResourceList, error) {
 	capacity := apiv1.ResourceList{}
 	// TODO: get a real value.
 	capacity[apiv1.ResourcePods] = *resource.NewQuantity(110, resource.DecimalSI)
 	capacity[apiv1.ResourceCPU] = *resource.NewQuantity(cpu, resource.DecimalSI)
-	capacity[apiv1.ResourceMemory] = *resource.NewQuantity(mem, resource.DecimalSI)
+	memTotal := mem - CalculateKernelReserved(mem)
+	capacity[apiv1.ResourceMemory] = *resource.NewQuantity(memTotal, resource.DecimalSI)
 
 	if accelerators != nil && len(accelerators) > 0 {
 		capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(t.getAcceleratorCount(accelerators), resource.DecimalSI)
@@ -92,32 +82,20 @@ func (t *templateBuilder) buildAllocatableFromKubeEnv(capacity apiv1.ResourceLis
 	if err != nil {
 		return nil, err
 	}
-	if quantity, found := reserved[apiv1.ResourceMemory]; found {
-		reserved[apiv1.ResourceMemory] = *resource.NewQuantity(quantity.Value()+kubeletEvictionHardMemory, resource.BinarySI)
-	}
-	return t.getAllocatable(capacity, reserved), nil
+	return t.calculateAllocatable(capacity, reserved), nil
 }
 
-// buildAllocatableFromCapacity builds node allocatable based only on node capacity.
-// Calculates reserved as a ratio of capacity. See calculateReserved for more details
-func (t *templateBuilder) buildAllocatableFromCapacity(capacity apiv1.ResourceList) apiv1.ResourceList {
-	memoryReserved := memoryReservedMB(capacity.Memory().Value() / bytesPerMB)
-	cpuReserved := cpuReservedMillicores(capacity.Cpu().MilliValue())
-	reserved := apiv1.ResourceList{}
-	reserved[apiv1.ResourceCPU] = *resource.NewMilliQuantity(cpuReserved, resource.DecimalSI)
-	// Duplicating an upstream bug treating MB as MiB (we need to predict the end result accurately).
-	memoryReserved = memoryReserved * 1024 * 1024
-	memoryReserved += kubeletEvictionHardMemory
-	reserved[apiv1.ResourceMemory] = *resource.NewQuantity(memoryReserved, resource.BinarySI)
-	return t.getAllocatable(capacity, reserved)
-}
-
-func (t *templateBuilder) getAllocatable(capacity, reserved apiv1.ResourceList) apiv1.ResourceList {
+// calculateAllocatable computes allocatable resources subtracting kube reserved values
+// and kubelet eviction memory buffer from corresponding capacity.
+func (t *templateBuilder) calculateAllocatable(capacity, kubeReserved apiv1.ResourceList) apiv1.ResourceList {
 	allocatable := apiv1.ResourceList{}
 	for key, value := range capacity {
 		quantity := *value.Copy()
-		if reservedQuantity, found := reserved[key]; found {
+		if reservedQuantity, found := kubeReserved[key]; found {
 			quantity.Sub(reservedQuantity)
+		}
+		if key == apiv1.ResourceMemory {
+			quantity = *resource.NewQuantity(quantity.Value()-KubeletEvictionHardMemory, resource.BinarySI)
 		}
 		allocatable[key] = quantity
 	}
@@ -139,7 +117,7 @@ func (t *templateBuilder) buildNodeFromTemplate(mig *Mig, template *gce.Instance
 		Labels:   map[string]string{},
 	}
 
-	capacity, err := t.buildCapacity(template.Properties.MachineType, template.Properties.GuestAccelerators, mig.GceRef.Zone, cpu, mem)
+	capacity, err := t.buildCapacity(cpu, mem, template.Properties.GuestAccelerators)
 	if err != nil {
 		return nil, err
 	}
@@ -207,7 +185,7 @@ func (t *templateBuilder) buildNodeFromAutoprovisioningSpec(mig *Mig, cpu int64,
 		Labels:   map[string]string{},
 	}
 
-	capacity, err := t.buildCapacity(mig.spec.machineType, nil, mig.GceRef.Zone, cpu, mem)
+	capacity, err := t.buildCapacity(cpu, mem, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -216,9 +194,11 @@ func (t *templateBuilder) buildNodeFromAutoprovisioningSpec(mig *Mig, cpu int64,
 		capacity[gpu.ResourceNvidiaGPU] = gpuRequest.DeepCopy()
 	}
 
+	kubeReserved := t.buildKubeReserved(cpu, mem)
+
 	node.Status = apiv1.NodeStatus{
 		Capacity:    capacity,
-		Allocatable: t.buildAllocatableFromCapacity(capacity),
+		Allocatable: t.calculateAllocatable(capacity, kubeReserved),
 	}
 
 	labels, err := buildLabelsForAutoprovisionedMig(mig, nodeName)
@@ -232,6 +212,17 @@ func (t *templateBuilder) buildNodeFromAutoprovisioningSpec(mig *Mig, cpu int64,
 	// Ready status
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()
 	return &node, nil
+}
+
+// buildKubeReserved builds kube reserved resources based on node physical resources.
+// See calculateReserved for more details
+func (t *templateBuilder) buildKubeReserved(cpu, physicalMemory int64) apiv1.ResourceList {
+	cpuReservedMillicores := PredictKubeReservedCpuMillicores(cpu * 1000)
+	memoryReserved := PredictKubeReservedMemory(physicalMemory)
+	reserved := apiv1.ResourceList{}
+	reserved[apiv1.ResourceCPU] = *resource.NewMilliQuantity(cpuReservedMillicores, resource.DecimalSI)
+	reserved[apiv1.ResourceMemory] = *resource.NewQuantity(memoryReserved, resource.BinarySI)
+	return reserved
 }
 
 func buildLabelsForAutoprovisionedMig(mig *Mig, nodeName string) (map[string]string, error) {
@@ -405,82 +396,4 @@ func buildTaints(kubeEnvTaints map[string]string) ([]apiv1.Taint, error) {
 		})
 	}
 	return taints, nil
-}
-
-type allocatableBracket struct {
-	threshold            int64
-	marginalReservedRate float64
-}
-
-func memoryReservedMB(memoryCapacityMB int64) int64 {
-	if memoryCapacityMB <= 1*mbPerGB {
-		// do not set any memory reserved for nodes with less than 1 Gb of capacity
-		return 0
-	}
-	return calculateReserved(memoryCapacityMB, []allocatableBracket{
-		{
-			threshold:            0,
-			marginalReservedRate: 0.25,
-		},
-		{
-			threshold:            4 * mbPerGB,
-			marginalReservedRate: 0.2,
-		},
-		{
-			threshold:            8 * mbPerGB,
-			marginalReservedRate: 0.1,
-		},
-		{
-			threshold:            16 * mbPerGB,
-			marginalReservedRate: 0.06,
-		},
-		{
-			threshold:            128 * mbPerGB,
-			marginalReservedRate: 0.02,
-		},
-	})
-}
-
-func cpuReservedMillicores(cpuCapacityMillicores int64) int64 {
-	return calculateReserved(cpuCapacityMillicores, []allocatableBracket{
-		{
-			threshold:            0,
-			marginalReservedRate: 0.06,
-		},
-		{
-			threshold:            1 * millicoresPerCore,
-			marginalReservedRate: 0.01,
-		},
-		{
-			threshold:            2 * millicoresPerCore,
-			marginalReservedRate: 0.005,
-		},
-		{
-			threshold:            4 * millicoresPerCore,
-			marginalReservedRate: 0.0025,
-		},
-	})
-}
-
-// calculateReserved calculates reserved using capacity and a series of
-// brackets as follows:  the marginalReservedRate applies to all capacity
-// greater than the bracket, but less than the next bracket.  For example, if
-// the first bracket is threshold: 0, rate:0.1, and the second bracket has
-// threshold: 100, rate: 0.4, a capacity of 100 results in a reserved of
-// 100*0.1 = 10, but a capacity of 200 results in a reserved of
-// 10 + (200-100)*.4 = 50.  Using brackets with marginal rates ensures that as
-// capacity increases, reserved always increases, and never decreases.
-func calculateReserved(capacity int64, brackets []allocatableBracket) int64 {
-	var reserved float64
-	for i, bracket := range brackets {
-		c := capacity
-		if i < len(brackets)-1 && brackets[i+1].threshold < capacity {
-			c = brackets[i+1].threshold
-		}
-		additionalReserved := float64(c-bracket.threshold) * bracket.marginalReservedRate
-		if additionalReserved > 0 {
-			reserved += additionalReserved
-		}
-	}
-	return int64(reserved)
 }
