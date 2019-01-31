@@ -17,6 +17,8 @@ limitations under the License.
 package deletetaint
 
 import (
+	"fmt"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -24,6 +26,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes/fake"
 	core "k8s.io/client-go/testing"
@@ -33,22 +36,26 @@ import (
 
 func TestMarkNodes(t *testing.T) {
 	node := BuildTestNode("node", 1000, 1000)
-	fakeClient, updatedNodes := buildFakeClientAndUpdateChannel(node)
+	fakeClient := buildFakeClient(t, node)
 	err := MarkToBeDeleted(node, fakeClient)
 	assert.NoError(t, err)
-	assert.Equal(t, node.Name, getStringFromChan(updatedNodes))
-	assert.True(t, HasToBeDeletedTaint(node))
+
+	updatedNode, err := fakeClient.Core().Nodes().Get("node", metav1.GetOptions{})
+	assert.NoError(t, err)
+	assert.True(t, HasToBeDeletedTaint(updatedNode))
 }
 
 func TestCheckNodes(t *testing.T) {
 	node := BuildTestNode("node", 1000, 1000)
-	fakeClient, updatedNodes := buildFakeClientAndUpdateChannel(node)
+	fakeClient := buildFakeClient(t, node)
 	err := MarkToBeDeleted(node, fakeClient)
 	assert.NoError(t, err)
-	assert.Equal(t, node.Name, getStringFromChan(updatedNodes))
-	assert.True(t, HasToBeDeletedTaint(node))
 
-	val, err := GetToBeDeletedTime(node)
+	updatedNode, err := fakeClient.Core().Nodes().Get("node", metav1.GetOptions{})
+	assert.NoError(t, err)
+	assert.True(t, HasToBeDeletedTaint(updatedNode))
+
+	val, err := GetToBeDeletedTime(updatedNode)
 	assert.NoError(t, err)
 	assert.True(t, time.Now().Sub(*val) < 10*time.Second)
 }
@@ -56,39 +63,39 @@ func TestCheckNodes(t *testing.T) {
 func TestCleanNodes(t *testing.T) {
 	node := BuildTestNode("node", 1000, 1000)
 	addToBeDeletedTaint(node)
-	fakeClient, updatedNodes := buildFakeClientAndUpdateChannel(node)
+	fakeClient := buildFakeClient(t, node)
 
 	cleaned, err := CleanToBeDeleted(node, fakeClient)
 	assert.True(t, cleaned)
 	assert.NoError(t, err)
-	assert.Equal(t, node.Name, getStringFromChan(updatedNodes))
-	assert.False(t, HasToBeDeletedTaint(node))
+
+	updatedNode, err := fakeClient.Core().Nodes().Get("node", metav1.GetOptions{})
+	assert.NoError(t, err)
+	assert.False(t, HasToBeDeletedTaint(updatedNode))
 }
 
-func buildFakeClientAndUpdateChannel(node *apiv1.Node) (*fake.Clientset, chan string) {
-	fakeClient := &fake.Clientset{}
-	updatedNodes := make(chan string, 10)
-	fakeClient.Fake.AddReactor("get", "nodes", func(action core.Action) (bool, runtime.Object, error) {
-		get := action.(core.GetAction)
-		if get.GetName() == node.Name {
-			return true, node, nil
-		}
-		return true, nil, errors.NewNotFound(apiv1.Resource("node"), get.GetName())
-	})
-	fakeClient.Fake.AddReactor("update", "nodes", func(action core.Action) (bool, runtime.Object, error) {
+func buildFakeClient(t *testing.T, node *apiv1.Node) *fake.Clientset {
+	fakeClient := fake.NewSimpleClientset()
+
+	_, err := fakeClient.CoreV1().Nodes().Create(node)
+	assert.NoError(t, err)
+
+	// return a 'Conflict' error on the first upadte, then pass it through, then return a Conflict again
+	var returnedConflict int32
+	fakeClient.Fake.PrependReactor("update", "nodes", func(action core.Action) (bool, runtime.Object, error) {
 		update := action.(core.UpdateAction)
 		obj := update.GetObject().(*apiv1.Node)
-		updatedNodes <- obj.Name
-		return true, obj, nil
-	})
-	return fakeClient, updatedNodes
-}
 
-func getStringFromChan(c chan string) string {
-	select {
-	case val := <-c:
-		return val
-	case <-time.After(time.Second * 10):
-		return "Nothing returned"
-	}
+		if atomic.LoadInt32(&returnedConflict) == 0 {
+			// allow the next update
+			atomic.StoreInt32(&returnedConflict, 1)
+			return true, nil, errors.NewConflict(apiv1.Resource("node"), obj.GetName(), fmt.Errorf("concurrent update on %s", obj.GetName()))
+		}
+
+		// return a conflict on next update
+		atomic.StoreInt32(&returnedConflict, 0)
+		return false, nil, nil
+	})
+
+	return fakeClient
 }
