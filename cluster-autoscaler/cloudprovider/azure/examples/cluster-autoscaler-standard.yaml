@@ -42,7 +42,7 @@ rules:
   resources: ["poddisruptionbudgets"]
   verbs: ["watch","list"]
 - apiGroups: ["apps"]
-  resources: ["statefulsets", "replicasets"]
+  resources: ["statefulsets", "replicasets","daemonsets"]
   verbs: ["watch","list","get"]
 - apiGroups: ["storage.k8s.io"]
   resources: ["storageclasses"]
@@ -112,7 +112,8 @@ data:
   ResourceGroup: <base64-encoded-resource-group>
   SubscriptionID: <base64-encode-subscription-id>
   TenantID: <base64-encoded-tenant-id>
-  VMType: dm1zcw==
+  Deployment: <base64-encoded-azure-initial-deploy-name>
+  VMType: c3RhbmRhcmQ=
 kind: Secret
 metadata:
   name: cluster-autoscaler-azure
@@ -137,24 +138,14 @@ spec:
     spec:
       serviceAccountName: cluster-autoscaler
       containers:
-      - image: k8s.gcr.io/cluster-autoscaler:{{ ca_version }}
-        imagePullPolicy: Always
-        name: cluster-autoscaler
-        resources:
-          limits:
-            cpu: 100m
-            memory: 300Mi
-          requests:
-            cpu: 100m
-            memory: 300Mi
-        command:
+      - command:
         - ./cluster-autoscaler
         - --v=3
         - --logtostderr=true
         - --cloud-provider=azure
         - --skip-nodes-with-local-storage=false
-        - --nodes=1:10:vmss1
-        - --nodes=1:10:vmss2
+        - --nodes=1:10:agentpool1
+        - --nodes=1:10:agentpool2
         env:
         - name: ARM_SUBSCRIPTION_ID
           valueFrom:
@@ -186,13 +177,38 @@ spec:
             secretKeyRef:
               key: VMType
               name: cluster-autoscaler-azure
+        - name: ARM_DEPLOYMENT
+          valueFrom:
+            secretKeyRef:
+              key: Deployment
+              name: cluster-autoscaler-azure
+        image: k8s.gcr.io/cluster-autoscaler:{{ ca_version }}
+        imagePullPolicy: Always
+        name: cluster-autoscaler
+        resources:
+          limits:
+            cpu: 100m
+            memory: 300Mi
+          requests:
+            cpu: 100m
+            memory: 300Mi
         volumeMounts:
         - mountPath: /etc/ssl/certs/ca-certificates.crt
           name: ssl-certs
           readOnly: true
+        - mountPath: /var/lib/azure/
+          name: deploy-parameters
+          readOnly: true
+      dnsPolicy: ClusterFirst
       restartPolicy: Always
       volumes:
       - hostPath:
           path: /etc/ssl/certs/ca-certificates.crt
           type: ""
         name: ssl-certs
+      - name: deploy-parameters
+        secret:
+          secretName: cluster-autoscaler-azure-deploy-parameters
+          items:
+          - key: deploy-parameters
+            path: azuredeploy.parameters.json
