@@ -118,6 +118,8 @@ var (
 	gpuTotal          = multiStringFlag("gpu-total", "Minimum and maximum number of different GPUs in cluster, in the format <gpu_type>:<min>:<max>. Cluster autoscaler will not scale the cluster beyond these numbers. Can be passed multiple times. CURRENTLY THIS FLAG ONLY WORKS ON GKE.")
 	cloudProviderFlag = flag.String("cloud-provider", cloudBuilder.DefaultCloudProvider,
 		"Cloud provider type. Available values: ["+strings.Join(cloudBuilder.AvailableCloudProviders, ",")+"]")
+	maxBulkSoftTaintCount      = flag.Int("max-bulk-soft-taint-count", 10, "Maximum number of nodes that can be tainted/untainted PreferNoSchedule at the same time. Set to 0 to turn off such tainting.")
+	maxBulkSoftTaintTime       = flag.Duration("max-bulk-soft-taint-time", 3*time.Second, "Maximum duration of tainting/untainting nodes as PreferNoSchedule at the same time.")
 	maxEmptyBulkDeleteFlag     = flag.Int("max-empty-bulk-delete", 10, "Maximum number of empty nodes that can be deleted at the same time.")
 	maxGracefulTerminationFlag = flag.Int("max-graceful-termination-sec", 10*60, "Maximum number of seconds CA waits for pod termination when trying to scale down a node.")
 	maxTotalUnreadyPercentage  = flag.Float64("max-total-unready-percentage", 45, "Maximum percentage of unready nodes in the cluster.  After this is exceeded, CA halts operations")
@@ -152,10 +154,14 @@ var (
 	nodeAutoprovisioningEnabled      = flag.Bool("node-autoprovisioning-enabled", false, "Should CA autoprovision node groups when needed")
 	maxAutoprovisionedNodeGroupCount = flag.Int("max-autoprovisioned-node-group-count", 15, "The maximum number of autoprovisioned groups in the cluster.")
 
-	unremovableNodeRecheckTimeout = flag.Duration("unremovable-node-recheck-timeout", 5*time.Minute, "The timeout before we check again a node that couldn't be removed before")
-	expendablePodsPriorityCutoff  = flag.Int("expendable-pods-priority-cutoff", -10, "Pods with priority below cutoff will be expendable. They can be killed without any consideration during scale down and they don't cause scale up. Pods with null priority (PodPriority disabled) are non expendable.")
-	regional                      = flag.Bool("regional", false, "Cluster is regional.")
-	newPodScaleUpDelay            = flag.Duration("new-pod-scale-up-delay", 0*time.Second, "Pods less than this old will not be considered for scale-up.")
+	unremovableNodeRecheckTimeout       = flag.Duration("unremovable-node-recheck-timeout", 5*time.Minute, "The timeout before we check again a node that couldn't be removed before")
+	expendablePodsPriorityCutoff        = flag.Int("expendable-pods-priority-cutoff", -10, "Pods with priority below cutoff will be expendable. They can be killed without any consideration during scale down and they don't cause scale up. Pods with null priority (PodPriority disabled) are non expendable.")
+	regional                            = flag.Bool("regional", false, "Cluster is regional.")
+	newPodScaleUpDelay                  = flag.Duration("new-pod-scale-up-delay", 0*time.Second, "Pods less than this old will not be considered for scale-up.")
+	filterOutSchedulablePodsUsesPacking = flag.Bool("filter-out-schedulable-pods-uses-packing", true,
+		"Filtering out schedulable pods before CA scale up by trying to pack the schedulable pods on free capacity on existing nodes."+
+			"Setting it to false employs a more lenient filtering approach that does not try to pack the pods on the nodes."+
+			"Pods with nominatedNodeName set are always filtered out.")
 )
 
 func createAutoscalingOptions() config.AutoscalingOptions {
@@ -177,45 +183,48 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 	}
 
 	return config.AutoscalingOptions{
-		CloudConfig:                      *cloudConfig,
-		CloudProviderName:                *cloudProviderFlag,
-		NodeGroupAutoDiscovery:           *nodeGroupAutoDiscoveryFlag,
-		MaxTotalUnreadyPercentage:        *maxTotalUnreadyPercentage,
-		OkTotalUnreadyCount:              *okTotalUnreadyCount,
-		EstimatorName:                    *estimatorFlag,
-		ExpanderName:                     *expanderFlag,
-		IgnoreDaemonSetsUtilization:      *ignoreDaemonSetsUtilization,
-		IgnoreMirrorPodsUtilization:      *ignoreMirrorPodsUtilization,
-		MaxEmptyBulkDelete:               *maxEmptyBulkDeleteFlag,
-		MaxGracefulTerminationSec:        *maxGracefulTerminationFlag,
-		MaxNodeProvisionTime:             *maxNodeProvisionTime,
-		MaxNodesTotal:                    *maxNodesTotal,
-		MaxCoresTotal:                    maxCoresTotal,
-		MinCoresTotal:                    minCoresTotal,
-		MaxMemoryTotal:                   maxMemoryTotal,
-		MinMemoryTotal:                   minMemoryTotal,
-		GpuTotal:                         parsedGpuTotal,
-		NodeGroups:                       *nodeGroupsFlag,
-		ScaleDownDelayAfterAdd:           *scaleDownDelayAfterAdd,
-		ScaleDownDelayAfterDelete:        *scaleDownDelayAfterDelete,
-		ScaleDownDelayAfterFailure:       *scaleDownDelayAfterFailure,
-		ScaleDownEnabled:                 *scaleDownEnabled,
-		ScaleDownUnneededTime:            *scaleDownUnneededTime,
-		ScaleDownUnreadyTime:             *scaleDownUnreadyTime,
-		ScaleDownUtilizationThreshold:    *scaleDownUtilizationThreshold,
-		ScaleDownNonEmptyCandidatesCount: *scaleDownNonEmptyCandidatesCount,
-		ScaleDownCandidatesPoolRatio:     *scaleDownCandidatesPoolRatio,
-		ScaleDownCandidatesPoolMinCount:  *scaleDownCandidatesPoolMinCount,
-		WriteStatusConfigMap:             *writeStatusConfigMapFlag,
-		BalanceSimilarNodeGroups:         *balanceSimilarNodeGroupsFlag,
-		ConfigNamespace:                  *namespace,
-		ClusterName:                      *clusterName,
-		NodeAutoprovisioningEnabled:      *nodeAutoprovisioningEnabled,
-		MaxAutoprovisionedNodeGroupCount: *maxAutoprovisionedNodeGroupCount,
-		UnremovableNodeRecheckTimeout:    *unremovableNodeRecheckTimeout,
-		ExpendablePodsPriorityCutoff:     *expendablePodsPriorityCutoff,
-		Regional:                         *regional,
-		NewPodScaleUpDelay:               *newPodScaleUpDelay,
+		CloudConfig:                         *cloudConfig,
+		CloudProviderName:                   *cloudProviderFlag,
+		NodeGroupAutoDiscovery:              *nodeGroupAutoDiscoveryFlag,
+		MaxTotalUnreadyPercentage:           *maxTotalUnreadyPercentage,
+		OkTotalUnreadyCount:                 *okTotalUnreadyCount,
+		EstimatorName:                       *estimatorFlag,
+		ExpanderName:                        *expanderFlag,
+		IgnoreDaemonSetsUtilization:         *ignoreDaemonSetsUtilization,
+		IgnoreMirrorPodsUtilization:         *ignoreMirrorPodsUtilization,
+		MaxBulkSoftTaintCount:               *maxBulkSoftTaintCount,
+		MaxBulkSoftTaintTime:                *maxBulkSoftTaintTime,
+		MaxEmptyBulkDelete:                  *maxEmptyBulkDeleteFlag,
+		MaxGracefulTerminationSec:           *maxGracefulTerminationFlag,
+		MaxNodeProvisionTime:                *maxNodeProvisionTime,
+		MaxNodesTotal:                       *maxNodesTotal,
+		MaxCoresTotal:                       maxCoresTotal,
+		MinCoresTotal:                       minCoresTotal,
+		MaxMemoryTotal:                      maxMemoryTotal,
+		MinMemoryTotal:                      minMemoryTotal,
+		GpuTotal:                            parsedGpuTotal,
+		NodeGroups:                          *nodeGroupsFlag,
+		ScaleDownDelayAfterAdd:              *scaleDownDelayAfterAdd,
+		ScaleDownDelayAfterDelete:           *scaleDownDelayAfterDelete,
+		ScaleDownDelayAfterFailure:          *scaleDownDelayAfterFailure,
+		ScaleDownEnabled:                    *scaleDownEnabled,
+		ScaleDownUnneededTime:               *scaleDownUnneededTime,
+		ScaleDownUnreadyTime:                *scaleDownUnreadyTime,
+		ScaleDownUtilizationThreshold:       *scaleDownUtilizationThreshold,
+		ScaleDownNonEmptyCandidatesCount:    *scaleDownNonEmptyCandidatesCount,
+		ScaleDownCandidatesPoolRatio:        *scaleDownCandidatesPoolRatio,
+		ScaleDownCandidatesPoolMinCount:     *scaleDownCandidatesPoolMinCount,
+		WriteStatusConfigMap:                *writeStatusConfigMapFlag,
+		BalanceSimilarNodeGroups:            *balanceSimilarNodeGroupsFlag,
+		ConfigNamespace:                     *namespace,
+		ClusterName:                         *clusterName,
+		NodeAutoprovisioningEnabled:         *nodeAutoprovisioningEnabled,
+		MaxAutoprovisionedNodeGroupCount:    *maxAutoprovisionedNodeGroupCount,
+		UnremovableNodeRecheckTimeout:       *unremovableNodeRecheckTimeout,
+		ExpendablePodsPriorityCutoff:        *expendablePodsPriorityCutoff,
+		Regional:                            *regional,
+		NewPodScaleUpDelay:                  *newPodScaleUpDelay,
+		FilterOutSchedulablePodsUsesPacking: *filterOutSchedulablePodsUsesPacking,
 	}
 }
 

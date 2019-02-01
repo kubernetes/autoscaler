@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/golang/glog"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
@@ -42,6 +41,8 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	resourceclient "k8s.io/metrics/pkg/client/clientset/versioned/typed/metrics/v1beta1"
+
+	"github.com/golang/glog"
 )
 
 // ClusterStateFeeder can update state of ClusterState object.
@@ -74,7 +75,7 @@ type ClusterStateFeederFactory struct {
 	VpaCheckpointClient vpa_api.VerticalPodAutoscalerCheckpointsGetter
 	VpaLister           vpa_lister.VerticalPodAutoscalerLister
 	PodLister           v1lister.PodLister
-	OOMObserver         *oom.Observer
+	OOMObserver         oom.Observer
 }
 
 // Make creates new ClusterStateFeeder with internal data providers, based on kube client.
@@ -82,7 +83,7 @@ func (m ClusterStateFeederFactory) Make() *clusterStateFeeder {
 	return &clusterStateFeeder{
 		coreClient:          m.KubeClient.CoreV1(),
 		metricsClient:       m.MetricsClient,
-		oomChan:             m.OOMObserver.ObservedOomsChannel,
+		oomChan:             m.OOMObserver.GetObservedOomsChannel(),
 		vpaCheckpointClient: m.VpaCheckpointClient,
 		vpaLister:           m.VpaLister,
 		clusterState:        m.ClusterState,
@@ -112,7 +113,7 @@ func newMetricsClient(config *rest.Config) metrics.MetricsClient {
 }
 
 // WatchEvictionEventsWithRetries watches new Events with reason=Evicted and passes them to the observer.
-func WatchEvictionEventsWithRetries(kubeClient kube_client.Interface, observer *oom.Observer) {
+func WatchEvictionEventsWithRetries(kubeClient kube_client.Interface, observer oom.Observer) {
 	go func() {
 		options := metav1.ListOptions{
 			FieldSelector: "reason=Evicted",
@@ -129,7 +130,7 @@ func WatchEvictionEventsWithRetries(kubeClient kube_client.Interface, observer *
 	}()
 }
 
-func watchEvictionEvents(evictedEventChan <-chan watch.Event, observer *oom.Observer) {
+func watchEvictionEvents(evictedEventChan <-chan watch.Event, observer oom.Observer) {
 	for {
 		evictedEvent, ok := <-evictedEventChan
 		if !ok {
@@ -164,11 +165,11 @@ func newPodClients(kubeClient kube_client.Interface, resourceEventHandler cache.
 }
 
 // NewPodListerAndOOMObserver creates pair of pod lister and OOM observer.
-func NewPodListerAndOOMObserver(kubeClient kube_client.Interface) (v1lister.PodLister, *oom.Observer) {
+func NewPodListerAndOOMObserver(kubeClient kube_client.Interface) (v1lister.PodLister, oom.Observer) {
 	oomObserver := oom.NewObserver()
-	podLister := newPodClients(kubeClient, &oomObserver)
-	WatchEvictionEventsWithRetries(kubeClient, &oomObserver)
-	return podLister, &oomObserver
+	podLister := newPodClients(kubeClient, oomObserver)
+	WatchEvictionEventsWithRetries(kubeClient, oomObserver)
+	return podLister, oomObserver
 }
 
 type clusterStateFeeder struct {
@@ -354,14 +355,7 @@ Loop:
 		select {
 		case oomInfo := <-feeder.oomChan:
 			glog.V(3).Infof("OOM detected %+v", oomInfo)
-			container := model.ContainerID{
-				PodID: model.PodID{
-					Namespace: oomInfo.Namespace,
-					PodName:   oomInfo.Pod,
-				},
-				ContainerName: oomInfo.Container,
-			}
-			feeder.clusterState.RecordOOM(container, oomInfo.Timestamp, model.ResourceAmount(oomInfo.Memory.Value()))
+			feeder.clusterState.RecordOOM(oomInfo.ContainerID, oomInfo.Timestamp, oomInfo.Memory)
 		default:
 			break Loop
 		}
