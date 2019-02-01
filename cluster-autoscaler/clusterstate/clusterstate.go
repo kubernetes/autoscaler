@@ -67,6 +67,8 @@ type ScaleUpRequest struct {
 	ExpectedAddTime time.Time
 	// How much the node group is increased.
 	Increase int
+	// NodeGroupName is the node group to be scaled up.
+	NodeGroupName string
 }
 
 // ScaleDownRequest contains information about the requested node deletion.
@@ -221,9 +223,9 @@ func (csr *ClusterStateRegistry) updateScaleRequests(currentTime time.Time) {
 			// scale-out finished successfully
 			// remove it and reset node group backoff
 			delete(csr.scaleUpRequests, nodeGroupName)
-			csr.backoff.RemoveBackoff(scaleUpRequest.NodeGroup, csr.nodeInfosForGroups[scaleUpRequest.NodeGroup.Id()])
+			csr.backoff.RemoveBackoff(scaleUpRequest.NodeGroup, csr.nodeInfosForGroups[scaleUpRequest.NodeGroupName])
 			klog.V(4).Infof("Scale up in group %v finished successfully in %v",
-				nodeGroupName, currentTime.Sub(scaleUpRequest.Time))
+				scaleUpRequest.NodeGroupName, currentTime.Sub(scaleUpRequest.Time))
 			continue
 		}
 
@@ -232,7 +234,7 @@ func (csr *ClusterStateRegistry) updateScaleRequests(currentTime time.Time) {
 				nodeGroupName, currentTime.Sub(scaleUpRequest.Time))
 			csr.logRecorder.Eventf(apiv1.EventTypeWarning, "ScaleUpTimedOut",
 				"Nodes added to group %s failed to register within %v",
-				scaleUpRequest.NodeGroup.Id(), currentTime.Sub(scaleUpRequest.Time))
+				nodeGroupName, currentTime.Sub(scaleUpRequest.Time))
 			metrics.RegisterFailedScaleUp(metrics.Timeout)
 			csr.backoffNodeGroup(scaleUpRequest.NodeGroup, cloudprovider.OtherErrorClass, "timeout", currentTime)
 			delete(csr.scaleUpRequests, nodeGroupName)
@@ -569,9 +571,9 @@ func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 		perNodeGroup[nodeGroup.Id()] = perNgCopy
 	}
 
-	for ngId, ngReadiness := range perNodeGroup {
+	for ngID, ngReadiness := range perNodeGroup {
 		ngReadiness.Time = currentTime
-		perNodeGroup[ngId] = ngReadiness
+		perNodeGroup[ngID] = ngReadiness
 	}
 	csr.perNodeGroupReadiness = perNodeGroup
 	csr.totalReadiness = total
