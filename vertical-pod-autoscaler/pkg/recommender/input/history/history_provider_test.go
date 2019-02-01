@@ -48,7 +48,8 @@ func (m *mockPrometheusClient) GetTimeseries(query string) ([]Timeseries, error)
 func TestGetEmptyClusterHistory(t *testing.T) {
 	mockClient := mockPrometheusClient{}
 	historyProvider := prometheusHistoryProvider{
-		prometheusClient: &mockClient}
+		prometheusJobName: prometheusJobName,
+		prometheusClient:  &mockClient}
 	mockClient.On("GetTimeseries", mock.AnythingOfType("string")).Times(3).Return(
 		[]Timeseries{}, nil)
 	tss, err := historyProvider.GetClusterHistory()
@@ -60,7 +61,8 @@ func TestGetEmptyClusterHistory(t *testing.T) {
 func TestPrometheusError(t *testing.T) {
 	mockClient := mockPrometheusClient{}
 	historyProvider := prometheusHistoryProvider{
-		prometheusClient: &mockClient}
+		prometheusJobName: prometheusJobName,
+		prometheusClient:  &mockClient}
 	mockClient.On("GetTimeseries", mock.AnythingOfType("string")).Times(3).Return(
 		nil, fmt.Errorf("bla"))
 	_, err := historyProvider.GetClusterHistory()
@@ -70,7 +72,8 @@ func TestPrometheusError(t *testing.T) {
 func TestGetCPUSamples(t *testing.T) {
 	mockClient := mockPrometheusClient{}
 	historyProvider := prometheusHistoryProvider{
-		prometheusClient: &mockClient}
+		prometheusJobName: prometheusJobName,
+		prometheusClient:  &mockClient}
 	mockClient.On("GetTimeseries", cpuQuery).Return(
 		[]Timeseries{{
 			Labels: map[string]string{
@@ -96,7 +99,8 @@ func TestGetCPUSamples(t *testing.T) {
 func TestGetMemorySamples(t *testing.T) {
 	mockClient := mockPrometheusClient{}
 	historyProvider := prometheusHistoryProvider{
-		prometheusClient: &mockClient}
+		prometheusJobName: prometheusJobName,
+		prometheusClient:  &mockClient}
 	mockClient.On("GetTimeseries", cpuQuery).Return([]Timeseries{}, nil)
 	mockClient.On("GetTimeseries", memoryQuery).Return(
 		[]Timeseries{{
@@ -122,7 +126,8 @@ func TestGetMemorySamples(t *testing.T) {
 func TestGetLabels(t *testing.T) {
 	mockClient := mockPrometheusClient{}
 	historyProvider := prometheusHistoryProvider{
-		prometheusClient: &mockClient}
+		prometheusJobName: prometheusJobName,
+		prometheusClient:  &mockClient}
 	mockClient.On("GetTimeseries", cpuQuery).Return([]Timeseries{}, nil)
 	mockClient.On("GetTimeseries", memoryQuery).Return([]Timeseries{}, nil)
 	mockClient.On("GetTimeseries", labelsQuery).Return([]Timeseries{

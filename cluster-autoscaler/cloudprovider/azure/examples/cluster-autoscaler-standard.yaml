@@ -42,7 +42,7 @@ rules:
   resources: ["poddisruptionbudgets"]
   verbs: ["watch","list"]
 - apiGroups: ["apps"]
-  resources: ["statefulsets", "replicasets"]
+  resources: ["statefulsets", "replicasets","daemonsets"]
   verbs: ["watch","list","get"]
 - apiGroups: ["storage.k8s.io"]
   resources: ["storageclasses"]
@@ -107,8 +107,11 @@ subjects:
 ---
 apiVersion: v1
 data:
+  ClientID: <base64-encoded-client-id>
+  ClientSecret: <base64-encoded-client-secret>
   ResourceGroup: <base64-encoded-resource-group>
   SubscriptionID: <base64-encode-subscription-id>
+  TenantID: <base64-encoded-tenant-id>
   Deployment: <base64-encoded-azure-initial-deploy-name>
   VMType: c3RhbmRhcmQ=
 kind: Secret
@@ -133,15 +136,7 @@ spec:
       labels:
         app: cluster-autoscaler
     spec:
-      hostNetwork: true
       serviceAccountName: cluster-autoscaler
-      tolerations:
-      - effect: NoSchedule
-        operator: "Equal"
-        value: "true"
-        key: node-role.kubernetes.io/master
-      nodeSelector:
-        kubernetes.io/role: master
       containers:
       - command:
         - ./cluster-autoscaler
@@ -162,8 +157,21 @@ spec:
             secretKeyRef:
               key: ResourceGroup
               name: cluster-autoscaler-azure
-        - name: ARM_USE_MANAGED_IDENTITY_EXTENSION
-          value: "true"
+        - name: ARM_TENANT_ID
+          valueFrom:
+            secretKeyRef:
+              key: TenantID
+              name: cluster-autoscaler-azure
+        - name: ARM_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              key: ClientID
+              name: cluster-autoscaler-azure
+        - name: ARM_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              key: ClientSecret
+              name: cluster-autoscaler-azure
         - name: ARM_VM_TYPE
           valueFrom:
             secretKeyRef:
@@ -191,9 +199,6 @@ spec:
         - mountPath: /var/lib/azure/
           name: deploy-parameters
           readOnly: true
-        - mountPath: /var/lib/waagent/
-          name: waagent
-          readOnly: true
       dnsPolicy: ClusterFirst
       restartPolicy: Always
       volumes:
@@ -207,6 +212,3 @@ spec:
           items:
           - key: deploy-parameters
             path: azuredeploy.parameters.json
-      - hostPath:
-          path: /var/lib/waagent/
-        name: waagent

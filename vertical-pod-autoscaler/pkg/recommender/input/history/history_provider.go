@@ -27,8 +27,9 @@ import (
 )
 
 const (
-	historyLength  = "8d"
-	podLabelPrefix = "pod_label_"
+	historyLength     = "8d"
+	podLabelPrefix    = "pod_label_"
+	prometheusJobName = "kubernetes-cadvisor"
 )
 
 // PodHistory represents history of usage and labels for a given pod.
@@ -53,13 +54,15 @@ type HistoryProvider interface {
 }
 
 type prometheusHistoryProvider struct {
-	prometheusClient PrometheusClient
+	prometheusClient  PrometheusClient
+	prometheusJobName string
 }
 
 // NewPrometheusHistoryProvider contructs a history provider that gets data from Prometheus.
-func NewPrometheusHistoryProvider(prometheusAddress string) HistoryProvider {
+func NewPrometheusHistoryProvider(prometheusAddress, prometheusJobName string) HistoryProvider {
 	return &prometheusHistoryProvider{
-		prometheusClient: NewPrometheusClient(&http.Client{}, prometheusAddress),
+		prometheusClient:  NewPrometheusClient(&http.Client{}, prometheusAddress),
+		prometheusJobName: prometheusJobName,
 	}
 }
 
@@ -180,7 +183,7 @@ func (p *prometheusHistoryProvider) readLastLabels(res map[model.PodID]*PodHisto
 
 func (p *prometheusHistoryProvider) GetClusterHistory() (map[model.PodID]*PodHistory, error) {
 	res := make(map[model.PodID]*PodHistory)
-	podSelector := "job=\"kubernetes-cadvisor\", pod_name=~\".+\""
+	podSelector := fmt.Sprintf(`job="%s", pod_name=~".+"`, p.prometheusJobName)
 	err := p.readResourceHistory(res, fmt.Sprintf("container_cpu_usage_seconds_total{%s}[%s]", podSelector, historyLength), model.ResourceCPU)
 	if err != nil {
 		return nil, fmt.Errorf("cannot get usage history: %v", err)

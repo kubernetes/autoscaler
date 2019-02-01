@@ -20,28 +20,42 @@ import (
 	"strings"
 	"time"
 
-	"github.com/golang/glog"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
+	"k8s.io/client-go/tools/cache"
+
+	"github.com/golang/glog"
 )
 
 // OomInfo contains data of the OOM event occurrence
 type OomInfo struct {
-	Timestamp                 time.Time
-	Memory                    resource.Quantity
-	Namespace, Pod, Container string
+	Timestamp   time.Time
+	Memory      model.ResourceAmount
+	ContainerID model.ContainerID
 }
 
 // Observer can observe pod resource update and collect OOM events.
-type Observer struct {
-	ObservedOomsChannel chan OomInfo
+type Observer interface {
+	GetObservedOomsChannel() chan OomInfo
+	OnEvent(*apiv1.Event)
+	cache.ResourceEventHandler
 }
 
-// NewObserver returns new instance of the Observer.
-func NewObserver() Observer {
-	return Observer{
-		ObservedOomsChannel: make(chan OomInfo, 5000),
+// observer can observe pod resource update and collect OOM events.
+type observer struct {
+	observedOomsChannel chan OomInfo
+}
+
+// NewObserver returns new instance of the observer.
+func NewObserver() *observer {
+	return &observer{
+		observedOomsChannel: make(chan OomInfo, 5000),
 	}
+}
+
+func (o *observer) GetObservedOomsChannel() chan OomInfo {
+	return o.observedOomsChannel
 }
 
 func parseEvictionEvent(event *apiv1.Event) []OomInfo {
@@ -77,10 +91,14 @@ func parseEvictionEvent(event *apiv1.Event) []OomInfo {
 		}
 		oomInfo := OomInfo{
 			Timestamp: event.CreationTimestamp.Time.UTC(),
-			Memory:    memory,
-			Namespace: event.InvolvedObject.Namespace,
-			Pod:       event.InvolvedObject.Name,
-			Container: container,
+			Memory:    model.ResourceAmount(memory.Value()),
+			ContainerID: model.ContainerID{
+				PodID: model.PodID{
+					Namespace: event.InvolvedObject.Namespace,
+					PodName:   event.InvolvedObject.Name,
+				},
+				ContainerName: container,
+			},
 		}
 		result = append(result, oomInfo)
 	}
@@ -88,10 +106,10 @@ func parseEvictionEvent(event *apiv1.Event) []OomInfo {
 }
 
 // OnEvent inspects k8s eviction events and translates them to OomInfo.
-func (o *Observer) OnEvent(event *apiv1.Event) {
+func (o *observer) OnEvent(event *apiv1.Event) {
 	glog.V(1).Infof("OOM Observer processing event: %+v", event)
 	for _, oomInfo := range parseEvictionEvent(event) {
-		o.ObservedOomsChannel <- oomInfo
+		o.observedOomsChannel <- oomInfo
 	}
 }
 
@@ -114,11 +132,11 @@ func findSpec(name string, containers []apiv1.Container) *apiv1.Container {
 }
 
 // OnAdd is Noop
-func (*Observer) OnAdd(obj interface{}) {}
+func (*observer) OnAdd(obj interface{}) {}
 
 // OnUpdate inspects if the update contains oom information and
 // passess it to the ObservedOomsChannel
-func (o *Observer) OnUpdate(oldObj, newObj interface{}) {
+func (o *observer) OnUpdate(oldObj, newObj interface{}) {
 	oldPod, ok := oldObj.(*apiv1.Pod)
 	if oldPod == nil || !ok {
 		glog.Errorf("OOM observer received invalid oldObj: %v", oldObj)
@@ -130,20 +148,26 @@ func (o *Observer) OnUpdate(oldObj, newObj interface{}) {
 
 	for _, containerStatus := range newPod.Status.ContainerStatuses {
 		if containerStatus.RestartCount > 0 &&
+			containerStatus.LastTerminationState.Terminated != nil &&
 			containerStatus.LastTerminationState.Terminated.Reason == "OOMKilled" {
 
 			oldStatus := findStatus(containerStatus.Name, oldPod.Status.ContainerStatuses)
 			if oldStatus != nil && containerStatus.RestartCount > oldStatus.RestartCount {
 				oldSpec := findSpec(containerStatus.Name, oldPod.Spec.Containers)
 				if oldSpec != nil {
+					memory := oldSpec.Resources.Requests[apiv1.ResourceMemory]
 					oomInfo := OomInfo{
-						Namespace: newPod.ObjectMeta.Namespace,
-						Pod:       newPod.ObjectMeta.Name,
-						Container: containerStatus.Name,
-						Memory:    oldSpec.Resources.Requests[apiv1.ResourceMemory],
 						Timestamp: containerStatus.LastTerminationState.Terminated.FinishedAt.Time.UTC(),
+						Memory:    model.ResourceAmount(memory.Value()),
+						ContainerID: model.ContainerID{
+							PodID: model.PodID{
+								Namespace: newPod.ObjectMeta.Namespace,
+								PodName:   newPod.ObjectMeta.Name,
+							},
+							ContainerName: containerStatus.Name,
+						},
 					}
-					o.ObservedOomsChannel <- oomInfo
+					o.observedOomsChannel <- oomInfo
 				}
 			}
 		}
@@ -151,4 +175,4 @@ func (o *Observer) OnUpdate(oldObj, newObj interface{}) {
 }
 
 // OnDelete is Noop
-func (*Observer) OnDelete(obj interface{}) {}
+func (*observer) OnDelete(obj interface{}) {}

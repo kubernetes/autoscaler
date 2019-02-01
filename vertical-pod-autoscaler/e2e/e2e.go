@@ -151,7 +151,7 @@ var _ = ginkgo.SynchronizedBeforeSuite(func() []byte {
 	framework.Logf("No cloud config support.")
 })
 
-// Similar to SynchornizedBeforeSuite, we want to run some operations only once (such as collecting cluster logs).
+// Similar to SynchronizedBeforeSuite, we want to run some operations only once (such as collecting cluster logs).
 // Here, the order of functions is reversed; first, the function which runs everywhere,
 // and then the function that only runs on the first Ginkgo node.
 var _ = ginkgo.SynchronizedAfterSuite(func() {

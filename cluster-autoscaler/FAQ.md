@@ -205,8 +205,8 @@ Pods with priority lower than this cutoff:
 
 Nothing changes for pods with priority greater or equal to cutoff, and pods without priority.
 
-Default priority cutoff is 0. It can be changed using `--expendable-pods-priority-cutoff` flag,
-but we discourage it.
+Default priority cutoff is -10 (since version 1.12, was 0 before that).
+It can be changed using `--expendable-pods-priority-cutoff` flag, but we discourage it.
 Cluster Autoscaler also doesn't trigger scale-up if an unschedulable pod is already waiting for a lower
 priority pod preemption.
 
@@ -476,7 +476,7 @@ needed, Cluster Autoscaler checks which nodes are unneeded. A node is considered
 * All pods running on the node (except these that run on all nodes by default, like manifest-run pods
 or pods created by daemonsets) can be moved to other nodes. See
 [What types of pods can prevent CA from removing a node?](#what-types-of-pods-can-prevent-ca-from-removing-a-node) section for more details on what pods don't fulfill this condition, even if there is space for them elsewhere.
-While checking this condition, the new locations of all moved pods are memorized.
+While checking this condition, the new locations of all movable pods are memorized.
 With that, Cluster Autoscaler knows where each pod can be moved, and which nodes
 depend on which other nodes in terms of pod migration. Of course, it may happen that eventually
 the scheduler will place the pods somewhere else.

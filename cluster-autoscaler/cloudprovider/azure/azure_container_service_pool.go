@@ -193,7 +193,7 @@ func (agentPool *ContainerServiceAgentPool) setAKSNodeCount(count int) error {
 		klog.Errorf("Failed to update AKS cluster (%q): %v", agentPool.clusterName, err)
 		return err
 	}
-	return future.WaitForCompletion(updateCtx, aksClient.Client)
+	return future.WaitForCompletionRef(updateCtx, aksClient.Client)
 }
 
 // setACSNodeCount sets node count for ACS agent pool.
@@ -226,7 +226,7 @@ func (agentPool *ContainerServiceAgentPool) setACSNodeCount(count int) error {
 		klog.Errorf("Failed to update ACS cluster (%q): %v", agentPool.clusterName, err)
 		return err
 	}
-	return future.WaitForCompletion(updateCtx, acsClient.Client)
+	return future.WaitForCompletionRef(updateCtx, acsClient.Client)
 }
 
 //GetNodeCount returns the count of nodes from the managed agent pool profile

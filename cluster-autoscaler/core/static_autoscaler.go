@@ -34,11 +34,13 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/backoff"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/tpu"
 
 	"k8s.io/klog"
+	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 )
 
 const (
@@ -111,7 +113,11 @@ func (a *StaticAutoscaler) cleanUpIfRequired() {
 	if readyNodes, err := a.ReadyNodeLister().List(); err != nil {
 		klog.Errorf("Failed to list ready nodes, not cleaning up taints: %v", err)
 	} else {
-		cleanToBeDeleted(readyNodes, a.AutoscalingContext.ClientSet, a.Recorder)
+		deletetaint.CleanAllToBeDeleted(readyNodes, a.AutoscalingContext.ClientSet, a.Recorder)
+		if a.AutoscalingContext.AutoscalingOptions.MaxBulkSoftTaintCount == 0 {
+			// Clean old taints if soft taints handling is disabled
+			deletetaint.CleanAllDeletionCandidates(readyNodes, a.AutoscalingContext.ClientSet, a.Recorder)
+		}
 	}
 	a.initialized = true
 }
@@ -137,7 +143,19 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		return nil
 	}
 
-	typedErr = a.updateClusterState(allNodes, currentTime)
+	daemonsets, err := a.ListerRegistry.DaemonSetLister().List(labels.Everything())
+	if err != nil {
+		klog.Errorf("Failed to get daemonset list")
+		return errors.ToAutoscalerError(errors.ApiCallError, err)
+	}
+
+	nodeInfosForGroups, autoscalerError := getNodeInfosForGroups(readyNodes, autoscalingContext.CloudProvider, autoscalingContext.ListerRegistry,
+		daemonsets, autoscalingContext.PredicateChecker)
+	if err != nil {
+		return autoscalerError.AddPrefix("failed to build node infos for node groups: ")
+	}
+
+	typedErr = a.updateClusterState(allNodes, nodeInfosForGroups, currentTime)
 	if typedErr != nil {
 		return typedErr
 	}
@@ -260,12 +278,19 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 
 	// Some unschedulable pods can be waiting for lower priority pods preemption so they have nominated node to run.
 	// Such pods don't require scale up but should be considered during scale down.
-	unschedulablePods, unschedulableWaitingForLowerPriorityPreemption := FilterOutExpendableAndSplit(unschedulablePodsWithoutTPUs, a.ExpendablePodsPriorityCutoff)
+	unschedulablePods, unschedulableWaitingForLowerPriorityPreemption := filterOutExpendableAndSplit(unschedulablePodsWithoutTPUs, a.ExpendablePodsPriorityCutoff)
 
 	klog.V(4).Infof("Filtering out schedulables")
 	filterOutSchedulableStart := time.Now()
-	unschedulablePodsToHelp := FilterOutSchedulable(unschedulablePods, readyNodes, allScheduled,
-		unschedulableWaitingForLowerPriorityPreemption, a.PredicateChecker, a.ExpendablePodsPriorityCutoff)
+	var unschedulablePodsToHelp []*apiv1.Pod
+	if a.FilterOutSchedulablePodsUsesPacking {
+		unschedulablePodsToHelp = filterOutSchedulableByPacking(unschedulablePods, readyNodes, allScheduled,
+			unschedulableWaitingForLowerPriorityPreemption, a.PredicateChecker, a.ExpendablePodsPriorityCutoff)
+	} else {
+		unschedulablePodsToHelp = filterOutSchedulableSimple(unschedulablePods, readyNodes, allScheduled,
+			unschedulableWaitingForLowerPriorityPreemption, a.PredicateChecker, a.ExpendablePodsPriorityCutoff)
+	}
+
 	metrics.UpdateDurationFromStart(metrics.FilterOutSchedulable, filterOutSchedulableStart)
 
 	if len(unschedulablePodsToHelp) != len(unschedulablePods) {
@@ -293,17 +318,10 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		scaleUpStatus.Result = status.ScaleUpInCooldown
 		klog.V(1).Info("Unschedulable pods are very new, waiting one iteration for more")
 	} else {
-		daemonsets, err := a.ListerRegistry.DaemonSetLister().List(labels.Everything())
-		if err != nil {
-			klog.Errorf("Failed to get daemonset list")
-			scaleUpStatus.Result = status.ScaleUpError
-			return errors.ToAutoscalerError(errors.ApiCallError, err)
-		}
-
 		scaleUpStart := time.Now()
 		metrics.UpdateLastTime(metrics.ScaleUp, scaleUpStart)
 
-		scaleUpStatus, typedErr = ScaleUp(autoscalingContext, a.processors, a.clusterStateRegistry, unschedulablePodsToHelp, readyNodes, daemonsets)
+		scaleUpStatus, typedErr = ScaleUp(autoscalingContext, a.processors, a.clusterStateRegistry, unschedulablePodsToHelp, readyNodes, daemonsets, nodeInfosForGroups)
 
 		metrics.UpdateDurationFromStart(metrics.ScaleUp, scaleUpStart)
 
@@ -372,6 +390,10 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 			scaleDownStatus.Result = status.ScaleDownInProgress
 		} else {
 			klog.V(4).Infof("Starting scale down")
+
+			if a.AutoscalingContext.AutoscalingOptions.MaxBulkSoftTaintCount != 0 {
+				scaleDown.SoftTaintUnneededNodes(allNodes)
+			}
 
 			// We want to delete unneeded Node Groups only if there was no recent scale up,
 			// and there is no current delete in progress and there was no recent errors.
@@ -511,14 +533,14 @@ func (a *StaticAutoscaler) actOnEmptyCluster(allNodes, readyNodes []*apiv1.Node,
 	return false
 }
 
-func (a *StaticAutoscaler) updateClusterState(allNodes []*apiv1.Node, currentTime time.Time) errors.AutoscalerError {
+func (a *StaticAutoscaler) updateClusterState(allNodes []*apiv1.Node, nodeInfosForGroups map[string]*schedulercache.NodeInfo, currentTime time.Time) errors.AutoscalerError {
 	err := a.AutoscalingContext.CloudProvider.Refresh()
 	if err != nil {
 		klog.Errorf("Failed to refresh cloud provider config: %v", err)
 		return errors.ToAutoscalerError(errors.CloudProviderError, err)
 	}
 
-	err = a.clusterStateRegistry.UpdateNodes(allNodes, currentTime)
+	err = a.clusterStateRegistry.UpdateNodes(allNodes, nodeInfosForGroups, currentTime)
 	if err != nil {
 		klog.Errorf("Failed to update node registry: %v", err)
 		a.scaleDown.CleanUpUnneededNodes()
@@ -532,7 +554,7 @@ func (a *StaticAutoscaler) updateClusterState(allNodes []*apiv1.Node, currentTim
 func (a *StaticAutoscaler) onEmptyCluster(status string, emitEvent bool) {
 	klog.Warningf(status)
 	a.scaleDown.CleanUpUnneededNodes()
-	UpdateEmptyClusterStateMetrics()
+	updateEmptyClusterStateMetrics()
 	if a.AutoscalingContext.WriteStatusConfigMap {
 		utils.WriteStatusConfigMap(a.AutoscalingContext.ClientSet, a.AutoscalingContext.ConfigNamespace, status, a.AutoscalingContext.LogRecorder)
 	}

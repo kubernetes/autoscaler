@@ -18,27 +18,19 @@ package scheduler
 
 import (
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/klog"
 	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
-)
-
-const (
-	// NominatedNodeAnnotationKey is used to annotate a pod that has preempted other pods.
-	// The scheduler uses the annotation to find that the pod shouldn't preempt more pods
-	// when it gets to the head of scheduling queue again.
-	// See podEligibleToPreemptOthers() for more information.
-	NominatedNodeAnnotationKey = "NominatedNodeName"
 )
 
 // CreateNodeNameToInfoMap obtains a list of pods and pivots that list into a map where the keys are node names
 // and the values are the aggregated information for that node. Pods waiting lower priority pods preemption
-// (annotated with NominatedNodeAnnotationKey) are also added to list of pods for a node.
+// (pod.Status.NominatedNodeName is set) are also added to list of pods for a node.
 func CreateNodeNameToInfoMap(pods []*apiv1.Pod, nodes []*apiv1.Node) map[string]*schedulercache.NodeInfo {
-
 	nodeNameToNodeInfo := make(map[string]*schedulercache.NodeInfo)
 	for _, pod := range pods {
 		nodeName := pod.Spec.NodeName
 		if nodeName == "" {
-			nodeName = pod.Annotations[NominatedNodeAnnotationKey]
+			nodeName = pod.Status.NominatedNodeName
 		}
 		if _, ok := nodeNameToNodeInfo[nodeName]; !ok {
 			nodeNameToNodeInfo[nodeName] = schedulercache.NewNodeInfo()
@@ -65,4 +57,15 @@ func CreateNodeNameToInfoMap(pods []*apiv1.Pod, nodes []*apiv1.Node) map[string]
 	}
 
 	return nodeNameToNodeInfo
+}
+
+// NodeWithPod function returns NodeInfo, which is a copy of nodeInfo argument with an additional pod scheduled on it.
+func NodeWithPod(nodeInfo *schedulercache.NodeInfo, pod *apiv1.Pod) *schedulercache.NodeInfo {
+	podsOnNode := nodeInfo.Pods()
+	podsOnNode = append(podsOnNode, pod)
+	newNodeInfo := schedulercache.NewNodeInfo(podsOnNode...)
+	if err := newNodeInfo.SetNode(nodeInfo.Node()); err != nil {
+		klog.Errorf("error setting node for NodeInfo %s, because of %s", nodeInfo.Node().Name, err.Error())
+	}
+	return newNodeInfo
 }

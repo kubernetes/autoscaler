@@ -18,6 +18,7 @@ package deletetaint
 
 import (
 	"fmt"
+	"strconv"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -28,6 +29,8 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
+	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
 	core "k8s.io/client-go/testing"
 
@@ -35,50 +38,180 @@ import (
 )
 
 func TestMarkNodes(t *testing.T) {
+	defer setConflictRetryInterval(setConflictRetryInterval(time.Millisecond))
 	node := BuildTestNode("node", 1000, 1000)
-	fakeClient := buildFakeClient(t, node)
+	fakeClient := buildFakeClientWithConflicts(t, node)
 	err := MarkToBeDeleted(node, fakeClient)
 	assert.NoError(t, err)
 
-	updatedNode, err := fakeClient.Core().Nodes().Get("node", metav1.GetOptions{})
-	assert.NoError(t, err)
+	updatedNode := getNode(t, fakeClient, "node")
 	assert.True(t, HasToBeDeletedTaint(updatedNode))
+	assert.False(t, HasDeletionCandidateTaint(updatedNode))
+}
+
+func TestSoftMarkNodes(t *testing.T) {
+	defer setConflictRetryInterval(setConflictRetryInterval(time.Millisecond))
+	node := BuildTestNode("node", 1000, 1000)
+	fakeClient := buildFakeClientWithConflicts(t, node)
+	err := MarkDeletionCandidate(node, fakeClient)
+	assert.NoError(t, err)
+
+	updatedNode := getNode(t, fakeClient, "node")
+	assert.False(t, HasToBeDeletedTaint(updatedNode))
+	assert.True(t, HasDeletionCandidateTaint(updatedNode))
 }
 
 func TestCheckNodes(t *testing.T) {
+	defer setConflictRetryInterval(setConflictRetryInterval(time.Millisecond))
 	node := BuildTestNode("node", 1000, 1000)
-	fakeClient := buildFakeClient(t, node)
+	addTaintToSpec(node, ToBeDeletedTaint, apiv1.TaintEffectNoSchedule)
+	fakeClient := buildFakeClientWithConflicts(t, node)
+
+	updatedNode := getNode(t, fakeClient, "node")
+	assert.True(t, HasToBeDeletedTaint(updatedNode))
+	assert.False(t, HasDeletionCandidateTaint(updatedNode))
+}
+
+func TestSoftCheckNodes(t *testing.T) {
+	defer setConflictRetryInterval(setConflictRetryInterval(time.Millisecond))
+	node := BuildTestNode("node", 1000, 1000)
+	addTaintToSpec(node, DeletionCandidateTaint, apiv1.TaintEffectPreferNoSchedule)
+	fakeClient := buildFakeClientWithConflicts(t, node)
+
+	updatedNode := getNode(t, fakeClient, "node")
+	assert.False(t, HasToBeDeletedTaint(updatedNode))
+	assert.True(t, HasDeletionCandidateTaint(updatedNode))
+}
+
+func TestQueryNodes(t *testing.T) {
+	defer setConflictRetryInterval(setConflictRetryInterval(time.Millisecond))
+	node := BuildTestNode("node", 1000, 1000)
+	fakeClient := buildFakeClientWithConflicts(t, node)
 	err := MarkToBeDeleted(node, fakeClient)
 	assert.NoError(t, err)
 
-	updatedNode, err := fakeClient.Core().Nodes().Get("node", metav1.GetOptions{})
-	assert.NoError(t, err)
+	updatedNode := getNode(t, fakeClient, "node")
 	assert.True(t, HasToBeDeletedTaint(updatedNode))
 
 	val, err := GetToBeDeletedTime(updatedNode)
 	assert.NoError(t, err)
+	assert.NotNil(t, val)
+	assert.True(t, time.Now().Sub(*val) < 10*time.Second)
+}
+
+func TestSoftQueryNodes(t *testing.T) {
+	defer setConflictRetryInterval(setConflictRetryInterval(time.Millisecond))
+	node := BuildTestNode("node", 1000, 1000)
+	fakeClient := buildFakeClientWithConflicts(t, node)
+	err := MarkDeletionCandidate(node, fakeClient)
+	assert.NoError(t, err)
+
+	updatedNode := getNode(t, fakeClient, "node")
+	assert.True(t, HasDeletionCandidateTaint(updatedNode))
+
+	val, err := GetDeletionCandidateTime(updatedNode)
+	assert.NoError(t, err)
+	assert.NotNil(t, val)
 	assert.True(t, time.Now().Sub(*val) < 10*time.Second)
 }
 
 func TestCleanNodes(t *testing.T) {
+	defer setConflictRetryInterval(setConflictRetryInterval(time.Millisecond))
 	node := BuildTestNode("node", 1000, 1000)
-	addToBeDeletedTaint(node)
-	fakeClient := buildFakeClient(t, node)
+	addTaintToSpec(node, ToBeDeletedTaint, apiv1.TaintEffectNoSchedule)
+	fakeClient := buildFakeClientWithConflicts(t, node)
+
+	updatedNode := getNode(t, fakeClient, "node")
+	assert.True(t, HasToBeDeletedTaint(updatedNode))
 
 	cleaned, err := CleanToBeDeleted(node, fakeClient)
 	assert.True(t, cleaned)
 	assert.NoError(t, err)
 
-	updatedNode, err := fakeClient.Core().Nodes().Get("node", metav1.GetOptions{})
+	updatedNode = getNode(t, fakeClient, "node")
 	assert.NoError(t, err)
 	assert.False(t, HasToBeDeletedTaint(updatedNode))
 }
 
-func buildFakeClient(t *testing.T, node *apiv1.Node) *fake.Clientset {
+func TestSoftCleanNodes(t *testing.T) {
+	defer setConflictRetryInterval(setConflictRetryInterval(time.Millisecond))
+	node := BuildTestNode("node", 1000, 1000)
+	addTaintToSpec(node, DeletionCandidateTaint, apiv1.TaintEffectPreferNoSchedule)
+	fakeClient := buildFakeClientWithConflicts(t, node)
+
+	updatedNode := getNode(t, fakeClient, "node")
+	assert.True(t, HasDeletionCandidateTaint(updatedNode))
+
+	cleaned, err := CleanDeletionCandidate(node, fakeClient)
+	assert.True(t, cleaned)
+	assert.NoError(t, err)
+
+	updatedNode = getNode(t, fakeClient, "node")
+	assert.NoError(t, err)
+	assert.False(t, HasDeletionCandidateTaint(updatedNode))
+}
+
+func TestCleanAllToBeDeleted(t *testing.T) {
+	n1 := BuildTestNode("n1", 1000, 10)
+	n2 := BuildTestNode("n2", 1000, 10)
+	n2.Spec.Taints = []apiv1.Taint{{Key: ToBeDeletedTaint, Value: strconv.FormatInt(time.Now().Unix()-301, 10)}}
+
+	fakeClient := buildFakeClient(t, n1, n2)
+	fakeRecorder := kube_util.CreateEventRecorder(fakeClient)
+
+	assert.Equal(t, 1, len(getNode(t, fakeClient, "n2").Spec.Taints))
+
+	CleanAllToBeDeleted([]*apiv1.Node{n1, n2}, fakeClient, fakeRecorder)
+
+	assert.Equal(t, 0, len(getNode(t, fakeClient, "n1").Spec.Taints))
+	assert.Equal(t, 0, len(getNode(t, fakeClient, "n2").Spec.Taints))
+}
+
+func TestCleanAllDeletionCandidates(t *testing.T) {
+	n1 := BuildTestNode("n1", 1000, 10)
+	n2 := BuildTestNode("n2", 1000, 10)
+	n2.Spec.Taints = []apiv1.Taint{{Key: DeletionCandidateTaint, Value: strconv.FormatInt(time.Now().Unix()-301, 10)}}
+
+	fakeClient := buildFakeClient(t, n1, n2)
+	fakeRecorder := kube_util.CreateEventRecorder(fakeClient)
+
+	assert.Equal(t, 1, len(getNode(t, fakeClient, "n2").Spec.Taints))
+
+	CleanAllDeletionCandidates([]*apiv1.Node{n1, n2}, fakeClient, fakeRecorder)
+
+	assert.Equal(t, 0, len(getNode(t, fakeClient, "n1").Spec.Taints))
+	assert.Equal(t, 0, len(getNode(t, fakeClient, "n2").Spec.Taints))
+}
+
+func setConflictRetryInterval(interval time.Duration) time.Duration {
+	before := conflictRetryInterval
+	conflictRetryInterval = interval
+	return before
+}
+
+func getNode(t *testing.T, client kube_client.Interface, name string) *apiv1.Node {
+	t.Helper()
+	node, err := client.CoreV1().Nodes().Get(name, metav1.GetOptions{})
+	if err != nil {
+		t.Fatalf("Failed to retrieve node %v: %v", name, err)
+	}
+	return node
+}
+
+func buildFakeClient(t *testing.T, nodes ...*apiv1.Node) *fake.Clientset {
+	t.Helper()
 	fakeClient := fake.NewSimpleClientset()
 
-	_, err := fakeClient.CoreV1().Nodes().Create(node)
-	assert.NoError(t, err)
+	for _, node := range nodes {
+		_, err := fakeClient.CoreV1().Nodes().Create(node)
+		assert.NoError(t, err)
+	}
+
+	return fakeClient
+}
+
+func buildFakeClientWithConflicts(t *testing.T, nodes ...*apiv1.Node) *fake.Clientset {
+	fakeClient := buildFakeClient(t, nodes...)
 
 	// return a 'Conflict' error on the first upadte, then pass it through, then return a Conflict again
 	var returnedConflict int32

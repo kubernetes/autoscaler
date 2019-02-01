@@ -19,6 +19,7 @@ package main
 import (
 	"flag"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/golang/glog"
@@ -40,7 +41,8 @@ var (
 		tlsPrivateKey: flag.String("tls-private-key", "/etc/tls-certs/serverKey.pem", "Path to server certificate key PEM file."),
 	}
 
-	address = flag.String("address", ":8944", "The address to expose Prometheus metrics.")
+	address   = flag.String("address", ":8944", "The address to expose Prometheus metrics.")
+	namespace = os.Getenv("NAMESPACE")
 )
 
 func newReadyVPALister(stopChannel <-chan struct{}) vpa_lister.VerticalPodAutoscalerLister {
@@ -73,6 +75,6 @@ func main() {
 		Addr:      ":8000",
 		TLSConfig: configTLS(clientset, certs.serverCert, certs.serverKey),
 	}
-	go selfRegistration(clientset, certs.caCert)
+	go selfRegistration(clientset, certs.caCert, &namespace)
 	server.ListenAndServeTLS("", "")
 }
