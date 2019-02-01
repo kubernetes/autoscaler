@@ -38,7 +38,7 @@ Pre-requirements:
 - Get the scale set name which is used for nodes scaling.
 - Encode each data with base64.
 
-Fill the values of cluster-autoscaler-azure secret in [cluster-autoscaler-vmss.yaml](cluster-autoscaler-vmss.yaml), including
+Fill the values of cluster-autoscaler-azure secret in [cluster-autoscaler-vmss.yaml](examples/cluster-autoscaler-vmss.yaml), including
 
 - ClientID: `<base64-encoded-client-id>`
 - ClientSecret: `<base64-encoded-client-secret>`
@@ -64,19 +64,19 @@ or multiple node groups:
 Then deploy cluster-autoscaler by running
 
 ```sh
-kubectl create -f cluster-autoscaler-vmss.yaml
+kubectl create -f examples/cluster-autoscaler-vmss.yaml
 ```
 
 To run a CA pod in master node - CA deployment should tolerate the master `taint` and `nodeSelector` should be used to schedule the pods in master node.
 
 ```sh
-kubectl create -f cluster-autoscaler-vmss-master.yaml
+kubectl create -f examples/cluster-autoscaler-vmss-master.yaml
 ```
 
-To run a CA pod with Azure managed service identity (MSI), use [cluster-autoscaler-vmss-msi.yaml](cluster-autoscaler-vmss-msi.yaml) instead:
+To run a CA pod with Azure managed service identity (MSI), use [cluster-autoscaler-vmss-msi.yaml](examples/cluster-autoscaler-vmss-msi.yaml) instead:
 
 ```sh
-kubectl create -f cluster-autoscaler-vmss-msi.yaml
+kubectl create -f examples/cluster-autoscaler-vmss-msi.yaml
 ```
 
 ### Standard deployment
@@ -88,7 +88,7 @@ Pre-requirements:
 - Get a node pool name for nodes scaling from acs-engine deployment manifests
 - Encode each data with base64.
 
-Fill the values of cluster-autoscaler-azure secret in [cluster-autoscaler-standard-master.yaml](cluster-autoscaler-standard-master.yaml), including
+Fill the values of cluster-autoscaler-azure secret in [cluster-autoscaler-standard-master.yaml](examples/cluster-autoscaler-standard-master.yaml), including
 
 - ClientID: `<base64-encoded-client-id>`
 - ClientSecret: `<base64-encoded-client-secret>`
@@ -124,10 +124,10 @@ Then deploy cluster-autoscaler by running
 kubectl create -f cluster-autoscaler-standard-master.yaml
 ```
 
-To run a CA pod with Azure managed service identity (MSI), use [cluster-autoscaler-standard-msi.yaml](cluster-autoscaler-standard-msi.yaml) instead:
+To run a CA pod with Azure managed service identity (MSI), use [cluster-autoscaler-standard-msi.yaml](examples/cluster-autoscaler-standard-msi.yaml) instead:
 
 ```sh
-kubectl create -f cluster-autoscaler-standard-msi.yaml
+kubectl create -f examples/cluster-autoscaler-standard-msi.yaml
 ```
 
 **WARNING**: Cluster autoscaler depends on user provided deployment parameters to provision new nodes. It should be redeployed with new parameters after upgrading Kubernetes cluster (e.g. upgraded by `acs-engine upgrade` command), or else new nodes will be provisioned with old version.
@@ -152,7 +152,7 @@ Pre-requirements:
 
 - Encode each data with base64.
 
-Fill the values of cluster-autoscaler-azure secret in [cluster-autoscaler-containerservice](cluster-autoscaler-containerservice.yaml), including
+Fill the values of cluster-autoscaler-azure secret in [cluster-autoscaler-containerservice](examples/cluster-autoscaler-containerservice.yaml), including
 
 - ClientID: `<base64-encoded-client-id>`
 - ClientSecret: `<base64-encoded-client-secret>`
@@ -181,7 +181,7 @@ QUNTCg==
 Then deploy cluster-autoscaler by running
 
 ```sh
-kubectl create -f cluster-autoscaler-containerservice.yaml
+kubectl create -f examples/cluster-autoscaler-containerservice.yaml
 ```
 
 ### AKS deployment

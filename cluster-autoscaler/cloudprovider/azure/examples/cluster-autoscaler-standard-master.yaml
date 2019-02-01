@@ -42,7 +42,7 @@ rules:
   resources: ["poddisruptionbudgets"]
   verbs: ["watch","list"]
 - apiGroups: ["apps"]
-  resources: ["statefulsets", "replicasets"]
+  resources: ["statefulsets", "replicasets","daemonsets"]
   verbs: ["watch","list","get"]
 - apiGroups: ["storage.k8s.io"]
   resources: ["storageclasses"]
@@ -107,9 +107,13 @@ subjects:
 ---
 apiVersion: v1
 data:
+  ClientID: <base64-encoded-client-id>
+  ClientSecret: <base64-encoded-client-secret>
   ResourceGroup: <base64-encoded-resource-group>
   SubscriptionID: <base64-encode-subscription-id>
-  VMType: dm1zcw==
+  TenantID: <base64-encoded-tenant-id>
+  Deployment: <base64-encoded-azure-initial-deploy-name>
+  VMType: c3RhbmRhcmQ=
 kind: Secret
 metadata:
   name: cluster-autoscaler-azure
@@ -132,7 +136,6 @@ spec:
       labels:
         app: cluster-autoscaler
     spec:
-      hostNetwork: true
       serviceAccountName: cluster-autoscaler
       tolerations:
       - effect: NoSchedule
@@ -142,17 +145,14 @@ spec:
       nodeSelector:
         kubernetes.io/role: master
       containers:
-      - image: k8s.gcr.io/cluster-autoscaler:{{ ca_version }}
-        imagePullPolicy: Always
-        name: cluster-autoscaler
-        command:
+      - command:
         - ./cluster-autoscaler
         - --v=3
         - --logtostderr=true
         - --cloud-provider=azure
         - --skip-nodes-with-local-storage=false
-        - --nodes=1:10:vmss1
-        - --nodes=1:10:vmss2
+        - --nodes=1:10:agentpool1
+        - --nodes=1:10:agentpool2
         env:
         - name: ARM_SUBSCRIPTION_ID
           valueFrom:
@@ -164,13 +164,34 @@ spec:
             secretKeyRef:
               key: ResourceGroup
               name: cluster-autoscaler-azure
-        - name: ARM_USE_MANAGED_IDENTITY_EXTENSION
-          value: "true"
+        - name: ARM_TENANT_ID
+          valueFrom:
+            secretKeyRef:
+              key: TenantID
+              name: cluster-autoscaler-azure
+        - name: ARM_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              key: ClientID
+              name: cluster-autoscaler-azure
+        - name: ARM_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              key: ClientSecret
+              name: cluster-autoscaler-azure
         - name: ARM_VM_TYPE
           valueFrom:
             secretKeyRef:
               key: VMType
               name: cluster-autoscaler-azure
+        - name: ARM_DEPLOYMENT
+          valueFrom:
+            secretKeyRef:
+              key: Deployment
+              name: cluster-autoscaler-azure
+        image: k8s.gcr.io/cluster-autoscaler:{{ ca_version }}
+        imagePullPolicy: Always
+        name: cluster-autoscaler
         resources:
           limits:
             cpu: 100m
@@ -182,15 +203,19 @@ spec:
         - mountPath: /etc/ssl/certs/ca-certificates.crt
           name: ssl-certs
           readOnly: true
-        - mountPath: /var/lib/waagent/
-          name: waagent
+        - mountPath: /var/lib/azure/
+          name: deploy-parameters
           readOnly: true
+      dnsPolicy: ClusterFirst
       restartPolicy: Always
       volumes:
       - hostPath:
           path: /etc/ssl/certs/ca-certificates.crt
           type: ""
         name: ssl-certs
-      - hostPath:
-          path: /var/lib/waagent/
-        name: waagent
+      - name: deploy-parameters
+        secret:
+          secretName: cluster-autoscaler-azure-deploy-parameters
+          items:
+          - key: deploy-parameters
+            path: azuredeploy.parameters.json

@@ -42,7 +42,7 @@ rules:
   resources: ["poddisruptionbudgets"]
   verbs: ["watch","list"]
 - apiGroups: ["apps"]
-  resources: ["statefulsets", "replicasets"]
+  resources: ["statefulsets", "replicasets","daemonsets"]
   verbs: ["watch","list","get"]
 - apiGroups: ["storage.k8s.io"]
   resources: ["storageclasses"]
@@ -136,17 +136,17 @@ spec:
         app: cluster-autoscaler
     spec:
       serviceAccountName: cluster-autoscaler
-      tolerations:
-      - effect: NoSchedule
-        operator: "Equal"
-        value: "true"
-        key: node-role.kubernetes.io/master
-      nodeSelector:
-        kubernetes.io/role: master
       containers:
       - image: k8s.gcr.io/cluster-autoscaler:{{ ca_version }}
         imagePullPolicy: Always
         name: cluster-autoscaler
+        resources:
+          limits:
+            cpu: 100m
+            memory: 300Mi
+          requests:
+            cpu: 100m
+            memory: 300Mi
         command:
         - ./cluster-autoscaler
         - --v=3
@@ -186,13 +186,6 @@ spec:
             secretKeyRef:
               key: VMType
               name: cluster-autoscaler-azure
-        resources:
-          limits:
-            cpu: 100m
-            memory: 300Mi
-          requests:
-            cpu: 100m
-            memory: 300Mi
         volumeMounts:
         - mountPath: /etc/ssl/certs/ca-certificates.crt
           name: ssl-certs
