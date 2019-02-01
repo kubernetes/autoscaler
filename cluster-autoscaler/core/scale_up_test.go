@@ -413,7 +413,7 @@ func simpleScaleUpTest(t *testing.T, config *scaleTestConfig) {
 	}
 	context.ExpanderStrategy = expander
 
-	nodeInfos, _ := getNodeInfosForGroups(nodes, provider, listers, []*appsv1.DaemonSet{}, context.PredicateChecker)
+	nodeInfos, _ := getNodeInfosForGroups(nodes, nil, provider, listers, []*appsv1.DaemonSet{}, context.PredicateChecker)
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
 	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
 
@@ -500,7 +500,7 @@ func TestScaleUpNodeComingNoScale(t *testing.T) {
 	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider)
 
 	nodes := []*apiv1.Node{n1, n2}
-	nodeInfos, _ := getNodeInfosForGroups(nodes, provider, listers, []*appsv1.DaemonSet{}, context.PredicateChecker)
+	nodeInfos, _ := getNodeInfosForGroups(nodes, nil, provider, listers, []*appsv1.DaemonSet{}, context.PredicateChecker)
 	clusterState := clusterstate.NewClusterStateRegistry(
 		provider,
 		clusterstate.ClusterStateRegistryConfig{MaxNodeProvisionTime: 5 * time.Minute},
@@ -546,7 +546,7 @@ func TestScaleUpNodeComingHasScale(t *testing.T) {
 	context := NewScaleTestAutoscalingContext(defaultOptions, &fake.Clientset{}, listers, provider)
 
 	nodes := []*apiv1.Node{n1, n2}
-	nodeInfos, _ := getNodeInfosForGroups(nodes, provider, listers, []*appsv1.DaemonSet{}, context.PredicateChecker)
+	nodeInfos, _ := getNodeInfosForGroups(nodes, nil, provider, listers, []*appsv1.DaemonSet{}, context.PredicateChecker)
 	clusterState := clusterstate.NewClusterStateRegistry(
 		provider,
 		clusterstate.ClusterStateRegistryConfig{
@@ -600,7 +600,7 @@ func TestScaleUpUnhealthy(t *testing.T) {
 	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider)
 
 	nodes := []*apiv1.Node{n1, n2}
-	nodeInfos, _ := getNodeInfosForGroups(nodes, provider, listers, []*appsv1.DaemonSet{}, context.PredicateChecker)
+	nodeInfos, _ := getNodeInfosForGroups(nodes, nil, provider, listers, []*appsv1.DaemonSet{}, context.PredicateChecker)
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
 	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
 	p3 := BuildTestPod("p-new", 550, 0)
@@ -639,7 +639,7 @@ func TestScaleUpNoHelp(t *testing.T) {
 	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider)
 
 	nodes := []*apiv1.Node{n1}
-	nodeInfos, _ := getNodeInfosForGroups(nodes, provider, listers, []*appsv1.DaemonSet{}, context.PredicateChecker)
+	nodeInfos, _ := getNodeInfosForGroups(nodes, nil, provider, listers, []*appsv1.DaemonSet{}, context.PredicateChecker)
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
 	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
 	p3 := BuildTestPod("p-new", 500, 0)
@@ -703,7 +703,7 @@ func TestScaleUpBalanceGroups(t *testing.T) {
 	}
 	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider)
 
-	nodeInfos, _ := getNodeInfosForGroups(nodes, provider, listers, []*appsv1.DaemonSet{}, context.PredicateChecker)
+	nodeInfos, _ := getNodeInfosForGroups(nodes, nil, provider, listers, []*appsv1.DaemonSet{}, context.PredicateChecker)
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
 	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
 
@@ -768,7 +768,7 @@ func TestScaleUpAutoprovisionedNodeGroup(t *testing.T) {
 	processors.NodeGroupManager = &mockAutoprovisioningNodeGroupManager{t}
 
 	nodes := []*apiv1.Node{}
-	nodeInfos, _ := getNodeInfosForGroups(nodes, provider, context.ListerRegistry, []*appsv1.DaemonSet{}, context.PredicateChecker)
+	nodeInfos, _ := getNodeInfosForGroups(nodes, nil, provider, context.ListerRegistry, []*appsv1.DaemonSet{}, context.PredicateChecker)
 
 	scaleUpStatus, err := ScaleUp(&context, processors, clusterState, []*apiv1.Pod{p1}, nodes, []*appsv1.DaemonSet{}, nodeInfos)
 	assert.NoError(t, err)
