@@ -71,26 +71,33 @@ func TestK8sLinuxVMNameParts(t *testing.T) {
 }
 
 func TestWindowsVMNameParts(t *testing.T) {
-	expectedPoolPrefix := "38988"
-	expectedAcs := "k8s"
-	expectedPoolIndex := 903
-	expectedAgentIndex := 12
+	data := []struct {
+		VMName, expectedPoolPrefix, expectedOrch string
+		expectedPoolIndex, expectedAgentIndex    int
+	}{
+		{"38988k8s90312", "38988", "k8s", 3, 12},
+		{"4506k8s010", "4506", "k8s", 1, 0},
+		{"2314k8s03000001", "2314", "k8s", 3, 1},
+		{"2314k8s0310", "2314", "k8s", 3, 10},
+	}
 
-	poolPrefix, acs, poolIndex, agentIndex, err := windowsVMNameParts("38988k8s90312")
-	if poolPrefix != expectedPoolPrefix {
-		t.Fatalf("incorrect poolPrefix. expected=%s actual=%s", expectedPoolPrefix, poolPrefix)
-	}
-	if acs != expectedAcs {
-		t.Fatalf("incorrect acs string. expected=%s actual=%s", expectedAcs, acs)
-	}
-	if poolIndex != expectedPoolIndex {
-		t.Fatalf("incorrect poolIndex. expected=%d actual=%d", expectedPoolIndex, poolIndex)
-	}
-	if agentIndex != expectedAgentIndex {
-		t.Fatalf("incorrect agentIndex. expected=%d actual=%d", expectedAgentIndex, agentIndex)
-	}
-	if err != nil {
-		t.Fatalf("unexpected error: %s", err)
+	for _, d := range data {
+		poolPrefix, orch, poolIndex, agentIndex, err := windowsVMNameParts(d.VMName)
+		if poolPrefix != d.expectedPoolPrefix {
+			t.Fatalf("incorrect poolPrefix. expected=%s actual=%s", d.expectedPoolPrefix, poolPrefix)
+		}
+		if orch != d.expectedOrch {
+			t.Fatalf("incorrect acs string. expected=%s actual=%s", d.expectedOrch, orch)
+		}
+		if poolIndex != d.expectedPoolIndex {
+			t.Fatalf("incorrect poolIndex. expected=%d actual=%d", d.expectedPoolIndex, poolIndex)
+		}
+		if agentIndex != d.expectedAgentIndex {
+			t.Fatalf("incorrect agentIndex. expected=%d actual=%d", d.expectedAgentIndex, agentIndex)
+		}
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
 	}
 }
 
