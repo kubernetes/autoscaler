@@ -180,7 +180,7 @@ func (gke *GkeCloudProvider) NewNodeGroup(machineType string, labels map[string]
 	// but if it fails later, we'd end up with a node group we can't scale anyway,
 	// so there's no point creating it.
 	if _, err := gke.gkeManager.GetMigTemplateNode(mig); err != nil {
-		return nil, fmt.Errorf("Failed to build node from spec: %v", err)
+		return nil, fmt.Errorf("failed to build node from spec: %v", err)
 	}
 
 	return mig, nil
@@ -388,7 +388,7 @@ func (mig *GkeMig) Create() (cloudprovider.NodeGroup, error) {
 	if !mig.exist && mig.autoprovisioned {
 		return mig.gkeManager.CreateNodePool(mig)
 	}
-	return nil, fmt.Errorf("Cannot create non-autoprovisioned node group")
+	return nil, fmt.Errorf("cannot create non-autoprovisioned node group")
 }
 
 // Delete deletes the node group on the cloud provider side.
@@ -397,7 +397,7 @@ func (mig *GkeMig) Delete() error {
 	if mig.exist && mig.autoprovisioned {
 		return mig.gkeManager.DeleteNodePool(mig)
 	}
-	return fmt.Errorf("Cannot delete non-autoprovisioned node group")
+	return fmt.Errorf("cannot delete non-autoprovisioned node group")
 }
 
 // Autoprovisioned returns true if the node group is autoprovisioned.

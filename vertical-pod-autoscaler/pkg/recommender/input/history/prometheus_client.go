@@ -93,7 +93,7 @@ func (c *prometheusClient) GetTimeseries(query string) ([]Timeseries, error) {
 		return nil
 	}, numRetries, retryDelay)
 	if err != nil {
-		return nil, fmt.Errorf("Retrying GetTimeseries unsuccessful: %v", err)
+		return nil, fmt.Errorf("retrying GetTimeseries unsuccessful: %v", err)
 	}
 	return decodeTimeseriesFromResponse(resp.Body)
 }
