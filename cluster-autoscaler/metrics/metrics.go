@@ -79,6 +79,7 @@ const (
 	ScaleDownNodeDeletion      FunctionLabel = "scaleDown:nodeDeletion"
 	ScaleDownFindNodesToRemove FunctionLabel = "scaleDown:findNodesToRemove"
 	ScaleDownMiscOperations    FunctionLabel = "scaleDown:miscOperations"
+	ScaleDownSoftTaintUnneeded FunctionLabel = "scaleDown:softTaintUnneeded"
 	ScaleUp                    FunctionLabel = "scaleUp"
 	FindUnneeded               FunctionLabel = "findUnneeded"
 	UpdateState                FunctionLabel = "updateClusterState"
