@@ -438,7 +438,7 @@ func simpleScaleUpTest(t *testing.T, config *scaleTestConfig) {
 		LogRecorder: fakeLogRecorder,
 	}
 
-	nodeInfos, _ := GetNodeInfosForGroups(nodes, provider, fakeClient, []*extensionsv1.DaemonSet{}, context.PredicateChecker)
+	nodeInfos, _ := GetNodeInfosForGroups(nodes, nil, provider, fakeClient, []*extensionsv1.DaemonSet{}, context.PredicateChecker)
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder)
 
 	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
@@ -546,7 +546,7 @@ func TestScaleUpNodeComingNoScale(t *testing.T) {
 	}
 
 	nodes := []*apiv1.Node{n1, n2}
-	nodeInfos, _ := GetNodeInfosForGroups(nodes, provider, fakeClient, []*extensionsv1.DaemonSet{}, context.PredicateChecker)
+	nodeInfos, _ := GetNodeInfosForGroups(nodes, nil, provider, fakeClient, []*extensionsv1.DaemonSet{}, context.PredicateChecker)
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder)
 	clusterState.RegisterScaleUp(&clusterstate.ScaleUpRequest{
 		NodeGroupName:   "ng2",
@@ -614,7 +614,7 @@ func TestScaleUpNodeComingHasScale(t *testing.T) {
 	}
 
 	nodes := []*apiv1.Node{n1, n2}
-	nodeInfos, _ := GetNodeInfosForGroups(nodes, provider, fakeClient, []*extensionsv1.DaemonSet{}, context.PredicateChecker)
+	nodeInfos, _ := GetNodeInfosForGroups(nodes, nil, provider, fakeClient, []*extensionsv1.DaemonSet{}, context.PredicateChecker)
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder)
 	clusterState.RegisterScaleUp(&clusterstate.ScaleUpRequest{
 		NodeGroupName:   "ng2",
@@ -686,7 +686,7 @@ func TestScaleUpUnhealthy(t *testing.T) {
 	}
 
 	nodes := []*apiv1.Node{n1, n2}
-	nodeInfos, _ := GetNodeInfosForGroups(nodes, provider, fakeClient, []*extensionsv1.DaemonSet{}, context.PredicateChecker)
+	nodeInfos, _ := GetNodeInfosForGroups(nodes, nil, provider, fakeClient, []*extensionsv1.DaemonSet{}, context.PredicateChecker)
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder)
 	clusterState.UpdateNodes([]*apiv1.Node{n1, n2}, nodeInfos, time.Now())
 
@@ -743,7 +743,7 @@ func TestScaleUpNoHelp(t *testing.T) {
 	}
 
 	nodes := []*apiv1.Node{n1}
-	nodeInfos, _ := GetNodeInfosForGroups(nodes, provider, fakeClient, []*extensionsv1.DaemonSet{}, context.PredicateChecker)
+	nodeInfos, _ := GetNodeInfosForGroups(nodes, nil, provider, fakeClient, []*extensionsv1.DaemonSet{}, context.PredicateChecker)
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder)
 	clusterState.UpdateNodes([]*apiv1.Node{n1}, nodeInfos, time.Now())
 
@@ -830,7 +830,7 @@ func TestScaleUpBalanceGroups(t *testing.T) {
 		LogRecorder:      fakeLogRecorder,
 	}
 
-	nodeInfos, _ := GetNodeInfosForGroups(nodes, provider, fakeClient, []*extensionsv1.DaemonSet{}, context.PredicateChecker)
+	nodeInfos, _ := GetNodeInfosForGroups(nodes, nil, provider, fakeClient, []*extensionsv1.DaemonSet{}, context.PredicateChecker)
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, fakeLogRecorder)
 	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
 
@@ -904,7 +904,7 @@ func TestScaleUpAutoprovisionedNodeGroup(t *testing.T) {
 	processors.NodeGroupManager = nodegroups.NewDefaultNodeGroupManager()
 
 	nodes := []*apiv1.Node{}
-	nodeInfos, _ := GetNodeInfosForGroups(nodes, provider, fakeClient, []*extensionsv1.DaemonSet{}, context.PredicateChecker)
+	nodeInfos, _ := GetNodeInfosForGroups(nodes, nil, provider, fakeClient, []*extensionsv1.DaemonSet{}, context.PredicateChecker)
 
 	status, err := ScaleUp(context, processors, clusterState, []*apiv1.Pod{p1}, []*apiv1.Node{}, []*extensionsv1.DaemonSet{}, nodeInfos)
 	assert.NoError(t, err)
