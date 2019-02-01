@@ -65,6 +65,8 @@ type StaticAutoscaler struct {
 	scaleDown               *ScaleDown
 	processors              *ca_processors.AutoscalingProcessors
 	initialized             bool
+	// Caches nodeInfo computed for previously seen nodes
+	nodeInfoCache map[string]*schedulercache.NodeInfo
 }
 
 // NewStaticAutoscaler creates an instance of Autoscaler filled with provided parameters
@@ -97,6 +99,7 @@ func NewStaticAutoscaler(
 		scaleDown:               scaleDown,
 		processors:              processors,
 		clusterStateRegistry:    clusterStateRegistry,
+		nodeInfoCache:           make(map[string]*schedulercache.NodeInfo),
 	}
 }
 
@@ -143,8 +146,8 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		return errors.ToAutoscalerError(errors.ApiCallError, err)
 	}
 
-	nodeInfosForGroups, autoscalerError := GetNodeInfosForGroups(readyNodes, autoscalingContext.CloudProvider, autoscalingContext.ClientSet,
-		daemonsets, autoscalingContext.PredicateChecker)
+	nodeInfosForGroups, autoscalerError := GetNodeInfosForGroups(
+		readyNodes, a.nodeInfoCache, autoscalingContext.CloudProvider, autoscalingContext.ClientSet, daemonsets, autoscalingContext.PredicateChecker)
 	if err != nil {
 		return autoscalerError.AddPrefix("failed to build node infos for node groups: ")
 	}
