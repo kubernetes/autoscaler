@@ -225,5 +225,5 @@ func (m *autoscalingGkeClientV1beta1) waitForGkeOp(op *gke_api_beta.Operation) e
 			klog.Warningf("Error while getting operation %s on %s: %v", op.Name, op.TargetLink, err)
 		}
 	}
-	return fmt.Errorf("Timeout while waiting for operation %s on %s to complete.", op.Name, op.TargetLink)
+	return fmt.Errorf("timeout while waiting for operation %s on %s to complete.", op.Name, op.TargetLink)
 }

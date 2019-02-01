@@ -63,7 +63,7 @@ func (k *kubernetesClient) ContainerResources() (*apiv1.ResourceRequirements, er
 			return &container.Resources, nil
 		}
 	}
-	return nil, fmt.Errorf("Container %s was not found in deployment %s in namespace %s.", k.container, k.deployment, k.namespace)
+	return nil, fmt.Errorf("container %s was not found in deployment %s in namespace %s.", k.container, k.deployment, k.namespace)
 }
 
 func (k *kubernetesClient) UpdateDeployment(resources *apiv1.ResourceRequirements) error {
@@ -83,7 +83,7 @@ func (k *kubernetesClient) UpdateDeployment(resources *apiv1.ResourceRequirement
 		}
 	}
 
-	return fmt.Errorf("Container %s was not found in the deployment %s in namespace %s.", k.container, k.deployment, k.namespace)
+	return fmt.Errorf("container %s was not found in the deployment %s in namespace %s.", k.container, k.deployment, k.namespace)
 }
 
 // NewKubernetesClient gives a KubernetesClient with the given dependencies.

@@ -49,7 +49,7 @@ func (m autoScalingWrapper) getInstanceTypeByLCName(name string) (string, error)
 		return "", err
 	}
 	if len(launchConfigurations.LaunchConfigurations) < 1 {
-		return "", fmt.Errorf("Unable to get first LaunchConfiguration for %s", name)
+		return "", fmt.Errorf("unable to get first LaunchConfiguration for %s", name)
 	}
 
 	return *launchConfigurations.LaunchConfigurations[0].InstanceType, nil

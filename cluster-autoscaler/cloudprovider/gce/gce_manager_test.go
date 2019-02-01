@@ -387,7 +387,7 @@ func TestDeleteInstances(t *testing.T) {
 
 	err = g.DeleteInstances(instances)
 	assert.Error(t, err)
-	assert.Equal(t, "Cannot delete instances which don't belong to the same MIG.", err.Error())
+	assert.Equal(t, "cannot delete instances which don't belong to the same MIG.", err.Error())
 	mock.AssertExpectationsForObjects(t, server)
 }
 

@@ -233,7 +233,7 @@ func (m *gceManagerImpl) DeleteInstances(instances []*GceRef) error {
 			return err
 		}
 		if mig != commonMig {
-			return fmt.Errorf("Cannot delete instances which don't belong to the same MIG.")
+			return fmt.Errorf("cannot delete instances which don't belong to the same MIG.")
 		}
 	}
 

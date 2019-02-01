@@ -287,7 +287,7 @@ func (tng *TestNodeGroup) Exist() bool {
 // Create creates the node group on the cloud provider side.
 func (tng *TestNodeGroup) Create() (cloudprovider.NodeGroup, error) {
 	if tng.Exist() {
-		return nil, fmt.Errorf("Group already exist")
+		return nil, fmt.Errorf("group already exist")
 	}
 	newNodeGroup := tng.cloudProvider.AddAutoprovisionedNodeGroup(tng.id, tng.minSize, tng.maxSize, 0, tng.machineType)
 	return newNodeGroup, tng.cloudProvider.onNodeGroupCreate(tng.id)
@@ -370,13 +370,13 @@ func (tng *TestNodeGroup) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
 	if tng.autoprovisioned {
 		template, found := tng.cloudProvider.machineTemplates[tng.machineType]
 		if !found {
-			return nil, fmt.Errorf("No template declared for %s", tng.machineType)
+			return nil, fmt.Errorf("no template declared for %s", tng.machineType)
 		}
 		return template, nil
 	}
 	template, found := tng.cloudProvider.machineTemplates[tng.id]
 	if !found {
-		return nil, fmt.Errorf("No template declared for %s", tng.id)
+		return nil, fmt.Errorf("no template declared for %s", tng.id)
 	}
 	return template, nil
 }
