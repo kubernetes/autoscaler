@@ -25,7 +25,6 @@ import (
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/eviction"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
-	"k8s.io/kubernetes/pkg/api/testapi"
 )
 
 func TestRunOnce(t *testing.T) {
@@ -38,7 +37,6 @@ func TestRunOnce(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "rc",
 			Namespace: "default",
-			SelfLink:  testapi.Default.SelfLink("replicationcontrollers", "rc"),
 		},
 		Spec: apiv1.ReplicationControllerSpec{
 			Replicas: &replicas,

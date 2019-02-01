@@ -23,7 +23,6 @@ import (
 	k8sapiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
-	api "k8s.io/kubernetes/pkg/apis/core"
 	"k8s.io/metrics/pkg/apis/metrics/v1beta1"
 	resourceclient "k8s.io/metrics/pkg/client/clientset/versioned/typed/metrics/v1beta1"
 )
@@ -62,7 +61,7 @@ func NewMetricsClient(metricsGetter resourceclient.PodMetricsesGetter) MetricsCl
 func (c *metricsClient) GetContainersMetrics() ([]*ContainerMetricsSnapshot, error) {
 	var metricsSnapshots []*ContainerMetricsSnapshot
 
-	podMetricsInterface := c.metricsGetter.PodMetricses(api.NamespaceAll)
+	podMetricsInterface := c.metricsGetter.PodMetricses(k8sapiv1.NamespaceAll)
 	podMetricsList, err := podMetricsInterface.List(metav1.ListOptions{})
 	if err != nil {
 		return nil, err
