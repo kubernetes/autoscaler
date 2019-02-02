@@ -23,6 +23,7 @@ this document:
   * [How is Cluster Autoscaler different from CPU-usage-based node autoscalers?](#how-is-cluster-autoscaler-different-from-cpu-usage-based-node-autoscalers)
   * [Is Cluster Autoscaler compatible with CPU-usage-based node autoscalers?](#is-cluster-autoscaler-compatible-with-cpu-usage-based-node-autoscalers)
   * [How does Cluster Autoscaler work with Pod Priority and Preemption?](#how-does-cluster-autoscaler-work-with-pod-priority-and-preemption)
+  * [What namespace should Cluster Autoscaler be deployed into?](#what-namespace-should-cluster-autoscaler-be-deployed-into)
 * [How to?](#how-to)
   * [I'm running cluster with nodes in multiple zones for HA purposes. Is that supported by Cluster Autoscaler?](#im-running-cluster-with-nodes-in-multiple-zones-for-ha-purposes-is-that-supported-by-cluster-autoscaler)
   * [How can I monitor Cluster Autoscaler?](#how-can-i-monitor-cluster-autoscaler)
@@ -217,7 +218,29 @@ More about Pod Priority and Preemption:
  * [Pod Preemption in Kubernetes](https://github.com/kubernetes/community/blob/master/contributors/design-proposals/scheduling/pod-preemption.md),
  * [Pod Priority and Preemption tutorial](https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/).
 
+### What namespace should Cluster Autoscaler be deployed into?
 
+Usually, Cluster Autoscaler is expected to be deployed into `kube-system` namespace, which is inline with its semantic purpose -- being a system-level component. However, it can be deployed into a different namespace, with one limitation: Cluster Autoscaler `Role` and `RoleBinding` should remain in `kube-system` namespace:
+
+```
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: cluster-autoscaler
+  namespace: kube-system
+  ...
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: cluster-autoscaler
+  namespace: kube-system
+  ...
+```
+
+_Keep in mind_, however, that placing Cluster Autoscaler into a `kube-system` namespace marks it as a [critical component](https://kubernetes.io/docs/tasks/administer-cluster/guaranteed-scheduling-critical-addon-pods/#marking-pod-as-critical), thus preventing manual or scheduled eviction.
+
+This ensures that autoscaling is operational on highly-utilized clusters and is able to properly function.
 
 ****************
 
