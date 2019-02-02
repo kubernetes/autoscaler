@@ -30,7 +30,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"math/rand"
 	"net/url"
 	"os"
@@ -42,6 +41,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"k8s.io/klog"
 )
 
 // GetURL gets the full URL for a http request.
@@ -562,13 +563,13 @@ func dirWindows() (string, error) {
 // Debug generates debug info for debug mode.
 func Debug(title, message string) {
 	if title != "" {
-		log.Println("----------------------------DEBUG: start of " + title + "----------------------------")
+		klog.V(5).Infof("----------------------------DEBUG: start of %s ----------------------------", title)
 	}
 
-	log.Println(message)
+	klog.V(5).Infof(message)
 
 	if title != "" {
-		log.Println("----------------------------DEBUG: end of " + title + "------------------------------\n")
+		klog.V(5).Infof("----------------------------DEBUG: end of %s------------------------------", title)
 	}
 }
 
