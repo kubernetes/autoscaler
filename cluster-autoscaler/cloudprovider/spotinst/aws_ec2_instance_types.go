@@ -266,8 +266,8 @@ var InstanceTypes = map[string]*instanceType{
 		GPU:          2,
 		GPUMemory:    15965618176,
 	},
-	"g3s.4xlarge": {
-		InstanceType: "g3.8xlarge",
+	"g3s.xlarge": {
+		InstanceType: "g3s.xlarge",
 		VCPU:         4,
 		MemoryMb:     31232,
 		GPU:          1,
