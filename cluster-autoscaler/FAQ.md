@@ -348,7 +348,7 @@ description: "Priority class used by overprovisioning."
 **For 1.11:**
 
 ```
-apiVersion: scheduling.k8s.io/v1beta
+apiVersion: scheduling.k8s.io/v1beta1
 kind: PriorityClass
 metadata:
   name: overprovisioning
