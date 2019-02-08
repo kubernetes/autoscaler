@@ -82,14 +82,14 @@ type Duration struct {
 	// Signed seconds of the span of time. Must be from -315,576,000,000
 	// to +315,576,000,000 inclusive. Note: these bounds are computed from:
 	// 60 sec/min * 60 min/hr * 24 hr/day * 365.25 days/year * 10000 years
-	Seconds int64 `protobuf:"varint,1,opt,name=seconds,proto3" json:"seconds,omitempty"`
+	Seconds int64 `protobuf:"varint,1,opt,name=seconds" json:"seconds,omitempty"`
 	// Signed fractions of a second at nanosecond resolution of the span
 	// of time. Durations less than one second are represented with a 0
 	// `seconds` field and a positive or negative `nanos` field. For durations
 	// of one second or more, a non-zero value for the `nanos` field must be
 	// of the same sign as the `seconds` field. Must be from -999,999,999
 	// to +999,999,999 inclusive.
-	Nanos                int32    `protobuf:"varint,2,opt,name=nanos,proto3" json:"nanos,omitempty"`
+	Nanos                int32    `protobuf:"varint,2,opt,name=nanos" json:"nanos,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -99,7 +99,7 @@ func (m *Duration) Reset()         { *m = Duration{} }
 func (m *Duration) String() string { return proto.CompactTextString(m) }
 func (*Duration) ProtoMessage()    {}
 func (*Duration) Descriptor() ([]byte, []int) {
-	return fileDescriptor_23597b2ebd7ac6c5, []int{0}
+	return fileDescriptor_duration_e7d612259e3f0613, []int{0}
 }
 func (*Duration) XXX_WellKnownType() string { return "Duration" }
 func (m *Duration) XXX_Unmarshal(b []byte) error {
@@ -138,9 +138,11 @@ func init() {
 	proto.RegisterType((*Duration)(nil), "google.protobuf.Duration")
 }
 
-func init() { proto.RegisterFile("google/protobuf/duration.proto", fileDescriptor_23597b2ebd7ac6c5) }
+func init() {
+	proto.RegisterFile("google/protobuf/duration.proto", fileDescriptor_duration_e7d612259e3f0613)
+}
 
-var fileDescriptor_23597b2ebd7ac6c5 = []byte{
+var fileDescriptor_duration_e7d612259e3f0613 = []byte{
 	// 190 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x92, 0x4b, 0xcf, 0xcf, 0x4f,
 	0xcf, 0x49, 0xd5, 0x2f, 0x28, 0xca, 0x2f, 0xc9, 0x4f, 0x2a, 0x4d, 0xd3, 0x4f, 0x29, 0x2d, 0x4a,
