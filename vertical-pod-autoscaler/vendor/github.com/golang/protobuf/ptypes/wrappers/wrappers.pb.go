@@ -23,7 +23,7 @@ const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
 // The JSON representation for `DoubleValue` is JSON number.
 type DoubleValue struct {
 	// The double value.
-	Value                float64  `protobuf:"fixed64,1,opt,name=value,proto3" json:"value,omitempty"`
+	Value                float64  `protobuf:"fixed64,1,opt,name=value" json:"value,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -33,7 +33,7 @@ func (m *DoubleValue) Reset()         { *m = DoubleValue{} }
 func (m *DoubleValue) String() string { return proto.CompactTextString(m) }
 func (*DoubleValue) ProtoMessage()    {}
 func (*DoubleValue) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5377b62bda767935, []int{0}
+	return fileDescriptor_wrappers_16c7c35c009f3253, []int{0}
 }
 func (*DoubleValue) XXX_WellKnownType() string { return "DoubleValue" }
 func (m *DoubleValue) XXX_Unmarshal(b []byte) error {
@@ -66,7 +66,7 @@ func (m *DoubleValue) GetValue() float64 {
 // The JSON representation for `FloatValue` is JSON number.
 type FloatValue struct {
 	// The float value.
-	Value                float32  `protobuf:"fixed32,1,opt,name=value,proto3" json:"value,omitempty"`
+	Value                float32  `protobuf:"fixed32,1,opt,name=value" json:"value,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -76,7 +76,7 @@ func (m *FloatValue) Reset()         { *m = FloatValue{} }
 func (m *FloatValue) String() string { return proto.CompactTextString(m) }
 func (*FloatValue) ProtoMessage()    {}
 func (*FloatValue) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5377b62bda767935, []int{1}
+	return fileDescriptor_wrappers_16c7c35c009f3253, []int{1}
 }
 func (*FloatValue) XXX_WellKnownType() string { return "FloatValue" }
 func (m *FloatValue) XXX_Unmarshal(b []byte) error {
@@ -109,7 +109,7 @@ func (m *FloatValue) GetValue() float32 {
 // The JSON representation for `Int64Value` is JSON string.
 type Int64Value struct {
 	// The int64 value.
-	Value                int64    `protobuf:"varint,1,opt,name=value,proto3" json:"value,omitempty"`
+	Value                int64    `protobuf:"varint,1,opt,name=value" json:"value,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -119,7 +119,7 @@ func (m *Int64Value) Reset()         { *m = Int64Value{} }
 func (m *Int64Value) String() string { return proto.CompactTextString(m) }
 func (*Int64Value) ProtoMessage()    {}
 func (*Int64Value) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5377b62bda767935, []int{2}
+	return fileDescriptor_wrappers_16c7c35c009f3253, []int{2}
 }
 func (*Int64Value) XXX_WellKnownType() string { return "Int64Value" }
 func (m *Int64Value) XXX_Unmarshal(b []byte) error {
@@ -152,7 +152,7 @@ func (m *Int64Value) GetValue() int64 {
 // The JSON representation for `UInt64Value` is JSON string.
 type UInt64Value struct {
 	// The uint64 value.
-	Value                uint64   `protobuf:"varint,1,opt,name=value,proto3" json:"value,omitempty"`
+	Value                uint64   `protobuf:"varint,1,opt,name=value" json:"value,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -162,7 +162,7 @@ func (m *UInt64Value) Reset()         { *m = UInt64Value{} }
 func (m *UInt64Value) String() string { return proto.CompactTextString(m) }
 func (*UInt64Value) ProtoMessage()    {}
 func (*UInt64Value) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5377b62bda767935, []int{3}
+	return fileDescriptor_wrappers_16c7c35c009f3253, []int{3}
 }
 func (*UInt64Value) XXX_WellKnownType() string { return "UInt64Value" }
 func (m *UInt64Value) XXX_Unmarshal(b []byte) error {
@@ -195,7 +195,7 @@ func (m *UInt64Value) GetValue() uint64 {
 // The JSON representation for `Int32Value` is JSON number.
 type Int32Value struct {
 	// The int32 value.
-	Value                int32    `protobuf:"varint,1,opt,name=value,proto3" json:"value,omitempty"`
+	Value                int32    `protobuf:"varint,1,opt,name=value" json:"value,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -205,7 +205,7 @@ func (m *Int32Value) Reset()         { *m = Int32Value{} }
 func (m *Int32Value) String() string { return proto.CompactTextString(m) }
 func (*Int32Value) ProtoMessage()    {}
 func (*Int32Value) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5377b62bda767935, []int{4}
+	return fileDescriptor_wrappers_16c7c35c009f3253, []int{4}
 }
 func (*Int32Value) XXX_WellKnownType() string { return "Int32Value" }
 func (m *Int32Value) XXX_Unmarshal(b []byte) error {
@@ -238,7 +238,7 @@ func (m *Int32Value) GetValue() int32 {
 // The JSON representation for `UInt32Value` is JSON number.
 type UInt32Value struct {
 	// The uint32 value.
-	Value                uint32   `protobuf:"varint,1,opt,name=value,proto3" json:"value,omitempty"`
+	Value                uint32   `protobuf:"varint,1,opt,name=value" json:"value,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -248,7 +248,7 @@ func (m *UInt32Value) Reset()         { *m = UInt32Value{} }
 func (m *UInt32Value) String() string { return proto.CompactTextString(m) }
 func (*UInt32Value) ProtoMessage()    {}
 func (*UInt32Value) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5377b62bda767935, []int{5}
+	return fileDescriptor_wrappers_16c7c35c009f3253, []int{5}
 }
 func (*UInt32Value) XXX_WellKnownType() string { return "UInt32Value" }
 func (m *UInt32Value) XXX_Unmarshal(b []byte) error {
@@ -281,7 +281,7 @@ func (m *UInt32Value) GetValue() uint32 {
 // The JSON representation for `BoolValue` is JSON `true` and `false`.
 type BoolValue struct {
 	// The bool value.
-	Value                bool     `protobuf:"varint,1,opt,name=value,proto3" json:"value,omitempty"`
+	Value                bool     `protobuf:"varint,1,opt,name=value" json:"value,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -291,7 +291,7 @@ func (m *BoolValue) Reset()         { *m = BoolValue{} }
 func (m *BoolValue) String() string { return proto.CompactTextString(m) }
 func (*BoolValue) ProtoMessage()    {}
 func (*BoolValue) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5377b62bda767935, []int{6}
+	return fileDescriptor_wrappers_16c7c35c009f3253, []int{6}
 }
 func (*BoolValue) XXX_WellKnownType() string { return "BoolValue" }
 func (m *BoolValue) XXX_Unmarshal(b []byte) error {
@@ -324,7 +324,7 @@ func (m *BoolValue) GetValue() bool {
 // The JSON representation for `StringValue` is JSON string.
 type StringValue struct {
 	// The string value.
-	Value                string   `protobuf:"bytes,1,opt,name=value,proto3" json:"value,omitempty"`
+	Value                string   `protobuf:"bytes,1,opt,name=value" json:"value,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -334,7 +334,7 @@ func (m *StringValue) Reset()         { *m = StringValue{} }
 func (m *StringValue) String() string { return proto.CompactTextString(m) }
 func (*StringValue) ProtoMessage()    {}
 func (*StringValue) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5377b62bda767935, []int{7}
+	return fileDescriptor_wrappers_16c7c35c009f3253, []int{7}
 }
 func (*StringValue) XXX_WellKnownType() string { return "StringValue" }
 func (m *StringValue) XXX_Unmarshal(b []byte) error {
@@ -377,7 +377,7 @@ func (m *BytesValue) Reset()         { *m = BytesValue{} }
 func (m *BytesValue) String() string { return proto.CompactTextString(m) }
 func (*BytesValue) ProtoMessage()    {}
 func (*BytesValue) Descriptor() ([]byte, []int) {
-	return fileDescriptor_5377b62bda767935, []int{8}
+	return fileDescriptor_wrappers_16c7c35c009f3253, []int{8}
 }
 func (*BytesValue) XXX_WellKnownType() string { return "BytesValue" }
 func (m *BytesValue) XXX_Unmarshal(b []byte) error {
@@ -417,9 +417,11 @@ func init() {
 	proto.RegisterType((*BytesValue)(nil), "google.protobuf.BytesValue")
 }
 
-func init() { proto.RegisterFile("google/protobuf/wrappers.proto", fileDescriptor_5377b62bda767935) }
+func init() {
+	proto.RegisterFile("google/protobuf/wrappers.proto", fileDescriptor_wrappers_16c7c35c009f3253)
+}
 
-var fileDescriptor_5377b62bda767935 = []byte{
+var fileDescriptor_wrappers_16c7c35c009f3253 = []byte{
 	// 259 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x92, 0x4b, 0xcf, 0xcf, 0x4f,
 	0xcf, 0x49, 0xd5, 0x2f, 0x28, 0xca, 0x2f, 0xc9, 0x4f, 0x2a, 0x4d, 0xd3, 0x2f, 0x2f, 0x4a, 0x2c,
