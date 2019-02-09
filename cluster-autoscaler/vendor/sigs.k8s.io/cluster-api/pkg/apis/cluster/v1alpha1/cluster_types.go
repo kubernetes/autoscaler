@@ -19,7 +19,6 @@ package v1alpha1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"sigs.k8s.io/cluster-api/pkg/apis/cluster/common"
 )
@@ -54,7 +53,7 @@ type ClusterSpec struct {
 	// their own versioned API types that should be
 	// serialized/deserialized from this field.
 	// +optional
-	ProviderConfig ProviderConfig `json:"providerConfig,omitempty"`
+	ProviderSpec ProviderSpec `json:"providerSpec,omitempty"`
 }
 
 /// [ClusterSpec]
@@ -66,7 +65,7 @@ type ClusterNetworkingConfig struct {
 	// The network ranges from which service VIPs are allocated.
 	Services NetworkRanges `json:"services"`
 
-	// The network ranges from which POD networks are allocated.
+	// The network ranges from which Pod networks are allocated.
 	Pods NetworkRanges `json:"pods"`
 
 	// Domain name for services.

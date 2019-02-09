@@ -17,10 +17,10 @@ limitations under the License.
 package common
 
 import (
-	"fmt"
 	"sync"
 
-	"github.com/golang/glog"
+	"github.com/pkg/errors"
+	"k8s.io/klog"
 )
 
 var (
@@ -34,9 +34,9 @@ func RegisterClusterProvisioner(name string, provisioner interface{}) {
 	providersMutex.Lock()
 	defer providersMutex.Unlock()
 	if _, found := providers[name]; found {
-		glog.Fatalf("Cluster provisioner %q was registered twice", name)
+		klog.Fatalf("Cluster provisioner %q was registered twice", name)
 	}
-	glog.V(1).Infof("Registered cluster provisioner %q", name)
+	klog.V(1).Infof("Registered cluster provisioner %q", name)
 	providers[name] = provisioner
 }
 
@@ -45,7 +45,7 @@ func ClusterProvisioner(name string) (interface{}, error) {
 	defer providersMutex.Unlock()
 	provisioner, found := providers[name]
 	if !found {
-		return nil, fmt.Errorf("unable to find provisioner for %s", name)
+		return nil, errors.Errorf("unable to find provisioner for %s", name)
 	}
 	return provisioner, nil
 }

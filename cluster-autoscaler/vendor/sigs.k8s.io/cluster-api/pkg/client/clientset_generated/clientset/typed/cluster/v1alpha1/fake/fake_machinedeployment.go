@@ -131,7 +131,7 @@ func (c *FakeMachineDeployments) DeleteCollection(options *v1.DeleteOptions, lis
 // Patch applies the patch and returns the patched machineDeployment.
 func (c *FakeMachineDeployments) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.MachineDeployment, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(machinedeploymentsResource, c.ns, name, data, subresources...), &v1alpha1.MachineDeployment{})
+		Invokes(testing.NewPatchSubresourceAction(machinedeploymentsResource, c.ns, name, pt, data, subresources...), &v1alpha1.MachineDeployment{})
 
 	if obj == nil {
 		return nil, err

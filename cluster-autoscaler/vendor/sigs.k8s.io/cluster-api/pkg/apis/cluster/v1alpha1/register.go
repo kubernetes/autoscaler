@@ -30,12 +30,13 @@ import (
 )
 
 var (
-	// SchemeGroupVersion is group version used to register these objects
+	// SchemeGroupVersion is group version used to register these objects.
 	SchemeGroupVersion = schema.GroupVersion{Group: "cluster.k8s.io", Version: "v1alpha1"}
 
-	// SchemeBuilder is used to add go types to the GroupVersionKind scheme
+	// SchemeBuilder is used to add go types to the GroupVersionKind scheme.
 	SchemeBuilder = &scheme.Builder{GroupVersion: SchemeGroupVersion}
 
+	// AddToScheme adds registered types to the builder.
 	// Required by pkg/client/...
 	// TODO(pwittrock): Remove this after removing pkg/client/...
 	AddToScheme = SchemeBuilder.AddToScheme

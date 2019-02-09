@@ -56,7 +56,7 @@ type MachineClass struct {
 	// Allocatable corev1.ResourceList `json:"allocatable"`
 
 	// Provider-specific configuration to use during node creation.
-	ProviderConfig runtime.RawExtension `json:"providerConfig"`
+	ProviderSpec runtime.RawExtension `json:"providerSpec"`
 
 	// TODO: should this use an api.ObjectReference to a 'MachineTemplate' instead?
 	// A link to the MachineTemplate that will be used to create provider

@@ -21,8 +21,8 @@ import (
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
-// ProviderConfig defines the configuration to use during node creation.
-type ProviderConfig struct {
+// ProviderSpec defines the configuration to use during node creation.
+type ProviderSpec struct {
 
 	// No more than one of the following may be specified.
 
@@ -36,12 +36,12 @@ type ProviderConfig struct {
 	// Source for the provider configuration. Cannot be used if value is
 	// not empty.
 	// +optional
-	ValueFrom *ProviderConfigSource `json:"valueFrom,omitempty"`
+	ValueFrom *ProviderSpecSource `json:"valueFrom,omitempty"`
 }
 
-// ProviderConfigSource represents a source for the provider-specific
+// ProviderSpecSource represents a source for the provider-specific
 // resource configuration.
-type ProviderConfigSource struct {
+type ProviderSpecSource struct {
 	// The machine class from which the provider config should be sourced.
 	// +optional
 	MachineClass *MachineClassRef `json:"machineClass,omitempty"`
