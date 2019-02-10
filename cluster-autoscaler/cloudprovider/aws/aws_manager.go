@@ -172,8 +172,13 @@ func (m *AwsManager) getAsgTemplate(asg *asg) (*asgTemplate, error) {
 		glog.Warningf("Found multiple availability zones, using %s\n", az)
 	}
 
+	instanceType, ok := InstanceTypes[instanceTypeName]
+	if !ok {
+		return nil, fmt.Errorf("Unknown instance type %s for %s", instanceTypeName, asg.Name)
+	}
+
 	return &asgTemplate{
-		InstanceType: InstanceTypes[instanceTypeName],
+		InstanceType: instanceType,
 		Region:       region,
 		Zone:         az,
 		Tags:         asg.Tags,
