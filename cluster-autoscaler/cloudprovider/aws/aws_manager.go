@@ -247,6 +247,11 @@ func (m *AwsManager) buildNodeFromTemplate(asg *asg, template *asgTemplate) (*ap
 	node.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(template.InstanceType.GPU, resource.DecimalSI)
 	node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(template.InstanceType.MemoryMb*1024*1024, resource.DecimalSI)
 
+	resourcesFromTags := extractAllocatableResourcesFromAsg(template.Tags)
+	if val, ok := resourcesFromTags["ephemeral-storage"]; ok {
+		node.Status.Capacity[apiv1.ResourceEphemeralStorage] = *val
+	}
+
 	// TODO: use proper allocatable!!
 	node.Status.Allocatable = node.Status.Capacity
 
@@ -286,6 +291,28 @@ func extractLabelsFromAsg(tags []*autoscaling.TagDescription) map[string]string 
 			label := splits[1]
 			if label != "" {
 				result[label] = v
+			}
+		}
+	}
+
+	return result
+}
+
+func extractAllocatableResourcesFromAsg(tags []*autoscaling.TagDescription) map[string]*resource.Quantity {
+	result := make(map[string]*resource.Quantity)
+
+	for _, tag := range tags {
+		k := *tag.Key
+		v := *tag.Value
+		splits := strings.Split(k, "k8s.io/cluster-autoscaler/node-template/resources/")
+		if len(splits) > 1 {
+			label := splits[1]
+			if label != "" {
+				quantity, err := resource.ParseQuantity(v)
+				if err != nil {
+					continue
+				}
+				result[label] = &quantity
 			}
 		}
 	}
