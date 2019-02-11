@@ -33,6 +33,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 )
@@ -80,6 +81,31 @@ func TestBuildGenericLabels(t *testing.T) {
 	assert.Equal(t, "c4.large", labels[kubeletapis.LabelInstanceType])
 	assert.Equal(t, cloudprovider.DefaultArch, labels[kubeletapis.LabelArch])
 	assert.Equal(t, cloudprovider.DefaultOS, labels[kubeletapis.LabelOS])
+}
+
+func TestExtractAllocatableResourcesFromAsg(t *testing.T) {
+	tags := []*autoscaling.TagDescription{
+		{
+			Key:   aws.String("k8s.io/cluster-autoscaler/node-template/resources/cpu"),
+			Value: aws.String("100m"),
+		},
+		{
+			Key:   aws.String("k8s.io/cluster-autoscaler/node-template/resources/memory"),
+			Value: aws.String("100M"),
+		},
+		{
+			Key:   aws.String("k8s.io/cluster-autoscaler/node-template/resources/ephemeral-storage"),
+			Value: aws.String("20G"),
+		},
+	}
+
+	labels := extractAllocatableResourcesFromAsg(tags)
+
+	assert.Equal(t, resource.NewMilliQuantity(100, resource.DecimalSI).String(), labels["cpu"].String())
+	expectedMemory := resource.MustParse("100M")
+	assert.Equal(t, (&expectedMemory).String(), labels["memory"].String())
+	expectedEphemeralStorage := resource.MustParse("20G")
+	assert.Equal(t, (&expectedEphemeralStorage).String(), labels["ephemeral-storage"].String())
 }
 
 func TestExtractLabelsFromAsg(t *testing.T) {
