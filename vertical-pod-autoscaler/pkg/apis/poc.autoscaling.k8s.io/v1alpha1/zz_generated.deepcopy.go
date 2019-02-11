@@ -22,7 +22,7 @@ package v1alpha1
 
 import (
 	v1 "k8s.io/api/core/v1"
-	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -31,12 +31,8 @@ func (in *ContainerResourcePolicy) DeepCopyInto(out *ContainerResourcePolicy) {
 	*out = *in
 	if in.Mode != nil {
 		in, out := &in.Mode, &out.Mode
-		if *in == nil {
-			*out = nil
-		} else {
-			*out = new(ContainerScalingMode)
-			**out = **in
-		}
+		*out = new(ContainerScalingMode)
+		**out = **in
 	}
 	if in.MinAllowed != nil {
 		in, out := &in.MinAllowed, &out.MinAllowed
@@ -117,12 +113,8 @@ func (in *PodUpdatePolicy) DeepCopyInto(out *PodUpdatePolicy) {
 	*out = *in
 	if in.UpdateMode != nil {
 		in, out := &in.UpdateMode, &out.UpdateMode
-		if *in == nil {
-			*out = nil
-		} else {
-			*out = new(UpdateMode)
-			**out = **in
-		}
+		*out = new(UpdateMode)
+		**out = **in
 	}
 	return
 }
@@ -378,30 +370,18 @@ func (in *VerticalPodAutoscalerSpec) DeepCopyInto(out *VerticalPodAutoscalerSpec
 	*out = *in
 	if in.Selector != nil {
 		in, out := &in.Selector, &out.Selector
-		if *in == nil {
-			*out = nil
-		} else {
-			*out = new(meta_v1.LabelSelector)
-			(*in).DeepCopyInto(*out)
-		}
+		*out = new(metav1.LabelSelector)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.UpdatePolicy != nil {
 		in, out := &in.UpdatePolicy, &out.UpdatePolicy
-		if *in == nil {
-			*out = nil
-		} else {
-			*out = new(PodUpdatePolicy)
-			(*in).DeepCopyInto(*out)
-		}
+		*out = new(PodUpdatePolicy)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.ResourcePolicy != nil {
 		in, out := &in.ResourcePolicy, &out.ResourcePolicy
-		if *in == nil {
-			*out = nil
-		} else {
-			*out = new(PodResourcePolicy)
-			(*in).DeepCopyInto(*out)
-		}
+		*out = new(PodResourcePolicy)
+		(*in).DeepCopyInto(*out)
 	}
 	return
 }
@@ -421,12 +401,8 @@ func (in *VerticalPodAutoscalerStatus) DeepCopyInto(out *VerticalPodAutoscalerSt
 	*out = *in
 	if in.Recommendation != nil {
 		in, out := &in.Recommendation, &out.Recommendation
-		if *in == nil {
-			*out = nil
-		} else {
-			*out = new(RecommendedPodResources)
-			(*in).DeepCopyInto(*out)
-		}
+		*out = new(RecommendedPodResources)
+		(*in).DeepCopyInto(*out)
 	}
 	if in.Conditions != nil {
 		in, out := &in.Conditions, &out.Conditions
