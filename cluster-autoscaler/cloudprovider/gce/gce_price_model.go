@@ -147,7 +147,7 @@ func getBasePrice(resources apiv1.ResourceList, startTime time.Time, endTime tim
 	cpu := resources[apiv1.ResourceCPU]
 	mem := resources[apiv1.ResourceMemory]
 	price += float64(cpu.MilliValue()) / 1000.0 * cpuPricePerHour * hours
-	price += float64(mem.Value()) / float64(units.Gigabyte) * memoryPricePerHourPerGb * hours
+	price += float64(mem.Value()) / float64(units.GiB) * memoryPricePerHourPerGb * hours
 	return price
 }
 

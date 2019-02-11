@@ -18,11 +18,13 @@ package gke
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce"
 	gpuUtils "k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 
 	gce_api "google.golang.org/api/compute/v1"
 	apiv1 "k8s.io/api/core/v1"
@@ -35,104 +37,93 @@ import (
 
 func TestBuildNodeFromTemplateSetsResources(t *testing.T) {
 	type testCase struct {
-		kubeEnv           string
-		name              string
-		machineType       string
-		accelerators      []*gce_api.AcceleratorConfig
-		mig               gce.Mig
-		capacityCpu       int64
-		capacityMemory    int64
-		allocatableCpu    string
-		allocatableMemory string
-		gpuCount          int64
-		expectedErr       bool
+		scenario         string
+		kubeEnv          string
+		accelerators     []*gce_api.AcceleratorConfig
+		mig              gce.Mig
+		physicalCpu      int64
+		physicalMemory   int64
+		kubeReserved     bool
+		reservedCpu      string
+		reservedMemory   string
+		expectedGpuCount int64
+		expectedErr      bool
 	}
-	testCases := []testCase{{
-		kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
-			"NODE_LABELS: a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true\n" +
-			"DNS_SERVER_IP: '10.0.0.10'\n" +
-			fmt.Sprintf("KUBELET_TEST_ARGS: --experimental-allocatable-ignore-eviction --kube-reserved=cpu=1000m,memory=%v\n", 1024*1024) +
-			"NODE_TAINTS: 'dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c'\n",
-		name:        "nodeName",
-		machineType: "custom-8-2",
-		accelerators: []*gce_api.AcceleratorConfig{
-			{AcceleratorType: "nvidia-tesla-k80", AcceleratorCount: 3},
-			{AcceleratorType: "nvidia-tesla-p100", AcceleratorCount: 8},
-		},
-		mig: &GkeMig{
-			gceRef: gce.GceRef{
-				Name:    "some-name",
-				Project: "some-proj",
-				Zone:    "us-central1-b",
-			},
-		},
-		capacityCpu:       8,
-		capacityMemory:    200 * 1024 * 1024,
-		allocatableCpu:    "7000m",
-		allocatableMemory: fmt.Sprintf("%v", 99*1024*1024),
-		gpuCount:          11,
-		expectedErr:       false,
-	},
+	testCases := []testCase{
 		{
+			scenario: "kube-reserved present in kube-env",
+			kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
+				"NODE_LABELS: a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true\n" +
+				"DNS_SERVER_IP: '10.0.0.10'\n" +
+				fmt.Sprintf("KUBELET_TEST_ARGS: --experimental-allocatable-ignore-eviction --kube-reserved=cpu=1000m,memory=%v\n", 1*units.MiB) +
+				"NODE_TAINTS: 'dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c'\n",
+			accelerators: []*gce_api.AcceleratorConfig{
+				{AcceleratorType: "nvidia-tesla-k80", AcceleratorCount: 3},
+				{AcceleratorType: "nvidia-tesla-p100", AcceleratorCount: 8},
+			},
+			physicalCpu:      8,
+			physicalMemory:   200 * units.MiB,
+			kubeReserved:     true,
+			reservedCpu:      "1000m",
+			reservedMemory:   fmt.Sprintf("%v", 1*units.MiB),
+			expectedGpuCount: 11,
+			expectedErr:      false,
+		},
+		{
+			scenario: "no kube-reserved in kube-env",
 			kubeEnv: "ENABLE_NODE_PROBLEM_DETECTOR: 'daemonset'\n" +
 				"NODE_LABELS: a=b,c=d,cloud.google.com/gke-nodepool=pool-3,cloud.google.com/gke-preemptible=true\n" +
 				"DNS_SERVER_IP: '10.0.0.10'\n" +
 				"NODE_TAINTS: 'dedicated=ml:NoSchedule,test=dev:PreferNoSchedule,a=b:c'\n",
-			name:        "nodeName",
-			machineType: "custom-8-2",
-			mig: &GkeMig{
-				gceRef: gce.GceRef{
-					Name:    "some-name",
-					Project: "some-proj",
-					Zone:    "us-central1-b",
-				},
-			},
-			capacityCpu:       8,
-			capacityMemory:    2 * 1024 * 1024,
-			allocatableCpu:    "8000m",
-			allocatableMemory: fmt.Sprintf("%v", 2*1024*1024),
-			expectedErr:       false,
+			physicalCpu:      8,
+			physicalMemory:   200 * units.MiB,
+			kubeReserved:     false,
+			expectedGpuCount: 11,
+			expectedErr:      false,
 		}, {
+			scenario:    "totally messed up kube-env",
 			kubeEnv:     "This kube-env is totally messed up",
-			name:        "nodeName",
-			machineType: "custom-8-2",
-			mig: &GkeMig{
-				gceRef: gce.GceRef{
-					Name:    "some-name",
-					Project: "some-proj",
-					Zone:    "us-central1-b",
-				},
-			},
 			expectedErr: true,
 		},
 	}
 	for _, tc := range testCases {
-		tb := &GkeTemplateBuilder{}
-		template := &gce_api.InstanceTemplate{
-			Name: tc.name,
-			Properties: &gce_api.InstanceProperties{
-				GuestAccelerators: tc.accelerators,
-				Metadata: &gce_api.Metadata{
-					Items: []*gce_api.MetadataItems{{Key: "kube-env", Value: &tc.kubeEnv}},
+		t.Run(tc.scenario, func(t *testing.T) {
+			tb := &GkeTemplateBuilder{}
+			mig := &GkeMig{
+				gceRef: gce.GceRef{
+					Name:    "some-name",
+					Project: "some-proj",
+					Zone:    "us-central1-b",
 				},
-				MachineType: tc.machineType,
-			},
-		}
-		node, err := tb.BuildNodeFromTemplate(tc.mig, template, tc.capacityCpu, tc.capacityMemory)
-		if tc.expectedErr {
-			assert.Error(t, err)
-		} else {
-			assert.NoError(t, err)
-			podsQuantity, _ := resource.ParseQuantity("110")
-			capacity, err := makeResourceList(fmt.Sprintf("%dm", tc.capacityCpu*1000), fmt.Sprintf("%v", tc.capacityMemory), tc.gpuCount)
-			capacity[apiv1.ResourcePods] = podsQuantity
-			assert.NoError(t, err)
-			allocatable, err := makeResourceList(tc.allocatableCpu, tc.allocatableMemory, tc.gpuCount)
-			allocatable[apiv1.ResourcePods] = podsQuantity
-			assert.NoError(t, err)
-			assertEqualResourceLists(t, "Capacity", capacity, node.Status.Capacity)
-			assertEqualResourceLists(t, "Allocatable", allocatable, node.Status.Allocatable)
-		}
+			}
+			template := &gce_api.InstanceTemplate{
+				Name: "node-name",
+				Properties: &gce_api.InstanceProperties{
+					GuestAccelerators: tc.accelerators,
+					Metadata: &gce_api.Metadata{
+						Items: []*gce_api.MetadataItems{{Key: "kube-env", Value: &tc.kubeEnv}},
+					},
+					MachineType: "irrelevant-type",
+				},
+			}
+			node, err := tb.BuildNodeFromTemplate(mig, template, tc.physicalCpu, tc.physicalMemory)
+			if tc.expectedErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				capacity, err := tb.BuildCapacity(tc.physicalCpu, tc.physicalMemory, tc.accelerators)
+				assert.NoError(t, err)
+				assertEqualResourceLists(t, "Capacity", capacity, node.Status.Capacity)
+				if !tc.kubeReserved {
+					assertEqualResourceLists(t, "Allocatable", capacity, node.Status.Allocatable)
+				} else {
+					reserved, err := makeResourceList(tc.reservedCpu, tc.reservedMemory, 0)
+					assert.NoError(t, err)
+					allocatable := tb.CalculateAllocatable(capacity, reserved)
+					assertEqualResourceLists(t, "Allocatable", allocatable, node.Status.Allocatable)
+				}
+			}
+		})
 	}
 }
 
@@ -237,36 +228,32 @@ func TestBuildAllocatableFromKubeEnv(t *testing.T) {
 	}
 }
 
-func TestBuildAllocatableFromCapacity(t *testing.T) {
+func TestBuildKubeReserved(t *testing.T) {
 	type testCase struct {
-		capacityCpu       string
-		capacityMemory    string
-		allocatableCpu    string
-		allocatableMemory string
-		gpuCount          int64
+		physicalCpu    int64
+		reservedCpu    string
+		physicalMemory int64
+		reservedMemory string
 	}
 	testCases := []testCase{{
-		capacityCpu:    "16000m",
-		capacityMemory: fmt.Sprintf("%v", 1*mbPerGB*bytesPerMB),
-		allocatableCpu: "15890m",
+		physicalCpu: 16,
+		reservedCpu: "110m",
 		// Below threshold for reserving memory
-		allocatableMemory: fmt.Sprintf("%v", 1*mbPerGB*bytesPerMB-kubeletEvictionHardMemory),
-		gpuCount:          1,
+		physicalMemory: units.GB,
+		reservedMemory: fmt.Sprintf("%v", 255*units.MiB),
 	}, {
-		capacityCpu:    "500m",
-		capacityMemory: fmt.Sprintf("%v", 1.1*mbPerGB*bytesPerMB),
-		allocatableCpu: "470m",
-		// Final 1024*1024 because we're duplicating upstream bug using MB as MiB
-		allocatableMemory: fmt.Sprintf("%v", 1.1*mbPerGB*bytesPerMB-0.25*1.1*mbPerGB*1024*1024-kubeletEvictionHardMemory),
+		physicalCpu: 1,
+		reservedCpu: "60m",
+		// 10760Mi = 0.25*4000Mi + 0.2*4000Mi + 0.1*8000Mi + 0.06*112000Mi + 0.02*72000Mi
+		physicalMemory: 200 * 1000 * units.MiB,
+		reservedMemory: fmt.Sprintf("%v", 10760*units.MiB),
 	}}
 	for _, tc := range testCases {
 		tb := GkeTemplateBuilder{}
-		capacity, err := makeResourceList(tc.capacityCpu, tc.capacityMemory, tc.gpuCount)
+		expectedReserved, err := makeResourceList(tc.reservedCpu, tc.reservedMemory, 0)
 		assert.NoError(t, err)
-		expectedAllocatable, err := makeResourceList(tc.allocatableCpu, tc.allocatableMemory, tc.gpuCount)
-		assert.NoError(t, err)
-		allocatable := tb.BuildAllocatableFromCapacity(capacity)
-		assertEqualResourceLists(t, "Allocatable", expectedAllocatable, allocatable)
+		kubeReserved := tb.BuildKubeReserved(tc.physicalCpu, tc.physicalMemory)
+		assertEqualResourceLists(t, "Kube reserved", expectedReserved, kubeReserved)
 	}
 }
 
@@ -293,5 +280,24 @@ func makeResourceList(cpu string, memory string, gpu int64) (apiv1.ResourceList,
 }
 
 func assertEqualResourceLists(t *testing.T, name string, expected, actual apiv1.ResourceList) {
-	assert.True(t, quota.V1Equals(expected, actual), "%q unequal:\nExpected:%v\nActual:%v", name, expected, actual)
+	t.Helper()
+	assert.True(t, quota.V1Equals(expected, actual),
+		"%q unequal:\nExpected: %v\nActual:   %v", name, stringifyResourceList(expected), stringifyResourceList(actual))
+}
+
+func stringifyResourceList(resourceList apiv1.ResourceList) string {
+	resourceNames := []apiv1.ResourceName{
+		apiv1.ResourcePods, apiv1.ResourceCPU, gpuUtils.ResourceNvidiaGPU, apiv1.ResourceMemory, apiv1.ResourceEphemeralStorage}
+	var results []string
+	for _, name := range resourceNames {
+		quantity, found := resourceList[name]
+		if found {
+			value := quantity.Value()
+			if name == apiv1.ResourceCPU {
+				value = quantity.MilliValue()
+			}
+			results = append(results, fmt.Sprintf("%v: %v", string(name), value))
+		}
+	}
+	return strings.Join(results, ", ")
 }

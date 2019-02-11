@@ -24,6 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -46,13 +47,13 @@ func TestGetNodePrice(t *testing.T) {
 	now := time.Now()
 
 	// regular
-	node1 := BuildTestNode("sillyname1", 8000, 30*1024*1024*1024)
+	node1 := BuildTestNode("sillyname1", 8000, 30*units.GiB)
 	node1.Labels = labels1
 	price1, err := model.NodePrice(node1, now, now.Add(time.Hour))
 	assert.NoError(t, err)
 
 	// preemptible
-	node2 := BuildTestNode("sillyname2", 8000, 30*1024*1024*1024)
+	node2 := BuildTestNode("sillyname2", 8000, 30*units.GiB)
 	node2.Labels = labels2
 	price2, err := model.NodePrice(node2, now, now.Add(time.Hour))
 	assert.NoError(t, err)
@@ -60,7 +61,7 @@ func TestGetNodePrice(t *testing.T) {
 	assert.True(t, price1 > 3*price2)
 
 	// custom node
-	node3 := BuildTestNode("sillyname3", 8000, 30*1024*1024*1024)
+	node3 := BuildTestNode("sillyname3", 8000, 30*units.GiB)
 	price3, err := model.NodePrice(node3, now, now.Add(time.Hour))
 	assert.NoError(t, err)
 	// custom nodes should be slightly more expensive than regular.
@@ -68,13 +69,13 @@ func TestGetNodePrice(t *testing.T) {
 	assert.True(t, price1*1.2 > price3)
 
 	// regular with gpu
-	node4 := BuildTestNode("sillyname4", 8000, 30*1024*1024*1024)
+	node4 := BuildTestNode("sillyname4", 8000, 30*units.GiB)
 	node4.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(1, resource.DecimalSI)
 	node4.Labels = labels1
 	price4, err := model.NodePrice(node4, now, now.Add(time.Hour))
 
 	// preemptible with gpu
-	node5 := BuildTestNode("sillyname5", 8000, 30*1024*1024*1024)
+	node5 := BuildTestNode("sillyname5", 8000, 30*units.GiB)
 	node5.Labels = labels2
 	node5.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(1, resource.DecimalSI)
 	price5, err := model.NodePrice(node5, now, now.Add(time.Hour))
@@ -86,7 +87,7 @@ func TestGetNodePrice(t *testing.T) {
 	assert.True(t, price4 > 2*price1)
 
 	// small custom node
-	node6 := BuildTestNode("sillyname6", 1000, 3750*1024*1024)
+	node6 := BuildTestNode("sillyname6", 1000, 3750*units.MiB)
 	price6, err := model.NodePrice(node6, now, now.Add(time.Hour))
 	assert.NoError(t, err)
 	// 8 times smaller node should be 8 times less expensive.
@@ -94,8 +95,8 @@ func TestGetNodePrice(t *testing.T) {
 }
 
 func TestGetPodPrice(t *testing.T) {
-	pod1 := BuildTestPod("a1", 100, 500*1024*1024)
-	pod2 := BuildTestPod("a2", 2*100, 2*500*1024*1024)
+	pod1 := BuildTestPod("a1", 100, 500*units.MiB)
+	pod2 := BuildTestPod("a2", 2*100, 2*500*units.MiB)
 
 	model := &GcePriceModel{}
 	now := time.Now()

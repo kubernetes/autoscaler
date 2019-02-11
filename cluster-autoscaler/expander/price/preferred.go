@@ -24,6 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 )
 
 // SimplePreferredNodeProvider returns preferred node based on the cluster size.
@@ -46,22 +47,21 @@ func (spnp *SimplePreferredNodeProvider) Node() (*apiv1.Node, error) {
 	}
 	size := len(nodes)
 
-	mb := int64(1024 * 1024)
 	cpu := int64(1000)
 
 	// Double node size with every time the cluster size increases 3x.
 	if size <= 2 {
-		return buildNode(1*cpu, 3750*mb), nil
+		return buildNode(1*cpu, 3750*units.MiB), nil
 	} else if size <= 6 {
-		return buildNode(2*cpu, 7500*mb), nil
+		return buildNode(2*cpu, 7500*units.MiB), nil
 	} else if size <= 20 {
-		return buildNode(4*cpu, 15000*mb), nil
+		return buildNode(4*cpu, 15000*units.MiB), nil
 	} else if size <= 60 {
-		return buildNode(8*cpu, 30000*mb), nil
+		return buildNode(8*cpu, 30000*units.MiB), nil
 	} else if size <= 200 {
-		return buildNode(16*cpu, 60000*mb), nil
+		return buildNode(16*cpu, 60000*units.MiB), nil
 	}
-	return buildNode(32*cpu, 120000*mb), nil
+	return buildNode(32*cpu, 120000*units.MiB), nil
 }
 
 func buildNode(millicpu int64, mem int64) *apiv1.Node {

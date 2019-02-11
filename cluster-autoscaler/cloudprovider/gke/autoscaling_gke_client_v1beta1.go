@@ -117,10 +117,10 @@ func buildResourceLimiter(cluster *gke_api_beta.Cluster) *cloudprovider.Resource
 
 	// GKE API provides memory in GB, but ResourceLimiter expects them in bytes
 	if _, found := minLimits[cloudprovider.ResourceNameMemory]; found {
-		minLimits[cloudprovider.ResourceNameMemory] = minLimits[cloudprovider.ResourceNameMemory] * units.Gigabyte
+		minLimits[cloudprovider.ResourceNameMemory] = minLimits[cloudprovider.ResourceNameMemory] * units.GiB
 	}
 	if _, found := maxLimits[cloudprovider.ResourceNameMemory]; found {
-		maxLimits[cloudprovider.ResourceNameMemory] = maxLimits[cloudprovider.ResourceNameMemory] * units.Gigabyte
+		maxLimits[cloudprovider.ResourceNameMemory] = maxLimits[cloudprovider.ResourceNameMemory] * units.GiB
 	}
 
 	return cloudprovider.NewResourceLimiter(minLimits, maxLimits)
