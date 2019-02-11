@@ -60,15 +60,18 @@ type VerticalPodAutoscaler struct {
 // VerticalPodAutoscalerSpec is the specification of the behavior of the autoscaler.
 type VerticalPodAutoscalerSpec struct {
 
-	// ControllerRef points to the controller managing the set of pods for the
-	// autoscaler to control. The pod set is retrieved from the controller's
-	// ScaleStatus or in case of some well known controllers (Daemonset, Job
-	// or CronJob) from the controller's spec.
+	// TargetRef points to the controller managing the set of pods for the
+	// autoscaler to control - e.g. Deployment, StatefulSet. VerticalPodAutoscaler
+	// can be targeted at controller implementing scale subresource (the pod set is
+	// retrieved from the controller's ScaleStatus) or some well known controllers
+	// (e.g. for DaemonSet the pod set is read from the controller's spec).
+	// If VerticalPodAutoscaler cannot use specified target it will report
+	// ConfigUnsupported condition.
 	// Note that VerticalPodAutoscaler does not require full implementation
 	// of scale subresource - it will not use it to modify the replica count.
 	// The only thing retrieved is a label selector matching pods grouped by
 	// the target resource.
-	ControllerRef *autoscaling.CrossVersionObjectReference `json:"controllerRef" protobuf:"bytes,1,name=controllerRef"`
+	TargetRef *autoscaling.CrossVersionObjectReference `json:"targetRef" protobuf:"bytes,1,name=targetRef"`
 
 	// Describes the rules on how changes are applied to the pods.
 	// If not specified, all fields in the `PodUpdatePolicy` are set to their
