@@ -17,6 +17,7 @@ limitations under the License.
 package aws
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -373,6 +374,85 @@ func TestBelongs(t *testing.T) {
 	// the first `Belongs` call, no additional DescribAutoScalingGroupsPages
 	// call is made.
 	service.AssertNumberOfCalls(t, "DescribeAutoScalingGroupsPages", 1)
+}
+
+func TestTemplateNodeInfoUnknownAZ(t *testing.T) {
+	service := &AutoScalingMock{}
+	provider := testProvider(t, newTestAwsManagerWithAsgs(t, service, []string{"1:5:test-asg"}))
+	asgs := provider.NodeGroups()
+
+	service.On("DescribeAutoScalingGroupsPages",
+		&autoscaling.DescribeAutoScalingGroupsInput{
+			AutoScalingGroupNames: aws.StringSlice([]string{asgs[0].Id()}),
+			MaxRecords:            aws.Int64(maxRecordsReturnedByAPI),
+		},
+		mock.AnythingOfType("func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool"),
+	).Run(func(args mock.Arguments) {
+		fn := args.Get(1).(func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool)
+		fn(testNamedDescribeAutoScalingGroupsOutput("test-asg", 1, "test-instance-id"), false)
+	}).Return(nil)
+
+	unknownInstanceType := "unknown"
+	outLuanch := &autoscaling.LaunchConfiguration{
+		InstanceType: &unknownInstanceType,
+	}
+	subject := autoscaling.DescribeLaunchConfigurationsOutput{
+		LaunchConfigurations: []*autoscaling.LaunchConfiguration{
+			outLuanch,
+		},
+	}
+
+	service.On("DescribeLaunchConfigurations", mock.Anything).Return(&subject, nil)
+
+	provider.Refresh()
+
+	_, err := asgs[0].(*AwsNodeGroup).TemplateNodeInfo()
+	assert.EqualError(t, err, "Unable to get first AvailabilityZone for test-asg")
+	service.AssertNumberOfCalls(t, "DescribeAutoScalingGroupsPages", 1)
+	service.AssertNumberOfCalls(t, "DescribeLaunchConfigurations", 1)
+}
+
+func TestTemplateNodeInfoUnknownInstanceType(t *testing.T) {
+	service := &AutoScalingMock{}
+	provider := testProvider(t, newTestAwsManagerWithAsgs(t, service, []string{"1:5:test-asg"}))
+	asgs := provider.NodeGroups()
+
+	for _, asg := range asgs {
+		fmt.Printf("TEST: asg: %+v\n", asg.(*AwsNodeGroup).asg)
+	}
+
+	service.On("DescribeAutoScalingGroupsPages",
+		&autoscaling.DescribeAutoScalingGroupsInput{
+			AutoScalingGroupNames: aws.StringSlice([]string{asgs[0].Id()}),
+			MaxRecords:            aws.Int64(maxRecordsReturnedByAPI),
+		},
+		mock.AnythingOfType("func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool"),
+	).Run(func(args mock.Arguments) {
+		fn := args.Get(1).(func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool)
+		fn(testNamedDescribeAutoScalingGroupsOutput("test-asg", 1, "test-instance-id"), false)
+	}).Return(nil)
+
+	unknownInstanceType := "unknown"
+	outLuanch := &autoscaling.LaunchConfiguration{
+		InstanceType: &unknownInstanceType,
+	}
+	subject := autoscaling.DescribeLaunchConfigurationsOutput{
+		LaunchConfigurations: []*autoscaling.LaunchConfiguration{
+			outLuanch,
+		},
+	}
+
+	service.On("DescribeLaunchConfigurations", mock.Anything).Return(&subject, nil)
+
+	provider.Refresh()
+
+	asgNodeGroup := asgs[0].(*AwsNodeGroup)
+	asgNodeGroup.asg.AvailabilityZones = []string{"test-east-1a", "test-east-1c"}
+
+	_, err := asgNodeGroup.TemplateNodeInfo()
+	assert.EqualError(t, err, "Unknown instance type unknown for test-asg")
+	service.AssertNumberOfCalls(t, "DescribeAutoScalingGroupsPages", 1)
+	service.AssertNumberOfCalls(t, "DescribeLaunchConfigurations", 1)
 }
 
 func TestDeleteNodes(t *testing.T) {
