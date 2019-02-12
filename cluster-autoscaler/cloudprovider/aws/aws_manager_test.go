@@ -36,16 +36,19 @@ import (
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 )
 
+// resetAWSRegion resets AWS_REGION environment variable key to its pre-test
+// value, but only if it was originally present among environment variables.
+func resetAWSRegion(value string, present bool) {
+	os.Unsetenv("AWS_REGION")
+	if present {
+		os.Setenv("AWS_REGION", value)
+	}
+}
+
 // TestGetRegion ensures correct source supplies AWS Region.
 func TestGetRegion(t *testing.T) {
 	key := "AWS_REGION"
-	originalRegion, originalPresent := os.LookupEnv(key)
-	defer func(region string, present bool) {
-		os.Unsetenv(key)
-		if present {
-			os.Setenv(key, region)
-		}
-	}(originalRegion, originalPresent)
+	defer resetAWSRegion(os.LookupEnv(key))
 	// Ensure environment variable retains precedence.
 	expected1 := "the-shire-1"
 	os.Setenv(key, expected1)
@@ -191,6 +194,9 @@ func TestFetchExplicitAsgs(t *testing.T) {
 			fmt.Sprintf("%d:%d:%s", min, max-1, groupname),
 		},
 	}
+	// #1449 Without AWS_REGION getRegion() lookup runs till timeout during tests.
+	defer resetAWSRegion(os.LookupEnv("AWS_REGION"))
+	os.Setenv("AWS_REGION", "fanghorn")
 	// fetchExplicitASGs is called at manager creation time.
 	m, err := createAWSManagerInternal(nil, do, &autoScalingWrapper{s}, nil)
 	assert.NoError(t, err)
@@ -217,6 +223,9 @@ func TestBuildInstanceType(t *testing.T) {
 		},
 	})
 
+	// #1449 Without AWS_REGION getRegion() lookup runs till timeout during tests.
+	defer resetAWSRegion(os.LookupEnv("AWS_REGION"))
+	os.Setenv("AWS_REGION", "fanghorn")
 	m, err := createAWSManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, nil, &ec2Wrapper{s})
 	assert.NoError(t, err)
 
@@ -278,6 +287,9 @@ func TestFetchAutoAsgs(t *testing.T) {
 		NodeGroupAutoDiscoverySpecs: []string{fmt.Sprintf("asg:tag=%s", strings.Join(tags, ","))},
 	}
 
+	// #1449 Without AWS_REGION getRegion() lookup runs till timeout during tests.
+	defer resetAWSRegion(os.LookupEnv("AWS_REGION"))
+	os.Setenv("AWS_REGION", "fanghorn")
 	// fetchAutoASGs is called at manager creation time, via forceRefresh
 	m, err := createAWSManagerInternal(nil, do, &autoScalingWrapper{s}, nil)
 	assert.NoError(t, err)
