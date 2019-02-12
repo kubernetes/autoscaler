@@ -22,14 +22,17 @@ import (
 	"fmt"
 	"io"
 	"math/rand"
+	"os"
 	"regexp"
 	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/golang/glog"
-	"gopkg.in/gcfg.v1"
+	gcfg "gopkg.in/gcfg.v1"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -60,6 +63,18 @@ type asgTemplate struct {
 	Tags         []*autoscaling.TagDescription
 }
 
+// getRegion deduces the current AWS Region.
+func getRegion(cfg ...*aws.Config) string {
+	region, present := os.LookupEnv("AWS_REGION")
+	if !present {
+		svc := ec2metadata.New(session.New(), cfg...)
+		if r, err := svc.Region(); err == nil {
+			region = r
+		}
+	}
+	return region
+}
+
 // createAwsManagerInternal allows for a customer autoScalingWrapper to be passed in by tests
 func createAWSManagerInternal(
 	configReader io.Reader,
@@ -75,8 +90,9 @@ func createAWSManagerInternal(
 	}
 
 	if service == nil {
+		sess := session.New(aws.NewConfig().WithRegion(getRegion()))
 		service = &autoScalingWrapper{
-			autoscaling.New(session.New()),
+			autoscaling.New(sess),
 		}
 	}
 
