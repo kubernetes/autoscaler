@@ -19,3 +19,5 @@ limitations under the License.
 package v1beta2
 
 type VerticalPodAutoscalerExpansion interface{}
+
+type VerticalPodAutoscalerCheckpointExpansion interface{}
