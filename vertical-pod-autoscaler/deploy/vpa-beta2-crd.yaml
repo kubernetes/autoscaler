@@ -4,6 +4,7 @@ metadata:
   name: verticalpodautoscalers.autoscaling.k8s.io
 spec:
   group: autoscaling.k8s.io
+  version: v1beta2
   scope: Namespaced
   names:
     plural: verticalpodautoscalers
@@ -11,22 +12,15 @@ spec:
     kind: VerticalPodAutoscaler
     shortNames:
     - vpa
-  versions:
-  - name: v1beta1
-    served: true
-    storage: false
-  - name: v1beta2
-    served: true
-    storage: true
   validation:
     # openAPIV3Schema is the schema for validating custom objects.
     openAPIV3Schema:
       properties:
         spec:
+          required:
+          - targetRef
           properties:
-            selector:
-              type: object
-            controllerRef:
+            targetRef:
               type: object
             updatePolicy:
               properties:
@@ -43,7 +37,7 @@ metadata:
   name: verticalpodautoscalercheckpoints.autoscaling.k8s.io
 spec:
   group: autoscaling.k8s.io
-  version: v1beta1
+  version: v1beta2
   scope: Namespaced
   names:
     plural: verticalpodautoscalercheckpoints
