@@ -137,9 +137,6 @@ spec:
             - --cloud-provider=aws
             - --skip-nodes-with-local-storage=false
             - --nodes=1:10:k8s-worker-asg-1
-          env:
-            - name: AWS_REGION
-              value: us-east-1
           volumeMounts:
             - name: ssl-certs
               mountPath: /etc/ssl/certs/ca-certificates.crt
