@@ -26,6 +26,8 @@ import (
 type Interface interface {
 	// VerticalPodAutoscalers returns a VerticalPodAutoscalerInformer.
 	VerticalPodAutoscalers() VerticalPodAutoscalerInformer
+	// VerticalPodAutoscalerCheckpoints returns a VerticalPodAutoscalerCheckpointInformer.
+	VerticalPodAutoscalerCheckpoints() VerticalPodAutoscalerCheckpointInformer
 }
 
 type version struct {
@@ -42,4 +44,9 @@ func New(f internalinterfaces.SharedInformerFactory, namespace string, tweakList
 // VerticalPodAutoscalers returns a VerticalPodAutoscalerInformer.
 func (v *version) VerticalPodAutoscalers() VerticalPodAutoscalerInformer {
 	return &verticalPodAutoscalerInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+}
+
+// VerticalPodAutoscalerCheckpoints returns a VerticalPodAutoscalerCheckpointInformer.
+func (v *version) VerticalPodAutoscalerCheckpoints() VerticalPodAutoscalerCheckpointInformer {
+	return &verticalPodAutoscalerCheckpointInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
