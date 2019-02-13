@@ -26,7 +26,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 )
 
-// Prometheus history provider configuration, allow to select which metrics
+// PrometheusHistoryProviderConfig allow to select which metrics
 // should be queried to get real resource utilization.
 type PrometheusHistoryProviderConfig struct {
 	Address                                            string
