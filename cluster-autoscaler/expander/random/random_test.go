@@ -19,21 +19,22 @@ package random
 import (
 	"testing"
 
-	"k8s.io/autoscaler/cluster-autoscaler/expander"
-
 	"github.com/stretchr/testify/assert"
+
+	"k8s.io/autoscaler/cluster-autoscaler/expander"
 )
 
 func TestRandomExpander(t *testing.T) {
-	eo1a := expander.Option{Debug: "EO1a"}
 	e := NewStrategy()
 
+	eo1a := expander.Option{Debug: "EO1a"}
 	ret := e.BestOption([]expander.Option{eo1a}, nil)
 	assert.Equal(t, *ret, eo1a)
 
 	eo1b := expander.Option{Debug: "EO1b"}
-
 	ret = e.BestOption([]expander.Option{eo1a, eo1b}, nil)
-
 	assert.True(t, assert.ObjectsAreEqual(*ret, eo1a) || assert.ObjectsAreEqual(*ret, eo1b))
+
+	ret = e.BestOption([]expander.Option{}, nil)
+	assert.Nil(t, ret)
 }
