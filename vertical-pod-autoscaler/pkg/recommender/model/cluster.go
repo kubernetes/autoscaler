@@ -20,10 +20,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/golang/glog"
 	apiv1 "k8s.io/api/core/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
+	"k8s.io/klog"
 )
 
 // ClusterState holds all runtime information about the cluster required for the
@@ -292,12 +292,12 @@ func (cluster *ClusterState) findOrCreateAggregateContainerState(containerID Con
 
 // GarbageCollectAggregateCollectionStates removes obsolete AggregateCollectionStates from the ClusterState.
 func (cluster *ClusterState) GarbageCollectAggregateCollectionStates(now time.Time) {
-	glog.V(1).Info("Garbage collection of AggregateCollectionStates triggered")
+	klog.V(1).Info("Garbage collection of AggregateCollectionStates triggered")
 	keysToDelete := make([]AggregateStateKey, 0)
 	for key, aggregateContainerState := range cluster.aggregateStateMap {
 		if aggregateContainerState.isExpired(now) {
 			keysToDelete = append(keysToDelete, key)
-			glog.V(1).Infof("Removing AggregateCollectionStates for %+v", key)
+			klog.V(1).Infof("Removing AggregateCollectionStates for %+v", key)
 		}
 	}
 	for _, key := range keysToDelete {

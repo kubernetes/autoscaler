@@ -20,7 +20,6 @@ import (
 	"flag"
 	"time"
 
-	"github.com/golang/glog"
 	kube_flag "k8s.io/apiserver/pkg/util/flag"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/history"
@@ -28,6 +27,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics"
 	metrics_recommender "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/recommender"
 	"k8s.io/client-go/rest"
+	"k8s.io/klog"
 )
 
 var (
@@ -53,7 +53,7 @@ var (
 
 func main() {
 	kube_flag.InitFlags()
-	glog.V(1).Infof("Vertical Pod Autoscaler %s Recommender", common.VerticalPodAutoscalerVersion)
+	klog.V(1).Infof("Vertical Pod Autoscaler %s Recommender", common.VerticalPodAutoscalerVersion)
 
 	config := createKubeConfig(float32(*kubeApiQps), int(*kubeApiBurst))
 
@@ -92,7 +92,7 @@ func main() {
 func createKubeConfig(kubeApiQps float32, kubeApiBurst int) *rest.Config {
 	config, err := rest.InClusterConfig()
 	if err != nil {
-		glog.Fatalf("Failed to create config: %v", err)
+		klog.Fatalf("Failed to create config: %v", err)
 	}
 	config.QPS = kubeApiQps
 	config.Burst = kubeApiBurst
