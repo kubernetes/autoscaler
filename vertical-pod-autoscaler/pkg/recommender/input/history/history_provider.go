@@ -60,8 +60,6 @@ type prometheusHistoryProvider struct {
 	config           PrometheusHistoryProviderConfig
 }
 
-var singletonHistoryProvider *prometheusHistoryProvider
-
 // NewPrometheusHistoryProvider contructs a history provider that gets data from Prometheus.
 func NewPrometheusHistoryProvider(config PrometheusHistoryProviderConfig) HistoryProvider {
 	return &prometheusHistoryProvider{
