@@ -33,6 +33,10 @@ func NewStrategy() expander.Strategy {
 
 // RandomExpansion Selects from the expansion options at random
 func (r *random) BestOption(expansionOptions []expander.Option, nodeInfo map[string]*schedulercache.NodeInfo) *expander.Option {
+	if len(expansionOptions) <= 0 {
+		return nil
+	}
+
 	pos := rand.Int31n(int32(len(expansionOptions)))
 	return &expansionOptions[pos]
 }
