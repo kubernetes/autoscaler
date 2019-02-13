@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/golang/glog"
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1beta1"
@@ -31,6 +30,7 @@ import (
 	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
+	"k8s.io/klog"
 )
 
 const (
@@ -136,7 +136,7 @@ func (e *podsEvictionRestrictionImpl) Evict(podToEvict *apiv1.Pod, eventRecorder
 	}
 	err := e.client.CoreV1().Pods(podToEvict.Namespace).Evict(eviction)
 	if err != nil {
-		glog.Errorf("failed to evict pod %s/%s, error: %v", podToEvict.Namespace, podToEvict.Name, err)
+		klog.Errorf("failed to evict pod %s/%s, error: %v", podToEvict.Namespace, podToEvict.Name, err)
 		return err
 	}
 	eventRecorder.Event(podToEvict, apiv1.EventTypeNormal, "EvictedByVPA",
@@ -190,11 +190,11 @@ func (f *podsEvictionRestrictionFactoryImpl) NewPodsEvictionRestriction(pods []*
 	for _, pod := range pods {
 		creator, err := getPodReplicaCreator(pod)
 		if err != nil {
-			glog.Errorf("failed to obtain replication info for pod %s: %v", pod.Name, err)
+			klog.Errorf("failed to obtain replication info for pod %s: %v", pod.Name, err)
 			continue
 		}
 		if creator == nil {
-			glog.Warningf("pod %s not replicated", pod.Name)
+			klog.Warningf("pod %s not replicated", pod.Name)
 			continue
 		}
 		livePods[*creator] = append(livePods[*creator], pod)
@@ -206,7 +206,7 @@ func (f *podsEvictionRestrictionFactoryImpl) NewPodsEvictionRestriction(pods []*
 	for creator, replicas := range livePods {
 		actual := len(replicas)
 		if actual < f.minReplicas {
-			glog.V(2).Infof("too few replicas for %v %v/%v. Found %v live pods",
+			klog.V(2).Infof("too few replicas for %v %v/%v. Found %v live pods",
 				creator.Kind, creator.Namespace, creator.Name, actual)
 			continue
 		}
@@ -219,7 +219,7 @@ func (f *podsEvictionRestrictionFactoryImpl) NewPodsEvictionRestriction(pods []*
 			var err error
 			configured, err = f.getReplicaCount(creator)
 			if err != nil {
-				glog.Errorf("failed to obtain replication info for %v %v/%v. %v",
+				klog.Errorf("failed to obtain replication info for %v %v/%v. %v",
 					creator.Kind, creator.Namespace, creator.Name, err)
 				continue
 			}

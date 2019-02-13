@@ -25,7 +25,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	"k8s.io/client-go/tools/cache"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 // OomInfo contains data of the OOM event occurrence
@@ -86,7 +86,7 @@ func parseEvictionEvent(event *apiv1.Event) []OomInfo {
 		}
 		memory, err := resource.ParseQuantity(offendingContainersUsage[i])
 		if err != nil {
-			glog.Errorf("Cannot parse resource quantity in eviction event %v. Error: %v", offendingContainersUsage[i], err)
+			klog.Errorf("Cannot parse resource quantity in eviction event %v. Error: %v", offendingContainersUsage[i], err)
 			continue
 		}
 		oomInfo := OomInfo{
@@ -107,7 +107,7 @@ func parseEvictionEvent(event *apiv1.Event) []OomInfo {
 
 // OnEvent inspects k8s eviction events and translates them to OomInfo.
 func (o *observer) OnEvent(event *apiv1.Event) {
-	glog.V(1).Infof("OOM Observer processing event: %+v", event)
+	klog.V(1).Infof("OOM Observer processing event: %+v", event)
 	for _, oomInfo := range parseEvictionEvent(event) {
 		o.observedOomsChannel <- oomInfo
 	}
@@ -139,11 +139,11 @@ func (*observer) OnAdd(obj interface{}) {}
 func (o *observer) OnUpdate(oldObj, newObj interface{}) {
 	oldPod, ok := oldObj.(*apiv1.Pod)
 	if oldPod == nil || !ok {
-		glog.Errorf("OOM observer received invalid oldObj: %v", oldObj)
+		klog.Errorf("OOM observer received invalid oldObj: %v", oldObj)
 	}
 	newPod, ok := newObj.(*apiv1.Pod)
 	if newPod == nil || !ok {
-		glog.Errorf("OOM observer received invalid newObj: %v", newObj)
+		klog.Errorf("OOM observer received invalid newObj: %v", newObj)
 	}
 
 	for _, containerStatus := range newPod.Status.ContainerStatuses {
