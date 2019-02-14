@@ -1,5 +1,5 @@
 /*
-Copyright 2018 The Kubernetes Authors.
+Copyright 2019 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,99 +17,58 @@ limitations under the License.
 package openstack
 
 import (
-	"context"
-	"fmt"
-	"net/http"
-	"net/url"
-	"path"
 	"regexp"
 	"time"
 
-	"github.com/golang/glog"
-    "github.com/gophercloud/gophercloud/openstack"
-    "github.com/gophercloud/gophercloud/openstack/orchestration/v1/stacks"
-    "github.com/gophercloud/gophercloud/openstack/orchestration/v1/stackresources"
+    "github.com/gophercloud/gophercloud"
 )
-
-const (
-	defaultOperationWaitTimeout  = 5 * time.Second
-	defaultOperationPollInterval = 100 * time.Millisecond
-)
-
-// AutoscalingOpenStackClient is used for communicating with OpenStack Go SDK (gophercloud).
-type AutoscalingOpenStackClient interface {
-	// reading resources
-	FetchASGTargetSize(OpenStackRef) (int64, error)
-	FetchASGInstances(OpenStackRef) ([]OpenStackRef, error)
-	FetchASGsWithName(filter *regexp.Regexp) ([]string, error)
-
-	// modifying resources
-	ResizeASG(OpenStackRef, int64) error
-	DeleteInstances(asgRef OpenStackRef, instances []*OpenStackRef) error
-}
 
 type autoscalingOrchestrationClient struct {
-	openstackService *openstack.Service
+	projectId               string
 
-	projectId string
+    openstackService        *gophercloud.ServiceClient
 
 	// These can be overridden, e.g. for testing.
-	operationWaitTimeout  time.Duration
-	operationPollInterval time.Duration
-}
-
-// NewAutoscalingOrchestrationClient creates a new client for communicating with Heat service through OpenStack go sdk.
-func NewAutoscalingOrchestrationClient(authOpts gophercloud.AuthOptions,  endpointOpts gophercloud.EndpointOpts) (*autoscalingOrchestrationClient, error) {
-    var auth_provider, err = openstack.AuthenticatedClient(authOpts)
-	if err != nil {
-		return nil, err
-	}
-    orchestrationClient, err := openstack.NewOrchestrationV1(auth_provider,  endpoint_options)
-	if err != nil {
-		return nil, err
-	}
-
-	return &autoscalingOrchestrationClient{
-		projectId:             projectId,
-		openstackService:      orchestrationClient,
-		operationWaitTimeout:  defaultOperationWaitTimeout,
-		operationPollInterval: defaultOperationPollInterval,
-	}, nil
+	operationWaitTimeout    time.Duration
+	operationPollInterval   time.Duration
 }
 
 func (client *autoscalingOrchestrationClient) FetchASGTargetSize(asgRef OpenStackRef) (int64, error) {
-    rsrc_result := stackresources.Get(client.openStackService, asgRef.Stack, asgRef.Name)
-    if rsrc_result.Err != nil {
-        return _, rsrc_result.Err
-    }
-    rsrc, err := rsrc_result.Extract()
-    if err != nil {
-        return _, err
-    }
-    asg_stack_id := rsrc.PhysicalID
+    //rsrc_result := stackresources.Get(client.openstackService, asgRef.Name, asgRef.Resource, asgRef.Name)
+    //if rsrc_result.Err != nil {
+    //    return int64(0), rsrc_result.Err
+    //}
+    //rsrc, err := rsrc_result.Extract()
+    //if err != nil {
+    //    return int64(0), err
+    //}
+    //asg_stack_id := rsrc.PhysicalID
 
-    all_stack_rsrc_pages, err := stackresources.List(client, asg_stack_id, nil).AllPages()
-    if err != nil {
-        return _, err
-    }
+    //all_stack_rsrc_pages, err := stackresources.List(client.openstackService, asg_stack_id, asg_stack_id, nil).AllPages()
+    //if err != nil {
+    //    return int64(0), err
+    //}
 
-    fmt.Println(all_stack_rsrc_pages)
+    //fmt.Println(all_stack_rsrc_pages)
 
-    all_stack_rsrcs, err := stackresources.ExtractResources(all_stack_rsrc_pages)
-    if err != nil {
-        return _, err
-    }
-    return len(all_stack_rsrcs), nil
+    //all_stack_rsrcs, err := stackresources.ExtractResources(all_stack_rsrc_pages)
+    //if err != nil {
+    //    return int64(0), err
+    //}
+    //return int64(len(all_stack_rsrcs)), nil
+    return int64(0), nil
 }
 
 func (client *autoscalingOrchestrationClient) ResizeASG(asgRef OpenStackRef, size int64) error {
     //TODO resize ASG
     // Fetch Template, change template, do stack update
+    return nil
 }
 
 func (client *autoscalingOrchestrationClient) DeleteInstances(asgRef OpenStackRef, instances []*OpenStackRef) error {
     // TODO delete instances for ASG
     // Mark as unhealthy then trigger update to delete from ASG
+    return nil
 }
 
 func (client *autoscalingOrchestrationClient) FetchASGInstances(asgRef OpenStackRef) ([]OpenStackRef, error) {
@@ -117,8 +76,15 @@ func (client *autoscalingOrchestrationClient) FetchASGInstances(asgRef OpenStack
     // TODO get instance list for ASG
     //do resource list for ASG, get all type with OS::Nova::Server and make a list
 	//refs := []OpenStackRef{}
-	return refs, nil
+	//return refs, nil
+	return nil, nil
 }
+
+func (client *autoscalingOrchestrationClient) FetchASGBasename(asgRef OpenStackRef) (string, error) {
+    // TODO get base name for ASG
+    return "", nil
+}
+
 
 func (client *autoscalingOrchestrationClient) FetchASGsWithName(name *regexp.Regexp) ([]string, error) {
 	links := make([]string, 0)
