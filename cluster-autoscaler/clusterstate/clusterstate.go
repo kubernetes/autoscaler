@@ -33,6 +33,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
+	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 
 	"github.com/golang/glog"
 )
@@ -118,6 +119,7 @@ type ClusterStateRegistry struct {
 	scaleUpRequests         []*ScaleUpRequest
 	scaleDownRequests       []*ScaleDownRequest
 	nodes                   []*apiv1.Node
+	nodeInfosForGroups      map[string]*schedulercache.NodeInfo
 	cloudProvider           cloudprovider.CloudProvider
 	perNodeGroupReadiness   map[string]Readiness
 	totalReadiness          Readiness
@@ -235,7 +237,7 @@ func (csr *ClusterStateRegistry) RegisterFailedScaleUp(nodeGroupName string, rea
 }
 
 // UpdateNodes updates the state of the nodes in the ClusterStateRegistry and recalculates the stats
-func (csr *ClusterStateRegistry) UpdateNodes(nodes []*apiv1.Node, currentTime time.Time) error {
+func (csr *ClusterStateRegistry) UpdateNodes(nodes []*apiv1.Node, nodeInfosForGroups map[string]*schedulercache.NodeInfo, currentTime time.Time) error {
 	csr.updateNodeGroupMetrics()
 	targetSizes, err := getTargetSizes(csr.cloudProvider)
 	if err != nil {
@@ -250,6 +252,7 @@ func (csr *ClusterStateRegistry) UpdateNodes(nodes []*apiv1.Node, currentTime ti
 	defer csr.Unlock()
 
 	csr.nodes = nodes
+	csr.nodeInfosForGroups = nodeInfosForGroups
 
 	csr.updateUnregisteredNodes(notRegistered)
 	csr.updateReadinessStats(currentTime)
