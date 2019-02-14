@@ -18,8 +18,6 @@ package main
 
 import (
 	"crypto/tls"
-	"crypto/x509"
-	"fmt"
 	"time"
 
 	"k8s.io/api/admissionregistration/v1beta1"
@@ -47,36 +45,13 @@ func getClient() *kubernetes.Clientset {
 	return clientset
 }
 
-// retrieve the CA cert that will signed the cert used by the
-// "GenericAdmissionWebhook" plugin admission controller.
-func getAPIServerCert(clientset *kubernetes.Clientset) []byte {
-	c, err := clientset.CoreV1().ConfigMaps("kube-system").Get("extension-apiserver-authentication", metav1.GetOptions{})
-	if err != nil {
-		glog.Fatal(err)
-	}
-
-	pem, ok := c.Data["requestheader-client-ca-file"]
-	if !ok {
-		glog.Fatalf(fmt.Sprintf("cannot find the ca.crt in the configmap, configMap.Data is %#v", c.Data))
-	}
-	glog.V(4).Info("client-ca-file=", pem)
-	return []byte(pem)
-}
-
 func configTLS(clientset *kubernetes.Clientset, serverCert, serverKey []byte) *tls.Config {
-	cert := getAPIServerCert(clientset)
-	apiserverCA := x509.NewCertPool()
-	apiserverCA.AppendCertsFromPEM(cert)
-
 	sCert, err := tls.X509KeyPair(serverCert, serverKey)
 	if err != nil {
 		glog.Fatal(err)
 	}
 	return &tls.Config{
 		Certificates: []tls.Certificate{sCert},
-		ClientCAs:    apiserverCA,
-		// Consider changing to tls.RequireAndVerifyClientCert.
-		ClientAuth: tls.NoClientCert,
 	}
 }
 
