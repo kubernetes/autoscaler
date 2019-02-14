@@ -45,6 +45,8 @@ import (
 	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 )
 
+const MiB = 1024 * 1024
+
 func TestPodSchedulableMap(t *testing.T) {
 	rc1 := apiv1.ReplicationController{
 		ObjectMeta: metav1.ObjectMeta{
@@ -298,44 +300,35 @@ func TestFilterSchedulablePodsForNode(t *testing.T) {
 }
 
 func TestGetNodeInfosForGroups(t *testing.T) {
-	n1 := BuildTestNode("n1", 100, 1000)
-	SetNodeReadyState(n1, true, time.Now())
-	n2 := BuildTestNode("n2", 1000, 1000)
-	SetNodeReadyState(n2, true, time.Now())
-	n3 := BuildTestNode("n3", 1000, 1000)
-	SetNodeReadyState(n3, false, time.Now())
-	n4 := BuildTestNode("n4", 1000, 1000)
-	SetNodeReadyState(n4, false, time.Now())
+	ready1 := BuildTestNode("n1", 1000, 1000)
+	SetNodeReadyState(ready1, true, time.Now())
+	ready2 := BuildTestNode("n2", 2000, 2000)
+	SetNodeReadyState(ready2, true, time.Now())
+	unready3 := BuildTestNode("n3", 3000, 3000)
+	SetNodeReadyState(unready3, false, time.Now())
+	unready4 := BuildTestNode("n4", 4000, 4000)
+	SetNodeReadyState(unready4, false, time.Now())
 
-	p1 := BuildTestPod("p1", 80, 0)
-	p2 := BuildTestPod("p2", 800, 0)
-	p3 := BuildTestPod("p3", 800, 0)
-	p1.Spec.NodeName = "n1"
-	p2.Spec.NodeName = "n2"
-	p3.Spec.NodeName = "n4"
-
-	tn := BuildTestNode("T1-abc", 4000, 1000000)
+	tn := BuildTestNode("tn", 5000, 5000)
 	tni := schedulercache.NewNodeInfo()
 	tni.SetNode(tn)
 
 	// Cloud provider with TemplateNodeInfo implemented.
-	provider1 := testprovider.NewTestAutoprovisioningCloudProvider(nil, nil,
-		nil, nil,
-		nil, map[string]*schedulercache.NodeInfo{"n3": tni, "n4": tni})
-	provider1.AddNodeGroup("n1", 1, 10, 1)   // Nodegroup with ready node.
-	provider1.AddNodeGroup("n2", 1, 10, 1)   // Nodegroup with ready and unready node.
-	provider1.AddNodeGroup("n3", 1, 10, 1)   // Nodegroup with unready node.
-	provider1.AddNodeGroup("n4", 0, 1000, 0) // Nodegroup without nodes.
-	provider1.AddNode("n1", n1)
-	provider1.AddNode("n2", n2)
-	provider1.AddNode("n2", n3)
-	provider1.AddNode("n3", n4)
+	provider1 := testprovider.NewTestAutoprovisioningCloudProvider(
+		nil, nil, nil, nil, nil,
+		map[string]*schedulercache.NodeInfo{"ng3": tni, "ng4": tni})
+	provider1.AddNodeGroup("ng1", 1, 10, 1) // Nodegroup with ready node.
+	provider1.AddNode("ng1", ready1)
+	provider1.AddNodeGroup("ng2", 1, 10, 1) // Nodegroup with ready and unready node.
+	provider1.AddNode("ng2", ready2)
+	provider1.AddNode("ng2", unready3)
+	provider1.AddNodeGroup("ng3", 1, 10, 1) // Nodegroup with unready node.
+	provider1.AddNode("ng3", unready4)
+	provider1.AddNodeGroup("ng4", 0, 1000, 0) // Nodegroup without nodes.
 
 	// Cloud provider with TemplateNodeInfo not implemented.
-	provider2 := testprovider.NewTestAutoprovisioningCloudProvider(nil, nil,
-		nil, nil,
-		nil, nil)
-	provider2.AddNodeGroup("n5", 1, 10, 1) // Nodegroup without nodes.
+	provider2 := testprovider.NewTestAutoprovisioningCloudProvider(nil, nil, nil, nil, nil, nil)
+	provider2.AddNodeGroup("ng5", 1, 10, 1) // Nodegroup without nodes.
 
 	fakeClient := &fake.Clientset{}
 	fakeClient.Fake.AddReactor("list", "pods", func(action core.Action) (bool, runtime.Object, error) {
@@ -344,24 +337,155 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 
 	predicateChecker := simulator.NewTestPredicateChecker()
 
-	res, err := GetNodeInfosForGroups([]*apiv1.Node{n1, n2, n3, n4}, provider1, fakeClient,
-		[]*extensionsv1.DaemonSet{}, predicateChecker)
+	res, err := GetNodeInfosForGroups([]*apiv1.Node{unready4, unready3, ready2, ready1}, nil,
+		provider1, fakeClient, []*extensionsv1.DaemonSet{}, predicateChecker)
 	assert.NoError(t, err)
 	assert.Equal(t, 4, len(res))
-	_, found := res["n1"]
+	info, found := res["ng1"]
 	assert.True(t, found)
-	_, found = res["n2"]
+	assertEqualNodeCapacities(t, ready1, info.Node())
+	info, found = res["ng2"]
 	assert.True(t, found)
-	_, found = res["n3"]
+	assertEqualNodeCapacities(t, ready2, info.Node())
+	info, found = res["ng3"]
 	assert.True(t, found)
-	_, found = res["n4"]
+	assertEqualNodeCapacities(t, tn, info.Node())
+	info, found = res["ng4"]
 	assert.True(t, found)
+	assertEqualNodeCapacities(t, tn, info.Node())
 
 	// Test for a nodegroup without nodes and TemplateNodeInfo not implemented by cloud proivder
-	res, err = GetNodeInfosForGroups([]*apiv1.Node{}, provider2, fakeClient,
+	res, err = GetNodeInfosForGroups([]*apiv1.Node{}, nil, provider2, fakeClient,
 		[]*extensionsv1.DaemonSet{}, predicateChecker)
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(res))
+}
+
+func TestGetNodeInfosForGroupsCache(t *testing.T) {
+	ready1 := BuildTestNode("n1", 1000, 1000)
+	SetNodeReadyState(ready1, true, time.Now())
+	ready2 := BuildTestNode("n2", 2000, 2000)
+	SetNodeReadyState(ready2, true, time.Now())
+	unready3 := BuildTestNode("n3", 3000, 3000)
+	SetNodeReadyState(unready3, false, time.Now())
+	unready4 := BuildTestNode("n4", 4000, 4000)
+	SetNodeReadyState(unready4, false, time.Now())
+	ready5 := BuildTestNode("n5", 5000, 5000)
+	SetNodeReadyState(ready5, true, time.Now())
+	ready6 := BuildTestNode("n6", 6000, 6000)
+	SetNodeReadyState(ready6, true, time.Now())
+
+	tn := BuildTestNode("tn", 10000, 10000)
+	tni := schedulercache.NewNodeInfo()
+	tni.SetNode(tn)
+
+	lastDeletedGroup := ""
+	onDeleteGroup := func(id string) error {
+		lastDeletedGroup = id
+		return nil
+	}
+
+	// Cloud provider with TemplateNodeInfo implemented.
+	provider1 := testprovider.NewTestAutoprovisioningCloudProvider(
+		nil, nil, nil, onDeleteGroup, nil,
+		map[string]*schedulercache.NodeInfo{"ng3": tni, "ng4": tni})
+	provider1.AddNodeGroup("ng1", 1, 10, 1) // Nodegroup with ready node.
+	provider1.AddNode("ng1", ready1)
+	provider1.AddNodeGroup("ng2", 1, 10, 1) // Nodegroup with ready and unready node.
+	provider1.AddNode("ng2", ready2)
+	provider1.AddNode("ng2", unready3)
+	provider1.AddNodeGroup("ng3", 1, 10, 1) // Nodegroup with unready node (and 1 previously ready node).
+	provider1.AddNode("ng3", unready4)
+	provider1.AddNode("ng3", ready5)
+	provider1.AddNodeGroup("ng4", 0, 1000, 0) // Nodegroup without nodes (and 1 previously ready node).
+	provider1.AddNode("ng4", ready6)
+
+	fakeClient := &fake.Clientset{}
+	fakeClient.Fake.AddReactor("list", "pods", func(action core.Action) (bool, runtime.Object, error) {
+		return true, &apiv1.PodList{Items: []apiv1.Pod{}}, nil
+	})
+
+	predicateChecker := simulator.NewTestPredicateChecker()
+
+	nodeInfoCache := make(map[string]*schedulercache.NodeInfo)
+
+	// Fill cache
+	res, err := GetNodeInfosForGroups([]*apiv1.Node{unready4, unready3, ready2, ready1}, nodeInfoCache,
+		provider1, fakeClient, []*extensionsv1.DaemonSet{}, predicateChecker)
+	assert.NoError(t, err)
+	// Check results
+	assert.Equal(t, 4, len(res))
+	info, found := res["ng1"]
+	assert.True(t, found)
+	assertEqualNodeCapacities(t, ready1, info.Node())
+	info, found = res["ng2"]
+	assert.True(t, found)
+	assertEqualNodeCapacities(t, ready2, info.Node())
+	info, found = res["ng3"]
+	assert.True(t, found)
+	assertEqualNodeCapacities(t, tn, info.Node())
+	info, found = res["ng4"]
+	assert.True(t, found)
+	assertEqualNodeCapacities(t, tn, info.Node())
+	// Check cache
+	cachedInfo, found := nodeInfoCache["ng1"]
+	assert.True(t, found)
+	assertEqualNodeCapacities(t, ready1, cachedInfo.Node())
+	cachedInfo, found = nodeInfoCache["ng2"]
+	assert.True(t, found)
+	assertEqualNodeCapacities(t, ready2, cachedInfo.Node())
+	cachedInfo, found = nodeInfoCache["ng3"]
+	assert.False(t, found)
+	cachedInfo, found = nodeInfoCache["ng4"]
+	assert.False(t, found)
+
+	// Invalidate part of cache in two different ways
+	provider1.DeleteNodeGroup("ng1")
+	provider1.GetNodeGroup("ng3").Delete()
+	assert.Equal(t, "ng3", lastDeletedGroup)
+
+	// Check cache with all nodes removed
+	res, err = GetNodeInfosForGroups([]*apiv1.Node{}, nodeInfoCache,
+		provider1, fakeClient, []*extensionsv1.DaemonSet{}, predicateChecker)
+	assert.NoError(t, err)
+	// Check results
+	assert.Equal(t, 2, len(res))
+	info, found = res["ng2"]
+	assert.True(t, found)
+	assertEqualNodeCapacities(t, ready2, info.Node())
+	// Check ng4 result and cache
+	info, found = res["ng4"]
+	assert.True(t, found)
+	assertEqualNodeCapacities(t, tn, info.Node())
+	// Check cache
+	cachedInfo, found = nodeInfoCache["ng2"]
+	assert.True(t, found)
+	assertEqualNodeCapacities(t, ready2, cachedInfo.Node())
+	cachedInfo, found = nodeInfoCache["ng4"]
+	assert.False(t, found)
+
+	// Fill cache manually
+	infoNg4Node6 := schedulercache.NewNodeInfo()
+	err2 := infoNg4Node6.SetNode(ready6.DeepCopy())
+	assert.NoError(t, err2)
+	nodeInfoCache = map[string]*schedulercache.NodeInfo{"ng4": infoNg4Node6}
+	// Check if cache was used
+	res, err = GetNodeInfosForGroups([]*apiv1.Node{ready1, ready2}, nodeInfoCache,
+		provider1, fakeClient, []*extensionsv1.DaemonSet{}, predicateChecker)
+	assert.NoError(t, err)
+	assert.Equal(t, 2, len(res))
+	info, found = res["ng2"]
+	assert.True(t, found)
+	assertEqualNodeCapacities(t, ready2, info.Node())
+	info, found = res["ng4"]
+	assert.True(t, found)
+	assertEqualNodeCapacities(t, ready6, info.Node())
+}
+
+func assertEqualNodeCapacities(t *testing.T, expected, actual *apiv1.Node) {
+	t.Helper()
+	assert.Equal(t, getNodeResource(expected, apiv1.ResourceCPU), getNodeResource(actual, apiv1.ResourceCPU), "CPU should be the same")
+	assert.Equal(t, getNodeResource(expected, apiv1.ResourceMemory), getNodeResource(actual, apiv1.ResourceMemory), "Memory should be the same")
 }
 
 func TestRemoveOldUnregisteredNodes(t *testing.T) {
@@ -387,7 +511,7 @@ func TestRemoveOldUnregisteredNodes(t *testing.T) {
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
 	}, fakeLogRecorder)
-	err := clusterState.UpdateNodes([]*apiv1.Node{ng1_1}, now.Add(-time.Hour))
+	err := clusterState.UpdateNodes([]*apiv1.Node{ng1_1}, nil, now.Add(-time.Hour))
 	assert.NoError(t, err)
 
 	context := &context.AutoscalingContext{
@@ -484,7 +608,7 @@ func TestRemoveFixNodeTargetSize(t *testing.T) {
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
 	}, fakeLogRecorder)
-	err := clusterState.UpdateNodes([]*apiv1.Node{ng1_1}, now.Add(-time.Hour))
+	err := clusterState.UpdateNodes([]*apiv1.Node{ng1_1}, nil, now.Add(-time.Hour))
 	assert.NoError(t, err)
 
 	context := &context.AutoscalingContext{
@@ -584,19 +708,19 @@ func TestConfigurePredicateCheckerForLoop(t *testing.T) {
 }
 
 func TestGetNodeResource(t *testing.T) {
-	node := BuildTestNode("n1", 1000, 2*MB)
+	node := BuildTestNode("n1", 1000, 2*MiB)
 
 	cores := getNodeResource(node, apiv1.ResourceCPU)
 	assert.Equal(t, int64(1), cores)
 
 	memory := getNodeResource(node, apiv1.ResourceMemory)
-	assert.Equal(t, int64(2*MB), memory)
+	assert.Equal(t, int64(2*MiB), memory)
 
 	unknownResourceValue := getNodeResource(node, "unknown resource")
 	assert.Equal(t, int64(0), unknownResourceValue)
 
 	// if we have no resources in capacity we expect getNodeResource to return 0
-	nodeWithMissingCapacity := BuildTestNode("n1", 1000, 2*MB)
+	nodeWithMissingCapacity := BuildTestNode("n1", 1000, 2*MiB)
 	nodeWithMissingCapacity.Status.Capacity = apiv1.ResourceList{}
 
 	cores = getNodeResource(nodeWithMissingCapacity, apiv1.ResourceCPU)
@@ -606,7 +730,7 @@ func TestGetNodeResource(t *testing.T) {
 	assert.Equal(t, int64(0), memory)
 
 	// if we have negative values in resources we expect getNodeResource to return 0
-	nodeWithNegativeCapacity := BuildTestNode("n1", -1000, -2*MB)
+	nodeWithNegativeCapacity := BuildTestNode("n1", -1000, -2*MiB)
 	nodeWithNegativeCapacity.Status.Capacity = apiv1.ResourceList{}
 
 	cores = getNodeResource(nodeWithNegativeCapacity, apiv1.ResourceCPU)
@@ -618,14 +742,14 @@ func TestGetNodeResource(t *testing.T) {
 }
 
 func TestGetNodeCoresAndMemory(t *testing.T) {
-	node := BuildTestNode("n1", 2000, 2048*MB)
+	node := BuildTestNode("n1", 2000, 2048*MiB)
 
 	cores, memory := getNodeCoresAndMemory(node)
 	assert.Equal(t, int64(2), cores)
-	assert.Equal(t, int64(2048*MB), memory)
+	assert.Equal(t, int64(2048*MiB), memory)
 
 	// if we have no cpu/memory defined in capacity we expect getNodeCoresAndMemory to return 0s
-	nodeWithMissingCapacity := BuildTestNode("n1", 1000, 2*MB)
+	nodeWithMissingCapacity := BuildTestNode("n1", 1000, 2*MiB)
 	nodeWithMissingCapacity.Status.Capacity = apiv1.ResourceList{}
 
 	cores, memory = getNodeCoresAndMemory(nodeWithMissingCapacity)

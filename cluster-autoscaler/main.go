@@ -162,8 +162,8 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		glog.Fatalf("Failed to parse flags: %v", err)
 	}
 	// Convert memory limits to bytes.
-	minMemoryTotal = minMemoryTotal * units.Gigabyte
-	maxMemoryTotal = maxMemoryTotal * units.Gigabyte
+	minMemoryTotal = minMemoryTotal * units.GiB
+	maxMemoryTotal = maxMemoryTotal * units.GiB
 
 	parsedGpuTotal, err := parseMultipleGpuLimits(*gpuTotal)
 	if err != nil {
