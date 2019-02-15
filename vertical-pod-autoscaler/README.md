@@ -30,7 +30,7 @@ The safest way to switch is to use `vpa-down.sh` script to tear down
 the old installation of VPA first. This will delete your old VPA objects that
 have been defined with `poc.autoscaling.k8s.io/v1alpha1` apiVersion.
 Then use `vpa-up.sh` to bring up the new version of VPA and create you VPA
-objects from the scratch, passing apiVersion `autoscaling.k8s.io/v1beta1`
+objects from scratch, passing apiVersion `autoscaling.k8s.io/v1beta1`
 (See [example](./examples/hamster.yaml)).
 
 If you want to migrate your objects between versions, you can use the [object conversion script](./hack/convert-alpha-objects.sh).
