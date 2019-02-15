@@ -21,7 +21,7 @@ import (
 
 	core "k8s.io/api/core/v1"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
-	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
 )
 
 // VerticalPodAutoscalerBuilder helps building test instances of VerticalPodAutoscaler.
@@ -29,7 +29,6 @@ type VerticalPodAutoscalerBuilder interface {
 	WithName(vpaName string) VerticalPodAutoscalerBuilder
 	WithContainer(containerName string) VerticalPodAutoscalerBuilder
 	WithNamespace(namespace string) VerticalPodAutoscalerBuilder
-	WithSelector(labelSelector string) VerticalPodAutoscalerBuilder
 	WithUpdateMode(updateMode vpa_types.UpdateMode) VerticalPodAutoscalerBuilder
 	WithCreationTimestamp(timestamp time.Time) VerticalPodAutoscalerBuilder
 	WithMinAllowed(cpu, memory string) VerticalPodAutoscalerBuilder
@@ -55,7 +54,6 @@ type verticalPodAutoscalerBuilder struct {
 	vpaName           string
 	containerName     string
 	namespace         string
-	labelSelector     *meta.LabelSelector
 	updatePolicy      *vpa_types.PodUpdatePolicy
 	creationTimestamp time.Time
 	minAllowed        core.ResourceList
@@ -79,16 +77,6 @@ func (b *verticalPodAutoscalerBuilder) WithContainer(containerName string) Verti
 func (b *verticalPodAutoscalerBuilder) WithNamespace(namespace string) VerticalPodAutoscalerBuilder {
 	c := *b
 	c.namespace = namespace
-	return &c
-}
-
-func (b *verticalPodAutoscalerBuilder) WithSelector(labelSelector string) VerticalPodAutoscalerBuilder {
-	c := *b
-	if labelSelector, err := meta.ParseToLabelSelector(labelSelector); err != nil {
-		panic(err)
-	} else {
-		c.labelSelector = labelSelector
-	}
 	return &c
 }
 
@@ -166,7 +154,6 @@ func (b *verticalPodAutoscalerBuilder) Get() *vpa_types.VerticalPodAutoscaler {
 			CreationTimestamp: meta.NewTime(b.creationTimestamp),
 		},
 		Spec: vpa_types.VerticalPodAutoscalerSpec{
-			Selector:       b.labelSelector,
 			UpdatePolicy:   b.updatePolicy,
 			ResourcePolicy: &resourcePolicy,
 		},

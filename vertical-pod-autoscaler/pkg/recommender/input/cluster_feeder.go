@@ -20,29 +20,34 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/golang/glog"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/watch"
-	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
-	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1beta1"
-	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1beta1"
+	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1beta2"
+	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1beta2"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/history"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/metrics"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/oom"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/spec"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
+	target "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
+	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	v1lister "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	resourceclient "k8s.io/metrics/pkg/client/clientset/versioned/typed/metrics/v1beta1"
+)
 
-	"github.com/golang/glog"
+const (
+	defaultResyncPeriod time.Duration = 10 * time.Minute
 )
 
 // ClusterStateFeeder can update state of ClusterState object.
@@ -69,25 +74,29 @@ type ClusterStateFeeder interface {
 
 // ClusterStateFeederFactory makes instances of ClusterStateFeeder.
 type ClusterStateFeederFactory struct {
-	ClusterState        *model.ClusterState
-	KubeClient          kube_client.Interface
-	MetricsClient       metrics.MetricsClient
-	VpaCheckpointClient vpa_api.VerticalPodAutoscalerCheckpointsGetter
-	VpaLister           vpa_lister.VerticalPodAutoscalerLister
-	PodLister           v1lister.PodLister
-	OOMObserver         oom.Observer
+	ClusterState          *model.ClusterState
+	KubeClient            kube_client.Interface
+	MetricsClient         metrics.MetricsClient
+	VpaCheckpointClient   vpa_api.VerticalPodAutoscalerCheckpointsGetter
+	VpaLister             vpa_lister.VerticalPodAutoscalerLister
+	PodLister             v1lister.PodLister
+	OOMObserver           oom.Observer
+	LegacySelectorFetcher target.VpaTargetSelectorFetcher
+	SelectorFetcher       target.VpaTargetSelectorFetcher
 }
 
 // Make creates new ClusterStateFeeder with internal data providers, based on kube client.
 func (m ClusterStateFeederFactory) Make() *clusterStateFeeder {
 	return &clusterStateFeeder{
-		coreClient:          m.KubeClient.CoreV1(),
-		metricsClient:       m.MetricsClient,
-		oomChan:             m.OOMObserver.GetObservedOomsChannel(),
-		vpaCheckpointClient: m.VpaCheckpointClient,
-		vpaLister:           m.VpaLister,
-		clusterState:        m.ClusterState,
-		specClient:          spec.NewSpecClient(m.PodLister),
+		coreClient:            m.KubeClient.CoreV1(),
+		metricsClient:         m.MetricsClient,
+		oomChan:               m.OOMObserver.GetObservedOomsChannel(),
+		vpaCheckpointClient:   m.VpaCheckpointClient,
+		vpaLister:             m.VpaLister,
+		clusterState:          m.ClusterState,
+		specClient:            spec.NewSpecClient(m.PodLister),
+		legacySelectorFetcher: m.LegacySelectorFetcher,
+		selectorFetcher:       m.SelectorFetcher,
 	}
 }
 
@@ -96,14 +105,17 @@ func (m ClusterStateFeederFactory) Make() *clusterStateFeeder {
 func NewClusterStateFeeder(config *rest.Config, clusterState *model.ClusterState) ClusterStateFeeder {
 	kubeClient := kube_client.NewForConfigOrDie(config)
 	podLister, oomObserver := NewPodListerAndOOMObserver(kubeClient)
+	factory := informers.NewSharedInformerFactory(kubeClient, defaultResyncPeriod)
 	return ClusterStateFeederFactory{
-		PodLister:           podLister,
-		OOMObserver:         oomObserver,
-		KubeClient:          kubeClient,
-		MetricsClient:       newMetricsClient(config),
-		VpaCheckpointClient: vpa_clientset.NewForConfigOrDie(config).AutoscalingV1beta1(),
-		VpaLister:           vpa_api_util.NewAllVpasLister(vpa_clientset.NewForConfigOrDie(config), make(chan struct{})),
-		ClusterState:        clusterState,
+		PodLister:             podLister,
+		OOMObserver:           oomObserver,
+		KubeClient:            kubeClient,
+		MetricsClient:         newMetricsClient(config),
+		VpaCheckpointClient:   vpa_clientset.NewForConfigOrDie(config).AutoscalingV1beta2(),
+		VpaLister:             vpa_api_util.NewAllVpasLister(vpa_clientset.NewForConfigOrDie(config), make(chan struct{})),
+		ClusterState:          clusterState,
+		LegacySelectorFetcher: target.NewBeta1TargetSelectorFetcher(config),
+		SelectorFetcher:       target.NewVpaTargetSelectorFetcher(config, kubeClient, factory),
 	}.Make()
 }
 
@@ -173,13 +185,15 @@ func NewPodListerAndOOMObserver(kubeClient kube_client.Interface) (v1lister.PodL
 }
 
 type clusterStateFeeder struct {
-	coreClient          corev1.CoreV1Interface
-	specClient          spec.SpecClient
-	metricsClient       metrics.MetricsClient
-	oomChan             <-chan oom.OomInfo
-	vpaCheckpointClient vpa_api.VerticalPodAutoscalerCheckpointsGetter
-	vpaLister           vpa_lister.VerticalPodAutoscalerLister
-	clusterState        *model.ClusterState
+	coreClient            corev1.CoreV1Interface
+	specClient            spec.SpecClient
+	metricsClient         metrics.MetricsClient
+	oomChan               <-chan oom.OomInfo
+	vpaCheckpointClient   vpa_api.VerticalPodAutoscalerCheckpointsGetter
+	vpaLister             vpa_lister.VerticalPodAutoscalerLister
+	clusterState          *model.ClusterState
+	legacySelectorFetcher target.VpaTargetSelectorFetcher
+	selectorFetcher       target.VpaTargetSelectorFetcher
 }
 
 func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider history.HistoryProvider) {
@@ -296,9 +310,20 @@ func (feeder *clusterStateFeeder) LoadVPAs() {
 		vpaID := model.VpaID{
 			Namespace: vpaCRD.Namespace,
 			VpaName:   vpaCRD.Name}
-		if feeder.clusterState.AddOrUpdateVpa(vpaCRD) == nil {
+
+		selector, conditions := feeder.getSelector(vpaCRD)
+		glog.Infof("Using selector %s for VPA %s/%s", selector.String(), vpaCRD.Namespace, vpaCRD.Name)
+
+		if feeder.clusterState.AddOrUpdateVpa(vpaCRD, selector) == nil {
 			// Successfully added VPA to the model.
 			vpaKeys[vpaID] = true
+			for _, condition := range conditions {
+				if condition.delete {
+					delete(feeder.clusterState.Vpas[vpaID].Conditions, condition.conditionType)
+				} else {
+					feeder.clusterState.Vpas[vpaID].Conditions.Set(condition.conditionType, true, "", condition.message)
+				}
+			}
 		}
 	}
 	// Delete non-existent VPAs from the model.
@@ -377,4 +402,47 @@ func newContainerUsageSamplesWithKey(metrics *metrics.ContainerMetricsSnapshot) 
 		samples = append(samples, sample)
 	}
 	return samples
+}
+
+type condition struct {
+	conditionType vpa_types.VerticalPodAutoscalerConditionType
+	delete        bool
+	message       string
+}
+
+func (feeder *clusterStateFeeder) getSelector(vpa *vpa_types.VerticalPodAutoscaler) (labels.Selector, []condition) {
+	legacySelector, fetchLegacyErr := feeder.legacySelectorFetcher.Fetch(vpa)
+	if fetchLegacyErr != nil {
+		glog.Errorf("Error while fetching legacy selector. Reason: %+v", fetchLegacyErr)
+	}
+	selector, fetchErr := feeder.selectorFetcher.Fetch(vpa)
+	if fetchErr != nil {
+		glog.Errorf("Cannot get target selector from VPA's targetRef. Reason: %+v", fetchErr)
+	}
+	if selector != nil {
+		if legacySelector != nil {
+			return labels.Nothing(), []condition{
+				{conditionType: vpa_types.ConfigUnsupported, delete: false, message: "Both targetRef and label selector defined. Please reomve label selector"},
+				{conditionType: vpa_types.ConfigDeprecated, delete: true},
+			}
+		}
+		return selector, []condition{
+			{conditionType: vpa_types.ConfigUnsupported, delete: true},
+			{conditionType: vpa_types.ConfigDeprecated, delete: true},
+		}
+	}
+	if legacySelector != nil {
+		return legacySelector, []condition{
+			{conditionType: vpa_types.ConfigUnsupported, delete: true},
+			{conditionType: vpa_types.ConfigDeprecated, delete: false, message: "Deprecated label selector defined, please migrate to targetRef"},
+		}
+	}
+	msg := "Cannot read targetRef"
+	if fetchErr != nil {
+		msg = fmt.Sprintf("Cannot read targetRef. Reason: %s", fetchErr.Error())
+	}
+	return labels.Nothing(), []condition{
+		{conditionType: vpa_types.ConfigUnsupported, delete: false, message: msg},
+		{conditionType: vpa_types.ConfigDeprecated, delete: true},
+	}
 }

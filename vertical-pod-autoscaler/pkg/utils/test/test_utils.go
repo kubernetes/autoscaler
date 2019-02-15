@@ -26,8 +26,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
-	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
-	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1beta1"
+	vpa_types_v1beta1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
+	vpa_lister_v1beta1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1beta1"
+	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1beta2"
 	v1 "k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/tools/record"
 )
@@ -197,6 +199,37 @@ func (m *VerticalPodAutoscalerListerMock) VerticalPodAutoscalers(namespace strin
 
 // Get is not implemented for this mock
 func (m *VerticalPodAutoscalerListerMock) Get(name string) (*vpa_types.VerticalPodAutoscaler, error) {
+	return nil, fmt.Errorf("unimplemented")
+}
+
+// VerticalPodAutoscalerV1Beta1ListerMock is a mock of VerticalPodAutoscalerLister or
+// VerticalPodAutoscalerNamespaceLister - the crucial List method is the same.
+type VerticalPodAutoscalerV1Beta1ListerMock struct {
+	mock.Mock
+}
+
+// List is a mock implementation of VerticalPodAutoscalerLister.List
+func (m *VerticalPodAutoscalerV1Beta1ListerMock) List(selector labels.Selector) (ret []*vpa_types_v1beta1.VerticalPodAutoscaler, err error) {
+	args := m.Called()
+	var returnArg []*vpa_types_v1beta1.VerticalPodAutoscaler
+	if args.Get(0) != nil {
+		returnArg = args.Get(0).([]*vpa_types_v1beta1.VerticalPodAutoscaler)
+	}
+	return returnArg, args.Error(1)
+}
+
+// VerticalPodAutoscalers is a mock implementation of returning a lister for namespace.
+func (m *VerticalPodAutoscalerV1Beta1ListerMock) VerticalPodAutoscalers(namespace string) vpa_lister_v1beta1.VerticalPodAutoscalerNamespaceLister {
+	args := m.Called(namespace)
+	var returnArg vpa_lister_v1beta1.VerticalPodAutoscalerNamespaceLister
+	if args.Get(0) != nil {
+		returnArg = args.Get(0).(vpa_lister_v1beta1.VerticalPodAutoscalerNamespaceLister)
+	}
+	return returnArg
+}
+
+// Get is not implemented for this mock
+func (m *VerticalPodAutoscalerV1Beta1ListerMock) Get(name string) (*vpa_types_v1beta1.VerticalPodAutoscaler, error) {
 	return nil, fmt.Errorf("unimplemented")
 }
 

@@ -20,18 +20,30 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
+	"k8s.io/apimachinery/pkg/labels"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
+	target_mock "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/mock"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/updater/eviction"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
 
+func parseLabelSelector(selector string) labels.Selector {
+	labelSelector, _ := metav1.ParseToLabelSelector(selector)
+	parsedSelector, _ := metav1.LabelSelectorAsSelector(labelSelector)
+	return parsedSelector
+}
+
 func TestRunOnce(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
 	replicas := int32(5)
 	livePods := 5
 	labels := map[string]string{"app": "testingApp"}
-	selector := "app = testingApp"
+	selector := parseLabelSelector("app = testingApp")
 	containerName := "container1"
 	rc := apiv1.ReplicationController{
 		ObjectMeta: metav1.ObjectMeta{
@@ -64,26 +76,32 @@ func TestRunOnce(t *testing.T) {
 		WithTarget("2", "200M").
 		WithMinAllowed("1", "100M").
 		WithMaxAllowed("3", "1G").
-		WithSelector(selector).Get()
+		Get()
 	updateMode := vpa_types.UpdateModeAuto
 	vpaObj.Spec.UpdatePolicy = &vpa_types.PodUpdatePolicy{UpdateMode: &updateMode}
 	vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpaObj}, nil).Once()
+
+	mockSelectorFetcher := target_mock.NewMockVpaTargetSelectorFetcher(ctrl)
 
 	updater := &updater{
 		vpaLister:               vpaLister,
 		podLister:               podLister,
 		evictionFactory:         factory,
 		recommendationProcessor: &test.FakeRecommendationProcessor{},
+		selectorFetcher:         mockSelectorFetcher,
 	}
 
+	mockSelectorFetcher.EXPECT().Fetch(gomock.Eq(vpaObj)).Return(selector, nil)
 	updater.RunOnce()
 	eviction.AssertNumberOfCalls(t, "Evict", 5)
 }
 
 func TestVPAOff(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
 	livePods := 5
 	labels := map[string]string{"app": "testingApp"}
-	selector := "app = testingApp"
 	containerName := "container1"
 	pods := make([]*apiv1.Pod, livePods)
 	eviction := &test.PodsEvictionRestrictionMock{}
@@ -106,7 +124,7 @@ func TestVPAOff(t *testing.T) {
 		WithTarget("2", "200M").
 		WithMinAllowed("1", "100M").
 		WithMaxAllowed("3", "1G").
-		WithSelector(selector).Get()
+		Get()
 	vpaObj.Namespace = "default"
 	updateMode := vpa_types.UpdateModeInitial
 	vpaObj.Spec.UpdatePolicy = &vpa_types.PodUpdatePolicy{UpdateMode: &updateMode}
@@ -117,6 +135,7 @@ func TestVPAOff(t *testing.T) {
 		podLister:               podLister,
 		evictionFactory:         factory,
 		recommendationProcessor: &test.FakeRecommendationProcessor{},
+		selectorFetcher:         target_mock.NewMockVpaTargetSelectorFetcher(ctrl),
 	}
 
 	updater.RunOnce()
