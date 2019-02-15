@@ -29,13 +29,19 @@ import (
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
-	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
-	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1beta1"
-	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1beta1"
+	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1beta2"
+	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1beta2"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	"k8s.io/client-go/tools/cache"
 )
+
+// VpaWithSelector is a pair a VPA and its selector.
+type VpaWithSelector struct {
+	Vpa      *vpa_types.VerticalPodAutoscaler
+	Selector labels.Selector
+}
 
 type patchRecord struct {
 	Op    string      `json:"op,inline"`
@@ -79,7 +85,7 @@ func UpdateVpaStatusIfNeeded(vpaClient vpa_api.VerticalPodAutoscalerInterface, v
 // NewAllVpasLister returns VerticalPodAutoscalerLister configured to fetch all VPA objects.
 // The method blocks until vpaLister is initially populated.
 func NewAllVpasLister(vpaClient *vpa_clientset.Clientset, stopChannel <-chan struct{}) vpa_lister.VerticalPodAutoscalerLister {
-	vpaListWatch := cache.NewListWatchFromClient(vpaClient.AutoscalingV1beta1().RESTClient(), "verticalpodautoscalers", core.NamespaceAll, fields.Everything())
+	vpaListWatch := cache.NewListWatchFromClient(vpaClient.AutoscalingV1beta2().RESTClient(), "verticalpodautoscalers", core.NamespaceAll, fields.Everything())
 	indexer, controller := cache.NewIndexerInformer(vpaListWatch,
 		&vpa_types.VerticalPodAutoscaler{},
 		1*time.Hour,
@@ -95,17 +101,12 @@ func NewAllVpasLister(vpaClient *vpa_clientset.Clientset, stopChannel <-chan str
 	return vpaLister
 }
 
-// PodMatchesVPA returns true iff the VPA's selector matches the Pod and they are in the same namespace.
-func PodMatchesVPA(pod *core.Pod, vpa *vpa_types.VerticalPodAutoscaler) bool {
-	if pod.Namespace != vpa.Namespace {
+// PodMatchesVPA returns true iff the vpaWithSelector matches the Pod.
+func PodMatchesVPA(pod *core.Pod, vpaWithSelector *VpaWithSelector) bool {
+	if pod.Namespace != vpaWithSelector.Vpa.Namespace {
 		return false
 	}
-	selector, err := meta.LabelSelectorAsSelector(vpa.Spec.Selector)
-	if err != nil {
-		glog.Errorf("error processing VPA object: failed to create pod selector: %v", err)
-		return false
-	}
-	return selector.Matches(labels.Set(pod.GetLabels()))
+	return vpaWithSelector.Selector.Matches(labels.Set(pod.GetLabels()))
 }
 
 // stronger returns true iff a is before b in the order to control a Pod (that matches both VPAs).
@@ -126,12 +127,14 @@ func stronger(a, b *vpa_types.VerticalPodAutoscaler) bool {
 }
 
 // GetControllingVPAForPod chooses the earliest created VPA from the input list that matches the given Pod.
-func GetControllingVPAForPod(pod *core.Pod, vpas []*vpa_types.VerticalPodAutoscaler) *vpa_types.VerticalPodAutoscaler {
-	var controlling *vpa_types.VerticalPodAutoscaler
+func GetControllingVPAForPod(pod *core.Pod, vpas []*VpaWithSelector) *VpaWithSelector {
+	var controlling *VpaWithSelector
+	var controllingVpa *vpa_types.VerticalPodAutoscaler
 	// Choose the strongest VPA from the ones that match this Pod.
-	for _, vpa := range vpas {
-		if PodMatchesVPA(pod, vpa) && stronger(vpa, controlling) {
-			controlling = vpa
+	for _, vpaWithSelector := range vpas {
+		if PodMatchesVPA(pod, vpaWithSelector) && stronger(vpaWithSelector.Vpa, controllingVpa) {
+			controlling = vpaWithSelector
+			controllingVpa = controlling.Vpa
 		}
 	}
 	return controlling
