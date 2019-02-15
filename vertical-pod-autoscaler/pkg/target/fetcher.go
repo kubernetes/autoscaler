@@ -20,7 +20,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/golang/glog"
+	appsv1 "k8s.io/api/apps/v1"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -28,12 +31,16 @@ import (
 	"k8s.io/client-go/discovery"
 	cacheddiscovery "k8s.io/client-go/discovery/cached"
 	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/restmapper"
 	"k8s.io/client-go/scale"
+	"k8s.io/client-go/tools/cache"
+)
 
-	"github.com/golang/glog"
+const (
+	discoveryResetPeriod time.Duration = 5 * time.Minute
 )
 
 // VpaTargetSelectorFetcher gets a labelSelector used to gather Pods controlled by the given VPA.
@@ -43,8 +50,17 @@ type VpaTargetSelectorFetcher interface {
 	Fetch(vpa *vpa_types.VerticalPodAutoscaler) (labels.Selector, error)
 }
 
+type wellKnownController string
+
+const (
+	daemonSet   wellKnownController = "DaemonSet"
+	deployment  wellKnownController = "Deployment"
+	replicaSet  wellKnownController = "ReplicaSet"
+	statefulSet wellKnownController = "StatefulSet"
+)
+
 // NewVpaTargetSelectorFetcher returns new instance of VpaTargetSelectorFetcher
-func NewVpaTargetSelectorFetcher(config *rest.Config, kubeClient kube_client.Interface) VpaTargetSelectorFetcher {
+func NewVpaTargetSelectorFetcher(config *rest.Config, kubeClient kube_client.Interface, factory informers.SharedInformerFactory) VpaTargetSelectorFetcher {
 	discoveryClient, err := discovery.NewDiscoveryClientForConfig(config)
 	if err != nil {
 		glog.Fatalf("Could not create discoveryClient: %v", err)
@@ -55,12 +71,31 @@ func NewVpaTargetSelectorFetcher(config *rest.Config, kubeClient kube_client.Int
 	mapper := restmapper.NewDeferredDiscoveryRESTMapper(cachedDiscoveryClient)
 	go wait.Until(func() {
 		mapper.Reset()
-	}, 5*time.Minute, make(chan struct{}))
+	}, discoveryResetPeriod, make(chan struct{}))
+
+	informersMap := map[wellKnownController]cache.SharedIndexInformer{
+		daemonSet:   factory.Apps().V1().DaemonSets().Informer(),
+		deployment:  factory.Apps().V1().Deployments().Informer(),
+		replicaSet:  factory.Apps().V1().ReplicaSets().Informer(),
+		statefulSet: factory.Apps().V1().StatefulSets().Informer(),
+	}
+
+	for kind, informer := range informersMap {
+		stopCh := make(chan struct{})
+		go informer.Run(stopCh)
+		synced := cache.WaitForCacheSync(stopCh, informer.HasSynced)
+		if !synced {
+			glog.Fatalf("Could not sync cache for %s: %v", kind, err)
+		} else {
+			glog.Infof("Initial sync of %s completed", kind)
+		}
+	}
 
 	scaleNamespacer := scale.New(restClient, mapper, dynamic.LegacyAPIPathResolverFunc, resolver)
 	return &vpaTargetSelectorFetcher{
 		scaleNamespacer: scaleNamespacer,
 		mapper:          mapper,
+		informersMap:    informersMap,
 	}
 }
 
@@ -69,12 +104,21 @@ func NewVpaTargetSelectorFetcher(config *rest.Config, kubeClient kube_client.Int
 type vpaTargetSelectorFetcher struct {
 	scaleNamespacer scale.ScalesGetter
 	mapper          apimeta.RESTMapper
+	informersMap    map[wellKnownController]cache.SharedIndexInformer
 }
 
 func (f *vpaTargetSelectorFetcher) Fetch(vpa *vpa_types.VerticalPodAutoscaler) (labels.Selector, error) {
 	if vpa.Spec.TargetRef == nil {
 		return nil, fmt.Errorf("targetRef not defined")
 	}
+	kind := wellKnownController(vpa.Spec.TargetRef.Kind)
+	informer, exists := f.informersMap[kind]
+	if exists {
+		return getLabelSelector(informer, vpa.Spec.TargetRef.Kind, vpa.Namespace, vpa.Spec.TargetRef.Name)
+	}
+
+	// not on a list of known controllers, use scale sub-resource
+	// TODO: cache response
 	groupVersion, err := schema.ParseGroupVersion(vpa.Spec.TargetRef.APIVersion)
 	if err != nil {
 		return nil, err
@@ -83,16 +127,50 @@ func (f *vpaTargetSelectorFetcher) Fetch(vpa *vpa_types.VerticalPodAutoscaler) (
 		Group: groupVersion.Group,
 		Kind:  vpa.Spec.TargetRef.Kind,
 	}
+
 	selector, err := f.getLabelSelectorFromResource(groupKind, vpa.Namespace, vpa.Spec.TargetRef.Name)
+	if err != nil {
+		return nil, fmt.Errorf("Unhandled targetRef %s / %s / %s, last error %v",
+			vpa.Spec.TargetRef.APIVersion, vpa.Spec.TargetRef.Kind, vpa.Spec.TargetRef.Name, err)
+	}
+	return selector, nil
+}
+
+func getLabelSelector(informer cache.SharedIndexInformer, kind, namespace, name string) (labels.Selector, error) {
+	obj, exists, err := informer.GetStore().GetByKey(namespace + "/" + name)
 	if err != nil {
 		return nil, err
 	}
-	if selector != nil {
-		return selector, nil
+	if !exists {
+		return nil, fmt.Errorf("%s %s/%s does not exist", kind, namespace, name)
 	}
-	// TODO: handle DaemonSet too
-	return nil, fmt.Errorf("Unhandled targetRef %s / %s / %s",
-		vpa.Spec.TargetRef.APIVersion, vpa.Spec.TargetRef.Kind, vpa.Spec.TargetRef.Name)
+	switch obj.(type) {
+	case (*appsv1.DaemonSet):
+		apiObj, ok := obj.(*appsv1.DaemonSet)
+		if !ok {
+			return nil, fmt.Errorf("Failed to parse %s %s/%s", kind, namespace, name)
+		}
+		return metav1.LabelSelectorAsSelector(apiObj.Spec.Selector)
+	case (*appsv1.Deployment):
+		apiObj, ok := obj.(*appsv1.Deployment)
+		if !ok {
+			return nil, fmt.Errorf("Failed to parse %s %s/%s", kind, namespace, name)
+		}
+		return metav1.LabelSelectorAsSelector(apiObj.Spec.Selector)
+	case (*appsv1.StatefulSet):
+		apiObj, ok := obj.(*appsv1.StatefulSet)
+		if !ok {
+			return nil, fmt.Errorf("Failed to parse %s %s/%s", kind, namespace, name)
+		}
+		return metav1.LabelSelectorAsSelector(apiObj.Spec.Selector)
+	case (*appsv1.ReplicaSet):
+		apiObj, ok := obj.(*appsv1.ReplicaSet)
+		if !ok {
+			return nil, fmt.Errorf("Failed to parse %s %s/%s", kind, namespace, name)
+		}
+		return metav1.LabelSelectorAsSelector(apiObj.Spec.Selector)
+	}
+	return nil, fmt.Errorf("Don't know how to read label seletor")
 }
 
 func (f *vpaTargetSelectorFetcher) getLabelSelectorFromResource(
@@ -102,6 +180,8 @@ func (f *vpaTargetSelectorFetcher) getLabelSelectorFromResource(
 	if err != nil {
 		return nil, err
 	}
+
+	var lastError error
 	for _, mapping := range mappings {
 		groupResource := mapping.Resource.GroupResource()
 		scale, err := f.scaleNamespacer.Scales(namespace).Get(groupResource, name)
@@ -112,8 +192,9 @@ func (f *vpaTargetSelectorFetcher) getLabelSelectorFromResource(
 			}
 			return selector, nil
 		}
+		lastError = err
 	}
 
-	// nothing found but that's still OK, maybe our target ref does not support it
-	return nil, nil
+	// nothing found, apparently the resource does support scale (or we lack RBAC)
+	return nil, lastError
 }
