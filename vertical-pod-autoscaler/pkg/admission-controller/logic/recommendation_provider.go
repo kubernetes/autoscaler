@@ -19,11 +19,12 @@ package logic
 import (
 	"github.com/golang/glog"
 
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
-	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
-	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1beta1"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
+	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1beta2"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
@@ -44,12 +45,16 @@ type RecommendationProvider interface {
 type recommendationProvider struct {
 	vpaLister               vpa_lister.VerticalPodAutoscalerLister
 	recommendationProcessor vpa_api_util.RecommendationProcessor
+	selectorFetcher         target.VpaTargetSelectorFetcher
 }
 
 // NewRecommendationProvider constructs the recommendation provider that list VPAs and can be used to determine recommendations for pods.
-func NewRecommendationProvider(vpaLister vpa_lister.VerticalPodAutoscalerLister, recommendationProcessor vpa_api_util.RecommendationProcessor) *recommendationProvider {
-	return &recommendationProvider{vpaLister: vpaLister,
-		recommendationProcessor: recommendationProcessor}
+func NewRecommendationProvider(vpaLister vpa_lister.VerticalPodAutoscalerLister, recommendationProcessor vpa_api_util.RecommendationProcessor, selectorFetcher target.VpaTargetSelectorFetcher) *recommendationProvider {
+	return &recommendationProvider{
+		vpaLister:               vpaLister,
+		recommendationProcessor: recommendationProcessor,
+		selectorFetcher:         selectorFetcher,
+	}
 }
 
 // getContainersResources returns the recommended resources for each container in the given pod in the same order they are specified in the pod.Spec.
@@ -74,15 +79,27 @@ func (p *recommendationProvider) getMatchingVPA(pod *v1.Pod) *vpa_types.Vertical
 		glog.Errorf("failed to get vpa configs: %v", err)
 		return nil
 	}
-	onConfigs := make([]*vpa_types.VerticalPodAutoscaler, 0)
+	onConfigs := make([]*vpa_api_util.VpaWithSelector, 0)
 	for _, vpaConfig := range configs {
 		if vpa_api_util.GetUpdateMode(vpaConfig) == vpa_types.UpdateModeOff {
 			continue
 		}
-		onConfigs = append(onConfigs, vpaConfig)
+		selector, err := p.selectorFetcher.Fetch(vpaConfig)
+		if err != nil {
+			glog.V(3).Infof("skipping VPA object %v because we cannot fetch selector", vpaConfig.Name)
+			continue
+		}
+		onConfigs = append(onConfigs, &vpa_api_util.VpaWithSelector{
+			Vpa:      vpaConfig,
+			Selector: selector,
+		})
 	}
 	glog.V(2).Infof("Let's choose from %d configs for pod %s/%s", len(onConfigs), pod.Namespace, pod.Name)
-	return vpa_api_util.GetControllingVPAForPod(pod, onConfigs)
+	result := vpa_api_util.GetControllingVPAForPod(pod, onConfigs)
+	if result != nil {
+		return result.Vpa
+	}
+	return nil
 }
 
 // GetContainersResourcesForPod returns recommended request for a given pod, annotations and name of controlling VPA.

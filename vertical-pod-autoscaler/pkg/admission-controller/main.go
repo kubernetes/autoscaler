@@ -27,11 +27,17 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/logic"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
-	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1beta1"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics"
 	metrics_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/admission"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
+	"k8s.io/client-go/informers"
+	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+)
+
+const (
+	defaultResyncPeriod time.Duration = 10 * time.Minute
 )
 
 var (
@@ -45,15 +51,6 @@ var (
 	namespace = os.Getenv("NAMESPACE")
 )
 
-func newReadyVPALister(stopChannel <-chan struct{}) vpa_lister.VerticalPodAutoscalerLister {
-	config, err := rest.InClusterConfig()
-	if err != nil {
-		glog.Fatal(err)
-	}
-	vpaClient := vpa_clientset.NewForConfigOrDie(config)
-	return vpa_api_util.NewAllVpasLister(vpaClient, stopChannel)
-}
-
 func main() {
 	kube_flag.InitFlags()
 	glog.V(1).Infof("Vertical Pod Autoscaler %s Admission Controller", common.VerticalPodAutoscalerVersion)
@@ -63,9 +60,21 @@ func main() {
 	metrics_admission.Register()
 
 	certs := initCerts(*certsConfiguration)
-	stopChannel := make(chan struct{})
-	vpaLister := newReadyVPALister(stopChannel)
-	as := logic.NewAdmissionServer(logic.NewRecommendationProvider(vpaLister, vpa_api_util.NewCappingRecommendationProcessor()), logic.NewDefaultPodPreProcessor())
+
+	config, err := rest.InClusterConfig()
+	if err != nil {
+		glog.Fatal(err)
+	}
+
+	vpaClient := vpa_clientset.NewForConfigOrDie(config)
+	vpaLister := vpa_api_util.NewAllVpasLister(vpaClient, make(chan struct{}))
+	kubeClient := kube_client.NewForConfigOrDie(config)
+	factory := informers.NewSharedInformerFactory(kubeClient, defaultResyncPeriod)
+	targetSelectorFetcher := target.NewCompositeTargetSelectorFetcher(
+		target.NewVpaTargetSelectorFetcher(config, kubeClient, factory),
+		target.NewBeta1TargetSelectorFetcher(config),
+	)
+	as := logic.NewAdmissionServer(logic.NewRecommendationProvider(vpaLister, vpa_api_util.NewCappingRecommendationProcessor(), targetSelectorFetcher), logic.NewDefaultPodPreProcessor())
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		as.Serve(w, r)
 		healthCheck.UpdateLastActivity()

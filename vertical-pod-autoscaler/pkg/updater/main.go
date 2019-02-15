@@ -20,6 +20,8 @@ import (
 	"flag"
 	"time"
 
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
+
 	"github.com/golang/glog"
 	kube_flag "k8s.io/apiserver/pkg/util/flag"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
@@ -28,6 +30,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics"
 	metrics_updater "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/updater"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
+	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
 	kube_restclient "k8s.io/client-go/rest"
 )
@@ -45,6 +48,10 @@ var (
 	address = flag.String("address", ":8943", "The address to expose Prometheus metrics.")
 )
 
+const (
+	defaultResyncPeriod time.Duration = 10 * time.Minute
+)
+
 func main() {
 	kube_flag.InitFlags()
 	glog.V(1).Infof("Vertical Pod Autoscaler %s Updater", common.VerticalPodAutoscalerVersion)
@@ -53,8 +60,19 @@ func main() {
 	metrics.Initialize(*address, healthCheck)
 	metrics_updater.Register()
 
-	kubeClient, vpaClient := createKubeClients()
-	updater, err := updater.NewUpdater(kubeClient, vpaClient, *minReplicas, *evictionToleranceFraction, vpa_api_util.NewCappingRecommendationProcessor(), nil)
+	config, err := kube_restclient.InClusterConfig()
+	if err != nil {
+		glog.Fatalf("Failed to build Kubernetes client : fail to create config: %v", err)
+	}
+	kubeClient := kube_client.NewForConfigOrDie(config)
+	vpaClient := vpa_clientset.NewForConfigOrDie(config)
+	factory := informers.NewSharedInformerFactory(kubeClient, defaultResyncPeriod)
+	targetSelectorFetcher := target.NewCompositeTargetSelectorFetcher(
+		target.NewVpaTargetSelectorFetcher(config, kubeClient, factory),
+		target.NewBeta1TargetSelectorFetcher(config),
+	)
+	// TODO: use SharedInformerFactory in updater
+	updater, err := updater.NewUpdater(kubeClient, vpaClient, *minReplicas, *evictionToleranceFraction, vpa_api_util.NewCappingRecommendationProcessor(), nil, targetSelectorFetcher)
 	if err != nil {
 		glog.Fatalf("Failed to create updater: %v", err)
 	}
@@ -63,12 +81,4 @@ func main() {
 		updater.RunOnce()
 		healthCheck.UpdateLastActivity()
 	}
-}
-
-func createKubeClients() (kube_client.Interface, *vpa_clientset.Clientset) {
-	config, err := kube_restclient.InClusterConfig()
-	if err != nil {
-		glog.Fatalf("Failed to build Kubernetes client : fail to create config: %v", err)
-	}
-	return kube_client.NewForConfigOrDie(config), vpa_clientset.NewForConfigOrDie(config)
 }

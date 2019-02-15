@@ -22,9 +22,9 @@ import (
 	"time"
 
 	"github.com/golang/glog"
-	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
-	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1beta1"
+	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1beta2"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/checkpoint"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/logic"
@@ -231,8 +231,8 @@ func NewRecommender(config *rest.Config, checkpointsGCInterval time.Duration, us
 	return RecommenderFactory{
 		ClusterState:           clusterState,
 		ClusterStateFeeder:     input.NewClusterStateFeeder(config, clusterState),
-		CheckpointWriter:       checkpoint.NewCheckpointWriter(clusterState, vpa_clientset.NewForConfigOrDie(config).AutoscalingV1beta1()),
-		VpaClient:              vpa_clientset.NewForConfigOrDie(config).AutoscalingV1beta1(),
+		CheckpointWriter:       checkpoint.NewCheckpointWriter(clusterState, vpa_clientset.NewForConfigOrDie(config).AutoscalingV1beta2()),
+		VpaClient:              vpa_clientset.NewForConfigOrDie(config).AutoscalingV1beta2(),
 		PodResourceRecommender: logic.CreatePodResourceRecommender(),
 		CheckpointsGCInterval:  checkpointsGCInterval,
 		UseCheckpoints:         useCheckpoints,
