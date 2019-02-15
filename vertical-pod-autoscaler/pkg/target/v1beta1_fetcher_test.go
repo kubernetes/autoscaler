@@ -148,7 +148,7 @@ func TestLegacySelector(t *testing.T) {
 
 	for i, tc := range testCases {
 		t.Run(fmt.Sprintf("test case number: %d", i), func(t *testing.T) {
-			vpaLister := &test.VerticalPodAutoscalerListerMock{}
+			vpaLister := &test.VerticalPodAutoscalerV1Beta1ListerMock{}
 			if tc.vpaInStore == nil {
 				vpaLister.On("List").Return(nil, fmt.Errorf("Cannot list"))
 			} else {

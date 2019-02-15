@@ -21,15 +21,15 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
-	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
+	"k8s.io/apimachinery/pkg/labels"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
 	vpa_fake "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/fake"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
-
-	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -43,6 +43,12 @@ var (
 func init() {
 	flag.Set("alsologtostderr", "true")
 	flag.Set("v", "5")
+}
+
+func parseLabelSelector(selector string) labels.Selector {
+	labelSelector, _ := meta.ParseToLabelSelector(selector)
+	parsedSelector, _ := meta.LabelSelectorAsSelector(labelSelector)
+	return parsedSelector
 }
 
 func TestUpdateVpaIfNeeded(t *testing.T) {
@@ -90,7 +96,7 @@ func TestUpdateVpaIfNeeded(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.caseName, func(t *testing.T) {
 			fakeClient := vpa_fake.NewSimpleClientset()
-			_, err := UpdateVpaStatusIfNeeded(fakeClient.AutoscalingV1beta1().VerticalPodAutoscalers(tc.vpa.ID.Namespace),
+			_, err := UpdateVpaStatusIfNeeded(fakeClient.AutoscalingV1beta2().VerticalPodAutoscalers(tc.vpa.ID.Namespace),
 				tc.vpa, tc.observedStatus)
 			assert.NoError(t, err, "Unexpected error occurred.")
 			actions := fakeClient.Actions()
@@ -105,11 +111,10 @@ func TestUpdateVpaIfNeeded(t *testing.T) {
 
 func TestPodMatchesVPA(t *testing.T) {
 	type testCase struct {
-		pod    *core.Pod
-		vpa    *vpa_types.VerticalPodAutoscaler
-		result bool
+		pod             *core.Pod
+		vpaWithSelector VpaWithSelector
+		result          bool
 	}
-	selector := "app = testingApp"
 
 	pod := test.Pod().WithName("test-pod").AddContainer(test.BuildTestContainer(containerName, "1", "100M")).Get()
 	pod.Labels = map[string]string{"app": "testingApp"}
@@ -118,27 +123,23 @@ func TestPodMatchesVPA(t *testing.T) {
 		WithContainer(containerName).
 		WithTarget("2", "200M").
 		WithMinAllowed("1", "100M").
-		WithMaxAllowed("3", "1G").
-		WithSelector(selector)
+		WithMaxAllowed("3", "1G")
 
 	vpa := vpaBuilder.Get()
 	otherNamespaceVPA := vpaBuilder.WithNamespace("other").Get()
-	otherSelectorVPA := vpaBuilder.WithSelector("app = other").Get()
 
 	testCases := []testCase{
-		{pod, vpa, true},
-		{pod, otherNamespaceVPA, false},
-		{pod, otherSelectorVPA, false}}
+		{pod, VpaWithSelector{vpa, parseLabelSelector("app = testingApp")}, true},
+		{pod, VpaWithSelector{otherNamespaceVPA, parseLabelSelector("app = testingApp")}, false},
+		{pod, VpaWithSelector{vpa, parseLabelSelector("app = other")}, false}}
 
 	for _, tc := range testCases {
-		actual := PodMatchesVPA(tc.pod, tc.vpa)
+		actual := PodMatchesVPA(tc.pod, &tc.vpaWithSelector)
 		assert.Equal(t, tc.result, actual)
 	}
 }
 
 func TestGetControllingVPAForPod(t *testing.T) {
-	selector := "app = testingApp"
-
 	pod := test.Pod().WithName("test-pod").AddContainer(test.BuildTestContainer(containerName, "1", "100M")).Get()
 	pod.Labels = map[string]string{"app": "testingApp"}
 
@@ -146,14 +147,17 @@ func TestGetControllingVPAForPod(t *testing.T) {
 		WithContainer(containerName).
 		WithTarget("2", "200M").
 		WithMinAllowed("1", "100M").
-		WithMaxAllowed("3", "1G").
-		WithSelector(selector)
+		WithMaxAllowed("3", "1G")
 	vpaA := vpaBuilder.WithCreationTimestamp(time.Unix(5, 0)).Get()
 	vpaB := vpaBuilder.WithCreationTimestamp(time.Unix(10, 0)).Get()
-	nonMatchingVPA := vpaBuilder.WithCreationTimestamp(time.Unix(2, 0)).WithSelector("app = other").Get()
+	nonMatchingVPA := vpaBuilder.WithCreationTimestamp(time.Unix(2, 0)).Get()
 
-	chosen := GetControllingVPAForPod(pod, []*vpa_types.VerticalPodAutoscaler{vpaB, vpaA, nonMatchingVPA})
-	assert.Equal(t, vpaA, chosen)
+	chosen := GetControllingVPAForPod(pod, []*VpaWithSelector{
+		{vpaB, parseLabelSelector("app = testingApp")},
+		{vpaA, parseLabelSelector("app = testingApp")},
+		{nonMatchingVPA, parseLabelSelector("app = other")},
+	})
+	assert.Equal(t, vpaA, chosen.Vpa)
 }
 
 func TestGetContainerResourcePolicy(t *testing.T) {

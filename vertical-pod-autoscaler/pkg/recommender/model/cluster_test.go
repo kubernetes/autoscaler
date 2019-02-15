@@ -24,7 +24,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
 )
 
 var (
@@ -176,8 +176,9 @@ func addVpa(cluster *ClusterState, id VpaID, selector string) *Vpa {
 	var apiObject vpa_types.VerticalPodAutoscaler
 	apiObject.Namespace = id.Namespace
 	apiObject.Name = id.VpaName
-	apiObject.Spec.Selector, _ = metav1.ParseToLabelSelector(selector)
-	err := cluster.AddOrUpdateVpa(&apiObject)
+	labelSelector, _ := metav1.ParseToLabelSelector(selector)
+	parsedSelector, _ := metav1.LabelSelectorAsSelector(labelSelector)
+	err := cluster.AddOrUpdateVpa(&apiObject, parsedSelector)
 	if err != nil {
 		glog.Fatalf("AddOrUpdateVpa() failed: %v", err)
 	}
