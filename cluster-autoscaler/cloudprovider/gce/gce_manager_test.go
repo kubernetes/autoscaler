@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
@@ -807,14 +808,14 @@ func TestGetCpuAndMemoryForMachineType(t *testing.T) {
 	cpu, mem, err := g.getCpuAndMemoryForMachineType("custom-8-2", zoneB)
 	assert.NoError(t, err)
 	assert.Equal(t, int64(8), cpu)
-	assert.Equal(t, int64(2*bytesPerMB), mem)
+	assert.Equal(t, int64(2*units.MiB), mem)
 	mock.AssertExpectationsForObjects(t, server)
 
 	// Standard machine type found in cache.
 	cpu, mem, err = g.getCpuAndMemoryForMachineType("n1-standard-1", zoneB)
 	assert.NoError(t, err)
 	assert.Equal(t, int64(1), cpu)
-	assert.Equal(t, int64(1*bytesPerMB), mem)
+	assert.Equal(t, int64(1*units.MiB), mem)
 	mock.AssertExpectationsForObjects(t, server)
 
 	// Standard machine type not found in cache.
@@ -822,14 +823,14 @@ func TestGetCpuAndMemoryForMachineType(t *testing.T) {
 	cpu, mem, err = g.getCpuAndMemoryForMachineType("n1-standard-2", zoneB)
 	assert.NoError(t, err)
 	assert.Equal(t, int64(2), cpu)
-	assert.Equal(t, int64(3840*bytesPerMB), mem)
+	assert.Equal(t, int64(3840*units.MiB), mem)
 	mock.AssertExpectationsForObjects(t, server)
 
 	// Standard machine type cached.
 	cpu, mem, err = g.getCpuAndMemoryForMachineType("n1-standard-2", zoneB)
 	assert.NoError(t, err)
 	assert.Equal(t, int64(2), cpu)
-	assert.Equal(t, int64(3840*bytesPerMB), mem)
+	assert.Equal(t, int64(3840*units.MiB), mem)
 	mock.AssertExpectationsForObjects(t, server)
 
 	// Standard machine type not found in the zone.
@@ -844,7 +845,7 @@ func TestParseCustomMachineType(t *testing.T) {
 	cpu, mem, err := parseCustomMachineType("custom-2-2816")
 	assert.NoError(t, err)
 	assert.Equal(t, int64(2), cpu)
-	assert.Equal(t, int64(2816*bytesPerMB), mem)
+	assert.Equal(t, int64(2816*units.MiB), mem)
 	cpu, mem, err = parseCustomMachineType("other-a2-2816")
 	assert.Error(t, err)
 	cpu, mem, err = parseCustomMachineType("other-2-2816")
