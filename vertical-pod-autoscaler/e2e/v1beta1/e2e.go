@@ -227,43 +227,10 @@ func RunE2ETests(t *testing.T) {
 		if err := os.MkdirAll(framework.TestContext.ReportDir, 0755); err != nil {
 			glog.Errorf("Failed creating report directory: %v", err)
 		} else {
-			r = append(r, reporters.NewJUnitReporter(path.Join(framework.TestContext.ReportDir, fmt.Sprintf("junit_%v%02d.xml", framework.TestContext.ReportPrefix, config.GinkgoConfig.ParallelNode))))
+			r = append(r, reporters.NewJUnitReporter(path.Join(framework.TestContext.ReportDir, fmt.Sprintf("v1_beta1_junit_%v%02d.xml", framework.TestContext.ReportPrefix, config.GinkgoConfig.ParallelNode))))
 		}
 	}
 	glog.Infof("Starting e2e run %q on Ginkgo node %d", framework.RunId, config.GinkgoConfig.ParallelNode)
 
 	ginkgo.RunSpecsWithDefaultAndCustomReporters(t, "Kubernetes e2e suite", r)
 }
-
-// // Run a test container to try and contact the Kubernetes api-server from a pod, wait for it
-// // to flip to Ready, log its output and delete it.
-// func runKubernetesServiceTestContainer(c clientset.Interface, ns string) {
-// 	path := "test/images/clusterapi-tester/pod.yaml"
-// 	framework.Logf("Parsing pod from %v", path)
-// 	p, err := manifest.PodFromManifest(path)
-// 	if err != nil {
-// 		framework.Logf("Failed to parse clusterapi-tester from manifest %v: %v", path, err)
-// 		return
-// 	}
-// 	p.Namespace = ns
-// 	if _, err := c.CoreV1().Pods(ns).Create(p); err != nil {
-// 		framework.Logf("Failed to create %v: %v", p.Name, err)
-// 		return
-// 	}
-// 	defer func() {
-// 		if err := c.CoreV1().Pods(ns).Delete(p.Name, nil); err != nil {
-// 			framework.Logf("Failed to delete pod %v: %v", p.Name, err)
-// 		}
-// 	}()
-// 	timeout := 5 * time.Minute
-// 	if err := framework.WaitForPodCondition(c, ns, p.Name, "clusterapi-tester", timeout, testutils.PodRunningReady); err != nil {
-// 		framework.Logf("Pod %v took longer than %v to enter running/ready: %v", p.Name, timeout, err)
-// 		return
-// 	}
-// 	logs, err := framework.GetPodLogs(c, ns, p.Name, p.Spec.Containers[0].Name)
-// 	if err != nil {
-// 		framework.Logf("Failed to retrieve logs from %v: %v", p.Name, err)
-// 	} else {
-// 		framework.Logf("Output of clusterapi-tester:\n%v", logs)
-// 	}
-// }
