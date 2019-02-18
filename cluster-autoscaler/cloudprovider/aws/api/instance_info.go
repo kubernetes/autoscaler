@@ -19,7 +19,6 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"regexp"
 	"strconv"
 	"strings"
@@ -35,7 +34,6 @@ import (
 
 const (
 	instanceInfoCacheMaxAge      = time.Hour * 6
-	awsPricingAPIURLTemplate     = "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonEC2/current/%s/index.json"
 	instanceOperatingSystemLinux = "Linux"
 	instanceTenancyShared        = "Shared"
 )
@@ -242,16 +240,9 @@ func (s *instanceInfoService) sync(region string) error {
 }
 
 func (s *instanceInfoService) fetch(region string, etag string) (*response, error) {
-	url := fmt.Sprintf(awsPricingAPIURLTemplate, region)
 	regionName, err := regionFullName(region)
 	if err != nil {
 		return nil, err
-	}
-
-	req, err := http.NewRequest("GET", url, nil)
-
-	if len(etag) != 0 {
-		req.Header.Add("If-None-Match", etag)
 	}
 
 	input := &pricing.GetProductsInput{
