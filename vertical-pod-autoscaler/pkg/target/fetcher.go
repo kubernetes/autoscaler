@@ -22,6 +22,8 @@ import (
 
 	"github.com/golang/glog"
 	appsv1 "k8s.io/api/apps/v1"
+	batchv1 "k8s.io/api/batch/v1"
+	corev1 "k8s.io/api/core/v1"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -53,10 +55,12 @@ type VpaTargetSelectorFetcher interface {
 type wellKnownController string
 
 const (
-	daemonSet   wellKnownController = "DaemonSet"
-	deployment  wellKnownController = "Deployment"
-	replicaSet  wellKnownController = "ReplicaSet"
-	statefulSet wellKnownController = "StatefulSet"
+	daemonSet             wellKnownController = "DaemonSet"
+	deployment            wellKnownController = "Deployment"
+	replicaSet            wellKnownController = "ReplicaSet"
+	statefulSet           wellKnownController = "StatefulSet"
+	replicationController wellKnownController = "ReplicationController"
+	job                   wellKnownController = "Job"
 )
 
 // NewVpaTargetSelectorFetcher returns new instance of VpaTargetSelectorFetcher
@@ -74,10 +78,12 @@ func NewVpaTargetSelectorFetcher(config *rest.Config, kubeClient kube_client.Int
 	}, discoveryResetPeriod, make(chan struct{}))
 
 	informersMap := map[wellKnownController]cache.SharedIndexInformer{
-		daemonSet:   factory.Apps().V1().DaemonSets().Informer(),
-		deployment:  factory.Apps().V1().Deployments().Informer(),
-		replicaSet:  factory.Apps().V1().ReplicaSets().Informer(),
-		statefulSet: factory.Apps().V1().StatefulSets().Informer(),
+		daemonSet:             factory.Apps().V1().DaemonSets().Informer(),
+		deployment:            factory.Apps().V1().Deployments().Informer(),
+		replicaSet:            factory.Apps().V1().ReplicaSets().Informer(),
+		statefulSet:           factory.Apps().V1().StatefulSets().Informer(),
+		replicationController: factory.Core().V1().ReplicationControllers().Informer(),
+		job:                   factory.Batch().V1().Jobs().Informer(),
 	}
 
 	for kind, informer := range informersMap {
@@ -169,6 +175,18 @@ func getLabelSelector(informer cache.SharedIndexInformer, kind, namespace, name 
 			return nil, fmt.Errorf("Failed to parse %s %s/%s", kind, namespace, name)
 		}
 		return metav1.LabelSelectorAsSelector(apiObj.Spec.Selector)
+	case (*batchv1.Job):
+		apiObj, ok := obj.(*batchv1.Job)
+		if !ok {
+			return nil, fmt.Errorf("Failed to parse %s %s/%s", kind, namespace, name)
+		}
+		return metav1.LabelSelectorAsSelector(apiObj.Spec.Selector)
+	case (*corev1.ReplicationController):
+		apiObj, ok := obj.(*corev1.ReplicationController)
+		if !ok {
+			return nil, fmt.Errorf("Failed to parse %s %s/%s", kind, namespace, name)
+		}
+		return metav1.LabelSelectorAsSelector(metav1.SetAsLabelSelector(apiObj.Spec.Selector))
 	}
 	return nil, fmt.Errorf("Don't know how to read label seletor")
 }
