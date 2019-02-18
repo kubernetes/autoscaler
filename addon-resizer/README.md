@@ -5,7 +5,11 @@ vertically scales the dependent container up and down. Currently the only
 option is to scale it linearly based on the number of nodes, and it only works
 for a singleton.
 
-Currently recommended version is 1.8, on addon-resizer-release-1.8 branch.
+Currently recommended version is 1.8, on addon-resizer-release-1.8 branch. The latest version and Docker images are 2.1 pushed to:
+
+* gcr.io/google-containers/addon-resizer-amd64:2.1
+* gcr.io/google-containers/addon-resizer-arm64:2.1
+* gcr.io/google-containers/addon-resizer-arm:2.1
 
 ## Nanny program and arguments
 
@@ -14,7 +18,9 @@ The nanny scales resources linearly with the number of nodes in the cluster. The
 The cluster size is periodically checked, and used to calculate the expected resources. If the expected and actual resources differ by more than the threshold (given as a +/- percent), then the deployment is updated (updating a deployment stops the old pod, and starts a new pod).
 
 ```
-Usage of pod_nanny:
+Usage of ./pod_nanny:
+      --acceptance-offset=20: A number from range 0-100. The dependent's resources are rewritten when they deviate from expected by a percentage that is higher than this threshold. Can't be lower than recommendation-offset.
+      --alsologtostderr[=false]: log to standard error as well as files
       --container="pod-nanny": The name of the container to watch. This defaults to the nanny itself.
       --cpu="MISSING": The base CPU resource requirement.
       --deployment="": The name of the deployment being monitored. This is required.
@@ -22,12 +28,18 @@ Usage of pod_nanny:
       --extra-memory="0Mi": The amount of memory to add per node.
       --extra-storage="0Gi": The amount of storage to add per node.
       --log-flush-frequency=5s: Maximum number of seconds between log flushes
+      --log_backtrace_at=:0: when logging hits line file:N, emit a stack trace
+      --log_dir="": If non-empty, write log files in this directory
+      --logtostderr[=true]: log to standard error instead of files
       --memory="MISSING": The base memory resource requirement.
-      --namespace=$MY_POD_NAMESPACE: The namespace of the ward. This defaults to the nanny pod's own namespace.
-      --pod=$MY_POD_NAME: The name of the pod to watch. This defaults to the nanny's own pod.
+      --namespace="": The namespace of the ward. This defaults to the nanny pod's own namespace.
+      --pod="": The name of the pod to watch. This defaults to the nanny's own pod.
       --poll-period=10000: The time, in milliseconds, to poll the dependent container.
+      --recommendation-offset=10: A number from range 0-100. When the dependent's resources are rewritten, they are set to the closer end of the range defined by this percentage threshold.
+      --stderrthreshold=2: logs at or above this threshold go to stderr
       --storage="MISSING": The base storage resource requirement.
-      --threshold=0: A number between 0-100. The dependent's resources are rewritten when they deviate from expected by more than threshold.
+      --v=0: log level for V logs
+      --vmodule=: comma-separated list of pattern=N settings for file-filtered logging
 ```
 
 ## Example deployment file
@@ -70,7 +82,7 @@ spec:
         kubernetes.io/cluster-service: "true"
     spec:
       containers:
-        - image: staging-k8s.gcr.io/addon-resizer:1.8.1
+        - image: gcr.io/google-containers/addon-resizer-amd64:2.1
           imagePullPolicy: Always
           name: pod-nanny
           resources:
