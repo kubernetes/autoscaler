@@ -227,7 +227,7 @@ func RunE2ETests(t *testing.T) {
 		if err := os.MkdirAll(framework.TestContext.ReportDir, 0755); err != nil {
 			glog.Errorf("Failed creating report directory: %v", err)
 		} else {
-			r = append(r, reporters.NewJUnitReporter(path.Join(framework.TestContext.ReportDir, fmt.Sprintf("v1_beta1_junit_%v%02d.xml", framework.TestContext.ReportPrefix, config.GinkgoConfig.ParallelNode))))
+			r = append(r, reporters.NewJUnitReporter(path.Join(framework.TestContext.ReportDir, "junit_02.xml")))
 		}
 	}
 	glog.Infof("Starting e2e run %q on Ginkgo node %d", framework.RunId, config.GinkgoConfig.ParallelNode)
