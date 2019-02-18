@@ -152,7 +152,7 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: system:controllers-reader
+  name: system:vpa-target-reader
 rules:
 - apiGroups:
   - ""
@@ -165,46 +165,18 @@ rules:
 - apiGroups:
   - apps
   resources:
-  - statefulsets
-  - replicasets
-  verbs:
-  - get
-  - list
-  - watch
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: system:vpa-updater-controllers-reader-binding
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: system:controllers-reader
-subjects:
-- kind: ServiceAccount
-  name: vpa-updater
-  namespace: kube-system
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: system:vpa-target-reader
-rules:
-- apiGroups:
-  - ""
-  resources:
-  - replicationcontrollers/scale
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - apps
-  resources:
   - daemonsets
   - deployments
   - replicasets
   - statefulsets
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - batch
+  resources:
+  - jobs
   verbs:
   - get
   - list

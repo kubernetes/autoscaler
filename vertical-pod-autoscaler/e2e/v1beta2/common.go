@@ -23,6 +23,7 @@ import (
 	"github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
 	appsv1 "k8s.io/api/apps/v1"
+	autoscaling "k8s.io/api/autoscaling/v1"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -30,7 +31,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
-	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	"k8s.io/kubernetes/test/e2e/framework"
 )
@@ -50,6 +51,12 @@ const (
 	defaultHamsterReplicas = int32(3)
 )
 
+var hamsterTargetRef = &autoscaling.CrossVersionObjectReference{
+	APIVersion: "extensions/v1beta1",
+	Kind:       "Deployment",
+	Name:       "hamster-deployment",
+}
+
 var hamsterLabels = map[string]string{"app": "hamster"}
 
 // SIGDescribe adds sig-autoscaling tag to test description.
@@ -59,7 +66,7 @@ func SIGDescribe(text string, body func()) bool {
 
 // E2eDescribe describes a VPA e2e test.
 func E2eDescribe(scenario, name string, body func()) bool {
-	return SIGDescribe(fmt.Sprintf("[VPA] [%s] %s", scenario, name), body)
+	return SIGDescribe(fmt.Sprintf("[VPA] [%s] [v1beta2] %s", scenario, name), body)
 }
 
 // RecommenderE2eDescribe describes a VPA recommender e2e test.
@@ -133,10 +140,8 @@ func GetHamsterPods(f *framework.Framework) (*apiv1.PodList, error) {
 }
 
 // SetupVPA creates and installs a simple hamster VPA for e2e test purposes.
-func SetupVPA(f *framework.Framework, cpu string, mode vpa_types.UpdateMode) {
-	vpaCRD := NewVPA(f, "hamster-vpa", &metav1.LabelSelector{
-		MatchLabels: hamsterLabels,
-	})
+func SetupVPA(f *framework.Framework, cpu string, mode vpa_types.UpdateMode, targetRef *autoscaling.CrossVersionObjectReference) {
+	vpaCRD := NewVPA(f, "hamster-vpa", targetRef)
 	vpaCRD.Spec.UpdatePolicy.UpdateMode = &mode
 
 	cpuQuantity := ParseQuantityOrDie(cpu)
@@ -154,7 +159,7 @@ func SetupVPA(f *framework.Framework, cpu string, mode vpa_types.UpdateMode) {
 }
 
 // NewVPA creates a VPA object for e2e test purposes.
-func NewVPA(f *framework.Framework, name string, selector *metav1.LabelSelector) *vpa_types.VerticalPodAutoscaler {
+func NewVPA(f *framework.Framework, name string, targetRef *autoscaling.CrossVersionObjectReference) *vpa_types.VerticalPodAutoscaler {
 	updateMode := vpa_types.UpdateModeAuto
 	vpa := vpa_types.VerticalPodAutoscaler{
 		ObjectMeta: metav1.ObjectMeta{
@@ -162,7 +167,7 @@ func NewVPA(f *framework.Framework, name string, selector *metav1.LabelSelector)
 			Namespace: f.Namespace.Name,
 		},
 		Spec: vpa_types.VerticalPodAutoscalerSpec{
-			Selector: selector,
+			TargetRef: targetRef,
 			UpdatePolicy: &vpa_types.PodUpdatePolicy{
 				UpdateMode: &updateMode,
 			},
@@ -180,7 +185,7 @@ func InstallVPA(f *framework.Framework, vpa *vpa_types.VerticalPodAutoscaler) {
 	config, err := framework.LoadConfig()
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	vpaClientSet := vpa_clientset.NewForConfigOrDie(config)
-	vpaClient := vpaClientSet.AutoscalingV1beta1()
+	vpaClient := vpaClientSet.AutoscalingV1beta2()
 	_, err = vpaClient.VerticalPodAutoscalers(ns).Create(vpa)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 }
@@ -292,7 +297,7 @@ func WaitForVPAMatch(c *vpa_clientset.Clientset, vpa *vpa_types.VerticalPodAutos
 	var polledVpa *vpa_types.VerticalPodAutoscaler
 	err := wait.PollImmediate(pollInterval, pollTimeout, func() (bool, error) {
 		var err error
-		polledVpa, err = c.AutoscalingV1beta1().VerticalPodAutoscalers(vpa.Namespace).Get(vpa.Name, metav1.GetOptions{})
+		polledVpa, err = c.AutoscalingV1beta2().VerticalPodAutoscalers(vpa.Namespace).Get(vpa.Name, metav1.GetOptions{})
 		if err != nil {
 			return false, err
 		}
