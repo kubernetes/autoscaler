@@ -63,7 +63,9 @@ func (client *VirtualMachineScaleSetsClientMock) CreateOrUpdate(ctx context.Cont
 	}
 	client.FakeStore[resourceGroupName][VMScaleSetName] = parameters
 
-	return nil, nil
+	return &http.Response{
+		StatusCode: http.StatusOK,
+	}, nil
 }
 
 // DeleteInstances deletes a set of instances for specified VirtualMachineScaleSet.

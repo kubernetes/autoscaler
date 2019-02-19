@@ -609,3 +609,22 @@ func checkResourceExistsFromError(err error) (bool, error) {
 	}
 	return false, v
 }
+
+// isSuccessHTTPResponse determines if the response from an HTTP request suggests success
+func isSuccessHTTPResponse(resp *http.Response, err error) (isSuccess bool, realError error) {
+	if err != nil {
+		return false, err
+	}
+
+	if resp != nil {
+		// HTTP 2xx suggests a successful response
+		if 199 < resp.StatusCode && resp.StatusCode < 300 {
+			return true, nil
+		}
+
+		return false, fmt.Errorf("failed with HTTP status code %d", resp.StatusCode)
+	}
+
+	// This shouldn't happen, it only ensures all exceptions are handled.
+	return false, fmt.Errorf("failed with unknown error")
+}

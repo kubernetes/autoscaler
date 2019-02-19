@@ -18,9 +18,11 @@ package azure
 
 import (
 	"fmt"
+	"net/http"
 	"testing"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-04-01/compute"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestSplitBlobURI(t *testing.T) {
@@ -122,5 +124,68 @@ func TestGetVMNameIndexWindows(t *testing.T) {
 	}
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
+	}
+}
+
+func TestIsSuccessResponse(t *testing.T) {
+	tests := []struct {
+		name          string
+		resp          *http.Response
+		err           error
+		expected      bool
+		expectedError error
+	}{
+		{
+			name:          "both resp and err nil should report error",
+			expected:      false,
+			expectedError: fmt.Errorf("failed with unknown error"),
+		},
+		{
+			name: "http.StatusNotFound should report error",
+			resp: &http.Response{
+				StatusCode: http.StatusNotFound,
+			},
+			expected:      false,
+			expectedError: fmt.Errorf("failed with HTTP status code %d", http.StatusNotFound),
+		},
+		{
+			name: "http.StatusInternalServerError should report error",
+			resp: &http.Response{
+				StatusCode: http.StatusInternalServerError,
+			},
+			expected:      false,
+			expectedError: fmt.Errorf("failed with HTTP status code %d", http.StatusInternalServerError),
+		},
+		{
+			name: "http.StatusOK shouldn't report error",
+			resp: &http.Response{
+				StatusCode: http.StatusOK,
+			},
+			expected: true,
+		},
+		{
+			name: "non-nil response error with http.StatusOK should report error",
+			resp: &http.Response{
+				StatusCode: http.StatusOK,
+			},
+			err:           fmt.Errorf("test error"),
+			expected:      false,
+			expectedError: fmt.Errorf("test error"),
+		},
+		{
+			name: "non-nil response error with http.StatusInternalServerError should report error",
+			resp: &http.Response{
+				StatusCode: http.StatusInternalServerError,
+			},
+			err:           fmt.Errorf("test error"),
+			expected:      false,
+			expectedError: fmt.Errorf("test error"),
+		},
+	}
+
+	for _, test := range tests {
+		result, realError := isSuccessHTTPResponse(test.resp, test.err)
+		assert.Equal(t, test.expected, result, "[%s] expected: %v, saw: %v", test.name, result, test.expected)
+		assert.Equal(t, test.expectedError, realError, "[%s] expected: %v, saw: %v", test.name, realError, test.expectedError)
 	}
 }
