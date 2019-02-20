@@ -12,6 +12,7 @@ spec:
     kind: VerticalPodAutoscaler
     shortNames:
     - vpa
+  version: v1beta1
   versions:
   - name: v1beta1
     served: true
@@ -50,6 +51,7 @@ spec:
     kind: VerticalPodAutoscalerCheckpoint
     shortNames:
     - vpacheckpoint
+  version: v1beta1
   versions:
   - name: v1beta1
     served: true
