@@ -317,3 +317,15 @@ func WaitForRecommendationPresent(c *vpa_clientset.Clientset, vpa *vpa_types.Ver
 		return vpa.Status.Recommendation != nil && len(vpa.Status.Recommendation.ContainerRecommendations) != 0
 	})
 }
+
+// WaitForConditionPresent pools VPA object until it contains condition with given type. On timeout returns an error.
+func WaitForConditionPresent(c *vpa_clientset.Clientset, vpa *vpa_types.VerticalPodAutoscaler, expectedConditionType string) (*vpa_types.VerticalPodAutoscaler, error) {
+	return WaitForVPAMatch(c, vpa, func(vpa *vpa_types.VerticalPodAutoscaler) bool {
+		for _, condition := range vpa.Status.Conditions {
+			if string(condition.Type) == expectedConditionType {
+				return true
+			}
+		}
+		return false
+	})
+}
