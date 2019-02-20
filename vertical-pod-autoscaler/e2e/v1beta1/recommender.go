@@ -183,9 +183,11 @@ var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
 
-	ginkgo.It("serves recommendation", func() {
+	ginkgo.It("serves recommendation and is marked deprecated", func() {
 		ginkgo.By("Waiting for recommendation to be filled")
 		_, err := WaitForRecommendationPresent(vpaClientSet, vpaCRD)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		_, err = WaitForConditionPresent(vpaClientSet, vpaCRD, "ConfigDeprecated")
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
 
