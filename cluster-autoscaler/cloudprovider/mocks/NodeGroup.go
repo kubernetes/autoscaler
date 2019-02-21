@@ -16,7 +16,7 @@ limitations under the License.
 
 package mocks
 
-import cache "k8s.io/kubernetes/pkg/scheduler/cache"
+import cache "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 import cloudprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 import mock "github.com/stretchr/testify/mock"
 import v1 "k8s.io/api/core/v1"

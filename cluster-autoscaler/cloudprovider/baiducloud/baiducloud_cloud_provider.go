@@ -29,7 +29,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/klog"
-	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
+	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 )
 
 const (
@@ -304,13 +304,13 @@ func (asg *Asg) Nodes() ([]cloudprovider.Instance, error) {
 	return instances, nil
 }
 
-// TemplateNodeInfo returns a schedulercache.NodeInfo structure of an empty
+// TemplateNodeInfo returns a schedulernodeinfo.NodeInfo structure of an empty
 // (as if just started) node. This will be used in scale-up simulations to
 // predict what would a new node look like if a node group was expanded. The returned
 // NodeInfo is expected to have a fully populated Node object, with all of the labels,
 // capacity and allocatable information as well as all pods that are started on
 // the node by default, using manifest (most likely only kube-proxy). Implementation optional.
-func (asg *Asg) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
+func (asg *Asg) TemplateNodeInfo() (*schedulernodeinfo.NodeInfo, error) {
 	template, err := asg.baiducloudManager.getAsgTemplate(asg.Name)
 	if err != nil {
 		return nil, err
@@ -319,7 +319,7 @@ func (asg *Asg) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
 	if err != nil {
 		return nil, err
 	}
-	nodeInfo := schedulercache.NewNodeInfo(cloudprovider.BuildKubeProxy(asg.Name))
+	nodeInfo := schedulernodeinfo.NewNodeInfo(cloudprovider.BuildKubeProxy(asg.Name))
 	nodeInfo.SetNode(node)
 	return nodeInfo, nil
 }

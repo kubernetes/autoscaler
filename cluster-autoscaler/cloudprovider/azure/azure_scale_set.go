@@ -29,9 +29,10 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	cloudvolume "k8s.io/cloud-provider/volume"
 	"k8s.io/klog"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
-	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
+	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-10-01/compute"
 )
@@ -398,8 +399,8 @@ func buildGenericLabels(template compute.VirtualMachineScaleSet, nodeName string
 
 	result[kubeletapis.LabelArch] = cloudprovider.DefaultArch
 	result[kubeletapis.LabelOS] = buildInstanceOS(template)
-	result[kubeletapis.LabelInstanceType] = *template.Sku.Name
-	result[kubeletapis.LabelZoneRegion] = strings.ToLower(*template.Location)
+	result[apiv1.LabelInstanceType] = *template.Sku.Name
+	result[apiv1.LabelZoneRegion] = strings.ToLower(*template.Location)
 
 	if template.Zones != nil && len(*template.Zones) > 0 {
 		failureDomains := make([]string, len(*template.Zones))
@@ -407,12 +408,12 @@ func buildGenericLabels(template compute.VirtualMachineScaleSet, nodeName string
 			failureDomains[k] = strings.ToLower(*template.Location) + "-" + v
 		}
 
-		result[kubeletapis.LabelZoneFailureDomain] = strings.Join(failureDomains[:], kubeletapis.LabelMultiZoneDelimiter)
+		result[apiv1.LabelZoneFailureDomain] = strings.Join(failureDomains[:], cloudvolume.LabelMultiZoneDelimiter)
 	} else {
-		result[kubeletapis.LabelZoneFailureDomain] = "0"
+		result[apiv1.LabelZoneFailureDomain] = "0"
 	}
 
-	result[kubeletapis.LabelHostname] = nodeName
+	result[apiv1.LabelHostname] = nodeName
 	return result
 }
 
@@ -461,7 +462,7 @@ func (scaleSet *ScaleSet) buildNodeFromTemplate(template compute.VirtualMachineS
 }
 
 // TemplateNodeInfo returns a node template for this scale set.
-func (scaleSet *ScaleSet) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
+func (scaleSet *ScaleSet) TemplateNodeInfo() (*schedulernodeinfo.NodeInfo, error) {
 	template, err := scaleSet.getVMSSInfo()
 	if err != nil {
 		return nil, err
@@ -472,7 +473,7 @@ func (scaleSet *ScaleSet) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
 		return nil, err
 	}
 
-	nodeInfo := schedulercache.NewNodeInfo(cloudprovider.BuildKubeProxy(scaleSet.Name))
+	nodeInfo := schedulernodeinfo.NewNodeInfo(cloudprovider.BuildKubeProxy(scaleSet.Name))
 	nodeInfo.SetNode(node)
 	return nodeInfo, nil
 }

@@ -22,7 +22,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
-	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
+	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -64,11 +64,11 @@ func TestEstimate(t *testing.T) {
 			},
 		},
 	}
-	nodeInfo := schedulercache.NewNodeInfo()
+	nodeInfo := schedulernodeinfo.NewNodeInfo()
 	nodeInfo.SetNode(node)
 
 	estimator := NewBasicNodeEstimator()
-	estimate := estimator.Estimate(pods, nodeInfo, []*schedulercache.NodeInfo{})
+	estimate := estimator.Estimate(pods, nodeInfo, []*schedulernodeinfo.NodeInfo{})
 
 	// Check result.
 	assert.Equal(t, 3, estimate)
@@ -101,11 +101,11 @@ func TestEstimateWithComing(t *testing.T) {
 		},
 	}
 	node.Status.Allocatable = node.Status.Capacity
-	nodeInfo := schedulercache.NewNodeInfo()
+	nodeInfo := schedulernodeinfo.NewNodeInfo()
 	nodeInfo.SetNode(node)
 
 	estimator := NewBasicNodeEstimator()
-	estimate := estimator.Estimate(pods, nodeInfo, []*schedulercache.NodeInfo{nodeInfo, nodeInfo})
+	estimate := estimator.Estimate(pods, nodeInfo, []*schedulernodeinfo.NodeInfo{nodeInfo, nodeInfo})
 
 	// Check result.
 	assert.Equal(t, 1, estimate)
@@ -142,11 +142,11 @@ func TestEstimateWithPorts(t *testing.T) {
 			},
 		},
 	}
-	nodeInfo := schedulercache.NewNodeInfo()
+	nodeInfo := schedulernodeinfo.NewNodeInfo()
 	nodeInfo.SetNode(node)
 
 	estimator := NewBasicNodeEstimator()
-	estimate := estimator.Estimate(pods, nodeInfo, []*schedulercache.NodeInfo{})
+	estimate := estimator.Estimate(pods, nodeInfo, []*schedulernodeinfo.NodeInfo{})
 	assert.Contains(t, estimator.GetDebug(), "CPU")
 	assert.Equal(t, 5, estimate)
 }

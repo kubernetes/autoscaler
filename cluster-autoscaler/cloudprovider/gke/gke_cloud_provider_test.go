@@ -29,7 +29,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
-	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 
 	apiv1 "k8s.io/api/core/v1"
 
@@ -297,7 +296,7 @@ func TestMig(t *testing.T) {
 	// Test NewNodeGroup.
 	gkeManagerMock.On("GetProjectId").Return("project1").Once()
 	gkeManagerMock.On("GetMigTemplateNode", mock.AnythingOfType("*gke.GkeMig")).Return(&apiv1.Node{}, nil).Once()
-	systemLabels := map[string]string{kubeletapis.LabelZoneFailureDomain: "us-central1-b"}
+	systemLabels := map[string]string{apiv1.LabelZoneFailureDomain: "us-central1-b"}
 	nodeGroup, err := gke.NewNodeGroup("n1-standard-1", nil, systemLabels, nil, nil)
 	assert.NoError(t, err)
 	assert.NotNil(t, nodeGroup)
@@ -464,8 +463,8 @@ func TestNewNodeGroupForGpu(t *testing.T) {
 	gkeManagerMock.On("GetMigTemplateNode", mock.AnythingOfType("*gke.GkeMig")).Return(&apiv1.Node{}, nil).Once()
 
 	systemLabels := map[string]string{
-		gpu.GPULabel:                       gpu.DefaultGPUType,
-		kubeletapis.LabelZoneFailureDomain: "us-west1-b",
+		gpu.GPULabel:                 gpu.DefaultGPUType,
+		apiv1.LabelZoneFailureDomain: "us-west1-b",
 	}
 	extraResources := map[string]resource.Quantity{
 		gpu.ResourceNvidiaGPU: resource.MustParse("1"),

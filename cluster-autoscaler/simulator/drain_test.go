@@ -25,7 +25,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/kubernetes/pkg/kubelet/types"
-	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
+	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -39,7 +39,7 @@ func TestFastGetPodsToMove(t *testing.T) {
 			Namespace: "ns",
 		},
 	}
-	_, err := FastGetPodsToMove(schedulercache.NewNodeInfo(pod1), true, true, nil)
+	_, err := FastGetPodsToMove(schedulernodeinfo.NewNodeInfo(pod1), true, true, nil)
 	assert.Error(t, err)
 
 	// Replicated pod
@@ -50,7 +50,7 @@ func TestFastGetPodsToMove(t *testing.T) {
 			OwnerReferences: GenerateOwnerReferences("rs", "ReplicaSet", "extensions/v1beta1", ""),
 		},
 	}
-	r2, err := FastGetPodsToMove(schedulercache.NewNodeInfo(pod2), true, true, nil)
+	r2, err := FastGetPodsToMove(schedulernodeinfo.NewNodeInfo(pod2), true, true, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(r2))
 	assert.Equal(t, pod2, r2[0])
@@ -65,7 +65,7 @@ func TestFastGetPodsToMove(t *testing.T) {
 			},
 		},
 	}
-	r3, err := FastGetPodsToMove(schedulercache.NewNodeInfo(pod3), true, true, nil)
+	r3, err := FastGetPodsToMove(schedulernodeinfo.NewNodeInfo(pod3), true, true, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(r3))
 
@@ -77,7 +77,7 @@ func TestFastGetPodsToMove(t *testing.T) {
 			OwnerReferences: GenerateOwnerReferences("ds", "DaemonSet", "extensions/v1beta1", ""),
 		},
 	}
-	r4, err := FastGetPodsToMove(schedulercache.NewNodeInfo(pod2, pod3, pod4), true, true, nil)
+	r4, err := FastGetPodsToMove(schedulernodeinfo.NewNodeInfo(pod2, pod3, pod4), true, true, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(r4))
 	assert.Equal(t, pod2, r4[0])
@@ -90,7 +90,7 @@ func TestFastGetPodsToMove(t *testing.T) {
 			OwnerReferences: GenerateOwnerReferences("rs", "ReplicaSet", "extensions/v1beta1", ""),
 		},
 	}
-	_, err = FastGetPodsToMove(schedulercache.NewNodeInfo(pod5), true, true, nil)
+	_, err = FastGetPodsToMove(schedulernodeinfo.NewNodeInfo(pod5), true, true, nil)
 	assert.Error(t, err)
 
 	// Local storage
@@ -110,7 +110,7 @@ func TestFastGetPodsToMove(t *testing.T) {
 			},
 		},
 	}
-	_, err = FastGetPodsToMove(schedulercache.NewNodeInfo(pod6), true, true, nil)
+	_, err = FastGetPodsToMove(schedulernodeinfo.NewNodeInfo(pod6), true, true, nil)
 	assert.Error(t, err)
 
 	// Non-local storage
@@ -132,7 +132,7 @@ func TestFastGetPodsToMove(t *testing.T) {
 			},
 		},
 	}
-	r7, err := FastGetPodsToMove(schedulercache.NewNodeInfo(pod7), true, true, nil)
+	r7, err := FastGetPodsToMove(schedulernodeinfo.NewNodeInfo(pod7), true, true, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(r7))
 
@@ -167,7 +167,7 @@ func TestFastGetPodsToMove(t *testing.T) {
 		},
 	}
 
-	_, err = FastGetPodsToMove(schedulercache.NewNodeInfo(pod8), true, true, []*policyv1.PodDisruptionBudget{pdb8})
+	_, err = FastGetPodsToMove(schedulernodeinfo.NewNodeInfo(pod8), true, true, []*policyv1.PodDisruptionBudget{pdb8})
 	assert.Error(t, err)
 
 	// Pdb allowing
@@ -200,7 +200,7 @@ func TestFastGetPodsToMove(t *testing.T) {
 		},
 	}
 
-	r9, err := FastGetPodsToMove(schedulercache.NewNodeInfo(pod9), true, true, []*policyv1.PodDisruptionBudget{pdb9})
+	r9, err := FastGetPodsToMove(schedulernodeinfo.NewNodeInfo(pod9), true, true, []*policyv1.PodDisruptionBudget{pdb9})
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(r9))
 }

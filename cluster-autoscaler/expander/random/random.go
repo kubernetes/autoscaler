@@ -20,7 +20,7 @@ import (
 	"math/rand"
 
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
-	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
+	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 )
 
 type random struct {
@@ -32,7 +32,7 @@ func NewStrategy() expander.Strategy {
 }
 
 // RandomExpansion Selects from the expansion options at random
-func (r *random) BestOption(expansionOptions []expander.Option, nodeInfo map[string]*schedulercache.NodeInfo) *expander.Option {
+func (r *random) BestOption(expansionOptions []expander.Option, nodeInfo map[string]*schedulernodeinfo.NodeInfo) *expander.Option {
 	if len(expansionOptions) <= 0 {
 		return nil
 	}

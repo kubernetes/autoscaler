@@ -21,8 +21,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
-	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
+	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 )
 
 const (
@@ -36,7 +35,7 @@ const (
 
 // NodeInfoComparator is a function that tells if two nodes are from NodeGroups
 // similar enough to be considered a part of a single NodeGroupSet.
-type NodeInfoComparator func(n1, n2 *schedulercache.NodeInfo) bool
+type NodeInfoComparator func(n1, n2 *schedulernodeinfo.NodeInfo) bool
 
 func compareResourceMapsWithTolerance(resources map[apiv1.ResourceName][]resource.Quantity,
 	maxDifferenceRatio float64) bool {
@@ -58,11 +57,11 @@ func compareResourceMapsWithTolerance(resources map[apiv1.ResourceName][]resourc
 // somewhat arbitrary, but generally we check if resources provided by both nodes
 // are similar enough to likely be the same type of machine and if the set of labels
 // is the same (except for a pre-defined set of labels like hostname or zone).
-func IsNodeInfoSimilar(n1, n2 *schedulercache.NodeInfo) bool {
+func IsNodeInfoSimilar(n1, n2 *schedulernodeinfo.NodeInfo) bool {
 	capacity := make(map[apiv1.ResourceName][]resource.Quantity)
 	allocatable := make(map[apiv1.ResourceName][]resource.Quantity)
 	free := make(map[apiv1.ResourceName][]resource.Quantity)
-	nodes := []*schedulercache.NodeInfo{n1, n2}
+	nodes := []*schedulernodeinfo.NodeInfo{n1, n2}
 	for _, node := range nodes {
 		for res, quantity := range node.Node().Status.Capacity {
 			capacity[res] = append(capacity[res], quantity)
@@ -94,9 +93,9 @@ func IsNodeInfoSimilar(n1, n2 *schedulercache.NodeInfo) bool {
 	}
 
 	ignoredLabels := map[string]bool{
-		kubeletapis.LabelHostname:             true,
-		kubeletapis.LabelZoneFailureDomain:    true,
-		kubeletapis.LabelZoneRegion:           true,
+		apiv1.LabelHostname:                   true,
+		apiv1.LabelZoneFailureDomain:          true,
+		apiv1.LabelZoneRegion:                 true,
 		"beta.kubernetes.io/fluentd-ds-ready": true, // this is internal label used for determining if fluentd should be installed as deamon set. Used for migration 1.8 to 1.9.
 	}
 
