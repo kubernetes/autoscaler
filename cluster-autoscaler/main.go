@@ -31,7 +31,6 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	apiserverconfig "k8s.io/apiserver/pkg/apis/config"
-	kube_flag "k8s.io/apiserver/pkg/util/flag"
 	cloudBuilder "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/core"
@@ -48,6 +47,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/leaderelection"
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
+	kube_flag "k8s.io/component-base/cli/flag"
 	"k8s.io/kubernetes/pkg/client/leaderelectionconfig"
 
 	"github.com/prometheus/client_golang/prometheus"
