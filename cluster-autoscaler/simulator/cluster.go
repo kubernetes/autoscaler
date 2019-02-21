@@ -29,11 +29,11 @@ import (
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	scheduler_util "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/tpu"
+	"k8s.io/kubernetes/pkg/scheduler/algorithm/predicates"
 
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1beta1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/kubernetes/pkg/scheduler/algorithm"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 
 	"k8s.io/klog"
@@ -207,7 +207,7 @@ func findPlaceFor(removedNode string, pods []*apiv1.Pod, nodes []*apiv1.Node, no
 
 	loggingQuota := glogx.PodsLoggingQuota()
 
-	tryNodeForPod := func(nodename string, pod *apiv1.Pod, predicateMeta algorithm.PredicateMetadata) bool {
+	tryNodeForPod := func(nodename string, pod *apiv1.Pod, predicateMeta predicates.PredicateMetadata) bool {
 		nodeInfo, found := newNodeInfos[nodename]
 		if found {
 			if nodeInfo.Node() == nil {

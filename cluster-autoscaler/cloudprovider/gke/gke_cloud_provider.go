@@ -30,7 +30,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/klog"
-	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 )
 
@@ -126,7 +125,7 @@ func (gke *GkeCloudProvider) GetAvailableMachineTypes() ([]string, error) {
 func (gke *GkeCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string,
 	taints []apiv1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
 	nodePoolName := fmt.Sprintf("%s-%s-%d", nodeAutoprovisioningPrefix, machineType, time.Now().Unix())
-	zone, found := systemLabels[kubeletapis.LabelZoneFailureDomain]
+	zone, found := systemLabels[apiv1.LabelZoneFailureDomain]
 	if !found {
 		return nil, cloudprovider.ErrIllegalConfiguration
 	}

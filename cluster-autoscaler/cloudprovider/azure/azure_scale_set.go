@@ -29,6 +29,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
+	cloudvolume "k8s.io/cloud-provider/volume"
 	"k8s.io/klog"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
@@ -395,8 +396,8 @@ func buildGenericLabels(template compute.VirtualMachineScaleSet, nodeName string
 
 	result[kubeletapis.LabelArch] = cloudprovider.DefaultArch
 	result[kubeletapis.LabelOS] = buildInstanceOS(template)
-	result[kubeletapis.LabelInstanceType] = *template.Sku.Name
-	result[kubeletapis.LabelZoneRegion] = strings.ToLower(*template.Location)
+	result[apiv1.LabelInstanceType] = *template.Sku.Name
+	result[apiv1.LabelZoneRegion] = strings.ToLower(*template.Location)
 
 	if template.Zones != nil && len(*template.Zones) > 0 {
 		failureDomains := make([]string, len(*template.Zones))
@@ -404,12 +405,12 @@ func buildGenericLabels(template compute.VirtualMachineScaleSet, nodeName string
 			failureDomains[k] = strings.ToLower(*template.Location) + "-" + v
 		}
 
-		result[kubeletapis.LabelZoneFailureDomain] = strings.Join(failureDomains[:], kubeletapis.LabelMultiZoneDelimiter)
+		result[apiv1.LabelZoneFailureDomain] = strings.Join(failureDomains[:], cloudvolume.LabelMultiZoneDelimiter)
 	} else {
-		result[kubeletapis.LabelZoneFailureDomain] = "0"
+		result[apiv1.LabelZoneFailureDomain] = "0"
 	}
 
-	result[kubeletapis.LabelHostname] = nodeName
+	result[apiv1.LabelHostname] = nodeName
 	return result
 }
 

@@ -43,7 +43,6 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
-	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 
 	"k8s.io/klog"
@@ -432,7 +431,7 @@ func sanitizeTemplateNode(node *apiv1.Node, nodeGroup string) (*apiv1.Node, erro
 	nodeName := fmt.Sprintf("template-node-for-%s-%d", nodeGroup, rand.Int63())
 	newNode.Labels = make(map[string]string, len(node.Labels))
 	for k, v := range node.Labels {
-		if k != kubeletapis.LabelHostname {
+		if k != apiv1.LabelHostname {
 			newNode.Labels[k] = v
 		} else {
 			newNode.Labels[k] = nodeName
