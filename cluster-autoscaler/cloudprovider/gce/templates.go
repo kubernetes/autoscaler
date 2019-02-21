@@ -179,14 +179,14 @@ func BuildGenericLabels(ref GceRef, machineType string, nodeName string) (map[st
 	result[kubeletapis.LabelArch] = cloudprovider.DefaultArch
 	result[kubeletapis.LabelOS] = cloudprovider.DefaultOS
 
-	result[kubeletapis.LabelInstanceType] = machineType
+	result[apiv1.LabelInstanceType] = machineType
 	ix := strings.LastIndex(ref.Zone, "-")
 	if ix == -1 {
 		return nil, fmt.Errorf("unexpected zone: %s", ref.Zone)
 	}
-	result[kubeletapis.LabelZoneRegion] = ref.Zone[:ix]
-	result[kubeletapis.LabelZoneFailureDomain] = ref.Zone
-	result[kubeletapis.LabelHostname] = nodeName
+	result[apiv1.LabelZoneRegion] = ref.Zone[:ix]
+	result[apiv1.LabelZoneFailureDomain] = ref.Zone
+	result[apiv1.LabelHostname] = nodeName
 	return result, nil
 }
 

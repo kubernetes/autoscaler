@@ -1,5 +1,8 @@
-commit 416974b8346bb1c219efe871c18a9f29de4fad2d (origin/master, origin/HEAD)
-Author: Anago GCB <nobody@k8s.io>
-Date:   Mon Nov 26 14:16:47 2018 +0000
+commit 8d69dc630ba66d05ad95146583a7482ed1eb3f82 (HEAD, tag: v1.15.0-alpha.0)
+Merge: d61e878533 f64baf755e
+Author: Kubernetes Prow Robot <k8s-ci-robot@users.noreply.github.com>
+Date:   Tue Feb 19 04:55:32 2019 -0800
 
-    Update CHANGELOG-1.12.md for v1.12.3.
+    Merge pull request #74025 from rosti/deprecated-configs
+    
+    kubeadm: Don't load deprecated configs

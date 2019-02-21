@@ -38,7 +38,7 @@ func (sf SenderFunc) Do(r *http.Request) (*http.Response, error) {
 	return sf(r)
 }
 
-// SendDecorator takes and possibility decorates, by wrapping, a Sender. Decorators may affect the
+// SendDecorator takes and possibily decorates, by wrapping, a Sender. Decorators may affect the
 // http.Request and pass it along or, first, pass the http.Request along then react to the
 // http.Response result.
 type SendDecorator func(Sender) Sender
@@ -234,7 +234,7 @@ func DoRetryForStatusCodes(attempts int, backoff time.Duration, codes ...int) Se
 				}
 				delayed := DelayWithRetryAfter(resp, r.Context().Done())
 				if !delayed && !DelayForBackoff(backoff, attempt, r.Context().Done()) {
-					return nil, r.Context().Err()
+					return resp, r.Context().Err()
 				}
 				// don't count a 429 against the number of attempts
 				// so that we continue to retry until it succeeds

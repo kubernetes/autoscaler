@@ -8,8 +8,6 @@ go_library(
         "helper.go",
         "log_metrics_provider.go",
         "stats_provider.go",
-        "stats_provider_linux.go",
-        "stats_provider_unsupported.go",
     ],
     importpath = "k8s.io/kubernetes/pkg/kubelet/stats",
     visibility = ["//visibility:public"],
@@ -24,6 +22,8 @@ go_library(
         "//pkg/kubelet/leaky:go_default_library",
         "//pkg/kubelet/pod:go_default_library",
         "//pkg/kubelet/server/stats:go_default_library",
+        "//pkg/kubelet/stats/pidlimit:go_default_library",
+        "//pkg/kubelet/status:go_default_library",
         "//pkg/kubelet/types:go_default_library",
         "//pkg/volume:go_default_library",
         "//staging/src/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
@@ -44,7 +44,10 @@ filegroup(
 
 filegroup(
     name = "all-srcs",
-    srcs = [":package-srcs"],
+    srcs = [
+        ":package-srcs",
+        "//pkg/kubelet/stats/pidlimit:all-srcs",
+    ],
     tags = ["automanaged"],
     visibility = ["//visibility:public"],
 )
@@ -71,8 +74,10 @@ go_test(
         "//pkg/kubelet/leaky:go_default_library",
         "//pkg/kubelet/pod/testing:go_default_library",
         "//pkg/kubelet/server/stats:go_default_library",
+        "//pkg/kubelet/status/testing:go_default_library",
         "//pkg/kubelet/types:go_default_library",
         "//pkg/volume:go_default_library",
+        "//staging/src/k8s.io/api/core/v1:go_default_library",
         "//staging/src/k8s.io/apimachinery/pkg/api/resource:go_default_library",
         "//staging/src/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//staging/src/k8s.io/apimachinery/pkg/types:go_default_library",
