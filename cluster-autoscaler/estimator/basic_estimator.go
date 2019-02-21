@@ -24,7 +24,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/klog"
-	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
+	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 )
 
 const basicEstimatorDeprecationMessage = "WARNING: basic estimator is deprecated. It will be removed in Cluster Autoscaler 1.5."
@@ -98,7 +98,7 @@ func (basicEstimator *BasicNodeEstimator) GetDebug() string {
 }
 
 // Estimate estimates the number needed of nodes of the given shape.
-func (basicEstimator *BasicNodeEstimator) Estimate(pods []*apiv1.Pod, nodeInfo *schedulercache.NodeInfo, upcomingNodes []*schedulercache.NodeInfo) int {
+func (basicEstimator *BasicNodeEstimator) Estimate(pods []*apiv1.Pod, nodeInfo *schedulernodeinfo.NodeInfo, upcomingNodes []*schedulernodeinfo.NodeInfo) int {
 	for _, pod := range pods {
 		basicEstimator.Add(pod)
 	}

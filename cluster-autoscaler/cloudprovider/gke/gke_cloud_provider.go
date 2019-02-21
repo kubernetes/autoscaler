@@ -31,7 +31,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/klog"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
-	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
+	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 )
 
 const (
@@ -406,12 +406,12 @@ func (mig *GkeMig) Autoprovisioned() bool {
 }
 
 // TemplateNodeInfo returns a node template for this node group.
-func (mig *GkeMig) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
+func (mig *GkeMig) TemplateNodeInfo() (*schedulernodeinfo.NodeInfo, error) {
 	node, err := mig.gkeManager.GetMigTemplateNode(mig)
 	if err != nil {
 		return nil, err
 	}
-	nodeInfo := schedulercache.NewNodeInfo(cloudprovider.BuildKubeProxy(mig.Id()))
+	nodeInfo := schedulernodeinfo.NewNodeInfo(cloudprovider.BuildKubeProxy(mig.Id()))
 	nodeInfo.SetNode(node)
 	return nodeInfo, nil
 }

@@ -22,7 +22,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/klog"
-	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
+	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 )
 
 const (
@@ -41,7 +41,7 @@ var AvailableEstimators = []string{BinpackingEstimatorName, deprecated(BasicEsti
 
 // Estimator calculates the number of nodes of given type needed to schedule pods.
 type Estimator interface {
-	Estimate([]*apiv1.Pod, *schedulercache.NodeInfo, []*schedulercache.NodeInfo) int
+	Estimate([]*apiv1.Pod, *schedulernodeinfo.NodeInfo, []*schedulernodeinfo.NodeInfo) int
 }
 
 // EstimatorBuilder creates a new estimator object.

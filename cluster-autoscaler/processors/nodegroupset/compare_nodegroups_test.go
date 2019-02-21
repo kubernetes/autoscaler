@@ -24,7 +24,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
-	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
+	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -34,9 +34,9 @@ func checkNodesSimilar(t *testing.T, n1, n2 *apiv1.Node, comparator NodeInfoComp
 }
 
 func checkNodesSimilarWithPods(t *testing.T, n1, n2 *apiv1.Node, pods1, pods2 []*apiv1.Pod, comparator NodeInfoComparator, shouldEqual bool) {
-	ni1 := schedulercache.NewNodeInfo(pods1...)
+	ni1 := schedulernodeinfo.NewNodeInfo(pods1...)
 	ni1.SetNode(n1)
-	ni2 := schedulercache.NewNodeInfo(pods2...)
+	ni2 := schedulernodeinfo.NewNodeInfo(pods2...)
 	ni2.SetNode(n2)
 	assert.Equal(t, shouldEqual, comparator(ni1, ni2))
 }

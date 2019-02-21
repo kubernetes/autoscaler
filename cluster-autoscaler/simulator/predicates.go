@@ -26,7 +26,7 @@ import (
 	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/kubernetes/pkg/scheduler/algorithm"
 	"k8s.io/kubernetes/pkg/scheduler/algorithm/predicates"
-	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
+	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 	"k8s.io/kubernetes/pkg/scheduler/factory"
 
 	// We need to import provider to initialize default scheduler.
@@ -132,7 +132,7 @@ func NewPredicateChecker(kubeClient kube_client.Interface, stop <-chan struct{})
 	}, nil
 }
 
-func isNodeReadyAndSchedulablePredicate(pod *apiv1.Pod, meta algorithm.PredicateMetadata, nodeInfo *schedulercache.NodeInfo) (bool,
+func isNodeReadyAndSchedulablePredicate(pod *apiv1.Pod, meta algorithm.PredicateMetadata, nodeInfo *schedulernodeinfo.NodeInfo) (bool,
 	[]algorithm.PredicateFailureReason, error) {
 	ready := kube_util.IsNodeReadyAndSchedulable(nodeInfo.Node())
 	if !ready {
@@ -148,7 +148,7 @@ func NewTestPredicateChecker() *PredicateChecker {
 			{name: "default", predicate: predicates.GeneralPredicates},
 			{name: "ready", predicate: isNodeReadyAndSchedulablePredicate},
 		},
-		predicateMetadataProducer: func(_ *apiv1.Pod, _ map[string]*schedulercache.NodeInfo) algorithm.PredicateMetadata {
+		predicateMetadataProducer: func(_ *apiv1.Pod, _ map[string]*schedulernodeinfo.NodeInfo) algorithm.PredicateMetadata {
 			return nil
 		},
 	}
@@ -172,7 +172,7 @@ func (p *PredicateChecker) IsAffinityPredicateEnabled() bool {
 // improve the performance of running predicates, especially MatchInterPodAffinity predicate. However, calculating
 // predicateMetadata is also quite expensive, so it's not always the best option to run this method.
 // Please refer to https://github.com/kubernetes/autoscaler/issues/257 for more details.
-func (p *PredicateChecker) GetPredicateMetadata(pod *apiv1.Pod, nodeInfos map[string]*schedulercache.NodeInfo) algorithm.PredicateMetadata {
+func (p *PredicateChecker) GetPredicateMetadata(pod *apiv1.Pod, nodeInfos map[string]*schedulernodeinfo.NodeInfo) algorithm.PredicateMetadata {
 	// Skip precomputation if affinity predicate is disabled - it's not worth it performance-wise.
 	if !p.enableAffinityPredicate {
 		return nil
@@ -181,7 +181,7 @@ func (p *PredicateChecker) GetPredicateMetadata(pod *apiv1.Pod, nodeInfos map[st
 }
 
 // FitsAny checks if the given pod can be place on any of the given nodes.
-func (p *PredicateChecker) FitsAny(pod *apiv1.Pod, nodeInfos map[string]*schedulercache.NodeInfo) (string, error) {
+func (p *PredicateChecker) FitsAny(pod *apiv1.Pod, nodeInfos map[string]*schedulernodeinfo.NodeInfo) (string, error) {
 	for name, nodeInfo := range nodeInfos {
 		// Be sure that the node is schedulable.
 		if nodeInfo.Node().Spec.Unschedulable {
@@ -268,7 +268,7 @@ func (pe *PredicateError) PredicateName() string {
 // it was calculated using NodeInfo map representing different cluster state and the
 // performance gains of CheckPredicates won't always offset the cost of GetPredicateMetadata.
 // Alternatively you can pass nil as predicateMetadata.
-func (p *PredicateChecker) CheckPredicates(pod *apiv1.Pod, predicateMetadata algorithm.PredicateMetadata, nodeInfo *schedulercache.NodeInfo) *PredicateError {
+func (p *PredicateChecker) CheckPredicates(pod *apiv1.Pod, predicateMetadata algorithm.PredicateMetadata, nodeInfo *schedulernodeinfo.NodeInfo) *PredicateError {
 	for _, predInfo := range p.predicates {
 		// Skip affinity predicate if it has been disabled.
 		if !p.enableAffinityPredicate && predInfo.name == affinityPredicateName {
