@@ -37,7 +37,6 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 	kube_record "k8s.io/client-go/tools/record"
 	"k8s.io/kubernetes/pkg/api/testapi"
-	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 
 	"github.com/stretchr/testify/assert"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
@@ -628,15 +627,15 @@ func TestSanitizeNodeInfo(t *testing.T) {
 func TestSanitizeLabels(t *testing.T) {
 	oldNode := BuildTestNode("ng1-1", 1000, 1000)
 	oldNode.Labels = map[string]string{
-		kubeletapis.LabelHostname: "abc",
-		"x":                       "y",
+		apiv1.LabelHostname: "abc",
+		"x":                 "y",
 	}
 	node, err := sanitizeTemplateNode(oldNode, "bzium")
 	assert.NoError(t, err)
-	assert.NotEqual(t, node.Labels[kubeletapis.LabelHostname], "abc")
+	assert.NotEqual(t, node.Labels[apiv1.LabelHostname], "abc")
 	assert.Equal(t, node.Labels["x"], "y")
 	assert.NotEqual(t, node.Name, oldNode.Name)
-	assert.Equal(t, node.Labels[kubeletapis.LabelHostname], node.Name)
+	assert.Equal(t, node.Labels[apiv1.LabelHostname], node.Name)
 }
 
 func TestSanitizeTaints(t *testing.T) {
