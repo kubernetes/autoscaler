@@ -23,7 +23,7 @@ import (
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
-	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
+	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -76,12 +76,12 @@ func TestFindSimilarNodeGroupsGkeByLabel(t *testing.T) {
 	provider.AddNode("ng1", n1)
 	provider.AddNode("ng2", n2)
 
-	ni1 := schedulercache.NewNodeInfo()
+	ni1 := schedulernodeinfo.NewNodeInfo()
 	ni1.SetNode(n1)
-	ni2 := schedulercache.NewNodeInfo()
+	ni2 := schedulernodeinfo.NewNodeInfo()
 	ni2.SetNode(n2)
 
-	nodeInfosForGroups := map[string]*schedulercache.NodeInfo{
+	nodeInfosForGroups := map[string]*schedulernodeinfo.NodeInfo{
 		"ng1": ni1, "ng2": ni2,
 	}
 

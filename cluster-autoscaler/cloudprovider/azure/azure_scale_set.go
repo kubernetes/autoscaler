@@ -31,7 +31,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/klog"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
-	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
+	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-10-01/compute"
 )
@@ -458,7 +458,7 @@ func (scaleSet *ScaleSet) buildNodeFromTemplate(template compute.VirtualMachineS
 }
 
 // TemplateNodeInfo returns a node template for this scale set.
-func (scaleSet *ScaleSet) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
+func (scaleSet *ScaleSet) TemplateNodeInfo() (*schedulernodeinfo.NodeInfo, error) {
 	template, err := scaleSet.getVMSSInfo()
 	if err != nil {
 		return nil, err
@@ -469,7 +469,7 @@ func (scaleSet *ScaleSet) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
 		return nil, err
 	}
 
-	nodeInfo := schedulercache.NewNodeInfo(cloudprovider.BuildKubeProxy(scaleSet.Name))
+	nodeInfo := schedulernodeinfo.NewNodeInfo(cloudprovider.BuildKubeProxy(scaleSet.Name))
 	nodeInfo.SetNode(node)
 	return nodeInfo, nil
 }

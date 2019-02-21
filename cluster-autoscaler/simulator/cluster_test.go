@@ -25,7 +25,7 @@ import (
 	policyv1 "k8s.io/api/policy/v1beta1"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/kubernetes/pkg/kubelet/types"
-	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
+	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -34,7 +34,7 @@ func TestUtilization(t *testing.T) {
 	pod := BuildTestPod("p1", 100, 200000)
 	pod2 := BuildTestPod("p2", -1, -1)
 
-	nodeInfo := schedulercache.NewNodeInfo(pod, pod, pod2)
+	nodeInfo := schedulernodeinfo.NewNodeInfo(pod, pod, pod2)
 	node := BuildTestNode("node1", 2000, 2000000)
 	SetNodeReadyState(node, true, time.Time{})
 
@@ -50,12 +50,12 @@ func TestUtilization(t *testing.T) {
 	daemonSetPod3 := BuildTestPod("p3", 100, 200000)
 	daemonSetPod3.OwnerReferences = GenerateOwnerReferences("ds", "DaemonSet", "apps/v1", "")
 
-	nodeInfo = schedulercache.NewNodeInfo(pod, pod, pod2, daemonSetPod3)
+	nodeInfo = schedulernodeinfo.NewNodeInfo(pod, pod, pod2, daemonSetPod3)
 	utilInfo, err = CalculateUtilization(node, nodeInfo, true, false)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 2.0/10, utilInfo.Utilization, 0.01)
 
-	nodeInfo = schedulercache.NewNodeInfo(pod, pod2, daemonSetPod3)
+	nodeInfo = schedulernodeinfo.NewNodeInfo(pod, pod2, daemonSetPod3)
 	utilInfo, err = CalculateUtilization(node, nodeInfo, false, false)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 2.0/10, utilInfo.Utilization, 0.01)
@@ -65,12 +65,12 @@ func TestUtilization(t *testing.T) {
 		types.ConfigMirrorAnnotationKey: "",
 	}
 
-	nodeInfo = schedulercache.NewNodeInfo(pod, pod, pod2, mirrorPod4)
+	nodeInfo = schedulernodeinfo.NewNodeInfo(pod, pod, pod2, mirrorPod4)
 	utilInfo, err = CalculateUtilization(node, nodeInfo, false, true)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 2.0/10, utilInfo.Utilization, 0.01)
 
-	nodeInfo = schedulercache.NewNodeInfo(pod, pod2, mirrorPod4)
+	nodeInfo = schedulernodeinfo.NewNodeInfo(pod, pod2, mirrorPod4)
 	utilInfo, err = CalculateUtilization(node, nodeInfo, false, false)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 2.0/10, utilInfo.Utilization, 0.01)
@@ -81,9 +81,9 @@ func TestFindPlaceAllOk(t *testing.T) {
 	new1 := BuildTestPod("p2", 600, 500000)
 	new2 := BuildTestPod("p3", 500, 500000)
 
-	nodeInfos := map[string]*schedulercache.NodeInfo{
-		"n1": schedulercache.NewNodeInfo(pod1),
-		"n2": schedulercache.NewNodeInfo(),
+	nodeInfos := map[string]*schedulernodeinfo.NodeInfo{
+		"n1": schedulernodeinfo.NewNodeInfo(pod1),
+		"n2": schedulernodeinfo.NewNodeInfo(),
 	}
 	node1 := BuildTestNode("n1", 1000, 2000000)
 	SetNodeReadyState(node1, true, time.Time{})
@@ -115,10 +115,10 @@ func TestFindPlaceAllBas(t *testing.T) {
 	new2 := BuildTestPod("p3", 500, 500000)
 	new3 := BuildTestPod("p4", 700, 500000)
 
-	nodeInfos := map[string]*schedulercache.NodeInfo{
-		"n1":   schedulercache.NewNodeInfo(pod1),
-		"n2":   schedulercache.NewNodeInfo(),
-		"nbad": schedulercache.NewNodeInfo(),
+	nodeInfos := map[string]*schedulernodeinfo.NodeInfo{
+		"n1":   schedulernodeinfo.NewNodeInfo(pod1),
+		"n2":   schedulernodeinfo.NewNodeInfo(),
+		"nbad": schedulernodeinfo.NewNodeInfo(),
 	}
 	nodebad := BuildTestNode("nbad", 1000, 2000000)
 	node1 := BuildTestNode("n1", 1000, 2000000)
@@ -151,9 +151,9 @@ func TestFindPlaceAllBas(t *testing.T) {
 func TestFindNone(t *testing.T) {
 	pod1 := BuildTestPod("p1", 300, 500000)
 
-	nodeInfos := map[string]*schedulercache.NodeInfo{
-		"n1": schedulercache.NewNodeInfo(pod1),
-		"n2": schedulercache.NewNodeInfo(),
+	nodeInfos := map[string]*schedulernodeinfo.NodeInfo{
+		"n1": schedulernodeinfo.NewNodeInfo(pod1),
+		"n2": schedulernodeinfo.NewNodeInfo(),
 	}
 	node1 := BuildTestNode("n1", 1000, 2000000)
 	SetNodeReadyState(node1, true, time.Time{})

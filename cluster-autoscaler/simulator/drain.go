@@ -26,7 +26,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
-	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
+	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 )
 
 // FastGetPodsToMove returns a list of pods that should be moved elsewhere if the node
@@ -34,7 +34,7 @@ import (
 // Based on kubectl drain code. It makes an assumption that RC, DS, Jobs and RS were deleted
 // along with their pods (no abandoned pods with dangling created-by annotation). Useful for fast
 // checks.
-func FastGetPodsToMove(nodeInfo *schedulercache.NodeInfo, skipNodesWithSystemPods bool, skipNodesWithLocalStorage bool,
+func FastGetPodsToMove(nodeInfo *schedulernodeinfo.NodeInfo, skipNodesWithSystemPods bool, skipNodesWithLocalStorage bool,
 	pdbs []*policyv1.PodDisruptionBudget) ([]*apiv1.Pod, error) {
 	pods, err := drain.GetPodsForDeletionOnNodeDrain(
 		nodeInfo.Pods(),
@@ -61,7 +61,7 @@ func FastGetPodsToMove(nodeInfo *schedulercache.NodeInfo, skipNodesWithSystemPod
 // is drained. Raises error if there is an unreplicated pod.
 // Based on kubectl drain code. It checks whether RC, DS, Jobs and RS that created these pods
 // still exist.
-func DetailedGetPodsForMove(nodeInfo *schedulercache.NodeInfo, skipNodesWithSystemPods bool,
+func DetailedGetPodsForMove(nodeInfo *schedulernodeinfo.NodeInfo, skipNodesWithSystemPods bool,
 	skipNodesWithLocalStorage bool, listers kube_util.ListerRegistry, minReplicaCount int32,
 	pdbs []*policyv1.PodDisruptionBudget) ([]*apiv1.Pod, error) {
 	pods, err := drain.GetPodsForDeletionOnNodeDrain(
