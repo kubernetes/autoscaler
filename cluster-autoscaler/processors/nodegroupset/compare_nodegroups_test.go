@@ -23,7 +23,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
-	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 
 	"github.com/stretchr/testify/assert"
@@ -112,13 +111,13 @@ func TestNodesSimilarVariousLabels(t *testing.T) {
 	checkNodesSimilar(t, n1, n2, IsNodeInfoSimilar, true)
 
 	// Different hostname labels shouldn't matter
-	n1.ObjectMeta.Labels[kubeletapis.LabelHostname] = "node1"
-	n2.ObjectMeta.Labels[kubeletapis.LabelHostname] = "node2"
+	n1.ObjectMeta.Labels[apiv1.LabelHostname] = "node1"
+	n2.ObjectMeta.Labels[apiv1.LabelHostname] = "node2"
 	checkNodesSimilar(t, n1, n2, IsNodeInfoSimilar, true)
 
 	// Different zone shouldn't matter either
-	n1.ObjectMeta.Labels[kubeletapis.LabelZoneFailureDomain] = "mars-olympus-mons1-b"
-	n2.ObjectMeta.Labels[kubeletapis.LabelZoneFailureDomain] = "us-houston1-a"
+	n1.ObjectMeta.Labels[apiv1.LabelZoneFailureDomain] = "mars-olympus-mons1-b"
+	n2.ObjectMeta.Labels[apiv1.LabelZoneFailureDomain] = "us-houston1-a"
 	checkNodesSimilar(t, n1, n2, IsNodeInfoSimilar, true)
 
 	// Different beta.kubernetes.io/fluentd-ds-ready should not matter
