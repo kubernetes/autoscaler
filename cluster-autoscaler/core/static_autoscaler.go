@@ -40,7 +40,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/tpu"
 
 	"k8s.io/klog"
-	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
+	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 )
 
 const (
@@ -68,7 +68,7 @@ type StaticAutoscaler struct {
 	processors              *ca_processors.AutoscalingProcessors
 	initialized             bool
 	// Caches nodeInfo computed for previously seen nodes
-	nodeInfoCache map[string]*schedulercache.NodeInfo
+	nodeInfoCache map[string]*schedulernodeinfo.NodeInfo
 }
 
 // NewStaticAutoscaler creates an instance of Autoscaler filled with provided parameters
@@ -101,7 +101,7 @@ func NewStaticAutoscaler(
 		scaleDown:               scaleDown,
 		processors:              processors,
 		clusterStateRegistry:    clusterStateRegistry,
-		nodeInfoCache:           make(map[string]*schedulercache.NodeInfo),
+		nodeInfoCache:           make(map[string]*schedulernodeinfo.NodeInfo),
 	}
 }
 
@@ -536,7 +536,7 @@ func (a *StaticAutoscaler) actOnEmptyCluster(allNodes, readyNodes []*apiv1.Node,
 	return false
 }
 
-func (a *StaticAutoscaler) updateClusterState(allNodes []*apiv1.Node, nodeInfosForGroups map[string]*schedulercache.NodeInfo, currentTime time.Time) errors.AutoscalerError {
+func (a *StaticAutoscaler) updateClusterState(allNodes []*apiv1.Node, nodeInfosForGroups map[string]*schedulernodeinfo.NodeInfo, currentTime time.Time) errors.AutoscalerError {
 	err := a.AutoscalingContext.CloudProvider.Refresh()
 	if err != nil {
 		klog.Errorf("Failed to refresh cloud provider config: %v", err)

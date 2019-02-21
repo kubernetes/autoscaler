@@ -17,13 +17,13 @@ limitations under the License.
 package nodegroupset
 
 import (
-	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
+	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 )
 
 // GkeNodepoolLabel is a label specifying GKE node pool particular node belongs to.
 const GkeNodepoolLabel = "cloud.google.com/gke-nodepool"
 
-func nodesFromSameGkeNodePool(n1, n2 *schedulercache.NodeInfo) bool {
+func nodesFromSameGkeNodePool(n1, n2 *schedulernodeinfo.NodeInfo) bool {
 	n1GkeNodePool := n1.Node().Labels[GkeNodepoolLabel]
 	n2GkeNodePool := n2.Node().Labels[GkeNodepoolLabel]
 	return n1GkeNodePool != "" && n1GkeNodePool == n2GkeNodePool
@@ -32,7 +32,7 @@ func nodesFromSameGkeNodePool(n1, n2 *schedulercache.NodeInfo) bool {
 // IsGkeNodeInfoSimilar compares if two nodes should be considered part of the
 // same NodeGroupSet. This is true if they either belong to the same GKE nodepool
 // or match usual conditions checked by IsNodeInfoSimilar.
-func IsGkeNodeInfoSimilar(n1, n2 *schedulercache.NodeInfo) bool {
+func IsGkeNodeInfoSimilar(n1, n2 *schedulernodeinfo.NodeInfo) bool {
 	if nodesFromSameGkeNodePool(n1, n2) {
 		return true
 	}

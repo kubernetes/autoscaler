@@ -40,7 +40,7 @@ import (
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 
 	"github.com/stretchr/testify/assert"
-	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
+	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 )
 
 const MiB = 1024 * 1024
@@ -354,7 +354,7 @@ func TestFilterSchedulablePodsForNode(t *testing.T) {
 
 	tn := BuildTestNode("T1-abc", 2000, 2000000)
 	SetNodeReadyState(tn, true, time.Time{})
-	tni := schedulercache.NewNodeInfo()
+	tni := schedulernodeinfo.NewNodeInfo()
 	tni.SetNode(tn)
 
 	context := &context.AutoscalingContext{
@@ -389,13 +389,13 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 	SetNodeReadyState(unready4, false, time.Now())
 
 	tn := BuildTestNode("tn", 5000, 5000)
-	tni := schedulercache.NewNodeInfo()
+	tni := schedulernodeinfo.NewNodeInfo()
 	tni.SetNode(tn)
 
 	// Cloud provider with TemplateNodeInfo implemented.
 	provider1 := testprovider.NewTestAutoprovisioningCloudProvider(
 		nil, nil, nil, nil, nil,
-		map[string]*schedulercache.NodeInfo{"ng3": tni, "ng4": tni})
+		map[string]*schedulernodeinfo.NodeInfo{"ng3": tni, "ng4": tni})
 	provider1.AddNodeGroup("ng1", 1, 10, 1) // Nodegroup with ready node.
 	provider1.AddNode("ng1", ready1)
 	provider1.AddNodeGroup("ng2", 1, 10, 1) // Nodegroup with ready and unready node.
@@ -453,7 +453,7 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 	SetNodeReadyState(ready6, true, time.Now())
 
 	tn := BuildTestNode("tn", 10000, 10000)
-	tni := schedulercache.NewNodeInfo()
+	tni := schedulernodeinfo.NewNodeInfo()
 	tni.SetNode(tn)
 
 	lastDeletedGroup := ""
@@ -465,7 +465,7 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 	// Cloud provider with TemplateNodeInfo implemented.
 	provider1 := testprovider.NewTestAutoprovisioningCloudProvider(
 		nil, nil, nil, onDeleteGroup, nil,
-		map[string]*schedulercache.NodeInfo{"ng3": tni, "ng4": tni})
+		map[string]*schedulernodeinfo.NodeInfo{"ng3": tni, "ng4": tni})
 	provider1.AddNodeGroup("ng1", 1, 10, 1) // Nodegroup with ready node.
 	provider1.AddNode("ng1", ready1)
 	provider1.AddNodeGroup("ng2", 1, 10, 1) // Nodegroup with ready and unready node.
@@ -482,7 +482,7 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 
 	predicateChecker := simulator.NewTestPredicateChecker()
 
-	nodeInfoCache := make(map[string]*schedulercache.NodeInfo)
+	nodeInfoCache := make(map[string]*schedulernodeinfo.NodeInfo)
 
 	// Fill cache
 	res, err := getNodeInfosForGroups([]*apiv1.Node{unready4, unready3, ready2, ready1}, nodeInfoCache,
@@ -540,10 +540,10 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 	assert.False(t, found)
 
 	// Fill cache manually
-	infoNg4Node6 := schedulercache.NewNodeInfo()
+	infoNg4Node6 := schedulernodeinfo.NewNodeInfo()
 	err2 := infoNg4Node6.SetNode(ready6.DeepCopy())
 	assert.NoError(t, err2)
-	nodeInfoCache = map[string]*schedulercache.NodeInfo{"ng4": infoNg4Node6}
+	nodeInfoCache = map[string]*schedulernodeinfo.NodeInfo{"ng4": infoNg4Node6}
 	// Check if cache was used
 	res, err = getNodeInfosForGroups([]*apiv1.Node{ready1, ready2}, nodeInfoCache,
 		provider1, registry, []*appsv1.DaemonSet{}, predicateChecker)
@@ -617,7 +617,7 @@ func TestSanitizeNodeInfo(t *testing.T) {
 
 	node := BuildTestNode("node", 1000, 1000)
 
-	nodeInfo := schedulercache.NewNodeInfo(pod)
+	nodeInfo := schedulernodeinfo.NewNodeInfo(pod)
 	nodeInfo.SetNode(node)
 
 	res, err := sanitizeNodeInfo(nodeInfo, "test-group")

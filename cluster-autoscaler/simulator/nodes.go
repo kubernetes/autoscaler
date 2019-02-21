@@ -24,7 +24,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
-	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
+	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 )
 
 // GetRequiredPodsForNode returns a list of pods that would appear on the node if the
@@ -75,12 +75,12 @@ func GetRequiredPodsForNode(nodename string, listers kube_util.ListerRegistry) (
 }
 
 // BuildNodeInfoForNode build a NodeInfo structure for the given node as if the node was just created.
-func BuildNodeInfoForNode(node *apiv1.Node, listers kube_util.ListerRegistry) (*schedulercache.NodeInfo, errors.AutoscalerError) {
+func BuildNodeInfoForNode(node *apiv1.Node, listers kube_util.ListerRegistry) (*schedulernodeinfo.NodeInfo, errors.AutoscalerError) {
 	requiredPods, err := GetRequiredPodsForNode(node.Name, listers)
 	if err != nil {
 		return nil, err
 	}
-	result := schedulercache.NewNodeInfo(requiredPods...)
+	result := schedulernodeinfo.NewNodeInfo(requiredPods...)
 	if err := result.SetNode(node); err != nil {
 		return nil, errors.ToAutoscalerError(errors.InternalError, err)
 	}

@@ -22,7 +22,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/random"
 	"k8s.io/klog"
-	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
+	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 )
 
 type leastwaste struct {
@@ -35,7 +35,7 @@ func NewStrategy() expander.Strategy {
 }
 
 // BestOption Finds the option that wastes the least fraction of CPU and Memory
-func (l *leastwaste) BestOption(expansionOptions []expander.Option, nodeInfo map[string]*schedulercache.NodeInfo) *expander.Option {
+func (l *leastwaste) BestOption(expansionOptions []expander.Option, nodeInfo map[string]*schedulernodeinfo.NodeInfo) *expander.Option {
 	var leastWastedScore float64
 	var leastWastedOptions []expander.Option
 

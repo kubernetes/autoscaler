@@ -26,7 +26,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
-	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
+	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 )
 
 //ContainerServiceAgentPool implements NodeGroup interface for agent pool deployed in ACS/AKS
@@ -458,7 +458,7 @@ func (agentPool *ContainerServiceAgentPool) Nodes() ([]cloudprovider.Instance, e
 }
 
 //TemplateNodeInfo is not implemented.
-func (agentPool *ContainerServiceAgentPool) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
+func (agentPool *ContainerServiceAgentPool) TemplateNodeInfo() (*schedulernodeinfo.NodeInfo, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 

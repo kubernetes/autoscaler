@@ -22,7 +22,7 @@ import (
 	"time"
 
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
-	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
+	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -33,9 +33,9 @@ func TestPredicates(t *testing.T) {
 	p3 := BuildTestPod("p3", 8000, 0)
 	p4 := BuildTestPod("p4", 500, 500000)
 
-	ni1 := schedulercache.NewNodeInfo(p1)
-	ni2 := schedulercache.NewNodeInfo()
-	nodeInfos := map[string]*schedulercache.NodeInfo{
+	ni1 := schedulernodeinfo.NewNodeInfo(p1)
+	ni2 := schedulernodeinfo.NewNodeInfo()
+	nodeInfos := map[string]*schedulernodeinfo.NodeInfo{
 		"n1": ni1,
 		"n2": ni2,
 	}
