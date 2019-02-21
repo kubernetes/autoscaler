@@ -209,15 +209,20 @@ func (as *AgentPool) IncreaseSize(delta int) error {
 	}
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
-	_, err = as.manager.azClient.deploymentsClient.CreateOrUpdate(ctx, as.manager.config.ResourceGroup, newDeploymentName, newDeployment)
 	klog.V(3).Infof("Waiting for deploymentsClient.CreateOrUpdate(%s, %s, %v)", as.manager.config.ResourceGroup, newDeploymentName, newDeployment)
-	if err != nil {
-		return err
+	resp, err := as.manager.azClient.deploymentsClient.CreateOrUpdate(ctx, as.manager.config.ResourceGroup, newDeploymentName, newDeployment)
+	isSuccess, realError := isSuccessHTTPResponse(resp, err)
+	if isSuccess {
+		klog.V(3).Infof("deploymentsClient.CreateOrUpdate(%s, %s, %v) success", as.manager.config.ResourceGroup, newDeploymentName, newDeployment)
+
+		// Update cache after scale success.
+		as.curSize = int64(expectedSize)
+		as.lastRefresh = time.Now()
+		return nil
 	}
 
-	as.curSize = int64(expectedSize)
-	as.lastRefresh = time.Now()
-	return err
+	klog.Errorf("deploymentsClient.CreateOrUpdate for deployment %q failed: %v", newDeploymentName, realError)
+	return realError
 }
 
 // GetVirtualMachines returns list of nodes for the given agent pool.
