@@ -23,7 +23,6 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
-	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 )
 
 // GcePriceModel implements PriceModel interface for GCE.
@@ -96,7 +95,7 @@ func (model *GcePriceModel) NodePrice(node *apiv1.Node, startTime time.Time, end
 	price := 0.0
 	basePriceFound := false
 	if node.Labels != nil {
-		if machineType, found := node.Labels[kubeletapis.LabelInstanceType]; found {
+		if machineType, found := node.Labels[apiv1.LabelInstanceType]; found {
 			var priceMapToUse map[string]float64
 			if node.Labels[preemptibleLabel] == "true" {
 				priceMapToUse = preemptiblePrices

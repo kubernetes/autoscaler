@@ -32,7 +32,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
-	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
+	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 )
 
 // AgentPool implements NodeGroup interface for agent pools deployed by acs-engine.
@@ -380,7 +380,7 @@ func (as *AgentPool) Debug() string {
 }
 
 // TemplateNodeInfo returns a node template for this agent pool.
-func (as *AgentPool) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
+func (as *AgentPool) TemplateNodeInfo() (*schedulernodeinfo.NodeInfo, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 

@@ -30,8 +30,6 @@ import (
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	apiserverconfig "k8s.io/apiserver/pkg/apis/config"
-	kube_flag "k8s.io/apiserver/pkg/util/flag"
 	cloudBuilder "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/core"
@@ -48,6 +46,8 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/leaderelection"
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
+	kube_flag "k8s.io/component-base/cli/flag"
+	componentbaseconfig "k8s.io/component-base/config"
 	"k8s.io/kubernetes/pkg/client/leaderelectionconfig"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -369,6 +369,7 @@ func main() {
 			*namespace,
 			"cluster-autoscaler",
 			kubeClient.CoreV1(),
+			kubeClient.CoordinationV1(),
 			resourcelock.ResourceLockConfig{
 				Identity:      id,
 				EventRecorder: kube_util.CreateEventRecorder(kubeClient),
@@ -397,8 +398,8 @@ func main() {
 	}
 }
 
-func defaultLeaderElectionConfiguration() apiserverconfig.LeaderElectionConfiguration {
-	return apiserverconfig.LeaderElectionConfiguration{
+func defaultLeaderElectionConfiguration() componentbaseconfig.LeaderElectionConfiguration {
+	return componentbaseconfig.LeaderElectionConfiguration{
 		LeaderElect:   false,
 		LeaseDuration: metav1.Duration{Duration: defaultLeaseDuration},
 		RenewDeadline: metav1.Duration{Duration: defaultRenewDeadline},

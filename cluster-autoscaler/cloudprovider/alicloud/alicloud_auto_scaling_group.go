@@ -22,7 +22,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/klog"
-	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
+	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 )
 
 // Asg implements NodeGroup interface.
@@ -173,7 +173,7 @@ func (asg *Asg) Nodes() ([]cloudprovider.Instance, error) {
 }
 
 // TemplateNodeInfo returns a node template for this node group.
-func (asg *Asg) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
+func (asg *Asg) TemplateNodeInfo() (*schedulernodeinfo.NodeInfo, error) {
 	template, err := asg.manager.getAsgTemplate(asg.id)
 	if err != nil {
 		return nil, err
@@ -185,7 +185,7 @@ func (asg *Asg) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
 		return nil, err
 	}
 
-	nodeInfo := schedulercache.NewNodeInfo(cloudprovider.BuildKubeProxy(asg.id))
+	nodeInfo := schedulernodeinfo.NewNodeInfo(cloudprovider.BuildKubeProxy(asg.id))
 	nodeInfo.SetNode(node)
 	return nodeInfo, nil
 }

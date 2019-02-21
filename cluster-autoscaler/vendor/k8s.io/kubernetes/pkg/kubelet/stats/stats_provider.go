@@ -28,6 +28,8 @@ import (
 	kubecontainer "k8s.io/kubernetes/pkg/kubelet/container"
 	kubepod "k8s.io/kubernetes/pkg/kubelet/pod"
 	"k8s.io/kubernetes/pkg/kubelet/server/stats"
+	"k8s.io/kubernetes/pkg/kubelet/stats/pidlimit"
+	"k8s.io/kubernetes/pkg/kubelet/status"
 )
 
 // NewCRIStatsProvider returns a StatsProvider that provides the node stats
@@ -52,8 +54,9 @@ func NewCadvisorStatsProvider(
 	podManager kubepod.Manager,
 	runtimeCache kubecontainer.RuntimeCache,
 	imageService kubecontainer.ImageService,
+	statusProvider status.PodStatusProvider,
 ) *StatsProvider {
-	return newStatsProvider(cadvisor, podManager, runtimeCache, newCadvisorStatsProvider(cadvisor, resourceAnalyzer, imageService))
+	return newStatsProvider(cadvisor, podManager, runtimeCache, newCadvisorStatsProvider(cadvisor, resourceAnalyzer, imageService, statusProvider))
 }
 
 // newStatsProvider returns a new StatsProvider that provides node stats from
@@ -92,6 +95,11 @@ type containerStatsProvider interface {
 
 type rlimitStatsProvider interface {
 	RlimitStats() (*statsapi.RlimitStats, error)
+}
+
+// RlimitStats returns base information about process count
+func (p *StatsProvider) RlimitStats() (*statsapi.RlimitStats, error) {
+	return pidlimit.Stats()
 }
 
 // GetCgroupStats returns the stats of the cgroup with the cgroupName. Note that
