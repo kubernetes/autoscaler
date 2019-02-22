@@ -20,7 +20,7 @@ spec:
       serviceAccountName: vpa-updater
       containers:
       - name: updater
-        image: k8s.gcr.io/vpa-updater:0.3.1
+        image: k8s.gcr.io/vpa-updater:0.4.0
         imagePullPolicy: Always
         resources:
           limits:
