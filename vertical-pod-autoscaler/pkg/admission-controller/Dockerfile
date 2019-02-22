@@ -17,4 +17,4 @@ MAINTAINER Tomasz Kulczynski "tkulczynski@google.com"
 
 ADD admission-controller admission-controller
 
-CMD ./admission-controller --v=4 --stderrthreshold=info
+ENTRYPOINT ./admission-controller --v=4 --stderrthreshold=info
