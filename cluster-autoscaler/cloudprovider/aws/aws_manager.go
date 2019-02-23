@@ -30,6 +30,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
+	//"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -67,6 +68,21 @@ type asgTemplate struct {
 	Tags         []*autoscaling.TagDescription
 }
 
+// Interface to make the CloudConfig immutable for awsSDKProvider
+//type awsCloudConfigProvider interface {
+        //getResolver() endpoints.ResolverFunc
+//}
+
+type awsSDKProvider struct {
+        cfg   provider_aws.AwsCloudConfigProvider
+}
+
+func newAWSSDKProvider(cfg *provider_aws.CloudConfig) *awsSDKProvider {
+        return &awsSDKProvider{
+                cfg:            cfg,
+        }
+}
+
 // getRegion deduces the current AWS Region.
 func getRegion(cfg ...*aws.Config) string {
 	region, present := os.LookupEnv("AWS_REGION")
@@ -92,17 +108,23 @@ func createAWSManagerInternal(
 	discoveryOpts cloudprovider.NodeGroupDiscoveryOptions,
 	autoScalingService *autoScalingWrapper,
 	ec2Service *ec2Wrapper,
-) (*AwsManager, error) {
-	if configReader != nil {
-		var cfg provider_aws.CloudConfig
-		if err := gcfg.ReadInto(&cfg, configReader); err != nil {
-			klog.Errorf("Couldn't read config: %v", err)
-			return nil, err
-		}
+        ) (*AwsManager, error) {
+
+	cfg, err := readAWSCloudConfig(configReader)
+	if err != nil {
+		klog.Errorf("Couldn't read config: %v", err)
+		return nil, err
+	}
+
+	if err = cfg.ValidateOverrides(); err != nil {
+		klog.Errorf("Unable to validate custom endpoint overrides: %v", err)
+		return nil, err
 	}
 
 	if autoScalingService == nil || ec2Service == nil {
-		sess := session.New(aws.NewConfig().WithRegion(getRegion()))
+		awsSdkProvider := newAWSSDKProvider(cfg)
+		sess := session.New(aws.NewConfig().WithRegion(getRegion()).
+ 			WithEndpointResolver(awsSdkProvider.cfg.GetResolver()))
 
 		if autoScalingService == nil {
 			autoScalingService = &autoScalingWrapper{autoscaling.New(sess)}
@@ -134,6 +156,21 @@ func createAWSManagerInternal(
 	}
 
 	return manager, nil
+}
+
+// readAWSCloudConfig reads an instance of AWSCloudConfig from config reader.
+func readAWSCloudConfig(config io.Reader) (*provider_aws.CloudConfig, error) {
+        var cfg provider_aws.CloudConfig
+        var err error
+
+        if config != nil {
+                err = gcfg.ReadInto(&cfg, config)
+                if err != nil {
+                        return nil, err
+                }
+        }
+
+        return &cfg, nil
 }
 
 // CreateAwsManager constructs awsManager object.
