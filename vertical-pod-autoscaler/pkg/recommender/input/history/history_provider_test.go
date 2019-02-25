@@ -27,13 +27,28 @@ import (
 )
 
 const (
-	cpuQuery    = "container_cpu_usage_seconds_total{job=\"kubernetes-cadvisor\", pod_name=~\".+\"}[8d]"
-	memoryQuery = "container_memory_usage_bytes{job=\"kubernetes-cadvisor\", pod_name=~\".+\"}[8d]"
+	cpuQuery    = "container_cpu_usage_seconds_total{job=\"kubernetes-cadvisor\", pod_name=~\".+\", name!=\"POD\", name!=\"\"}[8d]"
+	memoryQuery = "container_memory_usage_bytes{job=\"kubernetes-cadvisor\", pod_name=~\".+\", name!=\"POD\", name!=\"\"}[8d]"
 	labelsQuery = "up{job=\"kubernetes-pods\"}[8d]"
 )
 
 type mockPrometheusClient struct {
 	mock.Mock
+}
+
+func getDefaultPrometheusHistoryProviderConfigForTest() PrometheusHistoryProviderConfig {
+	return PrometheusHistoryProviderConfig{
+		Address:                "",
+		HistoryLength:          "8d",
+		PodLabelPrefix:         "pod_label_",
+		PodLabelsMetricName:    "up{job=\"kubernetes-pods\"}",
+		PodNamespaceLabel:      "kubernetes_namespace",
+		PodNameLabel:           "kubernetes_pod_name",
+		CtrNamespaceLabel:      "namespace",
+		CtrPodNameLabel:        "pod_name",
+		CtrNameLabel:           "name",
+		CadvisorMetricsJobName: "kubernetes-cadvisor",
+	}
 }
 
 func (m *mockPrometheusClient) GetTimeseries(query string) ([]Timeseries, error) {
@@ -48,8 +63,8 @@ func (m *mockPrometheusClient) GetTimeseries(query string) ([]Timeseries, error)
 func TestGetEmptyClusterHistory(t *testing.T) {
 	mockClient := mockPrometheusClient{}
 	historyProvider := prometheusHistoryProvider{
-		prometheusJobName: prometheusJobName,
-		prometheusClient:  &mockClient}
+		config:           getDefaultPrometheusHistoryProviderConfigForTest(),
+		prometheusClient: &mockClient}
 	mockClient.On("GetTimeseries", mock.AnythingOfType("string")).Times(3).Return(
 		[]Timeseries{}, nil)
 	tss, err := historyProvider.GetClusterHistory()
@@ -61,8 +76,8 @@ func TestGetEmptyClusterHistory(t *testing.T) {
 func TestPrometheusError(t *testing.T) {
 	mockClient := mockPrometheusClient{}
 	historyProvider := prometheusHistoryProvider{
-		prometheusJobName: prometheusJobName,
-		prometheusClient:  &mockClient}
+		config:           getDefaultPrometheusHistoryProviderConfigForTest(),
+		prometheusClient: &mockClient}
 	mockClient.On("GetTimeseries", mock.AnythingOfType("string")).Times(3).Return(
 		nil, fmt.Errorf("bla"))
 	_, err := historyProvider.GetClusterHistory()
@@ -72,8 +87,8 @@ func TestPrometheusError(t *testing.T) {
 func TestGetCPUSamples(t *testing.T) {
 	mockClient := mockPrometheusClient{}
 	historyProvider := prometheusHistoryProvider{
-		prometheusJobName: prometheusJobName,
-		prometheusClient:  &mockClient}
+		config:           getDefaultPrometheusHistoryProviderConfigForTest(),
+		prometheusClient: &mockClient}
 	mockClient.On("GetTimeseries", cpuQuery).Return(
 		[]Timeseries{{
 			Labels: map[string]string{
@@ -99,8 +114,8 @@ func TestGetCPUSamples(t *testing.T) {
 func TestGetMemorySamples(t *testing.T) {
 	mockClient := mockPrometheusClient{}
 	historyProvider := prometheusHistoryProvider{
-		prometheusJobName: prometheusJobName,
-		prometheusClient:  &mockClient}
+		config:           getDefaultPrometheusHistoryProviderConfigForTest(),
+		prometheusClient: &mockClient}
 	mockClient.On("GetTimeseries", cpuQuery).Return([]Timeseries{}, nil)
 	mockClient.On("GetTimeseries", memoryQuery).Return(
 		[]Timeseries{{
@@ -126,8 +141,8 @@ func TestGetMemorySamples(t *testing.T) {
 func TestGetLabels(t *testing.T) {
 	mockClient := mockPrometheusClient{}
 	historyProvider := prometheusHistoryProvider{
-		prometheusJobName: prometheusJobName,
-		prometheusClient:  &mockClient}
+		config:           getDefaultPrometheusHistoryProviderConfigForTest(),
+		prometheusClient: &mockClient}
 	mockClient.On("GetTimeseries", cpuQuery).Return([]Timeseries{}, nil)
 	mockClient.On("GetTimeseries", memoryQuery).Return([]Timeseries{}, nil)
 	mockClient.On("GetTimeseries", labelsQuery).Return([]Timeseries{
