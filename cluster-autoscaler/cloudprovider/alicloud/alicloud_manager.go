@@ -29,6 +29,7 @@ import (
 	"k8s.io/klog"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 	"math/rand"
+	"strings"
 	"time"
 )
 
@@ -56,6 +57,7 @@ type sgTemplate struct {
 	InstanceType *instanceType
 	Region       string
 	Zone         string
+	Tags         *ess.Tags
 }
 
 // CreateAliCloudManager constructs aliCloudManager object.
@@ -182,19 +184,25 @@ func (m *AliCloudManager) getAsgTemplate(asgId string) (*sgTemplate, error) {
 		return nil, err
 	}
 
-	typeID, err := m.aService.getInstanceTypeByConfiguration(sg.ActiveScalingConfigurationId, asgId)
+	configuration, err := m.aService.getConfigurationById(sg.ActiveScalingConfigurationId, asgId)
 	if err != nil {
-		klog.Errorf("failed to get instanceType by configuration Id:%s from ASG:%s,because of %s", sg.ActiveScalingConfigurationId, asgId, err.Error())
+		klog.Errorf("failed to get configuration by Id:%s from ASG:%s, because of %s", sg.ActiveScalingConfigurationId, asgId, err.Error())
 		return nil, err
 	}
+
+	typeID := configuration.InstanceType
+	tags := &configuration.Tags
+
 	instanceType, err := m.iService.getInstanceTypeById(typeID)
 	if err != nil {
 		klog.Errorf("failed to get instanceType by Id:%s,because of %s", typeID, err.Error())
 		return nil, err
 	}
+
 	return &sgTemplate{
 		InstanceType: instanceType,
 		Region:       sg.RegionId,
+		Tags:         tags,
 	}, nil
 }
 
@@ -220,6 +228,7 @@ func (m *AliCloudManager) buildNodeFromTemplate(sg *Asg, template *sgTemplate) (
 
 	node.Status.Allocatable = node.Status.Capacity
 
+	node.Labels = cloudprovider.JoinStringMaps(node.Labels, extractLabelsFromAsg(template.Tags))
 	node.Labels = cloudprovider.JoinStringMaps(node.Labels, buildGenericLabels(template, nodeName))
 
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()
@@ -236,5 +245,25 @@ func buildGenericLabels(template *sgTemplate, nodeName string) map[string]string
 	result[apiv1.LabelZoneRegion] = template.Region
 	result[apiv1.LabelZoneFailureDomain] = template.Zone
 	result[apiv1.LabelHostname] = nodeName
+	return result
+}
+
+func extractLabelsFromAsg(tags *ess.Tags) map[string]string {
+	result := make(map[string]string)
+
+	if tags != nil {
+		for _, tag := range tags.Tag {
+			k := tag.Key
+			v := tag.Value
+			splits := strings.Split(k, "k8s.io/cluster-autoscaler/node-template/label/")
+			if len(splits) > 1 {
+				label := splits[1]
+				if label != "" {
+					result[label] = v
+				}
+			}
+		}
+	}
+
 	return result
 }
