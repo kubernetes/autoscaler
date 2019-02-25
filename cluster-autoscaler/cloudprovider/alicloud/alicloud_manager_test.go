@@ -17,6 +17,7 @@ limitations under the License.
 package alicloud
 
 import (
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/services/ess"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -37,4 +38,24 @@ func TestBuildGenericLabels(t *testing.T) {
 	nodeName := "virtual-node"
 	labels := buildGenericLabels(template, nodeName)
 	assert.Equal(t, labels[apiv1.LabelInstanceType], template.InstanceType.instanceTypeID)
+}
+
+func TestExtractLabelsFromAsg(t *testing.T) {
+	template := &sgTemplate{
+		InstanceType: &instanceType{
+			instanceTypeID: "gn5-4c-8g",
+			vcpu:           4,
+			memoryInBytes:  8 * 1024 * 1024 * 1024,
+			gpu:            1,
+		},
+		Region: "cn-hangzhou",
+		Zone:   "cn-hangzhou-a",
+		Tags: &ess.Tags{
+			Tag: []ess.Tag{
+				{Key: "k8s.io/cluster-autoscaler/node-template/label/asg1", Value: "true"},
+			},
+		},
+	}
+	labels := extractLabelsFromAsg(template.Tags)
+	assert.Equal(t, labels["asg1"], "true")
 }
