@@ -17,6 +17,7 @@ limitations under the License.
 package core
 
 import (
+	"encoding/json"
 	"fmt"
 	"sort"
 	"testing"
@@ -514,6 +515,34 @@ func TestDeleteNode(t *testing.T) {
 					fakeNode = obj.DeepCopy()
 					return true, obj, nil
 				})
+			fakeClient.Fake.AddReactor("patch", "nodes",
+				func(action core.Action) (bool, runtime.Object, error) {
+					patch := action.(core.PatchAction)
+					patchMap := make(map[string]interface{})
+					if err := json.Unmarshal(patch.GetPatch(), &patchMap); err != nil {
+						return false, nil, err
+					}
+					// Ugly but works for retrieving taints from patch.
+					// Applying patch seems far more complicated.
+					specMap := patchMap["spec"].(map[string]interface{})
+					taintsMap := specMap["taints"].([]interface{})
+					taints := []apiv1.Taint{}
+					taintKeys := []string{}
+					for _, v := range taintsMap {
+						taintMap := v.(map[string]interface{})
+						taint := apiv1.Taint{
+							Key:    taintMap["key"].(string),
+							Value:  taintMap["value"].(string),
+							Effect: apiv1.TaintEffect(taintMap["effect"].(string)),
+						}
+						taints = append(taints, taint)
+						taintKeys = append(taintKeys, taint.Key)
+					}
+
+					updatedNodes <- fmt.Sprintf("%s-%s", patch.GetName(), taintKeys)
+					fakeNode.Spec.Taints = taints
+					return true, fakeNode, nil
+				})
 			fakeClient.Fake.AddReactor("create", "pods",
 				func(action core.Action) (bool, runtime.Object, error) {
 					if !scenario.drainSuccess {
@@ -746,6 +775,12 @@ func TestScaleDown(t *testing.T) {
 		updatedNodes <- obj.Name
 		return true, obj, nil
 	})
+	fakeClient.Fake.AddReactor("patch", "nodes",
+		func(action core.Action) (bool, runtime.Object, error) {
+			patch := action.(core.PatchAction)
+			updatedNodes <- patch.GetName()
+			return true, nil, nil
+		})
 
 	provider := testprovider.NewTestCloudProvider(nil, func(nodeGroup string, node string) error {
 		deletedNodes <- node
@@ -958,6 +993,12 @@ func simpleScaleDownEmpty(t *testing.T, config *scaleTestConfig) {
 		updatedNodes <- obj.Name
 		return true, obj, nil
 	})
+	fakeClient.Fake.AddReactor("patch", "nodes",
+		func(action core.Action) (bool, runtime.Object, error) {
+			patch := action.(core.PatchAction)
+			updatedNodes <- patch.GetName()
+			return true, nil, nil
+		})
 
 	provider := testprovider.NewTestCloudProvider(nil, func(nodeGroup string, node string) error {
 		deletedNodes <- node
@@ -1136,6 +1177,11 @@ func TestScaleDownNoMove(t *testing.T) {
 		t.FailNow()
 		return false, nil, nil
 	})
+	fakeClient.Fake.AddReactor("patch", "nodes",
+		func(action core.Action) (bool, runtime.Object, error) {
+			t.FailNow()
+			return false, nil, nil
+		})
 	provider := testprovider.NewTestCloudProvider(nil, func(nodeGroup string, node string) error {
 		t.FailNow()
 		return nil
@@ -1493,6 +1539,10 @@ func TestSoftTaintTimeLimit(t *testing.T) {
 
 	// Move time forward when updating
 	fakeClient.Fake.PrependReactor("update", "nodes", func(action core.Action) (bool, runtime.Object, error) {
+		currentTime = currentTime.Add(updateTime)
+		return false, nil, nil
+	})
+	fakeClient.Fake.PrependReactor("patch", "nodes", func(action core.Action) (bool, runtime.Object, error) {
 		currentTime = currentTime.Add(updateTime)
 		return false, nil, nil
 	})

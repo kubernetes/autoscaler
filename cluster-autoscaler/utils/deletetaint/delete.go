@@ -17,6 +17,7 @@ limitations under the License.
 package deletetaint
 
 import (
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"time"
@@ -24,6 +25,8 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/strategicpatch"
 	kube_client "k8s.io/client-go/kubernetes"
 	kube_record "k8s.io/client-go/tools/record"
 
@@ -80,25 +83,46 @@ func addTaint(node *apiv1.Node, client kube_client.Interface, taintKey string, e
 			}
 		}
 
+		oldData, err := json.Marshal(freshNode)
+		if err != nil {
+			return err
+		}
+
 		if !addTaintToSpec(freshNode, taintKey, effect) {
-			if !refresh {
-				// Make sure we have the latest version before skipping update.
-				refresh = true
-				continue
-			}
 			return nil
 		}
-		_, err = client.CoreV1().Nodes().Update(freshNode)
-		if err != nil && errors.IsConflict(err) && time.Now().Before(retryDeadline) {
-			refresh = true
-			time.Sleep(conflictRetryInterval)
+
+		newData, err := json.Marshal(freshNode)
+		if err != nil {
+			return err
+		}
+
+		patchBytes, err := strategicpatch.CreateTwoWayMergePatch(oldData, newData, freshNode)
+		if err != nil {
+			return err
+		}
+
+		_, err = client.CoreV1().Nodes().Patch(freshNode.Name, types.StrategicMergePatchType, patchBytes)
+		beforeDeadline := time.Now().Before(retryDeadline)
+		if err != nil && errors.IsConflict(err) && beforeDeadline {
+			if refresh {
+				time.Sleep(conflictRetryInterval)
+			} else {
+				// Do not wait after first failure.
+				refresh = true
+			}
 			continue
 		}
 
 		if err != nil {
-			klog.Warningf("Error while adding %v taint on node %v: %v", getKeyShortName(taintKey), node.Name, err)
+			if beforeDeadline {
+				klog.Warningf("Error while adding %v taint on node %v: %v (non-retriable error)", getKeyShortName(taintKey), node.Name, err)
+			} else {
+				klog.Warningf("Error while adding %v taint on node %v: %v (retry limit exhausted)", getKeyShortName(taintKey), node.Name, err)
+			}
 			return err
 		}
+
 		klog.V(1).Infof("Successfully added %v on node %v", getKeyShortName(taintKey), node.Name)
 		return nil
 	}
