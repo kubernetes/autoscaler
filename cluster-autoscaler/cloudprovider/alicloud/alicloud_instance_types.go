@@ -19,6 +19,7 @@ package alicloud
 import (
 	"fmt"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/services/ecs"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/services/ess"
 	"k8s.io/klog"
 	"time"
 )
@@ -59,6 +60,14 @@ func (iw *instanceWrapper) getInstanceTypeById(typeId string) (*instanceType, er
 		return &instanceTypeModel.instanceType, nil
 	}
 	return nil, fmt.Errorf("failed to find the specific instance type by Id: %s", typeId)
+}
+
+func (iw *instanceWrapper) getInstanceTags(tags ess.Tags) (map[string]string, error) {
+	tagsMap := make(map[string]string)
+	for _, tag := range tags.Tag {
+		tagsMap[tag.Key] = tag.Value
+	}
+	return tagsMap, nil
 }
 
 func (iw *instanceWrapper) FindInstanceType(typeId string) *instanceTypeModel {
