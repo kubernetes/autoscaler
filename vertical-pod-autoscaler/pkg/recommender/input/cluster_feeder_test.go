@@ -49,6 +49,7 @@ func TestLegacySelector(t *testing.T) {
 	type testCase struct {
 		legacySelector            labels.Selector
 		selector                  labels.Selector
+		beta1APIDeprecated        bool
 		fetchSelectorError        error
 		expectedSelector          labels.Selector
 		expectedConfigUnsupported *string
@@ -59,6 +60,7 @@ func TestLegacySelector(t *testing.T) {
 		{
 			legacySelector:            nil,
 			selector:                  nil,
+			beta1APIDeprecated:        true,
 			fetchSelectorError:        fmt.Errorf("targetRef not defined"),
 			expectedSelector:          labels.Nothing(),
 			expectedConfigUnsupported: &unsupportedConditionTextFromFetcher,
@@ -67,6 +69,7 @@ func TestLegacySelector(t *testing.T) {
 		{
 			legacySelector:            nil,
 			selector:                  nil,
+			beta1APIDeprecated:        true,
 			fetchSelectorError:        nil,
 			expectedSelector:          labels.Nothing(),
 			expectedConfigUnsupported: &unsupportedConditionNoExtraText,
@@ -75,6 +78,7 @@ func TestLegacySelector(t *testing.T) {
 		{
 			legacySelector:            parseLabelSelector("app = test"),
 			selector:                  nil,
+			beta1APIDeprecated:        true,
 			fetchSelectorError:        fmt.Errorf("targetRef not defined"),
 			expectedSelector:          parseLabelSelector("app = test"),
 			expectedConfigUnsupported: nil,
@@ -82,6 +86,7 @@ func TestLegacySelector(t *testing.T) {
 		}, {
 			legacySelector:            nil,
 			selector:                  parseLabelSelector("app = test"),
+			beta1APIDeprecated:        true,
 			fetchSelectorError:        nil,
 			expectedSelector:          parseLabelSelector("app = test"),
 			expectedConfigUnsupported: nil,
@@ -89,6 +94,49 @@ func TestLegacySelector(t *testing.T) {
 		}, {
 			legacySelector:            parseLabelSelector("app = test1"),
 			selector:                  parseLabelSelector("app = test2"),
+			beta1APIDeprecated:        true,
+			fetchSelectorError:        nil,
+			expectedSelector:          labels.Nothing(),
+			expectedConfigUnsupported: &unsupportedConditionBothDefined,
+			expectedConfigDeprecated:  nil,
+		}, {
+			legacySelector:            nil,
+			selector:                  nil,
+			beta1APIDeprecated:        false,
+			fetchSelectorError:        fmt.Errorf("targetRef not defined"),
+			expectedSelector:          labels.Nothing(),
+			expectedConfigUnsupported: &unsupportedConditionTextFromFetcher,
+			expectedConfigDeprecated:  nil,
+		},
+		{
+			legacySelector:            nil,
+			selector:                  nil,
+			beta1APIDeprecated:        false,
+			fetchSelectorError:        nil,
+			expectedSelector:          labels.Nothing(),
+			expectedConfigUnsupported: &unsupportedConditionNoExtraText,
+			expectedConfigDeprecated:  nil,
+		},
+		{
+			legacySelector:            parseLabelSelector("app = test"),
+			selector:                  nil,
+			beta1APIDeprecated:        false,
+			fetchSelectorError:        fmt.Errorf("targetRef not defined"),
+			expectedSelector:          parseLabelSelector("app = test"),
+			expectedConfigUnsupported: nil,
+			expectedConfigDeprecated:  nil,
+		}, {
+			legacySelector:            nil,
+			selector:                  parseLabelSelector("app = test"),
+			beta1APIDeprecated:        false,
+			fetchSelectorError:        nil,
+			expectedSelector:          parseLabelSelector("app = test"),
+			expectedConfigUnsupported: nil,
+			expectedConfigDeprecated:  nil,
+		}, {
+			legacySelector:            parseLabelSelector("app = test1"),
+			selector:                  parseLabelSelector("app = test2"),
+			beta1APIDeprecated:        false,
 			fetchSelectorError:        nil,
 			expectedSelector:          labels.Nothing(),
 			expectedConfigUnsupported: &unsupportedConditionBothDefined,
@@ -105,6 +153,7 @@ func TestLegacySelector(t *testing.T) {
 			vpa := test.VerticalPodAutoscaler().WithName("testVpa").WithContainer("container").WithNamespace("testNamespace").Get()
 			vpaLister := &test.VerticalPodAutoscalerListerMock{}
 			vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpa}, nil)
+			*beta1APIDeprecated = tc.beta1APIDeprecated
 
 			legacyTargetSelectorFetcher := target_mock.NewMockVpaTargetSelectorFetcher(ctrl)
 			targetSelectorFetcher := target_mock.NewMockVpaTargetSelectorFetcher(ctrl)
