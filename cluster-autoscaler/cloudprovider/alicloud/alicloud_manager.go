@@ -56,6 +56,7 @@ type sgTemplate struct {
 	InstanceType *instanceType
 	Region       string
 	Zone         string
+	Tags         map[string]string
 }
 
 // CreateAliCloudManager constructs aliCloudManager object.
@@ -182,19 +183,27 @@ func (m *AliCloudManager) getAsgTemplate(asgId string) (*sgTemplate, error) {
 		return nil, err
 	}
 
-	typeID, err := m.aService.getInstanceTypeByConfiguration(sg.ActiveScalingConfigurationId, asgId)
+	configuration, err := m.aService.getScalingGroupConfigurationByID(sg.ActiveScalingConfigurationId, asgId)
 	if err != nil {
-		klog.Errorf("failed to get instanceType by configuration Id:%s from ASG:%s,because of %s", sg.ActiveScalingConfigurationId, asgId, err.Error())
 		return nil, err
 	}
-	instanceType, err := m.iService.getInstanceTypeById(typeID)
+
+	instanceType, err := m.iService.getInstanceTypeById(configuration.InstanceType)
 	if err != nil {
-		klog.Errorf("failed to get instanceType by Id:%s,because of %s", typeID, err.Error())
+		klog.Errorf("failed to get instanceType by Id:%s,because of %s", configuration.InstanceType, err.Error())
 		return nil, err
 	}
+
+	tags, err := m.iService.getInstanceTags(configuration.Tags)
+	if err != nil {
+		klog.Errorf("failed to getInstanceTags from scalingGroup %s,because of %s", asgId, err.Error())
+		return nil, err
+	}
+
 	return &sgTemplate{
 		InstanceType: instanceType,
 		Region:       sg.RegionId,
+		Tags:         tags,
 	}, nil
 }
 
@@ -236,5 +245,11 @@ func buildGenericLabels(template *sgTemplate, nodeName string) map[string]string
 	result[apiv1.LabelZoneRegion] = template.Region
 	result[apiv1.LabelZoneFailureDomain] = template.Zone
 	result[apiv1.LabelHostname] = nodeName
+
+	// append custom node labels
+	for key, value := range template.Tags {
+		result[key] = value
+	}
+
 	return result
 }
