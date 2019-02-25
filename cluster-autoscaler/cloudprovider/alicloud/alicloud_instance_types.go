@@ -63,11 +63,11 @@ func (iw *instanceWrapper) getInstanceTypeById(typeId string) (*instanceType, er
 }
 
 func (iw *instanceWrapper) getInstanceTags(tags ess.Tags) (map[string]string, error) {
-	tags_map := make(map[string]string)
+	tagsMap := make(map[string]string)
 	for _, tag := range tags.Tag {
-		tags_map[tag.Key] = tag.Value
+		tagsMap[tag.Key] = tag.Value
 	}
-	return tags_map, nil
+	return tagsMap, nil
 }
 
 func (iw *instanceWrapper) FindInstanceType(typeId string) *instanceTypeModel {
