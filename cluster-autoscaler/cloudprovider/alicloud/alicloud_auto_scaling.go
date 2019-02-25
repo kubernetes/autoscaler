@@ -101,7 +101,7 @@ type autoScalingWrapper struct {
 	cfg *cloudConfig
 }
 
-func (m autoScalingWrapper) getInstanceTypeByConfiguration(configID string, asgId string) (string, error) {
+func (m autoScalingWrapper) getScalingGroupConfigurationByID(configID string, asgId string) (*ess.ScalingConfiguration, error) {
 	params := ess.CreateDescribeScalingConfigurationsRequest()
 	params.ScalingConfigurationId1 = configID
 	params.ScalingGroupId = asgId
@@ -109,19 +109,19 @@ func (m autoScalingWrapper) getInstanceTypeByConfiguration(configID string, asgI
 	resp, err := m.DescribeScalingConfigurations(params)
 	if err != nil {
 		klog.Errorf("failed to get ScalingConfiguration info request for %s,because of %s", configID, err.Error())
-		return "", err
+		return nil, err
 	}
 
 	configurations := resp.ScalingConfigurations.ScalingConfiguration
 
 	if len(configurations) < 1 {
-		return "", fmt.Errorf("unable to get first ScalingConfiguration for %s", configID)
+		return nil, fmt.Errorf("unable to get first ScalingConfiguration for %s", configID)
 	}
 	if len(configurations) > 1 {
 		klog.Warningf("more than one ScalingConfiguration found for config(%q) and ASG(%q)", configID, asgId)
 	}
 
-	return configurations[0].InstanceType, nil
+	return &configurations[0], nil
 }
 
 func (m autoScalingWrapper) getScalingGroupByID(groupID string) (*ess.ScalingGroup, error) {
