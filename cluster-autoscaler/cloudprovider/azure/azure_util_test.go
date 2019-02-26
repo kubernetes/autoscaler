@@ -18,9 +18,11 @@ package azure
 
 import (
 	"fmt"
+	"net/http"
 	"testing"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2017-12-01/compute"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestSplitBlobURI(t *testing.T) {
@@ -71,26 +73,33 @@ func TestK8sLinuxVMNameParts(t *testing.T) {
 }
 
 func TestWindowsVMNameParts(t *testing.T) {
-	expectedPoolPrefix := "38988"
-	expectedAcs := "k8s"
-	expectedPoolIndex := 903
-	expectedAgentIndex := 12
+	data := []struct {
+		VMName, expectedPoolPrefix, expectedOrch string
+		expectedPoolIndex, expectedAgentIndex    int
+	}{
+		{"38988k8s90312", "38988", "k8s", 3, 12},
+		{"4506k8s010", "4506", "k8s", 1, 0},
+		{"2314k8s03000001", "2314", "k8s", 3, 1},
+		{"2314k8s0310", "2314", "k8s", 3, 10},
+	}
 
-	poolPrefix, acs, poolIndex, agentIndex, err := windowsVMNameParts("38988k8s90312")
-	if poolPrefix != expectedPoolPrefix {
-		t.Fatalf("incorrect poolPrefix. expected=%s actual=%s", expectedPoolPrefix, poolPrefix)
-	}
-	if acs != expectedAcs {
-		t.Fatalf("incorrect acs string. expected=%s actual=%s", expectedAcs, acs)
-	}
-	if poolIndex != expectedPoolIndex {
-		t.Fatalf("incorrect poolIndex. expected=%d actual=%d", expectedPoolIndex, poolIndex)
-	}
-	if agentIndex != expectedAgentIndex {
-		t.Fatalf("incorrect agentIndex. expected=%d actual=%d", expectedAgentIndex, agentIndex)
-	}
-	if err != nil {
-		t.Fatalf("unexpected error: %s", err)
+	for _, d := range data {
+		poolPrefix, orch, poolIndex, agentIndex, err := windowsVMNameParts(d.VMName)
+		if poolPrefix != d.expectedPoolPrefix {
+			t.Fatalf("incorrect poolPrefix. expected=%s actual=%s", d.expectedPoolPrefix, poolPrefix)
+		}
+		if orch != d.expectedOrch {
+			t.Fatalf("incorrect acs string. expected=%s actual=%s", d.expectedOrch, orch)
+		}
+		if poolIndex != d.expectedPoolIndex {
+			t.Fatalf("incorrect poolIndex. expected=%d actual=%d", d.expectedPoolIndex, poolIndex)
+		}
+		if agentIndex != d.expectedAgentIndex {
+			t.Fatalf("incorrect agentIndex. expected=%d actual=%d", d.expectedAgentIndex, agentIndex)
+		}
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
 	}
 }
 
@@ -115,5 +124,68 @@ func TestGetVMNameIndexWindows(t *testing.T) {
 	}
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
+	}
+}
+
+func TestIsSuccessResponse(t *testing.T) {
+	tests := []struct {
+		name          string
+		resp          *http.Response
+		err           error
+		expected      bool
+		expectedError error
+	}{
+		{
+			name:          "both resp and err nil should report error",
+			expected:      false,
+			expectedError: fmt.Errorf("failed with unknown error"),
+		},
+		{
+			name: "http.StatusNotFound should report error",
+			resp: &http.Response{
+				StatusCode: http.StatusNotFound,
+			},
+			expected:      false,
+			expectedError: fmt.Errorf("failed with HTTP status code %d", http.StatusNotFound),
+		},
+		{
+			name: "http.StatusInternalServerError should report error",
+			resp: &http.Response{
+				StatusCode: http.StatusInternalServerError,
+			},
+			expected:      false,
+			expectedError: fmt.Errorf("failed with HTTP status code %d", http.StatusInternalServerError),
+		},
+		{
+			name: "http.StatusOK shouldn't report error",
+			resp: &http.Response{
+				StatusCode: http.StatusOK,
+			},
+			expected: true,
+		},
+		{
+			name: "non-nil response error with http.StatusOK should report error",
+			resp: &http.Response{
+				StatusCode: http.StatusOK,
+			},
+			err:           fmt.Errorf("test error"),
+			expected:      false,
+			expectedError: fmt.Errorf("test error"),
+		},
+		{
+			name: "non-nil response error with http.StatusInternalServerError should report error",
+			resp: &http.Response{
+				StatusCode: http.StatusInternalServerError,
+			},
+			err:           fmt.Errorf("test error"),
+			expected:      false,
+			expectedError: fmt.Errorf("test error"),
+		},
+	}
+
+	for _, test := range tests {
+		result, realError := isSuccessHTTPResponse(test.resp, test.err)
+		assert.Equal(t, test.expected, result, "[%s] expected: %v, saw: %v", test.name, result, test.expected)
+		assert.Equal(t, test.expectedError, realError, "[%s] expected: %v, saw: %v", test.name, realError, test.expectedError)
 	}
 }
