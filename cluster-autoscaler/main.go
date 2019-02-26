@@ -274,6 +274,7 @@ func buildAutoscaler() (core.Autoscaler, error) {
 	// Create basic config from flags.
 	autoscalingOptions := createAutoscalingOptions()
 	kubeClient := createKubeClient(getKubeConfig())
+	eventsKubeClient := createKubeClient(getKubeConfig())
 	processors := ca_processors.DefaultProcessors()
 	if autoscalingOptions.CloudProviderName == "gke" {
 		processors.NodeGroupSetProcessor = &nodegroupset.BalancingNodeGroupSetProcessor{
@@ -283,6 +284,7 @@ func buildAutoscaler() (core.Autoscaler, error) {
 	opts := core.AutoscalerOptions{
 		AutoscalingOptions: autoscalingOptions,
 		KubeClient:         kubeClient,
+		EventsKubeClient:   eventsKubeClient,
 		Processors:         processors,
 	}
 

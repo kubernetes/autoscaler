@@ -93,16 +93,16 @@ func NewAutoscalingContext(options config.AutoscalingOptions, predicateChecker *
 }
 
 // NewAutoscalingKubeClients builds AutoscalingKubeClients out of basic client.
-func NewAutoscalingKubeClients(opts config.AutoscalingOptions, kubeClient kube_client.Interface) *AutoscalingKubeClients {
+func NewAutoscalingKubeClients(opts config.AutoscalingOptions, kubeClient, eventsKubeClient kube_client.Interface) *AutoscalingKubeClients {
 	listerRegistryStopChannel := make(chan struct{})
 	listerRegistry := kube_util.NewListerRegistryWithDefaultListers(kubeClient, listerRegistryStopChannel)
-	kubeEventRecorder := kube_util.CreateEventRecorder(kubeClient)
+	kubeEventRecorder := kube_util.CreateEventRecorder(eventsKubeClient)
 	logRecorder, err := utils.NewStatusMapRecorder(kubeClient, opts.ConfigNamespace, kubeEventRecorder, opts.WriteStatusConfigMap)
 	if err != nil {
 		klog.Error("Failed to initialize status configmap, unable to write status events")
 		// Get a dummy, so we can at least safely call the methods
 		// TODO(maciekpytel): recover from this after successful status configmap update?
-		logRecorder, _ = utils.NewStatusMapRecorder(kubeClient, opts.ConfigNamespace, kubeEventRecorder, false)
+		logRecorder, _ = utils.NewStatusMapRecorder(eventsKubeClient, opts.ConfigNamespace, kubeEventRecorder, false)
 	}
 
 	return &AutoscalingKubeClients{

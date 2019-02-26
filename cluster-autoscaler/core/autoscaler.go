@@ -38,6 +38,7 @@ import (
 type AutoscalerOptions struct {
 	config.AutoscalingOptions
 	KubeClient             kube_client.Interface
+	EventsKubeClient       kube_client.Interface
 	AutoscalingKubeClients *context.AutoscalingKubeClients
 	CloudProvider          cloudprovider.CloudProvider
 	PredicateChecker       *simulator.PredicateChecker
@@ -78,7 +79,7 @@ func initializeDefaultOptions(opts *AutoscalerOptions) error {
 		opts.Processors = ca_processors.DefaultProcessors()
 	}
 	if opts.AutoscalingKubeClients == nil {
-		opts.AutoscalingKubeClients = context.NewAutoscalingKubeClients(opts.AutoscalingOptions, opts.KubeClient)
+		opts.AutoscalingKubeClients = context.NewAutoscalingKubeClients(opts.AutoscalingOptions, opts.KubeClient, opts.EventsKubeClient)
 	}
 	if opts.PredicateChecker == nil {
 		predicateCheckerStopChannel := make(chan struct{})
