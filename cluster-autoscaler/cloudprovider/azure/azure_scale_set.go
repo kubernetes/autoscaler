@@ -150,15 +150,19 @@ func (scaleSet *ScaleSet) SetScaleSetSize(size int64) error {
 	op.VirtualMachineScaleSetProperties.ProvisioningState = nil
 	updateCtx, updateCancel := getContextWithCancel()
 	defer updateCancel()
-	_, err = scaleSet.manager.azClient.virtualMachineScaleSetsClient.CreateOrUpdate(updateCtx, resourceGroup, scaleSet.Name, op)
-	if err != nil {
-		glog.Errorf("virtualMachineScaleSetsClient.CreateOrUpdate for scale set %q failed: %v", scaleSet.Name, err)
-		return err
+
+	glog.V(3).Infof("Waiting for virtualMachineScaleSetsClient.CreateOrUpdate(%s)", scaleSet.Name)
+	resp, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.CreateOrUpdate(updateCtx, resourceGroup, scaleSet.Name, op)
+	isSuccess, realError := isSuccessHTTPResponse(resp, err)
+	if isSuccess {
+		glog.V(3).Infof("virtualMachineScaleSetsClient.CreateOrUpdate(%s) success", scaleSet.Name)
+		scaleSet.curSize = size
+		scaleSet.lastRefresh = time.Now()
+		return nil
 	}
 
-	scaleSet.curSize = size
-	scaleSet.lastRefresh = time.Now()
-	return nil
+	glog.Errorf("virtualMachineScaleSetsClient.CreateOrUpdate for scale set %q failed: %v", scaleSet.Name, realError)
+	return realError
 }
 
 // TargetSize returns the current TARGET size of the node group. It is possible that the

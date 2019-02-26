@@ -193,7 +193,16 @@ func (agentPool *ContainerServiceAgentPool) setAKSNodeCount(count int) error {
 		glog.Errorf("Failed to update AKS cluster (%q): %v", agentPool.clusterName, err)
 		return err
 	}
-	return future.WaitForCompletion(updateCtx, aksClient.Client)
+
+	err = future.WaitForCompletionRef(updateCtx, aksClient.Client)
+	isSuccess, realError := isSuccessHTTPResponse(future.Response(), err)
+	if isSuccess {
+		glog.V(3).Infof("aksClient.CreateOrUpdate for aks cluster %q success", agentPool.clusterName)
+		return nil
+	}
+
+	glog.Errorf("aksClient.CreateOrUpdate for aks cluster %q failed: %v", agentPool.clusterName, realError)
+	return realError
 }
 
 // setACSNodeCount sets node count for ACS agent pool.
@@ -226,7 +235,16 @@ func (agentPool *ContainerServiceAgentPool) setACSNodeCount(count int) error {
 		glog.Errorf("Failed to update ACS cluster (%q): %v", agentPool.clusterName, err)
 		return err
 	}
-	return future.WaitForCompletion(updateCtx, acsClient.Client)
+
+	err = future.WaitForCompletionRef(updateCtx, acsClient.Client)
+	isSuccess, realError := isSuccessHTTPResponse(future.Response(), err)
+	if isSuccess {
+		glog.V(3).Infof("acsClient.CreateOrUpdate for acs cluster %q success", agentPool.clusterName)
+		return nil
+	}
+
+	glog.Errorf("acsClient.CreateOrUpdate for acs cluster %q failed: %v", agentPool.clusterName, realError)
+	return realError
 }
 
 //GetNodeCount returns the count of nodes from the managed agent pool profile
