@@ -394,10 +394,6 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		} else {
 			klog.V(4).Infof("Starting scale down")
 
-			if a.AutoscalingContext.AutoscalingOptions.MaxBulkSoftTaintCount != 0 {
-				scaleDown.SoftTaintUnneededNodes(allNodes)
-			}
-
 			// We want to delete unneeded Node Groups only if there was no recent scale up,
 			// and there is no current delete in progress and there was no recent errors.
 			a.processors.NodeGroupManager.RemoveUnneededNodeGroups(autoscalingContext)
@@ -410,6 +406,11 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 			if scaleDownStatus.Result == status.ScaleDownNodeDeleted {
 				a.lastScaleDownDeleteTime = currentTime
 				a.clusterStateRegistry.Recalculate()
+			}
+
+			if scaleDownStatus.Result == status.ScaleDownNoNodeDeleted &&
+				a.AutoscalingContext.AutoscalingOptions.MaxBulkSoftTaintCount != 0 {
+				scaleDown.SoftTaintUnneededNodes(allNodes)
 			}
 
 			if a.processors != nil && a.processors.ScaleDownStatusProcessor != nil {
