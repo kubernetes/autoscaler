@@ -18,6 +18,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"net/http"
 	"os"
 	"time"
@@ -47,6 +48,7 @@ var (
 		tlsPrivateKey: flag.String("tls-private-key", "/etc/tls-certs/serverKey.pem", "Path to server certificate key PEM file."),
 	}
 
+	port      = flag.Int("port", 8000, "The port to listen on.")
 	address   = flag.String("address", ":8944", "The address to expose Prometheus metrics.")
 	namespace = os.Getenv("NAMESPACE")
 )
@@ -81,7 +83,7 @@ func main() {
 	})
 	clientset := getClient()
 	server := &http.Server{
-		Addr:      ":8000",
+		Addr:      fmt.Sprintf(":%d", *port),
 		TLSConfig: configTLS(clientset, certs.serverCert, certs.serverKey),
 	}
 	go selfRegistration(clientset, certs.caCert, &namespace)
