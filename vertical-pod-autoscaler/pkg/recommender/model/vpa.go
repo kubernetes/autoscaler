@@ -91,6 +91,8 @@ type Vpa struct {
 	Created time.Time
 	// CheckpointWritten indicates when last checkpoint for the VPA object was stored.
 	CheckpointWritten time.Time
+	// IsV1Beta1API is set to true if VPA object has labelSelector defined as in v1beta1 api.
+	IsV1Beta1API bool
 }
 
 // NewVpa returns a new Vpa with a given ID and pod selector. Doesn't set the
@@ -103,6 +105,7 @@ func NewVpa(id VpaID, selector labels.Selector, created time.Time) *Vpa {
 		ContainersInitialAggregateState: make(ContainerNameToAggregateStateMap),
 		Created:                         created,
 		Conditions:                      make(vpaConditionsMap),
+		IsV1Beta1API:                    false,
 	}
 	return vpa
 }
