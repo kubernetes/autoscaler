@@ -167,7 +167,10 @@ func TestLegacySelector(t *testing.T) {
 				selectorFetcher:       targetSelectorFetcher,
 			}
 
-			legacyTargetSelectorFetcher.EXPECT().Fetch(vpa).Return(tc.legacySelector, nil)
+			// legacyTargetSelectorFetcher is called twice:
+			// - one time to determine ultimate selector
+			// - one time to check if object uses deprecated API
+			legacyTargetSelectorFetcher.EXPECT().Fetch(vpa).Times(2).Return(tc.legacySelector, nil)
 			targetSelectorFetcher.EXPECT().Fetch(vpa).Return(tc.selector, tc.fetchSelectorError)
 			clusterStateFeeder.LoadVPAs()
 
