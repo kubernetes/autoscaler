@@ -317,6 +317,10 @@ func (feeder *clusterStateFeeder) LoadVPAs() {
 		if feeder.clusterState.AddOrUpdateVpa(vpaCRD, selector) == nil {
 			// Successfully added VPA to the model.
 			vpaKeys[vpaID] = true
+
+			legacySelector, _ := feeder.legacySelectorFetcher.Fetch(vpaCRD)
+			feeder.clusterState.Vpas[vpaID].IsV1Beta1API = legacySelector != nil
+
 			for _, condition := range conditions {
 				if condition.delete {
 					delete(feeder.clusterState.Vpas[vpaID].Conditions, condition.conditionType)
