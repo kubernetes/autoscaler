@@ -24,8 +24,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 const (
@@ -36,11 +35,11 @@ const (
 func getClient() *kubernetes.Clientset {
 	config, err := rest.InClusterConfig()
 	if err != nil {
-		glog.Fatal(err)
+		klog.Fatal(err)
 	}
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		glog.Fatal(err)
+		klog.Fatal(err)
 	}
 	return clientset
 }
@@ -48,7 +47,7 @@ func getClient() *kubernetes.Clientset {
 func configTLS(clientset *kubernetes.Clientset, serverCert, serverKey []byte) *tls.Config {
 	sCert, err := tls.X509KeyPair(serverCert, serverKey)
 	if err != nil {
-		glog.Fatal(err)
+		klog.Fatal(err)
 	}
 	return &tls.Config{
 		Certificates: []tls.Certificate{sCert},
@@ -63,7 +62,7 @@ func selfRegistration(clientset *kubernetes.Clientset, caCert []byte, namespace 
 	_, err := client.Get(webhookConfigName, metav1.GetOptions{})
 	if err == nil {
 		if err2 := client.Delete(webhookConfigName, nil); err2 != nil {
-			glog.Fatal(err2)
+			klog.Fatal(err2)
 		}
 	}
 	RegisterClientConfig := v1beta1.WebhookClientConfig{}
@@ -103,8 +102,8 @@ func selfRegistration(clientset *kubernetes.Clientset, caCert []byte, namespace 
 		},
 	}
 	if _, err := client.Create(webhookConfig); err != nil {
-		glog.Fatal(err)
+		klog.Fatal(err)
 	} else {
-		glog.V(3).Info("Self registration as MutatingWebhook succeeded.")
+		klog.V(3).Info("Self registration as MutatingWebhook succeeded.")
 	}
 }
