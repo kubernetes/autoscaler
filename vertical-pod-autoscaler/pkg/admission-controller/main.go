@@ -48,9 +48,12 @@ var (
 		tlsPrivateKey: flag.String("tls-private-key", "/etc/tls-certs/serverKey.pem", "Path to server certificate key PEM file."),
 	}
 
-	port      = flag.Int("port", 8000, "The port to listen on.")
-	address   = flag.String("address", ":8944", "The address to expose Prometheus metrics.")
-	namespace = os.Getenv("NAMESPACE")
+	port           = flag.Int("port", 8000, "The port to listen on.")
+	address        = flag.String("address", ":8944", "The address to expose Prometheus metrics.")
+	namespace      = os.Getenv("NAMESPACE")
+	webhookAddress = flag.String("webhook-address", "", "Address under which webhook is registered. Used when registerByURL is set to true.")
+	webhookPort    = flag.String("webhook-port", "", "Server Port for Webhook")
+	registerByURL  = flag.Bool("register-by-url", false, "If set to true, admission webhook will be registered by URL (webhookAddress:webhookPort) instead of by service name")
 )
 
 func main() {
@@ -86,6 +89,7 @@ func main() {
 		Addr:      fmt.Sprintf(":%d", *port),
 		TLSConfig: configTLS(clientset, certs.serverCert, certs.serverKey),
 	}
-	go selfRegistration(clientset, certs.caCert, &namespace)
+	url := fmt.Sprintf("%v:%v", webhookAddress, webhookPort)
+	go selfRegistration(clientset, certs.caCert, &namespace, url, *registerByURL)
 	server.ListenAndServeTLS("", "")
 }

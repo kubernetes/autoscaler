@@ -57,7 +57,7 @@ func configTLS(clientset *kubernetes.Clientset, serverCert, serverKey []byte) *t
 
 // register this webhook admission controller with the kube-apiserver
 // by creating MutatingWebhookConfiguration.
-func selfRegistration(clientset *kubernetes.Clientset, caCert []byte, namespace *string) {
+func selfRegistration(clientset *kubernetes.Clientset, caCert []byte, namespace *string, url string, registerByURL bool) {
 	time.Sleep(10 * time.Second)
 	client := clientset.AdmissionregistrationV1beta1().MutatingWebhookConfigurations()
 	_, err := client.Get(webhookConfigName, metav1.GetOptions{})
@@ -66,6 +66,14 @@ func selfRegistration(clientset *kubernetes.Clientset, caCert []byte, namespace 
 			glog.Fatal(err2)
 		}
 	}
+	RegisterClientConfig := v1beta1.WebhookClientConfig{}
+	if !registerByURL {
+		RegisterClientConfig.Service.Name = *namespace
+		RegisterClientConfig.Service.Name = "vpa-webhook"
+	} else {
+		RegisterClientConfig.URL = &url
+	}
+	RegisterClientConfig.CABundle = caCert
 	webhookConfig := &v1beta1.MutatingWebhookConfiguration{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: webhookConfigName,
@@ -90,13 +98,7 @@ func selfRegistration(clientset *kubernetes.Clientset, caCert []byte, namespace 
 							Resources:   []string{"verticalpodautoscalers"},
 						},
 					}},
-				ClientConfig: v1beta1.WebhookClientConfig{
-					Service: &v1beta1.ServiceReference{
-						Namespace: *namespace,
-						Name:      "vpa-webhook",
-					},
-					CABundle: caCert,
-				},
+				ClientConfig: RegisterClientConfig,
 			},
 		},
 	}
