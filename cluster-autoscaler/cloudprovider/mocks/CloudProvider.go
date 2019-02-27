@@ -201,3 +201,17 @@ func (_m *CloudProvider) Refresh() error {
 
 	return r0
 }
+
+// GetInstanceID gets the instance ID for the specified node.
+func (_m *CloudProvider) GetInstanceID(node *v1.Node) string {
+	ret := _m.Called()
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func() string); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}
