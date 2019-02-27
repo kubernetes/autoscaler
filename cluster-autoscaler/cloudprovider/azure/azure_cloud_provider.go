@@ -19,6 +19,7 @@ package azure
 import (
 	"io"
 	"os"
+	"strings"
 
 	"k8s.io/klog"
 
@@ -108,6 +109,11 @@ func (azure *AzureCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLi
 // In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
 func (azure *AzureCloudProvider) Refresh() error {
 	return azure.azureManager.Refresh()
+}
+
+// GetInstanceID gets the instance ID for the specified node.
+func (azure *AzureCloudProvider) GetInstanceID(node *apiv1.Node) string {
+	return strings.ToLower(node.Spec.ProviderID)
 }
 
 // azureRef contains a reference to some entity in Azure world.
