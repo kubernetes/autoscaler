@@ -33,10 +33,9 @@ func newTestScaleSet(manager *AzureManager, name string) *ScaleSet {
 		azureRef: azureRef{
 			Name: name,
 		},
-		manager:         manager,
-		minSize:         1,
-		maxSize:         5,
-		virtualMachines: make(map[string]string),
+		manager: manager,
+		minSize: 1,
+		maxSize: 5,
 	}
 }
 
@@ -92,7 +91,7 @@ func TestBelongs(t *testing.T) {
 
 	invalidNode := &apiv1.Node{
 		Spec: apiv1.NodeSpec{
-			ProviderID: "azure:///subscriptions/test-subscrition-id/resourceGroups/invalid-asg/providers/Microsoft.Compute/virtualMachineScaleSets/agents/virtualMachines/0",
+			ProviderID: "azure:///subscriptions/test-subscrition-id/resourcegroups/invalid-asg/providers/microsoft.compute/virtualmachinescalesets/agents/virtualmachines/0",
 		},
 	}
 	_, err := scaleSet.Belongs(invalidNode)
@@ -183,10 +182,6 @@ func TestScaleSetNodes(t *testing.T) {
 	ss, ok := group.(*ScaleSet)
 	assert.True(t, ok)
 	assert.NotNil(t, ss)
-	assert.Equal(t, ss.virtualMachines, map[string]string{
-		"0": fakeVirtualMachineScaleSetVMID,
-	})
-
 	instances, err := group.Nodes()
 	assert.NoError(t, err)
 	assert.Equal(t, len(instances), 1)
