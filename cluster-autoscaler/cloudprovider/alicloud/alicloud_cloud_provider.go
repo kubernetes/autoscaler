@@ -140,6 +140,11 @@ func (ali *aliCloudProvider) Cleanup() error {
 	return nil
 }
 
+// GetInstanceID gets the instance ID for the specified node.
+func (ali *aliCloudProvider) GetInstanceID(node *apiv1.Node) string {
+	return node.Spec.ProviderID
+}
+
 // AliRef contains a reference to ECS instance or .
 type AliRef struct {
 	ID     string
