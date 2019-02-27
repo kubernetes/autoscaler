@@ -881,7 +881,7 @@ func (csr *ClusterStateRegistry) GetUpcomingNodes() map[string]int {
 func getNotRegisteredNodes(allNodes []*apiv1.Node, cloudProvider cloudprovider.CloudProvider, time time.Time) ([]UnregisteredNode, error) {
 	registered := sets.NewString()
 	for _, node := range allNodes {
-		registered.Insert(node.Spec.ProviderID)
+		registered.Insert(cloudProvider.GetInstanceID(node))
 	}
 	notRegistered := make([]UnregisteredNode, 0)
 	for _, nodeGroup := range cloudProvider.NodeGroups() {
