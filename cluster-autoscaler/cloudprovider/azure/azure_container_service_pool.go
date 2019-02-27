@@ -78,7 +78,7 @@ func (agentPool *ContainerServiceAgentPool) GetAKSAgentPool(agentProfiles *[]con
 	for _, value := range *agentProfiles {
 		profileName := *value.Name
 		glog.V(5).Infof("AKS AgentPool profile name: %s", profileName)
-		if profileName == (agentPool.azureRef.Name) {
+		if strings.EqualFold(profileName, agentPool.azureRef.Name) {
 			return &value
 		}
 	}
@@ -92,7 +92,7 @@ func (agentPool *ContainerServiceAgentPool) GetACSAgentPool(agentProfiles *[]con
 	for _, value := range *agentProfiles {
 		profileName := *value.Name
 		glog.V(5).Infof("ACS AgentPool profile name: %s", profileName)
-		if profileName == (agentPool.azureRef.Name) {
+		if strings.EqualFold(profileName, agentPool.azureRef.Name) {
 			return &value
 		}
 	}
@@ -105,7 +105,7 @@ func (agentPool *ContainerServiceAgentPool) GetACSAgentPool(agentProfiles *[]con
 		profileName := *value.Name
 		poolName := agentPool.azureRef.Name + "pool0"
 		glog.V(5).Infof("Workaround match check - ACS AgentPool Profile: %s <=> Poolname: %s", profileName, poolName)
-		if profileName == poolName {
+		if strings.EqualFold(profileName, poolName) {
 			return &value
 		}
 	}
@@ -270,7 +270,7 @@ func (agentPool *ContainerServiceAgentPool) SetNodeCount(count int) (err error) 
 func (agentPool *ContainerServiceAgentPool) GetProviderID(name string) string {
 	//TODO: come with a generic way to make it work with provider id formats
 	// in different version of k8s.
-	return "azure://" + name
+	return "azure://" + strings.ToLower(name)
 }
 
 //GetName extracts the name of the node (a format which underlying cloud service understands)
@@ -285,7 +285,7 @@ func (agentPool *ContainerServiceAgentPool) GetName(providerID string) (string, 
 		return "", err
 	}
 	for _, vm := range vms {
-		if strings.Compare(*vm.ID, providerID) == 0 {
+		if strings.EqualFold(*vm.ID, providerID) {
 			return *vm.Name, nil
 		}
 	}
@@ -398,7 +398,7 @@ func (agentPool *ContainerServiceAgentPool) IsContainerServiceNode(tags map[stri
 	poolName := tags["poolName"]
 	if poolName != nil {
 		glog.V(5).Infof("Matching agentPool name: %s with tag name: %s", agentPool.azureRef.Name, *poolName)
-		if *poolName == agentPool.azureRef.Name {
+		if strings.EqualFold(*poolName, agentPool.azureRef.Name) {
 			return true
 		}
 	}
