@@ -19,7 +19,7 @@ package main
 import (
 	"os"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 type certsContainer struct {
@@ -33,16 +33,16 @@ type certsConfig struct {
 func readFile(filePath string) []byte {
 	file, err := os.Open(filePath)
 	if err != nil {
-		glog.Error(err)
+		klog.Error(err)
 		return nil
 	}
 	res := make([]byte, 5000)
 	count, err := file.Read(res)
 	if err != nil {
-		glog.Error(err)
+		klog.Error(err)
 		return nil
 	}
-	glog.Infof("Successfully read %d bytes from %v", count, filePath)
+	klog.Infof("Successfully read %d bytes from %v", count, filePath)
 	return res
 }
 
