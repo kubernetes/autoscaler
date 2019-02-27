@@ -142,6 +142,14 @@ type NodeGroup interface {
 	Autoprovisioned() bool
 }
 
+// NodeGroupExtended represents the extended node group interfaces.
+type NodeGroupExtended interface {
+	// NodesLowered returns a list of all nodes (Id in lowered cases) that belong to this node group.
+	// It is required that Instance objects returned by this method have Id field set.
+	// Other fields are optional.
+	NodesLowered() ([]Instance, error)
+}
+
 // Instance represents a cloud-provider node. The node does not necessarily map to k8s node
 // i.e it does not have to be registered in k8s cluster despite being returned by NodeGroup.Nodes()
 // method. Also it is sane to have Instance object for nodes which are being created or deleted.

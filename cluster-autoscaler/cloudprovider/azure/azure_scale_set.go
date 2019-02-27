@@ -48,8 +48,6 @@ type ScaleSet struct {
 	mutex       sync.Mutex
 	lastRefresh time.Time
 	curSize     int64
-	// virtualMachines holds a list of vmss instances (instanceID -> resourceID).
-	virtualMachines map[string]string
 }
 
 // NewScaleSet creates a new NewScaleSet.
@@ -58,11 +56,10 @@ func NewScaleSet(spec *dynamic.NodeGroupSpec, az *AzureManager) (*ScaleSet, erro
 		azureRef: azureRef{
 			Name: spec.Name,
 		},
-		minSize:         spec.MinSize,
-		maxSize:         spec.MaxSize,
-		manager:         az,
-		curSize:         -1,
-		virtualMachines: make(map[string]string),
+		minSize: spec.MinSize,
+		maxSize: spec.MaxSize,
+		manager: az,
+		curSize: -1,
 	}
 
 	return scaleSet, nil
@@ -196,55 +193,24 @@ func (scaleSet *ScaleSet) IncreaseSize(delta int) error {
 // GetScaleSetVms returns list of nodes for the given scale set.
 // Note that the list results is not used directly because their resource ID format
 // is not consistent with Get results.
-// TODO(feiskyer): use list results directly after the issue fixed in Azure VMSS API.
 func (scaleSet *ScaleSet) GetScaleSetVms() ([]string, error) {
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
 
 	resourceGroup := scaleSet.manager.config.ResourceGroup
-	result, err := scaleSet.manager.azClient.virtualMachineScaleSetVMsClient.List(ctx, resourceGroup, scaleSet.Name, "", "", "")
+	vmList, err := scaleSet.manager.azClient.virtualMachineScaleSetVMsClient.List(ctx, resourceGroup, scaleSet.Name, "", "", "")
 	if err != nil {
 		klog.Errorf("VirtualMachineScaleSetVMsClient.List failed for %s: %v", scaleSet.Name, err)
 		return nil, err
 	}
 
-	instanceIDs := make([]string, 0)
-	for _, vm := range result {
-		instanceIDs = append(instanceIDs, *vm.InstanceID)
-	}
-
 	allVMs := make([]string, 0)
-	for _, instanceID := range instanceIDs {
-		// Get from cache first.
-		if v, ok := scaleSet.virtualMachines[instanceID]; ok {
-			allVMs = append(allVMs, v)
-			continue
-		}
-
-		// Not in cache, get from Azure API.
-		getCtx, getCancel := getContextWithCancel()
-		defer getCancel()
-		vm, err := scaleSet.manager.azClient.virtualMachineScaleSetVMsClient.Get(getCtx, resourceGroup, scaleSet.Name, instanceID)
-		if err != nil {
-			exists, realErr := checkResourceExistsFromError(err)
-			if realErr != nil {
-				klog.Errorf("Failed to get VirtualMachineScaleSetVM by (%s,%s), error: %v", scaleSet.Name, instanceID, err)
-				return nil, realErr
-			}
-
-			if !exists {
-				klog.Warningf("Couldn't find VirtualMachineScaleSetVM by (%s,%s), assuming it has been removed", scaleSet.Name, instanceID)
-				continue
-			}
-		}
-
+	for _, vm := range vmList {
 		// The resource ID is empty string, which indicates the instance may be in deleting state.
 		if len(*vm.ID) == 0 {
 			continue
 		}
 
-		// Save into cache.
-		scaleSet.virtualMachines[instanceID] = *vm.ID
 		allVMs = append(allVMs, *vm.ID)
 	}
 
@@ -490,9 +456,14 @@ func (scaleSet *ScaleSet) Nodes() ([]cloudprovider.Instance, error) {
 
 	instances := make([]cloudprovider.Instance, 0, len(vms))
 	for i := range vms {
-		name := "azure://" + vms[i]
+		name := "azure://" + strings.ToLower(vms[i])
 		instances = append(instances, cloudprovider.Instance{Id: name})
 	}
 
 	return instances, nil
+}
+
+// NodesLowered returns a list of all nodes (Id in lowered cases) that belong to this node group.
+func (scaleSet *ScaleSet) NodesLowered() ([]cloudprovider.Instance, error) {
+	return scaleSet.Nodes()
 }

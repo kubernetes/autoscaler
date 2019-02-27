@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"reflect"
 	"regexp"
+	"strings"
 	"sync"
 	"time"
 
@@ -141,17 +142,23 @@ func (m *asgCache) FindForInstance(instance *azureRef, vmType string) (cloudprov
 		}
 	}
 
-	if asg, found := m.instanceToAsg[*instance]; found {
+	// Look up caches for the instance.
+	if asg := m.getInstanceFromCache(instance.GetKey()); asg != nil {
 		return asg, nil
 	}
 
+	// Not found, regenerate the cache and try again.
 	if err := m.regenerate(); err != nil {
 		return nil, fmt.Errorf("error while looking for ASG for instance %+v, error: %v", *instance, err)
 	}
 	if config, found := m.instanceToAsg[*instance]; found {
 		return config, nil
 	}
+	if asg := m.getInstanceFromCache(instance.GetKey()); asg != nil {
+		return asg, nil
+	}
 
+	// Add the instance to notInRegisteredAsg since it's unknown from Azure.
 	m.notInRegisteredAsg[*instance] = true
 	return nil, nil
 }
@@ -177,5 +184,17 @@ func (m *asgCache) regenerate() error {
 	}
 
 	m.instanceToAsg = newCache
+	return nil
+}
+
+// Get node group from cache. nil would be return if not found.
+// Should be call with lock protected.
+func (m *asgCache) getInstanceFromCache(providerID string) cloudprovider.NodeGroup {
+	for instanceID, asg := range m.instanceToAsg {
+		if strings.EqualFold(instanceID.GetKey(), providerID) {
+			return asg
+		}
+	}
+
 	return nil
 }

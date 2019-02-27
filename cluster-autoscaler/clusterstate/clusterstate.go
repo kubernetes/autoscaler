@@ -277,11 +277,11 @@ func (csr *ClusterStateRegistry) UpdateNodes(nodes []*apiv1.Node, nodeInfosForGr
 		return err
 	}
 
-	cloudProviderNodeInstances, err := getCloudProviderNodeInstances(csr.cloudProvider)
+	cloudProviderNodeInstances, extended, err := getCloudProviderNodeInstances(csr.cloudProvider)
 	if err != nil {
 		return err
 	}
-	notRegistered := getNotRegisteredNodes(nodes, cloudProviderNodeInstances, currentTime)
+	notRegistered := getNotRegisteredNodes(nodes, cloudProviderNodeInstances, currentTime, extended)
 
 	csr.Lock()
 	defer csr.Unlock()
@@ -919,23 +919,39 @@ func (csr *ClusterStateRegistry) GetUpcomingNodes() map[string]int {
 
 // getCloudProviderNodeInstances returns map keyed on node group id where value is list of node instances
 // as returned by NodeGroup.Nodes().
-func getCloudProviderNodeInstances(cloudProvider cloudprovider.CloudProvider) (map[string][]cloudprovider.Instance, error) {
+// Extended is also returned as true if the node group supports NodeGroupExtended interface.
+func getCloudProviderNodeInstances(provider cloudprovider.CloudProvider) (map[string][]cloudprovider.Instance, bool, error) {
+	var nodeGroupInstances []cloudprovider.Instance
+	var extended bool
+	var err error
+
 	allInstances := make(map[string][]cloudprovider.Instance)
-	for _, nodeGroup := range cloudProvider.NodeGroups() {
-		nodeGroupInstances, err := nodeGroup.Nodes()
+	for _, nodeGroup := range provider.NodeGroups() {
+		// Invoke NodesLowered() if the node group has implemented NodeGroupExtended interface.
+		if nodeGroupExtended, ok := nodeGroup.(cloudprovider.NodeGroupExtended); ok {
+			extended = true
+			nodeGroupInstances, err = nodeGroupExtended.NodesLowered()
+		} else { // Or else, invoke Nodes().
+			nodeGroupInstances, err = nodeGroup.Nodes()
+		}
 		if err != nil {
-			return nil, err
+			return nil, extended, err
 		}
 		allInstances[nodeGroup.Id()] = nodeGroupInstances
 	}
-	return allInstances, nil
+	return allInstances, extended, nil
 }
 
 // Calculates which of the existing cloud provider nodes are not registered in Kubernetes.
-func getNotRegisteredNodes(allNodes []*apiv1.Node, cloudProviderNodeInstances map[string][]cloudprovider.Instance, time time.Time) []UnregisteredNode {
+func getNotRegisteredNodes(allNodes []*apiv1.Node, cloudProviderNodeInstances map[string][]cloudprovider.Instance, time time.Time, extended bool) []UnregisteredNode {
 	registered := sets.NewString()
 	for _, node := range allNodes {
-		registered.Insert(node.Spec.ProviderID)
+		providerID := node.Spec.ProviderID
+		if extended {
+			// if extended is set, node's providerID should be converted to lower cases.
+			providerID = strings.ToLower(providerID)
+		}
+		registered.Insert(providerID)
 	}
 	notRegistered := make([]UnregisteredNode, 0)
 	for _, instances := range cloudProviderNodeInstances {
