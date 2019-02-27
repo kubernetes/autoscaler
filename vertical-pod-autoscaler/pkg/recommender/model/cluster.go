@@ -219,6 +219,7 @@ func (cluster *ClusterState) AddOrUpdateVpa(apiObject *vpa_types.VerticalPodAuto
 			vpa.UseAggregationIfMatching(aggregationKey, aggregation)
 		}
 	}
+	vpa.TargetRef = apiObject.Spec.TargetRef
 	vpa.Conditions = conditionsMap
 	vpa.Recommendation = currentRecommendation
 	vpa.ResourcePolicy = apiObject.Spec.ResourcePolicy
