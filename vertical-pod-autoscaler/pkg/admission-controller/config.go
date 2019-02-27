@@ -67,8 +67,10 @@ func selfRegistration(clientset *kubernetes.Clientset, caCert []byte, namespace 
 	}
 	RegisterClientConfig := v1beta1.WebhookClientConfig{}
 	if !registerByURL {
-		RegisterClientConfig.Service.Name = *namespace
-		RegisterClientConfig.Service.Name = "vpa-webhook"
+		RegisterClientConfig.Service = &v1beta1.ServiceReference{
+			Namespace: *namespace,
+			Name:      "vpa-webhook",
+		}
 	} else {
 		RegisterClientConfig.URL = &url
 	}
