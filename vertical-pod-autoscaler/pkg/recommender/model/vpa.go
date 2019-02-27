@@ -20,6 +20,7 @@ import (
 	"sort"
 	"time"
 
+	autoscaling "k8s.io/api/autoscaling/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -93,6 +94,8 @@ type Vpa struct {
 	CheckpointWritten time.Time
 	// IsV1Beta1API is set to true if VPA object has labelSelector defined as in v1beta1 api.
 	IsV1Beta1API bool
+	// TargetRef points to the controller managing the set of pods.
+	TargetRef *autoscaling.CrossVersionObjectReference
 }
 
 // NewVpa returns a new Vpa with a given ID and pod selector. Doesn't set the
