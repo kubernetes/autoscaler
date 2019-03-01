@@ -74,6 +74,31 @@ const instanceGroupManagerResponseTemplate = `{
 }
 `
 
+const instanceGroupManagerTargetSize4ResponseTemplate = `{
+  "kind": "compute#instanceGroupManager",
+  "id": "3213213219",
+  "creationTimestamp": "2017-09-15T04:47:24.687-07:00",
+  "name": "%s",
+  "zone": "https://www.googleapis.com/compute/v1/projects/project1/zones/%s",
+  "instanceTemplate": "https://www.googleapis.com/compute/v1/projects/project1/global/instanceTemplates/%s",
+  "instanceGroup": "https://www.googleapis.com/compute/v1/projects/project1/zones/%s/instanceGroups/%s",
+  "baseInstanceName": "gke-cluster-1-default-pool-f23aac-grp",
+  "fingerprint": "kfdsuH",
+  "currentActions": {
+    "none": 3,
+    "creating": 0,
+    "creatingWithoutRetries": 0,
+    "recreating": 0,
+    "deleting": 0,
+    "abandoning": 0,
+    "restarting": 0,
+    "refreshing": 0
+  },
+  "targetSize": 4,
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/zones/%s/instanceGroupManagers/%s"
+}
+`
+
 const instanceTemplate = `
 {
  "kind": "compute#instanceTemplate",
@@ -252,6 +277,7 @@ func newTestGceManager(t *testing.T, testServerURL string, regional bool) *gceMa
 				{"us-central1-c", "n1-standard-1"}: {GuestCpus: 1, MemoryMb: 1},
 				{"us-central1-f", "n1-standard-1"}: {GuestCpus: 1, MemoryMb: 1},
 			},
+			migTargetSizeCache: map[GceRef]int64{},
 		},
 		GceService:           gceService,
 		projectId:            projectId,
@@ -392,7 +418,7 @@ func TestDeleteInstances(t *testing.T) {
 	mock.AssertExpectationsForObjects(t, server)
 }
 
-func TestGetMigSize(t *testing.T) {
+func TestGetMigSizeWithCache(t *testing.T) {
 	server := NewHttpServerMock()
 	defer server.Close()
 	g := newTestGceManager(t, server.URL, false)
@@ -412,6 +438,44 @@ func TestGetMigSize(t *testing.T) {
 	size, err := g.GetMigSize(mig)
 	assert.NoError(t, err)
 	assert.Equal(t, int64(3), size)
+
+	size, err = g.GetMigSize(mig)
+	assert.Equal(t, int64(3), size)
+	mock.AssertExpectationsForObjects(t, server)
+}
+
+func TestGetAndSetMigSizeWithCache(t *testing.T) {
+	server := NewHttpServerMock()
+	defer server.Close()
+	g := newTestGceManager(t, server.URL, false)
+
+	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/extra-pool-323233232").Return(instanceGroupManagerResponseTemplate).Once()
+	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/extra-pool-323233232/resize").Return(setMigSizeResponse).Once()
+	server.On("handle", "/project1/zones/us-central1-b/operations/operation-1505739408819-5597646964339-eb839c88-28805931").Return(setMigSizeOperationResponse).Once()
+	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/extra-pool-323233232").Return(instanceGroupManagerTargetSize4ResponseTemplate).Once()
+
+	mig := &gceMig{
+		gceRef: GceRef{
+			Project: projectId,
+			Zone:    zoneB,
+			Name:    "extra-pool-323233232",
+		},
+		gceManager: g,
+		minSize:    0,
+		maxSize:    1000,
+	}
+	size, err := g.GetMigSize(mig)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(3), size)
+
+	err = g.SetMigSize(mig, 4)
+	assert.NoError(t, err)
+
+	size, err = g.GetMigSize(mig)
+	assert.Equal(t, int64(4), size)
+
+	size, err = g.GetMigSize(mig)
+	assert.Equal(t, int64(4), size)
 	mock.AssertExpectationsForObjects(t, server)
 }
 
