@@ -281,7 +281,7 @@ func (csr *ClusterStateRegistry) UpdateNodes(nodes []*apiv1.Node, nodeInfosForGr
 	if err != nil {
 		return err
 	}
-	notRegistered := getNotRegisteredNodes(nodes, cloudProviderNodeInstances, currentTime)
+	notRegistered := getNotRegisteredNodes(csr.cloudProvider, nodes, cloudProviderNodeInstances, currentTime)
 
 	csr.Lock()
 	defer csr.Unlock()
@@ -932,10 +932,10 @@ func getCloudProviderNodeInstances(cloudProvider cloudprovider.CloudProvider) (m
 }
 
 // Calculates which of the existing cloud provider nodes are not registered in Kubernetes.
-func getNotRegisteredNodes(allNodes []*apiv1.Node, cloudProviderNodeInstances map[string][]cloudprovider.Instance, time time.Time) []UnregisteredNode {
+func getNotRegisteredNodes(cloudProvider cloudprovider.CloudProvider, allNodes []*apiv1.Node, cloudProviderNodeInstances map[string][]cloudprovider.Instance, time time.Time) []UnregisteredNode {
 	registered := sets.NewString()
 	for _, node := range allNodes {
-		registered.Insert(node.Spec.ProviderID)
+		registered.Insert(cloudProvider.GetInstanceID(node))
 	}
 	notRegistered := make([]UnregisteredNode, 0)
 	for _, instances := range cloudProviderNodeInstances {
