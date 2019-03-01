@@ -1,5 +1,9 @@
 # Vertical Pod Autoscaler - Updater
 
+- [Introduction](#introduction)
+- [Current implementation](current-implementation)
+- [Missing parts](#missing-parts)
+
 # Introduction
 Updater component for Vertical Pod Autoscaler described in https://github.com/kubernetes/community/pull/338
 

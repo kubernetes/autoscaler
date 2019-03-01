@@ -1,5 +1,19 @@
 # Vertical Pod Autoscaler
 
+## Contents
+- [Intro](#intro)
+- [Installation](#intallation)
+  - [Prerequisites](#prerequisites)
+  - [Install command](#install-command)
+  - [Quick start](#quick-start)
+  - [Test your installation](#test-your-installation)
+  - [Example VPA configuration](#example-vpa-configuration)
+  - [Troubleshooting](#troubleshooting)
+  - [Components of VPA](#component-of-vpa)
+  - [Tear down](#tear-down)
+- [Known limitations](#known-limitation)
+  - [Limitations of beta version](#limitations-of-beta-version)
+
 # Intro
 
 Vertical Pod Autoscaler (VPA) frees the users from necessity of setting
@@ -254,13 +268,13 @@ kubectl get customresourcedefinition|grep verticalpodautoscalers
 
 The project consists of 3 components:
 
-* Recommender - it monitors the current and past resource consumption and, based on it,
+* [Recommender](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/pkg/recommender/README.md) - it monitors the current and past resource consumption and, based on it,
 provides recommended values containers' cpu and memory requests.
 
-* Updater - it checks which of the managed pods have correct resources set and, if not,
+* [Updater](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/pkg/updater/README.md) - it checks which of the managed pods have correct resources set and, if not,
 kills them so that they can be recreated by their controllers with the updated requests.
 
-* Admission Plugin - it sets the correct resource requests on new pods (either just created
+* [Admission Plugin](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/pkg/admission-controller/README.md) - it sets the correct resource requests on new pods (either just created
 or recreated by their controller due to Updater's activity).
 
 More on the architecture can be found [HERE](https://github.com/kubernetes/community/blob/master/contributors/design-proposals/autoscaling/vertical-pod-autoscaler.md).
