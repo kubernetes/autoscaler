@@ -206,16 +206,21 @@ func (m *gceManagerImpl) registerMig(mig Mig) bool {
 
 // GetMigSize gets MIG size.
 func (m *gceManagerImpl) GetMigSize(mig Mig) (int64, error) {
+	if migSize, found := m.cache.GetMigTargetSize(mig.GceRef()); found {
+		return migSize, nil
+	}
 	targetSize, err := m.GceService.FetchMigTargetSize(mig.GceRef())
 	if err != nil {
 		return -1, err
 	}
+	m.cache.SetMigTargetSize(mig.GceRef(), targetSize)
 	return targetSize, nil
 }
 
 // SetMigSize sets MIG size.
 func (m *gceManagerImpl) SetMigSize(mig Mig, size int64) error {
 	klog.V(0).Infof("Setting mig size %s to %d", mig.Id(), size)
+	m.cache.InvalidateTargetSizeCacheForMig(mig.GceRef())
 	return m.GceService.ResizeMig(mig.GceRef(), size)
 }
 
@@ -237,7 +242,7 @@ func (m *gceManagerImpl) DeleteInstances(instances []*GceRef) error {
 			return fmt.Errorf("cannot delete instances which don't belong to the same MIG.")
 		}
 	}
-
+	m.cache.InvalidateTargetSizeCacheForMig(commonMig.GceRef())
 	return m.GceService.DeleteInstances(commonMig.GceRef(), instances)
 }
 
@@ -258,6 +263,7 @@ func (m *gceManagerImpl) GetMigNodes(mig Mig) ([]cloudprovider.Instance, error) 
 
 // Refresh triggers refresh of cached resources.
 func (m *gceManagerImpl) Refresh() error {
+	m.cache.InvalidateTargetSizeCache()
 	if m.lastRefresh.Add(refreshInterval).After(time.Now()) {
 		return nil
 	}
