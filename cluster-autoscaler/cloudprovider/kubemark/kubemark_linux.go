@@ -135,6 +135,11 @@ func (kubemark *KubemarkCloudProvider) Refresh() error {
 	return nil
 }
 
+// GetInstanceID gets the instance ID for the specified node.
+func (kubemark *KubemarkCloudProvider) GetInstanceID(node *apiv1.Node) string {
+	return node.Spec.ProviderID
+}
+
 // Cleanup cleans up all resources before the cloud provider is removed
 func (kubemark *KubemarkCloudProvider) Cleanup() error {
 	return nil

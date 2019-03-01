@@ -224,6 +224,11 @@ func (tcp *TestCloudProvider) Refresh() error {
 	return nil
 }
 
+// GetInstanceID gets the instance ID for the specified node.
+func (tcp *TestCloudProvider) GetInstanceID(node *apiv1.Node) string {
+	return node.Spec.ProviderID
+}
+
 // TestNodeGroup is a node group used by TestCloudProvider.
 type TestNodeGroup struct {
 	sync.Mutex

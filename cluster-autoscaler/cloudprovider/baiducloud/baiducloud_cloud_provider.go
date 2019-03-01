@@ -196,6 +196,11 @@ func (baiducloud *baiducloudCloudProvider) Refresh() error {
 	return nil
 }
 
+// GetInstanceID gets the instance ID for the specified node.
+func (baiducloud *baiducloudCloudProvider) GetInstanceID(node *apiv1.Node) string {
+	return node.Spec.ProviderID
+}
+
 // BaiducloudRef contains a reference to some entity in baiducloud world.
 type BaiducloudRef struct {
 	Name string
