@@ -270,7 +270,7 @@ func (agentPool *ContainerServiceAgentPool) SetNodeCount(count int) (err error) 
 func (agentPool *ContainerServiceAgentPool) GetProviderID(name string) string {
 	//TODO: come with a generic way to make it work with provider id formats
 	// in different version of k8s.
-	return "azure://" + strings.ToLower(name)
+	return "azure://" + name
 }
 
 //GetName extracts the name of the node (a format which underlying cloud service understands)
@@ -419,7 +419,13 @@ func (agentPool *ContainerServiceAgentPool) GetNodes() ([]string, error) {
 	for _, node := range vmList {
 		klog.V(5).Infof("Node Name: %s, ID: %s", *node.Name, *node.ID)
 		if agentPool.IsContainerServiceNode(node.Tags) {
-			providerID := agentPool.GetProviderID(*node.ID)
+			providerID, err := convertResourceGroupNameToLower(agentPool.GetProviderID(*node.ID))
+			if err != nil {
+				// This shouldn't happen. Log a waring message for tracking.
+				klog.Warningf("GetNodes.convertResourceGroupNameToLower failed with error: %v", err)
+				continue
+			}
+
 			klog.V(5).Infof("Returning back the providerID: %s", providerID)
 			nodeArray = append(nodeArray, providerID)
 		}
