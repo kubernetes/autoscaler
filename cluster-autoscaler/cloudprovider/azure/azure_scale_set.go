@@ -211,7 +211,14 @@ func (scaleSet *ScaleSet) GetScaleSetVms() ([]string, error) {
 			continue
 		}
 
-		allVMs = append(allVMs, *vm.ID)
+		resourceID, err := convertResourceGroupNameToLower(*vm.ID)
+		if err != nil {
+			// This shouldn't happen. Log a waring message for tracking.
+			klog.Warningf("GetScaleSetVms.convertResourceGroupNameToLower failed with error: %v", err)
+			continue
+		}
+
+		allVMs = append(allVMs, resourceID)
 	}
 
 	return allVMs, nil
@@ -456,7 +463,7 @@ func (scaleSet *ScaleSet) Nodes() ([]cloudprovider.Instance, error) {
 
 	instances := make([]cloudprovider.Instance, 0, len(vms))
 	for i := range vms {
-		name := "azure://" + strings.ToLower(vms[i])
+		name := "azure://" + vms[i]
 		instances = append(instances, cloudprovider.Instance{Id: name})
 	}
 

@@ -118,7 +118,11 @@ func (m *asgCache) FindForInstance(instance *azureRef, vmType string) (cloudprov
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	inst := azureRef{Name: strings.ToLower(instance.Name)}
+	resourceID, err := convertResourceGroupNameToLower(instance.Name)
+	if err != nil {
+		return nil, err
+	}
+	inst := azureRef{Name: resourceID}
 	if m.notInRegisteredAsg[inst] {
 		// We already know we don't own this instance. Return early and avoid
 		// additional calls.

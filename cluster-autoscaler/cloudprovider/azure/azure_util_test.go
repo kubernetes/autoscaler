@@ -189,3 +189,58 @@ func TestIsSuccessResponse(t *testing.T) {
 		assert.Equal(t, test.expectedError, realError, "[%s] expected: %v, saw: %v", test.name, realError, test.expectedError)
 	}
 }
+func TestConvertResourceGroupNameToLower(t *testing.T) {
+	tests := []struct {
+		desc        string
+		resourceID  string
+		expected    string
+		expectError bool
+	}{
+		{
+			desc:        "empty string should report error",
+			resourceID:  "",
+			expectError: true,
+		},
+		{
+			desc:        "resourceID not in Azure format should report error",
+			resourceID:  "invalid-id",
+			expectError: true,
+		},
+		{
+			desc:        "providerID not in Azure format should report error",
+			resourceID:  "azure://invalid-id",
+			expectError: true,
+		},
+		{
+			desc:       "resource group name in VM providerID should be converted",
+			resourceID: "azure:///subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroupName/providers/Microsoft.Compute/virtualMachines/k8s-agent-AAAAAAAA-0",
+			expected:   "azure:///subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myresourcegroupname/providers/Microsoft.Compute/virtualMachines/k8s-agent-AAAAAAAA-0",
+		},
+		{
+			desc:       "resource group name in VM resourceID should be converted",
+			resourceID: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroupName/providers/Microsoft.Compute/virtualMachines/k8s-agent-AAAAAAAA-0",
+			expected:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myresourcegroupname/providers/Microsoft.Compute/virtualMachines/k8s-agent-AAAAAAAA-0",
+		},
+		{
+			desc:       "resource group name in VMSS providerID should be converted",
+			resourceID: "azure:///subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroupName/providers/Microsoft.Compute/virtualMachineScaleSets/myScaleSetName/virtualMachines/156",
+			expected:   "azure:///subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myresourcegroupname/providers/Microsoft.Compute/virtualMachineScaleSets/myScaleSetName/virtualMachines/156",
+		},
+		{
+			desc:       "resource group name in VMSS resourceID should be converted",
+			resourceID: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroupName/providers/Microsoft.Compute/virtualMachineScaleSets/myScaleSetName/virtualMachines/156",
+			expected:   "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myresourcegroupname/providers/Microsoft.Compute/virtualMachineScaleSets/myScaleSetName/virtualMachines/156",
+		},
+	}
+
+	for _, test := range tests {
+		real, err := convertResourceGroupNameToLower(test.resourceID)
+		if test.expectError {
+			assert.NotNil(t, err, test.desc)
+			continue
+		}
+
+		assert.Nil(t, err, test.desc)
+		assert.Equal(t, test.expected, real, test.desc)
+	}
+}
