@@ -9,7 +9,13 @@ Cluster Autoscaler is a tool that automatically adjusts the size of the Kubernet
 
 # FAQ/Documentation
 
-Is available [HERE](./FAQ.md).
+An FAQ is available [HERE](./FAQ.md).
+
+You should also take a look at the notes and "gotchas" for your specific cloud provider:
+* [AliCloud](./cloudprovider/alicloud/README.md)
+* [Azure](./cloudprovider/azure/README.md)
+* [AWS](./cloudprovider/aws/README.md)
+* [BaiduCloud](./cloudprovider/baiducloud/README.md)
 
 # Releases
 
