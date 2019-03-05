@@ -30,6 +30,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
+	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -67,6 +68,80 @@ type asgTemplate struct {
 	Tags         []*autoscaling.TagDescription
 }
 
+func validateOverrides(cfg *provider_aws.CloudConfig) error {
+	if len(cfg.ServiceOverride) == 0 {
+		return nil
+	}
+	set := make(map[string]bool)
+	for onum, ovrd := range cfg.ServiceOverride {
+		// Note: gcfg does not space trim, so we have to when comparing to empty string ""
+		name := strings.TrimSpace(ovrd.Service)
+		if name == "" {
+			return fmt.Errorf("service name is missing [Service is \"\"] in override %s", onum)
+		}
+		// insure the map service name is space trimmed
+		ovrd.Service = name
+
+		region := strings.TrimSpace(ovrd.Region)
+		if region == "" {
+			return fmt.Errorf("service region is missing [Region is \"\"] in override %s", onum)
+		}
+		// insure the map region is space trimmed
+		ovrd.Region = region
+
+		url := strings.TrimSpace(ovrd.URL)
+		if url == "" {
+			return fmt.Errorf("url is missing [URL is \"\"] in override %s", onum)
+		}
+		signingRegion := strings.TrimSpace(ovrd.SigningRegion)
+		if signingRegion == "" {
+			return fmt.Errorf("signingRegion is missing [SigningRegion is \"\"] in override %s", onum)
+		}
+		signature := name + "_" + region
+		if set[signature] {
+			return fmt.Errorf("duplicate entry found for service override [%s] (%s in %s)", onum, name, region)
+		}
+		set[signature] = true
+	}
+	return nil
+}
+
+func getResolver(cfg *provider_aws.CloudConfig) endpoints.ResolverFunc {
+	defaultResolver := endpoints.DefaultResolver()
+	defaultResolverFn := func(service, region string,
+		optFns ...func(*endpoints.Options)) (endpoints.ResolvedEndpoint, error) {
+		return defaultResolver.EndpointFor(service, region, optFns...)
+	}
+	if len(cfg.ServiceOverride) == 0 {
+		return defaultResolverFn
+	}
+
+	return func(service, region string,
+		optFns ...func(*endpoints.Options)) (endpoints.ResolvedEndpoint, error) {
+		for _, override := range cfg.ServiceOverride {
+			if override.Service == service && override.Region == region {
+				return endpoints.ResolvedEndpoint{
+					URL:           override.URL,
+					SigningRegion: override.SigningRegion,
+					SigningMethod: override.SigningMethod,
+					SigningName:   override.SigningName,
+				}, nil
+			}
+		}
+		return defaultResolver.EndpointFor(service, region, optFns...)
+	}
+}
+
+type awsSDKProvider struct {
+	cfg *provider_aws.CloudConfig
+}
+
+func newAWSSDKProvider(cfg *provider_aws.CloudConfig) *awsSDKProvider {
+	return &awsSDKProvider{
+		cfg: cfg,
+	}
+}
+
 // getRegion deduces the current AWS Region.
 func getRegion(cfg ...*aws.Config) string {
 	region, present := os.LookupEnv("AWS_REGION")
@@ -93,16 +168,22 @@ func createAWSManagerInternal(
 	autoScalingService *autoScalingWrapper,
 	ec2Service *ec2Wrapper,
 ) (*AwsManager, error) {
-	if configReader != nil {
-		var cfg provider_aws.CloudConfig
-		if err := gcfg.ReadInto(&cfg, configReader); err != nil {
-			klog.Errorf("Couldn't read config: %v", err)
-			return nil, err
-		}
+
+	cfg, err := readAWSCloudConfig(configReader)
+	if err != nil {
+		klog.Errorf("Couldn't read config: %v", err)
+		return nil, err
+	}
+
+	if err = validateOverrides(cfg); err != nil {
+		klog.Errorf("Unable to validate custom endpoint overrides: %v", err)
+		return nil, err
 	}
 
 	if autoScalingService == nil || ec2Service == nil {
-		sess := session.New(aws.NewConfig().WithRegion(getRegion()))
+		awsSdkProvider := newAWSSDKProvider(cfg)
+		sess := session.New(aws.NewConfig().WithRegion(getRegion()).
+			WithEndpointResolver(getResolver(awsSdkProvider.cfg)))
 
 		if autoScalingService == nil {
 			autoScalingService = &autoScalingWrapper{autoscaling.New(sess)}
@@ -134,6 +215,21 @@ func createAWSManagerInternal(
 	}
 
 	return manager, nil
+}
+
+// readAWSCloudConfig reads an instance of AWSCloudConfig from config reader.
+func readAWSCloudConfig(config io.Reader) (*provider_aws.CloudConfig, error) {
+	var cfg provider_aws.CloudConfig
+	var err error
+
+	if config != nil {
+		err = gcfg.ReadInto(&cfg, config)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &cfg, nil
 }
 
 // CreateAwsManager constructs awsManager object.
