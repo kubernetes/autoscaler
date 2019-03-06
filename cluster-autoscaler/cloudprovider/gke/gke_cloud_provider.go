@@ -214,6 +214,11 @@ func (gke *GkeCloudProvider) GetNodeLocations() []string {
 	return gke.gkeManager.GetNodeLocations()
 }
 
+// GetInstanceID gets the instance ID for the specified node.
+func (gke *GkeCloudProvider) GetInstanceID(node *apiv1.Node) string {
+	return node.Spec.ProviderID
+}
+
 // MigSpec contains information about what machines in a MIG look like.
 type MigSpec struct {
 	MachineType    string

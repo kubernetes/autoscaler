@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"reflect"
 	"regexp"
+	"strings"
 	"sync"
 	"time"
 
@@ -28,7 +29,7 @@ import (
 	"k8s.io/klog"
 )
 
-var virtualMachineRE = regexp.MustCompile(`^azure://(?:.*)/providers/Microsoft.Compute/virtualMachines/(.+)$`)
+var virtualMachineRE = regexp.MustCompile(`^azure://(?:.*)/providers/microsoft.compute/virtualmachines/(.+)$`)
 
 type asgCache struct {
 	registeredAsgs     []cloudprovider.NodeGroup
@@ -63,7 +64,7 @@ func (m *asgCache) Register(asg cloudprovider.NodeGroup) bool {
 	defer m.mutex.Unlock()
 
 	for i := range m.registeredAsgs {
-		if existing := m.registeredAsgs[i]; existing.Id() == asg.Id() {
+		if existing := m.registeredAsgs[i]; strings.EqualFold(existing.Id(), asg.Id()) {
 			if reflect.DeepEqual(existing, asg) {
 				return false
 			}
@@ -94,7 +95,7 @@ func (m *asgCache) Unregister(asg cloudprovider.NodeGroup) bool {
 	updated := make([]cloudprovider.NodeGroup, 0, len(m.registeredAsgs))
 	changed := false
 	for _, existing := range m.registeredAsgs {
-		if existing.Id() == asg.Id() {
+		if strings.EqualFold(existing.Id(), asg.Id()) {
 			klog.V(1).Infof("Unregistered ASG %s", asg.Id())
 			changed = true
 			continue
@@ -117,7 +118,8 @@ func (m *asgCache) FindForInstance(instance *azureRef, vmType string) (cloudprov
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
-	if m.notInRegisteredAsg[*instance] {
+	inst := azureRef{Name: strings.ToLower(instance.Name)}
+	if m.notInRegisteredAsg[inst] {
 		// We already know we don't own this instance. Return early and avoid
 		// additional calls.
 		return nil, nil
@@ -125,34 +127,37 @@ func (m *asgCache) FindForInstance(instance *azureRef, vmType string) (cloudprov
 
 	if vmType == vmTypeVMSS {
 		// Omit virtual machines not managed by vmss.
-		if ok := virtualMachineRE.Match([]byte(instance.Name)); ok {
+		if ok := virtualMachineRE.Match([]byte(inst.Name)); ok {
 			klog.V(3).Infof("Instance %q is not managed by vmss, omit it in autoscaler", instance.Name)
-			m.notInRegisteredAsg[*instance] = true
+			m.notInRegisteredAsg[inst] = true
 			return nil, nil
 		}
 	}
 
 	if vmType == vmTypeStandard {
 		// Omit virtual machines with providerID not in Azure resource ID format.
-		if ok := virtualMachineRE.Match([]byte(instance.Name)); !ok {
+		if ok := virtualMachineRE.Match([]byte(inst.Name)); !ok {
 			klog.V(3).Infof("Instance %q is not in Azure resource ID format, omit it in autoscaler", instance.Name)
-			m.notInRegisteredAsg[*instance] = true
+			m.notInRegisteredAsg[inst] = true
 			return nil, nil
 		}
 	}
 
-	if asg, found := m.instanceToAsg[*instance]; found {
+	// Look up caches for the instance.
+	if asg := m.getInstanceFromCache(inst.Name); asg != nil {
 		return asg, nil
 	}
 
+	// Not found, regenerate the cache and try again.
 	if err := m.regenerate(); err != nil {
-		return nil, fmt.Errorf("Error while looking for ASG for instance %+v, error: %v", *instance, err)
+		return nil, fmt.Errorf("error while looking for ASG for instance %q, error: %v", instance.Name, err)
 	}
-	if config, found := m.instanceToAsg[*instance]; found {
-		return config, nil
+	if asg := m.getInstanceFromCache(inst.Name); asg != nil {
+		return asg, nil
 	}
 
-	m.notInRegisteredAsg[*instance] = true
+	// Add the instance to notInRegisteredAsg since it's unknown from Azure.
+	m.notInRegisteredAsg[inst] = true
 	return nil, nil
 }
 
@@ -177,5 +182,17 @@ func (m *asgCache) regenerate() error {
 	}
 
 	m.instanceToAsg = newCache
+	return nil
+}
+
+// Get node group from cache. nil would be return if not found.
+// Should be call with lock protected.
+func (m *asgCache) getInstanceFromCache(providerID string) cloudprovider.NodeGroup {
+	for instanceID, asg := range m.instanceToAsg {
+		if strings.EqualFold(instanceID.GetKey(), providerID) {
+			return asg
+		}
+	}
+
 	return nil
 }
