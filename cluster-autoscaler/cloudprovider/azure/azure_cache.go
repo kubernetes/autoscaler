@@ -29,7 +29,7 @@ import (
 	"k8s.io/klog"
 )
 
-var virtualMachineRE = regexp.MustCompile(`^azure://(?:.*)/providers/Microsoft.Compute/virtualMachines/(.+)$`)
+var virtualMachineRE = regexp.MustCompile(`^azure://(?:.*)/providers/microsoft.compute/virtualmachines/(.+)$`)
 
 type asgCache struct {
 	registeredAsgs     []cloudprovider.NodeGroup
