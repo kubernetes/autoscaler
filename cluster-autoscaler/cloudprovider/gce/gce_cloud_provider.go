@@ -110,6 +110,11 @@ func (gce *GceCloudProvider) Refresh() error {
 	return gce.gceManager.Refresh()
 }
 
+// GetInstanceID gets the instance ID for the specified node.
+func (gce *GceCloudProvider) GetInstanceID(node *apiv1.Node) string {
+	return node.Spec.ProviderID
+}
+
 // GceRef contains s reference to some entity in GCE world.
 type GceRef struct {
 	Project string
