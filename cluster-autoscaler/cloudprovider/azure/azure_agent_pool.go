@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"math/rand"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 
@@ -129,7 +130,7 @@ func (as *AgentPool) GetVMIndexes() ([]int, map[int]string, error) {
 		}
 
 		indexes = append(indexes, index)
-		indexToVM[index] = "azure://" + *instance.ID
+		indexToVM[index] = "azure://" + strings.ToLower(*instance.ID)
 	}
 
 	sortedIndexes := sort.IntSlice(indexes)
@@ -234,7 +235,7 @@ func (as *AgentPool) GetVirtualMachines() (instances []compute.VirtualMachine, e
 
 		tags := *instance.Tags
 		vmPoolName := tags["poolName"]
-		if *vmPoolName != as.Id() {
+		if vmPoolName == nil || !strings.EqualFold(*vmPoolName, as.Id()) {
 			continue
 		}
 
@@ -284,7 +285,7 @@ func (as *AgentPool) Belongs(node *apiv1.Node) (bool, error) {
 	if targetAsg == nil {
 		return false, fmt.Errorf("%s doesn't belong to a known agent pool", node.Name)
 	}
-	if targetAsg.Id() != as.Id() {
+	if !strings.EqualFold(targetAsg.Id(), as.Id()) {
 		return false, nil
 	}
 	return true, nil
@@ -307,7 +308,7 @@ func (as *AgentPool) DeleteInstances(instances []*azureRef) error {
 			return err
 		}
 
-		if asg != commonAsg {
+		if !strings.EqualFold(asg.Id(), commonAsg.Id()) {
 			return fmt.Errorf("cannot delete instance (%s) which don't belong to the same node pool (%q)", instance.GetKey(), commonAsg)
 		}
 	}
@@ -390,7 +391,7 @@ func (as *AgentPool) Nodes() ([]string, error) {
 		}
 
 		// To keep consistent with providerID from kubernetes cloud provider, do not convert ID to lower case.
-		name := "azure://" + *instance.ID
+		name := "azure://" + strings.ToLower(*instance.ID)
 		nodes = append(nodes, name)
 	}
 

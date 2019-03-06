@@ -58,6 +58,9 @@ type CloudProvider interface {
 	// GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
 	GetResourceLimiter() (*ResourceLimiter, error)
 
+	// GetInstanceID gets the instance ID for the specified node.
+	GetInstanceID(node *apiv1.Node) string
+
 	// Cleanup cleans up open resources before the cloud provider is destroyed, i.e. go routines etc.
 	Cleanup() error
 

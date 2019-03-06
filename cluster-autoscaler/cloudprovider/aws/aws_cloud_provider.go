@@ -116,7 +116,12 @@ func (aws *awsCloudProvider) Refresh() error {
 	return aws.awsManager.Refresh()
 }
 
-// AwsRef contains a reference to some entity in AWS/GKE world.
+// GetInstanceID gets the instance ID for the specified node.
+func (aws *awsCloudProvider) GetInstanceID(node *apiv1.Node) string {
+	return node.Spec.ProviderID
+}
+
+// AwsRef contains a reference to some entity in AWS world.
 type AwsRef struct {
 	Name string
 }
