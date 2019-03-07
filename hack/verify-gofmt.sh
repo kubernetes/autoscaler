@@ -38,7 +38,9 @@ find_files() {
     \) -name '*.go'
 }
 
-GOFMT="gofmt -s"
+DOCKER_IMAGE=`grep 'FROM golang' builder/Dockerfile | sed 's/FROM //'`
+GOFMT="docker run -v $(pwd):/code -w /code $DOCKER_IMAGE gofmt -s"
+
 bad_files=$(find_files | xargs $GOFMT -l)
 if [[ -n "${bad_files}" ]]; then
   echo "Please run hack/update-gofmt.sh to fix the following files:"
