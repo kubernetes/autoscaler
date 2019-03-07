@@ -667,7 +667,7 @@ func (pt *pollingTrackerPatch) updatePollingMethod() error {
 		}
 	}
 	// for 202 prefer the Azure-AsyncOperation header but fall back to Location if necessary
-	// note the absense of the "final GET" mechanism for PATCH
+	// note the absence of the "final GET" mechanism for PATCH
 	if pt.resp.StatusCode == http.StatusAccepted {
 		ao, err := getURLFromAsyncOpHeader(pt.resp)
 		if err != nil {

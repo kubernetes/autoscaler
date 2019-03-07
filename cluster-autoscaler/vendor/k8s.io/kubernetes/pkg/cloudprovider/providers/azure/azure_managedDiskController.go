@@ -67,10 +67,6 @@ type ManagedDiskOptions struct {
 	DiskMBpsReadWrite string
 }
 
-func newManagedDiskController(common *controllerCommon) (*ManagedDiskController, error) {
-	return &ManagedDiskController{common: common}, nil
-}
-
 //CreateManagedDisk : create managed disk
 func (c *ManagedDiskController) CreateManagedDisk(options *ManagedDiskOptions) (string, error) {
 	var err error
@@ -155,7 +151,7 @@ func (c *ManagedDiskController) CreateManagedDisk(options *ManagedDiskOptions) (
 	diskID := ""
 
 	err = kwait.ExponentialBackoff(defaultBackOff, func() (bool, error) {
-		provisionState, id, err := c.getDisk(options.ResourceGroup, options.DiskName)
+		provisionState, id, err := c.GetDisk(options.ResourceGroup, options.DiskName)
 		diskID = id
 		// We are waiting for provisioningState==Succeeded
 		// We don't want to hand-off managed disks to k8s while they are
@@ -201,8 +197,8 @@ func (c *ManagedDiskController) DeleteManagedDisk(diskURI string) error {
 	return nil
 }
 
-// return: disk provisionState, diskID, error
-func (c *ManagedDiskController) getDisk(resourceGroup, diskName string) (string, string, error) {
+// GetDisk return: disk provisionState, diskID, error
+func (c *ManagedDiskController) GetDisk(resourceGroup, diskName string) (string, string, error) {
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
 
