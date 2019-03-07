@@ -109,7 +109,8 @@ func (plugin *cinderPlugin) CanSupport(spec *volume.Spec) bool {
 }
 
 func (plugin *cinderPlugin) IsMigratedToCSI() bool {
-	return false
+	return utilfeature.DefaultFeatureGate.Enabled(features.CSIMigration) &&
+		utilfeature.DefaultFeatureGate.Enabled(features.CSIMigrationOpenStack)
 }
 
 func (plugin *cinderPlugin) RequiresRemount() bool {
@@ -143,6 +144,12 @@ func (plugin *cinderPlugin) GetVolumeLimits() (map[string]int64, error) {
 	if cloud.ProviderName() != openstack.ProviderName {
 		return nil, fmt.Errorf("Expected Openstack cloud, found %s", cloud.ProviderName())
 	}
+
+	openstackCloud, ok := cloud.(*openstack.OpenStack)
+	if ok && openstackCloud.NodeVolumeAttachLimit() > 0 {
+		volumeLimits[util.CinderVolumeLimitKey] = int64(openstackCloud.NodeVolumeAttachLimit())
+	}
+
 	return volumeLimits, nil
 }
 
