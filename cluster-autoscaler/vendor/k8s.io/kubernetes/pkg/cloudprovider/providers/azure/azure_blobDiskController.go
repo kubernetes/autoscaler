@@ -18,6 +18,7 @@ package azure
 
 import (
 	"bytes"
+	"context"
 	"encoding/binary"
 	"fmt"
 	"net/url"
@@ -62,25 +63,26 @@ var (
 	accountsLock = &sync.Mutex{}
 )
 
-func newBlobDiskController(common *controllerCommon) (*BlobDiskController, error) {
-	c := BlobDiskController{common: common}
+func (c *BlobDiskController) initStorageAccounts() {
+	accountsLock.Lock()
+	defer accountsLock.Unlock()
 
-	// get accounts
-	accounts, err := c.getAllStorageAccounts()
-	if err != nil {
-		klog.Errorf("azureDisk - getAllStorageAccounts error: %v", err)
-		c.accounts = make(map[string]*storageAccountState)
-		return &c, nil
+	if c.accounts == nil {
+		// get accounts
+		accounts, err := c.getAllStorageAccounts()
+		if err != nil {
+			klog.Errorf("azureDisk - getAllStorageAccounts error: %v", err)
+			c.accounts = make(map[string]*storageAccountState)
+		}
+		c.accounts = accounts
 	}
-	c.accounts = accounts
-	return &c, nil
 }
 
 // CreateVolume creates a VHD blob in a storage account that has storageType and location using the given storage account.
 // If no storage account is given, search all the storage accounts associated with the resource group and pick one that
 // fits storage type and location.
 func (c *BlobDiskController) CreateVolume(blobName, accountName, accountType, location string, requestGB int) (string, string, int, error) {
-	account, key, err := c.common.cloud.ensureStorageAccount(accountName, accountType, string(defaultStorageAccountKind), c.common.resourceGroup, location, dedicatedDiskAccountNamePrefix)
+	account, key, err := c.common.cloud.EnsureStorageAccount(accountName, accountType, string(defaultStorageAccountKind), c.common.resourceGroup, location, dedicatedDiskAccountNamePrefix)
 	if err != nil {
 		return "", "", 0, fmt.Errorf("could not get storage key for storage account %s: %v", accountName, err)
 	}
@@ -216,6 +218,8 @@ func (c *BlobDiskController) deleteVhdBlob(accountName, accountKey, blobName str
 //CreateBlobDisk : create a blob disk in a node
 func (c *BlobDiskController) CreateBlobDisk(dataDiskName string, storageAccountType storage.SkuName, sizeGB int) (string, error) {
 	klog.V(4).Infof("azureDisk - creating blob data disk named:%s on StorageAccountType:%s", dataDiskName, storageAccountType)
+
+	c.initStorageAccounts()
 
 	storageAccountName, err := c.findSANameForDisk(storageAccountType)
 	if err != nil {
@@ -436,7 +440,7 @@ func (c *BlobDiskController) getDiskCount(SAName string) (int, error) {
 }
 
 func (c *BlobDiskController) getAllStorageAccounts() (map[string]*storageAccountState, error) {
-	ctx, cancel := getContextWithCancel()
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 	accountListResult, err := c.common.cloud.StorageAccountClient.ListByResourceGroup(ctx, c.common.resourceGroup)
 	if err != nil {
