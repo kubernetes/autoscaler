@@ -54,9 +54,9 @@ import (
 	"k8s.io/client-go/tools/record"
 	certutil "k8s.io/client-go/util/cert"
 	"k8s.io/client-go/util/certificate"
+	"k8s.io/client-go/util/keyutil"
 	cloudprovider "k8s.io/cloud-provider"
 	cliflag "k8s.io/component-base/cli/flag"
-	csiclientset "k8s.io/csi-api/pkg/client/clientset/versioned"
 	kubeletconfigv1beta1 "k8s.io/kubelet/config/v1beta1"
 	"k8s.io/kubernetes/cmd/kubelet/app/options"
 	"k8s.io/kubernetes/pkg/api/legacyscheme"
@@ -94,6 +94,7 @@ import (
 	"k8s.io/kubernetes/pkg/util/rlimit"
 	"k8s.io/kubernetes/pkg/version"
 	"k8s.io/kubernetes/pkg/version/verflag"
+	"k8s.io/kubernetes/pkg/volume/util/subpath"
 	nodeapiclientset "k8s.io/node-api/pkg/client/clientset/versioned"
 	"k8s.io/utils/exec"
 	"k8s.io/utils/nsenter"
@@ -363,6 +364,7 @@ func UnsecuredDependencies(s *options.KubeletServer) (*kubelet.Dependencies, err
 	}
 
 	mounter := mount.New(s.ExperimentalMounterPath)
+	subpather := subpath.New(mounter)
 	var pluginRunner = exec.New()
 	if s.Containerized {
 		klog.V(2).Info("Running kubelet in containerized mode")
@@ -371,6 +373,8 @@ func UnsecuredDependencies(s *options.KubeletServer) (*kubelet.Dependencies, err
 			return nil, err
 		}
 		mounter = mount.NewNsenterMounter(s.RootDirectory, ne)
+		// NSenter only valid on Linux
+		subpather = subpath.NewNSEnter(mounter, ne, s.RootDirectory)
 		// an exec interface which can use nsenter for flex plugin calls
 		pluginRunner, err = nsenter.NewNsenter(nsenter.DefaultHostRootFsPath, exec.New())
 		if err != nil {
@@ -395,9 +399,9 @@ func UnsecuredDependencies(s *options.KubeletServer) (*kubelet.Dependencies, err
 		DockerClientConfig:  dockerClientConfig,
 		KubeClient:          nil,
 		HeartbeatClient:     nil,
-		CSIClient:           nil,
 		EventClient:         nil,
 		Mounter:             mounter,
+		Subpather:           subpather,
 		OOMAdjuster:         oom.NewOOMAdjuster(),
 		OSInterface:         kubecontainer.RealOS{},
 		VolumePlugins:       ProbeVolumePlugins(),
@@ -592,10 +596,6 @@ func run(s *options.KubeletServer, kubeDeps *kubelet.Dependencies, stopCh <-chan
 		// CRDs are JSON only, and client renegotiation for streaming is not correct as per #67803
 		crdClientConfig := restclient.CopyConfig(clientConfig)
 		crdClientConfig.ContentType = "application/json"
-		kubeDeps.CSIClient, err = csiclientset.NewForConfig(crdClientConfig)
-		if err != nil {
-			return fmt.Errorf("failed to initialize kubelet storage client: %v", err)
-		}
 
 		kubeDeps.NodeAPIClient, err = nodeapiclientset.NewForConfig(crdClientConfig)
 		if err != nil {
@@ -899,7 +899,7 @@ func InitializeTLS(kf *options.KubeletFlags, kc *kubeletconfiginternal.KubeletCo
 				return nil, err
 			}
 
-			if err := certutil.WriteKey(kc.TLSPrivateKeyFile, key); err != nil {
+			if err := keyutil.WriteKey(kc.TLSPrivateKeyFile, key); err != nil {
 				return nil, err
 			}
 
