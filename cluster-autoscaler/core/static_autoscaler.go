@@ -154,7 +154,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 
 	nodeInfosForGroups, autoscalerError := getNodeInfosForGroups(
 		readyNodes, a.nodeInfoCache, autoscalingContext.CloudProvider, autoscalingContext.ListerRegistry, daemonsets, autoscalingContext.PredicateChecker)
-	if err != nil {
+	if autoscalerError != nil {
 		return autoscalerError.AddPrefix("failed to build node infos for node groups: ")
 	}
 
