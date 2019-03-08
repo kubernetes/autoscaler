@@ -78,9 +78,10 @@ const (
 )
 
 var (
-	vmnameLinuxRegexp      = regexp.MustCompile(k8sLinuxVMNamingFormat)
-	vmnameWindowsRegexp    = regexp.MustCompile(k8sWindowsVMNamingFormat)
-	oldvmnameWindowsRegexp = regexp.MustCompile(k8sWindowsOldVMNamingFormat)
+	vmnameLinuxRegexp        = regexp.MustCompile(k8sLinuxVMNamingFormat)
+	vmnameWindowsRegexp      = regexp.MustCompile(k8sWindowsVMNamingFormat)
+	oldvmnameWindowsRegexp   = regexp.MustCompile(k8sWindowsOldVMNamingFormat)
+	azureResourceGroupNameRE = regexp.MustCompile(`.*/subscriptions/(?:.*)/resourceGroups/(.+)/providers/(?:.*)`)
 )
 
 //AzUtil consists of utility functions which utilizes clients to different services.
@@ -627,4 +628,15 @@ func isSuccessHTTPResponse(resp *http.Response, err error) (isSuccess bool, real
 
 	// This shouldn't happen, it only ensures all exceptions are handled.
 	return false, fmt.Errorf("failed with unknown error")
+}
+
+// convertResourceGroupNameToLower converts the resource group name in the resource ID to be lowered.
+func convertResourceGroupNameToLower(resourceID string) (string, error) {
+	matches := azureResourceGroupNameRE.FindStringSubmatch(resourceID)
+	if len(matches) != 2 {
+		return "", fmt.Errorf("%q isn't in Azure resource ID format", resourceID)
+	}
+
+	resourceGroup := matches[1]
+	return strings.Replace(resourceID, resourceGroup, strings.ToLower(resourceGroup), 1), nil
 }
