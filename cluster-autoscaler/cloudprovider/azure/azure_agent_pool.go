@@ -133,7 +133,11 @@ func (as *AgentPool) GetVMIndexes() ([]int, map[int]string, error) {
 		}
 
 		indexes = append(indexes, index)
-		indexToVM[index] = "azure://" + strings.ToLower(*instance.ID)
+		resourceID, err := convertResourceGroupNameToLower("azure://" + *instance.ID)
+		if err != nil {
+			return nil, nil, err
+		}
+		indexToVM[index] = resourceID
 	}
 
 	sortedIndexes := sort.IntSlice(indexes)
@@ -398,9 +402,13 @@ func (as *AgentPool) Nodes() ([]cloudprovider.Instance, error) {
 			continue
 		}
 
-		// To keep consistent with providerID from kubernetes cloud provider, do not convert ID to lower case.
-		name := "azure://" + strings.ToLower(*instance.ID)
-		nodes = append(nodes, cloudprovider.Instance{Id: name})
+		// To keep consistent with providerID from kubernetes cloud provider, convert
+		// resourceGroupName in the ID to lower case.
+		resourceID, err := convertResourceGroupNameToLower("azure://" + *instance.ID)
+		if err != nil {
+			return nil, err
+		}
+		nodes = append(nodes, cloudprovider.Instance{Id: resourceID})
 	}
 
 	return nodes, nil
