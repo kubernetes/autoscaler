@@ -32,6 +32,17 @@ import (
 const (
 	// ProviderName is the cloud provider name for Azure
 	ProviderName = "azure"
+
+	// GPULabel is the label added to nodes with GPU resource.
+	GPULabel = "cloud.google.com/gke-accelerator"
+)
+
+var (
+	availableGPUTypes = map[string]struct{}{
+		"nvidia-tesla-k80":  {},
+		"nvidia-tesla-p100": {},
+		"nvidia-tesla-v100": {},
+	}
 )
 
 // AzureCloudProvider provides implementation of CloudProvider interface for Azure.
@@ -59,6 +70,16 @@ func (azure *AzureCloudProvider) Cleanup() error {
 // Name returns name of the cloud provider.
 func (azure *AzureCloudProvider) Name() string {
 	return "azure"
+}
+
+// GPULabel returns the label added to nodes with GPU resource.
+func (azure *AzureCloudProvider) GPULabel() string {
+	return GPULabel
+}
+
+// GetAvailableGPUTypes return all available GPU types cloud provider supports
+func (azure *AzureCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
+	return availableGPUTypes
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.

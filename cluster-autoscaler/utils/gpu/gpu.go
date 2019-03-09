@@ -27,8 +27,6 @@ import (
 const (
 	// ResourceNvidiaGPU is the name of the Nvidia GPU resource.
 	ResourceNvidiaGPU = "nvidia.com/gpu"
-	// GPULabel is the label added to nodes with GPU resource on GKE.
-	GPULabel = "cloud.google.com/gke-accelerator"
 	// DefaultGPUType is the type of GPU used in NAP if the user
 	// don't specify what type of GPU his pod wants.
 	DefaultGPUType = "nvidia-tesla-k80"
@@ -49,21 +47,11 @@ const (
 	MetricsNoGPU = ""
 )
 
-var (
-	// knownGpuTypes lists all known GPU types, to be used in metrics; map for convenient access
-	// TODO(kgolab) obtain this from Cloud Provider
-	knownGpuTypes = map[string]struct{}{
-		"nvidia-tesla-k80":  {},
-		"nvidia-tesla-p100": {},
-		"nvidia-tesla-v100": {},
-	}
-)
-
 // FilterOutNodesWithUnreadyGpus removes nodes that should have GPU, but don't have it in allocatable
 // from ready nodes list and updates their status to unready on all nodes list.
 // This is a hack/workaround for nodes with GPU coming up without installed drivers, resulting
 // in GPU missing from their allocatable and capacity.
-func FilterOutNodesWithUnreadyGpus(allNodes, readyNodes []*apiv1.Node) ([]*apiv1.Node, []*apiv1.Node) {
+func FilterOutNodesWithUnreadyGpus(GPULabel string, allNodes, readyNodes []*apiv1.Node) ([]*apiv1.Node, []*apiv1.Node) {
 	newAllNodes := make([]*apiv1.Node, 0)
 	newReadyNodes := make([]*apiv1.Node, 0)
 	nodesWithUnreadyGpu := make(map[string]*apiv1.Node)
@@ -95,7 +83,7 @@ func FilterOutNodesWithUnreadyGpus(allNodes, readyNodes []*apiv1.Node) ([]*apiv1
 // GetGpuTypeForMetrics returns name of the GPU used on the node or empty string if there's no GPU
 // if the GPU type is unknown, "generic" is returned
 // NOTE: current implementation is GKE/GCE-specific
-func GetGpuTypeForMetrics(node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) string {
+func GetGpuTypeForMetrics(GPULabel string, availableGPUTypes map[string]struct{}, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) string {
 	// we use the GKE label if there is one
 	gpuType, labelFound := node.Labels[GPULabel]
 	capacity, capacityFound := node.Status.Capacity[ResourceNvidiaGPU]
@@ -112,7 +100,7 @@ func GetGpuTypeForMetrics(node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) s
 
 	// GKE-specific label & capacity are present - consistent state
 	if capacityFound {
-		return validateGpuType(gpuType)
+		return validateGpuType(availableGPUTypes, gpuType)
 	}
 
 	// GKE-specific label present but no capacity (yet?) - check the node template
@@ -135,8 +123,8 @@ func GetGpuTypeForMetrics(node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) s
 	return MetricsUnexpectedLabelGPU
 }
 
-func validateGpuType(gpu string) string {
-	if _, found := knownGpuTypes[gpu]; found {
+func validateGpuType(availableGPUTypes map[string]struct{}, gpu string) string {
+	if _, found := availableGPUTypes[gpu]; found {
 		return gpu
 	}
 	return MetricsUnknownGPU
@@ -162,7 +150,7 @@ func getUnreadyNodeCopy(node *apiv1.Node) *apiv1.Node {
 // NodeHasGpu returns true if a given node has GPU hardware.
 // The result will be true if there is hardware capability. It doesn't matter
 // if the drivers are installed and GPU is ready to use.
-func NodeHasGpu(node *apiv1.Node) bool {
+func NodeHasGpu(GPULabel string, node *apiv1.Node) bool {
 	_, hasGpuLabel := node.Labels[GPULabel]
 	gpuAllocatable, hasGpuAllocatable := node.Status.Allocatable[ResourceNvidiaGPU]
 	return hasGpuLabel || (hasGpuAllocatable && !gpuAllocatable.IsZero())
@@ -183,7 +171,7 @@ func PodRequestsGpu(pod *apiv1.Pod) bool {
 
 // GetNodeTargetGpus returns the number of gpus on a given node. This includes gpus which are not yet
 // ready to use and visible in kubernetes.
-func GetNodeTargetGpus(node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) (gpuType string, gpuCount int64, error errors.AutoscalerError) {
+func GetNodeTargetGpus(GPULabel string, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) (gpuType string, gpuCount int64, error errors.AutoscalerError) {
 	gpuLabel, found := node.Labels[GPULabel]
 	if !found {
 		return "", 0, nil
