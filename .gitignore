@@ -13,6 +13,9 @@
 .idea/
 *.iml
 
+# VSCode project files
+**/.vscode
+
 # Emacs save files
 *~
 \#*\#
