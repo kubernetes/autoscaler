@@ -29,6 +29,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const (
+	GPULabel = "TestGPULabel/accelerator"
+)
+
 func TestFilterOutNodesWithUnreadyGpus(t *testing.T) {
 	start := time.Now()
 	later := start.Add(10 * time.Minute)
@@ -129,7 +133,7 @@ func TestFilterOutNodesWithUnreadyGpus(t *testing.T) {
 		nodeNoGpuUnready,
 	}
 
-	newAllNodes, newReadyNodes := FilterOutNodesWithUnreadyGpus(initialAllNodes, initialReadyNodes)
+	newAllNodes, newReadyNodes := FilterOutNodesWithUnreadyGpus(GPULabel, initialAllNodes, initialReadyNodes)
 
 	foundInReady := make(map[string]bool)
 	for _, node := range newReadyNodes {
@@ -167,7 +171,7 @@ func TestNodeHasGpu(t *testing.T) {
 	}
 	nodeGpuReady.Status.Allocatable[ResourceNvidiaGPU] = *resource.NewQuantity(1, resource.DecimalSI)
 	nodeGpuReady.Status.Capacity[ResourceNvidiaGPU] = *resource.NewQuantity(1, resource.DecimalSI)
-	assert.True(t, NodeHasGpu(nodeGpuReady))
+	assert.True(t, NodeHasGpu(GPULabel, nodeGpuReady))
 
 	nodeGpuUnready := &apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{
@@ -179,7 +183,7 @@ func TestNodeHasGpu(t *testing.T) {
 			Allocatable: apiv1.ResourceList{},
 		},
 	}
-	assert.True(t, NodeHasGpu(nodeGpuUnready))
+	assert.True(t, NodeHasGpu(GPULabel, nodeGpuUnready))
 
 	nodeNoGpu := &apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{
@@ -191,7 +195,7 @@ func TestNodeHasGpu(t *testing.T) {
 			Allocatable: apiv1.ResourceList{},
 		},
 	}
-	assert.False(t, NodeHasGpu(nodeNoGpu))
+	assert.False(t, NodeHasGpu(GPULabel, nodeNoGpu))
 }
 
 func TestPodRequestsGpu(t *testing.T) {
