@@ -285,6 +285,10 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 
 	upcomingNodes := make([]*schedulercache.NodeInfo, 0)
 	for nodeGroup, numberOfNodes := range clusterStateRegistry.GetUpcomingNodes() {
+		if !clusterStateRegistry.IsNodeGroupHealthy(nodeGroup) {
+			klog.Warningf("Node group %s has %d upcoming nodes but is unhealthy. Ignoring those nodes.", nodeGroup, numberOfNodes)
+			continue
+		}
 		nodeTemplate, found := nodeInfos[nodeGroup]
 		if !found {
 			return &status.ScaleUpStatus{Result: status.ScaleUpError}, errors.NewAutoscalerError(
