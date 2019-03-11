@@ -19,6 +19,8 @@ package azure
 import (
 	"fmt"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2018-03-31/containerservice"
 	"k8s.io/klog"
@@ -41,6 +43,10 @@ type ContainerServiceAgentPool struct {
 	clusterName       string
 	resourceGroup     string
 	nodeResourceGroup string
+
+	curSize     int
+	lastRefresh time.Time
+	mutex       sync.Mutex
 }
 
 //NewContainerServiceAgentPool constructs ContainerServiceAgentPool from the --node param
@@ -53,6 +59,7 @@ func NewContainerServiceAgentPool(spec *dynamic.NodeGroupSpec, am *AzureManager)
 		minSize: spec.MinSize,
 		maxSize: spec.MaxSize,
 		manager: am,
+		curSize: -1,
 	}
 
 	asg.util = &AzUtil{
@@ -307,13 +314,37 @@ func (agentPool *ContainerServiceAgentPool) MinSize() int {
 //TargetSize gathers the target node count set for the cluster by
 //querying the underlying service.
 func (agentPool *ContainerServiceAgentPool) TargetSize() (int, error) {
-	return agentPool.GetNodeCount()
+	agentPool.mutex.Lock()
+	defer agentPool.mutex.Unlock()
+
+	if agentPool.lastRefresh.Add(15 * time.Second).After(time.Now()) {
+		return agentPool.curSize, nil
+	}
+
+	count, err := agentPool.GetNodeCount()
+	if err != nil {
+		return -1, err
+	}
+	klog.V(5).Infof("Got new size %d for agent pool (%q)", count, agentPool.Name)
+
+	agentPool.curSize = count
+	agentPool.lastRefresh = time.Now()
+	return agentPool.curSize, nil
 }
 
 //SetSize contacts the underlying service and sets the size of the pool.
 //This will be called when a scale up occurs and will be called just after
 //a delete is performed from a scale down.
-func (agentPool *ContainerServiceAgentPool) SetSize(targetSize int) error {
+func (agentPool *ContainerServiceAgentPool) SetSize(targetSize int) (err error) {
+	agentPool.mutex.Lock()
+	defer agentPool.mutex.Unlock()
+
+	return agentPool.setSizeInternal(targetSize)
+}
+
+// setSizeInternal contacts the underlying service and sets the size of the pool.
+// It should be called under lock protected.
+func (agentPool *ContainerServiceAgentPool) setSizeInternal(targetSize int) (err error) {
 	if targetSize > agentPool.MaxSize() || targetSize < agentPool.MinSize() {
 		klog.Errorf("Target size %d requested outside Max: %d, Min: %d", targetSize, agentPool.MaxSize(), agentPool.MaxSize())
 		return fmt.Errorf("Target size %d requested outside Max: %d, Min: %d", targetSize, agentPool.MaxSize(), agentPool.MinSize())
@@ -321,10 +352,17 @@ func (agentPool *ContainerServiceAgentPool) SetSize(targetSize int) error {
 
 	klog.V(2).Infof("Setting size for cluster (%q) with new count (%d)", agentPool.clusterName, targetSize)
 	if agentPool.serviceType == vmTypeAKS {
-		return agentPool.setAKSNodeCount(targetSize)
+		err = agentPool.setAKSNodeCount(targetSize)
+	} else {
+		err = agentPool.setACSNodeCount(targetSize)
+	}
+	if err != nil {
+		return err
 	}
 
-	return agentPool.setACSNodeCount(targetSize)
+	agentPool.curSize = targetSize
+	agentPool.lastRefresh = time.Now()
+	return nil
 }
 
 //IncreaseSize calls in the underlying SetSize to increase the size in response
@@ -345,52 +383,53 @@ func (agentPool *ContainerServiceAgentPool) IncreaseSize(delta int) error {
 	return agentPool.SetSize(targetSize)
 }
 
-//DeleteNodesInternal calls the underlying vm service to delete the node.
-//Additionally it also call into the container service to reflect the node count resulting
-//from the deletion.
-func (agentPool *ContainerServiceAgentPool) DeleteNodesInternal(providerIDs []string) error {
-	currentSize, err := agentPool.TargetSize()
-	if err != nil {
-		return err
-	}
-	// Set the size to current size. Reduce as we are able to go through.
-	targetSize := currentSize
-
+// deleteNodesInternal calls the underlying vm service to delete the node.
+// It should be called within lock protected.
+func (agentPool *ContainerServiceAgentPool) deleteNodesInternal(providerIDs []string) (deleted int, err error) {
 	for _, providerID := range providerIDs {
 		klog.Infof("ProviderID got to delete: %s", providerID)
 		nodeName, err := agentPool.GetName(providerID)
 		if err != nil {
-			return err
+			return deleted, err
 		}
 		klog.Infof("VM name got to delete: %s", nodeName)
 
 		err = agentPool.util.DeleteVirtualMachine(agentPool.nodeResourceGroup, nodeName)
 		if err != nil {
-			klog.Error(err)
-			return err
+			klog.Errorf("Failed to delete virtual machine %q with error: %v", nodeName, err)
+			return deleted, err
 		}
-		targetSize--
+
+		// increase the deleted count after delete VM succeed.
+		deleted++
 	}
 
-	// TODO: handle the errors from delete operation.
-	if currentSize != targetSize {
-		agentPool.SetSize(targetSize)
-	}
-	return nil
+	return deleted, nil
 }
 
 //DeleteNodes extracts the providerIDs from the node spec and calls into the internal
 //delete method.
 func (agentPool *ContainerServiceAgentPool) DeleteNodes(nodes []*apiv1.Node) error {
+	agentPool.mutex.Lock()
+	defer agentPool.mutex.Unlock()
+
 	var providerIDs []string
 	for _, node := range nodes {
-		klog.Infof("Node: %s", node.Spec.ProviderID)
 		providerIDs = append(providerIDs, node.Spec.ProviderID)
 	}
-	for _, p := range providerIDs {
-		klog.Infof("ProviderID before calling acsmgr: %s", p)
+
+	deleted, deleteError := agentPool.deleteNodesInternal(providerIDs)
+	// Update node count if there're some virtual machines got deleted.
+	if deleted != 0 {
+		targetSize := agentPool.curSize - deleted
+		err := agentPool.setSizeInternal(targetSize)
+		if err != nil {
+			klog.Errorf("Failed to set size for agent pool %q with error: %v", agentPool.Name, err)
+		} else {
+			klog.V(3).Infof("Size for agent pool %q has been updated to %d", agentPool.Name, targetSize)
+		}
 	}
-	return agentPool.DeleteNodesInternal(providerIDs)
+	return deleteError
 }
 
 //IsContainerServiceNode checks if the tag from the vm matches the agentPool name
@@ -438,13 +477,17 @@ func (agentPool *ContainerServiceAgentPool) DecreaseTargetSize(delta int) error 
 		klog.Error(err)
 		return err
 	}
+	klog.V(5).Infof("DecreaseTargetSize get current size %d for agent pool %q", currentSize, agentPool.Name)
+
 	// Get the current nodes in the list
 	nodes, err := agentPool.GetNodes()
 	if err != nil {
 		klog.Error(err)
 		return err
 	}
-	targetSize := int(currentSize) + delta
+
+	targetSize := currentSize + delta
+	klog.V(5).Infof("DecreaseTargetSize get target size %d for agent pool %q", targetSize, agentPool.Name)
 	if targetSize < len(nodes) {
 		return fmt.Errorf("attempt to delete existing nodes targetSize:%d delta:%d existingNodes: %d",
 			currentSize, delta, len(nodes))
