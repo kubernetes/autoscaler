@@ -408,7 +408,8 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 				a.clusterStateRegistry.Recalculate()
 			}
 
-			if scaleDownStatus.Result == status.ScaleDownNoNodeDeleted &&
+			if (scaleDownStatus.Result == status.ScaleDownNoNodeDeleted ||
+				scaleDownStatus.Result == status.ScaleDownNoUnneeded) &&
 				a.AutoscalingContext.AutoscalingOptions.MaxBulkSoftTaintCount != 0 {
 				scaleDown.SoftTaintUnneededNodes(allNodes)
 			}
