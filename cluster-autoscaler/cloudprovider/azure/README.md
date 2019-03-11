@@ -138,12 +138,8 @@ Pre-requirements:
 
 - Get credentials from above `permissions` step.
 - Get the cluster name using the following:
-
-  ```
-  for ACS:
-  ```sh
-  az acs list
-  ```
+  - for ACS: `az acs list`
+  - for AKS: `az aks list`
 
 - Get a node pool name by extracting the value of the label **agentpool**
   ```sh
@@ -160,9 +156,10 @@ Fill the values of cluster-autoscaler-azure secret in [cluster-autoscaler-contai
 - SubscriptionID: `<base64-encode-subscription-id>`
 - TenantID: `<base64-encoded-tenant-id>`
 - ClusterName: `<base64-encoded-clustername>`
+- VMType: `<base64-encoded-vmtype>`
+- NodeResourceGroup: `<base64-encoded-node-resource-group>` (only for AKS with VMAS)
 
 > Note that all data above should be encoded with base64.
-
 
 And fill the node groups in container command by `--nodes`, with the range of nodes (minimum to be set as 3 which is the default cluster size) and node pool name obtained from pre-requirements steps above, e.g.
 
@@ -170,13 +167,19 @@ And fill the node groups in container command by `--nodes`, with the range of no
         - --nodes=3:10:nodepool1
 ```
 
-The vmType param determines the kind of service we are interacting with.
-For ACS fill the following base64 encoded value:
+The `vmType` param determines the kind of service we are interacting with:
 
 ```sh
-$echo ACS | base64
-QUNTCg==
+# For ACS
+$ echo -n ACS | base64
+QUNT
+
+# For AKS
+$ echo -n AKS | base64
+QUtT
 ```
+
+The `NodeResourceGroup` param is only for AKS with VMAS, it should be in format `MC_<resource-group>_<cluster-name>_<location>`. Note the param is case sensitive and should be encoded with base64.
 
 Then deploy cluster-autoscaler by running
 
@@ -186,4 +189,26 @@ kubectl create -f examples/cluster-autoscaler-containerservice.yaml
 
 ### AKS deployment
 
-Take a look at these docs here: https://docs.microsoft.com/en-us/azure/aks/autoscaler
+AKS supports two types of nodes: virtual machine scale sets (VMSS) and availability sets (VMAS).
+
+**AKS with VMSS**
+
+Virtual machine scale sets is only supported from Kubernetes version 1.12.4, you can enable the cluster autoscaler when provisioning the cluster, e.g.
+
+```sh
+az aks create \
+  --resource-group myResourceGroup \
+  --name myAKSCluster \
+  --kubernetes-version 1.12.4 \
+  --node-count 1 \
+  --enable-vmss \
+  --enable-cluster-autoscaler \
+  --min-count 1 \
+  --max-count 3
+```
+
+Please take a look at https://docs.microsoft.com/en-us/azure/aks/autoscaler for full documentations.
+
+**AKS with VMAS**
+
+For virtual machine availability sets, please follow same steps in [ACS deployment](#acs-deployment).
