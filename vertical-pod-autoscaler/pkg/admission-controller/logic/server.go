@@ -147,7 +147,7 @@ var (
 	}
 )
 
-func validateVPA(vpa *vpa_types.VerticalPodAutoscaler) error {
+func validateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
 	if vpa.Spec.UpdatePolicy != nil {
 		mode := vpa.Spec.UpdatePolicy.UpdateMode
 		if mode == nil {
@@ -178,16 +178,20 @@ func validateVPA(vpa *vpa_types.VerticalPodAutoscaler) error {
 		}
 	}
 
+	if isCreate && vpa.Spec.TargetRef == nil {
+		return fmt.Errorf("TargetRef is required. If you're using v1beta1 version of the API, please migrate to v1beta2.")
+	}
+
 	return nil
 }
 
-func getPatchesForVPADefaults(raw []byte) ([]patchRecord, error) {
+func getPatchesForVPADefaults(raw []byte, isCreate bool) ([]patchRecord, error) {
 	vpa, err := parseVPA(raw)
 	if err != nil {
 		return nil, err
 	}
 
-	err = validateVPA(vpa)
+	err = validateVPA(vpa, isCreate)
 	if err != nil {
 		return nil, err
 	}
@@ -228,7 +232,7 @@ func (s *AdmissionServer) admit(data []byte) (*v1beta1.AdmissionResponse, metric
 		patches, err = s.getPatchesForPodResourceRequest(ar.Request.Object.Raw, ar.Request.Namespace)
 		resource = metrics_admission.Pod
 	case vpaResource:
-		patches, err = getPatchesForVPADefaults(ar.Request.Object.Raw)
+		patches, err = getPatchesForVPADefaults(ar.Request.Object.Raw, ar.Request.Operation == v1beta1.Create)
 		resource = metrics_admission.Vpa
 		// we don't let in problematic VPA objects - late validation
 		if err != nil {
