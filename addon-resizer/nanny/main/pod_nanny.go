@@ -59,8 +59,6 @@ func checkPercentageFlagBounds(flagName string, flagValue int) {
 }
 
 func main() {
-	// First log our starting config, and then set up.
-	log.Infof("Invoked by %v", os.Args)
 	// Add standard go flags to the flag set, to enable e.g. setting glog flags.
 	flag.CommandLine.AddGoFlagSet(goflag.CommandLine)
 	flag.Parse()
