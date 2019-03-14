@@ -94,7 +94,7 @@ func initializeDefaultOptions(opts *AutoscalerOptions) error {
 	}
 	if opts.ExpanderStrategy == nil {
 		expanderStrategy, err := factory.ExpanderStrategyFromString(opts.ExpanderName,
-			opts.CloudProvider, opts.AutoscalingKubeClients.AllNodeLister())
+			opts.CloudProvider, opts.AutoscalingKubeClients, opts.KubeClient, opts.ConfigNamespace)
 		if err != nil {
 			return err
 		}
