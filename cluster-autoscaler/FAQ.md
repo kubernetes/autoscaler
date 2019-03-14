@@ -589,7 +589,7 @@ new nodes will be added.
 Expanders can be selected by passing the name to the `--expander` flag, i.e.
 `./cluster-autoscaler --expander=random`.
 
-Currently Cluster Autoscaler has 4 expanders:
+Currently Cluster Autoscaler has 5 expanders:
 
 * `random` - this is the default expander, and should be used when you don't have a particular
 need for the node groups to scale differently.
@@ -605,6 +605,14 @@ after scale-up. This is useful when you have different classes of nodes, for exa
 * `price` - select the node group that will cost the least and, at the same time, whose machines
 would match the cluster size. This expander is described in more details
 [HERE](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/proposals/pricing.md). Currently it works only for GCE and GKE (patches welcome.)
+
+* `priority` - selects the node group that has the highest priority assigned by the user. It's configuration is described in more details [here](expander/priority/readme.md)
+
+### Does CA respect node affinity when selecting node groups to scale up?
+
+CA respects `nodeSelector` and `requiredDuringSchedulingIgnoredDuringExecution` in nodeAffinity given that you have labelled your node groups accordingly. If there is a pod that cannot be scheduled with either `nodeSelector` or `requiredDuringSchedulingIgnoredDuringExecution` specified, CA will only consider node groups that satisfy those requirements for expansion.
+
+However, CA does not consider "soft" constraints like `preferredDuringSchedulingIgnoredDuringExecution` when selecting node groups. That means that if CA has two or more node groups available for expansion, it will not use soft constraints to pick one node group over another.
 
 ************
 
