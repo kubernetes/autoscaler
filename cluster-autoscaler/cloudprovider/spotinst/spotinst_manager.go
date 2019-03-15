@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/mpscontext"
 	"math/rand"
 	"strings"
 	"sync"
@@ -394,6 +395,7 @@ func (mgr *CloudManager) buildNodeFromTemplate(group *Group, template *groupTemp
 	node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewQuantity(template.InstanceType.VCPU, resource.DecimalSI)
 	node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(template.InstanceType.MemoryMb*1024*1024, resource.DecimalSI)
 	node.Status.Capacity[gpumemory.ResourceVisenzeGPUMemory] = *resource.NewQuantity(template.InstanceType.GPUMemory, resource.DecimalSI)
+	node.Status.Capacity[mpscontext.ResourceVisenzeMPSContext] = *resource.NewQuantity(template.InstanceType.MPSContext, resource.DecimalSI)
 	node.Status.Allocatable = node.Status.Capacity
 
 	// NodeLabels
