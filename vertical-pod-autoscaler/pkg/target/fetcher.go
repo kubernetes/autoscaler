@@ -23,6 +23,7 @@ import (
 	"github.com/golang/glog"
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
+	v1batch "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -61,6 +62,7 @@ const (
 	statefulSet           wellKnownController = "StatefulSet"
 	replicationController wellKnownController = "ReplicationController"
 	job                   wellKnownController = "Job"
+	cronJob               wellKnownController = "CronJob"
 )
 
 // NewVpaTargetSelectorFetcher returns new instance of VpaTargetSelectorFetcher
@@ -84,6 +86,7 @@ func NewVpaTargetSelectorFetcher(config *rest.Config, kubeClient kube_client.Int
 		statefulSet:           factory.Apps().V1().StatefulSets().Informer(),
 		replicationController: factory.Core().V1().ReplicationControllers().Informer(),
 		job:                   factory.Batch().V1().Jobs().Informer(),
+		cronJob:               factory.Batch().V2alpha1().CronJobs().Informer(),
 	}
 
 	for kind, informer := range informersMap {
@@ -187,6 +190,12 @@ func getLabelSelector(informer cache.SharedIndexInformer, kind, namespace, name 
 			return nil, fmt.Errorf("Failed to parse %s %s/%s", kind, namespace, name)
 		}
 		return metav1.LabelSelectorAsSelector(metav1.SetAsLabelSelector(apiObj.Spec.Selector))
+	case (*v1batch.CronJob):
+		apiObj, ok := obj.(*v1batch.CronJob)
+		if !ok {
+			return nil, fmt.Errorf("Failed to parse %s %s/%s", kind, namespace, name)
+		}
+		return metav1.LabelSelectorAsSelector(metav1.SetAsLabelSelector(apiObj.Spec.JobTemplate.Spec.Selector))
 	}
 	return nil, fmt.Errorf("Don't know how to read label seletor")
 }
