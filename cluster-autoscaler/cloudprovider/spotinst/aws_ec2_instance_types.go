@@ -24,6 +24,7 @@ type instanceType struct {
 	MemoryMb     int64
 	GPU          int64
 	GPUMemory    int64
+	MPSContext   int64
 }
 
 // InstanceTypes is a map of ec2 resources
@@ -225,18 +226,21 @@ var InstanceTypes = map[string]*instanceType{
 		VCPU:         32,
 		MemoryMb:     0,
 		GPU:          4,
+		MPSContext:   16,
 	},
 	"g2.2xlarge": {
 		InstanceType: "g2.2xlarge",
 		VCPU:         8,
 		MemoryMb:     15360,
 		GPU:          1,
+		MPSContext:   16,
 	},
 	"g2.8xlarge": {
 		InstanceType: "g2.8xlarge",
 		VCPU:         32,
 		MemoryMb:     61440,
 		GPU:          4,
+		MPSContext:   16,
 	},
 	"g3": {
 		InstanceType: "g3",
@@ -244,6 +248,7 @@ var InstanceTypes = map[string]*instanceType{
 		MemoryMb:     0,
 		GPU:          4,
 		GPUMemory:    31931236352,
+		MPSContext:   16,
 	},
 	"g3.16xlarge": {
 		InstanceType: "g3.16xlarge",
@@ -251,6 +256,7 @@ var InstanceTypes = map[string]*instanceType{
 		MemoryMb:     499712,
 		GPU:          4,
 		GPUMemory:    31931236352,
+		MPSContext:   16,
 	},
 	"g3.4xlarge": {
 		InstanceType: "g3.4xlarge",
@@ -258,6 +264,7 @@ var InstanceTypes = map[string]*instanceType{
 		MemoryMb:     124928,
 		GPU:          1,
 		GPUMemory:    7982809088,
+		MPSContext:   16,
 	},
 	"g3.8xlarge": {
 		InstanceType: "g3.8xlarge",
@@ -265,6 +272,7 @@ var InstanceTypes = map[string]*instanceType{
 		MemoryMb:     249856,
 		GPU:          2,
 		GPUMemory:    15965618176,
+		MPSContext:   16,
 	},
 	"g3s.xlarge": {
 		InstanceType: "g3s.xlarge",
@@ -272,6 +280,7 @@ var InstanceTypes = map[string]*instanceType{
 		MemoryMb:     31232,
 		GPU:          1,
 		GPUMemory:    7982809088,
+		MPSContext:   16,
 	},
 	"h1": {
 		InstanceType: "h1",
@@ -543,6 +552,7 @@ var InstanceTypes = map[string]*instanceType{
 		MemoryMb:     0,
 		GPU:          16,
 		GPUMemory:    12000000000, // Rough estimate of 12 GB
+		MPSContext:   16,
 	},
 	"p2.16xlarge": {
 		InstanceType: "p2.16xlarge",
@@ -550,6 +560,7 @@ var InstanceTypes = map[string]*instanceType{
 		MemoryMb:     786432,
 		GPU:          16,
 		GPUMemory:    192000000000,
+		MPSContext:   16,
 	},
 	"p2.8xlarge": {
 		InstanceType: "p2.8xlarge",
@@ -557,6 +568,7 @@ var InstanceTypes = map[string]*instanceType{
 		MemoryMb:     499712,
 		GPU:          8,
 		GPUMemory:    96000000000,
+		MPSContext:   16,
 	},
 	"p2.xlarge": {
 		InstanceType: "p2.xlarge",
@@ -564,6 +576,7 @@ var InstanceTypes = map[string]*instanceType{
 		MemoryMb:     62464,
 		GPU:          1,
 		GPUMemory:    12000000000,
+		MPSContext:   16,
 	},
 	"p3": {
 		InstanceType: "p3",
@@ -571,6 +584,7 @@ var InstanceTypes = map[string]*instanceType{
 		MemoryMb:     499712,
 		GPU:          8,
 		GPUMemory:    16000000000,
+		MPSContext:   48,
 	},
 	"p3.16xlarge": {
 		InstanceType: "p3.16xlarge",
@@ -578,6 +592,7 @@ var InstanceTypes = map[string]*instanceType{
 		MemoryMb:     499712,
 		GPU:          8,
 		GPUMemory:    128000000000,
+		MPSContext:   48,
 	},
 	"p3.2xlarge": {
 		InstanceType: "p3.2xlarge",
@@ -585,6 +600,7 @@ var InstanceTypes = map[string]*instanceType{
 		MemoryMb:     62464,
 		GPU:          1,
 		GPUMemory:    16000000000,
+		MPSContext:   48,
 	},
 	"p3.8xlarge": {
 		InstanceType: "p3.8xlarge",
@@ -592,6 +608,7 @@ var InstanceTypes = map[string]*instanceType{
 		MemoryMb:     249856,
 		GPU:          4,
 		GPUMemory:    64000000000,
+		MPSContext:   48,
 	},
 	"r3": {
 		InstanceType: "r3",
