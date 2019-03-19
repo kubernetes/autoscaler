@@ -41,6 +41,7 @@ this document:
   * [How fast is HPA when combined with CA?](#how-fast-is-hpa-when-combined-with-ca)
   * [Where can I find the designs of the upcoming features?](#where-can-i-find-the-designs-of-the-upcoming-features)
   * [What are Expanders?](#what-are-expanders)
+  * [Does CA respect node affinity when selecting node groups to scale up?](#does-ca-respect-node-affinity-when-selecting-node-groups-to-scale-up)
   * [What are the parameters to CA?](#what-are-the-parameters-to-ca)
 * [Troubleshooting](#troubleshooting)
   * [I have a couple of nodes with low utilization, but they are not scaled down. Why?](#i-have-a-couple-of-nodes-with-low-utilization-but-they-are-not-scaled-down-why)
@@ -605,6 +606,11 @@ after scale-up. This is useful when you have different classes of nodes, for exa
 * `price` - select the node group that will cost the least and, at the same time, whose machines
 would match the cluster size. This expander is described in more details
 [HERE](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/proposals/pricing.md). Currently it works only for GCE and GKE (patches welcome.)
+
+### Does CA respect node affinity when selecting node groups to scale up?
+CA respects `nodeSelector` and `requiredDuringSchedulingIgnoredDuringExecution` in nodeAffinity given that you have labelled your node groups accordingly. If there is a pod that cannot be scheduled with either `nodeSelector` or `requiredDuringSchedulingIgnoredDuringExecution` specified, CA will only consider node groups that satisfy those requirements for expansion.
+
+However, CA does not consider "soft" constraints like `preferredDuringSchedulingIgnoredDuringExecution` when selecting node groups. That means that if CA has two or more node groups available for expansion, it will not use soft constraints to pick one node group over another.
 
 ************
 
