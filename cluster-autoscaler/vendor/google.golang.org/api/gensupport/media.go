@@ -242,7 +242,6 @@ func NewInfoFromResumableMedia(r io.ReaderAt, size int64, mediaType string) *Med
 	}
 }
 
-// SetProgressUpdater sets the progress updater for the media info.
 func (mi *MediaInfo) SetProgressUpdater(pu googleapi.ProgressUpdater) {
 	if mi != nil {
 		mi.progressUpdater = pu
@@ -334,9 +333,4 @@ func (mi *MediaInfo) ResumableUpload(locURI string) *ResumableUpload {
 			}
 		},
 	}
-}
-
-// SetGetBody sets the GetBody field of req to f.
-func SetGetBody(req *http.Request, f func() (io.ReadCloser, error)) {
-	req.GetBody = f
 }
