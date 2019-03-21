@@ -23,13 +23,6 @@ for item in $with_vendor; do
     git commit -a -m no_vendor
 done
 
-echo Overriding GKE API
-mkdir -p $GOPATH/src/google.golang.org/api/container/v1beta1
-cp $GOPATH/src/k8s.io/autoscaler/cluster-autoscaler/_override/google.golang.org/api/container/v1beta1/*  $GOPATH/src/google.golang.org/api/container/v1beta1
-cd $GOPATH/src/google.golang.org/api/
-git add .
-git commit -a -m "Api override for NAP"
-
 echo Overriding AKS API
 mkdir -p $GOPATH/src/github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2018-03-31/containerservice
 cp $GOPATH/src/k8s.io/autoscaler/cluster-autoscaler/_override/github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2018-03-31/containerservice/* $GOPATH/src/github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2018-03-31/containerservice/
