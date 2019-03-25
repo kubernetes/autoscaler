@@ -35,11 +35,23 @@ procedure described below.
 
 # Installation
 
-The current default version is Vertical Pod Autoscaler 0.4.0
+The current default version is Vertical Pod Autoscaler 0.5.0
 
-**NOTE:** version 0.4 requires at least Kubernetes 1.11 to work (needs certain
+**NOTE:** since version 0.4 VPA requires at least Kubernetes 1.11 to work (needs certain
 Custom Resource Definition capabilities). With older Kubernetes versions we
-suggest using the [latest 0.3 version](https://github.com/kubernetes/autoscaler/blob/vpa-release-0.3/vertical-pod-autoscaler/README.md) 
+suggest using the [latest 0.3 version](https://github.com/kubernetes/autoscaler/blob/vpa-release-0.3/vertical-pod-autoscaler/README.md).
+
+### Notice on removal of v1beta1 version (>=0.5.0)
+
+**NOTE:** In 0.5.0 we disabled the old version of the API - `autoscaling.k8s.io/v1beta1`.
+The VPA objects in this version will no longer receive recommendations and
+existing recommendations will be removed. The objects will remain present though
+and a ConfigUnsupported condition will be set on them.
+
+To receive recommendations please migrate to `autoscaling.k8s.io/v1beta2` API,
+as described in the next section.
+Please also have a look there if you want to understand the rationale behind
+the API change.
 
 ### Notice on switching to v1beta2 version (0.3.X to >=0.4.0)
 
