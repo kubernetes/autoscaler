@@ -2211,6 +2211,7 @@
 			"ImportPath": "google.golang.org/api/container/v1",
 			"Rev": "e21acd801f91da814261b938941d193bb036441a"
 		},
+		{
 			"ImportPath": "google.golang.org/api/gensupport",
 			"Rev": "e21acd801f91da814261b938941d193bb036441a"
 		},
