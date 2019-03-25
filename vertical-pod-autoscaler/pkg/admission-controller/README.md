@@ -28,8 +28,10 @@ up the changes: ```sudo systemctl restart kubelet.service```
 1. Create the pod:
    `kubectl create -f ../deploy/admission-controller-deployment.yaml`.
    The first thing this will do is it will register itself with the apiserver as
-   an Webhook Admission Controller and start changing resource requirements
+   Webhook Admission Controller and start changing resource requirements
    for pods on their creation & updates.
+1. You can specify a path for it to register as a part of the installation process
+   by setting `--register-by-url=true` and passing `--webhook-address` and `--webhook-port`.
 
 ## Implementation
 
