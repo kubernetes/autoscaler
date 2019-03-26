@@ -33,6 +33,16 @@ import (
 const (
 	// ProviderName is the cloud provider name for Magnum
 	ProviderName = "magnum"
+	// GPULabel is the label added to nodes with GPU resource.
+	GPULabel = "cloud.google.com/gke-accelerator"
+)
+
+var (
+	availableGPUTypes = map[string]struct{}{
+		"nvidia-tesla-k80":  {},
+		"nvidia-tesla-p100": {},
+		"nvidia-tesla-v100": {},
+	}
 )
 
 // magnumCloudProvider implements CloudProvider interface from cluster-autoscaler/cloudprovider module.
@@ -54,6 +64,16 @@ func buildMagnumCloudProvider(magnumManager magnumManager, resourceLimiter *clou
 // Name returns the name of the cloud provider.
 func (os *magnumCloudProvider) Name() string {
 	return ProviderName
+}
+
+// GPULabel returns the label added to nodes with GPU resource.
+func (os *magnumCloudProvider) GPULabel() string {
+	return GPULabel
+}
+
+// GetAvailableGPUTypes return all available GPU types cloud provider supports
+func (os *magnumCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
+	return availableGPUTypes
 }
 
 // NodeGroups returns all node groups managed by this cloud provider.

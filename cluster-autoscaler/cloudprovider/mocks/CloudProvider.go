@@ -41,6 +41,36 @@ func (_m *CloudProvider) Cleanup() error {
 	return r0
 }
 
+// GPULabel provides a mock function with given fields:
+func (_m *CloudProvider) GPULabel() string {
+	ret := _m.Called()
+
+	var r0 string
+	if rf, ok := ret.Get(0).(func() string); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(string)
+	}
+
+	return r0
+}
+
+// GetAvailableGPUTypes provides a mock function with given fields:
+func (_m *CloudProvider) GetAvailableGPUTypes() map[string]struct{} {
+	ret := _m.Called()
+
+	var r0 map[string]struct{}
+	if rf, ok := ret.Get(0).(func() map[string]struct{}); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(map[string]struct{})
+		}
+	}
+
+	return r0
+}
+
 // GetAvailableMachineTypes provides a mock function with given fields:
 func (_m *CloudProvider) GetAvailableMachineTypes() ([]string, error) {
 	ret := _m.Called()

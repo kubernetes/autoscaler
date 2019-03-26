@@ -67,7 +67,8 @@ func NewAutoscaler(opts AutoscalerOptions) (Autoscaler, errors.AutoscalerError) 
 		opts.AutoscalingOptions,
 		opts.PredicateChecker,
 		opts.AutoscalingKubeClients,
-		opts.Processors, opts.CloudProvider,
+		opts.Processors,
+		opts.CloudProvider,
 		opts.ExpanderStrategy,
 		opts.EstimatorBuilder,
 		opts.Backoff), nil
