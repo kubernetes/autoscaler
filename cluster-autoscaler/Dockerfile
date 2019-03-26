@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM k8s.gcr.io/debian-base-amd64:0.4.1
+FROM k8s.gcr.io/debian-base-amd64:v1.0.0
 LABEL maintainer="Marcin Wielgus <mwielgus@google.com>"
 
 ENV DEBIAN_FRONTEND noninteractive
