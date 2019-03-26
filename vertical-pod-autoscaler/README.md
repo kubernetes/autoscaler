@@ -2,16 +2,16 @@
 
 ## Contents
 - [Intro](#intro)
-- [Installation](#intallation)
+- [Installation](#installation)
   - [Prerequisites](#prerequisites)
   - [Install command](#install-command)
   - [Quick start](#quick-start)
   - [Test your installation](#test-your-installation)
   - [Example VPA configuration](#example-vpa-configuration)
   - [Troubleshooting](#troubleshooting)
-  - [Components of VPA](#component-of-vpa)
+  - [Components of VPA](#components-of-vpa)
   - [Tear down](#tear-down)
-- [Known limitations](#known-limitation)
+- [Known limitations](#known-limitations)
   - [Limitations of beta version](#limitations-of-beta-version)
 
 # Intro
