@@ -43,6 +43,17 @@ import (
 const (
 	// ProviderName is the cloud provider name for kubemark
 	ProviderName = "kubemark"
+
+	// GPULabel is the label added to nodes with GPU resource.
+	GPULabel = "cloud.google.com/gke-accelerator"
+)
+
+var (
+	availableGPUTypes = map[string]struct{}{
+		"nvidia-tesla-k80":  {},
+		"nvidia-tesla-p100": {},
+		"nvidia-tesla-v100": {},
+	}
 )
 
 // KubemarkCloudProvider implements CloudProvider interface for kubemark
@@ -81,6 +92,16 @@ func (kubemark *KubemarkCloudProvider) addNodeGroup(spec string) error {
 // Name returns name of the cloud provider.
 func (kubemark *KubemarkCloudProvider) Name() string {
 	return ProviderName
+}
+
+// GPULabel returns the label added to nodes with GPU resource.
+func (kubemark *KubemarkCloudProvider) GPULabel() string {
+	return GPULabel
+}
+
+// GetAvailableGPUTypes return all available GPU types cloud provider supports
+func (kubemark *KubemarkCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
+	return availableGPUTypes
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.

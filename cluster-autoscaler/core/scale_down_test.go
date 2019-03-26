@@ -927,10 +927,17 @@ func simpleScaleDownEmpty(t *testing.T, config *scaleTestConfig) {
 	nodes := make([]*apiv1.Node, len(config.nodes))
 	nodesMap := make(map[string]*apiv1.Node)
 	groups := make(map[string][]*apiv1.Node)
+
+	provider := testprovider.NewTestCloudProvider(nil, func(nodeGroup string, node string) error {
+		deletedNodes <- node
+		return nil
+	})
+
 	for i, n := range config.nodes {
 		node := BuildTestNode(n.name, n.cpu, n.memory)
 		if n.gpu > 0 {
 			AddGpusToNode(node, n.gpu)
+			node.Labels[provider.GPULabel()] = gpu.DefaultGPUType
 		}
 		SetNodeReadyState(node, n.ready, time.Time{})
 		nodesMap[n.name] = node
@@ -957,11 +964,6 @@ func simpleScaleDownEmpty(t *testing.T, config *scaleTestConfig) {
 		obj := update.GetObject().(*apiv1.Node)
 		updatedNodes <- obj.Name
 		return true, obj, nil
-	})
-
-	provider := testprovider.NewTestCloudProvider(nil, func(nodeGroup string, node string) error {
-		deletedNodes <- node
-		return nil
 	})
 
 	for name, nodesInGroup := range groups {
