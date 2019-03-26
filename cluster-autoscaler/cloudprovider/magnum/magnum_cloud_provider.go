@@ -43,79 +43,79 @@ type magnumCloudProvider struct {
 }
 
 func buildMagnumCloudProvider(magnumManager magnumManager, resourceLimiter *cloudprovider.ResourceLimiter) (cloudprovider.CloudProvider, error) {
-	os := &magnumCloudProvider{
+	mcp := &magnumCloudProvider{
 		magnumManager:   &magnumManager,
 		resourceLimiter: resourceLimiter,
 		nodeGroups:      []magnumNodeGroup{},
 	}
-	return os, nil
+	return mcp, nil
 }
 
 // Name returns the name of the cloud provider.
-func (os *magnumCloudProvider) Name() string {
+func (mcp *magnumCloudProvider) Name() string {
 	return ProviderName
 }
 
 // NodeGroups returns all node groups managed by this cloud provider.
-func (os *magnumCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
-	groups := make([]cloudprovider.NodeGroup, len(os.nodeGroups))
-	for i, group := range os.nodeGroups {
+func (mcp *magnumCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
+	groups := make([]cloudprovider.NodeGroup, len(mcp.nodeGroups))
+	for i, group := range mcp.nodeGroups {
 		groups[i] = &group
 	}
 	return groups
 }
 
 // AddNodeGroup appends a node group to the list of node groups managed by this cloud provider.
-func (os *magnumCloudProvider) AddNodeGroup(group magnumNodeGroup) {
-	os.nodeGroups = append(os.nodeGroups, group)
+func (mcp *magnumCloudProvider) AddNodeGroup(group magnumNodeGroup) {
+	mcp.nodeGroups = append(mcp.nodeGroups, group)
 }
 
 // NodeGroupForNode returns the node group that a given node belongs to.
 //
 // Since only a single node group is currently supported, the first node group is always returned.
-func (os *magnumCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+func (mcp *magnumCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	// TODO: wait for magnum nodegroup support
-	return &(os.nodeGroups[0]), nil
+	return &(mcp.nodeGroups[0]), nil
 }
 
 // Pricing is not implemented.
-func (os *magnumCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
+func (mcp *magnumCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetAvailableMachineTypes is not implemented.
-func (os *magnumCloudProvider) GetAvailableMachineTypes() ([]string, error) {
+func (mcp *magnumCloudProvider) GetAvailableMachineTypes() ([]string, error) {
 	return []string{}, nil
 }
 
 // NewNodeGroup is not implemented.
-func (os *magnumCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string,
+func (mcp *magnumCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string,
 	taints []apiv1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetResourceLimiter returns resource constraints for the cloud provider
-func (os *magnumCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
-	return os.resourceLimiter, nil
+func (mcp *magnumCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+	return mcp.resourceLimiter, nil
 }
 
 // GetInstanceID gets the instance ID for the specified node.
-func (os *magnumCloudProvider) GetInstanceID(node *apiv1.Node) string {
+func (mcp *magnumCloudProvider) GetInstanceID(node *apiv1.Node) string {
 	return node.Spec.ProviderID
 }
 
 // Refresh is called before every autoscaler main loop.
 //
 // Currently only prints debug information.
-func (os *magnumCloudProvider) Refresh() error {
-	for _, nodegroup := range os.nodeGroups {
+func (mcp *magnumCloudProvider) Refresh() error {
+	for _, nodegroup := range mcp.nodeGroups {
 		klog.V(3).Info(nodegroup.Debug())
 	}
 	return nil
 }
 
 // Cleanup currently does nothing.
-func (os *magnumCloudProvider) Cleanup() error {
+func (mcp *magnumCloudProvider) Cleanup() error {
 	return nil
 }
 
