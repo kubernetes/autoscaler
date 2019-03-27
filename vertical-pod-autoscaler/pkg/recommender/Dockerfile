@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM k8s.gcr.io/debian-base-amd64:v1.0.0
+FROM k8s.gcr.io/debian-base-amd64:1.0.0
 MAINTAINER Krzysztof Grygiel "kgrygiel@google.com"
 
 ADD recommender recommender
