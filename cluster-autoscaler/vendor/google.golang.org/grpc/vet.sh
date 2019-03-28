@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [[ `uname -a` = *"Darwin"* ]]; then
+if [[ $(uname -a) = *"Darwin"* ]]; then
   echo "It seems you are running on Mac. This script does not work on Mac. See https://github.com/grpc/grpc-go/issues/2047"
   exit 1
 fi
@@ -38,7 +38,7 @@ if [ "$1" = "-install" ]; then
       unzip ${PROTOC_FILENAME}
       bin/protoc --version
       popd
-    elif ! which protoc > /dev/null; then
+    elif ! protoc -v > /dev/null; then
       die "Please install protoc into your path"
     fi
   fi
@@ -49,16 +49,16 @@ fi
 
 # TODO: Remove this check and the mangling below once "context" is imported
 # directly.
-if git status --porcelain | read; then
+if git status --porcelain | read -r; then
   die "Uncommitted or untracked files found; commit changes first"
 fi
 
-git ls-files "*.go" | xargs grep -L "\(Copyright [0-9]\{4,\} gRPC authors\)\|DO NOT EDIT" 2>&1 | tee /dev/stderr | (! read)
-git ls-files "*.go" | xargs grep -l '"unsafe"' 2>&1 | (! grep -v '_test.go') | tee /dev/stderr | (! read)
-git ls-files "*.go" | xargs grep -l '"math/rand"' 2>&1 | (! grep -v '^examples\|^stress\|grpcrand') | tee /dev/stderr | (! read)
-gofmt -s -d -l . 2>&1 | tee /dev/stderr | (! read)
-goimports -l . 2>&1 | tee /dev/stderr | (! read)
-golint ./... 2>&1 | (grep -vE "(_mock|\.pb)\.go:" || true) | tee /dev/stderr | (! read)
+git ls-files "*.go" | xargs grep -L "\(Copyright [0-9]\{4,\} gRPC authors\)\|DO NOT EDIT" 2>&1 | tee /dev/stderr | (! read -r)
+git ls-files "*.go" | xargs grep -l '"unsafe"' 2>&1 | (! grep -v '_test.go') | tee /dev/stderr | (! read -r)
+git ls-files "*.go" | xargs grep -l '"math/rand"' 2>&1 | (! grep -v '^examples\|^stress\|grpcrand') | tee /dev/stderr | (! read -r)
+gofmt -s -d -l . 2>&1 | tee /dev/stderr | (! read -r)
+goimports -l . 2>&1 | tee /dev/stderr | (! read -r)
+golint ./... 2>&1 | (grep -vE "(_mock|\.pb)\.go:" || true) | tee /dev/stderr | (! read -r)
 
 # Undo any edits made by this script.
 cleanup() {
@@ -71,13 +71,13 @@ trap cleanup EXIT
 git ls-files "*.go" | xargs sed -i 's:"golang.org/x/net/context":"context":'
 set +o pipefail
 # TODO: Stop filtering pb.go files once golang/protobuf#214 is fixed.
-go tool vet -all . 2>&1 | grep -vE '(clientconn|transport\/transport_test).go:.*cancel (function|var)' | grep -vF '.pb.go:' | tee /dev/stderr | (! read)
+go tool vet -all . 2>&1 | grep -vE '(clientconn|transport\/transport_test).go:.*cancel (function|var)' | grep -vF '.pb.go:' | tee /dev/stderr | (! read -r)
 set -o pipefail
 git reset --hard HEAD
 
 if [[ "$check_proto" = "true" ]]; then
-  PATH="/home/travis/bin:$PATH" make proto && \
-    git status --porcelain 2>&1 | (! read) || \
+  PATH="/home/travis/bin:${PATH}" make proto && \
+    git status --porcelain 2>&1 | (! read -r) || \
     (git status; git --no-pager diff; exit 1)
 fi
 

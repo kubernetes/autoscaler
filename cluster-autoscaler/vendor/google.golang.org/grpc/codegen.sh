@@ -14,4 +14,4 @@
 # script is for demonstration purpose.
 #
 proto=$1
-protoc --go_out=plugins=grpc:. $proto
+protoc --go_out=plugins=grpc:. "$proto"
