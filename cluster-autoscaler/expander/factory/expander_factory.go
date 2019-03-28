@@ -26,6 +26,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/expander/random"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/waste"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
+
 	kube_client "k8s.io/client-go/kubernetes"
 )
 
@@ -49,12 +51,11 @@ func ExpanderStrategyFromString(expanderFlag string, cloudProvider cloudprovider
 			price.NewSimplePreferredNodeProvider(autoscalingKubeClients.AllNodeLister()),
 			price.SimpleNodeUnfitness), nil
 	case expander.PriorityBasedExpanderName:
-		maps := kubeClient.CoreV1().ConfigMaps(configNamespace)
-		initialPriorities, priorityChangesChan, err := priority.InitPriorityConfigMap(maps, configNamespace)
-		if err != nil {
-			return nil, errors.ToAutoscalerError(errors.InternalError, err)
-		}
-		return priority.NewStrategy(initialPriorities, priorityChangesChan, autoscalingKubeClients.LogRecorder)
+		// It seems other listers do the same here - they never receive the termination msg on the ch.
+		// This should be currently OK.
+		stopChannel := make(chan struct{})
+		lister := kubernetes.NewConfigMapListerForNamespace(kubeClient, stopChannel, configNamespace)
+		return priority.NewStrategy(lister.ConfigMaps(configNamespace), autoscalingKubeClients.Recorder)
 	}
 	return nil, errors.NewAutoscalerError(errors.InternalError, "Expander %s not supported", expanderFlag)
 }
