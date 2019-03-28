@@ -17,89 +17,89 @@ limitations under the License.
 package priority
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
-	"sync"
 
 	"gopkg.in/yaml.v2"
 
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/random"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	caserrors "k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/watch"
+	v1lister "k8s.io/client-go/listers/core/v1"
+	"k8s.io/client-go/tools/record"
 	"k8s.io/klog"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 )
 
+const (
+	// PriorityConfigMapName defines a name of the ConfigMap used to store priority expander configuration
+	PriorityConfigMapName = "cluster-autoscaler-priority-expander"
+	// ConfigMapKey defines the key used in the ConfigMap to configure priorities
+	ConfigMapKey = "priorities"
+)
+
+type priorities map[int][]*regexp.Regexp
+
 type priority struct {
+	logRecorder      record.EventRecorder
 	fallbackStrategy expander.Strategy
-	changesChan      <-chan watch.Event
-	priorities       map[int][]*regexp.Regexp
-	padlock          sync.RWMutex
 	okConfigUpdates  int
 	badConfigUpdates int
-	logRecorder      EventRecorder
+	configMapLister  v1lister.ConfigMapNamespaceLister
 }
 
 // NewStrategy returns an expansion strategy that picks node groups based on user-defined priorities
-func NewStrategy(initialPriorities string, priorityChangesChan <-chan watch.Event,
-	logRecorder EventRecorder) (expander.Strategy, errors.AutoscalerError) {
+func NewStrategy(configMapLister v1lister.ConfigMapNamespaceLister,
+	logRecorder record.EventRecorder) (expander.Strategy, caserrors.AutoscalerError) {
 	res := &priority{
-		fallbackStrategy: random.NewStrategy(),
-		changesChan:      priorityChangesChan,
 		logRecorder:      logRecorder,
+		fallbackStrategy: random.NewStrategy(),
+		configMapLister:  configMapLister,
 	}
-	if err := res.parsePrioritiesYAMLString(initialPriorities); err != nil {
-		return nil, errors.ToAutoscalerError(errors.InternalError, err)
-	}
-	go func() {
-		// TODO: how to terminate on process shutdown?
-		for event := range priorityChangesChan {
-			cm, ok := event.Object.(*apiv1.ConfigMap)
-			if !ok {
-				klog.Exit("Unexpected object type received on the configmap update channel in priority expander")
-			}
-
-			if event.Type == watch.Deleted {
-				msg := "Configmap for priority expander was deleted, no updates will be processed until recreated."
-				res.logConfigWarning("PriorityConfigMapDeleted", msg)
-				continue
-			}
-
-			prioString, found := cm.Data[ConfigMapKey]
-			if !found {
-				msg := fmt.Sprintf("Wrong configmap for priority expander, doesn't contain %s key. Ignoring update.",
-					ConfigMapKey)
-				res.logConfigWarning("PriorityConfigMapInvalid", msg)
-				continue
-			}
-			if err := res.parsePrioritiesYAMLString(prioString); err != nil {
-				msg := fmt.Sprintf("Wrong configuration for priority expander: %v. Ignoring update.", err)
-				res.logConfigWarning("PriorityConfigMapInvalid", msg)
-				continue
-			}
-		}
-	}()
 	return res, nil
 }
 
-func (p *priority) logConfigWarning(reason, msg string) {
-	p.logRecorder.Event(apiv1.EventTypeWarning, reason, msg)
+func (p *priority) reloadConfigMap() (priorities, *apiv1.ConfigMap, error) {
+	cm, err := p.configMapLister.Get(PriorityConfigMapName)
+	if err != nil {
+		return nil, nil, fmt.Errorf("Priority expander config map %s not found: %v", PriorityConfigMapName, err)
+	}
+
+	prioString, found := cm.Data[ConfigMapKey]
+	if !found {
+		msg := fmt.Sprintf("Wrong configmap for priority expander, doesn't contain %s key. Ignoring update.",
+			ConfigMapKey)
+		p.logConfigWarning(cm, "PriorityConfigMapInvalid", msg)
+		return nil, cm, errors.New(msg)
+	}
+
+	newPriorities, err := p.parsePrioritiesYAMLString(prioString)
+	if err != nil {
+		msg := fmt.Sprintf("Wrong configuration for priority expander: %v. Ignoring update.", err)
+		p.logConfigWarning(cm, "PriorityConfigMapInvalid", msg)
+		return nil, cm, err
+	}
+
+	return newPriorities, cm, nil
+}
+
+func (p *priority) logConfigWarning(cm *apiv1.ConfigMap, reason, msg string) {
+	p.logRecorder.Event(cm, apiv1.EventTypeWarning, reason, msg)
 	klog.Warning(msg)
 	p.badConfigUpdates++
 }
 
-func (p *priority) parsePrioritiesYAMLString(prioritiesYAML string) error {
+func (p *priority) parsePrioritiesYAMLString(prioritiesYAML string) (priorities, error) {
 	if prioritiesYAML == "" {
-		p.badConfigUpdates++
-		return fmt.Errorf("priority configuration in %s configmap is empty; please provide valid configuration", PriorityConfigMapName)
+		return nil, fmt.Errorf("priority configuration in %s configmap is empty; please provide valid configuration",
+			PriorityConfigMapName)
 	}
 	var config map[int][]string
 	if err := yaml.Unmarshal([]byte(prioritiesYAML), &config); err != nil {
-		p.badConfigUpdates++
-		return fmt.Errorf("Can't parse YAML with priorities in the configmap: %v", err)
+		return nil, fmt.Errorf("Can't parse YAML with priorities in the configmap: %v", err)
 	}
 
 	newPriorities := make(map[int][]*regexp.Regexp)
@@ -107,23 +107,17 @@ func (p *priority) parsePrioritiesYAMLString(prioritiesYAML string) error {
 		for _, re := range reList {
 			regexp, err := regexp.Compile(re)
 			if err != nil {
-				p.badConfigUpdates++
-				return fmt.Errorf("Can't compile regexp rule for priority %d and rule %s: %v", prio, re, err)
+				return nil, fmt.Errorf("Can't compile regexp rule for priority %d and rule %s: %v", prio, re, err)
 			}
 			newPriorities[prio] = append(newPriorities[prio], regexp)
 		}
 	}
 
-	p.padlock.Lock()
-	p.priorities = newPriorities
 	p.okConfigUpdates++
-	p.padlock.Unlock()
-
-	msg := "Successfully reloaded priority configuration from configmap."
+	msg := "Successfully loaded priority configuration from configmap."
 	klog.V(4).Info(msg)
-	p.logRecorder.Event(apiv1.EventTypeNormal, "PriorityConfigMapReloaded", msg)
 
-	return nil
+	return newPriorities, nil
 }
 
 func (p *priority) BestOption(expansionOptions []expander.Option, nodeInfo map[string]*schedulernodeinfo.NodeInfo) *expander.Option {
@@ -131,13 +125,17 @@ func (p *priority) BestOption(expansionOptions []expander.Option, nodeInfo map[s
 		return nil
 	}
 
+	priorities, cm, err := p.reloadConfigMap()
+	if err != nil {
+		return nil
+	}
+
 	maxPrio := -1
 	best := []expander.Option{}
-	p.padlock.RLock()
 	for _, option := range expansionOptions {
 		id := option.NodeGroup.Id()
 		found := false
-		for prio, nameRegexpList := range p.priorities {
+		for prio, nameRegexpList := range priorities {
 			if prio < maxPrio {
 				continue
 			}
@@ -155,17 +153,19 @@ func (p *priority) BestOption(expansionOptions []expander.Option, nodeInfo map[s
 		if !found {
 			msg := fmt.Sprintf("Priority expander: node group %s not found in priority expander configuration. "+
 				"The group won't be used.", id)
-			p.logConfigWarning("PriorityConfigMapNotMatchedGroup", msg)
+			p.logConfigWarning(cm, "PriorityConfigMapNotMatchedGroup", msg)
 		}
 	}
-	p.padlock.RUnlock()
 
 	if len(best) == 0 {
 		msg := "Priority expander: no priorities info found for any of the expansion options. Falling back to random choice."
-		p.logConfigWarning("PriorityConfigMapNoGroupMatched", msg)
+		p.logConfigWarning(cm, "PriorityConfigMapNoGroupMatched", msg)
 		return p.fallbackStrategy.BestOption(expansionOptions, nodeInfo)
 	}
 
+	for _, opt := range best {
+		klog.V(2).Infof("priority expander: %s chosen as the highest available", opt.NodeGroup.Id())
+	}
 	return p.fallbackStrategy.BestOption(best, nodeInfo)
 }
 
@@ -176,14 +176,4 @@ func (p *priority) groupIDMatchesList(id string, nameRegexpList []*regexp.Regexp
 		}
 	}
 	return false
-}
-
-// EventRecorder is an interface to abstract kubernetes event recording.
-type EventRecorder interface {
-	// Event records a new event of given type, reason and description given with message.
-	Event(eventtype, reason, message string)
-
-	// Events records a new event of given type, reason and description given with message,
-	// which can be formatted using args.
-	Eventf(eventtype, reason, message string, args ...interface{})
 }

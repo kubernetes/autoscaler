@@ -19,28 +19,27 @@ package priority
 import (
 	"fmt"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/watch"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/record"
-	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 )
 
 const (
-	configOKMessage = "Normal PriorityConfigMapReloaded Successfully reloaded priority " +
-		"configuration from configmap."
+	testNamespace                  = "default"
 	configWarnGroupNotFoundMessage = "Warning PriorityConfigMapNotMatchedGroup Priority expander: node group " +
 		"%s not found in priority expander configuration. The group won't be used."
-	configWarnConfigMapDeleted = "Warning PriorityConfigMapDeleted Configmap for priority expander was deleted, " +
-		"no updates will be processed until recreated."
+	configWarnConfigMapEmpty = "Warning PriorityConfigMapInvalid Wrong configuration for priority expander: " +
+		"priority configuration in cluster-autoscaler-priority-expander configmap is empty; please provide " +
+		"valid configuration. Ignoring update."
+	configWarnEmptyMsg = "priority configuration in cluster-autoscaler-priority-expander configmap is empty; please provide valid configuration"
+	configWarnParseMsg = "Can't parse YAML with priorities in the configmap"
 )
 
 var (
@@ -64,38 +63,38 @@ var (
   - ".*t\\.large.*"
 `
 	eoT2Micro = expander.Option{
-		Debug: "t2.micro",
-		NodeGroup: &testNodeGroup{
-			id: "my-asg.t2.micro",
-		},
+		Debug:     "t2.micro",
+		NodeGroup: test.NewTestNodeGroup("my-asg.t2.micro", 10, 1, 1, true, false, "t2.micro", nil, nil),
 	}
 	eoT2Large = expander.Option{
-		Debug: "t2.large",
-		NodeGroup: &testNodeGroup{
-			id: "my-asg.t2.large",
-		},
+		Debug:     "t2.large",
+		NodeGroup: test.NewTestNodeGroup("my-asg.t2.large", 10, 1, 1, true, false, "t2.large", nil, nil),
 	}
 	eoT3Large = expander.Option{
-		Debug: "t3.large",
-		NodeGroup: &testNodeGroup{
-			id: "my-asg.t3.large",
-		},
+		Debug:     "t3.large",
+		NodeGroup: test.NewTestNodeGroup("my-asg.t3.large", 10, 1, 1, true, false, "t3.large", nil, nil),
 	}
 	eoM44XLarge = expander.Option{
-		Debug: "m4.4xlarge",
-		NodeGroup: &testNodeGroup{
-			id: "my-asg.m4.4xlarge",
-		},
+		Debug:     "m4.4xlarge",
+		NodeGroup: test.NewTestNodeGroup("my-asg.m4.4xlarge", 10, 1, 1, true, false, "m4.4xlarge", nil, nil),
 	}
 )
 
-func getStrategyInstance(t *testing.T, config string) (expander.Strategy, chan watch.Event, *testEventRecorder, error) {
-	c := make(chan watch.Event)
-
-	r := newTestRecorder()
-	s, err := NewStrategy(config, c, r)
+func getStrategyInstance(t *testing.T, config string) (expander.Strategy, *record.FakeRecorder, *apiv1.ConfigMap, error) {
+	cm := &apiv1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: testNamespace,
+			Name:      PriorityConfigMapName,
+		},
+		Data: map[string]string{
+			ConfigMapKey: config,
+		},
+	}
+	lister, err := kubernetes.NewTestConfigMapLister([]*apiv1.ConfigMap{cm})
 	assert.Nil(t, err)
-	return s, c, r, err
+	r := record.NewFakeRecorder(100)
+	s, err := NewStrategy(lister.ConfigMaps(testNamespace), r)
+	return s, r, cm, err
 }
 
 func TestPriorityExpanderCorrecltySelectsSingleMatchingOptionOutOfOne(t *testing.T) {
@@ -127,158 +126,35 @@ func TestPriorityExpanderCorrecltyFallsBackToRandomWhenNoMatches(t *testing.T) {
 }
 
 func TestPriorityExpanderCorrecltyHandlesConfigUpdate(t *testing.T) {
-	t.Skipf("TODO fix; Fails because of data race")
-	s, c, r, _ := getStrategyInstance(t, oneEntryConfig)
+	s, r, cm, _ := getStrategyInstance(t, oneEntryConfig)
 	ret := s.BestOption([]expander.Option{eoT2Large, eoT3Large, eoM44XLarge}, nil)
 	assert.Equal(t, *ret, eoT2Large)
 
-	event := <-r.recorder.Events
-	assert.EqualValues(t, configOKMessage, event)
+	var event string
 	for _, group := range []string{eoT3Large.NodeGroup.Id(), eoM44XLarge.NodeGroup.Id()} {
-		event = <-r.recorder.Events
+		event = <-r.Events
 		assert.EqualValues(t, fmt.Sprintf(configWarnGroupNotFoundMessage, group), event)
 	}
 
-	c <- watch.Event{
-		Type: watch.Modified,
-		Object: &apiv1.ConfigMap{
-			Data: map[string]string{
-				ConfigMapKey: config,
-			},
-		},
-	}
-	priority := s.(*priority)
-	for {
-		if priority.okConfigUpdates == 2 {
-			break
-		}
-		time.Sleep(time.Millisecond)
-	}
+	cm.Data[ConfigMapKey] = config
 	ret = s.BestOption([]expander.Option{eoT2Large, eoT3Large, eoM44XLarge}, nil)
+
+	priority := s.(*priority)
+	assert.Equal(t, 2, priority.okConfigUpdates)
 	assert.Equal(t, *ret, eoM44XLarge)
-	event = <-r.recorder.Events
-	assert.EqualValues(t, configOKMessage, event)
 }
 
 func TestPriorityExpanderCorrecltySkipsBadChangeConfig(t *testing.T) {
-	t.Skipf("TODO fix; Fails because of data race")
-	s, c, r, _ := getStrategyInstance(t, oneEntryConfig)
-
-	event := <-r.recorder.Events
-	assert.EqualValues(t, configOKMessage, event)
-
-	c <- watch.Event{
-		Type:   watch.Deleted,
-		Object: &apiv1.ConfigMap{},
-	}
+	s, r, cm, _ := getStrategyInstance(t, oneEntryConfig)
 	priority := s.(*priority)
-	for {
-		if priority.badConfigUpdates == 1 {
-			break
-		}
-		time.Sleep(time.Millisecond)
-	}
+	assert.Equal(t, 0, priority.okConfigUpdates)
 
-	assert.Equal(t, 1, priority.okConfigUpdates)
-	event = <-r.recorder.Events
-	assert.EqualValues(t, configWarnConfigMapDeleted, event)
-
+	cm.Data[ConfigMapKey] = ""
 	ret := s.BestOption([]expander.Option{eoT2Large, eoT3Large, eoM44XLarge}, nil)
 
-	assert.Equal(t, *ret, eoT2Large)
-	for _, group := range []string{eoT3Large.NodeGroup.Id(), eoM44XLarge.NodeGroup.Id()} {
-		event = <-r.recorder.Events
-		assert.EqualValues(t, fmt.Sprintf(configWarnGroupNotFoundMessage, group), event)
-	}
-}
+	assert.Equal(t, 1, priority.badConfigUpdates)
 
-func TestPriorityExpanderFailsToStartWithEmptyConfig(t *testing.T) {
-	_, err := NewStrategy("", nil, &utils.LogEventRecorder{})
-	assert.NotNil(t, err)
-}
-
-func TestPriorityExpanderFailsToStartWithBadConfig(t *testing.T) {
-	_, err := NewStrategy("not_really_yaml: 34 : 43", nil, &utils.LogEventRecorder{})
-	assert.NotNil(t, err)
-}
-
-type testNodeGroup struct {
-	id    string
-	debug string
-}
-
-func (t *testNodeGroup) MaxSize() int {
-	return 10
-}
-
-func (t *testNodeGroup) MinSize() int {
-	return 0
-}
-
-func (t *testNodeGroup) TargetSize() (int, error) {
-	return 5, nil
-}
-
-func (t *testNodeGroup) IncreaseSize(delta int) error {
-	return nil
-}
-
-func (t *testNodeGroup) DeleteNodes([]*apiv1.Node) error {
-	return nil
-}
-
-func (t *testNodeGroup) DecreaseTargetSize(delta int) error {
-	return nil
-}
-
-func (t *testNodeGroup) Id() string {
-	return t.id
-}
-
-func (t *testNodeGroup) Debug() string {
-	return t.debug
-}
-
-func (t *testNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
-	return nil, nil
-}
-
-func (t *testNodeGroup) TemplateNodeInfo() (*schedulernodeinfo.NodeInfo, error) {
-	return nil, nil
-}
-
-func (t *testNodeGroup) Exist() bool {
-	return true
-}
-
-func (t *testNodeGroup) Create() (cloudprovider.NodeGroup, error) {
-	return nil, nil
-}
-
-func (t *testNodeGroup) Delete() error {
-	return nil
-}
-
-func (t *testNodeGroup) Autoprovisioned() bool {
-	return false
-}
-
-type testEventRecorder struct {
-	recorder     *record.FakeRecorder
-	statusObject runtime.Object
-}
-
-func newTestRecorder() *testEventRecorder {
-	return &testEventRecorder{
-		recorder:     record.NewFakeRecorder(100),
-		statusObject: &apiv1.ConfigMap{},
-	}
-}
-
-func (ler *testEventRecorder) Event(eventtype, reason, message string) {
-	ler.recorder.Event(ler.statusObject, eventtype, reason, message)
-}
-
-func (ler *testEventRecorder) Eventf(eventtype, reason, message string, args ...interface{}) {
-	ler.recorder.Eventf(ler.statusObject, eventtype, reason, message, args...)
+	event := <-r.Events
+	assert.EqualValues(t, configWarnConfigMapEmpty, event)
+	assert.Nil(t, ret)
 }
