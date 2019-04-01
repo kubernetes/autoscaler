@@ -62,7 +62,7 @@ type MachineTypeKey struct {
 // RegenerateInstancesCache is required to sync it with registered migs.
 type GceCache struct {
 	// Cache content.
-	migs               []*MigInformation
+	migs               map[GceRef]*MigInformation
 	instancesCache     map[GceRef]Mig
 	resourceLimiter    *cloudprovider.ResourceLimiter
 	machinesCache      map[MachineTypeKey]*gce.MachineType
@@ -80,7 +80,7 @@ type GceCache struct {
 // NewGceCache creates empty GceCache.
 func NewGceCache(gceService AutoscalingGceClient) GceCache {
 	return GceCache{
-		migs:               []*MigInformation{},
+		migs:               map[GceRef]*MigInformation{},
 		instancesCache:     map[GceRef]Mig{},
 		machinesCache:      map[MachineTypeKey]*gce.MachineType{},
 		GceService:         gceService,
@@ -91,26 +91,26 @@ func NewGceCache(gceService AutoscalingGceClient) GceCache {
 //  Methods locking on migsMutex.
 
 // RegisterMig returns true if the node group wasn't in cache before, or its config was updated.
-func (gc *GceCache) RegisterMig(mig Mig) bool {
+func (gc *GceCache) RegisterMig(newMig Mig) bool {
 	gc.migsMutex.Lock()
 	defer gc.migsMutex.Unlock()
 
-	for i := range gc.migs {
-		if oldMig := gc.migs[i].Config; oldMig.GceRef() == mig.GceRef() {
-			if !reflect.DeepEqual(oldMig, mig) {
-				gc.migs[i].Config = mig
-				klog.V(4).Infof("Updated Mig %s", mig.GceRef().String())
-				return true
-			}
-			return false
+	oldMigInformation, found := gc.migs[newMig.GceRef()]
+	if found {
+		if !reflect.DeepEqual(oldMigInformation.Config, newMig) {
+			gc.migs[newMig.GceRef()].Config = newMig
+			klog.V(4).Infof("Updated Mig %s", newMig.GceRef().String())
+			return true
 		}
+		return false
 	}
 
-	klog.V(1).Infof("Registering %s", mig.GceRef().String())
+	klog.V(1).Infof("Registering %s", newMig.GceRef().String())
 	// TODO(aleksandra-malinowska): fetch and set MIG basename here.
-	gc.migs = append(gc.migs, &MigInformation{
-		Config: mig,
-	})
+	newMigInformation := &MigInformation{
+		Config: newMig,
+	}
+	gc.migs[newMig.GceRef()] = newMigInformation
 	return true
 }
 
@@ -119,18 +119,13 @@ func (gc *GceCache) UnregisterMig(toBeRemoved Mig) bool {
 	gc.migsMutex.Lock()
 	defer gc.migsMutex.Unlock()
 
-	newMigs := make([]*MigInformation, 0, len(gc.migs))
-	found := false
-	for _, mig := range gc.migs {
-		if mig.Config.GceRef() == toBeRemoved.GceRef() {
-			klog.V(1).Infof("Unregistered Mig %s", toBeRemoved.GceRef().String())
-			found = true
-		} else {
-			newMigs = append(newMigs, mig)
-		}
+	_, found := gc.migs[toBeRemoved.GceRef()]
+	if found {
+		klog.V(1).Infof("Unregistered Mig %s", toBeRemoved.GceRef().String())
+		delete(gc.migs, toBeRemoved.GceRef())
+		return true
 	}
-	gc.migs = newMigs
-	return found
+	return false
 }
 
 // GetMigs returns a copy of migs list.
@@ -148,15 +143,15 @@ func (gc *GceCache) GetMigs() []*MigInformation {
 	return migs
 }
 
-func (gc *GceCache) updateMigBasename(ref GceRef, basename string) {
+func (gc *GceCache) updateMigBasename(migRef GceRef, basename string) {
 	gc.migsMutex.Lock()
 	defer gc.migsMutex.Unlock()
 
-	for _, mig := range gc.migs {
-		if mig.Config.GceRef() == ref {
-			mig.Basename = basename
-		}
+	mig, found := gc.migs[migRef]
+	if found {
+		mig.Basename = basename
 	}
+	// TODO: is found == false a possiblity?
 }
 
 // Methods locking on cacheMutex.
