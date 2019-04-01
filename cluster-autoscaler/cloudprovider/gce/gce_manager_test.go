@@ -368,8 +368,6 @@ func TestDeleteInstances(t *testing.T) {
 	// Test DeleteInstance function.
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool").Return(buildDefaultInstanceGroupManagerResponse(zoneB)).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool/listManagedInstances").Return(buildFourRunningInstancesOnDefaultMigManagedInstancesResponse(zoneB)).Once()
-	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-extra-pool-323233232").Return(buildDefaultInstanceGroupManagerResponse(zoneB)).Once()
-	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-extra-pool-323233232/listManagedInstances").Return(buildOneRunningInstanceOnExtraPoolMigManagedInstancesResponse(zoneB)).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool/deleteInstances").Return(deleteInstancesResponse).Once()
 	server.On("handle", "/project1/zones/us-central1-b/operations/operation-1505802641136-55984ff86d980-a99e8c2b-0c8aaaaa").Return(deleteInstancesOperationResponse).Once()
 
@@ -389,6 +387,9 @@ func TestDeleteInstances(t *testing.T) {
 	err := g.DeleteInstances(instances)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, server)
+
+	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-extra-pool-323233232").Return(buildDefaultInstanceGroupManagerResponse(zoneB)).Once()
+	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-extra-pool-323233232/listManagedInstances").Return(buildOneRunningInstanceOnExtraPoolMigManagedInstancesResponse(zoneB)).Once()
 
 	// Fail on deleting instances from different MIGs.
 	instances = []GceRef{
