@@ -70,8 +70,8 @@ type GceCache struct {
 }
 
 // NewGceCache creates empty GceCache.
-func NewGceCache(gceService AutoscalingGceClient) GceCache {
-	return GceCache{
+func NewGceCache(gceService AutoscalingGceClient) *GceCache {
+	return &GceCache{
 		migs:                map[GceRef]Mig{},
 		instanceRefToMigRef: map[GceRef]GceRef{},
 		machinesCache:       map[MachineTypeKey]*gce.MachineType{},
