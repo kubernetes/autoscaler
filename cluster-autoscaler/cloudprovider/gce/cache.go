@@ -56,20 +56,20 @@ type MachineTypeKey struct {
 // How it works:
 // - migs (1), resource limits (3) and machine types (4) are only stored in this cache,
 // not updated by it.
-// - instancesCache (2) is based on registered migs (1). For each mig, its instances
+// - instanceRefToMigRef (2) is based on registered migs (1). For each mig, its instances
 // are fetched from GCE API using gceService.
-// - instancesCache (2) is NOT updated automatically when migs field (1) is updated. Calling
+// - instanceRefToMigRef (2) is NOT updated automatically when migs field (1) is updated. Calling
 // RegenerateInstancesCache is required to sync it with registered migs.
 type GceCache struct {
 	// Cache content.
-	migs               map[GceRef]*MigInformation
-	instancesCache     map[GceRef]Mig
-	resourceLimiter    *cloudprovider.ResourceLimiter
-	machinesCache      map[MachineTypeKey]*gce.MachineType
-	migTargetSizeCache map[GceRef]int64
+	migs                map[GceRef]*MigInformation
+	instanceRefToMigRef map[GceRef]GceRef
+	resourceLimiter     *cloudprovider.ResourceLimiter
+	machinesCache       map[MachineTypeKey]*gce.MachineType
+	migTargetSizeCache  map[GceRef]int64
 	// Locks. Rules of locking:
 	// - migsMutex protects only migs.
-	// - cacheMutex protects instancesCache, resourceLimiter, machinesCache and migTargetSizeCache.
+	// - cacheMutex protects instanceRefToMigRef, resourceLimiter, machinesCache and migTargetSizeCache.
 	// - if both locks are needed, cacheMutex must be obtained before migsMutex.
 	cacheMutex sync.Mutex
 	migsMutex  sync.Mutex
@@ -80,11 +80,11 @@ type GceCache struct {
 // NewGceCache creates empty GceCache.
 func NewGceCache(gceService AutoscalingGceClient) GceCache {
 	return GceCache{
-		migs:               map[GceRef]*MigInformation{},
-		instancesCache:     map[GceRef]Mig{},
-		machinesCache:      map[MachineTypeKey]*gce.MachineType{},
-		GceService:         gceService,
-		migTargetSizeCache: map[GceRef]int64{},
+		migs:                map[GceRef]*MigInformation{},
+		instanceRefToMigRef: map[GceRef]GceRef{},
+		machinesCache:       map[MachineTypeKey]*gce.MachineType{},
+		GceService:          gceService,
+		migTargetSizeCache:  map[GceRef]int64{},
 	}
 }
 
@@ -116,6 +116,8 @@ func (gc *GceCache) RegisterMig(newMig Mig) bool {
 
 // UnregisterMig returns true if the node group has been removed, and false if it was already missing from cache.
 func (gc *GceCache) UnregisterMig(toBeRemoved Mig) bool {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
 	gc.migsMutex.Lock()
 	defer gc.migsMutex.Unlock()
 
@@ -123,6 +125,7 @@ func (gc *GceCache) UnregisterMig(toBeRemoved Mig) bool {
 	if found {
 		klog.V(1).Infof("Unregistered Mig %s", toBeRemoved.GceRef().String())
 		delete(gc.migs, toBeRemoved.GceRef())
+		gc.removeInstancesForMig(toBeRemoved.GceRef())
 		return true
 	}
 	return false
@@ -160,29 +163,54 @@ func (gc *GceCache) updateMigBasename(migRef GceRef, basename string) {
 // Attempts to regenerate cache if there is a Mig with matching prefix in migs list.
 // TODO(aleksandra-malinowska): reconsider failing when there's a Mig with
 // matching prefix, but instance doesn't belong to it.
-func (gc *GceCache) GetMigForInstance(instance *GceRef) (Mig, error) {
+func (gc *GceCache) GetMigForInstance(instanceRef *GceRef) (Mig, error) {
 	gc.cacheMutex.Lock()
 	defer gc.cacheMutex.Unlock()
 
-	if mig, found := gc.instancesCache[*instance]; found {
-		return mig, nil
+	if migRef, found := gc.instanceRefToMigRef[*instanceRef]; found {
+		mig, found := gc.getMig(migRef)
+		if !found {
+			return nil, fmt.Errorf("instance %+v belongs to unregistered mig %+v", *instanceRef, migRef)
+		}
+		return mig.Config, nil
 	}
 
 	for _, mig := range gc.GetMigs() {
-		if mig.Config.GceRef().Project == instance.Project &&
-			mig.Config.GceRef().Zone == instance.Zone &&
-			strings.HasPrefix(instance.Name, mig.Basename) {
+		if mig.Config.GceRef().Project == instanceRef.Project &&
+			mig.Config.GceRef().Zone == instanceRef.Zone &&
+			strings.HasPrefix(instanceRef.Name, mig.Basename) {
 			if err := gc.regenerateCache(); err != nil {
-				return nil, fmt.Errorf("error while looking for MIG for instance %+v, error: %v", *instance, err)
+				return nil, fmt.Errorf("error while looking for MIG for instance %+v, error: %v", *instanceRef, err)
 			}
-			if mig, found := gc.instancesCache[*instance]; found {
-				return mig, nil
+
+			migRef, found := gc.instanceRefToMigRef[*instanceRef]
+			if !found {
+				return nil, fmt.Errorf("instance %+v belongs to unknown mig", *instanceRef)
 			}
-			return nil, fmt.Errorf("instance %+v does not belong to any configured MIG", *instance)
+			mig, found := gc.getMig(migRef)
+			if !found {
+				return nil, fmt.Errorf("instance %+v belongs to unregistered mig %+v", *instanceRef, migRef)
+			}
+			return mig.Config, nil
 		}
 	}
 	// Instance doesn't belong to any configured mig.
 	return nil, nil
+}
+
+func (gc *GceCache) removeInstancesForMig(migRef GceRef) {
+	for instanceRef, instanceMigRef := range gc.instanceRefToMigRef {
+		if migRef == instanceMigRef {
+			delete(gc.instanceRefToMigRef, instanceRef)
+		}
+	}
+}
+
+func (gc *GceCache) getMig(migRef GceRef) (*MigInformation, bool) {
+	gc.migsMutex.Lock()
+	defer gc.migsMutex.Unlock()
+	mig, found := gc.migs[migRef]
+	return mig, found
 }
 
 // RegenerateInstancesCache triggers instances cache regeneration under lock.
@@ -195,8 +223,7 @@ func (gc *GceCache) RegenerateInstancesCache() error {
 
 // internal method - should only be called after locking on cacheMutex.
 func (gc *GceCache) regenerateCache() error {
-	newInstancesCache := make(map[GceRef]Mig)
-
+	newInstancesCache := make(map[GceRef]GceRef)
 	for _, migInfo := range gc.GetMigs() {
 		mig := migInfo.Config
 		klog.V(4).Infof("Regenerating MIG information for %s", mig.GceRef().String())
@@ -217,11 +244,11 @@ func (gc *GceCache) regenerateCache() error {
 			if err != nil {
 				return err
 			}
-			newInstancesCache[*gceRef] = mig
+			newInstancesCache[*gceRef] = mig.GceRef()
 		}
 	}
 
-	gc.instancesCache = newInstancesCache
+	gc.instanceRefToMigRef = newInstancesCache
 	return nil
 }
 
