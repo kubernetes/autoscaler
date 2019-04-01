@@ -163,14 +163,14 @@ func (gc *GceCache) updateMigBasename(migRef GceRef, basename string) {
 // Attempts to regenerate cache if there is a Mig with matching prefix in migs list.
 // TODO(aleksandra-malinowska): reconsider failing when there's a Mig with
 // matching prefix, but instance doesn't belong to it.
-func (gc *GceCache) GetMigForInstance(instanceRef *GceRef) (Mig, error) {
+func (gc *GceCache) GetMigForInstance(instanceRef GceRef) (Mig, error) {
 	gc.cacheMutex.Lock()
 	defer gc.cacheMutex.Unlock()
 
-	if migRef, found := gc.instanceRefToMigRef[*instanceRef]; found {
+	if migRef, found := gc.instanceRefToMigRef[instanceRef]; found {
 		mig, found := gc.getMig(migRef)
 		if !found {
-			return nil, fmt.Errorf("instance %+v belongs to unregistered mig %+v", *instanceRef, migRef)
+			return nil, fmt.Errorf("instance %+v belongs to unregistered mig %+v", instanceRef, migRef)
 		}
 		return mig.Config, nil
 	}
@@ -180,16 +180,16 @@ func (gc *GceCache) GetMigForInstance(instanceRef *GceRef) (Mig, error) {
 			mig.Config.GceRef().Zone == instanceRef.Zone &&
 			strings.HasPrefix(instanceRef.Name, mig.Basename) {
 			if err := gc.regenerateCache(); err != nil {
-				return nil, fmt.Errorf("error while looking for MIG for instance %+v, error: %v", *instanceRef, err)
+				return nil, fmt.Errorf("error while looking for MIG for instance %+v, error: %v", instanceRef, err)
 			}
 
-			migRef, found := gc.instanceRefToMigRef[*instanceRef]
+			migRef, found := gc.instanceRefToMigRef[instanceRef]
 			if !found {
-				return nil, fmt.Errorf("instance %+v belongs to unknown mig", *instanceRef)
+				return nil, fmt.Errorf("instance %+v belongs to unknown mig", instanceRef)
 			}
 			mig, found := gc.getMig(migRef)
 			if !found {
-				return nil, fmt.Errorf("instance %+v belongs to unregistered mig %+v", *instanceRef, migRef)
+				return nil, fmt.Errorf("instance %+v belongs to unregistered mig %+v", instanceRef, migRef)
 			}
 			return mig.Config, nil
 		}
@@ -244,7 +244,7 @@ func (gc *GceCache) regenerateCache() error {
 			if err != nil {
 				return err
 			}
-			newInstancesCache[*gceRef] = mig.GceRef()
+			newInstancesCache[gceRef] = mig.GceRef()
 		}
 	}
 
