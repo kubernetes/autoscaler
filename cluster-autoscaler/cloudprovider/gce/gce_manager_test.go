@@ -373,7 +373,7 @@ func TestDeleteInstances(t *testing.T) {
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool/deleteInstances").Return(deleteInstancesResponse).Once()
 	server.On("handle", "/project1/zones/us-central1-b/operations/operation-1505802641136-55984ff86d980-a99e8c2b-0c8aaaaa").Return(deleteInstancesOperationResponse).Once()
 
-	instances := []*GceRef{
+	instances := []GceRef{
 		{
 			Project: projectId,
 			Zone:    zoneB,
@@ -391,7 +391,7 @@ func TestDeleteInstances(t *testing.T) {
 	mock.AssertExpectationsForObjects(t, server)
 
 	// Fail on deleting instances from different MIGs.
-	instances = []*GceRef{
+	instances = []GceRef{
 		{
 			Project: projectId,
 			Zone:    zoneB,
@@ -537,7 +537,7 @@ func TestGetMigForInstance(t *testing.T) {
 
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool").Return(buildDefaultInstanceGroupManagerResponse(zoneB)).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool/listManagedInstances").Return(buildFourRunningInstancesOnDefaultMigManagedInstancesResponse(zoneB)).Once()
-	gceRef := &GceRef{
+	gceRef := GceRef{
 		Project: projectId,
 		Zone:    zoneB,
 		Name:    "gke-cluster-1-default-pool-f7607aac-f1hm",

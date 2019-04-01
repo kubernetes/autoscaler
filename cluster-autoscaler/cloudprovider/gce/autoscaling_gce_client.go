@@ -56,7 +56,7 @@ type AutoscalingGceClient interface {
 
 	// modifying resources
 	ResizeMig(GceRef, int64) error
-	DeleteInstances(migRef GceRef, instances []*GceRef) error
+	DeleteInstances(migRef GceRef, instances []GceRef) error
 }
 
 type autoscalingGceClientV1 struct {
@@ -159,12 +159,12 @@ func (client *autoscalingGceClientV1) waitForOp(operation *gce.Operation, projec
 	return fmt.Errorf("timeout while waiting for operation %s on %s to complete.", operation.Name, operation.TargetLink)
 }
 
-func (client *autoscalingGceClientV1) DeleteInstances(migRef GceRef, instances []*GceRef) error {
+func (client *autoscalingGceClientV1) DeleteInstances(migRef GceRef, instances []GceRef) error {
 	req := gce.InstanceGroupManagersDeleteInstancesRequest{
 		Instances: []string{},
 	}
 	for _, i := range instances {
-		req.Instances = append(req.Instances, GenerateInstanceUrl(*i))
+		req.Instances = append(req.Instances, GenerateInstanceUrl(i))
 	}
 	registerRequest("instance_group_managers", "delete_instances")
 	op, err := client.gceService.InstanceGroupManagers.DeleteInstances(migRef.Project, migRef.Zone, migRef.Name, &req).Do()
