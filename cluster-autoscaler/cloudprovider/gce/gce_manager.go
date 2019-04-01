@@ -68,7 +68,7 @@ type GceManager interface {
 	// GetMigNodes returns mig nodes.
 	GetMigNodes(mig Mig) ([]cloudprovider.Instance, error)
 	// GetMigForInstance returns MIG to which the given instance belongs.
-	GetMigForInstance(instance *GceRef) (Mig, error)
+	GetMigForInstance(instance GceRef) (Mig, error)
 	// GetMigTemplateNode returns a template node for MIG.
 	GetMigTemplateNode(mig Mig) (*apiv1.Node, error)
 	// GetResourceLimiter returns resource limiter.
@@ -79,7 +79,7 @@ type GceManager interface {
 	// SetMigSize sets MIG size.
 	SetMigSize(mig Mig, size int64) error
 	// DeleteInstances deletes the given instances. All instances must be controlled by the same MIG.
-	DeleteInstances(instances []*GceRef) error
+	DeleteInstances(instances []GceRef) error
 }
 
 type gceManagerImpl struct {
@@ -225,7 +225,7 @@ func (m *gceManagerImpl) SetMigSize(mig Mig, size int64) error {
 }
 
 // DeleteInstances deletes the given instances. All instances must be controlled by the same MIG.
-func (m *gceManagerImpl) DeleteInstances(instances []*GceRef) error {
+func (m *gceManagerImpl) DeleteInstances(instances []GceRef) error {
 	if len(instances) == 0 {
 		return nil
 	}
@@ -252,7 +252,7 @@ func (m *gceManagerImpl) GetMigs() []*MigInformation {
 }
 
 // GetMigForInstance returns MIG to which the given instance belongs.
-func (m *gceManagerImpl) GetMigForInstance(instance *GceRef) (Mig, error) {
+func (m *gceManagerImpl) GetMigForInstance(instance GceRef) (Mig, error) {
 	return m.cache.GetMigForInstance(instance)
 }
 
