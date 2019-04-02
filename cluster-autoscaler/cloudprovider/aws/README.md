@@ -5,8 +5,9 @@ The cluster autoscaler on AWS scales worker nodes within any specified autoscali
 Cluster autoscaler must run on v1.3.0 or greater.
 
 ## Permissions
-The worker running the cluster autoscaler will need access to certain resources and actions.
+The worker running the cluster autoscaler will need access to certain resources and actions. We always recommend you to attach IAM policy to nodegroup and avoid using AWS credentials directly unless you have special requirements.
 
+### Attach IAM policy to NodeGroup
 A minimum IAM policy would look like:
 ```json
 {
@@ -48,6 +49,39 @@ If you'd like to auto-discover node groups by specifying the `--node-group-auto-
 ```
 
 AWS supports ARNs for autoscaling groups. More information [here](https://docs.aws.amazon.com/autoscaling/latest/userguide/control-access-using-iam.html#policy-auto-scaling-resources).
+
+### Using AWS Credentials
+For on premise users like to scale out to AWS, above approach that attaching policy to nodegroup role won't work. Instead, you can create an aws secret manually and add following environment variables to cluster-autoscaler deployment manifest. Cluster autoscaler will use credential to authenticate and authorize itself. Please make sure your role has above permissions.
+
+```
+apiVersion: v1
+kind: Secret
+metadata:
+  name: aws-secret
+type: Opaque
+data:
+  aws_access_key_id: BASE64_OF_YOUR_AWS_ACCESS_KEY_ID
+  aws_secret_access_key: BASE64_OF_YOUR_AWS_SECRET_ACCESS_KEY
+
+```
+Please check [guidance](https://kubernetes.io/docs/concepts/configuration/secret/#creating-a-secret-manually) for creating a secret manually.
+
+```
+env:
+- name: AWS_ACCESS_KEY_ID
+  valueFrom:
+    secretKeyRef:
+      name: aws-secret
+      key: aws_access_key_id
+- name: AWS_SECRET_ACCESS_KEY
+  valueFrom:
+    secretKeyRef:
+      name: aws-secret
+      key: aws_secret_access_key
+- name: AWS_REGION
+  value: YOUR_AWS_REGION
+
+```
 
 ## Deployment Specification
 Auto-Discovery Setup is always preferred option to avoid multiple, potentially different configuration for min/max values. If you want to adjust minimum and maximum size of the group, please adjust size on ASG directly, CA will fetch latest change when talking to ASG.
