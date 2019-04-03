@@ -218,11 +218,11 @@ func (gc *GceCache) removeInstancesForMig(migRef GceRef) {
 	}
 }
 
-func (gc *GceCache) getMig(migRef GceRef) (*MigInformation, bool) {
+func (gc *GceCache) getMig(migRef GceRef) (MigInformation, bool) {
 	gc.migsMutex.Lock()
 	defer gc.migsMutex.Unlock()
 	mig, found := gc.migs[migRef]
-	return mig, found
+	return *mig, found
 }
 
 // RegenerateInstanceCacheForMig triggers instances cache regeneration for single MIG under lock.
