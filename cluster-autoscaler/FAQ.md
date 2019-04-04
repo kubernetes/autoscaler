@@ -823,6 +823,9 @@ Events:
   ---------	--------	-----	----			-------------	--------	------			-------
   1m		1m		1	cluster-autoscaler			Normal		TriggeredScaleUp	pod triggered scale-up, group: https://content.googleapis.com/compute/v1/projects/maciekpytel-dev-playground/zones/us-central1-b/instanceGroups/e2e-test-maciekpytel-minion-group, sizes (current/new): 3/4
 ```
+### My cluster is below minimum / above maximum number of nodes, but CA did not fix that! Why?
+
+Cluster Autoscaler will not scale the cluster beyond these limits, but does not enforce them. If your cluster is below the minimum number of nodes configured for Cluster Autoscaler, it will be scaled up *only* in presence of unschedulable pods.
 
 ### What happens in scale-up when I have no more quota in the cloud provider?
 
