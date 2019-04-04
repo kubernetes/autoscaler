@@ -34,9 +34,12 @@ type GpuLimits struct {
 type AutoscalingOptions struct {
 	// MaxEmptyBulkDelete is a number of empty nodes that can be removed at the same time.
 	MaxEmptyBulkDelete int
-	// ScaleDownUtilizationThreshold sets threshold for nodes to be considered for scale down.
+	// ScaleDownUtilizationThreshold sets threshold for nodes to be considered for scale down if cpu or memory utilization is over threshold.
 	// Well-utilized nodes are not touched.
 	ScaleDownUtilizationThreshold float64
+	// ScaleDownGpuUtilizationThreshold sets threshold for gpu nodes to be considered for scale down if gpu utilization is over threshold.
+	// Well-utilized nodes are not touched.
+	ScaleDownGpuUtilizationThreshold float64
 	// ScaleDownUnneededTime sets the duration CA expects a node to be unneeded/eligible for removal
 	// before scaling down the node.
 	ScaleDownUnneededTime time.Duration

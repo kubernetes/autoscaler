@@ -19,13 +19,13 @@ package simulator
 import (
 	"flag"
 	"fmt"
-	"math"
 	"math/rand"
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/glogx"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	scheduler_util "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/tpu"
@@ -62,7 +62,10 @@ type NodeToBeRemoved struct {
 type UtilizationInfo struct {
 	CpuUtil float64
 	MemUtil float64
-	// Max(CpuUtil, MemUtil).
+	GpuUtil float64
+	// Resource name of highest utilization resource
+	ResourceName apiv1.ResourceName
+	// Max(CpuUtil, MemUtil) or GpuUtils
 	Utilization float64
 }
 
@@ -149,10 +152,22 @@ func FindEmptyNodesToRemove(candidates []*apiv1.Node, pods []*apiv1.Pod) []*apiv
 	return result
 }
 
-// CalculateUtilization calculates utilization of a node, defined as maximum of (cpu, memory) utilization.
-// Per resource utilization is the sum of requests for it divided by allocatable. It also returns the individual
-// cpu and memory utilization.
-func CalculateUtilization(node *apiv1.Node, nodeInfo *schedulernodeinfo.NodeInfo, skipDaemonSetPods, skipMirrorPods bool) (utilInfo UtilizationInfo, err error) {
+// CalculateUtilization calculates utilization of a node, defined as maximum of (cpu, memory) or gpu utilization
+// based on if the node has GPU or not. Per resource utilization is the sum of requests for it divided by allocatable.
+// It also returns the individual cpu, memory and gpu utilization.
+func CalculateUtilization(node *apiv1.Node, nodeInfo *schedulernodeinfo.NodeInfo, skipDaemonSetPods, skipMirrorPods bool, gpuLabel string) (utilInfo UtilizationInfo, err error) {
+	if gpu.NodeHasGpu(gpuLabel, node) {
+		gpuUtil, err := calculateUtilizationOfResource(node, nodeInfo, gpu.ResourceNvidiaGPU, skipDaemonSetPods, skipMirrorPods)
+		if err != nil {
+			klog.V(3).Infof("node %s has unready GPU", node.Name)
+			// Return 0 if GPU is unready. This will guarantee we can still scale down a node with unready GPU.
+			return UtilizationInfo{GpuUtil: 0, ResourceName: gpu.ResourceNvidiaGPU, Utilization: 0}, nil
+		}
+
+		// Skips cpu and memory utilization calculation for node with GPU.
+		return UtilizationInfo{GpuUtil: gpuUtil, ResourceName: gpu.ResourceNvidiaGPU, Utilization: gpuUtil}, nil
+	}
+
 	cpu, err := calculateUtilizationOfResource(node, nodeInfo, apiv1.ResourceCPU, skipDaemonSetPods, skipMirrorPods)
 	if err != nil {
 		return UtilizationInfo{}, err
@@ -161,7 +176,18 @@ func CalculateUtilization(node *apiv1.Node, nodeInfo *schedulernodeinfo.NodeInfo
 	if err != nil {
 		return UtilizationInfo{}, err
 	}
-	return UtilizationInfo{CpuUtil: cpu, MemUtil: mem, Utilization: math.Max(cpu, mem)}, nil
+
+	utilization := UtilizationInfo{CpuUtil: cpu, MemUtil: mem}
+
+	if cpu > mem {
+		utilization.ResourceName = apiv1.ResourceCPU
+		utilization.Utilization = cpu
+	} else {
+		utilization.ResourceName = apiv1.ResourceMemory
+		utilization.Utilization = mem
+	}
+
+	return utilization, nil
 }
 
 func calculateUtilizationOfResource(node *apiv1.Node, nodeInfo *schedulernodeinfo.NodeInfo, resourceName apiv1.ResourceName, skipDaemonSetPods, skipMirrorPods bool) (float64, error) {
