@@ -39,9 +39,10 @@ import (
 func BuildTestPod(name string, cpu int64, mem int64) *apiv1.Pod {
 	pod := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Namespace: "default",
-			Name:      name,
-			SelfLink:  fmt.Sprintf("/api/v1/namespaces/default/pods/%s", name),
+			Namespace:   "default",
+			Name:        name,
+			SelfLink:    fmt.Sprintf("/api/v1/namespaces/default/pods/%s", name),
+			Annotations: map[string]string{},
 		},
 		Spec: apiv1.PodSpec{
 			Containers: []apiv1.Container{
@@ -128,7 +129,17 @@ func AddGpusToNode(node *apiv1.Node, gpusCount int64) {
 		})
 	node.Status.Capacity[resourceNvidiaGPU] = *resource.NewQuantity(gpusCount, resource.DecimalSI)
 	node.Status.Allocatable[resourceNvidiaGPU] = *resource.NewQuantity(gpusCount, resource.DecimalSI)
+	AddGpuLabelToNode(node)
+}
+
+// AddGpuLabelToNode adds GPULabel to give node. This is used to mock intermediate result that GPU on node is not ready
+func AddGpuLabelToNode(node *apiv1.Node) {
 	node.Labels[gpuLabel] = defaultGPUType
+}
+
+// GetGPULabel return GPULabel on the node. This is only used in unit tests.
+func GetGPULabel() string {
+	return gpuLabel
 }
 
 // SetNodeReadyState sets node ready state to either ConditionTrue or ConditionFalse.
