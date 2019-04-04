@@ -172,6 +172,66 @@ func TestFindUnneededNodes(t *testing.T) {
 	assert.Equal(t, 0, len(sd.unremovableNodes))
 }
 
+func TestFindUnneededGPUNodes(t *testing.T) {
+	// shared owner reference
+	ownerRef := GenerateOwnerReferences("rs", "ReplicaSet", "extensions/v1beta1", "")
+
+	p1 := BuildTestPod("p1", 100, 0)
+	p1.Spec.NodeName = "n1"
+	p1.OwnerReferences = ownerRef
+	RequestGpuForPod(p1, 1)
+
+	p2 := BuildTestPod("p2", 400, 0)
+	p2.Spec.NodeName = "n2"
+	p2.OwnerReferences = ownerRef
+	RequestGpuForPod(p2, 1)
+
+	p3 := BuildTestPod("p3", 300, 0)
+	p3.Spec.NodeName = "n3"
+	p3.OwnerReferences = ownerRef
+	p3.ObjectMeta.Annotations["cluster-autoscaler.kubernetes.io/safe-to-evict"] = "false"
+	RequestGpuForPod(p3, 1)
+
+	// Node with low cpu utilization and high gpu utilization
+	n1 := BuildTestNode("n1", 1000, 10)
+	AddGpusToNode(n1, 2)
+	// Node with high cpu utilization and low gpu utilization
+	n2 := BuildTestNode("n2", 1000, 10)
+	AddGpusToNode(n2, 4)
+	// Node with low gpu utilization and pods on node can not be interrupted
+	n3 := BuildTestNode("n3", 1000, 10)
+	AddGpusToNode(n3, 8)
+
+	SetNodeReadyState(n1, true, time.Time{})
+	SetNodeReadyState(n2, true, time.Time{})
+	SetNodeReadyState(n3, true, time.Time{})
+
+	provider := testprovider.NewTestCloudProvider(nil, nil)
+	provider.AddNodeGroup("ng1", 1, 10, 2)
+	provider.AddNode("ng1", n1)
+	provider.AddNode("ng1", n2)
+	provider.AddNode("ng1", n3)
+
+	options := config.AutoscalingOptions{
+		ScaleDownUtilizationThreshold:    0.35,
+		ScaleDownGpuUtilizationThreshold: 0.3,
+		UnremovableNodeRecheckTimeout:    5 * time.Minute,
+	}
+	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider)
+
+	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
+	sd := NewScaleDown(&context, clusterStateRegistry)
+	sd.UpdateUnneededNodes([]*apiv1.Node{n1, n2, n3}, []*apiv1.Node{n1, n2, n3},
+		[]*apiv1.Pod{p1, p2, p3}, time.Now(), nil)
+
+	assert.Equal(t, 1, len(sd.unneededNodes))
+	_, found := sd.unneededNodes["n2"]
+	assert.True(t, found)
+
+	assert.Contains(t, sd.podLocationHints, p2.Namespace+"/"+p2.Name)
+	assert.Equal(t, 3, len(sd.nodeUtilizationMap))
+}
+
 func TestPodsWithPrioritiesFindUnneededNodes(t *testing.T) {
 	// shared owner reference
 	ownerRef := GenerateOwnerReferences("rs", "ReplicaSet", "extensions/v1beta1", "")
@@ -812,14 +872,15 @@ func assertSubset(t *testing.T, a []string, b []string) {
 }
 
 var defaultScaleDownOptions = config.AutoscalingOptions{
-	ScaleDownUtilizationThreshold: 0.5,
-	ScaleDownUnneededTime:         time.Minute,
-	MaxGracefulTerminationSec:     60,
-	MaxEmptyBulkDelete:            10,
-	MinCoresTotal:                 0,
-	MinMemoryTotal:                0,
-	MaxCoresTotal:                 config.DefaultMaxClusterCores,
-	MaxMemoryTotal:                config.DefaultMaxClusterMemory * units.GiB,
+	ScaleDownUtilizationThreshold:    0.5,
+	ScaleDownGpuUtilizationThreshold: 0.5,
+	ScaleDownUnneededTime:            time.Minute,
+	MaxGracefulTerminationSec:        60,
+	MaxEmptyBulkDelete:               10,
+	MinCoresTotal:                    0,
+	MinMemoryTotal:                   0,
+	MaxCoresTotal:                    config.DefaultMaxClusterCores,
+	MaxMemoryTotal:                   config.DefaultMaxClusterMemory * units.GiB,
 }
 
 func TestScaleDownEmptyMultipleNodeGroups(t *testing.T) {
