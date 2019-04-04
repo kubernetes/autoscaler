@@ -93,7 +93,10 @@ var (
 	scaleDownUnreadyTime = flag.Duration("scale-down-unready-time", 20*time.Minute,
 		"How long an unready node should be unneeded before it is eligible for scale down")
 	scaleDownUtilizationThreshold = flag.Float64("scale-down-utilization-threshold", 0.5,
-		"Node utilization level, defined as sum of requested resources divided by capacity, below which a node can be considered for scale down")
+		"Sum of cpu or memory of all pods running on the node divided by node's corresponding allocatable resource, below which a node can be considered for scale down")
+	scaleDownGpuUtilizationThreshold = flag.Float64("scale-down-gpu-utilization-threshold", 0.5,
+		"Sum of gpu requests of all pods running on the node divided by node's allocatable resource, below which a node can be considered for scale down."+
+			"Utilization calculation only cares about gpu resource for accelerator node. cpu and memory utilization will be ignored.")
 	scaleDownNonEmptyCandidatesCount = flag.Int("scale-down-non-empty-candidates-count", 30,
 		"Maximum number of non empty nodes considered in one iteration as candidates for scale down with drain."+
 			"Lower value means better CA responsiveness but possible slower scale down latency."+
@@ -210,6 +213,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		ScaleDownUnneededTime:               *scaleDownUnneededTime,
 		ScaleDownUnreadyTime:                *scaleDownUnreadyTime,
 		ScaleDownUtilizationThreshold:       *scaleDownUtilizationThreshold,
+		ScaleDownGpuUtilizationThreshold:    *scaleDownGpuUtilizationThreshold,
 		ScaleDownNonEmptyCandidatesCount:    *scaleDownNonEmptyCandidatesCount,
 		ScaleDownCandidatesPoolRatio:        *scaleDownCandidatesPoolRatio,
 		ScaleDownCandidatesPoolMinCount:     *scaleDownCandidatesPoolMinCount,

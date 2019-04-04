@@ -31,6 +31,7 @@ import (
 )
 
 func TestUtilization(t *testing.T) {
+	gpuLabel := GetGPULabel()
 	pod := BuildTestPod("p1", 100, 200000)
 	pod2 := BuildTestPod("p2", -1, -1)
 
@@ -38,25 +39,25 @@ func TestUtilization(t *testing.T) {
 	node := BuildTestNode("node1", 2000, 2000000)
 	SetNodeReadyState(node, true, time.Time{})
 
-	utilInfo, err := CalculateUtilization(node, nodeInfo, false, false)
+	utilInfo, err := CalculateUtilization(node, nodeInfo, false, false, gpuLabel)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 2.0/10, utilInfo.Utilization, 0.01)
 
 	node2 := BuildTestNode("node1", 2000, -1)
 
-	_, err = CalculateUtilization(node2, nodeInfo, false, false)
+	_, err = CalculateUtilization(node2, nodeInfo, false, false, gpuLabel)
 	assert.Error(t, err)
 
 	daemonSetPod3 := BuildTestPod("p3", 100, 200000)
 	daemonSetPod3.OwnerReferences = GenerateOwnerReferences("ds", "DaemonSet", "apps/v1", "")
 
 	nodeInfo = schedulernodeinfo.NewNodeInfo(pod, pod, pod2, daemonSetPod3)
-	utilInfo, err = CalculateUtilization(node, nodeInfo, true, false)
+	utilInfo, err = CalculateUtilization(node, nodeInfo, true, false, gpuLabel)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 2.0/10, utilInfo.Utilization, 0.01)
 
 	nodeInfo = schedulernodeinfo.NewNodeInfo(pod, pod2, daemonSetPod3)
-	utilInfo, err = CalculateUtilization(node, nodeInfo, false, false)
+	utilInfo, err = CalculateUtilization(node, nodeInfo, false, false, gpuLabel)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 2.0/10, utilInfo.Utilization, 0.01)
 
@@ -66,14 +67,31 @@ func TestUtilization(t *testing.T) {
 	}
 
 	nodeInfo = schedulernodeinfo.NewNodeInfo(pod, pod, pod2, mirrorPod4)
-	utilInfo, err = CalculateUtilization(node, nodeInfo, false, true)
+	utilInfo, err = CalculateUtilization(node, nodeInfo, false, true, gpuLabel)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 2.0/10, utilInfo.Utilization, 0.01)
 
 	nodeInfo = schedulernodeinfo.NewNodeInfo(pod, pod2, mirrorPod4)
-	utilInfo, err = CalculateUtilization(node, nodeInfo, false, false)
+	utilInfo, err = CalculateUtilization(node, nodeInfo, false, false, gpuLabel)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 2.0/10, utilInfo.Utilization, 0.01)
+
+	gpuNode := BuildTestNode("gpu_node", 2000, 2000000)
+	AddGpusToNode(gpuNode, 1)
+	gpuPod := BuildTestPod("gpu_pod", 100, 200000)
+	RequestGpuForPod(gpuPod, 1)
+	nodeInfo = schedulernodeinfo.NewNodeInfo(pod, pod, gpuPod)
+	utilInfo, err = CalculateUtilization(gpuNode, nodeInfo, false, false, gpuLabel)
+	assert.NoError(t, err)
+	assert.InEpsilon(t, 1/1, utilInfo.Utilization, 0.01)
+
+	// Node with Unready GPU
+	gpuNode = BuildTestNode("gpu_node", 2000, 2000000)
+	AddGpuLabelToNode(gpuNode)
+	nodeInfo = schedulernodeinfo.NewNodeInfo(pod, pod)
+	utilInfo, err = CalculateUtilization(gpuNode, nodeInfo, false, false, gpuLabel)
+	assert.NoError(t, err)
+	assert.Zero(t, utilInfo.Utilization)
 }
 
 func TestFindPlaceAllOk(t *testing.T) {
