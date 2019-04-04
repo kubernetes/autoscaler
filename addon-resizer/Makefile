@@ -21,12 +21,12 @@ ALL_ARCH = amd64 arm arm64 ppc64le s390x
 ARCH ?= amd64
 
 GOARM=7
-GOLANG_VERSION = 1.8.3
+GOLANG_VERSION = 1.12.1
 REGISTRY = staging-k8s.gcr.io
 IMGNAME = addon-resizer
 IMAGE = $(REGISTRY)/$(IMGNAME)
 MULTI_ARCH_IMG = $(IMAGE)-$(ARCH)
-TAG = 2.1
+TAG = 2.2
 
 ifeq ($(ARCH),amd64)
 	BASEIMAGE=busybox
@@ -65,9 +65,9 @@ container: .container-$(ARCH)
 	docker run --rm -it -v $(TEMP_DIR):$(TEMP_DIR):Z -v `pwd`:/go/src/k8s.io/autoscaler/addon-resizer/:Z \
         golang:${GOLANG_VERSION} \
         /bin/bash -c "\
-		go get github.com/tools/godep && \
+								go get github.com/tools/godep && \
                 cd /go/src/k8s.io/autoscaler/addon-resizer/ && \
-                CGO_ENABLED=0 GOARM=$(GOARM) GOARCH=$(ARCH) godep go build -a -installsuffix cgo --ldflags '-w' -o $(TEMP_DIR)/pod_nanny nanny/main/pod_nanny.go"
+                CGO_ENABLED=0 GOARM=$(GOARM) GOARCH=$(ARCH) godep go build -a -installsuffix cgo --ldflags '-w' -o $(TEMP_DIR)/pod_nanny main.go"
 
 	docker build -t $(MULTI_ARCH_IMG):$(TAG) $(TEMP_DIR)
 
@@ -80,9 +80,9 @@ test:
 	docker run --rm -it -v `pwd`:/go/src/k8s.io/autoscaler/addon-resizer/:Z \
 	golang:${GOLANG_VERSION} \
         /bin/bash -c "\
-                go get github.com/tools/godep && \
-                cd /go/src/k8s.io/autoscaler/addon-resizer/ && \
-		godep go test ./nanny -v"
+				go get github.com/tools/godep && \
+        cd /go/src/k8s.io/autoscaler/addon-resizer/ && \
+				godep go test ./nanny -v"
 
 push: .push-$(ARCH)
 .push-$(ARCH): .container-$(ARCH)
