@@ -402,16 +402,16 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 			klog.Errorf("Node info for %s not found", node.Name)
 			continue
 		}
-		utilInfo, err := simulator.CalculateUtilization(node, nodeInfo, sd.context.IgnoreDaemonSetsUtilization, sd.context.IgnoreMirrorPodsUtilization)
 
+		utilInfo, err := simulator.CalculateUtilization(node, nodeInfo, sd.context.IgnoreDaemonSetsUtilization, sd.context.IgnoreMirrorPodsUtilization, sd.context.CloudProvider.GPULabel())
 		if err != nil {
 			klog.Warningf("Failed to calculate utilization for %s: %v", node.Name, err)
 		}
-		klog.V(4).Infof("Node %s - utilization %f", node.Name, utilInfo.Utilization)
+		klog.V(4).Infof("Node %s - %s utilization %f", node.Name, utilInfo.ResourceName, utilInfo.Utilization)
 		utilizationMap[node.Name] = utilInfo
 
-		if utilInfo.Utilization >= sd.context.ScaleDownUtilizationThreshold {
-			klog.V(4).Infof("Node %s is not suitable for removal - utilization too big (%f)", node.Name, utilInfo.Utilization)
+		if !sd.isNodeBelowUtilzationThreshold(node, utilInfo) {
+			klog.V(4).Infof("Node %s is not suitable for removal - %s utilization too big (%f)", node.Name, utilInfo.ResourceName, utilInfo.Utilization)
 			continue
 		}
 		currentlyUnneededNodes = append(currentlyUnneededNodes, node)
@@ -504,6 +504,20 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	sd.clusterStateRegistry.UpdateScaleDownCandidates(sd.unneededNodesList, timestamp)
 	metrics.UpdateUnneededNodesCount(len(sd.unneededNodesList))
 	return nil
+}
+
+// isNodeBelowUtilzationThreshold determintes if a given node utilization is blow threshold.
+func (sd *ScaleDown) isNodeBelowUtilzationThreshold(node *apiv1.Node, utilInfo simulator.UtilizationInfo) bool {
+	if gpu.NodeHasGpu(sd.context.CloudProvider.GPULabel(), node) {
+		if utilInfo.Utilization >= sd.context.ScaleDownGpuUtilizationThreshold {
+			return false
+		}
+	} else {
+		if utilInfo.Utilization >= sd.context.ScaleDownUtilizationThreshold {
+			return false
+		}
+	}
+	return true
 }
 
 // updateUnremovableNodes updates unremovableNodes map according to current
