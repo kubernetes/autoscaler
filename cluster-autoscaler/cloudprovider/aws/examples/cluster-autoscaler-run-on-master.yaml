@@ -133,7 +133,7 @@ spec:
       nodeSelector:
         kubernetes.io/role: master
       containers:
-        - image: k8s.gcr.io/cluster-autoscaler:v1.3.6
+        - image: k8s.gcr.io/cluster-autoscaler:v1.12.3
           name: cluster-autoscaler
           resources:
             limits:
@@ -157,4 +157,4 @@ spec:
       volumes:
         - name: ssl-certs
           hostPath:
-            path: "/etc/ssl/certs/ca-certificates.crt"
+            path: "/etc/ssl/certs/ca-bundle.crt"
