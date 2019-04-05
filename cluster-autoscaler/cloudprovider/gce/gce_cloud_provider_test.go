@@ -47,12 +47,12 @@ func (m *gceManagerMock) SetMigSize(mig Mig, size int64) error {
 	return args.Error(0)
 }
 
-func (m *gceManagerMock) DeleteInstances(instances []*GceRef) error {
+func (m *gceManagerMock) DeleteInstances(instances []GceRef) error {
 	args := m.Called(instances)
 	return args.Error(0)
 }
 
-func (m *gceManagerMock) GetMigForInstance(instance *GceRef) (Mig, error) {
+func (m *gceManagerMock) GetMigForInstance(instance GceRef) (Mig, error) {
 	args := m.Called(instance)
 	return args.Get(0).(*gceMig), args.Error(1)
 }
@@ -129,7 +129,7 @@ func TestNodeGroupForNode(t *testing.T) {
 	n := BuildTestNode("n1", 1000, 1000)
 	n.Spec.ProviderID = "gce://project1/us-central1-b/n1"
 	mig := gceMig{gceRef: GceRef{Name: "ng1"}}
-	gceManagerMock.On("GetMigForInstance", mock.AnythingOfType("*gce.GceRef")).Return(&mig, nil).Once()
+	gceManagerMock.On("GetMigForInstance", mock.AnythingOfType("gce.GceRef")).Return(&mig, nil).Once()
 
 	nodeGroup, err := gce.NodeGroupForNode(n)
 	assert.NoError(t, err)
@@ -333,7 +333,7 @@ func TestMig(t *testing.T) {
 	mock.AssertExpectationsForObjects(t, gceManagerMock)
 
 	// Test Belongs - true.
-	gceManagerMock.On("GetMigForInstance", mock.AnythingOfType("*gce.GceRef")).Return(mig1, nil).Once()
+	gceManagerMock.On("GetMigForInstance", mock.AnythingOfType("gce.GceRef")).Return(mig1, nil).Once()
 	node := BuildTestNode("gke-cluster-1-default-pool-f7607aac-dck1", 1000, 1000)
 	node.Spec.ProviderID = "gce://project1/us-central1-b/gke-cluster-1-default-pool-f7607aac-dck1"
 
@@ -353,7 +353,7 @@ func TestMig(t *testing.T) {
 		minSize:    0,
 		maxSize:    1000,
 	}
-	gceManagerMock.On("GetMigForInstance", mock.AnythingOfType("*gce.GceRef")).Return(mig2, nil).Once()
+	gceManagerMock.On("GetMigForInstance", mock.AnythingOfType("gce.GceRef")).Return(mig2, nil).Once()
 
 	belongs, err = mig1.Belongs(node)
 	assert.NoError(t, err)
@@ -363,14 +363,14 @@ func TestMig(t *testing.T) {
 	// Test DeleteNodes.
 	n1 := BuildTestNode("gke-cluster-1-default-pool-f7607aac-9j4g", 1000, 1000)
 	n1.Spec.ProviderID = "gce://project1/us-central1-b/gke-cluster-1-default-pool-f7607aac-9j4g"
-	n1ref := &GceRef{"project1", "us-central1-b", "gke-cluster-1-default-pool-f7607aac-9j4g"}
+	n1ref := GceRef{"project1", "us-central1-b", "gke-cluster-1-default-pool-f7607aac-9j4g"}
 	n2 := BuildTestNode("gke-cluster-1-default-pool-f7607aac-dck1", 1000, 1000)
 	n2.Spec.ProviderID = "gce://project1/us-central1-b/gke-cluster-1-default-pool-f7607aac-dck1"
-	n2ref := &GceRef{"project1", "us-central1-b", "gke-cluster-1-default-pool-f7607aac-dck1"}
+	n2ref := GceRef{"project1", "us-central1-b", "gke-cluster-1-default-pool-f7607aac-dck1"}
 	gceManagerMock.On("GetMigSize", mock.AnythingOfType("*gce.gceMig")).Return(int64(2), nil).Once()
 	gceManagerMock.On("GetMigForInstance", n1ref).Return(mig1, nil).Once()
 	gceManagerMock.On("GetMigForInstance", n2ref).Return(mig1, nil).Once()
-	gceManagerMock.On("DeleteInstances", []*GceRef{n1ref, n2ref}).Return(nil).Once()
+	gceManagerMock.On("DeleteInstances", []GceRef{n1ref, n2ref}).Return(nil).Once()
 	err = mig1.DeleteNodes([]*apiv1.Node{n1, n2})
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, gceManagerMock)
@@ -420,7 +420,7 @@ func TestMig(t *testing.T) {
 func TestGceRefFromProviderId(t *testing.T) {
 	ref, err := GceRefFromProviderId("gce://project1/us-central1-b/name1")
 	assert.NoError(t, err)
-	assert.Equal(t, GceRef{"project1", "us-central1-b", "name1"}, *ref)
+	assert.Equal(t, GceRef{"project1", "us-central1-b", "name1"}, ref)
 }
 
 func createString(s string) *string {

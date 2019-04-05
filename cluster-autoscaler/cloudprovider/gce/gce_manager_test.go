@@ -269,9 +269,9 @@ func newTestGceManager(t *testing.T, testServerURL string, regional bool) *gceMa
 
 	manager := &gceManagerImpl{
 		cache: GceCache{
-			migs:           make([]*MigInformation, 0),
-			GceService:     gceService,
-			instancesCache: make(map[GceRef]Mig),
+			migs:                make(map[GceRef]*MigInformation),
+			GceService:          gceService,
+			instanceRefToMigRef: make(map[GceRef]GceRef),
 			machinesCache: map[MachineTypeKey]*gce.MachineType{
 				{"us-central1-b", "n1-standard-1"}: {GuestCpus: 1, MemoryMb: 1},
 				{"us-central1-c", "n1-standard-1"}: {GuestCpus: 1, MemoryMb: 1},
@@ -292,14 +292,6 @@ func newTestGceManager(t *testing.T, testServerURL string, regional bool) *gceMa
 	}
 
 	return manager
-}
-
-func validateMig(t *testing.T, mig Mig, zone string, name string, minSize int, maxSize int) {
-	assert.Equal(t, name, mig.GceRef().Name)
-	assert.Equal(t, zone, mig.GceRef().Zone)
-	assert.Equal(t, projectId, mig.GceRef().Project)
-	assert.Equal(t, minSize, mig.MinSize())
-	assert.Equal(t, maxSize, mig.MaxSize())
 }
 
 const deleteInstancesResponse = `{
@@ -348,7 +340,7 @@ func setupTestDefaultPool(manager *gceManagerImpl) {
 		minSize:    1,
 		maxSize:    11,
 	}
-	manager.cache.migs = append(manager.cache.migs, &MigInformation{Config: mig})
+	manager.cache.migs[mig.GceRef()] = &MigInformation{Config: mig}
 }
 
 func setupTestExtraPool(manager *gceManagerImpl) {
@@ -362,7 +354,7 @@ func setupTestExtraPool(manager *gceManagerImpl) {
 		minSize:    0,
 		maxSize:    1000,
 	}
-	manager.cache.migs = append(manager.cache.migs, &MigInformation{Config: mig})
+	manager.cache.migs[mig.GceRef()] = &MigInformation{Config: mig}
 }
 
 func TestDeleteInstances(t *testing.T) {
@@ -376,12 +368,10 @@ func TestDeleteInstances(t *testing.T) {
 	// Test DeleteInstance function.
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool").Return(buildDefaultInstanceGroupManagerResponse(zoneB)).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool/listManagedInstances").Return(buildFourRunningInstancesOnDefaultMigManagedInstancesResponse(zoneB)).Once()
-	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-extra-pool-323233232").Return(buildDefaultInstanceGroupManagerResponse(zoneB)).Once()
-	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-extra-pool-323233232/listManagedInstances").Return(buildOneRunningInstanceOnExtraPoolMigManagedInstancesResponse(zoneB)).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool/deleteInstances").Return(deleteInstancesResponse).Once()
 	server.On("handle", "/project1/zones/us-central1-b/operations/operation-1505802641136-55984ff86d980-a99e8c2b-0c8aaaaa").Return(deleteInstancesOperationResponse).Once()
 
-	instances := []*GceRef{
+	instances := []GceRef{
 		{
 			Project: projectId,
 			Zone:    zoneB,
@@ -398,8 +388,11 @@ func TestDeleteInstances(t *testing.T) {
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, server)
 
+	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-extra-pool-323233232").Return(buildDefaultInstanceGroupManagerResponse(zoneB)).Once()
+	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-extra-pool-323233232/listManagedInstances").Return(buildOneRunningInstanceOnExtraPoolMigManagedInstancesResponse(zoneB)).Once()
+
 	// Fail on deleting instances from different MIGs.
-	instances = []*GceRef{
+	instances = []GceRef{
 		{
 			Project: projectId,
 			Zone:    zoneB,
@@ -545,7 +538,7 @@ func TestGetMigForInstance(t *testing.T) {
 
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool").Return(buildDefaultInstanceGroupManagerResponse(zoneB)).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool/listManagedInstances").Return(buildFourRunningInstancesOnDefaultMigManagedInstancesResponse(zoneB)).Once()
-	gceRef := &GceRef{
+	gceRef := GceRef{
 		Project: projectId,
 		Zone:    zoneB,
 		Name:    "gke-cluster-1-default-pool-f7607aac-f1hm",
@@ -953,8 +946,8 @@ func TestFetchAutoMigsZonal(t *testing.T) {
 
 	migs := g.GetMigs()
 	assert.Equal(t, 2, len(migs))
-	validateMig(t, migs[0].Config, zoneB, gceMigA, min, max)
-	validateMig(t, migs[1].Config, zoneB, gceMigB, min, max)
+	validateMigExists(t, migs, zoneB, gceMigA, min, max)
+	validateMigExists(t, migs, zoneB, gceMigB, min, max)
 	mock.AssertExpectationsForObjects(t, server)
 }
 
@@ -996,7 +989,7 @@ func TestFetchAutoMigsUnregistersMissingMigs(t *testing.T) {
 
 	migs := g.GetMigs()
 	assert.Equal(t, 1, len(migs))
-	validateMig(t, migs[0].Config, zoneB, gceMigA, minA, maxA)
+	validateMigExists(t, migs, zoneB, gceMigA, minA, maxA)
 	mock.AssertExpectationsForObjects(t, server)
 }
 
@@ -1028,8 +1021,8 @@ func TestFetchAutoMigsRegional(t *testing.T) {
 
 	migs := g.GetMigs()
 	assert.Equal(t, 2, len(migs))
-	validateMig(t, migs[0].Config, zoneB, gceMigA, min, max)
-	validateMig(t, migs[1].Config, zoneB, gceMigB, min, max)
+	validateMigExists(t, migs, zoneB, gceMigA, min, max)
+	validateMigExists(t, migs, zoneB, gceMigB, min, max)
 	mock.AssertExpectationsForObjects(t, server)
 }
 
@@ -1062,8 +1055,8 @@ func TestFetchExplicitMigs(t *testing.T) {
 
 	migs := g.GetMigs()
 	assert.Equal(t, 2, len(migs))
-	validateMig(t, migs[0].Config, zoneB, gceMigA, minA, maxA)
-	validateMig(t, migs[1].Config, zoneB, gceMigB, minB, maxB)
+	validateMigExists(t, migs, zoneB, gceMigA, minA, maxA)
+	validateMigExists(t, migs, zoneB, gceMigB, minB, maxB)
 	mock.AssertExpectationsForObjects(t, server)
 }
 
@@ -1199,4 +1192,25 @@ func TestParseCustomMachineType(t *testing.T) {
 	assert.Error(t, err)
 	cpu, mem, err = parseCustomMachineType("other-2-2816")
 	assert.Error(t, err)
+}
+
+func validateMigExists(t *testing.T, migs []*MigInformation, zone string, name string, minSize int, maxSize int) {
+	ref := GceRef{
+		projectId,
+		zone,
+		name,
+	}
+	for _, migInformation := range migs {
+		mig := migInformation.Config
+		if mig.GceRef() == ref {
+			assert.Equal(t, minSize, mig.MinSize())
+			assert.Equal(t, maxSize, mig.MaxSize())
+			return
+		}
+	}
+	allRefs := []GceRef{}
+	for _, migInformation := range migs {
+		allRefs = append(allRefs, migInformation.Config.GceRef())
+	}
+	assert.Failf(t, "Mig not found", "Mig %v not found among %v", ref, allRefs)
 }
