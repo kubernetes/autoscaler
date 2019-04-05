@@ -155,12 +155,12 @@ func (ref GceRef) ToProviderId() string {
 // from provider id which must be in format:
 // gce://<project-id>/<zone>/<name>
 // TODO(piosz): add better check whether the id is correct
-func GceRefFromProviderId(id string) (*GceRef, error) {
+func GceRefFromProviderId(id string) (GceRef, error) {
 	splitted := strings.Split(id[6:], "/")
 	if len(splitted) != 3 {
-		return nil, fmt.Errorf("wrong id: expected format gce://<project-id>/<zone>/<name>, got %v", id)
+		return GceRef{}, fmt.Errorf("wrong id: expected format gce://<project-id>/<zone>/<name>, got %v", id)
 	}
-	return &GceRef{
+	return GceRef{
 		Project: splitted[0],
 		Zone:    splitted[1],
 		Name:    splitted[2],
@@ -269,7 +269,7 @@ func (mig *gceMig) DeleteNodes(nodes []*apiv1.Node) error {
 	if int(size) <= mig.MinSize() {
 		return fmt.Errorf("min size reached, nodes will not be deleted")
 	}
-	refs := make([]*GceRef, 0, len(nodes))
+	refs := make([]GceRef, 0, len(nodes))
 	for _, node := range nodes {
 
 		belongs, err := mig.Belongs(node)
