@@ -141,6 +141,11 @@ func (m *azureRef) GetKey() string {
 	return m.Name
 }
 
+// String is represented by calling GetKey()
+func (m *azureRef) String() string {
+	return m.GetKey()
+}
+
 // BuildAzure builds Azure cloud provider, manager etc.
 func BuildAzure(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	var config io.ReadCloser
