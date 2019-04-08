@@ -75,6 +75,9 @@ func (mcp *magnumCloudProvider) AddNodeGroup(group magnumNodeGroup) {
 // Since only a single node group is currently supported, the first node group is always returned.
 func (mcp *magnumCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
 	// TODO: wait for magnum nodegroup support
+	if _, found := node.ObjectMeta.Labels["node-role.kubernetes.io/master"]; found {
+		return nil, nil
+	}
 	return &(mcp.nodeGroups[0]), nil
 }
 
