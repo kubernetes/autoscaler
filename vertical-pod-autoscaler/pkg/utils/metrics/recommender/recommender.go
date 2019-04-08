@@ -62,6 +62,14 @@ var (
 
 	functionLatency = metrics.CreateExecutionTimeMetric(metricsNamespace,
 		"Time spent in various parts of VPA Recommender main loop.")
+
+	aggregateContainerStatesCount = prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Namespace: metricsNamespace,
+			Name:      "aggregate_container_states_count",
+			Help:      "Number of aggregate container states being tracked by the recommender",
+		},
+	)
 )
 
 type objectCounterKey struct {
@@ -77,9 +85,7 @@ type ObjectCounter struct {
 
 // Register initializes all metrics for VPA Recommender
 func Register() {
-	prometheus.MustRegister(vpaObjectCount)
-	prometheus.MustRegister(recommendationLatency)
-	prometheus.MustRegister(functionLatency)
+	prometheus.MustRegister(vpaObjectCount, recommendationLatency, functionLatency, aggregateContainerStatesCount)
 }
 
 // NewExecutionTimer provides a timer for Recommender's RunOnce execution
@@ -90,6 +96,11 @@ func NewExecutionTimer() *metrics.ExecutionTimer {
 // ObserveRecommendationLatency observes the time it took for the first recommendation to appear
 func ObserveRecommendationLatency(created time.Time) {
 	recommendationLatency.Observe(time.Now().Sub(created).Seconds())
+}
+
+// RecordAggregateContainerStatesCount records the number of containers being tracked by the recommender
+func RecordAggregateContainerStatesCount(statesCount int) {
+	aggregateContainerStatesCount.Set(float64(statesCount))
 }
 
 // NewObjectCounter creates a new helper to split VPA objects into buckets
