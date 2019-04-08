@@ -11,7 +11,8 @@ for item in $to_fix; do
    mkdir "${GOPATH}/src/k8s.io/${item}"
    cd "${GOPATH}/src/k8s.io/${item}"
    git init
-   cp -R "${GOPATH}/src/k8s.io/kubernetes/staging/src/k8s.io/${item}/*" ./
+   # shellcheck disable=SC2086
+   cp -R ${GOPATH}/src/k8s.io/kubernetes/staging/src/k8s.io/${item}/* ./
    git add .
    git commit -a -m from_staging
 done
@@ -26,13 +27,15 @@ done
 
 echo Overriding AKS API
 mkdir -p "${GOPATH}/src/github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2018-03-31/containerservice"
-cp "${GOPATH}/src/k8s.io/autoscaler/cluster-autoscaler/_override/github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2018-03-31/containerservice/*" "${GOPATH}/src/github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2018-03-31/containerservice/"
+# shellcheck disable=SC2086
+cp ${GOPATH}/src/k8s.io/autoscaler/cluster-autoscaler/_override/github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2018-03-31/containerservice/* "${GOPATH}/src/github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2018-03-31/containerservice/"
 cd "${GOPATH}/src/github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2018-03-31/containerservice"
 git add .
 git commit -a -m "Api override for AKS"
 
 echo Overriding Azure autorest
-cp -r "${GOPATH}/src/k8s.io/autoscaler/cluster-autoscaler/_override/github.com/Azure/go-autorest/*" "${GOPATH}/src/github.com/Azure/go-autorest/"
+# shellcheck disable=SC2086
+cp -r ${GOPATH}/src/k8s.io/autoscaler/cluster-autoscaler/_override/github.com/Azure/go-autorest/* "${GOPATH}/src/github.com/Azure/go-autorest/"
 cd "${GOPATH}/src/github.com/Azure/go-autorest/"
 git add .
 git commit -a -m "Api override for autorest"
