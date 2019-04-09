@@ -61,18 +61,14 @@ type MachineTypeKey struct {
 // - instanceRefToMigRef (2) is NOT updated automatically when migs field (1) is updated. Calling
 // RegenerateInstancesCache is required to sync it with registered migs.
 type GceCache struct {
+	cacheMutex sync.Mutex
+
 	// Cache content.
 	migs                map[GceRef]*MigInformation
 	instanceRefToMigRef map[GceRef]GceRef
 	resourceLimiter     *cloudprovider.ResourceLimiter
 	machinesCache       map[MachineTypeKey]*gce.MachineType
 	migTargetSizeCache  map[GceRef]int64
-	// Locks. Rules of locking:
-	// - migsMutex protects only migs.
-	// - cacheMutex protects instanceRefToMigRef, resourceLimiter, machinesCache and migTargetSizeCache.
-	// - if both locks are needed, cacheMutex must be obtained before migsMutex.
-	cacheMutex sync.Mutex
-	migsMutex  sync.Mutex
 	// Service used to refresh cache.
 	GceService AutoscalingGceClient
 }
@@ -92,8 +88,8 @@ func NewGceCache(gceService AutoscalingGceClient) GceCache {
 
 // RegisterMig returns true if the node group wasn't in cache before, or its config was updated.
 func (gc *GceCache) RegisterMig(newMig Mig) bool {
-	gc.migsMutex.Lock()
-	defer gc.migsMutex.Unlock()
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
 
 	oldMigInformation, found := gc.migs[newMig.GceRef()]
 	if found {
@@ -118,8 +114,6 @@ func (gc *GceCache) RegisterMig(newMig Mig) bool {
 func (gc *GceCache) UnregisterMig(toBeRemoved Mig) bool {
 	gc.cacheMutex.Lock()
 	defer gc.cacheMutex.Unlock()
-	gc.migsMutex.Lock()
-	defer gc.migsMutex.Unlock()
 
 	_, found := gc.migs[toBeRemoved.GceRef()]
 	if found {
@@ -133,8 +127,8 @@ func (gc *GceCache) UnregisterMig(toBeRemoved Mig) bool {
 
 // GetMigs returns a copy of migs list.
 func (gc *GceCache) GetMigs() []*MigInformation {
-	gc.migsMutex.Lock()
-	defer gc.migsMutex.Unlock()
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
 
 	migs := make([]*MigInformation, 0, len(gc.migs))
 	for _, mig := range gc.migs {
@@ -148,9 +142,6 @@ func (gc *GceCache) GetMigs() []*MigInformation {
 
 // GetMigs returns a copy of migs list.
 func (gc *GceCache) getMigRefs() []GceRef {
-	gc.migsMutex.Lock()
-	defer gc.migsMutex.Unlock()
-
 	migRefs := make([]GceRef, 0, len(gc.migs))
 	for migRef := range gc.migs {
 		migRefs = append(migRefs, migRef)
@@ -159,9 +150,6 @@ func (gc *GceCache) getMigRefs() []GceRef {
 }
 
 func (gc *GceCache) updateMigBasename(migRef GceRef, basename string) {
-	gc.migsMutex.Lock()
-	defer gc.migsMutex.Unlock()
-
 	mig, found := gc.migs[migRef]
 	if found {
 		mig.Basename = basename
@@ -219,8 +207,6 @@ func (gc *GceCache) removeInstancesForMig(migRef GceRef) {
 }
 
 func (gc *GceCache) getMig(migRef GceRef) (MigInformation, bool) {
-	gc.migsMutex.Lock()
-	defer gc.migsMutex.Unlock()
 	mig, found := gc.migs[migRef]
 	return *mig, found
 }
