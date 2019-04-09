@@ -72,9 +72,9 @@ func (m *gceManagerMock) Cleanup() error {
 	return args.Error(0)
 }
 
-func (m *gceManagerMock) GetMigs() []*MigInformation {
+func (m *gceManagerMock) GetMigs() []Mig {
 	args := m.Called()
-	return args.Get(0).([]*MigInformation)
+	return args.Get(0).([]Mig)
 }
 
 func (m *gceManagerMock) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
@@ -114,10 +114,10 @@ func TestNodeGroups(t *testing.T) {
 	gce := &GceCloudProvider{
 		gceManager: gceManagerMock,
 	}
-	mig := &MigInformation{Config: &gceMig{gceRef: GceRef{Name: "ng1"}}}
-	gceManagerMock.On("GetMigs").Return([]*MigInformation{mig}).Once()
+	mig := &gceMig{gceRef: GceRef{Name: "ng1"}}
+	gceManagerMock.On("GetMigs").Return([]Mig{mig}).Once()
 	result := gce.NodeGroups()
-	assert.Equal(t, []cloudprovider.NodeGroup{mig.Config}, result)
+	assert.Equal(t, []cloudprovider.NodeGroup{mig}, result)
 	mock.AssertExpectationsForObjects(t, gceManagerMock)
 }
 
