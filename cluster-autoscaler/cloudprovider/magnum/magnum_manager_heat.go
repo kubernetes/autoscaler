@@ -29,6 +29,7 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/containerinfra/v1/clusters"
 	"github.com/gophercloud/gophercloud/openstack/orchestration/v1/stackresources"
 	"github.com/gophercloud/gophercloud/openstack/orchestration/v1/stacks"
+	"github.com/satori/go.uuid"
 	"gopkg.in/gcfg.v1"
 	netutil "k8s.io/apimachinery/pkg/util/net"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -359,14 +360,23 @@ func (mgr *magnumManagerHeat) findStackIndices(nodeRefs []NodeRef) ([]string, er
 // which is provided by findStackIndices (inverted).
 // The boolean return value specifies if the index was found or not.
 func stackIndexFromID(IDToIndex map[string]string, nodeRef NodeRef) (string, bool) {
-	if index, found := IDToIndex[nodeRef.MachineID]; found {
-		return index, found
+	// Kubernetes stores machine UUID without dashes, openstack expects with dashes.
+	// Parsing the MachineID and getting the string output gives the correct format.
+	// If the MachineID does not parse (maybe it is empty) then it will not be checked, it will not cause an error.
+	id, err := uuid.FromString(nodeRef.MachineID)
+	if err == nil {
+		machineID := id.String()
+		if index, found := IDToIndex[machineID]; found {
+			return index, found
+		}
 	}
+
 	for _, IP := range nodeRef.IPs {
 		if index, found := IDToIndex[IP]; found {
 			return index, found
 		}
 	}
+
 	return "", false
 }
 
