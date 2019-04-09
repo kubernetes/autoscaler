@@ -153,7 +153,7 @@ var stackGetResponseNotFound = fmt.Sprintf(`
 }`, badStackID)
 
 var deleteNodeRefs = []NodeRef{
-	{Name: stackName + "-minion-1", MachineID: "3ae2e15807bd48ccbb26f9bb5f2996d6", ProviderID: "openstack:///3ae2e15807bd48ccbb26f9bb5f2996d6", IPs: []string{"10.0.0.52"}},
+	{Name: stackName + "-minion-1", MachineID: "3ae2e15807bd48ccbb26f9bb5f2996d6", ProviderID: "openstack:///3ae2e158-07bd-48cc-bb26-f9bb5f2996d6", IPs: []string{"10.0.0.52"}},
 }
 var patchResponseSuccess = `{"uuid": "732851e1-f792-4194-b966-4cbfa5f30093"}`
 
@@ -260,8 +260,8 @@ var stackGetKubeMinionsStackResponse = fmt.Sprintf(`
         "outputs":[
             {
                 "output_value":{
-                    "0":"ffbc651da661462d94352e01f3020688",
-                    "1":"3ae2e15807bd48ccbb26f9bb5f2996d6"
+                    "0":"ffbc651d-a661-462d-9435-2e01f3020688",
+                    "1":"3ae2e158-07bd-48cc-bb26-f9bb5f2996d6"
                 },
                 "output_key":"refs_map",
                 "description":"No description given"
@@ -778,14 +778,19 @@ func TestStackIndexFromID(t *testing.T) {
 	minion0IP := []string{"10.0.0.52"}
 	minion0ID := "a390ca6ab24846af8ddd854a52fd5281"
 	minion0 := NodeRef{MachineID: minion0ID, IPs: minion0IP}
+	minion0StackID := "a390ca6a-b248-46af-8ddd-854a52fd5281"
 
 	minion1IP := []string{"10.0.0.59"}
 	minion1ID := "5bc76eeb2b2e4625a1a559560aa90e5a"
 	minion1 := NodeRef{MachineID: minion1ID, IPs: minion1IP}
+	minion1StackID := "5bc76eeb-2b2e-4625-a1a5-59560aa90e5a"
 
 	minion2IP := []string{"10.0.0.70"}
 	minion2ID := "86db2aa4666948cfa2b828eb93cf3fd1"
 	minion2 := NodeRef{MachineID: minion2ID, IPs: minion2IP}
+
+	// Empty nodeRef, covers case with MachineID "" and IPs []string{}
+	minion3 := NodeRef{}
 
 	mappingWithIPs := map[string]string{
 		minion0IP[0]: "0",
@@ -793,8 +798,8 @@ func TestStackIndexFromID(t *testing.T) {
 	}
 
 	mappingWithIDs := map[string]string{
-		minion0ID: "0",
-		minion1ID: "1",
+		minion0StackID: "0",
+		minion1StackID: "1",
 	}
 
 	emptyMapping := map[string]string{}
@@ -817,6 +822,8 @@ func TestStackIndexFromID(t *testing.T) {
 		{"empty 0", emptyMapping, minion0, "", false},
 		{"empty 1", emptyMapping, minion1, "", false},
 		{"empty 2", emptyMapping, minion2, "", false},
+
+		{"empty ref", mappingWithIDs, minion3, "", false},
 	}
 
 	for _, test := range tests {
