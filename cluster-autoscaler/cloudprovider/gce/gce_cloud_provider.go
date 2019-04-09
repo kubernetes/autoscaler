@@ -85,7 +85,7 @@ func (gce *GceCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 	migs := gce.gceManager.GetMigs()
 	result := make([]cloudprovider.NodeGroup, 0, len(migs))
 	for _, mig := range migs {
-		result = append(result, mig.Config)
+		result = append(result, mig)
 	}
 	return result
 }
