@@ -24,27 +24,27 @@ import (
 
 func TestGetNormalizedGpuCount(t *testing.T) {
 	gpus, err := getNormalizedGpuCount(int64(0))
-	assert.Equal(t, err, nil)
+	assert.NoError(t, err)
 	assert.Equal(t, gpus, int64(1))
 
 	gpus, err = getNormalizedGpuCount(int64(1))
-	assert.Equal(t, err, nil)
+	assert.NoError(t, err)
 	assert.Equal(t, gpus, int64(1))
 
 	gpus, err = getNormalizedGpuCount(int64(2))
-	assert.Equal(t, err, nil)
+	assert.NoError(t, err)
 	assert.Equal(t, gpus, int64(2))
 
 	gpus, err = getNormalizedGpuCount(int64(3))
-	assert.Equal(t, err, nil)
+	assert.NoError(t, err)
 	assert.Equal(t, gpus, int64(4))
 
 	gpus, err = getNormalizedGpuCount(int64(7))
-	assert.Equal(t, err, nil)
+	assert.NoError(t, err)
 	assert.Equal(t, gpus, int64(8))
 
 	gpus, err = getNormalizedGpuCount(int64(8))
-	assert.Equal(t, err, nil)
+	assert.NoError(t, err)
 	assert.Equal(t, gpus, int64(8))
 
 	gpus, err = getNormalizedGpuCount(int64(9))
@@ -54,11 +54,15 @@ func TestGetNormalizedGpuCount(t *testing.T) {
 func TestValidateGpuConfig(t *testing.T) {
 	// valid configs
 	err := validateGpuConfig("nvidia-tesla-k80", int64(1), "europe-west1-b", "n1-standard-1")
-	assert.Equal(t, err, nil)
+	assert.NoError(t, err)
 	err = validateGpuConfig("nvidia-tesla-p100", int64(1), "europe-west1-b", "n1-standard-1")
-	assert.Equal(t, err, nil)
+	assert.NoError(t, err)
 	err = validateGpuConfig("nvidia-tesla-k80", int64(4), "europe-west1-b", "n1-standard-32")
-	assert.Equal(t, err, nil)
+	assert.NoError(t, err)
+	err = validateGpuConfig("nvidia-tesla-p4", int64(4), "us-west2-c", "n1-standard-16")
+	assert.NoError(t, err)
+	err = validateGpuConfig("nvidia-tesla-t4", int64(2), "us-central1-a", "n1-standard-8")
+	assert.NoError(t, err)
 
 	// invalid gpu
 	err = validateGpuConfig("duke-igthorn", int64(1), "europe-west1-b", "n1-standard-1")

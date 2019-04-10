@@ -27,34 +27,71 @@ var (
 	// TODO(maciekpytel): get this from API
 	gpuZones = map[string]map[string]bool{
 		"nvidia-tesla-k80": {
-			"us-west1-b":     true,
+			"asia-east1-a":   true,
+			"asia-east1-b":   true,
+			"europe-west1-b": true,
+			"europe-west1-d": true,
+			"us-central1-a":  true,
 			"us-central1-c":  true,
 			"us-east1-c":     true,
 			"us-east1-d":     true,
-			"europe-west1-b": true,
-			"europe-west1-d": true,
-			"asia-east1-a":   true,
-			"asia-east1-b":   true,
+			"us-west1-b":     true,
 		},
 		"nvidia-tesla-p100": {
-			"us-west1-b":     true,
+			"asia-east1-a":   true,
+			"asia-east1-c":   true,
+			"europe-west1-b": true,
+			"europe-west1-d": true,
+			"europe-west4-a": true,
 			"us-central1-c":  true,
 			"us-central1-f":  true,
 			"us-east1-b":     true,
 			"us-east1-c":     true,
-			"europe-west1-b": true,
-			"europe-west1-d": true,
-			"asia-east1-a":   true,
-			"asia-east1-c":   true,
-			"europe-west4-a": true,
-		},
-		"nvidia-tesla-v100": {
 			"us-west1-a":     true,
 			"us-west1-b":     true,
-			"us-central1-a":  true,
-			"us-central1-f":  true,
-			"europe-west4-a": true,
+		},
+		"nvidia-tesla-v100": {
 			"asia-east1-c":   true,
+			"europe-west4-a": true,
+			"europe-west4-b": true,
+			"europe-west4-c": true,
+			"us-central1-a":  true,
+			"us-central1-b":  true,
+			"us-central1-f":  true,
+			"us-west1-a":     true,
+			"us-west1-b":     true,
+		},
+		"nvidia-tesla-p4": {
+			"asia-southeast1-b":         true,
+			"asia-southeast1-c":         true,
+			"australia-southeast1-a":    true,
+			"australia-southeast1-b":    true,
+			"europe-west4-b":            true,
+			"europe-west4-c":            true,
+			"northamerica-northeast1-a": true,
+			"northamerica-northeast1-b": true,
+			"northamerica-northeast1-c": true,
+			"us-central1-a":             true,
+			"us-central1-c":             true,
+			"us-east4-a":                true,
+			"us-east4-b":                true,
+			"us-east4-c":                true,
+			"us-west2-b":                true,
+			"us-west2-c":                true,
+		},
+		"nvidia-tesla-t4": {
+			"asia-northeast1-a":    true,
+			"asia-south1-b":        true,
+			"asia-southeast1-b":    true,
+			"europe-west4-b":       true,
+			"europe-west4-c":       true,
+			"southamerica-east1-c": true,
+			"us-central1-a":        true,
+			"us-central1-b":        true,
+			"us-east1-c":           true,
+			"us-east1-d":           true,
+			"us-west1-a":           true,
+			"us-west1-b":           true,
 		},
 	}
 
@@ -62,6 +99,8 @@ var (
 		"nvidia-tesla-k80":  8,
 		"nvidia-tesla-p100": 4,
 		"nvidia-tesla-v100": 8,
+		"nvidia-tesla-p4":   4,
+		"nvidia-tesla-t4":   4,
 	}
 
 	maxCpuCount = map[string]map[int64]int{
@@ -82,12 +121,24 @@ var (
 			4: 48,
 			8: 96,
 		},
+		"nvidia-tesla-p4": {
+			1: 24,
+			2: 48,
+			4: 96,
+		},
+		"nvidia-tesla-t4": {
+			1: 24,
+			2: 48,
+			4: 96,
+		},
 	}
 
 	supportedGpuTypes = []string{
 		"nvidia-tesla-k80",
 		"nvidia-tesla-p100",
 		"nvidia-tesla-v100",
+		"nvidia-tesla-p4",
+		"nvidia-tesla-t4",
 	}
 )
 
