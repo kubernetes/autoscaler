@@ -404,7 +404,7 @@ func simpleScaleUpTest(t *testing.T, config *scaleTestConfig) {
 	assert.NotNil(t, provider)
 
 	// Create context with non-random expander strategy.
-	context := NewScaleTestAutoscalingContext(config.options, &fake.Clientset{}, listers, provider)
+	context := NewScaleTestAutoscalingContext(config.options, &fake.Clientset{}, listers, provider, nil)
 	expander := assertingStrategy{
 		initialNodeConfigs:     config.nodes,
 		expectedScaleUpOptions: config.expectedScaleUpOptions,
@@ -497,7 +497,7 @@ func TestScaleUpNodeComingNoScale(t *testing.T) {
 		MaxCoresTotal:  config.DefaultMaxClusterCores,
 		MaxMemoryTotal: config.DefaultMaxClusterMemory,
 	}
-	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider)
+	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil)
 
 	nodes := []*apiv1.Node{n1, n2}
 	nodeInfos, _ := getNodeInfosForGroups(nodes, nil, provider, listers, []*appsv1.DaemonSet{}, context.PredicateChecker)
@@ -543,7 +543,7 @@ func TestScaleUpNodeComingHasScale(t *testing.T) {
 	provider.AddNode("ng1", n1)
 	provider.AddNode("ng2", n2)
 
-	context := NewScaleTestAutoscalingContext(defaultOptions, &fake.Clientset{}, listers, provider)
+	context := NewScaleTestAutoscalingContext(defaultOptions, &fake.Clientset{}, listers, provider, nil)
 
 	nodes := []*apiv1.Node{n1, n2}
 	nodeInfos, _ := getNodeInfosForGroups(nodes, nil, provider, listers, []*appsv1.DaemonSet{}, context.PredicateChecker)
@@ -597,7 +597,7 @@ func TestScaleUpUnhealthy(t *testing.T) {
 		MaxCoresTotal:  config.DefaultMaxClusterCores,
 		MaxMemoryTotal: config.DefaultMaxClusterMemory,
 	}
-	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider)
+	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil)
 
 	nodes := []*apiv1.Node{n1, n2}
 	nodeInfos, _ := getNodeInfosForGroups(nodes, nil, provider, listers, []*appsv1.DaemonSet{}, context.PredicateChecker)
@@ -636,7 +636,7 @@ func TestScaleUpNoHelp(t *testing.T) {
 		MaxCoresTotal:  config.DefaultMaxClusterCores,
 		MaxMemoryTotal: config.DefaultMaxClusterMemory,
 	}
-	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider)
+	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil)
 
 	nodes := []*apiv1.Node{n1}
 	nodeInfos, _ := getNodeInfosForGroups(nodes, nil, provider, listers, []*appsv1.DaemonSet{}, context.PredicateChecker)
@@ -701,7 +701,7 @@ func TestScaleUpBalanceGroups(t *testing.T) {
 		MaxCoresTotal:            config.DefaultMaxClusterCores,
 		MaxMemoryTotal:           config.DefaultMaxClusterMemory,
 	}
-	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider)
+	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil)
 
 	nodeInfos, _ := getNodeInfosForGroups(nodes, nil, provider, listers, []*appsv1.DaemonSet{}, context.PredicateChecker)
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
@@ -759,7 +759,7 @@ func TestScaleUpAutoprovisionedNodeGroup(t *testing.T) {
 		NodeAutoprovisioningEnabled:      true,
 		MaxAutoprovisionedNodeGroupCount: 10,
 	}
-	context := NewScaleTestAutoscalingContext(options, fakeClient, nil, provider)
+	context := NewScaleTestAutoscalingContext(options, fakeClient, nil, provider, nil)
 
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
 

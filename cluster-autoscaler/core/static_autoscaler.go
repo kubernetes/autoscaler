@@ -66,9 +66,28 @@ type StaticAutoscaler struct {
 	lastScaleDownFailTime   time.Time
 	scaleDown               *ScaleDown
 	processors              *ca_processors.AutoscalingProcessors
+	processorCallbacks      *staticAutoscalerProcessorCallbacks
 	initialized             bool
 	// Caches nodeInfo computed for previously seen nodes
 	nodeInfoCache map[string]*schedulernodeinfo.NodeInfo
+}
+
+type staticAutoscalerProcessorCallbacks struct {
+	disableScaleDownForLoop bool
+}
+
+func newStaticAutoscalerProcessorCallbacks() *staticAutoscalerProcessorCallbacks {
+	callbacks := &staticAutoscalerProcessorCallbacks{}
+	callbacks.reset()
+	return callbacks
+}
+
+func (callbacks *staticAutoscalerProcessorCallbacks) DisableScaleDownForLoop() {
+	callbacks.disableScaleDownForLoop = true
+}
+
+func (callbacks *staticAutoscalerProcessorCallbacks) reset() {
+	callbacks.disableScaleDownForLoop = false
 }
 
 // NewStaticAutoscaler creates an instance of Autoscaler filled with provided parameters
@@ -81,7 +100,9 @@ func NewStaticAutoscaler(
 	expanderStrategy expander.Strategy,
 	estimatorBuilder estimator.EstimatorBuilder,
 	backoff backoff.Backoff) *StaticAutoscaler {
-	autoscalingContext := context.NewAutoscalingContext(opts, predicateChecker, autoscalingKubeClients, cloudProvider, expanderStrategy, estimatorBuilder)
+
+	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
+	autoscalingContext := context.NewAutoscalingContext(opts, predicateChecker, autoscalingKubeClients, cloudProvider, expanderStrategy, estimatorBuilder, processorCallbacks)
 
 	clusterStateConfig := clusterstate.ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: opts.MaxTotalUnreadyPercentage,
@@ -100,6 +121,7 @@ func NewStaticAutoscaler(
 		lastScaleDownFailTime:   time.Now(),
 		scaleDown:               scaleDown,
 		processors:              processors,
+		processorCallbacks:      processorCallbacks,
 		clusterStateRegistry:    clusterStateRegistry,
 		nodeInfoCache:           make(map[string]*schedulernodeinfo.NodeInfo),
 	}
@@ -128,6 +150,7 @@ func (a *StaticAutoscaler) cleanUpIfRequired() {
 // RunOnce iterates over node groups and scales them up/down if necessary
 func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError {
 	a.cleanUpIfRequired()
+	a.processorCallbacks.reset()
 
 	unschedulablePodLister := a.UnschedulablePodLister()
 	scheduledPodLister := a.ScheduledPodLister()
@@ -382,6 +405,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 			}
 		}
 
+		scaleDownForbidden = scaleDownForbidden || a.processorCallbacks.disableScaleDownForLoop
 		scaleDownInCooldown := scaleDownForbidden ||
 			a.lastScaleUpTime.Add(a.ScaleDownDelayAfterAdd).After(currentTime) ||
 			a.lastScaleDownFailTime.Add(a.ScaleDownDelayAfterFailure).After(currentTime) ||

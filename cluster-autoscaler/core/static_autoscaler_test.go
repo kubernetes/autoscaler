@@ -187,7 +187,8 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 		ScaleDownUnneededTime:               time.Minute,
 		FilterOutSchedulablePodsUsesPacking: true,
 	}
-	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider)
+	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
+	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, processorCallbacks)
 	listerRegistry := kube_util.NewListerRegistry(allNodeListerMock, readyNodeListerMock, scheduledPodMock,
 		unschedulablePodMock, podDisruptionBudgetListerMock, daemonSetListerMock,
 		nil, nil, nil, nil)
@@ -208,6 +209,7 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 		lastScaleDownFailTime: time.Now(),
 		scaleDown:             sd,
 		processors:            ca_processors.TestProcessors(),
+		processorCallbacks:    processorCallbacks,
 		initialized:           true,
 	}
 
@@ -371,7 +373,8 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 		MaxAutoprovisionedNodeGroupCount:    10, // Pods with null priority are always non expendable. Test if it works.
 		FilterOutSchedulablePodsUsesPacking: true,
 	}
-	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider)
+	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
+	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, processorCallbacks)
 	listerRegistry := kube_util.NewListerRegistry(allNodeListerMock, readyNodeListerMock, scheduledPodMock,
 		unschedulablePodMock, podDisruptionBudgetListerMock, daemonSetListerMock,
 		nil, nil, nil, nil)
@@ -392,6 +395,7 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 		lastScaleDownFailTime: time.Now(),
 		scaleDown:             sd,
 		processors:            processors,
+		processorCallbacks:    processorCallbacks,
 		initialized:           true,
 	}
 
@@ -500,7 +504,8 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 		MaxNodeProvisionTime:                10 * time.Second,
 		FilterOutSchedulablePodsUsesPacking: true,
 	}
-	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider)
+	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
+	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, processorCallbacks)
 	listerRegistry := kube_util.NewListerRegistry(allNodeListerMock, readyNodeListerMock, scheduledPodMock,
 		unschedulablePodMock, podDisruptionBudgetListerMock, daemonSetListerMock,
 		nil, nil, nil, nil)
@@ -529,6 +534,7 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 		lastScaleDownFailTime: time.Now(),
 		scaleDown:             sd,
 		processors:            ca_processors.TestProcessors(),
+		processorCallbacks:    processorCallbacks,
 	}
 
 	// Scale up.
@@ -632,7 +638,8 @@ func TestStaticAutoscalerRunOncePodsWithFilterOutSchedulablePodsUsesPackingFalse
 		//Turn off filtering schedulables using packing
 		FilterOutSchedulablePodsUsesPacking: false,
 	}
-	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider)
+	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
+	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, processorCallbacks)
 	listerRegistry := kube_util.NewListerRegistry(allNodeListerMock, readyNodeListerMock, scheduledPodMock,
 		unschedulablePodMock, podDisruptionBudgetListerMock, daemonSetListerMock,
 		nil, nil, nil, nil)
@@ -653,6 +660,7 @@ func TestStaticAutoscalerRunOncePodsWithFilterOutSchedulablePodsUsesPackingFalse
 		lastScaleDownFailTime: time.Now(),
 		scaleDown:             sd,
 		processors:            ca_processors.TestProcessors(),
+		processorCallbacks:    processorCallbacks,
 	}
 
 	// Scale up
@@ -747,7 +755,8 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 		ExpendablePodsPriorityCutoff:        10,
 		FilterOutSchedulablePodsUsesPacking: true,
 	}
-	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider)
+	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
+	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, processorCallbacks)
 	listerRegistry := kube_util.NewListerRegistry(allNodeListerMock, readyNodeListerMock, scheduledPodMock,
 		unschedulablePodMock, podDisruptionBudgetListerMock, daemonSetListerMock,
 		nil, nil, nil, nil)
@@ -768,6 +777,7 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 		lastScaleDownFailTime: time.Now(),
 		scaleDown:             sd,
 		processors:            ca_processors.TestProcessors(),
+		processorCallbacks:    processorCallbacks,
 	}
 
 	// Scale up
@@ -834,7 +844,8 @@ func TestStaticAutoscalerOutOfResources(t *testing.T) {
 		ExpendablePodsPriorityCutoff:        10,
 		FilterOutSchedulablePodsUsesPacking: true,
 	}
-	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider)
+	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
+	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, processorCallbacks)
 
 	clusterStateConfig := clusterstate.ClusterStateRegistryConfig{
 		OkTotalUnreadyCount:  1,
@@ -847,6 +858,7 @@ func TestStaticAutoscalerOutOfResources(t *testing.T) {
 		clusterStateRegistry:  clusterState,
 		lastScaleUpTime:       time.Now(),
 		lastScaleDownFailTime: time.Now(),
+		processorCallbacks:    processorCallbacks,
 	}
 
 	nodeGroupA := &mockprovider.NodeGroup{}
