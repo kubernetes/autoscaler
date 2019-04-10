@@ -83,6 +83,7 @@ type AggregateContainerState struct {
 	FirstSampleStart  time.Time
 	LastSampleStart   time.Time
 	TotalSamplesCount int
+	CreationTime      time.Time
 }
 
 // MergeContainerState merges two AggregateContainerStates.
@@ -104,6 +105,7 @@ func NewAggregateContainerState() *AggregateContainerState {
 	return &AggregateContainerState{
 		AggregateCPUUsage:    util.NewDecayingHistogram(CPUHistogramOptions, CPUHistogramDecayHalfLife),
 		AggregateMemoryPeaks: util.NewDecayingHistogram(MemoryHistogramOptions, MemoryHistogramDecayHalfLife),
+		CreationTime:         time.Now(),
 	}
 }
 
@@ -192,7 +194,14 @@ func (a *AggregateContainerState) LoadFromCheckpoint(checkpoint *vpa_types.Verti
 }
 
 func (a *AggregateContainerState) isExpired(now time.Time) bool {
-	return !a.LastSampleStart.IsZero() && now.Sub(a.LastSampleStart) >= MemoryAggregationWindowLength
+	if a.isEmpty() {
+		return now.Sub(a.CreationTime) >= MemoryAggregationWindowLength
+	}
+	return now.Sub(a.LastSampleStart) >= MemoryAggregationWindowLength
+}
+
+func (a *AggregateContainerState) isEmpty() bool {
+	return a.TotalSamplesCount == 0
 }
 
 // AggregateStateByContainerName takes a set of AggregateContainerStates and merge them
