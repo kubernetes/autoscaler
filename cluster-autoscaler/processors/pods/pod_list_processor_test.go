@@ -32,13 +32,14 @@ func TestPodListProcessor(t *testing.T) {
 	n1 := BuildTestNode("n1", 100, 1000)
 	n2 := BuildTestNode("n1", 100, 1000)
 	unschedulablePods := []*apiv1.Pod{p1}
-	allScheduled := []*apiv1.Pod{p2}
-	nodes := []*apiv1.Node{n1, n2}
+	allScheduledPods := []*apiv1.Pod{p2}
+	allNodes := []*apiv1.Node{n1, n2}
+	readyNodes := []*apiv1.Node{n1, n2}
 	podListProcessor := NewDefaultPodListProcessor()
-	gotUnschedulablePods, gotAllScheduled, err := podListProcessor.Process(context, unschedulablePods, allScheduled, nodes)
+	gotUnschedulablePods, gotAllScheduled, err := podListProcessor.Process(context, unschedulablePods, allScheduledPods, allNodes, readyNodes)
 	if len(gotUnschedulablePods) != 1 || len(gotAllScheduled) != 1 || err != nil {
 		t.Errorf("Error podListProcessor.Process() = %v, %v, %v want %v, %v, nil ",
-			gotUnschedulablePods, gotAllScheduled, err, unschedulablePods, allScheduled)
+			gotUnschedulablePods, gotAllScheduled, err, unschedulablePods, allScheduledPods)
 	}
 
 }
