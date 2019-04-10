@@ -282,56 +282,13 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		return errors.ToAutoscalerError(errors.ApiCallError, err)
 	}
 
-	allUnschedulablePods, allScheduledPods, err = a.processors.PodListProcessor.Process(a.AutoscalingContext, allUnschedulablePods, allScheduledPods, allNodes, readyNodes)
-	if err != nil {
-		klog.Errorf("Failed to process pod list: %v", err)
-		return errors.ToAutoscalerError(errors.InternalError, err)
-	}
-
 	ConfigurePredicateCheckerForLoop(allUnschedulablePods, allScheduledPods, a.PredicateChecker)
-
-	// We need to check whether pods marked as unschedulable are actually unschedulable.
-	// It's likely we added a new node and the scheduler just haven't managed to put the
-	// pod on in yet. In this situation we don't want to trigger another scale-up.
-	//
-	// It's also important to prevent uncontrollable cluster growth if CA's simulated
-	// scheduler differs in opinion with real scheduler. Example of such situation:
-	// - CA and Scheduler has slightly different configuration
-	// - Scheduler can't schedule a pod and marks it as unschedulable
-	// - CA added a node which should help the pod
-	// - Scheduler doesn't schedule the pod on the new node
-	//   because according to it logic it doesn't fit there
-	// - CA see the pod is still unschedulable, so it adds another node to help it
-	//
-	// With the check enabled the last point won't happen because CA will ignore a pod
-	// which is supposed to schedule on an existing node.
-	scaleDownForbidden := false
 
 	unschedulablePodsWithoutTPUs := tpu.ClearTPURequests(allUnschedulablePods)
 
-	// Some unschedulable pods can be waiting for lower priority pods preemption so they have nominated node to run.
-	// Such pods don't require scale up but should be considered during scale down.
-	unschedulablePods, unschedulableWaitingForLowerPriorityPreemption := filterOutExpendableAndSplit(unschedulablePodsWithoutTPUs, a.ExpendablePodsPriorityCutoff)
-
-	klog.V(4).Infof("Filtering out schedulables")
-	filterOutSchedulableStart := time.Now()
-	var unschedulablePodsToHelp []*apiv1.Pod
-	if a.FilterOutSchedulablePodsUsesPacking {
-		unschedulablePodsToHelp = filterOutSchedulableByPacking(unschedulablePods, readyNodes, allScheduledPods,
-			unschedulableWaitingForLowerPriorityPreemption, a.PredicateChecker, a.ExpendablePodsPriorityCutoff)
-	} else {
-		unschedulablePodsToHelp = filterOutSchedulableSimple(unschedulablePods, readyNodes, allScheduledPods,
-			unschedulableWaitingForLowerPriorityPreemption, a.PredicateChecker, a.ExpendablePodsPriorityCutoff)
-	}
-
-	metrics.UpdateDurationFromStart(metrics.FilterOutSchedulable, filterOutSchedulableStart)
-
-	if len(unschedulablePodsToHelp) != len(unschedulablePods) {
-		klog.V(2).Info("Schedulable pods present")
-		scaleDownForbidden = true
-	} else {
-		klog.V(4).Info("No schedulable pods")
-	}
+	// todo: this is also computed in filterOutSchedulablePodListProcessor; avoid that.
+	_, unschedulableWaitingForLowerPriorityPreemption := filterOutExpendableAndSplit(unschedulablePodsWithoutTPUs, a.ExpendablePodsPriorityCutoff)
+	unschedulablePodsToHelp, allScheduledPods, err := a.processors.PodListProcessor.Process(a.AutoscalingContext, unschedulablePodsWithoutTPUs, allScheduledPods, allNodes, readyNodes)
 
 	// finally, filter out pods that are too "young" to safely be considered for a scale-up (delay is configurable)
 	unschedulablePodsToHelp = a.filterOutYoungPods(unschedulablePodsToHelp, currentTime)
@@ -347,7 +304,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		// is more pods to come. In theory we could check the newest pod time but then if pod were created
 		// slowly but at the pace of 1 every 2 seconds then no scale up would be triggered for long time.
 		// We also want to skip a real scale down (just like if the pods were handled).
-		scaleDownForbidden = true
+		a.processorCallbacks.DisableScaleDownForLoop()
 		scaleUpStatus.Result = status.ScaleUpInCooldown
 		klog.V(1).Info("Unschedulable pods are very new, waiting one iteration for more")
 	} else {
@@ -405,8 +362,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 			}
 		}
 
-		scaleDownForbidden = scaleDownForbidden || a.processorCallbacks.disableScaleDownForLoop
-		scaleDownInCooldown := scaleDownForbidden ||
+		scaleDownInCooldown := a.processorCallbacks.disableScaleDownForLoop ||
 			a.lastScaleUpTime.Add(a.ScaleDownDelayAfterAdd).After(currentTime) ||
 			a.lastScaleDownFailTime.Add(a.ScaleDownDelayAfterFailure).After(currentTime) ||
 			a.lastScaleDownDeleteTime.Add(a.ScaleDownDelayAfterDelete).After(currentTime)
@@ -416,7 +372,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		klog.V(4).Infof("Scale down status: unneededOnly=%v lastScaleUpTime=%s "+
 			"lastScaleDownDeleteTime=%v lastScaleDownFailTime=%s scaleDownForbidden=%v isDeleteInProgress=%v",
 			calculateUnneededOnly, a.lastScaleUpTime, a.lastScaleDownDeleteTime, a.lastScaleDownFailTime,
-			scaleDownForbidden, scaleDown.nodeDeleteStatus.IsDeleteInProgress())
+			a.processorCallbacks.disableScaleDownForLoop, scaleDown.nodeDeleteStatus.IsDeleteInProgress())
 
 		if scaleDownInCooldown {
 			scaleDownStatus.Result = status.ScaleDownInCooldown
