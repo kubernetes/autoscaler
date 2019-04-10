@@ -82,6 +82,64 @@ func TestClusterGCAggregateContainerStateDeletesOld(t *testing.T) {
 	assert.Empty(t, vpa.aggregateContainerStates)
 }
 
+func TestClusterGCAggregateContainerStateDeletesOldEmpty(t *testing.T) {
+	// Create a pod with a single container.
+	cluster := NewClusterState()
+	vpa := addTestVpa(cluster)
+	addTestPod(cluster)
+
+	assert.NoError(t, cluster.AddOrUpdateContainer(testContainerID, testRequest))
+	// No usage samples added.
+
+	assert.NotEmpty(t, cluster.aggregateStateMap)
+	assert.NotEmpty(t, vpa.aggregateContainerStates)
+
+	assert.Len(t, cluster.aggregateStateMap, 1)
+	var creationTime time.Time
+	for _, aggregateState := range cluster.aggregateStateMap {
+		creationTime = aggregateState.CreationTime
+	}
+
+	// Verify empty aggregate states are not removed right away.
+	cluster.GarbageCollectAggregateCollectionStates(creationTime.Add(1 * time.Minute)) // AggegateContainerState should be deleted from both cluster and vpa
+	assert.NotEmpty(t, cluster.aggregateStateMap)
+	assert.NotEmpty(t, vpa.aggregateContainerStates)
+
+	// AggegateContainerState are valid for 8 days since creation
+	cluster.GarbageCollectAggregateCollectionStates(creationTime.Add(9 * 24 * time.Hour))
+
+	// AggegateContainerState should be deleted from both cluster and vpa
+	assert.Empty(t, cluster.aggregateStateMap)
+	assert.Empty(t, vpa.aggregateContainerStates)
+}
+
+func TestClusterGCAggregateContainerStateDeletesEmptyInactive(t *testing.T) {
+	// Create a pod with a single container.
+	cluster := NewClusterState()
+	vpa := addTestVpa(cluster)
+	pod := addTestPod(cluster)
+
+	assert.NoError(t, cluster.AddOrUpdateContainer(testContainerID, testRequest))
+	// No usage samples added.
+
+	assert.NotEmpty(t, cluster.aggregateStateMap)
+	assert.NotEmpty(t, vpa.aggregateContainerStates)
+
+	cluster.GarbageCollectAggregateCollectionStates(testTimestamp)
+
+	// AggegateContainerState should not be deleted as the pod is still active.
+	assert.NotEmpty(t, cluster.aggregateStateMap)
+	assert.NotEmpty(t, vpa.aggregateContainerStates)
+
+	cluster.Pods[pod.ID].Phase = apiv1.PodSucceeded
+	cluster.GarbageCollectAggregateCollectionStates(testTimestamp)
+
+	// AggegateContainerState should be empty as the pod is no longer active and
+	// there are no usage samples.
+	assert.Empty(t, cluster.aggregateStateMap)
+	assert.Empty(t, vpa.aggregateContainerStates)
+}
+
 func TestClusterGCAggregateContainerStateLeavesValid(t *testing.T) {
 	// Create a pod with a single container.
 	cluster := NewClusterState()
