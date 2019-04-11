@@ -192,39 +192,6 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 			},
 		},
 		{
-			name: "two replacement resources",
-			podJson: []byte(
-				`{
-					"spec": {
-						"containers": [
-							{
-								"resources": {
-									"requests": {
-										"cpu": "0"
-									}
-								}
-							}
-						]
-					}
-				}`),
-			namespace: "default",
-			recommendResources: []ContainerResources{
-				{
-					apiv1.ResourceList{
-						cpu:        resource.MustParse("1"),
-						unobtanium: resource.MustParse("2"),
-					},
-				},
-			},
-			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
-			recommendName:        "name",
-			expectPatches: []patchRecord{
-				addResourceRequestPatch(0, cpu, "1"),
-				addResourceRequestPatch(0, unobtanium, "2"),
-				addAnnotationRequest([][]string{{cpu, unobtanium}}),
-			},
-		},
-		{
 			name: "two containers",
 			podJson: []byte(
 				`{
@@ -272,9 +239,11 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 			s := NewAdmissionServer(&frp, &fppp)
 			patches, err := s.getPatchesForPodResourceRequest(tc.podJson, tc.namespace)
 			if tc.expectError == nil {
-				assert.Nil(t, err)
+				assert.NoError(t, err)
 			} else {
-				assert.Errorf(t, err, tc.expectError.Error())
+				if assert.Error(t, err) {
+					assert.Equal(t, tc.expectError.Error(), err.Error())
+				}
 			}
 			if assert.Equal(t, len(tc.expectPatches), len(patches)) {
 				for i, gotPatch := range patches {
@@ -284,5 +253,46 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestGetPatchesForResourceRequest_TwoReplacementResources(t *testing.T) {
+
+	fppp := fakePodPreProcessor{}
+	recommendResources := []ContainerResources{
+		{
+			apiv1.ResourceList{
+				cpu:        resource.MustParse("1"),
+				unobtanium: resource.MustParse("2"),
+			},
+		},
+	}
+	podJson := []byte(
+		`{
+					"spec": {
+						"containers": [
+							{
+								"resources": {
+									"requests": {
+										"cpu": "0"
+									}
+								}
+							}
+						]
+					}
+				}`)
+	recommendAnnotations := vpa_api_util.ContainerToAnnotationsMap{}
+	frp := fakeRecommendationProvider{recommendResources, recommendAnnotations, "name", nil}
+	s := NewAdmissionServer(&frp, &fppp)
+	patches, err := s.getPatchesForPodResourceRequest(podJson, "default")
+	assert.NoError(t, err)
+	// Order of updates for cpu and unobtanium depends on order of iterating a map, both possible results are valid.
+	if assert.Equal(t, len(patches), 3) {
+		cpuUpdate := addResourceRequestPatch(0, cpu, "1")
+		unobtaniumUpdate := addResourceRequestPatch(0, unobtanium, "2")
+		assert.True(t, eqPatch(patches[0], cpuUpdate) || eqPatch(patches[0], unobtaniumUpdate))
+		assert.True(t, eqPatch(patches[1], cpuUpdate) || eqPatch(patches[1], unobtaniumUpdate))
+		assert.False(t, eqPatch(patches[0], patches[1]))
+		assert.True(t, eqPatch(patches[2], addAnnotationRequest([][]string{{cpu, unobtanium}})) || eqPatch(patches[2], addAnnotationRequest([][]string{{unobtanium, cpu}})))
 	}
 }
