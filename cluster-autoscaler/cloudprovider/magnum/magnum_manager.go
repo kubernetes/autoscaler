@@ -42,11 +42,11 @@ type magnumManager interface {
 }
 
 // createMagnumManager creates the desired implementation of magnumManager.
-// Currently reads the environment variable OSMANAGER to find which to create,
+// Currently reads the environment variable MAGNUM_MANAGER to find which to create,
 // and falls back to a default if the variable is not found.
 func createMagnumManager(configReader io.Reader, discoverOpts cloudprovider.NodeGroupDiscoveryOptions, opts config.AutoscalingOptions) (magnumManager, error) {
 	// For now get manager from env var, can consider adding flag later
-	manager, ok := os.LookupEnv("OSMANAGER")
+	manager, ok := os.LookupEnv("MAGNUM_MANAGER")
 	if !ok {
 		manager = defaultManager
 	}
