@@ -193,39 +193,6 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 			},
 		},
 		{
-			name: "two replacement resources",
-			podJson: []byte(
-				`{
-					"spec": {
-						"containers": [
-							{
-								"resources": {
-									"requests": {
-										"cpu": "0"
-									}
-								}
-							}
-						]
-					}
-				}`),
-			namespace: "default",
-			recommendResources: []ContainerResources{
-				{
-					apiv1.ResourceList{
-						cpu:        resource.MustParse("1"),
-						unobtanium: resource.MustParse("2"),
-					},
-				},
-			},
-			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
-			recommendName:        "name",
-			expectPatches: []patchRecord{
-				addResourceRequestPatch(0, cpu, "1"),
-				addResourceRequestPatch(0, unobtanium, "2"),
-				addAnnotationRequest([][]string{{cpu, unobtanium}}),
-			},
-		},
-		{
 			name: "two containers",
 			podJson: []byte(
 				`{
@@ -273,9 +240,11 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 			s := NewAdmissionServer(&frp, &fppp)
 			patches, err := s.getPatchesForPodResourceRequest(tc.podJson, tc.namespace)
 			if tc.expectError == nil {
-				assert.Nil(t, err)
+				assert.NoError(t, err)
 			} else {
-				assert.Errorf(t, err, tc.expectError.Error())
+				if assert.Error(t, err) {
+					assert.Equal(t, tc.expectError.Error(), err.Error())
+				}
 			}
 			if assert.Equal(t, len(tc.expectPatches), len(patches)) {
 				for i, gotPatch := range patches {
