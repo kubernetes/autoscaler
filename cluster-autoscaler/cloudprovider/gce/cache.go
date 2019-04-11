@@ -28,12 +28,6 @@ import (
 	"k8s.io/klog"
 )
 
-// MigInformation is a wrapper for Mig.
-type MigInformation struct {
-	Config   Mig
-	Basename string
-}
-
 // MachineTypeKey is used to identify MachineType.
 type MachineTypeKey struct {
 	Zone        string
@@ -61,18 +55,16 @@ type MachineTypeKey struct {
 // - instanceRefToMigRef (2) is NOT updated automatically when migs field (1) is updated. Calling
 // RegenerateInstancesCache is required to sync it with registered migs.
 type GceCache struct {
+	cacheMutex sync.Mutex
+
 	// Cache content.
-	migs                map[GceRef]*MigInformation
+	migs                map[GceRef]Mig
 	instanceRefToMigRef map[GceRef]GceRef
 	resourceLimiter     *cloudprovider.ResourceLimiter
 	machinesCache       map[MachineTypeKey]*gce.MachineType
 	migTargetSizeCache  map[GceRef]int64
-	// Locks. Rules of locking:
-	// - migsMutex protects only migs.
-	// - cacheMutex protects instanceRefToMigRef, resourceLimiter, machinesCache and migTargetSizeCache.
-	// - if both locks are needed, cacheMutex must be obtained before migsMutex.
-	cacheMutex sync.Mutex
-	migsMutex  sync.Mutex
+	migBaseNameCache    map[GceRef]string
+
 	// Service used to refresh cache.
 	GceService AutoscalingGceClient
 }
@@ -80,11 +72,12 @@ type GceCache struct {
 // NewGceCache creates empty GceCache.
 func NewGceCache(gceService AutoscalingGceClient) GceCache {
 	return GceCache{
-		migs:                map[GceRef]*MigInformation{},
+		migs:                map[GceRef]Mig{},
 		instanceRefToMigRef: map[GceRef]GceRef{},
 		machinesCache:       map[MachineTypeKey]*gce.MachineType{},
-		GceService:          gceService,
 		migTargetSizeCache:  map[GceRef]int64{},
+		migBaseNameCache:    map[GceRef]string{},
+		GceService:          gceService,
 	}
 }
 
@@ -92,13 +85,13 @@ func NewGceCache(gceService AutoscalingGceClient) GceCache {
 
 // RegisterMig returns true if the node group wasn't in cache before, or its config was updated.
 func (gc *GceCache) RegisterMig(newMig Mig) bool {
-	gc.migsMutex.Lock()
-	defer gc.migsMutex.Unlock()
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
 
-	oldMigInformation, found := gc.migs[newMig.GceRef()]
+	oldMig, found := gc.migs[newMig.GceRef()]
 	if found {
-		if !reflect.DeepEqual(oldMigInformation.Config, newMig) {
-			gc.migs[newMig.GceRef()].Config = newMig
+		if !reflect.DeepEqual(oldMig, newMig) {
+			gc.migs[newMig.GceRef()] = newMig
 			klog.V(4).Infof("Updated Mig %s", newMig.GceRef().String())
 			return true
 		}
@@ -106,11 +99,7 @@ func (gc *GceCache) RegisterMig(newMig Mig) bool {
 	}
 
 	klog.V(1).Infof("Registering %s", newMig.GceRef().String())
-	// TODO(aleksandra-malinowska): fetch and set MIG basename here.
-	newMigInformation := &MigInformation{
-		Config: newMig,
-	}
-	gc.migs[newMig.GceRef()] = newMigInformation
+	gc.migs[newMig.GceRef()] = newMig
 	return true
 }
 
@@ -118,8 +107,6 @@ func (gc *GceCache) RegisterMig(newMig Mig) bool {
 func (gc *GceCache) UnregisterMig(toBeRemoved Mig) bool {
 	gc.cacheMutex.Lock()
 	defer gc.cacheMutex.Unlock()
-	gc.migsMutex.Lock()
-	defer gc.migsMutex.Unlock()
 
 	_, found := gc.migs[toBeRemoved.GceRef()]
 	if found {
@@ -132,41 +119,24 @@ func (gc *GceCache) UnregisterMig(toBeRemoved Mig) bool {
 }
 
 // GetMigs returns a copy of migs list.
-func (gc *GceCache) GetMigs() []*MigInformation {
-	gc.migsMutex.Lock()
-	defer gc.migsMutex.Unlock()
+func (gc *GceCache) GetMigs() []Mig {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
 
-	migs := make([]*MigInformation, 0, len(gc.migs))
+	migs := make([]Mig, 0, len(gc.migs))
 	for _, mig := range gc.migs {
-		migs = append(migs, &MigInformation{
-			Basename: mig.Basename,
-			Config:   mig.Config,
-		})
+		migs = append(migs, mig)
 	}
 	return migs
 }
 
 // GetMigs returns a copy of migs list.
 func (gc *GceCache) getMigRefs() []GceRef {
-	gc.migsMutex.Lock()
-	defer gc.migsMutex.Unlock()
-
 	migRefs := make([]GceRef, 0, len(gc.migs))
 	for migRef := range gc.migs {
 		migRefs = append(migRefs, migRef)
 	}
 	return migRefs
-}
-
-func (gc *GceCache) updateMigBasename(migRef GceRef, basename string) {
-	gc.migsMutex.Lock()
-	defer gc.migsMutex.Unlock()
-
-	mig, found := gc.migs[migRef]
-	if found {
-		mig.Basename = basename
-	}
-	// TODO: is found == false a possiblity?
 }
 
 // Methods locking on cacheMutex.
@@ -180,18 +150,31 @@ func (gc *GceCache) GetMigForInstance(instanceRef GceRef) (Mig, error) {
 	defer gc.cacheMutex.Unlock()
 
 	if migRef, found := gc.instanceRefToMigRef[instanceRef]; found {
-		mig, found := gc.getMig(migRef)
+		mig, found := gc.getMigNoLock(migRef)
 		if !found {
 			return nil, fmt.Errorf("instance %+v belongs to unregistered mig %+v", instanceRef, migRef)
 		}
-		return mig.Config, nil
+		return mig, nil
 	}
 
-	for _, mig := range gc.GetMigs() {
-		if mig.Config.GceRef().Project == instanceRef.Project &&
-			mig.Config.GceRef().Zone == instanceRef.Zone &&
-			strings.HasPrefix(instanceRef.Name, mig.Basename) {
-			if err := gc.regenerateInstanceCacheForMigNoLock(mig.Config.GceRef()); err != nil {
+	for _, migRef := range gc.getMigRefs() {
+
+		// get mig basename - refresh if not found
+		// todo[lukaszos] move this one as well as whole instance cache regeneration out of cache
+		migBasename, found := gc.migBaseNameCache[migRef]
+		var err error
+		if !found {
+			migBasename, err = gc.GceService.FetchMigBasename(migRef)
+			if err != nil {
+				return nil, err
+			}
+			gc.migBaseNameCache[migRef] = migBasename
+		}
+
+		if migRef.Project == instanceRef.Project &&
+			migRef.Zone == instanceRef.Zone &&
+			strings.HasPrefix(instanceRef.Name, migBasename) {
+			if err := gc.regenerateInstanceCacheForMigNoLock(migRef); err != nil {
 				return nil, fmt.Errorf("error while looking for MIG for instance %+v, error: %v", instanceRef, err)
 			}
 
@@ -199,11 +182,11 @@ func (gc *GceCache) GetMigForInstance(instanceRef GceRef) (Mig, error) {
 			if !found {
 				return nil, fmt.Errorf("instance %+v belongs to unknown mig", instanceRef)
 			}
-			mig, found := gc.getMig(migRef)
+			mig, found := gc.getMigNoLock(migRef)
 			if !found {
 				return nil, fmt.Errorf("instance %+v belongs to unregistered mig %+v", instanceRef, migRef)
 			}
-			return mig.Config, nil
+			return mig, nil
 		}
 	}
 	// Instance doesn't belong to any configured mig.
@@ -218,11 +201,9 @@ func (gc *GceCache) removeInstancesForMig(migRef GceRef) {
 	}
 }
 
-func (gc *GceCache) getMig(migRef GceRef) (MigInformation, bool) {
-	gc.migsMutex.Lock()
-	defer gc.migsMutex.Unlock()
-	mig, found := gc.migs[migRef]
-	return *mig, found
+func (gc *GceCache) getMigNoLock(migRef GceRef) (mig Mig, found bool) {
+	mig, found = gc.migs[migRef]
+	return
 }
 
 // RegenerateInstanceCacheForMig triggers instances cache regeneration for single MIG under lock.
@@ -237,12 +218,6 @@ func (gc *GceCache) regenerateInstanceCacheForMigNoLock(migRef GceRef) error {
 
 	// cleanup old entries
 	gc.removeInstancesForMig(migRef)
-
-	basename, err := gc.GceService.FetchMigBasename(migRef)
-	if err != nil {
-		return err
-	}
-	gc.updateMigBasename(migRef, basename)
 
 	instances, err := gc.GceService.FetchMigInstances(migRef)
 	if err != nil {
@@ -310,17 +285,8 @@ func (gc *GceCache) SetMigTargetSize(ref GceRef, size int64) {
 	gc.migTargetSizeCache[ref] = size
 }
 
-// InvalidateTargetSizeCache clears the target size cache
-func (gc *GceCache) InvalidateTargetSizeCache() {
-	gc.cacheMutex.Lock()
-	defer gc.cacheMutex.Unlock()
-
-	klog.V(5).Infof("target size cache invalidated")
-	gc.migTargetSizeCache = map[GceRef]int64{}
-}
-
-// InvalidateTargetSizeCacheForMig clears the target size cache
-func (gc *GceCache) InvalidateTargetSizeCacheForMig(ref GceRef) {
+// InvalidateMigTargetSize clears the target size cache
+func (gc *GceCache) InvalidateMigTargetSize(ref GceRef) {
 	gc.cacheMutex.Lock()
 	defer gc.cacheMutex.Unlock()
 
@@ -328,6 +294,15 @@ func (gc *GceCache) InvalidateTargetSizeCacheForMig(ref GceRef) {
 		klog.V(5).Infof("target size cache invalidated for %s", ref)
 		delete(gc.migTargetSizeCache, ref)
 	}
+}
+
+// InvalidateAllMigTargetSizes clears the target size cache
+func (gc *GceCache) InvalidateAllMigTargetSizes() {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+
+	klog.V(5).Infof("target size cache invalidated")
+	gc.migTargetSizeCache = map[GceRef]int64{}
 }
 
 // GetMachineFromCache retrieves machine type from cache under lock.
@@ -352,4 +327,33 @@ func (gc *GceCache) SetMachinesCache(machinesCache map[MachineTypeKey]*gce.Machi
 	defer gc.cacheMutex.Unlock()
 
 	gc.machinesCache = machinesCache
+}
+
+// SetMigBasename sets basename for given mig in cache
+func (gc *GceCache) SetMigBasename(migRef GceRef, basename string) {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+	gc.migBaseNameCache[migRef] = basename
+}
+
+// GetMigBasename get basename for given mig from cache.
+func (gc *GceCache) GetMigBasename(migRef GceRef) (basename string, found bool) {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+	basename, found = gc.migBaseNameCache[migRef]
+	return
+}
+
+// InvalidateMigBasename invalidates basename entry for given mig.
+func (gc *GceCache) InvalidateMigBasename(migRef GceRef) {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+	delete(gc.migBaseNameCache, migRef)
+}
+
+// InvalidateAllMigBasenames invalidates all basename entries.
+func (gc *GceCache) InvalidateAllMigBasenames() {
+	gc.cacheMutex.Lock()
+	defer gc.cacheMutex.Unlock()
+	gc.migBaseNameCache = make(map[GceRef]string)
 }
