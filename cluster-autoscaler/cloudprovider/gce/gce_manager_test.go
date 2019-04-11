@@ -57,7 +57,7 @@ const instanceGroupManagerResponseTemplate = `{
   "zone": "https://www.googleapis.com/compute/v1/projects/project1/zones/%s",
   "instanceTemplate": "https://www.googleapis.com/compute/v1/projects/project1/global/instanceTemplates/%s",
   "instanceGroup": "https://www.googleapis.com/compute/v1/projects/project1/zones/%s/instanceGroups/%s",
-  "baseInstanceName": "gke-cluster-1-default-pool-f23aac-grp",
+  "baseInstanceName": "%s",
   "fingerprint": "kfdsuH",
   "currentActions": {
     "none": 3,
@@ -241,7 +241,7 @@ func buildDefaultInstanceGroupManagerResponse(zone string) string {
 }
 
 func buildInstanceGroupManagerResponse(zone string, instanceGroup string) string {
-	return fmt.Sprintf(instanceGroupManagerResponseTemplate, instanceGroup, zone, instanceGroup, zone, instanceGroup, zone, instanceGroup)
+	return fmt.Sprintf(instanceGroupManagerResponseTemplate, instanceGroup, zone, instanceGroup, zone, instanceGroup, instanceGroup, zone, instanceGroup)
 }
 
 func buildFourRunningInstancesOnDefaultMigManagedInstancesResponse(zone string) string {
@@ -269,7 +269,7 @@ func newTestGceManager(t *testing.T, testServerURL string, regional bool) *gceMa
 
 	manager := &gceManagerImpl{
 		cache: GceCache{
-			migs:                make(map[GceRef]*MigInformation),
+			migs:                make(map[GceRef]Mig),
 			GceService:          gceService,
 			instanceRefToMigRef: make(map[GceRef]GceRef),
 			machinesCache: map[MachineTypeKey]*gce.MachineType{
@@ -278,6 +278,7 @@ func newTestGceManager(t *testing.T, testServerURL string, regional bool) *gceMa
 				{"us-central1-f", "n1-standard-1"}: {GuestCpus: 1, MemoryMb: 1},
 			},
 			migTargetSizeCache: map[GceRef]int64{},
+			migBaseNameCache:   map[GceRef]string{},
 		},
 		GceService:           gceService,
 		projectId:            projectId,
@@ -329,7 +330,7 @@ const deleteInstancesOperationResponse = `
   "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-a/operations/operation-1505802641136-55984ff86d980-a99e8c2b-0c8aaaaa"
 }`
 
-func setupTestDefaultPool(manager *gceManagerImpl) {
+func setupTestDefaultPool(manager *gceManagerImpl, setupBaseName bool) {
 	mig := &gceMig{
 		gceRef: GceRef{
 			Name:    defaultPoolMig,
@@ -340,10 +341,13 @@ func setupTestDefaultPool(manager *gceManagerImpl) {
 		minSize:    1,
 		maxSize:    11,
 	}
-	manager.cache.migs[mig.GceRef()] = &MigInformation{Config: mig}
+	manager.cache.migs[mig.GceRef()] = mig
+	if setupBaseName {
+		manager.cache.migBaseNameCache[mig.GceRef()] = defaultPoolMig
+	}
 }
 
-func setupTestExtraPool(manager *gceManagerImpl) {
+func setupTestExtraPool(manager *gceManagerImpl, setupBaseName bool) {
 	mig := &gceMig{
 		gceRef: GceRef{
 			Name:    extraPoolMig,
@@ -354,7 +358,10 @@ func setupTestExtraPool(manager *gceManagerImpl) {
 		minSize:    0,
 		maxSize:    1000,
 	}
-	manager.cache.migs[mig.GceRef()] = &MigInformation{Config: mig}
+	manager.cache.migs[mig.GceRef()] = mig
+	if setupBaseName {
+		manager.cache.migBaseNameCache[mig.GceRef()] = extraPoolMig
+	}
 }
 
 func TestDeleteInstances(t *testing.T) {
@@ -362,12 +369,15 @@ func TestDeleteInstances(t *testing.T) {
 	defer server.Close()
 	g := newTestGceManager(t, server.URL, false)
 
-	setupTestDefaultPool(g)
-	setupTestExtraPool(g)
+	setupTestDefaultPool(g, false)
+	setupTestExtraPool(g, true)
 
-	// Test DeleteInstance function.
+	// Get basename for defaultPool
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool").Return(buildDefaultInstanceGroupManagerResponse(zoneB)).Once()
+
+	// Regenerate instances for defaultPool
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool/listManagedInstances").Return(buildFourRunningInstancesOnDefaultMigManagedInstancesResponse(zoneB)).Once()
+
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool/deleteInstances").Return(deleteInstancesResponse).Once()
 	server.On("handle", "/project1/zones/us-central1-b/operations/operation-1505802641136-55984ff86d980-a99e8c2b-0c8aaaaa").Return(deleteInstancesOperationResponse).Once()
 
@@ -388,7 +398,7 @@ func TestDeleteInstances(t *testing.T) {
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, server)
 
-	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-extra-pool-323233232").Return(buildDefaultInstanceGroupManagerResponse(zoneB)).Once()
+	// Regenerate instances for extraPool (no basename call because it is already in cache)
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-extra-pool-323233232/listManagedInstances").Return(buildOneRunningInstanceOnExtraPoolMigManagedInstancesResponse(zoneB)).Once()
 
 	// Fail on deleting instances from different MIGs.
@@ -534,7 +544,8 @@ func TestGetMigForInstance(t *testing.T) {
 	defer server.Close()
 	g := newTestGceManager(t, server.URL, false)
 
-	setupTestDefaultPool(g)
+	setupTestDefaultPool(g, false)
+	g.cache.InvalidateAllMigBasenames()
 
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool").Return(buildDefaultInstanceGroupManagerResponse(zoneB)).Once()
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool/listManagedInstances").Return(buildFourRunningInstancesOnDefaultMigManagedInstancesResponse(zoneB)).Once()
@@ -927,11 +938,10 @@ func TestFetchAutoMigsZonal(t *testing.T) {
 	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA).Return(buildInstanceGroupManagerResponse(zoneB, gceMigA)).Once()
 	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigB).Return(buildInstanceGroupManagerResponse(zoneB, gceMigB)).Once()
 
+	// Regenerate instance cache
 	server.On("handle", "/project1/global/instanceTemplates/"+gceMigA).Return(instanceTemplate).Once()
 	server.On("handle", "/project1/global/instanceTemplates/"+gceMigB).Return(instanceTemplate).Once()
-	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA).Return(buildInstanceGroupManagerResponse(zoneB, gceMigA)).Once()
 	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA+"/listManagedInstances").Return(buildFourRunningInstancesManagedInstancesResponse(zoneB, gceMigA)).Once()
-	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigB).Return(buildInstanceGroupManagerResponse(zoneB, gceMigB)).Once()
 	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigB+"/listManagedInstances").Return(buildOneRunningInstanceManagedInstancesResponse(zoneB, gceMigB)).Once()
 
 	regional := false
@@ -960,7 +970,6 @@ func TestFetchAutoMigsUnregistersMissingMigs(t *testing.T) {
 	server.On("handle", "/project1/global/instanceTemplates/"+gceMigA).Return(instanceTemplate).Once()
 
 	// Regenerate cache for explicit instance group
-	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA).Return(buildInstanceGroupManagerResponse(zoneB, gceMigA)).Twice()
 	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA+"/listManagedInstances").Return(buildFourRunningInstancesManagedInstancesResponse(zoneB, gceMigA)).Twice()
 
 	// Register 'previously autodetected' instance group
@@ -1002,11 +1011,10 @@ func TestFetchAutoMigsRegional(t *testing.T) {
 	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA).Return(buildInstanceGroupManagerResponse(zoneB, gceMigA)).Once()
 	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigB).Return(buildInstanceGroupManagerResponse(zoneB, gceMigB)).Once()
 
+	// Regenerate instance cache
 	server.On("handle", "/project1/global/instanceTemplates/"+gceMigA).Return(instanceTemplate).Once()
 	server.On("handle", "/project1/global/instanceTemplates/"+gceMigB).Return(instanceTemplate).Once()
-	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA).Return(buildInstanceGroupManagerResponse(zoneB, gceMigA)).Once()
 	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA+"/listManagedInstances").Return(buildFourRunningInstancesManagedInstancesResponse(zoneB, gceMigA)).Once()
-	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigB).Return(buildInstanceGroupManagerResponse(gceMigB, zoneB)).Once()
 	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigB+"/listManagedInstances").Return(buildOneRunningInstanceManagedInstancesResponse(zoneB, gceMigB)).Once()
 
 	regional := true
@@ -1036,9 +1044,7 @@ func TestFetchExplicitMigs(t *testing.T) {
 	server.On("handle", "/project1/global/instanceTemplates/"+gceMigA).Return(instanceTemplate).Once()
 	server.On("handle", "/project1/global/instanceTemplates/"+gceMigB).Return(instanceTemplate).Once()
 
-	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA).Return(buildInstanceGroupManagerResponse(zoneB, gceMigA)).Once()
 	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigA+"/listManagedInstances").Return(buildFourRunningInstancesManagedInstancesResponse(zoneB, gceMigA)).Once()
-	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigB).Return(buildInstanceGroupManagerResponse(zoneB, gceMigB)).Once()
 	server.On("handle", "/project1/zones/"+zoneB+"/instanceGroupManagers/"+gceMigB+"/listManagedInstances").Return(buildOneRunningInstanceManagedInstancesResponse(zoneB, gceMigB)).Once()
 
 	regional := false
@@ -1194,14 +1200,13 @@ func TestParseCustomMachineType(t *testing.T) {
 	assert.Error(t, err)
 }
 
-func validateMigExists(t *testing.T, migs []*MigInformation, zone string, name string, minSize int, maxSize int) {
+func validateMigExists(t *testing.T, migs []Mig, zone string, name string, minSize int, maxSize int) {
 	ref := GceRef{
 		projectId,
 		zone,
 		name,
 	}
-	for _, migInformation := range migs {
-		mig := migInformation.Config
+	for _, mig := range migs {
 		if mig.GceRef() == ref {
 			assert.Equal(t, minSize, mig.MinSize())
 			assert.Equal(t, maxSize, mig.MaxSize())
@@ -1209,8 +1214,8 @@ func validateMigExists(t *testing.T, migs []*MigInformation, zone string, name s
 		}
 	}
 	allRefs := []GceRef{}
-	for _, migInformation := range migs {
-		allRefs = append(allRefs, migInformation.Config.GceRef())
+	for _, mig := range migs {
+		allRefs = append(allRefs, mig.GceRef())
 	}
 	assert.Failf(t, "Mig not found", "Mig %v not found among %v", ref, allRefs)
 }
