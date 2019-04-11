@@ -211,10 +211,12 @@ func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider histor
 				ContainerName: containerName}
 			glog.V(4).Infof("Adding %d samples for container %v", len(sampleList), containerID)
 			for _, sample := range sampleList {
-				feeder.clusterState.AddSample(
+				if err := feeder.clusterState.AddSample(
 					&model.ContainerUsageSampleWithKey{
 						ContainerUsageSample: sample,
-						Container:            containerID})
+						Container:            containerID}); err != nil {
+					glog.Warningf("Error adding metric sample for container %v: %v", containerID, err)
+				}
 			}
 		}
 	}
@@ -367,14 +369,18 @@ func (feeder *clusterStateFeeder) LoadRealTimeMetrics() {
 	}
 
 	sampleCount := 0
+	droppedSampleCount := 0
 	for _, containerMetrics := range containersMetrics {
 		for _, sample := range newContainerUsageSamplesWithKey(containerMetrics) {
-			feeder.clusterState.AddSample(sample)
-			sampleCount++
+			if err := feeder.clusterState.AddSample(sample); err != nil {
+				glog.Warningf("Error adding metric sample for container %v: %v", sample.Container, err)
+				droppedSampleCount++
+			} else {
+				sampleCount++
+			}
 		}
 	}
-	glog.V(3).Infof("ClusterSpec fed with #%v ContainerUsageSamples for #%v containers", sampleCount, len(containersMetrics))
-
+	glog.V(3).Infof("ClusterSpec fed with #%v ContainerUsageSamples for #%v containers. Dropped #%v samples.", sampleCount, len(containersMetrics), droppedSampleCount)
 Loop:
 	for {
 		select {
