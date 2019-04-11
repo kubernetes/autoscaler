@@ -29,6 +29,7 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/containerinfra/v1/clusters"
 	"github.com/gophercloud/gophercloud/openstack/orchestration/v1/stackresources"
 	"github.com/gophercloud/gophercloud/openstack/orchestration/v1/stacks"
+	"github.com/satori/go.uuid"
 	"gopkg.in/gcfg.v1"
 	netutil "k8s.io/apimachinery/pkg/util/net"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -155,8 +156,8 @@ func createMagnumManagerHeat(configReader io.Reader, discoverOpts cloudprovider.
 // nodeGroupSize gets the current cluster size as reported by magnum.
 // The nodegroup argument is ignored as this implementation of magnumManager
 // assumes that only a single node group exists.
-func (osm *magnumManagerHeat) nodeGroupSize(nodegroup string) (int, error) {
-	cluster, err := clusters.Get(osm.clusterClient, osm.clusterName).Extract()
+func (mgr *magnumManagerHeat) nodeGroupSize(nodegroup string) (int, error) {
+	cluster, err := clusters.Get(mgr.clusterClient, mgr.clusterName).Extract()
 	if err != nil {
 		return 0, fmt.Errorf("could not get cluster: %v", err)
 	}
@@ -164,11 +165,11 @@ func (osm *magnumManagerHeat) nodeGroupSize(nodegroup string) (int, error) {
 }
 
 // updateNodeCount replaces the cluster node_count in magnum.
-func (osm *magnumManagerHeat) updateNodeCount(nodegroup string, nodes int) error {
+func (mgr *magnumManagerHeat) updateNodeCount(nodegroup string, nodes int) error {
 	updateOpts := []clusters.UpdateOptsBuilder{
 		UpdateOptsInt{Op: clusters.ReplaceOp, Path: "/node_count", Value: nodes},
 	}
-	_, err := clusters.Update(osm.clusterClient, osm.clusterName, updateOpts).Extract()
+	_, err := clusters.Update(mgr.clusterClient, mgr.clusterName, updateOpts).Extract()
 	if err != nil {
 		return fmt.Errorf("could not update cluster: %v", err)
 	}
@@ -179,7 +180,7 @@ func (osm *magnumManagerHeat) updateNodeCount(nodegroup string, nodes int) error
 // used to find any nodes which are unregistered in kubernetes.
 // This can not be done with heat currently but a change has been merged upstream
 // that will allow this.
-func (osm *magnumManagerHeat) getNodes(nodegroup string) ([]string, error) {
+func (mgr *magnumManagerHeat) getNodes(nodegroup string) ([]string, error) {
 	// TODO: get node ProviderIDs by getting nova instance IDs from heat
 	// Waiting for https://review.openstack.org/#/c/639053/ to be able to get
 	// nova instance IDs from the kube_minions stack resource.
@@ -193,8 +194,8 @@ func (osm *magnumManagerHeat) getNodes(nodegroup string) ([]string, error) {
 //
 // TODO: The two step process is required until https://storyboard.openstack.org/#!/story/2005052
 // is complete, which will allow resizing with specific nodes to be deleted as a single Magnum operation.
-func (osm *magnumManagerHeat) deleteNodes(nodegroup string, nodes []NodeRef, updatedNodeCount int) error {
-	stackIndices, err := osm.findStackIndices(nodes)
+func (mgr *magnumManagerHeat) deleteNodes(nodegroup string, nodes []NodeRef, updatedNodeCount int) error {
+	stackIndices, err := mgr.findStackIndices(nodes)
 	if err != nil {
 		return fmt.Errorf("could not find stack indices for nodes to be deleted: %v", err)
 	}
@@ -207,23 +208,23 @@ func (osm *magnumManagerHeat) deleteNodes(nodegroup string, nodes []NodeRef, upd
 		},
 	}
 
-	updateResult := stacks.UpdatePatch(osm.heatClient, osm.stackName, osm.stackID, updateOpts)
+	updateResult := stacks.UpdatePatch(mgr.heatClient, mgr.stackName, mgr.stackID, updateOpts)
 	err = updateResult.ExtractErr()
 	if err != nil {
 		return fmt.Errorf("stack patch failed: %v", err)
 	}
 
 	// Wait for the stack to do its thing before updating the cluster node_count
-	err = osm.waitForStackStatus(stackStatusUpdateInProgress, waitForUpdateStatusTimeout)
+	err = mgr.waitForStackStatus(stackStatusUpdateInProgress, waitForUpdateStatusTimeout)
 	if err != nil {
 		return fmt.Errorf("error waiting for stack %s status: %v", stackStatusUpdateInProgress, err)
 	}
-	err = osm.waitForStackStatus(stackStatusUpdateComplete, waitForCompleteStatusTimout)
+	err = mgr.waitForStackStatus(stackStatusUpdateComplete, waitForCompleteStatusTimout)
 	if err != nil {
 		return fmt.Errorf("error waiting for stack %s status: %v", stackStatusUpdateComplete, err)
 	}
 
-	err = osm.updateNodeCount(nodegroup, updatedNodeCount)
+	err = mgr.updateNodeCount(nodegroup, updatedNodeCount)
 	if err != nil {
 		return fmt.Errorf("could not set new cluster size: %v", err)
 	}
@@ -231,8 +232,8 @@ func (osm *magnumManagerHeat) deleteNodes(nodegroup string, nodes []NodeRef, upd
 }
 
 // getClusterStatus returns the current status of the magnum cluster.
-func (osm *magnumManagerHeat) getClusterStatus() (string, error) {
-	cluster, err := clusters.Get(osm.clusterClient, osm.clusterName).Extract()
+func (mgr *magnumManagerHeat) getClusterStatus() (string, error) {
+	cluster, err := clusters.Get(mgr.clusterClient, mgr.clusterName).Extract()
 	if err != nil {
 		return "", fmt.Errorf("could not get cluster: %v", err)
 	}
@@ -242,8 +243,8 @@ func (osm *magnumManagerHeat) getClusterStatus() (string, error) {
 // canUpdate checks if the cluster status is present in a set of statuses that
 // prevent the cluster from being updated.
 // Returns if updating is possible and the status for convenience.
-func (osm *magnumManagerHeat) canUpdate() (bool, string, error) {
-	clusterStatus, err := osm.getClusterStatus()
+func (mgr *magnumManagerHeat) canUpdate() (bool, string, error) {
+	clusterStatus, err := mgr.getClusterStatus()
 	if err != nil {
 		return false, "", fmt.Errorf("could not get cluster status: %v", err)
 	}
@@ -251,8 +252,8 @@ func (osm *magnumManagerHeat) canUpdate() (bool, string, error) {
 }
 
 // getStackStatus returns the current status of the heat stack used by the magnum cluster.
-func (osm *magnumManagerHeat) getStackStatus() (string, error) {
-	stack, err := stacks.Get(osm.heatClient, osm.stackName, osm.stackID).Extract()
+func (mgr *magnumManagerHeat) getStackStatus() (string, error) {
+	stack, err := stacks.Get(mgr.heatClient, mgr.stackName, mgr.stackID).Extract()
 	if err != nil {
 		return "", fmt.Errorf("could not get stack from heat: %v", err)
 	}
@@ -261,17 +262,17 @@ func (osm *magnumManagerHeat) getStackStatus() (string, error) {
 
 // templateNodeInfo returns a NodeInfo with a node template based on the VM flavor
 // that is used to created minions in a given node group.
-func (osm *magnumManagerHeat) templateNodeInfo(nodegroup string) (*schedulernodeinfo.NodeInfo, error) {
+func (mgr *magnumManagerHeat) templateNodeInfo(nodegroup string) (*schedulernodeinfo.NodeInfo, error) {
 	// TODO: create a node template by getting the minion flavor from the heat stack.
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // waitForStackStatus checks periodically to see if the heat stack has entered a given status.
 // Returns when the status is observed or the timeout is reached.
-func (osm *magnumManagerHeat) waitForStackStatus(status string, timeout time.Duration) error {
+func (mgr *magnumManagerHeat) waitForStackStatus(status string, timeout time.Duration) error {
 	klog.V(2).Infof("Waiting for stack %s status", status)
-	for start := time.Now(); time.Since(start) < timeout; time.Sleep(osm.waitTimeStep) {
-		currentStatus, err := osm.getStackStatus()
+	for start := time.Now(); time.Since(start) < timeout; time.Sleep(mgr.waitTimeStep) {
+		currentStatus, err := mgr.getStackStatus()
 		if err != nil {
 			return fmt.Errorf("error waiting for stack status: %v", err)
 		}
@@ -284,24 +285,24 @@ func (osm *magnumManagerHeat) waitForStackStatus(status string, timeout time.Dur
 }
 
 // getStackName finds the name of a stack matching a given ID.
-func (osm *magnumManagerHeat) getStackName(stackID string) (string, error) {
-	stack, err := stacks.Find(osm.heatClient, stackID).Extract()
+func (mgr *magnumManagerHeat) getStackName(stackID string) (string, error) {
+	stack, err := stacks.Find(mgr.heatClient, stackID).Extract()
 	if err != nil {
-		return "", fmt.Errorf("could not find stack with ID %s: %v", osm.stackID, err)
+		return "", fmt.Errorf("could not find stack with ID %s: %v", mgr.stackID, err)
 	}
-	klog.V(0).Infof("For stack ID %s, stack name is %s", osm.stackID, stack.Name)
+	klog.V(0).Infof("For stack ID %s, stack name is %s", mgr.stackID, stack.Name)
 	return stack.Name, nil
 }
 
 // getKubeMinionsStack finds the nested kube_minions stack belonging to the main cluster stack,
 // and returns its name and ID.
-func (osm *magnumManagerHeat) getKubeMinionsStack(stackName, stackID string) (name string, ID string, err error) {
-	minionsResource, err := stackresources.Get(osm.heatClient, stackName, stackID, "kube_minions").Extract()
+func (mgr *magnumManagerHeat) getKubeMinionsStack(stackName, stackID string) (name string, ID string, err error) {
+	minionsResource, err := stackresources.Get(mgr.heatClient, stackName, stackID, "kube_minions").Extract()
 	if err != nil {
 		return "", "", fmt.Errorf("could not get kube_minions stack resource: %v", err)
 	}
 
-	stack, err := stacks.Find(osm.heatClient, minionsResource.PhysicalID).Extract()
+	stack, err := stacks.Find(mgr.heatClient, minionsResource.PhysicalID).Extract()
 	if err != nil {
 		return "", "", fmt.Errorf("could not find stack matching resource ID in heat: %v", err)
 	}
@@ -319,8 +320,8 @@ func (osm *magnumManagerHeat) getKubeMinionsStack(stackName, stackID string) (na
 // or  {'0': 'f12070fef4144bef82812aff177b83c1'}
 // Deleting minions in heat can be done with either the index of the minion or the ID associated with it,
 // but since the ID could be one of several things it is useful to be able to resolve back to indices.
-func (osm *magnumManagerHeat) findStackIndices(nodeRefs []NodeRef) ([]string, error) {
-	stack, err := stacks.Get(osm.heatClient, osm.kubeMinionsStackName, osm.kubeMinionsStackID).Extract()
+func (mgr *magnumManagerHeat) findStackIndices(nodeRefs []NodeRef) ([]string, error) {
+	stack, err := stacks.Get(mgr.heatClient, mgr.kubeMinionsStackName, mgr.kubeMinionsStackID).Extract()
 	if err != nil {
 		return nil, fmt.Errorf("could not get kube_minions nested stack from heat: %v", err)
 	}
@@ -359,14 +360,23 @@ func (osm *magnumManagerHeat) findStackIndices(nodeRefs []NodeRef) ([]string, er
 // which is provided by findStackIndices (inverted).
 // The boolean return value specifies if the index was found or not.
 func stackIndexFromID(IDToIndex map[string]string, nodeRef NodeRef) (string, bool) {
-	if index, found := IDToIndex[nodeRef.MachineID]; found {
-		return index, found
+	// Kubernetes stores machine UUID without dashes, openstack expects with dashes.
+	// Parsing the MachineID and getting the string output gives the correct format.
+	// If the MachineID does not parse (maybe it is empty) then it will not be checked, it will not cause an error.
+	id, err := uuid.FromString(nodeRef.MachineID)
+	if err == nil {
+		machineID := id.String()
+		if index, found := IDToIndex[machineID]; found {
+			return index, found
+		}
 	}
+
 	for _, IP := range nodeRef.IPs {
 		if index, found := IDToIndex[IP]; found {
 			return index, found
 		}
 	}
+
 	return "", false
 }
 
