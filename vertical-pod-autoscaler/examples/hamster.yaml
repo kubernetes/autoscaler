@@ -1,8 +1,10 @@
 # This config creates a deployment with two pods, each requesting 100 millicores
 # and trying to utilize slightly above 500 millicores (repeatedly using CPU for
 # 0.5s and sleeping 0.5s).
-# It also creates a corresponding Vertical Pod Autoscaler that adjusts the requests.
+# It also creates a corresponding Vertical Pod Autoscaler that adjusts the
+# requests.
 # Note that the update mode is left unset, so it defaults to "Auto" mode.
+---
 apiVersion: "autoscaling.k8s.io/v1beta2"
 kind: VerticalPodAutoscaler
 metadata:
@@ -10,8 +12,8 @@ metadata:
 spec:
   targetRef:
     apiVersion: "extensions/v1beta1"
-    kind:       Deployment
-    name:       hamster
+    kind: Deployment
+    name: hamster
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -25,11 +27,13 @@ spec:
         app: hamster
     spec:
       containers:
-      - name: hamster
-        image: k8s.gcr.io/ubuntu-slim:0.1
-        resources:
-          requests:
-            cpu: 100m
-            memory: 50Mi
-        command: ["/bin/sh"]
-        args: ["-c", "while true; do timeout 0.5s yes >/dev/null; sleep 0.5s; done"]
+        - name: hamster
+          image: k8s.gcr.io/ubuntu-slim:0.1
+          resources:
+            requests:
+              cpu: 100m
+              memory: 50Mi
+          command: ["/bin/sh"]
+          args:
+            - "-c"
+            - "while true; do timeout 0.5s yes >/dev/null; sleep 0.5s; done"
