@@ -25,6 +25,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
@@ -281,6 +282,168 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 					if !eqPatch(gotPatch, tc.expectPatches[i]) {
 						t.Errorf("Expected patch at position %d to be %+v, got %+v", i, tc.expectPatches[i], gotPatch)
 					}
+				}
+			}
+		})
+	}
+}
+
+func TestGetPatchesForResourceRequest_TwoReplacementResources(t *testing.T) {
+
+	fppp := fakePodPreProcessor{}
+	recommendResources := []ContainerResources{
+		{
+			apiv1.ResourceList{
+				cpu:        resource.MustParse("1"),
+				unobtanium: resource.MustParse("2"),
+			},
+		},
+	}
+	podJson := []byte(
+		`{
+					"spec": {
+						"containers": [
+							{
+								"resources": {
+									"requests": {
+										"cpu": "0"
+									}
+								}
+							}
+						]
+					}
+				}`)
+	recommendAnnotations := vpa_api_util.ContainerToAnnotationsMap{}
+	frp := fakeRecommendationProvider{recommendResources, recommendAnnotations, "name", nil}
+	s := NewAdmissionServer(&frp, &fppp)
+	patches, err := s.getPatchesForPodResourceRequest(podJson, "default")
+	assert.NoError(t, err)
+	// Order of updates for cpu and unobtanium depends on order of iterating a map, both possible results are valid.
+	if assert.Equal(t, len(patches), 3) {
+		cpuUpdate := addResourceRequestPatch(0, cpu, "1")
+		unobtaniumUpdate := addResourceRequestPatch(0, unobtanium, "2")
+		assert.True(t, eqPatch(patches[0], cpuUpdate) || eqPatch(patches[0], unobtaniumUpdate))
+		assert.True(t, eqPatch(patches[1], cpuUpdate) || eqPatch(patches[1], unobtaniumUpdate))
+		assert.False(t, eqPatch(patches[0], patches[1]))
+		assert.True(t, eqPatch(patches[2], addAnnotationRequest([][]string{{cpu, unobtanium}})) || eqPatch(patches[2], addAnnotationRequest([][]string{{unobtanium, cpu}})))
+	}
+}
+
+func TestValidateVPA(t *testing.T) {
+	badUpdateMode := vpa_types.UpdateMode("bad")
+	validUpdateMode := vpa_types.UpdateModeOff
+	badScalingMode := vpa_types.ContainerScalingMode("bad")
+	validScalingMode := vpa_types.ContainerScalingModeAuto
+	tests := []struct {
+		name        string
+		vpa         vpa_types.VerticalPodAutoscaler
+		expectError error
+	}{
+		{
+			name: "empty",
+			vpa:  vpa_types.VerticalPodAutoscaler{},
+		},
+		{
+			name: "no update mode",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{},
+				},
+			},
+			expectError: fmt.Errorf("UpdateMode is required if UpdatePolicy is used"),
+		},
+		{
+			name: "bad update mode",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode: &badUpdateMode,
+					},
+				},
+			},
+			expectError: fmt.Errorf("unexpected UpdateMode value bad"),
+		},
+		{
+			name: "no policy name",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{{}},
+					},
+				},
+			},
+			expectError: fmt.Errorf("ContainerPolicies.ContainerName is required"),
+		},
+		{
+			name: "invalid scaling mode",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName: "loot box",
+								Mode:          &badScalingMode,
+							},
+						},
+					},
+				},
+			},
+			expectError: fmt.Errorf("unexpected Mode value bad"),
+		},
+		{
+			name: "bad limits",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName: "loot box",
+								MinAllowed: apiv1.ResourceList{
+									cpu: resource.MustParse("100"),
+								},
+								MaxAllowed: apiv1.ResourceList{
+									cpu: resource.MustParse("10"),
+								},
+							},
+						},
+					},
+				},
+			},
+			expectError: fmt.Errorf("max resource for cpu is lower than min"),
+		},
+		{
+			name: "all valid",
+			vpa: vpa_types.VerticalPodAutoscaler{
+				Spec: vpa_types.VerticalPodAutoscalerSpec{
+					ResourcePolicy: &vpa_types.PodResourcePolicy{
+						ContainerPolicies: []vpa_types.ContainerResourcePolicy{
+							{
+								ContainerName: "loot box",
+								Mode:          &validScalingMode,
+								MinAllowed: apiv1.ResourceList{
+									cpu: resource.MustParse("10"),
+								},
+								MaxAllowed: apiv1.ResourceList{
+									cpu: resource.MustParse("100"),
+								},
+							},
+						},
+					},
+					UpdatePolicy: &vpa_types.PodUpdatePolicy{
+						UpdateMode: &validUpdateMode,
+					},
+				},
+			},
+		},
+	}
+	for _, tc := range tests {
+		t.Run(fmt.Sprintf("test case: %s", tc.name), func(t *testing.T) {
+			err := validateVPA(&tc.vpa)
+			if tc.expectError == nil {
+				assert.NoError(t, err)
+			} else {
+				if assert.Error(t, err) {
+					assert.Equal(t, tc.expectError.Error(), err.Error())
 				}
 			}
 		})
