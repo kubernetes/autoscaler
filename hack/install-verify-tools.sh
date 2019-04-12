@@ -19,7 +19,6 @@ set -o nounset
 set -o pipefail
 
 KUBE_ROOT=$(dirname "${BASH_SOURCE}")/..
-${KUBE_ROOT}/hack/check-go-version.sh
 
 go get -u golang.org/x/lint/golint
 
