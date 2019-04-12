@@ -4,108 +4,108 @@ kind: ClusterRole
 metadata:
   name: system:metrics-reader
 rules:
-- apiGroups:
-  - "metrics.k8s.io"
-  resources:
-  - pods
-  verbs:
-  - get
-  - list
+  - apiGroups:
+      - "metrics.k8s.io"
+    resources:
+      - pods
+    verbs:
+      - get
+      - list
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: system:vpa-actor
 rules:
-- apiGroups:
-  - ""
-  resources:
-  - pods
-  - nodes
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - events
-  verbs:
-  - get
-  - list
-  - watch
-  - create
-- apiGroups:
-  - "poc.autoscaling.k8s.io"
-  resources:
-  - verticalpodautoscalers
-  verbs:
-  - get
-  - list
-  - watch
-  - patch
-- apiGroups:
-  - "autoscaling.k8s.io"
-  resources:
-  - verticalpodautoscalers
-  verbs:
-  - get
-  - list
-  - watch
-  - patch
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+      - nodes
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - events
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+  - apiGroups:
+      - "poc.autoscaling.k8s.io"
+    resources:
+      - verticalpodautoscalers
+    verbs:
+      - get
+      - list
+      - watch
+      - patch
+  - apiGroups:
+      - "autoscaling.k8s.io"
+    resources:
+      - verticalpodautoscalers
+    verbs:
+      - get
+      - list
+      - watch
+      - patch
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: system:vpa-checkpoint-actor
 rules:
-- apiGroups:
-  - "poc.autoscaling.k8s.io"
-  resources:
-  - verticalpodautoscalercheckpoints
-  verbs:
-  - get
-  - list
-  - watch
-  - create
-  - patch
-  - delete
-- apiGroups:
-  - "autoscaling.k8s.io"
-  resources:
-  - verticalpodautoscalercheckpoints
-  verbs:
-  - get
-  - list
-  - watch
-  - create
-  - patch
-  - delete
-- apiGroups:
-  - ""
-  resources:
-  - namespaces
-  verbs:
-  - get
-  - list
+  - apiGroups:
+      - "poc.autoscaling.k8s.io"
+    resources:
+      - verticalpodautoscalercheckpoints
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - patch
+      - delete
+  - apiGroups:
+      - "autoscaling.k8s.io"
+    resources:
+      - verticalpodautoscalercheckpoints
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - patch
+      - delete
+  - apiGroups:
+      - ""
+    resources:
+      - namespaces
+    verbs:
+      - get
+      - list
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: system:evictioner
 rules:
-- apiGroups:
-  - "extensions"
-  resources:
-  - replicasets
-  verbs:
-  - get
-- apiGroups:
-  - ""
-  resources:
-  - pods/eviction
-  verbs:
-  - create
+  - apiGroups:
+      - "extensions"
+    resources:
+      - replicasets
+    verbs:
+      - get
+  - apiGroups:
+      - ""
+    resources:
+      - pods/eviction
+    verbs:
+      - create
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -116,9 +116,9 @@ roleRef:
   kind: ClusterRole
   name: system:metrics-reader
 subjects:
-- kind: ServiceAccount
-  name: vpa-recommender
-  namespace: kube-system
+  - kind: ServiceAccount
+    name: vpa-recommender
+    namespace: kube-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -129,12 +129,12 @@ roleRef:
   kind: ClusterRole
   name: system:vpa-actor
 subjects:
-- kind: ServiceAccount
-  name: vpa-recommender
-  namespace: kube-system
-- kind: ServiceAccount
-  name: vpa-updater
-  namespace: kube-system
+  - kind: ServiceAccount
+    name: vpa-recommender
+    namespace: kube-system
+  - kind: ServiceAccount
+    name: vpa-updater
+    namespace: kube-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -145,42 +145,42 @@ roleRef:
   kind: ClusterRole
   name: system:vpa-checkpoint-actor
 subjects:
-- kind: ServiceAccount
-  name: vpa-recommender
-  namespace: kube-system
+  - kind: ServiceAccount
+    name: vpa-recommender
+    namespace: kube-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: system:vpa-target-reader
 rules:
-- apiGroups:
-  - ""
-  resources:
-  - replicationcontrollers
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - apps
-  resources:
-  - daemonsets
-  - deployments
-  - replicasets
-  - statefulsets
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - batch
-  resources:
-  - jobs
-  verbs:
-  - get
-  - list
-  - watch
+  - apiGroups:
+      - ""
+    resources:
+      - replicationcontrollers
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - apps
+    resources:
+      - daemonsets
+      - deployments
+      - replicasets
+      - statefulsets
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - batch
+    resources:
+      - jobs
+    verbs:
+      - get
+      - list
+      - watch
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -191,15 +191,15 @@ roleRef:
   kind: ClusterRole
   name: system:vpa-target-reader
 subjects:
-- kind: ServiceAccount
-  name: vpa-recommender
-  namespace: kube-system
-- kind: ServiceAccount
-  name: vpa-admission-controller
-  namespace: kube-system
-- kind: ServiceAccount
-  name: vpa-updater
-  namespace: kube-system
+  - kind: ServiceAccount
+    name: vpa-recommender
+    namespace: kube-system
+  - kind: ServiceAccount
+    name: vpa-admission-controller
+    namespace: kube-system
+  - kind: ServiceAccount
+    name: vpa-updater
+    namespace: kube-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -210,9 +210,9 @@ roleRef:
   kind: ClusterRole
   name: system:evictioner
 subjects:
-- kind: ServiceAccount
-  name: vpa-updater
-  namespace: kube-system
+  - kind: ServiceAccount
+    name: vpa-updater
+    namespace: kube-system
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -225,41 +225,41 @@ kind: ClusterRole
 metadata:
   name: system:admission-controller
 rules:
-- apiGroups:
-  - ""
-  resources:
-  - pods
-  - configmaps
-  - nodes
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - "admissionregistration.k8s.io"
-  resources:
-  - mutatingwebhookconfigurations
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-- apiGroups:
-  - "poc.autoscaling.k8s.io"
-  resources:
-  - verticalpodautoscalers
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - "autoscaling.k8s.io"
-  resources:
-  - verticalpodautoscalers
-  verbs:
-  - get
-  - list
-  - watch
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+      - configmaps
+      - nodes
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - "admissionregistration.k8s.io"
+    resources:
+      - mutatingwebhookconfigurations
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+  - apiGroups:
+      - "poc.autoscaling.k8s.io"
+    resources:
+      - verticalpodautoscalers
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - "autoscaling.k8s.io"
+    resources:
+      - verticalpodautoscalers
+    verbs:
+      - get
+      - list
+      - watch
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -270,6 +270,6 @@ roleRef:
   kind: ClusterRole
   name: system:admission-controller
 subjects:
-- kind: ServiceAccount
-  name: vpa-admission-controller
-  namespace: kube-system
+  - kind: ServiceAccount
+    name: vpa-admission-controller
+    namespace: kube-system
