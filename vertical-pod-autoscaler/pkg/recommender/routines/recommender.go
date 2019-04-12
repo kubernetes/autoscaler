@@ -106,6 +106,11 @@ func (r *recommender) UpdateVPAs() {
 				metrics_recommender.ObserveRecommendationLatency(vpa.Created)
 			}
 		}
+		if err := r.clusterState.RecordRecommendation(vpa, time.Now()); err != nil {
+			glog.Warningf("%v", err)
+			glog.V(4).Infof("VPA dump")
+			glog.V(4).Infof("%+v", vpa)
+		}
 		cnt.Add(vpa)
 
 		_, err := vpa_utils.UpdateVpaStatusIfNeeded(
