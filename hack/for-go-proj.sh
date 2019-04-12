@@ -49,7 +49,7 @@ for godep_file in ${godep_projects}; do
     cd "${project}"
     case "${CMD}" in
       "test")
-        godep go "${CMD}" $(go list ./... | grep -v /vendor/ | grep -v vertical-pod-autoscaler/e2e )
+        godep go test -race $(go list ./... | grep -v /vendor/ | grep -v vertical-pod-autoscaler/e2e )
         ;;
       *)
         godep go "${CMD}" ./...
