@@ -26,6 +26,11 @@ import (
 	"k8s.io/klog"
 )
 
+const (
+	// RecommendationMissingMaxDuration is maximum time that we accept the recommendation can be missing.
+	RecommendationMissingMaxDuration = 30 * time.Minute
+)
+
 // ClusterState holds all runtime information about the cluster required for the
 // VPA operations, i.e. configuration of resources (pods, containers,
 // VPA objects), aggregated utilization of compute resources (CPU, memory) and
@@ -36,6 +41,10 @@ type ClusterState struct {
 	Pods map[PodID]*PodState
 	// VPA objects in the cluster.
 	Vpas map[VpaID]*Vpa
+	// VPA objects in the cluster that have no recommendation mapped to the first
+	// time we've noticed the recommendation missing or last time we logged
+	// a warning about it.
+	EmptyVPAs map[VpaID]time.Time
 	// Observed VPAs. Used to check if there are updates needed.
 	ObservedVpas []*vpa_types.VerticalPodAutoscaler
 
@@ -81,6 +90,7 @@ func NewClusterState() *ClusterState {
 	return &ClusterState{
 		Pods:              make(map[PodID]*PodState),
 		Vpas:              make(map[VpaID]*Vpa),
+		EmptyVPAs:         make(map[VpaID]time.Time),
 		aggregateStateMap: make(aggregateContainerStatesMap),
 		labelSetMap:       make(labelSetMap),
 	}
@@ -332,6 +342,26 @@ func (cluster *ClusterState) getActiveAggregateStateKeys() map[AggregateStateKey
 		}
 	}
 	return activeKeys
+}
+
+// RecordRecommendation marks the state of recommendation in the cluster. We
+// keep track of empty recommendations and log information about them
+// periodically.
+func (cluster *ClusterState) RecordRecommendation(vpa *Vpa, now time.Time) error {
+	if vpa.Recommendation != nil && len(vpa.Recommendation.ContainerRecommendations) > 0 {
+		delete(cluster.EmptyVPAs, vpa.ID)
+		return nil
+	}
+	lastLogged, ok := cluster.EmptyVPAs[vpa.ID]
+	if !ok {
+		cluster.EmptyVPAs[vpa.ID] = now
+	} else {
+		if lastLogged.Add(RecommendationMissingMaxDuration).Before(now) {
+			cluster.EmptyVPAs[vpa.ID] = now
+			return fmt.Errorf("VPA %v/%v is missing recommendation for more than %v", vpa.ID.Namespace, vpa.ID.VpaName, RecommendationMissingMaxDuration)
+		}
+	}
+	return nil
 }
 
 // Implementation of the AggregateStateKey interface. It can be used as a map key.

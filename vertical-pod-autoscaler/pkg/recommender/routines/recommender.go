@@ -108,6 +108,11 @@ func (r *recommender) UpdateVPAs() {
 		} else {
 			vpa.Conditions.Set(vpa_types.RecommendationProvided, false, "", "")
 		}
+		if err := r.clusterState.RecordRecommendation(vpa, time.Now()); err != nil {
+			klog.Warningf("%v", err)
+			klog.V(4).Infof("VPA dump")
+			klog.V(4).Infof("%+v", vpa)
+		}
 		cnt.Add(vpa)
 
 		_, err := vpa_utils.UpdateVpaStatusIfNeeded(

@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -24,6 +25,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	"k8s.io/klog"
 )
 
@@ -385,4 +387,78 @@ func TestEmptySelector(t *testing.T) {
 	// Both pods should be matched by the VPA.
 	assert.Contains(t, vpa.aggregateContainerStates, cluster.aggregateStateKeyForContainerID(containerID1))
 	assert.Contains(t, vpa.aggregateContainerStates, cluster.aggregateStateKeyForContainerID(containerID2))
+}
+
+func TestRecordRecommendation(t *testing.T) {
+	cases := []struct {
+		name               string
+		recommendation     *vpa_types.RecommendedPodResources
+		lastLogged         time.Time
+		now                time.Time
+		expectedEmpty      bool
+		expectedLastLogged time.Time
+		expectedError      error
+	}{
+		{
+			name:           "VPA has recommendation",
+			recommendation: test.Recommendation().WithContainer("test").WithTarget("100m", "200G").Get(),
+			now:            testTimestamp,
+			expectedEmpty:  false,
+			expectedError:  nil,
+		}, {
+			name:           "VPA recommendation appears",
+			recommendation: test.Recommendation().WithContainer("test").WithTarget("100m", "200G").Get(),
+			lastLogged:     testTimestamp.Add(-10 * time.Minute),
+			now:            testTimestamp,
+			expectedEmpty:  false,
+			expectedError:  nil,
+		}, {
+			name:               "VPA recommendation missing",
+			recommendation:     &vpa_types.RecommendedPodResources{},
+			lastLogged:         testTimestamp.Add(-10 * time.Minute),
+			now:                testTimestamp,
+			expectedEmpty:      true,
+			expectedLastLogged: testTimestamp.Add(-10 * time.Minute),
+			expectedError:      nil,
+		}, {
+			name:               "VPA recommendation missing and needs logging",
+			recommendation:     &vpa_types.RecommendedPodResources{},
+			lastLogged:         testTimestamp.Add(-40 * time.Minute),
+			now:                testTimestamp,
+			expectedEmpty:      true,
+			expectedLastLogged: testTimestamp,
+			expectedError:      fmt.Errorf("VPA namespace-1/vpa-1 is missing recommendation for more than %v", RecommendationMissingMaxDuration),
+		}, {
+			name:               "VPA recommendation disappears",
+			recommendation:     &vpa_types.RecommendedPodResources{},
+			now:                testTimestamp,
+			expectedEmpty:      true,
+			expectedLastLogged: testTimestamp,
+			expectedError:      nil,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			cluster := NewClusterState()
+			vpa := addVpa(cluster, testVpaID, testSelectorStr)
+			cluster.Vpas[testVpaID].Recommendation = tc.recommendation
+			if !tc.lastLogged.IsZero() {
+				cluster.EmptyVPAs[testVpaID] = tc.lastLogged
+			}
+
+			err := cluster.RecordRecommendation(vpa, tc.now)
+			if tc.expectedError != nil {
+				assert.Equal(t, tc.expectedError, err)
+			} else {
+				assert.NoError(t, err)
+				if tc.expectedEmpty {
+					assert.Contains(t, cluster.EmptyVPAs, testVpaID)
+					assert.Equal(t, cluster.EmptyVPAs[testVpaID], tc.expectedLastLogged)
+				} else {
+					assert.NotContains(t, cluster.EmptyVPAs, testVpaID)
+				}
+			}
+		})
+	}
 }
