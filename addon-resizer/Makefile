@@ -28,21 +28,7 @@ IMAGE = $(REGISTRY)/$(IMGNAME)
 MULTI_ARCH_IMG = $(IMAGE)-$(ARCH)
 TAG = 2.1
 
-ifeq ($(ARCH),amd64)
-	BASEIMAGE=busybox
-endif
-ifeq ($(ARCH),arm)
-	BASEIMAGE=arm32v6/busybox
-endif
-ifeq ($(ARCH),arm64)
-	BASEIMAGE=arm64v8/busybox
-endif
-ifeq ($(ARCH),ppc64le)
-	BASEIMAGE=ppc64le/busybox
-endif
-ifeq ($(ARCH),s390x)
-	BASEIMAGE=s390x/busybox
-endif
+BASEIMAGE?=gcr.io/distroless/static:latest
 
 TEMP_DIR := $(shell mktemp -d)
 
