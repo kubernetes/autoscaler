@@ -66,9 +66,28 @@ type StaticAutoscaler struct {
 	lastScaleDownFailTime   time.Time
 	scaleDown               *ScaleDown
 	processors              *ca_processors.AutoscalingProcessors
+	processorCallbacks      *staticAutoscalerProcessorCallbacks
 	initialized             bool
 	// Caches nodeInfo computed for previously seen nodes
 	nodeInfoCache map[string]*schedulernodeinfo.NodeInfo
+}
+
+type staticAutoscalerProcessorCallbacks struct {
+	disableScaleDownForLoop bool
+}
+
+func newStaticAutoscalerProcessorCallbacks() *staticAutoscalerProcessorCallbacks {
+	callbacks := &staticAutoscalerProcessorCallbacks{}
+	callbacks.reset()
+	return callbacks
+}
+
+func (callbacks *staticAutoscalerProcessorCallbacks) DisableScaleDownForLoop() {
+	callbacks.disableScaleDownForLoop = true
+}
+
+func (callbacks *staticAutoscalerProcessorCallbacks) reset() {
+	callbacks.disableScaleDownForLoop = false
 }
 
 // NewStaticAutoscaler creates an instance of Autoscaler filled with provided parameters
@@ -81,7 +100,9 @@ func NewStaticAutoscaler(
 	expanderStrategy expander.Strategy,
 	estimatorBuilder estimator.EstimatorBuilder,
 	backoff backoff.Backoff) *StaticAutoscaler {
-	autoscalingContext := context.NewAutoscalingContext(opts, predicateChecker, autoscalingKubeClients, cloudProvider, expanderStrategy, estimatorBuilder)
+
+	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
+	autoscalingContext := context.NewAutoscalingContext(opts, predicateChecker, autoscalingKubeClients, cloudProvider, expanderStrategy, estimatorBuilder, processorCallbacks)
 
 	clusterStateConfig := clusterstate.ClusterStateRegistryConfig{
 		MaxTotalUnreadyPercentage: opts.MaxTotalUnreadyPercentage,
@@ -100,6 +121,7 @@ func NewStaticAutoscaler(
 		lastScaleDownFailTime:   time.Now(),
 		scaleDown:               scaleDown,
 		processors:              processors,
+		processorCallbacks:      processorCallbacks,
 		clusterStateRegistry:    clusterStateRegistry,
 		nodeInfoCache:           make(map[string]*schedulernodeinfo.NodeInfo),
 	}
@@ -128,6 +150,7 @@ func (a *StaticAutoscaler) cleanUpIfRequired() {
 // RunOnce iterates over node groups and scales them up/down if necessary
 func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError {
 	a.cleanUpIfRequired()
+	a.processorCallbacks.reset()
 
 	unschedulablePodLister := a.UnschedulablePodLister()
 	scheduledPodLister := a.ScheduledPodLister()
@@ -246,69 +269,35 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 
 	metrics.UpdateLastTime(metrics.Autoscaling, time.Now())
 
-	allUnschedulablePods, err := unschedulablePodLister.List()
+	unschedulablePods, err := unschedulablePodLister.List()
 	if err != nil {
 		klog.Errorf("Failed to list unscheduled pods: %v", err)
 		return errors.ToAutoscalerError(errors.ApiCallError, err)
 	}
-	metrics.UpdateUnschedulablePodsCount(len(allUnschedulablePods))
+	metrics.UpdateUnschedulablePodsCount(len(unschedulablePods))
 
-	allScheduled, err := scheduledPodLister.List()
+	originalScheduledPods, err := scheduledPodLister.List()
 	if err != nil {
 		klog.Errorf("Failed to list scheduled pods: %v", err)
 		return errors.ToAutoscalerError(errors.ApiCallError, err)
 	}
 
-	allUnschedulablePods, allScheduled, err = a.processors.PodListProcessor.Process(a.AutoscalingContext, allUnschedulablePods, allScheduled, allNodes)
-	if err != nil {
-		klog.Errorf("Failed to process pod list: %v", err)
-		return errors.ToAutoscalerError(errors.InternalError, err)
-	}
+	// scheduledPods will be mutated over this method. We keep original list of pods on originalScheduledPods.
+	scheduledPods := append([]*apiv1.Pod{}, originalScheduledPods...)
 
-	ConfigurePredicateCheckerForLoop(allUnschedulablePods, allScheduled, a.PredicateChecker)
+	ConfigurePredicateCheckerForLoop(unschedulablePods, scheduledPods, a.PredicateChecker)
 
-	// We need to check whether pods marked as unschedulable are actually unschedulable.
-	// It's likely we added a new node and the scheduler just haven't managed to put the
-	// pod on in yet. In this situation we don't want to trigger another scale-up.
-	//
-	// It's also important to prevent uncontrollable cluster growth if CA's simulated
-	// scheduler differs in opinion with real scheduler. Example of such situation:
-	// - CA and Scheduler has slightly different configuration
-	// - Scheduler can't schedule a pod and marks it as unschedulable
-	// - CA added a node which should help the pod
-	// - Scheduler doesn't schedule the pod on the new node
-	//   because according to it logic it doesn't fit there
-	// - CA see the pod is still unschedulable, so it adds another node to help it
-	//
-	// With the check enabled the last point won't happen because CA will ignore a pod
-	// which is supposed to schedule on an existing node.
-	scaleDownForbidden := false
+	unschedulablePods = tpu.ClearTPURequests(unschedulablePods)
 
-	unschedulablePodsWithoutTPUs := tpu.ClearTPURequests(allUnschedulablePods)
-
+	// todo: move split and append below to separate PodListProcessor
 	// Some unschedulable pods can be waiting for lower priority pods preemption so they have nominated node to run.
 	// Such pods don't require scale up but should be considered during scale down.
-	unschedulablePods, unschedulableWaitingForLowerPriorityPreemption := filterOutExpendableAndSplit(unschedulablePodsWithoutTPUs, a.ExpendablePodsPriorityCutoff)
+	unschedulablePods, unschedulableWaitingForLowerPriorityPreemption := filterOutExpendableAndSplit(unschedulablePods, a.ExpendablePodsPriorityCutoff)
 
-	klog.V(4).Infof("Filtering out schedulables")
-	filterOutSchedulableStart := time.Now()
-	var unschedulablePodsToHelp []*apiv1.Pod
-	if a.FilterOutSchedulablePodsUsesPacking {
-		unschedulablePodsToHelp = filterOutSchedulableByPacking(unschedulablePods, readyNodes, allScheduled,
-			unschedulableWaitingForLowerPriorityPreemption, a.PredicateChecker, a.ExpendablePodsPriorityCutoff)
-	} else {
-		unschedulablePodsToHelp = filterOutSchedulableSimple(unschedulablePods, readyNodes, allScheduled,
-			unschedulableWaitingForLowerPriorityPreemption, a.PredicateChecker, a.ExpendablePodsPriorityCutoff)
-	}
+	// we tread pods with nominated node-name as scheduled for sake of scale-up considerations
+	scheduledPods = append(scheduledPods, unschedulableWaitingForLowerPriorityPreemption...)
 
-	metrics.UpdateDurationFromStart(metrics.FilterOutSchedulable, filterOutSchedulableStart)
-
-	if len(unschedulablePodsToHelp) != len(unschedulablePods) {
-		klog.V(2).Info("Schedulable pods present")
-		scaleDownForbidden = true
-	} else {
-		klog.V(4).Info("No schedulable pods")
-	}
+	unschedulablePodsToHelp, scheduledPods, err := a.processors.PodListProcessor.Process(a.AutoscalingContext, unschedulablePods, scheduledPods, allNodes, readyNodes)
 
 	// finally, filter out pods that are too "young" to safely be considered for a scale-up (delay is configurable)
 	unschedulablePodsToHelp = a.filterOutYoungPods(unschedulablePodsToHelp, currentTime)
@@ -324,7 +313,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		// is more pods to come. In theory we could check the newest pod time but then if pod were created
 		// slowly but at the pace of 1 every 2 seconds then no scale up would be triggered for long time.
 		// We also want to skip a real scale down (just like if the pods were handled).
-		scaleDownForbidden = true
+		a.processorCallbacks.DisableScaleDownForLoop()
 		scaleUpStatus.Result = status.ScaleUpInCooldown
 		klog.V(1).Info("Unschedulable pods are very new, waiting one iteration for more")
 	} else {
@@ -367,7 +356,9 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		scaleDown.CleanUp(currentTime)
 		potentiallyUnneeded := getPotentiallyUnneededNodes(autoscalingContext, allNodes)
 
-		typedErr := scaleDown.UpdateUnneededNodes(allNodes, potentiallyUnneeded, append(allScheduled, unschedulableWaitingForLowerPriorityPreemption...), currentTime, pdbs)
+		// We use scheduledPods (not originalScheduledPods) here, so artificial scheduled pods introduced by processors
+		// (e.g unscheduled pods with nominated node name) can block scaledown of given node.
+		typedErr := scaleDown.UpdateUnneededNodes(allNodes, potentiallyUnneeded, scheduledPods, currentTime, pdbs)
 		if typedErr != nil {
 			scaleDownStatus.Result = status.ScaleDownError
 			klog.Errorf("Failed to scale down: %v", typedErr)
@@ -382,7 +373,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 			}
 		}
 
-		scaleDownInCooldown := scaleDownForbidden ||
+		scaleDownInCooldown := a.processorCallbacks.disableScaleDownForLoop ||
 			a.lastScaleUpTime.Add(a.ScaleDownDelayAfterAdd).After(currentTime) ||
 			a.lastScaleDownFailTime.Add(a.ScaleDownDelayAfterFailure).After(currentTime) ||
 			a.lastScaleDownDeleteTime.Add(a.ScaleDownDelayAfterDelete).After(currentTime)
@@ -392,7 +383,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		klog.V(4).Infof("Scale down status: unneededOnly=%v lastScaleUpTime=%s "+
 			"lastScaleDownDeleteTime=%v lastScaleDownFailTime=%s scaleDownForbidden=%v isDeleteInProgress=%v",
 			calculateUnneededOnly, a.lastScaleUpTime, a.lastScaleDownDeleteTime, a.lastScaleDownFailTime,
-			scaleDownForbidden, scaleDown.nodeDeleteStatus.IsDeleteInProgress())
+			a.processorCallbacks.disableScaleDownForLoop, scaleDown.nodeDeleteStatus.IsDeleteInProgress())
 
 		if scaleDownInCooldown {
 			scaleDownStatus.Result = status.ScaleDownInCooldown
@@ -407,7 +398,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 
 			scaleDownStart := time.Now()
 			metrics.UpdateLastTime(metrics.ScaleDown, scaleDownStart)
-			scaleDownStatus, typedErr := scaleDown.TryToScaleDown(allNodes, allScheduled, pdbs, currentTime)
+			scaleDownStatus, typedErr := scaleDown.TryToScaleDown(allNodes, originalScheduledPods, pdbs, currentTime)
 			metrics.UpdateDurationFromStart(metrics.ScaleDown, scaleDownStart)
 
 			if scaleDownStatus.Result == status.ScaleDownNodeDeleted {
