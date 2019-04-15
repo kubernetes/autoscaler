@@ -269,26 +269,35 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 
 	metrics.UpdateLastTime(metrics.Autoscaling, time.Now())
 
-	allUnschedulablePods, err := unschedulablePodLister.List()
+	unschedulablePods, err := unschedulablePodLister.List()
 	if err != nil {
 		klog.Errorf("Failed to list unscheduled pods: %v", err)
 		return errors.ToAutoscalerError(errors.ApiCallError, err)
 	}
-	metrics.UpdateUnschedulablePodsCount(len(allUnschedulablePods))
+	metrics.UpdateUnschedulablePodsCount(len(unschedulablePods))
 
-	allScheduledPods, err := scheduledPodLister.List()
+	originalScheduledPods, err := scheduledPodLister.List()
 	if err != nil {
 		klog.Errorf("Failed to list scheduled pods: %v", err)
 		return errors.ToAutoscalerError(errors.ApiCallError, err)
 	}
 
-	ConfigurePredicateCheckerForLoop(allUnschedulablePods, allScheduledPods, a.PredicateChecker)
+	// scheduledPods will be mutated over this method. We keep original list of pods on originalScheduledPods.
+	scheduledPods := append([]*apiv1.Pod{}, originalScheduledPods...)
 
-	unschedulablePodsWithoutTPUs := tpu.ClearTPURequests(allUnschedulablePods)
+	ConfigurePredicateCheckerForLoop(unschedulablePods, scheduledPods, a.PredicateChecker)
 
-	// todo: this is also computed in filterOutSchedulablePodListProcessor; avoid that.
-	_, unschedulableWaitingForLowerPriorityPreemption := filterOutExpendableAndSplit(unschedulablePodsWithoutTPUs, a.ExpendablePodsPriorityCutoff)
-	unschedulablePodsToHelp, allScheduledPods, err := a.processors.PodListProcessor.Process(a.AutoscalingContext, unschedulablePodsWithoutTPUs, allScheduledPods, allNodes, readyNodes)
+	unschedulablePods = tpu.ClearTPURequests(unschedulablePods)
+
+	// todo: move split and append below to separate PodListProcessor
+	// Some unschedulable pods can be waiting for lower priority pods preemption so they have nominated node to run.
+	// Such pods don't require scale up but should be considered during scale down.
+	unschedulablePods, unschedulableWaitingForLowerPriorityPreemption := filterOutExpendableAndSplit(unschedulablePods, a.ExpendablePodsPriorityCutoff)
+
+	// we tread pods with nominated node-name as scheduled for sake of scale-up considerations
+	scheduledPods = append(scheduledPods, unschedulableWaitingForLowerPriorityPreemption...)
+
+	unschedulablePodsToHelp, scheduledPods, err := a.processors.PodListProcessor.Process(a.AutoscalingContext, unschedulablePods, scheduledPods, allNodes, readyNodes)
 
 	// finally, filter out pods that are too "young" to safely be considered for a scale-up (delay is configurable)
 	unschedulablePodsToHelp = a.filterOutYoungPods(unschedulablePodsToHelp, currentTime)
@@ -347,7 +356,9 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		scaleDown.CleanUp(currentTime)
 		potentiallyUnneeded := getPotentiallyUnneededNodes(autoscalingContext, allNodes)
 
-		typedErr := scaleDown.UpdateUnneededNodes(allNodes, potentiallyUnneeded, append(allScheduledPods, unschedulableWaitingForLowerPriorityPreemption...), currentTime, pdbs)
+		// We use scheduledPods (not originalScheduledPods) here, so artificial scheduled pods introduced by processors
+		// (e.g unscheduled pods with nominated node name) can block scaledown of given node.
+		typedErr := scaleDown.UpdateUnneededNodes(allNodes, potentiallyUnneeded, scheduledPods, currentTime, pdbs)
 		if typedErr != nil {
 			scaleDownStatus.Result = status.ScaleDownError
 			klog.Errorf("Failed to scale down: %v", typedErr)
@@ -387,7 +398,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 
 			scaleDownStart := time.Now()
 			metrics.UpdateLastTime(metrics.ScaleDown, scaleDownStart)
-			scaleDownStatus, typedErr := scaleDown.TryToScaleDown(allNodes, allScheduledPods, pdbs, currentTime)
+			scaleDownStatus, typedErr := scaleDown.TryToScaleDown(allNodes, originalScheduledPods, pdbs, currentTime)
 			metrics.UpdateDurationFromStart(metrics.ScaleDown, scaleDownStart)
 
 			if scaleDownStatus.Result == status.ScaleDownNodeDeleted {
