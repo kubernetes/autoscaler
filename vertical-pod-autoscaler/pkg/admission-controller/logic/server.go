@@ -27,6 +27,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/api/admission/v1beta1"
 	"k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
 	metrics_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/admission"
@@ -74,42 +75,12 @@ func (s *AdmissionServer) getPatchesForPodResourceRequest(raw []byte, namespace 
 	patches := []patchRecord{}
 	updatesAnnotation := []string{}
 	for i, containerResources := range containersResources {
-
-		// Add resources empty object if missing
-		if pod.Spec.Containers[i].Resources.Limits == nil &&
-			pod.Spec.Containers[i].Resources.Requests == nil {
-			patches = append(patches, patchRecord{
-				Op:    "add",
-				Path:  fmt.Sprintf("/spec/containers/%d/resources", i),
-				Value: v1.ResourceRequirements{},
-			})
-		}
-
-		// Add request empty map if missing
-		if pod.Spec.Containers[i].Resources.Requests == nil {
-			patches = append(patches, patchRecord{
-				Op:    "add",
-				Path:  fmt.Sprintf("/spec/containers/%d/resources/requests", i),
-				Value: v1.ResourceList{}})
-		}
-
-		annotations, found := annotationsPerContainer[pod.Spec.Containers[i].Name]
-		if !found {
-			annotations = make([]string, 0)
-		}
-		for resource, request := range containerResources.Requests {
-			// Set request
-			patches = append(patches, patchRecord{
-				Op:    "add",
-				Path:  fmt.Sprintf("/spec/containers/%d/resources/requests/%s", i, resource),
-				Value: request.String()})
-			annotations = append(annotations, fmt.Sprintf("%s request", resource))
-		}
-
-		updatesAnnotation = append(updatesAnnotation, fmt.Sprintf("container %d: ", i)+strings.Join(annotations, ", "))
+		newPatches, newUpdatesAnnotation := s.getContainerPatch(pod, i, "requests", annotationsPerContainer, containerResources)
+		patches = append(patches, newPatches...)
+		updatesAnnotation = append(updatesAnnotation, newUpdatesAnnotation)
 	}
 	if len(updatesAnnotation) > 0 {
-		vpaAnnotationValue := fmt.Sprintf("Pod resources updated by %s: ", vpaName) + strings.Join(updatesAnnotation, "; ")
+		vpaAnnotationValue := fmt.Sprintf("Pod resources updated by %s: %s", vpaName, strings.Join(updatesAnnotation, "; "))
 		if pod.Annotations == nil {
 			patches = append(patches, patchRecord{
 				Op:    "add",
@@ -123,6 +94,53 @@ func (s *AdmissionServer) getPatchesForPodResourceRequest(raw []byte, namespace 
 		}
 	}
 	return patches, nil
+}
+
+func getPatchInitializingEmptyResources(i int) patchRecord {
+	return patchRecord{
+		Op:    "add",
+		Path:  fmt.Sprintf("/spec/containers/%d/resources", i),
+		Value: v1.ResourceRequirements{},
+	}
+}
+
+func getPatchInitializingEmptyResourcesSubfield(i int, kind string) patchRecord {
+	return patchRecord{
+		Op:    "add",
+		Path:  fmt.Sprintf("/spec/containers/%d/resources/%s", i, kind),
+		Value: v1.ResourceList{},
+	}
+}
+
+func getAddResourceRequirementValuePatch(i int, kind string, resource v1.ResourceName, quantity resource.Quantity) patchRecord {
+	return patchRecord{
+		Op:    "add",
+		Path:  fmt.Sprintf("/spec/containers/%d/resources/%s/%s", i, kind, resource),
+		Value: quantity.String()}
+}
+
+func (s *AdmissionServer) getContainerPatch(pod v1.Pod, i int, patchKind string, annotationsPerContainer vpa_api_util.ContainerToAnnotationsMap, containerResources ContainerResources) ([]patchRecord, string) {
+	var patches []patchRecord
+	// Add empty resources object if missing
+	if pod.Spec.Containers[i].Resources.Limits == nil &&
+		pod.Spec.Containers[i].Resources.Requests == nil {
+		patches = append(patches, getPatchInitializingEmptyResources(i))
+	}
+	// Add empty resources requests object if missing
+	if pod.Spec.Containers[i].Resources.Requests == nil {
+		patches = append(patches, getPatchInitializingEmptyResourcesSubfield(i, "requests"))
+	}
+	annotations, found := annotationsPerContainer[pod.Spec.Containers[i].Name]
+	if !found {
+		annotations = make([]string, 0)
+	}
+	for resource, request := range containerResources.Requests {
+		// Set request
+		patches = append(patches, getAddResourceRequirementValuePatch(i, "requests", resource, request))
+		annotations = append(annotations, fmt.Sprintf("%s request", resource))
+	}
+	updatesAnnotation := fmt.Sprintf("container %d: ", i) + strings.Join(annotations, ", ")
+	return patches, updatesAnnotation
 }
 
 func parseVPA(raw []byte) (*vpa_types.VerticalPodAutoscaler, error) {
