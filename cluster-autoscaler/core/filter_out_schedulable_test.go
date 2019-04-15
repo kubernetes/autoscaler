@@ -82,27 +82,20 @@ func TestFilterOutSchedulableByPacking(t *testing.T) {
 
 	predicateChecker := simulator.NewTestPredicateChecker()
 
-	res := filterOutSchedulableByPacking(unschedulablePods, []*apiv1.Node{node}, []*apiv1.Pod{scheduledPod1, scheduledPod3}, []*apiv1.Pod{}, predicateChecker, 10)
+	res := filterOutSchedulableByPacking(unschedulablePods, []*apiv1.Node{node}, []*apiv1.Pod{scheduledPod1, scheduledPod3}, predicateChecker, 10)
 	assert.Equal(t, 3, len(res))
 	assert.Equal(t, p2_1, res[0])
 	assert.Equal(t, p2_2, res[1])
 	assert.Equal(t, p3_2, res[2])
 
-	res2 := filterOutSchedulableByPacking(unschedulablePods, []*apiv1.Node{node}, []*apiv1.Pod{scheduledPod1, scheduledPod2, scheduledPod3}, []*apiv1.Pod{}, predicateChecker, 10)
+	res2 := filterOutSchedulableByPacking(unschedulablePods, []*apiv1.Node{node}, []*apiv1.Pod{scheduledPod1, scheduledPod2, scheduledPod3}, predicateChecker, 10)
 	assert.Equal(t, 4, len(res2))
 	assert.Equal(t, p1, res2[0])
 	assert.Equal(t, p2_1, res2[1])
 	assert.Equal(t, p2_2, res2[2])
 	assert.Equal(t, p3_2, res2[3])
 
-	res3 := filterOutSchedulableByPacking(unschedulablePods, []*apiv1.Node{node}, []*apiv1.Pod{scheduledPod1, scheduledPod3}, []*apiv1.Pod{podWaitingForPreemption}, predicateChecker, 10)
-	assert.Equal(t, 4, len(res3))
-	assert.Equal(t, p1, res3[0])
-	assert.Equal(t, p2_1, res3[1])
-	assert.Equal(t, p2_2, res3[2])
-	assert.Equal(t, p3_2, res3[3])
-
-	res4 := filterOutSchedulableByPacking(append(unschedulablePods, p4), []*apiv1.Node{node}, []*apiv1.Pod{scheduledPod1, scheduledPod3}, []*apiv1.Pod{}, predicateChecker, 10)
+	res4 := filterOutSchedulableByPacking(append(unschedulablePods, p4), []*apiv1.Node{node}, []*apiv1.Pod{scheduledPod1, scheduledPod3}, predicateChecker, 10)
 	assert.Equal(t, 5, len(res4))
 	assert.Equal(t, p1, res4[0])
 	assert.Equal(t, p2_1, res4[1])
@@ -160,20 +153,15 @@ func TestFilterOutSchedulableSimple(t *testing.T) {
 
 	predicateChecker := simulator.NewTestPredicateChecker()
 
-	res := filterOutSchedulableSimple(unschedulablePods, []*apiv1.Node{node}, []*apiv1.Pod{scheduledPod1, scheduledPod3}, []*apiv1.Pod{}, predicateChecker, 10)
+	res := filterOutSchedulableSimple(unschedulablePods, []*apiv1.Node{node}, []*apiv1.Pod{scheduledPod1, scheduledPod3}, predicateChecker, 10)
 	assert.Equal(t, 2, len(res))
 	assert.Equal(t, p2_1, res[0])
 	assert.Equal(t, p2_2, res[1])
 
-	res2 := filterOutSchedulableSimple(unschedulablePods, []*apiv1.Node{node}, []*apiv1.Pod{scheduledPod1, scheduledPod2, scheduledPod3}, []*apiv1.Pod{}, predicateChecker, 10)
+	res2 := filterOutSchedulableSimple(unschedulablePods, []*apiv1.Node{node}, []*apiv1.Pod{scheduledPod1, scheduledPod2, scheduledPod3}, predicateChecker, 10)
 	assert.Equal(t, 3, len(res2))
 	assert.Equal(t, p1, res2[0])
 	assert.Equal(t, p2_1, res2[1])
 	assert.Equal(t, p2_2, res2[2])
 
-	res3 := filterOutSchedulableSimple(unschedulablePods, []*apiv1.Node{node}, []*apiv1.Pod{scheduledPod1, scheduledPod3}, []*apiv1.Pod{podWaitingForPreemption}, predicateChecker, 10)
-	assert.Equal(t, 3, len(res3))
-	assert.Equal(t, p1, res3[0])
-	assert.Equal(t, p2_1, res3[1])
-	assert.Equal(t, p2_2, res3[2])
 }
