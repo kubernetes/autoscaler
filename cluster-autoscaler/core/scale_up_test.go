@@ -28,7 +28,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
-	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
@@ -404,7 +403,7 @@ func simpleScaleUpTest(t *testing.T, config *scaleTestConfig) {
 	assert.NotNil(t, provider)
 
 	// Create context with non-random expander strategy.
-	context := NewScaleTestAutoscalingContext(config.options, &fake.Clientset{}, listers, provider)
+	context := NewScaleTestAutoscalingContext(config.options, &fake.Clientset{}, listers, provider, nil)
 	expander := assertingStrategy{
 		initialNodeConfigs:     config.nodes,
 		expectedScaleUpOptions: config.expectedScaleUpOptions,
@@ -423,7 +422,7 @@ func simpleScaleUpTest(t *testing.T, config *scaleTestConfig) {
 		extraPods[i] = pod
 	}
 
-	processors := ca_processors.TestProcessors()
+	processors := NewTestProcessors()
 
 	scaleUpStatus, err := ScaleUp(&context, processors, clusterState, extraPods, nodes, []*appsv1.DaemonSet{}, nodeInfos)
 	processors.ScaleUpStatusProcessor.Process(&context, scaleUpStatus)
@@ -497,7 +496,7 @@ func TestScaleUpNodeComingNoScale(t *testing.T) {
 		MaxCoresTotal:  config.DefaultMaxClusterCores,
 		MaxMemoryTotal: config.DefaultMaxClusterMemory,
 	}
-	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider)
+	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil)
 
 	nodes := []*apiv1.Node{n1, n2}
 	nodeInfos, _ := getNodeInfosForGroups(nodes, nil, provider, listers, []*appsv1.DaemonSet{}, context.PredicateChecker)
@@ -511,7 +510,7 @@ func TestScaleUpNodeComingNoScale(t *testing.T) {
 
 	p3 := BuildTestPod("p-new", 550, 0)
 
-	processors := ca_processors.TestProcessors()
+	processors := NewTestProcessors()
 
 	scaleUpStatus, err := ScaleUp(&context, processors, clusterState, []*apiv1.Pod{p3}, nodes, []*appsv1.DaemonSet{}, nodeInfos)
 	assert.NoError(t, err)
@@ -543,7 +542,7 @@ func TestScaleUpNodeComingHasScale(t *testing.T) {
 	provider.AddNode("ng1", n1)
 	provider.AddNode("ng2", n2)
 
-	context := NewScaleTestAutoscalingContext(defaultOptions, &fake.Clientset{}, listers, provider)
+	context := NewScaleTestAutoscalingContext(defaultOptions, &fake.Clientset{}, listers, provider, nil)
 
 	nodes := []*apiv1.Node{n1, n2}
 	nodeInfos, _ := getNodeInfosForGroups(nodes, nil, provider, listers, []*appsv1.DaemonSet{}, context.PredicateChecker)
@@ -560,7 +559,7 @@ func TestScaleUpNodeComingHasScale(t *testing.T) {
 	p3 := BuildTestPod("p-new", 550, 0)
 	p4 := BuildTestPod("p-new", 550, 0)
 
-	processors := ca_processors.TestProcessors()
+	processors := NewTestProcessors()
 	scaleUpStatus, err := ScaleUp(&context, processors, clusterState, []*apiv1.Pod{p3, p4}, nodes, []*appsv1.DaemonSet{}, nodeInfos)
 
 	assert.NoError(t, err)
@@ -597,7 +596,7 @@ func TestScaleUpUnhealthy(t *testing.T) {
 		MaxCoresTotal:  config.DefaultMaxClusterCores,
 		MaxMemoryTotal: config.DefaultMaxClusterMemory,
 	}
-	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider)
+	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil)
 
 	nodes := []*apiv1.Node{n1, n2}
 	nodeInfos, _ := getNodeInfosForGroups(nodes, nil, provider, listers, []*appsv1.DaemonSet{}, context.PredicateChecker)
@@ -605,7 +604,7 @@ func TestScaleUpUnhealthy(t *testing.T) {
 	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
 	p3 := BuildTestPod("p-new", 550, 0)
 
-	processors := ca_processors.TestProcessors()
+	processors := NewTestProcessors()
 	scaleUpStatus, err := ScaleUp(&context, processors, clusterState, []*apiv1.Pod{p3}, nodes, []*appsv1.DaemonSet{}, nodeInfos)
 
 	assert.NoError(t, err)
@@ -636,7 +635,7 @@ func TestScaleUpNoHelp(t *testing.T) {
 		MaxCoresTotal:  config.DefaultMaxClusterCores,
 		MaxMemoryTotal: config.DefaultMaxClusterMemory,
 	}
-	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider)
+	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil)
 
 	nodes := []*apiv1.Node{n1}
 	nodeInfos, _ := getNodeInfosForGroups(nodes, nil, provider, listers, []*appsv1.DaemonSet{}, context.PredicateChecker)
@@ -644,7 +643,7 @@ func TestScaleUpNoHelp(t *testing.T) {
 	clusterState.UpdateNodes(nodes, nodeInfos, time.Now())
 	p3 := BuildTestPod("p-new", 500, 0)
 
-	processors := ca_processors.TestProcessors()
+	processors := NewTestProcessors()
 	scaleUpStatus, err := ScaleUp(&context, processors, clusterState, []*apiv1.Pod{p3}, nodes, []*appsv1.DaemonSet{}, nodeInfos)
 	processors.ScaleUpStatusProcessor.Process(&context, scaleUpStatus)
 
@@ -701,7 +700,7 @@ func TestScaleUpBalanceGroups(t *testing.T) {
 		MaxCoresTotal:            config.DefaultMaxClusterCores,
 		MaxMemoryTotal:           config.DefaultMaxClusterMemory,
 	}
-	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider)
+	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, listers, provider, nil)
 
 	nodeInfos, _ := getNodeInfosForGroups(nodes, nil, provider, listers, []*appsv1.DaemonSet{}, context.PredicateChecker)
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
@@ -712,7 +711,7 @@ func TestScaleUpBalanceGroups(t *testing.T) {
 		pods = append(pods, BuildTestPod(fmt.Sprintf("test-pod-%v", i), 80, 0))
 	}
 
-	processors := ca_processors.TestProcessors()
+	processors := NewTestProcessors()
 	scaleUpStatus, typedErr := ScaleUp(&context, processors, clusterState, pods, nodes, []*appsv1.DaemonSet{}, nodeInfos)
 
 	assert.NoError(t, typedErr)
@@ -759,11 +758,11 @@ func TestScaleUpAutoprovisionedNodeGroup(t *testing.T) {
 		NodeAutoprovisioningEnabled:      true,
 		MaxAutoprovisionedNodeGroupCount: 10,
 	}
-	context := NewScaleTestAutoscalingContext(options, fakeClient, nil, provider)
+	context := NewScaleTestAutoscalingContext(options, fakeClient, nil, provider, nil)
 
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
 
-	processors := ca_processors.TestProcessors()
+	processors := NewTestProcessors()
 	processors.NodeGroupListProcessor = &mockAutoprovisioningNodeGroupListProcessor{t}
 	processors.NodeGroupManager = &mockAutoprovisioningNodeGroupManager{t}
 
