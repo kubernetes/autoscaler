@@ -42,24 +42,26 @@ Fill the values of cluster-autoscaler-azure secret in [cluster-autoscaler-vmss.y
 
 - ClientID: `<base64-encoded-client-id>`
 - ClientSecret: `<base64-encoded-client-secret>`
-- ResourceGroup: `<base64-encoded-resource-group>`
+- ResourceGroup: `<base64-encoded-resource-group>` 
 - SubscriptionID: `<base64-encode-subscription-id>`
 - TenantID: `<base64-encoded-tenant-id>`
 
 > Note that all data above should be encoded with base64.
 
-And fill the node groups in container command by `--nodes`, e.g.
+And fill the vmss name in container command by `--nodes`, e.g.
 
 ```yaml
         - --nodes=1:10:vmss1
 ```
 
-or multiple node groups:
+or multiple vm scale sets:
 
 ```yaml
         - --nodes=1:10:vmss1
         - --nodes=1:10:vmss2
 ```
+
+Some aks notes: ResourceGroup will be the rg created by aks (usually MC_<cluster>_<region>) ratehr than the group the aks resource is in. The vm scale set names will be aks-<nodepool>-<hash>-vmss. Where the function that computes that hash is under flux
 
 Then deploy cluster-autoscaler by running
 
