@@ -55,20 +55,6 @@ func DefaultProcessors() *AutoscalingProcessors {
 	}
 }
 
-// TestProcessors returns a set of simple processors for use in tests.
-func TestProcessors() *AutoscalingProcessors {
-	return &AutoscalingProcessors{
-		PodListProcessor:       &pods.NoOpPodListProcessor{},
-		NodeGroupListProcessor: &nodegroups.NoOpNodeGroupListProcessor{},
-		NodeGroupSetProcessor:  &nodegroupset.BalancingNodeGroupSetProcessor{},
-		// TODO(bskiba): change scale up test so that this can be a NoOpProcessor
-		ScaleUpStatusProcessor:     &status.EventingScaleUpStatusProcessor{},
-		ScaleDownStatusProcessor:   &status.NoOpScaleDownStatusProcessor{},
-		AutoscalingStatusProcessor: &status.NoOpAutoscalingStatusProcessor{},
-		NodeGroupManager:           nodegroups.NewDefaultNodeGroupManager(),
-	}
-}
-
 // CleanUp cleans up the processors' internal structures.
 func (ap *AutoscalingProcessors) CleanUp() {
 	ap.PodListProcessor.CleanUp()
