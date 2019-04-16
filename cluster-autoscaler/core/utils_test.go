@@ -656,6 +656,12 @@ func TestSanitizeTaints(t *testing.T) {
 		Value:  "1",
 		Effect: apiv1.TaintEffectNoSchedule,
 	})
+	taints = append(taints, apiv1.Taint{
+		Key:    "node.kubernetes.io/memory-pressure",
+		Value:  "1",
+		Effect: apiv1.TaintEffectNoSchedule,
+	})
+
 	oldNode.Spec.Taints = taints
 	node, err := sanitizeTemplateNode(oldNode, "bzium")
 	assert.NoError(t, err)
