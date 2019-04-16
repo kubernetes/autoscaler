@@ -42,6 +42,7 @@ const (
 var (
 	checkpointsWriteTimeout = flag.Duration("checkpoints-timeout", time.Minute, `Timeout for writing checkpoints since the start of the recommender's main loop`)
 	minCheckpointsPerRun    = flag.Int("min-checkpoints", 10, "Minimum number of checkpoints to write per recommender's main loop")
+	memorySaver             = flag.Bool("memory-saver", false, `If true, only track pods which have an associated VPA`)
 )
 
 // Recommender recommend resources for certain containers, based on utilization periodically got from metrics api.
@@ -197,6 +198,7 @@ func (r *recommender) RunOnce() {
 
 	r.GarbageCollect()
 	timer.ObserveStep("GarbageCollect")
+	klog.V(3).Infof("ClusterState is tracking %d aggregated container states", r.clusterState.StateMapSize())
 }
 
 // RecommenderFactory makes instances of Recommender.
@@ -237,7 +239,7 @@ func NewRecommender(config *rest.Config, checkpointsGCInterval time.Duration, us
 	clusterState := model.NewClusterState()
 	return RecommenderFactory{
 		ClusterState:           clusterState,
-		ClusterStateFeeder:     input.NewClusterStateFeeder(config, clusterState),
+		ClusterStateFeeder:     input.NewClusterStateFeeder(config, clusterState, *memorySaver),
 		CheckpointWriter:       checkpoint.NewCheckpointWriter(clusterState, vpa_clientset.NewForConfigOrDie(config).AutoscalingV1beta2()),
 		VpaClient:              vpa_clientset.NewForConfigOrDie(config).AutoscalingV1beta2(),
 		PodResourceRecommender: logic.CreatePodResourceRecommender(),
