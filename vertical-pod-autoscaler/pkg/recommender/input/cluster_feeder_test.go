@@ -26,6 +26,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/spec"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	target_mock "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/mock"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
@@ -156,5 +157,102 @@ func TestLegacySelector(t *testing.T) {
 
 		})
 	}
+}
 
+type testSpecClient struct {
+	pods []*spec.BasicPodSpec
+}
+
+func (c *testSpecClient) GetPodSpecs() ([]*spec.BasicPodSpec, error) {
+	return c.pods, nil
+}
+
+func makeTestSpecClient(podLabels []map[string]string) spec.SpecClient {
+	pods := make([]*spec.BasicPodSpec, len(podLabels))
+	for i, l := range podLabels {
+		pods[i] = &spec.BasicPodSpec{
+			ID:        model.PodID{Namespace: "default", PodName: fmt.Sprintf("pod-%d", i)},
+			PodLabels: l,
+		}
+	}
+	return &testSpecClient{
+		pods: pods,
+	}
+}
+
+func TestClusterStateFeeder_LoadPods(t *testing.T) {
+	for _, tc := range []struct {
+		Name              string
+		VPALabelSelectors []string
+		PodLabels         []map[string]string
+		TrackedPods       int
+	}{
+		{
+			Name:              "simple",
+			VPALabelSelectors: []string{"name=vpa-pod"},
+			PodLabels: []map[string]string{
+				{"name": "vpa-pod"},
+				{"type": "stateful"},
+			},
+			TrackedPods: 1,
+		},
+		{
+			Name:              "multiple",
+			VPALabelSelectors: []string{"name=vpa-pod,type=stateful"},
+			PodLabels: []map[string]string{
+				{"name": "vpa-pod", "type": "stateful"},
+				{"type": "stateful"},
+				{"name": "vpa-pod"},
+			},
+			TrackedPods: 1,
+		},
+		{
+			Name:              "no matches",
+			VPALabelSelectors: []string{"name=vpa-pod"},
+			PodLabels: []map[string]string{
+				{"name": "non-vpa-pod", "type": "stateful"},
+			},
+			TrackedPods: 0,
+		},
+		{
+			Name:              "set based",
+			VPALabelSelectors: []string{"environment in (staging, qa),name=vpa-pod"},
+			PodLabels: []map[string]string{
+				{"name": "vpa-pod", "environment": "staging"},
+				{"name": "vpa-pod", "environment": "production"},
+				{"name": "non-vpa-pod", "environment": "staging"},
+				{"name": "non-vpa-pod", "environment": "production"},
+			},
+			TrackedPods: 1,
+		},
+	} {
+		t.Run(tc.Name, func(t *testing.T) {
+			clusterState := model.NewClusterState()
+			for i, selector := range tc.VPALabelSelectors {
+				vpaLabel, err := labels.Parse(selector)
+				assert.NoError(t, err)
+				clusterState.Vpas = map[model.VpaID]*model.Vpa{
+					{VpaName: fmt.Sprintf("test-vpa-%d", i), Namespace: "default"}: {PodSelector: vpaLabel},
+				}
+			}
+
+			feeder := clusterStateFeeder{
+				specClient:     makeTestSpecClient(tc.PodLabels),
+				memorySaveMode: true,
+				clusterState:   clusterState,
+			}
+
+			feeder.LoadPods()
+			assert.Len(t, feeder.clusterState.Pods, tc.TrackedPods, "number of pods is not %d", tc.TrackedPods)
+
+			feeder = clusterStateFeeder{
+				specClient:     makeTestSpecClient(tc.PodLabels),
+				memorySaveMode: false,
+				clusterState:   clusterState,
+			}
+
+			feeder.LoadPods()
+			assert.Len(t, feeder.clusterState.Pods, len(tc.PodLabels), "number of pods is not %d", len(tc.PodLabels))
+		})
+	}
 }

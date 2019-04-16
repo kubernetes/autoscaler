@@ -35,7 +35,8 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/oom"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/spec"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
-	target "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
+	metrics_recommender "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/recommender"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
@@ -53,7 +54,6 @@ const (
 
 // ClusterStateFeeder can update state of ClusterState object.
 type ClusterStateFeeder interface {
-
 	// InitFromHistoryProvider loads historical pod spec into clusterState.
 	InitFromHistoryProvider(historyProvider history.HistoryProvider)
 
@@ -84,6 +84,7 @@ type ClusterStateFeederFactory struct {
 	OOMObserver           oom.Observer
 	LegacySelectorFetcher target.VpaTargetSelectorFetcher
 	SelectorFetcher       target.VpaTargetSelectorFetcher
+	MemorySaveMode        bool
 }
 
 // Make creates new ClusterStateFeeder with internal data providers, based on kube client.
@@ -98,12 +99,13 @@ func (m ClusterStateFeederFactory) Make() *clusterStateFeeder {
 		specClient:            spec.NewSpecClient(m.PodLister),
 		legacySelectorFetcher: m.LegacySelectorFetcher,
 		selectorFetcher:       m.SelectorFetcher,
+		memorySaveMode:        m.MemorySaveMode,
 	}
 }
 
 // NewClusterStateFeeder creates new ClusterStateFeeder with internal data providers, based on kube client config.
 // Deprecated; Use ClusterStateFeederFactory instead.
-func NewClusterStateFeeder(config *rest.Config, clusterState *model.ClusterState) ClusterStateFeeder {
+func NewClusterStateFeeder(config *rest.Config, clusterState *model.ClusterState, memorySave bool) ClusterStateFeeder {
 	kubeClient := kube_client.NewForConfigOrDie(config)
 	podLister, oomObserver := NewPodListerAndOOMObserver(kubeClient)
 	factory := informers.NewSharedInformerFactory(kubeClient, defaultResyncPeriod)
@@ -117,6 +119,7 @@ func NewClusterStateFeeder(config *rest.Config, clusterState *model.ClusterState
 		ClusterState:          clusterState,
 		LegacySelectorFetcher: target.NewBeta1TargetSelectorFetcher(config),
 		SelectorFetcher:       target.NewVpaTargetSelectorFetcher(config, kubeClient, factory),
+		MemorySaveMode:        memorySave,
 	}.Make()
 }
 
@@ -195,6 +198,7 @@ type clusterStateFeeder struct {
 	clusterState          *model.ClusterState
 	legacySelectorFetcher target.VpaTargetSelectorFetcher
 	selectorFetcher       target.VpaTargetSelectorFetcher
+	memorySaveMode        bool
 }
 
 func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider history.HistoryProvider) {
@@ -360,6 +364,9 @@ func (feeder *clusterStateFeeder) LoadPods() {
 		}
 	}
 	for _, pod := range pods {
+		if feeder.memorySaveMode && !feeder.matchesVPA(pod) {
+			continue
+		}
 		feeder.clusterState.AddOrUpdatePod(pod.ID, pod.PodLabels, pod.Phase)
 		for _, container := range pod.Containers {
 			feeder.clusterState.AddOrUpdateContainer(container.ID, container.Request)
@@ -386,7 +393,6 @@ func (feeder *clusterStateFeeder) LoadRealTimeMetrics() {
 		}
 	}
 	klog.V(3).Infof("ClusterSpec fed with #%v ContainerUsageSamples for #%v containers. Dropped #%v samples.", sampleCount, len(containersMetrics), droppedSampleCount)
-
 Loop:
 	for {
 		select {
@@ -397,6 +403,17 @@ Loop:
 			break Loop
 		}
 	}
+	metrics_recommender.RecordAggregateContainerStatesCount(feeder.clusterState.StateMapSize())
+}
+
+func (feeder *clusterStateFeeder) matchesVPA(pod *spec.BasicPodSpec) bool {
+	for vpaKey, vpa := range feeder.clusterState.Vpas {
+		podLabels := labels.Set(pod.PodLabels)
+		if vpaKey.Namespace == pod.ID.Namespace && vpa.PodSelector.Matches(podLabels) {
+			return true
+		}
+	}
+	return false
 }
 
 func newContainerUsageSamplesWithKey(metrics *metrics.ContainerMetricsSnapshot) []*model.ContainerUsageSampleWithKey {
