@@ -18,11 +18,13 @@ package input
 
 import (
 	"fmt"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/controller_fetcher"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/golang/mock/gomock"
+	"k8s.io/api/autoscaling/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
@@ -30,6 +32,15 @@ import (
 	target_mock "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/mock"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
+
+type fakeControllerFetcher struct {
+	key *controllerfetcher.ControllerKeyWithAPIVersion
+	err error
+}
+
+func (f *fakeControllerFetcher) FindTopLevel(controller *controllerfetcher.ControllerKeyWithAPIVersion) (*controllerfetcher.ControllerKeyWithAPIVersion, error) {
+	return f.key, f.err
+}
 
 func parseLabelSelector(selector string) labels.Selector {
 	labelSelector, _ := metav1.ParseToLabelSelector(selector)
@@ -42,14 +53,29 @@ var (
 	unsupportedConditionTextFromFetcher   = "Cannot read targetRef. Reason: targetRef not defined"
 	unsupportedConditionNoExtraText       = "Cannot read targetRef"
 	unsupportedConditionBothDefined       = "Both targetRef and label selector defined. Please remove label selector"
+	unsupportedConditionNoTargetRef       = "Cannot read targetRef"
+	unsupportedConditionMudaMudaMuda      = "Error checking if target is a top level controller: muda muda muda"
+	unsupportedTargetRefHasParent         = "The targetRef controller has a parent but it should point to a top-level controller"
+)
+
+const (
+	kind       = "dodokind"
+	name1      = "dotaro"
+	name2      = "doseph"
+	namespace  = "testNamespace"
+	apiVersion = "stardust"
 )
 
 func TestLegacySelector(t *testing.T) {
 
 	type testCase struct {
+		name                      string
 		legacySelector            labels.Selector
 		selector                  labels.Selector
 		fetchSelectorError        error
+		targetRef                 *v1.CrossVersionObjectReference
+		topLevelKey               *controllerfetcher.ControllerKeyWithAPIVersion
+		findTopLevelError         error
 		expectedSelector          labels.Selector
 		expectedConfigUnsupported *string
 		expectedConfigDeprecated  *string
@@ -57,6 +83,7 @@ func TestLegacySelector(t *testing.T) {
 
 	testCases := []testCase{
 		{
+			name:                      "no selector",
 			legacySelector:            nil,
 			selector:                  nil,
 			fetchSelectorError:        fmt.Errorf("targetRef not defined"),
@@ -65,6 +92,7 @@ func TestLegacySelector(t *testing.T) {
 			expectedConfigDeprecated:  nil,
 		},
 		{
+			name:                      "also no selector but no error",
 			legacySelector:            nil,
 			selector:                  nil,
 			fetchSelectorError:        nil,
@@ -73,6 +101,7 @@ func TestLegacySelector(t *testing.T) {
 			expectedConfigDeprecated:  nil,
 		},
 		{
+			name:                      "legacy selector no ref",
 			legacySelector:            parseLabelSelector("app = test"),
 			selector:                  nil,
 			fetchSelectorError:        fmt.Errorf("targetRef not defined"),
@@ -80,14 +109,29 @@ func TestLegacySelector(t *testing.T) {
 			expectedConfigUnsupported: &unsupportedConditionNoLongerSupported,
 			expectedConfigDeprecated:  nil,
 		}, {
+			name: "targetRef selector",
 			// the only valid option since v1beta1 removal
-			legacySelector:            nil,
-			selector:                  parseLabelSelector("app = test"),
-			fetchSelectorError:        nil,
+			legacySelector:     nil,
+			selector:           parseLabelSelector("app = test"),
+			fetchSelectorError: nil,
+			targetRef: &v1.CrossVersionObjectReference{
+				Kind:       kind,
+				Name:       name1,
+				APIVersion: apiVersion,
+			},
+			topLevelKey: &controllerfetcher.ControllerKeyWithAPIVersion{
+				ControllerKey: controllerfetcher.ControllerKey{
+					Kind:      kind,
+					Name:      name1,
+					Namespace: namespace,
+				},
+				ApiVersion: apiVersion,
+			},
 			expectedSelector:          parseLabelSelector("app = test"),
 			expectedConfigUnsupported: nil,
 			expectedConfigDeprecated:  nil,
 		}, {
+			name:                      "new and legacy selector",
 			legacySelector:            parseLabelSelector("app = test1"),
 			selector:                  parseLabelSelector("app = test2"),
 			fetchSelectorError:        nil,
@@ -95,15 +139,84 @@ func TestLegacySelector(t *testing.T) {
 			expectedConfigUnsupported: &unsupportedConditionBothDefined,
 			expectedConfigDeprecated:  nil,
 		},
+		{
+			name:               "can't decide if top-level-ref",
+			legacySelector:     nil,
+			selector:           nil,
+			fetchSelectorError: nil,
+			expectedSelector:   labels.Nothing(),
+			targetRef: &v1.CrossVersionObjectReference{
+				Kind:       kind,
+				Name:       name1,
+				APIVersion: apiVersion,
+			},
+			expectedConfigUnsupported: &unsupportedConditionNoTargetRef,
+		},
+		{
+			name:               "non-top-level targetRef",
+			legacySelector:     nil,
+			selector:           parseLabelSelector("app = test"),
+			fetchSelectorError: nil,
+			expectedSelector:   labels.Nothing(),
+			targetRef: &v1.CrossVersionObjectReference{
+				Kind:       kind,
+				Name:       name1,
+				APIVersion: apiVersion,
+			},
+			topLevelKey: &controllerfetcher.ControllerKeyWithAPIVersion{
+				ControllerKey: controllerfetcher.ControllerKey{
+					Kind:      kind,
+					Name:      name2,
+					Namespace: namespace,
+				},
+				ApiVersion: apiVersion,
+			},
+			expectedConfigUnsupported: &unsupportedTargetRefHasParent,
+		},
+		{
+			name:               "error checking if top-level-ref",
+			legacySelector:     nil,
+			selector:           parseLabelSelector("app = test"),
+			fetchSelectorError: nil,
+			expectedSelector:   labels.Nothing(),
+			targetRef: &v1.CrossVersionObjectReference{
+				Kind:       "doestar",
+				Name:       "doseph-doestar",
+				APIVersion: "taxonomy",
+			},
+			expectedConfigUnsupported: &unsupportedConditionMudaMudaMuda,
+			findTopLevelError:         fmt.Errorf("muda muda muda"),
+		},
+		{
+			name:               "top-level target ref",
+			legacySelector:     nil,
+			selector:           parseLabelSelector("app = test"),
+			fetchSelectorError: nil,
+			expectedSelector:   parseLabelSelector("app = test"),
+			targetRef: &v1.CrossVersionObjectReference{
+				Kind:       kind,
+				Name:       name1,
+				APIVersion: apiVersion,
+			},
+			topLevelKey: &controllerfetcher.ControllerKeyWithAPIVersion{
+				ControllerKey: controllerfetcher.ControllerKey{
+					Kind:      kind,
+					Name:      name1,
+					Namespace: namespace,
+				},
+				ApiVersion: apiVersion,
+			},
+			expectedConfigUnsupported: nil,
+		},
 	}
 
-	for i, tc := range testCases {
+	for _, tc := range testCases {
 
-		t.Run(fmt.Sprintf("test case number: %d", i), func(t *testing.T) {
+		t.Run(tc.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			vpa := test.VerticalPodAutoscaler().WithName("testVpa").WithContainer("container").WithNamespace("testNamespace").Get()
+			vpa := test.VerticalPodAutoscaler().WithName("testVpa").WithContainer("container").WithNamespace("testNamespace").WithTargetRef(tc.targetRef).Get()
 			vpaLister := &test.VerticalPodAutoscalerListerMock{}
 			vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpa}, nil)
 
@@ -117,6 +230,10 @@ func TestLegacySelector(t *testing.T) {
 				clusterState:          clusterState,
 				legacySelectorFetcher: legacyTargetSelectorFetcher,
 				selectorFetcher:       targetSelectorFetcher,
+				controllerFetcher: &fakeControllerFetcher{
+					key: tc.topLevelKey,
+					err: tc.findTopLevelError,
+				},
 			}
 
 			// legacyTargetSelectorFetcher is called twice:

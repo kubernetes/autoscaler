@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/golang/glog"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
@@ -30,6 +29,7 @@ import (
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1beta2"
 	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1beta2"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/controller_fetcher"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/history"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/metrics"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/oom"
@@ -84,6 +84,7 @@ type ClusterStateFeederFactory struct {
 	OOMObserver           oom.Observer
 	LegacySelectorFetcher target.VpaTargetSelectorFetcher
 	SelectorFetcher       target.VpaTargetSelectorFetcher
+	ControllerFetcher     controllerfetcher.ControllerFetcher
 }
 
 // Make creates new ClusterStateFeeder with internal data providers, based on kube client.
@@ -98,6 +99,7 @@ func (m ClusterStateFeederFactory) Make() *clusterStateFeeder {
 		specClient:            spec.NewSpecClient(m.PodLister),
 		legacySelectorFetcher: m.LegacySelectorFetcher,
 		selectorFetcher:       m.SelectorFetcher,
+		controllerFetcher:     m.ControllerFetcher,
 	}
 }
 
@@ -107,6 +109,7 @@ func NewClusterStateFeeder(config *rest.Config, clusterState *model.ClusterState
 	kubeClient := kube_client.NewForConfigOrDie(config)
 	podLister, oomObserver := NewPodListerAndOOMObserver(kubeClient)
 	factory := informers.NewSharedInformerFactory(kubeClient, defaultResyncPeriod)
+	controllerFetcher := controllerfetcher.NewControllerFetcher(config, kubeClient, factory)
 	return ClusterStateFeederFactory{
 		PodLister:             podLister,
 		OOMObserver:           oomObserver,
@@ -117,6 +120,7 @@ func NewClusterStateFeeder(config *rest.Config, clusterState *model.ClusterState
 		ClusterState:          clusterState,
 		LegacySelectorFetcher: target.NewBeta1TargetSelectorFetcher(config),
 		SelectorFetcher:       target.NewVpaTargetSelectorFetcher(config, kubeClient, factory),
+		ControllerFetcher:     controllerFetcher,
 	}.Make()
 }
 
@@ -195,6 +199,7 @@ type clusterStateFeeder struct {
 	clusterState          *model.ClusterState
 	legacySelectorFetcher target.VpaTargetSelectorFetcher
 	selectorFetcher       target.VpaTargetSelectorFetcher
+	controllerFetcher     controllerfetcher.ControllerFetcher
 }
 
 func (feeder *clusterStateFeeder) InitFromHistoryProvider(historyProvider history.HistoryProvider) {
@@ -315,7 +320,7 @@ func (feeder *clusterStateFeeder) LoadVPAs() {
 			VpaName:   vpaCRD.Name}
 
 		selector, conditions := feeder.getSelector(vpaCRD)
-		glog.Infof("Using selector %s for VPA %s/%s", selector.String(), vpaCRD.Namespace, vpaCRD.Name)
+		klog.Infof("Using selector %s for VPA %s/%s", selector.String(), vpaCRD.Namespace, vpaCRD.Name)
 
 		if feeder.clusterState.AddOrUpdateVpa(vpaCRD, selector) == nil {
 			// Successfully added VPA to the model.
@@ -422,19 +427,52 @@ type condition struct {
 	message       string
 }
 
+func (feeder *clusterStateFeeder) validateTargetRef(vpa *vpa_types.VerticalPodAutoscaler) (bool, condition) {
+	//
+	if vpa.Spec.TargetRef == nil {
+		return false, condition{}
+	}
+	k := controllerfetcher.ControllerKeyWithAPIVersion{
+		ControllerKey: controllerfetcher.ControllerKey{
+			Namespace: vpa.Namespace,
+			Kind:      vpa.Spec.TargetRef.Kind,
+			Name:      vpa.Spec.TargetRef.Name,
+		},
+		ApiVersion: vpa.Spec.TargetRef.APIVersion,
+	}
+	top, err := feeder.controllerFetcher.FindTopLevel(&k)
+	if err != nil {
+		return false, condition{conditionType: vpa_types.ConfigUnsupported, delete: false, message: fmt.Sprintf("Error checking if target is a top level controller: %s", err)}
+	}
+	if top == nil {
+		return false, condition{conditionType: vpa_types.ConfigUnsupported, delete: false, message: fmt.Sprintf("Unknown error during checking if target is a top level controller: %s", err)}
+	}
+	if *top != k {
+		return false, condition{conditionType: vpa_types.ConfigUnsupported, delete: false, message: "The targetRef controller has a parent but it should point to a top-level controller"}
+	}
+	return true, condition{}
+}
+
 func (feeder *clusterStateFeeder) getSelector(vpa *vpa_types.VerticalPodAutoscaler) (labels.Selector, []condition) {
 	legacySelector, fetchLegacyErr := feeder.legacySelectorFetcher.Fetch(vpa)
 	if fetchLegacyErr != nil {
-		glog.Errorf("Error while fetching legacy selector. Reason: %+v", fetchLegacyErr)
+		klog.Errorf("Error while fetching legacy selector. Reason: %+v", fetchLegacyErr)
 	}
 	selector, fetchErr := feeder.selectorFetcher.Fetch(vpa)
 	if fetchErr != nil {
-		glog.Errorf("Cannot get target selector from VPA's targetRef. Reason: %+v", fetchErr)
+		klog.Errorf("Cannot get target selector from VPA's targetRef. Reason: %+v", fetchErr)
 	}
 	if selector != nil {
 		if legacySelector != nil {
 			return labels.Nothing(), []condition{
 				{conditionType: vpa_types.ConfigUnsupported, delete: false, message: "Both targetRef and label selector defined. Please remove label selector"},
+				{conditionType: vpa_types.ConfigDeprecated, delete: true},
+			}
+		}
+		validTargetRef, unsupportedCondition := feeder.validateTargetRef(vpa)
+		if !validTargetRef {
+			return labels.Nothing(), []condition{
+				unsupportedCondition,
 				{conditionType: vpa_types.ConfigDeprecated, delete: true},
 			}
 		}

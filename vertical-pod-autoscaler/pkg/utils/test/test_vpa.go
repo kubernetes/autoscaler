@@ -19,6 +19,7 @@ package test
 import (
 	"time"
 
+	autoscaling "k8s.io/api/autoscaling/v1"
 	core "k8s.io/api/core/v1"
 	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
@@ -35,6 +36,7 @@ type VerticalPodAutoscalerBuilder interface {
 	WithMaxAllowed(cpu, memory string) VerticalPodAutoscalerBuilder
 	WithTarget(cpu, memory string) VerticalPodAutoscalerBuilder
 	WithLowerBound(cpu, memory string) VerticalPodAutoscalerBuilder
+	WithTargetRef(targetRef *autoscaling.CrossVersionObjectReference) VerticalPodAutoscalerBuilder
 	WithUpperBound(cpu, memory string) VerticalPodAutoscalerBuilder
 	AppendCondition(conditionType vpa_types.VerticalPodAutoscalerConditionType,
 		status core.ConditionStatus, reason, message string, lastTransitionTime time.Time) VerticalPodAutoscalerBuilder
@@ -60,6 +62,7 @@ type verticalPodAutoscalerBuilder struct {
 	maxAllowed        core.ResourceList
 	recommendation    RecommendationBuilder
 	conditions        []vpa_types.VerticalPodAutoscalerCondition
+	targetRef         *autoscaling.CrossVersionObjectReference
 }
 
 func (b *verticalPodAutoscalerBuilder) WithName(vpaName string) VerticalPodAutoscalerBuilder {
@@ -125,6 +128,12 @@ func (b *verticalPodAutoscalerBuilder) WithUpperBound(cpu, memory string) Vertic
 	return &c
 }
 
+func (b *verticalPodAutoscalerBuilder) WithTargetRef(targetRef *autoscaling.CrossVersionObjectReference) VerticalPodAutoscalerBuilder {
+	c := *b
+	c.targetRef = targetRef
+	return &c
+}
+
 func (b *verticalPodAutoscalerBuilder) AppendCondition(conditionType vpa_types.VerticalPodAutoscalerConditionType,
 	status core.ConditionStatus, reason, message string, lastTransitionTime time.Time) VerticalPodAutoscalerBuilder {
 	c := *b
@@ -156,6 +165,7 @@ func (b *verticalPodAutoscalerBuilder) Get() *vpa_types.VerticalPodAutoscaler {
 		Spec: vpa_types.VerticalPodAutoscalerSpec{
 			UpdatePolicy:   b.updatePolicy,
 			ResourcePolicy: &resourcePolicy,
+			TargetRef:      b.targetRef,
 		},
 		Status: vpa_types.VerticalPodAutoscalerStatus{
 			Recommendation: b.recommendation.WithContainer(b.containerName).Get(),
