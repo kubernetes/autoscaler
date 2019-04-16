@@ -18,12 +18,12 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-KUBE_ROOT=$(dirname "${BASH_SOURCE}")/..
+KUBE_ROOT=$(dirname "${BASH_SOURCE[0]}")/..
 
 boilerDir="${KUBE_ROOT}/hack/boilerplate"
 boiler="${boilerDir}/boilerplate.py"
 
-files_need_boilerplate=($(${boiler} "$@"))
+mapfile -t files_need_boilerplate < <( ${boiler} "$@" )
 
 # Run boilerplate check
 if [[ ${#files_need_boilerplate[@]} -gt 0 ]]; then

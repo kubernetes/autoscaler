@@ -18,7 +18,7 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
-CONTRIB_ROOT="$(dirname ${BASH_SOURCE})/.."
+CONTRIB_ROOT="$(dirname "${BASH_SOURCE[0]}")/.."
 
 godep_projects=$(find "${CONTRIB_ROOT}" -wholename '*Godeps/Godeps.json')
 
@@ -49,7 +49,8 @@ for godep_file in ${godep_projects}; do
     cd "${project}"
     case "${CMD}" in
       "test")
-        godep go "${CMD}" $(go list ./... | grep -v /vendor/ | grep -v vertical-pod-autoscaler/e2e )
+        #shellcheck disable=SC2046
+        godep go "${CMD}" $(go list ./... | grep -v /vendor/ | grep -v vertical-pod-autoscaler/e2e)
         ;;
       *)
         godep go "${CMD}" ./...

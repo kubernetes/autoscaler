@@ -18,15 +18,16 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-KUBE_ROOT=$(dirname "${BASH_SOURCE}")/..
+KUBE_ROOT=$(dirname "${BASH_SOURCE[0]}")/..
+#shellcheck disable=SC1090
 source "${KUBE_ROOT}/hack/kube-env.sh"
-${KUBE_ROOT}/hack/check-go-version.sh
+"${KUBE_ROOT}"/hack/check-go-version.sh
 
 SILENT=true
 EXCLUDE=${EXCLUDE:-} # nothing excluded by default
 
 function is-excluded {
-  if [[ $1 -ef ${BASH_SOURCE} ]]; then
+  if [[ $1 -ef ${BASH_SOURCE[0]} ]]; then
     return
   fi
   for e in $EXCLUDE; do
@@ -54,17 +55,19 @@ if $SILENT ; then
 fi
 
 ret=0
-for t in `ls $KUBE_ROOT/hack/verify-*.sh`
+for t in "${KUBE_ROOT}"/hack/verify-*.sh
 do
-  if is-excluded $t ; then
-    echo "Skipping $t"
+  if is-excluded "$t" ; then
+    echo "Skipping ${t}"
     continue
   fi
   if ! $SILENT ; then
-    echo -e "Verifying $t"
+    echo -e "Verifying ${t}"
     if bash "$t"; then
+      # shellcheck disable=SC2154
       echo -e "${color_green}SUCCESS${color_norm}"
     else
+      # shellcheck disable=SC2154
       echo -e "${color_red}FAILED${color_norm}"
       ret=1
     fi

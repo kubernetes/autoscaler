@@ -20,7 +20,7 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-KUBE_ROOT=$(dirname "${BASH_SOURCE}")/..
+KUBE_ROOT=$(dirname "${BASH_SOURCE[0]}")/..
 cd "${KUBE_ROOT}"
 
 find_files() {
@@ -38,10 +38,10 @@ find_files() {
     \) -name '*.go'
 }
 
-DOCKER_IMAGE=`grep 'FROM golang' builder/Dockerfile | sed 's/FROM //'`
+DOCKER_IMAGE=$(grep 'FROM golang' builder/Dockerfile | sed 's/FROM //')
 GOFMT="docker run -v $(pwd):/code -w /code $DOCKER_IMAGE gofmt -s"
 
-bad_files=$(find_files | xargs $GOFMT -l)
+bad_files=$(find_files | xargs "$GOFMT" -l)
 if [[ -n "${bad_files}" ]]; then
   echo "Please run hack/update-gofmt.sh to fix the following files:"
   echo "${bad_files}"

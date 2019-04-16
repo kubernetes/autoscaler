@@ -16,10 +16,10 @@
 
 set -euo pipefail
 
-GO_VERSION=($(go version))
+mapfile -t GO_VERSION < <( go version )
 
 if ! echo "${GO_VERSION[2]}" | grep -Eq 'go1.9|1.10|1.11'; then
-  echo "Unsupported go version ${GO_VERSION}"
+  echo "Unsupported go version ${GO_VERSION[2]}"
   return 1
 fi
 

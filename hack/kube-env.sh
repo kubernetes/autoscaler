@@ -17,9 +17,13 @@
 # Some useful colors.
 if [[ -z "${color_start-}" ]]; then
   declare -r color_start="\033["
+  # shellcheck disable=SC2034
   declare -r color_red="${color_start}0;31m"
+  # shellcheck disable=SC2034
   declare -r color_yellow="${color_start}0;33m"
+  # shellcheck disable=SC2034
   declare -r color_green="${color_start}0;32m"
+  # shellcheck disable=SC2034
   declare -r color_norm="${color_start}0m"
 fi
 
@@ -37,8 +41,9 @@ function kube_server_version() {
   # Server Version: &version.Info{Major:"0", Minor:"7+", GitVersion:"v0.7.0-dirty", GitCommit:"ad44234f7152e9c66bc2853575445c7071335e57", GitTreeState:"dirty"}
   # and capture the GitVersion portion (which has the patch level)
   server_version=$(${KUBECTL} --match-server-version=false version | grep "Server Version:")
-  read major minor patch < <(
-    echo ${server_version} | \
+  read -r major minor patch < <(
+    # shellcheck disable=SC2001
+    echo "${server_version}" | \
       sed "s/.*GitVersion:\"v\([0-9]\{1,\}\)\.\([0-9]\{1,\}\)\.\([0-9]\{1,\}\).*/\1 \2 \3/")
-  printf "%02d%02d%02d" ${major} ${minor} ${patch} | sed 's/^0*//'
+  printf "%02d%02d%02d" "${major}" "${minor}" "${patch}" | sed 's/^0*//'
 }

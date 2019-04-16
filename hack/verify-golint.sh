@@ -18,11 +18,11 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-KUBE_ROOT=$(dirname "${BASH_SOURCE}")/..
+KUBE_ROOT=$(dirname "${BASH_SOURCE[0]}")/..
 cd "${KUBE_ROOT}"
 
 GOLINT=${GOLINT:-"golint"}
-PACKAGES=($(go list ./... | grep -v /vendor/ | grep -v vertical-pod-autoscaler/pkg/client | grep -v vertical-pod-autoscaler/pkg/apis))
+mapfile -t PACKAGES < <( go list ./... | grep -v /vendor/ | grep -v vertical-pod-autoscaler/pkg/client | grep -v vertical-pod-autoscaler/pkg/apis )
 bad_files=()
 for package in "${PACKAGES[@]}"; do
   out=$("${GOLINT}" -min_confidence=0.9 "${package}")

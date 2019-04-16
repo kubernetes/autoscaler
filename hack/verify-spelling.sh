@@ -17,10 +17,10 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-DIR=$(dirname $0) 
+DIR=$(dirname "$0")
 
 # Install tools we need
-go install ${DIR}/../../../github.com/client9/misspell/cmd/misspell
+go install "${DIR}/../../../github.com/client9/misspell/cmd/misspell"
 
 # Spell checking
 git ls-files | grep -v -e vendor | xargs misspell -error -o stderr
