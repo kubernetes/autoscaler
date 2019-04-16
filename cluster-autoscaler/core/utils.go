@@ -42,6 +42,7 @@ import (
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	kube_client "k8s.io/client-go/kubernetes"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
+	schedulerapi "k8s.io/kubernetes/pkg/scheduler/api"
 	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 
 	"k8s.io/klog"
@@ -50,6 +51,20 @@ import (
 const (
 	// ReschedulerTaintKey is the name of the taint created by rescheduler.
 	ReschedulerTaintKey = "CriticalAddonsOnly"
+)
+
+var (
+	nodeConditionTaints = taintKeySet{
+		schedulerapi.TaintNodeNotReady:           true,
+		schedulerapi.TaintNodeUnreachable:        true,
+		schedulerapi.TaintNodeUnschedulable:      true,
+		schedulerapi.TaintNodeMemoryPressure:     true,
+		schedulerapi.TaintNodeDiskPressure:       true,
+		schedulerapi.TaintNodeNetworkUnavailable: true,
+		schedulerapi.TaintNodePIDPressure:        true,
+		schedulerapi.TaintExternalCloudProvider:  true,
+		schedulerapi.TaintNodeShutdown:           true,
+	}
 )
 
 // Following data structure is used to avoid running predicates #pending_pods * #nodes
@@ -73,6 +88,8 @@ type podSchedulableInfo struct {
 }
 
 type podSchedulableMap map[string][]podSchedulableInfo
+
+type taintKeySet map[string]bool
 
 func (psi *podSchedulableInfo) match(pod *apiv1.Pod) bool {
 	return reflect.DeepEqual(pod.Labels, psi.labels) && apiequality.Semantic.DeepEqual(pod.Spec, psi.spec)
@@ -417,11 +434,19 @@ func sanitizeTemplateNode(node *apiv1.Node, nodeGroup string) (*apiv1.Node, erro
 		switch taint.Key {
 		case ReschedulerTaintKey:
 			klog.V(4).Infof("Removing rescheduler taint when creating template from node %s", node.Name)
+			continue
 		case deletetaint.ToBeDeletedTaint:
 			klog.V(4).Infof("Removing autoscaler taint when creating template from node %s", node.Name)
-		default:
-			newTaints = append(newTaints, taint)
+			continue
 		}
+
+		// ignore conditional taints as they represent a transient node state.
+		if exists := nodeConditionTaints[taint.Key]; exists {
+			klog.V(4).Infof("Removing node condition taint %s, when creating template from node %s", taint.Key, node.Name)
+			continue
+		}
+
+		newTaints = append(newTaints, taint)
 	}
 	newNode.Spec.Taints = newTaints
 	return newNode, nil
