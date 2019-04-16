@@ -18,9 +18,9 @@ package target
 
 import (
 	"fmt"
+	"k8s.io/klog"
 	"time"
 
-	"github.com/golang/glog"
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -67,7 +67,7 @@ const (
 func NewVpaTargetSelectorFetcher(config *rest.Config, kubeClient kube_client.Interface, factory informers.SharedInformerFactory) VpaTargetSelectorFetcher {
 	discoveryClient, err := discovery.NewDiscoveryClientForConfig(config)
 	if err != nil {
-		glog.Fatalf("Could not create discoveryClient: %v", err)
+		klog.Fatalf("Could not create discoveryClient: %v", err)
 	}
 	resolver := scale.NewDiscoveryScaleKindResolver(discoveryClient)
 	restClient := kubeClient.CoreV1().RESTClient()
@@ -91,9 +91,9 @@ func NewVpaTargetSelectorFetcher(config *rest.Config, kubeClient kube_client.Int
 		go informer.Run(stopCh)
 		synced := cache.WaitForCacheSync(stopCh, informer.HasSynced)
 		if !synced {
-			glog.Fatalf("Could not sync cache for %s: %v", kind, err)
+			klog.Fatalf("Could not sync cache for %s: %v", kind, err)
 		} else {
-			glog.Infof("Initial sync of %s completed", kind)
+			klog.Infof("Initial sync of %s completed", kind)
 		}
 	}
 
