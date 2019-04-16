@@ -83,11 +83,12 @@ type GceManager interface {
 }
 
 type gceManagerImpl struct {
-	cache                    GceCache
+	cache                    *GceCache
 	lastRefresh              time.Time
 	machinesCacheLastRefresh time.Time
 
-	GceService AutoscalingGceClient
+	GceService             AutoscalingGceClient
+	migTargetSizesProvider MigTargetSizesProvider
 
 	location              string
 	projectId             string
@@ -153,15 +154,17 @@ func CreateGceManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGr
 	if err != nil {
 		return nil, err
 	}
+	cache := NewGceCache(gceService)
 	manager := &gceManagerImpl{
-		cache:                NewGceCache(gceService),
-		GceService:           gceService,
-		location:             location,
-		regional:             regional,
-		projectId:            projectId,
-		templates:            &GceTemplateBuilder{},
-		interrupt:            make(chan struct{}),
-		explicitlyConfigured: make(map[GceRef]bool),
+		cache:                  cache,
+		GceService:             gceService,
+		migTargetSizesProvider: NewCachingMigTargetSizesProvider(cache, gceService, projectId),
+		location:               location,
+		regional:               regional,
+		projectId:              projectId,
+		templates:              &GceTemplateBuilder{},
+		interrupt:              make(chan struct{}),
+		explicitlyConfigured:   make(map[GceRef]bool),
 	}
 
 	if err := manager.fetchExplicitMigs(discoveryOpts.NodeGroupSpecs); err != nil {
@@ -206,22 +209,19 @@ func (m *gceManagerImpl) registerMig(mig Mig) bool {
 
 // GetMigSize gets MIG size.
 func (m *gceManagerImpl) GetMigSize(mig Mig) (int64, error) {
-	if migSize, found := m.cache.GetMigTargetSize(mig.GceRef()); found {
-		return migSize, nil
-	}
-	targetSize, err := m.GceService.FetchMigTargetSize(mig.GceRef())
-	if err != nil {
-		return -1, err
-	}
-	m.cache.SetMigTargetSize(mig.GceRef(), targetSize)
-	return targetSize, nil
+	return m.migTargetSizesProvider.GetMigTargetSize(mig.GceRef())
 }
 
 // SetMigSize sets MIG size.
 func (m *gceManagerImpl) SetMigSize(mig Mig, size int64) error {
 	klog.V(0).Infof("Setting mig size %s to %d", mig.Id(), size)
 	m.cache.InvalidateMigTargetSize(mig.GceRef())
-	return m.GceService.ResizeMig(mig.GceRef(), size)
+	err := m.GceService.ResizeMig(mig.GceRef(), size)
+	if err != nil {
+		return err
+	}
+	m.cache.SetMigTargetSize(mig.GceRef(), size)
+	return nil
 }
 
 // DeleteInstances deletes the given instances. All instances must be controlled by the same MIG.
