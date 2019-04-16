@@ -23,7 +23,9 @@ import (
 
 // PodListProcessor processes lists of unschedulable and scheduled pods before scaling of the cluster.
 type PodListProcessor interface {
-	Process(context *context.AutoscalingContext, unschedulablePods []*apiv1.Pod, allScheduled []*apiv1.Pod, nodes []*apiv1.Node) ([]*apiv1.Pod, []*apiv1.Pod, error)
+	Process(context *context.AutoscalingContext,
+		unschedulablePods []*apiv1.Pod, allScheduledPods []*apiv1.Pod,
+		allNodes []*apiv1.Node, readyNodes []*apiv1.Node) ([]*apiv1.Pod, []*apiv1.Pod, error)
 	CleanUp()
 }
 
@@ -37,8 +39,10 @@ func NewDefaultPodListProcessor() PodListProcessor {
 }
 
 // Process processes lists of unschedulable and scheduled pods before scaling of the cluster.
-func (p *NoOpPodListProcessor) Process(context *context.AutoscalingContext, unschedulablePods []*apiv1.Pod, allScheduled []*apiv1.Pod, nodes []*apiv1.Node) ([]*apiv1.Pod, []*apiv1.Pod, error) {
-	return unschedulablePods, allScheduled, nil
+func (p *NoOpPodListProcessor) Process(context *context.AutoscalingContext,
+	unschedulablePods []*apiv1.Pod, allScheduledPods []*apiv1.Pod,
+	allNodes []*apiv1.Node, readyNodes []*apiv1.Node) ([]*apiv1.Pod, []*apiv1.Pod, error) {
+	return unschedulablePods, allScheduledPods, nil
 }
 
 // CleanUp cleans up the processor's internal structures.

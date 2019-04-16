@@ -153,7 +153,7 @@ var stackGetResponseNotFound = fmt.Sprintf(`
 }`, badStackID)
 
 var deleteNodeRefs = []NodeRef{
-	{Name: stackName + "-minion-1", MachineID: "3ae2e15807bd48ccbb26f9bb5f2996d6", ProviderID: "openstack:///3ae2e15807bd48ccbb26f9bb5f2996d6", IPs: []string{"10.0.0.52"}},
+	{Name: stackName + "-minion-1", MachineID: "3ae2e15807bd48ccbb26f9bb5f2996d6", ProviderID: "openstack:///3ae2e158-07bd-48cc-bb26-f9bb5f2996d6", IPs: []string{"10.0.0.52"}},
 }
 var patchResponseSuccess = `{"uuid": "732851e1-f792-4194-b966-4cbfa5f30093"}`
 
@@ -260,8 +260,8 @@ var stackGetKubeMinionsStackResponse = fmt.Sprintf(`
         "outputs":[
             {
                 "output_value":{
-                    "0":"ffbc651da661462d94352e01f3020688",
-                    "1":"3ae2e15807bd48ccbb26f9bb5f2996d6"
+                    "0":"ffbc651d-a661-462d-9435-2e01f3020688",
+                    "1":"3ae2e158-07bd-48cc-bb26-f9bb5f2996d6"
                 },
                 "output_key":"refs_map",
                 "description":"No description given"
@@ -296,10 +296,10 @@ func createManagerGetClusterSuccess() *magnumManagerHeat {
 
 	sc := createTestServiceClient()
 
-	osm := createTestMagnumManagerHeat(sc)
-	osm.clusterName = clusterUUID
+	manager := createTestMagnumManagerHeat(sc)
+	manager.clusterName = clusterUUID
 
-	return osm
+	return manager
 }
 
 func createManagerGetClusterFail() *magnumManagerHeat {
@@ -312,19 +312,19 @@ func createManagerGetClusterFail() *magnumManagerHeat {
 
 	sc := createTestServiceClient()
 
-	osm := createTestMagnumManagerHeat(sc)
-	osm.clusterName = badClusterUUID
+	manager := createTestMagnumManagerHeat(sc)
+	manager.clusterName = badClusterUUID
 
-	return osm
+	return manager
 }
 
 func TestNodeGroupSizeSuccess(t *testing.T) {
 	th.SetupHTTP()
 	defer th.TeardownHTTP()
 
-	osm := createManagerGetClusterSuccess()
+	manager := createManagerGetClusterSuccess()
 
-	nodeCount, err := osm.nodeGroupSize("default")
+	nodeCount, err := manager.nodeGroupSize("default")
 	assert.NoError(t, err)
 	assert.Equal(t, clusterNodeCount, nodeCount)
 }
@@ -333,9 +333,9 @@ func TestNodeGroupSizeFail(t *testing.T) {
 	th.SetupHTTP()
 	defer th.TeardownHTTP()
 
-	osm := createManagerGetClusterFail()
+	manager := createManagerGetClusterFail()
 
-	_, err := osm.nodeGroupSize("default")
+	_, err := manager.nodeGroupSize("default")
 	assert.Error(t, err)
 	assert.Equal(t, "could not get cluster: Resource not found", err.Error())
 }
@@ -344,9 +344,9 @@ func TestGetClusterStatusSuccess(t *testing.T) {
 	th.SetupHTTP()
 	defer th.TeardownHTTP()
 
-	osm := createManagerGetClusterSuccess()
+	manager := createManagerGetClusterSuccess()
 
-	gotStatus, err := osm.getClusterStatus()
+	gotStatus, err := manager.getClusterStatus()
 	assert.NoError(t, err)
 	assert.Equal(t, clusterStatus, gotStatus)
 }
@@ -355,9 +355,9 @@ func TestGetClusterStatusFail(t *testing.T) {
 	th.SetupHTTP()
 	defer th.TeardownHTTP()
 
-	osm := createManagerGetClusterFail()
+	manager := createManagerGetClusterFail()
 
-	_, err := osm.getClusterStatus()
+	_, err := manager.getClusterStatus()
 	assert.Error(t, err)
 	assert.Equal(t, "could not get cluster: Resource not found", err.Error())
 }
@@ -366,9 +366,9 @@ func TestCanUpdateSuccess(t *testing.T) {
 	th.SetupHTTP()
 	defer th.TeardownHTTP()
 
-	osm := createManagerGetClusterSuccess()
+	manager := createManagerGetClusterSuccess()
 
-	can, status, err := osm.canUpdate()
+	can, status, err := manager.canUpdate()
 	assert.NoError(t, err)
 	assert.Equal(t, true, can)
 	assert.Equal(t, clusterStatus, status)
@@ -378,9 +378,9 @@ func TestCanUpdateFail(t *testing.T) {
 	th.SetupHTTP()
 	defer th.TeardownHTTP()
 
-	osm := createManagerGetClusterFail()
+	manager := createManagerGetClusterFail()
 
-	_, _, err := osm.canUpdate()
+	_, _, err := manager.canUpdate()
 	assert.Error(t, err)
 	assert.Equal(t, "could not get cluster status: could not get cluster: Resource not found", err.Error())
 }
@@ -398,11 +398,11 @@ func TestGetStackNameSuccess(t *testing.T) {
 
 	sc := createTestServiceClient()
 
-	osm := createTestMagnumManagerHeat(sc)
-	osm.clusterName = clusterUUID
-	osm.stackID = stackID
+	manager := createTestMagnumManagerHeat(sc)
+	manager.clusterName = clusterUUID
+	manager.stackID = stackID
 
-	gotStackName, err := osm.getStackName(osm.stackID)
+	gotStackName, err := manager.getStackName(manager.stackID)
 	assert.NoError(t, err)
 	assert.Equal(t, stackName, gotStackName)
 }
@@ -420,11 +420,11 @@ func TestGetStackNameNotFound(t *testing.T) {
 
 	sc := createTestServiceClient()
 
-	osm := createTestMagnumManagerHeat(sc)
-	osm.clusterName = clusterUUID
-	osm.stackID = badStackID
+	manager := createTestMagnumManagerHeat(sc)
+	manager.clusterName = clusterUUID
+	manager.stackID = badStackID
 
-	_, err := osm.getStackName(osm.stackID)
+	_, err := manager.getStackName(manager.stackID)
 	assert.Error(t, err)
 	assert.Equal(t, fmt.Sprintf("could not find stack with ID %s: Resource not found", badStackID), err.Error())
 }
@@ -442,12 +442,12 @@ func TestGetStackStatusSuccess(t *testing.T) {
 
 	sc := createTestServiceClient()
 
-	osm := createTestMagnumManagerHeat(sc)
-	osm.clusterName = clusterUUID
-	osm.stackID = stackID
-	osm.stackName = stackName
+	manager := createTestMagnumManagerHeat(sc)
+	manager.clusterName = clusterUUID
+	manager.stackID = stackID
+	manager.stackName = stackName
 
-	status, err := osm.getStackStatus()
+	status, err := manager.getStackStatus()
 	assert.NoError(t, err)
 	assert.Equal(t, stackStatus, status)
 }
@@ -465,12 +465,12 @@ func TestGetStackStatusFail(t *testing.T) {
 
 	sc := createTestServiceClient()
 
-	osm := createTestMagnumManagerHeat(sc)
-	osm.clusterName = clusterUUID
-	osm.stackID = badStackID
-	osm.stackName = stackName
+	manager := createTestMagnumManagerHeat(sc)
+	manager.clusterName = clusterUUID
+	manager.stackID = badStackID
+	manager.stackName = stackName
 
-	_, err := osm.getStackStatus()
+	_, err := manager.getStackStatus()
 	assert.Error(t, err)
 	assert.Equal(t, "could not get stack from heat: Resource not found", err.Error())
 }
@@ -488,10 +488,10 @@ func TestUpdateNodeCountSuccess(t *testing.T) {
 
 	sc := createTestServiceClient()
 
-	osm := createTestMagnumManagerHeat(sc)
-	osm.clusterName = clusterUUID
+	manager := createTestMagnumManagerHeat(sc)
+	manager.clusterName = clusterUUID
 
-	err := osm.updateNodeCount("default", 2)
+	err := manager.updateNodeCount("default", 2)
 	assert.NoError(t, err)
 }
 
@@ -508,10 +508,10 @@ func TestUpdateNodeCountFail(t *testing.T) {
 
 	sc := createTestServiceClient()
 
-	osm := createTestMagnumManagerHeat(sc)
-	osm.clusterName = badClusterUUID
+	manager := createTestMagnumManagerHeat(sc)
+	manager.clusterName = badClusterUUID
 
-	err := osm.updateNodeCount("default", 2)
+	err := manager.updateNodeCount("default", 2)
 	assert.Error(t, err)
 	assert.Equal(t, "could not update cluster: Resource not found", err.Error())
 }
@@ -557,12 +557,12 @@ func TestDeleteNodesSuccess(t *testing.T) {
 
 	sc := createTestServiceClient()
 
-	osm := createTestMagnumManagerHeat(sc)
-	osm.clusterName = clusterUUID
-	osm.stackID = stackID
-	osm.stackName = stackName
+	manager := createTestMagnumManagerHeat(sc)
+	manager.clusterName = clusterUUID
+	manager.stackID = stackID
+	manager.stackName = stackName
 
-	err := osm.deleteNodes("default", deleteNodeRefs, 1)
+	err := manager.deleteNodes("default", deleteNodeRefs, 1)
 	assert.NoError(t, err)
 }
 
@@ -607,12 +607,12 @@ func TestDeleteNodesStackPatchFail(t *testing.T) {
 
 	sc := createTestServiceClient()
 
-	osm := createTestMagnumManagerHeat(sc)
-	osm.clusterName = clusterUUID
-	osm.stackID = stackID
-	osm.stackName = stackName
+	manager := createTestMagnumManagerHeat(sc)
+	manager.clusterName = clusterUUID
+	manager.stackID = stackID
+	manager.stackName = stackName
 
-	err := osm.deleteNodes("default", deleteNodeRefs, -1)
+	err := manager.deleteNodes("default", deleteNodeRefs, -1)
 	assert.Error(t, err)
 
 	expectedErrString := fmt.Sprintf("stack patch failed: Bad request with: [PATCH %s/v1/stacks/%s/%s], error message: %s",
@@ -633,17 +633,17 @@ func TestFindStackIndicesMissing(t *testing.T) {
 
 	sc := createTestServiceClient()
 
-	osm := createTestMagnumManagerHeat(sc)
-	osm.clusterName = clusterUUID
-	osm.stackID = stackID
-	osm.stackName = stackName
+	manager := createTestMagnumManagerHeat(sc)
+	manager.clusterName = clusterUUID
+	manager.stackID = stackID
+	manager.stackName = stackName
 
 	nodes := []NodeRef{
 		{Name: fmt.Sprintf("%s-minion-0", stackName), MachineID: "ffbc651da661462d94352e01f3020688"},
 		{Name: fmt.Sprintf("%s-minion-1", stackName)},
 	}
 
-	_, err := osm.findStackIndices(nodes)
+	_, err := manager.findStackIndices(nodes)
 	assert.Error(t, err)
 	assert.Equal(t, "1 nodes could not be resolved to stack indices", err.Error())
 }
@@ -669,12 +669,12 @@ func TestWaitForStackStatusSuccess(t *testing.T) {
 
 	sc := createTestServiceClient()
 
-	osm := createTestMagnumManagerHeat(sc)
-	osm.clusterName = clusterUUID
-	osm.stackID = stackID
-	osm.stackName = stackName
+	manager := createTestMagnumManagerHeat(sc)
+	manager.clusterName = clusterUUID
+	manager.stackID = stackID
+	manager.stackName = stackName
 
-	err := osm.waitForStackStatus(stackStatusUpdateComplete, 200*time.Millisecond)
+	err := manager.waitForStackStatus(stackStatusUpdateComplete, 200*time.Millisecond)
 	assert.NoError(t, err)
 }
 
@@ -690,12 +690,12 @@ func TestWaitForStackStatusTimeout(t *testing.T) {
 
 	sc := createTestServiceClient()
 
-	osm := createTestMagnumManagerHeat(sc)
-	osm.clusterName = clusterUUID
-	osm.stackID = stackID
-	osm.stackName = stackName
+	manager := createTestMagnumManagerHeat(sc)
+	manager.clusterName = clusterUUID
+	manager.stackID = stackID
+	manager.stackName = stackName
 
-	err := osm.waitForStackStatus(stackStatusUpdateComplete, 200*time.Millisecond)
+	err := manager.waitForStackStatus(stackStatusUpdateComplete, 200*time.Millisecond)
 	assert.Error(t, err)
 	assert.Equal(t, "timeout (200ms) waiting for stack status UPDATE_COMPLETE", err.Error())
 }
@@ -712,12 +712,12 @@ func TestWaitForStackStatusError(t *testing.T) {
 
 	sc := createTestServiceClient()
 
-	osm := createTestMagnumManagerHeat(sc)
-	osm.clusterName = clusterUUID
-	osm.stackID = stackID
-	osm.stackName = stackName
+	manager := createTestMagnumManagerHeat(sc)
+	manager.clusterName = clusterUUID
+	manager.stackID = stackID
+	manager.stackName = stackName
 
-	err := osm.waitForStackStatus(stackStatusUpdateComplete, 200*time.Millisecond)
+	err := manager.waitForStackStatus(stackStatusUpdateComplete, 200*time.Millisecond)
 	assert.Error(t, err)
 	assert.Equal(t, "error waiting for stack status: could not get stack from heat: Resource not found", err.Error())
 }
@@ -740,12 +740,12 @@ func TestGetKubeMinionsStackSuccess(t *testing.T) {
 
 	sc := createTestServiceClient()
 
-	osm := createTestMagnumManagerHeat(sc)
-	osm.clusterName = clusterUUID
-	osm.stackID = stackID
-	osm.stackName = stackName
+	manager := createTestMagnumManagerHeat(sc)
+	manager.clusterName = clusterUUID
+	manager.stackID = stackID
+	manager.stackName = stackName
 
-	name, ID, err := osm.getKubeMinionsStack(osm.stackName, osm.stackID)
+	name, ID, err := manager.getKubeMinionsStack(manager.stackName, manager.stackID)
 	assert.NoError(t, err)
 	assert.Equal(t, kubeMinionsStackName, name)
 	assert.Equal(t, kubeMinionsStackID, ID)
@@ -763,12 +763,12 @@ func TestGetKubeMinionsStackNotFound(t *testing.T) {
 
 	sc := createTestServiceClient()
 
-	osm := createTestMagnumManagerHeat(sc)
-	osm.clusterName = clusterUUID
-	osm.stackID = badStackID
-	osm.stackName = stackName
+	manager := createTestMagnumManagerHeat(sc)
+	manager.clusterName = clusterUUID
+	manager.stackID = badStackID
+	manager.stackName = stackName
 
-	_, _, err := osm.getKubeMinionsStack(osm.stackName, osm.stackID)
+	_, _, err := manager.getKubeMinionsStack(manager.stackName, manager.stackID)
 	assert.Error(t, err)
 	assert.Equal(t, "could not get kube_minions stack resource: Resource not found", err.Error())
 
@@ -778,14 +778,19 @@ func TestStackIndexFromID(t *testing.T) {
 	minion0IP := []string{"10.0.0.52"}
 	minion0ID := "a390ca6ab24846af8ddd854a52fd5281"
 	minion0 := NodeRef{MachineID: minion0ID, IPs: minion0IP}
+	minion0StackID := "a390ca6a-b248-46af-8ddd-854a52fd5281"
 
 	minion1IP := []string{"10.0.0.59"}
 	minion1ID := "5bc76eeb2b2e4625a1a559560aa90e5a"
 	minion1 := NodeRef{MachineID: minion1ID, IPs: minion1IP}
+	minion1StackID := "5bc76eeb-2b2e-4625-a1a5-59560aa90e5a"
 
 	minion2IP := []string{"10.0.0.70"}
 	minion2ID := "86db2aa4666948cfa2b828eb93cf3fd1"
 	minion2 := NodeRef{MachineID: minion2ID, IPs: minion2IP}
+
+	// Empty nodeRef, covers case with MachineID "" and IPs []string{}
+	minion3 := NodeRef{}
 
 	mappingWithIPs := map[string]string{
 		minion0IP[0]: "0",
@@ -793,8 +798,8 @@ func TestStackIndexFromID(t *testing.T) {
 	}
 
 	mappingWithIDs := map[string]string{
-		minion0ID: "0",
-		minion1ID: "1",
+		minion0StackID: "0",
+		minion1StackID: "1",
 	}
 
 	emptyMapping := map[string]string{}
@@ -817,6 +822,8 @@ func TestStackIndexFromID(t *testing.T) {
 		{"empty 0", emptyMapping, minion0, "", false},
 		{"empty 1", emptyMapping, minion1, "", false},
 		{"empty 2", emptyMapping, minion2, "", false},
+
+		{"empty ref", mappingWithIDs, minion3, "", false},
 	}
 
 	for _, test := range tests {

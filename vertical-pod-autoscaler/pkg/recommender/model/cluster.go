@@ -292,13 +292,24 @@ func (cluster *ClusterState) findOrCreateAggregateContainerState(containerID Con
 }
 
 // GarbageCollectAggregateCollectionStates removes obsolete AggregateCollectionStates from the ClusterState.
+// AggregateCollectionState is obsolete in following situations:
+// 1) It has no samples and there are no more active pods that can contribute,
+// 2) The last sample is too old to give meaningful recommendation (>8 days),
+// 3) There are no samples and the aggregate state was created >8 days ago.
 func (cluster *ClusterState) GarbageCollectAggregateCollectionStates(now time.Time) {
 	klog.V(1).Info("Garbage collection of AggregateCollectionStates triggered")
 	keysToDelete := make([]AggregateStateKey, 0)
+	activeKeys := cluster.getActiveAggregateStateKeys()
 	for key, aggregateContainerState := range cluster.aggregateStateMap {
+		isKeyActive := activeKeys[key]
+		if !isKeyActive && aggregateContainerState.isEmpty() {
+			keysToDelete = append(keysToDelete, key)
+			klog.V(1).Infof("Removing empty and inactive AggregateCollectionState for %+v", key)
+			continue
+		}
 		if aggregateContainerState.isExpired(now) {
 			keysToDelete = append(keysToDelete, key)
-			klog.V(1).Infof("Removing AggregateCollectionStates for %+v", key)
+			klog.V(1).Infof("Removing expired AggregateCollectionState for %+v", key)
 		}
 	}
 	for _, key := range keysToDelete {
@@ -307,6 +318,20 @@ func (cluster *ClusterState) GarbageCollectAggregateCollectionStates(now time.Ti
 			vpa.DeleteAggregation(key)
 		}
 	}
+}
+
+func (cluster *ClusterState) getActiveAggregateStateKeys() map[AggregateStateKey]bool {
+	activeKeys := map[AggregateStateKey]bool{}
+	for _, pod := range cluster.Pods {
+		// Pods that will not run anymore are considered inactive.
+		if pod.Phase == apiv1.PodSucceeded || pod.Phase == apiv1.PodFailed {
+			continue
+		}
+		for container := range pod.Containers {
+			activeKeys[cluster.MakeAggregateStateKey(pod, container)] = true
+		}
+	}
+	return activeKeys
 }
 
 // Implementation of the AggregateStateKey interface. It can be used as a map key.

@@ -50,7 +50,7 @@ for godep_file in ${godep_projects}; do
     case "${CMD}" in
       "test")
         #shellcheck disable=SC2046
-        godep go "${CMD}" $(go list ./... | grep -v /vendor/ | grep -v vertical-pod-autoscaler/e2e)
+        godep go test -race $(go list ./... | grep -v /vendor/ | grep -v vertical-pod-autoscaler/e2e )
         ;;
       *)
         godep go "${CMD}" ./...

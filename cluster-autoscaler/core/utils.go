@@ -20,11 +20,11 @@ import (
 	"fmt"
 	"math/rand"
 	"reflect"
-	"sort"
 	"time"
 
-	"k8s.io/kubernetes/pkg/scheduler/util"
-
+	appsv1 "k8s.io/api/apps/v1"
+	apiv1 "k8s.io/api/core/v1"
+	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
@@ -38,11 +38,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/glogx"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
-	scheduler_util "k8s.io/autoscaler/cluster-autoscaler/utils/scheduler"
-
-	appsv1 "k8s.io/api/apps/v1"
-	apiv1 "k8s.io/api/core/v1"
-	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 
 	"k8s.io/klog"
@@ -106,75 +101,6 @@ func (podMap podSchedulableMap) set(pod *apiv1.Pod, err *simulator.PredicateErro
 		labels:          pod.Labels,
 		schedulingError: err,
 	})
-}
-
-// filterOutSchedulableByPacking checks whether pods from <unschedulableCandidates> marked as unschedulable
-// can be scheduled on free capacity on existing nodes by trying to pack the pods. It tries to pack the higher priority
-// pods first. It takes into account pods that are bound to node and will be scheduled after lower priority pod preemption.
-func filterOutSchedulableByPacking(unschedulableCandidates []*apiv1.Pod, nodes []*apiv1.Node, allScheduled []*apiv1.Pod, podsWaitingForLowerPriorityPreemption []*apiv1.Pod,
-	predicateChecker *simulator.PredicateChecker, expendablePodsPriorityCutoff int) []*apiv1.Pod {
-	var unschedulablePods []*apiv1.Pod
-	nonExpendableScheduled := filterOutExpendablePods(allScheduled, expendablePodsPriorityCutoff)
-	nodeNameToNodeInfo := scheduler_util.CreateNodeNameToInfoMap(append(nonExpendableScheduled, podsWaitingForLowerPriorityPreemption...), nodes)
-	loggingQuota := glogx.PodsLoggingQuota()
-
-	sort.Slice(unschedulableCandidates, func(i, j int) bool {
-		return util.GetPodPriority(unschedulableCandidates[i]) > util.GetPodPriority(unschedulableCandidates[j])
-	})
-
-	for _, pod := range unschedulableCandidates {
-		nodeName, err := predicateChecker.FitsAny(pod, nodeNameToNodeInfo)
-		if err != nil {
-			unschedulablePods = append(unschedulablePods, pod)
-		} else {
-			glogx.V(4).UpTo(loggingQuota).Infof("Pod %s marked as unschedulable can be scheduled on %s. Ignoring in scale up.", pod.Name, nodeName)
-			nodeNameToNodeInfo[nodeName] = scheduler_util.NodeWithPod(nodeNameToNodeInfo[nodeName], pod)
-		}
-	}
-
-	glogx.V(4).Over(loggingQuota).Infof("%v other pods marked as unschedulable can be scheduled.", -loggingQuota.Left())
-	return unschedulablePods
-}
-
-// filterOutSchedulableSimple checks whether pods from <unschedulableCandidates> marked as unschedulable
-// by Scheduler actually can't be scheduled on any node and filter out the ones that can.
-// It takes into account pods that are bound to node and will be scheduled after lower priority pod preemption.
-func filterOutSchedulableSimple(unschedulableCandidates []*apiv1.Pod, nodes []*apiv1.Node, allScheduled []*apiv1.Pod, podsWaitingForLowerPriorityPreemption []*apiv1.Pod,
-	predicateChecker *simulator.PredicateChecker, expendablePodsPriorityCutoff int) []*apiv1.Pod {
-	var unschedulablePods []*apiv1.Pod
-	nonExpendableScheduled := filterOutExpendablePods(allScheduled, expendablePodsPriorityCutoff)
-	nodeNameToNodeInfo := scheduler_util.CreateNodeNameToInfoMap(append(nonExpendableScheduled, podsWaitingForLowerPriorityPreemption...), nodes)
-	podSchedulable := make(podSchedulableMap)
-	loggingQuota := glogx.PodsLoggingQuota()
-
-	for _, pod := range unschedulableCandidates {
-		cachedError, found := podSchedulable.get(pod)
-		// Try to get result from cache.
-		if found {
-			if cachedError != nil {
-				unschedulablePods = append(unschedulablePods, pod)
-			} else {
-				glogx.V(4).UpTo(loggingQuota).Infof("Pod %s marked as unschedulable can be scheduled (based on simulation run for other pod owned by the same controller). Ignoring in scale up.", pod.Name)
-			}
-			continue
-		}
-
-		// Not found in cache, have to run the predicates.
-		nodeName, err := predicateChecker.FitsAny(pod, nodeNameToNodeInfo)
-		// err returned from FitsAny isn't a PredicateError.
-		// Hello, ugly hack. I wish you weren't here.
-		var predicateError *simulator.PredicateError
-		if err != nil {
-			predicateError = simulator.NewPredicateError("FitsAny", err, nil, nil)
-			unschedulablePods = append(unschedulablePods, pod)
-		} else {
-			glogx.V(4).UpTo(loggingQuota).Infof("Pod %s marked as unschedulable can be scheduled on %s. Ignoring in scale up.", pod.Name, nodeName)
-		}
-		podSchedulable.set(pod, predicateError)
-	}
-
-	glogx.V(4).Over(loggingQuota).Infof("%v other pods marked as unschedulable can be scheduled.", -loggingQuota.Left())
-	return unschedulablePods
 }
 
 // filterOutExpendableAndSplit filters out expendable pods and splits into:

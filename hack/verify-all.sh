@@ -21,7 +21,6 @@ set -o pipefail
 KUBE_ROOT=$(dirname "${BASH_SOURCE[0]}")/..
 #shellcheck disable=SC1090
 source "${KUBE_ROOT}/hack/kube-env.sh"
-"${KUBE_ROOT}"/hack/check-go-version.sh
 
 SILENT=true
 EXCLUDE=${EXCLUDE:-} # nothing excluded by default

@@ -44,6 +44,8 @@ var (
 		"nvidia-tesla-k80":  {},
 		"nvidia-tesla-p100": {},
 		"nvidia-tesla-v100": {},
+		"nvidia-tesla-p4":   {},
+		"nvidia-tesla-t4":   {},
 	}
 )
 
@@ -85,7 +87,7 @@ func (gce *GceCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 	migs := gce.gceManager.GetMigs()
 	result := make([]cloudprovider.NodeGroup, 0, len(migs))
 	for _, mig := range migs {
-		result = append(result, mig.Config)
+		result = append(result, mig)
 	}
 	return result
 }
