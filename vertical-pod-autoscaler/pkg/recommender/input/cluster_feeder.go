@@ -17,6 +17,7 @@ limitations under the License.
 package input
 
 import (
+	"flag"
 	"fmt"
 	"time"
 
@@ -48,6 +49,10 @@ import (
 
 const (
 	defaultResyncPeriod time.Duration = 10 * time.Minute
+)
+
+var (
+	beta1APIDeprecated = flag.Bool("beta1-api-deprecated", true, `If v1beta1 API objects should be marked as deprecated.`)
 )
 
 // ClusterStateFeeder can update state of ClusterState object.
@@ -317,6 +322,10 @@ func (feeder *clusterStateFeeder) LoadVPAs() {
 		if feeder.clusterState.AddOrUpdateVpa(vpaCRD, selector) == nil {
 			// Successfully added VPA to the model.
 			vpaKeys[vpaID] = true
+
+			legacySelector, _ := feeder.legacySelectorFetcher.Fetch(vpaCRD)
+			feeder.clusterState.Vpas[vpaID].IsV1Beta1API = legacySelector != nil
+
 			for _, condition := range conditions {
 				if condition.delete {
 					delete(feeder.clusterState.Vpas[vpaID].Conditions, condition.conditionType)
@@ -432,10 +441,13 @@ func (feeder *clusterStateFeeder) getSelector(vpa *vpa_types.VerticalPodAutoscal
 		}
 	}
 	if legacySelector != nil {
-		return legacySelector, []condition{
-			{conditionType: vpa_types.ConfigUnsupported, delete: true},
-			{conditionType: vpa_types.ConfigDeprecated, delete: false, message: "Deprecated label selector defined, please migrate to targetRef"},
+		if *beta1APIDeprecated {
+			return legacySelector, []condition{
+				{conditionType: vpa_types.ConfigUnsupported, delete: true},
+				{conditionType: vpa_types.ConfigDeprecated, delete: false, message: "Deprecated label selector defined, please migrate to targetRef"},
+			}
 		}
+		return legacySelector, []condition{}
 	}
 	msg := "Cannot read targetRef"
 	if fetchErr != nil {

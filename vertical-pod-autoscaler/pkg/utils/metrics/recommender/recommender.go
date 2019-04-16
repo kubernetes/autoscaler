@@ -35,13 +35,20 @@ var (
 	modes = []string{string(vpa_types.UpdateModeOff), string(vpa_types.UpdateModeInitial), string(vpa_types.UpdateModeRecreate), string(vpa_types.UpdateModeAuto)}
 )
 
+type apiVersion string
+
+const (
+	v1beta1 apiVersion = "v1beta1"
+	v1beta2 apiVersion = "v1beta2"
+)
+
 var (
 	vpaObjectCount = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Namespace: metricsNamespace,
 			Name:      "vpa_objects_count",
 			Help:      "Number of VPA objects present in the cluster.",
-		}, []string{"update_mode", "has_recommendation"},
+		}, []string{"update_mode", "has_recommendation", "api"},
 	)
 
 	recommendationLatency = prometheus.NewHistogram(
@@ -58,8 +65,9 @@ var (
 )
 
 type objectCounterKey struct {
-	mode string
-	has  bool
+	mode       string
+	has        bool
+	apiVersion apiVersion
 }
 
 // ObjectCounter helps split all VPA objects into buckets
@@ -92,8 +100,11 @@ func NewObjectCounter() *ObjectCounter {
 
 	// initialize with empty data so we can clean stale gauge values in Observe
 	for _, m := range modes {
-		obj.cnt[objectCounterKey{mode: m, has: false}] = 0
-		obj.cnt[objectCounterKey{mode: m, has: true}] = 0
+		for _, h := range []bool{false, true} {
+			for _, api := range []apiVersion{v1beta1, v1beta2} {
+				obj.cnt[objectCounterKey{mode: m, has: h, apiVersion: api}] = 0
+			}
+		}
 	}
 
 	return &obj
@@ -101,13 +112,18 @@ func NewObjectCounter() *ObjectCounter {
 
 // Add updates the helper state to include the given VPA object
 func (oc *ObjectCounter) Add(vpa *model.Vpa) {
-	var mode string
-	if vpa.UpdateMode != nil {
+	mode := string(vpa_types.UpdateModeAuto)
+	if vpa.UpdateMode != nil && string(*vpa.UpdateMode) != "" {
 		mode = string(*vpa.UpdateMode)
 	}
+	api := v1beta2
+	if vpa.IsV1Beta1API {
+		api = v1beta1
+	}
 	key := objectCounterKey{
-		mode: mode,
-		has:  vpa.HasRecommendation(),
+		mode:       mode,
+		has:        vpa.HasRecommendation(),
+		apiVersion: api,
 	}
 	oc.cnt[key]++
 }
@@ -115,6 +131,6 @@ func (oc *ObjectCounter) Add(vpa *model.Vpa) {
 // Observe passes all the computed bucket values to metrics
 func (oc *ObjectCounter) Observe() {
 	for k, v := range oc.cnt {
-		vpaObjectCount.WithLabelValues(k.mode, fmt.Sprintf("%v", k.has)).Set(float64(v))
+		vpaObjectCount.WithLabelValues(k.mode, fmt.Sprintf("%v", k.has), string(k.apiVersion)).Set(float64(v))
 	}
 }
