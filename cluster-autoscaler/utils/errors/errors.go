@@ -55,6 +55,9 @@ const (
 	// TransientError is an error that causes us to skip a single loop, but
 	// does not require any additional action.
 	TransientError AutoscalerErrorType = "transientError"
+	// ConfigurationError is an error related to bad configuration provided
+	// by a user.
+	ConfigurationError AutoscalerErrorType = "configurationError"
 )
 
 // NewAutoscalerError returns new autoscaler error with a message constructed from format string
