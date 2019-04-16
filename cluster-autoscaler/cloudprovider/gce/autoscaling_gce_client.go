@@ -47,6 +47,7 @@ type AutoscalingGceClient interface {
 	// reading resources
 	FetchMachineType(zone, machineType string) (*gce.MachineType, error)
 	FetchMachineTypes(zone string) ([]*gce.MachineType, error)
+	FetchAllMigs(zone string) ([]*gce.InstanceGroupManager, error)
 	FetchMigTargetSize(GceRef) (int64, error)
 	FetchMigBasename(GceRef) (string, error)
 	FetchMigInstances(GceRef) ([]cloudprovider.Instance, error)
@@ -114,6 +115,22 @@ func (client *autoscalingGceClientV1) FetchMachineTypes(zone string) ([]*gce.Mac
 		return nil, err
 	}
 	return machines.Items, nil
+}
+
+func (client *autoscalingGceClientV1) FetchAllMigs(zone string) ([]*gce.InstanceGroupManager, error) {
+	registerRequest("instance_group_managers", "list")
+
+	var migs []*gce.InstanceGroupManager
+	err := client.gceService.InstanceGroupManagers.List(client.projectId, zone).Pages(
+		context.TODO(),
+		func(page *gce.InstanceGroupManagerList) error {
+			migs = append(migs, page.Items...)
+			return nil
+		})
+	if err != nil {
+		return nil, err
+	}
+	return migs, nil
 }
 
 func (client *autoscalingGceClientV1) FetchMigTargetSize(migRef GceRef) (int64, error) {
