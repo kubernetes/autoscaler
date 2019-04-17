@@ -20,8 +20,8 @@ import (
 	"fmt"
 	"math"
 
-	"k8s.io/kubernetes/pkg/api/resource"
-	api "k8s.io/kubernetes/pkg/api/v1"
+	api "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 
 	log "github.com/golang/glog"
 )
