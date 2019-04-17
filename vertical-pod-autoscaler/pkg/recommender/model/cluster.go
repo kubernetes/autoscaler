@@ -23,6 +23,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
+	vpa_utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 	"k8s.io/klog"
 )
 
@@ -45,6 +46,9 @@ type ClusterState struct {
 	// time we've noticed the recommendation missing or last time we logged
 	// a warning about it.
 	EmptyVPAs map[VpaID]time.Time
+	// VpasWithMatchingPods contains information if there exist live pods that
+	// this VPAs selector matches.
+	VpasWithMatchingPods map[VpaID]bool
 	// Observed VPAs. Used to check if there are updates needed.
 	ObservedVpas []*vpa_types.VerticalPodAutoscaler
 
@@ -88,11 +92,12 @@ type PodState struct {
 // NewClusterState returns a new ClusterState with no pods.
 func NewClusterState() *ClusterState {
 	return &ClusterState{
-		Pods:              make(map[PodID]*PodState),
-		Vpas:              make(map[VpaID]*Vpa),
-		EmptyVPAs:         make(map[VpaID]time.Time),
-		aggregateStateMap: make(aggregateContainerStatesMap),
-		labelSetMap:       make(labelSetMap),
+		Pods:                 make(map[PodID]*PodState),
+		Vpas:                 make(map[VpaID]*Vpa),
+		EmptyVPAs:            make(map[VpaID]time.Time),
+		VpasWithMatchingPods: make(map[VpaID]bool),
+		aggregateStateMap:    make(aggregateContainerStatesMap),
+		labelSetMap:          make(labelSetMap),
 	}
 }
 
@@ -295,7 +300,9 @@ func (cluster *ClusterState) findOrCreateAggregateContainerState(containerID Con
 		cluster.aggregateStateMap[aggregateStateKey] = aggregateContainerState
 		// Link the new aggregation to the existing VPAs.
 		for _, vpa := range cluster.Vpas {
-			vpa.UseAggregationIfMatching(aggregateStateKey, aggregateContainerState)
+			if vpa.UseAggregationIfMatching(aggregateStateKey, aggregateContainerState) {
+				cluster.VpasWithMatchingPods[vpa.ID] = true
+			}
 		}
 	}
 	return aggregateContainerState
@@ -362,6 +369,19 @@ func (cluster *ClusterState) RecordRecommendation(vpa *Vpa, now time.Time) error
 		}
 	}
 	return nil
+}
+
+// GetMatchingPods returns a list of currently active pods that match the
+// given VPA. Traverses through all pods in the cluster - use sparingly.
+func (cluster *ClusterState) GetMatchingPods(vpa *Vpa) []PodID {
+	matchingPods := []PodID{}
+	for podID, pod := range cluster.Pods {
+		if vpa_utils.PodLabelsMatchVPA(podID.Namespace, cluster.labelSetMap[pod.labelSetKey],
+			vpa.ID.Namespace, vpa.PodSelector) {
+			matchingPods = append(matchingPods, podID)
+		}
+	}
+	return matchingPods
 }
 
 // Implementation of the AggregateStateKey interface. It can be used as a map key.
