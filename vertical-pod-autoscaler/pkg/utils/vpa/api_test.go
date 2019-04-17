@@ -28,7 +28,6 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
 	vpa_fake "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/fake"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
 
@@ -52,41 +51,39 @@ func parseLabelSelector(selector string) labels.Selector {
 }
 
 func TestUpdateVpaIfNeeded(t *testing.T) {
-	modelVpa := model.NewVpa(model.VpaID{VpaName: "vpa", Namespace: "test"}, nil, time.Now())
-	modelVpa.Conditions.Set(vpa_types.RecommendationProvided, true, "reason", "msg")
-	condition := modelVpa.Conditions[vpa_types.RecommendationProvided]
-	condition.LastTransitionTime = meta.NewTime(anytime)
-	modelVpa.Conditions[vpa_types.RecommendationProvided] = condition
+	updatedVpa := test.VerticalPodAutoscaler().WithName("vpa").WithNamespace("test").WithContainer(containerName).
+		AppendCondition(vpa_types.RecommendationProvided, core.ConditionTrue, "reason", "msg", anytime).Get()
 	recommendation := test.Recommendation().WithContainer(containerName).WithTarget("5", "200").Get()
+	updatedVpa.Status.Recommendation = recommendation
 	observedVpaBuilder := test.VerticalPodAutoscaler().WithName("vpa").WithNamespace("test").WithContainer(containerName)
-	modelVpa.Recommendation = recommendation
+
 	testCases := []struct {
 		caseName       string
-		vpa            *model.Vpa
+		updatedVpa     *vpa_types.VerticalPodAutoscaler
 		observedStatus *vpa_types.VerticalPodAutoscalerStatus
 		expectedUpdate bool
 	}{
 		{
-			caseName: "Doesn't update if no changes.",
-			vpa:      modelVpa,
+			caseName:   "Doesn't update if no changes.",
+			updatedVpa: updatedVpa,
 			observedStatus: &observedVpaBuilder.WithTarget("5", "200").
 				AppendCondition(vpa_types.RecommendationProvided, core.ConditionTrue, "reason", "msg", anytime).Get().Status,
 			expectedUpdate: false,
 		}, {
-			caseName: "Updates on recommendation change.",
-			vpa:      modelVpa,
+			caseName:   "Updates on recommendation change.",
+			updatedVpa: updatedVpa,
 			observedStatus: &observedVpaBuilder.WithTarget("10", "200").
 				AppendCondition(vpa_types.RecommendationProvided, core.ConditionTrue, "reason", "msg", anytime).Get().Status,
 			expectedUpdate: true,
 		}, {
-			caseName: "Updates on condition change.",
-			vpa:      modelVpa,
+			caseName:   "Updates on condition change.",
+			updatedVpa: updatedVpa,
 			observedStatus: &observedVpaBuilder.WithTarget("5", "200").
 				AppendCondition(vpa_types.RecommendationProvided, core.ConditionFalse, "reason", "msg", anytime).Get().Status,
 			expectedUpdate: true,
 		}, {
-			caseName: "Updates on condition added.",
-			vpa:      modelVpa,
+			caseName:   "Updates on condition added.",
+			updatedVpa: updatedVpa,
 			observedStatus: &observedVpaBuilder.WithTarget("5", "200").
 				AppendCondition(vpa_types.RecommendationProvided, core.ConditionTrue, "reason", "msg", anytime).
 				AppendCondition(vpa_types.LowConfidence, core.ConditionTrue, "reason", "msg", anytime).Get().Status,
@@ -96,8 +93,8 @@ func TestUpdateVpaIfNeeded(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.caseName, func(t *testing.T) {
 			fakeClient := vpa_fake.NewSimpleClientset()
-			_, err := UpdateVpaStatusIfNeeded(fakeClient.AutoscalingV1beta2().VerticalPodAutoscalers(tc.vpa.ID.Namespace),
-				tc.vpa, tc.observedStatus)
+			_, err := UpdateVpaStatusIfNeeded(fakeClient.AutoscalingV1beta2().VerticalPodAutoscalers(tc.updatedVpa.Namespace),
+				tc.updatedVpa.Name, &tc.updatedVpa.Status, tc.observedStatus)
 			assert.NoError(t, err, "Unexpected error occurred.")
 			actions := fakeClient.Actions()
 			if tc.expectedUpdate {
