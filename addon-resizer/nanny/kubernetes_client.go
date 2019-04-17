@@ -21,7 +21,7 @@ import (
 	"time"
 
 	apps "k8s.io/api/apps/v1"
-	api "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	kube_client "k8s.io/client-go/kubernetes"
@@ -40,29 +40,39 @@ type kubernetesClient struct {
 	deployment       string
 	pod              string
 	container        string
-	stopChannel      chan struct{}
+	stopChannels     []chan<- struct{}
 }
 
 // NewKubernetesClient gives a KubernetesClient with the given dependencies.
 func NewKubernetesClient(kubeClient kube_client.Interface, namespace, deployment, pod, container string) KubernetesClient {
-	stopChannel := make(chan struct{})
+	stops := []chan<- struct{}{}
+
+	nodeLister, stopCh := newReadyNodeLister(kubeClient)
+	stops = append(stops, stopCh)
+
+	podLister, stopCh := newPodListerByNamespace(kubeClient, namespace)
+	stops = append(stops, stopCh)
+
+	deploymentLister, stopCh := newDeploymentListerByNamespace(kubeClient, namespace)
+	stops = append(stops, stopCh)
+
 	result := &kubernetesClient{
-		stopChannel:      stopChannel,
 		namespace:        namespace,
 		deployment:       deployment,
 		pod:              pod,
 		container:        container,
-		nodeLister:       newReadyNodeLister(kubeClient, stopChannel),
-		podLister:        newPodListerByNamespace(kubeClient, stopChannel, namespace),
-		deploymentLister: newDeploymentListerByNamespace(kubeClient, stopChannel, namespace),
+		nodeLister:       nodeLister,
+		podLister:        podLister,
+		deploymentLister: deploymentLister,
 		deploymentClient: kubeClient.AppsV1().Deployments(namespace),
+		stopChannels:     stops,
 	}
 	return result
 }
 
 func (k *kubernetesClient) Stop() {
-	for i := 0; i < 3; i++ {
-		k.stopChannel <- struct{}{}
+	for _, ch := range k.stopChannels {
+		ch <- struct{}{}
 	}
 }
 
@@ -71,7 +81,7 @@ func (k *kubernetesClient) CountNodes() (uint64, error) {
 	return uint64(len(nodes)), err
 }
 
-func (k *kubernetesClient) ContainerResources() (*api.ResourceRequirements, error) {
+func (k *kubernetesClient) ContainerResources() (*core.ResourceRequirements, error) {
 	pod, err := k.podLister.Get(k.pod)
 
 	if err != nil {
@@ -85,7 +95,7 @@ func (k *kubernetesClient) ContainerResources() (*api.ResourceRequirements, erro
 	return nil, fmt.Errorf("container %s was not found in deployment %s in namespace %s", k.container, k.deployment, k.namespace)
 }
 
-func (k *kubernetesClient) UpdateDeployment(resources *api.ResourceRequirements) error {
+func (k *kubernetesClient) UpdateDeployment(resources *core.ResourceRequirements) error {
 	// First, get the Deployment.
 	dep, err := k.deploymentLister.Get(k.deployment)
 	if err != nil {
@@ -106,33 +116,36 @@ func (k *kubernetesClient) UpdateDeployment(resources *api.ResourceRequirements)
 	return fmt.Errorf("container %s was not found in the deployment %s in namespace %s", k.container, k.deployment, k.namespace)
 }
 
-func newReadyNodeLister(kubeClient kube_client.Interface, stopChannel <-chan struct{}) v1lister.NodeLister {
-	listWatcher := cache.NewListWatchFromClient(kubeClient.CoreV1().RESTClient(), "nodes", api.NamespaceAll, fields.Everything())
+func newReadyNodeLister(kubeClient kube_client.Interface) (v1lister.NodeLister, chan<- struct{}) {
+	stopChannel := make(chan struct{})
+	listWatcher := cache.NewListWatchFromClient(kubeClient.CoreV1().RESTClient(), "nodes", core.NamespaceAll, fields.Everything())
 	store := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
 	nodeLister := v1lister.NewNodeLister(store)
-	reflector := cache.NewReflector(listWatcher, &api.Node{}, store, time.Hour)
+	reflector := cache.NewReflector(listWatcher, &core.Node{}, store, time.Hour)
 	go reflector.Run(stopChannel)
-	return nodeLister
+	return nodeLister, stopChannel
 }
 
-func newPodListerByNamespace(kubeClient kube_client.Interface, stopChannel <-chan struct{},
-	namespace string) v1lister.PodNamespaceLister {
+func newPodListerByNamespace(kubeClient kube_client.Interface, namespace string) (v1lister.PodNamespaceLister,
+	chan<- struct{}) {
+	stopChannel := make(chan struct{})
 	listWatcher := cache.NewListWatchFromClient(kubeClient.CoreV1().RESTClient(), "pods", namespace, fields.Everything())
 	store := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
 	lister := v1lister.NewPodLister(store)
-	reflector := cache.NewReflector(listWatcher, &api.Pod{}, store, time.Hour)
+	reflector := cache.NewReflector(listWatcher, &core.Pod{}, store, time.Hour)
 	go reflector.Run(stopChannel)
 	nsLister := lister.Pods(namespace)
-	return nsLister
+	return nsLister, stopChannel
 }
 
-func newDeploymentListerByNamespace(kubeClient kube_client.Interface, stopChannel <-chan struct{},
-	namespace string) v1appslister.DeploymentNamespaceLister {
+func newDeploymentListerByNamespace(kubeClient kube_client.Interface, namespace string) (v1appslister.DeploymentNamespaceLister,
+	chan<- struct{}) {
+	stopChannel := make(chan struct{})
 	listWatcher := cache.NewListWatchFromClient(kubeClient.AppsV1().RESTClient(), "deployments", namespace, fields.Everything())
 	store := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
 	lister := v1appslister.NewDeploymentLister(store)
 	reflector := cache.NewReflector(listWatcher, &apps.Deployment{}, store, time.Hour)
 	go reflector.Run(stopChannel)
 	nsLister := lister.Deployments(namespace)
-	return nsLister
+	return nsLister, stopChannel
 }

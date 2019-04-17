@@ -60,19 +60,14 @@ func checkPercentageFlagBounds(flagName string, flagValue int) {
 	}
 }
 
-// GetClient returns a k8s clientset to the request from inside of cluster
-func GetClient() kubernetes.Interface {
+// GetClientOrDie returns a k8s clientset to the request from inside of cluster
+func GetClientOrDie() kubernetes.Interface {
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		log.Fatalf("Can not get kubernetes config: %v", err)
 	}
 
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		log.Fatalf("Can not create kubernetes client: %v", err)
-	}
-
-	return clientset
+	return kubernetes.NewForConfigOrDie(config)
 }
 
 func buildOutOfClusterConfig() (*rest.Config, error) {
@@ -83,14 +78,14 @@ func buildOutOfClusterConfig() (*rest.Config, error) {
 	return clientcmd.BuildConfigFromFlags("", kubeconfigPath)
 }
 
-// GetClientOutOfCluster returns a k8s clientset to the request from outside of cluster
-func GetClientOutOfCluster() kubernetes.Interface {
+// GetClientOutOfClusterOrDie returns a k8s clientset to the request from outside of cluster
+func GetClientOutOfClusterOrDie() kubernetes.Interface {
 	config, err := buildOutOfClusterConfig()
 	if err != nil {
 		log.Fatalf("Can not get kubernetes config: %v", err)
 	}
 
-	clientset, err := kubernetes.NewForConfig(config)
+	clientset := kubernetes.NewForConfigOrDie(config)
 
 	return clientset
 }
@@ -117,9 +112,9 @@ func main() {
 	var kubeClient kubernetes.Interface
 	_, err := rest.InClusterConfig()
 	if err != nil {
-		kubeClient = GetClientOutOfCluster()
+		kubeClient = GetClientOutOfClusterOrDie()
 	} else {
-		kubeClient = GetClient()
+		kubeClient = GetClientOrDie()
 	}
 
 	k8s := nanny.NewKubernetesClient(kubeClient, *podNamespace, *deployment, *podName, *containerName)
