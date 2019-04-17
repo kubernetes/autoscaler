@@ -114,11 +114,17 @@ func NewVpa(id VpaID, selector labels.Selector, created time.Time) *Vpa {
 }
 
 // UseAggregationIfMatching checks if the given aggregation matches (contributes to) this VPA
-// and adds it to the set of VPA's aggregations if that is the case.
-func (vpa *Vpa) UseAggregationIfMatching(aggregationKey AggregateStateKey, aggregation *AggregateContainerState) {
-	if !vpa.UsesAggregation(aggregationKey) && vpa.matchesAggregation(aggregationKey) {
-		vpa.aggregateContainerStates[aggregationKey] = aggregation
+// and adds it to the set of VPA's aggregations if that is the case. Returns true
+// if the aggregation matches VPA.
+func (vpa *Vpa) UseAggregationIfMatching(aggregationKey AggregateStateKey, aggregation *AggregateContainerState) bool {
+	if vpa.UsesAggregation(aggregationKey) {
+		return true
 	}
+	if vpa.matchesAggregation(aggregationKey) {
+		vpa.aggregateContainerStates[aggregationKey] = aggregation
+		return true
+	}
+	return false
 }
 
 // UsesAggregation returns true iff an aggregation with the given key contributes to the VPA.
@@ -163,4 +169,46 @@ func (vpa *Vpa) matchesAggregation(aggregationKey AggregateStateKey) bool {
 		return false
 	}
 	return vpa.PodSelector != nil && vpa.PodSelector.Matches(aggregationKey.Labels())
+}
+
+// UpdateConditions updates the conditions of VPA objects based on it's state.
+// PodsMatched is passed to indicate if there are currently active pods in the
+// cluster matching this VPA.
+func (vpa *Vpa) UpdateConditions(podsMatched bool) {
+	reason := ""
+	msg := ""
+	if !podsMatched {
+		reason = "NoPodsMatched"
+		msg = "No live pods match this VPA object"
+		vpa.Conditions.Set(vpa_types.NoPodsMatched, true, reason, msg)
+	}
+	if vpa.HasRecommendation() {
+		vpa.Conditions.Set(vpa_types.RecommendationProvided, true, "", "")
+	} else {
+		vpa.Conditions.Set(vpa_types.RecommendationProvided, false, reason, msg)
+	}
+
+}
+
+// AsStatus returns this objects equivalent of VPA Status. UpdateConditions
+// should be called first.
+func (vpa *Vpa) AsStatus() *vpa_types.VerticalPodAutoscalerStatus {
+	status := &vpa_types.VerticalPodAutoscalerStatus{
+		Conditions: vpa.Conditions.AsList(),
+	}
+	if vpa.Recommendation != nil {
+		status.Recommendation = vpa.Recommendation
+	}
+	return status
+}
+
+// HasMatchedPods returns true if there are are currently active pods in the
+// cluster matching this VPA, based on conditions. UpdateConditions should be
+// called first.
+func (vpa *Vpa) HasMatchedPods() bool {
+	noPodsMatched, found := vpa.Conditions[vpa_types.NoPodsMatched]
+	if found && noPodsMatched.Status == apiv1.ConditionTrue {
+		return false
+	}
+	return true
 }
