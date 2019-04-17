@@ -24,7 +24,7 @@ import (
 	"time"
 
 	log "github.com/golang/glog"
-	api "k8s.io/kubernetes/pkg/api/v1"
+	api "k8s.io/api/core/v1"
 )
 
 // checkResource determines whether a specific resource needs to be over-written.
@@ -72,6 +72,7 @@ type KubernetesClient interface {
 	CountNodes() (uint64, error)
 	ContainerResources() (*api.ResourceRequirements, error)
 	UpdateDeployment(resources *api.ResourceRequirements) error
+	Stop()
 }
 
 // ResourceEstimator estimates ResourceRequirements for a given criteria. Returned value is a list
@@ -92,6 +93,10 @@ func PollAPIServer(k8s KubernetesClient, est ResourceEstimator, pollPeriod time.
 
 		// Query the apiserver for the number of nodes.
 		num, err := k8s.CountNodes()
+		if num == 0 {
+			log.V(2).Info("No nodes found, probably listers have not synced yet. Skipping current check.")
+			continue
+		}
 		if err != nil {
 			log.Error(err)
 			continue
