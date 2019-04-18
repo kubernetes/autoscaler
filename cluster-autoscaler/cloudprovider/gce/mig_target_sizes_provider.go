@@ -56,7 +56,13 @@ func (c *cachingMigTargetSizesProvider) GetMigTargetSize(migRef GceRef) (int64, 
 
 	newTargetSizes, err := c.fillInMigTargetSizeCache()
 	if err != nil {
-		return 0, err
+		// fallback to querying for single mig
+		targetSize, err = c.gceClient.FetchMigTargetSize(migRef)
+		if err != nil {
+			return 0, err
+		}
+		c.cache.SetMigTargetSize(migRef, targetSize)
+		return targetSize, nil
 	}
 
 	// if we still do not have value here return an error
@@ -76,7 +82,7 @@ func (c *cachingMigTargetSizesProvider) fillInMigTargetSizeCache() (map[GceRef]i
 	for zone := range zones {
 		zoneMigs, err := c.gceClient.FetchAllMigs(zone)
 		if err != nil {
-			klog.Errorf("Error listing migs from zone %v", zone)
+			klog.Errorf("Error listing migs from zone %v; err=%v", zone, err)
 			return nil, err
 		}
 
