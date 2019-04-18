@@ -24,6 +24,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	labels "k8s.io/apimachinery/pkg/labels"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 	"k8s.io/klog"
@@ -459,6 +460,129 @@ func TestRecordRecommendation(t *testing.T) {
 					assert.NotContains(t, cluster.EmptyVPAs, testVpaID)
 				}
 			}
+		})
+	}
+}
+
+type podDesc struct {
+	id     PodID
+	labels labels.Set
+	phase  apiv1.PodPhase
+}
+
+func TestGetActiveMatchingPods(t *testing.T) {
+	cases := []struct {
+		name         string
+		vpaSelector  string
+		pods         []podDesc
+		expectedPods []PodID
+	}{
+		{
+			name:         "No pods",
+			vpaSelector:  testSelectorStr,
+			pods:         []podDesc{},
+			expectedPods: []PodID{},
+		}, {
+			name:        "Matching pod",
+			vpaSelector: testSelectorStr,
+			pods: []podDesc{
+				{
+					id:     testPodID,
+					labels: testLabels,
+					phase:  apiv1.PodRunning,
+				},
+			},
+			expectedPods: []PodID{testPodID},
+		}, {
+			name:        "Matching pod is inactive",
+			vpaSelector: testSelectorStr,
+			pods: []podDesc{
+				{
+					id:     testPodID,
+					labels: testLabels,
+					phase:  apiv1.PodFailed,
+				},
+			},
+			expectedPods: []PodID{testPodID},
+		}, {
+			name:        "No matching pods",
+			vpaSelector: testSelectorStr,
+			pods: []podDesc{
+				{
+					id:     testPodID,
+					labels: emptyLabels,
+					phase:  apiv1.PodRunning,
+				}, {
+					id:     PodID{Namespace: "different-than-vpa", PodName: "pod-1"},
+					labels: testLabels,
+					phase:  apiv1.PodRunning,
+				},
+			},
+			expectedPods: []PodID{},
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			cluster := NewClusterState()
+			vpa := addVpa(cluster, testVpaID, tc.vpaSelector)
+			for _, pod := range tc.pods {
+				cluster.AddOrUpdatePod(pod.id, pod.labels, pod.phase)
+			}
+			pods := cluster.GetMatchingPods(vpa)
+			assert.ElementsMatch(t, tc.expectedPods, pods)
+		})
+	}
+}
+
+func TestVPAWithMatchingPods(t *testing.T) {
+	cases := []struct {
+		name          string
+		vpaSelector   string
+		pods          []podDesc
+		expectedMatch bool
+	}{
+		{
+			name:          "No pods",
+			vpaSelector:   testSelectorStr,
+			pods:          []podDesc{},
+			expectedMatch: false,
+		},
+		{
+			name:        "VPA with matching pod",
+			vpaSelector: testSelectorStr,
+			pods: []podDesc{
+				{
+					testPodID,
+					testLabels,
+					apiv1.PodRunning,
+				},
+			},
+			expectedMatch: true,
+		},
+		{
+			name:        "No matching pod",
+			vpaSelector: testSelectorStr,
+			pods: []podDesc{
+				{
+					testPodID,
+					emptyLabels,
+					apiv1.PodRunning,
+				},
+			},
+			expectedMatch: false,
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			cluster := NewClusterState()
+			vpa := addVpa(cluster, testVpaID, tc.vpaSelector)
+			for _, podDesc := range tc.pods {
+				cluster.AddOrUpdatePod(podDesc.id, podDesc.labels, podDesc.phase)
+				containerID := ContainerID{testPodID, "foo"}
+				assert.NoError(t, cluster.AddOrUpdateContainer(containerID, testRequest))
+			}
+			assert.Equal(t, tc.expectedMatch, cluster.VpasWithMatchingPods[vpa.ID])
 		})
 	}
 }
