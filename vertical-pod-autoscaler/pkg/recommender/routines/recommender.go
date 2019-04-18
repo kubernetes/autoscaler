@@ -99,22 +99,26 @@ func (r *recommender) UpdateVPAs() {
 		resources := r.podResourceRecommender.GetRecommendedPodResources(GetContainerNameToAggregateStateMap(vpa))
 		had := vpa.HasRecommendation()
 		vpa.Recommendation = getCappedRecommendation(vpa.ID, resources, observedVpa.Spec.ResourcePolicy)
-		// Set RecommendationProvided if recommendation not empty.
-		if len(vpa.Recommendation.ContainerRecommendations) > 0 {
-			vpa.Conditions.Set(vpa_types.RecommendationProvided, true, "", "")
-			if !had {
-				metrics_recommender.ObserveRecommendationLatency(vpa.Created)
-			}
+		if vpa.HasRecommendation() && !had {
+			metrics_recommender.ObserveRecommendationLatency(vpa.Created)
 		}
+		hasMatchingPods := r.clusterState.VpasWithMatchingPods[vpa.ID]
+		vpa.UpdateConditions(hasMatchingPods)
 		if err := r.clusterState.RecordRecommendation(vpa, time.Now()); err != nil {
 			glog.Warningf("%v", err)
 			glog.V(4).Infof("VPA dump")
 			glog.V(4).Infof("%+v", vpa)
+			glog.V(4).Infof("HasMatchingPods: %v", hasMatchingPods)
+			pods := r.clusterState.GetMatchingPods(vpa)
+			glog.V(4).Infof("MatchingPods: %+v", pods)
+			if len(pods) > 0 != hasMatchingPods {
+				glog.Errorf("Aggregated states and matching pods disagree for vpa %v/%v", vpa.ID.Namespace, vpa.ID.VpaName)
+			}
 		}
 		cnt.Add(vpa)
 
 		_, err := vpa_utils.UpdateVpaStatusIfNeeded(
-			r.vpaClient.VerticalPodAutoscalers(vpa.ID.Namespace), vpa, &observedVpa.Status)
+			r.vpaClient.VerticalPodAutoscalers(vpa.ID.Namespace), vpa.ID.VpaName, vpa.AsStatus(), &observedVpa.Status)
 		if err != nil {
 			glog.Errorf(
 				"Cannot update VPA %v object. Reason: %+v", vpa.ID.VpaName, err)
