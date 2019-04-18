@@ -32,12 +32,11 @@ import (
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned/typed/autoscaling.k8s.io/v1beta2"
 	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1beta2"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/klog"
 )
 
-// VpaWithSelector is a pair a VPA and its selector.
+// VpaWithSelector is a pair of VPA and its selector.
 type VpaWithSelector struct {
 	Vpa      *vpa_types.VerticalPodAutoscaler
 	Selector labels.Selector
@@ -62,14 +61,8 @@ func patchVpa(vpaClient vpa_api.VerticalPodAutoscalerInterface, vpaName string, 
 // UpdateVpaStatusIfNeeded updates the status field of the VPA API object.
 // It prevents race conditions by verifying that the lastUpdateTime of the
 // API object and its model representation are equal.
-func UpdateVpaStatusIfNeeded(vpaClient vpa_api.VerticalPodAutoscalerInterface, vpa *model.Vpa,
+func UpdateVpaStatusIfNeeded(vpaClient vpa_api.VerticalPodAutoscalerInterface, vpaName string, newStatus,
 	oldStatus *vpa_types.VerticalPodAutoscalerStatus) (result *vpa_types.VerticalPodAutoscaler, err error) {
-	newStatus := &vpa_types.VerticalPodAutoscalerStatus{
-		Conditions: vpa.Conditions.AsList(),
-	}
-	if vpa.Recommendation != nil {
-		newStatus.Recommendation = vpa.Recommendation
-	}
 	patches := []patchRecord{{
 		Op:    "add",
 		Path:  "/status",
@@ -77,7 +70,7 @@ func UpdateVpaStatusIfNeeded(vpaClient vpa_api.VerticalPodAutoscalerInterface, v
 	}}
 
 	if !apiequality.Semantic.DeepEqual(*oldStatus, *newStatus) {
-		return patchVpa(vpaClient, (*vpa).ID.VpaName, patches)
+		return patchVpa(vpaClient, vpaName, patches)
 	}
 	return nil, nil
 }
@@ -103,10 +96,15 @@ func NewAllVpasLister(vpaClient *vpa_clientset.Clientset, stopChannel <-chan str
 
 // PodMatchesVPA returns true iff the vpaWithSelector matches the Pod.
 func PodMatchesVPA(pod *core.Pod, vpaWithSelector *VpaWithSelector) bool {
-	if pod.Namespace != vpaWithSelector.Vpa.Namespace {
+	return PodLabelsMatchVPA(pod.Namespace, labels.Set(pod.GetLabels()), vpaWithSelector.Vpa.Namespace, vpaWithSelector.Selector)
+}
+
+// PodLabelsMatchVPA returns true iff the vpaWithSelector matches the pod labels.
+func PodLabelsMatchVPA(podNamespace string, labels labels.Set, vpaNamespace string, vpaSelector labels.Selector) bool {
+	if podNamespace != vpaNamespace {
 		return false
 	}
-	return vpaWithSelector.Selector.Matches(labels.Set(pod.GetLabels()))
+	return vpaSelector.Matches(labels)
 }
 
 // stronger returns true iff a is before b in the order to control a Pod (that matches both VPAs).
