@@ -509,64 +509,41 @@ func TestDeleteInstances(t *testing.T) {
 
 // TODO; make Test*MigSize tests use MigTargetSizesProvider mock and move mocking API server to tests of cachingMigTargetSizesProvider
 
-func TestGetMigSize(t *testing.T) {
-	server := NewHttpServerMock()
-	defer server.Close()
-	g := newTestGceManager(t, server.URL, false)
+const setMigSizeResponse = `{
+  "kind": "compute#operation",
+  "id": "7558996788000226430",
+  "name": "operation-1505739408819-5597646964339-eb839c88-28805931",
+  "zone": "https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-a",
+  "operationType": "compute.instanceGroupManagers.resize",
+  "targetLink": "https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-a/instanceGroupManagers/gke-cluster-1-default-pool-f7607aac-grp",
+  "targetId": "5382990249302819619",
+  "status": "DONE",
+  "user": "user@example.com",
+  "progress": 100,
+  "insertTime": "2017-09-18T05:56:49.227-07:00",
+  "startTime": "2017-09-18T05:56:49.230-07:00",
+  "endTime": "2017-09-18T05:56:49.230-07:00",
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-a/operations/operation-1505739408819-5597646964339-eb839c88-28805931"
+}`
 
-	defaultMig := setupTestDefaultPool(g, true)
-	//buildListInstanceGroupManagersResponse
+const setMigSizeOperationResponse = `{
+  "kind": "compute#operation",
+  "id": "7558996788000226430",
+  "name": "operation-1505739408819-5597646964339-eb839c88-28805931",
+  "zone": "https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-a",
+  "operationType": "compute.instanceGroupManagers.resize",
+  "targetLink": "https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-a/instanceGroupManagers/gke-cluster-1-default-pool-f7607aac-grp",
+  "targetId": "5382990249302819619",
+  "status": "DONE",
+  "user": "user@example.com",
+  "progress": 100,
+  "insertTime": "2017-09-18T05:56:49.227-07:00",
+  "startTime": "2017-09-18T05:56:49.230-07:00",
+  "endTime": "2017-09-18T05:56:49.230-07:00",
+  "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-a/operations/operation-1505739408819-5597646964339-eb839c88-28805931"
+}`
 
-	// we expect just a call listing instanceGroupManagers as a result of initial GetMigSize
-	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers").Return(
-		buildListInstanceGroupManagersResponse(
-			buildListInstanceGroupManagersResponsePart(defaultPoolMigName, zoneB, 7),
-		)).Once()
-	defaultMigSize, err := g.GetMigSize(defaultMig)
-	assert.NoError(t, err)
-	assert.Equal(t, int64(7), defaultMigSize)
-	mock.AssertExpectationsForObjects(t, server)
-
-	// another check to ensure cache is working
-	defaultMigSize, err = g.GetMigSize(defaultMig)
-	assert.NoError(t, err)
-	assert.Equal(t, int64(7), defaultMigSize)
-	mock.AssertExpectationsForObjects(t, server)
-
-	// setup extra mig which was not there on on initial cache propagation
-	extraMig := setupTestExtraPool(g, true)
-
-	// query target size for extra mig should make yet another API call listing instanceGroupManagers
-	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers").Return(
-		buildListInstanceGroupManagersResponse(
-			buildListInstanceGroupManagersResponsePart(defaultPoolMigName, zoneB, 7),
-			buildListInstanceGroupManagersResponsePart(extraPoolMigName, zoneB, 9)),
-	).Once()
-	extraMigSize, err := g.GetMigSize(extraMig)
-	assert.NoError(t, err)
-	assert.Equal(t, int64(9), extraMigSize)
-	mock.AssertExpectationsForObjects(t, server)
-
-	// setup extra mig in another zone
-	extraMig2 := setupTestExtraPool2(g, true)
-
-	// now there should be two calls - for two zones
-	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers").Return(
-		buildListInstanceGroupManagersResponse(
-			buildListInstanceGroupManagersResponsePart(defaultPoolMigName, zoneB, 7),
-			buildListInstanceGroupManagersResponsePart(extraPoolMigName, zoneB, 9)),
-	).Once()
-	server.On("handle", "/project1/zones/us-central1-c/instanceGroupManagers").Return(
-		buildListInstanceGroupManagersResponse(
-			buildListInstanceGroupManagersResponsePart(extraPool2MigName, zoneC, 11)),
-	).Once()
-	extraMig2Size, err := g.GetMigSize(extraMig2)
-	assert.NoError(t, err)
-	assert.Equal(t, int64(11), extraMig2Size)
-	mock.AssertExpectationsForObjects(t, server)
-}
-
-func TestGetAndSetMigSizeWithCache(t *testing.T) {
+func TestGetAndSetMigSize(t *testing.T) {
 	server := NewHttpServerMock()
 	defer server.Close()
 	g := newTestGceManager(t, server.URL, false)
@@ -689,63 +666,6 @@ func TestGetMigSizeListCallFails(t *testing.T) {
 	extraPoolMigSize, err := g.GetMigSize(extraPoolMig)
 	assert.NoError(t, err)
 	assert.Equal(t, int64(8), extraPoolMigSize)
-	mock.AssertExpectationsForObjects(t, server)
-}
-
-const setMigSizeResponse = `{
-  "kind": "compute#operation",
-  "id": "7558996788000226430",
-  "name": "operation-1505739408819-5597646964339-eb839c88-28805931",
-  "zone": "https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-a",
-  "operationType": "compute.instanceGroupManagers.resize",
-  "targetLink": "https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-a/instanceGroupManagers/gke-cluster-1-default-pool-f7607aac-grp",
-  "targetId": "5382990249302819619",
-  "status": "DONE",
-  "user": "user@example.com",
-  "progress": 100,
-  "insertTime": "2017-09-18T05:56:49.227-07:00",
-  "startTime": "2017-09-18T05:56:49.230-07:00",
-  "endTime": "2017-09-18T05:56:49.230-07:00",
-  "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-a/operations/operation-1505739408819-5597646964339-eb839c88-28805931"
-}`
-
-const setMigSizeOperationResponse = `{
-  "kind": "compute#operation",
-  "id": "7558996788000226430",
-  "name": "operation-1505739408819-5597646964339-eb839c88-28805931",
-  "zone": "https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-a",
-  "operationType": "compute.instanceGroupManagers.resize",
-  "targetLink": "https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-a/instanceGroupManagers/gke-cluster-1-default-pool-f7607aac-grp",
-  "targetId": "5382990249302819619",
-  "status": "DONE",
-  "user": "user@example.com",
-  "progress": 100,
-  "insertTime": "2017-09-18T05:56:49.227-07:00",
-  "startTime": "2017-09-18T05:56:49.230-07:00",
-  "endTime": "2017-09-18T05:56:49.230-07:00",
-  "selfLink": "https://www.googleapis.com/compute/v1/projects/project1/zones/us-central1-a/operations/operation-1505739408819-5597646964339-eb839c88-28805931"
-}`
-
-func TestSetMigSize(t *testing.T) {
-	server := NewHttpServerMock()
-	defer server.Close()
-	g := newTestGceManager(t, server.URL, false)
-
-	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/extra-pool-323233232/resize").Return(setMigSizeResponse).Once()
-	server.On("handle", "/project1/zones/us-central1-b/operations/operation-1505739408819-5597646964339-eb839c88-28805931").Return(setMigSizeOperationResponse).Once()
-
-	mig := &gceMig{
-		gceRef: GceRef{
-			Project: projectId,
-			Zone:    zoneB,
-			Name:    "extra-pool-323233232",
-		},
-		gceManager: g,
-		minSize:    0,
-		maxSize:    1000,
-	}
-	err := g.SetMigSize(mig, 3)
-	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, server)
 }
 
