@@ -507,6 +507,8 @@ func TestDeleteInstances(t *testing.T) {
 	mock.AssertExpectationsForObjects(t, server)
 }
 
+// TODO; make Test*MigSize tests use MigTargetSizesProvider mock and move mocking API server to tests of cachingMigTargetSizesProvider
+
 func TestGetMigSize(t *testing.T) {
 	server := NewHttpServerMock()
 	defer server.Close()
@@ -651,6 +653,42 @@ func TestGetAndSetMigSizeWithCache(t *testing.T) {
 	extraPool2MigSize, err = g.GetMigSize(extraPool2Mig)
 	assert.NoError(t, err)
 	assert.Equal(t, int64(9), extraPool2MigSize)
+	mock.AssertExpectationsForObjects(t, server)
+}
+
+func TestGetMigSizeListCallFails(t *testing.T) {
+	server := NewHttpServerMock()
+	defer server.Close()
+	g := newTestGceManager(t, server.URL, false)
+
+	extraPoolMig := setupTestExtraPool(g, true)
+	defaultPoolMig := setupTestDefaultPool(g, true)
+
+	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers").Return("bad_response").Once()
+	server.On("handle", fmt.Sprintf("/project1/zones/us-central1-b/instanceGroupManagers/%s", defaultPoolMigName)).Return(buildInstanceGroupManagerResponse(zoneB, defaultPoolMigName, 7)).Once()
+
+	// getting size for defaultPoolMig should trigger listing all the InstanceGroupManagers
+	defaultPoolMigSize, err := g.GetMigSize(defaultPoolMig)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(7), defaultPoolMigSize)
+	mock.AssertExpectationsForObjects(t, server)
+
+	// extra queries for defaultPoolMig and extraPoolMig should not result in any extra API calls
+	defaultPoolMigSize, err = g.GetMigSize(defaultPoolMig)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(7), defaultPoolMigSize)
+
+	// Querying another mig will yet again try to list all migs
+	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers").Return(
+		buildListInstanceGroupManagersResponse(
+			buildListInstanceGroupManagersResponsePart(defaultPoolMigName, zoneB, 7),
+			buildListInstanceGroupManagersResponsePart(extraPoolMigName, zoneB, 8),
+		)).Once()
+
+	// getting size for defaultPoolMig should trigger listing all the InstanceGroupManagers
+	extraPoolMigSize, err := g.GetMigSize(extraPoolMig)
+	assert.NoError(t, err)
+	assert.Equal(t, int64(8), extraPoolMigSize)
 	mock.AssertExpectationsForObjects(t, server)
 }
 
