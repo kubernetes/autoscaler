@@ -48,7 +48,7 @@ var (
 			Namespace: metricsNamespace,
 			Name:      "vpa_objects_count",
 			Help:      "Number of VPA objects present in the cluster.",
-		}, []string{"update_mode", "has_recommendation", "api", "matches_pods"},
+		}, []string{"update_mode", "has_recommendation", "api", "matches_pods", "unsupported_config"},
 	)
 
 	recommendationLatency = prometheus.NewHistogram(
@@ -65,10 +65,11 @@ var (
 )
 
 type objectCounterKey struct {
-	mode        string
-	has         bool
-	matchesPods bool
-	apiVersion  apiVersion
+	mode              string
+	has               bool
+	matchesPods       bool
+	apiVersion        apiVersion
+	unsupportedConfig bool
 }
 
 // ObjectCounter helps split all VPA objects into buckets
@@ -102,9 +103,17 @@ func NewObjectCounter() *ObjectCounter {
 	// initialize with empty data so we can clean stale gauge values in Observe
 	for _, m := range modes {
 		for _, h := range []bool{false, true} {
-			for _, mp := range []bool{false, true} {
-				for _, api := range []apiVersion{v1beta1, v1beta2} {
-					obj.cnt[objectCounterKey{mode: m, has: h, apiVersion: api, matchesPods: mp}] = 0
+			for _, api := range []apiVersion{v1beta1, v1beta2} {
+				for _, mp := range []bool{false, true} {
+					for _, uc := range []bool{false, true} {
+						obj.cnt[objectCounterKey{
+							mode:              m,
+							has:               h,
+							apiVersion:        api,
+							matchesPods:       mp,
+							unsupportedConfig: uc,
+						}] = 0
+					}
 				}
 			}
 		}
@@ -123,11 +132,13 @@ func (oc *ObjectCounter) Add(vpa *model.Vpa) {
 	if vpa.IsV1Beta1API {
 		api = v1beta1
 	}
+
 	key := objectCounterKey{
-		mode:        mode,
-		has:         vpa.HasRecommendation(),
-		apiVersion:  api,
-		matchesPods: vpa.HasMatchedPods(),
+		mode:              mode,
+		has:               vpa.HasRecommendation(),
+		apiVersion:        api,
+		matchesPods:       vpa.HasMatchedPods(),
+		unsupportedConfig: vpa.Conditions.ConditionActive(vpa_types.ConfigUnsupported),
 	}
 	oc.cnt[key]++
 }
@@ -139,6 +150,8 @@ func (oc *ObjectCounter) Observe() {
 			k.mode,
 			fmt.Sprintf("%v", k.has),
 			string(k.apiVersion),
-			fmt.Sprintf("%v", k.matchesPods)).Set(float64(v))
+			fmt.Sprintf("%v", k.matchesPods),
+			fmt.Sprintf("%v", k.unsupportedConfig),
+		).Set(float64(v))
 	}
 }
