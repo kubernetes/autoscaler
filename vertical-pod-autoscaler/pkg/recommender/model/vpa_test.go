@@ -129,9 +129,15 @@ func TestUpdateConditions(t *testing.T) {
 				assert.Equal(t, condition.Status, actualCondition.Status, "Condition: %v", condition.Type)
 				assert.Equal(t, condition.Reason, actualCondition.Reason, "Condition: %v", condition.Type)
 				assert.Equal(t, condition.Message, actualCondition.Message, "Condition: %v", condition.Type)
+				if condition.Status == core.ConditionTrue {
+					assert.True(t, vpa.Conditions.ConditionActive(condition.Type))
+				} else {
+					assert.False(t, vpa.Conditions.ConditionActive(condition.Type))
+				}
 			}
 			for _, condition := range tc.expectedAbsent {
 				assert.NotContains(t, vpa.Conditions, condition)
+				assert.False(t, vpa.Conditions.ConditionActive(condition))
 			}
 		})
 	}
