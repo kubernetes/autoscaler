@@ -67,6 +67,11 @@ func (conditionsMap *vpaConditionsMap) AsList() []vpa_types.VerticalPodAutoscale
 	return conditions
 }
 
+func (conditionsMap *vpaConditionsMap) ConditionActive(conditionType vpa_types.VerticalPodAutoscalerConditionType) bool {
+	condition, found := (*conditionsMap)[conditionType]
+	return found && condition.Status == apiv1.ConditionTrue
+}
+
 // Vpa (Vertical Pod Autoscaler) object is responsible for vertical scaling of
 // Pods matching a given label selector.
 type Vpa struct {
