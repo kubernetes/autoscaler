@@ -47,7 +47,7 @@ const (
 	operationWaitTimeout    = 5 * time.Second
 	operationPollInterval   = 100 * time.Millisecond
 	maxRecordsReturnedByAPI = 100
-	refreshInterval         = 10 * time.Second
+	refreshInterval         = 1 * time.Minute
 )
 
 // AwsManager is handles aws communication and data caching.
