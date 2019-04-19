@@ -51,6 +51,7 @@ func TestUpdateConditions(t *testing.T) {
 		podsMatched        bool
 		hasRecommendation  bool
 		expectedConditions []vpa_types.VerticalPodAutoscalerCondition
+		expectedAbsent     []vpa_types.VerticalPodAutoscalerConditionType
 	}{
 		{
 			name:              "Has recommendation",
@@ -64,6 +65,7 @@ func TestUpdateConditions(t *testing.T) {
 					Message: "",
 				},
 			},
+			expectedAbsent: []vpa_types.VerticalPodAutoscalerConditionType{vpa_types.NoPodsMatched},
 		}, {
 			name:              "Has recommendation but no pods matched",
 			podsMatched:       false,
@@ -78,7 +80,7 @@ func TestUpdateConditions(t *testing.T) {
 					Type:    vpa_types.NoPodsMatched,
 					Status:  core.ConditionTrue,
 					Reason:  "NoPodsMatched",
-					Message: "No live pods match this VPA object",
+					Message: "No pods match this VPA object",
 				},
 			},
 		}, {
@@ -93,6 +95,7 @@ func TestUpdateConditions(t *testing.T) {
 					Message: "",
 				},
 			},
+			expectedAbsent: []vpa_types.VerticalPodAutoscalerConditionType{vpa_types.NoPodsMatched},
 		}, {
 			name:              "No recommendation no pods matched",
 			podsMatched:       false,
@@ -102,12 +105,12 @@ func TestUpdateConditions(t *testing.T) {
 					Type:    vpa_types.RecommendationProvided,
 					Status:  core.ConditionFalse,
 					Reason:  "NoPodsMatched",
-					Message: "No live pods match this VPA object",
+					Message: "No pods match this VPA object",
 				}, {
 					Type:    vpa_types.NoPodsMatched,
 					Status:  core.ConditionTrue,
 					Reason:  "NoPodsMatched",
-					Message: "No live pods match this VPA object",
+					Message: "No pods match this VPA object",
 				},
 			},
 		},
@@ -126,6 +129,9 @@ func TestUpdateConditions(t *testing.T) {
 				assert.Equal(t, condition.Status, actualCondition.Status, "Condition: %v", condition.Type)
 				assert.Equal(t, condition.Reason, actualCondition.Reason, "Condition: %v", condition.Type)
 				assert.Equal(t, condition.Message, actualCondition.Message, "Condition: %v", condition.Type)
+			}
+			for _, condition := range tc.expectedAbsent {
+				assert.NotContains(t, vpa.Conditions, condition)
 			}
 		})
 	}

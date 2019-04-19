@@ -177,9 +177,11 @@ func (vpa *Vpa) matchesAggregation(aggregationKey AggregateStateKey) bool {
 func (vpa *Vpa) UpdateConditions(podsMatched bool) {
 	reason := ""
 	msg := ""
-	if !podsMatched {
+	if podsMatched {
+		delete(vpa.Conditions, vpa_types.NoPodsMatched)
+	} else {
 		reason = "NoPodsMatched"
-		msg = "No live pods match this VPA object"
+		msg = "No pods match this VPA object"
 		vpa.Conditions.Set(vpa_types.NoPodsMatched, true, reason, msg)
 	}
 	if vpa.HasRecommendation() {
