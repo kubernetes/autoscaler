@@ -103,7 +103,7 @@ func createAWSManagerInternal(
 		sess := session.New(aws.NewConfig().WithRegion(getRegion()))
 
 		if autoScalingService == nil {
-			autoScalingService = &autoScalingWrapper{autoscaling.New(sess)}
+			autoScalingService = &autoScalingWrapper{autoscaling.New(sess), map[string]string{}}
 		}
 
 		if ec2Service == nil {
