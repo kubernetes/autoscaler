@@ -66,7 +66,7 @@ func (e *EC2Mock) DescribeLaunchTemplateVersions(i *ec2.DescribeLaunchTemplateVe
 	return args.Get(0).(*ec2.DescribeLaunchTemplateVersionsOutput), nil
 }
 
-var testService = autoScalingWrapper{&AutoScalingMock{}}
+var testService = autoScalingWrapper{&AutoScalingMock{}, map[string]string{}}
 
 var testAwsManager = &AwsManager{
 	asgCache: &asgCache{
@@ -80,7 +80,7 @@ var testAwsManager = &AwsManager{
 }
 
 func newTestAwsManagerWithService(service autoScaling, autoDiscoverySpecs []cloudprovider.ASGAutoDiscoveryConfig) *AwsManager {
-	wrapper := autoScalingWrapper{service}
+	wrapper := autoScalingWrapper{service, map[string]string{}}
 	return &AwsManager{
 		autoScalingService: wrapper,
 		asgCache: &asgCache{
