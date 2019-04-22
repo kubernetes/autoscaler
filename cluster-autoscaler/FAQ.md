@@ -111,7 +111,7 @@ Since version 1.0.0 we consider CA as GA. It means that:
  * Most of the pain-points reported by the users (like too short graceful termination support) were fixed, however
    some of the less critical feature requests are yet to be implemented.
  * CA has decent monitoring, logging and eventing.
- * CA tries to handle most of the error situations in the cluster (like cloud provider stockouts, broken nodes, etc).
+ * CA tries to handle most of the error situations in the cluster (like cloud provider stockouts, broken nodes, etc). The cases handled can however vary from cloudprovider to cloudprovider.
  * CA developers are committed to maintaining and supporting CA in the foreseeable future.
 
 All of the previous versions (earlier that 1.0.0) are considered beta.
