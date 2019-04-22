@@ -7,13 +7,13 @@
 
 ### VPA restarts my pods but does not modify CPU or memory settings
 
-First check that VPA admission controller is running correctly:
+First check that the VPA admission controller is running correctly:
 
 ```$ kubectl get pod -n kube-system | grep vpa-admission-controller```
 
 ```vpa-admission-controller-69645795dc-sm88s            1/1       Running   0          1m```
 
-Check the logs of admission controller:
+Check the logs of the admission controller:
 
 ```$ kubectl logs -n kube-system vpa-admission-controller-69645795dc-sm88s```
 
@@ -24,7 +24,7 @@ Check the output of:
 
 ```$ kubectl describe mutatingWebhookConfiguration vpa-webhook-config```
 
-This should be correctly configured to point to VPA admission webhook service.
+This should be correctly configured to point to the VPA admission webhook service.
 Example:
 
 ```yaml
