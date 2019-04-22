@@ -43,7 +43,7 @@ func readFile(filePath string) []byte {
 		return nil
 	}
 	klog.Infof("Successfully read %d bytes from %v", count, filePath)
-	return res
+	return res[:count]
 }
 
 func initCerts(config certsConfig) certsContainer {
