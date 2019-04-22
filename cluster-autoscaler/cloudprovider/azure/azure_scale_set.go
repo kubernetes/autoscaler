@@ -270,7 +270,7 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef) error {
 		return nil
 	}
 
-	klog.V(3).Infof("Deleting vmss instances %q", instances)
+	klog.V(3).Infof("Deleting vmss instances %#v", instances)
 
 	commonAsg, err := scaleSet.manager.GetAsgForInstance(instances[0])
 	if err != nil {
