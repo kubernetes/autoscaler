@@ -24,20 +24,19 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gophercloud/gophercloud"
-	"github.com/gophercloud/gophercloud/openstack"
-	"github.com/gophercloud/gophercloud/openstack/containerinfra/v1/clusters"
-	"github.com/gophercloud/gophercloud/openstack/orchestration/v1/stackresources"
-	"github.com/gophercloud/gophercloud/openstack/orchestration/v1/stacks"
 	"github.com/satori/go.uuid"
 	"gopkg.in/gcfg.v1"
 	netutil "k8s.io/apimachinery/pkg/util/net"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum/gophercloud"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum/gophercloud/openstack"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum/gophercloud/openstack/containerinfra/v1/clusters"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum/gophercloud/openstack/orchestration/v1/stackresources"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum/gophercloud/openstack/orchestration/v1/stacks"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	certutil "k8s.io/client-go/util/cert"
 	"k8s.io/klog"
-	provider_os "k8s.io/kubernetes/pkg/cloudprovider/providers/openstack"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 )
 
@@ -78,7 +77,7 @@ type magnumManagerHeat struct {
 // createMagnumManagerHeat sets up cluster and stack clients and returns
 // an magnumManagerHeat.
 func createMagnumManagerHeat(configReader io.Reader, discoverOpts cloudprovider.NodeGroupDiscoveryOptions, opts config.AutoscalingOptions) (*magnumManagerHeat, error) {
-	var cfg provider_os.Config
+	var cfg Config
 	if configReader != nil {
 		if err := gcfg.ReadInto(&cfg, configReader); err != nil {
 			klog.Errorf("Couldn't read config: %v", err)
