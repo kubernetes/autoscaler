@@ -1,14 +1,19 @@
 # Vertical Pod Autoscaler FAQ
 
-1. VPA restarts my pods but does not modify CPU or memory settings. Why?
+## Contents
 
-First check that VPA admission controller is running correctly:
+- [VPA restarts my pods but does not modify CPU or memory settings. Why?](#vpa-restarts-my-pods-but-does-not-modify-CPU-or-memory-settings)
+- [How can I use Prometheus as a history provider for the VPA recommender?](#how-can-i-use-prometheus-as-a-history-provider-for-the-vpa-recommender)
+
+### VPA restarts my pods but does not modify CPU or memory settings
+
+First check that the VPA admission controller is running correctly:
 
 ```$ kubectl get pod -n kube-system | grep vpa-admission-controller```
 
 ```vpa-admission-controller-69645795dc-sm88s            1/1       Running   0          1m```
 
-Check the logs of admission controller:
+Check the logs of the admission controller:
 
 ```$ kubectl logs -n kube-system vpa-admission-controller-69645795dc-sm88s```
 
@@ -19,8 +24,9 @@ Check the output of:
 
 ```$ kubectl describe mutatingWebhookConfiguration vpa-webhook-config```
 
-This should be correctly configured to point to VPA admission webhook service.
+This should be correctly configured to point to the VPA admission webhook service.
 Example:
+
 ```yaml
 Name:         vpa-webhook-config
 Namespace:
@@ -67,6 +73,7 @@ If the webhook config doesn't exist, something got wrong with webhook
 registration for admission controller. Check the logs for more info.
 
 From the above config following part defines the webhook service:
+
 ```yaml
 Service:
       Name:        vpa-webhook
@@ -97,9 +104,9 @@ is serving.
 
 Note: the commands will differ if you deploy VPA in a different namespace.
 
-2. How can I use Prometheus as a history provider for the VPA recommender?
+### How can I use Prometheus as a history provider for the VPA recommender
 
-Configure your prometheus to get metrics from cadvisor. Make sure that the metrics from the cadvisor have the label `job=kubernetes-cadvisor`
+Configure your Prometheus to get metrics from cadvisor. Make sure that the metrics from the cadvisor have the label `job=kubernetes-cadvisor`
 
 Set the flags `--storage=prometheus` and `--prometheus-address=<your-prometheus-address>` in the deployment for the `VPA recommender`. The `args` for the container should look something like this:
 
@@ -112,7 +119,7 @@ spec:
     - --prometheus-address=http://prometheus.default.svc.cluster.local:9090
   ```
 
-In this example, prometheus is running in the default namespace.
+In this example, Prometheus is running in the default namespace.
 
 Now deploy the `VPA recommender` and check the logs.
 
@@ -121,5 +128,4 @@ Now deploy the `VPA recommender` and check the logs.
 Here you should see the flags that you set for the VPA recommender and you should see:
 ```Initializing VPA from history provider```
 
-This means that the VPA recommender is now using prometheus as the history provider.
-
+This means that the VPA recommender is now using Prometheus as the history provider.
