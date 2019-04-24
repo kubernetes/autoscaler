@@ -265,7 +265,7 @@ func checkPodsSchedulableOnNode(context *context.AutoscalingContext, pods []*api
 //
 // TODO(mwielgus): Review error policy - sometimes we may continue with partial errors.
 func getNodeInfosForGroups(nodes []*apiv1.Node, nodeInfoCache map[string]*schedulernodeinfo.NodeInfo, cloudProvider cloudprovider.CloudProvider, listers kube_util.ListerRegistry,
-	daemonsets []*appsv1.DaemonSet, predicateChecker *simulator.PredicateChecker) (map[string]*schedulernodeinfo.NodeInfo, errors.AutoscalerError) {
+	daemonsets []*appsv1.DaemonSet, predicateChecker *simulator.PredicateChecker, ignoredTaints taintKeySet) (map[string]*schedulernodeinfo.NodeInfo, errors.AutoscalerError) {
 	result := make(map[string]*schedulernodeinfo.NodeInfo)
 	seenGroups := make(map[string]bool)
 
@@ -285,7 +285,7 @@ func getNodeInfosForGroups(nodes []*apiv1.Node, nodeInfoCache map[string]*schedu
 			if err != nil {
 				return false, "", err
 			}
-			sanitizedNodeInfo, err := sanitizeNodeInfo(nodeInfo, id)
+			sanitizedNodeInfo, err := sanitizeNodeInfo(nodeInfo, id, ignoredTaints)
 			if err != nil {
 				return false, "", err
 			}
@@ -329,7 +329,7 @@ func getNodeInfosForGroups(nodes []*apiv1.Node, nodeInfoCache map[string]*schedu
 
 		// No good template, trying to generate one. This is called only if there are no
 		// working nodes in the node groups. By default CA tries to use a real-world example.
-		nodeInfo, err := getNodeInfoFromTemplate(nodeGroup, daemonsets, predicateChecker)
+		nodeInfo, err := getNodeInfoFromTemplate(nodeGroup, daemonsets, predicateChecker, ignoredTaints)
 		if err != nil {
 			if err == cloudprovider.ErrNotImplemented {
 				continue
@@ -371,7 +371,7 @@ func getNodeInfosForGroups(nodes []*apiv1.Node, nodeInfoCache map[string]*schedu
 }
 
 // getNodeInfoFromTemplate returns NodeInfo object built base on TemplateNodeInfo returned by NodeGroup.TemplateNodeInfo().
-func getNodeInfoFromTemplate(nodeGroup cloudprovider.NodeGroup, daemonsets []*appsv1.DaemonSet, predicateChecker *simulator.PredicateChecker) (*schedulernodeinfo.NodeInfo, errors.AutoscalerError) {
+func getNodeInfoFromTemplate(nodeGroup cloudprovider.NodeGroup, daemonsets []*appsv1.DaemonSet, predicateChecker *simulator.PredicateChecker, ignoredTaints taintKeySet) (*schedulernodeinfo.NodeInfo, errors.AutoscalerError) {
 	id := nodeGroup.Id()
 	baseNodeInfo, err := nodeGroup.TemplateNodeInfo()
 	if err != nil {
@@ -382,7 +382,7 @@ func getNodeInfoFromTemplate(nodeGroup cloudprovider.NodeGroup, daemonsets []*ap
 	pods = append(pods, baseNodeInfo.Pods()...)
 	fullNodeInfo := schedulernodeinfo.NewNodeInfo(pods...)
 	fullNodeInfo.SetNode(baseNodeInfo.Node())
-	sanitizedNodeInfo, typedErr := sanitizeNodeInfo(fullNodeInfo, id)
+	sanitizedNodeInfo, typedErr := sanitizeNodeInfo(fullNodeInfo, id, ignoredTaints)
 	if typedErr != nil {
 		return nil, typedErr
 	}
@@ -420,9 +420,9 @@ func deepCopyNodeInfo(nodeInfo *schedulernodeinfo.NodeInfo) (*schedulernodeinfo.
 	return newNodeInfo, nil
 }
 
-func sanitizeNodeInfo(nodeInfo *schedulernodeinfo.NodeInfo, nodeGroupName string) (*schedulernodeinfo.NodeInfo, errors.AutoscalerError) {
+func sanitizeNodeInfo(nodeInfo *schedulernodeinfo.NodeInfo, nodeGroupName string, ignoredTaints taintKeySet) (*schedulernodeinfo.NodeInfo, errors.AutoscalerError) {
 	// Sanitize node name.
-	sanitizedNode, err := sanitizeTemplateNode(nodeInfo.Node(), nodeGroupName)
+	sanitizedNode, err := sanitizeTemplateNode(nodeInfo.Node(), nodeGroupName, ignoredTaints)
 	if err != nil {
 		return nil, err
 	}
@@ -443,7 +443,7 @@ func sanitizeNodeInfo(nodeInfo *schedulernodeinfo.NodeInfo, nodeGroupName string
 	return sanitizedNodeInfo, nil
 }
 
-func sanitizeTemplateNode(node *apiv1.Node, nodeGroup string) (*apiv1.Node, errors.AutoscalerError) {
+func sanitizeTemplateNode(node *apiv1.Node, nodeGroup string, ignoredTaints taintKeySet) (*apiv1.Node, errors.AutoscalerError) {
 	newNode := node.DeepCopy()
 	nodeName := fmt.Sprintf("template-node-for-%s-%d", nodeGroup, rand.Int63())
 	newNode.Labels = make(map[string]string, len(node.Labels))
@@ -475,6 +475,11 @@ func sanitizeTemplateNode(node *apiv1.Node, nodeGroup string) (*apiv1.Node, erro
 		// ignore conditional taints as they represent a transient node state.
 		if exists := nodeConditionTaints[taint.Key]; exists {
 			klog.V(4).Infof("Removing node condition taint %s, when creating template from node %s", taint.Key, node.Name)
+			continue
+		}
+
+		if exists := ignoredTaints[taint.Key]; exists {
+			klog.V(4).Infof("Removing ignored taint %s, when creating template from node %s", taint.Key, node.Name)
 			continue
 		}
 
