@@ -36,9 +36,14 @@ type autoScaling interface {
 // autoScalingWrapper provides several utility methods over the auto-scaling service provided by AWS SDK
 type autoScalingWrapper struct {
 	autoScaling
+	launchConfigurationInstanceTypeCache map[string]string
 }
 
 func (m autoScalingWrapper) getInstanceTypeByLCName(name string) (string, error) {
+	if instanceType, found := m.launchConfigurationInstanceTypeCache[name]; found {
+		return instanceType, nil
+	}
+
 	params := &autoscaling.DescribeLaunchConfigurationsInput{
 		LaunchConfigurationNames: []*string{aws.String(name)},
 		MaxRecords:               aws.Int64(1),
@@ -52,7 +57,9 @@ func (m autoScalingWrapper) getInstanceTypeByLCName(name string) (string, error)
 		return "", fmt.Errorf("Unable to get first LaunchConfiguration for %s", name)
 	}
 
-	return *launchConfigurations.LaunchConfigurations[0].InstanceType, nil
+	instanceType := *launchConfigurations.LaunchConfigurations[0].InstanceType
+	m.launchConfigurationInstanceTypeCache[name] = instanceType
+	return instanceType, nil
 }
 
 func (m *autoScalingWrapper) getAutoscalingGroupsByNames(names []string) ([]*autoscaling.Group, error) {
