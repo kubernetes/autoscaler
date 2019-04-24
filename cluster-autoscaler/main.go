@@ -156,6 +156,7 @@ var (
 	expendablePodsPriorityCutoff  = flag.Int("expendable-pods-priority-cutoff", -10, "Pods with priority below cutoff will be expendable. They can be killed without any consideration during scale down and they don't cause scale up. Pods with null priority (PodPriority disabled) are non expendable.")
 	regional                      = flag.Bool("regional", false, "Cluster is regional.")
 	newPodScaleUpDelay            = flag.Duration("new-pod-scale-up-delay", 0*time.Second, "Pods less than this old will not be considered for scale-up.")
+	ignoreTaintsFlag              = multiStringFlag("ignore-taint", "Specifies a taint to ignore in node templates when considering to scale a node group")
 )
 
 func createAutoscalingOptions() config.AutoscalingOptions {
@@ -216,6 +217,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		ExpendablePodsPriorityCutoff:     *expendablePodsPriorityCutoff,
 		Regional:                         *regional,
 		NewPodScaleUpDelay:               *newPodScaleUpDelay,
+		IgnoredTaints:                    *ignoreTaintsFlag,
 	}
 }
 

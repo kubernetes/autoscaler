@@ -338,7 +338,7 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 	predicateChecker := simulator.NewTestPredicateChecker()
 
 	res, err := GetNodeInfosForGroups([]*apiv1.Node{unready4, unready3, ready2, ready1}, nil,
-		provider1, fakeClient, []*extensionsv1.DaemonSet{}, predicateChecker)
+		provider1, fakeClient, []*extensionsv1.DaemonSet{}, predicateChecker, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 4, len(res))
 	info, found := res["ng1"]
@@ -356,7 +356,7 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 
 	// Test for a nodegroup without nodes and TemplateNodeInfo not implemented by cloud proivder
 	res, err = GetNodeInfosForGroups([]*apiv1.Node{}, nil, provider2, fakeClient,
-		[]*extensionsv1.DaemonSet{}, predicateChecker)
+		[]*extensionsv1.DaemonSet{}, predicateChecker, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(res))
 }
@@ -411,7 +411,7 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 
 	// Fill cache
 	res, err := GetNodeInfosForGroups([]*apiv1.Node{unready4, unready3, ready2, ready1}, nodeInfoCache,
-		provider1, fakeClient, []*extensionsv1.DaemonSet{}, predicateChecker)
+		provider1, fakeClient, []*extensionsv1.DaemonSet{}, predicateChecker, nil)
 	assert.NoError(t, err)
 	// Check results
 	assert.Equal(t, 4, len(res))
@@ -446,7 +446,7 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 
 	// Check cache with all nodes removed
 	res, err = GetNodeInfosForGroups([]*apiv1.Node{}, nodeInfoCache,
-		provider1, fakeClient, []*extensionsv1.DaemonSet{}, predicateChecker)
+		provider1, fakeClient, []*extensionsv1.DaemonSet{}, predicateChecker, nil)
 	assert.NoError(t, err)
 	// Check results
 	assert.Equal(t, 2, len(res))
@@ -471,7 +471,7 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 	nodeInfoCache = map[string]*schedulercache.NodeInfo{"ng4": infoNg4Node6}
 	// Check if cache was used
 	res, err = GetNodeInfosForGroups([]*apiv1.Node{ready1, ready2}, nodeInfoCache,
-		provider1, fakeClient, []*extensionsv1.DaemonSet{}, predicateChecker)
+		provider1, fakeClient, []*extensionsv1.DaemonSet{}, predicateChecker, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(res))
 	info, found = res["ng2"]
@@ -545,7 +545,7 @@ func TestSanitizeNodeInfo(t *testing.T) {
 	nodeInfo := schedulercache.NewNodeInfo(pod)
 	nodeInfo.SetNode(node)
 
-	res, err := sanitizeNodeInfo(nodeInfo, "test-group")
+	res, err := sanitizeNodeInfo(nodeInfo, "test-group", nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(res.Pods()))
 }
@@ -556,9 +556,9 @@ func TestSanitizeLabels(t *testing.T) {
 		kubeletapis.LabelHostname: "abc",
 		"x":                       "y",
 	}
-	node, err := sanitizeTemplateNode(oldNode, "bzium")
+	node, err := sanitizeTemplateNode(oldNode, "bzium", nil)
 	assert.NoError(t, err)
-	assert.NotEqual(t, node.Labels[kubeletapis.LabelHostname], "abc")
+	assert.NotEqual(t, node.Labels[kubeletapis.LabelHostname], "abc", nil)
 	assert.Equal(t, node.Labels["x"], "y")
 	assert.NotEqual(t, node.Name, oldNode.Name)
 	assert.Equal(t, node.Labels[kubeletapis.LabelHostname], node.Name)
@@ -583,13 +583,20 @@ func TestSanitizeTaints(t *testing.T) {
 		Effect: apiv1.TaintEffectNoSchedule,
 	})
 	taints = append(taints, apiv1.Taint{
+		Key:    "ignore-me",
+		Value:  "1",
+		Effect: apiv1.TaintEffectNoSchedule,
+	})
+	taints = append(taints, apiv1.Taint{
 		Key:    "node.kubernetes.io/memory-pressure",
 		Value:  "1",
 		Effect: apiv1.TaintEffectNoSchedule,
 	})
 
+	ignoredTaints := map[string]bool{"ignore-me": true}
+
 	oldNode.Spec.Taints = taints
-	node, err := sanitizeTemplateNode(oldNode, "bzium")
+	node, err := sanitizeTemplateNode(oldNode, "bzium", ignoredTaints)
 	assert.NoError(t, err)
 	assert.Equal(t, len(node.Spec.Taints), 1)
 	assert.Equal(t, node.Spec.Taints[0].Key, "test-taint")
