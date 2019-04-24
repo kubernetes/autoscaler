@@ -34,6 +34,7 @@ find_files() {
         -o -wholename '*/third_party/*' \
         -o -wholename '*/Godeps/*' \
         -o -wholename '*/vendor/*' \
+        -o -wholename './cluster-autoscaler/cloudprovider/magnum/gophercloud/*' \
       \) -prune \
     \) -name '*.go'
 }
