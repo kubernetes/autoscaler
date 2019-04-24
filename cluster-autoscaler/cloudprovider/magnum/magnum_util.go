@@ -19,9 +19,8 @@ package magnum
 import (
 	"time"
 
-	"github.com/gophercloud/gophercloud"
-	"github.com/gophercloud/gophercloud/openstack/identity/v3/extensions/trusts"
-	provider_os "k8s.io/kubernetes/pkg/cloudprovider/providers/openstack"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum/gophercloud"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum/gophercloud/openstack/identity/v3/extensions/trusts"
 )
 
 const (
@@ -41,7 +40,85 @@ const (
 	deleteNodesBatchingDelay = 2 * time.Second
 )
 
-func toAuthOptsExt(cfg provider_os.Config) trusts.AuthOptsExt {
+// MyDuration is the encoding.TextUnmarshaler interface for time.Duration
+type MyDuration struct {
+	time.Duration
+}
+
+// UnmarshalText is used to convert from text to Duration
+func (d *MyDuration) UnmarshalText(text []byte) error {
+	res, err := time.ParseDuration(string(text))
+	if err != nil {
+		return err
+	}
+	d.Duration = res
+	return nil
+}
+
+// LoadBalancerOpts have the options to talk to Neutron LBaaSV2 or Octavia
+type LoadBalancerOpts struct {
+	LBVersion            string     `gcfg:"lb-version"`          // overrides autodetection. Only support v2.
+	UseOctavia           bool       `gcfg:"use-octavia"`         // uses Octavia V2 service catalog endpoint
+	SubnetID             string     `gcfg:"subnet-id"`           // overrides autodetection.
+	FloatingNetworkID    string     `gcfg:"floating-network-id"` // If specified, will create floating ip for loadbalancer, or do not create floating ip.
+	LBMethod             string     `gcfg:"lb-method"`           // default to ROUND_ROBIN.
+	LBProvider           string     `gcfg:"lb-provider"`
+	CreateMonitor        bool       `gcfg:"create-monitor"`
+	MonitorDelay         MyDuration `gcfg:"monitor-delay"`
+	MonitorTimeout       MyDuration `gcfg:"monitor-timeout"`
+	MonitorMaxRetries    uint       `gcfg:"monitor-max-retries"`
+	ManageSecurityGroups bool       `gcfg:"manage-security-groups"`
+	NodeSecurityGroupIDs []string   // Do not specify, get it automatically when enable manage-security-groups. TODO(FengyunPan): move it into cache
+}
+
+// BlockStorageOpts is used to talk to Cinder service
+type BlockStorageOpts struct {
+	BSVersion             string `gcfg:"bs-version"`        // overrides autodetection. v1 or v2. Defaults to auto
+	TrustDevicePath       bool   `gcfg:"trust-device-path"` // See Issue #33128
+	IgnoreVolumeAZ        bool   `gcfg:"ignore-volume-az"`
+	NodeVolumeAttachLimit int    `gcfg:"node-volume-attach-limit"` // override volume attach limit for Cinder. Default is : 256
+}
+
+// RouterOpts is used for Neutron routes
+type RouterOpts struct {
+	RouterID string `gcfg:"router-id"` // required
+}
+
+// MetadataOpts is used for configuring how to talk to metadata service or config drive
+type MetadataOpts struct {
+	SearchOrder    string     `gcfg:"search-order"`
+	RequestTimeout MyDuration `gcfg:"request-timeout"`
+}
+
+// Config is used to read and store information from the cloud configuration file
+//
+// Taken from kubernetes/pkg/cloudprovider/providers/openstack/openstack.go
+// LoadBalancer, BlockStorage, Route, Metadata are not needed for the autoscaler,
+// but are kept so that if a cloud-config file with those sections is provided
+// then the parsing will not fail.
+type Config struct {
+	Global struct {
+		AuthURL         string `gcfg:"auth-url"`
+		Username        string
+		UserID          string `gcfg:"user-id"`
+		Password        string
+		TenantID        string `gcfg:"tenant-id"`
+		TenantName      string `gcfg:"tenant-name"`
+		TrustID         string `gcfg:"trust-id"`
+		DomainID        string `gcfg:"domain-id"`
+		DomainName      string `gcfg:"domain-name"`
+		Region          string
+		CAFile          string `gcfg:"ca-file"`
+		SecretName      string `gcfg:"secret-name"`
+		SecretNamespace string `gcfg:"secret-namespace"`
+	}
+	LoadBalancer LoadBalancerOpts
+	BlockStorage BlockStorageOpts
+	Route        RouterOpts
+	Metadata     MetadataOpts
+}
+
+func toAuthOptsExt(cfg Config) trusts.AuthOptsExt {
 	opts := gophercloud.AuthOptions{
 		IdentityEndpoint: cfg.Global.AuthURL,
 		Username:         cfg.Global.Username,

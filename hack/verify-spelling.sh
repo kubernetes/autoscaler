@@ -23,4 +23,4 @@ DIR=$(dirname $0)
 go install ${DIR}/../../../github.com/client9/misspell/cmd/misspell
 
 # Spell checking
-git ls-files | grep -v -e vendor | xargs misspell -error -o stderr
+git ls-files --full-name | grep -v -e vendor | grep -v cluster-autoscaler/cloudprovider/magnum/gophercloud | xargs misspell -error -o stderr
