@@ -22,9 +22,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gophercloud/gophercloud"
-	th "github.com/gophercloud/gophercloud/testhelper"
 	"github.com/stretchr/testify/assert"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum/gophercloud"
+	th "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum/gophercloud/testhelper"
 )
 
 var clusterUUID = "732851e1-f792-4194-b966-4cbfa5f30093"

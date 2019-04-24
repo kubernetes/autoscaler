@@ -1221,10 +1221,6 @@
 			"Rev": "c818fa66e4c88b30db28038fe3f18f2f4a0db9a8"
 		},
 		{
-			"ImportPath": "github.com/gophercloud/gophercloud/openstack/containerinfra/v1/clusters",
-			"Rev": "c818fa66e4c88b30db28038fe3f18f2f4a0db9a8"
-		},
-		{
 			"ImportPath": "github.com/gophercloud/gophercloud/openstack/identity/v2/tenants",
 			"Rev": "c818fa66e4c88b30db28038fe3f18f2f4a0db9a8"
 		},
@@ -1293,23 +1289,11 @@
 			"Rev": "c818fa66e4c88b30db28038fe3f18f2f4a0db9a8"
 		},
 		{
-			"ImportPath": "github.com/gophercloud/gophercloud/openstack/orchestration/v1/stackresources",
-			"Rev": "c818fa66e4c88b30db28038fe3f18f2f4a0db9a8"
-		},
-		{
-			"ImportPath": "github.com/gophercloud/gophercloud/openstack/orchestration/v1/stacks",
-			"Rev": "c818fa66e4c88b30db28038fe3f18f2f4a0db9a8"
-		},
-		{
 			"ImportPath": "github.com/gophercloud/gophercloud/openstack/utils",
 			"Rev": "c818fa66e4c88b30db28038fe3f18f2f4a0db9a8"
 		},
 		{
 			"ImportPath": "github.com/gophercloud/gophercloud/pagination",
-			"Rev": "c818fa66e4c88b30db28038fe3f18f2f4a0db9a8"
-		},
-		{
-			"ImportPath": "github.com/gophercloud/gophercloud/testhelper",
 			"Rev": "c818fa66e4c88b30db28038fe3f18f2f4a0db9a8"
 		},
 		{
