@@ -17,9 +17,9 @@ limitations under the License.
 package target
 
 import (
-	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/labels"
 	vpa_types_v1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
+	"k8s.io/klog"
 )
 
 type compositeTargetSelectorFetcher struct {
@@ -40,7 +40,7 @@ func (f *compositeTargetSelectorFetcher) Fetch(vpa *vpa_types_v1beta2.VerticalPo
 	if primaryErr == nil {
 		return primarySelector, primaryErr
 	}
-	glog.Errorf("Primary VpaTargetSelectorFetcher failed. Err: %v", primaryErr)
+	klog.Errorf("Primary VpaTargetSelectorFetcher failed. Err: %v", primaryErr)
 	backupSelector, _ := f.backup.Fetch(vpa)
 	if backupSelector != nil {
 		return backupSelector, nil

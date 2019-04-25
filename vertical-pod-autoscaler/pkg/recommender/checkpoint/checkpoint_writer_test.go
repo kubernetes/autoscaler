@@ -21,13 +21,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang/glog"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/api/core/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
+	"k8s.io/klog"
 )
 
 // TODO: Extract these constants to a common test module.
@@ -51,7 +51,7 @@ func addVpa(cluster *model.ClusterState, vpaID model.VpaID, selector string) *mo
 	parsedSelector, _ := metav1.LabelSelectorAsSelector(labelSelector)
 	err := cluster.AddOrUpdateVpa(&apiObject, parsedSelector)
 	if err != nil {
-		glog.Fatalf("AddOrUpdateVpa() failed: %v", err)
+		klog.Fatalf("AddOrUpdateVpa() failed: %v", err)
 	}
 	return cluster.Vpas[vpaID]
 }
