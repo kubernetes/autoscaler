@@ -42,6 +42,14 @@ func (fpp *fakePodPreProcessor) Process(pod apiv1.Pod) (apiv1.Pod, error) {
 	return pod, fpp.e
 }
 
+type fakeVpaPreProcessor struct {
+	e error
+}
+
+func (fvp *fakeVpaPreProcessor) Process(vpa *vpa_types.VerticalPodAutoscaler) (*vpa_types.VerticalPodAutoscaler, error) {
+	return vpa, fvp.e
+}
+
 type fakeRecommendationProvider struct {
 	resources              []ContainerResources
 	containerToAnnotations vpa_api_util.ContainerToAnnotationsMap
@@ -108,7 +116,7 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 		name                 string
 		podJson              []byte
 		namespace            string
-		preProcessorError    error
+		podPreProcessorError error
 		recommendResources   []ContainerResources
 		recommendAnnotations vpa_api_util.ContainerToAnnotationsMap
 		recommendName        string
@@ -120,7 +128,7 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 			name:                 "invalid JSON",
 			podJson:              []byte("{"),
 			namespace:            "default",
-			preProcessorError:    nil,
+			podPreProcessorError: nil,
 			recommendResources:   []ContainerResources{},
 			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
 			recommendName:        "name",
@@ -130,7 +138,7 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 			name:                 "invalid pod",
 			podJson:              []byte("{}"),
 			namespace:            "default",
-			preProcessorError:    fmt.Errorf("bad pod"),
+			podPreProcessorError: fmt.Errorf("bad pod"),
 			recommendResources:   []ContainerResources{},
 			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
 			recommendName:        "name",
@@ -235,9 +243,10 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(fmt.Sprintf("test case: %s", tc.name), func(t *testing.T) {
-			fppp := fakePodPreProcessor{e: tc.preProcessorError}
+			fppp := fakePodPreProcessor{e: tc.podPreProcessorError}
+			fvpp := fakeVpaPreProcessor{}
 			frp := fakeRecommendationProvider{tc.recommendResources, tc.recommendAnnotations, tc.recommendName, tc.recommendError}
-			s := NewAdmissionServer(&frp, &fppp)
+			s := NewAdmissionServer(&frp, &fppp, &fvpp)
 			patches, err := s.getPatchesForPodResourceRequest(tc.podJson, tc.namespace)
 			if tc.expectError == nil {
 				assert.NoError(t, err)
@@ -258,8 +267,8 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 }
 
 func TestGetPatchesForResourceRequest_TwoReplacementResources(t *testing.T) {
-
 	fppp := fakePodPreProcessor{}
+	fvpp := fakeVpaPreProcessor{}
 	recommendResources := []ContainerResources{
 		{
 			apiv1.ResourceList{
@@ -284,7 +293,7 @@ func TestGetPatchesForResourceRequest_TwoReplacementResources(t *testing.T) {
 				}`)
 	recommendAnnotations := vpa_api_util.ContainerToAnnotationsMap{}
 	frp := fakeRecommendationProvider{recommendResources, recommendAnnotations, "name", nil}
-	s := NewAdmissionServer(&frp, &fppp)
+	s := NewAdmissionServer(&frp, &fppp, &fvpp)
 	patches, err := s.getPatchesForPodResourceRequest(podJson, "default")
 	assert.NoError(t, err)
 	// Order of updates for cpu and unobtanium depends on order of iterating a map, both possible results are valid.
