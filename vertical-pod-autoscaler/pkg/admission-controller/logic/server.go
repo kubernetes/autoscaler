@@ -34,15 +34,20 @@ import (
 	"k8s.io/klog"
 )
 
+type vpaPreProcessor interface {
+	Process(vpa *vpa_types.VerticalPodAutoscaler) (*vpa_types.VerticalPodAutoscaler, error)
+}
+
 // AdmissionServer is an admission webhook server that modifies pod resources request based on VPA recommendation
 type AdmissionServer struct {
 	recommendationProvider RecommendationProvider
 	podPreProcessor        PodPreProcessor
+	vpaPreProcessor        vpaPreProcessor
 }
 
 // NewAdmissionServer constructs new AdmissionServer
-func NewAdmissionServer(recommendationProvider RecommendationProvider, podPreProcessor PodPreProcessor) *AdmissionServer {
-	return &AdmissionServer{recommendationProvider, podPreProcessor}
+func NewAdmissionServer(recommendationProvider RecommendationProvider, podPreProcessor PodPreProcessor, vpaPreProcessor vpaPreProcessor) *AdmissionServer {
+	return &AdmissionServer{recommendationProvider, podPreProcessor, vpaPreProcessor}
 }
 
 type patchRecord struct {
@@ -203,8 +208,13 @@ func validateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
 	return nil
 }
 
-func getPatchesForVPADefaults(raw []byte, isCreate bool) ([]patchRecord, error) {
+func (s *AdmissionServer) getPatchesForVPADefaults(raw []byte, isCreate bool) ([]patchRecord, error) {
 	vpa, err := parseVPA(raw)
+	if err != nil {
+		return nil, err
+	}
+
+	vpa, err = s.vpaPreProcessor.Process(vpa)
 	if err != nil {
 		return nil, err
 	}
@@ -250,7 +260,7 @@ func (s *AdmissionServer) admit(data []byte) (*v1beta1.AdmissionResponse, metric
 		patches, err = s.getPatchesForPodResourceRequest(ar.Request.Object.Raw, ar.Request.Namespace)
 		resource = metrics_admission.Pod
 	case vpaResource:
-		patches, err = getPatchesForVPADefaults(ar.Request.Object.Raw, ar.Request.Operation == v1beta1.Create)
+		patches, err = s.getPatchesForVPADefaults(ar.Request.Object.Raw, ar.Request.Operation == v1beta1.Create)
 		resource = metrics_admission.Vpa
 		// we don't let in problematic VPA objects - late validation
 		if err != nil {

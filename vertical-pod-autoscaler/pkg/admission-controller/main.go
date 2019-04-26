@@ -79,7 +79,10 @@ func main() {
 		target.NewVpaTargetSelectorFetcher(config, kubeClient, factory),
 		target.NewBeta1TargetSelectorFetcher(config),
 	)
-	as := logic.NewAdmissionServer(logic.NewRecommendationProvider(vpaLister, vpa_api_util.NewCappingRecommendationProcessor(), targetSelectorFetcher), logic.NewDefaultPodPreProcessor())
+	recommendationProvider := logic.NewRecommendationProvider(vpaLister, vpa_api_util.NewCappingRecommendationProcessor(), targetSelectorFetcher)
+	podPreprocessor := logic.NewDefaultPodPreProcessor()
+	vpaPreprocessor := logic.NewDefaultVpaPreProcessor()
+	as := logic.NewAdmissionServer(recommendationProvider, podPreprocessor, vpaPreprocessor)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		as.Serve(w, r)
 		healthCheck.UpdateLastActivity()
