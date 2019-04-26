@@ -730,16 +730,22 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 	emptyNodes := getEmptyNodes(candidates, pods, sd.context.MaxEmptyBulkDelete, scaleDownResourcesLeft, sd.context.CloudProvider)
 	if len(emptyNodes) > 0 {
 		nodeDeletionStart := time.Now()
-		confirmation := make(chan errors.AutoscalerError, len(emptyNodes))
+		confirmation := make(chan nodeDeletionConfirmation, len(emptyNodes))
 		sd.scheduleDeleteEmptyNodes(emptyNodes, sd.context.CloudProvider, sd.context.ClientSet, sd.context.Recorder, readinessMap, candidateNodeGroups, confirmation)
-		err := sd.waitForEmptyNodesDeleted(emptyNodes, confirmation)
+		deletedNodes, err := sd.waitForEmptyNodesDeleted(emptyNodes, confirmation)
 		nodeDeletionDuration = time.Now().Sub(nodeDeletionStart)
-		if err == nil {
-			scaleDownStatus.ScaledDownNodes = sd.mapNodesToStatusScaleDownNodes(emptyNodes, candidateNodeGroups, make(map[string][]*apiv1.Pod))
+
+		// TODO: Give the processor some information about the nodes that failed to be deleted.
+		scaleDownStatus.ScaledDownNodes = sd.mapNodesToStatusScaleDownNodes(deletedNodes, candidateNodeGroups, make(map[string][]*apiv1.Pod))
+		if len(deletedNodes) > 0 {
 			scaleDownStatus.Result = status.ScaleDownNodeDeleted
+		} else {
+			scaleDownStatus.Result = status.ScaleDownError
+		}
+
+		if err == nil {
 			return scaleDownStatus, nil
 		}
-		scaleDownStatus.Result = status.ScaleDownError
 		return scaleDownStatus, err.AddPrefix("failed to delete at least one empty node: ")
 	}
 
@@ -875,9 +881,14 @@ func getEmptyNodes(candidates []*apiv1.Node, pods []*apiv1.Pod, maxEmptyBulkDele
 	return result[:limit]
 }
 
+type nodeDeletionConfirmation struct {
+	node *apiv1.Node
+	err  errors.AutoscalerError
+}
+
 func (sd *ScaleDown) scheduleDeleteEmptyNodes(emptyNodes []*apiv1.Node, cp cloudprovider.CloudProvider, client kube_client.Interface,
 	recorder kube_record.EventRecorder, readinessMap map[string]bool,
-	candidateNodeGroups map[string]cloudprovider.NodeGroup, confirmation chan errors.AutoscalerError) {
+	candidateNodeGroups map[string]cloudprovider.NodeGroup, confirmation chan nodeDeletionConfirmation) {
 	for _, node := range emptyNodes {
 		klog.V(0).Infof("Scale-down: removing empty node %s", node.Name)
 		sd.context.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaleDownEmpty", "Scale-down: removing empty node %s", node.Name)
@@ -886,7 +897,7 @@ func (sd *ScaleDown) scheduleDeleteEmptyNodes(emptyNodes []*apiv1.Node, cp cloud
 			taintErr := deletetaint.MarkToBeDeleted(nodeToDelete, client)
 			if taintErr != nil {
 				recorder.Eventf(nodeToDelete, apiv1.EventTypeWarning, "ScaleDownFailed", "failed to mark the node as toBeDeleted/unschedulable: %v", taintErr)
-				confirmation <- errors.ToAutoscalerError(errors.ApiCallError, taintErr)
+				confirmation <- nodeDeletionConfirmation{node: nodeToDelete, err: errors.ToAutoscalerError(errors.ApiCallError, taintErr)}
 				return
 			}
 
@@ -911,32 +922,34 @@ func (sd *ScaleDown) scheduleDeleteEmptyNodes(emptyNodes []*apiv1.Node, cp cloud
 					metrics.RegisterScaleDown(1, gpu.GetGpuTypeForMetrics(cp.GPULabel(), cp.GetAvailableGPUTypes(), nodeToDelete, nodeGroup), metrics.Unready)
 				}
 			}
-			confirmation <- deleteErr
+			confirmation <- nodeDeletionConfirmation{node: nodeToDelete, err: deleteErr}
 		}(node)
 	}
 }
 
-func (sd *ScaleDown) waitForEmptyNodesDeleted(emptyNodes []*apiv1.Node, confirmation chan errors.AutoscalerError) errors.AutoscalerError {
-	var finalError errors.AutoscalerError
+func (sd *ScaleDown) waitForEmptyNodesDeleted(emptyNodes []*apiv1.Node, confirmation chan nodeDeletionConfirmation) (deletedNodes []*apiv1.Node, finalError errors.AutoscalerError) {
+	deletedNodes = make([]*apiv1.Node, 0)
 
 	startTime := time.Now()
 	for range emptyNodes {
 		timeElapsed := time.Now().Sub(startTime)
 		timeLeft := MaxCloudProviderNodeDeletionTime - timeElapsed
 		if timeLeft < 0 {
-			return errors.NewAutoscalerError(errors.TransientError, "Failed to delete nodes in time")
+			return deletedNodes, errors.NewAutoscalerError(errors.TransientError, "Failed to delete nodes in time")
 		}
 		select {
-		case err := <-confirmation:
-			if err != nil {
-				klog.Errorf("Problem with empty node deletion: %v", err)
-				finalError = err
+		case conf := <-confirmation:
+			if conf.err != nil {
+				klog.Errorf("Problem with empty node deletion: %v", conf.err)
+				finalError = conf.err
+			} else {
+				deletedNodes = append(deletedNodes, conf.node)
 			}
 		case <-time.After(timeLeft):
 			finalError = errors.NewAutoscalerError(errors.TransientError, "Failed to delete nodes in time")
 		}
 	}
-	return finalError
+	return deletedNodes, finalError
 }
 
 func (sd *ScaleDown) deleteNode(node *apiv1.Node, pods []*apiv1.Pod) errors.AutoscalerError {
