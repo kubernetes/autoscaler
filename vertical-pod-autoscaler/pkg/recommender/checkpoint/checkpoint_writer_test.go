@@ -23,8 +23,7 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/stretchr/testify/assert"
-	"k8s.io/api/core/v1"
-	apiv1 "k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
@@ -58,7 +57,7 @@ func addVpa(cluster *model.ClusterState, vpaID model.VpaID, selector string) *mo
 
 func TestMergeContainerStateForCheckpointDropsRecentMemoryPeak(t *testing.T) {
 	cluster := model.NewClusterState()
-	cluster.AddOrUpdatePod(testPodID1, testLabels, apiv1.PodRunning)
+	cluster.AddOrUpdatePod(testPodID1, testLabels, v1.PodRunning)
 	assert.NoError(t, cluster.AddOrUpdateContainer(testContainerID1, testRequest))
 	container := cluster.GetContainer(testContainerID1)
 
