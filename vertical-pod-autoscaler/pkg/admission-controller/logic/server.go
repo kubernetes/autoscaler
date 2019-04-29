@@ -34,19 +34,15 @@ import (
 	"k8s.io/klog"
 )
 
-type vpaPreProcessor interface {
-	Process(vpa *vpa_types.VerticalPodAutoscaler) (*vpa_types.VerticalPodAutoscaler, error)
-}
-
 // AdmissionServer is an admission webhook server that modifies pod resources request based on VPA recommendation
 type AdmissionServer struct {
 	recommendationProvider RecommendationProvider
 	podPreProcessor        PodPreProcessor
-	vpaPreProcessor        vpaPreProcessor
+	vpaPreProcessor        VpaPreProcessor
 }
 
 // NewAdmissionServer constructs new AdmissionServer
-func NewAdmissionServer(recommendationProvider RecommendationProvider, podPreProcessor PodPreProcessor, vpaPreProcessor vpaPreProcessor) *AdmissionServer {
+func NewAdmissionServer(recommendationProvider RecommendationProvider, podPreProcessor PodPreProcessor, vpaPreProcessor VpaPreProcessor) *AdmissionServer {
 	return &AdmissionServer{recommendationProvider, podPreProcessor, vpaPreProcessor}
 }
 
@@ -214,7 +210,7 @@ func (s *AdmissionServer) getPatchesForVPADefaults(raw []byte, isCreate bool) ([
 		return nil, err
 	}
 
-	vpa, err = s.vpaPreProcessor.Process(vpa)
+	vpa, err = s.vpaPreProcessor.Process(vpa, isCreate)
 	if err != nil {
 		return nil, err
 	}
