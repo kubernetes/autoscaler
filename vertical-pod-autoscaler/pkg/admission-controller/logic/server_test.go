@@ -46,7 +46,7 @@ type fakeVpaPreProcessor struct {
 	e error
 }
 
-func (fvp *fakeVpaPreProcessor) Process(vpa *vpa_types.VerticalPodAutoscaler) (*vpa_types.VerticalPodAutoscaler, error) {
+func (fvp *fakeVpaPreProcessor) Process(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) (*vpa_types.VerticalPodAutoscaler, error) {
 	return vpa, fvp.e
 }
 
