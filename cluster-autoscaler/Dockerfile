@@ -22,4 +22,7 @@ RUN clean-install ca-certificates tzdata
 ADD cluster-autoscaler cluster-autoscaler
 ADD run.sh run.sh
 
+RUN useradd -ms /bin/bash cluster-autoscaler
+USER cluster-autoscaler
+
 CMD ./run.sh

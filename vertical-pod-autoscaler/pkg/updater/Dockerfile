@@ -18,4 +18,7 @@ MAINTAINER Marcin Wielgus "mwielgus@google.com"
 
 ADD updater updater
 
+RUN useradd -ms /bin/bash updater
+USER updater
+
 ENTRYPOINT ./updater --v=4 --stderrthreshold=info

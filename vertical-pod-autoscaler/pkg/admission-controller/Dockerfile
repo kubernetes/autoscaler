@@ -17,4 +17,7 @@ MAINTAINER Tomasz Kulczynski "tkulczynski@google.com"
 
 ADD admission-controller admission-controller
 
+RUN useradd -ms /bin/bash admission-controller
+USER admission-controller
+
 ENTRYPOINT ./admission-controller --v=4 --stderrthreshold=info
