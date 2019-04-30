@@ -368,3 +368,9 @@ func (asg *Asg) Delete() error {
 func (asg *Asg) Autoprovisioned() bool {
 	return false
 }
+
+// Paused should return true, if autoscaling needs to be paused
+func (baiducloud *baiducloudCloudProvider) Paused() bool {
+	// Support to be added later
+	return false
+}

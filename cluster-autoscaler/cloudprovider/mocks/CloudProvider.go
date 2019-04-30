@@ -231,3 +231,8 @@ func (_m *CloudProvider) Refresh() error {
 
 	return r0
 }
+
+// Paused should return true, if autoscaling needs to be paused
+func (_m *CloudProvider) Paused() bool {
+	return false
+}

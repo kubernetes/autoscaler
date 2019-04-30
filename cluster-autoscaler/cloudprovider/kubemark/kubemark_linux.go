@@ -346,3 +346,8 @@ func BuildKubemark(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDis
 	}
 	return provider
 }
+
+// Paused should return true, if autoscaling needs to be paused
+func (kubemark *KubemarkCloudProvider) Paused() bool {
+	return false
+}

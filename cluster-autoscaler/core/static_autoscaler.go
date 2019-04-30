@@ -149,6 +149,12 @@ func (a *StaticAutoscaler) cleanUpIfRequired() {
 
 // RunOnce iterates over node groups and scales them up/down if necessary
 func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError {
+
+	if a.AutoscalingContext.CloudProvider.Paused() {
+		klog.V(4).Info("Paused tag present. Nothing to do")
+		return nil
+	}
+
 	a.cleanUpIfRequired()
 	a.processorCallbacks.reset()
 

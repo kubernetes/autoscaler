@@ -230,3 +230,8 @@ func BuildAlicloud(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDis
 	}
 	return cloudProvider
 }
+
+func (ali *aliCloudProvider) Paused() bool {
+	// Support to be added later
+	return false
+}

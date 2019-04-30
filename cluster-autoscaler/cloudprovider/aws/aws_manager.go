@@ -440,3 +440,15 @@ func extractTaintsFromAsg(tags []*autoscaling.TagDescription) []apiv1.Taint {
 	}
 	return taints
 }
+
+// Paused will return true if any asg has the pause tag
+func (m *AwsManager) Paused(pauseTag string) bool {
+	for _, asg := range m.getAsgs() {
+		for _, tag := range asg.Tags {
+			if *tag.Key == pauseTag {
+				return true
+			}
+		}
+	}
+	return false
+}

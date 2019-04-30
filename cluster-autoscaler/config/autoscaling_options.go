@@ -133,4 +133,6 @@ type AutoscalingOptions struct {
 	// Setting it to false employs a more lenient filtering approach that does not try to pack the pods on the nodes.
 	// Pods with nominatedNodeName set are always filtered out.
 	FilterOutSchedulablePodsUsesPacking bool
+	// Pause any scaling activities if this tag is present (AWS only)
+	PauseTag string
 }

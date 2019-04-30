@@ -30,6 +30,7 @@ import (
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws"
 	cloudBuilder "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/core"
@@ -164,6 +165,7 @@ var (
 		"Filtering out schedulable pods before CA scale up by trying to pack the schedulable pods on free capacity on existing nodes."+
 			"Setting it to false employs a more lenient filtering approach that does not try to pack the pods on the nodes."+
 			"Pods with nominatedNodeName set are always filtered out.")
+	pauseTag = flag.String("pause-tag", "", "Pause any scaling activities if this tag is present (AWS only)")
 )
 
 func createAutoscalingOptions() config.AutoscalingOptions {
@@ -182,6 +184,10 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 	parsedGpuTotal, err := parseMultipleGpuLimits(*gpuTotal)
 	if err != nil {
 		klog.Fatalf("Failed to parse flags: %v", err)
+	}
+
+	if !validatePauseTag(*pauseTag, *cloudProviderFlag) {
+		klog.Fatal("-pause-tag is only supported with aws cloud provider")
 	}
 
 	return config.AutoscalingOptions{
@@ -228,6 +234,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		Regional:                            *regional,
 		NewPodScaleUpDelay:                  *newPodScaleUpDelay,
 		FilterOutSchedulablePodsUsesPacking: *filterOutSchedulablePodsUsesPacking,
+		PauseTag:                            *pauseTag,
 	}
 }
 
@@ -496,4 +503,11 @@ func parseSingleGpuLimit(limits string) (config.GpuLimits, error) {
 		Max:     maxVal,
 	}
 	return parsedGpuLimits, nil
+}
+
+func validatePauseTag(pauseTag string, cloudProvider string) bool {
+	if pauseTag != "" && cloudProvider != aws.ProviderName {
+		return false
+	}
+	return true
 }

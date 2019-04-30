@@ -207,3 +207,9 @@ func BuildMagnum(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDisco
 
 	return provider
 }
+
+// Paused should return true, if autoscaling needs to be paused
+func (mcp *magnumCloudProvider) Paused() bool {
+	// Support to be added later
+	return false
+}

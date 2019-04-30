@@ -361,3 +361,9 @@ func BuildGCE(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscover
 	RegisterMetrics()
 	return provider
 }
+
+// Paused should return true, if autoscaling needs to be paused
+func (gce *GceCloudProvider) Paused() bool {
+	// Support to be added later
+	return false
+}

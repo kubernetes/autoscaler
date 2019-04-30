@@ -248,6 +248,11 @@ func (tcp *TestCloudProvider) Refresh() error {
 	return nil
 }
 
+// Paused should return true, if autoscaling needs to be paused
+func (tcp *TestCloudProvider) Paused() bool {
+	return false
+}
+
 // TestNodeGroup is a node group used by TestCloudProvider.
 type TestNodeGroup struct {
 	sync.Mutex

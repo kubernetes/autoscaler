@@ -133,7 +133,7 @@ func testProvider(t *testing.T, m *AwsManager) *awsCloudProvider {
 		map[string]int64{cloudprovider.ResourceNameCores: 1, cloudprovider.ResourceNameMemory: 10000000},
 		map[string]int64{cloudprovider.ResourceNameCores: 10, cloudprovider.ResourceNameMemory: 100000000})
 
-	provider, err := BuildAwsCloudProvider(m, resourceLimiter)
+	provider, err := BuildAwsCloudProvider(m, resourceLimiter, "")
 	assert.NoError(t, err)
 	return provider.(*awsCloudProvider)
 }
@@ -143,7 +143,7 @@ func TestBuildAwsCloudProvider(t *testing.T) {
 		map[string]int64{cloudprovider.ResourceNameCores: 1, cloudprovider.ResourceNameMemory: 10000000},
 		map[string]int64{cloudprovider.ResourceNameCores: 10, cloudprovider.ResourceNameMemory: 100000000})
 
-	_, err := BuildAwsCloudProvider(testAwsManager, resourceLimiter)
+	_, err := BuildAwsCloudProvider(testAwsManager, resourceLimiter, "")
 	assert.NoError(t, err)
 }
 

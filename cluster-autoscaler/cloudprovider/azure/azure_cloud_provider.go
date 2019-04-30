@@ -170,3 +170,9 @@ func BuildAzure(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscov
 	}
 	return provider
 }
+
+// Paused should return true, if autoscaling needs to be paused
+func (azure *AzureCloudProvider) Paused() bool {
+	// Support to be added later
+	return false
+}

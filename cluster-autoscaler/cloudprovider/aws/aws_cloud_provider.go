@@ -52,13 +52,15 @@ var (
 type awsCloudProvider struct {
 	awsManager      *AwsManager
 	resourceLimiter *cloudprovider.ResourceLimiter
+	pauseTag        string
 }
 
 // BuildAwsCloudProvider builds CloudProvider implementation for AWS.
-func BuildAwsCloudProvider(awsManager *AwsManager, resourceLimiter *cloudprovider.ResourceLimiter) (cloudprovider.CloudProvider, error) {
+func BuildAwsCloudProvider(awsManager *AwsManager, resourceLimiter *cloudprovider.ResourceLimiter, pauseTag string) (cloudprovider.CloudProvider, error) {
 	aws := &awsCloudProvider{
 		awsManager:      awsManager,
 		resourceLimiter: resourceLimiter,
+		pauseTag:        pauseTag,
 	}
 	return aws, nil
 }
@@ -351,9 +353,14 @@ func BuildAWS(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscover
 		klog.Fatalf("Failed to create AWS Manager: %v", err)
 	}
 
-	provider, err := BuildAwsCloudProvider(manager, rl)
+	provider, err := BuildAwsCloudProvider(manager, rl, opts.PauseTag)
 	if err != nil {
 		klog.Fatalf("Failed to create AWS cloud provider: %v", err)
 	}
 	return provider
+}
+
+// Paused should return true, if autoscaling needs to be paused
+func (aws *awsCloudProvider) Paused() bool {
+	return aws.awsManager.Paused(aws.pauseTag)
 }
