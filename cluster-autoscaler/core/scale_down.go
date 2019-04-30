@@ -70,10 +70,10 @@ const (
 type NodeDeleteStatus struct {
 	sync.Mutex
 	deleteInProgress bool
-	// A map of node delete results by node name. It contains nil if the delete was successful and an error otherwise.
-	// It's being constantly drained into ScaleDownStatus objects in order to notify the ScaleDownStatusProcessor that
-	// the node drain has ended or that an error occurred during the deletion process.
-	nodeDeleteResults map[string]error
+	// A map of node delete results by node name. It's being constantly emptied into ScaleDownStatus
+	// objects in order to notify the ScaleDownStatusProcessor that the node drain has ended or that
+	// an error occurred during the deletion process.
+	nodeDeleteResults map[string]status.NodeDeleteResult
 }
 
 // Get current time. Proxy for unit tests.
@@ -94,18 +94,18 @@ func (n *NodeDeleteStatus) SetDeleteInProgress(status bool) {
 }
 
 // AddNodeDeleteResult adds a node delete result to the result map.
-func (n *NodeDeleteStatus) AddNodeDeleteResult(nodeName string, result error) {
+func (n *NodeDeleteStatus) AddNodeDeleteResult(nodeName string, result status.NodeDeleteResult) {
 	n.Lock()
 	defer n.Unlock()
 	n.nodeDeleteResults[nodeName] = result
 }
 
-// DrainNodeDeleteResults returns the whole result map and replaces it with a new empty one.
-func (n *NodeDeleteStatus) DrainNodeDeleteResults() map[string]error {
+// GetAndClearNodeDeleteResults returns the whole result map and replaces it with a new empty one.
+func (n *NodeDeleteStatus) GetAndClearNodeDeleteResults() map[string]status.NodeDeleteResult {
 	n.Lock()
 	defer n.Unlock()
 	results := n.nodeDeleteResults
-	n.nodeDeleteResults = make(map[string]error)
+	n.nodeDeleteResults = make(map[string]status.NodeDeleteResult)
 	return results
 }
 
@@ -325,7 +325,7 @@ func NewScaleDown(context *context.AutoscalingContext, clusterStateRegistry *clu
 		nodeUtilizationMap:   make(map[string]simulator.UtilizationInfo),
 		usageTracker:         simulator.NewUsageTracker(),
 		unneededNodesList:    make([]*apiv1.Node, 0),
-		nodeDeleteStatus:     &NodeDeleteStatus{nodeDeleteResults: make(map[string]error)},
+		nodeDeleteStatus:     &NodeDeleteStatus{nodeDeleteResults: make(map[string]status.NodeDeleteResult)},
 	}
 }
 
@@ -636,7 +636,7 @@ func (sd *ScaleDown) SoftTaintUnneededNodes(allNodes []*apiv1.Node) (errors []er
 // TryToScaleDown tries to scale down the cluster. It returns a result inside a ScaleDownStatus indicating if any node was
 // removed and error if such occurred.
 func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, pdbs []*policyv1.PodDisruptionBudget, currentTime time.Time) (*status.ScaleDownStatus, errors.AutoscalerError) {
-	scaleDownStatus := &status.ScaleDownStatus{NodeDeleteResults: sd.nodeDeleteStatus.DrainNodeDeleteResults()}
+	scaleDownStatus := &status.ScaleDownStatus{NodeDeleteResults: sd.nodeDeleteStatus.GetAndClearNodeDeleteResults()}
 	nodeDeletionDuration := time.Duration(0)
 	findNodesToRemoveDuration := time.Duration(0)
 	defer updateScaleDownMetrics(time.Now(), &findNodesToRemoveDuration, &nodeDeletionDuration)
@@ -782,12 +782,12 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 
 	go func() {
 		// Finishing the delete process once this goroutine is over.
-		var err error
-		defer func() { sd.nodeDeleteStatus.AddNodeDeleteResult(toRemove.Node.Name, err) }()
+		var result status.NodeDeleteResult
+		defer func() { sd.nodeDeleteStatus.AddNodeDeleteResult(toRemove.Node.Name, result) }()
 		defer sd.nodeDeleteStatus.SetDeleteInProgress(false)
-		err = sd.deleteNode(toRemove.Node, toRemove.PodsToReschedule)
-		if err != nil {
-			klog.Errorf("Failed to delete %s: %v", toRemove.Node.Name, err)
+		result = sd.deleteNode(toRemove.Node, toRemove.PodsToReschedule)
+		if result.ResultType != status.NodeDeleteOk {
+			klog.Errorf("Failed to delete %s: %v", toRemove.Node.Name, result.Err)
 			return
 		}
 		nodeGroup := candidateNodeGroups[toRemove.Node.Name]
@@ -939,13 +939,13 @@ func (sd *ScaleDown) waitForEmptyNodesDeleted(emptyNodes []*apiv1.Node, confirma
 	return finalError
 }
 
-func (sd *ScaleDown) deleteNode(node *apiv1.Node, pods []*apiv1.Pod) errors.AutoscalerError {
+func (sd *ScaleDown) deleteNode(node *apiv1.Node, pods []*apiv1.Pod) status.NodeDeleteResult {
 	deleteSuccessful := false
 	drainSuccessful := false
 
 	if err := deletetaint.MarkToBeDeleted(node, sd.context.ClientSet); err != nil {
 		sd.context.Recorder.Eventf(node, apiv1.EventTypeWarning, "ScaleDownFailed", "failed to mark the node as toBeDeleted/unschedulable: %v", err)
-		return errors.ToAutoscalerError(errors.ApiCallError, err)
+		return status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToMarkToBeDeleted, Err: errors.ToAutoscalerError(errors.ApiCallError, err)}
 	}
 
 	// If we fail to evict all the pods from the node we want to remove delete taint
@@ -963,23 +963,23 @@ func (sd *ScaleDown) deleteNode(node *apiv1.Node, pods []*apiv1.Pod) errors.Auto
 	sd.context.Recorder.Eventf(node, apiv1.EventTypeNormal, "ScaleDown", "marked the node as toBeDeleted/unschedulable")
 
 	// attempt drain
-	if err := drainNode(node, pods, sd.context.ClientSet, sd.context.Recorder, sd.context.MaxGracefulTerminationSec, MaxPodEvictionTime, EvictionRetryTime); err != nil {
-		return err
+	evictionResults, err := drainNode(node, pods, sd.context.ClientSet, sd.context.Recorder, sd.context.MaxGracefulTerminationSec, MaxPodEvictionTime, EvictionRetryTime, PodEvictionHeadroom)
+	if err != nil {
+		return status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToEvictPods, Err: err, PodEvictionResults: evictionResults}
 	}
 	drainSuccessful = true
 
 	// attempt delete from cloud provider
-	err := deleteNodeFromCloudProvider(node, sd.context.CloudProvider, sd.context.Recorder, sd.clusterStateRegistry)
-	if err != nil {
-		return err
+	if err := deleteNodeFromCloudProvider(node, sd.context.CloudProvider, sd.context.Recorder, sd.clusterStateRegistry); err != nil {
+		return status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToDelete, Err: err}
 	}
 
 	deleteSuccessful = true // Let the deferred function know there is no need to cleanup
-	return nil
+	return status.NodeDeleteResult{ResultType: status.NodeDeleteOk}
 }
 
 func evictPod(podToEvict *apiv1.Pod, client kube_client.Interface, recorder kube_record.EventRecorder,
-	maxGracefulTerminationSec int, retryUntil time.Time, waitBetweenRetries time.Duration) error {
+	maxGracefulTerminationSec int, retryUntil time.Time, waitBetweenRetries time.Duration) status.PodEvictionResult {
 	recorder.Eventf(podToEvict, apiv1.EventTypeNormal, "ScaleDown", "deleting pod for node scale down")
 
 	maxTermination := int64(apiv1.DefaultTerminationGracePeriodSeconds)
@@ -1005,51 +1005,57 @@ func evictPod(podToEvict *apiv1.Pod, client kube_client.Interface, recorder kube
 		}
 		lastError = client.CoreV1().Pods(podToEvict.Namespace).Evict(eviction)
 		if lastError == nil || kube_errors.IsNotFound(lastError) {
-			return nil
+			return status.PodEvictionResult{Pod: podToEvict, TimedOut: false, Err: nil}
 		}
 	}
 	klog.Errorf("Failed to evict pod %s, error: %v", podToEvict.Name, lastError)
 	recorder.Eventf(podToEvict, apiv1.EventTypeWarning, "ScaleDownFailed", "failed to delete pod for ScaleDown")
-	return fmt.Errorf("failed to evict pod %s/%s within allowed timeout (last error: %v)", podToEvict.Namespace, podToEvict.Name, lastError)
+	return status.PodEvictionResult{Pod: podToEvict, TimedOut: true, Err: fmt.Errorf("failed to evict pod %s/%s within allowed timeout (last error: %v)", podToEvict.Namespace, podToEvict.Name, lastError)}
 }
 
 // Performs drain logic on the node. Marks the node as unschedulable and later removes all pods, giving
 // them up to MaxGracefulTerminationTime to finish.
 func drainNode(node *apiv1.Node, pods []*apiv1.Pod, client kube_client.Interface, recorder kube_record.EventRecorder,
-	maxGracefulTerminationSec int, maxPodEvictionTime time.Duration, waitBetweenRetries time.Duration) errors.AutoscalerError {
+	maxGracefulTerminationSec int, maxPodEvictionTime time.Duration, waitBetweenRetries time.Duration,
+	podEvictionHeadroom time.Duration) (evictionResults map[string]status.PodEvictionResult, err error) {
 
+	evictionResults = make(map[string]status.PodEvictionResult)
 	toEvict := len(pods)
 	retryUntil := time.Now().Add(maxPodEvictionTime)
-	confirmations := make(chan error, toEvict)
+	confirmations := make(chan status.PodEvictionResult, toEvict)
 	for _, pod := range pods {
+		evictionResults[pod.Name] = status.PodEvictionResult{Pod: pod, TimedOut: true, Err: nil}
 		go func(podToEvict *apiv1.Pod) {
 			confirmations <- evictPod(podToEvict, client, recorder, maxGracefulTerminationSec, retryUntil, waitBetweenRetries)
 		}(pod)
 	}
 
-	evictionErrs := make([]error, 0)
-
 	for range pods {
 		select {
-		case err := <-confirmations:
-			if err != nil {
-				evictionErrs = append(evictionErrs, err)
-			} else {
+		case evictionResult := <-confirmations:
+			evictionResults[evictionResult.Pod.Name] = evictionResult
+			if evictionResult.WasEvictionSuccessful() {
 				metrics.RegisterEvictions(1)
 			}
 		case <-time.After(retryUntil.Sub(time.Now()) + 5*time.Second):
-			return errors.NewAutoscalerError(
-				errors.ApiCallError, "Failed to drain node %s/%s: timeout when waiting for creating evictions", node.Namespace, node.Name)
+			// All pods initially had results with TimedOut set to true, so the ones that didn't receive an actual result are correctly marked as timed out.
+			return evictionResults, errors.NewAutoscalerError(errors.ApiCallError, "Failed to drain node %s/%s: timeout when waiting for creating evictions", node.Namespace, node.Name)
+		}
+	}
+
+	evictionErrs := make([]error, 0)
+	for _, result := range evictionResults {
+		if !result.WasEvictionSuccessful() {
+			evictionErrs = append(evictionErrs, result.Err)
 		}
 	}
 	if len(evictionErrs) != 0 {
-		return errors.NewAutoscalerError(
-			errors.ApiCallError, "Failed to drain node %s/%s, due to following errors: %v", node.Namespace, node.Name, evictionErrs)
+		return evictionResults, errors.NewAutoscalerError(errors.ApiCallError, "Failed to drain node %s/%s, due to following errors: %v", node.Namespace, node.Name, evictionErrs)
 	}
 
-	// Evictions created successfully, wait maxGracefulTerminationSec + PodEvictionHeadroom to see if pods really disappeared.
+	// Evictions created successfully, wait maxGracefulTerminationSec + podEvictionHeadroom to see if pods really disappeared.
 	allGone := true
-	for start := time.Now(); time.Now().Sub(start) < time.Duration(maxGracefulTerminationSec)*time.Second+PodEvictionHeadroom; time.Sleep(5 * time.Second) {
+	for start := time.Now(); time.Now().Sub(start) < time.Duration(maxGracefulTerminationSec)*time.Second+podEvictionHeadroom; time.Sleep(5 * time.Second) {
 		allGone = true
 		for _, pod := range pods {
 			podreturned, err := client.CoreV1().Pods(pod.Namespace).Get(pod.Name, metav1.GetOptions{})
@@ -1067,11 +1073,22 @@ func drainNode(node *apiv1.Node, pods []*apiv1.Pod, client kube_client.Interface
 		if allGone {
 			klog.V(1).Infof("All pods removed from %s", node.Name)
 			// Let the deferred function know there is no need for cleanup
-			return nil
+			return evictionResults, nil
 		}
 	}
-	return errors.NewAutoscalerError(
-		errors.TransientError, "Failed to drain node %s/%s: pods remaining after timeout", node.Namespace, node.Name)
+
+	for _, pod := range pods {
+		podReturned, err := client.CoreV1().Pods(pod.Namespace).Get(pod.Name, metav1.GetOptions{})
+		if err == nil && (podReturned == nil || podReturned.Spec.NodeName == node.Name) {
+			evictionResults[pod.Name] = status.PodEvictionResult{Pod: pod, TimedOut: true, Err: nil}
+		} else if err != nil && !kube_errors.IsNotFound(err) {
+			evictionResults[pod.Name] = status.PodEvictionResult{Pod: pod, TimedOut: true, Err: err}
+		} else {
+			evictionResults[pod.Name] = status.PodEvictionResult{Pod: pod, TimedOut: false, Err: nil}
+		}
+	}
+
+	return evictionResults, errors.NewAutoscalerError(errors.TransientError, "Failed to drain node %s/%s: pods remaining after timeout", node.Namespace, node.Name)
 }
 
 // Removes the given node from cloud provider. No extra pre-deletion actions are executed on

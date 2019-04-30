@@ -27,7 +27,7 @@ import (
 type ScaleDownStatus struct {
 	Result            ScaleDownResult
 	ScaledDownNodes   []*ScaleDownNode
-	NodeDeleteResults map[string]error
+	NodeDeleteResults map[string]NodeDeleteResult
 }
 
 // ScaleDownNode represents the state of a node that's being scaled down.
@@ -61,6 +61,32 @@ const (
 	ScaleDownInProgress
 )
 
+// NodeDeleteResultType denotes the type of the result of node deletion. It provides deeper
+// insight into why the node failed to be deleted.
+type NodeDeleteResultType int
+
+const (
+	// NodeDeleteOk - the node was deleted successfully.
+	NodeDeleteOk NodeDeleteResultType = iota
+
+	// NodeDeleteErrorFailedToMarkToBeDeleted - node deletion failed because the node couldn't be marked to be deleted.
+	NodeDeleteErrorFailedToMarkToBeDeleted
+	// NodeDeleteErrorFailedToEvictPods - node deletion failed because some of the pods couldn't be evicted from the node.
+	NodeDeleteErrorFailedToEvictPods
+	// NodeDeleteErrorFailedToDelete - failed to delete the node from the cloud provider.
+	NodeDeleteErrorFailedToDelete
+)
+
+// NodeDeleteResult contains information about the result of a node deletion.
+type NodeDeleteResult struct {
+	// Err contains nil if the delete was successful and an error otherwise.
+	Err error
+	// ResultType contains the type of the result of a node deletion.
+	ResultType NodeDeleteResultType
+	// PodEvictionResults maps pod names to the result of their eviction.
+	PodEvictionResults map[string]PodEvictionResult
+}
+
 // ScaleDownStatusProcessor processes the status of the cluster after a scale-down.
 type ScaleDownStatusProcessor interface {
 	Process(context *context.AutoscalingContext, status *ScaleDownStatus)
@@ -70,6 +96,18 @@ type ScaleDownStatusProcessor interface {
 // NewDefaultScaleDownStatusProcessor creates a default instance of ScaleUpStatusProcessor.
 func NewDefaultScaleDownStatusProcessor() ScaleDownStatusProcessor {
 	return &NoOpScaleDownStatusProcessor{}
+}
+
+// PodEvictionResult contains the result of an eviction of a pod.
+type PodEvictionResult struct {
+	Pod      *apiv1.Pod
+	TimedOut bool
+	Err      error
+}
+
+// WasEvictionSuccessful tells if the pod was successfully evicted.
+func (per PodEvictionResult) WasEvictionSuccessful() bool {
+	return per.Err == nil && !per.TimedOut
 }
 
 // NoOpScaleDownStatusProcessor is a ScaleDownStatusProcessor implementations useful for testing.
