@@ -251,8 +251,12 @@ func (cluster *ClusterState) AddOrUpdateVpa(apiObject *vpa_types.VerticalPodAuto
 
 // DeleteVpa removes a VPA with the given ID from the ClusterState.
 func (cluster *ClusterState) DeleteVpa(vpaID VpaID) error {
-	if _, vpaExists := cluster.Vpas[vpaID]; !vpaExists {
+	vpa, vpaExists := cluster.Vpas[vpaID]
+	if !vpaExists {
 		return NewKeyError(vpaID)
+	}
+	for _, state := range vpa.aggregateContainerStates {
+		state.MarkNotAutoscaled()
 	}
 	delete(cluster.Vpas, vpaID)
 	delete(cluster.EmptyVPAs, vpaID)
@@ -413,5 +417,8 @@ func (k aggregateStateKey) ContainerName() string {
 
 // Labels returns the set of labels for the aggregateStateKey.
 func (k aggregateStateKey) Labels() labels.Labels {
+	if k.labelSetMap == nil {
+		return labels.Set{}
+	}
 	return (*k.labelSetMap)[k.labelSetKey]
 }

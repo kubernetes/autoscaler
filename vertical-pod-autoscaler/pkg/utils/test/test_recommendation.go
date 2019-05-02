@@ -28,6 +28,7 @@ type RecommendationBuilder interface {
 	WithLowerBound(cpu, memory string) RecommendationBuilder
 	WithUpperBound(cpu, memory string) RecommendationBuilder
 	Get() *vpa_types.RecommendedPodResources
+	GetContainerResources() vpa_types.RecommendedContainerResources
 }
 
 // Recommendation returns a new RecommendationBuilder.
@@ -73,10 +74,21 @@ func (b *recommendationBuilder) Get() *vpa_types.RecommendedPodResources {
 	return &vpa_types.RecommendedPodResources{
 		ContainerRecommendations: []vpa_types.RecommendedContainerResources{
 			{
-				ContainerName: b.containerName,
-				Target:        b.target,
-				LowerBound:    b.lowerBound,
-				UpperBound:    b.upperBound,
+				ContainerName:  b.containerName,
+				Target:         b.target,
+				UncappedTarget: b.target,
+				LowerBound:     b.lowerBound,
+				UpperBound:     b.upperBound,
 			},
 		}}
+}
+
+func (b *recommendationBuilder) GetContainerResources() vpa_types.RecommendedContainerResources {
+	return vpa_types.RecommendedContainerResources{
+		ContainerName:  b.containerName,
+		Target:         b.target,
+		UncappedTarget: b.target,
+		LowerBound:     b.lowerBound,
+		UpperBound:     b.upperBound,
+	}
 }
