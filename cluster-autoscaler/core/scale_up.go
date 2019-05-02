@@ -288,16 +288,20 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 	}
 
 	upcomingNodes := make([]*schedulernodeinfo.NodeInfo, 0)
-	for nodeGroup, numberOfNodes := range clusterStateRegistry.GetUpcomingNodes() {
-		nodeTemplate, found := nodeInfos[nodeGroup]
+	for nodeGroupID, numberOfNodes := range clusterStateRegistry.GetUpcomingNodes() {
+		nodeTemplate, found := nodeInfos[nodeGroupID]
 		if !found {
 			return &status.ScaleUpStatus{Result: status.ScaleUpError}, errors.NewAutoscalerError(
 				errors.InternalError,
 				"failed to find template node for node group %s",
-				nodeGroup)
+				nodeGroupID)
 		}
-		for i := 0; i < numberOfNodes; i++ {
-			upcomingNodes = append(upcomingNodes, nodeTemplate)
+
+		// We do not consider upcoming nodes from unhealthy nodeGroups
+		if clusterStateRegistry.IsNodeGroupHealthy(nodeGroupID) {
+			for i := 0; i < numberOfNodes; i++ {
+				upcomingNodes = append(upcomingNodes, nodeTemplate)
+			}
 		}
 	}
 	klog.V(4).Infof("Upcoming %d nodes", len(upcomingNodes))
