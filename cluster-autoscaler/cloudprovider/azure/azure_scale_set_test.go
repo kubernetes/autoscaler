@@ -222,15 +222,64 @@ func TestTemplateNodeInfo(t *testing.T) {
 func TestExtractLabelsFromScaleSet(t *testing.T) {
 	expectedNodeLabelKey := "zip"
 	expectedNodeLabelValue := "zap"
-	extraNodeLabelKey := "fizz"
 	extraNodeLabelValue := "buzz"
+	blankString := ""
 
 	tags := map[string]*string{
 		fmt.Sprintf("%s%s", nodeLabelTagName, expectedNodeLabelKey): &expectedNodeLabelValue,
-		extraNodeLabelKey: &extraNodeLabelValue,
+		"fizz": &extraNodeLabelValue,
+		"bip":  &blankString,
 	}
 
 	labels := extractLabelsFromScaleSet(tags)
 	assert.Len(t, labels, 1)
 	assert.Equal(t, expectedNodeLabelValue, labels[expectedNodeLabelKey])
+}
+
+func TestExtractTaintsFromScaleSet(t *testing.T) {
+	noScheduleTaintValue := "foo:NoSchedule"
+	noExecuteTaintValue := "bar:NoExecute"
+	preferNoScheduleTaintValue := "fizz:PreferNoSchedule"
+	noSplitTaintValue := "some_value"
+	blankTaintValue := ""
+	regularTagValue := "baz"
+
+	tags := map[string]*string{
+		fmt.Sprintf("%s%s", nodeTaintTagName, "dedicated"): &noScheduleTaintValue,
+		fmt.Sprintf("%s%s", nodeTaintTagName, "group"):     &noExecuteTaintValue,
+		fmt.Sprintf("%s%s", nodeTaintTagName, "app"):       &preferNoScheduleTaintValue,
+		"bar": &regularTagValue,
+		fmt.Sprintf("%s%s", nodeTaintTagName, "blank"):   &blankTaintValue,
+		fmt.Sprintf("%s%s", nodeTaintTagName, "nosplit"): &noSplitTaintValue,
+	}
+
+	expectedTaints := []apiv1.Taint{
+		{
+			Key:    "dedicated",
+			Value:  "foo",
+			Effect: apiv1.TaintEffectNoSchedule,
+		},
+		{
+			Key:    "group",
+			Value:  "bar",
+			Effect: apiv1.TaintEffectNoExecute,
+		},
+		{
+			Key:    "app",
+			Value:  "fizz",
+			Effect: apiv1.TaintEffectPreferNoSchedule,
+		},
+	}
+
+	taints := extractTaintsFromScaleSet(tags)
+	assert.Len(t, taints, 3)
+	assert.Equal(t, makeTaintSet(expectedTaints), makeTaintSet(taints))
+}
+
+func makeTaintSet(taints []apiv1.Taint) map[apiv1.Taint]bool {
+	set := make(map[apiv1.Taint]bool)
+	for _, taint := range taints {
+		set[taint] = true
+	}
+	return set
 }
