@@ -17,6 +17,7 @@ limitations under the License.
 package azure
 
 import (
+	"fmt"
 	"net/http"
 	"testing"
 
@@ -217,4 +218,19 @@ func TestTemplateNodeInfo(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, nodeInfo)
 	assert.NotEmpty(t, nodeInfo.Pods())
+}
+func TestExtractLabelsFromScaleSet(t *testing.T) {
+	expectedNodeLabelKey := "zip"
+	expectedNodeLabelValue := "zap"
+	extraNodeLabelKey := "fizz"
+	extraNodeLabelValue := "buzz"
+
+	tags := map[string]*string{
+		fmt.Sprintf("%s%s", nodeLabelTagName, expectedNodeLabelKey): &expectedNodeLabelValue,
+		extraNodeLabelKey: &extraNodeLabelValue,
+	}
+
+	labels := extractLabelsFromScaleSet(tags)
+	assert.Len(t, labels, 1)
+	assert.Equal(t, expectedNodeLabelValue, labels[expectedNodeLabelKey])
 }

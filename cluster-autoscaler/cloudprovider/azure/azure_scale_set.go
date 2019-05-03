@@ -498,8 +498,30 @@ func (scaleSet *ScaleSet) buildNodeFromTemplate(template compute.VirtualMachineS
 
 	// GenericLabels
 	node.Labels = cloudprovider.JoinStringMaps(node.Labels, buildGenericLabels(template, nodeName))
+	// Labels from the Scale Set's Tags
+	node.Labels = cloudprovider.JoinStringMaps(node.Labels, extractLabelsFromScaleSet(template.Tags))
+
+	// Taints from the Scale Set's Tags
+	node.Spec.Taints = extractTaintsFromScaleSet(template.Tags)
+
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()
 	return &node, nil
+}
+
+func extractLabelsFromScaleSet(tags map[string]*string) map[string]string {
+	result := make(map[string]string)
+
+	for tagName, tagValue := range tags {
+		splits := strings.Split(tagName, nodeLabelTagName)
+		if len(splits) > 1 {
+			label := splits[1]
+			if label != "" {
+				result[label] = *tagValue
+			}
+		}
+	}
+
+	return result
 }
 
 // TemplateNodeInfo returns a node template for this scale set.
