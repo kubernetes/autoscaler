@@ -25,6 +25,12 @@ az ad sp create-for-rbac --role="Contributor" --scopes="/subscriptions/<subscrip
 
 This will create a new [service principal][] with "Contributor" role scoped to your subscription. Save the JSON output, because it will be needed to configure the cluster autoscaler deployment in the next step.
 
+## Scaling a node group to and from 0
+
+If you are using `nodeSelector`, you need to tag the VMSS  with a node-template key `"k8s.io|cluster-autoscaler|node-template|label|"` for using labels and and `"k8s.io|cluster-autoscaler|node-template|taint|"` if you are using taints.
+
+> Note that these tags use the pipe `|` character compared to a forward slash due to [Azure tag name restrictions](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-using-tags).
+
 ## Deployment manifests
 
 Cluster autoscaler supports four Kubernetes cluster options on Azure:
