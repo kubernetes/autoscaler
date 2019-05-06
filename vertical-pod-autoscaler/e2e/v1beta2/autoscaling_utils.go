@@ -78,7 +78,7 @@ var (
 )
 
 /*
-ResourceConsumer is a tool for testing. It helps create specified usage of CPU or memory (Warning: memory not supported)
+ResourceConsumer is a tool for testing. It helps create specified usage of CPU or memory
 typical use case:
 rc.ConsumeCPU(600)
 // ... check your assumption here
@@ -127,8 +127,8 @@ func NewStaticResourceConsumer(name, nsName string, replicas, initCPUTotal, init
 NewResourceConsumer creates new ResourceConsumer
 initCPUTotal argument is in millicores
 initMemoryTotal argument is in megabytes
-memLimit argument is in megabytes, memLimit is a maximum amount of memory that can be consumed by a single pod
-cpuLimit argument is in millicores, cpuLimit is a maximum amount of cpu that can be consumed by a single pod
+memRequest argument is in megabytes, it specifies the original Pod resource request
+cpuRequest argument is in millicores, it specifies the original Pod resource request
 */
 func newResourceConsumer(name, nsName string, kind schema.GroupVersionKind, replicas, initCPUTotal, initMemoryTotal, initCustomMetric, consumptionTimeInSeconds, requestSizeInMillicores,
 	requestSizeInMegabytes int, requestSizeCustomMetric int, cpuRequest, memRequest resource.Quantity, clientset clientset.Interface, internalClientset *internalclientset.Clientset) *ResourceConsumer {
@@ -418,7 +418,7 @@ func (rc *ResourceConsumer) CleanUp() {
 	framework.ExpectNoError(rc.clientSet.CoreV1().Services(rc.nsName).Delete(rc.controllerName, nil))
 }
 
-func runServiceAndWorkloadForResourceConsumer(c clientset.Interface, internalClient internalclientset.Interface, ns, name string, kind schema.GroupVersionKind, replicas int, cpuLimit, memLimit resource.Quantity) {
+func runServiceAndWorkloadForResourceConsumer(c clientset.Interface, internalClient internalclientset.Interface, ns, name string, kind schema.GroupVersionKind, replicas int, cpuRequest, memRequest resource.Quantity) {
 	ginkgo.By(fmt.Sprintf("Running consuming RC %s via %s with %v replicas", name, kind, replicas))
 	_, err := c.CoreV1().Services(ns).Create(&v1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -445,8 +445,8 @@ func runServiceAndWorkloadForResourceConsumer(c clientset.Interface, internalCli
 		Namespace:      ns,
 		Timeout:        timeoutRC,
 		Replicas:       replicas,
-		CpuRequest:     cpuLimit.MilliValue(),
-		MemRequest:     memLimit.Value(),
+		CpuRequest:     cpuRequest.MilliValue(),
+		MemRequest:     memRequest.Value(),
 	}
 
 	switch kind {
