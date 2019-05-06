@@ -40,15 +40,6 @@ func parseLabelSelector(selector string) labels.Selector {
 }
 
 func TestUpdateResourceRequests(t *testing.T) {
-	type testCase struct {
-		pod            *apiv1.Pod
-		vpas           []*vpa_types.VerticalPodAutoscaler
-		expectedAction bool
-		expectedMem    string
-		expectedCPU    string
-		annotations    vpa_api_util.ContainerToAnnotationsMap
-		labelSelector  string
-	}
 	containerName := "container1"
 	vpaName := "vpa1"
 	labels := map[string]string{"app": "testingApp"}
@@ -78,89 +69,110 @@ func TestUpdateResourceRequests(t *testing.T) {
 	vpaWithNilRecommendation := vpaBuilder.Get()
 	vpaWithNilRecommendation.Status.Recommendation = nil
 
-	testCases := []testCase{{
+	testCases := []struct {
+		name           string
+		pod            *apiv1.Pod
+		vpas           []*vpa_types.VerticalPodAutoscaler
+		expectedAction bool
+		expectedMem    resource.Quantity
+		expectedCPU    resource.Quantity
+		annotations    vpa_api_util.ContainerToAnnotationsMap
+		labelSelector  string
+	}{{
+		name:           "uninitialized pod",
 		pod:            uninitialized,
 		vpas:           []*vpa_types.VerticalPodAutoscaler{vpa},
 		expectedAction: true,
-		expectedMem:    "200Mi",
-		expectedCPU:    "2",
+		expectedMem:    resource.MustParse("200Mi"),
+		expectedCPU:    resource.MustParse("2"),
 		labelSelector:  "app = testingApp",
-	}, {
-		pod:            uninitialized,
-		vpas:           []*vpa_types.VerticalPodAutoscaler{vpa},
-		expectedAction: true,
-		expectedMem:    "200Mi",
-		expectedCPU:    "2",
-		labelSelector:  "app = testingApp",
-	}, {
-		pod:            uninitialized,
-		vpas:           []*vpa_types.VerticalPodAutoscaler{targetBelowMinVPA},
-		expectedAction: true,
-		expectedMem:    "300Mi", // MinMemory is expected to be used
-		expectedCPU:    "4",     // MinCpu is expected to be used
-		annotations: vpa_api_util.ContainerToAnnotationsMap{
-			containerName: []string{"cpu capped to minAllowed", "memory capped to minAllowed"},
+	},
+		{
+			name:           "target below min",
+			pod:            uninitialized,
+			vpas:           []*vpa_types.VerticalPodAutoscaler{targetBelowMinVPA},
+			expectedAction: true,
+			expectedMem:    resource.MustParse("300Mi"), // MinMemory is expected to be used
+			expectedCPU:    resource.MustParse("4"),     // MinCpu is expected to be used
+			annotations: vpa_api_util.ContainerToAnnotationsMap{
+				containerName: []string{"cpu capped to minAllowed", "memory capped to minAllowed"},
+			},
+			labelSelector: "app = testingApp",
 		},
-		labelSelector: "app = testingApp",
-	}, {
-		pod:            uninitialized,
-		vpas:           []*vpa_types.VerticalPodAutoscaler{targetAboveMaxVPA},
-		expectedAction: true,
-		expectedMem:    "1Gi", // MaxMemory is expected to be used
-		expectedCPU:    "5",   // MaxCpu is expected to be used
-		annotations: vpa_api_util.ContainerToAnnotationsMap{
-			containerName: []string{"cpu capped to maxAllowed", "memory capped to maxAllowed"},
+		{
+			name:           "target above max",
+			pod:            uninitialized,
+			vpas:           []*vpa_types.VerticalPodAutoscaler{targetAboveMaxVPA},
+			expectedAction: true,
+			expectedMem:    resource.MustParse("1Gi"), // MaxMemory is expected to be used
+			expectedCPU:    resource.MustParse("5"),   // MaxCpu is expected to be used
+			annotations: vpa_api_util.ContainerToAnnotationsMap{
+				containerName: []string{"cpu capped to maxAllowed", "memory capped to maxAllowed"},
+			},
+			labelSelector: "app = testingApp",
 		},
-		labelSelector: "app = testingApp",
-	}, {
-		pod:            initialized,
-		vpas:           []*vpa_types.VerticalPodAutoscaler{vpa},
-		expectedAction: true,
-		expectedMem:    "200Mi",
-		expectedCPU:    "2",
-		labelSelector:  "app = testingApp",
-	}, {
-		pod:            initialized,
-		vpas:           []*vpa_types.VerticalPodAutoscaler{vpaWithHighMemory},
-		expectedAction: true,
-		expectedMem:    "1000Mi",
-		expectedCPU:    "2",
-		labelSelector:  "app = testingApp",
-	}, {
-		pod:            uninitialized,
-		vpas:           []*vpa_types.VerticalPodAutoscaler{vpa},
-		expectedAction: false,
-		labelSelector:  "app = differentApp",
-	}, {
-		pod:            uninitialized,
-		vpas:           []*vpa_types.VerticalPodAutoscaler{offVPA},
-		expectedAction: false,
-		labelSelector:  "app = testingApp",
-	}, {
-		pod:            uninitialized,
-		vpas:           []*vpa_types.VerticalPodAutoscaler{offVPA, vpa},
-		expectedAction: true,
-		expectedMem:    "200Mi",
-		expectedCPU:    "2",
-		labelSelector:  "app = testingApp",
-	}, {
-		pod:            initialized,
-		vpas:           []*vpa_types.VerticalPodAutoscaler{vpaWithEmptyRecommendation},
-		expectedAction: true,
-		expectedMem:    "0",
-		expectedCPU:    "0",
-		labelSelector:  "app = testingApp",
-	}, {
-		pod:            initialized,
-		vpas:           []*vpa_types.VerticalPodAutoscaler{vpaWithNilRecommendation},
-		expectedAction: true,
-		expectedMem:    "0",
-		expectedCPU:    "0",
-		labelSelector:  "app = testingApp",
-	}}
-	for i, tc := range testCases {
+		{
+			name:           "initialized pod",
+			pod:            initialized,
+			vpas:           []*vpa_types.VerticalPodAutoscaler{vpa},
+			expectedAction: true,
+			expectedMem:    resource.MustParse("200Mi"),
+			expectedCPU:    resource.MustParse("2"),
+			labelSelector:  "app = testingApp",
+		},
+		{
+			name:           "high memory",
+			pod:            initialized,
+			vpas:           []*vpa_types.VerticalPodAutoscaler{vpaWithHighMemory},
+			expectedAction: true,
+			expectedMem:    resource.MustParse("1000Mi"),
+			expectedCPU:    resource.MustParse("2"),
+			labelSelector:  "app = testingApp",
+		},
+		{
+			name:           "not matching selecetor",
+			pod:            uninitialized,
+			vpas:           []*vpa_types.VerticalPodAutoscaler{vpa},
+			expectedAction: false,
+			labelSelector:  "app = differentApp",
+		},
+		{
+			name:           "off mode",
+			pod:            uninitialized,
+			vpas:           []*vpa_types.VerticalPodAutoscaler{offVPA},
+			expectedAction: false,
+			labelSelector:  "app = testingApp",
+		},
+		{
+			name:           "two vpas one in off mode",
+			pod:            uninitialized,
+			vpas:           []*vpa_types.VerticalPodAutoscaler{offVPA, vpa},
+			expectedAction: true,
+			expectedMem:    resource.MustParse("200Mi"),
+			expectedCPU:    resource.MustParse("2"),
+			labelSelector:  "app = testingApp",
+		},
+		{
+			name:           "empty recommendation",
+			pod:            initialized,
+			vpas:           []*vpa_types.VerticalPodAutoscaler{vpaWithEmptyRecommendation},
+			expectedAction: true,
+			expectedMem:    resource.MustParse("0"),
+			expectedCPU:    resource.MustParse("0"),
+			labelSelector:  "app = testingApp",
+		},
+		{
+			pod:            initialized,
+			vpas:           []*vpa_types.VerticalPodAutoscaler{vpaWithNilRecommendation},
+			expectedAction: true,
+			expectedMem:    resource.MustParse("0"),
+			expectedCPU:    resource.MustParse("0"),
+			labelSelector:  "app = testingApp",
+		},
+	}
+	for _, tc := range testCases {
 
-		t.Run(fmt.Sprintf("test case number: %d", i), func(t *testing.T) {
+		t.Run(fmt.Sprintf(tc.name), func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
@@ -186,14 +198,12 @@ func TestUpdateResourceRequests(t *testing.T) {
 				assert.Equal(t, vpaName, name)
 				assert.Nil(t, err)
 				assert.Equal(t, len(resources), 1)
-				expectedCPU, err := resource.ParseQuantity(tc.expectedCPU)
-				assert.NoError(t, err)
+
 				cpuRequest := resources[0].Requests[apiv1.ResourceCPU]
-				assert.Equal(t, expectedCPU.Value(), cpuRequest.Value(), "cpu request doesn't match")
-				expectedMemory, err := resource.ParseQuantity(tc.expectedMem)
-				assert.NoError(t, err)
+				assert.Equal(t, tc.expectedCPU.Value(), cpuRequest.Value(), "cpu request doesn't match")
+
 				memoryRequest := resources[0].Requests[apiv1.ResourceMemory]
-				assert.Equal(t, expectedMemory.Value(), memoryRequest.Value(), "memory request doesn't match")
+				assert.Equal(t, tc.expectedMem.Value(), memoryRequest.Value(), "memory request doesn't match")
 				assert.Len(t, annotations, len(tc.annotations))
 				if len(tc.annotations) > 0 {
 					for annotationKey, annotationValues := range tc.annotations {
