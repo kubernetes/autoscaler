@@ -39,6 +39,11 @@ func parseLabelSelector(selector string) labels.Selector {
 	return parsedSelector
 }
 
+func mustParseResourcePointer(val string) *resource.Quantity {
+	q := resource.MustParse(val)
+	return &q
+}
+
 func TestUpdateResourceRequests(t *testing.T) {
 	containerName := "container1"
 	vpaName := "vpa1"
@@ -51,11 +56,20 @@ func TestUpdateResourceRequests(t *testing.T) {
 		WithMaxAllowed("3", "1Gi")
 	vpa := vpaBuilder.Get()
 
-	uninitialized := test.Pod().WithName("test_uninitialized").AddContainer(test.BuildTestContainer(containerName, "", "")).Get()
-	uninitialized.ObjectMeta.Labels = labels
+	uninitialized := test.Pod().WithName("test_uninitialized").
+		AddContainer(test.Container().WithName(containerName).Get()).
+		WithLabels(labels).Get()
 
-	initialized := test.Pod().WithName("test_initialized").AddContainer(test.BuildTestContainer(containerName, "1", "100Mi")).Get()
-	initialized.ObjectMeta.Labels = labels
+	initializedContainer := test.Container().WithName(containerName).
+		WithCPURequest(resource.MustParse("1")).WithMemRequest(resource.MustParse("100Mi")).Get()
+	initialized := test.Pod().WithName("test_initialized").
+		AddContainer(initializedContainer).WithLabels(labels).Get()
+
+	guaranteedCPUContainer := test.Container().WithName(containerName).
+		WithCPURequest(resource.MustParse("2")).WithCPULimit(resource.MustParse("2")).
+		WithMemLimit(resource.MustParse("200Mi")).WithMemRequest(resource.MustParse("200Mi")).Get()
+	guaranteedCPUPod := test.Pod().WithName("test_initialized").
+		AddContainer(guaranteedCPUContainer).WithLabels(labels).Get()
 
 	offVPA := vpaBuilder.WithUpdateMode(vpa_types.UpdateModeOff).Get()
 
@@ -70,23 +84,26 @@ func TestUpdateResourceRequests(t *testing.T) {
 	vpaWithNilRecommendation.Status.Recommendation = nil
 
 	testCases := []struct {
-		name           string
-		pod            *apiv1.Pod
-		vpas           []*vpa_types.VerticalPodAutoscaler
-		expectedAction bool
-		expectedMem    resource.Quantity
-		expectedCPU    resource.Quantity
-		annotations    vpa_api_util.ContainerToAnnotationsMap
-		labelSelector  string
-	}{{
-		name:           "uninitialized pod",
-		pod:            uninitialized,
-		vpas:           []*vpa_types.VerticalPodAutoscaler{vpa},
-		expectedAction: true,
-		expectedMem:    resource.MustParse("200Mi"),
-		expectedCPU:    resource.MustParse("2"),
-		labelSelector:  "app = testingApp",
-	},
+		name             string
+		pod              *apiv1.Pod
+		vpas             []*vpa_types.VerticalPodAutoscaler
+		expectedAction   bool
+		expectedMem      resource.Quantity
+		expectedCPU      resource.Quantity
+		expectedCPULimit *resource.Quantity
+		expectedMemLimit *resource.Quantity
+		annotations      vpa_api_util.ContainerToAnnotationsMap
+		labelSelector    string
+	}{
+		{
+			name:           "uninitialized pod",
+			pod:            uninitialized,
+			vpas:           []*vpa_types.VerticalPodAutoscaler{vpa},
+			expectedAction: true,
+			expectedMem:    resource.MustParse("200Mi"),
+			expectedCPU:    resource.MustParse("2"),
+			labelSelector:  "app = testingApp",
+		},
 		{
 			name:           "target below min",
 			pod:            uninitialized,
@@ -169,6 +186,17 @@ func TestUpdateResourceRequests(t *testing.T) {
 			expectedCPU:    resource.MustParse("0"),
 			labelSelector:  "app = testingApp",
 		},
+		{
+			name:             "guaranteed resources",
+			pod:              guaranteedCPUPod,
+			vpas:             []*vpa_types.VerticalPodAutoscaler{vpa},
+			expectedAction:   true,
+			expectedMem:      resource.MustParse("200Mi"),
+			expectedCPU:      resource.MustParse("2"),
+			expectedCPULimit: mustParseResourcePointer("2"),
+			expectedMemLimit: mustParseResourcePointer("200Mi"),
+			labelSelector:    "app = testingApp",
+		},
 	}
 	for _, tc := range testCases {
 
@@ -197,13 +225,34 @@ func TestUpdateResourceRequests(t *testing.T) {
 			if tc.expectedAction {
 				assert.Equal(t, vpaName, name)
 				assert.Nil(t, err)
-				assert.Equal(t, len(resources), 1)
+				if !assert.Equal(t, len(resources), 1) {
+					return
+				}
 
 				cpuRequest := resources[0].Requests[apiv1.ResourceCPU]
 				assert.Equal(t, tc.expectedCPU.Value(), cpuRequest.Value(), "cpu request doesn't match")
 
 				memoryRequest := resources[0].Requests[apiv1.ResourceMemory]
 				assert.Equal(t, tc.expectedMem.Value(), memoryRequest.Value(), "memory request doesn't match")
+
+				cpuLimit, cpuLimitPresent := resources[0].Limits[apiv1.ResourceCPU]
+				if tc.expectedCPULimit == nil {
+					assert.False(t, cpuLimitPresent, "expected no cpu limit, got %s", cpuLimit.String())
+				} else {
+					if assert.True(t, cpuLimitPresent, "expected cpu limit, but it's missing") {
+						assert.Equal(t, *tc.expectedCPULimit, cpuLimit, "cpu limit doesn't match")
+					}
+				}
+
+				memLimit, memLimitPresent := resources[0].Limits[apiv1.ResourceMemory]
+				if tc.expectedMemLimit == nil {
+					assert.False(t, memLimitPresent, "expected no memory limit, got %s", memLimit.String())
+				} else {
+					if assert.True(t, memLimitPresent, "expected cpu limit, but it's missing") {
+						assert.Equal(t, *tc.expectedMemLimit, memLimit, "memory limit doesn't match")
+					}
+				}
+
 				assert.Len(t, annotations, len(tc.annotations))
 				if len(tc.annotations) > 0 {
 					for annotationKey, annotationValues := range tc.annotations {
