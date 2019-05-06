@@ -249,6 +249,8 @@ func (cluster *ClusterState) DeleteVpa(vpaID VpaID) error {
 		return NewKeyError(vpaID)
 	}
 	delete(cluster.Vpas, vpaID)
+	delete(cluster.EmptyVPAs, vpaID)
+	delete(cluster.VpasWithMatchingPods, vpaID)
 	return nil
 }
 
