@@ -32,6 +32,8 @@ import (
 const (
 	cpu        = "cpu"
 	unobtanium = "unobtanium"
+	limit      = "limit"
+	request    = "request"
 )
 
 type fakePodPreProcessor struct {
@@ -69,6 +71,14 @@ func addRequestsPatch(idx int) patchRecord {
 	}
 }
 
+func addLimitsPatch(idx int) patchRecord {
+	return patchRecord{
+		"add",
+		fmt.Sprintf("/spec/containers/%d/resources/limits", idx),
+		apiv1.ResourceList{},
+	}
+}
+
 func addResourceRequestPatch(index int, res, amount string) patchRecord {
 	return patchRecord{
 		"add",
@@ -77,12 +87,20 @@ func addResourceRequestPatch(index int, res, amount string) patchRecord {
 	}
 }
 
-func addAnnotationRequest(updateResources [][]string) patchRecord {
+func addResourceLimitPatch(index int, res, amount string) patchRecord {
+	return patchRecord{
+		"add",
+		fmt.Sprintf("/spec/containers/%d/resources/limits/%s", index, res),
+		resource.MustParse(amount),
+	}
+}
+
+func addAnnotationRequest(updateResources [][]string, kind string) patchRecord {
 	requests := make([]string, 0)
 	for idx, podResources := range updateResources {
 		podRequests := make([]string, 0)
 		for _, resource := range podResources {
-			podRequests = append(podRequests, resource+" request")
+			podRequests = append(podRequests, resource+" "+kind)
 		}
 		requests = append(requests, fmt.Sprintf("container %d: %s", idx, strings.Join(podRequests, ", ")))
 	}
@@ -147,7 +165,7 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 			namespace: "default",
 			recommendResources: []ContainerResources{
 				{
-					apiv1.ResourceList{
+					Requests: apiv1.ResourceList{
 						cpu: resource.MustParse("1"),
 					},
 				},
@@ -158,7 +176,7 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 				addResourcesPatch(0),
 				addRequestsPatch(0),
 				addResourceRequestPatch(0, cpu, "1"),
-				addAnnotationRequest([][]string{{cpu}}),
+				addAnnotationRequest([][]string{{cpu}}, request),
 			},
 		},
 		{
@@ -180,7 +198,7 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 			namespace: "default",
 			recommendResources: []ContainerResources{
 				{
-					apiv1.ResourceList{
+					Requests: apiv1.ResourceList{
 						cpu: resource.MustParse("1"),
 					},
 				},
@@ -189,7 +207,7 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 			recommendName:        "name",
 			expectPatches: []patchRecord{
 				addResourceRequestPatch(0, cpu, "1"),
-				addAnnotationRequest([][]string{{cpu}}),
+				addAnnotationRequest([][]string{{cpu}}, request),
 			},
 		},
 		{
@@ -212,12 +230,12 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 			namespace: "default",
 			recommendResources: []ContainerResources{
 				{
-					apiv1.ResourceList{
+					Requests: apiv1.ResourceList{
 						cpu: resource.MustParse("1"),
 					},
 				},
 				{
-					apiv1.ResourceList{
+					Requests: apiv1.ResourceList{
 						cpu: resource.MustParse("2"),
 					},
 				},
@@ -229,7 +247,63 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 				addResourcesPatch(1),
 				addRequestsPatch(1),
 				addResourceRequestPatch(1, cpu, "2"),
-				addAnnotationRequest([][]string{{cpu}, {cpu}}),
+				addAnnotationRequest([][]string{{cpu}, {cpu}}, request),
+			},
+		},
+		{
+			name: "new cpu limit",
+			podJson: []byte(
+				`{
+					"spec": {
+						"containers": [{}]
+					}
+				}`),
+			namespace: "default",
+			recommendResources: []ContainerResources{
+				{
+					Limits: apiv1.ResourceList{
+						cpu: resource.MustParse("1"),
+					},
+				},
+			},
+			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
+			recommendName:        "name",
+			expectPatches: []patchRecord{
+				addResourcesPatch(0),
+				addLimitsPatch(0),
+				addResourceLimitPatch(0, cpu, "1"),
+				addAnnotationRequest([][]string{{cpu}}, limit),
+			},
+		},
+		{
+			name: "replacement cpu limit",
+			podJson: []byte(
+				`{
+					"spec": {
+						"containers": [
+							{
+								"resources": {
+									"limits": {
+										"cpu": "0"
+									}
+								}
+							}
+						]
+					}
+				}`),
+			namespace: "default",
+			recommendResources: []ContainerResources{
+				{
+					Limits: apiv1.ResourceList{
+						cpu: resource.MustParse("1"),
+					},
+				},
+			},
+			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
+			recommendName:        "name",
+			expectPatches: []patchRecord{
+				addResourceLimitPatch(0, cpu, "1"),
+				addAnnotationRequest([][]string{{cpu}}, limit),
 			},
 		},
 	}
@@ -246,7 +320,7 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 					assert.Equal(t, tc.expectError.Error(), err.Error())
 				}
 			}
-			if assert.Equal(t, len(tc.expectPatches), len(patches)) {
+			if assert.Equal(t, len(tc.expectPatches), len(patches), fmt.Sprintf("got %+v, want %+v", patches, tc.expectPatches)) {
 				for i, gotPatch := range patches {
 					if !eqPatch(gotPatch, tc.expectPatches[i]) {
 						t.Errorf("Expected patch at position %d to be %+v, got %+v", i, tc.expectPatches[i], gotPatch)
@@ -262,7 +336,7 @@ func TestGetPatchesForResourceRequest_TwoReplacementResources(t *testing.T) {
 	fppp := fakePodPreProcessor{}
 	recommendResources := []ContainerResources{
 		{
-			apiv1.ResourceList{
+			Requests: apiv1.ResourceList{
 				cpu:        resource.MustParse("1"),
 				unobtanium: resource.MustParse("2"),
 			},
@@ -294,7 +368,7 @@ func TestGetPatchesForResourceRequest_TwoReplacementResources(t *testing.T) {
 		assert.True(t, eqPatch(patches[0], cpuUpdate) || eqPatch(patches[0], unobtaniumUpdate))
 		assert.True(t, eqPatch(patches[1], cpuUpdate) || eqPatch(patches[1], unobtaniumUpdate))
 		assert.False(t, eqPatch(patches[0], patches[1]))
-		assert.True(t, eqPatch(patches[2], addAnnotationRequest([][]string{{cpu, unobtanium}})) || eqPatch(patches[2], addAnnotationRequest([][]string{{unobtanium, cpu}})))
+		assert.True(t, eqPatch(patches[2], addAnnotationRequest([][]string{{cpu, unobtanium}}, request)) || eqPatch(patches[2], addAnnotationRequest([][]string{{unobtanium, cpu}}, request)))
 	}
 }
 

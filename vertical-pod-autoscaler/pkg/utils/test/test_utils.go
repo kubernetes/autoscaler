@@ -30,7 +30,7 @@ import (
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
 	vpa_lister_v1beta1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1beta1"
 	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1beta2"
-	v1 "k8s.io/client-go/listers/core/v1"
+	"k8s.io/client-go/listers/core/v1"
 	"k8s.io/client-go/tools/record"
 )
 
@@ -41,23 +41,18 @@ var (
 
 // BuildTestContainer creates container with specified resources
 func BuildTestContainer(containerName, cpu, mem string) apiv1.Container {
-	container := apiv1.Container{
-		Name: containerName,
-		Resources: apiv1.ResourceRequirements{
-			Requests: apiv1.ResourceList{},
-		},
-	}
+	// TODO: Use builder directly, remove this function.
+	builder := Container().WithName(containerName)
 
 	if len(cpu) > 0 {
 		cpuVal, _ := resource.ParseQuantity(cpu)
-		container.Resources.Requests[apiv1.ResourceCPU] = cpuVal
+		builder = builder.WithCPURequest(cpuVal)
 	}
 	if len(mem) > 0 {
 		memVal, _ := resource.ParseQuantity(mem)
-		container.Resources.Requests[apiv1.ResourceMemory] = memVal
+		builder = builder.WithMemRequest(memVal)
 	}
-
-	return container
+	return builder.Get()
 }
 
 // BuildTestPolicy creates ResourcesPolicy with specified constraints

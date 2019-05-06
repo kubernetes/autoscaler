@@ -126,21 +126,29 @@ func (s *AdmissionServer) getContainerPatch(pod v1.Pod, i int, patchKind string,
 		pod.Spec.Containers[i].Resources.Requests == nil {
 		patches = append(patches, getPatchInitializingEmptyResources(i))
 	}
-	// Add empty resources requests object if missing
-	if pod.Spec.Containers[i].Resources.Requests == nil {
-		patches = append(patches, getPatchInitializingEmptyResourcesSubfield(i, "requests"))
-	}
+
 	annotations, found := annotationsPerContainer[pod.Spec.Containers[i].Name]
 	if !found {
 		annotations = make([]string, 0)
 	}
-	for resource, request := range containerResources.Requests {
-		// Set request
-		patches = append(patches, getAddResourceRequirementValuePatch(i, "requests", resource, request))
-		annotations = append(annotations, fmt.Sprintf("%s request", resource))
-	}
+
+	patches, annotations = appendPatchesAndAnnotations(patches, annotations, pod.Spec.Containers[i].Resources.Requests, i, containerResources.Requests, "requests", "request")
+	patches, annotations = appendPatchesAndAnnotations(patches, annotations, pod.Spec.Containers[i].Resources.Limits, i, containerResources.Limits, "limits", "limit")
+
 	updatesAnnotation := fmt.Sprintf("container %d: ", i) + strings.Join(annotations, ", ")
 	return patches, updatesAnnotation
+}
+
+func appendPatchesAndAnnotations(patches []patchRecord, annotations []string, current v1.ResourceList, containerIndex int, resources v1.ResourceList, fieldName, resourceName string) ([]patchRecord, []string) {
+	// Add empty object if it's missing and we're about to fill it.
+	if current == nil && len(resources) > 0 {
+		patches = append(patches, getPatchInitializingEmptyResourcesSubfield(containerIndex, fieldName))
+	}
+	for resource, request := range resources {
+		patches = append(patches, getAddResourceRequirementValuePatch(containerIndex, fieldName, resource, request))
+		annotations = append(annotations, fmt.Sprintf("%s %s", resource, resourceName))
+	}
+	return patches, annotations
 }
 
 func parseVPA(raw []byte) (*vpa_types.VerticalPodAutoscaler, error) {
