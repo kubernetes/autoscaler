@@ -34,7 +34,13 @@ import (
 )
 
 const (
-	minimalCPU = "50m"
+	minimalCPULowerBound    = "20m"
+	minimalCPUUpperBound    = "100m"
+	minimalMemoryLowerBound = "20Mi"
+	minimalMemoryUpperBound = "300Mi"
+	// the initial values should be outside minimal bounds
+	initialCPU    = "10m"
+	initialMemory = "10Mi"
 )
 
 var _ = FullVpaE2eDescribe("Pods under VPA", func() {
@@ -58,11 +64,11 @@ var _ = FullVpaE2eDescribe("Pods under VPA", func() {
 		ginkgo.By("Setting up a hamster deployment")
 		rc = NewDynamicResourceConsumer("hamster", ns, e2e_common.KindDeployment,
 			replicas,
-			1,                          /*initCPUTotal*/
-			10,                         /*initMemoryTotal*/
-			1,                          /*initCustomMetric*/
-			ParseQuantityOrDie("100m"), /*cpuRequest*/
-			ParseQuantityOrDie("10Mi"), /*memRequest*/
+			1,                                 /*initCPUTotal*/
+			10,                                /*initMemoryTotal*/
+			1,                                 /*initCustomMetric*/
+			ParseQuantityOrDie(initialCPU),    /*cpuRequest*/
+			ParseQuantityOrDie(initialMemory), /*memRequest*/
 			f.ClientSet,
 			f.InternalClientset)
 
@@ -83,29 +89,34 @@ var _ = FullVpaE2eDescribe("Pods under VPA", func() {
 
 	})
 
-	ginkgo.It("stabilize at minimum CPU if doing nothing", func() {
-		err := waitForResourceRequestAboveThresholdInPods(
-			f, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU, ParseQuantityOrDie(minimalCPU))
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
-	})
-
 	ginkgo.It("have cpu requests growing with usage", func() {
+		// initial CPU usage is low so a minimal recommendation is expected
+		err := waitForResourceRequestInRangeInPods(
+			f, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU,
+			ParseQuantityOrDie(minimalCPULowerBound), ParseQuantityOrDie(minimalCPUUpperBound))
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+		// consume more CPU to get a higher recommendation
 		rc.ConsumeCPU(600 * replicas)
-		err := waitForResourceRequestAboveThresholdInPods(
-			f, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU, ParseQuantityOrDie("500m"))
+		err = waitForResourceRequestInRangeInPods(
+			f, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceCPU,
+			ParseQuantityOrDie("500m"), ParseQuantityOrDie("900m"))
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
 
-	ginkgo.It("have memory requests growing with OOMs", func() {
-		// Wait for any recommendation
-		_, err := WaitForRecommendationPresent(vpaClientSet, vpaCRD)
+	ginkgo.It("have memory requests growing with usage", func() {
+		// initial memory usage is low so a minimal recommendation is expected
+		err := waitForResourceRequestInRangeInPods(
+			f, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceMemory,
+			ParseQuantityOrDie(minimalMemoryLowerBound), ParseQuantityOrDie(minimalMemoryUpperBound))
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
-		// Restart pods to have limits populated
-		err = deletePods(f, metav1.ListOptions{LabelSelector: "name=hamster"})
-		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+		// consume more memory to get a higher recommendation
+		// NOTE: large range given due to unpredictability of actual memory usage
 		rc.ConsumeMem(1024 * replicas)
-		err = waitForResourceRequestAboveThresholdInPods(
-			f, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceMemory, ParseQuantityOrDie("600Mi"))
+		err = waitForResourceRequestInRangeInPods(
+			f, metav1.ListOptions{LabelSelector: "name=hamster"}, apiv1.ResourceMemory,
+			ParseQuantityOrDie("900Mi"), ParseQuantityOrDie("4000Mi"))
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
 })
@@ -135,32 +146,16 @@ func waitForPodsMatch(f *framework.Framework, listOptions metav1.ListOptions, ma
 	})
 }
 
-func deletePods(f *framework.Framework, listOptions metav1.ListOptions) error {
-	ns := f.Namespace.Name
-	c := f.ClientSet
-	podList, err := c.CoreV1().Pods(ns).List(listOptions)
-	if err != nil {
-		return err
-	}
-	for _, pod := range podList.Items {
-		err := c.CoreV1().Pods(ns).Delete(pod.Name, &metav1.DeleteOptions{})
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func waitForResourceRequestAboveThresholdInPods(f *framework.Framework, listOptions metav1.ListOptions, resourceName apiv1.ResourceName, threshold resource.Quantity) error {
+func waitForResourceRequestInRangeInPods(f *framework.Framework, listOptions metav1.ListOptions, resourceName apiv1.ResourceName, lowerBound, upperBound resource.Quantity) error {
 	err := waitForPodsMatch(f, listOptions,
 		func(pod apiv1.Pod) bool {
 			resourceRequest, found := pod.Spec.Containers[0].Resources.Requests[resourceName]
-			framework.Logf("Comparing %v request %v against minimum threshold of %v", resourceName, resourceRequest, threshold)
-			return found && resourceRequest.MilliValue() > threshold.MilliValue()
+			framework.Logf("Comparing %v request %v against range of (%v, %v)", resourceName, resourceRequest, lowerBound, upperBound)
+			return found && resourceRequest.MilliValue() > lowerBound.MilliValue() && resourceRequest.MilliValue() < upperBound.MilliValue()
 		})
 
 	if err != nil {
-		return fmt.Errorf("error waiting for %s request above %v for pods: %+v", resourceName, threshold, listOptions)
+		return fmt.Errorf("error waiting for %s request in range of (%v,%v) for pods: %+v", resourceName, lowerBound, upperBound, listOptions)
 	}
 	return nil
 }
