@@ -52,6 +52,7 @@ var (
 )
 
 func main() {
+	klog.InitFlags(nil)
 	kube_flag.InitFlags()
 	klog.V(1).Infof("Vertical Pod Autoscaler %s Recommender", common.VerticalPodAutoscalerVersion)
 
