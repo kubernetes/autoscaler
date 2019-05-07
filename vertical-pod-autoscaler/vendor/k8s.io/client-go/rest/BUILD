@@ -36,11 +36,12 @@ go_test(
         "//staging/src/k8s.io/client-go/kubernetes/scheme:go_default_library",
         "//staging/src/k8s.io/client-go/rest/watch:go_default_library",
         "//staging/src/k8s.io/client-go/tools/clientcmd/api:go_default_library",
+        "//staging/src/k8s.io/client-go/transport:go_default_library",
         "//staging/src/k8s.io/client-go/util/flowcontrol:go_default_library",
         "//staging/src/k8s.io/client-go/util/testing:go_default_library",
-        "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/github.com/google/gofuzz:go_default_library",
         "//vendor/github.com/stretchr/testify/assert:go_default_library",
+        "//vendor/k8s.io/klog:go_default_library",
     ],
 )
 
@@ -76,8 +77,8 @@ go_library(
         "//staging/src/k8s.io/client-go/transport:go_default_library",
         "//staging/src/k8s.io/client-go/util/cert:go_default_library",
         "//staging/src/k8s.io/client-go/util/flowcontrol:go_default_library",
-        "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/golang.org/x/net/http2:go_default_library",
+        "//vendor/k8s.io/klog:go_default_library",
     ],
 )
 

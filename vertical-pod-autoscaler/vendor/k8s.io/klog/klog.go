@@ -43,7 +43,7 @@
 //		Logs are written to standard error instead of to files.
 //	-alsologtostderr=false
 //		Logs are written to standard error as well as to files.
-//	-stderrthreshold=INFO
+//	-stderrthreshold=ERROR
 //		Log events at or above this severity are logged to standard
 //		error as well as to files.
 //	-log_dir=""
@@ -396,8 +396,8 @@ type flushSyncWriter interface {
 }
 
 func init() {
-	// Default stderrThreshold is INFO.
-	logging.stderrThreshold = infoLog
+	// Default stderrThreshold is ERROR.
+	logging.stderrThreshold = errorLog
 
 	logging.setVState(0, nil, false)
 	go logging.flushDaemon()
@@ -739,9 +739,7 @@ func (l *loggingT) output(s severity, buf *buffer, file string, line int, alsoTo
 	}
 	data := buf.Bytes()
 	if l.toStderr {
-		if s >= l.stderrThreshold.get() {
-			os.Stderr.Write(data)
-		}
+		os.Stderr.Write(data)
 	} else {
 		if alsoToStderr || l.alsoToStderr || s >= l.stderrThreshold.get() {
 			os.Stderr.Write(data)
@@ -874,7 +872,7 @@ func (sb *syncBuffer) Sync() error {
 
 func (sb *syncBuffer) Write(p []byte) (n int, err error) {
 	if sb.nbytes+uint64(len(p)) >= MaxSize {
-		if err := sb.rotateFile(time.Now()); err != nil {
+		if err := sb.rotateFile(time.Now(), false); err != nil {
 			sb.logger.exit(err)
 		}
 	}
@@ -887,13 +885,15 @@ func (sb *syncBuffer) Write(p []byte) (n int, err error) {
 }
 
 // rotateFile closes the syncBuffer's file and starts a new one.
-func (sb *syncBuffer) rotateFile(now time.Time) error {
+// The startup argument indicates whether this is the initial startup of klog.
+// If startup is true, existing files are opened for apending instead of truncated.
+func (sb *syncBuffer) rotateFile(now time.Time, startup bool) error {
 	if sb.file != nil {
 		sb.Flush()
 		sb.file.Close()
 	}
 	var err error
-	sb.file, _, err = create(severityName[sb.sev], now)
+	sb.file, _, err = create(severityName[sb.sev], now, startup)
 	sb.nbytes = 0
 	if err != nil {
 		return err
@@ -928,7 +928,7 @@ func (l *loggingT) createFiles(sev severity) error {
 			logger: l,
 			sev:    s,
 		}
-		if err := sb.rotateFile(now); err != nil {
+		if err := sb.rotateFile(now, true); err != nil {
 			return err
 		}
 		l.file[s] = sb
