@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/golang/glog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
@@ -30,6 +29,7 @@ import (
 	vpa_lister_v1beta1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1beta1"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
+	"k8s.io/klog"
 	"k8s.io/kubernetes/pkg/apis/core"
 )
 
@@ -61,7 +61,7 @@ func (f *beta1TargetSelectorFetcher) Fetch(vpa *vpa_types_v1beta2.VerticalPodAut
 				// Intentionally ignore error
 				return labels.Nothing(), nil
 			}
-			glog.Infof("Found deprecated label selector for VPA %s/%s", vpa.Namespace, vpa.Name)
+			klog.Infof("Found deprecated label selector for VPA %s/%s", vpa.Namespace, vpa.Name)
 			return selector, nil
 		}
 	}
@@ -79,9 +79,9 @@ func newAllVpasLister(vpaClient *vpa_clientset.Clientset, stopChannel <-chan str
 	vpaLister := vpa_lister_v1beta1.NewVerticalPodAutoscalerLister(indexer)
 	go controller.Run(stopChannel)
 	if !cache.WaitForCacheSync(make(chan struct{}), controller.HasSynced) {
-		glog.Fatalf("Failed to sync VPA v1beta1 cache during initialization")
+		klog.Fatalf("Failed to sync VPA v1beta1 cache during initialization")
 	} else {
-		glog.Info("Initial VPA v1beta1 synced successfully")
+		klog.Info("Initial VPA v1beta1 synced successfully")
 	}
 	return vpaLister
 }

@@ -21,12 +21,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang/glog"
-	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
+
+	"github.com/stretchr/testify/assert"
 )
 
 // TODO: Extract these constants to a common test module.
@@ -42,7 +42,7 @@ var (
 	}
 )
 
-func addVpa(cluster *model.ClusterState, vpaID model.VpaID, selector string) *model.Vpa {
+func addVpa(t *testing.T, cluster *model.ClusterState, vpaID model.VpaID, selector string) *model.Vpa {
 	var apiObject vpa_types.VerticalPodAutoscaler
 	apiObject.Namespace = vpaID.Namespace
 	apiObject.Name = vpaID.VpaName
@@ -50,7 +50,7 @@ func addVpa(cluster *model.ClusterState, vpaID model.VpaID, selector string) *mo
 	parsedSelector, _ := metav1.LabelSelectorAsSelector(labelSelector)
 	err := cluster.AddOrUpdateVpa(&apiObject, parsedSelector)
 	if err != nil {
-		glog.Fatalf("AddOrUpdateVpa() failed: %v", err)
+		t.Fatalf("AddOrUpdateVpa() failed: %v", err)
 	}
 	return cluster.Vpas[vpaID]
 }
@@ -64,7 +64,7 @@ func TestMergeContainerStateForCheckpointDropsRecentMemoryPeak(t *testing.T) {
 	timeNow := time.Unix(1, 0)
 	container.AddSample(&model.ContainerUsageSample{
 		timeNow, model.MemoryAmountFromBytes(1024 * 1024 * 1024), testRequest[model.ResourceMemory], model.ResourceMemory})
-	vpa := addVpa(cluster, testVpaID1, testSelectorStr)
+	vpa := addVpa(t, cluster, testVpaID1, testSelectorStr)
 
 	// Verify that the current peak is excluded from the aggregation.
 	aggregateContainerStateMap := buildAggregateContainerStateMap(vpa, cluster, timeNow)
