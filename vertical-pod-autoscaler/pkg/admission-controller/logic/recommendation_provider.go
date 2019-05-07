@@ -17,7 +17,7 @@ limitations under the License.
 package logic
 
 import (
-	v1 "k8s.io/api/core/v1"
+	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
@@ -29,11 +29,15 @@ import (
 
 // ContainerResources holds resources request for container
 type ContainerResources struct {
+	Limits   v1.ResourceList
 	Requests v1.ResourceList
 }
 
 func newContainerResources() ContainerResources {
-	return ContainerResources{Requests: v1.ResourceList{}}
+	return ContainerResources{
+		Requests: v1.ResourceList{},
+		Limits:   v1.ResourceList{},
+	}
 }
 
 // RecommendationProvider gets current recommendation, annotations and vpaName for the given pod.
@@ -68,6 +72,17 @@ func getContainersResources(pod *v1.Pod, podRecommendation vpa_types.Recommended
 			continue
 		}
 		resources[i].Requests = recommendation.Target
+
+		// If user set containers limit and request for a resource to the same value then keep the limit in sync.
+		if container.Resources.Limits.Cpu() != nil && container.Resources.Limits.Cpu().Value() != 0 &&
+			container.Resources.Requests.Cpu() != nil && *container.Resources.Limits.Cpu() == *container.Resources.Requests.Cpu() {
+			resources[i].Limits[v1.ResourceCPU] = *resources[i].Requests.Cpu()
+		}
+
+		if container.Resources.Limits.Memory() != nil && container.Resources.Limits.Memory().Value() != 0 &&
+			container.Resources.Requests.Memory() != nil && *container.Resources.Limits.Memory() == *container.Resources.Requests.Memory() {
+			resources[i].Limits[v1.ResourceMemory] = *resources[i].Requests.Memory()
+		}
 	}
 	return resources
 }
