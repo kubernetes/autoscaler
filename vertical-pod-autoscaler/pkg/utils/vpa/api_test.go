@@ -60,41 +60,41 @@ func TestUpdateVpaIfNeeded(t *testing.T) {
 	testCases := []struct {
 		caseName       string
 		updatedVpa     *vpa_types.VerticalPodAutoscaler
-		observedStatus *vpa_types.VerticalPodAutoscalerStatus
+		observedVpa    *vpa_types.VerticalPodAutoscaler
 		expectedUpdate bool
 	}{
 		{
 			caseName:   "Doesn't update if no changes.",
 			updatedVpa: updatedVpa,
-			observedStatus: &observedVpaBuilder.WithTarget("5", "200").
-				AppendCondition(vpa_types.RecommendationProvided, core.ConditionTrue, "reason", "msg", anytime).Get().Status,
+			observedVpa: observedVpaBuilder.WithTarget("5", "200").
+				AppendCondition(vpa_types.RecommendationProvided, core.ConditionTrue, "reason", "msg", anytime).Get(),
 			expectedUpdate: false,
 		}, {
 			caseName:   "Updates on recommendation change.",
 			updatedVpa: updatedVpa,
-			observedStatus: &observedVpaBuilder.WithTarget("10", "200").
-				AppendCondition(vpa_types.RecommendationProvided, core.ConditionTrue, "reason", "msg", anytime).Get().Status,
+			observedVpa: observedVpaBuilder.WithTarget("10", "200").
+				AppendCondition(vpa_types.RecommendationProvided, core.ConditionTrue, "reason", "msg", anytime).Get(),
 			expectedUpdate: true,
 		}, {
 			caseName:   "Updates on condition change.",
 			updatedVpa: updatedVpa,
-			observedStatus: &observedVpaBuilder.WithTarget("5", "200").
-				AppendCondition(vpa_types.RecommendationProvided, core.ConditionFalse, "reason", "msg", anytime).Get().Status,
+			observedVpa: observedVpaBuilder.WithTarget("5", "200").
+				AppendCondition(vpa_types.RecommendationProvided, core.ConditionFalse, "reason", "msg", anytime).Get(),
 			expectedUpdate: true,
 		}, {
 			caseName:   "Updates on condition added.",
 			updatedVpa: updatedVpa,
-			observedStatus: &observedVpaBuilder.WithTarget("5", "200").
+			observedVpa: observedVpaBuilder.WithTarget("5", "200").
 				AppendCondition(vpa_types.RecommendationProvided, core.ConditionTrue, "reason", "msg", anytime).
-				AppendCondition(vpa_types.LowConfidence, core.ConditionTrue, "reason", "msg", anytime).Get().Status,
+				AppendCondition(vpa_types.LowConfidence, core.ConditionTrue, "reason", "msg", anytime).Get(),
 			expectedUpdate: true,
 		},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.caseName, func(t *testing.T) {
-			fakeClient := vpa_fake.NewSimpleClientset()
+			fakeClient := vpa_fake.NewSimpleClientset(&vpa_types.VerticalPodAutoscalerList{Items: []vpa_types.VerticalPodAutoscaler{*tc.observedVpa}})
 			_, err := UpdateVpaStatusIfNeeded(fakeClient.AutoscalingV1beta2().VerticalPodAutoscalers(tc.updatedVpa.Namespace),
-				tc.updatedVpa.Name, &tc.updatedVpa.Status, tc.observedStatus)
+				tc.updatedVpa.Name, &tc.updatedVpa.Status, &tc.observedVpa.Status)
 			assert.NoError(t, err, "Unexpected error occurred.")
 			actions := fakeClient.Actions()
 			if tc.expectedUpdate {
