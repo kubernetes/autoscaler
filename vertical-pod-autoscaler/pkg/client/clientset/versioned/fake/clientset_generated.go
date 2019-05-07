@@ -85,17 +85,7 @@ func (c *Clientset) AutoscalingV1beta1() autoscalingv1beta1.AutoscalingV1beta1In
 	return &fakeautoscalingv1beta1.FakeAutoscalingV1beta1{Fake: &c.Fake}
 }
 
-// Autoscaling retrieves the AutoscalingV1beta1Client
-func (c *Clientset) Autoscaling() autoscalingv1beta1.AutoscalingV1beta1Interface {
-	return &fakeautoscalingv1beta1.FakeAutoscalingV1beta1{Fake: &c.Fake}
-}
-
 // PocV1alpha1 retrieves the PocV1alpha1Client
 func (c *Clientset) PocV1alpha1() pocv1alpha1.PocV1alpha1Interface {
-	return &fakepocv1alpha1.FakePocV1alpha1{Fake: &c.Fake}
-}
-
-// Poc retrieves the PocV1alpha1Client
-func (c *Clientset) Poc() pocv1alpha1.PocV1alpha1Interface {
 	return &fakepocv1alpha1.FakePocV1alpha1{Fake: &c.Fake}
 }
