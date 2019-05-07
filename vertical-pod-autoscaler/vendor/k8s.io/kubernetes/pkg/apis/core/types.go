@@ -26,17 +26,19 @@ import (
 
 const (
 	// NamespaceDefault means the object is in the default namespace which is applied when not specified by clients
-	NamespaceDefault string = "default"
+	NamespaceDefault = "default"
 	// NamespaceAll is the default argument to specify on a context when you want to list or filter resources across all namespaces
-	NamespaceAll string = ""
+	NamespaceAll = ""
 	// NamespaceNone is the argument for a context when there is no namespace.
-	NamespaceNone string = ""
+	NamespaceNone = ""
 	// NamespaceSystem is the system namespace where we place system components.
-	NamespaceSystem string = "kube-system"
+	NamespaceSystem = "kube-system"
 	// NamespacePublic is the namespace where we place public info (ConfigMaps)
-	NamespacePublic string = "kube-public"
+	NamespacePublic = "kube-public"
+	// NamespaceNodeLease is the namespace where we place node lease objects (used for node heartbeats)
+	NamespaceNodeLease = "kube-node-lease"
 	// TerminationMessagePathDefault means the default path to capture the application termination message running in a container
-	TerminationMessagePathDefault string = "/dev/termination-log"
+	TerminationMessagePathDefault = "/dev/termination-log"
 )
 
 // Volume represents a named volume in a pod that may be accessed by any containers in the pod.
@@ -152,6 +154,9 @@ type VolumeSource struct {
 	// StorageOS represents a StorageOS volume that is attached to the kubelet's host machine and mounted into the pod
 	// +optional
 	StorageOS *StorageOSVolumeSource
+	// CSI (Container Storage Interface) represents storage that is handled by an external CSI driver (Alpha feature).
+	// +optional
+	CSI *CSIVolumeSource
 }
 
 // Similar to VolumeSource but meant for the administrator who creates PVs.
@@ -173,7 +178,7 @@ type PersistentVolumeSource struct {
 	HostPath *HostPathVolumeSource
 	// Glusterfs represents a Glusterfs volume that is attached to a host and exposed to the pod
 	// +optional
-	Glusterfs *GlusterfsVolumeSource
+	Glusterfs *GlusterfsPersistentVolumeSource
 	// NFS represents an NFS mount on the host that shares a pod's lifetime
 	// +optional
 	NFS *NFSVolumeSource
@@ -227,7 +232,7 @@ type PersistentVolumeSource struct {
 	// More info: https://releases.k8s.io/HEAD/examples/volumes/storageos/README.md
 	// +optional
 	StorageOS *StorageOSPersistentVolumeSource
-	// CSI (Container Storage Interface) represents storage that handled by an external CSI driver (Beta feature).
+	// CSI (Container Storage Interface) represents storage that is handled by an external CSI driver.
 	// +optional
 	CSI *CSIPersistentVolumeSource
 }
@@ -296,7 +301,7 @@ type PersistentVolumeSpec struct {
 	MountOptions []string
 	// volumeMode defines if a volume is intended to be used with a formatted filesystem
 	// or to remain in raw block state. Value of Filesystem is implied when not included in spec.
-	// This is an alpha feature and may change in the future.
+	// This is a beta feature.
 	// +optional
 	VolumeMode *PersistentVolumeMode
 	// NodeAffinity defines constraints that limit what nodes this volume can be accessed from.
@@ -408,9 +413,19 @@ type PersistentVolumeClaimSpec struct {
 	StorageClassName *string
 	// volumeMode defines what type of volume is required by the claim.
 	// Value of Filesystem is implied when not included in claim spec.
-	// This is an alpha feature and may change in the future.
+	// This is a beta feature.
 	// +optional
 	VolumeMode *PersistentVolumeMode
+	// This field requires the VolumeSnapshotDataSource alpha feature gate to be
+	// enabled and currently VolumeSnapshot is the only supported data source.
+	// If the provisioner can support VolumeSnapshot data source, it will create
+	// a new volume and data will be restored to the volume at the same time.
+	// If the provisioner does not support VolumeSnapshot data source, volume will
+	// not be created and the failure will be reported as an event.
+	// In the future, we plan to support more data source types and the behavior
+	// of the provisioner may change.
+	// +optional
+	DataSource *TypedLocalObjectReference
 }
 
 type PersistentVolumeClaimConditionType string
@@ -562,6 +577,8 @@ const (
 	ProtocolTCP Protocol = "TCP"
 	// ProtocolUDP is the UDP protocol.
 	ProtocolUDP Protocol = "UDP"
+	// ProtocolSCTP is the SCTP protocol.
+	ProtocolSCTP Protocol = "SCTP"
 )
 
 // Represents a Persistent Disk resource in Google Compute Engine.
@@ -904,6 +921,11 @@ type QuobyteVolumeSource struct {
 	// Default is no group
 	// +optional
 	Group string
+
+	// Tenant owning the given Quobyte volume in the Backend
+	// Used with dynamically provisioned Quobyte volumes, value is set by the plugin
+	// +optional
+	Tenant string
 }
 
 // Represents a Glusterfs mount that lasts the lifetime of a pod.
@@ -919,6 +941,30 @@ type GlusterfsVolumeSource struct {
 	// the Glusterfs to be mounted with read-only permissions
 	// +optional
 	ReadOnly bool
+}
+
+// Represents a Glusterfs mount that lasts the lifetime of a pod.
+// Glusterfs volumes do not support ownership management or SELinux relabeling.
+type GlusterfsPersistentVolumeSource struct {
+	// EndpointsName is the endpoint name that details Glusterfs topology.
+	// More info: https://releases.k8s.io/HEAD/examples/volumes/glusterfs/README.md#create-a-pod
+	EndpointsName string
+
+	// Path is the Glusterfs volume path.
+	// More info: https://releases.k8s.io/HEAD/examples/volumes/glusterfs/README.md#create-a-pod
+	Path string
+
+	// ReadOnly here will force the Glusterfs volume to be mounted with read-only permissions.
+	// Defaults to false.
+	// More info: https://releases.k8s.io/HEAD/examples/volumes/glusterfs/README.md#create-a-pod
+	// +optional
+	ReadOnly bool
+
+	// EndpointsNamespace is the namespace that contains Glusterfs endpoint.
+	// If this field is empty, the EndpointNamespace defaults to the same namespace as the bound PVC.
+	// More info: https://releases.k8s.io/HEAD/examples/volumes/glusterfs/README.md#create-a-pod
+	// +optional
+	EndpointsNamespace *string
 }
 
 // Represents a Rados Block Device mount that lasts the lifetime of a pod.
@@ -1499,13 +1545,17 @@ type KeyToPath struct {
 type LocalVolumeSource struct {
 	// The full path to the volume on the node.
 	// It can be either a directory or block device (disk, partition, ...).
-	// Directories can be represented only by PersistentVolume with VolumeMode=Filesystem.
-	// Block devices can be represented only by VolumeMode=Block, which also requires the
-	// BlockVolume alpha feature gate to be enabled.
 	Path string
+
+	// Filesystem type to mount.
+	// It applies only when the Path is a block device.
+	// Must be a filesystem type supported by the host operating system.
+	// Ex. "ext4", "xfs", "ntfs". The default value is to auto-select a fileystem if unspecified.
+	// +optional
+	FSType *string
 }
 
-// Represents storage that is managed by an external CSI volume driver (Beta feature)
+// Represents storage that is managed by an external CSI volume driver.
 type CSIPersistentVolumeSource struct {
 	// Driver is the name of the driver to use for this volume.
 	// Required.
@@ -1534,7 +1584,7 @@ type CSIPersistentVolumeSource struct {
 	// ControllerPublishSecretRef is a reference to the secret object containing
 	// sensitive information to pass to the CSI driver to complete the CSI
 	// ControllerPublishVolume and ControllerUnpublishVolume calls.
-	// This field is optional, and  may be empty if no secret is required. If the
+	// This field is optional, and may be empty if no secret is required. If the
 	// secret object contains more than one secret, all secrets are passed.
 	// +optional
 	ControllerPublishSecretRef *SecretReference
@@ -1542,7 +1592,7 @@ type CSIPersistentVolumeSource struct {
 	// NodeStageSecretRef is a reference to the secret object containing sensitive
 	// information to pass to the CSI driver to complete the CSI NodeStageVolume
 	// and NodeStageVolume and NodeUnstageVolume calls.
-	// This field is optional, and  may be empty if no secret is required. If the
+	// This field is optional, and may be empty if no secret is required. If the
 	// secret object contains more than one secret, all secrets are passed.
 	// +optional
 	NodeStageSecretRef *SecretReference
@@ -1550,10 +1600,42 @@ type CSIPersistentVolumeSource struct {
 	// NodePublishSecretRef is a reference to the secret object containing
 	// sensitive information to pass to the CSI driver to complete the CSI
 	// NodePublishVolume and NodeUnpublishVolume calls.
-	// This field is optional, and  may be empty if no secret is required. If the
+	// This field is optional, and may be empty if no secret is required. If the
 	// secret object contains more than one secret, all secrets are passed.
 	// +optional
 	NodePublishSecretRef *SecretReference
+}
+
+// Represents a source location of a volume to mount, managed by an external CSI driver
+type CSIVolumeSource struct {
+	// Driver is the name of the CSI driver that handles this volume.
+	// Consult with your admin for the correct name as registered in the cluster.
+	// Required.
+	Driver string
+
+	// Specifies a read-only configuration for the volume.
+	// Defaults to false (read/write).
+	// +optional
+	ReadOnly *bool
+
+	// Filesystem type to mount. Ex. "ext4", "xfs", "ntfs".
+	// If not provided, the empty value is passed to the associated CSI driver
+	// which will determine the default filesystem to apply.
+	// +optional
+	FSType *string
+
+	// VolumeAttributes stores driver-specific properties that are passed to the CSI
+	// driver. Consult your driver's documentation for supported values.
+	// +optional
+	VolumeAttributes map[string]string
+
+	// NodePublishSecretRef is a reference to the secret object containing
+	// sensitive information to pass to the CSI driver to complete the CSI
+	// NodePublishVolume and NodeUnpublishVolume calls.
+	// This field is optional, and  may be empty if no secret is required. If the
+	// secret object contains more than one secret, all secret references are passed.
+	// +optional
+	NodePublishSecretRef *LocalObjectReference
 }
 
 // ContainerPort represents a network port in a single container
@@ -1568,7 +1650,7 @@ type ContainerPort struct {
 	HostPort int32
 	// Required: This must be a valid port number, 0 < x < 65536.
 	ContainerPort int32
-	// Required: Supports "TCP" and "UDP".
+	// Required: Supports "TCP", "UDP" and "SCTP"
 	// +optional
 	Protocol Protocol
 	// Optional: What host IP to bind the external port to.
@@ -1597,6 +1679,13 @@ type VolumeMount struct {
 	// This field is beta in 1.10.
 	// +optional
 	MountPropagation *MountPropagationMode
+	// Expanded path within the volume from which the container's volume should be mounted.
+	// Behaves similarly to SubPath but environment variable references $(VAR_NAME) are expanded using the container's environment.
+	// Defaults to "" (volume's root).
+	// SubPathExpr and SubPath are mutually exclusive.
+	// This field is alpha in 1.14.
+	// +optional
+	SubPathExpr string
 }
 
 // MountPropagationMode describes mount propagation.
@@ -1926,7 +2015,7 @@ type Container struct {
 	// +optional
 	VolumeMounts []VolumeMount
 	// volumeDevices is the list of block devices to be used by the container.
-	// This is an alpha feature and may change in the future.
+	// This is a beta feature.
 	// +optional
 	VolumeDevices []VolumeDevice
 	// +optional
@@ -1981,8 +2070,15 @@ type Lifecycle struct {
 	// is terminated and restarted.
 	// +optional
 	PostStart *Handler
-	// PreStop is called immediately before a container is terminated.  The reason for termination is
-	// passed to the handler.  Regardless of the outcome of the handler, the container is eventually terminated.
+	// PreStop is called immediately before a container is terminated due to an
+	// API request or management event such as liveness probe failure,
+	// preemption, resource contention, etc. The handler is not called if the
+	// container crashes or exits. The reason for termination is passed to the
+	// handler. The Pod's termination grace period countdown begins before the
+	// PreStop hooked is executed. Regardless of the outcome of the handler, the
+	// container will eventually terminate within the Pod's termination grace
+	// period. Other management of the container blocks until the hook completes
+	// or until the termination grace period is reached.
 	// +optional
 	PreStop *Handler
 }
@@ -2568,9 +2664,22 @@ type PodSpec struct {
 	// If specified, all readiness gates will be evaluated for pod readiness.
 	// A pod is ready when all its containers are ready AND
 	// all conditions specified in the readiness gates have status equal to "True"
-	// More info: https://github.com/kubernetes/community/blob/master/keps/sig-network/0007-pod-ready%2B%2B.md
+	// More info: https://git.k8s.io/enhancements/keps/sig-network/0007-pod-ready%2B%2B.md
 	// +optional
 	ReadinessGates []PodReadinessGate
+	// RuntimeClassName refers to a RuntimeClass object in the node.k8s.io group, which should be used
+	// to run this pod.  If no RuntimeClass resource matches the named class, the pod will not be run.
+	// If unset or empty, the "legacy" RuntimeClass will be used, which is an implicit class with an
+	// empty definition that uses the default runtime handler.
+	// More info: https://git.k8s.io/enhancements/keps/sig-node/runtime-class.md
+	// This is an alpha feature and may change in the future.
+	// +optional
+	RuntimeClassName *string
+	// EnableServiceLinks indicates whether information about services should be injected into pod's
+	// environment variables, matching the syntax of Docker links.
+	// If not specified, the default is true.
+	// +optional
+	EnableServiceLinks *bool
 }
 
 // HostAlias holds the mapping between IP and hostnames that will be injected as an entry in the
@@ -3165,7 +3274,7 @@ type ServicePort struct {
 	// the 'Name' field in EndpointPort objects.
 	Name string
 
-	// The IP protocol for this port.  Supports "TCP" and "UDP".
+	// The IP protocol for this port.  Supports "TCP", "UDP", and "SCTP".
 	Protocol Protocol
 
 	// The port that will be exposed on the service.
@@ -3948,6 +4057,19 @@ type LocalObjectReference struct {
 	Name string
 }
 
+// TypedLocalObjectReference contains enough information to let you locate the typed referenced object inside the same namespace.
+type TypedLocalObjectReference struct {
+	// APIGroup is the group for the resource being referenced.
+	// If APIGroup is not specified, the specified Kind must be in the core API group.
+	// For any other third-party types, APIGroup is required.
+	// +optional
+	APIGroup *string
+	// Kind is the type of resource being referenced
+	Kind string
+	// Name is the name of resource being referenced
+	Name string
+}
+
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 type SerializedReference struct {
@@ -4584,7 +4706,26 @@ type SecurityContext struct {
 	// the no_new_privs flag will be set on the container process.
 	// +optional
 	AllowPrivilegeEscalation *bool
+	// ProcMount denotes the type of proc mount to use for the containers.
+	// The default is DefaultProcMount which uses the container runtime defaults for
+	// readonly paths and masked paths.
+	// +optional
+	ProcMount *ProcMountType
 }
+
+type ProcMountType string
+
+const (
+	// DefaultProcMount uses the container runtime defaults for readonly and masked
+	// paths for /proc.  Most container runtimes mask certain paths in /proc to avoid
+	// accidental security exposure of special devices or information.
+	DefaultProcMount ProcMountType = "Default"
+
+	// UnmaskedProcMount bypasses the default masking behavior of the container
+	// runtime and ensures the newly created /proc the container stays intact with
+	// no modifications.
+	UnmaskedProcMount ProcMountType = "Unmasked"
+)
 
 // SELinuxOptions are the labels to be applied to the container.
 type SELinuxOptions struct {
