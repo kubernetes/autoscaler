@@ -18,6 +18,7 @@ package logic
 
 import (
 	"k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/labels"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
@@ -60,6 +61,19 @@ func NewRecommendationProvider(vpaLister vpa_lister.VerticalPodAutoscalerLister,
 	}
 }
 
+func limitMatchesRequest(limit, request *resource.Quantity) bool {
+	// Limit not set, it cannot match the request.
+	if limit == nil || limit.Value() == 0 {
+		return false
+	}
+	// Limit set but request not set - K8s will treat the pod as if they were equal.
+	if request == nil || request.Value() == 0 {
+		return true
+	}
+	// Limit and request are set. Check if they are equal.
+	return request.Value() == limit.Value()
+}
+
 // getContainersResources returns the recommended resources for each container in the given pod in the same order they are specified in the pod.Spec.
 func getContainersResources(pod *v1.Pod, podRecommendation vpa_types.RecommendedPodResources) []ContainerResources {
 	resources := make([]ContainerResources, len(pod.Spec.Containers))
@@ -73,14 +87,11 @@ func getContainersResources(pod *v1.Pod, podRecommendation vpa_types.Recommended
 		}
 		resources[i].Requests = recommendation.Target
 
-		// If user set containers limit and request for a resource to the same value then keep the limit in sync.
-		if container.Resources.Limits.Cpu() != nil && container.Resources.Limits.Cpu().Value() != 0 &&
-			container.Resources.Requests.Cpu() != nil && *container.Resources.Limits.Cpu() == *container.Resources.Requests.Cpu() {
+		if limitMatchesRequest(container.Resources.Limits.Cpu(), container.Resources.Requests.Cpu()) {
 			resources[i].Limits[v1.ResourceCPU] = *resources[i].Requests.Cpu()
 		}
 
-		if container.Resources.Limits.Memory() != nil && container.Resources.Limits.Memory().Value() != 0 &&
-			container.Resources.Requests.Memory() != nil && *container.Resources.Limits.Memory() == *container.Resources.Requests.Memory() {
+		if limitMatchesRequest(container.Resources.Limits.Memory(), container.Resources.Requests.Memory()) {
 			resources[i].Limits[v1.ResourceMemory] = *resources[i].Requests.Memory()
 		}
 	}
