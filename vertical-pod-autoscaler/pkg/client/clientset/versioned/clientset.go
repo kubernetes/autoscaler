@@ -31,11 +31,7 @@ type Interface interface {
 	Discovery() discovery.DiscoveryInterface
 	AutoscalingV1beta2() autoscalingv1beta2.AutoscalingV1beta2Interface
 	AutoscalingV1beta1() autoscalingv1beta1.AutoscalingV1beta1Interface
-	// Deprecated: please explicitly pick a version if possible.
-	Autoscaling() autoscalingv1beta1.AutoscalingV1beta1Interface
 	PocV1alpha1() pocv1alpha1.PocV1alpha1Interface
-	// Deprecated: please explicitly pick a version if possible.
-	Poc() pocv1alpha1.PocV1alpha1Interface
 }
 
 // Clientset contains the clients for groups. Each group has exactly one
@@ -57,20 +53,8 @@ func (c *Clientset) AutoscalingV1beta1() autoscalingv1beta1.AutoscalingV1beta1In
 	return c.autoscalingV1beta1
 }
 
-// Deprecated: Autoscaling retrieves the default version of AutoscalingClient.
-// Please explicitly pick a version.
-func (c *Clientset) Autoscaling() autoscalingv1beta1.AutoscalingV1beta1Interface {
-	return c.autoscalingV1beta1
-}
-
 // PocV1alpha1 retrieves the PocV1alpha1Client
 func (c *Clientset) PocV1alpha1() pocv1alpha1.PocV1alpha1Interface {
-	return c.pocV1alpha1
-}
-
-// Deprecated: Poc retrieves the default version of PocClient.
-// Please explicitly pick a version.
-func (c *Clientset) Poc() pocv1alpha1.PocV1alpha1Interface {
 	return c.pocV1alpha1
 }
 
