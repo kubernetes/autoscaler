@@ -65,11 +65,16 @@ func TestUpdateResourceRequests(t *testing.T) {
 	initialized := test.Pod().WithName("test_initialized").
 		AddContainer(initializedContainer).WithLabels(labels).Get()
 
-	guaranteedCPUContainer := test.Container().WithName(containerName).
+	limitsMatchRequestsContainer := test.Container().WithName(containerName).
 		WithCPURequest(resource.MustParse("2")).WithCPULimit(resource.MustParse("2")).
 		WithMemLimit(resource.MustParse("200Mi")).WithMemRequest(resource.MustParse("200Mi")).Get()
-	guaranteedCPUPod := test.Pod().WithName("test_initialized").
-		AddContainer(guaranteedCPUContainer).WithLabels(labels).Get()
+	limitsMatchRequestsPod := test.Pod().WithName("test_initialized").
+		AddContainer(limitsMatchRequestsContainer).WithLabels(labels).Get()
+
+	limitsNoRequestsContainer := test.Container().WithName(containerName).
+		WithCPULimit(resource.MustParse("2")).WithMemLimit(resource.MustParse("200Mi")).Get()
+	limitsNoRequestsPod := test.Pod().WithName("test_initialized").
+		AddContainer(limitsNoRequestsContainer).WithLabels(labels).Get()
 
 	offVPA := vpaBuilder.WithUpdateMode(vpa_types.UpdateModeOff).Get()
 
@@ -188,7 +193,18 @@ func TestUpdateResourceRequests(t *testing.T) {
 		},
 		{
 			name:             "guaranteed resources",
-			pod:              guaranteedCPUPod,
+			pod:              limitsMatchRequestsPod,
+			vpas:             []*vpa_types.VerticalPodAutoscaler{vpa},
+			expectedAction:   true,
+			expectedMem:      resource.MustParse("200Mi"),
+			expectedCPU:      resource.MustParse("2"),
+			expectedCPULimit: mustParseResourcePointer("2"),
+			expectedMemLimit: mustParseResourcePointer("200Mi"),
+			labelSelector:    "app = testingApp",
+		},
+		{
+			name:             "guaranteed resources - no request",
+			pod:              limitsNoRequestsPod,
 			vpas:             []*vpa_types.VerticalPodAutoscaler{vpa},
 			expectedAction:   true,
 			expectedMem:      resource.MustParse("200Mi"),
