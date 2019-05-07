@@ -176,8 +176,7 @@ type Creater interface {
 	// This object must be a pointer type for use with Codec.DecodeInto([]byte, runtime.Object)
 	New() runtime.Object
 
-	// Create creates a new version of a resource. If includeUninitialized is set, the object may be returned
-	// without completing initialization.
+	// Create creates a new version of a resource.
 	Create(ctx context.Context, obj runtime.Object, createValidation ValidateObjectFunc, options *metav1.CreateOptions) (runtime.Object, error)
 }
 
@@ -189,8 +188,7 @@ type NamedCreater interface {
 
 	// Create creates a new version of a resource. It expects a name parameter from the path.
 	// This is needed for create operations on subresources which include the name of the parent
-	// resource in the path. If includeUninitialized is set, the object may be returned without
-	// completing initialization.
+	// resource in the path.
 	Create(ctx context.Context, name string, obj runtime.Object, createValidation ValidateObjectFunc, options *metav1.CreateOptions) (runtime.Object, error)
 }
 
@@ -320,7 +318,7 @@ type ResourceStreamer interface {
 	// the caller may return a flag indicating whether the result should be flushed as writes occur
 	// and a content type string that indicates the type of the stream.
 	// If a null stream is returned, a StatusNoContent response wil be generated.
-	InputStream(apiVersion, acceptHeader string) (stream io.ReadCloser, flush bool, mimeType string, err error)
+	InputStream(ctx context.Context, apiVersion, acceptHeader string) (stream io.ReadCloser, flush bool, mimeType string, err error)
 }
 
 // StorageMetadata is an optional interface that callers can implement to provide additional
@@ -333,4 +331,13 @@ type StorageMetadata interface {
 	// ProducesObject returns an object the specified HTTP verb respond with. It will overwrite storage object if
 	// it is not nil. Only the type of the return object matters, the value will be ignored.
 	ProducesObject(verb string) interface{}
+}
+
+// StorageVersionProvider is an optional interface that a storage object can
+// implement if it wishes to disclose its storage version.
+type StorageVersionProvider interface {
+	// StorageVersion returns a group versioner, which will outputs the gvk
+	// an object will be converted to before persisted in etcd, given a
+	// list of kinds the object might belong to.
+	StorageVersion() runtime.GroupVersioner
 }

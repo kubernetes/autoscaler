@@ -81,7 +81,7 @@ func BeforeCreate(strategy RESTCreateStrategy, ctx context.Context, obj runtime.
 		if !ValidNamespace(ctx, objectMeta) {
 			return errors.NewBadRequest("the namespace of the provided object does not match the namespace sent on the request")
 		}
-	} else {
+	} else if len(objectMeta.GetNamespace()) > 0 {
 		objectMeta.SetNamespace(metav1.NamespaceNone)
 	}
 	objectMeta.SetDeletionTimestamp(nil)
@@ -92,13 +92,18 @@ func BeforeCreate(strategy RESTCreateStrategy, ctx context.Context, obj runtime.
 		objectMeta.SetName(strategy.GenerateName(objectMeta.GetGenerateName()))
 	}
 
-	// Ensure Initializers are not set unless the feature is enabled
-	if !utilfeature.DefaultFeatureGate.Enabled(features.Initializers) {
-		objectMeta.SetInitializers(nil)
+	// Initializers are a deprecated alpha field and should not be saved
+	objectMeta.SetInitializers(nil)
+
+	// Ensure managedFields is not set unless the feature is enabled
+	if !utilfeature.DefaultFeatureGate.Enabled(features.ServerSideApply) {
+		objectMeta.SetManagedFields(nil)
 	}
 
 	// ClusterName is ignored and should not be saved
-	objectMeta.SetClusterName("")
+	if len(objectMeta.GetClusterName()) > 0 {
+		objectMeta.SetClusterName("")
+	}
 
 	if errs := strategy.Validate(ctx, obj); len(errs) > 0 {
 		return errors.NewInvalid(kind.GroupKind(), objectMeta.GetName(), errs)
@@ -155,7 +160,7 @@ type NamespaceScopedStrategy interface {
 }
 
 // AdmissionToValidateObjectFunc converts validating admission to a rest validate object func
-func AdmissionToValidateObjectFunc(admit admission.Interface, staticAttributes admission.Attributes) ValidateObjectFunc {
+func AdmissionToValidateObjectFunc(admit admission.Interface, staticAttributes admission.Attributes, o admission.ObjectInterfaces) ValidateObjectFunc {
 	validatingAdmission, ok := admit.(admission.ValidationInterface)
 	if !ok {
 		return func(obj runtime.Object) error { return nil }
@@ -176,6 +181,6 @@ func AdmissionToValidateObjectFunc(admit admission.Interface, staticAttributes a
 		if !validatingAdmission.Handles(finalAttributes.GetOperation()) {
 			return nil
 		}
-		return validatingAdmission.Validate(finalAttributes)
+		return validatingAdmission.Validate(finalAttributes, o)
 	}
 }

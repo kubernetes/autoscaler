@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/golang/glog"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
@@ -95,7 +94,7 @@ func (u *updater) RunOnce() {
 		}
 		selector, err := u.selectorFetcher.Fetch(vpa)
 		if err != nil {
-			glog.V(3).Infof("skipping VPA object %v because we cannot fetch selector", vpa.Name)
+			klog.V(3).Infof("skipping VPA object %v because we cannot fetch selector", vpa.Name)
 			continue
 		}
 

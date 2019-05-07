@@ -119,7 +119,7 @@ func (c *FakeVerticalPodAutoscalerCheckpoints) DeleteCollection(options *v1.Dele
 // Patch applies the patch and returns the patched verticalPodAutoscalerCheckpoint.
 func (c *FakeVerticalPodAutoscalerCheckpoints) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.VerticalPodAutoscalerCheckpoint, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(verticalpodautoscalercheckpointsResource, c.ns, name, data, subresources...), &v1alpha1.VerticalPodAutoscalerCheckpoint{})
+		Invokes(testing.NewPatchSubresourceAction(verticalpodautoscalercheckpointsResource, c.ns, name, pt, data, subresources...), &v1alpha1.VerticalPodAutoscalerCheckpoint{})
 
 	if obj == nil {
 		return nil, err
