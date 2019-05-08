@@ -130,6 +130,19 @@ func NewHamsterDeploymentWithResources(f *framework.Framework, cpuQuantity, memo
 	return d
 }
 
+// NewHamsterDeploymentWithGuaranteedResources creates a simple hamster deployment with specific
+// resource requests for e2e test purposes. Since the container in the pod specifies resource limits
+// but not resource requests K8s will set requests equal to limits and the pod will have guaranteed
+// QoS class.
+func NewHamsterDeploymentWithGuaranteedResources(f *framework.Framework, cpuQuantity, memoryQuantity resource.Quantity) *appsv1.Deployment {
+	d := NewHamsterDeployment(f)
+	d.Spec.Template.Spec.Containers[0].Resources.Limits = apiv1.ResourceList{
+		apiv1.ResourceCPU:    cpuQuantity,
+		apiv1.ResourceMemory: memoryQuantity,
+	}
+	return d
+}
+
 // GetHamsterPods returns running hamster pods (matched by hamsterLabels)
 func GetHamsterPods(f *framework.Framework) (*apiv1.PodList, error) {
 	label := labels.SelectorFromSet(labels.Set(hamsterLabels))
