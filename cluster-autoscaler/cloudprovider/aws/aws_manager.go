@@ -180,7 +180,11 @@ func (m *AwsManager) SetAsgSize(asg *asg, size int) error {
 
 // DeleteInstances deletes the given instances. All instances must be controlled by the same ASG.
 func (m *AwsManager) DeleteInstances(instances []*AwsInstanceRef) error {
-	return m.asgCache.DeleteInstances(instances)
+	if err := m.asgCache.DeleteInstances(instances); err != nil {
+		return err
+	}
+	glog.V(2).Infof("Some ASG instances might have been deleted, forcing ASG list refresh")
+	return m.forceRefresh()
 }
 
 // GetAsgNodes returns Asg nodes.
