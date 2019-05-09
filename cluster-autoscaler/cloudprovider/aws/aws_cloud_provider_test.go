@@ -398,6 +398,7 @@ func TestDeleteNodes(t *testing.T) {
 	})
 
 	// Look up the current number of instances...
+	var expectedInstancesCount int64 = 2
 	service.On("DescribeAutoScalingGroupsPages",
 		&autoscaling.DescribeAutoScalingGroupsInput{
 			AutoScalingGroupNames: aws.StringSlice([]string{"test-asg"}),
@@ -406,7 +407,9 @@ func TestDeleteNodes(t *testing.T) {
 		mock.AnythingOfType("func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool"),
 	).Run(func(args mock.Arguments) {
 		fn := args.Get(1).(func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool)
-		fn(testNamedDescribeAutoScalingGroupsOutput("test-asg", 2, "test-instance-id", "second-test-instance-id"), false)
+		fn(testNamedDescribeAutoScalingGroupsOutput("test-asg", expectedInstancesCount, "test-instance-id", "second-test-instance-id"), false)
+		// we expect the instance count to be 1 after the call to DeleteNodes
+		expectedInstancesCount = 1
 	}).Return(nil)
 
 	provider.Refresh()
@@ -423,7 +426,7 @@ func TestDeleteNodes(t *testing.T) {
 	err = asgs[0].DeleteNodes([]*apiv1.Node{node})
 	assert.NoError(t, err)
 	service.AssertNumberOfCalls(t, "TerminateInstanceInAutoScalingGroup", 1)
-	service.AssertNumberOfCalls(t, "DescribeAutoScalingGroupsPages", 1)
+	service.AssertNumberOfCalls(t, "DescribeAutoScalingGroupsPages", 2)
 
 	newSize, err := asgs[0].TargetSize()
 	assert.NoError(t, err)
