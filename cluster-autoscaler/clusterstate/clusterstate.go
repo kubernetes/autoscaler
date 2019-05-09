@@ -274,6 +274,14 @@ func (csr *ClusterStateRegistry) updateScaleRequests(currentTime time.Time) {
 	csr.scaleDownRequests = newScaleDownRequests
 }
 
+// BackoffNodeGroup is used to force the specified nodeGroup to go into backoff mode, which
+// means it won't be used for scaling out temporarily
+func (csr *ClusterStateRegistry) BackoffNodeGroup(nodeGroup cloudprovider.NodeGroup, currentTime time.Time) {
+	csr.Lock()
+	defer csr.Unlock()
+	csr.backoffNodeGroup(nodeGroup, cloudprovider.OtherErrorClass, "cloudProviderError", currentTime)
+}
+
 // To be executed under a lock.
 func (csr *ClusterStateRegistry) backoffNodeGroup(nodeGroup cloudprovider.NodeGroup, errorClass cloudprovider.InstanceErrorClass, errorCode string, currentTime time.Time) {
 	nodeGroupInfo := csr.nodeInfosForGroups[nodeGroup.Id()]
