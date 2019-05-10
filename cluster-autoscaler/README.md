@@ -76,9 +76,9 @@ With this release we graduated Cluster Autoscaler to GA.
 * Improved eventing and monitoring.
 * Node allocatable support.
 * Removed Azure support. See: [PR removing support with reasoning behind this decision](https://github.com/kubernetes/autoscaler/pull/229)
-* cluster-autoscaler.kubernetes.io/scale-down-disabled` annotation for marking
+* `cluster-autoscaler.kubernetes.io/scale-down-disabled` annotation for marking
   nodes that should not be scaled down.
-* scale-down-delay-after-delete` and `scale-down-delay-after-failure` flags
+* `scale-down-delay-after-delete` and `scale-down-delay-after-failure` flags
     replaced `scale-down-trial-interval`
 
 CA Version 0.6:
