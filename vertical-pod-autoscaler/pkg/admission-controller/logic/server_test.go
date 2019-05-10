@@ -311,7 +311,8 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 		t.Run(fmt.Sprintf("test case: %s", tc.name), func(t *testing.T) {
 			fppp := fakePodPreProcessor{e: tc.preProcessorError}
 			frp := fakeRecommendationProvider{tc.recommendResources, tc.recommendAnnotations, tc.recommendName, tc.recommendError}
-			s := NewAdmissionServer(&frp, &fppp)
+			lc := NewLimitsChecker(nil)
+			s := NewAdmissionServer(&frp, &fppp, lc)
 			patches, err := s.getPatchesForPodResourceRequest(tc.podJson, tc.namespace)
 			if tc.expectError == nil {
 				assert.NoError(t, err)
@@ -358,7 +359,8 @@ func TestGetPatchesForResourceRequest_TwoReplacementResources(t *testing.T) {
 				}`)
 	recommendAnnotations := vpa_api_util.ContainerToAnnotationsMap{}
 	frp := fakeRecommendationProvider{recommendResources, recommendAnnotations, "name", nil}
-	s := NewAdmissionServer(&frp, &fppp)
+	lc := NewLimitsChecker(nil)
+	s := NewAdmissionServer(&frp, &fppp, lc)
 	patches, err := s.getPatchesForPodResourceRequest(podJson, "default")
 	assert.NoError(t, err)
 	// Order of updates for cpu and unobtanium depends on order of iterating a map, both possible results are valid.

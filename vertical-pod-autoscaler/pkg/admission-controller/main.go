@@ -47,8 +47,9 @@ var (
 		tlsPrivateKey: flag.String("tls-private-key", "/etc/tls-certs/serverKey.pem", "Path to server certificate key PEM file."),
 	}
 
-	address   = flag.String("address", ":8944", "The address to expose Prometheus metrics.")
-	namespace = os.Getenv("NAMESPACE")
+	address             = flag.String("address", ":8944", "The address to expose Prometheus metrics.")
+	allowToAdjustLimits = flag.Bool("allow-to-adjust-limits", false, "If set to true, admission webhook will set limits per container too if needed")
+	namespace           = os.Getenv("NAMESPACE")
 )
 
 func main() {
@@ -74,7 +75,13 @@ func main() {
 		target.NewVpaTargetSelectorFetcher(config, kubeClient, factory),
 		target.NewBeta1TargetSelectorFetcher(config),
 	)
-	as := logic.NewAdmissionServer(logic.NewRecommendationProvider(vpaLister, vpa_api_util.NewCappingRecommendationProcessor(), targetSelectorFetcher), logic.NewDefaultPodPreProcessor())
+	recommendationProvider := logic.NewRecommendationProvider(vpaLister, vpa_api_util.NewCappingRecommendationProcessor(), targetSelectorFetcher)
+	podPreprocessor := logic.NewDefaultPodPreProcessor()
+	limitsChecker := logic.NewLimitsChecker(nil)
+	if *allowToAdjustLimits {
+		limitsChecker = logic.NewLimitsChecker(factory)
+	}
+	as := logic.NewAdmissionServer(recommendationProvider, podPreprocessor, limitsChecker)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		as.Serve(w, r)
 		healthCheck.UpdateLastActivity()
