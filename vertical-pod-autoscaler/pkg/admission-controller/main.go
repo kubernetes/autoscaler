@@ -48,12 +48,15 @@ var (
 		tlsPrivateKey: flag.String("tls-private-key", "/etc/tls-certs/serverKey.pem", "Path to server certificate key PEM file."),
 	}
 
-	port           = flag.Int("port", 8000, "The port to listen on.")
-	address        = flag.String("address", ":8944", "The address to expose Prometheus metrics.")
-	namespace      = os.Getenv("NAMESPACE")
-	webhookAddress = flag.String("webhook-address", "", "Address under which webhook is registered. Used when registerByURL is set to true.")
-	webhookPort    = flag.String("webhook-port", "", "Server Port for Webhook")
-	registerByURL  = flag.Bool("register-by-url", false, "If set to true, admission webhook will be registered by URL (webhookAddress:webhookPort) instead of by service name")
+	port                = flag.Int("port", 8000, "The port to listen on.")
+	address             = flag.String("address", ":8944", "The address to expose Prometheus metrics.")
+	namespace           = os.Getenv("NAMESPACE")
+	webhookAddress      = flag.String("webhook-address", "", "Address under which webhook is registered. Used when registerByURL is set to true.")
+	webhookPort         = flag.String("webhook-port", "", "Server Port for Webhook")
+	registerByURL       = flag.Bool("register-by-url", false, "If set to true, admission webhook will be registered by URL (webhookAddress:webhookPort) instead of by service name")
+	allowToAdjustLimits = flag.Bool("allow-to-adjust-limits", false, "If set to true, admission webhook will set limits per container too if needed")
+
+	factoryForLimitsChecker interface{}
 )
 
 func main() {
@@ -79,7 +82,13 @@ func main() {
 		target.NewVpaTargetSelectorFetcher(config, kubeClient, factory),
 		target.NewBeta1TargetSelectorFetcher(config),
 	)
-	as := logic.NewAdmissionServer(logic.NewRecommendationProvider(vpaLister, vpa_api_util.NewCappingRecommendationProcessor(), targetSelectorFetcher), logic.NewDefaultPodPreProcessor())
+	recommendationProvider := logic.NewRecommendationProvider(vpaLister, vpa_api_util.NewCappingRecommendationProcessor(), targetSelectorFetcher)
+	podPreprocessor := logic.NewDefaultPodPreProcessor()
+	limitsChecker := logic.NewLimitsChecker(nil)
+	if *allowToAdjustLimits {
+		limitsChecker = logic.NewLimitsChecker(factory)
+	}
+	as := logic.NewAdmissionServer(recommendationProvider, podPreprocessor, limitsChecker)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		as.Serve(w, r)
 		healthCheck.UpdateLastActivity()
