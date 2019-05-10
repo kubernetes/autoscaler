@@ -39,11 +39,12 @@ type AdmissionServer struct {
 	recommendationProvider RecommendationProvider
 	podPreProcessor        PodPreProcessor
 	vpaPreProcessor        VpaPreProcessor
+	limitsChecker          LimitsChecker
 }
 
 // NewAdmissionServer constructs new AdmissionServer
-func NewAdmissionServer(recommendationProvider RecommendationProvider, podPreProcessor PodPreProcessor, vpaPreProcessor VpaPreProcessor) *AdmissionServer {
-	return &AdmissionServer{recommendationProvider, podPreProcessor, vpaPreProcessor}
+func NewAdmissionServer(recommendationProvider RecommendationProvider, podPreProcessor PodPreProcessor, vpaPreProcessor VpaPreProcessor, limitsChecker LimitsChecker) *AdmissionServer {
+	return &AdmissionServer{recommendationProvider, podPreProcessor, vpaPreProcessor, limitsChecker}
 }
 
 type patchRecord struct {
@@ -73,10 +74,13 @@ func (s *AdmissionServer) getPatchesForPodResourceRequest(raw []byte, namespace 
 	if annotationsPerContainer == nil {
 		annotationsPerContainer = vpa_api_util.ContainerToAnnotationsMap{}
 	}
+
+	limitsHints := s.limitsChecker.NeedsLimits(&pod, containersResources)
+
 	patches := []patchRecord{}
 	updatesAnnotation := []string{}
 	for i, containerResources := range containersResources {
-		newPatches, newUpdatesAnnotation := s.getContainerPatch(pod, i, "requests", annotationsPerContainer, containerResources)
+		newPatches, newUpdatesAnnotation := s.getContainerPatch(pod, i, annotationsPerContainer, containerResources, limitsHints)
 		patches = append(patches, newPatches...)
 		updatesAnnotation = append(updatesAnnotation, newUpdatesAnnotation)
 	}
@@ -120,7 +124,7 @@ func getAddResourceRequirementValuePatch(i int, kind string, resource v1.Resourc
 		Value: quantity.String()}
 }
 
-func (s *AdmissionServer) getContainerPatch(pod v1.Pod, i int, patchKind string, annotationsPerContainer vpa_api_util.ContainerToAnnotationsMap, containerResources ContainerResources) ([]patchRecord, string) {
+func (s *AdmissionServer) getContainerPatch(pod v1.Pod, i int, annotationsPerContainer vpa_api_util.ContainerToAnnotationsMap, containerResources ContainerResources, limitsHints LimitsHints) ([]patchRecord, string) {
 	var patches []patchRecord
 	// Add empty resources object if missing
 	if pod.Spec.Containers[i].Resources.Limits == nil &&
@@ -133,6 +137,26 @@ func (s *AdmissionServer) getContainerPatch(pod v1.Pod, i int, patchKind string,
 		annotations = make([]string, 0)
 	}
 
+	if !limitsHints.IsNil() {
+		var resources v1.ResourceList
+		resourceNames := []v1.ResourceName{"cpu", "memory"}
+		for _, resource := range resourceNames {
+			if limitsHints.RequestsExceedsRatio(i, resource) {
+				// we need just to take care of max ratio
+				// setting limits to request*maxRatio,
+				// It's needed when we are lowering requests too much
+				limit := limitsHints.HintedLimit(i, resource)
+				if resources == nil {
+					resources = make(v1.ResourceList)
+				}
+				resources[resource] = limit
+				annotations = append(annotations, fmt.Sprintf("%s limit decreased to respect ratio", resource))
+			}
+		}
+		if len(resources) > 0 {
+			containerResources.Limits = resources
+		}
+	}
 	patches, annotations = appendPatchesAndAnnotations(patches, annotations, pod.Spec.Containers[i].Resources.Requests, i, containerResources.Requests, "requests", "request")
 	patches, annotations = appendPatchesAndAnnotations(patches, annotations, pod.Spec.Containers[i].Resources.Limits, i, containerResources.Limits, "limits", "limit")
 
