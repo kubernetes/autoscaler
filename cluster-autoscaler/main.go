@@ -425,7 +425,7 @@ func defaultLeaderElectionConfiguration() componentbaseconfig.LeaderElectionConf
 		LeaseDuration: metav1.Duration{Duration: defaultLeaseDuration},
 		RenewDeadline: metav1.Duration{Duration: defaultRenewDeadline},
 		RetryPeriod:   metav1.Duration{Duration: defaultRetryPeriod},
-		ResourceLock:  resourcelock.EndpointsResourceLock,
+		ResourceLock:  resourcelock.LeasesResourceLock,
 	}
 }
 
