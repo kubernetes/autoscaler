@@ -18,6 +18,7 @@ package logic
 
 import (
 	"fmt"
+	"math"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -67,9 +68,21 @@ func TestUpdateResourceRequests(t *testing.T) {
 
 	limitsMatchRequestsContainer := test.Container().WithName(containerName).
 		WithCPURequest(resource.MustParse("2")).WithCPULimit(resource.MustParse("2")).
-		WithMemLimit(resource.MustParse("200Mi")).WithMemRequest(resource.MustParse("200Mi")).Get()
+		WithMemRequest(resource.MustParse("200Mi")).WithMemLimit(resource.MustParse("200Mi")).Get()
 	limitsMatchRequestsPod := test.Pod().WithName("test_initialized").
 		AddContainer(limitsMatchRequestsContainer).WithLabels(labels).Get()
+
+	containerWithDoubleLimit := test.Container().WithName(containerName).
+		WithCPURequest(resource.MustParse("1")).WithCPULimit(resource.MustParse("2")).
+		WithMemRequest(resource.MustParse("100Mi")).WithMemLimit(resource.MustParse("200Mi")).Get()
+	podWithDoubleLimit := test.Pod().WithName("test_initialized").
+		AddContainer(containerWithDoubleLimit).WithLabels(labels).Get()
+
+	containerWithTenfoldLimit := test.Container().WithName(containerName).
+		WithCPURequest(resource.MustParse("1")).WithCPULimit(resource.MustParse("10")).
+		WithMemRequest(resource.MustParse("100Mi")).WithMemLimit(resource.MustParse("1000Mi")).Get()
+	podWithTenfoldLimit := test.Pod().WithName("test_initialized").
+		AddContainer(containerWithTenfoldLimit).WithLabels(labels).Get()
 
 	limitsNoRequestsContainer := test.Container().WithName(containerName).
 		WithCPULimit(resource.MustParse("2")).WithMemLimit(resource.MustParse("200Mi")).Get()
@@ -80,8 +93,8 @@ func TestUpdateResourceRequests(t *testing.T) {
 
 	targetBelowMinVPA := vpaBuilder.WithTarget("3", "150Mi").WithMinAllowed("4", "300Mi").WithMaxAllowed("5", "1Gi").Get()
 	targetAboveMaxVPA := vpaBuilder.WithTarget("7", "2Gi").WithMinAllowed("4", "300Mi").WithMaxAllowed("5", "1Gi").Get()
-
 	vpaWithHighMemory := vpaBuilder.WithTarget("2", "1000Mi").WithMaxAllowed("3", "3Gi").Get()
+	vpaWithExabyteRecommendation := vpaBuilder.WithTarget("1Ei", "1Ei").WithMaxAllowed("1Ei", "1Ei").Get()
 
 	vpaWithEmptyRecommendation := vpaBuilder.Get()
 	vpaWithEmptyRecommendation.Status.Recommendation = &vpa_types.RecommendedPodResources{}
@@ -213,9 +226,36 @@ func TestUpdateResourceRequests(t *testing.T) {
 			expectedMemLimit: mustParseResourcePointer("200Mi"),
 			labelSelector:    "app = testingApp",
 		},
+		{
+			name:             "proportional limit",
+			pod:              podWithDoubleLimit,
+			vpas:             []*vpa_types.VerticalPodAutoscaler{vpa},
+			expectedAction:   true,
+			expectedCPU:      resource.MustParse("2"),
+			expectedMem:      resource.MustParse("200Mi"),
+			expectedCPULimit: mustParseResourcePointer("4"),
+			expectedMemLimit: mustParseResourcePointer("400Mi"),
+			labelSelector:    "app = testingApp",
+		},
+		{
+			name:             "limit over int64",
+			pod:              podWithTenfoldLimit,
+			vpas:             []*vpa_types.VerticalPodAutoscaler{vpaWithExabyteRecommendation},
+			expectedAction:   true,
+			expectedCPU:      resource.MustParse("1Ei"),
+			expectedMem:      resource.MustParse("1Ei"),
+			expectedCPULimit: resource.NewMilliQuantity(math.MaxInt64, resource.DecimalExponent),
+			expectedMemLimit: resource.NewMilliQuantity(math.MaxInt64, resource.DecimalExponent),
+			labelSelector:    "app = testingApp",
+			annotations: vpa_api_util.ContainerToAnnotationsMap{
+				containerName: []string{
+					"Failed to keep CPU limit to request proportion of 10000 to 1000 with recommended request of -9223372036854775808 milliCPU; doesn't fit in int64. Capping limit to MaxInt64",
+					"Failed to keep memory limit to request proportion of 1048576000000 to 104857600000 with recommended request of -9223372036854775808 milliBytes; doesn't fit in int64. Capping limit to MaxInt64",
+				},
+			},
+		},
 	}
 	for _, tc := range testCases {
-
 		t.Run(fmt.Sprintf(tc.name), func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
@@ -256,7 +296,7 @@ func TestUpdateResourceRequests(t *testing.T) {
 					assert.False(t, cpuLimitPresent, "expected no cpu limit, got %s", cpuLimit.String())
 				} else {
 					if assert.True(t, cpuLimitPresent, "expected cpu limit, but it's missing") {
-						assert.Equal(t, *tc.expectedCPULimit, cpuLimit, "cpu limit doesn't match")
+						assert.Equal(t, tc.expectedCPULimit.MilliValue(), cpuLimit.MilliValue(), "cpu limit doesn't match")
 					}
 				}
 
@@ -265,7 +305,7 @@ func TestUpdateResourceRequests(t *testing.T) {
 					assert.False(t, memLimitPresent, "expected no memory limit, got %s", memLimit.String())
 				} else {
 					if assert.True(t, memLimitPresent, "expected cpu limit, but it's missing") {
-						assert.Equal(t, *tc.expectedMemLimit, memLimit, "memory limit doesn't match")
+						assert.Equal(t, tc.expectedMemLimit.MilliValue(), memLimit.MilliValue(), "memory limit doesn't match")
 					}
 				}
 
