@@ -44,20 +44,23 @@ const (
 	affinityPredicateName = "MatchInterPodAffinity"
 )
 
-type predicateInfo struct {
-	name      string
-	predicate predicates.FitPredicate
+// PredicateInfo assigns a name to a predicate
+type PredicateInfo struct {
+	Name      string
+	Predicate predicates.FitPredicate
 }
 
 // PredicateChecker checks whether all required predicates pass for given Pod and Node.
 type PredicateChecker struct {
-	predicates                []predicateInfo
+	predicates                []PredicateInfo
 	predicateMetadataProducer predicates.PredicateMetadataProducer
 	enableAffinityPredicate   bool
 }
 
+// We run some predicates first as they are cheap to check and they should be enough
+// to fail predicates in most of our simulations (especially binpacking).
 // There are no const arrays in Go, this is meant to be used as a const.
-var priorityPredicates = []string{"PodFitsResources", "GeneralPredicates", "PodToleratesNodeTaints"}
+var priorityPredicates = []string{"PodFitsResources", "PodToleratesNodeTaints", "GeneralPredicates", "ready"}
 
 func init() {
 	// This results in filtering out some predicate functions registered by defaults.init() method.
@@ -141,31 +144,31 @@ func NewPredicateChecker(kubeClient kube_client.Interface, stop <-chan struct{})
 	for predicateName, predicateFunc := range sched.Config().Algorithm.Predicates() {
 		predicateMap[predicateName] = predicateFunc
 	}
-	predicateMap["ready"] = isNodeReadyAndSchedulablePredicate
-	if err != nil {
-		return nil, err
-	}
-	// We always want to have PodFitsResources as a first predicate we run
-	// as this is cheap to check and it should be enough to fail predicates
+	// We want to make sure that some predicates are present to run them first
+	// as they are cheap to check and they should be enough to fail predicates
 	// in most of our simulations (especially binpacking).
+	predicateMap["ready"] = IsNodeReadyAndSchedulablePredicate
 	if _, found := predicateMap["PodFitsResources"]; !found {
 		predicateMap["PodFitsResources"] = predicates.PodFitsResources
 	}
+	if _, found := predicateMap["PodToleratesNodeTaints"]; !found {
+		predicateMap["PodToleratesNodeTaints"] = predicates.PodToleratesNodeTaints
+	}
 
-	predicateList := make([]predicateInfo, 0)
+	predicateList := make([]PredicateInfo, len(predicateMap))
 	for _, predicateName := range priorityPredicates {
 		if predicate, found := predicateMap[predicateName]; found {
-			predicateList = append(predicateList, predicateInfo{name: predicateName, predicate: predicate})
+			predicateList = append(predicateList, PredicateInfo{Name: predicateName, Predicate: predicate})
 			delete(predicateMap, predicateName)
 		}
 	}
 
 	for predicateName, predicate := range predicateMap {
-		predicateList = append(predicateList, predicateInfo{name: predicateName, predicate: predicate})
+		predicateList = append(predicateList, PredicateInfo{Name: predicateName, Predicate: predicate})
 	}
 
 	for _, predInfo := range predicateList {
-		klog.V(1).Infof("Using predicate %s", predInfo.name)
+		klog.V(1).Infof("Using predicate %s", predInfo.Name)
 	}
 
 	informerFactory.Start(stop)
@@ -182,7 +185,8 @@ func NewPredicateChecker(kubeClient kube_client.Interface, stop <-chan struct{})
 	}, nil
 }
 
-func isNodeReadyAndSchedulablePredicate(pod *apiv1.Pod, meta predicates.PredicateMetadata, nodeInfo *schedulernodeinfo.NodeInfo) (bool,
+// IsNodeReadyAndSchedulablePredicate checks if node is ready.
+func IsNodeReadyAndSchedulablePredicate(pod *apiv1.Pod, meta predicates.PredicateMetadata, nodeInfo *schedulernodeinfo.NodeInfo) (bool,
 	[]predicates.PredicateFailureReason, error) {
 	ready := kube_util.IsNodeReadyAndSchedulable(nodeInfo.Node())
 	if !ready {
@@ -194,10 +198,21 @@ func isNodeReadyAndSchedulablePredicate(pod *apiv1.Pod, meta predicates.Predicat
 // NewTestPredicateChecker builds test version of PredicateChecker.
 func NewTestPredicateChecker() *PredicateChecker {
 	return &PredicateChecker{
-		predicates: []predicateInfo{
-			{name: "default", predicate: predicates.GeneralPredicates},
-			{name: "ready", predicate: isNodeReadyAndSchedulablePredicate},
+		predicates: []PredicateInfo{
+			{Name: "default", Predicate: predicates.GeneralPredicates},
+			{Name: "ready", Predicate: IsNodeReadyAndSchedulablePredicate},
 		},
+		predicateMetadataProducer: func(_ *apiv1.Pod, _ map[string]*schedulernodeinfo.NodeInfo) predicates.PredicateMetadata {
+			return nil
+		},
+	}
+}
+
+// NewCustomTestPredicateChecker builds test version of PredicateChecker with additional predicates.
+// Helps with benchmarking different ordering of predicates.
+func NewCustomTestPredicateChecker(predicateInfos []PredicateInfo) *PredicateChecker {
+	return &PredicateChecker{
+		predicates: predicateInfos,
 		predicateMetadataProducer: func(_ *apiv1.Pod, _ map[string]*schedulernodeinfo.NodeInfo) predicates.PredicateMetadata {
 			return nil
 		},
@@ -321,15 +336,15 @@ func (pe *PredicateError) PredicateName() string {
 func (p *PredicateChecker) CheckPredicates(pod *apiv1.Pod, predicateMetadata predicates.PredicateMetadata, nodeInfo *schedulernodeinfo.NodeInfo) *PredicateError {
 	for _, predInfo := range p.predicates {
 		// Skip affinity predicate if it has been disabled.
-		if !p.enableAffinityPredicate && predInfo.name == affinityPredicateName {
+		if !p.enableAffinityPredicate && predInfo.Name == affinityPredicateName {
 			continue
 		}
 
-		match, failureReasons, err := predInfo.predicate(pod, predicateMetadata, nodeInfo)
+		match, failureReasons, err := predInfo.Predicate(pod, predicateMetadata, nodeInfo)
 
 		if err != nil || !match {
 			return &PredicateError{
-				predicateName:  predInfo.name,
+				predicateName:  predInfo.Name,
 				failureReasons: failureReasons,
 				err:            err,
 			}
