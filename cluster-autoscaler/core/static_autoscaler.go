@@ -74,6 +74,7 @@ type StaticAutoscaler struct {
 
 type staticAutoscalerProcessorCallbacks struct {
 	disableScaleDownForLoop bool
+	extraValues             map[string]interface{}
 }
 
 func newStaticAutoscalerProcessorCallbacks() *staticAutoscalerProcessorCallbacks {
@@ -86,8 +87,18 @@ func (callbacks *staticAutoscalerProcessorCallbacks) DisableScaleDownForLoop() {
 	callbacks.disableScaleDownForLoop = true
 }
 
+func (callbacks *staticAutoscalerProcessorCallbacks) SetExtraValue(key string, value interface{}) {
+	callbacks.extraValues[key] = value
+}
+
+func (callbacks *staticAutoscalerProcessorCallbacks) GetExtraValue(key string) (value interface{}, found bool) {
+	value, found = callbacks.extraValues[key]
+	return
+}
+
 func (callbacks *staticAutoscalerProcessorCallbacks) reset() {
 	callbacks.disableScaleDownForLoop = false
+	callbacks.extraValues = make(map[string]interface{})
 }
 
 // NewStaticAutoscaler creates an instance of Autoscaler filled with provided parameters
