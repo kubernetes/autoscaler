@@ -35,6 +35,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum/gophercloud/openstack/orchestration/v1/stackresources"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum/gophercloud/openstack/orchestration/v1/stacks"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/version"
 	certutil "k8s.io/client-go/util/cert"
 	"k8s.io/klog"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
@@ -107,6 +108,13 @@ func createMagnumManagerHeat(configReader io.Reader, discoverOpts cloudprovider.
 
 	}
 
+	userAgent := gophercloud.UserAgent{}
+	userAgent.Prepend(fmt.Sprintf("cluster-autoscaler/%s", version.ClusterAutoscalerVersion))
+	userAgent.Prepend(fmt.Sprintf("cluster/%s", opts.ClusterName))
+	provider.UserAgent = userAgent
+
+	klog.V(5).Infof("Using user-agent %s", userAgent.Join())
+
 	err = openstack.AuthenticateV3(provider, authOpts, gophercloud.EndpointOpts{})
 	if err != nil {
 		return nil, fmt.Errorf("could not authenticate: %v", err)
@@ -135,6 +143,19 @@ func createMagnumManagerHeat(configReader io.Reader, discoverOpts cloudprovider.
 		return nil, fmt.Errorf("unable to access cluster (%s): %v", manager.clusterName, err)
 	}
 	manager.stackID = cluster.StackID
+
+	// Prefer to use the cluster UUID if the cluster name was given in the parameters
+	if cluster.UUID != opts.ClusterName {
+		klog.V(0).Infof("Using cluster UUID %s instead of name %s", cluster.UUID, opts.ClusterName)
+		manager.clusterName = cluster.UUID
+
+		userAgent := gophercloud.UserAgent{}
+		userAgent.Prepend(fmt.Sprintf("cluster-autoscaler/%s", version.ClusterAutoscalerVersion))
+		userAgent.Prepend(fmt.Sprintf("cluster/%s", cluster.UUID))
+		provider.UserAgent = userAgent
+
+		klog.V(5).Infof("Using updated user-agent %s", userAgent.Join())
+	}
 
 	// Need both the stack name and ID to use in GET requests for the stack, so get name and store that on the manager
 	manager.stackName, err = manager.getStackName(manager.stackID)
