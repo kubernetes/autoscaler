@@ -1028,3 +1028,27 @@ func TestStaticAutoscalerOutOfResources(t *testing.T) {
 	// we expect no more Delete Nodes
 	nodeGroupA.AssertNumberOfCalls(t, "DeleteNodes", 2)
 }
+
+func TestStaticAutoscalerProcessorCallbacks(t *testing.T) {
+	processorCallbacks := newStaticAutoscalerProcessorCallbacks()
+	assert.Equal(t, false, processorCallbacks.disableScaleDownForLoop)
+	assert.Equal(t, 0, len(processorCallbacks.extraValues))
+
+	processorCallbacks.DisableScaleDownForLoop()
+	assert.Equal(t, true, processorCallbacks.disableScaleDownForLoop)
+	processorCallbacks.reset()
+	assert.Equal(t, false, processorCallbacks.disableScaleDownForLoop)
+
+	_, found := processorCallbacks.GetExtraValue("blah")
+	assert.False(t, found)
+
+	processorCallbacks.SetExtraValue("blah", "some value")
+	value, found := processorCallbacks.GetExtraValue("blah")
+	assert.True(t, found)
+	assert.Equal(t, "some value", value)
+
+	processorCallbacks.reset()
+	assert.Equal(t, 0, len(processorCallbacks.extraValues))
+	_, found = processorCallbacks.GetExtraValue("blah")
+	assert.False(t, found)
+}
