@@ -128,6 +128,7 @@ func (vpa *Vpa) UseAggregationIfMatching(aggregationKey AggregateStateKey, aggre
 	if vpa.matchesAggregation(aggregationKey) {
 		vpa.aggregateContainerStates[aggregationKey] = aggregation
 		aggregation.IsUnderVPA = true
+		aggregation.UpdateMode = vpa.UpdateMode
 		return true
 	}
 	return false
