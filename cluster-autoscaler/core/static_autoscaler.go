@@ -70,6 +70,7 @@ type StaticAutoscaler struct {
 	initialized             bool
 	// Caches nodeInfo computed for previously seen nodes
 	nodeInfoCache map[string]*schedulernodeinfo.NodeInfo
+	ignoredTaints taintKeySet
 }
 
 type staticAutoscalerProcessorCallbacks struct {
@@ -109,6 +110,13 @@ func NewStaticAutoscaler(
 		OkTotalUnreadyCount:       opts.OkTotalUnreadyCount,
 		MaxNodeProvisionTime:      opts.MaxNodeProvisionTime,
 	}
+
+	ignoredTaints := make(taintKeySet)
+	for _, taintKey := range opts.IgnoredTaints {
+		klog.V(4).Infof("Ignoring taint %s on all NodeGroups", taintKey)
+		ignoredTaints[taintKey] = true
+	}
+
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(autoscalingContext.CloudProvider, clusterStateConfig, autoscalingContext.LogRecorder, backoff)
 
 	scaleDown := NewScaleDown(autoscalingContext, clusterStateRegistry)
@@ -124,6 +132,7 @@ func NewStaticAutoscaler(
 		processorCallbacks:      processorCallbacks,
 		clusterStateRegistry:    clusterStateRegistry,
 		nodeInfoCache:           make(map[string]*schedulernodeinfo.NodeInfo),
+		ignoredTaints:           ignoredTaints,
 	}
 }
 
@@ -183,7 +192,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	}
 
 	nodeInfosForGroups, autoscalerError := getNodeInfosForGroups(
-		readyNodes, a.nodeInfoCache, autoscalingContext.CloudProvider, autoscalingContext.ListerRegistry, daemonsets, autoscalingContext.PredicateChecker)
+		readyNodes, a.nodeInfoCache, autoscalingContext.CloudProvider, autoscalingContext.ListerRegistry, daemonsets, autoscalingContext.PredicateChecker, a.ignoredTaints)
 	if autoscalerError != nil {
 		return autoscalerError.AddPrefix("failed to build node infos for node groups: ")
 	}
@@ -320,7 +329,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		scaleUpStart := time.Now()
 		metrics.UpdateLastTime(metrics.ScaleUp, scaleUpStart)
 
-		scaleUpStatus, typedErr = ScaleUp(autoscalingContext, a.processors, a.clusterStateRegistry, unschedulablePodsToHelp, readyNodes, daemonsets, nodeInfosForGroups)
+		scaleUpStatus, typedErr = ScaleUp(autoscalingContext, a.processors, a.clusterStateRegistry, unschedulablePodsToHelp, readyNodes, daemonsets, nodeInfosForGroups, a.ignoredTaints)
 
 		metrics.UpdateDurationFromStart(metrics.ScaleUp, scaleUpStart)
 
