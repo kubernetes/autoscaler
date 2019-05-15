@@ -73,6 +73,9 @@ type ContainerStateAggregator interface {
 	// NeedsRecommendation returns true if this aggregator should have
 	// a recommendation calculated.
 	NeedsRecommendation() bool
+	// GetUpdateMode returns the update mode of VPA controlling this aggregator,
+	// nil if aggregator is not autoscaled.
+	GetUpdateMode() *vpa_types.UpdateMode
 }
 
 // AggregateContainerState holds input signals aggregated from a set of containers.
@@ -93,6 +96,7 @@ type AggregateContainerState struct {
 	CreationTime       time.Time
 	LastRecommendation corev1.ResourceList
 	IsUnderVPA         bool
+	UpdateMode         *vpa_types.UpdateMode
 }
 
 // GetLastRecommendation returns last recorded recommendation.
@@ -105,11 +109,18 @@ func (a *AggregateContainerState) NeedsRecommendation() bool {
 	return a.IsUnderVPA
 }
 
+// GetUpdateMode returns the update mode of VPA controlling this aggregator,
+// nil if aggregator is not autoscaled.
+func (a *AggregateContainerState) GetUpdateMode() *vpa_types.UpdateMode {
+	return a.UpdateMode
+}
+
 // MarkNotAutoscaled registers that this container state is not contorled by
 // a VPA object.
 func (a *AggregateContainerState) MarkNotAutoscaled() {
 	a.IsUnderVPA = false
 	a.LastRecommendation = nil
+	a.UpdateMode = nil
 }
 
 // MergeContainerState merges two AggregateContainerStates.
@@ -283,4 +294,10 @@ func (p *ContainerStateAggregatorProxy) GetLastRecommendation() corev1.ResourceL
 func (p *ContainerStateAggregatorProxy) NeedsRecommendation() bool {
 	aggregator := p.cluster.findOrCreateAggregateContainerState(p.containerID)
 	return aggregator.NeedsRecommendation()
+}
+
+// GetUpdateMode returns update mode of VPA controlling the aggregator.
+func (p *ContainerStateAggregatorProxy) GetUpdateMode() *vpa_types.UpdateMode {
+	aggregator := p.cluster.findOrCreateAggregateContainerState(p.containerID)
+	return aggregator.GetUpdateMode()
 }
