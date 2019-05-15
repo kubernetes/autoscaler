@@ -43,12 +43,16 @@ type VirtualMachineScaleSetsClientMock struct {
 // Get gets the VirtualMachineScaleSet by vmScaleSetName.
 func (client *VirtualMachineScaleSetsClientMock) Get(ctx context.Context, resourceGroupName string, vmScaleSetName string) (result compute.VirtualMachineScaleSet, err error) {
 	capacity := int64(2)
+	name := "Standard_D8_V3" // typo to test case-insensitive lookup
+	location := "switzerlandwest"
 	properties := compute.VirtualMachineScaleSetProperties{}
 	return compute.VirtualMachineScaleSet{
 		Name: &vmScaleSetName,
 		Sku: &compute.Sku{
 			Capacity: &capacity,
+			Name:     &name,
 		},
+		Location: &location,
 		VirtualMachineScaleSetProperties: &properties,
 	}, nil
 }
