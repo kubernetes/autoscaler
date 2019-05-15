@@ -187,3 +187,23 @@ func TestScaleSetNodes(t *testing.T) {
 	assert.Equal(t, len(instances), 1)
 	assert.Equal(t, instances[0], fakeProviderID)
 }
+
+func TestTemplateNodeInfo(t *testing.T) {
+	provider := newTestProvider(t)
+	registered := provider.azureManager.RegisterAsg(
+		newTestScaleSet(provider.azureManager, "test-asg"))
+	assert.True(t, registered)
+	assert.Equal(t, len(provider.NodeGroups()), 1)
+
+	asg := ScaleSet{
+		manager: newTestAzureManager(t),
+		minSize: 1,
+		maxSize: 5,
+	}
+	asg.Name = "test-scale-set"
+
+	nodeInfo, err := asg.TemplateNodeInfo()
+	assert.NoError(t, err)
+	assert.NotNil(t, nodeInfo)
+	assert.NotEmpty(t, nodeInfo.Pods())
+}
