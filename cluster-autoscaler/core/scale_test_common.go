@@ -75,6 +75,7 @@ type scaleTestConfig struct {
 	expectedFinalScaleUp   groupSizeChange   // we expect this to be delivered via scale-up event
 	expectedScaleDowns     []string
 	options                config.AutoscalingOptions
+	nodeDeletionTracker    *NodeDeletionTracker
 }
 
 // NewScaleTestAutoscalingContext creates a new test autoscaling context for scaling tests.

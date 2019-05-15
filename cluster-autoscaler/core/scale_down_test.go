@@ -22,6 +22,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/mock"
 	batchv1 "k8s.io/api/batch/v1"
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1beta1"
@@ -599,13 +600,14 @@ func TestDeleteNode(t *testing.T) {
 			fakeClient.Fake.AddReactor("get", "pods", podNotFoundFunc)
 
 			// build context
-			context := NewScaleTestAutoscalingContext(config.AutoscalingOptions{}, fakeClient, nil, provider, nil)
+			registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
+			context := NewScaleTestAutoscalingContext(config.AutoscalingOptions{}, fakeClient, registry, provider, nil)
 
 			clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
 			sd := NewScaleDown(&context, clusterStateRegistry)
 
 			// attempt delete
-			result := sd.deleteNode(n1, pods)
+			result := sd.deleteNode(n1, pods, provider.GetNodeGroup("ng1"))
 
 			// verify
 			if scenario.expectedDeletion {
@@ -950,7 +952,7 @@ func TestScaleDown(t *testing.T) {
 
 func waitForDeleteToFinish(t *testing.T, sd *ScaleDown) {
 	for start := time.Now(); time.Since(start) < 20*time.Second; time.Sleep(100 * time.Millisecond) {
-		if !sd.nodeDeleteStatus.IsDeleteInProgress() {
+		if !sd.nodeDeletionTracker.IsNonEmptyNodeDeleteInProgress() {
 			return
 		}
 	}
@@ -1088,6 +1090,24 @@ func TestScaleDownEmptyMinGroupSizeLimitHit(t *testing.T) {
 	simpleScaleDownEmpty(t, config)
 }
 
+func TestScaleDownEmptyMinGroupSizeLimitHitWhenOneNodeIsBeingDeleted(t *testing.T) {
+	nodeDeletionTracker := NewNodeDeletionTracker()
+	nodeDeletionTracker.StartDeletion("ng1")
+	nodeDeletionTracker.StartDeletion("ng1")
+	options := defaultScaleDownOptions
+	config := &scaleTestConfig{
+		nodes: []nodeConfig{
+			{"n1", 2000, 1000, 0, true, "ng1"},
+			{"n2", 2000, 1000, 0, true, "ng1"},
+			{"n3", 2000, 1000, 0, true, "ng1"},
+		},
+		options:             options,
+		expectedScaleDowns:  []string{},
+		nodeDeletionTracker: nodeDeletionTracker,
+	}
+	simpleScaleDownEmpty(t, config)
+}
+
 func simpleScaleDownEmpty(t *testing.T, config *scaleTestConfig) {
 	updatedNodes := make(chan string, 10)
 	deletedNodes := make(chan string, 10)
@@ -1147,22 +1167,23 @@ func simpleScaleDownEmpty(t *testing.T, config *scaleTestConfig) {
 
 	assert.NotNil(t, provider)
 
-	context := NewScaleTestAutoscalingContext(config.options, fakeClient, nil, provider, nil)
+	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
+	context := NewScaleTestAutoscalingContext(config.options, fakeClient, registry, provider, nil)
 
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
 	scaleDown := NewScaleDown(&context, clusterStateRegistry)
+	if config.nodeDeletionTracker != nil {
+		scaleDown.nodeDeletionTracker = config.nodeDeletionTracker
+	}
 	scaleDown.UpdateUnneededNodes(nodes,
 		nodes, []*apiv1.Pod{}, time.Now().Add(-5*time.Minute), nil)
 	scaleDownStatus, err := scaleDown.TryToScaleDown(nodes, []*apiv1.Pod{}, nil, time.Now())
-	waitForDeleteToFinish(t, scaleDown)
-	// This helps to verify that TryToScaleDown doesn't attempt to remove anything
-	// after delete in progress status is gone.
-	close(deletedNodes)
+	assert.False(t, scaleDown.nodeDeletionTracker.IsNonEmptyNodeDeleteInProgress())
 
 	assert.NoError(t, err)
 	var expectedScaleDownResult status.ScaleDownResult
 	if len(config.expectedScaleDowns) > 0 {
-		expectedScaleDownResult = status.ScaleDownNodeDeleted
+		expectedScaleDownResult = status.ScaleDownNodeDeleteStarted
 	} else {
 		expectedScaleDownResult = status.ScaleDownNoUnneeded
 	}
@@ -1172,8 +1193,8 @@ func simpleScaleDownEmpty(t *testing.T, config *scaleTestConfig) {
 	// Report only up to 10 extra nodes found.
 	deleted := make([]string, 0, len(config.expectedScaleDowns)+10)
 	for i := 0; i < len(config.expectedScaleDowns)+10; i++ {
-		d := getStringFromChanImmediately(deletedNodes)
-		if d == "" { // a closed channel yields empty value
+		d := getStringFromChan(deletedNodes)
+		if d == nothingReturned { // a closed channel yields empty value
 			break
 		}
 		deleted = append(deleted, d)
@@ -1222,7 +1243,8 @@ func TestNoScaleDownUnready(t *testing.T) {
 		ScaleDownUnreadyTime:          time.Hour,
 		MaxGracefulTerminationSec:     60,
 	}
-	context := NewScaleTestAutoscalingContext(options, fakeClient, nil, provider, nil)
+	registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
+	context := NewScaleTestAutoscalingContext(options, fakeClient, registry, provider, nil)
 
 	// N1 is unready so it requires a bigger unneeded time.
 	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
@@ -1729,4 +1751,56 @@ func TestSoftTaintTimeLimit(t *testing.T) {
 	errs = scaleDown.SoftTaintUnneededNodes(getAllNodes(t, fakeClient))
 	assert.Empty(t, errs)
 	assert.Equal(t, 0, countDeletionCandidateTaints(t, fakeClient))
+}
+
+func TestWaitForDelayDeletion(t *testing.T) {
+	type testcase struct {
+		name                 string
+		addAnnotation        bool
+		removeAnnotation     bool
+		expectCallingGetNode bool
+	}
+	tests := []testcase{
+		{
+			name:             "annotation not set",
+			addAnnotation:    false,
+			removeAnnotation: false,
+		},
+		{
+			name:             "annotation set and removed",
+			addAnnotation:    true,
+			removeAnnotation: true,
+		},
+		{
+			name:             "annotation set but not removed",
+			addAnnotation:    true,
+			removeAnnotation: false,
+		},
+	}
+
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			node := BuildTestNode("n1", 1000, 10)
+			nodeWithAnnotation := BuildTestNode("n1", 1000, 10)
+			nodeWithAnnotation.Annotations = map[string]string{DelayDeletionAnnotationPrefix + "ingress": "true"}
+			allNodeListerMock := &nodeListerMock{}
+			if test.addAnnotation {
+				if test.removeAnnotation {
+					allNodeListerMock.On("Get").Return(node, nil).Once()
+				} else {
+					allNodeListerMock.On("Get").Return(nodeWithAnnotation, nil).Twice()
+				}
+			}
+			var err error
+			if test.addAnnotation {
+				err = waitForDelayDeletion(nodeWithAnnotation, allNodeListerMock, 6*time.Second)
+			} else {
+				err = waitForDelayDeletion(node, allNodeListerMock, 6*time.Second)
+			}
+			assert.NoError(t, err)
+			mock.AssertExpectationsForObjects(t, allNodeListerMock)
+		})
+	}
 }
