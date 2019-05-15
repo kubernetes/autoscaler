@@ -318,7 +318,7 @@ func (fl fileLogger) WriteResponse(resp *http.Response, filter Filter) {
 // returns true if the provided body should be included in the log
 func (fl fileLogger) shouldLogBody(header http.Header, body io.ReadCloser) bool {
 	ct := header.Get("Content-Type")
-	return fl.logLevel >= LogDebug && body != nil && strings.Index(ct, "application/octet-stream") == -1
+	return fl.logLevel >= LogDebug && body != nil && !strings.Contains(ct, "application/octet-stream")
 }
 
 // creates standard header for log entries, it contains a timestamp and the log level

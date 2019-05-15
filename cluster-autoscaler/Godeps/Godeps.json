@@ -81,28 +81,28 @@
 		},
 		{
 			"ImportPath": "github.com/Azure/go-autorest/autorest/date",
-			"Comment": "v11.1.0-1-g194f960",
-			"Rev": "194f960ee3cf7437e213e07b8250531534f2acb1"
+			"Comment": "v11.3.2",
+			"Rev": "7324aa01f00acb1ae6e502ac06e0213cfdf09bdb"
 		},
 		{
 			"ImportPath": "github.com/Azure/go-autorest/autorest/to",
-			"Comment": "v11.1.0-1-g194f960",
-			"Rev": "194f960ee3cf7437e213e07b8250531534f2acb1"
+			"Comment": "v11.3.2",
+			"Rev": "7324aa01f00acb1ae6e502ac06e0213cfdf09bdb"
 		},
 		{
 			"ImportPath": "github.com/Azure/go-autorest/autorest/validation",
-			"Comment": "v11.1.0-1-g194f960",
-			"Rev": "194f960ee3cf7437e213e07b8250531534f2acb1"
+			"Comment": "v11.3.2",
+			"Rev": "7324aa01f00acb1ae6e502ac06e0213cfdf09bdb"
 		},
 		{
 			"ImportPath": "github.com/Azure/go-autorest/logger",
-			"Comment": "v11.1.0-1-g194f960",
-			"Rev": "194f960ee3cf7437e213e07b8250531534f2acb1"
+			"Comment": "v11.3.2",
+			"Rev": "7324aa01f00acb1ae6e502ac06e0213cfdf09bdb"
 		},
 		{
 			"ImportPath": "github.com/Azure/go-autorest/version",
-			"Comment": "v11.1.0-1-g194f960",
-			"Rev": "194f960ee3cf7437e213e07b8250531534f2acb1"
+			"Comment": "v11.3.2",
+			"Rev": "7324aa01f00acb1ae6e502ac06e0213cfdf09bdb"
 		},
 		{
 			"ImportPath": "github.com/GoogleCloudPlatform/k8s-cloud-provider/pkg/cloud",
