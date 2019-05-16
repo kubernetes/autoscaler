@@ -404,7 +404,13 @@ func (scaleSet *ScaleSet) buildNodeFromTemplate(template compute.VirtualMachineS
 		Capacity: apiv1.ResourceList{},
 	}
 
-	vmssType := InstanceTypes[*template.Sku.Name]
+	var vmssType *instanceType
+	for k := range InstanceTypes {
+		if strings.EqualFold(k, *template.Sku.Name) {
+			vmssType = InstanceTypes[k]
+			break
+		}
+	}
 	if vmssType == nil {
 		return nil, fmt.Errorf("instance type %q not supported", *template.Sku.Name)
 	}
