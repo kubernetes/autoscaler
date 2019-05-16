@@ -56,13 +56,13 @@ func TestBuildAwsCloudProvider(t *testing.T) {
 
 func TestName(t *testing.T) {
 	provider := testProvider(t, testBaiducloudManager)
-	assert.Equal(t, provider.Name(), ProviderName)
+	assert.Equal(t, provider.Name(ctx), ProviderName)
 }
 
 func TestNodeGroups(t *testing.T) {
 	provider := testProvider(t, testBaiducloudManager)
 
-	nodeGroups := provider.NodeGroups()
+	nodeGroups := provider.NodeGroups(ctx)
 	assert.Equal(t, len(nodeGroups), 1)
 	assert.Equal(t, nodeGroups[0].Id(), "k8s-worker-asg-1")
 	assert.Equal(t, nodeGroups[0].MinSize(), 1)
@@ -71,12 +71,12 @@ func TestNodeGroups(t *testing.T) {
 
 func TestCleanup(t *testing.T) {
 	provider := testProvider(t, testBaiducloudManager)
-	err := provider.Cleanup()
+	err := provider.Cleanup(ctx)
 	assert.NoError(t, err)
 }
 
 func TestRefresh(t *testing.T) {
 	provider := testProvider(t, testBaiducloudManager)
-	err := provider.Refresh()
+	err := provider.Refresh(ctx)
 	assert.NoError(t, err)
 }

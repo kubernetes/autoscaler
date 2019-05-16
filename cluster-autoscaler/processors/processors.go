@@ -17,6 +17,9 @@ limitations under the License.
 package processors
 
 import (
+	"context"
+
+	"github.com/opentracing/opentracing-go"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/pods"
@@ -70,12 +73,15 @@ func TestProcessors() *AutoscalingProcessors {
 }
 
 // CleanUp cleans up the processors' internal structures.
-func (ap *AutoscalingProcessors) CleanUp() {
-	ap.PodListProcessor.CleanUp()
-	ap.NodeGroupListProcessor.CleanUp()
-	ap.NodeGroupSetProcessor.CleanUp()
-	ap.ScaleUpStatusProcessor.CleanUp()
-	ap.ScaleDownStatusProcessor.CleanUp()
-	ap.AutoscalingStatusProcessor.CleanUp()
-	ap.NodeGroupManager.CleanUp()
+func (ap *AutoscalingProcessors) CleanUp(ctx context.Context) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "AutoscalingProcessors.CleanUp")
+	defer span.Finish()
+
+	ap.PodListProcessor.CleanUp(ctx)
+	ap.NodeGroupListProcessor.CleanUp(ctx)
+	ap.NodeGroupSetProcessor.CleanUp(ctx)
+	ap.ScaleUpStatusProcessor.CleanUp(ctx)
+	ap.ScaleDownStatusProcessor.CleanUp(ctx)
+	ap.AutoscalingStatusProcessor.CleanUp(ctx)
+	ap.NodeGroupManager.CleanUp(ctx)
 }

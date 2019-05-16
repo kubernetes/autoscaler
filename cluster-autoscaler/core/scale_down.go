@@ -17,6 +17,7 @@ limitations under the License.
 package core
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"reflect"
@@ -24,9 +25,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/opentracing/opentracing-go"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	autoscalingcontext "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
@@ -115,13 +117,13 @@ type scaleDownResourcesDelta map[string]int64
 // used as a value in scaleDownResourcesLimits if actual limit could not be obtained due to errors talking to cloud provider
 const scaleDownLimitUnknown = math.MinInt64
 
-func computeScaleDownResourcesLeftLimits(nodes []*apiv1.Node, resourceLimiter *cloudprovider.ResourceLimiter, cp cloudprovider.CloudProvider, timestamp time.Time) scaleDownResourcesLimits {
+func computeScaleDownResourcesLeftLimits(ctx context.Context, nodes []*apiv1.Node, resourceLimiter *cloudprovider.ResourceLimiter, cp cloudprovider.CloudProvider, timestamp time.Time) scaleDownResourcesLimits {
 	totalCores, totalMem := calculateScaleDownCoresMemoryTotal(nodes, timestamp)
 
 	var totalGpus map[string]int64
 	var totalGpusErr error
 	if cloudprovider.ContainsGpuResources(resourceLimiter.GetResources()) {
-		totalGpus, totalGpusErr = calculateScaleDownGpusTotal(nodes, cp, timestamp)
+		totalGpus, totalGpusErr = calculateScaleDownGpusTotal(ctx, nodes, cp, timestamp)
 	}
 
 	resultScaleDownLimits := make(scaleDownResourcesLimits)
@@ -173,7 +175,7 @@ func calculateScaleDownCoresMemoryTotal(nodes []*apiv1.Node, timestamp time.Time
 	return coresTotal, memoryTotal
 }
 
-func calculateScaleDownGpusTotal(nodes []*apiv1.Node, cp cloudprovider.CloudProvider, timestamp time.Time) (map[string]int64, error) {
+func calculateScaleDownGpusTotal(ctx context.Context, nodes []*apiv1.Node, cp cloudprovider.CloudProvider, timestamp time.Time) (map[string]int64, error) {
 	type gpuInfo struct {
 		name  string
 		count int64
@@ -186,7 +188,7 @@ func calculateScaleDownGpusTotal(nodes []*apiv1.Node, cp cloudprovider.CloudProv
 			// Nodes being deleted do not count towards total cluster resources
 			continue
 		}
-		nodeGroup, err := cp.NodeGroupForNode(node)
+		nodeGroup, err := cp.NodeGroupForNode(ctx, node)
 		if err != nil {
 			return nil, errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("can not get node group for node %v when calculating cluster gpu usage", node.Name)
 		}
@@ -210,7 +212,7 @@ func calculateScaleDownGpusTotal(nodes []*apiv1.Node, cp cloudprovider.CloudProv
 			}
 		}
 		if !cacheHit {
-			gpuType, gpuCount, err = gpu.GetNodeTargetGpus(node, nodeGroup)
+			gpuType, gpuCount, err = gpu.GetNodeTargetGpus(ctx, node, nodeGroup)
 			if err != nil {
 				return nil, errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("can not get gpu count for node %v when calculating cluster gpu usage")
 			}
@@ -244,7 +246,7 @@ func copyScaleDownResourcesLimits(source scaleDownResourcesLimits) scaleDownReso
 	return copy
 }
 
-func computeScaleDownResourcesDelta(node *apiv1.Node, nodeGroup cloudprovider.NodeGroup, resourcesWithLimits []string) (scaleDownResourcesDelta, errors.AutoscalerError) {
+func computeScaleDownResourcesDelta(ctx context.Context, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup, resourcesWithLimits []string) (scaleDownResourcesDelta, errors.AutoscalerError) {
 	resultScaleDownDelta := make(scaleDownResourcesDelta)
 
 	nodeCPU, nodeMemory := getNodeCoresAndMemory(node)
@@ -252,7 +254,7 @@ func computeScaleDownResourcesDelta(node *apiv1.Node, nodeGroup cloudprovider.No
 	resultScaleDownDelta[cloudprovider.ResourceNameMemory] = nodeMemory
 
 	if cloudprovider.ContainsGpuResources(resourcesWithLimits) {
-		gpuType, gpuCount, err := gpu.GetNodeTargetGpus(node, nodeGroup)
+		gpuType, gpuCount, err := gpu.GetNodeTargetGpus(ctx, node, nodeGroup)
 		if err != nil {
 			return scaleDownResourcesDelta{}, errors.ToAutoscalerError(errors.CloudProviderError, err).AddPrefix("Failed to get node %v gpu: %v", node.Name)
 		}
@@ -303,7 +305,7 @@ func (limits *scaleDownResourcesLimits) tryDecrementLimitsByDelta(delta scaleDow
 
 // ScaleDown is responsible for maintaining the state needed to perform unneeded node removals.
 type ScaleDown struct {
-	context              *context.AutoscalingContext
+	context              *autoscalingcontext.AutoscalingContext
 	clusterStateRegistry *clusterstate.ClusterStateRegistry
 	unneededNodes        map[string]time.Time
 	unneededNodesList    []*apiv1.Node
@@ -315,7 +317,7 @@ type ScaleDown struct {
 }
 
 // NewScaleDown builds new ScaleDown object.
-func NewScaleDown(context *context.AutoscalingContext, clusterStateRegistry *clusterstate.ClusterStateRegistry) *ScaleDown {
+func NewScaleDown(context *autoscalingcontext.AutoscalingContext, clusterStateRegistry *clusterstate.ClusterStateRegistry) *ScaleDown {
 	return &ScaleDown{
 		context:              context,
 		clusterStateRegistry: clusterStateRegistry,
@@ -330,8 +332,11 @@ func NewScaleDown(context *context.AutoscalingContext, clusterStateRegistry *clu
 }
 
 // CleanUp cleans up the internal ScaleDown state.
-func (sd *ScaleDown) CleanUp(timestamp time.Time) {
-	sd.usageTracker.CleanUp(timestamp.Add(-sd.context.ScaleDownUnneededTime))
+func (sd *ScaleDown) CleanUp(ctx context.Context, timestamp time.Time) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "ScaleDown.CleanUp")
+	defer span.Finish()
+
+	sd.usageTracker.CleanUp(ctx, timestamp.Add(-sd.context.ScaleDownUnneededTime))
 }
 
 // GetCandidatesForScaleDown gets candidates for scale down.
@@ -349,12 +354,9 @@ func (sd *ScaleDown) CleanUpUnneededNodes() {
 // and updates unneededNodes map accordingly. It also computes information where pods can be rescheduled and
 // node utilization level. Timestamp is the current timestamp. The computations are made only for the nodes
 // managed by CA.
-func (sd *ScaleDown) UpdateUnneededNodes(
-	nodes []*apiv1.Node,
-	nodesToCheck []*apiv1.Node,
-	pods []*apiv1.Pod,
-	timestamp time.Time,
-	pdbs []*policyv1.PodDisruptionBudget) errors.AutoscalerError {
+func (sd *ScaleDown) UpdateUnneededNodes(ctx context.Context, nodes []*apiv1.Node, nodesToCheck []*apiv1.Node, pods []*apiv1.Pod, timestamp time.Time, pdbs []*policyv1.PodDisruptionBudget) errors.AutoscalerError {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "ScaleDown.UpdateUnneededNodes")
+	defer span.Finish()
 
 	currentlyUnneededNodes := make([]*apiv1.Node, 0)
 	// Only scheduled non expendable pods and pods waiting for lower priority pods preemption can prevent node delete.
@@ -419,7 +421,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 
 	emptyNodes := make(map[string]bool)
 
-	emptyNodesList := getEmptyNodesNoResourceLimits(currentlyUnneededNodes, pods, len(currentlyUnneededNodes), sd.context.CloudProvider)
+	emptyNodesList := getEmptyNodesNoResourceLimits(ctx, currentlyUnneededNodes, pods, len(currentlyUnneededNodes), sd.context.CloudProvider)
 	for _, node := range emptyNodesList {
 		emptyNodes[node.Name] = true
 	}
@@ -439,7 +441,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		currentCandidates, nodes, nonExpendablePods, nil, sd.context.PredicateChecker,
 		len(currentCandidates), true, sd.podLocationHints, sd.usageTracker, timestamp, pdbs)
 	if simulatorErr != nil {
-		return sd.markSimulationError(simulatorErr, timestamp)
+		return sd.markSimulationError(ctx, simulatorErr, timestamp)
 	}
 
 	additionalCandidatesCount := sd.context.ScaleDownNonEmptyCandidatesCount - len(nodesToRemove)
@@ -462,7 +464,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 				sd.context.PredicateChecker, additionalCandidatesCount, true,
 				sd.podLocationHints, sd.usageTracker, timestamp, pdbs)
 		if simulatorErr != nil {
-			return sd.markSimulationError(simulatorErr, timestamp)
+			return sd.markSimulationError(ctx, simulatorErr, timestamp)
 		}
 		nodesToRemove = append(nodesToRemove, additionalNodesToRemove...)
 		unremovable = append(unremovable, additionalUnremovable...)
@@ -501,7 +503,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	sd.unneededNodes = result
 	sd.podLocationHints = newHints
 	sd.nodeUtilizationMap = utilizationMap
-	sd.clusterStateRegistry.UpdateScaleDownCandidates(sd.unneededNodesList, timestamp)
+	sd.clusterStateRegistry.UpdateScaleDownCandidates(ctx, sd.unneededNodesList, timestamp)
 	metrics.UpdateUnneededNodesCount(len(sd.unneededNodesList))
 	return nil
 }
@@ -531,13 +533,15 @@ func (sd *ScaleDown) updateUnremovableNodes(nodes []*apiv1.Node) {
 
 // markSimulationError indicates a simulation error by clearing  relevant scale
 // down state and returning an appropriate error.
-func (sd *ScaleDown) markSimulationError(simulatorErr errors.AutoscalerError,
-	timestamp time.Time) errors.AutoscalerError {
+func (sd *ScaleDown) markSimulationError(ctx context.Context, simulatorErr errors.AutoscalerError, timestamp time.Time) errors.AutoscalerError {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "ScaleDown.markSimulationError")
+	defer span.Finish()
+
 	klog.Errorf("Error while simulating node drains: %v", simulatorErr)
 	sd.unneededNodesList = make([]*apiv1.Node, 0)
 	sd.unneededNodes = make(map[string]time.Time)
 	sd.nodeUtilizationMap = make(map[string]simulator.UtilizationInfo)
-	sd.clusterStateRegistry.UpdateScaleDownCandidates(sd.unneededNodesList, timestamp)
+	sd.clusterStateRegistry.UpdateScaleDownCandidates(ctx, sd.unneededNodesList, timestamp)
 	return simulatorErr.AddPrefix("error while simulating node drains: ")
 }
 
@@ -621,7 +625,10 @@ func (sd *ScaleDown) SoftTaintUnneededNodes(allNodes []*apiv1.Node) (errors []er
 
 // TryToScaleDown tries to scale down the cluster. It returns a result inside a ScaleDownStatus indicating if any node was
 // removed and error if such occurred.
-func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, pdbs []*policyv1.PodDisruptionBudget, currentTime time.Time) (*status.ScaleDownStatus, errors.AutoscalerError) {
+func (sd *ScaleDown) TryToScaleDown(ctx context.Context, allNodes []*apiv1.Node, pods []*apiv1.Pod, pdbs []*policyv1.PodDisruptionBudget, currentTime time.Time) (*status.ScaleDownStatus, errors.AutoscalerError) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "ScaleDown.TryToScaleDown")
+	defer span.Finish()
+
 	scaleDownStatus := &status.ScaleDownStatus{NodeDeleteResults: sd.nodeDeleteStatus.DrainNodeDeleteResults()}
 	nodeDeletionDuration := time.Duration(0)
 	findNodesToRemoveDuration := time.Duration(0)
@@ -631,15 +638,15 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 	readinessMap := make(map[string]bool)
 	candidateNodeGroups := make(map[string]cloudprovider.NodeGroup)
 
-	resourceLimiter, errCP := sd.context.CloudProvider.GetResourceLimiter()
+	resourceLimiter, errCP := sd.context.CloudProvider.GetResourceLimiter(ctx)
 	if errCP != nil {
 		scaleDownStatus.Result = status.ScaleDownError
 		return scaleDownStatus, errors.ToAutoscalerError(errors.CloudProviderError, errCP)
 	}
 
-	scaleDownResourcesLeft := computeScaleDownResourcesLeftLimits(nodesWithoutMaster, resourceLimiter, sd.context.CloudProvider, currentTime)
+	scaleDownResourcesLeft := computeScaleDownResourcesLeftLimits(ctx, nodesWithoutMaster, resourceLimiter, sd.context.CloudProvider, currentTime)
 
-	nodeGroupSize := getNodeGroupSizeMap(sd.context.CloudProvider)
+	nodeGroupSize := getNodeGroupSizeMap(ctx, sd.context.CloudProvider)
 	resourcesWithLimits := resourceLimiter.GetResources()
 	for _, node := range nodesWithoutMaster {
 		if val, found := sd.unneededNodes[node.Name]; found {
@@ -665,7 +672,7 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 				continue
 			}
 
-			nodeGroup, err := sd.context.CloudProvider.NodeGroupForNode(node)
+			nodeGroup, err := sd.context.CloudProvider.NodeGroupForNode(ctx, node)
 			if err != nil {
 				klog.Errorf("Error while checking node group for %s: %v", node.Name, err)
 				continue
@@ -686,7 +693,7 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 				continue
 			}
 
-			scaleDownResourcesDelta, err := computeScaleDownResourcesDelta(node, nodeGroup, resourcesWithLimits)
+			scaleDownResourcesDelta, err := computeScaleDownResourcesDelta(ctx, node, nodeGroup, resourcesWithLimits)
 			if err != nil {
 				klog.Errorf("Error getting node resources: %v", err)
 				continue
@@ -711,11 +718,11 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 	// Trying to delete empty nodes in bulk. If there are no empty nodes then CA will
 	// try to delete not-so-empty nodes, possibly killing some pods and allowing them
 	// to recreate on other nodes.
-	emptyNodes := getEmptyNodes(candidates, pods, sd.context.MaxEmptyBulkDelete, scaleDownResourcesLeft, sd.context.CloudProvider)
+	emptyNodes := getEmptyNodes(ctx, candidates, pods, sd.context.MaxEmptyBulkDelete, scaleDownResourcesLeft, sd.context.CloudProvider)
 	if len(emptyNodes) > 0 {
 		nodeDeletionStart := time.Now()
 		confirmation := make(chan errors.AutoscalerError, len(emptyNodes))
-		sd.scheduleDeleteEmptyNodes(emptyNodes, sd.context.ClientSet, sd.context.Recorder, readinessMap, candidateNodeGroups, confirmation)
+		sd.scheduleDeleteEmptyNodes(ctx, emptyNodes, sd.context.ClientSet, sd.context.Recorder, readinessMap, candidateNodeGroups, confirmation)
 		err := sd.waitForEmptyNodesDeleted(emptyNodes, confirmation)
 		nodeDeletionDuration = time.Now().Sub(nodeDeletionStart)
 		if err == nil {
@@ -769,16 +776,16 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 		var err error
 		defer func() { sd.nodeDeleteStatus.AddNodeDeleteResult(toRemove.Node.Name, err) }()
 		defer sd.nodeDeleteStatus.SetDeleteInProgress(false)
-		err = sd.deleteNode(toRemove.Node, toRemove.PodsToReschedule)
+		err = sd.deleteNode(ctx, toRemove.Node, toRemove.PodsToReschedule)
 		if err != nil {
 			klog.Errorf("Failed to delete %s: %v", toRemove.Node.Name, err)
 			return
 		}
 		nodeGroup := candidateNodeGroups[toRemove.Node.Name]
 		if readinessMap[toRemove.Node.Name] {
-			metrics.RegisterScaleDown(1, gpu.GetGpuTypeForMetrics(toRemove.Node, nodeGroup), metrics.Underutilized)
+			metrics.RegisterScaleDown(1, gpu.GetGpuTypeForMetrics(ctx, toRemove.Node, nodeGroup), metrics.Underutilized)
 		} else {
-			metrics.RegisterScaleDown(1, gpu.GetGpuTypeForMetrics(toRemove.Node, nodeGroup), metrics.Unready)
+			metrics.RegisterScaleDown(1, gpu.GetGpuTypeForMetrics(ctx, toRemove.Node, nodeGroup), metrics.Unready)
 		}
 	}()
 
@@ -797,15 +804,13 @@ func updateScaleDownMetrics(scaleDownStart time.Time, findNodesToRemoveDuration 
 	metrics.UpdateDuration(metrics.ScaleDownMiscOperations, miscDuration)
 }
 
-func getEmptyNodesNoResourceLimits(candidates []*apiv1.Node, pods []*apiv1.Pod, maxEmptyBulkDelete int,
-	cloudProvider cloudprovider.CloudProvider) []*apiv1.Node {
-	return getEmptyNodes(candidates, pods, maxEmptyBulkDelete, noScaleDownLimitsOnResources(), cloudProvider)
+func getEmptyNodesNoResourceLimits(ctx context.Context, candidates []*apiv1.Node, pods []*apiv1.Pod, maxEmptyBulkDelete int, cloudProvider cloudprovider.CloudProvider) []*apiv1.Node {
+	return getEmptyNodes(ctx, candidates, pods, maxEmptyBulkDelete, noScaleDownLimitsOnResources(), cloudProvider)
 }
 
 // This functions finds empty nodes among passed candidates and returns a list of empty nodes
 // that can be deleted at the same time.
-func getEmptyNodes(candidates []*apiv1.Node, pods []*apiv1.Pod, maxEmptyBulkDelete int,
-	resourcesLimits scaleDownResourcesLimits, cloudProvider cloudprovider.CloudProvider) []*apiv1.Node {
+func getEmptyNodes(ctx context.Context, candidates []*apiv1.Node, pods []*apiv1.Pod, maxEmptyBulkDelete int, resourcesLimits scaleDownResourcesLimits, cloudProvider cloudprovider.CloudProvider) []*apiv1.Node {
 
 	emptyNodes := simulator.FindEmptyNodesToRemove(candidates, pods)
 	availabilityMap := make(map[string]int)
@@ -814,7 +819,7 @@ func getEmptyNodes(candidates []*apiv1.Node, pods []*apiv1.Pod, maxEmptyBulkDele
 	resourcesNames := sets.StringKeySet(resourcesLimits).List()
 
 	for _, node := range emptyNodes {
-		nodeGroup, err := cloudProvider.NodeGroupForNode(node)
+		nodeGroup, err := cloudProvider.NodeGroupForNode(ctx, node)
 		if err != nil {
 			klog.Errorf("Failed to get group for %s", node.Name)
 			continue
@@ -826,7 +831,7 @@ func getEmptyNodes(candidates []*apiv1.Node, pods []*apiv1.Pod, maxEmptyBulkDele
 		var found bool
 		if available, found = availabilityMap[nodeGroup.Id()]; !found {
 			// Will be cached.
-			size, err := nodeGroup.TargetSize()
+			size, err := nodeGroup.TargetSize(ctx)
 			if err != nil {
 				klog.Errorf("Failed to get size for %s: %v ", nodeGroup.Id(), err)
 				continue
@@ -838,7 +843,7 @@ func getEmptyNodes(candidates []*apiv1.Node, pods []*apiv1.Pod, maxEmptyBulkDele
 			availabilityMap[nodeGroup.Id()] = available
 		}
 		if available > 0 {
-			resourcesDelta, err := computeScaleDownResourcesDelta(node, nodeGroup, resourcesNames)
+			resourcesDelta, err := computeScaleDownResourcesDelta(ctx, node, nodeGroup, resourcesNames)
 			if err != nil {
 				klog.Errorf("Error: %v", err)
 				continue
@@ -859,9 +864,10 @@ func getEmptyNodes(candidates []*apiv1.Node, pods []*apiv1.Pod, maxEmptyBulkDele
 	return result[:limit]
 }
 
-func (sd *ScaleDown) scheduleDeleteEmptyNodes(emptyNodes []*apiv1.Node, client kube_client.Interface,
-	recorder kube_record.EventRecorder, readinessMap map[string]bool,
-	candidateNodeGroups map[string]cloudprovider.NodeGroup, confirmation chan errors.AutoscalerError) {
+func (sd *ScaleDown) scheduleDeleteEmptyNodes(ctx context.Context, emptyNodes []*apiv1.Node, client kube_client.Interface, recorder kube_record.EventRecorder, readinessMap map[string]bool, candidateNodeGroups map[string]cloudprovider.NodeGroup, confirmation chan errors.AutoscalerError) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "ScaleDown.scheduleDeleteEmptyNodes")
+	defer span.Finish()
+
 	for _, node := range emptyNodes {
 		klog.V(0).Infof("Scale-down: removing empty node %s", node.Name)
 		sd.context.LogRecorder.Eventf(apiv1.EventTypeNormal, "ScaleDownEmpty", "Scale-down: removing empty node %s", node.Name)
@@ -885,14 +891,13 @@ func (sd *ScaleDown) scheduleDeleteEmptyNodes(emptyNodes []*apiv1.Node, client k
 				}
 			}()
 
-			deleteErr = deleteNodeFromCloudProvider(nodeToDelete, sd.context.CloudProvider,
-				sd.context.Recorder, sd.clusterStateRegistry)
+			deleteErr = deleteNodeFromCloudProvider(ctx, nodeToDelete, sd.context.CloudProvider, sd.context.Recorder, sd.clusterStateRegistry)
 			if deleteErr == nil {
 				nodeGroup := candidateNodeGroups[nodeToDelete.Name]
 				if readinessMap[nodeToDelete.Name] {
-					metrics.RegisterScaleDown(1, gpu.GetGpuTypeForMetrics(nodeToDelete, nodeGroup), metrics.Empty)
+					metrics.RegisterScaleDown(1, gpu.GetGpuTypeForMetrics(ctx, nodeToDelete, nodeGroup), metrics.Empty)
 				} else {
-					metrics.RegisterScaleDown(1, gpu.GetGpuTypeForMetrics(nodeToDelete, nodeGroup), metrics.Unready)
+					metrics.RegisterScaleDown(1, gpu.GetGpuTypeForMetrics(ctx, nodeToDelete, nodeGroup), metrics.Unready)
 				}
 			}
 			confirmation <- deleteErr
@@ -923,7 +928,10 @@ func (sd *ScaleDown) waitForEmptyNodesDeleted(emptyNodes []*apiv1.Node, confirma
 	return finalError
 }
 
-func (sd *ScaleDown) deleteNode(node *apiv1.Node, pods []*apiv1.Pod) errors.AutoscalerError {
+func (sd *ScaleDown) deleteNode(ctx context.Context, node *apiv1.Node, pods []*apiv1.Pod) errors.AutoscalerError {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "ScaleDown.deleteNode")
+	defer span.Finish()
+
 	deleteSuccessful := false
 	drainSuccessful := false
 
@@ -953,7 +961,7 @@ func (sd *ScaleDown) deleteNode(node *apiv1.Node, pods []*apiv1.Pod) errors.Auto
 	drainSuccessful = true
 
 	// attempt delete from cloud provider
-	err := deleteNodeFromCloudProvider(node, sd.context.CloudProvider, sd.context.Recorder, sd.clusterStateRegistry)
+	err := deleteNodeFromCloudProvider(ctx, node, sd.context.CloudProvider, sd.context.Recorder, sd.clusterStateRegistry)
 	if err != nil {
 		return err
 	}
@@ -1060,9 +1068,8 @@ func drainNode(node *apiv1.Node, pods []*apiv1.Pod, client kube_client.Interface
 
 // Removes the given node from cloud provider. No extra pre-deletion actions are executed on
 // the Kubernetes side.
-func deleteNodeFromCloudProvider(node *apiv1.Node, cloudProvider cloudprovider.CloudProvider,
-	recorder kube_record.EventRecorder, registry *clusterstate.ClusterStateRegistry) errors.AutoscalerError {
-	nodeGroup, err := cloudProvider.NodeGroupForNode(node)
+func deleteNodeFromCloudProvider(ctx context.Context, node *apiv1.Node, cloudProvider cloudprovider.CloudProvider, recorder kube_record.EventRecorder, registry *clusterstate.ClusterStateRegistry) errors.AutoscalerError {
+	nodeGroup, err := cloudProvider.NodeGroupForNode(ctx, node)
 	if err != nil {
 		return errors.NewAutoscalerError(
 			errors.CloudProviderError, "failed to find node group for %s: %v", node.Name, err)
@@ -1070,7 +1077,7 @@ func deleteNodeFromCloudProvider(node *apiv1.Node, cloudProvider cloudprovider.C
 	if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
 		return errors.NewAutoscalerError(errors.InternalError, "picked node that doesn't belong to a node group: %s", node.Name)
 	}
-	if err = nodeGroup.DeleteNodes([]*apiv1.Node{node}); err != nil {
+	if err = nodeGroup.DeleteNodes(ctx, []*apiv1.Node{node}); err != nil {
 		return errors.NewAutoscalerError(errors.CloudProviderError, "failed to delete %s: %v", node.Name, err)
 	}
 	recorder.Eventf(node, apiv1.EventTypeNormal, "ScaleDown", "node removed by cluster autoscaler")

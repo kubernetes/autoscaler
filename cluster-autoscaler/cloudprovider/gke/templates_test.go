@@ -143,8 +143,7 @@ func TestBuildLabelsForAutoprovisionedMigOK(t *testing.T) {
 				},
 			},
 		},
-		"sillyname",
-	)
+		"sillyname")
 
 	assert.Nil(t, err)
 	assert.Equal(t, "B", labels["A"])
@@ -172,8 +171,7 @@ func TestBuildLabelsForAutoprovisionedMigConflict(t *testing.T) {
 				},
 			},
 		},
-		"sillyname",
-	)
+		"sillyname")
 	assert.Error(t, err)
 }
 

@@ -19,7 +19,6 @@ package gce
 import (
 	"context"
 	"fmt"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"net/http"
 	"net/url"
 	"path"
@@ -27,8 +26,12 @@ import (
 	"strings"
 	"time"
 
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+
 	gce "google.golang.org/api/compute/v1"
 	"k8s.io/klog"
+
+	"github.com/opentracing/opentracing-go"
 )
 
 const (
@@ -45,18 +48,18 @@ const (
 // AutoscalingGceClient is used for communicating with GCE API.
 type AutoscalingGceClient interface {
 	// reading resources
-	FetchMachineType(zone, machineType string) (*gce.MachineType, error)
-	FetchMachineTypes(zone string) ([]*gce.MachineType, error)
-	FetchMigTargetSize(GceRef) (int64, error)
-	FetchMigBasename(GceRef) (string, error)
-	FetchMigInstances(GceRef) ([]cloudprovider.Instance, error)
-	FetchMigTemplate(GceRef) (*gce.InstanceTemplate, error)
-	FetchMigsWithName(zone string, filter *regexp.Regexp) ([]string, error)
-	FetchZones(region string) ([]string, error)
+	FetchMachineType(ctx context.Context, zone, machineType string) (*gce.MachineType, error)
+	FetchMachineTypes(ctx context.Context, zone string) ([]*gce.MachineType, error)
+	FetchMigTargetSize(context.Context, GceRef) (int64, error)
+	FetchMigBasename(context.Context, GceRef) (string, error)
+	FetchMigInstances(context.Context, GceRef) ([]cloudprovider.Instance, error)
+	FetchMigTemplate(context.Context, GceRef) (*gce.InstanceTemplate, error)
+	FetchMigsWithName(ctx context.Context, zone string, filter *regexp.Regexp) ([]string, error)
+	FetchZones(ctx context.Context, region string) ([]string, error)
 
 	// modifying resources
-	ResizeMig(GceRef, int64) error
-	DeleteInstances(migRef GceRef, instances []*GceRef) error
+	ResizeMig(context.Context, GceRef, int64) error
+	DeleteInstances(ctx context.Context, migRef GceRef, instances []*GceRef) error
 }
 
 type autoscalingGceClientV1 struct {
@@ -102,12 +105,18 @@ func NewCustomAutoscalingGceClientV1(client *http.Client, projectId, serverUrl s
 	}, nil
 }
 
-func (client *autoscalingGceClientV1) FetchMachineType(zone, machineType string) (*gce.MachineType, error) {
+func (client *autoscalingGceClientV1) FetchMachineType(ctx context.Context, zone, machineType string) (*gce.MachineType, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "autoscalingGceClientV1.FetchMachineType")
+	defer span.Finish()
+
 	registerRequest("machine_types", "get")
 	return client.gceService.MachineTypes.Get(client.projectId, zone, machineType).Do()
 }
 
-func (client *autoscalingGceClientV1) FetchMachineTypes(zone string) ([]*gce.MachineType, error) {
+func (client *autoscalingGceClientV1) FetchMachineTypes(ctx context.Context, zone string) ([]*gce.MachineType, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "autoscalingGceClientV1.FetchMachineTypes")
+	defer span.Finish()
+
 	registerRequest("machine_types", "list")
 	machines, err := client.gceService.MachineTypes.List(client.projectId, zone).Do()
 	if err != nil {
@@ -116,7 +125,10 @@ func (client *autoscalingGceClientV1) FetchMachineTypes(zone string) ([]*gce.Mac
 	return machines.Items, nil
 }
 
-func (client *autoscalingGceClientV1) FetchMigTargetSize(migRef GceRef) (int64, error) {
+func (client *autoscalingGceClientV1) FetchMigTargetSize(ctx context.Context, migRef GceRef) (int64, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "autoscalingGceClientV1.FetchMigTargetSize")
+	defer span.Finish()
+
 	registerRequest("instance_group_managers", "get")
 	igm, err := client.gceService.InstanceGroupManagers.Get(migRef.Project, migRef.Zone, migRef.Name).Do()
 	if err != nil {
@@ -125,7 +137,10 @@ func (client *autoscalingGceClientV1) FetchMigTargetSize(migRef GceRef) (int64, 
 	return igm.TargetSize, nil
 }
 
-func (client *autoscalingGceClientV1) FetchMigBasename(migRef GceRef) (string, error) {
+func (client *autoscalingGceClientV1) FetchMigBasename(ctx context.Context, migRef GceRef) (string, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "autoscalingGceClientV1.FetchMigBasename")
+	defer span.Finish()
+
 	registerRequest("instance_group_managers", "get")
 	igm, err := client.gceService.InstanceGroupManagers.Get(migRef.Project, migRef.Zone, migRef.Name).Do()
 	if err != nil {
@@ -134,16 +149,22 @@ func (client *autoscalingGceClientV1) FetchMigBasename(migRef GceRef) (string, e
 	return igm.BaseInstanceName, nil
 }
 
-func (client *autoscalingGceClientV1) ResizeMig(migRef GceRef, size int64) error {
+func (client *autoscalingGceClientV1) ResizeMig(ctx context.Context, migRef GceRef, size int64) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "autoscalingGceClientV1.ResizeMig")
+	defer span.Finish()
+
 	registerRequest("instance_group_managers", "resize")
 	op, err := client.gceService.InstanceGroupManagers.Resize(migRef.Project, migRef.Zone, migRef.Name, size).Do()
 	if err != nil {
 		return err
 	}
-	return client.waitForOp(op, migRef.Project, migRef.Zone)
+	return client.waitForOp(ctx, op, migRef.Project, migRef.Zone)
 }
 
-func (client *autoscalingGceClientV1) waitForOp(operation *gce.Operation, project, zone string) error {
+func (client *autoscalingGceClientV1) waitForOp(ctx context.Context, operation *gce.Operation, project, zone string) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "autoscalingGceClientV1.waitForOp")
+	defer span.Finish()
+
 	for start := time.Now(); time.Since(start) < client.operationWaitTimeout; time.Sleep(client.operationPollInterval) {
 		klog.V(4).Infof("Waiting for operation %s %s %s", project, zone, operation.Name)
 		registerRequest("zone_operations", "get")
@@ -159,7 +180,10 @@ func (client *autoscalingGceClientV1) waitForOp(operation *gce.Operation, projec
 	return fmt.Errorf("timeout while waiting for operation %s on %s to complete.", operation.Name, operation.TargetLink)
 }
 
-func (client *autoscalingGceClientV1) DeleteInstances(migRef GceRef, instances []*GceRef) error {
+func (client *autoscalingGceClientV1) DeleteInstances(ctx context.Context, migRef GceRef, instances []*GceRef) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "autoscalingGceClientV1.DeleteInstances")
+	defer span.Finish()
+
 	req := gce.InstanceGroupManagersDeleteInstancesRequest{
 		Instances: []string{},
 	}
@@ -171,10 +195,13 @@ func (client *autoscalingGceClientV1) DeleteInstances(migRef GceRef, instances [
 	if err != nil {
 		return err
 	}
-	return client.waitForOp(op, migRef.Project, migRef.Zone)
+	return client.waitForOp(ctx, op, migRef.Project, migRef.Zone)
 }
 
-func (client *autoscalingGceClientV1) FetchMigInstances(migRef GceRef) ([]cloudprovider.Instance, error) {
+func (client *autoscalingGceClientV1) FetchMigInstances(ctx context.Context, migRef GceRef) ([]cloudprovider.Instance, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "autoscalingGceClientV1.FetchMigInstances")
+	defer span.Finish()
+
 	gceInstances, err := client.gceService.InstanceGroupManagers.ListManagedInstances(migRef.Project, migRef.Zone, migRef.Name).Do()
 	if err != nil {
 		klog.V(4).Infof("Failed MIG info request for %s %s %s: %v", migRef.Project, migRef.Zone, migRef.Name, err)
@@ -247,7 +274,10 @@ func isQuotaExceededErrorCoce(errorCode string) bool {
 	return strings.Contains(errorCode, "QUOTA")
 }
 
-func (client *autoscalingGceClientV1) FetchZones(region string) ([]string, error) {
+func (client *autoscalingGceClientV1) FetchZones(ctx context.Context, region string) ([]string, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "autoscalingGceClientV1.FetchZones")
+	defer span.Finish()
+
 	registerRequest("regions", "get")
 	r, err := client.gceService.Regions.Get(client.projectId, region).Do()
 	if err != nil {
@@ -260,7 +290,10 @@ func (client *autoscalingGceClientV1) FetchZones(region string) ([]string, error
 	return zones, nil
 }
 
-func (client *autoscalingGceClientV1) FetchMigTemplate(migRef GceRef) (*gce.InstanceTemplate, error) {
+func (client *autoscalingGceClientV1) FetchMigTemplate(ctx context.Context, migRef GceRef) (*gce.InstanceTemplate, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "autoscalingGceClientV1.FetchMigTemplate")
+	defer span.Finish()
+
 	registerRequest("instance_group_managers", "get")
 	igm, err := client.gceService.InstanceGroupManagers.Get(migRef.Project, migRef.Zone, migRef.Name).Do()
 	if err != nil {
@@ -275,7 +308,10 @@ func (client *autoscalingGceClientV1) FetchMigTemplate(migRef GceRef) (*gce.Inst
 	return client.gceService.InstanceTemplates.Get(migRef.Project, templateName).Do()
 }
 
-func (client *autoscalingGceClientV1) FetchMigsWithName(zone string, name *regexp.Regexp) ([]string, error) {
+func (client *autoscalingGceClientV1) FetchMigsWithName(ctx context.Context, zone string, name *regexp.Regexp) ([]string, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "autoscalingGceClientV1.FetchMigsWithName")
+	defer span.Finish()
+
 	filter := fmt.Sprintf("name eq %s", name)
 	links := make([]string, 0)
 	registerRequest("instance_groups", "list")

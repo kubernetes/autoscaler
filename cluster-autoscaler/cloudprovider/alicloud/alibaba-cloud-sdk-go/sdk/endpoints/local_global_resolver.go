@@ -18,8 +18,9 @@ package endpoints
 
 import (
 	"fmt"
-	"github.com/jmespath/go-jmespath"
 	"strings"
+
+	"github.com/jmespath/go-jmespath"
 )
 
 // LocalGlobalResolver is global resolver

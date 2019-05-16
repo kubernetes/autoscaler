@@ -17,6 +17,7 @@ limitations under the License.
 package azure
 
 import (
+	"context"
 	"net/http"
 	"testing"
 
@@ -27,6 +28,8 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 )
+
+var ctx context.Context
 
 func newTestScaleSet(manager *AzureManager, name string) *ScaleSet {
 	return &ScaleSet{
@@ -44,8 +47,8 @@ func TestMaxSize(t *testing.T) {
 	registered := provider.azureManager.RegisterAsg(
 		newTestScaleSet(provider.azureManager, "test-asg"))
 	assert.True(t, registered)
-	assert.Equal(t, len(provider.NodeGroups()), 1)
-	assert.Equal(t, provider.NodeGroups()[0].MaxSize(), 5)
+	assert.Equal(t, len(provider.NodeGroups(ctx)), 1)
+	assert.Equal(t, provider.NodeGroups(ctx)[0].MaxSize(), 5)
 }
 
 func TestMinSize(t *testing.T) {
@@ -53,8 +56,8 @@ func TestMinSize(t *testing.T) {
 	registered := provider.azureManager.RegisterAsg(
 		newTestScaleSet(provider.azureManager, "test-asg"))
 	assert.True(t, registered)
-	assert.Equal(t, len(provider.NodeGroups()), 1)
-	assert.Equal(t, provider.NodeGroups()[0].MinSize(), 1)
+	assert.Equal(t, len(provider.NodeGroups(ctx)), 1)
+	assert.Equal(t, provider.NodeGroups(ctx)[0].MinSize(), 1)
 }
 
 func TestTargetSize(t *testing.T) {
@@ -62,9 +65,9 @@ func TestTargetSize(t *testing.T) {
 	registered := provider.azureManager.RegisterAsg(
 		newTestScaleSet(provider.azureManager, "test-asg"))
 	assert.True(t, registered)
-	assert.Equal(t, len(provider.NodeGroups()), 1)
+	assert.Equal(t, len(provider.NodeGroups(ctx)), 1)
 
-	targetSize, err := provider.NodeGroups()[0].TargetSize()
+	targetSize, err := provider.NodeGroups(ctx)[0].TargetSize(ctx)
 	assert.NoError(t, err)
 	assert.Equal(t, targetSize, 2)
 }
@@ -74,9 +77,9 @@ func TestIncreaseSize(t *testing.T) {
 	registered := provider.azureManager.RegisterAsg(
 		newTestScaleSet(provider.azureManager, "test-asg"))
 	assert.True(t, registered)
-	assert.Equal(t, len(provider.NodeGroups()), 1)
+	assert.Equal(t, len(provider.NodeGroups(ctx)), 1)
 
-	err := provider.NodeGroups()[0].IncreaseSize(1)
+	err := provider.NodeGroups(ctx)[0].IncreaseSize(ctx, 1)
 	assert.NoError(t, err)
 }
 
@@ -86,7 +89,7 @@ func TestBelongs(t *testing.T) {
 		newTestScaleSet(provider.azureManager, "test-asg"))
 	assert.True(t, registered)
 
-	scaleSet, ok := provider.NodeGroups()[0].(*ScaleSet)
+	scaleSet, ok := provider.NodeGroups(ctx)[0].(*ScaleSet)
 	assert.True(t, ok)
 
 	invalidNode := &apiv1.Node{
@@ -94,7 +97,7 @@ func TestBelongs(t *testing.T) {
 			ProviderID: "azure:///subscriptions/test-subscrition-id/resourcegroups/invalid-asg/providers/microsoft.compute/virtualmachinescalesets/agents/virtualmachines/0",
 		},
 	}
-	_, err := scaleSet.Belongs(invalidNode)
+	_, err := scaleSet.Belongs(ctx, invalidNode)
 	assert.Error(t, err)
 
 	validNode := &apiv1.Node{
@@ -102,7 +105,7 @@ func TestBelongs(t *testing.T) {
 			ProviderID: "azure://" + fakeVirtualMachineScaleSetVMID,
 		},
 	}
-	belongs, err := scaleSet.Belongs(validNode)
+	belongs, err := scaleSet.Belongs(ctx, validNode)
 	assert.Equal(t, true, belongs)
 	assert.NoError(t, err)
 }
@@ -133,7 +136,7 @@ func TestDeleteNodes(t *testing.T) {
 			ProviderID: "azure://" + fakeVirtualMachineScaleSetVMID,
 		},
 	}
-	scaleSet, ok := provider.NodeGroups()[0].(*ScaleSet)
+	scaleSet, ok := provider.NodeGroups(ctx)[0].(*ScaleSet)
 	assert.True(t, ok)
 	err = scaleSet.DeleteNodes([]*apiv1.Node{node})
 	assert.NoError(t, err)
@@ -145,8 +148,8 @@ func TestId(t *testing.T) {
 	registered := provider.azureManager.RegisterAsg(
 		newTestScaleSet(provider.azureManager, "test-asg"))
 	assert.True(t, registered)
-	assert.Equal(t, len(provider.NodeGroups()), 1)
-	assert.Equal(t, provider.NodeGroups()[0].Id(), "test-asg")
+	assert.Equal(t, len(provider.NodeGroups(ctx)), 1)
+	assert.Equal(t, provider.NodeGroups(ctx)[0].Id(), "test-asg")
 }
 
 func TestDebug(t *testing.T) {
@@ -164,7 +167,7 @@ func TestScaleSetNodes(t *testing.T) {
 	registered := provider.azureManager.RegisterAsg(
 		newTestScaleSet(provider.azureManager, "test-asg"))
 	assert.True(t, registered)
-	assert.Equal(t, len(provider.NodeGroups()), 1)
+	assert.Equal(t, len(provider.NodeGroups(ctx)), 1)
 
 	fakeProviderID := "azure://" + fakeVirtualMachineScaleSetVMID
 	node := &apiv1.Node{
@@ -172,7 +175,7 @@ func TestScaleSetNodes(t *testing.T) {
 			ProviderID: fakeProviderID,
 		},
 	}
-	group, err := provider.NodeGroupForNode(node)
+	group, err := provider.NodeGroupForNode(ctx, node)
 	assert.NoError(t, err)
 	assert.NotNil(t, group, "Group should not be nil")
 	assert.Equal(t, group.Id(), "test-asg")
@@ -182,7 +185,7 @@ func TestScaleSetNodes(t *testing.T) {
 	ss, ok := group.(*ScaleSet)
 	assert.True(t, ok)
 	assert.NotNil(t, ss)
-	instances, err := group.Nodes()
+	instances, err := group.Nodes(ctx)
 	assert.NoError(t, err)
 	assert.Equal(t, len(instances), 1)
 	assert.Equal(t, instances[0], cloudprovider.Instance{Id: fakeProviderID})

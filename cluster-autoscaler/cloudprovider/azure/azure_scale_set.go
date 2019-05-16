@@ -17,6 +17,7 @@ limitations under the License.
 package azure
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
 	"strings"
@@ -35,6 +36,7 @@ import (
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-10-01/compute"
+	"github.com/opentracing/opentracing-go"
 )
 
 // ScaleSet implements NodeGroup interface.
@@ -77,13 +79,19 @@ func (scaleSet *ScaleSet) Exist() bool {
 }
 
 // Create creates the node group on the cloud provider side.
-func (scaleSet *ScaleSet) Create() (cloudprovider.NodeGroup, error) {
+func (scaleSet *ScaleSet) Create(ctx context.Context) (cloudprovider.NodeGroup, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "ScaleSet.Create")
+	defer span.Finish()
+
 	return nil, cloudprovider.ErrAlreadyExist
 }
 
 // Delete deletes the node group on the cloud provider side.
 // This will be executed only for autoprovisioned node groups, once their size drops to 0.
-func (scaleSet *ScaleSet) Delete() error {
+func (scaleSet *ScaleSet) Delete(ctx context.Context) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "ScaleSet.Delete")
+	defer span.Finish()
+
 	return cloudprovider.ErrNotImplemented
 }
 
@@ -167,13 +175,19 @@ func (scaleSet *ScaleSet) SetScaleSetSize(size int64) error {
 
 // TargetSize returns the current TARGET size of the node group. It is possible that the
 // number is different from the number of nodes registered in Kubernetes.
-func (scaleSet *ScaleSet) TargetSize() (int, error) {
+func (scaleSet *ScaleSet) TargetSize(ctx context.Context) (int, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "ScaleSet.TargetSize")
+	defer span.Finish()
+
 	size, err := scaleSet.GetScaleSetSize()
 	return int(size), err
 }
 
 // IncreaseSize increases Scale Set size
-func (scaleSet *ScaleSet) IncreaseSize(delta int) error {
+func (scaleSet *ScaleSet) IncreaseSize(ctx context.Context, delta int) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "ScaleSet.IncreaseSize")
+	defer span.Finish()
+
 	if delta <= 0 {
 		return fmt.Errorf("size increase must be positive")
 	}
@@ -229,7 +243,10 @@ func (scaleSet *ScaleSet) GetScaleSetVms() ([]string, error) {
 // request for new nodes that have not been yet fulfilled. Delta should be negative.
 // It is assumed that cloud provider will not delete the existing nodes if the size
 // when there is an option to just decrease the target.
-func (scaleSet *ScaleSet) DecreaseTargetSize(delta int) error {
+func (scaleSet *ScaleSet) DecreaseTargetSize(ctx context.Context, delta int) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "ScaleSet.DecreaseTargetSize")
+	defer span.Finish()
+
 	if delta >= 0 {
 		return fmt.Errorf("size decrease size must be negative")
 	}
@@ -239,7 +256,7 @@ func (scaleSet *ScaleSet) DecreaseTargetSize(delta int) error {
 		return err
 	}
 
-	nodes, err := scaleSet.Nodes()
+	nodes, err := scaleSet.Nodes(ctx)
 	if err != nil {
 		return err
 	}
@@ -253,14 +270,17 @@ func (scaleSet *ScaleSet) DecreaseTargetSize(delta int) error {
 }
 
 // Belongs returns true if the given node belongs to the NodeGroup.
-func (scaleSet *ScaleSet) Belongs(node *apiv1.Node) (bool, error) {
+func (scaleSet *ScaleSet) Belongs(ctx context.Context, node *apiv1.Node) (bool, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "ScaleSet.Belongs")
+	defer span.Finish()
+
 	klog.V(6).Infof("Check if node belongs to this scale set: scaleset:%v, node:%v\n", scaleSet, node)
 
 	ref := &azureRef{
 		Name: node.Spec.ProviderID,
 	}
 
-	targetAsg, err := scaleSet.manager.GetAsgForInstance(ref)
+	targetAsg, err := scaleSet.manager.GetAsgForInstance(ctx, ref)
 	if err != nil {
 		return false, err
 	}
@@ -274,21 +294,24 @@ func (scaleSet *ScaleSet) Belongs(node *apiv1.Node) (bool, error) {
 }
 
 // DeleteInstances deletes the given instances. All instances must be controlled by the same ASG.
-func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef) error {
+func (scaleSet *ScaleSet) DeleteInstances(ctx context.Context, instances []*azureRef) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "ScaleSet.DeleteInstances")
+	defer span.Finish()
+
 	if len(instances) == 0 {
 		return nil
 	}
 
 	klog.V(3).Infof("Deleting vmss instances %q", instances)
 
-	commonAsg, err := scaleSet.manager.GetAsgForInstance(instances[0])
+	commonAsg, err := scaleSet.manager.GetAsgForInstance(ctx, instances[0])
 	if err != nil {
 		return err
 	}
 
 	instanceIDs := []string{}
 	for _, instance := range instances {
-		asg, err := scaleSet.manager.GetAsgForInstance(instance)
+		asg, err := scaleSet.manager.GetAsgForInstance(ctx, instance)
 		if err != nil {
 			return err
 		}
@@ -317,7 +340,10 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef) error {
 }
 
 // DeleteNodes deletes the nodes from the group.
-func (scaleSet *ScaleSet) DeleteNodes(nodes []*apiv1.Node) error {
+func (scaleSet *ScaleSet) DeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "ScaleSet.DeleteNodes")
+	defer span.Finish()
+
 	klog.V(8).Infof("Delete nodes requested: %q\n", nodes)
 	size, err := scaleSet.GetScaleSetSize()
 	if err != nil {
@@ -330,7 +356,7 @@ func (scaleSet *ScaleSet) DeleteNodes(nodes []*apiv1.Node) error {
 
 	refs := make([]*azureRef, 0, len(nodes))
 	for _, node := range nodes {
-		belongs, err := scaleSet.Belongs(node)
+		belongs, err := scaleSet.Belongs(ctx, node)
 		if err != nil {
 			return err
 		}
@@ -345,7 +371,7 @@ func (scaleSet *ScaleSet) DeleteNodes(nodes []*apiv1.Node) error {
 		refs = append(refs, ref)
 	}
 
-	return scaleSet.DeleteInstances(refs)
+	return scaleSet.DeleteInstances(ctx, refs)
 }
 
 // Id returns ScaleSet id.
@@ -435,7 +461,10 @@ func (scaleSet *ScaleSet) buildNodeFromTemplate(template compute.VirtualMachineS
 }
 
 // TemplateNodeInfo returns a node template for this scale set.
-func (scaleSet *ScaleSet) TemplateNodeInfo() (*schedulernodeinfo.NodeInfo, error) {
+func (scaleSet *ScaleSet) TemplateNodeInfo(ctx context.Context) (*schedulernodeinfo.NodeInfo, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "ScaleSet.TemplateNodeInfo")
+	defer span.Finish()
+
 	template, err := scaleSet.getVMSSInfo()
 	if err != nil {
 		return nil, err
@@ -452,7 +481,10 @@ func (scaleSet *ScaleSet) TemplateNodeInfo() (*schedulernodeinfo.NodeInfo, error
 }
 
 // Nodes returns a list of all nodes that belong to this node group.
-func (scaleSet *ScaleSet) Nodes() ([]cloudprovider.Instance, error) {
+func (scaleSet *ScaleSet) Nodes(ctx context.Context) ([]cloudprovider.Instance, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "ScaleSet.Nodes")
+	defer span.Finish()
+
 	scaleSet.mutex.Lock()
 	defer scaleSet.mutex.Unlock()
 

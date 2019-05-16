@@ -17,9 +17,13 @@ limitations under the License.
 package alicloud
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
+	"os"
+
+	"github.com/opentracing/opentracing-go"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -27,7 +31,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/klog"
-	"os"
 )
 
 const (
@@ -86,11 +89,17 @@ func (ali *aliCloudProvider) addAsg(asg *Asg) {
 	ali.manager.RegisterAsg(asg)
 }
 
-func (ali *aliCloudProvider) Name() string {
+func (ali *aliCloudProvider) Name(ctx context.Context) string {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "aliCloudProvider.Name")
+	defer span.Finish()
+
 	return ProviderName
 }
 
-func (ali *aliCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
+func (ali *aliCloudProvider) NodeGroups(ctx context.Context) []cloudprovider.NodeGroup {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "aliCloudProvider.NodeGroups")
+	defer span.Finish()
+
 	result := make([]cloudprovider.NodeGroup, 0, len(ali.asgs))
 	for _, asg := range ali.asgs {
 		result = append(result, asg)
@@ -99,7 +108,10 @@ func (ali *aliCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 }
 
 // NodeGroupForNode returns the node group for the given node.
-func (ali *aliCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+func (ali *aliCloudProvider) NodeGroupForNode(ctx context.Context, node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "aliCloudProvider.NodeGroupForNode")
+	defer span.Finish()
+
 	instanceId, err := ecsInstanceIdFromProviderId(node.Spec.ProviderID)
 	if err != nil {
 		klog.Errorf("failed to get instance Id from provider Id:%s,because of %s", node.Spec.ProviderID, err.Error())
@@ -109,34 +121,52 @@ func (ali *aliCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.N
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.
-func (ali *aliCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
+func (ali *aliCloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, errors.AutoscalerError) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "aliCloudProvider.Pricing")
+	defer span.Finish()
+
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetAvailableMachineTypes get all machine types that can be requested from the cloud provider.
-func (ali *aliCloudProvider) GetAvailableMachineTypes() ([]string, error) {
+func (ali *aliCloudProvider) GetAvailableMachineTypes(ctx context.Context) ([]string, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "aliCloudProvider.GetAvailableMachineTypes")
+	defer span.Finish()
+
 	return []string{}, nil
 }
 
 // NewNodeGroup builds a theoretical node group based on the node definition provided. The node group is not automatically
-// created on the cloud provider side. The node group is not returned by NodeGroups() until it is created.
-func (ali *aliCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string, taints []apiv1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
+// created on the cloud provider side. The node group is not returned by NodeGroups(ctx) until it is created.
+func (ali *aliCloudProvider) NewNodeGroup(ctx context.Context, machineType string, labels map[string]string, systemLabels map[string]string, taints []apiv1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "aliCloudProvider.NewNodeGroup")
+	defer span.Finish()
+
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
-func (ali *aliCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (ali *aliCloudProvider) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "aliCloudProvider.GetResourceLimiter")
+	defer span.Finish()
+
 	return ali.resourceLimiter, nil
 }
 
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
-// In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
-func (ali *aliCloudProvider) Refresh() error {
+// In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh(ctx).
+func (ali *aliCloudProvider) Refresh(ctx context.Context) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "aliCloudProvider.Refresh")
+	defer span.Finish()
+
 	return nil
 }
 
 // Cleanup stops the go routine that is handling the current view of the ASGs in the form of a cache
-func (ali *aliCloudProvider) Cleanup() error {
+func (ali *aliCloudProvider) Cleanup(ctx context.Context) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "aliCloudProvider.Cleanup")
+	defer span.Finish()
+
 	return nil
 }
 

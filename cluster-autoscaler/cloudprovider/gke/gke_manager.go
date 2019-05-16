@@ -17,6 +17,7 @@ limitations under the License.
 package gke
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -25,6 +26,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/opentracing/opentracing-go"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
@@ -86,9 +88,9 @@ func init() {
 // GkeManager handles GCE and GKE communication and data caching.
 type GkeManager interface {
 	// Refresh triggers refresh of cached resources.
-	Refresh() error
+	Refresh(ctx context.Context) error
 	// Cleanup cleans up open resources before the cloud provider is destroyed, i.e. go routines etc.
-	Cleanup() error
+	Cleanup(ctx context.Context) error
 
 	// GetLocation returns cluster's location.
 	GetLocation() string
@@ -97,28 +99,28 @@ type GkeManager interface {
 	// GetClusterName returns the name of the GKE cluster.
 	GetClusterName() string
 	// GetMigs returns a list of registered MIGs.
-	GetMigs() []*gce.MigInformation
+	GetMigs(ctx context.Context) []*gce.MigInformation
 	// GetMigNodes returns mig nodes.
-	GetMigNodes(mig gce.Mig) ([]string, error)
+	GetMigNodes(ctx context.Context, mig gce.Mig) ([]string, error)
 	// GetMigForInstance returns MigConfig of the given Instance
-	GetMigForInstance(instance *gce.GceRef) (gce.Mig, error)
+	GetMigForInstance(ctx context.Context, instance *gce.GceRef) (gce.Mig, error)
 	// GetMigTemplateNode returns a template node for MIG.
-	GetMigTemplateNode(mig *GkeMig) (*apiv1.Node, error)
+	GetMigTemplateNode(ctx context.Context, mig *GkeMig) (*apiv1.Node, error)
 	// GetMigSize gets MIG size.
-	GetMigSize(mig gce.Mig) (int64, error)
+	GetMigSize(ctx context.Context, mig gce.Mig) (int64, error)
 	// GetNodeLocations returns a list of locations with nodes.
 	GetNodeLocations() []string
 	// GetResourceLimiter returns resource limiter.
-	GetResourceLimiter() (*cloudprovider.ResourceLimiter, error)
+	GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error)
 
 	// SetMigSize sets MIG size.
-	SetMigSize(mig gce.Mig, size int64) error
+	SetMigSize(ctx context.Context, mig gce.Mig, size int64) error
 	// DeleteInstances deletes the given instances. All instances must be controlled by the same MIG.
-	DeleteInstances(instances []*gce.GceRef) error
+	DeleteInstances(ctx context.Context, instances []*gce.GceRef) error
 	// CreateNodePool creates a MIG based on blueprint and returns the newly created MIG.
-	CreateNodePool(mig *GkeMig) (*GkeMig, error)
+	CreateNodePool(ctx context.Context, mig *GkeMig) (*GkeMig, error)
 	// DeleteNodePool deletes a MIG from cloud provider.
-	DeleteNodePool(toBeRemoved *GkeMig) error
+	DeleteNodePool(ctx context.Context, toBeRemoved *GkeMig) error
 }
 
 // gkeConfigurationCache is used for storing cached cluster configuration.
@@ -163,7 +165,7 @@ type gkeManagerImpl struct {
 }
 
 // CreateGkeManager constructs GkeManager object.
-func CreateGkeManager(configReader io.Reader, mode GcpCloudProviderMode, clusterName string, regional bool) (GkeManager, error) {
+func CreateGkeManager(ctx context.Context, configReader io.Reader, mode GcpCloudProviderMode, clusterName string, regional bool) (GkeManager, error) {
 	// Create Google Compute Engine token.
 	var err error
 	tokenSource := google.ComputeTokenSource("")
@@ -245,12 +247,12 @@ func CreateGkeManager(configReader io.Reader, mode GcpCloudProviderMode, cluster
 		klog.V(1).Info("Using GKE-NAP mode")
 	}
 
-	if err := manager.forceRefresh(); err != nil {
+	if err := manager.forceRefresh(ctx); err != nil {
 		return nil, err
 	}
 
 	go wait.Until(func() {
-		if err := manager.cache.RegenerateInstancesCache(); err != nil {
+		if err := manager.cache.RegenerateInstancesCache(ctx); err != nil {
 			klog.Errorf("Error while regenerating Mig cache: %v", err)
 		}
 	}, time.Hour, manager.interrupt)
@@ -259,7 +261,10 @@ func CreateGkeManager(configReader io.Reader, mode GcpCloudProviderMode, cluster
 }
 
 // Cleanup closes the channel to stop the goroutine refreshing cache.
-func (m *gkeManagerImpl) Cleanup() error {
+func (m *gkeManagerImpl) Cleanup(ctx context.Context) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "gkeManagerImpl.Cleanup")
+	defer span.Finish()
+
 	close(m.interrupt)
 	return nil
 }
@@ -270,7 +275,10 @@ func (m *gkeManagerImpl) assertGKENAP() {
 	}
 }
 
-func (m *gkeManagerImpl) refreshNodePools(nodePools []NodePool) error {
+func (m *gkeManagerImpl) refreshNodePools(ctx context.Context, nodePools []NodePool) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "gkeManagerImpl.refreshNodePools")
+	defer span.Finish()
+
 	existingMigs := map[gce.GceRef]struct{}{}
 	changed := false
 
@@ -295,19 +303,19 @@ func (m *gkeManagerImpl) refreshNodePools(nodePools []NodePool) error {
 			}
 			existingMigs[mig.GceRef()] = struct{}{}
 
-			if m.registerMig(mig) {
+			if m.registerMig(ctx, mig) {
 				changed = true
 			}
 		}
 	}
-	for _, mig := range m.cache.GetMigs() {
+	for _, mig := range m.cache.GetMigs(ctx) {
 		if _, found := existingMigs[mig.Config.GceRef()]; !found {
 			m.cache.UnregisterMig(mig.Config)
 			changed = true
 		}
 	}
 	if changed {
-		return m.cache.RegenerateInstancesCache()
+		return m.cache.RegenerateInstancesCache(ctx)
 	}
 	return nil
 }
@@ -317,13 +325,16 @@ func (m *gkeManagerImpl) GetNodeLocations() []string {
 	return m.gkeConfigurationCache.getNodeLocations()
 }
 
-func (m *gkeManagerImpl) registerMig(mig *GkeMig) bool {
+func (m *gkeManagerImpl) registerMig(ctx context.Context, mig *GkeMig) bool {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "gkeManagerImpl.registerMig")
+	defer span.Finish()
+
 	changed := m.cache.RegisterMig(mig)
 	if changed {
 		// Try to build a node from template to validate that this group
 		// can be scaled up from 0 nodes.
 		// We may never need to do it, so just log error if it fails.
-		if _, err := m.GetMigTemplateNode(mig); err != nil {
+		if _, err := m.GetMigTemplateNode(ctx, mig); err != nil {
 			klog.Errorf("Can't build node from template for %s, won't be able to scale from 0: %v", mig.GceRef().String(), err)
 		}
 	}
@@ -331,32 +342,38 @@ func (m *gkeManagerImpl) registerMig(mig *GkeMig) bool {
 }
 
 // DeleteNodePool deletes a node pool corresponding to the given MIG.
-func (m *gkeManagerImpl) DeleteNodePool(toBeRemoved *GkeMig) error {
+func (m *gkeManagerImpl) DeleteNodePool(ctx context.Context, toBeRemoved *GkeMig) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "gkeManagerImpl.DeleteNodePool")
+	defer span.Finish()
+
 	m.assertGKENAP()
 
 	if !toBeRemoved.Autoprovisioned() {
 		return fmt.Errorf("only autoprovisioned node pools can be deleted")
 	}
-	err := m.GkeService.DeleteNodePool(toBeRemoved.NodePoolName())
+	err := m.GkeService.DeleteNodePool(ctx, toBeRemoved.NodePoolName())
 	if err != nil {
 		return err
 	}
-	return m.refreshClusterResources()
+	return m.refreshClusterResources(ctx)
 }
 
 // CreateNodePool creates a node pool based on provided spec and returns newly created MIG.
-func (m *gkeManagerImpl) CreateNodePool(mig *GkeMig) (*GkeMig, error) {
+func (m *gkeManagerImpl) CreateNodePool(ctx context.Context, mig *GkeMig) (*GkeMig, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "gkeManagerImpl.CreateNodePool")
+	defer span.Finish()
+
 	m.assertGKENAP()
 
-	err := m.GkeService.CreateNodePool(mig)
+	err := m.GkeService.CreateNodePool(ctx, mig)
 	if err != nil {
 		return nil, err
 	}
-	err = m.refreshClusterResources()
+	err = m.refreshClusterResources(ctx)
 	if err != nil {
 		return nil, err
 	}
-	for _, existingMig := range m.cache.GetMigs() {
+	for _, existingMig := range m.cache.GetMigs(ctx) {
 		gkeMig, ok := existingMig.Config.(*GkeMig)
 		if !ok {
 			// This is "should never happen" branch.
@@ -373,7 +390,10 @@ func (m *gkeManagerImpl) CreateNodePool(mig *GkeMig) (*GkeMig, error) {
 	return nil, fmt.Errorf("node pool %s not found", mig.NodePoolName())
 }
 
-func (m *gkeManagerImpl) refreshMachinesCache() error {
+func (m *gkeManagerImpl) refreshMachinesCache(ctx context.Context) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "gkeManagerImpl.refreshMachinesCache")
+	defer span.Finish()
+
 	if m.machinesCacheLastRefresh.Add(machinesRefreshInterval).After(time.Now()) {
 		return nil
 	}
@@ -381,7 +401,7 @@ func (m *gkeManagerImpl) refreshMachinesCache() error {
 	locations := m.gkeConfigurationCache.getNodeLocations()
 	machinesCache := make(map[gce.MachineTypeKey]*gce_api.MachineType)
 	for _, location := range locations {
-		machineTypes, err := m.GceService.FetchMachineTypes(location)
+		machineTypes, err := m.GceService.FetchMachineTypes(ctx, location)
 		if err != nil {
 			return err
 		}
@@ -390,7 +410,7 @@ func (m *gkeManagerImpl) refreshMachinesCache() error {
 		}
 
 	}
-	m.cache.SetMachinesCache(machinesCache)
+	m.cache.SetMachinesCache(ctx, machinesCache)
 	nextRefresh := time.Now()
 	m.machinesCacheLastRefresh = nextRefresh
 	klog.V(2).Infof("Refreshed machine types, next refresh after %v", nextRefresh)
@@ -398,8 +418,11 @@ func (m *gkeManagerImpl) refreshMachinesCache() error {
 }
 
 // GetMigSize gets MIG size.
-func (m *gkeManagerImpl) GetMigSize(mig gce.Mig) (int64, error) {
-	targetSize, err := m.GceService.FetchMigTargetSize(mig.GceRef())
+func (m *gkeManagerImpl) GetMigSize(ctx context.Context, mig gce.Mig) (int64, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "gkeManagerImpl.GetMigSize")
+	defer span.Finish()
+
+	targetSize, err := m.GceService.FetchMigTargetSize(ctx, mig.GceRef())
 	if err != nil {
 		return -1, err
 	}
@@ -407,22 +430,28 @@ func (m *gkeManagerImpl) GetMigSize(mig gce.Mig) (int64, error) {
 }
 
 // SetMigSize sets MIG size.
-func (m *gkeManagerImpl) SetMigSize(mig gce.Mig, size int64) error {
+func (m *gkeManagerImpl) SetMigSize(ctx context.Context, mig gce.Mig, size int64) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "gkeManagerImpl.SetMigSize")
+	defer span.Finish()
+
 	klog.V(0).Infof("Setting mig size %s to %d", mig.Id(), size)
-	return m.GceService.ResizeMig(mig.GceRef(), size)
+	return m.GceService.ResizeMig(ctx, mig.GceRef(), size)
 }
 
 // DeleteInstances deletes the given instances. All instances must be controlled by the same MIG.
-func (m *gkeManagerImpl) DeleteInstances(instances []*gce.GceRef) error {
+func (m *gkeManagerImpl) DeleteInstances(ctx context.Context, instances []*gce.GceRef) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "gkeManagerImpl.DeleteInstances")
+	defer span.Finish()
+
 	if len(instances) == 0 {
 		return nil
 	}
-	commonMig, err := m.GetMigForInstance(instances[0])
+	commonMig, err := m.GetMigForInstance(ctx, instances[0])
 	if err != nil {
 		return err
 	}
 	for _, instance := range instances {
-		mig, err := m.GetMigForInstance(instance)
+		mig, err := m.GetMigForInstance(ctx, instance)
 		if err != nil {
 			return err
 		}
@@ -431,21 +460,30 @@ func (m *gkeManagerImpl) DeleteInstances(instances []*gce.GceRef) error {
 		}
 	}
 
-	return m.GceService.DeleteInstances(commonMig.GceRef(), instances)
+	return m.GceService.DeleteInstances(ctx, commonMig.GceRef(), instances)
 }
 
-func (m *gkeManagerImpl) GetMigs() []*gce.MigInformation {
-	return m.cache.GetMigs()
+func (m *gkeManagerImpl) GetMigs(ctx context.Context) []*gce.MigInformation {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "gkeManagerImpl.GetMigs")
+	defer span.Finish()
+
+	return m.cache.GetMigs(ctx)
 }
 
 // GetMigForInstance returns MIG to which the given instance belongs.
-func (m *gkeManagerImpl) GetMigForInstance(instance *gce.GceRef) (gce.Mig, error) {
-	return m.cache.GetMigForInstance(instance)
+func (m *gkeManagerImpl) GetMigForInstance(ctx context.Context, instance *gce.GceRef) (gce.Mig, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "gkeManagerImpl.GetMigForInstance")
+	defer span.Finish()
+
+	return m.cache.GetMigForInstance(ctx, instance)
 }
 
 // GetMigNodes returns instances that belong to a MIG.
-func (m *gkeManagerImpl) GetMigNodes(mig gce.Mig) ([]string, error) {
-	instances, err := m.GceService.FetchMigInstances(mig.GceRef())
+func (m *gkeManagerImpl) GetMigNodes(ctx context.Context, mig gce.Mig) ([]string, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "gkeManagerImpl.GetMigNodes")
+	defer span.Finish()
+
+	instances, err := m.GceService.FetchMigInstances(ctx, mig.GceRef())
 	if err != nil {
 		return []string{}, err
 	}
@@ -472,19 +510,25 @@ func (m *gkeManagerImpl) GetClusterName() string {
 }
 
 // Refresh triggers refresh of cached resources.
-func (m *gkeManagerImpl) Refresh() error {
+func (m *gkeManagerImpl) Refresh(ctx context.Context) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "gkeManagerImpl.Refresh")
+	defer span.Finish()
+
 	if m.lastRefresh.Add(refreshInterval).After(time.Now()) {
 		return nil
 	}
-	return m.forceRefresh()
+	return m.forceRefresh(ctx)
 }
 
-func (m *gkeManagerImpl) forceRefresh() error {
-	if err := m.refreshClusterResources(); err != nil {
+func (m *gkeManagerImpl) forceRefresh(ctx context.Context) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "gkeManagerImpl.forceRefresh")
+	defer span.Finish()
+
+	if err := m.refreshClusterResources(ctx); err != nil {
 		klog.Errorf("Failed to refresh GKE cluster resources: %v", err)
 		return err
 	}
-	if err := m.refreshMachinesCache(); err != nil {
+	if err := m.refreshMachinesCache(ctx); err != nil {
 		klog.Errorf("Failed to fetch machine types: %v", err)
 		return err
 	}
@@ -493,13 +537,16 @@ func (m *gkeManagerImpl) forceRefresh() error {
 	return nil
 }
 
-func (m *gkeManagerImpl) refreshClusterResources() error {
-	cluster, err := m.GkeService.GetCluster()
+func (m *gkeManagerImpl) refreshClusterResources(ctx context.Context) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "gkeManagerImpl.refreshClusterResources")
+	defer span.Finish()
+
+	cluster, err := m.GkeService.GetCluster(ctx)
 	if err != nil {
 		return err
 	}
-	m.refreshNodePools(cluster.NodePools)
-	m.refreshResourceLimiter(cluster.ResourceLimiter)
+	m.refreshNodePools(ctx, cluster.NodePools)
+	m.refreshResourceLimiter(ctx, cluster.ResourceLimiter)
 	m.gkeConfigurationCache.setNodeLocations(cluster.Locations)
 	return nil
 }
@@ -534,30 +581,39 @@ func (m *gkeManagerImpl) buildMigFromSpec(s *dynamic.NodeGroupSpec) (gce.Mig, er
 	return mig, nil
 }
 
-func (m *gkeManagerImpl) refreshResourceLimiter(resourceLimiter *cloudprovider.ResourceLimiter) {
+func (m *gkeManagerImpl) refreshResourceLimiter(ctx context.Context, resourceLimiter *cloudprovider.ResourceLimiter) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "gkeManagerImpl.refreshResourceLimiter")
+	defer span.Finish()
+
 	if m.mode == ModeGKENAP {
 		if resourceLimiter != nil {
 			klog.V(2).Infof("Refreshed resource limits: %s", resourceLimiter.String())
 			m.cache.SetResourceLimiter(resourceLimiter)
 		} else {
-			oldLimits, _ := m.cache.GetResourceLimiter()
+			oldLimits, _ := m.cache.GetResourceLimiter(ctx)
 			klog.Errorf("Resource limits should always be defined in NAP mode, but they appear to be empty. Using possibly outdated limits: %v", oldLimits.String())
 		}
 	}
 }
 
 // GetResourceLimiter returns resource limiter from cache.
-func (m *gkeManagerImpl) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
-	return m.cache.GetResourceLimiter()
+func (m *gkeManagerImpl) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "gkeManagerImpl.GetResourceLimiter")
+	defer span.Finish()
+
+	return m.cache.GetResourceLimiter(ctx)
 }
 
-func (m *gkeManagerImpl) clearMachinesCache() {
+func (m *gkeManagerImpl) clearMachinesCache(ctx context.Context) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "gkeManagerImpl.clearMachinesCache")
+	defer span.Finish()
+
 	if m.machinesCacheLastRefresh.Add(machinesRefreshInterval).After(time.Now()) {
 		return
 	}
 
 	machinesCache := make(map[gce.MachineTypeKey]*gce_api.MachineType)
-	m.cache.SetMachinesCache(machinesCache)
+	m.cache.SetMachinesCache(ctx, machinesCache)
 	nextRefresh := time.Now()
 	m.machinesCacheLastRefresh = nextRefresh
 	klog.V(2).Infof("Cleared machine types cache, next clear after %v", nextRefresh)
@@ -590,19 +646,22 @@ func getProjectAndLocation(regional bool) (string, string, error) {
 // GetMigTemplateNode constructs a node:
 // - from GCE instance template of the given MIG, if the MIG already exists,
 // - from MIG spec, if it doesn't exist, but may be autoprovisioned.
-func (m *gkeManagerImpl) GetMigTemplateNode(mig *GkeMig) (*apiv1.Node, error) {
+func (m *gkeManagerImpl) GetMigTemplateNode(ctx context.Context, mig *GkeMig) (*apiv1.Node, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "gkeManagerImpl.GetMigTemplateNode")
+	defer span.Finish()
+
 	if mig.Exist() {
-		template, err := m.GceService.FetchMigTemplate(mig.GceRef())
+		template, err := m.GceService.FetchMigTemplate(ctx, mig.GceRef())
 		if err != nil {
 			return nil, err
 		}
-		cpu, mem, err := m.getCpuAndMemoryForMachineType(template.Properties.MachineType, mig.GceRef().Zone)
+		cpu, mem, err := m.getCpuAndMemoryForMachineType(ctx, template.Properties.MachineType, mig.GceRef().Zone)
 		if err != nil {
 			return nil, err
 		}
 		return m.templates.BuildNodeFromTemplate(mig, template, cpu, mem)
 	} else if mig.Autoprovisioned() {
-		cpu, mem, err := m.getCpuAndMemoryForMachineType(mig.Spec().MachineType, mig.GceRef().Zone)
+		cpu, mem, err := m.getCpuAndMemoryForMachineType(ctx, mig.Spec().MachineType, mig.GceRef().Zone)
 		if err != nil {
 			return nil, err
 		}
@@ -611,13 +670,16 @@ func (m *gkeManagerImpl) GetMigTemplateNode(mig *GkeMig) (*apiv1.Node, error) {
 	return nil, fmt.Errorf("unable to get node info for %s", mig.GceRef().String())
 }
 
-func (m *gkeManagerImpl) getCpuAndMemoryForMachineType(machineType string, zone string) (cpu int64, mem int64, err error) {
+func (m *gkeManagerImpl) getCpuAndMemoryForMachineType(ctx context.Context, machineType string, zone string) (cpu int64, mem int64, err error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "gkeManagerImpl.getCpuAndMemoryForMachineType")
+	defer span.Finish()
+
 	if strings.HasPrefix(machineType, "custom-") {
 		return parseCustomMachineType(machineType)
 	}
 	machine := m.cache.GetMachineFromCache(machineType, zone)
 	if machine == nil {
-		machine, err = m.GceService.FetchMachineType(zone, machineType)
+		machine, err = m.GceService.FetchMachineType(ctx, zone, machineType)
 		if err != nil {
 			return 0, 0, err
 		}

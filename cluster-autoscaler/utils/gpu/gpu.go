@@ -17,6 +17,8 @@ limitations under the License.
 package gpu
 
 import (
+	"context"
+
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
@@ -95,7 +97,7 @@ func FilterOutNodesWithUnreadyGpus(allNodes, readyNodes []*apiv1.Node) ([]*apiv1
 // GetGpuTypeForMetrics returns name of the GPU used on the node or empty string if there's no GPU
 // if the GPU type is unknown, "generic" is returned
 // NOTE: current implementation is GKE/GCE-specific
-func GetGpuTypeForMetrics(node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) string {
+func GetGpuTypeForMetrics(ctx context.Context, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) string {
 	// we use the GKE label if there is one
 	gpuType, labelFound := node.Labels[GPULabel]
 	capacity, capacityFound := node.Status.Capacity[ResourceNvidiaGPU]
@@ -117,7 +119,7 @@ func GetGpuTypeForMetrics(node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) s
 
 	// GKE-specific label present but no capacity (yet?) - check the node template
 	if nodeGroup != nil {
-		template, err := nodeGroup.TemplateNodeInfo()
+		template, err := nodeGroup.TemplateNodeInfo(ctx)
 		if err != nil {
 			klog.Warningf("Failed to build template for getting GPU metrics for node %v: %v", node.Name, err)
 			return MetricsErrorGPU
@@ -183,7 +185,7 @@ func PodRequestsGpu(pod *apiv1.Pod) bool {
 
 // GetNodeTargetGpus returns the number of gpus on a given node. This includes gpus which are not yet
 // ready to use and visible in kubernetes.
-func GetNodeTargetGpus(node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) (gpuType string, gpuCount int64, error errors.AutoscalerError) {
+func GetNodeTargetGpus(ctx context.Context, node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) (gpuType string, gpuCount int64, error errors.AutoscalerError) {
 	gpuLabel, found := node.Labels[GPULabel]
 	if !found {
 		return "", 0, nil
@@ -211,7 +213,7 @@ func GetNodeTargetGpus(node *apiv1.Node, nodeGroup cloudprovider.NodeGroup) (gpu
 		return "", 0, errors.NewAutoscalerError(errors.InternalError, "node without with gpu label, without capacity not belonging to autoscaled node group")
 	}
 
-	template, err := nodeGroup.TemplateNodeInfo()
+	template, err := nodeGroup.TemplateNodeInfo(ctx)
 	if err != nil {
 		klog.Errorf("Failed to build template for getting GPU estimation for node %v: %v", node.Name, err)
 		return "", 0, errors.ToAutoscalerError(errors.CloudProviderError, err)

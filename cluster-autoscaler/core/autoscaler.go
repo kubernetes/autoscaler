@@ -17,13 +17,14 @@ limitations under the License.
 package core
 
 import (
+	"context"
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	cloudBuilder "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	autoscalingcontext "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/factory"
@@ -39,7 +40,7 @@ type AutoscalerOptions struct {
 	config.AutoscalingOptions
 	KubeClient             kube_client.Interface
 	EventsKubeClient       kube_client.Interface
-	AutoscalingKubeClients *context.AutoscalingKubeClients
+	AutoscalingKubeClients *autoscalingcontext.AutoscalingKubeClients
 	CloudProvider          cloudprovider.CloudProvider
 	PredicateChecker       *simulator.PredicateChecker
 	ExpanderStrategy       expander.Strategy
@@ -52,14 +53,14 @@ type AutoscalerOptions struct {
 // The configuration can be injected at the creation of an autoscaler
 type Autoscaler interface {
 	// RunOnce represents an iteration in the control-loop of CA
-	RunOnce(currentTime time.Time) errors.AutoscalerError
+	RunOnce(ctx context.Context, currentTime time.Time) errors.AutoscalerError
 	// ExitCleanUp is a clean-up performed just before process termination.
-	ExitCleanUp()
+	ExitCleanUp(ctx context.Context)
 }
 
 // NewAutoscaler creates an autoscaler of an appropriate type according to the parameters
-func NewAutoscaler(opts AutoscalerOptions) (Autoscaler, errors.AutoscalerError) {
-	err := initializeDefaultOptions(&opts)
+func NewAutoscaler(ctx context.Context, opts AutoscalerOptions) (Autoscaler, errors.AutoscalerError) {
+	err := initializeDefaultOptions(ctx, &opts)
 	if err != nil {
 		return nil, errors.ToAutoscalerError(errors.InternalError, err)
 	}
@@ -74,12 +75,12 @@ func NewAutoscaler(opts AutoscalerOptions) (Autoscaler, errors.AutoscalerError) 
 }
 
 // Initialize default options if not provided.
-func initializeDefaultOptions(opts *AutoscalerOptions) error {
+func initializeDefaultOptions(ctx context.Context, opts *AutoscalerOptions) error {
 	if opts.Processors == nil {
 		opts.Processors = ca_processors.DefaultProcessors()
 	}
 	if opts.AutoscalingKubeClients == nil {
-		opts.AutoscalingKubeClients = context.NewAutoscalingKubeClients(opts.AutoscalingOptions, opts.KubeClient, opts.EventsKubeClient)
+		opts.AutoscalingKubeClients = autoscalingcontext.NewAutoscalingKubeClients(opts.AutoscalingOptions, opts.KubeClient, opts.EventsKubeClient)
 	}
 	if opts.PredicateChecker == nil {
 		predicateCheckerStopChannel := make(chan struct{})
@@ -90,11 +91,10 @@ func initializeDefaultOptions(opts *AutoscalerOptions) error {
 		opts.PredicateChecker = predicateChecker
 	}
 	if opts.CloudProvider == nil {
-		opts.CloudProvider = cloudBuilder.NewCloudProvider(opts.AutoscalingOptions)
+		opts.CloudProvider = cloudBuilder.NewCloudProvider(ctx, opts.AutoscalingOptions)
 	}
 	if opts.ExpanderStrategy == nil {
-		expanderStrategy, err := factory.ExpanderStrategyFromString(opts.ExpanderName,
-			opts.CloudProvider, opts.AutoscalingKubeClients.AllNodeLister())
+		expanderStrategy, err := factory.ExpanderStrategyFromString(ctx, opts.ExpanderName, opts.CloudProvider, opts.AutoscalingKubeClients.AllNodeLister())
 		if err != nil {
 			return err
 		}

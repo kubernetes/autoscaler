@@ -17,12 +17,14 @@ limitations under the License.
 package azure
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/services/containerservice/mgmt/2018-03-31/containerservice"
+	"github.com/opentracing/opentracing-go"
 	"k8s.io/klog"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -313,7 +315,10 @@ func (agentPool *ContainerServiceAgentPool) MinSize() int {
 
 //TargetSize gathers the target node count set for the cluster by
 //querying the underlying service.
-func (agentPool *ContainerServiceAgentPool) TargetSize() (int, error) {
+func (agentPool *ContainerServiceAgentPool) TargetSize(ctx context.Context) (int, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "ContainerServiceAgentPool.TargetSize")
+	defer span.Finish()
+
 	agentPool.mutex.Lock()
 	defer agentPool.mutex.Unlock()
 
@@ -368,11 +373,14 @@ func (agentPool *ContainerServiceAgentPool) setSizeInternal(targetSize int) (err
 //IncreaseSize calls in the underlying SetSize to increase the size in response
 //to a scale up. It calculates the expected size based on a delta provided as
 //parameter
-func (agentPool *ContainerServiceAgentPool) IncreaseSize(delta int) error {
+func (agentPool *ContainerServiceAgentPool) IncreaseSize(ctx context.Context, delta int) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "ContainerServiceAgentPool.IncreaseSize")
+	defer span.Finish()
+
 	if delta <= 0 {
 		return fmt.Errorf("size increase must be +ve")
 	}
-	currentSize, err := agentPool.TargetSize()
+	currentSize, err := agentPool.TargetSize(ctx)
 	if err != nil {
 		return err
 	}
@@ -409,7 +417,10 @@ func (agentPool *ContainerServiceAgentPool) deleteNodesInternal(providerIDs []st
 
 //DeleteNodes extracts the providerIDs from the node spec and calls into the internal
 //delete method.
-func (agentPool *ContainerServiceAgentPool) DeleteNodes(nodes []*apiv1.Node) error {
+func (agentPool *ContainerServiceAgentPool) DeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "ContainerServiceAgentPool.DeleteNodes")
+	defer span.Finish()
+
 	agentPool.mutex.Lock()
 	defer agentPool.mutex.Unlock()
 
@@ -473,12 +484,15 @@ func (agentPool *ContainerServiceAgentPool) GetNodes() ([]string, error) {
 }
 
 //DecreaseTargetSize requests the underlying service to decrease the node count.
-func (agentPool *ContainerServiceAgentPool) DecreaseTargetSize(delta int) error {
+func (agentPool *ContainerServiceAgentPool) DecreaseTargetSize(ctx context.Context, delta int) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "ContainerServiceAgentPool.DecreaseTargetSize")
+	defer span.Finish()
+
 	if delta >= 0 {
 		klog.Errorf("Size decrease error: %d", delta)
 		return fmt.Errorf("size decrease must be negative")
 	}
-	currentSize, err := agentPool.TargetSize()
+	currentSize, err := agentPool.TargetSize(ctx)
 	if err != nil {
 		klog.Error(err)
 		return err
@@ -512,7 +526,10 @@ func (agentPool *ContainerServiceAgentPool) Debug() string {
 }
 
 //Nodes returns the list of nodes in the agentPool.
-func (agentPool *ContainerServiceAgentPool) Nodes() ([]cloudprovider.Instance, error) {
+func (agentPool *ContainerServiceAgentPool) Nodes(ctx context.Context) ([]cloudprovider.Instance, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "ContainerServiceAgentPool.Nodes")
+	defer span.Finish()
+
 	instanceNames, err := agentPool.GetNodes()
 	if err != nil {
 		return nil, err
@@ -525,7 +542,10 @@ func (agentPool *ContainerServiceAgentPool) Nodes() ([]cloudprovider.Instance, e
 }
 
 //TemplateNodeInfo is not implemented.
-func (agentPool *ContainerServiceAgentPool) TemplateNodeInfo() (*schedulernodeinfo.NodeInfo, error) {
+func (agentPool *ContainerServiceAgentPool) TemplateNodeInfo(ctx context.Context) (*schedulernodeinfo.NodeInfo, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "ContainerServiceAgentPool.TemplateNodeInfo")
+	defer span.Finish()
+
 	return nil, cloudprovider.ErrNotImplemented
 }
 
@@ -536,13 +556,19 @@ func (agentPool *ContainerServiceAgentPool) Exist() bool {
 
 //Create is returns already exists since we don't support the
 //agent pool creation.
-func (agentPool *ContainerServiceAgentPool) Create() (cloudprovider.NodeGroup, error) {
+func (agentPool *ContainerServiceAgentPool) Create(ctx context.Context) (cloudprovider.NodeGroup, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "ContainerServiceAgentPool.Create")
+	defer span.Finish()
+
 	return nil, cloudprovider.ErrAlreadyExist
 }
 
 //Delete is not implemented since we don't support agent pool
 //deletion.
-func (agentPool *ContainerServiceAgentPool) Delete() error {
+func (agentPool *ContainerServiceAgentPool) Delete(ctx context.Context) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "ContainerServiceAgentPool.Delete")
+	defer span.Finish()
+
 	return cloudprovider.ErrNotImplemented
 }
 

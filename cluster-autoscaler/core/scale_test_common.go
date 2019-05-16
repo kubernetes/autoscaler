@@ -17,13 +17,14 @@ limitations under the License.
 package core
 
 import (
+	"context"
 	"testing"
 
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	autoscalingcontext "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/random"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
@@ -33,6 +34,7 @@ import (
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/labels"
 
+	"github.com/opentracing/opentracing-go"
 	"github.com/stretchr/testify/assert"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -77,15 +79,15 @@ type scaleTestConfig struct {
 }
 
 // NewScaleTestAutoscalingContext creates a new test autoscaling context for scaling tests.
-func NewScaleTestAutoscalingContext(options config.AutoscalingOptions, fakeClient kube_client.Interface, listers kube_util.ListerRegistry, provider cloudprovider.CloudProvider) context.AutoscalingContext {
+func NewScaleTestAutoscalingContext(options config.AutoscalingOptions, fakeClient kube_client.Interface, listers kube_util.ListerRegistry, provider cloudprovider.CloudProvider) autoscalingcontext.AutoscalingContext {
 	fakeRecorder := kube_record.NewFakeRecorder(5)
 	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", fakeRecorder, false)
 	// Ignoring error here is safe - if a test doesn't specify valid estimatorName,
 	// it either doesn't need one, or should fail when it turns out to be nil.
 	estimatorBuilder, _ := estimator.NewEstimatorBuilder(options.EstimatorName)
-	return context.AutoscalingContext{
+	return autoscalingcontext.AutoscalingContext{
 		AutoscalingOptions: options,
-		AutoscalingKubeClients: context.AutoscalingKubeClients{
+		AutoscalingKubeClients: autoscalingcontext.AutoscalingKubeClients{
 			ClientSet:      fakeClient,
 			Recorder:       fakeRecorder,
 			LogRecorder:    fakeLogRecorder,
@@ -102,8 +104,11 @@ type mockAutoprovisioningNodeGroupManager struct {
 	t *testing.T
 }
 
-func (p *mockAutoprovisioningNodeGroupManager) CreateNodeGroup(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (nodegroups.CreateNodeGroupResult, errors.AutoscalerError) {
-	newNodeGroup, err := nodeGroup.Create()
+func (p *mockAutoprovisioningNodeGroupManager) CreateNodeGroup(ctx context.Context, context *autoscalingcontext.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (nodegroups.CreateNodeGroupResult, errors.AutoscalerError) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "mockAutoprovisioningNodeGroupManager.CreateNodeGroup")
+	defer span.Finish()
+
+	newNodeGroup, err := nodeGroup.Create(ctx)
 	assert.NoError(p.t, err)
 	metrics.RegisterNodeGroupCreation()
 	result := nodegroups.CreateNodeGroupResult{
@@ -112,49 +117,55 @@ func (p *mockAutoprovisioningNodeGroupManager) CreateNodeGroup(context *context.
 	return result, nil
 }
 
-func (p *mockAutoprovisioningNodeGroupManager) RemoveUnneededNodeGroups(context *context.AutoscalingContext) error {
+func (p *mockAutoprovisioningNodeGroupManager) RemoveUnneededNodeGroups(ctx context.Context, context *autoscalingcontext.AutoscalingContext) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "mockAutoprovisioningNodeGroupManager.RemoveUnneededNodeGroups")
+	defer span.Finish()
+
 	if !context.AutoscalingOptions.NodeAutoprovisioningEnabled {
 		return nil
 	}
-	nodeGroups := context.CloudProvider.NodeGroups()
+	nodeGroups := context.CloudProvider.NodeGroups(ctx)
 	for _, nodeGroup := range nodeGroups {
 		if !nodeGroup.Autoprovisioned() {
 			continue
 		}
-		targetSize, err := nodeGroup.TargetSize()
+		targetSize, err := nodeGroup.TargetSize(ctx)
 		assert.NoError(p.t, err)
 		if targetSize > 0 {
 			continue
 		}
-		nodes, err := nodeGroup.Nodes()
+		nodes, err := nodeGroup.Nodes(ctx)
 		assert.NoError(p.t, err)
 		if len(nodes) > 0 {
 			continue
 		}
-		err = nodeGroup.Delete()
+		err = nodeGroup.Delete(ctx)
 		assert.NoError(p.t, err)
 	}
 	return nil
 }
 
-func (p *mockAutoprovisioningNodeGroupManager) CleanUp() {
+func (p *mockAutoprovisioningNodeGroupManager) CleanUp(ctx context.Context) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "mockAutoprovisioningNodeGroupManager.CleanUp")
+	defer span.Finish()
 }
 
 type mockAutoprovisioningNodeGroupListProcessor struct {
 	t *testing.T
 }
 
-func (p *mockAutoprovisioningNodeGroupListProcessor) Process(context *context.AutoscalingContext, nodeGroups []cloudprovider.NodeGroup, nodeInfos map[string]*schedulernodeinfo.NodeInfo,
-	unschedulablePods []*apiv1.Pod) ([]cloudprovider.NodeGroup, map[string]*schedulernodeinfo.NodeInfo, error) {
+func (p *mockAutoprovisioningNodeGroupListProcessor) Process(ctx context.Context, context *autoscalingcontext.AutoscalingContext, nodeGroups []cloudprovider.NodeGroup, nodeInfos map[string]*schedulernodeinfo.NodeInfo, unschedulablePods []*apiv1.Pod) ([]cloudprovider.NodeGroup, map[string]*schedulernodeinfo.NodeInfo, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "mockAutoprovisioningNodeGroupListProcessor.Process")
+	defer span.Finish()
 
-	machines, err := context.CloudProvider.GetAvailableMachineTypes()
+	machines, err := context.CloudProvider.GetAvailableMachineTypes(ctx)
 	assert.NoError(p.t, err)
 
 	bestLabels := labels.BestLabelSet(unschedulablePods)
 	for _, machineType := range machines {
-		nodeGroup, err := context.CloudProvider.NewNodeGroup(machineType, bestLabels, map[string]string{}, []apiv1.Taint{}, map[string]resource.Quantity{})
+		nodeGroup, err := context.CloudProvider.NewNodeGroup(ctx, machineType, bestLabels, map[string]string{}, []apiv1.Taint{}, map[string]resource.Quantity{})
 		assert.NoError(p.t, err)
-		nodeInfo, err := nodeGroup.TemplateNodeInfo()
+		nodeInfo, err := nodeGroup.TemplateNodeInfo(ctx)
 		assert.NoError(p.t, err)
 		nodeInfos[nodeGroup.Id()] = nodeInfo
 		nodeGroups = append(nodeGroups, nodeGroup)
@@ -162,7 +173,9 @@ func (p *mockAutoprovisioningNodeGroupListProcessor) Process(context *context.Au
 	return nodeGroups, nodeInfos, nil
 }
 
-func (p *mockAutoprovisioningNodeGroupListProcessor) CleanUp() {
+func (p *mockAutoprovisioningNodeGroupListProcessor) CleanUp(ctx context.Context) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "mockAutoprovisioningNodeGroupListProcessor.CleanUp")
+	defer span.Finish()
 }
 
 func newBackoff() backoff.Backoff {

@@ -204,8 +204,7 @@ func TestFetchExplicitAsgs(t *testing.T) {
 			AutoScalingGroupNames: aws.StringSlice([]string{groupname}),
 			MaxRecords:            aws.Int64(maxRecordsReturnedByAPI),
 		},
-		mock.AnythingOfType("func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool"),
-	).Run(func(args mock.Arguments) {
+		mock.AnythingOfType("func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool")).Run(func(args mock.Arguments) {
 		fn := args.Get(1).(func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool)
 		fn(&autoscaling.DescribeAutoScalingGroupsOutput{
 			AutoScalingGroups: []*autoscaling.Group{
@@ -327,7 +326,7 @@ func TestGetASGTemplate(t *testing.T) {
 				AvailabilityZones:     test.availabilityZones,
 				LaunchTemplateName:    ltName,
 				LaunchTemplateVersion: ltVersion,
-				Tags:                  tags,
+				Tags: tags,
 			}
 
 			template, err := m.getAsgTemplate(asg)
@@ -361,8 +360,7 @@ func TestFetchAutoAsgs(t *testing.T) {
 	}
 	// Use MatchedBy pattern to avoid list order issue https://github.com/kubernetes/autoscaler/issues/1346
 	s.On("DescribeTagsPages", mock.MatchedBy(tagsMatcher(expectedTagsInput)),
-		mock.AnythingOfType("func(*autoscaling.DescribeTagsOutput, bool) bool"),
-	).Run(func(args mock.Arguments) {
+		mock.AnythingOfType("func(*autoscaling.DescribeTagsOutput, bool) bool")).Run(func(args mock.Arguments) {
 		fn := args.Get(1).(func(*autoscaling.DescribeTagsOutput, bool) bool)
 		fn(&autoscaling.DescribeTagsOutput{
 			Tags: []*autoscaling.TagDescription{
@@ -378,8 +376,7 @@ func TestFetchAutoAsgs(t *testing.T) {
 			AutoScalingGroupNames: aws.StringSlice([]string{groupname}),
 			MaxRecords:            aws.Int64(maxRecordsReturnedByAPI),
 		},
-		mock.AnythingOfType("func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool"),
-	).Run(func(args mock.Arguments) {
+		mock.AnythingOfType("func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool")).Run(func(args mock.Arguments) {
 		fn := args.Get(1).(func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool)
 		fn(&autoscaling.DescribeAutoScalingGroupsOutput{
 			AutoScalingGroups: []*autoscaling.Group{{
@@ -406,8 +403,7 @@ func TestFetchAutoAsgs(t *testing.T) {
 
 	// Simulate the previously discovered ASG disappearing
 	s.On("DescribeTagsPages", mock.MatchedBy(tagsMatcher(expectedTagsInput)),
-		mock.AnythingOfType("func(*autoscaling.DescribeTagsOutput, bool) bool"),
-	).Run(func(args mock.Arguments) {
+		mock.AnythingOfType("func(*autoscaling.DescribeTagsOutput, bool) bool")).Run(func(args mock.Arguments) {
 		fn := args.Get(1).(func(*autoscaling.DescribeTagsOutput, bool) bool)
 		fn(&autoscaling.DescribeTagsOutput{Tags: []*autoscaling.TagDescription{}}, false)
 	}).Return(nil).Once()

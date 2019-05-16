@@ -17,6 +17,7 @@ limitations under the License.
 package gke
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"time"
@@ -73,7 +74,7 @@ func NewAutoscalingGkeClientV1beta1(client *http.Client, projectId, location, cl
 	return autoscalingGkeClient, nil
 }
 
-func (m *autoscalingGkeClientV1beta1) GetCluster() (Cluster, error) {
+func (m *autoscalingGkeClientV1beta1) GetCluster(context.Context) (Cluster, error) {
 	registerRequest("clusters", "get")
 	clusterResponse, err := m.gkeBetaService.Projects.Locations.Clusters.Get(m.clusterPath).Do()
 	if err != nil {
@@ -126,7 +127,7 @@ func buildResourceLimiter(cluster *gke_api_beta.Cluster) *cloudprovider.Resource
 	return cloudprovider.NewResourceLimiter(minLimits, maxLimits)
 }
 
-func (m *autoscalingGkeClientV1beta1) DeleteNodePool(toBeRemoved string) error {
+func (m *autoscalingGkeClientV1beta1) DeleteNodePool(i context.Context, toBeRemoved string) error {
 	registerRequest("node_pools", "delete")
 	deleteOp, err := m.gkeBetaService.Projects.Locations.Clusters.NodePools.Delete(
 		fmt.Sprintf(m.nodePoolPath, toBeRemoved)).Do()
@@ -136,7 +137,7 @@ func (m *autoscalingGkeClientV1beta1) DeleteNodePool(toBeRemoved string) error {
 	return m.waitForGkeOp(deleteOp)
 }
 
-func (m *autoscalingGkeClientV1beta1) CreateNodePool(mig *GkeMig) error {
+func (m *autoscalingGkeClientV1beta1) CreateNodePool(i context.Context, mig *GkeMig) error {
 	// TODO: handle preemptible VMs
 	// TODO: handle SSDs
 

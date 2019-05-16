@@ -17,10 +17,13 @@ limitations under the License.
 package gce
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"strings"
 	"sync"
+
+	"github.com/opentracing/opentracing-go"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 
@@ -134,7 +137,10 @@ func (gc *GceCache) UnregisterMig(toBeRemoved Mig) bool {
 }
 
 // GetMigs returns a copy of migs list.
-func (gc *GceCache) GetMigs() []*MigInformation {
+func (gc *GceCache) GetMigs(ctx context.Context) []*MigInformation {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "GceCache.GetMigs")
+	defer span.Finish()
+
 	gc.migsMutex.Lock()
 	defer gc.migsMutex.Unlock()
 
@@ -165,7 +171,10 @@ func (gc *GceCache) updateMigBasename(ref GceRef, basename string) {
 // Attempts to regenerate cache if there is a Mig with matching prefix in migs list.
 // TODO(aleksandra-malinowska): reconsider failing when there's a Mig with
 // matching prefix, but instance doesn't belong to it.
-func (gc *GceCache) GetMigForInstance(instance *GceRef) (Mig, error) {
+func (gc *GceCache) GetMigForInstance(ctx context.Context, instance *GceRef) (Mig, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "GceCache.GetMigForInstance")
+	defer span.Finish()
+
 	gc.cacheMutex.Lock()
 	defer gc.cacheMutex.Unlock()
 
@@ -173,11 +182,11 @@ func (gc *GceCache) GetMigForInstance(instance *GceRef) (Mig, error) {
 		return mig, nil
 	}
 
-	for _, mig := range gc.GetMigs() {
+	for _, mig := range gc.GetMigs(ctx) {
 		if mig.Config.GceRef().Project == instance.Project &&
 			mig.Config.GceRef().Zone == instance.Zone &&
 			strings.HasPrefix(instance.Name, mig.Basename) {
-			if err := gc.regenerateCache(); err != nil {
+			if err := gc.regenerateCache(ctx); err != nil {
 				return nil, fmt.Errorf("error while looking for MIG for instance %+v, error: %v", *instance, err)
 			}
 			if mig, found := gc.instancesCache[*instance]; found {
@@ -191,28 +200,34 @@ func (gc *GceCache) GetMigForInstance(instance *GceRef) (Mig, error) {
 }
 
 // RegenerateInstancesCache triggers instances cache regeneration under lock.
-func (gc *GceCache) RegenerateInstancesCache() error {
+func (gc *GceCache) RegenerateInstancesCache(ctx context.Context) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "GceCache.RegenerateInstancesCache")
+	defer span.Finish()
+
 	gc.cacheMutex.Lock()
 	defer gc.cacheMutex.Unlock()
 
-	return gc.regenerateCache()
+	return gc.regenerateCache(ctx)
 }
 
 // internal method - should only be called after locking on cacheMutex.
-func (gc *GceCache) regenerateCache() error {
+func (gc *GceCache) regenerateCache(ctx context.Context) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "GceCache.regenerateCache")
+	defer span.Finish()
+
 	newInstancesCache := make(map[GceRef]Mig)
 
-	for _, migInfo := range gc.GetMigs() {
+	for _, migInfo := range gc.GetMigs(ctx) {
 		mig := migInfo.Config
 		klog.V(4).Infof("Regenerating MIG information for %s", mig.GceRef().String())
 
-		basename, err := gc.GceService.FetchMigBasename(mig.GceRef())
+		basename, err := gc.GceService.FetchMigBasename(ctx, mig.GceRef())
 		if err != nil {
 			return err
 		}
 		gc.updateMigBasename(mig.GceRef(), basename)
 
-		instances, err := gc.GceService.FetchMigInstances(mig.GceRef())
+		instances, err := gc.GceService.FetchMigInstances(ctx, mig.GceRef())
 		if err != nil {
 			klog.V(4).Infof("Failed MIG info request for %s: %v", mig.GceRef().String(), err)
 			return err
@@ -239,7 +254,10 @@ func (gc *GceCache) SetResourceLimiter(resourceLimiter *cloudprovider.ResourceLi
 }
 
 // GetResourceLimiter returns resource limiter.
-func (gc *GceCache) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (gc *GceCache) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "GceCache.GetResourceLimiter")
+	defer span.Finish()
+
 	gc.cacheMutex.Lock()
 	defer gc.cacheMutex.Unlock()
 
@@ -303,7 +321,10 @@ func (gc *GceCache) AddMachineToCache(machineType string, zone string, machine *
 }
 
 // SetMachinesCache sets the machines cache under lock.
-func (gc *GceCache) SetMachinesCache(machinesCache map[MachineTypeKey]*gce.MachineType) {
+func (gc *GceCache) SetMachinesCache(ctx context.Context, machinesCache map[MachineTypeKey]*gce.MachineType) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "GceCache.SetMachinesCache")
+	defer span.Finish()
+
 	gc.cacheMutex.Lock()
 	defer gc.cacheMutex.Unlock()
 

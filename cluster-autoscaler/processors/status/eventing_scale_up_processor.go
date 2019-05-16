@@ -17,11 +17,13 @@ limitations under the License.
 package status
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
+	"github.com/opentracing/opentracing-go"
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	autoscalingcontext "k8s.io/autoscaler/cluster-autoscaler/context"
 )
 
 // EventingScaleUpStatusProcessor processes the state of the cluster after
@@ -31,7 +33,10 @@ type EventingScaleUpStatusProcessor struct{}
 
 // Process processes the state of the cluster after a scale-up by emitting
 // relevant events for pods depending on their post scale-up status.
-func (p *EventingScaleUpStatusProcessor) Process(context *context.AutoscalingContext, status *ScaleUpStatus) {
+func (p *EventingScaleUpStatusProcessor) Process(ctx context.Context, context *autoscalingcontext.AutoscalingContext, status *ScaleUpStatus) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "EventingScaleUpStatusProcessor.Process")
+	defer span.Finish()
+
 	for _, noScaleUpInfo := range status.PodsRemainUnschedulable {
 		context.Recorder.Event(noScaleUpInfo.Pod, apiv1.EventTypeNormal, "NotTriggerScaleUp",
 			fmt.Sprintf("pod didn't trigger scale-up (it wouldn't fit if a new node is added): %s", ReasonsMessage(noScaleUpInfo)))
@@ -45,7 +50,9 @@ func (p *EventingScaleUpStatusProcessor) Process(context *context.AutoscalingCon
 }
 
 // CleanUp cleans up the processor's internal structures.
-func (p *EventingScaleUpStatusProcessor) CleanUp() {
+func (p *EventingScaleUpStatusProcessor) CleanUp(ctx context.Context) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "EventingScaleUpStatusProcessor.CleanUp")
+	defer span.Finish()
 }
 
 // ReasonsMessage aggregates reasons from NoScaleUpInfos.

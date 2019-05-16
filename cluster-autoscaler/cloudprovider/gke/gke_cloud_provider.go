@@ -17,20 +17,23 @@ limitations under the License.
 package gke
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
 	"time"
 
+	"github.com/opentracing/opentracing-go"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/klog"
+	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
-	"k8s.io/klog"
-	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 )
 
 const (
@@ -80,19 +83,28 @@ func BuildGkeCloudProvider(gkeManager GkeManager, resourceLimiter *cloudprovider
 }
 
 // Cleanup cleans up all resources before the cloud provider is removed
-func (gke *GkeCloudProvider) Cleanup() error {
-	gke.gkeManager.Cleanup()
+func (gke *GkeCloudProvider) Cleanup(ctx context.Context) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "GkeCloudProvider.Cleanup")
+	defer span.Finish()
+
+	gke.gkeManager.Cleanup(ctx)
 	return nil
 }
 
 // Name returns name of the cloud provider.
-func (gke *GkeCloudProvider) Name() string {
+func (gke *GkeCloudProvider) Name(ctx context.Context) string {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "GkeCloudProvider.Name")
+	defer span.Finish()
+
 	return ProviderNameGKE
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
-func (gke *GkeCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
-	migs := gke.gkeManager.GetMigs()
+func (gke *GkeCloudProvider) NodeGroups(ctx context.Context) []cloudprovider.NodeGroup {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "GkeCloudProvider.NodeGroups")
+	defer span.Finish()
+
+	migs := gke.gkeManager.GetMigs(ctx)
 	result := make([]cloudprovider.NodeGroup, 0, len(migs))
 	for _, mig := range migs {
 		result = append(result, mig.Config)
@@ -101,29 +113,41 @@ func (gke *GkeCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 }
 
 // NodeGroupForNode returns the node group for the given node.
-func (gke *GkeCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+func (gke *GkeCloudProvider) NodeGroupForNode(ctx context.Context, node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "GkeCloudProvider.NodeGroupForNode")
+	defer span.Finish()
+
 	ref, err := gce.GceRefFromProviderId(node.Spec.ProviderID)
 	if err != nil {
 		return nil, err
 	}
-	mig, err := gke.gkeManager.GetMigForInstance(ref)
+	mig, err := gke.gkeManager.GetMigForInstance(ctx, ref)
 	return mig, err
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.
-func (gke *GkeCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
+func (gke *GkeCloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, errors.AutoscalerError) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "GkeCloudProvider.Pricing")
+	defer span.Finish()
+
 	return &gce.GcePriceModel{}, nil
 }
 
 // GetAvailableMachineTypes get all machine types that can be requested from the cloud provider.
-func (gke *GkeCloudProvider) GetAvailableMachineTypes() ([]string, error) {
+func (gke *GkeCloudProvider) GetAvailableMachineTypes(ctx context.Context) ([]string, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "GkeCloudProvider.GetAvailableMachineTypes")
+	defer span.Finish()
+
 	return autoprovisionedMachineTypes, nil
 }
 
 // NewNodeGroup builds a theoretical node group based on the node definition provided. The node group is not automatically
 // created on the cloud provider side. The node group is not returned by NodeGroups() until it is created.
-func (gke *GkeCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string,
+func (gke *GkeCloudProvider) NewNodeGroup(ctx context.Context, machineType string, labels map[string]string, systemLabels map[string]string,
 	taints []apiv1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "GkeCloudProvider.NewNodeGroup")
+	defer span.Finish()
+
 	nodePoolName := fmt.Sprintf("%s-%s-%d", nodeAutoprovisioningPrefix, machineType, time.Now().Unix())
 	zone, found := systemLabels[apiv1.LabelZoneFailureDomain]
 	if !found {
@@ -178,7 +202,7 @@ func (gke *GkeCloudProvider) NewNodeGroup(machineType string, labels map[string]
 	// Try to build a node from autoprovisioning spec. We don't need one right now,
 	// but if it fails later, we'd end up with a node group we can't scale anyway,
 	// so there's no point creating it.
-	if _, err := gke.gkeManager.GetMigTemplateNode(mig); err != nil {
+	if _, err := gke.gkeManager.GetMigTemplateNode(ctx, mig); err != nil {
 		return nil, fmt.Errorf("failed to build node from spec: %v", err)
 	}
 
@@ -186,8 +210,11 @@ func (gke *GkeCloudProvider) NewNodeGroup(machineType string, labels map[string]
 }
 
 // GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
-func (gke *GkeCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
-	resourceLimiter, err := gke.gkeManager.GetResourceLimiter()
+func (gke *GkeCloudProvider) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "GkeCloudProvider.GetResourceLimiter")
+	defer span.Finish()
+
+	resourceLimiter, err := gke.gkeManager.GetResourceLimiter(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -198,9 +225,12 @@ func (gke *GkeCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimite
 }
 
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
-// In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
-func (gke *GkeCloudProvider) Refresh() error {
-	return gke.gkeManager.Refresh()
+// In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh(ctx).
+func (gke *GkeCloudProvider) Refresh(ctx context.Context) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "GkeCloudProvider.Refresh")
+	defer span.Finish()
+
+	return gke.gkeManager.Refresh(ctx)
 }
 
 // GetClusterInfo returns the project id, location and cluster name.
@@ -261,41 +291,50 @@ func (mig *GkeMig) MinSize() int {
 
 // TargetSize returns the current TARGET size of the node group. It is possible that the
 // number is different from the number of nodes registered in Kubernetes.
-func (mig *GkeMig) TargetSize() (int, error) {
+func (mig *GkeMig) TargetSize(ctx context.Context) (int, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "GkeMig.TargetSize")
+	defer span.Finish()
+
 	if !mig.exist {
 		return 0, nil
 	}
-	size, err := mig.gkeManager.GetMigSize(mig)
+	size, err := mig.gkeManager.GetMigSize(ctx, mig)
 	return int(size), err
 }
 
 // IncreaseSize increases Mig size
-func (mig *GkeMig) IncreaseSize(delta int) error {
+func (mig *GkeMig) IncreaseSize(ctx context.Context, delta int) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "GkeMig.IncreaseSize")
+	defer span.Finish()
+
 	if delta <= 0 {
 		return fmt.Errorf("size increase must be positive")
 	}
-	size, err := mig.gkeManager.GetMigSize(mig)
+	size, err := mig.gkeManager.GetMigSize(ctx, mig)
 	if err != nil {
 		return err
 	}
 	if int(size)+delta > mig.MaxSize() {
 		return fmt.Errorf("size increase too large - desired:%d max:%d", int(size)+delta, mig.MaxSize())
 	}
-	return mig.gkeManager.SetMigSize(mig, size+int64(delta))
+	return mig.gkeManager.SetMigSize(ctx, mig, size+int64(delta))
 }
 
 // DecreaseTargetSize decreases the target size of the node group. This function
 // doesn't permit to delete any existing node and can be used only to reduce the
 // request for new nodes that have not been yet fulfilled. Delta should be negative.
-func (mig *GkeMig) DecreaseTargetSize(delta int) error {
+func (mig *GkeMig) DecreaseTargetSize(ctx context.Context, delta int) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "GkeMig.DecreaseTargetSize")
+	defer span.Finish()
+
 	if delta >= 0 {
 		return fmt.Errorf("size decrease must be negative")
 	}
-	size, err := mig.gkeManager.GetMigSize(mig)
+	size, err := mig.gkeManager.GetMigSize(ctx, mig)
 	if err != nil {
 		return err
 	}
-	nodes, err := mig.gkeManager.GetMigNodes(mig)
+	nodes, err := mig.gkeManager.GetMigNodes(ctx, mig)
 	if err != nil {
 		return err
 	}
@@ -303,16 +342,19 @@ func (mig *GkeMig) DecreaseTargetSize(delta int) error {
 		return fmt.Errorf("attempt to delete existing nodes targetSize:%d delta:%d existingNodes: %d",
 			size, delta, len(nodes))
 	}
-	return mig.gkeManager.SetMigSize(mig, size+int64(delta))
+	return mig.gkeManager.SetMigSize(ctx, mig, size+int64(delta))
 }
 
 // Belongs returns true if the given node belongs to the NodeGroup.
-func (mig *GkeMig) Belongs(node *apiv1.Node) (bool, error) {
+func (mig *GkeMig) Belongs(ctx context.Context, node *apiv1.Node) (bool, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "GkeMig.Belongs")
+	defer span.Finish()
+
 	ref, err := gce.GceRefFromProviderId(node.Spec.ProviderID)
 	if err != nil {
 		return false, err
 	}
-	targetMig, err := mig.gkeManager.GetMigForInstance(ref)
+	targetMig, err := mig.gkeManager.GetMigForInstance(ctx, ref)
 	if err != nil {
 		return false, err
 	}
@@ -326,8 +368,11 @@ func (mig *GkeMig) Belongs(node *apiv1.Node) (bool, error) {
 }
 
 // DeleteNodes deletes the nodes from the group.
-func (mig *GkeMig) DeleteNodes(nodes []*apiv1.Node) error {
-	size, err := mig.gkeManager.GetMigSize(mig)
+func (mig *GkeMig) DeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "GkeMig.DeleteNodes")
+	defer span.Finish()
+
+	size, err := mig.gkeManager.GetMigSize(ctx, mig)
 	if err != nil {
 		return err
 	}
@@ -337,7 +382,7 @@ func (mig *GkeMig) DeleteNodes(nodes []*apiv1.Node) error {
 	refs := make([]*gce.GceRef, 0, len(nodes))
 	for _, node := range nodes {
 
-		belongs, err := mig.Belongs(node)
+		belongs, err := mig.Belongs(ctx, node)
 		if err != nil {
 			return err
 		}
@@ -350,7 +395,7 @@ func (mig *GkeMig) DeleteNodes(nodes []*apiv1.Node) error {
 		}
 		refs = append(refs, gceref)
 	}
-	return mig.gkeManager.DeleteInstances(refs)
+	return mig.gkeManager.DeleteInstances(ctx, refs)
 }
 
 // Id returns mig url.
@@ -364,8 +409,11 @@ func (mig *GkeMig) Debug() string {
 }
 
 // Nodes returns a list of all nodes that belong to this node group.
-func (mig *GkeMig) Nodes() ([]cloudprovider.Instance, error) {
-	instanceNames, err := mig.gkeManager.GetMigNodes(mig)
+func (mig *GkeMig) Nodes(ctx context.Context) ([]cloudprovider.Instance, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "GkeMig.Nodes")
+	defer span.Finish()
+
+	instanceNames, err := mig.gkeManager.GetMigNodes(ctx, mig)
 	if err != nil {
 		return nil, err
 	}
@@ -383,18 +431,24 @@ func (mig *GkeMig) Exist() bool {
 }
 
 // Create creates the node group on the cloud provider side.
-func (mig *GkeMig) Create() (cloudprovider.NodeGroup, error) {
+func (mig *GkeMig) Create(ctx context.Context) (cloudprovider.NodeGroup, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "GkeMig.Create")
+	defer span.Finish()
+
 	if !mig.exist && mig.autoprovisioned {
-		return mig.gkeManager.CreateNodePool(mig)
+		return mig.gkeManager.CreateNodePool(ctx, mig)
 	}
 	return nil, fmt.Errorf("cannot create non-autoprovisioned node group")
 }
 
 // Delete deletes the node group on the cloud provider side.
 // This will be executed only for autoprovisioned node groups, once their size drops to 0.
-func (mig *GkeMig) Delete() error {
+func (mig *GkeMig) Delete(ctx context.Context) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "GkeMig.Delete")
+	defer span.Finish()
+
 	if mig.exist && mig.autoprovisioned {
-		return mig.gkeManager.DeleteNodePool(mig)
+		return mig.gkeManager.DeleteNodePool(ctx, mig)
 	}
 	return fmt.Errorf("cannot delete non-autoprovisioned node group")
 }
@@ -405,8 +459,11 @@ func (mig *GkeMig) Autoprovisioned() bool {
 }
 
 // TemplateNodeInfo returns a node template for this node group.
-func (mig *GkeMig) TemplateNodeInfo() (*schedulernodeinfo.NodeInfo, error) {
-	node, err := mig.gkeManager.GetMigTemplateNode(mig)
+func (mig *GkeMig) TemplateNodeInfo(ctx context.Context) (*schedulernodeinfo.NodeInfo, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "GkeMig.TemplateNodeInfo")
+	defer span.Finish()
+
+	node, err := mig.gkeManager.GetMigTemplateNode(ctx, mig)
 	if err != nil {
 		return nil, err
 	}
@@ -416,7 +473,7 @@ func (mig *GkeMig) TemplateNodeInfo() (*schedulernodeinfo.NodeInfo, error) {
 }
 
 // BuildGKE builds a new GKE cloud provider, manager etc.
-func BuildGKE(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+func BuildGKE(ctx context.Context, opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	if do.DiscoverySpecified() {
 		klog.Fatal("GKE gets nodegroup specification via API, command line specs are not allowed")
 	}
@@ -434,7 +491,7 @@ func BuildGKE(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscover
 	if opts.NodeAutoprovisioningEnabled {
 		mode = ModeGKENAP
 	}
-	manager, err := CreateGkeManager(config, mode, opts.ClusterName, opts.Regional)
+	manager, err := CreateGkeManager(ctx, config, mode, opts.ClusterName, opts.Regional)
 	if err != nil {
 		klog.Fatalf("Failed to create GKE Manager: %v", err)
 	}

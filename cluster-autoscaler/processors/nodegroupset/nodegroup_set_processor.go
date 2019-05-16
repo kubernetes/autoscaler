@@ -17,12 +17,15 @@ limitations under the License.
 package nodegroupset
 
 import (
+	"context"
 	"fmt"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"github.com/opentracing/opentracing-go"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	autoscalingcontext "k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 )
 
 // ScaleUpInfo contains information about planned scale-up of a single NodeGroup
@@ -44,11 +47,11 @@ func (s ScaleUpInfo) String() string {
 
 // NodeGroupSetProcessor finds nodegroups that are similar and allows balancing scale-up between them.
 type NodeGroupSetProcessor interface {
-	FindSimilarNodeGroups(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup,
+	FindSimilarNodeGroups(ctx context.Context, context *autoscalingcontext.AutoscalingContext, nodeGroup cloudprovider.NodeGroup,
 		nodeInfosForGroups map[string]*schedulernodeinfo.NodeInfo) ([]cloudprovider.NodeGroup, errors.AutoscalerError)
 
-	BalanceScaleUpBetweenGroups(context *context.AutoscalingContext, groups []cloudprovider.NodeGroup, newNodes int) ([]ScaleUpInfo, errors.AutoscalerError)
-	CleanUp()
+	BalanceScaleUpBetweenGroups(ctx context.Context, context *autoscalingcontext.AutoscalingContext, groups []cloudprovider.NodeGroup, newNodes int) ([]ScaleUpInfo, errors.AutoscalerError)
+	CleanUp(ctx context.Context)
 }
 
 // NoOpNodeGroupSetProcessor returns no similar node groups and doesn't do any balancing.
@@ -56,18 +59,24 @@ type NoOpNodeGroupSetProcessor struct {
 }
 
 // FindSimilarNodeGroups returns a list of NodeGroups similar to the one provided in parameter.
-func (n *NoOpNodeGroupSetProcessor) FindSimilarNodeGroups(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup,
+func (n *NoOpNodeGroupSetProcessor) FindSimilarNodeGroups(ctx context.Context, context *autoscalingcontext.AutoscalingContext, nodeGroup cloudprovider.NodeGroup,
 	nodeInfosForGroups map[string]*schedulernodeinfo.NodeInfo) ([]cloudprovider.NodeGroup, errors.AutoscalerError) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "NoOpNodeGroupSetProcessor.FindSimilarNodeGroups")
+	defer span.Finish()
+
 	return []cloudprovider.NodeGroup{}, nil
 }
 
 // BalanceScaleUpBetweenGroups splits a scale-up between provided NodeGroups.
-func (n *NoOpNodeGroupSetProcessor) BalanceScaleUpBetweenGroups(context *context.AutoscalingContext, groups []cloudprovider.NodeGroup, newNodes int) ([]ScaleUpInfo, errors.AutoscalerError) {
+func (n *NoOpNodeGroupSetProcessor) BalanceScaleUpBetweenGroups(ctx context.Context, context *autoscalingcontext.AutoscalingContext, groups []cloudprovider.NodeGroup, newNodes int) ([]ScaleUpInfo, errors.AutoscalerError) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "NoOpNodeGroupSetProcessor.BalanceScaleUpBetweenGroups")
+	defer span.Finish()
+
 	return []ScaleUpInfo{}, nil
 }
 
 // CleanUp performs final clean up of processor state.
-func (n *NoOpNodeGroupSetProcessor) CleanUp() {}
+func (n *NoOpNodeGroupSetProcessor) CleanUp(ctx context.Context) {}
 
 // NewDefaultNodeGroupSetProcessor creates an instance of NodeGroupSetProcessor.
 func NewDefaultNodeGroupSetProcessor() NodeGroupSetProcessor {

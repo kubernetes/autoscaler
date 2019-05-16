@@ -17,6 +17,7 @@ limitations under the License.
 package core
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -25,7 +26,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	autoscalingcontext "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -41,6 +42,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 )
+
+var ctx context.Context
 
 const MiB = 1024 * 1024
 
@@ -356,7 +359,7 @@ func TestFilterSchedulablePodsForNode(t *testing.T) {
 	tni := schedulernodeinfo.NewNodeInfo()
 	tni.SetNode(tn)
 
-	context := &context.AutoscalingContext{
+	context := &autoscalingcontext.AutoscalingContext{
 		PredicateChecker: simulator.NewTestPredicateChecker(),
 	}
 
@@ -413,8 +416,7 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 
 	predicateChecker := simulator.NewTestPredicateChecker()
 
-	res, err := getNodeInfosForGroups([]*apiv1.Node{unready4, unready3, ready2, ready1}, nil,
-		provider1, registry, []*appsv1.DaemonSet{}, predicateChecker)
+	res, err := getNodeInfosForGroups(ctx, []*apiv1.Node{unready4, unready3, ready2, ready1}, nil, provider1, registry, []*appsv1.DaemonSet{}, predicateChecker)
 	assert.NoError(t, err)
 	assert.Equal(t, 4, len(res))
 	info, found := res["ng1"]
@@ -431,8 +433,7 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 	assertEqualNodeCapacities(t, tn, info.Node())
 
 	// Test for a nodegroup without nodes and TemplateNodeInfo not implemented by cloud proivder
-	res, err = getNodeInfosForGroups([]*apiv1.Node{}, nil, provider2, registry,
-		[]*appsv1.DaemonSet{}, predicateChecker)
+	res, err = getNodeInfosForGroups(ctx, []*apiv1.Node{}, nil, provider2, registry, []*appsv1.DaemonSet{}, predicateChecker)
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(res))
 }
@@ -484,8 +485,7 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 	nodeInfoCache := make(map[string]*schedulernodeinfo.NodeInfo)
 
 	// Fill cache
-	res, err := getNodeInfosForGroups([]*apiv1.Node{unready4, unready3, ready2, ready1}, nodeInfoCache,
-		provider1, registry, []*appsv1.DaemonSet{}, predicateChecker)
+	res, err := getNodeInfosForGroups(ctx, []*apiv1.Node{unready4, unready3, ready2, ready1}, nodeInfoCache, provider1, registry, []*appsv1.DaemonSet{}, predicateChecker)
 	assert.NoError(t, err)
 	// Check results
 	assert.Equal(t, 4, len(res))
@@ -519,8 +519,7 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 	assert.Equal(t, "ng3", lastDeletedGroup)
 
 	// Check cache with all nodes removed
-	res, err = getNodeInfosForGroups([]*apiv1.Node{}, nodeInfoCache,
-		provider1, registry, []*appsv1.DaemonSet{}, predicateChecker)
+	res, err = getNodeInfosForGroups(ctx, []*apiv1.Node{}, nodeInfoCache, provider1, registry, []*appsv1.DaemonSet{}, predicateChecker)
 	assert.NoError(t, err)
 	// Check results
 	assert.Equal(t, 2, len(res))
@@ -544,8 +543,7 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 	assert.NoError(t, err2)
 	nodeInfoCache = map[string]*schedulernodeinfo.NodeInfo{"ng4": infoNg4Node6}
 	// Check if cache was used
-	res, err = getNodeInfosForGroups([]*apiv1.Node{ready1, ready2}, nodeInfoCache,
-		provider1, registry, []*appsv1.DaemonSet{}, predicateChecker)
+	res, err = getNodeInfosForGroups(ctx, []*apiv1.Node{ready1, ready2}, nodeInfoCache, provider1, registry, []*appsv1.DaemonSet{}, predicateChecker)
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(res))
 	info, found = res["ng2"]
@@ -585,10 +583,10 @@ func TestRemoveOldUnregisteredNodes(t *testing.T) {
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
 	}, fakeLogRecorder, newBackoff())
-	err := clusterState.UpdateNodes([]*apiv1.Node{ng1_1}, nil, now.Add(-time.Hour))
+	err := clusterState.UpdateNodes(ctx, []*apiv1.Node{ng1_1}, nil, now.Add(-time.Hour))
 	assert.NoError(t, err)
 
-	context := &context.AutoscalingContext{
+	context := &autoscalingcontext.AutoscalingContext{
 		AutoscalingOptions: config.AutoscalingOptions{
 			MaxNodeProvisionTime: 45 * time.Minute,
 		},
@@ -598,12 +596,12 @@ func TestRemoveOldUnregisteredNodes(t *testing.T) {
 	assert.Equal(t, 1, len(unregisteredNodes))
 
 	// Nothing should be removed. The unregistered node is not old enough.
-	removed, err := removeOldUnregisteredNodes(unregisteredNodes, context, now.Add(-50*time.Minute), fakeLogRecorder)
+	removed, err := removeOldUnregisteredNodes(ctx, unregisteredNodes, context, now.Add(-50*time.Minute), fakeLogRecorder)
 	assert.NoError(t, err)
 	assert.False(t, removed)
 
 	// ng1_2 should be removed.
-	removed, err = removeOldUnregisteredNodes(unregisteredNodes, context, now, fakeLogRecorder)
+	removed, err = removeOldUnregisteredNodes(ctx, unregisteredNodes, context, now, fakeLogRecorder)
 	assert.NoError(t, err)
 	assert.True(t, removed)
 	deletedNode := getStringFromChan(deletedNodes)
@@ -682,10 +680,10 @@ func TestRemoveFixNodeTargetSize(t *testing.T) {
 		MaxTotalUnreadyPercentage: 10,
 		OkTotalUnreadyCount:       1,
 	}, fakeLogRecorder, newBackoff())
-	err := clusterState.UpdateNodes([]*apiv1.Node{ng1_1}, nil, now.Add(-time.Hour))
+	err := clusterState.UpdateNodes(ctx, []*apiv1.Node{ng1_1}, nil, now.Add(-time.Hour))
 	assert.NoError(t, err)
 
-	context := &context.AutoscalingContext{
+	context := &autoscalingcontext.AutoscalingContext{
 		AutoscalingOptions: config.AutoscalingOptions{
 			MaxNodeProvisionTime: 45 * time.Minute,
 		},
@@ -693,12 +691,12 @@ func TestRemoveFixNodeTargetSize(t *testing.T) {
 	}
 
 	// Nothing should be fixed. The incorrect size state is not old enough.
-	removed, err := fixNodeGroupSize(context, clusterState, now.Add(-50*time.Minute))
+	removed, err := fixNodeGroupSize(ctx, context, clusterState, now.Add(-50*time.Minute))
 	assert.NoError(t, err)
 	assert.False(t, removed)
 
 	// Node group should be decreased.
-	removed, err = fixNodeGroupSize(context, clusterState, now)
+	removed, err = fixNodeGroupSize(ctx, context, clusterState, now)
 	assert.NoError(t, err)
 	assert.True(t, removed)
 	change := getStringFromChan(sizeChanges)
@@ -717,11 +715,11 @@ func TestGetPotentiallyUnneededNodes(t *testing.T) {
 	provider.AddNode("ng1", ng1_2)
 	provider.AddNode("ng2", ng2_1)
 
-	context := &context.AutoscalingContext{
+	context := &autoscalingcontext.AutoscalingContext{
 		CloudProvider: provider,
 	}
 
-	result := getPotentiallyUnneededNodes(context, []*apiv1.Node{ng1_1, ng1_2, ng2_1, noNg})
+	result := getPotentiallyUnneededNodes(ctx, context, []*apiv1.Node{ng1_1, ng1_2, ng2_1, noNg})
 	assert.Equal(t, 2, len(result))
 	ok1 := result[0].Name == "ng1-1" && result[1].Name == "ng1-2"
 	ok2 := result[1].Name == "ng1-1" && result[0].Name == "ng1-2"

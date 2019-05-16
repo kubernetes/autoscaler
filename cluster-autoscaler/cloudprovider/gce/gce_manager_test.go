@@ -908,8 +908,7 @@ func buildListInstanceGroupsResponse(zone string, instanceGroups ...string) stri
 	return fmt.Sprintf(listInstanceGroupsResponseTemplate,
 		zone,
 		strings.Join(items, ", "),
-		zone,
-	)
+		zone)
 }
 
 const getRegionResponse = `{

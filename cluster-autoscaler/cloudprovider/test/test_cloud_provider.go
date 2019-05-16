@@ -17,9 +17,11 @@ limitations under the License.
 package test
 
 import (
+	"context"
 	"fmt"
 	"sync"
 
+	"github.com/opentracing/opentracing-go"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -83,12 +85,18 @@ func NewTestAutoprovisioningCloudProvider(onScaleUp OnScaleUpFunc, onScaleDown O
 }
 
 // Name returns name of the cloud provider.
-func (tcp *TestCloudProvider) Name() string {
+func (tcp *TestCloudProvider) Name(ctx context.Context) string {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "TestCloudProvider.Name")
+	defer span.Finish()
+
 	return "TestCloudProvider"
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
-func (tcp *TestCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
+func (tcp *TestCloudProvider) NodeGroups(ctx context.Context) []cloudprovider.NodeGroup {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "TestCloudProvider.NodeGroups")
+	defer span.Finish()
+
 	tcp.Lock()
 	defer tcp.Unlock()
 
@@ -109,7 +117,10 @@ func (tcp *TestCloudProvider) GetNodeGroup(name string) cloudprovider.NodeGroup 
 // NodeGroupForNode returns the node group for the given node, nil if the node
 // should not be processed by cluster autoscaler, or non-nil error if such
 // occurred.
-func (tcp *TestCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+func (tcp *TestCloudProvider) NodeGroupForNode(ctx context.Context, node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "TestCloudProvider.NodeGroupForNode")
+	defer span.Finish()
+
 	tcp.Lock()
 	defer tcp.Unlock()
 
@@ -125,19 +136,28 @@ func (tcp *TestCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.
-func (tcp *TestCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
+func (tcp *TestCloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, errors.AutoscalerError) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "TestCloudProvider.Pricing")
+	defer span.Finish()
+
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetAvailableMachineTypes get all machine types that can be requested from the cloud provider.
-func (tcp *TestCloudProvider) GetAvailableMachineTypes() ([]string, error) {
+func (tcp *TestCloudProvider) GetAvailableMachineTypes(ctx context.Context) ([]string, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "TestCloudProvider.GetAvailableMachineTypes")
+	defer span.Finish()
+
 	return tcp.machineTypes, nil
 }
 
 // NewNodeGroup builds a theoretical node group based on the node definition provided. The node group is not automatically
 // created on the cloud provider side. The node group is not returned by NodeGroups() until it is created.
-func (tcp *TestCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string,
+func (tcp *TestCloudProvider) NewNodeGroup(ctx context.Context, machineType string, labels map[string]string, systemLabels map[string]string,
 	taints []apiv1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "TestCloudProvider.NewNodeGroup")
+	defer span.Finish()
+
 	return &TestNodeGroup{
 		cloudProvider:   tcp,
 		id:              "autoprovisioned-" + machineType,
@@ -204,7 +224,10 @@ func (tcp *TestCloudProvider) AddNode(nodeGroupId string, node *apiv1.Node) {
 }
 
 // GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
-func (tcp *TestCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (tcp *TestCloudProvider) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "TestCloudProvider.GetResourceLimiter")
+	defer span.Finish()
+
 	return tcp.resourceLimiter, nil
 }
 
@@ -214,13 +237,19 @@ func (tcp *TestCloudProvider) SetResourceLimiter(resourceLimiter *cloudprovider.
 }
 
 // Cleanup this is a function to close resources associated with the cloud provider
-func (tcp *TestCloudProvider) Cleanup() error {
+func (tcp *TestCloudProvider) Cleanup(ctx context.Context) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "TestCloudProvider.Cleanup")
+	defer span.Finish()
+
 	return nil
 }
 
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
-// In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
-func (tcp *TestCloudProvider) Refresh() error {
+// In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh(ctx).
+func (tcp *TestCloudProvider) Refresh(ctx context.Context) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "TestCloudProvider.Refresh")
+	defer span.Finish()
+
 	return nil
 }
 
@@ -259,7 +288,10 @@ func (tng *TestNodeGroup) MinSize() int {
 // number of nodes in Kubernetes is different at the moment but should be equal
 // to Size() once everything stabilizes (new nodes finish startup and registration or
 // removed nodes are deleted completely)
-func (tng *TestNodeGroup) TargetSize() (int, error) {
+func (tng *TestNodeGroup) TargetSize(ctx context.Context) (int, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "TestNodeGroup.TargetSize")
+	defer span.Finish()
+
 	tng.Lock()
 	defer tng.Unlock()
 
@@ -276,7 +308,10 @@ func (tng *TestNodeGroup) SetTargetSize(size int) {
 // IncreaseSize increases the size of the node group. To delete a node you need
 // to explicitly name it and use DeleteNode. This function should wait until
 // node group size is updated.
-func (tng *TestNodeGroup) IncreaseSize(delta int) error {
+func (tng *TestNodeGroup) IncreaseSize(ctx context.Context, delta int) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "TestNodeGroup.IncreaseSize")
+	defer span.Finish()
+
 	tng.Lock()
 	tng.targetSize += delta
 	tng.Unlock()
@@ -293,7 +328,10 @@ func (tng *TestNodeGroup) Exist() bool {
 }
 
 // Create creates the node group on the cloud provider side.
-func (tng *TestNodeGroup) Create() (cloudprovider.NodeGroup, error) {
+func (tng *TestNodeGroup) Create(ctx context.Context) (cloudprovider.NodeGroup, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "TestNodeGroup.Create")
+	defer span.Finish()
+
 	if tng.Exist() {
 		return nil, fmt.Errorf("group already exist")
 	}
@@ -303,7 +341,10 @@ func (tng *TestNodeGroup) Create() (cloudprovider.NodeGroup, error) {
 
 // Delete deletes the node group on the cloud provider side.
 // This will be executed only for autoprovisioned node groups, once their size drops to 0.
-func (tng *TestNodeGroup) Delete() error {
+func (tng *TestNodeGroup) Delete(ctx context.Context) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "TestNodeGroup.Delete")
+	defer span.Finish()
+
 	err := tng.cloudProvider.onNodeGroupDelete(tng.id)
 	if err == nil {
 		tng.cloudProvider.DeleteNodeGroup(tng.Id())
@@ -314,7 +355,10 @@ func (tng *TestNodeGroup) Delete() error {
 // DecreaseTargetSize decreases the target size of the node group. This function
 // doesn't permit to delete any existing node and can be used only to reduce the
 // request for new nodes that have not been yet fulfilled. Delta should be negative.
-func (tng *TestNodeGroup) DecreaseTargetSize(delta int) error {
+func (tng *TestNodeGroup) DecreaseTargetSize(ctx context.Context, delta int) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "TestNodeGroup.DecreaseTargetSize")
+	defer span.Finish()
+
 	tng.Lock()
 	tng.targetSize += delta
 	tng.Unlock()
@@ -325,7 +369,10 @@ func (tng *TestNodeGroup) DecreaseTargetSize(delta int) error {
 // DeleteNodes deletes nodes from this node group. Error is returned either on
 // failure or if the given node doesn't belong to this node group. This function
 // should wait until node group size is updated.
-func (tng *TestNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
+func (tng *TestNodeGroup) DeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "TestNodeGroup.DeleteNodes")
+	defer span.Finish()
+
 	tng.Lock()
 	id := tng.id
 	tng.targetSize -= len(nodes)
@@ -356,7 +403,10 @@ func (tng *TestNodeGroup) Debug() string {
 }
 
 // Nodes returns a list of all nodes that belong to this node group.
-func (tng *TestNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
+func (tng *TestNodeGroup) Nodes(ctx context.Context) ([]cloudprovider.Instance, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "TestNodeGroup.Nodes")
+	defer span.Finish()
+
 	tng.Lock()
 	defer tng.Unlock()
 
@@ -375,7 +425,10 @@ func (tng *TestNodeGroup) Autoprovisioned() bool {
 }
 
 // TemplateNodeInfo returns a node template for this node group.
-func (tng *TestNodeGroup) TemplateNodeInfo() (*schedulernodeinfo.NodeInfo, error) {
+func (tng *TestNodeGroup) TemplateNodeInfo(ctx context.Context) (*schedulernodeinfo.NodeInfo, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "TestNodeGroup.TemplateNodeInfo")
+	defer span.Finish()
+
 	if tng.cloudProvider.machineTemplates == nil {
 		return nil, cloudprovider.ErrNotImplemented
 	}

@@ -17,16 +17,18 @@ limitations under the License.
 package nodegroups
 
 import (
+	"context"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	autoscalingcontext "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 )
 
 // NodeGroupManager is responsible for creating/deleting node groups.
 type NodeGroupManager interface {
-	CreateNodeGroup(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (CreateNodeGroupResult, errors.AutoscalerError)
-	RemoveUnneededNodeGroups(context *context.AutoscalingContext) error
-	CleanUp()
+	CreateNodeGroup(ctx context.Context, context *autoscalingcontext.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (CreateNodeGroupResult, errors.AutoscalerError)
+	RemoveUnneededNodeGroups(ctx context.Context, context *autoscalingcontext.AutoscalingContext) error
+	CleanUp(ctx context.Context)
 }
 
 // NoOpNodeGroupManager is a no-op implementation of NodeGroupManager.
@@ -47,17 +49,17 @@ type CreateNodeGroupResult struct {
 }
 
 // CreateNodeGroup always returns internal error. It must not be called on NoOpNodeGroupManager.
-func (*NoOpNodeGroupManager) CreateNodeGroup(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (CreateNodeGroupResult, errors.AutoscalerError) {
+func (*NoOpNodeGroupManager) CreateNodeGroup(ctx context.Context, context *autoscalingcontext.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (CreateNodeGroupResult, errors.AutoscalerError) {
 	return CreateNodeGroupResult{}, errors.NewAutoscalerError(errors.InternalError, "not implemented")
 }
 
 // RemoveUnneededNodeGroups does nothing in NoOpNodeGroupManager
-func (*NoOpNodeGroupManager) RemoveUnneededNodeGroups(context *context.AutoscalingContext) error {
+func (*NoOpNodeGroupManager) RemoveUnneededNodeGroups(ctx context.Context, context *autoscalingcontext.AutoscalingContext) error {
 	return nil
 }
 
 // CleanUp does nothing in NoOpNodeGroupManager
-func (*NoOpNodeGroupManager) CleanUp() {}
+func (*NoOpNodeGroupManager) CleanUp(ctx context.Context) {}
 
 // NewDefaultNodeGroupManager creates an instance of NodeGroupManager.
 func NewDefaultNodeGroupManager() NodeGroupManager {

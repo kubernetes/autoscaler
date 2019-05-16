@@ -17,6 +17,7 @@ limitations under the License.
 package azure
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"regexp"
@@ -24,6 +25,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/opentracing/opentracing-go"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/klog"
@@ -39,7 +41,7 @@ type asgCache struct {
 	interrupt          chan struct{}
 }
 
-func newAsgCache() (*asgCache, error) {
+func newAsgCache(ctx context.Context) (*asgCache, error) {
 	cache := &asgCache{
 		registeredAsgs:     make([]cloudprovider.NodeGroup, 0),
 		instanceToAsg:      make(map[azureRef]cloudprovider.NodeGroup),
@@ -50,7 +52,7 @@ func newAsgCache() (*asgCache, error) {
 	go wait.Until(func() {
 		cache.mutex.Lock()
 		defer cache.mutex.Unlock()
-		if err := cache.regenerate(); err != nil {
+		if err := cache.regenerate(ctx); err != nil {
 			klog.Errorf("Error while regenerating Asg cache: %v", err)
 		}
 	}, time.Hour, cache.interrupt)
@@ -114,7 +116,10 @@ func (m *asgCache) get() []cloudprovider.NodeGroup {
 }
 
 // FindForInstance returns Asg of the given Instance
-func (m *asgCache) FindForInstance(instance *azureRef, vmType string) (cloudprovider.NodeGroup, error) {
+func (m *asgCache) FindForInstance(ctx context.Context, instance *azureRef, vmType string) (cloudprovider.NodeGroup, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "asgCache.FindForInstance")
+	defer span.Finish()
+
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -153,7 +158,7 @@ func (m *asgCache) FindForInstance(instance *azureRef, vmType string) (cloudprov
 	}
 
 	// Not found, regenerate the cache and try again.
-	if err := m.regenerate(); err != nil {
+	if err := m.regenerate(ctx); err != nil {
 		return nil, fmt.Errorf("error while looking for ASG for instance %q, error: %v", instance.Name, err)
 	}
 	if asg := m.getInstanceFromCache(inst.Name); asg != nil {
@@ -166,15 +171,21 @@ func (m *asgCache) FindForInstance(instance *azureRef, vmType string) (cloudprov
 }
 
 // Cleanup closes the channel to signal the go routine to stop that is handling the cache
-func (m *asgCache) Cleanup() {
+func (m *asgCache) Cleanup(ctx context.Context) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "asgCache.Cleanup")
+	defer span.Finish()
+
 	close(m.interrupt)
 }
 
-func (m *asgCache) regenerate() error {
+func (m *asgCache) regenerate(ctx context.Context) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "asgCache.regenerate")
+	defer span.Finish()
+
 	newCache := make(map[azureRef]cloudprovider.NodeGroup)
 
 	for _, nsg := range m.registeredAsgs {
-		instances, err := nsg.Nodes()
+		instances, err := nsg.Nodes(ctx)
 		if err != nil {
 			return err
 		}

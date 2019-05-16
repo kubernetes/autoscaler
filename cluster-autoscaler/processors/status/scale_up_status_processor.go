@@ -17,8 +17,11 @@ limitations under the License.
 package status
 
 import (
+	"context"
+
+	"github.com/opentracing/opentracing-go"
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	autoscalingcontext "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 )
 
@@ -71,8 +74,8 @@ type Reasons interface {
 
 // ScaleUpStatusProcessor processes the status of the cluster after a scale-up.
 type ScaleUpStatusProcessor interface {
-	Process(context *context.AutoscalingContext, status *ScaleUpStatus)
-	CleanUp()
+	Process(ctx context.Context, context *autoscalingcontext.AutoscalingContext, status *ScaleUpStatus)
+	CleanUp(ctx context.Context)
 }
 
 // NewDefaultScaleUpStatusProcessor creates a default instance of ScaleUpStatusProcessor.
@@ -84,9 +87,13 @@ func NewDefaultScaleUpStatusProcessor() ScaleUpStatusProcessor {
 type NoOpScaleUpStatusProcessor struct{}
 
 // Process processes the status of the cluster after a scale-up.
-func (p *NoOpScaleUpStatusProcessor) Process(context *context.AutoscalingContext, status *ScaleUpStatus) {
+func (p *NoOpScaleUpStatusProcessor) Process(ctx context.Context, context *autoscalingcontext.AutoscalingContext, status *ScaleUpStatus) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "NoOpScaleUpStatusProcessor.Process")
+	defer span.Finish()
 }
 
 // CleanUp cleans up the processor's internal structures.
-func (p *NoOpScaleUpStatusProcessor) CleanUp() {
+func (p *NoOpScaleUpStatusProcessor) CleanUp(ctx context.Context) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "NoOpScaleUpStatusProcessor.CleanUp")
+	defer span.Finish()
 }

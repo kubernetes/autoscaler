@@ -17,6 +17,7 @@ limitations under the License.
 package core
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
 	"reflect"
@@ -28,7 +29,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	autoscalingcontext "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/daemonset"
@@ -208,7 +209,7 @@ func filterOutExpendablePods(pods []*apiv1.Pod, expendablePodsPriorityCutoff int
 }
 
 // checkPodsSchedulableOnNode checks if pods can be scheduled on the given node.
-func checkPodsSchedulableOnNode(context *context.AutoscalingContext, pods []*apiv1.Pod, nodeGroupId string, nodeInfo *schedulernodeinfo.NodeInfo) map[*apiv1.Pod]*simulator.PredicateError {
+func checkPodsSchedulableOnNode(context *autoscalingcontext.AutoscalingContext, pods []*apiv1.Pod, nodeGroupId string, nodeInfo *schedulernodeinfo.NodeInfo) map[*apiv1.Pod]*simulator.PredicateError {
 	schedulingErrors := map[*apiv1.Pod]*simulator.PredicateError{}
 	loggingQuota := glogx.PodsLoggingQuota()
 	podSchedulable := make(podSchedulableMap)
@@ -247,14 +248,13 @@ func checkPodsSchedulableOnNode(context *context.AutoscalingContext, pods []*api
 // TODO(mwielgus): This returns map keyed by url, while most code (including scheduler) uses node.Name for a key.
 //
 // TODO(mwielgus): Review error policy - sometimes we may continue with partial errors.
-func getNodeInfosForGroups(nodes []*apiv1.Node, nodeInfoCache map[string]*schedulernodeinfo.NodeInfo, cloudProvider cloudprovider.CloudProvider, listers kube_util.ListerRegistry,
-	daemonsets []*appsv1.DaemonSet, predicateChecker *simulator.PredicateChecker) (map[string]*schedulernodeinfo.NodeInfo, errors.AutoscalerError) {
+func getNodeInfosForGroups(ctx context.Context, nodes []*apiv1.Node, nodeInfoCache map[string]*schedulernodeinfo.NodeInfo, cloudProvider cloudprovider.CloudProvider, listers kube_util.ListerRegistry, daemonsets []*appsv1.DaemonSet, predicateChecker *simulator.PredicateChecker) (map[string]*schedulernodeinfo.NodeInfo, errors.AutoscalerError) {
 	result := make(map[string]*schedulernodeinfo.NodeInfo)
 	seenGroups := make(map[string]bool)
 
 	// processNode returns information whether the nodeTemplate was generated and if there was an error.
 	processNode := func(node *apiv1.Node) (bool, string, errors.AutoscalerError) {
-		nodeGroup, err := cloudProvider.NodeGroupForNode(node)
+		nodeGroup, err := cloudProvider.NodeGroupForNode(ctx, node)
 		if err != nil {
 			return false, "", errors.ToAutoscalerError(errors.CloudProviderError, err)
 		}
@@ -293,7 +293,7 @@ func getNodeInfosForGroups(nodes []*apiv1.Node, nodeInfoCache map[string]*schedu
 			}
 		}
 	}
-	for _, nodeGroup := range cloudProvider.NodeGroups() {
+	for _, nodeGroup := range cloudProvider.NodeGroups(ctx) {
 		id := nodeGroup.Id()
 		seenGroups[id] = true
 		if _, found := result[id]; found {
@@ -312,7 +312,7 @@ func getNodeInfosForGroups(nodes []*apiv1.Node, nodeInfoCache map[string]*schedu
 
 		// No good template, trying to generate one. This is called only if there are no
 		// working nodes in the node groups. By default CA tries to use a real-world example.
-		nodeInfo, err := getNodeInfoFromTemplate(nodeGroup, daemonsets, predicateChecker)
+		nodeInfo, err := getNodeInfoFromTemplate(ctx, nodeGroup, daemonsets, predicateChecker)
 		if err != nil {
 			if err == cloudprovider.ErrNotImplemented {
 				continue
@@ -339,7 +339,7 @@ func getNodeInfosForGroups(nodes []*apiv1.Node, nodeInfoCache map[string]*schedu
 			if typedErr != nil {
 				return map[string]*schedulernodeinfo.NodeInfo{}, typedErr
 			}
-			nodeGroup, err := cloudProvider.NodeGroupForNode(node)
+			nodeGroup, err := cloudProvider.NodeGroupForNode(ctx, node)
 			if err != nil {
 				return map[string]*schedulernodeinfo.NodeInfo{}, errors.ToAutoscalerError(
 					errors.CloudProviderError, err)
@@ -354,9 +354,9 @@ func getNodeInfosForGroups(nodes []*apiv1.Node, nodeInfoCache map[string]*schedu
 }
 
 // getNodeInfoFromTemplate returns NodeInfo object built base on TemplateNodeInfo returned by NodeGroup.TemplateNodeInfo().
-func getNodeInfoFromTemplate(nodeGroup cloudprovider.NodeGroup, daemonsets []*appsv1.DaemonSet, predicateChecker *simulator.PredicateChecker) (*schedulernodeinfo.NodeInfo, errors.AutoscalerError) {
+func getNodeInfoFromTemplate(ctx context.Context, nodeGroup cloudprovider.NodeGroup, daemonsets []*appsv1.DaemonSet, predicateChecker *simulator.PredicateChecker) (*schedulernodeinfo.NodeInfo, errors.AutoscalerError) {
 	id := nodeGroup.Id()
-	baseNodeInfo, err := nodeGroup.TemplateNodeInfo()
+	baseNodeInfo, err := nodeGroup.TemplateNodeInfo(ctx)
 	if err != nil {
 		return nil, errors.ToAutoscalerError(errors.CloudProviderError, err)
 	}
@@ -374,11 +374,11 @@ func getNodeInfoFromTemplate(nodeGroup cloudprovider.NodeGroup, daemonsets []*ap
 
 // filterOutNodesFromNotAutoscaledGroups return subset of input nodes for which cloud provider does not
 // return autoscaled node group.
-func filterOutNodesFromNotAutoscaledGroups(nodes []*apiv1.Node, cloudProvider cloudprovider.CloudProvider) ([]*apiv1.Node, errors.AutoscalerError) {
+func filterOutNodesFromNotAutoscaledGroups(ctx context.Context, nodes []*apiv1.Node, cloudProvider cloudprovider.CloudProvider) ([]*apiv1.Node, errors.AutoscalerError) {
 	result := make([]*apiv1.Node, 0)
 
 	for _, node := range nodes {
-		nodeGroup, err := cloudProvider.NodeGroupForNode(node)
+		nodeGroup, err := cloudProvider.NodeGroupForNode(ctx, node)
 		if err != nil {
 			return []*apiv1.Node{}, errors.ToAutoscalerError(errors.CloudProviderError, err)
 		}
@@ -459,13 +459,12 @@ func sanitizeTemplateNode(node *apiv1.Node, nodeGroup string) (*apiv1.Node, erro
 }
 
 // Removes unregistered nodes if needed. Returns true if anything was removed and error if such occurred.
-func removeOldUnregisteredNodes(unregisteredNodes []clusterstate.UnregisteredNode, context *context.AutoscalingContext,
-	currentTime time.Time, logRecorder *utils.LogEventRecorder) (bool, error) {
+func removeOldUnregisteredNodes(ctx context.Context, unregisteredNodes []clusterstate.UnregisteredNode, context *autoscalingcontext.AutoscalingContext, currentTime time.Time, logRecorder *utils.LogEventRecorder) (bool, error) {
 	removedAny := false
 	for _, unregisteredNode := range unregisteredNodes {
 		if unregisteredNode.UnregisteredSince.Add(context.MaxNodeProvisionTime).Before(currentTime) {
 			klog.V(0).Infof("Removing unregistered node %v", unregisteredNode.Node.Name)
-			nodeGroup, err := context.CloudProvider.NodeGroupForNode(unregisteredNode.Node)
+			nodeGroup, err := context.CloudProvider.NodeGroupForNode(ctx, unregisteredNode.Node)
 			if err != nil {
 				klog.Warningf("Failed to get node group for %s: %v", unregisteredNode.Node.Name, err)
 				return removedAny, err
@@ -474,7 +473,7 @@ func removeOldUnregisteredNodes(unregisteredNodes []clusterstate.UnregisteredNod
 				klog.Warningf("No node group for node %s, skipping", unregisteredNode.Node.Name)
 				continue
 			}
-			size, err := nodeGroup.TargetSize()
+			size, err := nodeGroup.TargetSize(ctx)
 			if err != nil {
 				klog.Warningf("Failed to get node group size; unregisteredNode=%v; nodeGroup=%v; err=%v", unregisteredNode.Node.Name, nodeGroup.Id(), err)
 				continue
@@ -483,7 +482,7 @@ func removeOldUnregisteredNodes(unregisteredNodes []clusterstate.UnregisteredNod
 				klog.Warningf("Failed to remove node %s: node group min size reached, skipping unregistered node removal", unregisteredNode.Node.Name)
 				continue
 			}
-			err = nodeGroup.DeleteNodes([]*apiv1.Node{unregisteredNode.Node})
+			err = nodeGroup.DeleteNodes(ctx, []*apiv1.Node{unregisteredNode.Node})
 			if err != nil {
 				klog.Warningf("Failed to remove node %s: %v", unregisteredNode.Node.Name, err)
 				logRecorder.Eventf(apiv1.EventTypeWarning, "DeleteUnregisteredFailed",
@@ -501,9 +500,9 @@ func removeOldUnregisteredNodes(unregisteredNodes []clusterstate.UnregisteredNod
 // Sets the target size of node groups to the current number of nodes in them
 // if the difference was constant for a prolonged time. Returns true if managed
 // to fix something.
-func fixNodeGroupSize(context *context.AutoscalingContext, clusterStateRegistry *clusterstate.ClusterStateRegistry, currentTime time.Time) (bool, error) {
+func fixNodeGroupSize(ctx context.Context, context *autoscalingcontext.AutoscalingContext, clusterStateRegistry *clusterstate.ClusterStateRegistry, currentTime time.Time) (bool, error) {
 	fixed := false
-	for _, nodeGroup := range context.CloudProvider.NodeGroups() {
+	for _, nodeGroup := range context.CloudProvider.NodeGroups(ctx) {
 		incorrectSize := clusterStateRegistry.GetIncorrectNodeGroupSize(nodeGroup.Id())
 		if incorrectSize == nil {
 			continue
@@ -515,7 +514,7 @@ func fixNodeGroupSize(context *context.AutoscalingContext, clusterStateRegistry 
 					incorrectSize.ExpectedSize,
 					incorrectSize.CurrentSize,
 					delta)
-				if err := nodeGroup.DecreaseTargetSize(delta); err != nil {
+				if err := nodeGroup.DecreaseTargetSize(ctx, delta); err != nil {
 					return fixed, fmt.Errorf("failed to decrease %s: %v", nodeGroup.Id(), err)
 				}
 				fixed = true
@@ -528,13 +527,13 @@ func fixNodeGroupSize(context *context.AutoscalingContext, clusterStateRegistry 
 // getPotentiallyUnneededNodes returns nodes that are:
 // - managed by the cluster autoscaler
 // - in groups with size > min size
-func getPotentiallyUnneededNodes(context *context.AutoscalingContext, nodes []*apiv1.Node) []*apiv1.Node {
+func getPotentiallyUnneededNodes(ctx context.Context, context *autoscalingcontext.AutoscalingContext, nodes []*apiv1.Node) []*apiv1.Node {
 	result := make([]*apiv1.Node, 0, len(nodes))
 
-	nodeGroupSize := getNodeGroupSizeMap(context.CloudProvider)
+	nodeGroupSize := getNodeGroupSizeMap(ctx, context.CloudProvider)
 
 	for _, node := range nodes {
-		nodeGroup, err := context.CloudProvider.NodeGroupForNode(node)
+		nodeGroup, err := context.CloudProvider.NodeGroupForNode(ctx, node)
 		if err != nil {
 			klog.Warningf("Error while checking node group for %s: %v", node.Name, err)
 			continue
@@ -616,10 +615,10 @@ func getNodeResource(node *apiv1.Node, resource apiv1.ResourceName) int64 {
 	return nodeCapacityValue
 }
 
-func getNodeGroupSizeMap(cloudProvider cloudprovider.CloudProvider) map[string]int {
+func getNodeGroupSizeMap(ctx context.Context, cloudProvider cloudprovider.CloudProvider) map[string]int {
 	nodeGroupSize := make(map[string]int)
-	for _, nodeGroup := range cloudProvider.NodeGroups() {
-		size, err := nodeGroup.TargetSize()
+	for _, nodeGroup := range cloudProvider.NodeGroups(ctx) {
+		size, err := nodeGroup.TargetSize(ctx)
 		if err != nil {
 			klog.Errorf("Error while checking node group size %s: %v", nodeGroup.Id(), err)
 			continue

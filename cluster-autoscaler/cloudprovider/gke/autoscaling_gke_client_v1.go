@@ -17,6 +17,7 @@ limitations under the License.
 package gke
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -51,7 +52,7 @@ func NewAutoscalingGkeClientV1(client *http.Client, projectId, location, cluster
 	return autoscalingGkeClient, nil
 }
 
-func (m *autoscalingGkeClientV1) GetCluster() (Cluster, error) {
+func (m *autoscalingGkeClientV1) GetCluster(context.Context) (Cluster, error) {
 	registerRequest("clusters", "get")
 	clusterResponse, err := m.gkeService.Projects.Locations.Clusters.Get(m.clusterPath).Do()
 	if err != nil {
@@ -75,10 +76,10 @@ func (m *autoscalingGkeClientV1) GetCluster() (Cluster, error) {
 	}, nil
 }
 
-func (m *autoscalingGkeClientV1) DeleteNodePool(toBeRemoved string) error {
+func (m *autoscalingGkeClientV1) DeleteNodePool(i context.Context, toBeRemoved string) error {
 	return cloudprovider.ErrNotImplemented
 }
 
-func (m *autoscalingGkeClientV1) CreateNodePool(mig *GkeMig) error {
+func (m *autoscalingGkeClientV1) CreateNodePool(i context.Context, mig *GkeMig) error {
 	return cloudprovider.ErrNotImplemented
 }

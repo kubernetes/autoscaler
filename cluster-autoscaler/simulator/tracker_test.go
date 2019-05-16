@@ -60,7 +60,7 @@ func TestUsageTracker(t *testing.T) {
 	assert.False(t, Y.usedByTooMany)
 
 	// Checking cleanup
-	tracker.CleanUp(now.Add(-17 * time.Minute))
+	tracker.CleanUp(ctx, now.Add(-17*time.Minute))
 
 	C, foundC := tracker.Get("C")
 	_, foundD := tracker.Get("D")

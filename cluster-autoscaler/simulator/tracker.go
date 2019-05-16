@@ -17,7 +17,10 @@ limitations under the License.
 package simulator
 
 import (
+	"context"
 	"time"
+
+	"github.com/opentracing/opentracing-go"
 )
 
 const (
@@ -113,7 +116,10 @@ func filterOutOld(timestampMap map[string]time.Time, cutoff time.Time) {
 }
 
 // CleanUp removes all relations updated before the cutoff time.
-func (tracker *UsageTracker) CleanUp(cutoff time.Time) {
+func (tracker *UsageTracker) CleanUp(ctx context.Context, cutoff time.Time) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "UsageTracker.CleanUp")
+	defer span.Finish()
+
 	toDelete := make([]string, 0)
 	for key, usageRecord := range tracker.usage {
 		if !usageRecord.usingTooMany {

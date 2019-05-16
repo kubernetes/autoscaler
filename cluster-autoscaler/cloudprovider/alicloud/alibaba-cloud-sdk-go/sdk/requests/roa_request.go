@@ -19,10 +19,11 @@ package requests
 import (
 	"bytes"
 	"io"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/utils"
 	"net/url"
 	"sort"
 	"strings"
+
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/utils"
 )
 
 // RoaRequest wrap base request

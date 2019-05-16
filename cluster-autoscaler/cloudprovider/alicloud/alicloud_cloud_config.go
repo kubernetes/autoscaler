@@ -17,9 +17,10 @@ limitations under the License.
 package alicloud
 
 import (
+	"os"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/metadata"
 	"k8s.io/klog"
-	"os"
 )
 
 const (

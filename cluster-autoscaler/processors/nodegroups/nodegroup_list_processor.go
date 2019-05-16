@@ -17,18 +17,22 @@ limitations under the License.
 package nodegroups
 
 import (
+	"context"
+
+	"github.com/opentracing/opentracing-go"
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	autoscalingcontext "k8s.io/autoscaler/cluster-autoscaler/context"
 )
 
 // NodeGroupListProcessor processes lists of NodeGroups considered in scale-up.
 type NodeGroupListProcessor interface {
-	Process(context *context.AutoscalingContext, nodeGroups []cloudprovider.NodeGroup,
+	Process(ctx context.Context, context *autoscalingcontext.AutoscalingContext, nodeGroups []cloudprovider.NodeGroup,
 		nodeInfos map[string]*schedulernodeinfo.NodeInfo,
 		unschedulablePods []*apiv1.Pod) ([]cloudprovider.NodeGroup, map[string]*schedulernodeinfo.NodeInfo, error)
-	CleanUp()
+	CleanUp(ctx context.Context)
 }
 
 // NoOpNodeGroupListProcessor is returning pod lists without processing them.
@@ -41,11 +45,16 @@ func NewDefaultNodeGroupListProcessor() NodeGroupListProcessor {
 }
 
 // Process processes lists of unschedulable and scheduled pods before scaling of the cluster.
-func (p *NoOpNodeGroupListProcessor) Process(context *context.AutoscalingContext, nodeGroups []cloudprovider.NodeGroup, nodeInfos map[string]*schedulernodeinfo.NodeInfo,
+func (p *NoOpNodeGroupListProcessor) Process(ctx context.Context, context *autoscalingcontext.AutoscalingContext, nodeGroups []cloudprovider.NodeGroup, nodeInfos map[string]*schedulernodeinfo.NodeInfo,
 	unschedulablePods []*apiv1.Pod) ([]cloudprovider.NodeGroup, map[string]*schedulernodeinfo.NodeInfo, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "NoOpNodeGroupListProcessor.Process")
+	defer span.Finish()
+
 	return nodeGroups, nodeInfos, nil
 }
 
 // CleanUp cleans up the processor's internal structures.
-func (p *NoOpNodeGroupListProcessor) CleanUp() {
+func (p *NoOpNodeGroupListProcessor) CleanUp(ctx context.Context) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "NoOpNodeGroupListProcessor.CleanUp")
+	defer span.Finish()
 }

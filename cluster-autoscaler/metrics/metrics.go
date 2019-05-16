@@ -97,32 +97,28 @@ var (
 			Namespace: caNamespace,
 			Name:      "cluster_safe_to_autoscale",
 			Help:      "Whether or not cluster is healthy enough for autoscaling. 1 if it is, 0 otherwise.",
-		},
-	)
+		})
 
 	nodesCount = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Namespace: caNamespace,
 			Name:      "nodes_count",
 			Help:      "Number of nodes in cluster.",
-		}, []string{"state"},
-	)
+		}, []string{"state"})
 
 	nodeGroupsCount = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Namespace: caNamespace,
 			Name:      "node_groups_count",
 			Help:      "Number of node groups managed by CA.",
-		}, []string{"node_group_type"},
-	)
+		}, []string{"node_group_type"})
 
 	unschedulablePodsCount = prometheus.NewGauge(
 		prometheus.GaugeOpts{
 			Namespace: caNamespace,
 			Name:      "unschedulable_pods_count",
 			Help:      "Number of unschedulable pods in the cluster.",
-		},
-	)
+		})
 
 	/**** Metrics related to autoscaler execution ****/
 	lastActivity = prometheus.NewGaugeVec(
@@ -130,8 +126,7 @@ var (
 			Namespace: caNamespace,
 			Name:      "last_activity",
 			Help:      "Last time certain part of CA logic executed.",
-		}, []string{"activity"},
-	)
+		}, []string{"activity"})
 
 	functionDuration = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
@@ -139,8 +134,7 @@ var (
 			Name:      "function_duration_seconds",
 			Help:      "Time taken by various parts of CA main loop.",
 			Buckets:   []float64{0.01, 0.05, 0.1, 0.5, 1.0, 2.5, 5.0, 7.5, 10.0, 12.5, 15.0, 17.5, 20.0, 22.5, 25.0, 27.5, 30.0, 50.0, 75.0, 100.0, 1000.0},
-		}, []string{"function"},
-	)
+		}, []string{"function"})
 
 	/**** Metrics related to autoscaler operations ****/
 	errorsCount = prometheus.NewCounterVec(
@@ -148,64 +142,56 @@ var (
 			Namespace: caNamespace,
 			Name:      "errors_total",
 			Help:      "The number of CA loops failed due to an error.",
-		}, []string{"type"},
-	)
+		}, []string{"type"})
 
 	scaleUpCount = prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Namespace: caNamespace,
 			Name:      "scaled_up_nodes_total",
 			Help:      "Number of nodes added by CA.",
-		},
-	)
+		})
 
 	gpuScaleUpCount = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Namespace: caNamespace,
 			Name:      "scaled_up_gpu_nodes_total",
 			Help:      "Number of GPU nodes added by CA, by GPU name.",
-		}, []string{"gpu_name"},
-	)
+		}, []string{"gpu_name"})
 
 	failedScaleUpCount = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Namespace: caNamespace,
 			Name:      "failed_scale_ups_total",
 			Help:      "Number of times scale-up operation has failed.",
-		}, []string{"reason"},
-	)
+		}, []string{"reason"})
 
 	scaleDownCount = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Namespace: caNamespace,
 			Name:      "scaled_down_nodes_total",
 			Help:      "Number of nodes removed by CA.",
-		}, []string{"reason"},
-	)
+		}, []string{"reason"})
 
 	gpuScaleDownCount = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Namespace: caNamespace,
 			Name:      "scaled_down_gpu_nodes_total",
 			Help:      "Number of GPU nodes removed by CA, by reason and GPU name.",
-		}, []string{"reason", "gpu_name"},
-	)
+		}, []string{"reason", "gpu_name"})
 
 	evictionsCount = prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Namespace: caNamespace,
 			Name:      "evicted_pods_total",
 			Help:      "Number of pods evicted by CA",
-		},
-	)
+		})
 
 	unneededNodesCount = prometheus.NewGauge(
 		prometheus.GaugeOpts{
 			Namespace: caNamespace,
 			Name:      "unneeded_nodes_count",
 			Help:      "Number of nodes currently considered unneeded by CA.",
-		},
-	)
+		})
 
 	/**** Metrics related to NodeAutoprovisioning ****/
 	napEnabled = prometheus.NewGauge(
@@ -213,24 +199,21 @@ var (
 			Namespace: caNamespace,
 			Name:      "nap_enabled",
 			Help:      "Whether or not Node Autoprovisioning is enabled. 1 if it is, 0 otherwise.",
-		},
-	)
+		})
 
 	nodeGroupCreationCount = prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Namespace: caNamespace,
 			Name:      "created_node_groups_total",
 			Help:      "Number of node groups created by Node Autoprovisioning.",
-		},
-	)
+		})
 
 	nodeGroupDeletionCount = prometheus.NewCounter(
 		prometheus.CounterOpts{
 			Namespace: caNamespace,
 			Name:      "deleted_node_groups_total",
 			Help:      "Number of node groups deleted by Node Autoprovisioning.",
-		},
-	)
+		})
 )
 
 // RegisterAll registers all metrics.

@@ -17,7 +17,7 @@ limitations under the License.
 package main
 
 import (
-	ctx "context"
+	"context"
 	"flag"
 	"fmt"
 	"net/http"
@@ -30,6 +30,15 @@ import (
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	kube_client "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/tools/leaderelection"
+	"k8s.io/client-go/tools/leaderelection/resourcelock"
+	kube_flag "k8s.io/component-base/cli/flag"
+	componentbaseconfig "k8s.io/component-base/config"
+	"k8s.io/kubernetes/pkg/client/leaderelectionconfig"
+
 	cloudBuilder "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/core"
@@ -41,18 +50,15 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
-	kube_client "k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/client-go/tools/leaderelection"
-	"k8s.io/client-go/tools/leaderelection/resourcelock"
-	kube_flag "k8s.io/component-base/cli/flag"
-	componentbaseconfig "k8s.io/component-base/config"
-	"k8s.io/kubernetes/pkg/client/leaderelectionconfig"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/spf13/pflag"
 	"k8s.io/klog"
+
+	"cloud.google.com/go/profiler"
+	"github.com/opentracing/opentracing-go"
+	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/opentracer"
+	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 )
 
 // MultiStringFlag is a flag for passing multiple parameters using same flag
@@ -255,7 +261,7 @@ func createKubeClient(kubeConfig *rest.Config) kube_client.Interface {
 	return kube_client.NewForConfigOrDie(kubeConfig)
 }
 
-func registerSignalHandlers(autoscaler core.Autoscaler) {
+func registerSignalHandlers(ctx context.Context, autoscaler core.Autoscaler) {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, os.Interrupt, os.Kill, syscall.SIGTERM, syscall.SIGQUIT)
 	klog.V(1).Info("Registered cleanup signal handler")
@@ -263,14 +269,14 @@ func registerSignalHandlers(autoscaler core.Autoscaler) {
 	go func() {
 		<-sigs
 		klog.V(1).Info("Received signal, attempting cleanup")
-		autoscaler.ExitCleanUp()
+		autoscaler.ExitCleanUp(ctx)
 		klog.V(1).Info("Cleaned up, exiting...")
 		klog.Flush()
 		os.Exit(0)
 	}()
 }
 
-func buildAutoscaler() (core.Autoscaler, error) {
+func buildAutoscaler(ctx context.Context) (core.Autoscaler, error) {
 	// Create basic config from flags.
 	autoscalingOptions := createAutoscalingOptions()
 	kubeClient := createKubeClient(getKubeConfig())
@@ -292,19 +298,19 @@ func buildAutoscaler() (core.Autoscaler, error) {
 	metrics.UpdateNapEnabled(autoscalingOptions.NodeAutoprovisioningEnabled)
 
 	// Create autoscaler.
-	return core.NewAutoscaler(opts)
+	return core.NewAutoscaler(ctx, opts)
 }
 
-func run(healthCheck *metrics.HealthCheck) {
+func run(ctx context.Context, healthCheck *metrics.HealthCheck) {
 	metrics.RegisterAll()
 
-	autoscaler, err := buildAutoscaler()
+	autoscaler, err := buildAutoscaler(ctx)
 	if err != nil {
 		klog.Fatalf("Failed to create autoscaler: %v", err)
 	}
 
 	// Register signal handlers for graceful shutdown.
-	registerSignalHandlers(autoscaler)
+	registerSignalHandlers(ctx, autoscaler)
 
 	// Start updating health check endpoint.
 	healthCheck.StartMonitoring()
@@ -318,7 +324,7 @@ func run(healthCheck *metrics.HealthCheck) {
 				metrics.UpdateLastTime(metrics.Main, loopStart)
 				healthCheck.UpdateLastActivity(loopStart)
 
-				err := autoscaler.RunOnce(loopStart)
+				err := autoscaler.RunOnce(ctx, loopStart)
 				if err != nil && err.Type() != errors.TransientError {
 					metrics.RegisterError(err)
 				} else {
@@ -343,6 +349,20 @@ func main() {
 
 	klog.V(1).Infof("Cluster Autoscaler %s", ClusterAutoscalerVersion)
 
+	ctx := context.Background()
+
+	t := opentracer.New(tracer.WithAgentAddr(""))
+	defer tracer.Stop()
+
+	opentracing.SetGlobalTracer(t)
+
+	if err := profiler.Start(profiler.Config{
+		Service:        "cluster-autoscaler",
+		ServiceVersion: ClusterAutoscalerVersion,
+	}); err != nil {
+		klog.Fatalf("Cannot start the profiler: %v", err)
+	}
+
 	go func() {
 		http.Handle("/metrics", prometheus.Handler())
 		http.Handle("/health-check", healthCheck)
@@ -351,7 +371,7 @@ func main() {
 	}()
 
 	if !leaderElection.LeaderElect {
-		run(healthCheck)
+		run(ctx, healthCheck)
 	} else {
 		id, err := os.Hostname()
 		if err != nil {
@@ -375,22 +395,21 @@ func main() {
 			resourcelock.ResourceLockConfig{
 				Identity:      id,
 				EventRecorder: kube_util.CreateEventRecorder(kubeClient),
-			},
-		)
+			})
 		if err != nil {
 			klog.Fatalf("Unable to create leader election lock: %v", err)
 		}
 
-		leaderelection.RunOrDie(ctx.TODO(), leaderelection.LeaderElectionConfig{
+		leaderelection.RunOrDie(context.TODO(), leaderelection.LeaderElectionConfig{
 			Lock:          lock,
 			LeaseDuration: leaderElection.LeaseDuration.Duration,
 			RenewDeadline: leaderElection.RenewDeadline.Duration,
 			RetryPeriod:   leaderElection.RetryPeriod.Duration,
 			Callbacks: leaderelection.LeaderCallbacks{
-				OnStartedLeading: func(_ ctx.Context) {
+				OnStartedLeading: func(ctx context.Context) {
 					// Since we are committing a suicide after losing
 					// mastership, we can safely ignore the argument.
-					run(healthCheck)
+					run(ctx, healthCheck)
 				},
 				OnStoppedLeading: func() {
 					klog.Fatalf("lost master")

@@ -20,13 +20,12 @@ import (
 	"testing"
 
 	apiv1 "k8s.io/api/core/v1"
-
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	autoscalingcontext "k8s.io/autoscaler/cluster-autoscaler/context"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 )
 
 func TestPodListProcessor(t *testing.T) {
-	context := &context.AutoscalingContext{}
+	context := &autoscalingcontext.AutoscalingContext{}
 	p1 := BuildTestPod("p1", 40, 0)
 	p2 := BuildTestPod("p2", 400, 0)
 	n1 := BuildTestNode("n1", 100, 1000)

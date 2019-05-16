@@ -17,6 +17,7 @@ limitations under the License.
 package aws
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"strings"
@@ -27,6 +28,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/opentracing/opentracing-go"
 	"k8s.io/klog"
 )
 
@@ -379,7 +381,7 @@ func (m *asgCache) buildAsgFromAWS(g *autoscaling.Group) (*asg, error) {
 		LaunchConfigurationName: aws.StringValue(g.LaunchConfigurationName),
 		LaunchTemplateName:      launchTemplateName,
 		LaunchTemplateVersion:   launchTemplateVersion,
-		Tags:                    g.Tags,
+		Tags: g.Tags,
 	}
 
 	return asg, nil
@@ -402,6 +404,9 @@ func (m *asgCache) buildInstanceRefFromAWS(instance *autoscaling.Instance) AwsIn
 }
 
 // Cleanup closes the channel to signal the go routine to stop that is handling the cache
-func (m *asgCache) Cleanup() {
+func (m *asgCache) Cleanup(ctx context.Context) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "asgCache.Cleanup")
+	defer span.Finish()
+
 	close(m.interrupt)
 }

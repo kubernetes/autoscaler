@@ -17,15 +17,17 @@ limitations under the License.
 package builder
 
 import (
+	"context"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	autoscalingcontext "k8s.io/autoscaler/cluster-autoscaler/context"
 
 	"k8s.io/klog"
 )
 
 // NewCloudProvider builds a cloud provider from provided parameters.
-func NewCloudProvider(opts config.AutoscalingOptions) cloudprovider.CloudProvider {
+func NewCloudProvider(ctx context.Context, opts config.AutoscalingOptions) cloudprovider.CloudProvider {
 	klog.V(1).Infof("Building %s cloud provider.", opts.CloudProviderName)
 
 	do := cloudprovider.NodeGroupDiscoveryOptions{
@@ -33,7 +35,7 @@ func NewCloudProvider(opts config.AutoscalingOptions) cloudprovider.CloudProvide
 		NodeGroupAutoDiscoverySpecs: opts.NodeGroupAutoDiscovery,
 	}
 
-	rl := context.NewResourceLimiterFromAutoscalingOptions(opts)
+	rl := autoscalingcontext.NewResourceLimiterFromAutoscalingOptions(opts)
 
 	if opts.CloudProviderName == "" {
 		// Ideally this would be an error, but several unit tests of the
@@ -42,7 +44,7 @@ func NewCloudProvider(opts config.AutoscalingOptions) cloudprovider.CloudProvide
 		return nil
 	}
 
-	provider := buildCloudProvider(opts, do, rl)
+	provider := buildCloudProvider(ctx, opts, do, rl)
 	if provider != nil {
 		return provider
 	}

@@ -17,8 +17,11 @@ limitations under the License.
 package waste
 
 import (
+	"context"
 	"testing"
 	"time"
+
+	"github.com/opentracing/opentracing-go"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
@@ -26,33 +29,45 @@ import (
 	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+
+	"k8s.io/autoscaler/cluster-autoscaler/expander"
 )
 
 type FakeNodeGroup struct {
 	id string
 }
 
-func (f *FakeNodeGroup) MaxSize() int                       { return 2 }
-func (f *FakeNodeGroup) MinSize() int                       { return 1 }
-func (f *FakeNodeGroup) TargetSize() (int, error)           { return 2, nil }
-func (f *FakeNodeGroup) IncreaseSize(delta int) error       { return nil }
-func (f *FakeNodeGroup) DecreaseTargetSize(delta int) error { return nil }
-func (f *FakeNodeGroup) DeleteNodes([]*apiv1.Node) error    { return nil }
-func (f *FakeNodeGroup) Id() string                         { return f.id }
-func (f *FakeNodeGroup) Debug() string                      { return f.id }
-func (f *FakeNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
+func (f *FakeNodeGroup) MaxSize() int                                { return 2 }
+func (f *FakeNodeGroup) MinSize() int                                { return 1 }
+func (f *FakeNodeGroup) TargetSize(ctx context.Context) (int, error) { return 2, nil }
+
+func (f *FakeNodeGroup) IncreaseSize(ctx context.Context, delta int) error { return nil }
+
+func (f *FakeNodeGroup) DecreaseTargetSize(ctx context.Context, delta int) error { return nil }
+
+func (f *FakeNodeGroup) DeleteNodes(context.Context, []*apiv1.Node) error { return nil }
+
+func (f *FakeNodeGroup) Id() string    { return f.id }
+func (f *FakeNodeGroup) Debug() string { return f.id }
+func (f *FakeNodeGroup) Nodes(ctx context.Context) ([]cloudprovider.Instance, error) {
 	return []cloudprovider.Instance{}, nil
 }
-func (f *FakeNodeGroup) TemplateNodeInfo() (*schedulernodeinfo.NodeInfo, error) {
+func (f *FakeNodeGroup) TemplateNodeInfo(ctx context.Context) (*schedulernodeinfo.NodeInfo, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "FakeNodeGroup.TemplateNodeInfo")
+	defer span.Finish()
+
 	return nil, cloudprovider.ErrNotImplemented
 }
 func (f *FakeNodeGroup) Exist() bool { return true }
-func (f *FakeNodeGroup) Create() (cloudprovider.NodeGroup, error) {
+func (f *FakeNodeGroup) Create(ctx context.Context) (cloudprovider.NodeGroup, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "FakeNodeGroup.Create")
+	defer span.Finish()
+
 	return nil, cloudprovider.ErrAlreadyExist
 }
-func (f *FakeNodeGroup) Delete() error         { return cloudprovider.ErrNotImplemented }
+func (f *FakeNodeGroup) Delete(ctx context.Context) error { return cloudprovider.ErrNotImplemented }
+
 func (f *FakeNodeGroup) Autoprovisioned() bool { return false }
 
 func makeNodeInfo(cpu int64, memory int64, pods int64) *schedulernodeinfo.NodeInfo {

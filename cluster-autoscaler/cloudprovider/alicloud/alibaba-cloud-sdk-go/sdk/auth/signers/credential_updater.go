@@ -17,9 +17,10 @@ limitations under the License.
 package signers
 
 import (
+	"time"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/requests"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/responses"
-	"time"
 )
 
 const defaultInAdvanceScale = 0.8

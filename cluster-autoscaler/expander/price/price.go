@@ -77,8 +77,7 @@ var (
 // NewStrategy returns an expansion strategy that picks nodes based on price and preferred node type.
 func NewStrategy(pricingModel cloudprovider.PricingModel,
 	preferredNodeProvider PreferredNodeProvider,
-	nodeUnfitness NodeUnfitness,
-) expander.Strategy {
+	nodeUnfitness NodeUnfitness) expander.Strategy {
 	return &priceBased{
 		pricingModel:          pricingModel,
 		preferredNodeProvider: preferredNodeProvider,
@@ -158,8 +157,7 @@ nextoption:
 			priceSubScore,
 			nodeUnfitness,
 			supressedUnfitness,
-			optionScore,
-		)
+			optionScore)
 
 		klog.V(5).Infof("Price expander for %s: %s", option.NodeGroup.Id(), debug)
 

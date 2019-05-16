@@ -20,8 +20,9 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/errors"
 	"strings"
+
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/errors"
 )
 
 // CommonRequest wrap base request

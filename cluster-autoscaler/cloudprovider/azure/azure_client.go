@@ -31,6 +31,7 @@ import (
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/go-autorest/autorest/azure"
+	"github.com/opentracing/opentracing-go"
 	"k8s.io/klog"
 )
 
@@ -95,6 +96,9 @@ func newAzVirtualMachineScaleSetsClient(subscriptionID, endpoint string, service
 }
 
 func (az *azVirtualMachineScaleSetsClient) CreateOrUpdate(ctx context.Context, resourceGroupName string, VMScaleSetName string, parameters compute.VirtualMachineScaleSet) (resp *http.Response, err error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "azVirtualMachineScaleSetsClient.CreateOrUpdate")
+	defer span.Finish()
+
 	klog.V(10).Infof("azVirtualMachineScaleSetsClient.CreateOrUpdate(%q,%q): start", resourceGroupName, VMScaleSetName)
 	defer func() {
 		klog.V(10).Infof("azVirtualMachineScaleSetsClient.CreateOrUpdate(%q,%q): end", resourceGroupName, VMScaleSetName)
@@ -110,6 +114,9 @@ func (az *azVirtualMachineScaleSetsClient) CreateOrUpdate(ctx context.Context, r
 }
 
 func (az *azVirtualMachineScaleSetsClient) Get(ctx context.Context, resourceGroupName string, VMScaleSetName string) (result compute.VirtualMachineScaleSet, err error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "azVirtualMachineScaleSetsClient.Get")
+	defer span.Finish()
+
 	klog.V(10).Infof("azVirtualMachineScaleSetsClient.Get(%q,%q): start", resourceGroupName, VMScaleSetName)
 	defer func() {
 		klog.V(10).Infof("azVirtualMachineScaleSetsClient.Get(%q,%q): end", resourceGroupName, VMScaleSetName)
@@ -119,6 +126,9 @@ func (az *azVirtualMachineScaleSetsClient) Get(ctx context.Context, resourceGrou
 }
 
 func (az *azVirtualMachineScaleSetsClient) List(ctx context.Context, resourceGroupName string) (result []compute.VirtualMachineScaleSet, err error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "azVirtualMachineScaleSetsClient.List")
+	defer span.Finish()
+
 	klog.V(10).Infof("azVirtualMachineScaleSetsClient.List(%q): start", resourceGroupName)
 	defer func() {
 		klog.V(10).Infof("azVirtualMachineScaleSetsClient.List(%q): end", resourceGroupName)
@@ -142,6 +152,9 @@ func (az *azVirtualMachineScaleSetsClient) List(ctx context.Context, resourceGro
 }
 
 func (az *azVirtualMachineScaleSetsClient) DeleteInstances(ctx context.Context, resourceGroupName string, vmScaleSetName string, vmInstanceIDs compute.VirtualMachineScaleSetVMInstanceRequiredIDs) (resp *http.Response, err error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "azVirtualMachineScaleSetsClient.DeleteInstances")
+	defer span.Finish()
+
 	klog.V(10).Infof("azVirtualMachineScaleSetsClient.DeleteInstances(%q,%q,%v): start", resourceGroupName, vmScaleSetName, vmInstanceIDs)
 	defer func() {
 		klog.V(10).Infof("azVirtualMachineScaleSetsClient.DeleteInstances(%q,%q,%v): end", resourceGroupName, vmScaleSetName, vmInstanceIDs)
@@ -174,6 +187,9 @@ func newAzVirtualMachineScaleSetVMsClient(subscriptionID, endpoint string, servi
 }
 
 func (az *azVirtualMachineScaleSetVMsClient) Get(ctx context.Context, resourceGroupName string, VMScaleSetName string, instanceID string) (result compute.VirtualMachineScaleSetVM, err error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "azVirtualMachineScaleSetVMsClient.Get")
+	defer span.Finish()
+
 	klog.V(10).Infof("azVirtualMachineScaleSetVMsClient.Get(%q,%q,%q): start", resourceGroupName, VMScaleSetName, instanceID)
 	defer func() {
 		klog.V(10).Infof("azVirtualMachineScaleSetVMsClient.Get(%q,%q,%q): end", resourceGroupName, VMScaleSetName, instanceID)
@@ -183,6 +199,9 @@ func (az *azVirtualMachineScaleSetVMsClient) Get(ctx context.Context, resourceGr
 }
 
 func (az *azVirtualMachineScaleSetVMsClient) List(ctx context.Context, resourceGroupName string, virtualMachineScaleSetName string, filter string, selectParameter string, expand string) (result []compute.VirtualMachineScaleSetVM, err error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "azVirtualMachineScaleSetVMsClient.List")
+	defer span.Finish()
+
 	klog.V(10).Infof("azVirtualMachineScaleSetVMsClient.List(%q,%q,%q): start", resourceGroupName, virtualMachineScaleSetName, filter)
 	defer func() {
 		klog.V(10).Infof("azVirtualMachineScaleSetVMsClient.List(%q,%q,%q): end", resourceGroupName, virtualMachineScaleSetName, filter)
@@ -223,6 +242,9 @@ func newAzVirtualMachinesClient(subscriptionID, endpoint string, servicePrincipa
 }
 
 func (az *azVirtualMachinesClient) Get(ctx context.Context, resourceGroupName string, VMName string, expand compute.InstanceViewTypes) (result compute.VirtualMachine, err error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "azVirtualMachinesClient.Get")
+	defer span.Finish()
+
 	klog.V(10).Infof("azVirtualMachinesClient.Get(%q,%q,%q): start", resourceGroupName, VMName, expand)
 	defer func() {
 		klog.V(10).Infof("azVirtualMachinesClient.Get(%q,%q,%q): end", resourceGroupName, VMName, expand)
@@ -232,6 +254,9 @@ func (az *azVirtualMachinesClient) Get(ctx context.Context, resourceGroupName st
 }
 
 func (az *azVirtualMachinesClient) Delete(ctx context.Context, resourceGroupName string, VMName string) (resp *http.Response, err error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "azVirtualMachinesClient.Delete")
+	defer span.Finish()
+
 	klog.V(10).Infof("azVirtualMachinesClient.Delete(%q,%q): start", resourceGroupName, VMName)
 	defer func() {
 		klog.V(10).Infof("azVirtualMachinesClient.Delete(%q,%q): end", resourceGroupName, VMName)
@@ -247,6 +272,9 @@ func (az *azVirtualMachinesClient) Delete(ctx context.Context, resourceGroupName
 }
 
 func (az *azVirtualMachinesClient) List(ctx context.Context, resourceGroupName string) (result []compute.VirtualMachine, err error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "azVirtualMachinesClient.List")
+	defer span.Finish()
+
 	klog.V(10).Infof("azVirtualMachinesClient.List(%q): start", resourceGroupName)
 	defer func() {
 		klog.V(10).Infof("azVirtualMachinesClient.List(%q): end", resourceGroupName)
@@ -286,6 +314,9 @@ func newAzInterfacesClient(subscriptionID, endpoint string, servicePrincipalToke
 }
 
 func (az *azInterfacesClient) Delete(ctx context.Context, resourceGroupName string, networkInterfaceName string) (resp *http.Response, err error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "azInterfacesClient.Delete")
+	defer span.Finish()
+
 	klog.V(10).Infof("azInterfacesClient.Delete(%q,%q): start", resourceGroupName, networkInterfaceName)
 	defer func() {
 		klog.V(10).Infof("azInterfacesClient.Delete(%q,%q): end", resourceGroupName, networkInterfaceName)
@@ -317,6 +348,9 @@ func newAzDeploymentsClient(subscriptionID, endpoint string, servicePrincipalTok
 }
 
 func (az *azDeploymentsClient) Get(ctx context.Context, resourceGroupName string, deploymentName string) (result resources.DeploymentExtended, err error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "azDeploymentsClient.Get")
+	defer span.Finish()
+
 	klog.V(10).Infof("azDeploymentsClient.Get(%q,%q): start", resourceGroupName, deploymentName)
 	defer func() {
 		klog.V(10).Infof("azDeploymentsClient.Get(%q,%q): end", resourceGroupName, deploymentName)
@@ -326,6 +360,9 @@ func (az *azDeploymentsClient) Get(ctx context.Context, resourceGroupName string
 }
 
 func (az *azDeploymentsClient) ExportTemplate(ctx context.Context, resourceGroupName string, deploymentName string) (result resources.DeploymentExportResult, err error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "azDeploymentsClient.ExportTemplate")
+	defer span.Finish()
+
 	klog.V(10).Infof("azDeploymentsClient.ExportTemplate(%q,%q): start", resourceGroupName, deploymentName)
 	defer func() {
 		klog.V(10).Infof("azDeploymentsClient.ExportTemplate(%q,%q): end", resourceGroupName, deploymentName)
@@ -335,6 +372,9 @@ func (az *azDeploymentsClient) ExportTemplate(ctx context.Context, resourceGroup
 }
 
 func (az *azDeploymentsClient) CreateOrUpdate(ctx context.Context, resourceGroupName string, deploymentName string, parameters resources.Deployment) (resp *http.Response, err error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "azDeploymentsClient.CreateOrUpdate")
+	defer span.Finish()
+
 	klog.V(10).Infof("azDeploymentsClient.CreateOrUpdate(%q,%q): start", resourceGroupName, deploymentName)
 	defer func() {
 		klog.V(10).Infof("azDeploymentsClient.CreateOrUpdate(%q,%q): end", resourceGroupName, deploymentName)
@@ -366,6 +406,9 @@ func newAzDisksClient(subscriptionID, endpoint string, servicePrincipalToken *ad
 }
 
 func (az *azDisksClient) Delete(ctx context.Context, resourceGroupName string, diskName string) (resp *http.Response, err error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "azDisksClient.Delete")
+	defer span.Finish()
+
 	klog.V(10).Infof("azDisksClient.Delete(%q,%q): start", resourceGroupName, diskName)
 	defer func() {
 		klog.V(10).Infof("azDisksClient.Delete(%q,%q): end", resourceGroupName, diskName)
@@ -397,6 +440,9 @@ func newAzAccountsClient(subscriptionID, endpoint string, servicePrincipalToken 
 }
 
 func (az *azAccountsClient) ListKeys(ctx context.Context, resourceGroupName string, accountName string) (result storage.AccountListKeysResult, err error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "azAccountsClient.ListKeys")
+	defer span.Finish()
+
 	klog.V(10).Infof("azAccountsClient.ListKeys(%q,%q): start", resourceGroupName, accountName)
 	defer func() {
 		klog.V(10).Infof("azAccountsClient.ListKeys(%q,%q): end", resourceGroupName, accountName)

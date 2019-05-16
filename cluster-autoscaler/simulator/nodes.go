@@ -45,7 +45,7 @@ func GetRequiredPodsForNode(nodename string, listers kube_util.ListerRegistry) (
 	podsToRemoveList, err := drain.GetPodsForDeletionOnNodeDrain(
 		allPods,
 		[]*policyv1.PodDisruptionBudget{}, // PDBs are irrelevant when considering new node.
-		true,                              // Force all removals.
+		true, // Force all removals.
 		false,
 		false,
 		false, // Setting this to true requires listers to be not-null.

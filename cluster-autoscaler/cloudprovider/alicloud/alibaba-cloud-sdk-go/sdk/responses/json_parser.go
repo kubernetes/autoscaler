@@ -18,13 +18,14 @@ package responses
 
 import (
 	"encoding/json"
-	"github.com/json-iterator/go"
 	"io"
 	"math"
 	"strconv"
 	"strings"
 	"sync"
 	"unsafe"
+
+	"github.com/json-iterator/go"
 )
 
 const maxUint = ^uint(0)

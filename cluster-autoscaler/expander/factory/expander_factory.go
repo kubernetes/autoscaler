@@ -17,6 +17,8 @@ limitations under the License.
 package factory
 
 import (
+	"context"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/mostpods"
@@ -29,8 +31,7 @@ import (
 )
 
 // ExpanderStrategyFromString creates an expander.Strategy according to its name
-func ExpanderStrategyFromString(expanderFlag string, cloudProvider cloudprovider.CloudProvider,
-	nodeLister kube_util.NodeLister) (expander.Strategy, errors.AutoscalerError) {
+func ExpanderStrategyFromString(ctx context.Context, expanderFlag string, cloudProvider cloudprovider.CloudProvider, nodeLister kube_util.NodeLister) (expander.Strategy, errors.AutoscalerError) {
 	switch expanderFlag {
 	case expander.RandomExpanderName:
 		return random.NewStrategy(), nil
@@ -39,7 +40,7 @@ func ExpanderStrategyFromString(expanderFlag string, cloudProvider cloudprovider
 	case expander.LeastWasteExpanderName:
 		return waste.NewStrategy(), nil
 	case expander.PriceBasedExpanderName:
-		pricing, err := cloudProvider.Pricing()
+		pricing, err := cloudProvider.Pricing(ctx)
 		if err != nil {
 			return nil, err
 		}

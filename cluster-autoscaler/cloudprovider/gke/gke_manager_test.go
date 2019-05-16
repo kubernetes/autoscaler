@@ -563,7 +563,7 @@ func TestRefreshNodePools(t *testing.T) {
 
 	err := g.refreshClusterResources()
 	assert.NoError(t, err)
-	migs := g.GetMigs()
+	migs := g.GetMigs(ctx)
 	assert.Equal(t, 1, len(migs))
 	validateMig(t, migs[0].Config, zoneB, "gke-cluster-1-default-pool", 1, 11)
 	mock.AssertExpectationsForObjects(t, server)
@@ -580,7 +580,7 @@ func TestRefreshNodePools(t *testing.T) {
 
 	err = g.refreshClusterResources()
 	assert.NoError(t, err)
-	migs = g.GetMigs()
+	migs = g.GetMigs(ctx)
 	assert.Equal(t, 2, len(migs))
 	validateMig(t, migs[0].Config, zoneB, "gke-cluster-1-default-pool", 1, 11)
 	validateMig(t, migs[1].Config, zoneB, "gke-cluster-1-nodeautoprovisioning-323233232", 0, 1000)
@@ -594,7 +594,7 @@ func TestRefreshNodePools(t *testing.T) {
 
 	err = g.refreshClusterResources()
 	assert.NoError(t, err)
-	migs = g.GetMigs()
+	migs = g.GetMigs(ctx)
 	assert.Equal(t, 1, len(migs))
 	validateMig(t, migs[0].Config, zoneB, "gke-cluster-1-default-pool", 1, 11)
 	mock.AssertExpectationsForObjects(t, server)
@@ -619,7 +619,7 @@ func TestFetchAllNodePoolsRegional(t *testing.T) {
 
 	err := g.refreshClusterResources()
 	assert.NoError(t, err)
-	migs := g.GetMigs()
+	migs := g.GetMigs(ctx)
 	assert.Equal(t, 3, len(migs))
 	validateMig(t, migs[0].Config, zoneB, "gke-cluster-1-default-pool", 1, 11)
 	validateMig(t, migs[1].Config, zoneC, "gke-cluster-1-default-pool", 1, 11)
@@ -678,7 +678,7 @@ func TestDeleteNodePool(t *testing.T) {
 		nodePoolName:    "nodeautoprovisioning-323233232",
 		spec:            nil}
 
-	err := g.DeleteNodePool(mig)
+	err := g.DeleteNodePool(mig, ctx)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, server)
 }
@@ -749,10 +749,10 @@ func TestCreateNodePool(t *testing.T) {
 		},
 	}
 
-	newMig, err := g.CreateNodePool(mig)
+	newMig, err := g.CreateNodePool(ctx, mig)
 	assert.NoError(t, err)
 	assert.True(t, newMig.Exist())
-	migs := g.GetMigs()
+	migs := g.GetMigs(ctx)
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(migs))
 	mock.AssertExpectationsForObjects(t, server)
@@ -856,7 +856,7 @@ func TestDeleteInstances(t *testing.T) {
 		},
 	}
 
-	err := g.DeleteInstances(instances)
+	err := g.DeleteInstances(instances, ctx)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, server)
 
@@ -874,7 +874,7 @@ func TestDeleteInstances(t *testing.T) {
 		},
 	}
 
-	err = g.DeleteInstances(instances)
+	err = g.DeleteInstances(instances, ctx)
 	assert.Error(t, err)
 	assert.Equal(t, "cannot delete instances which don't belong to the same MIG.", err.Error())
 	mock.AssertExpectationsForObjects(t, server)
@@ -901,7 +901,7 @@ func TestGetMigSize(t *testing.T) {
 		nodePoolName:    "nodeautoprovisioning-323233232",
 		spec:            nil}
 
-	size, err := g.GetMigSize(mig)
+	size, err := g.GetMigSize(ctx, mig)
 	assert.NoError(t, err)
 	assert.Equal(t, int64(3), size)
 	mock.AssertExpectationsForObjects(t, server)
@@ -963,7 +963,7 @@ func TestSetMigSize(t *testing.T) {
 		nodePoolName:    "nodeautoprovisioning-323233232",
 		spec:            nil}
 
-	err := g.SetMigSize(mig, 3)
+	err := g.SetMigSize(mig, ctx, 3)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, server)
 }
@@ -983,7 +983,7 @@ func TestGetMigForInstance(t *testing.T) {
 		Name:    "gke-cluster-1-default-pool-f7607aac-f1hm",
 	}
 
-	mig, err := g.GetMigForInstance(gceRef)
+	mig, err := g.GetMigForInstance(ctx, gceRef)
 	assert.NoError(t, err)
 	assert.NotNil(t, mig)
 	assert.Equal(t, "gke-cluster-1-default-pool", mig.GceRef().Name)
@@ -1012,7 +1012,7 @@ func TestGetMigNodes(t *testing.T) {
 		spec:            nil,
 	}
 
-	nodes, err := g.GetMigNodes(mig)
+	nodes, err := g.GetMigNodes(ctx, mig)
 	assert.NoError(t, err)
 	assert.Equal(t, 4, len(nodes))
 	assert.Equal(t, "gce://project1/us-central1-b/gke-cluster-1-default-pool-f7607aac-9j4g", nodes[0])
@@ -1084,21 +1084,21 @@ func TestRefreshMachinesCache(t *testing.T) {
 	server.On("handle", "/project1/zones/us-central1-b/machineTypes").Return(listMachineTypesResponse).Once()
 
 	g.gkeConfigurationCache.setNodeLocations([]string{"us-central1-b"})
-	err := g.refreshMachinesCache()
+	err := g.refreshMachinesCache(ctx)
 	assert.NoError(t, err)
 	assert.NotNil(t, g.cache.GetMachineFromCache("f1-micro", zoneB))
 	assert.NotNil(t, g.cache.GetMachineFromCache("g1-small", zoneB))
 	mock.AssertExpectationsForObjects(t, server)
 
 	// Skipped refresh.
-	err = g.refreshMachinesCache()
+	err = g.refreshMachinesCache(ctx)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, server)
 
 	// Refresh again.
 	server.On("handle", "/project1/zones/us-central1-b/machineTypes").Return(listMachineTypesResponse).Once()
 	g.machinesCacheLastRefresh = time.Now().Add(-2 * time.Hour)
-	err = g.refreshMachinesCache()
+	err = g.refreshMachinesCache(ctx)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, server)
 }
@@ -1128,7 +1128,7 @@ func TestGetMigTemplateNode(t *testing.T) {
 		spec:            nil,
 	}
 
-	node, err := g.GetMigTemplateNode(mig)
+	node, err := g.GetMigTemplateNode(mig, ctx)
 	assert.NoError(t, err)
 	assert.NotNil(t, node)
 	mock.AssertExpectationsForObjects(t, server)
@@ -1156,14 +1156,14 @@ func TestGetCpuAndMemoryForMachineType(t *testing.T) {
 	g := newTestGkeManager(t, server.URL, ModeGKE, regional)
 
 	// Custom machine type.
-	cpu, mem, err := g.getCpuAndMemoryForMachineType("custom-8-2", zoneB)
+	cpu, mem, err := g.getCpuAndMemoryForMachineType(ctx, "custom-8-2", zoneB)
 	assert.NoError(t, err)
 	assert.Equal(t, int64(8), cpu)
 	assert.Equal(t, int64(2*units.MiB), mem)
 	mock.AssertExpectationsForObjects(t, server)
 
 	// Standard machine type found in cache.
-	cpu, mem, err = g.getCpuAndMemoryForMachineType("n1-standard-1", zoneB)
+	cpu, mem, err = g.getCpuAndMemoryForMachineType(ctx, "n1-standard-1", zoneB)
 	assert.NoError(t, err)
 	assert.Equal(t, int64(1), cpu)
 	assert.Equal(t, int64(1*units.MiB), mem)
@@ -1171,14 +1171,14 @@ func TestGetCpuAndMemoryForMachineType(t *testing.T) {
 
 	// Standard machine type not found in cache.
 	server.On("handle", "/project1/zones/"+zoneB+"/machineTypes/n1-standard-2").Return(getMachineTypeResponse).Once()
-	cpu, mem, err = g.getCpuAndMemoryForMachineType("n1-standard-2", zoneB)
+	cpu, mem, err = g.getCpuAndMemoryForMachineType(ctx, "n1-standard-2", zoneB)
 	assert.NoError(t, err)
 	assert.Equal(t, int64(2), cpu)
 	assert.Equal(t, int64(3840*units.MiB), mem)
 	mock.AssertExpectationsForObjects(t, server)
 
 	// Standard machine type cached.
-	cpu, mem, err = g.getCpuAndMemoryForMachineType("n1-standard-2", zoneB)
+	cpu, mem, err = g.getCpuAndMemoryForMachineType(ctx, "n1-standard-2", zoneB)
 	assert.NoError(t, err)
 	assert.Equal(t, int64(2), cpu)
 	assert.Equal(t, int64(3840*units.MiB), mem)
@@ -1186,7 +1186,7 @@ func TestGetCpuAndMemoryForMachineType(t *testing.T) {
 
 	// Standard machine type not found in the zone.
 	server.On("handle", "/project1/zones/us-central1-g/machineTypes/n1-standard-1").Return("").Once()
-	_, _, err = g.getCpuAndMemoryForMachineType("n1-standard-1", "us-central1-g")
+	_, _, err = g.getCpuAndMemoryForMachineType(ctx, "n1-standard-1", "us-central1-g")
 	assert.Error(t, err)
 	mock.AssertExpectationsForObjects(t, server)
 

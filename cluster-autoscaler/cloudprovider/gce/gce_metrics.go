@@ -31,8 +31,7 @@ var (
 			Namespace: caNamespace,
 			Name:      "gce_request_count",
 			Help:      "Counter of GCE API requests for each verb and API resource.",
-		}, []string{"resource", "verb"},
-	)
+		}, []string{"resource", "verb"})
 )
 
 // RegisterMetrics registers all GCE metrics.

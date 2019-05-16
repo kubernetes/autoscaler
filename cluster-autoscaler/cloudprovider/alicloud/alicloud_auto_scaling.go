@@ -18,10 +18,11 @@ package alicloud
 
 import (
 	"fmt"
+	"time"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/requests"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/services/ess"
 	"k8s.io/klog"
-	"time"
 )
 
 const (

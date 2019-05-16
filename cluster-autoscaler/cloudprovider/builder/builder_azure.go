@@ -35,7 +35,7 @@ const DefaultCloudProvider = azure.ProviderName
 func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	switch opts.CloudProviderName {
 	case azure.ProviderName:
-		return azure.BuildAzure(opts, do, rl)
+		return azure.BuildAzure(ctx, opts, do, rl)
 	}
 
 	return nil

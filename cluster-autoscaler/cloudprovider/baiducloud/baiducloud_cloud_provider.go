@@ -17,11 +17,13 @@ limitations under the License.
 package baiducloud
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
 	"strings"
 
+	"github.com/opentracing/opentracing-go"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
@@ -135,12 +137,18 @@ func (baiducloud *baiducloudCloudProvider) addAsg(asg *Asg) {
 }
 
 // Name returns name of the cloud provider.
-func (baiducloud *baiducloudCloudProvider) Name() string {
+func (baiducloud *baiducloudCloudProvider) Name(ctx context.Context) string {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "baiducloudCloudProvider.Name")
+	defer span.Finish()
+
 	return ProviderName
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
-func (baiducloud *baiducloudCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
+func (baiducloud *baiducloudCloudProvider) NodeGroups(ctx context.Context) []cloudprovider.NodeGroup {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "baiducloudCloudProvider.NodeGroups")
+	defer span.Finish()
+
 	result := make([]cloudprovider.NodeGroup, 0, len(baiducloud.asgs))
 	for _, asg := range baiducloud.asgs {
 		result = append(result, asg)
@@ -151,7 +159,10 @@ func (baiducloud *baiducloudCloudProvider) NodeGroups() []cloudprovider.NodeGrou
 // NodeGroupForNode returns the node group for the given node, nil if the node
 // should not be processed by cluster autoscaler, or non-nil error if such
 // occurred. Must be implemented.
-func (baiducloud *baiducloudCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+func (baiducloud *baiducloudCloudProvider) NodeGroupForNode(ctx context.Context, node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "baiducloudCloudProvider.NodeGroupForNode")
+	defer span.Finish()
+
 	splitted := strings.Split(node.Spec.ProviderID, "//")
 	if len(splitted) != 2 {
 		return nil, fmt.Errorf("parse ProviderID failed: %v", node.Spec.ProviderID)
@@ -162,37 +173,55 @@ func (baiducloud *baiducloudCloudProvider) NodeGroupForNode(node *apiv1.Node) (c
 
 // Pricing returns pricing model for this cloud provider or error if not available.
 // Implementation optional.
-func (baiducloud *baiducloudCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
+func (baiducloud *baiducloudCloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, errors.AutoscalerError) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "baiducloudCloudProvider.Pricing")
+	defer span.Finish()
+
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetAvailableMachineTypes get all machine types that can be requested from the cloud provider.
 // Implementation optional.
-func (baiducloud *baiducloudCloudProvider) GetAvailableMachineTypes() ([]string, error) {
+func (baiducloud *baiducloudCloudProvider) GetAvailableMachineTypes(ctx context.Context) ([]string, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "baiducloudCloudProvider.GetAvailableMachineTypes")
+	defer span.Finish()
+
 	return []string{}, cloudprovider.ErrNotImplemented
 }
 
 // NewNodeGroup builds a theoretical node group based on the node definition provided. The node group is not automatically
-// created on the cloud provider side. The node group is not returned by NodeGroups() until it is created.
+// created on the cloud provider side. The node group is not returned by NodeGroups(ctx) until it is created.
 // Implementation optional.
-func (baiducloud *baiducloudCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string,
+func (baiducloud *baiducloudCloudProvider) NewNodeGroup(ctx context.Context, machineType string, labels map[string]string, systemLabels map[string]string,
 	taints []apiv1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "baiducloudCloudProvider.NewNodeGroup")
+	defer span.Finish()
+
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
-func (baiducloud *baiducloudCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (baiducloud *baiducloudCloudProvider) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "baiducloudCloudProvider.GetResourceLimiter")
+	defer span.Finish()
+
 	return baiducloud.resourceLimiter, nil
 }
 
 // Cleanup cleans up open resources before the cloud provider is destroyed, i.e. go routines etc.
-func (baiducloud *baiducloudCloudProvider) Cleanup() error {
+func (baiducloud *baiducloudCloudProvider) Cleanup(ctx context.Context) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "baiducloudCloudProvider.Cleanup")
+	defer span.Finish()
+
 	return nil
 }
 
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
-// In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
-func (baiducloud *baiducloudCloudProvider) Refresh() error {
+// In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh(ctx).
+func (baiducloud *baiducloudCloudProvider) Refresh(ctx context.Context) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "baiducloudCloudProvider.Refresh")
+	defer span.Finish()
+
 	return nil
 }
 
@@ -224,7 +253,10 @@ func (asg *Asg) MinSize() int {
 // number of nodes in Kubernetes is different at the moment but should be equal
 // to Size() once everything stabilizes (new nodes finish startup and registration or
 // removed nodes are deleted completely). Implementation required.
-func (asg *Asg) TargetSize() (int, error) {
+func (asg *Asg) TargetSize(ctx context.Context) (int, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "Asg.TargetSize")
+	defer span.Finish()
+
 	size, err := asg.baiducloudManager.GetAsgSize(asg)
 	return int(size), err
 }
@@ -232,7 +264,10 @@ func (asg *Asg) TargetSize() (int, error) {
 // IncreaseSize increases the size of the node group. To delete a node you need
 // to explicitly name it and use DeleteNode. This function should wait until
 // node group size is updated. Implementation required.
-func (asg *Asg) IncreaseSize(delta int) error {
+func (asg *Asg) IncreaseSize(ctx context.Context, delta int) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "Asg.IncreaseSize")
+	defer span.Finish()
+
 	if delta <= 0 {
 		return fmt.Errorf("size increase must be positive")
 	}
@@ -249,7 +284,10 @@ func (asg *Asg) IncreaseSize(delta int) error {
 // DeleteNodes deletes nodes from this node group. Error is returned either on
 // failure or if the given node doesn't belong to this node group. This function
 // should wait until node group size is updated. Implementation required.
-func (asg *Asg) DeleteNodes(nodes []*apiv1.Node) error {
+func (asg *Asg) DeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "Asg.DeleteNodes")
+	defer span.Finish()
+
 	size, err := asg.baiducloudManager.GetAsgSize(asg)
 	if err != nil {
 		return err
@@ -274,7 +312,10 @@ func (asg *Asg) DeleteNodes(nodes []*apiv1.Node) error {
 // request for new nodes that have not been yet fulfilled. Delta should be negative.
 // It is assumed that cloud provider will not delete the existing nodes when there
 // is an option to just decrease the target. Implementation required.
-func (asg *Asg) DecreaseTargetSize(delta int) error {
+func (asg *Asg) DecreaseTargetSize(ctx context.Context, delta int) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "Asg.DecreaseTargetSize")
+	defer span.Finish()
+
 	return cloudprovider.ErrNotImplemented
 }
 
@@ -291,7 +332,10 @@ func (asg *Asg) Debug() string {
 // Nodes returns a list of all nodes that belong to this node group.
 // It is required that Instance objects returned by this method have Id field set.
 // Other fields are optional.
-func (asg *Asg) Nodes() ([]cloudprovider.Instance, error) {
+func (asg *Asg) Nodes(ctx context.Context) ([]cloudprovider.Instance, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "Asg.Nodes")
+	defer span.Finish()
+
 	asgNodes, err := asg.baiducloudManager.GetAsgNodes(asg)
 	if err != nil {
 		return nil, err
@@ -310,7 +354,10 @@ func (asg *Asg) Nodes() ([]cloudprovider.Instance, error) {
 // NodeInfo is expected to have a fully populated Node object, with all of the labels,
 // capacity and allocatable information as well as all pods that are started on
 // the node by default, using manifest (most likely only kube-proxy). Implementation optional.
-func (asg *Asg) TemplateNodeInfo() (*schedulernodeinfo.NodeInfo, error) {
+func (asg *Asg) TemplateNodeInfo(ctx context.Context) (*schedulernodeinfo.NodeInfo, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "Asg.TemplateNodeInfo")
+	defer span.Finish()
+
 	template, err := asg.baiducloudManager.getAsgTemplate(asg.Name)
 	if err != nil {
 		return nil, err
@@ -331,14 +378,20 @@ func (asg *Asg) Exist() bool {
 }
 
 // Create creates the node group on the cloud provider side. Implementation optional.
-func (asg *Asg) Create() (cloudprovider.NodeGroup, error) {
+func (asg *Asg) Create(ctx context.Context) (cloudprovider.NodeGroup, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "Asg.Create")
+	defer span.Finish()
+
 	return nil, cloudprovider.ErrAlreadyExist
 }
 
 // Delete deletes the node group on the cloud provider side.
 // This will be executed only for autoprovisioned node groups, once their size drops to 0.
 // Implementation optional.
-func (asg *Asg) Delete() error {
+func (asg *Asg) Delete(ctx context.Context) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "Asg.Delete")
+	defer span.Finish()
+
 	return cloudprovider.ErrNotImplemented
 }
 

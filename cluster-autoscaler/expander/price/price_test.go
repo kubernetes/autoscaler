@@ -72,9 +72,9 @@ func TestPriceExpander(t *testing.T) {
 	provider.AddNodeGroup("ng2", 1, 10, 1)
 	provider.AddNode("ng1", n1)
 	provider.AddNode("ng2", n2)
-	ng1, _ := provider.NodeGroupForNode(n1)
-	ng2, _ := provider.NodeGroupForNode(n2)
-	ng3, _ := provider.NewNodeGroup("MT1", nil, nil, nil, nil)
+	ng1, _ := provider.NodeGroupForNode(ctx, n1)
+	ng2, _ := provider.NodeGroupForNode(ctx, n2)
+	ng3, _ := provider.NewNodeGroup(ctx, "MT1", nil, nil, nil, nil)
 
 	ni1 := schedulernodeinfo.NewNodeInfo()
 	ni1.SetNode(n1)
@@ -118,8 +118,7 @@ func TestPriceExpander(t *testing.T) {
 		&testPreferredNodeProvider{
 			preferred: buildNode(2000, units.GiB),
 		},
-		SimpleNodeUnfitness,
-	).BestOption(options, nodeInfosForGroups).Debug, "ng1")
+		SimpleNodeUnfitness).BestOption(options, nodeInfosForGroups).Debug, "ng1")
 
 	// First node group is cheaper, however, the second one is preferred.
 	assert.Contains(t, NewStrategy(
@@ -137,8 +136,7 @@ func TestPriceExpander(t *testing.T) {
 		&testPreferredNodeProvider{
 			preferred: buildNode(4000, units.GiB),
 		},
-		SimpleNodeUnfitness,
-	).BestOption(options, nodeInfosForGroups).Debug, "ng2")
+		SimpleNodeUnfitness).BestOption(options, nodeInfosForGroups).Debug, "ng2")
 
 	// All node groups accept the same set of pods. Lots of nodes.
 	options1b := []expander.Option{
@@ -172,8 +170,7 @@ func TestPriceExpander(t *testing.T) {
 		&testPreferredNodeProvider{
 			preferred: buildNode(4000, units.GiB),
 		},
-		SimpleNodeUnfitness,
-	).BestOption(options1b, nodeInfosForGroups).Debug, "ng1")
+		SimpleNodeUnfitness).BestOption(options1b, nodeInfosForGroups).Debug, "ng1")
 
 	// Second node group is cheaper
 	assert.Contains(t, NewStrategy(
@@ -191,8 +188,7 @@ func TestPriceExpander(t *testing.T) {
 		&testPreferredNodeProvider{
 			preferred: buildNode(2000, units.GiB),
 		},
-		SimpleNodeUnfitness,
-	).BestOption(options, nodeInfosForGroups).Debug, "ng2")
+		SimpleNodeUnfitness).BestOption(options, nodeInfosForGroups).Debug, "ng2")
 
 	// First group accept 1 pod and second accepts 2.
 	options2 := []expander.Option{
@@ -227,8 +223,7 @@ func TestPriceExpander(t *testing.T) {
 		&testPreferredNodeProvider{
 			preferred: buildNode(2000, units.GiB),
 		},
-		SimpleNodeUnfitness,
-	).BestOption(options2, nodeInfosForGroups).Debug, "ng2")
+		SimpleNodeUnfitness).BestOption(options2, nodeInfosForGroups).Debug, "ng2")
 
 	// Errors are expected
 	assert.Nil(t, NewStrategy(
@@ -239,8 +234,7 @@ func TestPriceExpander(t *testing.T) {
 		&testPreferredNodeProvider{
 			preferred: buildNode(2000, units.GiB),
 		},
-		SimpleNodeUnfitness,
-	).BestOption(options2, nodeInfosForGroups))
+		SimpleNodeUnfitness).BestOption(options2, nodeInfosForGroups))
 
 	// Add node info for autoprovisioned group.
 	nodeInfosForGroups["autoprovisioned-MT1"] = ni3
@@ -283,8 +277,7 @@ func TestPriceExpander(t *testing.T) {
 		&testPreferredNodeProvider{
 			preferred: buildNode(2000, units.GiB),
 		},
-		SimpleNodeUnfitness,
-	).BestOption(options3, nodeInfosForGroups).Debug, "ng2")
+		SimpleNodeUnfitness).BestOption(options3, nodeInfosForGroups).Debug, "ng2")
 
 	// Choose non-existing group when non-existing is cheaper.
 	assert.Contains(t, NewStrategy(
@@ -303,6 +296,5 @@ func TestPriceExpander(t *testing.T) {
 		&testPreferredNodeProvider{
 			preferred: buildNode(2000, units.GiB),
 		},
-		SimpleNodeUnfitness,
-	).BestOption(options3, nodeInfosForGroups).Debug, "ng3")
+		SimpleNodeUnfitness).BestOption(options3, nodeInfosForGroups).Debug, "ng3")
 }

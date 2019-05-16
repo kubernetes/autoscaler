@@ -17,19 +17,23 @@ limitations under the License.
 package aws
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
 	"regexp"
 	"strings"
 
+	"github.com/opentracing/opentracing-go"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/klog"
+
+	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	"k8s.io/klog"
-	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 )
 
 const (
@@ -53,18 +57,27 @@ func BuildAwsCloudProvider(awsManager *AwsManager, resourceLimiter *cloudprovide
 }
 
 // Cleanup stops the go routine that is handling the current view of the ASGs in the form of a cache
-func (aws *awsCloudProvider) Cleanup() error {
-	aws.awsManager.Cleanup()
+func (aws *awsCloudProvider) Cleanup(ctx context.Context) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "awsCloudProvider.Cleanup")
+	defer span.Finish()
+
+	aws.awsManager.Cleanup(ctx)
 	return nil
 }
 
 // Name returns name of the cloud provider.
-func (aws *awsCloudProvider) Name() string {
+func (aws *awsCloudProvider) Name(ctx context.Context) string {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "awsCloudProvider.Name")
+	defer span.Finish()
+
 	return ProviderName
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.
-func (aws *awsCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
+func (aws *awsCloudProvider) NodeGroups(ctx context.Context) []cloudprovider.NodeGroup {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "awsCloudProvider.NodeGroups")
+	defer span.Finish()
+
 	asgs := aws.awsManager.getAsgs()
 	ngs := make([]cloudprovider.NodeGroup, len(asgs))
 	for i, asg := range asgs {
@@ -78,7 +91,10 @@ func (aws *awsCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 }
 
 // NodeGroupForNode returns the node group for the given node.
-func (aws *awsCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+func (aws *awsCloudProvider) NodeGroupForNode(ctx context.Context, node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "awsCloudProvider.NodeGroupForNode")
+	defer span.Finish()
+
 	if len(node.Spec.ProviderID) == 0 {
 		klog.Warningf("Node %v has no providerId", node.Name)
 		return nil, nil
@@ -100,31 +116,45 @@ func (aws *awsCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.N
 }
 
 // Pricing returns pricing model for this cloud provider or error if not available.
-func (aws *awsCloudProvider) Pricing() (cloudprovider.PricingModel, errors.AutoscalerError) {
+func (aws *awsCloudProvider) Pricing(ctx context.Context) (cloudprovider.PricingModel, errors.AutoscalerError) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "awsCloudProvider.Pricing")
+	defer span.Finish()
+
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetAvailableMachineTypes get all machine types that can be requested from the cloud provider.
-func (aws *awsCloudProvider) GetAvailableMachineTypes() ([]string, error) {
+func (aws *awsCloudProvider) GetAvailableMachineTypes(ctx context.Context) ([]string, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "awsCloudProvider.GetAvailableMachineTypes")
+	defer span.Finish()
+
 	return []string{}, nil
 }
 
 // NewNodeGroup builds a theoretical node group based on the node definition provided. The node group is not automatically
 // created on the cloud provider side. The node group is not returned by NodeGroups() until it is created.
-func (aws *awsCloudProvider) NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string,
-	taints []apiv1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
+func (aws *awsCloudProvider) NewNodeGroup(ctx context.Context, machineType string, labels map[string]string, systemLabels map[string]string, taints []apiv1.Taint, extraResources map[string]resource.Quantity) (cloudprovider.NodeGroup, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "awsCloudProvider.NewNodeGroup")
+	defer span.Finish()
+
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
-func (aws *awsCloudProvider) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (aws *awsCloudProvider) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "awsCloudProvider.GetResourceLimiter")
+	defer span.Finish()
+
 	return aws.resourceLimiter, nil
 }
 
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
-// In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
-func (aws *awsCloudProvider) Refresh() error {
-	return aws.awsManager.Refresh()
+// In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh(ctx).
+func (aws *awsCloudProvider) Refresh(ctx context.Context) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "awsCloudProvider.Refresh")
+	defer span.Finish()
+
+	return aws.awsManager.Refresh(ctx)
 }
 
 // AwsRef contains a reference to some entity in AWS world.
@@ -171,7 +201,10 @@ func (ng *AwsNodeGroup) MinSize() int {
 
 // TargetSize returns the current TARGET size of the node group. It is possible that the
 // number is different from the number of nodes registered in Kubernetes.
-func (ng *AwsNodeGroup) TargetSize() (int, error) {
+func (ng *AwsNodeGroup) TargetSize(ctx context.Context) (int, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "AwsNodeGroup.TargetSize")
+	defer span.Finish()
+
 	return ng.asg.curSize, nil
 }
 
@@ -182,7 +215,10 @@ func (ng *AwsNodeGroup) Exist() bool {
 }
 
 // Create creates the node group on the cloud provider side.
-func (ng *AwsNodeGroup) Create() (cloudprovider.NodeGroup, error) {
+func (ng *AwsNodeGroup) Create(ctx context.Context) (cloudprovider.NodeGroup, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "AwsNodeGroup.Create")
+	defer span.Finish()
+
 	return nil, cloudprovider.ErrAlreadyExist
 }
 
@@ -193,12 +229,18 @@ func (ng *AwsNodeGroup) Autoprovisioned() bool {
 
 // Delete deletes the node group on the cloud provider side.
 // This will be executed only for autoprovisioned node groups, once their size drops to 0.
-func (ng *AwsNodeGroup) Delete() error {
+func (ng *AwsNodeGroup) Delete(ctx context.Context) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "AwsNodeGroup.Delete")
+	defer span.Finish()
+
 	return cloudprovider.ErrNotImplemented
 }
 
 // IncreaseSize increases Asg size
-func (ng *AwsNodeGroup) IncreaseSize(delta int) error {
+func (ng *AwsNodeGroup) IncreaseSize(ctx context.Context, delta int) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "AwsNodeGroup.IncreaseSize")
+	defer span.Finish()
+
 	if delta <= 0 {
 		return fmt.Errorf("size increase must be positive")
 	}
@@ -214,7 +256,10 @@ func (ng *AwsNodeGroup) IncreaseSize(delta int) error {
 // request for new nodes that have not been yet fulfilled. Delta should be negative.
 // It is assumed that cloud provider will not delete the existing nodes if the size
 // when there is an option to just decrease the target.
-func (ng *AwsNodeGroup) DecreaseTargetSize(delta int) error {
+func (ng *AwsNodeGroup) DecreaseTargetSize(ctx context.Context, delta int) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "AwsNodeGroup.DecreaseTargetSize")
+	defer span.Finish()
+
 	if delta >= 0 {
 		return fmt.Errorf("size decrease size must be negative")
 	}
@@ -248,7 +293,10 @@ func (ng *AwsNodeGroup) Belongs(node *apiv1.Node) (bool, error) {
 }
 
 // DeleteNodes deletes the nodes from the group.
-func (ng *AwsNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
+func (ng *AwsNodeGroup) DeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "AwsNodeGroup.DeleteNodes")
+	defer span.Finish()
+
 	size := ng.asg.curSize
 	if int(size) <= ng.MinSize() {
 		return fmt.Errorf("min size reached, nodes will not be deleted")
@@ -282,7 +330,10 @@ func (ng *AwsNodeGroup) Debug() string {
 }
 
 // Nodes returns a list of all nodes that belong to this node group.
-func (ng *AwsNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
+func (ng *AwsNodeGroup) Nodes(ctx context.Context) ([]cloudprovider.Instance, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "AwsNodeGroup.Nodes")
+	defer span.Finish()
+
 	asgNodes, err := ng.awsManager.GetAsgNodes(ng.asg.AwsRef)
 	if err != nil {
 		return nil, err
@@ -297,7 +348,10 @@ func (ng *AwsNodeGroup) Nodes() ([]cloudprovider.Instance, error) {
 }
 
 // TemplateNodeInfo returns a node template for this node group.
-func (ng *AwsNodeGroup) TemplateNodeInfo() (*schedulernodeinfo.NodeInfo, error) {
+func (ng *AwsNodeGroup) TemplateNodeInfo(ctx context.Context) (*schedulernodeinfo.NodeInfo, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "AwsNodeGroup.TemplateNodeInfo")
+	defer span.Finish()
+
 	template, err := ng.awsManager.getAsgTemplate(ng.asg)
 	if err != nil {
 		return nil, err

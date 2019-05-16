@@ -17,12 +17,15 @@ limitations under the License.
 package nodegroupset
 
 import (
+	"context"
 	"sort"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"github.com/opentracing/opentracing-go"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	autoscalingcontext "k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 
 	"k8s.io/klog"
 )
@@ -34,8 +37,10 @@ type BalancingNodeGroupSetProcessor struct {
 
 // FindSimilarNodeGroups returns a list of NodeGroups similar to the given one.
 // Two groups are similar if the NodeInfos for them compare equal using IsNodeInfoSimilar.
-func (b *BalancingNodeGroupSetProcessor) FindSimilarNodeGroups(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup,
+func (b *BalancingNodeGroupSetProcessor) FindSimilarNodeGroups(ctx context.Context, context *autoscalingcontext.AutoscalingContext, nodeGroup cloudprovider.NodeGroup,
 	nodeInfosForGroups map[string]*schedulernodeinfo.NodeInfo) ([]cloudprovider.NodeGroup, errors.AutoscalerError) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "BalancingNodeGroupSetProcessor.FindSimilarNodeGroups")
+	defer span.Finish()
 
 	result := []cloudprovider.NodeGroup{}
 	nodeGroupId := nodeGroup.Id()
@@ -46,7 +51,7 @@ func (b *BalancingNodeGroupSetProcessor) FindSimilarNodeGroups(context *context.
 			"failed to find template node for node group %s",
 			nodeGroupId)
 	}
-	for _, ng := range context.CloudProvider.NodeGroups() {
+	for _, ng := range context.CloudProvider.NodeGroups(ctx) {
 		ngId := ng.Id()
 		if ngId == nodeGroupId {
 			continue
@@ -76,7 +81,10 @@ func (b *BalancingNodeGroupSetProcessor) FindSimilarNodeGroups(context *context.
 // MaxSize of each group will be respected. If newNodes > total free capacity
 // of all NodeGroups it will be capped to total capacity. In particular if all
 // group already have MaxSize, empty list will be returned.
-func (b *BalancingNodeGroupSetProcessor) BalanceScaleUpBetweenGroups(context *context.AutoscalingContext, groups []cloudprovider.NodeGroup, newNodes int) ([]ScaleUpInfo, errors.AutoscalerError) {
+func (b *BalancingNodeGroupSetProcessor) BalanceScaleUpBetweenGroups(ctx context.Context, context *autoscalingcontext.AutoscalingContext, groups []cloudprovider.NodeGroup, newNodes int) ([]ScaleUpInfo, errors.AutoscalerError) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "BalancingNodeGroupSetProcessor.BalanceScaleUpBetweenGroups")
+	defer span.Finish()
+
 	if len(groups) == 0 {
 		return []ScaleUpInfo{}, errors.NewAutoscalerError(
 			errors.InternalError, "Can't balance scale up between 0 groups")
@@ -86,7 +94,7 @@ func (b *BalancingNodeGroupSetProcessor) BalanceScaleUpBetweenGroups(context *co
 	scaleUpInfos := make([]ScaleUpInfo, 0)
 	totalCapacity := 0
 	for _, ng := range groups {
-		currentSize, err := ng.TargetSize()
+		currentSize, err := ng.TargetSize(ctx)
 		if err != nil {
 			return []ScaleUpInfo{}, errors.NewAutoscalerError(
 				errors.CloudProviderError,
@@ -178,4 +186,4 @@ func (b *BalancingNodeGroupSetProcessor) BalanceScaleUpBetweenGroups(context *co
 }
 
 // CleanUp performs final clean up of processor state.
-func (b *BalancingNodeGroupSetProcessor) CleanUp() {}
+func (b *BalancingNodeGroupSetProcessor) CleanUp(ctx context.Context) {}

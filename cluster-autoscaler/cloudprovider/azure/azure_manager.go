@@ -17,6 +17,7 @@ limitations under the License.
 package azure
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -25,6 +26,7 @@ import (
 	"time"
 
 	"github.com/Azure/go-autorest/autorest/azure"
+	"github.com/opentracing/opentracing-go"
 	"gopkg.in/gcfg.v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
@@ -98,7 +100,7 @@ func (c *Config) TrimSpace() {
 }
 
 // CreateAzureManager creates Azure Manager object to work with Azure.
-func CreateAzureManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGroupDiscoveryOptions) (*AzureManager, error) {
+func CreateAzureManager(ctx context.Context, configReader io.Reader, discoveryOpts cloudprovider.NodeGroupDiscoveryOptions) (*AzureManager, error) {
 	var err error
 	var cfg Config
 
@@ -175,7 +177,7 @@ func CreateAzureManager(configReader io.Reader, discoveryOpts cloudprovider.Node
 		explicitlyConfigured: make(map[string]bool),
 	}
 
-	cache, err := newAsgCache()
+	cache, err := newAsgCache(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -187,18 +189,21 @@ func CreateAzureManager(configReader io.Reader, discoveryOpts cloudprovider.Node
 	}
 	manager.asgAutoDiscoverySpecs = specs
 
-	if err := manager.fetchExplicitAsgs(discoveryOpts.NodeGroupSpecs); err != nil {
+	if err := manager.fetchExplicitAsgs(ctx, discoveryOpts.NodeGroupSpecs); err != nil {
 		return nil, err
 	}
 
-	if err := manager.forceRefresh(); err != nil {
+	if err := manager.forceRefresh(ctx); err != nil {
 		return nil, err
 	}
 
 	return manager, nil
 }
 
-func (m *AzureManager) fetchExplicitAsgs(specs []string) error {
+func (m *AzureManager) fetchExplicitAsgs(ctx context.Context, specs []string) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "AzureManager.fetchExplicitAsgs")
+	defer span.Finish()
+
 	changed := false
 	for _, spec := range specs {
 		asg, err := m.buildAsgFromSpec(spec)
@@ -212,7 +217,7 @@ func (m *AzureManager) fetchExplicitAsgs(specs []string) error {
 	}
 
 	if changed {
-		if err := m.regenerateCache(); err != nil {
+		if err := m.regenerateCache(ctx); err != nil {
 			return err
 		}
 	}
@@ -244,16 +249,22 @@ func (m *AzureManager) buildAsgFromSpec(spec string) (cloudprovider.NodeGroup, e
 }
 
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
-// In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
-func (m *AzureManager) Refresh() error {
+// In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh(ctx).
+func (m *AzureManager) Refresh(ctx context.Context) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "AzureManager.Refresh")
+	defer span.Finish()
+
 	if m.lastRefresh.Add(refreshInterval).After(time.Now()) {
 		return nil
 	}
-	return m.forceRefresh()
+	return m.forceRefresh(ctx)
 }
 
-func (m *AzureManager) forceRefresh() error {
-	if err := m.fetchAutoAsgs(); err != nil {
+func (m *AzureManager) forceRefresh(ctx context.Context) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "AzureManager.forceRefresh")
+	defer span.Finish()
+
+	if err := m.fetchAutoAsgs(ctx); err != nil {
 		klog.Errorf("Failed to fetch ASGs: %v", err)
 		return err
 	}
@@ -264,7 +275,10 @@ func (m *AzureManager) forceRefresh() error {
 
 // Fetch automatically discovered ASGs. These ASGs should be unregistered if
 // they no longer exist in Azure.
-func (m *AzureManager) fetchAutoAsgs() error {
+func (m *AzureManager) fetchAutoAsgs(ctx context.Context) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "AzureManager.fetchAutoAsgs")
+	defer span.Finish()
+
 	groups, err := m.getFilteredAutoscalingGroups(m.asgAutoDiscoverySpecs)
 	if err != nil {
 		return fmt.Errorf("cannot autodiscover ASGs: %s", err)
@@ -297,7 +311,7 @@ func (m *AzureManager) fetchAutoAsgs() error {
 	}
 
 	if changed {
-		if err := m.regenerateCache(); err != nil {
+		if err := m.regenerateCache(ctx); err != nil {
 			return err
 		}
 	}
@@ -320,19 +334,28 @@ func (m *AzureManager) UnregisterAsg(asg cloudprovider.NodeGroup) bool {
 }
 
 // GetAsgForInstance returns AsgConfig of the given Instance
-func (m *AzureManager) GetAsgForInstance(instance *azureRef) (cloudprovider.NodeGroup, error) {
-	return m.asgCache.FindForInstance(instance, m.config.VMType)
+func (m *AzureManager) GetAsgForInstance(ctx context.Context, instance *azureRef) (cloudprovider.NodeGroup, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "AzureManager.GetAsgForInstance")
+	defer span.Finish()
+
+	return m.asgCache.FindForInstance(ctx, instance, m.config.VMType)
 }
 
-func (m *AzureManager) regenerateCache() error {
+func (m *AzureManager) regenerateCache(ctx context.Context) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "AzureManager.regenerateCache")
+	defer span.Finish()
+
 	m.asgCache.mutex.Lock()
 	defer m.asgCache.mutex.Unlock()
-	return m.asgCache.regenerate()
+	return m.asgCache.regenerate(ctx)
 }
 
 // Cleanup the ASG cache.
-func (m *AzureManager) Cleanup() {
-	m.asgCache.Cleanup()
+func (m *AzureManager) Cleanup(ctx context.Context) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "AzureManager.Cleanup")
+	defer span.Finish()
+
+	m.asgCache.Cleanup(ctx)
 }
 
 func (m *AzureManager) getFilteredAutoscalingGroups(filter []cloudprovider.LabelAutoDiscoveryConfig) (asgs []cloudprovider.NodeGroup, err error) {

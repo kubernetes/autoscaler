@@ -17,6 +17,7 @@ limitations under the License.
 package cloudprovider
 
 import (
+	"context"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -29,39 +30,39 @@ import (
 // cloud provider (GCE, AWS, etc).
 type CloudProvider interface {
 	// Name returns name of the cloud provider.
-	Name() string
+	Name(ctx context.Context) string
 
 	// NodeGroups returns all node groups configured for this cloud provider.
-	NodeGroups() []NodeGroup
+	NodeGroups(ctx context.Context) []NodeGroup
 
 	// NodeGroupForNode returns the node group for the given node, nil if the node
 	// should not be processed by cluster autoscaler, or non-nil error if such
 	// occurred. Must be implemented.
-	NodeGroupForNode(*apiv1.Node) (NodeGroup, error)
+	NodeGroupForNode(context.Context, *apiv1.Node) (NodeGroup, error)
 
 	// Pricing returns pricing model for this cloud provider or error if not available.
 	// Implementation optional.
-	Pricing() (PricingModel, errors.AutoscalerError)
+	Pricing(ctx context.Context) (PricingModel, errors.AutoscalerError)
 
 	// GetAvailableMachineTypes get all machine types that can be requested from the cloud provider.
 	// Implementation optional.
-	GetAvailableMachineTypes() ([]string, error)
+	GetAvailableMachineTypes(ctx context.Context) ([]string, error)
 
 	// NewNodeGroup builds a theoretical node group based on the node definition provided. The node group is not automatically
-	// created on the cloud provider side. The node group is not returned by NodeGroups() until it is created.
+	// created on the cloud provider side. The node group is not returned by NodeGroups(ctx) until it is created.
 	// Implementation optional.
-	NewNodeGroup(machineType string, labels map[string]string, systemLabels map[string]string,
+	NewNodeGroup(ctx context.Context, machineType string, labels map[string]string, systemLabels map[string]string,
 		taints []apiv1.Taint, extraResources map[string]resource.Quantity) (NodeGroup, error)
 
-	// GetResourceLimiter returns struct containing limits (max, min) for resources (cores, memory etc.).
-	GetResourceLimiter() (*ResourceLimiter, error)
+	// GetResourceLimiter returns struct containing limits (ctx context.Context, max, min) for resources (cores, memory etc.).
+	GetResourceLimiter(ctx context.Context) (*ResourceLimiter, error)
 
 	// Cleanup cleans up open resources before the cloud provider is destroyed, i.e. go routines etc.
-	Cleanup() error
+	Cleanup(ctx context.Context) error
 
 	// Refresh is called before every main loop and can be used to dynamically update cloud provider state.
-	// In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
-	Refresh() error
+	// In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh(ctx).
+	Refresh(ctx context.Context) error
 }
 
 // ErrNotImplemented is returned if a method is not implemented.
@@ -87,24 +88,24 @@ type NodeGroup interface {
 	// number of nodes in Kubernetes is different at the moment but should be equal
 	// to Size() once everything stabilizes (new nodes finish startup and registration or
 	// removed nodes are deleted completely). Implementation required.
-	TargetSize() (int, error)
+	TargetSize(ctx context.Context) (int, error)
 
 	// IncreaseSize increases the size of the node group. To delete a node you need
 	// to explicitly name it and use DeleteNode. This function should wait until
 	// node group size is updated. Implementation required.
-	IncreaseSize(delta int) error
+	IncreaseSize(ctx context.Context, delta int) error
 
 	// DeleteNodes deletes nodes from this node group. Error is returned either on
 	// failure or if the given node doesn't belong to this node group. This function
 	// should wait until node group size is updated. Implementation required.
-	DeleteNodes([]*apiv1.Node) error
+	DeleteNodes(ctx context.Context, nodes []*apiv1.Node) error
 
 	// DecreaseTargetSize decreases the target size of the node group. This function
 	// doesn't permit to delete any existing node and can be used only to reduce the
 	// request for new nodes that have not been yet fulfilled. Delta should be negative.
 	// It is assumed that cloud provider will not delete the existing nodes when there
 	// is an option to just decrease the target. Implementation required.
-	DecreaseTargetSize(delta int) error
+	DecreaseTargetSize(ctx context.Context, delta int) error
 
 	// Id returns an unique identifier of the node group.
 	Id() string
@@ -115,7 +116,7 @@ type NodeGroup interface {
 	// Nodes returns a list of all nodes that belong to this node group.
 	// It is required that Instance objects returned by this method have Id field set.
 	// Other fields are optional.
-	Nodes() ([]Instance, error)
+	Nodes(ctx context.Context) ([]Instance, error)
 
 	// TemplateNodeInfo returns a schedulernodeinfo.NodeInfo structure of an empty
 	// (as if just started) node. This will be used in scale-up simulations to
@@ -123,19 +124,19 @@ type NodeGroup interface {
 	// NodeInfo is expected to have a fully populated Node object, with all of the labels,
 	// capacity and allocatable information as well as all pods that are started on
 	// the node by default, using manifest (most likely only kube-proxy). Implementation optional.
-	TemplateNodeInfo() (*schedulernodeinfo.NodeInfo, error)
+	TemplateNodeInfo(ctx context.Context) (*schedulernodeinfo.NodeInfo, error)
 
 	// Exist checks if the node group really exists on the cloud provider side. Allows to tell the
 	// theoretical node group from the real one. Implementation required.
 	Exist() bool
 
 	// Create creates the node group on the cloud provider side. Implementation optional.
-	Create() (NodeGroup, error)
+	Create(ctx context.Context) (NodeGroup, error)
 
 	// Delete deletes the node group on the cloud provider side.
 	// This will be executed only for autoprovisioned node groups, once their size drops to 0.
 	// Implementation optional.
-	Delete() error
+	Delete(ctx context.Context) error
 
 	// Autoprovisioned returns true if the node group is autoprovisioned. An autoprovisioned group
 	// was created by CA and can be deleted when scaled to 0.

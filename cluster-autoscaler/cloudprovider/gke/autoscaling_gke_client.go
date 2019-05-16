@@ -17,6 +17,7 @@ limitations under the License.
 package gke
 
 import (
+	"context"
 	"flag"
 	"time"
 
@@ -43,11 +44,11 @@ const (
 // AutoscalingGkeClient is used for communicating with GKE API.
 type AutoscalingGkeClient interface {
 	// reading cluster state
-	GetCluster() (Cluster, error)
+	GetCluster(ctx context.Context) (Cluster, error)
 
 	// modifying cluster state
-	DeleteNodePool(string) error
-	CreateNodePool(*GkeMig) error
+	DeleteNodePool(context.Context, string) error
+	CreateNodePool(context.Context, *GkeMig) error
 }
 
 // Cluster contains cluster's fields we want to use.

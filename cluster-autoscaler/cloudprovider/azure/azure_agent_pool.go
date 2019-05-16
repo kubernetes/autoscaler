@@ -17,6 +17,7 @@ limitations under the License.
 package azure
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
 	"sort"
@@ -28,6 +29,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources"
 	azStorage "github.com/Azure/azure-sdk-for-go/storage"
 	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/opentracing/opentracing-go"
 	"k8s.io/klog"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -97,13 +99,19 @@ func (as *AgentPool) Exist() bool {
 }
 
 // Create creates the node group on the cloud provider side.
-func (as *AgentPool) Create() (cloudprovider.NodeGroup, error) {
+func (as *AgentPool) Create(ctx context.Context) (cloudprovider.NodeGroup, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "AgentPool.Create")
+	defer span.Finish()
+
 	return nil, cloudprovider.ErrAlreadyExist
 }
 
 // Delete deletes the node group on the cloud provider side.
 // This will be executed only for autoprovisioned node groups, once their size drops to 0.
-func (as *AgentPool) Delete() error {
+func (as *AgentPool) Delete(ctx context.Context) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "AgentPool.Delete")
+	defer span.Finish()
+
 	return cloudprovider.ErrNotImplemented
 }
 
@@ -167,7 +175,10 @@ func (as *AgentPool) getCurSize() (int64, error) {
 
 // TargetSize returns the current TARGET size of the node group. It is possible that the
 // number is different from the number of nodes registered in Kubernetes.
-func (as *AgentPool) TargetSize() (int, error) {
+func (as *AgentPool) TargetSize(ctx context.Context) (int, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "AgentPool.TargetSize")
+	defer span.Finish()
+
 	size, err := as.getCurSize()
 	if err != nil {
 		return -1, err
@@ -177,7 +188,10 @@ func (as *AgentPool) TargetSize() (int, error) {
 }
 
 // IncreaseSize increases agent pool size
-func (as *AgentPool) IncreaseSize(delta int) error {
+func (as *AgentPool) IncreaseSize(ctx context.Context, delta int) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "AgentPool.IncreaseSize")
+	defer span.Finish()
+
 	as.mutex.Lock()
 	defer as.mutex.Unlock()
 
@@ -262,7 +276,10 @@ func (as *AgentPool) GetVirtualMachines() (instances []compute.VirtualMachine, e
 // request for new nodes that have not been yet fulfilled. Delta should be negative.
 // It is assumed that cloud provider will not delete the existing nodes if the size
 // when there is an option to just decrease the target.
-func (as *AgentPool) DecreaseTargetSize(delta int) error {
+func (as *AgentPool) DecreaseTargetSize(ctx context.Context, delta int) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "AgentPool.DecreaseTargetSize")
+	defer span.Finish()
+
 	as.mutex.Lock()
 	defer as.mutex.Unlock()
 
@@ -283,14 +300,17 @@ func (as *AgentPool) DecreaseTargetSize(delta int) error {
 }
 
 // Belongs returns true if the given node belongs to the NodeGroup.
-func (as *AgentPool) Belongs(node *apiv1.Node) (bool, error) {
+func (as *AgentPool) Belongs(ctx context.Context, node *apiv1.Node) (bool, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "AgentPool.Belongs")
+	defer span.Finish()
+
 	klog.V(6).Infof("Check if node belongs to this agent pool: AgentPool:%v, node:%v\n", as, node)
 
 	ref := &azureRef{
 		Name: node.Spec.ProviderID,
 	}
 
-	targetAsg, err := as.manager.GetAsgForInstance(ref)
+	targetAsg, err := as.manager.GetAsgForInstance(ctx, ref)
 	if err != nil {
 		return false, err
 	}
@@ -304,18 +324,21 @@ func (as *AgentPool) Belongs(node *apiv1.Node) (bool, error) {
 }
 
 // DeleteInstances deletes the given instances. All instances must be controlled by the same ASG.
-func (as *AgentPool) DeleteInstances(instances []*azureRef) error {
+func (as *AgentPool) DeleteInstances(ctx context.Context, instances []*azureRef) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "AgentPool.DeleteInstances")
+	defer span.Finish()
+
 	if len(instances) == 0 {
 		return nil
 	}
 
-	commonAsg, err := as.manager.GetAsgForInstance(instances[0])
+	commonAsg, err := as.manager.GetAsgForInstance(ctx, instances[0])
 	if err != nil {
 		return err
 	}
 
 	for _, instance := range instances {
-		asg, err := as.manager.GetAsgForInstance(instance)
+		asg, err := as.manager.GetAsgForInstance(ctx, instance)
 		if err != nil {
 			return err
 		}
@@ -343,7 +366,10 @@ func (as *AgentPool) DeleteInstances(instances []*azureRef) error {
 }
 
 // DeleteNodes deletes the nodes from the group.
-func (as *AgentPool) DeleteNodes(nodes []*apiv1.Node) error {
+func (as *AgentPool) DeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "AgentPool.DeleteNodes")
+	defer span.Finish()
+
 	klog.V(8).Infof("Delete nodes requested: %v\n", nodes)
 	indexes, _, err := as.GetVMIndexes()
 	if err != nil {
@@ -356,7 +382,7 @@ func (as *AgentPool) DeleteNodes(nodes []*apiv1.Node) error {
 
 	refs := make([]*azureRef, 0, len(nodes))
 	for _, node := range nodes {
-		belongs, err := as.Belongs(node)
+		belongs, err := as.Belongs(ctx, node)
 		if err != nil {
 			return err
 		}
@@ -371,7 +397,7 @@ func (as *AgentPool) DeleteNodes(nodes []*apiv1.Node) error {
 		refs = append(refs, ref)
 	}
 
-	return as.DeleteInstances(refs)
+	return as.DeleteInstances(ctx, refs)
 }
 
 // Id returns AgentPool id.
@@ -385,12 +411,18 @@ func (as *AgentPool) Debug() string {
 }
 
 // TemplateNodeInfo returns a node template for this agent pool.
-func (as *AgentPool) TemplateNodeInfo() (*schedulernodeinfo.NodeInfo, error) {
+func (as *AgentPool) TemplateNodeInfo(ctx context.Context) (*schedulernodeinfo.NodeInfo, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "AgentPool.TemplateNodeInfo")
+	defer span.Finish()
+
 	return nil, cloudprovider.ErrNotImplemented
 }
 
 // Nodes returns a list of all nodes that belong to this node group.
-func (as *AgentPool) Nodes() ([]cloudprovider.Instance, error) {
+func (as *AgentPool) Nodes(ctx context.Context) ([]cloudprovider.Instance, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "AgentPool.Nodes")
+	defer span.Finish()
+
 	instances, err := as.GetVirtualMachines()
 	if err != nil {
 		return nil, err

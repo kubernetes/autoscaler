@@ -219,7 +219,7 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 	daemonSetListerMock.On("List", labels.Everything()).Return([]*appsv1.DaemonSet{}, nil).Once()
 	podDisruptionBudgetListerMock.On("List").Return([]*policyv1.PodDisruptionBudget{}, nil).Once()
 
-	err := autoscaler.RunOnce(time.Now())
+	err := autoscaler.RunOnce(time.Now(), ctx)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, readyNodeListerMock, allNodeListerMock, scheduledPodMock, unschedulablePodMock,
 		podDisruptionBudgetListerMock, daemonSetListerMock, onScaleUpMock, onScaleDownMock)
@@ -233,7 +233,7 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 	onScaleUpMock.On("ScaleUp", "ng1", 1).Return(nil).Once()
 
 	context.MaxNodesTotal = 10
-	err = autoscaler.RunOnce(time.Now().Add(time.Hour))
+	err = autoscaler.RunOnce(time.Now().Add(time.Hour), ctx)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, readyNodeListerMock, allNodeListerMock, scheduledPodMock, unschedulablePodMock,
 		podDisruptionBudgetListerMock, daemonSetListerMock, onScaleUpMock, onScaleDownMock)
@@ -249,7 +249,7 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 	provider.AddNode("ng1", n2)
 	ng1.SetTargetSize(2)
 
-	err = autoscaler.RunOnce(time.Now().Add(2 * time.Hour))
+	err = autoscaler.RunOnce(time.Now().Add(2*time.Hour), ctx)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, readyNodeListerMock, allNodeListerMock, scheduledPodMock, unschedulablePodMock,
 		podDisruptionBudgetListerMock, daemonSetListerMock, onScaleUpMock, onScaleDownMock)
@@ -263,7 +263,7 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 	podDisruptionBudgetListerMock.On("List").Return([]*policyv1.PodDisruptionBudget{}, nil).Once()
 	onScaleDownMock.On("ScaleDown", "ng1", "n2").Return(nil).Once()
 
-	err = autoscaler.RunOnce(time.Now().Add(3 * time.Hour))
+	err = autoscaler.RunOnce(time.Now().Add(3*time.Hour), ctx)
 	waitForDeleteToFinish(t, autoscaler.scaleDown)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, readyNodeListerMock, allNodeListerMock, scheduledPodMock, unschedulablePodMock,
@@ -280,7 +280,7 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 	provider.AddNode("ng1", n3)
 	ng1.SetTargetSize(3)
 
-	err = autoscaler.RunOnce(time.Now().Add(4 * time.Hour))
+	err = autoscaler.RunOnce(time.Now().Add(4*time.Hour), ctx)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, readyNodeListerMock, allNodeListerMock, scheduledPodMock, unschedulablePodMock,
 		podDisruptionBudgetListerMock, daemonSetListerMock, onScaleUpMock, onScaleDownMock)
@@ -292,7 +292,7 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 	daemonSetListerMock.On("List", labels.Everything()).Return([]*appsv1.DaemonSet{}, nil).Once()
 	onScaleDownMock.On("ScaleDown", "ng1", "n3").Return(nil).Once()
 
-	err = autoscaler.RunOnce(time.Now().Add(5 * time.Hour))
+	err = autoscaler.RunOnce(time.Now().Add(5*time.Hour), ctx)
 	waitForDeleteToFinish(t, autoscaler.scaleDown)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, readyNodeListerMock, allNodeListerMock, scheduledPodMock, unschedulablePodMock,
@@ -404,7 +404,7 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 	onNodeGroupCreateMock.On("Create", "autoprovisioned-TN2").Return(nil).Once()
 	onScaleUpMock.On("ScaleUp", "autoprovisioned-TN2", 1).Return(nil).Once()
 
-	err := autoscaler.RunOnce(time.Now().Add(time.Hour))
+	err := autoscaler.RunOnce(time.Now().Add(time.Hour), ctx)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, readyNodeListerMock, allNodeListerMock, scheduledPodMock, unschedulablePodMock,
 		podDisruptionBudgetListerMock, daemonSetListerMock, onScaleUpMock, onScaleDownMock)
@@ -424,7 +424,7 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 	provider.AddAutoprovisionedNodeGroup("autoprovisioned-TN2", 0, 10, 1, "TN1")
 	provider.AddNode("autoprovisioned-TN2", n2)
 
-	err = autoscaler.RunOnce(time.Now().Add(1 * time.Hour))
+	err = autoscaler.RunOnce(time.Now().Add(1*time.Hour), ctx)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, readyNodeListerMock, allNodeListerMock, scheduledPodMock, unschedulablePodMock,
 		podDisruptionBudgetListerMock, daemonSetListerMock, onScaleUpMock, onScaleDownMock)
@@ -440,7 +440,7 @@ func TestStaticAutoscalerRunOnceWithAutoprovisionedEnabled(t *testing.T) {
 		"TN1").Return(nil).Once()
 	onScaleDownMock.On("ScaleDown", "autoprovisioned-TN2", "n2").Return(nil).Once()
 
-	err = autoscaler.RunOnce(time.Now().Add(2 * time.Hour))
+	err = autoscaler.RunOnce(time.Now().Add(2*time.Hour), ctx)
 	waitForDeleteToFinish(t, autoscaler.scaleDown)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, readyNodeListerMock, allNodeListerMock, scheduledPodMock, unschedulablePodMock,
@@ -515,10 +515,10 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 
 	nodes := []*apiv1.Node{n1}
 	//nodeInfos, _ := getNodeInfosForGroups(nodes, provider, listerRegistry, []*appsv1.DaemonSet{}, context.PredicateChecker)
-	clusterState.UpdateNodes(nodes, nil, now)
+	clusterState.UpdateNodes(ctx, nodes, nil, now)
 
 	// broken node failed to register in time
-	clusterState.UpdateNodes(nodes, nil, later)
+	clusterState.UpdateNodes(ctx, nodes, nil, later)
 
 	sd := NewScaleDown(&context, clusterState)
 
@@ -539,7 +539,7 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 	daemonSetListerMock.On("List", labels.Everything()).Return([]*appsv1.DaemonSet{}, nil).Once()
 	onScaleUpMock.On("ScaleUp", "ng1", 1).Return(nil).Once()
 
-	err := autoscaler.RunOnce(later.Add(time.Hour))
+	err := autoscaler.RunOnce(later.Add(time.Hour), ctx)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, readyNodeListerMock, allNodeListerMock, scheduledPodMock, unschedulablePodMock,
 		podDisruptionBudgetListerMock, daemonSetListerMock, onScaleUpMock, onScaleDownMock)
@@ -554,7 +554,7 @@ func TestStaticAutoscalerRunOnceWithALongUnregisteredNode(t *testing.T) {
 	onScaleDownMock.On("ScaleDown", "ng1", "broken").Return(nil).Once()
 	daemonSetListerMock.On("List", labels.Everything()).Return([]*appsv1.DaemonSet{}, nil).Once()
 
-	err = autoscaler.RunOnce(later.Add(2 * time.Hour))
+	err = autoscaler.RunOnce(later.Add(2*time.Hour), ctx)
 	waitForDeleteToFinish(t, autoscaler.scaleDown)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, readyNodeListerMock, allNodeListerMock, scheduledPodMock, unschedulablePodMock,
@@ -663,7 +663,7 @@ func TestStaticAutoscalerRunOncePodsWithFilterOutSchedulablePodsUsesPackingFalse
 	daemonSetListerMock.On("List", labels.Everything()).Return([]*appsv1.DaemonSet{}, nil).Once()
 	onScaleUpMock.On("ScaleUp", "ng2", 2).Return(nil).Once()
 
-	err := autoscaler.RunOnce(time.Now())
+	err := autoscaler.RunOnce(time.Now(), ctx)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, readyNodeListerMock, allNodeListerMock, scheduledPodMock, unschedulablePodMock,
 		podDisruptionBudgetListerMock, daemonSetListerMock, onScaleUpMock, onScaleDownMock)
@@ -778,7 +778,7 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 	daemonSetListerMock.On("List", labels.Everything()).Return([]*appsv1.DaemonSet{}, nil).Once()
 	onScaleUpMock.On("ScaleUp", "ng2", 1).Return(nil).Once()
 
-	err := autoscaler.RunOnce(time.Now())
+	err := autoscaler.RunOnce(time.Now(), ctx)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, readyNodeListerMock, allNodeListerMock, scheduledPodMock, unschedulablePodMock,
 		podDisruptionBudgetListerMock, daemonSetListerMock, onScaleUpMock, onScaleDownMock)
@@ -793,7 +793,7 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 
 	ng2.SetTargetSize(2)
 
-	err = autoscaler.RunOnce(time.Now().Add(2 * time.Hour))
+	err = autoscaler.RunOnce(time.Now().Add(2*time.Hour), ctx)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, readyNodeListerMock, allNodeListerMock, scheduledPodMock, unschedulablePodMock,
 		podDisruptionBudgetListerMock, daemonSetListerMock, onScaleUpMock, onScaleDownMock)
@@ -809,7 +809,7 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 
 	p4.Spec.NodeName = "n2"
 
-	err = autoscaler.RunOnce(time.Now().Add(3 * time.Hour))
+	err = autoscaler.RunOnce(time.Now().Add(3*time.Hour), ctx)
 	waitForDeleteToFinish(t, autoscaler.scaleDown)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, readyNodeListerMock, allNodeListerMock, scheduledPodMock, unschedulablePodMock,
@@ -932,10 +932,10 @@ func TestStaticAutoscalerOutOfResources(t *testing.T) {
 	now := time.Now()
 
 	// propagate nodes info in cluster state
-	clusterState.UpdateNodes([]*apiv1.Node{}, nil, now)
+	clusterState.UpdateNodes(ctx, []*apiv1.Node{}, nil, now)
 
 	// delete nodes with create errors
-	autoscaler.deleteCreatedNodesWithErrors()
+	autoscaler.deleteCreatedNodesWithErrors(ctx)
 
 	// check delete was called on correct nodes
 	nodeGroupA.AssertCalled(t, "DeleteNodes", mock.MatchedBy(
@@ -954,10 +954,10 @@ func TestStaticAutoscalerOutOfResources(t *testing.T) {
 
 	// propagate nodes info in cluster state again
 	// no changes in what provider returns
-	clusterState.UpdateNodes([]*apiv1.Node{}, nil, now)
+	clusterState.UpdateNodes(ctx, []*apiv1.Node{}, nil, now)
 
 	// delete nodes with create errors
-	autoscaler.deleteCreatedNodesWithErrors()
+	autoscaler.deleteCreatedNodesWithErrors(ctx)
 
 	// nodes should be deleted again
 	nodeGroupA.AssertCalled(t, "DeleteNodes", mock.MatchedBy(
@@ -1009,10 +1009,10 @@ func TestStaticAutoscalerOutOfResources(t *testing.T) {
 	}, nil)
 
 	// update cluster state
-	clusterState.UpdateNodes([]*apiv1.Node{}, nil, now)
+	clusterState.UpdateNodes(ctx, []*apiv1.Node{}, nil, now)
 
 	// delete nodes with create errors
-	autoscaler.deleteCreatedNodesWithErrors()
+	autoscaler.deleteCreatedNodesWithErrors(ctx)
 
 	// we expect no more Delete Nodes
 	nodeGroupA.AssertNumberOfCalls(t, "DeleteNodes", 2)

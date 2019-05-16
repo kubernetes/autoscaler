@@ -19,9 +19,10 @@ package requests
 import (
 	"fmt"
 	"io"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/errors"
 	"reflect"
 	"strconv"
+
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/errors"
 )
 
 /* const vars */

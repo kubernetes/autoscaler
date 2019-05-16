@@ -17,17 +17,20 @@ limitations under the License.
 package status
 
 import (
+	"context"
 	"strings"
 	"testing"
 
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
+	autoscalingcontext "k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 	kube_record "k8s.io/client-go/tools/record"
 
 	"github.com/stretchr/testify/assert"
 )
+
+var ctx context.Context
 
 type testReason struct {
 	message string
@@ -85,12 +88,12 @@ func TestEventingScaleUpStatusProcessor(t *testing.T) {
 
 	for _, tc := range testCases {
 		fakeRecorder := kube_record.NewFakeRecorder(5)
-		context := &context.AutoscalingContext{
-			AutoscalingKubeClients: context.AutoscalingKubeClients{
+		context := &autoscalingcontext.AutoscalingContext{
+			AutoscalingKubeClients: autoscalingcontext.AutoscalingKubeClients{
 				Recorder: fakeRecorder,
 			},
 		}
-		p.Process(context, tc.state)
+		p.Process(ctx, context, tc.state)
 		triggered := 0
 		noTriggered := 0
 		for eventsLeft := true; eventsLeft; {

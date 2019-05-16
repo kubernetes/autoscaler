@@ -17,8 +17,10 @@ limitations under the License.
 package alicloud
 
 import (
+	"context"
 	"fmt"
 
+	"github.com/opentracing/opentracing-go"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/klog"
@@ -46,13 +48,19 @@ func (asg *Asg) MinSize() int {
 
 // TargetSize returns the current TARGET size of the node group. It is possible that the
 // number is different from the number of nodes registered in Kubernetes.
-func (asg *Asg) TargetSize() (int, error) {
+func (asg *Asg) TargetSize(ctx context.Context) (int, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "Asg.TargetSize")
+	defer span.Finish()
+
 	size, err := asg.manager.GetAsgSize(asg)
 	return int(size), err
 }
 
 // IncreaseSize increases Asg size
-func (asg *Asg) IncreaseSize(delta int) error {
+func (asg *Asg) IncreaseSize(ctx context.Context, delta int) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "Asg.IncreaseSize")
+	defer span.Finish()
+
 	klog.Infof("increase ASG:%s with %d nodes", asg.Id(), delta)
 	if delta <= 0 {
 		return fmt.Errorf("size increase must be positive")
@@ -73,7 +81,10 @@ func (asg *Asg) IncreaseSize(delta int) error {
 // request for new nodes that have not been yet fulfilled. Delta should be negative.
 // It is assumed that cloud provider will not delete the existing nodes if the size
 // when there is an option to just decrease the target.
-func (asg *Asg) DecreaseTargetSize(delta int) error {
+func (asg *Asg) DecreaseTargetSize(ctx context.Context, delta int) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "Asg.DecreaseTargetSize")
+	defer span.Finish()
+
 	klog.V(4).Infof("Aliyun: DecreaseTargetSize() with args: %v", delta)
 	if delta >= 0 {
 		return fmt.Errorf("size decrease size must be negative")
@@ -115,7 +126,10 @@ func (asg *Asg) Belongs(node *apiv1.Node) (bool, error) {
 }
 
 // DeleteNodes deletes the nodes from the group.
-func (asg *Asg) DeleteNodes(nodes []*apiv1.Node) error {
+func (asg *Asg) DeleteNodes(ctx context.Context, nodes []*apiv1.Node) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "Asg.DeleteNodes")
+	defer span.Finish()
+
 	size, err := asg.manager.GetAsgSize(asg)
 	if err != nil {
 		klog.Errorf("failed to get ASG size because of %s", err.Error())
@@ -160,7 +174,10 @@ func (asg *Asg) Debug() string {
 }
 
 // Nodes returns a list of all nodes that belong to this node group.
-func (asg *Asg) Nodes() ([]cloudprovider.Instance, error) {
+func (asg *Asg) Nodes(ctx context.Context) ([]cloudprovider.Instance, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "Asg.Nodes")
+	defer span.Finish()
+
 	instanceNames, err := asg.manager.GetAsgNodes(asg)
 	if err != nil {
 		return nil, err
@@ -173,7 +190,10 @@ func (asg *Asg) Nodes() ([]cloudprovider.Instance, error) {
 }
 
 // TemplateNodeInfo returns a node template for this node group.
-func (asg *Asg) TemplateNodeInfo() (*schedulernodeinfo.NodeInfo, error) {
+func (asg *Asg) TemplateNodeInfo(ctx context.Context) (*schedulernodeinfo.NodeInfo, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "Asg.TemplateNodeInfo")
+	defer span.Finish()
+
 	template, err := asg.manager.getAsgTemplate(asg.id)
 	if err != nil {
 		return nil, err
@@ -197,7 +217,10 @@ func (asg *Asg) Exist() bool {
 }
 
 // Create creates the node group on the cloud provider side.
-func (asg *Asg) Create() (cloudprovider.NodeGroup, error) {
+func (asg *Asg) Create(ctx context.Context) (cloudprovider.NodeGroup, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "Asg.Create")
+	defer span.Finish()
+
 	return nil, cloudprovider.ErrNotImplemented
 }
 
@@ -208,6 +231,9 @@ func (asg *Asg) Autoprovisioned() bool {
 
 // Delete deletes the node group on the cloud provider side.
 // This will be executed only for autoprovisioned node groups, once their size drops to 0.
-func (asg *Asg) Delete() error {
+func (asg *Asg) Delete(ctx context.Context) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "Asg.Delete")
+	defer span.Finish()
+
 	return cloudprovider.ErrNotImplemented
 }

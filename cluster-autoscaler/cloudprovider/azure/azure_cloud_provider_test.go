@@ -53,7 +53,7 @@ func newTestAzureManager(t *testing.T) *AzureManager {
 			virtualMachineScaleSetVMsClient: &VirtualMachineScaleSetVMsClientMock{},
 		},
 	}
-	cache, error := newAsgCache()
+	cache, error := newAsgCache(ctx)
 	assert.NoError(t, error)
 
 	manager.asgCache = cache
@@ -83,17 +83,17 @@ func TestBuildAzureCloudProvider(t *testing.T) {
 
 func TestName(t *testing.T) {
 	provider := newTestProvider(t)
-	assert.Equal(t, provider.Name(), "azure")
+	assert.Equal(t, provider.Name(ctx), "azure")
 }
 
 func TestNodeGroups(t *testing.T) {
 	provider := newTestProvider(t)
-	assert.Equal(t, len(provider.NodeGroups()), 0)
+	assert.Equal(t, len(provider.NodeGroups(ctx)), 0)
 
 	registered := provider.azureManager.RegisterAsg(
 		newTestScaleSet(provider.azureManager, "test-asg"))
 	assert.True(t, registered)
-	assert.Equal(t, len(provider.NodeGroups()), 1)
+	assert.Equal(t, len(provider.NodeGroups(ctx)), 1)
 }
 
 func TestNodeGroupForNode(t *testing.T) {
@@ -101,14 +101,14 @@ func TestNodeGroupForNode(t *testing.T) {
 	registered := provider.azureManager.RegisterAsg(
 		newTestScaleSet(provider.azureManager, "test-asg"))
 	assert.True(t, registered)
-	assert.Equal(t, len(provider.NodeGroups()), 1)
+	assert.Equal(t, len(provider.NodeGroups(ctx)), 1)
 
 	node := &apiv1.Node{
 		Spec: apiv1.NodeSpec{
 			ProviderID: "azure://" + fakeVirtualMachineScaleSetVMID,
 		},
 	}
-	group, err := provider.NodeGroupForNode(node)
+	group, err := provider.NodeGroupForNode(ctx, node)
 	assert.NoError(t, err)
 	assert.NotNil(t, group, "Group should not be nil")
 	assert.Equal(t, group.Id(), "test-asg")
@@ -121,7 +121,7 @@ func TestNodeGroupForNode(t *testing.T) {
 			ProviderID: "azure:///subscriptions/subscripion/resourceGroups/test-resource-group/providers/Microsoft.Compute/virtualMachines/test-instance-id-not-in-group",
 		},
 	}
-	group, err = provider.NodeGroupForNode(nodeNotInGroup)
+	group, err = provider.NodeGroupForNode(ctx, nodeNotInGroup)
 	assert.NoError(t, err)
 	assert.Nil(t, group)
 }

@@ -37,9 +37,9 @@ const DefaultCloudProvider = gce.ProviderNameGCE
 func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	switch opts.CloudProviderName {
 	case gce.ProviderNameGCE:
-		return gce.BuildGCE(opts, do, rl)
+		return gce.BuildGCE(ctx, opts, do, rl)
 	case gke.ProviderNameGKE:
-		return gke.BuildGKE(opts, do, rl)
+		return gke.BuildGKE(ctx, opts, do, rl)
 	}
 
 	return nil

@@ -17,12 +17,14 @@ limitations under the License.
 package clusterstate
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/opentracing/opentracing-go"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/api"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
@@ -270,14 +272,17 @@ func (csr *ClusterStateRegistry) registerFailedScaleUpNoLock(nodeGroup cloudprov
 }
 
 // UpdateNodes updates the state of the nodes in the ClusterStateRegistry and recalculates the stats
-func (csr *ClusterStateRegistry) UpdateNodes(nodes []*apiv1.Node, nodeInfosForGroups map[string]*schedulernodeinfo.NodeInfo, currentTime time.Time) error {
-	csr.updateNodeGroupMetrics()
-	targetSizes, err := getTargetSizes(csr.cloudProvider)
+func (csr *ClusterStateRegistry) UpdateNodes(ctx context.Context, nodes []*apiv1.Node, nodeInfosForGroups map[string]*schedulernodeinfo.NodeInfo, currentTime time.Time) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "ClusterStateRegistry.UpdateNodes")
+	defer span.Finish()
+
+	csr.updateNodeGroupMetrics(ctx)
+	targetSizes, err := getTargetSizes(ctx, csr.cloudProvider)
 	if err != nil {
 		return err
 	}
 
-	cloudProviderNodeInstances, err := getCloudProviderNodeInstances(csr.cloudProvider)
+	cloudProviderNodeInstances, err := getCloudProviderNodeInstances(ctx, csr.cloudProvider)
 	if err != nil {
 		return err
 	}
@@ -292,36 +297,39 @@ func (csr *ClusterStateRegistry) UpdateNodes(nodes []*apiv1.Node, nodeInfosForGr
 	csr.cloudProviderNodeInstances = cloudProviderNodeInstances
 
 	csr.updateUnregisteredNodes(notRegistered)
-	csr.updateReadinessStats(currentTime)
+	csr.updateReadinessStats(ctx, currentTime)
 
 	// update acceptable ranges based on requests from last loop and targetSizes
 	// updateScaleRequests relies on acceptableRanges being up to date
-	csr.updateAcceptableRanges(targetSizes)
+	csr.updateAcceptableRanges(ctx, targetSizes)
 	csr.updateScaleRequests(currentTime)
-	csr.handleOutOfResourcesErrors(currentTime)
+	csr.handleOutOfResourcesErrors(ctx, currentTime)
 	//  recalculate acceptable ranges after removing timed out requests
-	csr.updateAcceptableRanges(targetSizes)
-	csr.updateIncorrectNodeGroupSizes(currentTime)
+	csr.updateAcceptableRanges(ctx, targetSizes)
+	csr.updateIncorrectNodeGroupSizes(ctx, currentTime)
 	return nil
 }
 
 // Recalculate cluster state after scale-ups or scale-downs were registered.
-func (csr *ClusterStateRegistry) Recalculate() {
-	targetSizes, err := getTargetSizes(csr.cloudProvider)
+func (csr *ClusterStateRegistry) Recalculate(ctx context.Context) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "ClusterStateRegistry.Recalculate")
+	defer span.Finish()
+
+	targetSizes, err := getTargetSizes(ctx, csr.cloudProvider)
 	if err != nil {
 		klog.Warningf("Failed to get target sizes, when trying to recalculate cluster state: %v", err)
 	}
 
 	csr.Lock()
 	defer csr.Unlock()
-	csr.updateAcceptableRanges(targetSizes)
+	csr.updateAcceptableRanges(ctx, targetSizes)
 }
 
 // getTargetSizes gets target sizes of node groups.
-func getTargetSizes(cp cloudprovider.CloudProvider) (map[string]int, error) {
+func getTargetSizes(ctx context.Context, cp cloudprovider.CloudProvider) (map[string]int, error) {
 	result := make(map[string]int)
-	for _, ng := range cp.NodeGroups() {
-		size, err := ng.TargetSize()
+	for _, ng := range cp.NodeGroups(ctx) {
+		size, err := ng.TargetSize(ctx)
 		if err != nil {
 			return map[string]int{}, err
 		}
@@ -380,10 +388,13 @@ func (csr *ClusterStateRegistry) IsNodeGroupHealthy(nodeGroupName string) bool {
 }
 
 // updateNodeGroupMetrics looks at NodeGroups provided by cloudprovider and updates corresponding metrics
-func (csr *ClusterStateRegistry) updateNodeGroupMetrics() {
+func (csr *ClusterStateRegistry) updateNodeGroupMetrics(ctx context.Context) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "ClusterStateRegistry.updateNodeGroupMetrics")
+	defer span.Finish()
+
 	autoscaled := 0
 	autoprovisioned := 0
-	for _, nodeGroup := range csr.cloudProvider.NodeGroups() {
+	for _, nodeGroup := range csr.cloudProvider.NodeGroups(ctx) {
 		if !nodeGroup.Exist() {
 			continue
 		}
@@ -466,9 +477,12 @@ type AcceptableRange struct {
 // So if there has been a recent scale up of size 5 then there should be between targetSize-5 and targetSize
 // nodes in ready state. In the same way, if there have been 3 nodes removed recently then
 // the expected number of ready nodes is between targetSize and targetSize + 3.
-func (csr *ClusterStateRegistry) updateAcceptableRanges(targetSize map[string]int) {
+func (csr *ClusterStateRegistry) updateAcceptableRanges(ctx context.Context, targetSize map[string]int) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "ClusterStateRegistry.updateAcceptableRanges")
+	defer span.Finish()
+
 	result := make(map[string]AcceptableRange)
-	for _, nodeGroup := range csr.cloudProvider.NodeGroups() {
+	for _, nodeGroup := range csr.cloudProvider.NodeGroups(ctx) {
 		size := targetSize[nodeGroup.Id()]
 		readiness := csr.perNodeGroupReadiness[nodeGroup.Id()]
 		result[nodeGroup.Id()] = AcceptableRange{
@@ -513,7 +527,9 @@ type Readiness struct {
 	Time time.Time
 }
 
-func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
+func (csr *ClusterStateRegistry) updateReadinessStats(ctx context.Context, currentTime time.Time) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "ClusterStateRegistry.updateReadinessStats")
+	defer span.Finish()
 
 	perNodeGroup := make(map[string]Readiness)
 	total := Readiness{Time: currentTime}
@@ -535,7 +551,7 @@ func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 	}
 
 	for _, node := range csr.nodes {
-		nodeGroup, errNg := csr.cloudProvider.NodeGroupForNode(node)
+		nodeGroup, errNg := csr.cloudProvider.NodeGroupForNode(ctx, node)
 		ready, _, errReady := kube_util.GetReadinessState(node)
 
 		// Node is most likely not autoscaled, however check the errors.
@@ -553,7 +569,7 @@ func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 	}
 
 	for _, unregistered := range csr.unregisteredNodes {
-		nodeGroup, errNg := csr.cloudProvider.NodeGroupForNode(unregistered.Node)
+		nodeGroup, errNg := csr.cloudProvider.NodeGroupForNode(ctx, unregistered.Node)
 		if errNg != nil {
 			klog.Warningf("Failed to get nodegroup for %s: %v", unregistered.Node.Name, errNg)
 			continue
@@ -578,9 +594,12 @@ func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 }
 
 // Calculates which node groups have incorrect size.
-func (csr *ClusterStateRegistry) updateIncorrectNodeGroupSizes(currentTime time.Time) {
+func (csr *ClusterStateRegistry) updateIncorrectNodeGroupSizes(ctx context.Context, currentTime time.Time) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "ClusterStateRegistry.updateIncorrectNodeGroupSizes")
+	defer span.Finish()
+
 	result := make(map[string]IncorrectNodeGroupSize)
-	for _, nodeGroup := range csr.cloudProvider.NodeGroups() {
+	for _, nodeGroup := range csr.cloudProvider.NodeGroups(ctx) {
 		acceptableRange, found := csr.acceptableRanges[nodeGroup.Id()]
 		if !found {
 			klog.Warningf("Acceptable range for node group %s not found", nodeGroup.Id())
@@ -639,10 +658,13 @@ func (csr *ClusterStateRegistry) GetUnregisteredNodes() []UnregisteredNode {
 }
 
 // UpdateScaleDownCandidates updates scale down candidates
-func (csr *ClusterStateRegistry) UpdateScaleDownCandidates(nodes []*apiv1.Node, now time.Time) {
+func (csr *ClusterStateRegistry) UpdateScaleDownCandidates(ctx context.Context, nodes []*apiv1.Node, now time.Time) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "ClusterStateRegistry.UpdateScaleDownCandidates")
+	defer span.Finish()
+
 	result := make(map[string][]string)
 	for _, node := range nodes {
-		group, err := csr.cloudProvider.NodeGroupForNode(node)
+		group, err := csr.cloudProvider.NodeGroupForNode(ctx, node)
 		if err != nil {
 			klog.Warningf("Failed to get node group for %s: %v", node.Name, err)
 			continue
@@ -657,12 +679,15 @@ func (csr *ClusterStateRegistry) UpdateScaleDownCandidates(nodes []*apiv1.Node, 
 }
 
 // GetStatus returns ClusterAutoscalerStatus with the current cluster autoscaler status.
-func (csr *ClusterStateRegistry) GetStatus(now time.Time) *api.ClusterAutoscalerStatus {
+func (csr *ClusterStateRegistry) GetStatus(ctx context.Context, now time.Time) *api.ClusterAutoscalerStatus {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "ClusterStateRegistry.GetStatus")
+	defer span.Finish()
+
 	result := &api.ClusterAutoscalerStatus{
 		ClusterwideConditions: make([]api.ClusterAutoscalerCondition, 0),
 		NodeGroupStatuses:     make([]api.NodeGroupStatus, 0),
 	}
-	for _, nodeGroup := range csr.cloudProvider.NodeGroups() {
+	for _, nodeGroup := range csr.cloudProvider.NodeGroups(ctx) {
 		nodeGroupStatus := api.NodeGroupStatus{
 			ProviderID: nodeGroup.Id(),
 			Conditions: make([]api.ClusterAutoscalerCondition, 0),
@@ -768,8 +793,7 @@ func buildHealthStatusClusterwide(isReady bool, readiness Readiness) api.Cluster
 			readiness.NotStarted,
 			readiness.LongNotStarted,
 			readiness.Registered,
-			readiness.LongUnregistered,
-		),
+			readiness.LongUnregistered),
 		LastProbeTime: metav1.Time{Time: readiness.Time},
 	}
 	if isReady {
@@ -897,12 +921,15 @@ func (csr *ClusterStateRegistry) GetIncorrectNodeGroupSize(nodeGroupName string)
 
 // GetUpcomingNodes returns how many new nodes will be added shortly to the node groups or should become ready soon.
 // The function may overestimate the number of nodes.
-func (csr *ClusterStateRegistry) GetUpcomingNodes() map[string]int {
+func (csr *ClusterStateRegistry) GetUpcomingNodes(ctx context.Context) map[string]int {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "ClusterStateRegistry.GetUpcomingNodes")
+	defer span.Finish()
+
 	csr.Lock()
 	defer csr.Unlock()
 
 	result := make(map[string]int)
-	for _, nodeGroup := range csr.cloudProvider.NodeGroups() {
+	for _, nodeGroup := range csr.cloudProvider.NodeGroups(ctx) {
 		id := nodeGroup.Id()
 		readiness := csr.perNodeGroupReadiness[id]
 		ar := csr.acceptableRanges[id]
@@ -919,10 +946,10 @@ func (csr *ClusterStateRegistry) GetUpcomingNodes() map[string]int {
 
 // getCloudProviderNodeInstances returns map keyed on node group id where value is list of node instances
 // as returned by NodeGroup.Nodes().
-func getCloudProviderNodeInstances(cloudProvider cloudprovider.CloudProvider) (map[string][]cloudprovider.Instance, error) {
+func getCloudProviderNodeInstances(ctx context.Context, cloudProvider cloudprovider.CloudProvider) (map[string][]cloudprovider.Instance, error) {
 	allInstances := make(map[string][]cloudprovider.Instance)
-	for _, nodeGroup := range cloudProvider.NodeGroups() {
-		nodeGroupInstances, err := nodeGroup.Nodes()
+	for _, nodeGroup := range cloudProvider.NodeGroups(ctx) {
+		nodeGroupInstances, err := nodeGroup.Nodes(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -964,8 +991,11 @@ func (csr *ClusterStateRegistry) GetClusterSize() (currentSize, targetSize int) 
 	return currentSize, targetSize
 }
 
-func (csr *ClusterStateRegistry) handleOutOfResourcesErrors(currentTime time.Time) {
-	nodeGroups := csr.cloudProvider.NodeGroups()
+func (csr *ClusterStateRegistry) handleOutOfResourcesErrors(ctx context.Context, currentTime time.Time) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "ClusterStateRegistry.handleOutOfResourcesErrors")
+	defer span.Finish()
+
+	nodeGroups := csr.cloudProvider.NodeGroups(ctx)
 
 	for _, nodeGroup := range nodeGroups {
 		csr.handleOutOfResourcesErrorsForNodeGroup(

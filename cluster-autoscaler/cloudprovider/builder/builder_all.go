@@ -19,6 +19,8 @@ limitations under the License.
 package builder
 
 import (
+	"context"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws"
@@ -42,16 +44,16 @@ var AvailableCloudProviders = []string{
 // DefaultCloudProvider is GCE.
 const DefaultCloudProvider = gce.ProviderNameGCE
 
-func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
+func buildCloudProvider(ctx context.Context, opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	switch opts.CloudProviderName {
 	case gce.ProviderNameGCE:
-		return gce.BuildGCE(opts, do, rl)
+		return gce.BuildGCE(ctx, opts, do, rl)
 	case gke.ProviderNameGKE:
-		return gke.BuildGKE(opts, do, rl)
+		return gke.BuildGKE(ctx, opts, do, rl)
 	case aws.ProviderName:
 		return aws.BuildAWS(opts, do, rl)
 	case azure.ProviderName:
-		return azure.BuildAzure(opts, do, rl)
+		return azure.BuildAzure(ctx, opts, do, rl)
 	case alicloud.ProviderName:
 		return alicloud.BuildAlicloud(opts, do, rl)
 	case baiducloud.ProviderName:

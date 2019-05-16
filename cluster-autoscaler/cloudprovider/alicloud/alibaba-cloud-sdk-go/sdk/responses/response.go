@@ -21,9 +21,10 @@ import (
 	"encoding/xml"
 	"fmt"
 	"io/ioutil"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/errors"
 	"net/http"
 	"strings"
+
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/alicloud/alibaba-cloud-sdk-go/sdk/errors"
 )
 
 // AcsResponse interface

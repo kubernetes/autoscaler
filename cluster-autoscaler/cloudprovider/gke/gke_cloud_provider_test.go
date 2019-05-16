@@ -17,6 +17,7 @@ limitations under the License.
 package gke
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"reflect"
@@ -32,61 +33,91 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 
+	"github.com/opentracing/opentracing-go"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	gcev1 "google.golang.org/api/compute/v1"
 )
 
+var ctx context.Context
+
 type gkeManagerMock struct {
 	mock.Mock
 }
 
-func (m *gkeManagerMock) GetMigSize(mig gce.Mig) (int64, error) {
+func (m *gkeManagerMock) GetMigSize(ctx context.Context, mig gce.Mig) (int64, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "gkeManagerMock.GetMigSize")
+	defer span.Finish()
+
 	args := m.Called(mig)
 	return args.Get(0).(int64), args.Error(1)
 }
 
-func (m *gkeManagerMock) SetMigSize(mig gce.Mig, size int64) error {
+func (m *gkeManagerMock) SetMigSize(ctx context.Context, mig gce.Mig, size int64) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "gkeManagerMock.SetMigSize")
+	defer span.Finish()
+
 	args := m.Called(mig, size)
 	return args.Error(0)
 }
 
-func (m *gkeManagerMock) DeleteInstances(instances []*gce.GceRef) error {
+func (m *gkeManagerMock) DeleteInstances(ctx context.Context, instances []*gce.GceRef) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "gkeManagerMock.DeleteInstances")
+	defer span.Finish()
+
 	args := m.Called(instances)
 	return args.Error(0)
 }
 
-func (m *gkeManagerMock) GetMigForInstance(instance *gce.GceRef) (gce.Mig, error) {
+func (m *gkeManagerMock) GetMigForInstance(ctx context.Context, instance *gce.GceRef) (gce.Mig, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "gkeManagerMock.GetMigForInstance")
+	defer span.Finish()
+
 	args := m.Called(instance)
 	return args.Get(0).(*GkeMig), args.Error(1)
 }
 
-func (m *gkeManagerMock) GetMigNodes(mig gce.Mig) ([]string, error) {
+func (m *gkeManagerMock) GetMigNodes(ctx context.Context, mig gce.Mig) ([]string, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "gkeManagerMock.GetMigNodes")
+	defer span.Finish()
+
 	args := m.Called(mig)
 	return args.Get(0).([]string), args.Error(1)
 }
 
-func (m *gkeManagerMock) Refresh() error {
+func (m *gkeManagerMock) Refresh(ctx context.Context) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "gkeManagerMock.Refresh")
+	defer span.Finish()
+
 	args := m.Called()
 	return args.Error(0)
 }
 
-func (m *gkeManagerMock) Cleanup() error {
+func (m *gkeManagerMock) Cleanup(ctx context.Context) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "gkeManagerMock.Cleanup")
+	defer span.Finish()
+
 	args := m.Called()
 	return args.Error(0)
 }
 
-func (m *gkeManagerMock) GetMigs() []*gce.MigInformation {
+func (m *gkeManagerMock) GetMigs(context.Context) []*gce.MigInformation {
 	args := m.Called()
 	return args.Get(0).([]*gce.MigInformation)
 }
 
-func (m *gkeManagerMock) CreateNodePool(mig *GkeMig) (*GkeMig, error) {
+func (m *gkeManagerMock) CreateNodePool(ctx context.Context, mig *GkeMig) (*GkeMig, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "gkeManagerMock.CreateNodePool")
+	defer span.Finish()
+
 	args := m.Called(mig)
 	return mig, args.Error(0)
 }
 
-func (m *gkeManagerMock) DeleteNodePool(toBeRemoved *GkeMig) error {
+func (m *gkeManagerMock) DeleteNodePool(ctx context.Context, toBeRemoved *GkeMig) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "gkeManagerMock.DeleteNodePool")
+	defer span.Finish()
+
 	args := m.Called(toBeRemoved)
 	return args.Error(0)
 }
@@ -111,7 +142,10 @@ func (m *gkeManagerMock) getMode() GcpCloudProviderMode {
 	return args.Get(0).(GcpCloudProviderMode)
 }
 
-func (m *gkeManagerMock) GetResourceLimiter() (*cloudprovider.ResourceLimiter, error) {
+func (m *gkeManagerMock) GetResourceLimiter(ctx context.Context) (*cloudprovider.ResourceLimiter, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "gkeManagerMock.GetResourceLimiter")
+	defer span.Finish()
+
 	args := m.Called()
 	return args.Get(0).(*cloudprovider.ResourceLimiter), args.Error(1)
 }
@@ -121,7 +155,10 @@ func (m *gkeManagerMock) findMigsNamed(name *regexp.Regexp) ([]string, error) {
 	return args.Get(0).([]string), args.Error(1)
 }
 
-func (m *gkeManagerMock) GetMigTemplateNode(mig *GkeMig) (*apiv1.Node, error) {
+func (m *gkeManagerMock) GetMigTemplateNode(ctx context.Context, mig *GkeMig) (*apiv1.Node, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "gkeManagerMock.GetMigTemplateNode")
+	defer span.Finish()
+
 	args := m.Called(mig)
 	return args.Get(0).(*apiv1.Node), args.Error(1)
 }
@@ -155,7 +192,7 @@ func TestNodeGroups(t *testing.T) {
 	}
 	mig := &gce.MigInformation{Config: &GkeMig{gceRef: gce.GceRef{Name: "ng1"}}}
 	gkeManagerMock.On("GetMigs").Return([]*gce.MigInformation{mig}).Once()
-	result := gke.NodeGroups()
+	result := gke.NodeGroups(ctx)
 	assert.Equal(t, []cloudprovider.NodeGroup{mig.Config}, result)
 	mock.AssertExpectationsForObjects(t, gkeManagerMock)
 }
@@ -170,7 +207,7 @@ func TestNodeGroupForNode(t *testing.T) {
 	mig := GkeMig{gceRef: gce.GceRef{Name: "ng1"}}
 	gkeManagerMock.On("GetMigForInstance", mock.AnythingOfType("*gce.GceRef")).Return(&mig, nil).Once()
 
-	nodeGroup, err := gke.NodeGroupForNode(n)
+	nodeGroup, err := gke.NodeGroupForNode(ctx, n)
 	assert.NoError(t, err)
 	assert.Equal(t, mig, *reflect.ValueOf(nodeGroup).Interface().(*GkeMig))
 	mock.AssertExpectationsForObjects(t, gkeManagerMock)
@@ -188,7 +225,7 @@ func TestGetResourceLimiter(t *testing.T) {
 
 	// Return default.
 	gkeManagerMock.On("GetResourceLimiter").Return((*cloudprovider.ResourceLimiter)(nil), nil).Once()
-	returnedResourceLimiter, err := gke.GetResourceLimiter()
+	returnedResourceLimiter, err := gke.GetResourceLimiter(ctx)
 	assert.NoError(t, err)
 	assert.Equal(t, resourceLimiter, returnedResourceLimiter)
 
@@ -197,13 +234,13 @@ func TestGetResourceLimiter(t *testing.T) {
 		map[string]int64{cloudprovider.ResourceNameCores: 2, cloudprovider.ResourceNameMemory: 20000000},
 		map[string]int64{cloudprovider.ResourceNameCores: 5, cloudprovider.ResourceNameMemory: 200000000})
 	gkeManagerMock.On("GetResourceLimiter").Return(resourceLimiterGKE, nil).Once()
-	returnedResourceLimiterGKE, err := gke.GetResourceLimiter()
+	returnedResourceLimiterGKE, err := gke.GetResourceLimiter(ctx)
 	assert.NoError(t, err)
 	assert.Equal(t, returnedResourceLimiterGKE, resourceLimiterGKE)
 
 	// Error in GceManager.
 	gkeManagerMock.On("GetResourceLimiter").Return((*cloudprovider.ResourceLimiter)(nil), fmt.Errorf("some error")).Once()
-	returnedResourceLimiter, err = gke.GetResourceLimiter()
+	returnedResourceLimiter, err = gke.GetResourceLimiter(ctx)
 	assert.Error(t, err)
 }
 
@@ -297,7 +334,7 @@ func TestMig(t *testing.T) {
 	gkeManagerMock.On("GetProjectId").Return("project1").Once()
 	gkeManagerMock.On("GetMigTemplateNode", mock.AnythingOfType("*gke.GkeMig")).Return(&apiv1.Node{}, nil).Once()
 	systemLabels := map[string]string{apiv1.LabelZoneFailureDomain: "us-central1-b"}
-	nodeGroup, err := gke.NewNodeGroup("n1-standard-1", nil, systemLabels, nil, nil)
+	nodeGroup, err := gke.NewNodeGroup(ctx, "n1-standard-1", nil, systemLabels, nil, nil)
 	assert.NoError(t, err)
 	assert.NotNil(t, nodeGroup)
 	mig1 := reflect.ValueOf(nodeGroup).Interface().(*GkeMig)
@@ -311,7 +348,7 @@ func TestMig(t *testing.T) {
 
 	// Test TargetSize.
 	gkeManagerMock.On("GetMigSize", mock.AnythingOfType("*gke.GkeMig")).Return(int64(2), nil).Once()
-	targetSize, err := mig1.TargetSize()
+	targetSize, err := mig1.TargetSize(ctx)
 	assert.NoError(t, err)
 	assert.Equal(t, 2, targetSize)
 	mock.AssertExpectationsForObjects(t, gkeManagerMock)
@@ -319,18 +356,18 @@ func TestMig(t *testing.T) {
 	// Test IncreaseSize.
 	gkeManagerMock.On("GetMigSize", mock.AnythingOfType("*gke.GkeMig")).Return(int64(2), nil).Once()
 	gkeManagerMock.On("SetMigSize", mock.AnythingOfType("*gke.GkeMig"), int64(3)).Return(nil).Once()
-	err = mig1.IncreaseSize(1)
+	err = mig1.IncreaseSize(ctx, 1)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, gkeManagerMock)
 
 	// Test IncreaseSize - fail on wrong size.
-	err = mig1.IncreaseSize(0)
+	err = mig1.IncreaseSize(ctx, 0)
 	assert.Error(t, err)
 	assert.Equal(t, "size increase must be positive", err.Error())
 
 	// Test IncreaseSize - fail on too big delta.
 	gkeManagerMock.On("GetMigSize", mock.AnythingOfType("*gke.GkeMig")).Return(int64(2), nil).Once()
-	err = mig1.IncreaseSize(1000)
+	err = mig1.IncreaseSize(ctx, 1000)
 	assert.Error(t, err)
 	assert.Equal(t, "size increase too large - desired:1002 max:1000", err.Error())
 	mock.AssertExpectationsForObjects(t, gkeManagerMock)
@@ -341,12 +378,12 @@ func TestMig(t *testing.T) {
 		[]string{"gce://project1/us-central1-b/gke-cluster-1-default-pool-f7607aac-9j4g",
 			"gce://project1/us-central1-b/gke-cluster-1-default-pool-f7607aac-dck1"}, nil).Once()
 	gkeManagerMock.On("SetMigSize", mock.AnythingOfType("*gke.GkeMig"), int64(2)).Return(nil).Once()
-	err = mig1.DecreaseTargetSize(-1)
+	err = mig1.DecreaseTargetSize(ctx, -1)
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, gkeManagerMock)
 
 	// Test DecreaseTargetSize - fail on positive delta.
-	err = mig1.DecreaseTargetSize(1)
+	err = mig1.DecreaseTargetSize(ctx, 1)
 	assert.Error(t, err)
 	assert.Equal(t, "size decrease must be negative", err.Error())
 
@@ -356,7 +393,7 @@ func TestMig(t *testing.T) {
 		[]string{"gce://project1/us-central1-b/gke-cluster-1-default-pool-f7607aac-9j4g",
 			"gce://project1/us-central1-b/gke-cluster-1-default-pool-f7607aac-dck1"}, nil).Once()
 
-	err = mig1.DecreaseTargetSize(-2)
+	err = mig1.DecreaseTargetSize(ctx, -2)
 	assert.Error(t, err)
 	assert.Equal(t, "attempt to delete existing nodes targetSize:3 delta:-2 existingNodes: 2", err.Error())
 	mock.AssertExpectationsForObjects(t, gkeManagerMock)
@@ -366,7 +403,7 @@ func TestMig(t *testing.T) {
 	node := BuildTestNode("gke-cluster-1-default-pool-f7607aac-dck1", 1000, 1000)
 	node.Spec.ProviderID = "gce://project1/us-central1-b/gke-cluster-1-default-pool-f7607aac-dck1"
 
-	belongs, err := mig1.Belongs(node)
+	belongs, err := mig1.Belongs(ctx, node)
 	assert.NoError(t, err)
 	assert.True(t, belongs)
 	mock.AssertExpectationsForObjects(t, gkeManagerMock)
@@ -387,7 +424,7 @@ func TestMig(t *testing.T) {
 		spec:            nil}
 	gkeManagerMock.On("GetMigForInstance", mock.AnythingOfType("*gce.GceRef")).Return(mig2, nil).Once()
 
-	belongs, err = mig1.Belongs(node)
+	belongs, err = mig1.Belongs(ctx, node)
 	assert.NoError(t, err)
 	assert.False(t, belongs)
 	mock.AssertExpectationsForObjects(t, gkeManagerMock)
@@ -403,13 +440,13 @@ func TestMig(t *testing.T) {
 	gkeManagerMock.On("GetMigForInstance", n1ref).Return(mig1, nil).Once()
 	gkeManagerMock.On("GetMigForInstance", n2ref).Return(mig1, nil).Once()
 	gkeManagerMock.On("DeleteInstances", []*gce.GceRef{n1ref, n2ref}).Return(nil).Once()
-	err = mig1.DeleteNodes([]*apiv1.Node{n1, n2})
+	err = mig1.DeleteNodes(ctx, []*apiv1.Node{n1, n2})
 	assert.NoError(t, err)
 	mock.AssertExpectationsForObjects(t, gkeManagerMock)
 
 	// Test DeleteNodes - fail on reaching min size.
 	gkeManagerMock.On("GetMigSize", mock.AnythingOfType("*gke.GkeMig")).Return(int64(0), nil).Once()
-	err = mig1.DeleteNodes([]*apiv1.Node{n1, n2})
+	err = mig1.DeleteNodes(ctx, []*apiv1.Node{n1, n2})
 	assert.Error(t, err)
 	assert.Equal(t, "min size reached, nodes will not be deleted", err.Error())
 	mock.AssertExpectationsForObjects(t, gkeManagerMock)
@@ -418,7 +455,7 @@ func TestMig(t *testing.T) {
 	gkeManagerMock.On("GetMigNodes", mock.AnythingOfType("*gke.GkeMig")).Return(
 		[]string{"gce://project1/us-central1-b/gke-cluster-1-default-pool-f7607aac-9j4g",
 			"gce://project1/us-central1-b/gke-cluster-1-default-pool-f7607aac-dck1"}, nil).Once()
-	nodes, err := mig1.Nodes()
+	nodes, err := mig1.Nodes(ctx)
 	assert.NoError(t, err)
 	assert.Equal(t, cloudprovider.Instance{Id: "gce://project1/us-central1-b/gke-cluster-1-default-pool-f7607aac-9j4g"}, nodes[0])
 	assert.Equal(t, cloudprovider.Instance{Id: "gce://project1/us-central1-b/gke-cluster-1-default-pool-f7607aac-dck1"}, nodes[1])
@@ -439,7 +476,7 @@ func TestMig(t *testing.T) {
 
 	// Test TemplateNodeInfo.
 	gkeManagerMock.On("GetMigTemplateNode", mock.AnythingOfType("*gke.GkeMig")).Return(&apiv1.Node{}, nil).Once()
-	templateNodeInfo, err := mig2.TemplateNodeInfo()
+	templateNodeInfo, err := mig2.TemplateNodeInfo(ctx)
 	assert.NoError(t, err)
 	assert.NotNil(t, templateNodeInfo)
 	assert.NotNil(t, templateNodeInfo.Node())
@@ -469,7 +506,7 @@ func TestNewNodeGroupForGpu(t *testing.T) {
 	extraResources := map[string]resource.Quantity{
 		gpu.ResourceNvidiaGPU: resource.MustParse("1"),
 	}
-	nodeGroup, err := gke.NewNodeGroup("n1-standard-1", make(map[string]string), systemLabels, nil, extraResources)
+	nodeGroup, err := gke.NewNodeGroup(ctx, "n1-standard-1", make(map[string]string), systemLabels, nil, extraResources)
 	assert.NoError(t, err)
 	assert.NotNil(t, nodeGroup)
 	mig1 := reflect.ValueOf(nodeGroup).Interface().(*GkeMig)

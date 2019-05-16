@@ -19,6 +19,7 @@ limitations under the License.
 package aws
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -34,6 +35,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/opentracing/opentracing-go"
 	"gopkg.in/gcfg.v1"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -166,8 +168,7 @@ func createAWSManagerInternal(
 	configReader io.Reader,
 	discoveryOpts cloudprovider.NodeGroupDiscoveryOptions,
 	autoScalingService *autoScalingWrapper,
-	ec2Service *ec2Wrapper,
-) (*AwsManager, error) {
+	ec2Service *ec2Wrapper) (*AwsManager, error) {
 
 	cfg, err := readAWSCloudConfig(configReader)
 	if err != nil {
@@ -238,8 +239,11 @@ func CreateAwsManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGr
 }
 
 // Refresh is called before every main loop and can be used to dynamically update cloud provider state.
-// In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
-func (m *AwsManager) Refresh() error {
+// In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh(ctx).
+func (m *AwsManager) Refresh(ctx context.Context) error {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "AwsManager.Refresh")
+	defer span.Finish()
+
 	if m.lastRefresh.Add(refreshInterval).After(time.Now()) {
 		return nil
 	}
@@ -262,8 +266,11 @@ func (m *AwsManager) GetAsgForInstance(instance AwsInstanceRef) *asg {
 }
 
 // Cleanup the ASG cache.
-func (m *AwsManager) Cleanup() {
-	m.asgCache.Cleanup()
+func (m *AwsManager) Cleanup(ctx context.Context) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "AwsManager.Cleanup")
+	defer span.Finish()
+
+	m.asgCache.Cleanup(ctx)
 }
 
 func (m *AwsManager) getAsgs() []*asg {
