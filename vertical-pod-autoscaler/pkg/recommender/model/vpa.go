@@ -127,9 +127,23 @@ func (vpa *Vpa) UseAggregationIfMatching(aggregationKey AggregateStateKey, aggre
 	}
 	if vpa.matchesAggregation(aggregationKey) {
 		vpa.aggregateContainerStates[aggregationKey] = aggregation
+		aggregation.IsUnderVPA = true
 		return true
 	}
 	return false
+}
+
+// UpdateRecommendation updates the recommended resources in the VPA and its
+// aggregations with the given recommendation.
+func (vpa *Vpa) UpdateRecommendation(recommendation *vpa_types.RecommendedPodResources) {
+	vpa.Recommendation = recommendation
+	for _, containerRecommendation := range recommendation.ContainerRecommendations {
+		for container, state := range vpa.aggregateContainerStates {
+			if container.ContainerName() == containerRecommendation.ContainerName {
+				state.LastRecommendation = containerRecommendation.UncappedTarget
+			}
+		}
+	}
 }
 
 // UsesAggregation returns true iff an aggregation with the given key contributes to the VPA.
@@ -140,6 +154,8 @@ func (vpa *Vpa) UsesAggregation(aggregationKey AggregateStateKey) bool {
 
 // DeleteAggregation deletes aggregation used by this container
 func (vpa *Vpa) DeleteAggregation(aggregationKey AggregateStateKey) {
+	state := vpa.aggregateContainerStates[aggregationKey]
+	state.MarkNotAutoscaled()
 	delete(vpa.aggregateContainerStates, aggregationKey)
 }
 

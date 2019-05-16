@@ -20,7 +20,8 @@ import (
 	"testing"
 	"time"
 
-	core "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	labels "k8s.io/apimachinery/pkg/labels"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
@@ -60,7 +61,7 @@ func TestUpdateConditions(t *testing.T) {
 			expectedConditions: []vpa_types.VerticalPodAutoscalerCondition{
 				{
 					Type:    vpa_types.RecommendationProvided,
-					Status:  core.ConditionTrue,
+					Status:  corev1.ConditionTrue,
 					Reason:  "",
 					Message: "",
 				},
@@ -73,12 +74,12 @@ func TestUpdateConditions(t *testing.T) {
 			expectedConditions: []vpa_types.VerticalPodAutoscalerCondition{
 				{
 					Type:    vpa_types.RecommendationProvided,
-					Status:  core.ConditionTrue,
+					Status:  corev1.ConditionTrue,
 					Reason:  "",
 					Message: "",
 				}, {
 					Type:    vpa_types.NoPodsMatched,
-					Status:  core.ConditionTrue,
+					Status:  corev1.ConditionTrue,
 					Reason:  "NoPodsMatched",
 					Message: "No pods match this VPA object",
 				},
@@ -90,7 +91,7 @@ func TestUpdateConditions(t *testing.T) {
 			expectedConditions: []vpa_types.VerticalPodAutoscalerCondition{
 				{
 					Type:    vpa_types.RecommendationProvided,
-					Status:  core.ConditionFalse,
+					Status:  corev1.ConditionFalse,
 					Reason:  "",
 					Message: "",
 				},
@@ -103,12 +104,12 @@ func TestUpdateConditions(t *testing.T) {
 			expectedConditions: []vpa_types.VerticalPodAutoscalerCondition{
 				{
 					Type:    vpa_types.RecommendationProvided,
-					Status:  core.ConditionFalse,
+					Status:  corev1.ConditionFalse,
 					Reason:  "NoPodsMatched",
 					Message: "No pods match this VPA object",
 				}, {
 					Type:    vpa_types.NoPodsMatched,
-					Status:  core.ConditionTrue,
+					Status:  corev1.ConditionTrue,
 					Reason:  "NoPodsMatched",
 					Message: "No pods match this VPA object",
 				},
@@ -129,7 +130,7 @@ func TestUpdateConditions(t *testing.T) {
 				assert.Equal(t, condition.Status, actualCondition.Status, "Condition: %v", condition.Type)
 				assert.Equal(t, condition.Reason, actualCondition.Reason, "Condition: %v", condition.Type)
 				assert.Equal(t, condition.Message, actualCondition.Message, "Condition: %v", condition.Type)
-				if condition.Status == core.ConditionTrue {
+				if condition.Status == corev1.ConditionTrue {
 					assert.True(t, vpa.Conditions.ConditionActive(condition.Type))
 				} else {
 					assert.False(t, vpa.Conditions.ConditionActive(condition.Type))
@@ -141,4 +142,189 @@ func TestUpdateConditions(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestUpdateRecommendation(t *testing.T) {
+	type simpleRec struct {
+		cpu, mem string
+	}
+	cases := []struct {
+		name           string
+		containers     map[string]*simpleRec
+		recommendation *vpa_types.RecommendedPodResources
+		expectedLast   map[string]corev1.ResourceList
+	}{
+		{
+			name:       "New recommendation",
+			containers: map[string]*simpleRec{"test-container": nil, "second-container": nil},
+			recommendation: &vpa_types.RecommendedPodResources{
+				ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+					test.Recommendation().WithContainer("test-container").WithTarget("5", "200").GetContainerResources(),
+					test.Recommendation().WithContainer("second-container").WithTarget("200m", "3000").GetContainerResources(),
+				}},
+			expectedLast: map[string]corev1.ResourceList{
+				"test-container":   test.Resources("5", "200"),
+				"second-container": test.Resources("200m", "3000"),
+			},
+		}, {
+			name:       "One recommendation updated",
+			containers: map[string]*simpleRec{"test-container": {"5", "200"}, "second-container": {"200m", "3000"}},
+			recommendation: &vpa_types.RecommendedPodResources{
+				ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+					test.Recommendation().WithContainer("test-container").WithTarget("10", "200").GetContainerResources(),
+				}},
+			expectedLast: map[string]corev1.ResourceList{
+				"test-container":   test.Resources("10", "200"),
+				"second-container": test.Resources("200m", "3000"),
+			},
+		}, {
+			name:           "Recommendation for container missing",
+			containers:     map[string]*simpleRec{"test-container": nil, "second-container": nil},
+			recommendation: test.Recommendation().WithContainer("test-container").WithTarget("5", "200").Get(),
+			expectedLast: map[string]corev1.ResourceList{
+				"test-container": test.Resources("5", "200"),
+			},
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			namespace := "test-namespace"
+			vpa := NewVpa(VpaID{Namespace: namespace, VpaName: "my-favourite-vpa"}, labels.Nothing(), anyTime)
+			for container, rec := range tc.containers {
+				state := &AggregateContainerState{}
+				if rec != nil {
+					state.LastRecommendation = corev1.ResourceList{
+						corev1.ResourceCPU:    resource.MustParse(rec.cpu),
+						corev1.ResourceMemory: resource.MustParse(rec.mem),
+					}
+				}
+
+				vpa.aggregateContainerStates[aggregateStateKey{
+					namespace:     namespace,
+					containerName: container,
+				}] = state
+			}
+			vpa.UpdateRecommendation(tc.recommendation)
+			assert.Equal(t, vpa.Recommendation, tc.recommendation)
+			for key, state := range vpa.aggregateContainerStates {
+				expected, ok := tc.expectedLast[key.ContainerName()]
+				if !ok {
+					assert.Nil(t, state.LastRecommendation)
+				} else {
+					assert.Equal(t, expected, state.LastRecommendation)
+				}
+			}
+		})
+	}
+}
+
+func TestUseAggregationIfMatching(t *testing.T) {
+	cases := []struct {
+		name                        string
+		aggregations                []string
+		vpaSelector                 string
+		container                   string
+		containerLabels             map[string]string
+		isUnderVPA                  bool
+		expectedAggregations        []string
+		expectedNeedsRecommendation bool
+	}{
+		{
+			name:                        "First matching aggregation",
+			aggregations:                []string{},
+			vpaSelector:                 testSelectorStr,
+			container:                   "test-container",
+			containerLabels:             testLabels,
+			isUnderVPA:                  false,
+			expectedAggregations:        []string{"test-container"},
+			expectedNeedsRecommendation: true,
+		}, {
+			name:                        "New matching aggregation",
+			aggregations:                []string{"test-container"},
+			vpaSelector:                 testSelectorStr,
+			container:                   "second-container",
+			containerLabels:             testLabels,
+			isUnderVPA:                  false,
+			expectedAggregations:        []string{"test-container", "second-container"},
+			expectedNeedsRecommendation: true,
+		}, {
+			name:                        "Existing matching aggregation",
+			aggregations:                []string{"test-container"},
+			vpaSelector:                 testSelectorStr,
+			container:                   "test-container",
+			containerLabels:             testLabels,
+			isUnderVPA:                  true,
+			expectedAggregations:        []string{"test-container"},
+			expectedNeedsRecommendation: true,
+		}, {
+			name:                        "Aggregation not matching",
+			aggregations:                []string{"test-container"},
+			vpaSelector:                 testSelectorStr,
+			container:                   "second-container",
+			containerLabels:             map[string]string{"different": "labels"},
+			isUnderVPA:                  false,
+			expectedAggregations:        []string{"test-container"},
+			expectedNeedsRecommendation: false,
+		},
+	}
+	for _, tc := range cases {
+		if tc.name == "Existing matching aggregation" {
+			t.Run(tc.name, func(t *testing.T) {
+				namespace := "test-namespace"
+				selector, err := labels.Parse(tc.vpaSelector)
+				if !assert.NoError(t, err) {
+					t.FailNow()
+				}
+				vpa := NewVpa(VpaID{Namespace: namespace, VpaName: "my-favourite-vpa"}, selector, anyTime)
+				for _, container := range tc.aggregations {
+					vpa.aggregateContainerStates[mockAggregateStateKey{
+						namespace:     namespace,
+						containerName: container,
+						labels:        labels.Set(testLabels).String(),
+					}] = &AggregateContainerState{}
+				}
+				key := mockAggregateStateKey{
+					namespace:     namespace,
+					containerName: tc.container,
+					labels:        labels.Set(tc.containerLabels).String(),
+				}
+				aggregation := &AggregateContainerState{
+					IsUnderVPA: tc.isUnderVPA,
+				}
+				vpa.UseAggregationIfMatching(key, aggregation)
+				assert.Equal(t, len(tc.expectedAggregations), len(vpa.aggregateContainerStates), "AggregateContainerStates has unexpected size")
+				for _, container := range tc.expectedAggregations {
+					found := false
+					for key := range vpa.aggregateContainerStates {
+						if key.ContainerName() == container {
+							found = true
+							break
+						}
+					}
+					assert.True(t, found, "Container %s not found in aggregateContainerStates", container)
+				}
+				assert.Equal(t, tc.expectedNeedsRecommendation, aggregation.NeedsRecommendation())
+			})
+		}
+	}
+}
+
+type mockAggregateStateKey struct {
+	namespace     string
+	containerName string
+	labels        string
+}
+
+func (k mockAggregateStateKey) Namespace() string {
+	return k.namespace
+}
+
+func (k mockAggregateStateKey) ContainerName() string {
+	return k.containerName
+}
+
+func (k mockAggregateStateKey) Labels() labels.Labels {
+	// Should return empty on error
+	labels, _ := labels.ConvertSelectorToLabelsMap(k.labels)
+	return labels
 }
