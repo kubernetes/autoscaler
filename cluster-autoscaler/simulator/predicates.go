@@ -155,7 +155,7 @@ func NewPredicateChecker(kubeClient kube_client.Interface, stop <-chan struct{})
 		predicateMap["PodToleratesNodeTaints"] = predicates.PodToleratesNodeTaints
 	}
 
-	predicateList := make([]PredicateInfo, len(predicateMap))
+	predicateList := make([]PredicateInfo, 0, len(predicateMap))
 	for _, predicateName := range priorityPredicates {
 		if predicate, found := predicateMap[predicateName]; found {
 			predicateList = append(predicateList, PredicateInfo{Name: predicateName, Predicate: predicate})
