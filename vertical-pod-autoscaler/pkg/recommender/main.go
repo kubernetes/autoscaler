@@ -24,6 +24,7 @@ import (
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/history"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/routines"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics"
+	metrics_quality "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/quality"
 	metrics_recommender "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/recommender"
 	"k8s.io/client-go/rest"
 	kube_flag "k8s.io/component-base/cli/flag"
@@ -61,6 +62,7 @@ func main() {
 	healthCheck := metrics.NewHealthCheck(*metricsFetcherInterval*5, true)
 	metrics.Initialize(*address, healthCheck)
 	metrics_recommender.Register()
+	metrics_quality.Register()
 
 	useCheckpoints := *storage != "prometheus"
 	recommender := routines.NewRecommender(config, *checkpointsGCInterval, useCheckpoints)
