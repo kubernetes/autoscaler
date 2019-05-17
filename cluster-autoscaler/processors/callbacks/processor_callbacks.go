@@ -20,4 +20,11 @@ package callbacks
 type ProcessorCallbacks interface {
 	// DisableScaleDownForLoop disables scale down for current loop iteration
 	DisableScaleDownForLoop()
+
+	// SetExtraValue sets arbitrary value for given key. Value storage will be reset at the beginning of each loop iteration.
+	// Arbitrary value storage is used to pass information between processors used in extension points.
+	SetExtraValue(key string, value interface{})
+
+	// GetExtraValue gets arbitrary value for given key. If value for given key is not found, found=false will be returned.
+	GetExtraValue(key string) (value interface{}, found bool)
 }
