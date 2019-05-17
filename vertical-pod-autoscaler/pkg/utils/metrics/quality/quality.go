@@ -18,7 +18,7 @@ limitations under the License.
 package quality
 
 import (
-	"fmt"
+	"math"
 	"strconv"
 
 	corev1 "k8s.io/api/core/v1"
@@ -34,9 +34,9 @@ const (
 )
 
 var (
-	// Buckets between 0.01 and 655.36
+	// Buckets between 0.01 and 655.36 cores
 	cpuBuckets = prometheus.ExponentialBuckets(0.01, 2., 17)
-	// Buckets between 1MB and
+	// Buckets between 1MB and 65.5 GB
 	memoryBuckets = prometheus.ExponentialBuckets(1e6, 2., 17)
 )
 
@@ -45,7 +45,7 @@ var (
 		prometheus.HistogramOpts{
 			Namespace: metricsNamespace,
 			Name:      "usage_recommendation_relative_diffs",
-			Help:      "Diffs between usage and recommendation, normalized by recommendation value",
+			Help:      "Diffs between recommendation and usage, normalized by recommendation value",
 			Buckets: []float64{-1., -.75, -.5, -.25, -.1, -.05, -0.025, -.01, -.005, -0.0025, -.001, 0.,
 				.001, .0025, .005, .01, .025, .05, .1, .25, .5, .75, 1., 2.5, 5., 10., 25., 50., 100.},
 		}, []string{"update_mode", "resource", "is_oom"},
@@ -57,20 +57,36 @@ var (
 			Help:      "Count of usage samples when a recommendation should be present but is missing",
 		}, []string{"update_mode", "resource", "is_oom"},
 	)
-	cpuUsageRecommendationDiff = prometheus.NewHistogramVec(
+	cpuRecommendationOverUsageDiff = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Namespace: metricsNamespace,
-			Name:      "cpu_usage_recommendation_diffs_cores",
-			Help:      "Absolute diffs between usage and recommendation for CPU",
-			Buckets:   prependNegativeBuckets(cpuBuckets),
+			Name:      "cpu_recommendation_over_usage_diffs_cores",
+			Help:      "Absolute diffs between recommendation and usage for CPU when recommendation > usage",
+			Buckets:   cpuBuckets,
 		}, []string{"update_mode", "recommendation_missing"},
 	)
-	memoryUsageRecommendationDiff = prometheus.NewHistogramVec(
+	memoryRecommendationOverUsageDiff = prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Namespace: metricsNamespace,
-			Name:      "mem_usage_recommendation_diffs_bytes",
-			Help:      "Absolute diffs between usage and recommendation for memory",
-			Buckets:   prependNegativeBuckets(memoryBuckets),
+			Name:      "mem_recommendation_over_usage_diffs_bytes",
+			Help:      "Absolute diffs between recommendation and usage for memory when recommendation > usage",
+			Buckets:   memoryBuckets,
+		}, []string{"update_mode", "recommendation_missing", "is_oom"},
+	)
+	cpuRecommendationLowerOrEqualUsageDiff = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Namespace: metricsNamespace,
+			Name:      "cpu_recommendation_lower_equal_usage_diffs_cores",
+			Help:      "Absolute diffs between recommendation and usage for CPU when recommendation <= usage",
+			Buckets:   cpuBuckets,
+		}, []string{"update_mode", "recommendation_missing"},
+	)
+	memoryRecommendationLowerOrEqualUsageDiff = prometheus.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Namespace: metricsNamespace,
+			Name:      "mem_recommendation_lower_equal_usage_diffs_bytes",
+			Help:      "Absolute diffs between recommendation and usage for memory when recommendation <= usage",
+			Buckets:   memoryBuckets,
 		}, []string{"update_mode", "recommendation_missing", "is_oom"},
 	)
 	cpuRecommendations = prometheus.NewHistogramVec(
@@ -95,8 +111,10 @@ var (
 func Register() {
 	prometheus.MustRegister(usageRecommendationRelativeDiff)
 	prometheus.MustRegister(usageMissingRecommendationCounter)
-	prometheus.MustRegister(cpuUsageRecommendationDiff)
-	prometheus.MustRegister(memoryUsageRecommendationDiff)
+	prometheus.MustRegister(cpuRecommendationOverUsageDiff)
+	prometheus.MustRegister(memoryRecommendationOverUsageDiff)
+	prometheus.MustRegister(cpuRecommendationLowerOrEqualUsageDiff)
+	prometheus.MustRegister(memoryRecommendationLowerOrEqualUsageDiff)
 	prometheus.MustRegister(cpuRecommendations)
 	prometheus.MustRegister(memoryRecommendations)
 }
@@ -117,12 +135,25 @@ func observeMissingRecommendation(isOOM bool, resource corev1.ResourceName, upda
 // observeUsageRecommendationDiff records absolute diff between usage and
 // recommendation.
 func observeUsageRecommendationDiff(usage, recommendation float64, isRecommendationMissing, isOOM bool, resource corev1.ResourceName, updateMode *vpa_types.UpdateMode) {
+	recommendationOverUsage := recommendation > usage
+	diff := math.Abs(usage - recommendation)
 	switch resource {
 	case corev1.ResourceCPU:
-		cpuUsageRecommendationDiff.WithLabelValues(updateModeToString(updateMode), strconv.FormatBool(isRecommendationMissing)).Observe(usage - recommendation)
+		if recommendationOverUsage {
+			cpuRecommendationOverUsageDiff.WithLabelValues(updateModeToString(updateMode),
+				strconv.FormatBool(isRecommendationMissing)).Observe(diff)
+		} else {
+			cpuRecommendationLowerOrEqualUsageDiff.WithLabelValues(updateModeToString(updateMode),
+				strconv.FormatBool(isRecommendationMissing)).Observe(diff)
+		}
 	case corev1.ResourceMemory:
-		memoryUsageRecommendationDiff.WithLabelValues(updateModeToString(updateMode),
-			strconv.FormatBool(isRecommendationMissing), strconv.FormatBool(isOOM)).Observe(usage - recommendation)
+		if recommendationOverUsage {
+			memoryRecommendationOverUsageDiff.WithLabelValues(updateModeToString(updateMode),
+				strconv.FormatBool(isRecommendationMissing), strconv.FormatBool(isOOM)).Observe(diff)
+		} else {
+			memoryRecommendationLowerOrEqualUsageDiff.WithLabelValues(updateModeToString(updateMode),
+				strconv.FormatBool(isRecommendationMissing), strconv.FormatBool(isOOM)).Observe(diff)
+		}
 	default:
 		klog.Warningf("Unknown resource: %v", resource)
 	}
@@ -140,7 +171,7 @@ func observeRecommendation(recommendation float64, isOOM bool, resource corev1.R
 	}
 }
 
-// ObserveQualityMetrics records all quality metrics that we can derive from usage and recommendation.
+// ObserveQualityMetrics records all quality metrics that we can derive from recommendation and usage.
 func ObserveQualityMetrics(usage, recommendation float64, isOOM bool, resource corev1.ResourceName, updateMode *vpa_types.UpdateMode) {
 	observeRecommendation(recommendation, isOOM, resource, updateMode)
 	observeUsageRecommendationDiff(usage, recommendation, false, isOOM, resource, updateMode)
@@ -151,20 +182,6 @@ func ObserveQualityMetrics(usage, recommendation float64, isOOM bool, resource c
 func ObserveQualityMetricsRecommendationMissing(usage float64, isOOM bool, resource corev1.ResourceName, updateMode *vpa_types.UpdateMode) {
 	observeMissingRecommendation(isOOM, resource, updateMode)
 	observeUsageRecommendationDiff(usage, 0, true, isOOM, resource, updateMode)
-}
-
-func prependNegativeBuckets(buckets []float64) []float64 {
-	bucketCount := len(buckets)
-	result := make([]float64, bucketCount*2+1)
-	result[bucketCount] = 0
-	for i, bucket := range buckets {
-		if bucket < 0 {
-			panic(fmt.Sprintf("Positive buckets expected. Got: %v", bucket))
-		}
-		result[bucketCount-i-1] = -bucket
-		result[bucketCount+i+1] = bucket
-	}
-	return result
 }
 
 func updateModeToString(updateMode *vpa_types.UpdateMode) string {
