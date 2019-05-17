@@ -87,39 +87,44 @@ func (container *ContainerState) addCPUSample(sample *ContainerUsageSample) bool
 	if !sample.isValid(ResourceCPU) || !sample.MeasureStart.After(container.LastCPUSampleStart) {
 		return false // Discard invalid, duplicate or out-of-order samples.
 	}
-	container.observeRecommendationUsageDiff(sample.Usage, false, corev1.ResourceCPU)
+	container.observeQualityMetrics(sample.Usage, false, corev1.ResourceCPU)
 	container.aggregator.AddSample(sample)
 	container.LastCPUSampleStart = sample.MeasureStart
 	return true
 }
 
-func (container *ContainerState) observeRecommendationUsageDiff(usage ResourceAmount, isOOM bool, resource corev1.ResourceName) {
+func (container *ContainerState) observeQualityMetrics(usage ResourceAmount, isOOM bool, resource corev1.ResourceName) {
 	if !container.aggregator.NeedsRecommendation() {
 		return
 	}
+	updateMode := container.aggregator.GetUpdateMode()
+	var usageValue float64
+	switch resource {
+	case corev1.ResourceCPU:
+		usageValue = CoresFromCPUAmount(usage)
+	case corev1.ResourceMemory:
+		usageValue = BytesFromMemoryAmount(usage)
+	}
 	if container.aggregator.GetLastRecommendation() == nil {
-		metrics_quality.ObserveMissingRecommendation(isOOM, resource)
+		metrics_quality.ObserveQualityMetricsRecommendationMissing(usageValue, isOOM, resource, updateMode)
 		return
 	}
 	recommendation := container.aggregator.GetLastRecommendation()[resource]
-	var recommendationValue float64
-	var usageValue float64
 	if recommendation.IsZero() {
-		metrics_quality.ObserveMissingRecommendation(isOOM, resource)
+		metrics_quality.ObserveQualityMetricsRecommendationMissing(usageValue, isOOM, resource, updateMode)
 		return
 	}
+	var recommendationValue float64
 	switch resource {
 	case corev1.ResourceCPU:
 		recommendationValue = float64(recommendation.MilliValue()) / 1000.0
-		usageValue = CoresFromCPUAmount(usage)
 	case corev1.ResourceMemory:
 		recommendationValue = float64(recommendation.Value())
-		usageValue = BytesFromMemoryAmount(usage)
 	default:
 		klog.Warningf("Unknown resource: %v", resource)
 		return
 	}
-	metrics_quality.ObserveUsageRecommendationRelativeDiff(usageValue, recommendationValue, isOOM, resource)
+	metrics_quality.ObserveQualityMetrics(usageValue, recommendationValue, isOOM, resource, updateMode)
 }
 
 // GetMaxMemoryPeak returns maximum memory usage in the sample, possibly estimated from OOM
@@ -163,7 +168,7 @@ func (container *ContainerState) addMemorySample(sample *ContainerUsageSample, i
 		container.oomPeak = 0
 		addNewPeak = true
 	}
-	container.observeRecommendationUsageDiff(sample.Usage, isOOM, corev1.ResourceMemory)
+	container.observeQualityMetrics(sample.Usage, isOOM, corev1.ResourceMemory)
 	if addNewPeak {
 		newPeak := ContainerUsageSample{
 			MeasureStart: container.WindowEnd,
