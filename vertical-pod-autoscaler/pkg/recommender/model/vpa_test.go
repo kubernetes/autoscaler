@@ -219,52 +219,64 @@ func TestUpdateRecommendation(t *testing.T) {
 }
 
 func TestUseAggregationIfMatching(t *testing.T) {
+	modeOff := vpa_types.UpdateModeOff
+	modeAuto := vpa_types.UpdateModeAuto
 	cases := []struct {
 		name                        string
 		aggregations                []string
 		vpaSelector                 string
+		updateMode                  *vpa_types.UpdateMode
 		container                   string
 		containerLabels             map[string]string
 		isUnderVPA                  bool
 		expectedAggregations        []string
+		expectedUpdateMode          *vpa_types.UpdateMode
 		expectedNeedsRecommendation bool
 	}{
 		{
 			name:                        "First matching aggregation",
 			aggregations:                []string{},
 			vpaSelector:                 testSelectorStr,
+			updateMode:                  &modeOff,
 			container:                   "test-container",
 			containerLabels:             testLabels,
 			isUnderVPA:                  false,
 			expectedAggregations:        []string{"test-container"},
 			expectedNeedsRecommendation: true,
+			expectedUpdateMode:          &modeOff,
 		}, {
 			name:                        "New matching aggregation",
 			aggregations:                []string{"test-container"},
 			vpaSelector:                 testSelectorStr,
+			updateMode:                  &modeAuto,
 			container:                   "second-container",
 			containerLabels:             testLabels,
 			isUnderVPA:                  false,
 			expectedAggregations:        []string{"test-container", "second-container"},
 			expectedNeedsRecommendation: true,
+			expectedUpdateMode:          &modeAuto,
 		}, {
 			name:                        "Existing matching aggregation",
 			aggregations:                []string{"test-container"},
 			vpaSelector:                 testSelectorStr,
+			updateMode:                  &modeOff,
 			container:                   "test-container",
 			containerLabels:             testLabels,
 			isUnderVPA:                  true,
 			expectedAggregations:        []string{"test-container"},
 			expectedNeedsRecommendation: true,
+			expectedUpdateMode:          &modeOff,
 		}, {
 			name:                        "Aggregation not matching",
 			aggregations:                []string{"test-container"},
 			vpaSelector:                 testSelectorStr,
+			updateMode:                  &modeAuto,
 			container:                   "second-container",
 			containerLabels:             map[string]string{"different": "labels"},
 			isUnderVPA:                  false,
 			expectedAggregations:        []string{"test-container"},
 			expectedNeedsRecommendation: false,
+			expectedUpdateMode:          nil,
 		},
 	}
 	for _, tc := range cases {
@@ -276,13 +288,7 @@ func TestUseAggregationIfMatching(t *testing.T) {
 					t.FailNow()
 				}
 				vpa := NewVpa(VpaID{Namespace: namespace, VpaName: "my-favourite-vpa"}, selector, anyTime)
-				for _, container := range tc.aggregations {
-					vpa.aggregateContainerStates[mockAggregateStateKey{
-						namespace:     namespace,
-						containerName: container,
-						labels:        labels.Set(testLabels).String(),
-					}] = &AggregateContainerState{}
-				}
+				vpa.UpdateMode = tc.updateMode
 				key := mockAggregateStateKey{
 					namespace:     namespace,
 					containerName: tc.container,
@@ -291,6 +297,20 @@ func TestUseAggregationIfMatching(t *testing.T) {
 				aggregation := &AggregateContainerState{
 					IsUnderVPA: tc.isUnderVPA,
 				}
+				for _, container := range tc.aggregations {
+					containerKey := mockAggregateStateKey{
+						namespace:     namespace,
+						containerName: container,
+						labels:        labels.Set(testLabels).String(),
+					}
+					if container == tc.container {
+						aggregation.UpdateMode = vpa.UpdateMode
+						vpa.aggregateContainerStates[containerKey] = aggregation
+					} else {
+						vpa.aggregateContainerStates[key] = &AggregateContainerState{UpdateMode: vpa.UpdateMode}
+					}
+				}
+
 				vpa.UseAggregationIfMatching(key, aggregation)
 				assert.Equal(t, len(tc.expectedAggregations), len(vpa.aggregateContainerStates), "AggregateContainerStates has unexpected size")
 				for _, container := range tc.expectedAggregations {
@@ -304,6 +324,13 @@ func TestUseAggregationIfMatching(t *testing.T) {
 					assert.True(t, found, "Container %s not found in aggregateContainerStates", container)
 				}
 				assert.Equal(t, tc.expectedNeedsRecommendation, aggregation.NeedsRecommendation())
+				if tc.expectedUpdateMode == nil {
+					assert.Nil(t, aggregation.GetUpdateMode())
+				} else {
+					if assert.NotNil(t, aggregation.GetUpdateMode()) {
+						assert.Equal(t, *tc.expectedUpdateMode, *aggregation.GetUpdateMode())
+					}
+				}
 			})
 		}
 	}
