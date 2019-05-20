@@ -17,6 +17,7 @@ limitations under the License.
 package logic
 
 import (
+	"fmt"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/labels"
@@ -27,14 +28,12 @@ import (
 
 // LimitsHints provides hinted limits that respect limit range max ratio
 type LimitsHints interface {
-	IsNil() bool
 	RequestsExceedsRatio(indexOfContainer int, resourceName v1.ResourceName) bool
 	HintedLimit(indexOfContainer int, resourceName v1.ResourceName) resource.Quantity
 }
 
 // LimitRangeHints implements LimitsHints interface
 type LimitRangeHints struct {
-	requestsExceedsRatio  []map[v1.ResourceName]bool
 	limitsRespectingRatio []v1.ResourceList
 }
 
@@ -42,26 +41,21 @@ var _ LimitsHints = &LimitRangeHints{}
 
 // LimitsChecker checks for LimitRange and if container needs limits to be set
 type LimitsChecker interface {
-	NeedsLimits(*v1.Pod, []ContainerResources) LimitsHints
-}
-
-// IsNil return true if there is no hints to set limits
-func (lrh *LimitRangeHints) IsNil() bool {
-	return lrh == (*LimitRangeHints)(nil)
+	NeedsLimits(*v1.Pod, []ContainerResources) (LimitsHints, error)
 }
 
 // RequestsExceedsRatio return true if limits have to be set to respect limit range max ratio
 func (lrh *LimitRangeHints) RequestsExceedsRatio(indexOfContainer int, resourceName v1.ResourceName) bool {
-	if !lrh.IsNil() {
-		yes, ok := lrh.requestsExceedsRatio[indexOfContainer][resourceName]
-		return ok && yes
+	if lrh != nil && indexOfContainer < len(lrh.limitsRespectingRatio) {
+		_, present := lrh.limitsRespectingRatio[indexOfContainer][resourceName]
+		return present
 	}
 	return false
 }
 
 // HintedLimit return the limit Quantity that respect the limit range max ration
 func (lrh *LimitRangeHints) HintedLimit(indexOfContainer int, resourceName v1.ResourceName) resource.Quantity {
-	if !lrh.IsNil() {
+	if lrh != nil && indexOfContainer < len(lrh.limitsRespectingRatio) {
 		limit, ok := lrh.limitsRespectingRatio[indexOfContainer][resourceName]
 		if ok {
 			return limit
@@ -75,8 +69,8 @@ type neverNeedsLimitsChecker struct{}
 
 var _ LimitsChecker = &neverNeedsLimitsChecker{}
 
-func (lc *neverNeedsLimitsChecker) NeedsLimits(pod *v1.Pod, containersResources []ContainerResources) LimitsHints {
-	return LimitsHints((*LimitRangeHints)(nil))
+func (lc *neverNeedsLimitsChecker) NeedsLimits(pod *v1.Pod, containersResources []ContainerResources) (LimitsHints, error) {
+	return LimitsHints((*LimitRangeHints)(nil)), nil
 }
 
 type limitsChecker struct {
@@ -85,21 +79,26 @@ type limitsChecker struct {
 
 var _ LimitsChecker = &limitsChecker{}
 
-// NewLimitsChecker creates a LimitsChecker
-func NewLimitsChecker(f informers.SharedInformerFactory) LimitsChecker {
-	if f != nil {
-		limitrangeLister := f.Core().V1().LimitRanges().Lister()
-		stopCh := make(chan struct{})
-		f.Start(stopCh)
-		for _, ok := range f.WaitForCacheSync(stopCh) {
-			if !ok {
-				if ok := f.Core().V1().LimitRanges().Informer().HasSynced(); !ok {
-					return &neverNeedsLimitsChecker{}
-				}
+// NewLimitsChecker returns a limitsChecker or an error it encountered when attempting to create it.
+func NewLimitsChecker(f informers.SharedInformerFactory) (*limitsChecker, error) {
+	if f == nil {
+		return nil, fmt.Errorf("NewLimitsChecker requires a SharedInformerFactory but got nil")
+	}
+	limitrangeLister := f.Core().V1().LimitRanges().Lister()
+	stopCh := make(chan struct{})
+	f.Start(stopCh)
+	for _, ok := range f.WaitForCacheSync(stopCh) {
+		if !ok {
+			if f.Core().V1().LimitRanges().Informer().HasSynced() {
+				return nil, fmt.Errorf("Informer did not sync")
 			}
 		}
-		return &limitsChecker{limitrangeLister}
 	}
+	return &limitsChecker{limitrangeLister}, nil
+}
+
+// NewNoopLimitsChecker returns a limit checker that
+func NewNoopLimitsChecker() *neverNeedsLimitsChecker {
 	return &neverNeedsLimitsChecker{}
 }
 
@@ -143,14 +142,13 @@ func (id *interestingData) parse(lri *v1.LimitRangeItem) {
 	}
 }
 
-func (lc *limitsChecker) getLimitRangeItem(pod *v1.Pod) (ret *v1.LimitRangeItem) {
-	ret = nil
+func (lc *limitsChecker) getLimitRangeItem(pod *v1.Pod) (*v1.LimitRangeItem, error) {
 	limitranges, err := lc.limitrangeLister.
 		LimitRanges(pod.GetNamespace()).
 		List(labels.Everything())
 
 	if err != nil {
-		return ret
+		return nil, fmt.Errorf("error loading limit ranges: %s", err)
 	}
 
 	id := &interestingData{}
@@ -164,35 +162,36 @@ func (lc *limitsChecker) getLimitRangeItem(pod *v1.Pod) (ret *v1.LimitRangeItem)
 				lri.Default == nil {
 				continue
 			}
+			// TODO: handle multiple limit ranges matching a pod.
 			foundInterstingData = true
 			id.parse(&lri)
 		}
 	}
 	if foundInterstingData {
-		ret = &v1.LimitRangeItem{
+		return &v1.LimitRangeItem{
 			MaxLimitRequestRatio: id.MaxLimitRequestRatio,
 			Default:              id.Default,
-		}
+		}, nil
 	}
-
-	return ret
+	return nil, nil
 }
 
-func (lc *limitsChecker) NeedsLimits(pod *v1.Pod, containersResources []ContainerResources) LimitsHints {
-	lri := lc.getLimitRangeItem(pod)
+func (lc *limitsChecker) NeedsLimits(pod *v1.Pod, containersResources []ContainerResources) (LimitsHints, error) {
+	lri, err := lc.getLimitRangeItem(pod)
+	if err != nil {
+		return nil, fmt.Errorf("error getting limit range for pod: %s", err)
+	}
 
 	if lri == (*v1.LimitRangeItem)(nil) {
-		return LimitsHints((*LimitRangeHints)(nil))
+		return &LimitRangeHints{}, nil
 	}
 
 	lrh := &LimitRangeHints{
-		requestsExceedsRatio:  make([]map[v1.ResourceName]bool, len(containersResources)),
 		limitsRespectingRatio: make([]v1.ResourceList, len(containersResources)),
 	}
 	needsLimits := false
 
 	for i, cr := range containersResources {
-		lrh.requestsExceedsRatio[i] = make(map[v1.ResourceName]bool)
 		lrh.limitsRespectingRatio[i] = make(v1.ResourceList)
 		for name, value := range cr.Requests {
 			var ctrLimit *resource.Quantity
@@ -227,7 +226,6 @@ func (lc *limitsChecker) NeedsLimits(pod *v1.Pod, containersResources []Containe
 
 				if futureRatio > maxRatio {
 					needsLimits = true
-					lrh.requestsExceedsRatio[i][name] = true
 					l := int64(float64(vv) * maxRatio)
 					if useMilli {
 						if l > resource.MaxMilliValue {
@@ -245,5 +243,5 @@ func (lc *limitsChecker) NeedsLimits(pod *v1.Pod, containersResources []Containe
 	if !needsLimits {
 		lrh = nil
 	}
-	return LimitsHints(lrh)
+	return LimitsHints(lrh), nil
 }

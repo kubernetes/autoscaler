@@ -74,7 +74,10 @@ func (s *AdmissionServer) getPatchesForPodResourceRequest(raw []byte, namespace 
 		annotationsPerContainer = vpa_api_util.ContainerToAnnotationsMap{}
 	}
 
-	limitsHints := s.limitsChecker.NeedsLimits(&pod, containersResources)
+	limitsHints, err := s.limitsChecker.NeedsLimits(&pod, containersResources)
+	if err != nil {
+		return nil, err
+	}
 
 	patches := []patchRecord{}
 	updatesAnnotation := []string{}
@@ -136,14 +139,13 @@ func (s *AdmissionServer) getContainerPatch(pod v1.Pod, i int, annotationsPerCon
 		annotations = make([]string, 0)
 	}
 
-	if !limitsHints.IsNil() {
+	if limitsHints != nil {
 		var resources v1.ResourceList
 		resourceNames := []v1.ResourceName{"cpu", "memory"}
 		for _, resource := range resourceNames {
 			if limitsHints.RequestsExceedsRatio(i, resource) {
-				// we need just to take care of max ratio
-				// setting limits to request*maxRatio,
-				// It's needed when we are lowering requests too much
+				// LimitRange cannot specify min ratio: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.12/#limitrangeitem-v1-core
+				// If we exceed max ratio cap limit to request*maxRatio.
 				limit := limitsHints.HintedLimit(i, resource)
 				if resources == nil {
 					resources = make(v1.ResourceList)
