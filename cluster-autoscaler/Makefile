@@ -2,7 +2,7 @@ all: build
 
 TAG?=dev
 FLAGS=
-ENVVAR=
+ENVVAR=CGO_ENABLED=0 LD_FLAGS=-s
 GOOS?=linux
 REGISTRY?=staging-k8s.gcr.io
 ifdef BUILD_TAGS
