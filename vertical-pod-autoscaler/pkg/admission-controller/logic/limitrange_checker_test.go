@@ -164,42 +164,43 @@ func TestUpdateResourceLimits(t *testing.T) {
 	// - no needed limits
 	// - RequestsExceedsRatio always return false
 	t.Run("test case for neverNeedsLimitsChecker", func(t *testing.T) {
-		nlc := NewLimitsChecker(nil)
-		hints := nlc.NeedsLimits(uninitialized, vpaContainersResources)
-		hintsPtr, _ := hints.(*LimitRangeHints)
-		if hintsPtr != nil {
-			t.Errorf("%v NeedsLimits didn't not return nil: %v", nlc, hints)
-		}
-		if !hints.IsNil() {
-			t.Errorf("%v NeedsLimits returned a LimitsHints not nil: %v", nlc, hints)
-		}
-		if hints.RequestsExceedsRatio(0, apiv1.ResourceMemory) != false {
-			t.Errorf("%v RequestsExceedsRatio didn't not return false", hints)
-		}
-		hinted := hints.HintedLimit(0, apiv1.ResourceMemory)
-		if !(&hinted).IsZero() {
-			t.Errorf("%v RequestsExceedsRatio didn't not return zero quantity", hints)
+		nlc := NewNoopLimitsChecker()
+		hints, err := nlc.NeedsLimits(uninitialized, vpaContainersResources)
+		if assert.NoError(t, err) {
+			hintsPtr, _ := hints.(*LimitRangeHints)
+			if hintsPtr != nil {
+				t.Errorf("%v NeedsLimits didn't not return nil: %v", nlc, hints)
+			}
+			assert.Nil(t, hints)
+			if hints.RequestsExceedsRatio(0, apiv1.ResourceMemory) != false {
+				t.Errorf("%v RequestsExceedsRatio didn't not return false", hints)
+			}
+			hinted := hints.HintedLimit(0, apiv1.ResourceMemory)
+			if !(&hinted).IsZero() {
+				t.Errorf("%v RequestsExceedsRatio didn't not return zero quantity", hints)
+			}
 		}
 	})
 
 	t.Run("test case for no Limit Range", func(t *testing.T) {
 		cs := fake.NewSimpleClientset()
 		factory := informers.NewSharedInformerFactory(cs, 0)
-		lc := NewLimitsChecker(factory)
-		hints := lc.NeedsLimits(uninitialized, vpaContainersResources)
-		hintsPtr, _ := hints.(*LimitRangeHints)
-		if hintsPtr != nil {
-			t.Errorf("%v NeedsLimits didn't not return nil: %v", lc, hints)
-		}
-		if !hints.IsNil() {
-			t.Errorf("%v NeedsLimits returned a LimitsHints not nil: %v", lc, hints)
-		}
-		if hints.RequestsExceedsRatio(0, apiv1.ResourceMemory) != false {
-			t.Errorf("%v RequestsExceedsRatio didn't not return false", hints)
-		}
-		hinted := hints.HintedLimit(0, apiv1.ResourceMemory)
-		if !(&hinted).IsZero() {
-			t.Errorf("%v RequestsExceedsRatio didn't not return zero quantity", hints)
+		lc, err := NewLimitsChecker(factory)
+		if assert.NoError(t, err) {
+			hints, err := lc.NeedsLimits(uninitialized, vpaContainersResources)
+			if assert.NoError(t, err) {
+				hintsPtr, _ := hints.(*LimitRangeHints)
+				if assert.NotNil(t, hintsPtr) {
+					assert.Empty(t, hintsPtr.limitsRespectingRatio)
+				}
+				if hints.RequestsExceedsRatio(0, apiv1.ResourceMemory) != false {
+					t.Errorf("%v RequestsExceedsRatio didn't not return false", hints)
+				}
+				hinted := hints.HintedLimit(0, apiv1.ResourceMemory)
+				if !(&hinted).IsZero() {
+					t.Errorf("%v RequestsExceedsRatio didn't not return zero quantity", hints)
+				}
+			}
 		}
 	})
 
@@ -208,28 +209,32 @@ func TestUpdateResourceLimits(t *testing.T) {
 		t.Run(fmt.Sprintf("test case number: %d", i), func(t *testing.T) {
 			cs := fake.NewSimpleClientset(tc.limitRanges...)
 			factory := informers.NewSharedInformerFactory(cs, 0)
-			lc := NewLimitsChecker(factory)
-			resources := tc.containerResources
+			lc, err := NewLimitsChecker(factory)
+			if assert.NoError(t, err) {
+				resources := tc.containerResources
 
-			hints := lc.NeedsLimits(tc.pod, resources)
-			assert.NotNil(t, hints, fmt.Sprintf("hints is: %+v", hints))
+				hints, err := lc.NeedsLimits(tc.pod, resources)
+				if assert.NoError(t, err) {
+					assert.NotNil(t, hints, fmt.Sprintf("hints is: %+v", hints))
 
-			if tc.requestsExceedsRatioCPU {
-				assert.True(t, hints.RequestsExceedsRatio(0, apiv1.ResourceCPU))
-			} else {
-				assert.False(t, hints.RequestsExceedsRatio(0, apiv1.ResourceCPU))
+					if tc.requestsExceedsRatioCPU {
+						assert.True(t, hints.RequestsExceedsRatio(0, apiv1.ResourceCPU))
+					} else {
+						assert.False(t, hints.RequestsExceedsRatio(0, apiv1.ResourceCPU))
+					}
+
+					if tc.requestsExceedsRatioMemory {
+						assert.True(t, hints.RequestsExceedsRatio(0, apiv1.ResourceMemory))
+					} else {
+						assert.False(t, hints.RequestsExceedsRatio(0, apiv1.ResourceMemory))
+					}
+
+					hintedCPULimits := hints.HintedLimit(0, apiv1.ResourceCPU)
+					hintedMemoryLimits := hints.HintedLimit(0, apiv1.ResourceMemory)
+					assert.EqualValues(t, tc.limitsRespectingRatioCPU.Value(), hintedCPULimits.Value(), fmt.Sprintf("cpu limits doesn't match: %v != %v\n", tc.limitsRespectingRatioCPU.Value(), hintedCPULimits.Value()))
+					assert.EqualValues(t, tc.limitsRespectingRatioMemory.Value(), hintedMemoryLimits.Value(), fmt.Sprintf("memory limits doesn't match: %v != %v\n", tc.limitsRespectingRatioMemory.Value(), hintedMemoryLimits.Value()))
+				}
 			}
-
-			if tc.requestsExceedsRatioMemory {
-				assert.True(t, hints.RequestsExceedsRatio(0, apiv1.ResourceMemory))
-			} else {
-				assert.False(t, hints.RequestsExceedsRatio(0, apiv1.ResourceMemory))
-			}
-
-			hintedCPULimits := hints.HintedLimit(0, apiv1.ResourceCPU)
-			hintedMemoryLimits := hints.HintedLimit(0, apiv1.ResourceMemory)
-			assert.EqualValues(t, tc.limitsRespectingRatioCPU.Value(), hintedCPULimits.Value(), fmt.Sprintf("cpu limits doesn't match: %v != %v\n", tc.limitsRespectingRatioCPU.Value(), hintedCPULimits.Value()))
-			assert.EqualValues(t, tc.limitsRespectingRatioMemory.Value(), hintedMemoryLimits.Value(), fmt.Sprintf("memory limits doesn't match: %v != %v\n", tc.limitsRespectingRatioMemory.Value(), hintedMemoryLimits.Value()))
 		})
 
 	}
