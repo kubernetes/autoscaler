@@ -86,10 +86,17 @@ func main() {
 	recommendationProvider := logic.NewRecommendationProvider(vpaLister, vpa_api_util.NewCappingRecommendationProcessor(), targetSelectorFetcher)
 	podPreprocessor := logic.NewDefaultPodPreProcessor()
 	vpaPreprocessor := logic.NewDefaultVpaPreProcessor()
-	limitsChecker := logic.NewLimitsChecker(nil)
+	var limitsChecker logic.LimitsChecker
 	if *allowToAdjustLimits {
-		limitsChecker = logic.NewLimitsChecker(factory)
+		limitsChecker, err = logic.NewLimitsChecker(factory)
+		if err != nil {
+			klog.Errorf("Failed to create limitsChecker, falling back to not checking limits. Error message: %s", err)
+			limitsChecker = logic.NewNoopLimitsChecker()
+		}
+	} else {
+		limitsChecker = logic.NewNoopLimitsChecker()
 	}
+
 	as := logic.NewAdmissionServer(recommendationProvider, podPreprocessor, vpaPreprocessor, limitsChecker)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		as.Serve(w, r)
