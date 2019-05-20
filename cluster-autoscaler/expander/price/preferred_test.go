@@ -33,6 +33,10 @@ func (n *testNodeLister) List() ([]*apiv1.Node, error) {
 	return n.list, nil
 }
 
+func (n *testNodeLister) Get(name string) (*apiv1.Node, error) {
+	return nil, nil
+}
+
 func testPreferredNodeSingleCase(t *testing.T, currentNodes int, expectedNodeSize int) {
 	nodes := []*apiv1.Node{}
 	for i := 1; i <= currentNodes; i++ {
