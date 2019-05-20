@@ -53,6 +53,10 @@ func (l *nodeListerMock) List() ([]*apiv1.Node, error) {
 	args := l.Called()
 	return args.Get(0).([]*apiv1.Node), args.Error(1)
 }
+func (l *nodeListerMock) Get(name string) (*apiv1.Node, error) {
+	args := l.Called()
+	return args.Get(0).(*apiv1.Node), args.Error(1)
+}
 
 type podListerMock struct {
 	mock.Mock
