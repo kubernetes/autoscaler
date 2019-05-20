@@ -223,6 +223,7 @@ func NewScheduledPodLister(kubeClient client.Interface, stopchannel <-chan struc
 // NodeLister lists nodes.
 type NodeLister interface {
 	List() ([]*apiv1.Node, error)
+	Get(name string) (*apiv1.Node, error)
 }
 
 // ReadyNodeLister lists ready nodes.
@@ -243,6 +244,15 @@ func (readyNodeLister *ReadyNodeLister) List() ([]*apiv1.Node, error) {
 		}
 	}
 	return readyNodes, nil
+}
+
+// Get returns the node with the given name.
+func (readyNodeLister *ReadyNodeLister) Get(name string) (*apiv1.Node, error) {
+	node, err := readyNodeLister.nodeLister.Get(name)
+	if err != nil {
+		return nil, err
+	}
+	return node, nil
 }
 
 // NewReadyNodeLister builds a node lister.
@@ -270,6 +280,15 @@ func (allNodeLister *AllNodeLister) List() ([]*apiv1.Node, error) {
 	}
 	allNodes := append(make([]*apiv1.Node, 0, len(nodes)), nodes...)
 	return allNodes, nil
+}
+
+// Get returns the node with the given name.
+func (allNodeLister *AllNodeLister) Get(name string) (*apiv1.Node, error) {
+	node, err := allNodeLister.nodeLister.Get(name)
+	if err != nil {
+		return nil, err
+	}
+	return node, nil
 }
 
 // NewAllNodeLister builds a node lister that returns all nodes (ready and unready)
