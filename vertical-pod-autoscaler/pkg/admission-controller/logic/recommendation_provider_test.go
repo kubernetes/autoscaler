@@ -30,7 +30,7 @@ import (
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
 	target_mock "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/mock"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
-	api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
@@ -43,6 +43,15 @@ func parseLabelSelector(selector string) labels.Selector {
 func mustParseResourcePointer(val string) *resource.Quantity {
 	q := resource.MustParse(val)
 	return &q
+}
+
+type fakeLimitRangeCalculator struct {
+	limitRange *apiv1.LimitRangeItem
+	err        error
+}
+
+func (nlrc *fakeLimitRangeCalculator) GetContainerLimitRangeItem(namespace string) (*apiv1.LimitRangeItem, error) {
+	return nlrc.limitRange, nlrc.err
 }
 
 func TestUpdateResourceRequests(t *testing.T) {
@@ -62,7 +71,7 @@ func TestUpdateResourceRequests(t *testing.T) {
 		WithLabels(labels).Get()
 
 	initializedContainer := test.Container().WithName(containerName).
-		WithCPURequest(resource.MustParse("1")).WithMemRequest(resource.MustParse("100Mi")).Get()
+		WithCPURequest(resource.MustParse("1")).WithCPURequest(resource.MustParse("2")).WithMemRequest(resource.MustParse("100Mi")).Get()
 	initialized := test.Pod().WithName("test_initialized").
 		AddContainer(initializedContainer).WithLabels(labels).Get()
 
@@ -102,16 +111,19 @@ func TestUpdateResourceRequests(t *testing.T) {
 	vpaWithNilRecommendation.Status.Recommendation = nil
 
 	testCases := []struct {
-		name             string
-		pod              *apiv1.Pod
-		vpas             []*vpa_types.VerticalPodAutoscaler
-		expectedAction   bool
-		expectedMem      resource.Quantity
-		expectedCPU      resource.Quantity
-		expectedCPULimit *resource.Quantity
-		expectedMemLimit *resource.Quantity
-		annotations      vpa_api_util.ContainerToAnnotationsMap
-		labelSelector    string
+		name              string
+		pod               *apiv1.Pod
+		vpas              []*vpa_types.VerticalPodAutoscaler
+		expectedAction    bool
+		expectedError     error
+		expectedMem       resource.Quantity
+		expectedCPU       resource.Quantity
+		expectedCPULimit  *resource.Quantity
+		expectedMemLimit  *resource.Quantity
+		limitRange        *apiv1.LimitRangeItem
+		limitRangeCalcErr error
+		annotations       vpa_api_util.ContainerToAnnotationsMap
+		labelSelector     string
 	}{
 		{
 			name:           "uninitialized pod",
@@ -254,7 +266,52 @@ func TestUpdateResourceRequests(t *testing.T) {
 				},
 			},
 		},
+		{
+			name:              "limit range calculation error",
+			pod:               initialized,
+			vpas:              []*vpa_types.VerticalPodAutoscaler{vpa},
+			limitRangeCalcErr: fmt.Errorf("oh no"),
+			expectedAction:    false,
+			expectedError:     fmt.Errorf("error getting podLimitRange: oh no"),
+		},
+		{
+			name:             "proportional limit from default",
+			pod:              initialized,
+			vpas:             []*vpa_types.VerticalPodAutoscaler{vpa},
+			expectedAction:   true,
+			expectedCPU:      resource.MustParse("2"),
+			expectedMem:      resource.MustParse("200Mi"),
+			expectedCPULimit: mustParseResourcePointer("2"),
+			expectedMemLimit: mustParseResourcePointer("200Mi"),
+			labelSelector:    "app = testingApp",
+			limitRange: &apiv1.LimitRangeItem{
+				Type: apiv1.LimitTypeContainer,
+				Default: apiv1.ResourceList{
+					apiv1.ResourceCPU:    resource.MustParse("2"),
+					apiv1.ResourceMemory: resource.MustParse("100Mi"),
+				},
+			},
+		},
+		{
+			name:             "cap limits to max",
+			pod:              limitsMatchRequestsPod,
+			vpas:             []*vpa_types.VerticalPodAutoscaler{vpa},
+			expectedAction:   true,
+			expectedCPU:      resource.MustParse("1.5"),
+			expectedMem:      resource.MustParse("150Mi"),
+			expectedCPULimit: mustParseResourcePointer("1.5"),
+			expectedMemLimit: mustParseResourcePointer("150Mi"),
+			labelSelector:    "app = testingApp",
+			limitRange: &apiv1.LimitRangeItem{
+				Type: apiv1.LimitTypeContainer,
+				Max: apiv1.ResourceList{
+					apiv1.ResourceCPU:    resource.MustParse("1.5"),
+					apiv1.ResourceMemory: resource.MustParse("150Mi"),
+				},
+			},
+		},
 	}
+
 	for _, tc := range testCases {
 		t.Run(fmt.Sprintf(tc.name), func(t *testing.T) {
 			ctrl := gomock.NewController(t)
@@ -274,6 +331,10 @@ func TestUpdateResourceRequests(t *testing.T) {
 				vpaLister:               vpaLister,
 				recommendationProcessor: api.NewCappingRecommendationProcessor(),
 				selectorFetcher:         mockSelectorFetcher,
+				limitsRangeCalculator: &fakeLimitRangeCalculator{
+					tc.limitRange,
+					tc.limitRangeCalcErr,
+				},
 			}
 
 			resources, annotations, name, err := recommendationProvider.GetContainersResourcesForPod(tc.pod)
@@ -320,6 +381,12 @@ func TestUpdateResourceRequests(t *testing.T) {
 				}
 			} else {
 				assert.Empty(t, resources)
+				if tc.expectedError != nil {
+					assert.Error(t, err)
+					assert.Equal(t, tc.expectedError.Error(), err.Error())
+				} else {
+					assert.NoError(t, err)
+				}
 			}
 
 		})
