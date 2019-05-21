@@ -38,11 +38,11 @@ import (
 type AdmissionServer struct {
 	recommendationProvider RecommendationProvider
 	podPreProcessor        PodPreProcessor
-	limitsChecker          LimitsChecker
+	limitsChecker          LimitsRangeCalculator
 }
 
 // NewAdmissionServer constructs new AdmissionServer
-func NewAdmissionServer(recommendationProvider RecommendationProvider, podPreProcessor PodPreProcessor, limitsChecker LimitsChecker) *AdmissionServer {
+func NewAdmissionServer(recommendationProvider RecommendationProvider, podPreProcessor PodPreProcessor, limitsChecker LimitsRangeCalculator) *AdmissionServer {
 	return &AdmissionServer{recommendationProvider, podPreProcessor, limitsChecker}
 }
 
@@ -74,15 +74,10 @@ func (s *AdmissionServer) getPatchesForPodResourceRequest(raw []byte, namespace 
 		annotationsPerContainer = vpa_api_util.ContainerToAnnotationsMap{}
 	}
 
-	limitsHints, err := s.limitsChecker.NeedsLimits(&pod, containersResources)
-	if err != nil {
-		return nil, err
-	}
-
 	patches := []patchRecord{}
 	updatesAnnotation := []string{}
 	for i, containerResources := range containersResources {
-		newPatches, newUpdatesAnnotation := s.getContainerPatch(pod, i, annotationsPerContainer, containerResources, limitsHints)
+		newPatches, newUpdatesAnnotation := s.getContainerPatch(pod, i, annotationsPerContainer, containerResources)
 		patches = append(patches, newPatches...)
 		updatesAnnotation = append(updatesAnnotation, newUpdatesAnnotation)
 	}
@@ -126,7 +121,7 @@ func getAddResourceRequirementValuePatch(i int, kind string, resource v1.Resourc
 		Value: quantity.String()}
 }
 
-func (s *AdmissionServer) getContainerPatch(pod v1.Pod, i int, annotationsPerContainer vpa_api_util.ContainerToAnnotationsMap, containerResources ContainerResources, limitsHints LimitsHints) ([]patchRecord, string) {
+func (s *AdmissionServer) getContainerPatch(pod v1.Pod, i int, annotationsPerContainer vpa_api_util.ContainerToAnnotationsMap, containerResources ContainerResources) ([]patchRecord, string) {
 	var patches []patchRecord
 	// Add empty resources object if missing
 	if pod.Spec.Containers[i].Resources.Limits == nil &&
@@ -139,25 +134,6 @@ func (s *AdmissionServer) getContainerPatch(pod v1.Pod, i int, annotationsPerCon
 		annotations = make([]string, 0)
 	}
 
-	if limitsHints != nil {
-		var resources v1.ResourceList
-		resourceNames := []v1.ResourceName{"cpu", "memory"}
-		for _, resource := range resourceNames {
-			if limitsHints.RequestsExceedsRatio(i, resource) {
-				// LimitRange cannot specify min ratio: https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.12/#limitrangeitem-v1-core
-				// If we exceed max ratio cap limit to request*maxRatio.
-				limit := limitsHints.HintedLimit(i, resource)
-				if resources == nil {
-					resources = make(v1.ResourceList)
-				}
-				resources[resource] = limit
-				annotations = append(annotations, fmt.Sprintf("%s limit decreased to respect ratio", resource))
-			}
-		}
-		if len(resources) > 0 {
-			containerResources.Limits = resources
-		}
-	}
 	patches, annotations = appendPatchesAndAnnotations(patches, annotations, pod.Spec.Containers[i].Resources.Requests, i, containerResources.Requests, "requests", "request")
 	patches, annotations = appendPatchesAndAnnotations(patches, annotations, pod.Spec.Containers[i].Resources.Limits, i, containerResources.Limits, "limits", "limit")
 

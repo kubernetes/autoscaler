@@ -75,18 +75,19 @@ func main() {
 		target.NewVpaTargetSelectorFetcher(config, kubeClient, factory),
 		target.NewBeta1TargetSelectorFetcher(config),
 	)
-	recommendationProvider := logic.NewRecommendationProvider(vpaLister, vpa_api_util.NewCappingRecommendationProcessor(), targetSelectorFetcher)
 	podPreprocessor := logic.NewDefaultPodPreProcessor()
-	var limitsChecker logic.LimitsChecker
+	var limitsChecker logic.LimitsRangeCalculator
 	if *allowToAdjustLimits {
-		limitsChecker, err = logic.NewLimitsChecker(factory)
+		limitsChecker, err = logic.NewLimitsRangeCalculator(factory)
 		if err != nil {
 			klog.Errorf("Failed to create limitsChecker, falling back to not checking limits. Error message: %s", err)
-			limitsChecker = logic.NewNoopLimitsChecker()
+			limitsChecker = logic.NewNoopLimitsCalculator()
 		}
 	} else {
-		limitsChecker = logic.NewNoopLimitsChecker()
+		limitsChecker = logic.NewNoopLimitsCalculator()
 	}
+	recommendationProvider := logic.NewRecommendationProvider(limitsChecker, vpa_api_util.NewCappingRecommendationProcessor(), targetSelectorFetcher, vpaLister)
+
 	as := logic.NewAdmissionServer(recommendationProvider, podPreprocessor, limitsChecker)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		as.Serve(w, r)

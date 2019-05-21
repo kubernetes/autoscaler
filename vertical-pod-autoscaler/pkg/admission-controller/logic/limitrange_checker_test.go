@@ -17,223 +17,106 @@ limitations under the License.
 package logic
 
 import (
-	"fmt"
-	"testing"
-
+	"github.com/stretchr/testify/assert"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/informers"
+
+	//"fmt"
+	"testing"
+
+	//"k8s.io/apimachinery/pkg/runtime"
+	//"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes/fake"
 
-	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	//"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
 )
 
-func TestUpdateResourceLimits(t *testing.T) {
-	type testCase struct {
-		pod                         *apiv1.Pod
-		containerResources          []ContainerResources
-		limitRanges                 []runtime.Object
-		requestsExceedsRatioCPU     bool
-		requestsExceedsRatioMemory  bool
-		limitsRespectingRatioCPU    resource.Quantity
-		limitsRespectingRatioMemory resource.Quantity
-	}
-	containerName := "container1"
-	vpaName := "vpa1"
+func getPod() *apiv1.Pod {
 	labels := map[string]string{"app": "testingApp"}
+	return test.Pod().WithName("test_uninitialized").AddContainer(test.BuildTestContainer("container1", "", "")).WithLabels(labels).Get()
+}
 
-	minRatio := test.Resources("5", "5")
+func TestNewNoopLimitsChecker(t *testing.T) {
+	nlc := NewNoopLimitsCalculator()
+	limitRange, err := nlc.GetContainerLimitRangeItem(getPod().Namespace)
+	if assert.NoError(t, err) {
+		assert.Nil(t, limitRange)
+	}
+}
 
-	limitranges := []runtime.Object{
-		&apiv1.LimitRange{
-			ObjectMeta: metav1.ObjectMeta{
-				Namespace: "default",
-				Name:      "limitRange-with-default-and-ratio",
+func TestNoLimitRange(t *testing.T) {
+	cs := fake.NewSimpleClientset()
+	factory := informers.NewSharedInformerFactory(cs, 0)
+	lc, err := NewLimitsRangeCalculator(factory)
+
+	if assert.NoError(t, err) {
+		limitRange, err := lc.GetContainerLimitRangeItem(getPod().Namespace)
+		if assert.NoError(t, err) {
+			assert.Nil(t, limitRange)
+		}
+	}
+}
+
+func TestUpdateResourceLimits(t *testing.T) {
+
+	testCases := []struct {
+		name         string
+		pod          *apiv1.Pod
+		limitRanges  []runtime.Object
+		expectErr    error
+		expectLimits *apiv1.LimitRangeItem
+	}{
+		{
+			name: "no matching limit ranges",
+			pod:  getPod(),
+			limitRanges: []runtime.Object{
+				test.LimitRange().WithName("different-namespace").WithNamespace("different").WithType(apiv1.LimitTypePod).WithMax(test.Resources("2", "2")).Get(),
+				test.LimitRange().WithName("differen-type").WithNamespace("default").WithType(apiv1.LimitTypePersistentVolumeClaim).WithMax(test.Resources("2", "2")).Get(),
 			},
-			Spec: apiv1.LimitRangeSpec{
-				Limits: []apiv1.LimitRangeItem{
-					{
-						Type:    apiv1.LimitTypeContainer,
-						Default: test.Resources("2000m", "2Gi"),
-					},
-					{
-						Type:                 apiv1.LimitTypePod,
-						MaxLimitRequestRatio: test.Resources("10", "10"),
-					},
-				},
+			expectErr:    nil,
+			expectLimits: nil,
+		},
+		{
+			name: "matching container limit range",
+			pod:  getPod(),
+			limitRanges: []runtime.Object{
+				test.LimitRange().WithName("default").WithNamespace("default").WithType(apiv1.LimitTypeContainer).WithMax(test.Resources("2", "2")).Get(),
+			},
+			expectErr: nil,
+			expectLimits: &apiv1.LimitRangeItem{
+				Max: test.Resources("2", "2"),
 			},
 		},
-		&apiv1.LimitRange{
-			ObjectMeta: metav1.ObjectMeta{
-				Namespace: "default",
-				Name:      "limitRange-with-only-ratio",
+		{
+			name: "with default value",
+			pod:  getPod(),
+			limitRanges: []runtime.Object{
+				test.LimitRange().WithName("default").WithNamespace("default").WithType(apiv1.LimitTypeContainer).WithDefault(test.Resources("2", "2")).Get(),
 			},
-			Spec: apiv1.LimitRangeSpec{
-				Limits: []apiv1.LimitRangeItem{
-					{
-						Type:                 apiv1.LimitTypePod,
-						MaxLimitRequestRatio: minRatio,
-					},
-				},
+			expectErr: nil,
+			expectLimits: &apiv1.LimitRangeItem{
+				Default: test.Resources("2", "2"),
 			},
 		},
 	}
 
-	uninitialized := test.Pod().WithName("test_uninitialized").AddContainer(test.BuildTestContainer(containerName, "", "")).Get()
-	uninitialized.ObjectMeta.Labels = labels
-
-	initialized := test.Pod().WithName("test_initialized").AddContainer(test.BuildTestContainer(containerName, "1", "100Mi")).Get()
-	initialized.ObjectMeta.Labels = labels
-
-	withLimits := test.Pod().WithName("test_initialized").AddContainer(test.BuildTestContainer(containerName, "1", "100Mi")).Get()
-	withLimits.ObjectMeta.Labels = labels
-	withLimits.Spec.Containers[0].Resources.Limits = test.Resources("1500m", "800Mi")
-
-	withHugeMemLimits := test.Pod().WithName("test_initialized").AddContainer(test.BuildTestContainer(containerName, "1", "10Gi")).Get()
-	withHugeMemLimits.ObjectMeta.Labels = labels
-	withHugeMemLimits.Spec.Containers[0].Resources.Limits = test.Resources("1500m", "80Gi")
-
-	vpaBuilder := test.VerticalPodAutoscaler().
-		WithName(vpaName).
-		WithContainer(containerName).
-		WithTarget("20m", "200Mi")
-	vpa := vpaBuilder.Get()
-
-	vpaWithHighMemory := vpaBuilder.WithTarget("2", "3Gi").Get()
-
-	// short circuit recommendation provider
-	vpaContainersResources := []ContainerResources{{
-		Requests: vpa.Status.Recommendation.ContainerRecommendations[0].Target,
-	}}
-	vpaHighMemContainersResources := []ContainerResources{{
-		Requests: vpaWithHighMemory.Status.Recommendation.ContainerRecommendations[0].Target,
-	}}
-
-	expectedMemory := func(crs []ContainerResources, ratio apiv1.ResourceList) resource.Quantity {
-		return *resource.NewQuantity(
-			int64(float64(
-				crs[0].Requests.Memory().Value())*float64(ratio.Memory().Value())),
-			crs[0].Requests.Memory().Format)
-	}
-	expectedCPU := func(crs []ContainerResources, ratio apiv1.ResourceList) resource.Quantity {
-		return *resource.NewMilliQuantity(
-			int64(float64(
-				crs[0].Requests.Cpu().MilliValue())*float64(ratio.Cpu().Value())),
-			crs[0].Requests.Cpu().Format)
-	}
-
-	testCases := []testCase{{
-		pod:                         uninitialized,
-		containerResources:          vpaContainersResources,
-		limitRanges:                 limitranges,
-		requestsExceedsRatioCPU:     true,
-		requestsExceedsRatioMemory:  true,
-		limitsRespectingRatioCPU:    expectedCPU(vpaContainersResources, minRatio),
-		limitsRespectingRatioMemory: expectedMemory(vpaContainersResources, minRatio),
-	}, {
-		pod:                         initialized,
-		containerResources:          vpaContainersResources,
-		limitRanges:                 limitranges,
-		requestsExceedsRatioCPU:     true,
-		requestsExceedsRatioMemory:  true,
-		limitsRespectingRatioCPU:    expectedCPU(vpaContainersResources, minRatio),
-		limitsRespectingRatioMemory: expectedMemory(vpaContainersResources, minRatio),
-	}, {
-		pod:                         withLimits,
-		containerResources:          vpaContainersResources,
-		limitRanges:                 limitranges,
-		requestsExceedsRatioCPU:     true,
-		requestsExceedsRatioMemory:  false,
-		limitsRespectingRatioCPU:    expectedCPU(vpaContainersResources, minRatio),
-		limitsRespectingRatioMemory: resource.Quantity{},
-	}, {
-		pod:                         withHugeMemLimits,
-		containerResources:          vpaHighMemContainersResources,
-		limitRanges:                 limitranges,
-		requestsExceedsRatioCPU:     false,
-		requestsExceedsRatioMemory:  true,
-		limitsRespectingRatioCPU:    resource.Quantity{},
-		limitsRespectingRatioMemory: expectedMemory(vpaHighMemContainersResources, minRatio),
-	}}
-
-	// if admission controller is not allowed to adjust limits
-	// the limits checher have to return always:
-	// - no needed limits
-	// - RequestsExceedsRatio always return false
-	t.Run("test case for neverNeedsLimitsChecker", func(t *testing.T) {
-		nlc := NewNoopLimitsChecker()
-		hints, err := nlc.NeedsLimits(uninitialized, vpaContainersResources)
-		if assert.NoError(t, err) {
-			hintsPtr, _ := hints.(*LimitRangeHints)
-			if hintsPtr != nil {
-				t.Errorf("%v NeedsLimits didn't not return nil: %v", nlc, hints)
-			}
-			assert.Nil(t, hints)
-			if hints.RequestsExceedsRatio(0, apiv1.ResourceMemory) != false {
-				t.Errorf("%v RequestsExceedsRatio didn't not return false", hints)
-			}
-			hinted := hints.HintedLimit(0, apiv1.ResourceMemory)
-			if !(&hinted).IsZero() {
-				t.Errorf("%v RequestsExceedsRatio didn't not return zero quantity", hints)
-			}
-		}
-	})
-
-	t.Run("test case for no Limit Range", func(t *testing.T) {
-		cs := fake.NewSimpleClientset()
-		factory := informers.NewSharedInformerFactory(cs, 0)
-		lc, err := NewLimitsChecker(factory)
-		if assert.NoError(t, err) {
-			hints, err := lc.NeedsLimits(uninitialized, vpaContainersResources)
-			if assert.NoError(t, err) {
-				hintsPtr, _ := hints.(*LimitRangeHints)
-				if assert.NotNil(t, hintsPtr) {
-					assert.Empty(t, hintsPtr.limitsRespectingRatio)
-				}
-				if hints.RequestsExceedsRatio(0, apiv1.ResourceMemory) != false {
-					t.Errorf("%v RequestsExceedsRatio didn't not return false", hints)
-				}
-				hinted := hints.HintedLimit(0, apiv1.ResourceMemory)
-				if !(&hinted).IsZero() {
-					t.Errorf("%v RequestsExceedsRatio didn't not return zero quantity", hints)
-				}
-			}
-		}
-	})
-
-	for i, tc := range testCases {
-
-		t.Run(fmt.Sprintf("test case number: %d", i), func(t *testing.T) {
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
 			cs := fake.NewSimpleClientset(tc.limitRanges...)
 			factory := informers.NewSharedInformerFactory(cs, 0)
-			lc, err := NewLimitsChecker(factory)
+			lc, err := NewLimitsRangeCalculator(factory)
 			if assert.NoError(t, err) {
-				resources := tc.containerResources
-
-				hints, err := lc.NeedsLimits(tc.pod, resources)
-				if assert.NoError(t, err) {
-					assert.NotNil(t, hints, fmt.Sprintf("hints is: %+v", hints))
-
-					if tc.requestsExceedsRatioCPU {
-						assert.True(t, hints.RequestsExceedsRatio(0, apiv1.ResourceCPU))
-					} else {
-						assert.False(t, hints.RequestsExceedsRatio(0, apiv1.ResourceCPU))
-					}
-
-					if tc.requestsExceedsRatioMemory {
-						assert.True(t, hints.RequestsExceedsRatio(0, apiv1.ResourceMemory))
-					} else {
-						assert.False(t, hints.RequestsExceedsRatio(0, apiv1.ResourceMemory))
-					}
-
-					hintedCPULimits := hints.HintedLimit(0, apiv1.ResourceCPU)
-					hintedMemoryLimits := hints.HintedLimit(0, apiv1.ResourceMemory)
-					assert.EqualValues(t, tc.limitsRespectingRatioCPU.Value(), hintedCPULimits.Value(), fmt.Sprintf("cpu limits doesn't match: %v != %v\n", tc.limitsRespectingRatioCPU.Value(), hintedCPULimits.Value()))
-					assert.EqualValues(t, tc.limitsRespectingRatioMemory.Value(), hintedMemoryLimits.Value(), fmt.Sprintf("memory limits doesn't match: %v != %v\n", tc.limitsRespectingRatioMemory.Value(), hintedMemoryLimits.Value()))
+				labels := map[string]string{"app": "testingApp"}
+				pod := test.Pod().WithName("test_uninitialized").AddContainer(test.BuildTestContainer("container1", "", "")).WithLabels(labels).Get()
+				limitRange, err := lc.GetContainerLimitRangeItem(pod.Namespace)
+				if tc.expectErr == nil {
+					assert.NoError(t, err)
+				} else {
+					assert.Error(t, err)
 				}
+				assert.Equal(t, tc.expectLimits, limitRange)
 			}
 		})
 
