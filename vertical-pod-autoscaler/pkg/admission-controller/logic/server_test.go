@@ -320,7 +320,7 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 			fppp := fakePodPreProcessor{e: tc.podPreProcessorError}
 			fvpp := fakeVpaPreProcessor{}
 			frp := fakeRecommendationProvider{tc.recommendResources, tc.recommendAnnotations, tc.recommendName, tc.recommendError}
-			lc := NewNoopLimitsChecker()
+			lc := NewNoopLimitsCalculator()
 			s := NewAdmissionServer(&frp, &fppp, &fvpp, lc)
 			patches, err := s.getPatchesForPodResourceRequest(tc.podJson, tc.namespace)
 			if tc.expectError == nil {
@@ -368,7 +368,7 @@ func TestGetPatchesForResourceRequest_TwoReplacementResources(t *testing.T) {
 				}`)
 	recommendAnnotations := vpa_api_util.ContainerToAnnotationsMap{}
 	frp := fakeRecommendationProvider{recommendResources, recommendAnnotations, "name", nil}
-	lc := NewNoopLimitsChecker()
+	lc := NewNoopLimitsCalculator()
 	s := NewAdmissionServer(&frp, &fppp, &fvpp, lc)
 	patches, err := s.getPatchesForPodResourceRequest(podJson, "default")
 	assert.NoError(t, err)
