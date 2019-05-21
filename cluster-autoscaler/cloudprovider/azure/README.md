@@ -8,12 +8,12 @@ Kubernetes v1.10.X and Cluster autoscaler v1.2+  are required to run on Azure.
 
 Cluster autoscaler supports four VM types with Azure cloud provider:
 
-- **vmss**: For Kubernetes cluster running on VMSS instances. Azure cloud provider's `vmType` parameter must be configured as 'VMSS'.
+- **vmss**: For Kubernetes cluster running on VMSS instances. Azure cloud provider's `vmType` parameter must be configured as 'vmss'.
 - **standard**: For Kubernetes cluster running on VMAS instances. Azure cloud provider's `vmType` parameter must be configured as 'standard' or left as empty string. It only supports Kubernetes cluster deployed via [aks-engine](https://github.com/Azure/aks-engine).
 - **aks**: Managed Container Service ([AKS](https://docs.microsoft.com/en-us/azure/aks/))
 - **acs**: Container service ([ACS](https://docs.microsoft.com/en-us/azure/container-service/kubernetes/container-service-intro-kubernetes))
 
-Only **VMSS** vmType supports scaling to zero nodes.
+Only the **vmss** vmType supports scaling to zero nodes.
 
 ## CA Version
 
