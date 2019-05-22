@@ -8,20 +8,20 @@ Kubernetes v1.10.X and Cluster autoscaler v1.2+  are required to run on Azure.
 
 Cluster autoscaler supports four VM types with Azure cloud provider:
 
-- **vmss**: For kubernetes cluster running on VMSS instances. Azure cloud provider's `vmType` parameter must be configured as 'vmss'. It requires Kubernetes with Azure VMSS support ([kubernetes#43287](https://github.com/kubernetes/kubernetes/issues/43287)).
-- **standard**: For kubernetes cluster running on VMAS instances. Azure cloud provider's `vmType` parameter must be configured as 'standard' or left as empty string. It only supports Kubernetes cluster deployed via [acs-engine](https://github.com/Azure/acs-engine).
-- **aks**: Managed Container Service([AKS](https://docs.microsoft.com/en-us/azure/aks/))
-- **acs**: Container service([ACS](https://docs.microsoft.com/en-us/azure/container-service/kubernetes/))
+- **vmss**: For Kubernetes cluster running on VMSS instances. Azure cloud provider's `vmType` parameter must be configured as 'vmss'.
+- **standard**: For Kubernetes cluster running on VMAS instances. Azure cloud provider's `vmType` parameter must be configured as 'standard' or left as empty string. It only supports Kubernetes cluster deployed via [aks-engine](https://github.com/Azure/aks-engine).
+- **aks**: Managed Container Service ([AKS](https://docs.microsoft.com/en-us/azure/aks/))
+- **acs**: Container service ([ACS](https://docs.microsoft.com/en-us/azure/container-service/kubernetes/container-service-intro-kubernetes))
 
-Only **vmss** vmType supports scaling to zero nodes.
+Only the **vmss** vmType supports scaling to zero nodes.
 
 ## CA Version
 
-You need to replace a placeholder, '{{ ca_version }}' in manifests with CA Version such as v1.2.2.
+You need to replace the `{{ ca_version }}` placeholder in manifests with the CA Version (eg. v1.2.2).
 
 ## Permissions
 
-Get azure credentials by running the following command
+Get Azure credentials by running the following command
 
 ```sh
 # replace <subscription-id> with yours.
@@ -61,7 +61,7 @@ or multiple vm scale sets:
         - --nodes=1:10:vmss2
 ```
 
-Some aks notes: ResourceGroup will be the rg created by aks (usually MC_<cluster>_<region>) ratehr than the group the aks resource is in. The vm scale set names will be aks-<nodepool>-<hash>-vmss. Where the function that computes that hash is under flux
+Some aks notes: ResourceGroup will be the rg created by aks (usually MC_<cluster>_<region>) rather than the group the aks resource is in. The vm scale set names will be aks-<nodepool>-<hash>-vmss. Where the function that computes that hash is under flux
 
 Then deploy cluster-autoscaler by running
 
@@ -86,8 +86,8 @@ kubectl create -f examples/cluster-autoscaler-vmss-msi.yaml
 Pre-requirements:
 
 - Get credentials from above `permissions` step.
-- Get the initial Azure deployment name from azure portal. If you have multiple deployments (e.g. have run `acs-engine scale` command), make sure to get the first one.
-- Get a node pool name for nodes scaling from acs-engine deployment manifests
+- Get the initial Azure deployment name from the Azure Portal. If you have multiple deployments (e.g. have run `aks-engine scale` command), make sure to get the first one.
+- Get a node pool name for nodes scaling from aks-engine deployment manifests
 - Encode each data with base64.
 
 Fill the values of cluster-autoscaler-azure secret in [cluster-autoscaler-standard-master.yaml](examples/cluster-autoscaler-standard-master.yaml), including
@@ -132,7 +132,7 @@ To run a CA pod with Azure managed service identity (MSI), use [cluster-autoscal
 kubectl create -f examples/cluster-autoscaler-standard-msi.yaml
 ```
 
-**WARNING**: Cluster autoscaler depends on user provided deployment parameters to provision new nodes. It should be redeployed with new parameters after upgrading Kubernetes cluster (e.g. upgraded by `acs-engine upgrade` command), or else new nodes will be provisioned with old version.
+**WARNING**: Cluster autoscaler depends on user provided deployment parameters to provision new nodes. It should be redeployed with new parameters after upgrading Kubernetes cluster (e.g. upgraded by `aks-engine upgrade` command), or else new nodes will be provisioned with old version.
 
 ### ACS deployment
 
@@ -144,6 +144,7 @@ Pre-requirements:
   - for AKS: `az aks list`
 
 - Get a node pool name by extracting the value of the label **agentpool**
+
   ```sh
   kubectl get nodes --show-labels
   ```
@@ -193,7 +194,7 @@ kubectl create -f examples/cluster-autoscaler-containerservice.yaml
 
 AKS supports two types of nodes: virtual machine scale sets (VMSS) and availability sets (VMAS).
 
-**AKS with VMSS**
+#### AKS with VMSS
 
 Virtual machine scale sets is only supported from Kubernetes version 1.12.4, you can enable the cluster autoscaler when provisioning the cluster, e.g.
 
@@ -211,6 +212,6 @@ az aks create \
 
 Please take a look at https://docs.microsoft.com/en-us/azure/aks/autoscaler for full documentations.
 
-**AKS with VMAS**
+#### AKS with VMAS
 
-For virtual machine availability sets, please follow same steps in [ACS deployment](#acs-deployment).
+For virtual machine availability sets, please follow same steps listed in [ACS deployment](#acs-deployment).
