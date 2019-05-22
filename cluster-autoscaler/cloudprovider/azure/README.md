@@ -61,7 +61,7 @@ or multiple vm scale sets:
         - --nodes=1:10:vmss2
 ```
 
-Some aks notes: ResourceGroup will be the rg created by aks (usually MC_<cluster>_<region>) ratehr than the group the aks resource is in. The vm scale set names will be aks-<nodepool>-<hash>-vmss. Where the function that computes that hash is under flux
+Some aks notes: ResourceGroup will be the rg created by aks (usually MC_<cluster>_<region>) rather than the group the aks resource is in. The vm scale set names will be aks-<nodepool>-<hash>-vmss. Where the function that computes that hash is under flux
 
 Then deploy cluster-autoscaler by running
 
