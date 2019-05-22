@@ -36,7 +36,7 @@ import (
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 )
 
-// AgentPool implements NodeGroup interface for agent pools deployed by acs-engine.
+// AgentPool implements NodeGroup interface for agent pools deployed by aks-engine.
 type AgentPool struct {
 	azureRef
 	manager *AzureManager
