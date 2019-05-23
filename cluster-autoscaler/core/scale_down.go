@@ -120,10 +120,18 @@ func (n *NodeDeletionTracker) StartDeletion(nodeGroupId string) {
 func (n *NodeDeletionTracker) EndDeletion(nodeGroupId string) {
 	n.Lock()
 	defer n.Unlock()
+
+	value, found := n.deletionsInProgress[nodeGroupId]
+	if !found {
+		klog.Errorf("This should never happen, counter for %s in DelayedNodeDeletionStatus wasn't found", nodeGroupId)
+		return
+	}
+	if value <= 0 {
+		klog.Errorf("This should never happen, counter for %s in DelayedNodeDeletionStatus isn't greater than 0, counter value is %d", nodeGroupId, value)
+	}
 	n.deletionsInProgress[nodeGroupId]--
-	if n.deletionsInProgress[nodeGroupId] < 0 {
+	if n.deletionsInProgress[nodeGroupId] <= 0 {
 		delete(n.deletionsInProgress, nodeGroupId)
-		klog.Errorf("This should never happen, counter for %s in DelayedNodeDeletionStatus is below 0", nodeGroupId)
 	}
 }
 
@@ -832,7 +840,7 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 		nodeGroup, found := candidateNodeGroups[toRemove.Node.Name]
 		if !found {
 			result = status.NodeDeleteResult{ResultType: status.NodeDeleteErrorFailedToDelete, Err: errors.NewAutoscalerError(
-				errors.CloudProviderError, "failed to find node group for %s", toRemove.Node.Name)}
+				errors.InternalError, "failed to find node group for %s", toRemove.Node.Name)}
 			return
 		}
 		result = sd.deleteNode(toRemove.Node, toRemove.PodsToReschedule, nodeGroup)
@@ -1169,10 +1177,10 @@ func deleteNodeFromCloudProvider(node *apiv1.Node, cloudProvider cloudprovider.C
 }
 
 func waitForDelayDeletion(node *apiv1.Node, nodeLister kubernetes.NodeLister, timeout time.Duration) errors.AutoscalerError {
-	if hasDelayDeletionAnnotation(node) {
+	if timeout != 0 && hasDelayDeletionAnnotation(node) {
 		klog.V(1).Infof("Wait for removing %s annotations on node %v", DelayDeletionAnnotationPrefix, node.Name)
 		err := wait.Poll(5*time.Second, timeout, func() (bool, error) {
-			klog.V(2).Infof("Waiting for removing %s annotations on node %v", DelayDeletionAnnotationPrefix, node.Name)
+			klog.V(5).Infof("Waiting for removing %s annotations on node %v", DelayDeletionAnnotationPrefix, node.Name)
 			freshNode, err := nodeLister.Get(node.Name)
 			if err != nil || freshNode == nil {
 				return false, fmt.Errorf("failed to get node %v: %v", node.Name, err)
