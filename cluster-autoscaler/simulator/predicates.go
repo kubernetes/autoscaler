@@ -19,6 +19,7 @@ package simulator
 import (
 	"fmt"
 	"strings"
+	"sync"
 
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -44,6 +45,13 @@ const (
 	affinityPredicateName = "MatchInterPodAffinity"
 )
 
+var (
+	// initMutex is used for guarding static initialization.
+	staticInitMutex sync.Mutex
+	// statiInitHappened denotes if static initialization happened.
+	staticInitDone bool
+)
+
 // PredicateInfo assigns a name to a predicate
 type PredicateInfo struct {
 	Name      string
@@ -62,13 +70,21 @@ type PredicateChecker struct {
 // There are no const arrays in Go, this is meant to be used as a const.
 var priorityPredicates = []string{"PodFitsResources", "PodToleratesNodeTaints", "GeneralPredicates", "ready"}
 
-func init() {
+func staticInitIfNeeded() {
+	staticInitMutex.Lock()
+	defer staticInitMutex.Unlock()
+
+	if staticInitDone {
+		return
+	}
+
 	// This results in filtering out some predicate functions registered by defaults.init() method.
 	// In scheduler this method is run from app.runCommand().
 	// We also need to call it in CA to have simulation behaviour consistent with scheduler.
 	// Note: the logic of method is conditional and depends on feature gates enabled. To have same
 	//       behaviour in CA and scheduler both need to be run with same set of feature gates.
 	algorithmprovider.ApplyFeatureGates()
+	staticInitDone = true
 }
 
 // NoOpEventRecorder is a noop implementation of EventRecorder
@@ -92,6 +108,8 @@ func (NoOpEventRecorder) AnnotatedEventf(object runtime.Object, annotations map[
 
 // NewPredicateChecker builds PredicateChecker.
 func NewPredicateChecker(kubeClient kube_client.Interface, stop <-chan struct{}) (*PredicateChecker, error) {
+	staticInitIfNeeded()
+
 	informerFactory := informers.NewSharedInformerFactory(kubeClient, 0)
 	algorithmProvider := factory.DefaultProvider
 
