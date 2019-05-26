@@ -26,7 +26,7 @@ of our weekly meetings.  See [the Kubernetes Community Repo](https://github.com/
 
 Fork the repository in the cloud:
 1. Visit https://github.com/kubernetes/autoscaler
-1. Click Fork button (top right) to establish a cloud-based fork.
+2. Click Fork button (top right) to establish a cloud-based fork.
 
 The code must be checked out as a subdirectory of `k8s.io`, and not `github.com`.
 
@@ -37,6 +37,16 @@ cd $GOPATH/src/k8s.io
 git clone https://github.com/$YOUR_GITHUB_USERNAME/autoscaler.git
 cd autoscaler
 ```
+
+## Building the Cluster autoscaler
+
+```shell
+# Replace "$YOUR_GITHUB_USERNAME" below with your github username
+git clone https://github.com/$YOUR_GITHUB_USERNAME/autoscaler.git
+cd autoscaler
+docker build -t autoscaler cluster-autoscaler/Dockerfile .
+```
+
 
 Please refer to Kubernetes [Github workflow guide] for more details.
 
