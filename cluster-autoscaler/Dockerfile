@@ -26,7 +26,6 @@ FROM k8s.gcr.io/debian-base-amd64:v1.0.0
 ENV DEBIAN_FRONTEND noninteractive
 ADD cluster-autoscaler cluster-autoscaler
 RUN clean-install ca-certificates tzdata
-#COPY --from=0 /cluster-autoscaler /
 ADD cluster-autoscaler/run.sh /run.sh
 
 CMD ./run.sh
