@@ -12,8 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM busybox
-MAINTAINER Quintin Lee "qlee@google.com"
+FROM gcr.io/distroless/static:latest
 
 ADD build/pod_nanny pod_nanny
 
