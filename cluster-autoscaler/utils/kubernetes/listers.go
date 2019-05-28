@@ -226,81 +226,61 @@ type NodeLister interface {
 	Get(name string) (*apiv1.Node, error)
 }
 
-// ReadyNodeLister lists ready nodes.
-type ReadyNodeLister struct {
+// nodeLister implementation.
+type nodeListerImpl struct {
 	nodeLister v1lister.NodeLister
+	filter     func(*apiv1.Node) bool
 }
 
-// List returns ready nodes.
-func (readyNodeLister *ReadyNodeLister) List() ([]*apiv1.Node, error) {
-	nodes, err := readyNodeLister.nodeLister.List(labels.Everything())
-	if err != nil {
-		return []*apiv1.Node{}, err
-	}
-	readyNodes := make([]*apiv1.Node, 0, len(nodes))
-	for _, node := range nodes {
-		if IsNodeReadyAndSchedulable(node) {
-			readyNodes = append(readyNodes, node)
-		}
-	}
-	return readyNodes, nil
-}
-
-// Get returns the node with the given name.
-func (readyNodeLister *ReadyNodeLister) Get(name string) (*apiv1.Node, error) {
-	node, err := readyNodeLister.nodeLister.Get(name)
-	if err != nil {
-		return nil, err
-	}
-	return node, nil
-}
-
-// NewReadyNodeLister builds a node lister.
+// NewReadyNodeLister builds a node lister that returns only ready nodes.
 func NewReadyNodeLister(kubeClient client.Interface, stopChannel <-chan struct{}) NodeLister {
+	return NewNodeLister(kubeClient, IsNodeReadyAndSchedulable, stopChannel)
+}
+
+// NewAllNodeLister builds a node lister that returns all nodes (ready and unready).
+func NewAllNodeLister(kubeClient client.Interface, stopChannel <-chan struct{}) NodeLister {
+	return NewNodeLister(kubeClient, nil, stopChannel)
+}
+
+// NewNodeLister builds a node lister.
+func NewNodeLister(kubeClient client.Interface, filter func(*apiv1.Node) bool, stopChannel <-chan struct{}) NodeLister {
 	listWatcher := cache.NewListWatchFromClient(kubeClient.CoreV1().RESTClient(), "nodes", apiv1.NamespaceAll, fields.Everything())
 	store := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
 	nodeLister := v1lister.NewNodeLister(store)
 	reflector := cache.NewReflector(listWatcher, &apiv1.Node{}, store, time.Hour)
 	go reflector.Run(stopChannel)
-	return &ReadyNodeLister{
+	return &nodeListerImpl{
 		nodeLister: nodeLister,
+		filter:     filter,
 	}
 }
 
-// AllNodeLister lists all nodes
-type AllNodeLister struct {
-	nodeLister v1lister.NodeLister
-}
-
-// List returns all nodes
-func (allNodeLister *AllNodeLister) List() ([]*apiv1.Node, error) {
-	nodes, err := allNodeLister.nodeLister.List(labels.Everything())
+// List returns list of nodes.
+func (l *nodeListerImpl) List() ([]*apiv1.Node, error) {
+	nodes, err := l.nodeLister.List(labels.Everything())
 	if err != nil {
 		return []*apiv1.Node{}, err
 	}
-	allNodes := append(make([]*apiv1.Node, 0, len(nodes)), nodes...)
-	return allNodes, nil
+	results := make([]*apiv1.Node, 0, len(nodes))
+	if l.filter != nil {
+		for _, node := range nodes {
+			if l.filter(node) {
+				results = append(results, node)
+			}
+		}
+	} else {
+		results = append(results, nodes...)
+	}
+	return nodes, nil
 }
 
 // Get returns the node with the given name.
-func (allNodeLister *AllNodeLister) Get(name string) (*apiv1.Node, error) {
-	node, err := allNodeLister.nodeLister.Get(name)
+func (l *nodeListerImpl) Get(name string) (*apiv1.Node, error) {
+	node, err := l.nodeLister.Get(name)
 	if err != nil {
 		return nil, err
 	}
 	return node, nil
-}
-
-// NewAllNodeLister builds a node lister that returns all nodes (ready and unready)
-func NewAllNodeLister(kubeClient client.Interface, stopchannel <-chan struct{}) NodeLister {
-	listWatcher := cache.NewListWatchFromClient(kubeClient.CoreV1().RESTClient(), "nodes", apiv1.NamespaceAll, fields.Everything())
-	store := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
-	nodeLister := v1lister.NewNodeLister(store)
-	reflector := cache.NewReflector(listWatcher, &apiv1.Node{}, store, time.Hour)
-	go reflector.Run(stopchannel)
-	return &AllNodeLister{
-		nodeLister: nodeLister,
-	}
 }
 
 // PodDisruptionBudgetLister lists pod disruption budgets.
