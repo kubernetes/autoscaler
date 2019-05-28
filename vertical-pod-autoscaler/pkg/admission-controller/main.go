@@ -76,14 +76,10 @@ func main() {
 		target.NewBeta1TargetSelectorFetcher(config),
 	)
 	podPreprocessor := logic.NewDefaultPodPreProcessor()
-	var limitsChecker logic.LimitsRangeCalculator
-	if *allowToAdjustLimits {
-		limitsChecker, err = logic.NewLimitsRangeCalculator(factory)
-		if err != nil {
-			klog.Errorf("Failed to create limitsChecker, falling back to not checking limits. Error message: %s", err)
-			limitsChecker = logic.NewNoopLimitsCalculator()
-		}
-	} else {
+	var limitsChecker logic.LimitRangeCalculator
+	limitsChecker, err = logic.NewLimitsRangeCalculator(factory)
+	if err != nil {
+		klog.Errorf("Failed to create limitsChecker, falling back to not checking limits. Error message: %s", err)
 		limitsChecker = logic.NewNoopLimitsCalculator()
 	}
 	recommendationProvider := logic.NewRecommendationProvider(limitsChecker, vpa_api_util.NewCappingRecommendationProcessor(), targetSelectorFetcher, vpaLister)

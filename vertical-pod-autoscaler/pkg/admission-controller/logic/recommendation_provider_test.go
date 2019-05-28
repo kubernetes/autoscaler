@@ -261,8 +261,8 @@ func TestUpdateResourceRequests(t *testing.T) {
 			labelSelector:    "app = testingApp",
 			annotations: vpa_api_util.ContainerToAnnotationsMap{
 				containerName: []string{
-					"Failed to keep CPU limit to request proportion of 10000 to 1000 with recommended request of -9223372036854775808 milliCPU; doesn't fit in int64. Capping limit to MaxInt64",
-					"Failed to keep memory limit to request proportion of 1048576000000 to 104857600000 with recommended request of -9223372036854775808 milliBytes; doesn't fit in int64. Capping limit to MaxInt64",
+					"CPU: failed to keep limit to request proportion of 10 to 1 with recommended request of 1Ei; doesn't fit in int64. Capping limit to MaxInt64 milliunits",
+					"memory: failed to keep limit to request proportion of 1000Mi to 100Mi with recommended request of 1Ei; doesn't fit in int64. Capping limit to MaxInt64 milliunits",
 				},
 			},
 		},
