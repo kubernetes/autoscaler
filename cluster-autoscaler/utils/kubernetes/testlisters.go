@@ -43,6 +43,36 @@ func NewTestPodLister(pods []*apiv1.Pod) PodLister {
 	return TestPodLister{pods: pods}
 }
 
+// TestNodeLister is used in tests involving listers
+type TestNodeLister struct {
+	nodes []*apiv1.Node
+}
+
+// List returns all nodes in test lister.
+func (l *TestNodeLister) List() ([]*apiv1.Node, error) {
+	return l.nodes, nil
+}
+
+// Get returns node from test lister.
+func (l *TestNodeLister) Get(name string) (*apiv1.Node, error) {
+	for _, node := range l.nodes {
+		if node.Name == name {
+			return node, nil
+		}
+	}
+	return nil, fmt.Errorf("Node %s not found", name)
+}
+
+// SetNodes sets nodes in test lister.
+func (l *TestNodeLister) SetNodes(nodes []*apiv1.Node) {
+	l.nodes = nodes
+}
+
+// NewTestNodeLister returns a lister that returns provided nodes
+func NewTestNodeLister(nodes []*apiv1.Node) *TestNodeLister {
+	return &TestNodeLister{nodes: nodes}
+}
+
 // NewTestDaemonSetLister returns a lister that returns provided DaemonSets
 func NewTestDaemonSetLister(dss []*appsv1.DaemonSet) (v1appslister.DaemonSetLister, error) {
 	store := cache.NewIndexer(cache.MetaNamespaceKeyFunc, cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc})
