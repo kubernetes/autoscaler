@@ -48,13 +48,12 @@ var (
 		tlsPrivateKey: flag.String("tls-private-key", "/etc/tls-certs/serverKey.pem", "Path to server certificate key PEM file."),
 	}
 
-	port                = flag.Int("port", 8000, "The port to listen on.")
-	address             = flag.String("address", ":8944", "The address to expose Prometheus metrics.")
-	namespace           = os.Getenv("NAMESPACE")
-	webhookAddress      = flag.String("webhook-address", "", "Address under which webhook is registered. Used when registerByURL is set to true.")
-	webhookPort         = flag.String("webhook-port", "", "Server Port for Webhook")
-	registerByURL       = flag.Bool("register-by-url", false, "If set to true, admission webhook will be registered by URL (webhookAddress:webhookPort) instead of by service name")
-	allowToAdjustLimits = flag.Bool("allow-to-adjust-limits", false, "If set to true, admission webhook will set limits per container too if needed")
+	port           = flag.Int("port", 8000, "The port to listen on.")
+	address        = flag.String("address", ":8944", "The address to expose Prometheus metrics.")
+	namespace      = os.Getenv("NAMESPACE")
+	webhookAddress = flag.String("webhook-address", "", "Address under which webhook is registered. Used when registerByURL is set to true.")
+	webhookPort    = flag.String("webhook-port", "", "Server Port for Webhook")
+	registerByURL  = flag.Bool("register-by-url", false, "If set to true, admission webhook will be registered by URL (webhookAddress:webhookPort) instead of by service name")
 )
 
 func main() {
@@ -81,14 +80,10 @@ func main() {
 		target.NewBeta1TargetSelectorFetcher(config),
 	)
 	podPreprocessor := logic.NewDefaultPodPreProcessor()
-	var limitsChecker logic.LimitsRangeCalculator
-	if *allowToAdjustLimits {
-		limitsChecker, err = logic.NewLimitsRangeCalculator(factory)
-		if err != nil {
-			klog.Errorf("Failed to create limitsChecker, falling back to not checking limits. Error message: %s", err)
-			limitsChecker = logic.NewNoopLimitsCalculator()
-		}
-	} else {
+	var limitsChecker logic.LimitRangeCalculator
+	limitsChecker, err = logic.NewLimitsRangeCalculator(factory)
+	if err != nil {
+		klog.Errorf("Failed to create limitsChecker, falling back to not checking limits. Error message: %s", err)
 		limitsChecker = logic.NewNoopLimitsCalculator()
 	}
 	recommendationProvider := logic.NewRecommendationProvider(limitsChecker, vpa_api_util.NewCappingRecommendationProcessor(), targetSelectorFetcher, vpaLister)

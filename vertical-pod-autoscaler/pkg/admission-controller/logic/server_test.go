@@ -45,13 +45,13 @@ func (fpp *fakePodPreProcessor) Process(pod apiv1.Pod) (apiv1.Pod, error) {
 }
 
 type fakeRecommendationProvider struct {
-	resources              []ContainerResources
+	resources              []vpa_api_util.ContainerResources
 	containerToAnnotations vpa_api_util.ContainerToAnnotationsMap
 	name                   string
 	e                      error
 }
 
-func (frp *fakeRecommendationProvider) GetContainersResourcesForPod(pod *apiv1.Pod) ([]ContainerResources, vpa_api_util.ContainerToAnnotationsMap, string, error) {
+func (frp *fakeRecommendationProvider) GetContainersResourcesForPod(pod *apiv1.Pod) ([]vpa_api_util.ContainerResources, vpa_api_util.ContainerToAnnotationsMap, string, error) {
 	return frp.resources, frp.containerToAnnotations, frp.name, frp.e
 }
 
@@ -127,7 +127,7 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 		podJson              []byte
 		namespace            string
 		preProcessorError    error
-		recommendResources   []ContainerResources
+		recommendResources   []vpa_api_util.ContainerResources
 		recommendAnnotations vpa_api_util.ContainerToAnnotationsMap
 		recommendName        string
 		recommendError       error
@@ -139,7 +139,7 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 			podJson:              []byte("{"),
 			namespace:            "default",
 			preProcessorError:    nil,
-			recommendResources:   []ContainerResources{},
+			recommendResources:   []vpa_api_util.ContainerResources{},
 			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
 			recommendName:        "name",
 			expectError:          fmt.Errorf("unexpected end of JSON input"),
@@ -149,7 +149,7 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 			podJson:              []byte("{}"),
 			namespace:            "default",
 			preProcessorError:    fmt.Errorf("bad pod"),
-			recommendResources:   []ContainerResources{},
+			recommendResources:   []vpa_api_util.ContainerResources{},
 			recommendAnnotations: vpa_api_util.ContainerToAnnotationsMap{},
 			recommendName:        "name",
 			expectError:          fmt.Errorf("bad pod"),
@@ -163,7 +163,7 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 					}
 				}`),
 			namespace: "default",
-			recommendResources: []ContainerResources{
+			recommendResources: []vpa_api_util.ContainerResources{
 				{
 					Requests: apiv1.ResourceList{
 						cpu: resource.MustParse("1"),
@@ -196,7 +196,7 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 					}
 				}`),
 			namespace: "default",
-			recommendResources: []ContainerResources{
+			recommendResources: []vpa_api_util.ContainerResources{
 				{
 					Requests: apiv1.ResourceList{
 						cpu: resource.MustParse("1"),
@@ -228,7 +228,7 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 					}
 				}`),
 			namespace: "default",
-			recommendResources: []ContainerResources{
+			recommendResources: []vpa_api_util.ContainerResources{
 				{
 					Requests: apiv1.ResourceList{
 						cpu: resource.MustParse("1"),
@@ -259,7 +259,7 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 					}
 				}`),
 			namespace: "default",
-			recommendResources: []ContainerResources{
+			recommendResources: []vpa_api_util.ContainerResources{
 				{
 					Limits: apiv1.ResourceList{
 						cpu: resource.MustParse("1"),
@@ -292,7 +292,7 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 					}
 				}`),
 			namespace: "default",
-			recommendResources: []ContainerResources{
+			recommendResources: []vpa_api_util.ContainerResources{
 				{
 					Limits: apiv1.ResourceList{
 						cpu: resource.MustParse("1"),
@@ -335,7 +335,7 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 func TestGetPatchesForResourceRequest_TwoReplacementResources(t *testing.T) {
 
 	fppp := fakePodPreProcessor{}
-	recommendResources := []ContainerResources{
+	recommendResources := []vpa_api_util.ContainerResources{
 		{
 			Requests: apiv1.ResourceList{
 				cpu:        resource.MustParse("1"),
