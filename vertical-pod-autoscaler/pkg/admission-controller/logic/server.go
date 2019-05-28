@@ -39,11 +39,11 @@ type AdmissionServer struct {
 	recommendationProvider RecommendationProvider
 	podPreProcessor        PodPreProcessor
 	vpaPreProcessor        VpaPreProcessor
-	limitsChecker          LimitsRangeCalculator
+	limitsChecker          LimitRangeCalculator
 }
 
 // NewAdmissionServer constructs new AdmissionServer
-func NewAdmissionServer(recommendationProvider RecommendationProvider, podPreProcessor PodPreProcessor, vpaPreProcessor VpaPreProcessor, limitsChecker LimitsRangeCalculator) *AdmissionServer {
+func NewAdmissionServer(recommendationProvider RecommendationProvider, podPreProcessor PodPreProcessor, vpaPreProcessor VpaPreProcessor, limitsChecker LimitRangeCalculator) *AdmissionServer {
 	return &AdmissionServer{recommendationProvider, podPreProcessor, vpaPreProcessor, limitsChecker}
 }
 
@@ -122,7 +122,7 @@ func getAddResourceRequirementValuePatch(i int, kind string, resource v1.Resourc
 		Value: quantity.String()}
 }
 
-func (s *AdmissionServer) getContainerPatch(pod v1.Pod, i int, annotationsPerContainer vpa_api_util.ContainerToAnnotationsMap, containerResources ContainerResources) ([]patchRecord, string) {
+func (s *AdmissionServer) getContainerPatch(pod v1.Pod, i int, annotationsPerContainer vpa_api_util.ContainerToAnnotationsMap, containerResources vpa_api_util.ContainerResources) ([]patchRecord, string) {
 	var patches []patchRecord
 	// Add empty resources object if missing
 	if pod.Spec.Containers[i].Resources.Limits == nil &&

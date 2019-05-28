@@ -25,8 +25,8 @@ import (
 	listers "k8s.io/client-go/listers/core/v1"
 )
 
-// LimitsRangeCalculator calculates limit range items that has the same effect as all limit range items present in the cluster.
-type LimitsRangeCalculator interface {
+// LimitRangeCalculator calculates limit range items that has the same effect as all limit range items present in the cluster.
+type LimitRangeCalculator interface {
 	// GetContainerLimitRangeItem returns LimitRangeItem that describes limitation on container limits in the given namespace.
 	GetContainerLimitRangeItem(namespace string) (*v1.LimitRangeItem, error)
 }
