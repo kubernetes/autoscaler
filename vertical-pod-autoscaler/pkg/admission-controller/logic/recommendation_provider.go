@@ -117,18 +117,15 @@ func proportionallyCapLimitToMax(recommendedRequest, recommendedLimit, maxLimit 
 	return scaledRequest, maxLimit
 }
 
-func proportionallyCapLimitsToMax(recommendedRequests v1.ResourceList, cpuLimit, memLimit, maxCpuLimit, maxMemLimit *resource.Quantity) ContainerResources {
+func proportionallyCapResourcesToMaxLimit(recommendedRequests v1.ResourceList, cpuLimit, memLimit, maxCpuLimit, maxMemLimit *resource.Quantity) ContainerResources {
 	scaledCpuRequest, scaledCpuLimit := proportionallyCapLimitToMax(recommendedRequests.Cpu(), cpuLimit, maxCpuLimit)
 	scaledMemRequest, scaledMemLimit := proportionallyCapLimitToMax(recommendedRequests.Memory(), memLimit, maxMemLimit)
 	result := newContainerResources()
-	if scaledCpuRequest != nil {
-		result.Requests[v1.ResourceCPU] = *scaledCpuRequest
-	}
+
+	result.Requests[v1.ResourceCPU] = *scaledCpuRequest
+	result.Requests[v1.ResourceMemory] = *scaledMemRequest
 	if scaledCpuLimit != nil {
 		result.Limits[v1.ResourceCPU] = *scaledCpuLimit
-	}
-	if scaledMemRequest != nil {
-		result.Requests[v1.ResourceMemory] = *scaledMemRequest
 	}
 	if scaledMemLimit != nil {
 		result.Limits[v1.ResourceMemory] = *scaledMemLimit
@@ -171,7 +168,7 @@ func GetContainersResources(pod *v1.Pod, podRecommendation vpa_types.Recommended
 					"Failed to keep memory limit to request proportion of %d to %d with recommended request of %d milliBytes; doesn't fit in int64. Capping limit to MaxInt64",
 					container.Resources.Limits.Memory().MilliValue(), container.Resources.Requests.Memory().MilliValue(), recommendation.Target.Memory().MilliValue()))
 		}
-		resources[i] = proportionallyCapLimitsToMax(recommendation.Target, cpuLimit, memLimit, maxCpuLimit, maxMemLimit)
+		resources[i] = proportionallyCapResourcesToMaxLimit(recommendation.Target, cpuLimit, memLimit, maxCpuLimit, maxMemLimit)
 	}
 	return resources
 }
