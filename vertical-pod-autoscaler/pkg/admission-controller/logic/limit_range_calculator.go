@@ -18,14 +18,14 @@ package logic
 
 import (
 	"fmt"
+
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/informers"
-
-	v1_listers "k8s.io/client-go/listers/core/v1"
+	listers "k8s.io/client-go/listers/core/v1"
 )
 
-// LimitsRangeCalculator checks for LimitRange and if container needs limits to be set
+// LimitsRangeCalculator calculates limit range items that has the same effect as all limit range items present in the cluster.
 type LimitsRangeCalculator interface {
 	// GetContainerLimitRangeItem returns LimitRangeItem that describes limitation on container limits in the given namespace.
 	GetContainerLimitRangeItem(namespace string) (*v1.LimitRangeItem, error)
@@ -38,7 +38,7 @@ func (lc *noopLimitsRangeCalculator) GetContainerLimitRangeItem(namespace string
 }
 
 type limitsChecker struct {
-	limitRangeLister v1_listers.LimitRangeLister
+	limitRangeLister listers.LimitRangeLister
 }
 
 // NewLimitsRangeCalculator returns a limitsChecker or an error it encountered when attempting to create it.
@@ -51,7 +51,7 @@ func NewLimitsRangeCalculator(f informers.SharedInformerFactory) (*limitsChecker
 	f.Start(stopCh)
 	for _, ok := range f.WaitForCacheSync(stopCh) {
 		if !ok {
-			if f.Core().V1().LimitRanges().Informer().HasSynced() {
+			if !f.Core().V1().LimitRanges().Informer().HasSynced() {
 				return nil, fmt.Errorf("informer did not sync")
 			}
 		}
@@ -74,10 +74,7 @@ func (lc *limitsChecker) GetContainerLimitRangeItem(namespace string) (*v1.Limit
 		for _, lri := range lr.Spec.Limits {
 			if lri.Type == v1.LimitTypeContainer && (lri.Max != nil || lri.Default != nil) {
 				// TODO: handle multiple limit ranges matching a pod.
-				return &v1.LimitRangeItem{
-					Max:     lri.Max.DeepCopy(),
-					Default: lri.Default.DeepCopy(),
-				}, nil
+				return &lri, nil
 			}
 		}
 	}

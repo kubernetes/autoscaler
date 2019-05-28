@@ -17,33 +17,24 @@ limitations under the License.
 package logic
 
 import (
-	"github.com/stretchr/testify/assert"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/client-go/informers"
-
-	//"fmt"
 	"testing"
 
-	//"k8s.io/apimachinery/pkg/runtime"
-	//"k8s.io/client-go/informers"
+	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
+	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes/fake"
 
-	apiv1 "k8s.io/api/core/v1"
-	//"k8s.io/apimachinery/pkg/api/resource"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
+	"github.com/stretchr/testify/assert"
 )
 
-func getPod() *apiv1.Pod {
-	labels := map[string]string{"app": "testingApp"}
-	return test.Pod().WithName("test_uninitialized").AddContainer(test.BuildTestContainer("container1", "", "")).WithLabels(labels).Get()
-}
+const defaultNamespace = "default"
 
 func TestNewNoopLimitsChecker(t *testing.T) {
 	nlc := NewNoopLimitsCalculator()
-	limitRange, err := nlc.GetContainerLimitRangeItem(getPod().Namespace)
-	if assert.NoError(t, err) {
-		assert.Nil(t, limitRange)
-	}
+	limitRange, err := nlc.GetContainerLimitRangeItem(defaultNamespace)
+	assert.NoError(t, err)
+	assert.Nil(t, limitRange)
 }
 
 func TestNoLimitRange(t *testing.T) {
@@ -52,53 +43,45 @@ func TestNoLimitRange(t *testing.T) {
 	lc, err := NewLimitsRangeCalculator(factory)
 
 	if assert.NoError(t, err) {
-		limitRange, err := lc.GetContainerLimitRangeItem(getPod().Namespace)
-		if assert.NoError(t, err) {
-			assert.Nil(t, limitRange)
-		}
+		limitRange, err := lc.GetContainerLimitRangeItem(defaultNamespace)
+		assert.NoError(t, err)
+		assert.Nil(t, limitRange)
 	}
 }
 
-func TestUpdateResourceLimits(t *testing.T) {
-
+func TestGetContainerLimitRangeItem(t *testing.T) {
+	containerLimitRangeWithMax := test.LimitRange().WithName("default").WithNamespace(defaultNamespace).WithType(apiv1.LimitTypeContainer).WithMax(test.Resources("2", "2")).Get()
+	containerLimitRangeWithDefault := test.LimitRange().WithName("default").WithNamespace(defaultNamespace).WithType(apiv1.LimitTypeContainer).WithDefault(test.Resources("2", "2")).Get()
 	testCases := []struct {
-		name         string
-		pod          *apiv1.Pod
-		limitRanges  []runtime.Object
-		expectErr    error
-		expectLimits *apiv1.LimitRangeItem
+		name           string
+		limitRanges    []runtime.Object
+		expectedErr    error
+		expectedLimits *apiv1.LimitRangeItem
 	}{
 		{
 			name: "no matching limit ranges",
-			pod:  getPod(),
 			limitRanges: []runtime.Object{
-				test.LimitRange().WithName("different-namespace").WithNamespace("different").WithType(apiv1.LimitTypePod).WithMax(test.Resources("2", "2")).Get(),
-				test.LimitRange().WithName("differen-type").WithNamespace("default").WithType(apiv1.LimitTypePersistentVolumeClaim).WithMax(test.Resources("2", "2")).Get(),
+				test.LimitRange().WithName("different-namespace").WithNamespace("different").WithType(apiv1.LimitTypeContainer).WithMax(test.Resources("2", "2")).Get(),
+				test.LimitRange().WithName("differen-type").WithNamespace(defaultNamespace).WithType(apiv1.LimitTypePersistentVolumeClaim).WithMax(test.Resources("2", "2")).Get(),
 			},
-			expectErr:    nil,
-			expectLimits: nil,
+			expectedErr:    nil,
+			expectedLimits: nil,
 		},
 		{
 			name: "matching container limit range",
-			pod:  getPod(),
 			limitRanges: []runtime.Object{
-				test.LimitRange().WithName("default").WithNamespace("default").WithType(apiv1.LimitTypeContainer).WithMax(test.Resources("2", "2")).Get(),
+				containerLimitRangeWithMax,
 			},
-			expectErr: nil,
-			expectLimits: &apiv1.LimitRangeItem{
-				Max: test.Resources("2", "2"),
-			},
+			expectedErr:    nil,
+			expectedLimits: &containerLimitRangeWithMax.Spec.Limits[0],
 		},
 		{
 			name: "with default value",
-			pod:  getPod(),
 			limitRanges: []runtime.Object{
-				test.LimitRange().WithName("default").WithNamespace("default").WithType(apiv1.LimitTypeContainer).WithDefault(test.Resources("2", "2")).Get(),
+				containerLimitRangeWithDefault,
 			},
-			expectErr: nil,
-			expectLimits: &apiv1.LimitRangeItem{
-				Default: test.Resources("2", "2"),
-			},
+			expectedErr:    nil,
+			expectedLimits: &containerLimitRangeWithDefault.Spec.Limits[0],
 		},
 	}
 
@@ -108,15 +91,13 @@ func TestUpdateResourceLimits(t *testing.T) {
 			factory := informers.NewSharedInformerFactory(cs, 0)
 			lc, err := NewLimitsRangeCalculator(factory)
 			if assert.NoError(t, err) {
-				labels := map[string]string{"app": "testingApp"}
-				pod := test.Pod().WithName("test_uninitialized").AddContainer(test.BuildTestContainer("container1", "", "")).WithLabels(labels).Get()
-				limitRange, err := lc.GetContainerLimitRangeItem(pod.Namespace)
-				if tc.expectErr == nil {
+				limitRange, err := lc.GetContainerLimitRangeItem(defaultNamespace)
+				if tc.expectedErr == nil {
 					assert.NoError(t, err)
 				} else {
 					assert.Error(t, err)
 				}
-				assert.Equal(t, tc.expectLimits, limitRange)
+				assert.Equal(t, tc.expectedLimits, limitRange)
 			}
 		})
 
