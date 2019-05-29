@@ -22,6 +22,8 @@ import (
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
+
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
 	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1beta2"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
@@ -36,14 +38,14 @@ type RecommendationProvider interface {
 }
 
 type recommendationProvider struct {
-	limitsRangeCalculator   LimitRangeCalculator
+	limitsRangeCalculator   limitrange.LimitRangeCalculator
 	recommendationProcessor vpa_api_util.RecommendationProcessor
 	selectorFetcher         target.VpaTargetSelectorFetcher
 	vpaLister               vpa_lister.VerticalPodAutoscalerLister
 }
 
 // NewRecommendationProvider constructs the recommendation provider that list VPAs and can be used to determine recommendations for pods.
-func NewRecommendationProvider(calculator LimitRangeCalculator, recommendationProcessor vpa_api_util.RecommendationProcessor,
+func NewRecommendationProvider(calculator limitrange.LimitRangeCalculator, recommendationProcessor vpa_api_util.RecommendationProcessor,
 	selectorFetcher target.VpaTargetSelectorFetcher, vpaLister vpa_lister.VerticalPodAutoscalerLister) *recommendationProvider {
 	return &recommendationProvider{
 		limitsRangeCalculator:   calculator,

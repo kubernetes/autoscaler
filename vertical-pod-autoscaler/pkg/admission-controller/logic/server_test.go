@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/stretchr/testify/assert"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	"strings"
 	"testing"
 
@@ -311,7 +312,7 @@ func TestGetPatchesForResourceRequest(t *testing.T) {
 		t.Run(fmt.Sprintf("test case: %s", tc.name), func(t *testing.T) {
 			fppp := fakePodPreProcessor{e: tc.preProcessorError}
 			frp := fakeRecommendationProvider{tc.recommendResources, tc.recommendAnnotations, tc.recommendName, tc.recommendError}
-			lc := NewNoopLimitsCalculator()
+			lc := limitrange.NewNoopLimitsCalculator()
 			s := NewAdmissionServer(&frp, &fppp, lc)
 			patches, err := s.getPatchesForPodResourceRequest(tc.podJson, tc.namespace)
 			if tc.expectError == nil {
@@ -359,7 +360,7 @@ func TestGetPatchesForResourceRequest_TwoReplacementResources(t *testing.T) {
 				}`)
 	recommendAnnotations := vpa_api_util.ContainerToAnnotationsMap{}
 	frp := fakeRecommendationProvider{recommendResources, recommendAnnotations, "name", nil}
-	lc := NewNoopLimitsCalculator()
+	lc := limitrange.NewNoopLimitsCalculator()
 	s := NewAdmissionServer(&frp, &fppp, lc)
 	patches, err := s.getPatchesForPodResourceRequest(podJson, "default")
 	assert.NoError(t, err)

@@ -22,18 +22,20 @@ import (
 	"os"
 	"time"
 
-	"github.com/golang/glog"
 	kube_flag "k8s.io/apiserver/pkg/util/flag"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/admission-controller/logic"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics"
 	metrics_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/admission"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+
+	"github.com/golang/glog"
 )
 
 const (
@@ -76,15 +78,15 @@ func main() {
 		target.NewBeta1TargetSelectorFetcher(config),
 	)
 	podPreprocessor := logic.NewDefaultPodPreProcessor()
-	var limitsChecker logic.LimitRangeCalculator
-	limitsChecker, err = logic.NewLimitsRangeCalculator(factory)
+	var limitRangeCalculator limitrange.LimitRangeCalculator
+	limitRangeCalculator, err = limitrange.NewLimitsRangeCalculator(factory)
 	if err != nil {
-		klog.Errorf("Failed to create limitsChecker, falling back to not checking limits. Error message: %s", err)
-		limitsChecker = logic.NewNoopLimitsCalculator()
+		klog.Errorf("Failed to create limitRangeCalculator, falling back to not checking limits. Error message: %s", err)
+		limitRangeCalculator = limitrange.NewNoopLimitsCalculator()
 	}
-	recommendationProvider := logic.NewRecommendationProvider(limitsChecker, vpa_api_util.NewCappingRecommendationProcessor(), targetSelectorFetcher, vpaLister)
+	recommendationProvider := logic.NewRecommendationProvider(limitRangeCalculator, vpa_api_util.NewCappingRecommendationProcessor(limitRangeCalculator), targetSelectorFetcher, vpaLister)
 
-	as := logic.NewAdmissionServer(recommendationProvider, podPreprocessor, limitsChecker)
+	as := logic.NewAdmissionServer(recommendationProvider, podPreprocessor, limitRangeCalculator)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		as.Serve(w, r)
 		healthCheck.UpdateLastActivity()
