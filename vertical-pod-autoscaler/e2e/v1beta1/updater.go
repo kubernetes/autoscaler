@@ -98,6 +98,44 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		gomega.Expect(evictedCount >= permissiveMaxUnavailable).To(gomega.BeTrue())
 	})
+
+	ginkgo.It("observes max in LimitRange", func() {
+		ginkgo.By("Setting up a hamster deployment")
+		d := NewHamsterDeploymentWithResourcesAndLimits(f,
+			ParseQuantityOrDie("100m") /*cpu request*/, ParseQuantityOrDie("200Mi"), /*memory request*/
+			ParseQuantityOrDie("300m") /*cpu limit*/, ParseQuantityOrDie("400Mi") /*memory limit*/)
+		podList := startDeploymentPods(f, d)
+
+		ginkgo.By("Setting up a VPA CRD")
+		SetupVPA(f, "200m", vpa_types.UpdateModeAuto)
+
+		// Max CPU limit is 300m and ratio is 3., so max request is 100m, while
+		// recommendation is 200m
+		// Max memory limit is 1T and ratio is 2., so max request is 0.5T
+		InstallLimitRangeWithMax(f, "300m", "1T")
+
+		ginkgo.By(fmt.Sprintf("Waiting for pods to be evicted, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
+		CheckNoPodsEvicted(f, MakePodSet(podList))
+	})
+
+	ginkgo.It("observes min in LimitRange", func() {
+		ginkgo.By("Setting up a hamster deployment")
+		d := NewHamsterDeploymentWithResourcesAndLimits(f,
+			ParseQuantityOrDie("100m") /*cpu request*/, ParseQuantityOrDie("200Mi"), /*memory request*/
+			ParseQuantityOrDie("300m") /*cpu limit*/, ParseQuantityOrDie("400Mi") /*memory limit*/)
+		podList := startDeploymentPods(f, d)
+
+		ginkgo.By("Setting up a VPA CRD")
+		SetupVPA(f, "50m", vpa_types.UpdateModeAuto)
+
+		// Min CPU limit is 300m and ratio is 3., so min request is 100m, while
+		// recommendation is 200m
+		// Min memory limit is 0 and ratio is 2., so min request is 0
+		InstallLimitRangeWithMin(f, "300m", "0")
+
+		ginkgo.By(fmt.Sprintf("Waiting for pods to be evicted, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
+		CheckNoPodsEvicted(f, MakePodSet(podList))
+	})
 })
 
 func testEvictsPods(f *framework.Framework, controllerKind string) {
