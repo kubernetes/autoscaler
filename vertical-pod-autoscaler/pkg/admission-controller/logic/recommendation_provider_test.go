@@ -18,6 +18,7 @@ package logic
 
 import (
 	"fmt"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	"math"
 	"testing"
 
@@ -329,7 +330,7 @@ func TestUpdateResourceRequests(t *testing.T) {
 
 			recommendationProvider := &recommendationProvider{
 				vpaLister:               vpaLister,
-				recommendationProcessor: api.NewCappingRecommendationProcessor(),
+				recommendationProcessor: api.NewCappingRecommendationProcessor(limitrange.NewNoopLimitsCalculator()),
 				selectorFetcher:         mockSelectorFetcher,
 				limitsRangeCalculator: &fakeLimitRangeCalculator{
 					tc.limitRange,

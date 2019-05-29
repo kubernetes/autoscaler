@@ -41,7 +41,7 @@ func TestRecommendationNotAvailable(t *testing.T) {
 	}
 	policy := vpa_types.PodResourcePolicy{}
 
-	res, annotations, err := NewCappingRecommendationProcessor().Apply(&podRecommendation, &policy, nil, pod)
+	res, annotations, err := NewCappingRecommendationProcessor(&fakeLimitRangeCalculator{}).Apply(&podRecommendation, &policy, nil, pod)
 	assert.Nil(t, err)
 	assert.Empty(t, annotations)
 	assert.Empty(t, res.ContainerRecommendations)
@@ -84,7 +84,7 @@ func TestRecommendationCappedToMinMaxPolicy(t *testing.T) {
 		},
 	}
 
-	res, annotations, err := NewCappingRecommendationProcessor().Apply(&podRecommendation, &policy, nil, pod)
+	res, annotations, err := NewCappingRecommendationProcessor(&fakeLimitRangeCalculator{}).Apply(&podRecommendation, &policy, nil, pod)
 	assert.Nil(t, err)
 	assert.Equal(t, apiv1.ResourceList{
 		apiv1.ResourceCPU:    *resource.NewScaledQuantity(40, 1),
@@ -146,7 +146,7 @@ func TestApply(t *testing.T) {
 	pod := test.Pod().WithName("pod1").AddContainer(test.BuildTestContainer("ctr-name", "", "")).Get()
 
 	for _, testCase := range applyTestCases {
-		res, _, err := NewCappingRecommendationProcessor().Apply(
+		res, _, err := NewCappingRecommendationProcessor(&fakeLimitRangeCalculator{}).Apply(
 			testCase.PodRecommendation, testCase.Policy, nil, pod)
 		assert.Equal(t, testCase.ExpectedPodRecommendation, res)
 		assert.Equal(t, testCase.ExpectedError, err)
@@ -214,4 +214,78 @@ func TestApplyVpa(t *testing.T) {
 		apiv1.ResourceCPU:    *resource.NewScaledQuantity(45, 1),
 		apiv1.ResourceMemory: *resource.NewScaledQuantity(4500, 1),
 	}, res.ContainerRecommendations[0].UpperBound)
+}
+
+type fakeLimitRangeCalculator struct {
+	limitRange apiv1.LimitRangeItem
+}
+
+func (nlrc *fakeLimitRangeCalculator) GetContainerLimitRangeItem(namespace string) (*apiv1.LimitRangeItem, error) {
+	return &nlrc.limitRange, nil
+}
+
+func TestApplyCapsToLimitRange(t *testing.T) {
+	limitRange := apiv1.LimitRangeItem{
+		Type: apiv1.LimitTypeContainer,
+		Max: apiv1.ResourceList{
+			apiv1.ResourceCPU:    resource.MustParse("1"),
+			apiv1.ResourceMemory: resource.MustParse("1G"),
+		},
+	}
+	recommendation := vpa_types.RecommendedPodResources{
+		ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+			{
+				ContainerName: "container",
+				Target: apiv1.ResourceList{
+					apiv1.ResourceCPU:    resource.MustParse("2"),
+					apiv1.ResourceMemory: resource.MustParse("10G"),
+				},
+			},
+		},
+	}
+	pod := apiv1.Pod{
+		Spec: apiv1.PodSpec{
+			Containers: []apiv1.Container{
+				{
+					Name: "container",
+					Resources: apiv1.ResourceRequirements{
+						Requests: apiv1.ResourceList{
+							apiv1.ResourceCPU:    resource.MustParse("1"),
+							apiv1.ResourceMemory: resource.MustParse("1G"),
+						},
+						Limits: apiv1.ResourceList{
+							apiv1.ResourceCPU:    resource.MustParse("1"),
+							apiv1.ResourceMemory: resource.MustParse("1G"),
+						},
+					},
+				},
+			},
+		},
+	}
+	expectedRecommendation := vpa_types.RecommendedPodResources{
+		ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+			{
+				ContainerName: "container",
+				LowerBound: apiv1.ResourceList{
+					apiv1.ResourceCPU:    *resource.NewQuantity(0, resource.DecimalSI),
+					apiv1.ResourceMemory: *resource.NewQuantity(0, resource.BinarySI),
+				},
+				Target: apiv1.ResourceList{
+					apiv1.ResourceCPU:    resource.MustParse("1000m"),
+					apiv1.ResourceMemory: resource.MustParse("1000000000000m"),
+				},
+				UpperBound: apiv1.ResourceList{
+					apiv1.ResourceCPU:    *resource.NewQuantity(0, resource.DecimalSI),
+					apiv1.ResourceMemory: *resource.NewQuantity(0, resource.BinarySI),
+				},
+			},
+		},
+	}
+
+	calculator := fakeLimitRangeCalculator{limitRange}
+	processor := NewCappingRecommendationProcessor(&calculator)
+	processedRecommendation, annotations, err := processor.Apply(&recommendation, nil, nil, &pod)
+	assert.NoError(t, err)
+	assert.Equal(t, map[string][]string{"container": {"changed CPU limit to fit within limit range", "changed memory limit to fit within limit range"}}, annotations)
+	assert.Equal(t, expectedRecommendation, *processedRecommendation)
 }
