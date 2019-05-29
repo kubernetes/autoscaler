@@ -143,6 +143,17 @@ func NewHamsterDeploymentWithGuaranteedResources(f *framework.Framework, cpuQuan
 	return d
 }
 
+// NewHamsterDeploymentWithResourcesAndLimits creates a simple hamster deployment with specific
+// resource requests and limits for e2e test purposes.
+func NewHamsterDeploymentWithResourcesAndLimits(f *framework.Framework, cpuQuantityRequest, memoryQuantityRequest, cpuQuantityLimit, memoryQuantityLimit resource.Quantity) *appsv1.Deployment {
+	d := NewHamsterDeploymentWithResources(f, cpuQuantityRequest, memoryQuantityRequest)
+	d.Spec.Template.Spec.Containers[0].Resources.Limits = apiv1.ResourceList{
+		apiv1.ResourceCPU:    cpuQuantityLimit,
+		apiv1.ResourceMemory: memoryQuantityLimit,
+	}
+	return d
+}
+
 // GetHamsterPods returns running hamster pods (matched by hamsterLabels)
 func GetHamsterPods(f *framework.Framework) (*apiv1.PodList, error) {
 	label := labels.SelectorFromSet(labels.Set(hamsterLabels))
@@ -334,4 +345,62 @@ func WaitForRecommendationPresent(c *vpa_clientset.Clientset, vpa *vpa_types.Ver
 	return WaitForVPAMatch(c, vpa, func(vpa *vpa_types.VerticalPodAutoscaler) bool {
 		return vpa.Status.Recommendation != nil && len(vpa.Status.Recommendation.ContainerRecommendations) != 0
 	})
+}
+
+func installLimitRange(f *framework.Framework, minCpuLimit, minMemoryLimit, maxCpuLimit, maxMemoryLimit *resource.Quantity) {
+	lr := &apiv1.LimitRange{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: f.Namespace.Name,
+			Name:      "hamster-lr",
+		},
+		Spec: apiv1.LimitRangeSpec{
+			Limits: []apiv1.LimitRangeItem{},
+		},
+	}
+
+	if maxMemoryLimit != nil || maxCpuLimit != nil {
+		lrItem := apiv1.LimitRangeItem{
+			Type: apiv1.LimitTypeContainer,
+			Max:  apiv1.ResourceList{},
+		}
+		if maxCpuLimit != nil {
+			lrItem.Max[apiv1.ResourceCPU] = *maxCpuLimit
+		}
+		if maxMemoryLimit != nil {
+			lrItem.Max[apiv1.ResourceMemory] = *maxMemoryLimit
+		}
+		lr.Spec.Limits = append(lr.Spec.Limits, lrItem)
+	}
+
+	if minMemoryLimit != nil || minCpuLimit != nil {
+		lrItem := apiv1.LimitRangeItem{
+			Type: apiv1.LimitTypeContainer,
+			Max:  apiv1.ResourceList{},
+		}
+		if minCpuLimit != nil {
+			lrItem.Min[apiv1.ResourceCPU] = *minCpuLimit
+		}
+		if minMemoryLimit != nil {
+			lrItem.Min[apiv1.ResourceMemory] = *minMemoryLimit
+		}
+		lr.Spec.Limits = append(lr.Spec.Limits, lrItem)
+	}
+	_, err := f.ClientSet.CoreV1().LimitRanges(f.Namespace.Name).Create(lr)
+	gomega.Expect(err).NotTo(gomega.HaveOccurred())
+}
+
+// InstallLimitRangeWithMax installs a LimitRange with a maximum limit for CPU and memory.
+func InstallLimitRangeWithMax(f *framework.Framework, maxCpuLimit, maxMemoryLimit string) {
+	ginkgo.By(fmt.Sprintf("Setting up LimitRange with max limits - CPU: %v, memory: %v", maxCpuLimit, maxMemoryLimit))
+	maxCpuLimitQuantity := ParseQuantityOrDie(maxCpuLimit)
+	maxMemoryLimitQuantity := ParseQuantityOrDie(maxMemoryLimit)
+	installLimitRange(f, nil, nil, &maxCpuLimitQuantity, &maxMemoryLimitQuantity)
+}
+
+// InstallLimitRangeWithMin installs a LimitRange with a minimum limit for CPU and memory.
+func InstallLimitRangeWithMin(f *framework.Framework, minCpuLimit, minMemoryLimit string) {
+	ginkgo.By(fmt.Sprintf("Setting up LimitRange with min limits - CPU: %v, memory: %v", minCpuLimit, minMemoryLimit))
+	minCpuLimitQuantity := ParseQuantityOrDie(minCpuLimit)
+	minMemoryLimitQuantity := ParseQuantityOrDie(minMemoryLimit)
+	installLimitRange(f, &minCpuLimitQuantity, &minMemoryLimitQuantity, nil, nil)
 }
