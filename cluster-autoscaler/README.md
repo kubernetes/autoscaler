@@ -134,6 +134,7 @@ on them) and set a `priorityClassName: system-cluster-critical` property on your
 Supported cloud providers:
 * GCE https://kubernetes.io/docs/concepts/cluster-administration/cluster-management/
 * GKE https://cloud.google.com/container-engine/docs/cluster-autoscaler
+* IBM Cloud https://cloud.ibm.com/docs/containers?topic=containers-ca
 * AWS https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/aws/README.md
 * Azure https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/azure/README.md
 * Alibaba Cloud https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/cloudprovider/alicloud/README.md
