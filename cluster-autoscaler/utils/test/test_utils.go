@@ -39,6 +39,7 @@ import (
 func BuildTestPod(name string, cpu int64, mem int64) *apiv1.Pod {
 	pod := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
+			UID:         types.UID(name),
 			Namespace:   "default",
 			Name:        name,
 			SelfLink:    fmt.Sprintf("/api/v1/namespaces/default/pods/%s", name),
