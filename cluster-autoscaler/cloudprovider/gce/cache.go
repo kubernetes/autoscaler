@@ -274,7 +274,7 @@ func (gc *GceCache) GetMigTargetSize(ref GceRef) (int64, bool) {
 
 	size, found := gc.migTargetSizeCache[ref]
 	if found {
-		klog.V(5).Infof("target size cache hit for %s", ref)
+		klog.V(5).Infof("Target size cache hit for %s", ref)
 	}
 	return size, found
 }
@@ -293,7 +293,7 @@ func (gc *GceCache) InvalidateMigTargetSize(ref GceRef) {
 	defer gc.cacheMutex.Unlock()
 
 	if _, found := gc.migTargetSizeCache[ref]; found {
-		klog.V(5).Infof("target size cache invalidated for %s", ref)
+		klog.V(5).Infof("Target size cache invalidated for %s", ref)
 		delete(gc.migTargetSizeCache, ref)
 	}
 }
@@ -303,7 +303,7 @@ func (gc *GceCache) InvalidateAllMigTargetSizes() {
 	gc.cacheMutex.Lock()
 	defer gc.cacheMutex.Unlock()
 
-	klog.V(5).Infof("target size cache invalidated")
+	klog.V(5).Infof("Target size cache invalidated")
 	gc.migTargetSizeCache = map[GceRef]int64{}
 }
 
@@ -314,7 +314,7 @@ func (gc *GceCache) GetMigInstanceTemplate(ref GceRef) (*gce.InstanceTemplate, b
 
 	instanceTemplate, found := gc.instanceTemplatesCache[ref]
 	if found {
-		klog.V(5).Infof("instance template cache hit for %s", ref)
+		klog.V(5).Infof("Instance template cache hit for %s", ref)
 	}
 	return instanceTemplate, found
 }
@@ -333,7 +333,7 @@ func (gc *GceCache) InvalidateMigInstanceTemplate(ref GceRef) {
 	defer gc.cacheMutex.Unlock()
 
 	if _, found := gc.instanceTemplatesCache[ref]; found {
-		klog.V(5).Infof("instance template cache invalidated for %s", ref)
+		klog.V(5).Infof("Instance template cache invalidated for %s", ref)
 		delete(gc.instanceTemplatesCache, ref)
 	}
 }
@@ -343,7 +343,7 @@ func (gc *GceCache) InvalidateAllMigInstanceTemplates() {
 	gc.cacheMutex.Lock()
 	defer gc.cacheMutex.Unlock()
 
-	klog.V(5).Infof("instance template cache invalidated")
+	klog.V(5).Infof("Instance template cache invalidated")
 	gc.instanceTemplatesCache = map[GceRef]*gce.InstanceTemplate{}
 }
 
