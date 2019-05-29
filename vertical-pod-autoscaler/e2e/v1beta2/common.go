@@ -389,13 +389,17 @@ func installLimitRange(f *framework.Framework, minCpuLimit, minMemoryLimit, maxC
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 }
 
+// InstallLimitRangeWithMax installs a LimitRange with a maximum limit for CPU and memory.
 func InstallLimitRangeWithMax(f *framework.Framework, maxCpuLimit, maxMemoryLimit string) {
+	ginkgo.By(fmt.Sprintf("Setting up LimitRange with max limits - CPU: %v, memory: %v", maxCpuLimit, maxMemoryLimit))
 	maxCpuLimitQuantity := ParseQuantityOrDie(maxCpuLimit)
 	maxMemoryLimitQuantity := ParseQuantityOrDie(maxMemoryLimit)
 	installLimitRange(f, nil, nil, &maxCpuLimitQuantity, &maxMemoryLimitQuantity)
 }
 
+// InstallLimitRangeWithMin installs a LimitRange with a minimum limit for CPU and memory.
 func InstallLimitRangeWithMin(f *framework.Framework, minCpuLimit, minMemoryLimit string) {
+	ginkgo.By(fmt.Sprintf("Setting up LimitRange with min limits - CPU: %v, memory: %v", minCpuLimit, minMemoryLimit))
 	minCpuLimitQuantity := ParseQuantityOrDie(minCpuLimit)
 	minMemoryLimitQuantity := ParseQuantityOrDie(minMemoryLimit)
 	installLimitRange(f, &minCpuLimitQuantity, &minMemoryLimitQuantity, nil, nil)
