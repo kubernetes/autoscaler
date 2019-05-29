@@ -58,7 +58,7 @@ func GetProportionalLimit(originalLimit, originalRequest, recommendedRequest, de
 		return &result, ""
 	}
 	result, capped := scaleQuantityProportionally( /*scaledQuantity=*/ originalLimit /*scaleBase=*/, originalRequest /*scaleResult=*/, recommendedRequest)
-	if capped {
+	if !capped {
 		return result, ""
 	}
 	return result, fmt.Sprintf(
@@ -92,7 +92,7 @@ func proportionallyCapLimitToMax(recommendedRequest, recommendedLimit, maxLimit 
 	return scaledRequest, maxLimit
 }
 
-// ProportionallyCapResourcesToMaxLimit caps CPU and memory limit to maximu and scales requests to maintain limit/request ratio.
+// ProportionallyCapResourcesToMaxLimit caps CPU and memory limit to maximum and scales requests to maintain limit/request ratio.
 func ProportionallyCapResourcesToMaxLimit(recommendedRequests v1.ResourceList, cpuLimit, memLimit, maxCpuLimit, maxMemLimit *resource.Quantity) ContainerResources {
 	scaledCpuRequest, scaledCpuLimit := proportionallyCapLimitToMax(recommendedRequests.Cpu(), cpuLimit, maxCpuLimit)
 	scaledMemRequest, scaledMemLimit := proportionallyCapLimitToMax(recommendedRequests.Memory(), memLimit, maxMemLimit)

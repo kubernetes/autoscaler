@@ -18,18 +18,17 @@ package api
 
 import (
 	"fmt"
-
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
-
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	"k8s.io/klog"
 )
 
 // NewCappingRecommendationProcessor constructs new RecommendationsProcessor that adjusts recommendation
 // for given pod to obey VPA resources policy and container limits
-func NewCappingRecommendationProcessor() RecommendationProcessor {
-	return &cappingRecommendationProcessor{}
+func NewCappingRecommendationProcessor(limitsRangeCalculator limitrange.LimitRangeCalculator) RecommendationProcessor {
+	return &cappingRecommendationProcessor{limitsRangeCalculator: limitsRangeCalculator}
 }
 
 type cappingAction string
@@ -43,7 +42,9 @@ func toCappingAnnotation(resourceName apiv1.ResourceName, action cappingAction) 
 	return fmt.Sprintf("%s %s", resourceName, action)
 }
 
-type cappingRecommendationProcessor struct{}
+type cappingRecommendationProcessor struct {
+	limitsRangeCalculator limitrange.LimitRangeCalculator
+}
 
 // Apply returns a recommendation for the given pod, adjusted to obey policy and limits.
 func (c *cappingRecommendationProcessor) Apply(
@@ -51,6 +52,7 @@ func (c *cappingRecommendationProcessor) Apply(
 	policy *vpa_types.PodResourcePolicy,
 	conditions []vpa_types.VerticalPodAutoscalerCondition,
 	pod *apiv1.Pod) (*vpa_types.RecommendedPodResources, ContainerToAnnotationsMap, error) {
+	// TODO: Annotate if request enforced by maintaining proportion with limit and allowed limit range is in conflict with policy.
 
 	if podRecommendation == nil && policy == nil {
 		// If there is no recommendation and no policies have been defined then no recommendation can be computed.
@@ -62,7 +64,11 @@ func (c *cappingRecommendationProcessor) Apply(
 	}
 	updatedRecommendations := []vpa_types.RecommendedContainerResources{}
 	containerToAnnotationsMap := ContainerToAnnotationsMap{}
-	for _, containerRecommendation := range podRecommendation.ContainerRecommendations {
+	limitAdjustedRecommendation, err := c.capProportionallyToMaxLimit(podRecommendation, pod, containerToAnnotationsMap)
+	if err != nil {
+		return nil, nil, err
+	}
+	for _, containerRecommendation := range limitAdjustedRecommendation {
 		container := getContainer(containerRecommendation.ContainerName, pod)
 
 		if container == nil {
@@ -82,6 +88,53 @@ func (c *cappingRecommendationProcessor) Apply(
 		updatedRecommendations = append(updatedRecommendations, *updatedContainerResources)
 	}
 	return &vpa_types.RecommendedPodResources{ContainerRecommendations: updatedRecommendations}, containerToAnnotationsMap, nil
+}
+
+func capSingleRecommendationProportionallyToMaxLimit(recommendation apiv1.ResourceList, container apiv1.Container, podLimitRange *apiv1.LimitRangeItem, containerToAnnotationsMap ContainerToAnnotationsMap) apiv1.ResourceList {
+	defaultCpu := podLimitRange.Default.Cpu()
+	defaultMem := podLimitRange.Default.Memory()
+	maxCpuLimit := podLimitRange.Max.Cpu()
+	maxMemLimit := podLimitRange.Max.Memory()
+	cpuLimit, _ := GetProportionalLimit(container.Resources.Limits.Cpu(), container.Resources.Requests.Cpu(), recommendation.Cpu(), defaultCpu)
+	memLimit, _ := GetProportionalLimit(container.Resources.Limits.Memory(), container.Resources.Requests.Memory(), recommendation.Memory(), defaultMem)
+	capped := ProportionallyCapResourcesToMaxLimit(recommendation, cpuLimit, memLimit, maxCpuLimit, maxMemLimit)
+	return apiv1.ResourceList{
+		apiv1.ResourceCPU:    *capped.Requests.Cpu(),
+		apiv1.ResourceMemory: *capped.Requests.Memory(),
+	}
+}
+
+func (c *cappingRecommendationProcessor) capProportionallyToMaxLimit(podRecommendation *vpa_types.RecommendedPodResources, pod *apiv1.Pod, containerToAnnotationsMap ContainerToAnnotationsMap) ([]vpa_types.RecommendedContainerResources, error) {
+	podLimitRange, err := c.limitsRangeCalculator.GetContainerLimitRangeItem(pod.Namespace)
+	if err != nil {
+		return nil, fmt.Errorf("error obtaining limit range: %s", err)
+	}
+	if podLimitRange == nil {
+		return podRecommendation.ContainerRecommendations, nil
+	}
+
+	updatedRecommendations := []vpa_types.RecommendedContainerResources{}
+
+	for _, container := range pod.Spec.Containers {
+		recommendation := GetRecommendationForContainer(container.Name, podRecommendation)
+		if recommendation == nil {
+			klog.V(2).Infof("no matching recommendation found for container %s", container.Name)
+			continue
+		}
+
+		scaledRecommendation := recommendation.DeepCopy()
+		scaledRecommendation.LowerBound = capSingleRecommendationProportionallyToMaxLimit(recommendation.LowerBound, container, podLimitRange, containerToAnnotationsMap)
+		scaledRecommendation.Target = capSingleRecommendationProportionallyToMaxLimit(recommendation.Target, container, podLimitRange, containerToAnnotationsMap)
+		scaledRecommendation.UpperBound = capSingleRecommendationProportionallyToMaxLimit(recommendation.UpperBound, container, podLimitRange, containerToAnnotationsMap)
+		if scaledRecommendation.Target.Cpu().MilliValue() != recommendation.Target.Cpu().MilliValue() {
+			containerToAnnotationsMap[container.Name] = append(containerToAnnotationsMap[container.Name], "changed CPU limit to fit within limit range")
+		}
+		if scaledRecommendation.Target.Memory().Value() != recommendation.Target.Memory().Value() {
+			containerToAnnotationsMap[container.Name] = append(containerToAnnotationsMap[container.Name], "changed memory limit to fit within limit range")
+		}
+		updatedRecommendations = append(updatedRecommendations, *scaledRecommendation)
+	}
+	return updatedRecommendations, nil
 }
 
 // getCappedRecommendationForContainer returns a recommendation for the given container, adjusted to obey policy and limits.

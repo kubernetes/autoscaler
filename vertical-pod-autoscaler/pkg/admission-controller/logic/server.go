@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	"net/http"
 
 	"strings"
@@ -39,11 +40,11 @@ type AdmissionServer struct {
 	recommendationProvider RecommendationProvider
 	podPreProcessor        PodPreProcessor
 	vpaPreProcessor        VpaPreProcessor
-	limitsChecker          LimitRangeCalculator
+	limitsChecker          limitrange.LimitRangeCalculator
 }
 
 // NewAdmissionServer constructs new AdmissionServer
-func NewAdmissionServer(recommendationProvider RecommendationProvider, podPreProcessor PodPreProcessor, vpaPreProcessor VpaPreProcessor, limitsChecker LimitRangeCalculator) *AdmissionServer {
+func NewAdmissionServer(recommendationProvider RecommendationProvider, podPreProcessor PodPreProcessor, vpaPreProcessor VpaPreProcessor, limitsChecker limitrange.LimitRangeCalculator) *AdmissionServer {
 	return &AdmissionServer{recommendationProvider, podPreProcessor, vpaPreProcessor, limitsChecker}
 }
 
