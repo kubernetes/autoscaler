@@ -30,7 +30,7 @@ type RecommendationProcessor interface {
 	// VPA policy and possibly other internal RecommendationProcessor context.
 	// Must return a non-nil pointer to RecommendedPodResources or error.
 	Apply(podRecommendation *vpa_types.RecommendedPodResources,
-		_ *vpa_types.PodResourcePolicy,
-		_ []vpa_types.VerticalPodAutoscalerCondition,
+		policy *vpa_types.PodResourcePolicy,
+		conditions []vpa_types.VerticalPodAutoscalerCondition,
 		pod *v1.Pod) (*vpa_types.RecommendedPodResources, ContainerToAnnotationsMap, error)
 }

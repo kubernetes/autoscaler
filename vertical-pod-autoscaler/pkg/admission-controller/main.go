@@ -19,6 +19,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	"net/http"
 	"os"
 	"time"
@@ -80,15 +81,15 @@ func main() {
 		target.NewBeta1TargetSelectorFetcher(config),
 	)
 	podPreprocessor := logic.NewDefaultPodPreProcessor()
-	var limitsChecker logic.LimitRangeCalculator
-	limitsChecker, err = logic.NewLimitsRangeCalculator(factory)
+	var limitRangeCalculator limitrange.LimitRangeCalculator
+	limitRangeCalculator, err = limitrange.NewLimitsRangeCalculator(factory)
 	if err != nil {
-		klog.Errorf("Failed to create limitsChecker, falling back to not checking limits. Error message: %s", err)
-		limitsChecker = logic.NewNoopLimitsCalculator()
+		klog.Errorf("Failed to create limitRangeCalculator, falling back to not checking limits. Error message: %s", err)
+		limitRangeCalculator = limitrange.NewNoopLimitsCalculator()
 	}
-	recommendationProvider := logic.NewRecommendationProvider(limitsChecker, vpa_api_util.NewCappingRecommendationProcessor(), targetSelectorFetcher, vpaLister)
+	recommendationProvider := logic.NewRecommendationProvider(limitRangeCalculator, vpa_api_util.NewCappingRecommendationProcessor(limitRangeCalculator), targetSelectorFetcher, vpaLister)
 
-	as := logic.NewAdmissionServer(recommendationProvider, podPreprocessor, limitsChecker)
+	as := logic.NewAdmissionServer(recommendationProvider, podPreprocessor, limitRangeCalculator)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		as.Serve(w, r)
 		healthCheck.UpdateLastActivity()
