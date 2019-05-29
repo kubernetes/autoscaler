@@ -143,6 +143,17 @@ func NewHamsterDeploymentWithGuaranteedResources(f *framework.Framework, cpuQuan
 	return d
 }
 
+// NewHamsterDeploymentWithResourcesAndLimits creates a simple hamster deployment with specific
+// resource requests and limits for e2e test purposes.
+func NewHamsterDeploymentWithResourcesAndLimits(f *framework.Framework, cpuQuantityRequest, memoryQuantityRequest, cpuQuantityLimit, memoryQuantityLimit resource.Quantity) *appsv1.Deployment {
+	d := NewHamsterDeploymentWithResources(f, cpuQuantityRequest, memoryQuantityRequest)
+	d.Spec.Template.Spec.Containers[0].Resources.Limits = apiv1.ResourceList{
+		apiv1.ResourceCPU:    cpuQuantityLimit,
+		apiv1.ResourceMemory: memoryQuantityLimit,
+	}
+	return d
+}
+
 // GetHamsterPods returns running hamster pods (matched by hamsterLabels)
 func GetHamsterPods(f *framework.Framework) (*apiv1.PodList, error) {
 	label := labels.SelectorFromSet(labels.Set(hamsterLabels))
