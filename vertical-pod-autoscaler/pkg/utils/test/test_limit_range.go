@@ -17,8 +17,8 @@ limitations under the License.
 package test
 
 import (
-	"k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	core "k8s.io/api/core/v1"
+	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // LimitRange returns an object that helps build a LimitRangeItem object for tests.
@@ -29,9 +29,10 @@ func LimitRange() *limitRangeBuilder {
 type limitRangeBuilder struct {
 	namespace     string
 	name          string
-	rangeType     v1.LimitType
-	defaultValues *v1.ResourceList
-	max           *v1.ResourceList
+	rangeType     core.LimitType
+	defaultValues []*core.ResourceList
+	maxValues     []*core.ResourceList
+	minValues     []*core.ResourceList
 }
 
 func (lrb *limitRangeBuilder) WithName(name string) *limitRangeBuilder {
@@ -46,46 +47,58 @@ func (lrb *limitRangeBuilder) WithNamespace(namespace string) *limitRangeBuilder
 	return &result
 }
 
-func (lrb *limitRangeBuilder) WithType(rangeType v1.LimitType) *limitRangeBuilder {
+func (lrb *limitRangeBuilder) WithType(rangeType core.LimitType) *limitRangeBuilder {
 	result := *lrb
 	result.rangeType = rangeType
 	return &result
 }
 
-func (lrb *limitRangeBuilder) WithDefault(defaultValues v1.ResourceList) *limitRangeBuilder {
+func (lrb *limitRangeBuilder) WithDefault(defaultValues core.ResourceList) *limitRangeBuilder {
 	result := *lrb
-	result.defaultValues = &defaultValues
+	result.defaultValues = append(result.defaultValues, &defaultValues)
 	return &result
 }
 
-func (lrb *limitRangeBuilder) WithMax(max v1.ResourceList) *limitRangeBuilder {
+func (lrb *limitRangeBuilder) WithMax(max core.ResourceList) *limitRangeBuilder {
 	result := *lrb
-	result.max = &max
+	result.maxValues = append(result.maxValues, &max)
 	return &result
 }
 
-func (lrb *limitRangeBuilder) Get() *v1.LimitRange {
-	result := v1.LimitRange{
-		ObjectMeta: metav1.ObjectMeta{
+func (lrb *limitRangeBuilder) WithMin(min core.ResourceList) *limitRangeBuilder {
+	result := *lrb
+	result.minValues = append(result.minValues, &min)
+	return &result
+}
+
+func (lrb *limitRangeBuilder) Get() *core.LimitRange {
+	result := core.LimitRange{
+		ObjectMeta: meta.ObjectMeta{
 			Namespace: lrb.namespace,
 			Name:      lrb.name,
 		},
 	}
-	if lrb.defaultValues != nil || lrb.max != nil {
-		result.Spec = v1.LimitRangeSpec{
-			Limits: []v1.LimitRangeItem{},
+	if len(lrb.defaultValues) > 0 || len(lrb.maxValues) > 0 || len(lrb.minValues) > 0 {
+		result.Spec = core.LimitRangeSpec{
+			Limits: []core.LimitRangeItem{},
 		}
 	}
-	if lrb.defaultValues != nil {
-		result.Spec.Limits = append(result.Spec.Limits, v1.LimitRangeItem{
+	for _, v := range lrb.defaultValues {
+		result.Spec.Limits = append(result.Spec.Limits, core.LimitRangeItem{
 			Type:    lrb.rangeType,
-			Default: *lrb.defaultValues,
+			Default: *v,
 		})
 	}
-	if lrb.max != nil {
-		result.Spec.Limits = append(result.Spec.Limits, v1.LimitRangeItem{
+	for _, v := range lrb.maxValues {
+		result.Spec.Limits = append(result.Spec.Limits, core.LimitRangeItem{
 			Type: lrb.rangeType,
-			Max:  *lrb.max,
+			Max:  *v,
+		})
+	}
+	for _, v := range lrb.minValues {
+		result.Spec.Limits = append(result.Spec.Limits, core.LimitRangeItem{
+			Type: lrb.rangeType,
+			Min:  *v,
 		})
 	}
 	return &result
