@@ -134,6 +134,8 @@ type ClusterStateRegistry struct {
 	logRecorder                        *utils.LogEventRecorder
 	cloudProviderNodeInstances         map[string][]cloudprovider.Instance
 	previousCloudProviderNodeInstances map[string][]cloudprovider.Instance
+	cloudProviderNodeInstancesCache    *utils.CloudProviderNodeInstancesCache
+	interrupt                          chan struct{}
 }
 
 // NewClusterStateRegistry creates new ClusterStateRegistry.
@@ -142,21 +144,34 @@ func NewClusterStateRegistry(cloudProvider cloudprovider.CloudProvider, config C
 		ClusterwideConditions: make([]api.ClusterAutoscalerCondition, 0),
 		NodeGroupStatuses:     make([]api.NodeGroupStatus, 0),
 	}
+
 	return &ClusterStateRegistry{
-		scaleUpRequests:         make(map[string]*ScaleUpRequest),
-		scaleDownRequests:       make([]*ScaleDownRequest, 0),
-		nodes:                   make([]*apiv1.Node, 0),
-		cloudProvider:           cloudProvider,
-		config:                  config,
-		perNodeGroupReadiness:   make(map[string]Readiness),
-		acceptableRanges:        make(map[string]AcceptableRange),
-		incorrectNodeGroupSizes: make(map[string]IncorrectNodeGroupSize),
-		unregisteredNodes:       make(map[string]UnregisteredNode),
-		candidatesForScaleDown:  make(map[string][]string),
-		backoff:                 backoff,
-		lastStatus:              emptyStatus,
-		logRecorder:             logRecorder,
+		scaleUpRequests:                 make(map[string]*ScaleUpRequest),
+		scaleDownRequests:               make([]*ScaleDownRequest, 0),
+		nodes:                           make([]*apiv1.Node, 0),
+		cloudProvider:                   cloudProvider,
+		config:                          config,
+		perNodeGroupReadiness:           make(map[string]Readiness),
+		acceptableRanges:                make(map[string]AcceptableRange),
+		incorrectNodeGroupSizes:         make(map[string]IncorrectNodeGroupSize),
+		unregisteredNodes:               make(map[string]UnregisteredNode),
+		candidatesForScaleDown:          make(map[string][]string),
+		backoff:                         backoff,
+		lastStatus:                      emptyStatus,
+		logRecorder:                     logRecorder,
+		cloudProviderNodeInstancesCache: utils.NewCloudProviderNodeInstancesCache(cloudProvider),
+		interrupt:                       make(chan struct{}),
 	}
+}
+
+// Start starts components running in background.
+func (csr *ClusterStateRegistry) Start() {
+	csr.cloudProviderNodeInstancesCache.Start(csr.interrupt)
+}
+
+// Stop stops components running in background.
+func (csr *ClusterStateRegistry) Stop() {
+	close(csr.interrupt)
 }
 
 // RegisterOrUpdateScaleUp registers scale-up for give node group or changes requested node increase
@@ -277,7 +292,7 @@ func (csr *ClusterStateRegistry) UpdateNodes(nodes []*apiv1.Node, nodeInfosForGr
 		return err
 	}
 
-	cloudProviderNodeInstances, err := getCloudProviderNodeInstances(csr.cloudProvider)
+	cloudProviderNodeInstances, err := csr.getCloudProviderNodeInstances()
 	if err != nil {
 		return err
 	}
@@ -919,16 +934,13 @@ func (csr *ClusterStateRegistry) GetUpcomingNodes() map[string]int {
 
 // getCloudProviderNodeInstances returns map keyed on node group id where value is list of node instances
 // as returned by NodeGroup.Nodes().
-func getCloudProviderNodeInstances(cloudProvider cloudprovider.CloudProvider) (map[string][]cloudprovider.Instance, error) {
-	allInstances := make(map[string][]cloudprovider.Instance)
-	for _, nodeGroup := range cloudProvider.NodeGroups() {
-		nodeGroupInstances, err := nodeGroup.Nodes()
-		if err != nil {
-			return nil, err
+func (csr *ClusterStateRegistry) getCloudProviderNodeInstances() (map[string][]cloudprovider.Instance, error) {
+	for _, nodeGroup := range csr.cloudProvider.NodeGroups() {
+		if csr.IsNodeGroupScalingUp(nodeGroup.Id()) {
+			csr.cloudProviderNodeInstancesCache.InvalidateCacheEntry(nodeGroup)
 		}
-		allInstances[nodeGroup.Id()] = nodeGroupInstances
 	}
-	return allInstances, nil
+	return csr.cloudProviderNodeInstancesCache.GetCloudProviderNodeInstances()
 }
 
 // Calculates which of the existing cloud provider nodes are not registered in Kubernetes.
@@ -1078,6 +1090,11 @@ func (csr *ClusterStateRegistry) GetCreatedNodesWithOutOfResourcesErrors() []*ap
 		}
 	}
 	return nodesWithCreateErrors
+}
+
+// RefreshCloudProviderNodeInstancesCache refreshes cloud provider node instances cache.
+func (csr *ClusterStateRegistry) RefreshCloudProviderNodeInstancesCache() {
+	csr.cloudProviderNodeInstancesCache.Refresh()
 }
 
 func fakeNode(instance cloudprovider.Instance) *apiv1.Node {
