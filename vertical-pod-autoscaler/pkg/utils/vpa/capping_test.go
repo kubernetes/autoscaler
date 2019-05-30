@@ -217,11 +217,16 @@ func TestApplyVpa(t *testing.T) {
 }
 
 type fakeLimitRangeCalculator struct {
-	limitRange apiv1.LimitRangeItem
+	containerLimitRange apiv1.LimitRangeItem
+	podLimitRange       apiv1.LimitRangeItem
 }
 
 func (nlrc *fakeLimitRangeCalculator) GetContainerLimitRangeItem(namespace string) (*apiv1.LimitRangeItem, error) {
-	return &nlrc.limitRange, nil
+	return &nlrc.containerLimitRange, nil
+}
+
+func (nlrc *fakeLimitRangeCalculator) GetPodLimitRangeItem(namespace string) (*apiv1.LimitRangeItem, error) {
+	return &nlrc.podLimitRange, nil
 }
 
 func TestApplyCapsToLimitRange(t *testing.T) {
@@ -276,7 +281,7 @@ func TestApplyCapsToLimitRange(t *testing.T) {
 		},
 	}
 
-	calculator := fakeLimitRangeCalculator{limitRange}
+	calculator := fakeLimitRangeCalculator{containerLimitRange: limitRange}
 	processor := NewCappingRecommendationProcessor(&calculator)
 	processedRecommendation, annotations, err := processor.Apply(&recommendation, nil, nil, &pod)
 	assert.NoError(t, err)
