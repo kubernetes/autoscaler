@@ -382,7 +382,7 @@ func installLimitRange(f *framework.Framework, minCpuLimit, minMemoryLimit, maxC
 	if minMemoryLimit != nil || minCpuLimit != nil {
 		lrItem := apiv1.LimitRangeItem{
 			Type: apiv1.LimitTypeContainer,
-			Max:  apiv1.ResourceList{},
+			Min:  apiv1.ResourceList{},
 		}
 		if minCpuLimit != nil {
 			lrItem.Min[apiv1.ResourceCPU] = *minCpuLimit
