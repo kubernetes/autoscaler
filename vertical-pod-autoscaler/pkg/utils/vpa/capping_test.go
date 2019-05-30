@@ -228,8 +228,10 @@ func TestApplyCapsToLimitRange(t *testing.T) {
 	limitRange := apiv1.LimitRangeItem{
 		Type: apiv1.LimitTypeContainer,
 		Max: apiv1.ResourceList{
-			apiv1.ResourceCPU:    resource.MustParse("1"),
-			apiv1.ResourceMemory: resource.MustParse("1G"),
+			apiv1.ResourceCPU: resource.MustParse("1"),
+		},
+		Min: apiv1.ResourceList{
+			apiv1.ResourceMemory: resource.MustParse("500M"),
 		},
 	}
 	recommendation := vpa_types.RecommendedPodResources{
@@ -238,7 +240,7 @@ func TestApplyCapsToLimitRange(t *testing.T) {
 				ContainerName: "container",
 				Target: apiv1.ResourceList{
 					apiv1.ResourceCPU:    resource.MustParse("2"),
-					apiv1.ResourceMemory: resource.MustParse("10G"),
+					apiv1.ResourceMemory: resource.MustParse("200M"),
 				},
 			},
 		},
@@ -266,17 +268,9 @@ func TestApplyCapsToLimitRange(t *testing.T) {
 		ContainerRecommendations: []vpa_types.RecommendedContainerResources{
 			{
 				ContainerName: "container",
-				LowerBound: apiv1.ResourceList{
-					apiv1.ResourceCPU:    *resource.NewQuantity(0, resource.DecimalSI),
-					apiv1.ResourceMemory: *resource.NewQuantity(0, resource.BinarySI),
-				},
 				Target: apiv1.ResourceList{
 					apiv1.ResourceCPU:    resource.MustParse("1000m"),
-					apiv1.ResourceMemory: resource.MustParse("1000000000000m"),
-				},
-				UpperBound: apiv1.ResourceList{
-					apiv1.ResourceCPU:    *resource.NewQuantity(0, resource.DecimalSI),
-					apiv1.ResourceMemory: *resource.NewQuantity(0, resource.BinarySI),
+					apiv1.ResourceMemory: resource.MustParse("500000000000m"),
 				},
 			},
 		},
@@ -286,6 +280,7 @@ func TestApplyCapsToLimitRange(t *testing.T) {
 	processor := NewCappingRecommendationProcessor(&calculator)
 	processedRecommendation, annotations, err := processor.Apply(&recommendation, nil, nil, &pod)
 	assert.NoError(t, err)
-	assert.Equal(t, map[string][]string{"container": {"changed CPU limit to fit within limit range", "changed memory limit to fit within limit range"}}, annotations)
+	assert.Contains(t, annotations, "container")
+	assert.ElementsMatch(t, []string{"cpu capped to fit Max in container LimitRange", "memory capped to fit Min in container LimitRange"}, annotations["container"])
 	assert.Equal(t, expectedRecommendation, *processedRecommendation)
 }
