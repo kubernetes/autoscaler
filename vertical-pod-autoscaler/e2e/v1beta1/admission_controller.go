@@ -145,8 +145,8 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 
 		// Max CPU limit is 300m and ratio is 1.5, so max request is 200m, while
 		// recommendation is 250m
-		// Max memory limit is 1T and ratio is 2., so max request is 0.5T
-		InstallLimitRangeWithMax(f, "300m", "1T")
+		// Max memory limit is 1Gi and ratio is 2., so max request is 0.5Gi
+		InstallLimitRangeWithMax(f, "300m", "1Gi")
 
 		ginkgo.By("Setting up a hamster deployment")
 		podList := startDeploymentPods(f, d)
@@ -158,8 +158,8 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		for _, pod := range podList.Items {
 			gomega.Expect(*pod.Spec.Containers[0].Resources.Requests.Cpu()).To(gomega.Equal(ParseQuantityOrDie("200m")))
 			gomega.Expect(*pod.Spec.Containers[0].Resources.Requests.Memory()).To(gomega.Equal(ParseQuantityOrDie("200Mi")))
-			gomega.Expect(*pod.Spec.Containers[0].Resources.Limits.Cpu()).To(gomega.BeNumerically("<=", ParseQuantityOrDie("300m")))
-			gomega.Expect(*pod.Spec.Containers[0].Resources.Limits.Memory()).To(gomega.BeNumerically("<=", ParseQuantityOrDie("1T")))
+			gomega.Expect(pod.Spec.Containers[0].Resources.Limits.Cpu().MilliValue()).To(gomega.BeNumerically("<=", 300))
+			gomega.Expect(pod.Spec.Containers[0].Resources.Limits.Memory().Value()).To(gomega.BeNumerically("<=", 1024*1024*1024))
 			gomega.Expect(float64(pod.Spec.Containers[0].Resources.Limits.Cpu().MilliValue()) / float64(pod.Spec.Containers[0].Resources.Requests.Cpu().MilliValue())).To(gomega.BeNumerically("~", 1.5))
 			gomega.Expect(float64(pod.Spec.Containers[0].Resources.Limits.Memory().Value()) / float64(pod.Spec.Containers[0].Resources.Requests.Memory().Value())).To(gomega.BeNumerically("~", 2.))
 		}
@@ -200,8 +200,8 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		for _, pod := range podList.Items {
 			gomega.Expect(*pod.Spec.Containers[0].Resources.Requests.Cpu()).To(gomega.Equal(ParseQuantityOrDie("250m")))
 			gomega.Expect(*pod.Spec.Containers[0].Resources.Requests.Memory()).To(gomega.Equal(ParseQuantityOrDie("125Mi")))
-			gomega.Expect(*pod.Spec.Containers[0].Resources.Limits.Cpu()).To(gomega.BeNumerically(">=", ParseQuantityOrDie("75m")))
-			gomega.Expect(*pod.Spec.Containers[0].Resources.Limits.Memory()).To(gomega.BeNumerically(">=", ParseQuantityOrDie("250Mi")))
+			gomega.Expect(pod.Spec.Containers[0].Resources.Limits.Cpu().MilliValue()).To(gomega.BeNumerically(">=", 75))
+			gomega.Expect(pod.Spec.Containers[0].Resources.Limits.Memory().Value()).To(gomega.BeNumerically(">=", 250*1024*1024))
 			gomega.Expect(float64(pod.Spec.Containers[0].Resources.Limits.Cpu().MilliValue()) / float64(pod.Spec.Containers[0].Resources.Requests.Cpu().MilliValue())).To(gomega.BeNumerically("~", 1.5))
 			gomega.Expect(float64(pod.Spec.Containers[0].Resources.Limits.Memory().Value()) / float64(pod.Spec.Containers[0].Resources.Requests.Memory().Value())).To(gomega.BeNumerically("~", 2.))
 		}
