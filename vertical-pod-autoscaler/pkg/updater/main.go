@@ -18,6 +18,7 @@ package main
 
 import (
 	"flag"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	"time"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
@@ -71,8 +72,14 @@ func main() {
 		target.NewVpaTargetSelectorFetcher(config, kubeClient, factory),
 		target.NewBeta1TargetSelectorFetcher(config),
 	)
+	var limitRangeCalculator limitrange.LimitRangeCalculator
+	limitRangeCalculator, err = limitrange.NewLimitsRangeCalculator(factory)
+	if err != nil {
+		klog.Errorf("Failed to create limitRangeCalculator, falling back to not checking limits. Error message: %s", err)
+		limitRangeCalculator = limitrange.NewNoopLimitsCalculator()
+	}
 	// TODO: use SharedInformerFactory in updater
-	updater, err := updater.NewUpdater(kubeClient, vpaClient, *minReplicas, *evictionToleranceFraction, vpa_api_util.NewCappingRecommendationProcessor(), nil, targetSelectorFetcher)
+	updater, err := updater.NewUpdater(kubeClient, vpaClient, *minReplicas, *evictionToleranceFraction, vpa_api_util.NewCappingRecommendationProcessor(limitRangeCalculator), nil, targetSelectorFetcher)
 	if err != nil {
 		klog.Fatalf("Failed to create updater: %v", err)
 	}
