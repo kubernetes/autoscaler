@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	"net/http"
 
 	"strings"
@@ -39,11 +40,12 @@ type AdmissionServer struct {
 	recommendationProvider RecommendationProvider
 	podPreProcessor        PodPreProcessor
 	vpaPreProcessor        VpaPreProcessor
+	limitsChecker          limitrange.LimitRangeCalculator
 }
 
 // NewAdmissionServer constructs new AdmissionServer
-func NewAdmissionServer(recommendationProvider RecommendationProvider, podPreProcessor PodPreProcessor, vpaPreProcessor VpaPreProcessor) *AdmissionServer {
-	return &AdmissionServer{recommendationProvider, podPreProcessor, vpaPreProcessor}
+func NewAdmissionServer(recommendationProvider RecommendationProvider, podPreProcessor PodPreProcessor, vpaPreProcessor VpaPreProcessor, limitsChecker limitrange.LimitRangeCalculator) *AdmissionServer {
+	return &AdmissionServer{recommendationProvider, podPreProcessor, vpaPreProcessor, limitsChecker}
 }
 
 type patchRecord struct {
@@ -73,10 +75,11 @@ func (s *AdmissionServer) getPatchesForPodResourceRequest(raw []byte, namespace 
 	if annotationsPerContainer == nil {
 		annotationsPerContainer = vpa_api_util.ContainerToAnnotationsMap{}
 	}
+
 	patches := []patchRecord{}
 	updatesAnnotation := []string{}
 	for i, containerResources := range containersResources {
-		newPatches, newUpdatesAnnotation := s.getContainerPatch(pod, i, "requests", annotationsPerContainer, containerResources)
+		newPatches, newUpdatesAnnotation := s.getContainerPatch(pod, i, annotationsPerContainer, containerResources)
 		patches = append(patches, newPatches...)
 		updatesAnnotation = append(updatesAnnotation, newUpdatesAnnotation)
 	}
@@ -120,7 +123,7 @@ func getAddResourceRequirementValuePatch(i int, kind string, resource v1.Resourc
 		Value: quantity.String()}
 }
 
-func (s *AdmissionServer) getContainerPatch(pod v1.Pod, i int, patchKind string, annotationsPerContainer vpa_api_util.ContainerToAnnotationsMap, containerResources ContainerResources) ([]patchRecord, string) {
+func (s *AdmissionServer) getContainerPatch(pod v1.Pod, i int, annotationsPerContainer vpa_api_util.ContainerToAnnotationsMap, containerResources vpa_api_util.ContainerResources) ([]patchRecord, string) {
 	var patches []patchRecord
 	// Add empty resources object if missing
 	if pod.Spec.Containers[i].Resources.Limits == nil &&
