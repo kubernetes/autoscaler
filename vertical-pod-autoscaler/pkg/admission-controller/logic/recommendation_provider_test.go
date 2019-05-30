@@ -18,21 +18,21 @@ package logic
 
 import (
 	"fmt"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	"math"
 	"testing"
 
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
 	target_mock "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/mock"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
+
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 )
 
 func parseLabelSelector(selector string) labels.Selector {
@@ -262,8 +262,8 @@ func TestUpdateResourceRequests(t *testing.T) {
 			labelSelector:    "app = testingApp",
 			annotations: vpa_api_util.ContainerToAnnotationsMap{
 				containerName: []string{
-					"CPU: failed to keep limit to request proportion of 10 to 1 with recommended request of 1Ei; doesn't fit in int64. Capping limit to MaxInt64 milliunits",
-					"memory: failed to keep limit to request proportion of 1000Mi to 100Mi with recommended request of 1Ei; doesn't fit in int64. Capping limit to MaxInt64 milliunits",
+					"cpu: failed to keep limit to request ratio; capping limit to int64",
+					"memory: failed to keep limit to request ratio; capping limit to int64",
 				},
 			},
 		},
@@ -293,24 +293,6 @@ func TestUpdateResourceRequests(t *testing.T) {
 				},
 			},
 		},
-		{
-			name:             "cap limits to max",
-			pod:              limitsMatchRequestsPod,
-			vpas:             []*vpa_types.VerticalPodAutoscaler{vpa},
-			expectedAction:   true,
-			expectedCPU:      resource.MustParse("1.5"),
-			expectedMem:      resource.MustParse("150Mi"),
-			expectedCPULimit: mustParseResourcePointer("1.5"),
-			expectedMemLimit: mustParseResourcePointer("150Mi"),
-			labelSelector:    "app = testingApp",
-			limitRange: &apiv1.LimitRangeItem{
-				Type: apiv1.LimitTypeContainer,
-				Max: apiv1.ResourceList{
-					apiv1.ResourceCPU:    resource.MustParse("1.5"),
-					apiv1.ResourceMemory: resource.MustParse("150Mi"),
-				},
-			},
-		},
 	}
 
 	for _, tc := range testCases {
@@ -330,7 +312,7 @@ func TestUpdateResourceRequests(t *testing.T) {
 
 			recommendationProvider := &recommendationProvider{
 				vpaLister:               vpaLister,
-				recommendationProcessor: api.NewCappingRecommendationProcessor(limitrange.NewNoopLimitsCalculator()),
+				recommendationProcessor: vpa_api_util.NewCappingRecommendationProcessor(limitrange.NewNoopLimitsCalculator()),
 				selectorFetcher:         mockSelectorFetcher,
 				limitsRangeCalculator: &fakeLimitRangeCalculator{
 					tc.limitRange,
@@ -366,7 +348,7 @@ func TestUpdateResourceRequests(t *testing.T) {
 				if tc.expectedMemLimit == nil {
 					assert.False(t, memLimitPresent, "expected no memory limit, got %s", memLimit.String())
 				} else {
-					if assert.True(t, memLimitPresent, "expected cpu limit, but it's missing") {
+					if assert.True(t, memLimitPresent, "expected memory limit, but it's missing") {
 						assert.Equal(t, tc.expectedMemLimit.MilliValue(), memLimit.MilliValue(), "memory limit doesn't match")
 					}
 				}
