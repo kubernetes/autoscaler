@@ -22,6 +22,7 @@ rules:
     resources:
       - pods
       - nodes
+      - limitranges
     verbs:
       - get
       - list
@@ -231,6 +232,7 @@ rules:
       - pods
       - configmaps
       - nodes
+      - limitranges
     verbs:
       - get
       - list
