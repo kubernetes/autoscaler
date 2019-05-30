@@ -47,12 +47,18 @@ func mustParseResourcePointer(val string) *resource.Quantity {
 }
 
 type fakeLimitRangeCalculator struct {
-	limitRange *apiv1.LimitRangeItem
-	err        error
+	containerLimitRange *apiv1.LimitRangeItem
+	containerErr        error
+	podLimitRange       *apiv1.LimitRangeItem
+	podErr              error
 }
 
 func (nlrc *fakeLimitRangeCalculator) GetContainerLimitRangeItem(namespace string) (*apiv1.LimitRangeItem, error) {
-	return nlrc.limitRange, nlrc.err
+	return nlrc.containerLimitRange, nlrc.containerErr
+}
+
+func (nlrc *fakeLimitRangeCalculator) GetPodLimitRangeItem(namespace string) (*apiv1.LimitRangeItem, error) {
+	return nlrc.podLimitRange, nlrc.podErr
 }
 
 func TestUpdateResourceRequests(t *testing.T) {
@@ -315,8 +321,8 @@ func TestUpdateResourceRequests(t *testing.T) {
 				recommendationProcessor: vpa_api_util.NewCappingRecommendationProcessor(limitrange.NewNoopLimitsCalculator()),
 				selectorFetcher:         mockSelectorFetcher,
 				limitsRangeCalculator: &fakeLimitRangeCalculator{
-					tc.limitRange,
-					tc.limitRangeCalcErr,
+					containerLimitRange: tc.limitRange,
+					containerErr:        tc.limitRangeCalcErr,
 				},
 			}
 
