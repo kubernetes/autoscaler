@@ -177,6 +177,7 @@ func (a *StaticAutoscaler) cleanUpIfRequired() {
 func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError {
 	a.cleanUpIfRequired()
 	a.processorCallbacks.reset()
+	a.clusterStateRegistry.PeriodicCleanup()
 
 	unschedulablePodLister := a.UnschedulablePodLister()
 	scheduledPodLister := a.ScheduledPodLister()
