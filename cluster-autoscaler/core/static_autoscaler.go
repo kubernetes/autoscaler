@@ -147,6 +147,12 @@ func NewStaticAutoscaler(
 	}
 }
 
+// Start starts components running in background.
+func (a *StaticAutoscaler) Start() error {
+	a.clusterStateRegistry.Start()
+	return nil
+}
+
 // cleanUpIfRequired removes ToBeDeleted taints added by a previous run of CA
 // the taints are removed only once per runtime
 func (a *StaticAutoscaler) cleanUpIfRequired() {
@@ -517,6 +523,8 @@ func (a *StaticAutoscaler) ExitCleanUp() {
 		return
 	}
 	utils.DeleteStatusConfigMap(a.AutoscalingContext.ClientSet, a.AutoscalingContext.ConfigNamespace)
+
+	a.clusterStateRegistry.Stop()
 }
 
 func (a *StaticAutoscaler) obtainNodeLists(cp cloudprovider.CloudProvider) ([]*apiv1.Node, []*apiv1.Node, errors.AutoscalerError) {
