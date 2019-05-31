@@ -17,6 +17,7 @@ limitations under the License.
 package cloudprovider
 
 import (
+	"fmt"
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -199,6 +200,17 @@ const (
 	// OtherErrorClass means some non-specific error situation occurred
 	OtherErrorClass InstanceErrorClass = 99
 )
+
+func (c InstanceErrorClass) String() string {
+	switch c {
+	case OutOfResourcesErrorClass:
+		return "OutOfResource"
+	case OtherErrorClass:
+		return "Other"
+	default:
+		return fmt.Sprintf("%d", c)
+	}
+}
 
 // PricingModel contains information about the node price and how it changes in time.
 type PricingModel interface {
