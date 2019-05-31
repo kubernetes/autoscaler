@@ -30,11 +30,17 @@ import (
 type LimitRangeCalculator interface {
 	// GetContainerLimitRangeItem returns LimitRangeItem that describes limitation on container limits in the given namespace.
 	GetContainerLimitRangeItem(namespace string) (*core.LimitRangeItem, error)
+	// GetPodLimitRangeItem returns LimitRangeItem that describes limitation on pod limits in the given namespace.
+	GetPodLimitRangeItem(namespace string) (*core.LimitRangeItem, error)
 }
 
 type noopLimitsRangeCalculator struct{}
 
 func (lc *noopLimitsRangeCalculator) GetContainerLimitRangeItem(namespace string) (*core.LimitRangeItem, error) {
+	return nil, nil
+}
+
+func (lc *noopLimitsRangeCalculator) GetPodLimitRangeItem(namespace string) (*core.LimitRangeItem, error) {
 	return nil, nil
 }
 
@@ -66,6 +72,14 @@ func NewNoopLimitsCalculator() *noopLimitsRangeCalculator {
 }
 
 func (lc *limitsChecker) GetContainerLimitRangeItem(namespace string) (*core.LimitRangeItem, error) {
+	return lc.getLimitRangeItem(namespace, core.LimitTypeContainer)
+}
+
+func (lc *limitsChecker) GetPodLimitRangeItem(namespace string) (*core.LimitRangeItem, error) {
+	return lc.getLimitRangeItem(namespace, core.LimitTypePod)
+}
+
+func (lc *limitsChecker) getLimitRangeItem(namespace string, limitType core.LimitType) (*core.LimitRangeItem, error) {
 	limitRanges, err := lc.limitRangeLister.LimitRanges(namespace).List(labels.Everything())
 	if err != nil {
 		return nil, fmt.Errorf("error loading limit ranges: %s", err)
@@ -102,10 +116,10 @@ func (lc *limitsChecker) GetContainerLimitRangeItem(namespace string) (*core.Lim
 		return q2
 	}
 
-	result := &core.LimitRangeItem{Type: core.LimitTypeContainer}
+	result := &core.LimitRangeItem{Type: limitType}
 	for _, lr := range limitRanges {
 		for _, lri := range lr.Spec.Limits {
-			if lri.Type == core.LimitTypeContainer && (lri.Max != nil || lri.Default != nil || lri.Min != nil) {
+			if lri.Type == limitType && (lri.Max != nil || lri.Default != nil || lri.Min != nil) {
 				if lri.Default != nil {
 					result.Default = lri.Default
 				}
