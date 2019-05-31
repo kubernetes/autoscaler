@@ -997,6 +997,12 @@ func (csr *ClusterStateRegistry) handleOutOfResourcesErrorsForNodeGroup(
 	_, currentUniqueErrorMessagesForErrorCode, currentErrorCodeToInstance := csr.buildInstanceToOutOfResourcesErrorCodeMappings(currentInstances)
 	previousInstanceToErrorCode, _, _ := csr.buildInstanceToOutOfResourcesErrorCodeMappings(previousInstances)
 
+	for errorCode, instances := range currentErrorCodeToInstance {
+		if len(instances) > 0 {
+			klog.V(4).Infof("Found %v instances with errorCode %v", len(instances), errorCode)
+		}
+	}
+
 	// If node group is scaling up and there are new node-create requests which cannot be satisfied because of
 	// out-of-resources errors we:
 	//  - emit event
