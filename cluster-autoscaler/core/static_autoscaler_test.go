@@ -159,7 +159,7 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 			return onScaleDownMock.ScaleDown(id, name)
 		},
 		nil, nil,
-		nil, map[string]*schedulernodeinfo.NodeInfo{"ng1": tni})
+		nil, map[string]*schedulernodeinfo.NodeInfo{"ng1": tni, "ng2": tni})
 	provider.AddNodeGroup("ng1", 1, 10, 1)
 	provider.AddNode("ng1", n1)
 	ng1 := reflect.ValueOf(provider.GetNodeGroup("ng1")).Interface().(*testprovider.TestNodeGroup)
@@ -270,8 +270,8 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 	daemonSetListerMock.On("List", labels.Everything()).Return([]*appsv1.DaemonSet{}, nil).Once()
 	podDisruptionBudgetListerMock.On("List").Return([]*policyv1.PodDisruptionBudget{}, nil).Once()
 
-	provider.AddNode("ng1", n3)
-	ng1.SetTargetSize(3)
+	provider.AddNodeGroup("ng2", 0, 10, 1)
+	provider.AddNode("ng2", n3)
 
 	err = autoscaler.RunOnce(time.Now().Add(4 * time.Hour))
 	assert.NoError(t, err)
@@ -283,7 +283,7 @@ func TestStaticAutoscalerRunOnce(t *testing.T) {
 	allNodeLister.SetNodes([]*apiv1.Node{n1, n2})
 	scheduledPodMock.On("List").Return([]*apiv1.Pod{p1}, nil).Once()
 	daemonSetListerMock.On("List", labels.Everything()).Return([]*appsv1.DaemonSet{}, nil).Once()
-	onScaleDownMock.On("ScaleDown", "ng1", "n3").Return(nil).Once()
+	onScaleDownMock.On("ScaleDown", "ng2", "n3").Return(nil).Once()
 
 	err = autoscaler.RunOnce(time.Now().Add(5 * time.Hour))
 	waitForDeleteToFinish(t, autoscaler.scaleDown)
@@ -934,6 +934,7 @@ func TestStaticAutoscalerOutOfResources(t *testing.T) {
 
 	now := time.Now()
 
+	clusterState.RefreshCloudProviderNodeInstancesCache()
 	// propagate nodes info in cluster state
 	clusterState.UpdateNodes([]*apiv1.Node{}, nil, now)
 
@@ -954,6 +955,8 @@ func TestStaticAutoscalerOutOfResources(t *testing.T) {
 		}))
 
 	// TODO assert that scaleup was failed (separately for QUOTA and STOCKOUT)
+
+	clusterState.RefreshCloudProviderNodeInstancesCache()
 
 	// propagate nodes info in cluster state again
 	// no changes in what provider returns
@@ -1010,6 +1013,8 @@ func TestStaticAutoscalerOutOfResources(t *testing.T) {
 			},
 		},
 	}, nil)
+
+	clusterState.RefreshCloudProviderNodeInstancesCache()
 
 	// update cluster state
 	clusterState.UpdateNodes([]*apiv1.Node{}, nil, now)

@@ -314,6 +314,11 @@ func run(healthCheck *metrics.HealthCheck) {
 	// Start updating health check endpoint.
 	healthCheck.StartMonitoring()
 
+	// Start components running in background.
+	if err := autoscaler.Start(); err != nil {
+		klog.Fatalf("Failed to autoscaler background components: %v", err)
+	}
+
 	// Autoscale ad infinitum.
 	for {
 		select {
