@@ -905,7 +905,7 @@ func TestGetMigNodesComplex(t *testing.T) {
 			buildManagedInstanceWithCurrentActionAndErrorResponsePart("europe-west1-b", "instance-creating-other-error", "CREATING", "SOME_ERROR", "Ojojojoj!"),
 			cloudprovider.InstanceCreating,
 			cloudprovider.OtherErrorClass,
-			"",
+			ErrorCodeOther,
 			"Ojojojoj!",
 		},
 		{
