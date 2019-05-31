@@ -17,10 +17,13 @@ limitations under the License.
 package api
 
 import (
-	"github.com/stretchr/testify/assert"
-	"k8s.io/apimachinery/pkg/api/resource"
 	"math"
 	"testing"
+
+	core "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func mustParseToPointer(str string) *resource.Quantity {
@@ -28,7 +31,7 @@ func mustParseToPointer(str string) *resource.Quantity {
 	return &val
 }
 
-func TestGetProportionalLimit(t *testing.T) {
+func TestGetProportionalResourceLimit(t *testing.T) {
 	tests := []struct {
 		name               string
 		originalLimit      *resource.Quantity
@@ -82,7 +85,7 @@ func TestGetProportionalLimit(t *testing.T) {
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			gotLimit, gotAnnotation := GetProportionalLimit(tc.originalLimit, tc.originalRequest, tc.recommendedRequest, tc.defaultLimit)
+			gotLimit, gotAnnotation := getProportionalResourceLimit(core.ResourceCPU, tc.originalLimit, tc.originalRequest, tc.recommendedRequest, tc.defaultLimit)
 			if tc.expectLimit == nil {
 				assert.Nil(t, gotLimit)
 			} else {

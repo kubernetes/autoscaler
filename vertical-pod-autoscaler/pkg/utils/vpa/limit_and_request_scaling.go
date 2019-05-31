@@ -18,27 +18,51 @@ package api
 
 import (
 	"fmt"
-	"k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/resource"
 	"math"
 	"math/big"
+
+	core "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 // ContainerResources holds resources request for container
 type ContainerResources struct {
-	Limits   v1.ResourceList
-	Requests v1.ResourceList
+	Limits   core.ResourceList
+	Requests core.ResourceList
 }
 
 func newContainerResources() ContainerResources {
 	return ContainerResources{
-		Requests: v1.ResourceList{},
-		Limits:   v1.ResourceList{},
+		Requests: core.ResourceList{},
+		Limits:   core.ResourceList{},
 	}
 }
 
 // GetProportionalLimit returns limit that will be in the same proportion to recommended request as original limit had to original request.
-func GetProportionalLimit(originalLimit, originalRequest, recommendedRequest, defaultLimit *resource.Quantity) (*resource.Quantity, string) {
+func GetProportionalLimit(originalLimit, originalRequest, recommendation, defaultLimit core.ResourceList) (core.ResourceList, []string) {
+	annotations := []string{}
+	cpuLimit, annotation := getProportionalResourceLimit(core.ResourceCPU, originalLimit.Cpu(), originalRequest.Cpu(), recommendation.Cpu(), defaultLimit.Cpu())
+	if annotation != "" {
+		annotations = append(annotations, annotation)
+	}
+	memLimit, annotation := getProportionalResourceLimit(core.ResourceMemory, originalLimit.Memory(), originalRequest.Memory(), recommendation.Memory(), defaultLimit.Memory())
+	if annotation != "" {
+		annotations = append(annotations, annotation)
+	}
+	if memLimit == nil && cpuLimit == nil {
+		return nil, []string{}
+	}
+	result := core.ResourceList{}
+	if cpuLimit != nil {
+		result[core.ResourceCPU] = *cpuLimit
+	}
+	if memLimit != nil {
+		result[core.ResourceMemory] = *memLimit
+	}
+	return result, annotations
+}
+
+func getProportionalResourceLimit(resourceName core.ResourceName, originalLimit, originalRequest, recommendedRequest, defaultLimit *resource.Quantity) (*resource.Quantity, string) {
 	if originalLimit == nil || originalLimit.Value() == 0 && defaultLimit != nil {
 		originalLimit = defaultLimit
 	}
@@ -62,8 +86,25 @@ func GetProportionalLimit(originalLimit, originalRequest, recommendedRequest, de
 		return result, ""
 	}
 	return result, fmt.Sprintf(
-		"failed to keep limit to request proportion of %s to %s with recommended request of %s; doesn't fit in int64. Capping limit to MaxInt64 milliunits",
-		originalLimit, originalRequest, recommendedRequest)
+		"%v: failed to keep limit to request ratio; capping limit to int64", resourceName)
+}
+
+// GetBoundaryRequest returns the boundary (min/max) request that can be specified with
+// preserving the original limit to request ratio. Returns nil if no boundary exists
+func GetBoundaryRequest(originalRequest, originalLimit, boundaryLimit, defaultLimit *resource.Quantity) *resource.Quantity {
+	if originalLimit == nil || originalLimit.Value() == 0 && defaultLimit != nil {
+		originalLimit = defaultLimit
+	}
+	// originalLimit not set, no boundary
+	if originalLimit == nil || originalLimit.Value() == 0 {
+		return nil
+	}
+	// originalLimit set but originalRequest not set - K8s will treat the pod as if they were equal
+	if originalRequest == nil || originalRequest.Value() == 0 {
+		return boundaryLimit
+	}
+	result, _ := scaleQuantityProportionally(originalRequest /* scaledQuantity */, originalLimit /*scaleBase*/, boundaryLimit /*scaleResult*/)
+	return result
 }
 
 // scaleQuantityProportionally returns value which has the same proportion to scaledQuantity as scaleResult has to scaleBase
@@ -79,32 +120,4 @@ func scaleQuantityProportionally(scaledQuantity, scaleBase, scaleResult *resourc
 		return resource.NewMilliQuantity(scaledOriginal.Int64(), scaledQuantity.Format), false
 	}
 	return resource.NewMilliQuantity(math.MaxInt64, scaledQuantity.Format), true
-}
-
-func proportionallyCapLimitToMax(recommendedRequest, recommendedLimit, maxLimit *resource.Quantity) (request, limit *resource.Quantity) {
-	if recommendedLimit == nil || maxLimit == nil || maxLimit.IsZero() {
-		return recommendedRequest, recommendedLimit
-	}
-	if recommendedLimit.Cmp(*maxLimit) <= 0 {
-		return recommendedRequest, recommendedLimit
-	}
-	scaledRequest, _ := scaleQuantityProportionally(recommendedRequest, recommendedLimit, maxLimit)
-	return scaledRequest, maxLimit
-}
-
-// ProportionallyCapResourcesToMaxLimit caps CPU and memory limit to maximum and scales requests to maintain limit/request ratio.
-func ProportionallyCapResourcesToMaxLimit(recommendedRequests v1.ResourceList, cpuLimit, memLimit, maxCpuLimit, maxMemLimit *resource.Quantity) ContainerResources {
-	scaledCpuRequest, scaledCpuLimit := proportionallyCapLimitToMax(recommendedRequests.Cpu(), cpuLimit, maxCpuLimit)
-	scaledMemRequest, scaledMemLimit := proportionallyCapLimitToMax(recommendedRequests.Memory(), memLimit, maxMemLimit)
-	result := newContainerResources()
-
-	result.Requests[v1.ResourceCPU] = *scaledCpuRequest
-	result.Requests[v1.ResourceMemory] = *scaledMemRequest
-	if scaledCpuLimit != nil {
-		result.Limits[v1.ResourceCPU] = *scaledCpuLimit
-	}
-	if scaledMemLimit != nil {
-		result.Limits[v1.ResourceMemory] = *scaledMemLimit
-	}
-	return result
 }
