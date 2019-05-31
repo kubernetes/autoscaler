@@ -23,25 +23,14 @@ import (
 	policyv1 "k8s.io/api/policy/v1beta1"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
-	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 )
 
-// GetRequiredPodsForNode returns a list of pods that would appear on the node if the
+// getRequiredPodsForNode returns a list of pods that would appear on the node if the
 // node was just created (like daemonset and manifest-run pods). It reuses kubectl
 // drain command to get the list.
-func GetRequiredPodsForNode(nodename string, listers kube_util.ListerRegistry) ([]*apiv1.Pod, errors.AutoscalerError) {
-	pods, err := listers.ScheduledPodLister().List()
-	if err != nil {
-		return []*apiv1.Pod{}, errors.ToAutoscalerError(errors.ApiCallError, err)
-	}
-	allPods := make([]*apiv1.Pod, 0)
-	for _, p := range pods {
-		if p.Spec.NodeName == nodename {
-			allPods = append(allPods, p)
-		}
-	}
-
+func getRequiredPodsForNode(nodename string, podsForNodes map[string][]*apiv1.Pod) ([]*apiv1.Pod, errors.AutoscalerError) {
+	allPods := podsForNodes[nodename]
 	podsToRemoveList, err := drain.GetPodsForDeletionOnNodeDrain(
 		allPods,
 		[]*policyv1.PodDisruptionBudget{}, // PDBs are irrelevant when considering new node.
@@ -75,8 +64,8 @@ func GetRequiredPodsForNode(nodename string, listers kube_util.ListerRegistry) (
 }
 
 // BuildNodeInfoForNode build a NodeInfo structure for the given node as if the node was just created.
-func BuildNodeInfoForNode(node *apiv1.Node, listers kube_util.ListerRegistry) (*schedulernodeinfo.NodeInfo, errors.AutoscalerError) {
-	requiredPods, err := GetRequiredPodsForNode(node.Name, listers)
+func BuildNodeInfoForNode(node *apiv1.Node, podsForNodes map[string][]*apiv1.Pod) (*schedulernodeinfo.NodeInfo, errors.AutoscalerError) {
+	requiredPods, err := getRequiredPodsForNode(node.Name, podsForNodes)
 	if err != nil {
 		return nil, err
 	}
