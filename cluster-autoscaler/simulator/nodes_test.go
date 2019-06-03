@@ -21,26 +21,26 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/kubernetes/pkg/kubelet/types"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestRequiredPodsForNode(t *testing.T) {
-	nodeName := "node1"
-	pod1 := apiv1.Pod{
+	nodeName1 := "node1"
+	nodeName2 := "node2"
+	pod1 := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: "default",
 			Name:      "pod1",
 			SelfLink:  "pod1",
 		},
 		Spec: apiv1.PodSpec{
-			NodeName: nodeName,
+			NodeName: nodeName1,
 		},
 	}
 	// Manifest pod.
-	pod2 := apiv1.Pod{
+	pod2 := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "pod2",
 			Namespace: "kube-system",
@@ -50,14 +50,25 @@ func TestRequiredPodsForNode(t *testing.T) {
 			},
 		},
 		Spec: apiv1.PodSpec{
-			NodeName: nodeName,
+			NodeName: nodeName1,
+		},
+	}
+	pod3 := &apiv1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "pod2",
+			Namespace: "kube-system",
+			SelfLink:  "pod2",
+			Annotations: map[string]string{
+				types.ConfigMirrorAnnotationKey: "something",
+			},
+		},
+		Spec: apiv1.PodSpec{
+			NodeName: nodeName2,
 		},
 	}
 
-	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{&pod1, &pod2})
-	registry := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil)
-
-	pods, err := GetRequiredPodsForNode(nodeName, registry)
+	podsForNodes := map[string][]*apiv1.Pod{nodeName1: {pod1, pod2}, nodeName2: {pod3}}
+	pods, err := getRequiredPodsForNode(nodeName1, podsForNodes)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(pods))
 	assert.Equal(t, "pod2", pods[0].Name)
