@@ -286,10 +286,24 @@ func getMaxAllowedRecommendation(recommendation apiv1.ResourceList, container ap
 
 func getMinAllowedRecommendation(recommendation apiv1.ResourceList, container apiv1.Container,
 	podLimitRange *apiv1.LimitRangeItem) apiv1.ResourceList {
+	// Both limit and request must be higher than min set in the limit range:
+	// https://github.com/kubernetes/kubernetes/blob/016e9d5c06089774c6286fd825302cbae661a446/plugin/pkg/admission/limitranger/admission.go#L303
 	if podLimitRange == nil {
 		return apiv1.ResourceList{}
 	}
-	return getBoundaryRecommendation(recommendation, container, podLimitRange.Min, podLimitRange.Default)
+	minForLimit := getBoundaryRecommendation(recommendation, container, podLimitRange.Min, podLimitRange.Default)
+	minForRequest := podLimitRange.Min
+	if minForRequest == nil {
+		return minForLimit
+	}
+	result := minForLimit
+	if minForRequest.Cpu() != nil && minForRequest.Cpu().Cmp(*minForLimit.Cpu()) > 0 {
+		result[apiv1.ResourceCPU] = *minForRequest.Cpu()
+	}
+	if minForRequest.Memory() != nil && minForRequest.Memory().Cmp(*minForLimit.Memory()) > 0 {
+		result[apiv1.ResourceMemory] = *minForRequest.Memory()
+	}
+	return result
 }
 
 func getBoundaryRecommendation(recommendation apiv1.ResourceList, container apiv1.Container,
@@ -311,7 +325,7 @@ func applyPodLimitRange(resources []vpa_types.RecommendedContainerResources,
 	maxLimit := limitRange.Max[resourceName]
 	defaultLimit := limitRange.Default[resourceName]
 
-	var sumLimit resource.Quantity
+	var sumLimit, sumRecommendation resource.Quantity
 	for i, container := range pod.Spec.Containers {
 		if i >= len(resources) {
 			continue
@@ -323,10 +337,21 @@ func applyPodLimitRange(resources []vpa_types.RecommendedContainerResources,
 		if containerLimit != nil {
 			sumLimit.Add(*containerLimit)
 		}
+		sumRecommendation.Add(recommendation)
 	}
-	if minLimit.Cmp(sumLimit) <= 0 && (maxLimit.IsZero() || maxLimit.Cmp(sumLimit) >= 0) {
+	if minLimit.Cmp(sumLimit) <= 0 && minLimit.Cmp(sumRecommendation) <= 0 && (maxLimit.IsZero() || maxLimit.Cmp(sumLimit) >= 0) {
 		return resources
 	}
+
+	if minLimit.Cmp(sumRecommendation) > 0 {
+		for i := range pod.Spec.Containers {
+			limit := resources[i].Target[resourceName]
+			cappedContainerRequest, _ := scaleQuantityProportionally(&limit, &sumRecommendation, &minLimit)
+			resources[i].Target[resourceName] = *cappedContainerRequest
+		}
+		return resources
+	}
+
 	var targetTotalLimit resource.Quantity
 	if minLimit.Cmp(sumLimit) > 0 {
 		targetTotalLimit = minLimit
