@@ -12,20 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM golang:1.11.2
-ENV GOPATH /gopath
-ENV PATH $GOPATH/bin:$PATH
-ADD ./cluster-autoscaler/ $GOPATH/src/k8s.io/autoscaler/cluster-autoscaler/
-RUN go get github.com/tools/godep
-RUN rm -Rf $GOPATH/src/k8s.io/autoscaler/cluster-autoscaler/cluster-autoscaler && cd $GOPATH/src/k8s.io/autoscaler/cluster-autoscaler && GOOS=linux make build-binary
-RUN chmod 755 $GOPATH/src/k8s.io/autoscaler/cluster-autoscaler/cluster-autoscaler
-RUN cp $GOPATH/src/k8s.io/autoscaler/cluster-autoscaler/cluster-autoscaler /cluster-autoscaler
-RUN cp $GOPATH/src/k8s.io/autoscaler/cluster-autoscaler/run.sh /run.sh
+ARG BASEIMAGE=k8s.gcr.io/debian-base-amd64:v1.0.0
+FROM $BASEIMAGE
+LABEL maintainer="Marcin Wielgus <mwielgus@google.com>"
 
-FROM k8s.gcr.io/debian-base-amd64:v1.0.0
 ENV DEBIAN_FRONTEND noninteractive
-ADD cluster-autoscaler cluster-autoscaler
 RUN clean-install ca-certificates tzdata
-ADD cluster-autoscaler/run.sh /run.sh
+
+ADD cluster-autoscaler cluster-autoscaler
+ADD run.sh run.sh
 
 CMD ./run.sh
