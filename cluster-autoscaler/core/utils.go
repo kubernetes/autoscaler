@@ -18,6 +18,7 @@ package core
 
 import (
 	"fmt"
+	"k8s.io/apimachinery/pkg/types"
 	"math/rand"
 	"reflect"
 	"time"
@@ -150,40 +151,89 @@ func filterOutExpendablePods(pods []*apiv1.Pod, expendablePodsPriorityCutoff int
 	return result
 }
 
-// checkPodsSchedulableOnNode checks if pods can be scheduled on the given node.
-func checkPodsSchedulableOnNode(context *context.AutoscalingContext, pods []*apiv1.Pod, nodeGroupId string, nodeInfo *schedulernodeinfo.NodeInfo) map[*apiv1.Pod]*simulator.PredicateError {
-	schedulingErrors := map[*apiv1.Pod]*simulator.PredicateError{}
-	loggingQuota := glogx.PodsLoggingQuota()
-	podSchedulable := make(podSchedulableMap)
+type equivalenceGroupId int
+
+type podsSchedulableOnNodeChecker struct {
+	context               *context.AutoscalingContext
+	pods                  []*apiv1.Pod
+	podsEquivalenceGroups map[types.UID]equivalenceGroupId
+}
+
+func newPodsSchedulableOnNodeChecker(context *context.AutoscalingContext, pods []*apiv1.Pod) *podsSchedulableOnNodeChecker {
+	checker := podsSchedulableOnNodeChecker{
+		context:               context,
+		pods:                  pods,
+		podsEquivalenceGroups: make(map[types.UID]equivalenceGroupId),
+	}
+
+	// compute the podsEquivalenceGroups
+	var nextGroupId equivalenceGroupId
+	type equivalanceGroup struct {
+		id           equivalenceGroupId
+		representant *apiv1.Pod
+	}
+
+	equivalenceGroupsByController := make(map[types.UID][]equivalanceGroup)
 
 	for _, pod := range pods {
-		// Check if pod isn't repeated before overwriting result for it.
-		if _, repeated := schedulingErrors[pod]; repeated {
-			// This shouldn't really happen.
-			klog.Warningf("Pod %v appears multiple time on pods list, will only count it once in scale-up simulation", pod)
+		controllerRef := drain.ControllerRef(pod)
+		if controllerRef == nil {
+			checker.podsEquivalenceGroups[pod.UID] = nextGroupId
+			nextGroupId++
+			continue
 		}
-		// Try to get result from cache.
-		err, found := podSchedulable.get(pod)
-		if found {
-			schedulingErrors[pod] = err
-			if err != nil {
-				glogx.V(2).UpTo(loggingQuota).Infof("Pod %s can't be scheduled on %s. Used cached predicate check results", pod.Name, nodeGroupId)
+
+		matchingFound := false
+		for _, g := range equivalenceGroupsByController[controllerRef.UID] {
+			if reflect.DeepEqual(pod.Labels, g.representant.Labels) && apiequality.Semantic.DeepEqual(pod.Spec, g.representant.Spec) {
+				matchingFound = true
+				checker.podsEquivalenceGroups[pod.UID] = g.id
+				break
 			}
+		}
+
+		if !matchingFound {
+			newGroup := equivalanceGroup{
+				id:           nextGroupId,
+				representant: pod,
+			}
+			equivalenceGroupsByController[controllerRef.UID] = append(equivalenceGroupsByController[controllerRef.UID], newGroup)
+			checker.podsEquivalenceGroups[pod.UID] = newGroup.id
+			nextGroupId++
+		}
+	}
+
+	return &checker
+}
+
+// checkPodsSchedulableOnNode checks if pods can be scheduled on the given node.
+func (c *podsSchedulableOnNodeChecker) checkPodsSchedulableOnNode(nodeGroupId string, nodeInfo *schedulernodeinfo.NodeInfo) map[*apiv1.Pod]*simulator.PredicateError {
+	loggingQuota := glogx.PodsLoggingQuota()
+	schedulingErrors := make(map[equivalenceGroupId]*simulator.PredicateError)
+
+	for _, pod := range c.pods {
+		equivalenceGroup := c.podsEquivalenceGroups[pod.UID]
+		err, found := schedulingErrors[equivalenceGroup]
+		if found && err != nil {
+			glogx.V(2).UpTo(loggingQuota).Infof("Pod %s can't be scheduled on %s. Used cached predicate check results", pod.Name, nodeGroupId)
 		}
 		// Not found in cache, have to run the predicates.
 		if !found {
-			err = context.PredicateChecker.CheckPredicates(pod, nil, nodeInfo)
-			podSchedulable.set(pod, err)
-			schedulingErrors[pod] = err
+			err = c.context.PredicateChecker.CheckPredicates(pod, nil, nodeInfo)
+			schedulingErrors[equivalenceGroup] = err
 			if err != nil {
 				// Always log for the first pod in a controller.
 				klog.V(2).Infof("Pod %s can't be scheduled on %s, predicate failed: %v", pod.Name, nodeGroupId, err.VerboseError())
 			}
 		}
 	}
-
 	glogx.V(2).Over(loggingQuota).Infof("%v other pods can't be scheduled on %s.", -loggingQuota.Left(), nodeGroupId)
-	return schedulingErrors
+
+	schedulingErrorsByPod := make(map[*apiv1.Pod]*simulator.PredicateError)
+	for _, pod := range c.pods {
+		schedulingErrorsByPod[pod] = schedulingErrors[c.podsEquivalenceGroups[pod.UID]]
+	}
+	return schedulingErrorsByPod
 }
 
 // getNodeInfosForGroups finds NodeInfos for all node groups used to manage the given nodes. It also returns a node group to sample node mapping.
