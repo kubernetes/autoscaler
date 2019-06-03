@@ -758,7 +758,9 @@ func TestScaleUpAutoprovisionedNodeGroup(t *testing.T) {
 		NodeAutoprovisioningEnabled:      true,
 		MaxAutoprovisionedNodeGroupCount: 10,
 	}
-	context := NewScaleTestAutoscalingContext(options, fakeClient, nil, provider, nil)
+	podLister := kube_util.NewTestPodLister([]*apiv1.Pod{})
+	listers := kube_util.NewListerRegistry(nil, nil, podLister, nil, nil, nil, nil, nil, nil, nil)
+	context := NewScaleTestAutoscalingContext(options, fakeClient, listers, provider, nil)
 
 	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
 
