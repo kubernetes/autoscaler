@@ -38,12 +38,30 @@ git clone https://github.com/$YOUR_GITHUB_USERNAME/autoscaler.git
 cd autoscaler
 ```
 
-## Building the Cluster autoscaler
+## Building the Cluster autoscaler from master
 
 ```shell
 # Replace "$YOUR_GITHUB_USERNAME" below with your github username
 git clone https://github.com/$YOUR_GITHUB_USERNAME/autoscaler.git
-cd autoscaler
+# Replace "GO_Versiom" below with the version of go you want to use(eg. go1.11)
+wget https://dl.google.com/go/$GO_Version.linux-amd64.tar.gz
+# Extract the tar file
+tar -xvf go1.11.linux-amd64.tar.gz
+# Move go to /usr/local
+mv go /usr/local
+# Set GOROOT,GOPATH,PATH and add to profile
+export GOROOT=/usr/local/go
+export GOPATH=$HOME/go
+export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+source ~/.profile
+# Create directory $GOPATH/src/k8s.io and copy autoscaler cloned earlier
+cp -r ./autoscaler/  $GOPATH/src/k8s.io/
+# get godep and move to the copied location 
+go get github.com/tools/godep
+cd $GOPATH/src/k8s.io/autoscaler/cluster-autoscaler 
+# start the build
+GOOS=linux make build-binary
+#Run the Dockerfile from $GOPATH/src/k8s.io/autoscaler directory
 docker build -t autoscaler cluster-autoscaler/Dockerfile .
 ```
 
