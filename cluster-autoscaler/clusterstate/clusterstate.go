@@ -313,7 +313,7 @@ func (csr *ClusterStateRegistry) UpdateNodes(nodes []*apiv1.Node, nodeInfosForGr
 	// updateScaleRequests relies on acceptableRanges being up to date
 	csr.updateAcceptableRanges(targetSizes)
 	csr.updateScaleRequests(currentTime)
-	csr.handleOutOfResourcesErrors(currentTime)
+	csr.handleInstanceCreationErrors(currentTime)
 	//  recalculate acceptable ranges after removing timed out requests
 	csr.updateAcceptableRanges(targetSizes)
 	csr.updateIncorrectNodeGroupSizes(currentTime)
@@ -976,11 +976,11 @@ func (csr *ClusterStateRegistry) GetClusterSize() (currentSize, targetSize int) 
 	return currentSize, targetSize
 }
 
-func (csr *ClusterStateRegistry) handleOutOfResourcesErrors(currentTime time.Time) {
+func (csr *ClusterStateRegistry) handleInstanceCreationErrors(currentTime time.Time) {
 	nodeGroups := csr.cloudProvider.NodeGroups()
 
 	for _, nodeGroup := range nodeGroups {
-		csr.handleOutOfResourcesErrorsForNodeGroup(
+		csr.handleInstanceCreationErrorsForNodeGroup(
 			nodeGroup,
 			csr.cloudProviderNodeInstances[nodeGroup.Id()],
 			csr.previousCloudProviderNodeInstances[nodeGroup.Id()],
@@ -988,18 +988,18 @@ func (csr *ClusterStateRegistry) handleOutOfResourcesErrors(currentTime time.Tim
 	}
 }
 
-func (csr *ClusterStateRegistry) handleOutOfResourcesErrorsForNodeGroup(
+func (csr *ClusterStateRegistry) handleInstanceCreationErrorsForNodeGroup(
 	nodeGroup cloudprovider.NodeGroup,
 	currentInstances []cloudprovider.Instance,
 	previousInstances []cloudprovider.Instance,
 	currentTime time.Time) {
 
-	_, currentUniqueErrorMessagesForErrorCode, currentErrorCodeToInstance := csr.buildInstanceToOutOfResourcesErrorCodeMappings(currentInstances)
-	previousInstanceToErrorCode, _, _ := csr.buildInstanceToOutOfResourcesErrorCodeMappings(previousInstances)
+	_, currentUniqueErrorMessagesForErrorCode, currentErrorCodeToInstance := csr.buildInstanceToErrorCodeMappings(currentInstances)
+	previousInstanceToErrorCode, _, _ := csr.buildInstanceToErrorCodeMappings(previousInstances)
 
 	for errorCode, instances := range currentErrorCodeToInstance {
 		if len(instances) > 0 {
-			klog.V(4).Infof("Found %v instances with errorCode %v", len(instances), errorCode)
+			klog.V(4).Infof("Found %v instances with errorCode %v in nodeGroup %v", len(instances), errorCode, nodeGroup.Id())
 		}
 	}
 
@@ -1030,7 +1030,7 @@ func (csr *ClusterStateRegistry) handleOutOfResourcesErrorsForNodeGroup(
 
 			// Decrease the scale up request by the number of deleted nodes
 			csr.registerOrUpdateScaleUpNoLock(nodeGroup, -len(unseenInstanceIds), currentTime)
-			csr.registerFailedScaleUpNoLock(nodeGroup, metrics.FailedScaleUpReason(errorCode), cloudprovider.OutOfResourcesErrorClass, errorCode, currentTime)
+			csr.registerFailedScaleUpNoLock(nodeGroup, metrics.FailedScaleUpReason(errorCode.code), errorCode.class, errorCode.code, currentTime)
 		}
 	}
 }
@@ -1051,24 +1051,32 @@ func (csr *ClusterStateRegistry) buildErrorMessageEventString(uniqErrorMessages 
 	return sb.String()
 }
 
-func (csr *ClusterStateRegistry) buildInstanceToOutOfResourcesErrorCodeMappings(instances []cloudprovider.Instance) (instanceToErrorCode map[string]string, uniqueErrorMessagesForErrorCode map[string][]string, errorCodeToInstance map[string][]cloudprovider.Instance) {
-	instanceToErrorCode = make(map[string]string)
-	uniqueErrorMessagesForErrorCode = make(map[string][]string)
-	errorCodeToInstance = make(map[string][]cloudprovider.Instance)
+type errorCode struct {
+	code  string
+	class cloudprovider.InstanceErrorClass
+}
 
-	uniqErrorMessagesForErrorCodeTmp := make(map[string]map[string]bool)
+func (c errorCode) String() string {
+	return fmt.Sprintf("%v.%v", c.class, c.code)
+}
+
+func (csr *ClusterStateRegistry) buildInstanceToErrorCodeMappings(instances []cloudprovider.Instance) (instanceToErrorCode map[string]errorCode, uniqueErrorMessagesForErrorCode map[errorCode][]string, errorCodeToInstance map[errorCode][]cloudprovider.Instance) {
+	instanceToErrorCode = make(map[string]errorCode)
+	uniqueErrorMessagesForErrorCode = make(map[errorCode][]string)
+	errorCodeToInstance = make(map[errorCode][]cloudprovider.Instance)
+
+	uniqErrorMessagesForErrorCodeTmp := make(map[errorCode]map[string]bool)
 	for _, instance := range instances {
 		if instance.Status != nil && instance.Status.State == cloudprovider.InstanceCreating && instance.Status.ErrorInfo != nil {
 			errorInfo := instance.Status.ErrorInfo
-			if errorInfo.ErrorClass == cloudprovider.OutOfResourcesErrorClass {
+			errorCode := errorCode{errorInfo.ErrorCode, errorInfo.ErrorClass}
 
-				if _, found := uniqErrorMessagesForErrorCodeTmp[errorInfo.ErrorCode]; !found {
-					uniqErrorMessagesForErrorCodeTmp[errorInfo.ErrorCode] = make(map[string]bool)
-				}
-				instanceToErrorCode[instance.Id] = errorInfo.ErrorCode
-				uniqErrorMessagesForErrorCodeTmp[errorInfo.ErrorCode][errorInfo.ErrorMessage] = true
-				errorCodeToInstance[errorInfo.ErrorCode] = append(errorCodeToInstance[errorInfo.ErrorCode], instance)
+			if _, found := uniqErrorMessagesForErrorCodeTmp[errorCode]; !found {
+				uniqErrorMessagesForErrorCodeTmp[errorCode] = make(map[string]bool)
 			}
+			instanceToErrorCode[instance.Id] = errorCode
+			uniqErrorMessagesForErrorCodeTmp[errorCode][errorInfo.ErrorMessage] = true
+			errorCodeToInstance[errorCode] = append(errorCodeToInstance[errorCode], instance)
 		}
 	}
 
@@ -1088,7 +1096,7 @@ func (csr *ClusterStateRegistry) GetCreatedNodesWithOutOfResourcesErrors() []*ap
 
 	nodesWithCreateErrors := make([]*apiv1.Node, 0, 0)
 	for _, nodeGroupInstances := range csr.cloudProviderNodeInstances {
-		_, _, instancesByErrorCode := csr.buildInstanceToOutOfResourcesErrorCodeMappings(nodeGroupInstances)
+		_, _, instancesByErrorCode := csr.buildInstanceToErrorCodeMappings(nodeGroupInstances)
 		for _, instances := range instancesByErrorCode {
 			for _, instance := range instances {
 				nodesWithCreateErrors = append(nodesWithCreateErrors, fakeNode(instance))
