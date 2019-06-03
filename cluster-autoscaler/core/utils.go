@@ -245,6 +245,11 @@ func getNodeInfosForGroups(nodes []*apiv1.Node, nodeInfoCache map[string]*schedu
 	result := make(map[string]*schedulernodeinfo.NodeInfo)
 	seenGroups := make(map[string]bool)
 
+	podsForNodes, err := getPodsForNodes(listers)
+	if err != nil {
+		return map[string]*schedulernodeinfo.NodeInfo{}, err
+	}
+
 	// processNode returns information whether the nodeTemplate was generated and if there was an error.
 	processNode := func(node *apiv1.Node) (bool, string, errors.AutoscalerError) {
 		nodeGroup, err := cloudProvider.NodeGroupForNode(node)
@@ -257,7 +262,7 @@ func getNodeInfosForGroups(nodes []*apiv1.Node, nodeInfoCache map[string]*schedu
 		id := nodeGroup.Id()
 		if _, found := result[id]; !found {
 			// Build nodeInfo.
-			nodeInfo, err := simulator.BuildNodeInfoForNode(node, listers)
+			nodeInfo, err := simulator.BuildNodeInfoForNode(node, podsForNodes)
 			if err != nil {
 				return false, "", err
 			}
@@ -344,6 +349,18 @@ func getNodeInfosForGroups(nodes []*apiv1.Node, nodeInfoCache map[string]*schedu
 	}
 
 	return result, nil
+}
+
+func getPodsForNodes(listers kube_util.ListerRegistry) (map[string][]*apiv1.Pod, errors.AutoscalerError) {
+	pods, err := listers.ScheduledPodLister().List()
+	if err != nil {
+		return nil, errors.ToAutoscalerError(errors.ApiCallError, err)
+	}
+	podsForNodes := map[string][]*apiv1.Pod{}
+	for _, p := range pods {
+		podsForNodes[p.Spec.NodeName] = append(podsForNodes[p.Spec.NodeName], p)
+	}
+	return podsForNodes, nil
 }
 
 // getNodeInfoFromTemplate returns NodeInfo object built base on TemplateNodeInfo returned by NodeGroup.TemplateNodeInfo().
