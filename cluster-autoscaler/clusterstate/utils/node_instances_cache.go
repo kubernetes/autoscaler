@@ -92,8 +92,26 @@ func (cache *CloudProviderNodeInstancesCache) removeEntriesForNonExistingNodeGro
 
 // GetCloudProviderNodeInstances returns cloud provider node instances for all node groups returned by cloud provider.
 func (cache *CloudProviderNodeInstancesCache) GetCloudProviderNodeInstances() (map[string][]cloudprovider.Instance, error) {
+	nodeGroups := cache.cloudProvider.NodeGroups()
+
+	// Fetch missing node instances.
+	var wg sync.WaitGroup
+	for _, nodeGroup := range nodeGroups {
+		nodeGroup := nodeGroup
+		if _, found := cache.getCacheEntryLocked(nodeGroup); !found {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				_, err := cache.fetchCloudProviderNodeInstancesForNodeGroup(nodeGroup)
+				klog.Errorf("Failed to fetch cloud provider node instances for %v, error %v", nodeGroup.Id(), err)
+			}()
+		}
+	}
+	wg.Wait()
+
+	// Get data from cache.
 	results := map[string][]cloudprovider.Instance{}
-	for _, nodeGroup := range cache.cloudProvider.NodeGroups() {
+	for _, nodeGroup := range nodeGroups {
 		nodeGroupInstances, err := cache.GetCloudProviderNodeInstancesForNodeGroup(nodeGroup)
 		if err != nil {
 			return nil, err
@@ -114,13 +132,16 @@ func (cache *CloudProviderNodeInstancesCache) GetCloudProviderNodeInstancesForNo
 		return cacheEntry.instances, nil
 	}
 	klog.V(5).Infof("Cloud provider node instances for %v hasn't been found in cache, fetch from cloud provider", nodeGroup.Id())
+	return cache.fetchCloudProviderNodeInstancesForNodeGroup(nodeGroup)
+}
+
+func (cache *CloudProviderNodeInstancesCache) fetchCloudProviderNodeInstancesForNodeGroup(nodeGroup cloudprovider.NodeGroup) ([]cloudprovider.Instance, error) {
 	nodeGroupInstances, err := nodeGroup.Nodes()
 	if err != nil {
 		return nil, err
 	}
 	cache.updateCacheEntryLocked(nodeGroup, &cloudProviderNodeInstancesCacheEntry{nodeGroupInstances, time.Now()})
 	return nodeGroupInstances, nil
-
 }
 
 // InvalidateCacheEntry removes entry for the given node group from cache.
