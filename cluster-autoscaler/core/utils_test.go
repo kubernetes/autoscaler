@@ -193,13 +193,13 @@ func TestFilterSchedulablePodsForNode(t *testing.T) {
 	}
 
 	p1 := BuildTestPod("p1", 1500, 200000)
-	p2_1 := BuildTestPod("p2_2", 3000, 200000)
+	p2_1 := BuildTestPod("p2_1", 3000, 200000)
 	p2_1.OwnerReferences = GenerateOwnerReferences(rc1.Name, "ReplicationController", "extensions/v1beta1", rc1.UID)
 	p2_2 := BuildTestPod("p2_2", 3000, 200000)
 	p2_2.OwnerReferences = GenerateOwnerReferences(rc1.Name, "ReplicationController", "extensions/v1beta1", rc1.UID)
-	p3_1 := BuildTestPod("p3", 100, 200000)
+	p3_1 := BuildTestPod("p3_1", 100, 200000)
 	p3_1.OwnerReferences = GenerateOwnerReferences(rc2.Name, "ReplicationController", "extensions/v1beta1", rc2.UID)
-	p3_2 := BuildTestPod("p3", 100, 200000)
+	p3_2 := BuildTestPod("p3_2", 100, 200000)
 	p3_2.OwnerReferences = GenerateOwnerReferences(rc2.Name, "ReplicationController", "extensions/v1beta1", rc2.UID)
 	unschedulablePods := []*apiv1.Pod{p1, p2_1, p2_2, p3_1, p3_2}
 
@@ -212,7 +212,8 @@ func TestFilterSchedulablePodsForNode(t *testing.T) {
 		PredicateChecker: simulator.NewTestPredicateChecker(),
 	}
 
-	res := checkPodsSchedulableOnNode(context, unschedulablePods, "T1-abc", tni)
+	checker := newPodsSchedulableOnNodeChecker(context, unschedulablePods)
+	res := checker.checkPodsSchedulableOnNode("T1-abc", tni)
 	wantedSchedulable := []*apiv1.Pod{p1, p3_1, p3_2}
 	wantedUnschedulable := []*apiv1.Pod{p2_1, p2_2}
 

@@ -563,6 +563,7 @@ func getPodsPredicatePassingCheckFunctions(
 	podsPassingPredicatesCache := make(map[string][]*apiv1.Pod)
 	podsNotPassingPredicatesCache := make(map[string]map[*apiv1.Pod]status.Reasons)
 	errorsCache := make(map[string]error)
+	checker := newPodsSchedulableOnNodeChecker(context, unschedulablePods)
 
 	computeCaches := func(nodeGroupId string) {
 		nodeInfo, found := nodeInfos[nodeGroupId]
@@ -573,7 +574,7 @@ func getPodsPredicatePassingCheckFunctions(
 
 		podsPassing := make([]*apiv1.Pod, 0)
 		podsNotPassing := make(map[*apiv1.Pod]status.Reasons)
-		schedulableOnNode := checkPodsSchedulableOnNode(context, unschedulablePods, nodeGroupId, nodeInfo)
+		schedulableOnNode := checker.checkPodsSchedulableOnNode(nodeGroupId, nodeInfo)
 		for pod, err := range schedulableOnNode {
 			if err == nil {
 				podsPassing = append(podsPassing, pod)
