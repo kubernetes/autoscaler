@@ -149,10 +149,10 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 		ginkgo.By("Setting up a VPA CRD")
 		SetupVPA(f, "50m", vpa_types.UpdateModeAuto, hamsterTargetRef)
 
-		// Min CPU limit is 300m and ratio is 3., so min request is 100m, while
-		// recommendation is 200m
+		// Min CPU from limit range is 100m and ratio is 3. Min applies both to limit and request so min
+		// request is 100m request and 300m limit
 		// Min memory limit is 0 and ratio is 2., so min request is 0
-		InstallLimitRangeWithMin(f, "300m", "0")
+		InstallLimitRangeWithMin(f, "100m", "0")
 
 		ginkgo.By(fmt.Sprintf("Waiting for pods to be evicted, hoping it won't happen, sleep for %s", VpaEvictionTimeout.String()))
 		CheckNoPodsEvicted(f, MakePodSet(podList))
