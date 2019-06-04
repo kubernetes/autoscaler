@@ -174,10 +174,11 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		}
 		InstallVPA(f, vpaCRD)
 
-		// Min CPU limit is 75m and ratio is 1.5, so min request is 50m
+		// Min CPU from limit range is 50m and ratio is 1.5. Min applies to both limit and request so min
+		// request is 50m and min limit is 75
 		// Min memory limit is 250Mi and ratio is 2., so min request is 125Mi, while
 		// recommendation is 100Mi.
-		InstallLimitRangeWithMin(f, "75m", "250Mi")
+		InstallLimitRangeWithMin(f, "50m", "250Mi")
 
 		ginkgo.By("Setting up a hamster deployment")
 		podList := startDeploymentPods(f, d)
