@@ -182,6 +182,33 @@ func SetupVPA(f *framework.Framework, cpu string, mode vpa_types.UpdateMode, tar
 	InstallVPA(f, vpaCRD)
 }
 
+// SetupVPAForTwoHamsters creates and installs a simple pod with two hamster containers for e2e test purposes.
+func SetupVPAForTwoHamsters(f *framework.Framework, cpu string, mode vpa_types.UpdateMode, targetRef *autoscaling.CrossVersionObjectReference) {
+	vpaCRD := NewVPA(f, "hamster-vpa", targetRef)
+	vpaCRD.Spec.UpdatePolicy.UpdateMode = &mode
+
+	cpuQuantity := ParseQuantityOrDie(cpu)
+	resourceList := apiv1.ResourceList{apiv1.ResourceCPU: cpuQuantity}
+
+	vpaCRD.Status.Recommendation = &vpa_types.RecommendedPodResources{
+		ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+			{
+				ContainerName: "hamster",
+				Target:        resourceList,
+				LowerBound:    resourceList,
+				UpperBound:    resourceList,
+			},
+			{
+				ContainerName: "hamster2",
+				Target:        resourceList,
+				LowerBound:    resourceList,
+				UpperBound:    resourceList,
+			},
+		},
+	}
+	InstallVPA(f, vpaCRD)
+}
+
 // NewVPA creates a VPA object for e2e test purposes.
 func NewVPA(f *framework.Framework, name string, targetRef *autoscaling.CrossVersionObjectReference) *vpa_types.VerticalPodAutoscaler {
 	updateMode := vpa_types.UpdateModeAuto
@@ -347,7 +374,7 @@ func WaitForRecommendationPresent(c *vpa_clientset.Clientset, vpa *vpa_types.Ver
 	})
 }
 
-func installLimitRange(f *framework.Framework, minCpuLimit, minMemoryLimit, maxCpuLimit, maxMemoryLimit *resource.Quantity) {
+func installLimitRange(f *framework.Framework, minCpuLimit, minMemoryLimit, maxCpuLimit, maxMemoryLimit *resource.Quantity, lrType apiv1.LimitType) {
 	lr := &apiv1.LimitRange{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: f.Namespace.Name,
@@ -360,7 +387,7 @@ func installLimitRange(f *framework.Framework, minCpuLimit, minMemoryLimit, maxC
 
 	if maxMemoryLimit != nil || maxCpuLimit != nil {
 		lrItem := apiv1.LimitRangeItem{
-			Type: apiv1.LimitTypeContainer,
+			Type: lrType,
 			Max:  apiv1.ResourceList{},
 		}
 		if maxCpuLimit != nil {
@@ -390,17 +417,17 @@ func installLimitRange(f *framework.Framework, minCpuLimit, minMemoryLimit, maxC
 }
 
 // InstallLimitRangeWithMax installs a LimitRange with a maximum limit for CPU and memory.
-func InstallLimitRangeWithMax(f *framework.Framework, maxCpuLimit, maxMemoryLimit string) {
+func InstallLimitRangeWithMax(f *framework.Framework, maxCpuLimit, maxMemoryLimit string, lrType apiv1.LimitType) {
 	ginkgo.By(fmt.Sprintf("Setting up LimitRange with max limits - CPU: %v, memory: %v", maxCpuLimit, maxMemoryLimit))
 	maxCpuLimitQuantity := ParseQuantityOrDie(maxCpuLimit)
 	maxMemoryLimitQuantity := ParseQuantityOrDie(maxMemoryLimit)
-	installLimitRange(f, nil, nil, &maxCpuLimitQuantity, &maxMemoryLimitQuantity)
+	installLimitRange(f, nil, nil, &maxCpuLimitQuantity, &maxMemoryLimitQuantity, lrType)
 }
 
 // InstallLimitRangeWithMin installs a LimitRange with a minimum limit for CPU and memory.
-func InstallLimitRangeWithMin(f *framework.Framework, minCpuLimit, minMemoryLimit string) {
+func InstallLimitRangeWithMin(f *framework.Framework, minCpuLimit, minMemoryLimit string, lrType apiv1.LimitType) {
 	ginkgo.By(fmt.Sprintf("Setting up LimitRange with min limits - CPU: %v, memory: %v", minCpuLimit, minMemoryLimit))
 	minCpuLimitQuantity := ParseQuantityOrDie(minCpuLimit)
 	minMemoryLimitQuantity := ParseQuantityOrDie(minMemoryLimit)
-	installLimitRange(f, &minCpuLimitQuantity, &minMemoryLimitQuantity, nil, nil)
+	installLimitRange(f, &minCpuLimitQuantity, &minMemoryLimitQuantity, nil, nil, lrType)
 }
