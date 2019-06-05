@@ -197,7 +197,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		}
 	})
 
-	ginkgo.It("caps request according to pod max limit set in pod LimitRange", func() {
+	ginkgo.It("caps request according to pod max limit set in LimitRange", func() {
 		d := NewHamsterDeploymentWithResourcesAndLimits(f,
 			ParseQuantityOrDie("100m") /*cpu request*/, ParseQuantityOrDie("100Mi"), /*memory request*/
 			ParseQuantityOrDie("150m") /*cpu limit*/, ParseQuantityOrDie("200Mi") /*memory limit*/)
@@ -247,7 +247,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		}
 	})
 
-	ginkgo.It("raises request according to pod min limit set in pod LimitRange", func() {
+	ginkgo.It("raises request according to pod min limit set in LimitRange", func() {
 		d := NewHamsterDeploymentWithResourcesAndLimits(f,
 			ParseQuantityOrDie("100m") /*cpu request*/, ParseQuantityOrDie("200Mi"), /*memory request*/
 			ParseQuantityOrDie("150m") /*cpu limit*/, ParseQuantityOrDie("400Mi") /*memory limit*/)

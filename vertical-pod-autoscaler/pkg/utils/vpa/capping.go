@@ -345,8 +345,8 @@ func applyPodLimitRange(resources []vpa_types.RecommendedContainerResources,
 
 	if minLimit.Cmp(sumRecommendation) > 0 {
 		for i := range pod.Spec.Containers {
-			limit := resources[i].Target[resourceName]
-			cappedContainerRequest, _ := scaleQuantityProportionally(&limit, &sumRecommendation, &minLimit)
+			request := resources[i].Target[resourceName]
+			cappedContainerRequest, _ := scaleQuantityProportionally(&request, &sumRecommendation, &minLimit)
 			resources[i].Target[resourceName] = *cappedContainerRequest
 		}
 		return resources
