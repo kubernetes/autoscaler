@@ -1,0 +1,9 @@
+module k8s.io/autoscaler/cluster-autoscaler
+go 1.12
+
+require (
+  github.com/rancher/go-rancher v0.1.0
+)
+
+replace (
+)
