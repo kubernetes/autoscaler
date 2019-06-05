@@ -46,7 +46,7 @@ git clone https://github.com/$YOUR_GITHUB_USERNAME/autoscaler.git
 # Replace "GO_Versiom" below with the version of go you want to use(eg. go1.11)
 wget https://dl.google.com/go/$GO_Version.linux-amd64.tar.gz
 # Extract the tar file
-tar -xvf go1.11.linux-amd64.tar.gz
+tar -xvf $GO_Version.linux-amd64.tar.gz
 # Move go to /usr/local
 mv go /usr/local
 # Set GOROOT,GOPATH,PATH and add to profile
