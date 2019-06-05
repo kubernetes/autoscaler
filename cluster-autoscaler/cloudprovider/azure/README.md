@@ -68,6 +68,12 @@ or to autoscale multiple VM scale sets:
         - --nodes=1:10:k8s-nodepool-2-vmss
 ```
 
+To allow scaling similar node pools simultaneously, or when using separate node groups per zone and to keep nodes balanced across zones, use the `--balance-similar-node-groups` flag. Add it to the `command` section to enable it:
+
+```yaml
+        - --balance-similar-node-groups=true
+```
+
 Save the updated deployment manifest, then deploy cluster-autoscaler by running:
 
 ```sh

@@ -97,6 +97,7 @@ func IsNodeInfoSimilar(n1, n2 *schedulernodeinfo.NodeInfo) bool {
 		apiv1.LabelZoneFailureDomain:          true,
 		apiv1.LabelZoneRegion:                 true,
 		"beta.kubernetes.io/fluentd-ds-ready": true, // this is internal label used for determining if fluentd should be installed as deamon set. Used for migration 1.8 to 1.9.
+		"agentpool":                           true,
 	}
 
 	labels := make(map[string][]string)
