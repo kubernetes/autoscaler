@@ -362,9 +362,9 @@ func applyPodLimitRange(resources []vpa_types.RecommendedContainerResources,
 		targetTotalLimit = maxLimit
 	}
 	for i := range pod.Spec.Containers {
-		limit := resources[i].Target[resourceName]
+		limit := (*fieldGetter(resources[i]))[resourceName]
 		cappedContainerRequest, _ := scaleQuantityProportionally(&limit, &sumLimit, &targetTotalLimit)
-		resources[i].Target[resourceName] = *cappedContainerRequest
+		(*fieldGetter(resources[i]))[resourceName] = *cappedContainerRequest
 	}
 	return resources
 }
