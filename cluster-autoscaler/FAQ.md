@@ -415,7 +415,7 @@ spec:
         - image: k8s.gcr.io/cluster-proportional-autoscaler-amd64:1.1.2
           name: autoscaler
           command:
-            - /cluster-proportional-autoscaler
+            - ./cluster-proportional-autoscaler
             - --namespace=default
             - --configmap=overprovisioning-autoscaler
             - --default-params={"linear":{"coresPerReplica":1}}
