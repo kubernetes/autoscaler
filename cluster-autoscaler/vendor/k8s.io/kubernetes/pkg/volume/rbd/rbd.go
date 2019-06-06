@@ -201,12 +201,15 @@ func (plugin *rbdPlugin) ExpandVolumeDevice(spec *volume.Spec, newSize resource.
 	}
 }
 
-func (plugin *rbdPlugin) ExpandFS(spec *volume.Spec, devicePath, deviceMountPath string, _, _ resource.Quantity) error {
-	_, err := volutil.GenericResizeFS(plugin.host, plugin.GetPluginName(), devicePath, deviceMountPath)
-	return err
+func (plugin *rbdPlugin) NodeExpand(resizeOptions volume.NodeResizeOptions) (bool, error) {
+	_, err := volutil.GenericResizeFS(plugin.host, plugin.GetPluginName(), resizeOptions.DevicePath, resizeOptions.DeviceMountPath)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }
 
-var _ volume.FSResizableVolumePlugin = &rbdPlugin{}
+var _ volume.NodeExpandableVolumePlugin = &rbdPlugin{}
 
 func (expander *rbdVolumeExpander) ResizeImage(oldSize resource.Quantity, newSize resource.Quantity) (resource.Quantity, error) {
 	return expander.manager.ExpandImage(expander, oldSize, newSize)
@@ -371,8 +374,8 @@ func (plugin *rbdPlugin) newUnmounterInternal(volName string, podUID types.UID, 
 
 func (plugin *rbdPlugin) ConstructVolumeSpec(volumeName, mountPath string) (*volume.Spec, error) {
 	mounter := plugin.host.GetMounter(plugin.GetPluginName())
-	pluginDir := plugin.host.GetPluginDir(plugin.GetPluginName())
-	sourceName, err := mounter.GetDeviceNameFromMount(mountPath, pluginDir)
+	pluginMntDir := volutil.GetPluginMountDir(plugin.host, plugin.GetPluginName())
+	sourceName, err := mounter.GetDeviceNameFromMount(mountPath, pluginMntDir)
 	if err != nil {
 		return nil, err
 	}
@@ -822,14 +825,14 @@ func (b *rbdMounter) CanMount() error {
 	return nil
 }
 
-func (b *rbdMounter) SetUp(fsGroup *int64) error {
-	return b.SetUpAt(b.GetPath(), fsGroup)
+func (b *rbdMounter) SetUp(mounterArgs volume.MounterArgs) error {
+	return b.SetUpAt(b.GetPath(), mounterArgs)
 }
 
-func (b *rbdMounter) SetUpAt(dir string, fsGroup *int64) error {
+func (b *rbdMounter) SetUpAt(dir string, mounterArgs volume.MounterArgs) error {
 	// diskSetUp checks mountpoints and prevent repeated calls
 	klog.V(4).Infof("rbd: attempting to setup at %s", dir)
-	err := diskSetUp(b.manager, *b, dir, b.mounter, fsGroup)
+	err := diskSetUp(b.manager, *b, dir, b.mounter, mounterArgs.FsGroup)
 	if err != nil {
 		klog.Errorf("rbd: failed to setup at %s %v", dir, err)
 	}
@@ -1076,15 +1079,6 @@ func getVolumeAccessModes(spec *volume.Spec) ([]v1.PersistentVolumeAccessMode, e
 	}
 
 	return nil, nil
-}
-
-func parsePodSecret(pod *v1.Pod, secretName string, kubeClient clientset.Interface) (string, error) {
-	secret, err := volutil.GetSecretForPod(pod, secretName, kubeClient)
-	if err != nil {
-		klog.Errorf("failed to get secret from [%q/%q]: %+v", pod.Namespace, secretName, err)
-		return "", fmt.Errorf("failed to get secret from [%q/%q]: %+v", pod.Namespace, secretName, err)
-	}
-	return parseSecretMap(secret)
 }
 
 func parsePVSecret(namespace, secretName string, kubeClient clientset.Interface) (string, error) {

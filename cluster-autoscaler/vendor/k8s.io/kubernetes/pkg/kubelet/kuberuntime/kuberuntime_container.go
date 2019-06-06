@@ -40,7 +40,7 @@ import (
 	kubetypes "k8s.io/apimachinery/pkg/types"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
-	runtimeapi "k8s.io/kubernetes/pkg/kubelet/apis/cri/runtime/v1alpha2"
+	runtimeapi "k8s.io/cri-api/pkg/apis/runtime/v1alpha2"
 	kubecontainer "k8s.io/kubernetes/pkg/kubelet/container"
 	"k8s.io/kubernetes/pkg/kubelet/events"
 	"k8s.io/kubernetes/pkg/kubelet/types"
@@ -205,7 +205,7 @@ func (m *kubeGenericRuntimeManager) generateContainerConfig(container *v1.Contai
 	}
 
 	command, args := kubecontainer.ExpandContainerCommandAndArgs(container, opts.Envs)
-	logDir := BuildContainerLogsDirectory(kubetypes.UID(pod.UID), container.Name)
+	logDir := BuildContainerLogsDirectory(pod.Namespace, pod.Name, pod.UID, container.Name)
 	err = m.osInterface.MkdirAll(logDir, 0755)
 	if err != nil {
 		return nil, cleanupAction, fmt.Errorf("create container log directory for container %s failed: %v", container.Name, err)
@@ -402,7 +402,6 @@ func (m *kubeGenericRuntimeManager) getPodContainerStatuses(uid kubetypes.UID, n
 		if status.State == runtimeapi.ContainerState_CONTAINER_EXITED {
 			// Populate the termination message if needed.
 			annotatedInfo := getContainerInfoFromAnnotations(status.Annotations)
-			labeledInfo := getContainerInfoFromLabels(status.Labels)
 			fallbackToLogs := annotatedInfo.TerminationMessagePolicy == v1.TerminationMessageFallbackToLogsOnError && cStatus.ExitCode != 0
 			tMessage, checkLogs := getTerminationMessage(status, annotatedInfo.TerminationMessagePath, fallbackToLogs)
 			if checkLogs {
@@ -413,8 +412,7 @@ func (m *kubeGenericRuntimeManager) getPodContainerStatuses(uid kubetypes.UID, n
 						tMessage = fmt.Sprintf("Error reading termination message from logs: %v", err)
 					}
 				} else {
-					path := buildFullContainerLogsPath(uid, labeledInfo.ContainerName, annotatedInfo.RestartCount)
-					tMessage = m.readLastStringFromContainerLogs(path)
+					tMessage = m.readLastStringFromContainerLogs(status.GetLogPath())
 				}
 			}
 			// Use the termination message written by the application is not empty
@@ -548,7 +546,7 @@ func (m *kubeGenericRuntimeManager) killContainer(pod *v1.Pod, containerID kubec
 		pod, containerSpec = restoredPod, restoredContainer
 	}
 
-	// From this point , pod and container must be non-nil.
+	// From this point, pod and container must be non-nil.
 	gracePeriod := int64(minimumGracePeriodInSeconds)
 	switch {
 	case pod.DeletionGracePeriodSeconds != nil:
@@ -824,8 +822,7 @@ func (m *kubeGenericRuntimeManager) removeContainerLog(containerID string) error
 		return fmt.Errorf("failed to get container status %q: %v", containerID, err)
 	}
 	labeledInfo := getContainerInfoFromLabels(status.Labels)
-	annotatedInfo := getContainerInfoFromAnnotations(status.Annotations)
-	path := buildFullContainerLogsPath(labeledInfo.PodUID, labeledInfo.ContainerName, annotatedInfo.RestartCount)
+	path := status.GetLogPath()
 	if err := m.osInterface.Remove(path); err != nil && !os.IsNotExist(err) {
 		return fmt.Errorf("failed to remove container %q log %q: %v", containerID, path, err)
 	}
