@@ -260,14 +260,14 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 				{
 					ContainerName: "hamster",
 					Target: apiv1.ResourceList{
-						apiv1.ResourceCPU:    ParseQuantityOrDie("250m"),
+						apiv1.ResourceCPU:    ParseQuantityOrDie("120m"),
 						apiv1.ResourceMemory: ParseQuantityOrDie("100Mi"), // memory is downscaled
 					},
 				},
 				{
 					ContainerName: "hamster2",
 					Target: apiv1.ResourceList{
-						apiv1.ResourceCPU:    ParseQuantityOrDie("250m"),
+						apiv1.ResourceCPU:    ParseQuantityOrDie("120m"),
 						apiv1.ResourceMemory: ParseQuantityOrDie("100Mi"), // memory is downscaled
 					},
 				},
@@ -289,7 +289,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		// request that limitrange allows.
 		// Limit to request ratio should stay unchanged.
 		for _, pod := range podList.Items {
-			gomega.Expect(*pod.Spec.Containers[0].Resources.Requests.Cpu()).To(gomega.Equal(ParseQuantityOrDie("250m")))
+			gomega.Expect(*pod.Spec.Containers[0].Resources.Requests.Cpu()).To(gomega.Equal(ParseQuantityOrDie("120m")))
 			gomega.Expect(*pod.Spec.Containers[0].Resources.Requests.Memory()).To(gomega.Equal(ParseQuantityOrDie("250Mi")))
 			gomega.Expect(pod.Spec.Containers[0].Resources.Limits.Cpu().MilliValue()).To(gomega.BeNumerically(">=", 75))
 			gomega.Expect(pod.Spec.Containers[0].Resources.Limits.Memory().Value()).To(gomega.BeNumerically(">=", 250*1024*1024))
