@@ -21,4 +21,4 @@ limitations under the License.
 
 // +groupName=settings.k8s.io
 
-package v1alpha1
+package v1alpha1 // import "k8s.io/kubernetes/pkg/apis/settings/v1alpha1"
