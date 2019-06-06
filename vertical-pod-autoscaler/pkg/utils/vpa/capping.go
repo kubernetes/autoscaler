@@ -321,7 +321,8 @@ func getBoundaryRecommendation(recommendation apiv1.ResourceList, container apiv
 }
 
 func applyPodLimitRange(resources []vpa_types.RecommendedContainerResources,
-	pod *apiv1.Pod, limitRange apiv1.LimitRangeItem, resourceName apiv1.ResourceName) []vpa_types.RecommendedContainerResources {
+	pod *apiv1.Pod, limitRange apiv1.LimitRangeItem, resourceName apiv1.ResourceName,
+	fieldGetter func(vpa_types.RecommendedContainerResources) *apiv1.ResourceList) []vpa_types.RecommendedContainerResources {
 	minLimit := limitRange.Min[resourceName]
 	maxLimit := limitRange.Max[resourceName]
 	defaultLimit := limitRange.Default[resourceName]
@@ -333,7 +334,7 @@ func applyPodLimitRange(resources []vpa_types.RecommendedContainerResources,
 		}
 		limit := container.Resources.Limits[resourceName]
 		request := container.Resources.Requests[resourceName]
-		recommendation := resources[i].Target[resourceName]
+		recommendation := (*fieldGetter(resources[i]))[resourceName]
 		containerLimit, _ := getProportionalResourceLimit(resourceName, &limit, &request, &recommendation, &defaultLimit)
 		if containerLimit != nil {
 			sumLimit.Add(*containerLimit)
@@ -346,9 +347,9 @@ func applyPodLimitRange(resources []vpa_types.RecommendedContainerResources,
 
 	if minLimit.Cmp(sumRecommendation) > 0 {
 		for i := range pod.Spec.Containers {
-			request := resources[i].Target[resourceName]
+			request := (*fieldGetter(resources[i]))[resourceName]
 			cappedContainerRequest, _ := scaleQuantityProportionally(&request, &sumRecommendation, &minLimit)
-			resources[i].Target[resourceName] = *cappedContainerRequest
+			(*fieldGetter(resources[i]))[resourceName] = *cappedContainerRequest
 		}
 		return resources
 	}
@@ -377,7 +378,17 @@ func (c *cappingRecommendationProcessor) capProportionallyToPodLimitRange(
 	if podLimitRange == nil {
 		return containerRecommendations, nil
 	}
-	containerRecommendations = applyPodLimitRange(containerRecommendations, pod, *podLimitRange, apiv1.ResourceCPU)
-	containerRecommendations = applyPodLimitRange(containerRecommendations, pod, *podLimitRange, apiv1.ResourceMemory)
+	getTarget := func(rl vpa_types.RecommendedContainerResources) *apiv1.ResourceList { return &rl.Target }
+	getUpper := func(rl vpa_types.RecommendedContainerResources) *apiv1.ResourceList { return &rl.UpperBound }
+	getLower := func(rl vpa_types.RecommendedContainerResources) *apiv1.ResourceList { return &rl.LowerBound }
+
+	containerRecommendations = applyPodLimitRange(containerRecommendations, pod, *podLimitRange, apiv1.ResourceCPU, getUpper)
+	containerRecommendations = applyPodLimitRange(containerRecommendations, pod, *podLimitRange, apiv1.ResourceMemory, getUpper)
+
+	containerRecommendations = applyPodLimitRange(containerRecommendations, pod, *podLimitRange, apiv1.ResourceCPU, getTarget)
+	containerRecommendations = applyPodLimitRange(containerRecommendations, pod, *podLimitRange, apiv1.ResourceMemory, getTarget)
+
+	containerRecommendations = applyPodLimitRange(containerRecommendations, pod, *podLimitRange, apiv1.ResourceCPU, getLower)
+	containerRecommendations = applyPodLimitRange(containerRecommendations, pod, *podLimitRange, apiv1.ResourceMemory, getLower)
 	return containerRecommendations, nil
 }

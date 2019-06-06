@@ -556,9 +556,10 @@ func TestApplyPodLimitRange(t *testing.T) {
 			},
 		},
 	}
+	getTarget := func(rl vpa_types.RecommendedContainerResources) *apiv1.ResourceList { return &rl.Target }
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			got := applyPodLimitRange(tc.resources, &tc.pod, tc.limitRange, tc.resourceName)
+			got := applyPodLimitRange(tc.resources, &tc.pod, tc.limitRange, tc.resourceName, getTarget)
 			assert.Equal(t, tc.expect, got)
 		})
 	}
