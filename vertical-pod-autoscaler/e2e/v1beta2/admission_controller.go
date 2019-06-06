@@ -176,8 +176,8 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 
 		// Min CPU from limit range is 50m and ratio is 1.5. Min applies to both limit and request so min
 		// request is 50m and min limit is 75
-		// Min memory limit is 250Mi and ratio is 2., so min request is 125Mi, while
-		// recommendation is 100Mi.
+		// Min memory limit is 250Mi and it applies to both limit and request. Recommendation is 100Mi.
+		// It should be scaled up to 250Mi.
 		InstallLimitRangeWithMin(f, "50m", "250Mi", apiv1.LimitTypeContainer)
 
 		ginkgo.By("Setting up a hamster deployment")
@@ -189,7 +189,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		// Limit to request ratio should stay unchanged.
 		for _, pod := range podList.Items {
 			gomega.Expect(*pod.Spec.Containers[0].Resources.Requests.Cpu()).To(gomega.Equal(ParseQuantityOrDie("250m")))
-			gomega.Expect(*pod.Spec.Containers[0].Resources.Requests.Memory()).To(gomega.Equal(ParseQuantityOrDie("125Mi")))
+			gomega.Expect(*pod.Spec.Containers[0].Resources.Requests.Memory()).To(gomega.Equal(ParseQuantityOrDie("250Mi")))
 			gomega.Expect(pod.Spec.Containers[0].Resources.Limits.Cpu().MilliValue()).To(gomega.BeNumerically(">=", 75))
 			gomega.Expect(pod.Spec.Containers[0].Resources.Limits.Memory().Value()).To(gomega.BeNumerically(">=", 250*1024*1024))
 			gomega.Expect(float64(pod.Spec.Containers[0].Resources.Limits.Cpu().MilliValue()) / float64(pod.Spec.Containers[0].Resources.Requests.Cpu().MilliValue())).To(gomega.BeNumerically("~", 1.5))
@@ -277,8 +277,8 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 
 		// Min CPU from limit range is 100m, 50m per pod and ratio is 1.5. Min applies to both limit and
 		// request so min request is 50m and min limit is 75
-		// Min memory limit is 500Mi per pod, 250 per container and ratio is 2., so min request is 125Mi, while
-		// recommendation is 100Mi.
+		// Min memory limit is 500Mi per pod, 250 per container and it applies to both limit and request.
+		// Recommendation is 100Mi it should be scaled up to 250Mi.
 		InstallLimitRangeWithMin(f, "100m", "500Mi", apiv1.LimitTypePod)
 
 		ginkgo.By("Setting up a hamster deployment")
@@ -290,7 +290,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		// Limit to request ratio should stay unchanged.
 		for _, pod := range podList.Items {
 			gomega.Expect(*pod.Spec.Containers[0].Resources.Requests.Cpu()).To(gomega.Equal(ParseQuantityOrDie("250m")))
-			gomega.Expect(*pod.Spec.Containers[0].Resources.Requests.Memory()).To(gomega.Equal(ParseQuantityOrDie("125Mi")))
+			gomega.Expect(*pod.Spec.Containers[0].Resources.Requests.Memory()).To(gomega.Equal(ParseQuantityOrDie("250Mi")))
 			gomega.Expect(pod.Spec.Containers[0].Resources.Limits.Cpu().MilliValue()).To(gomega.BeNumerically(">=", 75))
 			gomega.Expect(pod.Spec.Containers[0].Resources.Limits.Memory().Value()).To(gomega.BeNumerically(">=", 250*1024*1024))
 			gomega.Expect(float64(pod.Spec.Containers[0].Resources.Limits.Cpu().MilliValue()) / float64(pod.Spec.Containers[0].Resources.Requests.Cpu().MilliValue())).To(gomega.BeNumerically("~", 1.5))
