@@ -74,6 +74,8 @@ To allow scaling similar node pools simultaneously, or when using separate node 
         - --balance-similar-node-groups=true
 ```
 
+See the [FAQ](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#im-running-cluster-with-nodes-in-multiple-zones-for-ha-purposes-is-that-supported-by-cluster-autoscaler) for more details.
+
 Save the updated deployment manifest, then deploy cluster-autoscaler by running:
 
 ```sh
