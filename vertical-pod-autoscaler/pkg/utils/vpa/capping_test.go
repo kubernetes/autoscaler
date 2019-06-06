@@ -489,7 +489,7 @@ func TestApplyPodLimitRange(t *testing.T) {
 			},
 		},
 		{
-			name: "cap mem request to min",
+			name: "cap mem request to pod min",
 			resources: []vpa_types.RecommendedContainerResources{
 				{
 					ContainerName: "container1",
@@ -533,7 +533,7 @@ func TestApplyPodLimitRange(t *testing.T) {
 			limitRange: apiv1.LimitRangeItem{
 				Type: apiv1.LimitTypePod,
 				Max: apiv1.ResourceList{
-					apiv1.ResourceCPU: resource.MustParse("10G"),
+					apiv1.ResourceMemory: resource.MustParse("10G"),
 				},
 				Min: apiv1.ResourceList{
 					apiv1.ResourceMemory: resource.MustParse("4G"),
@@ -556,9 +556,10 @@ func TestApplyPodLimitRange(t *testing.T) {
 			},
 		},
 	}
+	getTarget := func(rl vpa_types.RecommendedContainerResources) *apiv1.ResourceList { return &rl.Target }
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			got := applyPodLimitRange(tc.resources, &tc.pod, tc.limitRange, tc.resourceName)
+			got := applyPodLimitRange(tc.resources, &tc.pod, tc.limitRange, tc.resourceName, getTarget)
 			assert.Equal(t, tc.expect, got)
 		})
 	}
