@@ -21,4 +21,4 @@ limitations under the License.
 
 // +groupName=auditregistration.k8s.io
 
-package v1alpha1
+package v1alpha1 // import "k8s.io/kubernetes/pkg/apis/auditregistration/v1alpha1"

@@ -20,4 +20,4 @@ limitations under the License.
 // +k8s:defaulter-gen=TypeMeta
 // +k8s:defaulter-gen-input=../../../../vendor/k8s.io/api/batch/v2alpha1
 
-package v2alpha1
+package v2alpha1 // import "k8s.io/kubernetes/pkg/apis/batch/v2alpha1"

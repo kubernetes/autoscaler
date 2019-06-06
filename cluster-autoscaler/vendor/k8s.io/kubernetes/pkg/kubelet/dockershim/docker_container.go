@@ -29,7 +29,7 @@ import (
 	dockerstrslice "github.com/docker/docker/api/types/strslice"
 	"k8s.io/klog"
 
-	runtimeapi "k8s.io/kubernetes/pkg/kubelet/apis/cri/runtime/v1alpha2"
+	runtimeapi "k8s.io/cri-api/pkg/apis/runtime/v1alpha2"
 	"k8s.io/kubernetes/pkg/kubelet/dockershim/libdocker"
 )
 
@@ -137,6 +137,9 @@ func (ds *dockerService) CreateContainer(_ context.Context, r *runtimeapi.Create
 		},
 		HostConfig: &dockercontainer.HostConfig{
 			Binds: generateMountBindings(config.GetMounts()),
+			RestartPolicy: dockercontainer.RestartPolicy{
+				Name: "no",
+			},
 		},
 	}
 

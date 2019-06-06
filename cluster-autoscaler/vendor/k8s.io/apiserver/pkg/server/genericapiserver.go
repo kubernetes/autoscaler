@@ -157,6 +157,10 @@ type GenericAPIServer struct {
 	// the create-on-update case
 	Authorizer authorizer.Authorizer
 
+	// EquivalentResourceRegistry provides information about resources equivalent to a given resource,
+	// and the kind associated with a given resource. As resources are installed, they are registered here.
+	EquivalentResourceRegistry runtime.EquivalentResourceRegistry
+
 	// enableAPIResponseCompression indicates whether API Responses should support compression
 	// if the client requests it via Accept-Encoding
 	enableAPIResponseCompression bool
@@ -258,10 +262,13 @@ func (s *GenericAPIServer) PrepareRun() preparedGenericAPIServer {
 
 	// Register audit backend preShutdownHook.
 	if s.AuditBackend != nil {
-		s.AddPreShutdownHook("audit-backend", func() error {
+		err := s.AddPreShutdownHook("audit-backend", func() error {
 			s.AuditBackend.Shutdown()
 			return nil
 		})
+		if err != nil {
+			klog.Errorf("Failed to add pre-shutdown hook for audit-backend %s", err)
+		}
 	}
 
 	return preparedGenericAPIServer{s}
@@ -463,6 +470,8 @@ func (s *GenericAPIServer) newAPIGroupVersion(apiGroupInfo *APIGroupInfo, groupV
 		Defaulter:       apiGroupInfo.Scheme,
 		Typer:           apiGroupInfo.Scheme,
 		Linker:          runtime.SelfLinker(meta.NewAccessor()),
+
+		EquivalentResourceRegistry: s.EquivalentResourceRegistry,
 
 		Admit:                        s.admissionControl,
 		MinRequestTimeout:            s.minRequestTimeout,

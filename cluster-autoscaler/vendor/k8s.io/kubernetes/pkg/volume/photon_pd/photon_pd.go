@@ -19,7 +19,7 @@ package photon_pd
 import (
 	"fmt"
 	"os"
-	"path"
+	"path/filepath"
 
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -136,8 +136,8 @@ func (plugin *photonPersistentDiskPlugin) newUnmounterInternal(volName string, p
 
 func (plugin *photonPersistentDiskPlugin) ConstructVolumeSpec(volumeSpecName, mountPath string) (*volume.Spec, error) {
 	mounter := plugin.host.GetMounter(plugin.GetPluginName())
-	pluginDir := plugin.host.GetPluginDir(plugin.GetPluginName())
-	pdID, err := mounter.GetDeviceNameFromMount(mountPath, pluginDir)
+	pluginMntDir := util.GetPluginMountDir(plugin.host, plugin.GetPluginName())
+	pdID, err := mounter.GetDeviceNameFromMount(mountPath, pluginMntDir)
 	if err != nil {
 		return nil, err
 	}
@@ -200,12 +200,12 @@ func (b *photonPersistentDiskMounter) CanMount() error {
 }
 
 // SetUp attaches the disk and bind mounts to the volume path.
-func (b *photonPersistentDiskMounter) SetUp(fsGroup *int64) error {
-	return b.SetUpAt(b.GetPath(), fsGroup)
+func (b *photonPersistentDiskMounter) SetUp(mounterArgs volume.MounterArgs) error {
+	return b.SetUpAt(b.GetPath(), mounterArgs)
 }
 
 // SetUp attaches the disk and bind mounts to the volume path.
-func (b *photonPersistentDiskMounter) SetUpAt(dir string, fsGroup *int64) error {
+func (b *photonPersistentDiskMounter) SetUpAt(dir string, mounterArgs volume.MounterArgs) error {
 	klog.V(4).Infof("Photon Persistent Disk setup %s to %s", b.pdID, dir)
 
 	// TODO: handle failed mounts here.
@@ -285,7 +285,7 @@ func (c *photonPersistentDiskUnmounter) TearDownAt(dir string) error {
 }
 
 func makeGlobalPDPath(host volume.VolumeHost, devName string) string {
-	return path.Join(host.GetPluginDir(photonPersistentDiskPluginName), mount.MountsInGlobalPDPath, devName)
+	return filepath.Join(host.GetPluginDir(photonPersistentDiskPluginName), util.MountsInGlobalPDPath, devName)
 }
 
 func (ppd *photonPersistentDisk) GetPath() string {

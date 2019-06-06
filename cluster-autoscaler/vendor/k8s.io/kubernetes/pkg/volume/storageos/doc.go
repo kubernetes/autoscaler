@@ -16,4 +16,4 @@ limitations under the License.
 
 // Package storageos contains the internal representation of StorageOS
 // PersistentDisk volumes.
-package storageos
+package storageos // import "k8s.io/kubernetes/pkg/volume/storageos"

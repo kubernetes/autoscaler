@@ -162,7 +162,7 @@ type Writer interface {
 	// WriteResponse writes the specified HTTP response to the logger if the log level is greater than
 	// or equal to LogInfo.  The response body, if set, is logged at level LogDebug or higher.
 	// Custom filters can be specified to exclude URL, header, and/or body content from the log.
-	// By default no response content is excluded.
+	// By default no respone content is excluded.
 	WriteResponse(resp *http.Response, filter Filter)
 }
 

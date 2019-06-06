@@ -46,6 +46,16 @@ var (
 		},
 	)
 
+	// SyncProxyRulesLastTimestamp is the timestamp proxy rules were last
+	// successfully synced.
+	SyncProxyRulesLastTimestamp = prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Subsystem: kubeProxySubsystem,
+			Name:      "sync_proxy_rules_last_timestamp_seconds",
+			Help:      "The last time proxy rules were successfully synced",
+		},
+	)
+
 	// NetworkProgrammingLatency is defined as the time it took to program the network - from the time
 	// the service or pod has changed to the time the change was propagated and the proper kube-proxy
 	// rules were synced. Exported for each endpoints object that were part of the rules sync.
@@ -64,15 +74,43 @@ var (
 		},
 	)
 
-	// DeprecatedNetworkProgrammingLatency is deprecated, please use NetworkProgrammingLatency.
-	DeprecatedNetworkProgrammingLatency = prometheus.NewHistogram(
-		prometheus.HistogramOpts{
+	// EndpointChangesPending is the number of pending endpoint changes that
+	// have not yet been synced to the proxy.
+	EndpointChangesPending = prometheus.NewGauge(
+		prometheus.GaugeOpts{
 			Subsystem: kubeProxySubsystem,
-			Name:      "network_programming_latency_seconds",
-			Help:      "(Deprecated) In Cluster Network Programming Latency in seconds",
-			// TODO(mm4tt): Reevaluate buckets before 1.14 release.
-			// The last bucket will be [0.001s*2^20 ~= 17min, +inf)
-			Buckets: prometheus.ExponentialBuckets(0.001, 2, 20),
+			Name:      "sync_proxy_rules_endpoint_changes_pending",
+			Help:      "Pending proxy rules Endpoint changes",
+		},
+	)
+
+	// EndpointChangesTotal is the number of endpoint changes that the proxy
+	// has seen.
+	EndpointChangesTotal = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Subsystem: kubeProxySubsystem,
+			Name:      "sync_proxy_rules_endpoint_changes_total",
+			Help:      "Cumulative proxy rules Endpoint changes",
+		},
+	)
+
+	// ServiceChangesPending is the number of pending service changes that
+	// have not yet been synced to the proxy.
+	ServiceChangesPending = prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Subsystem: kubeProxySubsystem,
+			Name:      "sync_proxy_rules_service_changes_pending",
+			Help:      "Pending proxy rules Service changes",
+		},
+	)
+
+	// ServiceChangesTotal is the number of service changes that the proxy has
+	// seen.
+	ServiceChangesTotal = prometheus.NewCounter(
+		prometheus.CounterOpts{
+			Subsystem: kubeProxySubsystem,
+			Name:      "sync_proxy_rules_service_changes_total",
+			Help:      "Cumulative proxy rules Service changes",
 		},
 	)
 )
@@ -84,8 +122,12 @@ func RegisterMetrics() {
 	registerMetricsOnce.Do(func() {
 		prometheus.MustRegister(SyncProxyRulesLatency)
 		prometheus.MustRegister(DeprecatedSyncProxyRulesLatency)
+		prometheus.MustRegister(SyncProxyRulesLastTimestamp)
 		prometheus.MustRegister(NetworkProgrammingLatency)
-		prometheus.MustRegister(DeprecatedNetworkProgrammingLatency)
+		prometheus.MustRegister(EndpointChangesPending)
+		prometheus.MustRegister(EndpointChangesTotal)
+		prometheus.MustRegister(ServiceChangesPending)
+		prometheus.MustRegister(ServiceChangesTotal)
 	})
 }
 
