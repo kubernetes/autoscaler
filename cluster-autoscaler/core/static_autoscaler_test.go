@@ -817,7 +817,7 @@ func TestStaticAutoscalerRunOncePodsWithPriorities(t *testing.T) {
 		podDisruptionBudgetListerMock, daemonSetListerMock, onScaleUpMock, onScaleDownMock)
 }
 
-func TestStaticAutoscalerOutOfResources(t *testing.T) {
+func TestStaticAutoscalerInstaceCreationErrors(t *testing.T) {
 
 	// setup
 	provider := &mockprovider.CloudProvider{}
@@ -904,6 +904,16 @@ func TestStaticAutoscalerOutOfResources(t *testing.T) {
 				},
 			},
 		},
+		{
+			"A6",
+			&cloudprovider.InstanceStatus{
+				State: cloudprovider.InstanceCreating,
+				ErrorInfo: &cloudprovider.InstanceErrorInfo{
+					ErrorClass: cloudprovider.OtherErrorClass,
+					ErrorCode:  "OTHER",
+				},
+			},
+		},
 	}, nil).Twice()
 
 	nodeGroupB.On("Exist").Return(true)
@@ -944,14 +954,14 @@ func TestStaticAutoscalerOutOfResources(t *testing.T) {
 	// check delete was called on correct nodes
 	nodeGroupA.AssertCalled(t, "DeleteNodes", mock.MatchedBy(
 		func(nodes []*apiv1.Node) bool {
-			if len(nodes) != 3 {
+			if len(nodes) != 4 {
 				return false
 			}
 			names := make(map[string]bool)
 			for _, node := range nodes {
 				names[node.Spec.ProviderID] = true
 			}
-			return names["A3"] && names["A4"] && names["A5"]
+			return names["A3"] && names["A4"] && names["A5"] && names["A6"]
 		}))
 
 	// TODO assert that scaleup was failed (separately for QUOTA and STOCKOUT)
@@ -968,14 +978,14 @@ func TestStaticAutoscalerOutOfResources(t *testing.T) {
 	// nodes should be deleted again
 	nodeGroupA.AssertCalled(t, "DeleteNodes", mock.MatchedBy(
 		func(nodes []*apiv1.Node) bool {
-			if len(nodes) != 3 {
+			if len(nodes) != 4 {
 				return false
 			}
 			names := make(map[string]bool)
 			for _, node := range nodes {
 				names[node.Spec.ProviderID] = true
 			}
-			return names["A3"] && names["A4"] && names["A5"]
+			return names["A3"] && names["A4"] && names["A5"] && names["A6"]
 		}))
 
 	// TODO assert that scaleup is not failed again
@@ -1008,6 +1018,12 @@ func TestStaticAutoscalerOutOfResources(t *testing.T) {
 		},
 		{
 			"A5",
+			&cloudprovider.InstanceStatus{
+				State: cloudprovider.InstanceDeleting,
+			},
+		},
+		{
+			"A6",
 			&cloudprovider.InstanceStatus{
 				State: cloudprovider.InstanceDeleting,
 			},
