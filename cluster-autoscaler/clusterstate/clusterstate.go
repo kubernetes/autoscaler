@@ -113,6 +113,13 @@ type UnregisteredNode struct {
 	UnregisteredSince time.Time
 }
 
+// ScaleUpFailure contains information about a failure of a scale-up.
+type ScaleUpFailure struct {
+	NodeGroup cloudprovider.NodeGroup
+	Reason    metrics.FailedScaleUpReason
+	Time      time.Time
+}
+
 // ClusterStateRegistry is a structure to keep track the current state of the cluster.
 type ClusterStateRegistry struct {
 	sync.Mutex
@@ -136,6 +143,10 @@ type ClusterStateRegistry struct {
 	previousCloudProviderNodeInstances map[string][]cloudprovider.Instance
 	cloudProviderNodeInstancesCache    *utils.CloudProviderNodeInstancesCache
 	interrupt                          chan struct{}
+
+	// scaleUpFailures contains information about scale-up failures for each node group. It should be
+	// cleared periodically to avoid unnecessary accumulation.
+	scaleUpFailures map[string][]ScaleUpFailure
 }
 
 // NewClusterStateRegistry creates new ClusterStateRegistry.
@@ -161,6 +172,7 @@ func NewClusterStateRegistry(cloudProvider cloudprovider.CloudProvider, config C
 		logRecorder:                     logRecorder,
 		cloudProviderNodeInstancesCache: utils.NewCloudProviderNodeInstancesCache(cloudProvider),
 		interrupt:                       make(chan struct{}),
+		scaleUpFailures:                 make(map[string][]ScaleUpFailure),
 	}
 }
 
@@ -248,8 +260,7 @@ func (csr *ClusterStateRegistry) updateScaleRequests(currentTime time.Time) {
 			csr.logRecorder.Eventf(apiv1.EventTypeWarning, "ScaleUpTimedOut",
 				"Nodes added to group %s failed to register within %v",
 				scaleUpRequest.NodeGroup.Id(), currentTime.Sub(scaleUpRequest.Time))
-			metrics.RegisterFailedScaleUp(metrics.Timeout)
-			csr.backoffNodeGroup(scaleUpRequest.NodeGroup, cloudprovider.OtherErrorClass, "timeout", currentTime)
+			csr.registerFailedScaleUpNoLock(scaleUpRequest.NodeGroup, metrics.Timeout, cloudprovider.OtherErrorClass, "timeout", currentTime)
 			delete(csr.scaleUpRequests, nodeGroupName)
 		}
 	}
@@ -280,6 +291,7 @@ func (csr *ClusterStateRegistry) RegisterFailedScaleUp(nodeGroup cloudprovider.N
 }
 
 func (csr *ClusterStateRegistry) registerFailedScaleUpNoLock(nodeGroup cloudprovider.NodeGroup, reason metrics.FailedScaleUpReason, errorClass cloudprovider.InstanceErrorClass, errorCode string, currentTime time.Time) {
+	csr.scaleUpFailures[nodeGroup.Id()] = append(csr.scaleUpFailures[nodeGroup.Id()], ScaleUpFailure{NodeGroup: nodeGroup, Reason: reason, Time: currentTime})
 	metrics.RegisterFailedScaleUp(reason)
 	csr.backoffNodeGroup(nodeGroup, errorClass, errorCode, currentTime)
 }
@@ -1120,4 +1132,29 @@ func fakeNode(instance cloudprovider.Instance) *apiv1.Node {
 			ProviderID: instance.Id,
 		},
 	}
+}
+
+// PeriodicCleanup performs clean-ups that should be done periodically, e.g.
+// each Autoscaler loop.
+func (csr *ClusterStateRegistry) PeriodicCleanup() {
+	// Clear the scale-up failures info so they don't accumulate.
+	csr.clearScaleUpFailures()
+}
+
+// clearScaleUpFailures clears the scale-up failures map.
+func (csr *ClusterStateRegistry) clearScaleUpFailures() {
+	csr.Lock()
+	defer csr.Unlock()
+	csr.scaleUpFailures = make(map[string][]ScaleUpFailure)
+}
+
+// GetScaleUpFailures returns the scale-up failures map.
+func (csr *ClusterStateRegistry) GetScaleUpFailures() map[string][]ScaleUpFailure {
+	csr.Lock()
+	defer csr.Unlock()
+	result := make(map[string][]ScaleUpFailure)
+	for nodeGroupId, failures := range csr.scaleUpFailures {
+		result[nodeGroupId] = failures
+	}
+	return result
 }
