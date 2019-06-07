@@ -17,7 +17,6 @@ limitations under the License.
 package nodegroupset
 
 import (
-	apiv1 "k8s.io/api/core/v1"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 )
 
@@ -37,12 +36,10 @@ func IsAzureNodeInfoSimilar(n1, n2 *schedulernodeinfo.NodeInfo) bool {
 	if nodesFromSameAzureNodePool(n1, n2) {
 		return true
 	}
-	ignoredLabels := map[string]bool{
-		apiv1.LabelHostname:                   true,
-		apiv1.LabelZoneFailureDomain:          true,
-		apiv1.LabelZoneRegion:                 true,
-		"beta.kubernetes.io/fluentd-ds-ready": true, // this is internal label used for determining if fluentd should be installed as deamon set. Used for migration 1.8 to 1.9.
-		AzureNodepoolLabel:                    true,
+	azureIgnoredLabels := make(map[string]bool)
+	for k, v := range ignoredLabels {
+		azureIgnoredLabels[k] = v
 	}
-	return IsNodeInfoSimilarIgnoreLabels(n1, n2, ignoredLabels)
+	azureIgnoredLabels[AzureNodepoolLabel] = true
+	return IsNodeInfoSimilarIgnoreLabels(n1, n2, azureIgnoredLabels)
 }
