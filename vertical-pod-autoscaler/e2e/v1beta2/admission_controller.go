@@ -85,6 +85,219 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		}
 	})
 
+	ginkgo.It("keeps limits to request ratio constant", func() {
+		d := NewHamsterDeploymentWithResourcesAndLimits(f,
+			ParseQuantityOrDie("100m") /*cpu request*/, ParseQuantityOrDie("100Mi"), /*memory request*/
+			ParseQuantityOrDie("150m") /*cpu limit*/, ParseQuantityOrDie("200Mi") /*memory limit*/)
+
+		ginkgo.By("Setting up a VPA CRD")
+		vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef)
+		vpaCRD.Status.Recommendation = &vpa_types.RecommendedPodResources{
+			ContainerRecommendations: []vpa_types.RecommendedContainerResources{{
+				ContainerName: "hamster",
+				Target: apiv1.ResourceList{
+					apiv1.ResourceCPU:    ParseQuantityOrDie("250m"),
+					apiv1.ResourceMemory: ParseQuantityOrDie("200Mi"),
+				},
+			}},
+		}
+		InstallVPA(f, vpaCRD)
+
+		ginkgo.By("Setting up a hamster deployment")
+		podList := startDeploymentPods(f, d)
+
+		// Originally Pods had 100m CPU, 100Mi of memory, but admission controller
+		// should change it to 250m CPU and 200Mi of memory. Limits to request ratio should stay unchanged.
+		for _, pod := range podList.Items {
+			gomega.Expect(*pod.Spec.Containers[0].Resources.Requests.Cpu()).To(gomega.Equal(ParseQuantityOrDie("250m")))
+			gomega.Expect(*pod.Spec.Containers[0].Resources.Requests.Memory()).To(gomega.Equal(ParseQuantityOrDie("200Mi")))
+			gomega.Expect(float64(pod.Spec.Containers[0].Resources.Limits.Cpu().MilliValue()) / float64(pod.Spec.Containers[0].Resources.Requests.Cpu().MilliValue())).To(gomega.BeNumerically("~", 1.5))
+			gomega.Expect(float64(pod.Spec.Containers[0].Resources.Limits.Memory().Value()) / float64(pod.Spec.Containers[0].Resources.Requests.Memory().Value())).To(gomega.BeNumerically("~", 2.))
+		}
+	})
+
+	ginkgo.It("caps request according to container max limit set in LimitRange", func() {
+		d := NewHamsterDeploymentWithResourcesAndLimits(f,
+			ParseQuantityOrDie("100m") /*cpu request*/, ParseQuantityOrDie("100Mi"), /*memory request*/
+			ParseQuantityOrDie("150m") /*cpu limit*/, ParseQuantityOrDie("200Mi") /*memory limit*/)
+
+		ginkgo.By("Setting up a VPA CRD")
+		vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef)
+		vpaCRD.Status.Recommendation = &vpa_types.RecommendedPodResources{
+			ContainerRecommendations: []vpa_types.RecommendedContainerResources{{
+				ContainerName: "hamster",
+				Target: apiv1.ResourceList{
+					apiv1.ResourceCPU:    ParseQuantityOrDie("250m"),
+					apiv1.ResourceMemory: ParseQuantityOrDie("200Mi"),
+				},
+			}},
+		}
+		InstallVPA(f, vpaCRD)
+
+		// Max CPU limit is 300m and ratio is 1.5, so max request is 200m, while
+		// recommendation is 250m
+		// Max memory limit is 1Gi and ratio is 2., so max request is 0.5Gi
+		InstallLimitRangeWithMax(f, "300m", "1Gi", apiv1.LimitTypeContainer)
+
+		ginkgo.By("Setting up a hamster deployment")
+		podList := startDeploymentPods(f, d)
+
+		// Originally Pods had 100m CPU, 100Mi of memory, but admission controller
+		// should change it to 200m CPU (as this is the recommendation
+		// capped according to max limit in LimitRange) and 200Mi of memory,
+		// which is uncapped. Limit to request ratio should stay unchanged.
+		for _, pod := range podList.Items {
+			gomega.Expect(*pod.Spec.Containers[0].Resources.Requests.Cpu()).To(gomega.Equal(ParseQuantityOrDie("200m")))
+			gomega.Expect(*pod.Spec.Containers[0].Resources.Requests.Memory()).To(gomega.Equal(ParseQuantityOrDie("200Mi")))
+			gomega.Expect(pod.Spec.Containers[0].Resources.Limits.Cpu().MilliValue()).To(gomega.BeNumerically("<=", 300))
+			gomega.Expect(pod.Spec.Containers[0].Resources.Limits.Memory().Value()).To(gomega.BeNumerically("<=", 1024*1024*1024))
+			gomega.Expect(float64(pod.Spec.Containers[0].Resources.Limits.Cpu().MilliValue()) / float64(pod.Spec.Containers[0].Resources.Requests.Cpu().MilliValue())).To(gomega.BeNumerically("~", 1.5))
+			gomega.Expect(float64(pod.Spec.Containers[0].Resources.Limits.Memory().Value()) / float64(pod.Spec.Containers[0].Resources.Requests.Memory().Value())).To(gomega.BeNumerically("~", 2.))
+		}
+	})
+
+	ginkgo.It("raises request according to container min limit set in LimitRange", func() {
+		d := NewHamsterDeploymentWithResourcesAndLimits(f,
+			ParseQuantityOrDie("100m") /*cpu request*/, ParseQuantityOrDie("200Mi"), /*memory request*/
+			ParseQuantityOrDie("150m") /*cpu limit*/, ParseQuantityOrDie("400Mi") /*memory limit*/)
+
+		ginkgo.By("Setting up a VPA CRD")
+		vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef)
+		vpaCRD.Status.Recommendation = &vpa_types.RecommendedPodResources{
+			ContainerRecommendations: []vpa_types.RecommendedContainerResources{{
+				ContainerName: "hamster",
+				Target: apiv1.ResourceList{
+					apiv1.ResourceCPU:    ParseQuantityOrDie("250m"),
+					apiv1.ResourceMemory: ParseQuantityOrDie("100Mi"), // memory is downscaled
+				},
+			}},
+		}
+		InstallVPA(f, vpaCRD)
+
+		// Min CPU from limit range is 50m and ratio is 1.5. Min applies to both limit and request so min
+		// request is 50m and min limit is 75
+		// Min memory limit is 250Mi and it applies to both limit and request. Recommendation is 100Mi.
+		// It should be scaled up to 250Mi.
+		InstallLimitRangeWithMin(f, "50m", "250Mi", apiv1.LimitTypeContainer)
+
+		ginkgo.By("Setting up a hamster deployment")
+		podList := startDeploymentPods(f, d)
+
+		// Originally Pods had 100m CPU, 200Mi of memory, but admission controller
+		// should change it to 250m CPU and 125Mi of memory, since this is the lowest
+		// request that limitrange allows.
+		// Limit to request ratio should stay unchanged.
+		for _, pod := range podList.Items {
+			gomega.Expect(*pod.Spec.Containers[0].Resources.Requests.Cpu()).To(gomega.Equal(ParseQuantityOrDie("250m")))
+			gomega.Expect(*pod.Spec.Containers[0].Resources.Requests.Memory()).To(gomega.Equal(ParseQuantityOrDie("250Mi")))
+			gomega.Expect(pod.Spec.Containers[0].Resources.Limits.Cpu().MilliValue()).To(gomega.BeNumerically(">=", 75))
+			gomega.Expect(pod.Spec.Containers[0].Resources.Limits.Memory().Value()).To(gomega.BeNumerically(">=", 250*1024*1024))
+			gomega.Expect(float64(pod.Spec.Containers[0].Resources.Limits.Cpu().MilliValue()) / float64(pod.Spec.Containers[0].Resources.Requests.Cpu().MilliValue())).To(gomega.BeNumerically("~", 1.5))
+			gomega.Expect(float64(pod.Spec.Containers[0].Resources.Limits.Memory().Value()) / float64(pod.Spec.Containers[0].Resources.Requests.Memory().Value())).To(gomega.BeNumerically("~", 2.))
+		}
+	})
+
+	ginkgo.It("caps request according to pod max limit set in LimitRange", func() {
+		d := NewHamsterDeploymentWithResourcesAndLimits(f,
+			ParseQuantityOrDie("100m") /*cpu request*/, ParseQuantityOrDie("100Mi"), /*memory request*/
+			ParseQuantityOrDie("150m") /*cpu limit*/, ParseQuantityOrDie("200Mi") /*memory limit*/)
+		d.Spec.Template.Spec.Containers = append(d.Spec.Template.Spec.Containers, d.Spec.Template.Spec.Containers[0])
+		d.Spec.Template.Spec.Containers[1].Name = "hamster2"
+		ginkgo.By("Setting up a VPA CRD")
+		vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef)
+		vpaCRD.Status.Recommendation = &vpa_types.RecommendedPodResources{
+			ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+				{
+					ContainerName: "hamster",
+					Target: apiv1.ResourceList{
+						apiv1.ResourceCPU:    ParseQuantityOrDie("250m"),
+						apiv1.ResourceMemory: ParseQuantityOrDie("200Mi"),
+					},
+				},
+				{
+					ContainerName: "hamster2",
+					Target: apiv1.ResourceList{
+						apiv1.ResourceCPU:    ParseQuantityOrDie("250m"),
+						apiv1.ResourceMemory: ParseQuantityOrDie("200Mi"),
+					},
+				},
+			},
+		}
+		InstallVPA(f, vpaCRD)
+
+		// Max CPU limit is 600m for pod, 300 per container and ratio is 1.5, so max request is 200m,
+		// while recommendation is 250m
+		// Max memory limit is 1Gi and ratio is 2., so max request is 0.5Gi
+		InstallLimitRangeWithMax(f, "600m", "1Gi", apiv1.LimitTypePod)
+
+		ginkgo.By("Setting up a hamster deployment")
+		podList := startDeploymentPods(f, d)
+
+		// Originally Pods had 100m CPU, 100Mi of memory, but admission controller
+		// should change it to 200m CPU (as this is the recommendation
+		// capped according to max limit in LimitRange) and 200Mi of memory,
+		// which is uncapped. Limit to request ratio should stay unchanged.
+		for _, pod := range podList.Items {
+			gomega.Expect(*pod.Spec.Containers[0].Resources.Requests.Cpu()).To(gomega.Equal(ParseQuantityOrDie("200m")))
+			gomega.Expect(*pod.Spec.Containers[0].Resources.Requests.Memory()).To(gomega.Equal(ParseQuantityOrDie("200Mi")))
+			gomega.Expect(pod.Spec.Containers[0].Resources.Limits.Cpu().MilliValue()).To(gomega.BeNumerically("<=", 300))
+			gomega.Expect(pod.Spec.Containers[0].Resources.Limits.Memory().Value()).To(gomega.BeNumerically("<=", 1024*1024*1024))
+			gomega.Expect(float64(pod.Spec.Containers[0].Resources.Limits.Cpu().MilliValue()) / float64(pod.Spec.Containers[0].Resources.Requests.Cpu().MilliValue())).To(gomega.BeNumerically("~", 1.5))
+			gomega.Expect(float64(pod.Spec.Containers[0].Resources.Limits.Memory().Value()) / float64(pod.Spec.Containers[0].Resources.Requests.Memory().Value())).To(gomega.BeNumerically("~", 2.))
+		}
+	})
+
+	ginkgo.It("raises request according to pod min limit set in LimitRange", func() {
+		d := NewHamsterDeploymentWithResourcesAndLimits(f,
+			ParseQuantityOrDie("100m") /*cpu request*/, ParseQuantityOrDie("200Mi"), /*memory request*/
+			ParseQuantityOrDie("150m") /*cpu limit*/, ParseQuantityOrDie("400Mi") /*memory limit*/)
+		d.Spec.Template.Spec.Containers = append(d.Spec.Template.Spec.Containers, d.Spec.Template.Spec.Containers[0])
+		d.Spec.Template.Spec.Containers[1].Name = "hamster2"
+		ginkgo.By("Setting up a VPA CRD")
+		vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef)
+		vpaCRD.Status.Recommendation = &vpa_types.RecommendedPodResources{
+			ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+				{
+					ContainerName: "hamster",
+					Target: apiv1.ResourceList{
+						apiv1.ResourceCPU:    ParseQuantityOrDie("120m"),
+						apiv1.ResourceMemory: ParseQuantityOrDie("100Mi"), // memory is downscaled
+					},
+				},
+				{
+					ContainerName: "hamster2",
+					Target: apiv1.ResourceList{
+						apiv1.ResourceCPU:    ParseQuantityOrDie("120m"),
+						apiv1.ResourceMemory: ParseQuantityOrDie("100Mi"), // memory is downscaled
+					},
+				},
+			},
+		}
+		InstallVPA(f, vpaCRD)
+
+		// Min CPU from limit range is 100m, 50m per pod and ratio is 1.5. Min applies to both limit and
+		// request so min request is 50m and min limit is 75
+		// Min memory limit is 500Mi per pod, 250 per container and it applies to both limit and request.
+		// Recommendation is 100Mi it should be scaled up to 250Mi.
+		InstallLimitRangeWithMin(f, "100m", "500Mi", apiv1.LimitTypePod)
+
+		ginkgo.By("Setting up a hamster deployment")
+		podList := startDeploymentPods(f, d)
+
+		// Originally Pods had 100m CPU, 200Mi of memory, but admission controller
+		// should change it to 250m CPU and 125Mi of memory, since this is the lowest
+		// request that limitrange allows.
+		// Limit to request ratio should stay unchanged.
+		for _, pod := range podList.Items {
+			gomega.Expect(*pod.Spec.Containers[0].Resources.Requests.Cpu()).To(gomega.Equal(ParseQuantityOrDie("120m")))
+			gomega.Expect(*pod.Spec.Containers[0].Resources.Requests.Memory()).To(gomega.Equal(ParseQuantityOrDie("250Mi")))
+			gomega.Expect(pod.Spec.Containers[0].Resources.Limits.Cpu().MilliValue()).To(gomega.BeNumerically(">=", 75))
+			gomega.Expect(pod.Spec.Containers[0].Resources.Limits.Memory().Value()).To(gomega.BeNumerically(">=", 250*1024*1024))
+			gomega.Expect(float64(pod.Spec.Containers[0].Resources.Limits.Cpu().MilliValue()) / float64(pod.Spec.Containers[0].Resources.Requests.Cpu().MilliValue())).To(gomega.BeNumerically("~", 1.5))
+			gomega.Expect(float64(pod.Spec.Containers[0].Resources.Limits.Memory().Value()) / float64(pod.Spec.Containers[0].Resources.Requests.Memory().Value())).To(gomega.BeNumerically("~", 2.))
+		}
+	})
+
 	ginkgo.It("caps request to max set in VPA", func() {
 		d := NewHamsterDeploymentWithResources(f, ParseQuantityOrDie("100m") /*cpu*/, ParseQuantityOrDie("100Mi") /*memory*/)
 
