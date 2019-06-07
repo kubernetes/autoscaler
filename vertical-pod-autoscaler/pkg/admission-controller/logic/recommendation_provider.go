@@ -128,11 +128,10 @@ func (p *recommendationProvider) GetContainersResourcesForPod(pod *core.Pod) ([]
 			return nil, annotations, vpaConfig.Name, err
 		}
 	}
-	podLimitRange, err := p.limitsRangeCalculator.GetContainerLimitRangeItem(pod.Namespace)
-	// TODO: Support limit range on pod level.
+	containerLimitRange, err := p.limitsRangeCalculator.GetContainerLimitRangeItem(pod.Namespace)
 	if err != nil {
-		return nil, nil, "", fmt.Errorf("error getting podLimitRange: %s", err)
+		return nil, nil, "", fmt.Errorf("error getting containerLimitRange: %s", err)
 	}
-	containerResources := GetContainersResources(pod, *recommendedPodResources, podLimitRange, annotations)
+	containerResources := GetContainersResources(pod, *recommendedPodResources, containerLimitRange, annotations)
 	return containerResources, annotations, vpaConfig.Name, nil
 }
