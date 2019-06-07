@@ -17,8 +17,12 @@ limitations under the License.
 package logic
 
 import (
-	v1 "k8s.io/api/core/v1"
+	"fmt"
+	"k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/labels"
+	"math"
+	"math/big"
 
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
 	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1beta2"
@@ -29,11 +33,15 @@ import (
 
 // ContainerResources holds resources request for container
 type ContainerResources struct {
+	Limits   v1.ResourceList
 	Requests v1.ResourceList
 }
 
 func newContainerResources() ContainerResources {
-	return ContainerResources{Requests: v1.ResourceList{}}
+	return ContainerResources{
+		Requests: v1.ResourceList{},
+		Limits:   v1.ResourceList{},
+	}
 }
 
 // RecommendationProvider gets current recommendation, annotations and vpaName for the given pod.
@@ -56,8 +64,38 @@ func NewRecommendationProvider(vpaLister vpa_lister.VerticalPodAutoscalerLister,
 	}
 }
 
-// getContainersResources returns the recommended resources for each container in the given pod in the same order they are specified in the pod.Spec.
-func getContainersResources(pod *v1.Pod, podRecommendation vpa_types.RecommendedPodResources) []ContainerResources {
+func getProportionalLimit(originalLimit, originalRequest, recommendedRequest *resource.Quantity) (limit *resource.Quantity, capped bool) {
+	// originalLimit not set, don't set limit.
+	if originalLimit == nil || originalLimit.Value() == 0 {
+		return nil, false
+	}
+	// originalLimit set but originalRequest not set - K8s will treat the pod as if they were equal,
+	// recommend limit equal to request
+	if originalRequest == nil || originalRequest.Value() == 0 {
+		result := *recommendedRequest
+		return &result, false
+	}
+	// originalLimit and originalRequest are set. If they are equal recommend limit equal to request.
+	if originalRequest.MilliValue() == originalLimit.MilliValue() {
+		result := *recommendedRequest
+		return &result, false
+	}
+
+	// Input and output milli values should fit in int64 but intermediate values might be bigger.
+	originalMilliRequest := big.NewInt(originalRequest.MilliValue())
+	originalMilliLimit := big.NewInt(originalLimit.MilliValue())
+	recommendedMilliRequest := big.NewInt(recommendedRequest.MilliValue())
+	var recommendedMilliLimit big.Int
+	recommendedMilliLimit.Mul(recommendedMilliRequest, originalMilliLimit)
+	recommendedMilliLimit.Div(&recommendedMilliLimit, originalMilliRequest)
+	if recommendedMilliLimit.IsInt64() {
+		return resource.NewMilliQuantity(recommendedMilliLimit.Int64(), recommendedRequest.Format), false
+	}
+	return resource.NewMilliQuantity(math.MaxInt64, recommendedRequest.Format), true
+}
+
+// GetContainersResources returns the recommended resources for each container in the given pod in the same order they are specified in the pod.Spec.
+func GetContainersResources(pod *v1.Pod, podRecommendation vpa_types.RecommendedPodResources, annotations vpa_api_util.ContainerToAnnotationsMap) []ContainerResources {
 	resources := make([]ContainerResources, len(pod.Spec.Containers))
 	for i, container := range pod.Spec.Containers {
 		resources[i] = newContainerResources()
@@ -68,6 +106,29 @@ func getContainersResources(pod *v1.Pod, podRecommendation vpa_types.Recommended
 			continue
 		}
 		resources[i].Requests = recommendation.Target
+
+		cpuLimit, capped := getProportionalLimit(container.Resources.Limits.Cpu(), container.Resources.Requests.Cpu(), resources[i].Requests.Cpu())
+		if cpuLimit != nil {
+			resources[i].Limits[v1.ResourceCPU] = *cpuLimit
+		}
+		if capped {
+			annotations[container.Name] = append(
+				annotations[container.Name],
+				fmt.Sprintf(
+					"Failed to keep CPU limit to request proportion of %d to %d with recommended request of %d milliCPU; doesn't fit in int64. Capping limit to MaxInt64",
+					container.Resources.Limits.Cpu().MilliValue(), container.Resources.Requests.Cpu().MilliValue(), resources[i].Requests.Cpu().MilliValue()))
+		}
+		memLimit, capped := getProportionalLimit(container.Resources.Limits.Memory(), container.Resources.Requests.Memory(), resources[i].Requests.Memory())
+		if memLimit != nil {
+			resources[i].Limits[v1.ResourceMemory] = *memLimit
+		}
+		if capped {
+			annotations[container.Name] = append(
+				annotations[container.Name],
+				fmt.Sprintf(
+					"Failed to keep memory limit to request proportion of %d to %d with recommended request of %d milliBytes; doesn't fit in int64. Capping limit to MaxInt64",
+					container.Resources.Limits.Memory().MilliValue(), container.Resources.Requests.Memory().MilliValue(), resources[i].Requests.Memory().MilliValue()))
+		}
 	}
 	return resources
 }
@@ -122,6 +183,6 @@ func (p *recommendationProvider) GetContainersResourcesForPod(pod *v1.Pod) ([]Co
 			return nil, annotations, vpaConfig.Name, err
 		}
 	}
-	containerResources := getContainersResources(pod, *recommendedPodResources)
+	containerResources := GetContainersResources(pod, *recommendedPodResources, annotations)
 	return containerResources, annotations, vpaConfig.Name, nil
 }
