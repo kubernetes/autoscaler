@@ -18,7 +18,6 @@ package target
 
 import (
 	"fmt"
-	"k8s.io/klog"
 	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
@@ -39,6 +38,7 @@ import (
 	"k8s.io/client-go/restmapper"
 	"k8s.io/client-go/scale"
 	"k8s.io/client-go/tools/cache"
+	"k8s.io/klog"
 )
 
 const (
@@ -115,7 +115,7 @@ type vpaTargetSelectorFetcher struct {
 
 func (f *vpaTargetSelectorFetcher) Fetch(vpa *vpa_types.VerticalPodAutoscaler) (labels.Selector, error) {
 	if vpa.Spec.TargetRef == nil {
-		return nil, fmt.Errorf("targetRef not defined")
+		return nil, fmt.Errorf("targetRef not defined. If this is a v1beta1 object switch to v1beta2.")
 	}
 	kind := wellKnownController(vpa.Spec.TargetRef.Kind)
 	informer, exists := f.informersMap[kind]
