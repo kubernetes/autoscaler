@@ -279,7 +279,7 @@ func TestUpdateResourceRequests(t *testing.T) {
 			vpas:              []*vpa_types.VerticalPodAutoscaler{vpa},
 			limitRangeCalcErr: fmt.Errorf("oh no"),
 			expectedAction:    false,
-			expectedError:     fmt.Errorf("error getting podLimitRange: oh no"),
+			expectedError:     fmt.Errorf("error getting containerLimitRange: oh no"),
 		},
 		{
 			name:             "proportional limit from default",
