@@ -22,7 +22,7 @@ import (
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
-	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics"
 )
@@ -40,6 +40,7 @@ type apiVersion string
 const (
 	v1beta1 apiVersion = "v1beta1"
 	v1beta2 apiVersion = "v1beta2"
+	v1      apiVersion = "v1"
 )
 
 var (
@@ -114,7 +115,7 @@ func NewObjectCounter() *ObjectCounter {
 	// initialize with empty data so we can clean stale gauge values in Observe
 	for _, m := range modes {
 		for _, h := range []bool{false, true} {
-			for _, api := range []apiVersion{v1beta1, v1beta2} {
+			for _, api := range []apiVersion{v1beta1, v1beta2, v1} {
 				for _, mp := range []bool{false, true} {
 					for _, uc := range []bool{false, true} {
 						obj.cnt[objectCounterKey{
@@ -139,6 +140,7 @@ func (oc *ObjectCounter) Add(vpa *model.Vpa) {
 	if vpa.UpdateMode != nil && string(*vpa.UpdateMode) != "" {
 		mode = string(*vpa.UpdateMode)
 	}
+	// TODO: Maybe report v1 version as well.
 	api := v1beta2
 	if vpa.IsV1Beta1API {
 		api = v1beta1

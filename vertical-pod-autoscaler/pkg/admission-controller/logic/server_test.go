@@ -26,7 +26,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 )
 
@@ -403,7 +403,7 @@ func TestValidateVPA(t *testing.T) {
 			name:        "empty create",
 			vpa:         vpa_types.VerticalPodAutoscaler{},
 			isCreate:    true,
-			expectError: fmt.Errorf("TargetRef is required. If you're using v1beta1 version of the API, please migrate to v1beta2."),
+			expectError: fmt.Errorf("TargetRef is required. If you're using v1beta1 version of the API, please migrate to v1."),
 		},
 		{
 			name: "no update mode",
