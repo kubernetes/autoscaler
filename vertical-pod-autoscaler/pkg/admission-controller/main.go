@@ -78,10 +78,7 @@ func main() {
 	vpaLister := vpa_api_util.NewAllVpasLister(vpaClient, make(chan struct{}))
 	kubeClient := kube_client.NewForConfigOrDie(config)
 	factory := informers.NewSharedInformerFactory(kubeClient, defaultResyncPeriod)
-	targetSelectorFetcher := target.NewCompositeTargetSelectorFetcher(
-		target.NewVpaTargetSelectorFetcher(config, kubeClient, factory),
-		target.NewBeta1TargetSelectorFetcher(config),
-	)
+	targetSelectorFetcher := target.NewVpaTargetSelectorFetcher(config, kubeClient, factory)
 	podPreprocessor := logic.NewDefaultPodPreProcessor()
 	vpaPreprocessor := logic.NewDefaultVpaPreProcessor()
 	var limitRangeCalculator limitrange.LimitRangeCalculator
