@@ -255,17 +255,9 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	if len(unregisteredNodes) > 0 {
 		klog.V(1).Infof("%d unregistered nodes present", len(unregisteredNodes))
 		removedAny, err := removeOldUnregisteredNodes(unregisteredNodes, autoscalingContext, currentTime, autoscalingContext.LogRecorder)
-		// There was a problem with removing unregistered nodes. Retry in the next loop.
 		if err != nil {
-			if removedAny {
-				klog.Warningf("Some unregistered nodes were removed, but got error: %v", err)
-			} else {
-				klog.Errorf("Failed to remove unregistered nodes: %v", err)
-
-			}
-			return errors.ToAutoscalerError(errors.CloudProviderError, err)
+			klog.Warningf("Failed to remove unregistered nodes: %v", err)
 		}
-		// Some nodes were removed. Let's skip this iteration, the next one should be better.
 		if removedAny {
 			klog.V(0).Infof("Some unregistered nodes were removed, skipping iteration")
 			return nil
