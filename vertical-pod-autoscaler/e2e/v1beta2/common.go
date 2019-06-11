@@ -103,9 +103,9 @@ func SetupHamsterDeployment(f *framework.Framework, cpu, memory string, replicas
 	d := NewHamsterDeploymentWithResources(f, cpuQuantity, memoryQuantity)
 	d.Spec.Replicas = &replicas
 	d, err := f.ClientSet.AppsV1().Deployments(f.Namespace.Name).Create(d)
-	gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "unexpected error when starting deployment creation")
 	err = framework.WaitForDeploymentComplete(f.ClientSet, d)
-	gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "unexpected error waiting for deployment creation to finish")
 	return d
 }
 
@@ -143,6 +143,17 @@ func NewHamsterDeploymentWithGuaranteedResources(f *framework.Framework, cpuQuan
 	return d
 }
 
+// NewHamsterDeploymentWithResourcesAndLimits creates a simple hamster deployment with specific
+// resource requests and limits for e2e test purposes.
+func NewHamsterDeploymentWithResourcesAndLimits(f *framework.Framework, cpuQuantityRequest, memoryQuantityRequest, cpuQuantityLimit, memoryQuantityLimit resource.Quantity) *appsv1.Deployment {
+	d := NewHamsterDeploymentWithResources(f, cpuQuantityRequest, memoryQuantityRequest)
+	d.Spec.Template.Spec.Containers[0].Resources.Limits = apiv1.ResourceList{
+		apiv1.ResourceCPU:    cpuQuantityLimit,
+		apiv1.ResourceMemory: memoryQuantityLimit,
+	}
+	return d
+}
+
 // GetHamsterPods returns running hamster pods (matched by hamsterLabels)
 func GetHamsterPods(f *framework.Framework) (*apiv1.PodList, error) {
 	label := labels.SelectorFromSet(labels.Set(hamsterLabels))
@@ -167,6 +178,33 @@ func SetupVPA(f *framework.Framework, cpu string, mode vpa_types.UpdateMode, tar
 			LowerBound:    resourceList,
 			UpperBound:    resourceList,
 		}},
+	}
+	InstallVPA(f, vpaCRD)
+}
+
+// SetupVPAForTwoHamsters creates and installs a simple pod with two hamster containers for e2e test purposes.
+func SetupVPAForTwoHamsters(f *framework.Framework, cpu string, mode vpa_types.UpdateMode, targetRef *autoscaling.CrossVersionObjectReference) {
+	vpaCRD := NewVPA(f, "hamster-vpa", targetRef)
+	vpaCRD.Spec.UpdatePolicy.UpdateMode = &mode
+
+	cpuQuantity := ParseQuantityOrDie(cpu)
+	resourceList := apiv1.ResourceList{apiv1.ResourceCPU: cpuQuantity}
+
+	vpaCRD.Status.Recommendation = &vpa_types.RecommendedPodResources{
+		ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+			{
+				ContainerName: "hamster",
+				Target:        resourceList,
+				LowerBound:    resourceList,
+				UpperBound:    resourceList,
+			},
+			{
+				ContainerName: "hamster2",
+				Target:        resourceList,
+				LowerBound:    resourceList,
+				UpperBound:    resourceList,
+			},
+		},
 	}
 	InstallVPA(f, vpaCRD)
 }
@@ -196,18 +234,18 @@ func NewVPA(f *framework.Framework, name string, targetRef *autoscaling.CrossVer
 func InstallVPA(f *framework.Framework, vpa *vpa_types.VerticalPodAutoscaler) {
 	ns := f.Namespace.Name
 	config, err := framework.LoadConfig()
-	gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "unexpected error loading framework")
 	vpaClientSet := vpa_clientset.NewForConfigOrDie(config)
 	vpaClient := vpaClientSet.AutoscalingV1beta2()
 	_, err = vpaClient.VerticalPodAutoscalers(ns).Create(vpa)
-	gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "unexpected error creating VPA")
 }
 
 // ParseQuantityOrDie parses quantity from string and dies with an error if
 // unparsable.
 func ParseQuantityOrDie(text string) resource.Quantity {
 	quantity, err := resource.ParseQuantity(text)
-	gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "unexpected error parsing quantity: %s", text)
 	return quantity
 }
 
@@ -299,9 +337,9 @@ func GetEvictedPodsCount(currentPodSet PodSet, initialPodSet PodSet) int {
 func CheckNoPodsEvicted(f *framework.Framework, initialPodSet PodSet) {
 	time.Sleep(VpaEvictionTimeout)
 	currentPodList, err := GetHamsterPods(f)
-	gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "unexpected error when listing hamster pods to check number of pod evictions")
 	restarted := GetEvictedPodsCount(MakePodSet(currentPodList), initialPodSet)
-	gomega.Expect(restarted).To(gomega.Equal(0))
+	gomega.Expect(restarted).To(gomega.Equal(0), "there should be no pod evictions")
 }
 
 // WaitForVPAMatch pools VPA object until match function returns true. Returns
@@ -334,4 +372,62 @@ func WaitForRecommendationPresent(c *vpa_clientset.Clientset, vpa *vpa_types.Ver
 	return WaitForVPAMatch(c, vpa, func(vpa *vpa_types.VerticalPodAutoscaler) bool {
 		return vpa.Status.Recommendation != nil && len(vpa.Status.Recommendation.ContainerRecommendations) != 0
 	})
+}
+
+func installLimitRange(f *framework.Framework, minCpuLimit, minMemoryLimit, maxCpuLimit, maxMemoryLimit *resource.Quantity, lrType apiv1.LimitType) {
+	lr := &apiv1.LimitRange{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: f.Namespace.Name,
+			Name:      "hamster-lr",
+		},
+		Spec: apiv1.LimitRangeSpec{
+			Limits: []apiv1.LimitRangeItem{},
+		},
+	}
+
+	if maxMemoryLimit != nil || maxCpuLimit != nil {
+		lrItem := apiv1.LimitRangeItem{
+			Type: lrType,
+			Max:  apiv1.ResourceList{},
+		}
+		if maxCpuLimit != nil {
+			lrItem.Max[apiv1.ResourceCPU] = *maxCpuLimit
+		}
+		if maxMemoryLimit != nil {
+			lrItem.Max[apiv1.ResourceMemory] = *maxMemoryLimit
+		}
+		lr.Spec.Limits = append(lr.Spec.Limits, lrItem)
+	}
+
+	if minMemoryLimit != nil || minCpuLimit != nil {
+		lrItem := apiv1.LimitRangeItem{
+			Type: lrType,
+			Min:  apiv1.ResourceList{},
+		}
+		if minCpuLimit != nil {
+			lrItem.Min[apiv1.ResourceCPU] = *minCpuLimit
+		}
+		if minMemoryLimit != nil {
+			lrItem.Min[apiv1.ResourceMemory] = *minMemoryLimit
+		}
+		lr.Spec.Limits = append(lr.Spec.Limits, lrItem)
+	}
+	_, err := f.ClientSet.CoreV1().LimitRanges(f.Namespace.Name).Create(lr)
+	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "unexpected error when creating limit range")
+}
+
+// InstallLimitRangeWithMax installs a LimitRange with a maximum limit for CPU and memory.
+func InstallLimitRangeWithMax(f *framework.Framework, maxCpuLimit, maxMemoryLimit string, lrType apiv1.LimitType) {
+	ginkgo.By(fmt.Sprintf("Setting up LimitRange with max limits - CPU: %v, memory: %v", maxCpuLimit, maxMemoryLimit))
+	maxCpuLimitQuantity := ParseQuantityOrDie(maxCpuLimit)
+	maxMemoryLimitQuantity := ParseQuantityOrDie(maxMemoryLimit)
+	installLimitRange(f, nil, nil, &maxCpuLimitQuantity, &maxMemoryLimitQuantity, lrType)
+}
+
+// InstallLimitRangeWithMin installs a LimitRange with a minimum limit for CPU and memory.
+func InstallLimitRangeWithMin(f *framework.Framework, minCpuLimit, minMemoryLimit string, lrType apiv1.LimitType) {
+	ginkgo.By(fmt.Sprintf("Setting up LimitRange with min limits - CPU: %v, memory: %v", minCpuLimit, minMemoryLimit))
+	minCpuLimitQuantity := ParseQuantityOrDie(minCpuLimit)
+	minMemoryLimitQuantity := ParseQuantityOrDie(minMemoryLimit)
+	installLimitRange(f, &minCpuLimitQuantity, &minMemoryLimitQuantity, nil, nil, lrType)
 }

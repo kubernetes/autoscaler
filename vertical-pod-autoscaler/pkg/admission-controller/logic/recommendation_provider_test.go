@@ -21,17 +21,18 @@ import (
 	"math"
 	"testing"
 
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
 	target_mock "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/mock"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/test"
-	api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
+
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 )
 
 func parseLabelSelector(selector string) labels.Selector {
@@ -43,6 +44,21 @@ func parseLabelSelector(selector string) labels.Selector {
 func mustParseResourcePointer(val string) *resource.Quantity {
 	q := resource.MustParse(val)
 	return &q
+}
+
+type fakeLimitRangeCalculator struct {
+	containerLimitRange *apiv1.LimitRangeItem
+	containerErr        error
+	podLimitRange       *apiv1.LimitRangeItem
+	podErr              error
+}
+
+func (nlrc *fakeLimitRangeCalculator) GetContainerLimitRangeItem(namespace string) (*apiv1.LimitRangeItem, error) {
+	return nlrc.containerLimitRange, nlrc.containerErr
+}
+
+func (nlrc *fakeLimitRangeCalculator) GetPodLimitRangeItem(namespace string) (*apiv1.LimitRangeItem, error) {
+	return nlrc.podLimitRange, nlrc.podErr
 }
 
 func TestUpdateResourceRequests(t *testing.T) {
@@ -62,7 +78,7 @@ func TestUpdateResourceRequests(t *testing.T) {
 		WithLabels(labels).Get()
 
 	initializedContainer := test.Container().WithName(containerName).
-		WithCPURequest(resource.MustParse("1")).WithMemRequest(resource.MustParse("100Mi")).Get()
+		WithCPURequest(resource.MustParse("1")).WithCPURequest(resource.MustParse("2")).WithMemRequest(resource.MustParse("100Mi")).Get()
 	initialized := test.Pod().WithName("test_initialized").
 		AddContainer(initializedContainer).WithLabels(labels).Get()
 
@@ -102,16 +118,19 @@ func TestUpdateResourceRequests(t *testing.T) {
 	vpaWithNilRecommendation.Status.Recommendation = nil
 
 	testCases := []struct {
-		name             string
-		pod              *apiv1.Pod
-		vpas             []*vpa_types.VerticalPodAutoscaler
-		expectedAction   bool
-		expectedMem      resource.Quantity
-		expectedCPU      resource.Quantity
-		expectedCPULimit *resource.Quantity
-		expectedMemLimit *resource.Quantity
-		annotations      vpa_api_util.ContainerToAnnotationsMap
-		labelSelector    string
+		name              string
+		pod               *apiv1.Pod
+		vpas              []*vpa_types.VerticalPodAutoscaler
+		expectedAction    bool
+		expectedError     error
+		expectedMem       resource.Quantity
+		expectedCPU       resource.Quantity
+		expectedCPULimit  *resource.Quantity
+		expectedMemLimit  *resource.Quantity
+		limitRange        *apiv1.LimitRangeItem
+		limitRangeCalcErr error
+		annotations       vpa_api_util.ContainerToAnnotationsMap
+		labelSelector     string
 	}{
 		{
 			name:           "uninitialized pod",
@@ -249,12 +268,39 @@ func TestUpdateResourceRequests(t *testing.T) {
 			labelSelector:    "app = testingApp",
 			annotations: vpa_api_util.ContainerToAnnotationsMap{
 				containerName: []string{
-					"Failed to keep CPU limit to request proportion of 10000 to 1000 with recommended request of -9223372036854775808 milliCPU; doesn't fit in int64. Capping limit to MaxInt64",
-					"Failed to keep memory limit to request proportion of 1048576000000 to 104857600000 with recommended request of -9223372036854775808 milliBytes; doesn't fit in int64. Capping limit to MaxInt64",
+					"cpu: failed to keep limit to request ratio; capping limit to int64",
+					"memory: failed to keep limit to request ratio; capping limit to int64",
+				},
+			},
+		},
+		{
+			name:              "limit range calculation error",
+			pod:               initialized,
+			vpas:              []*vpa_types.VerticalPodAutoscaler{vpa},
+			limitRangeCalcErr: fmt.Errorf("oh no"),
+			expectedAction:    false,
+			expectedError:     fmt.Errorf("error getting podLimitRange: oh no"),
+		},
+		{
+			name:             "proportional limit from default",
+			pod:              initialized,
+			vpas:             []*vpa_types.VerticalPodAutoscaler{vpa},
+			expectedAction:   true,
+			expectedCPU:      resource.MustParse("2"),
+			expectedMem:      resource.MustParse("200Mi"),
+			expectedCPULimit: mustParseResourcePointer("2"),
+			expectedMemLimit: mustParseResourcePointer("200Mi"),
+			labelSelector:    "app = testingApp",
+			limitRange: &apiv1.LimitRangeItem{
+				Type: apiv1.LimitTypeContainer,
+				Default: apiv1.ResourceList{
+					apiv1.ResourceCPU:    resource.MustParse("2"),
+					apiv1.ResourceMemory: resource.MustParse("100Mi"),
 				},
 			},
 		},
 	}
+
 	for _, tc := range testCases {
 		t.Run(fmt.Sprintf(tc.name), func(t *testing.T) {
 			ctrl := gomock.NewController(t)
@@ -272,8 +318,12 @@ func TestUpdateResourceRequests(t *testing.T) {
 
 			recommendationProvider := &recommendationProvider{
 				vpaLister:               vpaLister,
-				recommendationProcessor: api.NewCappingRecommendationProcessor(),
+				recommendationProcessor: vpa_api_util.NewCappingRecommendationProcessor(limitrange.NewNoopLimitsCalculator()),
 				selectorFetcher:         mockSelectorFetcher,
+				limitsRangeCalculator: &fakeLimitRangeCalculator{
+					containerLimitRange: tc.limitRange,
+					containerErr:        tc.limitRangeCalcErr,
+				},
 			}
 
 			resources, annotations, name, err := recommendationProvider.GetContainersResourcesForPod(tc.pod)
@@ -304,7 +354,7 @@ func TestUpdateResourceRequests(t *testing.T) {
 				if tc.expectedMemLimit == nil {
 					assert.False(t, memLimitPresent, "expected no memory limit, got %s", memLimit.String())
 				} else {
-					if assert.True(t, memLimitPresent, "expected cpu limit, but it's missing") {
+					if assert.True(t, memLimitPresent, "expected memory limit, but it's missing") {
 						assert.Equal(t, tc.expectedMemLimit.MilliValue(), memLimit.MilliValue(), "memory limit doesn't match")
 					}
 				}
@@ -320,6 +370,12 @@ func TestUpdateResourceRequests(t *testing.T) {
 				}
 			} else {
 				assert.Empty(t, resources)
+				if tc.expectedError != nil {
+					assert.Error(t, err)
+					assert.Equal(t, tc.expectedError.Error(), err.Error())
+				} else {
+					assert.NoError(t, err)
+				}
 			}
 
 		})
