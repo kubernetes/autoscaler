@@ -236,7 +236,9 @@ func (cluster *ClusterState) AddOrUpdateVpa(apiObject *vpa_types.VerticalPodAuto
 		vpa = NewVpa(vpaID, selector, apiObject.CreationTimestamp.Time)
 		cluster.Vpas[vpaID] = vpa
 		for aggregationKey, aggregation := range cluster.aggregateStateMap {
-			vpa.UseAggregationIfMatching(aggregationKey, aggregation)
+			if vpa.UseAggregationIfMatching(aggregationKey, aggregation) {
+				cluster.VpasWithMatchingPods[vpa.ID] = true
+			}
 		}
 	}
 	vpa.TargetRef = apiObject.Spec.TargetRef
