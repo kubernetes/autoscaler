@@ -22,6 +22,7 @@ import (
 	"fmt"
 
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
+	v1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	v1beta1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
 	v1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
 	v1alpha1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/poc.autoscaling.k8s.io/v1alpha1"
@@ -54,7 +55,13 @@ func (f *genericInformer) Lister() cache.GenericLister {
 // TODO extend this to unknown resources with a client pool
 func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource) (GenericInformer, error) {
 	switch resource {
-	// Group=autoscaling.k8s.io, Version=v1beta1
+	// Group=autoscaling.k8s.io, Version=v1
+	case v1.SchemeGroupVersion.WithResource("verticalpodautoscalers"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Autoscaling().V1().VerticalPodAutoscalers().Informer()}, nil
+	case v1.SchemeGroupVersion.WithResource("verticalpodautoscalercheckpoints"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Autoscaling().V1().VerticalPodAutoscalerCheckpoints().Informer()}, nil
+
+		// Group=autoscaling.k8s.io, Version=v1beta1
 	case v1beta1.SchemeGroupVersion.WithResource("verticalpodautoscalers"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Autoscaling().V1beta1().VerticalPodAutoscalers().Informer()}, nil
 	case v1beta1.SchemeGroupVersion.WithResource("verticalpodautoscalercheckpoints"):
