@@ -18,16 +18,16 @@ package input
 
 import (
 	"fmt"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/controller_fetcher"
 	"testing"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
-	"k8s.io/api/autoscaling/v1"
+	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
+	controllerfetcher "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/controller_fetcher"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/input/spec"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 	target_mock "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target/mock"
@@ -67,14 +67,13 @@ const (
 	apiVersion = "stardust"
 )
 
-func TestLegacySelector(t *testing.T) {
+func TestLoadPods(t *testing.T) {
 
 	type testCase struct {
 		name                      string
-		legacySelector            labels.Selector
 		selector                  labels.Selector
 		fetchSelectorError        error
-		targetRef                 *v1.CrossVersionObjectReference
+		targetRef                 *autoscalingv1.CrossVersionObjectReference
 		topLevelKey               *controllerfetcher.ControllerKeyWithAPIVersion
 		findTopLevelError         error
 		expectedSelector          labels.Selector
@@ -85,7 +84,6 @@ func TestLegacySelector(t *testing.T) {
 	testCases := []testCase{
 		{
 			name:                      "no selector",
-			legacySelector:            nil,
 			selector:                  nil,
 			fetchSelectorError:        fmt.Errorf("targetRef not defined"),
 			expectedSelector:          labels.Nothing(),
@@ -94,7 +92,6 @@ func TestLegacySelector(t *testing.T) {
 		},
 		{
 			name:                      "also no selector but no error",
-			legacySelector:            nil,
 			selector:                  nil,
 			fetchSelectorError:        nil,
 			expectedSelector:          labels.Nothing(),
@@ -102,20 +99,10 @@ func TestLegacySelector(t *testing.T) {
 			expectedConfigDeprecated:  nil,
 		},
 		{
-			name:                      "legacy selector no ref",
-			legacySelector:            parseLabelSelector("app = test"),
-			selector:                  nil,
-			fetchSelectorError:        fmt.Errorf("targetRef not defined"),
-			expectedSelector:          labels.Nothing(),
-			expectedConfigUnsupported: &unsupportedConditionNoLongerSupported,
-			expectedConfigDeprecated:  nil,
-		}, {
-			name: "targetRef selector",
-			// the only valid option since v1beta1 removal
-			legacySelector:     nil,
+			name:               "targetRef selector",
 			selector:           parseLabelSelector("app = test"),
 			fetchSelectorError: nil,
-			targetRef: &v1.CrossVersionObjectReference{
+			targetRef: &autoscalingv1.CrossVersionObjectReference{
 				Kind:       kind,
 				Name:       name1,
 				APIVersion: apiVersion,
@@ -131,22 +118,13 @@ func TestLegacySelector(t *testing.T) {
 			expectedSelector:          parseLabelSelector("app = test"),
 			expectedConfigUnsupported: nil,
 			expectedConfigDeprecated:  nil,
-		}, {
-			name:                      "new and legacy selector",
-			legacySelector:            parseLabelSelector("app = test1"),
-			selector:                  parseLabelSelector("app = test2"),
-			fetchSelectorError:        nil,
-			expectedSelector:          labels.Nothing(),
-			expectedConfigUnsupported: &unsupportedConditionBothDefined,
-			expectedConfigDeprecated:  nil,
 		},
 		{
 			name:               "can't decide if top-level-ref",
-			legacySelector:     nil,
 			selector:           nil,
 			fetchSelectorError: nil,
 			expectedSelector:   labels.Nothing(),
-			targetRef: &v1.CrossVersionObjectReference{
+			targetRef: &autoscalingv1.CrossVersionObjectReference{
 				Kind:       kind,
 				Name:       name1,
 				APIVersion: apiVersion,
@@ -155,11 +133,10 @@ func TestLegacySelector(t *testing.T) {
 		},
 		{
 			name:               "non-top-level targetRef",
-			legacySelector:     nil,
 			selector:           parseLabelSelector("app = test"),
 			fetchSelectorError: nil,
 			expectedSelector:   labels.Nothing(),
-			targetRef: &v1.CrossVersionObjectReference{
+			targetRef: &autoscalingv1.CrossVersionObjectReference{
 				Kind:       kind,
 				Name:       name1,
 				APIVersion: apiVersion,
@@ -176,11 +153,10 @@ func TestLegacySelector(t *testing.T) {
 		},
 		{
 			name:               "error checking if top-level-ref",
-			legacySelector:     nil,
 			selector:           parseLabelSelector("app = test"),
 			fetchSelectorError: nil,
 			expectedSelector:   labels.Nothing(),
-			targetRef: &v1.CrossVersionObjectReference{
+			targetRef: &autoscalingv1.CrossVersionObjectReference{
 				Kind:       "doestar",
 				Name:       "doseph-doestar",
 				APIVersion: "taxonomy",
@@ -190,11 +166,10 @@ func TestLegacySelector(t *testing.T) {
 		},
 		{
 			name:               "top-level target ref",
-			legacySelector:     nil,
 			selector:           parseLabelSelector("app = test"),
 			fetchSelectorError: nil,
 			expectedSelector:   parseLabelSelector("app = test"),
-			targetRef: &v1.CrossVersionObjectReference{
+			targetRef: &autoscalingv1.CrossVersionObjectReference{
 				Kind:       kind,
 				Name:       name1,
 				APIVersion: apiVersion,
@@ -221,26 +196,20 @@ func TestLegacySelector(t *testing.T) {
 			vpaLister := &test.VerticalPodAutoscalerListerMock{}
 			vpaLister.On("List").Return([]*vpa_types.VerticalPodAutoscaler{vpa}, nil)
 
-			legacyTargetSelectorFetcher := target_mock.NewMockVpaTargetSelectorFetcher(ctrl)
 			targetSelectorFetcher := target_mock.NewMockVpaTargetSelectorFetcher(ctrl)
 
 			clusterState := model.NewClusterState()
 
 			clusterStateFeeder := clusterStateFeeder{
-				vpaLister:             vpaLister,
-				clusterState:          clusterState,
-				legacySelectorFetcher: legacyTargetSelectorFetcher,
-				selectorFetcher:       targetSelectorFetcher,
+				vpaLister:       vpaLister,
+				clusterState:    clusterState,
+				selectorFetcher: targetSelectorFetcher,
 				controllerFetcher: &fakeControllerFetcher{
 					key: tc.topLevelKey,
 					err: tc.findTopLevelError,
 				},
 			}
 
-			// legacyTargetSelectorFetcher is called twice:
-			// - one time to determine ultimate selector
-			// - one time to check if object uses deprecated API
-			legacyTargetSelectorFetcher.EXPECT().Fetch(vpa).Times(2).Return(tc.legacySelector, nil)
 			targetSelectorFetcher.EXPECT().Fetch(vpa).Return(tc.selector, tc.fetchSelectorError)
 			clusterStateFeeder.LoadVPAs()
 
