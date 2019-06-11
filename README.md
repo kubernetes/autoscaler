@@ -61,7 +61,8 @@ go get github.com/tools/godep
 cd $GOPATH/src/k8s.io/autoscaler/cluster-autoscaler 
 # start the build
 GOOS=linux make build-binary
-#Run the Dockerfile from $GOPATH/src/k8s.io/autoscaler directory
+#Copy  run.sh and Run the Dockerfile from $GOPATH/src/k8s.io/autoscaler directory
+cp $GOPATH/src/k8s.io/autoscaler/cluster-autoscaler ..
 docker build -t autoscaler -f cluster-autoscaler/Dockerfile .
 ```
 
