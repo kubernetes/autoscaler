@@ -27,7 +27,7 @@ import (
 )
 
 const (
-	defaultManager = "packngo"
+	defaultManager = "rest"
 )
 
 // NodeRef stores the name, machineID and providerID of a node.
@@ -58,8 +58,8 @@ func createPacketManager(configReader io.Reader, discoverOpts cloudprovider.Node
 	}
 
 	switch manager {
-	case "packngo":
-		return createPacketManagerPackngo(configReader, discoverOpts, opts)
+	case "rest":
+		return createPacketManagerRest(configReader, discoverOpts, opts)
 	}
 
 	return nil, fmt.Errorf("packet manager does not exist: %s", manager)
