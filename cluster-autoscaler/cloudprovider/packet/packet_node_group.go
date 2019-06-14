@@ -104,108 +104,128 @@ func (ng *packetNodeGroup) IncreaseSize(delta int) error {
 //   - does not allow scaling while the cluster is already in an UPDATE_IN_PROGRESS state
 //   - after scaling down, blocks until the cluster has reached UPDATE_COMPLETE
 func (ng *packetNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
-	return nil
-	/*
-		// Batch simultaneous deletes on individual nodes
-		ng.nodesToDeleteMutex.Lock()
+	klog.V(0).Infof("Locking nodesToDeleteMutex")
 
-		// First get the node group size and store the value, so that any other parallel delete calls can use it
-		// without having to make the get request for the cluster themselves.
-		// cachedSize keeps a local copy for this goroutine, so that ng.deleteNodesCachedSize is used
-		// only within the ng.nodesToDeleteMutex.
-		var cachedSize int
-		var err error
-		if time.Since(ng.deleteNodesCachedSizeAt) > time.Second*10 {
-			cachedSize, err = ng.packetManager.nodeGroupSize(ng.id)
-			if err != nil {
-				ng.nodesToDeleteMutex.Unlock()
-				return fmt.Errorf("could not get current node count: %v", err)
-			}
-			ng.deleteNodesCachedSize = cachedSize
-			ng.deleteNodesCachedSizeAt = time.Now()
-		} else {
-			cachedSize = ng.deleteNodesCachedSize
-		}
+	// Batch simultaneous deletes on individual nodes
+	ng.nodesToDeleteMutex.Lock()
 
-		// Check that these nodes would not make the batch delete more nodes than the minimum would allow
-		if cachedSize-len(ng.nodesToDelete)-len(nodes) < ng.MinSize() {
-			ng.nodesToDeleteMutex.Unlock()
-			return fmt.Errorf("deleting nodes would take nodegroup below minimum size")
-		}
-		// otherwise, add the nodes to the batch and release the lock
-		ng.nodesToDelete = append(ng.nodesToDelete, nodes...)
-		ng.nodesToDeleteMutex.Unlock()
-
-		// The first of the parallel delete calls to obtain this lock will be the one to actually perform the deletion
-		ng.clusterUpdateMutex.Lock()
-		defer ng.clusterUpdateMutex.Unlock()
-
-		ng.nodesToDeleteMutex.Lock()
-		if len(ng.nodesToDelete) == 0 {
-			// Deletion was handled by another goroutine
-			ng.nodesToDeleteMutex.Unlock()
-			return nil
-		}
-		ng.nodesToDeleteMutex.Unlock()
-
-		// This goroutine has the clusterUpdateMutex, so will be the one
-		// to actually delete the nodes. While this goroutine waits, others
-		// will add their nodes to nodesToDelete and block at acquiring
-		// the clusterUpdateMutex lock. One they get it, the deletion will
-		// already be done and they will return above at the check
-		// for len(ng.nodesToDelete) == 0.
-		time.Sleep(ng.deleteBatchingDelay)
-
-		ng.nodesToDeleteMutex.Lock()
-		nodes = make([]*apiv1.Node, len(ng.nodesToDelete))
-		copy(nodes, ng.nodesToDelete)
-		ng.nodesToDelete = nil
-		ng.nodesToDeleteMutex.Unlock()
-
-		var nodeNames []string
-		for _, node := range nodes {
-			nodeNames = append(nodeNames, node.Name)
-		}
-		klog.V(1).Infof("Deleting nodes: %v", nodeNames)
-
-		// Double check that the total number of batched nodes for deletion will not take the node group below its minimum size
-		if cachedSize-len(nodes) < ng.MinSize() {
-			return fmt.Errorf("size decrease too large, desired:%d min:%d", cachedSize-len(nodes), ng.MinSize())
-		}
-
-		var nodeRefs []NodeRef
-		for _, node := range nodes {
-
-			// Find node IPs, can be multiple (IPv4 and IPv6)
-			var IPs []string
-			for _, addr := range node.Status.Addresses {
-				if addr.Type == apiv1.NodeInternalIP {
-					IPs = append(IPs, addr.Address)
-				}
-			}
-			nodeRefs = append(nodeRefs, NodeRef{
-				Name:       node.Name,
-				MachineID:  node.Status.NodeInfo.MachineID,
-				ProviderID: node.Spec.ProviderID,
-				IPs:        IPs,
-			})
-		}
-
-		err = ng.packetManager.deleteNodes(ng.id, nodeRefs, cachedSize-len(nodes))
-		if err != nil {
-			return fmt.Errorf("manager error deleting nodes: %v", err)
-		} */
-
-	/*var cachedSize int
+	// First get the node group size and store the value, so that any other parallel delete calls can use it
+	// without having to make the get request themselves.
+	// cachedSize keeps a local copy for this goroutine, so that ng.deleteNodesCachedSize is used
+	// only within the ng.nodesToDeleteMutex.
+	var cachedSize int
 	var err error
-	cachedSize, err = ng.packetManager.nodeGroupSize(ng.id)
-	if err != nil {
-		ng.nodesToDeleteMutex.Unlock()
-		return fmt.Errorf("could not get current node count: %v", err)
+	if time.Since(ng.deleteNodesCachedSizeAt) > time.Second*10 {
+		cachedSize, err = ng.packetManager.nodeGroupSize(ng.id)
+		if err != nil {
+			ng.nodesToDeleteMutex.Unlock()
+			klog.V(0).Infof("UnLocking nodesToDeleteMutex")
+			return fmt.Errorf("could not get current node count: %v", err)
+		}
+		ng.deleteNodesCachedSize = cachedSize
+		ng.deleteNodesCachedSizeAt = time.Now()
+	} else {
+		cachedSize = ng.deleteNodesCachedSize
 	}
-	*ng.targetSize = cachedSize - len(nodes)
 
-	return nil*/
+	// Check that these nodes would not make the batch delete more nodes than the minimum would allow
+	if cachedSize-len(ng.nodesToDelete)-len(nodes) < ng.MinSize() {
+		ng.nodesToDeleteMutex.Unlock()
+		klog.V(0).Infof("UnLocking nodesToDeleteMutex")
+		return fmt.Errorf("deleting nodes would take nodegroup below minimum size")
+	}
+	// otherwise, add the nodes to the batch and release the lock
+	ng.nodesToDelete = append(ng.nodesToDelete, nodes...)
+	ng.nodesToDeleteMutex.Unlock()
+	klog.V(0).Infof("Unlocking nodesToDeleteMutex")
+
+	// The first of the parallel delete calls to obtain this lock will be the one to actually perform the deletion
+	klog.V(0).Infof("Locking clusterUpdateMutex")
+	ng.clusterUpdateMutex.Lock()
+	defer func() {
+		klog.V(0).Infof("UnLocking clusterUpdateMutex")
+		ng.clusterUpdateMutex.Unlock()
+	}()
+
+	klog.V(0).Infof("Locking nodesToDeleteMutex")
+	ng.nodesToDeleteMutex.Lock()
+	if len(ng.nodesToDelete) == 0 {
+		// Deletion was handled by another goroutine
+		klog.V(0).Infof("UnLocking nodesToDeleteMutex")
+		ng.nodesToDeleteMutex.Unlock()
+		return nil
+	}
+	klog.V(0).Infof("Unlocking nodesToDeleteMutex")
+	ng.nodesToDeleteMutex.Unlock()
+
+	// This goroutine has the clusterUpdateMutex, so will be the one
+	// to actually delete the nodes. While this goroutine waits, others
+	// will add their nodes to nodesToDelete and block at acquiring
+	// the clusterUpdateMutex lock. One they get it, the deletion will
+	// already be done and they will return above at the check
+	// for len(ng.nodesToDelete) == 0.
+	time.Sleep(ng.deleteBatchingDelay)
+
+	klog.V(0).Infof("Locking nodesToDeleteMutex")
+	ng.nodesToDeleteMutex.Lock()
+	nodes = make([]*apiv1.Node, len(ng.nodesToDelete))
+	copy(nodes, ng.nodesToDelete)
+	ng.nodesToDelete = nil
+	klog.V(0).Infof("UnLocking nodesToDeleteMutex")
+	ng.nodesToDeleteMutex.Unlock()
+
+	var nodeNames []string
+	for _, node := range nodes {
+		nodeNames = append(nodeNames, node.Name)
+	}
+	klog.V(1).Infof("Deleting nodes: %v", nodeNames)
+
+	/*updatePossible, currentStatus, err := ng.magnumManager.canUpdate()
+	if err != nil {
+		return fmt.Errorf("could not check if cluster is ready to delete nodes: %v", err)
+	}
+	if !updatePossible {
+		return fmt.Errorf("can not delete nodes, cluster is in %s status", currentStatus)
+	}*/
+
+	// Double check that the total number of batched nodes for deletion will not take the node group below its minimum size
+	if cachedSize-len(nodes) < ng.MinSize() {
+		return fmt.Errorf("size decrease too large, desired:%d min:%d", cachedSize-len(nodes), ng.MinSize())
+	}
+
+	var nodeRefs []NodeRef
+	for _, node := range nodes {
+
+		// Find node IPs, can be multiple (IPv4 and IPv6)
+		var IPs []string
+		for _, addr := range node.Status.Addresses {
+			if addr.Type == apiv1.NodeInternalIP {
+				IPs = append(IPs, addr.Address)
+			}
+		}
+		nodeRefs = append(nodeRefs, NodeRef{
+			Name:       node.Name,
+			MachineID:  node.Status.NodeInfo.MachineID,
+			ProviderID: node.Spec.ProviderID,
+			IPs:        IPs,
+		})
+	}
+
+	err = ng.packetManager.deleteNodes(ng.id, nodeRefs, cachedSize-len(nodes))
+	if err != nil {
+		return fmt.Errorf("manager error deleting nodes: %v", err)
+	}
+
+	// Check the new node group size and store that as the new target
+	newSize, err := ng.packetManager.nodeGroupSize(ng.id)
+	if err != nil {
+		// Set to the expected size as a fallback
+		*ng.targetSize = cachedSize - len(nodes)
+		return fmt.Errorf("could not check new cluster size after scale down: %v", err)
+	}
+	*ng.targetSize = newSize
+
+	return nil
 }
 
 // DecreaseTargetSize decreases the cluster node_count in packet.
