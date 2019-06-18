@@ -30,6 +30,23 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func makePod(cpuPerPod, memoryPerPod int64) *apiv1.Pod {
+	return &apiv1.Pod{
+		Spec: apiv1.PodSpec{
+			Containers: []apiv1.Container{
+				{
+					Resources: apiv1.ResourceRequirements{
+						Requests: apiv1.ResourceList{
+							apiv1.ResourceCPU:    *resource.NewMilliQuantity(cpuPerPod, resource.DecimalSI),
+							apiv1.ResourceMemory: *resource.NewQuantity(memoryPerPod, resource.DecimalSI),
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
 func TestBinpackingEstimate(t *testing.T) {
 	estimator := NewBinpackingNodeEstimator(simulator.NewTestPredicateChecker())
 
@@ -55,38 +72,8 @@ func TestBinpackingEstimate(t *testing.T) {
 
 	nodeInfo := schedulernodeinfo.NewNodeInfo()
 	nodeInfo.SetNode(node)
-	estimate := estimator.Estimate(pods, nodeInfo, []*schedulernodeinfo.NodeInfo{})
+	estimate := estimator.Estimate(pods, nodeInfo, nil)
 	assert.Equal(t, 5, estimate)
-}
-
-func TestBinpackingEstimateComingNodes(t *testing.T) {
-	estimator := NewBinpackingNodeEstimator(simulator.NewTestPredicateChecker())
-
-	cpuPerPod := int64(350)
-	memoryPerPod := int64(1000 * units.MiB)
-	pod := makePod(cpuPerPod, memoryPerPod)
-
-	pods := make([]*apiv1.Pod, 0)
-	for i := 0; i < 10; i++ {
-		pods = append(pods, pod)
-	}
-	node := &apiv1.Node{
-		Status: apiv1.NodeStatus{
-			Capacity: apiv1.ResourceList{
-				apiv1.ResourceCPU:    *resource.NewMilliQuantity(cpuPerPod*3-50, resource.DecimalSI),
-				apiv1.ResourceMemory: *resource.NewQuantity(2*memoryPerPod, resource.DecimalSI),
-				apiv1.ResourcePods:   *resource.NewQuantity(10, resource.DecimalSI),
-			},
-		},
-	}
-	node.Status.Allocatable = node.Status.Capacity
-	SetNodeReadyState(node, true, time.Time{})
-
-	nodeInfo := schedulernodeinfo.NewNodeInfo()
-	nodeInfo.SetNode(node)
-	estimate := estimator.Estimate(pods, nodeInfo, []*schedulernodeinfo.NodeInfo{nodeInfo, nodeInfo})
-	// 5 - 2 nodes that are coming.
-	assert.Equal(t, 3, estimate)
 }
 
 func TestBinpackingEstimateWithPorts(t *testing.T) {
@@ -118,6 +105,6 @@ func TestBinpackingEstimateWithPorts(t *testing.T) {
 
 	nodeInfo := schedulernodeinfo.NewNodeInfo()
 	nodeInfo.SetNode(node)
-	estimate := estimator.Estimate(pods, nodeInfo, []*schedulernodeinfo.NodeInfo{})
+	estimate := estimator.Estimate(pods, nodeInfo, nil)
 	assert.Equal(t, 8, estimate)
 }

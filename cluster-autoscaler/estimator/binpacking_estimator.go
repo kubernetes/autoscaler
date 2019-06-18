@@ -53,12 +53,10 @@ func NewBinpackingNodeEstimator(predicateChecker *simulator.PredicateChecker) *B
 // Returns the number of nodes needed to accommodate all pods from the list.
 func (estimator *BinpackingNodeEstimator) Estimate(pods []*apiv1.Pod, nodeTemplate *schedulernodeinfo.NodeInfo,
 	upcomingNodes []*schedulernodeinfo.NodeInfo) int {
-
 	podInfos := calculatePodScore(pods, nodeTemplate)
 	sort.Slice(podInfos, func(i, j int) bool { return podInfos[i].score > podInfos[j].score })
 
 	newNodes := make([]*schedulernodeinfo.NodeInfo, 0)
-	newNodes = append(newNodes, upcomingNodes...)
 
 	for _, podInfo := range podInfos {
 		found := false
@@ -73,7 +71,7 @@ func (estimator *BinpackingNodeEstimator) Estimate(pods []*apiv1.Pod, nodeTempla
 			newNodes = append(newNodes, schedulerUtils.NodeWithPod(nodeTemplate, podInfo.pod))
 		}
 	}
-	return len(newNodes) - len(upcomingNodes)
+	return len(newNodes)
 }
 
 // Calculates score for all pods and returns podInfo structure.
