@@ -316,7 +316,9 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	// we tread pods with nominated node-name as scheduled for sake of scale-up considerations
 	scheduledPods = append(scheduledPods, unschedulableWaitingForLowerPriorityPreemption...)
 
-	unschedulablePodsToHelp, scheduledPods, err := a.processors.PodListProcessor.Process(a.AutoscalingContext, unschedulablePods, scheduledPods, allNodes, readyNodes)
+	unschedulablePodsToHelp, scheduledPods, err := a.processors.PodListProcessor.Process(
+		a.AutoscalingContext, unschedulablePods, scheduledPods, allNodes, readyNodes,
+		getUpcomingNodeInfos(a.clusterStateRegistry, nodeInfosForGroups))
 
 	// finally, filter out pods that are too "young" to safely be considered for a scale-up (delay is configurable)
 	unschedulablePodsToHelp = a.filterOutYoungPods(unschedulablePodsToHelp, currentTime)
@@ -587,4 +589,19 @@ func allPodsAreNew(pods []*apiv1.Pod, currentTime time.Time) bool {
 	}
 	found, oldest := getOldestCreateTimeWithGpu(pods)
 	return found && oldest.Add(unschedulablePodWithGpuTimeBuffer).After(currentTime)
+}
+
+func getUpcomingNodeInfos(registry *clusterstate.ClusterStateRegistry, nodeInfos map[string]*schedulernodeinfo.NodeInfo) []*apiv1.Node {
+	upcomingNodes := make([]*apiv1.Node, 0)
+	for nodeGroup, numberOfNodes := range registry.GetUpcomingNodes() {
+		nodeTemplate, found := nodeInfos[nodeGroup]
+		if !found {
+			klog.Warningf("Couldn't find template for node group %s", nodeGroup)
+			continue
+		}
+		for i := 0; i < numberOfNodes; i++ {
+			upcomingNodes = append(upcomingNodes, nodeTemplate.Node())
+		}
+	}
+	return upcomingNodes
 }
