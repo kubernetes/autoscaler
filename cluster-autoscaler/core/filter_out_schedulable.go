@@ -123,7 +123,7 @@ func filterOutSchedulableByPacking(unschedulableCandidates []*apiv1.Pod, nodes [
 			}
 			klog.V(4).Infof("Pod %s marked as unschedulable can be scheduled on %s node %s. Ignoring"+
 				" in scale up.", pod.Name, nodeType, nodeName)
-			nodeNameToNodeInfo[nodeName] = schedulerutil.NodeWithPod(nodeNameToNodeInfo[nodeName], pod)
+			nodeNameToNodeInfo[nodeName].AddPod(pod)
 		}
 	}
 
