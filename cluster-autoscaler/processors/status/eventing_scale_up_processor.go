@@ -18,6 +18,7 @@ package status
 
 import (
 	"fmt"
+	"k8s.io/klog"
 	"strings"
 
 	apiv1 "k8s.io/api/core/v1"
@@ -32,9 +33,15 @@ type EventingScaleUpStatusProcessor struct{}
 // Process processes the state of the cluster after a scale-up by emitting
 // relevant events for pods depending on their post scale-up status.
 func (p *EventingScaleUpStatusProcessor) Process(context *context.AutoscalingContext, status *ScaleUpStatus) {
-	for _, noScaleUpInfo := range status.PodsRemainUnschedulable {
-		context.Recorder.Event(noScaleUpInfo.Pod, apiv1.EventTypeNormal, "NotTriggerScaleUp",
-			fmt.Sprintf("pod didn't trigger scale-up (it wouldn't fit if a new node is added): %s", ReasonsMessage(noScaleUpInfo)))
+	if status.Result != ScaleUpSuccessful && status.Result != ScaleUpError {
+		for _, noScaleUpInfo := range status.PodsRemainUnschedulable {
+			context.Recorder.Event(noScaleUpInfo.Pod, apiv1.EventTypeNormal, "NotTriggerScaleUp",
+				fmt.Sprintf("pod didn't trigger scale-up (it wouldn't fit if a new node is"+
+					" added): %s", ReasonsMessage(noScaleUpInfo)))
+		}
+	} else {
+		klog.V(4).Infof("Skipping event processing for unschedulable pods since there is a" +
+			" ScaleUp attempt this loop")
 	}
 	if len(status.ScaleUpInfos) > 0 {
 		for _, pod := range status.PodsTriggeredScaleUp {

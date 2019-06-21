@@ -58,8 +58,9 @@ func TestEventingScaleUpStatusProcessor(t *testing.T) {
 		expectedNoTriggered int
 	}{
 		{
-			caseName: "No scale up",
+			caseName: "No scale up; no options available",
 			state: &ScaleUpStatus{
+				Result:       ScaleUpNoOptionsAvailable,
 				ScaleUpInfos: []nodegroupset.ScaleUpInfo{},
 				PodsRemainUnschedulable: []NoScaleUpInfo{
 					{p1, reasons, reasons},
@@ -69,8 +70,9 @@ func TestEventingScaleUpStatusProcessor(t *testing.T) {
 			expectedNoTriggered: 2,
 		},
 		{
-			caseName: "Scale up",
+			caseName: "Scale up; some pods remain unschedulable",
 			state: &ScaleUpStatus{
+				Result:               ScaleUpSuccessful,
 				ScaleUpInfos:         []nodegroupset.ScaleUpInfo{{}},
 				PodsTriggeredScaleUp: []*apiv1.Pod{p3},
 				PodsRemainUnschedulable: []NoScaleUpInfo{
@@ -79,7 +81,22 @@ func TestEventingScaleUpStatusProcessor(t *testing.T) {
 				},
 			},
 			expectedTriggered:   1,
-			expectedNoTriggered: 2,
+			expectedNoTriggered: 0,
+		},
+		{
+			caseName: "Scale failed; pods remain unschedulable",
+			state: &ScaleUpStatus{
+				Result:               ScaleUpError,
+				ScaleUpInfos:         []nodegroupset.ScaleUpInfo{{}},
+				PodsTriggeredScaleUp: []*apiv1.Pod{},
+				PodsRemainUnschedulable: []NoScaleUpInfo{
+					{p1, reasons, reasons},
+					{p2, reasons, reasons},
+					{p3, reasons, reasons},
+				},
+			},
+			expectedTriggered:   0,
+			expectedNoTriggered: 0,
 		},
 	}
 
