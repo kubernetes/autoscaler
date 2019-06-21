@@ -128,7 +128,7 @@ spec:
       nodeSelector:
         kubernetes.io/role: master
       containers:
-        - image: k8s.gcr.io/cluster-autoscaler:v1.3.6
+        - image: k8s.gcr.io/cluster-autoscaler:v1.14.3
           name: cluster-autoscaler
           resources:
             limits:
