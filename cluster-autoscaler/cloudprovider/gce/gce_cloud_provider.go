@@ -94,7 +94,12 @@ func (gce *GceCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 
 // NodeGroupForNode returns the node group for the given node.
 func (gce *GceCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
-	ref, err := GceRefFromProviderId(node.Spec.ProviderID)
+        id := node.Spec.ProviderID
+        if (len(id) ==0) {
+                panic(fmt.Sprintf("node.Spec.ProviderID not set for node: %v - expected format gce://<project-id>/<zone>/<name>, got empty", node.Name))
+        }
+
+	ref, err := GceRefFromProviderId(id)
 	if err != nil {
 		return nil, err
 	}
