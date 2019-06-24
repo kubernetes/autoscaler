@@ -103,7 +103,9 @@ func (cache *CloudProviderNodeInstancesCache) GetCloudProviderNodeInstances() (m
 			go func() {
 				defer wg.Done()
 				_, err := cache.fetchCloudProviderNodeInstancesForNodeGroup(nodeGroup)
-				klog.Errorf("Failed to fetch cloud provider node instances for %v, error %v", nodeGroup.Id(), err)
+				if err != nil {
+					klog.Errorf("Failed to fetch cloud provider node instances for %v, error %v", nodeGroup.Id(), err)
+				}
 			}()
 		}
 	}
