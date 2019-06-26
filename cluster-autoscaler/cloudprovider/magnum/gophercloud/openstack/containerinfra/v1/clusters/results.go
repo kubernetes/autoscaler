@@ -39,6 +39,11 @@ type UpdateResult struct {
 	commonResult
 }
 
+// ResizeResult is the response of a Resize operations.
+type ResizeResult struct {
+	commonResult
+}
+
 func (r CreateResult) Extract() (string, error) {
 	var s struct {
 		UUID string
@@ -48,6 +53,14 @@ func (r CreateResult) Extract() (string, error) {
 }
 
 func (r UpdateResult) Extract() (string, error) {
+	var s struct {
+		UUID string
+	}
+	err := r.ExtractInto(&s)
+	return s.UUID, err
+}
+
+func (r ResizeResult) Extract() (string, error) {
 	var s struct {
 		UUID string
 	}
@@ -82,6 +95,9 @@ type Cluster struct {
 	UUID              string             `json:"uuid"`
 	UpdatedAt         time.Time          `json:"updated_at"`
 	UserID            string             `json:"user_id"`
+	FloatingIPEnabled bool               `json:"floating_ip_enabled"`
+	FixedNetwork      string             `json:"fixed_network"`
+	FixedSubnet       string             `json:"fixed_subnet"`
 }
 
 type ClusterPage struct {
