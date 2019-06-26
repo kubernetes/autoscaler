@@ -75,3 +75,39 @@ func Template(c *gophercloud.ServiceClient, resourceType string) (r TemplateResu
 	_, r.Err = c.Get(templateURL(c, resourceType), &r.Body, nil)
 	return
 }
+
+// MarkUnhealthyOpts contains the common options struct used in this package's
+// MarkUnhealthy operations.
+type MarkUnhealthyOpts struct {
+	// A boolean indicating whether the target resource should be marked as unhealthy.
+	MarkUnhealthy bool `json:"mark_unhealthy"`
+	// The reason for the current stack resource state.
+	ResourceStatusReason string `json:"resource_status_reason,omitempty"`
+}
+
+// MarkUnhealthyOptsBuilder is the interface options structs have to satisfy in order
+// to be used in the MarkUnhealthy operation in this package
+type MarkUnhealthyOptsBuilder interface {
+	ToMarkUnhealthyMap() (map[string]interface{}, error)
+}
+
+// ToMarkUnhealthyMap validates that a template was supplied and calls
+// the ToMarkUnhealthyMap private function.
+func (opts MarkUnhealthyOpts) ToMarkUnhealthyMap() (map[string]interface{}, error) {
+	b, err := gophercloud.BuildRequestBody(opts, "")
+	if err != nil {
+		return nil, err
+	}
+	return b, nil
+}
+
+// MarkUnhealthy marks the specified resource in the stack as unhealthy.
+func MarkUnhealthy(c *gophercloud.ServiceClient, stackName, stackID, resourceName string, opts MarkUnhealthyOptsBuilder) (r MarkUnhealthyResult) {
+	b, err := opts.ToMarkUnhealthyMap()
+	if err != nil {
+		r.Err = err
+		return
+	}
+	_, r.Err = c.Patch(markUnhealthyURL(c, stackName, stackID, resourceName), b, nil, nil)
+	return
+}
