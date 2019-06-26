@@ -53,6 +53,22 @@ Example to List Clusters
 		fmt.Printf("%+v\n", cluster)
 	}
 
+Example to List Clusters with detailed information
+
+    allPagesDetail, err := clusters.ListDetail(serviceClient, clusters.ListOpts{}).AllPages()
+    if err != nil {
+        panic(err)
+    }
+
+    allClustersDetail, err := clusters.ExtractClusters(allPagesDetail)
+    if err != nil {
+        panic(err)
+    }
+
+    for _, clusterDetail := range allClustersDetail {
+        fmt.Printf("%+v\n", clusterDetail)
+    }
+
 Example to Update a Cluster
 
 	updateOpts := []clusters.UpdateOptsBuilder{
