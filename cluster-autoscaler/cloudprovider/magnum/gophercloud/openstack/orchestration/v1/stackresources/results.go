@@ -10,18 +10,19 @@ import (
 
 // Resource represents a stack resource.
 type Resource struct {
-	Attributes   map[string]interface{} `json:"attributes"`
-	CreationTime time.Time              `json:"-"`
-	Description  string                 `json:"description"`
-	Links        []gophercloud.Link     `json:"links"`
-	LogicalID    string                 `json:"logical_resource_id"`
-	Name         string                 `json:"resource_name"`
-	PhysicalID   string                 `json:"physical_resource_id"`
-	RequiredBy   []interface{}          `json:"required_by"`
-	Status       string                 `json:"resource_status"`
-	StatusReason string                 `json:"resource_status_reason"`
-	Type         string                 `json:"resource_type"`
-	UpdatedTime  time.Time              `json:"-"`
+	Attributes     map[string]interface{} `json:"attributes"`
+	CreationTime   time.Time              `json:"-"`
+	Description    string                 `json:"description"`
+	Links          []gophercloud.Link     `json:"links"`
+	LogicalID      string                 `json:"logical_resource_id"`
+	Name           string                 `json:"resource_name"`
+	ParentResource string                 `json:"parent_resource"`
+	PhysicalID     string                 `json:"physical_resource_id"`
+	RequiredBy     []interface{}          `json:"required_by"`
+	Status         string                 `json:"resource_status"`
+	StatusReason   string                 `json:"resource_status_reason"`
+	Type           string                 `json:"resource_type"`
+	UpdatedTime    time.Time              `json:"-"`
 }
 
 func (r *Resource) UnmarshalJSON(b []byte) error {
@@ -203,4 +204,9 @@ func (r TemplateResult) Extract() ([]byte, error) {
 	}
 	template, err := json.MarshalIndent(r.Body, "", "  ")
 	return template, err
+}
+
+// MarkUnhealthyResult represents the result of a mark unhealthy operation.
+type MarkUnhealthyResult struct {
+	gophercloud.ErrResult
 }
