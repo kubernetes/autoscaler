@@ -475,13 +475,13 @@ func (a *StaticAutoscaler) deleteCreatedNodesWithErrors() {
 
 		nodeGroup := nodeGroups[nodeGroupId]
 		if nodeGroup == nil {
-			err = fmt.Errorf("Node group %s not found", nodeGroup)
+			err = fmt.Errorf("node group %s not found", nodeGroupId)
 		} else {
 			err = nodeGroup.DeleteNodes(nodesToBeDeleted)
 		}
 
 		if err != nil {
-			klog.Warningf("Error while trying to delete nodes from %v: %v", nodeGroup.Id(), err)
+			klog.Warningf("Error while trying to delete nodes from %v: %v", nodeGroupId, err)
 		}
 	}
 }
