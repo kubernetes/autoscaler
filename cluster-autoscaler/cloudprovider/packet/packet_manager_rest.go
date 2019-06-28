@@ -46,6 +46,8 @@ type packetManagerRest struct {
 	os                string
 	billing           string
 	cloudinit         string
+	reservation       string
+	hostnamePattern   string
 	waitTimeStep      time.Duration
 }
 
@@ -59,6 +61,8 @@ type ConfigGlobal struct {
 	OS                string `gcfg:"os"`
 	Billing           string `gcfg:"billing"`
 	CloudInit         string `gcfg:"cloudinit"`
+	Reservation       string `gcfg:"reservation"`
+	HostnamePattern   string `gcfg:"hostname-pattern"`
 }
 
 // ConfigFile is used to read and store information from the cloud configuration file
@@ -89,17 +93,18 @@ type IPAddressCreateRequest struct {
 
 // DeviceCreateRequest represents a request to create a new Packet device. Used by createNodes
 type DeviceCreateRequest struct {
-	Hostname     string                   `json:"hostname"`
-	Plan         string                   `json:"plan"`
-	Facility     []string                 `json:"facility"`
-	OS           string                   `json:"operating_system"`
-	BillingCycle string                   `json:"billing_cycle"`
-	ProjectID    string                   `json:"project_id"`
-	UserData     string                   `json:"userdata"`
-	Storage      string                   `json:"storage,omitempty"`
-	Tags         []string                 `json:"tags"`
-	CustomData   string                   `json:"customdata,omitempty"`
-	IPAddresses  []IPAddressCreateRequest `json:"ip_addresses,omitempty"`
+	Hostname              string                   `json:"hostname"`
+	Plan                  string                   `json:"plan"`
+	Facility              []string                 `json:"facility"`
+	OS                    string                   `json:"operating_system"`
+	BillingCycle          string                   `json:"billing_cycle"`
+	ProjectID             string                   `json:"project_id"`
+	UserData              string                   `json:"userdata"`
+	Storage               string                   `json:"storage,omitempty"`
+	Tags                  []string                 `json:"tags"`
+	CustomData            string                   `json:"customdata,omitempty"`
+	IPAddresses           []IPAddressCreateRequest `json:"ip_addresses,omitempty"`
+	HardwareReservationID string                   `json:"hardware_reservation_id,omitempty"`
 }
 
 // CloudInitTemplateData represents the variables that can be used in cloudinit templates
@@ -107,6 +112,13 @@ type CloudInitTemplateData struct {
 	BootstrapTokenID     string
 	BootstrapTokenSecret string
 	APIServerEndpoint    string
+}
+
+// HostnameTemplateData represents the template variables used to construct host names for new nodes
+type HostnameTemplateData struct {
+	ClusterName string
+	NodeGroup   string
+	RandString8 string
 }
 
 // Find returns the smallest index i at which x == a[i],
@@ -156,6 +168,8 @@ func createPacketManagerRest(configReader io.Reader, discoverOpts cloudprovider.
 		os:                cfg.Global.OS,
 		billing:           cfg.Global.Billing,
 		cloudinit:         cfg.Global.CloudInit,
+		reservation:       cfg.Global.Reservation,
+		hostnamePattern:   cfg.Global.HostnamePattern,
 	}
 	return &manager, nil
 }
@@ -210,9 +224,6 @@ func randString8() string {
 // createNodes provisions new nodes on packet and bootstraps them in the cluster.
 func (mgr *packetManagerRest) createNodes(nodegroup string, nodes int) error {
 	klog.Infof("Updating node count to %d for nodegroup %s", nodes, nodegroup)
-	packetAuthToken := os.Getenv("PACKET_AUTH_TOKEN")
-	url := "https://api.packet.net/projects/" + mgr.projectID + "/devices"
-
 	cloudinit, err := base64.StdEncoding.DecodeString(mgr.cloudinit)
 	if err != nil {
 		log.Fatal(err)
@@ -225,37 +236,84 @@ func (mgr *packetManagerRest) createNodes(nodegroup string, nodes int) error {
 		APIServerEndpoint:    mgr.apiServerEndpoint,
 	}
 	ud := renderTemplate(string(cloudinit), udvars)
-	hn := "k8s-" + mgr.clusterName + "-" + nodegroup + "-" + randString8()
+	hnvars := HostnameTemplateData{
+		ClusterName: mgr.clusterName,
+		NodeGroup:   nodegroup,
+		RandString8: randString8(),
+	}
+	hn := renderTemplate(mgr.hostnamePattern, hnvars)
 
-	cr := DeviceCreateRequest{
-		Hostname:     hn,
-		Facility:     []string{mgr.facility},
-		Plan:         mgr.plan,
-		OS:           mgr.os,
-		ProjectID:    mgr.projectID,
-		BillingCycle: mgr.billing,
-		UserData:     renderTemplate(ud, udvars),
-		Tags:         []string{"k8s-cluster-" + mgr.clusterName, "k8s-nodepool-" + nodegroup},
+	reservation := ""
+	if mgr.reservation == "require" || mgr.reservation == "prefer" {
+		reservation = "next-available"
 	}
 
-	jsonValue, _ := json.Marshal(cr)
+	cr := DeviceCreateRequest{
+		Hostname:              hn,
+		Facility:              []string{mgr.facility},
+		Plan:                  mgr.plan,
+		OS:                    mgr.os,
+		ProjectID:             mgr.projectID,
+		BillingCycle:          mgr.billing,
+		UserData:              ud,
+		Tags:                  []string{"k8s-cluster-" + mgr.clusterName, "k8s-nodepool-" + nodegroup},
+		HardwareReservationID: reservation,
+	}
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonValue))
-	req.Header.Set("X-Auth-Token", packetAuthToken)
-	req.Header.Set("Content-Type", "application/json")
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		panic(err)
-		// klog.Fatalf("Error creating node: %v", err)
+	resp, err := createDevice(&cr)
+	if err != nil || resp.StatusCode > 299 {
+		// If reservation is preferred but not available, retry provisioning as on-demand
+		if reservation != "" && mgr.reservation == "prefer" {
+			klog.Infof("Reservation preferred but not available. Provisioning on-demand node.")
+			cr.HardwareReservationID = ""
+			resp, err = createDevice(&cr)
+			if err != nil {
+				klog.Errorf("Failed to create device using Packet API: %v", err)
+				panic(err)
+			} else if resp.StatusCode > 299 {
+				klog.Errorf("Failed to create device using Packet API: %v", resp)
+				panic(resp)
+			}
+		} else if err != nil {
+			klog.Errorf("Failed to create device using Packet API: %v", err)
+			panic(err)
+		} else if resp.StatusCode > 299 {
+			klog.Errorf("Failed to create device using Packet API: %v", resp)
+			panic(resp)
+		}
 	}
 	defer resp.Body.Close()
 
-	body, _ := ioutil.ReadAll(resp.Body)
-	klog.Infof("Created device %v", body)
+	rbody, err := ioutil.ReadAll(resp.Body)
+	klog.V(3).Infof("Response body: %v", rbody)
+	if err != nil {
+		klog.Errorf("Failed to read response body: %v", err)
+	} else {
+		klog.Infof("Created new node on Packet.")
+	}
+	if cr.HardwareReservationID != "" {
+		klog.Infof("Reservation %v", cr.HardwareReservationID)
+	}
 
 	return nil
+}
+
+func createDevice(cr *DeviceCreateRequest) (*http.Response, error) {
+	packetAuthToken := os.Getenv("PACKET_AUTH_TOKEN")
+	url := "https://api.packet.net/projects/" + cr.ProjectID + "/devices"
+	jsonValue, _ := json.Marshal(cr)
+	klog.Infof("Creating new node")
+	klog.V(3).Infof("POST %s \n%v", url, jsonValue)
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonValue))
+	if err != nil {
+		klog.Errorf("Failed to create device: %v", err)
+		panic(err)
+	}
+	req.Header.Set("X-Auth-Token", packetAuthToken)
+	req.Header.Set("Content-Type", "application/json")
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	return resp, err
 }
 
 // getNodes should return ProviderIDs for all nodes in the node group,
@@ -280,8 +338,7 @@ func (mgr *packetManagerRest) deleteNodes(nodegroup string, nodes []NodeRef, upd
 			if Contains(d.Tags, "k8s-cluster-"+mgr.clusterName) && Contains(d.Tags, "k8s-nodepool-"+nodegroup) {
 				klog.Infof("nodegroup match %s %s", d.Hostname, n.Name)
 				if d.Hostname == n.Name {
-					klog.Infof("Hostname match!")
-					klog.Infof("Matching Packet Device %s - %s - %v", d.Hostname, d.ID)
+					klog.V(1).Infof("Matching Packet Device %s - %s - %v", d.Hostname, d.ID)
 					req, err := http.NewRequest("DELETE", "https://api.packet.net/devices/"+d.ID, bytes.NewBuffer([]byte("")))
 					req.Header.Set("X-Auth-Token", packetAuthToken)
 					req.Header.Set("Content-Type", "application/json")
