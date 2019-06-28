@@ -48,7 +48,7 @@ type packetManager interface {
 }
 
 // createPacketManager creates the desired implementation of packetManager.
-// Currently reads the environment variable MAGNUM_MANAGER to find which to create,
+// Currently reads the environment variable PACKET_MANAGER to find which to create,
 // and falls back to a default if the variable is not found.
 func createPacketManager(configReader io.Reader, discoverOpts cloudprovider.NodeGroupDiscoveryOptions, opts config.AutoscalingOptions) (packetManager, error) {
 	// For now get manager from env var, can consider adding flag later

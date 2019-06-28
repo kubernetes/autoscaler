@@ -104,7 +104,7 @@ func (ng *packetNodeGroup) IncreaseSize(delta int) error {
 //   - does not allow scaling while the cluster is already in an UPDATE_IN_PROGRESS state
 //   - after scaling down, blocks until the cluster has reached UPDATE_COMPLETE
 func (ng *packetNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
-	klog.V(0).Infof("Locking nodesToDeleteMutex")
+	klog.V(1).Infof("Locking nodesToDeleteMutex")
 
 	// Batch simultaneous deletes on individual nodes
 	ng.nodesToDeleteMutex.Lock()
@@ -119,7 +119,7 @@ func (ng *packetNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 		cachedSize, err = ng.packetManager.nodeGroupSize(ng.id)
 		if err != nil {
 			ng.nodesToDeleteMutex.Unlock()
-			klog.V(0).Infof("UnLocking nodesToDeleteMutex")
+			klog.V(1).Infof("UnLocking nodesToDeleteMutex")
 			return fmt.Errorf("could not get current node count: %v", err)
 		}
 		ng.deleteNodesCachedSize = cachedSize
@@ -131,19 +131,19 @@ func (ng *packetNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	// Check that these nodes would not make the batch delete more nodes than the minimum would allow
 	if cachedSize-len(ng.nodesToDelete)-len(nodes) < ng.MinSize() {
 		ng.nodesToDeleteMutex.Unlock()
-		klog.V(0).Infof("UnLocking nodesToDeleteMutex")
+		klog.V(1).Infof("UnLocking nodesToDeleteMutex")
 		return fmt.Errorf("deleting nodes would take nodegroup below minimum size")
 	}
 	// otherwise, add the nodes to the batch and release the lock
 	ng.nodesToDelete = append(ng.nodesToDelete, nodes...)
 	ng.nodesToDeleteMutex.Unlock()
-	klog.V(0).Infof("Unlocking nodesToDeleteMutex")
+	klog.V(1).Infof("Unlocking nodesToDeleteMutex")
 
 	// The first of the parallel delete calls to obtain this lock will be the one to actually perform the deletion
-	klog.V(0).Infof("Locking clusterUpdateMutex")
+	klog.V(1).Infof("Locking clusterUpdateMutex")
 	ng.clusterUpdateMutex.Lock()
 	defer func() {
-		klog.V(0).Infof("UnLocking clusterUpdateMutex")
+		klog.V(1).Infof("UnLocking clusterUpdateMutex")
 		ng.clusterUpdateMutex.Unlock()
 	}()
 
@@ -151,11 +151,11 @@ func (ng *packetNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	ng.nodesToDeleteMutex.Lock()
 	if len(ng.nodesToDelete) == 0 {
 		// Deletion was handled by another goroutine
-		klog.V(0).Infof("UnLocking nodesToDeleteMutex")
+		klog.V(1).Infof("UnLocking nodesToDeleteMutex")
 		ng.nodesToDeleteMutex.Unlock()
 		return nil
 	}
-	klog.V(0).Infof("Unlocking nodesToDeleteMutex")
+	klog.V(1).Infof("Unlocking nodesToDeleteMutex")
 	ng.nodesToDeleteMutex.Unlock()
 
 	// This goroutine has the clusterUpdateMutex, so will be the one
@@ -166,19 +166,19 @@ func (ng *packetNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	// for len(ng.nodesToDelete) == 0.
 	time.Sleep(ng.deleteBatchingDelay)
 
-	klog.V(0).Infof("Locking nodesToDeleteMutex")
+	klog.V(1).Infof("Locking nodesToDeleteMutex")
 	ng.nodesToDeleteMutex.Lock()
 	nodes = make([]*apiv1.Node, len(ng.nodesToDelete))
 	copy(nodes, ng.nodesToDelete)
 	ng.nodesToDelete = nil
-	klog.V(0).Infof("UnLocking nodesToDeleteMutex")
+	klog.V(1).Infof("UnLocking nodesToDeleteMutex")
 	ng.nodesToDeleteMutex.Unlock()
 
 	var nodeNames []string
 	for _, node := range nodes {
 		nodeNames = append(nodeNames, node.Name)
 	}
-	klog.V(1).Infof("Deleting nodes: %v", nodeNames)
+	klog.V(0).Infof("Deleting nodes: %v", nodeNames)
 
 	/*updatePossible, currentStatus, err := ng.magnumManager.canUpdate()
 	if err != nil {
