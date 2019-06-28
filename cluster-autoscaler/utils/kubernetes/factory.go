@@ -27,12 +27,31 @@ import (
 	"k8s.io/klog"
 )
 
+const (
+	// Rate of refill for the event spam filter in client go
+	// 1 per event key per 5 minutes.
+	defaultQPS = 1. / 300.
+	// Number of events allowed per event key before rate limiting is triggered
+	// Has to greater than or equal to 1.
+	defaultBurstSize = 1
+	// Number of distinct event keys in the rate limiting cache.
+	defaultLRUCache = 8192
+)
+
 // CreateEventRecorder creates an event recorder to send custom events to Kubernetes to be recorded for targeted Kubernetes objects
 func CreateEventRecorder(kubeClient clientset.Interface) kube_record.EventRecorder {
-	eventBroadcaster := kube_record.NewBroadcaster()
+	eventBroadcaster := kube_record.NewBroadcasterWithCorrelatorOptions(getCorrelationOptions())
 	eventBroadcaster.StartLogging(klog.V(4).Infof)
 	if _, isfake := kubeClient.(*fake.Clientset); !isfake {
 		eventBroadcaster.StartRecordingToSink(&v1core.EventSinkImpl{Interface: v1core.New(kubeClient.CoreV1().RESTClient()).Events("")})
 	}
 	return eventBroadcaster.NewRecorder(scheme.Scheme, clientv1.EventSource{Component: "cluster-autoscaler"})
+}
+
+func getCorrelationOptions() kube_record.CorrelatorOptions {
+	return kube_record.CorrelatorOptions{
+		QPS:          defaultQPS,
+		BurstSize:    defaultBurstSize,
+		LRUCacheSize: defaultLRUCache,
+	}
 }
