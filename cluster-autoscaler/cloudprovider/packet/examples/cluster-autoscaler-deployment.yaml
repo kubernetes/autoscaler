@@ -137,12 +137,12 @@ spec:
             - name: BOOTSTRAP_TOKEN_ID
               valueFrom:
                 secretKeyRef:
-                  name: bootstrap-token-07401b
+                  name: bootstrap-token-cluster-autoscaler-packet
                   key: token-id
             - name: BOOTSTRAP_TOKEN_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: bootstrap-token-07401b
+                  name: bootstrap-token-cluster-autoscaler-packet
                   key: token-secret
             - name: PACKET_AUTH_TOKEN
               valueFrom:
@@ -159,7 +159,7 @@ spec:
             - --scale-down-unneeded-time=1m0s
             - --scale-down-delay-after-add=1m0s
             - --scale-down-unready-time=1m0s
-            - --v=0
+            - --v=2
           volumeMounts:
             - name: cloud-config
               mountPath: /config

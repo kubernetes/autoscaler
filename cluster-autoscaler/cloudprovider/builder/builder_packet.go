@@ -29,7 +29,7 @@ var AvailableCloudProviders = []string{
 	packet.ProviderName,
 }
 
-// DefaultCloudProvider for OpenStack-only build is OpenStack.
+// DefaultCloudProvider for Packet-only build is Packet.
 const DefaultCloudProvider = packet.ProviderName
 
 func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
