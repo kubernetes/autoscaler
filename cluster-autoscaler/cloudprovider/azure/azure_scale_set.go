@@ -37,7 +37,8 @@ import (
 )
 
 var (
-	vmssSizeRefreshPeriod = 15 * time.Second
+	vmssSizeRefreshPeriod      = 15 * time.Second
+	vmssInstancesRefreshPeriod = 5 * time.Minute
 )
 
 // ScaleSet implements NodeGroup interface.
@@ -48,9 +49,13 @@ type ScaleSet struct {
 	minSize int
 	maxSize int
 
-	mutex       sync.Mutex
-	lastRefresh time.Time
-	curSize     int64
+	sizeMutex       sync.Mutex
+	curSize         int64
+	lastSizeRefresh time.Time
+
+	instanceMutex       sync.Mutex
+	instanceCache       []string
+	lastInstanceRefresh time.Time
 }
 
 // NewScaleSet creates a new NewScaleSet.
@@ -114,22 +119,33 @@ func (scaleSet *ScaleSet) getVMSSInfo() (compute.VirtualMachineScaleSet, error) 
 }
 
 func (scaleSet *ScaleSet) getCurSize() (int64, error) {
-	scaleSet.mutex.Lock()
-	defer scaleSet.mutex.Unlock()
+	scaleSet.sizeMutex.Lock()
+	defer scaleSet.sizeMutex.Unlock()
 
-	if scaleSet.lastRefresh.Add(vmssSizeRefreshPeriod).After(time.Now()) {
+	if scaleSet.lastSizeRefresh.Add(vmssSizeRefreshPeriod).After(time.Now()) {
 		return scaleSet.curSize, nil
 	}
 
 	glog.V(5).Infof("Get scale set size for %q", scaleSet.Name)
 	set, err := scaleSet.getVMSSInfo()
 	if err != nil {
+		if isAzureRequestsThrottled(err) {
+			// Log a warning and update the size refresh time so that it would retry after next vmssSizeRefreshPeriod.
+			glog.Warningf("getVMSSInfo() is throttled with message %v, would return the cached vmss size", err)
+			scaleSet.lastSizeRefresh = time.Now()
+			return scaleSet.curSize, nil
+		}
 		return -1, err
 	}
 	glog.V(5).Infof("Getting scale set (%q) capacity: %d\n", scaleSet.Name, *set.Sku.Capacity)
 
+	if scaleSet.curSize != *set.Sku.Capacity {
+		// Invalidate the instance cache if the capacity has changed.
+		scaleSet.invalidateInstanceCache()
+	}
+
 	scaleSet.curSize = *set.Sku.Capacity
-	scaleSet.lastRefresh = time.Now()
+	scaleSet.lastSizeRefresh = time.Now()
 	return scaleSet.curSize, nil
 }
 
@@ -147,10 +163,10 @@ func (scaleSet *ScaleSet) updateVMSSCapacity(size int64) {
 
 	defer func() {
 		if err != nil {
-			klog.Errorf("Failed to update the capacity for vmss %s with error %v, invalidate the cache so as to get the real size from API", scaleSet.Name, err)
+			glog.Errorf("Failed to update the capacity for vmss %s with error %v, invalidate the cache so as to get the real size from API", scaleSet.Name, err)
 			// Invalidate the VMSS size cache in order to fetch the size from the API.
-			scaleSet.mutex.Lock()
-			defer scaleSet.mutex.Unlock()
+			scaleSet.sizeMutex.Lock()
+			defer scaleSet.sizeMutex.Unlock()
 			scaleSet.lastRefresh = time.Now().Add(-1 * vmssSizeRefreshPeriod)
 		}
 	}()
@@ -158,7 +174,7 @@ func (scaleSet *ScaleSet) updateVMSSCapacity(size int64) {
 	resourceGroup := scaleSet.manager.config.ResourceGroup
 	op, err = scaleSet.getVMSSInfo()
 	if err != nil {
-		klog.Errorf("Failed to get information for VMSS (%q): %v", scaleSet.Name, err)
+		glog.Errorf("Failed to get information for VMSS (%q): %v", scaleSet.Name, err)
 		return
 	}
 
@@ -166,26 +182,27 @@ func (scaleSet *ScaleSet) updateVMSSCapacity(size int64) {
 	op.VirtualMachineScaleSetProperties.ProvisioningState = nil
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
-	klog.V(3).Infof("Waiting for virtualMachineScaleSetsClient.CreateOrUpdate(%s)", scaleSet.Name)
+	glog.V(3).Infof("Waiting for virtualMachineScaleSetsClient.CreateOrUpdate(%s)", scaleSet.Name)
 	resp, err = scaleSet.manager.azClient.virtualMachineScaleSetsClient.CreateOrUpdate(ctx, resourceGroup, scaleSet.Name, op)
 	isSuccess, err = isSuccessHTTPResponse(resp, err)
 	if isSuccess {
-		klog.V(3).Infof("virtualMachineScaleSetsClient.CreateOrUpdate(%s) success", scaleSet.Name)
+		glog.V(3).Infof("virtualMachineScaleSetsClient.CreateOrUpdate(%s) success", scaleSet.Name)
+		scaleSet.invalidateInstanceCache()
 		return
 	}
 
-	klog.Errorf("virtualMachineScaleSetsClient.CreateOrUpdate for scale set %q failed: %v", scaleSet.Name, err)
+	glog.Errorf("virtualMachineScaleSetsClient.CreateOrUpdate for scale set %q failed: %v", scaleSet.Name, err)
 	return
 }
 
 // SetScaleSetSize sets ScaleSet size.
 func (scaleSet *ScaleSet) SetScaleSetSize(size int64) {
-	scaleSet.mutex.Lock()
-	defer scaleSet.mutex.Unlock()
+	scaleSet.sizeMutex.Lock()
+	defer scaleSet.sizeMutex.Unlock()
 
 	// Proactively set the VMSS size so autoscaler makes better decisions.
 	scaleSet.curSize = size
-	scaleSet.lastRefresh = time.Now()
+	scaleSet.lastSizeRefresh = time.Now()
 	go scaleSet.updateVMSSCapacity(size)
 }
 
@@ -467,19 +484,38 @@ func (scaleSet *ScaleSet) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
 
 // Nodes returns a list of all nodes that belong to this node group.
 func (scaleSet *ScaleSet) Nodes() ([]string, error) {
-	scaleSet.mutex.Lock()
-	defer scaleSet.mutex.Unlock()
+	scaleSet.instanceMutex.Lock()
+	defer scaleSet.instanceMutex.Unlock()
+
+	if int64(len(scaleSet.instanceCache)) == scaleSet.curSize &&
+		scaleSet.lastInstanceRefresh.Add(vmssInstancesRefreshPeriod).After(time.Now()) {
+		return scaleSet.instanceCache, nil
+	}
 
 	vms, err := scaleSet.GetScaleSetVms()
 	if err != nil {
+		if isAzureRequestsThrottled(err) {
+			// Log a warning and update the instance refresh time so that it would retry after next vmssInstancesRefreshPeriod.
+			glog.Warningf("GetScaleSetVms() is throttled with message %v, would return the cached instances", err)
+			scaleSet.lastInstanceRefresh = time.Now()
+			return scaleSet.instanceCache, nil
+		}
 		return nil, err
 	}
 
-	result := make([]string, 0, len(vms))
+	instances := make([]string, len(vms))
 	for i := range vms {
-		name := "azure://" + strings.ToLower(vms[i])
-		result = append(result, name)
+		instances[i] = "azure://" + strings.ToLower(vms[i])
 	}
 
-	return result, nil
+	scaleSet.instanceCache = instances
+	scaleSet.lastInstanceRefresh = time.Now()
+	return instances, nil
+}
+
+func (scaleSet *ScaleSet) invalidateInstanceCache() {
+	scaleSet.instanceMutex.Lock()
+	// Set the instanceCache as outdated.
+	scaleSet.lastInstanceRefresh = time.Now().Add(-1 * vmssInstancesRefreshPeriod)
+	scaleSet.instanceMutex.Unlock()
 }
