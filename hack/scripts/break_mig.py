@@ -30,6 +30,7 @@ flags together to break all nodes.
 Messing with iptables rules on master is obviously unsafe and can potentially
 lead to completely breaking your cluster!
 '''
+from __future__ import print_function
 
 
 import argparse
@@ -72,10 +73,10 @@ def get_instances(master, ng):
 
 def break_node(master, instance, broken_ips, verbose):
     '''Add iptable rules to drop packets coming from ips used by a give node'''
-    print 'Breaking node {}'.format(instance.name)
+    print('Breaking node {}'.format(instance.name))
     for ip in instance.ip:
         if verbose:
-            print 'Blocking ip {} on master'.format(ip)
+            print('Blocking ip {} on master'.format(ip))
         subprocess.call(['gcloud', 'compute', 'ssh', master, '--', 'sudo iptables -I INPUT 1 -p tcp -s {} -j DROP'.format(ip)])
         broken_ips.add(ip)
 
@@ -94,7 +95,7 @@ def run(master, ng, existing, upcoming, max_nodes_to_break, broken_ips, verbose)
     def maybe_break_node(*args, **kwargs):
         if max_nodes_to_break >= 0 and broken[0] >= max_nodes_to_break:
             if verbose:
-                print 'Maximum number of instances already broken, will not break {}'.format(args[1])
+                print('Maximum number of instances already broken, will not break {}'.format(args[1]))
         else:
             break_node(*args, **kwargs)
             broken[0] += 1
@@ -111,7 +112,7 @@ def run(master, ng, existing, upcoming, max_nodes_to_break, broken_ips, verbose)
             if inst.name in known:
                 continue
             if verbose:
-                print 'New instance observed: {}'.format(inst.name)
+                print('New instance observed: {}'.format(inst.name))
             if upcoming:
                 maybe_break_node(master, inst, broken_ips, verbose)
             known.add(inst.name)
@@ -126,7 +127,7 @@ def clean_up(master, broken, verbose):
     top of INPUT chain while this was running you will suffer.
     '''
     if verbose:
-        print 'Cleaning up top {} iptable rules'.format(len(broken))
+        print('Cleaning up top {} iptable rules'.format(len(broken)))
     for i in xrange(len(broken)):
         subprocess.call(['gcloud', 'compute', 'ssh', master, '--', 'sudo iptables -D INPUT 1'])
 
@@ -143,14 +144,14 @@ def main():
     args = parser.parse_args()
 
     if not args.existing and not args.upcoming:
-        print 'At least one of --existing or --upcoming must be specified'
+        print('At least one of --existing or --upcoming must be specified')
         return
 
     if not args.yes:
-        print 'Running this script will break nodes in your cluster for testing purposes.'
-        print 'The nodes may or may not recover after this. Your whole cluster may be broken.'
-        print 'DO NOT RUN THIS SCRIPT ON PRODUCTION CLUSTER.'
-        print 'Do you want to proceed? (anything but y stops the script)'
+        print('Running this script will break nodes in your cluster for testing purposes.')
+        print('The nodes may or may not recover after this. Your whole cluster may be broken.')
+        print('DO NOT RUN THIS SCRIPT ON PRODUCTION CLUSTER.')
+        print('Do you want to proceed? (anything but y stops the script)')
         user_ok = sys.stdin.read(1)
         if user_ok.upper() != 'Y':
             return
