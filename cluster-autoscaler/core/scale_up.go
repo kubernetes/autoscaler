@@ -25,6 +25,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/apimachinery/pkg/util/uuid"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
@@ -293,7 +294,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 				nodeGroup)
 		}
 		for i := 0; i < numberOfNodes; i++ {
-			upcomingNodes = append(upcomingNodes, nodeTemplate)
+			upcomingNodes = append(upcomingNodes, buildNodeInfoForNodeTemplate(nodeTemplate, i))
 		}
 	}
 	klog.V(4).Infof("Upcoming %d nodes", len(upcomingNodes))
@@ -544,6 +545,14 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 	}
 
 	return &status.ScaleUpStatus{Result: status.ScaleUpNoOptionsAvailable, PodsRemainUnschedulable: getRemainingPods(podsRemainUnschedulable, skippedNodeGroups)}, nil
+}
+
+func buildNodeInfoForNodeTemplate(nodeTemplate *schedulernodeinfo.NodeInfo, index int) *schedulernodeinfo.NodeInfo {
+	nodeInfo := nodeTemplate.Clone()
+	node := nodeInfo.Node()
+	node.Name = fmt.Sprintf("%s-%d", node.Name, index)
+	node.UID = uuid.NewUUID()
+	return nodeInfo
 }
 
 type podsPredicatePassingCheckFunctions struct {
