@@ -25,6 +25,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	extensionsv1 "k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/apimachinery/pkg/util/uuid"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
@@ -294,7 +295,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 				nodeGroup)
 		}
 		for i := 0; i < numberOfNodes; i++ {
-			upcomingNodes = append(upcomingNodes, nodeTemplate)
+			upcomingNodes = append(upcomingNodes, buildNodeInfoForNodeTemplate(nodeTemplate, i))
 		}
 	}
 	glog.V(4).Infof("Upcoming %d nodes", len(upcomingNodes))
@@ -517,6 +518,14 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 	}
 
 	return &status.ScaleUpStatus{ScaledUp: false, PodsRemainUnschedulable: getRemainingPods(podsRemainUnschedulable, skippedNodeGroups)}, nil
+}
+
+func buildNodeInfoForNodeTemplate(nodeTemplate *schedulercache.NodeInfo, index int) *schedulercache.NodeInfo {
+	nodeInfo := nodeTemplate.Clone()
+	node := nodeInfo.Node()
+	node.Name = fmt.Sprintf("%s-%d", node.Name, index)
+	node.UID = uuid.NewUUID()
+	return nodeInfo
 }
 
 func getRemainingPods(schedulingErrors map[*apiv1.Pod]map[string]status.Reasons, skipped map[string]status.Reasons) []status.NoScaleUpInfo {
