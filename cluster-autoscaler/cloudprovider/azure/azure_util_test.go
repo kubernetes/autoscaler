@@ -22,6 +22,7 @@ import (
 	"testing"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-04-01/compute"
+	"github.com/Azure/go-autorest/autorest"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -187,5 +188,42 @@ func TestIsSuccessResponse(t *testing.T) {
 		result, realError := isSuccessHTTPResponse(test.resp, test.err)
 		assert.Equal(t, test.expected, result, "[%s] expected: %v, saw: %v", test.name, result, test.expected)
 		assert.Equal(t, test.expectedError, realError, "[%s] expected: %v, saw: %v", test.name, realError, test.expectedError)
+	}
+}
+
+func TestIsAzureRequestsThrottled(t *testing.T) {
+	tests := []struct {
+		desc     string
+		err      error
+		expected bool
+	}{
+		{
+			desc:     "nil error should return false",
+			expected: false,
+		},
+		{
+			desc:     "non autorest.DetailedError error should return false",
+			err:      fmt.Errorf("unknown error"),
+			expected: false,
+		},
+		{
+			desc: "non http.StatusTooManyRequests error should return false",
+			err: autorest.DetailedError{
+				StatusCode: http.StatusBadRequest,
+			},
+			expected: false,
+		},
+		{
+			desc: "http.StatusTooManyRequests error should return true",
+			err: autorest.DetailedError{
+				StatusCode: http.StatusTooManyRequests,
+			},
+			expected: true,
+		},
+	}
+
+	for _, test := range tests {
+		real := isAzureRequestsThrottled(test.err)
+		assert.Equal(t, test.expected, real, test.desc)
 	}
 }
