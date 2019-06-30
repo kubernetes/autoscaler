@@ -628,3 +628,21 @@ func isSuccessHTTPResponse(resp *http.Response, err error) (isSuccess bool, real
 	// This shouldn't happen, it only ensures all exceptions are handled.
 	return false, fmt.Errorf("failed with unknown error")
 }
+
+// isAzureRequestsThrottled returns true when the err is http.StatusTooManyRequests (429).
+func isAzureRequestsThrottled(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	v, ok := err.(autorest.DetailedError)
+	if !ok {
+		return false
+	}
+
+	if v.StatusCode == http.StatusTooManyRequests {
+		return true
+	}
+
+	return false
+}
