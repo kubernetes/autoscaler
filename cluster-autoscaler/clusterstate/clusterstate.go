@@ -585,7 +585,7 @@ func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 			klog.Warningf("Failed to get nodegroup for %s: %v", unregistered.Node.Name, errNg)
 			continue
 		}
-		if nodeGroup == nil {
+		if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
 			klog.Warningf("Nodegroup is nil for %s", unregistered.Node.Name)
 			continue
 		}
