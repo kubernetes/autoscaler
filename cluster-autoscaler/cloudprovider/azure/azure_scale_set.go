@@ -19,6 +19,7 @@ package azure
 import (
 	"fmt"
 	"math/rand"
+	"net/http"
 	"strings"
 	"sync"
 	"time"
@@ -33,6 +34,10 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
+)
+
+var (
+	vmssSizeRefreshPeriod = 15 * time.Second
 )
 
 // ScaleSet implements NodeGroup interface.
@@ -112,7 +117,7 @@ func (scaleSet *ScaleSet) getCurSize() (int64, error) {
 	scaleSet.mutex.Lock()
 	defer scaleSet.mutex.Unlock()
 
-	if scaleSet.lastRefresh.Add(15 * time.Second).After(time.Now()) {
+	if scaleSet.lastRefresh.Add(vmssSizeRefreshPeriod).After(time.Now()) {
 		return scaleSet.curSize, nil
 	}
 
@@ -133,34 +138,55 @@ func (scaleSet *ScaleSet) GetScaleSetSize() (int64, error) {
 	return scaleSet.getCurSize()
 }
 
-// SetScaleSetSize sets ScaleSet size.
-func (scaleSet *ScaleSet) SetScaleSetSize(size int64) error {
-	scaleSet.mutex.Lock()
-	defer scaleSet.mutex.Unlock()
+// updateVMSSCapacity invokes virtualMachineScaleSetsClient to update the capacity for VMSS.
+func (scaleSet *ScaleSet) updateVMSSCapacity(size int64) {
+	var op compute.VirtualMachineScaleSet
+	var resp *http.Response
+	var isSuccess bool
+	var err error
+
+	defer func() {
+		if err != nil {
+			klog.Errorf("Failed to update the capacity for vmss %s with error %v, invalidate the cache so as to get the real size from API", scaleSet.Name, err)
+			// Invalidate the VMSS size cache in order to fetch the size from the API.
+			scaleSet.mutex.Lock()
+			defer scaleSet.mutex.Unlock()
+			scaleSet.lastRefresh = time.Now().Add(-1 * vmssSizeRefreshPeriod)
+		}
+	}()
 
 	resourceGroup := scaleSet.manager.config.ResourceGroup
-	op, err := scaleSet.getVMSSInfo()
+	op, err = scaleSet.getVMSSInfo()
 	if err != nil {
-		return err
+		klog.Errorf("Failed to get information for VMSS (%q): %v", scaleSet.Name, err)
+		return
 	}
 
 	op.Sku.Capacity = &size
 	op.VirtualMachineScaleSetProperties.ProvisioningState = nil
-	updateCtx, updateCancel := getContextWithCancel()
-	defer updateCancel()
-
-	glog.V(3).Infof("Waiting for virtualMachineScaleSetsClient.CreateOrUpdate(%s)", scaleSet.Name)
-	resp, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.CreateOrUpdate(updateCtx, resourceGroup, scaleSet.Name, op)
-	isSuccess, realError := isSuccessHTTPResponse(resp, err)
+	ctx, cancel := getContextWithCancel()
+	defer cancel()
+	klog.V(3).Infof("Waiting for virtualMachineScaleSetsClient.CreateOrUpdate(%s)", scaleSet.Name)
+	resp, err = scaleSet.manager.azClient.virtualMachineScaleSetsClient.CreateOrUpdate(ctx, resourceGroup, scaleSet.Name, op)
+	isSuccess, err = isSuccessHTTPResponse(resp, err)
 	if isSuccess {
-		glog.V(3).Infof("virtualMachineScaleSetsClient.CreateOrUpdate(%s) success", scaleSet.Name)
-		scaleSet.curSize = size
-		scaleSet.lastRefresh = time.Now()
-		return nil
+		klog.V(3).Infof("virtualMachineScaleSetsClient.CreateOrUpdate(%s) success", scaleSet.Name)
+		return
 	}
 
-	glog.Errorf("virtualMachineScaleSetsClient.CreateOrUpdate for scale set %q failed: %v", scaleSet.Name, realError)
-	return realError
+	klog.Errorf("virtualMachineScaleSetsClient.CreateOrUpdate for scale set %q failed: %v", scaleSet.Name, err)
+	return
+}
+
+// SetScaleSetSize sets ScaleSet size.
+func (scaleSet *ScaleSet) SetScaleSetSize(size int64) {
+	scaleSet.mutex.Lock()
+	defer scaleSet.mutex.Unlock()
+
+	// Proactively set the VMSS size so autoscaler makes better decisions.
+	scaleSet.curSize = size
+	scaleSet.lastRefresh = time.Now()
+	go scaleSet.updateVMSSCapacity(size)
 }
 
 // TargetSize returns the current TARGET size of the node group. It is possible that the
@@ -185,7 +211,8 @@ func (scaleSet *ScaleSet) IncreaseSize(delta int) error {
 		return fmt.Errorf("size increase too large - desired:%d max:%d", int(size)+delta, scaleSet.MaxSize())
 	}
 
-	return scaleSet.SetScaleSetSize(size + int64(delta))
+	scaleSet.SetScaleSetSize(size + int64(delta))
+	return nil
 }
 
 // GetScaleSetVms returns list of nodes for the given scale set.
@@ -240,7 +267,8 @@ func (scaleSet *ScaleSet) DecreaseTargetSize(delta int) error {
 			size, delta, len(nodes))
 	}
 
-	return scaleSet.SetScaleSetSize(size + int64(delta))
+	scaleSet.SetScaleSetSize(size + int64(delta))
+	return nil
 }
 
 // Belongs returns true if the given node belongs to the NodeGroup.
