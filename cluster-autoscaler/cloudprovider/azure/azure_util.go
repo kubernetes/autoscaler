@@ -640,3 +640,21 @@ func convertResourceGroupNameToLower(resourceID string) (string, error) {
 	resourceGroup := matches[1]
 	return strings.Replace(resourceID, resourceGroup, strings.ToLower(resourceGroup), 1), nil
 }
+
+// isAzureRequestsThrottled returns true when the err is http.StatusTooManyRequests (429).
+func isAzureRequestsThrottled(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	v, ok := err.(autorest.DetailedError)
+	if !ok {
+		return false
+	}
+
+	if v.StatusCode == http.StatusTooManyRequests {
+		return true
+	}
+
+	return false
+}
