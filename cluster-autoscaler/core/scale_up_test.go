@@ -50,6 +50,7 @@ var defaultOptions = config.AutoscalingOptions{
 	MinMemoryTotal: 0,
 }
 
+// Scale up scenarios.
 func TestScaleUpOK(t *testing.T) {
 	config := &scaleTestConfig{
 		nodes: []nodeConfig{
@@ -326,6 +327,33 @@ func TestWillConsiderAllPoolsWhichFitTwoPodsRequiringGpus(t *testing.T) {
 	simpleScaleUpTest(t, config, results)
 }
 
+// No scale up scenarios.
+func TestNoScaleUpMaxCoresLimitHit(t *testing.T) {
+	options := defaultOptions
+	options.MaxCoresTotal = 7
+	options.MaxMemoryTotal = 1150
+	config := &scaleTestConfig{
+		nodes: []nodeConfig{
+			{"n1", 2000, 100, 0, true, "ng1"},
+			{"n2", 4000, 1000, 0, true, "ng2"},
+		},
+		pods: []podConfig{
+			{"p1", 1000, 0, 0, "n1"},
+			{"p2", 3000, 0, 0, "n2"},
+		},
+		extraPods: []podConfig{
+			{"p-new-1", 2000, 0, 0, ""},
+			{"p-new-2", 2000, 0, 0, ""},
+		},
+		options: options,
+	}
+	results := &scaleTestResults{
+		noScaleUpReason: "max cluster cpu, memory limit reached",
+	}
+
+	simpleNoScaleUpTest(t, config, results)
+}
+
 // To implement expander.Strategy, BestOption method must have a struct receiver.
 // This prevents it from modifying fields of reportingStrategy, so we need a thin
 // pointer wrapper for mutable parts.
@@ -437,9 +465,14 @@ func runSimpleScaleUpTest(t *testing.T, config *scaleTestConfig) *scaleTestResul
 
 	scaleUpStatus, err := ScaleUp(&context, processors, clusterState, extraPods, nodes, []*appsv1.DaemonSet{}, nodeInfos, nil)
 	processors.ScaleUpStatusProcessor.Process(&context, scaleUpStatus)
+
 	assert.NoError(t, err)
 
 	expandedGroup := getGroupSizeChangeFromChan(expandedGroups)
+	var expandedGroupStruct groupSizeChange
+	if expandedGroup != nil {
+		expandedGroupStruct = *expandedGroup
+	}
 
 	events := []string{}
 	for eventsLeft := true; eventsLeft; {
@@ -453,10 +486,30 @@ func runSimpleScaleUpTest(t *testing.T, config *scaleTestConfig) *scaleTestResul
 
 	return &scaleTestResults{
 		expansionOptions: expander.results.inputOptions,
-		finalOption:      *expandedGroup,
+		finalOption:      expandedGroupStruct,
 		scaleUpStatus:    scaleUpStatus,
 		events:           events,
 	}
+}
+
+func simpleNoScaleUpTest(t *testing.T, config *scaleTestConfig, expectedResults *scaleTestResults) {
+	results := runSimpleScaleUpTest(t, config)
+
+	assert.Equal(t, groupSizeChange{}, results.finalOption)
+	assert.False(t, results.scaleUpStatus.WasSuccessful())
+	noScaleUpEventSeen := false
+	for _, event := range results.events {
+		if strings.Contains(event, "NotTriggerScaleUp") {
+			if strings.Contains(event, expectedResults.noScaleUpReason) {
+				noScaleUpEventSeen = true
+			} else {
+				// Surprisingly useful for debugging.
+				fmt.Println("Event:", event)
+			}
+		}
+		assert.NotRegexp(t, regexp.MustCompile("TriggeredScaleUp"), event)
+	}
+	assert.True(t, noScaleUpEventSeen)
 }
 
 func simpleScaleUpTest(t *testing.T, config *scaleTestConfig, expectedResults *scaleTestResults) {
@@ -495,7 +548,7 @@ func getGroupSizeChangeFromChan(c chan groupSizeChange) *groupSizeChange {
 	select {
 	case val := <-c:
 		return &val
-	case <-time.After(10 * time.Second):
+	case <-time.After(100 * time.Millisecond):
 		return nil
 	}
 }
