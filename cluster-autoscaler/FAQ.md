@@ -256,7 +256,7 @@ available [here](https://github.com/kubernetes/autoscaler/blob/master/cluster-au
 ### How can I scale my cluster to just 1 node?
 
 Prior to version 0.6, Cluster Autoscaler was not touching nodes that were running important
-kube-system pods like DNS, Heapster, Dashboard etc. If these pods landed on different nodes,
+kube-system pods like DNS, Metrics Server, Dashboard etc. If these pods landed on different nodes,
 CA could not scale the cluster down and the user could end up with a completely empty
 3 node cluster. In 0.6, we added an option to tell CA that some system pods can be moved around.
 If the user configures a [PodDisruptionBudget](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/)
@@ -553,7 +553,7 @@ running is determined by three major factors:
 * node provisioning time.
 
 By default, pods' CPU usage is scraped by kubelet every 10 seconds, and it is obtained from kubelet
-by Heapster every 1 minute. HPA checks CPU load metrics in Heapster every 30 seconds.
+by Metrics Server every 1 minute. HPA checks CPU load metrics in Metrics Server every 30 seconds.
 However, after changing the number of replicas, HPA backs off for 3 minutes before taking
 further action. So it can be up to 3 minutes before pods are added or deleted,
 but usually it's closer to 1 minute.
@@ -709,8 +709,8 @@ adding preventSinglePointFailure parameter. For example:
 linear:'{"coresPerReplica":256,"nodesPerReplica":16,"preventSinglePointFailure":true}'
 ```
 
-* Heapster is best left alone, as restarting it causes the loss of metrics for >1 minute, as well as metrics
-in dashboard from the last 15 minutes. Heapster downtime also means effective HPA downtime as it relies on metrics. Add PDB for it only if you're sure you don't mind. App name is k8s-heapster.
+* Metrics Server is best left alone, as restarting it causes the loss of metrics for >1 minute, as well as metrics
+in dashboard from the last 15 minutes. Metrics Server downtime also means effective HPA downtime as it relies on metrics. Add PDB for it only if you're sure you don't mind.
 
 ### I have a couple of pending pods, but there was no scale-up?
 
