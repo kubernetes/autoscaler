@@ -18,12 +18,16 @@
 # Intro
 
 Vertical Pod Autoscaler (VPA) frees the users from necessity of setting
-up-to-date resource requests for the containers in their pods.
-When configured, it will set the requests automatically based on usage and
-thus allow proper scheduling onto nodes so that appropriate resource amount is
-available for each pod.
+up-to-date resource limits and requests for the containers in their pods. When
+configured, it will set the requests automatically based on usage and thus
+allow proper scheduling onto nodes so that appropriate resource amount is
+available for each pod. It will also maintain ratios between limits and
+requests that were specified in initial containers configuration.
 
-It can both down-scale pods that are over-requesting resources, and also up-scale pods that are under-requesting resources based on their usage over time.
+It can both down-scale pods that are over-requesting resources, and also
+up-scale pods that are under-requesting resources based on their usage over
+time.
+
 
 Autoscaling is configured with a
 [Custom Resource Definition object](https://kubernetes.io/docs/concepts/api-extension/custom-resources/)
@@ -212,6 +216,42 @@ kubectl delete clusterrolebinding myname-cluster-admin-binding
 ./hack/vpa-down.sh
 ```
 
+# Limits control
+
+When setting limits VPA will conform to
+[resource policies](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2/types.go#L82).
+It will maintain limit to request ratio specified for all containers.
+
+VPA will try to cap recommendations between min and max of
+[limit ranges](https://kubernetes.io/docs/concepts/policy/limit-range/). If limit range conflicts
+and VPA resource policy conflict then VPA will follow VPA policy (and set values outside limit
+range).
+
+## Examples
+
+### Keeping limit proportional to request
+
+Container template specifies resource request for 500 milli CPU and 1 GB of RAM. The template also
+specifies resource limit of 2 GB RAM. VPA recommendation is 1000 milli CPU and 2 GB of RAM. When VPA
+applies the recommendation it will also set memory limit to 4 GB.
+
+### Capping to Limit Range
+
+Container template specifies resource request for 500 milli CPU and 1 GB of RAM. The template also
+specifies resource limit of 2 GB RAM. A limit range sets maximum limit to 3 GB RAM per container.
+VPA recommendation is 1000 milli CPU and 2 GB of RAM. When VPA applies the recommendation it will
+set memory limit to 3 GB (to keep it within the allowed limit range) and memory request to 1.5 GB (
+to maintain 2:1 limit/request ratio from the template).
+
+### Resource Policy Overriding Limit Range
+
+Container template specifies resource request for 500 milli CPU and 1 GB of RAM. The template also
+specifies resource limit of 2 GB RAM. A limit range sets maximum limit to 3 GB RAM per container.
+VPAs Container Resource Policy requires VPA to set containers request to at least 750 milli CPU and
+2 GB RAM. VPA recommendation is 1000 milli CPU and 2 GB of RAM. When applying the recommendation
+VPA will set RAM request to 2 GB (following the resource policy) and RAM limit to 4 GB (to maintain
+2:1 limit/request ratio from the template).
+
 # Known limitations
 
 ## Limitations of beta version
@@ -232,9 +272,6 @@ kubectl delete clusterrolebinding myname-cluster-admin-binding
   size, available quota) and cause **pods to go pending**. This can be partly 
   addressed by using VPA together with [Cluster Autoscaler](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#basics).
 * Multiple VPA resources matching the same pod have undefined behavior.
-* VPA does not change resource limits. This implies that recommendations are
-  capped to limits during actuation.
-  **NOTE** This behaviour is likely to change so please don't rely on it.
 
 # Related links
 
