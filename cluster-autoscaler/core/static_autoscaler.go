@@ -74,6 +74,11 @@ type StaticAutoscaler struct {
 	ignoredTaints taintKeySet
 }
 
+// GetCloudProvider returns the CloudProvider instance in staticAutoscaler
+func (a *StaticAutoscaler) GetCloudProvider() cloudprovider.CloudProvider {
+	return a.CloudProvider
+}
+
 type staticAutoscalerProcessorCallbacks struct {
 	disableScaleDownForLoop bool
 	extraValues             map[string]interface{}
@@ -165,10 +170,12 @@ func (a *StaticAutoscaler) cleanUpIfRequired() {
 	if readyNodes, err := a.ReadyNodeLister().List(); err != nil {
 		klog.Errorf("Failed to list ready nodes, not cleaning up taints: %v", err)
 	} else {
-		deletetaint.CleanAllToBeDeleted(readyNodes, a.AutoscalingContext.ClientSet, a.Recorder)
+		deletetaint.CleanAllToBeDeleted(readyNodes,
+			a.AutoscalingContext.ClientSet, a.Recorder)
 		if a.AutoscalingContext.AutoscalingOptions.MaxBulkSoftTaintCount == 0 {
 			// Clean old taints if soft taints handling is disabled
-			deletetaint.CleanAllDeletionCandidates(readyNodes, a.AutoscalingContext.ClientSet, a.Recorder)
+			deletetaint.CleanAllDeletionCandidates(readyNodes,
+				a.AutoscalingContext.ClientSet, a.Recorder)
 		}
 	}
 	a.initialized = true

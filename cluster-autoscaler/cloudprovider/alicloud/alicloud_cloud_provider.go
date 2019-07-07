@@ -18,17 +18,18 @@ package alicloud
 
 import (
 	"fmt"
-	"strings"
-
 	"os"
+	"strings"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/klog"
+	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 )
 
 const (
@@ -229,4 +230,10 @@ func BuildAlicloud(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDis
 		klog.Fatalf("Failed to create Alicloud cloud provider: %v", err)
 	}
 	return cloudProvider
+}
+
+// IsNodeInfoSimilar compares if two nodes should be considered part of the
+// same NodeGroupSet.
+func (ali *aliCloudProvider) IsNodeInfoSimilar(n1, n2 *schedulernodeinfo.NodeInfo) bool {
+	return nodegroupset.IsNodeInfoSimilar(n1, n2)
 }
