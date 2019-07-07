@@ -34,11 +34,12 @@ import (
 	azStorage "github.com/Azure/azure-sdk-for-go/storage"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/to"
+
 	"golang.org/x/crypto/pkcs12"
-	"k8s.io/klog"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/client-go/pkg/version"
+	"k8s.io/klog"
 )
 
 const (
@@ -75,6 +76,9 @@ const (
 	k8sWindowsVMAgentPoolPrefixIndex       = 1
 	k8sWindowsVMAgentOrchestratorNameIndex = 2
 	k8sWindowsVMAgentPoolInfoIndex         = 3
+
+	// AzureNodepoolLabel is a label specifying which Azure node pool a particular node belongs to.
+	AzureNodepoolLabel = "agentpool"
 )
 
 var (
