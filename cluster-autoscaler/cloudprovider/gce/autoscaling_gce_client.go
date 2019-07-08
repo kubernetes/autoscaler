@@ -40,6 +40,9 @@ const (
 
 	// ErrorCodeStockout is error code used in InstanceErrorInfo if stockout occurs.
 	ErrorCodeStockout = "STOCKOUT"
+
+	// ErrorCodeOther is error code used in InstanceErrorInfo if other error occurs.
+	ErrorCodeOther = "OTHER"
 )
 
 // AutoscalingGceClient is used for communicating with GCE API.
@@ -233,6 +236,7 @@ func (client *autoscalingGceClientV1) FetchMigInstances(migRef GceRef) ([]cloudp
 					errorInfo.ErrorCode = ErrorCodeQuotaExceeded
 				} else if !errorFound {
 					errorInfo.ErrorClass = cloudprovider.OtherErrorClass
+					errorInfo.ErrorCode = ErrorCodeOther
 				}
 				errorFound = true
 

@@ -26,18 +26,14 @@ import (
 )
 
 const (
-	//BasicEstimatorName is the name of basic estimator.
-	BasicEstimatorName = "basic"
 	// BinpackingEstimatorName is the name of binpacking estimator.
 	BinpackingEstimatorName = "binpacking"
+	// OldBinpackingEstimatorName is the name of the older binpacking estimator.
+	OldBinpackingEstimatorName = "oldbinpacking"
 )
 
-func deprecated(name string) string {
-	return fmt.Sprintf("%s (DEPRECATED)", name)
-}
-
 // AvailableEstimators is a list of available estimators.
-var AvailableEstimators = []string{BinpackingEstimatorName, deprecated(BasicEstimatorName)}
+var AvailableEstimators = []string{BinpackingEstimatorName, OldBinpackingEstimatorName}
 
 // Estimator calculates the number of nodes of given type needed to schedule pods.
 type Estimator interface {
@@ -55,11 +51,10 @@ func NewEstimatorBuilder(name string) (EstimatorBuilder, error) {
 			return NewBinpackingNodeEstimator(predicateChecker)
 		}, nil
 	// Deprecated.
-	// TODO(aleksandra-malinowska): remove in 1.5.
-	case BasicEstimatorName:
-		klog.Warning(basicEstimatorDeprecationMessage)
-		return func(_ *simulator.PredicateChecker) Estimator {
-			return NewBasicNodeEstimator()
+	case OldBinpackingEstimatorName:
+		klog.Warning(oldBinPackingEstimatorDeprecationMessage)
+		return func(predicateChecker *simulator.PredicateChecker) Estimator {
+			return NewOldBinpackingNodeEstimator(predicateChecker)
 		}, nil
 	}
 	return nil, fmt.Errorf("unknown estimator: %s", name)

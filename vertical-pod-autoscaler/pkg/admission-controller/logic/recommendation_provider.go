@@ -21,8 +21,8 @@ import (
 
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
-	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1beta2"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	vpa_lister "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/listers/autoscaling.k8s.io/v1"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/target"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
@@ -128,11 +128,10 @@ func (p *recommendationProvider) GetContainersResourcesForPod(pod *core.Pod) ([]
 			return nil, annotations, vpaConfig.Name, err
 		}
 	}
-	podLimitRange, err := p.limitsRangeCalculator.GetContainerLimitRangeItem(pod.Namespace)
-	// TODO: Support limit range on pod level.
+	containerLimitRange, err := p.limitsRangeCalculator.GetContainerLimitRangeItem(pod.Namespace)
 	if err != nil {
-		return nil, nil, "", fmt.Errorf("error getting podLimitRange: %s", err)
+		return nil, nil, "", fmt.Errorf("error getting containerLimitRange: %s", err)
 	}
-	containerResources := GetContainersResources(pod, *recommendedPodResources, podLimitRange, annotations)
+	containerResources := GetContainersResources(pod, *recommendedPodResources, containerLimitRange, annotations)
 	return containerResources, annotations, vpaConfig.Name, nil
 }

@@ -17,7 +17,7 @@ limitations under the License.
 package logic
 
 import (
-	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 )
 
 // VpaPreProcessor processes the VPAs before applying default .

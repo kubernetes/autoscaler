@@ -22,6 +22,7 @@ import (
 	"testing"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-10-01/compute"
+	"github.com/Azure/go-autorest/autorest"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -241,6 +242,43 @@ func TestConvertResourceGroupNameToLower(t *testing.T) {
 		}
 
 		assert.Nil(t, err, test.desc)
+		assert.Equal(t, test.expected, real, test.desc)
+	}
+}
+
+func TestIsAzureRequestsThrottled(t *testing.T) {
+	tests := []struct {
+		desc     string
+		err      error
+		expected bool
+	}{
+		{
+			desc:     "nil error should return false",
+			expected: false,
+		},
+		{
+			desc:     "non autorest.DetailedError error should return false",
+			err:      fmt.Errorf("unknown error"),
+			expected: false,
+		},
+		{
+			desc: "non http.StatusTooManyRequests error should return false",
+			err: autorest.DetailedError{
+				StatusCode: http.StatusBadRequest,
+			},
+			expected: false,
+		},
+		{
+			desc: "http.StatusTooManyRequests error should return true",
+			err: autorest.DetailedError{
+				StatusCode: http.StatusTooManyRequests,
+			},
+			expected: true,
+		},
+	}
+
+	for _, test := range tests {
+		real := isAzureRequestsThrottled(test.err)
 		assert.Equal(t, test.expected, real, test.desc)
 	}
 }

@@ -19,7 +19,7 @@ package mocktarget
 import (
 	gomock "github.com/golang/mock/gomock"
 	labels "k8s.io/apimachinery/pkg/labels"
-	v1beta2 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 )
 
 // MockVpaTargetSelectorFetcher is a mock of VpaTargetSelectorFetcher interface
@@ -46,7 +46,7 @@ func (_m *MockVpaTargetSelectorFetcher) EXPECT() *_MockVpaTargetSelectorFetcherR
 }
 
 // Fetch enables configuring expectations on Fetch method
-func (_m *MockVpaTargetSelectorFetcher) Fetch(vpa *v1beta2.VerticalPodAutoscaler) (labels.Selector, error) {
+func (_m *MockVpaTargetSelectorFetcher) Fetch(vpa *vpa_types.VerticalPodAutoscaler) (labels.Selector, error) {
 	ret := _m.ctrl.Call(_m, "Fetch", vpa)
 	ret0, _ := ret[0].(labels.Selector)
 	ret1, _ := ret[1].(error)
