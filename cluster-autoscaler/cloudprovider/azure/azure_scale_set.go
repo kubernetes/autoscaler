@@ -521,10 +521,16 @@ func (scaleSet *ScaleSet) TemplateNodeInfo() (*schedulernodeinfo.NodeInfo, error
 
 // Nodes returns a list of all nodes that belong to this node group.
 func (scaleSet *ScaleSet) Nodes() ([]cloudprovider.Instance, error) {
+	curSize, err := scaleSet.getCurSize()
+	if err != nil {
+		klog.Errorf("Failed to get current size for vmss %q: %v", scaleSet.Name, err)
+		return nil, err
+	}
+
 	scaleSet.instanceMutex.Lock()
 	defer scaleSet.instanceMutex.Unlock()
 
-	if int64(len(scaleSet.instanceCache)) == scaleSet.curSize &&
+	if int64(len(scaleSet.instanceCache)) == curSize &&
 		scaleSet.lastInstanceRefresh.Add(vmssInstancesRefreshPeriod).After(time.Now()) {
 		return scaleSet.instanceCache, nil
 	}
