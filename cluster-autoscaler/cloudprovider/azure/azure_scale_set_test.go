@@ -76,8 +76,19 @@ func TestIncreaseSize(t *testing.T) {
 	assert.True(t, registered)
 	assert.Equal(t, len(provider.NodeGroups()), 1)
 
-	err := provider.NodeGroups()[0].IncreaseSize(1)
+	// current target size is 2.
+	targetSize, err := provider.NodeGroups()[0].TargetSize()
 	assert.NoError(t, err)
+	assert.Equal(t, targetSize, 2)
+
+	// increase 3 nodes.
+	err = provider.NodeGroups()[0].IncreaseSize(3)
+	assert.NoError(t, err)
+
+	// new target size should be 5.
+	targetSize, err = provider.NodeGroups()[0].TargetSize()
+	assert.NoError(t, err)
+	assert.Equal(t, 5, targetSize)
 }
 
 func TestBelongs(t *testing.T) {
