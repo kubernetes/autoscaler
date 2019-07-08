@@ -69,7 +69,7 @@ func (client ContainerServicesClient) CreateOrUpdate(ctx context.Context, resour
 						}},
 					{Target: "parameters.Properties.LinuxProfile", Name: validation.Null, Rule: true,
 						Chain: []validation.Constraint{{Target: "parameters.Properties.LinuxProfile.AdminUsername", Name: validation.Null, Rule: true,
-							Chain: []validation.Constraint{{Target: "parameters.Properties.LinuxProfile.AdminUsername", Name: validation.Pattern, Rule: `^[a-z][a-z0-9_-]*$`, Chain: nil}}},
+							Chain: []validation.Constraint{{Target: "parameters.Properties.LinuxProfile.AdminUsername", Name: validation.Pattern, Rule: `^[A-Za-z][-A-Za-z0-9_]*$`, Chain: nil}}},
 							{Target: "parameters.Properties.LinuxProfile.SSH", Name: validation.Null, Rule: true,
 								Chain: []validation.Constraint{{Target: "parameters.Properties.LinuxProfile.SSH.PublicKeys", Name: validation.Null, Rule: true, Chain: nil}}},
 						}},
@@ -125,10 +125,6 @@ func (client ContainerServicesClient) CreateOrUpdateSender(req *http.Request) (f
 	var resp *http.Response
 	resp, err = autorest.SendWithSender(client, req,
 		azure.DoRetryWithRegistration(client.Client))
-	if err != nil {
-		return
-	}
-	err = autorest.Respond(resp, azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusCreated, http.StatusAccepted))
 	if err != nil {
 		return
 	}
@@ -199,10 +195,6 @@ func (client ContainerServicesClient) DeleteSender(req *http.Request) (future Co
 	var resp *http.Response
 	resp, err = autorest.SendWithSender(client, req,
 		azure.DoRetryWithRegistration(client.Client))
-	if err != nil {
-		return
-	}
-	err = autorest.Respond(resp, azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusAccepted, http.StatusNoContent))
 	if err != nil {
 		return
 	}
@@ -478,7 +470,7 @@ func (client ContainerServicesClient) ListByResourceGroupComplete(ctx context.Co
 }
 
 // ListOrchestrators gets a list of supported orchestrators in the specified subscription. The operation returns
-// properties of each orchestrator including version and available upgrades.
+// properties of each orchestrator including verison and available upgrades.
 // Parameters:
 // location - the name of a supported Azure region.
 // resourceType - resource type for which the list of orchestrators needs to be returned

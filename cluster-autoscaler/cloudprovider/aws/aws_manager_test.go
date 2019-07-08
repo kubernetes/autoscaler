@@ -35,8 +35,8 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	provider_aws "k8s.io/kubernetes/pkg/cloudprovider/providers/aws"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
+	provider_aws "k8s.io/legacy-cloud-providers/aws"
 )
 
 // resetAWSRegion resets AWS_REGION environment variable key to its pre-test

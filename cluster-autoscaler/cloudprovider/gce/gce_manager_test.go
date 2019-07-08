@@ -340,17 +340,19 @@ func newTestGceManager(t *testing.T, testServerURL string, regional bool) *gceMa
 			{"us-central1-c", "n1-standard-1"}: {GuestCpus: 1, MemoryMb: 1},
 			{"us-central1-f", "n1-standard-1"}: {GuestCpus: 1, MemoryMb: 1},
 		},
-		migTargetSizeCache: map[GceRef]int64{},
-		migBaseNameCache:   map[GceRef]string{},
+		migTargetSizeCache:     map[GceRef]int64{},
+		instanceTemplatesCache: map[GceRef]*gce.InstanceTemplate{},
+		migBaseNameCache:       map[GceRef]string{},
 	}
 	manager := &gceManagerImpl{
-		cache:                  cache,
-		migTargetSizesProvider: NewCachingMigTargetSizesProvider(cache, gceService, projectId),
-		GceService:             gceService,
-		projectId:              projectId,
-		regional:               regional,
-		templates:              &GceTemplateBuilder{},
-		explicitlyConfigured:   make(map[GceRef]bool),
+		cache:                        cache,
+		migTargetSizesProvider:       NewCachingMigTargetSizesProvider(cache, gceService, projectId),
+		migInstanceTemplatesProvider: NewCachingMigInstanceTemplatesProvider(cache, gceService),
+		GceService:                   gceService,
+		projectId:                    projectId,
+		regional:                     regional,
+		templates:                    &GceTemplateBuilder{},
+		explicitlyConfigured:         make(map[GceRef]bool),
 	}
 	if regional {
 		manager.location = region
@@ -905,7 +907,7 @@ func TestGetMigNodesComplex(t *testing.T) {
 			buildManagedInstanceWithCurrentActionAndErrorResponsePart("europe-west1-b", "instance-creating-other-error", "CREATING", "SOME_ERROR", "Ojojojoj!"),
 			cloudprovider.InstanceCreating,
 			cloudprovider.OtherErrorClass,
-			"",
+			ErrorCodeOther,
 			"Ojojojoj!",
 		},
 		{

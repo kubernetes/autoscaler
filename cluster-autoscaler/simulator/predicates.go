@@ -156,7 +156,7 @@ func NewPredicateChecker(kubeClient kube_client.Interface, stop <-chan struct{})
 	sched := scheduler.NewFromConfig(config)
 
 	scheduler.AddAllEventHandlers(sched, apiv1.DefaultSchedulerName,
-		nodeInformer, podInformer, pvInformer, pvcInformer, replicationControllerInformer, replicaSetInformer, statefulSetInformer, serviceInformer, pdbInformer, storageClassInformer)
+		nodeInformer, podInformer, pvInformer, pvcInformer, serviceInformer, storageClassInformer)
 
 	predicateMap := map[string]predicates.FitPredicate{}
 	for predicateName, predicateFunc := range sched.Config().Algorithm.Predicates() {

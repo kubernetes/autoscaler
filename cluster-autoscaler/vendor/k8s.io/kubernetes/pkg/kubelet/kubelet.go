@@ -32,8 +32,7 @@ import (
 	"time"
 
 	cadvisorapi "github.com/google/cadvisor/info/v1"
-	cadvisorapiv2 "github.com/google/cadvisor/info/v2"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
@@ -51,11 +50,11 @@ import (
 	"k8s.io/client-go/util/certificate"
 	"k8s.io/client-go/util/flowcontrol"
 	cloudprovider "k8s.io/cloud-provider"
+	internalapi "k8s.io/cri-api/pkg/apis"
 	"k8s.io/klog"
 	api "k8s.io/kubernetes/pkg/apis/core"
 	"k8s.io/kubernetes/pkg/features"
 	kubeletconfiginternal "k8s.io/kubernetes/pkg/kubelet/apis/config"
-	internalapi "k8s.io/kubernetes/pkg/kubelet/apis/cri"
 	pluginwatcherapi "k8s.io/kubernetes/pkg/kubelet/apis/pluginregistration/v1"
 	"k8s.io/kubernetes/pkg/kubelet/apis/podresources"
 	"k8s.io/kubernetes/pkg/kubelet/cadvisor"
@@ -79,7 +78,10 @@ import (
 	"k8s.io/kubernetes/pkg/kubelet/metrics/collectors"
 	"k8s.io/kubernetes/pkg/kubelet/network/dns"
 	"k8s.io/kubernetes/pkg/kubelet/nodelease"
+	oomwatcher "k8s.io/kubernetes/pkg/kubelet/oom"
 	"k8s.io/kubernetes/pkg/kubelet/pleg"
+	"k8s.io/kubernetes/pkg/kubelet/pluginmanager"
+	plugincache "k8s.io/kubernetes/pkg/kubelet/pluginmanager/cache"
 	kubepod "k8s.io/kubernetes/pkg/kubelet/pod"
 	"k8s.io/kubernetes/pkg/kubelet/preemption"
 	"k8s.io/kubernetes/pkg/kubelet/prober"
@@ -98,7 +100,6 @@ import (
 	"k8s.io/kubernetes/pkg/kubelet/util"
 	"k8s.io/kubernetes/pkg/kubelet/util/format"
 	"k8s.io/kubernetes/pkg/kubelet/util/manager"
-	"k8s.io/kubernetes/pkg/kubelet/util/pluginwatcher"
 	"k8s.io/kubernetes/pkg/kubelet/util/queue"
 	"k8s.io/kubernetes/pkg/kubelet/util/sliceutils"
 	"k8s.io/kubernetes/pkg/kubelet/volumemanager"
@@ -110,10 +111,10 @@ import (
 	"k8s.io/kubernetes/pkg/util/mount"
 	nodeutil "k8s.io/kubernetes/pkg/util/node"
 	"k8s.io/kubernetes/pkg/util/oom"
+	"k8s.io/kubernetes/pkg/util/selinux"
 	"k8s.io/kubernetes/pkg/volume"
 	"k8s.io/kubernetes/pkg/volume/csi"
 	"k8s.io/kubernetes/pkg/volume/util/subpath"
-	nodeapiclientset "k8s.io/node-api/pkg/client/clientset/versioned"
 	utilexec "k8s.io/utils/exec"
 	"k8s.io/utils/integer"
 )
@@ -192,8 +193,8 @@ type Bootstrap interface {
 	GetConfiguration() kubeletconfiginternal.KubeletConfiguration
 	BirthCry()
 	StartGarbageCollection()
-	ListenAndServe(address net.IP, port uint, tlsOptions *server.TLSOptions, auth server.AuthInterface, enableDebuggingHandlers, enableContentionProfiling bool)
-	ListenAndServeReadOnly(address net.IP, port uint)
+	ListenAndServe(address net.IP, port uint, tlsOptions *server.TLSOptions, auth server.AuthInterface, enableCAdvisorJSONEndpoints, enableDebuggingHandlers, enableContentionProfiling bool)
+	ListenAndServeReadOnly(address net.IP, port uint, enableCAdvisorJSONEndpoints bool)
 	ListenAndServePodResources()
 	Run(<-chan kubetypes.PodUpdate)
 	RunOnce(<-chan kubetypes.PodUpdate) ([]RunPodResult, error)
@@ -248,7 +249,6 @@ type Dependencies struct {
 	HeartbeatClient         clientset.Interface
 	OnHeartbeatFailure      func()
 	KubeClient              clientset.Interface
-	NodeAPIClient           nodeapiclientset.Interface
 	Mounter                 mount.Interface
 	OOMAdjuster             *oom.OOMAdjuster
 	OSInterface             kubecontainer.OSInterface
@@ -467,7 +467,7 @@ func NewMainKubelet(kubeCfg *kubeletconfiginternal.KubeletConfiguration,
 
 	containerRefManager := kubecontainer.NewRefManager()
 
-	oomWatcher := NewOOMWatcher(kubeDeps.CAdvisorInterface, kubeDeps.Recorder)
+	oomWatcher := oomwatcher.NewWatcher(kubeDeps.Recorder)
 
 	clusterDNS := make([]net.IP, 0, len(kubeCfg.ClusterDNS))
 	for _, ipEntry := range kubeCfg.ClusterDNS {
@@ -658,8 +658,8 @@ func NewMainKubelet(kubeCfg *kubeletconfiginternal.KubeletConfiguration,
 	}
 	klet.runtimeService = runtimeService
 
-	if utilfeature.DefaultFeatureGate.Enabled(features.RuntimeClass) && kubeDeps.NodeAPIClient != nil {
-		klet.runtimeClassManager = runtimeclass.NewManager(kubeDeps.NodeAPIClient)
+	if utilfeature.DefaultFeatureGate.Enabled(features.RuntimeClass) && kubeDeps.KubeClient != nil {
+		klet.runtimeClassManager = runtimeclass.NewManager(kubeDeps.KubeClient)
 	}
 
 	runtime, err := kuberuntime.NewKubeGenericRuntimeManager(
@@ -713,7 +713,8 @@ func NewMainKubelet(kubeCfg *kubeletconfiginternal.KubeletConfiguration,
 			klet.runtimeCache,
 			runtimeService,
 			imageService,
-			stats.NewLogMetricsService())
+			stats.NewLogMetricsService(),
+			kubecontainer.RealOS{})
 	}
 
 	klet.pleg = pleg.NewGenericPLEG(klet.containerRuntime, plegChannelCapacity, plegRelistPeriod, klet.podCache, clock.RealClock{})
@@ -776,15 +777,19 @@ func NewMainKubelet(kubeCfg *kubeletconfiginternal.KubeletConfiguration,
 
 	tokenManager := token.NewManager(kubeDeps.KubeClient)
 
+	// NewInitializedVolumePluginMgr intializes some storageErrors on the Kubelet runtimeState (in csi_plugin.go init)
+	// which affects node ready status. This function must be called before Kubelet is initialized so that the Node
+	// ReadyState is accurate with the storage state.
 	klet.volumePluginMgr, err =
 		NewInitializedVolumePluginMgr(klet, secretManager, configMapManager, tokenManager, kubeDeps.VolumePlugins, kubeDeps.DynamicPluginProber)
 	if err != nil {
 		return nil, err
 	}
 	if klet.enablePluginsWatcher {
-		klet.pluginWatcher = pluginwatcher.NewWatcher(
+		klet.pluginManager = pluginmanager.NewPluginManager(
 			klet.getPluginsRegistrationDir(), /* sockDir */
 			klet.getPluginsDir(),             /* deprecatedSockDir */
+			kubeDeps.Recorder,
 		)
 	}
 
@@ -820,7 +825,7 @@ func NewMainKubelet(kubeCfg *kubeletconfiginternal.KubeletConfiguration,
 	klet.podKillingCh = make(chan *kubecontainer.PodPair, podKillingChannelCapacity)
 
 	// setup eviction manager
-	evictionManager, evictionAdmitHandler := eviction.NewManager(klet.resourceAnalyzer, evictionConfig, killPodNow(klet.podWorkers, kubeDeps.Recorder), klet.imageManager, klet.containerGC, kubeDeps.Recorder, nodeRef, klet.clock)
+	evictionManager, evictionAdmitHandler := eviction.NewManager(klet.resourceAnalyzer, evictionConfig, killPodNow(klet.podWorkers, kubeDeps.Recorder), klet.podManager.GetMirrorPodByPod, klet.imageManager, klet.containerGC, kubeDeps.Recorder, nodeRef, klet.clock)
 
 	klet.evictionManager = evictionManager
 	klet.admitHandlers.AddPodAdmitHandler(evictionAdmitHandler)
@@ -899,7 +904,7 @@ type Kubelet struct {
 	iptClient       utilipt.Interface
 	rootDirectory   string
 
-	lastObservedNodeAddressesMux sync.Mutex
+	lastObservedNodeAddressesMux sync.RWMutex
 	lastObservedNodeAddresses    []v1.NodeAddress
 
 	// onRepeatedHeartbeatFailure is called when a heartbeat operation fails more than once. optional.
@@ -989,9 +994,6 @@ type Kubelet struct {
 	// Cached MachineInfo returned by cadvisor.
 	machineInfo *cadvisorapi.MachineInfo
 
-	//Cached RootFsInfo returned by cadvisor
-	rootfsInfo *cadvisorapiv2.FsInfo
-
 	// Handles certificate rotations.
 	serverCertificateManager certificate.Manager
 
@@ -1048,7 +1050,7 @@ type Kubelet struct {
 	//    as it takes time to gather all necessary node information.
 	nodeStatusUpdateFrequency time.Duration
 
-	// nodeStatusUpdateFrequency is the frequency that kubelet posts node
+	// nodeStatusReportFrequency is the frequency that kubelet posts node
 	// status to master. It is only used when node lease feature is enabled.
 	nodeStatusReportFrequency time.Duration
 
@@ -1080,7 +1082,7 @@ type Kubelet struct {
 	os kubecontainer.OSInterface
 
 	// Watcher of out of memory events.
-	oomWatcher OOMWatcher
+	oomWatcher oomwatcher.Watcher
 
 	// Monitor resource usage
 	resourceAnalyzer serverstats.ResourceAnalyzer
@@ -1201,10 +1203,9 @@ type Kubelet struct {
 	// This can be useful for debugging volume related issues.
 	keepTerminatedPodVolumes bool // DEPRECATED
 
-	// pluginwatcher is a utility for Kubelet to register different types of node-level plugins
-	// such as device plugins or CSI plugins. It discovers plugins by monitoring inotify events under the
-	// directory returned by kubelet.getPluginsDir()
-	pluginWatcher *pluginwatcher.Watcher
+	// pluginmanager runs a set of asynchronous loops that figure out which
+	// plugins need to be registered/unregistered based on this node and makes it so.
+	pluginManager pluginmanager.PluginManager
 
 	// This flag sets a maximum number of images to report in the node status.
 	nodeStatusMaxImages int32
@@ -1223,6 +1224,8 @@ type Kubelet struct {
 // 4.  the pod-resources directory
 func (kl *Kubelet) setupDataDirs() error {
 	kl.rootDirectory = path.Clean(kl.rootDirectory)
+	pluginRegistrationDir := kl.getPluginsRegistrationDir()
+	pluginsDir := kl.getPluginsDir()
 	if err := os.MkdirAll(kl.getRootDir(), 0750); err != nil {
 		return fmt.Errorf("error creating root directory: %v", err)
 	}
@@ -1240,6 +1243,16 @@ func (kl *Kubelet) setupDataDirs() error {
 	}
 	if err := os.MkdirAll(kl.getPodResourcesDir(), 0750); err != nil {
 		return fmt.Errorf("error creating podresources directory: %v", err)
+	}
+	if selinux.SELinuxEnabled() {
+		err := selinux.SetFileLabel(pluginRegistrationDir, config.KubeletPluginsDirSELinuxLabel)
+		if err != nil {
+			klog.Warningf("Unprivileged containerized plugins might not work. Could not set selinux context on %s: %v", pluginRegistrationDir, err)
+		}
+		err = selinux.SetFileLabel(pluginsDir, config.KubeletPluginsDirSELinuxLabel)
+		if err != nil {
+			klog.Warningf("Unprivileged containerized plugins might not work. Could not set selinux context on %s: %v", pluginsDir, err)
+		}
 	}
 	return nil
 }
@@ -1364,15 +1377,12 @@ func (kl *Kubelet) initializeRuntimeDependentModules() {
 	kl.containerLogManager.Start()
 	if kl.enablePluginsWatcher {
 		// Adding Registration Callback function for CSI Driver
-		kl.pluginWatcher.AddHandler(pluginwatcherapi.CSIPlugin, pluginwatcher.PluginHandler(csi.PluginHandler))
+		kl.pluginManager.AddHandler(pluginwatcherapi.CSIPlugin, plugincache.PluginHandler(csi.PluginHandler))
 		// Adding Registration Callback function for Device Manager
-		kl.pluginWatcher.AddHandler(pluginwatcherapi.DevicePlugin, kl.containerManager.GetPluginRegistrationHandler())
-		// Start the plugin watcher
-		klog.V(4).Infof("starting watcher")
-		if err := kl.pluginWatcher.Start(); err != nil {
-			kl.recorder.Eventf(kl.nodeRef, v1.EventTypeWarning, events.KubeletSetupFailed, err.Error())
-			klog.Fatalf("failed to start Plugin Watcher. err: %v", err)
-		}
+		kl.pluginManager.AddHandler(pluginwatcherapi.DevicePlugin, kl.containerManager.GetPluginRegistrationHandler())
+		// Start the plugin manager
+		klog.V(4).Infof("starting plugin manager")
+		go kl.pluginManager.Run(kl.sourcesReady, wait.NeverStop)
 	}
 }
 
@@ -1783,15 +1793,6 @@ func (kl *Kubelet) canRunPod(pod *v1.Pod) lifecycle.PodAdmitResult {
 		}
 	}
 
-	// TODO: Refactor as a soft admit handler.
-	if err := canRunPod(pod); err != nil {
-		return lifecycle.PodAdmitResult{
-			Admit:   false,
-			Reason:  "Forbidden",
-			Message: err.Error(),
-		}
-	}
-
 	return lifecycle.PodAdmitResult{Admit: true}
 }
 
@@ -1842,7 +1843,7 @@ func (kl *Kubelet) syncLoop(updates <-chan kubetypes.PodUpdate, handler SyncHand
 // 1.  configCh:       a channel to read config events from
 // 2.  handler:        the SyncHandler to dispatch pods to
 // 3.  syncCh:         a channel to read periodic sync events from
-// 4.  houseKeepingCh: a channel to read housekeeping events from
+// 4.  housekeepingCh: a channel to read housekeeping events from
 // 5.  plegCh:         a channel to read PLEG updates from
 //
 // Events are also read from the kubelet liveness manager's update channel.
@@ -1864,7 +1865,7 @@ func (kl *Kubelet) syncLoop(updates <-chan kubetypes.PodUpdate, handler SyncHand
 //             handler callback for the event type
 // * plegCh: update the runtime cache; sync pod
 // * syncCh: sync all pods waiting for sync
-// * houseKeepingCh: trigger cleanup of pods
+// * housekeepingCh: trigger cleanup of pods
 // * liveness manager: sync pods that have failed or in which one or more
 //                     containers have failed liveness checks
 func (kl *Kubelet) syncLoopIteration(configCh <-chan kubetypes.PodUpdate, handler SyncHandler,
@@ -2201,18 +2202,23 @@ func (kl *Kubelet) ResyncInterval() time.Duration {
 }
 
 // ListenAndServe runs the kubelet HTTP server.
-func (kl *Kubelet) ListenAndServe(address net.IP, port uint, tlsOptions *server.TLSOptions, auth server.AuthInterface, enableDebuggingHandlers, enableContentionProfiling bool) {
-	server.ListenAndServeKubeletServer(kl, kl.resourceAnalyzer, address, port, tlsOptions, auth, enableDebuggingHandlers, enableContentionProfiling, kl.redirectContainerStreaming, kl.criHandler)
+func (kl *Kubelet) ListenAndServe(address net.IP, port uint, tlsOptions *server.TLSOptions, auth server.AuthInterface, enableCAdvisorJSONEndpoints, enableDebuggingHandlers, enableContentionProfiling bool) {
+	server.ListenAndServeKubeletServer(kl, kl.resourceAnalyzer, address, port, tlsOptions, auth, enableCAdvisorJSONEndpoints, enableDebuggingHandlers, enableContentionProfiling, kl.redirectContainerStreaming, kl.criHandler)
 }
 
 // ListenAndServeReadOnly runs the kubelet HTTP server in read-only mode.
-func (kl *Kubelet) ListenAndServeReadOnly(address net.IP, port uint) {
-	server.ListenAndServeKubeletReadOnlyServer(kl, kl.resourceAnalyzer, address, port)
+func (kl *Kubelet) ListenAndServeReadOnly(address net.IP, port uint, enableCAdvisorJSONEndpoints bool) {
+	server.ListenAndServeKubeletReadOnlyServer(kl, kl.resourceAnalyzer, address, port, enableCAdvisorJSONEndpoints)
 }
 
 // ListenAndServePodResources runs the kubelet podresources grpc service
 func (kl *Kubelet) ListenAndServePodResources() {
-	server.ListenAndServePodResources(util.LocalEndpoint(kl.getPodResourcesDir(), podresources.Socket), kl.podManager, kl.containerManager)
+	socket, err := util.LocalEndpoint(kl.getPodResourcesDir(), podresources.Socket)
+	if err != nil {
+		klog.V(2).Infof("Failed to get local endpoint for PodResources endpoint: %v", err)
+		return
+	}
+	server.ListenAndServePodResources(socket, kl.podManager, kl.containerManager)
 }
 
 // Delete the eligible dead container instances in a pod. Depending on the configuration, the latest dead containers may be kept around.

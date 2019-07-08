@@ -148,7 +148,7 @@ func (m *AliCloudManager) DeleteInstances(instanceIds []string) error {
 
 		resp, err := m.aService.RemoveInstances(req)
 		if err != nil {
-			fmt.Errorf("failed to remove instance from scaling group %s,because of %s", commonAsg.id, err.Error())
+			klog.Errorf("failed to remove instance from scaling group %s,because of %s", commonAsg.id, err.Error())
 			continue
 		}
 		klog.Infof("remove instances successfully with response: %s", resp.GetHttpContentString())

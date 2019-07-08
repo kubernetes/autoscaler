@@ -166,6 +166,7 @@ var (
 		"Filtering out schedulable pods before CA scale up by trying to pack the schedulable pods on free capacity on existing nodes."+
 			"Setting it to false employs a more lenient filtering approach that does not try to pack the pods on the nodes."+
 			"Pods with nominatedNodeName set are always filtered out.")
+
 	ignoreTaintsFlag = multiStringFlag("ignore-taint", "Specifies a taint to ignore in node templates when considering to scale a node group")
 )
 

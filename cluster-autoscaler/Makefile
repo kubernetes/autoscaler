@@ -2,7 +2,7 @@ all: build
 
 TAG?=dev
 FLAGS=
-ENVVAR=
+ENVVAR=CGO_ENABLED=0 LD_FLAGS=-s
 GOOS?=linux
 REGISTRY?=staging-k8s.gcr.io
 ifdef BUILD_TAGS
@@ -15,18 +15,15 @@ else
   FOR_PROVIDER=
 endif
 
-deps:
-	go get github.com/tools/godep
-
 build: clean deps
-	$(ENVVAR) GOOS=$(GOOS) godep go build ./... ${TAGS_FLAG}
-	$(ENVVAR) GOOS=$(GOOS) godep go build -o cluster-autoscaler ${TAGS_FLAG}
+	$(ENVVAR) GOOS=$(GOOS) go build ./... ${TAGS_FLAG}
+	$(ENVVAR) GOOS=$(GOOS) go build -o cluster-autoscaler ${TAGS_FLAG}
 
 build-binary: clean deps
-	$(ENVVAR) GOOS=$(GOOS) godep go build -o cluster-autoscaler ${TAGS_FLAG}
+	$(ENVVAR) GOOS=$(GOOS) go build -o cluster-autoscaler ${TAGS_FLAG}
 
 test-unit: clean deps build
-	$(ENVVAR) godep go test --test.short -race ./... $(FLAGS) ${TAGS_FLAG}
+	$(ENVVAR) go test --test.short -race ./... $(FLAGS) ${TAGS_FLAG}
 
 dev-release: build-binary execute-release
 	@echo "Release ${TAG}${FOR_PROVIDER} completed"
@@ -67,7 +64,7 @@ container: build-in-docker make-image
 	@echo "Created in-docker image ${TAG}${FOR_PROVIDER}"
 
 test-in-docker: clean docker-builder
-	docker run -v `pwd`:/gopath/src/k8s.io/autoscaler/cluster-autoscaler/ autoscaling-builder:latest bash -c 'cd /gopath/src/k8s.io/autoscaler/cluster-autoscaler && godep go test -race ./... ${TAGS_FLAG}'
+	docker run -v `pwd`:/gopath/src/k8s.io/autoscaler/cluster-autoscaler/ autoscaling-builder:latest bash -c 'cd /gopath/src/k8s.io/autoscaler/cluster-autoscaler && go test -race ./... ${TAGS_FLAG}'
 
 .PHONY: all deps build test-unit clean format execute-release dev-release docker-builder build-in-docker release generate
 

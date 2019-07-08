@@ -1012,9 +1012,19 @@ func TestScaleDownEmptySingleNodeGroup(t *testing.T) {
 		nodes: []nodeConfig{
 			{"n1", 1000, 1000, 0, true, "ng1"},
 			{"n2", 1000, 1000, 0, true, "ng1"},
+			{"n3", 1000, 1000, 0, true, "ng1"},
+			{"n4", 1000, 1000, 0, true, "ng1"},
+			{"n5", 1000, 1000, 0, true, "ng1"},
+			{"n6", 1000, 1000, 0, true, "ng1"},
+			{"n7", 1000, 1000, 0, true, "ng1"},
+			{"n8", 1000, 1000, 0, true, "ng1"},
+			{"n9", 1000, 1000, 0, true, "ng1"},
+			{"n10", 1000, 1000, 0, true, "ng1"},
+			{"n11", 1000, 1000, 0, true, "ng1"},
+			{"n12", 1000, 1000, 0, true, "ng1"},
 		},
 		options:            defaultScaleDownOptions,
-		expectedScaleDowns: []string{"n1"},
+		expectedScaleDowns: []string{"n1", "n2", "n3", "n4", "n5", "n6", "n7", "n8", "n9", "n10"},
 	}
 	simpleScaleDownEmpty(t, config)
 }
@@ -1109,8 +1119,8 @@ func TestScaleDownEmptyMinGroupSizeLimitHitWhenOneNodeIsBeingDeleted(t *testing.
 }
 
 func simpleScaleDownEmpty(t *testing.T, config *scaleTestConfig) {
-	updatedNodes := make(chan string, 10)
-	deletedNodes := make(chan string, 10)
+	updatedNodes := make(chan string, 30)
+	deletedNodes := make(chan string, 30)
 	fakeClient := &fake.Clientset{}
 
 	nodes := make([]*apiv1.Node, len(config.nodes))
@@ -1365,7 +1375,7 @@ func getStringFromChan(c chan string) string {
 	select {
 	case val := <-c:
 		return val
-	case <-time.After(10 * time.Second):
+	case <-time.After(100 * time.Millisecond):
 		return nothingReturned
 	}
 }

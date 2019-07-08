@@ -30,7 +30,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
-	provider_gce "k8s.io/kubernetes/pkg/cloudprovider/providers/gce"
+	provider_gce "k8s.io/legacy-cloud-providers/gce"
 
 	"cloud.google.com/go/compute/metadata"
 	"golang.org/x/oauth2"
@@ -87,8 +87,9 @@ type gceManagerImpl struct {
 	lastRefresh              time.Time
 	machinesCacheLastRefresh time.Time
 
-	GceService             AutoscalingGceClient
-	migTargetSizesProvider MigTargetSizesProvider
+	GceService                   AutoscalingGceClient
+	migTargetSizesProvider       MigTargetSizesProvider
+	migInstanceTemplatesProvider MigInstanceTemplatesProvider
 
 	location              string
 	projectId             string
@@ -156,15 +157,16 @@ func CreateGceManager(configReader io.Reader, discoveryOpts cloudprovider.NodeGr
 	}
 	cache := NewGceCache(gceService)
 	manager := &gceManagerImpl{
-		cache:                  cache,
-		GceService:             gceService,
-		migTargetSizesProvider: NewCachingMigTargetSizesProvider(cache, gceService, projectId),
-		location:               location,
-		regional:               regional,
-		projectId:              projectId,
-		templates:              &GceTemplateBuilder{},
-		interrupt:              make(chan struct{}),
-		explicitlyConfigured:   make(map[GceRef]bool),
+		cache:                        cache,
+		GceService:                   gceService,
+		migTargetSizesProvider:       NewCachingMigTargetSizesProvider(cache, gceService, projectId),
+		migInstanceTemplatesProvider: NewCachingMigInstanceTemplatesProvider(cache, gceService),
+		location:                     location,
+		regional:                     regional,
+		projectId:                    projectId,
+		templates:                    &GceTemplateBuilder{},
+		interrupt:                    make(chan struct{}),
+		explicitlyConfigured:         make(map[GceRef]bool),
 	}
 
 	if err := manager.fetchExplicitMigs(discoveryOpts.NodeGroupSpecs); err != nil {
@@ -462,7 +464,8 @@ func (m *gceManagerImpl) findMigsInRegion(region string, name *regexp.Regexp) ([
 
 // GetMigTemplateNode constructs a node from GCE instance template of the given MIG.
 func (m *gceManagerImpl) GetMigTemplateNode(mig Mig) (*apiv1.Node, error) {
-	template, err := m.GceService.FetchMigTemplate(mig.GceRef())
+	template, err := m.migInstanceTemplatesProvider.GetMigInstanceTemplate(mig.GceRef())
+
 	if err != nil {
 		return nil, err
 	}

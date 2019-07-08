@@ -52,17 +52,12 @@ func (client ManagedClustersClient) CreateOrUpdate(ctx context.Context, resource
 			Constraints: []validation.Constraint{{Target: "parameters.ManagedClusterProperties", Name: validation.Null, Rule: false,
 				Chain: []validation.Constraint{{Target: "parameters.ManagedClusterProperties.LinuxProfile", Name: validation.Null, Rule: false,
 					Chain: []validation.Constraint{{Target: "parameters.ManagedClusterProperties.LinuxProfile.AdminUsername", Name: validation.Null, Rule: true,
-						Chain: []validation.Constraint{{Target: "parameters.ManagedClusterProperties.LinuxProfile.AdminUsername", Name: validation.Pattern, Rule: `^[a-z][a-z0-9_-]*$`, Chain: nil}}},
+						Chain: []validation.Constraint{{Target: "parameters.ManagedClusterProperties.LinuxProfile.AdminUsername", Name: validation.Pattern, Rule: `^[A-Za-z][-A-Za-z0-9_]*$`, Chain: nil}}},
 						{Target: "parameters.ManagedClusterProperties.LinuxProfile.SSH", Name: validation.Null, Rule: true,
 							Chain: []validation.Constraint{{Target: "parameters.ManagedClusterProperties.LinuxProfile.SSH.PublicKeys", Name: validation.Null, Rule: true, Chain: nil}}},
 					}},
 					{Target: "parameters.ManagedClusterProperties.ServicePrincipalProfile", Name: validation.Null, Rule: false,
-						Chain: []validation.Constraint{{Target: "parameters.ManagedClusterProperties.ServicePrincipalProfile.ClientID", Name: validation.Null, Rule: true, Chain: nil},
-							{Target: "parameters.ManagedClusterProperties.ServicePrincipalProfile.KeyVaultSecretRef", Name: validation.Null, Rule: false,
-								Chain: []validation.Constraint{{Target: "parameters.ManagedClusterProperties.ServicePrincipalProfile.KeyVaultSecretRef.VaultID", Name: validation.Null, Rule: true, Chain: nil},
-									{Target: "parameters.ManagedClusterProperties.ServicePrincipalProfile.KeyVaultSecretRef.SecretName", Name: validation.Null, Rule: true, Chain: nil},
-								}},
-						}},
+						Chain: []validation.Constraint{{Target: "parameters.ManagedClusterProperties.ServicePrincipalProfile.ClientID", Name: validation.Null, Rule: true, Chain: nil}}},
 					{Target: "parameters.ManagedClusterProperties.NetworkProfile", Name: validation.Null, Rule: false,
 						Chain: []validation.Constraint{{Target: "parameters.ManagedClusterProperties.NetworkProfile.PodCidr", Name: validation.Null, Rule: false,
 							Chain: []validation.Constraint{{Target: "parameters.ManagedClusterProperties.NetworkProfile.PodCidr", Name: validation.Pattern, Rule: `^([0-9]{1,3}\.){3}[0-9]{1,3}(\/([0-9]|[1-2][0-9]|3[0-2]))?$`, Chain: nil}}},
@@ -125,10 +120,6 @@ func (client ManagedClustersClient) CreateOrUpdateSender(req *http.Request) (fut
 	var resp *http.Response
 	resp, err = autorest.SendWithSender(client, req,
 		azure.DoRetryWithRegistration(client.Client))
-	if err != nil {
-		return
-	}
-	err = autorest.Respond(resp, azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusCreated))
 	if err != nil {
 		return
 	}
@@ -196,10 +187,6 @@ func (client ManagedClustersClient) DeleteSender(req *http.Request) (future Mana
 	var resp *http.Response
 	resp, err = autorest.SendWithSender(client, req,
 		azure.DoRetryWithRegistration(client.Client))
-	if err != nil {
-		return
-	}
-	err = autorest.Respond(resp, azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusAccepted, http.StatusNoContent))
 	if err != nil {
 		return
 	}
@@ -609,6 +596,142 @@ func (client ManagedClustersClient) ListByResourceGroupComplete(ctx context.Cont
 	return
 }
 
+// ListClusterAdminCredentials gets clusteradmin credential of the managed cluster with a specified resource group and
+// name.
+// Parameters:
+// resourceGroupName - the name of the resource group.
+// resourceName - the name of the managed cluster resource.
+func (client ManagedClustersClient) ListClusterAdminCredentials(ctx context.Context, resourceGroupName string, resourceName string) (result CredentialResults, err error) {
+	req, err := client.ListClusterAdminCredentialsPreparer(ctx, resourceGroupName, resourceName)
+	if err != nil {
+		err = autorest.NewErrorWithError(err, "containerservice.ManagedClustersClient", "ListClusterAdminCredentials", nil, "Failure preparing request")
+		return
+	}
+
+	resp, err := client.ListClusterAdminCredentialsSender(req)
+	if err != nil {
+		result.Response = autorest.Response{Response: resp}
+		err = autorest.NewErrorWithError(err, "containerservice.ManagedClustersClient", "ListClusterAdminCredentials", resp, "Failure sending request")
+		return
+	}
+
+	result, err = client.ListClusterAdminCredentialsResponder(resp)
+	if err != nil {
+		err = autorest.NewErrorWithError(err, "containerservice.ManagedClustersClient", "ListClusterAdminCredentials", resp, "Failure responding to request")
+	}
+
+	return
+}
+
+// ListClusterAdminCredentialsPreparer prepares the ListClusterAdminCredentials request.
+func (client ManagedClustersClient) ListClusterAdminCredentialsPreparer(ctx context.Context, resourceGroupName string, resourceName string) (*http.Request, error) {
+	pathParameters := map[string]interface{}{
+		"resourceGroupName": autorest.Encode("path", resourceGroupName),
+		"resourceName":      autorest.Encode("path", resourceName),
+		"subscriptionId":    autorest.Encode("path", client.SubscriptionID),
+	}
+
+	const APIVersion = "2018-03-31"
+	queryParameters := map[string]interface{}{
+		"api-version": APIVersion,
+	}
+
+	preparer := autorest.CreatePreparer(
+		autorest.AsPost(),
+		autorest.WithBaseURL(client.BaseURI),
+		autorest.WithPathParameters("/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ContainerService/managedClusters/{resourceName}/listClusterAdminCredential", pathParameters),
+		autorest.WithQueryParameters(queryParameters))
+	return preparer.Prepare((&http.Request{}).WithContext(ctx))
+}
+
+// ListClusterAdminCredentialsSender sends the ListClusterAdminCredentials request. The method will close the
+// http.Response Body if it receives an error.
+func (client ManagedClustersClient) ListClusterAdminCredentialsSender(req *http.Request) (*http.Response, error) {
+	return autorest.SendWithSender(client, req,
+		azure.DoRetryWithRegistration(client.Client))
+}
+
+// ListClusterAdminCredentialsResponder handles the response to the ListClusterAdminCredentials request. The method always
+// closes the http.Response Body.
+func (client ManagedClustersClient) ListClusterAdminCredentialsResponder(resp *http.Response) (result CredentialResults, err error) {
+	err = autorest.Respond(
+		resp,
+		client.ByInspecting(),
+		azure.WithErrorUnlessStatusCode(http.StatusOK),
+		autorest.ByUnmarshallingJSON(&result),
+		autorest.ByClosing())
+	result.Response = autorest.Response{Response: resp}
+	return
+}
+
+// ListClusterUserCredentials gets clusteruser credential of the managed cluster with a specified resource group and
+// name.
+// Parameters:
+// resourceGroupName - the name of the resource group.
+// resourceName - the name of the managed cluster resource.
+func (client ManagedClustersClient) ListClusterUserCredentials(ctx context.Context, resourceGroupName string, resourceName string) (result CredentialResults, err error) {
+	req, err := client.ListClusterUserCredentialsPreparer(ctx, resourceGroupName, resourceName)
+	if err != nil {
+		err = autorest.NewErrorWithError(err, "containerservice.ManagedClustersClient", "ListClusterUserCredentials", nil, "Failure preparing request")
+		return
+	}
+
+	resp, err := client.ListClusterUserCredentialsSender(req)
+	if err != nil {
+		result.Response = autorest.Response{Response: resp}
+		err = autorest.NewErrorWithError(err, "containerservice.ManagedClustersClient", "ListClusterUserCredentials", resp, "Failure sending request")
+		return
+	}
+
+	result, err = client.ListClusterUserCredentialsResponder(resp)
+	if err != nil {
+		err = autorest.NewErrorWithError(err, "containerservice.ManagedClustersClient", "ListClusterUserCredentials", resp, "Failure responding to request")
+	}
+
+	return
+}
+
+// ListClusterUserCredentialsPreparer prepares the ListClusterUserCredentials request.
+func (client ManagedClustersClient) ListClusterUserCredentialsPreparer(ctx context.Context, resourceGroupName string, resourceName string) (*http.Request, error) {
+	pathParameters := map[string]interface{}{
+		"resourceGroupName": autorest.Encode("path", resourceGroupName),
+		"resourceName":      autorest.Encode("path", resourceName),
+		"subscriptionId":    autorest.Encode("path", client.SubscriptionID),
+	}
+
+	const APIVersion = "2018-03-31"
+	queryParameters := map[string]interface{}{
+		"api-version": APIVersion,
+	}
+
+	preparer := autorest.CreatePreparer(
+		autorest.AsPost(),
+		autorest.WithBaseURL(client.BaseURI),
+		autorest.WithPathParameters("/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ContainerService/managedClusters/{resourceName}/listClusterUserCredential", pathParameters),
+		autorest.WithQueryParameters(queryParameters))
+	return preparer.Prepare((&http.Request{}).WithContext(ctx))
+}
+
+// ListClusterUserCredentialsSender sends the ListClusterUserCredentials request. The method will close the
+// http.Response Body if it receives an error.
+func (client ManagedClustersClient) ListClusterUserCredentialsSender(req *http.Request) (*http.Response, error) {
+	return autorest.SendWithSender(client, req,
+		azure.DoRetryWithRegistration(client.Client))
+}
+
+// ListClusterUserCredentialsResponder handles the response to the ListClusterUserCredentials request. The method always
+// closes the http.Response Body.
+func (client ManagedClustersClient) ListClusterUserCredentialsResponder(resp *http.Response) (result CredentialResults, err error) {
+	err = autorest.Respond(
+		resp,
+		client.ByInspecting(),
+		azure.WithErrorUnlessStatusCode(http.StatusOK),
+		autorest.ByUnmarshallingJSON(&result),
+		autorest.ByClosing())
+	result.Response = autorest.Response{Response: resp}
+	return
+}
+
 // UpdateTags updates a managed cluster with the specified tags.
 // Parameters:
 // resourceGroupName - the name of the resource group.
@@ -659,10 +782,6 @@ func (client ManagedClustersClient) UpdateTagsSender(req *http.Request) (future 
 	var resp *http.Response
 	resp, err = autorest.SendWithSender(client, req,
 		azure.DoRetryWithRegistration(client.Client))
-	if err != nil {
-		return
-	}
-	err = autorest.Respond(resp, azure.WithErrorUnlessStatusCode(http.StatusOK))
 	if err != nil {
 		return
 	}
