@@ -22,7 +22,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
-	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
+	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	vpa_utils "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 	"k8s.io/klog"
 )
@@ -236,7 +236,9 @@ func (cluster *ClusterState) AddOrUpdateVpa(apiObject *vpa_types.VerticalPodAuto
 		vpa = NewVpa(vpaID, selector, apiObject.CreationTimestamp.Time)
 		cluster.Vpas[vpaID] = vpa
 		for aggregationKey, aggregation := range cluster.aggregateStateMap {
-			vpa.UseAggregationIfMatching(aggregationKey, aggregation)
+			if vpa.UseAggregationIfMatching(aggregationKey, aggregation) {
+				cluster.VpasWithMatchingPods[vpa.ID] = true
+			}
 		}
 	}
 	vpa.TargetRef = apiObject.Spec.TargetRef

@@ -22,6 +22,7 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/util/uuid"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
@@ -177,6 +178,7 @@ func (a *StaticAutoscaler) cleanUpIfRequired() {
 func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError {
 	a.cleanUpIfRequired()
 	a.processorCallbacks.reset()
+	a.clusterStateRegistry.PeriodicCleanup()
 
 	unschedulablePodLister := a.UnschedulablePodLister()
 	scheduledPodLister := a.ScheduledPodLister()
@@ -254,17 +256,9 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	if len(unregisteredNodes) > 0 {
 		klog.V(1).Infof("%d unregistered nodes present", len(unregisteredNodes))
 		removedAny, err := removeOldUnregisteredNodes(unregisteredNodes, autoscalingContext, currentTime, autoscalingContext.LogRecorder)
-		// There was a problem with removing unregistered nodes. Retry in the next loop.
 		if err != nil {
-			if removedAny {
-				klog.Warningf("Some unregistered nodes were removed, but got error: %v", err)
-			} else {
-				klog.Errorf("Failed to remove unregistered nodes: %v", err)
-
-			}
-			return errors.ToAutoscalerError(errors.CloudProviderError, err)
+			klog.Warningf("Failed to remove unregistered nodes: %v", err)
 		}
-		// Some nodes were removed. Let's skip this iteration, the next one should be better.
 		if removedAny {
 			klog.V(0).Infof("Some unregistered nodes were removed, skipping iteration")
 			return nil
@@ -323,7 +317,9 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	// we tread pods with nominated node-name as scheduled for sake of scale-up considerations
 	scheduledPods = append(scheduledPods, unschedulableWaitingForLowerPriorityPreemption...)
 
-	unschedulablePodsToHelp, scheduledPods, err := a.processors.PodListProcessor.Process(a.AutoscalingContext, unschedulablePods, scheduledPods, allNodes, readyNodes)
+	unschedulablePodsToHelp, scheduledPods, err := a.processors.PodListProcessor.Process(
+		a.AutoscalingContext, unschedulablePods, scheduledPods, allNodes, readyNodes,
+		getUpcomingNodeInfos(a.clusterStateRegistry, nodeInfosForGroups))
 
 	// finally, filter out pods that are too "young" to safely be considered for a scale-up (delay is configurable)
 	unschedulablePodsToHelp = a.filterOutYoungPods(unschedulablePodsToHelp, currentTime)
@@ -480,13 +476,13 @@ func (a *StaticAutoscaler) deleteCreatedNodesWithErrors() {
 
 		nodeGroup := nodeGroups[nodeGroupId]
 		if nodeGroup == nil {
-			err = fmt.Errorf("Node group %s not found", nodeGroup)
+			err = fmt.Errorf("node group %s not found", nodeGroupId)
 		} else {
 			err = nodeGroup.DeleteNodes(nodesToBeDeleted)
 		}
 
 		if err != nil {
-			klog.Warningf("Error while trying to delete nodes from %v: %v", nodeGroup.Id(), err)
+			klog.Warningf("Error while trying to delete nodes from %v: %v", nodeGroupId, err)
 		}
 	}
 }
@@ -594,4 +590,27 @@ func allPodsAreNew(pods []*apiv1.Pod, currentTime time.Time) bool {
 	}
 	found, oldest := getOldestCreateTimeWithGpu(pods)
 	return found && oldest.Add(unschedulablePodWithGpuTimeBuffer).After(currentTime)
+}
+
+func buildNodeForNodeTemplate(nodeTemplate *schedulernodeinfo.NodeInfo, index int) *apiv1.Node {
+	node := nodeTemplate.Node().DeepCopy()
+	node.Name = fmt.Sprintf("%s-%d", node.Name, index)
+	node.UID = uuid.NewUUID()
+	return node
+}
+
+func getUpcomingNodeInfos(registry *clusterstate.ClusterStateRegistry, nodeInfos map[string]*schedulernodeinfo.NodeInfo) []*apiv1.Node {
+	upcomingNodes := make([]*apiv1.Node, 0)
+	for nodeGroup, numberOfNodes := range registry.GetUpcomingNodes() {
+		nodeTemplate, found := nodeInfos[nodeGroup]
+		if !found {
+			klog.Warningf("Couldn't find template for node group %s", nodeGroup)
+			continue
+		}
+		for i := 0; i < numberOfNodes; i++ {
+			// Ensure new nodes having different names because nodeName would used as a map key.
+			upcomingNodes = append(upcomingNodes, buildNodeForNodeTemplate(nodeTemplate, i))
+		}
+	}
+	return upcomingNodes
 }

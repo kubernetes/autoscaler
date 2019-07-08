@@ -17,29 +17,49 @@ limitations under the License.
 package csitranslation
 
 import (
+	"errors"
 	"fmt"
 
 	"k8s.io/api/core/v1"
+	storage "k8s.io/api/storage/v1"
 	"k8s.io/csi-translation-lib/plugins"
 )
 
 var (
 	inTreePlugins = map[string]plugins.InTreePlugin{
-		plugins.GCEPDDriverName:  plugins.NewGCEPersistentDiskCSITranslator(),
-		plugins.AWSEBSDriverName: plugins.NewAWSElasticBlockStoreCSITranslator(),
-		plugins.CinderDriverName: plugins.NewOpenStackCinderCSITranslator(),
+		plugins.GCEPDDriverName:     plugins.NewGCEPersistentDiskCSITranslator(),
+		plugins.AWSEBSDriverName:    plugins.NewAWSElasticBlockStoreCSITranslator(),
+		plugins.CinderDriverName:    plugins.NewOpenStackCinderCSITranslator(),
+		plugins.AzureDiskDriverName: plugins.NewAzureDiskCSITranslator(),
+		plugins.AzureFileDriverName: plugins.NewAzureFileCSITranslator(),
 	}
 )
 
-// TranslateInTreeStorageClassParametersToCSI takes in-tree storage class
-// parameters and translates them to a set of parameters consumable by CSI plugin
-func TranslateInTreeStorageClassParametersToCSI(inTreePluginName string, scParameters map[string]string) (map[string]string, error) {
+// TranslateInTreeStorageClassToCSI takes in-tree Storage Class
+// and translates it to a set of parameters consumable by CSI plugin
+func TranslateInTreeStorageClassToCSI(inTreePluginName string, sc *storage.StorageClass) (*storage.StorageClass, error) {
+	newSC := sc.DeepCopy()
 	for _, curPlugin := range inTreePlugins {
 		if inTreePluginName == curPlugin.GetInTreePluginName() {
-			return curPlugin.TranslateInTreeStorageClassParametersToCSI(scParameters)
+			return curPlugin.TranslateInTreeStorageClassToCSI(newSC)
 		}
 	}
 	return nil, fmt.Errorf("could not find in-tree storage class parameter translation logic for %#v", inTreePluginName)
+}
+
+// TranslateInTreeInlineVolumeToCSI takes a inline volume and will translate
+// the in-tree volume source to a CSIPersistentVolumeSource (wrapped in a PV)
+// if the translation logic has been implemented.
+func TranslateInTreeInlineVolumeToCSI(volume *v1.Volume) (*v1.PersistentVolume, error) {
+	if volume == nil {
+		return nil, fmt.Errorf("persistent volume was nil")
+	}
+	for _, curPlugin := range inTreePlugins {
+		if curPlugin.CanSupportInline(volume) {
+			return curPlugin.TranslateInTreeInlineVolumeToCSI(volume)
+		}
+	}
+	return nil, fmt.Errorf("could not find in-tree plugin translation logic for %#v", volume.Name)
 }
 
 // TranslateInTreePVToCSI takes a persistent volume and will translate
@@ -48,7 +68,7 @@ func TranslateInTreeStorageClassParametersToCSI(inTreePluginName string, scParam
 // be modified
 func TranslateInTreePVToCSI(pv *v1.PersistentVolume) (*v1.PersistentVolume, error) {
 	if pv == nil {
-		return nil, fmt.Errorf("persistent volume was nil")
+		return nil, errors.New("persistent volume was nil")
 	}
 	copiedPV := pv.DeepCopy()
 	for _, curPlugin := range inTreePlugins {
@@ -64,7 +84,7 @@ func TranslateInTreePVToCSI(pv *v1.PersistentVolume) (*v1.PersistentVolume, erro
 // by the `Driver` field in the CSI Source. The input PV object will not be modified.
 func TranslateCSIPVToInTree(pv *v1.PersistentVolume) (*v1.PersistentVolume, error) {
 	if pv == nil || pv.Spec.CSI == nil {
-		return nil, fmt.Errorf("CSI persistent volume was nil")
+		return nil, errors.New("CSI persistent volume was nil")
 	}
 	copiedPV := pv.DeepCopy()
 	for driverName, curPlugin := range inTreePlugins {
@@ -95,6 +115,23 @@ func IsMigratedCSIDriverByName(csiPluginName string) bool {
 	return false
 }
 
+// GetInTreePluginNameFromSpec returns the plugin name
+func GetInTreePluginNameFromSpec(pv *v1.PersistentVolume, vol *v1.Volume) (string, error) {
+	if pv != nil {
+		for _, curPlugin := range inTreePlugins {
+			if curPlugin.CanSupport(pv) {
+				return curPlugin.GetInTreePluginName(), nil
+			}
+		}
+		return "", fmt.Errorf("could not find in-tree plugin name from persistent volume %v", pv)
+	} else if vol != nil {
+		// TODO(dyzz): Implement inline volume migration support
+		return "", errors.New("inline volume migration not yet supported")
+	} else {
+		return "", errors.New("both persistent volume and volume are nil")
+	}
+}
+
 // GetCSINameFromInTreeName returns the name of a CSI driver that supersedes the
 // in-tree plugin with the given name
 func GetCSINameFromInTreeName(pluginName string) (string, error) {
@@ -103,7 +140,7 @@ func GetCSINameFromInTreeName(pluginName string) (string, error) {
 			return csiDriverName, nil
 		}
 	}
-	return "", fmt.Errorf("Could not find CSI Driver name for plugin %v", pluginName)
+	return "", fmt.Errorf("could not find CSI Driver name for plugin %v", pluginName)
 }
 
 // GetInTreeNameFromCSIName returns the name of the in-tree plugin superseded by
@@ -127,5 +164,10 @@ func IsPVMigratable(pv *v1.PersistentVolume) bool {
 
 // IsInlineMigratable tests whether there is Migration logic for the given Inline Volume
 func IsInlineMigratable(vol *v1.Volume) bool {
+	for _, curPlugin := range inTreePlugins {
+		if curPlugin.CanSupportInline(vol) {
+			return true
+		}
+	}
 	return false
 }

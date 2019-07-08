@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
 
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -266,8 +267,8 @@ func (plugin *cinderPlugin) getCloudProvider() (BlockStorageProvider, error) {
 
 func (plugin *cinderPlugin) ConstructVolumeSpec(volumeName, mountPath string) (*volume.Spec, error) {
 	mounter := plugin.host.GetMounter(plugin.GetPluginName())
-	pluginDir := plugin.host.GetPluginDir(plugin.GetPluginName())
-	sourceName, err := mounter.GetDeviceNameFromMount(mountPath, pluginDir)
+	pluginMntDir := util.GetPluginMountDir(plugin.host, plugin.GetPluginName())
+	sourceName, err := mounter.GetDeviceNameFromMount(mountPath, pluginMntDir)
 	if err != nil {
 		return nil, err
 	}
@@ -304,12 +305,15 @@ func (plugin *cinderPlugin) ExpandVolumeDevice(spec *volume.Spec, newSize resour
 	return expandedSize, nil
 }
 
-func (plugin *cinderPlugin) ExpandFS(spec *volume.Spec, devicePath, deviceMountPath string, _, _ resource.Quantity) error {
-	_, err := util.GenericResizeFS(plugin.host, plugin.GetPluginName(), devicePath, deviceMountPath)
-	return err
+func (plugin *cinderPlugin) NodeExpand(resizeOptions volume.NodeResizeOptions) (bool, error) {
+	_, err := util.GenericResizeFS(plugin.host, plugin.GetPluginName(), resizeOptions.DevicePath, resizeOptions.DeviceMountPath)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }
 
-var _ volume.FSResizableVolumePlugin = &cinderPlugin{}
+var _ volume.NodeExpandableVolumePlugin = &cinderPlugin{}
 
 func (plugin *cinderPlugin) RequiresFSResize() bool {
 	return true
@@ -373,12 +377,12 @@ func (b *cinderVolumeMounter) CanMount() error {
 	return nil
 }
 
-func (b *cinderVolumeMounter) SetUp(fsGroup *int64) error {
-	return b.SetUpAt(b.GetPath(), fsGroup)
+func (b *cinderVolumeMounter) SetUp(mounterArgs volume.MounterArgs) error {
+	return b.SetUpAt(b.GetPath(), mounterArgs)
 }
 
 // SetUp bind mounts to the volume path.
-func (b *cinderVolumeMounter) SetUpAt(dir string, fsGroup *int64) error {
+func (b *cinderVolumeMounter) SetUpAt(dir string, mounterArgs volume.MounterArgs) error {
 	klog.V(5).Infof("Cinder SetUp %s to %s", b.pdName, dir)
 
 	b.plugin.volumeLocks.LockKey(b.pdName)
@@ -438,7 +442,7 @@ func (b *cinderVolumeMounter) SetUpAt(dir string, fsGroup *int64) error {
 	}
 
 	if !b.readOnly {
-		volume.SetVolumeOwnership(b, fsGroup)
+		volume.SetVolumeOwnership(b, mounterArgs.FsGroup)
 	}
 	klog.V(3).Infof("Cinder volume %s mounted to %s", b.pdName, dir)
 
@@ -446,7 +450,7 @@ func (b *cinderVolumeMounter) SetUpAt(dir string, fsGroup *int64) error {
 }
 
 func makeGlobalPDName(host volume.VolumeHost, devName string) string {
-	return path.Join(host.GetPluginDir(cinderVolumePluginName), mount.MountsInGlobalPDPath, devName)
+	return filepath.Join(host.GetPluginDir(cinderVolumePluginName), util.MountsInGlobalPDPath, devName)
 }
 
 func (cd *cinderVolume) GetPath() string {

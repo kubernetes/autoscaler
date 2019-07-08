@@ -29,6 +29,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	processor_callbacks "k8s.io/autoscaler/cluster-autoscaler/processors/callbacks"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
@@ -67,15 +68,25 @@ type groupSizeChange struct {
 }
 
 type scaleTestConfig struct {
-	nodes                  []nodeConfig
-	pods                   []podConfig
-	extraPods              []podConfig
-	expectedScaleUpOptions []groupSizeChange // we expect that all those options should be included in expansion options passed to expander strategy
-	scaleUpOptionToChoose  groupSizeChange   // this will be selected by assertingStrategy.BestOption
-	expectedFinalScaleUp   groupSizeChange   // we expect this to be delivered via scale-up event
-	expectedScaleDowns     []string
-	options                config.AutoscalingOptions
-	nodeDeletionTracker    *NodeDeletionTracker
+	nodes                   []nodeConfig
+	pods                    []podConfig
+	extraPods               []podConfig
+	options                 config.AutoscalingOptions
+	nodeDeletionTracker     *NodeDeletionTracker
+	expansionOptionToChoose groupSizeChange // this will be selected by assertingStrategy.BestOption
+
+	//expectedScaleUpOptions []groupSizeChange // we expect that all those options should be included in expansion options passed to expander strategy
+	//expectedFinalScaleUp   groupSizeChange   // we expect this to be delivered via scale-up event
+	expectedScaleDowns []string
+}
+
+type scaleTestResults struct {
+	expansionOptions []groupSizeChange
+	finalOption      groupSizeChange
+	scaleUpStatus    *status.ScaleUpStatus
+	noScaleUpReason  string
+	finalScaleDowns  []string
+	events           []string
 }
 
 // NewScaleTestAutoscalingContext creates a new test autoscaling context for scaling tests.

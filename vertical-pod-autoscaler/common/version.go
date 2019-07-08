@@ -17,4 +17,4 @@ limitations under the License.
 package common
 
 // VerticalPodAutoscalerVersion is the version of VPA.
-const VerticalPodAutoscalerVersion = "0.5.0"
+const VerticalPodAutoscalerVersion = "0.6.0"
