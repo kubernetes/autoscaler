@@ -22,8 +22,21 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
+)
+
+const (
+	deprecatedNodeGroupMinSizeAnnotationKey = "cluster.k8s.io/cluster-api-autoscaler-node-group-min-size"
+	deprecatedNodeGroupMaxSizeAnnotationKey = "cluster.k8s.io/cluster-api-autoscaler-node-group-max-size"
+	deprecatedClusterNameLabel              = "cluster.k8s.io/cluster-name"
+
+	cpuKey     = "machine.openshift.io/vCPU"
+	memoryKey  = "machine.openshift.io/memoryMb"
+	gpuKey     = "machine.openshift.io/GPU"
+	maxPodsKey = "machine.openshift.io/maxPods"
 )
 
 var (
@@ -50,22 +63,7 @@ var (
 	// machine set has a non-integral max annotation value.
 	errInvalidMaxAnnotation = errors.New("invalid max annotation")
 
-	// machineDeleteAnnotationKey is the annotation used by cluster-api to indicate
-	// that a machine should be deleted. Because this key can be affected by the
-	// CAPI_GROUP env variable, it is initialized here.
-	machineDeleteAnnotationKey = getMachineDeleteAnnotationKey()
-
-	// machineAnnotationKey is the annotation used by the cluster-api on Node objects
-	// to specify the name of the related Machine object. Because this can be affected
-	// by the CAPI_GROUP env variable, it is initialized here.
-	machineAnnotationKey = getMachineAnnotationKey()
-
-	// nodeGroupMinSizeAnnotationKey and nodeGroupMaxSizeAnnotationKey are the keys
-	// used in MachineSet and MachineDeployment annotations to specify the limits
-	// for the node group. Because the keys can be affected by the CAPI_GROUP env
-	// variable, they are initialized here.
-	nodeGroupMinSizeAnnotationKey = getNodeGroupMinSizeAnnotationKey()
-	nodeGroupMaxSizeAnnotationKey = getNodeGroupMaxSizeAnnotationKey()
+	zeroQuantity = resource.MustParse("0")
 )
 
 type normalizedProviderID string
@@ -155,6 +153,50 @@ func machineSetHasMachineDeploymentOwnerRef(machineSet *unstructured.Unstructure
 func normalizedProviderString(s string) normalizedProviderID {
 	split := strings.Split(s, "/")
 	return normalizedProviderID(split[len(split)-1])
+}
+
+func scaleFromZeroEnabled(annotations map[string]string) bool {
+	cpu := annotations[cpuKey]
+	mem := annotations[memoryKey]
+
+	if cpu != "" && mem != "" {
+		return true
+	}
+	return false
+}
+
+func parseKey(annotations map[string]string, key string) (resource.Quantity, error) {
+	if val, exists := annotations[key]; exists && val != "" {
+		return resource.ParseQuantity(val)
+	}
+	return zeroQuantity.DeepCopy(), nil
+}
+
+func parseCPUCapacity(annotations map[string]string) (resource.Quantity, error) {
+	return parseKey(annotations, cpuKey)
+}
+
+func parseMemoryCapacity(annotations map[string]string) (resource.Quantity, error) {
+	// The value for the memoryKey is expected to be an integer representing Mebibytes. e.g. "1024".
+	// https://www.iec.ch/si/binary.htm
+	val, exists := annotations[memoryKey]
+	if exists && val != "" {
+		valInt, err := strconv.ParseInt(val, 10, 0)
+		if err != nil {
+			return zeroQuantity.DeepCopy(), fmt.Errorf("value %q from annotation %q expected to be an integer: %v", val, memoryKey, err)
+		}
+		// Convert from Mebibytes to bytes
+		return *resource.NewQuantity(valInt*units.MiB, resource.DecimalSI), nil
+	}
+	return zeroQuantity.DeepCopy(), nil
+}
+
+func parseGPUCapacity(annotations map[string]string) (resource.Quantity, error) {
+	return parseKey(annotations, gpuKey)
+}
+
+func parseMaxPodsCapacity(annotations map[string]string) (resource.Quantity, error) {
+	return parseKey(annotations, maxPodsKey)
 }
 
 func clusterNameFromResource(r *unstructured.Unstructured) string {

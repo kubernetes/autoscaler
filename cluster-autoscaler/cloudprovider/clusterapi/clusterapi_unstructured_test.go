@@ -18,12 +18,11 @@ package clusterapi
 
 import (
 	"context"
-	"fmt"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/client-go/tools/cache"
 	"testing"
-	"time"
+
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
 )
 
 func TestSetSize(t *testing.T) {
@@ -267,4 +266,118 @@ func TestSetSizeAndReplicas(t *testing.T) {
 			},
 		))
 	})
+}
+
+func TestAnnotations(t *testing.T) {
+	cpuQuantity := resource.MustParse("2")
+	memQuantity := resource.MustParse("1024")
+	gpuQuantity := resource.MustParse("1")
+	maxPodsQuantity := resource.MustParse("42")
+	annotations := map[string]string{
+		cpuKey:     cpuQuantity.String(),
+		memoryKey:  memQuantity.String(),
+		gpuKey:     gpuQuantity.String(),
+		maxPodsKey: maxPodsQuantity.String(),
+	}
+
+	// convert the initial memory value from Mebibytes to bytes as this conversion happens internally
+	// when we use InstanceMemoryCapacity()
+	memVal, _ := memQuantity.AsInt64()
+	memQuantityAsBytes := resource.NewQuantity(memVal*units.MiB, resource.DecimalSI)
+
+	test := func(t *testing.T, testConfig *testConfig) {
+		controller, stop := mustCreateTestController(t, testConfig)
+		defer stop()
+
+		testResource := testConfig.machineSet
+
+		sr, err := newUnstructuredScalableResource(controller, testResource)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if cpu, err := sr.InstanceCPUCapacity(); err != nil {
+			t.Fatal(err)
+		} else if cpuQuantity.Cmp(cpu) != 0 {
+			t.Errorf("expected %v, got %v", cpuQuantity, cpu)
+		}
+
+		if mem, err := sr.InstanceMemoryCapacity(); err != nil {
+			t.Fatal(err)
+		} else if memQuantityAsBytes.Cmp(mem) != 0 {
+			t.Errorf("expected %v, got %v", memQuantity, mem)
+		}
+
+		if gpu, err := sr.InstanceGPUCapacity(); err != nil {
+			t.Fatal(err)
+		} else if gpuQuantity.Cmp(gpu) != 0 {
+			t.Errorf("expected %v, got %v", gpuQuantity, gpu)
+		}
+
+		if maxPods, err := sr.InstanceMaxPodsCapacity(); err != nil {
+			t.Fatal(err)
+		} else if maxPodsQuantity.Cmp(maxPods) != 0 {
+			t.Errorf("expected %v, got %v", maxPodsQuantity, maxPods)
+		}
+	}
+
+	t.Run("MachineSet", func(t *testing.T) {
+		test(t, createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, annotations))
+	})
+}
+
+func TestCanScaleFromZero(t *testing.T) {
+	testConfigs := []struct {
+		name        string
+		annotations map[string]string
+		canScale    bool
+	}{
+		{
+			"MachineSet can scale from zero",
+			map[string]string{
+				cpuKey:    "1",
+				memoryKey: "1024",
+			},
+			true,
+		},
+		{
+			"MachineSet with missing CPU info cannot scale from zero",
+			map[string]string{
+				memoryKey: "1024",
+			},
+			false,
+		},
+		{
+			"MachineSet with missing Memory info cannot scale from zero",
+			map[string]string{
+				cpuKey: "1",
+			},
+			false,
+		},
+		{
+			"MachineSet with no information cannot scale from zero",
+			map[string]string{},
+			false,
+		},
+	}
+
+	for _, tc := range testConfigs {
+		t.Run(tc.name, func(t *testing.T) {
+			msTestConfig := createMachineSetTestConfig(RandomString(6), RandomString(6), RandomString(6), 1, tc.annotations)
+			controller, stop := mustCreateTestController(t, msTestConfig)
+			defer stop()
+
+			testResource := msTestConfig.machineSet
+
+			sr, err := newUnstructuredScalableResource(controller, testResource)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			canScale := sr.CanScaleFromZero()
+			if canScale != tc.canScale {
+				t.Errorf("expected %v, got %v", tc.canScale, canScale)
+			}
+		})
+	}
 }
