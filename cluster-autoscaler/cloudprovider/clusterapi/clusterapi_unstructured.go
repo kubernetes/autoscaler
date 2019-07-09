@@ -23,6 +23,8 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	apiv1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -161,6 +163,51 @@ func (r unstructuredScalableResource) MarkMachineForDeletion(machine *unstructur
 	_, updateErr := r.controller.managementClient.Resource(r.controller.machineResource).Namespace(u.GetNamespace()).Update(context.TODO(), u, metav1.UpdateOptions{})
 
 	return updateErr
+}
+
+func (r unstructuredScalableResource) Labels() map[string]string {
+	labels, found, err := unstructured.NestedStringMap(r.unstructured.Object, "spec", "template", "spec", "metadata", "labels")
+	if !found || err != nil {
+		return nil
+	}
+	return labels
+}
+
+func (r unstructuredScalableResource) Taints() []apiv1.Taint {
+	taints, found, err := unstructured.NestedSlice(r.unstructured.Object, "spec", "template", "spec", "taints")
+	if !found || err != nil {
+		return nil
+	}
+	ret := make([]apiv1.Taint, len(taints))
+	for i, t := range taints {
+		if v, ok := t.(apiv1.Taint); ok {
+			ret[i] = v
+		} else {
+			// if we cannot convert the interface to a Taint, return early with zero value
+			return nil
+		}
+	}
+	return ret
+}
+
+func (r unstructuredScalableResource) CanScaleFromZero() bool {
+	return scaleFromZeroEnabled(r.unstructured.GetAnnotations())
+}
+
+func (r unstructuredScalableResource) InstanceCPUCapacity() (resource.Quantity, error) {
+	return parseCPUCapacity(r.unstructured.GetAnnotations())
+}
+
+func (r unstructuredScalableResource) InstanceMemoryCapacity() (resource.Quantity, error) {
+	return parseMemoryCapacity(r.unstructured.GetAnnotations())
+}
+
+func (r unstructuredScalableResource) InstanceGPUCapacity() (resource.Quantity, error) {
+	return parseGPUCapacity(r.unstructured.GetAnnotations())
+}
+
+func (r unstructuredScalableResource) InstanceMaxPodsCapacity() (resource.Quantity, error) {
+	return parseMaxPodsCapacity(r.unstructured.GetAnnotations())
 }
 
 func newUnstructuredScalableResource(controller *machineController, u *unstructured.Unstructured) (*unstructuredScalableResource, error) {
