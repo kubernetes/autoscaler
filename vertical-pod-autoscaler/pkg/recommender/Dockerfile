@@ -18,4 +18,4 @@ MAINTAINER Krzysztof Grygiel "kgrygiel@google.com"
 ADD recommender recommender
 
 ENTRYPOINT ["./recommender"]
-CMD ["--v=4 --stderrthreshold=info --prometheus-address=http://prometheus.monitoring.svc"]
+CMD ["--v=4", "--stderrthreshold=info", "--prometheus-address=http://prometheus.monitoring.svc"]
