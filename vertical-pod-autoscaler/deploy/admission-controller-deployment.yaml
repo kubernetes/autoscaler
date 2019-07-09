@@ -1,11 +1,14 @@
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: vpa-admission-controller
   namespace: kube-system
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: vpa-admission-controller
   template:
     metadata:
       labels:
