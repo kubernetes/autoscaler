@@ -59,7 +59,7 @@ def upper_bound(buckets):
   Going from the rightmost bucket, find the first one that has some samples
   and return its upper bound.
   '''
-  for i in xrange(len(buckets) - 1, -1, -1):
+  for i in range(len(buckets) - 1, -1, -1):
     le, count = buckets[i]
     if i == 0:
       return le
@@ -73,7 +73,7 @@ def parse_metrics_file(metrics_file):
   '''
   Return interesting metrics for all Cluster Autoscaler functions.
 
-  Metrics are stored in a map keyed by function name and are expressed in 
+  Metrics are stored in a map keyed by function name and are expressed in
   seconds. They include
   * sum of all samples
   * count of sumples
@@ -115,10 +115,10 @@ def main():
   parser.add_argument('metrics_file', help='File to read metrics from')
   args = parser.parse_args()
 
-  summary = parse_metrics_file(args.metrics_file)  
+  summary = parse_metrics_file(args.metrics_file)
   print_summary(summary)
 
 
 if __name__ == '__main__':
   main()
-  
+
