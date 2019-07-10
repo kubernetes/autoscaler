@@ -28,6 +28,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+	"k8s.io/autoscaler/cluster-autoscaler/processors"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
@@ -399,11 +400,22 @@ func (sd *ScaleDown) CleanUpUnneededNodes() {
 // node utilization level. Timestamp is the current timestamp. The computations are made only for the nodes
 // managed by CA.
 func (sd *ScaleDown) UpdateUnneededNodes(
+	ctx *context.AutoscalingContext,
 	nodes []*apiv1.Node,
 	nodesToCheck []*apiv1.Node,
+	processors *processors.AutoscalingProcessors,
 	pods []*apiv1.Pod,
 	timestamp time.Time,
 	pdbs []*policyv1.PodDisruptionBudget) errors.AutoscalerError {
+
+	// Filter nodes to check
+	if processors != nil && processors.ScaleDownNodeProcessor != nil {
+		var err errors.AutoscalerError
+		nodesToCheck, err = processors.ScaleDownNodeProcessor.Process(ctx, nodesToCheck)
+		if err != nil {
+			return err
+		}
+	}
 
 	currentlyUnneededNodes := make([]*apiv1.Node, 0)
 	// Only scheduled non expendable pods and pods waiting for lower priority pods preemption can prevent node delete.
