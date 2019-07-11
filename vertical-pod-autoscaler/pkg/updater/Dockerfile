@@ -18,4 +18,4 @@ MAINTAINER Marcin Wielgus "mwielgus@google.com"
 ADD updater updater
 
 ENTRYPOINT ["./updater"]
-CMD ["--v=4 --stderrthreshold=info"]
+CMD ["--v=4", "--stderrthreshold=info"]
