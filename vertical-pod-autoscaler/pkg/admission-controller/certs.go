@@ -17,7 +17,7 @@ limitations under the License.
 package main
 
 import (
-	"os"
+	"io/ioutil"
 
 	"k8s.io/klog"
 )
@@ -31,19 +31,14 @@ type certsConfig struct {
 }
 
 func readFile(filePath string) []byte {
-	file, err := os.Open(filePath)
+	res, err := ioutil.ReadFile(filePath)
 	if err != nil {
-		klog.Error(err)
+		klog.Errorf("Error reading certificate file at %s: %v", filePath, err)
 		return nil
 	}
-	res := make([]byte, 5000)
-	count, err := file.Read(res)
-	if err != nil {
-		klog.Error(err)
-		return nil
-	}
-	klog.Infof("Successfully read %d bytes from %v", count, filePath)
-	return res[:count]
+
+	klog.V(3).Infof("Successfully read %d bytes from %v", len(res), filePath)
+	return res
 }
 
 func initCerts(config certsConfig) certsContainer {
