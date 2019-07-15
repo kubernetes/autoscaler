@@ -23,7 +23,7 @@ SCRIPT_ROOT=$(dirname ${BASH_SOURCE})/..
 function print_help {
   echo "ERROR! Usage: vpa-process-yamls.sh <action> [<component>]"
   echo "<action> should be either 'create' or 'delete'."
-  echo "<component> might be on of 'admission-controller', 'updater', 'recommender'."
+  echo "<component> might be one of 'admission-controller', 'updater', 'recommender'."
   echo "If <component> is set, only the deployment of that component will be processed,"
   echo "otherwise all components and configs will be processed."
 }
