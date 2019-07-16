@@ -16,7 +16,6 @@
 
 set -o nounset
 set -o pipefail
-set -o errexit
 
 SCRIPT_ROOT=$(dirname ${BASH_SOURCE})/..
 
