@@ -120,6 +120,14 @@ func TestLoadPods(t *testing.T) {
 			expectedConfigDeprecated:  nil,
 		},
 		{
+			name:                      "no targetRef",
+			selector:                  parseLabelSelector("app = test"),
+			fetchSelectorError:        nil,
+			expectedSelector:          labels.Nothing(),
+			expectedConfigUnsupported: nil,
+			expectedConfigDeprecated:  nil,
+		},
+		{
 			name:               "can't decide if top-level-ref",
 			selector:           nil,
 			fetchSelectorError: nil,
