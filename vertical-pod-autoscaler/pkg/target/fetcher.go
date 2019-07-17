@@ -19,6 +19,7 @@ package target
 import (
 	"fmt"
 	"time"
+	"reflect"
 
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
@@ -150,43 +151,9 @@ func getLabelSelector(informer cache.SharedIndexInformer, kind, namespace, name 
 	if !exists {
 		return nil, fmt.Errorf("%s %s/%s does not exist", kind, namespace, name)
 	}
-	switch obj.(type) {
-	case (*appsv1.DaemonSet):
-		apiObj, ok := obj.(*appsv1.DaemonSet)
-		if !ok {
-			return nil, fmt.Errorf("Failed to parse %s %s/%s", kind, namespace, name)
-		}
-		return metav1.LabelSelectorAsSelector(apiObj.Spec.Selector)
-	case (*appsv1.Deployment):
-		apiObj, ok := obj.(*appsv1.Deployment)
-		if !ok {
-			return nil, fmt.Errorf("Failed to parse %s %s/%s", kind, namespace, name)
-		}
-		return metav1.LabelSelectorAsSelector(apiObj.Spec.Selector)
-	case (*appsv1.StatefulSet):
-		apiObj, ok := obj.(*appsv1.StatefulSet)
-		if !ok {
-			return nil, fmt.Errorf("Failed to parse %s %s/%s", kind, namespace, name)
-		}
-		return metav1.LabelSelectorAsSelector(apiObj.Spec.Selector)
-	case (*appsv1.ReplicaSet):
-		apiObj, ok := obj.(*appsv1.ReplicaSet)
-		if !ok {
-			return nil, fmt.Errorf("Failed to parse %s %s/%s", kind, namespace, name)
-		}
-		return metav1.LabelSelectorAsSelector(apiObj.Spec.Selector)
-	case (*batchv1.Job):
-		apiObj, ok := obj.(*batchv1.Job)
-		if !ok {
-			return nil, fmt.Errorf("Failed to parse %s %s/%s", kind, namespace, name)
-		}
-		return metav1.LabelSelectorAsSelector(apiObj.Spec.Selector)
-	case (*corev1.ReplicationController):
-		apiObj, ok := obj.(*corev1.ReplicationController)
-		if !ok {
-			return nil, fmt.Errorf("Failed to parse %s %s/%s", kind, namespace, name)
-		}
-		return metav1.LabelSelectorAsSelector(metav1.SetAsLabelSelector(apiObj.Spec.Selector))
+	selector := reflect.Indirect(obj).FieldByName("Spec").FieldByName("Selector")
+	if selector.IsValid() {
+		return metav1.LabelSelectorAsSelector(selector.Interface().(*metav1.LabelSelector))
 	}
 	return nil, fmt.Errorf("Don't know how to read label seletor")
 }
