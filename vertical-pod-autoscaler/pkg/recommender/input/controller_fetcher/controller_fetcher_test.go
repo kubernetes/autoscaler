@@ -25,12 +25,14 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
+	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/cache"
 )
 
+var wellKnownControllers = []wellKnownController{daemonSet, deployment, replicaSet, statefulSet, replicationController, job, cronJob}
 var trueVar = true
 
 func simpleControllerFetcher() *controllerFetcher {
@@ -153,18 +155,49 @@ func TestControllerFetcher(t *testing.T) {
 		},
 		{
 			key: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
-				Name: "test-job", Kind: "Job", Namespace: "test-namesapce"}},
+				Name: "test-job", Kind: "Job", Namespace: "test-namespace"}},
 			objects: []runtime.Object{&batchv1.Job{
 				TypeMeta: metav1.TypeMeta{
 					Kind: "Job",
 				},
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test-job",
-					Namespace: "test-namesapce",
+					Namespace: "test-namespace",
+					OwnerReferences: []metav1.OwnerReference{
+						{
+							Controller: &trueVar,
+							Kind:       "CronJob",
+							Name:       "test-cronjob",
+						},
+					},
+				},
+			}, &batchv1beta1.CronJob{
+				TypeMeta: metav1.TypeMeta{
+					Kind: "CronJob",
+				},
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-cronjob",
+					Namespace: "test-namespace",
 				},
 			}},
 			expectedKey: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
-				Name: "test-job", Kind: "Job", Namespace: "test-namesapce"}}, // Job has no parent
+				Name: "test-cronjob", Kind: "CronJob", Namespace: "test-namespace"}}, // CronJob has no parent
+			expectedError: nil,
+		},
+		{
+			key: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
+				Name: "test-cronjob", Kind: "CronJob", Namespace: "test-namespace"}},
+			objects: []runtime.Object{&batchv1beta1.CronJob{
+				TypeMeta: metav1.TypeMeta{
+					Kind: "CronJob",
+				},
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-cronjob",
+					Namespace: "test-namespace",
+				},
+			}},
+			expectedKey: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
+				Name: "test-cronjob", Kind: "CronJob", Namespace: "test-namespace"}}, // CronJob has no parent
 			expectedError: nil,
 		},
 		{
