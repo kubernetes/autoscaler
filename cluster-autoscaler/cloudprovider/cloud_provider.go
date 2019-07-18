@@ -26,6 +26,12 @@ import (
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 )
 
+const (
+	// AzureProviderName gets the azure.ProviderName. To prevent the cyclic importation,
+	// `azure.ProviderName` cannot be directly used here.
+	AzureProviderName = "azure"
+)
+
 // CloudProvider contains configuration info and functions for interacting with
 // cloud provider (GCE, AWS, etc).
 type CloudProvider interface {
@@ -69,9 +75,6 @@ type CloudProvider interface {
 	// Refresh is called before every main loop and can be used to dynamically update cloud provider state.
 	// In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
 	Refresh() error
-
-	// IsNodeInfoSimilar compare if two nodes are similar
-	IsNodeInfoSimilar(n1, n2 *schedulernodeinfo.NodeInfo) bool
 }
 
 // ErrNotImplemented is returned if a method is not implemented.

@@ -29,10 +29,13 @@ import (
 	"syscall"
 	"time"
 
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/spf13/pflag"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	cloudBuilder "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/core"
@@ -287,6 +290,10 @@ func buildAutoscaler() (core.Autoscaler, error) {
 
 	processors := ca_processors.DefaultProcessors()
 	processors.PodListProcessor = core.NewFilterOutSchedulablePodListProcessor()
+	if autoscalingOptions.CloudProviderName == cloudprovider.AzureProviderName {
+		processors.NodeGroupSetProcessor = &nodegroupset.BalancingNodeGroupSetProcessor{
+			Comparator: azure.IsNodeInfoSimilar}
+	}
 
 	opts := core.AutoscalerOptions{
 		AutoscalingOptions: autoscalingOptions,
@@ -299,18 +306,7 @@ func buildAutoscaler() (core.Autoscaler, error) {
 	metrics.UpdateNapEnabled(autoscalingOptions.NodeAutoprovisioningEnabled)
 
 	// Create autoscaler.
-	ca, err := core.NewAutoscaler(opts)
-	if ca == nil || err != nil {
-		return ca, err
-	}
-
-	// Modify the NodeGroupSetProcessor.Comparator in autoscaler
-	cp := ca.GetCloudProvider()
-	processors.NodeGroupSetProcessor = &nodegroupset.BalancingNodeGroupSetProcessor{
-		Comparator: cp.IsNodeInfoSimilar,
-	}
-
-	return ca, err
+	return core.NewAutoscaler(opts)
 }
 
 func run(healthCheck *metrics.HealthCheck) {
