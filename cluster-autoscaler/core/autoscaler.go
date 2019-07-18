@@ -57,8 +57,6 @@ type Autoscaler interface {
 	RunOnce(currentTime time.Time) errors.AutoscalerError
 	// ExitCleanUp is a clean-up performed just before process termination.
 	ExitCleanUp()
-
-	GetCloudProvider() cloudprovider.CloudProvider
 }
 
 // NewAutoscaler creates an autoscaler of an appropriate type according to the parameters

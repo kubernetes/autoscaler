@@ -181,14 +181,14 @@ func nodesFromSameAzureNodePool(n1, n2 *schedulernodeinfo.NodeInfo) bool {
 // IsNodeInfoSimilar compares if two nodes should be considered part of the
 // same NodeGroupSet. This is true if they either belong to the same Azure agentpool
 // or match usual conditions checked by IsNodeInfoSimilar, even if they have different agentpool labels.
-func (azure *AzureCloudProvider) IsNodeInfoSimilar(n1, n2 *schedulernodeinfo.NodeInfo) bool {
+func IsNodeInfoSimilar(n1, n2 *schedulernodeinfo.NodeInfo) bool {
 	if nodesFromSameAzureNodePool(n1, n2) {
 		return true
 	}
 	azureIgnoredLabels := make(map[string]bool)
-	for k, v := range nodegroupset.IgnoredLabels {
+	for k, v := range nodegroupset.BasicIgnoredLabels {
 		azureIgnoredLabels[k] = v
 	}
 	azureIgnoredLabels[AzureNodepoolLabel] = true
-	return nodegroupset.IsNodeInfoSimilarExceptIgnoredLabels(n1, n2, azureIgnoredLabels)
+	return nodegroupset.IsCloudProviderNodeInfoSimilar(n1, n2, azureIgnoredLabels)
 }
