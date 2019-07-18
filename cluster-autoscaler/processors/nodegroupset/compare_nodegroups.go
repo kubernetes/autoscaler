@@ -33,9 +33,10 @@ const (
 	MaxFreeDifferenceRatio = 0.05
 )
 
-// IgnoredLabels define a set of basic labels that should be ignored when comparing the similarity
-// of two nodes
-var IgnoredLabels = map[string]bool{
+// BasicIgnoredLabels define a set of basic labels that should be ignored when comparing the similarity
+// of two nodes. Customized IgnoredLabels can be implemented in the corresponding codes of
+// specific cloud provider and the BasicIgnoredLabels should always be considered part of them.
+var BasicIgnoredLabels = map[string]bool{
 	apiv1.LabelHostname:                   true,
 	apiv1.LabelZoneFailureDomain:          true,
 	apiv1.LabelZoneRegion:                 true,
@@ -85,12 +86,12 @@ func compareLabels(nodes []*schedulernodeinfo.NodeInfo, ignoredLabels map[string
 // are similar enough to likely be the same type of machine and if the set of labels
 // is the same (except for a pre-defined set of labels like hostname or zone).
 func IsNodeInfoSimilar(n1, n2 *schedulernodeinfo.NodeInfo) bool {
-	return IsNodeInfoSimilarExceptIgnoredLabels(n1, n2, IgnoredLabels)
+	return IsCloudProviderNodeInfoSimilar(n1, n2, BasicIgnoredLabels)
 }
 
-// IsNodeInfoSimilarExceptIgnoredLabels returns true if two NodeInfos are similar while
-// ignoring the set of labels provided
-func IsNodeInfoSimilarExceptIgnoredLabels(n1, n2 *schedulernodeinfo.NodeInfo, ignoredLabels map[string]bool) bool {
+// IsCloudProviderNodeInfoSimilar remains the same logic of IsNodeInfoSimilar with the
+// customized set of labels that should be ignored when comparing the similarity of two NodeInfos.
+func IsCloudProviderNodeInfoSimilar(n1, n2 *schedulernodeinfo.NodeInfo, ignoredLabels map[string]bool) bool {
 	capacity := make(map[apiv1.ResourceName][]resource.Quantity)
 	allocatable := make(map[apiv1.ResourceName][]resource.Quantity)
 	free := make(map[apiv1.ResourceName][]resource.Quantity)
