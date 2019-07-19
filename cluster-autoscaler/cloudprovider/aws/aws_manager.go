@@ -164,7 +164,7 @@ func (m *AwsManager) fetchAutoAsgs() error {
 	exists := make(map[AwsRef]bool)
 	changed := false
 	for _, spec := range m.asgAutoDiscoverySpecs {
-		groups, err := m.getAutoscalingGroupsByTags(spec.TagKeys)
+		groups, err := m.getAutoscalingGroupsByTags(spec.Tags)
 		if err != nil {
 			return fmt.Errorf("cannot autodiscover ASGs: %s", err)
 		}
@@ -182,7 +182,7 @@ func (m *AwsManager) fetchAutoAsgs() error {
 				continue
 			}
 			if m.RegisterAsg(asg) {
-				glog.V(3).Infof("Autodiscovered ASG %s using tags %v", asg.AwsRef.Name, spec.TagKeys)
+				glog.V(3).Infof("Autodiscovered ASG %s using tags %v", asg.AwsRef.Name, spec.Tags)
 				changed = true
 			}
 		}
@@ -272,8 +272,8 @@ func (m *AwsManager) Cleanup() {
 	m.asgCache.Cleanup()
 }
 
-func (m *AwsManager) getAutoscalingGroupsByTags(keys []string) ([]*autoscaling.Group, error) {
-	return m.service.getAutoscalingGroupsByTags(keys)
+func (m *AwsManager) getAutoscalingGroupsByTags(tags map[string]string) ([]*autoscaling.Group, error) {
+	return m.service.getAutoscalingGroupsByTags(tags)
 }
 
 // GetAsgSize gets ASG size.

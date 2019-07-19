@@ -18,6 +18,8 @@ package aws
 
 import (
 	"fmt"
+	"reflect"
+	"sort"
 	"strings"
 	"testing"
 
@@ -177,14 +179,15 @@ func TestFetchAutoAsgs(t *testing.T) {
 
 	s := &AutoScalingMock{}
 	// Lookup groups associated with tags
-	s.On("DescribeTagsPages",
-		&autoscaling.DescribeTagsInput{
-			Filters: []*autoscaling.Filter{
-				{Name: aws.String("key"), Values: aws.StringSlice([]string{tags[0]})},
-				{Name: aws.String("key"), Values: aws.StringSlice([]string{tags[1]})},
-			},
-			MaxRecords: aws.Int64(maxRecordsReturnedByAPI),
+	expectedTagsInput := &autoscaling.DescribeTagsInput{
+		Filters: []*autoscaling.Filter{
+			{Name: aws.String("key"), Values: aws.StringSlice([]string{tags[0]})},
+			{Name: aws.String("key"), Values: aws.StringSlice([]string{tags[1]})},
 		},
+		MaxRecords: aws.Int64(maxRecordsReturnedByAPI),
+	}
+	// Use MatchedBy pattern to avoid list order issue https://github.com/kubernetes/autoscaler/issues/1346
+	s.On("DescribeTagsPages", mock.MatchedBy(tagsMatcher(expectedTagsInput)),
 		mock.AnythingOfType("func(*autoscaling.DescribeTagsOutput, bool) bool"),
 	).Run(func(args mock.Arguments) {
 		fn := args.Get(1).(func(*autoscaling.DescribeTagsOutput, bool) bool)
@@ -226,14 +229,7 @@ func TestFetchAutoAsgs(t *testing.T) {
 	validateAsg(t, asgs[0].config, groupname, min, max)
 
 	// Simulate the previously discovered ASG disappearing
-	s.On("DescribeTagsPages",
-		&autoscaling.DescribeTagsInput{
-			Filters: []*autoscaling.Filter{
-				{Name: aws.String("key"), Values: aws.StringSlice([]string{tags[0]})},
-				{Name: aws.String("key"), Values: aws.StringSlice([]string{tags[1]})},
-			},
-			MaxRecords: aws.Int64(maxRecordsReturnedByAPI),
-		},
+	s.On("DescribeTagsPages", mock.MatchedBy(tagsMatcher(expectedTagsInput)),
 		mock.AnythingOfType("func(*autoscaling.DescribeTagsOutput, bool) bool"),
 	).Run(func(args mock.Arguments) {
 		fn := args.Get(1).(func(*autoscaling.DescribeTagsOutput, bool) bool)
@@ -243,4 +239,23 @@ func TestFetchAutoAsgs(t *testing.T) {
 	err = m.fetchAutoAsgs()
 	assert.NoError(t, err)
 	assert.Empty(t, m.asgCache.get())
+}
+
+func tagsMatcher(expected *autoscaling.DescribeTagsInput) func(*autoscaling.DescribeTagsInput) bool {
+	return func(actual *autoscaling.DescribeTagsInput) bool {
+		expectedTags := flatTagSlice(expected.Filters)
+		actualTags := flatTagSlice(actual.Filters)
+
+		return *expected.MaxRecords == *actual.MaxRecords && reflect.DeepEqual(expectedTags, actualTags)
+	}
+}
+
+func flatTagSlice(filters []*autoscaling.Filter) []string {
+	tags := []string{}
+	for _, filter := range filters {
+		tags = append(tags, aws.StringValueSlice(filter.Values)...)
+	}
+	// Sort slice for compare
+	sort.Strings(tags)
+	return tags
 }

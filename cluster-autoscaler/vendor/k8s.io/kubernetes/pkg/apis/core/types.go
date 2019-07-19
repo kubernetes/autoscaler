@@ -1631,7 +1631,7 @@ type CSIPersistentVolumeSource struct {
 
 	// Filesystem type to mount.
 	// Must be a filesystem type supported by the host operating system.
-	// Ex. "ext4", "xfs", "ntfs". Implicitly inferred to be "ext4" if unspecified.
+	// Ex. "ext4", "xfs", "ntfs".
 	// +optional
 	FSType string
 
@@ -1711,6 +1711,12 @@ type VolumeMount struct {
 type MountPropagationMode string
 
 const (
+	// MountPropagationNone means that the volume in a container will
+	// not receive new mounts from the host or other containers, and filesystems
+	// mounted inside the container won't be propagated to the host or other
+	// containers.
+	// Note that this mode corresponds to "private" in Linux terminology.
+	MountPropagationNone MountPropagationMode = "None"
 	// MountPropagationHostToContainer means that the volume in a container will
 	// receive new mounts from the host or other containers, but filesystems
 	// mounted inside the container won't be propagated to the host or other

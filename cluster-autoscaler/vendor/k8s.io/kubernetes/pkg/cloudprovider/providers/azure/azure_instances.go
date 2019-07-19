@@ -34,7 +34,7 @@ func (az *Cloud) NodeAddresses(ctx context.Context, name types.NodeName) ([]v1.N
 	addressGetter := func(nodeName types.NodeName) ([]v1.NodeAddress, error) {
 		ip, publicIP, err := az.GetIPForMachineWithRetry(nodeName)
 		if err != nil {
-			glog.V(2).Infof("NodeAddresses(%s) abort backoff", nodeName)
+			glog.V(2).Infof("NodeAddresses(%s) abort backoff: %v", nodeName, err)
 			return nil, err
 		}
 
@@ -167,6 +167,10 @@ func (az *Cloud) InstanceID(ctx context.Context, name types.NodeName) (string, e
 		}
 		ssName, instanceID, err := extractVmssVMName(metadataName)
 		if err != nil {
+			if err == ErrorNotVmssInstance {
+				// Compose machineID for standard Node.
+				return az.getStandardMachineID(nodeName), nil
+			}
 			return "", err
 		}
 		// Compose instanceID based on ssName and instanceID for vmss instance.

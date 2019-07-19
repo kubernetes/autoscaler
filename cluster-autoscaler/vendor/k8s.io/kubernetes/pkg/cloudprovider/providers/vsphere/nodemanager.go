@@ -76,7 +76,11 @@ func (nm *NodeManager) DiscoverNode(node *v1.Node) error {
 	var globalErr *error
 
 	queueChannel = make(chan *VmSearch, QUEUE_SIZE)
-	nodeUUID := GetUUIDFromProviderID(node.Spec.ProviderID)
+	nodeUUID, err := GetNodeUUID(node)
+	if err != nil {
+		glog.Errorf("Node Discovery failed to get node uuid for node %s with error: %v", node.Name, err)
+		return err
+	}
 
 	glog.V(4).Infof("Discovering node %s with uuid %s", node.ObjectMeta.Name, nodeUUID)
 
@@ -357,7 +361,12 @@ func (nm *NodeManager) renewNodeInfo(nodeInfo *NodeInfo, reconnect bool) (*NodeI
 		}
 	}
 	vm := nodeInfo.vm.RenewVM(vsphereInstance.conn.GoVmomiClient)
-	return &NodeInfo{vm: &vm, dataCenter: vm.Datacenter, vcServer: nodeInfo.vcServer}, nil
+	return &NodeInfo{
+		vm:         &vm,
+		dataCenter: vm.Datacenter,
+		vcServer:   nodeInfo.vcServer,
+		vmUUID:     nodeInfo.vmUUID,
+	}, nil
 }
 
 func (nodeInfo *NodeInfo) VM() *vclib.VirtualMachine {

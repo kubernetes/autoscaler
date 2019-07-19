@@ -70,15 +70,17 @@ const (
 	k8sLinuxVMAgentClusterIDIndex  = 2
 	k8sLinuxVMAgentIndexArrayIndex = 3
 
-	k8sWindowsVMNamingFormat               = "^([a-fA-F0-9]{5})([0-9a-zA-Z]{3})([a-zA-Z0-9]{4,6})$"
+	k8sWindowsOldVMNamingFormat            = "^([a-fA-F0-9]{5})([0-9a-zA-Z]{3})([9])([a-zA-Z0-9]{3,5})$"
+	k8sWindowsVMNamingFormat               = "^([a-fA-F0-9]{4})([0-9a-zA-Z]{3})([0-9]{3,8})$"
 	k8sWindowsVMAgentPoolPrefixIndex       = 1
 	k8sWindowsVMAgentOrchestratorNameIndex = 2
 	k8sWindowsVMAgentPoolInfoIndex         = 3
 )
 
 var (
-	vmnameLinuxRegexp   = regexp.MustCompile(k8sLinuxVMNamingFormat)
-	vmnameWindowsRegexp = regexp.MustCompile(k8sWindowsVMNamingFormat)
+	vmnameLinuxRegexp      = regexp.MustCompile(k8sLinuxVMNamingFormat)
+	vmnameWindowsRegexp    = regexp.MustCompile(k8sWindowsVMNamingFormat)
+	oldvmnameWindowsRegexp = regexp.MustCompile(k8sWindowsOldVMNamingFormat)
 )
 
 //AzUtil consists of utility functions which utilizes clients to different services.
@@ -437,28 +439,33 @@ func k8sLinuxVMNameParts(vmName string) (poolIdentifier, nameSuffix string, agen
 	return vmNameParts[k8sLinuxVMAgentPoolNameIndex], vmNameParts[k8sLinuxVMAgentClusterIDIndex], vmNum, nil
 }
 
-// windowsVMNameParts returns parts of Windows VM name e.g: 50621k8s9000
-func windowsVMNameParts(vmName string) (poolPrefix string, acsStr string, poolIndex int, agentIndex int, err error) {
-	vmNameParts := vmnameWindowsRegexp.FindStringSubmatch(vmName)
-	if len(vmNameParts) != 4 {
-		return "", "", -1, -1, fmt.Errorf("resource name was missing from identifier")
+// windowsVMNameParts returns parts of Windows VM name
+func windowsVMNameParts(vmName string) (poolPrefix string, orch string, poolIndex int, agentIndex int, err error) {
+	var poolInfo string
+	vmNameParts := oldvmnameWindowsRegexp.FindStringSubmatch(vmName)
+	if len(vmNameParts) != 5 {
+		vmNameParts = vmnameWindowsRegexp.FindStringSubmatch(vmName)
+		if len(vmNameParts) != 4 {
+			return "", "", -1, -1, fmt.Errorf("resource name was missing from identifier")
+		}
+		poolInfo = vmNameParts[3]
+	} else {
+		poolInfo = vmNameParts[4]
 	}
 
-	poolPrefix = vmNameParts[k8sWindowsVMAgentPoolPrefixIndex]
-	acsStr = vmNameParts[k8sWindowsVMAgentOrchestratorNameIndex]
-	poolInfo := vmNameParts[k8sWindowsVMAgentPoolInfoIndex]
+	poolPrefix = vmNameParts[1]
+	orch = vmNameParts[2]
 
-	poolIndex, err = strconv.Atoi(poolInfo[:3])
+	poolIndex, err = strconv.Atoi(poolInfo[:2])
 	if err != nil {
-		return "", "", -1, -1, fmt.Errorf("Error parsing VM Name: %v", err)
+		return "", "", -1, -1, fmt.Errorf("error parsing VM Name: %v", err)
 	}
-
-	agentIndex, err = strconv.Atoi(poolInfo[3:])
+	agentIndex, err = strconv.Atoi(poolInfo[2:])
 	if err != nil {
-		return "", "", -1, -1, fmt.Errorf("Error parsing VM Name: %v", err)
+		return "", "", -1, -1, fmt.Errorf("error parsing VM Name: %v", err)
 	}
 
-	return poolPrefix, acsStr, poolIndex, agentIndex, nil
+	return poolPrefix, orch, poolIndex, agentIndex, nil
 }
 
 // GetVMNameIndex return the index of VM in the node pools.

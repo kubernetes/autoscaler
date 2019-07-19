@@ -139,10 +139,12 @@ func TestParseASGAutoDiscoverySpecs(t *testing.T) {
 			specs: []string{
 				"asg:tag=tag,anothertag",
 				"asg:tag=cooltag,anothertag",
+				"asg:tag=label=value,anothertag",
 			},
 			want: []ASGAutoDiscoveryConfig{
-				{TagKeys: []string{"tag", "anothertag"}},
-				{TagKeys: []string{"cooltag", "anothertag"}},
+				{Tags: map[string]string{"tag": "", "anothertag": ""}},
+				{Tags: map[string]string{"cooltag": "", "anothertag": ""}},
+				{Tags: map[string]string{"label": "value", "anothertag": ""}},
 			},
 		},
 		{

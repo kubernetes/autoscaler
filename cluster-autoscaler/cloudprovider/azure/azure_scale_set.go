@@ -19,6 +19,7 @@ package azure
 import (
 	"fmt"
 	"math/rand"
+	"strings"
 	"sync"
 	"time"
 
@@ -187,43 +188,25 @@ func (scaleSet *ScaleSet) IncreaseSize(delta int) error {
 // GetScaleSetVms returns list of nodes for the given scale set.
 // Note that the list results is not used directly because their resource ID format
 // is not consistent with Get results.
-// TODO(feiskyer): use list results directly after the issue fixed in Azure VMSS API.
-func (scaleSet *ScaleSet) GetScaleSetVms() ([]compute.VirtualMachineScaleSetVM, error) {
-	instanceIDs := make([]string, 0)
+func (scaleSet *ScaleSet) GetScaleSetVms() ([]string, error) {
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
 
 	resourceGroup := scaleSet.manager.config.ResourceGroup
-	result, err := scaleSet.manager.azClient.virtualMachineScaleSetVMsClient.List(ctx, resourceGroup, scaleSet.Name, "", "", "")
+	vmList, err := scaleSet.manager.azClient.virtualMachineScaleSetVMsClient.List(ctx, resourceGroup, scaleSet.Name, "", "", "")
 	if err != nil {
 		glog.Errorf("VirtualMachineScaleSetVMsClient.List failed for %s: %v", scaleSet.Name, err)
 		return nil, err
 	}
 
-	for _, vm := range result {
-		instanceIDs = append(instanceIDs, *vm.InstanceID)
-	}
-
-	allVMs := make([]compute.VirtualMachineScaleSetVM, 0)
-	for _, instanceID := range instanceIDs {
-		getCtx, getCancel := getContextWithCancel()
-		defer getCancel()
-
-		vm, err := scaleSet.manager.azClient.virtualMachineScaleSetVMsClient.Get(getCtx, resourceGroup, scaleSet.Name, instanceID)
-		if err != nil {
-			exists, realErr := checkResourceExistsFromError(err)
-			if realErr != nil {
-				glog.Errorf("Failed to get VirtualMachineScaleSetVM by (%s,%s), error: %v", scaleSet.Name, instanceID, err)
-				return nil, realErr
-			}
-
-			if !exists {
-				glog.Warningf("Couldn't find VirtualMachineScaleSetVM by (%s,%s), assuming it has been removed", scaleSet.Name, instanceID)
-				continue
-			}
+	allVMs := make([]string, 0)
+	for _, vm := range vmList {
+		// The resource ID is empty string, which indicates the instance may be in deleting state.
+		if len(*vm.ID) == 0 {
+			continue
 		}
 
-		allVMs = append(allVMs, vm)
+		allVMs = append(allVMs, *vm.ID)
 	}
 
 	return allVMs, nil
@@ -272,7 +255,7 @@ func (scaleSet *ScaleSet) Belongs(node *apiv1.Node) (bool, error) {
 	if targetAsg == nil {
 		return false, fmt.Errorf("%s doesn't belong to a known scale set", node.Name)
 	}
-	if targetAsg.Id() != scaleSet.Id() {
+	if !strings.EqualFold(targetAsg.Id(), scaleSet.Id()) {
 		return false, nil
 	}
 	return true, nil
@@ -298,7 +281,7 @@ func (scaleSet *ScaleSet) DeleteInstances(instances []*azureRef) error {
 			return err
 		}
 
-		if asg != commonAsg {
+		if !strings.EqualFold(asg.Id(), commonAsg.Id()) {
 			return fmt.Errorf("cannot delete instance (%s) which don't belong to the same Scale Set (%q)", instance.Name, commonAsg)
 		}
 
@@ -442,6 +425,9 @@ func (scaleSet *ScaleSet) TemplateNodeInfo() (*schedulercache.NodeInfo, error) {
 
 // Nodes returns a list of all nodes that belong to this node group.
 func (scaleSet *ScaleSet) Nodes() ([]string, error) {
+	scaleSet.mutex.Lock()
+	defer scaleSet.mutex.Unlock()
+
 	vms, err := scaleSet.GetScaleSetVms()
 	if err != nil {
 		return nil, err
@@ -449,10 +435,7 @@ func (scaleSet *ScaleSet) Nodes() ([]string, error) {
 
 	result := make([]string, 0, len(vms))
 	for i := range vms {
-		if len(*vms[i].ID) == 0 {
-			continue
-		}
-		name := "azure://" + *vms[i].ID
+		name := "azure://" + strings.ToLower(vms[i])
 		result = append(result, name)
 	}
 

@@ -91,7 +91,7 @@ func TestBelongs(t *testing.T) {
 
 	invalidNode := &apiv1.Node{
 		Spec: apiv1.NodeSpec{
-			ProviderID: "azure:///subscriptions/test-subscrition-id/resourceGroups/invalid-asg/providers/Microsoft.Compute/virtualMachineScaleSets/agents/virtualMachines/0",
+			ProviderID: "azure:///subscriptions/test-subscrition-id/resourcegroups/invalid-asg/providers/microsoft.compute/virtualmachinescalesets/agents/virtualmachines/0",
 		},
 	}
 	_, err := scaleSet.Belongs(invalidNode)
@@ -157,4 +157,33 @@ func TestDebug(t *testing.T) {
 	}
 	asg.Name = "test-scale-set"
 	assert.Equal(t, asg.Debug(), "test-scale-set (5:55)")
+}
+
+func TestScaleSetNodes(t *testing.T) {
+	provider := newTestProvider(t)
+	registered := provider.azureManager.RegisterAsg(
+		newTestScaleSet(provider.azureManager, "test-asg"))
+	assert.True(t, registered)
+	assert.Equal(t, len(provider.NodeGroups()), 1)
+
+	fakeProviderID := "azure://" + fakeVirtualMachineScaleSetVMID
+	node := &apiv1.Node{
+		Spec: apiv1.NodeSpec{
+			ProviderID: fakeProviderID,
+		},
+	}
+	group, err := provider.NodeGroupForNode(node)
+	assert.NoError(t, err)
+	assert.NotNil(t, group, "Group should not be nil")
+	assert.Equal(t, group.Id(), "test-asg")
+	assert.Equal(t, group.MinSize(), 1)
+	assert.Equal(t, group.MaxSize(), 5)
+
+	ss, ok := group.(*ScaleSet)
+	assert.True(t, ok)
+	assert.NotNil(t, ss)
+	instances, err := group.Nodes()
+	assert.NoError(t, err)
+	assert.Equal(t, len(instances), 1)
+	assert.Equal(t, instances[0], fakeProviderID)
 }
