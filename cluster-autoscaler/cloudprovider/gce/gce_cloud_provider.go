@@ -32,9 +32,6 @@ import (
 )
 
 const (
-	// ProviderNameGCE is the name of GCE cloud provider.
-	ProviderNameGCE = "gce"
-
 	// GPULabel is the label added to nodes with GPU resource.
 	GPULabel = "cloud.google.com/gke-accelerator"
 )
@@ -69,7 +66,7 @@ func (gce *GceCloudProvider) Cleanup() error {
 
 // Name returns name of the cloud provider.
 func (gce *GceCloudProvider) Name() string {
-	return ProviderNameGCE
+	return cloudprovider.GceProviderName
 }
 
 // GPULabel returns the label added to nodes with GPU resource.

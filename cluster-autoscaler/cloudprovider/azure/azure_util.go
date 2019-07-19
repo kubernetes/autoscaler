@@ -76,9 +76,6 @@ const (
 	k8sWindowsVMAgentPoolPrefixIndex       = 1
 	k8sWindowsVMAgentOrchestratorNameIndex = 2
 	k8sWindowsVMAgentPoolInfoIndex         = 3
-
-	// AzureNodepoolLabel is a label specifying which Azure node pool a particular node belongs to.
-	AzureNodepoolLabel = "agentpool"
 )
 
 var (
