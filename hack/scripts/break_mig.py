@@ -41,6 +41,11 @@ import subprocess
 import sys
 import time
 
+try:
+  range = xrange   # Python 2
+except NameError:  # Python 3
+  pass
+
 
 InstanceInfo = collections.namedtuple("InstanceInfo", 'name ip')
 
@@ -128,7 +133,7 @@ def clean_up(master, broken, verbose):
     '''
     if verbose:
         print('Cleaning up top {} iptable rules'.format(len(broken)))
-    for i in xrange(len(broken)):
+    for i in range(len(broken)):
         subprocess.call(['gcloud', 'compute', 'ssh', master, '--', 'sudo iptables -D INPUT 1'])
 
 
