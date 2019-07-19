@@ -33,9 +33,6 @@ import (
 )
 
 const (
-	// ProviderName is the cloud provider name for baiducloud
-	ProviderName = "baiducloud"
-
 	// GPULabel is the label added to nodes with GPU resource.
 	GPULabel = "cloud.google.com/gke-accelerator"
 )
@@ -147,7 +144,7 @@ func (baiducloud *baiducloudCloudProvider) addAsg(asg *Asg) {
 
 // Name returns name of the cloud provider.
 func (baiducloud *baiducloudCloudProvider) Name() string {
-	return ProviderName
+	return cloudprovider.BaiducloudProviderName
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.

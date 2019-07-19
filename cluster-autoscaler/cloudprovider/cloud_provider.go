@@ -27,9 +27,20 @@ import (
 )
 
 const (
-	// AzureProviderName gets the azure.ProviderName. To prevent the cyclic importation,
-	// `azure.ProviderName` cannot be directly used here.
+	// AzureProviderName gets the provider name of azure
 	AzureProviderName = "azure"
+	// AlicloudProviderName gets the provider name of alicloud
+	AlicloudProviderName = "alicloud"
+	// AwsProviderName gets the provider name of aws
+	AwsProviderName = "aws"
+	// BaiducloudProviderName gets the provider name of baiducloud
+	BaiducloudProviderName = "baiducloud"
+	// GceProviderName gets the provider name of gce
+	GceProviderName = "gce"
+	// MagnumProviderName gets the provider name of magnum
+	MagnumProviderName = "magnum"
+	// KubemarkProviderName gets the provider name of kubemark
+	KubemarkProviderName = "kubemark"
 )
 
 // CloudProvider contains configuration info and functions for interacting with
