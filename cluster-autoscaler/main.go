@@ -29,8 +29,6 @@ import (
 	"syscall"
 	"time"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure"
-
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/spf13/pflag"
 
@@ -292,7 +290,7 @@ func buildAutoscaler() (core.Autoscaler, error) {
 	processors.PodListProcessor = core.NewFilterOutSchedulablePodListProcessor()
 	if autoscalingOptions.CloudProviderName == cloudprovider.AzureProviderName {
 		processors.NodeGroupSetProcessor = &nodegroupset.BalancingNodeGroupSetProcessor{
-			Comparator: azure.IsNodeInfoSimilar}
+			Comparator: nodegroupset.IsAzureNodeInfoSimilar}
 	}
 
 	opts := core.AutoscalerOptions{

@@ -31,9 +31,6 @@ import (
 )
 
 const (
-	// ProviderName  is the cloud provider name for alicloud
-	ProviderName = "alicloud"
-
 	// GPULabel is the label added to nodes with GPU resource.
 	GPULabel = "aliyun.accelerator/nvidia_name"
 )
@@ -99,7 +96,7 @@ func (ali *aliCloudProvider) addAsg(asg *Asg) {
 }
 
 func (ali *aliCloudProvider) Name() string {
-	return ProviderName
+	return cloudprovider.AlicloudProviderName
 }
 
 // GPULabel returns the label added to nodes with GPU resource.

@@ -26,15 +26,15 @@ import (
 
 // AvailableCloudProviders supported by the cloud provider builder.
 var AvailableCloudProviders = []string{
-	magnum.ProviderName,
+	cloudprovider.MagnumProviderName,
 }
 
 // DefaultCloudProvider for OpenStack-only build is OpenStack.
-const DefaultCloudProvider = magnum.ProviderName
+const DefaultCloudProvider = cloudprovider.MagnumProviderName
 
 func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	switch opts.CloudProviderName {
-	case magnum.ProviderName:
+	case cloudprovider.MagnumProviderName:
 		return magnum.BuildMagnum(opts, do, rl)
 	}
 

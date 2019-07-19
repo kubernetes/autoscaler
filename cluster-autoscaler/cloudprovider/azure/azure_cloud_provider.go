@@ -24,16 +24,11 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/klog"
-	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 )
 
 const (
-	// ProviderName is the cloud provider name for Azure
-	ProviderName = "azure"
-
 	// GPULabel is the label added to nodes with GPU resource.
 	GPULabel = "cloud.google.com/gke-accelerator"
 )
@@ -170,25 +165,4 @@ func BuildAzure(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscov
 		klog.Fatalf("Failed to create Azure cloud provider: %v", err)
 	}
 	return provider
-}
-
-func nodesFromSameAzureNodePool(n1, n2 *schedulernodeinfo.NodeInfo) bool {
-	n1AzureNodePool := n1.Node().Labels[AzureNodepoolLabel]
-	n2AzureNodePool := n2.Node().Labels[AzureNodepoolLabel]
-	return n1AzureNodePool != "" && n1AzureNodePool == n2AzureNodePool
-}
-
-// IsNodeInfoSimilar compares if two nodes should be considered part of the
-// same NodeGroupSet. This is true if they either belong to the same Azure agentpool
-// or match usual conditions checked by IsNodeInfoSimilar, even if they have different agentpool labels.
-func IsNodeInfoSimilar(n1, n2 *schedulernodeinfo.NodeInfo) bool {
-	if nodesFromSameAzureNodePool(n1, n2) {
-		return true
-	}
-	azureIgnoredLabels := make(map[string]bool)
-	for k, v := range nodegroupset.BasicIgnoredLabels {
-		azureIgnoredLabels[k] = v
-	}
-	azureIgnoredLabels[AzureNodepoolLabel] = true
-	return nodegroupset.IsCloudProviderNodeInfoSimilar(n1, n2, azureIgnoredLabels)
 }
