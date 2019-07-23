@@ -30,9 +30,6 @@ import (
 )
 
 const (
-	// ProviderName is the cloud provider name for kubemark
-	ProviderName = "kubemark"
-
 	// GPULabel is the label added to nodes with GPU resource.
 	GPULabel = "cloud.google.com/gke-accelerator"
 )

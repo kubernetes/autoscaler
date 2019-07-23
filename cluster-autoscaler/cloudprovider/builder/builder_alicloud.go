@@ -26,15 +26,15 @@ import (
 
 // AvailableCloudProviders supported by the cloud provider builder.
 var AvailableCloudProviders = []string{
-	alicloud.ProviderName,
+	cloudprovider.AlicloudProviderName,
 }
 
 // DefaultCloudProvider for alicloud-only build is alicloud.
-const DefaultCloudProvider = alicloud.ProviderName
+const DefaultCloudProvider = cloudprovider.AlicloudProviderName
 
 func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	switch opts.CloudProviderName {
-	case alicloud.ProviderName:
+	case cloudprovider.AlicloudProviderName:
 		return alicloud.BuildAlicloud(opts, do, rl)
 	}
 

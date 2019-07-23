@@ -31,30 +31,30 @@ import (
 
 // AvailableCloudProviders supported by the cloud provider builder.
 var AvailableCloudProviders = []string{
-	aws.ProviderName,
-	azure.ProviderName,
-	gce.ProviderNameGCE,
-	alicloud.ProviderName,
-	baiducloud.ProviderName,
-	magnum.ProviderName,
+	cloudprovider.AwsProviderName,
+	cloudprovider.AzureProviderName,
+	cloudprovider.GceProviderName,
+	cloudprovider.AlicloudProviderName,
+	cloudprovider.BaiducloudProviderName,
+	cloudprovider.MagnumProviderName,
 }
 
 // DefaultCloudProvider is GCE.
-const DefaultCloudProvider = gce.ProviderNameGCE
+const DefaultCloudProvider = cloudprovider.GceProviderName
 
 func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	switch opts.CloudProviderName {
-	case gce.ProviderNameGCE:
+	case cloudprovider.GceProviderName:
 		return gce.BuildGCE(opts, do, rl)
-	case aws.ProviderName:
+	case cloudprovider.AwsProviderName:
 		return aws.BuildAWS(opts, do, rl)
-	case azure.ProviderName:
+	case cloudprovider.AzureProviderName:
 		return azure.BuildAzure(opts, do, rl)
-	case alicloud.ProviderName:
+	case cloudprovider.AlicloudProviderName:
 		return alicloud.BuildAlicloud(opts, do, rl)
-	case baiducloud.ProviderName:
+	case cloudprovider.BaiducloudProviderName:
 		return baiducloud.BuildBaiducloud(opts, do, rl)
-	case magnum.ProviderName:
+	case cloudprovider.MagnumProviderName:
 		return magnum.BuildMagnum(opts, do, rl)
 	}
 	return nil
