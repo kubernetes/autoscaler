@@ -123,12 +123,46 @@ func TestFindPlaceAllOk(t *testing.T) {
 		[]*apiv1.Pod{new1, new2},
 		[]*apiv1.Node{node1, node2},
 		nodeInfos, NewTestPredicateChecker(),
-		oldHints, newHints, tracker, time.Now())
+		oldHints, newHints, tracker, time.Now(),
+		[]*apiv1.Node{})
 
 	assert.Len(t, newHints, 2)
 	assert.Contains(t, newHints, new1.Namespace+"/"+new1.Name)
 	assert.Contains(t, newHints, new2.Namespace+"/"+new2.Name)
 	assert.NoError(t, err)
+}
+
+func TestFindPlaceNotOnEmptyNode(t *testing.T) {
+	pod1 := BuildTestPod("p1", 300, 500000)
+	new1 := BuildTestPod("p2", 600, 500000)
+	new2 := BuildTestPod("p3", 500, 500000)
+
+	nodeInfos := map[string]*schedulernodeinfo.NodeInfo{
+		"n1": schedulernodeinfo.NewNodeInfo(pod1),
+		"n2": schedulernodeinfo.NewNodeInfo(),
+	}
+	node1 := BuildTestNode("n1", 1000, 2000000)
+	SetNodeReadyState(node1, true, time.Time{})
+	node2 := BuildTestNode("n2", 1000, 2000000)
+	SetNodeReadyState(node2, true, time.Time{})
+	nodeInfos["n1"].SetNode(node1)
+	nodeInfos["n2"].SetNode(node2)
+
+	oldHints := make(map[string]string)
+	newHints := make(map[string]string)
+	tracker := NewUsageTracker()
+
+	err := findPlaceFor(
+		"x",
+		[]*apiv1.Pod{new1, new2},
+		[]*apiv1.Node{node1, node2},
+		nodeInfos, NewTestPredicateChecker(),
+		oldHints, newHints, tracker, time.Now(),
+		[]*apiv1.Node{node2})
+
+	assert.Error(t, err)
+	assert.Len(t, newHints, 1)
+	assert.Contains(t, newHints, new1.Namespace+"/"+new1.Name)
 }
 
 func TestFindPlaceAllBas(t *testing.T) {
@@ -162,7 +196,8 @@ func TestFindPlaceAllBas(t *testing.T) {
 		[]*apiv1.Pod{new1, new2, new3},
 		[]*apiv1.Node{nodebad, node1, node2},
 		nodeInfos, NewTestPredicateChecker(),
-		oldHints, newHints, tracker, time.Now())
+		oldHints, newHints, tracker, time.Now(),
+		[]*apiv1.Node{})
 
 	assert.Error(t, err)
 	assert.True(t, len(newHints) == 2)
@@ -194,7 +229,8 @@ func TestFindNone(t *testing.T) {
 		make(map[string]string),
 		make(map[string]string),
 		NewUsageTracker(),
-		time.Now())
+		time.Now(),
+		[]*apiv1.Node{})
 	assert.NoError(t, err)
 }
 
@@ -241,6 +277,7 @@ type findNodesToRemoveTestConfig struct {
 	name        string
 	candidates  []*apiv1.Node
 	allNodes    []*apiv1.Node
+	emptyNodes  []*apiv1.Node
 	toRemove    []NodeToBeRemoved
 	unremovable []*apiv1.Node
 }
@@ -294,6 +331,7 @@ func TestFindNodesToRemove(t *testing.T) {
 			name:        "just an empty node, should be removed",
 			candidates:  []*apiv1.Node{emptyNode},
 			allNodes:    []*apiv1.Node{emptyNode},
+			emptyNodes:  []*apiv1.Node{emptyNode},
 			toRemove:    []NodeToBeRemoved{emptyNodeToRemove},
 			unremovable: []*apiv1.Node{},
 		},
@@ -326,8 +364,18 @@ func TestFindNodesToRemove(t *testing.T) {
 			name:        "4 nodes, 1 empty, 1 drainable",
 			candidates:  []*apiv1.Node{emptyNode, drainableNode},
 			allNodes:    []*apiv1.Node{emptyNode, drainableNode, fullNode, nonDrainableNode},
+			emptyNodes:  []*apiv1.Node{emptyNode},
 			toRemove:    []NodeToBeRemoved{emptyNodeToRemove, drainableNodeToRemove},
 			unremovable: []*apiv1.Node{},
+		},
+		//  empty node, drainable node and full node
+		{
+			name:        "empty node, drainable node and full node",
+			candidates:  []*apiv1.Node{emptyNode, drainableNode},
+			allNodes:    []*apiv1.Node{emptyNode, drainableNode, fullNode},
+			emptyNodes:  []*apiv1.Node{emptyNode},
+			toRemove:    []NodeToBeRemoved{emptyNodeToRemove},
+			unremovable: []*apiv1.Node{drainableNode},
 		},
 	}
 
@@ -335,7 +383,8 @@ func TestFindNodesToRemove(t *testing.T) {
 		toRemove, unremovable, _, err := FindNodesToRemove(
 			test.candidates, test.allNodes, pods, nil,
 			predicateChecker, len(test.allNodes), true, map[string]string{},
-			tracker, time.Now(), []*policyv1.PodDisruptionBudget{})
+			tracker, time.Now(), []*policyv1.PodDisruptionBudget{},
+			test.emptyNodes)
 		assert.NoError(t, err)
 		fmt.Printf("Test scenario: %s, found len(toRemove)=%v, expected len(test.toRemove)=%v\n", test.name, len(toRemove), len(test.toRemove))
 		assert.Equal(t, toRemove, test.toRemove)

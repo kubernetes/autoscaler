@@ -489,7 +489,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 	// Look for nodes to remove in the current candidates
 	nodesToRemove, unremovable, newHints, simulatorErr := simulator.FindNodesToRemove(
 		currentCandidates, destinationNodes, nonExpendablePods, nil, sd.context.PredicateChecker,
-		len(currentCandidates), true, sd.podLocationHints, sd.usageTracker, timestamp, pdbs)
+		len(currentCandidates), true, sd.podLocationHints, sd.usageTracker, timestamp, pdbs, emptyNodesList)
 	if simulatorErr != nil {
 		return sd.markSimulationError(simulatorErr, timestamp)
 	}
@@ -512,7 +512,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		additionalNodesToRemove, additionalUnremovable, additionalNewHints, simulatorErr :=
 			simulator.FindNodesToRemove(currentNonCandidates[:additionalCandidatesPoolSize], destinationNodes, nonExpendablePods, nil,
 				sd.context.PredicateChecker, additionalCandidatesCount, true,
-				sd.podLocationHints, sd.usageTracker, timestamp, pdbs)
+				sd.podLocationHints, sd.usageTracker, timestamp, pdbs, emptyNodesList)
 		if simulatorErr != nil {
 			return sd.markSimulationError(simulatorErr, timestamp)
 		}
@@ -806,7 +806,7 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 	// We look for only 1 node so new hints may be incomplete.
 	nodesToRemove, _, _, err := simulator.FindNodesToRemove(candidates, nodesWithoutMaster, nonExpendablePods, sd.context.ListerRegistry,
 		sd.context.PredicateChecker, 1, false,
-		sd.podLocationHints, sd.usageTracker, time.Now(), pdbs)
+		sd.podLocationHints, sd.usageTracker, time.Now(), pdbs, emptyNodes)
 	findNodesToRemoveDuration = time.Now().Sub(findNodesToRemoveStart)
 
 	if err != nil {
