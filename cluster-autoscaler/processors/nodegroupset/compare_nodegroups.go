@@ -33,6 +33,16 @@ const (
 	MaxFreeDifferenceRatio = 0.05
 )
 
+// BasicIgnoredLabels define a set of basic labels that should be ignored when comparing the similarity
+// of two nodes. Customized IgnoredLabels can be implemented in the corresponding codes of
+// specific cloud provider and the BasicIgnoredLabels should always be considered part of them.
+var BasicIgnoredLabels = map[string]bool{
+	apiv1.LabelHostname:                   true,
+	apiv1.LabelZoneFailureDomain:          true,
+	apiv1.LabelZoneRegion:                 true,
+	"beta.kubernetes.io/fluentd-ds-ready": true, // this is internal label used for determining if fluentd should be installed as deamon set. Used for migration 1.8 to 1.9.
+}
+
 // NodeInfoComparator is a function that tells if two nodes are from NodeGroups
 // similar enough to be considered a part of a single NodeGroupSet.
 type NodeInfoComparator func(n1, n2 *schedulernodeinfo.NodeInfo) bool
@@ -52,12 +62,36 @@ func compareResourceMapsWithTolerance(resources map[apiv1.ResourceName][]resourc
 	return true
 }
 
+func compareLabels(nodes []*schedulernodeinfo.NodeInfo, ignoredLabels map[string]bool) bool {
+	labels := make(map[string][]string)
+	for _, node := range nodes {
+		for label, value := range node.Node().ObjectMeta.Labels {
+			ignore, _ := ignoredLabels[label]
+			if !ignore {
+				labels[label] = append(labels[label], value)
+			}
+		}
+	}
+	for _, labelValues := range labels {
+		if len(labelValues) != 2 || labelValues[0] != labelValues[1] {
+			return false
+		}
+	}
+	return true
+}
+
 // IsNodeInfoSimilar returns true if two NodeInfos are similar enough to consider
 // that the NodeGroups they come from are part of the same NodeGroupSet. The criteria are
 // somewhat arbitrary, but generally we check if resources provided by both nodes
 // are similar enough to likely be the same type of machine and if the set of labels
 // is the same (except for a pre-defined set of labels like hostname or zone).
 func IsNodeInfoSimilar(n1, n2 *schedulernodeinfo.NodeInfo) bool {
+	return IsCloudProviderNodeInfoSimilar(n1, n2, BasicIgnoredLabels)
+}
+
+// IsCloudProviderNodeInfoSimilar remains the same logic of IsNodeInfoSimilar with the
+// customized set of labels that should be ignored when comparing the similarity of two NodeInfos.
+func IsCloudProviderNodeInfoSimilar(n1, n2 *schedulernodeinfo.NodeInfo, ignoredLabels map[string]bool) bool {
 	capacity := make(map[apiv1.ResourceName][]resource.Quantity)
 	allocatable := make(map[apiv1.ResourceName][]resource.Quantity)
 	free := make(map[apiv1.ResourceName][]resource.Quantity)
@@ -92,26 +126,9 @@ func IsNodeInfoSimilar(n1, n2 *schedulernodeinfo.NodeInfo) bool {
 		return false
 	}
 
-	ignoredLabels := map[string]bool{
-		apiv1.LabelHostname:                   true,
-		apiv1.LabelZoneFailureDomain:          true,
-		apiv1.LabelZoneRegion:                 true,
-		"beta.kubernetes.io/fluentd-ds-ready": true, // this is internal label used for determining if fluentd should be installed as deamon set. Used for migration 1.8 to 1.9.
+	if !compareLabels(nodes, ignoredLabels) {
+		return false
 	}
 
-	labels := make(map[string][]string)
-	for _, node := range nodes {
-		for label, value := range node.Node().ObjectMeta.Labels {
-			ignore, _ := ignoredLabels[label]
-			if !ignore {
-				labels[label] = append(labels[label], value)
-			}
-		}
-	}
-	for _, labelValues := range labels {
-		if len(labelValues) != 2 || labelValues[0] != labelValues[1] {
-			return false
-		}
-	}
 	return true
 }

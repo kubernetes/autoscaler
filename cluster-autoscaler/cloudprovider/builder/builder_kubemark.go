@@ -26,15 +26,15 @@ import (
 
 // AvailableCloudProviders supported by the cloud provider builder.
 var AvailableCloudProviders = []string{
-	kubemark.ProviderName,
+	cloudprovider.KubemarkProviderName,
 }
 
 // DefaultCloudProvider for Kubemark-only build is Kubemark.
-const DefaultCloudProvider = kubemark.ProviderName
+const DefaultCloudProvider = cloudprovider.KubemarkProviderName
 
 func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	switch opts.CloudProviderName {
-	case kubemark.ProviderName:
+	case cloudprovider.KubemarkProviderName:
 		return kubemark.BuildKubemark(opts, do, rl)
 	}
 
