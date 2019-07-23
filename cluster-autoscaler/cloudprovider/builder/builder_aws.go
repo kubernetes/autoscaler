@@ -26,15 +26,15 @@ import (
 
 // AvailableCloudProviders supported by the cloud provider builder.
 var AvailableCloudProviders = []string{
-	aws.ProviderName,
+	cloudprovider.AwsProviderName,
 }
 
 // DefaultCloudProvider for AWS-only build is AWS.
-const DefaultCloudProvider = aws.ProviderName
+const DefaultCloudProvider = cloudprovider.AwsProviderName
 
 func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	switch opts.CloudProviderName {
-	case aws.ProviderName:
+	case cloudprovider.AwsProviderName:
 		return aws.BuildAWS(opts, do, rl)
 	}
 

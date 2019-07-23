@@ -20,22 +20,21 @@ package builder
 
 import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/baiducloud"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 )
 
 // AvailableCloudProviders supported by the cloud provider builder.
 var AvailableCloudProviders = []string{
-	baiducloud.ProviderName,
+	cloudprovider.BaiducloudProviderName,
 }
 
 // DefaultCloudProvider for baiducloud-only build is baiducloud.
-const DefaultCloudProvider = baiducloud.ProviderName
+const DefaultCloudProvider = cloudprovider.BaiducloudProviderName
 
 func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	switch opts.CloudProviderName {
-	case baiducloud.ProviderName:
+	case cloudprovider.BaiducloudProviderName:
 		return baiducloud.BuildBaiducloud(opts, do, rl)
 	}
 

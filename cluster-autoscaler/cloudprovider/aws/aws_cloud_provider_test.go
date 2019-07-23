@@ -149,7 +149,7 @@ func TestBuildAwsCloudProvider(t *testing.T) {
 
 func TestName(t *testing.T) {
 	provider := testProvider(t, testAwsManager)
-	assert.Equal(t, provider.Name(), ProviderName)
+	assert.Equal(t, provider.Name(), cloudprovider.AwsProviderName)
 }
 
 func TestNodeGroups(t *testing.T) {
