@@ -68,6 +68,14 @@ or to autoscale multiple VM scale sets:
         - --nodes=1:10:k8s-nodepool-2-vmss
 ```
 
+To allow scaling similar node pools simultaneously, or when using separate node groups per zone and to keep nodes balanced across zones, use the `--balance-similar-node-groups` flag (default false). Add it to the `command` section to enable it:
+
+```yaml
+        - --balance-similar-node-groups=true
+```
+
+See the [FAQ](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#im-running-cluster-with-nodes-in-multiple-zones-for-ha-purposes-is-that-supported-by-cluster-autoscaler) for more details.
+
 Save the updated deployment manifest, then deploy cluster-autoscaler by running:
 
 ```sh
