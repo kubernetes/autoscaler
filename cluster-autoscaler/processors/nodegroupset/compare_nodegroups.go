@@ -44,7 +44,8 @@ var BasicIgnoredLabels = map[string]bool{
 	apiv1.LabelZoneFailureDomain:          true,
 	apiv1.LabelZoneRegion:                 true,
 	"beta.kubernetes.io/fluentd-ds-ready": true, // this is internal label used for determining if fluentd should be installed as deamon set. Used for migration 1.8 to 1.9.
-	"kops.k8s.io/instancegroup":           true, // this is a label used by kops to identify instance group names. it's value is variable, defeating check of similar node groups
+	"kops.k8s.io/instancegroup":           true, // this is a label used by kops to identify "instance group" names. it's value is variable, defeating check of similar node groups
+	"alpha.eksctl.io/nodegroup-name":      true, // this is a label used by eksctl to identify "node group" names, similar in spirit to the kops label above
 }
 
 // NodeInfoComparator is a function that tells if two nodes are from NodeGroups
