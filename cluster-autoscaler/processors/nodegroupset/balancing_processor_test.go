@@ -155,6 +155,7 @@ func TestBalanceHittingMaxSize(t *testing.T) {
 	provider.AddNodeGroup("ng2", 1, 3, 1)
 	provider.AddNodeGroup("ng3", 1, 10, 3)
 	provider.AddNodeGroup("ng4", 1, 7, 5)
+	provider.AddNodeGroup("ng5", 1, 3, 6)
 	groupsMap := make(map[string]cloudprovider.NodeGroup)
 	for _, group := range provider.NodeGroups() {
 		groupsMap[group.Id()] = group
@@ -217,4 +218,10 @@ func TestBalanceHittingMaxSize(t *testing.T) {
 	assert.Equal(t, 3, scaleUpMap["ng2"].NewSize)
 	assert.Equal(t, 10, scaleUpMap["ng3"].NewSize)
 	assert.Equal(t, 7, scaleUpMap["ng4"].NewSize)
+
+	// One node group exceeds max.
+	scaleUpInfo, err = processor.BalanceScaleUpBetweenGroups(context, getGroups("ng2", "ng5"), 1)
+	assert.Equal(t, 1, len(scaleUpInfo))
+	scaleUpMap = toMap(scaleUpInfo)
+	assert.Equal(t, 2, scaleUpMap["ng2"].NewSize)
 }
