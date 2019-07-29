@@ -245,9 +245,10 @@ func TestExtractTaintsFromScaleSet(t *testing.T) {
 	regularTagValue := "baz"
 
 	tags := map[string]*string{
-		fmt.Sprintf("%s%s", nodeTaintTagName, "dedicated"): &noScheduleTaintValue,
-		fmt.Sprintf("%s%s", nodeTaintTagName, "group"):     &noExecuteTaintValue,
-		fmt.Sprintf("%s%s", nodeTaintTagName, "app"):       &preferNoScheduleTaintValue,
+		fmt.Sprintf("%s%s", nodeTaintTagName, "dedicated"):                          &noScheduleTaintValue,
+		fmt.Sprintf("%s%s", nodeTaintTagName, "group"):                              &noExecuteTaintValue,
+		fmt.Sprintf("%s%s", nodeTaintTagName, "app"):                                &preferNoScheduleTaintValue,
+		fmt.Sprintf("%s%s", nodeTaintTagName, "k8s.io_testing_underscore_to_slash"): &preferNoScheduleTaintValue,
 		"bar": &regularTagValue,
 		fmt.Sprintf("%s%s", nodeTaintTagName, "blank"):   &blankTaintValue,
 		fmt.Sprintf("%s%s", nodeTaintTagName, "nosplit"): &noSplitTaintValue,
@@ -269,10 +270,15 @@ func TestExtractTaintsFromScaleSet(t *testing.T) {
 			Value:  "fizz",
 			Effect: apiv1.TaintEffectPreferNoSchedule,
 		},
+		{
+			Key:    "k8s.io/testing/underscore/to/slash",
+			Value:  "fizz",
+			Effect: apiv1.TaintEffectPreferNoSchedule,
+		},
 	}
 
 	taints := extractTaintsFromScaleSet(tags)
-	assert.Len(t, taints, 3)
+	assert.Len(t, taints, 4)
 	assert.Equal(t, makeTaintSet(expectedTaints), makeTaintSet(taints))
 }
 

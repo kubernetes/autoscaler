@@ -515,7 +515,7 @@ func extractLabelsFromScaleSet(tags map[string]*string) map[string]string {
 	for tagName, tagValue := range tags {
 		splits := strings.Split(tagName, nodeLabelTagName)
 		if len(splits) > 1 {
-			label := splits[1]
+			label := strings.Replace(splits[1], "_", "/", -1)
 			if label != "" {
 				result[label] = *tagValue
 			}
@@ -537,8 +537,9 @@ func extractTaintsFromScaleSet(tags map[string]*string) []apiv1.Taint {
 			if len(splits) > 1 {
 				values := strings.SplitN(*tagValue, ":", 2)
 				if len(values) > 1 {
+					taintKey := strings.Replace(splits[1], "_", "/", -1)
 					taints = append(taints, apiv1.Taint{
-						Key:    splits[1],
+						Key:    taintKey,
 						Value:  values[0],
 						Effect: apiv1.TaintEffect(values[1]),
 					})
