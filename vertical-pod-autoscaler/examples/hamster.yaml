@@ -20,6 +20,9 @@ kind: Deployment
 metadata:
   name: hamster
 spec:
+  selector:
+    matchLabels:
+      app: hamster
   replicas: 2
   template:
     metadata:
