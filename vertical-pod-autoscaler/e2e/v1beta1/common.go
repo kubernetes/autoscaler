@@ -33,6 +33,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
+	"k8s.io/kubernetes/pkg/apis/autoscaling"
 	"k8s.io/kubernetes/test/e2e/framework"
 )
 
@@ -390,7 +391,7 @@ func WaitForConditionPresent(c *vpa_clientset.Clientset, vpa *vpa_types.Vertical
 	})
 }
 
-func installLimitRange(f *framework.Framework, minCpuLimit, minMemoryLimit, maxCpuLimit, maxMemoryLimit *resource.Quantity) {
+func installLimitRange(f *framework.Framework, minCpuLimit, minMemoryLimit, maxCpuLimit, maxMemoryLimit *resource.Quantity, lrType apiv1.LimitType) {
 	lr := &apiv1.LimitRange{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: f.Namespace.Name,
@@ -403,7 +404,7 @@ func installLimitRange(f *framework.Framework, minCpuLimit, minMemoryLimit, maxC
 
 	if maxMemoryLimit != nil || maxCpuLimit != nil {
 		lrItem := apiv1.LimitRangeItem{
-			Type: apiv1.LimitTypeContainer,
+			Type: lrType,
 			Max:  apiv1.ResourceList{},
 		}
 		if maxCpuLimit != nil {
@@ -417,7 +418,7 @@ func installLimitRange(f *framework.Framework, minCpuLimit, minMemoryLimit, maxC
 
 	if minMemoryLimit != nil || minCpuLimit != nil {
 		lrItem := apiv1.LimitRangeItem{
-			Type: apiv1.LimitTypeContainer,
+			Type: lrType,
 			Min:  apiv1.ResourceList{},
 		}
 		if minCpuLimit != nil {
@@ -429,21 +430,50 @@ func installLimitRange(f *framework.Framework, minCpuLimit, minMemoryLimit, maxC
 		lr.Spec.Limits = append(lr.Spec.Limits, lrItem)
 	}
 	_, err := f.ClientSet.CoreV1().LimitRanges(f.Namespace.Name).Create(lr)
-	gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "unexpected error when creating limit range")
 }
 
 // InstallLimitRangeWithMax installs a LimitRange with a maximum limit for CPU and memory.
-func InstallLimitRangeWithMax(f *framework.Framework, maxCpuLimit, maxMemoryLimit string) {
+func InstallLimitRangeWithMax(f *framework.Framework, maxCpuLimit, maxMemoryLimit string, lrType apiv1.LimitType) {
 	ginkgo.By(fmt.Sprintf("Setting up LimitRange with max limits - CPU: %v, memory: %v", maxCpuLimit, maxMemoryLimit))
 	maxCpuLimitQuantity := ParseQuantityOrDie(maxCpuLimit)
 	maxMemoryLimitQuantity := ParseQuantityOrDie(maxMemoryLimit)
-	installLimitRange(f, nil, nil, &maxCpuLimitQuantity, &maxMemoryLimitQuantity)
+	installLimitRange(f, nil, nil, &maxCpuLimitQuantity, &maxMemoryLimitQuantity, lrType)
 }
 
 // InstallLimitRangeWithMin installs a LimitRange with a minimum limit for CPU and memory.
-func InstallLimitRangeWithMin(f *framework.Framework, minCpuLimit, minMemoryLimit string) {
+func InstallLimitRangeWithMin(f *framework.Framework, minCpuLimit, minMemoryLimit string, lrType apiv1.LimitType) {
 	ginkgo.By(fmt.Sprintf("Setting up LimitRange with min limits - CPU: %v, memory: %v", minCpuLimit, minMemoryLimit))
 	minCpuLimitQuantity := ParseQuantityOrDie(minCpuLimit)
 	minMemoryLimitQuantity := ParseQuantityOrDie(minMemoryLimit)
-	installLimitRange(f, &minCpuLimitQuantity, &minMemoryLimitQuantity, nil, nil)
+	installLimitRange(f, &minCpuLimitQuantity, &minMemoryLimitQuantity, nil, nil, lrType)
+}
+
+// SetupVPAForTwoHamsters creates and installs a simple pod with two hamster containers for e2e test purposes.
+func SetupVPAForTwoHamsters(f *framework.Framework, cpu string, mode vpa_types.UpdateMode) {
+	vpaCRD := NewVPA(f, "hamster-vpa", &metav1.LabelSelector{
+		MatchLabels: hamsterLabels,
+	})
+	vpaCRD.Spec.UpdatePolicy.UpdateMode = &mode
+
+	cpuQuantity := ParseQuantityOrDie(cpu)
+	resourceList := apiv1.ResourceList{apiv1.ResourceCPU: cpuQuantity}
+
+	vpaCRD.Status.Recommendation = &vpa_types.RecommendedPodResources{
+		ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+			{
+				ContainerName: "hamster",
+				Target:        resourceList,
+				LowerBound:    resourceList,
+				UpperBound:    resourceList,
+			},
+			{
+				ContainerName: "hamster2",
+				Target:        resourceList,
+				LowerBound:    resourceList,
+				UpperBound:    resourceList,
+			},
+		},
+	}
+	InstallVPA(f, vpaCRD)
 }
