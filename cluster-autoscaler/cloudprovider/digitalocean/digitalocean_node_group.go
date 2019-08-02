@@ -50,16 +50,19 @@ type NodeGroup struct {
 	clusterID string
 	client    nodeGroupClient
 	nodePool  *godo.KubernetesNodePool
+
+	minSize int
+	maxSize int
 }
 
 // MaxSize returns maximum size of the node group.
 func (n *NodeGroup) MaxSize() int {
-	return maxNodePoolSize
+	return n.maxSize
 }
 
 // MinSize returns minimum size of the node group.
 func (n *NodeGroup) MinSize() int {
-	return minNodePoolSize
+	return n.minSize
 }
 
 // TargetSize returns the current target size of the node group. It is possible

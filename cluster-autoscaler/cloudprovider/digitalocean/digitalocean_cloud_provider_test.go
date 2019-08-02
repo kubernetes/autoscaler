@@ -31,7 +31,7 @@ import (
 func testCloudProvider(t *testing.T, client *doClientMock) *digitaloceanCloudProvider {
 	cfg := `{"cluster_id": "123456", "token": "123-123-123", "url": "https://api.digitalocean.com/v2", "version": "dev"}`
 
-	manager, err := newManager(bytes.NewBufferString(cfg))
+	manager, err := newManager(bytes.NewBufferString(cfg), nil)
 	assert.NoError(t, err)
 	rl := &cloudprovider.ResourceLimiter{}
 

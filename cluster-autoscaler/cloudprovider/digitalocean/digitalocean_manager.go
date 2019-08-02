@@ -24,10 +24,15 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"golang.org/x/oauth2"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/digitalocean/godo"
+	"k8s.io/klog"
 )
+
+const tagName = "k8s-cluster-autoscaler:"
 
 var (
 	version = "dev"
@@ -50,11 +55,10 @@ type nodeGroupClient interface {
 // Manager handles DigitalOcean communication and data caching of
 // node groups (node pools in DOKS)
 type Manager struct {
-	client nodeGroupClient
-
-	clusterID string
-
-	nodeGroups []*NodeGroup
+	client         nodeGroupClient
+	clusterID      string
+	nodeGroups     []*NodeGroup
+	nodeGroupsSpec map[string]*nodeSpec
 }
 
 // Config is the configuration of the DigitalOcean cloud provider
@@ -72,7 +76,7 @@ type Config struct {
 	URL string `json:"url"`
 }
 
-func newManager(configReader io.Reader) (*Manager, error) {
+func newManager(configReader io.Reader, specs []string) (*Manager, error) {
 	cfg := &Config{}
 	if configReader != nil {
 		body, err := ioutil.ReadAll(configReader)
@@ -109,10 +113,16 @@ func newManager(configReader io.Reader) (*Manager, error) {
 		return nil, fmt.Errorf("couldn't initialize DigitalOcean client: %s", err)
 	}
 
+	nodeSpecs, err := parseNodeSpec(specs)
+	if err != nil {
+		return nil, err
+	}
+
 	m := &Manager{
-		client:     doClient.Kubernetes,
-		clusterID:  cfg.ClusterID,
-		nodeGroups: make([]*NodeGroup, 0),
+		client:         doClient.Kubernetes,
+		clusterID:      cfg.ClusterID,
+		nodeGroups:     make([]*NodeGroup, 0),
+		nodeGroupsSpec: nodeSpecs,
 	}
 
 	return m, nil
@@ -138,14 +148,84 @@ func (m *Manager) Refresh() error {
 			return err
 		}
 
+		// default values
+		minSize := minNodePoolSize
+		maxSize := maxNodePoolSize
+
+		for _, tag := range nodePool.Tags {
+			v := strings.TrimPrefix(tag, tagName)
+			spec, ok := m.nodeGroupsSpec[v]
+			if ok {
+				minSize = spec.minSize
+				maxSize = spec.maxSize
+
+				klog.V(4).Infof("Found custom spec for node pool: %q (%s) with min: %d and max: %d",
+					nodePool.Name, nodePool.ID, minSize, maxSize)
+			}
+		}
+
 		group[i] = &NodeGroup{
 			id:        np.ID,
 			clusterID: m.clusterID,
 			client:    m.client,
 			nodePool:  nodePool,
+			minSize:   minSize,
+			maxSize:   maxSize,
 		}
 	}
 
 	m.nodeGroups = group
 	return nil
+}
+
+// nodeSpec defines a custom specification for a given node
+type nodeSpec struct {
+	tagValue string
+	minSize  int
+	maxSize  int
+}
+
+// parseNodeSpecs parses a list of specs in the format of 'min,max,tagValue'
+func parseNodeSpec(specs []string) (map[string]*nodeSpec, error) {
+	nodeSpecs := map[string]*nodeSpec{}
+
+	for _, spec := range specs {
+		// format should be "min,max,tagValue"
+		// e.g: "3,10,foo"
+		splitted := strings.Split(spec, ",")
+		if len(splitted) != 3 {
+			return nil, fmt.Errorf("spec %q should be in format: 'min,max,tagValue'", spec)
+		}
+
+		min, err := strconv.Atoi(splitted[0])
+		if err != nil {
+			return nil, fmt.Errorf("invalid minimum nodes: %q", splitted[0])
+		}
+
+		max, err := strconv.Atoi(splitted[1])
+		if err != nil {
+			return nil, fmt.Errorf("invalid maximum nodes: %q", splitted[1])
+		}
+
+		tagValue := splitted[2]
+		if tagValue == "" {
+			return nil, errors.New("tag value should be not empty")
+		}
+
+		if max == 0 {
+			return nil, fmt.Errorf("maximum nodes: %d can't be set to zero", max)
+		}
+
+		if min > max {
+			return nil, fmt.Errorf("minimum nodes: %d can't be higher than maximum nodes: %d", min, max)
+		}
+
+		nodeSpecs[tagValue] = &nodeSpec{
+			tagValue: tagValue,
+			minSize:  min,
+			maxSize:  max,
+		}
+	}
+
+	return nodeSpecs, nil
 }

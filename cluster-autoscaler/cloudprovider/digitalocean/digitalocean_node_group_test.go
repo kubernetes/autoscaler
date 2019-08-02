@@ -358,6 +358,8 @@ func testNodeGroup(client nodeGroupClient, np *godo.KubernetesNodePool) *NodeGro
 		clusterID: "1",
 		client:    client,
 		nodePool:  np,
+		minSize:   minNodePoolSize,
+		maxSize:   maxNodePoolSize,
 	}
 }
 

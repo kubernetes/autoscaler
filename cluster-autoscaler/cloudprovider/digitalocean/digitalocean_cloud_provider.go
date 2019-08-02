@@ -176,7 +176,7 @@ func BuildDigitalOcean(
 		defer configFile.Close()
 	}
 
-	manager, err := newManager(configFile)
+	manager, err := newManager(configFile, do.NodeGroupSpecs)
 	if err != nil {
 		klog.Fatalf("Failed to create DigitalOcean manager: %v", err)
 	}
