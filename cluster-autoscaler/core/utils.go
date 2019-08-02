@@ -549,38 +549,6 @@ func fixNodeGroupSize(context *context.AutoscalingContext, clusterStateRegistry 
 	return fixed, nil
 }
 
-// getPotentiallyUnneededNodes returns nodes that are:
-// - managed by the cluster autoscaler
-// - in groups with size > min size
-func getPotentiallyUnneededNodes(context *context.AutoscalingContext, nodes []*apiv1.Node) []*apiv1.Node {
-	result := make([]*apiv1.Node, 0, len(nodes))
-
-	nodeGroupSize := getNodeGroupSizeMap(context.CloudProvider)
-
-	for _, node := range nodes {
-		nodeGroup, err := context.CloudProvider.NodeGroupForNode(node)
-		if err != nil {
-			klog.Warningf("Error while checking node group for %s: %v", node.Name, err)
-			continue
-		}
-		if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
-			klog.V(4).Infof("Skipping %s - no node group config", node.Name)
-			continue
-		}
-		size, found := nodeGroupSize[nodeGroup.Id()]
-		if !found {
-			klog.Errorf("Error while checking node group size %s: group size not found", nodeGroup.Id())
-			continue
-		}
-		if size <= nodeGroup.MinSize() {
-			klog.V(1).Infof("Skipping %s - node group min size reached", node.Name)
-			continue
-		}
-		result = append(result, node)
-	}
-	return result
-}
-
 func hasHardInterPodAffinity(affinity *apiv1.Affinity) bool {
 	if affinity == nil {
 		return false
@@ -638,19 +606,6 @@ func getNodeResource(node *apiv1.Node, resource apiv1.ResourceName) int64 {
 	}
 
 	return nodeCapacityValue
-}
-
-func getNodeGroupSizeMap(cloudProvider cloudprovider.CloudProvider) map[string]int {
-	nodeGroupSize := make(map[string]int)
-	for _, nodeGroup := range cloudProvider.NodeGroups() {
-		size, err := nodeGroup.TargetSize()
-		if err != nil {
-			klog.Errorf("Error while checking node group size %s: %v", nodeGroup.Id(), err)
-			continue
-		}
-		nodeGroupSize[nodeGroup.Id()] = size
-	}
-	return nodeGroupSize
 }
 
 // UpdateClusterStateMetrics updates metrics related to cluster state
