@@ -29,8 +29,8 @@ This will create a new [service principal][] with "Contributor" role scoped to y
 
 Cluster autoscaler supports four Kubernetes cluster options on Azure:
 
-- [**vmss**](#vmss-deployment): Autoscale VMSS instances by setting the Azure cloud provider's `vmType` parameter to `vmss`. This supports clusters deployed with [aks-engine][].
-- [**standard**](#standard-deployment): Autoscale VMAS instances by setting the Azure cloud provider's `vmType` parameter to `standard` or to an empty string. This supports clusters deployed with [aks-engine][].
+- [**vmss**](#vmss-deployment): Autoscale VMSS instances by setting the Azure cloud provider's `vmType` parameter to `vmss` or to an empty string. This supports clusters deployed with [aks-engine][].
+- [**standard**](#standard-deployment): Autoscale VMAS instances by setting the Azure cloud provider's `vmType` parameter to `standard`. This supports clusters deployed with [aks-engine][].
 - [**aks**](#aks-deployment): Supports an Azure Kubernetes Service ([AKS][]) cluster.
 - *DEPRECATED* [**acs**](#acs-deployment): Supports an Azure Container Service ([ACS][]) cluster.
 
