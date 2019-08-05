@@ -336,6 +336,50 @@ func TestUseAggregationIfMatching(t *testing.T) {
 	}
 }
 
+func TestDeleteAggregation(t *testing.T) {
+	cases := []struct {
+		name                     string
+		aggregateContainerStates aggregateContainerStatesMap
+		delet                    AggregateStateKey
+	}{
+		{
+			name: "delet dis",
+			aggregateContainerStates: aggregateContainerStatesMap{
+				aggregateStateKey{
+					namespace:     "ns",
+					containerName: "container",
+					labelSetKey:   "labelSetKey",
+					labelSetMap:   nil,
+				}: &AggregateContainerState{},
+			},
+			delet: aggregateStateKey{
+				namespace:     "ns",
+				containerName: "container",
+				labelSetKey:   "labelSetKey",
+				labelSetMap:   nil,
+			},
+		},
+		{
+			name: "no delet",
+			delet: aggregateStateKey{
+				namespace:     "ns",
+				containerName: "container",
+				labelSetKey:   "labelSetKey",
+				labelSetMap:   nil,
+			},
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			vpa := Vpa{
+				aggregateContainerStates: tc.aggregateContainerStates,
+			}
+			vpa.DeleteAggregation(tc.delet)
+			assert.Equal(t, 0, len(vpa.aggregateContainerStates))
+		})
+	}
+}
+
 type mockAggregateStateKey struct {
 	namespace     string
 	containerName string
