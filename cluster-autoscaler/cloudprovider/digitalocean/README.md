@@ -6,46 +6,30 @@ offering which can be enabled/disable dynamically for an existing cluster.
 
 # Configuration
 
-The `cluster-autoscaler` accepts the `--nodes` flag in the format of:
+The `cluster-autoscaler` dynamically runs based on tags associated with node
+pools. These are the current valid tags:
 
 ```
---nodes "1,10,foo" 
+k8s-cluster-autoscaler-enabled:true
+k8s-cluster-autoscaler-min:3
+k8s-cluster-autoscaler-max:10
 ```
 
-This is a comma separated value, in the format of: `min,max,tagValue` with the
-following meanings:
+The syntax is in form of `key:value`.
 
-```
-  1: minimum number of nodes
-  5: maximum number of nodes
-foo: tag value assigned for the node pool at DigitalOcean
-```
+* If `k8s-cluster-autoscaler-enabled:true` is absent or
+  `k8s-cluster-autoscaler-enabled` is **not** set to `true`, the
+  `cluster-autoscaler` will not process the node pool by default.
+* To set the minimum number of nodes to use `k8s-cluster-autoscaler-min`
+* To set the maximum number of nodes to use `k8s-cluster-autoscaler-max`
 
-This can be defined multiple times for multiple node pools:
 
-```
---nodes "1,10,foo" --nodes "5,20,bar" 
-```
-
-If you don't set this flag, all node pools will have the following limits:
+If you don't set the minimum and maximum tags, node pools will have the
+following default limits:
 
 ```
 minimum number of nodes: 1
 maximum number of nodes: 200
-```
-
-In order to pick up the correct node pool, it needs to have a tag associated in
-the form of: `k8s-cluster-autoscaler:value`. For example if you have specified:
-
-
-```
---nodes "1,10,foo" 
-```
-
-Make sure your node-pool has the following tag associated with it:
-
-```
-k8s-cluster-autoscaler:foo
 ```
 
 # Development

@@ -20,8 +20,6 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"fmt"
-	"sort"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -32,7 +30,7 @@ func TestNewManager(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		cfg := `{"cluster_id": "123456", "token": "123-123-123", "url": "https://api.digitalocean.com/v2", "version": "dev"}`
 
-		manager, err := newManager(bytes.NewBufferString(cfg), nil)
+		manager, err := newManager(bytes.NewBufferString(cfg))
 		assert.NoError(t, err)
 		assert.Equal(t, manager.clusterID, "123456", "cluster ID does not match")
 	})
@@ -40,14 +38,14 @@ func TestNewManager(t *testing.T) {
 	t.Run("empty token", func(t *testing.T) {
 		cfg := `{"cluster_id": "123456", "token": "", "url": "https://api.digitalocean.com/v2", "version": "dev"}`
 
-		_, err := newManager(bytes.NewBufferString(cfg), nil)
+		_, err := newManager(bytes.NewBufferString(cfg))
 		assert.EqualError(t, err, errors.New("access token is not provided").Error())
 	})
 
 	t.Run("empty cluster ID", func(t *testing.T) {
 		cfg := `{"cluster_id": "", "token": "123-123-123", "url": "https://api.digitalocean.com/v2", "version": "dev"}`
 
-		_, err := newManager(bytes.NewBufferString(cfg), nil)
+		_, err := newManager(bytes.NewBufferString(cfg))
 		assert.EqualError(t, err, errors.New("cluster ID is not provided").Error())
 	})
 }
@@ -56,7 +54,7 @@ func TestDigitalOceanManager_Refresh(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		cfg := `{"cluster_id": "123456", "token": "123-123-123", "url": "https://api.digitalocean.com/v2", "version": "dev"}`
 
-		manager, err := newManager(bytes.NewBufferString(cfg), nil)
+		manager, err := newManager(bytes.NewBufferString(cfg))
 		assert.NoError(t, err)
 
 		client := &doClientMock{}
@@ -91,23 +89,43 @@ func TestDigitalOceanManager_Refresh(t *testing.T) {
 		).Once()
 
 		client.On("GetNodePool", ctx, manager.clusterID, "1").Return(
-			&godo.KubernetesNodePool{Nodes: nodes1},
+			&godo.KubernetesNodePool{
+				Nodes: nodes1,
+				Tags: []string{
+					"k8s-cluster-autoscaler-enabled:true",
+				},
+			},
 			&godo.Response{},
 			nil,
 		).Once()
 		client.On("GetNodePool", ctx, manager.clusterID, "2").Return(
-			&godo.KubernetesNodePool{Nodes: nodes2},
+			&godo.KubernetesNodePool{
+				Nodes: nodes2,
+				Tags: []string{
+					"k8s-cluster-autoscaler-enabled:true",
+				},
+			},
 			&godo.Response{},
 			nil,
 		).Once()
 
 		client.On("GetNodePool", ctx, manager.clusterID, "3").Return(
-			&godo.KubernetesNodePool{Nodes: nodes3},
+			&godo.KubernetesNodePool{
+				Nodes: nodes3,
+				Tags: []string{
+					"k8s-cluster-autoscaler-enabled:true",
+				},
+			},
 			&godo.Response{},
 			nil,
 		).Once()
 		client.On("GetNodePool", ctx, manager.clusterID, "4").Return(
-			&godo.KubernetesNodePool{Nodes: nodes4},
+			&godo.KubernetesNodePool{
+				Nodes: nodes4,
+				Tags: []string{
+					"k8s-cluster-autoscaler-enabled:true",
+				},
+			},
 			&godo.Response{},
 			nil,
 		).Once()
@@ -124,12 +142,7 @@ func TestDigitalOceanManager_RefreshWithNodeSpec(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		cfg := `{"cluster_id": "123456", "token": "123-123-123", "url": "https://api.digitalocean.com/v2", "version": "dev"}`
 
-		specs := []string{
-			"3,10,bar", // first group
-			"5,20,foo", // second group
-		}
-
-		manager, err := newManager(bytes.NewBufferString(cfg), specs)
+		manager, err := newManager(bytes.NewBufferString(cfg))
 		assert.NoError(t, err)
 
 		client := &doClientMock{}
@@ -162,7 +175,11 @@ func TestDigitalOceanManager_RefreshWithNodeSpec(t *testing.T) {
 		client.On("GetNodePool", ctx, manager.clusterID, "1").Return(
 			&godo.KubernetesNodePool{
 				Nodes: nodes1,
-				Tags:  []string{"k8s-cluster-autoscaler:bar"},
+				Tags: []string{
+					"k8s-cluster-autoscaler-enabled:true",
+					"k8s-cluster-autoscaler-min:3",
+					"k8s-cluster-autoscaler-max:10",
+				},
 			},
 			&godo.Response{},
 			nil,
@@ -170,7 +187,11 @@ func TestDigitalOceanManager_RefreshWithNodeSpec(t *testing.T) {
 		client.On("GetNodePool", ctx, manager.clusterID, "2").Return(
 			&godo.KubernetesNodePool{
 				Nodes: nodes2,
-				Tags:  []string{"k8s-cluster-autoscaler:foo"},
+				Tags: []string{
+					"k8s-cluster-autoscaler-enabled:true",
+					"k8s-cluster-autoscaler-min:5",
+					"k8s-cluster-autoscaler-max:20",
+				},
 			},
 			&godo.Response{},
 			nil,
@@ -181,6 +202,9 @@ func TestDigitalOceanManager_RefreshWithNodeSpec(t *testing.T) {
 		client.On("GetNodePool", ctx, manager.clusterID, "3").Return(
 			&godo.KubernetesNodePool{
 				Nodes: nodes3,
+				Tags: []string{
+					"k8s-cluster-autoscaler-enabled:true",
+				},
 			},
 			&godo.Response{},
 			nil,
@@ -205,77 +229,89 @@ func TestDigitalOceanManager_RefreshWithNodeSpec(t *testing.T) {
 	})
 }
 
-func Test_parseNodeSpec(t *testing.T) {
+func Test_parseTags(t *testing.T) {
 	cases := []struct {
 		name    string
-		specs   []string
-		want    []*nodeSpec
+		tags    []string
+		want    *nodeSpec
 		wantErr bool
 	}{
 		{
-			name: "good spec (single)",
-			specs: []string{
-				"3,10,foo",
+			name: "good config (single)",
+			tags: []string{
+				"k8s-cluster-autoscaler-enabled:true",
+				"k8s-cluster-autoscaler-min:3",
+				"k8s-cluster-autoscaler-max:10",
 			},
-			want: []*nodeSpec{
-				{minSize: 3, maxSize: 10, tagValue: "foo"},
-			},
-		},
-		{
-			name: "good specs (multiple)",
-			specs: []string{
-				"5,20,bar",
-				"3,10,foo",
-			},
-			want: []*nodeSpec{
-				{minSize: 5, maxSize: 20, tagValue: "bar"},
-				{minSize: 3, maxSize: 10, tagValue: "foo"},
+			want: &nodeSpec{
+				min:     3,
+				max:     10,
+				enabled: true,
 			},
 		},
 		{
-			name: "bad specs - no tag value",
-			specs: []string{
-				"5,20",
-				"3,10,foo",
+			name: "good config (disabled)",
+			tags: []string{
+				"k8s-cluster-autoscaler-min:3",
+				"k8s-cluster-autoscaler-max:10",
+			},
+			want: &nodeSpec{
+				min: 3,
+				max: 10,
+			},
+		},
+		{
+			name: "good config (disabled with no values)",
+			tags: []string{},
+			want: &nodeSpec{},
+		},
+		{
+			name: "good config - empty tags",
+			tags: []string{""},
+			want: &nodeSpec{},
+		},
+		{
+			name: "bad tags - malformed",
+			tags: []string{
+				"k8s-cluster-autoscaler-enabled:true",
+				"k8s-cluster-autoscaler-min=3",
+				"k8s-cluster-autoscaler-max=10",
 			},
 			wantErr: true,
 		},
 		{
-			name: "bad specs - no numerical min node size",
-			specs: []string{
-				"five,20,bar",
-				"3,10,foo",
+			name: "bad tags - no numerical min node size",
+			tags: []string{
+				"k8s-cluster-autoscaler-enabled:true",
+				"k8s-cluster-autoscaler-min:three",
+				"k8s-cluster-autoscaler-max:10",
 			},
 			wantErr: true,
 		},
 		{
-			name: "bad specs - no numerical max node size",
-			specs: []string{
-				"5,twenty,bar",
-				"3,10,foo",
+			name: "bad tags - no numerical max node size",
+			tags: []string{
+				"k8s-cluster-autoscaler-enabled:true",
+				"k8s-cluster-autoscaler-min:3",
+				"k8s-cluster-autoscaler-max:ten",
 			},
 			wantErr: true,
 		},
 		{
-			name: "bad specs - empty",
-			specs: []string{
-				"",
+			name: "bad tags - min is higher than max",
+			tags: []string{
+				"k8s-cluster-autoscaler-enabled:true",
+				"k8s-cluster-autoscaler-min:5",
+				"k8s-cluster-autoscaler-max:4",
 			},
 			wantErr: true,
 		},
 		{
-			name: "bad specs - min is higher than max",
-			specs: []string{
-				"5,4,bar",
-				"3,10,foo",
-			},
-			wantErr: true,
-		},
-		{
-			name: "bad specs - max is set to zero",
-			specs: []string{
-				"5,20,bar",
-				"3,0,foo",
+			name: "bad tags - max is set to zero",
+			tags: []string{
+				"k8s-cluster-autoscaler-enabled:true",
+				"k8s-cluster-autoscaler-min:5",
+				"k8s-cluster-autoscaler-max:0",
 			},
 			wantErr: true,
 		},
@@ -285,8 +321,7 @@ func Test_parseNodeSpec(t *testing.T) {
 		ts := ts
 
 		t.Run(ts.name, func(t *testing.T) {
-			nodeSpecs, err := parseNodeSpec(ts.specs)
-			fmt.Printf("err = %+v\n", err)
+			got, err := parseTags(ts.tags)
 			if ts.wantErr && err == nil {
 				assert.Error(t, err)
 				return
@@ -297,17 +332,8 @@ func Test_parseNodeSpec(t *testing.T) {
 			}
 
 			assert.NoError(t, err)
-
-			var got []*nodeSpec
-			for _, spec := range nodeSpecs {
-				got = append(got, spec)
-			}
-
-			sort.Slice(got, func(i, j int) bool {
-				return got[i].tagValue < got[j].tagValue
-			})
-
 			assert.Equal(t, ts.want, got, "\ngot: %#v\nwant: %#v", got, ts.want)
 		})
 	}
+
 }

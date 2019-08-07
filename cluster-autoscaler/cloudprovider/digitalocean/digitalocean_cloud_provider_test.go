@@ -32,7 +32,7 @@ import (
 func testCloudProvider(t *testing.T, client *doClientMock) *digitaloceanCloudProvider {
 	cfg := `{"cluster_id": "123456", "token": "123-123-123", "url": "https://api.digitalocean.com/v2", "version": "dev"}`
 
-	manager, err := newManager(bytes.NewBufferString(cfg), nil)
+	manager, err := newManager(bytes.NewBufferString(cfg))
 	assert.NoError(t, err)
 	rl := &cloudprovider.ResourceLimiter{}
 
@@ -70,23 +70,43 @@ func testCloudProvider(t *testing.T, client *doClientMock) *digitaloceanCloudPro
 		).Once()
 
 		client.On("GetNodePool", ctx, manager.clusterID, "1").Return(
-			&godo.KubernetesNodePool{Nodes: nodes1},
+			&godo.KubernetesNodePool{
+				Nodes: nodes1,
+				Tags: []string{
+					"k8s-cluster-autoscaler-enabled:true",
+				},
+			},
 			&godo.Response{},
 			nil,
 		).Once()
 		client.On("GetNodePool", ctx, manager.clusterID, "2").Return(
-			&godo.KubernetesNodePool{Nodes: nodes2},
+			&godo.KubernetesNodePool{
+				Nodes: nodes2,
+				Tags: []string{
+					"k8s-cluster-autoscaler-enabled:true",
+				},
+			},
 			&godo.Response{},
 			nil,
 		).Once()
 
 		client.On("GetNodePool", ctx, manager.clusterID, "3").Return(
-			&godo.KubernetesNodePool{Nodes: nodes3},
+			&godo.KubernetesNodePool{
+				Nodes: nodes3,
+				Tags: []string{
+					"k8s-cluster-autoscaler-enabled:true",
+				},
+			},
 			&godo.Response{},
 			nil,
 		).Once()
 		client.On("GetNodePool", ctx, manager.clusterID, "4").Return(
-			&godo.KubernetesNodePool{Nodes: nodes4},
+			&godo.KubernetesNodePool{
+				Nodes: nodes4,
+				Tags: []string{
+					"k8s-cluster-autoscaler-enabled:true",
+				},
+			},
 			&godo.Response{},
 			nil,
 		).Once()
@@ -156,12 +176,22 @@ func TestDigitalOceanCloudProvider_NodeGroupForNode(t *testing.T) {
 		).Once()
 
 		client.On("GetNodePool", ctx, clusterID, "1").Return(
-			&godo.KubernetesNodePool{Nodes: nodes1},
+			&godo.KubernetesNodePool{
+				Nodes: nodes1,
+				Tags: []string{
+					"k8s-cluster-autoscaler-enabled:true",
+				},
+			},
 			&godo.Response{},
 			nil,
 		).Once()
 		client.On("GetNodePool", ctx, clusterID, "2").Return(
-			&godo.KubernetesNodePool{Nodes: nodes2},
+			&godo.KubernetesNodePool{
+				Nodes: nodes2,
+				Tags: []string{
+					"k8s-cluster-autoscaler-enabled:true",
+				},
+			},
 			&godo.Response{},
 			nil,
 		).Once()

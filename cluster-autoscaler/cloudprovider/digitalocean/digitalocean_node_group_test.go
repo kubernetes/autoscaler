@@ -183,7 +183,7 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 			Count: numberOfNodes,
 		})
 
-		exp := fmt.Errorf("size decrease is too small. current: %d desired: %d max: %d",
+		exp := fmt.Errorf("size decrease is too small. current: %d desired: %d min: %d",
 			numberOfNodes, numberOfNodes+delta, ng.MinSize())
 		err := ng.DecreaseTargetSize(delta)
 		assert.EqualError(t, err, exp.Error(), "size decrease is too small")

@@ -33,7 +33,12 @@ import (
 	"k8s.io/klog"
 )
 
-const tagName = "k8s-cluster-autoscaler:"
+const (
+	tagPrefix  = "k8s-cluster-autoscaler-"
+	tagEnabled = tagPrefix + "enabled:"
+	tagMin     = tagPrefix + "min:"
+	tagMax     = tagPrefix + "max:"
+)
 
 var (
 	version = "dev"
@@ -56,10 +61,9 @@ type nodeGroupClient interface {
 // Manager handles DigitalOcean communication and data caching of
 // node groups (node pools in DOKS)
 type Manager struct {
-	client         nodeGroupClient
-	clusterID      string
-	nodeGroups     []*NodeGroup
-	nodeGroupsSpec map[string]*nodeSpec
+	client     nodeGroupClient
+	clusterID  string
+	nodeGroups []*NodeGroup
 }
 
 // Config is the configuration of the DigitalOcean cloud provider
@@ -77,7 +81,7 @@ type Config struct {
 	URL string `json:"url"`
 }
 
-func newManager(configReader io.Reader, specs []string) (*Manager, error) {
+func newManager(configReader io.Reader) (*Manager, error) {
 	cfg := &Config{}
 	if configReader != nil {
 		body, err := ioutil.ReadAll(configReader)
@@ -114,16 +118,10 @@ func newManager(configReader io.Reader, specs []string) (*Manager, error) {
 		return nil, fmt.Errorf("couldn't initialize DigitalOcean client: %s", err)
 	}
 
-	nodeSpecs, err := parseNodeSpec(specs)
-	if err != nil {
-		return nil, err
-	}
-
 	m := &Manager{
-		client:         doClient.Kubernetes,
-		clusterID:      cfg.ClusterID,
-		nodeGroups:     make([]*NodeGroup, 0),
-		nodeGroupsSpec: nodeSpecs,
+		client:     doClient.Kubernetes,
+		clusterID:  cfg.ClusterID,
+		nodeGroups: make([]*NodeGroup, 0),
 	}
 
 	return m, nil
@@ -138,8 +136,8 @@ func (m *Manager) Refresh() error {
 		return err
 	}
 
-	group := make([]*NodeGroup, len(nodePools))
-	for i, np := range nodePools {
+	var group []*NodeGroup
+	for _, np := range nodePools {
 		nodePool, resp, err := m.client.GetNodePool(ctx, m.clusterID, np.ID)
 		if err != nil {
 			if resp != nil && resp.StatusCode == http.StatusNotFound {
@@ -149,30 +147,44 @@ func (m *Manager) Refresh() error {
 			return err
 		}
 
-		// default values
-		minSize := minNodePoolSize
-		maxSize := maxNodePoolSize
-
-		for _, tag := range nodePool.Tags {
-			v := strings.TrimPrefix(tag, tagName)
-			spec, ok := m.nodeGroupsSpec[v]
-			if ok {
-				minSize = spec.minSize
-				maxSize = spec.maxSize
-
-				klog.V(4).Infof("Found custom spec for node pool: %q (%s) with min: %d and max: %d",
-					nodePool.Name, nodePool.ID, minSize, maxSize)
-			}
+		spec, err := parseTags(nodePool.Tags)
+		if err != nil {
+			// we should not return an error here, because one misconfigured
+			// node pool shouldn't bring down the whole cluster-autoscaler
+			klog.V(4).Infof("skipping misconfigured node pool: %q name: %s tags: %+v err: %s",
+				nodePool.ID, nodePool.Name, nodePool.Tags, err)
+			continue
 		}
 
-		group[i] = &NodeGroup{
+		if !spec.enabled {
+			continue
+		}
+
+		minSize := minNodePoolSize
+		if spec.min != 0 {
+			minSize = spec.min
+		}
+
+		maxSize := maxNodePoolSize
+		if spec.max != 0 {
+			maxSize = spec.max
+		}
+
+		klog.V(4).Infof("adding node pool: %q name: %s min: %d max: %d",
+			nodePool.ID, nodePool.Name, minSize, maxSize)
+
+		group = append(group, &NodeGroup{
 			id:        np.ID,
 			clusterID: m.clusterID,
 			client:    m.client,
 			nodePool:  nodePool,
 			minSize:   minSize,
 			maxSize:   maxSize,
-		}
+		})
+	}
+
+	if len(group) == 0 {
+		klog.V(4).Info("cluster-autoscaler is disabled. no node pools are configured")
 	}
 
 	m.nodeGroups = group
@@ -181,52 +193,56 @@ func (m *Manager) Refresh() error {
 
 // nodeSpec defines a custom specification for a given node
 type nodeSpec struct {
-	tagValue string
-	minSize  int
-	maxSize  int
+	min     int
+	max     int
+	enabled bool
 }
 
-// parseNodeSpecs parses a list of specs in the format of 'min,max,tagValue'
-func parseNodeSpec(specs []string) (map[string]*nodeSpec, error) {
-	nodeSpecs := map[string]*nodeSpec{}
+// parseTags parses a list of tags from a DigitalOcean node pool
+func parseTags(tags []string) (*nodeSpec, error) {
+	spec := &nodeSpec{}
 
-	for _, spec := range specs {
-		// format should be "min,max,tagValue"
-		// e.g: "3,10,foo"
-		splitted := strings.Split(spec, ",")
-		if len(splitted) != 3 {
-			return nil, fmt.Errorf("spec %q should be in format: 'min,max,tagValue'", spec)
+	for _, tag := range tags {
+		if !strings.HasPrefix(tag, tagPrefix) {
+			continue
 		}
 
-		min, err := strconv.Atoi(splitted[0])
-		if err != nil {
-			return nil, fmt.Errorf("invalid minimum nodes: %q", splitted[0])
+		splitted := strings.Split(strings.TrimPrefix(tag, tagPrefix), ":")
+		if len(splitted) != 2 {
+			return nil, fmt.Errorf("malformed tag: %q", tag)
 		}
 
-		max, err := strconv.Atoi(splitted[1])
-		if err != nil {
-			return nil, fmt.Errorf("invalid maximum nodes: %q", splitted[1])
-		}
+		key, value := splitted[0], splitted[1]
 
-		tagValue := splitted[2]
-		if tagValue == "" {
-			return nil, errors.New("tag value should be not empty")
-		}
+		switch key {
+		case "enabled":
+			if value == "true" {
+				spec.enabled = true
+			}
+		case "min":
+			min, err := strconv.Atoi(value)
+			if err != nil {
+				return nil, fmt.Errorf("invalid minimum nodes: %q", value)
+			}
+			spec.min = min
+		case "max":
+			max, err := strconv.Atoi(value)
+			if err != nil {
+				return nil, fmt.Errorf("invalid minimum nodes: %q", value)
+			}
 
-		if max == 0 {
-			return nil, fmt.Errorf("maximum nodes: %d can't be set to zero", max)
-		}
+			if max == 0 {
+				return nil, fmt.Errorf("maximum nodes: %d can't be set to zero", max)
+			}
 
-		if min > max {
-			return nil, fmt.Errorf("minimum nodes: %d can't be higher than maximum nodes: %d", min, max)
-		}
-
-		nodeSpecs[tagValue] = &nodeSpec{
-			tagValue: tagValue,
-			minSize:  min,
-			maxSize:  max,
+			spec.max = max
 		}
 	}
 
-	return nodeSpecs, nil
+	if spec.min != 0 && spec.max != 0 && spec.min > spec.max {
+		return nil, fmt.Errorf("minimum nodes: %d can't be higher than maximum nodes: %d",
+			spec.min, spec.max)
+	}
+
+	return spec, nil
 }
