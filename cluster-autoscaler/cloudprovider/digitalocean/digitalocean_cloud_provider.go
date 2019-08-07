@@ -83,8 +83,8 @@ func (d *digitaloceanCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudpro
 	// NOTE(arslan): the number of node groups per cluster is usually very
 	// small. So even though this looks like quadratic runtime, it's OK to
 	// proceed with this.
-	klog.V(5).Infof("iterating over %d node groups", len(d.manager.nodeGroups))
 	for _, group := range d.manager.nodeGroups {
+		klog.V(5).Infof("iterating over node group %q", group.Id())
 		nodes, err := group.Nodes()
 		if err != nil {
 			return nil, err
