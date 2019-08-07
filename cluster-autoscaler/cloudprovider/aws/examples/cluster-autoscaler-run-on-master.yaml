@@ -42,7 +42,7 @@ rules:
   resources: ["poddisruptionbudgets"]
   verbs: ["watch","list"]
 - apiGroups: ["apps"]
-  resources: ["statefulsets"]
+  resources: ["statefulsets", "replicasets"]
   verbs: ["watch","list","get"]
 - apiGroups: ["storage.k8s.io"]
   resources: ["storageclasses"]
@@ -126,7 +126,7 @@ spec:
       nodeSelector:
         kubernetes.io/role: master
       containers:
-        - image: k8s.gcr.io/cluster-autoscaler:v1.2.2
+        - image: k8s.gcr.io/cluster-autoscaler:v1.12.7
           name: cluster-autoscaler
           resources:
             limits:
@@ -150,4 +150,4 @@ spec:
       volumes:
         - name: ssl-certs
           hostPath:
-            path: "/etc/ssl/certs/ca-certificates.crt"
+            path: "/etc/ssl/certs/ca-bundle.crt"
