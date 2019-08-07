@@ -70,10 +70,12 @@ func (b *exponentialBackoff) Backoff(nodeGroup cloudprovider.NodeGroup, nodeInfo
 	duration := b.initialBackoffDuration
 	key := b.nodeGroupKey(nodeGroup)
 	if backoffInfo, found := b.backoffInfo[key]; found {
-		// Multiple concurrent scale-ups failing shouldn't cause backoff
-		// duration to increase, so we only increase it if we're not in
-		// backoff right now.
+		// Multiple concurrent scale-ups failing shouldn't cause
+		// backoff duration to increase exponentially
+		duration = backoffInfo.duration
 		if backoffInfo.backoffUntil.Before(currentTime) {
+			// NodeGroup is not currently in backoff, but was recently
+			// Increase backoff duration exponentially
 			duration = 2 * backoffInfo.duration
 			if duration > b.maxBackoffDuration {
 				duration = b.maxBackoffDuration
