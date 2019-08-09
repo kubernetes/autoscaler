@@ -22,7 +22,7 @@ KUBE_ROOT=$(dirname "${BASH_SOURCE}")/..
 cd "${KUBE_ROOT}"
 
 GOLINT=${GOLINT:-"golint"}
-PACKAGES=($(go list ./... | grep -v /vendor/ | grep -v vertical-pod-autoscaler/pkg/client | grep -v vertical-pod-autoscaler/pkg/apis | grep -v cluster-autoscaler/cloudprovider/magnum/gophercloud))
+PACKAGES=($(go list ./... | grep -v /vendor/ | grep -v vertical-pod-autoscaler/pkg/client | grep -v vertical-pod-autoscaler/pkg/apis | grep -v cluster-autoscaler/cloudprovider/magnum/gophercloud | grep -v cluster-autoscaler/cloudprovider/digitalocean/godo))
 bad_files=()
 for package in "${PACKAGES[@]}"; do
   out=$("${GOLINT}" -min_confidence=0.9 "${package}")
