@@ -143,6 +143,8 @@ If you'd like to scale node groups from 0, an `autoscaling:DescribeLaunchConfigu
 
 ## Using AutoScalingGroup MixedInstancesPolicy
 
+> Note: The minimum version of cluster autoscaler to support MixedInstancePolicy is v1.14.x.
+
 It is possible to use Cluster Autoscaler with a [mixed instances policy](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-autoscaling-autoscalinggroup-mixedinstancespolicy.html), to enable diversification across on-demand and spot instances, of multiple instance types in a single ASG. When using spot instances, this increases the likelihood of successfully launching a spot instance to add the desired capacity to the cluster versus a single instance type, which may be in short supply.
 
 Note that the instance types should have the same amount of RAM and number of CPU cores, since this is fundamental to CA's scaling calculations. Using mismatched instances types can produce unintended results.
