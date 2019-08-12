@@ -32,6 +32,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
@@ -422,7 +423,8 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 
 	if len(expansionOptions) == 0 {
 		klog.V(1).Info("No expansion options")
-		return &status.ScaleUpStatus{Result: status.ScaleUpNoOptionsAvailable, PodsRemainUnschedulable: getRemainingPods(podsRemainUnschedulable, skippedNodeGroups)}, nil
+		return &status.ScaleUpStatus{Result: status.ScaleUpNoOptionsAvailable, PodsRemainUnschedulable: getRemainingPods(podsRemainUnschedulable, skippedNodeGroups),
+			ConsideredNodeGroups: nodeGroups}, nil
 	}
 
 	// Pick some expansion option.
@@ -446,12 +448,14 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 			}
 		}
 
+		createNodeGroupResults := make([]nodegroups.CreateNodeGroupResult, 0)
 		if !bestOption.NodeGroup.Exist() {
 			oldId := bestOption.NodeGroup.Id()
 			createNodeGroupResult, err := processors.NodeGroupManager.CreateNodeGroup(context, bestOption.NodeGroup)
 			if err != nil {
 				return &status.ScaleUpStatus{Result: status.ScaleUpError}, err
 			}
+			createNodeGroupResults = append(createNodeGroupResults, createNodeGroupResult)
 			bestOption.NodeGroup = createNodeGroupResult.MainCreatedNodeGroup
 
 			// If possible replace candidate node-info with node info based on crated node group. The latter
@@ -490,7 +494,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 			// This should never happen, as we already should have retrieved
 			// nodeInfo for any considered nodegroup.
 			klog.Errorf("No node info for: %s", bestOption.NodeGroup.Id())
-			return &status.ScaleUpStatus{Result: status.ScaleUpError}, errors.NewAutoscalerError(
+			return &status.ScaleUpStatus{Result: status.ScaleUpError, CreateNodeGroupResults: createNodeGroupResults}, errors.NewAutoscalerError(
 				errors.CloudProviderError,
 				"No node info for best expansion option!")
 		}
@@ -498,14 +502,14 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 		// apply upper limits for CPU and memory
 		newNodes, err = applyScaleUpResourcesLimits(context.CloudProvider, newNodes, scaleUpResourcesLeft, nodeInfo, bestOption.NodeGroup, resourceLimiter)
 		if err != nil {
-			return &status.ScaleUpStatus{Result: status.ScaleUpError}, err
+			return &status.ScaleUpStatus{Result: status.ScaleUpError, CreateNodeGroupResults: createNodeGroupResults}, err
 		}
 
 		targetNodeGroups := []cloudprovider.NodeGroup{bestOption.NodeGroup}
 		if context.BalanceSimilarNodeGroups {
 			similarNodeGroups, typedErr := processors.NodeGroupSetProcessor.FindSimilarNodeGroups(context, bestOption.NodeGroup, nodeInfos)
 			if typedErr != nil {
-				return &status.ScaleUpStatus{Result: status.ScaleUpError}, typedErr.AddPrefix("Failed to find matching node groups: ")
+				return &status.ScaleUpStatus{Result: status.ScaleUpError, CreateNodeGroupResults: createNodeGroupResults}, typedErr.AddPrefix("Failed to find matching node groups: ")
 			}
 			similarNodeGroups = filterNodeGroupsByPods(similarNodeGroups, bestOption.Pods, getPodsPassingPredicates)
 			for _, ng := range similarNodeGroups {
@@ -532,13 +536,13 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 		scaleUpInfos, typedErr := processors.NodeGroupSetProcessor.BalanceScaleUpBetweenGroups(
 			context, targetNodeGroups, newNodes)
 		if typedErr != nil {
-			return &status.ScaleUpStatus{Result: status.ScaleUpError}, typedErr
+			return &status.ScaleUpStatus{Result: status.ScaleUpError, CreateNodeGroupResults: createNodeGroupResults}, typedErr
 		}
 		klog.V(1).Infof("Final scale-up plan: %v", scaleUpInfos)
 		for _, info := range scaleUpInfos {
 			typedErr := executeScaleUp(context, clusterStateRegistry, info, gpu.GetGpuTypeForMetrics(gpuLabel, availableGPUTypes, nodeInfo.Node(), nil), now)
 			if typedErr != nil {
-				return &status.ScaleUpStatus{Result: status.ScaleUpError}, typedErr
+				return &status.ScaleUpStatus{Result: status.ScaleUpError, CreateNodeGroupResults: createNodeGroupResults}, typedErr
 			}
 		}
 
@@ -547,12 +551,15 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 				Result:                  status.ScaleUpSuccessful,
 				ScaleUpInfos:            scaleUpInfos,
 				PodsRemainUnschedulable: getRemainingPods(podsRemainUnschedulable, skippedNodeGroups),
+				ConsideredNodeGroups:    nodeGroups,
+				CreateNodeGroupResults:  createNodeGroupResults,
 				PodsTriggeredScaleUp:    bestOption.Pods,
 				PodsAwaitEvaluation:     getPodsAwaitingEvaluation(unschedulablePods, podsRemainUnschedulable, bestOption.Pods)},
 			nil
 	}
 
-	return &status.ScaleUpStatus{Result: status.ScaleUpNoOptionsAvailable, PodsRemainUnschedulable: getRemainingPods(podsRemainUnschedulable, skippedNodeGroups)}, nil
+	return &status.ScaleUpStatus{Result: status.ScaleUpNoOptionsAvailable, PodsRemainUnschedulable: getRemainingPods(podsRemainUnschedulable, skippedNodeGroups),
+		ConsideredNodeGroups: nodeGroups}, nil
 }
 
 type podsPredicatePassingCheckFunctions struct {
