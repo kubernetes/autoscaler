@@ -18,10 +18,13 @@ package status
 
 import (
 	"fmt"
-	"k8s.io/klog"
 	"strings"
 
+	"k8s.io/klog"
+
 	apiv1 "k8s.io/api/core/v1"
+
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 )
 
@@ -33,11 +36,12 @@ type EventingScaleUpStatusProcessor struct{}
 // Process processes the state of the cluster after a scale-up by emitting
 // relevant events for pods depending on their post scale-up status.
 func (p *EventingScaleUpStatusProcessor) Process(context *context.AutoscalingContext, status *ScaleUpStatus) {
+	consideredNodeGroupsMap := nodeGroupListToMapById(status.ConsideredNodeGroups)
 	if status.Result != ScaleUpSuccessful && status.Result != ScaleUpError {
 		for _, noScaleUpInfo := range status.PodsRemainUnschedulable {
 			context.Recorder.Event(noScaleUpInfo.Pod, apiv1.EventTypeNormal, "NotTriggerScaleUp",
 				fmt.Sprintf("pod didn't trigger scale-up (it wouldn't fit if a new node is"+
-					" added): %s", ReasonsMessage(noScaleUpInfo)))
+					" added): %s", ReasonsMessage(noScaleUpInfo, consideredNodeGroupsMap)))
 		}
 	} else {
 		klog.V(4).Infof("Skipping event processing for unschedulable pods since there is a" +
@@ -56,21 +60,39 @@ func (p *EventingScaleUpStatusProcessor) CleanUp() {
 }
 
 // ReasonsMessage aggregates reasons from NoScaleUpInfos.
-func ReasonsMessage(noScaleUpInfo NoScaleUpInfo) string {
+func ReasonsMessage(noScaleUpInfo NoScaleUpInfo, consideredNodeGroups map[string]cloudprovider.NodeGroup) string {
 	messages := []string{}
 	aggregated := map[string]int{}
-	for _, reasons := range noScaleUpInfo.RejectedNodeGroups {
+	for nodeGroupId, reasons := range noScaleUpInfo.RejectedNodeGroups {
+		if nodeGroup, present := consideredNodeGroups[nodeGroupId]; !present || !nodeGroup.Exist() {
+			continue
+		}
+
 		for _, reason := range reasons.Reasons() {
 			aggregated[reason]++
 		}
 	}
-	for _, reasons := range noScaleUpInfo.SkippedNodeGroups {
+
+	for nodeGroupId, reasons := range noScaleUpInfo.SkippedNodeGroups {
+		if nodeGroup, present := consideredNodeGroups[nodeGroupId]; !present || !nodeGroup.Exist() {
+			continue
+		}
+
 		for _, reason := range reasons.Reasons() {
 			aggregated[reason]++
 		}
 	}
+
 	for msg, count := range aggregated {
 		messages = append(messages, fmt.Sprintf("%d %s", count, msg))
 	}
 	return strings.Join(messages, ", ")
+}
+
+func nodeGroupListToMapById(nodeGroups []cloudprovider.NodeGroup) map[string]cloudprovider.NodeGroup {
+	result := make(map[string]cloudprovider.NodeGroup)
+	for _, nodeGroup := range nodeGroups {
+		result[nodeGroup.Id()] = nodeGroup
+	}
+	return result
 }
