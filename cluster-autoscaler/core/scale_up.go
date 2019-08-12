@@ -400,10 +400,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 
 		for pod, err := range podsNotPassing {
 			_, found := podsRemainUnschedulable[pod]
-			if found && nodeGroup.Exist() {
-				// Aggregate errors across existing node groups.
-				// TODO(aleksandra-malinowska): figure out how to communicate
-				// reasons NAP can't create a node-pool, if it's enabled.
+			if found {
 				podsRemainUnschedulable[pod][nodeGroup.Id()] = err
 			}
 		}
