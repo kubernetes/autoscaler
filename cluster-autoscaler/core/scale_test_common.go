@@ -129,10 +129,11 @@ func (p *mockAutoprovisioningNodeGroupManager) CreateNodeGroup(context *context.
 	return result, nil
 }
 
-func (p *mockAutoprovisioningNodeGroupManager) RemoveUnneededNodeGroups(context *context.AutoscalingContext) error {
+func (p *mockAutoprovisioningNodeGroupManager) RemoveUnneededNodeGroups(context *context.AutoscalingContext) (removedNodeGroups []cloudprovider.NodeGroup, err error) {
 	if !context.AutoscalingOptions.NodeAutoprovisioningEnabled {
-		return nil
+		return nil, nil
 	}
+	removedNodeGroups = make([]cloudprovider.NodeGroup, 0)
 	nodeGroups := context.CloudProvider.NodeGroups()
 	for _, nodeGroup := range nodeGroups {
 		if !nodeGroup.Autoprovisioned() {
@@ -150,8 +151,9 @@ func (p *mockAutoprovisioningNodeGroupManager) RemoveUnneededNodeGroups(context 
 		}
 		err = nodeGroup.Delete()
 		assert.NoError(p.t, err)
+		removedNodeGroups = append(removedNodeGroups, nodeGroup)
 	}
-	return nil
+	return removedNodeGroups, nil
 }
 
 func (p *mockAutoprovisioningNodeGroupManager) CleanUp() {
