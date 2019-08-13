@@ -27,6 +27,7 @@ import (
 type ScaleDownStatus struct {
 	Result            ScaleDownResult
 	ScaledDownNodes   []*ScaleDownNode
+	RemovedNodeGroups []cloudprovider.NodeGroup
 	NodeDeleteResults map[string]NodeDeleteResult
 }
 
