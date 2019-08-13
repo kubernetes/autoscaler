@@ -18,7 +18,10 @@ package status
 
 import (
 	apiv1 "k8s.io/api/core/v1"
+
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 )
 
@@ -31,6 +34,8 @@ type ScaleUpStatus struct {
 	PodsTriggeredScaleUp    []*apiv1.Pod
 	PodsRemainUnschedulable []NoScaleUpInfo
 	PodsAwaitEvaluation     []*apiv1.Pod
+	CreateNodeGroupResults  []nodegroups.CreateNodeGroupResult
+	ConsideredNodeGroups    []cloudprovider.NodeGroup
 }
 
 // NoScaleUpInfo contains information about a pod that didn't trigger scale-up.
