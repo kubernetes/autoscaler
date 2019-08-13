@@ -19,10 +19,9 @@ set -o pipefail
 set -o nounset
 
 CONTRIB_ROOT="$(dirname ${BASH_SOURCE})/.."
+PROJECT_NAMES=(addon-resizer cluster-autoscaler vertical-pod-autoscaler)
 
-godep_projects=$(find "${CONTRIB_ROOT}" -wholename '*Godeps/Godeps.json')
-
-if [ $# -ne 1 ];then
+if [[ $# -ne 1 ]]; then
   echo "missing subcommand: [build|install|test]"
   exit 1
 fi
@@ -42,14 +41,18 @@ case "${CMD}" in
     ;;
 esac
 
-for godep_file in ${godep_projects}; do
+for project_name in ${PROJECT_NAMES[*]}; do
   (
-    project="${godep_file%Godeps/Godeps.json}"
+    project=${CONTRIB_ROOT}/${project_name}
     echo "${CMD}ing ${project}"
     cd "${project}"
     case "${CMD}" in
       "test")
-        godep go test -race $(go list ./... | grep -v /vendor/ | grep -v vertical-pod-autoscaler/e2e )
+        if [[ -n $(find . -name "Godeps.json") ]]; then
+          godep go test -race $(go list ./... | grep -v /vendor/ | grep -v vertical-pod-autoscaler/e2e)
+        else
+          go test -race $(go list ./... | grep -v /vendor/ | grep -v vertical-pod-autoscaler/e2e)
+        fi
         ;;
       *)
         godep go "${CMD}" ./...
