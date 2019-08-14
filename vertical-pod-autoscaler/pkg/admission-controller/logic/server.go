@@ -20,16 +20,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	"net/http"
-
 	"strings"
 
 	"k8s.io/api/admission/v1beta1"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
+	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	metrics_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/admission"
 	vpa_api_util "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/vpa"
 	"k8s.io/klog"
@@ -257,16 +256,21 @@ func (s *AdmissionServer) admit(data []byte) (*v1beta1.AdmissionResponse, metric
 	// The externalAdmissionHookConfiguration registered via selfRegistration
 	// asks the kube-apiserver only to send admission requests regarding pods & VPA objects.
 	podResource := metav1.GroupVersionResource{Group: "", Version: "v1", Resource: "pods"}
-	vpaResource := metav1.GroupVersionResource{Group: "autoscaling.k8s.io", Version: "v1beta2", Resource: "verticalpodautoscalers"}
+	vpaGroupResource := metav1.GroupResource{Group: "autoscaling.k8s.io", Resource: "verticalpodautoscalers"}
+
 	var patches []patchRecord
 	var err error
 	resource := metrics_admission.Unknown
 
-	switch ar.Request.Resource {
-	case podResource:
+	admittedGroupResource := metav1.GroupResource{
+		Group:    ar.Request.Resource.Group,
+		Resource: ar.Request.Resource.Resource,
+	}
+
+	if ar.Request.Resource == podResource {
 		patches, err = s.getPatchesForPodResourceRequest(ar.Request.Object.Raw, ar.Request.Namespace)
 		resource = metrics_admission.Pod
-	case vpaResource:
+	} else if admittedGroupResource == vpaGroupResource {
 		patches, err = s.getPatchesForVPADefaults(ar.Request.Object.Raw, ar.Request.Operation == v1beta1.Create)
 		resource = metrics_admission.Vpa
 		// we don't let in problematic VPA objects - late validation
@@ -277,8 +281,8 @@ func (s *AdmissionServer) admit(data []byte) (*v1beta1.AdmissionResponse, metric
 			response.Result = &status
 			response.Allowed = false
 		}
-	default:
-		patches, err = nil, fmt.Errorf("expected the resource to be %v or %v", podResource, vpaResource)
+	} else {
+		patches, err = nil, fmt.Errorf("expected the resource to be one of: %v, %v", podResource, vpaGroupResource)
 	}
 
 	if err != nil {
