@@ -351,6 +351,11 @@ func (m *AwsManager) buildNodeFromTemplate(asg *asg, template *asgTemplate) (*ap
 	// TODO: use proper allocatable!!
 	node.Status.Allocatable = node.Status.Capacity
 
+	// NodeLabels from CA environment variable
+	reservedLabels, present := os.LookupEnv("AUTOSCALER_NODE_LABELS")
+	if present {
+		node.Labels = cloudprovider.JoinStringMaps(node.Labels, extractReservedLabelsFromEnv(reservedLabels))
+	}
 	// NodeLabels
 	node.Labels = cloudprovider.JoinStringMaps(node.Labels, extractLabelsFromAsg(template.Tags))
 	// GenericLabels
@@ -373,6 +378,25 @@ func buildGenericLabels(template *asgTemplate, nodeName string) map[string]strin
 	result[apiv1.LabelZoneRegion] = template.Region
 	result[apiv1.LabelZoneFailureDomain] = template.Zone
 	result[apiv1.LabelHostname] = nodeName
+	return result
+}
+
+func extractReservedLabelsFromEnv(kvList string) map[string]string {
+	kvList = strings.Trim(kvList, " ")
+	result := make(map[string]string)
+	if len(kvList) == 0 {
+		return result
+	}
+	for _, keyValue := range strings.Split(kvList, ",") {
+		kvItems := strings.SplitN(keyValue, "=", 2)
+		if len(kvItems) != 2 {
+			klog.Warningf("error while parsing reserved labels from key-value list, val: %s", keyValue)
+			return nil
+		}
+		labelName := strings.Trim(kvItems[0], " ")
+		value := strings.Trim(kvItems[1], " ")
+		result[labelName] = value
+	}
 	return result
 }
 
