@@ -21,10 +21,13 @@ import (
 	"testing"
 
 	apiv1 "k8s.io/api/core/v1"
+	kube_record "k8s.io/client-go/tools/record"
+
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	cp_test "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
-	kube_record "k8s.io/client-go/tools/record"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -134,15 +137,27 @@ func TestReasonsMessage(t *testing.T) {
 	alsoNotSchedulableReason := &testReason{"also not schedulable"}
 	maxLimitReached := &testReason{"max limit reached"}
 	notReady := &testReason{"not ready"}
+	considered := map[string]cloudprovider.NodeGroup{
+		"group 1":     cp_test.NewTestNodeGroup("group 1", 1, 1, 1, true, false, "", nil, nil),
+		"group 2":     cp_test.NewTestNodeGroup("group 2", 1, 1, 1, true, false, "", nil, nil),
+		"group 3":     cp_test.NewTestNodeGroup("group 3", 1, 1, 1, true, false, "", nil, nil),
+		"group 4":     cp_test.NewTestNodeGroup("group 4", 1, 1, 1, true, false, "", nil, nil),
+		"group 5":     cp_test.NewTestNodeGroup("group 5", 1, 1, 1, true, false, "", nil, nil),
+		"group 6":     cp_test.NewTestNodeGroup("group 6", 1, 1, 1, true, false, "", nil, nil),
+		"tmp group 1": cp_test.NewTestNodeGroup("tmp group 1", 1, 1, 1, false, false, "", nil, nil),
+		"tmp group 2": cp_test.NewTestNodeGroup("tmp group 2", 1, 1, 1, false, false, "", nil, nil),
+	}
 	rejected := map[string]Reasons{
-		"group 1": notSchedulableReason,
-		"group 2": notSchedulableReason,
-		"group 3": alsoNotSchedulableReason,
+		"group 1":     notSchedulableReason,
+		"group 2":     notSchedulableReason,
+		"group 3":     alsoNotSchedulableReason,
+		"tmp group 1": alsoNotSchedulableReason,
 	}
 	skipped := map[string]Reasons{
-		"group 4": maxLimitReached,
-		"group 5": notReady,
-		"group 6": maxLimitReached,
+		"group 4":     maxLimitReached,
+		"group 5":     notReady,
+		"group 6":     maxLimitReached,
+		"tmp group 2": maxLimitReached,
 	}
 
 	expected := []string{
@@ -151,7 +166,7 @@ func TestReasonsMessage(t *testing.T) {
 		"2 max limit reached",
 		"1 not ready",
 	}
-	result := ReasonsMessage(NoScaleUpInfo{nil, rejected, skipped})
+	result := ReasonsMessage(NoScaleUpInfo{nil, rejected, skipped}, considered)
 
 	for _, part := range expected {
 		assert.Contains(t, result, part)
