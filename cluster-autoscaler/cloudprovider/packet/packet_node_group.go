@@ -88,7 +88,7 @@ func (ng *packetNodeGroup) IncreaseSize(delta int) error {
 	klog.V(0).Infof("Increasing size by %d, %d->%d", delta, *ng.targetSize, *ng.targetSize+delta)
 	*ng.targetSize += delta
 
-	err = ng.packetManager.createNodes(ng.id, *ng.targetSize)
+	err = ng.packetManager.createNodes(ng.id, delta)
 	if err != nil {
 		return fmt.Errorf("could not increase cluster size: %v", err)
 	}
