@@ -221,21 +221,13 @@ func randString8() string {
 	return string(b)
 }
 
-// createNodes provisions new nodes on packet and bootstraps them in the cluster.
-func (mgr *packetManagerRest) createNodes(nodegroup string, nodes int) error {
-	klog.Infof("Updating node count to %d for nodegroup %s", nodes, nodegroup)
-	cloudinit, err := base64.StdEncoding.DecodeString(mgr.cloudinit)
-	if err != nil {
-		log.Fatal(err)
-		return fmt.Errorf("Could not decode cloudinit script: %v", err)
-	}
-
+func (mgr *packetManagerRest) createNode(cloudinit, nodegroup string) {
 	udvars := CloudInitTemplateData{
 		BootstrapTokenID:     os.Getenv("BOOTSTRAP_TOKEN_ID"),
 		BootstrapTokenSecret: os.Getenv("BOOTSTRAP_TOKEN_SECRET"),
 		APIServerEndpoint:    mgr.apiServerEndpoint,
 	}
-	ud := renderTemplate(string(cloudinit), udvars)
+	ud := renderTemplate(cloudinit, udvars)
 	hnvars := HostnameTemplateData{
 		ClusterName: mgr.clusterName,
 		NodeGroup:   nodegroup,
@@ -285,7 +277,7 @@ func (mgr *packetManagerRest) createNodes(nodegroup string, nodes int) error {
 	defer resp.Body.Close()
 
 	rbody, err := ioutil.ReadAll(resp.Body)
-	klog.V(3).Infof("Response body: %v", rbody)
+	klog.V(3).Infof("Response body: %v", string(rbody))
 	if err != nil {
 		klog.Errorf("Failed to read response body: %v", err)
 	} else {
@@ -293,6 +285,20 @@ func (mgr *packetManagerRest) createNodes(nodegroup string, nodes int) error {
 	}
 	if cr.HardwareReservationID != "" {
 		klog.Infof("Reservation %v", cr.HardwareReservationID)
+	}
+}
+
+// createNodes provisions new nodes on packet and bootstraps them in the cluster.
+func (mgr *packetManagerRest) createNodes(nodegroup string, nodes int) error {
+	klog.Infof("Updating node count to %d for nodegroup %s", nodes, nodegroup)
+	cloudinit, err := base64.StdEncoding.DecodeString(mgr.cloudinit)
+	if err != nil {
+		log.Fatal(err)
+		return fmt.Errorf("Could not decode cloudinit script: %v", err)
+	}
+
+	for i := 0; i < nodes; i++ {
+		mgr.createNode(string(cloudinit), nodegroup)
 	}
 
 	return nil
@@ -303,7 +309,7 @@ func createDevice(cr *DeviceCreateRequest) (*http.Response, error) {
 	url := "https://api.packet.net/projects/" + cr.ProjectID + "/devices"
 	jsonValue, _ := json.Marshal(cr)
 	klog.Infof("Creating new node")
-	klog.V(3).Infof("POST %s \n%v", url, jsonValue)
+	klog.V(3).Infof("POST %s \n%v", url, string(jsonValue))
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonValue))
 	if err != nil {
 		klog.Errorf("Failed to create device: %v", err)
@@ -338,7 +344,7 @@ func (mgr *packetManagerRest) deleteNodes(nodegroup string, nodes []NodeRef, upd
 			if Contains(d.Tags, "k8s-cluster-"+mgr.clusterName) && Contains(d.Tags, "k8s-nodepool-"+nodegroup) {
 				klog.Infof("nodegroup match %s %s", d.Hostname, n.Name)
 				if d.Hostname == n.Name {
-					klog.V(1).Infof("Matching Packet Device %s - %s - %v", d.Hostname, d.ID)
+					klog.V(1).Infof("Matching Packet Device %s - %s", d.Hostname, d.ID)
 					req, err := http.NewRequest("DELETE", "https://api.packet.net/devices/"+d.ID, bytes.NewBuffer([]byte("")))
 					req.Header.Set("X-Auth-Token", packetAuthToken)
 					req.Header.Set("Content-Type", "application/json")
