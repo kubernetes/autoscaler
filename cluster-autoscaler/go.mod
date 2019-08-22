@@ -51,23 +51,34 @@ replace k8s.io/sample-cli-plugin => k8s.io/sample-cli-plugin v0.0.0-201908191442
 replace k8s.io/sample-controller => k8s.io/sample-controller v0.0.0-20190819143301-7c475f5e1313
 
 require (
-	cloud.google.com/go v0.34.0
+	cloud.google.com/go v0.44.3
 	github.com/Azure/azure-sdk-for-go v21.4.0+incompatible
 	github.com/Azure/go-autorest v11.1.2+incompatible
 	github.com/aws/aws-sdk-go v1.16.26
 	github.com/digitalocean/godo v1.19.0
 	github.com/ghodss/yaml v0.0.0-20180820084758-c7ce16629ff4
+	github.com/google/go-cmp v0.3.1 // indirect
+	github.com/google/pprof v0.0.0-20190723021845-34ac40c74b70 // indirect
+	github.com/hashicorp/golang-lru v0.5.3 // indirect
 	github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af
 	github.com/json-iterator/go v0.0.0-20180701071628-ab8a2e0c74be
+	github.com/kr/pty v1.1.8 // indirect
 	github.com/prometheus/client_golang v0.9.2
 	github.com/satori/go.uuid v1.2.0
 	github.com/spf13/pflag v1.0.1
 	github.com/stretchr/testify v1.3.0
-	golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2
-	golang.org/x/oauth2 v0.0.0-20190402181905-9f3314589c9a
-	google.golang.org/api v0.0.0-20181220000619-583d854617af
+	golang.org/x/crypto v0.0.0-20190820162420-60c769a6c586
+	golang.org/x/mobile v0.0.0-20190814143026-e8b3e6111d02 // indirect
+	golang.org/x/net v0.0.0-20190813141303-74dc4d7220e7 // indirect
+	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
+	golang.org/x/sys v0.0.0-20190813064441-fde4db37ae7a // indirect
+	golang.org/x/tools v0.0.0-20190822174633-71f556f074d4 // indirect
+	google.golang.org/api v0.9.0
+	google.golang.org/genproto v0.0.0-20190819201941-24fa4b261c55 // indirect
+	google.golang.org/grpc v1.23.0 // indirect
 	gopkg.in/gcfg.v1 v1.2.0
 	gopkg.in/yaml.v2 v2.2.1
+	honnef.co/go/tools v0.0.1-2019.2.2 // indirect
 	k8s.io/api v0.0.0
 	k8s.io/apimachinery v0.0.0
 	k8s.io/client-go v0.0.0
