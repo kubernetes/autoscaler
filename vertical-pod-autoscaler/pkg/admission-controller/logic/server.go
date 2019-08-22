@@ -27,6 +27,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	vpa_types_v1beta1 "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta1"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/limitrange"
 	metrics_admission "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/admission"
@@ -162,6 +163,14 @@ func parseVPA(raw []byte) (*vpa_types.VerticalPodAutoscaler, error) {
 	return &vpa, nil
 }
 
+func parseVPAv1beta1(raw []byte) (*vpa_types_v1beta1.VerticalPodAutoscaler, error) {
+	vpa := vpa_types_v1beta1.VerticalPodAutoscaler{}
+	if err := json.Unmarshal(raw, &vpa); err != nil {
+		return nil, err
+	}
+	return &vpa, nil
+}
+
 var (
 	possibleUpdateModes = map[vpa_types.UpdateMode]interface{}{
 		vpa_types.UpdateModeOff:      struct{}{},
@@ -216,6 +225,13 @@ func validateVPA(vpa *vpa_types.VerticalPodAutoscaler, isCreate bool) error {
 
 func (s *AdmissionServer) getPatchesForVPADefaults(raw []byte, isCreate bool) ([]patchRecord, error) {
 	vpa, err := parseVPA(raw)
+	if err != nil {
+		return nil, err
+	}
+
+	// We need to parse the object as v1beta1 as well to make sure spec.selector
+	// is not malformed.
+	_, err = parseVPAv1beta1(raw)
 	if err != nil {
 		return nil, err
 	}
