@@ -50,7 +50,7 @@ for project_name in ${PROJECT_NAMES[*]}; do
       "test")
         if [[ -n $(find . -name "Godeps.json") ]]; then
           godep go test -race $(go list ./... | grep -v /vendor/ | grep -v vertical-pod-autoscaler/e2e)
-        if [[ -n $(find . -name "go.mod") ]]; then
+        elif [[ -n $(find . -name "go.mod") ]]; then
           GO111MODULE=on go test -race $(go list ./... | grep -v /vendor/ | grep -v vertical-pod-autoscaler/e2e)
         else
           go test -race $(go list ./... | grep -v /vendor/ | grep -v vertical-pod-autoscaler/e2e)
