@@ -22,8 +22,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/digitalocean/godo"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewManager(t *testing.T) {
