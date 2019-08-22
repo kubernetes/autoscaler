@@ -24,6 +24,7 @@ import (
 	batchv1 "k8s.io/api/batch/v1"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -69,10 +70,10 @@ type ControllerKeyWithAPIVersion struct {
 	ApiVersion string
 }
 
-// ControllerFetcher is responsible for finding the top level controller
+// ControllerFetcher is responsible for finding the topmost well-known or scalable controller
 type ControllerFetcher interface {
-	// FindTopLevel returns top level controller. Error is returned if top level controller cannot be found.
-	FindTopLevel(controller *ControllerKeyWithAPIVersion) (*ControllerKeyWithAPIVersion, error)
+	// FindTopMostWellKnownOrScalable returns topmost well-known or scalable controller. Error is returned if controller cannot be found.
+	FindTopMostWellKnownOrScalable(controller *ControllerKeyWithAPIVersion) (*ControllerKeyWithAPIVersion, error)
 }
 
 type controllerFetcher struct {
@@ -126,7 +127,7 @@ func NewControllerFetcher(config *rest.Config, kubeClient kube_client.Interface,
 
 func getOwnerController(owners []metav1.OwnerReference, namespace string) *ControllerKeyWithAPIVersion {
 	for _, owner := range owners {
-		if owner.Controller != nil && *owner.Controller == true {
+		if owner.Controller != nil && *owner.Controller {
 			return &ControllerKeyWithAPIVersion{
 				ControllerKey: ControllerKey{
 					Namespace: namespace,
@@ -207,23 +208,70 @@ func (f *controllerFetcher) getParentOfController(controllerKey ControllerKeyWit
 		return getParentOfWellKnownController(informer, controllerKey)
 	}
 
-	// TODO: cache response
-	groupVersion, err := schema.ParseGroupVersion(controllerKey.ApiVersion)
+	groupKind, err := controllerKey.groupKind()
 	if err != nil {
 		return nil, err
 	}
-	groupKind := schema.GroupKind{
-		Group: groupVersion.Group,
-		Kind:  controllerKey.Kind,
-	}
 
 	owner, err := f.getOwnerForScaleResource(groupKind, controllerKey.Namespace, controllerKey.Name)
+	if apierrors.IsNotFound(err) {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, fmt.Errorf("Unhandled targetRef %s / %s / %s, last error %v",
 			controllerKey.ApiVersion, controllerKey.Kind, controllerKey.Name, err)
 	}
 
 	return owner, nil
+}
+
+func (c *ControllerKeyWithAPIVersion) groupKind() (schema.GroupKind, error) {
+	// TODO: cache response
+	groupVersion, err := schema.ParseGroupVersion(c.ApiVersion)
+	if err != nil {
+		return schema.GroupKind{}, err
+	}
+
+	groupKind := schema.GroupKind{
+		Group: groupVersion.Group,
+		Kind:  c.ControllerKey.Kind,
+	}
+
+	return groupKind, nil
+}
+
+func (f *controllerFetcher) isWellKnown(key *ControllerKeyWithAPIVersion) bool {
+	kind := wellKnownController(key.ControllerKey.Kind)
+	_, exists := f.informersMap[kind]
+	return exists
+}
+
+func (f *controllerFetcher) isWellKnownOrScalable(key *ControllerKeyWithAPIVersion) bool {
+	if f.isWellKnown(key) {
+		return true
+	}
+
+	//if not well known check if it supports scaling
+	groupKind, err := key.groupKind()
+	if err != nil {
+		klog.Errorf("Could not find groupKind for %s/%s: %v", key.Namespace, key.Name, err)
+		return false
+	}
+
+	mappings, err := f.mapper.RESTMappings(groupKind)
+	if err != nil {
+		klog.Errorf("Could not find mappings for %s: %v", groupKind, err)
+		return false
+	}
+
+	for _, mapping := range mappings {
+		groupResource := mapping.Resource.GroupResource()
+		scale, err := f.scaleNamespacer.Scales(key.Namespace).Get(groupResource, key.Name)
+		if err == nil && scale != nil {
+			return true
+		}
+	}
+	return false
 }
 
 func (f *controllerFetcher) getOwnerForScaleResource(groupKind schema.GroupKind, namespace, name string) (*ControllerKeyWithAPIVersion, error) {
@@ -246,10 +294,18 @@ func (f *controllerFetcher) getOwnerForScaleResource(groupKind schema.GroupKind,
 	return nil, lastError
 }
 
-func (f *controllerFetcher) FindTopLevel(key *ControllerKeyWithAPIVersion) (*ControllerKeyWithAPIVersion, error) {
+func (f *controllerFetcher) FindTopMostWellKnownOrScalable(key *ControllerKeyWithAPIVersion) (*ControllerKeyWithAPIVersion, error) {
 	if key == nil {
 		return nil, nil
 	}
+
+	var topMostWellKnownOrScalable *ControllerKeyWithAPIVersion
+
+	wellKnownOrScalable := f.isWellKnownOrScalable(key)
+	if wellKnownOrScalable {
+		topMostWellKnownOrScalable = key
+	}
+
 	visited := make(map[ControllerKeyWithAPIVersion]bool)
 	visited[*key] = true
 	for {
@@ -257,14 +313,22 @@ func (f *controllerFetcher) FindTopLevel(key *ControllerKeyWithAPIVersion) (*Con
 		if err != nil {
 			return nil, err
 		}
+
 		if owner == nil {
-			return key, nil
+			return topMostWellKnownOrScalable, nil
 		}
+
+		wellKnownOrScalable = f.isWellKnownOrScalable(owner)
+		if wellKnownOrScalable {
+			topMostWellKnownOrScalable = owner
+		}
+
 		_, alreadyVisited := visited[*owner]
 		if alreadyVisited {
 			return nil, fmt.Errorf("Cycle detected in ownership chain")
 		}
 		visited[*key] = true
+
 		key = owner
 	}
 }
@@ -272,7 +336,7 @@ func (f *controllerFetcher) FindTopLevel(key *ControllerKeyWithAPIVersion) (*Con
 type identityControllerFetcher struct {
 }
 
-func (f *identityControllerFetcher) FindTopLevel(controller *ControllerKeyWithAPIVersion) (*ControllerKeyWithAPIVersion, error) {
+func (f *identityControllerFetcher) FindTopMostWellKnownOrScalable(controller *ControllerKeyWithAPIVersion) (*ControllerKeyWithAPIVersion, error) {
 	return controller, nil
 }
 
@@ -280,7 +344,7 @@ type constControllerFetcher struct {
 	ControllerKeyWithAPIVersion *ControllerKeyWithAPIVersion
 }
 
-func (f *constControllerFetcher) FindTopLevel(controller *ControllerKeyWithAPIVersion) (*ControllerKeyWithAPIVersion, error) {
+func (f *constControllerFetcher) FindTopMostWellKnownOrScalable(controller *ControllerKeyWithAPIVersion) (*ControllerKeyWithAPIVersion, error) {
 	return f.ControllerKeyWithAPIVersion, nil
 }
 
@@ -289,7 +353,7 @@ type mockControllerFetcher struct {
 	result   *ControllerKeyWithAPIVersion
 }
 
-func (f *mockControllerFetcher) FindTopLevel(controller *ControllerKeyWithAPIVersion) (*ControllerKeyWithAPIVersion, error) {
+func (f *mockControllerFetcher) FindTopMostWellKnownOrScalable(controller *ControllerKeyWithAPIVersion) (*ControllerKeyWithAPIVersion, error) {
 	if controller == nil && f.expected == nil {
 		return f.result, nil
 	}

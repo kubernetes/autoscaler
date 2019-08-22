@@ -39,7 +39,7 @@ type fakeControllerFetcher struct {
 	err error
 }
 
-func (f *fakeControllerFetcher) FindTopLevel(controller *controllerfetcher.ControllerKeyWithAPIVersion) (*controllerfetcher.ControllerKeyWithAPIVersion, error) {
+func (f *fakeControllerFetcher) FindTopMostWellKnownOrScalable(controller *controllerfetcher.ControllerKeyWithAPIVersion) (*controllerfetcher.ControllerKeyWithAPIVersion, error) {
 	return f.key, f.err
 }
 
@@ -55,8 +55,8 @@ var (
 	unsupportedConditionNoExtraText       = "Cannot read targetRef"
 	unsupportedConditionBothDefined       = "Both targetRef and label selector defined. Please remove label selector"
 	unsupportedConditionNoTargetRef       = "Cannot read targetRef"
-	unsupportedConditionMudaMudaMuda      = "Error checking if target is a top level controller: muda muda muda"
-	unsupportedTargetRefHasParent         = "The targetRef controller has a parent but it should point to a top-level controller"
+	unsupportedConditionMudaMudaMuda      = "Error checking if target is a topmost well-known or scalable controller: muda muda muda"
+	unsupportedTargetRefHasParent         = "The targetRef controller has a parent but it should point to a topmost well-known or scalable controller"
 )
 
 const (
@@ -70,15 +70,15 @@ const (
 func TestLoadPods(t *testing.T) {
 
 	type testCase struct {
-		name                      string
-		selector                  labels.Selector
-		fetchSelectorError        error
-		targetRef                 *autoscalingv1.CrossVersionObjectReference
-		topLevelKey               *controllerfetcher.ControllerKeyWithAPIVersion
-		findTopLevelError         error
-		expectedSelector          labels.Selector
-		expectedConfigUnsupported *string
-		expectedConfigDeprecated  *string
+		name                                string
+		selector                            labels.Selector
+		fetchSelectorError                  error
+		targetRef                           *autoscalingv1.CrossVersionObjectReference
+		topMostWellKnownOrScalableKey       *controllerfetcher.ControllerKeyWithAPIVersion
+		findTopMostWellKnownOrScalableError error
+		expectedSelector                    labels.Selector
+		expectedConfigUnsupported           *string
+		expectedConfigDeprecated            *string
 	}
 
 	testCases := []testCase{
@@ -107,7 +107,7 @@ func TestLoadPods(t *testing.T) {
 				Name:       name1,
 				APIVersion: apiVersion,
 			},
-			topLevelKey: &controllerfetcher.ControllerKeyWithAPIVersion{
+			topMostWellKnownOrScalableKey: &controllerfetcher.ControllerKeyWithAPIVersion{
 				ControllerKey: controllerfetcher.ControllerKey{
 					Kind:      kind,
 					Name:      name1,
@@ -149,7 +149,7 @@ func TestLoadPods(t *testing.T) {
 				Name:       name1,
 				APIVersion: apiVersion,
 			},
-			topLevelKey: &controllerfetcher.ControllerKeyWithAPIVersion{
+			topMostWellKnownOrScalableKey: &controllerfetcher.ControllerKeyWithAPIVersion{
 				ControllerKey: controllerfetcher.ControllerKey{
 					Kind:      kind,
 					Name:      name2,
@@ -169,8 +169,8 @@ func TestLoadPods(t *testing.T) {
 				Name:       "doseph-doestar",
 				APIVersion: "taxonomy",
 			},
-			expectedConfigUnsupported: &unsupportedConditionMudaMudaMuda,
-			findTopLevelError:         fmt.Errorf("muda muda muda"),
+			expectedConfigUnsupported:           &unsupportedConditionMudaMudaMuda,
+			findTopMostWellKnownOrScalableError: fmt.Errorf("muda muda muda"),
 		},
 		{
 			name:               "top-level target ref",
@@ -182,7 +182,7 @@ func TestLoadPods(t *testing.T) {
 				Name:       name1,
 				APIVersion: apiVersion,
 			},
-			topLevelKey: &controllerfetcher.ControllerKeyWithAPIVersion{
+			topMostWellKnownOrScalableKey: &controllerfetcher.ControllerKeyWithAPIVersion{
 				ControllerKey: controllerfetcher.ControllerKey{
 					Kind:      kind,
 					Name:      name1,
@@ -213,8 +213,8 @@ func TestLoadPods(t *testing.T) {
 				clusterState:    clusterState,
 				selectorFetcher: targetSelectorFetcher,
 				controllerFetcher: &fakeControllerFetcher{
-					key: tc.topLevelKey,
-					err: tc.findTopLevelError,
+					key: tc.topMostWellKnownOrScalableKey,
+					err: tc.findTopMostWellKnownOrScalableError,
 				},
 			}
 
