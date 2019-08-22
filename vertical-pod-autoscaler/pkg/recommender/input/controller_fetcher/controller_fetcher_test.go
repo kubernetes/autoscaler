@@ -24,11 +24,17 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	appsv1 "k8s.io/api/apps/v1"
+	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/restmapper"
+	scalefake "k8s.io/client-go/scale/fake"
+	core "k8s.io/client-go/testing"
 	"k8s.io/client-go/tools/cache"
 )
 
@@ -38,6 +44,48 @@ var trueVar = true
 func simpleControllerFetcher() *controllerFetcher {
 	f := controllerFetcher{}
 	f.informersMap = make(map[wellKnownController]cache.SharedIndexInformer)
+	versioned := map[string][]metav1.APIResource{
+		"Foo": {{Kind: "Foo", Name: "bah", Group: "foo"}, {Kind: "Scale", Name: "iCanScale", Group: "foo"}},
+	}
+	fakeMapper := []*restmapper.APIGroupResources{
+		{
+			Group: metav1.APIGroup{
+				Name:     "Foo",
+				Versions: []metav1.GroupVersionForDiscovery{{GroupVersion: "Foo", Version: "Foo"}},
+			},
+			VersionedResources: versioned,
+		},
+	}
+	mapper := restmapper.NewDiscoveryRESTMapper(fakeMapper)
+	f.mapper = mapper
+
+	scaleNamespacer := &scalefake.FakeScaleClient{}
+	f.scaleNamespacer = scaleNamespacer
+
+	//return not found if if tries to find the scale subresouce on bah
+	scaleNamespacer.AddReactor("get", "bah", func(action core.Action) (handled bool, ret runtime.Object, err error) {
+		groupResource := schema.GroupResource{}
+		error := apierrors.NewNotFound(groupResource, "Foo")
+		return true, nil, error
+	})
+
+	//resource that can scale
+	scaleNamespacer.AddReactor("get", "iCanScale", func(action core.Action) (handled bool, ret runtime.Object, err error) {
+
+		ret = &autoscalingv1.Scale{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "Scaler",
+				Namespace: "foo",
+			},
+			Spec: autoscalingv1.ScaleSpec{
+				Replicas: 5,
+			},
+			Status: autoscalingv1.ScaleStatus{
+				Replicas: 5,
+			},
+		}
+		return true, ret, nil
+	})
 
 	for _, kind := range wellKnownControllers {
 		f.informersMap[kind] = cache.NewSharedIndexInformer(
@@ -51,7 +99,10 @@ func simpleControllerFetcher() *controllerFetcher {
 
 func addController(controller *controllerFetcher, obj runtime.Object) {
 	kind := wellKnownController(obj.GetObjectKind().GroupVersionKind().Kind)
-	controller.informersMap[kind].GetStore().Add(obj)
+	_, ok := controller.informersMap[kind]
+	if ok {
+		controller.informersMap[kind].GetStore().Add(obj)
+	}
 }
 
 func TestControllerFetcher(t *testing.T) {
@@ -239,17 +290,67 @@ func TestControllerFetcher(t *testing.T) {
 			expectedKey:   nil,
 			expectedError: fmt.Errorf("Cycle detected in ownership chain"),
 		},
+		{
+			key: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
+				Name: "test-deployment", Kind: "Deployment", Namespace: "test-namesapce"}},
+			objects: []runtime.Object{&appsv1.Deployment{
+				TypeMeta: metav1.TypeMeta{
+					Kind: "Deployment",
+				},
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-deployment",
+					Namespace: "test-namesapce",
+					// Parent that does not support scale subresource and is not well known
+					OwnerReferences: []metav1.OwnerReference{
+						{
+							APIVersion: "Foo/Foo",
+							Controller: &trueVar,
+							Kind:       "Foo",
+							Name:       "bah",
+						},
+					},
+				},
+			}},
+			expectedKey: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
+				Name: "test-deployment", Kind: "Deployment", Namespace: "test-namesapce"}}, // Parent does not support scale subresource so should return itself"
+			expectedError: nil,
+		},
+		{
+			key: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
+				Name: "test-deployment", Kind: "Deployment", Namespace: "test-namesapce"}},
+			objects: []runtime.Object{&appsv1.Deployment{
+				TypeMeta: metav1.TypeMeta{
+					Kind: "Deployment",
+				},
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-deployment",
+					Namespace: "test-namesapce",
+					// Parent that support scale subresource and is not well known
+					OwnerReferences: []metav1.OwnerReference{
+						{
+							APIVersion: "Foo/Foo",
+							Controller: &trueVar,
+							Kind:       "Scale",
+							Name:       "iCanScale",
+						},
+					},
+				},
+			}},
+			expectedKey: &ControllerKeyWithAPIVersion{ControllerKey: ControllerKey{
+				Name: "iCanScale", Kind: "Scale", Namespace: "test-namesapce"}, ApiVersion: "Foo/Foo"}, // Parent supports scale subresource"
+			expectedError: nil,
+		},
 	} {
 		t.Run(fmt.Sprintf("test case %d", i), func(t *testing.T) {
 			f := simpleControllerFetcher()
 			for _, obj := range tc.objects {
 				addController(f, obj)
 			}
-			topLevelController, err := f.FindTopLevel(tc.key)
+			topMostWellKnownOrScalableController, err := f.FindTopMostWellKnownOrScalable(tc.key)
 			if tc.expectedKey == nil {
-				assert.Nil(t, topLevelController)
+				assert.Nil(t, topMostWellKnownOrScalableController)
 			} else {
-				assert.Equal(t, tc.expectedKey, topLevelController)
+				assert.Equal(t, tc.expectedKey, topMostWellKnownOrScalableController)
 			}
 			if tc.expectedError == nil {
 				assert.Nil(t, err)
