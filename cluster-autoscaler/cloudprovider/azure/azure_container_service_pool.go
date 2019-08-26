@@ -335,19 +335,19 @@ func (agentPool *ContainerServiceAgentPool) TargetSize() (int, error) {
 //SetSize contacts the underlying service and sets the size of the pool.
 //This will be called when a scale up occurs and will be called just after
 //a delete is performed from a scale down.
-func (agentPool *ContainerServiceAgentPool) SetSize(targetSize int) (err error) {
+func (agentPool *ContainerServiceAgentPool) SetSize(targetSize int, isScalingDown bool) (err error) {
 	agentPool.mutex.Lock()
 	defer agentPool.mutex.Unlock()
 
-	return agentPool.setSizeInternal(targetSize)
+	return agentPool.setSizeInternal(targetSize, isScalingDown)
 }
 
 // setSizeInternal contacts the underlying service and sets the size of the pool.
 // It should be called under lock protected.
-func (agentPool *ContainerServiceAgentPool) setSizeInternal(targetSize int) (err error) {
-	if targetSize > agentPool.MaxSize() || targetSize < agentPool.MinSize() {
-		klog.Errorf("Target size %d requested outside Max: %d, Min: %d", targetSize, agentPool.MaxSize(), agentPool.MaxSize())
-		return fmt.Errorf("target size %d requested outside Max: %d, Min: %d", targetSize, agentPool.MaxSize(), agentPool.MinSize())
+func (agentPool *ContainerServiceAgentPool) setSizeInternal(targetSize int, isScalingDown bool) (err error) {
+	if isScalingDown && targetSize < agentPool.MinSize() {
+		klog.Errorf("size-decreasing request of %d is smaller than min size %d", targetSize, agentPool.MinSize())
+		return fmt.Errorf("size-decreasing request of %d is smaller than min size %d", targetSize, agentPool.MinSize())
 	}
 
 	klog.V(2).Infof("Setting size for cluster (%q) with new count (%d)", agentPool.clusterName, targetSize)
@@ -378,9 +378,9 @@ func (agentPool *ContainerServiceAgentPool) IncreaseSize(delta int) error {
 	}
 	targetSize := int(currentSize) + delta
 	if targetSize > agentPool.MaxSize() {
-		return fmt.Errorf("size increase request of %d more than max size %d set", targetSize, agentPool.MaxSize())
+		return fmt.Errorf("size-increasing request of %d is bigger than max size %d", targetSize, agentPool.MaxSize())
 	}
-	return agentPool.SetSize(targetSize)
+	return agentPool.SetSize(targetSize, false)
 }
 
 // deleteNodesInternal calls the underlying vm service to delete the node.
@@ -422,7 +422,7 @@ func (agentPool *ContainerServiceAgentPool) DeleteNodes(nodes []*apiv1.Node) err
 	// Update node count if there're some virtual machines got deleted.
 	if deleted != 0 {
 		targetSize := agentPool.curSize - deleted
-		err := agentPool.setSizeInternal(targetSize)
+		err := agentPool.setSizeInternal(targetSize, true)
 		if err != nil {
 			klog.Errorf("Failed to set size for agent pool %q with error: %v", agentPool.Name, err)
 		} else {
@@ -498,7 +498,7 @@ func (agentPool *ContainerServiceAgentPool) DecreaseTargetSize(delta int) error 
 		return fmt.Errorf("attempt to delete existing nodes targetSize:%d delta:%d existingNodes: %d",
 			currentSize, delta, len(nodes))
 	}
-	return agentPool.SetSize(targetSize)
+	return agentPool.SetSize(targetSize, true)
 }
 
 //Id returns the name of the agentPool
