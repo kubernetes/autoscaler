@@ -31,10 +31,10 @@ type ec2Wrapper struct {
 	ec2I
 }
 
-func (m ec2Wrapper) getInstanceTypeByLT(name string, version string) (string, error) {
+func (m ec2Wrapper) getInstanceTypeByLT(launchTemplate *launchTemplate) (string, error) {
 	params := &ec2.DescribeLaunchTemplateVersionsInput{
-		LaunchTemplateName: aws.String(name),
-		Versions:           []*string{aws.String(version)},
+		LaunchTemplateName: aws.String(launchTemplate.name),
+		Versions:           []*string{aws.String(launchTemplate.version)},
 	}
 
 	describeData, err := m.DescribeLaunchTemplateVersions(params)
