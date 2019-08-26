@@ -39,6 +39,7 @@ var AvailableCloudProviders = []string{
 	cloudprovider.AlicloudProviderName,
 	cloudprovider.BaiducloudProviderName,
 	cloudprovider.MagnumProviderName,
+	cloudprovider.DigitalOceanProviderName,
 }
 
 // DefaultCloudProvider is GCE.
