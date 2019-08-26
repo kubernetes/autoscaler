@@ -175,6 +175,7 @@ Make a copy of [cluster-autoscaler-containerservice](examples/cluster-autoscaler
 - SubscriptionID: `<base64-encoded-subscription-id>`
 - TenantID: `<base64-encoded-tenant-id>`
 - ClusterName: `<base64-encoded-clustername>`
+- NodeResourceGroup: `<base64-encoded-node-resource-group>` (Note: node resource group is not resource group and can be obtained in the corresponding label of the nodepool)
 
 > **_NOTE_**: Use a command such as `echo $CLIENT_ID | base64` to encode each of the fields above.
 
