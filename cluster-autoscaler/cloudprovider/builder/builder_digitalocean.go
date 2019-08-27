@@ -26,15 +26,15 @@ import (
 
 // AvailableCloudProviders supported by the digtalocean cloud provider builder.
 var AvailableCloudProviders = []string{
-	digitalocean.ProviderName,
+	cloudprovider.DigitalOceanProviderName,
 }
 
 // DefaultCloudProvider for do-only build is DigitalOcean.
-const DefaultCloudProvider = digitalocean.ProviderName
+const DefaultCloudProvider = cloudprovider.DigitalOceanProviderName
 
 func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	switch opts.CloudProviderName {
-	case digitalocean.ProviderName:
+	case cloudprovider.DigitalOceanProviderName:
 		return digitalocean.BuildDigitalOcean(opts, do, rl)
 	}
 
