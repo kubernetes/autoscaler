@@ -207,6 +207,14 @@ var (
 		},
 	)
 
+	scaleDownInCooldown = prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Namespace: caNamespace,
+			Name:      "scale_down_in_cooldown",
+			Help:      "Whether or not the scale down is in cooldown. 1 if its, 0 otherwise.",
+		},
+	)
+
 	/**** Metrics related to NodeAutoprovisioning ****/
 	napEnabled = prometheus.NewGauge(
 		prometheus.GaugeOpts{
@@ -249,6 +257,7 @@ func RegisterAll() {
 	prometheus.MustRegister(gpuScaleDownCount)
 	prometheus.MustRegister(evictionsCount)
 	prometheus.MustRegister(unneededNodesCount)
+	prometheus.MustRegister(scaleDownInCooldown)
 	prometheus.MustRegister(napEnabled)
 	prometheus.MustRegister(nodeGroupCreationCount)
 	prometheus.MustRegister(nodeGroupDeletionCount)
@@ -359,4 +368,14 @@ func RegisterNodeGroupCreation() {
 // RegisterNodeGroupDeletion registers node group deletion
 func RegisterNodeGroupDeletion() {
 	nodeGroupDeletionCount.Add(1.0)
+}
+
+// UpdateScaleDownInCooldown registers if the cluster autoscaler
+// scaledown is in cooldown
+func UpdateScaleDownInCooldown(inCooldown bool) {
+	if inCooldown {
+		scaleDownInCooldown.Set(1.0)
+	} else {
+		scaleDownInCooldown.Set(0.0)
+	}
 }
