@@ -142,6 +142,15 @@ var (
 		}, []string{"function"},
 	)
 
+	functionDurationSummary = prometheus.NewSummaryVec(
+		prometheus.SummaryOpts{
+			Namespace: caNamespace,
+			Name:      "function_duration_quantile_seconds",
+			Help:      "Quantiles of time taken by various parts of CA main loop.",
+			MaxAge:    time.Hour,
+		}, []string{"function"},
+	)
+
 	/**** Metrics related to autoscaler operations ****/
 	errorsCount = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
@@ -249,6 +258,7 @@ func RegisterAll() {
 	prometheus.MustRegister(unschedulablePodsCount)
 	prometheus.MustRegister(lastActivity)
 	prometheus.MustRegister(functionDuration)
+	prometheus.MustRegister(functionDurationSummary)
 	prometheus.MustRegister(errorsCount)
 	prometheus.MustRegister(scaleUpCount)
 	prometheus.MustRegister(gpuScaleUpCount)
@@ -278,6 +288,7 @@ func UpdateDuration(label FunctionLabel, duration time.Duration) {
 		klog.V(4).Infof("Function %s took %v to complete", label, duration)
 	}
 	functionDuration.WithLabelValues(string(label)).Observe(duration.Seconds())
+	functionDurationSummary.WithLabelValues(string(label)).Observe(duration.Seconds())
 }
 
 // UpdateLastTime records the time the step identified by the label was started
