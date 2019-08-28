@@ -30,7 +30,7 @@ excluded_packages=(
 )
 
 FIND_PACKAGES='go list ./... '
-for package in in "${excluded_packages[@]}"; do
+for package in "${excluded_packages[@]}"; do
      FIND_PACKAGES+="| grep -v ${package} "
 done
 
