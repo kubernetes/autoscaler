@@ -21,7 +21,6 @@ import (
 	"strconv"
 
 	"github.com/aws/aws-sdk-go/aws"
-
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 )
 
@@ -39,6 +38,9 @@ type EC2LaunchConfiguration struct {
 	Name string
 	// InstanceType of the underlying instance described in the launch configuration
 	InstanceType string
+	// The name or Amazon Resource Name (ARN) of the instance profile associated
+	// with the IAM role for the instance.
+	IamInstanceProfile string
 }
 
 // NewEC2LaunchConfigurationService is the constructor of launchConfigurationService which is a wrapper for
@@ -65,7 +67,7 @@ func (lcs *launchConfigurationService) DescribeLaunchConfiguration(launchConfigu
 
 		for _, lc := range res.LaunchConfigurations {
 
-			if *lc.LaunchConfigurationName == launchConfigurationName {
+			if aws.StringValue(lc.LaunchConfigurationName) == launchConfigurationName {
 				var p float64
 
 				if lc.SpotPrice != nil {
@@ -76,10 +78,11 @@ func (lcs *launchConfigurationService) DescribeLaunchConfiguration(launchConfigu
 				}
 
 				return &EC2LaunchConfiguration{
-					HasSpotMarkedBid: lc.SpotPrice != nil,
-					SpotPrice:        p,
-					Name:             *lc.LaunchConfigurationName,
-					InstanceType:     *lc.InstanceType,
+					HasSpotMarkedBid:   lc.SpotPrice != nil,
+					SpotPrice:          p,
+					Name:               aws.StringValue(lc.LaunchConfigurationName),
+					InstanceType:       aws.StringValue(lc.InstanceType),
+					IamInstanceProfile: aws.StringValue(lc.IamInstanceProfile),
 				}, nil
 			}
 		}

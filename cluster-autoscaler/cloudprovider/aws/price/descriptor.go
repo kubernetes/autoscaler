@@ -17,6 +17,8 @@ limitations under the License.
 package price
 
 import (
+	"time"
+
 	awssdk "github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
@@ -26,6 +28,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/api"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/price/ondemand"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/price/spot"
+	"k8s.io/klog"
 )
 
 // ShapeDescriptor describes an interface to appraise an instance price of any shape
@@ -35,10 +38,11 @@ type ShapeDescriptor interface {
 }
 
 type shapeDescriptor struct {
-	autoscaling         api.AutoscalingGroupDescriber
-	launchConfiguration api.LaunchConfigurationDescriber
-	spot                spot.Descriptor
-	onDemand            ondemand.Descriptor
+	autoscaling            api.AutoscalingGroupDescriber
+	launchConfiguration    api.LaunchConfigurationDescriber
+	spot                   spot.Descriptor
+	onDemand               ondemand.Descriptor
+	asgAvailabilityChecker spot.AsgAvailabilityChecker
 }
 
 // NewDescriptor is the constructor of a shapeDescriptor
@@ -48,17 +52,21 @@ func NewDescriptor(s *session.Session) (*shapeDescriptor, error) {
 	sess, err := session.NewSession(&awssdk.Config{
 		Region: awssdk.String("us-east-1"),
 	})
-
 	if err != nil {
 		return nil, goerrors.Wrap(err, "could not create AWS session for on demand descriptor")
 	}
 
+	ec2Service := ec2.New(sess)
+	spotMonitor := spot.NewSpotAvailabilityMonitor(ec2Service, time.Minute, time.Hour)
+	go spotMonitor.Run()
+
 	as := autoscaling.New(s)
 	return &shapeDescriptor{
-		autoscaling:         api.NewEC2AutoscalingService(as),
-		launchConfiguration: api.NewEC2LaunchConfigurationService(as),
-		spot:                spot.NewDescriptor(api.NewEC2SpotPriceService(ec2.New(s))),
-		onDemand:            ondemand.NewDescriptor(api.NewEC2InstanceInfoService(pricing.New(sess))),
+		autoscaling:            api.NewEC2AutoscalingService(as),
+		launchConfiguration:    api.NewEC2LaunchConfigurationService(as),
+		spot:                   spot.NewDescriptor(api.NewEC2SpotPriceService(ec2.New(s))),
+		onDemand:               ondemand.NewDescriptor(api.NewEC2InstanceInfoService(pricing.New(sess))),
+		asgAvailabilityChecker: spotMonitor,
 	}, nil
 }
 
@@ -75,6 +83,20 @@ func (d *shapeDescriptor) Price(asgName string) (price float64, err error) {
 	}
 
 	if lc.HasSpotMarkedBid {
+		asgAvailability := true
+		for _, availabilityZone := range asg.AvailabilityZones {
+			asgAvailability = d.asgAvailabilityChecker.AsgAvailability(
+				asg.Name, lc.IamInstanceProfile, availabilityZone, lc.InstanceType)
+			klog.V(5).Infof("spot ASG %s availability: %v", asg.Name, asgAvailability)
+
+			if asgAvailability == false {
+				// at least one AvailabilityZone ist not available,
+				// make sure this ASG will not be used
+				klog.V(5).Infof("disabling spot ASG %s", asg.Name)
+				return float64(1000000000), nil
+			}
+		}
+
 		return d.spot.Price(lc.InstanceType, lc.SpotPrice, asg.AvailabilityZones...)
 	}
 
