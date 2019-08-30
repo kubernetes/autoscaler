@@ -71,7 +71,7 @@ type spotAvailabilityMonitor struct {
 
 // Run starts the monitor's check cycle
 func (m *spotAvailabilityMonitor) Run() {
-	klog.Info("spot availability monitoring started")
+	klog.Infof("spot availability monitoring started with check interval %s and exclusion period %s", m.checkInterval.String(), m.exclusionPeriod.String())
 	// monitor ad infinitum.
 	for {
 		select {
@@ -79,10 +79,11 @@ func (m *spotAvailabilityMonitor) Run() {
 			{
 				err := m.roundtrip()
 				if err != nil {
-					klog.Errorf("spot availability check roundtrip failed: %v", err)
+					klog.Errorf("spot availability update roundtrip failed: %v", err)
 				} else {
-					klog.V(2).Info("successful spot availability check roundtrip")
+					klog.V(2).Info("successful spot availability update roundtrip")
 				}
+				klog.Infof("next update roundtrip in %s", m.checkInterval.String())
 			}
 		}
 	}
@@ -108,11 +109,11 @@ func (m *spotAvailabilityMonitor) roundtrip() error {
 				restExclusionTime := m.calculateRestExclusionTime(asgStatus.statusChangeTime)
 				if restExclusionTime > 0 {
 					// an ASG remains unavailable for a fixed period of time
-					klog.V(2).Infof("spot ASG for type %v is flagged unavailable for another %v", asgStatus.InstanceType, restExclusionTime)
+					klog.V(2).Infof("spot ASG for type %v is flagged unavailable for another %s", asgStatus.InstanceType, restExclusionTime.String())
 					continue
 				}
 			} else {
-				klog.V(2).Infof("spot ASG for type %v has been flagged unavailable for %v", asgStatus.InstanceType, m.exclusionPeriod)
+				klog.V(2).Infof("spot ASG for type %v has been flagged unavailable for %s", asgStatus.InstanceType, m.exclusionPeriod.String())
 				err := m.requestService.CancelRequests(asgRequests)
 				if err != nil {
 					return err
@@ -169,7 +170,7 @@ func (m *spotAvailabilityMonitor) asgStatus(name, iamInstanceProfile, availabili
 		asgStatus.Available = m.requestsAllValid(asgRequests)
 
 		m.statusCache.add(castedName, asgStatus)
-		klog.V(4).Infof("added spot ASG availability status (%v) for group %s", asgStatus.Available, name)
+		klog.V(3).Infof("added spot ASG availability status (%v) for group %s", asgStatus.Available, name)
 	} else {
 		asgStatus = m.statusCache.get(castedName)
 	}
