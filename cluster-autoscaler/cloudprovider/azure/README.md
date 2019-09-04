@@ -68,6 +68,10 @@ or to autoscale multiple VM scale sets:
         - --nodes=1:10:k8s-nodepool-2-vmss
 ```
 
+Note that it doesn't mean the number of nodes in nodepool is restricted in the 
+range from 1 to 10. It means when ca is downscaling (upscaling) the nodepool, 
+it will never break the limit of 1 (10). If the current node pool size is lower than the specified minimum or greater than the specified maximum when you enable autoscaling, the autoscaler waits to take effect until a new node is needed in the node pool or until a node can be safely deleted from the node pool.
+
 To allow scaling similar node pools simultaneously, or when using separate node groups per zone and to keep nodes balanced across zones, use the `--balance-similar-node-groups` flag (default false). Add it to the `command` section to enable it:
 
 ```yaml
