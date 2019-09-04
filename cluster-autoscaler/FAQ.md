@@ -324,7 +324,7 @@ number of replicas when cluster grows and decrease the number of replicas if clu
 
 Configuration of dynamic overprovisioning:
 
-1. (For 1.10, and below) Enable priority preemption in your cluster. 
+1. (For 1.10, and below) Enable priority preemption in your cluster.
 
 For GCE, it can be done by exporting following env
 variables before executing kube-up (more details [here](https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/)):
@@ -627,14 +627,14 @@ However, CA does not consider "soft" constraints like `preferredDuringScheduling
 
 The following startup parameters are supported for cluster autoscaler:
 
-| Parameter | Description | Default | 
+| Parameter | Description | Default |
 | --- | --- | --- |
-| `cluster-name` | Autoscaled cluster name, if available | "" 
-| `address` | The address to expose prometheus metrics | :8085 
-| `kubernetes` | Kubernetes master location. Leave blank for default | "" 
+| `cluster-name` | Autoscaled cluster name, if available | ""
+| `address` | The address to expose prometheus metrics | :8085
+| `kubernetes` | Kubernetes master location. Leave blank for default | ""
 | `kubeconfig` | Path to kubeconfig file with authorization and master location information | ""
 | `cloud-config` | The path to the cloud provider configuration file.  Empty string for no configuration file | ""
-| `namespace` | Namespace in which cluster-autoscaler run | "kube-system" 
+| `namespace` | Namespace in which cluster-autoscaler run | "kube-system"
 | `scale-down-enabled` | Should CA scale down the cluster | true
 | `scale-down-delay-after-add` | How long after scale up that scale down evaluation resumes | 10 minutes
 | `scale-down-delay-after-delete` | How long after node deletion that scale down evaluation resumes, defaults to scan-interval | scan-interval
@@ -906,4 +906,44 @@ We are aware that this process is tedious and we will work to improve it.
 
 ### How can I update CA dependencies (particularly k8s.io/kubernetes)?
 
-TODO - update needed after k8s migrated to go modules
+CA uses go modules for building, but closely sticks to the dependencies in
+k8s.io/kubernetes. CA imports a significant part of core k8s code (i.e.
+scheduler code). For correct operation it is crucial that the imported code
+behaves the same way as actual scheduler in the cluster. In order to minimize
+the chance of misbehavior, we stick as close to to the same set of dependencies
+(the same versions) in CA as in k8s as possible.
+
+CA sticks to the following rules of thumb:
+
+* Any k8s.io/kubernetes, k8s.io/* (or k8s.io/kubernetes/staging) dependency in
+    cluster-autoscaler should all be pinned to the same version
+* Any dependency that cluster-autoscaler and k8s.io/kubernetes both have should
+    be in sync with the what the above pinned version of k8s.io/kubernetes
+    requires with exceptions specified in the `PERMITTED_PACKAGE_DIFFS` list in
+    `hack/update-mods.sh`
+* Any dependency that cluster-autoscaler has that is not in k8s.io/kubernetes
+    can be independently upgraded at its own pace
+
+The `hack/update-mods.sh` script can be used to set dependency versions to match
+a particular revision (commit or tag) of Kubernetes and its dependencies.
+
+```
+update-mods.sh - Updates or detects differences in go.mod, go.sum, /vendor
+
+    -f --k8sfork    The Kubernetes fork to use. Defaults to kubernetes/kubernetes
+    -r --k8srev     Kubernetes revision to use. Defaults to hack/k8s_rev
+    -d --workdir    Working dir. Defaults to a temporary dir
+    -n --no-update  Set flag to only view differences in go.mod, /vendor
+    -h --help       Print this help output
+```
+
+To update the version of kubernetes, use the `-r` flag. When you're ready to
+commit your change, update the `K8S_REV` variable in `hack/update-mods.sh`.
+
+Dependencies not shared with Kubernetes can be updated using regular go module
+workflows.
+
+If you want to independently upgrade a CA dependency that Kubernetes shares, you
+will need to add it to the `PERMITTED_PACKAGE_DIFFS` list in
+`hack/update-mods.sh` and also update the `replace` directive in `go.mod`.
+
