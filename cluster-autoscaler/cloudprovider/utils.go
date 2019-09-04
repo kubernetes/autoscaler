@@ -51,7 +51,7 @@ func BuildReadyConditions() []apiv1.NodeCondition {
 			LastTransitionTime: metav1.Time{Time: lastTransition},
 		},
 		{
-			Type:               apiv1.NodeOutOfDisk,
+			Type:               apiv1.NodeDiskPressure,
 			Status:             apiv1.ConditionFalse,
 			LastTransitionTime: metav1.Time{Time: lastTransition},
 		},
