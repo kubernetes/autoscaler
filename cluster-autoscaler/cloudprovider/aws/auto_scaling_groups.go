@@ -277,10 +277,10 @@ func (m *asgCache) DeleteInstances(instances []*AwsInstanceRef) error {
 				return err
 			}
 			klog.V(4).Infof(*resp.Activity.Description)
-		}
 
-		// Proactively decrement the size so autoscaler makes better decisions
-		commonAsg.curSize--
+			// Proactively decrement the size so autoscaler makes better decisions
+			commonAsg.curSize--
+		}
 	}
 	return nil
 }
