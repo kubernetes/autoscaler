@@ -28,7 +28,7 @@ import (
 
 	"golang.org/x/oauth2"
 
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/digitalocean/godo"
+	"github.com/digitalocean/godo"
 	"k8s.io/klog"
 )
 

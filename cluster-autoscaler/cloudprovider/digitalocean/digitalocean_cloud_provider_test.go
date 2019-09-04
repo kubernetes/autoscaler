@@ -23,10 +23,10 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/digitalocean/godo"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/digitalocean/godo"
 )
 
 func testCloudProvider(t *testing.T, client *doClientMock) *digitaloceanCloudProvider {
