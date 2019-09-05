@@ -95,7 +95,7 @@ func (NoOpEventRecorder) Event(object runtime.Object, eventtype, reason, message
 }
 
 // Eventf is a noop method implementation
-func (NoOpEventRecorder) Eventf(object runtime.Object, eventtype, reason, messageFmt string, args ...interface{}) {
+func (NoOpEventRecorder) Eventf(regarding runtime.Object, related runtime.Object, eventtype, reason, action, note string, args ...interface{}) {
 }
 
 // PastEventf is a noop method implementation
@@ -124,8 +124,9 @@ func NewPredicateChecker(kubeClient kube_client.Interface, stop <-chan struct{})
 	serviceInformer := informerFactory.Core().V1().Services()
 	pdbInformer := informerFactory.Policy().V1beta1().PodDisruptionBudgets()
 	storageClassInformer := informerFactory.Storage().V1().StorageClasses()
+	csiNodeInformer := informerFactory.Storage().V1beta1().CSINodes()
+
 	configurator := factory.NewConfigFactory(&factory.ConfigFactoryArgs{
-		SchedulerName:                  apiv1.DefaultSchedulerName,
 		Client:                         kubeClient,
 		NodeInformer:                   nodeInformer,
 		PodInformer:                    podInformer,
@@ -156,10 +157,10 @@ func NewPredicateChecker(kubeClient kube_client.Interface, stop <-chan struct{})
 	sched := scheduler.NewFromConfig(config)
 
 	scheduler.AddAllEventHandlers(sched, apiv1.DefaultSchedulerName,
-		nodeInformer, podInformer, pvInformer, pvcInformer, serviceInformer, storageClassInformer)
+		nodeInformer, podInformer, pvInformer, pvcInformer, serviceInformer, storageClassInformer, csiNodeInformer)
 
 	predicateMap := map[string]predicates.FitPredicate{}
-	for predicateName, predicateFunc := range sched.Config().Algorithm.Predicates() {
+	for predicateName, predicateFunc := range sched.Algorithm.Predicates() {
 		predicateMap[predicateName] = predicateFunc
 	}
 	// We want to make sure that some predicates are present to run them first
