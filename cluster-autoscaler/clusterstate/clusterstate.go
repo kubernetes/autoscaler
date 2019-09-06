@@ -862,7 +862,7 @@ func isNodeStillStarting(node *apiv1.Node) bool {
 			condition.LastTransitionTime.Time.Sub(node.CreationTimestamp.Time) < MaxStatusSettingDelayAfterCreation {
 			return true
 		}
-		if condition.Type == apiv1.NodeOutOfDisk &&
+		if condition.Type == apiv1.NodeDiskPressure &&
 			condition.Status == apiv1.ConditionTrue &&
 			condition.LastTransitionTime.Time.Sub(node.CreationTimestamp.Time) < MaxStatusSettingDelayAfterCreation {
 			return true
