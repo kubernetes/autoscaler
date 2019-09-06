@@ -589,6 +589,9 @@ func (a *StaticAutoscaler) obtainNodeLists(cp cloudprovider.CloudProvider) ([]*a
 
 // actOnEmptyCluster returns true if the cluster was empty and thus acted upon
 func (a *StaticAutoscaler) actOnEmptyCluster(allNodes, readyNodes []*apiv1.Node, currentTime time.Time) bool {
+	if a.AutoscalingContext.AutoscalingOptions.ScaleUpFromZero {
+		return false
+	}
 	if len(allNodes) == 0 {
 		a.onEmptyCluster("Cluster has no nodes.", true)
 		return true
