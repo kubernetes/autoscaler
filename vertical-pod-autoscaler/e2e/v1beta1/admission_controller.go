@@ -474,6 +474,47 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		}
 	})
 
+	ginkgo.It("accepts valid and rejects invalid VPA object", func() {
+		ginkgo.By("Setting up valid VPA object")
+		validVPA := []byte(`{
+			"kind": "VerticalPodAutoscaler",
+			"apiVersion": "autoscaling.k8s.io/v1beta1",
+			"metadata": {"name": "hamster-vpa-valid"},
+			"spec": {
+				"targetRef": {
+					"apiVersion": "apps/v1",
+					"kind": "Deployment",
+					"name":"hamster"
+				},
+		   	"resourcePolicy": {
+		  		"containerPolicies": [{"containerName": "*", "minAllowed":{"cpu":"50m"}}]
+		  	}
+		  }
+		}`)
+		err := InstallRawVPA(f, validVPA)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred(), "Valid VPA object rejected") //
+
+		ginkgo.By("Setting up invalid VPA object")
+		invalidVPA := []byte(`{
+			"kind": "VerticalPodAutoscaler",
+			"apiVersion": "autoscaling.k8s.io/v1beta1",
+			"metadata": {"name": "hamster-vpa-invalid"},
+			"spec": {
+				"targetRef": {
+		    	"apiVersion": "apps/v1",
+		    	"kind": "Deployment",
+		    	"name": "hamster"
+		   	},
+		   	"resourcePolicy": {
+		  		"containerPolicies": [{"containerName": "*", "minAllowed":{"requests":{"cpu":"50m"}}}]
+		  	}
+		  }
+		}`)
+		err2 := InstallRawVPA(f, invalidVPA)
+		gomega.Expect(err2).To(gomega.HaveOccurred(), "Invalid VPA object accepted")
+		gomega.Expect(err2.Error()).To(gomega.MatchRegexp(`Internal error occurred: admission webhook .*vpa.* denied the request: .*`))
+	})
+
 })
 
 func startDeploymentPods(f *framework.Framework, deployment *appsv1.Deployment) *apiv1.PodList {
