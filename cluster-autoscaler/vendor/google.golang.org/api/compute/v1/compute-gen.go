@@ -1,4 +1,4 @@
-// Copyright 2018 Google Inc. All rights reserved.
+// Copyright 2019 Google LLC.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -6,13 +6,39 @@
 
 // Package compute provides access to the Compute Engine API.
 //
-// See https://developers.google.com/compute/docs/reference/latest/
+// For product documentation, see: https://developers.google.com/compute/docs/reference/latest/
+//
+// Creating a client
 //
 // Usage example:
 //
 //   import "google.golang.org/api/compute/v1"
 //   ...
-//   computeService, err := compute.New(oauthHttpClient)
+//   ctx := context.Background()
+//   computeService, err := compute.NewService(ctx)
+//
+// In this example, Google Application Default Credentials are used for authentication.
+//
+// For information on how to create and obtain Application Default Credentials, see https://developers.google.com/identity/protocols/application-default-credentials.
+//
+// Other authentication options
+//
+// By default, all available scopes (see "Constants") are used to authenticate. To restrict scopes, use option.WithScopes:
+//
+//   computeService, err := compute.NewService(ctx, option.WithScopes(compute.DevstorageReadWriteScope))
+//
+// To use an API key for authentication (note: some APIs do not support API keys), use option.WithAPIKey:
+//
+//   computeService, err := compute.NewService(ctx, option.WithAPIKey("AIza..."))
+//
+// To use an OAuth token (e.g., a user token obtained via a three-legged OAuth flow), use option.WithTokenSource:
+//
+//   config := &oauth2.Config{...}
+//   // ...
+//   token, err := config.Exchange(ctx, ...)
+//   computeService, err := compute.NewService(ctx, option.WithTokenSource(config.TokenSource(ctx, token)))
+//
+// See https://godoc.org/google.golang.org/api/option/ for details on options.
 package compute // import "google.golang.org/api/compute/v1"
 
 import (
@@ -29,6 +55,8 @@ import (
 
 	gensupport "google.golang.org/api/gensupport"
 	googleapi "google.golang.org/api/googleapi"
+	option "google.golang.org/api/option"
+	htransport "google.golang.org/api/transport/http"
 )
 
 // Always reference these packages, just in case the auto-generated code
@@ -71,6 +99,37 @@ const (
 	DevstorageReadWriteScope = "https://www.googleapis.com/auth/devstorage.read_write"
 )
 
+// NewService creates a new Service.
+func NewService(ctx context.Context, opts ...option.ClientOption) (*Service, error) {
+	scopesOption := option.WithScopes(
+		"https://www.googleapis.com/auth/cloud-platform",
+		"https://www.googleapis.com/auth/compute",
+		"https://www.googleapis.com/auth/compute.readonly",
+		"https://www.googleapis.com/auth/devstorage.full_control",
+		"https://www.googleapis.com/auth/devstorage.read_only",
+		"https://www.googleapis.com/auth/devstorage.read_write",
+	)
+	// NOTE: prepend, so we don't override user-specified scopes.
+	opts = append([]option.ClientOption{scopesOption}, opts...)
+	client, endpoint, err := htransport.NewClient(ctx, opts...)
+	if err != nil {
+		return nil, err
+	}
+	s, err := New(client)
+	if err != nil {
+		return nil, err
+	}
+	if endpoint != "" {
+		s.BasePath = endpoint
+	}
+	return s, nil
+}
+
+// New creates a new Service. It uses the provided http.Client for requests.
+//
+// Deprecated: please use NewService instead.
+// To provide a custom HTTP client, use option.WithHTTPClient.
+// If you are using google.golang.org/api/googleapis/transport.APIKey, use option.WithAPIKey with NewService instead.
 func New(client *http.Client) (*Service, error) {
 	if client == nil {
 		return nil, errors.New("client is nil")
@@ -102,6 +161,7 @@ func New(client *http.Client) (*Service, error) {
 	s.LicenseCodes = NewLicenseCodesService(s)
 	s.Licenses = NewLicensesService(s)
 	s.MachineTypes = NewMachineTypesService(s)
+	s.NetworkEndpointGroups = NewNetworkEndpointGroupsService(s)
 	s.Networks = NewNetworksService(s)
 	s.NodeGroups = NewNodeGroupsService(s)
 	s.NodeTemplates = NewNodeTemplatesService(s)
@@ -193,6 +253,8 @@ type Service struct {
 	Licenses *LicensesService
 
 	MachineTypes *MachineTypesService
+
+	NetworkEndpointGroups *NetworkEndpointGroupsService
 
 	Networks *NetworksService
 
@@ -500,6 +562,15 @@ type MachineTypesService struct {
 	s *Service
 }
 
+func NewNetworkEndpointGroupsService(s *Service) *NetworkEndpointGroupsService {
+	rs := &NetworkEndpointGroupsService{s: s}
+	return rs
+}
+
+type NetworkEndpointGroupsService struct {
+	s *Service
+}
+
 func NewNetworksService(s *Service) *NetworksService {
 	rs := &NetworksService{s: s}
 	return rs
@@ -796,8 +867,11 @@ type AcceleratorConfig struct {
 	AcceleratorCount int64 `json:"acceleratorCount,omitempty"`
 
 	// AcceleratorType: Full or partial URL of the accelerator type resource
-	// to attach to this instance. If you are creating an instance template,
-	// specify only the accelerator name.
+	// to attach to this instance. For example:
+	// projects/my-project/zones/us-central1-c/acceleratorTypes/nvidia-tesla-
+	// p100 If you are creating an instance template, specify only the
+	// accelerator name. See GPUs on Compute Engine for a full list of
+	// accelerator types.
 	AcceleratorType string `json:"acceleratorType,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "AcceleratorCount") to
@@ -1492,6 +1566,7 @@ type Address struct {
 	// Possible values:
 	//   "DNS_RESOLVER"
 	//   "GCE_ENDPOINT"
+	//   "NAT_AUTO"
 	//   "VPC_PEERING"
 	Purpose string `json:"purpose,omitempty"`
 
@@ -2053,7 +2128,7 @@ type AttachedDisk struct {
 	// the instance.
 	//
 	// If not specified, the server chooses a default device name to apply
-	// to this disk, in the form persistent-disks-x, where x is a number
+	// to this disk, in the form persistent-disk-x, where x is a number
 	// assigned by Google Compute Engine. This field is only applicable for
 	// persistent disks.
 	DeviceName string `json:"deviceName,omitempty"`
@@ -2258,6 +2333,23 @@ type AttachedDiskInitializeParams struct {
 	// you cannot create disks for instances in a managed instance group if
 	// the source images are encrypted with your own keys.
 	SourceImageEncryptionKey *CustomerEncryptionKey `json:"sourceImageEncryptionKey,omitempty"`
+
+	// SourceSnapshot: The source snapshot to create this disk. When
+	// creating a new instance, one of initializeParams.sourceSnapshot or
+	// disks.source is required except for local SSD.
+	//
+	// To create a disk with a snapshot that you created, specify the
+	// snapshot name in the following
+	// format:
+	// global/snapshots/my-backup
+	//
+	//
+	// If the source snapshot is deleted later, this field will not be set.
+	SourceSnapshot string `json:"sourceSnapshot,omitempty"`
+
+	// SourceSnapshotEncryptionKey: The customer-supplied encryption key of
+	// the source snapshot.
+	SourceSnapshotEncryptionKey *CustomerEncryptionKey `json:"sourceSnapshotEncryptionKey,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "Description") to
 	// unconditionally include in API requests. By default, fields with
@@ -3206,7 +3298,7 @@ func (s *AutoscalingPolicyCustomMetricUtilization) UnmarshalJSON(data []byte) er
 // of autoscaling based on load balancing.
 type AutoscalingPolicyLoadBalancingUtilization struct {
 	// UtilizationTarget: Fraction of backend capacity utilization (set in
-	// HTTP(s) load balancing configuration) that autoscaler should
+	// HTTP(S) load balancing configuration) that autoscaler should
 	// maintain. Must be a positive float value. If not defined, the default
 	// is 0.8.
 	UtilizationTarget float64 `json:"utilizationTarget,omitempty"`
@@ -3311,6 +3403,15 @@ type Backend struct {
 	// This cannot be used for internal load balancing.
 	MaxConnections int64 `json:"maxConnections,omitempty"`
 
+	// MaxConnectionsPerEndpoint: The max number of simultaneous connections
+	// that a single backend network endpoint can handle. This is used to
+	// calculate the capacity of the group. Can be used in either CONNECTION
+	// or UTILIZATION balancing modes. For CONNECTION mode, either
+	// maxConnections or maxConnectionsPerEndpoint must be set.
+	//
+	// This cannot be used for internal load balancing.
+	MaxConnectionsPerEndpoint int64 `json:"maxConnectionsPerEndpoint,omitempty"`
+
 	// MaxConnectionsPerInstance: The max number of simultaneous connections
 	// that a single backend instance can handle. This is used to calculate
 	// the capacity of the group. Can be used in either CONNECTION or
@@ -3327,6 +3428,14 @@ type Backend struct {
 	//
 	// This cannot be used for internal load balancing.
 	MaxRate int64 `json:"maxRate,omitempty"`
+
+	// MaxRatePerEndpoint: The max requests per second (RPS) that a single
+	// backend network endpoint can handle. This is used to calculate the
+	// capacity of the group. Can be used in either balancing mode. For RATE
+	// mode, either maxRate or maxRatePerEndpoint must be set.
+	//
+	// This cannot be used for internal load balancing.
+	MaxRatePerEndpoint float64 `json:"maxRatePerEndpoint,omitempty"`
 
 	// MaxRatePerInstance: The max requests per second (RPS) that a single
 	// backend instance can handle. This is used to calculate the capacity
@@ -3370,6 +3479,7 @@ func (s *Backend) UnmarshalJSON(data []byte) error {
 	type NoMethod Backend
 	var s1 struct {
 		CapacityScaler     gensupport.JSONFloat64 `json:"capacityScaler"`
+		MaxRatePerEndpoint gensupport.JSONFloat64 `json:"maxRatePerEndpoint"`
 		MaxRatePerInstance gensupport.JSONFloat64 `json:"maxRatePerInstance"`
 		MaxUtilization     gensupport.JSONFloat64 `json:"maxUtilization"`
 		*NoMethod
@@ -3379,6 +3489,7 @@ func (s *Backend) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	s.CapacityScaler = float64(s1.CapacityScaler)
+	s.MaxRatePerEndpoint = float64(s1.MaxRatePerEndpoint)
 	s.MaxRatePerInstance = float64(s1.MaxRatePerInstance)
 	s.MaxUtilization = float64(s1.MaxUtilization)
 	return nil
@@ -3672,6 +3783,10 @@ type BackendService struct {
 	// format.
 	CreationTimestamp string `json:"creationTimestamp,omitempty"`
 
+	// CustomRequestHeaders: Headers that the HTTP/S load balancer should
+	// add to proxied requests.
+	CustomRequestHeaders []string `json:"customRequestHeaders,omitempty"`
+
 	// Description: An optional description of this resource. Provide this
 	// property when you create the resource.
 	Description string `json:"description,omitempty"`
@@ -3720,6 +3835,7 @@ type BackendService struct {
 	// Possible values:
 	//   "EXTERNAL"
 	//   "INTERNAL"
+	//   "INTERNAL_SELF_MANAGED"
 	//   "INVALID_LOAD_BALANCING_SCHEME"
 	LoadBalancingScheme string `json:"loadBalancingScheme,omitempty"`
 
@@ -3756,6 +3872,7 @@ type BackendService struct {
 	//
 	// Possible values:
 	//   "HTTP"
+	//   "HTTP2"
 	//   "HTTPS"
 	//   "SSL"
 	//   "TCP"
@@ -4255,6 +4372,33 @@ func (s *BackendServiceListWarningData) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+type BackendServiceReference struct {
+	BackendService string `json:"backendService,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "BackendService") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "BackendService") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *BackendServiceReference) MarshalJSON() ([]byte, error) {
+	type NoMethod BackendServiceReference
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 type BackendServicesScopedList struct {
 	// BackendServices: A list of BackendServices contained in this scope.
 	BackendServices []*BackendService `json:"backendServices,omitempty"`
@@ -4391,10 +4535,10 @@ func (s *BackendServicesScopedListWarningData) MarshalJSON() ([]byte, error) {
 
 // Binding: Associates `members` with a `role`.
 type Binding struct {
-	// Condition: Unimplemented. The condition that is associated with this
-	// binding. NOTE: an unsatisfied condition will not allow user access
-	// via current binding. Different bindings, including their conditions,
-	// are examined independently.
+	// Condition: The condition that is associated with this binding. NOTE:
+	// An unsatisfied condition will not allow user access via current
+	// binding. Different bindings, including their conditions, are examined
+	// independently.
 	Condition *Expr `json:"condition,omitempty"`
 
 	// Members: Specifies the identities requesting access for a Cloud
@@ -4421,7 +4565,7 @@ type Binding struct {
 	//
 	//
 	//
-	// * `domain:{domain}`: A Google Apps domain name that represents all
+	// * `domain:{domain}`: The G Suite domain (primary) that represents all
 	// the users of that domain. For example, `google.com` or `example.com`.
 	Members []string `json:"members,omitempty"`
 
@@ -5127,11 +5271,7 @@ type Condition struct {
 	//   "SERVICE"
 	Sys string `json:"sys,omitempty"`
 
-	// Value: DEPRECATED. Use 'values' instead.
-	Value string `json:"value,omitempty"`
-
-	// Values: The objects of the condition. This is mutually exclusive with
-	// 'value'.
+	// Values: The objects of the condition.
 	Values []string `json:"values,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "Iam") to
@@ -5284,14 +5424,16 @@ type DeprecationStatus struct {
 	// resource as the deprecated resource.
 	Replacement string `json:"replacement,omitempty"`
 
-	// State: The deprecation state of this resource. This can be
-	// DEPRECATED, OBSOLETE, or DELETED. Operations which create a new
-	// resource using a DEPRECATED resource will return successfully, but
-	// with a warning indicating the deprecated resource and recommending
-	// its replacement. Operations which use OBSOLETE or DELETED resources
-	// will be rejected and result in an error.
+	// State: The deprecation state of this resource. This can be ACTIVE,
+	// DEPRECATED, OBSOLETE, or DELETED. Operations which communicate the
+	// end of life date for an image, can use ACTIVE. Operations which
+	// create a new resource using a DEPRECATED resource will return
+	// successfully, but with a warning indicating the deprecated resource
+	// and recommending its replacement. Operations which use OBSOLETE or
+	// DELETED resources will be rejected and result in an error.
 	//
 	// Possible values:
+	//   "ACTIVE"
 	//   "DELETED"
 	//   "DEPRECATED"
 	//   "OBSOLETE"
@@ -5336,8 +5478,8 @@ type Disk struct {
 	//
 	// After you encrypt a disk with a customer-supplied key, you must
 	// provide the same key if you use the disk later (e.g. to create a disk
-	// snapshot or an image, or to attach the disk to a virtual
-	// machine).
+	// snapshot, to create a disk image, to create a machine image, or to
+	// attach the disk to a virtual machine).
 	//
 	// Customer-supplied encryption keys do not protect access to metadata
 	// of the disk.
@@ -5505,6 +5647,7 @@ type Disk struct {
 	//
 	// Possible values:
 	//   "CREATING"
+	//   "DELETING"
 	//   "FAILED"
 	//   "READY"
 	//   "RESTORING"
@@ -5512,11 +5655,11 @@ type Disk struct {
 
 	// Type: URL of the disk type resource describing which disk type to use
 	// to create the disk. Provide this when creating the disk. For example:
-	// project/zones/zone/diskTypes/pd-standard or pd-ssd
+	// projects/project/zones/zone/diskTypes/pd-standard or pd-ssd
 	Type string `json:"type,omitempty"`
 
 	// Users: [Output Only] Links to the users of the disk (attached
-	// instances) in form: project/zones/zone/instances/instance
+	// instances) in form: projects/project/zones/zone/instances/instance
 	Users []string `json:"users,omitempty"`
 
 	// Zone: [Output Only] URL of the zone where the disk resides. You must
@@ -7184,6 +7327,52 @@ func (s *FirewallLogConfig) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// FixedOrPercent: Encapsulates numeric value that can be either
+// absolute or relative.
+type FixedOrPercent struct {
+	// Calculated: [Output Only] Absolute value of VM instances calculated
+	// based on the specific mode.
+	//
+	//
+	// - If the value is fixed, then the calculated value is equal to the
+	// fixed value.
+	// - If the value is a percent, then the calculated value is percent/100
+	// * targetSize. For example, the calculated value of a 80% of a managed
+	// instance group with 150 instances would be (80/100 * 150) = 120 VM
+	// instances. If there is a remainder, the number is rounded up.
+	Calculated int64 `json:"calculated,omitempty"`
+
+	// Fixed: Specifies a fixed number of VM instances. This must be a
+	// positive integer.
+	Fixed int64 `json:"fixed,omitempty"`
+
+	// Percent: Specifies a percentage of instances between 0 to 100%,
+	// inclusive. For example, specify 80 for 80%.
+	Percent int64 `json:"percent,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Calculated") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Calculated") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *FixedOrPercent) MarshalJSON() ([]byte, error) {
+	type NoMethod FixedOrPercent
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // ForwardingRule: A ForwardingRule resource. A ForwardingRule resource
 // specifies which pool of target virtual machines to forward a packet
 // to if it matches the given [IPAddress, IPProtocol, ports] tuple. (==
@@ -7247,6 +7436,16 @@ type ForwardingRule struct {
 	//   "UDP"
 	IPProtocol string `json:"IPProtocol,omitempty"`
 
+	// AllPorts: This field is used along with the backend_service field for
+	// internal load balancing or with the target field for internal
+	// TargetInstance. This field cannot be used with port or portRange
+	// fields.
+	//
+	// When the load balancing scheme is INTERNAL and protocol is TCP/UDP,
+	// specify this field to allow packets addressed to any ports will be
+	// forwarded to the backends configured with this forwarding rule.
+	AllPorts bool `json:"allPorts,omitempty"`
+
 	// BackendService: This field is only used for INTERNAL load
 	// balancing.
 	//
@@ -7292,6 +7491,7 @@ type ForwardingRule struct {
 	// Possible values:
 	//   "EXTERNAL"
 	//   "INTERNAL"
+	//   "INTERNAL_SELF_MANAGED"
 	//   "INVALID"
 	LoadBalancingScheme string `json:"loadBalancingScheme,omitempty"`
 
@@ -7368,6 +7568,26 @@ type ForwardingRule struct {
 	// SelfLink: [Output Only] Server-defined URL for the resource.
 	SelfLink string `json:"selfLink,omitempty"`
 
+	// ServiceLabel: An optional prefix to the service name for this
+	// Forwarding Rule. If specified, will be the first label of the fully
+	// qualified service name.
+	//
+	// The label must be 1-63 characters long, and comply with RFC1035.
+	// Specifically, the label must be 1-63 characters long and match the
+	// regular expression `[a-z]([-a-z0-9]*[a-z0-9])?` which means the first
+	// character must be a lowercase letter, and all following characters
+	// must be a dash, lowercase letter, or digit, except the last
+	// character, which cannot be a dash.
+	//
+	// This field is only used for internal load balancing.
+	ServiceLabel string `json:"serviceLabel,omitempty"`
+
+	// ServiceName: [Output Only] The internal fully qualified service name
+	// for this Forwarding Rule.
+	//
+	// This field is only used for internal load balancing.
+	ServiceName string `json:"serviceName,omitempty"`
+
 	// Subnetwork: This field is only used for INTERNAL load balancing.
 	//
 	// For internal load balancing, this field identifies the subnetwork
@@ -7384,8 +7604,8 @@ type ForwardingRule struct {
 	// same region as the forwarding rule. For global forwarding rules, this
 	// target must be a global load balancing resource. The forwarded
 	// traffic must be of a type appropriate to the target object. For
-	// INTERNAL_SELF_MANAGED" load balancing, only HTTP and HTTPS targets
-	// are valid.
+	// INTERNAL_SELF_MANAGED load balancing, only HTTP and HTTPS targets are
+	// valid.
 	Target string `json:"target,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the
@@ -7725,6 +7945,33 @@ func (s *ForwardingRuleListWarningData) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+type ForwardingRuleReference struct {
+	ForwardingRule string `json:"forwardingRule,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ForwardingRule") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ForwardingRule") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ForwardingRuleReference) MarshalJSON() ([]byte, error) {
+	type NoMethod ForwardingRuleReference
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 type ForwardingRulesScopedList struct {
 	// ForwardingRules: A list of forwarding rules contained in this scope.
 	ForwardingRules []*ForwardingRule `json:"forwardingRules,omitempty"`
@@ -7978,6 +8225,88 @@ func (s *GuestOsFeature) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+type HTTP2HealthCheck struct {
+	// Host: The value of the host header in the HTTP/2 health check
+	// request. If left empty (default value), the IP on behalf of which
+	// this health check is performed will be used.
+	Host string `json:"host,omitempty"`
+
+	// Port: The TCP port number for the health check request. The default
+	// value is 443. Valid values are 1 through 65535.
+	Port int64 `json:"port,omitempty"`
+
+	// PortName: Port name as defined in InstanceGroup#NamedPort#name. If
+	// both port and port_name are defined, port takes precedence.
+	PortName string `json:"portName,omitempty"`
+
+	// PortSpecification: Specifies how port is selected for health
+	// checking, can be one of following values:
+	// USE_FIXED_PORT: The port number in
+	// port
+	// is used for health checking.
+	// USE_NAMED_PORT: The
+	// portName
+	// is used for health checking.
+	// USE_SERVING_PORT: For NetworkEndpointGroup, the port specified for
+	// each network endpoint is used for health checking. For other
+	// backends, the port or named port specified in the Backend Service is
+	// used for health checking.
+	//
+	//
+	// If not specified, HTTP2 health check follows behavior specified
+	// in
+	// port
+	// and
+	// portName
+	// fields.
+	//
+	// Possible values:
+	//   "USE_FIXED_PORT"
+	//   "USE_NAMED_PORT"
+	//   "USE_SERVING_PORT"
+	PortSpecification string `json:"portSpecification,omitempty"`
+
+	// ProxyHeader: Specifies the type of proxy header to append before
+	// sending data to the backend, either NONE or PROXY_V1. The default is
+	// NONE.
+	//
+	// Possible values:
+	//   "NONE"
+	//   "PROXY_V1"
+	ProxyHeader string `json:"proxyHeader,omitempty"`
+
+	// RequestPath: The request path of the HTTP/2 health check request. The
+	// default value is /.
+	RequestPath string `json:"requestPath,omitempty"`
+
+	// Response: The string to match anywhere in the first 1024 bytes of the
+	// response body. If left empty (the default value), the status code
+	// determines health. The response data can only be ASCII.
+	Response string `json:"response,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Host") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Host") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *HTTP2HealthCheck) MarshalJSON() ([]byte, error) {
+	type NoMethod HTTP2HealthCheck
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 type HTTPHealthCheck struct {
 	// Host: The value of the host header in the HTTP health check request.
 	// If left empty (default value), the IP on behalf of which this health
@@ -7991,6 +8320,33 @@ type HTTPHealthCheck struct {
 	// PortName: Port name as defined in InstanceGroup#NamedPort#name. If
 	// both port and port_name are defined, port takes precedence.
 	PortName string `json:"portName,omitempty"`
+
+	// PortSpecification: Specifies how port is selected for health
+	// checking, can be one of following values:
+	// USE_FIXED_PORT: The port number in
+	// port
+	// is used for health checking.
+	// USE_NAMED_PORT: The
+	// portName
+	// is used for health checking.
+	// USE_SERVING_PORT: For NetworkEndpointGroup, the port specified for
+	// each network endpoint is used for health checking. For other
+	// backends, the port or named port specified in the Backend Service is
+	// used for health checking.
+	//
+	//
+	// If not specified, HTTP health check follows behavior specified
+	// in
+	// port
+	// and
+	// portName
+	// fields.
+	//
+	// Possible values:
+	//   "USE_FIXED_PORT"
+	//   "USE_NAMED_PORT"
+	//   "USE_SERVING_PORT"
+	PortSpecification string `json:"portSpecification,omitempty"`
 
 	// ProxyHeader: Specifies the type of proxy header to append before
 	// sending data to the backend, either NONE or PROXY_V1. The default is
@@ -8046,6 +8402,33 @@ type HTTPSHealthCheck struct {
 	// PortName: Port name as defined in InstanceGroup#NamedPort#name. If
 	// both port and port_name are defined, port takes precedence.
 	PortName string `json:"portName,omitempty"`
+
+	// PortSpecification: Specifies how port is selected for health
+	// checking, can be one of following values:
+	// USE_FIXED_PORT: The port number in
+	// port
+	// is used for health checking.
+	// USE_NAMED_PORT: The
+	// portName
+	// is used for health checking.
+	// USE_SERVING_PORT: For NetworkEndpointGroup, the port specified for
+	// each network endpoint is used for health checking. For other
+	// backends, the port or named port specified in the Backend Service is
+	// used for health checking.
+	//
+	//
+	// If not specified, HTTPS health check follows behavior specified
+	// in
+	// port
+	// and
+	// portName
+	// fields.
+	//
+	// Possible values:
+	//   "USE_FIXED_PORT"
+	//   "USE_NAMED_PORT"
+	//   "USE_SERVING_PORT"
+	PortSpecification string `json:"portSpecification,omitempty"`
 
 	// ProxyHeader: Specifies the type of proxy header to append before
 	// sending data to the backend, either NONE or PROXY_V1. The default is
@@ -8108,6 +8491,8 @@ type HealthCheck struct {
 	// after this many consecutive successes. The default value is 2.
 	HealthyThreshold int64 `json:"healthyThreshold,omitempty"`
 
+	Http2HealthCheck *HTTP2HealthCheck `json:"http2HealthCheck,omitempty"`
+
 	HttpHealthCheck *HTTPHealthCheck `json:"httpHealthCheck,omitempty"`
 
 	HttpsHealthCheck *HTTPSHealthCheck `json:"httpsHealthCheck,omitempty"`
@@ -8140,13 +8525,14 @@ type HealthCheck struct {
 	// greater value than checkIntervalSec.
 	TimeoutSec int64 `json:"timeoutSec,omitempty"`
 
-	// Type: Specifies the type of the healthCheck, either TCP, SSL, HTTP or
-	// HTTPS. If not specified, the default is TCP. Exactly one of the
-	// protocol-specific health check field must be specified, which must
-	// match type field.
+	// Type: Specifies the type of the healthCheck, either TCP, SSL, HTTP,
+	// HTTPS or HTTP2. If not specified, the default is TCP. Exactly one of
+	// the protocol-specific health check field must be specified, which
+	// must match type field.
 	//
 	// Possible values:
 	//   "HTTP"
+	//   "HTTP2"
 	//   "HTTPS"
 	//   "INVALID"
 	//   "SSL"
@@ -8408,6 +8794,53 @@ type HealthStatus struct {
 
 func (s *HealthStatus) MarshalJSON() ([]byte, error) {
 	type NoMethod HealthStatus
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type HealthStatusForNetworkEndpoint struct {
+	// BackendService: URL of the backend service associated with the health
+	// state of the network endpoint.
+	BackendService *BackendServiceReference `json:"backendService,omitempty"`
+
+	// ForwardingRule: URL of the forwarding rule associated with the health
+	// state of the network endpoint.
+	ForwardingRule *ForwardingRuleReference `json:"forwardingRule,omitempty"`
+
+	// HealthCheck: URL of the health check associated with the health state
+	// of the network endpoint.
+	HealthCheck *HealthCheckReference `json:"healthCheck,omitempty"`
+
+	// HealthState: Health state of the network endpoint determined based on
+	// the health checks configured.
+	//
+	// Possible values:
+	//   "DRAINING"
+	//   "HEALTHY"
+	//   "UNHEALTHY"
+	//   "UNKNOWN"
+	HealthState string `json:"healthState,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "BackendService") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "BackendService") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *HealthStatusForNetworkEndpoint) MarshalJSON() ([]byte, error) {
+	type NoMethod HealthStatusForNetworkEndpoint
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
@@ -9109,6 +9542,7 @@ type Image struct {
 	// Possible values are FAILED, PENDING, or READY.
 	//
 	// Possible values:
+	//   "DELETING"
 	//   "FAILED"
 	//   "PENDING"
 	//   "READY"
@@ -9153,8 +9587,9 @@ type ImageRawDisk struct {
 	//   "TAR"
 	ContainerType string `json:"containerType,omitempty"`
 
-	// Sha1Checksum: An optional SHA1 checksum of the disk image before
-	// unpackaging; provided by the client when the disk image is created.
+	// Sha1Checksum: [Deprecated] This field is deprecated. An optional SHA1
+	// checksum of the disk image before unpackaging provided by the client
+	// when the disk image is created.
 	Sha1Checksum string `json:"sha1Checksum,omitempty"`
 
 	// Source: The full Google Cloud Storage URL where the disk image is
@@ -9371,6 +9806,8 @@ type Instance struct {
 	// attached to the instance.
 	GuestAccelerators []*AcceleratorConfig `json:"guestAccelerators,omitempty"`
 
+	Hostname string `json:"hostname,omitempty"`
+
 	// Id: [Output Only] The unique identifier for the resource. This
 	// identifier is defined by the server.
 	Id uint64 `json:"id,omitempty,string"`
@@ -9458,6 +9895,10 @@ type Instance struct {
 	// instance. See Service Accounts for more information.
 	ServiceAccounts []*ServiceAccount `json:"serviceAccounts,omitempty"`
 
+	ShieldedInstanceConfig *ShieldedInstanceConfig `json:"shieldedInstanceConfig,omitempty"`
+
+	ShieldedInstanceIntegrityPolicy *ShieldedInstanceIntegrityPolicy `json:"shieldedInstanceIntegrityPolicy,omitempty"`
+
 	// StartRestricted: [Output Only] Whether a VM has been restricted for
 	// start because Compute Engine has detected suspicious activity.
 	StartRestricted bool `json:"startRestricted,omitempty"`
@@ -9468,6 +9909,7 @@ type Instance struct {
 	//
 	// Possible values:
 	//   "PROVISIONING"
+	//   "REPAIRING"
 	//   "RUNNING"
 	//   "STAGING"
 	//   "STOPPED"
@@ -10087,6 +10529,10 @@ func (s *InstanceGroupListWarningData) MarshalJSON() ([]byte, error) {
 // beta.regionInstanceGroupManagers ==) (== resource_for
 // v1.regionInstanceGroupManagers ==)
 type InstanceGroupManager struct {
+	// AutoHealingPolicies: The autohealing policy for this managed instance
+	// group. You can specify only one value.
+	AutoHealingPolicies []*InstanceGroupManagerAutoHealingPolicy `json:"autoHealingPolicies,omitempty"`
+
 	// BaseInstanceName: The base instance name to use for instances in this
 	// group. The value must be 1-58 characters long. Instances are named by
 	// appending a hyphen and a random four-character string to the base
@@ -10152,6 +10598,9 @@ type InstanceGroupManager struct {
 	// server defines this URL.
 	SelfLink string `json:"selfLink,omitempty"`
 
+	// Status: [Output Only] The status of this managed instance group.
+	Status *InstanceGroupManagerStatus `json:"status,omitempty"`
+
 	// TargetPools: The URLs for all TargetPool resources to which instances
 	// in the instanceGroup field are added. The target pools automatically
 	// apply to all of the instances in the managed instance group.
@@ -10162,6 +10611,20 @@ type InstanceGroupManager struct {
 	// Resizing the group changes this number.
 	TargetSize int64 `json:"targetSize,omitempty"`
 
+	// UpdatePolicy: The update policy for this managed instance group.
+	UpdatePolicy *InstanceGroupManagerUpdatePolicy `json:"updatePolicy,omitempty"`
+
+	// Versions: Specifies the instance templates used by this managed
+	// instance group to create instances.
+	//
+	// Each version is defined by an instanceTemplate and a name. Every
+	// version can appear at most once per instance group. This field
+	// overrides the top-level instanceTemplate field. Read more about the
+	// relationships between these fields. Exactly one version must leave
+	// the targetSize field unset. That version will be applied to all
+	// remaining instances. For more information, read about canary updates.
+	Versions []*InstanceGroupManagerVersion `json:"versions,omitempty"`
+
 	// Zone: [Output Only] The URL of the zone where the managed instance
 	// group is located (for zonal resources).
 	Zone string `json:"zone,omitempty"`
@@ -10170,15 +10633,15 @@ type InstanceGroupManager struct {
 	// server.
 	googleapi.ServerResponse `json:"-"`
 
-	// ForceSendFields is a list of field names (e.g. "BaseInstanceName") to
-	// unconditionally include in API requests. By default, fields with
+	// ForceSendFields is a list of field names (e.g. "AutoHealingPolicies")
+	// to unconditionally include in API requests. By default, fields with
 	// empty values are omitted from API requests. However, any non-pointer,
 	// non-interface field appearing in ForceSendFields will be sent to the
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
-	// NullFields is a list of field names (e.g. "BaseInstanceName") to
+	// NullFields is a list of field names (e.g. "AutoHealingPolicies") to
 	// include in API requests with the JSON null value. By default, fields
 	// with empty values are omitted from API requests. However, any field
 	// with an empty value appearing in NullFields will be sent to the
@@ -10430,6 +10893,42 @@ func (s *InstanceGroupManagerAggregatedListWarningData) MarshalJSON() ([]byte, e
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+type InstanceGroupManagerAutoHealingPolicy struct {
+	// HealthCheck: The URL for the health check that signals autohealing.
+	HealthCheck string `json:"healthCheck,omitempty"`
+
+	// InitialDelaySec: The number of seconds that the managed instance
+	// group waits before it applies autohealing policies to new instances
+	// or recently recreated instances. This initial delay allows instances
+	// to initialize and run their startup scripts before the instance group
+	// determines that they are UNHEALTHY. This prevents the managed
+	// instance group from recreating its instances prematurely. This value
+	// must be from range [0, 3600].
+	InitialDelaySec int64 `json:"initialDelaySec,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "HealthCheck") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "HealthCheck") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *InstanceGroupManagerAutoHealingPolicy) MarshalJSON() ([]byte, error) {
+	type NoMethod InstanceGroupManagerAutoHealingPolicy
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // InstanceGroupManagerList: [Output Only] A list of managed instance
 // groups.
 type InstanceGroupManagerList struct {
@@ -10584,6 +11083,157 @@ type InstanceGroupManagerListWarningData struct {
 
 func (s *InstanceGroupManagerListWarningData) MarshalJSON() ([]byte, error) {
 	type NoMethod InstanceGroupManagerListWarningData
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type InstanceGroupManagerStatus struct {
+	// IsStable: [Output Only] A bit indicating whether the managed instance
+	// group is in a stable state. A stable state means that: none of the
+	// instances in the managed instance group is currently undergoing any
+	// type of change (for example, creation, restart, or deletion); no
+	// future changes are scheduled for instances in the managed instance
+	// group; and the managed instance group itself is not being modified.
+	IsStable bool `json:"isStable,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "IsStable") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "IsStable") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *InstanceGroupManagerStatus) MarshalJSON() ([]byte, error) {
+	type NoMethod InstanceGroupManagerStatus
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type InstanceGroupManagerUpdatePolicy struct {
+	// MaxSurge: The maximum number of instances that can be created above
+	// the specified targetSize during the update process. By default, a
+	// fixed value of 1 is used. This value can be either a fixed number or
+	// a percentage if the instance group has 10 or more instances. If you
+	// set a percentage, the number of instances will be rounded up if
+	// necessary.
+	//
+	// At least one of either maxSurge or maxUnavailable must be greater
+	// than 0. Learn more about maxSurge.
+	MaxSurge *FixedOrPercent `json:"maxSurge,omitempty"`
+
+	// MaxUnavailable: The maximum number of instances that can be
+	// unavailable during the update process. An instance is considered
+	// available if all of the following conditions are satisfied:
+	//
+	//
+	// - The instance's status is RUNNING.
+	// - If there is a health check on the instance group, the instance's
+	// liveness health check result must be HEALTHY at least once. If there
+	// is no health check on the group, then the instance only needs to have
+	// a status of RUNNING to be considered available.  By default, a fixed
+	// value of 1 is used. This value can be either a fixed number or a
+	// percentage if the instance group has 10 or more instances. If you set
+	// a percentage, the number of instances will be rounded up if
+	// necessary.
+	//
+	// At least one of either maxSurge or maxUnavailable must be greater
+	// than 0. Learn more about maxUnavailable.
+	MaxUnavailable *FixedOrPercent `json:"maxUnavailable,omitempty"`
+
+	// MinimalAction: Minimal action to be taken on an instance. You can
+	// specify either RESTART to restart existing instances or REPLACE to
+	// delete and create new instances from the target template. If you
+	// specify a RESTART, the Updater will attempt to perform that action
+	// only. However, if the Updater determines that the minimal action you
+	// specify is not enough to perform the update, it might perform a more
+	// disruptive action.
+	//
+	// Possible values:
+	//   "REPLACE"
+	//   "RESTART"
+	MinimalAction string `json:"minimalAction,omitempty"`
+
+	// Possible values:
+	//   "OPPORTUNISTIC"
+	//   "PROACTIVE"
+	Type string `json:"type,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "MaxSurge") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "MaxSurge") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *InstanceGroupManagerUpdatePolicy) MarshalJSON() ([]byte, error) {
+	type NoMethod InstanceGroupManagerUpdatePolicy
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type InstanceGroupManagerVersion struct {
+	// InstanceTemplate: The URL of the instance template that is specified
+	// for this managed instance group. The group uses this template to
+	// create new instances in the managed instance group until the
+	// `targetSize` for this version is reached.
+	InstanceTemplate string `json:"instanceTemplate,omitempty"`
+
+	// Name: Name of the version. Unique among all versions in the scope of
+	// this managed instance group.
+	Name string `json:"name,omitempty"`
+
+	// TargetSize: Specifies the intended number of instances to be created
+	// from the instanceTemplate. The final number of instances created from
+	// the template will be equal to:
+	// - If expressed as a fixed number, the minimum of either
+	// targetSize.fixed or instanceGroupManager.targetSize is used.
+	// - if expressed as a percent, the targetSize would be
+	// (targetSize.percent/100 * InstanceGroupManager.targetSize) If there
+	// is a remainder, the number is rounded up.  If unset, this version
+	// will update any remaining instances not updated by another version.
+	// Read Starting a canary update for more information.
+	TargetSize *FixedOrPercent `json:"targetSize,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "InstanceTemplate") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "InstanceTemplate") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *InstanceGroupManagerVersion) MarshalJSON() ([]byte, error) {
+	type NoMethod InstanceGroupManagerVersion
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
@@ -11743,6 +12393,8 @@ type InstanceProperties struct {
 	// to obtain the access tokens for these instances.
 	ServiceAccounts []*ServiceAccount `json:"serviceAccounts,omitempty"`
 
+	ShieldedInstanceConfig *ShieldedInstanceConfig `json:"shieldedInstanceConfig,omitempty"`
+
 	// Tags: A list of tags to apply to the instances that are created from
 	// this template. The tags identify valid sources or targets for network
 	// firewalls. The setTags method can modify this list of tags. Each tag
@@ -12042,6 +12694,7 @@ type InstanceWithNamedPorts struct {
 	//
 	// Possible values:
 	//   "PROVISIONING"
+	//   "REPAIRING"
 	//   "RUNNING"
 	//   "STAGING"
 	//   "STOPPED"
@@ -12428,7 +13081,7 @@ type Interconnect struct {
 	// side of the Interconnect link. This can be used only for ping tests.
 	GoogleIpAddress string `json:"googleIpAddress,omitempty"`
 
-	// GoogleReferenceId: [Output Only] Google reference ID; to be used when
+	// GoogleReferenceId: [Output Only] Google reference ID to be used when
 	// raising support tickets with Google or otherwise to debug backend
 	// connectivity issues.
 	GoogleReferenceId string `json:"googleReferenceId,omitempty"`
@@ -12441,8 +13094,13 @@ type Interconnect struct {
 	// InterconnectAttachments configured to use this Interconnect.
 	InterconnectAttachments []string `json:"interconnectAttachments,omitempty"`
 
-	// InterconnectType: Type of interconnect. Note that "IT_PRIVATE" has
-	// been deprecated in favor of "DEDICATED"
+	// InterconnectType: Type of interconnect, which can take one of the
+	// following values:
+	// - PARTNER: A partner-managed interconnection shared between customers
+	// though a partner.
+	// - DEDICATED: A dedicated physical interconnection with the customer.
+	// Note that a value IT_PRIVATE has been deprecated in favor of
+	// DEDICATED.
 	//
 	// Possible values:
 	//   "DEDICATED"
@@ -12454,9 +13112,12 @@ type Interconnect struct {
 	// for interconnects.
 	Kind string `json:"kind,omitempty"`
 
-	// LinkType: Type of link requested. This field indicates speed of each
-	// of the links in the bundle, not the entire bundle. Only 10G per link
-	// is allowed for a dedicated interconnect. Options: Ethernet_10G_LR
+	// LinkType: Type of link requested, which can take one of the following
+	// values:
+	// - LINK_TYPE_ETHERNET_10G_LR: A 10G Ethernet with LR optics
+	// - LINK_TYPE_ETHERNET_100G_LR: A 100G Ethernet with LR optics. Note
+	// that this field indicates the speed of each of the links in the
+	// bundle, not the speed of the entire bundle.
 	//
 	// Possible values:
 	//   "LINK_TYPE_ETHERNET_10G_LR"
@@ -12482,8 +13143,16 @@ type Interconnect struct {
 	// Notifications.
 	NocContactEmail string `json:"nocContactEmail,omitempty"`
 
-	// OperationalStatus: [Output Only] The current status of whether or not
-	// this Interconnect is functional.
+	// OperationalStatus: [Output Only] The current status of this
+	// Interconnect's functionality, which can take one of the following
+	// values:
+	// - OS_ACTIVE: A valid Interconnect, which is turned up and is ready to
+	// use. Attachments may be provisioned on this Interconnect.
+	// - OS_UNPROVISIONED: An Interconnect that has not completed turnup. No
+	// attachments may be provisioned on this Interconnect.
+	// - OS_UNDER_MAINTENANCE: An Interconnect that is undergoing internal
+	// maintenance. No attachments may be provisioned or updated on this
+	// Interconnect.
 	//
 	// Possible values:
 	//   "OS_ACTIVE"
@@ -12507,8 +13176,15 @@ type Interconnect struct {
 	// SelfLink: [Output Only] Server-defined URL for the resource.
 	SelfLink string `json:"selfLink,omitempty"`
 
-	// State: [Output Only] The current state of whether or not this
-	// Interconnect is functional.
+	// State: [Output Only] The current state of Interconnect functionality,
+	// which can take one of the following values:
+	// - ACTIVE: The Interconnect is valid, turned up and ready to use.
+	// Attachments may be provisioned on this Interconnect.
+	// - UNPROVISIONED: The Interconnect has not completed turnup. No
+	// attachments may be provisioned on this Interconnect.
+	// - UNDER_MAINTENANCE: The Interconnect is undergoing internal
+	// maintenance. No attachments may be provisioned or updated on this
+	// Interconnect.
 	//
 	// Possible values:
 	//   "ACTIVE"
@@ -12551,10 +13227,22 @@ type InterconnectAttachment struct {
 	// Not present for PARTNER_PROVIDER.
 	AdminEnabled bool `json:"adminEnabled,omitempty"`
 
-	// Bandwidth: Provisioned bandwidth capacity for the
-	// interconnectAttachment. Can be set by the partner to update the
-	// customer's provisioned bandwidth. Output only for PARTNER type,
-	// mutable for PARTNER_PROVIDER and DEDICATED.
+	// Bandwidth: Provisioned bandwidth capacity for the interconnect
+	// attachment. For attachments of type DEDICATED, the user can set the
+	// bandwidth. For attachments of type PARTNER, the Google Partner that
+	// is operating the interconnect must set the bandwidth. Output only for
+	// PARTNER type, mutable for PARTNER_PROVIDER and DEDICATED, and can
+	// take one of the following values:
+	// - BPS_50M: 50 Mbit/s
+	// - BPS_100M: 100 Mbit/s
+	// - BPS_200M: 200 Mbit/s
+	// - BPS_300M: 300 Mbit/s
+	// - BPS_400M: 400 Mbit/s
+	// - BPS_500M: 500 Mbit/s
+	// - BPS_1G: 1 Gbit/s
+	// - BPS_2G: 2 Gbit/s
+	// - BPS_5G: 5 Gbit/s
+	// - BPS_10G: 10 Gbit/s
 	//
 	// Possible values:
 	//   "BPS_100M"
@@ -12597,12 +13285,16 @@ type InterconnectAttachment struct {
 	Description string `json:"description,omitempty"`
 
 	// EdgeAvailabilityDomain: Desired availability domain for the
-	// attachment. Only available for type PARTNER, at creation time. For
-	// improved reliability, customers should configure a pair of
-	// attachments with one per availability domain. The selected
-	// availability domain will be provided to the Partner via the pairing
-	// key so that the provisioned circuit will lie in the specified domain.
-	// If not specified, the value will default to AVAILABILITY_DOMAIN_ANY.
+	// attachment. Only available for type PARTNER, at creation time, and
+	// can take one of the following values:
+	// - AVAILABILITY_DOMAIN_ANY
+	// - AVAILABILITY_DOMAIN_1
+	// - AVAILABILITY_DOMAIN_2 For improved reliability, customers should
+	// configure a pair of attachments, one per availability domain. The
+	// selected availability domain will be provided to the Partner via the
+	// pairing key, so that the provisioned circuit will lie in the
+	// specified domain. If not specified, the value will default to
+	// AVAILABILITY_DOMAIN_ANY.
 	//
 	// Possible values:
 	//   "AVAILABILITY_DOMAIN_1"
@@ -12637,7 +13329,12 @@ type InterconnectAttachment struct {
 	Name string `json:"name,omitempty"`
 
 	// OperationalStatus: [Output Only] The current status of whether or not
-	// this interconnect attachment is functional.
+	// this interconnect attachment is functional, which can take one of the
+	// following values:
+	// - OS_ACTIVE: The attachment has been turned up and is ready to use.
+	//
+	// - OS_UNPROVISIONED: The attachment is not ready to use yet, because
+	// turnup is not complete.
 	//
 	// Possible values:
 	//   "OS_ACTIVE"
@@ -12650,10 +13347,10 @@ type InterconnectAttachment struct {
 	// selected partner. Of the form "XXXXX/region/domain"
 	PairingKey string `json:"pairingKey,omitempty"`
 
-	// PartnerAsn: Optional BGP ASN for the router that should be supplied
-	// by a layer 3 Partner if they configured BGP on behalf of the
-	// customer. Output only for PARTNER type, input only for
-	// PARTNER_PROVIDER, not available for DEDICATED.
+	// PartnerAsn: Optional BGP ASN for the router supplied by a Layer 3
+	// Partner if they configured BGP on behalf of the customer. Output only
+	// for PARTNER type, input only for PARTNER_PROVIDER, not available for
+	// DEDICATED.
 	PartnerAsn int64 `json:"partnerAsn,omitempty,string"`
 
 	// PartnerMetadata: Informational metadata about Partner attachments
@@ -12682,7 +13379,26 @@ type InterconnectAttachment struct {
 	SelfLink string `json:"selfLink,omitempty"`
 
 	// State: [Output Only] The current state of this attachment's
-	// functionality.
+	// functionality. Enum values ACTIVE and UNPROVISIONED are shared by
+	// DEDICATED/PRIVATE, PARTNER, and PARTNER_PROVIDER interconnect
+	// attachments, while enum values PENDING_PARTNER,
+	// PARTNER_REQUEST_RECEIVED, and PENDING_CUSTOMER are used for only
+	// PARTNER and PARTNER_PROVIDER interconnect attachments. This state can
+	// take one of the following values:
+	// - ACTIVE: The attachment has been turned up and is ready to use.
+	// - UNPROVISIONED: The attachment is not ready to use yet, because
+	// turnup is not complete.
+	// - PENDING_PARTNER: A newly-created PARTNER attachment that has not
+	// yet been configured on the Partner side.
+	// - PARTNER_REQUEST_RECEIVED: A PARTNER attachment is in the process of
+	// provisioning after a PARTNER_PROVIDER attachment was created that
+	// references it.
+	// - PENDING_CUSTOMER: A PARTNER or PARTNER_PROVIDER attachment that is
+	// waiting for a customer to activate it.
+	// - DEFUNCT: The attachment was deleted externally and is no longer
+	// functional. This could be because the associated Interconnect was
+	// removed, or because the other side of a Partner attachment was
+	// deleted.
 	//
 	// Possible values:
 	//   "ACTIVE"
@@ -12694,6 +13410,14 @@ type InterconnectAttachment struct {
 	//   "UNPROVISIONED"
 	State string `json:"state,omitempty"`
 
+	// Type: The type of interconnect attachment this is, which can take one
+	// of the following values:
+	// - DEDICATED: an attachment to a Dedicated Interconnect.
+	// - PARTNER: an attachment to a Partner Interconnect, created by the
+	// customer.
+	// - PARTNER_PROVIDER: an attachment to a Partner Interconnect, created
+	// by the partner.
+	//
 	// Possible values:
 	//   "DEDICATED"
 	//   "PARTNER"
@@ -13062,7 +13786,7 @@ type InterconnectAttachmentPartnerMetadata struct {
 	PartnerName string `json:"partnerName,omitempty"`
 
 	// PortalUrl: URL of the Partner?s portal for this Attachment. Partners
-	// may customise this to be a deep-link to the specific resource on the
+	// may customise this to be a deep link to the specific resource on the
 	// Partner portal. This value may be validated to match approved Partner
 	// values.
 	PortalUrl string `json:"portalUrl,omitempty"`
@@ -13378,6 +14102,12 @@ type InterconnectDiagnosticsLinkLACPStatus struct {
 	// LACP exchange.
 	NeighborSystemId string `json:"neighborSystemId,omitempty"`
 
+	// State: The state of a LACP link, which can take one of the following
+	// values:
+	// - ACTIVE: The link is configured and active within the bundle.
+	// - DETACHED: The link is not configured within the bundle. This means
+	// that the rest of the object should be empty.
+	//
 	// Possible values:
 	//   "ACTIVE"
 	//   "DETACHED"
@@ -13408,6 +14138,17 @@ func (s *InterconnectDiagnosticsLinkLACPStatus) MarshalJSON() ([]byte, error) {
 }
 
 type InterconnectDiagnosticsLinkOpticalPower struct {
+	// State: The status of the current value when compared to the warning
+	// and alarm levels for the receiving or transmitting transceiver.
+	// Possible states include:
+	// - OK: The value has not crossed a warning threshold.
+	// - LOW_WARNING: The value has crossed below the low warning threshold.
+	//
+	// - HIGH_WARNING: The value has crossed above the high warning
+	// threshold.
+	// - LOW_ALARM: The value has crossed below the low alarm threshold.
+	// - HIGH_ALARM: The value has crossed above the high alarm threshold.
+	//
 	// Possible values:
 	//   "HIGH_ALARM"
 	//   "HIGH_WARNING"
@@ -13416,10 +14157,11 @@ type InterconnectDiagnosticsLinkOpticalPower struct {
 	//   "OK"
 	State string `json:"state,omitempty"`
 
-	// Value: Value of the current optical power, read in dBm. Take a known
-	// good optical value, give it a 10% margin and trigger warnings
-	// relative to that value. In general, a -7dBm warning and a -11dBm
-	// alarm are good optical value estimates for most links.
+	// Value: Value of the current receiving or transmitting optical power,
+	// read in dBm. Take a known good optical value, give it a 10% margin
+	// and trigger warnings relative to that value. In general, a -7dBm
+	// warning and a -11dBm alarm are good optical value estimates for most
+	// links.
 	Value float64 `json:"value,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "State") to
@@ -13475,8 +14217,14 @@ type InterconnectDiagnosticsLinkStatus struct {
 
 	LacpStatus *InterconnectDiagnosticsLinkLACPStatus `json:"lacpStatus,omitempty"`
 
+	// ReceivingOpticalPower: An InterconnectDiagnostics.LinkOpticalPower
+	// object, describing the current value and status of the received light
+	// level.
 	ReceivingOpticalPower *InterconnectDiagnosticsLinkOpticalPower `json:"receivingOpticalPower,omitempty"`
 
+	// TransmittingOpticalPower: An InterconnectDiagnostics.LinkOpticalPower
+	// object, describing the current value and status of the transmitted
+	// light level.
 	TransmittingOpticalPower *InterconnectDiagnosticsLinkOpticalPower `json:"transmittingOpticalPower,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "ArpCaches") to
@@ -13678,7 +14426,13 @@ type InterconnectLocation struct {
 	// "Amsterdam, Netherlands".
 	City string `json:"city,omitempty"`
 
-	// Continent: [Output Only] Continent for this location.
+	// Continent: [Output Only] Continent for this location, which can take
+	// one of the following values:
+	// - AFRICA
+	// - ASIA_PAC
+	// - EUROPE
+	// - NORTH_AMERICA
+	// - SOUTH_AMERICA
 	//
 	// Possible values:
 	//   "AFRICA"
@@ -13730,6 +14484,18 @@ type InterconnectLocation struct {
 
 	// SelfLink: [Output Only] Server-defined URL for the resource.
 	SelfLink string `json:"selfLink,omitempty"`
+
+	// Status: [Output Only] The status of this InterconnectLocation, which
+	// can take one of the following values:
+	// - CLOSED: The InterconnectLocation is closed and is unavailable for
+	// provisioning new Interconnects.
+	// - AVAILABLE: The InterconnectLocation is available for provisioning
+	// new Interconnects.
+	//
+	// Possible values:
+	//   "AVAILABLE"
+	//   "CLOSED"
+	Status string `json:"status,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the
 	// server.
@@ -13972,9 +14738,14 @@ type InterconnectOutageNotification struct {
 	// epoch).
 	EndTime int64 `json:"endTime,omitempty,string"`
 
-	// IssueType: Form this outage is expected to take. Note that the "IT_"
-	// versions of this enum have been deprecated in favor of the unprefixed
-	// values.
+	// IssueType: Form this outage is expected to take, which can take one
+	// of the following values:
+	// - OUTAGE: The Interconnect may be completely out of service for some
+	// or all of the specified window.
+	// - PARTIAL_OUTAGE: Some circuits comprising the Interconnect as a
+	// whole should remain up, but with reduced bandwidth. Note that the
+	// versions of this enum prefixed with "IT_" have been deprecated in
+	// favor of the unprefixed values.
 	//
 	// Possible values:
 	//   "IT_OUTAGE"
@@ -13986,8 +14757,10 @@ type InterconnectOutageNotification struct {
 	// Name: Unique identifier for this outage notification.
 	Name string `json:"name,omitempty"`
 
-	// Source: The party that generated this notification. Note that
-	// "NSRC_GOOGLE" has been deprecated in favor of "GOOGLE"
+	// Source: The party that generated this notification, which can take
+	// the following value:
+	// - GOOGLE: this notification as generated by Google. Note that the
+	// value of NSRC_GOOGLE has been deprecated in favor of GOOGLE.
 	//
 	// Possible values:
 	//   "GOOGLE"
@@ -13998,8 +14771,15 @@ type InterconnectOutageNotification struct {
 	// Unix epoch).
 	StartTime int64 `json:"startTime,omitempty,string"`
 
-	// State: State of this notification. Note that the "NS_" versions of
-	// this enum have been deprecated in favor of the unprefixed values.
+	// State: State of this notification, which can take one of the
+	// following values:
+	// - ACTIVE: This outage notification is active. The event could be in
+	// the past, present, or future. See start_time and end_time for
+	// scheduling.
+	// - CANCELLED: The outage associated with this notification was
+	// cancelled before the outage was due to start. Note that the versions
+	// of this enum prefixed with "NS_" have been deprecated in favor of the
+	// unprefixed values.
 	//
 	// Possible values:
 	//   "ACTIVE"
@@ -14550,12 +15330,6 @@ type LogConfigDataAccessOptions struct {
 	// LogMode: Whether Gin logging should happen in a fail-closed manner at
 	// the caller. This is relevant only in the LocalIAM implementation, for
 	// now.
-	//
-	// NOTE: Logging to Gin in a fail-closed manner is currently unsupported
-	// while work is being done to satisfy the requirements of go/345.
-	// Currently, setting LOG_FAIL_CLOSED mode will have no effect, but
-	// still exists because there is active work being done to support it
-	// (b/115874152).
 	//
 	// Possible values:
 	//   "LOG_FAIL_CLOSED"
@@ -15200,6 +15974,7 @@ type ManagedInstance struct {
 	//
 	// Possible values:
 	//   "PROVISIONING"
+	//   "REPAIRING"
 	//   "RUNNING"
 	//   "STAGING"
 	//   "STOPPED"
@@ -15212,6 +15987,9 @@ type ManagedInstance struct {
 	// LastAttempt: [Output Only] Information about the last attempt to
 	// create or delete the instance.
 	LastAttempt *ManagedInstanceLastAttempt `json:"lastAttempt,omitempty"`
+
+	// Version: [Output Only] Intended version of this instance.
+	Version *ManagedInstanceVersion `json:"version,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "CurrentAction") to
 	// unconditionally include in API requests. By default, fields with
@@ -15324,6 +16102,39 @@ type ManagedInstanceLastAttemptErrorsErrors struct {
 
 func (s *ManagedInstanceLastAttemptErrorsErrors) MarshalJSON() ([]byte, error) {
 	type NoMethod ManagedInstanceLastAttemptErrorsErrors
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type ManagedInstanceVersion struct {
+	// InstanceTemplate: [Output Only] The intended template of the
+	// instance. This field is empty when current_action is one of {
+	// DELETING, ABANDONING }.
+	InstanceTemplate string `json:"instanceTemplate,omitempty"`
+
+	// Name: [Output Only] Name of the version.
+	Name string `json:"name,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "InstanceTemplate") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "InstanceTemplate") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ManagedInstanceVersion) MarshalJSON() ([]byte, error) {
+	type NoMethod ManagedInstanceVersion
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
@@ -15446,9 +16257,10 @@ func (s *NamedPort) MarshalJSON() ([]byte, error) {
 // (VPC) Network Overview for more information. (== resource_for
 // v1.networks ==) (== resource_for beta.networks ==)
 type Network struct {
-	// IPv4Range: The range of internal addresses that are legal on this
-	// network. This range is a CIDR specification, for example:
-	// 192.168.0.0/16. Provided by the client when the network is created.
+	// IPv4Range: Deprecated in favor of subnet mode networks. The range of
+	// internal addresses that are legal on this network. This range is a
+	// CIDR specification, for example: 192.168.0.0/16. Provided by the
+	// client when the network is created.
 	IPv4Range string `json:"IPv4Range,omitempty"`
 
 	// AutoCreateSubnetworks: When set to true, the VPC network is created
@@ -15527,6 +16339,857 @@ type Network struct {
 
 func (s *Network) MarshalJSON() ([]byte, error) {
 	type NoMethod Network
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// NetworkEndpoint: The network endpoint.
+type NetworkEndpoint struct {
+	// Instance: The name for a specific VM instance that the IP address
+	// belongs to. This is required for network endpoints of type
+	// GCE_VM_IP_PORT. The instance must be in the same zone of network
+	// endpoint group.
+	//
+	// The name must be 1-63 characters long, and comply with RFC1035.
+	Instance string `json:"instance,omitempty"`
+
+	// IpAddress: Optional IPv4 address of network endpoint. The IP address
+	// must belong to a VM in GCE (either the primary IP or as part of an
+	// aliased IP range). If the IP address is not specified, then the
+	// primary IP address for the VM instance in the network that the
+	// network endpoint group belongs to will be used.
+	IpAddress string `json:"ipAddress,omitempty"`
+
+	// Port: Optional port number of network endpoint. If not specified and
+	// the NetworkEndpointGroup.network_endpoint_type is GCE_IP_PORT, the
+	// defaultPort for the network endpoint group will be used.
+	Port int64 `json:"port,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Instance") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Instance") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *NetworkEndpoint) MarshalJSON() ([]byte, error) {
+	type NoMethod NetworkEndpoint
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// NetworkEndpointGroup: Represents a collection of network endpoints.
+type NetworkEndpointGroup struct {
+	// CreationTimestamp: [Output Only] Creation timestamp in RFC3339 text
+	// format.
+	CreationTimestamp string `json:"creationTimestamp,omitempty"`
+
+	// DefaultPort: The default port used if the port number is not
+	// specified in the network endpoint.
+	DefaultPort int64 `json:"defaultPort,omitempty"`
+
+	// Description: An optional description of this resource. Provide this
+	// property when you create the resource.
+	Description string `json:"description,omitempty"`
+
+	// Id: [Output Only] The unique identifier for the resource. This
+	// identifier is defined by the server.
+	Id uint64 `json:"id,omitempty,string"`
+
+	// Kind: [Output Only] Type of the resource. Always
+	// compute#networkEndpointGroup for network endpoint group.
+	Kind string `json:"kind,omitempty"`
+
+	// Name: Name of the resource; provided by the client when the resource
+	// is created. The name must be 1-63 characters long, and comply with
+	// RFC1035. Specifically, the name must be 1-63 characters long and
+	// match the regular expression `[a-z]([-a-z0-9]*[a-z0-9])?` which means
+	// the first character must be a lowercase letter, and all following
+	// characters must be a dash, lowercase letter, or digit, except the
+	// last character, which cannot be a dash.
+	Name string `json:"name,omitempty"`
+
+	// Network: The URL of the network to which all network endpoints in the
+	// NEG belong. Uses "default" project network if unspecified.
+	Network string `json:"network,omitempty"`
+
+	// NetworkEndpointType: Type of network endpoints in this network
+	// endpoint group. Currently the only supported value is GCE_VM_IP_PORT.
+	//
+	// Possible values:
+	//   "GCE_VM_IP_PORT"
+	NetworkEndpointType string `json:"networkEndpointType,omitempty"`
+
+	// SelfLink: [Output Only] Server-defined URL for the resource.
+	SelfLink string `json:"selfLink,omitempty"`
+
+	// Size: [Output only] Number of network endpoints in the network
+	// endpoint group.
+	Size int64 `json:"size,omitempty"`
+
+	// Subnetwork: Optional URL of the subnetwork to which all network
+	// endpoints in the NEG belong.
+	Subnetwork string `json:"subnetwork,omitempty"`
+
+	// Zone: [Output Only] The URL of the zone where the network endpoint
+	// group is located.
+	Zone string `json:"zone,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "CreationTimestamp")
+	// to unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "CreationTimestamp") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *NetworkEndpointGroup) MarshalJSON() ([]byte, error) {
+	type NoMethod NetworkEndpointGroup
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type NetworkEndpointGroupAggregatedList struct {
+	// Id: [Output Only] Unique identifier for the resource; defined by the
+	// server.
+	Id string `json:"id,omitempty"`
+
+	// Items: A list of NetworkEndpointGroupsScopedList resources.
+	Items map[string]NetworkEndpointGroupsScopedList `json:"items,omitempty"`
+
+	// Kind: [Output Only] The resource type, which is always
+	// compute#networkEndpointGroupAggregatedList for aggregated lists of
+	// network endpoint groups.
+	Kind string `json:"kind,omitempty"`
+
+	// NextPageToken: [Output Only] This token allows you to get the next
+	// page of results for list requests. If the number of results is larger
+	// than maxResults, use the nextPageToken as a value for the query
+	// parameter pageToken in the next list request. Subsequent list
+	// requests will have their own nextPageToken to continue paging through
+	// the results.
+	NextPageToken string `json:"nextPageToken,omitempty"`
+
+	// SelfLink: [Output Only] Server-defined URL for this resource.
+	SelfLink string `json:"selfLink,omitempty"`
+
+	// Warning: [Output Only] Informational warning message.
+	Warning *NetworkEndpointGroupAggregatedListWarning `json:"warning,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Id") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Id") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *NetworkEndpointGroupAggregatedList) MarshalJSON() ([]byte, error) {
+	type NoMethod NetworkEndpointGroupAggregatedList
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// NetworkEndpointGroupAggregatedListWarning: [Output Only]
+// Informational warning message.
+type NetworkEndpointGroupAggregatedListWarning struct {
+	// Code: [Output Only] A warning code, if applicable. For example,
+	// Compute Engine returns NO_RESULTS_ON_PAGE if there are no results in
+	// the response.
+	//
+	// Possible values:
+	//   "CLEANUP_FAILED"
+	//   "DEPRECATED_RESOURCE_USED"
+	//   "DEPRECATED_TYPE_USED"
+	//   "DISK_SIZE_LARGER_THAN_IMAGE_SIZE"
+	//   "EXPERIMENTAL_TYPE_USED"
+	//   "EXTERNAL_API_WARNING"
+	//   "FIELD_VALUE_OVERRIDEN"
+	//   "INJECTED_KERNELS_DEPRECATED"
+	//   "MISSING_TYPE_DEPENDENCY"
+	//   "NEXT_HOP_ADDRESS_NOT_ASSIGNED"
+	//   "NEXT_HOP_CANNOT_IP_FORWARD"
+	//   "NEXT_HOP_INSTANCE_NOT_FOUND"
+	//   "NEXT_HOP_INSTANCE_NOT_ON_NETWORK"
+	//   "NEXT_HOP_NOT_RUNNING"
+	//   "NOT_CRITICAL_ERROR"
+	//   "NO_RESULTS_ON_PAGE"
+	//   "REQUIRED_TOS_AGREEMENT"
+	//   "RESOURCE_IN_USE_BY_OTHER_RESOURCE_WARNING"
+	//   "RESOURCE_NOT_DELETED"
+	//   "SCHEMA_VALIDATION_IGNORED"
+	//   "SINGLE_INSTANCE_PROPERTY_TEMPLATE"
+	//   "UNDECLARED_PROPERTIES"
+	//   "UNREACHABLE"
+	Code string `json:"code,omitempty"`
+
+	// Data: [Output Only] Metadata about this warning in key: value format.
+	// For example:
+	// "data": [ { "key": "scope", "value": "zones/us-east1-d" }
+	Data []*NetworkEndpointGroupAggregatedListWarningData `json:"data,omitempty"`
+
+	// Message: [Output Only] A human-readable description of the warning
+	// code.
+	Message string `json:"message,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Code") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Code") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *NetworkEndpointGroupAggregatedListWarning) MarshalJSON() ([]byte, error) {
+	type NoMethod NetworkEndpointGroupAggregatedListWarning
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type NetworkEndpointGroupAggregatedListWarningData struct {
+	// Key: [Output Only] A key that provides more detail on the warning
+	// being returned. For example, for warnings where there are no results
+	// in a list request for a particular zone, this key might be scope and
+	// the key value might be the zone name. Other examples might be a key
+	// indicating a deprecated resource and a suggested replacement, or a
+	// warning about invalid network settings (for example, if an instance
+	// attempts to perform IP forwarding but is not enabled for IP
+	// forwarding).
+	Key string `json:"key,omitempty"`
+
+	// Value: [Output Only] A warning data value corresponding to the key.
+	Value string `json:"value,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Key") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Key") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *NetworkEndpointGroupAggregatedListWarningData) MarshalJSON() ([]byte, error) {
+	type NoMethod NetworkEndpointGroupAggregatedListWarningData
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type NetworkEndpointGroupList struct {
+	// Id: [Output Only] Unique identifier for the resource; defined by the
+	// server.
+	Id string `json:"id,omitempty"`
+
+	// Items: A list of NetworkEndpointGroup resources.
+	Items []*NetworkEndpointGroup `json:"items,omitempty"`
+
+	// Kind: [Output Only] The resource type, which is always
+	// compute#networkEndpointGroupList for network endpoint group lists.
+	Kind string `json:"kind,omitempty"`
+
+	// NextPageToken: [Output Only] This token allows you to get the next
+	// page of results for list requests. If the number of results is larger
+	// than maxResults, use the nextPageToken as a value for the query
+	// parameter pageToken in the next list request. Subsequent list
+	// requests will have their own nextPageToken to continue paging through
+	// the results.
+	NextPageToken string `json:"nextPageToken,omitempty"`
+
+	// SelfLink: [Output Only] Server-defined URL for this resource.
+	SelfLink string `json:"selfLink,omitempty"`
+
+	// Warning: [Output Only] Informational warning message.
+	Warning *NetworkEndpointGroupListWarning `json:"warning,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Id") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Id") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *NetworkEndpointGroupList) MarshalJSON() ([]byte, error) {
+	type NoMethod NetworkEndpointGroupList
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// NetworkEndpointGroupListWarning: [Output Only] Informational warning
+// message.
+type NetworkEndpointGroupListWarning struct {
+	// Code: [Output Only] A warning code, if applicable. For example,
+	// Compute Engine returns NO_RESULTS_ON_PAGE if there are no results in
+	// the response.
+	//
+	// Possible values:
+	//   "CLEANUP_FAILED"
+	//   "DEPRECATED_RESOURCE_USED"
+	//   "DEPRECATED_TYPE_USED"
+	//   "DISK_SIZE_LARGER_THAN_IMAGE_SIZE"
+	//   "EXPERIMENTAL_TYPE_USED"
+	//   "EXTERNAL_API_WARNING"
+	//   "FIELD_VALUE_OVERRIDEN"
+	//   "INJECTED_KERNELS_DEPRECATED"
+	//   "MISSING_TYPE_DEPENDENCY"
+	//   "NEXT_HOP_ADDRESS_NOT_ASSIGNED"
+	//   "NEXT_HOP_CANNOT_IP_FORWARD"
+	//   "NEXT_HOP_INSTANCE_NOT_FOUND"
+	//   "NEXT_HOP_INSTANCE_NOT_ON_NETWORK"
+	//   "NEXT_HOP_NOT_RUNNING"
+	//   "NOT_CRITICAL_ERROR"
+	//   "NO_RESULTS_ON_PAGE"
+	//   "REQUIRED_TOS_AGREEMENT"
+	//   "RESOURCE_IN_USE_BY_OTHER_RESOURCE_WARNING"
+	//   "RESOURCE_NOT_DELETED"
+	//   "SCHEMA_VALIDATION_IGNORED"
+	//   "SINGLE_INSTANCE_PROPERTY_TEMPLATE"
+	//   "UNDECLARED_PROPERTIES"
+	//   "UNREACHABLE"
+	Code string `json:"code,omitempty"`
+
+	// Data: [Output Only] Metadata about this warning in key: value format.
+	// For example:
+	// "data": [ { "key": "scope", "value": "zones/us-east1-d" }
+	Data []*NetworkEndpointGroupListWarningData `json:"data,omitempty"`
+
+	// Message: [Output Only] A human-readable description of the warning
+	// code.
+	Message string `json:"message,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Code") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Code") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *NetworkEndpointGroupListWarning) MarshalJSON() ([]byte, error) {
+	type NoMethod NetworkEndpointGroupListWarning
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type NetworkEndpointGroupListWarningData struct {
+	// Key: [Output Only] A key that provides more detail on the warning
+	// being returned. For example, for warnings where there are no results
+	// in a list request for a particular zone, this key might be scope and
+	// the key value might be the zone name. Other examples might be a key
+	// indicating a deprecated resource and a suggested replacement, or a
+	// warning about invalid network settings (for example, if an instance
+	// attempts to perform IP forwarding but is not enabled for IP
+	// forwarding).
+	Key string `json:"key,omitempty"`
+
+	// Value: [Output Only] A warning data value corresponding to the key.
+	Value string `json:"value,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Key") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Key") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *NetworkEndpointGroupListWarningData) MarshalJSON() ([]byte, error) {
+	type NoMethod NetworkEndpointGroupListWarningData
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type NetworkEndpointGroupsAttachEndpointsRequest struct {
+	// NetworkEndpoints: The list of network endpoints to be attached.
+	NetworkEndpoints []*NetworkEndpoint `json:"networkEndpoints,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "NetworkEndpoints") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "NetworkEndpoints") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *NetworkEndpointGroupsAttachEndpointsRequest) MarshalJSON() ([]byte, error) {
+	type NoMethod NetworkEndpointGroupsAttachEndpointsRequest
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type NetworkEndpointGroupsDetachEndpointsRequest struct {
+	// NetworkEndpoints: The list of network endpoints to be detached.
+	NetworkEndpoints []*NetworkEndpoint `json:"networkEndpoints,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "NetworkEndpoints") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "NetworkEndpoints") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *NetworkEndpointGroupsDetachEndpointsRequest) MarshalJSON() ([]byte, error) {
+	type NoMethod NetworkEndpointGroupsDetachEndpointsRequest
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type NetworkEndpointGroupsListEndpointsRequest struct {
+	// HealthStatus: Optional query parameter for showing the health status
+	// of each network endpoint. Valid options are SKIP or SHOW. If you
+	// don't specifiy this parameter, the health status of network endpoints
+	// will not be provided.
+	//
+	// Possible values:
+	//   "SHOW"
+	//   "SKIP"
+	HealthStatus string `json:"healthStatus,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "HealthStatus") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "HealthStatus") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *NetworkEndpointGroupsListEndpointsRequest) MarshalJSON() ([]byte, error) {
+	type NoMethod NetworkEndpointGroupsListEndpointsRequest
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type NetworkEndpointGroupsListNetworkEndpoints struct {
+	// Id: [Output Only] Unique identifier for the resource; defined by the
+	// server.
+	Id string `json:"id,omitempty"`
+
+	// Items: A list of NetworkEndpointWithHealthStatus resources.
+	Items []*NetworkEndpointWithHealthStatus `json:"items,omitempty"`
+
+	// Kind: [Output Only] The resource type, which is always
+	// compute#networkEndpointGroupsListNetworkEndpoints for the list of
+	// network endpoints in the specified network endpoint group.
+	Kind string `json:"kind,omitempty"`
+
+	// NextPageToken: [Output Only] This token allows you to get the next
+	// page of results for list requests. If the number of results is larger
+	// than maxResults, use the nextPageToken as a value for the query
+	// parameter pageToken in the next list request. Subsequent list
+	// requests will have their own nextPageToken to continue paging through
+	// the results.
+	NextPageToken string `json:"nextPageToken,omitempty"`
+
+	// Warning: [Output Only] Informational warning message.
+	Warning *NetworkEndpointGroupsListNetworkEndpointsWarning `json:"warning,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "Id") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Id") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *NetworkEndpointGroupsListNetworkEndpoints) MarshalJSON() ([]byte, error) {
+	type NoMethod NetworkEndpointGroupsListNetworkEndpoints
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// NetworkEndpointGroupsListNetworkEndpointsWarning: [Output Only]
+// Informational warning message.
+type NetworkEndpointGroupsListNetworkEndpointsWarning struct {
+	// Code: [Output Only] A warning code, if applicable. For example,
+	// Compute Engine returns NO_RESULTS_ON_PAGE if there are no results in
+	// the response.
+	//
+	// Possible values:
+	//   "CLEANUP_FAILED"
+	//   "DEPRECATED_RESOURCE_USED"
+	//   "DEPRECATED_TYPE_USED"
+	//   "DISK_SIZE_LARGER_THAN_IMAGE_SIZE"
+	//   "EXPERIMENTAL_TYPE_USED"
+	//   "EXTERNAL_API_WARNING"
+	//   "FIELD_VALUE_OVERRIDEN"
+	//   "INJECTED_KERNELS_DEPRECATED"
+	//   "MISSING_TYPE_DEPENDENCY"
+	//   "NEXT_HOP_ADDRESS_NOT_ASSIGNED"
+	//   "NEXT_HOP_CANNOT_IP_FORWARD"
+	//   "NEXT_HOP_INSTANCE_NOT_FOUND"
+	//   "NEXT_HOP_INSTANCE_NOT_ON_NETWORK"
+	//   "NEXT_HOP_NOT_RUNNING"
+	//   "NOT_CRITICAL_ERROR"
+	//   "NO_RESULTS_ON_PAGE"
+	//   "REQUIRED_TOS_AGREEMENT"
+	//   "RESOURCE_IN_USE_BY_OTHER_RESOURCE_WARNING"
+	//   "RESOURCE_NOT_DELETED"
+	//   "SCHEMA_VALIDATION_IGNORED"
+	//   "SINGLE_INSTANCE_PROPERTY_TEMPLATE"
+	//   "UNDECLARED_PROPERTIES"
+	//   "UNREACHABLE"
+	Code string `json:"code,omitempty"`
+
+	// Data: [Output Only] Metadata about this warning in key: value format.
+	// For example:
+	// "data": [ { "key": "scope", "value": "zones/us-east1-d" }
+	Data []*NetworkEndpointGroupsListNetworkEndpointsWarningData `json:"data,omitempty"`
+
+	// Message: [Output Only] A human-readable description of the warning
+	// code.
+	Message string `json:"message,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Code") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Code") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *NetworkEndpointGroupsListNetworkEndpointsWarning) MarshalJSON() ([]byte, error) {
+	type NoMethod NetworkEndpointGroupsListNetworkEndpointsWarning
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type NetworkEndpointGroupsListNetworkEndpointsWarningData struct {
+	// Key: [Output Only] A key that provides more detail on the warning
+	// being returned. For example, for warnings where there are no results
+	// in a list request for a particular zone, this key might be scope and
+	// the key value might be the zone name. Other examples might be a key
+	// indicating a deprecated resource and a suggested replacement, or a
+	// warning about invalid network settings (for example, if an instance
+	// attempts to perform IP forwarding but is not enabled for IP
+	// forwarding).
+	Key string `json:"key,omitempty"`
+
+	// Value: [Output Only] A warning data value corresponding to the key.
+	Value string `json:"value,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Key") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Key") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *NetworkEndpointGroupsListNetworkEndpointsWarningData) MarshalJSON() ([]byte, error) {
+	type NoMethod NetworkEndpointGroupsListNetworkEndpointsWarningData
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type NetworkEndpointGroupsScopedList struct {
+	// NetworkEndpointGroups: [Output Only] The list of network endpoint
+	// groups that are contained in this scope.
+	NetworkEndpointGroups []*NetworkEndpointGroup `json:"networkEndpointGroups,omitempty"`
+
+	// Warning: [Output Only] An informational warning that replaces the
+	// list of network endpoint groups when the list is empty.
+	Warning *NetworkEndpointGroupsScopedListWarning `json:"warning,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g.
+	// "NetworkEndpointGroups") to unconditionally include in API requests.
+	// By default, fields with empty values are omitted from API requests.
+	// However, any non-pointer, non-interface field appearing in
+	// ForceSendFields will be sent to the server regardless of whether the
+	// field is empty or not. This may be used to include empty fields in
+	// Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "NetworkEndpointGroups") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *NetworkEndpointGroupsScopedList) MarshalJSON() ([]byte, error) {
+	type NoMethod NetworkEndpointGroupsScopedList
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// NetworkEndpointGroupsScopedListWarning: [Output Only] An
+// informational warning that replaces the list of network endpoint
+// groups when the list is empty.
+type NetworkEndpointGroupsScopedListWarning struct {
+	// Code: [Output Only] A warning code, if applicable. For example,
+	// Compute Engine returns NO_RESULTS_ON_PAGE if there are no results in
+	// the response.
+	//
+	// Possible values:
+	//   "CLEANUP_FAILED"
+	//   "DEPRECATED_RESOURCE_USED"
+	//   "DEPRECATED_TYPE_USED"
+	//   "DISK_SIZE_LARGER_THAN_IMAGE_SIZE"
+	//   "EXPERIMENTAL_TYPE_USED"
+	//   "EXTERNAL_API_WARNING"
+	//   "FIELD_VALUE_OVERRIDEN"
+	//   "INJECTED_KERNELS_DEPRECATED"
+	//   "MISSING_TYPE_DEPENDENCY"
+	//   "NEXT_HOP_ADDRESS_NOT_ASSIGNED"
+	//   "NEXT_HOP_CANNOT_IP_FORWARD"
+	//   "NEXT_HOP_INSTANCE_NOT_FOUND"
+	//   "NEXT_HOP_INSTANCE_NOT_ON_NETWORK"
+	//   "NEXT_HOP_NOT_RUNNING"
+	//   "NOT_CRITICAL_ERROR"
+	//   "NO_RESULTS_ON_PAGE"
+	//   "REQUIRED_TOS_AGREEMENT"
+	//   "RESOURCE_IN_USE_BY_OTHER_RESOURCE_WARNING"
+	//   "RESOURCE_NOT_DELETED"
+	//   "SCHEMA_VALIDATION_IGNORED"
+	//   "SINGLE_INSTANCE_PROPERTY_TEMPLATE"
+	//   "UNDECLARED_PROPERTIES"
+	//   "UNREACHABLE"
+	Code string `json:"code,omitempty"`
+
+	// Data: [Output Only] Metadata about this warning in key: value format.
+	// For example:
+	// "data": [ { "key": "scope", "value": "zones/us-east1-d" }
+	Data []*NetworkEndpointGroupsScopedListWarningData `json:"data,omitempty"`
+
+	// Message: [Output Only] A human-readable description of the warning
+	// code.
+	Message string `json:"message,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Code") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Code") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *NetworkEndpointGroupsScopedListWarning) MarshalJSON() ([]byte, error) {
+	type NoMethod NetworkEndpointGroupsScopedListWarning
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type NetworkEndpointGroupsScopedListWarningData struct {
+	// Key: [Output Only] A key that provides more detail on the warning
+	// being returned. For example, for warnings where there are no results
+	// in a list request for a particular zone, this key might be scope and
+	// the key value might be the zone name. Other examples might be a key
+	// indicating a deprecated resource and a suggested replacement, or a
+	// warning about invalid network settings (for example, if an instance
+	// attempts to perform IP forwarding but is not enabled for IP
+	// forwarding).
+	Key string `json:"key,omitempty"`
+
+	// Value: [Output Only] A warning data value corresponding to the key.
+	Value string `json:"value,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Key") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Key") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *NetworkEndpointGroupsScopedListWarningData) MarshalJSON() ([]byte, error) {
+	type NoMethod NetworkEndpointGroupsScopedListWarningData
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type NetworkEndpointWithHealthStatus struct {
+	// Healths: [Output only] The health status of network endpoint;
+	Healths []*HealthStatusForNetworkEndpoint `json:"healths,omitempty"`
+
+	// NetworkEndpoint: [Output only] The network endpoint;
+	NetworkEndpoint *NetworkEndpoint `json:"networkEndpoint,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Healths") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Healths") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *NetworkEndpointWithHealthStatus) MarshalJSON() ([]byte, error) {
+	type NoMethod NetworkEndpointWithHealthStatus
 	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
@@ -15778,12 +17441,20 @@ func (s *NetworkListWarningData) MarshalJSON() ([]byte, error) {
 // flag indicating whether Google Compute Engine should automatically
 // create routes for the peering.
 type NetworkPeering struct {
-	// AutoCreateRoutes: Indicates whether full mesh connectivity is created
-	// and managed automatically. When it is set to true, Google Compute
-	// Engine will automatically create and manage the routes between two
-	// networks when the state is ACTIVE. Otherwise, user needs to create
-	// routes manually to route packets to peer network.
+	// AutoCreateRoutes: This field will be deprecated soon. Prefer using
+	// exchange_subnet_routes instead. Indicates whether full mesh
+	// connectivity is created and managed automatically. When it is set to
+	// true, Google Compute Engine will automatically create and manage the
+	// routes between two networks when the state is ACTIVE. Otherwise, user
+	// needs to create routes manually to route packets to peer network.
 	AutoCreateRoutes bool `json:"autoCreateRoutes,omitempty"`
+
+	// ExchangeSubnetRoutes: Whether full mesh connectivity is created and
+	// managed automatically. When it is set to true, Google Compute Engine
+	// will automatically create and manage the routes between two networks
+	// when the peering state is ACTIVE. Otherwise, user needs to create
+	// routes manually to route packets to peer network.
+	ExchangeSubnetRoutes bool `json:"exchangeSubnetRoutes,omitempty"`
 
 	// Name: Name of this peering. Provided by the client when the peering
 	// is created. The name must comply with RFC1035. Specifically, the name
@@ -15875,12 +17546,20 @@ func (s *NetworkRoutingConfig) MarshalJSON() ([]byte, error) {
 }
 
 type NetworksAddPeeringRequest struct {
-	// AutoCreateRoutes: Whether Google Compute Engine manages the routes
-	// automatically.
+	// AutoCreateRoutes: This field will be deprecated soon. Prefer using
+	// exchange_subnet_routes in network_peering instead. Whether Google
+	// Compute Engine manages the routes automatically.
 	AutoCreateRoutes bool `json:"autoCreateRoutes,omitempty"`
 
 	// Name: Name of the peering, which should conform to RFC1035.
 	Name string `json:"name,omitempty"`
+
+	// NetworkPeering: Network peering parameters. In order to specify route
+	// policies for peering using import/export custom routes, you will have
+	// to fill all peering related parameters (name, peer network,
+	// exchange_subnet_routes) in network_peeringfield. Corresponding fields
+	// in NetworksAddPeeringRequest will be deprecated soon.
+	NetworkPeering *NetworkPeering `json:"networkPeering,omitempty"`
 
 	// PeerNetwork: URL of the peer network. It can be either full URL or
 	// partial URL. The peer network may belong to a different project. If
@@ -15939,7 +17618,10 @@ func (s *NetworksRemovePeeringRequest) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// NodeGroup: A NodeGroup resource.
+// NodeGroup: A NodeGroup resource. To create a node group, you must
+// first create a node templates. To learn more about node groups and
+// sole-tenant nodes, read the Sole-tenant nodes documentation. (==
+// resource_for beta.nodeGroups ==) (== resource_for v1.nodeGroups ==)
 type NodeGroup struct {
 	// CreationTimestamp: [Output Only] Creation timestamp in RFC3339 text
 	// format.
@@ -16740,7 +18422,10 @@ func (s *NodeGroupsSetNodeTemplateRequest) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// NodeTemplate: A Node Template resource.
+// NodeTemplate: A Node Template resource. To learn more about node
+// templates and sole-tenant nodes, read the Sole-tenant nodes
+// documentation. (== resource_for beta.nodeTemplates ==) (==
+// resource_for v1.nodeTemplates ==)
 type NodeTemplate struct {
 	// CreationTimestamp: [Output Only] Creation timestamp in RFC3339 text
 	// format.
@@ -18583,12 +20268,15 @@ type PathMatcher struct {
 	// https://www.googleapis.com/compute/v1/projects/project/global/backendServices/backendService
 	// - compute/v1/projects/project/global/backendServices/backendService
 	//
-	// - global/backendServices/backendService
-	// Use defaultService instead of defaultRouteAction when simple routing
-	// to a backend service is desired and other advanced capabilities like
-	// traffic splitting and URL rewrites are not required.
-	// Only one of defaultService, defaultRouteAction or defaultUrlRedirect
-	// must be set.
+	// - global/backendServices/backendService  If defaultRouteAction is
+	// additionally specified, advanced routing actions like URL Rewrites,
+	// etc. take effect prior to sending the request to the backend.
+	// However, if defaultService is specified, defaultRouteAction cannot
+	// contain any weightedBackendServices. Conversely, if
+	// defaultRouteAction specifies any weightedBackendServices,
+	// defaultService must not be specified.
+	// Only one of defaultService, defaultUrlRedirect  or
+	// defaultRouteAction.weightedBackendService must be set.
 	// Authorization requires one or more of the following Google IAM
 	// permissions on the specified resource default_service:
 	// - compute.backendBuckets.use
@@ -18645,12 +20333,15 @@ type PathRule struct {
 	// or #, and those chars are not allowed here.
 	Paths []string `json:"paths,omitempty"`
 
-	// Service: The URL of the backend service resource if this rule is
-	// matched.
-	// Use service instead of routeAction when simple routing to a backend
-	// service is desired and other advanced capabilities like traffic
-	// splitting and rewrites are not required.
-	// Only one of service, routeAction or urlRedirect should must be set.
+	// Service: The full or partial URL of the backend service resource to
+	// which traffic is directed if this rule is matched. If routeAction is
+	// additionally specified, advanced routing actions like URL Rewrites,
+	// etc. take effect prior to sending the request to the backend.
+	// However, if service is specified, routeAction cannot contain any
+	// weightedBackendService s. Conversely, if routeAction specifies any
+	// weightedBackendServices, service must not be specified.
+	// Only one of urlRedirect, service or
+	// routeAction.weightedBackendService must be set.
 	Service string `json:"service,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "Paths") to
@@ -19039,6 +20730,7 @@ type Quota struct {
 	//   "CPUS"
 	//   "CPUS_ALL_REGIONS"
 	//   "DISKS_TOTAL_GB"
+	//   "EXTERNAL_VPN_GATEWAYS"
 	//   "FIREWALLS"
 	//   "FORWARDING_RULES"
 	//   "GLOBAL_INTERNAL_ADDRESSES"
@@ -19055,8 +20747,10 @@ type Quota struct {
 	//   "INTERNAL_ADDRESSES"
 	//   "IN_USE_ADDRESSES"
 	//   "IN_USE_BACKUP_SCHEDULES"
+	//   "IN_USE_SNAPSHOT_SCHEDULES"
 	//   "LOCAL_SSD_TOTAL_GB"
 	//   "NETWORKS"
+	//   "NETWORK_ENDPOINT_GROUPS"
 	//   "NVIDIA_K80_GPUS"
 	//   "NVIDIA_P100_GPUS"
 	//   "NVIDIA_P100_VWS_GPUS"
@@ -19098,6 +20792,10 @@ type Quota struct {
 	//   "VPN_GATEWAYS"
 	//   "VPN_TUNNELS"
 	Metric string `json:"metric,omitempty"`
+
+	// Owner: [Output Only] Owning resource. This is the resource on which
+	// this quota is applied.
+	Owner string `json:"owner,omitempty"`
 
 	// Usage: [Output Only] Current usage of this metric.
 	Usage float64 `json:"usage,omitempty"`
@@ -20996,9 +22694,10 @@ type Router struct {
 	// Bgp: BGP information specific to this router.
 	Bgp *RouterBgp `json:"bgp,omitempty"`
 
-	// BgpPeers: BGP information that needs to be configured into the
-	// routing stack to establish the BGP peering. It must specify peer ASN
-	// and either interface name, IP, or peer IP. Please refer to RFC4273.
+	// BgpPeers: BGP information that must be configured into the routing
+	// stack to establish BGP peering. This information must specify the
+	// peer ASN and either the interface name, IP address, or peer IP
+	// address. Please refer to RFC4273.
 	BgpPeers []*RouterBgpPeer `json:"bgpPeers,omitempty"`
 
 	// CreationTimestamp: [Output Only] Creation timestamp in RFC3339 text
@@ -21014,8 +22713,8 @@ type Router struct {
 	Id uint64 `json:"id,omitempty,string"`
 
 	// Interfaces: Router interfaces. Each interface requires either one
-	// linked resource (e.g. linkedVpnTunnel), or IP address and IP address
-	// range (e.g. ipRange), or both.
+	// linked resource, (for example, linkedVpnTunnel), or IP address and IP
+	// address range (for example, ipRange), or both.
 	Interfaces []*RouterInterface `json:"interfaces,omitempty"`
 
 	// Kind: [Output Only] Type of resource. Always compute#router for
@@ -21031,7 +22730,7 @@ type Router struct {
 	// last character, which cannot be a dash.
 	Name string `json:"name,omitempty"`
 
-	// Nats: A list of Nat services created in this router.
+	// Nats: A list of NAT services created in this router.
 	Nats []*RouterNat `json:"nats,omitempty"`
 
 	// Network: URI of the network to which this router belongs.
@@ -21262,7 +22961,7 @@ func (s *RouterAggregatedListWarningData) MarshalJSON() ([]byte, error) {
 
 type RouterBgp struct {
 	// AdvertiseMode: User-specified flag to indicate which mode to use for
-	// advertisement.
+	// advertisement. The options are DEFAULT or CUSTOM.
 	//
 	// Possible values:
 	//   "CUSTOM"
@@ -21326,11 +23025,15 @@ type RouterBgpPeer struct {
 	AdvertiseMode string `json:"advertiseMode,omitempty"`
 
 	// AdvertisedGroups: User-specified list of prefix groups to advertise
-	// in custom mode. This field can only be populated if advertise_mode is
-	// CUSTOM and overrides the list defined for the router (in Bgp
-	// message). These groups will be advertised in addition to any
-	// specified prefixes. Leave this field blank to advertise no custom
-	// groups.
+	// in custom mode, which can take one of the following options:
+	// - ALL_SUBNETS: Advertises all available subnets, including peer VPC
+	// subnets.
+	// - ALL_VPC_SUBNETS: Advertises the router's own VPC subnets.
+	// - ALL_PEER_VPC_SUBNETS: Advertises peer subnets of the router's VPC
+	// network. Note that this field can only be populated if advertise_mode
+	// is CUSTOM and overrides the list defined for the router (in the "bgp"
+	// message). These groups are advertised in addition to any specified
+	// prefixes. Leave this field blank to advertise no custom groups.
 	//
 	// Possible values:
 	//   "ALL_SUBNETS"
@@ -21339,14 +23042,14 @@ type RouterBgpPeer struct {
 	// AdvertisedIpRanges: User-specified list of individual IP ranges to
 	// advertise in custom mode. This field can only be populated if
 	// advertise_mode is CUSTOM and overrides the list defined for the
-	// router (in Bgp message). These IP ranges will be advertised in
+	// router (in the "bgp" message). These IP ranges are advertised in
 	// addition to any specified groups. Leave this field blank to advertise
 	// no custom IP ranges.
 	AdvertisedIpRanges []*RouterAdvertisedIpRange `json:"advertisedIpRanges,omitempty"`
 
 	// AdvertisedRoutePriority: The priority of routes advertised to this
-	// BGP peer. In the case where there is more than one matching route of
-	// maximum length, the routes with lowest priority value win.
+	// BGP peer. Where there is more than one matching route of maximum
+	// length, the routes with the lowest priority value win.
 	AdvertisedRoutePriority int64 `json:"advertisedRoutePriority,omitempty"`
 
 	// InterfaceName: Name of the interface the BGP peer is associated with.
@@ -21357,12 +23060,14 @@ type RouterBgpPeer struct {
 	IpAddress string `json:"ipAddress,omitempty"`
 
 	// ManagementType: [Output Only] The resource that configures and
-	// manages this BGP peer. MANAGED_BY_USER is the default value and can
-	// be managed by you or other users; MANAGED_BY_ATTACHMENT is a BGP peer
-	// that is configured and managed by Cloud Interconnect, specifically by
-	// an InterconnectAttachment of type PARTNER. Google will automatically
-	// create, update, and delete this type of BGP peer when the PARTNER
-	// InterconnectAttachment is created, updated, or deleted.
+	// manages this BGP peer.
+	// - MANAGED_BY_USER is the default value and can be managed by you or
+	// other users
+	// - MANAGED_BY_ATTACHMENT is a BGP peer that is configured and managed
+	// by Cloud Interconnect, specifically by an InterconnectAttachment of
+	// type PARTNER. Google automatically creates, updates, and deletes this
+	// type of BGP peer when the PARTNER InterconnectAttachment is created,
+	// updated, or deleted.
 	//
 	// Possible values:
 	//   "MANAGED_BY_ATTACHMENT"
@@ -21373,12 +23078,12 @@ type RouterBgpPeer struct {
 	// and comply with RFC1035.
 	Name string `json:"name,omitempty"`
 
-	// PeerAsn: Peer BGP Autonomous System Number (ASN). For VPN use case,
-	// this value can be different for every tunnel.
+	// PeerAsn: Peer BGP Autonomous System Number (ASN). Each BGP interface
+	// may use a different value.
 	PeerAsn int64 `json:"peerAsn,omitempty"`
 
-	// PeerIpAddress: IP address of the BGP interface outside Google cloud.
-	// Only IPv4 is supported.
+	// PeerIpAddress: IP address of the BGP interface outside Google Cloud
+	// Platform. Only IPv4 is supported.
 	PeerIpAddress string `json:"peerIpAddress,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "AdvertiseMode") to
@@ -21406,32 +23111,33 @@ func (s *RouterBgpPeer) MarshalJSON() ([]byte, error) {
 
 type RouterInterface struct {
 	// IpRange: IP address and range of the interface. The IP range must be
-	// in the RFC3927 link-local IP space. The value must be a
+	// in the RFC3927 link-local IP address space. The value must be a
 	// CIDR-formatted string, for example: 169.254.0.1/30. NOTE: Do not
 	// truncate the address as it represents the IP address of the
 	// interface.
 	IpRange string `json:"ipRange,omitempty"`
 
-	// LinkedInterconnectAttachment: URI of the linked interconnect
+	// LinkedInterconnectAttachment: URI of the linked Interconnect
 	// attachment. It must be in the same region as the router. Each
-	// interface can have at most one linked resource and it could either be
-	// a VPN Tunnel or an interconnect attachment.
+	// interface can have one linked resource, which can be either be a VPN
+	// tunnel or an Interconnect attachment.
 	LinkedInterconnectAttachment string `json:"linkedInterconnectAttachment,omitempty"`
 
-	// LinkedVpnTunnel: URI of the linked VPN tunnel. It must be in the same
-	// region as the router. Each interface can have at most one linked
-	// resource and it could either be a VPN Tunnel or an interconnect
+	// LinkedVpnTunnel: URI of the linked VPN tunnel, which must be in the
+	// same region as the router. Each interface can have one linked
+	// resource, which can be either a VPN tunnel or an Interconnect
 	// attachment.
 	LinkedVpnTunnel string `json:"linkedVpnTunnel,omitempty"`
 
 	// ManagementType: [Output Only] The resource that configures and
-	// manages this interface. MANAGED_BY_USER is the default value and can
-	// be managed by you or other users; MANAGED_BY_ATTACHMENT is an
-	// interface that is configured and managed by Cloud Interconnect,
-	// specifically by an InterconnectAttachment of type PARTNER. Google
-	// will automatically create, update, and delete this type of interface
-	// when the PARTNER InterconnectAttachment is created, updated, or
-	// deleted.
+	// manages this interface.
+	// - MANAGED_BY_USER is the default value and can be managed directly by
+	// users.
+	// - MANAGED_BY_ATTACHMENT is an interface that is configured and
+	// managed by Cloud Interconnect, specifically, by an
+	// InterconnectAttachment of type PARTNER. Google automatically creates,
+	// updates, and deletes this type of interface when the PARTNER
+	// InterconnectAttachment is created, updated, or deleted.
 	//
 	// Possible values:
 	//   "MANAGED_BY_ATTACHMENT"
@@ -21631,18 +23337,27 @@ type RouterNat struct {
 	// Defaults to 30s if not set.
 	IcmpIdleTimeoutSec int64 `json:"icmpIdleTimeoutSec,omitempty"`
 
+	// LogConfig: Configure logging on this NAT.
+	LogConfig *RouterNatLogConfig `json:"logConfig,omitempty"`
+
 	// MinPortsPerVm: Minimum number of ports allocated to a VM from this
 	// NAT config. If not set, a default number of ports is allocated to a
-	// VM. This gets rounded up to the nearest power of 2. Eg. if the value
-	// of this field is 50, at least 64 ports will be allocated to a VM.
+	// VM. This is rounded up to the nearest power of 2. For example, if the
+	// value of this field is 50, at least 64 ports are allocated to a VM.
 	MinPortsPerVm int64 `json:"minPortsPerVm,omitempty"`
 
 	// Name: Unique name of this Nat service. The name must be 1-63
 	// characters long and comply with RFC1035.
 	Name string `json:"name,omitempty"`
 
-	// NatIpAllocateOption: Specify the NatIpAllocateOption. If it is
-	// AUTO_ONLY, then nat_ip should be empty.
+	// NatIpAllocateOption: Specify the NatIpAllocateOption, which can take
+	// one of the following values:
+	// - MANUAL_ONLY: Uses only Nat IP addresses provided by customers. When
+	// there are not enough specified Nat IPs, the Nat service fails for new
+	// VMs.
+	// - AUTO_ONLY: Nat IPs are allocated by Google Cloud Platform;
+	// customers can't specify any Nat IPs. When choosing AUTO_ONLY, then
+	// nat_ip should be empty.
 	//
 	// Possible values:
 	//   "AUTO_ONLY"
@@ -21650,12 +23365,20 @@ type RouterNat struct {
 	NatIpAllocateOption string `json:"natIpAllocateOption,omitempty"`
 
 	// NatIps: A list of URLs of the IP resources used for this Nat service.
-	// These IPs must be valid static external IP addresses assigned to the
-	// project. max_length is subject to change post alpha.
+	// These IP addresses must be valid static external IP addresses
+	// assigned to the project.
 	NatIps []string `json:"natIps,omitempty"`
 
-	// SourceSubnetworkIpRangesToNat: Specify the Nat option. If this field
-	// contains ALL_SUBNETWORKS_ALL_IP_RANGES or
+	// SourceSubnetworkIpRangesToNat: Specify the Nat option, which can take
+	// one of the following values:
+	// - ALL_SUBNETWORKS_ALL_IP_RANGES: All of the IP ranges in every
+	// Subnetwork are allowed to Nat.
+	// - ALL_SUBNETWORKS_ALL_PRIMARY_IP_RANGES: All of the primary IP ranges
+	// in every Subnetwork are allowed to Nat.
+	// - LIST_OF_SUBNETWORKS: A list of Subnetworks are allowed to Nat
+	// (specified in the field subnetwork below) The default is
+	// SUBNETWORK_IP_RANGE_TO_NAT_OPTION_UNSPECIFIED. Note that if this
+	// field contains ALL_SUBNETWORKS_ALL_IP_RANGES or
 	// ALL_SUBNETWORKS_ALL_PRIMARY_IP_RANGES, then there should not be any
 	// other Router.Nat section in any Router for this network in this
 	// region.
@@ -21707,10 +23430,49 @@ func (s *RouterNat) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// RouterNatLogConfig: Configuration of logging on a NAT.
+type RouterNatLogConfig struct {
+	// Enable: Indicates whether or not to export logs. This is false by
+	// default.
+	Enable bool `json:"enable,omitempty"`
+
+	// Filter: Specifies the desired filtering of logs on this NAT. If
+	// unspecified, logs are exported for all connections handled by this
+	// NAT.
+	//
+	// Possible values:
+	//   "ALL"
+	//   "ERRORS_ONLY"
+	//   "TRANSLATIONS_ONLY"
+	Filter string `json:"filter,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Enable") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Enable") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *RouterNatLogConfig) MarshalJSON() ([]byte, error) {
+	type NoMethod RouterNatLogConfig
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // RouterNatSubnetworkToNat: Defines the IP ranges that want to use NAT
 // for a subnetwork.
 type RouterNatSubnetworkToNat struct {
-	// Name: URL for the subnetwork resource to use NAT.
+	// Name: URL for the subnetwork resource that will use NAT.
 	Name string `json:"name,omitempty"`
 
 	// SecondaryIpRangeNames: A list of the secondary ranges of the
@@ -21720,7 +23482,7 @@ type RouterNatSubnetworkToNat struct {
 	SecondaryIpRangeNames []string `json:"secondaryIpRangeNames,omitempty"`
 
 	// SourceIpRangesToNat: Specify the options for NAT ranges in the
-	// Subnetwork. All usages of single value are valid except
+	// Subnetwork. All options of a single value are valid except
 	// NAT_IP_RANGE_OPTION_UNSPECIFIED. The only valid option with multiple
 	// values is: ["PRIMARY_IP_RANGE", "LIST_OF_SECONDARY_IP_RANGES"]
 	// Default: [ALL_IP_RANGES]
@@ -21852,7 +23614,8 @@ func (s *RouterStatusBgpPeerStatus) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// RouterStatusNatStatus: Status of a NAT contained in this router.
+// RouterStatusNatStatus: Status of a NAT contained in this router. Next
+// tag: 9
 type RouterStatusNatStatus struct {
 	// AutoAllocatedNatIps: A list of IPs auto-allocated for NAT. Example:
 	// ["1.1.1.1", "129.2.16.89"]
@@ -22169,6 +23932,33 @@ type SSLHealthCheck struct {
 	// PortName: Port name as defined in InstanceGroup#NamedPort#name. If
 	// both port and port_name are defined, port takes precedence.
 	PortName string `json:"portName,omitempty"`
+
+	// PortSpecification: Specifies how port is selected for health
+	// checking, can be one of following values:
+	// USE_FIXED_PORT: The port number in
+	// port
+	// is used for health checking.
+	// USE_NAMED_PORT: The
+	// portName
+	// is used for health checking.
+	// USE_SERVING_PORT: For NetworkEndpointGroup, the port specified for
+	// each network endpoint is used for health checking. For other
+	// backends, the port or named port specified in the Backend Service is
+	// used for health checking.
+	//
+	//
+	// If not specified, SSL health check follows behavior specified
+	// in
+	// port
+	// and
+	// portName
+	// fields.
+	//
+	// Possible values:
+	//   "USE_FIXED_PORT"
+	//   "USE_NAMED_PORT"
+	//   "USE_SERVING_PORT"
+	PortSpecification string `json:"portSpecification,omitempty"`
 
 	// ProxyHeader: Specifies the type of proxy header to append before
 	// sending data to the backend, either NONE or PROXY_V1. The default is
@@ -22773,6 +24563,149 @@ func (s *ServiceAccount) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// ShieldedInstanceConfig: A set of Shielded Instance options.
+type ShieldedInstanceConfig struct {
+	// EnableIntegrityMonitoring: Defines whether the instance has integrity
+	// monitoring enabled.
+	EnableIntegrityMonitoring bool `json:"enableIntegrityMonitoring,omitempty"`
+
+	// EnableSecureBoot: Defines whether the instance has Secure Boot
+	// enabled.
+	EnableSecureBoot bool `json:"enableSecureBoot,omitempty"`
+
+	// EnableVtpm: Defines whether the instance has the vTPM enabled.
+	EnableVtpm bool `json:"enableVtpm,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g.
+	// "EnableIntegrityMonitoring") to unconditionally include in API
+	// requests. By default, fields with empty values are omitted from API
+	// requests. However, any non-pointer, non-interface field appearing in
+	// ForceSendFields will be sent to the server regardless of whether the
+	// field is empty or not. This may be used to include empty fields in
+	// Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g.
+	// "EnableIntegrityMonitoring") to include in API requests with the JSON
+	// null value. By default, fields with empty values are omitted from API
+	// requests. However, any field with an empty value appearing in
+	// NullFields will be sent to the server as null. It is an error if a
+	// field in this list has a non-empty value. This may be used to include
+	// null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ShieldedInstanceConfig) MarshalJSON() ([]byte, error) {
+	type NoMethod ShieldedInstanceConfig
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ShieldedInstanceIdentity: A shielded Instance identity entry.
+type ShieldedInstanceIdentity struct {
+	// EncryptionKey: An Endorsement Key (EK) issued to the Shielded
+	// Instance's vTPM.
+	EncryptionKey *ShieldedInstanceIdentityEntry `json:"encryptionKey,omitempty"`
+
+	// Kind: [Output Only] Type of the resource. Always
+	// compute#shieldedInstanceIdentity for shielded Instance identity
+	// entry.
+	Kind string `json:"kind,omitempty"`
+
+	// SigningKey: An Attestation Key (AK) issued to the Shielded Instance's
+	// vTPM.
+	SigningKey *ShieldedInstanceIdentityEntry `json:"signingKey,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "EncryptionKey") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "EncryptionKey") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ShieldedInstanceIdentity) MarshalJSON() ([]byte, error) {
+	type NoMethod ShieldedInstanceIdentity
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ShieldedInstanceIdentityEntry: A Shielded Instance Identity Entry.
+type ShieldedInstanceIdentityEntry struct {
+	// EkCert: A PEM-encoded X.509 certificate. This field can be empty.
+	EkCert string `json:"ekCert,omitempty"`
+
+	// EkPub: A PEM-encoded public key.
+	EkPub string `json:"ekPub,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "EkCert") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "EkCert") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ShieldedInstanceIdentityEntry) MarshalJSON() ([]byte, error) {
+	type NoMethod ShieldedInstanceIdentityEntry
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ShieldedInstanceIntegrityPolicy: The policy describes the baseline
+// against which Instance boot integrity is measured.
+type ShieldedInstanceIntegrityPolicy struct {
+	// UpdateAutoLearnPolicy: Updates the integrity policy baseline using
+	// the measurements from the VM instance's most recent boot.
+	UpdateAutoLearnPolicy bool `json:"updateAutoLearnPolicy,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g.
+	// "UpdateAutoLearnPolicy") to unconditionally include in API requests.
+	// By default, fields with empty values are omitted from API requests.
+	// However, any non-pointer, non-interface field appearing in
+	// ForceSendFields will be sent to the server regardless of whether the
+	// field is empty or not. This may be used to include empty fields in
+	// Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "UpdateAutoLearnPolicy") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ShieldedInstanceIntegrityPolicy) MarshalJSON() ([]byte, error) {
+	type NoMethod ShieldedInstanceIntegrityPolicy
+	raw := NoMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // SignedUrlKey: Represents a customer-supplied Signing Key used by
 // Cloud CDN Signed URLs
 type SignedUrlKey struct {
@@ -22874,12 +24807,12 @@ type Snapshot struct {
 	// customer-supplied encryption key.
 	//
 	// After you encrypt a snapshot using a customer-supplied key, you must
-	// provide the same key if you use the image later For example, you must
-	// provide the encryption key when you create a disk from the encrypted
-	// snapshot in a future request.
+	// provide the same key if you use the snapshot later. For example, you
+	// must provide the encryption key when you create a disk from the
+	// encrypted snapshot in a future request.
 	//
 	// Customer-supplied encryption keys do not protect access to metadata
-	// of the disk.
+	// of the snapshot.
 	//
 	// If you do not provide an encryption key when creating the snapshot,
 	// then the snapshot will be encrypted using an automatically generated
@@ -22927,6 +24860,10 @@ type Snapshot struct {
 	//   "UPDATING"
 	//   "UP_TO_DATE"
 	StorageBytesStatus string `json:"storageBytesStatus,omitempty"`
+
+	// StorageLocations: GCS bucket storage location of the snapshot
+	// (regional or multi-regional).
+	StorageLocations []string `json:"storageLocations,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the
 	// server.
@@ -24448,6 +26385,33 @@ type TCPHealthCheck struct {
 	// PortName: Port name as defined in InstanceGroup#NamedPort#name. If
 	// both port and port_name are defined, port takes precedence.
 	PortName string `json:"portName,omitempty"`
+
+	// PortSpecification: Specifies how port is selected for health
+	// checking, can be one of following values:
+	// USE_FIXED_PORT: The port number in
+	// port
+	// is used for health checking.
+	// USE_NAMED_PORT: The
+	// portName
+	// is used for health checking.
+	// USE_SERVING_PORT: For NetworkEndpointGroup, the port specified for
+	// each network endpoint is used for health checking. For other
+	// backends, the port or named port specified in the Backend Service is
+	// used for health checking.
+	//
+	//
+	// If not specified, TCP health check follows behavior specified
+	// in
+	// port
+	// and
+	// portName
+	// fields.
+	//
+	// Possible values:
+	//   "USE_FIXED_PORT"
+	//   "USE_NAMED_PORT"
+	//   "USE_SERVING_PORT"
+	PortSpecification string `json:"portSpecification,omitempty"`
 
 	// ProxyHeader: Specifies the type of proxy header to append before
 	// sending data to the backend, either NONE or PROXY_V1. The default is
@@ -26987,7 +28951,7 @@ type TargetVpnGateway struct {
 
 	// ForwardingRules: [Output Only] A list of URLs to the ForwardingRule
 	// resources. ForwardingRules are created using
-	// compute.forwardingRules.insert and associated to a VPN gateway.
+	// compute.forwardingRules.insert and associated with a VPN gateway.
 	ForwardingRules []string `json:"forwardingRules,omitempty"`
 
 	// Id: [Output Only] The unique identifier for the resource. This
@@ -27019,7 +28983,8 @@ type TargetVpnGateway struct {
 	// SelfLink: [Output Only] Server-defined URL for the resource.
 	SelfLink string `json:"selfLink,omitempty"`
 
-	// Status: [Output Only] The status of the VPN gateway.
+	// Status: [Output Only] The status of the VPN gateway, which can be one
+	// of the following: CREATING, READY, FAILED, or DELETING.
 	//
 	// Possible values:
 	//   "CREATING"
@@ -27029,8 +28994,8 @@ type TargetVpnGateway struct {
 	Status string `json:"status,omitempty"`
 
 	// Tunnels: [Output Only] A list of URLs to VpnTunnel resources.
-	// VpnTunnels are created using compute.vpntunnels.insert method and
-	// associated to a VPN gateway.
+	// VpnTunnels are created using the compute.vpntunnels.insert method and
+	// associated with a VPN gateway.
 	Tunnels []string `json:"tunnels,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the
@@ -27373,7 +29338,7 @@ func (s *TargetVpnGatewayListWarningData) MarshalJSON() ([]byte, error) {
 }
 
 type TargetVpnGatewaysScopedList struct {
-	// TargetVpnGateways: [Output Only] A list of target vpn gateways
+	// TargetVpnGateways: [Output Only] A list of target VPN gateways
 	// contained in this scope.
 	TargetVpnGateways []*TargetVpnGateway `json:"targetVpnGateways,omitempty"`
 
@@ -27608,13 +29573,16 @@ type UrlMap struct {
 	// format.
 	CreationTimestamp string `json:"creationTimestamp,omitempty"`
 
-	// DefaultService: The URL of the backendService resource if none of the
-	// hostRules match.
-	// Use defaultService instead of defaultRouteAction when simple routing
-	// to a backendService is desired and other advanced capabilities like
-	// traffic splitting and rewrites are not required.
-	// Only one of defaultService, defaultRouteAction or defaultUrlRedirect
-	// should must be set.
+	// DefaultService: The full or partial URL of the defaultService
+	// resource to which traffic is directed if none of the hostRules match.
+	// If defaultRouteAction is additionally specified, advanced routing
+	// actions like URL Rewrites, etc. take effect prior to sending the
+	// request to the backend. However, if defaultService is specified,
+	// defaultRouteAction cannot contain any weightedBackendServices.
+	// Conversely, if routeAction specifies any weightedBackendServices,
+	// service must not be specified.
+	// Only one of defaultService, defaultUrlRedirect  or
+	// defaultRouteAction.weightedBackendService must be set.
 	DefaultService string `json:"defaultService,omitempty"`
 
 	// Description: An optional description of this resource. Provide this
@@ -28533,8 +30501,8 @@ type VpnTunnel struct {
 	Id uint64 `json:"id,omitempty,string"`
 
 	// IkeVersion: IKE protocol version to use when establishing the VPN
-	// tunnel with peer VPN gateway. Acceptable IKE versions are 1 or 2.
-	// Default version is 2.
+	// tunnel with the peer VPN gateway. Acceptable IKE versions are 1 or 2.
+	// The default version is 2.
 	IkeVersion int64 `json:"ikeVersion,omitempty"`
 
 	// Kind: [Output Only] Type of resource. Always compute#vpnTunnel for
@@ -28542,8 +30510,8 @@ type VpnTunnel struct {
 	Kind string `json:"kind,omitempty"`
 
 	// LocalTrafficSelector: Local traffic selector to use when establishing
-	// the VPN tunnel with peer VPN gateway. The value should be a CIDR
-	// formatted string, for example: 192.168.0.0/16. The ranges should be
+	// the VPN tunnel with the peer VPN gateway. The value should be a CIDR
+	// formatted string, for example: 192.168.0.0/16. The ranges must be
 	// disjoint. Only IPv4 is supported.
 	LocalTrafficSelector []string `json:"localTrafficSelector,omitempty"`
 
@@ -28565,12 +30533,12 @@ type VpnTunnel struct {
 	Region string `json:"region,omitempty"`
 
 	// RemoteTrafficSelector: Remote traffic selectors to use when
-	// establishing the VPN tunnel with peer VPN gateway. The value should
-	// be a CIDR formatted string, for example: 192.168.0.0/16. The ranges
-	// should be disjoint. Only IPv4 is supported.
+	// establishing the VPN tunnel with the peer VPN gateway. The value
+	// should be a CIDR formatted string, for example: 192.168.0.0/16. The
+	// ranges should be disjoint. Only IPv4 is supported.
 	RemoteTrafficSelector []string `json:"remoteTrafficSelector,omitempty"`
 
-	// Router: URL of router resource to be used for dynamic routing.
+	// Router: URL of the router resource to be used for dynamic routing.
 	Router string `json:"router,omitempty"`
 
 	// SelfLink: [Output Only] Server-defined URL for the resource.
@@ -28583,7 +30551,23 @@ type VpnTunnel struct {
 	// SharedSecretHash: Hash of the shared secret.
 	SharedSecretHash string `json:"sharedSecretHash,omitempty"`
 
-	// Status: [Output Only] The status of the VPN tunnel.
+	// Status: [Output Only] The status of the VPN tunnel, which can be one
+	// of the following:
+	// - PROVISIONING: Resource is being allocated for the VPN tunnel.
+	// - WAITING_FOR_FULL_CONFIG: Waiting to receive all VPN-related configs
+	// from the user. Network, TargetVpnGateway, VpnTunnel, ForwardingRule,
+	// and Route resources are needed to setup the VPN tunnel.
+	// - FIRST_HANDSHAKE: Successful first handshake with the peer VPN.
+	// - ESTABLISHED: Secure session is successfully established with the
+	// peer VPN.
+	// - NETWORK_ERROR: Deprecated, replaced by NO_INCOMING_PACKETS
+	// - AUTHORIZATION_ERROR: Auth error (for example, bad shared secret).
+	//
+	// - NEGOTIATION_FAILURE: Handshake failed.
+	// - DEPROVISIONING: Resources are being deallocated for the VPN tunnel.
+	//
+	// - FAILED: Tunnel creation has failed and the tunnel is not ready to
+	// be used.
 	//
 	// Possible values:
 	//   "ALLOCATING_RESOURCES"
@@ -28944,7 +30928,7 @@ func (s *VpnTunnelListWarningData) MarshalJSON() ([]byte, error) {
 }
 
 type VpnTunnelsScopedList struct {
-	// VpnTunnels: A list of vpn tunnels contained in this scope.
+	// VpnTunnels: A list of VPN tunnels contained in this scope.
 	VpnTunnels []*VpnTunnel `json:"vpnTunnels,omitempty"`
 
 	// Warning: Informational warning which replaces the list of addresses
@@ -29268,7 +31252,7 @@ func (s *XpnResourceId) MarshalJSON() ([]byte, error) {
 }
 
 // Zone: A Zone resource. (== resource_for beta.zones ==) (==
-// resource_for v1.zones ==)
+// resource_for v1.zones ==) Next ID: 17
 type Zone struct {
 	// AvailableCpuPlatforms: [Output Only] Available cpu/platform
 	// selections for the zone.
@@ -29952,7 +31936,7 @@ func (c *AcceleratorTypesGetCall) Do(opts ...googleapi.CallOption) (*Accelerator
 	//     "acceleratorType": {
 	//       "description": "Name of the accelerator type to return.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -30639,7 +32623,7 @@ func (c *AddressesDeleteCall) Do(opts ...googleapi.CallOption) (*Operation, erro
 	//     "address": {
 	//       "description": "Name of the address resource to delete.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -30810,7 +32794,7 @@ func (c *AddressesGetCall) Do(opts ...googleapi.CallOption) (*Address, error) {
 	//     "address": {
 	//       "description": "Name of the address resource to return.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -31672,7 +33656,7 @@ func (c *AutoscalersDeleteCall) Do(opts ...googleapi.CallOption) (*Operation, er
 	//     "autoscaler": {
 	//       "description": "Name of the autoscaler to delete.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -31843,7 +33827,7 @@ func (c *AutoscalersGetCall) Do(opts ...googleapi.CallOption) (*Autoscaler, erro
 	//     "autoscaler": {
 	//       "description": "Name of the autoscaler to return.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -32464,7 +34448,7 @@ func (c *AutoscalersPatchCall) Do(opts ...googleapi.CallOption) (*Operation, err
 	//     "autoscaler": {
 	//       "description": "Name of the autoscaler to patch.",
 	//       "location": "query",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "type": "string"
 	//     },
 	//     "project": {
@@ -32652,7 +34636,7 @@ func (c *AutoscalersUpdateCall) Do(opts ...googleapi.CallOption) (*Operation, er
 	//     "autoscaler": {
 	//       "description": "Name of the autoscaler to update.",
 	//       "location": "query",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "type": "string"
 	//     },
 	//     "project": {
@@ -32999,7 +34983,7 @@ func (c *BackendBucketsDeleteCall) Do(opts ...googleapi.CallOption) (*Operation,
 	//     "backendBucket": {
 	//       "description": "Name of the BackendBucket resource to delete.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -33331,7 +35315,7 @@ func (c *BackendBucketsGetCall) Do(opts ...googleapi.CallOption) (*BackendBucket
 	//     "backendBucket": {
 	//       "description": "Name of the BackendBucket resource to return.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -33916,7 +35900,7 @@ func (c *BackendBucketsPatchCall) Do(opts ...googleapi.CallOption) (*Operation, 
 	//     "backendBucket": {
 	//       "description": "Name of the BackendBucket resource to patch.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -34091,7 +36075,7 @@ func (c *BackendBucketsUpdateCall) Do(opts ...googleapi.CallOption) (*Operation,
 	//     "backendBucket": {
 	//       "description": "Name of the BackendBucket resource to update.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -34685,7 +36669,7 @@ func (c *BackendServicesDeleteCall) Do(opts ...googleapi.CallOption) (*Operation
 	//     "backendService": {
 	//       "description": "Name of the BackendService resource to delete.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -35018,7 +37002,7 @@ func (c *BackendServicesGetCall) Do(opts ...googleapi.CallOption) (*BackendServi
 	//     "backendService": {
 	//       "description": "Name of the BackendService resource to return.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -35168,7 +37152,7 @@ func (c *BackendServicesGetHealthCall) Do(opts ...googleapi.CallOption) (*Backen
 	//     "backendService": {
 	//       "description": "Name of the BackendService resource to which the queried instance belongs.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -36115,7 +38099,7 @@ func (c *BackendServicesUpdateCall) Do(opts ...googleapi.CallOption) (*Operation
 	//     "backendService": {
 	//       "description": "Name of the BackendService resource to update.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -36535,7 +38519,7 @@ func (c *DiskTypesGetCall) Do(opts ...googleapi.CallOption) (*DiskType, error) {
 	//     "diskType": {
 	//       "description": "Name of the disk type to return.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -37107,7 +39091,10 @@ func (r *DisksService) CreateSnapshot(project string, zone string, disk string, 
 	return c
 }
 
-// GuestFlush sets the optional parameter "guestFlush":
+// GuestFlush sets the optional parameter "guestFlush": [Input Only]
+// Specifies to create an application consistent snapshot by informing
+// the OS to prepare for the snapshot process. Currently only supported
+// on Windows instances using the Volume Shadow Copy Service (VSS).
 func (c *DisksCreateSnapshotCall) GuestFlush(guestFlush bool) *DisksCreateSnapshotCall {
 	c.urlParams_.Set("guestFlush", fmt.Sprint(guestFlush))
 	return c
@@ -37241,6 +39228,7 @@ func (c *DisksCreateSnapshotCall) Do(opts ...googleapi.CallOption) (*Operation, 
 	//       "type": "string"
 	//     },
 	//     "guestFlush": {
+	//       "description": "[Input Only] Specifies to create an application consistent snapshot by informing the OS to prepare for the snapshot process. Currently only supported on Windows instances using the Volume Shadow Copy Service (VSS).",
 	//       "location": "query",
 	//       "type": "boolean"
 	//     },
@@ -40430,7 +42418,7 @@ func (c *ForwardingRulesDeleteCall) Do(opts ...googleapi.CallOption) (*Operation
 	//     "forwardingRule": {
 	//       "description": "Name of the ForwardingRule resource to delete.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -40601,7 +42589,7 @@ func (c *ForwardingRulesGetCall) Do(opts ...googleapi.CallOption) (*ForwardingRu
 	//     "forwardingRule": {
 	//       "description": "Name of the ForwardingRule resource to return.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -41221,7 +43209,7 @@ func (c *ForwardingRulesSetTargetCall) Do(opts ...googleapi.CallOption) (*Operat
 	//     "forwardingRule": {
 	//       "description": "Name of the ForwardingRule resource in which target is to be set.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -41396,7 +43384,7 @@ func (c *GlobalAddressesDeleteCall) Do(opts ...googleapi.CallOption) (*Operation
 	//     "address": {
 	//       "description": "Name of the address resource to delete.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -41557,7 +43545,7 @@ func (c *GlobalAddressesGetCall) Do(opts ...googleapi.CallOption) (*Address, err
 	//     "address": {
 	//       "description": "Name of the address resource to return.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -42135,7 +44123,7 @@ func (c *GlobalForwardingRulesDeleteCall) Do(opts ...googleapi.CallOption) (*Ope
 	//     "forwardingRule": {
 	//       "description": "Name of the ForwardingRule resource to delete.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -42296,7 +44284,7 @@ func (c *GlobalForwardingRulesGetCall) Do(opts ...googleapi.CallOption) (*Forwar
 	//     "forwardingRule": {
 	//       "description": "Name of the ForwardingRule resource to return.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -42883,7 +44871,7 @@ func (c *GlobalForwardingRulesSetTargetCall) Do(opts ...googleapi.CallOption) (*
 	//     "forwardingRule": {
 	//       "description": "Name of the ForwardingRule resource in which target is to be set.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -43259,7 +45247,7 @@ func (c *GlobalOperationsDeleteCall) Do(opts ...googleapi.CallOption) error {
 	//     "operation": {
 	//       "description": "Name of the Operations resource to delete.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -43412,7 +45400,7 @@ func (c *GlobalOperationsGetCall) Do(opts ...googleapi.CallOption) (*Operation, 
 	//     "operation": {
 	//       "description": "Name of the Operations resource to return.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -43825,7 +45813,7 @@ func (c *HealthChecksDeleteCall) Do(opts ...googleapi.CallOption) (*Operation, e
 	//     "healthCheck": {
 	//       "description": "Name of the HealthCheck resource to delete.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -43985,7 +45973,7 @@ func (c *HealthChecksGetCall) Do(opts ...googleapi.CallOption) (*HealthCheck, er
 	//     "healthCheck": {
 	//       "description": "Name of the HealthCheck resource to return.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -44570,7 +46558,7 @@ func (c *HealthChecksPatchCall) Do(opts ...googleapi.CallOption) (*Operation, er
 	//     "healthCheck": {
 	//       "description": "Name of the HealthCheck resource to patch.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -44745,7 +46733,7 @@ func (c *HealthChecksUpdateCall) Do(opts ...googleapi.CallOption) (*Operation, e
 	//     "healthCheck": {
 	//       "description": "Name of the HealthCheck resource to update.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -44913,7 +46901,7 @@ func (c *HttpHealthChecksDeleteCall) Do(opts ...googleapi.CallOption) (*Operatio
 	//     "httpHealthCheck": {
 	//       "description": "Name of the HttpHealthCheck resource to delete.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -45074,7 +47062,7 @@ func (c *HttpHealthChecksGetCall) Do(opts ...googleapi.CallOption) (*HttpHealthC
 	//     "httpHealthCheck": {
 	//       "description": "Name of the HttpHealthCheck resource to return.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -45662,7 +47650,7 @@ func (c *HttpHealthChecksPatchCall) Do(opts ...googleapi.CallOption) (*Operation
 	//     "httpHealthCheck": {
 	//       "description": "Name of the HttpHealthCheck resource to patch.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -45838,7 +47826,7 @@ func (c *HttpHealthChecksUpdateCall) Do(opts ...googleapi.CallOption) (*Operatio
 	//     "httpHealthCheck": {
 	//       "description": "Name of the HttpHealthCheck resource to update.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -46005,7 +47993,7 @@ func (c *HttpsHealthChecksDeleteCall) Do(opts ...googleapi.CallOption) (*Operati
 	//     "httpsHealthCheck": {
 	//       "description": "Name of the HttpsHealthCheck resource to delete.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -46165,7 +48153,7 @@ func (c *HttpsHealthChecksGetCall) Do(opts ...googleapi.CallOption) (*HttpsHealt
 	//     "httpsHealthCheck": {
 	//       "description": "Name of the HttpsHealthCheck resource to return.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -46750,7 +48738,7 @@ func (c *HttpsHealthChecksPatchCall) Do(opts ...googleapi.CallOption) (*Operatio
 	//     "httpsHealthCheck": {
 	//       "description": "Name of the HttpsHealthCheck resource to patch.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -46925,7 +48913,7 @@ func (c *HttpsHealthChecksUpdateCall) Do(opts ...googleapi.CallOption) (*Operati
 	//     "httpsHealthCheck": {
 	//       "description": "Name of the HttpsHealthCheck resource to update.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -53166,8 +55154,8 @@ type InstanceTemplatesDeleteCall struct {
 }
 
 // Delete: Deletes the specified instance template. Deleting an instance
-// template is permanent and cannot be undone. It's not possible to
-// delete templates which are in use by an instance group.
+// template is permanent and cannot be undone. It is not possible to
+// delete templates that are already in use by a managed instance group.
 // For details, see https://cloud.google.com/compute/docs/reference/latest/instanceTemplates/delete
 func (r *InstanceTemplatesService) Delete(project string, instanceTemplate string) *InstanceTemplatesDeleteCall {
 	c := &InstanceTemplatesDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
@@ -53281,7 +55269,7 @@ func (c *InstanceTemplatesDeleteCall) Do(opts ...googleapi.CallOption) (*Operati
 	}
 	return ret, nil
 	// {
-	//   "description": "Deletes the specified instance template. Deleting an instance template is permanent and cannot be undone. It's not possible to delete templates which are in use by an instance group.",
+	//   "description": "Deletes the specified instance template. Deleting an instance template is permanent and cannot be undone. It is not possible to delete templates that are already in use by a managed instance group.",
 	//   "httpMethod": "DELETE",
 	//   "id": "compute.instanceTemplates.delete",
 	//   "parameterOrder": [
@@ -53292,7 +55280,7 @@ func (c *InstanceTemplatesDeleteCall) Do(opts ...googleapi.CallOption) (*Operati
 	//     "instanceTemplate": {
 	//       "description": "The name of the instance template to delete.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -53453,7 +55441,7 @@ func (c *InstanceTemplatesGetCall) Do(opts ...googleapi.CallOption) (*InstanceTe
 	//     "instanceTemplate": {
 	//       "description": "The name of the instance template.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -53814,7 +55802,7 @@ type InstanceTemplatesListCall struct {
 }
 
 // List: Retrieves a list of instance templates that are contained
-// within the specified project and zone.
+// within the specified project.
 // For details, see https://cloud.google.com/compute/docs/reference/latest/instanceTemplates/list
 func (r *InstanceTemplatesService) List(project string) *InstanceTemplatesListCall {
 	c := &InstanceTemplatesListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
@@ -53983,7 +55971,7 @@ func (c *InstanceTemplatesListCall) Do(opts ...googleapi.CallOption) (*InstanceT
 	}
 	return ret, nil
 	// {
-	//   "description": "Retrieves a list of instance templates that are contained within the specified project and zone.",
+	//   "description": "Retrieves a list of instance templates that are contained within the specified project.",
 	//   "httpMethod": "GET",
 	//   "id": "compute.instanceTemplates.list",
 	//   "parameterOrder": [
@@ -54835,7 +56823,7 @@ func (r *InstancesService) AttachDisk(project string, zone string, instance stri
 
 // ForceAttach sets the optional parameter "forceAttach": Whether to
 // force attach the disk even if it's currently attached to another
-// instance. This is only available for regional disks.
+// instance.
 func (c *InstancesAttachDiskCall) ForceAttach(forceAttach bool) *InstancesAttachDiskCall {
 	c.urlParams_.Set("forceAttach", fmt.Sprint(forceAttach))
 	return c
@@ -54962,7 +56950,7 @@ func (c *InstancesAttachDiskCall) Do(opts ...googleapi.CallOption) (*Operation, 
 	//   ],
 	//   "parameters": {
 	//     "forceAttach": {
-	//       "description": "Whether to force attach the disk even if it's currently attached to another instance. This is only available for regional disks.",
+	//       "description": "Whether to force attach the disk even if it's currently attached to another instance.",
 	//       "location": "query",
 	//       "type": "boolean"
 	//     },
@@ -56098,6 +58086,173 @@ func (c *InstancesGetSerialPortOutputCall) Do(opts ...googleapi.CallOption) (*Se
 
 }
 
+// method id "compute.instances.getShieldedInstanceIdentity":
+
+type InstancesGetShieldedInstanceIdentityCall struct {
+	s            *Service
+	project      string
+	zone         string
+	instance     string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// GetShieldedInstanceIdentity: Returns the Shielded Instance Identity
+// of an instance
+func (r *InstancesService) GetShieldedInstanceIdentity(project string, zone string, instance string) *InstancesGetShieldedInstanceIdentityCall {
+	c := &InstancesGetShieldedInstanceIdentityCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.project = project
+	c.zone = zone
+	c.instance = instance
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *InstancesGetShieldedInstanceIdentityCall) Fields(s ...googleapi.Field) *InstancesGetShieldedInstanceIdentityCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *InstancesGetShieldedInstanceIdentityCall) IfNoneMatch(entityTag string) *InstancesGetShieldedInstanceIdentityCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *InstancesGetShieldedInstanceIdentityCall) Context(ctx context.Context) *InstancesGetShieldedInstanceIdentityCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *InstancesGetShieldedInstanceIdentityCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *InstancesGetShieldedInstanceIdentityCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instances/{instance}/getShieldedInstanceIdentity")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"project":  c.project,
+		"zone":     c.zone,
+		"instance": c.instance,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "compute.instances.getShieldedInstanceIdentity" call.
+// Exactly one of *ShieldedInstanceIdentity or error will be non-nil.
+// Any non-2xx status code is an error. Response headers are in either
+// *ShieldedInstanceIdentity.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *InstancesGetShieldedInstanceIdentityCall) Do(opts ...googleapi.CallOption) (*ShieldedInstanceIdentity, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &ShieldedInstanceIdentity{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Returns the Shielded Instance Identity of an instance",
+	//   "httpMethod": "GET",
+	//   "id": "compute.instances.getShieldedInstanceIdentity",
+	//   "parameterOrder": [
+	//     "project",
+	//     "zone",
+	//     "instance"
+	//   ],
+	//   "parameters": {
+	//     "instance": {
+	//       "description": "Name or id of the instance scoping this request.",
+	//       "location": "path",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "project": {
+	//       "description": "Project ID for this request.",
+	//       "location": "path",
+	//       "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "zone": {
+	//       "description": "The name of the zone for this request.",
+	//       "location": "path",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "{project}/zones/{zone}/instances/{instance}/getShieldedInstanceIdentity",
+	//   "response": {
+	//     "$ref": "ShieldedInstanceIdentity"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform",
+	//     "https://www.googleapis.com/auth/compute",
+	//     "https://www.googleapis.com/auth/compute.readonly"
+	//   ]
+	// }
+
+}
+
 // method id "compute.instances.insert":
 
 type InstancesInsertCall struct {
@@ -56845,8 +59000,9 @@ type InstancesResetCall struct {
 	header_    http.Header
 }
 
-// Reset: Performs a reset on the instance. For more information, see
-// Resetting an instance.
+// Reset: Performs a reset on the instance. This is a hard reset the VM
+// does not do a graceful shutdown. For more information, see Resetting
+// an instance.
 // For details, see https://cloud.google.com/compute/docs/reference/latest/instances/reset
 func (r *InstancesService) Reset(project string, zone string, instance string) *InstancesResetCall {
 	c := &InstancesResetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
@@ -56962,7 +59118,7 @@ func (c *InstancesResetCall) Do(opts ...googleapi.CallOption) (*Operation, error
 	}
 	return ret, nil
 	// {
-	//   "description": "Performs a reset on the instance. For more information, see Resetting an instance.",
+	//   "description": "Performs a reset on the instance. This is a hard reset the VM does not do a graceful shutdown. For more information, see Resetting an instance.",
 	//   "httpMethod": "POST",
 	//   "id": "compute.instances.reset",
 	//   "parameterOrder": [
@@ -58860,6 +61016,194 @@ func (c *InstancesSetServiceAccountCall) Do(opts ...googleapi.CallOption) (*Oper
 
 }
 
+// method id "compute.instances.setShieldedInstanceIntegrityPolicy":
+
+type InstancesSetShieldedInstanceIntegrityPolicyCall struct {
+	s                               *Service
+	project                         string
+	zone                            string
+	instance                        string
+	shieldedinstanceintegritypolicy *ShieldedInstanceIntegrityPolicy
+	urlParams_                      gensupport.URLParams
+	ctx_                            context.Context
+	header_                         http.Header
+}
+
+// SetShieldedInstanceIntegrityPolicy: Sets the Shielded Instance
+// integrity policy for an instance. You can only use this method on a
+// running instance. This method supports PATCH semantics and uses the
+// JSON merge patch format and processing rules.
+func (r *InstancesService) SetShieldedInstanceIntegrityPolicy(project string, zone string, instance string, shieldedinstanceintegritypolicy *ShieldedInstanceIntegrityPolicy) *InstancesSetShieldedInstanceIntegrityPolicyCall {
+	c := &InstancesSetShieldedInstanceIntegrityPolicyCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.project = project
+	c.zone = zone
+	c.instance = instance
+	c.shieldedinstanceintegritypolicy = shieldedinstanceintegritypolicy
+	return c
+}
+
+// RequestId sets the optional parameter "requestId": An optional
+// request ID to identify requests. Specify a unique request ID so that
+// if you must retry your request, the server will know to ignore the
+// request if it has already been completed.
+//
+// For example, consider a situation where you make an initial request
+// and the request times out. If you make the request again with the
+// same request ID, the server can check if original operation with the
+// same request ID was received, and if so, will ignore the second
+// request. This prevents clients from accidentally creating duplicate
+// commitments.
+//
+// The request ID must be a valid UUID with the exception that zero UUID
+// is not supported (00000000-0000-0000-0000-000000000000).
+func (c *InstancesSetShieldedInstanceIntegrityPolicyCall) RequestId(requestId string) *InstancesSetShieldedInstanceIntegrityPolicyCall {
+	c.urlParams_.Set("requestId", requestId)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *InstancesSetShieldedInstanceIntegrityPolicyCall) Fields(s ...googleapi.Field) *InstancesSetShieldedInstanceIntegrityPolicyCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *InstancesSetShieldedInstanceIntegrityPolicyCall) Context(ctx context.Context) *InstancesSetShieldedInstanceIntegrityPolicyCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *InstancesSetShieldedInstanceIntegrityPolicyCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *InstancesSetShieldedInstanceIntegrityPolicyCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.shieldedinstanceintegritypolicy)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instances/{instance}/setShieldedInstanceIntegrityPolicy")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("PATCH", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"project":  c.project,
+		"zone":     c.zone,
+		"instance": c.instance,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "compute.instances.setShieldedInstanceIntegrityPolicy" call.
+// Exactly one of *Operation or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *InstancesSetShieldedInstanceIntegrityPolicyCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &Operation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Sets the Shielded Instance integrity policy for an instance. You can only use this method on a running instance. This method supports PATCH semantics and uses the JSON merge patch format and processing rules.",
+	//   "httpMethod": "PATCH",
+	//   "id": "compute.instances.setShieldedInstanceIntegrityPolicy",
+	//   "parameterOrder": [
+	//     "project",
+	//     "zone",
+	//     "instance"
+	//   ],
+	//   "parameters": {
+	//     "instance": {
+	//       "description": "Name or id of the instance scoping this request.",
+	//       "location": "path",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "project": {
+	//       "description": "Project ID for this request.",
+	//       "location": "path",
+	//       "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "requestId": {
+	//       "description": "An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed.\n\nFor example, consider a situation where you make an initial request and the request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments.\n\nThe request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "zone": {
+	//       "description": "The name of the zone for this request.",
+	//       "location": "path",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "{project}/zones/{zone}/instances/{instance}/setShieldedInstanceIntegrityPolicy",
+	//   "request": {
+	//     "$ref": "ShieldedInstanceIntegrityPolicy"
+	//   },
+	//   "response": {
+	//     "$ref": "Operation"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform",
+	//     "https://www.googleapis.com/auth/compute"
+	//   ]
+	// }
+
+}
+
 // method id "compute.instances.setTags":
 
 type InstancesSetTagsCall struct {
@@ -60297,6 +62641,194 @@ func (c *InstancesUpdateNetworkInterfaceCall) Do(opts ...googleapi.CallOption) (
 
 }
 
+// method id "compute.instances.updateShieldedInstanceConfig":
+
+type InstancesUpdateShieldedInstanceConfigCall struct {
+	s                      *Service
+	project                string
+	zone                   string
+	instance               string
+	shieldedinstanceconfig *ShieldedInstanceConfig
+	urlParams_             gensupport.URLParams
+	ctx_                   context.Context
+	header_                http.Header
+}
+
+// UpdateShieldedInstanceConfig: Updates the Shielded Instance config
+// for an instance. You can only use this method on a stopped instance.
+// This method supports PATCH semantics and uses the JSON merge patch
+// format and processing rules.
+func (r *InstancesService) UpdateShieldedInstanceConfig(project string, zone string, instance string, shieldedinstanceconfig *ShieldedInstanceConfig) *InstancesUpdateShieldedInstanceConfigCall {
+	c := &InstancesUpdateShieldedInstanceConfigCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.project = project
+	c.zone = zone
+	c.instance = instance
+	c.shieldedinstanceconfig = shieldedinstanceconfig
+	return c
+}
+
+// RequestId sets the optional parameter "requestId": An optional
+// request ID to identify requests. Specify a unique request ID so that
+// if you must retry your request, the server will know to ignore the
+// request if it has already been completed.
+//
+// For example, consider a situation where you make an initial request
+// and the request times out. If you make the request again with the
+// same request ID, the server can check if original operation with the
+// same request ID was received, and if so, will ignore the second
+// request. This prevents clients from accidentally creating duplicate
+// commitments.
+//
+// The request ID must be a valid UUID with the exception that zero UUID
+// is not supported (00000000-0000-0000-0000-000000000000).
+func (c *InstancesUpdateShieldedInstanceConfigCall) RequestId(requestId string) *InstancesUpdateShieldedInstanceConfigCall {
+	c.urlParams_.Set("requestId", requestId)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *InstancesUpdateShieldedInstanceConfigCall) Fields(s ...googleapi.Field) *InstancesUpdateShieldedInstanceConfigCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *InstancesUpdateShieldedInstanceConfigCall) Context(ctx context.Context) *InstancesUpdateShieldedInstanceConfigCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *InstancesUpdateShieldedInstanceConfigCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *InstancesUpdateShieldedInstanceConfigCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.shieldedinstanceconfig)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/instances/{instance}/updateShieldedInstanceConfig")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("PATCH", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"project":  c.project,
+		"zone":     c.zone,
+		"instance": c.instance,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "compute.instances.updateShieldedInstanceConfig" call.
+// Exactly one of *Operation or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *InstancesUpdateShieldedInstanceConfigCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &Operation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Updates the Shielded Instance config for an instance. You can only use this method on a stopped instance. This method supports PATCH semantics and uses the JSON merge patch format and processing rules.",
+	//   "httpMethod": "PATCH",
+	//   "id": "compute.instances.updateShieldedInstanceConfig",
+	//   "parameterOrder": [
+	//     "project",
+	//     "zone",
+	//     "instance"
+	//   ],
+	//   "parameters": {
+	//     "instance": {
+	//       "description": "Name or id of the instance scoping this request.",
+	//       "location": "path",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "project": {
+	//       "description": "Project ID for this request.",
+	//       "location": "path",
+	//       "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "requestId": {
+	//       "description": "An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed.\n\nFor example, consider a situation where you make an initial request and the request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments.\n\nThe request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "zone": {
+	//       "description": "The name of the zone for this request.",
+	//       "location": "path",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "{project}/zones/{zone}/instances/{instance}/updateShieldedInstanceConfig",
+	//   "request": {
+	//     "$ref": "ShieldedInstanceConfig"
+	//   },
+	//   "response": {
+	//     "$ref": "Operation"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform",
+	//     "https://www.googleapis.com/auth/compute"
+	//   ]
+	// }
+
+}
+
 // method id "compute.interconnectAttachments.aggregatedList":
 
 type InterconnectAttachmentsAggregatedListCall struct {
@@ -60689,7 +63221,7 @@ func (c *InterconnectAttachmentsDeleteCall) Do(opts ...googleapi.CallOption) (*O
 	//     "interconnectAttachment": {
 	//       "description": "Name of the interconnect attachment to delete.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -60859,7 +63391,7 @@ func (c *InterconnectAttachmentsGetCall) Do(opts ...googleapi.CallOption) (*Inte
 	//     "interconnectAttachment": {
 	//       "description": "Name of the interconnect attachment to return.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -61477,7 +64009,7 @@ func (c *InterconnectAttachmentsPatchCall) Do(opts ...googleapi.CallOption) (*Op
 	//     "interconnectAttachment": {
 	//       "description": "Name of the interconnect attachment to patch.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -61648,7 +64180,7 @@ func (c *InterconnectLocationsGetCall) Do(opts ...googleapi.CallOption) (*Interc
 	//     "interconnectLocation": {
 	//       "description": "Name of the interconnect location to return.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -62060,7 +64592,7 @@ func (c *InterconnectsDeleteCall) Do(opts ...googleapi.CallOption) (*Operation, 
 	//     "interconnect": {
 	//       "description": "Name of the interconnect to delete.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -62220,7 +64752,7 @@ func (c *InterconnectsGetCall) Do(opts ...googleapi.CallOption) (*Interconnect, 
 	//     "interconnect": {
 	//       "description": "Name of the interconnect to return.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -62377,7 +64909,7 @@ func (c *InterconnectsGetDiagnosticsCall) Do(opts ...googleapi.CallOption) (*Int
 	//     "interconnect": {
 	//       "description": "Name of the interconnect resource to query.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -62962,7 +65494,7 @@ func (c *InterconnectsPatchCall) Do(opts ...googleapi.CallOption) (*Operation, e
 	//     "interconnect": {
 	//       "description": "Name of the interconnect to update.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -63437,7 +65969,7 @@ func (c *LicensesDeleteCall) Do(opts ...googleapi.CallOption) (*Operation, error
 	//     "license": {
 	//       "description": "Name of the license resource to delete.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -63597,7 +66129,7 @@ func (c *LicensesGetCall) Do(opts ...googleapi.CallOption) (*License, error) {
 	//     "license": {
 	//       "description": "Name of the License resource to return.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -64891,7 +67423,7 @@ func (c *MachineTypesGetCall) Do(opts ...googleapi.CallOption) (*MachineType, er
 	//     "machineType": {
 	//       "description": "Name of the machine type to return.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -65185,6 +67717,1837 @@ func (c *MachineTypesListCall) Pages(ctx context.Context, f func(*MachineTypeLis
 		}
 		c.PageToken(x.NextPageToken)
 	}
+}
+
+// method id "compute.networkEndpointGroups.aggregatedList":
+
+type NetworkEndpointGroupsAggregatedListCall struct {
+	s            *Service
+	project      string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// AggregatedList: Retrieves the list of network endpoint groups and
+// sorts them by zone.
+func (r *NetworkEndpointGroupsService) AggregatedList(project string) *NetworkEndpointGroupsAggregatedListCall {
+	c := &NetworkEndpointGroupsAggregatedListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.project = project
+	return c
+}
+
+// Filter sets the optional parameter "filter": A filter expression that
+// filters resources listed in the response. The expression must specify
+// the field name, a comparison operator, and the value that you want to
+// use for filtering. The value must be a string, a number, or a
+// boolean. The comparison operator must be either =, !=, >, or <.
+//
+// For example, if you are filtering Compute Engine instances, you can
+// exclude instances named example-instance by specifying name !=
+// example-instance.
+//
+// You can also filter nested fields. For example, you could specify
+// scheduling.automaticRestart = false to include instances only if they
+// are not scheduled for automatic restarts. You can use filtering on
+// nested fields to filter based on resource labels.
+//
+// To filter on multiple expressions, provide each separate expression
+// within parentheses. For example, (scheduling.automaticRestart = true)
+// (cpuPlatform = "Intel Skylake"). By default, each expression is an
+// AND expression. However, you can include AND and OR expressions
+// explicitly. For example, (cpuPlatform = "Intel Skylake") OR
+// (cpuPlatform = "Intel Broadwell") AND (scheduling.automaticRestart =
+// true).
+func (c *NetworkEndpointGroupsAggregatedListCall) Filter(filter string) *NetworkEndpointGroupsAggregatedListCall {
+	c.urlParams_.Set("filter", filter)
+	return c
+}
+
+// MaxResults sets the optional parameter "maxResults": The maximum
+// number of results per page that should be returned. If the number of
+// available results is larger than maxResults, Compute Engine returns a
+// nextPageToken that can be used to get the next page of results in
+// subsequent list requests. Acceptable values are 0 to 500, inclusive.
+// (Default: 500)
+func (c *NetworkEndpointGroupsAggregatedListCall) MaxResults(maxResults int64) *NetworkEndpointGroupsAggregatedListCall {
+	c.urlParams_.Set("maxResults", fmt.Sprint(maxResults))
+	return c
+}
+
+// OrderBy sets the optional parameter "orderBy": Sorts list results by
+// a certain order. By default, results are returned in alphanumerical
+// order based on the resource name.
+//
+// You can also sort results in descending order based on the creation
+// timestamp using orderBy="creationTimestamp desc". This sorts results
+// based on the creationTimestamp field in reverse chronological order
+// (newest result first). Use this to sort resources like operations so
+// that the newest operation is returned first.
+//
+// Currently, only sorting by name or creationTimestamp desc is
+// supported.
+func (c *NetworkEndpointGroupsAggregatedListCall) OrderBy(orderBy string) *NetworkEndpointGroupsAggregatedListCall {
+	c.urlParams_.Set("orderBy", orderBy)
+	return c
+}
+
+// PageToken sets the optional parameter "pageToken": Specifies a page
+// token to use. Set pageToken to the nextPageToken returned by a
+// previous list request to get the next page of results.
+func (c *NetworkEndpointGroupsAggregatedListCall) PageToken(pageToken string) *NetworkEndpointGroupsAggregatedListCall {
+	c.urlParams_.Set("pageToken", pageToken)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *NetworkEndpointGroupsAggregatedListCall) Fields(s ...googleapi.Field) *NetworkEndpointGroupsAggregatedListCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *NetworkEndpointGroupsAggregatedListCall) IfNoneMatch(entityTag string) *NetworkEndpointGroupsAggregatedListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *NetworkEndpointGroupsAggregatedListCall) Context(ctx context.Context) *NetworkEndpointGroupsAggregatedListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *NetworkEndpointGroupsAggregatedListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *NetworkEndpointGroupsAggregatedListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/aggregated/networkEndpointGroups")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"project": c.project,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "compute.networkEndpointGroups.aggregatedList" call.
+// Exactly one of *NetworkEndpointGroupAggregatedList or error will be
+// non-nil. Any non-2xx status code is an error. Response headers are in
+// either *NetworkEndpointGroupAggregatedList.ServerResponse.Header or
+// (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was
+// returned.
+func (c *NetworkEndpointGroupsAggregatedListCall) Do(opts ...googleapi.CallOption) (*NetworkEndpointGroupAggregatedList, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &NetworkEndpointGroupAggregatedList{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Retrieves the list of network endpoint groups and sorts them by zone.",
+	//   "httpMethod": "GET",
+	//   "id": "compute.networkEndpointGroups.aggregatedList",
+	//   "parameterOrder": [
+	//     "project"
+	//   ],
+	//   "parameters": {
+	//     "filter": {
+	//       "description": "A filter expression that filters resources listed in the response. The expression must specify the field name, a comparison operator, and the value that you want to use for filtering. The value must be a string, a number, or a boolean. The comparison operator must be either =, !=, \u003e, or \u003c.\n\nFor example, if you are filtering Compute Engine instances, you can exclude instances named example-instance by specifying name != example-instance.\n\nYou can also filter nested fields. For example, you could specify scheduling.automaticRestart = false to include instances only if they are not scheduled for automatic restarts. You can use filtering on nested fields to filter based on resource labels.\n\nTo filter on multiple expressions, provide each separate expression within parentheses. For example, (scheduling.automaticRestart = true) (cpuPlatform = \"Intel Skylake\"). By default, each expression is an AND expression. However, you can include AND and OR expressions explicitly. For example, (cpuPlatform = \"Intel Skylake\") OR (cpuPlatform = \"Intel Broadwell\") AND (scheduling.automaticRestart = true).",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "maxResults": {
+	//       "default": "500",
+	//       "description": "The maximum number of results per page that should be returned. If the number of available results is larger than maxResults, Compute Engine returns a nextPageToken that can be used to get the next page of results in subsequent list requests. Acceptable values are 0 to 500, inclusive. (Default: 500)",
+	//       "format": "uint32",
+	//       "location": "query",
+	//       "minimum": "0",
+	//       "type": "integer"
+	//     },
+	//     "orderBy": {
+	//       "description": "Sorts list results by a certain order. By default, results are returned in alphanumerical order based on the resource name.\n\nYou can also sort results in descending order based on the creation timestamp using orderBy=\"creationTimestamp desc\". This sorts results based on the creationTimestamp field in reverse chronological order (newest result first). Use this to sort resources like operations so that the newest operation is returned first.\n\nCurrently, only sorting by name or creationTimestamp desc is supported.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "pageToken": {
+	//       "description": "Specifies a page token to use. Set pageToken to the nextPageToken returned by a previous list request to get the next page of results.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "project": {
+	//       "description": "Project ID for this request.",
+	//       "location": "path",
+	//       "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "{project}/aggregated/networkEndpointGroups",
+	//   "response": {
+	//     "$ref": "NetworkEndpointGroupAggregatedList"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform",
+	//     "https://www.googleapis.com/auth/compute",
+	//     "https://www.googleapis.com/auth/compute.readonly"
+	//   ]
+	// }
+
+}
+
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *NetworkEndpointGroupsAggregatedListCall) Pages(ctx context.Context, f func(*NetworkEndpointGroupAggregatedList) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
+}
+
+// method id "compute.networkEndpointGroups.attachNetworkEndpoints":
+
+type NetworkEndpointGroupsAttachNetworkEndpointsCall struct {
+	s                                           *Service
+	project                                     string
+	zone                                        string
+	networkEndpointGroup                        string
+	networkendpointgroupsattachendpointsrequest *NetworkEndpointGroupsAttachEndpointsRequest
+	urlParams_                                  gensupport.URLParams
+	ctx_                                        context.Context
+	header_                                     http.Header
+}
+
+// AttachNetworkEndpoints: Attach a list of network endpoints to the
+// specified network endpoint group.
+func (r *NetworkEndpointGroupsService) AttachNetworkEndpoints(project string, zone string, networkEndpointGroup string, networkendpointgroupsattachendpointsrequest *NetworkEndpointGroupsAttachEndpointsRequest) *NetworkEndpointGroupsAttachNetworkEndpointsCall {
+	c := &NetworkEndpointGroupsAttachNetworkEndpointsCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.project = project
+	c.zone = zone
+	c.networkEndpointGroup = networkEndpointGroup
+	c.networkendpointgroupsattachendpointsrequest = networkendpointgroupsattachendpointsrequest
+	return c
+}
+
+// RequestId sets the optional parameter "requestId": An optional
+// request ID to identify requests. Specify a unique request ID so that
+// if you must retry your request, the server will know to ignore the
+// request if it has already been completed.
+//
+// For example, consider a situation where you make an initial request
+// and the request times out. If you make the request again with the
+// same request ID, the server can check if original operation with the
+// same request ID was received, and if so, will ignore the second
+// request. This prevents clients from accidentally creating duplicate
+// commitments.
+//
+// The request ID must be a valid UUID with the exception that zero UUID
+// is not supported (00000000-0000-0000-0000-000000000000).
+func (c *NetworkEndpointGroupsAttachNetworkEndpointsCall) RequestId(requestId string) *NetworkEndpointGroupsAttachNetworkEndpointsCall {
+	c.urlParams_.Set("requestId", requestId)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *NetworkEndpointGroupsAttachNetworkEndpointsCall) Fields(s ...googleapi.Field) *NetworkEndpointGroupsAttachNetworkEndpointsCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *NetworkEndpointGroupsAttachNetworkEndpointsCall) Context(ctx context.Context) *NetworkEndpointGroupsAttachNetworkEndpointsCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *NetworkEndpointGroupsAttachNetworkEndpointsCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *NetworkEndpointGroupsAttachNetworkEndpointsCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.networkendpointgroupsattachendpointsrequest)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/networkEndpointGroups/{networkEndpointGroup}/attachNetworkEndpoints")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"project":              c.project,
+		"zone":                 c.zone,
+		"networkEndpointGroup": c.networkEndpointGroup,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "compute.networkEndpointGroups.attachNetworkEndpoints" call.
+// Exactly one of *Operation or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *NetworkEndpointGroupsAttachNetworkEndpointsCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &Operation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Attach a list of network endpoints to the specified network endpoint group.",
+	//   "httpMethod": "POST",
+	//   "id": "compute.networkEndpointGroups.attachNetworkEndpoints",
+	//   "parameterOrder": [
+	//     "project",
+	//     "zone",
+	//     "networkEndpointGroup"
+	//   ],
+	//   "parameters": {
+	//     "networkEndpointGroup": {
+	//       "description": "The name of the network endpoint group where you are attaching network endpoints to. It should comply with RFC1035.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "project": {
+	//       "description": "Project ID for this request.",
+	//       "location": "path",
+	//       "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "requestId": {
+	//       "description": "An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed.\n\nFor example, consider a situation where you make an initial request and the request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments.\n\nThe request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "zone": {
+	//       "description": "The name of the zone where the network endpoint group is located. It should comply with RFC1035.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "{project}/zones/{zone}/networkEndpointGroups/{networkEndpointGroup}/attachNetworkEndpoints",
+	//   "request": {
+	//     "$ref": "NetworkEndpointGroupsAttachEndpointsRequest"
+	//   },
+	//   "response": {
+	//     "$ref": "Operation"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform",
+	//     "https://www.googleapis.com/auth/compute"
+	//   ]
+	// }
+
+}
+
+// method id "compute.networkEndpointGroups.delete":
+
+type NetworkEndpointGroupsDeleteCall struct {
+	s                    *Service
+	project              string
+	zone                 string
+	networkEndpointGroup string
+	urlParams_           gensupport.URLParams
+	ctx_                 context.Context
+	header_              http.Header
+}
+
+// Delete: Deletes the specified network endpoint group. The network
+// endpoints in the NEG and the VM instances they belong to are not
+// terminated when the NEG is deleted. Note that the NEG cannot be
+// deleted if there are backend services referencing it.
+func (r *NetworkEndpointGroupsService) Delete(project string, zone string, networkEndpointGroup string) *NetworkEndpointGroupsDeleteCall {
+	c := &NetworkEndpointGroupsDeleteCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.project = project
+	c.zone = zone
+	c.networkEndpointGroup = networkEndpointGroup
+	return c
+}
+
+// RequestId sets the optional parameter "requestId": An optional
+// request ID to identify requests. Specify a unique request ID so that
+// if you must retry your request, the server will know to ignore the
+// request if it has already been completed.
+//
+// For example, consider a situation where you make an initial request
+// and the request times out. If you make the request again with the
+// same request ID, the server can check if original operation with the
+// same request ID was received, and if so, will ignore the second
+// request. This prevents clients from accidentally creating duplicate
+// commitments.
+//
+// The request ID must be a valid UUID with the exception that zero UUID
+// is not supported (00000000-0000-0000-0000-000000000000).
+func (c *NetworkEndpointGroupsDeleteCall) RequestId(requestId string) *NetworkEndpointGroupsDeleteCall {
+	c.urlParams_.Set("requestId", requestId)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *NetworkEndpointGroupsDeleteCall) Fields(s ...googleapi.Field) *NetworkEndpointGroupsDeleteCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *NetworkEndpointGroupsDeleteCall) Context(ctx context.Context) *NetworkEndpointGroupsDeleteCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *NetworkEndpointGroupsDeleteCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *NetworkEndpointGroupsDeleteCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/networkEndpointGroups/{networkEndpointGroup}")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("DELETE", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"project":              c.project,
+		"zone":                 c.zone,
+		"networkEndpointGroup": c.networkEndpointGroup,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "compute.networkEndpointGroups.delete" call.
+// Exactly one of *Operation or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *NetworkEndpointGroupsDeleteCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &Operation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Deletes the specified network endpoint group. The network endpoints in the NEG and the VM instances they belong to are not terminated when the NEG is deleted. Note that the NEG cannot be deleted if there are backend services referencing it.",
+	//   "httpMethod": "DELETE",
+	//   "id": "compute.networkEndpointGroups.delete",
+	//   "parameterOrder": [
+	//     "project",
+	//     "zone",
+	//     "networkEndpointGroup"
+	//   ],
+	//   "parameters": {
+	//     "networkEndpointGroup": {
+	//       "description": "The name of the network endpoint group to delete. It should comply with RFC1035.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "project": {
+	//       "description": "Project ID for this request.",
+	//       "location": "path",
+	//       "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "requestId": {
+	//       "description": "An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed.\n\nFor example, consider a situation where you make an initial request and the request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments.\n\nThe request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "zone": {
+	//       "description": "The name of the zone where the network endpoint group is located. It should comply with RFC1035.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "{project}/zones/{zone}/networkEndpointGroups/{networkEndpointGroup}",
+	//   "response": {
+	//     "$ref": "Operation"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform",
+	//     "https://www.googleapis.com/auth/compute"
+	//   ]
+	// }
+
+}
+
+// method id "compute.networkEndpointGroups.detachNetworkEndpoints":
+
+type NetworkEndpointGroupsDetachNetworkEndpointsCall struct {
+	s                                           *Service
+	project                                     string
+	zone                                        string
+	networkEndpointGroup                        string
+	networkendpointgroupsdetachendpointsrequest *NetworkEndpointGroupsDetachEndpointsRequest
+	urlParams_                                  gensupport.URLParams
+	ctx_                                        context.Context
+	header_                                     http.Header
+}
+
+// DetachNetworkEndpoints: Detach a list of network endpoints from the
+// specified network endpoint group.
+func (r *NetworkEndpointGroupsService) DetachNetworkEndpoints(project string, zone string, networkEndpointGroup string, networkendpointgroupsdetachendpointsrequest *NetworkEndpointGroupsDetachEndpointsRequest) *NetworkEndpointGroupsDetachNetworkEndpointsCall {
+	c := &NetworkEndpointGroupsDetachNetworkEndpointsCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.project = project
+	c.zone = zone
+	c.networkEndpointGroup = networkEndpointGroup
+	c.networkendpointgroupsdetachendpointsrequest = networkendpointgroupsdetachendpointsrequest
+	return c
+}
+
+// RequestId sets the optional parameter "requestId": An optional
+// request ID to identify requests. Specify a unique request ID so that
+// if you must retry your request, the server will know to ignore the
+// request if it has already been completed.
+//
+// For example, consider a situation where you make an initial request
+// and the request times out. If you make the request again with the
+// same request ID, the server can check if original operation with the
+// same request ID was received, and if so, will ignore the second
+// request. This prevents clients from accidentally creating duplicate
+// commitments.
+//
+// The request ID must be a valid UUID with the exception that zero UUID
+// is not supported (00000000-0000-0000-0000-000000000000).
+func (c *NetworkEndpointGroupsDetachNetworkEndpointsCall) RequestId(requestId string) *NetworkEndpointGroupsDetachNetworkEndpointsCall {
+	c.urlParams_.Set("requestId", requestId)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *NetworkEndpointGroupsDetachNetworkEndpointsCall) Fields(s ...googleapi.Field) *NetworkEndpointGroupsDetachNetworkEndpointsCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *NetworkEndpointGroupsDetachNetworkEndpointsCall) Context(ctx context.Context) *NetworkEndpointGroupsDetachNetworkEndpointsCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *NetworkEndpointGroupsDetachNetworkEndpointsCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *NetworkEndpointGroupsDetachNetworkEndpointsCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.networkendpointgroupsdetachendpointsrequest)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/networkEndpointGroups/{networkEndpointGroup}/detachNetworkEndpoints")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"project":              c.project,
+		"zone":                 c.zone,
+		"networkEndpointGroup": c.networkEndpointGroup,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "compute.networkEndpointGroups.detachNetworkEndpoints" call.
+// Exactly one of *Operation or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *NetworkEndpointGroupsDetachNetworkEndpointsCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &Operation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Detach a list of network endpoints from the specified network endpoint group.",
+	//   "httpMethod": "POST",
+	//   "id": "compute.networkEndpointGroups.detachNetworkEndpoints",
+	//   "parameterOrder": [
+	//     "project",
+	//     "zone",
+	//     "networkEndpointGroup"
+	//   ],
+	//   "parameters": {
+	//     "networkEndpointGroup": {
+	//       "description": "The name of the network endpoint group where you are removing network endpoints. It should comply with RFC1035.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "project": {
+	//       "description": "Project ID for this request.",
+	//       "location": "path",
+	//       "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "requestId": {
+	//       "description": "An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed.\n\nFor example, consider a situation where you make an initial request and the request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments.\n\nThe request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "zone": {
+	//       "description": "The name of the zone where the network endpoint group is located. It should comply with RFC1035.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "{project}/zones/{zone}/networkEndpointGroups/{networkEndpointGroup}/detachNetworkEndpoints",
+	//   "request": {
+	//     "$ref": "NetworkEndpointGroupsDetachEndpointsRequest"
+	//   },
+	//   "response": {
+	//     "$ref": "Operation"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform",
+	//     "https://www.googleapis.com/auth/compute"
+	//   ]
+	// }
+
+}
+
+// method id "compute.networkEndpointGroups.get":
+
+type NetworkEndpointGroupsGetCall struct {
+	s                    *Service
+	project              string
+	zone                 string
+	networkEndpointGroup string
+	urlParams_           gensupport.URLParams
+	ifNoneMatch_         string
+	ctx_                 context.Context
+	header_              http.Header
+}
+
+// Get: Returns the specified network endpoint group. Gets a list of
+// available network endpoint groups by making a list() request.
+func (r *NetworkEndpointGroupsService) Get(project string, zone string, networkEndpointGroup string) *NetworkEndpointGroupsGetCall {
+	c := &NetworkEndpointGroupsGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.project = project
+	c.zone = zone
+	c.networkEndpointGroup = networkEndpointGroup
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *NetworkEndpointGroupsGetCall) Fields(s ...googleapi.Field) *NetworkEndpointGroupsGetCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *NetworkEndpointGroupsGetCall) IfNoneMatch(entityTag string) *NetworkEndpointGroupsGetCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *NetworkEndpointGroupsGetCall) Context(ctx context.Context) *NetworkEndpointGroupsGetCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *NetworkEndpointGroupsGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *NetworkEndpointGroupsGetCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/networkEndpointGroups/{networkEndpointGroup}")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"project":              c.project,
+		"zone":                 c.zone,
+		"networkEndpointGroup": c.networkEndpointGroup,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "compute.networkEndpointGroups.get" call.
+// Exactly one of *NetworkEndpointGroup or error will be non-nil. Any
+// non-2xx status code is an error. Response headers are in either
+// *NetworkEndpointGroup.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *NetworkEndpointGroupsGetCall) Do(opts ...googleapi.CallOption) (*NetworkEndpointGroup, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &NetworkEndpointGroup{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Returns the specified network endpoint group. Gets a list of available network endpoint groups by making a list() request.",
+	//   "httpMethod": "GET",
+	//   "id": "compute.networkEndpointGroups.get",
+	//   "parameterOrder": [
+	//     "project",
+	//     "zone",
+	//     "networkEndpointGroup"
+	//   ],
+	//   "parameters": {
+	//     "networkEndpointGroup": {
+	//       "description": "The name of the network endpoint group. It should comply with RFC1035.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "project": {
+	//       "description": "Project ID for this request.",
+	//       "location": "path",
+	//       "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "zone": {
+	//       "description": "The name of the zone where the network endpoint group is located. It should comply with RFC1035.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "{project}/zones/{zone}/networkEndpointGroups/{networkEndpointGroup}",
+	//   "response": {
+	//     "$ref": "NetworkEndpointGroup"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform",
+	//     "https://www.googleapis.com/auth/compute",
+	//     "https://www.googleapis.com/auth/compute.readonly"
+	//   ]
+	// }
+
+}
+
+// method id "compute.networkEndpointGroups.insert":
+
+type NetworkEndpointGroupsInsertCall struct {
+	s                    *Service
+	project              string
+	zone                 string
+	networkendpointgroup *NetworkEndpointGroup
+	urlParams_           gensupport.URLParams
+	ctx_                 context.Context
+	header_              http.Header
+}
+
+// Insert: Creates a network endpoint group in the specified project
+// using the parameters that are included in the request.
+func (r *NetworkEndpointGroupsService) Insert(project string, zone string, networkendpointgroup *NetworkEndpointGroup) *NetworkEndpointGroupsInsertCall {
+	c := &NetworkEndpointGroupsInsertCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.project = project
+	c.zone = zone
+	c.networkendpointgroup = networkendpointgroup
+	return c
+}
+
+// RequestId sets the optional parameter "requestId": An optional
+// request ID to identify requests. Specify a unique request ID so that
+// if you must retry your request, the server will know to ignore the
+// request if it has already been completed.
+//
+// For example, consider a situation where you make an initial request
+// and the request times out. If you make the request again with the
+// same request ID, the server can check if original operation with the
+// same request ID was received, and if so, will ignore the second
+// request. This prevents clients from accidentally creating duplicate
+// commitments.
+//
+// The request ID must be a valid UUID with the exception that zero UUID
+// is not supported (00000000-0000-0000-0000-000000000000).
+func (c *NetworkEndpointGroupsInsertCall) RequestId(requestId string) *NetworkEndpointGroupsInsertCall {
+	c.urlParams_.Set("requestId", requestId)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *NetworkEndpointGroupsInsertCall) Fields(s ...googleapi.Field) *NetworkEndpointGroupsInsertCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *NetworkEndpointGroupsInsertCall) Context(ctx context.Context) *NetworkEndpointGroupsInsertCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *NetworkEndpointGroupsInsertCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *NetworkEndpointGroupsInsertCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.networkendpointgroup)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/networkEndpointGroups")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"project": c.project,
+		"zone":    c.zone,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "compute.networkEndpointGroups.insert" call.
+// Exactly one of *Operation or error will be non-nil. Any non-2xx
+// status code is an error. Response headers are in either
+// *Operation.ServerResponse.Header or (if a response was returned at
+// all) in error.(*googleapi.Error).Header. Use googleapi.IsNotModified
+// to check whether the returned error was because
+// http.StatusNotModified was returned.
+func (c *NetworkEndpointGroupsInsertCall) Do(opts ...googleapi.CallOption) (*Operation, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &Operation{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Creates a network endpoint group in the specified project using the parameters that are included in the request.",
+	//   "httpMethod": "POST",
+	//   "id": "compute.networkEndpointGroups.insert",
+	//   "parameterOrder": [
+	//     "project",
+	//     "zone"
+	//   ],
+	//   "parameters": {
+	//     "project": {
+	//       "description": "Project ID for this request.",
+	//       "location": "path",
+	//       "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "requestId": {
+	//       "description": "An optional request ID to identify requests. Specify a unique request ID so that if you must retry your request, the server will know to ignore the request if it has already been completed.\n\nFor example, consider a situation where you make an initial request and the request times out. If you make the request again with the same request ID, the server can check if original operation with the same request ID was received, and if so, will ignore the second request. This prevents clients from accidentally creating duplicate commitments.\n\nThe request ID must be a valid UUID with the exception that zero UUID is not supported (00000000-0000-0000-0000-000000000000).",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "zone": {
+	//       "description": "The name of the zone where you want to create the network endpoint group. It should comply with RFC1035.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "{project}/zones/{zone}/networkEndpointGroups",
+	//   "request": {
+	//     "$ref": "NetworkEndpointGroup"
+	//   },
+	//   "response": {
+	//     "$ref": "Operation"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform",
+	//     "https://www.googleapis.com/auth/compute"
+	//   ]
+	// }
+
+}
+
+// method id "compute.networkEndpointGroups.list":
+
+type NetworkEndpointGroupsListCall struct {
+	s            *Service
+	project      string
+	zone         string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// List: Retrieves the list of network endpoint groups that are located
+// in the specified project and zone.
+func (r *NetworkEndpointGroupsService) List(project string, zone string) *NetworkEndpointGroupsListCall {
+	c := &NetworkEndpointGroupsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.project = project
+	c.zone = zone
+	return c
+}
+
+// Filter sets the optional parameter "filter": A filter expression that
+// filters resources listed in the response. The expression must specify
+// the field name, a comparison operator, and the value that you want to
+// use for filtering. The value must be a string, a number, or a
+// boolean. The comparison operator must be either =, !=, >, or <.
+//
+// For example, if you are filtering Compute Engine instances, you can
+// exclude instances named example-instance by specifying name !=
+// example-instance.
+//
+// You can also filter nested fields. For example, you could specify
+// scheduling.automaticRestart = false to include instances only if they
+// are not scheduled for automatic restarts. You can use filtering on
+// nested fields to filter based on resource labels.
+//
+// To filter on multiple expressions, provide each separate expression
+// within parentheses. For example, (scheduling.automaticRestart = true)
+// (cpuPlatform = "Intel Skylake"). By default, each expression is an
+// AND expression. However, you can include AND and OR expressions
+// explicitly. For example, (cpuPlatform = "Intel Skylake") OR
+// (cpuPlatform = "Intel Broadwell") AND (scheduling.automaticRestart =
+// true).
+func (c *NetworkEndpointGroupsListCall) Filter(filter string) *NetworkEndpointGroupsListCall {
+	c.urlParams_.Set("filter", filter)
+	return c
+}
+
+// MaxResults sets the optional parameter "maxResults": The maximum
+// number of results per page that should be returned. If the number of
+// available results is larger than maxResults, Compute Engine returns a
+// nextPageToken that can be used to get the next page of results in
+// subsequent list requests. Acceptable values are 0 to 500, inclusive.
+// (Default: 500)
+func (c *NetworkEndpointGroupsListCall) MaxResults(maxResults int64) *NetworkEndpointGroupsListCall {
+	c.urlParams_.Set("maxResults", fmt.Sprint(maxResults))
+	return c
+}
+
+// OrderBy sets the optional parameter "orderBy": Sorts list results by
+// a certain order. By default, results are returned in alphanumerical
+// order based on the resource name.
+//
+// You can also sort results in descending order based on the creation
+// timestamp using orderBy="creationTimestamp desc". This sorts results
+// based on the creationTimestamp field in reverse chronological order
+// (newest result first). Use this to sort resources like operations so
+// that the newest operation is returned first.
+//
+// Currently, only sorting by name or creationTimestamp desc is
+// supported.
+func (c *NetworkEndpointGroupsListCall) OrderBy(orderBy string) *NetworkEndpointGroupsListCall {
+	c.urlParams_.Set("orderBy", orderBy)
+	return c
+}
+
+// PageToken sets the optional parameter "pageToken": Specifies a page
+// token to use. Set pageToken to the nextPageToken returned by a
+// previous list request to get the next page of results.
+func (c *NetworkEndpointGroupsListCall) PageToken(pageToken string) *NetworkEndpointGroupsListCall {
+	c.urlParams_.Set("pageToken", pageToken)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *NetworkEndpointGroupsListCall) Fields(s ...googleapi.Field) *NetworkEndpointGroupsListCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *NetworkEndpointGroupsListCall) IfNoneMatch(entityTag string) *NetworkEndpointGroupsListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *NetworkEndpointGroupsListCall) Context(ctx context.Context) *NetworkEndpointGroupsListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *NetworkEndpointGroupsListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *NetworkEndpointGroupsListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/networkEndpointGroups")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("GET", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"project": c.project,
+		"zone":    c.zone,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "compute.networkEndpointGroups.list" call.
+// Exactly one of *NetworkEndpointGroupList or error will be non-nil.
+// Any non-2xx status code is an error. Response headers are in either
+// *NetworkEndpointGroupList.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *NetworkEndpointGroupsListCall) Do(opts ...googleapi.CallOption) (*NetworkEndpointGroupList, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &NetworkEndpointGroupList{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Retrieves the list of network endpoint groups that are located in the specified project and zone.",
+	//   "httpMethod": "GET",
+	//   "id": "compute.networkEndpointGroups.list",
+	//   "parameterOrder": [
+	//     "project",
+	//     "zone"
+	//   ],
+	//   "parameters": {
+	//     "filter": {
+	//       "description": "A filter expression that filters resources listed in the response. The expression must specify the field name, a comparison operator, and the value that you want to use for filtering. The value must be a string, a number, or a boolean. The comparison operator must be either =, !=, \u003e, or \u003c.\n\nFor example, if you are filtering Compute Engine instances, you can exclude instances named example-instance by specifying name != example-instance.\n\nYou can also filter nested fields. For example, you could specify scheduling.automaticRestart = false to include instances only if they are not scheduled for automatic restarts. You can use filtering on nested fields to filter based on resource labels.\n\nTo filter on multiple expressions, provide each separate expression within parentheses. For example, (scheduling.automaticRestart = true) (cpuPlatform = \"Intel Skylake\"). By default, each expression is an AND expression. However, you can include AND and OR expressions explicitly. For example, (cpuPlatform = \"Intel Skylake\") OR (cpuPlatform = \"Intel Broadwell\") AND (scheduling.automaticRestart = true).",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "maxResults": {
+	//       "default": "500",
+	//       "description": "The maximum number of results per page that should be returned. If the number of available results is larger than maxResults, Compute Engine returns a nextPageToken that can be used to get the next page of results in subsequent list requests. Acceptable values are 0 to 500, inclusive. (Default: 500)",
+	//       "format": "uint32",
+	//       "location": "query",
+	//       "minimum": "0",
+	//       "type": "integer"
+	//     },
+	//     "orderBy": {
+	//       "description": "Sorts list results by a certain order. By default, results are returned in alphanumerical order based on the resource name.\n\nYou can also sort results in descending order based on the creation timestamp using orderBy=\"creationTimestamp desc\". This sorts results based on the creationTimestamp field in reverse chronological order (newest result first). Use this to sort resources like operations so that the newest operation is returned first.\n\nCurrently, only sorting by name or creationTimestamp desc is supported.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "pageToken": {
+	//       "description": "Specifies a page token to use. Set pageToken to the nextPageToken returned by a previous list request to get the next page of results.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "project": {
+	//       "description": "Project ID for this request.",
+	//       "location": "path",
+	//       "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "zone": {
+	//       "description": "The name of the zone where the network endpoint group is located. It should comply with RFC1035.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "{project}/zones/{zone}/networkEndpointGroups",
+	//   "response": {
+	//     "$ref": "NetworkEndpointGroupList"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform",
+	//     "https://www.googleapis.com/auth/compute",
+	//     "https://www.googleapis.com/auth/compute.readonly"
+	//   ]
+	// }
+
+}
+
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *NetworkEndpointGroupsListCall) Pages(ctx context.Context, f func(*NetworkEndpointGroupList) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
+}
+
+// method id "compute.networkEndpointGroups.listNetworkEndpoints":
+
+type NetworkEndpointGroupsListNetworkEndpointsCall struct {
+	s                                         *Service
+	project                                   string
+	zone                                      string
+	networkEndpointGroup                      string
+	networkendpointgroupslistendpointsrequest *NetworkEndpointGroupsListEndpointsRequest
+	urlParams_                                gensupport.URLParams
+	ctx_                                      context.Context
+	header_                                   http.Header
+}
+
+// ListNetworkEndpoints: Lists the network endpoints in the specified
+// network endpoint group.
+func (r *NetworkEndpointGroupsService) ListNetworkEndpoints(project string, zone string, networkEndpointGroup string, networkendpointgroupslistendpointsrequest *NetworkEndpointGroupsListEndpointsRequest) *NetworkEndpointGroupsListNetworkEndpointsCall {
+	c := &NetworkEndpointGroupsListNetworkEndpointsCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.project = project
+	c.zone = zone
+	c.networkEndpointGroup = networkEndpointGroup
+	c.networkendpointgroupslistendpointsrequest = networkendpointgroupslistendpointsrequest
+	return c
+}
+
+// Filter sets the optional parameter "filter": A filter expression that
+// filters resources listed in the response. The expression must specify
+// the field name, a comparison operator, and the value that you want to
+// use for filtering. The value must be a string, a number, or a
+// boolean. The comparison operator must be either =, !=, >, or <.
+//
+// For example, if you are filtering Compute Engine instances, you can
+// exclude instances named example-instance by specifying name !=
+// example-instance.
+//
+// You can also filter nested fields. For example, you could specify
+// scheduling.automaticRestart = false to include instances only if they
+// are not scheduled for automatic restarts. You can use filtering on
+// nested fields to filter based on resource labels.
+//
+// To filter on multiple expressions, provide each separate expression
+// within parentheses. For example, (scheduling.automaticRestart = true)
+// (cpuPlatform = "Intel Skylake"). By default, each expression is an
+// AND expression. However, you can include AND and OR expressions
+// explicitly. For example, (cpuPlatform = "Intel Skylake") OR
+// (cpuPlatform = "Intel Broadwell") AND (scheduling.automaticRestart =
+// true).
+func (c *NetworkEndpointGroupsListNetworkEndpointsCall) Filter(filter string) *NetworkEndpointGroupsListNetworkEndpointsCall {
+	c.urlParams_.Set("filter", filter)
+	return c
+}
+
+// MaxResults sets the optional parameter "maxResults": The maximum
+// number of results per page that should be returned. If the number of
+// available results is larger than maxResults, Compute Engine returns a
+// nextPageToken that can be used to get the next page of results in
+// subsequent list requests. Acceptable values are 0 to 500, inclusive.
+// (Default: 500)
+func (c *NetworkEndpointGroupsListNetworkEndpointsCall) MaxResults(maxResults int64) *NetworkEndpointGroupsListNetworkEndpointsCall {
+	c.urlParams_.Set("maxResults", fmt.Sprint(maxResults))
+	return c
+}
+
+// OrderBy sets the optional parameter "orderBy": Sorts list results by
+// a certain order. By default, results are returned in alphanumerical
+// order based on the resource name.
+//
+// You can also sort results in descending order based on the creation
+// timestamp using orderBy="creationTimestamp desc". This sorts results
+// based on the creationTimestamp field in reverse chronological order
+// (newest result first). Use this to sort resources like operations so
+// that the newest operation is returned first.
+//
+// Currently, only sorting by name or creationTimestamp desc is
+// supported.
+func (c *NetworkEndpointGroupsListNetworkEndpointsCall) OrderBy(orderBy string) *NetworkEndpointGroupsListNetworkEndpointsCall {
+	c.urlParams_.Set("orderBy", orderBy)
+	return c
+}
+
+// PageToken sets the optional parameter "pageToken": Specifies a page
+// token to use. Set pageToken to the nextPageToken returned by a
+// previous list request to get the next page of results.
+func (c *NetworkEndpointGroupsListNetworkEndpointsCall) PageToken(pageToken string) *NetworkEndpointGroupsListNetworkEndpointsCall {
+	c.urlParams_.Set("pageToken", pageToken)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *NetworkEndpointGroupsListNetworkEndpointsCall) Fields(s ...googleapi.Field) *NetworkEndpointGroupsListNetworkEndpointsCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *NetworkEndpointGroupsListNetworkEndpointsCall) Context(ctx context.Context) *NetworkEndpointGroupsListNetworkEndpointsCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *NetworkEndpointGroupsListNetworkEndpointsCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *NetworkEndpointGroupsListNetworkEndpointsCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.networkendpointgroupslistendpointsrequest)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/networkEndpointGroups/{networkEndpointGroup}/listNetworkEndpoints")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"project":              c.project,
+		"zone":                 c.zone,
+		"networkEndpointGroup": c.networkEndpointGroup,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "compute.networkEndpointGroups.listNetworkEndpoints" call.
+// Exactly one of *NetworkEndpointGroupsListNetworkEndpoints or error
+// will be non-nil. Any non-2xx status code is an error. Response
+// headers are in either
+// *NetworkEndpointGroupsListNetworkEndpoints.ServerResponse.Header or
+// (if a response was returned at all) in
+// error.(*googleapi.Error).Header. Use googleapi.IsNotModified to check
+// whether the returned error was because http.StatusNotModified was
+// returned.
+func (c *NetworkEndpointGroupsListNetworkEndpointsCall) Do(opts ...googleapi.CallOption) (*NetworkEndpointGroupsListNetworkEndpoints, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &NetworkEndpointGroupsListNetworkEndpoints{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Lists the network endpoints in the specified network endpoint group.",
+	//   "httpMethod": "POST",
+	//   "id": "compute.networkEndpointGroups.listNetworkEndpoints",
+	//   "parameterOrder": [
+	//     "project",
+	//     "zone",
+	//     "networkEndpointGroup"
+	//   ],
+	//   "parameters": {
+	//     "filter": {
+	//       "description": "A filter expression that filters resources listed in the response. The expression must specify the field name, a comparison operator, and the value that you want to use for filtering. The value must be a string, a number, or a boolean. The comparison operator must be either =, !=, \u003e, or \u003c.\n\nFor example, if you are filtering Compute Engine instances, you can exclude instances named example-instance by specifying name != example-instance.\n\nYou can also filter nested fields. For example, you could specify scheduling.automaticRestart = false to include instances only if they are not scheduled for automatic restarts. You can use filtering on nested fields to filter based on resource labels.\n\nTo filter on multiple expressions, provide each separate expression within parentheses. For example, (scheduling.automaticRestart = true) (cpuPlatform = \"Intel Skylake\"). By default, each expression is an AND expression. However, you can include AND and OR expressions explicitly. For example, (cpuPlatform = \"Intel Skylake\") OR (cpuPlatform = \"Intel Broadwell\") AND (scheduling.automaticRestart = true).",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "maxResults": {
+	//       "default": "500",
+	//       "description": "The maximum number of results per page that should be returned. If the number of available results is larger than maxResults, Compute Engine returns a nextPageToken that can be used to get the next page of results in subsequent list requests. Acceptable values are 0 to 500, inclusive. (Default: 500)",
+	//       "format": "uint32",
+	//       "location": "query",
+	//       "minimum": "0",
+	//       "type": "integer"
+	//     },
+	//     "networkEndpointGroup": {
+	//       "description": "The name of the network endpoint group from which you want to generate a list of included network endpoints. It should comply with RFC1035.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "orderBy": {
+	//       "description": "Sorts list results by a certain order. By default, results are returned in alphanumerical order based on the resource name.\n\nYou can also sort results in descending order based on the creation timestamp using orderBy=\"creationTimestamp desc\". This sorts results based on the creationTimestamp field in reverse chronological order (newest result first). Use this to sort resources like operations so that the newest operation is returned first.\n\nCurrently, only sorting by name or creationTimestamp desc is supported.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "pageToken": {
+	//       "description": "Specifies a page token to use. Set pageToken to the nextPageToken returned by a previous list request to get the next page of results.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "project": {
+	//       "description": "Project ID for this request.",
+	//       "location": "path",
+	//       "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "zone": {
+	//       "description": "The name of the zone where the network endpoint group is located. It should comply with RFC1035.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "{project}/zones/{zone}/networkEndpointGroups/{networkEndpointGroup}/listNetworkEndpoints",
+	//   "request": {
+	//     "$ref": "NetworkEndpointGroupsListEndpointsRequest"
+	//   },
+	//   "response": {
+	//     "$ref": "NetworkEndpointGroupsListNetworkEndpoints"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform",
+	//     "https://www.googleapis.com/auth/compute",
+	//     "https://www.googleapis.com/auth/compute.readonly"
+	//   ]
+	// }
+
+}
+
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *NetworkEndpointGroupsListNetworkEndpointsCall) Pages(ctx context.Context, f func(*NetworkEndpointGroupsListNetworkEndpoints) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
+}
+
+// method id "compute.networkEndpointGroups.testIamPermissions":
+
+type NetworkEndpointGroupsTestIamPermissionsCall struct {
+	s                      *Service
+	project                string
+	zone                   string
+	resource               string
+	testpermissionsrequest *TestPermissionsRequest
+	urlParams_             gensupport.URLParams
+	ctx_                   context.Context
+	header_                http.Header
+}
+
+// TestIamPermissions: Returns permissions that a caller has on the
+// specified resource.
+func (r *NetworkEndpointGroupsService) TestIamPermissions(project string, zone string, resource string, testpermissionsrequest *TestPermissionsRequest) *NetworkEndpointGroupsTestIamPermissionsCall {
+	c := &NetworkEndpointGroupsTestIamPermissionsCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.project = project
+	c.zone = zone
+	c.resource = resource
+	c.testpermissionsrequest = testpermissionsrequest
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *NetworkEndpointGroupsTestIamPermissionsCall) Fields(s ...googleapi.Field) *NetworkEndpointGroupsTestIamPermissionsCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *NetworkEndpointGroupsTestIamPermissionsCall) Context(ctx context.Context) *NetworkEndpointGroupsTestIamPermissionsCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *NetworkEndpointGroupsTestIamPermissionsCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *NetworkEndpointGroupsTestIamPermissionsCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.testpermissionsrequest)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	c.urlParams_.Set("prettyPrint", "false")
+	urls := googleapi.ResolveRelative(c.s.BasePath, "{project}/zones/{zone}/networkEndpointGroups/{resource}/testIamPermissions")
+	urls += "?" + c.urlParams_.Encode()
+	req, err := http.NewRequest("POST", urls, body)
+	if err != nil {
+		return nil, err
+	}
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"project":  c.project,
+		"zone":     c.zone,
+		"resource": c.resource,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "compute.networkEndpointGroups.testIamPermissions" call.
+// Exactly one of *TestPermissionsResponse or error will be non-nil. Any
+// non-2xx status code is an error. Response headers are in either
+// *TestPermissionsResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *NetworkEndpointGroupsTestIamPermissionsCall) Do(opts ...googleapi.CallOption) (*TestPermissionsResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &TestPermissionsResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := gensupport.DecodeResponse(target, res); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Returns permissions that a caller has on the specified resource.",
+	//   "httpMethod": "POST",
+	//   "id": "compute.networkEndpointGroups.testIamPermissions",
+	//   "parameterOrder": [
+	//     "project",
+	//     "zone",
+	//     "resource"
+	//   ],
+	//   "parameters": {
+	//     "project": {
+	//       "description": "Project ID for this request.",
+	//       "location": "path",
+	//       "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "resource": {
+	//       "description": "Name or id of the resource for this request.",
+	//       "location": "path",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "zone": {
+	//       "description": "The name of the zone for this request.",
+	//       "location": "path",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "{project}/zones/{zone}/networkEndpointGroups/{resource}/testIamPermissions",
+	//   "request": {
+	//     "$ref": "TestPermissionsRequest"
+	//   },
+	//   "response": {
+	//     "$ref": "TestPermissionsResponse"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform",
+	//     "https://www.googleapis.com/auth/compute",
+	//     "https://www.googleapis.com/auth/compute.readonly"
+	//   ]
+	// }
+
 }
 
 // method id "compute.networks.addPeering":
@@ -66762,7 +71125,7 @@ func (c *NodeGroupsAddNodesCall) Do(opts ...googleapi.CallOption) (*Operation, e
 	//     "nodeGroup": {
 	//       "description": "Name of the NodeGroup resource.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -67192,7 +71555,7 @@ func (c *NodeGroupsDeleteCall) Do(opts ...googleapi.CallOption) (*Operation, err
 	//     "nodeGroup": {
 	//       "description": "Name of the NodeGroup resource to delete.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -67374,7 +71737,7 @@ func (c *NodeGroupsDeleteNodesCall) Do(opts ...googleapi.CallOption) (*Operation
 	//     "nodeGroup": {
 	//       "description": "Name of the NodeGroup resource to delete.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -67549,7 +71912,7 @@ func (c *NodeGroupsGetCall) Do(opts ...googleapi.CallOption) (*NodeGroup, error)
 	//     "nodeGroup": {
 	//       "description": "Name of the node group to return.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -68392,7 +72755,7 @@ func (c *NodeGroupsListNodesCall) Do(opts ...googleapi.CallOption) (*NodeGroupsL
 	//     "nodeGroup": {
 	//       "description": "Name of the NodeGroup resource whose nodes you want to list.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -68761,9 +73124,9 @@ func (c *NodeGroupsSetNodeTemplateCall) Do(opts ...googleapi.CallOption) (*Opera
 	//   ],
 	//   "parameters": {
 	//     "nodeGroup": {
-	//       "description": "Name of the NodeGroup resource to delete.",
+	//       "description": "Name of the NodeGroup resource to update.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -69355,7 +73718,7 @@ func (c *NodeTemplatesDeleteCall) Do(opts ...googleapi.CallOption) (*Operation, 
 	//     "nodeTemplate": {
 	//       "description": "Name of the NodeTemplate resource to delete.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -69526,7 +73889,7 @@ func (c *NodeTemplatesGetCall) Do(opts ...googleapi.CallOption) (*NodeTemplate, 
 	//     "nodeTemplate": {
 	//       "description": "Name of the node template to return.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -70874,7 +75237,7 @@ func (c *NodeTypesGetCall) Do(opts ...googleapi.CallOption) (*NodeType, error) {
 	//     "nodeType": {
 	//       "description": "Name of the node type to return.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -73558,7 +77921,7 @@ func (c *RegionAutoscalersDeleteCall) Do(opts ...googleapi.CallOption) (*Operati
 	//     "autoscaler": {
 	//       "description": "Name of the autoscaler to delete.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -73728,7 +78091,7 @@ func (c *RegionAutoscalersGetCall) Do(opts ...googleapi.CallOption) (*Autoscaler
 	//     "autoscaler": {
 	//       "description": "Name of the autoscaler to return.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -74349,7 +78712,7 @@ func (c *RegionAutoscalersPatchCall) Do(opts ...googleapi.CallOption) (*Operatio
 	//     "autoscaler": {
 	//       "description": "Name of the autoscaler to patch.",
 	//       "location": "query",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "type": "string"
 	//     },
 	//     "project": {
@@ -74537,7 +78900,7 @@ func (c *RegionAutoscalersUpdateCall) Do(opts ...googleapi.CallOption) (*Operati
 	//     "autoscaler": {
 	//       "description": "Name of the autoscaler to update.",
 	//       "location": "query",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "type": "string"
 	//     },
 	//     "project": {
@@ -74714,7 +79077,7 @@ func (c *RegionBackendServicesDeleteCall) Do(opts ...googleapi.CallOption) (*Ope
 	//     "backendService": {
 	//       "description": "Name of the BackendService resource to delete.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -74884,7 +79247,7 @@ func (c *RegionBackendServicesGetCall) Do(opts ...googleapi.CallOption) (*Backen
 	//     "backendService": {
 	//       "description": "Name of the BackendService resource to return.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -75044,7 +79407,7 @@ func (c *RegionBackendServicesGetHealthCall) Do(opts ...googleapi.CallOption) (*
 	//     "backendService": {
 	//       "description": "Name of the BackendService resource for which to get health.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -75858,7 +80221,7 @@ func (c *RegionBackendServicesUpdateCall) Do(opts ...googleapi.CallOption) (*Ope
 	//     "backendService": {
 	//       "description": "Name of the BackendService resource to update.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -76283,7 +80646,7 @@ func (c *RegionCommitmentsGetCall) Do(opts ...googleapi.CallOption) (*Commitment
 	//     "commitment": {
 	//       "description": "Name of the commitment to return.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -76888,7 +81251,7 @@ func (c *RegionDiskTypesGetCall) Do(opts ...googleapi.CallOption) (*DiskType, er
 	//     "diskType": {
 	//       "description": "Name of the disk type to return.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -82043,7 +86406,7 @@ func (c *RegionOperationsDeleteCall) Do(opts ...googleapi.CallOption) error {
 	//     "operation": {
 	//       "description": "Name of the Operations resource to delete.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -82206,7 +86569,7 @@ func (c *RegionOperationsGetCall) Do(opts ...googleapi.CallOption) (*Operation, 
 	//     "operation": {
 	//       "description": "Name of the Operations resource to return.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -82641,7 +87004,7 @@ func (c *RegionsGetCall) Do(opts ...googleapi.CallOption) (*Region, error) {
 	//     "region": {
 	//       "description": "Name of the region resource to return.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -83321,7 +87684,7 @@ func (c *RoutersDeleteCall) Do(opts ...googleapi.CallOption) (*Operation, error)
 	//     "router": {
 	//       "description": "Name of the Router resource to delete.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -83487,7 +87850,7 @@ func (c *RoutersGetCall) Do(opts ...googleapi.CallOption) (*Router, error) {
 	//     "router": {
 	//       "description": "Name of the Router resource to return.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -83740,7 +88103,7 @@ func (c *RoutersGetNatMappingInfoCall) Do(opts ...googleapi.CallOption) (*VmEndp
 	//     "router": {
 	//       "description": "Name of the Router resource to query for Nat Mapping information of VM endpoints.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -83928,7 +88291,7 @@ func (c *RoutersGetRouterStatusCall) Do(opts ...googleapi.CallOption) (*RouterSt
 	//     "router": {
 	//       "description": "Name of the Router resource to query.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -84551,7 +88914,7 @@ func (c *RoutersPatchCall) Do(opts ...googleapi.CallOption) (*Operation, error) 
 	//     "router": {
 	//       "description": "Name of the Router resource to patch.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -84714,7 +89077,7 @@ func (c *RoutersPreviewCall) Do(opts ...googleapi.CallOption) (*RoutersPreviewRe
 	//     "router": {
 	//       "description": "Name of the Router resource to query.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -84901,7 +89264,7 @@ func (c *RoutersUpdateCall) Do(opts ...googleapi.CallOption) (*Operation, error)
 	//     "router": {
 	//       "description": "Name of the Router resource to update.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -85791,7 +90154,7 @@ func (c *SecurityPoliciesAddRuleCall) Do(opts ...googleapi.CallOption) (*Operati
 	//     "securityPolicy": {
 	//       "description": "Name of the security policy to update.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -85958,7 +90321,7 @@ func (c *SecurityPoliciesDeleteCall) Do(opts ...googleapi.CallOption) (*Operatio
 	//     "securityPolicy": {
 	//       "description": "Name of the security policy to delete.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -86113,7 +90476,7 @@ func (c *SecurityPoliciesGetCall) Do(opts ...googleapi.CallOption) (*SecurityPol
 	//     "securityPolicy": {
 	//       "description": "Name of the security policy to get.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -86281,7 +90644,7 @@ func (c *SecurityPoliciesGetRuleCall) Do(opts ...googleapi.CallOption) (*Securit
 	//     "securityPolicy": {
 	//       "description": "Name of the security policy to which the queried rule belongs.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -86870,7 +91233,7 @@ func (c *SecurityPoliciesPatchCall) Do(opts ...googleapi.CallOption) (*Operation
 	//     "securityPolicy": {
 	//       "description": "Name of the security policy to update.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -87033,7 +91396,7 @@ func (c *SecurityPoliciesPatchRuleCall) Do(opts ...googleapi.CallOption) (*Opera
 	//     "securityPolicy": {
 	//       "description": "Name of the security policy to update.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -87189,7 +91552,7 @@ func (c *SecurityPoliciesRemoveRuleCall) Do(opts ...googleapi.CallOption) (*Oper
 	//     "securityPolicy": {
 	//       "description": "Name of the security policy to update.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -88544,7 +92907,7 @@ func (c *SslCertificatesDeleteCall) Do(opts ...googleapi.CallOption) (*Operation
 	//     "sslCertificate": {
 	//       "description": "Name of the SslCertificate resource to delete.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -88699,7 +93062,7 @@ func (c *SslCertificatesGetCall) Do(opts ...googleapi.CallOption) (*SslCertifica
 	//     "sslCertificate": {
 	//       "description": "Name of the SslCertificate resource to return.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -90685,7 +95048,7 @@ func (c *SubnetworksDeleteCall) Do(opts ...googleapi.CallOption) (*Operation, er
 	//     "subnetwork": {
 	//       "description": "Name of the Subnetwork resource to delete.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -90868,7 +95231,7 @@ func (c *SubnetworksExpandIpCidrRangeCall) Do(opts ...googleapi.CallOption) (*Op
 	//     "subnetwork": {
 	//       "description": "Name of the Subnetwork resource to update.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -91037,7 +95400,7 @@ func (c *SubnetworksGetCall) Do(opts ...googleapi.CallOption) (*Subnetwork, erro
 	//     "subnetwork": {
 	//       "description": "Name of the Subnetwork resource to return.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -92079,7 +96442,7 @@ func (c *SubnetworksPatchCall) Do(opts ...googleapi.CallOption) (*Operation, err
 	//     "subnetwork": {
 	//       "description": "Name of the Subnetwork resource to patch.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -92428,7 +96791,7 @@ func (c *SubnetworksSetPrivateIpGoogleAccessCall) Do(opts ...googleapi.CallOptio
 	//     "subnetwork": {
 	//       "description": "Name of the Subnetwork resource.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -92759,7 +97122,7 @@ func (c *TargetHttpProxiesDeleteCall) Do(opts ...googleapi.CallOption) (*Operati
 	//     "targetHttpProxy": {
 	//       "description": "Name of the TargetHttpProxy resource to delete.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -92915,7 +97278,7 @@ func (c *TargetHttpProxiesGetCall) Do(opts ...googleapi.CallOption) (*TargetHttp
 	//     "targetHttpProxy": {
 	//       "description": "Name of the TargetHttpProxy resource to return.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -93506,7 +97869,7 @@ func (c *TargetHttpProxiesSetUrlMapCall) Do(opts ...googleapi.CallOption) (*Oper
 	//     "targetHttpProxy": {
 	//       "description": "Name of the TargetHttpProxy to set a URL map for.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -93673,7 +98036,7 @@ func (c *TargetHttpsProxiesDeleteCall) Do(opts ...googleapi.CallOption) (*Operat
 	//     "targetHttpsProxy": {
 	//       "description": "Name of the TargetHttpsProxy resource to delete.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -93828,7 +98191,7 @@ func (c *TargetHttpsProxiesGetCall) Do(opts ...googleapi.CallOption) (*TargetHtt
 	//     "targetHttpsProxy": {
 	//       "description": "Name of the TargetHttpsProxy resource to return.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -94589,7 +98952,7 @@ func (c *TargetHttpsProxiesSetSslCertificatesCall) Do(opts ...googleapi.CallOpti
 	//     "targetHttpsProxy": {
 	//       "description": "Name of the TargetHttpsProxy resource to set an SslCertificates resource for.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -94940,7 +99303,7 @@ func (c *TargetHttpsProxiesSetUrlMapCall) Do(opts ...googleapi.CallOption) (*Ope
 	//     "targetHttpsProxy": {
 	//       "description": "Name of the TargetHttpsProxy resource whose URL map is to be set.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -95364,7 +99727,7 @@ func (c *TargetInstancesDeleteCall) Do(opts ...googleapi.CallOption) (*Operation
 	//     "targetInstance": {
 	//       "description": "Name of the TargetInstance resource to delete.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -95531,7 +99894,7 @@ func (c *TargetInstancesGetCall) Do(opts ...googleapi.CallOption) (*TargetInstan
 	//     "targetInstance": {
 	//       "description": "Name of the TargetInstance resource to return.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -96162,7 +100525,7 @@ func (c *TargetPoolsAddHealthCheckCall) Do(opts ...googleapi.CallOption) (*Opera
 	//     "targetPool": {
 	//       "description": "Name of the target pool to add a health check to.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -96348,7 +100711,7 @@ func (c *TargetPoolsAddInstanceCall) Do(opts ...googleapi.CallOption) (*Operatio
 	//     "targetPool": {
 	//       "description": "Name of the TargetPool resource to add instances to.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -96779,7 +101142,7 @@ func (c *TargetPoolsDeleteCall) Do(opts ...googleapi.CallOption) (*Operation, er
 	//     "targetPool": {
 	//       "description": "Name of the TargetPool resource to delete.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -96946,7 +101309,7 @@ func (c *TargetPoolsGetCall) Do(opts ...googleapi.CallOption) (*TargetPool, erro
 	//     "targetPool": {
 	//       "description": "Name of the TargetPool resource to return.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -97107,7 +101470,7 @@ func (c *TargetPoolsGetHealthCall) Do(opts ...googleapi.CallOption) (*TargetPool
 	//     "targetPool": {
 	//       "description": "Name of the TargetPool resource to which the queried instance belongs.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -97734,7 +102097,7 @@ func (c *TargetPoolsRemoveHealthCheckCall) Do(opts ...googleapi.CallOption) (*Op
 	//     "targetPool": {
 	//       "description": "Name of the target pool to remove health checks from.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -97920,7 +102283,7 @@ func (c *TargetPoolsRemoveInstanceCall) Do(opts ...googleapi.CallOption) (*Opera
 	//     "targetPool": {
 	//       "description": "Name of the TargetPool resource to remove instances from.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -98119,7 +102482,7 @@ func (c *TargetPoolsSetBackupCall) Do(opts ...googleapi.CallOption) (*Operation,
 	//     "targetPool": {
 	//       "description": "Name of the TargetPool resource to set a backup pool for.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -98286,7 +102649,7 @@ func (c *TargetSslProxiesDeleteCall) Do(opts ...googleapi.CallOption) (*Operatio
 	//     "targetSslProxy": {
 	//       "description": "Name of the TargetSslProxy resource to delete.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -98441,7 +102804,7 @@ func (c *TargetSslProxiesGetCall) Do(opts ...googleapi.CallOption) (*TargetSslPr
 	//     "targetSslProxy": {
 	//       "description": "Name of the TargetSslProxy resource to return.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -99029,7 +103392,7 @@ func (c *TargetSslProxiesSetBackendServiceCall) Do(opts ...googleapi.CallOption)
 	//     "targetSslProxy": {
 	//       "description": "Name of the TargetSslProxy resource whose BackendService resource is to be set.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -99203,7 +103566,7 @@ func (c *TargetSslProxiesSetProxyHeaderCall) Do(opts ...googleapi.CallOption) (*
 	//     "targetSslProxy": {
 	//       "description": "Name of the TargetSslProxy resource whose ProxyHeader is to be set.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -99377,7 +103740,7 @@ func (c *TargetSslProxiesSetSslCertificatesCall) Do(opts ...googleapi.CallOption
 	//     "targetSslProxy": {
 	//       "description": "Name of the TargetSslProxy resource whose SslCertificate resource is to be set.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -99720,7 +104083,7 @@ func (c *TargetTcpProxiesDeleteCall) Do(opts ...googleapi.CallOption) (*Operatio
 	//     "targetTcpProxy": {
 	//       "description": "Name of the TargetTcpProxy resource to delete.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -99875,7 +104238,7 @@ func (c *TargetTcpProxiesGetCall) Do(opts ...googleapi.CallOption) (*TargetTcpPr
 	//     "targetTcpProxy": {
 	//       "description": "Name of the TargetTcpProxy resource to return.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -100463,7 +104826,7 @@ func (c *TargetTcpProxiesSetBackendServiceCall) Do(opts ...googleapi.CallOption)
 	//     "targetTcpProxy": {
 	//       "description": "Name of the TargetTcpProxy resource whose BackendService resource is to be set.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -100637,7 +105000,7 @@ func (c *TargetTcpProxiesSetProxyHeaderCall) Do(opts ...googleapi.CallOption) (*
 	//     "targetTcpProxy": {
 	//       "description": "Name of the TargetTcpProxy resource whose ProxyHeader is to be set.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -101066,7 +105429,7 @@ func (c *TargetVpnGatewaysDeleteCall) Do(opts ...googleapi.CallOption) (*Operati
 	//     "targetVpnGateway": {
 	//       "description": "Name of the target VPN gateway to delete.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -101232,7 +105595,7 @@ func (c *TargetVpnGatewaysGetCall) Do(opts ...googleapi.CallOption) (*TargetVpnG
 	//     "targetVpnGateway": {
 	//       "description": "Name of the target VPN gateway to return.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -101836,7 +106199,7 @@ func (c *UrlMapsDeleteCall) Do(opts ...googleapi.CallOption) (*Operation, error)
 	//     "urlMap": {
 	//       "description": "Name of the UrlMap resource to delete.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -101992,7 +106355,7 @@ func (c *UrlMapsGetCall) Do(opts ...googleapi.CallOption) (*UrlMap, error) {
 	//     "urlMap": {
 	//       "description": "Name of the UrlMap resource to return.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -102330,7 +106693,7 @@ func (c *UrlMapsInvalidateCacheCall) Do(opts ...googleapi.CallOption) (*Operatio
 	//     "urlMap": {
 	//       "description": "Name of the UrlMap scoping this request.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -102760,7 +107123,7 @@ func (c *UrlMapsPatchCall) Do(opts ...googleapi.CallOption) (*Operation, error) 
 	//     "urlMap": {
 	//       "description": "Name of the UrlMap resource to patch.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -102936,7 +107299,7 @@ func (c *UrlMapsUpdateCall) Do(opts ...googleapi.CallOption) (*Operation, error)
 	//     "urlMap": {
 	//       "description": "Name of the UrlMap resource to update.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -103089,7 +107452,7 @@ func (c *UrlMapsValidateCall) Do(opts ...googleapi.CallOption) (*UrlMapsValidate
 	//     "urlMap": {
 	//       "description": "Name of the UrlMap resource to be validated as.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -103518,7 +107881,7 @@ func (c *VpnTunnelsDeleteCall) Do(opts ...googleapi.CallOption) (*Operation, err
 	//     "vpnTunnel": {
 	//       "description": "Name of the VpnTunnel resource to delete.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -103684,7 +108047,7 @@ func (c *VpnTunnelsGetCall) Do(opts ...googleapi.CallOption) (*VpnTunnel, error)
 	//     "vpnTunnel": {
 	//       "description": "Name of the VpnTunnel resource to return.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -104236,7 +108599,7 @@ func (c *ZoneOperationsDeleteCall) Do(opts ...googleapi.CallOption) error {
 	//     "operation": {
 	//       "description": "Name of the Operations resource to delete.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -104399,7 +108762,7 @@ func (c *ZoneOperationsGetCall) Do(opts ...googleapi.CallOption) (*Operation, er
 	//     "operation": {
 	//       "description": "Name of the Operations resource to return.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -104834,7 +109197,7 @@ func (c *ZonesGetCall) Do(opts ...googleapi.CallOption) (*Zone, error) {
 	//     "zone": {
 	//       "description": "Name of the zone resource to return.",
 	//       "location": "path",
-	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+	//       "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
 	//       "required": true,
 	//       "type": "string"
 	//     }
