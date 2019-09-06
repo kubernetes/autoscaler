@@ -31,6 +31,9 @@ const (
 	// MaxFreeDifferenceRatio describes how free resources (allocatable - daemon and system pods)
 	// can differ between groups in the same NodeGroupSet
 	MaxFreeDifferenceRatio = 0.05
+	// MaxMemoryDifferenceInKiloBytes describes how much memory
+	// capacity can differ but still be considered equal.
+	MaxMemoryDifferenceInKiloBytes = 128000
 )
 
 // BasicIgnoredLabels define a set of basic labels that should be ignored when comparing the similarity
@@ -110,14 +113,28 @@ func IsCloudProviderNodeInfoSimilar(n1, n2 *schedulernodeinfo.NodeInfo, ignoredL
 			free[res] = append(free[res], freeRes)
 		}
 	}
-	// For capacity we require exact match.
-	// If this is ever changed, enforcing MaxCoresTotal and MaxMemoryTotal limits
-	// as it is now may no longer work.
-	for _, qtyList := range capacity {
-		if len(qtyList) != 2 || qtyList[0].Cmp(qtyList[1]) != 0 {
+
+	for kind, qtyList := range capacity {
+		if len(qtyList) != 2 {
 			return false
 		}
+		switch kind {
+		case apiv1.ResourceMemory:
+			// For memory capacity we allow a small tolerance
+			memoryDifference := math.Abs(float64(qtyList[0].Value()) - float64(qtyList[1].Value()))
+			if memoryDifference > MaxMemoryDifferenceInKiloBytes {
+				return false
+			}
+		default:
+			// For other capacity types we require exact match.
+			// If this is ever changed, enforcing MaxCoresTotal limits
+			// as it is now may no longer work.
+			if qtyList[0].Cmp(qtyList[1]) != 0 {
+				return false
+			}
+		}
 	}
+
 	// For allocatable and free we allow resource quantities to be within a few % of each other
 	if !compareResourceMapsWithTolerance(allocatable, MaxAllocatableDifferenceRatio) {
 		return false

@@ -96,6 +96,20 @@ func TestNodesSimilarVariousRequirementsAndPods(t *testing.T) {
 	checkNodesSimilarWithPods(t, n1, n4, []*apiv1.Pod{p1}, []*apiv1.Pod{p4}, IsNodeInfoSimilar, true)
 }
 
+func TestNodesSimilarVariousMemoryRequirements(t *testing.T) {
+	n1 := BuildTestNode("node1", 1000, MaxMemoryDifferenceInKiloBytes)
+
+	// Different memory capacity within tolerance
+	n2 := BuildTestNode("node2", 1000, MaxMemoryDifferenceInKiloBytes)
+	n2.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(2*MaxMemoryDifferenceInKiloBytes, resource.DecimalSI)
+	checkNodesSimilar(t, n1, n2, IsNodeInfoSimilar, true)
+
+	// Different memory capacity exceeds tolerance
+	n3 := BuildTestNode("node3", 1000, MaxMemoryDifferenceInKiloBytes)
+	n3.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(2*MaxMemoryDifferenceInKiloBytes+1, resource.DecimalSI)
+	checkNodesSimilar(t, n1, n3, IsNodeInfoSimilar, false)
+}
+
 func TestNodesSimilarVariousLabels(t *testing.T) {
 	n1 := BuildTestNode("node1", 1000, 2000)
 	n1.ObjectMeta.Labels["test-label"] = "test-value"
