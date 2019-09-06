@@ -218,6 +218,17 @@ func InstallVPA(f *framework.Framework, vpa *vpa_types.VerticalPodAutoscaler) {
 	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "unexpected error creating VPA")
 }
 
+// InstallRawVPA installs a VPA object passed in as raw json in the test cluster.
+func InstallRawVPA(f *framework.Framework, obj interface{}) error {
+	vpaClientSet := getVpaClientSet(f)
+	err := vpaClientSet.AutoscalingV1beta1().RESTClient().Post().
+		Namespace(f.Namespace.Name).
+		Resource("verticalpodautoscalers").
+		Body(obj).
+		Do()
+	return err.Error()
+}
+
 // PatchVpaRecommendation installs a new reocmmendation for VPA object.
 func PatchVpaRecommendation(f *framework.Framework, vpa *vpa_types.VerticalPodAutoscaler,
 	recommendation *vpa_types.RecommendedPodResources) {
