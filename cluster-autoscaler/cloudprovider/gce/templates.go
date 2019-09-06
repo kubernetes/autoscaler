@@ -88,7 +88,7 @@ func (t *GceTemplateBuilder) BuildAllocatableFromKubeEnv(capacity apiv1.Resource
 func (t *GceTemplateBuilder) CalculateAllocatable(capacity, kubeReserved apiv1.ResourceList) apiv1.ResourceList {
 	allocatable := apiv1.ResourceList{}
 	for key, value := range capacity {
-		quantity := *value.Copy()
+		quantity := value.DeepCopy()
 		if reservedQuantity, found := kubeReserved[key]; found {
 			quantity.Sub(reservedQuantity)
 		}
