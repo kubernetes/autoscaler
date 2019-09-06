@@ -467,19 +467,20 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		  }
 		}`)
 		err := InstallRawVPA(f, validVPA)
-		gomega.Expect(err).NotTo(gomega.HaveOccurred(), "Valid VPA object rejected") //
+		gomega.Expect(err).NotTo(gomega.HaveOccurred(), "Valid VPA object rejected")
 
 		ginkgo.By("Setting up invalid VPA object")
+		// The invalid object differs by name and minAllowed - there is an invalid "requests" field.
 		invalidVPA := []byte(`{
 			"kind": "VerticalPodAutoscaler",
 			"apiVersion": "autoscaling.k8s.io/v1",
 			"metadata": {"name": "hamster-vpa-invalid"},
 			"spec": {
 				"targetRef": {
-		    	"apiVersion": "apps/v1",
-		    	"kind": "Deployment",
-		    	"name": "hamster"
-		   	},
+					"apiVersion": "apps/v1",
+					"kind": "Deployment",
+					"name":"hamster"
+				},
 		   	"resourcePolicy": {
 		  		"containerPolicies": [{"containerName": "*", "minAllowed":{"requests":{"cpu":"50m"}}}]
 		  	}
