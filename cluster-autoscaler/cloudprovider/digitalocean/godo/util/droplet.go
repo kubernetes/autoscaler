@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/digitalocean/godo"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/digitalocean/godo"
 )
 
 const (
