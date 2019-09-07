@@ -123,12 +123,13 @@ type DatabaseBackup struct {
 
 // DatabaseCreateRequest represents a request to create a database cluster
 type DatabaseCreateRequest struct {
-	Name       string `json:"name,omitempty"`
-	EngineSlug string `json:"engine,omitempty"`
-	Version    string `json:"version,omitempty"`
-	SizeSlug   string `json:"size,omitempty"`
-	Region     string `json:"region,omitempty"`
-	NumNodes   int    `json:"num_nodes,omitempty"`
+	Name               string `json:"name,omitempty"`
+	EngineSlug         string `json:"engine,omitempty"`
+	Version            string `json:"version,omitempty"`
+	SizeSlug           string `json:"size,omitempty"`
+	Region             string `json:"region,omitempty"`
+	NumNodes           int    `json:"num_nodes,omitempty"`
+	PrivateNetworkUUID string `json:"private_network_uuid"`
 }
 
 // DatabaseResizeRequest can be used to initiate a database resize operation.
