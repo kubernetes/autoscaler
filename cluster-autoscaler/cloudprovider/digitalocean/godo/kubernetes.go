@@ -24,6 +24,7 @@ const (
 type KubernetesService interface {
 	Create(context.Context, *KubernetesClusterCreateRequest) (*KubernetesCluster, *Response, error)
 	Get(context.Context, string) (*KubernetesCluster, *Response, error)
+	GetUser(context.Context, string) (*KubernetesClusterUser, *Response, error)
 	GetUpgrades(context.Context, string) ([]*KubernetesVersion, *Response, error)
 	GetKubeConfig(context.Context, string) (*KubernetesClusterConfig, *Response, error)
 	List(context.Context, *ListOptions) ([]*KubernetesCluster, *Response, error)
@@ -69,8 +70,8 @@ type KubernetesClusterCreateRequest struct {
 type KubernetesClusterUpdateRequest struct {
 	Name              string                       `json:"name,omitempty"`
 	Tags              []string                     `json:"tags,omitempty"`
-	MaintenancePolicy *KubernetesMaintenancePolicy `json:"maintenance_policy"`
-	AutoUpgrade       bool                         `json:"auto_upgrade"`
+	MaintenancePolicy *KubernetesMaintenancePolicy `json:"maintenance_policy,omitempty"`
+	AutoUpgrade       *bool                        `json:"auto_upgrade,omitempty"`
 }
 
 // KubernetesClusterUpgradeRequest represents a request to upgrade a Kubernetes cluster.
@@ -81,18 +82,24 @@ type KubernetesClusterUpgradeRequest struct {
 // KubernetesNodePoolCreateRequest represents a request to create a node pool for a
 // Kubernetes cluster.
 type KubernetesNodePoolCreateRequest struct {
-	Name  string   `json:"name,omitempty"`
-	Size  string   `json:"size,omitempty"`
-	Count int      `json:"count,omitempty"`
-	Tags  []string `json:"tags,omitempty"`
+	Name      string   `json:"name,omitempty"`
+	Size      string   `json:"size,omitempty"`
+	Count     int      `json:"count,omitempty"`
+	Tags      []string `json:"tags,omitempty"`
+	AutoScale bool     `json:"auto_scale,omitempty"`
+	MinNodes  int      `json:"min_nodes,omitempty"`
+	MaxNodes  int      `json:"max_nodes,omitempty"`
 }
 
 // KubernetesNodePoolUpdateRequest represents a request to update a node pool in a
 // Kubernetes cluster.
 type KubernetesNodePoolUpdateRequest struct {
-	Name  string   `json:"name,omitempty"`
-	Count int      `json:"count,omitempty"`
-	Tags  []string `json:"tags,omitempty"`
+	Name      string   `json:"name,omitempty"`
+	Count     *int     `json:"count,omitempty"`
+	Tags      []string `json:"tags,omitempty"`
+	AutoScale *bool    `json:"auto_scale,omitempty"`
+	MinNodes  *int     `json:"min_nodes,omitempty"`
+	MaxNodes  *int     `json:"max_nodes,omitempty"`
 }
 
 // KubernetesNodePoolRecycleNodesRequest is DEPRECATED please use DeleteNode
@@ -131,6 +138,12 @@ type KubernetesCluster struct {
 	Status    *KubernetesClusterStatus `json:"status,omitempty"`
 	CreatedAt time.Time                `json:"created_at,omitempty"`
 	UpdatedAt time.Time                `json:"updated_at,omitempty"`
+}
+
+// KubernetesClusterUser represents a Kubernetes cluster user.
+type KubernetesClusterUser struct {
+	Username string   `json:"username,omitempty"`
+	Groups   []string `json:"groups,omitempty"`
 }
 
 // KubernetesMaintenancePolicy is a configuration to set the maintenance window
@@ -267,11 +280,14 @@ type KubernetesClusterStatus struct {
 
 // KubernetesNodePool represents a node pool in a Kubernetes cluster.
 type KubernetesNodePool struct {
-	ID    string   `json:"id,omitempty"`
-	Name  string   `json:"name,omitempty"`
-	Size  string   `json:"size,omitempty"`
-	Count int      `json:"count,omitempty"`
-	Tags  []string `json:"tags,omitempty"`
+	ID        string   `json:"id,omitempty"`
+	Name      string   `json:"name,omitempty"`
+	Size      string   `json:"size,omitempty"`
+	Count     int      `json:"count,omitempty"`
+	Tags      []string `json:"tags,omitempty"`
+	AutoScale bool     `json:"auto_scale,omitempty"`
+	MinNodes  int      `json:"min_nodes,omitempty"`
+	MaxNodes  int      `json:"max_nodes,omitempty"`
 
 	Nodes []*KubernetesNode `json:"nodes,omitempty"`
 }
@@ -326,6 +342,10 @@ type kubernetesClusterRoot struct {
 	Cluster *KubernetesCluster `json:"kubernetes_cluster,omitempty"`
 }
 
+type kubernetesClusterUserRoot struct {
+	User *KubernetesClusterUser `json:"kubernetes_cluster_user,omitempty"`
+}
+
 type kubernetesNodePoolRoot struct {
 	NodePool *KubernetesNodePool `json:"node_pool,omitempty"`
 }
@@ -352,6 +372,21 @@ func (svc *KubernetesServiceOp) Get(ctx context.Context, clusterID string) (*Kub
 		return nil, resp, err
 	}
 	return root.Cluster, resp, nil
+}
+
+// GetUser retrieves the details of a Kubernetes cluster user.
+func (svc *KubernetesServiceOp) GetUser(ctx context.Context, clusterID string) (*KubernetesClusterUser, *Response, error) {
+	path := fmt.Sprintf("%s/%s/user", kubernetesClustersPath, clusterID)
+	req, err := svc.client.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+	root := new(kubernetesClusterUserRoot)
+	resp, err := svc.client.Do(ctx, req, root)
+	if err != nil {
+		return nil, resp, err
+	}
+	return root.User, resp, nil
 }
 
 // GetUpgrades retrieves versions a Kubernetes cluster can be upgraded to. An
