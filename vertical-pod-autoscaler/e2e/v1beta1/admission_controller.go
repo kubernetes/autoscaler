@@ -513,7 +513,7 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		}`)
 		err2 := InstallRawVPA(f, invalidVPA)
 		gomega.Expect(err2).To(gomega.HaveOccurred(), "Invalid VPA object accepted")
-		gomega.Expect(err2.Error()).To(gomega.MatchRegexp(`Internal error occurred: admission webhook .*vpa.* denied the request: .*`))
+		gomega.Expect(err2.Error()).To(gomega.MatchRegexp(`.*admission webhook .*vpa.* denied the request: .*`))
 	})
 
 })
