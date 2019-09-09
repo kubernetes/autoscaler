@@ -73,7 +73,7 @@ func testCloudProvider(t *testing.T, client *doClientMock) *digitaloceanCloudPro
 						{ID: "7", Status: &godo.KubernetesNodeStatus{State: "draining"}},
 						{ID: "8", Status: &godo.KubernetesNodeStatus{State: "running"}},
 					},
-					AutoScale: true,
+					AutoScale: false,
 				},
 			},
 			&godo.Response{},
@@ -109,7 +109,7 @@ func TestDigitalOceanCloudProvider_NodeGroups(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		nodes := provider.NodeGroups()
-		assert.Equal(t, len(nodes), 4, "number of nodes do not match")
+		assert.Equal(t, len(nodes), 3, "number of nodes do not match")
 	})
 
 	t.Run("zero groups", func(t *testing.T) {
