@@ -57,15 +57,16 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 
 		delta := 2
 
+		newCount := numberOfNodes + delta
 		client.On("UpdateNodePool",
 			ctx,
 			ng.clusterID,
 			ng.id,
 			&godo.KubernetesNodePoolUpdateRequest{
-				Count: numberOfNodes + delta,
+				Count: &newCount,
 			},
 		).Return(
-			&godo.KubernetesNodePool{Count: numberOfNodes + delta},
+			&godo.KubernetesNodePool{Count: newCount},
 			&godo.Response{},
 			nil,
 		).Once()
@@ -130,15 +131,16 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 
 		delta := -2
 
+		newCount := numberOfNodes + delta
 		client.On("UpdateNodePool",
 			ctx,
 			ng.clusterID,
 			ng.id,
 			&godo.KubernetesNodePoolUpdateRequest{
-				Count: numberOfNodes + delta,
+				Count: &newCount,
 			},
 		).Return(
-			&godo.KubernetesNodePool{Count: numberOfNodes + delta},
+			&godo.KubernetesNodePool{Count: newCount},
 			&godo.Response{},
 			nil,
 		).Once()
@@ -358,8 +360,8 @@ func testNodeGroup(client nodeGroupClient, np *godo.KubernetesNodePool) *NodeGro
 		clusterID: "1",
 		client:    client,
 		nodePool:  np,
-		minSize:   minNodePoolSize,
-		maxSize:   maxNodePoolSize,
+		minSize:   1,
+		maxSize:   200,
 	}
 }
 

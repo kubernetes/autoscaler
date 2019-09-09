@@ -49,9 +49,7 @@ func testCloudProvider(t *testing.T, client *doClientMock) *digitaloceanCloudPro
 						{ID: "1", Status: &godo.KubernetesNodeStatus{State: "running"}},
 						{ID: "2", Status: &godo.KubernetesNodeStatus{State: "running"}},
 					},
-					Tags: []string{
-						"k8s-cluster-autoscaler-enabled:true",
-					},
+					AutoScale: true,
 				},
 				{
 					ID: "2",
@@ -59,9 +57,7 @@ func testCloudProvider(t *testing.T, client *doClientMock) *digitaloceanCloudPro
 						{ID: "3", Status: &godo.KubernetesNodeStatus{State: "deleting"}},
 						{ID: "4", Status: &godo.KubernetesNodeStatus{State: "running"}},
 					},
-					Tags: []string{
-						"k8s-cluster-autoscaler-enabled:true",
-					},
+					AutoScale: true,
 				},
 				{
 					ID: "3",
@@ -69,9 +65,7 @@ func testCloudProvider(t *testing.T, client *doClientMock) *digitaloceanCloudPro
 						{ID: "5", Status: &godo.KubernetesNodeStatus{State: "provisioning"}},
 						{ID: "6", Status: &godo.KubernetesNodeStatus{State: "running"}},
 					},
-					Tags: []string{
-						"k8s-cluster-autoscaler-enabled:true",
-					},
+					AutoScale: true,
 				},
 				{
 					ID: "4",
@@ -79,9 +73,7 @@ func testCloudProvider(t *testing.T, client *doClientMock) *digitaloceanCloudPro
 						{ID: "7", Status: &godo.KubernetesNodeStatus{State: "draining"}},
 						{ID: "8", Status: &godo.KubernetesNodeStatus{State: "running"}},
 					},
-					Tags: []string{
-						"k8s-cluster-autoscaler-enabled:true",
-					},
+					AutoScale: false,
 				},
 			},
 			&godo.Response{},
@@ -117,7 +109,7 @@ func TestDigitalOceanCloudProvider_NodeGroups(t *testing.T) {
 
 	t.Run("success", func(t *testing.T) {
 		nodes := provider.NodeGroups()
-		assert.Equal(t, len(nodes), 4, "number of nodes do not match")
+		assert.Equal(t, len(nodes), 3, "number of nodes do not match")
 	})
 
 	t.Run("zero groups", func(t *testing.T) {
@@ -142,9 +134,7 @@ func TestDigitalOceanCloudProvider_NodeGroupForNode(t *testing.T) {
 						{ID: "2", Status: &godo.KubernetesNodeStatus{State: "deleting"}},
 						{ID: "3", Status: &godo.KubernetesNodeStatus{State: "running"}},
 					},
-					Tags: []string{
-						"k8s-cluster-autoscaler-enabled:true",
-					},
+					AutoScale: true,
 				},
 				{
 					ID: "2",
@@ -152,9 +142,7 @@ func TestDigitalOceanCloudProvider_NodeGroupForNode(t *testing.T) {
 						{ID: "4", Status: &godo.KubernetesNodeStatus{State: "provisioning"}},
 						{ID: "5", Status: &godo.KubernetesNodeStatus{State: "draining"}},
 					},
-					Tags: []string{
-						"k8s-cluster-autoscaler-enabled:true",
-					},
+					AutoScale: true,
 				},
 			},
 			&godo.Response{},

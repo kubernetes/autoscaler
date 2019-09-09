@@ -68,9 +68,7 @@ func TestDigitalOceanManager_Refresh(t *testing.T) {
 						{ID: "1", Status: &godo.KubernetesNodeStatus{State: "running"}},
 						{ID: "2", Status: &godo.KubernetesNodeStatus{State: "running"}},
 					},
-					Tags: []string{
-						"k8s-cluster-autoscaler-enabled:true",
-					},
+					AutoScale: true,
 				},
 				{
 					ID: "2",
@@ -78,9 +76,7 @@ func TestDigitalOceanManager_Refresh(t *testing.T) {
 						{ID: "3", Status: &godo.KubernetesNodeStatus{State: "deleting"}},
 						{ID: "4", Status: &godo.KubernetesNodeStatus{State: "running"}},
 					},
-					Tags: []string{
-						"k8s-cluster-autoscaler-enabled:true",
-					},
+					AutoScale: true,
 				},
 				{
 					ID: "3",
@@ -88,9 +84,7 @@ func TestDigitalOceanManager_Refresh(t *testing.T) {
 						{ID: "5", Status: &godo.KubernetesNodeStatus{State: "provisioning"}},
 						{ID: "6", Status: &godo.KubernetesNodeStatus{State: "running"}},
 					},
-					Tags: []string{
-						"k8s-cluster-autoscaler-enabled:true",
-					},
+					AutoScale: true,
 				},
 				{
 					ID: "4",
@@ -98,9 +92,7 @@ func TestDigitalOceanManager_Refresh(t *testing.T) {
 						{ID: "7", Status: &godo.KubernetesNodeStatus{State: "draining"}},
 						{ID: "8", Status: &godo.KubernetesNodeStatus{State: "running"}},
 					},
-					Tags: []string{
-						"k8s-cluster-autoscaler-enabled:true",
-					},
+					AutoScale: true,
 				},
 			},
 			&godo.Response{},
@@ -133,11 +125,9 @@ func TestDigitalOceanManager_RefreshWithNodeSpec(t *testing.T) {
 						{ID: "1", Status: &godo.KubernetesNodeStatus{State: "running"}},
 						{ID: "2", Status: &godo.KubernetesNodeStatus{State: "running"}},
 					},
-					Tags: []string{
-						"k8s-cluster-autoscaler-enabled:true",
-						"k8s-cluster-autoscaler-min:3",
-						"k8s-cluster-autoscaler-max:10",
-					},
+					AutoScale: true,
+					MinNodes:  3,
+					MaxNodes:  10,
 				},
 				{
 					ID: "2",
@@ -145,23 +135,17 @@ func TestDigitalOceanManager_RefreshWithNodeSpec(t *testing.T) {
 						{ID: "3", Status: &godo.KubernetesNodeStatus{State: "running"}},
 						{ID: "4", Status: &godo.KubernetesNodeStatus{State: "running"}},
 					},
-					Tags: []string{
-						"k8s-cluster-autoscaler-enabled:true",
-						"k8s-cluster-autoscaler-min:5",
-						"k8s-cluster-autoscaler-max:20",
-					},
+					AutoScale: true,
+					MinNodes:  5,
+					MaxNodes:  20,
 				},
 				{
-					// this node pool doesn't have any min and max tags,
-					// therefore this should get assigned the default minimum
-					// and maximum defaults
+					// this node pool doesn't have autoscale config, therefore
+					// this should default to disabled auto-scale.
 					ID: "3",
 					Nodes: []*godo.KubernetesNode{
 						{ID: "5", Status: &godo.KubernetesNodeStatus{State: "running"}},
 						{ID: "6", Status: &godo.KubernetesNodeStatus{State: "running"}},
-					},
-					Tags: []string{
-						"k8s-cluster-autoscaler-enabled:true",
 					},
 				},
 			},
@@ -172,7 +156,7 @@ func TestDigitalOceanManager_RefreshWithNodeSpec(t *testing.T) {
 		manager.client = client
 		err = manager.Refresh()
 		assert.NoError(t, err)
-		assert.Equal(t, len(manager.nodeGroups), 3, "number of nodes do not match")
+		assert.Equal(t, len(manager.nodeGroups), 2, "number of node groups do not match")
 
 		// first node group
 		assert.Equal(t, manager.nodeGroups[0].minSize, 3, "minimum node for first group does not match")
@@ -181,136 +165,5 @@ func TestDigitalOceanManager_RefreshWithNodeSpec(t *testing.T) {
 		// second node group
 		assert.Equal(t, manager.nodeGroups[1].minSize, 5, "minimum node for second group does not match")
 		assert.Equal(t, manager.nodeGroups[1].maxSize, 20, "maximum node for second group does not match")
-
-		// third node group
-		assert.Equal(t, manager.nodeGroups[2].minSize, minNodePoolSize, "minimum node for third group should match the default")
-		assert.Equal(t, manager.nodeGroups[2].maxSize, maxNodePoolSize, "maximum node for third group should match the default")
 	})
-}
-
-func Test_parseTags(t *testing.T) {
-	cases := []struct {
-		name    string
-		tags    []string
-		want    *nodeSpec
-		wantErr bool
-	}{
-		{
-			name: "good config (single)",
-			tags: []string{
-				"k8s-cluster-autoscaler-enabled:true",
-				"k8s-cluster-autoscaler-min:3",
-				"k8s-cluster-autoscaler-max:10",
-			},
-			want: &nodeSpec{
-				min:     3,
-				max:     10,
-				enabled: true,
-			},
-		},
-		{
-			name: "good config (disabled)",
-			tags: []string{
-				"k8s-cluster-autoscaler-min:3",
-				"k8s-cluster-autoscaler-max:10",
-			},
-			want: &nodeSpec{
-				min: 3,
-				max: 10,
-			},
-		},
-		{
-			name: "good config (disabled with no values)",
-			tags: []string{},
-			want: &nodeSpec{},
-		},
-		{
-			name: "good config - empty tags",
-			tags: []string{""},
-			want: &nodeSpec{},
-		},
-		{
-			name: "bad tags - malformed",
-			tags: []string{
-				"k8s-cluster-autoscaler-enabled:true",
-				"k8s-cluster-autoscaler-min=3",
-				"k8s-cluster-autoscaler-max=10",
-			},
-			wantErr: true,
-		},
-		{
-			name: "bad tags - no numerical min node size",
-			tags: []string{
-				"k8s-cluster-autoscaler-enabled:true",
-				"k8s-cluster-autoscaler-min:three",
-				"k8s-cluster-autoscaler-max:10",
-			},
-			wantErr: true,
-		},
-		{
-			name: "bad tags - no numerical max node size",
-			tags: []string{
-				"k8s-cluster-autoscaler-enabled:true",
-				"k8s-cluster-autoscaler-min:3",
-				"k8s-cluster-autoscaler-max:ten",
-			},
-			wantErr: true,
-		},
-		{
-			name: "bad tags - min is higher than max",
-			tags: []string{
-				"k8s-cluster-autoscaler-enabled:true",
-				"k8s-cluster-autoscaler-min:5",
-				"k8s-cluster-autoscaler-max:4",
-			},
-			wantErr: true,
-		},
-		{
-			name: "bad tags - max is set to zero",
-			tags: []string{
-				"k8s-cluster-autoscaler-enabled:true",
-				"k8s-cluster-autoscaler-min:5",
-				"k8s-cluster-autoscaler-max:0",
-			},
-			wantErr: true,
-		},
-		{
-			name: "bad tags - max is set to negative, no min",
-			tags: []string{
-				"k8s-cluster-autoscaler-enabled:true",
-				"k8s-cluster-autoscaler-max:-5",
-			},
-			wantErr: true,
-		},
-		{
-			// TODO(arslan): remove this once we support zero count node pools on our end
-			name: "bad tags - min is set to zero",
-			tags: []string{
-				"k8s-cluster-autoscaler-enabled:true",
-				"k8s-cluster-autoscaler-min:0",
-				"k8s-cluster-autoscaler-max:5",
-			},
-			wantErr: true,
-		},
-	}
-
-	for _, ts := range cases {
-		ts := ts
-
-		t.Run(ts.name, func(t *testing.T) {
-			got, err := parseTags(ts.tags)
-			if ts.wantErr && err == nil {
-				assert.Error(t, err)
-				return
-			}
-
-			if ts.wantErr {
-				return
-			}
-
-			assert.NoError(t, err)
-			assert.Equal(t, ts.want, got, "\ngot: %#v\nwant: %#v", got, ts.want)
-		})
-	}
-
 }

@@ -1,6 +1,7 @@
 package godo
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -17,7 +18,7 @@ func TestKubernetesClusters_ListClusters(t *testing.T) {
 	kubeSvc := client.Kubernetes
 
 	want := []*KubernetesCluster{
-		&KubernetesCluster{
+		{
 			ID:            "8d91899c-0739-4a1a-acc5-deadbeefbb8f",
 			Name:          "blablabla",
 			RegionSlug:    "nyc1",
@@ -57,7 +58,7 @@ func TestKubernetesClusters_ListClusters(t *testing.T) {
 			CreatedAt: time.Date(2018, 6, 21, 8, 44, 38, 0, time.UTC),
 			UpdatedAt: time.Date(2018, 6, 21, 8, 44, 38, 0, time.UTC),
 		},
-		&KubernetesCluster{
+		{
 			ID:            "deadbeef-dead-4aa5-beef-deadbeef347d",
 			Name:          "antoine",
 			RegionSlug:    "nyc1",
@@ -316,6 +317,34 @@ func TestKubernetesClusters_Get(t *testing.T) {
 	require.Equal(t, want, got)
 }
 
+func TestKubernetesClusters_GetUser(t *testing.T) {
+	setup()
+	defer teardown()
+
+	kubeSvc := client.Kubernetes
+	want := &KubernetesClusterUser{
+		Username: "foo@example.com",
+		Groups: []string{
+			"foo:bar",
+		},
+	}
+	jBlob := `
+{
+	"kubernetes_cluster_user": {
+		"username": "foo@example.com",
+		"groups": ["foo:bar"]
+	}
+}`
+
+	mux.HandleFunc("/v2/kubernetes/clusters/deadbeef-dead-4aa5-beef-deadbeef347d/user", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, http.MethodGet)
+		fmt.Fprint(w, jBlob)
+	})
+	got, _, err := kubeSvc.GetUser(ctx, "deadbeef-dead-4aa5-beef-deadbeef347d")
+	require.NoError(t, err)
+	require.Equal(t, want, got)
+}
+
 func TestKubernetesClusters_GetKubeConfig(t *testing.T) {
 	setup()
 	defer teardown()
@@ -387,7 +416,7 @@ func TestKubernetesClusters_Create(t *testing.T) {
 		Tags:          []string{"cluster-tag-1", "cluster-tag-2"},
 		VPCUUID:       "880b7f98-f062-404d-b33c-458d545696f6",
 		NodePools: []*KubernetesNodePool{
-			&KubernetesNodePool{
+			{
 				ID:    "8d91899c-0739-4a1a-acc5-deadbeefbb8a",
 				Size:  "s-1vcpu-1gb",
 				Count: 2,
@@ -407,11 +436,14 @@ func TestKubernetesClusters_Create(t *testing.T) {
 		Tags:        want.Tags,
 		VPCUUID:     want.VPCUUID,
 		NodePools: []*KubernetesNodePoolCreateRequest{
-			&KubernetesNodePoolCreateRequest{
-				Size:  want.NodePools[0].Size,
-				Count: want.NodePools[0].Count,
-				Name:  want.NodePools[0].Name,
-				Tags:  want.NodePools[0].Tags,
+			{
+				Size:      want.NodePools[0].Size,
+				Count:     want.NodePools[0].Count,
+				Name:      want.NodePools[0].Name,
+				Tags:      want.NodePools[0].Tags,
+				AutoScale: want.NodePools[0].AutoScale,
+				MinNodes:  want.NodePools[0].MinNodes,
+				MaxNodes:  want.NodePools[0].MaxNodes,
 			},
 		},
 		MaintenancePolicy: want.MaintenancePolicy,
@@ -466,6 +498,110 @@ func TestKubernetesClusters_Create(t *testing.T) {
 	require.Equal(t, want, got)
 }
 
+func TestKubernetesClusters_Create_AutoScalePool(t *testing.T) {
+	setup()
+	defer teardown()
+
+	kubeSvc := client.Kubernetes
+
+	want := &KubernetesCluster{
+		ID:            "8d91899c-0739-4a1a-acc5-deadbeefbb8f",
+		Name:          "antoine-test-cluster",
+		RegionSlug:    "s2r1",
+		VersionSlug:   "1.10.0-gen0",
+		ClusterSubnet: "10.244.0.0/16",
+		ServiceSubnet: "10.245.0.0/16",
+		Tags:          []string{"cluster-tag-1", "cluster-tag-2"},
+		VPCUUID:       "880b7f98-f062-404d-b33c-458d545696f6",
+		NodePools: []*KubernetesNodePool{
+			{
+				ID:        "8d91899c-0739-4a1a-acc5-deadbeefbb8a",
+				Size:      "s-1vcpu-1gb",
+				Count:     2,
+				Name:      "pool-a",
+				Tags:      []string{"tag-1"},
+				AutoScale: true,
+				MinNodes:  0,
+				MaxNodes:  10,
+			},
+		},
+		MaintenancePolicy: &KubernetesMaintenancePolicy{
+			StartTime: "00:00",
+			Day:       KubernetesMaintenanceDayMonday,
+		},
+	}
+	createRequest := &KubernetesClusterCreateRequest{
+		Name:        want.Name,
+		RegionSlug:  want.RegionSlug,
+		VersionSlug: want.VersionSlug,
+		Tags:        want.Tags,
+		VPCUUID:     want.VPCUUID,
+		NodePools: []*KubernetesNodePoolCreateRequest{
+			{
+				Size:      want.NodePools[0].Size,
+				Count:     want.NodePools[0].Count,
+				Name:      want.NodePools[0].Name,
+				Tags:      want.NodePools[0].Tags,
+				AutoScale: want.NodePools[0].AutoScale,
+				MinNodes:  want.NodePools[0].MinNodes,
+				MaxNodes:  want.NodePools[0].MaxNodes,
+			},
+		},
+		MaintenancePolicy: want.MaintenancePolicy,
+	}
+
+	jBlob := `
+{
+	"kubernetes_cluster": {
+		"id": "8d91899c-0739-4a1a-acc5-deadbeefbb8f",
+		"name": "antoine-test-cluster",
+		"region": "s2r1",
+		"version": "1.10.0-gen0",
+		"cluster_subnet": "10.244.0.0/16",
+		"service_subnet": "10.245.0.0/16",
+		"tags": [
+			"cluster-tag-1",
+			"cluster-tag-2"
+		],
+		"vpc_uuid": "880b7f98-f062-404d-b33c-458d545696f6",
+		"node_pools": [
+			{
+				"id": "8d91899c-0739-4a1a-acc5-deadbeefbb8a",
+				"size": "s-1vcpu-1gb",
+				"count": 2,
+				"name": "pool-a",
+				"tags": [
+					"tag-1"
+				],
+				"auto_scale": true,
+				"min_nodes": 0,
+				"max_nodes": 10
+			}
+		],
+		"maintenance_policy": {
+			"start_time": "00:00",
+			"day": "monday"
+		}
+	}
+}`
+
+	mux.HandleFunc("/v2/kubernetes/clusters", func(w http.ResponseWriter, r *http.Request) {
+		v := new(KubernetesClusterCreateRequest)
+		err := json.NewDecoder(r.Body).Decode(v)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		testMethod(t, r, http.MethodPost)
+		require.Equal(t, v, createRequest)
+		fmt.Fprint(w, jBlob)
+	})
+
+	got, _, err := kubeSvc.Create(ctx, createRequest)
+	require.NoError(t, err)
+	require.Equal(t, want, got)
+}
+
 func TestKubernetesClusters_Update(t *testing.T) {
 	setup()
 	defer teardown()
@@ -482,7 +618,7 @@ func TestKubernetesClusters_Update(t *testing.T) {
 		Tags:          []string{"cluster-tag-1", "cluster-tag-2"},
 		VPCUUID:       "880b7f98-f062-404d-b33c-458d545696f6",
 		NodePools: []*KubernetesNodePool{
-			&KubernetesNodePool{
+			{
 				ID:    "8d91899c-0739-4a1a-acc5-deadbeefbb8a",
 				Size:  "s-1vcpu-1gb",
 				Count: 2,
@@ -533,12 +669,104 @@ func TestKubernetesClusters_Update(t *testing.T) {
 	}
 }`
 
+	expectedReqJSON := `{"name":"antoine-test-cluster","tags":["cluster-tag-1","cluster-tag-2"],"maintenance_policy":{"start_time":"00:00","duration":"","day":"monday"}}
+`
+
 	mux.HandleFunc("/v2/kubernetes/clusters/8d91899c-0739-4a1a-acc5-deadbeefbb8f", func(w http.ResponseWriter, r *http.Request) {
+		buf := new(bytes.Buffer)
+		buf.ReadFrom(r.Body)
+		require.Equal(t, expectedReqJSON, buf.String())
+
 		v := new(KubernetesClusterUpdateRequest)
-		err := json.NewDecoder(r.Body).Decode(v)
-		if err != nil {
-			t.Fatal(err)
+		err := json.NewDecoder(buf).Decode(v)
+		require.NoError(t, err)
+
+		testMethod(t, r, http.MethodPut)
+		require.Equal(t, v, updateRequest)
+		fmt.Fprint(w, jBlob)
+	})
+
+	got, _, err := kubeSvc.Update(ctx, "8d91899c-0739-4a1a-acc5-deadbeefbb8f", updateRequest)
+	require.NoError(t, err)
+	require.Equal(t, want, got)
+}
+
+func TestKubernetesClusters_Update_FalseAutoUpgrade(t *testing.T) {
+	setup()
+	defer teardown()
+
+	kubeSvc := client.Kubernetes
+
+	want := &KubernetesCluster{
+		ID:            "8d91899c-0739-4a1a-acc5-deadbeefbb8f",
+		Name:          "antoine-test-cluster",
+		RegionSlug:    "s2r1",
+		VersionSlug:   "1.10.0-gen0",
+		ClusterSubnet: "10.244.0.0/16",
+		ServiceSubnet: "10.245.0.0/16",
+		Tags:          []string{"cluster-tag-1", "cluster-tag-2"},
+		VPCUUID:       "880b7f98-f062-404d-b33c-458d545696f6",
+		NodePools: []*KubernetesNodePool{
+			{
+				ID:    "8d91899c-0739-4a1a-acc5-deadbeefbb8a",
+				Size:  "s-1vcpu-1gb",
+				Count: 2,
+				Name:  "pool-a",
+				Tags:  []string{"tag-1"},
+			},
+		},
+		MaintenancePolicy: &KubernetesMaintenancePolicy{
+			StartTime: "00:00",
+			Day:       KubernetesMaintenanceDayMonday,
+		},
+	}
+	updateRequest := &KubernetesClusterUpdateRequest{
+		AutoUpgrade: boolPtr(false),
+	}
+
+	jBlob := `
+{
+	"kubernetes_cluster": {
+		"id": "8d91899c-0739-4a1a-acc5-deadbeefbb8f",
+		"name": "antoine-test-cluster",
+		"region": "s2r1",
+		"version": "1.10.0-gen0",
+		"cluster_subnet": "10.244.0.0/16",
+		"service_subnet": "10.245.0.0/16",
+		"tags": [
+			"cluster-tag-1",
+			"cluster-tag-2"
+		],
+		"vpc_uuid": "880b7f98-f062-404d-b33c-458d545696f6",
+		"node_pools": [
+			{
+				"id": "8d91899c-0739-4a1a-acc5-deadbeefbb8a",
+				"size": "s-1vcpu-1gb",
+				"count": 2,
+				"name": "pool-a",
+				"tags": [
+					"tag-1"
+				]
+			}
+		],
+		"maintenance_policy": {
+			"start_time": "00:00",
+			"day": "monday"
 		}
+	}
+}`
+
+	expectedReqJSON := `{"auto_upgrade":false}
+`
+
+	mux.HandleFunc("/v2/kubernetes/clusters/8d91899c-0739-4a1a-acc5-deadbeefbb8f", func(w http.ResponseWriter, r *http.Request) {
+		buf := new(bytes.Buffer)
+		buf.ReadFrom(r.Body)
+		require.Equal(t, expectedReqJSON, buf.String())
+
+		v := new(KubernetesClusterUpdateRequest)
+		err := json.NewDecoder(buf).Decode(v)
+		require.NoError(t, err)
 
 		testMethod(t, r, http.MethodPut)
 		require.Equal(t, v, updateRequest)
@@ -596,11 +824,14 @@ func TestKubernetesClusters_CreateNodePool(t *testing.T) {
 	kubeSvc := client.Kubernetes
 
 	want := &KubernetesNodePool{
-		ID:    "8d91899c-0739-4a1a-acc5-deadbeefbb8a",
-		Size:  "s-1vcpu-1gb",
-		Count: 2,
-		Name:  "pool-a",
-		Tags:  []string{"tag-1"},
+		ID:        "8d91899c-0739-4a1a-acc5-deadbeefbb8a",
+		Size:      "s-1vcpu-1gb",
+		Count:     2,
+		Name:      "pool-a",
+		Tags:      []string{"tag-1"},
+		AutoScale: false,
+		MinNodes:  0,
+		MaxNodes:  0,
 	}
 	createRequest := &KubernetesNodePoolCreateRequest{
 		Size:  want.Size,
@@ -619,6 +850,65 @@ func TestKubernetesClusters_CreateNodePool(t *testing.T) {
 		"tags": [
 			"tag-1"
 		]
+	}
+}`
+
+	mux.HandleFunc("/v2/kubernetes/clusters/8d91899c-0739-4a1a-acc5-deadbeefbb8f/node_pools", func(w http.ResponseWriter, r *http.Request) {
+		v := new(KubernetesNodePoolCreateRequest)
+		err := json.NewDecoder(r.Body).Decode(v)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		testMethod(t, r, http.MethodPost)
+		require.Equal(t, v, createRequest)
+		fmt.Fprint(w, jBlob)
+	})
+
+	got, _, err := kubeSvc.CreateNodePool(ctx, "8d91899c-0739-4a1a-acc5-deadbeefbb8f", createRequest)
+	require.NoError(t, err)
+	require.Equal(t, want, got)
+}
+
+func TestKubernetesClusters_CreateNodePool_AutoScale(t *testing.T) {
+	setup()
+	defer teardown()
+
+	kubeSvc := client.Kubernetes
+
+	want := &KubernetesNodePool{
+		ID:        "8d91899c-0739-4a1a-acc5-deadbeefbb8a",
+		Size:      "s-1vcpu-1gb",
+		Count:     2,
+		Name:      "pool-a",
+		Tags:      []string{"tag-1"},
+		AutoScale: true,
+		MinNodes:  0,
+		MaxNodes:  10,
+	}
+	createRequest := &KubernetesNodePoolCreateRequest{
+		Size:      want.Size,
+		Count:     want.Count,
+		Name:      want.Name,
+		Tags:      want.Tags,
+		AutoScale: want.AutoScale,
+		MinNodes:  want.MinNodes,
+		MaxNodes:  want.MaxNodes,
+	}
+
+	jBlob := `
+{
+	"node_pool": {
+		"id": "8d91899c-0739-4a1a-acc5-deadbeefbb8a",
+		"size": "s-1vcpu-1gb",
+		"count": 2,
+		"name": "pool-a",
+		"tags": [
+			"tag-1"
+		],
+		"auto_scale": true,
+		"min_nodes": 0,
+		"max_nodes": 10
 	}
 }`
 
@@ -757,15 +1047,18 @@ func TestKubernetesClusters_UpdateNodePool(t *testing.T) {
 	kubeSvc := client.Kubernetes
 
 	want := &KubernetesNodePool{
-		ID:    "8d91899c-nodepool-4a1a-acc5-deadbeefbb8a",
-		Name:  "a better name",
-		Size:  "s-1vcpu-1gb",
-		Count: 4,
-		Tags:  []string{"tag-1", "tag-2"},
+		ID:        "8d91899c-nodepool-4a1a-acc5-deadbeefbb8a",
+		Name:      "a better name",
+		Size:      "s-1vcpu-1gb",
+		Count:     4,
+		Tags:      []string{"tag-1", "tag-2"},
+		AutoScale: false,
+		MinNodes:  0,
+		MaxNodes:  0,
 	}
 	updateRequest := &KubernetesNodePoolUpdateRequest{
 		Name:  "a better name",
-		Count: 4,
+		Count: intPtr(4),
 		Tags:  []string{"tag-1", "tag-2"},
 	}
 
@@ -788,6 +1081,121 @@ func TestKubernetesClusters_UpdateNodePool(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+
+		testMethod(t, r, http.MethodPut)
+		require.Equal(t, v, updateRequest)
+		fmt.Fprint(w, jBlob)
+	})
+
+	got, _, err := kubeSvc.UpdateNodePool(ctx, "8d91899c-0739-4a1a-acc5-deadbeefbb8f", "8d91899c-nodepool-4a1a-acc5-deadbeefbb8a", updateRequest)
+	require.NoError(t, err)
+	require.Equal(t, want, got)
+}
+
+func TestKubernetesClusters_UpdateNodePool_ZeroCount(t *testing.T) {
+	setup()
+	defer teardown()
+
+	kubeSvc := client.Kubernetes
+
+	want := &KubernetesNodePool{
+		ID:        "8d91899c-nodepool-4a1a-acc5-deadbeefbb8a",
+		Name:      "name",
+		Size:      "s-1vcpu-1gb",
+		Count:     0,
+		Tags:      []string{"tag-1", "tag-2"},
+		AutoScale: false,
+		MinNodes:  0,
+		MaxNodes:  0,
+	}
+	updateRequest := &KubernetesNodePoolUpdateRequest{
+		Count: intPtr(0),
+	}
+
+	jBlob := `
+{
+	"node_pool": {
+		"id": "8d91899c-nodepool-4a1a-acc5-deadbeefbb8a",
+		"size": "s-1vcpu-1gb",
+		"count": 0,
+		"name": "name",
+		"tags": [
+			"tag-1", "tag-2"
+		]
+	}
+}`
+
+	expectedReqJSON := `{"count":0}
+`
+
+	mux.HandleFunc("/v2/kubernetes/clusters/8d91899c-0739-4a1a-acc5-deadbeefbb8f/node_pools/8d91899c-nodepool-4a1a-acc5-deadbeefbb8a", func(w http.ResponseWriter, r *http.Request) {
+		buf := new(bytes.Buffer)
+		buf.ReadFrom(r.Body)
+		require.Equal(t, expectedReqJSON, buf.String())
+
+		v := new(KubernetesNodePoolUpdateRequest)
+		err := json.NewDecoder(buf).Decode(v)
+		require.NoError(t, err)
+
+		testMethod(t, r, http.MethodPut)
+		require.Equal(t, v, updateRequest)
+		fmt.Fprint(w, jBlob)
+	})
+
+	got, _, err := kubeSvc.UpdateNodePool(ctx, "8d91899c-0739-4a1a-acc5-deadbeefbb8f", "8d91899c-nodepool-4a1a-acc5-deadbeefbb8a", updateRequest)
+	require.NoError(t, err)
+	require.Equal(t, want, got)
+}
+
+func TestKubernetesClusters_UpdateNodePool_AutoScale(t *testing.T) {
+	setup()
+	defer teardown()
+
+	kubeSvc := client.Kubernetes
+
+	want := &KubernetesNodePool{
+		ID:        "8d91899c-nodepool-4a1a-acc5-deadbeefbb8a",
+		Name:      "name",
+		Size:      "s-1vcpu-1gb",
+		Count:     4,
+		Tags:      []string{"tag-1", "tag-2"},
+		AutoScale: true,
+		MinNodes:  0,
+		MaxNodes:  10,
+	}
+	updateRequest := &KubernetesNodePoolUpdateRequest{
+		AutoScale: boolPtr(true),
+		MinNodes:  intPtr(0),
+		MaxNodes:  intPtr(10),
+	}
+
+	jBlob := `
+{
+	"node_pool": {
+		"id": "8d91899c-nodepool-4a1a-acc5-deadbeefbb8a",
+		"size": "s-1vcpu-1gb",
+		"count": 4,
+		"name": "name",
+		"tags": [
+			"tag-1", "tag-2"
+		],
+		"auto_scale": true,
+		"min_nodes": 0,
+		"max_nodes": 10
+	}
+}`
+
+	expectedReqJSON := `{"auto_scale":true,"min_nodes":0,"max_nodes":10}
+`
+
+	mux.HandleFunc("/v2/kubernetes/clusters/8d91899c-0739-4a1a-acc5-deadbeefbb8f/node_pools/8d91899c-nodepool-4a1a-acc5-deadbeefbb8a", func(w http.ResponseWriter, r *http.Request) {
+		buf := new(bytes.Buffer)
+		buf.ReadFrom(r.Body)
+		require.Equal(t, expectedReqJSON, buf.String())
+
+		v := new(KubernetesNodePoolUpdateRequest)
+		err := json.NewDecoder(buf).Decode(v)
+		require.NoError(t, err)
 
 		testMethod(t, r, http.MethodPut)
 		require.Equal(t, v, updateRequest)
