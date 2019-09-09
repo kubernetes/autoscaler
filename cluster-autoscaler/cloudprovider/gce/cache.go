@@ -58,13 +58,14 @@ type GceCache struct {
 	cacheMutex sync.Mutex
 
 	// Cache content.
-	migs                   map[GceRef]Mig
-	instanceRefToMigRef    map[GceRef]GceRef
-	resourceLimiter        *cloudprovider.ResourceLimiter
-	machinesCache          map[MachineTypeKey]*gce.MachineType
-	migTargetSizeCache     map[GceRef]int64
-	migBaseNameCache       map[GceRef]string
-	instanceTemplatesCache map[GceRef]*gce.InstanceTemplate
+	migs                     map[GceRef]Mig
+	instanceRefToMigRef      map[GceRef]GceRef
+	instancesFromUnknownMigs map[GceRef]struct{}
+	resourceLimiter          *cloudprovider.ResourceLimiter
+	machinesCache            map[MachineTypeKey]*gce.MachineType
+	migTargetSizeCache       map[GceRef]int64
+	migBaseNameCache         map[GceRef]string
+	instanceTemplatesCache   map[GceRef]*gce.InstanceTemplate
 
 	// Service used to refresh cache.
 	GceService AutoscalingGceClient
@@ -73,13 +74,14 @@ type GceCache struct {
 // NewGceCache creates empty GceCache.
 func NewGceCache(gceService AutoscalingGceClient) *GceCache {
 	return &GceCache{
-		migs:                   map[GceRef]Mig{},
-		instanceRefToMigRef:    map[GceRef]GceRef{},
-		machinesCache:          map[MachineTypeKey]*gce.MachineType{},
-		migTargetSizeCache:     map[GceRef]int64{},
-		migBaseNameCache:       map[GceRef]string{},
-		instanceTemplatesCache: map[GceRef]*gce.InstanceTemplate{},
-		GceService:             gceService,
+		migs:                     map[GceRef]Mig{},
+		instanceRefToMigRef:      map[GceRef]GceRef{},
+		instancesFromUnknownMigs: map[GceRef]struct{}{},
+		machinesCache:            map[MachineTypeKey]*gce.MachineType{},
+		migTargetSizeCache:       map[GceRef]int64{},
+		migBaseNameCache:         map[GceRef]string{},
+		instanceTemplatesCache:   map[GceRef]*gce.InstanceTemplate{},
+		GceService:               gceService,
 	}
 }
 
@@ -114,7 +116,7 @@ func (gc *GceCache) UnregisterMig(toBeRemoved Mig) bool {
 	if found {
 		klog.V(1).Infof("Unregistered Mig %s", toBeRemoved.GceRef().String())
 		delete(gc.migs, toBeRemoved.GceRef())
-		gc.removeInstancesForMig(toBeRemoved.GceRef())
+		gc.removeInstancesForMigs(toBeRemoved.GceRef())
 		return true
 	}
 	return false
@@ -157,6 +159,8 @@ func (gc *GceCache) GetMigForInstance(instanceRef GceRef) (Mig, error) {
 			return nil, fmt.Errorf("instance %+v belongs to unregistered mig %+v", instanceRef, migRef)
 		}
 		return mig, nil
+	} else if _, found := gc.instancesFromUnknownMigs[instanceRef]; found {
+		return nil, nil
 	}
 
 	for _, migRef := range gc.getMigRefs() {
@@ -182,7 +186,9 @@ func (gc *GceCache) GetMigForInstance(instanceRef GceRef) (Mig, error) {
 
 			migRef, found := gc.instanceRefToMigRef[instanceRef]
 			if !found {
-				return nil, fmt.Errorf("instance %+v belongs to unknown mig", instanceRef)
+				klog.Warningf("instance %+v belongs to unknown mig", instanceRef)
+				gc.instancesFromUnknownMigs[instanceRef] = struct{}{}
+				return nil, nil
 			}
 			mig, found := gc.getMigNoLock(migRef)
 			if !found {
@@ -195,10 +201,11 @@ func (gc *GceCache) GetMigForInstance(instanceRef GceRef) (Mig, error) {
 	return nil, nil
 }
 
-func (gc *GceCache) removeInstancesForMig(migRef GceRef) {
+func (gc *GceCache) removeInstancesForMigs(migRef GceRef) {
 	for instanceRef, instanceMigRef := range gc.instanceRefToMigRef {
 		if migRef == instanceMigRef {
 			delete(gc.instanceRefToMigRef, instanceRef)
+			delete(gc.instancesFromUnknownMigs, instanceRef)
 		}
 	}
 }
@@ -219,7 +226,7 @@ func (gc *GceCache) regenerateInstanceCacheForMigNoLock(migRef GceRef) error {
 	klog.V(4).Infof("Regenerating MIG information for %s", migRef.String())
 
 	// cleanup old entries
-	gc.removeInstancesForMig(migRef)
+	gc.removeInstancesForMigs(migRef)
 
 	instances, err := gc.GceService.FetchMigInstances(migRef)
 	if err != nil {
@@ -242,6 +249,7 @@ func (gc *GceCache) RegenerateInstancesCache() error {
 	defer gc.cacheMutex.Unlock()
 
 	gc.instanceRefToMigRef = make(map[GceRef]GceRef)
+	gc.instancesFromUnknownMigs = make(map[GceRef]struct{})
 	for _, migRef := range gc.getMigRefs() {
 		err := gc.regenerateInstanceCacheForMigNoLock(migRef)
 		if err != nil {
