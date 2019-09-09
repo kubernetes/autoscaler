@@ -20,7 +20,7 @@ In the above file you can modify the following fields:
 
 | Secret                          | Key                     | Value                        |
 |---------------------------------|-------------------------|------------------------------------------------------------------------------------------------------------------------------------|
-| cluster-autoscaler-packet       | authtoken               | Your Packet API token                                                                                                              |
+| cluster-autoscaler-packet       | authtoken               | Your Packet API token. It must be base64 encoded.                                                                                 |
 | cluster-autoscaler-cloud-config | Global/project-id       | Your Packet project id                                                                                                             |
 | cluster-autoscaler-cloud-config | Global/api-server       | The ip:port for you cluster's k8s api (e.g. K8S_MASTER_PUBLIC_IP:6443)                                                             |
 | cluster-autoscaler-cloud-config | Global/facility         | The Packet facility for the devices in your nodepool (eg: ams1)                                                                    |
