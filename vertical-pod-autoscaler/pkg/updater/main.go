@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"flag"
 	"time"
 
@@ -44,6 +45,12 @@ var (
 
 	evictionToleranceFraction = flag.Float64("eviction-tolerance", 0.5,
 		`Fraction of replica count that can be evicted for update, if more than one pod can be evicted.`)
+
+	evictionRateLimit = flag.Float64("eviction-rate-limit", -1,
+		`Number of pods that can be evicted per seconds. A rate limit set to 0 or -1 will disable
+		the rate limiter.`)
+
+	evictionRateBurst = flag.Int("eviction-rate-burst", 1, `Burst of pods that can be evicted.`)
 
 	address = flag.String("address", ":8943", "The address to expose Prometheus metrics.")
 )
@@ -76,13 +83,15 @@ func main() {
 		limitRangeCalculator = limitrange.NewNoopLimitsCalculator()
 	}
 	// TODO: use SharedInformerFactory in updater
-	updater, err := updater.NewUpdater(kubeClient, vpaClient, *minReplicas, *evictionToleranceFraction, vpa_api_util.NewCappingRecommendationProcessor(limitRangeCalculator), nil, targetSelectorFetcher)
+	updater, err := updater.NewUpdater(kubeClient, vpaClient, *minReplicas, *evictionRateLimit, *evictionRateBurst, *evictionToleranceFraction, vpa_api_util.NewCappingRecommendationProcessor(limitRangeCalculator), nil, targetSelectorFetcher)
 	if err != nil {
 		klog.Fatalf("Failed to create updater: %v", err)
 	}
 	ticker := time.Tick(*updaterInterval)
 	for range ticker {
-		updater.RunOnce()
+		ctx, cancel := context.WithTimeout(context.Background(), *updaterInterval)
+		defer cancel()
+		updater.RunOnce(ctx)
 		healthCheck.UpdateLastActivity()
 	}
 }
