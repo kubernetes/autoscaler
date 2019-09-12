@@ -69,7 +69,7 @@ github.com/PuerkitoBio/urlesc
 github.com/armon/circbuf
 # github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a => github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a
 github.com/asaskevich/govalidator
-# github.com/aws/aws-sdk-go v1.23.12 => github.com/aws/aws-sdk-go v1.23.12
+# github.com/aws/aws-sdk-go v1.23.18 => github.com/aws/aws-sdk-go v1.23.18
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/ec2metadata
 github.com/aws/aws-sdk-go/aws/endpoints
