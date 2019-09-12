@@ -71,6 +71,10 @@ func (azure *AzureCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 
 // NodeGroupForNode returns the node group for the given node.
 func (azure *AzureCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+	if node.Spec.ProviderID == "" {
+		glog.V(6).Infof("Skipping to search for node group for the node '%s'. Because doesn't have spec.ProviderID.\n", node.ObjectMeta.Name)
+		return nil, nil
+	}
 	glog.V(6).Infof("Searching for node group for the node: %s\n", node.Spec.ProviderID)
 	ref := &azureRef{
 		Name: node.Spec.ProviderID,
