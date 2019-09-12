@@ -12,7 +12,7 @@ require (
 	github.com/Azure/go-autorest/autorest v0.9.0
 	github.com/Azure/go-autorest/autorest/adal v0.5.0
 	github.com/Azure/go-autorest/autorest/to v0.2.0
-	github.com/aws/aws-sdk-go v1.23.12
+	github.com/aws/aws-sdk-go v1.23.18
 	github.com/ghodss/yaml v0.0.0-20180820084758-c7ce16629ff4
 	github.com/google/go-querystring v1.0.0
 	github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af
@@ -64,7 +64,7 @@ replace (
 	github.com/armon/consul-api => github.com/armon/consul-api v0.0.0-20180202201655-eb2c6b5be1b6
 	github.com/asaskevich/govalidator => github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a
 	github.com/auth0/go-jwt-middleware => github.com/auth0/go-jwt-middleware v0.0.0-20170425171159-5493cabe49f7
-	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.23.12
+	github.com/aws/aws-sdk-go => github.com/aws/aws-sdk-go v1.23.18
 	github.com/bazelbuild/bazel-gazelle => github.com/bazelbuild/bazel-gazelle v0.0.0-20181012220611-c728ce9f663e
 	github.com/bazelbuild/buildtools => github.com/bazelbuild/buildtools v0.0.0-20180226164855-80c7f0d45d7e
 	github.com/beorn7/perks => github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973
