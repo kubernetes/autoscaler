@@ -176,6 +176,63 @@ func TestFindUnneededNodes(t *testing.T) {
 	assert.Equal(t, 0, len(sd.unremovableNodes))
 }
 
+func TestFindUnneededMoveToEmptyWithMinSizeReached(t *testing.T) {
+	provider := testprovider.NewTestCloudProvider(nil, nil)
+
+	// node group with empty node, but min size reached
+	provider.AddNodeGroup("ng1", 1, 10, 1)
+	n1 := BuildTestNode("n1", 1000, 10)
+	SetNodeReadyState(n1, true, time.Time{})
+	provider.AddNode("ng1", n1)
+
+	// node group with one underutilized node and node min size not yet reached
+	provider.AddNodeGroup("ng2", 1, 10, 2)
+	n2 := BuildTestNode("n1", 1000, 10)
+	SetNodeReadyState(n2, true, time.Time{})
+	provider.AddNode("ng2", n2)
+	p1 := BuildTestPod("p1", 300, 1) // cannot be moved to n3, not enough CPU; will be moved to n1 instead
+	p1.Spec.NodeName = "n2"
+
+	n3 := BuildTestNode("n3", 1000, 10)
+	SetNodeReadyState(n3, true, time.Time{})
+	provider.AddNode("ng2", n3)
+	p2 := BuildTestPod("p2", 900, 8)
+	p2.Spec.NodeName = "n3"
+
+	nodes := []*apiv1.Node{n1, n2, n3}
+	pods := []*apiv1.Pod{p1, p2}
+
+	options := config.AutoscalingOptions{
+		ScaleDownUtilizationThreshold:    0.35,
+		ScaleDownNonEmptyCandidatesCount: 10,
+		ScaleDownCandidatesPoolRatio:     1.0,
+		ScaleDownCandidatesPoolMinCount:  1000,
+	}
+	context := NewScaleTestAutoscalingContext(options, &fake.Clientset{}, nil, provider, nil)
+
+	clusterStateRegistry := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{}, context.LogRecorder, newBackoff())
+	sd := NewScaleDown(&context, clusterStateRegistry)
+
+	sd.UpdateUnneededNodes(nodes, nodes, nodes, pods, time.Now(), nil)
+	for _, node := range sd.unneededNodesList {
+		t.Log(node.Name)
+	}
+
+	// only n2 should be considered unneeded
+	assert.Equal(t, []*apiv1.Node{n2}, sd.unneededNodesList)
+
+	// repeat, but now ng1 does not have min size reached
+	provider.AddNodeGroup("ng1", 0, 10, 1)
+
+	sd.UpdateUnneededNodes(nodes, nodes, nodes, pods, time.Now(), nil)
+	for _, node := range sd.unneededNodesList {
+		t.Log(node.Name)
+	}
+
+	// now n2 should *not* be considered for scale down as this would move pods onto an empty node
+	assert.Equal(t, []*apiv1.Node{n1}, sd.unneededNodesList)
+}
+
 func TestFindUnneededGPUNodes(t *testing.T) {
 	// shared owner reference
 	ownerRef := GenerateOwnerReferences("rs", "ReplicaSet", "extensions/v1beta1", "")
