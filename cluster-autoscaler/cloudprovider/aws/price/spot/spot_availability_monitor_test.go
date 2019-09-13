@@ -193,7 +193,7 @@ func TestAsgStatusCache_Update(t *testing.T) {
 				asgNames: []api.AWSAsgName{"foo"},
 				cache: map[api.AWSAsgName]*asgSpotStatus{
 					"foo": {
-						statusChangeTime: fluxCompensator(time.Minute),
+						statusChangeTime: fluxCompensator(time.Minute, past),
 					},
 				},
 				mux: sync.RWMutex{},
@@ -251,15 +251,15 @@ func TestAsgStatusCache_asgNameList(t *testing.T) {
 			cache: []*asgSpotStatus{
 				{
 					AsgName:          "foo",
-					statusChangeTime: fluxCompensator(time.Minute * 10),
+					statusChangeTime: fluxCompensator(time.Minute*10, past),
 				},
 				{
 					AsgName:          "bar",
-					statusChangeTime: fluxCompensator(time.Minute * 5),
+					statusChangeTime: fluxCompensator(time.Minute*5, past),
 				},
 				{
 					AsgName:          "foobar",
-					statusChangeTime: fluxCompensator(time.Minute),
+					statusChangeTime: fluxCompensator(time.Minute, past),
 				},
 			},
 			expected: []api.AWSAsgName{"foo", "bar", "foobar"},
@@ -285,7 +285,7 @@ func TestAsgStatusCache_asgNameList(t *testing.T) {
 }
 
 func TestSpotRequestCache_refresh(t *testing.T) {
-	cacheTime := fluxCompensator(time.Hour)
+	cacheTime := fluxCompensator(time.Hour, past)
 
 	cases := []struct {
 		name     string
@@ -380,7 +380,7 @@ func TestSpotRequestCache_refresh(t *testing.T) {
 }
 
 func TestSpotRequestCache_findRequests(t *testing.T) {
-	cacheTime := fluxCompensator(time.Hour)
+	cacheTime := fluxCompensator(time.Hour, past)
 
 	cases := []struct {
 		name               string
@@ -621,7 +621,7 @@ func TestSpotAvailabilityMonitor_requestsAllValid(t *testing.T) {
 }
 
 func TestSpotAvailabilityMonitor_AsgAvailability(t *testing.T) {
-	statusCreateTime := fluxCompensator(time.Hour)
+	statusCreateTime := fluxCompensator(time.Hour, past)
 	cases := []struct {
 		name               string
 		asgName            string
@@ -787,16 +787,16 @@ func TestSpotAvailabilityMonitor_updateRequestCache(t *testing.T) {
 			awsRequests: []*ec2.SpotInstanceRequest{
 				newSpotInstanceRequestInstance("12", "fulfilled",
 					"active", "123",
-					"m4.2xlarge", "eu-west-1a", fluxCompensatorAWS(time.Minute*35)),
+					"m4.2xlarge", "eu-west-1a", fluxCompensatorAWS(time.Minute*35, past)),
 				newSpotInstanceRequestInstance("13", "open",
 					"active", "222",
-					"m4.2xlarge", "eu-west-1c", fluxCompensatorAWS(time.Minute*30)),
+					"m4.2xlarge", "eu-west-1c", fluxCompensatorAWS(time.Minute*30, future)),
 				newSpotInstanceRequestInstance("14", "failed",
 					"bad-parameters", "123",
-					"m4.2xlarge", "eu-west-1a", fluxCompensatorAWS(time.Minute*5)),
+					"m4.2xlarge", "eu-west-1a", fluxCompensatorAWS(time.Minute*5, future)),
 				newSpotInstanceRequestInstance("15", "open",
 					"active", "123",
-					"m4.2xlarge", "eu-west-1a", fluxCompensatorAWS(time.Minute)),
+					"m4.2xlarge", "eu-west-1a", fluxCompensatorAWS(time.Minute, future)),
 			},
 			requests: []*api.SpotRequest{
 				{
@@ -836,6 +836,7 @@ func TestSpotAvailabilityMonitor_updateRequestCache(t *testing.T) {
 			monitor := NewSpotAvailabilityMonitor(mock, time.Minute, time.Hour)
 
 			err = monitor.updateRequestCache()
+			err = monitor.updateRequestCache()
 
 			if len(c.error) > 0 {
 				assert.NotNil(t, err, c.name, "awaits an error")
@@ -854,7 +855,7 @@ func TestSpotAvailabilityMonitor_updateRequestCache(t *testing.T) {
 }
 
 func TestSpotAvailabilityMonitor_roundtrip(t *testing.T) {
-	statusCreateTime := fluxCompensator(time.Hour)
+	statusCreateTime := fluxCompensator(time.Hour, past)
 	cases := []struct {
 		name            string
 		awsSpotRequests []*ec2.SpotInstanceRequest
@@ -876,16 +877,16 @@ func TestSpotAvailabilityMonitor_roundtrip(t *testing.T) {
 			awsSpotRequests: []*ec2.SpotInstanceRequest{
 				newSpotInstanceRequestInstance("12", "fulfilled",
 					"active", "123",
-					"m4.2xlarge", "eu-west-1a", fluxCompensatorAWS(time.Minute*35)),
+					"m4.2xlarge", "eu-west-1a", fluxCompensatorAWS(time.Minute*35, past)),
 				newSpotInstanceRequestInstance("13", "open",
 					"active", "222",
-					"m4.2xlarge", "eu-west-1c", fluxCompensatorAWS(time.Minute*30)),
+					"m4.2xlarge", "eu-west-1c", fluxCompensatorAWS(time.Minute*30, past)),
 				newSpotInstanceRequestInstance("14", "failed",
 					"bad-parameters", "123",
-					"m4.2xlarge", "eu-west-1a", fluxCompensatorAWS(time.Minute*5)),
+					"m4.2xlarge", "eu-west-1a", fluxCompensatorAWS(time.Minute*5, past)),
 				newSpotInstanceRequestInstance("15", "open",
 					"active", "123",
-					"m4.2xlarge", "eu-west-1a", fluxCompensatorAWS(time.Minute)),
+					"m4.2xlarge", "eu-west-1a", fluxCompensatorAWS(time.Minute, past)),
 			},
 			awsStatusCache: map[api.AWSAsgName]*asgSpotStatus{},
 			expectedCache:  map[api.AWSAsgName]*asgSpotStatus{},
@@ -895,16 +896,16 @@ func TestSpotAvailabilityMonitor_roundtrip(t *testing.T) {
 			awsSpotRequests: []*ec2.SpotInstanceRequest{
 				newSpotInstanceRequestInstance("12", "fulfilled",
 					"active", "123",
-					"m4.2xlarge", "eu-west-1a", fluxCompensatorAWS(time.Minute*35)),
+					"m4.2xlarge", "eu-west-1a", fluxCompensatorAWS(time.Minute*35, past)),
 				newSpotInstanceRequestInstance("13", "open",
 					"active", "222",
-					"m4.2xlarge", "eu-west-1c", fluxCompensatorAWS(time.Minute*30)),
+					"m4.2xlarge", "eu-west-1c", fluxCompensatorAWS(time.Minute*30, past)),
 				newSpotInstanceRequestInstance("14", "failed",
 					"bad-parameters", "123",
-					"m4.2xlarge", "eu-west-1a", fluxCompensatorAWS(time.Minute*5)),
+					"m4.2xlarge", "eu-west-1a", fluxCompensatorAWS(time.Minute*5, past)),
 				newSpotInstanceRequestInstance("15", "open",
 					"active", "123",
-					"m4.2xlarge", "eu-west-1a", fluxCompensatorAWS(time.Minute)),
+					"m4.2xlarge", "eu-west-1a", fluxCompensatorAWS(time.Minute, past)),
 			},
 			awsStatusCache: map[api.AWSAsgName]*asgSpotStatus{
 				"myasg": {
@@ -932,16 +933,16 @@ func TestSpotAvailabilityMonitor_roundtrip(t *testing.T) {
 			awsSpotRequests: []*ec2.SpotInstanceRequest{
 				newSpotInstanceRequestInstance("12", "fulfilled",
 					"active", "123",
-					"m4.2xlarge", "eu-west-1a", fluxCompensatorAWS(time.Minute*35)),
+					"m4.2xlarge", "eu-west-1a", fluxCompensatorAWS(time.Minute*35, past)),
 				newSpotInstanceRequestInstance("13", "open",
 					string(api.AWSSpotRequestStatusNotAvailable), "222",
-					"m4.2xlarge", "eu-west-1c", fluxCompensatorAWS(time.Minute*30)),
+					"m4.2xlarge", "eu-west-1c", fluxCompensatorAWS(time.Minute*30, past)),
 				newSpotInstanceRequestInstance("14", "failed",
 					"bad-parameters", "123",
-					"m4.2xlarge", "eu-west-1a", fluxCompensatorAWS(time.Minute*5)),
+					"m4.2xlarge", "eu-west-1a", fluxCompensatorAWS(time.Minute*5, past)),
 				newSpotInstanceRequestInstance("15", "open",
 					"active", "123",
-					"m4.2xlarge", "eu-west-1a", fluxCompensatorAWS(time.Minute)),
+					"m4.2xlarge", "eu-west-1a", fluxCompensatorAWS(time.Minute, past)),
 			},
 			awsStatusCache: map[api.AWSAsgName]*asgSpotStatus{
 				"myasg": {
@@ -974,7 +975,7 @@ func TestSpotAvailabilityMonitor_roundtrip(t *testing.T) {
 					IamInstanceProfile: "222",
 					InstanceType:       "m4.2xlarge",
 					Available:          false,
-					statusChangeTime:   fluxCompensator(time.Minute * 30),
+					statusChangeTime:   fluxCompensator(time.Minute*30, past),
 				},
 			},
 			expectedCache: map[api.AWSAsgName]*asgSpotStatus{
@@ -997,7 +998,7 @@ func TestSpotAvailabilityMonitor_roundtrip(t *testing.T) {
 					IamInstanceProfile: "222",
 					InstanceType:       "m4.2xlarge",
 					Available:          false,
-					statusChangeTime:   fluxCompensator(time.Minute * 90),
+					statusChangeTime:   fluxCompensator(time.Minute*90, past),
 				},
 			},
 			expectedCache: map[api.AWSAsgName]*asgSpotStatus{
@@ -1099,32 +1100,7 @@ func (m *awsEC2SpotRequestManagerMock) DescribeSpotInstanceRequests(input *ec2.D
 		return nil, errors.New(m.error)
 	}
 
-	startTime := time.Time{}
-	searchedStates := make([]*string, 0)
-
-	for _, filter := range input.Filters {
-		switch aws.StringValue(filter.Name) {
-		case api.InputStateFilter:
-			for _, state := range filter.Values {
-				searchedStates = append(searchedStates, state)
-			}
-		}
-	}
-
-	requests := make([]*ec2.SpotInstanceRequest, 0)
-
-	for _, request := range m.requests {
-		if aws.TimeValue(request.CreateTime).After(startTime) {
-			for _, state := range searchedStates {
-				if aws.StringValue(request.State) == aws.StringValue(state) {
-					requests = append(requests, request)
-					break
-				}
-			}
-		}
-	}
-
-	return &ec2.DescribeSpotInstanceRequestsOutput{SpotInstanceRequests: requests}, nil
+	return &ec2.DescribeSpotInstanceRequestsOutput{SpotInstanceRequests: m.requests}, nil
 }
 
 func newSpotInstanceRequestInstance(id, state, status, iamInstanceProfile, instanceType, availabilityZone string, created *time.Time) *ec2.SpotInstanceRequest {
@@ -1150,11 +1126,21 @@ func newSpotInstanceRequestInstance(id, state, status, iamInstanceProfile, insta
 	}
 }
 
-func fluxCompensatorAWS(travelRange time.Duration) *time.Time {
-	past := fluxCompensator(travelRange)
-	return &past
+type timeDirection string
+
+var future timeDirection = "future"
+var past timeDirection = "past"
+
+func fluxCompensatorAWS(travelRange time.Duration, direction timeDirection) *time.Time {
+	newPresent := fluxCompensator(travelRange, direction)
+	return &newPresent
 }
 
-func fluxCompensator(travelRange time.Duration) time.Time {
+func fluxCompensator(travelRange time.Duration, direction timeDirection) time.Time {
+	switch direction {
+	case future:
+		return time.Now().Add(travelRange)
+	}
+
 	return time.Now().Add(-1 * travelRange)
 }

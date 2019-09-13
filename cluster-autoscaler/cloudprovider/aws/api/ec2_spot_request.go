@@ -49,6 +49,7 @@ type SpotRequest struct {
 // SpotRequestManager defines the interface to interact with spot requests
 type SpotRequestManager interface {
 	List() ([]*SpotRequest, error)
+	ListDelta() ([]*SpotRequest, error)
 	CancelRequests([]*SpotRequest) error
 }
 
@@ -58,13 +59,13 @@ var _ SpotRequestManager = &spotRequestService{}
 func NewEC2SpotRequestManager(awsEC2Service AwsEC2SpotRequestManager) *spotRequestService {
 	return &spotRequestService{
 		service:       awsEC2Service,
-		lastCheckTime: time.Time{},
+		lastFetchTime: time.Time{},
 	}
 }
 
 type spotRequestService struct {
 	service       AwsEC2SpotRequestManager
-	lastCheckTime time.Time
+	lastFetchTime time.Time
 }
 
 // CancelRequests cancels all open spot requests from the provided list
@@ -85,13 +86,36 @@ func (srs *spotRequestService) CancelRequests(requests []*SpotRequest) error {
 	if err != nil {
 		return errors.Wrap(err, "could not cancel spot requests")
 	}
-	klog.V(5).Infof("canceled %d spot requests from AWS: %v", len(ids), ids)
+	klog.V(3).Infof("canceled %d spot requests from AWS: %v", len(ids), ids)
 
 	return nil
 }
 
-// Lists returns all failed or open spot requests since the last listing
+// Lists returns all aws spot requests
 func (srs *spotRequestService) List() ([]*SpotRequest, error) {
+	requests, err := srs.listDelta(time.Time{})
+
+	if err == nil {
+		klog.V(3).Infof("retrieved %d spot requests from AWS", len(requests))
+	}
+
+	return requests, err
+}
+
+// ListDelta returns all new or updated aws spot requests since the last listing
+func (srs *spotRequestService) ListDelta() ([]*SpotRequest, error) {
+	requests, err := srs.listDelta(srs.lastFetchTime)
+
+	if err == nil {
+		klog.V(3).Infof("retrieved %d new or updated spot requests from AWS", len(requests))
+		srs.lastFetchTime = time.Now()
+	}
+
+	return requests, err
+}
+
+// listDelta returns spot requests newer as a provided point in time
+func (srs *spotRequestService) listDelta(filterTime time.Time) ([]*SpotRequest, error) {
 	list := make([]*SpotRequest, 0)
 
 	arguments := srs.listArguments()
@@ -101,15 +125,15 @@ func (srs *spotRequestService) List() ([]*SpotRequest, error) {
 		return nil, errors.Wrap(err, "could not retrieve AWS Spot Request list")
 	}
 
+	klog.V(2).Infof("filter %d spot requests using provided time: %v",
+		len(awsSpotRequests.SpotInstanceRequests), filterTime)
+
 	for _, request := range awsSpotRequests.SpotInstanceRequests {
-		if aws.TimeValue(request.Status.UpdateTime).After(srs.lastCheckTime) {
+		if aws.TimeValue(request.Status.UpdateTime).After(filterTime) {
 			converted := srs.convertAwsSpotRequest(request)
 			list = append(list, converted)
 		}
 	}
-
-	klog.V(5).Infof("retrieved %d open or failed spot requests from AWS", len(list))
-	srs.lastCheckTime = time.Now()
 
 	return list, nil
 }
@@ -128,17 +152,5 @@ func (srs *spotRequestService) convertAwsSpotRequest(request *ec2.SpotInstanceRe
 }
 
 func (srs *spotRequestService) listArguments() *ec2.DescribeSpotInstanceRequestsInput {
-	arguments := &ec2.DescribeSpotInstanceRequestsInput{
-		Filters: []*ec2.Filter{
-			{
-				Name: aws.String(InputStateFilter),
-				Values: []*string{
-					aws.String("open"),
-					aws.String("failed"),
-				},
-			},
-		},
-	}
-
-	return arguments
+	return &ec2.DescribeSpotInstanceRequestsInput{}
 }

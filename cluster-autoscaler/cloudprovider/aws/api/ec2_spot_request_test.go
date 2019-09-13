@@ -27,7 +27,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestSpotRequestManager_List(t *testing.T) {
+func TestSpotRequestManager_listDelta(t *testing.T) {
 	cases := []struct {
 		name          string
 		requests      []*ec2.SpotInstanceRequest
@@ -112,7 +112,97 @@ func TestSpotRequestManager_List(t *testing.T) {
 			mock.setError(c.error)
 
 			service := NewEC2SpotRequestManager(mock)
-			service.lastCheckTime = c.lastCheckTime
+			list, err := service.listDelta(c.lastCheckTime)
+
+			if len(c.error) > 0 {
+				assert.Nil(t, list, c.name, "request list should be nil")
+				assert.NotNil(t, err, c.name, "awaits an error")
+
+				if err != nil {
+					assert.Equal(t, c.expectedError, err.Error(), c.name, "unexpected error")
+				}
+			} else {
+				assert.Nil(t, err, c.name, "no error should have append")
+				assert.NotNil(t, list, c.name, "awaits a list")
+
+				if list != nil {
+					assert.Equal(t, c.expected, list, c.name, "return list is not valid")
+				}
+			}
+		})
+	}
+}
+
+func TestSpotRequestManager_List(t *testing.T) {
+	cases := []struct {
+		name          string
+		requests      []*ec2.SpotInstanceRequest
+		expected      []*SpotRequest
+		lastCheckTime time.Time
+		expectedError string
+		error         string
+	}{
+		{
+			name:          "returns all found spot requests",
+			lastCheckTime: fluxCompensator(time.Minute * 10),
+			requests: []*ec2.SpotInstanceRequest{
+				newSpotInstanceRequestInstance("12", "fulfilled",
+					"active", "123",
+					"m4.2xlarge", "eu-west-1a", fluxCompensatorAWS(time.Minute*35)),
+				newSpotInstanceRequestInstance("13", "open",
+					"active", "123",
+					"m4.2xlarge", "eu-west-1c", fluxCompensatorAWS(time.Minute*30)),
+				newSpotInstanceRequestInstance("14", "failed",
+					"bad-parameters", "123",
+					"m4.2xlarge", "eu-west-1a", fluxCompensatorAWS(time.Minute*5)),
+				newSpotInstanceRequestInstance("15", "open",
+					"active", "123",
+					"m4.2xlarge", "eu-west-1a", fluxCompensatorAWS(time.Minute)),
+			},
+			expected: []*SpotRequest{
+				{
+					ID:               "12",
+					InstanceType:     "m4.2xlarge",
+					InstanceProfile:  "123",
+					AvailabilityZone: "eu-west-1a",
+					State:            "fulfilled",
+					Status:           "active",
+				},
+				{
+					ID:               "13",
+					InstanceType:     "m4.2xlarge",
+					InstanceProfile:  "123",
+					AvailabilityZone: "eu-west-1c",
+					State:            "open",
+					Status:           "active",
+				},
+				{
+					ID:               "14",
+					InstanceType:     "m4.2xlarge",
+					InstanceProfile:  "123",
+					AvailabilityZone: "eu-west-1a",
+					State:            "failed",
+					Status:           "bad-parameters",
+				},
+				{
+					ID:               "15",
+					InstanceType:     "m4.2xlarge",
+					InstanceProfile:  "123",
+					AvailabilityZone: "eu-west-1a",
+					State:            "open",
+					Status:           "active",
+				},
+			},
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			mock := newAwsEC2SpotRequestManagerMock(c.requests)
+			mock.setError(c.error)
+
+			service := NewEC2SpotRequestManager(mock)
+			service.lastFetchTime = c.lastCheckTime
 			list, err := service.List()
 
 			if len(c.error) > 0 {
@@ -125,6 +215,92 @@ func TestSpotRequestManager_List(t *testing.T) {
 			} else {
 				assert.Nil(t, err, c.name, "no error should have append")
 				assert.NotNil(t, list, c.name, "awaits a list")
+
+				if list != nil {
+					assert.Equal(t, c.expected, list, c.name, "return list is not valid")
+				}
+			}
+		})
+	}
+}
+
+func TestSpotRequestManager_ListDelta(t *testing.T) {
+	cases := []struct {
+		name          string
+		requests      []*ec2.SpotInstanceRequest
+		expected      []*SpotRequest
+		lastCheckTime time.Time
+		expectedError string
+		error         string
+	}{
+		{
+			name:          "error fetching list: last fetch time should not be updated",
+			requests:      []*ec2.SpotInstanceRequest{},
+			expected:      []*SpotRequest{},
+			expectedError: "could not retrieve AWS Spot Request list: AWS died",
+			error:         "AWS died",
+		},
+		{
+			name:          "returns a delta of all new/updated spot requests since the last fetch date",
+			lastCheckTime: fluxCompensator(time.Minute * 10),
+			requests: []*ec2.SpotInstanceRequest{
+				newSpotInstanceRequestInstance("12", "fulfilled",
+					"active", "123",
+					"m4.2xlarge", "eu-west-1a", fluxCompensatorAWS(time.Minute*35)),
+				newSpotInstanceRequestInstance("13", "open",
+					"active", "123",
+					"m4.2xlarge", "eu-west-1c", fluxCompensatorAWS(time.Minute*30)),
+				newSpotInstanceRequestInstance("14", "failed",
+					"bad-parameters", "123",
+					"m4.2xlarge", "eu-west-1a", fluxCompensatorAWS(time.Minute*5)),
+				newSpotInstanceRequestInstance("15", "open",
+					"active", "123",
+					"m4.2xlarge", "eu-west-1a", fluxCompensatorAWS(time.Minute)),
+			},
+			expected: []*SpotRequest{
+				{
+					ID:               "14",
+					InstanceType:     "m4.2xlarge",
+					InstanceProfile:  "123",
+					AvailabilityZone: "eu-west-1a",
+					State:            "failed",
+					Status:           "bad-parameters",
+				},
+				{
+					ID:               "15",
+					InstanceType:     "m4.2xlarge",
+					InstanceProfile:  "123",
+					AvailabilityZone: "eu-west-1a",
+					State:            "open",
+					Status:           "active",
+				},
+			},
+		},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			mock := newAwsEC2SpotRequestManagerMock(c.requests)
+			mock.setError(c.error)
+
+			service := NewEC2SpotRequestManager(mock)
+			service.lastFetchTime = c.lastCheckTime
+			list, err := service.ListDelta()
+
+			if len(c.error) > 0 {
+				assert.Nil(t, list, c.name, "request list should be nil")
+				assert.NotNil(t, err, c.name, "awaits an error")
+
+				assert.Equal(t, c.lastCheckTime, service.lastFetchTime, "on error lastFetchTime should not be updated")
+
+				if err != nil {
+					assert.Equal(t, c.expectedError, err.Error(), c.name, "unexpected error")
+				}
+			} else {
+				assert.Nil(t, err, c.name, "no error should have append")
+				assert.NotNil(t, list, c.name, "awaits a list")
+
+				assert.Equal(t, true, service.lastFetchTime.After(c.lastCheckTime), "on successful fetch lastFetchTime should be updated")
 
 				if list != nil {
 					assert.Equal(t, c.expected, list, c.name, "return list is not valid")
@@ -308,32 +484,7 @@ func (m *awsEC2SpotRequestManagerMock) DescribeSpotInstanceRequests(input *ec2.D
 		return nil, errors.New(m.error)
 	}
 
-	startTime := time.Time{}
-	searchedStates := make([]*string, 0)
-
-	for _, filter := range input.Filters {
-		switch aws.StringValue(filter.Name) {
-		case InputStateFilter:
-			for _, state := range filter.Values {
-				searchedStates = append(searchedStates, state)
-			}
-		}
-	}
-
-	requests := make([]*ec2.SpotInstanceRequest, 0)
-
-	for _, request := range m.requests {
-		if aws.TimeValue(request.CreateTime).After(startTime) {
-			for _, state := range searchedStates {
-				if aws.StringValue(request.State) == aws.StringValue(state) {
-					requests = append(requests, request)
-					break
-				}
-			}
-		}
-	}
-
-	return &ec2.DescribeSpotInstanceRequestsOutput{SpotInstanceRequests: requests}, nil
+	return &ec2.DescribeSpotInstanceRequestsOutput{SpotInstanceRequests: m.requests}, nil
 }
 
 func newSpotInstanceRequestInstance(id, state, status, iamInstanceProfile, instanceType, availabilityZone string, created *time.Time) *ec2.SpotInstanceRequest {

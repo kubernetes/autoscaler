@@ -124,11 +124,12 @@ func testNamedDescribeAutoScalingGroupsOutput(groupName string, desiredCap int64
 	return &autoscaling.DescribeAutoScalingGroupsOutput{
 		AutoScalingGroups: []*autoscaling.Group{
 			{
-				AutoScalingGroupName: aws.String(groupName),
-				DesiredCapacity:      aws.Int64(desiredCap),
-				MinSize:              aws.Int64(1),
-				MaxSize:              aws.Int64(5),
-				Instances:            instances,
+				AutoScalingGroupName:    aws.String(groupName),
+				LaunchConfigurationName: aws.String("auto-lc"),
+				DesiredCapacity:         aws.Int64(desiredCap),
+				MinSize:                 aws.Int64(1),
+				MaxSize:                 aws.Int64(5),
+				Instances:               instances,
 			},
 		},
 	}
@@ -203,6 +204,20 @@ func TestAutoDiscoveredNodeGroups(t *testing.T) {
 		fn(testNamedDescribeAutoScalingGroupsOutput("auto-asg", 1, "test-instance-id"), false)
 	}).Return(nil)
 
+	service.On("DescribeLaunchConfigurations",
+		&autoscaling.DescribeLaunchConfigurationsInput{
+			LaunchConfigurationNames: aws.StringSlice([]string{"auto-lc"}),
+			MaxRecords:               aws.Int64(1),
+		},
+	).Return(&autoscaling.DescribeLaunchConfigurationsOutput{
+		LaunchConfigurations: []*autoscaling.LaunchConfiguration{
+			{
+				LaunchConfigurationName: aws.String("auto-lc"),
+				IamInstanceProfile:      aws.String("auto-iam-instance-profil"),
+				InstanceType:            aws.String("m4.4xlarge"),
+			},
+		}}, nil)
+
 	provider.Refresh()
 
 	nodeGroups := provider.NodeGroups()
@@ -231,6 +246,20 @@ func TestNodeGroupForNode(t *testing.T) {
 		fn := args.Get(1).(func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool)
 		fn(testNamedDescribeAutoScalingGroupsOutput("test-asg", 1, "test-instance-id"), false)
 	}).Return(nil)
+
+	service.On("DescribeLaunchConfigurations",
+		&autoscaling.DescribeLaunchConfigurationsInput{
+			LaunchConfigurationNames: aws.StringSlice([]string{"auto-lc"}),
+			MaxRecords:               aws.Int64(1),
+		},
+	).Return(&autoscaling.DescribeLaunchConfigurationsOutput{
+		LaunchConfigurations: []*autoscaling.LaunchConfiguration{
+			{
+				LaunchConfigurationName: aws.String("auto-lc"),
+				IamInstanceProfile:      aws.String("auto-iam-instance-profil"),
+				InstanceType:            aws.String("m4.4xlarge"),
+			},
+		}}, nil)
 
 	provider.Refresh()
 
@@ -303,6 +332,20 @@ func TestTargetSize(t *testing.T) {
 		fn(testNamedDescribeAutoScalingGroupsOutput("test-asg", 2, "test-instance-id", "second-test-instance-id"), false)
 	}).Return(nil)
 
+	service.On("DescribeLaunchConfigurations",
+		&autoscaling.DescribeLaunchConfigurationsInput{
+			LaunchConfigurationNames: aws.StringSlice([]string{"auto-lc"}),
+			MaxRecords:               aws.Int64(1),
+		},
+	).Return(&autoscaling.DescribeLaunchConfigurationsOutput{
+		LaunchConfigurations: []*autoscaling.LaunchConfiguration{
+			{
+				LaunchConfigurationName: aws.String("auto-lc"),
+				IamInstanceProfile:      aws.String("auto-iam-instance-profil"),
+				InstanceType:            aws.String("m4.4xlarge"),
+			},
+		}}, nil)
+
 	provider.Refresh()
 
 	targetSize, err := asgs[0].TargetSize()
@@ -333,6 +376,20 @@ func TestIncreaseSize(t *testing.T) {
 		fn := args.Get(1).(func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool)
 		fn(testNamedDescribeAutoScalingGroupsOutput("test-asg", 2, "test-instance-id", "second-test-instance-id"), false)
 	}).Return(nil)
+
+	service.On("DescribeLaunchConfigurations",
+		&autoscaling.DescribeLaunchConfigurationsInput{
+			LaunchConfigurationNames: aws.StringSlice([]string{"auto-lc"}),
+			MaxRecords:               aws.Int64(1),
+		},
+	).Return(&autoscaling.DescribeLaunchConfigurationsOutput{
+		LaunchConfigurations: []*autoscaling.LaunchConfiguration{
+			{
+				LaunchConfigurationName: aws.String("auto-lc"),
+				IamInstanceProfile:      aws.String("auto-iam-instance-profil"),
+				InstanceType:            aws.String("m4.4xlarge"),
+			},
+		}}, nil)
 
 	provider.Refresh()
 
@@ -365,6 +422,20 @@ func TestBelongs(t *testing.T) {
 		fn := args.Get(1).(func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool)
 		fn(testNamedDescribeAutoScalingGroupsOutput("test-asg", 1, "test-instance-id"), false)
 	}).Return(nil)
+
+	service.On("DescribeLaunchConfigurations",
+		&autoscaling.DescribeLaunchConfigurationsInput{
+			LaunchConfigurationNames: aws.StringSlice([]string{"auto-lc"}),
+			MaxRecords:               aws.Int64(1),
+		},
+	).Return(&autoscaling.DescribeLaunchConfigurationsOutput{
+		LaunchConfigurations: []*autoscaling.LaunchConfiguration{
+			{
+				LaunchConfigurationName: aws.String("auto-lc"),
+				IamInstanceProfile:      aws.String("auto-iam-instance-profil"),
+				InstanceType:            aws.String("m4.4xlarge"),
+			},
+		}}, nil)
 
 	provider.Refresh()
 
@@ -415,6 +486,20 @@ func TestDeleteNodes(t *testing.T) {
 		fn(testNamedDescribeAutoScalingGroupsOutput("test-asg", 2, "test-instance-id", "second-test-instance-id"), false)
 	}).Return(nil)
 
+	service.On("DescribeLaunchConfigurations",
+		&autoscaling.DescribeLaunchConfigurationsInput{
+			LaunchConfigurationNames: aws.StringSlice([]string{"auto-lc"}),
+			MaxRecords:               aws.Int64(1),
+		},
+	).Return(&autoscaling.DescribeLaunchConfigurationsOutput{
+		LaunchConfigurations: []*autoscaling.LaunchConfiguration{
+			{
+				LaunchConfigurationName: aws.String("auto-lc"),
+				IamInstanceProfile:      aws.String("auto-iam-instance-profil"),
+				InstanceType:            aws.String("m4.4xlarge"),
+			},
+		}}, nil)
+
 	provider.Refresh()
 
 	initialSize, err := asgs[0].TargetSize()
@@ -460,6 +545,20 @@ func TestDeleteNodesAfterMultipleRefreshes(t *testing.T) {
 		fn := args.Get(1).(func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool)
 		fn(testNamedDescribeAutoScalingGroupsOutput("test-asg", 2, "test-instance-id", "second-test-instance-id"), false)
 	}).Return(nil)
+
+	service.On("DescribeLaunchConfigurations",
+		&autoscaling.DescribeLaunchConfigurationsInput{
+			LaunchConfigurationNames: aws.StringSlice([]string{"auto-lc"}),
+			MaxRecords:               aws.Int64(1),
+		},
+	).Return(&autoscaling.DescribeLaunchConfigurationsOutput{
+		LaunchConfigurations: []*autoscaling.LaunchConfiguration{
+			{
+				LaunchConfigurationName: aws.String("auto-lc"),
+				IamInstanceProfile:      aws.String("auto-iam-instance-profil"),
+				InstanceType:            aws.String("m4.4xlarge"),
+			},
+		}}, nil)
 
 	provider.Refresh()
 	// Call the manager directly as otherwise the call would be a noop as its within less then 60s

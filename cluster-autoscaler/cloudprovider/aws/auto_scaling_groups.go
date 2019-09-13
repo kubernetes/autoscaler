@@ -21,8 +21,12 @@ import (
 	"reflect"
 	"strings"
 	"sync"
+	"time"
 
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws/price/spot"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -40,8 +44,9 @@ type asgCache struct {
 	service        autoScalingWrapper
 	interrupt      chan struct{}
 
-	asgAutoDiscoverySpecs []cloudprovider.ASGAutoDiscoveryConfig
-	explicitlyConfigured  map[AwsRef]bool
+	asgAutoDiscoverySpecs  []cloudprovider.ASGAutoDiscoveryConfig
+	explicitlyConfigured   map[AwsRef]bool
+	asgAvailabilityChecker spot.AsgAvailabilityChecker
 }
 
 type asg struct {
@@ -59,14 +64,20 @@ type asg struct {
 }
 
 func newASGCache(service autoScalingWrapper, explicitSpecs []string, autoDiscoverySpecs []cloudprovider.ASGAutoDiscoveryConfig) (*asgCache, error) {
+	sess := session.New(aws.NewConfig().WithRegion(getRegion()))
+	ec2Service := ec2.New(sess)
+	spotMonitor := spot.NewSpotAvailabilityMonitor(ec2Service, time.Minute, time.Hour)
+	go spotMonitor.Run()
+
 	registry := &asgCache{
-		registeredAsgs:        make([]*asg, 0),
-		service:               service,
-		asgToInstances:        make(map[AwsRef][]AwsInstanceRef),
-		instanceToAsg:         make(map[AwsInstanceRef]*asg),
-		interrupt:             make(chan struct{}),
-		asgAutoDiscoverySpecs: autoDiscoverySpecs,
-		explicitlyConfigured:  make(map[AwsRef]bool),
+		registeredAsgs:         make([]*asg, 0),
+		service:                service,
+		asgToInstances:         make(map[AwsRef][]AwsInstanceRef),
+		instanceToAsg:          make(map[AwsInstanceRef]*asg),
+		interrupt:              make(chan struct{}),
+		asgAutoDiscoverySpecs:  autoDiscoverySpecs,
+		explicitlyConfigured:   make(map[AwsRef]bool),
+		asgAvailabilityChecker: spotMonitor,
 	}
 
 	if err := registry.parseExplicitAsgs(explicitSpecs); err != nil {
@@ -350,9 +361,63 @@ func (m *asgCache) regenerate() error {
 		}
 	}
 
+	// Handle unavailable spot ASGs
+	for _, asg := range m.registeredAsgs {
+		lc, err := m.launchConfiguration(asg.LaunchConfigurationName)
+		if err != nil {
+			return err
+		}
+
+		if lc.SpotPrice == nil {
+			klog.V(2).Infof("%s is no spot ASG", asg.Name)
+			continue
+		}
+
+		asgAvailability := true
+		for _, availabilityZone := range asg.AvailabilityZones {
+			asgAvailability = m.asgAvailabilityChecker.AsgAvailability(
+				asg.Name, aws.StringValue(lc.IamInstanceProfile), availabilityZone, aws.StringValue(lc.InstanceType))
+			klog.V(2).Infof("spot ASG %s availability: %v", asg.Name, asgAvailability)
+
+			if asgAvailability == false {
+				// at least one AvailabilityZone ist not available,
+				// make sure this ASG will not be used
+				klog.V(2).Infof("disabling spot ASG %s", asg.Name)
+				m.unregister(asg)
+				break
+			}
+		}
+	}
+
 	m.asgToInstances = newAsgToInstancesCache
 	m.instanceToAsg = newInstanceToAsgCache
 	return nil
+}
+
+var launchConfigurationCache = map[string]*autoscaling.LaunchConfiguration{}
+
+func (m *asgCache) launchConfiguration(launchConfigurationName string) (*autoscaling.LaunchConfiguration, error) {
+	if launchConfiguration, ok := launchConfigurationCache[launchConfigurationName]; ok {
+		return launchConfiguration, nil
+	}
+
+	params := &autoscaling.DescribeLaunchConfigurationsInput{
+		LaunchConfigurationNames: []*string{aws.String(launchConfigurationName)},
+		MaxRecords:               aws.Int64(1),
+	}
+	launchConfigurations, err := m.service.DescribeLaunchConfigurations(params)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(launchConfigurations.LaunchConfigurations) == 0 {
+		return nil, fmt.Errorf("no launch configuration %s found", launchConfigurationName)
+	}
+
+	launchConfigurationCache[launchConfigurationName] = launchConfigurations.LaunchConfigurations[0]
+	klog.V(2).Infof("cached launch configuration %s", launchConfigurationName)
+
+	return launchConfigurationCache[launchConfigurationName], nil
 }
 
 func (m *asgCache) buildAsgFromAWS(g *autoscaling.Group) (*asg, error) {

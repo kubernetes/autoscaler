@@ -186,6 +186,20 @@ func TestFetchExplicitAsgs(t *testing.T) {
 			}}, false)
 	}).Return(nil)
 
+	s.On("DescribeLaunchConfigurations",
+		&autoscaling.DescribeLaunchConfigurationsInput{
+			LaunchConfigurationNames: aws.StringSlice([]string{""}),
+			MaxRecords:               aws.Int64(1),
+		},
+	).Return(&autoscaling.DescribeLaunchConfigurationsOutput{
+		LaunchConfigurations: []*autoscaling.LaunchConfiguration{
+			{
+				LaunchConfigurationName: aws.String("auto-lc"),
+				IamInstanceProfile:      aws.String("auto-iam-instance-profil"),
+				InstanceType:            aws.String("m4.4xlarge"),
+			},
+		}}, nil)
+
 	do := cloudprovider.NodeGroupDiscoveryOptions{
 		// Register the same node group twice with different max nodes.
 		// The intention is to test that the asgs.Register method will update
@@ -223,6 +237,20 @@ func TestBuildInstanceType(t *testing.T) {
 			},
 		},
 	})
+
+	s.On("DescribeLaunchConfigurations",
+		&autoscaling.DescribeLaunchConfigurationsInput{
+			LaunchConfigurationNames: aws.StringSlice([]string{"auto-lc"}),
+			MaxRecords:               aws.Int64(1),
+		},
+	).Return(&autoscaling.DescribeLaunchConfigurationsOutput{
+		LaunchConfigurations: []*autoscaling.LaunchConfiguration{
+			{
+				LaunchConfigurationName: aws.String("auto-lc"),
+				IamInstanceProfile:      aws.String("auto-iam-instance-profil"),
+				InstanceType:            aws.String("m4.4xlarge"),
+			},
+		}}, nil)
 
 	// #1449 Without AWS_REGION getRegion() lookup runs till timeout during tests.
 	defer resetAWSRegion(os.LookupEnv("AWS_REGION"))
@@ -361,6 +389,20 @@ func TestFetchAutoAsgs(t *testing.T) {
 				MaxSize:              aws.Int64(int64(max)),
 			}}}, false)
 	}).Return(nil).Twice()
+
+	s.On("DescribeLaunchConfigurations",
+		&autoscaling.DescribeLaunchConfigurationsInput{
+			LaunchConfigurationNames: aws.StringSlice([]string{"auto-lc"}),
+			MaxRecords:               aws.Int64(1),
+		},
+	).Return(&autoscaling.DescribeLaunchConfigurationsOutput{
+		LaunchConfigurations: []*autoscaling.LaunchConfiguration{
+			{
+				LaunchConfigurationName: aws.String("auto-lc"),
+				IamInstanceProfile:      aws.String("auto-iam-instance-profil"),
+				InstanceType:            aws.String("m4.4xlarge"),
+			},
+		}}, nil)
 
 	do := cloudprovider.NodeGroupDiscoveryOptions{
 		NodeGroupAutoDiscoverySpecs: []string{fmt.Sprintf("asg:tag=%s", strings.Join(tags, ","))},
