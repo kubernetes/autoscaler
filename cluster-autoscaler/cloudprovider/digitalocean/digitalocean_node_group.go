@@ -35,6 +35,7 @@ const (
 
 	doksLabelNamespace = "doks.digitalocean.com"
 	nodeIDLabel        = doksLabelNamespace + "/node-id"
+	doProviderIDPrefix = "digitalocean://"
 )
 
 var (
@@ -238,9 +239,9 @@ func (n *NodeGroup) Autoprovisioned() bool {
 // toInstances converts a slice of *godo.KubernetesNode to
 // cloudprovider.Instance
 func toInstances(nodes []*godo.KubernetesNode) []cloudprovider.Instance {
-	instances := make([]cloudprovider.Instance, len(nodes))
-	for i, nd := range nodes {
-		instances[i] = toInstance(nd)
+	instances := []cloudprovider.Instance{}
+	for _, nd := range nodes {
+		instances = append(instances, toInstance(nd))
 	}
 	return instances
 }
@@ -249,9 +250,14 @@ func toInstances(nodes []*godo.KubernetesNode) []cloudprovider.Instance {
 // cloudprovider.Instance
 func toInstance(node *godo.KubernetesNode) cloudprovider.Instance {
 	return cloudprovider.Instance{
-		Id:     node.ID,
+		Id:     toProviderID(node.DropletID),
 		Status: toInstanceStatus(node.Status),
 	}
+}
+
+// toProviderID returns a provider ID from the given node ID.
+func toProviderID(nodeID string) string {
+	return fmt.Sprintf("%s%s", doProviderIDPrefix, nodeID)
 }
 
 // toInstanceStatus converts the given *godo.KubernetesNodeStatus to a
