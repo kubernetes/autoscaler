@@ -311,9 +311,10 @@ type KubernetesNodePool struct {
 
 // KubernetesNode represents a Node in a node pool in a Kubernetes cluster.
 type KubernetesNode struct {
-	ID     string                `json:"id,omitempty"`
-	Name   string                `json:"name,omitempty"`
-	Status *KubernetesNodeStatus `json:"status,omitempty"`
+	ID        string                `json:"id,omitempty"`
+	Name      string                `json:"name,omitempty"`
+	Status    *KubernetesNodeStatus `json:"status,omitempty"`
+	DropletID string                `json:"droplet_id,omitempty"`
 
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
