@@ -17,8 +17,10 @@ limitations under the License.
 package digitalocean
 
 import (
+	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -33,6 +35,8 @@ var _ cloudprovider.CloudProvider = (*digitaloceanCloudProvider)(nil)
 const (
 	// GPULabel is the label added to nodes with GPU resource.
 	GPULabel = "cloud.digitalocean.com/gpu-node"
+
+	doProviderIDPrefix = "digitalocean://"
 )
 
 // digitaloceanCloudProvider implements CloudProvider interface.
@@ -70,13 +74,8 @@ func (d *digitaloceanCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 // should not be processed by cluster autoscaler, or non-nil error if such
 // occurred. Must be implemented.
 func (d *digitaloceanCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
-	nodeID, ok := node.Labels[nodeIDLabel]
-	if !ok {
-		// CA creates fake node objects to represent upcoming VMs that haven't
-		// registered as nodes yet. They have node.Spec.ProviderID set. Use
-		// that as nodeID.
-		nodeID = node.Spec.ProviderID
-	}
+	providerID := node.Spec.ProviderID
+	nodeID := toNodeID(providerID)
 
 	klog.V(5).Infof("checking nodegroup for node ID: %q", nodeID)
 
@@ -91,8 +90,10 @@ func (d *digitaloceanCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudpro
 		}
 
 		for _, node := range nodes {
-			klog.V(6).Infof("checking node has: %q want: %q", node.Id, nodeID)
-			if node.Id != nodeID {
+			klog.V(6).Infof("checking node has: %q want: %q", node.Id, providerID)
+			// CA uses node.Spec.ProviderID when looking for (un)registered nodes,
+			// so we need to use it here too.
+			if node.Id != providerID {
 				continue
 			}
 
@@ -190,4 +191,14 @@ func BuildDigitalOcean(
 	}
 
 	return provider
+}
+
+// toProviderID returns a provider ID from the given node ID.
+func toProviderID(nodeID string) string {
+	return fmt.Sprintf("%s%s", doProviderIDPrefix, nodeID)
+}
+
+// toNodeID returns a node or droplet ID from the given provider ID.
+func toNodeID(providerID string) string {
+	return strings.TrimPrefix(providerID, doProviderIDPrefix)
 }
