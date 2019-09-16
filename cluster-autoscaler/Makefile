@@ -1,5 +1,6 @@
 all: build
 
+DOCKERFILE?=../builder
 TAG?=dev
 FLAGS=
 LDFLAGS?=-s
@@ -58,7 +59,7 @@ format:
     test -z "$$(find . -path ./vendor -prune -type f -o -name '*.go' -exec gofmt -s -w {} + | tee /dev/stderr)"
 
 docker-builder:
-	docker build -t autoscaling-builder ../builder
+	docker build -t autoscaling-builder ${DOCKERFILE}
 
 build-in-docker: clean docker-builder
 	docker run -v `pwd`:/gopath/src/k8s.io/autoscaler/cluster-autoscaler/ autoscaling-builder:latest bash -c 'cd /gopath/src/k8s.io/autoscaler/cluster-autoscaler && BUILD_TAGS=${BUILD_TAGS} LDFLAGS="${LDFLAGS}" make build-binary'
