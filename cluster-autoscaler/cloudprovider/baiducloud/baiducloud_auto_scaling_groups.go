@@ -28,9 +28,9 @@ type autoScalingGroups struct {
 	cloudConfig              *CloudConfig
 	cceClient                *cce.Client
 	registeredAsgs           []*asgInformation
-	instanceToAsg            map[BaiducloudRef]*Asg
+	instanceToAsg            map[string]*Asg
 	cacheMutex               sync.Mutex
-	instancesNotInManagedAsg map[BaiducloudRef]struct{}
+	instancesNotInManagedAsg map[string]struct{}
 }
 
 func newAutoScalingGroups(cfg *CloudConfig, cceClient *cce.Client) *autoScalingGroups {
@@ -38,8 +38,8 @@ func newAutoScalingGroups(cfg *CloudConfig, cceClient *cce.Client) *autoScalingG
 		cloudConfig:              cfg,
 		cceClient:                cceClient,
 		registeredAsgs:           make([]*asgInformation, 0),
-		instanceToAsg:            make(map[BaiducloudRef]*Asg),
-		instancesNotInManagedAsg: make(map[BaiducloudRef]struct{}),
+		instanceToAsg:            make(map[string]*Asg),
+		instancesNotInManagedAsg: make(map[string]struct{}),
 	}
 	return registry
 }
@@ -55,13 +55,13 @@ func (m *autoScalingGroups) Register(asg *Asg) {
 }
 
 // FindForInstance returns AsgConfig of the given Instance
-func (m *autoScalingGroups) FindForInstance(instance *BaiducloudRef) (*Asg, error) {
+func (m *autoScalingGroups) FindForInstance(instanceID string) (*Asg, error) {
 	m.cacheMutex.Lock()
 	defer m.cacheMutex.Unlock()
-	if config, found := m.instanceToAsg[*instance]; found {
+	if config, found := m.instanceToAsg[instanceID]; found {
 		return config, nil
 	}
-	if _, found := m.instancesNotInManagedAsg[*instance]; found {
+	if _, found := m.instancesNotInManagedAsg[instanceID]; found {
 		// The instance is already known to not belong to any configured ASG
 		// Skip regenerateCache so that we won't unnecessarily call DescribeAutoScalingGroups
 		// See https://github.com/kubernetes/contrib/issues/2541
@@ -69,38 +69,32 @@ func (m *autoScalingGroups) FindForInstance(instance *BaiducloudRef) (*Asg, erro
 		return nil, nil
 	}
 	if err := m.regenerateCache(); err != nil {
-		return nil, fmt.Errorf("error while looking for ASG for instance %+v, error: %v", *instance, err)
+		return nil, fmt.Errorf("error while looking for ASG for instance %+v, error: %v", instanceID, err)
 	}
-	if config, found := m.instanceToAsg[*instance]; found {
+	if config, found := m.instanceToAsg[instanceID]; found {
 		return config, nil
 	}
 	// instance does not belong to any configured ASG
 	klog.V(4).Infof("Instance %+v is not in any ASG managed by CA."+
 		" CA is now memorizing the fact not to unnecessarily call BCE API afterwards trying to find the "+
-		"unexistent managed ASG for the instance", *instance)
-	m.instancesNotInManagedAsg[*instance] = struct{}{}
+		"unexistent managed ASG for the instance", instanceID)
+	m.instancesNotInManagedAsg[instanceID] = struct{}{}
 	return nil, nil
 }
 
 func (m *autoScalingGroups) regenerateCache() error {
-	newCache := make(map[BaiducloudRef]*Asg)
-
+	newCache := make(map[string]*Asg)
 	// TODO: Currently, baiducloud cloudprovider not support Multiple ASG
-	instanceList, err := m.cceClient.ListInstances(m.cloudConfig.ClusterID)
-	if err != nil {
-		return err
-	}
-
 	for _, asg := range m.registeredAsgs {
 		klog.V(4).Infof("regenerating ASG information for %s", asg.config.Name)
+		instanceList, err := m.cceClient.GetAsgNodes(asg.config.Name, m.cloudConfig.ClusterID)
+		if err != nil {
+			return err
+		}
 		for _, instance := range instanceList {
-			ref := BaiducloudRef{
-				Name: instance.InstanceId,
-			}
-			newCache[ref] = asg.config
+			newCache[instance.InstanceId] = asg.config
 		}
 	}
-
 	m.instanceToAsg = newCache
 	return nil
 }
