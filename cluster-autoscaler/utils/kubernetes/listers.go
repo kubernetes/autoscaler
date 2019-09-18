@@ -254,21 +254,19 @@ func NewNodeLister(kubeClient client.Interface, filter func(*apiv1.Node) bool, s
 
 // List returns list of nodes.
 func (l *nodeListerImpl) List() ([]*apiv1.Node, error) {
-	nodes, err := l.nodeLister.List(labels.Everything())
+	var nodes []*apiv1.Node
+	var err error
+	if l.filter != nil {
+		nodes, err = l.nodeLister.ListWithPredicate(l.filter)
+	} else {
+		nodes, err = l.nodeLister.List(labels.Everything())
+	}
 	if err != nil {
 		return []*apiv1.Node{}, err
 	}
 	results := make([]*apiv1.Node, 0, len(nodes))
-	if l.filter != nil {
-		for _, node := range nodes {
-			if l.filter(node) {
-				results = append(results, node)
-			}
-		}
-	} else {
-		results = append(results, nodes...)
-	}
-	return nodes, nil
+	results = append(results, nodes...)
+	return results, nil
 }
 
 // Get returns the node with the given name.

@@ -771,7 +771,7 @@ func TestIsNodeStillStarting(t *testing.T) {
 	}{
 		{"unready", apiv1.NodeReady, apiv1.ConditionFalse, true},
 		{"readiness unknown", apiv1.NodeReady, apiv1.ConditionUnknown, true},
-		{"out of disk", apiv1.NodeOutOfDisk, apiv1.ConditionTrue, true},
+		{"out of disk", apiv1.NodeDiskPressure, apiv1.ConditionTrue, true},
 		{"network unavailable", apiv1.NodeNetworkUnavailable, apiv1.ConditionTrue, true},
 		{"started", apiv1.NodeReady, apiv1.ConditionTrue, false},
 	}

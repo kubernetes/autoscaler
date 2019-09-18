@@ -71,14 +71,14 @@ type UtilizationInfo struct {
 
 // FindNodesToRemove finds nodes that can be removed. Returns also an information about good
 // rescheduling location for each of the pods.
-func FindNodesToRemove(candidates []*apiv1.Node, allNodes []*apiv1.Node, pods []*apiv1.Pod,
+func FindNodesToRemove(candidates []*apiv1.Node, destinationNodes []*apiv1.Node, pods []*apiv1.Pod,
 	listers kube_util.ListerRegistry, predicateChecker *PredicateChecker, maxCount int,
 	fastCheck bool, oldHints map[string]string, usageTracker *UsageTracker,
 	timestamp time.Time,
 	podDisruptionBudgets []*policyv1.PodDisruptionBudget,
 ) (nodesToRemove []NodeToBeRemoved, unremovableNodes []*apiv1.Node, podReschedulingHints map[string]string, finalError errors.AutoscalerError) {
 
-	nodeNameToNodeInfo := scheduler_util.CreateNodeNameToInfoMap(pods, allNodes)
+	nodeNameToNodeInfo := scheduler_util.CreateNodeNameToInfoMap(pods, destinationNodes)
 	result := make([]NodeToBeRemoved, 0)
 	unremovable := make([]*apiv1.Node, 0)
 
@@ -113,7 +113,7 @@ candidateloop:
 			unremovable = append(unremovable, node)
 			continue candidateloop
 		}
-		findProblems := findPlaceFor(node.Name, podsToRemove, allNodes, nodeNameToNodeInfo, predicateChecker, oldHints, newHints,
+		findProblems := findPlaceFor(node.Name, podsToRemove, destinationNodes, nodeNameToNodeInfo, predicateChecker, oldHints, newHints,
 			usageTracker, timestamp)
 
 		if findProblems == nil {

@@ -29,8 +29,8 @@ This will create a new [service principal][] with "Contributor" role scoped to y
 
 Cluster autoscaler supports four Kubernetes cluster options on Azure:
 
-- [**vmss**](#vmss-deployment): Autoscale VMSS instances by setting the Azure cloud provider's `vmType` parameter to `vmss`. This supports clusters deployed with [aks-engine][].
-- [**standard**](#standard-deployment): Autoscale VMAS instances by setting the Azure cloud provider's `vmType` parameter to `standard` or to an empty string. This supports clusters deployed with [aks-engine][].
+- [**vmss**](#vmss-deployment): Autoscale VMSS instances by setting the Azure cloud provider's `vmType` parameter to `vmss` or to an empty string. This supports clusters deployed with [aks-engine][].
+- [**standard**](#standard-deployment): Autoscale VMAS instances by setting the Azure cloud provider's `vmType` parameter to `standard`. This supports clusters deployed with [aks-engine][].
 - [**aks**](#aks-deployment): Supports an Azure Kubernetes Service ([AKS][]) cluster.
 - *DEPRECATED* [**acs**](#acs-deployment): Supports an Azure Container Service ([ACS][]) cluster.
 
@@ -67,6 +67,18 @@ or to autoscale multiple VM scale sets:
         - --nodes=1:10:k8s-nodepool-1-vmss
         - --nodes=1:10:k8s-nodepool-2-vmss
 ```
+
+Note that it doesn't mean the number of nodes in nodepool is restricted in the 
+range from 1 to 10. It means when ca is downscaling (upscaling) the nodepool, 
+it will never break the limit of 1 (10). If the current node pool size is lower than the specified minimum or greater than the specified maximum when you enable autoscaling, the autoscaler waits to take effect until a new node is needed in the node pool or until a node can be safely deleted from the node pool.
+
+To allow scaling similar node pools simultaneously, or when using separate node groups per zone and to keep nodes balanced across zones, use the `--balance-similar-node-groups` flag (default false). Add it to the `command` section to enable it:
+
+```yaml
+        - --balance-similar-node-groups=true
+```
+
+See the [FAQ](https://github.com/kubernetes/autoscaler/blob/master/cluster-autoscaler/FAQ.md#im-running-cluster-with-nodes-in-multiple-zones-for-ha-purposes-is-that-supported-by-cluster-autoscaler) for more details.
 
 Save the updated deployment manifest, then deploy cluster-autoscaler by running:
 
@@ -167,6 +179,7 @@ Make a copy of [cluster-autoscaler-containerservice](examples/cluster-autoscaler
 - SubscriptionID: `<base64-encoded-subscription-id>`
 - TenantID: `<base64-encoded-tenant-id>`
 - ClusterName: `<base64-encoded-clustername>`
+- NodeResourceGroup: `<base64-encoded-node-resource-group>` (Note: node resource group is not resource group and can be obtained in the corresponding label of the nodepool)
 
 > **_NOTE_**: Use a command such as `echo $CLIENT_ID | base64` to encode each of the fields above.
 

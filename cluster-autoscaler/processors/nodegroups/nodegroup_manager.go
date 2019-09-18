@@ -25,7 +25,7 @@ import (
 // NodeGroupManager is responsible for creating/deleting node groups.
 type NodeGroupManager interface {
 	CreateNodeGroup(context *context.AutoscalingContext, nodeGroup cloudprovider.NodeGroup) (CreateNodeGroupResult, errors.AutoscalerError)
-	RemoveUnneededNodeGroups(context *context.AutoscalingContext) error
+	RemoveUnneededNodeGroups(context *context.AutoscalingContext) (removedNodeGroups []cloudprovider.NodeGroup, err error)
 	CleanUp()
 }
 
@@ -52,8 +52,8 @@ func (*NoOpNodeGroupManager) CreateNodeGroup(context *context.AutoscalingContext
 }
 
 // RemoveUnneededNodeGroups does nothing in NoOpNodeGroupManager
-func (*NoOpNodeGroupManager) RemoveUnneededNodeGroups(context *context.AutoscalingContext) error {
-	return nil
+func (*NoOpNodeGroupManager) RemoveUnneededNodeGroups(context *context.AutoscalingContext) (removedNodeGroups []cloudprovider.NodeGroup, err error) {
+	return nil, nil
 }
 
 // CleanUp does nothing in NoOpNodeGroupManager

@@ -78,6 +78,7 @@ type scaleTestConfig struct {
 	//expectedScaleUpOptions []groupSizeChange // we expect that all those options should be included in expansion options passed to expander strategy
 	//expectedFinalScaleUp   groupSizeChange   // we expect this to be delivered via scale-up event
 	expectedScaleDowns []string
+	tempNodeNames      []string
 }
 
 type scaleTestResults struct {
@@ -129,10 +130,11 @@ func (p *mockAutoprovisioningNodeGroupManager) CreateNodeGroup(context *context.
 	return result, nil
 }
 
-func (p *mockAutoprovisioningNodeGroupManager) RemoveUnneededNodeGroups(context *context.AutoscalingContext) error {
+func (p *mockAutoprovisioningNodeGroupManager) RemoveUnneededNodeGroups(context *context.AutoscalingContext) (removedNodeGroups []cloudprovider.NodeGroup, err error) {
 	if !context.AutoscalingOptions.NodeAutoprovisioningEnabled {
-		return nil
+		return nil, nil
 	}
+	removedNodeGroups = make([]cloudprovider.NodeGroup, 0)
 	nodeGroups := context.CloudProvider.NodeGroups()
 	for _, nodeGroup := range nodeGroups {
 		if !nodeGroup.Autoprovisioned() {
@@ -150,8 +152,9 @@ func (p *mockAutoprovisioningNodeGroupManager) RemoveUnneededNodeGroups(context 
 		}
 		err = nodeGroup.Delete()
 		assert.NoError(p.t, err)
+		removedNodeGroups = append(removedNodeGroups, nodeGroup)
 	}
-	return nil
+	return removedNodeGroups, nil
 }
 
 func (p *mockAutoprovisioningNodeGroupManager) CleanUp() {

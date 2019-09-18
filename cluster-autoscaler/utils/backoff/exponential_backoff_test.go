@@ -81,3 +81,23 @@ func TestResetStaleBackoffData(t *testing.T) {
 	backoff.RemoveStaleBackoffData(startTime.Add(5 * time.Hour))
 	assert.Equal(t, 0, len(backoff.(*exponentialBackoff).backoffInfo))
 }
+
+func TestIncreaseExistingBackoff(t *testing.T) {
+	backoff := NewIdBasedExponentialBackoff(1*time.Second, 10*time.Minute, 3*time.Hour)
+	startTime := time.Now()
+	backoff.Backoff(nodeGroup1, nil, cloudprovider.OtherErrorClass, "", startTime)
+	// NG in backoff for one second here
+	assert.True(t, backoff.IsBackedOff(nodeGroup1, nil, startTime))
+	// Come out of backoff
+	time.Sleep(1 * time.Second)
+	assert.False(t, backoff.IsBackedOff(nodeGroup1, nil, time.Now()))
+	// Confirm existing backoff duration has been increased by backing off again
+	backoff.Backoff(nodeGroup1, nil, cloudprovider.OtherErrorClass, "", time.Now())
+	// Backoff should be for 2 seconds now
+	assert.True(t, backoff.IsBackedOff(nodeGroup1, nil, time.Now()))
+	time.Sleep(1 * time.Second)
+	assert.True(t, backoff.IsBackedOff(nodeGroup1, nil, time.Now()))
+	time.Sleep(1 * time.Second)
+	assert.False(t, backoff.IsBackedOff(nodeGroup1, nil, time.Now()))
+	// Result: existing backoff duration was scaled up beyond initial duration
+}

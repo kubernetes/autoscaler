@@ -19,6 +19,7 @@ package aws
 import (
 	"fmt"
 	"reflect"
+	"regexp"
 	"strings"
 	"sync"
 
@@ -30,7 +31,10 @@ import (
 	"k8s.io/klog"
 )
 
-const scaleToZeroSupported = true
+const (
+	scaleToZeroSupported          = true
+	placeholderInstanceNamePrefix = "i-placeholder"
+)
 
 type asgCache struct {
 	registeredAsgs []*asg
@@ -44,6 +48,16 @@ type asgCache struct {
 	explicitlyConfigured  map[AwsRef]bool
 }
 
+type launchTemplate struct {
+	name    string
+	version string
+}
+
+type mixedInstancesPolicy struct {
+	launchTemplate         *launchTemplate
+	instanceTypesOverrides []string
+}
+
 type asg struct {
 	AwsRef
 
@@ -52,9 +66,9 @@ type asg struct {
 	curSize int
 
 	AvailabilityZones       []string
-	LaunchTemplateName      string
-	LaunchTemplateVersion   string
 	LaunchConfigurationName string
+	LaunchTemplate          *launchTemplate
+	MixedInstancesPolicy    *mixedInstancesPolicy
 	Tags                    []*autoscaling.TagDescription
 }
 
@@ -114,8 +128,8 @@ func (m *asgCache) register(asg *asg) *asg {
 			// from zero
 			existing.AvailabilityZones = asg.AvailabilityZones
 			existing.LaunchConfigurationName = asg.LaunchConfigurationName
-			existing.LaunchTemplateName = asg.LaunchTemplateName
-			existing.LaunchTemplateVersion = asg.LaunchTemplateVersion
+			existing.LaunchTemplate = asg.LaunchTemplate
+			existing.MixedInstancesPolicy = asg.MixedInstancesPolicy
 			existing.Tags = asg.Tags
 
 			return existing
@@ -195,6 +209,10 @@ func (m *asgCache) SetAsgSize(asg *asg, size int) error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
+	return m.setAsgSizeNoLock(asg, size)
+}
+
+func (m *asgCache) setAsgSizeNoLock(asg *asg, size int) error {
 	params := &autoscaling.SetDesiredCapacityInput{
 		AutoScalingGroupName: aws.String(asg.Name),
 		DesiredCapacity:      aws.Int64(int64(size)),
@@ -210,6 +228,10 @@ func (m *asgCache) SetAsgSize(asg *asg, size int) error {
 	asg.curSize = size
 
 	return nil
+}
+
+func (m *asgCache) decreaseAsgSizeByOneNoLock(asg *asg) error {
+	return m.setAsgSizeNoLock(asg, asg.curSize-1)
 }
 
 // DeleteInstances deletes the given instances. All instances must be controlled by the same ASG.
@@ -239,22 +261,34 @@ func (m *asgCache) DeleteInstances(instances []*AwsInstanceRef) error {
 	}
 
 	for _, instance := range instances {
-		params := &autoscaling.TerminateInstanceInAutoScalingGroupInput{
-			InstanceId:                     aws.String(instance.Name),
-			ShouldDecrementDesiredCapacity: aws.Bool(true),
-		}
-		resp, err := m.service.TerminateInstanceInAutoScalingGroup(params)
-		if err != nil {
-			return err
-		}
+		// check if the instance is a placeholder - a requested instance that was never created by the node group
+		// if it is, just decrease the size of the node group, as there's no specific instance we can remove
+		if m.isPlaceholderInstance(instance) {
+			klog.V(4).Infof("instance %s is detected as a placeholder, decreasing ASG requested size instead "+
+				"of deleting instance", instance.Name)
+			m.decreaseAsgSizeByOneNoLock(commonAsg)
+		} else {
+			params := &autoscaling.TerminateInstanceInAutoScalingGroupInput{
+				InstanceId:                     aws.String(instance.Name),
+				ShouldDecrementDesiredCapacity: aws.Bool(true),
+			}
+			resp, err := m.service.TerminateInstanceInAutoScalingGroup(params)
+			if err != nil {
+				return err
+			}
+			klog.V(4).Infof(*resp.Activity.Description)
 
-		// Proactively decrement the size so autoscaler makes better decisions
-		commonAsg.curSize--
-
-		klog.V(4).Infof(*resp.Activity.Description)
+			// Proactively decrement the size so autoscaler makes better decisions
+			commonAsg.curSize--
+		}
 	}
-
 	return nil
+}
+
+// isPlaceholderInstance checks if the given instance is only a placeholder
+func (m *asgCache) isPlaceholderInstance(instance *AwsInstanceRef) bool {
+	matched, _ := regexp.MatchString(fmt.Sprintf("^%s.*\\d+$", placeholderInstanceNamePrefix), instance.Name)
+	return matched
 }
 
 // Fetch automatically discovered ASGs. These ASGs should be unregistered if
@@ -323,6 +357,11 @@ func (m *asgCache) regenerate() error {
 		return err
 	}
 
+	// If currently any ASG has more Desired than running Instances, introduce placeholders
+	// for the instances to come up. This is required to track Desired instances that
+	// will never come up, like with Spot Request that can't be fulfilled
+	groups = m.createPlaceholdersForDesiredNonStartedInstances(groups)
+
 	// Register or update ASGs
 	exists := make(map[AwsRef]bool)
 	for _, group := range groups {
@@ -355,6 +394,27 @@ func (m *asgCache) regenerate() error {
 	return nil
 }
 
+func (m *asgCache) createPlaceholdersForDesiredNonStartedInstances(groups []*autoscaling.Group) []*autoscaling.Group {
+	for _, g := range groups {
+		desired := *g.DesiredCapacity
+		real := int64(len(g.Instances))
+		if desired <= real {
+			continue
+		}
+
+		for i := real; i < desired; i++ {
+			id := fmt.Sprintf("%s-%s-%d", placeholderInstanceNamePrefix, *g.AutoScalingGroupName, i)
+			klog.V(4).Infof("Instance group %s has only %d instances created while requested count is %d. "+
+				"Creating placeholder instance with ID %s.", *g.AutoScalingGroupName, real, desired, id)
+			g.Instances = append(g.Instances, &autoscaling.Instance{
+				InstanceId:       &id,
+				AvailabilityZone: g.AvailabilityZones[0],
+			})
+		}
+	}
+	return groups
+}
+
 func (m *asgCache) buildAsgFromAWS(g *autoscaling.Group) (*asg, error) {
 	spec := dynamic.NodeGroupSpec{
 		Name:               aws.StringValue(g.AutoScalingGroupName),
@@ -367,8 +427,6 @@ func (m *asgCache) buildAsgFromAWS(g *autoscaling.Group) (*asg, error) {
 		return nil, fmt.Errorf("failed to create node group spec: %v", verr)
 	}
 
-	launchTemplateName, launchTemplateVersion := m.buildLaunchTemplateParams(g)
-
 	asg := &asg{
 		AwsRef:  AwsRef{Name: spec.Name},
 		minSize: spec.MinSize,
@@ -377,23 +435,36 @@ func (m *asgCache) buildAsgFromAWS(g *autoscaling.Group) (*asg, error) {
 		curSize:                 int(aws.Int64Value(g.DesiredCapacity)),
 		AvailabilityZones:       aws.StringValueSlice(g.AvailabilityZones),
 		LaunchConfigurationName: aws.StringValue(g.LaunchConfigurationName),
-		LaunchTemplateName:      launchTemplateName,
-		LaunchTemplateVersion:   launchTemplateVersion,
 		Tags:                    g.Tags,
+	}
+
+	if g.LaunchTemplate != nil {
+		asg.LaunchTemplate = m.buildLaunchTemplateFromSpec(g.LaunchTemplate)
+	}
+
+	if g.MixedInstancesPolicy != nil {
+		getInstanceTypes := func(data []*autoscaling.LaunchTemplateOverrides) []string {
+			res := make([]string, len(data))
+			for i := 0; i < len(data); i++ {
+				res[i] = aws.StringValue(data[i].InstanceType)
+			}
+			return res
+		}
+
+		asg.MixedInstancesPolicy = &mixedInstancesPolicy{
+			launchTemplate:         m.buildLaunchTemplateFromSpec(g.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification),
+			instanceTypesOverrides: getInstanceTypes(g.MixedInstancesPolicy.LaunchTemplate.Overrides),
+		}
 	}
 
 	return asg, nil
 }
 
-func (m *asgCache) buildLaunchTemplateParams(g *autoscaling.Group) (string, string) {
-	if g.LaunchTemplate != nil {
-		return aws.StringValue(g.LaunchTemplate.LaunchTemplateName), aws.StringValue(g.LaunchTemplate.Version)
-	} else if g.MixedInstancesPolicy != nil && g.MixedInstancesPolicy.LaunchTemplate != nil {
-		return aws.StringValue(g.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification.LaunchTemplateName),
-			aws.StringValue(g.MixedInstancesPolicy.LaunchTemplate.LaunchTemplateSpecification.Version)
+func (m *asgCache) buildLaunchTemplateFromSpec(ltSpec *autoscaling.LaunchTemplateSpecification) *launchTemplate {
+	return &launchTemplate{
+		name:    aws.StringValue(ltSpec.LaunchTemplateName),
+		version: aws.StringValue(ltSpec.Version),
 	}
-
-	return "", ""
 }
 
 func (m *asgCache) buildInstanceRefFromAWS(instance *autoscaling.Instance) AwsInstanceRef {

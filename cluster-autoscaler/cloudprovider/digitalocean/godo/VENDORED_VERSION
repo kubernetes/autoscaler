@@ -1,0 +1,31 @@
+The godo package was vendored based on the following git SHA:
+
+8d8fad298a2eb45d1139313816d50a9ab5e423cd
+
+* We removed the `util/` folder because it's not needed 
+* We vendored the dependencies by calling `go mod vendor` after checking out a new version
+
+To upgrade to a new godo version do the following:
+
+```
+cd cloudprovider/digitalocean
+
+# remove the godo folder
+rm -rf godo/
+
+# clone the godo folder 
+git clone https://github.com/digitalocean/godo
+cd godo
+
+# checkout to new release, replace the version. Here we're using v1.19.0
+git checkout v1.19.0 
+
+# remove the .git and util/
+rm -rf .git
+rm -rf util/
+
+# vendor all dependencies
+go mod vendor
+
+# edit this file to include that you're using now the latest version
+```

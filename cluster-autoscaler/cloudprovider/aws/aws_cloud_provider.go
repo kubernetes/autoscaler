@@ -33,9 +33,6 @@ import (
 )
 
 const (
-	// ProviderName is the cloud provider name for AWS
-	ProviderName = "aws"
-
 	// GPULabel is the label added to nodes with GPU resource.
 	GPULabel = "k8s.amazonaws.com/accelerator"
 )
@@ -71,7 +68,7 @@ func (aws *awsCloudProvider) Cleanup() error {
 
 // Name returns name of the cloud provider.
 func (aws *awsCloudProvider) Name() string {
-	return ProviderName
+	return cloudprovider.AwsProviderName
 }
 
 // GPULabel returns the label added to nodes with GPU resource.
@@ -111,7 +108,7 @@ func (aws *awsCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.N
 	asg := aws.awsManager.GetAsgForInstance(*ref)
 
 	if asg == nil {
-		return nil, nil
+		return nil, fmt.Errorf("cannot find ASG for node %v", ref.Name)
 	}
 
 	return &AwsNodeGroup{

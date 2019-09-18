@@ -103,7 +103,9 @@ func (b *BalancingNodeGroupSetProcessor) BalanceScaleUpBetweenGroups(context *co
 			NewSize:     currentSize,
 			MaxSize:     maxSize}
 		scaleUpInfos = append(scaleUpInfos, info)
-		totalCapacity += maxSize - currentSize
+		if maxSize-currentSize > 0 {
+			totalCapacity += maxSize - currentSize
+		}
 	}
 	if totalCapacity < newNodes {
 		klog.V(2).Infof("Requested scale-up (%v) exceeds node group set capacity, capping to %v", newNodes, totalCapacity)

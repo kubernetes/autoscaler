@@ -362,7 +362,7 @@ func (csr *ClusterStateRegistry) IsClusterHealthy() bool {
 	csr.Lock()
 	defer csr.Unlock()
 
-	totalUnready := csr.totalReadiness.Unready + csr.totalReadiness.LongNotStarted + csr.totalReadiness.LongUnregistered
+	totalUnready := csr.totalReadiness.Unready
 
 	if totalUnready > csr.config.OkTotalUnreadyCount &&
 		float64(totalUnready) > csr.config.MaxTotalUnreadyPercentage/100.0*float64(len(csr.nodes)) {
@@ -585,7 +585,7 @@ func (csr *ClusterStateRegistry) updateReadinessStats(currentTime time.Time) {
 			klog.Warningf("Failed to get nodegroup for %s: %v", unregistered.Node.Name, errNg)
 			continue
 		}
-		if nodeGroup == nil {
+		if nodeGroup == nil || reflect.ValueOf(nodeGroup).IsNil() {
 			klog.Warningf("Nodegroup is nil for %s", unregistered.Node.Name)
 			continue
 		}
@@ -862,7 +862,7 @@ func isNodeStillStarting(node *apiv1.Node) bool {
 			condition.LastTransitionTime.Time.Sub(node.CreationTimestamp.Time) < MaxStatusSettingDelayAfterCreation {
 			return true
 		}
-		if condition.Type == apiv1.NodeOutOfDisk &&
+		if condition.Type == apiv1.NodeDiskPressure &&
 			condition.Status == apiv1.ConditionTrue &&
 			condition.LastTransitionTime.Time.Sub(node.CreationTimestamp.Time) < MaxStatusSettingDelayAfterCreation {
 			return true

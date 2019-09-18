@@ -207,9 +207,16 @@ func TestFetchExplicitAsgs(t *testing.T) {
 		mock.AnythingOfType("func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool"),
 	).Run(func(args mock.Arguments) {
 		fn := args.Get(1).(func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool)
+		zone := "test-1a"
 		fn(&autoscaling.DescribeAutoScalingGroupsOutput{
 			AutoScalingGroups: []*autoscaling.Group{
-				{AutoScalingGroupName: aws.String(groupname)},
+				{
+					AvailabilityZones:    []*string{&zone},
+					AutoScalingGroupName: aws.String(groupname),
+					MinSize:              aws.Int64(int64(min)),
+					MaxSize:              aws.Int64(int64(max)),
+					DesiredCapacity:      aws.Int64(int64(min)),
+				},
 			}}, false)
 	}).Return(nil)
 
@@ -258,14 +265,73 @@ func TestBuildInstanceType(t *testing.T) {
 	assert.NoError(t, err)
 
 	asg := asg{
-		LaunchTemplateName:    ltName,
-		LaunchTemplateVersion: ltVersion,
+		LaunchTemplate: &launchTemplate{name: ltName, version: ltVersion},
 	}
 
 	builtInstanceType, err := m.buildInstanceType(&asg)
 
 	assert.NoError(t, err)
 	assert.Equal(t, instanceType, builtInstanceType)
+}
+
+func TestBuildInstanceTypeMixedInstancePolicyOverride(t *testing.T) {
+	ltName, ltVersion, instanceType := "launcher", "1", "t2.large"
+	instanceTypes := []string{}
+
+	s := &EC2Mock{}
+	s.On("DescribeLaunchTemplateVersions", &ec2.DescribeLaunchTemplateVersionsInput{
+		LaunchTemplateName: aws.String(ltName),
+		Versions:           []*string{aws.String(ltVersion)},
+	}).Return(&ec2.DescribeLaunchTemplateVersionsOutput{
+		LaunchTemplateVersions: []*ec2.LaunchTemplateVersion{
+			{
+				LaunchTemplateData: &ec2.ResponseLaunchTemplateData{
+					InstanceType: aws.String(instanceType),
+				},
+			},
+		},
+	})
+
+	defer resetAWSRegion(os.LookupEnv("AWS_REGION"))
+	os.Setenv("AWS_REGION", "fanghorn")
+	m, err := createAWSManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, nil, &ec2Wrapper{s})
+	assert.NoError(t, err)
+
+	lt := &launchTemplate{name: ltName, version: ltVersion}
+	asg := asg{
+		MixedInstancesPolicy: &mixedInstancesPolicy{
+			launchTemplate:         lt,
+			instanceTypesOverrides: instanceTypes,
+		},
+	}
+
+	builtInstanceType, err := m.buildInstanceType(&asg)
+
+	assert.NoError(t, err)
+	assert.Equal(t, instanceType, builtInstanceType)
+}
+
+func TestBuildInstanceTypeMixedInstancePolicyNoOverride(t *testing.T) {
+	ltName, ltVersion := "launcher", "1"
+	instanceTypes := []string{"m4.xlarge", "m5.xlarge"}
+
+	defer resetAWSRegion(os.LookupEnv("AWS_REGION"))
+	os.Setenv("AWS_REGION", "fanghorn")
+	m, err := createAWSManagerInternal(nil, cloudprovider.NodeGroupDiscoveryOptions{}, nil, &ec2Wrapper{})
+	assert.NoError(t, err)
+
+	lt := &launchTemplate{name: ltName, version: ltVersion}
+	asg := asg{
+		MixedInstancesPolicy: &mixedInstancesPolicy{
+			launchTemplate:         lt,
+			instanceTypesOverrides: instanceTypes,
+		},
+	}
+
+	builtInstanceType, err := m.buildInstanceType(&asg)
+
+	assert.NoError(t, err)
+	assert.Equal(t, instanceTypes[0], builtInstanceType)
 }
 
 func TestGetASGTemplate(t *testing.T) {
@@ -323,11 +389,12 @@ func TestGetASGTemplate(t *testing.T) {
 			assert.NoError(t, err)
 
 			asg := &asg{
-				AwsRef:                AwsRef{Name: "sample"},
-				AvailabilityZones:     test.availabilityZones,
-				LaunchTemplateName:    ltName,
-				LaunchTemplateVersion: ltVersion,
-				Tags:                  tags,
+				AwsRef:            AwsRef{Name: "sample"},
+				AvailabilityZones: test.availabilityZones,
+				LaunchTemplate: &launchTemplate{
+					name:    ltName,
+					version: ltVersion},
+				Tags: tags,
 			}
 
 			template, err := m.getAsgTemplate(asg)
@@ -381,11 +448,14 @@ func TestFetchAutoAsgs(t *testing.T) {
 		mock.AnythingOfType("func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool"),
 	).Run(func(args mock.Arguments) {
 		fn := args.Get(1).(func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool)
+		zone := "test-1a"
 		fn(&autoscaling.DescribeAutoScalingGroupsOutput{
 			AutoScalingGroups: []*autoscaling.Group{{
+				AvailabilityZones:    []*string{&zone},
 				AutoScalingGroupName: aws.String(groupname),
 				MinSize:              aws.Int64(int64(min)),
 				MaxSize:              aws.Int64(int64(max)),
+				DesiredCapacity:      aws.Int64(int64(min)),
 			}}}, false)
 	}).Return(nil).Twice()
 
