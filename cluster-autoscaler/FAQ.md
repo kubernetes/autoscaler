@@ -23,6 +23,7 @@ this document:
   * [How is Cluster Autoscaler different from CPU-usage-based node autoscalers?](#how-is-cluster-autoscaler-different-from-cpu-usage-based-node-autoscalers)
   * [Is Cluster Autoscaler compatible with CPU-usage-based node autoscalers?](#is-cluster-autoscaler-compatible-with-cpu-usage-based-node-autoscalers)
   * [How does Cluster Autoscaler work with Pod Priority and Preemption?](#how-does-cluster-autoscaler-work-with-pod-priority-and-preemption)
+  * [How does Cluster Autoscaler remove nodes?](#how-does-cluster-autoscaler-remove-nodes)
 * [How to?](#how-to)
   * [I'm running cluster with nodes in multiple zones for HA purposes. Is that supported by Cluster Autoscaler?](#im-running-cluster-with-nodes-in-multiple-zones-for-ha-purposes-is-that-supported-by-cluster-autoscaler)
   * [How can I monitor Cluster Autoscaler?](#how-can-i-monitor-cluster-autoscaler)
@@ -158,7 +159,7 @@ space in the cluster.
 If there are not enough resources, CA will try to bring up some nodes, so that the
 HPA-created pods have a place to run.
 If the load decreases, HPA will stop some of the replicas. As a result, some nodes may become
-underutilized or completely empty, and then CA will delete such unneeded nodes.
+underutilized or completely empty, and then CA will terminate such unneeded nodes.
 
 ### What are the key best practices for running Cluster Autoscaler?
 
@@ -202,7 +203,7 @@ Cluster Autoscaler.
 
 Pods with priority lower than this cutoff:
 * don't trigger scale-ups - no new node is added in order to run them,
-* don't prevent scale-downs - nodes running such pods can be deleted.
+* don't prevent scale-downs - nodes running such pods can be terminated.
 
 Nothing changes for pods with priority greater or equal to cutoff, and pods without priority.
 
@@ -218,6 +219,11 @@ More about Pod Priority and Preemption:
  * [Pod Preemption in Kubernetes](https://github.com/kubernetes/community/blob/master/contributors/design-proposals/scheduling/pod-preemption.md),
  * [Pod Priority and Preemption tutorial](https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/).
 
+### How does Cluster Autoscaler remove nodes?
+
+Cluster Autoscaler terminates the underlying instance in a cloud-provider-dependent manner.
+
+It does _not_ delete the [Node object](https://kubernetes.io/docs/concepts/architecture/nodes/#api-object) from Kubernetes. Cleaning up Node objects corresponding to terminated instances is the responsibility of the [cloud node controller](https://kubernetes.io/docs/concepts/architecture/cloud-controller/#node-controller), which can run as part of [kube-controller-manager](https://kubernetes.io/docs/reference/command-line-tools-reference/kube-controller-manager/) or [cloud-controller-manager](https://kubernetes.io/docs/reference/command-line-tools-reference/cloud-controller-manager/).
 
 
 ****************
@@ -256,7 +262,7 @@ available [here](https://github.com/kubernetes/autoscaler/blob/master/cluster-au
 ### How can I scale my cluster to just 1 node?
 
 Prior to version 0.6, Cluster Autoscaler was not touching nodes that were running important
-kube-system pods like DNS, Heapster, Dashboard etc. If these pods landed on different nodes,
+kube-system pods like DNS, Metrics Server, Dashboard etc. If these pods landed on different nodes,
 CA could not scale the cluster down and the user could end up with a completely empty
 3 node cluster. In 0.6, we added an option to tell CA that some system pods can be moved around.
 If the user configures a [PodDisruptionBudget](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/)
@@ -484,15 +490,15 @@ the scheduler will place the pods somewhere else.
 
 * It doesn't have scale-down disabled annotation (see [How can I prevent Cluster Autoscaler from scaling down a particular node?](#how-can-i-prevent-cluster-autoscaler-from-scaling-down-a-particular-node))
 
-If a node is unneeded for more than 10 minutes, it will be deleted. (This time can
+If a node is unneeded for more than 10 minutes, it will be terminated. (This time can
 be configured by flags - please see [I have a couple of nodes with low utilization, but they are not scaled down. Why?](#i-have-a-couple-of-nodes-with-low-utilization-but-they-are-not-scaled-down-why) section for a more detailed explanation.)
-Cluster Autoscaler deletes one non-empty node at a time to reduce the risk of
-creating new unschedulable pods. The next node may possibly be deleted just after the first one,
+Cluster Autoscaler terminates one non-empty node at a time to reduce the risk of
+creating new unschedulable pods. The next node may possibly be terminated just after the first one,
 if it was also unneeded for more than 10 min and didn't rely on the same nodes
 in simulation (see below example scenario), but not together.
-Empty nodes, on the other hand, can be deleted in bulk, up to 10 nodes at a time (configurable by `--max-empty-bulk-delete` flag.)
+Empty nodes, on the other hand, can be terminated in bulk, up to 10 nodes at a time (configurable by `--max-empty-bulk-delete` flag.)
 
-What happens when a non-empty node is deleted? As mentioned above, all pods should be migrated
+What happens when a non-empty node is terminated? As mentioned above, all pods should be migrated
 elsewhere. Cluster Autoscaler does this by evicting them and tainting the node, so they aren't
 scheduled there again.
 
@@ -503,22 +509,22 @@ A, B, C are below utilization threshold.
 In simulation, pods from A fit on X, pods from B fit on X, and pods from C fit
 on Y.
 
-Node A was deleted. OK, but what about B and C, which were also eligible for deletion? Well, it depends.
+Node A was terminated. OK, but what about B and C, which were also eligible for deletion? Well, it depends.
 
-Pods from B may no longer fit on X after pods from A were moved there. Cluster Autoscaler has to find place for them somewhere else, and it is not sure that if A had been deleted much earlier than B, there would always have been a place for them. So the condition of having been unneeded for 10 min may not be true for B anymore.
+Pods from B may no longer fit on X after pods from A were moved there. Cluster Autoscaler has to find place for them somewhere else, and it is not sure that if A had been terminated much earlier than B, there would always have been a place for them. So the condition of having been unneeded for 10 min may not be true for B anymore.
 
-But for node C, it's still true as long as nothing happened to Y. So C can be deleted immediately after A, but B may not.
+But for node C, it's still true as long as nothing happened to Y. So C can be terminated immediately after A, but B may not.
 
 Cluster Autoscaler does all of this accounting based on the simulations and memorized new pod location.
 They may not always be precise (pods can be scheduled elsewhere in the end), but it seems to be a good heuristic so far.
 
 ### Does CA work with PodDisruptionBudget in scale-down?
 
-From 0.5 CA (K8S 1.6) respects PDBs. Before starting to delete a node, CA makes sure that PodDisruptionBudgets for pods scheduled there allow for removing at least one replica. Then it deletes all pods from a node through the pod eviction API, retrying, if needed, for up to 2 min. During that time other CA activity is stopped. If one of the evictions fails, the node is saved and it is not deleted, but another attempt to delete it may be conducted in the near future.
+From 0.5 CA (K8S 1.6) respects PDBs. Before starting to terminate a node, CA makes sure that PodDisruptionBudgets for pods scheduled there allow for removing at least one replica. Then it deletes all pods from a node through the pod eviction API, retrying, if needed, for up to 2 min. During that time other CA activity is stopped. If one of the evictions fails, the node is saved and it is not terminated, but another attempt to terminate it may be conducted in the near future.
 
 ### Does CA respect GracefulTermination in scale-down?
 
-CA, from version 1.0, gives pods at most 10 minutes graceful termination time by default (configurable via `--max-graceful-termination-sec`). If the pod is not stopped within these 10 min then the node is deleted anyway. Earlier versions of CA gave 1 minute or didn't respect graceful termination at all.
+CA, from version 1.0, gives pods at most 10 minutes graceful termination time by default (configurable via `--max-graceful-termination-sec`). If the pod is not stopped within these 10 min then the node is terminated anyway. Earlier versions of CA gave 1 minute or didn't respect graceful termination at all.
 
 ### How does CA deal with unready nodes?
 
@@ -553,7 +559,7 @@ running is determined by three major factors:
 * node provisioning time.
 
 By default, pods' CPU usage is scraped by kubelet every 10 seconds, and it is obtained from kubelet
-by Heapster every 1 minute. HPA checks CPU load metrics in Heapster every 30 seconds.
+by Metrics Server every 1 minute. HPA checks CPU load metrics in Metrics Server every 30 seconds.
 However, after changing the number of replicas, HPA backs off for 3 minutes before taking
 further action. So it can be up to 3 minutes before pods are added or deleted,
 but usually it's closer to 1 minute.
@@ -709,8 +715,8 @@ adding preventSinglePointFailure parameter. For example:
 linear:'{"coresPerReplica":256,"nodesPerReplica":16,"preventSinglePointFailure":true}'
 ```
 
-* Heapster is best left alone, as restarting it causes the loss of metrics for >1 minute, as well as metrics
-in dashboard from the last 15 minutes. Heapster downtime also means effective HPA downtime as it relies on metrics. Add PDB for it only if you're sure you don't mind. App name is k8s-heapster.
+* Metrics Server is best left alone, as restarting it causes the loss of metrics for >1 minute, as well as metrics
+in dashboard from the last 15 minutes. Metrics Server downtime also means effective HPA downtime as it relies on metrics. Add PDB for it only if you're sure you don't mind.
 
 ### I have a couple of pending pods, but there was no scale-up?
 
@@ -756,7 +762,7 @@ Most likely it's due to a problem with the cluster. Steps to debug:
 
 If both the cluster and CA appear healthy:
 
-* If you expect some nodes to be deleted, but they are not deleted for a long
+* If you expect some nodes to be terminated, but they are not terminated for a long
   time, check
   [I have a couple of nodes with low utilization, but they are not scaled down. Why?](#i-have-a-couple-of-nodes-with-low-utilization-but-they-are-not-scaled-down-why) section.
 

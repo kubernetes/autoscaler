@@ -20,19 +20,15 @@ import (
 	"io"
 	"os"
 
-	"k8s.io/klog"
-
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	"k8s.io/klog"
 )
 
 const (
-	// ProviderName is the cloud provider name for Azure
-	ProviderName = "azure"
-
 	// GPULabel is the label added to nodes with GPU resource.
 	GPULabel = "cloud.google.com/gke-accelerator"
 )
@@ -95,6 +91,10 @@ func (azure *AzureCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 
 // NodeGroupForNode returns the node group for the given node.
 func (azure *AzureCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.NodeGroup, error) {
+	if node.Spec.ProviderID == "" {
+		klog.V(6).Infof("Skipping to search for node group for the node '%s'. Because doesn't have spec.ProviderID.\n", node.ObjectMeta.Name)
+		return nil, nil
+	}
 	klog.V(6).Infof("Searching for node group for the node: %s\n", node.Spec.ProviderID)
 	ref := &azureRef{
 		Name: node.Spec.ProviderID,

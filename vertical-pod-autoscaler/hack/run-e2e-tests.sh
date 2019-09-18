@@ -16,7 +16,6 @@
 
 set -o nounset
 set -o pipefail
-set -o errexit
 
 SCRIPT_ROOT=$(dirname ${BASH_SOURCE})/..
 
@@ -47,6 +46,12 @@ case ${SUITE} in
   recommender|updater|admission-controller|actuation|full-vpa)
     export KUBECONFIG=$HOME/.kube/config
     go test ${SCRIPT_ROOT}/e2e/v1beta2/*go -v -test.timeout=60m  --args --ginkgo.v=true --ginkgo.focus="\[VPA\] \[${SUITE}\]" --report-dir=/workspace/_artifacts --disable-log-dump
+    FIRST_RESULT=$?
+    go test ${SCRIPT_ROOT}/e2e/v1/*go -v -test.timeout=60m  --args --ginkgo.v=true --ginkgo.focus="\[VPA\] \[${SUITE}\]" --report-dir=/workspace/_artifacts --disable-log-dump
+    echo First test result: ${FIRST_RESULT}
+    if [ $FIRST_RESULT -gt 0 ]; then
+      echo "Please check first \"go test\" logs!"
+    fi
     ;;
   *)
     print_help

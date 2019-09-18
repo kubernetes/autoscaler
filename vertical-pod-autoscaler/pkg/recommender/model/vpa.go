@@ -155,7 +155,10 @@ func (vpa *Vpa) UsesAggregation(aggregationKey AggregateStateKey) bool {
 
 // DeleteAggregation deletes aggregation used by this container
 func (vpa *Vpa) DeleteAggregation(aggregationKey AggregateStateKey) {
-	state := vpa.aggregateContainerStates[aggregationKey]
+	state, ok := vpa.aggregateContainerStates[aggregationKey]
+	if !ok {
+		return
+	}
 	state.MarkNotAutoscaled()
 	delete(vpa.aggregateContainerStates, aggregationKey)
 }

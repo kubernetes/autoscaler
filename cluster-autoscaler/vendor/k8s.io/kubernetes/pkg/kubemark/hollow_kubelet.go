@@ -17,6 +17,7 @@ limitations under the License.
 package kubemark
 
 import (
+	"fmt"
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -32,9 +33,28 @@ import (
 	kubetypes "k8s.io/kubernetes/pkg/kubelet/types"
 	"k8s.io/kubernetes/pkg/util/mount"
 	"k8s.io/kubernetes/pkg/util/oom"
+	"k8s.io/kubernetes/pkg/volume"
+	"k8s.io/kubernetes/pkg/volume/cephfs"
+	"k8s.io/kubernetes/pkg/volume/configmap"
+	"k8s.io/kubernetes/pkg/volume/csi"
+	"k8s.io/kubernetes/pkg/volume/downwardapi"
 	"k8s.io/kubernetes/pkg/volume/emptydir"
+	"k8s.io/kubernetes/pkg/volume/fc"
+	"k8s.io/kubernetes/pkg/volume/flocker"
+	"k8s.io/kubernetes/pkg/volume/git_repo"
+	"k8s.io/kubernetes/pkg/volume/glusterfs"
+	"k8s.io/kubernetes/pkg/volume/hostpath"
+	"k8s.io/kubernetes/pkg/volume/iscsi"
+	"k8s.io/kubernetes/pkg/volume/local"
+	"k8s.io/kubernetes/pkg/volume/nfs"
+	"k8s.io/kubernetes/pkg/volume/portworx"
 	"k8s.io/kubernetes/pkg/volume/projected"
+	"k8s.io/kubernetes/pkg/volume/quobyte"
+	"k8s.io/kubernetes/pkg/volume/rbd"
+	"k8s.io/kubernetes/pkg/volume/scaleio"
 	"k8s.io/kubernetes/pkg/volume/secret"
+	"k8s.io/kubernetes/pkg/volume/storageos"
+	"k8s.io/kubernetes/pkg/volume/util/hostutil"
 	"k8s.io/kubernetes/pkg/volume/util/subpath"
 	"k8s.io/kubernetes/test/utils"
 
@@ -47,44 +67,58 @@ type HollowKubelet struct {
 	KubeletDeps          *kubelet.Dependencies
 }
 
+func volumePlugins() []volume.VolumePlugin {
+	allPlugins := []volume.VolumePlugin{}
+	allPlugins = append(allPlugins, emptydir.ProbeVolumePlugins()...)
+	allPlugins = append(allPlugins, git_repo.ProbeVolumePlugins()...)
+	allPlugins = append(allPlugins, hostpath.ProbeVolumePlugins(volume.VolumeConfig{})...)
+	allPlugins = append(allPlugins, nfs.ProbeVolumePlugins(volume.VolumeConfig{})...)
+	allPlugins = append(allPlugins, secret.ProbeVolumePlugins()...)
+	allPlugins = append(allPlugins, iscsi.ProbeVolumePlugins()...)
+	allPlugins = append(allPlugins, glusterfs.ProbeVolumePlugins()...)
+	allPlugins = append(allPlugins, rbd.ProbeVolumePlugins()...)
+	allPlugins = append(allPlugins, quobyte.ProbeVolumePlugins()...)
+	allPlugins = append(allPlugins, cephfs.ProbeVolumePlugins()...)
+	allPlugins = append(allPlugins, downwardapi.ProbeVolumePlugins()...)
+	allPlugins = append(allPlugins, fc.ProbeVolumePlugins()...)
+	allPlugins = append(allPlugins, flocker.ProbeVolumePlugins()...)
+	allPlugins = append(allPlugins, configmap.ProbeVolumePlugins()...)
+	allPlugins = append(allPlugins, projected.ProbeVolumePlugins()...)
+	allPlugins = append(allPlugins, portworx.ProbeVolumePlugins()...)
+	allPlugins = append(allPlugins, scaleio.ProbeVolumePlugins()...)
+	allPlugins = append(allPlugins, local.ProbeVolumePlugins()...)
+	allPlugins = append(allPlugins, storageos.ProbeVolumePlugins()...)
+	allPlugins = append(allPlugins, csi.ProbeVolumePlugins()...)
+	return allPlugins
+}
+
 func NewHollowKubelet(
-	nodeName string,
+	flags *options.KubeletFlags,
+	config *kubeletconfig.KubeletConfiguration,
 	client *clientset.Clientset,
+	heartbeatClient *clientset.Clientset,
 	cadvisorInterface cadvisor.Interface,
 	dockerClientConfig *dockershim.ClientConfig,
-	kubeletPort, kubeletReadOnlyPort int,
-	containerManager cm.ContainerManager,
-	maxPods int, podsPerCore int,
-) *HollowKubelet {
-	// -----------------
-	// Static config
-	// -----------------
-	f, c := GetHollowKubeletConfig(nodeName, kubeletPort, kubeletReadOnlyPort, maxPods, podsPerCore)
-
-	// -----------------
-	// Injected objects
-	// -----------------
-	volumePlugins := emptydir.ProbeVolumePlugins()
-	volumePlugins = append(volumePlugins, secret.ProbeVolumePlugins()...)
-	volumePlugins = append(volumePlugins, projected.ProbeVolumePlugins()...)
+	containerManager cm.ContainerManager) *HollowKubelet {
 	d := &kubelet.Dependencies{
 		KubeClient:         client,
-		HeartbeatClient:    client,
+		HeartbeatClient:    heartbeatClient,
 		DockerClientConfig: dockerClientConfig,
 		CAdvisorInterface:  cadvisorInterface,
 		Cloud:              nil,
 		OSInterface:        &containertest.FakeOS{},
 		ContainerManager:   containerManager,
-		VolumePlugins:      volumePlugins,
+		VolumePlugins:      volumePlugins(),
 		TLSOptions:         nil,
 		OOMAdjuster:        oom.NewFakeOOMAdjuster(),
 		Mounter:            mount.New("" /* default mount path */),
 		Subpather:          &subpath.FakeSubpath{},
+		HostUtil:           hostutil.NewFakeHostUtil(nil),
 	}
 
 	return &HollowKubelet{
-		KubeletFlags:         f,
-		KubeletConfiguration: c,
+		KubeletFlags:         flags,
+		KubeletConfiguration: config,
 		KubeletDeps:          d,
 	}
 }
@@ -123,6 +157,7 @@ func GetHollowKubeletConfig(
 	f.MaxPerPodContainerCount = 2
 	f.RegisterNode = true
 	f.RegisterSchedulable = true
+	f.ProviderID = fmt.Sprintf("kubemark://%v", nodeName)
 
 	// Config struct
 	c, err := options.NewKubeletConfiguration()
@@ -138,6 +173,7 @@ func GetHollowKubeletConfig(
 	c.FileCheckFrequency.Duration = 20 * time.Second
 	c.HTTPCheckFrequency.Duration = 20 * time.Second
 	c.NodeStatusUpdateFrequency.Duration = 10 * time.Second
+	c.NodeStatusReportFrequency.Duration = time.Minute
 	c.SyncFrequency.Duration = 10 * time.Second
 	c.EvictionPressureTransitionPeriod.Duration = 5 * time.Minute
 	c.MaxPods = int32(maxPods)

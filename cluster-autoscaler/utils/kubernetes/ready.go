@@ -51,7 +51,7 @@ func GetReadinessState(node *apiv1.Node) (isNodeReady bool, lastTransitionTime t
 			if lastTransitionTime.Before(cond.LastTransitionTime.Time) {
 				lastTransitionTime = cond.LastTransitionTime.Time
 			}
-		case apiv1.NodeOutOfDisk:
+		case apiv1.NodeDiskPressure:
 			if cond.Status == apiv1.ConditionTrue {
 				canNodeBeReady = false
 			}
