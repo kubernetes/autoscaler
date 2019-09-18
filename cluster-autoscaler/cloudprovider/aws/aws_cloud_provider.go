@@ -108,7 +108,7 @@ func (aws *awsCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudprovider.N
 	asg := aws.awsManager.GetAsgForInstance(*ref)
 
 	if asg == nil {
-		return nil, fmt.Errorf("cannot find ASG for node %v", ref.Name)
+		return nil, nil
 	}
 
 	return &AwsNodeGroup{
