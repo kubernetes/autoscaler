@@ -54,12 +54,13 @@ type NodeConfig struct {
 	GroupID      string `json:"groupID"`
 }
 
-// CceCluster define cluster of cce
+// CceCluster defines cluster of cce
 type CceCluster struct {
 	ClusterUuid string     `json:"clusterUuid"`
 	NodeConfig  NodeConfig `json:"nodeConfig"`
 }
 
+// CceGroup defines autoscaling group
 type CceGroup struct {
 	InstanceType int    `json:"instanceType"`
 	CPU          int    `json:"cpu,omitempty"`
@@ -307,17 +308,18 @@ type ScaleDownClusterArgs struct {
 	NodeInfos []NodeInfo `json:"nodeInfo"`
 }
 
-// NodeInfo define instanceid
+// NodeInfo defines instanceid
 type NodeInfo struct {
 	InstanceID string `json:"instanceId"`
 }
 
-// ScaleDownClusterResponse define  args
+// ScaleDownClusterResponse defines args
 type ScaleDownClusterResponse struct {
 	ClusterID string   `json:"clusterUuid"`
 	OrderID   []string `json:"orderId"`
 }
 
+// ScaleUpClusterWithGroupIDArgs define the args of ScaleUpCluster's request
 type ScaleUpClusterWithGroupIDArgs struct {
 	GroupID   string `json:"groupId"`
 	ClusterID string `json:"clusterId"`
@@ -384,6 +386,7 @@ func (c *Client) ScaleDownCluster(args *ScaleDownClusterArgs) error {
 	return err
 }
 
+// DescribeGroup returns the description of the group
 func (c *Client) DescribeGroup(groupID string, clusterID string) (*CceGroup, error) {
 	if clusterID == "" {
 		return nil, fmt.Errorf("clusterID should not be nil")
@@ -423,6 +426,7 @@ func (c *Client) DescribeGroup(groupID string, clusterID string) (*CceGroup, err
 	return &cceGroup, nil
 }
 
+// GetAsgNodes returns the group's nodes
 func (c *Client) GetAsgNodes(groupID string, clusterID string) ([]CceInstance, error) {
 	if clusterID == "" {
 		return nil, fmt.Errorf("clusterID should not be nil")
@@ -464,6 +468,7 @@ func (c *Client) GetAsgNodes(groupID string, clusterID string) ([]CceInstance, e
 	return insList.Instances, nil
 }
 
+// ScaleUpClusterWithGroupID scales up cluster
 func (c *Client) ScaleUpClusterWithGroupID(args *ScaleUpClusterWithGroupIDArgs) error {
 	if args == nil || args.ClusterID == "" ||
 		args.GroupID == "" || args.Num < 0 {

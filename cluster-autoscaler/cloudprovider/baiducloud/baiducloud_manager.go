@@ -144,8 +144,7 @@ func randStringBytes(n int) string {
 	return string(b)
 }
 
-// ScaleUpCluster  Scale UP cluster
-// add groupID
+// ScaleUpCluster Scale UP cluster
 func (m *BaiducloudManager) ScaleUpCluster(delta int, groupID string) error {
 	var args *cce.ScaleUpClusterWithGroupIDArgs
 	// password := randStringBytes(4) + "123!T"
@@ -167,7 +166,7 @@ func (m *BaiducloudManager) ScaleUpCluster(delta int, groupID string) error {
 	return nil
 }
 
-// ScaleDownCluster gets Scale Set size.
+// ScaleDownCluster decreases nodes belong to cluster.
 func (m *BaiducloudManager) ScaleDownCluster(instances []string) error {
 	klog.V(4).Infof("scaleDownCluster: %v\n", instances)
 	if len(instances) == 0 {
@@ -231,7 +230,6 @@ func (m *BaiducloudManager) buildNodeFromTemplate(asg *Asg, template *asgTemplat
 	node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewQuantity(int64(template.CPU), resource.DecimalSI)
 	node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(int64(template.Memory*1024*1024*1024), resource.DecimalSI)
 
-	//add gpu
 	node.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(int64(template.GpuCount), resource.DecimalSI)
 
 	node.Status.Allocatable = node.Status.Capacity
