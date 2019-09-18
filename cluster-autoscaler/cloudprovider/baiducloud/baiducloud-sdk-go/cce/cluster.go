@@ -20,6 +20,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"strconv"
+
+	"k8s.io/klog"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/baiducloud/baiducloud-sdk-go/bce"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/baiducloud/baiducloud-sdk-go/util"
@@ -48,12 +51,22 @@ type NodeConfig struct {
 	GpuCount     int    `json:"gpuCount,omitempty"`
 	GpuCard      string `json:"gpuCard,omitempty"`
 	DiskSize     int    `json:"diskSize,omitempty"`
+	GroupID      string `json:"groupID"`
 }
 
 // CceCluster define cluster of cce
 type CceCluster struct {
 	ClusterUuid string     `json:"clusterUuid"`
 	NodeConfig  NodeConfig `json:"nodeConfig"`
+}
+
+type CceGroup struct {
+	InstanceType int    `json:"instanceType"`
+	CPU          int    `json:"cpu,omitempty"`
+	Memory       int    `json:"memory,omitempty"`
+	GpuCount     int    `json:"gpuCount,omitempty"`
+	GpuCard      string `json:"gpuCard,omitempty"`
+	DiskSize     int    `json:"diskSize,omitempty"`
 }
 
 // DescribeCluster describe the cluster
@@ -96,8 +109,8 @@ type CceInstance struct {
 	ExpireTime            string `json:"expireTime"`
 	PublicIP              string `json:"publicIp"`
 	InternalIP            string `json:"internalIp"`
-	CpuCount              int    `json:"cpu"`
-	GpuCount              int    `json:"gpu"`
+	CpuCount              int    `json:"cpuCount"`
+	GpuCount              int    `json:"gpuCount"`
 	MemoryCapacityInGB    int    `json:"memory"`
 	LocalDiskSizeInGB     int    `json:"localDiskSizeInGB"`
 	ImageId               string `json:"imageId"`
@@ -110,7 +123,7 @@ type CceInstance struct {
 
 // ListInstancesResponse define response of cce list
 type ListInstancesResponse struct {
-	Instances []CceInstance `json:"instances"`
+	Instances []CceInstance `json:"instanceList"`
 }
 
 // ListInstances gets all Instances of a cluster.
@@ -243,6 +256,7 @@ type BccOrderConfig struct {
 	SecurityGroupName string `json:"securityGroupName,omitempty"`
 	// BCC
 	ServiceType string `json:"serviceType,omitempty"`
+	GroupID     string `json:"groupID"`
 }
 
 // CreateEphemeralList define storage
@@ -304,6 +318,12 @@ type ScaleDownClusterResponse struct {
 	OrderID   []string `json:"orderId"`
 }
 
+type ScaleUpClusterWithGroupIDArgs struct {
+	GroupID   string `json:"groupId"`
+	ClusterID string `json:"clusterId"`
+	Num       int    `json:"num"`
+}
+
 // ScaleUpCluster scaleup a  cluster
 func (c *Client) ScaleUpCluster(args *ScaleUpClusterArgs) (*ScaleUpClusterResponse, error) {
 	var params map[string]string
@@ -348,14 +368,135 @@ func (c *Client) ScaleDownCluster(args *ScaleDownClusterArgs) error {
 			"scalingDown": "",
 		}
 	}
+
+	klog.Infof("ScaleDownCluster args: %v", params)
 	postContent, err := json.Marshal(args)
 	if err != nil {
 		return err
 	}
 	req, err := bce.NewRequest("POST", c.GetURL("v1/cluster", params), bytes.NewBuffer(postContent))
+	klog.Infof("ScaleDownCluster req: %v", req)
+
 	if err != nil {
 		return err
 	}
 	_, err = c.SendRequest(req, nil)
 	return err
+}
+
+func (c *Client) DescribeGroup(groupID string, clusterID string) (*CceGroup, error) {
+	if clusterID == "" {
+		return nil, fmt.Errorf("clusterID should not be nil")
+	}
+	if groupID == "" {
+		return nil, fmt.Errorf("groupID should not be nil")
+	}
+
+	params := map[string]string{
+		"clusterUuid": clusterID,
+		"groupId":     groupID,
+	}
+	req, err := bce.NewRequest("GET", c.GetURL("/v1/cluster/group", params), nil)
+
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.SendRequest(req, nil)
+
+	if err != nil {
+		return nil, err
+	}
+
+	bodyContent, err := resp.GetBodyContent()
+
+	if err != nil {
+		return nil, err
+	}
+
+	var cceGroup CceGroup
+	err = json.Unmarshal(bodyContent, &cceGroup)
+
+	if err != nil {
+		return nil, err
+	}
+	return &cceGroup, nil
+}
+
+func (c *Client) GetAsgNodes(groupID string, clusterID string) ([]CceInstance, error) {
+	if clusterID == "" {
+		return nil, fmt.Errorf("clusterID should not be nil")
+	}
+
+	if groupID == "" {
+		return nil, fmt.Errorf("groupID should not be nil")
+	}
+
+	params := map[string]string{
+		"clusterUuid": clusterID,
+		"groupId":     groupID,
+	}
+	req, err := bce.NewRequest("GET", c.GetURL("/v1/cluster/group/instances", params), nil)
+
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.SendRequest(req, nil)
+
+	if err != nil {
+		return nil, err
+	}
+
+	bodyContent, err := resp.GetBodyContent()
+
+	if err != nil {
+		return nil, err
+	}
+
+	var insList ListInstancesResponse
+	err = json.Unmarshal(bodyContent, &insList)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return insList.Instances, nil
+}
+
+func (c *Client) ScaleUpClusterWithGroupID(args *ScaleUpClusterWithGroupIDArgs) error {
+	if args == nil || args.ClusterID == "" ||
+		args.GroupID == "" || args.Num < 0 {
+		return fmt.Errorf("ScaleUpClusterWithGroupIDArgs err")
+	}
+
+	var params map[string]string
+	if args != nil {
+		params = map[string]string{
+			"groupId":     args.GroupID,
+			"clusterUuid": args.ClusterID,
+			"num":         strconv.Itoa(args.Num),
+		}
+	}
+
+	req, err := bce.NewRequest("POST", c.GetURL("v1/cluster/group/scaling_up", params), nil)
+	if err != nil {
+		return err
+	}
+	resp, err := c.SendRequest(req, nil)
+	if err != nil {
+		return err
+	}
+	bodyContent, err := resp.GetBodyContent()
+	if err != nil {
+		return err
+	}
+	var scResp *ScaleUpClusterResponse
+	err = json.Unmarshal(bodyContent, &scResp)
+
+	if err != nil {
+		return err
+	}
+	return nil
+
 }
