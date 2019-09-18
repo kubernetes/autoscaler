@@ -242,6 +242,19 @@ func TestNodeGroupForNode(t *testing.T) {
 
 	assert.Equal(t, []cloudprovider.Instance{{Id: "aws:///us-east-1a/test-instance-id"}}, nodes)
 	service.AssertNumberOfCalls(t, "DescribeAutoScalingGroupsPages", 1)
+
+	// test node in cluster that is not in a group managed by cluster autoscaler
+	nodeNotInGroup := &apiv1.Node{
+		Spec: apiv1.NodeSpec{
+			ProviderID: "aws:///us-east-1a/test-instance-id-not-in-group",
+		},
+	}
+
+	group, err = provider.NodeGroupForNode(nodeNotInGroup)
+
+	assert.NoError(t, err)
+	assert.Nil(t, group)
+	service.AssertNumberOfCalls(t, "DescribeAutoScalingGroupsPages", 1)
 }
 
 func TestNodeGroupForNodeWithNoProviderId(t *testing.T) {
@@ -256,22 +269,6 @@ func TestNodeGroupForNodeWithNoProviderId(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, group, nil)
-}
-
-func TestNodeGroupForNodeWithOutNodeGroup(t *testing.T) {
-	// test node in cluster that is not in a group managed by cluster autoscaler
-	node := &apiv1.Node{
-		Spec: apiv1.NodeSpec{
-			ProviderID: "aws:///us-east-1a/test-instance-id",
-		},
-	}
-	service := &AutoScalingMock{}
-	provider := testProvider(t, newTestAwsManagerWithAsgs(t, service, []string{"1:5:test-asg"}))
-	group, err := provider.NodeGroupForNode(node)
-
-	assert.Error(t, err)
-	assert.Equal(t, group, nil)
-	service.AssertNotCalled(t, "DescribeAutoScalingGroupsPages")
 }
 
 func TestAwsRefFromProviderId(t *testing.T) {
