@@ -1,4 +1,4 @@
-// +build !gce,!aws,!azure,!kubemark,!alicloud,!magnum
+// +build !gce,!aws,!azure,!kubemark,!alicloud,!magnum,!digitalocean
 
 /*
 Copyright 2018 The Kubernetes Authors.
@@ -24,38 +24,45 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/azure"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/baiducloud"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/digitalocean"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/gce"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/magnum"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/packet"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 )
 
 // AvailableCloudProviders supported by the cloud provider builder.
 var AvailableCloudProviders = []string{
-	aws.ProviderName,
-	azure.ProviderName,
-	gce.ProviderNameGCE,
-	alicloud.ProviderName,
-	baiducloud.ProviderName,
-	magnum.ProviderName,
+	cloudprovider.AwsProviderName,
+	cloudprovider.AzureProviderName,
+	cloudprovider.GceProviderName,
+	cloudprovider.AlicloudProviderName,
+	cloudprovider.BaiducloudProviderName,
+	cloudprovider.MagnumProviderName,
+	cloudprovider.DigitalOceanProviderName,
 }
 
 // DefaultCloudProvider is GCE.
-const DefaultCloudProvider = gce.ProviderNameGCE
+const DefaultCloudProvider = cloudprovider.GceProviderName
 
 func buildCloudProvider(opts config.AutoscalingOptions, do cloudprovider.NodeGroupDiscoveryOptions, rl *cloudprovider.ResourceLimiter) cloudprovider.CloudProvider {
 	switch opts.CloudProviderName {
-	case gce.ProviderNameGCE:
+	case cloudprovider.GceProviderName:
 		return gce.BuildGCE(opts, do, rl)
-	case aws.ProviderName:
+	case cloudprovider.AwsProviderName:
 		return aws.BuildAWS(opts, do, rl)
-	case azure.ProviderName:
+	case cloudprovider.AzureProviderName:
 		return azure.BuildAzure(opts, do, rl)
-	case alicloud.ProviderName:
+	case cloudprovider.AlicloudProviderName:
 		return alicloud.BuildAlicloud(opts, do, rl)
-	case baiducloud.ProviderName:
+	case cloudprovider.BaiducloudProviderName:
 		return baiducloud.BuildBaiducloud(opts, do, rl)
-	case magnum.ProviderName:
+	case cloudprovider.DigitalOceanProviderName:
+		return digitalocean.BuildDigitalOcean(opts, do, rl)
+	case cloudprovider.MagnumProviderName:
 		return magnum.BuildMagnum(opts, do, rl)
+	case packet.ProviderName:
+		return packet.BuildPacket(opts, do, rl)
 	}
 	return nil
 }

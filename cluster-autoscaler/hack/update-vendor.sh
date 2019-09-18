@@ -189,7 +189,7 @@ set +o errexit
   git add vendor go.mod go.sum >&${BASH_XTRACEFD} 2>&1
   if ! git diff --quiet --cached; then
     echo "Commiting vendor, go.mod and go.sum"
-    git ci -m "Updating vendor against ${K8S_FORK}:${K8S_REV} (${K8S_REV_PARSED})" >&${BASH_XTRACEFD} 2>&1
+    git commit -m "Updating vendor against ${K8S_FORK}:${K8S_REV} (${K8S_REV_PARSED})" >&${BASH_XTRACEFD} 2>&1
   else
     echo "No changes after vendor update; skipping commit"
   fi

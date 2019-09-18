@@ -194,7 +194,7 @@ func (p *prometheusHistoryProvider) GetClusterHistory() (map[model.PodID]*PodHis
 	if err != nil {
 		return nil, fmt.Errorf("cannot get usage history: %v", err)
 	}
-	err = p.readResourceHistory(res, fmt.Sprintf("container_memory_usage_bytes{%s}[%s]", podSelector, p.config.HistoryLength), model.ResourceMemory)
+	err = p.readResourceHistory(res, fmt.Sprintf("container_memory_working_set_bytes{%s}[%s]", podSelector, p.config.HistoryLength), model.ResourceMemory)
 	if err != nil {
 		return nil, fmt.Errorf("cannot get usage history: %v", err)
 	}

@@ -24,6 +24,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/kubernetes/pkg/apis/scheduling"
 	kubetypes "k8s.io/kubernetes/pkg/kubelet/types"
 )
 
@@ -51,7 +52,7 @@ func BuildReadyConditions() []apiv1.NodeCondition {
 			LastTransitionTime: metav1.Time{Time: lastTransition},
 		},
 		{
-			Type:               apiv1.NodeOutOfDisk,
+			Type:               apiv1.NodeDiskPressure,
 			Status:             apiv1.ConditionFalse,
 			LastTransitionTime: metav1.Time{Time: lastTransition},
 		},
@@ -73,13 +74,13 @@ func BuildReadyConditions() []apiv1.NodeCondition {
 // BuildKubeProxy builds a KubeProxy pod definition
 func BuildKubeProxy(name string) *apiv1.Pod {
 	// TODO: make cpu a flag.
+	priority := scheduling.SystemCriticalPriority
 	return &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fmt.Sprintf("kube-proxy-%s-%d", name, rand.Int63()),
 			Namespace: "kube-system",
 			Annotations: map[string]string{
 				kubetypes.ConfigSourceAnnotationKey: kubetypes.FileSource,
-				kubetypes.CriticalPodAnnotationKey:  "true",
 				kubetypes.ConfigMirrorAnnotationKey: "1234567890abcdef",
 			},
 			Labels: map[string]string{
@@ -100,6 +101,7 @@ func BuildKubeProxy(name string) *apiv1.Pod {
 					},
 				},
 			},
+			Priority: &priority,
 		},
 		Status: apiv1.PodStatus{
 			Phase: apiv1.PodRunning,

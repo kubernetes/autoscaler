@@ -29,7 +29,11 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/spf13/pflag"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	cloudBuilder "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/builder"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/core"
@@ -37,6 +41,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/expander"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	ca_processors "k8s.io/autoscaler/cluster-autoscaler/processors"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/units"
@@ -48,11 +53,8 @@ import (
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
 	kube_flag "k8s.io/component-base/cli/flag"
 	componentbaseconfig "k8s.io/component-base/config"
-	"k8s.io/kubernetes/pkg/client/leaderelectionconfig"
-
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/spf13/pflag"
 	"k8s.io/klog"
+	"k8s.io/kubernetes/pkg/client/leaderelectionconfig"
 )
 
 // MultiStringFlag is a flag for passing multiple parameters using same flag
@@ -128,6 +130,7 @@ var (
 	maxGracefulTerminationFlag = flag.Int("max-graceful-termination-sec", 10*60, "Maximum number of seconds CA waits for pod termination when trying to scale down a node.")
 	maxTotalUnreadyPercentage  = flag.Float64("max-total-unready-percentage", 45, "Maximum percentage of unready nodes in the cluster.  After this is exceeded, CA halts operations")
 	okTotalUnreadyCount        = flag.Int("ok-total-unready-count", 3, "Number of allowed unready nodes, irrespective of max-total-unready-percentage")
+	scaleUpFromZero            = flag.Bool("scale-up-from-zero", true, "Should CA scale up when there 0 ready nodes.")
 	maxNodeProvisionTime       = flag.Duration("max-node-provision-time", 15*time.Minute, "Maximum time CA waits for node to be provisioned")
 	nodeGroupsFlag             = multiStringFlag(
 		"nodes",
@@ -193,6 +196,7 @@ func createAutoscalingOptions() config.AutoscalingOptions {
 		NodeGroupAutoDiscovery:              *nodeGroupAutoDiscoveryFlag,
 		MaxTotalUnreadyPercentage:           *maxTotalUnreadyPercentage,
 		OkTotalUnreadyCount:                 *okTotalUnreadyCount,
+		ScaleUpFromZero:                     *scaleUpFromZero,
 		EstimatorName:                       *estimatorFlag,
 		ExpanderName:                        *expanderFlag,
 		IgnoreDaemonSetsUtilization:         *ignoreDaemonSetsUtilization,
@@ -286,6 +290,10 @@ func buildAutoscaler() (core.Autoscaler, error) {
 
 	processors := ca_processors.DefaultProcessors()
 	processors.PodListProcessor = core.NewFilterOutSchedulablePodListProcessor()
+	if autoscalingOptions.CloudProviderName == cloudprovider.AzureProviderName {
+		processors.NodeGroupSetProcessor = &nodegroupset.BalancingNodeGroupSetProcessor{
+			Comparator: nodegroupset.IsAzureNodeInfoSimilar}
+	}
 
 	opts := core.AutoscalerOptions{
 		AutoscalingOptions: autoscalingOptions,

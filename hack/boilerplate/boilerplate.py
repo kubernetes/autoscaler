@@ -148,6 +148,7 @@ def file_extension(filename):
 skipped_dirs = ['Godeps', 'third_party', '_gopath', '_output', '.git', 'cluster/env.sh',
                 "vendor", "test/e2e/generated/bindata.go", "hack/boilerplate/test",
                 "pkg/generated/bindata.go",
+                "cluster-autoscaler/cloudprovider/digitalocean/godo",
                 "cluster-autoscaler/cloudprovider/magnum/gophercloud"]
 
 # list all the files contain 'DO NOT EDIT', but are not generated

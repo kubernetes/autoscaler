@@ -31,8 +31,6 @@ import (
 )
 
 const (
-	// ProviderName is the cloud provider name for Magnum
-	ProviderName = "magnum"
 	// GPULabel is the label added to nodes with GPU resource.
 	GPULabel = "cloud.google.com/gke-accelerator"
 )
@@ -63,7 +61,7 @@ func buildMagnumCloudProvider(magnumManager magnumManager, resourceLimiter *clou
 
 // Name returns the name of the cloud provider.
 func (mcp *magnumCloudProvider) Name() string {
-	return ProviderName
+	return cloudprovider.MagnumProviderName
 }
 
 // GPULabel returns the label added to nodes with GPU resource.

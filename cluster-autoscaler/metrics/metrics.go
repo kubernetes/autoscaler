@@ -142,6 +142,15 @@ var (
 		}, []string{"function"},
 	)
 
+	functionDurationSummary = prometheus.NewSummaryVec(
+		prometheus.SummaryOpts{
+			Namespace: caNamespace,
+			Name:      "function_duration_quantile_seconds",
+			Help:      "Quantiles of time taken by various parts of CA main loop.",
+			MaxAge:    time.Hour,
+		}, []string{"function"},
+	)
+
 	/**** Metrics related to autoscaler operations ****/
 	errorsCount = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
@@ -207,6 +216,14 @@ var (
 		},
 	)
 
+	scaleDownInCooldown = prometheus.NewGauge(
+		prometheus.GaugeOpts{
+			Namespace: caNamespace,
+			Name:      "scale_down_in_cooldown",
+			Help:      "Whether or not the scale down is in cooldown. 1 if its, 0 otherwise.",
+		},
+	)
+
 	/**** Metrics related to NodeAutoprovisioning ****/
 	napEnabled = prometheus.NewGauge(
 		prometheus.GaugeOpts{
@@ -241,6 +258,7 @@ func RegisterAll() {
 	prometheus.MustRegister(unschedulablePodsCount)
 	prometheus.MustRegister(lastActivity)
 	prometheus.MustRegister(functionDuration)
+	prometheus.MustRegister(functionDurationSummary)
 	prometheus.MustRegister(errorsCount)
 	prometheus.MustRegister(scaleUpCount)
 	prometheus.MustRegister(gpuScaleUpCount)
@@ -249,6 +267,7 @@ func RegisterAll() {
 	prometheus.MustRegister(gpuScaleDownCount)
 	prometheus.MustRegister(evictionsCount)
 	prometheus.MustRegister(unneededNodesCount)
+	prometheus.MustRegister(scaleDownInCooldown)
 	prometheus.MustRegister(napEnabled)
 	prometheus.MustRegister(nodeGroupCreationCount)
 	prometheus.MustRegister(nodeGroupDeletionCount)
@@ -269,6 +288,7 @@ func UpdateDuration(label FunctionLabel, duration time.Duration) {
 		klog.V(4).Infof("Function %s took %v to complete", label, duration)
 	}
 	functionDuration.WithLabelValues(string(label)).Observe(duration.Seconds())
+	functionDurationSummary.WithLabelValues(string(label)).Observe(duration.Seconds())
 }
 
 // UpdateLastTime records the time the step identified by the label was started
@@ -359,4 +379,14 @@ func RegisterNodeGroupCreation() {
 // RegisterNodeGroupDeletion registers node group deletion
 func RegisterNodeGroupDeletion() {
 	nodeGroupDeletionCount.Add(1.0)
+}
+
+// UpdateScaleDownInCooldown registers if the cluster autoscaler
+// scaledown is in cooldown
+func UpdateScaleDownInCooldown(inCooldown bool) {
+	if inCooldown {
+		scaleDownInCooldown.Set(1.0)
+	} else {
+		scaleDownInCooldown.Set(0.0)
+	}
 }

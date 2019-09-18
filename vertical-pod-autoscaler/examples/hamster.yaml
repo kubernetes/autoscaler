@@ -11,15 +11,18 @@ metadata:
   name: hamster-vpa
 spec:
   targetRef:
-    apiVersion: "extensions/v1beta1"
+    apiVersion: "apps/v1"
     kind: Deployment
     name: hamster
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: hamster
 spec:
+  selector:
+    matchLabels:
+      app: hamster
   replicas: 2
   template:
     metadata:

@@ -5,13 +5,16 @@ metadata:
   name: vpa-updater
   namespace: kube-system
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: vpa-updater
   namespace: kube-system
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: vpa-updater
   template:
     metadata:
       labels:
@@ -20,7 +23,7 @@ spec:
       serviceAccountName: vpa-updater
       containers:
         - name: updater
-          image: k8s.gcr.io/vpa-updater:0.5.0
+          image: k8s.gcr.io/vpa-updater:0.6.1
           imagePullPolicy: Always
           resources:
             limits:
