@@ -296,6 +296,7 @@ func (asg *Asg) DeleteNodes(nodes []*apiv1.Node) error {
 	return asg.baiducloudManager.ScaleDownCluster(nodeID)
 }
 
+// Belongs returns true if the given node belongs to the NodeGroup. 
 func (asg *Asg) Belongs(instanceID string) (bool, error) {
 	targetAsg, err := asg.baiducloudManager.GetAsgForInstance(instanceID)
 	if err != nil {
