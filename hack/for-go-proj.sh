@@ -20,7 +20,7 @@ set -o nounset
 
 CONTRIB_ROOT="$(dirname ${BASH_SOURCE})/.."
 
-godep_projects=$(find "${CONTRIB_ROOT}" -wholename '*Godeps/Godeps.json')
+godep_projects=$(find "${CONTRIB_ROOT}" -wholename '*Godeps/Godeps.json'| grep -v /vendor/)
 
 if [ $# -ne 1 ];then
   echo "missing subcommand: [build|install|test]"
