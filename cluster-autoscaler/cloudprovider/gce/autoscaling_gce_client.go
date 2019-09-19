@@ -19,7 +19,6 @@ package gce
 import (
 	"context"
 	"fmt"
-	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"net/http"
 	"net/url"
 	"path"
@@ -27,12 +26,14 @@ import (
 	"strings"
 	"time"
 
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+
 	gce "google.golang.org/api/compute/v1"
 	"k8s.io/klog"
 )
 
 const (
-	defaultOperationWaitTimeout  = 5 * time.Second
+	defaultOperationWaitTimeout  = 20 * time.Second
 	defaultOperationPollInterval = 100 * time.Millisecond
 
 	// ErrorCodeQuotaExceeded is error code used in InstanceErrorInfo if quota exceeded error occurs.
