@@ -53,7 +53,7 @@ func NewRecommendationProvider(calculator limitrange.LimitRangeCalculator, recom
 }
 
 // GetContainersResources returns the recommended resources for each container in the given pod in the same order they are specified in the pod.Spec.
-func GetContainersResources(pod *core.Pod, podRecommendation vpa_types.RecommendedPodResources, limitRange *core.LimitRangeItem,
+func GetContainersResources(pod *core.Pod, vpaResourcePolicy *vpa_types.PodResourcePolicy, podRecommendation vpa_types.RecommendedPodResources, limitRange *core.LimitRangeItem,
 	annotations vpa_api_util.ContainerToAnnotationsMap) []vpa_api_util.ContainerResources {
 	resources := make([]vpa_api_util.ContainerResources, len(pod.Spec.Containers))
 	for i, container := range pod.Spec.Containers {
@@ -62,6 +62,13 @@ func GetContainersResources(pod *core.Pod, podRecommendation vpa_types.Recommend
 			klog.V(2).Infof("no matching recommendation found for container %s", container.Name)
 			continue
 		}
+
+		containerPolicy := vpa_api_util.GetContainerResourcePolicy(container.Name, vpaResourcePolicy)
+		if containerPolicy == nil {
+			klog.V(2).Infof("no matching resource policy found for container %s", container.Name)
+			continue
+		}
+
 		resources[i].Requests = recommendation.Target
 		defaultLimit := core.ResourceList{}
 		if limitRange != nil {
@@ -73,6 +80,8 @@ func GetContainersResources(pod *core.Pod, podRecommendation vpa_types.Recommend
 			if len(limitAnnotations) > 0 {
 				annotations[container.Name] = append(annotations[container.Name], limitAnnotations...)
 			}
+		} else if containerPolicy != nil && containerPolicy.MaxAllowed != nil {
+			resources[i].Limits = containerPolicy.MaxAllowed
 		}
 	}
 	return resources
@@ -132,6 +141,10 @@ func (p *recommendationProvider) GetContainersResourcesForPod(pod *core.Pod) ([]
 	if err != nil {
 		return nil, nil, "", fmt.Errorf("error getting containerLimitRange: %s", err)
 	}
-	containerResources := GetContainersResources(pod, *recommendedPodResources, containerLimitRange, annotations)
+	var resourcePolicy *vpa_types.PodResourcePolicy
+	if vpaConfig.Spec.UpdatePolicy == nil || vpaConfig.Spec.UpdatePolicy.UpdateMode == nil || *vpaConfig.Spec.UpdatePolicy.UpdateMode != vpa_types.UpdateModeOff {
+		resourcePolicy = vpaConfig.Spec.ResourcePolicy
+	}
+	containerResources := GetContainersResources(pod, resourcePolicy, *recommendedPodResources, containerLimitRange, annotations)
 	return containerResources, annotations, vpaConfig.Name, nil
 }
