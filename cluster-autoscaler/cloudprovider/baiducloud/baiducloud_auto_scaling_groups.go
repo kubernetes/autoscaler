@@ -84,7 +84,7 @@ func (m *autoScalingGroups) FindForInstance(instanceID string) (*Asg, error) {
 
 func (m *autoScalingGroups) regenerateCache() error {
 	newCache := make(map[string]*Asg)
-	// TODO: Currently, baiducloud cloudprovider not support Multiple ASG
+	// TODO: Currently, baiducloud cloudprovider does not support Multiple ASG
 	for _, asg := range m.registeredAsgs {
 		klog.V(4).Infof("regenerating ASG information for %s", asg.config.Name)
 		instanceList, err := m.cceClient.GetAsgNodes(asg.config.Name, m.cloudConfig.ClusterID)

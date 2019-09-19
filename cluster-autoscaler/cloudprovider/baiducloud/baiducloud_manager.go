@@ -147,12 +147,6 @@ func randStringBytes(n int) string {
 // ScaleUpCluster Scale UP cluster
 func (m *BaiducloudManager) ScaleUpCluster(delta int, groupID string) error {
 	var args *cce.ScaleUpClusterWithGroupIDArgs
-	// password := randStringBytes(4) + "123!T"
-	// cceGroup, err := m.cceClient.DescribeGroup(groupID, m.cloudConfig.ClusterID)
-	// if err != nil {
-	// 	klog.Errorf("error while ScaleUpCluster since DescribeCluster failed.")
-	// 	return fmt.Errorf("scaleUpCluster error: %v", err)
-	// }
 	args = &cce.ScaleUpClusterWithGroupIDArgs{
 		ClusterID: m.cloudConfig.ClusterID,
 		Num:       delta,
