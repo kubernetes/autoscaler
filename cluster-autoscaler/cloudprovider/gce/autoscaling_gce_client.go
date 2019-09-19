@@ -30,7 +30,7 @@ import (
 )
 
 const (
-	defaultOperationWaitTimeout  = 5 * time.Second
+	defaultOperationWaitTimeout  = 20 * time.Second
 	defaultOperationPollInterval = 100 * time.Millisecond
 )
 
