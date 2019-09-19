@@ -71,7 +71,6 @@ func TestNodeGroups(t *testing.T) {
 
 func TestGPULabel(t *testing.T) {
 	provider := testProvider(t, testBaiducloudManager)
-
 	GPULabel := provider.GPULabel()
 	assert.Equal(t, GPULabel, "baidu/nvidia_name")
 }
