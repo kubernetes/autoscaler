@@ -20,7 +20,7 @@ import (
 	"fmt"
 )
 
-// CloudConfig cloud config file for baiducloud
+// CloudConfig is the cloud config file for baiducloud.
 type CloudConfig struct {
 	ClusterID       string `json:"ClusterId"`
 	ClusterName     string `json:"ClusterName"`
