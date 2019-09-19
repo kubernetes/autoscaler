@@ -43,7 +43,7 @@ func testProvider(t *testing.T, m *BaiducloudManager) *baiducloudCloudProvider {
 	return provider.(*baiducloudCloudProvider)
 }
 
-func TestBuildAwsCloudProvider(t *testing.T) {
+func TestBuildBaiduCloudProvider(t *testing.T) {
 	resourceLimiter := cloudprovider.NewResourceLimiter(
 		map[string]int64{cloudprovider.ResourceNameCores: 1, cloudprovider.ResourceNameMemory: 10000000},
 		map[string]int64{cloudprovider.ResourceNameCores: 10, cloudprovider.ResourceNameMemory: 100000000})
@@ -67,6 +67,13 @@ func TestNodeGroups(t *testing.T) {
 	assert.Equal(t, nodeGroups[0].Id(), "k8s-worker-asg-1")
 	assert.Equal(t, nodeGroups[0].MinSize(), 1)
 	assert.Equal(t, nodeGroups[0].MaxSize(), 10)
+}
+
+func TestGPULabel(t *testing.T) {
+	provider := testProvider(t, testBaiducloudManager)
+
+	GPULabel := provider.GPULabel()
+	assert.Equal(t, GPULabel, "baidu/nvidia_name")
 }
 
 func TestCleanup(t *testing.T) {
