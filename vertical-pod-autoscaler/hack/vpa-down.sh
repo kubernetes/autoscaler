@@ -21,3 +21,5 @@ set -o pipefail
 SCRIPT_ROOT=$(dirname ${BASH_SOURCE})/..
 
 $SCRIPT_ROOT/hack/vpa-process-yamls.sh delete $*
+
+$SCRIPT_ROOT/hack/warn-obsolete-vpa-objects.sh
