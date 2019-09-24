@@ -280,6 +280,10 @@ func TestAwsRefFromProviderId(t *testing.T) {
 	awsRef, err := AwsRefFromProviderId("aws:///us-east-1a/i-260942b3")
 	assert.NoError(t, err)
 	assert.Equal(t, awsRef, &AwsInstanceRef{Name: "i-260942b3", ProviderID: "aws:///us-east-1a/i-260942b3"})
+
+	placeholderRef, err := AwsRefFromProviderId("aws:///us-east-1a/i-placeholder-some.arbitrary.cluster.local")
+	assert.NoError(t, err)
+	assert.Equal(t, placeholderRef, &AwsInstanceRef{Name: "i-placeholder-some.arbitrary.cluster.local", ProviderID: "aws:///us-east-1a/i-placeholder-some.arbitrary.cluster.local"})
 }
 
 func TestTargetSize(t *testing.T) {
