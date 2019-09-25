@@ -37,13 +37,13 @@ import (
 
 const (
 
-	// CceUserAgent is prefix of http header UserAgent
+	// CceUserAgent is a prefix of the http header UserAgent.
 	CceUserAgent = "cce-k8s:"
 
 	letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 )
 
-// BaiducloudManager is handles baiducloud communication and data caching.
+// BaiducloudManager handles baiducloud communication and data caching.
 type BaiducloudManager struct {
 	cloudConfig *CloudConfig
 	cceClient   *cce.Client
@@ -109,17 +109,17 @@ func CreateBaiducloudManager(configReader io.Reader) (*BaiducloudManager, error)
 	return manager, nil
 }
 
-// RegisterAsg registers asg in in Bce Manager
+// RegisterAsg registers asg in the BCE Manager.
 func (m *BaiducloudManager) RegisterAsg(asg *Asg) {
 	m.asgs.Register(asg)
 }
 
-// GetAsgForInstance returns AsgConfig of the given Instance
+// GetAsgForInstance returns AsgConfig.
 func (m *BaiducloudManager) GetAsgForInstance(instanceID string) (*Asg, error) {
 	return m.asgs.FindForInstance(instanceID)
 }
 
-// GetAsgSize gets asg size.
+// GetAsgSize gets asg's size.
 func (m *BaiducloudManager) GetAsgSize(asg *Asg) (int64, error) {
 	instanceList, err := m.cceClient.GetAsgNodes(asg.Name, m.cloudConfig.ClusterID)
 	if err != nil {
@@ -144,7 +144,7 @@ func randStringBytes(n int) string {
 	return string(b)
 }
 
-// ScaleUpCluster Scale UP cluster
+// ScaleUpCluster scales up cluster.
 func (m *BaiducloudManager) ScaleUpCluster(delta int, groupID string) error {
 	var args *cce.ScaleUpClusterWithGroupIDArgs
 	args = &cce.ScaleUpClusterWithGroupIDArgs{
@@ -160,7 +160,7 @@ func (m *BaiducloudManager) ScaleUpCluster(delta int, groupID string) error {
 	return nil
 }
 
-// ScaleDownCluster decreases nodes belong to cluster.
+// ScaleDownCluster decreases nodes belonging to cluster.
 func (m *BaiducloudManager) ScaleDownCluster(instances []string) error {
 	klog.V(4).Infof("scaleDownCluster: %v\n", instances)
 	if len(instances) == 0 {

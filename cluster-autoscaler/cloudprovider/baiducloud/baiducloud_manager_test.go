@@ -17,7 +17,10 @@ limitations under the License.
 package baiducloud
 
 import (
+	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestRegisterAsg(t *testing.T) {
@@ -30,4 +33,28 @@ func TestRegisterAsg(t *testing.T) {
 		},
 	}
 	testBaiducloudManager.RegisterAsg(asg)
+}
+
+func TestBuildNodeFromTemplate(t *testing.T) {
+	BaiduManager := &BaiducloudManager{}
+	asg := &Asg{}
+	template := &asgTemplate{}
+
+	_, err := BaiduManager.buildNodeFromTemplate(asg, template)
+	assert.NoError(t, err)
+
+	asg.Name = "test-asg"
+	template = &asgTemplate{
+		InstanceType: 10,
+		Region:       "test",
+		Zone:         "test",
+		CPU:          2,
+		Memory:       2048,
+		GpuCount:     0,
+	}
+	node, err := BaiduManager.buildNodeFromTemplate(asg, template)
+	assert.NoError(t, err)
+	if !strings.Contains(node.ObjectMeta.Name, "test-asg") {
+		t.Errorf("Generate node name err, get: %s", node.ObjectMeta.Name)
+	}
 }
