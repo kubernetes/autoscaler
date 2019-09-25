@@ -136,7 +136,7 @@ func buildAsg(baiducloudManager *BaiducloudManager, minSize int, maxSize int, na
 	}
 }
 
-// addAsg adds and registers an Asg to this cloud provider
+// addAsg adds and registers an Asg to this cloud provider.
 func (baiducloud *baiducloudCloudProvider) addAsg(asg *Asg) {
 	baiducloud.asgs = append(baiducloud.asgs, asg)
 	baiducloud.baiducloudManager.RegisterAsg(asg)
@@ -161,7 +161,7 @@ func (baiducloud *baiducloudCloudProvider) GPULabel() string {
 	return GPULabel
 }
 
-// GetAvailableGPUTypes return all available GPU types cloud provider supports
+// GetAvailableGPUTypes returns all available GPU types cloud provider supports.
 func (baiducloud *baiducloudCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
 	return availableGPUTypes
 }

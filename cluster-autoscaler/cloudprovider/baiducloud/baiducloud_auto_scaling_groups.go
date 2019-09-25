@@ -54,7 +54,7 @@ func (m *autoScalingGroups) Register(asg *Asg) {
 	})
 }
 
-// FindForInstance returns AsgConfig of the given Instance
+// FindForInstance returns AsgConfig of the given Instance.
 func (m *autoScalingGroups) FindForInstance(instanceID string) (*Asg, error) {
 	m.cacheMutex.Lock()
 	defer m.cacheMutex.Unlock()
@@ -74,7 +74,7 @@ func (m *autoScalingGroups) FindForInstance(instanceID string) (*Asg, error) {
 	if config, found := m.instanceToAsg[instanceID]; found {
 		return config, nil
 	}
-	// instance does not belong to any configured ASG
+	// instance does not belong to any configured ASG.
 	klog.V(4).Infof("Instance %+v is not in any ASG managed by CA."+
 		" CA is now memorizing the fact not to unnecessarily call BCE API afterwards trying to find the "+
 		"unexistent managed ASG for the instance", instanceID)
@@ -84,7 +84,7 @@ func (m *autoScalingGroups) FindForInstance(instanceID string) (*Asg, error) {
 
 func (m *autoScalingGroups) regenerateCache() error {
 	newCache := make(map[string]*Asg)
-	// TODO: Currently, baiducloud cloudprovider does not support Multiple ASG
+	// TODO: Currently, baiducloud cloudprovider does not support Multiple ASG.
 	for _, asg := range m.registeredAsgs {
 		klog.V(4).Infof("regenerating ASG information for %s", asg.config.Name)
 		instanceList, err := m.cceClient.GetAsgNodes(asg.config.Name, m.cloudConfig.ClusterID)
