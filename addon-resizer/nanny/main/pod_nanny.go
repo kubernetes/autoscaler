@@ -86,6 +86,8 @@ func main() {
 	if err != nil {
 		glog.Fatal(err)
 	}
+	// Use protobufs for communication with apiserver
+	config.ContentType = "application/vnd.kubernetes.protobuf"
 
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
