@@ -25,11 +25,25 @@ az ad sp create-for-rbac --role="Contributor" --scopes="/subscriptions/<subscrip
 
 This will create a new [service principal][] with "Contributor" role scoped to your subscription. Save the JSON output, because it will be needed to configure the cluster autoscaler deployment in the next step.
 
-## Scaling a node group to and from 0
+## Scaling a VMSS node group to and from 0
 
-If you are using `nodeSelector`, you need to tag the VMSS  with a node-template key `"k8s.io|cluster-autoscaler|node-template|label|"` for using labels and and `"k8s.io|cluster-autoscaler|node-template|taint|"` if you are using taints.
+If you are using `nodeSelector`, you need to tag the VMSS  with a node-template key `"k8s.io_cluster-autoscaler_node-template_label_"` for using labels and `"k8s.io_cluster-autoscaler_node-template_taint_"` if you are using taints.
 
-> Note that these tags use the pipe `|` character compared to a forward slash due to [Azure tag name restrictions](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-using-tags).
+> Note that these tags use the pipe `_` character compared to a forward slash due to [Azure tag name restrictions](https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-using-tags).
+
+### Examples
+
+#### Labels
+
+To add the label of `foo=bar` to a node from a VMSS pool, you would add the following tag to the VMSS `k8s.io_cluster-autoscaler_node-template_label_foo: bar`.
+
+You can also use forward slashes in the labels by setting them as an underscore in the tag name. For example to add the label of `k8s.io/foo=bar` to a node from a VMSS pool, you would add the following tag to the VMSS `k8s.io_cluster-autoscaler_node-template_label_k8s.io_foo: bar`
+
+#### Taints
+
+To add the taint of `foo=bar:NoSchedule` to a node from a VMSS pool, you would add the following tag to the VMSS `k8s.io_cluster-autoscaler_node-template_taint_foo: bar:NoSchedule`.
+
+You can also use forward slashes in taints by setting them as an underscore in the tag name. For example to add the taint of `k8s.io/foo=bar:NoSchedule` to a node from a VMSS pool, you would add the following tag to the VMSS `k8s.io_cluster-autoscaler_node-template_taint_k8s.io_foo: bar:NoSchedule`
 
 ## Deployment manifests
 
@@ -74,8 +88,8 @@ or to autoscale multiple VM scale sets:
         - --nodes=1:10:k8s-nodepool-2-vmss
 ```
 
-Note that it doesn't mean the number of nodes in nodepool is restricted in the 
-range from 1 to 10. It means when ca is downscaling (upscaling) the nodepool, 
+Note that it doesn't mean the number of nodes in nodepool is restricted in the
+range from 1 to 10. It means when ca is downscaling (upscaling) the nodepool,
 it will never break the limit of 1 (10). If the current node pool size is lower than the specified minimum or greater than the specified maximum when you enable autoscaling, the autoscaler waits to take effect until a new node is needed in the node pool or until a node can be safely deleted from the node pool.
 
 To allow scaling similar node pools simultaneously, or when using separate node groups per zone and to keep nodes balanced across zones, use the `--balance-similar-node-groups` flag (default false). Add it to the `command` section to enable it:
