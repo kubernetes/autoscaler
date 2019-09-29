@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -498,8 +499,56 @@ func (scaleSet *ScaleSet) buildNodeFromTemplate(template compute.VirtualMachineS
 
 	// GenericLabels
 	node.Labels = cloudprovider.JoinStringMaps(node.Labels, buildGenericLabels(template, nodeName))
+	// Labels from the Scale Set's Tags
+	node.Labels = cloudprovider.JoinStringMaps(node.Labels, extractLabelsFromScaleSet(template.Tags))
+
+	// Taints from the Scale Set's Tags
+	node.Spec.Taints = extractTaintsFromScaleSet(template.Tags)
+
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()
 	return &node, nil
+}
+
+func extractLabelsFromScaleSet(tags map[string]*string) map[string]string {
+	result := make(map[string]string)
+
+	for tagName, tagValue := range tags {
+		splits := strings.Split(tagName, nodeLabelTagName)
+		if len(splits) > 1 {
+			label := strings.Replace(splits[1], "_", "/", -1)
+			if label != "" {
+				result[label] = *tagValue
+			}
+		}
+	}
+
+	return result
+}
+
+func extractTaintsFromScaleSet(tags map[string]*string) []apiv1.Taint {
+	taints := make([]apiv1.Taint, 0)
+
+	for tagName, tagValue := range tags {
+		// The tag value must be in the format <tag>:NoSchedule
+		r, _ := regexp.Compile("(.*):(?:NoSchedule|NoExecute|PreferNoSchedule)")
+
+		if r.MatchString(*tagValue) {
+			splits := strings.Split(tagName, nodeTaintTagName)
+			if len(splits) > 1 {
+				values := strings.SplitN(*tagValue, ":", 2)
+				if len(values) > 1 {
+					taintKey := strings.Replace(splits[1], "_", "/", -1)
+					taints = append(taints, apiv1.Taint{
+						Key:    taintKey,
+						Value:  values[0],
+						Effect: apiv1.TaintEffect(values[1]),
+					})
+				}
+			}
+		}
+	}
+
+	return taints
 }
 
 // TemplateNodeInfo returns a node template for this scale set.
