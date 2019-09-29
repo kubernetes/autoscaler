@@ -126,6 +126,9 @@ spec:
     metadata:
       labels:
         app: cluster-autoscaler
+      annotations:
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '8085'
     spec:
       serviceAccountName: cluster-autoscaler
       tolerations:
