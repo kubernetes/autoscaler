@@ -530,6 +530,8 @@ func (a *StaticAutoscaler) deleteCreatedNodesWithErrors() {
 		if err != nil {
 			klog.Warningf("Error while trying to delete nodes from %v: %v", nodeGroupId, err)
 		}
+
+		a.clusterStateRegistry.InvalidateNodeInstancesCacheEntry(nodeGroup)
 	}
 }
 
