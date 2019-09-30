@@ -55,7 +55,7 @@ rules:
   - apiGroups: ["batch", "extensions"]
     resources: ["jobs"]
     verbs: ["get", "list", "watch", "patch"]
-    
+
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
