@@ -1127,6 +1127,11 @@ func (csr *ClusterStateRegistry) RefreshCloudProviderNodeInstancesCache() {
 	csr.cloudProviderNodeInstancesCache.Refresh()
 }
 
+// InvalidateNodeInstancesCacheEntry removes a node group from the cloud provider node instances cache.
+func (csr *ClusterStateRegistry) InvalidateNodeInstancesCacheEntry(nodeGroup cloudprovider.NodeGroup) {
+	csr.cloudProviderNodeInstancesCache.InvalidateCacheEntry(nodeGroup)
+}
+
 func fakeNode(instance cloudprovider.Instance) *apiv1.Node {
 	return &apiv1.Node{
 		ObjectMeta: metav1.ObjectMeta{
