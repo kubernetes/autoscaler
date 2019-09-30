@@ -1485,4 +1485,46 @@ var InstanceTypes = map[string]*instanceType{
 		MemoryMb:     32768,
 		GPU:          0,
 	},
+	"g4dn.xlarge": {
+		InstanceType: "g4dn.xlarge",
+		VCPU:         4,
+		MemoryMb:     16384,
+		GPU:          1,
+	},
+	"g4dn.2xlarge": {
+		InstanceType: "g4dn.2xlarge",
+		VCPU:         8,
+		MemoryMb:     32768,
+		GPU:          1,
+	},
+	"g4dn.4xlarge": {
+		InstanceType: "g4dn.4xlarge",
+		VCPU:         16,
+		MemoryMb:     65536,
+		GPU:          1,
+	},
+	"g4dn.8xlarge": {
+		InstanceType: "g4dn.8xlarge",
+		VCPU:         32,
+		MemoryMb:     131072,
+		GPU:          1,
+	},
+	"g4dn.16xlarge": {
+		InstanceType: "g4dn.16xlarge",
+		VCPU:         64,
+		MemoryMb:     262144,
+		GPU:          1,
+	},
+	"g4dn.12xlarge": {
+		InstanceType: "g4dn.12xlarge",
+		VCPU:         48,
+		MemoryMb:     196608,
+		GPU:          4,
+	},
+	"g4dn.metal": { //coming soon
+		InstanceType: "g4dn.metal",
+		VCPU:         96,
+		MemoryMb:     393216,
+		GPU:          8,
+	},
 }
