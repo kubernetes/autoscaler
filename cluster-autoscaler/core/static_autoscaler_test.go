@@ -17,21 +17,25 @@ limitations under the License.
 package core
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
 	"testing"
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
-
 	mockprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/mocks"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
+	clusterstate_utils "k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	"k8s.io/autoscaler/cluster-autoscaler/context"
+	core_utils "k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
+	kube_record "k8s.io/client-go/tools/record"
 
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
@@ -1334,4 +1338,94 @@ func TestStaticAutoscalerProcessorCallbacks(t *testing.T) {
 	assert.Equal(t, 0, len(processorCallbacks.extraValues))
 	_, found = processorCallbacks.GetExtraValue("blah")
 	assert.False(t, found)
+}
+
+func TestRemoveFixNodeTargetSize(t *testing.T) {
+	sizeChanges := make(chan string, 10)
+	now := time.Now()
+
+	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
+	ng1_1.Spec.ProviderID = "ng1-1"
+	provider := testprovider.NewTestCloudProvider(func(nodegroup string, delta int) error {
+		sizeChanges <- fmt.Sprintf("%s/%d", nodegroup, delta)
+		return nil
+	}, nil)
+	provider.AddNodeGroup("ng1", 1, 10, 3)
+	provider.AddNode("ng1", ng1_1)
+
+	fakeClient := &fake.Clientset{}
+	fakeLogRecorder, _ := clusterstate_utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false)
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{
+		MaxTotalUnreadyPercentage: 10,
+		OkTotalUnreadyCount:       1,
+	}, fakeLogRecorder, newBackoff())
+	err := clusterState.UpdateNodes([]*apiv1.Node{ng1_1}, nil, now.Add(-time.Hour))
+	assert.NoError(t, err)
+
+	context := &context.AutoscalingContext{
+		AutoscalingOptions: config.AutoscalingOptions{
+			MaxNodeProvisionTime: 45 * time.Minute,
+		},
+		CloudProvider: provider,
+	}
+
+	// Nothing should be fixed. The incorrect size state is not old enough.
+	removed, err := fixNodeGroupSize(context, clusterState, now.Add(-50*time.Minute))
+	assert.NoError(t, err)
+	assert.False(t, removed)
+
+	// Node group should be decreased.
+	removed, err = fixNodeGroupSize(context, clusterState, now)
+	assert.NoError(t, err)
+	assert.True(t, removed)
+	change := core_utils.GetStringFromChan(sizeChanges)
+	assert.Equal(t, "ng1/-2", change)
+}
+
+func TestRemoveOldUnregisteredNodes(t *testing.T) {
+	deletedNodes := make(chan string, 10)
+
+	now := time.Now()
+
+	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
+	ng1_1.Spec.ProviderID = "ng1-1"
+	ng1_2 := BuildTestNode("ng1-2", 1000, 1000)
+	ng1_2.Spec.ProviderID = "ng1-2"
+	provider := testprovider.NewTestCloudProvider(nil, func(nodegroup string, node string) error {
+		deletedNodes <- fmt.Sprintf("%s/%s", nodegroup, node)
+		return nil
+	})
+	provider.AddNodeGroup("ng1", 1, 10, 2)
+	provider.AddNode("ng1", ng1_1)
+	provider.AddNode("ng1", ng1_2)
+
+	fakeClient := &fake.Clientset{}
+	fakeLogRecorder, _ := clusterstate_utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false)
+	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{
+		MaxTotalUnreadyPercentage: 10,
+		OkTotalUnreadyCount:       1,
+	}, fakeLogRecorder, newBackoff())
+	err := clusterState.UpdateNodes([]*apiv1.Node{ng1_1}, nil, now.Add(-time.Hour))
+	assert.NoError(t, err)
+
+	context := &context.AutoscalingContext{
+		AutoscalingOptions: config.AutoscalingOptions{
+			MaxNodeProvisionTime: 45 * time.Minute,
+		},
+		CloudProvider: provider,
+	}
+	unregisteredNodes := clusterState.GetUnregisteredNodes()
+	assert.Equal(t, 1, len(unregisteredNodes))
+
+	// Nothing should be removed. The unregistered node is not old enough.
+	removed, err := removeOldUnregisteredNodes(unregisteredNodes, context, clusterState, now.Add(-50*time.Minute), fakeLogRecorder)
+	assert.NoError(t, err)
+	assert.False(t, removed)
+
+	// ng1_2 should be removed.
+	removed, err = removeOldUnregisteredNodes(unregisteredNodes, context, clusterState, now, fakeLogRecorder)
+	assert.NoError(t, err)
+	assert.True(t, removed)
+	deletedNode := core_utils.GetStringFromChan(deletedNodes)
+	assert.Equal(t, "ng1/ng1-2", deletedNode)
 }

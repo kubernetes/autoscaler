@@ -32,6 +32,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
@@ -48,8 +49,6 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/gpu"
 	"k8s.io/klog"
 )
-
-const nothingReturned = "Nothing returned"
 
 func TestFindUnneededNodes(t *testing.T) {
 	p1 := BuildTestPod("p1", 100, 0)
@@ -618,20 +617,20 @@ func TestDeleteNode(t *testing.T) {
 			// verify
 			if scenario.expectedDeletion {
 				assert.NoError(t, result.Err)
-				assert.Equal(t, n1.Name, getStringFromChanImmediately(deletedNodes))
+				assert.Equal(t, n1.Name, utils.GetStringFromChanImmediately(deletedNodes))
 			} else {
 				assert.NotNil(t, result.Err)
 			}
-			assert.Equal(t, nothingReturned, getStringFromChanImmediately(deletedNodes))
+			assert.Equal(t, utils.NothingReturned, utils.GetStringFromChanImmediately(deletedNodes))
 			assert.Equal(t, scenario.expectedResultType, result.ResultType)
 
 			taintedUpdate := fmt.Sprintf("%s-%s", n1.Name, []string{deletetaint.ToBeDeletedTaint})
-			assert.Equal(t, taintedUpdate, getStringFromChan(updatedNodes))
+			assert.Equal(t, taintedUpdate, utils.GetStringFromChan(updatedNodes))
 			if !scenario.expectedDeletion {
 				untaintedUpdate := fmt.Sprintf("%s-%s", n1.Name, []string{})
-				assert.Equal(t, untaintedUpdate, getStringFromChanImmediately(updatedNodes))
+				assert.Equal(t, untaintedUpdate, utils.GetStringFromChanImmediately(updatedNodes))
 			}
-			assert.Equal(t, nothingReturned, getStringFromChanImmediately(updatedNodes))
+			assert.Equal(t, utils.NothingReturned, utils.GetStringFromChanImmediately(updatedNodes))
 		})
 	}
 }
@@ -663,8 +662,8 @@ func TestDrainNode(t *testing.T) {
 	_, err := drainNode(n1, []*apiv1.Pod{p1, p2}, fakeClient, kube_util.CreateEventRecorder(fakeClient), 20, 5*time.Second, 0*time.Second, PodEvictionHeadroom)
 	assert.NoError(t, err)
 	deleted := make([]string, 0)
-	deleted = append(deleted, getStringFromChan(deletedPods))
-	deleted = append(deleted, getStringFromChan(deletedPods))
+	deleted = append(deleted, utils.GetStringFromChan(deletedPods))
+	deleted = append(deleted, utils.GetStringFromChan(deletedPods))
 	sort.Strings(deleted)
 	assert.Equal(t, p1.Name, deleted[0])
 	assert.Equal(t, p2.Name, deleted[1])
@@ -706,8 +705,8 @@ func TestDrainNodeWithRescheduled(t *testing.T) {
 	_, err := drainNode(n1, []*apiv1.Pod{p1, p2}, fakeClient, kube_util.CreateEventRecorder(fakeClient), 20, 5*time.Second, 0*time.Second, PodEvictionHeadroom)
 	assert.NoError(t, err)
 	deleted := make([]string, 0)
-	deleted = append(deleted, getStringFromChan(deletedPods))
-	deleted = append(deleted, getStringFromChan(deletedPods))
+	deleted = append(deleted, utils.GetStringFromChan(deletedPods))
+	deleted = append(deleted, utils.GetStringFromChan(deletedPods))
 	sort.Strings(deleted)
 	assert.Equal(t, p1.Name, deleted[0])
 	assert.Equal(t, p2.Name, deleted[1])
@@ -755,9 +754,9 @@ func TestDrainNodeWithRetries(t *testing.T) {
 	_, err := drainNode(n1, []*apiv1.Pod{p1, p2, p3}, fakeClient, kube_util.CreateEventRecorder(fakeClient), 20, 5*time.Second, 0*time.Second, PodEvictionHeadroom)
 	assert.NoError(t, err)
 	deleted := make([]string, 0)
-	deleted = append(deleted, getStringFromChan(deletedPods))
-	deleted = append(deleted, getStringFromChan(deletedPods))
-	deleted = append(deleted, getStringFromChan(deletedPods))
+	deleted = append(deleted, utils.GetStringFromChan(deletedPods))
+	deleted = append(deleted, utils.GetStringFromChan(deletedPods))
+	deleted = append(deleted, utils.GetStringFromChan(deletedPods))
 	sort.Strings(deleted)
 	assert.Equal(t, p1.Name, deleted[0])
 	assert.Equal(t, p2.Name, deleted[1])
@@ -952,8 +951,8 @@ func TestScaleDown(t *testing.T) {
 	waitForDeleteToFinish(t, scaleDown)
 	assert.NoError(t, err)
 	assert.Equal(t, status.ScaleDownNodeDeleteStarted, scaleDownStatus.Result)
-	assert.Equal(t, n1.Name, getStringFromChan(deletedNodes))
-	assert.Equal(t, n1.Name, getStringFromChan(updatedNodes))
+	assert.Equal(t, n1.Name, utils.GetStringFromChan(deletedNodes))
+	assert.Equal(t, n1.Name, utils.GetStringFromChan(updatedNodes))
 }
 
 func waitForDeleteToFinish(t *testing.T, sd *ScaleDown) {
@@ -1051,13 +1050,13 @@ func TestScaleDownEmptyMinCoresLimitHit(t *testing.T) {
 
 func TestScaleDownEmptyMinMemoryLimitHit(t *testing.T) {
 	options := defaultScaleDownOptions
-	options.MinMemoryTotal = 4000 * MiB
+	options.MinMemoryTotal = 4000 * utils.MiB
 	config := &scaleTestConfig{
 		nodes: []nodeConfig{
-			{"n1", 2000, 1000 * MiB, 0, true, "ng1"},
-			{"n2", 1000, 1000 * MiB, 0, true, "ng1"},
-			{"n3", 1000, 1000 * MiB, 0, true, "ng1"},
-			{"n4", 1000, 3000 * MiB, 0, true, "ng1"},
+			{"n1", 2000, 1000 * utils.MiB, 0, true, "ng1"},
+			{"n2", 1000, 1000 * utils.MiB, 0, true, "ng1"},
+			{"n3", 1000, 1000 * utils.MiB, 0, true, "ng1"},
+			{"n4", 1000, 3000 * utils.MiB, 0, true, "ng1"},
 		},
 		options:            options,
 		expectedScaleDowns: []string{"n1", "n2"},
@@ -1067,20 +1066,20 @@ func TestScaleDownEmptyMinMemoryLimitHit(t *testing.T) {
 
 func TestScaleDownEmptyTempNodesLimits(t *testing.T) {
 	options := defaultScaleDownOptions
-	options.MinMemoryTotal = 4000 * MiB
+	options.MinMemoryTotal = 4000 * utils.MiB
 	config := &scaleTestConfig{
 		nodes: []nodeConfig{
-			{"n1", 1000, 1000 * MiB, 0, true, "ng1"},
-			{"n2", 1000, 1000 * MiB, 0, true, "ng1"},
-			{"n3", 1000, 1000 * MiB, 0, true, "ng1"},
-			{"n4", 1000, 1000 * MiB, 0, true, "ng1"},
-			{"n5", 1000, 1000 * MiB, 0, true, "ng1"},
-			{"n6", 1000, 1000 * MiB, 0, true, "ng1"},
+			{"n1", 1000, 1000 * utils.MiB, 0, true, "ng1"},
+			{"n2", 1000, 1000 * utils.MiB, 0, true, "ng1"},
+			{"n3", 1000, 1000 * utils.MiB, 0, true, "ng1"},
+			{"n4", 1000, 1000 * utils.MiB, 0, true, "ng1"},
+			{"n5", 1000, 1000 * utils.MiB, 0, true, "ng1"},
+			{"n6", 1000, 1000 * utils.MiB, 0, true, "ng1"},
 
-			{"n7", 1000, 1000 * MiB, 0, true, "ng2"},
-			{"n8", 1000, 1000 * MiB, 0, true, "ng2"},
-			{"n9", 1000, 1000 * MiB, 0, true, "ng2"},
-			{"n10", 1000, 1000 * MiB, 0, true, "ng2"},
+			{"n7", 1000, 1000 * utils.MiB, 0, true, "ng2"},
+			{"n8", 1000, 1000 * utils.MiB, 0, true, "ng2"},
+			{"n9", 1000, 1000 * utils.MiB, 0, true, "ng2"},
+			{"n10", 1000, 1000 * utils.MiB, 0, true, "ng2"},
 		},
 		options:            options,
 		expectedScaleDowns: []string{"n1", "n2", "n3", "n7"},
@@ -1091,22 +1090,22 @@ func TestScaleDownEmptyTempNodesLimits(t *testing.T) {
 
 func TestScaleDownEmptyTempNodesMinSize(t *testing.T) {
 	options := defaultScaleDownOptions
-	options.MinMemoryTotal = 1000 * MiB
+	options.MinMemoryTotal = 1000 * utils.MiB
 	config := &scaleTestConfig{
 		nodes: []nodeConfig{
-			{"n1", 1000, 1000 * MiB, 0, true, "ng1"},
-			{"n2", 1000, 1000 * MiB, 0, true, "ng1"},
-			{"n3", 1000, 1000 * MiB, 0, true, "ng1"},
-			{"n4", 1000, 1000 * MiB, 0, true, "ng1"},
+			{"n1", 1000, 1000 * utils.MiB, 0, true, "ng1"},
+			{"n2", 1000, 1000 * utils.MiB, 0, true, "ng1"},
+			{"n3", 1000, 1000 * utils.MiB, 0, true, "ng1"},
+			{"n4", 1000, 1000 * utils.MiB, 0, true, "ng1"},
 
-			{"n6", 1000, 1000 * MiB, 0, true, "ng2"},
-			{"n7", 1000, 1000 * MiB, 0, true, "ng2"},
-			{"n8", 1000, 1000 * MiB, 0, true, "ng2"},
-			{"n9", 1000, 1000 * MiB, 0, true, "ng2"},
+			{"n6", 1000, 1000 * utils.MiB, 0, true, "ng2"},
+			{"n7", 1000, 1000 * utils.MiB, 0, true, "ng2"},
+			{"n8", 1000, 1000 * utils.MiB, 0, true, "ng2"},
+			{"n9", 1000, 1000 * utils.MiB, 0, true, "ng2"},
 
-			{"n10", 1000, 1000 * MiB, 0, true, "ng3"},
-			{"n11", 1000, 1000 * MiB, 0, true, "ng3"},
-			{"n12", 1000, 1000 * MiB, 0, true, "ng3"},
+			{"n10", 1000, 1000 * utils.MiB, 0, true, "ng3"},
+			{"n11", 1000, 1000 * utils.MiB, 0, true, "ng3"},
+			{"n12", 1000, 1000 * utils.MiB, 0, true, "ng3"},
 		},
 		options:            options,
 		expectedScaleDowns: []string{"n7", "n8", "n10", "n11"},
@@ -1131,12 +1130,12 @@ func TestScaleDownEmptyMinGpuLimitHit(t *testing.T) {
 	}
 	config := &scaleTestConfig{
 		nodes: []nodeConfig{
-			{"n1", 1000, 1000 * MiB, 1, true, "ng1"},
-			{"n2", 1000, 1000 * MiB, 1, true, "ng1"},
-			{"n3", 1000, 1000 * MiB, 1, true, "ng1"},
-			{"n4", 1000, 1000 * MiB, 1, true, "ng1"},
-			{"n5", 1000, 1000 * MiB, 1, true, "ng1"},
-			{"n6", 1000, 1000 * MiB, 1, true, "ng1"},
+			{"n1", 1000, 1000 * utils.MiB, 1, true, "ng1"},
+			{"n2", 1000, 1000 * utils.MiB, 1, true, "ng1"},
+			{"n3", 1000, 1000 * utils.MiB, 1, true, "ng1"},
+			{"n4", 1000, 1000 * utils.MiB, 1, true, "ng1"},
+			{"n5", 1000, 1000 * utils.MiB, 1, true, "ng1"},
+			{"n6", 1000, 1000 * utils.MiB, 1, true, "ng1"},
 		},
 		options:            options,
 		expectedScaleDowns: []string{"n1", "n2"},
@@ -1267,8 +1266,8 @@ func simpleScaleDownEmpty(t *testing.T, config *scaleTestConfig) {
 	// Report only up to 10 extra nodes found.
 	deleted := make([]string, 0, len(config.expectedScaleDowns)+10)
 	for i := 0; i < len(config.expectedScaleDowns)+10; i++ {
-		d := getStringFromChan(deletedNodes)
-		if d == nothingReturned { // a closed channel yields empty value
+		d := utils.GetStringFromChan(deletedNodes)
+		if d == utils.NothingReturned { // a closed channel yields empty value
 			break
 		}
 		deleted = append(deleted, d)
@@ -1355,7 +1354,7 @@ func TestNoScaleDownUnready(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, status.ScaleDownNodeDeleteStarted, scaleDownStatus.Result)
-	assert.Equal(t, n1.Name, getStringFromChan(deletedNodes))
+	assert.Equal(t, n1.Name, utils.GetStringFromChan(deletedNodes))
 }
 
 func TestScaleDownNoMove(t *testing.T) {
@@ -1440,24 +1439,6 @@ func TestScaleDownNoMove(t *testing.T) {
 	assert.Equal(t, status.ScaleDownNoUnneeded, scaleDownStatus.Result)
 }
 
-func getStringFromChan(c chan string) string {
-	select {
-	case val := <-c:
-		return val
-	case <-time.After(100 * time.Millisecond):
-		return nothingReturned
-	}
-}
-
-func getStringFromChanImmediately(c chan string) string {
-	select {
-	case val := <-c:
-		return val
-	default:
-		return nothingReturned
-	}
-}
-
 func getCountOfChan(c chan string) int {
 	count := 0
 	for {
@@ -1472,13 +1453,13 @@ func getCountOfChan(c chan string) int {
 
 func TestCalculateCoresAndMemoryTotal(t *testing.T) {
 	nodeConfigs := []nodeConfig{
-		{"n1", 2000, 7500 * MiB, 0, true, "ng1"},
-		{"n2", 2000, 7500 * MiB, 0, true, "ng1"},
-		{"n3", 2000, 7500 * MiB, 0, true, "ng1"},
-		{"n4", 12000, 8000 * MiB, 0, true, "ng1"},
-		{"n5", 16000, 7500 * MiB, 0, true, "ng1"},
-		{"n6", 8000, 6000 * MiB, 0, true, "ng1"},
-		{"n7", 6000, 16000 * MiB, 0, true, "ng1"},
+		{"n1", 2000, 7500 * utils.MiB, 0, true, "ng1"},
+		{"n2", 2000, 7500 * utils.MiB, 0, true, "ng1"},
+		{"n3", 2000, 7500 * utils.MiB, 0, true, "ng1"},
+		{"n4", 12000, 8000 * utils.MiB, 0, true, "ng1"},
+		{"n5", 16000, 7500 * utils.MiB, 0, true, "ng1"},
+		{"n6", 8000, 6000 * utils.MiB, 0, true, "ng1"},
+		{"n7", 6000, 16000 * utils.MiB, 0, true, "ng1"},
 	}
 	nodes := make([]*apiv1.Node, len(nodeConfigs))
 	for i, n := range nodeConfigs {
@@ -1498,7 +1479,7 @@ func TestCalculateCoresAndMemoryTotal(t *testing.T) {
 	coresTotal, memoryTotal := calculateScaleDownCoresMemoryTotal(nodes, time.Now())
 
 	assert.Equal(t, int64(42), coresTotal)
-	assert.Equal(t, int64(44000*MiB), memoryTotal)
+	assert.Equal(t, int64(44000*utils.MiB), memoryTotal)
 }
 
 func TestFilterOutMasters(t *testing.T) {
