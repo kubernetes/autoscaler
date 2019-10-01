@@ -384,11 +384,6 @@ func (sd *ScaleDown) CleanUp(timestamp time.Time) {
 	sd.usageTracker.CleanUp(timestamp.Add(-sd.context.ScaleDownUnneededTime))
 }
 
-// GetCandidatesForScaleDown gets candidates for scale down.
-func (sd *ScaleDown) GetCandidatesForScaleDown() []*apiv1.Node {
-	return sd.unneededNodesList
-}
-
 // CleanUpUnneededNodes clears the list of unneeded nodes.
 func (sd *ScaleDown) CleanUpUnneededNodes() {
 	sd.unneededNodesList = make([]*apiv1.Node, 0)
