@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM k8s.gcr.io/debian-base-amd64:1.0.0
+FROM gcr.io/distroless/static:latest
 MAINTAINER Tomasz Kulczynski "tkulczynski@google.com"
 
-ADD admission-controller admission-controller
+copy admission-controller /
 
-ENTRYPOINT ["./admission-controller"]
+ENTRYPOINT ["/admission-controller"]
 CMD ["--v=4", "--stderrthreshold=info"]

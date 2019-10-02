@@ -3,7 +3,7 @@ all: build
 TAG?=dev
 REGISTRY?=staging-k8s.gcr.io
 FLAGS=
-ENVVAR=
+ENVVAR=CGO_ENABLED=0 LD_FLAGS=-s
 GOOS?=linux
 COMPONENT=updater
 FULL_COMPONENT=vpa-${COMPONENT}
