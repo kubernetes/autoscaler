@@ -13,10 +13,10 @@
 # limitations under the License.
 
 
-FROM k8s.gcr.io/debian-base-amd64:1.0.0
+FROM gcr.io/distroless/static:latest
 MAINTAINER Marcin Wielgus "mwielgus@google.com"
 
-ADD updater updater
+COPY updater /
 
-ENTRYPOINT ["./updater"]
+ENTRYPOINT ["/updater"]
 CMD ["--v=4", "--stderrthreshold=info"]
