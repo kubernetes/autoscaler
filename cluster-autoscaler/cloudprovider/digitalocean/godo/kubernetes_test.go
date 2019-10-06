@@ -361,6 +361,33 @@ func TestKubernetesClusters_GetKubeConfig(t *testing.T) {
 	require.Equal(t, blob, got.KubeconfigYAML)
 }
 
+func TestKubernetesClusters_GetCredentials(t *testing.T) {
+	setup()
+	defer teardown()
+
+	kubeSvc := client.Kubernetes
+	timestamp, err := time.Parse(time.RFC3339, "2014-11-12T11:45:26.371Z")
+	require.NoError(t, err)
+	want := &KubernetesClusterCredentials{
+		Token:     "secret",
+		ExpiresAt: timestamp,
+	}
+	jBlob := `
+{
+	"token": "secret",
+	"expires_at": "2014-11-12T11:45:26.371Z"
+}`
+	mux.HandleFunc("/v2/kubernetes/clusters/deadbeef-dead-4aa5-beef-deadbeef347d/credentials", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, http.MethodGet)
+		fmt.Fprint(w, jBlob)
+	})
+	got, _, err := kubeSvc.GetCredentials(ctx, "deadbeef-dead-4aa5-beef-deadbeef347d", &KubernetesClusterCredentialsGetRequest{
+		ExpirySeconds: intPtr(60 * 60),
+	})
+	require.NoError(t, err)
+	require.Equal(t, want, got)
+}
+
 func TestKubernetesClusters_GetUpgrades(t *testing.T) {
 	setup()
 	defer teardown()
