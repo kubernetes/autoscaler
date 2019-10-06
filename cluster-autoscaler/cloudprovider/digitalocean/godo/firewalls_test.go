@@ -799,7 +799,7 @@ func TestFirewalls_RemoveRules(t *testing.T) {
 
 func makeExpectedFirewalls() []Firewall {
 	return []Firewall{
-		{
+		Firewall{
 			ID:   "fe6b88f2-b42b-4bf7-bbd3-5ae20208f0b0",
 			Name: "f-i-r-e-w-a-l-l",
 			InboundRules: []InboundRule{
