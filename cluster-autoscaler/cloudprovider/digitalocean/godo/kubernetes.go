@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -24,8 +25,10 @@ const (
 type KubernetesService interface {
 	Create(context.Context, *KubernetesClusterCreateRequest) (*KubernetesCluster, *Response, error)
 	Get(context.Context, string) (*KubernetesCluster, *Response, error)
+	GetUser(context.Context, string) (*KubernetesClusterUser, *Response, error)
 	GetUpgrades(context.Context, string) ([]*KubernetesVersion, *Response, error)
 	GetKubeConfig(context.Context, string) (*KubernetesClusterConfig, *Response, error)
+	GetCredentials(context.Context, string, *KubernetesClusterCredentialsGetRequest) (*KubernetesClusterCredentials, *Response, error)
 	List(context.Context, *ListOptions) ([]*KubernetesCluster, *Response, error)
 	Update(context.Context, string, *KubernetesClusterUpdateRequest) (*KubernetesCluster, *Response, error)
 	Upgrade(context.Context, string, *KubernetesClusterUpgradeRequest) (*Response, error)
@@ -69,8 +72,8 @@ type KubernetesClusterCreateRequest struct {
 type KubernetesClusterUpdateRequest struct {
 	Name              string                       `json:"name,omitempty"`
 	Tags              []string                     `json:"tags,omitempty"`
-	MaintenancePolicy *KubernetesMaintenancePolicy `json:"maintenance_policy"`
-	AutoUpgrade       bool                         `json:"auto_upgrade"`
+	MaintenancePolicy *KubernetesMaintenancePolicy `json:"maintenance_policy,omitempty"`
+	AutoUpgrade       *bool                        `json:"auto_upgrade,omitempty"`
 }
 
 // KubernetesClusterUpgradeRequest represents a request to upgrade a Kubernetes cluster.
@@ -81,18 +84,24 @@ type KubernetesClusterUpgradeRequest struct {
 // KubernetesNodePoolCreateRequest represents a request to create a node pool for a
 // Kubernetes cluster.
 type KubernetesNodePoolCreateRequest struct {
-	Name  string   `json:"name,omitempty"`
-	Size  string   `json:"size,omitempty"`
-	Count int      `json:"count,omitempty"`
-	Tags  []string `json:"tags,omitempty"`
+	Name      string   `json:"name,omitempty"`
+	Size      string   `json:"size,omitempty"`
+	Count     int      `json:"count,omitempty"`
+	Tags      []string `json:"tags,omitempty"`
+	AutoScale bool     `json:"auto_scale,omitempty"`
+	MinNodes  int      `json:"min_nodes,omitempty"`
+	MaxNodes  int      `json:"max_nodes,omitempty"`
 }
 
 // KubernetesNodePoolUpdateRequest represents a request to update a node pool in a
 // Kubernetes cluster.
 type KubernetesNodePoolUpdateRequest struct {
-	Name  string   `json:"name,omitempty"`
-	Count int      `json:"count,omitempty"`
-	Tags  []string `json:"tags,omitempty"`
+	Name      string   `json:"name,omitempty"`
+	Count     *int     `json:"count,omitempty"`
+	Tags      []string `json:"tags,omitempty"`
+	AutoScale *bool    `json:"auto_scale,omitempty"`
+	MinNodes  *int     `json:"min_nodes,omitempty"`
+	MaxNodes  *int     `json:"max_nodes,omitempty"`
 }
 
 // KubernetesNodePoolRecycleNodesRequest is DEPRECATED please use DeleteNode
@@ -108,6 +117,11 @@ type KubernetesNodeDeleteRequest struct {
 
 	// SkipDrain skips draining the node before deleting it.
 	SkipDrain bool `json:"skip_drain,omitempty"`
+}
+
+// KubernetesClusterCredentialsGetRequest is a request to get cluster credentials.
+type KubernetesClusterCredentialsGetRequest struct {
+	ExpirySeconds *int `json:"expiry_seconds,omitempty"`
 }
 
 // KubernetesCluster represents a Kubernetes cluster.
@@ -131,6 +145,22 @@ type KubernetesCluster struct {
 	Status    *KubernetesClusterStatus `json:"status,omitempty"`
 	CreatedAt time.Time                `json:"created_at,omitempty"`
 	UpdatedAt time.Time                `json:"updated_at,omitempty"`
+}
+
+// KubernetesClusterUser represents a Kubernetes cluster user.
+type KubernetesClusterUser struct {
+	Username string   `json:"username,omitempty"`
+	Groups   []string `json:"groups,omitempty"`
+}
+
+// KubernetesClusterCredentials represents Kubernetes cluster credentials.
+type KubernetesClusterCredentials struct {
+	Server                   string    `json:"server"`
+	CertificateAuthorityData []byte    `json:"certificate_authority_data"`
+	ClientCertificateData    []byte    `json:"client_certificate_data"`
+	ClientKeyData            []byte    `json:"client_key_data"`
+	Token                    string    `json:"token"`
+	ExpiresAt                time.Time `json:"expires_at"`
 }
 
 // KubernetesMaintenancePolicy is a configuration to set the maintenance window
@@ -267,11 +297,14 @@ type KubernetesClusterStatus struct {
 
 // KubernetesNodePool represents a node pool in a Kubernetes cluster.
 type KubernetesNodePool struct {
-	ID    string   `json:"id,omitempty"`
-	Name  string   `json:"name,omitempty"`
-	Size  string   `json:"size,omitempty"`
-	Count int      `json:"count,omitempty"`
-	Tags  []string `json:"tags,omitempty"`
+	ID        string   `json:"id,omitempty"`
+	Name      string   `json:"name,omitempty"`
+	Size      string   `json:"size,omitempty"`
+	Count     int      `json:"count,omitempty"`
+	Tags      []string `json:"tags,omitempty"`
+	AutoScale bool     `json:"auto_scale,omitempty"`
+	MinNodes  int      `json:"min_nodes,omitempty"`
+	MaxNodes  int      `json:"max_nodes,omitempty"`
 
 	Nodes []*KubernetesNode `json:"nodes,omitempty"`
 }
@@ -327,6 +360,10 @@ type kubernetesClusterRoot struct {
 	Cluster *KubernetesCluster `json:"kubernetes_cluster,omitempty"`
 }
 
+type kubernetesClusterUserRoot struct {
+	User *KubernetesClusterUser `json:"kubernetes_cluster_user,omitempty"`
+}
+
 type kubernetesNodePoolRoot struct {
 	NodePool *KubernetesNodePool `json:"node_pool,omitempty"`
 }
@@ -353,6 +390,21 @@ func (svc *KubernetesServiceOp) Get(ctx context.Context, clusterID string) (*Kub
 		return nil, resp, err
 	}
 	return root.Cluster, resp, nil
+}
+
+// GetUser retrieves the details of a Kubernetes cluster user.
+func (svc *KubernetesServiceOp) GetUser(ctx context.Context, clusterID string) (*KubernetesClusterUser, *Response, error) {
+	path := fmt.Sprintf("%s/%s/user", kubernetesClustersPath, clusterID)
+	req, err := svc.client.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+	root := new(kubernetesClusterUserRoot)
+	resp, err := svc.client.Do(ctx, req, root)
+	if err != nil {
+		return nil, resp, err
+	}
+	return root.User, resp, nil
 }
 
 // GetUpgrades retrieves versions a Kubernetes cluster can be upgraded to. An
@@ -443,6 +495,25 @@ func (svc *KubernetesServiceOp) GetKubeConfig(ctx context.Context, clusterID str
 		KubeconfigYAML: configBytes.Bytes(),
 	}
 	return res, resp, nil
+}
+
+// GetCredentials returns a Kubernetes API server credentials for the specified cluster.
+func (svc *KubernetesServiceOp) GetCredentials(ctx context.Context, clusterID string, get *KubernetesClusterCredentialsGetRequest) (*KubernetesClusterCredentials, *Response, error) {
+	path := fmt.Sprintf("%s/%s/credentials", kubernetesClustersPath, clusterID)
+	req, err := svc.client.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+	q := req.URL.Query()
+	if get.ExpirySeconds != nil {
+		q.Add("expiry_seconds", strconv.Itoa(*get.ExpirySeconds))
+	}
+	credentials := new(KubernetesClusterCredentials)
+	resp, err := svc.client.Do(ctx, req, credentials)
+	if err != nil {
+		return nil, nil, err
+	}
+	return credentials, resp, nil
 }
 
 // Update updates a Kubernetes cluster's properties.

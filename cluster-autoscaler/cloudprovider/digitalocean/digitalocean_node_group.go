@@ -28,11 +28,6 @@ import (
 )
 
 const (
-	// These are internal DO values, not publicly available and configurable at
-	// this point.
-	minNodePoolSize = 1
-	maxNodePoolSize = 200
-
 	doksLabelNamespace = "doks.digitalocean.com"
 	nodeIDLabel        = doksLabelNamespace + "/node-id"
 	doProviderIDPrefix = "digitalocean://"
@@ -91,7 +86,7 @@ func (n *NodeGroup) IncreaseSize(delta int) error {
 	}
 
 	req := &godo.KubernetesNodePoolUpdateRequest{
-		Count: targetSize,
+		Count: &targetSize,
 	}
 
 	ctx := context.Background()
@@ -155,7 +150,7 @@ func (n *NodeGroup) DecreaseTargetSize(delta int) error {
 	}
 
 	req := &godo.KubernetesNodePoolUpdateRequest{
-		Count: targetSize,
+		Count: &targetSize,
 	}
 
 	ctx := context.Background()
