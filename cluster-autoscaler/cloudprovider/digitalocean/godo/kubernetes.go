@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -27,6 +28,7 @@ type KubernetesService interface {
 	GetUser(context.Context, string) (*KubernetesClusterUser, *Response, error)
 	GetUpgrades(context.Context, string) ([]*KubernetesVersion, *Response, error)
 	GetKubeConfig(context.Context, string) (*KubernetesClusterConfig, *Response, error)
+	GetCredentials(context.Context, string, *KubernetesClusterCredentialsGetRequest) (*KubernetesClusterCredentials, *Response, error)
 	List(context.Context, *ListOptions) ([]*KubernetesCluster, *Response, error)
 	Update(context.Context, string, *KubernetesClusterUpdateRequest) (*KubernetesCluster, *Response, error)
 	Upgrade(context.Context, string, *KubernetesClusterUpgradeRequest) (*Response, error)
@@ -117,6 +119,11 @@ type KubernetesNodeDeleteRequest struct {
 	SkipDrain bool `json:"skip_drain,omitempty"`
 }
 
+// KubernetesClusterCredentialsGetRequest is a request to get cluster credentials.
+type KubernetesClusterCredentialsGetRequest struct {
+	ExpirySeconds *int `json:"expiry_seconds,omitempty"`
+}
+
 // KubernetesCluster represents a Kubernetes cluster.
 type KubernetesCluster struct {
 	ID            string   `json:"id,omitempty"`
@@ -144,6 +151,16 @@ type KubernetesCluster struct {
 type KubernetesClusterUser struct {
 	Username string   `json:"username,omitempty"`
 	Groups   []string `json:"groups,omitempty"`
+}
+
+// KubernetesClusterCredentials represents Kubernetes cluster credentials.
+type KubernetesClusterCredentials struct {
+	Server                   string    `json:"server"`
+	CertificateAuthorityData []byte    `json:"certificate_authority_data"`
+	ClientCertificateData    []byte    `json:"client_certificate_data"`
+	ClientKeyData            []byte    `json:"client_key_data"`
+	Token                    string    `json:"token"`
+	ExpiresAt                time.Time `json:"expires_at"`
 }
 
 // KubernetesMaintenancePolicy is a configuration to set the maintenance window
@@ -477,6 +494,25 @@ func (svc *KubernetesServiceOp) GetKubeConfig(ctx context.Context, clusterID str
 		KubeconfigYAML: configBytes.Bytes(),
 	}
 	return res, resp, nil
+}
+
+// GetCredentials returns a Kubernetes API server credentials for the specified cluster.
+func (svc *KubernetesServiceOp) GetCredentials(ctx context.Context, clusterID string, get *KubernetesClusterCredentialsGetRequest) (*KubernetesClusterCredentials, *Response, error) {
+	path := fmt.Sprintf("%s/%s/credentials", kubernetesClustersPath, clusterID)
+	req, err := svc.client.NewRequest(ctx, http.MethodGet, path, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+	q := req.URL.Query()
+	if get.ExpirySeconds != nil {
+		q.Add("expiry_seconds", strconv.Itoa(*get.ExpirySeconds))
+	}
+	credentials := new(KubernetesClusterCredentials)
+	resp, err := svc.client.Do(ctx, req, credentials)
+	if err != nil {
+		return nil, nil, err
+	}
+	return credentials, resp, nil
 }
 
 // Update updates a Kubernetes cluster's properties.

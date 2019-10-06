@@ -36,7 +36,7 @@ var db = Database{
 		SSL:      true,
 	},
 	Users: []DatabaseUser{
-		{
+		DatabaseUser{
 			Name:     "doadmin",
 			Role:     "primary",
 			Password: "zt91mum075ofzyww",
@@ -57,6 +57,7 @@ var db = Database{
 	},
 	SizeSlug:           "db-s-2vcpu-4gb",
 	PrivateNetworkUUID: "da4e0206-d019-41d7-b51f-deadbeefbb8f",
+	Tags:               []string{"production", "staging"},
 }
 
 var dbJSON = `
@@ -104,7 +105,8 @@ var dbJSON = `
 		"description": null
 	},
 	"size": "db-s-2vcpu-4gb",
-	"private_network_uuid": "da4e0206-d019-41d7-b51f-deadbeefbb8f"
+	"private_network_uuid": "da4e0206-d019-41d7-b51f-deadbeefbb8f",
+	"tags": ["production", "staging"]
 }
 `
 
@@ -193,6 +195,7 @@ func TestDatabases_Create(t *testing.T) {
 		CreatedAt:         time.Date(2019, 2, 26, 6, 12, 39, 0, time.UTC),
 		MaintenanceWindow: nil,
 		SizeSlug:          "db-s-2vcpu-4gb",
+		Tags:              []string{"production", "staging"},
 	}
 
 	createRequest := &DatabaseCreateRequest{
@@ -202,6 +205,7 @@ func TestDatabases_Create(t *testing.T) {
 		Region:     "nyc3",
 		SizeSlug:   "db-s-2vcpu-4gb",
 		NumNodes:   2,
+		Tags:       []string{"production", "staging"},
 	}
 
 	body := `
@@ -236,7 +240,8 @@ func TestDatabases_Create(t *testing.T) {
 		"status": "creating",
 		"created_at": "2019-02-26T06:12:39Z",
 		"maintenance_window": null,
-		"size": "db-s-2vcpu-4gb"
+		"size": "db-s-2vcpu-4gb",
+		"tags": ["production", "staging"]
 	}
 }`
 
@@ -361,11 +366,11 @@ func TestDatabases_ListBackups(t *testing.T) {
 	defer teardown()
 
 	want := []DatabaseBackup{
-		{
+		DatabaseBackup{
 			CreatedAt:     time.Date(2019, 1, 11, 18, 42, 27, 0, time.UTC),
 			SizeGigabytes: 0.03357696,
 		},
-		{
+		DatabaseBackup{
 			CreatedAt:     time.Date(2019, 1, 12, 18, 42, 29, 0, time.UTC),
 			SizeGigabytes: 0.03364864,
 		},
@@ -918,6 +923,7 @@ func TestDatabases_GetReplica(t *testing.T) {
 			Database: "db",
 		},
 		PrivateNetworkUUID: "deadbeef-dead-4aa5-beef-deadbeef347d",
+		Tags:               []string{"production", "staging"},
 	}
 
 	body := `
@@ -945,7 +951,8 @@ func TestDatabases_GetReplica(t *testing.T) {
       "database": "db",
       "ssl": true
     },
-    "private_network_uuid": "deadbeef-dead-4aa5-beef-deadbeef347d"
+    "private_network_uuid": "deadbeef-dead-4aa5-beef-deadbeef347d",
+	"tags": ["production", "staging"]
   }
 }
 `
@@ -994,6 +1001,7 @@ func TestDatabases_ListReplicas(t *testing.T) {
 				Database: "db",
 			},
 			PrivateNetworkUUID: "deadbeef-dead-4aa5-beef-deadbeef347d",
+			Tags:               []string{"production", "staging"},
 		},
 	}
 
@@ -1022,7 +1030,8 @@ func TestDatabases_ListReplicas(t *testing.T) {
       "database": "db",
       "ssl": true
     },
-    "private_network_uuid": "deadbeef-dead-4aa5-beef-deadbeef347d"
+    "private_network_uuid": "deadbeef-dead-4aa5-beef-deadbeef347d",
+	"tags": ["production", "staging"]
   }]
 }
 `
@@ -1070,6 +1079,7 @@ func TestDatabases_CreateReplica(t *testing.T) {
 			Database: "db",
 		},
 		PrivateNetworkUUID: "deadbeef-dead-4aa5-beef-deadbeef347d",
+		Tags:               []string{"production", "staging"},
 	}
 
 	body := `
@@ -1097,7 +1107,8 @@ func TestDatabases_CreateReplica(t *testing.T) {
       "database": "db",
       "ssl": true
     },
-    "private_network_uuid": "deadbeef-dead-4aa5-beef-deadbeef347d"
+    "private_network_uuid": "deadbeef-dead-4aa5-beef-deadbeef347d",
+	"tags": ["production", "staging"]
   }
 }
 `
@@ -1113,6 +1124,7 @@ func TestDatabases_CreateReplica(t *testing.T) {
 		Region:             "nyc1",
 		Size:               "db-s-2vcpu-4gb",
 		PrivateNetworkUUID: privateNetworkUUID,
+		Tags:               []string{"production", "staging"},
 	})
 	require.NoError(t, err)
 	require.Equal(t, want, got)
