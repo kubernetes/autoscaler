@@ -70,7 +70,7 @@ func TestGetRegion(t *testing.T) {
 
 func TestBuildGenericLabels(t *testing.T) {
 	labels := buildGenericLabels(&asgTemplate{
-		InstanceType: &instanceType{
+		InstanceType: &InstanceType{
 			InstanceType: "c4.large",
 			VCPU:         2,
 			MemoryMb:     3840,
