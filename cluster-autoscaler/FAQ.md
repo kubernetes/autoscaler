@@ -674,6 +674,7 @@ The following startup parameters are supported for cluster autoscaler:
 | `leader-elect-renew-deadline` | The interval between attempts by the acting master to renew a leadership slot before it stops leading.<br>This must be less than or equal to the lease duration.<br>This is only applicable if leader election is enabled | 10 seconds
 | `leader-elect-retry-period` | The duration the clients should wait between attempting acquisition and renewal of a leadership.<br>This is only applicable if leader election is enabled | 2 seconds
 | `leader-elect-resource-lock` | The type of resource object that is used for locking during leader election.<br>Supported options are `endpoints` (default) and `configmaps` | "endpoints"
+| `aws-use-static-instance-list` | Should CA fetch instance types in runtime or use a static list. AWS only | false
 
 # Troubleshooting:
 
