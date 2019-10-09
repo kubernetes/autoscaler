@@ -204,6 +204,13 @@ spec:
             - r5ad.2xlarge
 ```
 
+## Use Static Instance List
+The set of the latest supported EC2 instance types will be fetched by the CA at run time. You can find all the available instance types in the CA logs.
+If your network access is restricted such that fetching this set is infeasible, you can specify the command-line flag `--aws-use-static-instance-list=true` to switch the CA back to its original use of a statically defined set.
+
+To refresh static list, please run `go run ec2_instance_types/gen.go` under `cluster-autoscaler/cloudprovider/aws/` and update `staticListLastUpdateTime` in `aws_util.go`
+
+
 ### Example usage:
 
 * Create a [Launch Template](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-autoscaling-autoscalinggroup-launchtemplate.html) (LT) with an instance type, for example, r5.2xlarge. Consider this the 'base' instance type. Do not define any spot purchase options here.
