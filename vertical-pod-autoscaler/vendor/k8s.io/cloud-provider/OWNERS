@@ -23,9 +23,7 @@ reviewers:
 - zmerlynn
 - luxas
 - justinsb
-- roberthbailey
 - eparis
-- jlowdermilk
 - piosz
 - jsafrane
 - dims
@@ -40,5 +38,7 @@ reviewers:
 - wlan0
 - cheftako
 - andrewsykim
+- mcrute
 labels:
 - sig/cloud-provider
+- area/cloudprovider
