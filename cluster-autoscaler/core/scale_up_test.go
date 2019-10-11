@@ -18,11 +18,12 @@ package core
 
 import (
 	"fmt"
-	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"regexp"
 	"strings"
 	"testing"
 	"time"
+
+	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
@@ -72,6 +73,40 @@ func TestScaleUpOK(t *testing.T) {
 		finalOption: groupSizeChange{groupName: "ng2", sizeChange: 1},
 		scaleUpStatus: scaleUpStatusInfo{
 			podsTriggeredScaleUp: []string{"p-new"},
+		},
+	}
+
+	simpleScaleUpTest(t, config, expectedResults)
+}
+
+// There are triggering, remaining & awaiting pods.
+func TestMixedScaleUp(t *testing.T) {
+	config := &scaleTestConfig{
+		nodes: []nodeConfig{
+			{"n1", 100, 1000, 0, true, "ng1"},
+			{"n2", 1000, 100, 0, true, "ng2"},
+		},
+		pods: []podConfig{
+			{"p1", 80, 0, 0, "n1", false},
+			{"p2", 800, 0, 0, "n2", false},
+		},
+		extraPods: []podConfig{
+			// can only be scheduled on ng2
+			{"triggering", 900, 0, 0, "", false},
+			// can't be scheduled
+			{"remaining", 2000, 0, 0, "", false},
+			// can only be scheduled on ng1
+			{"awaiting", 0, 200, 0, "", false},
+		},
+		options:                 defaultOptions,
+		expansionOptionToChoose: groupSizeChange{groupName: "ng2", sizeChange: 1},
+	}
+	expectedResults := &scaleTestResults{
+		finalOption: groupSizeChange{groupName: "ng2", sizeChange: 1},
+		scaleUpStatus: scaleUpStatusInfo{
+			podsTriggeredScaleUp:    []string{"triggering"},
+			podsRemainUnschedulable: []string{"remaining"},
+			podsAwaitEvaluation:     []string{"awaiting"},
 		},
 	}
 
@@ -563,7 +598,9 @@ func simpleScaleUpTest(t *testing.T, config *scaleTestConfig, expectedResults *s
 		if strings.Contains(event, "TriggeredScaleUp") && strings.Contains(event, expectedResults.finalOption.groupName) {
 			nodeEventSeen = true
 		}
-		assert.NotRegexp(t, regexp.MustCompile("NotTriggerScaleUp"), event)
+		if len(expectedResults.scaleUpStatus.podsRemainUnschedulable) == 0 {
+			assert.NotRegexp(t, regexp.MustCompile("NotTriggerScaleUp"), event)
+		}
 	}
 	assert.True(t, nodeEventSeen)
 
