@@ -461,9 +461,32 @@ func (m *asgCache) buildAsgFromAWS(g *autoscaling.Group) (*asg, error) {
 }
 
 func (m *asgCache) buildLaunchTemplateFromSpec(ltSpec *autoscaling.LaunchTemplateSpecification) *launchTemplate {
+	// NOTE(jaypipes): The LaunchTemplateSpecification.Version is a pointer to
+	// string. When the pointer is nil, EC2 AutoScaling API considers the value
+	// to be "$Default", however aws.StringValue(ltSpec.Version) will return an
+	// empty string (which is not considered the same as "$Default" or a nil
+	// string pointer. So, in order to not pass an empty string as the version
+	// for the launch template when we communicate with the EC2 AutoScaling API
+	// using the information in the launchTemplate, we store the string
+	// "$Default" here when the ltSpec.Version is a nil pointer.
+	//
+	// See:
+	//
+	// https://github.com/kubernetes/autoscaler/issues/1728
+	// https://github.com/aws/aws-sdk-go/blob/81fad3b797f4a9bd1b452a5733dd465eefef1060/service/autoscaling/api.go#L10666-L10671
+	//
+	// A cleaner alternative might be to make launchTemplate.version a string
+	// pointer instead of a string, or even store the aws-sdk-go's
+	// LaunchTemplateSpecification structs directly.
+	var version string
+	if ltSpec.Version == nil {
+		version = "$Default"
+	} else {
+		version = aws.StringValue(ltSpec.Version)
+	}
 	return &launchTemplate{
 		name:    aws.StringValue(ltSpec.LaunchTemplateName),
-		version: aws.StringValue(ltSpec.Version),
+		version: version,
 	}
 }
 
