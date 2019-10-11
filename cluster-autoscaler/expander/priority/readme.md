@@ -20,6 +20,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: cluster-autoscaler-priority-expander
+  namespace: kube-system
 data:
   priorities: |-
     10: 
@@ -29,6 +30,8 @@ data:
       - .*m4\.4xlarge.*
 ```
 
-The priority should be a positive value. The highest value wins. For each priority value, a list of regular expressions should be given. If there are multiple node groups matching any of the regular expressions with the highest priority, one group to expand the cluster is selected each time at random. Priority values cannot be duplicated - in that case, only one of the lists will be used.
+The priority should be a positive value. The highest value wins. For each priority value, a list of regular expressions should be given. If there are multiple node groups matching any of the regular expressions with the highest priority, one group to expand the cluster is selected each time at random. Priority values cannot be duplicated - in that case, only one of the lists will be used. If no match is found, a group will be selected at random.
+
+Note that if a group name doesn't match any of the regular expressions in the priority list it will not be considered for expansion.  To ensure that *all* of your groups are autoscaled you might want to add a "catch-all" regex of `.*` (with a low priority) to your priorities list.
 
 In the example above, the user gives the highest priority to any expansion option, where the scaling group ID matches the regular expression `.*m4\.4xlarge.*`. Assuming all of the used scaling groups are based on AWS Spot instances, the user might now want to give up on all the scaling groups based on the `m4.4xlarge` instance family. To do that, it's enough to either reconfigure the priority to a value `<10` or remove the entry with priority `50` altogether.
