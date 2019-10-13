@@ -91,7 +91,7 @@ func (d *digitaloceanCloudProvider) NodeGroupForNode(node *apiv1.Node) (cloudpro
 		}
 
 		for _, node := range nodes {
-			klog.V(6).Infof("checking node have: %q want: %q", node.Id, nodeID)
+			klog.V(6).Infof("checking node has: %q want: %q", node.Id, nodeID)
 			if node.Id != nodeID {
 				continue
 			}
