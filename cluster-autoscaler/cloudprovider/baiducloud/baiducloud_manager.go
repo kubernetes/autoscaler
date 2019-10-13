@@ -127,7 +127,7 @@ func (m *BaiducloudManager) GetAsgSize(asg *Asg) (int64, error) {
 	}
 	size := int64(0)
 	for _, instance := range instanceList {
-		klog.V(4).Infof("Group: %s instacnes status: %v \n", asg.Name, instance.Status)
+		klog.V(4).Infof("Group: %s instances status: %v \n", asg.Name, instance.Status)
 		if instance.Status == cce.InstanceStatusRunning || instance.Status == cce.InstanceStatusCreating || instance.Status == "" {
 			size++
 		}
