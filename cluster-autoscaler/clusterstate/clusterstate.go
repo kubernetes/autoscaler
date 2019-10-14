@@ -1105,8 +1105,8 @@ func (csr *ClusterStateRegistry) buildInstanceToErrorCodeMappings(instances []cl
 	return
 }
 
-// GetCreatedNodesWithOutOfResourcesErrors returns list of nodes being created which reported create error of "out of resources" class.
-func (csr *ClusterStateRegistry) GetCreatedNodesWithOutOfResourcesErrors() []*apiv1.Node {
+// GetCreatedNodesWithErrors returns list of nodes being created which reported create error.
+func (csr *ClusterStateRegistry) GetCreatedNodesWithErrors() []*apiv1.Node {
 	csr.Lock()
 	defer csr.Unlock()
 

@@ -498,7 +498,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 func (a *StaticAutoscaler) deleteCreatedNodesWithErrors() {
 	// We always schedule deleting of incoming errornous nodes
 	// TODO[lukaszos] Consider adding logic to not retry delete every loop iteration
-	nodes := a.clusterStateRegistry.GetCreatedNodesWithOutOfResourcesErrors()
+	nodes := a.clusterStateRegistry.GetCreatedNodesWithErrors()
 
 	nodeGroups := a.nodeGroupsById()
 	nodesToBeDeletedByNodeGroupId := make(map[string][]*apiv1.Node)
