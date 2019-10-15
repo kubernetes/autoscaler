@@ -238,12 +238,17 @@ func (client *autoscalingGceClientV1) FetchMigInstances(migRef GceRef) ([]cloudp
 				} else if isQuotaExceededErrorCoce(instanceError.Code) {
 					errorInfo.ErrorClass = cloudprovider.OutOfResourcesErrorClass
 					errorInfo.ErrorCode = ErrorCodeQuotaExceeded
-				} else if !errorFound {
-					errorInfo.ErrorClass = cloudprovider.OtherErrorClass
-					errorInfo.ErrorCode = ErrorCodeOther
+				} else if isInstanceNotRunningYet(gceInstance) {
+					if !errorFound {
+						// do not override error code with OTHER
+						errorInfo.ErrorClass = cloudprovider.OtherErrorClass
+						errorInfo.ErrorCode = ErrorCodeOther
+					}
+				} else {
+					// no error
+					continue
 				}
 				errorFound = true
-
 				if instanceError.Message != "" {
 					errorMessages = append(errorMessages, instanceError.Message)
 				}
@@ -286,6 +291,10 @@ func isStockoutErrorCode(errorCode string) bool {
 
 func isQuotaExceededErrorCoce(errorCode string) bool {
 	return strings.Contains(errorCode, "QUOTA")
+}
+
+func isInstanceNotRunningYet(gceInstance *gce.ManagedInstance) bool {
+	return gceInstance.InstanceStatus == "" || gceInstance.InstanceStatus == "PROVISIONING" || gceInstance.InstanceStatus == "STAGING"
 }
 
 func (client *autoscalingGceClientV1) FetchZones(region string) ([]string, error) {

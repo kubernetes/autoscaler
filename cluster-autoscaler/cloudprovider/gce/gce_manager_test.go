@@ -729,10 +729,10 @@ func TestGetMigNodesBasic(t *testing.T) {
 
 const managedInstancesResponseTemplate = `{"managedInstances": [%s]}`
 
-const runningManagedInstanceResponsePartTemplate = `{
+const managedInstanceWithInstanceStatusResponsePartTemplate = `{
    "instance": "https://www.googleapis.com/compute/v1/projects/project1/zones/%s/instances/%s",
    "id": "1776565833558018907",
-   "instanceStatus": "RUNNING",
+   "instanceStatus": "%s",
    "version": {
     "instanceTemplate": "https://www.googleapis.com/compute/beta/projects/project1/global/instanceTemplates/test-1-cpu-1-k80-2"
    },
@@ -740,9 +740,9 @@ const runningManagedInstanceResponsePartTemplate = `{
   }
 `
 
-const runningManagedInstanceWithCurrentActionResponsePartTemplate = `{
+const managedInstanceWithInstanceStatusAndCurrentActionResponsePartTemplate = `{
    "instance": "https://www.googleapis.com/compute/v1/projects/project1/zones/%s/instances/%s",
-   "instanceStatus": "RUNNING",
+   "instanceStatus": "%s",
    "version": {
     "instanceTemplate": "https://www.googleapis.com/compute/beta/projects/project1/global/instanceTemplates/test-1-cpu-1-k80-2"
    },
@@ -751,9 +751,9 @@ const runningManagedInstanceWithCurrentActionResponsePartTemplate = `{
    }
 `
 
-const runningManagedInstanceWithCurrentActionAndErrorResponsePartTemplate = `{
+const managedInstanceWithInstanceStatusAndWithCurrentActionAndErrorResponsePartTemplate = `{
    "instance": "https://www.googleapis.com/compute/v1/projects/project1/zones/%s/instances/%s",
-   "instanceStatus": "RUNNING",
+   "instanceStatus": "%s",
    "version": {
     "instanceTemplate": "https://www.googleapis.com/compute/beta/projects/project1/global/instanceTemplates/test-1-cpu-1-k80-2"
    },
@@ -833,28 +833,40 @@ func buildManagedInstancesResponse(managedInstanceParts ...string) string {
 	return fmt.Sprintf(managedInstancesResponseTemplate, partsString)
 }
 
-func buildRunningManagedInstanceResponsePart(zone string, instance string) string {
-	return fmt.Sprintf(runningManagedInstanceResponsePartTemplate, zone, instance)
+func buildRunningManagedInstanceResponsePart(zone string, instanceName string) string {
+	return buildManagedInstanceWithInstanceStatusResponsePart(zone, instanceName, "RUNNING")
 }
 
-func buildRunningManagedInstanceWithCurrentActionResponsePart(zone string, instanceGroup string, currentAction string) string {
-	return fmt.Sprintf(runningManagedInstanceWithCurrentActionResponsePartTemplate, zone, instanceGroup, currentAction)
+func buildRunningManagedInstanceWithCurrentActionResponsePart(zone string, instanceName string, currentAction string) string {
+	return buildManagedInstanceWithInstanceStatusAndCurrentActionResponsePart(zone, instanceName, "RUNNING", currentAction)
 }
 
-func buildRunningManagedInstanceWithCurrentActionAndErrorResponsePart(zone string, instanceGroup string, currentAction string, code string, message string) string {
-	return fmt.Sprintf(runningManagedInstanceWithCurrentActionAndErrorResponsePartTemplate, zone, instanceGroup, currentAction, code, message)
+func buildRunningManagedInstanceWithCurrentActionAndErrorResponsePart(zone string, instanceName string, currentAction string, code string, message string) string {
+	return buildManagedInstanceWithInstanceStatusAndCurrentActionAndErrorResponsePart(zone, instanceName, "RUNNING", currentAction, code, message)
 }
 
-func buildManagedInstanceWithCurrentActionResponsePart(zone string, instanceGroup string, currentAction string) string {
-	return fmt.Sprintf(managedInstanceWithCurrentActionResponsePartTemplate, zone, instanceGroup, currentAction)
+func buildManagedInstanceWithInstanceStatusResponsePart(zone string, instanceName string, instanceStatus string) string {
+	return fmt.Sprintf(managedInstanceWithInstanceStatusResponsePartTemplate, zone, instanceName, instanceStatus)
 }
 
-func buildManagedInstanceWithCurrentActionAndErrorResponsePart(zone string, instanceGroup string, currentAction string, code string, message string) string {
-	return fmt.Sprintf(managedInstanceWithCurrentActionAndErrorResponsePartTemplate, zone, instanceGroup, currentAction, code, message)
+func buildManagedInstanceWithInstanceStatusAndCurrentActionResponsePart(zone string, instanceName string, instanceStatus string, currentAction string) string {
+	return fmt.Sprintf(managedInstanceWithInstanceStatusAndCurrentActionResponsePartTemplate, zone, instanceName, instanceStatus, currentAction)
 }
 
-func buildManagedInstanceWithCurrentActionAndTwoErrorsResponsePart(zone string, instanceGroup string, currentAction string, code1 string, message1 string, code2 string, message2 string) string {
-	return fmt.Sprintf(managedInstanceWithCurrentActionAndTwoErrorsResponsePartTemplate, zone, instanceGroup, currentAction, code1, message1, code2, message2)
+func buildManagedInstanceWithInstanceStatusAndCurrentActionAndErrorResponsePart(zone string, instanceName string, instanceStatus string, currentAction string, code string, message string) string {
+	return fmt.Sprintf(managedInstanceWithInstanceStatusAndWithCurrentActionAndErrorResponsePartTemplate, zone, instanceName, instanceStatus, currentAction, code, message)
+}
+
+func buildManagedInstanceWithCurrentActionResponsePart(zone string, instanceName string, currentAction string) string {
+	return fmt.Sprintf(managedInstanceWithCurrentActionResponsePartTemplate, zone, instanceName, currentAction)
+}
+
+func buildManagedInstanceWithCurrentActionAndErrorResponsePart(zone string, instanceName string, currentAction string, code string, message string) string {
+	return fmt.Sprintf(managedInstanceWithCurrentActionAndErrorResponsePartTemplate, zone, instanceName, currentAction, code, message)
+}
+
+func buildManagedInstanceWithCurrentActionAndTwoErrorsResponsePart(zone string, instanceName string, currentAction string, code1 string, message1 string, code2 string, message2 string) string {
+	return fmt.Sprintf(managedInstanceWithCurrentActionAndTwoErrorsResponsePartTemplate, zone, instanceName, currentAction, code1, message1, code2, message2)
 }
 
 func TestGetMigNodesComplex(t *testing.T) {
@@ -871,108 +883,156 @@ func TestGetMigNodesComplex(t *testing.T) {
 		expectedErrorMessage string
 	}{
 		{
-			"instance-running",
-			buildRunningManagedInstanceResponsePart("europe-west1-b", "instance-running"),
+			"running-creating-no_error",
+			buildRunningManagedInstanceResponsePart("europe-west1-b", "running-creating-no_error"),
 			cloudprovider.InstanceRunning,
 			0,
 			"",
 			"",
 		},
 		{
-			"instance-creating-quota-exceeded",
-			buildManagedInstanceWithCurrentActionAndErrorResponsePart("europe-west1-b", "instance-creating-quota-exceeded", "CREATING", ErrorCodeQuotaExceeded, "We run out of quota while creating!"),
+			"none-creating-quota_exceeded",
+			buildManagedInstanceWithCurrentActionAndErrorResponsePart("europe-west1-b", "none-creating-quota_exceeded", "CREATING", ErrorCodeQuotaExceeded, "We run out of quota while creating!"),
 			cloudprovider.InstanceCreating,
 			cloudprovider.OutOfResourcesErrorClass,
 			ErrorCodeQuotaExceeded,
 			"We run out of quota while creating!",
 		},
 		{
-			"instance-recreating-quota-exceeded",
-			buildManagedInstanceWithCurrentActionAndErrorResponsePart("europe-west1-b", "instance-recreating-quota-exceeded", "RECREATING", ErrorCodeQuotaExceeded, "We run out of quota while recreating!"),
+			"none-recreating-quota_exceeded",
+			buildManagedInstanceWithCurrentActionAndErrorResponsePart("europe-west1-b", "none-recreating-quota_exceeded", "RECREATING", ErrorCodeQuotaExceeded, "We run out of quota while recreating!"),
 			cloudprovider.InstanceCreating,
 			cloudprovider.OutOfResourcesErrorClass,
 			ErrorCodeQuotaExceeded,
 			"We run out of quota while recreating!",
 		},
 		{
-			"instance-creating-no-retries-quota-exceeded",
-			buildManagedInstanceWithCurrentActionAndErrorResponsePart("europe-west1-b", "instance-creating-no-retries-quota-exceeded", "CREATING_WITHOUT_RETRIES", ErrorCodeQuotaExceeded, "We run out of quota while creating without retries!"),
+			"none-creating_no_retries-quota_exceeded",
+			buildManagedInstanceWithCurrentActionAndErrorResponsePart("europe-west1-b", "none-creating_no_retries-quota_exceeded", "CREATING_WITHOUT_RETRIES", ErrorCodeQuotaExceeded, "We run out of quota while creating without retries!"),
 			cloudprovider.InstanceCreating,
 			cloudprovider.OutOfResourcesErrorClass,
 			ErrorCodeQuotaExceeded,
 			"We run out of quota while creating without retries!",
 		},
 		{
-			"instance-creating-other-error",
-			buildManagedInstanceWithCurrentActionAndErrorResponsePart("europe-west1-b", "instance-creating-other-error", "CREATING", "SOME_ERROR", "Ojojojoj!"),
+			"none-creating-other_error",
+			buildManagedInstanceWithCurrentActionAndErrorResponsePart("europe-west1-b", "none-creating-other_error", "CREATING", "SOME_ERROR", "Ojojojoj!"),
 			cloudprovider.InstanceCreating,
 			cloudprovider.OtherErrorClass,
 			ErrorCodeOther,
 			"Ojojojoj!",
 		},
 		{
-			"instance-creating-other-error-and-quota-exceeded",
-			buildManagedInstanceWithCurrentActionAndTwoErrorsResponsePart("europe-west1-b", "instance-creating-other-error-and-quota-exceeded", "CREATING", "SOME_ERROR", "Ojojojoj!", ErrorCodeQuotaExceeded, "We run out of quota!"),
+			"none-creating-other_error_and_quota_exceeded",
+			buildManagedInstanceWithCurrentActionAndTwoErrorsResponsePart("europe-west1-b", "none-creating-other_error_and_quota_exceeded", "CREATING", "SOME_ERROR", "Ojojojoj!", ErrorCodeQuotaExceeded, "We run out of quota!"),
 			cloudprovider.InstanceCreating,
 			cloudprovider.OutOfResourcesErrorClass,
 			ErrorCodeQuotaExceeded,
 			"Ojojojoj!; We run out of quota!",
 		},
 		{
-			"instance-creating-quota-exceeded-and-other",
-			buildManagedInstanceWithCurrentActionAndTwoErrorsResponsePart("europe-west1-b", "instance-creating-quota-exceeded-and-other", "CREATING", ErrorCodeQuotaExceeded, "We run out of quota!", "SOME_ERROR", "Ojojojoj!"),
+			"none-creating-quota_exceeded_and_other_error",
+			buildManagedInstanceWithCurrentActionAndTwoErrorsResponsePart("europe-west1-b", "none-creating-quota_exceeded_and_other_error", "CREATING", ErrorCodeQuotaExceeded, "We run out of quota!", "SOME_ERROR", "Ojojojoj!"),
 			cloudprovider.InstanceCreating,
 			cloudprovider.OutOfResourcesErrorClass,
 			ErrorCodeQuotaExceeded,
 			"We run out of quota!; Ojojojoj!",
 		},
 		{
-			"instance-deleting",
-			buildManagedInstanceWithCurrentActionResponsePart("europe-west1-b", "instance-deleting", "DELETING"),
+			"none-deleting-no_error",
+			buildManagedInstanceWithCurrentActionResponsePart("europe-west1-b", "none-deleting-no_error", "DELETING"),
 			cloudprovider.InstanceDeleting,
 			0,
 			"",
 			"",
 		},
 		{
-			"instance-running-deleting",
-			buildRunningManagedInstanceWithCurrentActionResponsePart("europe-west1-b", "instance-running-deleting", "DELETING"),
+			"running-deleting-no_error",
+			buildRunningManagedInstanceWithCurrentActionResponsePart("europe-west1-b", "running-deleting-no_error", "DELETING"),
 			cloudprovider.InstanceDeleting,
 			0,
 			"",
 			"",
 		},
 		{
-			"instance-running-deleting-error",
-			buildRunningManagedInstanceWithCurrentActionAndErrorResponsePart("europe-west1-b", "instance-running-deleting-error", "DELETING", "SOME_ERROR", "Error while deleting"),
+			"running-deleting-other_error",
+			buildRunningManagedInstanceWithCurrentActionAndErrorResponsePart("europe-west1-b", "running-deleting-other_error", "DELETING", "SOME_ERROR", "Error while deleting"),
 			cloudprovider.InstanceDeleting,
 			0,
 			"",
 			"",
 		},
 		{
-			"instance-creating-stockout",
-			buildManagedInstanceWithCurrentActionAndErrorResponsePart("europe-west1-b", "instance-creating-stockout", "CREATING", "RESOURCE_POOL_EXHAUSTED", "No resources!"),
+			"none-creating-stockout_error",
+			buildManagedInstanceWithCurrentActionAndErrorResponsePart("europe-west1-b", "none-creating-stockout_error", "CREATING", "RESOURCE_POOL_EXHAUSTED", "No resources!"),
 			cloudprovider.InstanceCreating,
 			cloudprovider.OutOfResourcesErrorClass,
 			ErrorCodeStockout,
 			"No resources!",
 		},
 		{
-			"instance-creating-stockout-zonal",
-			buildManagedInstanceWithCurrentActionAndErrorResponsePart("europe-west1-b", "instance-creating-stockout-zonal", "CREATING", "ZONE_RESOURCE_POOL_EXHAUSTED", "No resources!"),
+			"none-creating-zonal_stockout_error",
+			buildManagedInstanceWithCurrentActionAndErrorResponsePart("europe-west1-b", "none-creating-zonal_stockout_error", "CREATING", "ZONE_RESOURCE_POOL_EXHAUSTED", "No resources!"),
 			cloudprovider.InstanceCreating,
 			cloudprovider.OutOfResourcesErrorClass,
 			ErrorCodeStockout,
 			"No resources!",
 		},
 		{
-			"instance-creating-stockout-zonal-details",
-			buildManagedInstanceWithCurrentActionAndErrorResponsePart("europe-west1-b", "instance-creating-stockout-zonal-details", "CREATING", "ZONE_RESOURCE_POOL_EXHAUSTED_WITH_DETAILS", "No resources!"),
+			"none-creating-zonal_stockout_error_with_details",
+			buildManagedInstanceWithCurrentActionAndErrorResponsePart("europe-west1-b", "none-creating-zonal_stockout_error_with_details", "CREATING", "ZONE_RESOURCE_POOL_EXHAUSTED_WITH_DETAILS", "No resources!"),
 			cloudprovider.InstanceCreating,
 			cloudprovider.OutOfResourcesErrorClass,
 			ErrorCodeStockout,
 			"No resources!",
+		},
+		{
+			"running-creating-stockout_error",
+			buildRunningManagedInstanceWithCurrentActionAndErrorResponsePart("europe-west1-b", "running-creating-stockout_error", "CREATING", "RESOURCE_POOL_EXHAUSTED", "No resources!"),
+			cloudprovider.InstanceCreating,
+			cloudprovider.OutOfResourcesErrorClass,
+			ErrorCodeStockout,
+			"No resources!",
+		},
+		{
+			"running-creating-quota_error",
+			buildRunningManagedInstanceWithCurrentActionAndErrorResponsePart("europe-west1-b", "running-creating-quota_error", "CREATING", ErrorCodeQuotaExceeded, "We run out of quota while creating!"),
+			cloudprovider.InstanceCreating,
+			cloudprovider.OutOfResourcesErrorClass,
+			ErrorCodeQuotaExceeded,
+			"We run out of quota while creating!",
+		},
+		{
+			"running-creating-other_error",
+			buildRunningManagedInstanceWithCurrentActionAndErrorResponsePart("europe-west1-b", "running-creating-other_error", "CREATING", "SOME_ERROR", "Ojojojoj!"),
+			cloudprovider.InstanceCreating,
+			0,
+			"",
+			"",
+		},
+		{
+			"repairing-creating-other_error",
+			buildManagedInstanceWithInstanceStatusAndCurrentActionAndErrorResponsePart("europe-west1-b", "repairing-creating-other_error", "REPAIRING", "CREATING", "SOME_ERROR", "Ojojojoj!"),
+			cloudprovider.InstanceCreating,
+			0,
+			"",
+			"",
+		},
+		{
+			"provisioning-creating-other_error",
+			buildManagedInstanceWithInstanceStatusAndCurrentActionAndErrorResponsePart("europe-west1-b", "provisioning-creating-other_error", "PROVISIONING", "CREATING", "SOME_ERROR", "Ojojojoj!"),
+			cloudprovider.InstanceCreating,
+			cloudprovider.OtherErrorClass,
+			ErrorCodeOther,
+			"Ojojojoj!",
+		},
+		{
+			"staging-creating-other_error",
+			buildManagedInstanceWithInstanceStatusAndCurrentActionAndErrorResponsePart("europe-west1-b", "staging-creating-other_error", "STAGING", "CREATING", "SOME_ERROR", "Ojojojoj!"),
+			cloudprovider.InstanceCreating,
+			cloudprovider.OtherErrorClass,
+			ErrorCodeOther,
+			"Ojojojoj!",
 		},
 	}
 
