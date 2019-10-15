@@ -62,7 +62,7 @@ type AwsManager struct {
 }
 
 type asgTemplate struct {
-	InstanceType *instanceType
+	InstanceType *InstanceType
 	Region       string
 	Zone         string
 	Tags         []*autoscaling.TagDescription
