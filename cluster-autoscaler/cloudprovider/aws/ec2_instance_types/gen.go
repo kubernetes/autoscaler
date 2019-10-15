@@ -19,41 +19,12 @@ limitations under the License.
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"html/template"
-	"io/ioutil"
-	"net/http"
-	"os"
-	"regexp"
-	"strconv"
-	"strings"
-
-	"github.com/aws/aws-sdk-go/aws/endpoints"
+	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider/aws"
 	"k8s.io/klog"
+	"os"
 )
-
-type response struct {
-	Products map[string]product `json:"products"`
-}
-
-type product struct {
-	Attributes productAttributes `json:"attributes"`
-}
-
-type productAttributes struct {
-	InstanceType string `json:"instanceType"`
-	VCPU         string `json:"vcpu"`
-	Memory       string `json:"memory"`
-	GPU          string `json:"gpu"`
-}
-
-type instanceType struct {
-	InstanceType string
-	VCPU         int64
-	Memory       int64
-	GPU          int64
-}
 
 var packageTemplate = template.Must(template.New("").Parse(`/*
 Copyright The Kubernetes Authors.
@@ -75,7 +46,7 @@ limitations under the License.
 
 package aws
 
-type instanceType struct {
+type InstanceType struct {
 	InstanceType string
 	VCPU         int64
 	MemoryMb     int64
@@ -83,12 +54,12 @@ type instanceType struct {
 }
 
 // InstanceTypes is a map of ec2 resources
-var InstanceTypes = map[string]*instanceType{
+var InstanceTypes = map[string]*InstanceType{
 {{- range .InstanceTypes }}
 	"{{ .InstanceType }}": {
 		InstanceType: "{{ .InstanceType }}",
 		VCPU:         {{ .VCPU }},
-		MemoryMb:     {{ .Memory }},
+		MemoryMb:     {{ .MemoryMb }},
 		GPU:          {{ .GPU }},
 	},
 {{- end }}
@@ -96,57 +67,14 @@ var InstanceTypes = map[string]*instanceType{
 `))
 
 func main() {
+	var region = flag.String("region", "", "aws region you'd like to generate instances from."+
+		"It will populate list from all regions if region is not specified.")
 	flag.Parse()
 	defer klog.Flush()
 
-	instanceTypes := make(map[string]*instanceType)
-
-	resolver := endpoints.DefaultResolver()
-	partitions := resolver.(endpoints.EnumPartitions).Partitions()
-
-	for _, p := range partitions {
-		for _, r := range p.Regions() {
-			url := "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonEC2/current/" + r.ID() + "/index.json"
-			klog.V(1).Infof("fetching %s\n", url)
-			res, err := http.Get(url)
-			if err != nil {
-				klog.Warningf("Error fetching %s skipping...\n", url)
-				continue
-			}
-
-			defer res.Body.Close()
-
-			body, err := ioutil.ReadAll(res.Body)
-			if err != nil {
-				klog.Warningf("Error parsing %s skipping...\n", url)
-				continue
-			}
-
-			var unmarshalled = response{}
-			err = json.Unmarshal(body, &unmarshalled)
-			if err != nil {
-				klog.Warningf("Error unmarshalling %s skipping...\n", url)
-				continue
-			}
-
-			for _, product := range unmarshalled.Products {
-				attr := product.Attributes
-				if attr.InstanceType != "" {
-					instanceTypes[attr.InstanceType] = &instanceType{
-						InstanceType: attr.InstanceType,
-					}
-					if attr.Memory != "" && attr.Memory != "NA" {
-						instanceTypes[attr.InstanceType].Memory = parseMemory(attr.Memory)
-					}
-					if attr.VCPU != "" {
-						instanceTypes[attr.InstanceType].VCPU = parseCPU(attr.VCPU)
-					}
-					if attr.GPU != "" {
-						instanceTypes[attr.InstanceType].GPU = parseCPU(attr.GPU)
-					}
-				}
-			}
-		}
+	instanceTypes, err := aws.GenerateEC2InstanceTypes(*region)
+	if err != nil {
+		klog.Fatal(err)
 	}
 
 	f, err := os.Create("ec2_instance_types.go")
@@ -157,7 +85,7 @@ func main() {
 	defer f.Close()
 
 	err = packageTemplate.Execute(f, struct {
-		InstanceTypes map[string]*instanceType
+		InstanceTypes map[string]*aws.InstanceType
 	}{
 		InstanceTypes: instanceTypes,
 	})
@@ -165,27 +93,4 @@ func main() {
 	if err != nil {
 		klog.Fatal(err)
 	}
-}
-
-func parseMemory(memory string) int64 {
-	reg, err := regexp.Compile("[^0-9\\.]+")
-	if err != nil {
-		klog.Fatal(err)
-	}
-
-	parsed := strings.TrimSpace(reg.ReplaceAllString(memory, ""))
-	mem, err := strconv.ParseFloat(parsed, 64)
-	if err != nil {
-		klog.Fatal(err)
-	}
-
-	return int64(mem * float64(1024))
-}
-
-func parseCPU(cpu string) int64 {
-	i, err := strconv.ParseInt(cpu, 10, 64)
-	if err != nil {
-		klog.Fatal(err)
-	}
-	return i
 }
