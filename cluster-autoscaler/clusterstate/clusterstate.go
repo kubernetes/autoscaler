@@ -1033,7 +1033,7 @@ func (csr *ClusterStateRegistry) handleInstanceCreationErrorsForNodeGroup(
 			}
 		}
 
-		klog.V(1).Infof("Failed adding %v nodes (%v unseen previously) to group %v due to %v", len(instances), len(unseenInstanceIds), nodeGroup.Id(), errorCode)
+		klog.V(1).Infof("Failed adding %v nodes (%v unseen previously) to group %v due to %v; errorMessages=%#v", len(instances), len(unseenInstanceIds), nodeGroup.Id(), errorCode, currentUniqueErrorMessagesForErrorCode[errorCode])
 		if len(unseenInstanceIds) > 0 && csr.IsNodeGroupScalingUp(nodeGroup.Id()) {
 			csr.logRecorder.Eventf(
 				apiv1.EventTypeWarning,

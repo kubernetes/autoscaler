@@ -27,6 +27,7 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+	"k8s.io/autoscaler/cluster-autoscaler/utils/glogx"
 
 	gce "google.golang.org/api/compute/v1"
 	"k8s.io/klog"
@@ -203,6 +204,7 @@ func (client *autoscalingGceClientV1) FetchMigInstances(migRef GceRef) ([]cloudp
 	}
 	infos := []cloudprovider.Instance{}
 	errorCodeCounts := make(map[string]int)
+	errorLoggingQuota := glogx.NewLoggingQuota(100)
 	for _, gceInstance := range gceInstances.ManagedInstances {
 		ref, err := ParseInstanceUrlRef(gceInstance.Instance)
 		if err != nil {
@@ -227,7 +229,8 @@ func (client *autoscalingGceClientV1) FetchMigInstances(migRef GceRef) ([]cloudp
 			var errorInfo cloudprovider.InstanceErrorInfo
 			errorMessages := []string{}
 			errorFound := false
-			for _, instanceError := range getLastAttemptErrors(gceInstance) {
+			lastAttemptErrors := getLastAttemptErrors(gceInstance)
+			for _, instanceError := range lastAttemptErrors {
 				errorCodeCounts[instanceError.Code]++
 				if isStockoutErrorCode(instanceError.Code) {
 					errorInfo.ErrorClass = cloudprovider.OutOfResourcesErrorClass
@@ -249,10 +252,21 @@ func (client *autoscalingGceClientV1) FetchMigInstances(migRef GceRef) ([]cloudp
 			if errorFound {
 				instance.Status.ErrorInfo = &errorInfo
 			}
-		}
 
+			if len(lastAttemptErrors) > 0 {
+				gceInstanceJSONBytes, err := gceInstance.MarshalJSON()
+				var gceInstanceJSON string
+				if err != nil {
+					gceInstanceJSON = fmt.Sprintf("Got error from MarshalJSON; %v", err)
+				} else {
+					gceInstanceJSON = string(gceInstanceJSONBytes)
+				}
+				glogx.V(4).UpTo(errorLoggingQuota).Infof("Got GCE instance which is being created and has lastAttemptErrors; gceInstance=%v; errorInfo=%#v", gceInstanceJSON, errorInfo)
+			}
+		}
 		infos = append(infos, instance)
 	}
+	glogx.V(4).Over(errorLoggingQuota).Infof("Got %v other GCE instances being created with lastAttemptErrors", -errorLoggingQuota.Left())
 	if len(errorCodeCounts) > 0 {
 		klog.V(4).Infof("Spotted following instance creation error codes: %#v", errorCodeCounts)
 	}
