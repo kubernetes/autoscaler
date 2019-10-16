@@ -99,7 +99,7 @@ func main() {
 		Addr:      fmt.Sprintf(":%d", *port),
 		TLSConfig: configTLS(clientset, certs.serverCert, certs.serverKey),
 	}
-	url := fmt.Sprintf("%v:%v", webhookAddress, webhookPort)
+	url := fmt.Sprintf("%v:%v", *webhookAddress, *webhookPort)
 	go selfRegistration(clientset, certs.caCert, &namespace, url, *registerByURL)
 	server.ListenAndServeTLS("", "")
 }
