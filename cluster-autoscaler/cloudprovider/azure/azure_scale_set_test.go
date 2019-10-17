@@ -26,6 +26,8 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
+
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-10-01/compute"
 )
 
 func newTestScaleSet(manager *AzureManager, name string) *ScaleSet {
@@ -64,9 +66,12 @@ func TestTargetSize(t *testing.T) {
 	assert.True(t, registered)
 	assert.Equal(t, len(provider.NodeGroups()), 1)
 
+	ng := provider.NodeGroups()[0]
+	size, err := ng.TargetSize()
+	println(size)
 	targetSize, err := provider.NodeGroups()[0].TargetSize()
 	assert.NoError(t, err)
-	assert.Equal(t, targetSize, 2)
+	assert.Equal(t, 3, targetSize)
 }
 
 func TestIncreaseSize(t *testing.T) {
@@ -79,10 +84,10 @@ func TestIncreaseSize(t *testing.T) {
 	// current target size is 2.
 	targetSize, err := provider.NodeGroups()[0].TargetSize()
 	assert.NoError(t, err)
-	assert.Equal(t, targetSize, 2)
+	assert.Equal(t, 3, targetSize)
 
 	// increase 3 nodes.
-	err = provider.NodeGroups()[0].IncreaseSize(3)
+	err = provider.NodeGroups()[0].IncreaseSize(2)
 	assert.NoError(t, err)
 
 	// new target size should be 5.
@@ -120,7 +125,20 @@ func TestBelongs(t *testing.T) {
 
 func TestDeleteNodes(t *testing.T) {
 	manager := newTestAzureManager(t)
-	scaleSetClient := &VirtualMachineScaleSetsClientMock{}
+	vmssName := "test-asg"
+	var vmssCapacity int64 = 3
+	scaleSetClient := &VirtualMachineScaleSetsClientMock{
+		FakeStore: map[string]map[string]compute.VirtualMachineScaleSet{
+			"test": {
+				"test-asg": {
+					Name: &vmssName,
+					Sku: &compute.Sku{
+						Capacity: &vmssCapacity,
+					},
+				},
+			},
+		},
+	}
 	response := autorest.Response{
 		Response: &http.Response{
 			Status: "OK",
@@ -211,7 +229,7 @@ func TestTemplateNodeInfo(t *testing.T) {
 		minSize: 1,
 		maxSize: 5,
 	}
-	asg.Name = "test-scale-set"
+	asg.Name = "test-asg"
 
 	nodeInfo, err := asg.TemplateNodeInfo()
 	assert.NoError(t, err)

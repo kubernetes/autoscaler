@@ -29,6 +29,10 @@ import (
 )
 
 func newTestAzureManager(t *testing.T) *AzureManager {
+	vmssName := "test-asg"
+	skuName := "Standard_D4_v2"
+	location := "eastus"
+	var vmssCapacity int64 = 3
 	manager := &AzureManager{
 		env:                  azure.PublicCloud,
 		explicitlyConfigured: make(map[string]bool),
@@ -48,11 +52,24 @@ func newTestAzureManager(t *testing.T) *AzureManager {
 				FakeStore: make(map[string]map[string]compute.VirtualMachine),
 			},
 			virtualMachineScaleSetsClient: &VirtualMachineScaleSetsClientMock{
-				FakeStore: make(map[string]map[string]compute.VirtualMachineScaleSet),
+				FakeStore: map[string]map[string]compute.VirtualMachineScaleSet{
+					"test": {
+						"test-asg": {
+							Name: &vmssName,
+							Sku: &compute.Sku{
+								Capacity: &vmssCapacity,
+								Name:     &skuName,
+							},
+							VirtualMachineScaleSetProperties: &compute.VirtualMachineScaleSetProperties{},
+							Location:                         &location,
+						},
+					},
+				},
 			},
 			virtualMachineScaleSetVMsClient: &VirtualMachineScaleSetVMsClientMock{},
 		},
 	}
+
 	cache, error := newAsgCache()
 	assert.NoError(t, error)
 
