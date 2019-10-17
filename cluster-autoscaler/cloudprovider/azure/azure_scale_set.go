@@ -45,6 +45,11 @@ var (
 	vmssInstancesRefreshPeriod = 5 * time.Minute
 )
 
+var scaleSetStatusCache struct {
+	lastRefresh time.Time
+	scaleSets   map[string]compute.VirtualMachineScaleSet
+}
+
 func init() {
 	// In go-autorest SDK https://github.com/Azure/go-autorest/blob/master/autorest/sender.go#L242,
 	// if ARM returns http.StatusTooManyRequests, the sender doesn't increase the retry attempt count,
@@ -125,13 +130,36 @@ func (scaleSet *ScaleSet) MaxSize() int {
 }
 
 func (scaleSet *ScaleSet) getVMSSInfo() (compute.VirtualMachineScaleSet, error) {
+	if scaleSetStatusCache.lastRefresh.Add(vmssSizeRefreshPeriod).After(time.Now()) {
+		return scaleSetStatusCache.scaleSets[scaleSet.Name], nil
+	}
+	var allVMSS []compute.VirtualMachineScaleSet
+	var err error
+
+	allVMSS, err = scaleSet.getAllVMSSInfo()
+	if err != nil {
+		return compute.VirtualMachineScaleSet{}, err
+	}
+
+	var newStatus = make(map[string]compute.VirtualMachineScaleSet)
+	for _, vmss := range allVMSS {
+		newStatus[*vmss.Name] = vmss
+	}
+
+	scaleSetStatusCache.lastRefresh = time.Now()
+	scaleSetStatusCache.scaleSets = newStatus
+
+	return scaleSetStatusCache.scaleSets[scaleSet.Name], nil
+}
+
+func (scaleSet *ScaleSet) getAllVMSSInfo() ([]compute.VirtualMachineScaleSet, error) {
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
 
 	resourceGroup := scaleSet.manager.config.ResourceGroup
-	setInfo, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.Get(ctx, resourceGroup, scaleSet.Name)
+	setInfo, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.List(ctx, resourceGroup)
 	if err != nil {
-		return compute.VirtualMachineScaleSet{}, err
+		return []compute.VirtualMachineScaleSet{}, err
 	}
 
 	return setInfo, nil
