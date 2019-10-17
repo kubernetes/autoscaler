@@ -777,3 +777,64 @@ func flatTagSlice(filters []*autoscaling.Filter) []string {
 	sort.Strings(tags)
 	return tags
 }
+
+func TestParseASGAutoDiscoverySpecs(t *testing.T) {
+	cases := []struct {
+		name    string
+		specs   []string
+		want    []asgAutoDiscoveryConfig
+		wantErr bool
+	}{
+		{
+			name: "GoodSpecs",
+			specs: []string{
+				"asg:tag=tag,anothertag",
+				"asg:tag=cooltag,anothertag",
+				"asg:tag=label=value,anothertag",
+			},
+			want: []asgAutoDiscoveryConfig{
+				{Tags: map[string]string{"tag": "", "anothertag": ""}},
+				{Tags: map[string]string{"cooltag": "", "anothertag": ""}},
+				{Tags: map[string]string{"label": "value", "anothertag": ""}},
+			},
+		},
+		{
+			name:    "MissingASGType",
+			specs:   []string{"tag=tag,anothertag"},
+			wantErr: true,
+		},
+		{
+			name:    "WrongType",
+			specs:   []string{"mig:tag=tag,anothertag"},
+			wantErr: true,
+		},
+		{
+			name:    "KeyMissingValue",
+			specs:   []string{"asg:tag="},
+			wantErr: true,
+		},
+		{
+			name:    "ValueMissingKey",
+			specs:   []string{"asg:=tag"},
+			wantErr: true,
+		},
+		{
+			name:    "KeyMissingSeparator",
+			specs:   []string{"asg:tag"},
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			do := cloudprovider.NodeGroupDiscoveryOptions{NodeGroupAutoDiscoverySpecs: tc.specs}
+			got, err := parseASGAutoDiscoverySpecs(do)
+			if tc.wantErr {
+				assert.Error(t, err)
+				return
+			}
+			assert.NoError(t, err)
+			assert.True(t, assert.ObjectsAreEqualValues(tc.want, got), "\ngot: %#v\nwant: %#v", got, tc.want)
+		})
+	}
+}
