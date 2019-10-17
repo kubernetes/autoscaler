@@ -109,7 +109,7 @@ func (a *StaticAutoscaler) cleanUpIfRequired() {
 }
 
 // RunOnce iterates over node groups and scales them up/down if necessary
-func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError {
+func (a *StaticAutoscaler) RunOnce(currentTime time.Time, triggerScaleUpOverride bool) errors.AutoscalerError {
 	a.cleanUpIfRequired()
 
 	unschedulablePodLister := a.UnschedulablePodLister()
@@ -119,6 +119,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	autoscalingContext := a.AutoscalingContext
 
 	glog.V(4).Info("Starting main loop")
+	glog.V(4).Info("triggerScaleUpOverride: %t", triggerScaleUpOverride)
 
 	stateUpdateStart := time.Now()
 	allNodes, readyNodes, typedErr := a.obtainNodeLists()
@@ -263,9 +264,12 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		glog.V(4).Info("No schedulable pods")
 	}
 
-	if len(unschedulablePodsToHelp) == 0 {
+	// scale up logic starts here
+	triggerScaleUp := len(unschedulablePodsToHelp) == 0
+	if triggerScaleUp || triggerScaleUpOverride { // if unschedulable pods
 		glog.V(1).Info("No unschedulable pods")
 	} else if a.MaxNodesTotal > 0 && len(readyNodes) >= a.MaxNodesTotal {
+		// my logic goes here to trigger other cluster to scale
 		glog.V(1).Info("Max total nodes in cluster reached")
 	} else if allPodsAreNew(unschedulablePodsToHelp, currentTime) {
 		// The assumption here is that these pods have been created very recently and probably there
@@ -296,6 +300,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 		}
 	}
 
+	//scale down logic starts here
 	if a.ScaleDownEnabled {
 		pdbs, err := pdbLister.List()
 		if err != nil {

@@ -150,6 +150,7 @@ var (
 	unremovableNodeRecheckTimeout = flag.Duration("unremovable-node-recheck-timeout", 5*time.Minute, "The timeout before we check again a node that couldn't be removed before")
 	expendablePodsPriorityCutoff  = flag.Int("expendable-pods-priority-cutoff", -10, "Pods with priority below cutoff will be expendable. They can be killed without any consideration during scale down and they don't cause scale up. Pods with null priority (PodPriority disabled) are non expendable.")
 	regional                      = flag.Bool("regional", false, "Cluster is regional.")
+	triggerScaleUpOverride        = false
 )
 
 func createAutoscalingOptions() config.AutoscalingOptions {
@@ -299,7 +300,7 @@ func run(healthCheck *metrics.HealthCheck) {
 				metrics.UpdateLastTime(metrics.Main, loopStart)
 				healthCheck.UpdateLastActivity(loopStart)
 
-				err := autoscaler.RunOnce(loopStart)
+				err := autoscaler.RunOnce(loopStart, triggerScaleUpOverride)
 				if err != nil && err.Type() != errors.TransientError {
 					metrics.RegisterError(err)
 				} else {
@@ -310,6 +311,12 @@ func run(healthCheck *metrics.HealthCheck) {
 			}
 		}
 	}
+}
+
+// handler echoes the Path component of the requested URL.
+func triggerScaleUpHandler(w http.ResponseWriter, r *http.Request) {
+	triggerScaleUpOverride = true
+	fmt.Fprintf(w, "scale up triggered")
 }
 
 func main() {
@@ -335,6 +342,7 @@ func main() {
 	go func() {
 		http.Handle("/metrics", prometheus.Handler())
 		http.Handle("/health-check", healthCheck)
+		http.Handle("/trigger-scal-up", healthCheck)
 		err := http.ListenAndServe(*address, nil)
 		glog.Fatalf("Failed to start metrics: %v", err)
 	}()
@@ -369,6 +377,10 @@ func main() {
 			glog.Fatalf("Unable to create leader election lock: %v", err)
 		}
 
+		/*
+			https://kubernetes.io/blog/2016/01/simple-leader-election-with-kubernetes/
+			"Distributed applications usually replicate the tasks of a service for reliability and scalability, but often it is necessary to designate one of the replicas as the leader who is responsible for coordination among all of the replicas."
+		*/
 		leaderelection.RunOrDie(ctx.TODO(), leaderelection.LeaderElectionConfig{
 			Lock:          lock,
 			LeaseDuration: leaderElection.LeaseDuration.Duration,

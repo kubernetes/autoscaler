@@ -459,6 +459,11 @@ func simpleScaleUpTest(t *testing.T, config *scaleTestConfig) {
 	assert.True(t, nodeEventSeen)
 }
 
+func TestJamesFirstGoTest(t *testing.T) {
+	fmt.Println("Hello Go Lang!")
+	assert.True(t, true)
+}
+
 func getGroupSizeChangeFromChan(c chan groupSizeChange) *groupSizeChange {
 	select {
 	case val := <-c:

@@ -46,7 +46,7 @@ type AutoscalerOptions struct {
 // The configuration can be injected at the creation of an autoscaler
 type Autoscaler interface {
 	// RunOnce represents an iteration in the control-loop of CA
-	RunOnce(currentTime time.Time) errors.AutoscalerError
+	RunOnce(currentTime time.Time, triggerScaleUpOverride bool) errors.AutoscalerError
 	// ExitCleanUp is a clean-up performed just before process termination.
 	ExitCleanUp()
 }
