@@ -1,0 +1,14 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="push-image" type="MAKEFILE_TARGET_RUN_CONFIGURATION" factoryName="Makefile">
+    <makefile filename="$PROJECT_DIR$/Makefile" target="push-image" workingDirectory="" arguments="">
+      <envs>
+        <env name="GOROOT" value="$USER_HOME$/.gvm/gos/go1.10.8" />
+        <env name="GOOS" value="darwin" />
+        <env name="GOPATH" value="$PROJECT_DIR$/../../../.." />
+        <env name="REGISTRY" value="jkieley" />
+        <env name="PATH" value="$PROJECT_DIR$/../../../../bin:$USER_HOME$/.gvm/gos/go1.10.8/bin:$USER_HOME$/.gvm/pkgsets/go1.10.8/global/bin:$USER_HOME$/.gvm/gos/go1.10.8/bin:$USER_HOME$/.gvm/pkgsets/go1.10.8/global/overlay/bin:$USER_HOME$/.gvm/bin:$USER_HOME$/.gvm/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/X11/bin " />
+      </envs>
+    </makefile>
+    <method v="2" />
+  </configuration>
+</component>
