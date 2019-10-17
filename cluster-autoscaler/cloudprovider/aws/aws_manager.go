@@ -71,9 +71,14 @@ type asgTemplate struct {
 func getRegion(cfg ...*aws.Config) string {
 	region, present := os.LookupEnv("AWS_REGION")
 	if !present {
-		svc := ec2metadata.New(session.New(), cfg...)
-		if r, err := svc.Region(); err == nil {
-			region = r
+		sess, err := session.NewSession()
+		if err != nil {
+			klog.Errorf("Error getting AWS session while retrieving region: %v", err)
+		} else {
+			svc := ec2metadata.New(sess, cfg...)
+			if r, err := svc.Region(); err == nil {
+				region = r
+			}
 		}
 	}
 	return region
@@ -95,7 +100,10 @@ func createAWSManagerInternal(
 	}
 
 	if autoScalingService == nil || ec2Service == nil {
-		sess := session.New(aws.NewConfig().WithRegion(getRegion()))
+		sess, err := session.NewSession(aws.NewConfig().WithRegion(getRegion()))
+		if err != nil {
+			return nil, err
+		}
 
 		if autoScalingService == nil {
 			autoScalingService = &autoScalingWrapper{autoscaling.New(sess), map[string]string{}}
