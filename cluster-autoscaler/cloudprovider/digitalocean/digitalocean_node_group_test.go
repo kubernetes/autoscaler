@@ -52,11 +52,43 @@ func TestNodeGroup_IncreaseSize(t *testing.T) {
 		numberOfNodes := 3
 		client := &doClientMock{}
 		ng := testNodeGroup(client, &godo.KubernetesNodePool{
-			Count: numberOfNodes,
+			Count:    numberOfNodes,
+			MinNodes: 1,
+			MaxNodes: 10,
 		})
 
 		delta := 2
 
+		newCount := numberOfNodes + delta
+		client.On("UpdateNodePool",
+			ctx,
+			ng.clusterID,
+			ng.id,
+			&godo.KubernetesNodePoolUpdateRequest{
+				Count: &newCount,
+			},
+		).Return(
+			&godo.KubernetesNodePool{Count: newCount},
+			&godo.Response{},
+			nil,
+		).Once()
+
+		err := ng.IncreaseSize(delta)
+		assert.NoError(t, err)
+	})
+
+	t.Run("successful increase to maximum", func(t *testing.T) {
+		numberOfNodes := 2
+		maxNodes := 3
+		client := &doClientMock{}
+		ng := testNodeGroup(client, &godo.KubernetesNodePool{
+			Count:     numberOfNodes,
+			AutoScale: true,
+			MinNodes:  1,
+			MaxNodes:  maxNodes,
+		})
+
+		delta := 1
 		newCount := numberOfNodes + delta
 		client.On("UpdateNodePool",
 			ctx,
@@ -182,7 +214,9 @@ func TestNodeGroup_DecreaseTargetSize(t *testing.T) {
 		numberOfNodes := 3
 		client := &doClientMock{}
 		ng := testNodeGroup(client, &godo.KubernetesNodePool{
-			Count: numberOfNodes,
+			Count:    numberOfNodes,
+			MinNodes: 1,
+			MaxNodes: 5,
 		})
 
 		exp := fmt.Errorf("size decrease is too small. current: %d desired: %d min: %d",
@@ -328,7 +362,11 @@ func TestNodeGroup_Nodes(t *testing.T) {
 func TestNodeGroup_Debug(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		client := &doClientMock{}
-		ng := testNodeGroup(client, &godo.KubernetesNodePool{Count: 3})
+		ng := testNodeGroup(client, &godo.KubernetesNodePool{
+			Count:    3,
+			MinNodes: 1,
+			MaxNodes: 200,
+		})
 
 		d := ng.Debug()
 		exp := "cluster ID: 1 (min:1 max:200)"
@@ -355,13 +393,18 @@ func TestNodeGroup_Exist(t *testing.T) {
 }
 
 func testNodeGroup(client nodeGroupClient, np *godo.KubernetesNodePool) *NodeGroup {
+	var minNodes, maxNodes int
+	if np != nil {
+		minNodes = np.MinNodes
+		maxNodes = np.MaxNodes
+	}
 	return &NodeGroup{
 		id:        "1",
 		clusterID: "1",
 		client:    client,
 		nodePool:  np,
-		minSize:   1,
-		maxSize:   200,
+		minSize:   minNodes,
+		maxSize:   maxNodes,
 	}
 }
 

@@ -79,7 +79,7 @@ func (n *NodeGroup) IncreaseSize(delta int) error {
 
 	targetSize := n.nodePool.Count + delta
 
-	if targetSize >= n.MaxSize() {
+	if targetSize > n.MaxSize() {
 		return fmt.Errorf("size increase is too large. current: %d desired: %d max: %d",
 			n.nodePool.Count, targetSize, n.MaxSize())
 	}
