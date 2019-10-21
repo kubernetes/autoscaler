@@ -86,6 +86,7 @@ type Database struct {
 	MaintenanceWindow  *DatabaseMaintenanceWindow `json:"maintenance_window,omitempty"`
 	CreatedAt          time.Time                  `json:"created_at,omitempty"`
 	PrivateNetworkUUID string                     `json:"private_network_uuid,omitempty"`
+	Tags               []string                   `json:"tags,omitempty"`
 }
 
 // DatabaseConnection represents a database connection
@@ -123,13 +124,14 @@ type DatabaseBackup struct {
 
 // DatabaseCreateRequest represents a request to create a database cluster
 type DatabaseCreateRequest struct {
-	Name               string `json:"name,omitempty"`
-	EngineSlug         string `json:"engine,omitempty"`
-	Version            string `json:"version,omitempty"`
-	SizeSlug           string `json:"size,omitempty"`
-	Region             string `json:"region,omitempty"`
-	NumNodes           int    `json:"num_nodes,omitempty"`
-	PrivateNetworkUUID string `json:"private_network_uuid"`
+	Name               string   `json:"name,omitempty"`
+	EngineSlug         string   `json:"engine,omitempty"`
+	Version            string   `json:"version,omitempty"`
+	SizeSlug           string   `json:"size,omitempty"`
+	Region             string   `json:"region,omitempty"`
+	NumNodes           int      `json:"num_nodes,omitempty"`
+	PrivateNetworkUUID string   `json:"private_network_uuid"`
+	Tags               []string `json:"tags,omitempty"`
 }
 
 // DatabaseResizeRequest can be used to initiate a database resize operation.
@@ -167,6 +169,7 @@ type DatabaseReplica struct {
 	Status             string              `json:"status"`
 	CreatedAt          time.Time           `json:"created_at"`
 	PrivateNetworkUUID string              `json:"private_network_uuid,omitempty"`
+	Tags               []string            `json:"tags,omitempty"`
 }
 
 // DatabasePool represents a database connection pool
@@ -201,10 +204,11 @@ type DatabaseCreateDBRequest struct {
 
 // DatabaseCreateReplicaRequest is used to create a new read-only replica
 type DatabaseCreateReplicaRequest struct {
-	Name               string `json:"name"`
-	Region             string `json:"region"`
-	Size               string `json:"size"`
-	PrivateNetworkUUID string `json:"private_network_uuid"`
+	Name               string   `json:"name"`
+	Region             string   `json:"region"`
+	Size               string   `json:"size"`
+	PrivateNetworkUUID string   `json:"private_network_uuid"`
+	Tags               []string `json:"tags,omitempty"`
 }
 
 type databaseUserRoot struct {

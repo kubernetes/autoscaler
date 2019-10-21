@@ -1,31 +1,29 @@
-The godo package was vendored based on the following git SHA:
+The `godo` package was vendored based on the git SHA `1f632d37f6858f0532207a5f77118c097d94be89`.
 
-8d8fad298a2eb45d1139313816d50a9ab5e423cd
+* We removed the `util/` folder because it's not needed.
+* We removed the `go.mod` to avoid conflicts (https://github.com/kubernetes/autoscaler/commit/a96bd9adc3d041cb2328b88101d995546e360d15#diff-d5d7c905baa3f3ba3fd4563b8b5ff9fa).
+* We vendored the dependencies by calling `go mod vendor` after checking out a new version.
 
-* We removed the `util/` folder because it's not needed 
-* We vendored the dependencies by calling `go mod vendor` after checking out a new version
+To upgrade to a new `godo` version do the following:
 
-To upgrade to a new godo version do the following:
-
-```
+```sh
 cd cloudprovider/digitalocean
 
-# remove the godo folder
+# Remove the godo folder
 rm -rf godo/
 
-# clone the godo folder 
+# Clone the godo folder
 git clone https://github.com/digitalocean/godo
 cd godo
 
-# checkout to new release, replace the version. Here we're using v1.19.0
-git checkout v1.19.0 
+# Checkout to new release, replace the version. Here we're using v1.22.0
+git checkout v1.22.0
 
-# remove the .git and util/
-rm -rf .git
-rm -rf util/
-
-# vendor all dependencies
+# Vendor all dependencies
 go mod vendor
 
-# edit this file to include that you're using now the latest version
+# Remove the .git and util/
+rm -rf .git util/ go.mod
+
+# Re-add this VENDORED_VERSION file and edit to indicate which version is now being used.
 ```
