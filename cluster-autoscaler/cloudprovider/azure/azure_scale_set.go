@@ -47,6 +47,7 @@ var (
 
 var scaleSetStatusCache struct {
 	lastRefresh time.Time
+	mutex       sync.Mutex
 	scaleSets   map[string]compute.VirtualMachineScaleSet
 }
 
@@ -130,9 +131,15 @@ func (scaleSet *ScaleSet) MaxSize() int {
 }
 
 func (scaleSet *ScaleSet) getVMSSInfo() (compute.VirtualMachineScaleSet, error) {
+	scaleSetStatusCache.mutex.Lock()
+	defer scaleSetStatusCache.mutex.Unlock()
+
 	if scaleSetStatusCache.lastRefresh.Add(vmssSizeRefreshPeriod).After(time.Now()) {
-		return scaleSetStatusCache.scaleSets[scaleSet.Name], nil
+		if status, exists := scaleSetStatusCache.scaleSets[scaleSet.Name]; exists {
+			return status, nil
+		}
 	}
+
 	var allVMSS []compute.VirtualMachineScaleSet
 	var err error
 
