@@ -283,18 +283,21 @@ func TestNodeGroup_Nodes(t *testing.T) {
 					Status: &godo.KubernetesNodeStatus{
 						State: "provisioning",
 					},
+					DropletID: "droplet-1",
 				},
 				{
 					ID: "2",
 					Status: &godo.KubernetesNodeStatus{
 						State: "running",
 					},
+					DropletID: "droplet-2",
 				},
 				{
 					ID: "3",
 					Status: &godo.KubernetesNodeStatus{
 						State: "deleting",
 					},
+					DropletID: "droplet-3",
 				},
 				{
 					ID: "4",
@@ -302,10 +305,12 @@ func TestNodeGroup_Nodes(t *testing.T) {
 						State:   "unknown",
 						Message: "some-message",
 					},
+					DropletID: "droplet-4",
 				},
 				{
 					// no status
-					ID: "5",
+					ID:        "5",
+					DropletID: "droplet-5",
 				},
 			},
 			Count: 5,
@@ -313,25 +318,25 @@ func TestNodeGroup_Nodes(t *testing.T) {
 
 		exp := []cloudprovider.Instance{
 			{
-				Id: "1",
+				Id: "digitalocean://droplet-1",
 				Status: &cloudprovider.InstanceStatus{
 					State: cloudprovider.InstanceCreating,
 				},
 			},
 			{
-				Id: "2",
+				Id: "digitalocean://droplet-2",
 				Status: &cloudprovider.InstanceStatus{
 					State: cloudprovider.InstanceRunning,
 				},
 			},
 			{
-				Id: "3",
+				Id: "digitalocean://droplet-3",
 				Status: &cloudprovider.InstanceStatus{
 					State: cloudprovider.InstanceDeleting,
 				},
 			},
 			{
-				Id: "4",
+				Id: "digitalocean://droplet-4",
 				Status: &cloudprovider.InstanceStatus{
 					ErrorInfo: &cloudprovider.InstanceErrorInfo{
 						ErrorClass:   cloudprovider.OtherErrorClass,
@@ -341,7 +346,7 @@ func TestNodeGroup_Nodes(t *testing.T) {
 				},
 			},
 			{
-				Id: "5",
+				Id: "digitalocean://droplet-5",
 			},
 		}
 
