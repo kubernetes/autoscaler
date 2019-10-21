@@ -10,7 +10,7 @@ collection of services. You will generally want to create one Provider
 client per OpenStack cloud.
 
 Use your OpenStack credentials to create a Provider client.  The
-IdentityEndpoint is typically refered to as "auth_url" or "OS_AUTH_URL" in
+IdentityEndpoint is typically referred to as "auth_url" or "OS_AUTH_URL" in
 information provided by the cloud operator. Additionally, the cloud may refer to
 TenantID or TenantName as project_id and project_name. Credentials are
 specified like so:
