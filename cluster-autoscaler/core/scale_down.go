@@ -445,7 +445,7 @@ func (sd *ScaleDown) UpdateUnneededNodes(
 		// Old-time marked nodes are again eligible for deletion - something went wrong with them
 		// and they have not been deleted.
 		if isNodeBeingDeleted(node, timestamp) {
-			klog.V(1).Infof("Skipping %s from delete considerations - the node is currently being deleted", node.Name)
+			klog.V(1).Infof("Skipping %s from delete consideration - the node is currently being deleted", node.Name)
 			continue
 		}
 
