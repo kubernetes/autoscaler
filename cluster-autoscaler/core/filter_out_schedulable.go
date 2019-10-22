@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"k8s.io/autoscaler/cluster-autoscaler/context"
+	"k8s.io/autoscaler/cluster-autoscaler/core/utils"
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/pods"
@@ -103,7 +104,7 @@ func filterOutSchedulableByPacking(unschedulableCandidates []*apiv1.Pod, nodes [
 	allScheduled []*apiv1.Pod, predicateChecker *simulator.PredicateChecker,
 	expendablePodsPriorityCutoff int, nodesExist bool) []*apiv1.Pod {
 	var unschedulablePods []*apiv1.Pod
-	nonExpendableScheduled := filterOutExpendablePods(allScheduled, expendablePodsPriorityCutoff)
+	nonExpendableScheduled := utils.FilterOutExpendablePods(allScheduled, expendablePodsPriorityCutoff)
 	nodeNameToNodeInfo := schedulerutil.CreateNodeNameToInfoMap(nonExpendableScheduled, nodes)
 
 	sort.Slice(unschedulableCandidates, func(i, j int) bool {
@@ -138,13 +139,13 @@ func filterOutSchedulableByPacking(unschedulableCandidates []*apiv1.Pod, nodes [
 func filterOutSchedulableSimple(unschedulableCandidates []*apiv1.Pod, nodes []*apiv1.Node, allScheduled []*apiv1.Pod,
 	predicateChecker *simulator.PredicateChecker, expendablePodsPriorityCutoff int) []*apiv1.Pod {
 	var unschedulablePods []*apiv1.Pod
-	nonExpendableScheduled := filterOutExpendablePods(allScheduled, expendablePodsPriorityCutoff)
+	nonExpendableScheduled := utils.FilterOutExpendablePods(allScheduled, expendablePodsPriorityCutoff)
 	nodeNameToNodeInfo := schedulerutil.CreateNodeNameToInfoMap(nonExpendableScheduled, nodes)
-	podSchedulable := make(podSchedulableMap)
+	podSchedulable := make(utils.PodSchedulableMap)
 	loggingQuota := glogx.PodsLoggingQuota()
 
 	for _, pod := range unschedulableCandidates {
-		cachedError, found := podSchedulable.get(pod)
+		cachedError, found := podSchedulable.Get(pod)
 		// Try to get result from cache.
 		if found {
 			if cachedError != nil {
@@ -166,7 +167,7 @@ func filterOutSchedulableSimple(unschedulableCandidates []*apiv1.Pod, nodes []*a
 		} else {
 			glogx.V(4).UpTo(loggingQuota).Infof("Pod %s marked as unschedulable can be scheduled on %s. Ignoring in scale up.", pod.Name, nodeName)
 		}
-		podSchedulable.set(pod, predicateError)
+		podSchedulable.Set(pod, predicateError)
 	}
 
 	glogx.V(4).Over(loggingQuota).Infof("%v other pods marked as unschedulable can be scheduled.", -loggingQuota.Left())

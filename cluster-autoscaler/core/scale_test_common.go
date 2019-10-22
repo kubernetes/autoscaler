@@ -27,8 +27,10 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/estimator"
 	"k8s.io/autoscaler/cluster-autoscaler/expander/random"
 	"k8s.io/autoscaler/cluster-autoscaler/metrics"
+	"k8s.io/autoscaler/cluster-autoscaler/processors"
 	processor_callbacks "k8s.io/autoscaler/cluster-autoscaler/processors/callbacks"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroups"
+	"k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	"k8s.io/autoscaler/cluster-autoscaler/processors/status"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
@@ -88,6 +90,20 @@ type scaleTestResults struct {
 	noScaleUpReason  string
 	finalScaleDowns  []string
 	events           []string
+}
+
+// NewTestProcessors returns a set of simple processors for use in tests.
+func NewTestProcessors() *processors.AutoscalingProcessors {
+	return &processors.AutoscalingProcessors{
+		PodListProcessor:       NewFilterOutSchedulablePodListProcessor(),
+		NodeGroupListProcessor: &nodegroups.NoOpNodeGroupListProcessor{},
+		NodeGroupSetProcessor:  &nodegroupset.BalancingNodeGroupSetProcessor{},
+		// TODO(bskiba): change scale up test so that this can be a NoOpProcessor
+		ScaleUpStatusProcessor:     &status.EventingScaleUpStatusProcessor{},
+		ScaleDownStatusProcessor:   &status.NoOpScaleDownStatusProcessor{},
+		AutoscalingStatusProcessor: &status.NoOpAutoscalingStatusProcessor{},
+		NodeGroupManager:           nodegroups.NewDefaultNodeGroupManager(),
+	}
 }
 
 // NewScaleTestAutoscalingContext creates a new test autoscaling context for scaling tests.
