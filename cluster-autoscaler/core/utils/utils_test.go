@@ -14,221 +14,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package core
+package utils
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
 	testprovider "k8s.io/autoscaler/cluster-autoscaler/cloudprovider/test"
-	"k8s.io/autoscaler/cluster-autoscaler/clusterstate"
-	"k8s.io/autoscaler/cluster-autoscaler/clusterstate/utils"
-	"k8s.io/autoscaler/cluster-autoscaler/config"
-	"k8s.io/autoscaler/cluster-autoscaler/context"
 	"k8s.io/autoscaler/cluster-autoscaler/simulator"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/deletetaint"
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
 	. "k8s.io/autoscaler/cluster-autoscaler/utils/test"
 
+	"github.com/stretchr/testify/assert"
 	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes/fake"
-	kube_record "k8s.io/client-go/tools/record"
-	"k8s.io/kubernetes/pkg/api/testapi"
-
-	"github.com/stretchr/testify/assert"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
 )
-
-const MiB = 1024 * 1024
-
-func TestPodSchedulableMap(t *testing.T) {
-	rc1 := apiv1.ReplicationController{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "rc1",
-			Namespace: "default",
-			SelfLink:  testapi.Default.SelfLink("replicationcontrollers", "rc"),
-			UID:       "12345678-1234-1234-1234-123456789012",
-		},
-	}
-
-	rc2 := apiv1.ReplicationController{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "rc2",
-			Namespace: "default",
-			SelfLink:  testapi.Default.SelfLink("replicationcontrollers", "rc"),
-			UID:       "12345678-1234-1234-1234-12345678901a",
-		},
-	}
-
-	pMap := make(podSchedulableMap)
-
-	podInRc1_1 := BuildTestPod("podInRc1_1", 500, 1000)
-	podInRc1_1.OwnerReferences = GenerateOwnerReferences(rc1.Name, "ReplicationController", "extensions/v1beta1", rc1.UID)
-
-	podInRc2 := BuildTestPod("podInRc2", 500, 1000)
-	podInRc2.OwnerReferences = GenerateOwnerReferences(rc2.Name, "ReplicationController", "extensions/v1beta1", rc2.UID)
-
-	// Basic sanity checks
-	_, found := pMap.get(podInRc1_1)
-	assert.False(t, found)
-	pMap.set(podInRc1_1, nil)
-	err, found := pMap.get(podInRc1_1)
-	assert.True(t, found)
-	assert.Nil(t, err)
-
-	cpuErr := &simulator.PredicateError{}
-
-	// Pod in different RC
-	_, found = pMap.get(podInRc2)
-	assert.False(t, found)
-	pMap.set(podInRc2, cpuErr)
-	err, found = pMap.get(podInRc2)
-	assert.True(t, found)
-	assert.Equal(t, cpuErr, err)
-
-	// Another replica in rc1
-	podInRc1_2 := BuildTestPod("podInRc1_1", 500, 1000)
-	podInRc1_2.OwnerReferences = GenerateOwnerReferences(rc1.Name, "ReplicationController", "extensions/v1beta1", rc1.UID)
-	err, found = pMap.get(podInRc1_2)
-	assert.True(t, found)
-	assert.Nil(t, err)
-
-	// A pod in rc1, but with different requests
-	differentPodInRc1 := BuildTestPod("differentPodInRc1", 1000, 1000)
-	differentPodInRc1.OwnerReferences = GenerateOwnerReferences(rc1.Name, "ReplicationController", "extensions/v1beta1", rc1.UID)
-	_, found = pMap.get(differentPodInRc1)
-	assert.False(t, found)
-	pMap.set(differentPodInRc1, cpuErr)
-	err, found = pMap.get(differentPodInRc1)
-	assert.True(t, found)
-	assert.Equal(t, cpuErr, err)
-
-	// A non-replicated pod
-	nonReplicatedPod := BuildTestPod("nonReplicatedPod", 1000, 1000)
-	_, found = pMap.get(nonReplicatedPod)
-	assert.False(t, found)
-	pMap.set(nonReplicatedPod, err)
-	_, found = pMap.get(nonReplicatedPod)
-	assert.False(t, found)
-
-	// Verify information about first pod has not been overwritten by adding
-	// other pods
-	err, found = pMap.get(podInRc1_1)
-	assert.True(t, found)
-	assert.Nil(t, err)
-}
-
-func TestFilterOutExpendableAndSplit(t *testing.T) {
-	var priority1 int32 = 1
-	var priority100 int32 = 100
-
-	p1 := BuildTestPod("p1", 1000, 200000)
-	p1.Spec.Priority = &priority1
-	p2 := BuildTestPod("p2", 1000, 200000)
-	p2.Spec.Priority = &priority100
-
-	podWaitingForPreemption1 := BuildTestPod("w1", 1000, 200000)
-	podWaitingForPreemption1.Spec.Priority = &priority1
-	podWaitingForPreemption1.Status.NominatedNodeName = "node1"
-	podWaitingForPreemption2 := BuildTestPod("w2", 1000, 200000)
-	podWaitingForPreemption2.Spec.Priority = &priority100
-	podWaitingForPreemption2.Status.NominatedNodeName = "node1"
-
-	res1, res2 := filterOutExpendableAndSplit([]*apiv1.Pod{p1, p2, podWaitingForPreemption1, podWaitingForPreemption2}, 0)
-	assert.Equal(t, 2, len(res1))
-	assert.Equal(t, p1, res1[0])
-	assert.Equal(t, p2, res1[1])
-	assert.Equal(t, 2, len(res2))
-	assert.Equal(t, podWaitingForPreemption1, res2[0])
-	assert.Equal(t, podWaitingForPreemption2, res2[1])
-
-	res1, res2 = filterOutExpendableAndSplit([]*apiv1.Pod{p1, p2, podWaitingForPreemption1, podWaitingForPreemption2}, 10)
-	assert.Equal(t, 1, len(res1))
-	assert.Equal(t, p2, res1[0])
-	assert.Equal(t, 1, len(res2))
-	assert.Equal(t, podWaitingForPreemption2, res2[0])
-}
-
-func TestFilterOutExpendablePods(t *testing.T) {
-	p1 := BuildTestPod("p1", 1500, 200000)
-	p2 := BuildTestPod("p2", 3000, 200000)
-
-	podWaitingForPreemption1 := BuildTestPod("w1", 1500, 200000)
-	var priority1 int32 = -10
-	podWaitingForPreemption1.Spec.Priority = &priority1
-	podWaitingForPreemption1.Status.NominatedNodeName = "node1"
-
-	podWaitingForPreemption2 := BuildTestPod("w1", 1500, 200000)
-	var priority2 int32 = 10
-	podWaitingForPreemption2.Spec.Priority = &priority2
-	podWaitingForPreemption2.Status.NominatedNodeName = "node1"
-
-	res := filterOutExpendablePods([]*apiv1.Pod{p1, p2, podWaitingForPreemption1, podWaitingForPreemption2}, 0)
-	assert.Equal(t, 3, len(res))
-	assert.Equal(t, p1, res[0])
-	assert.Equal(t, p2, res[1])
-	assert.Equal(t, podWaitingForPreemption2, res[2])
-}
-
-func TestFilterSchedulablePodsForNode(t *testing.T) {
-	rc1 := apiv1.ReplicationController{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "rc1",
-			Namespace: "default",
-			SelfLink:  testapi.Default.SelfLink("replicationcontrollers", "rc"),
-			UID:       "12345678-1234-1234-1234-123456789012",
-		},
-	}
-
-	rc2 := apiv1.ReplicationController{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "rc2",
-			Namespace: "default",
-			SelfLink:  testapi.Default.SelfLink("replicationcontrollers", "rc"),
-			UID:       "12345678-1234-1234-1234-12345678901a",
-		},
-	}
-
-	p1 := BuildTestPod("p1", 1500, 200000)
-	p2_1 := BuildTestPod("p2_1", 3000, 200000)
-	p2_1.OwnerReferences = GenerateOwnerReferences(rc1.Name, "ReplicationController", "extensions/v1beta1", rc1.UID)
-	p2_2 := BuildTestPod("p2_2", 3000, 200000)
-	p2_2.OwnerReferences = GenerateOwnerReferences(rc1.Name, "ReplicationController", "extensions/v1beta1", rc1.UID)
-	p3_1 := BuildTestPod("p3_1", 100, 200000)
-	p3_1.OwnerReferences = GenerateOwnerReferences(rc2.Name, "ReplicationController", "extensions/v1beta1", rc2.UID)
-	p3_2 := BuildTestPod("p3_2", 100, 200000)
-	p3_2.OwnerReferences = GenerateOwnerReferences(rc2.Name, "ReplicationController", "extensions/v1beta1", rc2.UID)
-	unschedulablePods := []*apiv1.Pod{p1, p2_1, p2_2, p3_1, p3_2}
-
-	tn := BuildTestNode("T1-abc", 2000, 2000000)
-	SetNodeReadyState(tn, true, time.Time{})
-	tni := schedulernodeinfo.NewNodeInfo()
-	tni.SetNode(tn)
-
-	context := &context.AutoscalingContext{
-		PredicateChecker: simulator.NewTestPredicateChecker(),
-	}
-
-	checker := newPodsSchedulableOnNodeChecker(context, unschedulablePods)
-	res := checker.checkPodsSchedulableOnNode("T1-abc", tni)
-	wantedSchedulable := []*apiv1.Pod{p1, p3_1, p3_2}
-	wantedUnschedulable := []*apiv1.Pod{p2_1, p2_2}
-
-	assert.Equal(t, 5, len(res))
-	for _, pod := range wantedSchedulable {
-		err, found := res[pod]
-		assert.True(t, found)
-		assert.Nil(t, err)
-	}
-	for _, pod := range wantedUnschedulable {
-		err, found := res[pod]
-		assert.True(t, found)
-		assert.NotNil(t, err)
-	}
-}
 
 func TestGetNodeInfosForGroups(t *testing.T) {
 	ready1 := BuildTestNode("n1", 1000, 1000)
@@ -266,7 +69,7 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 
 	predicateChecker := simulator.NewTestPredicateChecker()
 
-	res, err := getNodeInfosForGroups([]*apiv1.Node{unready4, unready3, ready2, ready1}, nil,
+	res, err := GetNodeInfosForGroups([]*apiv1.Node{unready4, unready3, ready2, ready1}, nil,
 		provider1, registry, []*appsv1.DaemonSet{}, predicateChecker, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 4, len(res))
@@ -284,7 +87,7 @@ func TestGetNodeInfosForGroups(t *testing.T) {
 	assertEqualNodeCapacities(t, tn, info.Node())
 
 	// Test for a nodegroup without nodes and TemplateNodeInfo not implemented by cloud proivder
-	res, err = getNodeInfosForGroups([]*apiv1.Node{}, nil, provider2, registry,
+	res, err = GetNodeInfosForGroups([]*apiv1.Node{}, nil, provider2, registry,
 		[]*appsv1.DaemonSet{}, predicateChecker, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(res))
@@ -337,7 +140,7 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 	nodeInfoCache := make(map[string]*schedulernodeinfo.NodeInfo)
 
 	// Fill cache
-	res, err := getNodeInfosForGroups([]*apiv1.Node{unready4, unready3, ready2, ready1}, nodeInfoCache,
+	res, err := GetNodeInfosForGroups([]*apiv1.Node{unready4, unready3, ready2, ready1}, nodeInfoCache,
 		provider1, registry, []*appsv1.DaemonSet{}, predicateChecker, nil)
 	assert.NoError(t, err)
 	// Check results
@@ -372,7 +175,7 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 	assert.Equal(t, "ng3", lastDeletedGroup)
 
 	// Check cache with all nodes removed
-	res, err = getNodeInfosForGroups([]*apiv1.Node{}, nodeInfoCache,
+	res, err = GetNodeInfosForGroups([]*apiv1.Node{}, nodeInfoCache,
 		provider1, registry, []*appsv1.DaemonSet{}, predicateChecker, nil)
 	assert.NoError(t, err)
 	// Check results
@@ -397,7 +200,7 @@ func TestGetNodeInfosForGroupsCache(t *testing.T) {
 	assert.NoError(t, err2)
 	nodeInfoCache = map[string]*schedulernodeinfo.NodeInfo{"ng4": infoNg4Node6}
 	// Check if cache was used
-	res, err = getNodeInfosForGroups([]*apiv1.Node{ready1, ready2}, nodeInfoCache,
+	res, err = GetNodeInfosForGroups([]*apiv1.Node{ready1, ready2}, nodeInfoCache,
 		provider1, registry, []*appsv1.DaemonSet{}, predicateChecker, nil)
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(res))
@@ -413,54 +216,6 @@ func assertEqualNodeCapacities(t *testing.T, expected, actual *apiv1.Node) {
 	t.Helper()
 	assert.Equal(t, getNodeResource(expected, apiv1.ResourceCPU), getNodeResource(actual, apiv1.ResourceCPU), "CPU should be the same")
 	assert.Equal(t, getNodeResource(expected, apiv1.ResourceMemory), getNodeResource(actual, apiv1.ResourceMemory), "Memory should be the same")
-}
-
-func TestRemoveOldUnregisteredNodes(t *testing.T) {
-	deletedNodes := make(chan string, 10)
-
-	now := time.Now()
-
-	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
-	ng1_1.Spec.ProviderID = "ng1-1"
-	ng1_2 := BuildTestNode("ng1-2", 1000, 1000)
-	ng1_2.Spec.ProviderID = "ng1-2"
-	provider := testprovider.NewTestCloudProvider(nil, func(nodegroup string, node string) error {
-		deletedNodes <- fmt.Sprintf("%s/%s", nodegroup, node)
-		return nil
-	})
-	provider.AddNodeGroup("ng1", 1, 10, 2)
-	provider.AddNode("ng1", ng1_1)
-	provider.AddNode("ng1", ng1_2)
-
-	fakeClient := &fake.Clientset{}
-	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false)
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{
-		MaxTotalUnreadyPercentage: 10,
-		OkTotalUnreadyCount:       1,
-	}, fakeLogRecorder, newBackoff())
-	err := clusterState.UpdateNodes([]*apiv1.Node{ng1_1}, nil, now.Add(-time.Hour))
-	assert.NoError(t, err)
-
-	context := &context.AutoscalingContext{
-		AutoscalingOptions: config.AutoscalingOptions{
-			MaxNodeProvisionTime: 45 * time.Minute,
-		},
-		CloudProvider: provider,
-	}
-	unregisteredNodes := clusterState.GetUnregisteredNodes()
-	assert.Equal(t, 1, len(unregisteredNodes))
-
-	// Nothing should be removed. The unregistered node is not old enough.
-	removed, err := removeOldUnregisteredNodes(unregisteredNodes, context, clusterState, now.Add(-50*time.Minute), fakeLogRecorder)
-	assert.NoError(t, err)
-	assert.False(t, removed)
-
-	// ng1_2 should be removed.
-	removed, err = removeOldUnregisteredNodes(unregisteredNodes, context, clusterState, now, fakeLogRecorder)
-	assert.NoError(t, err)
-	assert.True(t, removed)
-	deletedNode := getStringFromChan(deletedNodes)
-	assert.Equal(t, "ng1/ng1-2", deletedNode)
 }
 
 func TestSanitizeNodeInfo(t *testing.T) {
@@ -527,48 +282,6 @@ func TestSanitizeTaints(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, len(node.Spec.Taints), 1)
 	assert.Equal(t, node.Spec.Taints[0].Key, "test-taint")
-}
-
-func TestRemoveFixNodeTargetSize(t *testing.T) {
-	sizeChanges := make(chan string, 10)
-	now := time.Now()
-
-	ng1_1 := BuildTestNode("ng1-1", 1000, 1000)
-	ng1_1.Spec.ProviderID = "ng1-1"
-	provider := testprovider.NewTestCloudProvider(func(nodegroup string, delta int) error {
-		sizeChanges <- fmt.Sprintf("%s/%d", nodegroup, delta)
-		return nil
-	}, nil)
-	provider.AddNodeGroup("ng1", 1, 10, 3)
-	provider.AddNode("ng1", ng1_1)
-
-	fakeClient := &fake.Clientset{}
-	fakeLogRecorder, _ := utils.NewStatusMapRecorder(fakeClient, "kube-system", kube_record.NewFakeRecorder(5), false)
-	clusterState := clusterstate.NewClusterStateRegistry(provider, clusterstate.ClusterStateRegistryConfig{
-		MaxTotalUnreadyPercentage: 10,
-		OkTotalUnreadyCount:       1,
-	}, fakeLogRecorder, newBackoff())
-	err := clusterState.UpdateNodes([]*apiv1.Node{ng1_1}, nil, now.Add(-time.Hour))
-	assert.NoError(t, err)
-
-	context := &context.AutoscalingContext{
-		AutoscalingOptions: config.AutoscalingOptions{
-			MaxNodeProvisionTime: 45 * time.Minute,
-		},
-		CloudProvider: provider,
-	}
-
-	// Nothing should be fixed. The incorrect size state is not old enough.
-	removed, err := fixNodeGroupSize(context, clusterState, now.Add(-50*time.Minute))
-	assert.NoError(t, err)
-	assert.False(t, removed)
-
-	// Node group should be decreased.
-	removed, err = fixNodeGroupSize(context, clusterState, now)
-	assert.NoError(t, err)
-	assert.True(t, removed)
-	change := getStringFromChan(sizeChanges)
-	assert.Equal(t, "ng1/-2", change)
 }
 
 func TestConfigurePredicateCheckerForLoop(t *testing.T) {
@@ -661,7 +374,7 @@ func TestGetNodeResource(t *testing.T) {
 func TestGetNodeCoresAndMemory(t *testing.T) {
 	node := BuildTestNode("n1", 2000, 2048*MiB)
 
-	cores, memory := getNodeCoresAndMemory(node)
+	cores, memory := GetNodeCoresAndMemory(node)
 	assert.Equal(t, int64(2), cores)
 	assert.Equal(t, int64(2048*MiB), memory)
 
@@ -669,7 +382,7 @@ func TestGetNodeCoresAndMemory(t *testing.T) {
 	nodeWithMissingCapacity := BuildTestNode("n1", 1000, 2*MiB)
 	nodeWithMissingCapacity.Status.Capacity = apiv1.ResourceList{}
 
-	cores, memory = getNodeCoresAndMemory(nodeWithMissingCapacity)
+	cores, memory = GetNodeCoresAndMemory(nodeWithMissingCapacity)
 	assert.Equal(t, int64(0), cores)
 	assert.Equal(t, int64(0), memory)
 }
@@ -682,6 +395,6 @@ func TestGetOldestPod(t *testing.T) {
 	p3 := BuildTestPod("p3", 500, 1000)
 	p3.CreationTimestamp = metav1.NewTime(time.Now())
 
-	assert.Equal(t, p1.CreationTimestamp.Time, getOldestCreateTime([]*apiv1.Pod{p1, p2, p3}))
-	assert.Equal(t, p1.CreationTimestamp.Time, getOldestCreateTime([]*apiv1.Pod{p3, p2, p1}))
+	assert.Equal(t, p1.CreationTimestamp.Time, GetOldestCreateTime([]*apiv1.Pod{p1, p2, p3}))
+	assert.Equal(t, p1.CreationTimestamp.Time, GetOldestCreateTime([]*apiv1.Pod{p3, p2, p1}))
 }
