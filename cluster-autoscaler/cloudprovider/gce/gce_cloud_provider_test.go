@@ -164,7 +164,7 @@ func TestGetResourceLimiter(t *testing.T) {
 
 	// Error in GceManager.
 	gceManagerMock.On("GetResourceLimiter").Return((*cloudprovider.ResourceLimiter)(nil), fmt.Errorf("some error")).Once()
-	returnedResourceLimiter, err = gce.GetResourceLimiter()
+	_, err = gce.GetResourceLimiter()
 	assert.Error(t, err)
 }
 
