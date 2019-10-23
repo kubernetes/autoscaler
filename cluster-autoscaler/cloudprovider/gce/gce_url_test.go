@@ -35,9 +35,9 @@ func TestParseUrl(t *testing.T) {
 	assert.Equal(t, "us-central1-b", zone)
 	assert.Equal(t, "kubernetes-minion-group", name)
 
-	proj, zone, name, err = parseGceUrl("www.onet.pl", "instanceGroups")
+	_, _, _, err = parseGceUrl("www.onet.pl", "instanceGroups")
 	assert.NotNil(t, err)
 
-	proj, zone, name, err = parseGceUrl("https://content.googleapis.com/compute/vabc/projects/mwielgus-proj/zones/us-central1-b/instanceGroups/kubernetes-minion-group", "instanceGroups")
+	_, _, _, err = parseGceUrl("https://content.googleapis.com/compute/vabc/projects/mwielgus-proj/zones/us-central1-b/instanceGroups/kubernetes-minion-group", "instanceGroups")
 	assert.NotNil(t, err)
 }
