@@ -370,7 +370,7 @@ func Update(c *gophercloud.ServiceClient, stackName, stackID string, opts Update
 	return
 }
 
-// Update accepts an UpdateOpts struct and updates an existing stack using the
+// UpdatePatch accepts an UpdateOpts struct and updates an existing stack using the
 //  http PATCH verb with the values provided. opts.TemplateOpts is not required.
 func UpdatePatch(c *gophercloud.ServiceClient, stackName, stackID string, opts UpdatePatchOptsBuilder) (r UpdateResult) {
 	b, err := opts.ToStackUpdatePatchMap()
