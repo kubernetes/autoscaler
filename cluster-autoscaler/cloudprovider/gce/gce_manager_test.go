@@ -332,9 +332,10 @@ func newTestGceManager(t *testing.T, testServerURL string, regional bool) *gceMa
 	gceService.operationPollInterval = 1 * time.Millisecond
 
 	cache := &GceCache{
-		migs:                make(map[GceRef]Mig),
-		GceService:          gceService,
-		instanceRefToMigRef: make(map[GceRef]GceRef),
+		migs:                     make(map[GceRef]Mig),
+		GceService:               gceService,
+		instanceRefToMigRef:      make(map[GceRef]GceRef),
+		instancesFromUnknownMigs: make(map[GceRef]struct{}),
 		machinesCache: map[MachineTypeKey]*gce.MachineType{
 			{"us-central1-b", "n1-standard-1"}: {GuestCpus: 1, MemoryMb: 1},
 			{"us-central1-c", "n1-standard-1"}: {GuestCpus: 1, MemoryMb: 1},
@@ -680,17 +681,29 @@ func TestGetMigForInstance(t *testing.T) {
 	g.cache.InvalidateAllMigBasenames()
 
 	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool").Return(buildDefaultInstanceGroupManagerResponse(zoneB)).Once()
-	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool/listManagedInstances").Return(buildFourRunningInstancesOnDefaultMigManagedInstancesResponse(zoneB)).Once()
-	gceRef := GceRef{
+	server.On("handle", "/project1/zones/us-central1-b/instanceGroupManagers/gke-cluster-1-default-pool/listManagedInstances").Return(buildFourRunningInstancesOnDefaultMigManagedInstancesResponse(zoneB)).Twice()
+	gceRef1 := GceRef{
 		Project: projectId,
 		Zone:    zoneB,
 		Name:    "gke-cluster-1-default-pool-f7607aac-f1hm",
 	}
 
-	mig, err := g.GetMigForInstance(gceRef)
+	mig, err := g.GetMigForInstance(gceRef1)
 	assert.NoError(t, err)
 	assert.NotNil(t, mig)
 	assert.Equal(t, "gke-cluster-1-default-pool", mig.GceRef().Name)
+
+	gceRef2 := GceRef{
+		Project: projectId,
+		Zone:    zoneB,
+		Name:    "gke-cluster-1-default-pool-f7607aac-0000", // instance from unknown MIG
+	}
+	mig, err = g.GetMigForInstance(gceRef2)
+	assert.NoError(t, err)
+	assert.Nil(t, mig)
+	_, found := g.cache.instancesFromUnknownMigs[gceRef2]
+	assert.True(t, found)
+
 	mock.AssertExpectationsForObjects(t, server)
 }
 
