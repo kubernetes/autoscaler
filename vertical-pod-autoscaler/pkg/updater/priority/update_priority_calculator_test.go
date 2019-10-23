@@ -31,7 +31,8 @@ import (
 )
 
 const (
-	containerName = "container1"
+	containerName       = "container1"
+	secondContainerName = "container2"
 )
 
 func TestSortPriority(t *testing.T) {
@@ -303,17 +304,24 @@ func TestDontUpdatePodWithOOMAfterLongRun(t *testing.T) {
 	assert.Exactly(t, []*apiv1.Pod{}, result, "Pod shouldn't be updated")
 }
 
-func TestDontUpdatePodWithOOMOnlyOnOneContainer(t *testing.T) {
+func TestUpdatePodWithOOMAnyContainer(t *testing.T) {
 	calculator := NewUpdatePriorityCalculator(
 		nil, nil, &UpdateConfig{MinChangePriority: 0.5}, &test.FakeRecommendationProcessor{})
 
-	pod := test.Pod().WithName("POD1").AddContainer(test.BuildTestContainer(containerName, "4", "")).Get()
+	pod := test.Pod().WithName("POD1").
+		AddContainer(test.BuildTestContainer(containerName, "4", "")).
+		AddContainer(test.BuildTestContainer(secondContainerName, "4", "")).
+		Get()
 
 	// Pretend that the test pod started 11 hours ago.
 	timestampNow := pod.Status.StartTime.Time.Add(time.Hour * 11)
 
 	pod.Status.ContainerStatuses = []apiv1.ContainerStatus{
 		{
+			Name: containerName,
+		},
+		{
+			Name: secondContainerName,
 			LastTerminationState: apiv1.ContainerState{
 				Terminated: &apiv1.ContainerStateTerminated{
 					Reason:     "OOMKilled",
@@ -322,18 +330,25 @@ func TestDontUpdatePodWithOOMOnlyOnOneContainer(t *testing.T) {
 				},
 			},
 		},
-		{},
 	}
 
 	// Pod is within the recommended range.
-	recommendation := test.Recommendation().WithContainer(containerName).
-		WithTarget("5", "").
-		WithLowerBound("1", "").
-		WithUpperBound("6", "").Get()
+	recommendation := &vpa_types.RecommendedPodResources{
+		ContainerRecommendations: []vpa_types.RecommendedContainerResources{
+			test.Recommendation().WithContainer(containerName).
+				WithTarget("5", "").
+				WithLowerBound("1", "").
+				WithUpperBound("6", "").GetContainerResources(),
+			test.Recommendation().WithContainer(secondContainerName).
+				WithTarget("5", "").
+				WithLowerBound("1", "").
+				WithUpperBound("6", "").GetContainerResources(),
+		},
+	}
 
 	calculator.AddPod(pod, recommendation, timestampNow)
 	result := calculator.GetSortedPods(NewDefaultPodEvictionAdmission())
-	assert.Exactly(t, []*apiv1.Pod{}, result, "Pod shouldn't be updated")
+	assert.Exactly(t, []*apiv1.Pod{pod}, result, "Pod should be updated")
 }
 
 func TestNoPods(t *testing.T) {

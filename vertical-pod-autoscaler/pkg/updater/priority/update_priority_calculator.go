@@ -86,13 +86,14 @@ func (calc *UpdatePriorityCalculator) AddPod(pod *apiv1.Pod, recommendation *vpa
 	updatePriority := calc.getUpdatePriority(pod, processedRecommendation)
 
 	quickOOM := false
-	if len(pod.Status.ContainerStatuses) == 1 {
-		terminationState := pod.Status.ContainerStatuses[0].LastTerminationState
+	for _, cs := range pod.Status.ContainerStatuses {
+		terminationState := cs.LastTerminationState
 		if terminationState.Terminated != nil &&
 			terminationState.Terminated.Reason == "OOMKilled" &&
 			terminationState.Terminated.FinishedAt.Time.Sub(terminationState.Terminated.StartedAt.Time) < *evictAfterOOMThreshold {
 			quickOOM = true
-			klog.V(2).Infof("quick OOM detected in pod %v", pod.Name)
+			klog.V(2).Infof("quick OOM detected in pod %v, container %s", pod.Name, cs.Name)
+			break
 		}
 	}
 
