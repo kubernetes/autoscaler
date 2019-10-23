@@ -193,7 +193,7 @@ func Delete(c *gophercloud.ServiceClient, id string) (r DeleteResult) {
 	return
 }
 
-// ListMemberOptsBuilder allows extensions to add additional parameters to the
+// ListMembersOptsBuilder allows extensions to add additional parameters to the
 // ListMembers request.
 type ListMembersOptsBuilder interface {
 	ToMembersListQuery() (string, error)
@@ -218,7 +218,7 @@ type ListMembersOpts struct {
 	SortDir      string `q:"sort_dir"`
 }
 
-// ToMemberListQuery formats a ListOpts into a query string.
+// ToMembersListQuery formats a ListOpts into a query string.
 func (opts ListMembersOpts) ToMembersListQuery() (string, error) {
 	q, err := gophercloud.BuildQueryString(opts)
 	return q.String(), err
@@ -335,7 +335,7 @@ func (opts UpdateMemberOpts) ToMemberUpdateMap() (map[string]interface{}, error)
 	return gophercloud.BuildRequestBody(opts, "member")
 }
 
-// Update allows Member to be updated.
+// UpdateMember allows Member to be updated.
 func UpdateMember(c *gophercloud.ServiceClient, poolID string, memberID string, opts UpdateMemberOptsBuilder) (r UpdateMemberResult) {
 	b, err := opts.ToMemberUpdateMap()
 	if err != nil {
@@ -348,7 +348,7 @@ func UpdateMember(c *gophercloud.ServiceClient, poolID string, memberID string, 
 	return
 }
 
-// DisassociateMember will remove and disassociate a Member from a particular
+// DeleteMember will remove and disassociate a Member from a particular
 // Pool.
 func DeleteMember(c *gophercloud.ServiceClient, poolID string, memberID string) (r DeleteMemberResult) {
 	_, r.Err = c.Delete(memberResourceURL(c, poolID, memberID), nil)

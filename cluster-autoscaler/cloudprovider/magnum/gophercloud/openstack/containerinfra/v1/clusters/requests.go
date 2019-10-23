@@ -129,7 +129,7 @@ type UpdateOptsBuilder interface {
 	ToClustersUpdateMap() (map[string]interface{}, error)
 }
 
-// ToClusterUpdateMap assembles a request body based on the contents of
+// ToClustersUpdateMap assembles a request body based on the contents of
 // UpdateOpts.
 func (opts UpdateOpts) ToClustersUpdateMap() (map[string]interface{}, error) {
 	return gophercloud.BuildRequestBody(opts, "")
