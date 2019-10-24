@@ -1,5 +1,5 @@
 # Cluster Autoscaler on AWS
-The cluster autoscaler on AWS scales worker nodes within any specified autoscaling group. It will run as a `Deployment` in your cluster. This README will go over some of the necessary steps required to get the cluster autoscaler up and running.
+The cluster autoscaler on AWS scales worker nodes within any specified autoscaling group. It will run as a `Deployment` in your cluster. This README covers the steps required to configure and run the cluster autoscaler.
 
 ## Kubernetes Version
 Cluster autoscaler must run on v1.3.0 or greater.
@@ -27,35 +27,23 @@ A minimum IAM policy would look like:
     ]
 }
 ```
+If you'd like to scale node groups from 0, an
+`autoscaling:DescribeLaunchConfigurations` or
+`ec2:DescribeLaunchTemplateVersions` permission is required depending on if you
+made your ASG with Launch Configuration or Launch Template.
 
-If you'd like to auto-discover node groups by specifying the `--node-group-auto-discovery` flag, a `DescribeTags` permission is also required:
+If you'd like the cluster autoscaler to [automatically
+discover](#auto-discovery-setup) EC2 AutoScalingGroups, the
+`autoscaling:DescribeTags` permission is also required.
 
-```json
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Effect": "Allow",
-            "Action": [
-                "autoscaling:DescribeAutoScalingGroups",
-                "autoscaling:DescribeAutoScalingInstances",
-                "autoscaling:DescribeLaunchConfigurations",
-                "autoscaling:DescribeTags",
-                "autoscaling:SetDesiredCapacity",
-                "autoscaling:TerminateInstanceInAutoScalingGroup"
-            ],
-            "Resource": "*"
-        }
-    ]
-}
-```
-
-AWS supports ARNs for autoscaling groups. More information [here](https://docs.aws.amazon.com/autoscaling/latest/userguide/control-access-using-iam.html#policy-auto-scaling-resources).
+**NOTE**: You can restrict the target resources for the autoscaling actions by
+specifying autoscaling group ARNS. More information can be found
+[here](https://docs.aws.amazon.com/autoscaling/latest/userguide/control-access-using-iam.html#policy-auto-scaling-resources).
 
 ### Using AWS Credentials
-For on premise users like to scale out to AWS, above approach that attaching policy to nodegroup role won't work. Instead, you can create an aws secret manually and add following environment variables to cluster-autoscaler deployment manifest. Cluster autoscaler will use credential to authenticate and authorize itself. Please make sure your role has above permissions.
+For on premise users wishing to scale out to AWS, the above approach of attaching policy to a nodegroup role won't work. Instead, you can create an aws secret manually and add following environment variables to cluster-autoscaler deployment manifest. Cluster autoscaler will use credential to authenticate and authorize itself. Please make sure your role has above permissions.
 
-```
+```yaml
 apiVersion: v1
 kind: Secret
 metadata:
@@ -64,11 +52,10 @@ type: Opaque
 data:
   aws_access_key_id: BASE64_OF_YOUR_AWS_ACCESS_KEY_ID
   aws_secret_access_key: BASE64_OF_YOUR_AWS_SECRET_ACCESS_KEY
-
 ```
 Please check [guidance](https://kubernetes.io/docs/concepts/configuration/secret/#creating-a-secret-manually) for creating a secret manually.
 
-```
+```yaml
 env:
 - name: AWS_ACCESS_KEY_ID
   valueFrom:
@@ -82,7 +69,6 @@ env:
       key: aws_secret_access_key
 - name: AWS_REGION
   value: YOUR_AWS_REGION
-
 ```
 
 ## Deployment Specification
@@ -107,7 +93,6 @@ Please replace `{{ node_asg_min }}`, `{{ node_asg_max }}` and `{{ name }}` with 
 ```
 kubectl apply -f examples/cluster-autoscaler-run-on-master.yaml
 ```
-
 
 ### Auto-Discovery Setup
 
