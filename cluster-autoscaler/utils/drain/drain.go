@@ -22,10 +22,12 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	policyv1 "k8s.io/api/policy/v1beta1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+
 	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
-	"k8s.io/kubernetes/pkg/kubelet/types"
+	pod_util "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
 )
 
 const (
@@ -44,7 +46,6 @@ const (
 func GetPodsForDeletionOnNodeDrain(
 	podList []*apiv1.Pod,
 	pdbs []*policyv1.PodDisruptionBudget,
-	deleteAll bool,
 	skipNodesWithSystemPods bool,
 	skipNodesWithLocalStorage bool,
 	checkReferences bool, // Setting this to true requires client to be not-null.
@@ -62,7 +63,7 @@ func GetPodsForDeletionOnNodeDrain(
 	}
 
 	for _, pod := range podList {
-		if IsMirrorPod(pod) {
+		if pod_util.IsMirrorPod(pod) {
 			continue
 		}
 
@@ -107,24 +108,17 @@ func GetPodsForDeletionOnNodeDrain(
 			} else {
 				replicated = true
 			}
-		} else if refKind == "DaemonSet" {
-			if checkReferences {
-				ds, err := listers.DaemonSetLister().DaemonSets(controllerNamespace).Get(controllerRef.Name)
-
-				// Assume the only reason for an error is because the DaemonSet is
-				// gone/missing, not for any other cause.  TODO(mml): something more
-				// sophisticated than this
-				if err == nil && ds != nil {
-					// Otherwise, treat daemonset-managed pods as unmanaged since
-					// DaemonSet Controller currently ignores the unschedulable bit.
-					// FIXME(mml): Add link to the issue concerning a proper way to drain
-					// daemonset pods, probably using taints.
-					daemonsetPod = true
-				} else {
+		} else if pod_util.IsDaemonSetPod(pod) {
+			daemonsetPod = true
+			// don't have listener for other DaemonSet kind
+			// TODO: we should use a generic client for checking the reference.
+			if checkReferences && refKind == "DaemonSet" {
+				_, err := listers.DaemonSetLister().DaemonSets(controllerNamespace).Get(controllerRef.Name)
+				if apierrors.IsNotFound(err) {
 					return []*apiv1.Pod{}, fmt.Errorf("daemonset for %s/%s is not present, err: %v", pod.Namespace, pod.Name, err)
+				} else if err != nil {
+					return []*apiv1.Pod{}, fmt.Errorf("error when trying to get daemonset for %s/%s , err: %v", pod.Namespace, pod.Name, err)
 				}
-			} else {
-				daemonsetPod = true
 			}
 		} else if refKind == "Job" {
 			if checkReferences {
@@ -180,7 +174,7 @@ func GetPodsForDeletionOnNodeDrain(
 			continue
 		}
 
-		if !deleteAll && !safeToEvict && !terminal {
+		if !safeToEvict && !terminal {
 			if !replicated {
 				return []*apiv1.Pod{}, fmt.Errorf("%s/%s is not replicated", pod.Namespace, pod.Name)
 			}
@@ -208,12 +202,6 @@ func GetPodsForDeletionOnNodeDrain(
 // ControllerRef returns the OwnerReference to pod's controller.
 func ControllerRef(pod *apiv1.Pod) *metav1.OwnerReference {
 	return metav1.GetControllerOf(pod)
-}
-
-// IsMirrorPod checks whether the pod is a mirror pod.
-func IsMirrorPod(pod *apiv1.Pod) bool {
-	_, found := pod.ObjectMeta.Annotations[types.ConfigMirrorAnnotationKey]
-	return found
 }
 
 // isPodTerminal checks whether the pod is in a terminal state.

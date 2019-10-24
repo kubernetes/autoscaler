@@ -17,13 +17,11 @@ limitations under the License.
 package simulator
 
 import (
-	"time"
-
 	apiv1 "k8s.io/api/core/v1"
-	policyv1 "k8s.io/api/policy/v1beta1"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/drain"
-	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+
+	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
+	pod_util "k8s.io/autoscaler/cluster-autoscaler/utils/pod"
 )
 
 // getRequiredPodsForNode returns a list of pods that would appear on the node if the
@@ -31,36 +29,8 @@ import (
 // drain command to get the list.
 func getRequiredPodsForNode(nodename string, podsForNodes map[string][]*apiv1.Pod) ([]*apiv1.Pod, errors.AutoscalerError) {
 	allPods := podsForNodes[nodename]
-	podsToRemoveList, err := drain.GetPodsForDeletionOnNodeDrain(
-		allPods,
-		[]*policyv1.PodDisruptionBudget{}, // PDBs are irrelevant when considering new node.
-		true,                              // Force all removals.
-		false,
-		false,
-		false, // Setting this to true requires listers to be not-null.
-		nil,
-		0,
-		time.Now())
-	if err != nil {
-		return []*apiv1.Pod{}, errors.ToAutoscalerError(errors.InternalError, err)
-	}
 
-	podsToRemoveMap := make(map[string]struct{})
-	for _, pod := range podsToRemoveList {
-		podsToRemoveMap[pod.SelfLink] = struct{}{}
-	}
-
-	podsOnNewNode := make([]*apiv1.Pod, 0)
-	for _, pod := range allPods {
-		if pod.DeletionTimestamp != nil {
-			continue
-		}
-
-		if _, found := podsToRemoveMap[pod.SelfLink]; !found {
-			podsOnNewNode = append(podsOnNewNode, pod)
-		}
-	}
-	return podsOnNewNode, nil
+	return filterRequiredPodsForNode(allPods), nil
 }
 
 // BuildNodeInfoForNode build a NodeInfo structure for the given node as if the node was just created.
@@ -74,4 +44,21 @@ func BuildNodeInfoForNode(node *apiv1.Node, podsForNodes map[string][]*apiv1.Pod
 		return nil, errors.ToAutoscalerError(errors.InternalError, err)
 	}
 	return result, nil
+}
+
+func filterRequiredPodsForNode(allPods []*apiv1.Pod) []*apiv1.Pod {
+	var selectedPods []*apiv1.Pod
+
+	for id, pod := range allPods {
+		// Ignore pod in deletion phase
+		if pod.DeletionTimestamp != nil {
+			continue
+		}
+
+		if pod_util.IsMirrorPod(pod) || pod_util.IsDaemonSetPod(pod) {
+			selectedPods = append(selectedPods, allPods[id])
+		}
+	}
+
+	return selectedPods
 }
