@@ -51,7 +51,11 @@ func TestUtilization(t *testing.T) {
 	daemonSetPod3 := BuildTestPod("p3", 100, 200000)
 	daemonSetPod3.OwnerReferences = GenerateOwnerReferences("ds", "DaemonSet", "apps/v1", "")
 
-	nodeInfo = schedulernodeinfo.NewNodeInfo(pod, pod, pod2, daemonSetPod3)
+	daemonSetPod4 := BuildTestPod("p4", 100, 200000)
+	daemonSetPod4.OwnerReferences = GenerateOwnerReferences("ds", "CustomDaemonSet", "crd/v1", "")
+	daemonSetPod4.Annotations = map[string]string{"cluster-autoscaler.kubernetes.io/daemonset-pod": "true"}
+
+	nodeInfo = schedulernodeinfo.NewNodeInfo(pod, pod, pod2, daemonSetPod3, daemonSetPod4)
 	utilInfo, err = CalculateUtilization(node, nodeInfo, true, false, gpuLabel)
 	assert.NoError(t, err)
 	assert.InEpsilon(t, 2.0/10, utilInfo.Utilization, 0.01)
