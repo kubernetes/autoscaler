@@ -39,7 +39,6 @@ func FastGetPodsToMove(nodeInfo *schedulernodeinfo.NodeInfo, skipNodesWithSystem
 	pods, err := drain.GetPodsForDeletionOnNodeDrain(
 		nodeInfo.Pods(),
 		pdbs,
-		false,
 		skipNodesWithSystemPods,
 		skipNodesWithLocalStorage,
 		false,
@@ -67,7 +66,6 @@ func DetailedGetPodsForMove(nodeInfo *schedulernodeinfo.NodeInfo, skipNodesWithS
 	pods, err := drain.GetPodsForDeletionOnNodeDrain(
 		nodeInfo.Pods(),
 		pdbs,
-		false,
 		skipNodesWithSystemPods,
 		skipNodesWithLocalStorage,
 		true,
