@@ -136,11 +136,11 @@ func TestFindUnneededNodes(t *testing.T) {
 		[]*apiv1.Pod{p1, p2, p3, p4, p5, p6}, time.Now(), nil, nil)
 
 	assert.Equal(t, 3, len(sd.unneededNodes))
-	addTime, found := sd.unneededNodes["n2"]
+	_, found := sd.unneededNodes["n2"]
 	assert.True(t, found)
-	addTime, found = sd.unneededNodes["n7"]
+	_, found = sd.unneededNodes["n7"]
 	assert.True(t, found)
-	addTime, found = sd.unneededNodes["n8"]
+	addTime, found := sd.unneededNodes["n8"]
 	assert.True(t, found)
 	assert.Contains(t, sd.podLocationHints, p2.Namespace+"/"+p2.Name)
 	assert.Equal(t, 6, len(sd.nodeUtilizationMap))

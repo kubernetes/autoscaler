@@ -178,7 +178,7 @@ func (mgr *packetManagerRest) listPacketDevices() *Devices {
 	var jsonStr = []byte(``)
 	packetAuthToken := os.Getenv("PACKET_AUTH_TOKEN")
 	url := "https://api.packet.net/projects/" + mgr.projectID + "/devices"
-	req, err := http.NewRequest("GET", url, bytes.NewBuffer(jsonStr))
+	req, _ := http.NewRequest("GET", url, bytes.NewBuffer(jsonStr))
 	req.Header.Set("X-Auth-Token", packetAuthToken)
 	req.Header.Set("Content-Type", "application/json")
 	client := &http.Client{}
@@ -345,7 +345,7 @@ func (mgr *packetManagerRest) deleteNodes(nodegroup string, nodes []NodeRef, upd
 				klog.Infof("nodegroup match %s %s", d.Hostname, n.Name)
 				if d.Hostname == n.Name {
 					klog.V(1).Infof("Matching Packet Device %s - %s", d.Hostname, d.ID)
-					req, err := http.NewRequest("DELETE", "https://api.packet.net/devices/"+d.ID, bytes.NewBuffer([]byte("")))
+					req, _ := http.NewRequest("DELETE", "https://api.packet.net/devices/"+d.ID, bytes.NewBuffer([]byte("")))
 					req.Header.Set("X-Auth-Token", packetAuthToken)
 					req.Header.Set("Content-Type", "application/json")
 

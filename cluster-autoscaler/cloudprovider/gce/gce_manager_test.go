@@ -1386,9 +1386,9 @@ func TestParseCustomMachineType(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, int64(2), cpu)
 	assert.Equal(t, int64(2816*units.MiB), mem)
-	cpu, mem, err = parseCustomMachineType("other-a2-2816")
+	_, _, err = parseCustomMachineType("other-a2-2816")
 	assert.Error(t, err)
-	cpu, mem, err = parseCustomMachineType("other-2-2816")
+	_, _, err = parseCustomMachineType("other-2-2816")
 	assert.Error(t, err)
 }
 
