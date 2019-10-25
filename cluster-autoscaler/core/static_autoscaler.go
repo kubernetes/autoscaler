@@ -327,7 +327,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 	// we tread pods with nominated node-name as scheduled for sake of scale-up considerations
 	scheduledPods = append(scheduledPods, unschedulableWaitingForLowerPriorityPreemption...)
 
-	unschedulablePodsToHelp, scheduledPods, err := a.processors.PodListProcessor.Process(
+	unschedulablePodsToHelp, scheduledPods, _ := a.processors.PodListProcessor.Process(
 		a.AutoscalingContext, unschedulablePods, scheduledPods, allNodes, readyNodes,
 		getUpcomingNodeInfos(a.clusterStateRegistry, nodeInfosForGroups))
 
