@@ -76,7 +76,7 @@ type DeleteOpts struct {
 	Cascade bool `q:"cascade"`
 }
 
-// ToLoadBalancerDeleteQuery formats a DeleteOpts into a query string.
+// ToVolumeDeleteQuery formats a DeleteOpts into a query string.
 func (opts DeleteOpts) ToVolumeDeleteQuery() (string, error) {
 	q, err := gophercloud.BuildQueryString(opts)
 	return q.String(), err
