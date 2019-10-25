@@ -17,10 +17,14 @@ limitations under the License.
 package logic
 
 import (
+	"context"
 	"strconv"
 	"testing"
 
+	"golang.org/x/time/rate"
+
 	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/assert"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -87,12 +91,13 @@ func TestRunOnce(t *testing.T) {
 		vpaLister:               vpaLister,
 		podLister:               podLister,
 		evictionFactory:         factory,
+		evictionRateLimiter:     rate.NewLimiter(rate.Inf, 0),
 		recommendationProcessor: &test.FakeRecommendationProcessor{},
 		selectorFetcher:         mockSelectorFetcher,
 	}
 
 	mockSelectorFetcher.EXPECT().Fetch(gomock.Eq(vpaObj)).Return(selector, nil)
-	updater.RunOnce()
+	updater.RunOnce(context.Background())
 	eviction.AssertNumberOfCalls(t, "Evict", 5)
 }
 
@@ -134,11 +139,12 @@ func TestVPAOff(t *testing.T) {
 		vpaLister:               vpaLister,
 		podLister:               podLister,
 		evictionFactory:         factory,
+		evictionRateLimiter:     rate.NewLimiter(rate.Inf, 0),
 		recommendationProcessor: &test.FakeRecommendationProcessor{},
 		selectorFetcher:         target_mock.NewMockVpaTargetSelectorFetcher(ctrl),
 	}
 
-	updater.RunOnce()
+	updater.RunOnce(context.Background())
 	eviction.AssertNumberOfCalls(t, "Evict", 0)
 }
 
@@ -153,9 +159,27 @@ func TestRunOnceNotingToProcess(t *testing.T) {
 		vpaLister:               vpaLister,
 		podLister:               podLister,
 		evictionFactory:         factory,
+		evictionRateLimiter:     rate.NewLimiter(rate.Inf, 0),
 		recommendationProcessor: &test.FakeRecommendationProcessor{},
 	}
-	updater.RunOnce()
+	updater.RunOnce(context.Background())
+}
+
+func TestGetRateLimiter(t *testing.T) {
+	cases := []struct {
+		rateLimit       float64
+		rateLimitBurst  int
+		expectedLimiter *rate.Limiter
+	}{
+		{0.0, 1, rate.NewLimiter(rate.Inf, 0)},
+		{-1.0, 2, rate.NewLimiter(rate.Inf, 0)},
+		{10.0, 3, rate.NewLimiter(rate.Limit(10), 3)},
+	}
+	for _, tc := range cases {
+		limiter := getRateLimiter(tc.rateLimit, tc.rateLimitBurst)
+		assert.Equal(t, tc.expectedLimiter.Burst(), limiter.Burst())
+		assert.InDelta(t, float64(tc.expectedLimiter.Limit()), float64(limiter.Limit()), 1e-6)
+	}
 }
 
 type fakeEvictFactory struct {
