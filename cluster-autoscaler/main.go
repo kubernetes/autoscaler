@@ -295,6 +295,9 @@ func buildAutoscaler() (core.Autoscaler, error) {
 	if autoscalingOptions.CloudProviderName == cloudprovider.AzureProviderName {
 		processors.NodeGroupSetProcessor = &nodegroupset.BalancingNodeGroupSetProcessor{
 			Comparator: nodegroupset.IsAzureNodeInfoSimilar}
+	} else if autoscalingOptions.CloudProviderName == cloudprovider.AwsProviderName {
+		processors.NodeGroupSetProcessor = &nodegroupset.BalancingNodeGroupSetProcessor{
+			Comparator: nodegroupset.IsAwsNodeInfoSimilar}
 	}
 
 	opts := core.AutoscalerOptions{
