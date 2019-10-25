@@ -53,7 +53,7 @@ func Attach(client *gophercloud.ServiceClient, id string, opts AttachOptsBuilder
 	return
 }
 
-// BeginDetach will mark the volume as detaching.
+// BeginDetaching will mark the volume as detaching.
 func BeginDetaching(client *gophercloud.ServiceClient, id string) (r BeginDetachingResult) {
 	b := map[string]interface{}{"os-begin_detaching": make(map[string]interface{})}
 	_, r.Err = client.Post(actionURL(client, id), b, nil, &gophercloud.RequestOpts{

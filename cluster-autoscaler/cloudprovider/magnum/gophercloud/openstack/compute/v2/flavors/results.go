@@ -214,7 +214,7 @@ type ListExtraSpecsResult struct {
 	extraSpecsResult
 }
 
-// CreateExtraSpecResult contains the result of a Create operation. Call its
+// CreateExtraSpecsResult contains the result of a Create operation. Call its
 // Extract method to interpret it as a map[string]interface.
 type CreateExtraSpecsResult struct {
 	extraSpecsResult
