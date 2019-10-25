@@ -117,7 +117,7 @@ type ProjectResource struct {
 	Status     string                `json:"status,omitempty"`
 }
 
-// ProjetResourceLinks specify the link for more information about the resource.
+// ProjectResourceLinks specify the link for more information about the resource.
 type ProjectResourceLinks struct {
 	Self string `json:"self"`
 }
