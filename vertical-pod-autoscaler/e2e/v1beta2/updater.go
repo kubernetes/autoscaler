@@ -31,6 +31,10 @@ import (
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/kubernetes/test/e2e/framework"
+	framework_deployment "k8s.io/kubernetes/test/e2e/framework/deployment"
+	framework_job "k8s.io/kubernetes/test/e2e/framework/job"
+	framework_rs "k8s.io/kubernetes/test/e2e/framework/replicaset"
+	framework_ss "k8s.io/kubernetes/test/e2e/framework/statefulset"
 	testutils "k8s.io/kubernetes/test/utils"
 
 	"github.com/onsi/ginkgo"
@@ -266,7 +270,7 @@ func waitForRCPodsRunning(f *framework.Framework, rc *apiv1.ReplicationControlle
 }
 
 func setupHamsterJob(f *framework.Framework, cpu, memory string, replicas int32) {
-	job := framework.NewTestJob("notTerminate", "hamster-job", apiv1.RestartPolicyOnFailure,
+	job := framework_job.NewTestJob("notTerminate", "hamster-job", apiv1.RestartPolicyOnFailure,
 		replicas, replicas, nil, 10)
 	job.Spec.Template.Spec.Containers[0] = setupHamsterContainer(cpu, memory)
 	for label, value := range hamsterLabels {
@@ -274,29 +278,28 @@ func setupHamsterJob(f *framework.Framework, cpu, memory string, replicas int32)
 	}
 	err := testutils.CreateJobWithRetries(f.ClientSet, f.Namespace.Name, job)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
-	err = framework.WaitForAllJobPodsRunning(f.ClientSet, f.Namespace.Name, job.Name, replicas)
+	err = framework_job.WaitForAllJobPodsRunning(f.ClientSet, f.Namespace.Name, job.Name, replicas)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 }
 
 func setupHamsterRS(f *framework.Framework, cpu, memory string, replicas int32) {
-	rs := framework.NewReplicaSet("hamster-rs", f.Namespace.Name, replicas,
+	rs := framework_rs.NewReplicaSet("hamster-rs", f.Namespace.Name, replicas,
 		hamsterLabels, "", "")
 	rs.Spec.Template.Spec.Containers[0] = setupHamsterContainer(cpu, memory)
 	err := createReplicaSetWithRetries(f.ClientSet, f.Namespace.Name, rs)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
-	err = framework.WaitForReadyReplicaSet(f.ClientSet, f.Namespace.Name, rs.Name)
+	err = framework_rs.WaitForReadyReplicaSet(f.ClientSet, f.Namespace.Name, rs.Name)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 }
 
 func setupHamsterStateful(f *framework.Framework, cpu, memory string, replicas int32) {
-	stateful := framework.NewStatefulSet("hamster-stateful", f.Namespace.Name,
+	stateful := framework_ss.NewStatefulSet("hamster-stateful", f.Namespace.Name,
 		"hamster-service", replicas, nil, nil, hamsterLabels)
 
 	stateful.Spec.Template.Spec.Containers[0] = setupHamsterContainer(cpu, memory)
 	err := createStatefulSetSetWithRetries(f.ClientSet, f.Namespace.Name, stateful)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
-	tester := framework.NewStatefulSetTester(f.ClientSet)
-	tester.WaitForRunningAndReady(*stateful.Spec.Replicas, stateful)
+	framework_ss.WaitForRunningAndReady(f.ClientSet, *stateful.Spec.Replicas, stateful)
 }
 
 func setupHamsterContainer(cpu, memory string) apiv1.Container {
@@ -336,7 +339,7 @@ func setupPDB(f *framework.Framework, name string, maxUnavailable int) *policyv1
 }
 
 func getCurrentPodSetForDeployment(c clientset.Interface, d *appsv1.Deployment) PodSet {
-	podList, err := framework.GetPodsForDeployment(c, d)
+	podList, err := framework_deployment.GetPodsForDeployment(c, d)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	return MakePodSet(podList)
 }
