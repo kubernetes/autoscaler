@@ -33,7 +33,7 @@ const (
 	MaxFreeDifferenceRatio = 0.05
 	// MaxMemoryDifferenceInKiloBytes describes how much memory
 	// capacity can differ but still be considered equal.
-	MaxMemoryDifferenceInKiloBytes = 128000
+	MaxMemoryDifferenceInKiloBytes = 256000
 )
 
 // BasicIgnoredLabels define a set of basic labels that should be ignored when comparing the similarity
