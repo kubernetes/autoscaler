@@ -26,6 +26,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/klog"
+	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+	nGroupSet "k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 )
 
 const (
@@ -76,6 +78,10 @@ func (azure *AzureCloudProvider) GPULabel() string {
 // GetAvailableGPUTypes return all available GPU types cloud provider supports
 func (azure *AzureCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
 	return availableGPUTypes
+}
+
+func (azure *AzureCloudProvider) IsNodeInfoSimilar(n1, n2 *schedulernodeinfo.NodeInfo) bool{
+	return nGroupSet.IsNodeInfoSimilar(n1, n2)
 }
 
 // NodeGroups returns all node groups configured for this cloud provider.

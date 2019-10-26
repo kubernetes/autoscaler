@@ -58,7 +58,7 @@ func (b *BalancingNodeGroupSetProcessor) FindSimilarNodeGroups(context *context.
 		}
 		comparator := b.Comparator
 		if comparator == nil {
-			comparator = IsNodeInfoSimilar
+			comparator = context.CloudProvider.IsNodeInfoSimilar
 		}
 		if comparator(nodeInfo, ngNodeInfo) {
 			result = append(result, ng)

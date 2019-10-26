@@ -28,6 +28,8 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/klog"
+	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+	nGroupSet "k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 )
 
 var _ cloudprovider.CloudProvider = (*digitaloceanCloudProvider)(nil)
@@ -68,6 +70,10 @@ func (d *digitaloceanCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 		nodeGroups[i] = ng
 	}
 	return nodeGroups
+}
+
+func (d *digitaloceanCloudProvider) IsNodeInfoSimilar(n1, n2 *schedulernodeinfo.NodeInfo) bool{
+	return nGroupSet.IsNodeInfoSimilar(n1, n2)
 }
 
 // NodeGroupForNode returns the node group for the given node, nil if the node

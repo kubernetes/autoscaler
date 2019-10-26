@@ -30,6 +30,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/klog"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+	nGroupSet "k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 )
 
 const (
@@ -154,6 +155,10 @@ func (baiducloud *baiducloudCloudProvider) NodeGroups() []cloudprovider.NodeGrou
 		result = append(result, asg)
 	}
 	return result
+}
+
+func (baiducloud *baiducloudCloudProvider) IsNodeInfoSimilar(n1, n2 *schedulernodeinfo.NodeInfo) bool{
+	return nGroupSet.IsNodeInfoSimilar(n1, n2)
 }
 
 // GPULabel returns the label added to nodes with GPU resource.

@@ -88,6 +88,9 @@ type CloudProvider interface {
 	// Refresh is called before every main loop and can be used to dynamically update cloud provider state.
 	// In particular the list of node groups returned by NodeGroups can change as a result of CloudProvider.Refresh().
 	Refresh() error
+
+	// IsNodeInfoSimilar, let provider decide for node similarity
+	IsNodeInfoSimilar(n1, n2 *schedulernodeinfo.NodeInfo) bool
 }
 
 // ErrNotImplemented is returned if a method is not implemented.

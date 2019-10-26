@@ -29,6 +29,7 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/klog"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
+	nGroupSet "k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 )
 
 const (
@@ -87,6 +88,10 @@ func (gce *GceCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 		result = append(result, mig)
 	}
 	return result
+}
+
+func (gce *GceCloudProvider) IsNodeInfoSimilar(n1, n2 *schedulernodeinfo.NodeInfo) bool{
+	return nGroupSet.IsNodeInfoSimilar(n1, n2)
 }
 
 // NodeGroupForNode returns the node group for the given node.
