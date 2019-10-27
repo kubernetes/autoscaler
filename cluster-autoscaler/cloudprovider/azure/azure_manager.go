@@ -43,7 +43,28 @@ const (
 
 	// The path of deployment parameters for standard vm.
 	deploymentParametersPath = "/var/lib/azure/azuredeploy.parameters.json"
+
+	vmssTagMin                     = "min"
+	vmssTagMax                     = "max"
+	autoDiscovererTypeLabel        = "label"
+	labelAutoDiscovererKeyMinNodes = "min"
+	labelAutoDiscovererKeyMaxNodes = "max"
 )
+
+var validLabelAutoDiscovererKeys = strings.Join([]string{
+	labelAutoDiscovererKeyMinNodes,
+	labelAutoDiscovererKeyMaxNodes,
+}, ", ")
+
+// A labelAutoDiscoveryConfig specifies how to autodiscover Azure scale sets.
+type labelAutoDiscoveryConfig struct {
+	// Key-values to match on.
+	Selector map[string]string
+	// MinSize specifies the minimum size for all MIGs that match Re.
+	MinSize int
+	// MaxSize specifies the maximum size for all MIGs that match Re.
+	MaxSize int
+}
 
 // AzureManager handles Azure communication and data caching.
 type AzureManager struct {
@@ -53,7 +74,7 @@ type AzureManager struct {
 
 	asgCache              *asgCache
 	lastRefresh           time.Time
-	asgAutoDiscoverySpecs []cloudprovider.LabelAutoDiscoveryConfig
+	asgAutoDiscoverySpecs []labelAutoDiscoveryConfig
 	explicitlyConfigured  map[string]bool
 }
 
@@ -181,7 +202,7 @@ func CreateAzureManager(configReader io.Reader, discoveryOpts cloudprovider.Node
 	}
 	manager.asgCache = cache
 
-	specs, err := discoveryOpts.ParseLabelAutoDiscoverySpecs()
+	specs, err := parseLabelAutoDiscoverySpecs(discoveryOpts)
 	if err != nil {
 		return nil, err
 	}
@@ -335,7 +356,7 @@ func (m *AzureManager) Cleanup() {
 	m.asgCache.Cleanup()
 }
 
-func (m *AzureManager) getFilteredAutoscalingGroups(filter []cloudprovider.LabelAutoDiscoveryConfig) (asgs []cloudprovider.NodeGroup, err error) {
+func (m *AzureManager) getFilteredAutoscalingGroups(filter []labelAutoDiscoveryConfig) (asgs []cloudprovider.NodeGroup, err error) {
 	if len(filter) == 0 {
 		return nil, nil
 	}
@@ -359,7 +380,7 @@ func (m *AzureManager) getFilteredAutoscalingGroups(filter []cloudprovider.Label
 }
 
 // listScaleSets gets a list of scale sets and instanceIDs.
-func (m *AzureManager) listScaleSets(filter []cloudprovider.LabelAutoDiscoveryConfig) (asgs []cloudprovider.NodeGroup, err error) {
+func (m *AzureManager) listScaleSets(filter []labelAutoDiscoveryConfig) (asgs []cloudprovider.NodeGroup, err error) {
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
 
@@ -379,13 +400,38 @@ func (m *AzureManager) listScaleSets(filter []cloudprovider.LabelAutoDiscoveryCo
 				continue
 			}
 		}
-
 		spec := &dynamic.NodeGroupSpec{
 			Name:               *scaleSet.Name,
 			MinSize:            1,
 			MaxSize:            -1,
 			SupportScaleToZero: scaleToZeroSupportedVMSS,
 		}
+
+		if val, ok := scaleSet.Tags["min"]; ok {
+			if minSize, err := strconv.Atoi(*val); err == nil {
+				spec.MinSize = minSize
+			} else {
+				return asgs, fmt.Errorf("invalid minimum size specified for vmss: %s", err)
+			}
+		} else {
+			return asgs, fmt.Errorf("no minimum size specified for vmss: %s", err)
+		}
+		if val, ok := scaleSet.Tags["max"]; ok {
+			if maxSize, err := strconv.Atoi(*val); err == nil {
+				spec.MaxSize = maxSize
+			} else {
+				return asgs, fmt.Errorf("invalid maximum size specified for vmss: %s", err)
+			}
+		} else {
+			return asgs, fmt.Errorf("no maximum size specified for vmss: %s", err)
+		}
+		if spec.MaxSize < 1 {
+			return asgs, fmt.Errorf("maximum size must be greater than 1 node")
+		}
+		if spec.MaxSize < spec.MinSize {
+			return asgs, fmt.Errorf("maximum size must be greater than minimum size")
+		}
+
 		asg, _ := NewScaleSet(spec, m)
 		asgs = append(asgs, asg)
 	}
@@ -395,7 +441,7 @@ func (m *AzureManager) listScaleSets(filter []cloudprovider.LabelAutoDiscoveryCo
 
 // listAgentPools gets a list of agent pools and instanceIDs.
 // Note: filter won't take effect for agent pools.
-func (m *AzureManager) listAgentPools(filter []cloudprovider.LabelAutoDiscoveryConfig) (asgs []cloudprovider.NodeGroup, err error) {
+func (m *AzureManager) listAgentPools(filter []labelAutoDiscoveryConfig) (asgs []cloudprovider.NodeGroup, err error) {
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
 	deploy, err := m.azClient.deploymentsClient.Get(ctx, m.config.ResourceGroup, m.config.Deployment)
@@ -422,4 +468,69 @@ func (m *AzureManager) listAgentPools(filter []cloudprovider.LabelAutoDiscoveryC
 	}
 
 	return asgs, nil
+}
+
+// ParseLabelAutoDiscoverySpecs returns any provided NodeGroupAutoDiscoverySpecs
+// parsed into configuration appropriate for ASG autodiscovery.
+func parseLabelAutoDiscoverySpecs(o cloudprovider.NodeGroupDiscoveryOptions) ([]labelAutoDiscoveryConfig, error) {
+	cfgs := make([]labelAutoDiscoveryConfig, len(o.NodeGroupAutoDiscoverySpecs))
+	var err error
+	for i, spec := range o.NodeGroupAutoDiscoverySpecs {
+		cfgs[i], err = parseLabelAutoDiscoverySpec(spec)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return cfgs, nil
+}
+
+// parseLabelAutoDiscoverySpec parses a single spec and returns the corredponding node group spec.
+func parseLabelAutoDiscoverySpec(spec string) (labelAutoDiscoveryConfig, error) {
+	cfg := labelAutoDiscoveryConfig{
+		Selector: make(map[string]string),
+		MinSize:  1,
+		MaxSize:  -1,
+	}
+
+	tokens := strings.Split(spec, ":")
+	if len(tokens) != 2 {
+		return cfg, fmt.Errorf("spec \"%s\" should be discoverer:key=value,key=value", spec)
+	}
+	discoverer := tokens[0]
+	if discoverer != autoDiscovererTypeLabel {
+		return cfg, fmt.Errorf("unsupported discoverer specified: %s", discoverer)
+	}
+
+	for _, arg := range strings.Split(tokens[1], ",") {
+		kv := strings.Split(arg, "=")
+		if len(kv) != 2 {
+			return cfg, fmt.Errorf("invalid key=value pair %s", kv)
+		}
+
+		k, v := kv[0], kv[1]
+
+		switch k {
+		case labelAutoDiscovererKeyMinNodes:
+			if minSize, err := strconv.Atoi(v); err == nil {
+				cfg.MinSize = minSize
+			} else {
+				return cfg, fmt.Errorf("invalid minimum nodes: %s", v)
+			}
+		case labelAutoDiscovererKeyMaxNodes:
+			if maxSize, err := strconv.Atoi(v); err == nil {
+				cfg.MaxSize = maxSize
+			} else {
+				return cfg, fmt.Errorf("invalid maximum nodes: %s", v)
+			}
+		default:
+			cfg.Selector[k] = v
+		}
+	}
+	if cfg.MaxSize < 1 {
+		return cfg, fmt.Errorf("maximum size must be greater than 1 node")
+	}
+	if cfg.MaxSize < cfg.MinSize {
+		return cfg, fmt.Errorf("maximum size must be greater than minimum size")
+	}
+	return cfg, nil
 }
