@@ -1140,7 +1140,7 @@ func TestFetchAutoMigsZonal(t *testing.T) {
 	g := newTestGceManager(t, server.URL, regional)
 
 	min, max := 0, 100
-	g.migAutoDiscoverySpecs = []cloudprovider.MIGAutoDiscoveryConfig{
+	g.migAutoDiscoverySpecs = []migAutoDiscoveryConfig{
 		{Re: regexp.MustCompile("UNUSED"), MinSize: min, MaxSize: max},
 	}
 
@@ -1213,7 +1213,7 @@ func TestFetchAutoMigsRegional(t *testing.T) {
 	g := newTestGceManager(t, server.URL, regional)
 
 	min, max := 0, 100
-	g.migAutoDiscoverySpecs = []cloudprovider.MIGAutoDiscoveryConfig{
+	g.migAutoDiscoverySpecs = []migAutoDiscoveryConfig{
 		{Re: regexp.MustCompile("UNUSED"), MinSize: min, MaxSize: max},
 	}
 
@@ -1410,4 +1410,108 @@ func validateMigExists(t *testing.T, migs []Mig, zone string, name string, minSi
 		allRefs = append(allRefs, mig.GceRef())
 	}
 	assert.Failf(t, "Mig not found", "Mig %v not found among %v", ref, allRefs)
+}
+
+func TestParseMIGAutoDiscoverySpecs(t *testing.T) {
+	cases := []struct {
+		name    string
+		specs   []string
+		want    []migAutoDiscoveryConfig
+		wantErr bool
+	}{
+		{
+			name: "GoodSpecs",
+			specs: []string{
+				"mig:namePrefix=pfx,min=0,max=10",
+				"mig:namePrefix=anotherpfx,min=1,max=2",
+			},
+			want: []migAutoDiscoveryConfig{
+				{Re: regexp.MustCompile("^pfx.+"), MinSize: 0, MaxSize: 10},
+				{Re: regexp.MustCompile("^anotherpfx.+"), MinSize: 1, MaxSize: 2},
+			},
+		},
+		{
+			name:    "MissingMIGType",
+			specs:   []string{"namePrefix=pfx,min=0,max=10"},
+			wantErr: true,
+		},
+		{
+			name:    "WrongType",
+			specs:   []string{"asg:namePrefix=pfx,min=0,max=10"},
+			wantErr: true,
+		},
+		{
+			name:    "UnknownKey",
+			specs:   []string{"mig:namePrefix=pfx,min=0,max=10,unknown=hi"},
+			wantErr: true,
+		},
+		{
+			name:    "NonIntegerMin",
+			specs:   []string{"mig:namePrefix=pfx,min=a,max=10"},
+			wantErr: true,
+		},
+		{
+			name:    "NonIntegerMax",
+			specs:   []string{"mig:namePrefix=pfx,min=1,max=donkey"},
+			wantErr: true,
+		},
+		{
+			name:    "PrefixDoesNotCompileToRegexp",
+			specs:   []string{"mig:namePrefix=a),min=1,max=10"},
+			wantErr: true,
+		},
+		{
+			name:    "KeyMissingValue",
+			specs:   []string{"mig:namePrefix=prefix,min=,max=10"},
+			wantErr: true,
+		},
+		{
+			name:    "ValueMissingKey",
+			specs:   []string{"mig:namePrefix=prefix,=0,max=10"},
+			wantErr: true,
+		},
+		{
+			name:    "KeyMissingSeparator",
+			specs:   []string{"mig:namePrefix=prefix,min,max=10"},
+			wantErr: true,
+		},
+		{
+			name:    "TooManySeparators",
+			specs:   []string{"mig:namePrefix=prefix,min=0,max=10=20"},
+			wantErr: true,
+		},
+		{
+			name:    "PrefixIsEmpty",
+			specs:   []string{"mig:namePrefix=,min=0,max=10"},
+			wantErr: true,
+		},
+		{
+			name:    "PrefixIsMissing",
+			specs:   []string{"mig:min=0,max=10"},
+			wantErr: true,
+		},
+		{
+			name:    "MaxBelowMin",
+			specs:   []string{"mig:namePrefix=prefix,min=10,max=1"},
+			wantErr: true,
+		},
+		{
+			name:    "MaxIsZero",
+			specs:   []string{"mig:namePrefix=prefix,min=0,max=0"},
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			do := cloudprovider.NodeGroupDiscoveryOptions{NodeGroupAutoDiscoverySpecs: tc.specs}
+			got, err := parseMIGAutoDiscoverySpecs(do)
+			if tc.wantErr {
+				assert.Error(t, err)
+				return
+			}
+			assert.NoError(t, err)
+			assert.True(t, assert.ObjectsAreEqualValues(tc.want, got), "\ngot: %#v\nwant: %#v", got, tc.want)
+		})
+	}
 }
