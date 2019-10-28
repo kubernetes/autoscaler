@@ -26,10 +26,10 @@ import (
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
+	nGroupSet "k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/klog"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
-	nGroupSet "k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 )
 
 const (
@@ -85,7 +85,8 @@ func (pcp *packetCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 	return groups
 }
 
-func (pcp *packetCloudProvider) IsNodeInfoSimilar(n1, n2 *schedulernodeinfo.NodeInfo) bool{
+// IsNodeInfoSimilar, let provider decide for node similarity
+func (pcp *packetCloudProvider) IsNodeInfoSimilar(n1, n2 *schedulernodeinfo.NodeInfo) bool {
 	return nGroupSet.IsNodeInfoSimilar(n1, n2)
 }
 

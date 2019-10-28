@@ -36,7 +36,7 @@ var db = Database{
 		SSL:      true,
 	},
 	Users: []DatabaseUser{
-		DatabaseUser{
+		{
 			Name:     "doadmin",
 			Role:     "primary",
 			Password: "zt91mum075ofzyww",
@@ -366,11 +366,11 @@ func TestDatabases_ListBackups(t *testing.T) {
 	defer teardown()
 
 	want := []DatabaseBackup{
-		DatabaseBackup{
+		{
 			CreatedAt:     time.Date(2019, 1, 11, 18, 42, 27, 0, time.UTC),
 			SizeGigabytes: 0.03357696,
 		},
-		DatabaseBackup{
+		{
 			CreatedAt:     time.Date(2019, 1, 12, 18, 42, 29, 0, time.UTC),
 			SizeGigabytes: 0.03364864,
 		},

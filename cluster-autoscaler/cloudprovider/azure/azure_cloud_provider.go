@@ -24,10 +24,10 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config"
+	nGroupSet "k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 	"k8s.io/autoscaler/cluster-autoscaler/utils/errors"
 	"k8s.io/klog"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
-	nGroupSet "k8s.io/autoscaler/cluster-autoscaler/processors/nodegroupset"
 )
 
 const (
@@ -80,7 +80,8 @@ func (azure *AzureCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
 	return availableGPUTypes
 }
 
-func (azure *AzureCloudProvider) IsNodeInfoSimilar(n1, n2 *schedulernodeinfo.NodeInfo) bool{
+// IsNodeInfoSimilar, let provider decide for node similarity
+func (azure *AzureCloudProvider) IsNodeInfoSimilar(n1, n2 *schedulernodeinfo.NodeInfo) bool {
 	return nGroupSet.IsNodeInfoSimilar(n1, n2)
 }
 

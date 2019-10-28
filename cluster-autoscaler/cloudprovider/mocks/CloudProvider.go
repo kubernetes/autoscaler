@@ -195,7 +195,8 @@ func (_m *CloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 	return r0
 }
 
-func (_m *CloudProvider) IsNodeInfoSimilar(n1, n2 *schedulernodeinfo.NodeInfo) bool{
+// IsNodeInfoSimilar, let provider decide for node similarity
+func (_m *CloudProvider) IsNodeInfoSimilar(n1, n2 *schedulernodeinfo.NodeInfo) bool {
 	return nGroupSet.IsNodeInfoSimilar(n1, n2)
 }
 
