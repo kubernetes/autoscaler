@@ -19,7 +19,6 @@ package aws
 import (
 	"fmt"
 	"reflect"
-	"regexp"
 	"strings"
 	"sync"
 
@@ -286,8 +285,7 @@ func (m *asgCache) DeleteInstances(instances []*AwsInstanceRef) error {
 
 // isPlaceholderInstance checks if the given instance is only a placeholder
 func (m *asgCache) isPlaceholderInstance(instance *AwsInstanceRef) bool {
-	matched, _ := regexp.MatchString(fmt.Sprintf("^%s.*\\d+$", placeholderInstanceNamePrefix), instance.Name)
-	return matched
+	return strings.HasPrefix(instance.Name, placeholderInstanceNamePrefix)
 }
 
 // Fetch automatically discovered ASGs. These ASGs should be unregistered if
