@@ -90,7 +90,7 @@ func (gce *GceCloudProvider) NodeGroups() []cloudprovider.NodeGroup {
 	return result
 }
 
-// IsNodeInfoSimilar, let provider decide for node similarity
+// IsNodeInfoSimilar let provider decide for node similarity
 func (gce *GceCloudProvider) IsNodeInfoSimilar(n1, n2 *schedulernodeinfo.NodeInfo) bool {
 	return nGroupSet.IsNodeInfoSimilar(n1, n2)
 }

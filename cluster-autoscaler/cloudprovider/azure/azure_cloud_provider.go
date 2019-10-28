@@ -80,7 +80,7 @@ func (azure *AzureCloudProvider) GetAvailableGPUTypes() map[string]struct{} {
 	return availableGPUTypes
 }
 
-// IsNodeInfoSimilar, let provider decide for node similarity
+// IsNodeInfoSimilar let provider decide for node similarity
 func (azure *AzureCloudProvider) IsNodeInfoSimilar(n1, n2 *schedulernodeinfo.NodeInfo) bool {
 	return nGroupSet.IsNodeInfoSimilar(n1, n2)
 }
