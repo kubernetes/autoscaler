@@ -37,6 +37,7 @@ import (
 
 // BuildTestPod creates a pod with specified resources.
 func BuildTestPod(name string, cpu int64, mem int64) *apiv1.Pod {
+	startTime := metav1.Unix(0, 0)
 	pod := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			UID:         types.UID(name),
@@ -53,6 +54,9 @@ func BuildTestPod(name string, cpu int64, mem int64) *apiv1.Pod {
 					},
 				},
 			},
+		},
+		Status: apiv1.PodStatus{
+			StartTime: &startTime,
 		},
 	}
 
