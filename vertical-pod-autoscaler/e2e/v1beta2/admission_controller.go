@@ -78,11 +78,13 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		ginkgo.By("Setting up a hamster deployment")
 		podList := startDeploymentPods(f, d)
 
-		// Originally Pods had 100m CPU, 100Mi of memory, but admission controller
-		// should change it to recommended 250m CPU and 200Mi of memory.
-		for _, pod := range podList.Items {
-			gomega.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("250m")))
-			gomega.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("200Mi")))
+		ginkgo.By("Verifying hamster deployment")
+		for i, pod := range podList.Items {
+			podInfo := fmt.Sprintf("pod %s at index %d", pod.Name, i)
+			cpuDescription := fmt.Sprintf("%s: originally Pods had 100m CPU, admission controller should change it to recommended 250m CPU", podInfo)
+			gomega.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceCPU]).To(gomega.Equal(ParseQuantityOrDie("250m")), cpuDescription)
+			memDescription := fmt.Sprintf("%s: originally Pods had 100Mi of memory, admission controller should change it to recommended 200Mi memory", podInfo)
+			gomega.Expect(pod.Spec.Containers[0].Resources.Requests[apiv1.ResourceMemory]).To(gomega.Equal(ParseQuantityOrDie("200Mi")), memDescription)
 		}
 
 		ginkgo.By("Modifying recommendation.")
@@ -162,9 +164,14 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 	})
 
 	ginkgo.It("caps request according to container max limit set in LimitRange", func() {
-		d := NewHamsterDeploymentWithResourcesAndLimits(f,
-			ParseQuantityOrDie("100m") /*cpu request*/, ParseQuantityOrDie("100Mi"), /*memory request*/
-			ParseQuantityOrDie("150m") /*cpu limit*/, ParseQuantityOrDie("200Mi") /*memory limit*/)
+		startCpuRequest := ParseQuantityOrDie("100m")
+		startCpuLimit := ParseQuantityOrDie("150m")
+		startMemRequest := ParseQuantityOrDie("100Mi")
+		startMemLimit := ParseQuantityOrDie("200Mi")
+		cpuRecommendation := ParseQuantityOrDie("250m")
+		memRecommendation := ParseQuantityOrDie("200Mi")
+
+		d := NewHamsterDeploymentWithResourcesAndLimits(f, startCpuRequest, startMemRequest, startCpuLimit, startMemLimit)
 
 		ginkgo.By("Setting up a VPA CRD")
 		vpaCRD := NewVPA(f, "hamster-vpa", hamsterTargetRef)
@@ -172,8 +179,8 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 			ContainerRecommendations: []vpa_types.RecommendedContainerResources{{
 				ContainerName: "hamster",
 				Target: apiv1.ResourceList{
-					apiv1.ResourceCPU:    ParseQuantityOrDie("250m"),
-					apiv1.ResourceMemory: ParseQuantityOrDie("200Mi"),
+					apiv1.ResourceCPU:    cpuRecommendation,
+					apiv1.ResourceMemory: memRecommendation,
 				},
 			}},
 		}
@@ -182,22 +189,38 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 		// Max CPU limit is 300m and ratio is 1.5, so max request is 200m, while
 		// recommendation is 250m
 		// Max memory limit is 1Gi and ratio is 2., so max request is 0.5Gi
-		InstallLimitRangeWithMax(f, "300m", "1Gi", apiv1.LimitTypeContainer)
+		maxCpu := ParseQuantityOrDie("300m")
+		InstallLimitRangeWithMax(f, maxCpu.String(), "1Gi", apiv1.LimitTypeContainer)
 
 		ginkgo.By("Setting up a hamster deployment")
 		podList := startDeploymentPods(f, d)
 
-		// Originally Pods had 100m CPU, 100Mi of memory, but admission controller
-		// should change it to 200m CPU (as this is the recommendation
-		// capped according to max limit in LimitRange) and 200Mi of memory,
-		// which is uncapped. Limit to request ratio should stay unchanged.
-		for _, pod := range podList.Items {
-			gomega.Expect(*pod.Spec.Containers[0].Resources.Requests.Cpu()).To(gomega.Equal(ParseQuantityOrDie("200m")))
-			gomega.Expect(*pod.Spec.Containers[0].Resources.Requests.Memory()).To(gomega.Equal(ParseQuantityOrDie("200Mi")))
-			gomega.Expect(pod.Spec.Containers[0].Resources.Limits.Cpu().MilliValue()).To(gomega.BeNumerically("<=", 300))
-			gomega.Expect(pod.Spec.Containers[0].Resources.Limits.Memory().Value()).To(gomega.BeNumerically("<=", 1024*1024*1024))
-			gomega.Expect(float64(pod.Spec.Containers[0].Resources.Limits.Cpu().MilliValue()) / float64(pod.Spec.Containers[0].Resources.Requests.Cpu().MilliValue())).To(gomega.BeNumerically("~", 1.5))
-			gomega.Expect(float64(pod.Spec.Containers[0].Resources.Limits.Memory().Value()) / float64(pod.Spec.Containers[0].Resources.Requests.Memory().Value())).To(gomega.BeNumerically("~", 2.))
+		ginkgo.By("Verifying hamster deployment")
+		for i, pod := range podList.Items {
+			podInfo := fmt.Sprintf("pod %s at index %d", pod.Name, i)
+
+			expectCpuRequest := "200m"
+			cpuRequestMsg := fmt.Sprintf("%s: CPU request should change from %s, to %s (the recommendation capped to max limit in LimitRange)", podInfo, startCpuRequest.String(), expectCpuRequest)
+			gomega.Expect(*pod.Spec.Containers[0].Resources.Requests.Cpu()).To(gomega.Equal(ParseQuantityOrDie(expectCpuRequest)), cpuRequestMsg)
+
+			cpuLimitMsg := fmt.Sprintf("%s: CPU limit shouldn't be above from %s (max limit in LimitRange)", podInfo, maxCpu.String())
+			gomega.Expect(pod.Spec.Containers[0].Resources.Limits.Cpu().MilliValue()).To(gomega.BeNumerically("<=", maxCpu.MilliValue()), cpuLimitMsg)
+
+			originalCpuRatio := float64(startCpuLimit.MilliValue()) / float64(startCpuRequest.MilliValue())
+			cpuRatioMsg := fmt.Sprintf("%s: CPU limit / request ratio shouldn be about %v (original ratio)", podInfo, originalCpuRatio)
+			cpuRatio := float64(pod.Spec.Containers[0].Resources.Limits.Cpu().MilliValue()) / float64(pod.Spec.Containers[0].Resources.Requests.Cpu().MilliValue())
+			gomega.Expect(cpuRatio).To(gomega.BeNumerically("~", originalCpuRatio), cpuRatioMsg)
+
+			memRequestMsg := fmt.Sprintf("%s: memory request should change from %s, to %s (the recommendation capped to max limit in LimitRange)", podInfo, startMemRequest.String(), memRecommendation.String())
+			gomega.Expect(*pod.Spec.Containers[0].Resources.Requests.Memory()).To(gomega.Equal(memRecommendation), memRequestMsg)
+
+			memLimitMsg := fmt.Sprintf("%s: memory limit shouldn't be above from 2**30 (max limit in LimitRange)", podInfo)
+			gomega.Expect(pod.Spec.Containers[0].Resources.Limits.Memory().Value()).To(gomega.BeNumerically("<=", 1024*1024*1024), memLimitMsg)
+
+			originalMemRatio := float64(startMemLimit.MilliValue()) / float64(startMemRequest.MilliValue())
+			memRatioMsg := fmt.Sprintf("%s: memory limit / request ratio shouldn be about %v (original ratio)", podInfo, originalMemRatio)
+			memRatio := float64(pod.Spec.Containers[0].Resources.Limits.Memory().Value()) / float64(pod.Spec.Containers[0].Resources.Requests.Memory().Value())
+			gomega.Expect(memRatio).To(gomega.BeNumerically("~", originalMemRatio), memRatioMsg)
 		}
 	})
 
