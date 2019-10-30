@@ -17,7 +17,8 @@ limitations under the License.
 package gce
 
 import (
-	"github.com/prometheus/client_golang/prometheus"
+	k8smetrics "k8s.io/component-base/metrics"
+	"k8s.io/component-base/metrics/legacyregistry"
 )
 
 const (
@@ -26,8 +27,8 @@ const (
 
 var (
 	/**** Metrics related to GCE API usage ****/
-	requestCounter = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
+	requestCounter = k8smetrics.NewCounterVec(
+		&k8smetrics.CounterOpts{
 			Namespace: caNamespace,
 			Name:      "gce_request_count",
 			Help:      "Counter of GCE API requests for each verb and API resource.",
@@ -37,7 +38,7 @@ var (
 
 // RegisterMetrics registers all GCE metrics.
 func RegisterMetrics() {
-	prometheus.MustRegister(requestCounter)
+	legacyregistry.MustRegister(requestCounter)
 }
 
 // registerRequest registers request to GCE API.
