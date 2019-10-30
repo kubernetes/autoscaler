@@ -21,22 +21,23 @@ import (
 	"strings"
 	"sync"
 
+	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
+
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	kube_util "k8s.io/autoscaler/cluster-autoscaler/utils/kubernetes"
-	informers "k8s.io/client-go/informers"
+	"k8s.io/client-go/informers"
 	kube_client "k8s.io/client-go/kubernetes"
+	"k8s.io/klog"
+
 	"k8s.io/kubernetes/pkg/scheduler"
 	"k8s.io/kubernetes/pkg/scheduler/algorithm/predicates"
-	schedulerapi "k8s.io/kubernetes/pkg/scheduler/api"
-	"k8s.io/kubernetes/pkg/scheduler/factory"
+	schedulerconfig "k8s.io/kubernetes/pkg/scheduler/apis/config"
+	schedulerlisters "k8s.io/kubernetes/pkg/scheduler/listers"
 	schedulernodeinfo "k8s.io/kubernetes/pkg/scheduler/nodeinfo"
-
+	schedulersnapshot "k8s.io/kubernetes/pkg/scheduler/nodeinfo/snapshot"
 	// We need to import provider to initialize default scheduler.
 	"k8s.io/kubernetes/pkg/scheduler/algorithmprovider"
-
-	"k8s.io/klog"
 )
 
 const (
@@ -61,7 +62,7 @@ type PredicateInfo struct {
 // PredicateChecker checks whether all required predicates pass for given Pod and Node.
 type PredicateChecker struct {
 	predicates                []PredicateInfo
-	predicateMetadataProducer predicates.PredicateMetadataProducer
+	predicateMetadataProducer predicates.MetadataProducer
 	enableAffinityPredicate   bool
 }
 
@@ -111,53 +112,23 @@ func NewPredicateChecker(kubeClient kube_client.Interface, stop <-chan struct{})
 	staticInitIfNeeded()
 
 	informerFactory := informers.NewSharedInformerFactory(kubeClient, 0)
-	algorithmProvider := factory.DefaultProvider
-
-	// Set up the configurator which can create schedulers from configs.
-	nodeInformer := informerFactory.Core().V1().Nodes()
 	podInformer := informerFactory.Core().V1().Pods()
-	pvInformer := informerFactory.Core().V1().PersistentVolumes()
-	pvcInformer := informerFactory.Core().V1().PersistentVolumeClaims()
-	replicationControllerInformer := informerFactory.Core().V1().ReplicationControllers()
-	replicaSetInformer := informerFactory.Apps().V1().ReplicaSets()
-	statefulSetInformer := informerFactory.Apps().V1().StatefulSets()
-	serviceInformer := informerFactory.Core().V1().Services()
-	pdbInformer := informerFactory.Policy().V1beta1().PodDisruptionBudgets()
-	storageClassInformer := informerFactory.Storage().V1().StorageClasses()
-	csiNodeInformer := informerFactory.Storage().V1beta1().CSINodes()
-
-	configurator := factory.NewConfigFactory(&factory.ConfigFactoryArgs{
-		Client:                         kubeClient,
-		NodeInformer:                   nodeInformer,
-		PodInformer:                    podInformer,
-		PvInformer:                     pvInformer,
-		PvcInformer:                    pvcInformer,
-		ReplicationControllerInformer:  replicationControllerInformer,
-		ReplicaSetInformer:             replicaSetInformer,
-		StatefulSetInformer:            statefulSetInformer,
-		ServiceInformer:                serviceInformer,
-		PdbInformer:                    pdbInformer,
-		StorageClassInformer:           storageClassInformer,
-		HardPodAffinitySymmetricWeight: apiv1.DefaultHardPodAffinitySymmetricWeight,
-		DisablePreemption:              false,
-		PercentageOfNodesToScore:       schedulerapi.DefaultPercentageOfNodesToScore,
-		BindTimeoutSeconds:             scheduler.BindTimeoutSeconds,
-	})
-	// Create the config from a named algorithm provider.
-	config, err := configurator.CreateFromProvider(algorithmProvider)
-	if err != nil {
-		return nil, fmt.Errorf("couldn't create scheduler using provider %q: %v", algorithmProvider, err)
+	defaultProviderName := schedulerconfig.SchedulerDefaultProviderName
+	algorithmSource := schedulerconfig.SchedulerAlgorithmSource{
+		Provider: &defaultProviderName,
 	}
-	// Additional tweaks to the config produced by the configurator.
-	config.Recorder = NoOpEventRecorder{}
-	config.DisablePreemption = false
-	config.StopEverything = stop
 
-	// Create the scheduler.
-	sched := scheduler.NewFromConfig(config)
-
-	scheduler.AddAllEventHandlers(sched, apiv1.DefaultSchedulerName,
-		nodeInformer, podInformer, pvInformer, pvcInformer, serviceInformer, storageClassInformer, csiNodeInformer)
+	sched, err := scheduler.New(
+		kubeClient,
+		informerFactory,
+		podInformer,
+		NoOpEventRecorder{},
+		stop,
+		scheduler.WithAlgorithmSource(algorithmSource),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("couldn't create scheduler; %v", err)
+	}
 
 	predicateMap := map[string]predicates.FitPredicate{}
 	for predicateName, predicateFunc := range sched.Algorithm.Predicates() {
@@ -192,20 +163,15 @@ func NewPredicateChecker(kubeClient kube_client.Interface, stop <-chan struct{})
 
 	informerFactory.Start(stop)
 
-	metadataProducer, err := configurator.GetPredicateMetadataProducer()
-	if err != nil {
-		return nil, fmt.Errorf("could not obtain predicateMetadataProducer; %v", err.Error())
-	}
-
 	return &PredicateChecker{
 		predicates:                predicateList,
-		predicateMetadataProducer: metadataProducer,
+		predicateMetadataProducer: sched.Algorithm.PredicateMetadataProducer(),
 		enableAffinityPredicate:   true,
 	}, nil
 }
 
 // IsNodeReadyAndSchedulablePredicate checks if node is ready.
-func IsNodeReadyAndSchedulablePredicate(pod *apiv1.Pod, meta predicates.PredicateMetadata, nodeInfo *schedulernodeinfo.NodeInfo) (bool,
+func IsNodeReadyAndSchedulablePredicate(pod *apiv1.Pod, meta predicates.Metadata, nodeInfo *schedulernodeinfo.NodeInfo) (bool,
 	[]predicates.PredicateFailureReason, error) {
 	ready := kube_util.IsNodeReadyAndSchedulable(nodeInfo.Node())
 	if !ready {
@@ -221,7 +187,7 @@ func NewTestPredicateChecker() *PredicateChecker {
 			{Name: "default", Predicate: predicates.GeneralPredicates},
 			{Name: "ready", Predicate: IsNodeReadyAndSchedulablePredicate},
 		},
-		predicateMetadataProducer: func(_ *apiv1.Pod, _ map[string]*schedulernodeinfo.NodeInfo) predicates.PredicateMetadata {
+		predicateMetadataProducer: func(_ *apiv1.Pod, _ schedulerlisters.SharedLister) predicates.Metadata {
 			return nil
 		},
 	}
@@ -232,7 +198,7 @@ func NewTestPredicateChecker() *PredicateChecker {
 func NewCustomTestPredicateChecker(predicateInfos []PredicateInfo) *PredicateChecker {
 	return &PredicateChecker{
 		predicates: predicateInfos,
-		predicateMetadataProducer: func(_ *apiv1.Pod, _ map[string]*schedulernodeinfo.NodeInfo) predicates.PredicateMetadata {
+		predicateMetadataProducer: func(_ *apiv1.Pod, _ schedulerlisters.SharedLister) predicates.Metadata {
 			return nil
 		},
 	}
@@ -256,12 +222,21 @@ func (p *PredicateChecker) IsAffinityPredicateEnabled() bool {
 // improve the performance of running predicates, especially MatchInterPodAffinity predicate. However, calculating
 // predicateMetadata is also quite expensive, so it's not always the best option to run this method.
 // Please refer to https://github.com/kubernetes/autoscaler/issues/257 for more details.
-func (p *PredicateChecker) GetPredicateMetadata(pod *apiv1.Pod, nodeInfos map[string]*schedulernodeinfo.NodeInfo) predicates.PredicateMetadata {
+func (p *PredicateChecker) GetPredicateMetadata(pod *apiv1.Pod, nodeInfos map[string]*schedulernodeinfo.NodeInfo) predicates.Metadata {
 	// Skip precomputation if affinity predicate is disabled - it's not worth it performance-wise.
 	if !p.enableAffinityPredicate {
 		return nil
 	}
-	return p.predicateMetadataProducer(pod, nodeInfos)
+	nodeInfoList := make([]*schedulernodeinfo.NodeInfo, 0, len(nodeInfos))
+	for _, v := range nodeInfos {
+		nodeInfoList = append(nodeInfoList, v)
+	}
+
+	snapshot := &schedulersnapshot.Snapshot{
+		NodeInfoMap:  nodeInfos,
+		NodeInfoList: nodeInfoList,
+	}
+	return p.predicateMetadataProducer(pod, snapshot)
 }
 
 // FitsAny checks if the given pod can be place on any of the given nodes.
@@ -352,7 +327,7 @@ func (pe *PredicateError) PredicateName() string {
 // it was calculated using NodeInfo map representing different cluster state and the
 // performance gains of CheckPredicates won't always offset the cost of GetPredicateMetadata.
 // Alternatively you can pass nil as predicateMetadata.
-func (p *PredicateChecker) CheckPredicates(pod *apiv1.Pod, predicateMetadata predicates.PredicateMetadata, nodeInfo *schedulernodeinfo.NodeInfo) *PredicateError {
+func (p *PredicateChecker) CheckPredicates(pod *apiv1.Pod, predicateMetadata predicates.Metadata, nodeInfo *schedulernodeinfo.NodeInfo) *PredicateError {
 	for _, predInfo := range p.predicates {
 		// Skip affinity predicate if it has been disabled.
 		if !p.enableAffinityPredicate && predInfo.Name == affinityPredicateName {
