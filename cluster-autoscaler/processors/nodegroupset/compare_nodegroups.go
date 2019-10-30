@@ -33,7 +33,7 @@ const (
 	MaxFreeDifferenceRatio = 0.05
 	// MaxMemoryDifferenceInKiloBytes describes how much memory
 	// capacity can differ but still be considered equal.
-	MaxMemoryDifferenceInKiloBytes = 128000
+	MaxMemoryDifferenceInKiloBytes = 256000
 )
 
 // BasicIgnoredLabels define a set of basic labels that should be ignored when comparing the similarity
@@ -45,7 +45,6 @@ var BasicIgnoredLabels = map[string]bool{
 	apiv1.LabelZoneRegion:                 true,
 	"beta.kubernetes.io/fluentd-ds-ready": true, // this is internal label used for determining if fluentd should be installed as deamon set. Used for migration 1.8 to 1.9.
 	"kops.k8s.io/instancegroup":           true, // this is a label used by kops to identify "instance group" names. it's value is variable, defeating check of similar node groups
-	"alpha.eksctl.io/nodegroup-name":      true, // this is a label used by eksctl to identify "node group" names, similar in spirit to the kops label above
 }
 
 // NodeInfoComparator is a function that tells if two nodes are from NodeGroups
