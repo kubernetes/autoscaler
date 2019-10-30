@@ -108,7 +108,7 @@ func filterOutSchedulableByPacking(unschedulableCandidates []*apiv1.Pod, nodes [
 	nodeNameToNodeInfo := schedulerutil.CreateNodeNameToInfoMap(nonExpendableScheduled, nodes)
 
 	sort.Slice(unschedulableCandidates, func(i, j int) bool {
-		return util.GetPodPriority(unschedulableCandidates[i]) > util.GetPodPriority(unschedulableCandidates[j])
+		return util.MoreImportantPod(unschedulableCandidates[i], unschedulableCandidates[j])
 	})
 
 	for _, pod := range unschedulableCandidates {
