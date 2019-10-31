@@ -30,6 +30,7 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/klog"
 	"k8s.io/kubernetes/test/e2e/framework"
+	framework_deployment "k8s.io/kubernetes/test/e2e/framework/deployment"
 
 	"github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
@@ -164,7 +165,7 @@ var _ = RecommenderE2eDescribe("VPA CRD object", func() {
 		d := NewHamsterDeploymentWithResources(f, cpuQuantity, memoryQuantity)
 		_, err := c.AppsV1().Deployments(ns).Create(d)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
-		err = framework.WaitForDeploymentComplete(c, d)
+		err = framework_deployment.WaitForDeploymentComplete(c, d)
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
 		ginkgo.By("Setting up a VPA CRD")

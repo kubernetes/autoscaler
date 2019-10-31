@@ -28,6 +28,7 @@ import (
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/kubernetes/test/e2e/framework"
+	framework_deployment "k8s.io/kubernetes/test/e2e/framework/deployment"
 
 	"github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
@@ -120,7 +121,7 @@ func assertPodsPendingForDuration(c clientset.Interface, deployment *appsv1.Depl
 
 	err := wait.PollImmediate(pollInterval, pollTimeout+pendingDuration, func() (bool, error) {
 		var err error
-		currentPodList, err := framework.GetPodsForDeployment(c, deployment)
+		currentPodList, err := framework_deployment.GetPodsForDeployment(c, deployment)
 		if err != nil {
 			return false, err
 		}

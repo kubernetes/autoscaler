@@ -23,6 +23,7 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/kubernetes/test/e2e/framework"
+	framework_deployment "k8s.io/kubernetes/test/e2e/framework/deployment"
 
 	"github.com/onsi/ginkgo"
 	"github.com/onsi/gomega"
@@ -497,10 +498,10 @@ func startDeploymentPods(f *framework.Framework, deployment *appsv1.Deployment) 
 	c, ns := f.ClientSet, f.Namespace.Name
 	deployment, err := c.AppsV1().Deployments(ns).Create(deployment)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
-	err = framework.WaitForDeploymentComplete(c, deployment)
+	err = framework_deployment.WaitForDeploymentComplete(c, deployment)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 
-	podList, err := framework.GetPodsForDeployment(c, deployment)
+	podList, err := framework_deployment.GetPodsForDeployment(c, deployment)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	return podList
 }
