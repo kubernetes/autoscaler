@@ -35,6 +35,7 @@ import (
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
 	vpa_clientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	"k8s.io/kubernetes/test/e2e/framework"
+	framework_deployment "k8s.io/kubernetes/test/e2e/framework/deployment"
 )
 
 const (
@@ -105,7 +106,7 @@ func SetupHamsterDeployment(f *framework.Framework, cpu, memory string, replicas
 	d.Spec.Replicas = &replicas
 	d, err := f.ClientSet.AppsV1().Deployments(f.Namespace.Name).Create(d)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "unexpected error when starting deployment creation")
-	err = framework.WaitForDeploymentComplete(f.ClientSet, d)
+	err = framework_deployment.WaitForDeploymentComplete(f.ClientSet, d)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "unexpected error waiting for deployment creation to finish")
 	return d
 }
@@ -113,7 +114,7 @@ func SetupHamsterDeployment(f *framework.Framework, cpu, memory string, replicas
 // NewHamsterDeployment creates a simple hamster deployment for e2e test
 // purposes.
 func NewHamsterDeployment(f *framework.Framework) *appsv1.Deployment {
-	d := framework.NewDeployment("hamster-deployment", defaultHamsterReplicas, hamsterLabels, "hamster", "k8s.gcr.io/ubuntu-slim:0.1", appsv1.RollingUpdateDeploymentStrategyType)
+	d := framework_deployment.NewDeployment("hamster-deployment", defaultHamsterReplicas, hamsterLabels, "hamster", "k8s.gcr.io/ubuntu-slim:0.1", appsv1.RollingUpdateDeploymentStrategyType)
 	d.ObjectMeta.Namespace = f.Namespace.Name
 	d.Spec.Template.Spec.Containers[0].Command = []string{"/bin/sh"}
 	d.Spec.Template.Spec.Containers[0].Args = []string{"-c", "/usr/bin/yes >/dev/null"}
