@@ -38,6 +38,7 @@ import (
 )
 
 type packetManagerRest struct {
+	baseURL           string
 	clusterName       string
 	projectID         string
 	apiServerEndpoint string
@@ -160,6 +161,7 @@ func createPacketManagerRest(configReader io.Reader, discoverOpts cloudprovider.
 	}
 
 	manager := packetManagerRest{
+		baseURL:           "https://api.packet.net",
 		clusterName:       cfg.Global.ClusterName,
 		projectID:         cfg.Global.ProjectID,
 		apiServerEndpoint: cfg.Global.APIServerEndpoint,
@@ -174,10 +176,10 @@ func createPacketManagerRest(configReader io.Reader, discoverOpts cloudprovider.
 	return &manager, nil
 }
 
-func (mgr *packetManagerRest) listPacketDevices() *Devices {
+func (mgr *packetManagerRest) listPacketDevices() (*Devices, error) {
 	var jsonStr = []byte(``)
 	packetAuthToken := os.Getenv("PACKET_AUTH_TOKEN")
-	url := "https://api.packet.net/projects/" + mgr.projectID + "/devices"
+	url := mgr.baseURL + "/projects/" + mgr.projectID + "/devices"
 	req, _ := http.NewRequest("GET", url, bytes.NewBuffer(jsonStr))
 	req.Header.Set("X-Auth-Token", packetAuthToken)
 	req.Header.Set("Content-Type", "application/json")
@@ -189,16 +191,22 @@ func (mgr *packetManagerRest) listPacketDevices() *Devices {
 	}
 	defer resp.Body.Close()
 
-	fmt.Println("response Status:", resp.Status)
-	body, _ := ioutil.ReadAll(resp.Body)
+	klog.Infof("response Status: %s", resp.Status)
+
 	var devices Devices
-	json.Unmarshal([]byte(body), &devices)
-	return &devices
+
+	if "200 OK" == resp.Status {
+		body, _ := ioutil.ReadAll(resp.Body)
+		json.Unmarshal([]byte(body), &devices)
+		return &devices, nil
+	}
+
+	return &devices, fmt.Errorf(resp.Status, resp.Body)
 }
 
 // nodeGroupSize gets the current size of the nodegroup as reported by packet tags.
 func (mgr *packetManagerRest) nodeGroupSize(nodegroup string) (int, error) {
-	devices := mgr.listPacketDevices()
+	devices, _ := mgr.listPacketDevices()
 	// Get the count of devices tagged as nodegroup members
 	count := 0
 	for _, d := range devices.Devices {
@@ -206,7 +214,7 @@ func (mgr *packetManagerRest) nodeGroupSize(nodegroup string) (int, error) {
 			count++
 		}
 	}
-	fmt.Println(len(devices.Devices), count)
+	klog.V(3).Infof("Nodegroup %s: %d/%d", nodegroup, count, len(devices.Devices))
 	return count, nil
 }
 
@@ -252,13 +260,13 @@ func (mgr *packetManagerRest) createNode(cloudinit, nodegroup string) {
 		HardwareReservationID: reservation,
 	}
 
-	resp, err := createDevice(&cr)
+	resp, err := createDevice(&cr, mgr.baseURL)
 	if err != nil || resp.StatusCode > 299 {
 		// If reservation is preferred but not available, retry provisioning as on-demand
 		if reservation != "" && mgr.reservation == "prefer" {
 			klog.Infof("Reservation preferred but not available. Provisioning on-demand node.")
 			cr.HardwareReservationID = ""
-			resp, err = createDevice(&cr)
+			resp, err = createDevice(&cr, mgr.baseURL)
 			if err != nil {
 				klog.Errorf("Failed to create device using Packet API: %v", err)
 				panic(err)
@@ -304,9 +312,9 @@ func (mgr *packetManagerRest) createNodes(nodegroup string, nodes int) error {
 	return nil
 }
 
-func createDevice(cr *DeviceCreateRequest) (*http.Response, error) {
+func createDevice(cr *DeviceCreateRequest, baseURL string) (*http.Response, error) {
 	packetAuthToken := os.Getenv("PACKET_AUTH_TOKEN")
-	url := "https://api.packet.net/projects/" + cr.ProjectID + "/devices"
+	url := baseURL + "/projects/" + cr.ProjectID + "/devices"
 	jsonValue, _ := json.Marshal(cr)
 	klog.Infof("Creating new node")
 	klog.V(3).Infof("POST %s \n%v", url, string(jsonValue))
@@ -325,18 +333,37 @@ func createDevice(cr *DeviceCreateRequest) (*http.Response, error) {
 // getNodes should return ProviderIDs for all nodes in the node group,
 // used to find any nodes which are unregistered in kubernetes.
 func (mgr *packetManagerRest) getNodes(nodegroup string) ([]string, error) {
-	// TODO: get node ProviderIDs by getting device IDs from Packet
-	// This works fine being empty for now anyway.
-	return []string{}, nil
+	// Get node ProviderIDs by getting device IDs from Packet
+	devices, err := mgr.listPacketDevices()
+	nodes := []string{}
+	for _, d := range devices.Devices {
+		if Contains(d.Tags, "k8s-cluster-"+mgr.clusterName) && Contains(d.Tags, "k8s-nodepool-"+nodegroup) {
+			nodes = append(nodes, d.ID)
+		}
+	}
+	return nodes, err
+}
+
+// getNodeNames should return Names for all nodes in the node group,
+// used to find any nodes which are unregistered in kubernetes.
+func (mgr *packetManagerRest) getNodeNames(nodegroup string) ([]string, error) {
+	devices, err := mgr.listPacketDevices()
+	nodes := []string{}
+	for _, d := range devices.Devices {
+		if Contains(d.Tags, "k8s-cluster-"+mgr.clusterName) && Contains(d.Tags, "k8s-nodepool-"+nodegroup) {
+			nodes = append(nodes, d.Hostname)
+		}
+	}
+	return nodes, err
 }
 
 // deleteNodes deletes nodes by passing a comma separated list of names or IPs
 func (mgr *packetManagerRest) deleteNodes(nodegroup string, nodes []NodeRef, updatedNodeCount int) error {
-	klog.Infof("Deleting nodes")
+	klog.Infof("Deleting nodes %v", nodes)
 	packetAuthToken := os.Getenv("PACKET_AUTH_TOKEN")
 	for _, n := range nodes {
 		klog.Infof("Node %s - %s - %s", n.Name, n.MachineID, n.IPs)
-		dl := mgr.listPacketDevices()
+		dl, _ := mgr.listPacketDevices()
 		klog.Infof("%d devices total", len(dl.Devices))
 		// Get the count of devices tagged as nodegroup
 		for _, d := range dl.Devices {
@@ -345,7 +372,7 @@ func (mgr *packetManagerRest) deleteNodes(nodegroup string, nodes []NodeRef, upd
 				klog.Infof("nodegroup match %s %s", d.Hostname, n.Name)
 				if d.Hostname == n.Name {
 					klog.V(1).Infof("Matching Packet Device %s - %s", d.Hostname, d.ID)
-					req, _ := http.NewRequest("DELETE", "https://api.packet.net/devices/"+d.ID, bytes.NewBuffer([]byte("")))
+					req, _ := http.NewRequest("DELETE", mgr.baseURL+"/devices/"+d.ID, bytes.NewBuffer([]byte("")))
 					req.Header.Set("X-Auth-Token", packetAuthToken)
 					req.Header.Set("Content-Type", "application/json")
 
