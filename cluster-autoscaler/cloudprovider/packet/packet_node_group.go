@@ -132,7 +132,7 @@ func (ng *packetNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 	if cachedSize-len(ng.nodesToDelete)-len(nodes) < ng.MinSize() {
 		ng.nodesToDeleteMutex.Unlock()
 		klog.V(1).Infof("UnLocking nodesToDeleteMutex")
-		return fmt.Errorf("deleting nodes would take nodegroup below minimum size")
+		return fmt.Errorf("deleting nodes would take nodegroup below minimum size %d", ng.minSize)
 	}
 	// otherwise, add the nodes to the batch and release the lock
 	ng.nodesToDelete = append(ng.nodesToDelete, nodes...)
@@ -179,14 +179,6 @@ func (ng *packetNodeGroup) DeleteNodes(nodes []*apiv1.Node) error {
 		nodeNames = append(nodeNames, node.Name)
 	}
 	klog.V(0).Infof("Deleting nodes: %v", nodeNames)
-
-	/*updatePossible, currentStatus, err := ng.magnumManager.canUpdate()
-	if err != nil {
-		return fmt.Errorf("could not check if cluster is ready to delete nodes: %v", err)
-	}
-	if !updatePossible {
-		return fmt.Errorf("can not delete nodes, cluster is in %s status", currentStatus)
-	}*/
 
 	// Double check that the total number of batched nodes for deletion will not take the node group below its minimum size
 	if cachedSize-len(nodes) < ng.MinSize() {

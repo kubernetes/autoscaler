@@ -43,6 +43,7 @@ type packetManager interface {
 	nodeGroupSize(nodegroup string) (int, error)
 	createNodes(nodegroup string, nodes int) error
 	getNodes(nodegroup string) ([]string, error)
+	getNodeNames(nodegroup string) ([]string, error)
 	deleteNodes(nodegroup string, nodes []NodeRef, updatedNodeCount int) error
 	templateNodeInfo(nodegroup string) (*schedulernodeinfo.NodeInfo, error)
 }
