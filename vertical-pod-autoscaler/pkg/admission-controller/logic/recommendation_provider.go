@@ -91,7 +91,7 @@ func (p *recommendationProvider) getMatchingVPA(pod *core.Pod) *vpa_types.Vertic
 		}
 		selector, err := p.selectorFetcher.Fetch(vpaConfig)
 		if err != nil {
-			klog.V(3).Infof("skipping VPA object %v because we cannot fetch selector", vpaConfig.Name)
+			klog.V(3).Infof("skipping VPA object %v because we cannot fetch selector: %s", vpaConfig.Name, err)
 			continue
 		}
 		onConfigs = append(onConfigs, &vpa_api_util.VpaWithSelector{
