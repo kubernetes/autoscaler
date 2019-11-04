@@ -1144,7 +1144,7 @@ func drainNode(node *apiv1.Node, pods []*apiv1.Pod, client kube_client.Interface
 		for _, pod := range pods {
 			podreturned, err := client.CoreV1().Pods(pod.Namespace).Get(pod.Name, metav1.GetOptions{})
 			if err == nil && (podreturned == nil || podreturned.Spec.NodeName == node.Name) {
-				klog.Errorf("Not deleted yet %v", podreturned)
+				klog.Errorf("Not deleted yet %s/%s", pod.Namespace, pod.Name)
 				allGone = false
 				break
 			}
