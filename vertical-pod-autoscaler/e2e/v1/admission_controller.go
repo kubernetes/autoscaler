@@ -20,7 +20,9 @@ import (
 	"fmt"
 
 	appsv1 "k8s.io/api/apps/v1"
+	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	apiv1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 	"k8s.io/kubernetes/test/e2e/framework"
 	framework_deployment "k8s.io/kubernetes/test/e2e/framework/deployment"
@@ -515,13 +517,39 @@ var _ = AdmissionControllerE2eDescribe("Admission-controller", func() {
 })
 
 func startDeploymentPods(f *framework.Framework, deployment *appsv1.Deployment) *apiv1.PodList {
+	// In admission controller e2e tests a recommendation is created before deployment.
+	// Creating deployment with size greater than 0 would create a race between information
+	// about pods and information about deployment getting to the admission controller.
+	// Any pods that get processed by AC before it receives information about the deployment
+	// don't receive recommendation.
+	// To avoid this create deployment with size 0, then scale it up to the desired size.
+	desiredPodCount := *deployment.Spec.Replicas
+	zero := int32(0)
+	deployment.Spec.Replicas = &zero
 	c, ns := f.ClientSet, f.Namespace.Name
 	deployment, err := c.AppsV1().Deployments(ns).Create(deployment)
-	gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "when creating deployment with size 0")
+
 	err = framework_deployment.WaitForDeploymentComplete(c, deployment)
+	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "when waiting for empty deployment to create")
+
+	scale := autoscalingv1.Scale{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      deployment.ObjectMeta.Name,
+			Namespace: deployment.ObjectMeta.Namespace,
+		},
+		Spec: autoscalingv1.ScaleSpec{
+			Replicas: desiredPodCount,
+		},
+	}
+	afterScale, err := c.AppsV1().Deployments(ns).UpdateScale(deployment.Name, &scale)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	gomega.Expect(afterScale.Spec.Replicas).To(gomega.Equal(desiredPodCount), fmt.Sprintf("expected %d replicas after scaling", desiredPodCount))
+
+	err = framework_deployment.WaitForDeploymentComplete(c, deployment)
+	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "when waiting for deployment to resize")
 
 	podList, err := framework_deployment.GetPodsForDeployment(c, deployment)
-	gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	gomega.Expect(err).NotTo(gomega.HaveOccurred(), "when listing pods after deployment resize")
 	return podList
 }
