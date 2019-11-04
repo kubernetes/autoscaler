@@ -65,9 +65,12 @@ func TestTargetSize(t *testing.T) {
 	assert.True(t, registered)
 	assert.Equal(t, len(provider.NodeGroups()), 1)
 
+	ng := provider.NodeGroups()[0]
+	size, err := ng.TargetSize()
+	println(size)
 	targetSize, err := provider.NodeGroups()[0].TargetSize()
 	assert.NoError(t, err)
-	assert.Equal(t, targetSize, 2)
+	assert.Equal(t, 3, targetSize)
 }
 
 func TestIncreaseSize(t *testing.T) {
@@ -80,10 +83,10 @@ func TestIncreaseSize(t *testing.T) {
 	// current target size is 2.
 	targetSize, err := provider.NodeGroups()[0].TargetSize()
 	assert.NoError(t, err)
-	assert.Equal(t, targetSize, 2)
+	assert.Equal(t, 3, targetSize)
 
 	// increase 3 nodes.
-	err = provider.NodeGroups()[0].IncreaseSize(3)
+	err = provider.NodeGroups()[0].IncreaseSize(2)
 	assert.NoError(t, err)
 
 	// new target size should be 5.
