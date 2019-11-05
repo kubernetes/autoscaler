@@ -4,11 +4,11 @@
 #### Prerequisites 
 
   - An Active EKS cluster (1.14 preferred since it is the latest) against which the user is able to run kubectl commands. 
-  - Cluster must consist of at least one worker node ASG 
+  - Cluster must consist of at least one worker node ASG. 
 
 A) Create an IAM OIDC identity provider for your cluster with the AWS Management Console using the [documentation] . 
 
-B) Create a test [IAM policy] for your service accounts
+B) Create a test [IAM policy] for your service accounts.
 
 ```sh
 {
@@ -27,15 +27,16 @@ B) Create a test [IAM policy] for your service accounts
 }
 ```
 
-C) Create an IAM role for your service accounts in the console
+C) Create an IAM role for your service accounts in the console.
 - Retrieve the OIDC issuer URL from the Amazon EKS console description of your cluster . It will look something identical to: 
 'https://oidc.eks.us-east-1.amazonaws.com/id/xxxxxxxxxx'
 - While creating a new IAM role, In the "Select type of trusted entity" section, choose "Web identity".
 - In the "Choose a web identity provider" section:
 For Identity provider, choose the URL for your cluster.
 For Audience, type sts.amazonaws.com.
+
 - In the "Attach Policy" section, select the policy to use for your service account, that you created in Section B above. 
-- After the role is created, choose the role in the console to open it for editing
+- After the role is created, choose the role in the console to open it for editing.
 - Choose the "Trust relationships" tab, and then choose "Edit trust relationship".
 Edit the OIDC provider suffix and change it from :aud to :sub.
 Replace sts.amazonaws.com to your service account ID.
@@ -52,7 +53,7 @@ D) Set up [Cluster Autoscaler Auto-Discovery] using the [tutorial] .
 
 Note: The keys for the tags that you entered don't have values. Cluster Autoscaler ignores any value set for the keys.
 
-- Create an IAM Policy for cluster autoscaler and to enable AutoDiscovery 
+- Create an IAM Policy for cluster autoscaler and to enable AutoDiscovery. 
 
 ```sh
 {
@@ -83,7 +84,11 @@ NOTE: autoscaling:DescribeTags is very important if you are making use of the Au
 $ wget https://raw.githubusercontent.com/kubernetes/autoscaler/master/cluster-autoscaler/cloudprovider/aws/examples/cluster-autoscaler-autodiscover.yaml
 ```
 
-- Open the downloaded YAML file, and set the EKS cluster name (awsExampleClusterName) and environment variable (us-east-1) based on the following example. Then, save your changes.
+- Open the downloaded YAML file in an editor. 
+
+##### Change 1: 
+
+Set the EKS cluster name (awsExampleClusterName) and environment variable (us-east-1) based on the following example. 
 
 ```sh
     spec:
@@ -111,7 +116,9 @@ $ wget https://raw.githubusercontent.com/kubernetes/autoscaler/master/cluster-au
               value: <<us-east-1>>
 ```
 
-Additionally, to use IAM with OIDC, you will have to make the below changes to the file as well. 
+##### Change 2: 
+
+To use IAM with OIDC, you will have to make the below changes to the file as well. 
 
 ```sh
 apiVersion: v1
