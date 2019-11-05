@@ -6,7 +6,7 @@
   - An Active EKS cluster (1.14 preferred since it is the latest)
   - Cluster must consist of at least one worker node ASG 
 
-A) Create an [IAM OIDC] identity provider for your cluster with the AWS Management Console using the documentation. 
+A) Create an [IAM OIDC] identity provider for your cluster with the AWS Management Console using the [documentation] . 
 
 B) Create a test [IAM policy] for your service accounts
 
@@ -28,21 +28,21 @@ B) Create a test [IAM policy] for your service accounts
 ```
 
 C) Create an IAM role for your service accounts in the console
--  Retrieve the OIDC issuer URL from the Amazon EKS console description 
-- Create a new IAM role. In the Select type of trusted entity section, choose Web identity.
-- In the Choose a web identity provider section:
+- Retrieve the OIDC issuer URL from the Amazon EKS console description of your cluster .
+- While creaing a new IAM role, In the "Select type of trusted entity" section, choose "Web identity".
+- In the "Choose a web identity provider" section:
 For Identity provider, choose the URL for your cluster.
 For Audience, type sts.amazonaws.com.
-- In the Attach Policy section, select the policy to use for your service account
+- In the "Attach Policy" section, select the policy to use for your service account, that you created in Section B above. 
 - After the role is created, choose the role in the console to open it for editing
-- Choose the Trust relationships tab, and then choose Edit trust relationship.
+- Choose the "Trust relationships" tab, and then choose "Edit trust relationship".
 Edit the OIDC provider suffix and change it from :aud to :sub.
 Replace sts.amazonaws.com to your service account ID.
 - Update trust policy to finish. 
 
-D) Set up [Cluster Autoscaler Auto-Discovery] using the tutorial. 
+D) Set up [Cluster Autoscaler Auto-Discovery] using the [tutorial] . 
 - Open the Amazon EC2 console, and then choose EKS worker node Auto Scaling Groups from the navigation pane.
-- In the Add/Edit Auto Scaling Group Tags window, please make sure you enter the following tags by replacing awsExampleClusterName with the name of your EKS cluster. Then, choose Save
+- In the "Add/Edit Auto Scaling Group Tags" window, please make sure you enter the following tags by replacing 'awsExampleClusterName' with the name of your EKS cluster. Then, choose Save
 
 | Plugin | README |
 | ------ | ------ |
@@ -151,5 +151,7 @@ autoscaler-demo   55/55   55           55          143m
    [Cluster Autoscaler Auto-Discovery]: <https://aws.amazon.com/premiumsupport/knowledge-center/eks-cluster-autoscaler-setup/>
    [IAM OIDC]: <https://docs.aws.amazon.com/eks/latest/userguide/enable-iam-roles-for-service-accounts.html> 
    [IAM policy]: <https://docs.aws.amazon.com/eks/latest/userguide/create-service-account-iam-policy-and-role.html>
+   [documentation]: <https://docs.aws.amazon.com/eks/latest/userguide/enable-iam-roles-for-service-accounts.html> 
+   [tutorial]: <https://aws.amazon.com/premiumsupport/knowledge-center/eks-cluster-autoscaler-setup/>
    
   
