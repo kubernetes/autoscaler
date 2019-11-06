@@ -43,6 +43,7 @@ import (
 var (
 	vmssSizeRefreshPeriod      = 15 * time.Second
 	vmssInstancesRefreshPeriod = 5 * time.Minute
+	vmssSizeMutex              sync.Mutex
 )
 
 var scaleSetStatusCache struct {
@@ -198,7 +199,9 @@ func (scaleSet *ScaleSet) getCurSize() (int64, error) {
 		scaleSet.invalidateInstanceCache()
 	}
 
+	vmssSizeMutex.Lock()
 	scaleSet.curSize = *set.Sku.Capacity
+	vmssSizeMutex.Unlock()
 	scaleSet.lastSizeRefresh = time.Now()
 	return scaleSet.curSize, nil
 }
@@ -215,14 +218,12 @@ func (scaleSet *ScaleSet) updateVMSSCapacity(size int64) {
 	var isSuccess bool
 	var err error
 
-	scaleSet.sizeMutex.Lock()
-	defer scaleSet.sizeMutex.Unlock()
-
 	defer func() {
 		if err != nil {
 			klog.Errorf("Failed to update the capacity for vmss %s with error %v, invalidate the cache so as to get the real size from API", scaleSet.Name, err)
 			// Invalidate the VMSS size cache in order to fetch the size from the API.
-
+			scaleSet.sizeMutex.Lock()
+			defer scaleSet.sizeMutex.Unlock()
 			scaleSet.lastSizeRefresh = time.Now().Add(-1 * vmssSizeRefreshPeriod)
 		}
 	}()
@@ -234,7 +235,9 @@ func (scaleSet *ScaleSet) updateVMSSCapacity(size int64) {
 		return
 	}
 
+	vmssSizeMutex.Lock()
 	op.Sku.Capacity = &size
+	vmssSizeMutex.Unlock()
 	op.Identity = nil
 	op.VirtualMachineScaleSetProperties.ProvisioningState = nil
 	ctx, cancel := getContextWithCancel()
