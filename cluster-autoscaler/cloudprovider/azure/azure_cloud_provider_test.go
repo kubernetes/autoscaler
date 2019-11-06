@@ -31,6 +31,7 @@ import (
 func newTestAzureManager(t *testing.T) *AzureManager {
 	vmssName := "test-asg"
 	skuName := "Standard_D4_v2"
+	location := "eastus"
 	var vmssCapacity int64 = 3
 	manager := &AzureManager{
 		env:                  azure.PublicCloud,
@@ -59,6 +60,8 @@ func newTestAzureManager(t *testing.T) *AzureManager {
 								Capacity: &vmssCapacity,
 								Name:     &skuName,
 							},
+							VirtualMachineScaleSetProperties: &compute.VirtualMachineScaleSetProperties{},
+							Location:                         &location,
 						},
 					},
 				},
