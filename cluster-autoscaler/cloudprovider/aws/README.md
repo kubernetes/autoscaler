@@ -195,7 +195,7 @@ spec:
 * Create an ASG with a MixedInstancesPolicy that refers to the newly-created LT.
 * Set LaunchTemplateOverrides to include the 'base' instance type r5.2xlarge and suitable alternatives, e.g. r5d.2xlarge, i3.2xlarge, r5a.2xlarge and r5ad.2xlarge. Differing processor types and speeds should be evaluated depending on your use-case(s).
 * Set [InstancesDistribution](https://docs.aws.amazon.com/autoscaling/ec2/APIReference/API_InstancesDistribution.html) according to your needs.
-* See [Allocation Strategies](https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-purchase-options.htlm#asg-allocation-strategies) for information about the ASG fulfils capacity from the specified instance types.
+* See [Allocation Strategies](https://docs.aws.amazon.com/autoscaling/ec2/userguide/asg-purchase-options.html#asg-allocation-strategies) for information about the ASG fulfils capacity from the specified instance types.
 * Repeat by creating other LTs and ASGs, for example c5.18xlarge and c5n.18xlarge or a bunch of similar burstable instances.
 
 See CloudFormation example [here](MixedInstancePolicy.md).
