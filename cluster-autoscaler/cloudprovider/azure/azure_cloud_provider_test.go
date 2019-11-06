@@ -30,6 +30,7 @@ import (
 
 func newTestAzureManager(t *testing.T) *AzureManager {
 	vmssName := "test-asg"
+	skuName := "Standard_D4_v2"
 	var vmssCapacity int64 = 3
 	manager := &AzureManager{
 		env:                  azure.PublicCloud,
@@ -56,6 +57,7 @@ func newTestAzureManager(t *testing.T) *AzureManager {
 							Name: &vmssName,
 							Sku: &compute.Sku{
 								Capacity: &vmssCapacity,
+								Name:     &skuName,
 							},
 						},
 					},
