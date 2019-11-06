@@ -121,4 +121,6 @@ type AutoscalingOptions struct {
 	Regional bool
 	// Pods newer than this will not be considered as unschedulable for scale-up.
 	NewPodScaleUpDelay time.Duration
+	// IgnoredTaints is a list of taints to ignore when considering a node template for scheduling.
+	IgnoredTaints []string
 }

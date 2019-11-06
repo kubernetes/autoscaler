@@ -42,6 +42,7 @@ import (
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	kube_client "k8s.io/client-go/kubernetes"
 	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
+	schedulerapi "k8s.io/kubernetes/pkg/scheduler/api"
 	schedulercache "k8s.io/kubernetes/pkg/scheduler/cache"
 
 	"k8s.io/klog"
@@ -50,6 +51,20 @@ import (
 const (
 	// ReschedulerTaintKey is the name of the taint created by rescheduler.
 	ReschedulerTaintKey = "CriticalAddonsOnly"
+)
+
+var (
+	nodeConditionTaints = taintKeySet{
+		schedulerapi.TaintNodeNotReady:           true,
+		schedulerapi.TaintNodeUnreachable:        true,
+		schedulerapi.TaintNodeUnschedulable:      true,
+		schedulerapi.TaintNodeMemoryPressure:     true,
+		schedulerapi.TaintNodeDiskPressure:       true,
+		schedulerapi.TaintNodeNetworkUnavailable: true,
+		schedulerapi.TaintNodePIDPressure:        true,
+		schedulerapi.TaintExternalCloudProvider:  true,
+		schedulerapi.TaintNodeShutdown:           true,
+	}
 )
 
 // Following data structure is used to avoid running predicates #pending_pods * #nodes
@@ -73,6 +88,8 @@ type podSchedulableInfo struct {
 }
 
 type podSchedulableMap map[string][]podSchedulableInfo
+
+type taintKeySet map[string]bool
 
 func (psi *podSchedulableInfo) match(pod *apiv1.Pod) bool {
 	return reflect.DeepEqual(pod.Labels, psi.labels) && apiequality.Semantic.DeepEqual(pod.Spec, psi.spec)
@@ -219,7 +236,7 @@ func CheckPodsSchedulableOnNode(context *context.AutoscalingContext, pods []*api
 //
 // TODO(mwielgus): Review error policy - sometimes we may continue with partial errors.
 func GetNodeInfosForGroups(nodes []*apiv1.Node, nodeInfoCache map[string]*schedulercache.NodeInfo, cloudProvider cloudprovider.CloudProvider, kubeClient kube_client.Interface,
-	daemonsets []*extensionsv1.DaemonSet, predicateChecker *simulator.PredicateChecker) (map[string]*schedulercache.NodeInfo, errors.AutoscalerError) {
+	daemonsets []*extensionsv1.DaemonSet, predicateChecker *simulator.PredicateChecker, ignoredTaints taintKeySet) (map[string]*schedulercache.NodeInfo, errors.AutoscalerError) {
 	result := make(map[string]*schedulercache.NodeInfo)
 	seenGroups := make(map[string]bool)
 
@@ -239,7 +256,7 @@ func GetNodeInfosForGroups(nodes []*apiv1.Node, nodeInfoCache map[string]*schedu
 			if err != nil {
 				return false, "", err
 			}
-			sanitizedNodeInfo, err := sanitizeNodeInfo(nodeInfo, id)
+			sanitizedNodeInfo, err := sanitizeNodeInfo(nodeInfo, id, ignoredTaints)
 			if err != nil {
 				return false, "", err
 			}
@@ -283,7 +300,7 @@ func GetNodeInfosForGroups(nodes []*apiv1.Node, nodeInfoCache map[string]*schedu
 
 		// No good template, trying to generate one. This is called only if there are no
 		// working nodes in the node groups. By default CA tries to use a real-world example.
-		nodeInfo, err := GetNodeInfoFromTemplate(nodeGroup, daemonsets, predicateChecker)
+		nodeInfo, err := GetNodeInfoFromTemplate(nodeGroup, daemonsets, predicateChecker, ignoredTaints)
 		if err != nil {
 			if err == cloudprovider.ErrNotImplemented {
 				continue
@@ -325,7 +342,7 @@ func GetNodeInfosForGroups(nodes []*apiv1.Node, nodeInfoCache map[string]*schedu
 }
 
 // GetNodeInfoFromTemplate returns NodeInfo object built base on TemplateNodeInfo returned by NodeGroup.TemplateNodeInfo().
-func GetNodeInfoFromTemplate(nodeGroup cloudprovider.NodeGroup, daemonsets []*extensionsv1.DaemonSet, predicateChecker *simulator.PredicateChecker) (*schedulercache.NodeInfo, errors.AutoscalerError) {
+func GetNodeInfoFromTemplate(nodeGroup cloudprovider.NodeGroup, daemonsets []*extensionsv1.DaemonSet, predicateChecker *simulator.PredicateChecker, ignoredTaints taintKeySet) (*schedulercache.NodeInfo, errors.AutoscalerError) {
 	id := nodeGroup.Id()
 	baseNodeInfo, err := nodeGroup.TemplateNodeInfo()
 	if err != nil {
@@ -336,7 +353,7 @@ func GetNodeInfoFromTemplate(nodeGroup cloudprovider.NodeGroup, daemonsets []*ex
 	pods = append(pods, baseNodeInfo.Pods()...)
 	fullNodeInfo := schedulercache.NewNodeInfo(pods...)
 	fullNodeInfo.SetNode(baseNodeInfo.Node())
-	sanitizedNodeInfo, typedErr := sanitizeNodeInfo(fullNodeInfo, id)
+	sanitizedNodeInfo, typedErr := sanitizeNodeInfo(fullNodeInfo, id, ignoredTaints)
 	if typedErr != nil {
 		return nil, typedErr
 	}
@@ -374,9 +391,9 @@ func deepCopyNodeInfo(nodeInfo *schedulercache.NodeInfo) (*schedulercache.NodeIn
 	return newNodeInfo, nil
 }
 
-func sanitizeNodeInfo(nodeInfo *schedulercache.NodeInfo, nodeGroupName string) (*schedulercache.NodeInfo, errors.AutoscalerError) {
+func sanitizeNodeInfo(nodeInfo *schedulercache.NodeInfo, nodeGroupName string, ignoredTaints taintKeySet) (*schedulercache.NodeInfo, errors.AutoscalerError) {
 	// Sanitize node name.
-	sanitizedNode, err := sanitizeTemplateNode(nodeInfo.Node(), nodeGroupName)
+	sanitizedNode, err := sanitizeTemplateNode(nodeInfo.Node(), nodeGroupName, ignoredTaints)
 	if err != nil {
 		return nil, err
 	}
@@ -397,7 +414,7 @@ func sanitizeNodeInfo(nodeInfo *schedulercache.NodeInfo, nodeGroupName string) (
 	return sanitizedNodeInfo, nil
 }
 
-func sanitizeTemplateNode(node *apiv1.Node, nodeGroup string) (*apiv1.Node, errors.AutoscalerError) {
+func sanitizeTemplateNode(node *apiv1.Node, nodeGroup string, ignoredTaints taintKeySet) (*apiv1.Node, errors.AutoscalerError) {
 	newNode := node.DeepCopy()
 	nodeName := fmt.Sprintf("template-node-for-%s-%d", nodeGroup, rand.Int63())
 	newNode.Labels = make(map[string]string, len(node.Labels))
@@ -417,11 +434,24 @@ func sanitizeTemplateNode(node *apiv1.Node, nodeGroup string) (*apiv1.Node, erro
 		switch taint.Key {
 		case ReschedulerTaintKey:
 			klog.V(4).Infof("Removing rescheduler taint when creating template from node %s", node.Name)
+			continue
 		case deletetaint.ToBeDeletedTaint:
 			klog.V(4).Infof("Removing autoscaler taint when creating template from node %s", node.Name)
-		default:
-			newTaints = append(newTaints, taint)
+			continue
 		}
+
+		// ignore conditional taints as they represent a transient node state.
+		if exists := nodeConditionTaints[taint.Key]; exists {
+			klog.V(4).Infof("Removing node condition taint %s, when creating template from node %s", taint.Key, node.Name)
+			continue
+		}
+
+		if exists := ignoredTaints[taint.Key]; exists {
+			klog.V(4).Infof("Removing ignored taint %s, when creating template from node %s", taint.Key, node.Name)
+			continue
+		}
+
+		newTaints = append(newTaints, taint)
 	}
 	newNode.Spec.Taints = newTaints
 	return newNode, nil
