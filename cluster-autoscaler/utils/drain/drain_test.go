@@ -103,6 +103,20 @@ func TestDrain(t *testing.T) {
 		},
 	}
 
+	cdsPod := &apiv1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:            "bar",
+			Namespace:       "default",
+			OwnerReferences: GenerateOwnerReferences(ds.Name, "CustomDaemonSet", "crd/v1", ""),
+			Annotations: map[string]string{
+				"cluster-autoscaler.kubernetes.io/daemonset-pod": "true",
+			},
+		},
+		Spec: apiv1.PodSpec{
+			NodeName: "node",
+		},
+	}
+
 	job := batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "job",
@@ -373,6 +387,13 @@ func TestDrain(t *testing.T) {
 			expectPods:  []*apiv1.Pod{},
 		},
 		{
+			description: "DS-managed pod by a custom Daemonset",
+			pods:        []*apiv1.Pod{cdsPod},
+			pdbs:        []*policyv1.PodDisruptionBudget{},
+			expectFatal: false,
+			expectPods:  []*apiv1.Pod{},
+		},
+		{
 			description: "Job-managed pod",
 			pods:        []*apiv1.Pod{jobPod},
 			pdbs:        []*policyv1.PodDisruptionBudget{},
@@ -540,8 +561,7 @@ func TestDrain(t *testing.T) {
 
 		registry := kube_util.NewListerRegistry(nil, nil, nil, nil, nil, dsLister, rcLister, jobLister, rsLister, ssLister)
 
-		pods, err := GetPodsForDeletionOnNodeDrain(test.pods, test.pdbs,
-			false, true, true, true, registry, 0, time.Now())
+		pods, err := GetPodsForDeletionOnNodeDrain(test.pods, test.pdbs, true, true, true, registry, 0, time.Now())
 
 		if test.expectFatal {
 			if err == nil {
