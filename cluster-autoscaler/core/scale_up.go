@@ -245,7 +245,7 @@ var (
 // false if it didn't and error if an error occurred. Assumes that all nodes in the cluster are
 // ready and in sync with instance groups.
 func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.AutoscalingProcessors, clusterStateRegistry *clusterstate.ClusterStateRegistry, unschedulablePods []*apiv1.Pod,
-	nodes []*apiv1.Node, daemonSets []*appsv1.DaemonSet, nodeInfos map[string]*schedulernodeinfo.NodeInfo) (*status.ScaleUpStatus, errors.AutoscalerError) {
+	nodes []*apiv1.Node, daemonSets []*appsv1.DaemonSet, nodeInfos map[string]*schedulernodeinfo.NodeInfo, ignoredTaints taintKeySet) (*status.ScaleUpStatus, errors.AutoscalerError) {
 	// From now on we only care about unschedulable pods that were marked after the newest
 	// node became available for the scheduler.
 	if len(unschedulablePods) == 0 {
@@ -448,7 +448,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 
 			// If possible replace candidate node-info with node info based on crated node group. The latter
 			// one should be more in line with nodes which will be created by node group.
-			mainCreatedNodeInfo, err := getNodeInfoFromTemplate(createNodeGroupResult.MainCreatedNodeGroup, daemonSets, context.PredicateChecker)
+			mainCreatedNodeInfo, err := getNodeInfoFromTemplate(createNodeGroupResult.MainCreatedNodeGroup, daemonSets, context.PredicateChecker, ignoredTaints)
 			if err == nil {
 				nodeInfos[createNodeGroupResult.MainCreatedNodeGroup.Id()] = mainCreatedNodeInfo
 			} else {
@@ -462,7 +462,7 @@ func ScaleUp(context *context.AutoscalingContext, processors *ca_processors.Auto
 			}
 
 			for _, nodeGroup := range createNodeGroupResult.ExtraCreatedNodeGroups {
-				nodeInfo, err := getNodeInfoFromTemplate(nodeGroup, daemonSets, context.PredicateChecker)
+				nodeInfo, err := getNodeInfoFromTemplate(nodeGroup, daemonSets, context.PredicateChecker, ignoredTaints)
 
 				if err != nil {
 					klog.Warningf("Cannot build node info for newly created extra node group %v; balancing similar node groups will not work; err=%v", nodeGroup.Id(), err)

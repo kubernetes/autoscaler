@@ -130,4 +130,6 @@ type AutoscalingOptions struct {
 	// Setting it to false employs a more lenient filtering approach that does not try to pack the pods on the nodes.
 	// Pods with nominatedNodeName set are always filtered out.
 	FilterOutSchedulablePodsUsesPacking bool
+	// IgnoredTaints is a list of taints to ignore when considering a node template for scheduling.
+	IgnoredTaints []string
 }
