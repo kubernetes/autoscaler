@@ -23,6 +23,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	autoscaling "k8s.io/api/autoscaling/v1"
 	apiv1 "k8s.io/api/core/v1"
+	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -65,6 +66,14 @@ var _ = UpdaterE2eDescribe("Updater", func() {
 			APIVersion: "batch/v1",
 			Kind:       "Job",
 			Name:       "hamster-job",
+		})
+	})
+
+	ginkgo.It("evicts pods in a CronJob", func() {
+		testEvictsPods(f, &autoscaling.CrossVersionObjectReference{
+			APIVersion: "batch/v1",
+			Kind:       "CronJob",
+			Name:       "hamster-cronjob",
 		})
 	})
 
@@ -227,6 +236,8 @@ func setupHamsterController(f *framework.Framework, controllerKind, cpu, memory 
 		setupHamsterReplicationController(f, cpu, memory, replicas)
 	case "Job":
 		setupHamsterJob(f, cpu, memory, replicas)
+	case "CronJob":
+		setupHamsterCronJob(f, cpu, memory, replicas)
 	case "ReplicaSet":
 		setupHamsterRS(f, cpu, memory, replicas)
 	case "StatefulSet":
@@ -279,6 +290,19 @@ func setupHamsterJob(f *framework.Framework, cpu, memory string, replicas int32)
 	err := testutils.CreateJobWithRetries(f.ClientSet, f.Namespace.Name, job)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	err = framework_job.WaitForAllJobPodsRunning(f.ClientSet, f.Namespace.Name, job.Name, replicas)
+	gomega.Expect(err).NotTo(gomega.HaveOccurred())
+}
+
+func setupHamsterCronJob(f *framework.Framework, cpu, memory string, replicas int32) {
+	cronJob := framework.NewTestCronJob("hamster-cronjob", "*/5 * * * *", batchv1beta1.ForbidConcurrent,
+			[]string{"sleep", "1000000"}, replicas, replicas, 10, nil, nil)
+	cronJob.Spec.JobTemplate.Spec.Template.Spec.Containers[0] = setupHamsterContainer(cpu, memory)
+	for label, value := range hamsterLabels {
+		cronJob.Spec.JobTemplate.Spec.Template.Labels[label] = value
+	}
+	cronJob, err := framework.CreateCronJob(f.ClientSet, f.Namespace.Name, cronJob)
+	gomega.Expect(err).NotTo(gomega.HaveOccurred())
+	err = framework.WaitForActiveJobs(f.ClientSet, f.Namespace.Name, cronJob.Name, 1)
 	gomega.Expect(err).NotTo(gomega.HaveOccurred())
 }
 
