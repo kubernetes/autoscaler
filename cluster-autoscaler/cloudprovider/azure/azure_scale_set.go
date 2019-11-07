@@ -192,16 +192,19 @@ func (scaleSet *ScaleSet) getCurSize() (int64, error) {
 		}
 		return -1, err
 	}
-	klog.V(5).Infof("Getting scale set (%q) capacity: %d\n", scaleSet.Name, *set.Sku.Capacity)
 
-	if scaleSet.curSize != *set.Sku.Capacity {
+	vmssSizeMutex.Lock()
+	curSize := *set.Sku.Capacity
+	vmssSizeMutex.Unlock()
+
+	klog.V(5).Infof("Getting scale set (%q) capacity: %d\n", scaleSet.Name, curSize)
+
+	if scaleSet.curSize != curSize {
 		// Invalidate the instance cache if the capacity has changed.
 		scaleSet.invalidateInstanceCache()
 	}
 
-	vmssSizeMutex.Lock()
-	scaleSet.curSize = *set.Sku.Capacity
-	vmssSizeMutex.Unlock()
+	scaleSet.curSize = curSize
 	scaleSet.lastSizeRefresh = time.Now()
 	return scaleSet.curSize, nil
 }
