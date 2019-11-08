@@ -142,7 +142,7 @@ $ kubectl exec -n kube-system cluster-autoscaler-xxxxxx-xxxxx  env | grep AWS
 
 Output of the exec command should ideally display the values for AWS_REGION, AWS_ROLE_ARN and AWS_WEB_IDENTITY_TOKEN_FILE where the role arn must be the same as the role provided in the service account annotations. 
 
-The cluster autoscaler scaling can also be tested: 
+The cluster autoscaler scaling the worker nodes can also be tested: 
 
 ```sh
 $ kubectl scale deployment autoscaler-demo --replicas=50
@@ -151,6 +151,12 @@ deployment.extensions/autoscaler-demo scaled
 $ kubectl get deployment
 NAME              READY   UP-TO-DATE   AVAILABLE   AGE
 autoscaler-demo   55/55   55           55          143m
+```
+
+Snippet of the cluster-autoscaler pod logs while scaling:
+
+```sh
+I1025 13:48:42.975037       1 scale_up.go:529] Final scale-up plan: [{eksctl-xxx-xxx-xxx-nodegroup-ng-xxxxx-NodeGroup-xxxxxxxxxx 2->3 (max: 8)}]
 ```
 
 
