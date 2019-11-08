@@ -17,6 +17,7 @@ limitations under the License.
 package utils
 
 import (
+	v1 "k8s.io/api/core/v1"
 	schedulerapi "k8s.io/kubernetes/pkg/scheduler/api"
 )
 
@@ -26,14 +27,14 @@ type TaintKeySet map[string]bool
 var (
 	// NodeConditionTaints lists taint keys used as node conditions
 	NodeConditionTaints = TaintKeySet{
-		schedulerapi.TaintNodeNotReady:           true,
-		schedulerapi.TaintNodeUnreachable:        true,
-		schedulerapi.TaintNodeUnschedulable:      true,
-		schedulerapi.TaintNodeMemoryPressure:     true,
-		schedulerapi.TaintNodeDiskPressure:       true,
-		schedulerapi.TaintNodeNetworkUnavailable: true,
-		schedulerapi.TaintNodePIDPressure:        true,
-		schedulerapi.TaintExternalCloudProvider:  true,
-		schedulerapi.TaintNodeShutdown:           true,
+		v1.TaintNodeNotReady:                    true,
+		v1.TaintNodeUnreachable:                 true,
+		v1.TaintNodeUnschedulable:               true,
+		v1.TaintNodeMemoryPressure:              true,
+		v1.TaintNodeDiskPressure:                true,
+		v1.TaintNodeNetworkUnavailable:          true,
+		v1.TaintNodePIDPressure:                 true,
+		schedulerapi.TaintExternalCloudProvider: true,
+		schedulerapi.TaintNodeShutdown:          true,
 	}
 )
