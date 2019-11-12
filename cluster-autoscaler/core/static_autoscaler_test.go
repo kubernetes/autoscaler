@@ -1154,7 +1154,7 @@ func TestStaticAutoscalerInstaceCreationErrors(t *testing.T) {
 				State: cloudprovider.InstanceCreating,
 				ErrorInfo: &cloudprovider.InstanceErrorInfo{
 					ErrorClass: cloudprovider.OutOfResourcesErrorClass,
-					ErrorCode:  "STOCKOUT",
+					ErrorCode:  "RESOURCE_POOL_EXHAUSTED",
 				},
 			},
 		},
@@ -1164,7 +1164,7 @@ func TestStaticAutoscalerInstaceCreationErrors(t *testing.T) {
 				State: cloudprovider.InstanceCreating,
 				ErrorInfo: &cloudprovider.InstanceErrorInfo{
 					ErrorClass: cloudprovider.OutOfResourcesErrorClass,
-					ErrorCode:  "STOCKOUT",
+					ErrorCode:  "RESOURCE_POOL_EXHAUSTED",
 				},
 			},
 		},
@@ -1238,7 +1238,7 @@ func TestStaticAutoscalerInstaceCreationErrors(t *testing.T) {
 			return names["A3"] && names["A4"] && names["A5"] && names["A6"]
 		}))
 
-	// TODO assert that scaleup was failed (separately for QUOTA and STOCKOUT)
+	// TODO assert that scaleup was failed (separately for QUOTA and RESOURCE_POOL_EXHAUSTED)
 
 	clusterState.RefreshCloudProviderNodeInstancesCache()
 
