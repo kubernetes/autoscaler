@@ -40,8 +40,9 @@ const (
 	// ErrorCodeQuotaExceeded is error code used in InstanceErrorInfo if quota exceeded error occurs.
 	ErrorCodeQuotaExceeded = "QUOTA_EXCEEDED"
 
-	// ErrorCodeStockout is error code used in InstanceErrorInfo if stockout occurs.
-	ErrorCodeStockout = "STOCKOUT"
+	// ErrorCodeResourcePoolExhausted is error code used in InstanceErrorInfo if requested resources
+	// cannot be provisioned by cloud provider.
+	ErrorCodeResourcePoolExhausted = "RESOURCE_POOL_EXHAUSTED"
 
 	// ErrorCodeOther is error code used in InstanceErrorInfo if other error occurs.
 	ErrorCodeOther = "OTHER"
@@ -232,9 +233,9 @@ func (client *autoscalingGceClientV1) FetchMigInstances(migRef GceRef) ([]cloudp
 			lastAttemptErrors := getLastAttemptErrors(gceInstance)
 			for _, instanceError := range lastAttemptErrors {
 				errorCodeCounts[instanceError.Code]++
-				if isStockoutErrorCode(instanceError.Code) {
+				if isResourcePoolExhaustedErrorCode(instanceError.Code) {
 					errorInfo.ErrorClass = cloudprovider.OutOfResourcesErrorClass
-					errorInfo.ErrorCode = ErrorCodeStockout
+					errorInfo.ErrorCode = ErrorCodeResourcePoolExhausted
 				} else if isQuotaExceededErrorCoce(instanceError.Code) {
 					errorInfo.ErrorClass = cloudprovider.OutOfResourcesErrorClass
 					errorInfo.ErrorCode = ErrorCodeQuotaExceeded
@@ -285,7 +286,7 @@ func getLastAttemptErrors(instance *gce.ManagedInstance) []*gce.ManagedInstanceL
 	return nil
 }
 
-func isStockoutErrorCode(errorCode string) bool {
+func isResourcePoolExhaustedErrorCode(errorCode string) bool {
 	return errorCode == "RESOURCE_POOL_EXHAUSTED" || errorCode == "ZONE_RESOURCE_POOL_EXHAUSTED" || errorCode == "ZONE_RESOURCE_POOL_EXHAUSTED_WITH_DETAILS"
 }
 
