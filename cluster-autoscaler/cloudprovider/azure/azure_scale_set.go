@@ -42,7 +42,14 @@ import (
 var (
 	vmssSizeRefreshPeriod      = 15 * time.Second
 	vmssInstancesRefreshPeriod = 5 * time.Minute
+	vmssSizeMutex              sync.Mutex
 )
+
+var scaleSetStatusCache struct {
+	lastRefresh time.Time
+	mutex       sync.Mutex
+	scaleSets   map[string]compute.VirtualMachineScaleSet
+}
 
 func init() {
 	// In go-autorest SDK https://github.com/Azure/go-autorest/blob/master/autorest/sender.go#L242,
@@ -124,13 +131,42 @@ func (scaleSet *ScaleSet) MaxSize() int {
 }
 
 func (scaleSet *ScaleSet) getVMSSInfo() (compute.VirtualMachineScaleSet, error) {
+	scaleSetStatusCache.mutex.Lock()
+	defer scaleSetStatusCache.mutex.Unlock()
+
+	if scaleSetStatusCache.lastRefresh.Add(vmssSizeRefreshPeriod).After(time.Now()) {
+		if status, exists := scaleSetStatusCache.scaleSets[scaleSet.Name]; exists {
+			return status, nil
+		}
+	}
+
+	var allVMSS []compute.VirtualMachineScaleSet
+	var err error
+
+	allVMSS, err = scaleSet.getAllVMSSInfo()
+	if err != nil {
+		return compute.VirtualMachineScaleSet{}, err
+	}
+
+	var newStatus = make(map[string]compute.VirtualMachineScaleSet)
+	for _, vmss := range allVMSS {
+		newStatus[*vmss.Name] = vmss
+	}
+
+	scaleSetStatusCache.lastRefresh = time.Now()
+	scaleSetStatusCache.scaleSets = newStatus
+
+	return scaleSetStatusCache.scaleSets[scaleSet.Name], nil
+}
+
+func (scaleSet *ScaleSet) getAllVMSSInfo() ([]compute.VirtualMachineScaleSet, error) {
 	ctx, cancel := getContextWithCancel()
 	defer cancel()
 
 	resourceGroup := scaleSet.manager.config.ResourceGroup
-	setInfo, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.Get(ctx, resourceGroup, scaleSet.Name)
+	setInfo, err := scaleSet.manager.azClient.virtualMachineScaleSetsClient.List(ctx, resourceGroup)
 	if err != nil {
-		return compute.VirtualMachineScaleSet{}, err
+		return []compute.VirtualMachineScaleSet{}, err
 	}
 
 	return setInfo, nil
@@ -155,14 +191,19 @@ func (scaleSet *ScaleSet) getCurSize() (int64, error) {
 		}
 		return -1, err
 	}
-	klog.V(5).Infof("Getting scale set (%q) capacity: %d\n", scaleSet.Name, *set.Sku.Capacity)
 
-	if scaleSet.curSize != *set.Sku.Capacity {
+	vmssSizeMutex.Lock()
+	curSize := *set.Sku.Capacity
+	vmssSizeMutex.Unlock()
+
+	klog.V(5).Infof("Getting scale set (%q) capacity: %d\n", scaleSet.Name, curSize)
+
+	if scaleSet.curSize != curSize {
 		// Invalidate the instance cache if the capacity has changed.
 		scaleSet.invalidateInstanceCache()
 	}
 
-	scaleSet.curSize = *set.Sku.Capacity
+	scaleSet.curSize = curSize
 	scaleSet.lastSizeRefresh = time.Now()
 	return scaleSet.curSize, nil
 }
@@ -196,7 +237,9 @@ func (scaleSet *ScaleSet) updateVMSSCapacity(size int64) {
 		return
 	}
 
+	vmssSizeMutex.Lock()
 	op.Sku.Capacity = &size
+	vmssSizeMutex.Unlock()
 	op.Identity = nil
 	op.VirtualMachineScaleSetProperties.ProvisioningState = nil
 	ctx, cancel := getContextWithCancel()
