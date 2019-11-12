@@ -389,15 +389,12 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 
 		var scaleDownCandidates []*apiv1.Node
 		var podDestinations []*apiv1.Node
-		var temporaryNodes []*apiv1.Node
 
 		if a.processors == nil || a.processors.ScaleDownNodeProcessor == nil {
 			scaleDownCandidates = allNodes
 			podDestinations = allNodes
-			temporaryNodes = []*apiv1.Node{}
 		} else {
 			var err errors.AutoscalerError
-			a.processors.ScaleDownNodeProcessor.Reset()
 			scaleDownCandidates, err = a.processors.ScaleDownNodeProcessor.GetScaleDownCandidates(
 				autoscalingContext, allNodes)
 			if err != nil {
@@ -409,18 +406,11 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 				klog.Error(err)
 				return err
 			}
-			temporaryNodes, err = a.processors.ScaleDownNodeProcessor.GetTemporaryNodes(allNodes)
-			if err != nil {
-				klog.Error(err)
-				return err
-			}
 		}
-
-		tempNodesPerNodeGroup := getTempNodesPerNodeGroup(a.CloudProvider, temporaryNodes)
 
 		// We use scheduledPods (not originalScheduledPods) here, so artificial scheduled pods introduced by processors
 		// (e.g unscheduled pods with nominated node name) can block scaledown of given node.
-		typedErr := scaleDown.UpdateUnneededNodes(allNodes, podDestinations, scaleDownCandidates, scheduledPods, currentTime, pdbs, tempNodesPerNodeGroup)
+		typedErr := scaleDown.UpdateUnneededNodes(allNodes, podDestinations, scaleDownCandidates, scheduledPods, currentTime, pdbs)
 		if typedErr != nil {
 			scaleDownStatus.Result = status.ScaleDownError
 			klog.Errorf("Failed to scale down: %v", typedErr)
@@ -466,7 +456,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 
 			scaleDownStart := time.Now()
 			metrics.UpdateLastTime(metrics.ScaleDown, scaleDownStart)
-			scaleDownStatus, typedErr := scaleDown.TryToScaleDown(allNodes, originalScheduledPods, pdbs, currentTime, temporaryNodes, tempNodesPerNodeGroup)
+			scaleDownStatus, typedErr := scaleDown.TryToScaleDown(allNodes, originalScheduledPods, pdbs, currentTime)
 			metrics.UpdateDurationFromStart(metrics.ScaleDown, scaleDownStart)
 
 			scaleDownStatus.RemovedNodeGroups = removedNodeGroups
