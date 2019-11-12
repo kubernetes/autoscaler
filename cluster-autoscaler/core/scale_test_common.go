@@ -80,7 +80,6 @@ type scaleTestConfig struct {
 	//expectedScaleUpOptions []groupSizeChange // we expect that all those options should be included in expansion options passed to expander strategy
 	//expectedFinalScaleUp   groupSizeChange   // we expect this to be delivered via scale-up event
 	expectedScaleDowns []string
-	tempNodeNames      []string
 }
 
 type scaleTestResults struct {

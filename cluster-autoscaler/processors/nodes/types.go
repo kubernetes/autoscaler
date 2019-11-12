@@ -30,10 +30,6 @@ type ScaleDownNodeProcessor interface {
 	GetPodDestinationCandidates(*context.AutoscalingContext, []*apiv1.Node) ([]*apiv1.Node, errors.AutoscalerError)
 	// GetScaleDownCandidates returns nodes that potentially could be scaled down.
 	GetScaleDownCandidates(*context.AutoscalingContext, []*apiv1.Node) ([]*apiv1.Node, errors.AutoscalerError)
-	// GetTemporaryNodes returns nodes that are temporary and will not stay in the node group
-	GetTemporaryNodes(allNodes []*apiv1.Node) ([]*apiv1.Node, errors.AutoscalerError)
-	// Reset resets the properties if ScaleDownNodeProcessor
-	Reset()
 	// CleanUp is called at CA termination
 	CleanUp()
 }
