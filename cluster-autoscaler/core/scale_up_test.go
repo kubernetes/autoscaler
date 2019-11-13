@@ -612,11 +612,7 @@ func simpleScaleUpTest(t *testing.T, config *scaleTestConfig, expectedResults *s
 		assert.Contains(t, expectedResults.expansionOptions, config.expansionOptionToChoose, "final expected expansion option must be in expected expansion options")
 		assert.Contains(t, results.expansionOptions, config.expansionOptionToChoose, "final expected expansion option must be in expected expansion options")
 
-		assert.Subset(t, results.expansionOptions, expectedResults.expansionOptions,
-			"actual and expected expansion options should be the same")
-		assert.Subset(t, expectedResults.expansionOptions, results.expansionOptions,
-			"actual and expected expansion options should be the same")
-		assert.Equal(t, len(expectedResults.expansionOptions), len(results.expansionOptions),
+		assert.ElementsMatch(t, results.expansionOptions, expectedResults.expansionOptions,
 			"actual and expected expansion options should be the same")
 	}
 
