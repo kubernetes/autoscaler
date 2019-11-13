@@ -272,10 +272,9 @@ fmt.Println(err)
 Sometimes, you may want to skip the invocation of a type's `Validate` method. To do so, simply associate
 a `validation.Skip` rule with the value being validated.
 
-
 ### Maps/Slices/Arrays of Validatables
 
-When validating a map, slice, or array, whose element type implements the `validation.Validatable` interface,
+When validating an iterable (map, slice, or array), whose element type implements the `validation.Validatable` interface,
 the `validation.Validate` method will call the `Validate` method of every non-nil element.
 The validation errors of the elements will be returned as `validation.Errors` which maps the keys of the
 invalid elements to their corresponding validation errors. For example,
@@ -295,6 +294,39 @@ fmt.Println(err)
 When using `validation.ValidateStruct` to validate a struct, the above validation procedure also applies to those struct 
 fields which are map/slices/arrays of validatables. 
 
+#### Each
+
+An other option is to use the `validation.Each` method.
+This method allows you to define the rules for the iterables within a struct.
+
+```go
+type Customer struct {
+    Name      string
+    Emails    []string
+}
+
+func (c Customer) Validate() error {
+    return validation.ValidateStruct(&c,
+        // Name cannot be empty, and the length must be between 5 and 20.
+		validation.Field(&c.Name, validation.Required, validation.Length(5, 20)),
+		// Emails are optional, but if given must be valid.
+		validation.Field(&c.Emails, validation.Each(is.Email)),
+    )
+}
+
+c := Customer{
+    Name:   "Qiang Xue",
+    Emails: []Email{
+        "valid@example.com",
+        "invalid",
+    },
+}
+
+err := c.Validate()
+fmt.Println(err)
+// Output:
+// Emails: (1: must be a valid email address.).
+```
 
 ### Pointers
 
@@ -396,6 +428,7 @@ The following rules are provided in the `validation` package:
 * `NilOrNotEmpty`: checks if a value is a nil pointer or a non-empty value. This differs from `Required` in that it treats a nil pointer as valid.
 * `Skip`: this is a special rule used to indicate that all rules following it should be skipped (including the nested ones).
 * `MultipleOf`: checks if the value is a multiple of the specified range.
+* `Each(rules ...Rule)`: checks the elements within an iterable (map/slice/array) with other rules.
 
 The `is` sub-package provides a list of commonly used string validation rules that can be used to check if the format
 of a value satisfies certain requirements. Note that these rules only handle strings and byte slices and if a string
@@ -498,6 +531,24 @@ func checkAbc(value interface{}) error {
 err := validation.Validate("xyz", validation.By(checkAbc))
 fmt.Println(err)
 // Output: must be abc
+```
+
+If your validation function takes additional parameters, you can use the following closure trick:
+
+```go
+func stringEquals(str string) validation.RuleFunc {
+	return func(value interface{}) error {
+		s, _ := value.(string)
+        if s != str {
+            return errors.New("unexpected string")
+        }
+        return nil
+    }
+}
+
+err := validation.Validate("xyz", validation.By(stringEquals("abc")))
+fmt.Println(err)
+// Output: unexpected string
 ```
 
 

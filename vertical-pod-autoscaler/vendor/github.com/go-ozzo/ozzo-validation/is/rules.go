@@ -90,6 +90,8 @@ var (
 	CountryCode2 = validation.NewStringRule(govalidator.IsISO3166Alpha2, "must be a valid two-letter country code")
 	// CountryCode3 validates if a string is a valid ISO3166 Alpha 3 country code
 	CountryCode3 = validation.NewStringRule(govalidator.IsISO3166Alpha3, "must be a valid three-letter country code")
+	// CurrencyCode validates if a string is a valid IsISO4217 currency code.
+	CurrencyCode = validation.NewStringRule(govalidator.IsISO4217, "must be valid ISO 4217 currency code")
 	// DialString validates if a string is a valid dial string that can be passed to Dial()
 	DialString = validation.NewStringRule(govalidator.IsDialString, "must be a valid dial string")
 	// MAC validates if a string is a MAC address
@@ -126,6 +128,12 @@ var (
 	reDigit = regexp.MustCompile("^[0-9]+$")
 	// Subdomain regex source: https://stackoverflow.com/a/7933253
 	reSubdomain = regexp.MustCompile(`^[A-Za-z0-9](?:[A-Za-z0-9\-]{0,61}[A-Za-z0-9])?$`)
+	// E164 regex source: https://stackoverflow.com/a/23299989
+	reE164 = regexp.MustCompile(`^\+?[1-9]\d{1,14}$`)
+	// Domain regex source: https://stackoverflow.com/a/7933253
+	// Slightly modified: Removed 255 max length validation since Go regex does not
+	// support lookarounds. More info: https://stackoverflow.com/a/38935027
+	reDomain = regexp.MustCompile(`^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+(?:[a-z]{1,63}| xn--[a-z0-9]{1,59})$`)
 )
 
 func isISBN(value string) bool {
@@ -137,14 +145,10 @@ func isDigit(value string) bool {
 }
 
 func isE164Number(value string) bool {
-	// E164 regex source: https://stackoverflow.com/a/23299989
-	reE164 := regexp.MustCompile(`^\+?[1-9]\d{1,14}$`)
 	return reE164.MatchString(value)
 }
 
 func isSubdomain(value string) bool {
-	// Subdomain regex source: https://stackoverflow.com/a/7933253
-	reSubdomain := regexp.MustCompile(`^[A-Za-z0-9](?:[A-Za-z0-9\-]{0,61}[A-Za-z0-9])?$`)
 	return reSubdomain.MatchString(value)
 }
 
@@ -152,11 +156,6 @@ func isDomain(value string) bool {
 	if len(value) > 255 {
 		return false
 	}
-
-	// Domain regex source: https://stackoverflow.com/a/7933253
-	// Slightly modified: Removed 255 max length validation since Go regex does not
-	// support lookarounds. More info: https://stackoverflow.com/a/38935027
-	reDomain := regexp.MustCompile(`^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+(?:[a-z]{1,63}| xn--[a-z0-9]{1,59})$`)
 
 	return reDomain.MatchString(value)
 }
