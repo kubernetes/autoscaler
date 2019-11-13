@@ -227,16 +227,7 @@ func (p *PredicateChecker) GetPredicateMetadata(pod *apiv1.Pod, nodeInfos map[st
 	if !p.enableAffinityPredicate {
 		return nil
 	}
-	nodeInfoList := make([]*schedulernodeinfo.NodeInfo, 0, len(nodeInfos))
-	for _, v := range nodeInfos {
-		nodeInfoList = append(nodeInfoList, v)
-	}
-
-	snapshot := &schedulersnapshot.Snapshot{
-		NodeInfoMap:  nodeInfos,
-		NodeInfoList: nodeInfoList,
-	}
-	return p.predicateMetadataProducer(pod, snapshot)
+	return p.predicateMetadataProducer(pod, schedulersnapshot.NewSnapshot(nodeInfos))
 }
 
 // FitsAny checks if the given pod can be place on any of the given nodes.
