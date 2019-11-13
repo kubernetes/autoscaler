@@ -183,13 +183,13 @@ func (client *autoscalingGceClientV1) waitForOp(operation *gce.Operation, projec
 }
 
 func (client *autoscalingGceClientV1) DeleteInstances(migRef GceRef, instances []GceRef) error {
+	registerRequest("instance_group_managers", "delete_instances")
 	req := gce.InstanceGroupManagersDeleteInstancesRequest{
 		Instances: []string{},
 	}
 	for _, i := range instances {
 		req.Instances = append(req.Instances, GenerateInstanceUrl(i))
 	}
-	registerRequest("instance_group_managers", "delete_instances")
 	op, err := client.gceService.InstanceGroupManagers.DeleteInstances(migRef.Project, migRef.Zone, migRef.Name, &req).Do()
 	if err != nil {
 		return err
@@ -198,6 +198,7 @@ func (client *autoscalingGceClientV1) DeleteInstances(migRef GceRef, instances [
 }
 
 func (client *autoscalingGceClientV1) FetchMigInstances(migRef GceRef) ([]cloudprovider.Instance, error) {
+	registerRequest("instance_group_managers", "list_managed_instances")
 	gceInstances, err := client.gceService.InstanceGroupManagers.ListManagedInstances(migRef.Project, migRef.Zone, migRef.Name).Do()
 	if err != nil {
 		klog.V(4).Infof("Failed MIG info request for %s %s %s: %v", migRef.Project, migRef.Zone, migRef.Name, err)
