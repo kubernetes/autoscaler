@@ -1,3 +1,6 @@
+// for updating kubernetes dependencies, use `autoscaler/vertical-pod-autoscaler/hack/update-kubernetes-deps-in-e2e.sh`
+// for any other update, use standard `go mod` commands
+
 module k8s.io/autoscaler/vertical-pod-autoscaler/e2e
 
 go 1.12
