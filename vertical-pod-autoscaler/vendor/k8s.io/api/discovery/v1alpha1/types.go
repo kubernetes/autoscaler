@@ -33,7 +33,11 @@ type EndpointSlice struct {
 	// +optional
 	metav1.ObjectMeta `json:"metadata,omitempty" protobuf:"bytes,1,opt,name=metadata"`
 	// addressType specifies the type of address carried by this EndpointSlice.
-	// All addresses in this slice must be the same type.
+	// All addresses in this slice must be the same type. The following address
+	// types are currently supported:
+	// * IP:   Represents an IP Address. This can include both IPv4 and IPv6
+	//         addresses.
+	// * FQDN: Represents a Fully Qualified Domain Name.
 	// Default is IP
 	// +optional
 	AddressType *AddressType `json:"addressType" protobuf:"bytes,4,rep,name=addressType"`
@@ -55,17 +59,21 @@ type EndpointSlice struct {
 type AddressType string
 
 const (
-	// AddressTypeIP represents an IP Address.
+	// AddressTypeIP represents an IP Address. Inclusive of IPv4 and IPv6
+	// addresses.
 	AddressTypeIP = AddressType("IP")
+	// AddressTypeFQDN represents a Fully Qualified Domain Name.
+	AddressTypeFQDN = AddressType("FQDN")
 )
 
 // Endpoint represents a single logical "backend" implementing a service.
 type Endpoint struct {
 	// addresses of this endpoint. The contents of this field are interpreted
 	// according to the corresponding EndpointSlice addressType field. This
-	// allows for cases like dual-stack (IPv4 and IPv6) networking. Consumers
-	// (e.g. kube-proxy) must handle different types of addresses in the context
-	// of their own capabilities. This must contain at least one address but no
+	// allows for cases like dual-stack networking where both IPv4 and IPv6
+	// addresses would be included with the IP addressType. Consumers (e.g.
+	// kube-proxy) must handle different types of addresses in the context of
+	// their own capabilities. This must contain at least one address but no
 	// more than 100.
 	// +listType=set
 	Addresses []string `json:"addresses" protobuf:"bytes,1,rep,name=addresses"`
@@ -113,11 +121,10 @@ type EndpointPort struct {
 	// The name of this port. All ports in an EndpointSlice must have a unique
 	// name. If the EndpointSlice is dervied from a Kubernetes service, this
 	// corresponds to the Service.ports[].name.
-	// Name must either be an empty string or pass IANA_SVC_NAME validation:
-	// * must be no more than 15 characters long
-	// * may contain only [-a-z0-9]
-	// * must contain at least one letter [a-z]
-	// * it must not start or end with a hyphen, nor contain adjacent hyphens
+	// Name must either be an empty string or pass DNS_LABEL validation:
+	// * must be no more than 63 characters long.
+	// * must consist of lower case alphanumeric characters or '-'.
+	// * must start and end with an alphanumeric character.
 	// Default is empty string.
 	Name *string `json:"name,omitempty" protobuf:"bytes,1,name=name"`
 	// The IP protocol for this port.
@@ -128,6 +135,13 @@ type EndpointPort struct {
 	// If this is not specified, ports are not restricted and must be
 	// interpreted in the context of the specific consumer.
 	Port *int32 `json:"port,omitempty" protobuf:"bytes,3,opt,name=port"`
+	// The application protocol for this port.
+	// This field follows standard Kubernetes label syntax.
+	// Un-prefixed names are reserved for IANA standard service names (as per
+	// RFC-6335 and http://www.iana.org/assignments/service-names).
+	// Non-standard protocols should use prefixed names.
+	// Default is empty string.
+	AppProtocol *string `json:"appProtocol,omitempty" protobuf:"bytes,4,name=appProtocol"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
