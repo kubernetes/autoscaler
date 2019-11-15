@@ -165,6 +165,25 @@ func GetHamsterPods(f *framework.Framework) (*apiv1.PodList, error) {
 	return f.ClientSet.CoreV1().Pods(f.Namespace.Name).List(options)
 }
 
+// SetupHamsterContainer returns containter with given amount of cpu and memory
+func SetupHamsterContainer(cpu, memory string) apiv1.Container {
+	cpuQuantity := ParseQuantityOrDie(cpu)
+	memoryQuantity := ParseQuantityOrDie(memory)
+
+	return apiv1.Container{
+		Name:  "hamster",
+		Image: "k8s.gcr.io/ubuntu-slim:0.1",
+		Resources: apiv1.ResourceRequirements{
+			Requests: apiv1.ResourceList{
+				apiv1.ResourceCPU:    cpuQuantity,
+				apiv1.ResourceMemory: memoryQuantity,
+			},
+		},
+		Command: []string{"/bin/sh"},
+		Args:    []string{"-c", "while true; do sleep 10 ; done"},
+	}
+}
+
 // SetupVPA creates and installs a simple hamster VPA for e2e test purposes.
 func SetupVPA(f *framework.Framework, cpu string, mode vpa_types.UpdateMode, targetRef *autoscaling.CrossVersionObjectReference) {
 	vpaCRD := NewVPA(f, "hamster-vpa", targetRef)

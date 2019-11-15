@@ -20,8 +20,10 @@ import (
 	"fmt"
 	"strings"
 	"time"
-
+	
+	autoscaling "k8s.io/api/autoscaling/v1"
 	apiv1 "k8s.io/api/core/v1"
+	batchv1beta1 "k8s.io/api/batch/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
@@ -143,6 +145,43 @@ var _ = RecommenderE2eDescribe("Checkpoints", func() {
 		list, err := vpaClientSet.AutoscalingV1().VerticalPodAutoscalerCheckpoints(ns).List(metav1.ListOptions{})
 		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 		gomega.Expect(list.Items).To(gomega.BeEmpty())
+	})
+})
+
+var _ = RecommenderE2eDescribe("CronJob Recommendation", func() {
+	f := framework.NewDefaultFramework("vertical-pod-autoscaling")
+
+	ginkgo.It("recommendations for CronJob are served", func() {
+		cronJob := framework.NewTestCronJob("hamster-cronjob", "*/3 * * * *", batchv1beta1.AllowConcurrent,
+			[]string{"sleep", "10000000"}, 2, 2, 10, nil, nil)
+		
+		cronJob.Spec.JobTemplate.Spec.Template.Spec.Containers[0] = SetupHamsterContainer("100m", "100Mi")
+		for label, value := range hamsterLabels {
+			cronJob.Spec.JobTemplate.Spec.Template.Labels[label] = value
+		}
+
+		cronJob, err := framework.CreateCronJob(f.ClientSet, f.Namespace.Name, cronJob)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+		
+		err = framework.WaitForActiveJobs(f.ClientSet, f.Namespace.Name, cronJob.Name, 3)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+		config, err := framework.LoadConfig()
+		vpaClientSet := vpa_clientset.NewForConfigOrDie(config)
+		vpaClient := vpaClientSet.AutoscalingV1()
+		
+		vpaCRD := NewVPA(f, "hamster-cronjob-vpa", &autoscaling.CrossVersionObjectReference{
+			APIVersion: "batch/v1",
+			Kind:       "CronJob",
+			Name:       "hamster-cronjob",
+		})
+
+		_, err = vpaClient.VerticalPodAutoscalers(f.Namespace.Name).Create(vpaCRD)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
+
+		ginkgo.By("Waiting for recommendation to be filled")
+		_, err = WaitForRecommendationPresent(vpaClientSet, vpaCRD)
+		gomega.Expect(err).NotTo(gomega.HaveOccurred())
 	})
 })
 
