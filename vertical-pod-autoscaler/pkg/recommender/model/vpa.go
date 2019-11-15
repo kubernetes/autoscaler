@@ -27,6 +27,9 @@ import (
 	vpa_types "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 )
 
+// Map from VPA annotation key to value.
+type vpaAnnotationsMap map[string]string
+
 // Map from VPA condition type to condition.
 type vpaConditionsMap map[vpa_types.VerticalPodAutoscalerConditionType]vpa_types.VerticalPodAutoscalerCondition
 
@@ -79,6 +82,8 @@ type Vpa struct {
 	// Labels selector that determines which Pods are controlled by this VPA
 	// object. Can be nil, in which case no Pod is matched.
 	PodSelector labels.Selector
+	// Map of the object annotations (key-value pairs).
+	Annotations vpaAnnotationsMap
 	// Map of the status conditions (keys are condition types).
 	Conditions vpaConditionsMap
 	// Most recently computed recommendation. Can be nil.
@@ -112,6 +117,7 @@ func NewVpa(id VpaID, selector labels.Selector, created time.Time) *Vpa {
 		aggregateContainerStates:        make(aggregateContainerStatesMap),
 		ContainersInitialAggregateState: make(ContainerNameToAggregateStateMap),
 		Created:                         created,
+		Annotations:                     make(vpaAnnotationsMap),
 		Conditions:                      make(vpaConditionsMap),
 		IsV1Beta1API:                    false,
 	}
