@@ -39,9 +39,11 @@ const (
 
 var (
 	availableGPUTypes = map[string]struct{}{
-		"nvidia-tesla-k80":  {},
-		"nvidia-tesla-p100": {},
-		"nvidia-tesla-v100": {},
+		"nTeslaV100":    {},
+		"nTeslaP40":     {},
+		"nTeslaP4":      {},
+		"nTeslaV100-16": {},
+		"nTeslaV100-32": {},
 	}
 )
 
@@ -93,8 +95,8 @@ func buildStaticallyDiscoveringProvider(manager *BaiducloudManager, specs []stri
 		asgs:              make([]*Asg, 0),
 		resourceLimiter:   resourceLimiter,
 	}
-	if len(specs) > 1 {
-		return nil, fmt.Errorf("currently, baiducloud cloud provider not support Multiple ASG")
+	if len(specs) > 200 {
+		return nil, fmt.Errorf("currently, baiducloud cloud provider not support ASG‘s number > 200")
 	}
 	for _, spec := range specs {
 		if err := bcp.addNodeGroup(spec); err != nil {
