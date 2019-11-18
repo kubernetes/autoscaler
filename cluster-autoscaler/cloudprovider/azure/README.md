@@ -75,6 +75,23 @@ Make a copy of [cluster-autoscaler-vmss.yaml](examples/cluster-autoscaler-vmss.y
 
 In the `cluster-autoscaler` spec, find the `image:` field and replace `{{ ca_version }}` with a specific cluster autoscaler release.
 
+#### Auto-Discovery Setup
+
+To run a cluster-autoscaler which auto-discovers VMSSs with nodes use the `--node-group-auto-discovery` flag.
+For example, `--node-group-auto-discovery=label:cluster-autoscaler-enabled=true,cluster-autoscaler-name=<YOUR CLUSTER NAME>` will find the VMSSs tagged with those tags containing those values.
+
+Note that:
+
+* It is recommended to use a second tag like `cluster-autoscaler-name=<YOUR CLUSTER NAME>` when `cluster-autoscaler-enabled=true` is used across many clusters to prevent VMSSs from different clusters recognized as the node groups
+* There are no `--nodes` flags passed to cluster-autoscaler because the node groups are automatically discovered by tags
+* No min/max values are provided when using Auto-Discovery, cluster-autoscaler will respect the current min and max values of the VMSS being targeted, and it will adjust only the "desired" value.
+
+```
+kubectl apply -f examples/cluster-autoscaler-autodiscover.yaml
+```
+
+#### Explicit setup
+
 Below that, in the `command:` section, update the `--nodes=` arguments to reference your node limits and VMSS name. For example, if node pool "k8s-nodepool-1-vmss" should scale from 1 to 10 nodes:
 
 ```yaml
