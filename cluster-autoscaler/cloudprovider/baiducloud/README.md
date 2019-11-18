@@ -11,8 +11,10 @@ Cluster autoscaler must run on v1.8.6 or greater.
 kubectl apply -f examples/cluster-autoscaler-one-asg.yaml
 ```
 
-### Multiple ASG Setup
-Multiple ASG Setup is not supported in BaiduCloud currently.
+### Multiple ASG Setup (min: 1, max: 10, ASG Name: k8s-worker-asg-1, min: 1, max: 10, ASG Name: k8s-worker-asg-2)
+```
+kubectl apply -f examples/cluster-autoscaler-multiple-asg.yaml
+```
 
 ## Common Notes and Gotchas:
 - By default, cluster autoscaler will not terminate nodes running pods in the kube-system namespace. You can override this default behaviour by passing in the `--skip-nodes-with-system-pods=false` flag.
