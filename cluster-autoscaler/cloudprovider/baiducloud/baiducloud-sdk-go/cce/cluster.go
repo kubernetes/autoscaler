@@ -68,6 +68,13 @@ type CceGroup struct {
 	GpuCount     int    `json:"gpuCount,omitempty"`
 	GpuCard      string `json:"gpuCard,omitempty"`
 	DiskSize     int    `json:"diskSize,omitempty"`
+	Tags         []Tag  `json:"tags"`
+}
+
+// Tag defines label
+type Tag struct {
+	Key   string `json:"key"`
+	Value string `json:"Value"`
 }
 
 // DescribeCluster describe the cluster
@@ -496,7 +503,7 @@ func (c *Client) ScaleUpClusterWithGroupID(args *ScaleUpClusterWithGroupIDArgs) 
 	if err != nil {
 		return err
 	}
-	var scResp *ScaleUpClusterResponse
+	var scResp ScaleUpClusterResponse
 	err = json.Unmarshal(bodyContent, &scResp)
 
 	if err != nil {

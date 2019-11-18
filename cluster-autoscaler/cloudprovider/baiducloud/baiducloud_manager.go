@@ -64,6 +64,7 @@ type asgTemplate struct {
 	CPU          int
 	Memory       int
 	GpuCount     int
+	Tags         map[string]string
 }
 
 // CreateBaiducloudManager constructs baiducloudManager object.
@@ -132,8 +133,30 @@ func (m *BaiducloudManager) GetAsgSize(asg *Asg) (int64, error) {
 			size++
 		}
 	}
-	klog.V(4).Infof("Group: %s GetAsgSize: %d\n", asg.Name, size)
+	printNodeStatusCount(instanceList, asg.Name, size)
 	return size, nil
+}
+
+func printNodeStatusCount(instanceList []cce.CceInstance, asgName string, size int64) {
+	runningCount := 0
+	creatingCount := 0
+	deletingCount := 0
+	exception := 0
+	for _, instance := range instanceList {
+		switch instance.Status {
+		case "RUNNING":
+			runningCount++
+		case "CREATING":
+			creatingCount++
+		case "DELETING":
+			deletingCount++
+		default:
+			exception++
+			klog.V(4).Infof("EXCEPTION instance: %v, status: %v", instance.InstanceId, instance.Status)
+		}
+	}
+	klog.V(4).Infof("Group: %s TotalSize: %d, CA Size: %d ,instances RUNNING: %v, CREATING: %v, DELETING: %v, EXCEPTION: %v",
+		asgName, len(instanceList), size, runningCount, creatingCount, deletingCount, exception)
 }
 
 func randStringBytes(n int) string {
@@ -200,12 +223,19 @@ func (m *BaiducloudManager) getAsgTemplate(name string) (*asgTemplate, error) {
 		klog.V(4).Infof("describeCluster err: %s\n", err)
 		return nil, err
 	}
+
+	tags := make(map[string]string)
+	for _, tag := range cceGroup.Tags {
+		tags[tag.Key] = tag.Value
+	}
+
 	return &asgTemplate{
 		InstanceType: cceGroup.InstanceType,
 		Region:       m.cloudConfig.Region,
 		CPU:          cceGroup.CPU,
 		Memory:       cceGroup.Memory,
 		GpuCount:     cceGroup.GpuCount,
+		Tags:         tags,
 	}, nil
 }
 
@@ -224,10 +254,21 @@ func (m *BaiducloudManager) buildNodeFromTemplate(asg *Asg, template *asgTemplat
 	node.Status.Capacity[apiv1.ResourceCPU] = *resource.NewQuantity(int64(template.CPU), resource.DecimalSI)
 	node.Status.Capacity[apiv1.ResourceMemory] = *resource.NewQuantity(int64(template.Memory*1024*1024*1024), resource.DecimalSI)
 
+	node.Labels = cloudprovider.JoinStringMaps(node.Labels, buildGenericLabels(template))
+
 	node.Status.Capacity[gpu.ResourceNvidiaGPU] = *resource.NewQuantity(int64(template.GpuCount), resource.DecimalSI)
 
 	node.Status.Allocatable = node.Status.Capacity
 
 	node.Status.Conditions = cloudprovider.BuildReadyConditions()
 	return &node, nil
+}
+
+func buildGenericLabels(template *asgTemplate) map[string]string {
+	result := make(map[string]string)
+	// append custom node labels
+	for key, value := range template.Tags {
+		result[key] = value
+	}
+	return result
 }
