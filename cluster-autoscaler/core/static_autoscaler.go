@@ -454,10 +454,7 @@ func (a *StaticAutoscaler) RunOnce(currentTime time.Time) errors.AutoscalerError
 				klog.Errorf("Error while removing unneeded node groups: %v", err)
 			}
 
-			scaleDownStart := time.Now()
-			metrics.UpdateLastTime(metrics.ScaleDown, scaleDownStart)
 			scaleDownStatus, typedErr := scaleDown.TryToScaleDown(allNodes, originalScheduledPods, pdbs, currentTime)
-			metrics.UpdateDurationFromStart(metrics.ScaleDown, scaleDownStart)
 
 			scaleDownStatus.RemovedNodeGroups = removedNodeGroups
 

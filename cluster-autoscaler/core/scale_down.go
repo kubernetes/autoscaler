@@ -693,7 +693,9 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 	nodeDeletionDuration := time.Duration(0)
 	findNodesToRemoveDuration := time.Duration(0)
 	scaleDownFnStartTime := time.Now()
+	metrics.UpdateLastTime(metrics.ScaleDown, scaleDownFnStartTime)
 	defer updateScaleDownMetrics(scaleDownFnStartTime, &findNodesToRemoveDuration, &nodeDeletionDuration)
+
 	nodesWithoutMaster := filterOutMasters(allNodes, pods)
 	candidates := make([]*apiv1.Node, 0)
 	readinessMap := make(map[string]bool)
@@ -875,6 +877,7 @@ func (sd *ScaleDown) TryToScaleDown(allNodes []*apiv1.Node, pods []*apiv1.Pod, p
 func updateScaleDownMetrics(scaleDownStart time.Time, findNodesToRemoveDuration *time.Duration, nodeDeletionDuration *time.Duration) {
 	stop := time.Now()
 	miscDuration := stop.Sub(scaleDownStart) - *nodeDeletionDuration - *findNodesToRemoveDuration
+	metrics.UpdateDurationFromStart(metrics.ScaleDown, scaleDownStart)
 	metrics.UpdateDuration(metrics.ScaleDownNodeDeletion, *nodeDeletionDuration)
 	metrics.UpdateDuration(metrics.ScaleDownFindNodesToRemove, *findNodesToRemoveDuration)
 	metrics.UpdateDuration(metrics.ScaleDownMiscOperations, miscDuration)
