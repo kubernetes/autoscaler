@@ -26,9 +26,11 @@ import (
 
 	"github.com/Azure/go-autorest/autorest/azure"
 	"gopkg.in/gcfg.v1"
+	"k8s.io/klog"
+	azure2 "k8s.io/legacy-cloud-providers/azure"
+
 	"k8s.io/autoscaler/cluster-autoscaler/cloudprovider"
 	"k8s.io/autoscaler/cluster-autoscaler/config/dynamic"
-	"k8s.io/klog"
 )
 
 const (
@@ -49,6 +51,7 @@ const (
 	autoDiscovererTypeLabel        = "label"
 	labelAutoDiscovererKeyMinNodes = "min"
 	labelAutoDiscovererKeyMaxNodes = "max"
+	metadataURL                    = "http://169.254.169.254/metadata/instance"
 )
 
 var validLabelAutoDiscovererKeys = strings.Join([]string{
@@ -130,7 +133,6 @@ func CreateAzureManager(configReader io.Reader, discoveryOpts cloudprovider.Node
 		}
 	} else {
 		cfg.Cloud = os.Getenv("ARM_CLOUD")
-		cfg.SubscriptionID = os.Getenv("ARM_SUBSCRIPTION_ID")
 		cfg.ResourceGroup = os.Getenv("ARM_RESOURCE_GROUP")
 		cfg.TenantID = os.Getenv("ARM_TENANT_ID")
 		cfg.AADClientID = os.Getenv("ARM_CLIENT_ID")
@@ -141,6 +143,12 @@ func CreateAzureManager(configReader io.Reader, discoveryOpts cloudprovider.Node
 		cfg.Deployment = os.Getenv("ARM_DEPLOYMENT")
 		cfg.ClusterName = os.Getenv("AZURE_CLUSTER_NAME")
 		cfg.NodeResourceGroup = os.Getenv("AZURE_NODE_RESOURCE_GROUP")
+
+		subscriptionID, err := getSubscriptionIdFromInstanceMetadata()
+		if err != nil {
+			return nil, err
+		}
+		cfg.SubscriptionID = subscriptionID
 
 		useManagedIdentityExtensionFromEnv := os.Getenv("ARM_USE_MANAGED_IDENTITY_EXTENSION")
 		if len(useManagedIdentityExtensionFromEnv) > 0 {
@@ -533,4 +541,23 @@ func parseLabelAutoDiscoverySpec(spec string) (labelAutoDiscoveryConfig, error) 
 		return cfg, fmt.Errorf("maximum size must be greater than minimum size")
 	}
 	return cfg, nil
+}
+
+// getSubscriptionId reads the Subscription ID from the instance metadata.
+func getSubscriptionIdFromInstanceMetadata() (string, error) {
+	subscriptionID, present := os.LookupEnv("ARM_SUBSCRIPTION_ID")
+	if !present {
+		metadataService, err := azure2.NewInstanceMetadataService(metadataURL)
+		if err != nil {
+			return "", err
+		}
+
+		metadata, err := metadataService.GetMetadata()
+		if err != nil {
+			return "", err
+		}
+
+		return metadata.Compute.SubscriptionID, nil
+	}
+	return subscriptionID, nil
 }
