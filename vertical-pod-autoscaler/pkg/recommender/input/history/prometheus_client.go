@@ -18,9 +18,12 @@ package history
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"time"
+
+	"k8s.io/klog"
 )
 
 var (
@@ -33,6 +36,7 @@ type PrometheusClient interface {
 	// Given a particular query (that's supposed to return range vectors
 	// in Prometheus terminology), gets the results from Prometheus.
 	GetTimeseries(query string) ([]Timeseries, error)
+	GetTimeseriesRange(query string, start, end time.Time, step string) ([]Timeseries, error)
 }
 
 type httpGetter interface {
@@ -63,6 +67,21 @@ func getUrlWithQuery(address, query string) (string, error) {
 	return url.String(), nil
 }
 
+func getUrlWithQueryRange(address, query string, start, end time.Time, step string) (string, error) {
+	url, err := url.Parse(address)
+	if err != nil {
+		return "", err
+	}
+	url.Path = "api/v1/query_range"
+	queryValues := url.Query()
+	queryValues.Set("query", query)
+	queryValues.Set("start", start.Format(time.RFC3339))
+	queryValues.Set("end", end.Format(time.RFC3339))
+	queryValues.Set("step", step)
+	url.RawQuery = queryValues.Encode()
+	return url.String(), nil
+}
+
 func retry(callback func() error, attempts int, delay time.Duration) error {
 	for i := 1; ; i++ {
 		err := callback()
@@ -76,19 +95,17 @@ func retry(callback func() error, attempts int, delay time.Duration) error {
 	}
 }
 
-func (c *prometheusClient) GetTimeseries(query string) ([]Timeseries, error) {
-	url, err := getUrlWithQuery(c.address, query)
-	if err != nil {
-		return nil, fmt.Errorf("couldn't construct url to Prometheus: %v", err)
-	}
+func (c *prometheusClient) queryPrometheus(url string) ([]Timeseries, error) {
 	var resp *http.Response
-	err = retry(func() error {
+	err := retry(func() error {
+		var err error
 		resp, err = c.httpClient.Get(url)
 		if err != nil {
 			return fmt.Errorf("error getting data from Prometheus: %v", err)
 		}
 		if resp.StatusCode != http.StatusOK {
-			return fmt.Errorf("bad HTTP status: %v %s", resp.StatusCode, http.StatusText(resp.StatusCode))
+			bodyBytes, _ := ioutil.ReadAll(resp.Body)
+			return fmt.Errorf("bad HTTP status: %v %s. Response text: %s", resp.StatusCode, http.StatusText(resp.StatusCode), bodyBytes)
 		}
 		return nil
 	}, numRetries, retryDelay)
@@ -96,4 +113,21 @@ func (c *prometheusClient) GetTimeseries(query string) ([]Timeseries, error) {
 		return nil, fmt.Errorf("retrying GetTimeseries unsuccessful: %v", err)
 	}
 	return decodeTimeseriesFromResponse(resp.Body)
+}
+
+func (c *prometheusClient) GetTimeseries(query string) ([]Timeseries, error) {
+	url, err := getUrlWithQuery(c.address, query)
+	if err != nil {
+		return nil, fmt.Errorf("couldn't construct url to Prometheus: %v", err)
+	}
+	return c.queryPrometheus(url)
+}
+
+func (c *prometheusClient) GetTimeseriesRange(query string, start, end time.Time, step string) ([]Timeseries, error) {
+	url, err := getUrlWithQueryRange(c.address, query, start, end, step)
+	if err != nil {
+		return nil, fmt.Errorf("couldn't construct url to Prometheus: %v", err)
+	}
+	klog.V(4).Infof("Running range query for %s between %s and %s", query, start.Format(time.RFC3339), end.Format(time.RFC3339))
+	return c.queryPrometheus(url)
 }

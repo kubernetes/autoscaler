@@ -23,17 +23,18 @@ import (
 	"strings"
 	"time"
 
+	prommodel "github.com/prometheus/common/model"
 	"k8s.io/autoscaler/vertical-pod-autoscaler/pkg/recommender/model"
 )
 
 // PrometheusHistoryProviderConfig allow to select which metrics
 // should be queried to get real resource utilization.
 type PrometheusHistoryProviderConfig struct {
-	Address                                            string
-	HistoryLength, PodLabelPrefix, PodLabelsMetricName string
-	PodNamespaceLabel, PodNameLabel                    string
-	CtrNamespaceLabel, CtrPodNameLabel, CtrNameLabel   string
-	CadvisorMetricsJobName                             string
+	Address                                                               string
+	HistoryLength, HistoryResolution, PodLabelPrefix, PodLabelsMetricName string
+	PodNamespaceLabel, PodNameLabel                                       string
+	CtrNamespaceLabel, CtrPodNameLabel, CtrNameLabel                      string
+	CadvisorMetricsJobName                                                string
 }
 
 // PodHistory represents history of usage and labels for a given pod.
@@ -137,7 +138,16 @@ func getContainerUsageSamplesFromSamples(samples []Sample, resource model.Resour
 }
 
 func (p *prometheusHistoryProvider) readResourceHistory(res map[model.PodID]*PodHistory, query string, resource model.ResourceName) error {
-	tss, err := p.prometheusClient.GetTimeseries(query)
+	// Use Prometheus's model.Duration; this can parse durations in days, weeks and years
+	historyDuration, err := prommodel.ParseDuration(p.config.HistoryLength)
+	if err != nil {
+		panic(fmt.Errorf("Given history length %s is not a valid duration: %v", p.config.HistoryLength, err))
+	}
+
+	end := time.Now()
+	start := end.Add(-time.Duration(historyDuration))
+
+	tss, err := p.prometheusClient.GetTimeseriesRange(query, start, end, p.config.HistoryResolution)
 	if err != nil {
 		return fmt.Errorf("cannot get timeseries for %v: %v", resource, err)
 	}
@@ -194,7 +204,7 @@ func (p *prometheusHistoryProvider) GetClusterHistory() (map[model.PodID]*PodHis
 	if err != nil {
 		return nil, fmt.Errorf("cannot get usage history: %v", err)
 	}
-	err = p.readResourceHistory(res, fmt.Sprintf("container_memory_working_set_bytes{%s}[%s]", podSelector, p.config.HistoryLength), model.ResourceMemory)
+	err = p.readResourceHistory(res, fmt.Sprintf("container_memory_working_set_bytes{%s}", podSelector), model.ResourceMemory)
 	if err != nil {
 		return nil, fmt.Errorf("cannot get usage history: %v", err)
 	}
