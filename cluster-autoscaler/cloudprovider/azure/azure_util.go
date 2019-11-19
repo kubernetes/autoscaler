@@ -525,22 +525,6 @@ func validateConfig(cfg *Config) error {
 		return fmt.Errorf("resource group not set")
 	}
 
-	if cfg.SubscriptionID == "" {
-		return fmt.Errorf("subscription ID not set")
-	}
-
-	if cfg.UseManagedIdentityExtension {
-		return nil
-	}
-
-	if cfg.TenantID == "" {
-		return fmt.Errorf("tenant ID not set")
-	}
-
-	if cfg.AADClientID == "" {
-		return fmt.Errorf("ARM Client ID not set")
-	}
-
 	if cfg.VMType == vmTypeStandard {
 		if cfg.Deployment == "" {
 			return fmt.Errorf("deployment not set")
@@ -556,6 +540,22 @@ func validateConfig(cfg *Config) error {
 		if cfg.ClusterName == "" {
 			return fmt.Errorf("cluster name not set for type %+v", cfg.VMType)
 		}
+	}
+
+	if cfg.SubscriptionID == "" {
+		return fmt.Errorf("subscription ID not set")
+	}
+
+	if cfg.UseManagedIdentityExtension {
+		return nil
+	}
+
+	if cfg.TenantID == "" {
+		return fmt.Errorf("tenant ID not set")
+	}
+
+	if cfg.AADClientID == "" {
+		return fmt.Errorf("ARM Client ID not set")
 	}
 
 	return nil
