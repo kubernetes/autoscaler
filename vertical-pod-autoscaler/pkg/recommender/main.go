@@ -18,6 +18,8 @@ package main
 
 import (
 	"flag"
+	"os"
+	"path/filepath"
 	"time"
 
 	"k8s.io/autoscaler/vertical-pod-autoscaler/common"
@@ -27,6 +29,7 @@ import (
 	metrics_quality "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/quality"
 	metrics_recommender "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/utils/metrics/recommender"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
 	kube_flag "k8s.io/component-base/cli/flag"
 	"k8s.io/klog"
 )
@@ -93,11 +96,32 @@ func main() {
 }
 
 func createKubeConfig(kubeApiQps float32, kubeApiBurst int) *rest.Config {
-	config, err := rest.InClusterConfig()
+	config, err := loadFromKubeConfig()
 	if err != nil {
 		klog.Fatalf("Failed to create config: %v", err)
 	}
 	config.QPS = kubeApiQps
 	config.Burst = kubeApiBurst
 	return config
+}
+
+func loadFromKubeConfig() (config *rest.Config, err error) {
+	if os.Getenv("KUBERNETES_SERVICE_HOST") != "" { // inside a k8s cluster
+		config, err = rest.InClusterConfig()
+	} else { // outside a k8s cluster, use kubeconfig
+		var kubeconfigPath string
+
+		if os.Getenv("KUBECONFIG") != "" {
+			kubeconfigPath = os.Getenv("KUBECONFIG")
+		} else {
+			kubeconfigPath = filepath.Join(os.Getenv("HOME"), ".kube", "config")
+		}
+		config, err = clientcmd.BuildConfigFromFlags("", kubeconfigPath)
+
+		if err != nil {
+			return config, err
+		}
+	}
+
+	return config, err
 }
